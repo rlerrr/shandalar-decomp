@@ -1,5 +1,5 @@
 set(cardartlib_sources
-  src/main.cpp
+  src/main.c
 )
 
 add_library(cardartlib SHARED ${cardartlib_sources})

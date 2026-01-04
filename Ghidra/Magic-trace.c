@@ -671,7 +671,7 @@ C_card_mirror_universe(int player, int card, event_t event)
 //----- (416460) --------------------------------------------------------
 C_card_chromium(int player, int card, event_t event)
 //----- (416530) --------------------------------------------------------
-TENTATIVE_dlgproc_mulligan(HWND hwnd, WM_t uMsg, WPARAM wparam, LPARAM lparam)
+TENTATIVE_dlgproc_mulligan(HWND hwnd, uint uMsg, WPARAM wparam, LPARAM lparam)
 //----- (416F30) --------------------------------------------------------
 draw_initial_hand(int player, signed int a2)
 //----- (417040) --------------------------------------------------------
@@ -1195,7 +1195,7 @@ register_ChatClass(const CHAR *a1)
 //----- (41EF50) --------------------------------------------------------
 destroy_ChatClass()
 //----- (41EF70) --------------------------------------------------------
-wndproc_ChatClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_ChatClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (41F220) --------------------------------------------------------
 card_contract_from_below(int player, int card, event_t event)
 //----- (41F310) --------------------------------------------------------
@@ -1657,7 +1657,7 @@ raging_river_helper(signed int result, int player, int a3)
 //----- (432D60) --------------------------------------------------------
 register_PlayerDirectiveClass(const CHAR *a1)
 //----- (432DE0) --------------------------------------------------------
-wndproc_PlayerDirectiveClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_PlayerDirectiveClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (432F80) --------------------------------------------------------
 helper_for_startduel()
 //----- (433190) --------------------------------------------------------
@@ -1969,7 +1969,7 @@ sub_43EBF0(unsigned int a1)
 //----- (43EC30) --------------------------------------------------------
 sub_43EC30()
 //----- (43EC50) --------------------------------------------------------
-TENTATIVE_dlgproc_show_ante(HWND hwnd, WM_t msg, unsigned int wparam, __int32 lparam)
+TENTATIVE_dlgproc_show_ante(HWND hwnd, uint msg, unsigned int wparam, __int32 lparam)
 //----- (43F560) --------------------------------------------------------
 sub_43F560(LPRECT lprc, HWND hWnd, int a3, int a4)
 //----- (43F720) --------------------------------------------------------
@@ -2035,11 +2035,11 @@ sub_444B20(const char *Filename)
 //----- (444C00) --------------------------------------------------------
 sub_444C00(HWND hDlg)
 //----- (4456B0) --------------------------------------------------------
-dlgproc_SingleDuelPage(HWND hwnd, WM_t msg, int wparam, int lparam)
+dlgproc_SingleDuelPage(HWND hwnd, uint msg, int wparam, int lparam)
 //----- (447470) --------------------------------------------------------
 sub_447470(HWND hDlg)
 //----- (447F70) --------------------------------------------------------
-dlgproc_GauntletPage(HWND hwnd, WM_t msg, int wparam, int lparam)
+dlgproc_GauntletPage(HWND hwnd, uint msg, int wparam, int lparam)
 //----- (449960) --------------------------------------------------------
 sub_449960(HWND hDlg)
 //----- (44A1F0) --------------------------------------------------------
@@ -2047,7 +2047,7 @@ sub_44A1F0()
 //----- (44A210) --------------------------------------------------------
 sub_44A210(char *Dest, int a2)
 //----- (44A2A0) --------------------------------------------------------
-dlgproc_SealedDeckPage(HWND hwnd, WM_t msg, int wparam, int lparam)
+dlgproc_SealedDeckPage(HWND hwnd, uint msg, int wparam, int lparam)
 //----- (44C5B0) --------------------------------------------------------
 sub_44C5B0(HWND hDlg)
 //----- (44D100) --------------------------------------------------------
@@ -2055,7 +2055,7 @@ register_FaceClass(const CHAR *a1)
 //----- (44D380) --------------------------------------------------------
 destroy_FaceClass()
 //----- (44D410) --------------------------------------------------------
-wndproc_FaceClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_FaceClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (44DA00) --------------------------------------------------------
 sub_44DA00(HDC hdc, const RECT *lprc, int a3)
 //----- (44DCE0) --------------------------------------------------------
@@ -2387,7 +2387,7 @@ register_SpellChainClass(const CHAR *a1)
 //----- (45A5F0) --------------------------------------------------------
 destroy_SpellChainClass()
 //----- (45A720) --------------------------------------------------------
-wndproc_SpellChainClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_SpellChainClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (45C020) --------------------------------------------------------
 sub_45C020(HWND hWnd, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22, int a23, int a24, int a25, int a26, int a27, int a28, int a29, int a30, int a31, int a32, int a33, int a34, int a35, int a36, int a37, int a38, int a39, int a40, int a41, int a42, int a43, int a44, signed int a45)
 //----- (45C0B0) --------------------------------------------------------
@@ -2403,7 +2403,7 @@ sub_45C4F0(HWND hWndParent, int a2, int a3, int a4, _BYTE *a5, int a6, int a7, i
 //----- (45C620) --------------------------------------------------------
 sub_45C620(HWND hDlg, LPRECT lprcDst)
 //----- (45CBA0) --------------------------------------------------------
-wndproc_SpellMinimized(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_SpellMinimized(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (45CEC0) --------------------------------------------------------
 sub_45CEC0()
 //----- (45CF00) --------------------------------------------------------
@@ -2413,7 +2413,7 @@ sub_45CF40(HWND hWndParent)
 //----- (45D0B0) --------------------------------------------------------
 sub_45D0B0(HWND hWndParent)
 //----- (45D0E0) --------------------------------------------------------
-sub_45D0E0(HWND hwnd, WM_t msg, int wparam, int lparam)
+sub_45D0E0(HWND hwnd, uint msg, int wparam, int lparam)
 //----- (45D8E0) --------------------------------------------------------
 sub_45D8E0(int a1, int a2, int a3, int a4, int a5, void *a6, int a7, int a8)
 //----- (45D9C0) --------------------------------------------------------
@@ -2447,7 +2447,7 @@ rfalse()
 //----- (45F9A0) --------------------------------------------------------
 rtrue()
 //----- (45F9B0) --------------------------------------------------------
-dlgproc_screennamepage(HWND hwnd, WM_t msg, int wparam, int lparam)
+dlgproc_screennamepage(HWND hwnd, uint msg, int wparam, int lparam)
 //----- (4618D0) --------------------------------------------------------
 sub_4618D0(HWND a1)
 //----- (461A30) --------------------------------------------------------
@@ -2469,7 +2469,7 @@ sub_462A00(char *deststr, int a2)
 //----- (462B90) --------------------------------------------------------
 sub_462B90(HWND hDlg)
 //----- (462FC0) --------------------------------------------------------
-sub_462FC0(HWND hwnd, WM_t msg, WPARAM wparam, __int32 lparam)
+sub_462FC0(HWND hwnd, uint msg, WPARAM wparam, __int32 lparam)
 //----- (463370) --------------------------------------------------------
 sub_463370(HWND hWndTo, LPRECT lpPoints)
 //----- (4633B0) --------------------------------------------------------
@@ -2477,7 +2477,7 @@ register_ScrollbarClass(const CHAR *a1)
 //----- (463460) --------------------------------------------------------
 destroy_ScrollbarClass()
 //----- (4634A0) --------------------------------------------------------
-wndproc_ScrollbarClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_ScrollbarClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4644F0) --------------------------------------------------------
 sub_4644F0(HWND hWnd, LONG a2)
 //----- (464570) --------------------------------------------------------
@@ -2563,7 +2563,7 @@ sub_467E90(HWND hWndInsertAfter, int a2, signed int a3)
 //----- (467F40) --------------------------------------------------------
 rgb_to_colorref_of_palette(int a1)
 //----- (467FA0) --------------------------------------------------------
-sub_467FA0(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+sub_467FA0(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (468110) --------------------------------------------------------
 sub_468110(HWND hWnd, int a2)
 //----- (468160) --------------------------------------------------------
@@ -2589,15 +2589,15 @@ destroy_LibraryClass()
 //----- (468750) --------------------------------------------------------
 redraw_libraries()
 //----- (468780) --------------------------------------------------------
-wndproc_LibraryClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_LibraryClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (469150) --------------------------------------------------------
 sub_469150(int a1)
 //----- (469170) --------------------------------------------------------
-wndproc_ShuffleCard(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_ShuffleCard(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (469490) --------------------------------------------------------
 TENTATIVE_prompt_for_mulligan(int *a1, int *a2, __int32 a3, int a4, int a5, int a6, int a7, int a8, int a9, int *a10)
 //----- (469690) --------------------------------------------------------
-TENTATIVE_dlgproc_play_or_draw(HWND hwnd, WM_t msg, WPARAM wparam, int lparam)
+TENTATIVE_dlgproc_play_or_draw(HWND hwnd, uint msg, WPARAM wparam, int lparam)
 //----- (469FB0) --------------------------------------------------------
 sub_469FB0(HWND hWnd)
 //----- (46A000) --------------------------------------------------------
@@ -2611,7 +2611,7 @@ sub_46A1D0(HGDIOBJ ho, void *a2, void *a3, void *a4)
 //----- (46A220) --------------------------------------------------------
 end_the_game(int a1, const char *a2, int a3, const char *a4, int a5, const char *a6, int a7)
 //----- (46A530) --------------------------------------------------------
-dlgproc_endduel(HWND hWndTo, WM_t msg, HDC wparam, int lparam)
+dlgproc_endduel(HWND hWndTo, uint msg, HDC wparam, int lparam)
 //----- (46B6F0) --------------------------------------------------------
 sub_46B6F0(HGDIOBJ *a1, COLORREF *a2, COLORREF *a3, HPEN *a4, HPEN *a5, HPEN *a6, COLORREF *a7, COLORREF *a8)
 //----- (46B7D0) --------------------------------------------------------
@@ -2619,7 +2619,7 @@ sub_46B7D0(void *a1, HGDIOBJ ho, void *a3, void *a4)
 //----- (46B820) --------------------------------------------------------
 sub_46B820(int a1)
 //----- (46B950) --------------------------------------------------------
-dlgproc_gauntletendduel(HWND hwnd, WM_t msg, HDC wparam, int lparam)
+dlgproc_gauntletendduel(HWND hwnd, uint msg, HDC wparam, int lparam)
 //----- (46C370) --------------------------------------------------------
 sub_46C370(HGDIOBJ *a1, COLORREF *a2, COLORREF *a3, HBRUSH *a4, HPEN *a5, HPEN *a6, COLORREF *a7, COLORREF *a8)
 //----- (46C450) --------------------------------------------------------
@@ -2635,11 +2635,11 @@ sub_46D870(HBRUSH *a1, HPEN *a2, HPEN *a3, HPEN *a4, HBRUSH *a5, COLORREF *a6)
 //----- (46D940) --------------------------------------------------------
 sub_46D940(HGDIOBJ ho, void *a2, void *a3, void *a4, void *a5)
 //----- (46D9A0) --------------------------------------------------------
-wndproc_ShowListCard(HWND hWndParent, WM_t msg, LPARAM lparam, WPARAM wparam)
+wndproc_ShowListCard(HWND hWndParent, uint msg, LPARAM lparam, WPARAM wparam)
 //----- (46DCF0) --------------------------------------------------------
 choose_a_number_dialog(int player, const char *prompt, int maxnum)
 //----- (46DD40) --------------------------------------------------------
-dlgproc_choose_a_number(HWND hwnd, WM_t msg, WPARAM wparam, choose_a_number_args_t *lparam)
+dlgproc_choose_a_number(HWND hwnd, uint msg, WPARAM wparam, choose_a_number_args_t *lparam)
 //----- (46E200) --------------------------------------------------------
 sub_46E200(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 //----- (46E260) --------------------------------------------------------
@@ -2649,7 +2649,7 @@ sub_46E330(void *a1, HGDIOBJ ho, void *a3, void *a4)
 //----- (46E380) --------------------------------------------------------
 choose_a_color_dialog(int player, const char *prompt, int use_color_names_instead_of_land, int ai_choice, color_test_t a5)
 //----- (46E540) --------------------------------------------------------
-dlgproc_choose_a_color(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+dlgproc_choose_a_color(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (46F240) --------------------------------------------------------
 sub_46F240(HGDIOBJ *a1, COLORREF *a2, HGDIOBJ *a3, int a4, COLORREF *a5, HBRUSH *a6, HPEN *a7, HPEN *a8, COLORREF *a9, COLORREF *a10)
 //----- (46F450) --------------------------------------------------------
@@ -2659,7 +2659,7 @@ sub_46F4F0(LPRECT lpPoints, HWND hWndTo, int a3)
 //----- (46F680) --------------------------------------------------------
 sub_46F680(int a1, int a2, LPARAM a3, int a4, int a5)
 //----- (46F780) --------------------------------------------------------
-TENTATIVE_dlgproc_hack_or_sleight(HWND hwnd, WM_t msg, HDC wparam, int lparam)
+TENTATIVE_dlgproc_hack_or_sleight(HWND hwnd, uint msg, HDC wparam, int lparam)
 //----- (470130) --------------------------------------------------------
 sub_470130(HGDIOBJ *a1, COLORREF *a2, HBRUSH *a3, HPEN *a4, HPEN *a5, COLORREF *a6, COLORREF *a7)
 //----- (470200) --------------------------------------------------------
@@ -2667,11 +2667,11 @@ sub_470200(void *a1, HGDIOBJ ho, void *a3, void *a4)
 //----- (470250) --------------------------------------------------------
 sub_470250(LPARAM a1, int a2)
 //----- (4702A0) --------------------------------------------------------
-TENTATIVE_dlgproc_manaburn(HWND hwnd, WM_t msg, unsigned int wparam, LPARAM lparam)
+TENTATIVE_dlgproc_manaburn(HWND hwnd, uint msg, unsigned int wparam, LPARAM lparam)
 //----- (470690) --------------------------------------------------------
 coin_flip(int player, const char *dialog_title, int show_dialog_if_animation_is_off)
 //----- (4707C0) --------------------------------------------------------
-dlgproc_coin_flip(HWND hwnd, WM_t msg, UINT_PTR wparam, LPARAM lparam)
+dlgproc_coin_flip(HWND hwnd, uint msg, UINT_PTR wparam, LPARAM lparam)
 //----- (470DF0) --------------------------------------------------------
 sub_470DF0(HBRUSH *a1, COLORREF *a2)
 //----- (470E10) --------------------------------------------------------
@@ -2679,7 +2679,7 @@ sub_470E10(HGDIOBJ ho)
 //----- (470E30) --------------------------------------------------------
 sub_470E30(int a1, int a2, LPARAM a3, int a4, int a5, int a6, int a7)
 //----- (470F80) --------------------------------------------------------
-dlgproc_fireball(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+dlgproc_fireball(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (471A00) --------------------------------------------------------
 sub_471A00(HGDIOBJ *a1, COLORREF *a2, HBRUSH *a3, HPEN *a4, HPEN *a5, COLORREF *a6, COLORREF *a7)
 //----- (471AD0) --------------------------------------------------------
@@ -2815,7 +2815,7 @@ register_CueCardClass(const CHAR *a1)
 //----- (4780E0) --------------------------------------------------------
 destroy_CueCardClass()
 //----- (478170) --------------------------------------------------------
-wndproc_CueCardClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_CueCardClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4785E0) --------------------------------------------------------
 sub_4785E0(int a1)
 //----- (478AC0) --------------------------------------------------------
@@ -2919,7 +2919,7 @@ register_HandClass(const CHAR *a1)
 //----- (47BFC0) --------------------------------------------------------
 destroy_HandClass()
 //----- (47C000) --------------------------------------------------------
-wndproc_HandClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_HandClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (47D2F0) --------------------------------------------------------
 TENTATIVE_update_hand_window(HWND hWnd)
 //----- (47D5F0) --------------------------------------------------------
@@ -2995,7 +2995,7 @@ sub_482780(int a1, int a2)
 //----- (482910) --------------------------------------------------------
 sub_482910(HWND hWndParent, int a2, int a3)
 //----- (482940) --------------------------------------------------------
-dlgproc_FoilPackScreen(HWND hwnd, WM_t msg, WPARAM wparam, int lparam)
+dlgproc_FoilPackScreen(HWND hwnd, uint msg, WPARAM wparam, int lparam)
 //----- (483FA0) --------------------------------------------------------
 sub_483FA0(HDC hDC, const RECT *lprcSrc, HDC hdcSrc, int a4, int wSrc, int hSrc)
 //----- (484010) --------------------------------------------------------
@@ -3017,7 +3017,7 @@ sub_484A60(signed int a1, HWND hWnd)
 //----- (484C10) --------------------------------------------------------
 sub_484C10(HWND hWndParent, LPARAM dwInitParam)
 //----- (484C40) --------------------------------------------------------
-dlgproc_LadderScreen(HWND hwnd, WM_t msg, WPARAM wparam, int lparam)
+dlgproc_LadderScreen(HWND hwnd, uint msg, WPARAM wparam, int lparam)
 //----- (4873E0) --------------------------------------------------------
 sub_4873E0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, void *a10, int a11, int a12)
 //----- (487540) --------------------------------------------------------
@@ -3033,7 +3033,7 @@ sub_488010(int a1, int a2, int a3, POINT pt, LPRECT lprcDst)
 //----- (488220) --------------------------------------------------------
 sub_488220(HWND hWndParent, LPARAM a2)
 //----- (488280) --------------------------------------------------------
-dlgproc_Rogue(HWND hwnd, WM_t msg, HDC wparam, int lparam)
+dlgproc_Rogue(HWND hwnd, uint msg, HDC wparam, int lparam)
 //----- (488980) --------------------------------------------------------
 sub_488980(int a1, int a2, int a3, int a4, int a5, void *a6, int a7)
 //----- (488A50) --------------------------------------------------------
@@ -3053,7 +3053,7 @@ register_CardClass(const CHAR *a1)
 //----- (489D10) --------------------------------------------------------
 destroy_CardClass()
 //----- (489D60) --------------------------------------------------------
-wndproc_CardClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_CardClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (48C700) --------------------------------------------------------
 sub_48C700(HWND hWnd)
 //----- (48C7B0) --------------------------------------------------------
@@ -3089,7 +3089,7 @@ register_AttackClass(const CHAR *a1)
 //----- (48D9E0) --------------------------------------------------------
 destroy_AttackClass()
 //----- (48DBC0) --------------------------------------------------------
-wndproc_AttackClass(HWND hWndParent, WM_t msg, HDC wparam, LPARAM lparam)
+wndproc_AttackClass(HWND hWndParent, uint msg, HDC wparam, LPARAM lparam)
 //----- (4910E0) --------------------------------------------------------
 sub_4910E0(int a1, int a2, int a3)
 //----- (4911B0) --------------------------------------------------------
@@ -3113,7 +3113,7 @@ assert(int condition, const char *file, int line, const char *fmt, ...)
 //----- (493330) --------------------------------------------------------
 register_MainClass(const CHAR *a1)
 //----- (4933C0) --------------------------------------------------------
-wndproc_MainClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_MainClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4946C0) --------------------------------------------------------
 start_duel_thread(int a1)
 //----- (494710) --------------------------------------------------------
@@ -3127,7 +3127,7 @@ sub_495DC0(int arg0, int a2, int a3)
 //----- (4961F0) --------------------------------------------------------
 sub_4961F0()
 //----- (496230) --------------------------------------------------------
-WILDGUESS_dlgproc_fake_dialog_to_popup_StillThinking_window(HWND hwnd, WM_t msg, HDC wparam, LPARAM lparam)
+WILDGUESS_dlgproc_fake_dialog_to_popup_StillThinking_window(HWND hwnd, uint msg, HDC wparam, LPARAM lparam)
 //----- (4964D0) --------------------------------------------------------
 sub_4964D0(HWND hDlg, int nIDDlgItem, int a3, int a4, int a5)
 //----- (4967F0) --------------------------------------------------------
@@ -3151,13 +3151,13 @@ register_LifeClass(const CHAR *a1)
 //----- (497270) --------------------------------------------------------
 destroy_LifeClass()
 //----- (497300) --------------------------------------------------------
-wndproc_LifeClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_LifeClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (497FE0) --------------------------------------------------------
 sub_497FE0(int a1)
 //----- (498020) --------------------------------------------------------
 register_IconButtonClass(const CHAR *a1)
 //----- (4980A0) --------------------------------------------------------
-wndproc_IconButtonClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_IconButtonClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4983C0) --------------------------------------------------------
 TENTATIVE_ai_plays_land(int player)
 //----- (498D90) --------------------------------------------------------
@@ -3197,7 +3197,7 @@ register_TerritoryClass(const CHAR *a1)
 //----- (49A150) --------------------------------------------------------
 destroy_TerritoryClass()
 //----- (49A1A0) --------------------------------------------------------
-wndproc_TerritoryClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_TerritoryClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (49BD60) --------------------------------------------------------
 sub_49BD60(HWND hWnd)
 //----- (49BE50) --------------------------------------------------------
@@ -3233,7 +3233,7 @@ sub_49D140()
 //----- (49D1A0) --------------------------------------------------------
 sub_49D1A0(int a1, MCIERROR mcierr)
 //----- (49D200) --------------------------------------------------------
-wndproc_MovieClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_MovieClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (49D240) --------------------------------------------------------
 declare_mana_available_hex(int player, color_test_t colors, int amount)
 //----- (49D2E0) --------------------------------------------------------
@@ -3541,21 +3541,21 @@ card_volcanic_island(int player, int card, event_t event)
 //----- (4A9750) --------------------------------------------------------
 choose_a_card(int a1, int a2, int a3)
 //----- (4A97E0) --------------------------------------------------------
-dlgproc_choose_a_card(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+dlgproc_choose_a_card(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4A9EB0) --------------------------------------------------------
 UNKNOWN_dlgproc_choose_a_card_helper(HWND hWnd, int color, char type)
 //----- (4AA090) --------------------------------------------------------
-dlgproc_do_dialog(HWND hwnd, WM_t msg, WPARAM wparam, dialog_args_t *lparam)
+dlgproc_do_dialog(HWND hwnd, uint msg, WPARAM wparam, dialog_args_t *lparam)
 //----- (4AABF0) --------------------------------------------------------
 register_BigCardCardClass(const CHAR *a1)
 //----- (4AAC80) --------------------------------------------------------
-wndproc_BigCardCardClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_BigCardCardClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4AAD90) --------------------------------------------------------
 register_BigCardChoiceClass(const CHAR *a1)
 //----- (4AAE60) --------------------------------------------------------
 destroy_BigCardChoiceClass()
 //----- (4AAE90) --------------------------------------------------------
-wndproc_BigCardChoiceClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_BigCardChoiceClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4ABEB0) --------------------------------------------------------
 sub_4ABEB0(HWND hWnd, __int32 a2)
 //----- (4ABF40) --------------------------------------------------------
@@ -3593,7 +3593,7 @@ sub_4AE150(const char *Filename, const char *a2)
 //----- (4AE470) --------------------------------------------------------
 sub_4AE470(HWND hWndParent, LPARAM a2, int a3, LPCSTR a4, int a5, int a6, LPCSTR a7, int a8, int a9)
 //----- (4AE610) --------------------------------------------------------
-dlgproc_Versus(HWND hwnd, WM_t msg, HDC wparam, int lparam)
+dlgproc_Versus(HWND hwnd, uint msg, HDC wparam, int lparam)
 //----- (4AEF80) --------------------------------------------------------
 sub_4AEF80(int a1, int a2, int a3, int a4, int a5, void *a6, int a7)
 //----- (4AF050) --------------------------------------------------------
@@ -3863,7 +3863,7 @@ register_AttackPhaseDisplayClass(const CHAR *a1)
 //----- (4BF200) --------------------------------------------------------
 destroy_AttackPhaseDisplayClass()
 //----- (4BF230) --------------------------------------------------------
-wndproc_PhaseDisplayClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_PhaseDisplayClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4BFFA0) --------------------------------------------------------
 sub_4BFFA0(POINT *a1, const RECT *lprcSrc, int a3, int a4)
 //----- (4C0340) --------------------------------------------------------
@@ -3871,7 +3871,7 @@ sub_4C0340(LPRECT lprc, int a2, int a3, int xRight, int a5)
 //----- (4C0520) --------------------------------------------------------
 sub_4C0520(HDC hdc, int a2)
 //----- (4C0760) --------------------------------------------------------
-wndproc_AttackPhaseDisplayClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_AttackPhaseDisplayClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4C15B0) --------------------------------------------------------
 sub_4C15B0(POINT *a1, const RECT *lprcSrc, int a3)
 //----- (4C1750) --------------------------------------------------------
@@ -3885,7 +3885,7 @@ register_ManaSummaryClass(const CHAR *a1)
 //----- (4C1F50) --------------------------------------------------------
 destroy_ManaSummaryClass()
 //----- (4C1FC0) --------------------------------------------------------
-wndproc_ManaSummaryClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_ManaSummaryClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4C30B0) --------------------------------------------------------
 sub_4C30B0(__int32 lprc, char *hWnd, int a3)
 //----- (4C3240) --------------------------------------------------------
@@ -4113,7 +4113,7 @@ sub_4CB6A0(HANDLE *a1, int a2, int a3, int a4, int a5, int a6)
 //----- (4CB760) --------------------------------------------------------
 sub_4CB760(void *a1, HGDIOBJ ho, void *a3)
 //----- (4CB7A0) --------------------------------------------------------
-TENTATIVE_dlgproc_credits(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+TENTATIVE_dlgproc_credits(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4CBDE0) --------------------------------------------------------
 sub_4CBDE0(HINSTANCE a1, int a2, char *Str1, int a4)
 //----- (4CC3D0) --------------------------------------------------------
@@ -4121,7 +4121,7 @@ sub_4CC3D0(HWND hWnd, int a2)
 //----- (4CC6F0) --------------------------------------------------------
 sub_4CC6F0(const CHAR *a1)
 //----- (4CC770) --------------------------------------------------------
-wndproc_MagicShellClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_MagicShellClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4CEA20) --------------------------------------------------------
 sub_4CEA20()
 //----- (4CEC40) --------------------------------------------------------
@@ -4163,7 +4163,7 @@ register_FullCardClass(const CHAR *a1)
 //----- (4CFF00) --------------------------------------------------------
 destroy_FullCardClass()
 //----- (4CFF20) --------------------------------------------------------
-wndproc_FullCardClass(HWND hwnd, WM_t msg, WPARAM wparam, LPARAM lparam)
+wndproc_FullCardClass(HWND hwnd, uint msg, WPARAM wparam, LPARAM lparam)
 //----- (4D0DF0) --------------------------------------------------------
 sub_4D0DF0()
 //----- (4D1390) --------------------------------------------------------

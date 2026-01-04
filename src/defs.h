@@ -15,7 +15,12 @@
 #include "Expansions.h"
 
 #ifndef PACKED
-#define PACKED __attribute__((__packed__))
+#define PACKED
+#endif
+
+#if __cplusplus < 201103L
+#define override
+#define static_assert(expr, msg)
 #endif
 
 #ifdef __cplusplus
@@ -28,28 +33,6 @@
 #define PRIVATE_IN_SHANDALAR(arg) private: arg public:
 #else
 #define PRIVATE_IN_SHANDALAR(arg) arg
-#endif
-
-#ifdef __cplusplus
-// Enum math.
-// While the warning's generally useful, complaints about |ing two bitmask types not being convertible back to that bitmask without a cast is infuriating.
-template<typename T> struct SafeBool
-{
-  T t;
-  constexpr explicit SafeBool(T v): t(v)	{}
-  constexpr operator T(void) const		{ return t; }
-  constexpr explicit operator bool(void) const	{ return (int)t; }
-  constexpr explicit operator int(void) const	{ return (int)t; }
-};
-#define OP_BITWISE(T)																																	\
-static inline constexpr T			operator| (T  lhs, T rhs)	{ return static_cast<T>(static_cast<int>(lhs) | static_cast<int>(rhs)); }				\
-static inline           T&			operator|=(T& lhs, T rhs)	{ return lhs = (lhs | rhs); }															\
-static inline constexpr T			operator^ (T  lhs, T rhs)	{ return static_cast<T>(static_cast<int>(lhs) ^ static_cast<int>(rhs)); }				\
-static inline           T&			operator^=(T& lhs, T rhs)	{ return lhs = (lhs ^ rhs); }															\
-static inline constexpr SafeBool<T>	operator& (T lhs, T rhs)	{ return SafeBool<T>(static_cast<T>(static_cast<int>(lhs) & static_cast<int>(rhs))); }	\
-static inline           T&			operator&=(T& lhs, T rhs)	{ return lhs = (lhs & rhs); }															\
-static inline constexpr T			operator~ (T  v)			{ return static_cast<T>(~static_cast<int>(v)); }										\
-/**/
 #endif
 
 /* Colors */
@@ -887,46 +870,8 @@ typedef enum
 STATIC_ASSERT(sizeof(counter_t) == 1, counter_t_wrong_size);
 #endif
 
-#ifdef __cplusplus
-struct card_instance_struct;
-struct csvid_t;
-
-struct iid_t
-{
-	iid_t(void)	{}
-	explicit iid_t(int raw_val): raw(raw_val)	{}
-	explicit iid_t(uint16_t raw_val): raw(raw_val == 0xFFFF ? -1 : (int)raw_val)	{}
-	explicit iid_t(uint32_t raw_val): raw(raw_val)	{}
-
-	iid_t& operator++(void)	{ ++raw;	return *this; }
-
-	bool ok(void) const		{ return raw >= 0; }
-	csvid_t csvid(void) const;
-
-	int raw;
-};
-inline bool operator==(iid_t lhs, iid_t rhs)	{ return lhs.raw == rhs.raw; }
-inline bool operator!=(iid_t lhs, iid_t rhs)	{ return lhs.raw != rhs.raw; }
-
-struct csvid_t
-{
-	csvid_t(void) {}
-	/*implicit*/ csvid_t(card_id_t id): raw(id)	{}
-	explicit csvid_t(int raw_val): raw(raw_val)	{}
-	explicit csvid_t(uint32_t raw_val): raw(raw_val)	{}
-	explicit csvid_t(uint16_t raw_val): raw(raw_val == 0xFFFF ? -1 : (int)raw_val)	{}
-
-	bool ok(void) const		{ return raw >= 0; }
-	iid_t iid(void) const;
-
-	int raw;
-};
-inline bool operator==(csvid_t lhs, csvid_t rhs)	{ return lhs.raw == rhs.raw; }
-inline bool operator!=(csvid_t lhs, csvid_t rhs)	{ return lhs.raw != rhs.raw; }
-#else
 typedef int csvid_t;
 typedef int iid_t;
-#endif
 
 #ifdef SHANDALAR
 struct card_aux_t;
@@ -2881,10 +2826,6 @@ typedef enum
  * example; charging mana is not. */
 #define FORCE(cmds) do { cancel = 0; cmds; } while (cancel == 1)
 
-/* Do something for the active player, then the same thing for the non-active player.  See Pox for an example.  Anything passed to this macro will be evaluated
- * at least twice, obviously. */
-#define APNAP(playervar, ...)	do { int playervar = current_turn; {__VA_ARGS__;} playervar = 1-current_turn; {__VA_ARGS__;} } while (0)
-
 #define COMPARE(a, comparator, b)		\
 ({										\
   __typeof__(a) macro_compare_a = (a);	\
@@ -2910,19 +2851,6 @@ typedef enum
 #define SGN(v)		(((v) > 0) - ((v) < 0))		// -1 if v is less than 0; +1 if v is greater than 0; 0 if v is equal to 0.  From http://graphics.stanford.edu/~seander/bithacks.html#CopyIntegerSign
 #define STRINGIZE_IMPL(x) #x
 #define STRINGIZE(x) STRINGIZE_IMPL(x)
-
-// Uses gcc statement expression extension.
-#define EXE_FN(returntyp, loc, ...)			\
-({											\
-  typedef returntyp (*FnTyp)(__VA_ARGS__);	\
-  (FnTyp)(loc);								\
-})
-
-#define EXE_STDCALL_FN(returntyp, loc, ...)				\
-({														\
-  typedef returntyp (__stdcall *FnTyp)(__VA_ARGS__);	\
-  (FnTyp)(loc);											\
-})
 
 #define EXE_PTR_VOID(addr)	(*(void**)(addr))
 
