@@ -9,7 +9,7 @@ typedef void * pointer;
 char s__assertFile_txt_1001d05c[] = "\\assertFile.txt";
 
 // GLOBAL: CARDARTLIB 0x1001D070
-char s_File____s__Line____d_1001d070[] = "File-> %s, Line-> %d\n";
+char s_File_>__s__Line_>__d_1001d070[] = "File-> %s, Line-> %d\n";
 
 // GLOBAL: CARDARTLIB 0x1001D088
 char s__s_s_1001d088[] = "%s%s\n";
@@ -20,11 +20,8 @@ char s_Assertion_Error_1001d090[] = "Assertion Error";
 // GLOBAL: CARDARTLIB 0x1001D0A0
 char s__assertFile_txt_1001d0a0[] = "\\assertFile.txt";
 
-// GLOBAL: CARDARTLIB 0x1001d0b0
-char DAT_1001d0b0 = "at";
-
 // GLOBAL: CARDARTLIB 0x1001D0B4
-char s_File____s__Line____d_1001d0b4[] = "File-> %s, Line-> %d\n";
+char s_File_>__s__Line_>__d_1001d0b4[] = "File-> %s, Line-> %d\n";
 
 // GLOBAL: CARDARTLIB 0x1001D0CC
 char s__s_s_1001d0cc[] = "%s%s\n";
@@ -164,14 +161,8 @@ char s_Only_Works_on_24_bit_images_1001e1dc[] = "Only Works on 24 bit images\n";
 // GLOBAL: CARDARTLIB 0x1001E1FC
 char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\NedCard\\haar.c";
 
-// GLOBAL: CARDARTLIB 0x1001d06c;
-char DAT_1001d06c[] = 'at';
-
 // GLOBAL: CARDARTLIB 0x1001E2A0
 undefined4 DAT_1001e2a0 = 0x00000000;
-
-// GLOBAL: CARDARTLIB 0x10020210
-undefined4 DAT_10020210 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100209E0
 undefined4 DAT_100209e0 = 0x00000000;
@@ -295,9 +286,6 @@ undefined1 DAT_101170f3 = 0x00;
 
 // GLOBAL: CARDARTLIB 0x101177F4
 undefined4 DAT_101177f4 = 0x00000000;
-
-// GLOBAL: CARDARTLIB 0x10117800
-undefined4 DAT_10117800 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10121FE0
 undefined4 DAT_10121fe0 = 0x00000000;
@@ -423,7 +411,7 @@ void __cdecl assert(int condition,char *file,int line,char *fmt,...)
     local_10._4_4_ = _fopen((char *)local_114,&DAT_1001d06c);
     local_8 = &stack0x00000014;
     if ((file != (char *)0x0) && (line != 0)) {
-      _sprintf(&DAT_10020210,s_File____s__Line____d_1001d070,file,line);
+      _sprintf(&DAT_10020210,s_File_>__s__Line_>__d_1001d070,file,line);
     }
     _Count = 2000;
     _Args = local_8;
@@ -460,7 +448,7 @@ void __cdecl FUN_10001116(int param_1,int param_2,int param_3,char *param_4)
     local_10._4_4_ = _fopen((char *)local_114,&DAT_1001d0b0);
     local_8 = &stack0x00000014;
     if ((param_2 != 0) && (param_3 != 0)) {
-      _sprintf(&DAT_10020210,s_File____s__Line____d_1001d0b4,param_2,param_3);
+      _sprintf(&DAT_10020210,s_File_>__s__Line_>__d_1001d0b4,param_2,param_3);
     }
     _Count = 2000;
     _Args = local_8;
@@ -683,7 +671,7 @@ undefined4 TENTATIVE_setup_palette(void)
   UINT local_514;
   uint local_510 [66];
   LOGPALETTE *local_408;
-  PALETTEENTRY local_404 [256];
+  tagPALETTEENTRY local_404 [256];
   
   local_51c = 1;
   FUN_10009490(local_624,(uint *)&DAT_10117800);
