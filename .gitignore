@@ -1,6 +1,9 @@
 *.exe
 *.dbg
 *.dll
+*.pdb
+*.exp
+*.lib
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
@@ -14,3 +17,5 @@ compile_commands.json
 Testing/
 CTestTestfile.cmake
 install_manifest.txt
+reccmp-user.yml
+reccmp-build.yml

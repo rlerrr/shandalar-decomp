@@ -48,6 +48,23 @@ typedef unsigned char undefined;
 typedef unsigned char undefined1;
 typedef unsigned short undefined2;
 typedef unsigned int undefined4;
+/* Avoid `long long` for MSVC 4.x. */
+#if defined(_MSC_VER)
+typedef unsigned __int64 undefined8;
+#else
 typedef unsigned long long undefined8;
+#endif
+
+/* Ghidra decompiler helper typedefs/macros */
+#if defined(_MSC_VER)
+typedef __int64 longlong;
+typedef unsigned __int64 ulonglong;
+#else
+typedef long long longlong;
+typedef unsigned long long ulonglong;
+#endif
+
+#define CONCAT11(x,y) ((undefined2)(((undefined1)(x)) | ((undefined2)((undefined1)(y)) << 8)))
+#define CONCAT44(x,y) ((undefined8)(((ulonglong)(x) << 32) | (undefined4)(y)))
 
 #endif

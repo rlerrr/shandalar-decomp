@@ -1,16 +1,24 @@
 targets:
   CARDARTLIB:
-    filename: CardArtLib.dll
-    source-root: src/cardartlib
+    filename: cardartlib.dll
+    source_root: .
+    hash:
+      sha256: 74a36dcd1c79b3009d19c79df169eacc31f91723dbc44f78fae5fa30cf15b5ed
+    data_sources: []
+    ghidra:
+      ignore_types: []
+      ignore_functions: []
+      name_substitutions: []
+      allow_hash_mismatch: false
+    report:
+      ignore_functions: []
   DRAWCARDLIB:
     filename: Drawcardlib.dll
     source-root: src/drawcardlib
+    hash:
+      sha256: 2ed0b09249baee83891927f111588930ceef782f937ee7520c4b9759f1748b80
   DECKDLL:
     filename: DeckDll.dll
     source-root: src/deckdll
-  MANALINKEH:
-    filename: ManalinkEh.dll
-    source-root: src/ManalinkEh
-  MANALINKEX:
-    filename: ManalinkEx.dll
-    source-root: src/manalinkex
+    hash:
+      sha256: d441148eca203c496b116e9f5c146c80d71eecd2fd95eab1e4646e20766367ab

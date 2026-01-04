@@ -10,20 +10,15 @@ target_include_directories(cardartlib PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-target_link_libraries(cardartlib PRIVATE gdiplus user32)
-
-if (SHANDALAR_USE_BOOST)
-  find_package(Boost COMPONENTS filesystem system)
-  if (Boost_FOUND)
-    target_include_directories(cardartlib PRIVATE ${Boost_INCLUDE_DIRS})
-    target_link_libraries(cardartlib PRIVATE Boost::filesystem Boost::system)
-  else()
-    message(WARNING "Boost filesystem/system not found; CardArtLib may fail to link.")
-  endif()
-endif()
+target_link_libraries(cardartlib PRIVATE gdi32 user32)
 
 if (MSVC)
+  # Force CardArtLib to build with debug-style settings.
+  target_compile_options(cardartlib PRIVATE /Od /Zi)
+  target_compile_definitions(cardartlib PRIVATE _DEBUG DEBUG)
+
   set_property(TARGET cardartlib PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/CardArtLib.def\"")
+  set_property(TARGET cardartlib APPEND_STRING PROPERTY LINK_FLAGS " /DEBUG")
   set_property(TARGET cardartlib APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/CardArtLib.def")
 endif()
 
@@ -34,7 +29,7 @@ set_target_properties(cardartlib PROPERTIES
 )
 
 if (MSVC_FOR_DECOMP)
-  set_property(TARGET cardartlib PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  set_property(TARGET cardartlib PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
 endif()
 
 reccmp_add_target(cardartlib ID CARDARTLIB)

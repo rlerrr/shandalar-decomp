@@ -3,7 +3,7 @@ LIBRARY "CardArtLib.dll" BASE=0x10800000
 EXPORTS
 LoadBigArt
 DestroySmallArt
-IsSmallArtRightSize
+ ; IsSmallArtRightSize
 DestroyAllSmallArts
 IsBigArtIn
 LoadSmallArt
@@ -15,4 +15,4 @@ IsBigArtRightSize
 DrawSmallArt
 DrawBigArt
 DestroyBigArt
-Cardartlib_initialize_for_shandalar
+ ; Cardartlib_initialize_for_shandalar
