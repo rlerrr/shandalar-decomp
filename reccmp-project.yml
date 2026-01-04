@@ -1,0 +1,16 @@
+targets:
+  CARDARTLIB:
+    filename: CardArtLib.dll
+    source-root: src/cardartlib
+  DRAWCARDLIB:
+    filename: Drawcardlib.dll
+    source-root: src/drawcardlib
+  DECKDLL:
+    filename: DeckDll.dll
+    source-root: src/deckdll
+  MANALINKEH:
+    filename: ManalinkEh.dll
+    source-root: src/ManalinkEh
+  MANALINKEX:
+    filename: ManalinkEx.dll
+    source-root: src/manalinkex
