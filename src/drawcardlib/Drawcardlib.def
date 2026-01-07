@@ -8,9 +8,4 @@ DrawManaText
 DrawCardBack
 DestroyAllCardBackgrounds
 DrawFullCard
-get_rarity
-expansion_category
-initialize_for_shandalar
-draw_special_counters
-draw_standard_counters
-get_special_counter_rect
+

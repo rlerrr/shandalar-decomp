@@ -3,7 +3,7 @@
 
 // Type declarations.  Should contain no function or extern data declarations.
 
-#include <inttypes.h>
+#include "inttypes.h"
 
 /* Creature types are in their own header because there are so many of them. */
 #include "subtypes.h"

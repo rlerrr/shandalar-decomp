@@ -1,4 +1,0 @@
-LIBRARY image.dll
-
-EXPORTS
-  LoadImage

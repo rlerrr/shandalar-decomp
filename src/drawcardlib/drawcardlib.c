@@ -86,12 +86,12 @@ LOGPALETTE* logpalette = (LOGPALETTE*)(&palette256);
 HPALETTE palette = NULL;
 
 HANDLE pics[MAX_PICHANDLES_PLUS_1] = { 0 };
-GpBitmap* gpics[MAX_PICHANDLES_PLUS_1] = { 0 };
+//GpBitmap* gpics[MAX_PICHANDLES_PLUS_1] = { 0 };
 
 Parent parent;
 
 HDC screendc = 0;
-ULONG_PTR gdiplus_token = 0;
+//ULONG_PTR gdiplus_token = 0;
 CRITICAL_SECTION* critical_section_for_drawing = NULL;
 CRITICAL_SECTION* critical_section_for_display = NULL;
 HDC* spare_hdc = NULL;
@@ -163,42 +163,6 @@ init_palette(void)
 	}
 
   palette = CreatePalette(logpalette);
-}
-
-static int
-init_gdiplus(void)
-{
-  if (!gdiplus_token)
-	{
-	  GdiplusStartupInput input;
-	  input.GdiplusVersion = 1;
-	  input.DebugEventCallback = NULL;
-	  input.SuppressBackgroundThread = 0;
-	  input.SuppressExternalCodecs = 0;
-
-	  GdiplusStartup(&gdiplus_token, &input, NULL);
-
-	  int i;
-	  for (i = 0; i <= MAX_CFG; ++i)
-		create_alpha_xforms(&configs[i]);
-
-	  return 1;
-	}
-  return 0;
-}
-
-static void
-close_gdiplus(void)
-{
-  int i;
-  for (i = 0; i < MAX_PICHANDLES_PLUS_1; ++i)
-	if (gpics[i])
-	  {
-		GdipDisposeImage(gpics[i]);
-		gpics[i] = NULL;
-	  }
-
-  GdiplusShutdown(gdiplus_token);
 }
 
 void
