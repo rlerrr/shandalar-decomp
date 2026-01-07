@@ -9,7 +9,7 @@ target_include_directories(drawcardlib PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(drawcardlib PRIVATE gdi32 gdiplus shlwapi msimg32)
+target_link_libraries(drawcardlib PRIVATE gdi32)
 
 if (TARGET cardartlib)
   target_link_libraries(drawcardlib PRIVATE cardartlib)

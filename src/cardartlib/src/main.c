@@ -678,23 +678,23 @@ void __cdecl assert(int condition,char *file,int line,char *fmt,...)
 
   DAT_10020210[0] = '\0';
   if ((file != (char *)0x0) && (line != 0)) {
-    _sprintf(DAT_10020210,s_File__s__Line__d_1001d070,file,line);
+    sprintf(DAT_10020210,s_File__s__Line__d_1001d070,file,line);
   }
 
-  messageLen = _strlen(DAT_10020210);
+  messageLen = strlen(DAT_10020210);
   va_start(args,fmt);
   __vsnprintf(DAT_10020210 + messageLen,2000 - messageLen,fmt,args);
   va_end(args);
 
   _time(&now);
   if (logFile != (FILE *)0x0) {
-    _fprintf(logFile,s__s_s_1001d088,_ctime(&now),DAT_10020210);
-    _fclose(logFile);
+    fprintf(logFile,s__s_s_1001d088,_ctime(&now),DAT_10020210);
+    fclose(logFile);
   }
 
   MessageBoxA((HWND)0x0,DAT_10020210,s_Assertion_Error_1001d090,0x1000);
                   /* WARNING: Subroutine does not return */
-  _exit(0xff);
+  exit(0xff);
 }
 
 // FUNCTION: CARDARTLIB 0x10001116
@@ -717,7 +717,7 @@ void __cdecl FUN_10001116(int param_1,int param_2,int param_3,char *param_4,...)
 
   DAT_10020210[0] = '\0';
   if ((param_2 != 0) && (param_3 != 0)) {
-    _sprintf(DAT_10020210,s_File__s__Line__d_1001d0b4,(char *)param_2,param_3);
+    sprintf(DAT_10020210,s_File__s__Line__d_1001d0b4,(char *)param_2,param_3);
   }
 
   messageLen = _strlen(DAT_10020210);

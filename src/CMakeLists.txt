@@ -29,7 +29,6 @@ function(shandalar_target_nasm_includes target)
 endfunction()
 
 if (MSVC)
-  shandalar_add_def_import_library(image "${SHANDALAR_SRC_ROOT}/drawcardlib/image.def")
   shandalar_add_def_import_library(capturestackbacktrace "${SHANDALAR_SRC_ROOT}/ManalinkEh/capturestackbacktrace.def")
 endif()
 
