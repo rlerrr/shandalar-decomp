@@ -14,43 +14,6 @@ typedef char byte;
 typedef unsigned short ushort;
 typedef BOOL (WINAPI code)(HINSTANCE,DWORD,LPVOID);
 
-/* Ghidra often labels CRT imports with a leading underscore (e.g. `_memset`).
- * Map them to the standard names so MSVC headers provide prototypes. */
-#define _fopen fopen
-#define _fclose fclose
-#define _fread fread
-#define _fwrite fwrite
-#define _fseek fseek
-#define _ftell ftell
-#define _sprintf sprintf
-#define _fprintf fprintf
-#define _fgets fgets
-#define _sscanf sscanf
-#define _strlen strlen
-#define _strchr strchr
-#define _strrchr strrchr
-#define _strncpy strncpy
-#define _strspn strspn
-#define _strcspn strcspn
-#define _atoi atoi
-#define _malloc malloc
-#define _memset memset
-#define _time time
-#define _ctime ctime
-#define _exit exit
-#define __vsnprintf _vsnprintf
-#define __strcmpi _strcmpi
-#define __strnicmp _strnicmp
-#define __splitpath _splitpath
-#define __strlwr _strlwr
-#define __open _open
-#define __close _close
-#define __read _read
-#define _strncmp strncmp
-#define _bsearch bsearch
-#define _strcmp strcmp
-#define _fgetc fgetc
-#define FID_conflict__memcpy memcpy
 #define CONCAT12(x,y) ((undefined4)(((undefined1)(x)) | ((undefined4)(undefined2)(y) << 8)))
 
 /* Globals referenced before their definitions (provide placeholders for the build). */
@@ -183,10 +146,10 @@ undefined4 DAT_10021ecc = 0x00000000;
 pointer PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = (pointer)0x10021EDC;
 
 // GLOBAL: DRAWCARDLIB 0x10021ED4
-undefined4 DAT_10021ed4 = 0x00000000;
+undefined4 gPcxBufferWidth = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10021ED8
-undefined4 DAT_10021ed8 = 0x00000000;
+undefined4 gPcxBufferHeight = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10021EDC
 char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
@@ -537,10 +500,10 @@ undefined1 DAT_1002254a = 0x00;
 undefined2 DAT_1002254c = 0x0000;
 
 // GLOBAL: DRAWCARDLIB 0x10026548
-undefined4 DAT_10026548 = 0x00000000;
+undefined4 gImageWidth = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1002654C
-undefined4 DAT_1002654c = 0x00000000;
+undefined4 gImageHeight = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10026554
 undefined4 DAT_10026554 = 0x00000000;
@@ -960,13 +923,13 @@ undefined1 DAT_10124551 = 0x00;
 undefined4 DAT_1012655c = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10127D30
-undefined4 DAT_10127d30 = 0x00000000;
+FILE *gPcxInFile = (FILE *)0x0;
 
 // GLOBAL: DRAWCARDLIB 0x10127D34
-undefined4 DAT_10127d34 = 0x00000000;
+FILE *gPcxOutFile = (FILE *)0x0;
 
 // GLOBAL: DRAWCARDLIB 0x10127D38
-undefined4 DAT_10127d38 = 0x00000000;
+char *gPcxPath = (char *)0x0;
 
 // GLOBAL: DRAWCARDLIB 0x10127D40
 undefined1 DAT_10127d40 = 0x00;
@@ -993,7 +956,7 @@ undefined2 DAT_10127d4a = 0x0000;
 undefined1 DAT_10127d81 = 0x00;
 
 // GLOBAL: DRAWCARDLIB 0x10127D82
-undefined2 DAT_10127d82 = 0x0000;
+undefined2 gPcxBytesPerLine = 0x0000;
 
 // GLOBAL: DRAWCARDLIB 0x10128A3C
 undefined4 DAT_10128a3c = 0x00000000;
@@ -1013,242 +976,14 @@ undefined1 DAT_10152423 = 0x00;
 // GLOBAL: DRAWCARDLIB 0x10153660
 code *DAT_10153660 = (code *)0x0;
 
-// GLOBAL: DRAWCARDLIB 0x10154294
-pointer PTR_LoadBigArt_10154294 = 0x00154986;
-
-// GLOBAL: DRAWCARDLIB 0x10154298
-pointer PTR_IsBigArtRightSize_10154298 = 0x00154954;
-
-// GLOBAL: DRAWCARDLIB 0x1015429C
-pointer PTR_DrawSmallArt_1015429c = 0x00154968;
-
-// GLOBAL: DRAWCARDLIB 0x101542A0
-pointer PTR_DrawBigArt_101542a0 = 0x00154978;
-
-// GLOBAL: DRAWCARDLIB 0x101542A4
-pointer PTR_IsSmallArtIn_101542a4 = 0x00154994;
-
-// GLOBAL: DRAWCARDLIB 0x101542A8
-pointer PTR_IsBigArtIn_101542a8 = 0x001549A4;
-
-// GLOBAL: DRAWCARDLIB 0x101542AC
-pointer PTR_ReloadSmallArtIfWrongSize_101542ac = 0x001549B2;
-
-// GLOBAL: DRAWCARDLIB 0x101542B0
-pointer PTR_LoadSmallArt_101542b0 = 0x001549CE;
-
-// GLOBAL: DRAWCARDLIB 0x101542B8
-pointer PTR_GetStockObject_101542b8 = 0x0015470A;
-
-// GLOBAL: DRAWCARDLIB 0x101542BC
-pointer PTR_GetObjectA_101542bc = 0x0015474A;
-
-// GLOBAL: DRAWCARDLIB 0x101542C0
-pointer PTR_SetBkMode_101542c0 = 0x00154758;
-
-// GLOBAL: DRAWCARDLIB 0x101542C4
-pointer PTR_CreateCompatibleDC_101542c4 = 0x001548EE;
-
-// GLOBAL: DRAWCARDLIB 0x101542C8
-pointer PTR_CreateDIBSection_101542c8 = 0x001548DA;
-
-// GLOBAL: DRAWCARDLIB 0x101542CC
-pointer PTR_StretchBlt_101542cc = 0x00154904;
-
-// GLOBAL: DRAWCARDLIB 0x101542D0
-pointer PTR_SelectPalette_101542d0 = 0x001548BE;
-
-// GLOBAL: DRAWCARDLIB 0x101542D4
-pointer PTR_RealizePalette_101542d4 = 0x001548AC;
-
-// GLOBAL: DRAWCARDLIB 0x101542D8
-pointer PTR_DeleteDC_101542d8 = 0x001548CE;
-
-// GLOBAL: DRAWCARDLIB 0x101542DC
-pointer PTR_SetDIBColorTable_101542dc = 0x0015488C;
-
-// GLOBAL: DRAWCARDLIB 0x101542E0
-pointer PTR_SetStretchBltMode_101542e0 = 0x00154878;
-
-// GLOBAL: DRAWCARDLIB 0x101542E4
-pointer PTR_GdiFlush_101542e4 = 0x001548A0;
-
-// GLOBAL: DRAWCARDLIB 0x101542E8
-pointer PTR_SetTextAlign_101542e8 = 0x00154854;
-
-// GLOBAL: DRAWCARDLIB 0x101542EC
-pointer PTR_SetBkColor_101542ec = 0x00154846;
-
-// GLOBAL: DRAWCARDLIB 0x101542F0
-pointer PTR_SetDIBitsToDevice_101542f0 = 0x00154864;
-
-// GLOBAL: DRAWCARDLIB 0x101542F4
-pointer PTR_DPtoLP_101542f4 = 0x00154830;
-
-// GLOBAL: DRAWCARDLIB 0x101542F8
-pointer PTR_CreatePalette_101542f8 = 0x0015493A;
-
-// GLOBAL: DRAWCARDLIB 0x101542FC
-pointer PTR_SetPaletteEntries_101542fc = 0x00154926;
-
-// GLOBAL: DRAWCARDLIB 0x10154300
-pointer PTR_CreateSolidBrush_10154300 = 0x0015469A;
-
-// GLOBAL: DRAWCARDLIB 0x10154304
-pointer PTR_CreatePen_10154304 = 0x001546AE;
-
-// GLOBAL: DRAWCARDLIB 0x10154308
-pointer PTR_CreateFontIndirectA_10154308 = 0x001546BA;
-
-// GLOBAL: DRAWCARDLIB 0x1015430C
-pointer PTR_AddFontResourceA_1015430c = 0x001546D0;
-
-// GLOBAL: DRAWCARDLIB 0x10154310
-pointer PTR_DeleteObject_10154310 = 0x001546E4;
-
-// GLOBAL: DRAWCARDLIB 0x10154314
-pointer PTR_RemoveFontResourceA_10154314 = 0x001546F4;
-
-// GLOBAL: DRAWCARDLIB 0x10154318
-pointer PTR_GetPaletteEntries_10154318 = 0x00154912;
-
-// GLOBAL: DRAWCARDLIB 0x1015431C
-pointer PTR_RestoreDC_1015431c = 0x0015471C;
-
-// GLOBAL: DRAWCARDLIB 0x10154320
-pointer PTR_SelectObject_10154320 = 0x00154728;
-
-// GLOBAL: DRAWCARDLIB 0x10154324
-pointer PTR_GetTextMetricsA_10154324 = 0x00154738;
-
-// GLOBAL: DRAWCARDLIB 0x10154328
-pointer PTR_Ellipse_10154328 = 0x00154826;
-
-// GLOBAL: DRAWCARDLIB 0x1015432C
-pointer PTR_Rectangle_1015432c = 0x0015483A;
-
-// GLOBAL: DRAWCARDLIB 0x10154330
-pointer PTR_SetTextColor_10154330 = 0x00154764;
-
-// GLOBAL: DRAWCARDLIB 0x10154334
-pointer PTR_LPtoDP_10154334 = 0x00154774;
-
-// GLOBAL: DRAWCARDLIB 0x10154338
-pointer PTR_RoundRect_10154338 = 0x0015477E;
-
-// GLOBAL: DRAWCARDLIB 0x1015433C
-pointer PTR_SetViewportOrgEx_1015433c = 0x0015478A;
-
-// GLOBAL: DRAWCARDLIB 0x10154340
-pointer PTR_SetWindowOrgEx_10154340 = 0x0015479E;
-
-// GLOBAL: DRAWCARDLIB 0x10154344
-pointer PTR_SetViewportExtEx_10154344 = 0x001547B0;
-
-// GLOBAL: DRAWCARDLIB 0x10154348
-pointer PTR_SetWindowExtEx_10154348 = 0x001547C4;
-
-// GLOBAL: DRAWCARDLIB 0x1015434C
-pointer PTR_SetMapMode_1015434c = 0x001547D6;
-
-// GLOBAL: DRAWCARDLIB 0x10154350
-pointer PTR_SaveDC_10154350 = 0x001547E4;
-
-// GLOBAL: DRAWCARDLIB 0x10154354
-pointer PTR_IntersectClipRect_10154354 = 0x001547EE;
-
-// GLOBAL: DRAWCARDLIB 0x10154358
-pointer PTR_TextOutA_10154358 = 0x00154802;
-
-// GLOBAL: DRAWCARDLIB 0x1015435C
-pointer PTR_GetTextExtentPoint32A_1015435c = 0x0015480E;
-
-// GLOBAL: DRAWCARDLIB 0x10154364
-pointer PTR_GlobalUnlock_10154364 = 0x001544FE;
-
-// GLOBAL: DRAWCARDLIB 0x10154368
-pointer PTR_GlobalAlloc_10154368 = 0x001544E2;
-
-// GLOBAL: DRAWCARDLIB 0x1015436C
-pointer PTR_GlobalFree_1015436c = 0x001544F0;
-
-// GLOBAL: DRAWCARDLIB 0x10154370
-pointer PTR_LeaveCriticalSection_10154370 = 0x00154542;
-
-// GLOBAL: DRAWCARDLIB 0x10154374
-pointer PTR_GetPrivateProfileStringA_10154374 = 0x0015450E;
-
-// GLOBAL: DRAWCARDLIB 0x10154378
-pointer PTR_GetPrivateProfileIntA_10154378 = 0x0015452A;
-
-// GLOBAL: DRAWCARDLIB 0x1015437C
-pointer PTR_OutputDebugStringA_1015437c = 0x0015455A;
-
-// GLOBAL: DRAWCARDLIB 0x10154380
-pointer PTR_EnterCriticalSection_10154380 = 0x00154570;
-
-// GLOBAL: DRAWCARDLIB 0x10154384
-pointer PTR_GetVersionExA_10154384 = 0x001545CA;
-
-// GLOBAL: DRAWCARDLIB 0x10154388
-pointer PTR_GetModuleFileNameA_10154388 = 0x001545F0;
-
-// GLOBAL: DRAWCARDLIB 0x1015438C
-pointer PTR_CreateFileMappingA_1015438c = 0x001545DA;
-
-// GLOBAL: DRAWCARDLIB 0x10154390
-pointer PTR_InitializeCriticalSection_10154390 = 0x00154588;
-
-// GLOBAL: DRAWCARDLIB 0x10154394
-pointer PTR_CloseHandle_10154394 = 0x001545BC;
-
-// GLOBAL: DRAWCARDLIB 0x10154398
-pointer PTR_DeleteCriticalSection_10154398 = 0x001545A4;
-
-// GLOBAL: DRAWCARDLIB 0x1015439C
-pointer PTR_GlobalLock_1015439c = 0x001544C4;
-
-// GLOBAL: DRAWCARDLIB 0x101543B8
-pointer PTR_GlobalHandle_101543b8 = 0x001544D2;
-
-// GLOBAL: DRAWCARDLIB 0x10154498
-pointer PTR_FillRect_10154498 = 0x00154614;
-
-// GLOBAL: DRAWCARDLIB 0x1015449C
-pointer PTR_SetRect_1015449c = 0x00154620;
-
-// GLOBAL: DRAWCARDLIB 0x101544A0
-pointer PTR_OffsetRect_101544a0 = 0x00154642;
-
-// GLOBAL: DRAWCARDLIB 0x101544A4
-pointer PTR_DrawTextA_101544a4 = 0x0015462A;
-
-// GLOBAL: DRAWCARDLIB 0x101544A8
-pointer PTR_CopyRect_101544a8 = 0x00154636;
-
-// GLOBAL: DRAWCARDLIB 0x101544AC
-pointer PTR_wsprintfA_101544ac = 0x00154650;
-
-// GLOBAL: DRAWCARDLIB 0x101544B0
-pointer PTR_ReleaseDC_101544b0 = 0x0015465C;
-
-// GLOBAL: DRAWCARDLIB 0x101544B4
-pointer PTR_GetClientRect_101544b4 = 0x00154668;
-
-// GLOBAL: DRAWCARDLIB 0x101544B8
-pointer PTR_GetDC_101544b8 = 0x00154678;
-
-// GLOBAL: DRAWCARDLIB 0x101544BC
-pointer PTR_MessageBoxA_101544bc = 0x00154680;
-
+// MATCHING
 // FUNCTION: DRAWCARDLIB 0x10001000
 void * FUN_10001000(void)
-
 {
   void *_Dst;
   
-  _Dst = _malloc(0x30);
-  _memset(_Dst,0,0x30);
+  _Dst = malloc(0x30);
+  memset(_Dst,0,0x30);
   return _Dst;
 }
 
@@ -1270,7 +1005,7 @@ undefined2 * FUN_10001033(char *param_1,char *param_2)
   local_20 = 0;
   local_8 = &DAT_10152020;
   DAT_10152020 = 0x300;
-  local_18 = _fopen(param_1,&DAT_10021e54);
+  local_18 = fopen(param_1,&DAT_10021e54);
   if (local_18 == (FILE *)0x0) {
     local_8 = (undefined2 *)0x0;
   }
@@ -1279,12 +1014,12 @@ undefined2 * FUN_10001033(char *param_1,char *param_2)
       FUN_10001591(DAT_10028ef4);
     }
     DAT_10028ef4 = FUN_10001000();
-    _fgets(local_120,0xff,local_18);
+    fgets(local_120,0xff,local_18);
     while ((local_18->_flag & 0x10) == 0) {
-      _sscanf(local_120,s__d____d__d__d_10021e58,&local_20,&local_10,&local_1c,&local_c);
-      local_14 = _strchr(local_120,0x2d);
+      sscanf(local_120,s__d____d__d__d_10021e58,&local_20,&local_10,&local_1c,&local_c);
+      local_14 = strchr(local_120,0x2d);
       local_14 = local_14 + 1;
-      local_14 = _strchr(local_14,0x2d);
+      local_14 = strchr(local_14,0x2d);
       local_14 = local_14 + 1;
       FUN_100014b7(DAT_10028ef4,local_14,local_20);
       *(uint *)(&DAT_10028f10 + local_20 * 4) = local_10 << 0x10 | local_1c << 8 | local_c;
@@ -1297,21 +1032,21 @@ undefined2 * FUN_10001033(char *param_1,char *param_2)
       else {
         *(undefined1 *)((int)local_8 + local_20 * 4 + 7) = 1;
       }
-      _fgets(local_120,0xff,local_18);
+      fgets(local_120,0xff,local_18);
     }
     DAT_10029324 = 0;
     DAT_10021030 = 0;
     _DAT_10028f08 = FUN_10001378(DAT_10028ef4);
     DAT_10021030 = DAT_10021030 + -1;
     local_8[1] = 0x100;
-    _fclose(local_18);
+    fclose(local_18);
     local_18 = (FILE *)0x0;
     if (param_2 != (char *)0x0) {
-      local_18 = _fopen(param_2,&DAT_10021e68);
+      local_18 = fopen(param_2,&DAT_10021e68);
     }
     if (local_18 != (FILE *)0x0) {
-      _fread(&DAT_10152020,0x404,1,local_18);
-      _fclose(local_18);
+      fread(&DAT_10152020,0x404,1,local_18);
+      fclose(local_18);
     }
     *(undefined1 *)((int)local_8 + 0x403) = 0;
     *(undefined1 *)((int)local_8 + 7) = *(undefined1 *)((int)local_8 + 0x403);
@@ -1393,10 +1128,10 @@ int FUN_10001378(int *param_1)
     if (local_410 != 0) {
       local_410 = 0;
       FUN_100012f9(param_1,local_404,&local_410);
-      pvVar2 = _malloc(local_410);
+      pvVar2 = malloc(local_410);
       param_1[10] = (int)pvVar2;
       param_1[0xb] = local_410;
-      FID_conflict__memcpy((void *)param_1[10],local_404,local_410);
+      memcpy((void *)param_1[10],local_404,local_410);
     }
     DAT_10029324 = DAT_10029324 + -1;
   }
@@ -1418,19 +1153,19 @@ undefined4 FUN_100014b7(undefined4 *param_1,char *param_2,undefined4 param_3)
   size_t sVar5;
   char *_Control;
   
-  sVar1 = _strspn(param_2,&DAT_10021e6c);
+  sVar1 = strspn(param_2,&DAT_10021e6c);
   for (param_2 = param_2 + sVar1; *param_2 != '\0'; param_2 = param_2 + sVar1 + sVar4 + sVar5) {
-    iVar2 = _atoi(param_2);
+    iVar2 = atoi(param_2);
     if (param_1[iVar2 + 2] == 0) {
       uVar3 = FUN_10001000();
       param_1[iVar2 + 2] = uVar3;
     }
     param_1 = (undefined4 *)param_1[iVar2 + 2];
     _Control = &DAT_10021e74;
-    sVar1 = _strspn(param_2,&DAT_10021e78);
-    sVar1 = _strcspn(param_2 + sVar1,_Control);
-    sVar4 = _strspn(param_2,&DAT_10021e70);
-    sVar5 = _strspn(param_2 + sVar1 + sVar4,&DAT_10021e7c);
+    sVar1 = strspn(param_2,&DAT_10021e78);
+    sVar1 = strcspn(param_2 + sVar1,_Control);
+    sVar4 = strspn(param_2,&DAT_10021e70);
+    sVar5 = strspn(param_2 + sVar1 + sVar4,&DAT_10021e7c);
   }
   *param_1 = 1;
   param_1[1] = param_3;
@@ -1857,7 +1592,7 @@ int FUN_10001cbf(int param_1,int param_2,int param_3,int param_4,int param_5,int
         local_c = local_c + local_88;
       }
       FUN_10002264(local_70 + 1,*(undefined4 *)(&DAT_10021078 + param_1 * 4));
-      _memset(local_70[*(int *)(&DAT_10021078 + param_1 * 4)] + -0x28,0,local_18 << 2);
+      memset(local_70[*(int *)(&DAT_10021078 + param_1 * 4)] + -0x28,0,local_18 << 2);
       if (param_2 != 0) {
         local_3c = -local_3c;
         local_7c = &DAT_100210c8 + (uint)(local_3c == -1) * 0x6c0 + param_1 * 0xc0;
@@ -1875,7 +1610,7 @@ void FUN_10002264(undefined4 *param_1,int param_2)
   undefined4 uVar1;
   
   uVar1 = *param_1;
-  FID_conflict__memcpy(param_1,param_1 + 1,param_2 * 4 - 4);
+  memcpy(param_1,param_1 + 1,param_2 * 4 - 4);
   param_1[param_2 + -1] = uVar1;
   return;
 }
@@ -1894,7 +1629,7 @@ undefined4 FUN_100022a5(int param_1,int param_2)
   for (local_10 = 0; local_10 < *(int *)(&DAT_10021050 + param_1 * 4); local_10 = local_10 + 1) {
     iVar2 = *(int *)(&DAT_100210c8 + local_10 * 0x10 + param_1 * 0xc0);
     if (*(int *)(param_2 + iVar2 * 4) == 0) {
-      pvVar3 = _malloc(0x800);
+      pvVar3 = malloc(0x800);
       *(void **)(param_2 + iVar2 * 4) = pvVar3;
       FUN_1000c0f0(*(int *)(param_2 + iVar2 * 4) != 0,s_D__Newmagic_sources_NedCard_Pale_10021ea4,
                    0x4fd,s_Not_enough_memory_for_delta_arra_10021e80);
@@ -1950,7 +1685,7 @@ undefined4 FUN_10002452(int param_1,byte *param_2,int param_3,int param_4,int pa
   
   _Dst = param_2;
   _Size = param_3 * 3;
-  _Dst_00 = _malloc((_Size + param_5) * param_4 + 0x10);
+  _Dst_00 = malloc((_Size + param_5) * param_4 + 0x10);
   if (DAT_10028ef8 == 0) {
     for (local_10 = -0x200; local_10 < 0x200; local_10 = local_10 + 1) {
       if ((local_10 < 0) || (0xff < local_10)) {
@@ -1967,7 +1702,7 @@ undefined4 FUN_10002452(int param_1,byte *param_2,int param_3,int param_4,int pa
     }
     DAT_10028ef8 = 1;
   }
-  FID_conflict__memcpy(_Dst_00,param_2,_Size);
+  memcpy(_Dst_00,param_2,_Size);
   param_2 = (byte *)((int)param_2 + _Size + param_5);
   local_1c = (byte *)((int)_Dst_00 + _Size + param_5);
   for (local_18 = 1; local_18 < param_4 + -1; local_18 = local_18 + 1) {
@@ -2020,8 +1755,8 @@ undefined4 FUN_10002452(int param_1,byte *param_2,int param_3,int param_4,int pa
     param_2 = pbVar19 + param_5 + 6;
     local_1c = pbVar20 + param_5 + 6;
   }
-  FID_conflict__memcpy(local_1c,param_2,_Size);
-  FID_conflict__memcpy(_Dst,_Dst_00,(_Size + param_5) * param_4);
+  memcpy(local_1c,param_2,_Size);
+  memcpy(_Dst,_Dst_00,(_Size + param_5) * param_4);
   FUN_1000cde0(_Dst_00);
   return 0;
 }
@@ -2114,7 +1849,7 @@ undefined4 FUN_10002877(int param_1,int param_2,int param_3,int param_4,int para
     DAT_10021e50 = param_1;
   }
   for (local_4c = 0; local_4c < 5; local_4c = local_4c + 1) {
-    _memset(DAT_10128e40 + local_4c * 0x8060,0,0x8060);
+    memset(DAT_10128e40 + local_4c * 0x8060,0,0x8060);
     local_70[local_4c + 1] = (undefined *)(DAT_10128e40 + local_4c * 0x8060 + 0x28);
   }
   iVar2 = *(int *)(&DAT_10021050 + param_1 * 4);
@@ -2169,7 +1904,7 @@ undefined4 FUN_10002877(int param_1,int param_2,int param_3,int param_4,int para
       local_c = local_c + local_88;
     }
     FUN_10002264(local_70 + 1,*(undefined4 *)(&DAT_10021078 + param_1 * 4));
-    _memset((void *)(local_70[*(int *)(&DAT_10021078 + param_1 * 4)] + -0x28),0,local_18 << 2);
+    memset((void *)(local_70[*(int *)(&DAT_10021078 + param_1 * 4)] + -0x28),0,local_18 << 2);
     if (param_2 != 0) {
       local_3c = -local_3c;
       local_7c = &DAT_100210c8 + (uint)(local_3c == -1) * 0x6c0 + param_1 * 0xc0;
@@ -2211,9 +1946,9 @@ int FUN_10002ddc(int param_1,int param_2,int param_3,byte *param_4)
   return local_10;
 }
 
+// MATCHING
 // FUNCTION: DRAWCARDLIB 0x10002E80
 uint FUN_10002e80(uint param_1)
-
 {
   return param_1 & 0xf8f8f8;
 }
@@ -2268,15 +2003,15 @@ int FUN_10002ef8(undefined1 *param_1,undefined4 param_2,undefined4 param_3)
   _DAT_10029fb4 = param_2;
   DAT_10029fb8 = param_3;
   DAT_10021ecc = 0;
-  iVar2 = FUN_10003ed0(8);
+  iVar2 = BitStream_ReadBits(8);
   for (local_18 = 0; local_18 < iVar2; local_18 = local_18 + 1) {
-    uVar3 = FUN_10003ed0(9);
+    uVar3 = BitStream_ReadBits(9);
     *(undefined4 *)(&DAT_10029fc8 + local_18 * 8) = uVar3;
-    uVar3 = FUN_10003ed0(9);
+    uVar3 = BitStream_ReadBits(9);
     *(undefined4 *)(&DAT_10029fcc + local_18 * 8) = uVar3;
   }
   FUN_100030b4(iVar2);
-  local_c = FUN_10003ed0(8);
+  local_c = BitStream_ReadBits(8);
   do {
     while( true ) {
       if (local_c == 0xffffffff) {
@@ -2287,7 +2022,7 @@ int FUN_10002ef8(undefined1 *param_1,undefined4 param_2,undefined4 param_3)
       *param_1 = (&DAT_100293b0)[local_c * 0xc];
       param_1 = param_1 + 1;
       local_28 = (byte)uVar3;
-      iVar2 = FUN_10003ed0(uVar3);
+      iVar2 = BitStream_ReadBits(uVar3);
       if (iVar2 == -1) {
         local_c = 0xffffffff;
       }
@@ -2297,7 +2032,7 @@ int FUN_10002ef8(undefined1 *param_1,undefined4 param_2,undefined4 param_3)
     }
     local_8 = *(int *)(&DAT_100293b8 + local_c * 0xc);
     do {
-      iVar2 = FUN_10003fc0();
+      iVar2 = BitStream_ReadBit();
       if (iVar2 == -1) goto LAB_10003092;
       if (iVar2 == 0) {
         local_1c = *(int *)(&DAT_10029fcc + local_8 * 8);
@@ -2310,7 +2045,7 @@ int FUN_10002ef8(undefined1 *param_1,undefined4 param_2,undefined4 param_3)
     *param_1 = (undefined1)local_1c;
     param_1 = param_1 + 1;
 LAB_10003092:
-    local_c = FUN_10003ed0(8);
+    local_c = BitStream_ReadBits(8);
   } while( true );
 }
 
@@ -2421,7 +2156,7 @@ int FUN_100033b7(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
   _DAT_10029fb4 = param_2;
   DAT_10029fb8 = param_3;
   DAT_10021ecc = 0;
-  local_c = FUN_10003ed0(8);
+  local_c = BitStream_ReadBits(8);
   do {
     while( true ) {
       if (local_c == 0xffffffff) {
@@ -2432,7 +2167,7 @@ int FUN_100033b7(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
       *param_1 = *(undefined4 *)(&DAT_100293b0 + local_c * 0xc);
       param_1 = param_1 + 1;
       local_24 = (byte)uVar1;
-      iVar3 = FUN_10003ed0(uVar1);
+      iVar3 = BitStream_ReadBits(uVar1);
       if (iVar3 == -1) {
         local_c = 0xffffffff;
       }
@@ -2442,7 +2177,7 @@ int FUN_100033b7(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
     }
     local_8 = *(int *)(&DAT_100293b8 + local_c * 0xc);
     do {
-      iVar3 = FUN_10003fc0();
+      iVar3 = BitStream_ReadBit();
       if (iVar3 == -1) goto LAB_10003506;
       if (iVar3 == 0) {
         local_14 = *(int *)(&DAT_10029fcc + local_8 * 8);
@@ -2455,7 +2190,7 @@ int FUN_100033b7(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
     *param_1 = *(undefined4 *)(DAT_10029fc4 + local_14 * 4);
     param_1 = param_1 + 1;
 LAB_10003506:
-    local_c = FUN_10003ed0(8);
+    local_c = BitStream_ReadBits(8);
   } while( true );
 }
 
@@ -2478,11 +2213,11 @@ int FUN_1000352b(undefined4 param_1,undefined4 param_2,undefined4 param_3)
   DAT_10029fb8 = 100000;
   DAT_10021ecc = 0;
   DAT_100293ac = 0;
-  DAT_10029fbc = FUN_10003ed0(0xd);
+  DAT_10029fbc = BitStream_ReadBits(0xd);
   for (local_8 = 0; local_8 < DAT_10029fbc; local_8 = local_8 + 1) {
-    uVar1 = FUN_10003ed0(0xd);
+    uVar1 = BitStream_ReadBits(0xd);
     *(undefined4 *)(&DAT_10029fc8 + local_8 * 8) = uVar1;
-    uVar1 = FUN_10003ed0(0xd);
+    uVar1 = BitStream_ReadBits(0xd);
     *(undefined4 *)(&DAT_10029fcc + local_8 * 8) = uVar1;
     local_c = local_c + 0x1a;
   }
@@ -2603,7 +2338,7 @@ undefined4 FUN_10003993(int param_1)
   }
   local_8c[0] = param_1 + -1;
   local_8 = local_8c[0];
-  _memset(&DAT_10127dc0,0,0x80);
+  memset(&DAT_10127dc0,0,0x80);
   do {
     iVar1 = local_90;
     local_90 = local_90 + 1;
@@ -2651,7 +2386,7 @@ int FUN_10003b2e(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
   local_8 = DAT_10029fbc + -1;
   do {
     do {
-      iVar1 = FUN_10003fc0();
+      iVar1 = BitStream_ReadBit();
       if (iVar1 == -1) {
         return local_10;
       }
@@ -2661,14 +2396,14 @@ int FUN_10003b2e(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
       else {
         local_c = *(int *)(&DAT_10029fc8 + local_8 * 8);
       }
-      local_8 = local_c - _DAT_10029fc0;
+    local_8 = local_c - _DAT_10029fc0;
     } while (-1 < local_8);
     if (local_c == 0) {
-      iVar1 = FUN_10003ed0(10);
+      iVar1 = BitStream_ReadBits(10);
       if (iVar1 < 0) {
         return local_10;
       }
-      _memset(param_1,0,iVar1 << 2);
+      memset(param_1,0,iVar1 << 2);
       param_1 = param_1 + iVar1;
       local_10 = local_10 + iVar1;
     }
@@ -2709,23 +2444,23 @@ int FUN_10003c3e(undefined4 *param_1,uint *param_2,undefined4 param_3)
     DAT_100293ac = 0xffffffffU >> (0x20U - (char)DAT_10021ecc & 0x1f) & *param_2;
     DAT_10029fb0 = (uint *)((int)param_2 + iVar2);
   }
-  local_c = FUN_10003ed0(8);
+  local_c = BitStream_ReadBits(8);
   while (local_c != 0xffffffff) {
     if (*(int *)(&DAT_100293b0 + local_c * 0xc) < 0x7fffffff) {
       iVar2 = *(int *)(&DAT_100293b4 + local_c * 0xc);
       local_28 = (byte)iVar2;
       if (*(int *)(&DAT_100293b0 + local_c * 0xc) == -0x80000000) {
-        iVar2 = FUN_10003ed0(iVar2 + 2);
+        iVar2 = BitStream_ReadBits(iVar2 + 2);
         if (iVar2 < 0) break;
         uVar3 = iVar2 << (8 - local_28 & 0x1f) | (int)local_c >> (local_28 & 0x1f);
         FUN_10002ea0(param_1,uVar3);
         param_1 = param_1 + uVar3;
-        local_c = FUN_10003ed0(8);
+        local_c = BitStream_ReadBits(8);
       }
       else {
         *param_1 = *(undefined4 *)(&DAT_100293b0 + local_c * 0xc);
         param_1 = param_1 + 1;
-        iVar2 = FUN_10003ed0(iVar2);
+        iVar2 = BitStream_ReadBits(iVar2);
         if (iVar2 == -1) break;
         local_c = (int)local_c >> (local_28 & 0x1f) | iVar2 << (8 - local_28 & 0x1f);
       }
@@ -2733,7 +2468,7 @@ int FUN_10003c3e(undefined4 *param_1,uint *param_2,undefined4 param_3)
     else {
       local_8 = *(int *)(&DAT_100293b8 + local_c * 0xc);
       do {
-        iVar2 = FUN_10003fc0();
+        iVar2 = BitStream_ReadBit();
         if (iVar2 == -1) goto LAB_10003ea6;
         if (iVar2 == 0) {
           local_14 = *(int *)(&DAT_10029fcc + local_8 * 8);
@@ -2744,7 +2479,7 @@ int FUN_10003c3e(undefined4 *param_1,uint *param_2,undefined4 param_3)
         local_8 = local_14 - _DAT_10029fc0;
       } while (-1 < local_8);
       if (local_14 == 0) {
-        iVar2 = FUN_10003ed0(10);
+        iVar2 = BitStream_ReadBits(10);
         if (-1 < iVar2) {
           FUN_10002ea0(param_1,iVar2);
           param_1 = param_1 + iVar2;
@@ -2755,7 +2490,7 @@ int FUN_10003c3e(undefined4 *param_1,uint *param_2,undefined4 param_3)
         param_1 = param_1 + 1;
       }
 LAB_10003ea6:
-      local_c = FUN_10003ed0(8);
+      local_c = BitStream_ReadBits(8);
     }
   }
   return (int)param_1 - (int)puVar1 >> 2;
@@ -2764,7 +2499,7 @@ LAB_10003ea6:
 // FUNCTION: DRAWCARDLIB 0x10003ED0
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-uint FUN_10003ed0(uint param_1)
+uint BitStream_ReadBits(uint bitCount)
 
 {
   int iVar1;
@@ -2773,8 +2508,8 @@ uint FUN_10003ed0(uint param_1)
   byte local_c;
   byte bVar4;
   
-  if (DAT_10021ecc < param_1) {
-    iVar1 = param_1 - DAT_10021ecc;
+  if (DAT_10021ecc < bitCount) {
+    iVar1 = bitCount - DAT_10021ecc;
     if ((int)DAT_10029fb0 + (4 - _DAT_10029fb4) < DAT_10029fb8) {
       uVar2 = *DAT_10029fb0;
       DAT_10029fb0 = DAT_10029fb0 + 1;
@@ -2790,20 +2525,17 @@ uint FUN_10003ed0(uint param_1)
     }
   }
   else {
-    uVar3 = *(uint *)(&DAT_10029328 + (0x20 - param_1) * 4) & DAT_100293ac;
-    DAT_100293ac = DAT_100293ac >> ((byte)param_1 & 0x1f);
-    DAT_10021ecc = DAT_10021ecc - param_1;
+    uVar3 = *(uint *)(&DAT_10029328 + (0x20 - bitCount) * 4) & DAT_100293ac;
+    DAT_100293ac = DAT_100293ac >> ((byte)bitCount & 0x1f);
+    DAT_10021ecc = DAT_10021ecc - bitCount;
   }
   return uVar3;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10003FC0
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-uint FUN_10003fc0(void)
-
+uint BitStream_ReadBit(void)
 {
-  uint local_8;
+  uint result = 0;
   
   if (DAT_10021ecc == 0) {
     if (DAT_10029fb8 <= (int)DAT_10029fb0 - _DAT_10029fb4) {
@@ -2813,14 +2545,14 @@ uint FUN_10003fc0(void)
     DAT_10029fb0 = DAT_10029fb0 + 1;
     DAT_10021ecc = 0x20;
   }
-  local_8 = (uint)((DAT_100293ac & 1) != 0);
+  result = (uint)((DAT_100293ac & 1) != 0);
   DAT_100293ac = DAT_100293ac >> 1;
   DAT_10021ecc = DAT_10021ecc + -1;
-  return local_8;
+  return result;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004050
-undefined1 * FUN_10004050(char *param_1,undefined1 *param_2,undefined4 param_3)
+undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOut)
 
 {
   undefined1 *puVar1;
@@ -2832,11 +2564,11 @@ undefined1 * FUN_10004050(char *param_1,undefined1 *param_2,undefined4 param_3)
   int local_14;
   int local_8;
   
-  DAT_10127d30 = _fopen(param_1,&DAT_10021f18);
-  FUN_1000c0f0(DAT_10127d30 != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
-               s_Error_Opening_File__s_10021f00,param_1);
-  DAT_10127d38 = param_1;
-  FUN_100042ea(param_3);
+  gPcxInFile = fopen(path,&DAT_10021f18);
+  FUN_1000c0f0(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
+               s_Error_Opening_File__s_10021f00,path);
+  gPcxPath = path;
+  PcxReadHeaderAndPalette(paletteOut);
   if ((DAT_10127d43 == '\b') && (DAT_10127d81 == '\x01')) {
     local_18 = 1;
   }
@@ -2844,93 +2576,93 @@ undefined1 * FUN_10004050(char *param_1,undefined1 *param_2,undefined4 param_3)
     local_18 = 0;
   }
   FUN_1000c0f0(local_18,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x6f,
-               s__s_Not_a_256_color_palettized_pc_10021f1c,DAT_10127d38);
-  uVar2 = 4 - (DAT_10026548 & 3);
+               s__s_Not_a_256_color_palettized_pc_10021f1c,gPcxPath);
+  uVar2 = 4 - (gImageWidth & 3);
   uVar5 = (int)uVar2 >> 0x1f;
   iVar3 = ((uVar2 ^ uVar5) - uVar5 & 3 ^ uVar5) - uVar5;
-  if ((DAT_10026548 == DAT_10021ed4) && (DAT_1002654c == DAT_10021ed8)) {
-    _memset(param_2,0,(DAT_10021ed4 + iVar3) * DAT_10021ed8);
+  if ((gImageWidth == gPcxBufferWidth) && (gImageHeight == gPcxBufferHeight)) {
+    memset(imagePixels,0,(gPcxBufferWidth + iVar3) * gPcxBufferHeight);
   }
   else {
-    pvVar4 = GlobalHandle(param_2);
+    pvVar4 = GlobalHandle(imagePixels);
     GlobalUnlock(pvVar4);
-    pvVar4 = GlobalHandle(param_2);
+    pvVar4 = GlobalHandle(imagePixels);
     GlobalUnlock(pvVar4);
-    pvVar4 = GlobalHandle(param_2);
+    pvVar4 = GlobalHandle(imagePixels);
     GlobalFree(pvVar4);
-    pvVar4 = GlobalAlloc(0x40,(DAT_10026548 + iVar3) * DAT_1002654c);
-    param_2 = GlobalLock(pvVar4);
-    pvVar4 = GlobalHandle(param_2);
+    pvVar4 = GlobalAlloc(0x40,(gImageWidth + iVar3) * gImageHeight);
+    imagePixels = GlobalLock(pvVar4);
+    pvVar4 = GlobalHandle(imagePixels);
     GlobalLock(pvVar4);
-    DAT_10021ed4 = DAT_10026548;
-    DAT_10021ed8 = DAT_1002654c;
+    gPcxBufferWidth = gImageWidth;
+    gPcxBufferHeight = gImageHeight;
   }
-  puVar1 = param_2;
-  for (local_8 = 0; local_8 < DAT_1002654c; local_8 = local_8 + 1) {
-    FUN_100044d0(&DAT_10126d30);
-    for (local_14 = 0; local_14 < (int)DAT_10026548; local_14 = local_14 + 1) {
-      *param_2 = (&DAT_10126d30)[local_14];
-      param_2 = param_2 + 1;
+  puVar1 = imagePixels;
+  for (local_8 = 0; local_8 < gImageHeight; local_8 = local_8 + 1) {
+    PcxReadScanlineRle(&DAT_10126d30);
+    for (local_14 = 0; local_14 < (int)gImageWidth; local_14 = local_14 + 1) {
+      *imagePixels = (&DAT_10126d30)[local_14];
+      imagePixels = imagePixels + 1;
     }
-    param_2 = param_2 + iVar3;
+    imagePixels = imagePixels + iVar3;
   }
-  _fclose(DAT_10127d30);
+  fclose(gPcxInFile);
   return puVar1;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004267
-bool FUN_10004267(char *param_1,undefined4 param_2)
+bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 
 {
   int iVar1;
   
-  DAT_10127d30 = _fopen(param_1,&DAT_10021f60);
-  FUN_1000c0f0(DAT_10127d30 != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
-               s_Error_Opening_File__s_10021f48,param_1);
-  DAT_10127d38 = param_1;
-  iVar1 = FUN_100042ea(param_2);
+  gPcxInFile = fopen(path,&DAT_10021f60);
+  FUN_1000c0f0(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
+               s_Error_Opening_File__s_10021f48,path);
+  gPcxPath = path;
+  iVar1 = PcxReadHeaderAndPalette(paletteOut);
   if (iVar1 != 0) {
-    _fclose(DAT_10127d30);
+    fclose(gPcxInFile);
   }
   return iVar1 != 0;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100042EA
-undefined4 FUN_100042ea(void *param_1)
+undefined4 PcxReadHeaderAndPalette(void *paletteOut)
 
 {
   int local_8;
   
-  _fread(&DAT_10127d40,0x80,1,DAT_10127d30);
+  fread(&DAT_10127d40,0x80,1,gPcxInFile);
   FUN_1000c0f0(DAT_10127d40 == '\n',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xad,
-               s__s_Not_a_pcx_file_10021f64,DAT_10127d38);
+               s__s_Not_a_pcx_file_10021f64,gPcxPath);
   FUN_1000c0f0(DAT_10127d41 == '\x05',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xae,
-               s__s_Not_a_version_5_pcx_file_10021f78,DAT_10127d38);
-  DAT_10026548 = ((uint)DAT_10127d48 - (uint)DAT_10127d44) + 1;
-  DAT_1002654c = ((uint)DAT_10127d4a - (uint)DAT_10127d46) + 1;
-  if (param_1 != (void *)0x0) {
+               s__s_Not_a_version_5_pcx_file_10021f78,gPcxPath);
+  gImageWidth = ((uint)DAT_10127d48 - (uint)DAT_10127d44) + 1;
+  gImageHeight = ((uint)DAT_10127d4a - (uint)DAT_10127d46) + 1;
+  if (paletteOut != (void *)0x0) {
     if ((DAT_10127d81 == '\x01') && (DAT_10127d43 == '\b')) {
-      _fseek(DAT_10127d30,-0x300,2);
-      _fread(param_1,1,0x300,DAT_10127d30);
-      _fseek(DAT_10127d30,0x80,0);
+      fseek(gPcxInFile,-0x300,2);
+      fread(paletteOut,1,0x300,gPcxInFile);
+      fseek(gPcxInFile,0x80,0);
     }
     else if ((DAT_10127d81 == '\x04') && (DAT_10127d43 == '\x01')) {
-      _fseek(DAT_10127d30,0x10,2);
+      fseek(gPcxInFile,0x10,2);
       for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-        _fread((void *)(local_8 * 4 + (int)param_1),1,3,DAT_10127d30);
+        fread((void *)(local_8 * 4 + (int)paletteOut),1,3,gPcxInFile);
       }
-      _fseek(DAT_10127d30,0x80,0);
+      fseek(gPcxInFile,0x80,0);
     }
     else {
       FUN_1000c0f0(0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xd4,
-                   s__s_is_not_in_a_recognizable_form_10021f98,DAT_10127d38);
+                   s__s_is_not_in_a_recognizable_form_10021f98,gPcxPath);
     }
   }
   return 1;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100044D0
-undefined4 FUN_100044d0(byte *param_1)
+undefined4 PcxReadScanlineRle(byte *dstScanline)
 
 {
   uint uVar1;
@@ -2938,28 +2670,28 @@ undefined4 FUN_100044d0(byte *param_1)
   int local_18;
   uint local_10;
   
-  local_18 = (int)DAT_10127d82;
+  local_18 = (int)gPcxBytesPerLine;
   while (0 < local_18) {
-    uVar1 = _fgetc(DAT_10127d30);
+    uVar1 = fgetc(gPcxInFile);
     if (((byte)uVar1 & 0xc0) == 0xc0) {
       uVar1 = uVar1 & 0x3f;
-      iVar2 = _fgetc(DAT_10127d30);
+      iVar2 = fgetc(gPcxInFile);
       if (uVar1 < 2) {
-        *param_1 = (byte)iVar2;
-        param_1 = param_1 + 1;
+        *dstScanline = (byte)iVar2;
+        dstScanline = dstScanline + 1;
         local_18 = local_18 + -1;
       }
       else {
         for (local_10 = 0; local_10 < uVar1; local_10 = local_10 + 1) {
-          *param_1 = (byte)iVar2;
-          param_1 = param_1 + 1;
+          *dstScanline = (byte)iVar2;
+          dstScanline = dstScanline + 1;
         }
         local_18 = local_18 - uVar1;
       }
     }
     else {
-      *param_1 = (byte)uVar1;
-      param_1 = param_1 + 1;
+      *dstScanline = (byte)uVar1;
+      dstScanline = dstScanline + 1;
       local_18 = local_18 + -1;
     }
   }
@@ -2968,8 +2700,8 @@ undefined4 FUN_100044d0(byte *param_1)
 
 // FUNCTION: DRAWCARDLIB 0x100045AC
 undefined4
-FUN_100045ac(undefined *param_1,char *param_2,undefined4 param_3,undefined4 param_4,
-            undefined4 param_5,undefined4 param_6,int param_7)
+PcxSave8bppImage(undefined *srcPixels,char *path,undefined4 srcStride,undefined4 unused_param_4,
+            undefined4 unused_param_5,undefined4 unused_param_6,int height)
 
 {
   int local_100c;
@@ -2981,33 +2713,33 @@ FUN_100045ac(undefined *param_1,char *param_2,undefined4 param_3,undefined4 para
   
   FUN_1000ead0();
   uStackY_1c = 0x100045ce;
-  DAT_10127d34 = _fopen(param_2,&DAT_10021fd8);
+  gPcxOutFile = fopen(path,&DAT_10021fd8);
   uStackY_1c = 0x146;
   puStackY_20 = PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0;
-  puStackY_24 = (undefined1 *)(uint)(DAT_10127d34 != (FILE *)0x0);
+  puStackY_24 = (undefined1 *)(uint)(gPcxOutFile != (FILE *)0x0);
   uStackY_28 = 0x100045fa;
   FUN_1000c0f0();
-  DAT_10127d38 = param_2;
+  gPcxPath = path;
   uStackY_1c = 0x10004612;
-  FUN_1000469c();
-  for (local_100c = 0; local_100c < param_7; local_100c = local_100c + 1) {
-    uStackY_1c = param_4;
-    puStackY_20 = param_1;
+  PcxWriteHeader();
+  for (local_100c = 0; local_100c < height; local_100c = local_100c + 1) {
+    uStackY_1c = unused_param_4;
+    puStackY_20 = srcPixels;
     puStackY_24 = local_1008;
     uStackY_28 = 0x1000465b;
     FUN_1000b80f();
     uStackY_1c = 0x1000466e;
-    FUN_10004760();
+    PcxWriteScanlineRle();
   }
-  FUN_1000491f();
-  _fclose(DAT_10127d34);
+  PcxWritePalette256();
+  fclose(gPcxOutFile);
   return 0;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000469C
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined4 FUN_1000469c(undefined4 param_1,short param_2)
+undefined4 PcxWriteHeader(undefined4 width,short height)
 
 {
   ushort uVar1;
@@ -3018,25 +2750,25 @@ undefined4 FUN_1000469c(undefined4 param_1,short param_2)
   DAT_10127d42 = 1;
   DAT_10127d43 = 8;
   DAT_10127d44 = 0;
-  uVar1 = (ushort)param_1;
+  uVar1 = (ushort)width;
   DAT_10127d48 = uVar1 - 1;
   DAT_10127d46 = 0;
-  DAT_10127d4a = param_2 + -1;
+  DAT_10127d4a = height + -1;
   _DAT_10127d4c = 0;
   _DAT_10127d4e = 0;
   DAT_10127d80 = 0;
   DAT_10127d81 = 1;
-  uVar2 = (ushort)((int)param_1 >> 0x1f);
-  DAT_10127d82 = uVar1 + (((uVar1 ^ uVar2) - uVar2 & 1 ^ uVar2) - uVar2);
+  uVar2 = (ushort)((int)width >> 0x1f);
+  gPcxBytesPerLine = uVar1 + (((uVar1 ^ uVar2) - uVar2 & 1 ^ uVar2) - uVar2);
   _DAT_10127d84 = 1;
   _DAT_10127d86 = 0;
   _DAT_10127d88 = 0;
-  _fwrite(&DAT_10127d40,0x80,1,DAT_10127d34);
+  fwrite(&DAT_10127d40,0x80,1,gPcxOutFile);
   return 0;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004760
-undefined4 FUN_10004760(char *param_1,int param_2)
+undefined4 PcxWriteScanlineRle(char *srcScanline,int widthBytes)
 
 {
   int iVar1;
@@ -3046,71 +2778,71 @@ undefined4 FUN_10004760(char *param_1,int param_2)
   
   local_8 = 0;
   local_14 = 0;
-  while (local_14 < param_2) {
-    local_8 = (local_8 & 0xffffff00U) | (uint)(byte)*param_1;
-    if ((param_2 - local_14 == 1) || (param_1[1] != *param_1)) {
-      FUN_10004873(local_8);
+  while (local_14 < widthBytes) {
+    local_8 = (local_8 & 0xffffff00U) | (uint)(byte)*srcScanline;
+    if ((widthBytes - local_14 == 1) || (srcScanline[1] != *srcScanline)) {
+      PcxWriteRleByte(local_8);
       local_14 = local_14 + 1;
-      param_1 = param_1 + 1;
+      srcScanline = srcScanline + 1;
     }
     else {
-      iVar1 = param_2 - local_14;
+      iVar1 = widthBytes - local_14;
       if (0x3e < iVar1) {
         iVar1 = 0x3f;
       }
-      local_c = FUN_100048c0(local_8,param_1,iVar1);
+      local_c = CountRepeats(local_8,srcScanline,iVar1);
       local_14 = local_14 + local_c;
-      param_1 = param_1 + local_c;
+      srcScanline = srcScanline + local_c;
       local_c = local_c | 0xc0;
-      _fwrite(&local_c,1,1,DAT_10127d34);
-      _fwrite(&local_8,1,1,DAT_10127d34);
+      fwrite(&local_c,1,1,gPcxOutFile);
+      fwrite(&local_8,1,1,gPcxOutFile);
     }
   }
-  if (local_14 < DAT_10127d82) {
+  if (local_14 < gPcxBytesPerLine) {
     local_8 = local_8 & 0xffffff00U;
-    _fwrite(&local_8,1,1,DAT_10127d34);
+    fwrite(&local_8,1,1,gPcxOutFile);
   }
   return 1;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004873
-void FUN_10004873(byte param_1)
+void PcxWriteRleByte(byte value)
 
 {
   undefined1 local_8 [4];
   
   local_8[0] = 0xc1;
-  if ((param_1 & 0xc0) == 0xc0) {
-    _fwrite(local_8,1,1,DAT_10127d34);
+  if ((value & 0xc0) == 0xc0) {
+    fwrite(local_8,1,1,gPcxOutFile);
   }
-  _fwrite(&param_1,1,1,DAT_10127d34);
+  fwrite(&value,1,1,gPcxOutFile);
   return;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100048C0
-int FUN_100048c0(char param_1,char *param_2,int param_3)
+int CountRepeats(char value,char *buffer,int maxCount)
 
 {
   int local_8;
   
   local_8 = 0;
-  while ((param_3 != 0 && (*param_2 == param_1))) {
+  while ((maxCount != 0 && (*buffer == value))) {
     local_8 = local_8 + 1;
-    param_2 = param_2 + 1;
-    param_3 = param_3 + -1;
+    buffer = buffer + 1;
+    maxCount = maxCount + -1;
   }
   return local_8;
 }
 
+// MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000491F
-undefined4 FUN_1000491f(void *param_1)
-
+undefined4 PcxWritePalette256(void *palette)
 {
   undefined1 local_8 [4];
   
   local_8[0] = 0xc;
-  _fwrite(local_8,1,1,DAT_10127d34);
-  _fwrite(param_1,3,0x100,DAT_10127d34);
+  fwrite(local_8,1,1,gPcxOutFile);
+  fwrite(palette,3,0x100,gPcxOutFile);
   return 0;
 }
 
@@ -3122,35 +2854,35 @@ undefined4 prepare_fonts_and_imgs(void)
   undefined4 uVar2;
   CHAR local_10c [264];
   
-  FUN_1000ee60(&DAT_1003a090,&DAT_100f35b0);
-  FUN_1000ee70(&DAT_1003a090,s__DuelArt_1002201c);
-  FUN_1000ee70(&DAT_1003a090,s__Duel_dat_10022028);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0530m__TTF_10022034);
+  strcpy_fast(&DAT_1003a090,&DAT_100f35b0);
+  strcat_fast(&DAT_1003a090,s__DuelArt_1002201c);
+  strcat_fast(&DAT_1003a090,s__Duel_dat_10022028);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0530m__TTF_10022034);
   AddFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Magis____TTF_10022044);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Magis____TTF_10022044);
   AddFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0127m__TTF_10022054);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0127m__TTF_10022054);
   AddFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0085m__TTF_10022064);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0085m__TTF_10022064);
   AddFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0298m__TTF_10022074);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0298m__TTF_10022074);
   AddFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0299m__TTF_10022084);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0299m__TTF_10022084);
   AddFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0300m__TTF_10022094);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0300m__TTF_10022094);
   AddFontResourceA(local_10c);
-  _sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&DAT_100f36c0);
+  sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&DAT_100f36c0);
   DAT_1003a198 = FUN_1000b700(local_10c);
-  _sprintf(local_10c,s__s_CardSets_pic_100220b8,&DAT_100f36c0);
+  sprintf(local_10c,s__s_CardSets_pic_100220b8,&DAT_100f36c0);
   DAT_10039fe4 = FUN_1000b700(local_10c);
-  _sprintf(local_10c,s__s_CardBack_pic_100220c8,&DAT_100f36c0);
+  sprintf(local_10c,s__s_CardBack_pic_100220c8,&DAT_100f36c0);
   DAT_1003a010 = FUN_1000b700(local_10c);
   pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardTitle_100220d8,0);
   DAT_1003a008 = CreateFontIndirectA(pLVar1);
@@ -3217,12 +2949,12 @@ undefined * FUN_10004e82(undefined4 param_1,int param_2)
   CHAR local_6c [100];
   UINT local_8;
   
-  FID_conflict__memcpy(&DAT_1003a048,&DAT_10021fe0,0x3c);
-  FUN_1000ee60(local_6c,DAT_1002212c);
-  FUN_1000ee70(local_6c,param_1);
+  memcpy(&DAT_1003a048,&DAT_10021fe0,0x3c);
+  strcpy_fast(local_6c,DAT_1002212c);
+  strcat_fast(local_6c,param_1);
   _DAT_1003a048 = GetPrivateProfileIntA(s_Fonts_10022134,local_6c,0x14,&DAT_1003a090);
-  FUN_1000ee60(local_6c,DAT_1002213c);
-  FUN_1000ee70(local_6c,param_1);
+  strcpy_fast(local_6c,DAT_1002213c);
+  strcat_fast(local_6c,param_1);
   local_8 = GetPrivateProfileIntA(s_Fonts_10022144,local_6c,0,&DAT_1003a090);
   if (local_8 != 0) {
     _DAT_1003a058 = 700;
@@ -3230,8 +2962,8 @@ undefined * FUN_10004e82(undefined4 param_1,int param_2)
   if (param_2 != 0) {
     DAT_1003a05c = 1;
   }
-  FUN_1000ee60(local_6c,DAT_1002214c);
-  FUN_1000ee70(local_6c,param_1);
+  strcpy_fast(local_6c,DAT_1002214c);
+  strcat_fast(local_6c,param_1);
   GetPrivateProfileStringA
             (s_Fonts_10022164,local_6c,s_MS_Sans_Serif_10022154,&DAT_1003a064,0x20,&DAT_1003a090);
   return &DAT_1003a048;
@@ -3243,29 +2975,29 @@ void FUN_10004f8e(void)
 {
   CHAR local_10c [264];
   
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Magim____TTF_1002216c);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Magim____TTF_1002216c);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0530m__TTF_1002217c);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0530m__TTF_1002217c);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Magis____TTF_1002218c);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Magis____TTF_1002218c);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0127m__TTF_1002219c);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0127m__TTF_1002219c);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0085m__TTF_100221ac);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0085m__TTF_100221ac);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0298m__TTF_100221bc);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0298m__TTF_100221bc);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0299m__TTF_100221cc);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0299m__TTF_100221cc);
   RemoveFontResourceA(local_10c);
-  FUN_1000ee60(local_10c,&DAT_100f35b0);
-  FUN_1000ee70(local_10c,s__Tt0300m__TTF_100221dc);
+  strcpy_fast(local_10c,&DAT_100f35b0);
+  strcat_fast(local_10c,s__Tt0300m__TTF_100221dc);
   RemoveFontResourceA(local_10c);
   if (DAT_1003a198 != 0) {
     FUN_1000ac34(DAT_1003a198);
@@ -3621,34 +3353,34 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
     if ((param_3[0x1f] != 0) || (param_3[0x20] != 0)) {
       local_b0[0] = '\0';
       if (param_3[0x1f] == local_4f0) {
-        FUN_1000ee70(local_b0,DAT_100221ec);
+        strcat_fast(local_b0,DAT_100221ec);
       }
       else if (local_4f0 < (int)param_3[0x1f]) {
         iVar3 = param_3[0x1f] - local_4f0;
         pCVar5 = DAT_100221f0;
-        sVar2 = _strlen(local_b0);
+        sVar2 = strlen(local_b0);
         wsprintfA(local_b0 + sVar2,pCVar5,iVar3);
       }
       else {
         uVar6 = param_3[0x1f];
         pCVar5 = DAT_100221f8;
-        sVar2 = _strlen(local_b0);
+        sVar2 = strlen(local_b0);
         wsprintfA(local_b0 + sVar2,pCVar5,uVar6);
       }
-      FUN_1000ee70(local_b0,DAT_100221fc);
+      strcat_fast(local_b0,DAT_100221fc);
       if (param_3[0x20] == local_4f0) {
-        FUN_1000ee70(local_b0,DAT_10022200);
+        strcat_fast(local_b0,DAT_10022200);
       }
       else if (local_4f0 < (int)param_3[0x20]) {
         iVar3 = param_3[0x20] - local_4f0;
         pCVar5 = DAT_10022204;
-        sVar2 = _strlen(local_b0);
+        sVar2 = strlen(local_b0);
         wsprintfA(local_b0 + sVar2,pCVar5,iVar3);
       }
       else {
         uVar6 = param_3[0x20];
         pCVar5 = DAT_1002220c;
-        sVar2 = _strlen(local_b0);
+        sVar2 = strlen(local_b0);
         wsprintfA(local_b0 + sVar2,pCVar5,uVar6);
       }
       SetTextColor(param_1,DAT_10039fec);
@@ -3723,7 +3455,7 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
     }
     local_6c = IsBigArtRightSize(*param_3,param_4,local_504.right - local_504.left,
                                  local_504.bottom - local_504.top);
-    FUN_1000ee60(local_4ac,param_3[0x1d]);
+    strcpy_fast(local_4ac,param_3[0x1d]);
     FUN_1000b06a(local_4ac,DAT_10022214,1,DAT_10022210);
     FUN_1000b06a(local_4ac,DAT_1002221c,1,DAT_10022218);
     FUN_1000b06a(local_4ac,DAT_10022224,1,DAT_10022220);
@@ -3814,27 +3546,27 @@ undefined4 * FUN_100067c7(int param_1)
         if ((*(byte *)(param_1 + 0xc) & 0x20) == 0) {
           if ((*(byte *)(param_1 + 0xd) & 1) == 0) {
             if ((*(byte *)(param_1 + 0xc) & 8) == 0) {
-              iVar1 = _strcmp(*(char **)(param_1 + 4),&DAT_100f952c);
+              iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f952c);
               if (iVar1 == 0) {
                 local_8 = &DAT_10039fe8;
               }
               else {
-                iVar1 = _strcmp(*(char **)(param_1 + 4),&DAT_100f8140);
+                iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f8140);
                 if (iVar1 == 0) {
                   local_8 = &DAT_10039ff0;
                 }
                 else {
-                  iVar1 = _strcmp(*(char **)(param_1 + 4),&DAT_100f77e0);
+                  iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f77e0);
                   if (iVar1 == 0) {
                     local_8 = &DAT_1003a00c;
                   }
                   else {
-                    iVar1 = _strcmp(*(char **)(param_1 + 4),&DAT_100f5b5c);
+                    iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f5b5c);
                     if (iVar1 == 0) {
                       local_8 = &DAT_10039fd8;
                     }
                     else {
-                      iVar1 = _strcmp(*(char **)(param_1 + 4),&DAT_100f6908);
+                      iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f6908);
                       if (iVar1 == 0) {
                         local_8 = &DAT_1003a004;
                       }
@@ -3889,64 +3621,64 @@ undefined4 FUN_10006a41(int *param_1)
   }
   else if (*param_1 == 0) {
     if (param_1 == &DAT_10039fcc) {
-      FUN_1000ee60(local_68,s_CARDBK_Green_10022260);
+      strcpy_fast(local_68,s_CARDBK_Green_10022260);
     }
     else if (param_1 == &DAT_10039fd4) {
-      FUN_1000ee60(local_68,s_CARDBK_White_10022270);
+      strcpy_fast(local_68,s_CARDBK_White_10022270);
     }
     else if (param_1 == &DAT_1003a034) {
-      FUN_1000ee60(local_68,s_CARDBK_Blue_10022280);
+      strcpy_fast(local_68,s_CARDBK_Blue_10022280);
     }
     else if (param_1 == &DAT_1003a088) {
-      FUN_1000ee60(local_68,s_CARDBK_Black_1002228c);
+      strcpy_fast(local_68,s_CARDBK_Black_1002228c);
     }
     else if (param_1 == &DAT_1003a03c) {
-      FUN_1000ee60(local_68,s_CARDBK_Red_1002229c);
+      strcpy_fast(local_68,s_CARDBK_Red_1002229c);
     }
     else if (param_1 == &DAT_10039ff4) {
-      FUN_1000ee60(local_68,s_CARDBK_Gold_100222a8);
+      strcpy_fast(local_68,s_CARDBK_Gold_100222a8);
     }
     else if (param_1 == &DAT_1003a024) {
-      FUN_1000ee60(local_68,s_CARDBK_Artifact_100222b4);
+      strcpy_fast(local_68,s_CARDBK_Artifact_100222b4);
     }
     else if (param_1 == &DAT_10039fd8) {
-      FUN_1000ee60(local_68,s_CARDBK_GreenLand_100222c4);
+      strcpy_fast(local_68,s_CARDBK_GreenLand_100222c4);
     }
     else if (param_1 == &DAT_10039ff0) {
-      FUN_1000ee60(local_68,s_CARDBK_WhiteLand_100222d8);
+      strcpy_fast(local_68,s_CARDBK_WhiteLand_100222d8);
     }
     else if (param_1 == &DAT_1003a004) {
-      FUN_1000ee60(local_68,s_CARDBK_BlueLand_100222ec);
+      strcpy_fast(local_68,s_CARDBK_BlueLand_100222ec);
     }
     else if (param_1 == &DAT_10039fe8) {
-      FUN_1000ee60(local_68,s_CARDBK_BlackLand_100222fc);
+      strcpy_fast(local_68,s_CARDBK_BlackLand_100222fc);
     }
     else if (param_1 == &DAT_1003a00c) {
-      FUN_1000ee60(local_68,s_CARDBK_RedLand_10022310);
+      strcpy_fast(local_68,s_CARDBK_RedLand_10022310);
     }
     else if (param_1 == &DAT_1003a014) {
-      FUN_1000ee60(local_68,s_CARDBK_DarklandsLand_10022320);
+      strcpy_fast(local_68,s_CARDBK_DarklandsLand_10022320);
     }
     else if (param_1 == &DAT_10039fd0) {
-      FUN_1000ee60(local_68,s_CARDBK_FallenEmpiresLand_10022338);
+      strcpy_fast(local_68,s_CARDBK_FallenEmpiresLand_10022338);
     }
     else if (param_1 == &DAT_1003a084) {
-      FUN_1000ee60(local_68,s_CARDBK_AntiquitiesLand_10022354);
+      strcpy_fast(local_68,s_CARDBK_AntiquitiesLand_10022354);
     }
     else if (param_1 == &DAT_10039fc8) {
-      FUN_1000ee60(local_68,s_CARDBK_LegendsLand_1002236c);
+      strcpy_fast(local_68,s_CARDBK_LegendsLand_1002236c);
     }
     else if (param_1 == &DAT_1003a028) {
-      FUN_1000ee60(local_68,s_CARDBK_ArabianNightsLand_10022380);
+      strcpy_fast(local_68,s_CARDBK_ArabianNightsLand_10022380);
     }
     else if (param_1 == &DAT_1003a020) {
-      FUN_1000ee60(local_68,s_CARDBK_Special_1002239c);
+      strcpy_fast(local_68,s_CARDBK_Special_1002239c);
     }
     else {
-      FUN_1000ee60(local_68,&DAT_100223ac);
+      strcpy_fast(local_68,&DAT_100223ac);
     }
     if (local_68[0] != '\0') {
-      _sprintf(local_170,s__s__s_pic_100223b0,&DAT_100f36c0,local_68);
+      sprintf(local_170,s__s__s_pic_100223b0,&DAT_100f36c0,local_68);
       iVar2 = FUN_1000b700(local_170);
       *param_1 = iVar2;
     }
@@ -4050,7 +3782,7 @@ void FUN_10006eed(int param_1,int param_2,char *param_3)
     iVar3 = *(int *)(param_2 + 0xc) - *(int *)(param_2 + 4);
     iVar1 = *(int *)(param_2 + 8);
     local_24 = iVar3;
-    sVar4 = _strlen(local_48);
+    sVar4 = strlen(local_48);
     local_2c = iVar1 - (sVar4 >> 1) * iVar3;
     local_34 = *(undefined4 *)(param_2 + 4);
     local_28 = local_48;
@@ -4166,10 +3898,10 @@ int FUN_10006ff3(int *param_1,int param_2)
     }
     if ((((local_18 == 0) && (local_50 == 0)) && (local_10 == 0)) &&
        (((local_8 == 0 && (local_14 == 0)) && ((local_58 == 0 && (local_54 == 0)))))) {
-      FUN_1000ee60(local_4c,&DAT_100223bc);
+      strcpy_fast(local_4c,&DAT_100223bc);
     }
     if (param_2 != 0) {
-      FUN_1000ee60(param_2,local_4c);
+      strcpy_fast(param_2,local_4c);
     }
   }
   return local_50;
@@ -4441,7 +4173,7 @@ uint DrawManaText(HDC param_1,int *param_2,char *param_3,int param_4)
             local_60 = *param_2;
             local_64 = uVar2;
           }
-          sVar6 = _strlen(local_b4);
+          sVar6 = strlen(local_b4);
           TextOutA(param_1,local_60,local_70,local_b4,sVar6);
           local_60 = local_60 + local_10.cx;
         }
@@ -4463,7 +4195,7 @@ uint DrawManaText(HDC param_1,int *param_2,char *param_3,int param_4)
             local_60 = *param_2;
             local_64 = uVar2;
           }
-          local_78 = _strlen(local_b4);
+          local_78 = strlen(local_b4);
           for (local_6c = 0; local_6c < (int)local_78; local_6c = local_6c + 1) {
             if (param_4 == 0) {
               Ellipse(param_1,local_60 + (iVar4 - local_80) / 2,local_70 + (local_7c - local_24) / 2
@@ -4483,7 +4215,7 @@ uint DrawManaText(HDC param_1,int *param_2,char *param_3,int param_4)
             local_6c = 1;
             local_b4[1] = 0;
             GetTextExtentPoint32A(param_1,local_b4,1,&local_10);
-            sVar6 = _strlen(local_b4);
+            sVar6 = strlen(local_b4);
             TextOutA(param_1,local_60,local_70,local_b4,sVar6);
             local_60 = local_60 + local_10.cx;
           }
@@ -4606,7 +4338,7 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,int param_3,int param_4,int par
   
                     /* 0x81b2  7  DrawSmallCardTitle */
   if (((param_1 != (HDC)0x0) && (param_2 != (int *)0x0)) && (param_3 != 0)) {
-    FUN_1000ee60(local_6c,param_3);
+    strcpy_fast(local_6c,param_3);
     local_8 = SaveDC(param_1);
     SetMapMode(param_1,8);
     SetWindowExtEx(param_1,200,0x118,(LPSIZE)0x0);
@@ -4632,11 +4364,11 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,int param_3,int param_4,int par
       SetBkMode(param_1,1);
     }
     SetTextColor(param_1,DAT_10039fec);
-    sVar1 = _strlen(local_6c);
+    sVar1 = strlen(local_6c);
     TextOutA(param_1,5,1,local_6c,sVar1);
     SetTextColor(param_1,local_70);
     SetBkMode(param_1,1);
-    sVar1 = _strlen(local_6c);
+    sVar1 = strlen(local_6c);
     TextOutA(param_1,2,-2,local_6c,sVar1);
     RestoreDC(param_1,local_8);
   }
@@ -4659,17 +4391,17 @@ undefined * FUN_10008370(int param_1,char *param_2,int param_3)
   
   local_c = &DAT_1003a9b8;
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
-  __splitpath(param_2,(char *)0x0,local_314,local_210,local_110);
+  _splitpath(param_2,(char *)0x0,local_314,local_210,local_110);
   if (DAT_1003a9ac == 0) {
-    FUN_1000ee60(local_41c,local_314);
-    FUN_1000ee70(local_41c,s_SmallArt_cat_1002240c);
+    strcpy_fast(local_41c,local_314);
+    strcat_fast(local_41c,s_SmallArt_cat_1002240c);
     DAT_100223fc = FUN_1000b820(local_41c);
-    FUN_1000ee60(local_41c,local_314);
-    FUN_1000ee70(local_41c,s_MedArt_cat_1002241c);
+    strcpy_fast(local_41c,local_314);
+    strcat_fast(local_41c,s_MedArt_cat_1002241c);
     DAT_10022400 = FUN_1000b820(local_41c);
     DAT_1003a9ac = 1;
   }
-  sVar1 = _strlen(local_314);
+  sVar1 = strlen(local_314);
   local_8 = local_314 + sVar1;
   if (param_1 == 0) {
     DAT_100f1f68 = DAT_100223fc;
@@ -4680,23 +4412,23 @@ undefined * FUN_10008370(int param_1,char *param_2,int param_3)
     }
     DAT_100f1f68 = DAT_10022400;
   }
-  FUN_1000ee60(local_314,local_210);
-  FUN_1000ee70(local_314,local_110);
-  __strlwr(local_314);
+  strcpy_fast(local_314,local_210);
+  strcat_fast(local_314,local_110);
+  _strlwr(local_314);
   if (local_c != (undefined *)0x0) {
-    _memset(local_c,0,0x1b0);
-    FUN_1000ee60(local_c + 0x9c,param_2);
+    memset(local_c,0,0x1b0);
+    strcpy_fast(local_c + 0x9c,param_2);
     *(undefined **)(local_c + 0x1a0) = &DAT_100b5368;
     local_10 = FUN_1000bbf1(DAT_100f1f68,local_314,local_c + 0x1a0);
     if (local_10 == -1) {
-      FUN_1000ee70(param_2,&DAT_10022428);
+      strcat_fast(param_2,&DAT_10022428);
       OutputDebugStringA(param_2);
       LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
       local_c = (undefined *)0x0;
     }
     else {
       *(int *)(local_c + 0x1a4) = local_10 + -0x9c;
-      FID_conflict__memcpy(local_c,*(void **)(local_c + 0x1a0),0x9c);
+      memcpy(local_c,*(void **)(local_c + 0x1a0),0x9c);
       *(int *)(local_c + 0x1a0) = *(int *)(local_c + 0x1a0) + 0x9c;
       if (*(int *)(local_c + 0x28) == 4) {
         *(int *)(local_c + 0x1c) = *(int *)(local_c + 0x1c) << 1;
@@ -4770,7 +4502,7 @@ void * FUN_10008663(int *param_1,void *param_2)
     FUN_10002ea0(param_2,(int)(param_1[0x24] + 2000 + (param_1[0x24] + 2000 >> 0x1f & 3U)) >> 2);
   }
   else {
-    param_2 = _malloc(param_1[0x24] + 2000);
+    param_2 = malloc(param_1[0x24] + 2000);
     FUN_10002ea0(param_2,(int)(param_1[0x24] + 2000 + (param_1[0x24] + 2000 >> 0x1f & 3U)) >> 2);
   }
   _DAT_10126554 = FUN_10009338(param_2,param_1);
@@ -4910,7 +4642,7 @@ void FUN_10008cb8(undefined8 *param_1,undefined8 *param_2,uint param_3)
 void FUN_10008cf3(undefined8 *param_1,uint param_2,uint param_3)
 
 {
-  _memset(param_1,(int)(byte)param_2,param_3);
+  memset(param_1,(int)(byte)param_2,param_3);
   return;
 }
 
@@ -4923,9 +4655,9 @@ void FUN_10008d5c(int param_1,int param_2,int param_3)
   undefined4 local_10;
   
   if (DAT_10022404 == 0) {
-    local_18 = _malloc(0x32000);
+    local_18 = malloc(0x32000);
     DAT_10124544 = local_18;
-    DAT_10124540 = _malloc(0x32000);
+    DAT_10124540 = malloc(0x32000);
     DAT_10022404 = 1;
   }
   else {
@@ -5048,7 +4780,7 @@ FUN_1000906f(undefined1 *param_1,int *param_2,int param_3,int param_4,int param_
     DAT_100f1f6c = 1;
   }
   if (param_1 == (undefined1 *)0x0) {
-    param_1 = _malloc(param_3 * param_3 * 3 + 0x10);
+    param_1 = malloc(param_3 * param_3 * 3 + 0x10);
   }
   puVar1 = param_1;
   for (local_20 = 0; local_20 < param_4; local_20 = local_20 + 1) {
@@ -5126,15 +4858,15 @@ undefined4 FUN_10009338(int param_1,int *param_2)
     _Dst = (void *)((iVar4 * iVar4 + iVar5 * iVar5 * 2 + 0x40) * local_28 * 4 + param_1);
     _Dst_00 = (void *)((int)_Dst + iVar4 * iVar4 * 4 + 0x80);
     _Dst_01 = (void *)((int)_Dst_00 + iVar5 * iVar5 * 4 + 0x80);
-    FID_conflict__memcpy(_Dst,local_18,iVar2 * iVar2 * 4);
+    memcpy(_Dst,local_18,iVar2 * iVar2 * 4);
     local_18 = (void *)((int)local_18 + iVar2 * iVar2 * 4);
     FUN_10003c3e((void *)((int)_Dst + iVar2 * iVar2 * 4),local_18,param_2[local_28 + 0x17]);
     local_18 = (void *)((int)local_18 + param_2[local_28 + 0x17]);
-    FID_conflict__memcpy(_Dst_00,local_18,iVar2 * iVar2 * 4);
+    memcpy(_Dst_00,local_18,iVar2 * iVar2 * 4);
     local_18 = (void *)((int)local_18 + iVar2 * iVar2 * 4);
     FUN_10003c3e((void *)((int)_Dst_00 + iVar2 * iVar2 * 4),local_18,param_2[local_28 + 0x1b]);
     local_18 = (void *)((int)local_18 + param_2[local_28 + 0x1b]);
-    FID_conflict__memcpy(_Dst_01,local_18,iVar2 * iVar2 * 4);
+    memcpy(_Dst_01,local_18,iVar2 * iVar2 * 4);
     local_18 = (void *)((int)local_18 + iVar2 * iVar2 * 4);
     FUN_10003c3e((void *)((int)_Dst_01 + iVar2 * iVar2 * 4),local_18,param_2[local_28 + 0x1f]);
     local_18 = (void *)((int)local_18 + param_2[local_28 + 0x1f]);
@@ -5185,13 +4917,13 @@ undefined4 * FUN_1000965b(undefined4 param_1,int param_2,int param_3)
   undefined4 *local_8;
   
   if (param_3 == 8) {
-    local_8 = _malloc(0x42c);
+    local_8 = malloc(0x42c);
   }
   else if (param_3 == 0x18) {
-    local_8 = _malloc(0x2c);
+    local_8 = malloc(0x2c);
   }
   else {
-    local_8 = _malloc(0x2c);
+    local_8 = malloc(0x2c);
   }
   *local_8 = 0x28;
   local_8[1] = param_1;
@@ -5259,7 +4991,7 @@ undefined4 * FUN_100097a0(undefined4 *param_1,int param_2,int param_3,int param_
   else {
     iVar6 = (DAT_100223c0 - (param_3 * 3) % DAT_100223c0) % DAT_100223c0;
     if (param_1 == (undefined4 *)0x0) {
-      param_1 = _malloc((param_3 * 3 + iVar6) * param_4 + 4);
+      param_1 = malloc((param_3 * 3 + iVar6) * param_4 + 4);
     }
     puVar3 = param_1;
     iVar5 = *(int *)(param_2 + 0x1c);
@@ -5271,7 +5003,7 @@ undefined4 * FUN_100097a0(undefined4 *param_1,int param_2,int param_3,int param_
       local_40 = *(int *)(param_2 + 0x1ac);
     }
     iVar2 = *(int *)(param_2 + 0x1c);
-    piVar4 = _malloc(param_3 << 2);
+    piVar4 = malloc(param_3 << 2);
     local_2c = 0;
     local_28 = piVar4;
     for (local_34 = 0; local_34 < param_3; local_34 = local_34 + 1) {
@@ -5282,7 +5014,7 @@ undefined4 * FUN_100097a0(undefined4 *param_1,int param_2,int param_3,int param_
     for (local_3c = 0; local_3c < param_4; local_3c = local_3c + 1) {
       iVar5 = iVar2 * 3 * (local_38 >> 0x10) + local_40;
       if (local_24 == iVar5) {
-        FID_conflict__memcpy(param_1,(void *)((int)param_1 + (param_3 * -3 - iVar6)),param_3 * 3);
+        memcpy(param_1,(void *)((int)param_1 + (param_3 * -3 - iVar6)),param_3 * 3);
         param_1 = (undefined4 *)((int)param_1 + param_3 * 3);
       }
       else {
@@ -5418,7 +5150,7 @@ char * FUN_10009aff(char *param_1,int param_2,int param_3,int param_4)
     local_101c = param_3 * 3 + local_1020;
     if (param_4 < *(int *)(param_2 + 0x20)) {
       pcStackY_20 = (char *)0x10009f57;
-      FID_conflict__memcpy
+      memcpy
                 (local_5050,local_5054 + (*(int *)(param_2 + 0x20) + -1) * local_101c,local_101c);
     }
     for (local_1044 = 0; local_1044 < param_3; local_1044 = local_1044 + 1) {
@@ -5442,11 +5174,11 @@ char * FUN_10009aff(char *param_1,int param_2,int param_3,int param_4)
     }
     if (param_4 < *(int *)(param_2 + 0x20)) {
       pcStackY_20 = (char *)0x1000a11a;
-      FID_conflict__memcpy(local_5054 + (param_4 + -1) * local_101c,local_5050,local_101c);
+      memcpy(local_5054 + (param_4 + -1) * local_101c,local_5050,local_101c);
     }
     else {
       pcStackY_20 = (char *)0x1000a142;
-      _memset(local_5054 + (param_4 + -1) * local_101c,0,local_101c);
+      memset(local_5054 + (param_4 + -1) * local_101c,0,local_101c);
     }
     if (DAT_10021048 == 0) {
       pcStackY_20 = local_5054;
@@ -5500,7 +5232,7 @@ undefined4 * FUN_1000a2e7(int param_1)
 {
   undefined4 *local_8;
   
-  local_8 = _malloc(param_1 + 8);
+  local_8 = malloc(param_1 + 8);
   if (((uint)local_8 & 7) == 0) {
     local_8[1] = 0;
     local_8 = local_8 + 2;
@@ -5546,8 +5278,8 @@ int FUN_1000a373(HWND param_1,int param_2,int param_3,int param_4,DWORD param_5,
   
   local_1c = 0;
   local_8 = 0;
-  _Dst = _malloc(param_5 * param_6 * 3 + 8);
-  _memset(_Dst,0,param_5 * param_6 * 3);
+  _Dst = malloc(param_5 * param_6 * 3 + 8);
+  memset(_Dst,0,param_5 * param_6 * 3);
   local_14 = _Dst;
   for (local_2c = 0; local_2c < (int)param_6; local_2c = local_2c + 1) {
     for (local_28 = 0; local_28 < (int)param_5; local_28 = local_28 + 1) {
@@ -5923,10 +5655,10 @@ undefined4 FUN_1000acf5(void)
   PALETTEENTRY local_404 [256];
   
   local_51c = 1;
-  FUN_1000ee60(local_624,&DAT_100f35b0);
-  FUN_1000ee70(local_624,s__DUELPALall_TR_10022508);
-  FUN_1000ee60(local_510,&DAT_100f35b0);
-  FUN_1000ee70(local_510,s__DUEL_plogpal_10022518);
+  strcpy_fast(local_624,&DAT_100f35b0);
+  strcat_fast(local_624,s__DUELPALall_TR_10022508);
+  strcpy_fast(local_510,&DAT_100f35b0);
+  strcat_fast(local_510,s__DUEL_plogpal_10022518);
   local_408 = (LOGPALETTE *)FUN_10001033(local_624,local_510);
   if (local_408 == (LOGPALETTE *)0x0) {
     local_51c = 0;
@@ -6007,15 +5739,15 @@ void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
   char *local_8;
   
   if ((((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) && (param_4 != (char *)0x0)) &&
-     ((sVar1 = _strlen(param_1), sVar1 != 0 && (sVar1 = _strlen(param_2), sVar1 != 0)))) {
-    local_10 = _strlen(param_2);
+     ((sVar1 = strlen(param_1), sVar1 != 0 && (sVar1 = strlen(param_2), sVar1 != 0)))) {
+    local_10 = strlen(param_2);
     local_8 = param_1;
     local_3f8[0] = '\0';
     local_3fc = 0;
     while (*local_8 != '\0') {
       local_c = 0;
-      if (((param_3 != 0) && (iVar2 = _strncmp(local_8,param_2,local_10), iVar2 == 0)) ||
-         ((param_3 == 0 && (iVar2 = __strnicmp(local_8,param_2,local_10), iVar2 == 0)))) {
+      if (((param_3 != 0) && (iVar2 = strncmp(local_8,param_2,local_10), iVar2 == 0)) ||
+         ((param_3 == 0 && (iVar2 = _strnicmp(local_8,param_2,local_10), iVar2 == 0)))) {
         local_c = 1;
       }
       if (local_c == 0) {
@@ -6025,13 +5757,13 @@ void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
         local_3fc = local_3fc + 1;
       }
       else {
-        FUN_1000ee70(local_3f8,param_4);
-        sVar1 = _strlen(param_4);
+        strcat_fast(local_3f8,param_4);
+        sVar1 = strlen(param_4);
         local_8 = local_8 + local_10;
         local_3fc = local_3fc + sVar1;
       }
     }
-    FUN_1000ee60(param_1,local_3f8);
+    strcpy_fast(param_1,local_3f8);
   }
   return;
 }
@@ -6115,39 +5847,39 @@ FUN_1000b40f(int param_1,undefined4 param_2,undefined4 param_3,char *param_4,und
   int local_8;
   
   local_8 = 8;
-  _Str2 = _strchr(param_4,0x2e);
-  iVar1 = __strcmpi(DAT_1002253c,_Str2);
+  _Str2 = strchr(param_4,0x2e);
+  iVar1 = strcmpi(DAT_1002253c,_Str2);
   if (iVar1 == 0) {
-    DAT_10127d30 = _fopen(param_4,DAT_10022544);
-    if (DAT_10127d30 == (FILE *)0x0) {
+    gPcxInFile = fopen(param_4,DAT_10022544);
+    if (gPcxInFile == (FILE *)0x0) {
       return 0;
     }
-    DAT_10127d38 = param_4;
+    gPcxPath = param_4;
     if (param_5 == (undefined1 *)0x1) {
       param_5 = local_40c;
     }
     if (param_5 == (undefined1 *)0x0) {
-      FUN_100042ea(0);
+      PcxReadHeaderAndPalette(0);
       if (param_1 < 0) {
-        DAT_1002654c = 0;
+        gImageHeight = 0;
       }
-      if ((int)DAT_10026548 % 3 == 0) {
+      if ((int)gImageWidth % 3 == 0) {
         local_410 = 0;
       }
       else {
-        local_410 = 4 - (int)DAT_10026548 % 3;
+        local_410 = 4 - (int)gImageWidth % 3;
       }
-      DAT_100f2394 = DAT_10026548 + local_410;
-      FUN_1000b1e0(DAT_100f2394,DAT_1002654c,local_8);
+      DAT_100f2394 = gImageWidth + local_410;
+      FUN_1000b1e0(DAT_100f2394,gImageHeight,local_8);
       local_c = *(int *)(PTR_DAT_10022528 + 0x18);
-      for (DAT_100f239c = 0; DAT_100f239c < DAT_1002654c; DAT_100f239c = DAT_100f239c + 1) {
-        FUN_100044d0(local_c);
+      for (DAT_100f239c = 0; DAT_100f239c < gImageHeight; DAT_100f239c = DAT_100f239c + 1) {
+        PcxReadScanlineRle(local_c);
         local_c = local_c + ((int)(local_8 + (local_8 >> 0x1f & 7U)) >> 3) * DAT_100f2394;
       }
-      _fclose(DAT_10127d30);
+      fclose(gPcxInFile);
     }
     else {
-      FUN_100042ea(param_5 + 6);
+      PcxReadHeaderAndPalette(param_5 + 6);
       *param_5 = 0x4d;
       param_5[1] = 0x31;
       *(undefined2 *)(param_5 + 2) = 0x300;
@@ -6162,26 +5894,26 @@ FUN_1000b40f(int param_1,undefined4 param_2,undefined4 param_3,char *param_4,und
     }
     FUN_1000b7a2(DAT_100f23a0);
     FUN_10155000(0,0,(ushort *)param_5);
-    if ((DAT_10026548 & 3) == 0) {
+    if ((gImageWidth & 3) == 0) {
       local_414 = 0;
     }
     else {
-      local_414 = 4 - (DAT_10026548 & 3);
+      local_414 = 4 - (gImageWidth & 3);
     }
-    DAT_100f2394 = DAT_10026548 + local_414;
-    iVar1 = FUN_1000b1e0(DAT_10026548,DAT_1002654c,local_8);
+    DAT_100f2394 = gImageWidth + local_414;
+    iVar1 = FUN_1000b1e0(gImageWidth,gImageHeight,local_8);
     if (iVar1 == 0) {
       *(undefined4 *)(PTR_DAT_10022528 + 8) = 0;
     }
     else {
       local_c = *(int *)(PTR_DAT_10022528 + 0x18);
       DAT_100f239c = 0;
-      while (DAT_100f239c < DAT_1002654c) {
-        FUN_10155484(local_c,DAT_10026548);
+      while (DAT_100f239c < gImageHeight) {
+        FUN_10155484(local_c,gImageWidth);
         DAT_100f239c = DAT_100f239c + 1;
         local_c = local_c + *(int *)(PTR_DAT_10022528 + 0x2c) +
-                            ((int)(DAT_10026548 * local_8 +
-                                  ((int)(DAT_10026548 * local_8) >> 0x1f & 7U)) >> 3);
+                            ((int)(gImageWidth * local_8 +
+                                  ((int)(gImageWidth * local_8) >> 0x1f & 7U)) >> 3);
       }
     }
     FUN_1000b778(DAT_100f23a0);
@@ -6189,9 +5921,9 @@ FUN_1000b40f(int param_1,undefined4 param_2,undefined4 param_3,char *param_4,und
   return *(undefined4 *)(PTR_DAT_10022528 + 8);
 }
 
+// MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000B700
 int FUN_1000b700(undefined4 param_1)
-
 {
   int iVar1;
   
@@ -6202,15 +5934,13 @@ int FUN_1000b700(undefined4 param_1)
   return iVar1;
 }
 
+// MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000B745
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
 int FUN_1000b745(char *param_1,int param_2)
-
 {
   int iVar1;
   
-  iVar1 = __open(param_1,param_2);
+  iVar1 = _open(param_1,param_2);
   _DAT_100f23a8 = 0xffffffff;
   return iVar1;
 }
@@ -6220,7 +5950,7 @@ void FUN_1000b778(int param_1)
 
 {
   if (param_1 != DAT_10022530) {
-    __close(param_1);
+    _close(param_1);
   }
   return;
 }
@@ -6235,13 +5965,13 @@ void FUN_1000b7a2(undefined4 param_1)
   return;
 }
 
+// MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000B7C9
 int FUN_1000b7c9(void)
-
 {
   int iVar1;
   
-  iVar1 = __read(DAT_100f23a4,DAT_100f33a0,0x200);
+  iVar1 = _read(DAT_100f23a4,DAT_100f33a0,0x200);
   DAT_100f3394 = (ushort *)DAT_100f33a0;
   return iVar1;
 }
@@ -6274,18 +6004,18 @@ LAB_1000b874:
                    s_Too_many_open_Catalogs__Max__d_10026978,5);
       iVar1 = local_c * 0x114;
       *(undefined4 *)(&DAT_100f2e3c + iVar1) = 0;
-      FUN_1000ee60(iVar1 + 0x100f2e40,param_1);
-      pFVar3 = _fopen(param_1,DAT_100269c0);
+      strcpy_fast(iVar1 + 0x100f2e40,param_1);
+      pFVar3 = fopen(param_1,DAT_100269c0);
       *(FILE **)(&DAT_100f2e30 + iVar1) = pFVar3;
       pFVar3 = *(FILE **)(&DAT_100f2e30 + iVar1);
       if (pFVar3 == (FILE *)0x0) {
         local_c = 0;
       }
       else {
-        _fread(&DAT_100f2e34 + iVar1,4,1,pFVar3);
-        pvVar4 = _malloc(*(int *)(&DAT_100f2e34 + iVar1) * 0xc);
+        fread(&DAT_100f2e34 + iVar1,4,1,pFVar3);
+        pvVar4 = malloc(*(int *)(&DAT_100f2e34 + iVar1) * 0xc);
         *(void **)(&DAT_100f2e38 + iVar1) = pvVar4;
-        _fread(*(void **)(&DAT_100f2e38 + iVar1),0xc,*(size_t *)(&DAT_100f2e34 + iVar1),pFVar3);
+        fread(*(void **)(&DAT_100f2e38 + iVar1),0xc,*(size_t *)(&DAT_100f2e34 + iVar1),pFVar3);
         if (DAT_10026974 != 0) {
           for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {
             if ((local_c != local_10) && (*(int *)(&DAT_100f2e30 + local_10 * 0x114) != 0)) {
@@ -6328,7 +6058,7 @@ bool FUN_1000ba6a(int param_1)
   iVar1 = *(int *)(&DAT_100f2e30 + param_1 * 0x114);
   if (iVar1 != 0) {
     FUN_1000cde0(*(undefined4 *)(&DAT_100f2e38 + param_1 * 0x114));
-    _fclose(*(FILE **)(&DAT_100f2e30 + param_1 * 0x114));
+    fclose(*(FILE **)(&DAT_100f2e30 + param_1 * 0x114));
     *(undefined4 *)(&DAT_100f2e38 + param_1 * 0x114) = 0;
     *(undefined4 *)(&DAT_100f2e30 + param_1 * 0x114) = 0;
     *(undefined4 *)(&DAT_100f2e34 + param_1 * 0x114) = 0;
@@ -6363,7 +6093,7 @@ void * FUN_1000bb76(int param_1,undefined4 param_2)
   
   local_8 = FUN_1000bc9a(param_2);
   if ((*(int *)(param_1 + 0xc) == 0) || (**(int **)(param_1 + 0xc) != local_8)) {
-    pvVar1 = _bsearch(&local_8,*(void **)(param_1 + 8),*(size_t *)(param_1 + 4),0xc,FUN_1000bb26);
+    pvVar1 = bsearch(&local_8,*(void **)(param_1 + 8),*(size_t *)(param_1 + 4),0xc,FUN_1000bb26);
     *(void **)(param_1 + 0xc) = pvVar1;
   }
   else {
@@ -6388,11 +6118,11 @@ size_t FUN_1000bbf1(int param_1,undefined4 param_2,int *param_3)
   }
   else {
     if (*param_3 == 0) {
-      pvVar4 = _malloc(*(int *)(iVar2 + 8) + 0x10);
+      pvVar4 = malloc(*(int *)(iVar2 + 8) + 0x10);
       *param_3 = (int)pvVar4;
     }
-    _fseek((FILE *)*puVar1,*(long *)(iVar2 + 4),0);
-    sVar3 = _fread((void *)*param_3,1,*(size_t *)(iVar2 + 8),(FILE *)*puVar1);
+    fseek((FILE *)*puVar1,*(long *)(iVar2 + 4),0);
+    sVar3 = fread((void *)*param_3,1,*(size_t *)(iVar2 + 8),(FILE *)*puVar1);
   }
   return sVar3;
 }
@@ -6415,9 +6145,9 @@ uint FUN_1000bc9a(byte *param_1)
   local_20 = 0;
   local_138 = 0;
   local_8 = 0;
-  __splitpath((char *)param_1,local_134,local_124,(char *)&local_1c,local_134);
+  _splitpath((char *)param_1,local_134,local_124,(char *)&local_1c,local_134);
   param_1 = &local_1c;
-  FUN_1000ee70(&local_1c,local_134);
+  strcat_fast(&local_1c,local_134);
   while( true ) {
     iVar1 = (int)(char)*param_1;
     param_1 = param_1 + 1;
@@ -6482,43 +6212,43 @@ int read_cfg(undefined4 param_1)
   _DAT_10124510 = param_1;
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
   GetModuleFileNameA((HMODULE)0x0,&DAT_100f35b0,0x105);
-  pcVar1 = _strrchr(&DAT_100f35b0,0x5c);
+  pcVar1 = strrchr(&DAT_100f35b0,0x5c);
   *pcVar1 = '\0';
-  FUN_1000ee60();
-  FUN_1000ee70();
+  strcpy_fast();
+  strcat_fast();
   DAT_10021048 = 3;
   DAT_10124538 = 0x10;
   FUN_1000a5a0();
-  FUN_1000ee60();
-  FUN_1000ee70();
-  pFStackY_4a38c = _fopen(acStackY_4a4a0,DAT_10026a60);
+  strcpy_fast();
+  strcat_fast();
+  pFStackY_4a38c = fopen(acStackY_4a4a0,DAT_10026a60);
   if (pFStackY_4a38c == (FILE *)0x0) {
     iVar2 = 0;
   }
   else {
-    _fread(&sStackY_4a398,4,1,pFStackY_4a38c);
-    _fread(&sStackY_4a394,4,1,pFStackY_4a38c);
-    _fread(auStackY_4a388,0x98,sStackY_4a398,pFStackY_4a38c);
-    _DstBuf = _malloc(sStackY_4a394);
+    fread(&sStackY_4a398,4,1,pFStackY_4a38c);
+    fread(&sStackY_4a394,4,1,pFStackY_4a38c);
+    fread(auStackY_4a388,0x98,sStackY_4a398,pFStackY_4a38c);
+    _DstBuf = malloc(sStackY_4a394);
     if (_DstBuf == (void *)0x0) {
       iVar2 = 0;
     }
     else {
-      _fread(_DstBuf,1,sStackY_4a394,pFStackY_4a38c);
+      fread(_DstBuf,1,sStackY_4a394,pFStackY_4a38c);
       for (iStackY_4a390 = 0; iStackY_4a390 < (int)sStackY_4a398; iStackY_4a390 = iStackY_4a390 + 1)
       {
         aiStackY_4a384[iStackY_4a390 * 0x26] = aiStackY_4a384[iStackY_4a390 * 0x26] + (int)_DstBuf;
-        _strncpy(DAT_100f37d0 + iStackY_4a390 * 100,(char *)aiStackY_4a384[iStackY_4a390 * 0x26],
+        strncpy(DAT_100f37d0 + iStackY_4a390 * 100,(char *)aiStackY_4a384[iStackY_4a390 * 0x26],
                  100);
         DAT_100f3833[iStackY_4a390 * 100] = 0;
       }
       FUN_1000cde0();
     }
-    _fclose(pFStackY_4a38c);
+    fclose(pFStackY_4a38c);
   }
   if (iVar2 == 0) {
     for (iStackY_4a390 = 0; iStackY_4a390 < (int)sStackY_4a398; iStackY_4a390 = iStackY_4a390 + 1) {
-      FUN_1000ee60();
+      strcpy_fast();
     }
   }
   return iVar2;
@@ -6547,22 +6277,22 @@ void FUN_1000c0f0(int ok,const char *file,int line,const char *fmt,...)
   
   DAT_100f23e0[0] = '\0';
   if ((file != (const char *)0x0) && (line != 0)) {
-    _sprintf(DAT_100f23e0,s_File____s__Line____d_10026aa8,file,line);
+    sprintf(DAT_100f23e0,s_File____s__Line____d_10026aa8,file,line);
   }
-  used = _strlen(DAT_100f23e0);
+  used = strlen(DAT_100f23e0);
   va_start(args,fmt);
-  __vsnprintf(DAT_100f23e0 + used,2000 - used,fmt,args);
+  _vsnprintf(DAT_100f23e0 + used,2000 - used,fmt,args);
   va_end(args);
   
-  now = _time((time_t *)0x0);
-  log = _fopen(s__assertFile_txt_10026a94,DAT_10026aa4);
+  now = time((time_t *)0x0);
+  log = fopen(s__assertFile_txt_10026a94,DAT_10026aa4);
   if (log != (FILE *)0x0) {
-    _fprintf(log,s__s_s_10026ac0,_ctime(&now),DAT_100f23e0);
-    _fclose(log);
+    fprintf(log,s__s_s_10026ac0,ctime(&now),DAT_100f23e0);
+    fclose(log);
   }
   
   MessageBoxA((HWND)0x0,DAT_100f23e0,s_Assertion_Error_10026ac8,0x1000);
-  _exit(0xff);
+  exit(0xff);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000C206
@@ -6579,134 +6309,23 @@ void FUN_1000c206(int ok,const char *file,int line,const char *fmt,...)
   
   DAT_100f23e0[0] = '\0';
   if ((file != (const char *)0x0) && (line != 0)) {
-    _sprintf(DAT_100f23e0,s_File____s__Line____d_10026aec,file,line);
+    sprintf(DAT_100f23e0,s_File____s__Line____d_10026aec,file,line);
   }
-  used = _strlen(DAT_100f23e0);
+  used = strlen(DAT_100f23e0);
   va_start(args,fmt);
-  __vsnprintf(DAT_100f23e0 + used,2000 - used,fmt,args);
+  _vsnprintf(DAT_100f23e0 + used,2000 - used,fmt,args);
   va_end(args);
   
-  now = _time((time_t *)0x0);
-  log = _fopen(s__assertFile_txt_10026ad8,DAT_10026aa4);
+  now = time((time_t *)0x0);
+  log = fopen(s__assertFile_txt_10026ad8,DAT_10026aa4);
   if (log != (FILE *)0x0) {
-    _fprintf(log,s__s_s_10026b04,_ctime(&now),DAT_100f23e0);
-    _fclose(log);
+    fprintf(log,s__s_s_10026b04,ctime(&now),DAT_100f23e0);
+    fclose(log);
   }
   
   MessageBoxA((HWND)0x0,DAT_100f23e0,s_Assertion_Error_10026b0c,0x1000);
-  _exit(0xff);
+  exit(0xff);
 }
-
-// LIBRARY: DRAWCARDLIB 0x1000C310 SYMBOL
-// _memset
-
-// LIBRARY: DRAWCARDLIB 0x1000C370 SYMBOL
-// _malloc
-
-// LIBRARY: DRAWCARDLIB 0x1000C3A0 SYMBOL
-// __malloc_dbg
-
-// LIBRARY: DRAWCARDLIB 0x1000C3D0 SYMBOL
-// __nh_malloc_dbg
-
-// LIBRARY: DRAWCARDLIB 0x1000C450 SYMBOL
-// __heap_alloc_dbg
-
-// LIBRARY: DRAWCARDLIB 0x1000C790 SYMBOL
-// __calloc_dbg
-
-// LIBRARY: DRAWCARDLIB 0x1000C800 SYMBOL
-// __realloc_dbg
-
-// LIBRARY: DRAWCARDLIB 0x1000C850 SYMBOL
-// realloc_help
-
-// LIBRARY: DRAWCARDLIB 0x1000CDE0 SYMBOL
-// FUN_1000cde0
-
-// LIBRARY: DRAWCARDLIB 0x1000CE00 SYMBOL
-// __free_dbg
-
-// LIBRARY: DRAWCARDLIB 0x1000CE30 SYMBOL
-// __free_dbg_lk
-
-// LIBRARY: DRAWCARDLIB 0x1000D260 SYMBOL
-// _CheckBytes
-
-// LIBRARY: DRAWCARDLIB 0x1000D2F0 SYMBOL
-// __CrtCheckMemory
-
-// LIBRARY: DRAWCARDLIB 0x1000D690 SYMBOL
-// __CrtSetDbgFlag
-
-// LIBRARY: DRAWCARDLIB 0x1000D6C0 SYMBOL
-// __CrtIsValidPointer
-
-// LIBRARY: DRAWCARDLIB 0x1000D720 SYMBOL
-// __CrtIsValidHeapPointer
-
-// LIBRARY: DRAWCARDLIB 0x1000D7F0 SYMBOL
-// __CrtMemCheckpoint
-
-// LIBRARY: DRAWCARDLIB 0x1000D940 SYMBOL
-// __CrtMemDumpAllObjectsSince
-
-// LIBRARY: DRAWCARDLIB 0x1000DC20 SYMBOL
-// __printMemBlockData
-
-// LIBRARY: DRAWCARDLIB 0x1000DD20 SYMBOL
-// __CrtDumpMemoryLeaks
-
-// LIBRARY: DRAWCARDLIB 0x1000DDB0 SYMBOL
-// _fclose
-
-// LIBRARY: DRAWCARDLIB 0x1000DE40 SYMBOL
-// __fclose_lk
-
-// LIBRARY: DRAWCARDLIB 0x1000DF10 SYMBOL
-// _fread
-
-// LIBRARY: DRAWCARDLIB 0x1000DF60 SYMBOL
-// __fread_lk
-
-// LIBRARY: DRAWCARDLIB 0x1000E130 SYMBOL
-// __fsopen
-
-// LIBRARY: DRAWCARDLIB 0x1000E240 SYMBOL
-// _fopen
-
-// LIBRARY: DRAWCARDLIB 0x1000E270 SYMBOL
-// _fgets
-
-// LIBRARY: DRAWCARDLIB 0x1000E3D0 SYMBOL
-// _strchr
-
-// LIBRARY: DRAWCARDLIB 0x1000E490 SYMBOL
-// _sscanf
-
-// LIBRARY: DRAWCARDLIB 0x1000E560 SYMBOL
-// FID_conflict:_memcpy
-
-// LIBRARY: DRAWCARDLIB 0x1000E6B0 SYMBOL
-// _strspn
-
-// LIBRARY: DRAWCARDLIB 0x1000E6F0 SYMBOL
-// _strcspn
-
-// LIBRARY: DRAWCARDLIB 0x1000E730 SYMBOL
-// _atol
-
-// LIBRARY: DRAWCARDLIB 0x1000E850 SYMBOL
-// _atoi
-
-// LIBRARY: DRAWCARDLIB 0x1000E870 SYMBOL
-// _fseek
-
-// LIBRARY: DRAWCARDLIB 0x1000E8F0 SYMBOL
-// __fseek_lk
-
-// LIBRARY: DRAWCARDLIB 0x1000EA30 SYMBOL
-// _fgetc
 
 // FUNCTION: DRAWCARDLIB 0x1000EAD0
 /* WARNING: Unable to track spacebase fully for stack */
@@ -6728,17 +6347,8 @@ void FUN_1000ead0(void)
   return;
 }
 
-// LIBRARY: DRAWCARDLIB 0x1000EB00 SYMBOL
-// _fwrite
-
-// LIBRARY: DRAWCARDLIB 0x1000EB50 SYMBOL
-// __fwrite_lk
-
-// LIBRARY: DRAWCARDLIB 0x1000ED70 SYMBOL
-// _sprintf
-
 // FUNCTION: DRAWCARDLIB 0x1000EE60
-uint * FUN_1000ee60(uint *param_1,uint *param_2)
+uint * strcpy_fast(uint *dst,uint *src)
 
 {
   byte bVar1;
@@ -6746,37 +6356,37 @@ uint * FUN_1000ee60(uint *param_1,uint *param_2)
   uint uVar3;
   uint *puVar4;
   
-  puVar4 = param_1;
-  while (((uint)param_2 & 3) != 0) {
-    bVar1 = (byte)*param_2;
+  puVar4 = dst;
+  while (((uint)src & 3) != 0) {
+    bVar1 = (byte)*src;
     uVar3 = (uint)bVar1;
-    param_2 = (uint *)((int)param_2 + 1);
+    src = (uint *)((int)src + 1);
     if (bVar1 == 0) goto LAB_1000ef48;
     *(byte *)puVar4 = bVar1;
     puVar4 = (uint *)((int)puVar4 + 1);
   }
   do {
-    uVar2 = *param_2;
-    uVar3 = *param_2;
-    param_2 = param_2 + 1;
+    uVar2 = *src;
+    uVar3 = *src;
+    src = src + 1;
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
       if ((char)uVar3 == '\0') {
 LAB_1000ef48:
         *(byte *)puVar4 = (byte)uVar3;
-        return param_1;
+        return dst;
       }
       if ((char)(uVar3 >> 8) == '\0') {
         *(short *)puVar4 = (short)uVar3;
-        return param_1;
+        return dst;
       }
       if ((uVar3 & 0xff0000) == 0) {
         *(short *)puVar4 = (short)uVar3;
         *(byte *)((int)puVar4 + 2) = 0;
-        return param_1;
+        return dst;
       }
       if ((uVar3 & 0xff000000) == 0) {
         *puVar4 = uVar3;
-        return param_1;
+        return dst;
       }
     }
     *puVar4 = uVar3;
@@ -6785,7 +6395,7 @@ LAB_1000ef48:
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000EE70
-uint * FUN_1000ee70(uint *param_1,uint *param_2)
+uint * strcat_fast(uint *dst,uint *src)
 
 {
   byte bVar1;
@@ -6794,7 +6404,7 @@ uint * FUN_1000ee70(uint *param_1,uint *param_2)
   uint uVar4;
   uint *puVar5;
   
-  puVar3 = param_1;
+  puVar3 = dst;
   do {
     if (((uint)puVar3 & 3) == 0) goto LAB_1000ee8c;
     uVar4 = *puVar3;
@@ -6823,124 +6433,43 @@ LAB_1000eebf:
   puVar5 = (uint *)((int)puVar3 + -1);
 joined_r0x1000eedb:
   do {
-    if (((uint)param_2 & 3) == 0) {
+    if (((uint)src & 3) == 0) {
       do {
-        uVar2 = *param_2;
-        uVar4 = *param_2;
-        param_2 = param_2 + 1;
+        uVar2 = *src;
+        uVar4 = *src;
+        src = src + 1;
         if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
           if ((char)uVar4 == '\0') {
 LAB_1000ef48:
             *(byte *)puVar5 = (byte)uVar4;
-            return param_1;
+            return dst;
           }
           if ((char)(uVar4 >> 8) == '\0') {
             *(short *)puVar5 = (short)uVar4;
-            return param_1;
+            return dst;
           }
           if ((uVar4 & 0xff0000) == 0) {
             *(short *)puVar5 = (short)uVar4;
             *(byte *)((int)puVar5 + 2) = 0;
-            return param_1;
+            return dst;
           }
           if ((uVar4 & 0xff000000) == 0) {
             *puVar5 = uVar4;
-            return param_1;
+            return dst;
           }
         }
         *puVar5 = uVar4;
         puVar5 = puVar5 + 1;
       } while( true );
     }
-    bVar1 = (byte)*param_2;
+    bVar1 = (byte)*src;
     uVar4 = (uint)bVar1;
-    param_2 = (uint *)((int)param_2 + 1);
+    src = (uint *)((int)src + 1);
     if (bVar1 == 0) goto LAB_1000ef48;
     *(byte *)puVar5 = bVar1;
     puVar5 = (uint *)((int)puVar5 + 1);
   } while( true );
 }
-
-// LIBRARY: DRAWCARDLIB 0x1000EF50 SYMBOL
-// _strlen
-
-// LIBRARY: DRAWCARDLIB 0x1000EFD0 SYMBOL
-// _strcmp
-
-// LIBRARY: DRAWCARDLIB 0x1000F060 SYMBOL
-// __splitpath
-
-// LIBRARY: DRAWCARDLIB 0x1000F2B0 SYMBOL
-// __allshl
-
-// LIBRARY: DRAWCARDLIB 0x1000F2D0 SYMBOL
-// _strncmp
-
-// LIBRARY: DRAWCARDLIB 0x1000F310 SYMBOL
-// __open
-
-// LIBRARY: DRAWCARDLIB 0x1000F360 SYMBOL
-// __sopen
-
-// LIBRARY: DRAWCARDLIB 0x1000F9A0 SYMBOL
-// __close
-
-// LIBRARY: DRAWCARDLIB 0x1000FA40 SYMBOL
-// __close_lk
-
-// LIBRARY: DRAWCARDLIB 0x1000FB10 SYMBOL
-// __read
-
-// LIBRARY: DRAWCARDLIB 0x1000FBC0 SYMBOL
-// __read_lk
-
-// LIBRARY: DRAWCARDLIB 0x10010080 SYMBOL
-// _bsearch
-
-// LIBRARY: DRAWCARDLIB 0x100101A0 SYMBOL
-// _strncpy
-
-// LIBRARY: DRAWCARDLIB 0x100102A0 SYMBOL
-// _strrchr
-
-// LIBRARY: DRAWCARDLIB 0x100102D0 SYMBOL
-// __cinit
-
-// LIBRARY: DRAWCARDLIB 0x10010320 SYMBOL
-// _exit
-
-// LIBRARY: DRAWCARDLIB 0x10010340 SYMBOL
-// __exit
-
-// LIBRARY: DRAWCARDLIB 0x10010360 SYMBOL
-// __cexit
-
-// LIBRARY: DRAWCARDLIB 0x10010380 SYMBOL
-// doexit
-
-// LIBRARY: DRAWCARDLIB 0x10010490 SYMBOL
-// FID_conflict:__lockexit
-
-// LIBRARY: DRAWCARDLIB 0x100104B0 SYMBOL
-// FID_conflict:__lockexit
-
-// LIBRARY: DRAWCARDLIB 0x100104D0 SYMBOL
-// __initterm
-
-// LIBRARY: DRAWCARDLIB 0x10010510 SYMBOL
-// _fprintf
-
-// LIBRARY: DRAWCARDLIB 0x100105E0 SYMBOL
-// _ctime
-
-// LIBRARY: DRAWCARDLIB 0x10010630 SYMBOL
-// _time
-
-// LIBRARY: DRAWCARDLIB 0x100107C0 SYMBOL
-// __vsnprintf
-
-// LIBRARY: DRAWCARDLIB 0x100108B0 SYMBOL
-// __CRT_INIT@12
 
 // FUNCTION: DRAWCARDLIB 0x10010AA0
 int entry(undefined4 dll,int reason,undefined4 reserved)
@@ -6960,492 +6489,6 @@ int entry(undefined4 dll,int reason,undefined4 reserved)
   }
   return FUN_1000bd90(dll,reason,reserved);
 }
-
-// LIBRARY: DRAWCARDLIB 0x10010BE0 SYMBOL
-// __amsg_exit
-
-// LIBRARY: DRAWCARDLIB 0x10010C40 SYMBOL
-// __callnewh
-
-// LIBRARY: DRAWCARDLIB 0x10010CA0 SYMBOL
-// __mtinitlocks
-
-// LIBRARY: DRAWCARDLIB 0x10010CE0 SYMBOL
-// __mtdeletelocks
-
-// LIBRARY: DRAWCARDLIB 0x10010DA0 SYMBOL
-// __lock
-
-// LIBRARY: DRAWCARDLIB 0x10010E50 SYMBOL
-// FUN_10010e50
-
-// LIBRARY: DRAWCARDLIB 0x10010E70 SYMBOL
-// __lock_file
-
-// LIBRARY: DRAWCARDLIB 0x10010ED0 SYMBOL
-// FID_conflict:__lock_file2
-
-// LIBRARY: DRAWCARDLIB 0x10010F10 SYMBOL
-// __unlock_file
-
-// LIBRARY: DRAWCARDLIB 0x10010F70 SYMBOL
-// FID_conflict:__lock_file2
-
-// LIBRARY: DRAWCARDLIB 0x10010FB0 SYMBOL
-// __malloc_base
-
-// LIBRARY: DRAWCARDLIB 0x10010FE0 SYMBOL
-// __nh_malloc_base
-
-// LIBRARY: DRAWCARDLIB 0x10011080 SYMBOL
-// __heap_alloc_base
-
-// LIBRARY: DRAWCARDLIB 0x10011100 SYMBOL
-// __CrtDbgBreak
-
-// LIBRARY: DRAWCARDLIB 0x10011120 SYMBOL
-// __CrtDbgReport
-
-// LIBRARY: DRAWCARDLIB 0x10011510 SYMBOL
-// _CrtMessageWindow
-
-// LIBRARY: DRAWCARDLIB 0x10011840 SYMBOL
-// FUN_10011840
-
-// LIBRARY: DRAWCARDLIB 0x10011860 SYMBOL
-// __expand_base
-
-// LIBRARY: DRAWCARDLIB 0x10011950 SYMBOL
-// __realloc_base
-
-// LIBRARY: DRAWCARDLIB 0x10011B80 SYMBOL
-// __free_base
-
-// LIBRARY: DRAWCARDLIB 0x10011C10 SYMBOL
-// __heapchk
-
-// LIBRARY: DRAWCARDLIB 0x10011CB0 SYMBOL
-// __heap_init
-
-// LIBRARY: DRAWCARDLIB 0x10011D10 SYMBOL
-// __heap_term
-
-// LIBRARY: DRAWCARDLIB 0x10011D70 SYMBOL
-// ___sbh_new_region
-
-// LIBRARY: DRAWCARDLIB 0x10011F80 SYMBOL
-// ___sbh_release_region
-
-// LIBRARY: DRAWCARDLIB 0x10012010 SYMBOL
-// ___sbh_decommit_pages
-
-// LIBRARY: DRAWCARDLIB 0x10012190 SYMBOL
-// ___sbh_find_block
-
-// LIBRARY: DRAWCARDLIB 0x10012240 SYMBOL
-// ___sbh_free_block
-
-// LIBRARY: DRAWCARDLIB 0x100122D0 SYMBOL
-// ___sbh_alloc_block
-
-// LIBRARY: DRAWCARDLIB 0x100127A0 SYMBOL
-// ___sbh_alloc_block_from_page
-
-// LIBRARY: DRAWCARDLIB 0x10012AA0 SYMBOL
-// ___sbh_resize_block
-
-// LIBRARY: DRAWCARDLIB 0x10012C60 SYMBOL
-// ___sbh_heap_check
-
-// LIBRARY: DRAWCARDLIB 0x10012ED0 SYMBOL
-// __isctype
-
-// LIBRARY: DRAWCARDLIB 0x10012F90 SYMBOL
-// __freebuf
-
-// LIBRARY: DRAWCARDLIB 0x10013020 SYMBOL
-// __fflush_lk
-
-// LIBRARY: DRAWCARDLIB 0x10013090 SYMBOL
-// __flush
-
-// LIBRARY: DRAWCARDLIB 0x10013150 SYMBOL
-// __flushall
-
-// LIBRARY: DRAWCARDLIB 0x10013170 SYMBOL
-// flsall
-
-// LIBRARY: DRAWCARDLIB 0x100132D0 SYMBOL
-// __filbuf
-
-// LIBRARY: DRAWCARDLIB 0x100134C0 SYMBOL
-// __openfile
-
-// LIBRARY: DRAWCARDLIB 0x10013880 SYMBOL
-// __getstream
-
-// LIBRARY: DRAWCARDLIB 0x10013A20 SYMBOL
-// __input
-
-// LIBRARY: DRAWCARDLIB 0x10014DD0 SYMBOL
-// __hextodec
-
-// LIBRARY: DRAWCARDLIB 0x10014E40 SYMBOL
-// __inc
-
-// LIBRARY: DRAWCARDLIB 0x10014E90 SYMBOL
-// __un_inc
-
-// LIBRARY: DRAWCARDLIB 0x10014EC0 SYMBOL
-// __whiteout
-
-// LIBRARY: DRAWCARDLIB 0x10014F50 SYMBOL
-// __lseek
-
-// LIBRARY: DRAWCARDLIB 0x10015000 SYMBOL
-// __lseek_lk
-
-// LIBRARY: DRAWCARDLIB 0x100150F0 SYMBOL
-// __ftell_lk
-
-// LIBRARY: DRAWCARDLIB 0x100153B0 SYMBOL
-// __dosmaperr
-
-// LIBRARY: DRAWCARDLIB 0x10015490 SYMBOL
-// FUN_10015490
-
-// LIBRARY: DRAWCARDLIB 0x100154B0 SYMBOL
-// FUN_100154b0
-
-// LIBRARY: DRAWCARDLIB 0x100154D0 SYMBOL
-// __flsbuf
-
-// LIBRARY: DRAWCARDLIB 0x10015770 SYMBOL
-// __write
-
-// LIBRARY: DRAWCARDLIB 0x10015820 SYMBOL
-// __write_lk
-
-// LIBRARY: DRAWCARDLIB 0x10015B20 SYMBOL
-// __output
-
-// LIBRARY: DRAWCARDLIB 0x100168B0 SYMBOL
-// write_char
-
-// LIBRARY: DRAWCARDLIB 0x10016930 SYMBOL
-// write_multi_char
-
-// LIBRARY: DRAWCARDLIB 0x10016980 SYMBOL
-// write_string
-
-// LIBRARY: DRAWCARDLIB 0x100169E0 SYMBOL
-// get_int_arg
-
-// LIBRARY: DRAWCARDLIB 0x10016A00 SYMBOL
-// get_int64_arg
-
-// LIBRARY: DRAWCARDLIB 0x10016A30 SYMBOL
-// get_short_arg
-
-// LIBRARY: DRAWCARDLIB 0x10016A50 SYMBOL
-// __mbsnbcpy
-
-// LIBRARY: DRAWCARDLIB 0x10016B80 SYMBOL
-// __setmbcp
-
-// LIBRARY: DRAWCARDLIB 0x10016F00 SYMBOL
-// getSystemCP
-
-// LIBRARY: DRAWCARDLIB 0x10016F90 SYMBOL
-// _CPtoLCID
-
-// LIBRARY: DRAWCARDLIB 0x10017030 SYMBOL
-// setSBCS
-
-// LIBRARY: DRAWCARDLIB 0x100170B0 SYMBOL
-// ___initmbctable
-
-// LIBRARY: DRAWCARDLIB 0x100170D0 SYMBOL
-// __alloc_osfhnd
-
-// LIBRARY: DRAWCARDLIB 0x100172C0 SYMBOL
-// __set_osfhnd
-
-// LIBRARY: DRAWCARDLIB 0x100173D0 SYMBOL
-// __free_osfhnd
-
-// LIBRARY: DRAWCARDLIB 0x10017500 SYMBOL
-// __get_osfhandle
-
-// LIBRARY: DRAWCARDLIB 0x100175A0 SYMBOL
-// __lock_fhandle
-
-// LIBRARY: DRAWCARDLIB 0x10017640 SYMBOL
-// __unlock_fhandle
-
-// LIBRARY: DRAWCARDLIB 0x10017680 SYMBOL
-// __ioinit
-
-// LIBRARY: DRAWCARDLIB 0x100179D0 SYMBOL
-// __ioterm
-
-// LIBRARY: DRAWCARDLIB 0x10017A90 SYMBOL
-// __chsize_lk
-
-// LIBRARY: DRAWCARDLIB 0x10017D20 SYMBOL
-// __stbuf
-
-// LIBRARY: DRAWCARDLIB 0x10017E70 SYMBOL
-// __ftbuf
-
-// LIBRARY: DRAWCARDLIB 0x10017F10 SYMBOL
-// _asctime
-
-// LIBRARY: DRAWCARDLIB 0x100180C0 SYMBOL
-// store_dt
-
-// LIBRARY: DRAWCARDLIB 0x10018100 SYMBOL
-// _localtime
-
-// LIBRARY: DRAWCARDLIB 0x10018360 SYMBOL
-// ___loctotime_t
-
-// LIBRARY: DRAWCARDLIB 0x10018480 SYMBOL
-// __mtinit
-
-// LIBRARY: DRAWCARDLIB 0x10018520 SYMBOL
-// __mtterm
-
-// LIBRARY: DRAWCARDLIB 0x10018560 SYMBOL
-// __initptd
-
-// LIBRARY: DRAWCARDLIB 0x10018580 SYMBOL
-// __getptd
-
-// LIBRARY: DRAWCARDLIB 0x10018630 SYMBOL
-// __freeptd
-
-// LIBRARY: DRAWCARDLIB 0x10018740 SYMBOL
-// __setenvp
-
-// LIBRARY: DRAWCARDLIB 0x10018880 SYMBOL
-// __setargv
-
-// LIBRARY: DRAWCARDLIB 0x10018950 SYMBOL
-// parse_cmdline
-
-// LIBRARY: DRAWCARDLIB 0x10018D10 SYMBOL
-// ___crtGetEnvironmentStringsA
-
-// LIBRARY: DRAWCARDLIB 0x10018F70 SYMBOL
-// ___set_app_type
-
-// LIBRARY: DRAWCARDLIB 0x10018F90 SYMBOL
-// __FF_MSGBANNER
-
-// LIBRARY: DRAWCARDLIB 0x10018FF0 SYMBOL
-// __NMSG_WRITE
-
-// LIBRARY: DRAWCARDLIB 0x10019210 SYMBOL
-// ___initstdio
-
-// LIBRARY: DRAWCARDLIB 0x10019370 SYMBOL
-// ___endstdio
-
-// LIBRARY: DRAWCARDLIB 0x100193A0 SYMBOL
-// __itoa
-
-// LIBRARY: DRAWCARDLIB 0x10019400 SYMBOL
-// xtoa
-
-// LIBRARY: DRAWCARDLIB 0x100194C0 SYMBOL
-// __snprintf
-
-// LIBRARY: DRAWCARDLIB 0x100195B0 SYMBOL
-// _raise
-
-// LIBRARY: DRAWCARDLIB 0x10019840 SYMBOL
-// siglookup
-
-// LIBRARY: DRAWCARDLIB 0x100198B0 SYMBOL
-// ___crtMessageBoxA
-
-// LIBRARY: DRAWCARDLIB 0x10019990 SYMBOL
-// ___crtGetStringTypeW
-
-// LIBRARY: DRAWCARDLIB 0x10019BF0 SYMBOL
-// ___crtGetStringTypeA
-
-// LIBRARY: DRAWCARDLIB 0x10019D90 SYMBOL
-// __commit
-
-// LIBRARY: DRAWCARDLIB 0x10019EB0 SYMBOL
-// __getbuf
-
-// LIBRARY: DRAWCARDLIB 0x10019F70 SYMBOL
-// _mbtowc
-
-// LIBRARY: DRAWCARDLIB 0x10019FF0 SYMBOL
-// __mbtowc_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001A1A0 SYMBOL
-// _isspace
-
-// LIBRARY: DRAWCARDLIB 0x1001A1F0 SYMBOL
-// __ungetc_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001A320 SYMBOL
-// __isatty
-
-// LIBRARY: DRAWCARDLIB 0x1001A370 SYMBOL
-// _wctomb
-
-// LIBRARY: DRAWCARDLIB 0x1001A3F0 SYMBOL
-// __wctomb_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001A4D0 SYMBOL
-// __aulldiv
-
-// LIBRARY: DRAWCARDLIB 0x1001A540 SYMBOL
-// __aullrem
-
-// LIBRARY: DRAWCARDLIB 0x1001A5C0 SYMBOL
-// __setmode_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001A6E0 SYMBOL
-// ___tzset
-
-// LIBRARY: DRAWCARDLIB 0x1001A730 SYMBOL
-// __tzset_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001AAC0 SYMBOL
-// __isindst
-
-// LIBRARY: DRAWCARDLIB 0x1001AB00 SYMBOL
-// __isindst_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001AE70 SYMBOL
-// cvtdate
-
-// LIBRARY: DRAWCARDLIB 0x1001B080 SYMBOL
-// _gmtime
-
-// LIBRARY: DRAWCARDLIB 0x1001B2B0 SYMBOL
-// _wcslen
-
-// LIBRARY: DRAWCARDLIB 0x1001B300 SYMBOL
-// __fcloseall
-
-// LIBRARY: DRAWCARDLIB 0x1001B3F0 SYMBOL
-// FID_conflict:_memcpy
-
-// LIBRARY: DRAWCARDLIB 0x1001B540 SYMBOL
-// __fptrap
-
-// LIBRARY: DRAWCARDLIB 0x1001B560 SYMBOL
-// FUN_1001b560
-
-// LIBRARY: DRAWCARDLIB 0x1001B580 SYMBOL
-// _wcstombs
-
-// LIBRARY: DRAWCARDLIB 0x1001B600 SYMBOL
-// __wcstombs_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001B980 SYMBOL
-// wcsncnt
-
-// LIBRARY: DRAWCARDLIB 0x1001B9F0 SYMBOL
-// __getenv_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001BAE0 SYMBOL
-// ___init_time
-
-// LIBRARY: DRAWCARDLIB 0x1001BBE0 SYMBOL
-// __get_lc_time
-
-// LIBRARY: DRAWCARDLIB 0x1001C090 SYMBOL
-// __free_lc_time
-
-// LIBRARY: DRAWCARDLIB 0x1001C3B0 SYMBOL
-// storeTimeFmt
-
-// LIBRARY: DRAWCARDLIB 0x1001C540 SYMBOL
-// ___init_numeric
-
-// LIBRARY: DRAWCARDLIB 0x1001C800 SYMBOL
-// fix_grouping
-
-// LIBRARY: DRAWCARDLIB 0x1001C890 SYMBOL
-// ___init_monetary
-
-// LIBRARY: DRAWCARDLIB 0x1001C9D0 SYMBOL
-// __get_lc_lconv
-
-// LIBRARY: DRAWCARDLIB 0x1001CBB0 SYMBOL
-// fix_grouping
-
-// LIBRARY: DRAWCARDLIB 0x1001CC40 SYMBOL
-// __free_lc_lconv
-
-// LIBRARY: DRAWCARDLIB 0x1001CCF0 SYMBOL
-// ___init_ctype
-
-// LIBRARY: DRAWCARDLIB 0x1001D0F0 SYMBOL
-// FUN_1001d0f0
-
-// LIBRARY: DRAWCARDLIB 0x1001D110 SYMBOL
-// _strpbrk
-
-// LIBRARY: DRAWCARDLIB 0x1001D150 SYMBOL
-// __mbsnbicoll
-
-// LIBRARY: DRAWCARDLIB 0x1001D1C0 SYMBOL
-// ___wtomb_environ
-
-// LIBRARY: DRAWCARDLIB 0x1001D290 SYMBOL
-// ___getlocaleinfo
-
-// LIBRARY: DRAWCARDLIB 0x1001D560 SYMBOL
-// ___crtGetLocaleInfoW
-
-// LIBRARY: DRAWCARDLIB 0x1001D720 SYMBOL
-// ___crtGetLocaleInfoA
-
-// LIBRARY: DRAWCARDLIB 0x1001D8F0 SYMBOL
-// __strcmpi
-
-// LIBRARY: DRAWCARDLIB 0x1001D9C0 SYMBOL
-// ___crtCompareStringA
-
-// LIBRARY: DRAWCARDLIB 0x1001DE20 SYMBOL
-// _strncnt
-
-// LIBRARY: DRAWCARDLIB 0x1001DE90 SYMBOL
-// ___crtsetenv
-
-// LIBRARY: DRAWCARDLIB 0x1001E200 SYMBOL
-// findenv
-
-// LIBRARY: DRAWCARDLIB 0x1001E2A0 SYMBOL
-// copy_environ
-
-// LIBRARY: DRAWCARDLIB 0x1001E3A0 SYMBOL
-// __tolower_lk
-
-// LIBRARY: DRAWCARDLIB 0x1001E4E0 SYMBOL
-// __mbschr
-
-// LIBRARY: DRAWCARDLIB 0x1001E5F0 SYMBOL
-// ___crtLCMapStringA
-
-// LIBRARY: DRAWCARDLIB 0x1001E910 SYMBOL
-// _strncnt
-
-// LIBRARY: DRAWCARDLIB 0x1001E980 SYMBOL
-// __strlwr
-
-// LIBRARY: DRAWCARDLIB 0x1001EB80 SYMBOL
-// __strnicmp
 
 // FUNCTION: DRAWCARDLIB 0x10155000
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -7517,11 +6560,11 @@ void __fastcall FUN_10155000(undefined4 param_1,undefined4 param_2,ushort *param
     puVar3 = DAT_100f3394;
   }
   DAT_100f3394 = puVar3 + 1;
-  DAT_10026548 = (uint)*puVar3;
+  gImageWidth = (uint)*puVar3;
   if (PTR_DAT_1002252c <= DAT_100f3394) {
     (*DAT_100f35a0)(param_2,param_1,unaff_EBX);
   }
-  DAT_1002654c = (uint)*DAT_100f3394;
+  gImageHeight = (uint)*DAT_100f3394;
   DAT_100f3394 = DAT_100f3394 + 1;
   FUN_10155245();
   return;
@@ -7542,7 +6585,7 @@ void __fastcall FUN_10155245(undefined4 param_1,undefined4 param_2)
   int iVar3;
   int iVar4;
   
-  if (DAT_10026548 == 0 && DAT_1002654c == 0) {
+  if (gImageWidth == 0 && gImageHeight == 0) {
     return;
   }
   DAT_1002655c = 0;

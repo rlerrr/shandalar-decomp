@@ -16,6 +16,10 @@ if (TARGET cardartlib)
 endif()
 
 if (MSVC)
+  # Force CardArtLib to build with debug-style settings.
+  target_compile_options(drawcardlib PRIVATE /Od /Zi)
+  target_compile_definitions(drawcardlib PRIVATE _DEBUG DEBUG)
+
   set_property(TARGET drawcardlib PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/Drawcardlib.def\"")
   set_property(TARGET drawcardlib APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Drawcardlib.def")
 endif()
