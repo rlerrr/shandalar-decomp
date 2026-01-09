@@ -25,9 +25,9 @@ typedef struct Catalog {
 } Catalog;
 
 typedef BOOL (WINAPI code)(HINSTANCE, DWORD, LPVOID);
-void FUN_1000b7a0(void);
+void MSVC_StackProbe(void);
 
-void __cdecl FUN_1000a210(void *ptr)
+void __cdecl FreeIfNotNull(void *ptr)
 {
   if (ptr != (void *)0x0) {
     free(ptr);
@@ -44,36 +44,44 @@ extern undefined1 DAT_100ecb10[0x800];
 extern undefined1 DAT_10115cf0[0x800];
 extern undefined1 DAT_101164f0[0x800];
 
-void __cdecl FUN_10005cb4(undefined4 *param_1,int param_2);
-uint * __cdecl FUN_10009490(uint *param_1,uint *param_2);
-uint * __cdecl FUN_100094a0(uint *param_1,uint *param_2);
-undefined4 * __cdecl FUN_10007bdb(undefined4 param_1,int param_2,int param_3);
-undefined4 __cdecl FUN_10007cff(void *param_1);
-uint * __cdecl FUN_1000807f(uint *param_1,int *param_2,int param_3,int param_4);
-int * __cdecl FUN_100068f0(int param_1,uint *param_2,int param_3);
-undefined8 * __cdecl FUN_10006be3(int *param_1,undefined8 *param_2);
-void FUN_10006809(void);
+void __cdecl RotateDwordsLeft1(undefined4 *param_1,int param_2);
+char * __cdecl StrCopy(char *dst,const char *src);
+char * __cdecl StrCat(char *dst,const char *src);
+BITMAPINFO * __cdecl AllocBitmapInfoTopDown(int width,int height,int bits_per_pixel);
+bool __cdecl FreeBitmapInfo(void *ptr);
+uint * __cdecl Wvl_DecodeToBgr24(uint *param_1,int *param_2,int param_3,int param_4);
+int * __cdecl Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3);
+undefined8 * __cdecl Wvl_DecodeHaar(int *param_1,undefined8 *param_2);
+void DestroyPaletteOctree(void);
+int __cdecl Huffman8_DecodeBytes(undefined1 *out_bytes,undefined4 bitstream_start,undefined4 bitstream_end);
+undefined4 __cdecl Huffman8_BuildDecodeTable(int node_count);
+int __cdecl Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,undefined4 bitstream_end);
+int __cdecl Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4 node_index_base);
+undefined4 __cdecl Huffman13_BuildDecodeTable(int node_count);
+int __cdecl Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,undefined4 bitstream_end);
+undefined4 __cdecl Wvl_UnpackPieces(int param_1,int *param_2);
 void ShutdownCardArtGdiResources(void);
 void __cdecl checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2);
 void DestroyCardArtPalette(void);
 void CardArtLib_Shutdown(void);
 void __cdecl InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height);
-undefined * __cdecl FUN_100045fe(int param_1,int param_2);
-void __cdecl FUN_1000485a(int id,int version);
-void FUN_100049e4(void);
+undefined * __cdecl FindVersionedSmallArtCacheEntry(int id,int version);
+void __cdecl DestroyVersionedSmallArt(int id,int version);
+void DestroyAllVersionedSmallArts(void);
 undefined2 * __cdecl TENTATIVE_read_palette(char *param_1,char *param_2);
-void __cdecl FUN_10007035(undefined8 *param_1,undefined8 *param_2,int param_3,int param_4,int param_5,int param_6,
+void __cdecl CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,int dst_x,int dst_y,
+                                           int rect_width,int rect_height,int dst_stride_pixels);
+void __cdecl CopyBytes(void *dst,const void *src,size_t size);
+void __cdecl SetBytes(void *dst,uint value,size_t size);
+void __cdecl Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size);
+void __cdecl Haar_CombineSumDiff(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,
                           int param_7);
-void __cdecl FUN_10007238(undefined8 *param_1,undefined8 *param_2,uint param_3);
-void __cdecl FUN_10007273(undefined8 *param_1,uint param_2,uint param_3);
-void __cdecl FUN_100072dc(int *param_1,int param_2,int param_3);
-void __cdecl FUN_10007419(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,
-                          int param_7);
-void __cdecl FUN_100074ee(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,
-                          int param_7);
+void __cdecl Haar_CombineSumDiffHalf(int *param_1,int *param_2,int *param_3,int param_4,int param_5,
+                                    undefined4 param_6,int param_7);
 undefined1 * __cdecl
-FUN_100075ef(undefined1 *param_1,int *param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-             undefined4 param_8,int param_9);
+YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int height,int chroma_u,int chroma_v,
+                 int chroma_stride,undefined4 unused_chroma_height,int chroma_is_420);
+
 
 // GLOBAL: CARDARTLIB 0x1001D05C
 char s__assertFile_txt_1001d05c[] = "\\assertFile.txt";
@@ -247,7 +255,7 @@ char s_D__Newmagic_sources_NedCard_Pale_1001e0b4[] = "D:\\Newmagic\\sources\\Ned
 undefined4 DAT_1001e0e0 = 0x00000004;
 
 // GLOBAL: CARDARTLIB 0x1001E118
-unsigned char * PTR_DAT_1001e118 = DAT_100326d8 + 0x400;
+unsigned char * g_waveletScaleToByteTable = DAT_100326d8 + 0x400;
 
 // GLOBAL: CARDARTLIB 0x1001E11C
 undefined4 DAT_1001e11c = 0x00000001;
@@ -256,10 +264,10 @@ undefined4 DAT_1001e11c = 0x00000001;
 undefined4 DAT_1001e120 = 0x00000002;
 
 // GLOBAL: CARDARTLIB 0x1001E124
-undefined4 DAT_1001e124 = 0x00000000;
+undefined4 g_haarScratchInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001E128
-undefined1 * PTR_DAT_1001e128 = DAT_100eaf00 + 0x400;
+undefined1 * g_yuvClampTable = DAT_100eaf00 + 0x400;
 
 // GLOBAL: CARDARTLIB 0x1001E12C
 char s_SmallArt_cat_1001e12c[] = "SmallArt.cat";
@@ -352,7 +360,7 @@ undefined1 DAT_10031aa1 = 0x00;
 undefined1 DAT_10031ca0[0x400];
 
 // GLOBAL: CARDARTLIB 0x10031EA4
-undefined4 DAT_10031ea4 = 0x00000000;
+undefined4 g_paletteOctreeRoot = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10031EA8
 undefined4 DAT_10031ea8 = 0x00000000;
@@ -367,7 +375,7 @@ undefined1 DAT_10031eb1 = 0x00;
 undefined4 _DAT_10031eb8 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10031EC0
-undefined1 DAT_10031ec0[0x400];
+undefined1 g_paletteRgbTable[0x400];
 
 // GLOBAL: CARDARTLIB 0x100322C0
 undefined1 DAT_100322c0 = 0x00;
@@ -394,7 +402,7 @@ undefined1 DAT_100322d9 = 0x00;
 undefined4 DAT_10032adc = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10032AE0
-undefined4 DAT_10032ae0 = 0x00000000;
+undefined4 g_waveletScaleToByteTableInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10032AE8
 int DAT_10032ae8[0x80];
@@ -433,13 +441,13 @@ unsigned char DAT_100ad498[0x200];
 undefined4 DAT_100ea098 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100EA09C
-undefined4 DAT_100ea09c = 0x00000000;
+undefined4 g_yuvClampTableInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100EA31C
-int *DAT_100ea31c = (int *)0x0;
+int *g_haarScratchB = (int *)0x0;
 
 // GLOBAL: CARDARTLIB 0x100EA320
-int *DAT_100ea320 = (int *)0x0;
+int *g_haarScratchA = (int *)0x0;
 
 // GLOBAL: CARDARTLIB 0x100EAB00
 undefined1 DAT_100eab00 = 0x00;
@@ -502,7 +510,7 @@ char DAT_10117800[0x105];
 char DAT_10117910[0x105];
 
 // GLOBAL: CARDARTLIB 0x10121FE0
-undefined4 DAT_10121fe0 = 0x00000000;
+undefined4 g_versionedSmallArtCount = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10121FE4
 undefined4 _DAT_10121fe4 = 0x00000000;
@@ -535,12 +543,12 @@ unsigned char DAT_10117a40[2000 * 0x10];
 #define DAT_10117a4c DAT_10117a40[0xc]
 
 // GLOBAL: CARDARTLIB 0x1011F740
-unsigned char DAT_1011f740[100 * 0x18];
-#define DAT_1011f744 DAT_1011f740[4]
-#define DAT_1011f748 DAT_1011f740[8]
-#define DAT_1011f74c DAT_1011f740[0xc]
-#define DAT_1011f750 DAT_1011f740[0x10]
-#define DAT_1011f754 DAT_1011f740[0x14]
+unsigned char g_versionedSmallArtCache[100 * 0x18];
+#define DAT_1011f744 g_versionedSmallArtCache[4]
+#define DAT_1011f748 g_versionedSmallArtCache[8]
+#define DAT_1011f74c g_versionedSmallArtCache[0xc]
+#define DAT_1011f750 g_versionedSmallArtCache[0x10]
+#define DAT_1011f754 g_versionedSmallArtCache[0x14]
 
 // GLOBAL: CARDARTLIB 0x10121FF0
 unsigned char DAT_10121ff0[0x14 * 0x18];
@@ -562,8 +570,8 @@ void __cdecl assert(int condition,char *file,int line,char *fmt,...)
   va_list args;
 
   if (condition == 0) {
-    FUN_10009490(local_114,(uint *)&DAT_10117800);
-    FUN_100094a0(local_114,(uint *)s__assertFile_txt_1001d05c);
+    StrCopy(local_114,DAT_10117800);
+    StrCat(local_114,s__assertFile_txt_1001d05c);
     logFile = fopen(local_114,DAT_1001d06c);
 
     va_start(args,fmt);
@@ -586,7 +594,7 @@ void __cdecl assert(int condition,char *file,int line,char *fmt,...)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001116
-void __cdecl FUN_10001116(int condition,char *file,int line,char *fmt,...)
+void __cdecl assert_noabort(int condition,char *file,int line,char *fmt,...)
 {
   char local_114 [260];
   time_t now;
@@ -594,8 +602,8 @@ void __cdecl FUN_10001116(int condition,char *file,int line,char *fmt,...)
   va_list args;
 
   if (condition == 0) {
-    FUN_10009490(local_114,(uint *)&DAT_10117800);
-    FUN_100094a0(local_114,(uint *)s__assertFile_txt_1001d0a0);
+    StrCopy(local_114,DAT_10117800);
+    StrCat(local_114,s__assertFile_txt_1001d0a0);
     logFile = fopen(local_114,DAT_1001d0b0);
 
     va_start(args,fmt);
@@ -803,10 +811,10 @@ static BOOL SetupDuelPalette(void)
   PALETTEENTRY local_404 [256];
   
   local_51c = 1;
-  FUN_10009490(local_624,(uint *)&DAT_10117800);
-  FUN_100094a0(local_624,(uint *)s__DUELPALall_TR_1001d0e8);
-  FUN_10009490(local_510,(uint *)&DAT_10117800);
-  FUN_100094a0(local_510,(uint *)s__DUEL_plogpal_1001d0f8);
+  StrCopy((char *)local_624,DAT_10117800);
+  StrCat((char *)local_624,s__DUELPALall_TR_1001d0e8);
+  StrCopy((char *)local_510,DAT_10117800);
+  StrCat((char *)local_510,s__DUEL_plogpal_1001d0f8);
   local_408 = (LOGPALETTE *)TENTATIVE_read_palette((char *)local_624,(char *)local_510);
   if (local_408 != (LOGPALETTE *)0x0) {
     for (local_514 = 1; (int)local_514 < 0xff; local_514 = local_514 + 1) {
@@ -862,7 +870,7 @@ void DestroyCardArtPalette(void)
 {
   DeleteObject(DAT_100209e0);
   DAT_100209e0 = (HGDIOBJ)0x0;
-  FUN_10006809();
+  DestroyPaletteOctree();
 }
 
 // FUNCTION: CARDARTLIB 0x100019D0
@@ -885,7 +893,7 @@ LAB_10001a24:
              s_Too_many_open_Catalogs__Max__d_1001d10c,5);
       catalog = &DAT_10117290[slot_index];
       catalog->cached_entry = (CatalogEntry *)0x0;
-      FUN_10009490((uint *)catalog->path,(uint *)catalog_path);
+      StrCopy(catalog->path,catalog_path);
       catalog_file = fopen(catalog_path,&DAT_1001d154);
       catalog->file = catalog_file;
       if (catalog_file == (FILE *)0x0) {
@@ -938,7 +946,7 @@ bool Catalog_Close(int handle)
   catalog = &DAT_10117290[slot_index];
   catalog_file = catalog->file;
   if (catalog_file != 0) {
-    FUN_1000a210(catalog->entries);
+    FreeIfNotNull(catalog->entries);
     fclose(catalog_file);
     catalog->entries = (CatalogEntry *)0x0;
     catalog->file = (FILE *)0x0;
@@ -1018,7 +1026,7 @@ uint Catalog_MakeKeyFromPath(const char *path)
   local_8 = 0;
   _splitpath(path,(char *)local_134,local_124,(char *)&local_1c,(char *)local_134);
   path = (char *)&local_1c;
-  FUN_100094a0(&local_1c,local_134);
+  StrCat((char *)&local_1c,(char *)local_134);
   while( true ) {
     iVar1 = (int)*path;
     path = path + 1;
@@ -1068,7 +1076,7 @@ void MemZeroDwords(undefined8 *param_1,uint param_2)
 // FUNCTION: CARDARTLIB 0x10001F98
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl FUN_10001f98(undefined1 *param_1,undefined4 param_2,undefined4 param_3)
+int __cdecl Huffman8_DecodeBytes(undefined1 *out_bytes,undefined4 bitstream_start,undefined4 bitstream_end)
 
 {
   undefined1 *puVar1;
@@ -1080,10 +1088,10 @@ int __cdecl FUN_10001f98(undefined1 *param_1,undefined4 param_2,undefined4 param
   uint local_c;
   int local_8;
   
-  puVar1 = param_1;
-  DAT_10021a88 = (uint *)param_2;
-  _DAT_10021a8c = (int)param_2;
-  DAT_10021a90 = (int)param_3;
+  puVar1 = out_bytes;
+  DAT_10021a88 = (uint *)bitstream_start;
+  _DAT_10021a8c = (int)bitstream_start;
+  DAT_10021a90 = (int)bitstream_end;
   DAT_1001d1dc = 0;
   uVar2 = BitStream_ReadBits(8);
   for (local_18 = 0; local_18 < (int)uVar2; local_18 = local_18 + 1) {
@@ -1092,17 +1100,17 @@ int __cdecl FUN_10001f98(undefined1 *param_1,undefined4 param_2,undefined4 param
     uVar3 = BitStream_ReadBits(9);
     *(uint *)(&DAT_10021aa4 + local_18 * 8) = uVar3;
   }
-  FUN_10002154(uVar2);
+  Huffman8_BuildDecodeTable(uVar2);
   local_c = BitStream_ReadBits(8);
   do {
     while( true ) {
       if (local_c == 0xffffffff) {
-        return (int)param_1 - (int)puVar1;
+        return (int)out_bytes - (int)puVar1;
       }
       if (*(int *)(&DAT_10020e88 + local_c * 0xc) < 0) break;
       uVar2 = *(uint *)(&DAT_10020e8c + local_c * 0xc);
-      *param_1 = (&DAT_10020e88)[local_c * 0xc];
-      param_1 = param_1 + 1;
+      *out_bytes = (&DAT_10020e88)[local_c * 0xc];
+      out_bytes = out_bytes + 1;
       local_28 = (byte)uVar2;
       uVar2 = BitStream_ReadBits(uVar2);
       if (uVar2 == 0xffffffff) {
@@ -1124,15 +1132,15 @@ int __cdecl FUN_10001f98(undefined1 *param_1,undefined4 param_2,undefined4 param
       }
       local_8 = local_1c + -0x100;
     } while (-1 < local_8);
-    *param_1 = (undefined1)local_1c;
-    param_1 = param_1 + 1;
+    *out_bytes = (undefined1)local_1c;
+    out_bytes = out_bytes + 1;
 LAB_10002132:
     local_c = BitStream_ReadBits(8);
   } while( true );
 }
 
 // FUNCTION: CARDARTLIB 0x10002154
-undefined4 __cdecl FUN_10002154(int param_1)
+undefined4 __cdecl Huffman8_BuildDecodeTable(int node_count)
 
 {
   int iVar1;
@@ -1161,8 +1169,8 @@ undefined4 __cdecl FUN_10002154(int param_1)
   for (local_9c = 0; local_9c < 0x10; local_9c = local_9c + 1) {
     local_98[local_9c + 9] = 1;
   }
-  local_8 = param_1 + -1;
-  local_30[0] = param_1 + -1;
+  local_8 = node_count + -1;
+  local_30[0] = node_count + -1;
   do {
     iVar1 = local_34;
     local_34 = local_34 + 1;
@@ -1222,7 +1230,7 @@ LAB_10002405:
 // FUNCTION: CARDARTLIB 0x10002457
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl FUN_10002457(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
+int __cdecl Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,undefined4 bitstream_end)
 
 {
   undefined4 *puVar1;
@@ -1232,21 +1240,21 @@ int __cdecl FUN_10002457(undefined4 *param_1,undefined4 param_2,undefined4 param
   uint local_c;
   int local_8;
   
-  puVar1 = param_1;
-  DAT_10021a88 = param_2;
-  _DAT_10021a8c = param_2;
-  DAT_10021a90 = param_3;
+  puVar1 = out_dwords;
+  DAT_10021a88 = bitstream_start;
+  _DAT_10021a8c = bitstream_start;
+  DAT_10021a90 = bitstream_end;
   DAT_1001d1dc = 0;
   local_c = BitStream_ReadBits(8);
   do {
     while( true ) {
       if (local_c == 0xffffffff) {
-        return (int)param_1 - (int)puVar1 >> 2;
+        return (int)out_dwords - (int)puVar1 >> 2;
       }
       if (0x7ffffffe < *(int *)(&DAT_10020e88 + local_c * 0xc)) break;
       uVar2 = *(uint *)(&DAT_10020e8c + local_c * 0xc);
-      *param_1 = *(undefined4 *)(&DAT_10020e88 + local_c * 0xc);
-      param_1 = param_1 + 1;
+      *out_dwords = *(undefined4 *)(&DAT_10020e88 + local_c * 0xc);
+      out_dwords = out_dwords + 1;
       local_24 = (byte)uVar2;
       uVar2 = BitStream_ReadBits(uVar2);
       if (uVar2 == 0xffffffff) {
@@ -1268,8 +1276,8 @@ int __cdecl FUN_10002457(undefined4 *param_1,undefined4 param_2,undefined4 param
       }
       local_8 = local_14 - _DAT_10021a98;
     } while (-1 < local_8);
-    *param_1 = *(undefined4 *)(DAT_10021a9c + local_14 * 4);
-    param_1 = param_1 + 1;
+    *out_dwords = *(undefined4 *)(DAT_10021a9c + local_14 * 4);
+    out_dwords = out_dwords + 1;
 LAB_100025a6:
     local_c = BitStream_ReadBits(8);
   } while( true );
@@ -1278,7 +1286,7 @@ LAB_100025a6:
 // FUNCTION: CARDARTLIB 0x100025CB
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl FUN_100025cb(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+int __cdecl Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4 node_index_base)
 
 {
   uint uVar1;
@@ -1289,8 +1297,8 @@ int __cdecl FUN_100025cb(undefined4 param_1,undefined4 param_2,undefined4 param_
   for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
     *(uint *)(&DAT_10020e00 + local_8 * 4) = 0xffffffff >> ((byte)local_8 & 0x1f);
   }
-  DAT_10021a88 = param_1;
-  _DAT_10021a8c = param_1;
+  DAT_10021a88 = bitstream_start;
+  _DAT_10021a8c = bitstream_start;
   DAT_10021a90 = 100000;
   DAT_1001d1dc = 0;
   DAT_10020e84 = 0;
@@ -1302,16 +1310,16 @@ int __cdecl FUN_100025cb(undefined4 param_1,undefined4 param_2,undefined4 param_
     *(uint *)(&DAT_10021aa4 + local_8 * 8) = uVar1;
     local_c = local_c + 0x1a;
   }
-  _DAT_10021a98 = param_3;
-  DAT_10021a9c = param_2;
-  FUN_100026e3(DAT_10021a94);
+  _DAT_10021a98 = node_index_base;
+  DAT_10021a9c = symbol_table;
+  Huffman13_BuildDecodeTable(DAT_10021a94);
   return (uint)((local_c & 7) != 0) + ((int)(local_c + ((int)local_c >> 0x1f & 7U)) >> 3);
 }
 
 // FUNCTION: CARDARTLIB 0x100026E3
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined4 __cdecl FUN_100026e3(int param_1)
+undefined4 __cdecl Huffman13_BuildDecodeTable(int node_count)
 
 {
   int iVar1;
@@ -1341,8 +1349,8 @@ undefined4 __cdecl FUN_100026e3(int param_1)
   for (local_ec = 0; local_ec < 0x20; local_ec = local_ec + 1) {
     local_c8[local_ec + 3] = 1;
   }
-  local_8 = param_1 + -1;
-  local_38[0] = param_1 + -1;
+  local_8 = node_count + -1;
+  local_38[0] = node_count + -1;
   do {
     iVar1 = local_3c;
     local_3c = local_3c + 1;
@@ -1500,7 +1508,7 @@ int __cdecl FUN_10002bce(undefined4 *param_1,undefined4 param_2,undefined4 param
 // FUNCTION: CARDARTLIB 0x10002CDE
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl FUN_10002cde(undefined8 *param_1,uint *param_2,undefined4 param_3)
+int __cdecl Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,undefined4 bitstream_end)
 
 {
   undefined8 *puVar1;
@@ -1511,19 +1519,19 @@ int __cdecl FUN_10002cde(undefined8 *param_1,uint *param_2,undefined4 param_3)
   uint local_c;
   int local_8;
   
-  puVar1 = param_1;
-  DAT_10021a88 = param_2;
-  _DAT_10021a8c = param_2;
-  DAT_10021a90 = param_3;
-  if (((uint)param_2 & 3) == 0) {
+  puVar1 = out_dwords;
+  DAT_10021a88 = bitstream;
+  _DAT_10021a8c = bitstream;
+  DAT_10021a90 = bitstream_end;
+  if (((uint)bitstream & 3) == 0) {
     DAT_1001d1dc = 0;
     DAT_10020e84 = 0;
   }
   else {
-    iVar2 = 4 - ((uint)param_2 & 3);
+    iVar2 = 4 - ((uint)bitstream & 3);
     DAT_1001d1dc = iVar2 * 8;
-    DAT_10020e84 = 0xffffffffU >> (0x20U - (char)DAT_1001d1dc & 0x1f) & *param_2;
-    DAT_10021a88 = (uint *)((int)param_2 + iVar2);
+    DAT_10020e84 = 0xffffffffU >> (0x20U - (char)DAT_1001d1dc & 0x1f) & *bitstream;
+    DAT_10021a88 = (uint *)((int)bitstream + iVar2);
   }
   local_c = BitStream_ReadBits(8);
   while (local_c != 0xffffffff) {
@@ -1534,13 +1542,13 @@ int __cdecl FUN_10002cde(undefined8 *param_1,uint *param_2,undefined4 param_3)
         uVar3 = BitStream_ReadBits(uVar3 + 2);
         if ((int)uVar3 < 0) break;
         uVar3 = uVar3 << (8 - local_28 & 0x1f) | (int)local_c >> (local_28 & 0x1f);
-        MemZeroDwords(param_1,uVar3);
-        param_1 = (undefined8 *)((int)param_1 + uVar3 * 4);
+        MemZeroDwords(out_dwords,uVar3);
+        out_dwords = (undefined8 *)((int)out_dwords + uVar3 * 4);
         local_c = BitStream_ReadBits(8);
       }
       else {
-        *(undefined4 *)param_1 = *(undefined4 *)(&DAT_10020e88 + local_c * 0xc);
-        param_1 = (undefined8 *)((int)param_1 + 4);
+        *(undefined4 *)out_dwords = *(undefined4 *)(&DAT_10020e88 + local_c * 0xc);
+        out_dwords = (undefined8 *)((int)out_dwords + 4);
         uVar3 = BitStream_ReadBits(uVar3);
         if (uVar3 == 0xffffffff) break;
         local_c = (int)local_c >> (local_28 & 0x1f) | uVar3 << (8 - local_28 & 0x1f);
@@ -1562,19 +1570,19 @@ int __cdecl FUN_10002cde(undefined8 *param_1,uint *param_2,undefined4 param_3)
       if (local_14 == 0) {
         uVar3 = BitStream_ReadBits(10);
         if (-1 < (int)uVar3) {
-          MemZeroDwords(param_1,uVar3);
-          param_1 = (undefined8 *)((int)param_1 + uVar3 * 4);
+          MemZeroDwords(out_dwords,uVar3);
+          out_dwords = (undefined8 *)((int)out_dwords + uVar3 * 4);
         }
       }
       else {
-        *(undefined4 *)param_1 = *(undefined4 *)(DAT_10021a9c + local_14 * 4);
-        param_1 = (undefined8 *)((int)param_1 + 4);
+        *(undefined4 *)out_dwords = *(undefined4 *)(DAT_10021a9c + local_14 * 4);
+        out_dwords = (undefined8 *)((int)out_dwords + 4);
       }
 LAB_10002f46:
       local_c = BitStream_ReadBits(8);
     }
   }
-  return (int)param_1 - (int)puVar1 >> 2;
+  return (int)out_dwords - (int)puVar1 >> 2;
 }
 
 // FUNCTION: CARDARTLIB 0x10002F70
@@ -1673,7 +1681,7 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   int aiStackY_4a348 [75978];
   int iVar2;
   
-  FUN_1000b7a0();
+  MSVC_StackProbe();
   _DAT_10121fe4 = (undefined4)instance;
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_101221f0);
@@ -1681,11 +1689,11 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   GetModuleFileNameA((HMODULE)0x0,&DAT_10117800,0x105);
   pcVar1 = strrchr(&DAT_10117800,0x5c);
   *pcVar1 = '\0';
-  FUN_10009490((uint *)&DAT_10117910,(uint *)&DAT_10117800);
-  FUN_100094a0((uint *)&DAT_10117910,(uint *)s__CARDART_1001d1e0);
+  StrCopy(DAT_10117910,DAT_10117800);
+  StrCat(DAT_10117910,s__CARDART_1001d1e0);
   InitCardArtGdiResources();
-  FUN_10009490(auStackY_4a4a4,(uint *)&DAT_10117800);
-  FUN_100094a0(auStackY_4a4a4,(uint *)s__CARDS_DAT_1001d1ec);
+  StrCopy((char *)auStackY_4a4a4,DAT_10117800);
+  StrCat((char *)auStackY_4a4a4,s__CARDS_DAT_1001d1ec);
   pFStackY_4a390 = fopen((char *)auStackY_4a4a4,&DAT_1001d1f8);
   if (pFStackY_4a390 == (FILE *)0x0) {
     for (iStackY_4a394 = 0; iStackY_4a394 < (int)sStackY_4a39c; iStackY_4a394 = iStackY_4a394 + 1) {
@@ -1710,9 +1718,9 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
     *(undefined4 *)(DAT_10117a40 + iVar2 * 0x10) = 0;
   }
   for (iVar2 = 0; iVar2 < 100; iVar2 = iVar2 + 1) {
-    *(undefined4 *)(DAT_1011f740 + iVar2 * 0x18) = 0;
+    *(undefined4 *)(g_versionedSmallArtCache + iVar2 * 0x18) = 0;
   }
-  DAT_10121fe0 = 0;
+  g_versionedSmallArtCount = 0;
   for (iVar2 = 0; iVar2 < 0x14; iVar2 = iVar2 + 1) {
     *(undefined4 *)(DAT_10121ff0 + iVar2 * 0x18) = 0;
   }
@@ -1782,7 +1790,7 @@ int __cdecl LoadBigArt(int id,int version,int width,int height)
     DAT_101221e8 = iVar2 * iVar3;
     pHVar1 = GetDesktopWindow();
     ReleaseDC(pHVar1,hdc);
-    local_3c = FUN_100068f0(1,local_154,0);
+    local_3c = Catalog_LoadWvlEntry(1,local_154,0);
     if (local_3c == (int *)0x0) {
       local_40 = 0;
     }
@@ -1795,7 +1803,7 @@ int __cdecl LoadBigArt(int id,int version,int width,int height)
         local_40 = 0;
       }
       else {
-        local_34 = FUN_1000807f((uint *)0x0,local_3c,width,height);
+        local_34 = Wvl_DecodeToBgr24((uint *)0x0,local_3c,width,height);
         if (local_34 == (uint *)0x0) {
           local_40 = 0;
           DeleteObject(local_48);
@@ -1811,7 +1819,7 @@ int __cdecl LoadBigArt(int id,int version,int width,int height)
         }
       }
       ReleaseDC((HWND)0x0,local_44);
-      FUN_10006bb5();
+      Catalog_Unlock();
     }
     if (local_40 != 0) {
       if (0x13 < DAT_101177f4) {
@@ -2056,7 +2064,7 @@ int __cdecl LoadSmallArt(int id,int version,int width,int height)
     pHVar1 = GetDesktopWindow();
     ReleaseDC(pHVar1,hdc);
     sprintf((char *)local_150,s__s__04d_WVL_1001d218,&DAT_10117910,id);
-    local_3c = FUN_100068f0(0,local_150,0);
+    local_3c = Catalog_LoadWvlEntry(0,local_150,0);
     if (local_3c == (int *)0x0) {
       local_40 = 0;
     }
@@ -2069,7 +2077,7 @@ int __cdecl LoadSmallArt(int id,int version,int width,int height)
         local_40 = 0;
       }
       else {
-        local_34 = FUN_1000807f((uint *)0x0,local_3c,width,height);
+        local_34 = Wvl_DecodeToBgr24((uint *)0x0,local_3c,width,height);
         if (local_34 == (uint *)0x0) {
           local_40 = 0;
           DeleteObject(local_48);
@@ -2085,7 +2093,7 @@ int __cdecl LoadSmallArt(int id,int version,int width,int height)
         }
       }
       ReleaseDC((HWND)0x0,local_44);
-      FUN_10006bb5();
+      Catalog_Unlock();
     }
     if (local_40 != 0) {
       *(HBITMAP *)(&DAT_10117a40 + id * 0x10) = local_48;
@@ -2096,7 +2104,7 @@ int __cdecl LoadSmallArt(int id,int version,int width,int height)
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   }
   else {
-    local_40 = FUN_10004346(id,version,width,height);
+    local_40 = LoadVersionedSmallArt(id,version,width,height);
   }
   return local_40;
 }
@@ -2110,7 +2118,7 @@ int IsSmallArtIn(int id,int version)
   }
 
   if (DAT_101200a0[id] > 1) {
-    if (FUN_100045fe(id,version) != (undefined *)0x0) {
+    if (FindVersionedSmallArtCacheEntry(id,version) != (undefined *)0x0) {
       return 1;
     } else {
       return 0;
@@ -2138,7 +2146,7 @@ int DrawSmallArt(HDC hdc,RECT *rect,int id,int version)
   }
   
   if (DAT_101200a0[id] > 1) {
-    FUN_100046aa(hdc,rect,id,version);
+    DrawVersionedSmallArt(hdc,rect,id,version);
   }
   else {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
@@ -2193,7 +2201,7 @@ undefined4 __cdecl ReloadSmallArtIfWrongSize(int id,int version,int width,int he
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   }
   else {
-    local_c = FUN_100047ab(id,version,width,height);
+    local_c = ReloadVersionedSmallArtIfWrongSize(id,version,width,height);
   }
   return local_c;
 }
@@ -2213,7 +2221,7 @@ void __cdecl DestroySmallArt(int id,int version)
       LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
     }
     else {
-      FUN_1000485a(id,version);
+      DestroyVersionedSmallArt(id,version);
     }
   }
   return;
@@ -2227,7 +2235,7 @@ void DestroyAllSmallArts(void)
   
                     /* 0x42dd  2  DestroyAllSmallArts */
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
-  FUN_100049e4();
+  DestroyAllVersionedSmallArts();
   for (local_8 = 0; local_8 < 2000; local_8 = local_8 + 1) {
     if (*(int *)(&DAT_101200a0 + local_8 * 4) < 2) {
       DestroySmallArt(local_8,0);
@@ -2238,7 +2246,7 @@ void DestroyAllSmallArts(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10004346
-int __cdecl FUN_10004346(int id,int version,int width,int height)
+int __cdecl LoadVersionedSmallArt(int id,int version,int width,int height)
 
 {
   int local_158;
@@ -2258,13 +2266,13 @@ int __cdecl FUN_10004346(int id,int version,int width,int height)
   }
   else {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
-    local_8 = FUN_100045fe(id,version);
+    local_8 = FindVersionedSmallArtCacheEntry(id,version);
     if (local_8 != (undefined *)0x0) {
       if ((*(int *)(local_8 + 8) == width) && (*(int *)(local_8 + 0xc) == height)) {
         LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
         return 1;
       }
-      FUN_1000485a(id,version);
+      DestroyVersionedSmallArt(id,version);
     }
     if (version == 0) {
       sprintf((char *)local_154,s__s__04d_WVL_1001d234,&DAT_10117910,id);
@@ -2273,7 +2281,7 @@ int __cdecl FUN_10004346(int id,int version,int width,int height)
       sprintf((char *)local_154,s__s__04d_c_WVL_1001d224,&DAT_10117910,id,
                (int)(char)((char)version + '`'));
     }
-    local_40 = FUN_100068f0(0,local_154,0);
+    local_40 = Catalog_LoadWvlEntry(0,local_154,0);
     if (local_40 == (int *)0x0) {
       local_44 = 0;
     }
@@ -2286,7 +2294,7 @@ int __cdecl FUN_10004346(int id,int version,int width,int height)
         local_44 = 0;
       }
       else {
-        local_38 = FUN_1000807f((uint *)0x0,local_40,width,height);
+        local_38 = Wvl_DecodeToBgr24((uint *)0x0,local_40,width,height);
         if (local_38 == (uint *)0x0) {
           local_44 = 0;
           DeleteObject(local_4c);
@@ -2302,16 +2310,16 @@ int __cdecl FUN_10004346(int id,int version,int width,int height)
         }
       }
       ReleaseDC((HWND)0x0,local_48);
-      FUN_10006bb5();
+      Catalog_Unlock();
     }
     if (local_44 != 0) {
-      *(HBITMAP *)(&DAT_1011f740 + DAT_10121fe0 * 0x18) = local_4c;
-      *(void **)(&DAT_1011f744 + DAT_10121fe0 * 0x18) = local_3c;
-      *(int *)(&DAT_1011f748 + DAT_10121fe0 * 0x18) = width;
-      *(int *)(&DAT_1011f74c + DAT_10121fe0 * 0x18) = height;
-      *(int *)(&DAT_1011f750 + DAT_10121fe0 * 0x18) = id;
-      *(int *)(&DAT_1011f754 + DAT_10121fe0 * 0x18) = version;
-      DAT_10121fe0 = DAT_10121fe0 + 1;
+      *(HBITMAP *)(&g_versionedSmallArtCache + g_versionedSmallArtCount * 0x18) = local_4c;
+      *(void **)(&DAT_1011f744 + g_versionedSmallArtCount * 0x18) = local_3c;
+      *(int *)(&DAT_1011f748 + g_versionedSmallArtCount * 0x18) = width;
+      *(int *)(&DAT_1011f74c + g_versionedSmallArtCount * 0x18) = height;
+      *(int *)(&DAT_1011f750 + g_versionedSmallArtCount * 0x18) = id;
+      *(int *)(&DAT_1011f754 + g_versionedSmallArtCount * 0x18) = version;
+      g_versionedSmallArtCount = g_versionedSmallArtCount + 1;
     }
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   }
@@ -2319,23 +2327,23 @@ int __cdecl FUN_10004346(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x100045FE
-undefined * __cdecl FUN_100045fe(int param_1,int param_2)
+undefined * __cdecl FindVersionedSmallArtCacheEntry(int id,int version)
 
 {
   int local_c;
   undefined *local_8;
   
   local_8 = (undefined *)0x0;
-  if (param_1 == -1) {
+  if (id == -1) {
     local_8 = (undefined *)0x0;
   }
   else {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
     local_c = 0;
-    while ((local_c < DAT_10121fe0 && (local_8 == (undefined *)0x0))) {
-      if ((*(int *)(&DAT_1011f750 + local_c * 0x18) == param_1) &&
-         (*(int *)(&DAT_1011f754 + local_c * 0x18) == param_2)) {
-        local_8 = &DAT_1011f740 + local_c * 0x18;
+    while ((local_c < g_versionedSmallArtCount && (local_8 == (undefined *)0x0))) {
+      if ((*(int *)(&DAT_1011f750 + local_c * 0x18) == id) &&
+         (*(int *)(&DAT_1011f754 + local_c * 0x18) == version)) {
+        local_8 = &g_versionedSmallArtCache + local_c * 0x18;
       }
       local_c = local_c + 1;
     }
@@ -2345,7 +2353,7 @@ undefined * __cdecl FUN_100045fe(int param_1,int param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x100046AA
-int __cdecl FUN_100046aa(HDC param_1,RECT *param_2,int param_3,int param_4)
+int __cdecl DrawVersionedSmallArt(HDC hdc,RECT *rect,int id,int version)
 
 {
   bool bVar1;
@@ -2354,30 +2362,30 @@ int __cdecl FUN_100046aa(HDC param_1,RECT *param_2,int param_3,int param_4)
   int local_10;
   int local_c;
   
-  if (param_3 == -1) {
+  if (id == -1) {
     local_14 = 0;
   }
   else {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
     local_c = 0;
     bVar1 = false;
-    while ((local_c < DAT_10121fe0 && (!bVar1))) {
-      if ((*(int *)(&DAT_1011f750 + local_c * 0x18) == param_3) &&
-         (*(int *)(&DAT_1011f754 + local_c * 0x18) == param_4)) {
+    while ((local_c < g_versionedSmallArtCount && (!bVar1))) {
+      if ((*(int *)(&DAT_1011f750 + local_c * 0x18) == id) &&
+         (*(int *)(&DAT_1011f754 + local_c * 0x18) == version)) {
         bVar1 = true;
         local_10 = local_c;
       }
       local_c = local_c + 1;
     }
     if (bVar1) {
-      local_14 = DrawBitmapToRect(param_1,param_2,*(HBITMAP *)(&DAT_1011f740 + local_10 * 0x18));
+      local_14 = DrawBitmapToRect(hdc,rect,*(HBITMAP *)(&g_versionedSmallArtCache + local_10 * 0x18));
     }
     else {
       local_14 = 0;
     }
     if (local_14 == 0) {
       hbr = GetStockObject(2);
-      FillRect(param_1,param_2,hbr);
+      FillRect(hdc,rect,hbr);
     }
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   }
@@ -2385,7 +2393,7 @@ int __cdecl FUN_100046aa(HDC param_1,RECT *param_2,int param_3,int param_4)
 }
 
 // FUNCTION: CARDARTLIB 0x100047AB
-undefined4 __cdecl FUN_100047ab(int id,int version,int width,int height)
+undefined4 __cdecl ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height)
 
 {
   undefined4 uVar1;
@@ -2396,14 +2404,14 @@ undefined4 __cdecl FUN_100047ab(int id,int version,int width,int height)
     uVar1 = 0;
   }
   else {
-    puVar2 = FUN_100045fe(id,version);
+    puVar2 = FindVersionedSmallArtCacheEntry(id,version);
     if (puVar2 != (undefined *)0x0) {
       if ((*(int *)(puVar2 + 8) == width) && (*(int *)(puVar2 + 0xc) == height)) {
         return 1;
       }
-      FUN_1000485a(id,version);
+      DestroyVersionedSmallArt(id,version);
     }
-    iVar3 = FUN_10004346(id,version,width,height);
+    iVar3 = LoadVersionedSmallArt(id,version,width,height);
     if (iVar3 == 0) {
       uVar1 = 0;
     }
@@ -2415,7 +2423,7 @@ undefined4 __cdecl FUN_100047ab(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x1000485A
-void __cdecl FUN_1000485a(int id,int version)
+void __cdecl DestroyVersionedSmallArt(int id,int version)
 
 {
   bool bVar1;
@@ -2426,17 +2434,17 @@ void __cdecl FUN_1000485a(int id,int version)
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
     local_c = 0;
     bVar1 = false;
-    while ((local_c < DAT_10121fe0 && (!bVar1))) {
+    while ((local_c < g_versionedSmallArtCount && (!bVar1))) {
       if ((*(int *)(&DAT_1011f750 + local_c * 0x18) == id) &&
          (*(int *)(&DAT_1011f754 + local_c * 0x18) == version)) {
         bVar1 = true;
-        if (*(int *)(&DAT_1011f740 + local_c * 0x18) != 0) {
-          DeleteObject(*(HGDIOBJ *)(&DAT_1011f740 + local_c * 0x18));
+        if (*(int *)(&g_versionedSmallArtCache + local_c * 0x18) != 0) {
+          DeleteObject(*(HGDIOBJ *)(&g_versionedSmallArtCache + local_c * 0x18));
         }
-        DAT_10121fe0 = DAT_10121fe0 + -1;
-        for (local_10 = local_c; local_10 < DAT_10121fe0; local_10 = local_10 + 1) {
-          *(undefined4 *)(&DAT_1011f740 + local_10 * 0x18) =
-               *(undefined4 *)(&DAT_1011f740 + (local_10 * 3 + 3) * 8);
+        g_versionedSmallArtCount = g_versionedSmallArtCount + -1;
+        for (local_10 = local_c; local_10 < g_versionedSmallArtCount; local_10 = local_10 + 1) {
+          *(undefined4 *)(&g_versionedSmallArtCache + local_10 * 0x18) =
+               *(undefined4 *)(&g_versionedSmallArtCache + (local_10 * 3 + 3) * 8);
           *(undefined4 *)(&DAT_1011f744 + local_10 * 0x18) =
                *(undefined4 *)(&DAT_1011f744 + (local_10 * 3 + 3) * 8);
           *(undefined4 *)(&DAT_1011f748 + local_10 * 0x18) =
@@ -2457,23 +2465,23 @@ void __cdecl FUN_1000485a(int id,int version)
 }
 
 // FUNCTION: CARDARTLIB 0x100049E4
-void FUN_100049e4(void)
+void DestroyAllVersionedSmallArts(void)
 
 {
   int local_8;
   
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
-  for (local_8 = 0; local_8 < DAT_10121fe0; local_8 = local_8 + 1) {
-    DeleteObject(*(HGDIOBJ *)(&DAT_1011f740 + local_8 * 0x18));
+  for (local_8 = 0; local_8 < g_versionedSmallArtCount; local_8 = local_8 + 1) {
+    DeleteObject(*(HGDIOBJ *)(&g_versionedSmallArtCache + local_8 * 0x18));
   }
-  DAT_10121fe0 = 0;
+  g_versionedSmallArtCount = 0;
   LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   return;
 }
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004A50
-void * FUN_10004a50(void)
+void * OctreeNode_Create(void)
 
 {
   void *_Dst;
@@ -2506,10 +2514,10 @@ undefined2 * __cdecl TENTATIVE_read_palette(char *param_1,char *param_2)
     local_8 = (undefined2 *)0x0;
   }
   else {
-    if (DAT_10031ea4 != (int *)0x0) {
-      FUN_10004fe1(DAT_10031ea4);
+    if (g_paletteOctreeRoot != (int *)0x0) {
+      Octree_Destroy(g_paletteOctreeRoot);
     }
-    DAT_10031ea4 = FUN_10004a50();
+    g_paletteOctreeRoot = OctreeNode_Create();
     fgets(local_120,0xff,local_18);
     while ((local_18->_flag & 0x10) == 0) {
       sscanf(local_120,s__d____d__d__d_1001e068,&local_20,&local_10,&local_1c,&local_c);
@@ -2517,8 +2525,8 @@ undefined2 * __cdecl TENTATIVE_read_palette(char *param_1,char *param_2)
       local_14 = local_14 + 1;
       local_14 = strchr(local_14,0x2d);
       local_14 = local_14 + 1;
-      FUN_10004f07(DAT_10031ea4,local_14,local_20);
-      *(uint *)(DAT_10031ec0 + local_20 * 4) = local_10 << 0x10 | local_1c << 8 | local_c;
+      Octree_InsertPathString(g_paletteOctreeRoot,local_14,local_20);
+      *(uint *)(g_paletteRgbTable + local_20 * 4) = local_10 << 0x10 | local_1c << 8 | local_c;
       *(undefined1 *)(local_8 + local_20 * 2 + 2) = (undefined1)local_10;
       *(undefined1 *)((int)local_8 + local_20 * 4 + 5) = (undefined1)local_1c;
       *(undefined1 *)(local_8 + local_20 * 2 + 3) = (undefined1)local_c;
@@ -2532,7 +2540,7 @@ undefined2 * __cdecl TENTATIVE_read_palette(char *param_1,char *param_2)
     }
     DAT_100322d4 = 0;
     DAT_1001d240 = 0;
-    _DAT_10031eb8 = FUN_10004dc8(DAT_10031ea4);
+    _DAT_10031eb8 = OctreeNode_FinalizeSubtree(g_paletteOctreeRoot);
     DAT_1001d240 = DAT_1001d240 + -1;
     local_8[1] = 0x100;
     fclose(local_18);
@@ -2546,14 +2554,14 @@ undefined2 * __cdecl TENTATIVE_read_palette(char *param_1,char *param_2)
     }
     *(undefined1 *)((int)local_8 + 0x403) = 0;
     *(undefined1 *)((int)local_8 + 7) = *(undefined1 *)((int)local_8 + 0x403);
-    FUN_100050f1();
-    FUN_10004cd7();
+    InitOctreeBitTables();
+    InitDiffSquaredLookupTable();
   }
   return local_8;
 }
 
 // FUNCTION: CARDARTLIB 0x10004CD7
-undefined4 FUN_10004cd7(void)
+undefined4 InitDiffSquaredLookupTable(void)
 
 {
   undefined4 uVar1;
@@ -2576,7 +2584,7 @@ undefined4 FUN_10004cd7(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10004D49
-void __cdecl FUN_10004d49(int *param_1,int param_2,int *param_3)
+void __cdecl OctreeNode_CollectLeafIndices(int *param_1,int param_2,int *param_3)
 
 {
   int local_8;
@@ -2584,7 +2592,7 @@ void __cdecl FUN_10004d49(int *param_1,int param_2,int *param_3)
   if (*param_1 == 0) {
     for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
       if (param_1[local_8 + 2] != 0) {
-        FUN_10004d49((int *)param_1[local_8 + 2],param_2,param_3);
+        OctreeNode_CollectLeafIndices((int *)param_1[local_8 + 2],param_2,param_3);
       }
     }
   }
@@ -2596,7 +2604,7 @@ void __cdecl FUN_10004d49(int *param_1,int param_2,int *param_3)
 }
 
 // FUNCTION: CARDARTLIB 0x10004DC8
-int __cdecl FUN_10004dc8(int *param_1)
+int __cdecl OctreeNode_FinalizeSubtree(int *param_1)
 
 {
   int iVar1;
@@ -2616,14 +2624,14 @@ int __cdecl FUN_10004dc8(int *param_1)
   if (*param_1 == 0) {
     for (local_40c = 0; local_40c < 8; local_40c = local_40c + 1) {
       if (param_1[local_40c + 2] != 0) {
-        iVar1 = FUN_10004dc8((int *)param_1[local_40c + 2]);
+        iVar1 = OctreeNode_FinalizeSubtree((int *)param_1[local_40c + 2]);
         local_408 = local_408 + iVar1;
         local_410 = local_410 + 1;
       }
     }
     if (local_410 != 0) {
       local_410 = 0;
-      FUN_10004d49(param_1,(int)local_404,(int *)&local_410);
+      OctreeNode_CollectLeafIndices(param_1,(int)local_404,(int *)&local_410);
       pvVar2 = malloc(local_410);
       param_1[10] = (int)pvVar2;
       param_1[0xb] = local_410;
@@ -2639,7 +2647,7 @@ int __cdecl FUN_10004dc8(int *param_1)
 }
 
 // FUNCTION: CARDARTLIB 0x10004F07
-undefined4 __cdecl FUN_10004f07(undefined4 *param_1,char *param_2,undefined4 param_3)
+undefined4 __cdecl Octree_InsertPathString(undefined4 *param_1,char *param_2,undefined4 param_3)
 
 {
   size_t sVar1;
@@ -2653,7 +2661,7 @@ undefined4 __cdecl FUN_10004f07(undefined4 *param_1,char *param_2,undefined4 par
   for (param_2 = param_2 + sVar1; *param_2 != '\0'; param_2 = param_2 + sVar1 + sVar4 + sVar5) {
     iVar2 = atoi(param_2);
     if (param_1[iVar2 + 2] == 0) {
-      pvVar3 = FUN_10004a50();
+      pvVar3 = OctreeNode_Create();
       param_1[iVar2 + 2] = pvVar3;
     }
     param_1 = (undefined4 *)param_1[iVar2 + 2];
@@ -2669,7 +2677,7 @@ undefined4 __cdecl FUN_10004f07(undefined4 *param_1,char *param_2,undefined4 par
 }
 
 // FUNCTION: CARDARTLIB 0x10004FE1
-int __cdecl FUN_10004fe1(int *param_1)
+int __cdecl Octree_Destroy(int *param_1)
 
 {
   int iVar1;
@@ -2680,24 +2688,24 @@ int __cdecl FUN_10004fe1(int *param_1)
   if (*param_1 == 0) {
     for (local_c = 0; local_c < 8; local_c = local_c + 1) {
       if (param_1[local_c + 2] != 0) {
-        iVar1 = FUN_10004fe1((int *)param_1[local_c + 2]);
+        iVar1 = Octree_Destroy((int *)param_1[local_c + 2]);
         local_8 = local_8 + iVar1;
       }
     }
     if (param_1[10] != 0) {
-      FUN_1000a210((void *)param_1[10]);
+      FreeIfNotNull((void *)param_1[10]);
     }
-    FUN_1000a210(param_1);
+    FreeIfNotNull(param_1);
   }
   else {
-    FUN_1000a210(param_1);
+    FreeIfNotNull(param_1);
     local_8 = 1;
   }
   return local_8;
 }
 
 // FUNCTION: CARDARTLIB 0x1000508D
-void __cdecl FUN_1000508d(uint param_1,uint *param_2)
+void __cdecl Octree_BuildPathBytesFromRgb(uint rgb,uint *out_path_words)
 
 {
   int iVar1;
@@ -2707,20 +2715,20 @@ void __cdecl FUN_1000508d(uint param_1,uint *param_2)
   uint uVar5;
   uint uVar6;
   
-  iVar1 = ((param_1 & 0xff0000) >> 0x10) * 8;
+  iVar1 = ((rgb & 0xff0000) >> 0x10) * 8;
   uVar4 = *(uint *)(PTR_DAT_1001d254 + iVar1 + 4);
-  iVar2 = (param_1 >> 8 & 0xff) * 8;
+  iVar2 = (rgb >> 8 & 0xff) * 8;
   uVar5 = *(uint *)(PTR_DAT_1001d250 + iVar2 + 4);
-  iVar3 = (param_1 & 0xff) * 8;
+  iVar3 = (rgb & 0xff) * 8;
   uVar6 = *(uint *)(PTR_DAT_1001d24c + iVar3 + 4);
-  *param_2 = *(uint *)(PTR_DAT_1001d254 + iVar1) | *(uint *)(PTR_DAT_1001d250 + iVar2) |
+  *out_path_words = *(uint *)(PTR_DAT_1001d254 + iVar1) | *(uint *)(PTR_DAT_1001d250 + iVar2) |
              *(uint *)(PTR_DAT_1001d24c + iVar3);
-  param_2[1] = uVar4 | uVar5 | uVar6;
+  out_path_words[1] = uVar4 | uVar5 | uVar6;
   return;
 }
 
 // FUNCTION: CARDARTLIB 0x100050F1
-undefined4 FUN_100050f1(void)
+undefined4 InitOctreeBitTables(void)
 
 {
   uint local_10;
@@ -2755,7 +2763,7 @@ undefined4 FUN_100050f1(void)
 }
 
 // FUNCTION: CARDARTLIB 0x100051F5
-undefined4 __cdecl FUN_100051f5(uint param_1)
+undefined4 __cdecl Octree_FindNearestColor(uint param_1)
 
 {
   int *piVar1;
@@ -2767,9 +2775,9 @@ undefined4 __cdecl FUN_100051f5(uint param_1)
   uint local_2c;
   int local_28;
   
-  FUN_1000508d(param_1,(uint *)&DAT_100322c0);
+  Octree_BuildPathBytesFromRgb(param_1,(uint *)&DAT_100322c0);
   pbVar5 = &DAT_100322c0;
-  piVar3 = DAT_10031ea4;
+  piVar3 = g_paletteOctreeRoot;
   do {
     piVar1 = (int *)piVar3[*pbVar5 + 2];
     pbVar5 = pbVar5 + 1;
@@ -2780,31 +2788,31 @@ undefined4 __cdecl FUN_100051f5(uint param_1)
         for (local_28 = 0; local_28 < piVar3[0xb]; local_28 = local_28 + 1) {
           iVar4 = *(int *)(PTR_DAT_1001d244 +
                           ((param_1 >> 8 & 0xff) -
-                          (uint)DAT_10031ec0[(uint)*(byte *)(local_28 + iVar2) * 4 + 1]) * 4) +
+                          (uint)g_paletteRgbTable[(uint)*(byte *)(local_28 + iVar2) * 4 + 1]) * 4) +
                   *(int *)(PTR_DAT_1001d244 +
                           ((param_1 & 0xff) -
-                          (*(uint *)(DAT_10031ec0 + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff)) *
+                          (*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff)) *
                           4) +
                   *(int *)(PTR_DAT_1001d244 +
                           (((param_1 & 0xff0000) >> 0x10) -
-                          ((*(uint *)(DAT_10031ec0 + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff0000)
+                          ((*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff0000)
                            >> 0x10)) * 4);
           if (iVar4 < local_34) {
             local_2c = (uint)*(byte *)(local_28 + iVar2);
             local_34 = iVar4;
           }
         }
-        return *(undefined4 *)(DAT_10031ec0 + local_2c * 4);
+        return *(undefined4 *)(g_paletteRgbTable + local_2c * 4);
       }
-      return *(undefined4 *)(DAT_10031ec0 + piVar3[1] * 4);
+      return *(undefined4 *)(g_paletteRgbTable + piVar3[1] * 4);
     }
     piVar3 = piVar1;
   } while ((char)*piVar1 != '\x01');
-  return *(undefined4 *)(DAT_10031ec0 + piVar1[1] * 4);
+  return *(undefined4 *)(g_paletteRgbTable + piVar1[1] * 4);
 }
 
 // FUNCTION: CARDARTLIB 0x10005383
-uint __cdecl FUN_10005383(uint param_1)
+uint __cdecl Octree_FindNearestPaletteIndex(uint param_1)
 
 {
   int *piVar1;
@@ -2816,9 +2824,9 @@ uint __cdecl FUN_10005383(uint param_1)
   uint local_2c;
   int local_28;
   
-  FUN_1000508d(param_1,(uint *)&DAT_10031eb0);
+  Octree_BuildPathBytesFromRgb(param_1,(uint *)&DAT_10031eb0);
   pbVar5 = &DAT_10031eb0;
-  piVar3 = DAT_10031ea4;
+  piVar3 = g_paletteOctreeRoot;
   do {
     piVar1 = (int *)piVar3[*pbVar5 + 2];
     pbVar5 = pbVar5 + 1;
@@ -2829,15 +2837,15 @@ uint __cdecl FUN_10005383(uint param_1)
         for (local_28 = 0; local_28 < piVar3[0xb]; local_28 = local_28 + 1) {
           iVar4 = *(int *)(PTR_DAT_1001d244 +
                           ((param_1 & 0xff) -
-                          ((*(uint *)(DAT_10031ec0 + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff0000)
+                          ((*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff0000)
                            >> 0x10)) * 4) +
                   *(int *)(PTR_DAT_1001d244 +
                           (((param_1 & 0xff0000) >> 0x10) -
-                          (*(uint *)(DAT_10031ec0 + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff)) *
+                          (*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff)) *
                           4) +
                   *(int *)(PTR_DAT_1001d244 +
                           ((param_1 >> 8 & 0xff) -
-                          (uint)DAT_10031ec0[(uint)*(byte *)(local_28 + iVar2) * 4 + 1]) * 4);
+                          (uint)g_paletteRgbTable[(uint)*(byte *)(local_28 + iVar2) * 4 + 1]) * 4);
           if (iVar4 < local_34) {
             local_2c = (uint)*(byte *)(local_28 + iVar2);
             local_34 = iVar4;
@@ -2853,7 +2861,7 @@ uint __cdecl FUN_10005383(uint param_1)
 }
 
 // FUNCTION: CARDARTLIB 0x100054FB
-int __cdecl FUN_100054fb(int *param_1,int *param_2)
+int __cdecl Octree_FlattenLeafValues(int *param_1,int *param_2)
 
 {
   int iVar1;
@@ -2864,7 +2872,7 @@ int __cdecl FUN_100054fb(int *param_1,int *param_2)
   if (*param_1 == 0) {
     for (local_c = 0; local_c < 8; local_c = local_c + 1) {
       if (param_1[local_c + 2] != 0) {
-        iVar1 = FUN_100054fb((int *)param_1[local_c + 2],param_2);
+        iVar1 = Octree_FlattenLeafValues((int *)param_1[local_c + 2],param_2);
         local_8 = local_8 + iVar1;
         param_2 = param_2 + iVar1;
       }
@@ -2878,7 +2886,7 @@ int __cdecl FUN_100054fb(int *param_1,int *param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x10005591
-undefined4 __cdecl FUN_10005591(uint *param_1,int param_2,int param_3,int param_4)
+undefined4 __cdecl QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int width,int row_padding)
 
 {
   uint uVar1;
@@ -2887,22 +2895,22 @@ undefined4 __cdecl FUN_10005591(uint *param_1,int param_2,int param_3,int param_
   undefined4 local_10;
   undefined4 local_c;
   
-  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
+  for (local_10 = 0; local_10 < height; local_10 = local_10 + 1) {
     local_c = 0;
-    local_18 = *param_1;
-    for (; local_c < param_3 * 3; local_c = local_c + 3) {
-      uVar1 = *(uint *)(local_c + 3 + (int)param_1);
-      uVar2 = FUN_100051f5(local_18);
-      *(undefined4 *)(local_c + (int)param_1) = uVar2;
+    local_18 = *bgr24;
+    for (; local_c < width * 3; local_c = local_c + 3) {
+      uVar1 = *(uint *)(local_c + 3 + (int)bgr24);
+      uVar2 = Octree_FindNearestColor(local_18);
+      *(undefined4 *)(local_c + (int)bgr24) = uVar2;
       local_18 = uVar1;
     }
-    param_1 = (uint *)((int)param_1 + param_4 + param_3 * 3);
+    bgr24 = (uint *)((int)bgr24 + row_padding + width * 3);
   }
   return 0;
 }
 
 // FUNCTION: CARDARTLIB 0x10005629
-undefined4 __cdecl FUN_10005629(uint *param_1,int param_2,int param_3,int param_4)
+undefined4 __cdecl QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width,int row_padding)
 
 {
   uint uVar1;
@@ -2913,23 +2921,23 @@ undefined4 __cdecl FUN_10005629(uint *param_1,int param_2,int param_3,int param_
   uint *local_10;
   int local_8;
   
-  local_10 = param_1;
-  for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {
+  local_10 = bgr24;
+  for (local_18 = 0; local_18 < height; local_18 = local_18 + 1) {
     local_8 = 0;
     local_14 = 0;
-    local_20 = *param_1;
-    for (; local_14 < param_3 * 3; local_14 = local_14 + 3) {
+    local_20 = *bgr24;
+    for (; local_14 < width * 3; local_14 = local_14 + 3) {
       uVar1 = local_20 & 0xffffff;
-      local_20 = *(uint *)(local_14 + 3 + (int)param_1);
-      uVar2 = FUN_10005383(uVar1);
+      local_20 = *(uint *)(local_14 + 3 + (int)bgr24);
+      uVar2 = Octree_FindNearestPaletteIndex(uVar1);
       *(char *)(local_8 + (int)local_10) = (char)uVar2;
-      if (*(uint *)(&DAT_10031ec0 + (uint)*(byte *)(local_8 + (int)local_10) * 4) != uVar1) {
-        *(undefined4 *)(&DAT_10031ec0 + (uint)*(byte *)(local_8 + (int)local_10) * 4) = 0;
+      if (*(uint *)(&g_paletteRgbTable + (uint)*(byte *)(local_8 + (int)local_10) * 4) != uVar1) {
+        *(undefined4 *)(&g_paletteRgbTable + (uint)*(byte *)(local_8 + (int)local_10) * 4) = 0;
       }
       local_8 = local_8 + 1;
     }
-    param_1 = (uint *)((int)param_1 + param_4 + param_3 * 3);
-    local_10 = (uint *)((int)local_10 + param_4 + param_3);
+    bgr24 = (uint *)((int)bgr24 + row_padding + width * 3);
+    local_10 = (uint *)((int)local_10 + row_padding + width);
   }
   return 0;
 }
@@ -2937,7 +2945,7 @@ undefined4 __cdecl FUN_10005629(uint *param_1,int param_2,int param_3,int param_
 // FUNCTION: CARDARTLIB 0x1000570F
 /* WARNING: Type propagation algorithm not settling */
 
-int __cdecl FUN_1000570f(int param_1,int param_2,uint *param_3,int param_4,int param_5,int param_6)
+int __cdecl DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 
 {
   int iVar1;
@@ -2992,15 +3000,16 @@ int __cdecl FUN_1000570f(int param_1,int param_2,uint *param_3,int param_4,int p
   local_1e = 0;
   local_3c = 1;
   local_2c = 0;
-  local_7c = &DAT_1001d2d8 + param_1 * 0xc0;
-  local_18 = param_5 * 8 + 0x50U >> 2;
-  if (param_1 == 0) {
-    DAT_1001e05c = param_1;
-    param_4 = 0;
+  local_7c = &DAT_1001d2d8 + dither_kernel_id * 0xc0;
+  local_18 = width * 8 + 0x50U >> 2;
+  if (dither_kernel_id == 0) {
+    DAT_1001e05c = dither_kernel_id;
+    height = 0;
   }
-  else if (param_1 == 1) {
-    DAT_1001e05c = param_1;
-    param_4 = FUN_10005591(param_3,param_4,param_5,param_6);
+  else if (dither_kernel_id == 1) {
+    DAT_1001e05c = dither_kernel_id;
+    QuantizeBgr24ToNearestPaletteColorInPlace(bgr24,height,width,row_padding);
+    return 0;
   }
   else {
     if (DAT_100322d0 == 0) {
@@ -3019,37 +3028,37 @@ int __cdecl FUN_1000570f(int param_1,int param_2,uint *param_3,int param_4,int p
       }
       DAT_100322d0 = 1;
     }
-    if (param_1 != DAT_1001e05c) {
+    if (dither_kernel_id != DAT_1001e05c) {
       for (local_4c = 0; local_4c < 0x41; local_4c = local_4c + 1) {
         if (DAT_10117100[local_4c] != (void *)0x0) {
-          FUN_1000a210(DAT_10117100[local_4c]);
+          FreeIfNotNull(DAT_10117100[local_4c]);
           DAT_10117100[local_4c] = (void *)0x0;
         }
       }
-      FUN_10005cf5(param_1,(int)DAT_10117100);
-      DAT_1001e05c = param_1;
+      InitErrorDiffusionDeltaTables(dither_kernel_id,(int)DAT_10117100);
+      DAT_1001e05c = dither_kernel_id;
     }
     for (local_4c = 0; local_4c < 5; local_4c = local_4c + 1) {
-      FUN_10007273((undefined8 *)(DAT_100edb10 + local_4c * 0x8060),0,0x8060);
+      SetBytes((void *)(DAT_100edb10 + local_4c * 0x8060),0,0x8060);
       local_70[local_4c + 1] = (undefined *)(DAT_100edb10 + local_4c * 0x8060 + 0x28);
     }
-    iVar1 = DAT_1001d260[param_1];
-    for (local_58 = 0; local_58 < param_4; local_58 = local_58 + 1) {
+    iVar1 = DAT_1001d260[dither_kernel_id];
+    for (local_58 = 0; local_58 < height; local_58 = local_58 + 1) {
       if (local_3c < 1) {
-        local_80 = param_5 + -1;
+        local_80 = width + -1;
         local_1c = -1;
         local_88 = -3;
       }
       else {
         local_80 = 0;
-        local_1c = param_5;
+        local_1c = width;
         local_88 = 3;
       }
       local_c = local_80 * 3;
       for (local_4c = local_80; local_4c != local_1c; local_4c = local_4c + local_3c) {
-        uVar2 = *(uint *)(local_c + (int)param_3);
+        uVar2 = *(uint *)(local_c + (int)bgr24);
         local_28 = uVar2 & 0xffffff;
-        *(uint *)(local_c + (int)param_3) = *(uint *)(local_c + (int)param_3) & 0xff000000;
+        *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) & 0xff000000;
         psVar4 = (short *)(local_4c * 8 + (int)local_70[1]);
         if (local_28 == 0) {
           local_84 = 0;
@@ -3068,9 +3077,9 @@ int __cdecl FUN_1000570f(int param_1,int param_2,uint *param_3,int param_4,int p
           local_38 = (uint)(byte)PTR_DAT_1001e058[(local_28 >> 8 & 0xff) + ((int)psVar4[1] >> 8)];
           local_74 = (uint)(byte)PTR_DAT_1001e058[(local_28 >> 0x10) + ((int)psVar4[2] >> 8)];
           local_28 = local_38 << 8 | local_74 << 0x10 | local_8;
-          local_84 = FUN_100051f5(local_28);
+          local_84 = Octree_FindNearestColor(local_28);
         }
-        *(uint *)(local_c + (int)param_3) = *(uint *)(local_c + (int)param_3) | local_84;
+        *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) | local_84;
         local_40 = local_8 - (local_84 & 0xff);
         local_34 = local_38 - (local_84 >> 8 & 0xff);
         local_70[0] = local_7c + iVar1 * 0x10;
@@ -3087,20 +3096,20 @@ int __cdecl FUN_1000570f(int param_1,int param_2,uint *param_3,int param_4,int p
         }
         local_c = local_c + local_88;
       }
-      FUN_10005cb4(local_70 + 1,DAT_1001d288[param_1]);
-      memset(local_70[DAT_1001d288[param_1]] + -0x28,0,local_18 << 2);
-      if (param_2 != 0) {
+      RotateDwordsLeft1(local_70 + 1,DAT_1001d288[dither_kernel_id]);
+      memset(local_70[DAT_1001d288[dither_kernel_id]] + -0x28,0,local_18 << 2);
+      if (serpentine != 0) {
         local_3c = -local_3c;
-        local_7c = &DAT_1001d2d8 + (uint)(local_3c == -1) * 0x6c0 + param_1 * 0xc0;
+        local_7c = &DAT_1001d2d8 + (uint)(local_3c == -1) * 0x6c0 + dither_kernel_id * 0xc0;
       }
-      param_3 = (uint *)((int)param_3 + param_5 * 3 + param_6);
+      bgr24 = (uint *)((int)bgr24 + width * 3 + row_padding);
     }
   }
-  return param_4;
+  return height;
 }
 
 // FUNCTION: CARDARTLIB 0x10005CB4
-void __cdecl FUN_10005cb4(undefined4 *param_1,int param_2)
+void __cdecl RotateDwordsLeft1(undefined4 *param_1,int param_2)
 
 {
   undefined4 uVar1;
@@ -3112,7 +3121,7 @@ void __cdecl FUN_10005cb4(undefined4 *param_1,int param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x10005CF5
-undefined4 __cdecl FUN_10005cf5(int param_1,int param_2)
+undefined4 __cdecl InitErrorDiffusionDeltaTables(int dither_kernel_id,int delta_table_ptrs_base)
 
 {
   int iVar1;
@@ -3121,29 +3130,30 @@ undefined4 __cdecl FUN_10005cf5(int param_1,int param_2)
   int local_14;
   int local_10;
   
-  iVar1 = DAT_1001d2b0[param_1];
-  for (local_10 = 0; local_10 < DAT_1001d260[param_1]; local_10 = local_10 + 1) {
-    iVar2 = *(int *)(&DAT_1001d2d8 + local_10 * 0x10 + param_1 * 0xc0);
-    if (*(int *)(param_2 + iVar2 * 4) == 0) {
+  iVar1 = DAT_1001d2b0[dither_kernel_id];
+  for (local_10 = 0; local_10 < DAT_1001d260[dither_kernel_id]; local_10 = local_10 + 1) {
+    iVar2 = *(int *)(&DAT_1001d2d8 + local_10 * 0x10 + dither_kernel_id * 0xc0);
+    if (*(int *)(delta_table_ptrs_base + iVar2 * 4) == 0) {
       pvVar3 = malloc(0x800);
-      *(void **)(param_2 + iVar2 * 4) = pvVar3;
-      assert((uint)(*(int *)(param_2 + iVar2 * 4) != 0),s_D__Newmagic_sources_NedCard_Pale_1001e0b4,
+      *(void **)(delta_table_ptrs_base + iVar2 * 4) = pvVar3;
+      assert((uint)(*(int *)(delta_table_ptrs_base + iVar2 * 4) != 0),s_D__Newmagic_sources_NedCard_Pale_1001e0b4,
              0x4fd,s_Not_enough_memory_for_delta_arra_1001e090);
       for (local_14 = -0x100; local_14 < 0x100; local_14 = local_14 + 1) {
-        *(int *)(*(int *)(param_2 + iVar2 * 4) + 0x400 + local_14 * 4) =
-             ((iVar2 * local_14 + (iVar1 >> 1)) * 0x100) / DAT_1001d2b0[param_1];
+        *(int *)(*(int *)(delta_table_ptrs_base + iVar2 * 4) + 0x400 + local_14 * 4) =
+             ((iVar2 * local_14 + (iVar1 >> 1)) * 0x100) / DAT_1001d2b0[dither_kernel_id];
       }
-      *(int *)(&DAT_1001d2e4 + local_10 * 0x10 + param_1 * 0xc0) =
-           *(int *)(param_2 + iVar2 * 4) + 0x3fc;
+      *(int *)(&DAT_1001d2e4 + local_10 * 0x10 + dither_kernel_id * 0xc0) =
+           *(int *)(delta_table_ptrs_base + iVar2 * 4) + 0x3fc;
     }
     else {
-      *(int *)(&DAT_1001d2e4 + local_10 * 0x10 + param_1 * 0xc0) =
-           *(int *)(param_2 + iVar2 * 4) + 0x400;
+      *(int *)(&DAT_1001d2e4 + local_10 * 0x10 + dither_kernel_id * 0xc0) =
+           *(int *)(delta_table_ptrs_base + iVar2 * 4) + 0x400;
     }
   }
-  for (local_10 = 0; local_10 < DAT_1001d260[param_1]; local_10 = local_10 + 1) {
-    *(int *)(&DAT_1001d9a4 + local_10 * 0x10 + param_1 * 0xc0) =
-         *(int *)(param_2 + *(int *)(&DAT_1001d998 + local_10 * 0x10 + param_1 * 0xc0) * 4) + 0x3fc;
+  for (local_10 = 0; local_10 < DAT_1001d260[dither_kernel_id]; local_10 = local_10 + 1) {
+    *(int *)(&DAT_1001d9a4 + local_10 * 0x10 + dither_kernel_id * 0xc0) =
+         *(int *)(delta_table_ptrs_base +
+                 *(int *)(&DAT_1001d998 + local_10 * 0x10 + dither_kernel_id * 0xc0) * 4) + 0x3fc;
   }
   return 0;
 }
@@ -3253,13 +3263,13 @@ undefined4 __cdecl FUN_10005ea2(int param_1,byte *param_2,int param_3,int param_
   }
   memcpy(local_1c,param_2,_Size);
   memcpy(_Dst,_Dst_00,(_Size + param_5) * param_4);
-  FUN_1000a210(_Dst_00);
+  FreeIfNotNull(_Dst_00);
   return 0;
 }
 
 // FUNCTION: CARDARTLIB 0x100062C7
 undefined4 __cdecl
-FUN_100062c7(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6)
+DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 
 {
   byte bVar1;
@@ -3315,8 +3325,8 @@ FUN_100062c7(int param_1,int param_2,int param_3,int param_4,int param_5,int par
   local_1e = 0;
   local_3c = 1;
   local_2c = 0;
-  local_7c = &DAT_1001d2d8 + param_1 * 0xc0;
-  local_18 = param_5 * 8 + 0x50U >> 2;
+  local_7c = &DAT_1001d2d8 + dither_kernel_id * 0xc0;
+  local_18 = width * 8 + 0x50U >> 2;
   if (DAT_100322cc == 0) {
     for (local_4c = -0x200; (int)local_4c < 0x200; local_4c = local_4c + 1) {
       if (((int)local_4c < 0) || (0xff < (int)local_4c)) {
@@ -3333,37 +3343,37 @@ FUN_100062c7(int param_1,int param_2,int param_3,int param_4,int param_5,int par
     }
     DAT_100322cc = 1;
   }
-  if (DAT_1001e060 != param_1) {
+  if (DAT_1001e060 != dither_kernel_id) {
     for (local_4c = 0; local_4c < 0x41; local_4c = local_4c + 1) {
       if (*(int *)(&DAT_10117100 + local_4c * 4) != 0) {
-        FUN_1000a210(*(void **)(&DAT_10117100 + local_4c * 4));
+        FreeIfNotNull(*(void **)(&DAT_10117100 + local_4c * 4));
         *(undefined4 *)(&DAT_10117100 + local_4c * 4) = 0;
       }
     }
-    FUN_10005cf5(param_1,0x10117100);
-    DAT_1001e060 = param_1;
+    InitErrorDiffusionDeltaTables(dither_kernel_id,0x10117100);
+    DAT_1001e060 = dither_kernel_id;
   }
   for (local_4c = 0; local_4c < 5; local_4c = local_4c + 1) {
-    memset(&DAT_100edb10 + local_4c * 0x8060,0,0x8060);
+    SetBytes((void *)(DAT_100edb10 + local_4c * 0x8060),0,0x8060);
     local_70[local_4c + 1] = local_4c * 0x8060 + 0x100edb38;
   }
-  iVar2 = *(int *)(&DAT_1001d260 + param_1 * 4);
-  for (local_58 = 0; local_58 < param_4; local_58 = local_58 + 1) {
+  iVar2 = *(int *)(&DAT_1001d260 + dither_kernel_id * 4);
+  for (local_58 = 0; local_58 < height; local_58 = local_58 + 1) {
     if (local_3c < 1) {
-      local_80 = param_5 + -1;
+      local_80 = width + -1;
       local_1c = -1;
       local_88 = -3;
     }
     else {
       local_80 = 0;
-      local_1c = param_5;
+      local_1c = width;
       local_88 = 3;
     }
     local_c = local_80 * 3;
     for (local_4c = local_80; local_4c != local_1c; local_4c = local_4c + local_3c) {
-      uVar3 = *(uint *)(local_c + param_3);
+      uVar3 = *(uint *)(local_c + (int)bgr24);
       uVar5 = uVar3 & 0xffffff;
-      *(uint *)(local_c + param_3) = *(uint *)(local_c + param_3) & 0xff000000;
+      *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) & 0xff000000;
       psVar6 = (short *)(local_4c * 8 + local_70[1]);
       local_8 = (uint)(byte)PTR_DAT_1001e058[(uVar3 & 0xff) + ((int)*psVar6 >> 8)];
       local_38 = (uint)(byte)PTR_DAT_1001e058[(uVar5 >> 8 & 0xff) + ((int)psVar6[1] >> 8)];
@@ -3378,9 +3388,9 @@ FUN_100062c7(int param_1,int param_2,int param_3,int param_4,int param_5,int par
         local_84 = 0xffffff;
       }
       else {
-        local_84 = FUN_100068d0(local_28);
+        local_84 = Rgb888_QuantizeToF8(local_28);
       }
-      *(uint *)(local_c + param_3) = *(uint *)(local_c + param_3) | local_84;
+      *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) | local_84;
       local_40 = local_8 - (local_84 & 0xff);
       local_34 = local_38 - (local_84 >> 8 & 0xff);
       local_30 = local_7c;
@@ -3398,28 +3408,28 @@ FUN_100062c7(int param_1,int param_2,int param_3,int param_4,int param_5,int par
       }
       local_c = local_c + local_88;
     }
-    FUN_10005cb4(local_70 + 1,*(int *)(&DAT_1001d288 + param_1 * 4));
-    memset((void *)(local_70[*(int *)(&DAT_1001d288 + param_1 * 4)] + -0x28),0,local_18 << 2);
-    if (param_2 != 0) {
+    RotateDwordsLeft1(local_70 + 1,*(int *)(&DAT_1001d288 + dither_kernel_id * 4));
+    memset((void *)(local_70[*(int *)(&DAT_1001d288 + dither_kernel_id * 4)] + -0x28),0,local_18 << 2);
+    if (serpentine != 0) {
       local_3c = -local_3c;
-      local_7c = &DAT_1001d2d8 + (uint)(local_3c == -1) * 0x6c0 + param_1 * 0xc0;
+      local_7c = &DAT_1001d2d8 + (uint)(local_3c == -1) * 0x6c0 + dither_kernel_id * 0xc0;
     }
-    param_3 = param_3 + param_5 * 3 + param_6;
+    bgr24 = (uint *)((int)bgr24 + width * 3 + row_padding);
   }
   return 1;
 }
 
 // FUNCTION: CARDARTLIB 0x10006809
-void FUN_10006809(void)
+void DestroyPaletteOctree(void)
 
 {
-  FUN_10004fe1(DAT_10031ea4);
-  DAT_10031ea4 = (int *)0x0;
+  Octree_Destroy(g_paletteOctreeRoot);
+  g_paletteOctreeRoot = (int *)0x0;
   return;
 }
 
 // FUNCTION: CARDARTLIB 0x1000682C
-int __cdecl FUN_1000682c(int param_1,int param_2,int param_3,byte *param_4)
+int __cdecl Palette_FindNearestEntryIndex(int param_1,int param_2,int param_3,byte *param_4)
 
 {
   int iVar1;
@@ -3443,14 +3453,14 @@ int __cdecl FUN_1000682c(int param_1,int param_2,int param_3,byte *param_4)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100068D0
-uint __cdecl FUN_100068d0(uint param_1)
+uint __cdecl Rgb888_QuantizeToF8(uint param_1)
 
 {
   return param_1 & 0xf8f8f8;
 }
 
 // FUNCTION: CARDARTLIB 0x100068F0
-int * __cdecl FUN_100068f0(int param_1,uint *param_2,int param_3)
+int * __cdecl Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3)
 
 {
   size_t sVar1;
@@ -3467,11 +3477,11 @@ int * __cdecl FUN_100068f0(int param_1,uint *param_2,int param_3)
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_101221d0);
   _splitpath((char *)param_2,(char *)0x0,(char *)local_314,(char *)local_210,(char *)local_110);
   if (DAT_10032adc == 0) {
-    FUN_10009490(local_41c,local_314);
-    FUN_100094a0(local_41c,(uint *)s_SmallArt_cat_1001e12c);
+    StrCopy((char *)local_41c,(char *)local_314);
+    StrCat((char *)local_41c,s_SmallArt_cat_1001e12c);
     DAT_1001e11c = Catalog_Open((char *)local_41c);
-    FUN_10009490(local_41c,local_314);
-    FUN_100094a0(local_41c,(uint *)s_MedArt_cat_1001e13c);
+    StrCopy((char *)local_41c,(char *)local_314);
+    StrCat((char *)local_41c,s_MedArt_cat_1001e13c);
     DAT_1001e120 = Catalog_Open((char *)local_41c);
     DAT_10032adc = 1;
   }
@@ -3486,16 +3496,16 @@ int * __cdecl FUN_100068f0(int param_1,uint *param_2,int param_3)
     }
     DAT_100ea098 = DAT_1001e120;
   }
-  FUN_10009490(local_314,local_210);
-  FUN_100094a0(local_314,local_110);
+  StrCopy((char *)local_314,(char *)local_210);
+  StrCat((char *)local_314,(char *)local_110);
   _strlwr((char *)local_314);
   if (local_c != (int *)0x0) {
     memset(local_c,0,0x1b0);
-    FUN_10009490((uint *)(local_c + 0x27),param_2);
+    StrCopy((char *)(local_c + 0x27),(const char *)param_2);
     local_c[0x68] = (int)&DAT_100ad498;
     local_10 = Catalog_ReadEntry(DAT_100ea098,(char *)local_314,(void **)(local_c + 0x68));
     if (local_10 == 0xffffffff) {
-      FUN_100094a0(param_2,(uint *)&DAT_1001e148);
+      StrCat((char *)param_2,DAT_1001e148);
       OutputDebugStringA((LPCSTR)param_2);
       LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_101221d0);
       local_c = (int *)0x0;
@@ -3509,10 +3519,10 @@ int * __cdecl FUN_100068f0(int param_1,uint *param_2,int param_3)
         local_c[8] = local_c[8] << 1;
       }
       if (param_3 != 0) {
-        puVar2 = FUN_10006be3(local_c,(undefined8 *)0x0);
+        puVar2 = Wvl_DecodeHaar(local_c,(undefined8 *)0x0);
         local_c[0x6b] = (int)puVar2;
         if (local_c[0x6b] == 0) {
-          FUN_10006bb5();
+          Catalog_Unlock();
           LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_101221d0);
           local_c = (int *)0x0;
         }
@@ -3527,7 +3537,7 @@ int * __cdecl FUN_100068f0(int param_1,uint *param_2,int param_3)
 }
 
 // FUNCTION: CARDARTLIB 0x10006BB5
-undefined4 FUN_10006bb5(void)
+undefined4 Catalog_Unlock(void)
 
 {
   LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_101221d0);
@@ -3537,7 +3547,7 @@ undefined4 FUN_10006bb5(void)
 // FUNCTION: CARDARTLIB 0x10006BE3
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined8 * __cdecl FUN_10006be3(int *param_1,undefined8 *param_2)
+undefined8 * __cdecl Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
 
 {
   int iVar1;
@@ -3555,21 +3565,21 @@ undefined8 * __cdecl FUN_10006be3(int *param_1,undefined8 *param_2)
   int local_2c;
   int local_8;
   
-  if (DAT_10032ae0 == 0) {
+  if (g_waveletScaleToByteTableInit == 0) {
     for (local_4c = -0x400; local_4c < 0x401; local_4c = local_4c + 1) {
       if ((local_4c < 0) || (0xf8 < local_4c)) {
         if (local_4c < 10) {
-          PTR_DAT_1001e118[local_4c] = 0;
+          g_waveletScaleToByteTable[local_4c] = 0;
         }
         else {
-          PTR_DAT_1001e118[local_4c] = 0xff;
+          g_waveletScaleToByteTable[local_4c] = 0xff;
         }
       }
       else {
-        PTR_DAT_1001e118[local_4c] = (char)((local_4c * 0xff) / 0xf8);
+        g_waveletScaleToByteTable[local_4c] = (char)((local_4c * 0xff) / 0xf8);
       }
     }
-    DAT_10032ae0 = 1;
+    g_waveletScaleToByteTableInit = 1;
   }
   bVar8 = param_2 != (undefined8 *)0x0;
   if (bVar8) {
@@ -3579,7 +3589,7 @@ undefined8 * __cdecl FUN_10006be3(int *param_1,undefined8 *param_2)
     param_2 = malloc(param_1[0x24] + 2000);
     MemZeroDwords(param_2,(int)(param_1[0x24] + 2000 + (param_1[0x24] + 2000 >> 0x1f & 3U)) >> 2);
   }
-  _DAT_100ecb04 = FUN_100078b8((int)param_2,param_1);
+  _DAT_100ecb04 = Wvl_UnpackPieces((int)param_2,param_1);
   if (param_1[10] == 1) {
     local_8 = 1;
   }
@@ -3608,34 +3618,32 @@ undefined8 * __cdecl FUN_10006be3(int *param_1,undefined8 *param_2)
     ;
     piVar6 = piVar5 + iVar3 * iVar3 + 0x20;
     piVar7 = piVar6 + local_2c * local_2c + 0x20;
-    FUN_100072dc(piVar5,iVar3,iVar2);
-    FUN_100072dc(piVar6,local_2c,iVar2);
-    FUN_100072dc(piVar7,local_2c,iVar2);
+    Haar2D_ReconstructInPlace(piVar5,iVar3,iVar2);
+    Haar2D_ReconstructInPlace(piVar6,local_2c,iVar2);
+    Haar2D_ReconstructInPlace(piVar7,local_2c,iVar2);
     if (local_48 < param_1[10] / 2) {
       local_50 = (undefined8 *)
-    FUN_100075ef(DAT_10032c98,piVar5,iVar3,iVar3,(int)piVar6,(int)piVar7,local_2c,
-                              local_2c,*param_1);
+    YuvPlanesToBgr24(DAT_10032c98,piVar5,iVar3,iVar3,(int)piVar6,(int)piVar7,local_2c,local_2c,*param_1);
     }
     else if (param_1[10] < 2) {
       local_50 = (undefined8 *)
-    FUN_100075ef(DAT_10032c98,piVar5,iVar3,iVar4,(int)piVar6,(int)piVar7,local_2c,
-                              local_34,*param_1);
+    YuvPlanesToBgr24(DAT_10032c98,piVar5,iVar3,iVar4,(int)piVar6,(int)piVar7,local_2c,local_34,*param_1);
     }
     else {
       local_50 = (undefined8 *)
-    FUN_100075ef(DAT_10032c98,piVar5,iVar3,param_1[8] - iVar3,(int)piVar6,(int)piVar7,
-                              local_2c,local_34,*param_1);
+    YuvPlanesToBgr24(DAT_10032c98,piVar5,iVar3,param_1[8] - iVar3,(int)piVar6,(int)piVar7,local_2c,local_34,
+                     *param_1);
     }
     if (param_1[10] < 2) {
       if (!bVar8) {
-        FUN_1000a210(param_2);
+        FreeIfNotNull(param_2);
       }
       param_2 = local_50;
     }
     else {
-      FUN_10007035(param_2,local_50,(local_48 % local_8) * (iVar1 / local_8),
-                   (local_48 / local_8) * (iVar1 / local_8),iVar3,iVar3,iVar1);
-      FUN_1000a210(local_50);
+      CopyBgr24RectIntoStridedBuffer(param_2,local_50,(local_48 % local_8) * (iVar1 / local_8),
+                                     (local_48 / local_8) * (iVar1 / local_8),iVar3,iVar3,iVar1);
+      FreeIfNotNull(local_50);
     }
   }
   return param_2;
@@ -3643,17 +3651,17 @@ undefined8 * __cdecl FUN_10006be3(int *param_1,undefined8 *param_2)
 
 // FUNCTION: CARDARTLIB 0x10007035
 void __cdecl
-FUN_10007035(undefined8 *param_1,undefined8 *param_2,int param_3,int param_4,int param_5,int param_6
-            ,int param_7)
+CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,int dst_x,int dst_y,int rect_width,
+                               int rect_height,int dst_stride_pixels)
 
 {
   undefined4 local_8;
   
-  param_1 = (undefined8 *)((int)param_1 + (param_7 * param_4 + param_3) * 3);
-  for (local_8 = 0; local_8 < param_6; local_8 = local_8 + 1) {
-    FUN_10007238(param_1,param_2,param_5 * 3);
-    param_1 = (undefined8 *)((int)param_1 + param_7 * 3);
-    param_2 = (undefined8 *)((int)param_2 + param_5 * 3);
+  dst_bgr24 = (undefined8 *)((int)dst_bgr24 + (dst_stride_pixels * dst_y + dst_x) * 3);
+  for (local_8 = 0; local_8 < rect_height; local_8 = local_8 + 1) {
+    CopyBytes(dst_bgr24,src_bgr24,rect_width * 3);
+    dst_bgr24 = (undefined8 *)((int)dst_bgr24 + dst_stride_pixels * 3);
+    src_bgr24 = (undefined8 *)((int)src_bgr24 + rect_width * 3);
   }
   return;
 }
@@ -3696,29 +3704,37 @@ FUN_1000709c(int *param_1,int *param_2,int *param_3,int param_4,int param_5,unde
 }
 
 // FUNCTION: CARDARTLIB 0x10007238
-void __cdecl FUN_10007238(undefined8 *param_1,undefined8 *param_2,uint param_3)
+void __cdecl CopyBytes(void *dst,const void *src,size_t size)
 
 {
   uint uVar1;
+  undefined8 *dst_qword;
+  const undefined8 *src_qword;
+  unsigned char *dst_byte;
+  const unsigned char *src_byte;
   
-  for (uVar1 = param_3 >> 3; uVar1 != 0; uVar1 = uVar1 - 1) {
-    *param_1 = *param_2;
-    param_2 = param_2 + 1;
-    param_1 = param_1 + 1;
+  dst_qword = (undefined8 *)dst;
+  src_qword = (const undefined8 *)src;
+  for (uVar1 = (uint)size >> 3; uVar1 != 0; uVar1 = uVar1 - 1) {
+    *dst_qword = *src_qword;
+    src_qword = src_qword + 1;
+    dst_qword = dst_qword + 1;
   }
-  uVar1 = param_3 & 7;
+  dst_byte = (unsigned char *)dst_qword;
+  src_byte = (const unsigned char *)src_qword;
+  uVar1 = (uint)size & 7;
   if (uVar1 != 0) {
     for (; uVar1 != 0; uVar1 = uVar1 - 1) {
-      *(undefined1 *)param_1 = *(undefined1 *)param_2;
-      param_2 = (undefined8 *)((int)param_2 + 1);
-      param_1 = (undefined8 *)((int)param_1 + 1);
+      *dst_byte = *src_byte;
+      src_byte = src_byte + 1;
+      dst_byte = dst_byte + 1;
     }
   }
   return;
 }
 
 // FUNCTION: CARDARTLIB 0x10007273
-void __cdecl FUN_10007273(undefined8 *param_1,uint param_2,uint param_3)
+void __cdecl SetBytes(void *dst,uint value,size_t size)
 
 {
   //TODO: memset((void *)param_1,(int)(param_2 & 0xff),param_3);
@@ -3727,57 +3743,59 @@ void __cdecl FUN_10007273(undefined8 *param_1,uint param_2,uint param_3)
   int iVar3;
   uint uVar4;
   longlong lVar5;
+  undefined8 *dst_qword;
+  unsigned char *dst_byte;
   
-  uVar2 = param_2 << 8 | param_2;
+  dst_qword = (undefined8 *)dst;
+  uVar2 = value << 8 | value;
   uVar4 = (int)uVar2 >> 0x1f | ((int)uVar2 >> 0x1f) << 0x10 | uVar2 >> 0x10;
   lVar5 = _allshl(0x20,uVar4);
   uVar1 = CONCAT44(uVar4 | (uint)((ulonglong)lVar5 >> 0x20),uVar2 | uVar2 << 0x10 | (uint)lVar5);
-  iVar3 = (param_3 >> 3) - 1;
+  iVar3 = ((uint)size >> 3) - 1;
   do {
-    *param_1 = uVar1;
-    param_1 = param_1 + 1;
+    *dst_qword = uVar1;
+    dst_qword = dst_qword + 1;
     iVar3 = iVar3 + -1;
   } while (iVar3 != 0);
-  *param_1 = uVar1;
-  for (uVar4 = param_3 & 7; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *(char *)param_1 = (char)param_2;
-    param_1 = (undefined8 *)((int)param_1 + 1);
+  *dst_qword = uVar1;
+  dst_byte = (unsigned char *)dst_qword;
+  for (uVar4 = (uint)size & 7; uVar4 != 0; uVar4 = uVar4 - 1) {
+    *dst_byte = (unsigned char)value;
+    dst_byte = dst_byte + 1;
   }
   return;
 }
 
 // FUNCTION: CARDARTLIB 0x100072DC
-void __cdecl FUN_100072dc(int *param_1,int param_2,int param_3)
+void __cdecl Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size)
 
 {
   int *piVar1;
   int *local_18;
   int local_10;
   
-  if (DAT_1001e124 == 0) {
+  if (g_haarScratchInit == 0) {
     local_18 = malloc(0x32000);
-    DAT_100ea320 = local_18;
-    DAT_100ea31c = malloc(0x32000);
-    DAT_1001e124 = 1;
+    g_haarScratchA = local_18;
+    g_haarScratchB = malloc(0x32000);
+    g_haarScratchInit = 1;
   }
   else {
-    local_18 = DAT_100ea320;
+    local_18 = g_haarScratchA;
   }
-  piVar1 = DAT_100ea31c;
-  for (local_10 = param_3; local_10 < param_2; local_10 = local_10 << 1) {
-    FUN_10007419(param_1,param_1 + local_10 * local_10,local_18,local_10,local_10,local_10 * 2,
-                 local_10);
-    FUN_10007419(param_1 + local_10 * local_10 * 2,param_1 + local_10 * local_10 * 3,piVar1,local_10
-                 ,local_10,local_10 * 2,local_10);
-    FUN_100074ee(local_18,piVar1,param_1,local_10,local_10 * 2,local_10 * 2,local_10 * 2);
+  piVar1 = g_haarScratchB;
+  for (local_10 = base_size; local_10 < full_size; local_10 = local_10 << 1) {
+    Haar_CombineSumDiff(coeffs,coeffs + local_10 * local_10,local_18,local_10,local_10,local_10 * 2,local_10);
+    Haar_CombineSumDiff(coeffs + local_10 * local_10 * 2,coeffs + local_10 * local_10 * 3,piVar1,local_10,
+                        local_10,local_10 * 2,local_10);
+    Haar_CombineSumDiffHalf(local_18,piVar1,coeffs,local_10,local_10 * 2,local_10 * 2,local_10 * 2);
   }
   return;
 }
 
 // FUNCTION: CARDARTLIB 0x10007419
 void __cdecl
-FUN_10007419(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,
-            int param_7)
+Haar_CombineSumDiff(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,int param_7)
 
 {
   int *piVar1;
@@ -3804,8 +3822,7 @@ FUN_10007419(int *param_1,int *param_2,int *param_3,int param_4,int param_5,unde
 
 // FUNCTION: CARDARTLIB 0x100074EE
 void __cdecl
-FUN_100074ee(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,
-            int param_7)
+Haar_CombineSumDiffHalf(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,int param_7)
 
 {
   int *piVar1;
@@ -3852,8 +3869,8 @@ undefined2 __cdecl FUN_100075c9(uint param_1,uint param_2)
 
 // FUNCTION: CARDARTLIB 0x100075EF
 undefined1 * __cdecl
-FUN_100075ef(undefined1 *param_1,int *param_2,int param_3,int param_4,int param_5,int param_6,
-            int param_7,undefined4 param_8,int param_9)
+YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int height,int chroma_u,int chroma_v,
+                 int chroma_stride,undefined4 unused_chroma_height,int chroma_is_420)
 
 {
   undefined1 *puVar1;
@@ -3867,35 +3884,35 @@ FUN_100075ef(undefined1 *param_1,int *param_2,int param_3,int param_4,int param_
   int local_c;
   int local_8;
   
-  if (DAT_100ea09c == 0) {
+  if (g_yuvClampTableInit == 0) {
     for (local_1c = -0x400; (int)local_1c < 0x1c00; local_1c = local_1c + 1) {
       if ((int)local_1c < 1) {
-        PTR_DAT_1001e128[local_1c] = 0;
+        g_yuvClampTable[local_1c] = 0;
       }
       else {
         iVar2 = (int)local_1c >> 2;
         if (0xfe < iVar2) {
           iVar2 = 0xff;
         }
-        PTR_DAT_1001e128[local_1c] = (char)iVar2;
+        g_yuvClampTable[local_1c] = (char)iVar2;
       }
     }
-    DAT_100ea09c = 1;
+    g_yuvClampTableInit = 1;
   }
-  if (param_1 == (undefined1 *)0x0) {
-    param_1 = malloc(param_3 * param_3 * 3 + 0x10);
+  if (out_bgr24 == (undefined1 *)0x0) {
+    out_bgr24 = malloc(width * width * 3 + 0x10);
   }
-  puVar1 = param_1;
-  for (local_20 = 0; local_20 < param_4; local_20 = local_20 + 1) {
+  puVar1 = out_bgr24;
+  for (local_20 = 0; local_20 < height; local_20 = local_20 + 1) {
     iVar2 = local_20;
-    if (param_9 != 0) {
+    if (chroma_is_420 != 0) {
       iVar2 = local_20 / 2;
     }
-    local_10 = (int *)(iVar2 * param_7 * 4 + param_6);
-    local_14 = (int *)(iVar2 * param_7 * 4 + param_5);
-    for (local_1c = 0; (int)local_1c < param_3; local_1c = local_1c + 1) {
-      iVar2 = *param_2;
-      if (param_9 == 0) {
+    local_10 = (int *)(iVar2 * chroma_stride * 4 + chroma_v);
+    local_14 = (int *)(iVar2 * chroma_stride * 4 + chroma_u);
+    for (local_1c = 0; (int)local_1c < width; local_1c = local_1c + 1) {
+      iVar2 = *luma;
+      if (chroma_is_420 == 0) {
         local_2c = *local_14;
         local_28 = *local_10;
         local_28 = (local_28 >> 3) + (local_28 >> 1) + local_28;
@@ -3906,19 +3923,19 @@ FUN_100075ef(undefined1 *param_1,int *param_2,int param_3,int param_4,int param_
           local_28 = *local_10;
         }
         else {
-          local_2c = (local_14[param_3 - 1U != local_1c] + *local_14) / 2;
-          local_28 = (local_10[param_3 - 1U != local_1c] + *local_10) / 2;
+          local_2c = (local_14[width - 1U != local_1c] + *local_14) / 2;
+          local_28 = (local_10[width - 1U != local_1c] + *local_10) / 2;
         }
         local_28 = (local_28 >> 3) + (local_28 >> 1) + local_28;
       }
       local_8 = local_2c * 2 + -0x400 + iVar2;
       local_c = local_28 + -0x333 + iVar2;
-      *param_1 = PTR_DAT_1001e128[local_8];
-      param_1[1] = PTR_DAT_1001e128
+      *out_bgr24 = g_yuvClampTable[local_8];
+      out_bgr24[1] = g_yuvClampTable
                    [((iVar2 * 2 - (iVar2 >> 2)) - (local_c >> 1)) -
-                    ((local_8 >> 2) - (local_8 >> 4))];
-      param_1[2] = PTR_DAT_1001e128[local_c];
-      if (param_9 == 0) {
+                     ((local_8 >> 2) - (local_8 >> 4))];
+      out_bgr24[2] = g_yuvClampTable[local_c];
+      if (chroma_is_420 == 0) {
         local_14 = local_14 + 1;
         local_10 = local_10 + 1;
       }
@@ -3926,15 +3943,15 @@ FUN_100075ef(undefined1 *param_1,int *param_2,int param_3,int param_4,int param_
         local_14 = local_14 + 1;
         local_10 = local_10 + 1;
       }
-      param_2 = param_2 + 1;
-      param_1 = param_1 + 3;
+      luma = luma + 1;
+      out_bgr24 = out_bgr24 + 3;
     }
   }
   return puVar1;
 }
 
 // FUNCTION: CARDARTLIB 0x100078B8
-undefined4 __cdecl FUN_100078b8(int param_1,int *param_2)
+undefined4 __cdecl Wvl_UnpackPieces(int param_1,int *param_2)
 
 {
   int *piVar1;
@@ -3956,7 +3973,7 @@ undefined4 __cdecl FUN_100078b8(int param_1,int *param_2)
   iVar4 = *(int *)param_2[0x68];
   piVar1 = (int *)param_2[0x68] + 1;
   *piVar1 = -0x80000000;
-  iVar7 = FUN_100025cb(piVar1 + iVar4,piVar1,iVar4);
+  iVar7 = Huffman13_Init(piVar1 + iVar4,piVar1,iVar4);
   local_18 = (void *)((int)(piVar1 + iVar4) + iVar7);
   for (local_28 = 0; local_28 < param_2[10]; local_28 = local_28 + 1) {
     pvVar8 = (void *)((iVar5 * iVar5 + iVar6 * iVar6 * 2 + 0x40) * local_28 * 4 + param_1);
@@ -3964,103 +3981,103 @@ undefined4 __cdecl FUN_100078b8(int param_1,int *param_2)
     _Dst_00 = (void *)((int)_Dst + iVar6 * iVar6 * 4 + 0x80);
     memcpy(pvVar8,local_18,iVar3 * iVar3 * 4);
     puVar2 = (uint *)((int)local_18 + iVar3 * iVar3 * 4);
-    FUN_10002cde((undefined8 *)((int)pvVar8 + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x17]);
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)((int)pvVar8 + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x17]);
     pvVar8 = (void *)((int)puVar2 + param_2[local_28 + 0x17]);
     memcpy(_Dst,pvVar8,iVar3 * iVar3 * 4);
     puVar2 = (uint *)((int)pvVar8 + iVar3 * iVar3 * 4);
-    FUN_10002cde((undefined8 *)((int)_Dst + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x1b]);
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)((int)_Dst + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x1b]);
     pvVar8 = (void *)((int)puVar2 + param_2[local_28 + 0x1b]);
     memcpy(_Dst_00,pvVar8,iVar3 * iVar3 * 4);
     puVar2 = (uint *)((int)pvVar8 + iVar3 * iVar3 * 4);
-    FUN_10002cde((undefined8 *)((int)_Dst_00 + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x1f]);
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)((int)_Dst_00 + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x1f]);
     local_18 = (void *)((int)puVar2 + param_2[local_28 + 0x1f]);
   }
   return 0;
 }
 
 // FUNCTION: CARDARTLIB 0x10007AEF
-bool __cdecl FUN_10007aef(HWND param_1)
+bool __cdecl ClearWindowClientWhite(HWND hwnd)
 
 {
   HDC hDC;
   HBRUSH hbr;
   RECT local_14;
   
-  if (param_1 != (HWND)0x0) {
-    hDC = GetDC(param_1);
-    GetClientRect(param_1,&local_14);
+  if (hwnd != (HWND)0x0) {
+    hDC = GetDC(hwnd);
+    GetClientRect(hwnd,&local_14);
     hbr = GetStockObject(0);
     FillRect(hDC,&local_14,hbr);
-    ReleaseDC(param_1,hDC);
+    ReleaseDC(hwnd,hDC);
   }
-  return param_1 != (HWND)0x0;
+  return hwnd != (HWND)0x0;
 }
 
 // FUNCTION: CARDARTLIB 0x10007B58
 int __cdecl
-FUN_10007b58(HWND param_1,void *param_2,int param_3,int param_4,DWORD param_5,DWORD param_6)
+BlitBgr24ToHwnd(HWND hwnd,const void *bgr24,int x,int y,DWORD width,DWORD height)
 
 {
   BITMAPINFO *lpbmi;
   HDC hdc;
   int iVar1;
   
-  lpbmi = (BITMAPINFO *)FUN_10007bdb(param_5,param_6,0x18);
-  hdc = GetDC(param_1);
-  iVar1 = SetDIBitsToDevice(hdc,param_3,param_4,param_5,param_6,0,0,0,param_6,param_2,lpbmi,0);
-  ReleaseDC(param_1,hdc);
-  FUN_10007cff(lpbmi);
+  lpbmi = AllocBitmapInfoTopDown((int)width,(int)height,0x18);
+  hdc = GetDC(hwnd);
+  iVar1 = SetDIBitsToDevice(hdc,x,y,width,height,0,0,0,height,(void *)bgr24,lpbmi,0);
+  ReleaseDC(hwnd,hdc);
+  FreeBitmapInfo(lpbmi);
   return iVar1;
 }
 
 // FUNCTION: CARDARTLIB 0x10007BDB
-undefined4 * __cdecl FUN_10007bdb(undefined4 param_1,int param_2,int param_3)
+BITMAPINFO * __cdecl AllocBitmapInfoTopDown(int width,int height,int bits_per_pixel)
 
 {
   int local_10;
   undefined4 *local_c;
-  undefined4 *local_8;
+  BITMAPINFO *local_8;
   
-  if (param_3 == 8) {
+  if (bits_per_pixel == 8) {
     local_8 = malloc(0x42c);
   }
-  else if (param_3 == 0x18) {
+  else if (bits_per_pixel == 0x18) {
     local_8 = malloc(0x2c);
   }
   else {
     local_8 = malloc(0x2c);
   }
-  *local_8 = 0x28;
-  local_8[1] = param_1;
-  local_8[2] = -param_2;
-  *(undefined2 *)(local_8 + 3) = 1;
-  *(short *)((int)local_8 + 0xe) = (short)param_3;
-  local_8[4] = 0;
-  local_8[5] = 0;
-  local_8[6] = 0;
-  local_8[7] = 0;
-  if (param_3 == 8) {
-    local_8[8] = 0x100;
-    local_8[9] = 0x100;
-    local_c = local_8 + 10;
+  local_8->bmiHeader.biSize = 0x28;
+  local_8->bmiHeader.biWidth = width;
+  local_8->bmiHeader.biHeight = -height;
+  local_8->bmiHeader.biPlanes = 1;
+  local_8->bmiHeader.biBitCount = (short)bits_per_pixel;
+  local_8->bmiHeader.biCompression = 0;
+  local_8->bmiHeader.biSizeImage = 0;
+  local_8->bmiHeader.biXPelsPerMeter = 0;
+  local_8->bmiHeader.biYPelsPerMeter = 0;
+  if (bits_per_pixel == 8) {
+    local_8->bmiHeader.biClrUsed = 0x100;
+    local_8->bmiHeader.biClrImportant = 0x100;
+    local_c = (undefined4 *)&local_8->bmiColors[0];
     for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
       *(short *)local_c = (short)local_10;
       local_c = (undefined4 *)((int)local_c + 2);
     }
   }
   else {
-    local_8[8] = 0;
-    local_8[9] = 0;
+    local_8->bmiHeader.biClrUsed = 0;
+    local_8->bmiHeader.biClrImportant = 0;
   }
   return local_8;
 }
 
 // FUNCTION: CARDARTLIB 0x10007CFF
-undefined4 __cdecl FUN_10007cff(void *param_1)
+bool __cdecl FreeBitmapInfo(void *ptr)
 
 {
-  FUN_1000a210(param_1);
-  return 1;
+  FreeIfNotNull(ptr);
+  return true;
 }
 
 // FUNCTION: CARDARTLIB 0x10007D20
@@ -4071,7 +4088,7 @@ undefined4 __cdecl FUN_10007cff(void *param_1)
 /* WARNING: Removing unreachable block (ram,0x10007e9f) */
 /* WARNING: Removing unreachable block (ram,0x10007e8c) */
 
-undefined4 * __cdecl FUN_10007d20(undefined4 *param_1,int *param_2,int param_3,int param_4)
+unsigned char * __cdecl Wvl_DecodeToBgr24BufferScaled(unsigned char *param_1,int *param_2,int param_3,int param_4)
 
 {
   int iVar1;
@@ -4103,7 +4120,7 @@ undefined4 * __cdecl FUN_10007d20(undefined4 *param_1,int *param_2,int param_3,i
     iVar1 = param_2[7];
     iVar2 = param_2[8];
     if (param_2[0x6a] == 0) {
-      local_40 = FUN_10006be3(param_2,(undefined8 *)0x0);
+      local_40 = Wvl_DecodeHaar(param_2,(undefined8 *)0x0);
     }
     else {
       local_40 = (undefined8 *)param_2[0x6b];
@@ -4134,33 +4151,33 @@ undefined4 * __cdecl FUN_10007d20(undefined4 *param_1,int *param_2,int param_3,i
       local_38 = local_38 + (iVar2 << 0x10) / param_4;
       param_1 = (undefined4 *)((int)param_1 + iVar7);
     }
-    FUN_1000a210(piVar5);
+    FreeIfNotNull(piVar5);
     if (param_2[0x6a] == 0) {
-      FUN_1000a210(local_40);
+      FreeIfNotNull(local_40);
     }
   }
   return puVar4;
 }
 
 // FUNCTION: CARDARTLIB 0x10008015
-bool __cdecl FUN_10008015(HWND param_1,int *param_2,DWORD param_3,DWORD param_4)
+bool __cdecl DrawWvlToHwnd(HWND hwnd,int *wvl,DWORD width,DWORD height)
 
 {
   undefined4 *puVar1;
   
-  if (param_2 != (int *)0x0) {
-    puVar1 = FUN_10007d20((undefined4 *)0x0,param_2,param_3,param_4);
-    FUN_10007b58(param_1,puVar1,0,0,param_3,param_4);
-    FUN_1000a210(puVar1);
+  if (wvl != (int *)0x0) {
+    puVar1 = (undefined4 *)Wvl_DecodeToBgr24BufferScaled((unsigned char *)0x0,wvl,width,height);
+    BlitBgr24ToHwnd(hwnd,puVar1,0,0,width,height);
+    FreeIfNotNull(puVar1);
   }
-  return param_2 != (int *)0x0;
+  return wvl != (int *)0x0;
 }
 
 // FUNCTION: CARDARTLIB 0x1000807F
 /* WARNING: Removing unreachable block (ram,0x10008470) */
 /* WARNING: Removing unreachable block (ram,0x1000824d) */
 
-uint * __cdecl FUN_1000807f(uint *param_1,int *param_2,int param_3,int param_4)
+uint * __cdecl Wvl_DecodeToBgr24(uint *param_1,int *param_2,int param_3,int param_4)
 
 {
   int iVar1;
@@ -4187,7 +4204,7 @@ uint * __cdecl FUN_1000807f(uint *param_1,int *param_2,int param_3,int param_4)
   uint local_100c [1016];
   undefined4 uStackY_2c;
   
-  FUN_1000b7a0();
+  MSVC_StackProbe();
   local_1034 = 0;
   local_1048 = 0;
   local_102c = 0;
@@ -4203,7 +4220,7 @@ uint * __cdecl FUN_1000807f(uint *param_1,int *param_2,int param_3,int param_4)
     iVar1 = local_1018 / param_3;
     iVar2 = local_1024 / param_4;
     if (param_2[0x6a] == 0) {
-      local_1050 = FUN_10006be3(param_2,(undefined8 *)&DAT_10032c98);
+      local_1050 = Wvl_DecodeHaar(param_2,(undefined8 *)&DAT_10032c98);
     }
     else {
       local_1050 = (undefined8 *)param_2[0x6b];
@@ -4289,37 +4306,37 @@ uint * __cdecl FUN_1000807f(uint *param_1,int *param_2,int param_3,int param_4)
     }
     iVar1 = (4 - (param_3 * 3) % 4) % 4;
     if (DAT_1001d258 == 0) {
-      FUN_10005591(local_5054,param_4,param_3,iVar1);
+      QuantizeBgr24ToNearestPaletteColorInPlace(local_5054,param_4,param_3,iVar1);
     }
     else if (DAT_101221e8 == 0x10) {
       uStackY_2c = 0x10008757;
-      FUN_100062c7(DAT_1001d258,DAT_1001d25c,(int)local_5054,param_4,param_3,iVar1);
+      DitherBgr24ToRgbQuantizedF8(DAT_1001d258,DAT_1001d25c,local_5054,param_4,param_3,iVar1);
     }
     else if (DAT_101221e8 == 8) {
       uStackY_2c = 0x10008793;
-      FUN_1000570f(DAT_1001d258,DAT_1001d25c,local_5054,param_4,param_3,iVar1);
+      DitherBgr24ToPaletteColors(DAT_1001d258,DAT_1001d25c,local_5054,param_4,param_3,iVar1);
     }
   }
   return local_5054;
 }
 
 // FUNCTION: CARDARTLIB 0x100087A6
-undefined4 __cdecl FUN_100087a6(HWND param_1,int *param_2,DWORD param_3,DWORD param_4)
+undefined4 __cdecl DrawWvlToHwndDithered(HWND hwnd,int *wvl,DWORD width,DWORD height)
 
 {
   undefined4 uVar1;
   uint *puVar2;
   
-  if (param_2 == (int *)0x0) {
+  if (wvl == (int *)0x0) {
     uVar1 = 0;
   }
   else {
-    puVar2 = FUN_1000807f((uint *)0x0,param_2,param_3,param_4);
-    FUN_1000570f(DAT_1001d258,DAT_1001d25c,puVar2,param_4,param_3,
-                 (DAT_1001e0e0 - (int)(param_3 * 3) % DAT_1001e0e0) % DAT_1001e0e0);
-    FUN_10007b58(param_1,puVar2,0,0,param_3,param_4);
-    if ((uint *)param_2[0x6b] != puVar2) {
-      FUN_1000a210(puVar2);
+    puVar2 = Wvl_DecodeToBgr24((uint *)0x0,wvl,width,height);
+    DitherBgr24ToPaletteColors(DAT_1001d258,DAT_1001d25c,puVar2,height,width,
+                 (DAT_1001e0e0 - (int)(width * 3) % DAT_1001e0e0) % DAT_1001e0e0);
+    BlitBgr24ToHwnd(hwnd,puVar2,0,0,width,height);
+    if ((uint *)wvl[0x6b] != puVar2) {
+      FreeIfNotNull(puVar2);
     }
     uVar1 = 1;
   }
@@ -4327,42 +4344,42 @@ undefined4 __cdecl FUN_100087a6(HWND param_1,int *param_2,DWORD param_3,DWORD pa
 }
 
 // FUNCTION: CARDARTLIB 0x10008867
-undefined4 * __cdecl FUN_10008867(int param_1)
+void * __cdecl AlignedAlloc8(int size)
 
 {
-  undefined4 *local_8;
+  undefined4 *ptr;
   
-  local_8 = malloc(param_1 + 8);
-  if (((uint)local_8 & 7) == 0) {
-    local_8[1] = 0;
-    local_8 = local_8 + 2;
+  ptr = malloc(size + 8);
+  if (((uint)ptr & 7) == 0) {
+    ptr[1] = 0;
+    ptr = ptr + 2;
   }
   else {
-    *local_8 = 0xffffffff;
-    local_8 = local_8 + 1;
+    *ptr = 0xffffffff;
+    ptr = ptr + 1;
   }
-  return local_8;
+  return ptr;
 }
 
 // FUNCTION: CARDARTLIB 0x100088B9
-void __cdecl FUN_100088b9(int param_1)
+void __cdecl AlignedFree8(void *ptr)
 
 {
   undefined4 local_8;
   
-  if (*(int *)(param_1 + -4) == 0) {
-    local_8 = (void *)(param_1 + -8);
+  if (*(int *)((int)ptr + -4) == 0) {
+    local_8 = (void *)((int)ptr + -8);
   }
   else {
-    local_8 = (void *)(param_1 + -4);
+    local_8 = (void *)((int)ptr + -4);
   }
-  FUN_1000a210(local_8);
+  FreeIfNotNull(local_8);
   return;
 }
 
 // FUNCTION: CARDARTLIB 0x100088F3
 int __cdecl
-FUN_100088f3(HWND param_1,int param_2,int param_3,int param_4,DWORD param_5,DWORD param_6)
+BlitInt32ToHwndGrayscale(HWND hwnd,int pixels_int32,int dst_x,int dst_y,DWORD width,DWORD height)
 
 {
   undefined1 *_Dst;
@@ -4379,12 +4396,12 @@ FUN_100088f3(HWND param_1,int param_2,int param_3,int param_4,DWORD param_5,DWOR
   
   local_1c = 0;
   local_8 = 0;
-  _Dst = malloc(param_5 * param_6 * 3 + 8);
-  memset(_Dst,0,param_5 * param_6 * 3);
+  _Dst = malloc(width * height * 3 + 8);
+  memset(_Dst,0,width * height * 3);
   local_14 = _Dst;
-  for (local_2c = 0; local_2c < (int)param_6; local_2c = local_2c + 1) {
-    for (local_28 = 0; local_28 < (int)param_5; local_28 = local_28 + 1) {
-      iVar1 = *(int *)(local_28 * 4 + param_5 * local_2c * 4 + param_2) >> 2;
+  for (local_2c = 0; local_2c < (int)height; local_2c = local_2c + 1) {
+    for (local_28 = 0; local_28 < (int)width; local_28 = local_28 + 1) {
+      iVar1 = *(int *)(local_28 * 4 + width * local_2c * 4 + pixels_int32) >> 2;
       iVar2 = iVar1;
       if ((local_8 <= iVar1) && (iVar2 = local_8, local_1c < iVar1)) {
         local_1c = iVar1;
@@ -4403,17 +4420,17 @@ FUN_100088f3(HWND param_1,int param_2,int param_3,int param_4,DWORD param_5,DWOR
       local_14 = local_14 + 3;
     }
   }
-  lpbmi = (BITMAPINFO *)FUN_10007bdb(param_5,param_6,0x18);
-  hdc = GetDC(param_1);
-  iVar2 = SetDIBitsToDevice(hdc,param_3,param_4,param_5,param_6,0,0,0,param_6,_Dst,lpbmi,0);
-  ReleaseDC(param_1,hdc);
-  FUN_10007cff(lpbmi);
-  FUN_1000a210(_Dst);
+  lpbmi = AllocBitmapInfoTopDown((int)width,(int)height,0x18);
+  hdc = GetDC(hwnd);
+  iVar2 = SetDIBitsToDevice(hdc,dst_x,dst_y,width,height,0,0,0,height,_Dst,lpbmi,0);
+  ReleaseDC(hwnd,hdc);
+  FreeBitmapInfo(lpbmi);
+  FreeIfNotNull(_Dst);
   return iVar2;
 }
 
 // FUNCTION: CARDARTLIB 0x10009490
-uint * __cdecl FUN_10009490(uint *param_1,uint *param_2)
+char * __cdecl StrCopy(char *dst,const char *src)
 
 {
   byte bVar1;
@@ -4421,37 +4438,37 @@ uint * __cdecl FUN_10009490(uint *param_1,uint *param_2)
   uint uVar3;
   uint *puVar4;
   
-  puVar4 = param_1;
-  while (((uint)param_2 & 3) != 0) {
-    bVar1 = (byte)*param_2;
+  puVar4 = (uint *)dst;
+  while (((uint)src & 3) != 0) {
+    bVar1 = *(byte *)src;
     uVar3 = (uint)bVar1;
-    param_2 = (uint *)((int)param_2 + 1);
+    src = (const char *)((int)src + 1);
     if (bVar1 == 0) goto LAB_10009578;
     *(byte *)puVar4 = bVar1;
     puVar4 = (uint *)((int)puVar4 + 1);
   }
   do {
-    uVar2 = *param_2;
-    uVar3 = *param_2;
-    param_2 = param_2 + 1;
+    uVar2 = *(uint *)src;
+    uVar3 = *(uint *)src;
+    src = (const char *)((int)src + 4);
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
       if ((char)uVar3 == '\0') {
 LAB_10009578:
         *(byte *)puVar4 = (byte)uVar3;
-        return param_1;
+        return dst;
       }
       if ((char)(uVar3 >> 8) == '\0') {
         *(short *)puVar4 = (short)uVar3;
-        return param_1;
+        return dst;
       }
       if ((uVar3 & 0xff0000) == 0) {
         *(short *)puVar4 = (short)uVar3;
         *(byte *)((int)puVar4 + 2) = 0;
-        return param_1;
+        return dst;
       }
       if ((uVar3 & 0xff000000) == 0) {
         *puVar4 = uVar3;
-        return param_1;
+        return dst;
       }
     }
     *puVar4 = uVar3;
@@ -4460,7 +4477,7 @@ LAB_10009578:
 }
 
 // FUNCTION: CARDARTLIB 0x100094A0
-uint * __cdecl FUN_100094a0(uint *param_1,uint *param_2)
+char * __cdecl StrCat(char *dst,const char *src)
 
 {
   byte bVar1;
@@ -4469,7 +4486,7 @@ uint * __cdecl FUN_100094a0(uint *param_1,uint *param_2)
   uint uVar4;
   uint *puVar5;
   
-  puVar3 = param_1;
+  puVar3 = (uint *)dst;
   do {
     if (((uint)puVar3 & 3) == 0) goto LAB_100094bc;
     uVar4 = *puVar3;
@@ -4498,38 +4515,38 @@ LAB_100094ef:
   puVar5 = (uint *)((int)puVar3 + -1);
 joined_r0x1000950b:
   do {
-    if (((uint)param_2 & 3) == 0) {
+    if (((uint)src & 3) == 0) {
       do {
-        uVar2 = *param_2;
-        uVar4 = *param_2;
-        param_2 = param_2 + 1;
+        uVar2 = *(uint *)src;
+        uVar4 = *(uint *)src;
+        src = (const char *)((int)src + 4);
         if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
           if ((char)uVar4 == '\0') {
 LAB_10009578:
             *(byte *)puVar5 = (byte)uVar4;
-            return param_1;
+            return dst;
           }
           if ((char)(uVar4 >> 8) == '\0') {
             *(short *)puVar5 = (short)uVar4;
-            return param_1;
+            return dst;
           }
           if ((uVar4 & 0xff0000) == 0) {
             *(short *)puVar5 = (short)uVar4;
             *(byte *)((int)puVar5 + 2) = 0;
-            return param_1;
+            return dst;
           }
           if ((uVar4 & 0xff000000) == 0) {
             *puVar5 = uVar4;
-            return param_1;
+            return dst;
           }
         }
         *puVar5 = uVar4;
         puVar5 = puVar5 + 1;
       } while( true );
     }
-    bVar1 = (byte)*param_2;
+    bVar1 = *(byte *)src;
     uVar4 = (uint)bVar1;
-    param_2 = (uint *)((int)param_2 + 1);
+    src = (const char *)((int)src + 1);
     if (bVar1 == 0) goto LAB_10009578;
     *(byte *)puVar5 = bVar1;
     puVar5 = (uint *)((int)puVar5 + 1);
@@ -4539,7 +4556,7 @@ LAB_10009578:
 // FUNCTION: CARDARTLIB 0x1000B7A0
 /* WARNING: Unable to track spacebase fully for stack */
 
-void FUN_1000b7a0(void)
+void MSVC_StackProbe(void)
 
 {  uint in_EAX;
   undefined1 *puVar1;
