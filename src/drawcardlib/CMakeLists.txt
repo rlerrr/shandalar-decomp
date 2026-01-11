@@ -16,7 +16,7 @@ if (TARGET cardartlib)
 endif()
 
 if (MSVC)
-  # Force CardArtLib to build with debug-style settings.
+  # Force DrawCardLib to build with debug-style settings.
   target_compile_options(drawcardlib PRIVATE /Od /Zi)
   target_compile_definitions(drawcardlib PRIVATE _DEBUG DEBUG)
 

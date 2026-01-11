@@ -128,7 +128,7 @@ char s__s__04d_c_WVL_1001d224[] = "%s\\%04d%c.WVL";
 char s__s__04d_WVL_1001d234[] = "%s\\%04d.WVL";
 
 // GLOBAL: CARDARTLIB 0x1001d240
-undefined4 DAT_1001d240 = 0x00000000;
+int DAT_1001d240 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d244
 undefined4 * PTR_DAT_1001d244 = &DAT_100ed70c;
@@ -347,7 +347,7 @@ undefined4 DAT_100322cc = 0x00000000;
 undefined4 DAT_100322d0 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322d4
-undefined4 DAT_100322d4 = 0x00000000;
+int DAT_100322d4 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322d8
 undefined1 DAT_100322d8 = 0x00;
@@ -2242,67 +2242,70 @@ void * OctreeNode_Create(void)
 // FUNCTION: CARDARTLIB 0x10004a83
 undefined2 * ReadPalette(char *param_1,char *param_2)
 {
-  char local_120 [256];
-  int local_20;
-  int local_1c;
-  FILE *local_18;
-  char *local_14;
-  int local_10;
-  uint local_c;
-  undefined2 *local_8;
+  struct {
+    uint rgbTemp;
+    char local_120 [256];
+    int local_20;
+    int local_1c;
+    FILE *local_18;
+    char *local_14;
+    int local_10;
+    uint local_c;
+    undefined2 *local_8;
+  } s;
   
-  local_20 = 0;
-  local_8 = &DAT_10116cf0;
-  DAT_10116cf0 = 0x300;
-  local_18 = fopen(param_1,s__rt_1001e064);
-  if (local_18 == (FILE *)0x0) {
-    local_8 = (undefined2 *)0x0;
+  s.local_20 = 0;
+  s.local_8 = &DAT_10116cf0;
+  *s.local_8 = 0x300;
+  s.local_18 = fopen(param_1,s__rt_1001e064);
+  if (s.local_18 == (FILE *)0x0) {
+    return 0;
   }
-  else {
-    if (g_paletteOctreeRoot != (int *)0x0) {
-      Octree_Destroy(g_paletteOctreeRoot);
-    }
-    g_paletteOctreeRoot = OctreeNode_Create();
-    fgets(local_120,0xff,local_18);
-    while ((local_18->_flag & 0x10) == 0) {
-      sscanf(local_120,s__d____d__d__d_1001e068,&local_20,&local_10,&local_1c,&local_c);
-      local_14 = strchr(local_120,0x2d);
-      local_14 = local_14 + 1;
-      local_14 = strchr(local_14,0x2d);
-      local_14 = local_14 + 1;
-      Octree_InsertPathString(g_paletteOctreeRoot,local_14,local_20);
-      *(uint *)(g_paletteRgbTable + local_20 * 4) = local_10 << 0x10 | local_1c << 8 | local_c;
-      *(undefined1 *)(local_8 + local_20 * 2 + 2) = (undefined1)local_10;
-      *(undefined1 *)((int)local_8 + local_20 * 4 + 5) = (undefined1)local_1c;
-      *(undefined1 *)(local_8 + local_20 * 2 + 3) = (undefined1)local_c;
-      if ((local_20 == 0) || (local_20 == 0xff)) {
-        *(undefined1 *)((int)local_8 + local_20 * 4 + 7) = 0;
-      }
-      else {
-        *(undefined1 *)((int)local_8 + local_20 * 4 + 7) = 1;
-      }
-      fgets(local_120,0xff,local_18);
-    }
-    DAT_100322d4 = 0;
-    DAT_1001d240 = 0;
-    _DAT_10031eb8 = OctreeNode_FinalizeSubtree(g_paletteOctreeRoot);
-    DAT_1001d240 = DAT_1001d240 + -1;
-    local_8[1] = 0x100;
-    fclose(local_18);
-    local_18 = (FILE *)0x0;
-    if (param_2 != (char *)0x0) {
-      local_18 = fopen(param_2,s__rb_1001e078);
-    }
-    if (local_18 != (FILE *)0x0) {
-      fread(&DAT_10116cf0,0x404,1,local_18);
-      fclose(local_18);
-    }
-    *(undefined1 *)((int)local_8 + 0x403) = 0;
-    *(undefined1 *)((int)local_8 + 7) = *(undefined1 *)((int)local_8 + 0x403);
-    InitOctreeBitTables();
-    InitDiffSquaredLookupTable();
+
+  if (g_paletteOctreeRoot != (int *)0x0) {
+    Octree_Destroy(g_paletteOctreeRoot);
   }
-  return local_8;
+  g_paletteOctreeRoot = OctreeNode_Create();
+  fgets(s.local_120,0xff,s.local_18);
+  while ((s.local_18->_flag & 0x10) == 0) {
+    sscanf(s.local_120,s__d____d__d__d_1001e068,&s.local_20,&s.local_10,&s.local_1c,&s.local_c);
+    s.local_14 = strchr(s.local_120,0x2d) + 1;
+    s.local_14 = strchr(s.local_14,0x2d) + 1;
+
+    Octree_InsertPathString(g_paletteOctreeRoot,s.local_14,s.local_20);
+    s.rgbTemp = s.local_10 << 0x10 | s.local_1c << 8 | s.local_c;
+    ((uint *)g_paletteRgbTable)[s.local_20] = s.rgbTemp;
+    *(undefined1 *)(s.local_8 + s.local_20 * 2 + 2) = (undefined1)s.local_10;
+    *(undefined1 *)((int)s.local_8 + s.local_20 * 4 + 5) = (undefined1)s.local_1c;
+    *(undefined1 *)(s.local_8 + s.local_20 * 2 + 3) = (undefined1)s.local_c;
+    if ((s.local_20 == 0) || (s.local_20 == 0xff)) {
+      *(undefined1 *)((int)s.local_8 + s.local_20 * 4 + 7) = 0;
+    }
+    else {
+      *(undefined1 *)((int)s.local_8 + s.local_20 * 4 + 7) = 1;
+    }
+    fgets(s.local_120,0xff,s.local_18);
+  }
+  DAT_100322d4 = 0;
+  DAT_1001d240 = DAT_100322d4;
+  _DAT_10031eb8 = OctreeNode_FinalizeSubtree(g_paletteOctreeRoot);
+  DAT_1001d240 = DAT_1001d240 + -1;
+  s.local_8[1] = 0x100;
+  fclose(s.local_18);
+  s.local_18 = (FILE *)0x0;
+  if (param_2 != (char *)0x0) {
+    s.local_18 = fopen(param_2,s__rb_1001e078);
+  }
+  if (s.local_18 != (FILE *)0x0) {
+    fread(&DAT_10116cf0,0x404,1,s.local_18);
+    fclose(s.local_18);
+  }
+  *(undefined1 *)((int)s.local_8 + 0x403) = 0;
+  *(undefined1 *)((int)s.local_8 + 7) = *(undefined1 *)((int)s.local_8 + 0x403);
+  InitOctreeBitTables();
+  InitDiffSquaredLookupTable();
+
+  return s.local_8;
 }
 
 // FUNCTION: CARDARTLIB 0x10004cd7
@@ -2343,68 +2346,60 @@ void OctreeNode_CollectLeafIndices(int *param_1,int param_2,int *param_3)
 // FUNCTION: CARDARTLIB 0x10004dc8
 int OctreeNode_FinalizeSubtree(int *param_1)
 {
-  int iVar1;
-  void *pvVar2;
-  size_t local_410;
-  int local_40c;
-  int local_408;
-  undefined1 local_404 [1024];
+  struct {
+    size_t local_410;
+    int i;
+    int local_408;
+    undefined1 local_404 [1024];
+  } s;
   
-  iVar1 = DAT_100322d4;
-  local_408 = 0;
-  local_410 = 0;
+  //iVar1 = DAT_100322d4;
+  s.local_408 = 0;
+  s.local_410 = 0;
   DAT_100322d4 = DAT_100322d4 + 1;
   if (DAT_1001d240 < DAT_100322d4) {
     DAT_1001d240 = DAT_100322d4;
   }
-  if (*param_1 == 0) {
-    for (local_40c = 0; local_40c < 8; local_40c = local_40c + 1) {
-      if (param_1[local_40c + 2] != 0) {
-        iVar1 = OctreeNode_FinalizeSubtree((int *)param_1[local_40c + 2]);
-        local_408 = local_408 + iVar1;
-        local_410 = local_410 + 1;
-      }
-    }
-    if (local_410 != 0) {
-      local_410 = 0;
-      OctreeNode_CollectLeafIndices(param_1,(int)local_404,(int *)&local_410);
-      pvVar2 = malloc(local_410);
-      param_1[10] = (int)pvVar2;
-      param_1[0xb] = local_410;
-      memcpy((void *)param_1[10],local_404,local_410);
-    }
-    DAT_100322d4 = DAT_100322d4 + -1;
+  if (*param_1 != 0) {
+    DAT_100322d4--;
+    return 1;
   }
-  else {
-    local_408 = 1;
-    DAT_100322d4 = iVar1;
+
+  for (s.i = 0; s.i < 8; s.i = s.i + 1) {
+    if (param_1[s.i + 2] != 0) {
+      s.local_408 = s.local_408 + OctreeNode_FinalizeSubtree((int *)param_1[s.i + 2]);
+      s.local_410 = s.local_410 + 1;
+    }
   }
-  return local_408;
+  if (s.local_410 != 0) {
+    s.local_410 = 0;
+    OctreeNode_CollectLeafIndices(param_1,(int)s.local_404,(int *)&s.local_410);
+    param_1[10] = (int)malloc(s.local_410);
+    param_1[0xb] = s.local_410;
+    memcpy((void *)param_1[10],s.local_404,s.local_410);
+  }
+  DAT_100322d4 = DAT_100322d4 + -1;
+
+  return s.local_408;
 }
 
 // FUNCTION: CARDARTLIB 0x10004f07
 undefined4 Octree_InsertPathString(undefined4 *param_1,char *param_2,undefined4 param_3)
 {
-  size_t sVar1;
   int iVar2;
-  void *pvVar3;
-  size_t sVar4;
-  size_t sVar5;
-  char *_Control;
-  
-  sVar1 = strspn(param_2,s__sp_lf_1001e07c);
-  for (param_2 = param_2 + sVar1; *param_2 != '\0'; param_2 = param_2 + sVar1 + sVar4 + sVar5) {
+
+  param_2 += strspn(param_2,s__sp_lf_1001e07c);
+  while (*param_2 != '\0') {
     iVar2 = atoi(param_2);
     if (param_1[iVar2 + 2] == 0) {
-      pvVar3 = OctreeNode_Create();
-      param_1[iVar2 + 2] = pvVar3;
+      param_1[iVar2 + 2] = OctreeNode_Create();
     }
     param_1 = (undefined4 *)param_1[iVar2 + 2];
-    _Control = s__sp_lf__1001e084;
-    sVar1 = strspn(param_2,s__sp_lf__1001e088);
-    sVar1 = strcspn(param_2 + sVar1,_Control);
-    sVar4 = strspn(param_2,s__sp_lf__1001e080);
-    sVar5 = strspn(param_2 + sVar1 + sVar4,s__sp_lf__1001e08c);
+
+    param_2 += strspn(param_2 +=  
+        strcspn(param_2 + strspn(param_2,s__sp_lf__1001e088),s__sp_lf__1001e084) + 
+        strspn(param_2,s__sp_lf__1001e080)
+      ,s__sp_lf__1001e08c);
   }
   *param_1 = 1;
   param_1[1] = param_3;
@@ -2438,56 +2433,38 @@ int Octree_Destroy(int *rootPtr)
 }
 
 // FUNCTION: CARDARTLIB 0x1000508d
-void Octree_BuildPathBytesFromRgb(uint rgb,uint *out_path_words)
+void Octree_BuildPathBytesFromRgb(uint rgb,char *out_path_words)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
+  struct {
+    int iVar2;
+    int iVar3;
+    int iVar1;
+  } s;
   
-  iVar1 = ((rgb & 0xff0000) >> 0x10) * 8;
-  uVar4 = *(uint *)(PTR_DAT_1001d254 + iVar1 + 4);
-  iVar2 = (rgb >> 8 & 0xff) * 8;
-  uVar5 = *(uint *)(PTR_DAT_1001d250 + iVar2 + 4);
-  iVar3 = (rgb & 0xff) * 8;
-  uVar6 = *(uint *)(PTR_DAT_1001d24c + iVar3 + 4);
-  *out_path_words = *(uint *)(PTR_DAT_1001d254 + iVar1) | *(uint *)(PTR_DAT_1001d250 + iVar2) |
-             *(uint *)(PTR_DAT_1001d24c + iVar3);
-  out_path_words[1] = uVar4 | uVar5 | uVar6;
-  return;
+  s.iVar3 = (rgb & 0xff);
+  s.iVar2 = ((RGBQUAD *) &rgb)->rgbGreen;
+  s.iVar1 = ((rgb & 0xff0000) >> 0x10);
+
+  *(uint *)out_path_words = *(uint *)(DAT_100ecb10 + s.iVar1 * 8) | *(uint *)(DAT_10115cf0 + s.iVar2 * 8) | *(uint *)(DAT_101164f0 + s.iVar3 * 8);
+  *(uint *)(out_path_words + 4) = *(uint *)(DAT_100ecb10 + s.iVar1 * 8 + 4) | *(uint *)(DAT_10115cf0 + s.iVar2 * 8 + 4) | *(uint *)(DAT_101164f0 + s.iVar3 * 8 + 4);
 }
 
 // FUNCTION: CARDARTLIB 0x100050f1
 undefined4 InitOctreeBitTables(void)
 {
-  uint local_10;
-  int local_c;
-  uint local_8;
+  struct {
+    int local_10;
+    int j;
+    int i;
+  } s;
   
-  for (local_8 = 0; (int)local_8 < 0x100; local_8 = local_8 + 1) {
-    local_10 = 0x80;
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      if ((local_8 & local_10) == 0) {
-        PTR_DAT_1001d24c[local_8 * 8 + local_c] = 0;
-      }
-      else {
-        PTR_DAT_1001d24c[local_8 * 8 + local_c] = 4;
-      }
-      if ((local_8 & local_10) == 0) {
-        PTR_DAT_1001d250[local_8 * 8 + local_c] = 0;
-      }
-      else {
-        PTR_DAT_1001d250[local_8 * 8 + local_c] = 2;
-      }
-      if ((local_8 & local_10) == 0) {
-        PTR_DAT_1001d254[local_8 * 8 + local_c] = 0;
-      }
-      else {
-        PTR_DAT_1001d254[local_8 * 8 + local_c] = 1;
-      }
-      local_10 = (int)local_10 >> 1;
+  for (s.i = 0; s.i < 0x100; s.i++) {
+    for (s.j = 0, s.local_10 = 0x80; s.j < 8; s.j++, s.local_10 = s.local_10 >> 1) {
+      PTR_DAT_1001d24c[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 4 : 0;
+
+      PTR_DAT_1001d250[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 2 : 0;
+
+      PTR_DAT_1001d254[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 1 : 0;
     }
   }
   return 0;
@@ -3078,7 +3055,6 @@ uint Rgb888_QuantizeToF8(uint param_1)
 
 // FUNCTION: CARDARTLIB 0x100068f0
 int * Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3)
-
 {
   size_t sVar1;
   undefined8 *puVar2;
@@ -3347,81 +3323,101 @@ void SetBytes(void *dst,uint value,size_t size)
 
 // FUNCTION: CARDARTLIB 0x100072dc
 void Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size)
-
 {
-  int *piVar1;
-  int *local_18;
-  int local_10;
+  struct {
+    int *idk;
+    int *piVar1; // ebp - 0x18
+    int *haarScratchA; // ebp - 0x14
+    int *haarScratchB; // ebp - 0x10
+    int i; // ebp - 0xc
+    int pad2; // ebp - 8
+    int *pad3; // ebp - 4
+  } s;
   
   if (g_haarScratchInit == 0) {
-    local_18 = malloc(0x32000);
-    g_haarScratchA = local_18;
+    g_haarScratchA = malloc(0x32000);
+    s.haarScratchA = g_haarScratchA;
     g_haarScratchB = malloc(0x32000);
+
+    s.haarScratchB = g_haarScratchB;
     g_haarScratchInit = 1;
   }
   else {
-    local_18 = g_haarScratchA;
+    s.haarScratchA = g_haarScratchA;
+    s.haarScratchB = g_haarScratchB;
   }
-  piVar1 = g_haarScratchB;
-  for (local_10 = base_size; local_10 < full_size; local_10 = local_10 << 1) {
-    Haar_CombineSumDiff(coeffs,coeffs + local_10 * local_10,local_18,local_10,local_10,local_10 * 2,local_10);
-    Haar_CombineSumDiff(coeffs + local_10 * local_10 * 2,coeffs + local_10 * local_10 * 3,piVar1,local_10,
-                        local_10,local_10 * 2,local_10);
-    Haar_CombineSumDiffHalf(local_18,piVar1,coeffs,local_10,local_10 * 2,local_10 * 2,local_10 * 2);
+
+
+  for (s.i = base_size; s.i < full_size; s.i = s.i << 1) {
+    s.pad2 = coeffs;
+    s.idk = &coeffs[s.i*s.i];
+
+    Haar_CombineSumDiff(s.pad2,s.idk,s.haarScratchA,s.i,s.i,s.i * 2,s.i);
+
+    s.pad3 = &coeffs[s.i*s.i*2];
+    s.piVar1 = &coeffs[s.i*s.i*3];
+
+    Haar_CombineSumDiff(s.pad3,s.piVar1,s.haarScratchB, s.i,
+                        s.i,s.i * 2,s.i);
+                        
+    Haar_CombineSumDiffHalf(s.haarScratchA,s.haarScratchB,coeffs,s.i,s.i * 2,s.i * 2,s.i * 2);
   }
-  return;
 }
 
 // FUNCTION: CARDARTLIB 0x10007419
 void Haar_CombineSumDiff(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,int param_7)
-
 {
-  int *piVar1;
-  int *piVar2;
-  int *local_c;
-  int local_8;
+  struct {
+    int *piVar1; // ebp - 0x10
+    int *piVar2; // ebp - 0xc
+    int *local_c; // ebp - 8
+    int local_8; // ebp - 4
+  } s;
   
-  for (local_8 = 0; piVar1 = param_1, local_8 < param_5; local_8 = local_8 + 1) {
-    piVar2 = param_1 + param_4;
-    local_c = param_3 + param_7 * 2;
-    while (param_1 = param_1 + 1, param_1 < piVar2) {
-      *local_c = *param_2 + *param_1;
-      local_c[param_7] = *param_1 - *param_2;
-      param_2 = param_2 + 1;
-      local_c = local_c + param_7 * 2;
+  s.local_8 = param_7;
+
+  for (s.local_8 = 0; s.local_8 < param_5; s.local_8++, param_3++, param_2++) {
+    s.local_c = param_3;
+    s.piVar2 = param_1;
+    s.piVar1 = (param_4 - 1) + param_1 + 1;
+    s.local_c = s.local_c + param_7 * 2;
+    param_1++;
+
+    for (;s.piVar1 > param_1;param_1++,param_2++, s.local_c += param_7 * 2) {
+      *s.local_c = *param_2 + *param_1;
+      s.local_c[param_7] = *param_1 - *param_2;
     }
-    *param_3 = *param_2 + *piVar1;
-    param_3[param_7] = *piVar1 - *param_2;
-    param_3 = param_3 + 1;
-    param_2 = param_2 + 1;
+    
+    *param_3 = *param_2 + *s.piVar2;
+    param_3[param_7] = *s.piVar1 - *param_2;
   }
-  return;
 }
 
 // FUNCTION: CARDARTLIB 0x100074ee
 void Haar_CombineSumDiffHalf(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,int param_7)
-
 {
-  int *piVar1;
-  int *piVar2;
-  int *local_c;
-  int local_8;
+  struct {
+    int *piVar1; // ebp - 0x10
+    int *piVar2; // ebp - 0xc
+    int *local_c; // ebp - 8
+    int local_8; // ebp - 4
+  } s;
   
-  for (local_8 = 0; piVar1 = param_1, local_8 < param_5; local_8 = local_8 + 1) {
-    piVar2 = param_1 + param_4;
-    local_c = param_3 + param_7 * 2;
-    while (param_1 = param_1 + 1, param_1 < piVar2) {
-      *local_c = *param_1 + *param_2 >> 1;
-      local_c[param_7] = *param_1 - *param_2 >> 1;
-      param_2 = param_2 + 1;
-      local_c = local_c + param_7 * 2;
+  for (s.local_8 = 0; s.local_8 < param_5; s.local_8++, param_3++, param_2++) {
+    s.local_c = param_3;
+    s.piVar2 = param_1;
+    s.piVar1 = (param_4 - 1) + param_1 + 1;
+    s.local_c = s.local_c + param_7 * 2;
+    param_1++;
+
+    for (;s.piVar1 > param_1;param_1++,param_2++, s.local_c += param_7 * 2) {
+      *s.local_c = *param_2 + *param_1;
+      s.local_c[param_7] = *param_1 - *param_2;
     }
-    *param_3 = *param_2 + *piVar1 >> 1;
-    param_3[param_7] = *piVar1 - *param_2 >> 1;
-    param_3 = param_3 + 1;
-    param_2 = param_2 + 1;
+    
+    *param_3 = *param_2 + *s.piVar2;
+    param_3[param_7] = *s.piVar1 - *param_2;
   }
-  return;
 }
 
 // FUNCTION: CARDARTLIB 0x100075ef
@@ -3551,143 +3547,206 @@ undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x1000807f
-uint * Wvl_DecodeToBgr24(uint *param_1,int *wvl_entry,int width,int height)
+uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 {
-  int iVar1;
-  int iVar2;
-  uint *local_5054;
-  uint local_5050 [4096];
-  undefined8 *local_1050;
-  int local_104c;
-  int local_1048;
-  int local_1044;
-  uint local_1040;
-  int local_103c;
-  uint *local_1038;
-  int local_1034;
-  uint *local_1030;
-  undefined4 local_102c;
-  uint *local_1028;
-  int local_1024;
-  int local_1020;
-  size_t local_101c;
-  int local_1018;
-  undefined4 local_1014;
-  byte *local_1010;
-  uint local_100c [1016];
-  undefined4 uStackY_2c;
+  struct WvlDecodeToBgr24Stack {
+    int unk_5060;
+    int unk_505c;
+    int y_step;
+    int x_step;
+    uint *out_base;
+    uint x_map[4096];
+    byte *decoded; // ebp - 0x104c
+    int y; // ebp - 0x1048
+    int y_acc; // ebp - 0x1044
+    int x; // ebp - 0x1040
+    int out_nonnull; // ebp - 0x103c
+    int src_width; // ebp - 0x1038
+    uint *y_map_ptr; // ebp - 0x1034
+    int x_acc; // ebp - 0x1030
+    uint *x_map_ptr; // ebp - 0x102c
+    byte *out_start; // ebp - 0x1028
+    byte *out_ptr; // ebp - 0x1024
+    int y_scale; // ebp - 0x1020
+    int row_pad; // ebp - 0x101c
+    int row_bytes; // ebp - 0x1018
+    int x_scale; // ebp - 0x1014
+    int zero_1010; // ebp - 0x1010
+    byte *src_ptr; // ebp - 0x100c
+    uint y_map[1016]; // ebp - 0x1008
+    int tmp_28; // ebp - 0x28
+    int tmp_24; // ebp - 0x24
+    int tmp_20; // ebp - 0x20
+    int tmp_1c; // ebp - 0x1c
+    int tmp_18; // ebp - 0x18
+    int tmp_14; // ebp - 0x14
+    int tmp_10; // ebp - 0x10
+    int tmp_c; // ebp - 0xc
+    int tmp_8; // ebp - 0x8
+    int tmp_4; // ebp - 0x4
+  } s;
+
+  s.x_acc = 0;
+  s.y_acc = 0;
+  s.out_base = param_1;
+  s.out_start = (byte *)0;
+  s.x_map_ptr = s.x_map;
+  s.y_map_ptr = s.y_map;
+  if (param_1 != (uint *)0) {
+    s.out_nonnull = 1;
+  } else {
+    s.out_nonnull = 0;
+  }
+
+  if (wvl_entry == (int *)0) {
+    return (uint *)0;
+  }
+
+  s.x_scale = wvl_entry[7];
+  s.y_scale = wvl_entry[8];
+  s.x_scale <<= 0x10;
+  s.y_scale <<= 0x10;
+  s.x_step = s.x_scale / width;
+  s.y_step = s.y_scale / height;
+
+  if (wvl_entry[0x6a] != 0) {
+    s.decoded = (byte *)wvl_entry[0x6b];
+  } else {
+    s.decoded = (byte *)Wvl_DecodeHaar(wvl_entry,(undefined8 *)&DAT_10032c98);
+  }
+
+  s.src_width = wvl_entry[7];
+  s.tmp_8 = 3;
+  s.zero_1010 = 0;
+  s.row_pad = (DAT_1001e0e0 - (width * 3) % DAT_1001e0e0) % DAT_1001e0e0;
+
+  if (param_1 == (uint *)0) {
+    param_1 = (uint *)&DAT_100ad498;
+    s.out_base = param_1;
+  } else {
+    s.out_base = param_1;
+  }
   
-  local_1034 = 0;
-  local_1048 = 0;
-  local_102c = 0;
-  local_1030 = local_5050;
-  local_1038 = local_100c;
-  local_1040 = (uint)(param_1 != (uint *)0x0);
-  if (wvl_entry == (int *)0x0) {
-    local_5054 = (uint *)0x0;
+  for (s.x = 0, s.x_acc = 0; s.x < width; s.x += 1, s.x_acc += s.x_step, s.x_map_ptr += 1) {
+    if (s.tmp_8 == 3) {
+      *s.x_map_ptr = (uint)(s.x_acc >> 8);
+    } else {
+      assert(0,s_D__Newmagic_sources_NedCard_haar_1001e1b8,0x6f7,
+             s_Only_Works_on_24_bit_images_1001e198);
+    }    
   }
-  else {
-    local_1018 = wvl_entry[7] << 0x10;
-    local_1024 = wvl_entry[8] << 0x10;
-    iVar1 = local_1018 / width;
-    iVar2 = local_1024 / height;
-    if (wvl_entry[0x6a] == 0) {
-      local_1050 = Wvl_DecodeHaar(wvl_entry,(undefined8 *)&DAT_10032c98);
-    }
-    else {
-      local_1050 = (undefined8 *)wvl_entry[0x6b];
-    }
-    local_103c = wvl_entry[7];
-    local_1014 = 0;
-    local_1020 = (DAT_1001e0e0 - (width * 3) % DAT_1001e0e0) % DAT_1001e0e0;
-    if (param_1 == (uint *)0x0) {
-      local_5054 = (uint *)&DAT_100ad498;
-    }
-    else {
-      local_5054 = param_1;
-    }
-    local_1034 = 0;
-    for (local_1044 = 0; local_1044 < width; local_1044 = local_1044 + 1) {
-      *local_1030 = local_1034 >> 8;
-      local_1034 = local_1034 + iVar1;
-      local_1030 = local_1030 + 1;
-    }
-    param_1 = local_5054;
-    if (wvl_entry[8] < height) {
-      param_1 = (uint *)((int)local_5054 + (height - wvl_entry[8]) * (width * 3 + local_1020));
-    }
-    local_1028 = param_1;
-    for (local_104c = 0; local_104c < wvl_entry[8]; local_104c = local_104c + 1) {
-      local_1030 = local_5050;
-      for (local_1044 = 0; local_1044 < width; local_1044 = local_1044 + 1) {
-        local_1010 = (byte *)((int)local_1050 +
-                             ((int)*local_1030 >> 8) * 3 + local_103c * 3 * local_104c);
-        *(byte *)param_1 =
-             (char)(((uint)local_1010[3] - (uint)*local_1010) * (*local_1030 & 0xff) >> 8) +
-             *local_1010;
-        *(byte *)((int)param_1 + 1) =
-             (char)(((uint)local_1010[4] - (uint)local_1010[1]) * (*local_1030 & 0xff) >> 8) +
-             local_1010[1];
-        *(byte *)((int)param_1 + 2) =
-             (char)(((uint)local_1010[5] - (uint)local_1010[2]) * (*local_1030 & 0xff) >> 8) +
-             local_1010[2];
-        param_1 = (uint *)((int)param_1 + 3);
-        local_1030 = local_1030 + 1;
-      }
-      param_1 = (uint *)((int)param_1 + local_1020);
-    }
-    local_1048 = 0;
-    for (local_1044 = 0; local_1044 < height; local_1044 = local_1044 + 1) {
-      *local_1038 = local_1048 >> 8;
-      local_1048 = local_1048 + iVar2;
-      local_1038 = local_1038 + 1;
-    }
-    local_101c = width * 3 + local_1020;
-    if (height < wvl_entry[8]) {
-      memcpy
-                (local_5050,(uint *)((wvl_entry[8] + -1) * local_101c + (int)local_5054),local_101c);
-    }
-    for (local_1044 = 0; local_1044 < width; local_1044 = local_1044 + 1) {
-      param_1 = (uint *)(local_1044 * 3 + (int)local_5054);
-      local_1038 = local_100c;
-      for (local_104c = 0; local_104c < height + -1; local_104c = local_104c + 1) {
-        iVar1 = wvl_entry[8] + -2;
-        if ((int)*local_1038 >> 8 <= wvl_entry[8] + -2) {
-          iVar1 = (int)*local_1038 >> 8;
-        }
-        local_1010 = (byte *)((int)local_1028 + iVar1 * local_101c + local_1044 * 3);
-        *(byte *)param_1 =
-             (char)(((uint)local_1010[local_101c] - (uint)*local_1010) * (*local_1038 & 0xff) >> 8)
-             + *local_1010;
-        *(byte *)((int)param_1 + 1) =
-             (char)(((uint)local_1010[local_101c + 1] - (uint)local_1010[1]) * (*local_1038 & 0xff)
-                   >> 8) + local_1010[1];
-        *(byte *)((int)param_1 + 2) =
-             (char)(((uint)local_1010[local_101c + 2] - (uint)local_1010[2]) * (*local_1038 & 0xff)
-                   >> 8) + local_1010[2];
-        local_1038 = local_1038 + 1;
-        param_1 = (uint *)((int)param_1 + local_101c);
-      }
-    }
-    if (height < wvl_entry[8]) {
-      memcpy
-                ((uint *)((height + -1) * local_101c + (int)local_5054),local_5050,local_101c);
-    }
-    else {
-      memset((uint *)((height + -1) * local_101c + (int)local_5054),0,local_101c);
-    }
-    iVar1 = (4 - (width * 3) % 4) % 4;
-    if (DAT_1001d258 == 0) {
-      QuantizeBgr24ToNearestPaletteColorInPlace(local_5054,height,width,iVar1);
-    }
-    else if (DAT_101221e8 == 0x10) {
-      uStackY_2c = 0x10008757;
-      DitherBgr24ToRgbQuantizedF8(DAT_1001d258,DAT_1001d25c,local_5054,height,width,iVar1);
-    }
-    else if (DAT_101221e8 == 8) {
-      uStackY_2c = 0x10008793;
-      DitherBgr24ToPaletteColors(DAT_1001d258,DAT_1001d25c,local_5054,height,width,iVar1);
+
+  //param_1 = s.out_base;
+  if (wvl_entry[8] < height) {
+    param_1 = (uint *)((int)s.out_base + (height - wvl_entry[8]) * (width * 3 + s.row_pad));
+  }
+  else
+    s.out_ptr = (byte *)param_1;
+  
+  for (s.y = 0; s.y < wvl_entry[8]; s.y += 1, param_1 += s.row_pad) {
+    s.tmp_4 = (int)s.decoded + (s.src_width * s.tmp_8 + s.zero_1010) * s.y;
+    s.x_map_ptr = s.x_map;
+
+    for (s.x = 0; s.x < width; s.x += 1, s.x_map_ptr += 1) {
+      s.src_ptr = (byte *)(s.tmp_4 + (((int)*s.x_map_ptr >> 8) * 3));
+
+      s.tmp_10 = (int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]);
+      s.tmp_10 *= ((int)*s.x_map_ptr & 0xff);
+      s.tmp_10 >>= 8;
+      s.tmp_10 += (int)(uint)s.src_ptr[0];
+      *(byte *)param_1 = (byte)s.tmp_10;
+
+      s.tmp_10 = (int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]);
+      s.tmp_10 *= ((int)*s.x_map_ptr & 0xff);
+      s.tmp_10 >>= 8;
+      s.tmp_10 += (int)(uint)s.src_ptr[1];
+      *(byte *)((int)param_1 + 1) = (byte)s.tmp_10;
+
+      s.tmp_10 = (int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]);
+      s.tmp_10 *= ((int)*s.x_map_ptr & 0xff);
+      s.tmp_10 >>= 8;
+      s.tmp_10 += (int)(uint)s.src_ptr[2];
+      *(byte *)((int)param_1 + 2) = (byte)s.tmp_10;
+
+      param_1 = (uint *)((int)param_1 + 3);
     }
   }
-  return local_5054;
+
+  s.y_acc = 0;
+  s.y_map_ptr = s.y_map;
+  s.y = 0;
+  while (s.y < height) {
+    if (s.tmp_8 != 3) {
+      assert(0,s_D__Newmagic_sources_NedCard_haar_1001e1fc,0x730,
+             s_Only_Works_on_24_bit_images_1001e1dc);
+      continue;
+    }
+    *s.y_map_ptr = (uint)(s.y_acc >> 8);
+    s.y_acc += s.y_step;
+    s.y_map_ptr += 1;
+    s.y += 1;
+  }
+
+  s.row_bytes = width * 3 + s.row_pad;
+  if (height < wvl_entry[8]) {
+    memcpy(s.x_map,(void *)((wvl_entry[8] - 1) * s.row_bytes + (int)s.out_base),s.row_bytes);
+  }
+
+  s.x = 0;
+  while (s.x < width) {
+    param_1 = (uint *)((int)s.out_base + s.x * 3);
+    s.y_map_ptr = s.y_map;
+    s.y = 0;
+    while (s.y < height - 1) {
+      s.tmp_10 = wvl_entry[8] - 2;
+      if ((int)*s.y_map_ptr >> 8 <= wvl_entry[8] - 2) {
+        s.tmp_10 = (int)*s.y_map_ptr >> 8;
+      }
+
+      s.src_ptr = s.out_ptr + s.tmp_10 * s.row_bytes + s.x * 3;
+
+      s.tmp_10 = (int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]);
+      s.tmp_10 *= ((int)*s.y_map_ptr & 0xff);
+      s.tmp_10 >>= 8;
+      s.tmp_10 += (int)(uint)s.src_ptr[0];
+      *(byte *)param_1 = (byte)s.tmp_10;
+
+      s.tmp_10 = (int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]);
+      s.tmp_10 *= ((int)*s.y_map_ptr & 0xff);
+      s.tmp_10 >>= 8;
+      s.tmp_10 += (int)(uint)s.src_ptr[1];
+      *(byte *)((int)param_1 + 1) = (byte)s.tmp_10;
+
+      s.tmp_10 = (int)((uint)s.src_ptr[s.row_bytes + 2] - (uint)s.src_ptr[2]);
+      s.tmp_10 *= ((int)*s.y_map_ptr & 0xff);
+      s.tmp_10 >>= 8;
+      s.tmp_10 += (int)(uint)s.src_ptr[2];
+      *(byte *)((int)param_1 + 2) = (byte)s.tmp_10;
+
+      s.y_map_ptr += 1;
+      param_1 = (uint *)((int)param_1 + s.row_bytes);
+      s.y += 1;
+    }
+    s.x += 1;
+  }
+
+  if (height < wvl_entry[8]) {
+    memcpy((void *)((height - 1) * s.row_bytes + (int)s.out_base),s.x_map,s.row_bytes);
+  } else {
+    memset((void *)((height - 1) * s.row_bytes + (int)s.out_base),0,s.row_bytes);
+  }
+
+  s.unk_5060 = 4;
+  s.tmp_10 = (width * 3) % s.unk_5060;
+  s.tmp_10 = s.unk_5060 - s.tmp_10;
+  s.unk_505c = s.tmp_10 % s.unk_5060;
+  if (DAT_1001d258 == 0) {
+    QuantizeBgr24ToNearestPaletteColorInPlace(s.out_base,height,width,s.unk_505c);
+  } else if (DAT_101221e8 == 0x10) {
+    DitherBgr24ToRgbQuantizedF8(DAT_1001d258,DAT_1001d25c,s.out_base,height,width,s.unk_505c);
+  } else if (DAT_101221e8 == 8) {
+    DitherBgr24ToPaletteColors(DAT_1001d258,DAT_1001d25c,s.out_base,height,width,s.unk_505c);
+  }
+
+  return s.out_base;
 }
