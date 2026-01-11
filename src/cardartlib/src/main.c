@@ -6,12 +6,15 @@
 #include <time.h>
 #include "inttypes.h"
 #include "mystdbool.h"
+#include "defs.h"
 
+// SIZE 0xc
 typedef struct CatalogEntry {
   int key;
   uint offset;
   uint size;
 } CatalogEntry;
+STATIC_ASSERT(sizeof(CatalogEntry) == 0xc, CatalogEntry_wrong_size);
 
 // SIZE 0x114
 typedef struct Catalog {
@@ -21,6 +24,7 @@ typedef struct Catalog {
   CatalogEntry *cached_entry;
   char path[0x104];
 } Catalog;
+STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 
 typedef BOOL (WINAPI code)(HINSTANCE, DWORD, LPVOID);
 
@@ -106,7 +110,7 @@ char s__CARDART_1001d1e0[] = "\\CARDART";
 char s__CARDS_DAT_1001d1ec[] = "\\CARDS.DAT";
 
 // GLOBAL: CARDARTLIB 0x1001d1f8
-char DAT_1001d1f8[] = "rb";
+char s__rb_1001d1f8[] = "rb";
 
 // GLOBAL: CARDARTLIB 0x1001d1fc
 char s__s__04d_c_WVL_1001d1fc[] = "%s\\%04d%c.WVL";
@@ -178,28 +182,28 @@ undefined4 DAT_1001e05c = 0xFFFFFFFF;
 undefined4 DAT_1001e060 = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e064
-char DAT_1001e064[] = "rt";
+char s__rt_1001e064[] = "rt";
 
 // GLOBAL: CARDARTLIB 0x1001e068
 char s__d____d__d__d_1001e068[] = "%d - %d %d %d";
 
 // GLOBAL: CARDARTLIB 0x1001e078
-char DAT_1001e078[] = "rb";
+char s__rb_1001e078[] = "rb";
 
 // GLOBAL: CARDARTLIB 0x1001e07c
-char DAT_1001e07c[] = " \n";
+char s__sp_lf_1001e07c[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e080
-char DAT_1001e080[] = " \n";
+char s__sp_lf__1001e080[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e084
-char DAT_1001e084[] = " \n";
+char s__sp_lf__1001e084[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e088
-char DAT_1001e088[] = " \n";
+char s__sp_lf__1001e088[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e08c
-char DAT_1001e08c[] = " \n";
+char s__sp_lf__1001e08c[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e090
 char s_Not_enough_memory_for_delta_arra_1001e090[] = "Not enough memory for delta array\r\n";
@@ -232,7 +236,7 @@ char s_SmallArt_cat_1001e12c[] = "SmallArt.cat";
 char s_MedArt_cat_1001e13c[] = "MedArt.cat";
 
 // GLOBAL: CARDARTLIB 0x1001e148
-char DAT_1001e148[] = "\n";
+char s__lf_1001e148[] = "\n";
 
 // GLOBAL: CARDARTLIB 0x1001e14c
 char s_wavelet_pieces_has_illegal_value_1001e14c[] = "wavelet pieces has illegal value: %d";
@@ -256,7 +260,7 @@ char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\Ned
 int __proc_attached = 0;
 
 // GLOBAL: CARDARTLIB 0x10020210
-char DAT_10020210[2000];
+char g_assertMessageBuffer[2000];
 
 // GLOBAL: CARDARTLIB 0x100209e0
 undefined4 DAT_100209e0 = 0x00000000;
@@ -265,10 +269,7 @@ undefined4 DAT_100209e0 = 0x00000000;
 undefined4 DAT_100209e4 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100209e8
-unsigned char DAT_100209e8[0x400];
-#define DAT_100209e9 DAT_100209e8[1]
-#define DAT_100209ea DAT_100209e8[2]
-#define DAT_100209eb DAT_100209e8[3]
+RGBQUAD g_cardArtPalette[0x100];
 
 // GLOBAL: CARDARTLIB 0x10020de8
 CRITICAL_SECTION DAT_10020de8;
@@ -288,7 +289,7 @@ unsigned char DAT_10020e88[0x100 * 0xc];
 uint *DAT_10021a88 = (uint *)0x0;
 
 // GLOBAL: CARDARTLIB 0x10021a8c
-int _DAT_10021a8c = 0;
+int DAT_10021a8c = 0;
 
 // GLOBAL: CARDARTLIB 0x10021a90
 int DAT_10021a90 = 0;
@@ -297,7 +298,7 @@ int DAT_10021a90 = 0;
 undefined4 DAT_10021a94 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10021a98
-int _DAT_10021a98 = 0;
+int DAT_10021a98 = 0;
 
 // GLOBAL: CARDARTLIB 0x10021a9c
 undefined4 DAT_10021a9c = 0x00000000;
@@ -484,7 +485,7 @@ CRITICAL_SECTION DAT_101221f0;
 CRITICAL_SECTION DAT_101221d0;
 
 // GLOBAL: CARDARTLIB 0x101200a0
-int DAT_101200a0[2000];
+int g_cardPicCounts[2000];
 
 // SIZE 0x10
 typedef struct ArtCacheEntry {
@@ -493,6 +494,7 @@ typedef struct ArtCacheEntry {
   int width;
   int height;
 } ArtCacheEntry;
+STATIC_ASSERT(sizeof(ArtCacheEntry) == 0x10, ArtCacheEntry_wrong_size);
 
 // GLOBAL: CARDARTLIB 0x10117a40
 ArtCacheEntry g_SmallArtCache[2000];
@@ -506,6 +508,7 @@ typedef struct VersionedArtCacheEntry {
   int id;
   int version;
 } VersionedArtCacheEntry;
+STATIC_ASSERT(sizeof(VersionedArtCacheEntry) == 0x18, VersionedArtCacheEntry_wrong_size);
 
 // GLOBAL: CARDARTLIB 0x1011f740
 VersionedArtCacheEntry g_versionedSmallArtCache[100];
@@ -564,18 +567,17 @@ void assert(int condition,char *file,int line,char *fmt,...)
 
     va_start(args,fmt);
     if ((file != (char *)0x0) && (line != 0)) {
-      sprintf(DAT_10020210,s_File__s__Line__d_1001d070,file,line);
+      sprintf(g_assertMessageBuffer,s_File__s__Line__d_1001d070,file,line);
     }
 
-    _vsnprintf(DAT_10020210 + strlen(DAT_10020210),2000,fmt,args);
+    _vsnprintf(g_assertMessageBuffer + strlen(g_assertMessageBuffer),2000,fmt,args);
     
     time(&now);
 
-    fprintf(logFile,s__s_s_1001d088,ctime(&now),DAT_10020210);
+    fprintf(logFile,s__s_s_1001d088,ctime(&now),g_assertMessageBuffer);
     fclose(logFile);
 
-    MessageBoxA((HWND)0x0,DAT_10020210,s_Assertion_Error_1001d090,0x1000);
-                    /* WARNING: Subroutine does not return */
+    MessageBoxA((HWND)0x0,g_assertMessageBuffer,s_Assertion_Error_1001d090,0x1000);
     exit(0xff);  
   }
 }
@@ -596,17 +598,17 @@ void assert_noabort(int condition,char *file,int line,char *fmt,...)
 
     va_start(args,fmt);
     if ((file != (char *)0x0) && (line != 0)) {
-      sprintf(DAT_10020210,s_File__s__Line__d_1001d0b4,file,line);
+      sprintf(g_assertMessageBuffer,s_File__s__Line__d_1001d0b4,file,line);
     }
 
-    _vsnprintf(DAT_10020210 + strlen(DAT_10020210),2000,fmt,args);
+    _vsnprintf(g_assertMessageBuffer + strlen(g_assertMessageBuffer),2000,fmt,args);
     
     time(&now);
 
-    fprintf(logFile,s__s_s_1001d0cc,ctime(&now),DAT_10020210);
+    fprintf(logFile,s__s_s_1001d0cc,ctime(&now),g_assertMessageBuffer);
     fclose(logFile);
 
-    MessageBoxA((HWND)0x0,DAT_10020210,s_Assertion_Error_1001d0d4,0x1000);
+    MessageBoxA((HWND)0x0,g_assertMessageBuffer,s_Assertion_Error_1001d0d4,0x1000);
   }
 }
 
@@ -655,7 +657,7 @@ static void ApplyCardArtPaletteToDc(HDC hdc)
   SelectPalette(hdc,DAT_100209e0,0);
   RealizePalette(hdc);
   GdiFlush();
-  SetDIBColorTable(hdc,0,0x100,(RGBQUAD *)&DAT_100209e8);
+  SetDIBColorTable(hdc,0,0x100,g_cardArtPalette);
   SetStretchBltMode(hdc,3);
 }
 
@@ -833,18 +835,18 @@ static BOOL SetupDuelPalette(void)
       }
       s.UVar1 = GetPaletteEntries(DAT_100209e0,0,0x100,s.local_404);
       for (s.local_514 = 0; (int)s.local_514 < (int)s.UVar1; s.local_514 = s.local_514 + 1) {
-        DAT_100209e8[s.local_514 * 4] = s.local_404[s.local_514].peBlue;
-        DAT_100209e8[s.local_514 * 4 + 1] = s.local_404[s.local_514].peGreen;
-        DAT_100209e8[s.local_514 * 4 + 2] = s.local_404[s.local_514].peRed;
-        DAT_100209e8[s.local_514 * 4 + 3] = 0;
+        g_cardArtPalette[s.local_514].rgbBlue = s.local_404[s.local_514].peBlue;
+        g_cardArtPalette[s.local_514].rgbGreen = s.local_404[s.local_514].peGreen;
+        g_cardArtPalette[s.local_514].rgbRed = s.local_404[s.local_514].peRed;
+        g_cardArtPalette[s.local_514].rgbReserved = 0;
       }
       
       
       for (s.local_514 = s.UVar1; (int)s.local_514 < 0x100; s.local_514++) {
-        DAT_100209e8[s.local_514 * 4] = 0;
-        DAT_100209e8[s.local_514 * 4 + 1] = 0;
-        DAT_100209e8[s.local_514 * 4 + 2] = 0;
-        DAT_100209e8[s.local_514 * 4 + 3] = 0;
+        g_cardArtPalette[s.local_514].rgbBlue = 0;
+        g_cardArtPalette[s.local_514].rgbGreen = 0;
+        g_cardArtPalette[s.local_514].rgbRed = 0;
+        g_cardArtPalette[s.local_514].rgbReserved = 0;
       }
     }
     else
@@ -1087,7 +1089,7 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
   s.local_14 = 0;
   s.out_base = out_dwords;
   DAT_10021a88 = bitstream_start;
-  _DAT_10021a8c = DAT_10021a88;
+  DAT_10021a8c = DAT_10021a88;
   DAT_10021a90 = bitstream_end;
   DAT_1001d1dc = 0;
   s.lookahead = (int)BitStream_ReadBits(8);
@@ -1114,7 +1116,7 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
         else {
           s.symbol = *(int *)(DAT_10021aa0 + s.node * 8 + 4);
         }
-        s.node = s.symbol - _DAT_10021a98;
+        s.node = s.symbol - DAT_10021a98;
         if (s.node < 0) {
           *(undefined4 *)out_dwords = *(undefined4 *)(DAT_10021a9c + s.symbol * 4);
           out_dwords = out_dwords + 1;
@@ -1143,7 +1145,7 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
   }
 
   DAT_10021a88 = bitstream_start;
-  _DAT_10021a8c = DAT_10021a88;
+  DAT_10021a8c = DAT_10021a88;
   DAT_10021a90 = 100000;
   DAT_1001d1dc = 0;
   DAT_10020e84 = DAT_1001d1dc;
@@ -1153,7 +1155,7 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
     ((uint *)&DAT_10021aa4)[s.i*2] = BitStream_ReadBits(0xd);
     s.result += 0x1a;
   }
-  _DAT_10021a98 = node_index_base;
+  DAT_10021a98 = node_index_base;
   DAT_10021a9c = symbol_table;
   Huffman13_BuildDecodeTable(DAT_10021a94);
 
@@ -1212,7 +1214,7 @@ int Huffman13_BuildDecodeTable(int node_count)
       s.sym = ((int *)DAT_10021aa0)[s.node * 2 + 1];
     }
 
-    s.node = s.sym - _DAT_10021a98;
+    s.node = s.sym - DAT_10021a98;
     s.node_stack[s.depth] = s.node;
 
     if (s.node < 0) {
@@ -1285,7 +1287,7 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
   s.out_base = out_dwords;
 
   DAT_10021a88 = bitstream;
-  _DAT_10021a8c = DAT_10021a88;
+  DAT_10021a8c = DAT_10021a88;
   DAT_10021a90 = bitstream_end;
 
   if (((uint)bitstream & 3) == 0) {
@@ -1339,7 +1341,7 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
           s.leaf_sym = ((int *)DAT_10021aa0)[s.tree_node * 2 + 1];
         }
 
-        s.tree_node = s.leaf_sym - _DAT_10021a98;
+        s.tree_node = s.leaf_sym - DAT_10021a98;
 
         if (s.tree_node < 0) {
           if (s.leaf_sym == 0) {
@@ -1383,7 +1385,7 @@ uint BitStream_ReadBits(uint bit_count)
     result = DAT_10020e84;
     bit_count = (int) bit_count - (int)DAT_1001d1dc;
 
-    if ((int)DAT_10021a88 - _DAT_10021a8c + 4 >= DAT_10021a90) {
+    if ((int)DAT_10021a88 - DAT_10021a8c + 4 >= DAT_10021a90) {
       return 0xffffffff;
     }
 
@@ -1403,7 +1405,7 @@ static uint BitStream_ReadBit(void)
   uint result = 0;
   
   if (DAT_1001d1dc == 0) {
-    if (DAT_10021a90 <= (int)DAT_10021a88 - _DAT_10021a8c) {
+    if (DAT_10021a90 <= (int)DAT_10021a88 - DAT_10021a8c) {
       return 0xffffffff;
     }
     DAT_10020e84 = *DAT_10021a88;
@@ -1451,8 +1453,7 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
     int unk_4a394;                 /* -0x4a394 */
     int idx;                       /* -0x4a390 */
     FILE *cards_file;              /* -0x4a38c */
-    unsigned char records[0x4a37c];/* -0x4a388 */
-    int pad_0c;                    /* -0x0c */
+    card_ptr_t records[2000];      /* -0x4a388 */
     int result;                    /* -0x08 */
     int i;                         /* -0x04 */
   } s;
@@ -1470,7 +1471,7 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   InitCardArtGdiResources();
   strcpy(s.cards_dat_path,DAT_10117800);
   strcat(s.cards_dat_path,s__CARDS_DAT_1001d1ec);
-  s.cards_file = fopen(s.cards_dat_path,&DAT_1001d1f8);
+  s.cards_file = fopen(s.cards_dat_path,&s__rb_1001d1f8);
 
   if (s.cards_file != (FILE *)0x0) {
     fread(&s.card_count,4,1,s.cards_file);
@@ -1478,17 +1479,17 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
     fread(s.records,0x98,(size_t)s.card_count,s.cards_file);
 
     for (s.idx = 0; s.idx < s.card_count; s.idx = s.idx + 1) {
-      if (*(int *)(s.records + (s.idx * 0x13) * 8 + 0x44) > 0) {
-        DAT_101200a0[s.idx] = *(int *)(s.records + (s.idx * 0x13) * 8 + 0x44);
+      if (s.records[s.idx].num_pics > 0) {
+        g_cardPicCounts[s.idx] = s.records[s.idx].num_pics;
       } else {
-        DAT_101200a0[s.idx] = 1;
+        g_cardPicCounts[s.idx] = 1;
       }
     }
 
     fclose(s.cards_file);
   } else {
     for (s.idx = 0; s.idx < s.card_count; s.idx = s.idx + 1) {
-      DAT_101200a0[s.idx] = 1;
+      g_cardPicCounts[s.idx] = 1;
     }
   }
 
@@ -1507,7 +1508,6 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
 
   g_versionedBigArtCount = 0;
   DAT_1001d258 = 3;
-  (void)s.pad_0c;
   return s.result;
 }
 
@@ -1557,7 +1557,7 @@ int LoadBigArt(int id,int version,int width,int height)
       DestroyBigArt(id,version);
   }
 
-  if ((DAT_101200a0[id] > 1) && (version != 0)) {
+  if ((g_cardPicCounts[id] > 1) && (version != 0)) {
     sprintf(s.wvl_path,s__s__04d_c_WVL_1001d1fc,&DAT_10117910,id,(int)(char)(version + '`'));
   } else {
     sprintf(s.wvl_path,s__s__04d_WVL_1001d20c,&DAT_10117910,id);
@@ -1811,7 +1811,7 @@ int LoadSmallArt(int id,int version,int width,int height)
     return 0;
   }
 
-  if (DAT_101200a0[id] > 1) {
+  if (g_cardPicCounts[id] > 1) {
     return LoadVersionedSmallArt(id,version,width,height);
   }
 
@@ -1883,7 +1883,7 @@ int IsSmallArtIn(int id,int version)
     return 0;
   }
 
-  if (DAT_101200a0[id] > 1) {
+  if (g_cardPicCounts[id] > 1) {
     if (FindVersionedSmallArtCacheEntry(id,version) != (undefined *)0x0) {
       return 1;
     } else {
@@ -1911,7 +1911,7 @@ int DrawSmallArt(HDC hdc,RECT *rect,int id,int version)
     return 0;
   }
   
-  if (DAT_101200a0[id] > 1) {
+  if (g_cardPicCounts[id] > 1) {
     DrawVersionedSmallArt(hdc,rect,id,version);
   }
   else {
@@ -1943,7 +1943,7 @@ bool ReloadSmallArtIfWrongSize(int id,int version,int width,int height)
     return 0;
   }
 
-  if (DAT_101200a0[id] > 1) {
+  if (g_cardPicCounts[id] > 1) {
     return ReloadVersionedSmallArtIfWrongSize(id,version,width,height);
   }
 
@@ -1976,7 +1976,7 @@ void DestroySmallArt(int id,int version)
   if (id == -1) 
     return;
 
-  if (((int *)&DAT_101200a0)[id] > 1) {
+  if ((g_cardPicCounts)[id] > 1) {
     DestroyVersionedSmallArt(id,version);
   } else {
     EnterCriticalSection(&DAT_10117a20);
@@ -1996,7 +1996,7 @@ void DestroyAllSmallArts(void)
   EnterCriticalSection(&DAT_10117a20);
   DestroyAllVersionedSmallArts();
   for (i = 0; i < 2000; i = i + 1) {
-    if (DAT_101200a0[i] <= 1) {
+    if (g_cardPicCounts[i] <= 1) {
       DestroySmallArt(i, 0);
     }
   }
@@ -2254,7 +2254,7 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
   local_20 = 0;
   local_8 = &DAT_10116cf0;
   DAT_10116cf0 = 0x300;
-  local_18 = fopen(param_1,DAT_1001e064);
+  local_18 = fopen(param_1,s__rt_1001e064);
   if (local_18 == (FILE *)0x0) {
     local_8 = (undefined2 *)0x0;
   }
@@ -2291,7 +2291,7 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
     fclose(local_18);
     local_18 = (FILE *)0x0;
     if (param_2 != (char *)0x0) {
-      local_18 = fopen(param_2,DAT_1001e078);
+      local_18 = fopen(param_2,s__rb_1001e078);
     }
     if (local_18 != (FILE *)0x0) {
       fread(&DAT_10116cf0,0x404,1,local_18);
@@ -2392,7 +2392,7 @@ undefined4 Octree_InsertPathString(undefined4 *param_1,char *param_2,undefined4 
   size_t sVar5;
   char *_Control;
   
-  sVar1 = strspn(param_2,DAT_1001e07c);
+  sVar1 = strspn(param_2,s__sp_lf_1001e07c);
   for (param_2 = param_2 + sVar1; *param_2 != '\0'; param_2 = param_2 + sVar1 + sVar4 + sVar5) {
     iVar2 = atoi(param_2);
     if (param_1[iVar2 + 2] == 0) {
@@ -2400,11 +2400,11 @@ undefined4 Octree_InsertPathString(undefined4 *param_1,char *param_2,undefined4 
       param_1[iVar2 + 2] = pvVar3;
     }
     param_1 = (undefined4 *)param_1[iVar2 + 2];
-    _Control = DAT_1001e084;
-    sVar1 = strspn(param_2,DAT_1001e088);
+    _Control = s__sp_lf__1001e084;
+    sVar1 = strspn(param_2,s__sp_lf__1001e088);
     sVar1 = strcspn(param_2 + sVar1,_Control);
-    sVar4 = strspn(param_2,DAT_1001e080);
-    sVar5 = strspn(param_2 + sVar1 + sVar4,DAT_1001e08c);
+    sVar4 = strspn(param_2,s__sp_lf__1001e080);
+    sVar5 = strspn(param_2 + sVar1 + sVar4,s__sp_lf__1001e08c);
   }
   *param_1 = 1;
   param_1[1] = param_3;
@@ -3122,7 +3122,7 @@ int * Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3)
     local_c[0x68] = (int)&DAT_100ad498;
     local_10 = Catalog_ReadEntry(DAT_100ea098,(char *)local_314,(void **)(local_c + 0x68));
     if (local_10 == 0xffffffff) {
-      strcat((char *)param_2,DAT_1001e148);
+      strcat((char *)param_2,s__lf_1001e148);
       OutputDebugStringA((LPCSTR)param_2);
       LeaveCriticalSection(&DAT_101221d0);
       local_c = (int *)0x0;

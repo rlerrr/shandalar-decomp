@@ -1274,7 +1274,7 @@ typedef struct
 	uint32_t unused0x38;
 	uint32_t unused0x3c;	// Only remaining access by Magic.exe is to set it to -1 during draw_fullcard_special_effect_card()
 	const char* artist;		// Always "None"
-	uint32_t num_pics;
+	int32_t num_pics;
 	const char* mana_cost_text;	// e.g. "|4|GU|GU"
 	uint32_t ai_modifiers1;
 	uint32_t ai_modifiers2;
