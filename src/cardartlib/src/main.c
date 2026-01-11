@@ -23,7 +23,6 @@ typedef struct Catalog {
 } Catalog;
 
 typedef BOOL (WINAPI code)(HINSTANCE, DWORD, LPVOID);
-void MSVC_StackProbe(void);
 
 // FUNCTION: CARDARTLIB 0x1000a210
 void FreeIfNotNull(void *ptr)
@@ -1440,65 +1439,75 @@ BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID reserved)
   }
 }
 
+// MATCHING
 // FUNCTION: CARDARTLIB 0x10003175
 static BOOL CardArtLib_Initialize(HINSTANCE instance)
 {
-  char *pcVar1;
-  uint auStackY_4a4a4 [66];
-  size_t sStackY_4a39c;
-  undefined1 auStackY_4a398 [4];
-  int iStackY_4a394;
-  FILE *pFStackY_4a390;
-  undefined1 auStackY_4a38c [68];
-  int aiStackY_4a348 [75978];
-  int iVar2;
-  
-  MSVC_StackProbe();
+  struct {
+    char *last_slash;              /* -0x4a4a4 */
+    char cards_dat_path[0x108];    /* -0x4a4a0 */
+    int card_count;                /* -0x4a398 */
+    int unk_4a394;                 /* -0x4a394 */
+    int idx;                       /* -0x4a390 */
+    FILE *cards_file;              /* -0x4a38c */
+    unsigned char records[0x4a37c];/* -0x4a388 */
+    int pad_0c;                    /* -0x0c */
+    int result;                    /* -0x08 */
+    int i;                         /* -0x04 */
+  } s;
+
+  s.result = 1;
   _DAT_10121fe4 = (undefined4)instance;
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_10117a20);
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_101221f0);
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_101221d0);
   GetModuleFileNameA((HMODULE)0x0,&DAT_10117800,0x105);
-  pcVar1 = strrchr(&DAT_10117800,0x5c);
-  *pcVar1 = '\0';
+  s.last_slash = strrchr(&DAT_10117800,0x5c);
+  *s.last_slash = '\0';
   strcpy(DAT_10117910,DAT_10117800);
   strcat(DAT_10117910,s__CARDART_1001d1e0);
   InitCardArtGdiResources();
-  strcpy((char *)auStackY_4a4a4,DAT_10117800);
-  strcat((char *)auStackY_4a4a4,s__CARDS_DAT_1001d1ec);
-  pFStackY_4a390 = fopen((char *)auStackY_4a4a4,&DAT_1001d1f8);
-  if (pFStackY_4a390 == (FILE *)0x0) {
-    for (iStackY_4a394 = 0; iStackY_4a394 < (int)sStackY_4a39c; iStackY_4a394 = iStackY_4a394 + 1) {
-      DAT_101200a0[iStackY_4a394] = 1;
-    }
-  }
-  else {
-    fread(&sStackY_4a39c,4,1,pFStackY_4a390);
-    fread(auStackY_4a398,4,1,pFStackY_4a390);
-    fread(auStackY_4a38c,0x98,sStackY_4a39c,pFStackY_4a390);
-    for (iStackY_4a394 = 0; iStackY_4a394 < (int)sStackY_4a39c; iStackY_4a394 = iStackY_4a394 + 1) {
-      if (aiStackY_4a348[iStackY_4a394 * 0x26] < 1) {
-        DAT_101200a0[iStackY_4a394] = 1;
-      }
-      else {
-        DAT_101200a0[iStackY_4a394] = aiStackY_4a348[iStackY_4a394 * 0x26];
+  strcpy(s.cards_dat_path,DAT_10117800);
+  strcat(s.cards_dat_path,s__CARDS_DAT_1001d1ec);
+  s.cards_file = fopen(s.cards_dat_path,&DAT_1001d1f8);
+
+  if (s.cards_file != (FILE *)0x0) {
+    fread(&s.card_count,4,1,s.cards_file);
+    fread(&s.unk_4a394,4,1,s.cards_file);
+    fread(s.records,0x98,(size_t)s.card_count,s.cards_file);
+
+    for (s.idx = 0; s.idx < s.card_count; s.idx = s.idx + 1) {
+      if (*(int *)(s.records + (s.idx * 0x13) * 8 + 0x44) > 0) {
+        DAT_101200a0[s.idx] = *(int *)(s.records + (s.idx * 0x13) * 8 + 0x44);
+      } else {
+        DAT_101200a0[s.idx] = 1;
       }
     }
-    fclose(pFStackY_4a390);
+
+    fclose(s.cards_file);
+  } else {
+    for (s.idx = 0; s.idx < s.card_count; s.idx = s.idx + 1) {
+      DAT_101200a0[s.idx] = 1;
+    }
   }
-  for (iVar2 = 0; iVar2 < 2000; iVar2 = iVar2 + 1) {
-    *(undefined4 *)(DAT_10117a40 + iVar2 * 0x10) = 0;
+
+  for (s.i = 0; s.i < 2000; s.i = s.i + 1) {
+    *(undefined4 *)(DAT_10117a40 + s.i * 0x10) = 0;
   }
-  for (iVar2 = 0; iVar2 < 100; iVar2 = iVar2 + 1) {
-    *(undefined4 *)(g_versionedSmallArtCache + iVar2 * 0x18) = 0;
+
+  for (s.i = 0; s.i < 100; s.i = s.i + 1) {
+    *(undefined4 *)(g_versionedSmallArtCache + (s.i * 3) * 8) = 0;
   }
   g_versionedSmallArtCount = 0;
-  for (iVar2 = 0; iVar2 < 0x14; iVar2 = iVar2 + 1) {
-    *(undefined4 *)(DAT_10121ff0 + iVar2 * 0x18) = 0;
+
+  for (s.i = 0; s.i < 0x14; s.i = s.i + 1) {
+    *(undefined4 *)(DAT_10121ff0 + (s.i * 3) * 8) = 0;
   }
+
   DAT_101177f4 = 0;
   DAT_1001d258 = 3;
-  return 1;
+  (void)s.pad_0c;
+  return s.result;
 }
 
 // MATCHING
@@ -3617,7 +3626,6 @@ uint * Wvl_DecodeToBgr24(uint *param_1,int *param_2,int param_3,int param_4)
   uint local_100c [1016];
   undefined4 uStackY_2c;
   
-  MSVC_StackProbe();
   local_1034 = 0;
   local_1048 = 0;
   local_102c = 0;
@@ -3731,20 +3739,4 @@ uint * Wvl_DecodeToBgr24(uint *param_1,int *param_2,int param_3,int param_4)
     }
   }
   return local_5054;
-}
-
-// FUNCTION: CARDARTLIB 0x1000b7a0
-/* WARNING: Unable to track spacebase fully for stack */
-void MSVC_StackProbe(void)
-
-{  uint in_EAX;
-  undefined1 *puVar1;
-  undefined4 unaff_retaddr;
-  
-  //puVar1 = &stack0x00000004;
-  for (; 0xfff < in_EAX; in_EAX = in_EAX - 0x1000) {
-    puVar1 = puVar1 + -0x1000;
-  }
-  *(undefined4 *)(puVar1 + (-4 - in_EAX)) = unaff_retaddr;
-  return;
 }
