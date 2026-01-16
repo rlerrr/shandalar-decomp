@@ -543,10 +543,10 @@ void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,
 void CopyBytes(void *dst,const void *src,size_t size);
 void SetBytes(void *dst,uint value,size_t size);
 void Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size);
-void Haar_CombineSumDiff(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,
-                          int param_7);
-void Haar_CombineSumDiffHalf(int *param_1,int *param_2,int *param_3,int param_4,int param_5,
-                                    undefined4 param_6,int param_7);
+void Haar_CombineSumDiff(int *src_a,int *src_b,int *dst,int width,int rows,undefined4 src_stride_unused,
+                         int dst_stride);
+void Haar_CombineSumDiffHalf(int *src_a,int *src_b,int *dst,int width,int rows,
+                             undefined4 src_stride_unused,int dst_stride);
 undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int height,int chroma_u,int chroma_v,
                  int chroma_stride,undefined4 unused_chroma_height,int chroma_is_420);
 
@@ -3365,58 +3365,62 @@ void Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size)
 }
 
 // FUNCTION: CARDARTLIB 0x10007419
-void Haar_CombineSumDiff(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,int param_7)
+void Haar_CombineSumDiff(int *src_a,int *src_b,int *dst,int width,int rows,undefined4 src_stride_unused,int dst_stride)
 {
   struct {
-    int *piVar1; // ebp - 0x10
-    int *piVar2; // ebp - 0xc
-    int *local_c; // ebp - 8
-    int local_8; // ebp - 4
+    int *src_a_end; // ebp - 0x10
+    int *src_a_row0; // ebp - 0xc
+    int *dst_row; // ebp - 8
+    int row; // ebp - 4
   } s;
   
-  s.local_8 = param_7;
+  s.row = dst_stride;
 
-  for (s.local_8 = 0; s.local_8 < param_5; s.local_8++, param_3++, param_2++) {
-    s.local_c = param_3;
-    s.piVar2 = param_1;
-    s.piVar1 = (param_4 - 1) + param_1 + 1;
-    s.local_c = s.local_c + param_7 * 2;
-    param_1++;
+  for (s.row = 0; s.row < rows; s.row++, dst++, src_b++) {
+    s.dst_row = dst;
+    s.src_a_row0 = src_a;
+    s.src_a_end = (width - 1) + src_a + 1;
+    s.dst_row = s.dst_row + dst_stride * 2;
+    src_a++;
 
-    for (;s.piVar1 > param_1;param_1++,param_2++, s.local_c += param_7 * 2) {
-      *s.local_c = *param_2 + *param_1;
-      s.local_c[param_7] = *param_1 - *param_2;
+    for (; s.src_a_end > src_a; src_a++, src_b++, s.dst_row += dst_stride * 2) {
+      *s.dst_row = *src_b + *src_a;
+
+      //s.dst_row[dst_stride] = *src_a - *src_b;
+      *(int *)((char *)s.dst_row + dst_stride * 4) = *src_a - *src_b;
     }
     
-    *param_3 = *param_2 + *s.piVar2;
-    param_3[param_7] = *s.piVar1 - *param_2;
+    *dst = *src_b + *s.src_a_row0;
+    dst[dst_stride] = *s.src_a_row0 - *src_b;
   }
 }
 
 // FUNCTION: CARDARTLIB 0x100074ee
-void Haar_CombineSumDiffHalf(int *param_1,int *param_2,int *param_3,int param_4,int param_5,undefined4 param_6,int param_7)
+void Haar_CombineSumDiffHalf(int *src_a,int *src_b,int *dst,int width,int rows,undefined4 src_stride_unused,int dst_stride)
 {
   struct {
-    int *piVar1; // ebp - 0x10
-    int *piVar2; // ebp - 0xc
-    int *local_c; // ebp - 8
-    int local_8; // ebp - 4
+    int *src_a_end; // ebp - 0x10
+    int *src_a_row0; // ebp - 0xc
+    int *dst_row; // ebp - 8
+    int row; // ebp - 4
   } s;
   
-  for (s.local_8 = 0; s.local_8 < param_5; s.local_8++, param_3++, param_2++) {
-    s.local_c = param_3;
-    s.piVar2 = param_1;
-    s.piVar1 = (param_4 - 1) + param_1 + 1;
-    s.local_c = s.local_c + param_7 * 2;
-    param_1++;
+  for (s.row = 0; s.row < rows; s.row++, dst++, src_b++) {
+    s.dst_row = dst;
+    s.src_a_row0 = src_a;
+    s.src_a_end = (width - 1) + src_a + 1;
+    s.dst_row = s.dst_row + dst_stride * 2;
+    src_a++;
 
-    for (;s.piVar1 > param_1;param_1++,param_2++, s.local_c += param_7 * 2) {
-      *s.local_c = *param_2 + *param_1;
-      s.local_c[param_7] = *param_1 - *param_2;
+    for (; s.src_a_end > src_a; src_a++, src_b++, s.dst_row += dst_stride * 2) {
+      *s.dst_row = (*src_b + *src_a) >> 1;
+      *(int *)((char *)s.dst_row + dst_stride * 4) = (*src_a - *src_b) >> 1;
+      //s.dst_row[dst_stride] = (*src_a - *src_b) >> 1;
     }
     
-    *param_3 = *param_2 + *s.piVar2;
-    param_3[param_7] = *s.piVar1 - *param_2;
+    *dst = (*src_b + *s.src_a_row0) >> 1;
+    //*(int *)((char *)dst + dst_stride * 4) = ((0 - *src_b) + *s.src_a_row0) >> 1;
+    dst[dst_stride] = (*s.src_a_row0 - *src_b) >> 1;
   }
 }
 
