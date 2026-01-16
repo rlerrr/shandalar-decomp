@@ -9,9 +9,6 @@ targets:
   DECKDLL:
     path: 'C:/dev/shandalar-decomp/src/deckdll/DeckDll.dll'
     pdb: 'C:/dev/shandalar-decomp/src/deckdll/DeckDll.pdb'
-  MANALINKEH:
-    path: 'C:/dev/shandalar-decomp/src/ManalinkEh/ManalinkEh.dll'
-    pdb: 'C:/dev/shandalar-decomp/src/ManalinkEh/ManalinkEh.pdb'
-  MANALINKEX:
-    path: 'C:/dev/shandalar-decomp/src/manalinkex/ManalinkEx.dll'
-    pdb: 'C:/dev/shandalar-decomp/src/manalinkex/ManalinkEx.pdb'
+  DECK:
+    path: 'C:/dev/shandalar-decomp/src/deck/deck.exe'
+    pdb: 'C:/dev/shandalar-decomp/src/deck/deck.pdb'

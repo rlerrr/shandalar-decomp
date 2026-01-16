@@ -11,9 +11,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 option(SHANDALAR_BUILD_CARDARTLIB "Build CardArtLib.dll" ON)
 option(SHANDALAR_BUILD_DRAWCARDLIB "Build Drawcardlib.dll" ON)
-option(SHANDALAR_BUILD_DECKDLL "Build DeckDll.dll" ON)
-option(SHANDALAR_BUILD_MANALINKEH "Build ManalinkEh.dll" ON)
-option(SHANDALAR_BUILD_MANALINKEX "Build ManalinkEx.dll" ON)
+#option(SHANDALAR_BUILD_DECKDLL "Build DeckDll.dll" OFF)
+option(SHANDALAR_BUILD_DECK "Build Deck.exe" ON)
 option(SHANDALAR_USE_BOOST "Link CardArtLib with Boost filesystem/system" ON)
 
 math(EXPR bits "8 * ${CMAKE_SIZEOF_VOID_P}")

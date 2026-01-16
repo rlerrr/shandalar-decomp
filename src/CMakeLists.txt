@@ -44,6 +44,10 @@ if (SHANDALAR_BUILD_DECKDLL)
   add_subdirectory(deckdll)
 endif()
 
+if (SHANDALAR_BUILD_DECK)
+  add_subdirectory(deck)
+endif()
+
 if (SHANDALAR_BUILD_MANALINKEH)
   add_subdirectory(ManalinkEh)
 endif()
