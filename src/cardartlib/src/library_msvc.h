@@ -667,6 +667,18 @@
 // LIBRARY: CARDARTLIB 0x1001adb0 SYMBOL
 // __strlwr
 
+// GLOBAL: CARDARTLIB 0x1001be80
+// __dnames
+
+// GLOBAL: CARDARTLIB 0x1001be98
+// __mnames
+
+// GLOBAL: CARDARTLIB 0x1001bef0
+// __nullstring
+
+// GLOBAL: CARDARTLIB 0x1001bef4
+// __wnullstring
+
 // GLOBAL: CARDARTLIB 0x1001d000
 // __xc_a
 
@@ -702,6 +714,15 @@
 
 // GLOBAL: CARDARTLIB 0x1001e230
 // _winminor
+
+// GLOBAL: CARDARTLIB 0x1001e234
+// __argc
+
+// GLOBAL: CARDARTLIB 0x1001e238
+// __argv
+
+// GLOBAL: CARDARTLIB 0x1001e250
+// _pgmptr
 
 // GLOBAL: CARDARTLIB 0x1001e240
 // _environ
@@ -748,8 +769,35 @@
 // GLOBAL: CARDARTLIB 0x1001e390
 // _CrtDbgFile
 
+// GLOBAL: CARDARTLIB 0x1001e3c0
+// _newmode
+
+// GLOBAL: CARDARTLIB 0x1001e3d0
+// __small_block_heap
+
 // GLOBAL: CARDARTLIB 0x1001e3ac
 // pfnwsprintfA
+
+// GLOBAL: CARDARTLIB 0x1001ebf0
+// _pctype
+
+// GLOBAL: CARDARTLIB 0x1001ebe4
+// __sbh_p_starting_region
+
+// GLOBAL: CARDARTLIB 0x1001ebe8
+// __sbh_decommitable_pages
+
+// GLOBAL: CARDARTLIB 0x1001ebec
+// __sbh_threshold
+
+// GLOBAL: CARDARTLIB 0x1001ebf4
+// _pwctype
+
+// GLOBAL: CARDARTLIB 0x1001ebf8
+// _ctype
+
+// GLOBAL: CARDARTLIB 0x1001edfc
+// __mb_cur_max
 
 // GLOBAL: CARDARTLIB 0x1001ee00
 // __decimal_point
@@ -757,8 +805,8 @@
 // GLOBAL: CARDARTLIB 0x1001ee04
 // __decimal_point_length
 
-// GLOBAL: CARDARTLIB 0x1001edfc
-// __mb_cur_max
+// GLOBAL: CARDARTLIB 0x1001ee08
+// errtable
 
 // GLOBAL: CARDARTLIB 0x1001ef70
 // _mbctype
@@ -775,14 +823,38 @@
 // GLOBAL: CARDARTLIB 0x1001f08c
 // fSystemSet
 
+// GLOBAL: CARDARTLIB 0x1001f090
+// __rgctypeflag
+
+// GLOBAL: CARDARTLIB 0x1001f098
+// __rgcode_page_info
+
 // GLOBAL: CARDARTLIB 0x1001f1a0
 // __tlsindex
+
+// GLOBAL: CARDARTLIB 0x1001f1d0
+// f_use
+
+// GLOBAL: CARDARTLIB 0x1001f1d8
+// rterrs
 
 // GLOBAL: CARDARTLIB 0x1001f268
 // _adbgmsg
 
 // GLOBAL: CARDARTLIB 0x1001f270
 // _iob
+
+// GLOBAL: CARDARTLIB 0x1001f4f4
+// ctrlc_action
+
+// GLOBAL: CARDARTLIB 0x1001f4f8
+// ctrlbreak_action
+
+// GLOBAL: CARDARTLIB 0x1001f4fc
+// abort_action
+
+// GLOBAL: CARDARTLIB 0x1001f500
+// term_action
 
 // GLOBAL: CARDARTLIB 0x1001f508
 // pfnMessageBoxA
@@ -817,11 +889,38 @@
 // GLOBAL: CARDARTLIB 0x1001f5f4
 // first_time
 
-// GLOBAL: CARDARTLIB 0x1001f6b0
-// __lc_codepage
+// GLOBAL: CARDARTLIB 0x1001f5f8
+// tb
+
+// GLOBAL: CARDARTLIB 0x1001f620
+// _lpdays
+
+// GLOBAL: CARDARTLIB 0x1001f658
+// _days
+
+// GLOBAL: CARDARTLIB 0x1001f68c
+// _commode
+
+// GLOBAL: CARDARTLIB 0x1001f694
+// f_use
 
 // GLOBAL: CARDARTLIB 0x1001f698
 // __lc_handle
+
+// GLOBAL: CARDARTLIB 0x1001f6b0
+// __lc_codepage
+
+// GLOBAL: CARDARTLIB 0x1001f6b8
+// _XcptActTab
+
+// GLOBAL: CARDARTLIB 0x1001f730
+// _First_FPE_Indx
+
+// GLOBAL: CARDARTLIB 0x1001f734
+// _Num_FPE
+
+// GLOBAL: CARDARTLIB 0x1001f73c
+// _XcptActTabCount
 
 // GLOBAL: CARDARTLIB 0x1001f8c0
 // __lc_time_intl
@@ -838,6 +937,12 @@
 // GLOBAL: CARDARTLIB 0x1001f8d0
 // __lconv_intl
 
+// GLOBAL: CARDARTLIB 0x1001f8d4
+// ctype1
+
+// GLOBAL: CARDARTLIB 0x1001f8d8
+// wctype1
+
 // GLOBAL: CARDARTLIB 0x10020100
 // __lc_time_c
 
@@ -847,11 +952,20 @@
 // GLOBAL: CARDARTLIB 0x100201b8
 // __lconv_static_decimal
 
+// GLOBAL: CARDARTLIB 0x100201bc
+// __lconv_static_null
+
 // GLOBAL: CARDARTLIB 0x100201c0
 // __lconv_c
 
 // GLOBAL: CARDARTLIB 0x100201f0
 // __lconv
+
+// GLOBAL: CARDARTLIB 0x100201f4
+// f_use
+
+// GLOBAL: CARDARTLIB 0x100201f8
+// f_use
 
 // GLOBAL: CARDARTLIB 0x100ea0a0
 // dstflag_cache
@@ -859,11 +973,29 @@
 // GLOBAL: CARDARTLIB 0x100ea0a8
 // gmt_cache
 
+// GLOBAL: CARDARTLIB 0x100ea130
+// buf
+
+// GLOBAL: CARDARTLIB 0x100ea14c
+// _pnhHeap
+
+// GLOBAL: CARDARTLIB 0x100ea150
+// _pgmname
+
 // GLOBAL: CARDARTLIB 0x100ea258
 // tzapiused
 
 // GLOBAL: CARDARTLIB 0x100ea260
 // tzinfo
+
+// GLOBAL: CARDARTLIB 0x100ea310
+// wcbuffer
+
+// GLOBAL: CARDARTLIB 0x10122208
+// __setlc_active
+
+// GLOBAL: CARDARTLIB 0x1012220c
+// __unguarded_readlc_active
 
 // GLOBAL: CARDARTLIB 0x10122210
 // __piob
@@ -874,11 +1006,20 @@
 // GLOBAL: CARDARTLIB 0x10123230
 // __pioinfo
 
+// GLOBAL: CARDARTLIB 0x10123330
+// _nhandle
+
+// GLOBAL: CARDARTLIB 0x10123334
+// _crtheap
+
 // GLOBAL: CARDARTLIB 0x10123338
 // _pfnReportHook
 
 // GLOBAL: CARDARTLIB 0x1012333c
 // _acmdln
+
+// GLOBAL: CARDARTLIB 0x10123340
+// _pRawDllMain
 
 // GLOBAL: CARDARTLIB 0x10123348
 // __onexitend

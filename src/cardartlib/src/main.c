@@ -516,9 +516,6 @@ VersionedArtCacheEntry g_versionedSmallArtCache[100];
 // GLOBAL: CARDARTLIB 0x10121ff0
 VersionedArtCacheEntry g_versionedBigArtCache[0x14];
 
-// GLOBAL: CARDARTLIB 0x10123340
-code *DAT_10123340 = (code *)0x0;
-
 void RotateDwordsLeft1(undefined4 *param_1,int param_2);
 uint * Wvl_DecodeToBgr24(uint *param_1,int *param_2,int param_3,int param_4);
 int * Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3);
