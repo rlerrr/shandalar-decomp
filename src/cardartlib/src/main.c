@@ -316,8 +316,20 @@ undefined1 DAT_10031aa1 = 0x00;
 // GLOBAL: CARDARTLIB 0x10031ca0
 undefined1 DAT_10031ca0[0x400];
 
+typedef struct OctNode OctNode;
+
+// SIZE 0x30
+typedef struct OctNode {
+    unsigned int      flags;          /* +0 : low byte == 1 => leaf */
+    unsigned int      palette_idx;    /* +4 */
+    OctNode           *children[8];   /* +8 */
+    byte              *list;          /* +0x28 */
+    int               list_count;     /* +0x2C */
+};
+STATIC_ASSERT(sizeof(OctNode) == 0x30, OctNode_wrong_size);
+
 // GLOBAL: CARDARTLIB 0x10031ea4
-undefined4 g_paletteOctreeRoot = 0x00000000;
+OctNode* g_paletteOctreeRoot = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10031ea8
 undefined4 DAT_10031ea8 = 0x00000000;
@@ -332,13 +344,10 @@ undefined1 DAT_10031eb1 = 0x00;
 undefined4 _DAT_10031eb8 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10031ec0
-undefined1 g_paletteRgbTable[0x400];
+uint g_paletteRgbTable[0x100];
 
 // GLOBAL: CARDARTLIB 0x100322c0
-undefined1 DAT_100322c0 = 0x00;
-
-// GLOBAL: CARDARTLIB 0x100322c1
-undefined1 DAT_100322c1 = 0x00;
+undefined1 *g_octPathTmp = 0x00;
 
 // GLOBAL: CARDARTLIB 0x100322cc
 undefined4 DAT_100322cc = 0x00000000;
@@ -1625,7 +1634,7 @@ int IsBigArtIn(int id,int version)
 
   EnterCriticalSection(&DAT_101221f0);
 
-  for (s.i = 0; s.i < g_versionedBigArtCount && (s.result == (undefined *)0x0); s.i++) {
+  for (s.i = 0; s.i < g_versionedBigArtCount && s.result == 0; s.i++) {
     if (g_versionedBigArtCache[s.i].id == id && g_versionedBigArtCache[s.i].version == version) {
       s.result = &g_versionedBigArtCache[s.i];
     }
@@ -1633,7 +1642,7 @@ int IsBigArtIn(int id,int version)
 
   LeaveCriticalSection(&DAT_101221f0);
 
-  return (int)s.result;
+  return s.result;
 }
 
 // MATCHING
@@ -2323,25 +2332,25 @@ bool InitDiffSquaredLookupTable(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10004d49
-void OctreeNode_CollectLeafIndices(int *param_1,int param_2,int *param_3)
+void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 {
   int i;
   
-  if (*param_1 != 0) {
-    *(char *)(*param_3 + param_2) = (char)param_1[1];
+  if (param_1->flags != 0) {
+    *(char *)(*param_3 + param_2) = (char)param_1->palette_idx;
     *param_3 = *param_3 + 1;   
   }
   else {
      for (i = 0; i < 8; i = i + 1) {
-      if (param_1[i + 2] != 0) {
-        OctreeNode_CollectLeafIndices((int *)param_1[i + 2],param_2,param_3);
+      if (param_1->children[i] != 0) {
+        OctreeNode_CollectLeafIndices(param_1->children[i],param_2,param_3);
       }
     }
   }
 }
 
 // FUNCTION: CARDARTLIB 0x10004dc8
-int OctreeNode_FinalizeSubtree(int *param_1)
+int OctreeNode_FinalizeSubtree(OctNode *param_1)
 {
   struct {
     size_t local_410;
@@ -2350,30 +2359,29 @@ int OctreeNode_FinalizeSubtree(int *param_1)
     undefined1 local_404 [1024];
   } s;
   
-  //iVar1 = DAT_100322d4;
   s.local_408 = 0;
   s.local_410 = 0;
   DAT_100322d4 = DAT_100322d4 + 1;
   if (DAT_1001d240 < DAT_100322d4) {
     DAT_1001d240 = DAT_100322d4;
   }
-  if (*param_1 != 0) {
+  if (param_1->flags != 0) {
     DAT_100322d4--;
     return 1;
   }
 
   for (s.i = 0; s.i < 8; s.i = s.i + 1) {
-    if (param_1[s.i + 2] != 0) {
-      s.local_408 = s.local_408 + OctreeNode_FinalizeSubtree((int *)param_1[s.i + 2]);
+    if (param_1->children[s.i] != 0) {
+      s.local_408 = s.local_408 + OctreeNode_FinalizeSubtree(param_1->children[s.i]);
       s.local_410 = s.local_410 + 1;
     }
   }
   if (s.local_410 != 0) {
     s.local_410 = 0;
     OctreeNode_CollectLeafIndices(param_1,(int)s.local_404,(int *)&s.local_410);
-    param_1[10] = (int)malloc(s.local_410);
-    param_1[0xb] = s.local_410;
-    memcpy((void *)param_1[10],s.local_404,s.local_410);
+    param_1->list = malloc(s.local_410);
+    param_1->list_count = s.local_410;
+    memcpy(param_1->list,s.local_404,s.local_410);
   }
   DAT_100322d4 = DAT_100322d4 + -1;
 
@@ -2381,48 +2389,48 @@ int OctreeNode_FinalizeSubtree(int *param_1)
 }
 
 // FUNCTION: CARDARTLIB 0x10004f07
-undefined4 Octree_InsertPathString(undefined4 *param_1,char *param_2,undefined4 param_3)
+undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int param_3)
 {
   int iVar2;
 
   param_2 += strspn(param_2,s__sp_lf_1001e07c);
   while (*param_2 != '\0') {
     iVar2 = atoi(param_2);
-    if (param_1[iVar2 + 2] == 0) {
-      param_1[iVar2 + 2] = OctreeNode_Create();
+    if (param_1->children[iVar2] == 0) {
+      param_1->children[iVar2] = OctreeNode_Create();
     }
-    param_1 = (undefined4 *)param_1[iVar2 + 2];
+    param_1 = param_1->children[iVar2];
 
     param_2 += strspn(param_2 +=  
         strcspn(param_2 + strspn(param_2,s__sp_lf__1001e088),s__sp_lf__1001e084) + 
         strspn(param_2,s__sp_lf__1001e080)
       ,s__sp_lf__1001e08c);
   }
-  *param_1 = 1;
-  param_1[1] = param_3;
+  param_1->flags = 1;
+  param_1->palette_idx = param_3;
   return 0;
 }
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004fe1
-int Octree_Destroy(int *rootPtr)
+int Octree_Destroy(OctNode *rootPtr)
 {
   int i;
   int result;
   
   result = 0;
-  if (*rootPtr != 0) {   
+  if (rootPtr->flags != 0) {   
       FreeIfNotNull(rootPtr);
       return 1;
   }
 
   for (i = 0; i < 8; i = i + 1) {
-    if (rootPtr[i + 2] != 0) {
-      result = result + Octree_Destroy((int *)rootPtr[i + 2]);
+    if (rootPtr->children[i] != 0) {
+      result = result + Octree_Destroy(rootPtr->children[i]);
     }
   }
-  if (rootPtr[10] != 0) {
-    FreeIfNotNull((void *)rootPtr[10]);
+  if (rootPtr->list != 0) {
+    FreeIfNotNull(rootPtr->list);
   }
   FreeIfNotNull(rootPtr);
 
@@ -2430,7 +2438,7 @@ int Octree_Destroy(int *rootPtr)
 }
 
 // FUNCTION: CARDARTLIB 0x1000508d
-void Octree_BuildPathBytesFromRgb(uint rgb,char *out_path_words)
+void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 {
   struct {
     int iVar2;
@@ -2442,8 +2450,9 @@ void Octree_BuildPathBytesFromRgb(uint rgb,char *out_path_words)
   s.iVar2 = ((RGBQUAD *) &rgb)->rgbGreen;
   s.iVar1 = ((rgb & 0xff0000) >> 0x10);
 
-  *(uint *)out_path_words = *(uint *)(DAT_100ecb10 + s.iVar1 * 8) | *(uint *)(DAT_10115cf0 + s.iVar2 * 8) | *(uint *)(DAT_101164f0 + s.iVar3 * 8);
-  *(uint *)(out_path_words + 4) = *(uint *)(DAT_100ecb10 + s.iVar1 * 8 + 4) | *(uint *)(DAT_10115cf0 + s.iVar2 * 8 + 4) | *(uint *)(DAT_101164f0 + s.iVar3 * 8 + 4);
+  *out_path_words = ((undefined8 *)DAT_100ecb10)[s.iVar1] | 
+    ((undefined8 *)DAT_10115cf0)[s.iVar2] | 
+    ((undefined8 *)DAT_101164f0)[s.iVar3];
 }
 
 // FUNCTION: CARDARTLIB 0x100050f1
@@ -2473,7 +2482,7 @@ undefined4 Octree_FindNearestColor(uint param_1)
   struct {
     int pal_r;        /* ebp - 0x34 */
     int best_dist;    /* ebp - 0x30 */
-    int idx_list_base;/* ebp - 0x2c */
+    byte* idx_list_base;/* ebp - 0x2c */
     uint best_idx;    /* ebp - 0x28 */
     int i;            /* ebp - 0x24 */
     int green;        /* ebp - 0x20 */
@@ -2482,179 +2491,217 @@ undefined4 Octree_FindNearestColor(uint param_1)
     int blue;         /* ebp - 0x14 */
     int red;          /* ebp - 0x10 */
     int pal_b;        /* ebp - 0xc */
-    int *node;        /* ebp - 8 */
+    OctNode *node;        /* ebp - 8 */
     byte *path;       /* ebp - 4 */
   } s;
 
-  s.path = &DAT_100322c0;
-  s.node = (int *)g_paletteOctreeRoot;
+  s.path = &g_octPathTmp;
+  s.node = g_paletteOctreeRoot;
 
-  Octree_BuildPathBytesFromRgb(param_1,(char *)&DAT_100322c0);
+  Octree_BuildPathBytesFromRgb(param_1,&g_octPathTmp);
 
-  for (;;) {
-    s.idx_list_base = s.node[(uint)*s.path + 2];
-    s.path = s.path + 1;
-    if (s.idx_list_base == 0) {
-      if (*s.node == 0) {
-        s.idx_list_base = s.node[10];
-        s.best_dist = 0x7fffffff;
-        s.blue = (int)(param_1 & 0xff);
-        s.green = (int)((byte *)&param_1)[1];
-        s.red = (int)((param_1 & 0xff0000) >> 0x10);
-
-        for (s.i = 0; s.i < s.node[0xb]; s.i = s.i + 1) {
-          s.dist = (uint)*(byte *)(s.idx_list_base + s.i);
-          s.pal_g = (int)(uint)g_paletteRgbTable[(uint)s.dist * 4 + 1];
-
-          s.pal_r = *(uint *)(g_paletteRgbTable + (uint)s.dist * 4);
-          s.pal_b = s.pal_r & 0xff;
-          s.pal_r = (s.pal_r & 0xff0000) >> 0x10;
-
-          s.dist = ((int *)PTR_DAT_1001d244)[s.green - s.pal_g] +
-                   ((int *)PTR_DAT_1001d244)[s.blue - s.pal_b] +
-                   ((int *)PTR_DAT_1001d244)[s.red - s.pal_r];
-
-          if (s.dist < s.best_dist) {
-            s.best_dist = s.dist;
-            s.best_idx = (uint)*(byte *)(s.idx_list_base + s.i);
-          }
-        }
-        return *(undefined4 *)(g_paletteRgbTable + s.best_idx * 4);
-      }
-      return *(undefined4 *)(g_paletteRgbTable + s.node[1] * 4);
-    }
-    s.node = (int *)s.idx_list_base;
-    if ((char)*s.node == '\x01') break;
+  //TODO: how on earth can you mimic this with /Od?
+  __asm {
+    mov eax, g_paletteOctreeRoot
+    mov ebx, offset g_octPathTmp
+    xor ecx, ecx
+  loop_start:
+    mov edx, eax
+    mov cl, byte ptr [ebx]
+    mov eax, dword ptr [eax + ecx*4 + 8]
+    add ebx, 1
+    cmp eax, 0
+    je loop_end
+    cmp byte ptr [eax], 1
+    jne loop_start
+    mov ebx, dword ptr [eax + 4]
+    mov edi, offset g_paletteRgbTable
+    mov eax, dword ptr [edi + ebx*4]
+    jmp end
+  loop_end:
+    mov s.node, edx
   }
-  return *(undefined4 *)(g_paletteRgbTable + s.node[1] * 4);
+  
+  if (s.node->flags == 0) {
+    s.idx_list_base = s.node->list;
+    s.best_dist = 0x7fffffff;
+    s.blue = (int)(param_1 & 0xff);
+    s.green = (int)((byte *)&param_1)[1];
+    s.red = (int)((param_1 & 0xff0000) >> 0x10);
+
+    for (s.i = 0; s.i < s.node->list_count; s.i = s.i + 1) {
+      s.pal_b = g_paletteRgbTable[s.idx_list_base[s.i]] & 0xff;
+
+      s.pal_g = ((RGBQUAD *)&g_paletteRgbTable[s.idx_list_base[s.i]])->rgbGreen;
+
+      s.pal_r = (g_paletteRgbTable[s.idx_list_base[s.i]] & 0xff0000) >> 0x10;
+
+      s.dist = PTR_DAT_1001d244[s.green - s.pal_g] +
+                PTR_DAT_1001d244[s.blue - s.pal_b] +
+                PTR_DAT_1001d244[s.red - s.pal_r];
+
+      if (s.dist < s.best_dist) {
+        s.best_idx = s.idx_list_base[s.i];
+        s.best_dist = s.dist;
+      }
+    }
+    return g_paletteRgbTable[s.best_idx];
+  }
+  else {
+    return g_paletteRgbTable[s.node->palette_idx];
+  }
+
+end:  ;
 }
 
 // FUNCTION: CARDARTLIB 0x10005383
 uint Octree_FindNearestPaletteIndex(uint param_1)
 {
-  int *piVar1;
-  int iVar2;
-  int *piVar3;
-  int iVar4;
-  byte *pbVar5;
-  int local_34;
-  uint local_2c;
-  int local_28;
+  struct {
+    int idk; // edp - 0x34
+    int local_34; // edp - 0x30
+    byte *iVar2; // edp - 0x2c
+    uint local_2c; // edp - 0x28
+    int i; // ebp - 0x24
+    int pal_g; // ebp - 0x20
+    int pad4; // ebp - 0x1c
+    int piVar1; // ebp - 0x18
+    int pal_b; // ebp - 0x14
+    int pal_r; // ebp - 0x10
+    int pad1; // edp - 0xc
+    OctNode *node; // edp - 8
+    byte *pbVar5; // edp - 4
+  } s;
+
+  s.pbVar5 = &DAT_10031eb0;
+  s.node = g_paletteOctreeRoot;
   
   Octree_BuildPathBytesFromRgb(param_1,(uint *)&DAT_10031eb0);
-  pbVar5 = &DAT_10031eb0;
-  piVar3 = g_paletteOctreeRoot;
-  do {
-    piVar1 = (int *)piVar3[*pbVar5 + 2];
-    pbVar5 = pbVar5 + 1;
-    if (piVar1 == (int *)0x0) {
-      if (*piVar3 == 0) {
-        iVar2 = piVar3[10];
-        local_34 = 0x7fffffff;
-        for (local_28 = 0; local_28 < piVar3[0xb]; local_28 = local_28 + 1) {
-          iVar4 = *(int *)(PTR_DAT_1001d244 +
-                          ((param_1 & 0xff) -
-                          ((*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff0000)
-                           >> 0x10)) * 4) +
-                  *(int *)(PTR_DAT_1001d244 +
-                          (((param_1 & 0xff0000) >> 0x10) -
-                          (*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff)) *
-                          4) +
-                  *(int *)(PTR_DAT_1001d244 +
-                          ((param_1 >> 8 & 0xff) -
-                          (uint)g_paletteRgbTable[(uint)*(byte *)(local_28 + iVar2) * 4 + 1]) * 4);
-          if (iVar4 < local_34) {
-            local_2c = (uint)*(byte *)(local_28 + iVar2);
-            local_34 = iVar4;
-          }
-        }
-        return local_2c;
+
+  //TODO: how on earth can you mimic this with /Od?
+  __asm {
+    mov eax, g_paletteOctreeRoot
+    mov ebx, offset DAT_10031eb0
+    xor ecx, ecx
+  loop_start:
+    mov edx, eax
+    mov cl, byte ptr [ebx]
+    mov eax, dword ptr [eax + ecx*4 + 8]
+    add ebx, 1
+    cmp eax, 0
+    je loop_end
+    cmp byte ptr [eax], 1
+    jne loop_start
+    mov eax, dword ptr [eax + 4]
+    jmp end
+  loop_end:
+    mov s.node, edx
+  }
+  
+  if (s.node->flags == 0) {
+    s.iVar2 = s.node->list;
+    s.local_34 = 0x7fffffff;
+    s.pal_b = param_1 & 0xff;
+    s.pal_g = ((RGBQUAD *)&param_1)->rgbGreen;
+    s.pal_r = (param_1 & 0xff0000) >> 0x10;
+    for (s.i = 0; s.i < s.node->list_count; s.i = s.i + 1) {
+      s.idk = g_paletteRgbTable[s.iVar2[s.i]] & 0xff;
+      s.piVar1 = ((RGBQUAD *)&g_paletteRgbTable[s.iVar2[s.i]])->rgbGreen;
+      s.pad1 = (g_paletteRgbTable[s.iVar2[s.i]] & 0xff0000) >> 0x10;
+
+      s.pad4 = PTR_DAT_1001d244[s.pal_b - s.pad1] +
+        PTR_DAT_1001d244[s.pal_r - s.idk] +
+        PTR_DAT_1001d244[s.pal_g - s.piVar1];
+
+      if (s.pad4 < s.local_34) {
+        s.local_2c = (uint)*(byte *)(s.i + s.iVar2);
+        s.local_34 = s.pad4;
       }
-      return piVar3[1];
     }
-    piVar3 = piVar1;
-  } while ((char)*piVar1 != '\x01');
-  return piVar1[1];
+    return s.local_2c;
+  }
+  else
+    return s.node->palette_idx;
+
+  end: ;
 }
 
 // FUNCTION: CARDARTLIB 0x100054fb
 int Octree_FlattenLeafValues(int *param_1,int *param_2)
-
 {
-  int iVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int result = 0;
+  if (*param_1 != 0) {
+    *param_2 = param_1[1];
+    return 1;
+  }
   
-  local_8 = 0;
-  if (*param_1 == 0) {
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      if (param_1[local_c + 2] != 0) {
-        iVar1 = Octree_FlattenLeafValues((int *)param_1[local_c + 2],param_2);
-        local_8 = local_8 + iVar1;
-        param_2 = param_2 + iVar1;
-      }
+  for (i = 0; i < 8; i++) {
+    if (param_1[i + 2] != 0) {
+      int iVar1 = Octree_FlattenLeafValues((int *)param_1[i + 2],param_2);
+      result = result + iVar1;
+      param_2 = param_2 + iVar1;
     }
   }
-  else {
-    *param_2 = param_1[1];
-    local_8 = 1;
-  }
-  return local_8;
+  return result;
 }
 
 // FUNCTION: CARDARTLIB 0x10005591
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int width,int row_padding)
-
 {
-  uint uVar1;
-  undefined4 uVar2;
-  undefined4 local_18;
-  undefined4 local_10;
-  undefined4 local_c;
-  
-  for (local_10 = 0; local_10 < height; local_10 = local_10 + 1) {
-    local_c = 0;
-    local_18 = *bgr24;
-    for (; local_c < width * 3; local_c = local_c + 3) {
-      uVar1 = *(uint *)(local_c + 3 + (int)bgr24);
-      uVar2 = Octree_FindNearestColor(local_18);
-      *(undefined4 *)(local_c + (int)bgr24) = uVar2;
-      local_18 = uVar1;
+  struct {
+    uint cur_color;  /* [ebp-0x14] */
+    uint arg_color;  /* [ebp-0x10] */
+    int y;           /* [ebp-0x0c] */
+    int byte_off;    /* [ebp-0x08] */
+    int width3;      /* [ebp-0x04] */
+  } s;
+
+  s.width3 = width * 3;
+  for (s.y = 0; height > s.y; s.y += 1, *(int *)&bgr24 += row_padding + s.width3) {
+    s.byte_off = 0;
+    s.cur_color = *bgr24;
+    for (; s.byte_off < s.width3; s.byte_off = s.byte_off + 3) {
+      s.arg_color = s.cur_color;
+      s.cur_color = *(uint *)(s.byte_off + 3 + (int)bgr24);
+      *(undefined4 *)(s.byte_off + (int)bgr24) = Octree_FindNearestColor(s.arg_color);
     }
-    bgr24 = (uint *)((int)bgr24 + row_padding + width * 3);
   }
   return 0;
 }
 
 // FUNCTION: CARDARTLIB 0x10005629
 undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width,int row_padding)
-
 {
-  uint uVar1;
-  uint uVar2;
-  uint local_20;
-  int local_18;
-  int local_14;
-  uint *local_10;
-  int local_8;
-  
-  local_10 = bgr24;
-  for (local_18 = 0; local_18 < height; local_18 = local_18 + 1) {
-    local_8 = 0;
-    local_14 = 0;
-    local_20 = *bgr24;
-    for (; local_14 < width * 3; local_14 = local_14 + 3) {
-      uVar1 = local_20 & 0xffffff;
-      local_20 = *(uint *)(local_14 + 3 + (int)bgr24);
-      uVar2 = Octree_FindNearestPaletteIndex(uVar1);
-      *(char *)(local_8 + (int)local_10) = (char)uVar2;
-      if (*(uint *)(&g_paletteRgbTable + (uint)*(byte *)(local_8 + (int)local_10) * 4) != uVar1) {
-        *(undefined4 *)(&g_paletteRgbTable + (uint)*(byte *)(local_8 + (int)local_10) * 4) = 0;
+  struct {
+    uint cur_color;     /* [ebp-0x1c] */
+    uint masked_color;  /* [ebp-0x18] */
+    int y;              /* [ebp-0x14] */
+    int byte_off;       /* [ebp-0x10] */
+    char *out_ptr;      /* [ebp-0x0c] */
+    int width3;         /* [ebp-0x08] */
+    int out_idx;        /* [ebp-0x04] */
+  } s;
+
+  s.width3 = width * 3;
+  s.out_ptr = (char *)bgr24;
+
+  for (s.y = 0; height > s.y;
+      s.y = s.y + 1, *(int *)&bgr24 += row_padding + s.width3,
+      *(int *)&s.out_ptr += row_padding + width) {
+    s.out_idx = 0;
+    s.byte_off = s.out_idx;
+    s.cur_color = *bgr24;
+    for (; s.byte_off < s.width3; s.byte_off = s.byte_off + 3, s.out_idx = s.out_idx + 1) {
+      s.masked_color = s.cur_color & 0xffffff;
+      s.cur_color = *(uint *)(s.byte_off + 3 + (int)bgr24);
+
+      s.out_ptr[s.out_idx] = (char)Octree_FindNearestPaletteIndex(s.masked_color);
+
+      if (g_paletteRgbTable[(byte)s.out_ptr[s.out_idx]] != s.masked_color) {
+        g_paletteRgbTable[(byte)s.out_ptr[s.out_idx]] = 0;
       }
-      local_8 = local_8 + 1;
     }
-    bgr24 = (uint *)((int)bgr24 + row_padding + width * 3);
-    local_10 = (uint *)((int)local_10 + row_padding + width);
   }
   return 0;
 }
@@ -2664,162 +2711,169 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 
 int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
-  short *psVar4;
-  int local_88;
-  uint local_84;
-  int local_80;
-  undefined *local_7c;
-  uint local_74;
-  undefined *local_70 [6];
-  int local_58;
-  undefined2 local_54;
-  undefined2 local_52;
-  undefined2 local_50;
-  undefined2 local_4e;
-  uint local_4c;
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_3c;
-  uint local_38;
-  int local_34;
-  undefined *local_30;
-  undefined4 local_2c;
-  uint local_28;
-  undefined2 local_24;
-  undefined2 local_22;
-  undefined2 local_20;
-  undefined2 local_1e;
-  int local_1c;
-  uint local_18;
-  undefined2 local_14;
-  undefined2 local_12;
-  undefined2 local_10;
-  undefined2 local_e;
-  int local_c;
-  uint local_8;
-  
-  local_14 = 0;
-  local_12 = 0;
-  local_10 = 0;
-  local_e = 0;
-  local_54 = 0;
-  local_52 = 0;
-  local_50 = 0;
-  local_4e = 0;
-  local_24 = 0xffff;
-  local_22 = 0xffff;
-  local_20 = 0xffff;
-  local_1e = 0;
-  local_3c = 1;
-  local_2c = 0;
-  local_7c = &DAT_1001d2d8 + dither_kernel_id * 0xc0;
-  local_18 = width * 8 + 0x50U >> 2;
+  struct {
+    char pad_0[0x14];
+    int local_88;
+    uint local_84;
+    int local_80;
+    undefined *local_7c;
+    uint local_74;
+    int local_70[6];
+    int local_58;
+    undefined2 local_50;
+    undefined2 local_4e;
+    undefined2 local_4c_w;
+    undefined2 local_4a;
+    uint local_4c;
+    int local_48;
+    int local_44;
+    int local_40;
+    int local_3c;
+    uint local_38;
+    int local_34;
+    undefined *local_30;
+    undefined4 local_2c;
+    uint local_28;
+    undefined2 local_24;
+    undefined2 local_22;
+    undefined2 local_20;
+    undefined2 local_1e;
+    int local_1c;
+    uint local_18;
+    undefined2 local_14;
+    undefined2 local_12;
+    undefined2 local_10;
+    undefined2 local_e;
+    int local_c;
+    uint local_8;
+  } s;
+
+  register int iVar1;
+  register uint uVar2;
+  register int iVar3;
+  register short *psVar4;
+
+  s.local_14 = 0;
+  s.local_12 = 0;
+  s.local_10 = 0;
+  s.local_e = 0;
+  s.local_50 = 0;
+  s.local_4e = 0;
+  s.local_4c_w = 0;
+  s.local_4a = 0;
+  s.local_24 = 0xffff;
+  s.local_22 = 0xffff;
+  s.local_20 = 0xffff;
+  s.local_1e = 0;
+  s.local_3c = 1;
+  s.local_2c = 0;
+  s.local_80 = -1;
+  s.local_7c = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
+  s.local_18 = width * 8 + 0x50U >> 2;
+
   if (dither_kernel_id == 0) {
     DAT_1001e05c = dither_kernel_id;
-    height = 0;
+    return 0;
   }
-  else if (dither_kernel_id == 1) {
+  if (dither_kernel_id == 1) {
     DAT_1001e05c = dither_kernel_id;
     QuantizeBgr24ToNearestPaletteColorInPlace(bgr24,height,width,row_padding);
     return 0;
   }
-  else {
-    if (DAT_100322d0 == 0) {
-      for (local_4c = -0x200; (int)local_4c < 0x200; local_4c = local_4c + 1) {
-        if (((int)local_4c < 0) || (0xff < (int)local_4c)) {
-          if ((int)local_4c < 0) {
-            PTR_DAT_1001e058[local_4c] = 0;
-          }
-          else {
-            PTR_DAT_1001e058[local_4c] = 0xff;
-          }
+
+  if (DAT_100322d0 == 0) {
+    for (s.local_4c = -0x200; (int)s.local_4c < 0x200; s.local_4c = s.local_4c + 1) {
+      if (((int)s.local_4c < 0) || (0xff < (int)s.local_4c)) {
+        if ((int)s.local_4c < 0) {
+          PTR_DAT_1001e058[s.local_4c] = 0;
         }
         else {
-          PTR_DAT_1001e058[local_4c] = (undefined1)local_4c;
+          PTR_DAT_1001e058[s.local_4c] = 0xff;
         }
-      }
-      DAT_100322d0 = 1;
-    }
-    if (dither_kernel_id != DAT_1001e05c) {
-      for (local_4c = 0; local_4c < 0x41; local_4c = local_4c + 1) {
-        if (DAT_10117100[local_4c] != (void *)0x0) {
-          FreeIfNotNull(DAT_10117100[local_4c]);
-          DAT_10117100[local_4c] = (void *)0x0;
-        }
-      }
-      InitErrorDiffusionDeltaTables(dither_kernel_id,(int)DAT_10117100);
-      DAT_1001e05c = dither_kernel_id;
-    }
-    for (local_4c = 0; local_4c < 5; local_4c = local_4c + 1) {
-      SetBytes((void *)(DAT_100edb10 + local_4c * 0x8060),0,0x8060);
-      local_70[local_4c + 1] = (undefined *)(DAT_100edb10 + local_4c * 0x8060 + 0x28);
-    }
-    iVar1 = DAT_1001d260[dither_kernel_id];
-    for (local_58 = 0; local_58 < height; local_58 = local_58 + 1) {
-      if (local_3c < 1) {
-        local_80 = width + -1;
-        local_1c = -1;
-        local_88 = -3;
       }
       else {
-        local_80 = 0;
-        local_1c = width;
-        local_88 = 3;
+        PTR_DAT_1001e058[s.local_4c] = (undefined1)s.local_4c;
       }
-      local_c = local_80 * 3;
-      for (local_4c = local_80; local_4c != local_1c; local_4c = local_4c + local_3c) {
-        uVar2 = *(uint *)(local_c + (int)bgr24);
-        local_28 = uVar2 & 0xffffff;
-        *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) & 0xff000000;
-        psVar4 = (short *)(local_4c * 8 + (int)local_70[1]);
-        if (local_28 == 0) {
-          local_84 = 0;
-          local_74 = 0;
-          local_38 = 0;
-          local_8 = 0;
-        }
-        else if (local_28 == 0xffffff) {
-          local_74 = 0xff;
-          local_38 = 0xff;
-          local_8 = 0xff;
-          local_84 = 0xffffff;
-        }
-        else {
-          local_8 = (uint)(byte)PTR_DAT_1001e058[(uVar2 & 0xff) + ((int)*psVar4 >> 8)];
-          local_38 = (uint)(byte)PTR_DAT_1001e058[(local_28 >> 8 & 0xff) + ((int)psVar4[1] >> 8)];
-          local_74 = (uint)(byte)PTR_DAT_1001e058[(local_28 >> 0x10) + ((int)psVar4[2] >> 8)];
-          local_28 = local_38 << 8 | local_74 << 0x10 | local_8;
-          local_84 = Octree_FindNearestColor(local_28);
-        }
-        *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) | local_84;
-        local_40 = local_8 - (local_84 & 0xff);
-        local_34 = local_38 - (local_84 >> 8 & 0xff);
-        local_70[0] = local_7c + iVar1 * 0x10;
-        for (local_30 = local_7c; local_30 < local_7c + iVar1 * 0x10; local_30 = local_30 + 0x10) {
-          local_44 = *(int *)(local_30 + 4);
-          local_48 = *(int *)(local_30 + 8);
-          iVar3 = *(int *)(local_30 + 0xc);
-          psVar4 = (short *)((*(int *)(local_30 + 4) + local_4c) * 8 +
-                            (int)local_70[*(int *)(local_30 + 8) + 1]);
-          *psVar4 = (short)*(undefined4 *)(iVar3 + local_40 * 4) + *psVar4;
-          psVar4[1] = (short)*(undefined4 *)(iVar3 + local_34 * 4) + psVar4[1];
-          psVar4[2] = (short)*(undefined4 *)(iVar3 + (local_74 - (local_84 >> 0x10)) * 4) +
-                      psVar4[2];
-        }
-        local_c = local_c + local_88;
-      }
-      RotateDwordsLeft1(local_70 + 1,DAT_1001d288[dither_kernel_id]);
-      memset(local_70[DAT_1001d288[dither_kernel_id]] + -0x28,0,local_18 << 2);
-      if (serpentine != 0) {
-        local_3c = -local_3c;
-        local_7c = &DAT_1001d2d8 + (uint)(local_3c == -1) * 0x6c0 + dither_kernel_id * 0xc0;
-      }
-      bgr24 = (uint *)((int)bgr24 + width * 3 + row_padding);
     }
+    DAT_100322d0 = 1;
+  }
+
+  if (dither_kernel_id != DAT_1001e05c) {
+    for (s.local_4c = 0; s.local_4c < 0x41; s.local_4c = s.local_4c + 1) {
+      if (DAT_10117100[s.local_4c] != (void *)0x0) {
+        FreeIfNotNull(DAT_10117100[s.local_4c]);
+        DAT_10117100[s.local_4c] = (void *)0x0;
+      }
+    }
+    InitErrorDiffusionDeltaTables(dither_kernel_id,(int)DAT_10117100);
+    DAT_1001e05c = dither_kernel_id;
+  }
+
+  for (s.local_4c = 0; s.local_4c < 5; s.local_4c = s.local_4c + 1) {
+    SetBytes((void *)(DAT_100edb10 + s.local_4c * 0x8060),0,0x8060);
+    s.local_70[s.local_4c + 1] = s.local_4c * 0x8060 + 0x100edb38;
+  }
+
+  iVar1 = DAT_1001d260[dither_kernel_id];
+  for (s.local_58 = 0; s.local_58 < height; s.local_58 = s.local_58 + 1) {
+    if (s.local_3c < 1) {
+      s.local_80 = width + -1;
+      s.local_1c = -1;
+      s.local_88 = -3;
+    }
+    else {
+      s.local_80 = 0;
+      s.local_1c = width;
+      s.local_88 = 3;
+    }
+    s.local_c = s.local_80 * 3;
+    for (s.local_4c = s.local_80; s.local_4c != s.local_1c; s.local_4c = s.local_4c + s.local_3c) {
+      uVar2 = *(uint *)(s.local_c + (int)bgr24);
+      s.local_28 = uVar2 & 0xffffff;
+      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) & 0xff000000;
+      psVar4 = (short *)(s.local_4c * 8 + s.local_70[1]);
+      if (s.local_28 == 0) {
+        s.local_84 = 0;
+        s.local_74 = 0;
+        s.local_38 = 0;
+        s.local_8 = 0;
+      }
+      else if (s.local_28 == 0xffffff) {
+        s.local_74 = 0xff;
+        s.local_38 = 0xff;
+        s.local_8 = 0xff;
+        s.local_84 = 0xffffff;
+      }
+      else {
+        s.local_8 = (uint)(byte)PTR_DAT_1001e058[(uVar2 & 0xff) + ((int)*psVar4 >> 8)];
+        s.local_38 = (uint)(byte)PTR_DAT_1001e058[(s.local_28 >> 8 & 0xff) + ((int)psVar4[1] >> 8)];
+        s.local_74 = (uint)(byte)PTR_DAT_1001e058[(s.local_28 >> 0x10) + ((int)psVar4[2] >> 8)];
+        s.local_28 = s.local_38 << 8 | s.local_74 << 0x10 | s.local_8;
+        s.local_84 = Octree_FindNearestColor(s.local_28);
+      }
+      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) | s.local_84;
+      s.local_40 = s.local_8 - (s.local_84 & 0xff);
+      s.local_34 = s.local_38 - (s.local_84 >> 8 & 0xff);
+      for (s.local_30 = s.local_7c; s.local_30 < s.local_7c + iVar1 * 0x10; s.local_30 = s.local_30 + 0x10) {
+        s.local_44 = *(int *)(s.local_30 + 4);
+        s.local_48 = *(int *)(s.local_30 + 8);
+        iVar3 = *(int *)(s.local_30 + 0xc);
+        psVar4 = (short *)((*(int *)(s.local_30 + 4) + s.local_4c) * 8 +
+                          s.local_70[*(int *)(s.local_30 + 8) + 1]);
+        *psVar4 = (short)*(undefined4 *)(iVar3 + s.local_40 * 4) + *psVar4;
+        psVar4[1] = (short)*(undefined4 *)(iVar3 + s.local_34 * 4) + psVar4[1];
+        psVar4[2] = (short)*(undefined4 *)(iVar3 + (s.local_74 - (s.local_84 >> 0x10)) * 4) +
+                    psVar4[2];
+      }
+      s.local_c = s.local_c + s.local_88;
+    }
+    RotateDwordsLeft1((undefined4 *)(s.local_70 + 1),DAT_1001d288[dither_kernel_id]);
+    memset((void *)(s.local_70[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.local_18 << 2);
+    if (serpentine != 0) {
+      s.local_3c = -s.local_3c;
+      s.local_7c = (undefined *)((int)DAT_1001d2d8 + (uint)(s.local_3c == -1) * 0x6c0 + dither_kernel_id * 0xc0);
+    }
+    bgr24 = (uint *)((int)bgr24 + width * 3 + row_padding);
   }
   return height;
 }
@@ -2876,149 +2930,158 @@ undefined4 InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_p
 undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 
 {
-  byte bVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  short *psVar6;
-  int local_88;
-  uint local_84;
-  int local_80;
-  undefined *local_7c;
-  int local_70 [6];
-  int local_58;
-  undefined2 local_54;
-  undefined2 local_52;
-  undefined2 local_50;
-  undefined2 local_4e;
-  uint local_4c;
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_3c;
-  uint local_38;
-  int local_34;
-  undefined *local_30;
-  undefined4 local_2c;
-  uint local_28;
-  undefined2 local_24;
-  undefined2 local_22;
-  undefined2 local_20;
-  undefined2 local_1e;
-  int local_1c;
-  uint local_18;
-  undefined2 local_14;
-  undefined2 local_12;
-  undefined2 local_10;
-  undefined2 local_e;
-  int local_c;
-  uint local_8;
-  
-  local_14 = 0;
-  local_12 = 0;
-  local_10 = 0;
-  local_e = 0;
-  local_54 = 0;
-  local_52 = 0;
-  local_50 = 0;
-  local_4e = 0;
-  local_24 = 0xffff;
-  local_22 = 0xffff;
-  local_20 = 0xffff;
-  local_1e = 0;
-  local_3c = 1;
-  local_2c = 0;
-  local_7c = &DAT_1001d2d8 + dither_kernel_id * 0xc0;
-  local_18 = width * 8 + 0x50U >> 2;
+  struct {
+    uint uVar3;             /* [ebp-0x94] */
+    uint uVar5;             /* [ebp-0x90] */
+    short *psVar6;          /* [ebp-0x8c] */
+    int local_88;           /* [ebp-0x88] */
+    uint local_84;          /* [ebp-0x84] */
+    int local_80;           /* [ebp-0x80] */
+    undefined *local_7c;    /* [ebp-0x7c] */
+    undefined *local_78;    /* [ebp-0x78] */
+    int local_74;           /* [ebp-0x74] */
+    int local_70_0;         /* [ebp-0x70] */
+    int local_6c[6];        /* [ebp-0x6c] */
+    int local_58;           /* [ebp-0x54] */
+    undefined2 local_50;    /* [ebp-0x50] */
+    undefined2 local_4e;    /* [ebp-0x4e] */
+    undefined2 local_4c_w;  /* [ebp-0x4c] */
+    undefined2 local_4a;    /* [ebp-0x4a] */
+    int local_4c;           /* [ebp-0x48] */
+    int local_48;           /* [ebp-0x44] */
+    int local_44;           /* [ebp-0x40] */
+    int local_40;           /* [ebp-0x3c] */
+    int local_3c;           /* [ebp-0x38] */
+    uint local_38;          /* [ebp-0x34] */
+    int local_34;           /* [ebp-0x30] */
+    undefined *local_30;    /* [ebp-0x2c] */
+    int local_2c;           /* [ebp-0x28] */
+    uint local_28;          /* [ebp-0x24] */
+    undefined2 local_24;    /* [ebp-0x20] */
+    undefined2 local_22;    /* [ebp-0x1e] */
+    undefined2 local_20;    /* [ebp-0x1c] */
+    undefined2 local_1e;    /* [ebp-0x1a] */
+    int local_1c;           /* [ebp-0x18] */
+    uint local_18;          /* [ebp-0x14] */
+    undefined2 local_10;    /* [ebp-0x10] */
+    undefined2 local_e;     /* [ebp-0xe] */
+    undefined2 local_c_w;   /* [ebp-0xc] */
+    undefined2 local_a;     /* [ebp-0xa] */
+    int local_c;            /* [ebp-0x8] */
+    uint local_8;           /* [ebp-0x4] */
+  } s;
+
+  s.local_10 = 0;
+  s.local_e = 0;
+  s.local_c_w = 0;
+  s.local_a = 0;
+  s.local_50 = 0;
+  s.local_4e = 0;
+  s.local_4c_w = 0;
+  s.local_4a = 0;
+  s.local_24 = 0xffff;
+  s.local_22 = 0xffff;
+  s.local_20 = 0xffff;
+  s.local_1e = 0;
+  s.local_80 = -1;
+  s.local_3c = 1;
+  s.local_2c = 0;
+  s.local_78 = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
+  s.local_18 = width * 8 + 0x50U >> 2;
+
   if (DAT_100322cc == 0) {
-    for (local_4c = -0x200; (int)local_4c < 0x200; local_4c = local_4c + 1) {
-      if (((int)local_4c < 0) || (0xff < (int)local_4c)) {
-        if ((int)local_4c < 0) {
-          PTR_DAT_1001e058[local_4c] = 0;
-        }
-        else {
-          PTR_DAT_1001e058[local_4c] = 0xff;
-        }
+    for (s.local_4c = -0x200; s.local_4c < 0x200; s.local_4c = s.local_4c + 1) {
+      if (s.local_4c < 0) {
+        PTR_DAT_1001e058[s.local_4c] = 0;
+      }
+      else if (0xff < s.local_4c) {
+        PTR_DAT_1001e058[s.local_4c] = 0xff;
       }
       else {
-        PTR_DAT_1001e058[local_4c] = (undefined1)local_4c;
+        PTR_DAT_1001e058[s.local_4c] = (undefined1)s.local_4c;
       }
     }
     DAT_100322cc = 1;
   }
+
   if (DAT_1001e060 != dither_kernel_id) {
-    for (local_4c = 0; local_4c < 0x41; local_4c = local_4c + 1) {
-      if (*(int *)(&DAT_10117100 + local_4c * 4) != 0) {
-        FreeIfNotNull(*(void **)(&DAT_10117100 + local_4c * 4));
-        *(undefined4 *)(&DAT_10117100 + local_4c * 4) = 0;
+    for (s.local_4c = 0; (uint)s.local_4c < 0x41; s.local_4c = s.local_4c + 1) {
+      if (DAT_10117100[s.local_4c] != (void *)0x0) {
+        FreeIfNotNull(DAT_10117100[s.local_4c]);
+        DAT_10117100[s.local_4c] = (void *)0x0;
       }
     }
     InitErrorDiffusionDeltaTables(dither_kernel_id,DAT_10117100);
     DAT_1001e060 = dither_kernel_id;
   }
-  for (local_4c = 0; local_4c < 5; local_4c = local_4c + 1) {
-    SetBytes((void *)(DAT_100edb10 + local_4c * 0x8060),0,0x8060);
-    local_70[local_4c + 1] = local_4c * 0x8060 + 0x100edb38;
+
+  for (s.local_4c = 0; (uint)s.local_4c < 5; s.local_4c = s.local_4c + 1) {
+    memset((void *)(DAT_100edb10 + s.local_4c * 0x8060),0,0x8060);
+    s.local_6c[s.local_4c + 1] = (int)(DAT_100edb10 + s.local_4c * 0x8060) + 0x28;
   }
-  iVar2 = *(int *)(&DAT_1001d260 + dither_kernel_id * 4);
-  for (local_58 = 0; local_58 < height; local_58 = local_58 + 1) {
-    if (local_3c < 1) {
-      local_80 = width + -1;
-      local_1c = -1;
-      local_88 = -3;
+
+  s.local_74 = DAT_1001d260[dither_kernel_id];
+  for (s.local_58 = 0; s.local_58 < height; s.local_58 = s.local_58 + 1) {
+    if (s.local_3c < 1) {
+      s.local_80 = width + -1;
+      s.local_1c = -1;
+      s.local_88 = -3;
     }
     else {
-      local_80 = 0;
-      local_1c = width;
-      local_88 = 3;
+      s.local_80 = 0;
+      s.local_1c = width;
+      s.local_88 = 3;
     }
-    local_c = local_80 * 3;
-    for (local_4c = local_80; local_4c != local_1c; local_4c = local_4c + local_3c) {
-      uVar3 = *(uint *)(local_c + (int)bgr24);
-      uVar5 = uVar3 & 0xffffff;
-      *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) & 0xff000000;
-      psVar6 = (short *)(local_4c * 8 + local_70[1]);
-      local_8 = (uint)(byte)PTR_DAT_1001e058[(uVar3 & 0xff) + ((int)*psVar6 >> 8)];
-      local_38 = (uint)(byte)PTR_DAT_1001e058[(uVar5 >> 8 & 0xff) + ((int)psVar6[1] >> 8)];
-      bVar1 = PTR_DAT_1001e058[(uVar5 >> 0x10) + ((int)psVar6[2] >> 8)];
-      local_28 = (uint)(byte)PTR_DAT_1001e058[(uVar5 >> 8 & 0xff) + ((int)psVar6[1] >> 8)] << 8 |
-                 (uint)bVar1 << 0x10 |
-                 (uint)(byte)PTR_DAT_1001e058[(uVar3 & 0xff) + ((int)*psVar6 >> 8)];
-      if (local_28 == 0) {
-        local_84 = 0;
+
+    s.local_c = s.local_80 * 3;
+    for (s.local_4c = s.local_80; s.local_4c != s.local_1c; s.local_4c = s.local_4c + s.local_3c) {
+      s.uVar3 = *(uint *)(s.local_c + (int)bgr24);
+      s.uVar5 = s.uVar3 & 0xffffff;
+      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) & 0xff000000;
+
+      s.psVar6 = (short *)(s.local_4c * 8 + s.local_6c[1]);
+      s.local_8 = (uint)(byte)PTR_DAT_1001e058[(s.uVar3 & 0xff) + ((int)*s.psVar6 >> 8)];
+      s.local_38 = (uint)(byte)PTR_DAT_1001e058[(s.uVar5 >> 8 & 0xff) + ((int)s.psVar6[1] >> 8)];
+      s.local_48 = (uint)(byte)PTR_DAT_1001e058[(s.uVar5 >> 0x10) + ((int)s.psVar6[2] >> 8)];
+
+      s.local_28 = s.local_38 << 8 | (uint)s.local_48 << 0x10 | s.local_8;
+      if (s.local_28 == 0) {
+        s.local_84 = 0;
       }
-      else if (local_28 == 0xffffff) {
-        local_84 = 0xffffff;
+      else if (s.local_28 == 0xffffff) {
+        s.local_84 = 0xffffff;
       }
       else {
-        local_84 = Rgb888_QuantizeToF8(local_28);
+        s.local_84 = Rgb888_QuantizeToF8(s.local_28);
       }
-      *(uint *)(local_c + (int)bgr24) = *(uint *)(local_c + (int)bgr24) | local_84;
-      local_40 = local_8 - (local_84 & 0xff);
-      local_34 = local_38 - (local_84 >> 8 & 0xff);
-      local_30 = local_7c;
-      for (local_70[0] = 0; local_70[0] < iVar2; local_70[0] = local_70[0] + 1) {
-        local_44 = *(int *)(local_30 + 4);
-        local_48 = *(int *)(local_30 + 8);
-        iVar4 = *(int *)(local_30 + 0xc);
-        psVar6 = (short *)(local_70[*(int *)(local_30 + 8) + 1] +
-                          (*(int *)(local_30 + 4) + local_4c) * 8);
-        *psVar6 = (short)*(undefined4 *)(iVar4 + local_40 * 4) + *psVar6;
-        psVar6[1] = (short)*(undefined4 *)(iVar4 + local_34 * 4) + psVar6[1];
-        psVar6[2] = (short)*(undefined4 *)(iVar4 + ((uint)bVar1 - (local_84 >> 0x10 & 0xff)) * 4) +
-                    psVar6[2];
-        local_30 = local_30 + 0x10;
+      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) | s.local_84;
+
+      s.local_40 = (int)s.local_8 - (int)(s.local_84 & 0xff);
+      s.local_34 = (int)s.local_38 - (int)(s.local_84 >> 8 & 0xff);
+      s.local_30 = s.local_78;
+      for (s.local_70_0 = 0; s.local_70_0 < s.local_74; s.local_70_0 = s.local_70_0 + 1) {
+        s.local_44 = *(int *)(s.local_30 + 4);
+        s.local_48 = *(int *)(s.local_30 + 8);
+        s.uVar5 = *(int *)(s.local_30 + 0xc);
+        s.psVar6 = (short *)(s.local_6c[*(int *)(s.local_30 + 8) + 1] +
+                          (*(int *)(s.local_30 + 4) + s.local_4c) * 8);
+        *s.psVar6 = (short)*(undefined4 *)(s.uVar5 + s.local_40 * 4) + *s.psVar6;
+        s.psVar6[1] = (short)*(undefined4 *)(s.uVar5 + s.local_34 * 4) + s.psVar6[1];
+        s.psVar6[2] = (short)*(undefined4 *)(s.uVar5 + ((uint)((s.local_28 >> 0x10) & 0xff) - (s.local_84 >> 0x10 & 0xff)) * 4) +
+                    s.psVar6[2];
+        s.local_30 = s.local_30 + 0x10;
       }
-      local_c = local_c + local_88;
+      s.local_c = s.local_c + s.local_88;
     }
-    RotateDwordsLeft1(local_70 + 1,*(int *)(&DAT_1001d288 + dither_kernel_id * 4));
-    memset((void *)(local_70[*(int *)(&DAT_1001d288 + dither_kernel_id * 4)] + -0x28),0,local_18 << 2);
+
+    RotateDwordsLeft1(s.local_6c + 1,DAT_1001d288[dither_kernel_id]);
+    memset((void *)(s.local_6c[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.local_18 << 2);
     if (serpentine != 0) {
-      local_3c = -local_3c;
-      local_7c = &DAT_1001d2d8 + (uint)(local_3c == -1) * 0x6c0 + dither_kernel_id * 0xc0;
+      s.local_3c = -s.local_3c;
+      s.local_78 = (undefined *)((int)DAT_1001d2d8 + ((dither_kernel_id << 6) * 3) +
+                                (uint)(s.local_3c == -1) * 0x6c0);
     }
-    bgr24 = (uint *)((int)bgr24 + width * 3 + row_padding);
+    *(int *)&bgr24 += width * 3 + row_padding;
   }
   return 1;
 }
@@ -3601,12 +3664,14 @@ undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
   return 0;
 }
 
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 // FUNCTION: CARDARTLIB 0x1000807f
 uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 {
   struct WvlDecodeToBgr24Stack {
     int unk_5060;
-    int unk_505c;
+    int row_padding;
     int y_step;
     int x_step;
     uint *out_base;
@@ -3617,9 +3682,9 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     int x; // ebp - 0x1040
     int out_nonnull; // ebp - 0x103c
     int src_width; // ebp - 0x1038
-    uint *y_map_ptr; // ebp - 0x1034
+    int *y_map_ptr; // ebp - 0x1034
     int x_acc; // ebp - 0x1030
-    uint *x_map_ptr; // ebp - 0x102c
+    int *x_map_ptr; // ebp - 0x102c
     byte *out_start; // ebp - 0x1028
     byte *out_ptr; // ebp - 0x1024
     int y_scale; // ebp - 0x1020
@@ -3693,7 +3758,8 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 
   //param_1 = s.out_base;
   if (wvl_entry[8] < height) {
-    param_1 = (uint *)((int)s.out_base + (height - wvl_entry[8]) * (width * 3 + s.row_pad));
+    param_1 += (height - wvl_entry[8]) * (s.row_pad + width * 3);
+    s.out_ptr = param_1;
   }
   else
     s.out_ptr = (byte *)param_1;
@@ -3705,41 +3771,21 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     for (s.x = 0; s.x < width; s.x += 1, s.x_map_ptr += 1) {
       s.src_ptr = (byte *)(s.tmp_4 + (((int)*s.x_map_ptr >> 8) * 3));
 
-      s.tmp_10 = (int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]);
-      s.tmp_10 *= ((int)*s.x_map_ptr & 0xff);
-      s.tmp_10 >>= 8;
-      s.tmp_10 += (int)(uint)s.src_ptr[0];
-      *(byte *)param_1 = (byte)s.tmp_10;
-
-      s.tmp_10 = (int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]);
-      s.tmp_10 *= ((int)*s.x_map_ptr & 0xff);
-      s.tmp_10 >>= 8;
-      s.tmp_10 += (int)(uint)s.src_ptr[1];
-      *(byte *)((int)param_1 + 1) = (byte)s.tmp_10;
-
-      s.tmp_10 = (int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]);
-      s.tmp_10 *= ((int)*s.x_map_ptr & 0xff);
-      s.tmp_10 >>= 8;
-      s.tmp_10 += (int)(uint)s.src_ptr[2];
-      *(byte *)((int)param_1 + 2) = (byte)s.tmp_10;
+      param_1[0] = ((int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
+      param_1[1] =  ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
+      param_1[2] =  ((int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
 
       param_1 = (uint *)((int)param_1 + 3);
     }
   }
 
-  s.y_acc = 0;
-  s.y_map_ptr = s.y_map;
-  s.y = 0;
-  while (s.y < height) {
-    if (s.tmp_8 != 3) {
+  for (s.x = 0, s.y_acc = 0;s.x < height; s.x++, s.y_acc += s.y_step, s.y_map_ptr++) {
+    if (s.tmp_8 == 3) {
+      *s.y_map_ptr = (uint)(s.y_acc >> 8);    
+    } else {
       assert(0,s_D__Newmagic_sources_NedCard_haar_1001e1fc,0x730,
              s_Only_Works_on_24_bit_images_1001e1dc);
-      continue;
     }
-    *s.y_map_ptr = (uint)(s.y_acc >> 8);
-    s.y_acc += s.y_step;
-    s.y_map_ptr += 1;
-    s.y += 1;
   }
 
   s.row_bytes = width * 3 + s.row_pad;
@@ -3747,42 +3793,18 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     memcpy(s.x_map,(void *)((wvl_entry[8] - 1) * s.row_bytes + (int)s.out_base),s.row_bytes);
   }
 
-  s.x = 0;
-  while (s.x < width) {
+  for (s.x = 0; s.x < width; s.x++) {
     param_1 = (uint *)((int)s.out_base + s.x * 3);
+    s.tmp_4 = (int*)(s.out_ptr + s.x*3);
     s.y_map_ptr = s.y_map;
-    s.y = 0;
-    while (s.y < height - 1) {
-      s.tmp_10 = wvl_entry[8] - 2;
-      if ((int)*s.y_map_ptr >> 8 <= wvl_entry[8] - 2) {
-        s.tmp_10 = (int)*s.y_map_ptr >> 8;
-      }
+    
+    for (s.y = 0; s.y < height - 1; s.y++, s.y_map_ptr++, param_1 += s.row_bytes) {
+      s.src_ptr = MIN((int)*s.y_map_ptr >> 8, wvl_entry[8] - 2) * s.row_bytes + s.tmp_4;
 
-      s.src_ptr = s.out_ptr + s.tmp_10 * s.row_bytes + s.x * 3;
-
-      s.tmp_10 = (int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]);
-      s.tmp_10 *= ((int)*s.y_map_ptr & 0xff);
-      s.tmp_10 >>= 8;
-      s.tmp_10 += (int)(uint)s.src_ptr[0];
-      *(byte *)param_1 = (byte)s.tmp_10;
-
-      s.tmp_10 = (int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]);
-      s.tmp_10 *= ((int)*s.y_map_ptr & 0xff);
-      s.tmp_10 >>= 8;
-      s.tmp_10 += (int)(uint)s.src_ptr[1];
-      *(byte *)((int)param_1 + 1) = (byte)s.tmp_10;
-
-      s.tmp_10 = (int)((uint)s.src_ptr[s.row_bytes + 2] - (uint)s.src_ptr[2]);
-      s.tmp_10 *= ((int)*s.y_map_ptr & 0xff);
-      s.tmp_10 >>= 8;
-      s.tmp_10 += (int)(uint)s.src_ptr[2];
-      *(byte *)((int)param_1 + 2) = (byte)s.tmp_10;
-
-      s.y_map_ptr += 1;
-      param_1 = (uint *)((int)param_1 + s.row_bytes);
-      s.y += 1;
+      param_1[0] = ((int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
+      param_1[1] = ((int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
+      param_1[2] = ((int)((uint)s.src_ptr[s.row_bytes + 2] - (uint)s.src_ptr[2]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
     }
-    s.x += 1;
   }
 
   if (height < wvl_entry[8]) {
@@ -3792,15 +3814,13 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   }
 
   s.unk_5060 = 4;
-  s.tmp_10 = (width * 3) % s.unk_5060;
-  s.tmp_10 = s.unk_5060 - s.tmp_10;
-  s.unk_505c = s.tmp_10 % s.unk_5060;
+  s.row_padding = (s.unk_5060 - ((width * 3) % s.unk_5060)) % s.unk_5060;
   if (DAT_1001d258 == 0) {
-    QuantizeBgr24ToNearestPaletteColorInPlace(s.out_base,height,width,s.unk_505c);
+    QuantizeBgr24ToNearestPaletteColorInPlace(s.out_base,height,width,s.row_padding);
   } else if (DAT_101221e8 == 0x10) {
-    DitherBgr24ToRgbQuantizedF8(DAT_1001d258,DAT_1001d25c,s.out_base,height,width,s.unk_505c);
+    DitherBgr24ToRgbQuantizedF8(DAT_1001d258,DAT_1001d25c,s.out_base,height,width,s.row_padding);
   } else if (DAT_101221e8 == 8) {
-    DitherBgr24ToPaletteColors(DAT_1001d258,DAT_1001d25c,s.out_base,height,width,s.unk_505c);
+    DitherBgr24ToPaletteColors(DAT_1001d258,DAT_1001d25c,s.out_base,height,width,s.row_padding);
   }
 
   return s.out_base;
