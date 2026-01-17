@@ -2707,56 +2707,53 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 }
 
 // FUNCTION: CARDARTLIB 0x1000570f
-/* WARNING: Type propagation algorithm not settling */
-
 int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
-    char pad_0[0x14];
-    int local_88;
-    uint local_84;
-    int local_80;
-    undefined *local_7c;
-    uint local_74;
-    int local_70[6];
-    int local_58;
-    undefined2 local_50;
-    undefined2 local_4e;
-    undefined2 local_4c_w;
-    undefined2 local_4a;
-    uint local_4c;
-    int local_48;
-    int local_44;
-    int local_40;
-    int local_3c;
-    uint local_38;
-    int local_34;
-    undefined *local_30;
-    undefined4 local_2c;
-    uint local_28;
-    undefined2 local_24;
-    undefined2 local_22;
-    undefined2 local_20;
-    undefined2 local_1e;
-    int local_1c;
-    uint local_18;
-    undefined2 local_14;
-    undefined2 local_12;
-    undefined2 local_10;
-    undefined2 local_e;
-    int local_c;
-    uint local_8;
+    uint pixel_dword;       /* [ebp-0x94] */
+    uint masked_rgb;        /* [ebp-0x90] */
+    short *err_px;          /* [ebp-0x8c] */
+    int kernel_i;           /* [ebp-0x88] */
+    int byte_step;          /* [ebp-0x84] */
+    uint nearest_palette_rgb; /* [ebp-0x80] */
+    int x_start;            /* [ebp-0x7c] */
+    undefined *kernel_ptr;  /* [ebp-0x78] */
+    int kernel_count;       /* [ebp-0x74] */
+    uint r_clamped;         /* [ebp-0x70] */
+    int err_row_ptrs[6];    /* [ebp-0x6c] */
+    int y;                  /* [ebp-0x54] */
+    undefined2 local_50;    /* [ebp-0x50] */
+    undefined2 local_4e;    /* [ebp-0x4e] */
+    undefined2 local_4c_w;  /* [ebp-0x4c] */
+    undefined2 local_4a;    /* [ebp-0x4a] */
+    int x;                  /* [ebp-0x48] */
+    int tmp0;               /* [ebp-0x44] */
+    int tmp1;               /* [ebp-0x40] */
+    int err_b;              /* [ebp-0x3c] */
+    int x_step;             /* [ebp-0x38] */
+    uint g_clamped;         /* [ebp-0x34] */
+    int err_g;              /* [ebp-0x30] */
+    undefined *k_it;        /* [ebp-0x2c] */
+    uint packed_clamped;    /* [ebp-0x28] */
+    uint tmp_rgb;           /* [ebp-0x24] */
+    undefined2 local_24;    /* [ebp-0x20] */
+    undefined2 local_22;    /* [ebp-0x1e] */
+    undefined2 local_20;    /* [ebp-0x1c] */
+    undefined2 local_1e;    /* [ebp-0x1a] */
+    int x_end;              /* [ebp-0x18] */
+    uint clear_dwords;      /* [ebp-0x14] */
+    undefined2 local_10;    /* [ebp-0x10] */
+    undefined2 local_e;     /* [ebp-0xe] */
+    undefined2 local_c_w;   /* [ebp-0xc] */
+    undefined2 local_a;     /* [ebp-0xa] */
+    int byte_off;           /* [ebp-0x8] */
+    uint b_clamped;         /* [ebp-0x4] */
   } s;
 
-  register int iVar1;
-  register uint uVar2;
-  register int iVar3;
-  register short *psVar4;
-
-  s.local_14 = 0;
-  s.local_12 = 0;
   s.local_10 = 0;
   s.local_e = 0;
+  s.local_c_w = 0;
+  s.local_a = 0;
   s.local_50 = 0;
   s.local_4e = 0;
   s.local_4c_w = 0;
@@ -2765,11 +2762,11 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
   s.local_22 = 0xffff;
   s.local_20 = 0xffff;
   s.local_1e = 0;
-  s.local_3c = 1;
-  s.local_2c = 0;
-  s.local_80 = -1;
-  s.local_7c = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
-  s.local_18 = width * 8 + 0x50U >> 2;
+  s.nearest_palette_rgb = 0xffffffff;
+  s.x_step = 1;
+  s.packed_clamped = 0;
+  s.kernel_ptr = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
+  s.clear_dwords = (uint)(width * 8 + 0x50U) >> 2;
 
   if (dither_kernel_id == 0) {
     DAT_1001e05c = dither_kernel_id;
@@ -2777,103 +2774,116 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
   }
   if (dither_kernel_id == 1) {
     DAT_1001e05c = dither_kernel_id;
-    QuantizeBgr24ToNearestPaletteColorInPlace(bgr24,height,width,row_padding);
-    return 0;
+    return QuantizeBgr24ToNearestPaletteColorInPlace(bgr24,height,width,row_padding);
   }
 
   if (DAT_100322d0 == 0) {
-    for (s.local_4c = -0x200; (int)s.local_4c < 0x200; s.local_4c = s.local_4c + 1) {
-      if (((int)s.local_4c < 0) || (0xff < (int)s.local_4c)) {
-        if ((int)s.local_4c < 0) {
-          PTR_DAT_1001e058[s.local_4c] = 0;
-        }
-        else {
-          PTR_DAT_1001e058[s.local_4c] = 0xff;
-        }
+    for (s.x = -0x200; s.x < 0x200; s.x = s.x + 1) {
+      if ((0 <= s.x) && (s.x <= 0xff)) {
+        PTR_DAT_1001e058[s.x] = (undefined1)s.x;
       }
       else {
-        PTR_DAT_1001e058[s.local_4c] = (undefined1)s.local_4c;
+        if (s.x < 0) {
+          PTR_DAT_1001e058[s.x] = 0;
+        }
+        else {
+          PTR_DAT_1001e058[s.x] = 0xff;
+        }
       }
     }
     DAT_100322d0 = 1;
   }
 
   if (dither_kernel_id != DAT_1001e05c) {
-    for (s.local_4c = 0; s.local_4c < 0x41; s.local_4c = s.local_4c + 1) {
-      if (DAT_10117100[s.local_4c] != (void *)0x0) {
-        FreeIfNotNull(DAT_10117100[s.local_4c]);
-        DAT_10117100[s.local_4c] = (void *)0x0;
+    for (s.x = 0; s.x < 0x41; s.x = s.x + 1) {
+      if (DAT_10117100[s.x] != (void *)0x0) {
+        FreeIfNotNull(DAT_10117100[s.x]);
+        DAT_10117100[s.x] = (void *)0x0;
       }
     }
     InitErrorDiffusionDeltaTables(dither_kernel_id,(int)DAT_10117100);
     DAT_1001e05c = dither_kernel_id;
   }
 
-  for (s.local_4c = 0; s.local_4c < 5; s.local_4c = s.local_4c + 1) {
-    SetBytes((void *)(DAT_100edb10 + s.local_4c * 0x8060),0,0x8060);
-    s.local_70[s.local_4c + 1] = s.local_4c * 0x8060 + 0x100edb38;
+  for (s.x = 0; (uint)s.x < 5; s.x = s.x + 1) {
+    SetBytes((void *)(DAT_100edb10 + s.x * 0x8060),0,0x8060);
+    s.err_row_ptrs[s.x + 1] = (int)(DAT_100edb10 + s.x * 0x8060) + 0x28;
   }
 
-  iVar1 = DAT_1001d260[dither_kernel_id];
-  for (s.local_58 = 0; s.local_58 < height; s.local_58 = s.local_58 + 1) {
-    if (s.local_3c < 1) {
-      s.local_80 = width + -1;
-      s.local_1c = -1;
-      s.local_88 = -3;
+  s.kernel_count = DAT_1001d260[dither_kernel_id];
+  for (s.y = 0; s.y < height; s.y = s.y + 1, *(int *)&bgr24 += width * 3 + row_padding) {
+    if (0 < s.x_step) {
+      s.x_start = 0;
+      s.x_end = width;
+      s.byte_step = 3;
     }
     else {
-      s.local_80 = 0;
-      s.local_1c = width;
-      s.local_88 = 3;
+      s.x_start = width + -1;
+      s.x_end = -1;
+      s.byte_step = -3;
     }
-    s.local_c = s.local_80 * 3;
-    for (s.local_4c = s.local_80; s.local_4c != s.local_1c; s.local_4c = s.local_4c + s.local_3c) {
-      uVar2 = *(uint *)(s.local_c + (int)bgr24);
-      s.local_28 = uVar2 & 0xffffff;
-      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) & 0xff000000;
-      psVar4 = (short *)(s.local_4c * 8 + s.local_70[1]);
-      if (s.local_28 == 0) {
-        s.local_84 = 0;
-        s.local_74 = 0;
-        s.local_38 = 0;
-        s.local_8 = 0;
+
+    s.byte_off = s.x_start;
+    s.byte_off = s.byte_off + s.x_start;
+    s.byte_off = s.byte_off + s.x_start;
+    for (s.x = s.x_start; s.x != s.x_end; s.x = s.x + s.x_step) {
+      s.pixel_dword = *(uint *)(s.byte_off + (int)bgr24);
+      s.masked_rgb = s.pixel_dword & 0xffffff;
+      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) & 0xff000000;
+
+      s.err_px = (short *)(s.err_row_ptrs[1] + (s.x << 3));
+      if (s.masked_rgb == 0) {
+        s.nearest_palette_rgb = 0;
+        s.r_clamped = 0;
+        s.g_clamped = 0;
+        s.b_clamped = 0;
       }
-      else if (s.local_28 == 0xffffff) {
-        s.local_74 = 0xff;
-        s.local_38 = 0xff;
-        s.local_8 = 0xff;
-        s.local_84 = 0xffffff;
+      else if (s.masked_rgb == 0xffffff) {
+        s.r_clamped = 0xff;
+        s.g_clamped = 0xff;
+        s.b_clamped = 0xff;
+        s.nearest_palette_rgb = 0xffffff;
       }
       else {
-        s.local_8 = (uint)(byte)PTR_DAT_1001e058[(uVar2 & 0xff) + ((int)*psVar4 >> 8)];
-        s.local_38 = (uint)(byte)PTR_DAT_1001e058[(s.local_28 >> 8 & 0xff) + ((int)psVar4[1] >> 8)];
-        s.local_74 = (uint)(byte)PTR_DAT_1001e058[(s.local_28 >> 0x10) + ((int)psVar4[2] >> 8)];
-        s.local_28 = s.local_38 << 8 | s.local_74 << 0x10 | s.local_8;
-        s.local_84 = Octree_FindNearestColor(s.local_28);
+        s.b_clamped = (uint)(byte)PTR_DAT_1001e058[(s.pixel_dword & 0xff) + ((int)*s.err_px >> 8)];
+        s.g_clamped = (uint)(byte)PTR_DAT_1001e058[(s.masked_rgb >> 8 & 0xff) + ((int)s.err_px[1] >> 8)];
+        s.r_clamped = (uint)(byte)PTR_DAT_1001e058[(s.masked_rgb >> 0x10) + ((int)s.err_px[2] >> 8)];
+        s.masked_rgb = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
+        s.nearest_palette_rgb = Octree_FindNearestColor(s.masked_rgb);
       }
-      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) | s.local_84;
-      s.local_40 = s.local_8 - (s.local_84 & 0xff);
-      s.local_34 = s.local_38 - (s.local_84 >> 8 & 0xff);
-      for (s.local_30 = s.local_7c; s.local_30 < s.local_7c + iVar1 * 0x10; s.local_30 = s.local_30 + 0x10) {
-        s.local_44 = *(int *)(s.local_30 + 4);
-        s.local_48 = *(int *)(s.local_30 + 8);
-        iVar3 = *(int *)(s.local_30 + 0xc);
-        psVar4 = (short *)((*(int *)(s.local_30 + 4) + s.local_4c) * 8 +
-                          s.local_70[*(int *)(s.local_30 + 8) + 1]);
-        *psVar4 = (short)*(undefined4 *)(iVar3 + s.local_40 * 4) + *psVar4;
-        psVar4[1] = (short)*(undefined4 *)(iVar3 + s.local_34 * 4) + psVar4[1];
-        psVar4[2] = (short)*(undefined4 *)(iVar3 + (s.local_74 - (s.local_84 >> 0x10)) * 4) +
-                    psVar4[2];
+
+      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) | s.nearest_palette_rgb;
+
+      s.err_b = (int)s.b_clamped - (int)(s.nearest_palette_rgb & 0xff);
+      s.err_g = (int)s.g_clamped - (int)(s.nearest_palette_rgb >> 8 & 0xff);
+
+      s.k_it = s.kernel_ptr;
+      for (s.kernel_i = 0; s.kernel_i < s.kernel_count; s.kernel_i = s.kernel_i + 1) {
+        s.tmp1 = *(int *)(s.k_it + 4);
+        s.tmp0 = *(int *)(s.k_it + 8);
+        s.tmp_rgb = *(uint *)(s.k_it + 0xc);
+
+        s.err_px = (short *)(s.err_row_ptrs[*(int *)(s.k_it + 8) + 1] +
+                          (*(int *)(s.k_it + 4) + s.x) * 8);
+
+        s.tmp0 = *(int *)((int)s.tmp_rgb + s.err_b * 4);
+        *s.err_px = (short)s.tmp0 + *s.err_px;
+        s.tmp0 = *(int *)((int)s.tmp_rgb + s.err_g * 4);
+        s.err_px[1] = (short)s.tmp0 + s.err_px[1];
+        s.tmp0 = *(int *)((int)s.tmp_rgb + (s.r_clamped - (s.nearest_palette_rgb >> 0x10)) * 4);
+        s.err_px[2] = (short)s.tmp0 + s.err_px[2];
+
+        s.k_it = s.k_it + 0x10;
       }
-      s.local_c = s.local_c + s.local_88;
+      s.byte_off = s.byte_off + s.byte_step;
     }
-    RotateDwordsLeft1((undefined4 *)(s.local_70 + 1),DAT_1001d288[dither_kernel_id]);
-    memset((void *)(s.local_70[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.local_18 << 2);
+
+    RotateDwordsLeft1((undefined4 *)(s.err_row_ptrs + 1),DAT_1001d288[dither_kernel_id]);
+    memset((void *)(s.err_row_ptrs[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
     if (serpentine != 0) {
-      s.local_3c = -s.local_3c;
-      s.local_7c = (undefined *)((int)DAT_1001d2d8 + (uint)(s.local_3c == -1) * 0x6c0 + dither_kernel_id * 0xc0);
+      s.x_step = -s.x_step;
+      s.kernel_ptr = (undefined *)((int)DAT_1001d2d8 + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
     }
-    bgr24 = (uint *)((int)bgr24 + width * 3 + row_padding);
   }
   return height;
 }
@@ -2928,47 +2938,46 @@ undefined4 InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_p
 
 // FUNCTION: CARDARTLIB 0x100062c7
 undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
-
 {
   struct {
-    uint uVar3;             /* [ebp-0x94] */
-    uint uVar5;             /* [ebp-0x90] */
-    short *psVar6;          /* [ebp-0x8c] */
-    int local_88;           /* [ebp-0x88] */
-    uint local_84;          /* [ebp-0x84] */
+    uint pixel_dword;       /* [ebp-0x94] (also reused as temp) */
+    uint pixel_rgb;         /* [ebp-0x90] */
+    short *err_px;          /* [ebp-0x8c] */
+    uint rgb_quant;         /* [ebp-0x88] */
+    int byte_step;          /* [ebp-0x84] */
     int local_80;           /* [ebp-0x80] */
-    undefined *local_7c;    /* [ebp-0x7c] */
-    undefined *local_78;    /* [ebp-0x78] */
-    int local_74;           /* [ebp-0x74] */
-    int local_70_0;         /* [ebp-0x70] */
-    int local_6c[6];        /* [ebp-0x6c] */
-    int local_58;           /* [ebp-0x54] */
+    int x_start;            /* [ebp-0x7c] */
+    undefined *kernel_ptr;  /* [ebp-0x78] */
+    int kernel_count;       /* [ebp-0x74] */
+    int kernel_i;           /* [ebp-0x70] */
+    int err_row_ptrs[6];    /* [ebp-0x6c] */
+    int y;                  /* [ebp-0x54] */
     undefined2 local_50;    /* [ebp-0x50] */
     undefined2 local_4e;    /* [ebp-0x4e] */
     undefined2 local_4c_w;  /* [ebp-0x4c] */
     undefined2 local_4a;    /* [ebp-0x4a] */
-    int local_4c;           /* [ebp-0x48] */
-    int local_48;           /* [ebp-0x44] */
-    int local_44;           /* [ebp-0x40] */
-    int local_40;           /* [ebp-0x3c] */
-    int local_3c;           /* [ebp-0x38] */
-    uint local_38;          /* [ebp-0x34] */
-    int local_34;           /* [ebp-0x30] */
-    undefined *local_30;    /* [ebp-0x2c] */
-    int local_2c;           /* [ebp-0x28] */
-    uint local_28;          /* [ebp-0x24] */
+    int x;                  /* [ebp-0x48] */
+    int tmp0;               /* [ebp-0x44] */
+    int tmp1;               /* [ebp-0x40] */
+    int err_b;              /* [ebp-0x3c] */
+    int x_step;             /* [ebp-0x38] */
+    uint g_clamped;         /* [ebp-0x34] */
+    int err_g;              /* [ebp-0x30] */
+    undefined *k_it;        /* [ebp-0x2c] */
+    int rgb_clamped;        /* [ebp-0x28] */
+    uint packed_clamped;    /* [ebp-0x24] */
     undefined2 local_24;    /* [ebp-0x20] */
     undefined2 local_22;    /* [ebp-0x1e] */
     undefined2 local_20;    /* [ebp-0x1c] */
     undefined2 local_1e;    /* [ebp-0x1a] */
-    int local_1c;           /* [ebp-0x18] */
-    uint local_18;          /* [ebp-0x14] */
+    int x_end;              /* [ebp-0x18] */
+    uint clear_dwords;      /* [ebp-0x14] */
     undefined2 local_10;    /* [ebp-0x10] */
     undefined2 local_e;     /* [ebp-0xe] */
     undefined2 local_c_w;   /* [ebp-0xc] */
     undefined2 local_a;     /* [ebp-0xa] */
-    int local_c;            /* [ebp-0x8] */
-    uint local_8;           /* [ebp-0x4] */
+    int byte_off;           /* [ebp-0x8] */
+    uint b_clamped;         /* [ebp-0x4] */
   } s;
 
   s.local_10 = 0;
@@ -2984,102 +2993,110 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
   s.local_20 = 0xffff;
   s.local_1e = 0;
   s.local_80 = -1;
-  s.local_3c = 1;
-  s.local_2c = 0;
-  s.local_78 = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
-  s.local_18 = width * 8 + 0x50U >> 2;
+  s.x_step = 1;
+  s.rgb_clamped = 0;
+  s.kernel_ptr = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
+  s.clear_dwords = (uint)(width * 8 + 0x50) >> 2;
 
   if (DAT_100322cc == 0) {
-    for (s.local_4c = -0x200; s.local_4c < 0x200; s.local_4c = s.local_4c + 1) {
-      if (s.local_4c < 0) {
-        PTR_DAT_1001e058[s.local_4c] = 0;
-      }
-      else if (0xff < s.local_4c) {
-        PTR_DAT_1001e058[s.local_4c] = 0xff;
+    for (s.x = -0x200; s.x < 0x200; s.x = s.x + 1) {
+      if ((0 <= s.x) && (s.x <= 0xff)) {
+        PTR_DAT_1001e058[s.x] = (undefined1)s.x;
       }
       else {
-        PTR_DAT_1001e058[s.local_4c] = (undefined1)s.local_4c;
+        if (s.x < 0) {
+          PTR_DAT_1001e058[s.x] = 0;
+        }
+        else {
+          PTR_DAT_1001e058[s.x] = 0xff;
+        }
       }
     }
     DAT_100322cc = 1;
   }
 
   if (DAT_1001e060 != dither_kernel_id) {
-    for (s.local_4c = 0; (uint)s.local_4c < 0x41; s.local_4c = s.local_4c + 1) {
-      if (DAT_10117100[s.local_4c] != (void *)0x0) {
-        FreeIfNotNull(DAT_10117100[s.local_4c]);
-        DAT_10117100[s.local_4c] = (void *)0x0;
+    for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
+      if (DAT_10117100[s.x] != (void *)0x0) {
+        FreeIfNotNull(DAT_10117100[s.x]);
+        DAT_10117100[s.x] = (void *)0x0;
       }
     }
     InitErrorDiffusionDeltaTables(dither_kernel_id,DAT_10117100);
     DAT_1001e060 = dither_kernel_id;
   }
 
-  for (s.local_4c = 0; (uint)s.local_4c < 5; s.local_4c = s.local_4c + 1) {
-    memset((void *)(DAT_100edb10 + s.local_4c * 0x8060),0,0x8060);
-    s.local_6c[s.local_4c + 1] = (int)(DAT_100edb10 + s.local_4c * 0x8060) + 0x28;
+  for (s.x = 0; (uint)s.x < 5; s.x = s.x + 1) {
+    memset((void *)(DAT_100edb10 + s.x * 0x8060),0,0x8060);
+    s.err_row_ptrs[s.x + 1] = (int)(DAT_100edb10 + s.x * 0x8060) + 0x28;
   }
 
-  s.local_74 = DAT_1001d260[dither_kernel_id];
-  for (s.local_58 = 0; s.local_58 < height; s.local_58 = s.local_58 + 1) {
-    if (s.local_3c < 1) {
-      s.local_80 = width + -1;
-      s.local_1c = -1;
-      s.local_88 = -3;
+  s.kernel_count = DAT_1001d260[dither_kernel_id];
+  for (s.y = 0; s.y < height; s.y = s.y + 1) {
+    if (0 < s.x_step) {
+      s.x_start = 0;
+      s.x_end = width;
+      s.byte_step = 3;
     }
     else {
-      s.local_80 = 0;
-      s.local_1c = width;
-      s.local_88 = 3;
+      s.x_start = width + -1;
+      s.x_end = -1;
+      s.byte_step = -3;
     }
 
-    s.local_c = s.local_80 * 3;
-    for (s.local_4c = s.local_80; s.local_4c != s.local_1c; s.local_4c = s.local_4c + s.local_3c) {
-      s.uVar3 = *(uint *)(s.local_c + (int)bgr24);
-      s.uVar5 = s.uVar3 & 0xffffff;
-      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) & 0xff000000;
+    s.byte_off = s.x_start;
+    s.byte_off = s.byte_off + s.x_start;
+    s.byte_off = s.byte_off + s.x_start;
+    for (s.x = s.x_start; s.x != s.x_end; s.x = s.x + s.x_step) {
+      s.pixel_dword = *(uint *)(s.byte_off + (int)bgr24);
+      s.pixel_rgb = s.pixel_dword & 0xffffff;
+      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) & 0xff000000;
 
-      s.psVar6 = (short *)(s.local_4c * 8 + s.local_6c[1]);
-      s.local_8 = (uint)(byte)PTR_DAT_1001e058[(s.uVar3 & 0xff) + ((int)*s.psVar6 >> 8)];
-      s.local_38 = (uint)(byte)PTR_DAT_1001e058[(s.uVar5 >> 8 & 0xff) + ((int)s.psVar6[1] >> 8)];
-      s.local_48 = (uint)(byte)PTR_DAT_1001e058[(s.uVar5 >> 0x10) + ((int)s.psVar6[2] >> 8)];
+      s.err_px = (short *)s.err_row_ptrs[1];
+      s.err_px = (short *)((int)s.err_px + (s.x << 3));
+      s.b_clamped = (uint)(byte)PTR_DAT_1001e058[(s.pixel_dword & 0xff) + ((int)*s.err_px >> 8)];
+      s.g_clamped = (uint)(byte)PTR_DAT_1001e058[(s.pixel_rgb >> 8 & 0xff) + ((int)s.err_px[1] >> 8)];
+      s.pixel_dword = (uint)(byte)PTR_DAT_1001e058[(s.pixel_rgb >> 0x10) + ((int)s.err_px[2] >> 8)];
 
-      s.local_28 = s.local_38 << 8 | (uint)s.local_48 << 0x10 | s.local_8;
-      if (s.local_28 == 0) {
-        s.local_84 = 0;
+      s.packed_clamped = s.g_clamped << 8 | s.pixel_dword << 0x10 | s.b_clamped;
+      if (s.packed_clamped == 0) {
+        s.rgb_quant = 0;
       }
-      else if (s.local_28 == 0xffffff) {
-        s.local_84 = 0xffffff;
+      else if (s.packed_clamped == 0xffffff) {
+        s.rgb_quant = 0xffffff;
       }
       else {
-        s.local_84 = Rgb888_QuantizeToF8(s.local_28);
+        s.rgb_quant = Rgb888_QuantizeToF8(s.packed_clamped);
       }
-      *(uint *)(s.local_c + (int)bgr24) = *(uint *)(s.local_c + (int)bgr24) | s.local_84;
+      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) | s.rgb_quant;
 
-      s.local_40 = (int)s.local_8 - (int)(s.local_84 & 0xff);
-      s.local_34 = (int)s.local_38 - (int)(s.local_84 >> 8 & 0xff);
-      s.local_30 = s.local_78;
-      for (s.local_70_0 = 0; s.local_70_0 < s.local_74; s.local_70_0 = s.local_70_0 + 1) {
-        s.local_44 = *(int *)(s.local_30 + 4);
-        s.local_48 = *(int *)(s.local_30 + 8);
-        s.uVar5 = *(int *)(s.local_30 + 0xc);
-        s.psVar6 = (short *)(s.local_6c[*(int *)(s.local_30 + 8) + 1] +
-                          (*(int *)(s.local_30 + 4) + s.local_4c) * 8);
-        *s.psVar6 = (short)*(undefined4 *)(s.uVar5 + s.local_40 * 4) + *s.psVar6;
-        s.psVar6[1] = (short)*(undefined4 *)(s.uVar5 + s.local_34 * 4) + s.psVar6[1];
-        s.psVar6[2] = (short)*(undefined4 *)(s.uVar5 + ((uint)((s.local_28 >> 0x10) & 0xff) - (s.local_84 >> 0x10 & 0xff)) * 4) +
-                    s.psVar6[2];
-        s.local_30 = s.local_30 + 0x10;
+      s.err_b = (int)s.b_clamped - (int)(s.rgb_quant & 0xff);
+      s.err_g = (int)s.g_clamped - (int)(s.rgb_quant >> 8 & 0xff);
+      s.k_it = s.kernel_ptr;
+      for (s.kernel_i = 0; s.kernel_i < s.kernel_count; s.kernel_i = s.kernel_i + 1) {
+        s.tmp1 = *(int *)(s.k_it + 4);
+        s.tmp0 = *(int *)(s.k_it + 8);
+        s.pixel_rgb = *(int *)(s.k_it + 0xc);
+        s.err_px = (short *)(s.err_row_ptrs[*(int *)(s.k_it + 8) + 1] +
+                          (*(int *)(s.k_it + 4) + s.x) * 8);
+
+        s.tmp0 = *(int *)(s.pixel_rgb + s.err_b * 4);
+        *s.err_px = (short)s.tmp0 + *s.err_px;
+        s.tmp0 = *(int *)(s.pixel_rgb + s.err_g * 4);
+        s.err_px[1] = (short)s.tmp0 + s.err_px[1];
+        s.tmp0 = *(int *)(s.pixel_rgb + (s.pixel_dword - (s.rgb_quant >> 0x10 & 0xff)) * 4);
+        s.err_px[2] = (short)s.tmp0 + s.err_px[2];
+
+        s.k_it = s.k_it + 0x10;
       }
-      s.local_c = s.local_c + s.local_88;
+      s.byte_off = s.byte_off + s.byte_step;
     }
 
-    RotateDwordsLeft1(s.local_6c + 1,DAT_1001d288[dither_kernel_id]);
-    memset((void *)(s.local_6c[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.local_18 << 2);
+    RotateDwordsLeft1(s.err_row_ptrs + 1,DAT_1001d288[dither_kernel_id]);
+    memset((void *)(s.err_row_ptrs[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
     if (serpentine != 0) {
-      s.local_3c = -s.local_3c;
-      s.local_78 = (undefined *)((int)DAT_1001d2d8 + ((dither_kernel_id << 6) * 3) +
-                                (uint)(s.local_3c == -1) * 0x6c0);
+      s.x_step = -s.x_step;
+      s.kernel_ptr = (undefined *)((int)DAT_1001d2d8 + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
     }
     *(int *)&bgr24 += width * 3 + row_padding;
   }
