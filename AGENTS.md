@@ -6,14 +6,17 @@ These instructions apply to the entire repository.
 - Try to update local variable names while matching.
 - Never use inline assembly (`__asm`, `asm`, etc.).
 - Try hard not to use `goto`. Most `jmp` patterns translate to structured control flow:
-  - A single `jmp` with a negative offset is usually the end of a loop.
-  - A single `jmp` with a small offset is usually the start of a for loop, jumping over the increment/decrement statement which MSVC always puts at the top of the loop.
+  - A single `jmp` with a negative offset is usually the end of a loop.  A conditional jump with a negative offset is typically the end of a `do { } while ()`
+  - A single `jmp` with a small offset is often the start of a for loop, jumping over the increment/decrement statement which MSVC always puts at the top of the loop.
   - Other single `jmp` instructions are usually an `else` or an early `return`.
   - Two `jmp`s in a row is very commonly a `return` followed by an `else` block.
 - If the compiler’s stack layout won’t match, you may force a stable layout by grouping locals in a single struct:
   - Example: `struct { int var1; int var2; } s;`
   - Prefer expanding this struct rather than adding loose locals.
+  - If the stack is already laid out as a struct don't attempt to "unwrap" it.
 - If a 100% match seems impossible fall back to the best possible match.
+- Do not attempt to fix any perceived bugs in the code.  We aim to faithfully match the original in all aspects.
+- Ignore files in the Ghidra folder, especially magic-trace.c which has nothing to do with the current task.
 
 ## Matching Tips (MSVC 4.20)
 - Prefer compound assignments to coax “op [mem], reg” codegen:
