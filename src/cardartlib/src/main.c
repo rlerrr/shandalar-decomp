@@ -2473,49 +2473,63 @@ undefined4 InitOctreeBitTables(void)
 // FUNCTION: CARDARTLIB 0x100051f5
 undefined4 Octree_FindNearestColor(uint param_1)
 {
-  int *piVar1;
-  int iVar2;
-  int *piVar3;
-  int iVar4;
-  byte *pbVar5;
-  int local_34;
-  uint local_2c;
-  int local_28;
-  
-  Octree_BuildPathBytesFromRgb(param_1,(uint *)&DAT_100322c0);
-  pbVar5 = &DAT_100322c0;
-  piVar3 = g_paletteOctreeRoot;
-  do {
-    piVar1 = (int *)piVar3[*pbVar5 + 2];
-    pbVar5 = pbVar5 + 1;
-    if (piVar1 == (int *)0x0) {
-      if (*piVar3 == 0) {
-        iVar2 = piVar3[10];
-        local_34 = 0x7fffffff;
-        for (local_28 = 0; local_28 < piVar3[0xb]; local_28 = local_28 + 1) {
-          iVar4 = *(int *)(PTR_DAT_1001d244 +
-                          ((param_1 >> 8 & 0xff) -
-                          (uint)g_paletteRgbTable[(uint)*(byte *)(local_28 + iVar2) * 4 + 1]) * 4) +
-                  *(int *)(PTR_DAT_1001d244 +
-                          ((param_1 & 0xff) -
-                          (*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff)) *
-                          4) +
-                  *(int *)(PTR_DAT_1001d244 +
-                          (((param_1 & 0xff0000) >> 0x10) -
-                          ((*(uint *)(g_paletteRgbTable + (uint)*(byte *)(local_28 + iVar2) * 4) & 0xff0000)
-                           >> 0x10)) * 4);
-          if (iVar4 < local_34) {
-            local_2c = (uint)*(byte *)(local_28 + iVar2);
-            local_34 = iVar4;
+  struct {
+    int pal_r;        /* ebp - 0x34 */
+    int best_dist;    /* ebp - 0x30 */
+    int idx_list_base;/* ebp - 0x2c */
+    uint best_idx;    /* ebp - 0x28 */
+    int i;            /* ebp - 0x24 */
+    int green;        /* ebp - 0x20 */
+    int dist;         /* ebp - 0x1c */
+    int pal_g;        /* ebp - 0x18 */
+    int blue;         /* ebp - 0x14 */
+    int red;          /* ebp - 0x10 */
+    int pal_b;        /* ebp - 0xc */
+    int *node;        /* ebp - 8 */
+    byte *path;       /* ebp - 4 */
+  } s;
+
+  s.path = &DAT_100322c0;
+  s.node = (int *)g_paletteOctreeRoot;
+
+  Octree_BuildPathBytesFromRgb(param_1,(char *)&DAT_100322c0);
+
+  for (;;) {
+    s.idx_list_base = s.node[(uint)*s.path + 2];
+    s.path = s.path + 1;
+    if (s.idx_list_base == 0) {
+      if (*s.node == 0) {
+        s.idx_list_base = s.node[10];
+        s.best_dist = 0x7fffffff;
+        s.blue = (int)(param_1 & 0xff);
+        s.green = (int)((byte *)&param_1)[1];
+        s.red = (int)((param_1 & 0xff0000) >> 0x10);
+
+        for (s.i = 0; s.i < s.node[0xb]; s.i = s.i + 1) {
+          s.dist = (uint)*(byte *)(s.idx_list_base + s.i);
+          s.pal_g = (int)(uint)g_paletteRgbTable[(uint)s.dist * 4 + 1];
+
+          s.pal_r = *(uint *)(g_paletteRgbTable + (uint)s.dist * 4);
+          s.pal_b = s.pal_r & 0xff;
+          s.pal_r = (s.pal_r & 0xff0000) >> 0x10;
+
+          s.dist = ((int *)PTR_DAT_1001d244)[s.green - s.pal_g] +
+                   ((int *)PTR_DAT_1001d244)[s.blue - s.pal_b] +
+                   ((int *)PTR_DAT_1001d244)[s.red - s.pal_r];
+
+          if (s.dist < s.best_dist) {
+            s.best_dist = s.dist;
+            s.best_idx = (uint)*(byte *)(s.idx_list_base + s.i);
           }
         }
-        return *(undefined4 *)(g_paletteRgbTable + local_2c * 4);
+        return *(undefined4 *)(g_paletteRgbTable + s.best_idx * 4);
       }
-      return *(undefined4 *)(g_paletteRgbTable + piVar3[1] * 4);
+      return *(undefined4 *)(g_paletteRgbTable + s.node[1] * 4);
     }
-    piVar3 = piVar1;
-  } while ((char)*piVar1 != '\x01');
-  return *(undefined4 *)(g_paletteRgbTable + piVar1[1] * 4);
+    s.node = (int *)s.idx_list_base;
+    if ((char)*s.node == '\x01') break;
+  }
+  return *(undefined4 *)(g_paletteRgbTable + s.node[1] * 4);
 }
 
 // FUNCTION: CARDARTLIB 0x10005383
@@ -3429,123 +3443,163 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
                  int chroma_stride,undefined4 unused_chroma_height,int chroma_is_420)
 
 {
-  undefined1 *puVar1;
-  int iVar2;
-  int local_2c;
-  int local_28;
-  int local_20;
-  uint local_1c;
-  int *local_14;
-  int *local_10;
-  int local_c;
-  int local_8;
+  struct {
+    int y; /* ebp - 0x2c */
+    int u; /* ebp - 0x28 */
+    int v; /* ebp - 0x24 */
+    undefined1 *out_base; /* ebp - 0x20 */
+    int row; /* ebp - 0x1c */
+    int col; /* ebp - 0x18 */
+    int green; /* ebp - 0x14 */
+    int *chroma_u_ptr; /* ebp - 0x10 */
+    int *chroma_v_ptr; /* ebp - 0xc */
+    int red; /* ebp - 8 */
+    int blue; /* ebp - 4 */
+  } s;
   
   if (g_yuvClampTableInit == 0) {
-    for (local_1c = -0x400; (int)local_1c < 0x1c00; local_1c = local_1c + 1) {
-      if ((int)local_1c < 1) {
-        g_yuvClampTable[local_1c] = 0;
-      }
-      else {
-        iVar2 = (int)local_1c >> 2;
-        if (0xfe < iVar2) {
-          iVar2 = 0xff;
-        }
-        g_yuvClampTable[local_1c] = (char)iVar2;
-      }
+    for (s.col = -0x400; s.col < 0x1c00; s.col = s.col + 1) {
+      if (0 < s.col) {
+        g_yuvClampTable[s.col] = (char)(((s.col >> 2) <= 0xff) ? (s.col >> 2) : 0xff);
+      } else {
+        g_yuvClampTable[s.col] = 0;
+      } 
     }
     g_yuvClampTableInit = 1;
   }
   if (out_bgr24 == (undefined1 *)0x0) {
     out_bgr24 = malloc(width * width * 3 + 0x10);
   }
-  puVar1 = out_bgr24;
-  for (local_20 = 0; local_20 < height; local_20 = local_20 + 1) {
-    iVar2 = local_20;
+  s.out_base = out_bgr24;
+  for (s.row = 0; s.row < height; s.row = s.row + 1) {
+    s.y = s.row;
     if (chroma_is_420 != 0) {
-      iVar2 = local_20 / 2;
+      s.y = s.y / 2;
     }
-    local_10 = (int *)(iVar2 * chroma_stride * 4 + chroma_v);
-    local_14 = (int *)(iVar2 * chroma_stride * 4 + chroma_u);
-    for (local_1c = 0; (int)local_1c < width; local_1c = local_1c + 1) {
-      iVar2 = *luma;
-      if (chroma_is_420 == 0) {
-        local_2c = *local_14;
-        local_28 = *local_10;
-        local_28 = (local_28 >> 3) + (local_28 >> 1) + local_28;
-      }
-      else {
-        if ((local_1c & 1) == 0) {
-          local_2c = *local_14;
-          local_28 = *local_10;
+
+    s.y = (s.y * chroma_stride) << 2;
+    s.chroma_u_ptr = (int *)(chroma_u + s.y);
+    s.chroma_v_ptr = (int *)(chroma_v + s.y);
+
+    for (s.col = 0; s.col < width; s.col = s.col + 1, luma = luma + 1, out_bgr24 = out_bgr24 + 3) {
+      s.y = *luma;
+
+      if (chroma_is_420 != 0) {
+        if ((s.col & 1) == 0) {
+          s.u = *s.chroma_u_ptr;
+          s.v = *s.chroma_v_ptr;
+        } else {
+          s.u = (s.chroma_u_ptr[((uint)(width - 1) - (uint)s.col) != 0] + *s.chroma_u_ptr) / 2;
+          s.v = (s.chroma_v_ptr[((uint)(width - 1) - (uint)s.col) != 0] + *s.chroma_v_ptr) / 2;
         }
-        else {
-          local_2c = (local_14[width - 1U != local_1c] + *local_14) / 2;
-          local_28 = (local_10[width - 1U != local_1c] + *local_10) / 2;
+        s.red = ((s.v >> 3) + (s.v >> 1) + s.v) - 0x333 + s.y;
+        s.blue = (s.u * 2) - 0x400 + s.y;
+        s.green = (((s.y * 2) - (s.y >> 2)) - (s.red >> 1)) - ((s.blue >> 2) - (s.blue >> 4));
+
+        out_bgr24[0] = g_yuvClampTable[s.blue];
+        out_bgr24[1] = g_yuvClampTable[s.green];
+        out_bgr24[2] = g_yuvClampTable[s.red];
+
+        if ((s.col & 1) != 0) {
+          s.chroma_u_ptr = s.chroma_u_ptr + 1;
+          s.chroma_v_ptr = s.chroma_v_ptr + 1;
         }
-        local_28 = (local_28 >> 3) + (local_28 >> 1) + local_28;
+      } else {
+        s.u = *s.chroma_u_ptr;
+        s.v = *s.chroma_v_ptr;
+
+        s.red = ((s.v >> 3) + (s.v >> 1) + s.v) - 0x333 + s.y;
+        s.blue = (s.u * 2) - 0x400 + s.y;
+        s.green = (((s.y * 2) - (s.y >> 2)) - (s.red >> 1)) - ((s.blue >> 2) - (s.blue >> 4));
+
+        out_bgr24[0] = g_yuvClampTable[s.blue];
+        out_bgr24[1] = g_yuvClampTable[s.green];
+        out_bgr24[2] = g_yuvClampTable[s.red];
+
+        s.chroma_u_ptr = s.chroma_u_ptr + 1;
+        s.chroma_v_ptr = s.chroma_v_ptr + 1;
       }
-      local_8 = local_2c * 2 + -0x400 + iVar2;
-      local_c = local_28 + -0x333 + iVar2;
-      *out_bgr24 = g_yuvClampTable[local_8];
-      out_bgr24[1] = g_yuvClampTable
-                   [((iVar2 * 2 - (iVar2 >> 2)) - (local_c >> 1)) -
-                     ((local_8 >> 2) - (local_8 >> 4))];
-      out_bgr24[2] = g_yuvClampTable[local_c];
-      if (chroma_is_420 == 0) {
-        local_14 = local_14 + 1;
-        local_10 = local_10 + 1;
-      }
-      else if ((local_1c & 1) != 0) {
-        local_14 = local_14 + 1;
-        local_10 = local_10 + 1;
-      }
-      luma = luma + 1;
-      out_bgr24 = out_bgr24 + 3;
     }
   }
-  return puVar1;
+  return s.out_base;
 }
 
 // FUNCTION: CARDARTLIB 0x100078b8
 undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
 {
-  int *piVar1;
-  uint *puVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  void *pvVar8;
-  void *_Dst;
-  void *_Dst_00;
-  int local_28;
-  void *local_18;
-  
-  iVar5 = param_2[7] / (int)(2 - (uint)(param_2[10] == 1));
-  iVar6 = iVar5 / (int)(2 - (uint)(*param_2 == 0));
-  iVar3 = param_2[9];
-  iVar4 = *(int *)param_2[0x68];
-  piVar1 = (int *)param_2[0x68] + 1;
-  *piVar1 = -0x80000000;
-  iVar7 = Huffman13_Init(piVar1 + iVar4,piVar1,iVar4);
-  local_18 = (void *)((int)(piVar1 + iVar4) + iVar7);
-  for (local_28 = 0; local_28 < param_2[10]; local_28 = local_28 + 1) {
-    pvVar8 = (void *)((iVar5 * iVar5 + iVar6 * iVar6 * 2 + 0x40) * local_28 * 4 + param_1);
-    _Dst = (void *)((int)pvVar8 + iVar5 * iVar5 * 4 + 0x80);
-    _Dst_00 = (void *)((int)_Dst + iVar6 * iVar6 * 4 + 0x80);
-    memcpy(pvVar8,local_18,iVar3 * iVar3 * 4);
-    puVar2 = (uint *)((int)local_18 + iVar3 * iVar3 * 4);
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)((int)pvVar8 + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x17]);
-    pvVar8 = (void *)((int)puVar2 + param_2[local_28 + 0x17]);
-    memcpy(_Dst,pvVar8,iVar3 * iVar3 * 4);
-    puVar2 = (uint *)((int)pvVar8 + iVar3 * iVar3 * 4);
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)((int)_Dst + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x1b]);
-    pvVar8 = (void *)((int)puVar2 + param_2[local_28 + 0x1b]);
-    memcpy(_Dst_00,pvVar8,iVar3 * iVar3 * 4);
-    puVar2 = (uint *)((int)pvVar8 + iVar3 * iVar3 * 4);
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)((int)_Dst_00 + iVar3 * iVar3 * 4),puVar2,param_2[local_28 + 0x1f]);
-    local_18 = (void *)((int)puVar2 + param_2[local_28 + 0x1f]);
+  struct {
+    byte *dst_y;        /* ebp - 0x3c */
+    int *wvl;           /* ebp - 0x38 */
+    int node_count;     /* ebp - 0x34 */
+    int chroma_w;       /* ebp - 0x30 */
+    int base_size;      /* ebp - 0x2c */
+    int chroma_h;       /* ebp - 0x28 */
+    int layer;          /* ebp - 0x24 */
+    uint *symbol_table; /* ebp - 0x20 */
+    int full_w;         /* ebp - 0x1c */
+    byte *dst_v;        /* ebp - 0x18 */
+    byte *bitstream;    /* ebp - 0x14 */
+    byte *huff_data;    /* ebp - 0x10 */
+    int full_h;         /* ebp - 0x0c */
+    int tmp;            /* ebp - 0x08 */
+    byte *dst_u;        /* ebp - 0x04 */
+  } s;
+
+  s.wvl = param_2;
+
+  s.full_w = s.wvl[7] / (2 - (s.wvl[10] < 2));
+  s.full_h = s.full_w;
+  s.chroma_w = s.full_w / (2 - (s.wvl[0] < 1));
+  s.chroma_h = s.chroma_w;
+  s.base_size = s.wvl[9];
+
+  s.huff_data = (byte *)s.wvl[0x68];
+  s.bitstream = s.huff_data;
+  s.node_count = *(int *)s.bitstream;
+  s.bitstream = s.bitstream + 4;
+  s.symbol_table = (uint *)s.bitstream;
+  *s.symbol_table = 0x80000000;
+  s.bitstream = s.bitstream + (s.node_count << 2);
+  s.bitstream =
+      s.bitstream +
+      Huffman13_Init((undefined4)s.bitstream,(undefined4)s.symbol_table,(undefined4)s.node_count);
+
+  for (s.layer = 0; s.layer < s.wvl[10]; s.layer = s.layer + 1) {
+    s.tmp = s.chroma_w * s.chroma_h;
+    s.tmp = (s.full_w * s.full_h) + s.tmp * 2;
+    s.tmp = s.tmp + 0x40;
+    s.dst_y = (byte *)(param_1 + ((s.tmp * s.layer) << 2));
+
+    s.dst_u += (s.full_w * s.full_h) << 2 + 0x80;
+
+    s.dst_v += (s.chroma_w * s.chroma_h) << 2 + 0x80;
+
+    memcpy(s.dst_y,s.bitstream,(s.base_size * s.base_size) << 2);
+
+    s.dst_y += (s.base_size * s.base_size) << 2;
+
+    s.bitstream += (s.base_size * s.base_size) << 2;
+
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_y,(uint *)s.bitstream,s.wvl[s.layer + 0x17]);
+    s.bitstream = s.bitstream + s.wvl[s.layer + 0x17];
+
+    memcpy(s.dst_u,s.bitstream,(s.base_size * s.base_size) << 2);
+
+    s.dst_u += (s.base_size * s.base_size) << 2;
+
+    s.bitstream += (s.base_size * s.base_size) << 2;
+
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_u,(uint *)s.bitstream,s.wvl[s.layer + 0x1b]);
+    s.bitstream = s.bitstream + s.wvl[s.layer + 0x1b];
+
+    memcpy(s.dst_v,s.bitstream,(s.base_size * s.base_size) << 2);
+
+    s.dst_v += (s.base_size * s.base_size) << 2;
+
+    s.bitstream += (s.base_size * s.base_size) << 2;
+
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_v,(uint *)s.bitstream,s.wvl[s.layer + 0x1f]);
+    s.bitstream = s.bitstream + s.wvl[s.layer + 0x1f];
   }
   return 0;
 }
