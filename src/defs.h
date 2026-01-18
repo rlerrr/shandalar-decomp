@@ -67,6 +67,28 @@ typedef enum
   COLOR_TEST_ANY       = COLOR_TEST_ANY_COLORED | COLOR_TEST_COLORLESS,
 } color_test_t;
 
+// Hybrid, Phyrexian, purely-colorless, etc. mana costs
+typedef enum
+{
+  HYBRID_0 = 0,
+
+  // 2-color hybrid
+  HYBRID_WU = (COLOR_TEST_WHITE|COLOR_TEST_BLUE),	HYBRID_WB = (COLOR_TEST_WHITE|COLOR_TEST_BLACK),
+  HYBRID_UB = (COLOR_TEST_BLUE |COLOR_TEST_BLACK),	HYBRID_UR = (COLOR_TEST_BLUE |COLOR_TEST_RED),
+  HYBRID_BR = (COLOR_TEST_BLACK|COLOR_TEST_RED),	HYBRID_BG = (COLOR_TEST_BLACK|COLOR_TEST_GREEN),
+  HYBRID_RG = (COLOR_TEST_RED  |COLOR_TEST_GREEN),	HYBRID_RW = (COLOR_TEST_RED  |COLOR_TEST_WHITE),
+  HYBRID_GW = (COLOR_TEST_GREEN|COLOR_TEST_WHITE),	HYBRID_GU = (COLOR_TEST_GREEN|COLOR_TEST_BLUE),
+  // reverse order, for convenience
+  HYBRID_UW = HYBRID_WU,	HYBRID_BW = HYBRID_WB,
+  HYBRID_BU = HYBRID_UB,	HYBRID_RU = HYBRID_UR,
+  HYBRID_RB = HYBRID_BR,	HYBRID_GB = HYBRID_BG,
+  HYBRID_GR = HYBRID_RG,	HYBRID_WR = HYBRID_RW,
+  HYBRID_WG = HYBRID_GW,	HYBRID_UG = HYBRID_GU,
+
+  // others
+  HYBRID_COLORLESS = COLOR_TEST_COLORLESS,	HYBRID_C = HYBRID_COLORLESS,
+} hybrid_t;
+
 /* event_t codes */
 typedef enum
 {
@@ -1226,10 +1248,13 @@ typedef struct
 	uint8_t req_colorless;
 	uint8_t req_black;
 	uint8_t req_blue;
-
-	uint8_t unknown0x2b;
-	uint8_t unknown0x2c;
-	
+#if defined(SHANDALAR) || defined(DECKBUILDER)
+	int8_t req_hybrid;
+	hybrid_t hybrid_type;
+#else
+	uint8_t req_hybrid;
+	uint8_t hybrid_type;
+#endif
 	uint8_t req_green;
 #ifdef SHANDALAR
 	mana_flags_t mana_flags;
@@ -2796,14 +2821,8 @@ typedef enum
  * example; charging mana is not. */
 #define FORCE(cmds) do { cancel = 0; cmds; } while (cancel == 1)
 
-#define COMPARE(a, comparator, b)		\
-({										\
-  __typeof__(a) macro_compare_a = (a);	\
-  __typeof__(b) macro_compare_b = (b);	\
-  macro_compare_a comparator macro_compare_b ? macro_compare_a : macro_compare_b;	\
-})
-#define MIN(a, b) COMPARE(a, <, b)
-#define MAX(a, b) COMPARE(a, >, b)
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define CLAMP(val, lo, hi)					\
 ({											\
@@ -2817,7 +2836,6 @@ typedef enum
 		 : macro_clamp_val);				\
 })
 
-#define SWAP(a, b)	do { __typeof__(a) temp_swap_ = a; a = b; b = temp_swap_; } while (0)	// gcc extension: typeof
 #define SGN(v)		(((v) > 0) - ((v) < 0))		// -1 if v is less than 0; +1 if v is greater than 0; 0 if v is equal to 0.  From http://graphics.stanford.edu/~seander/bithacks.html#CopyIntegerSign
 #define STRINGIZE_IMPL(x) #x
 #define STRINGIZE(x) STRINGIZE_IMPL(x)

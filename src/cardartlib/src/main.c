@@ -3711,8 +3711,6 @@ undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
   return 0;
 }
 
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-
 // FUNCTION: CARDARTLIB 0x1000807f
 uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 {
