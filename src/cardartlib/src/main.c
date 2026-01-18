@@ -3235,100 +3235,130 @@ BOOL Catalog_Unlock(int unused)
 // FUNCTION: CARDARTLIB 0x10006be3
 undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int *piVar5;
-  int *piVar6;
-  int *piVar7;
-  bool bVar8;
-  undefined8 *local_50;
-  int local_4c;
-  int local_48;
-  int local_34;
-  int local_2c;
-  int local_8;
-  
+  struct {
+    int bgr_tmp;         /* [ebp-0x4c] */
+    int scale_i;         /* [ebp-0x48] */
+    int piece_idx;       /* [ebp-0x44] */
+    int local_40;        /* [ebp-0x40] */
+    int have_dst;        /* [ebp-0x3c] */
+    int chroma_h;        /* [ebp-0x38] */
+    int local_34;        /* [ebp-0x34] */
+    int v_plane;         /* [ebp-0x30] */
+    int height_px;       /* [ebp-0x2c] */
+    int chroma_w;        /* [ebp-0x28] */
+    int width_px;        /* [ebp-0x24] */
+    int base_size;       /* [ebp-0x20] */
+    int alloc_bytes;     /* [ebp-0x1c] */
+    int dword_count;     /* [ebp-0x18] */
+    int block_width;     /* [ebp-0x14] */
+    int block_height;    /* [ebp-0x10] */
+    int *y_plane;        /* [ebp-0xc] */
+    int *u_plane;        /* [ebp-0x8] */
+    int pieces_per_row;  /* [ebp-0x4] */
+  } s;
+
+  s.have_dst = 0;
   if (g_waveletScaleToByteTableInit == 0) {
-    for (local_4c = -0x400; local_4c < 0x401; local_4c = local_4c + 1) {
-      if ((local_4c < 0) || (0xf8 < local_4c)) {
-        if (local_4c < 10) {
-          g_waveletScaleToByteTable[local_4c] = 0;
-        }
-        else {
-          g_waveletScaleToByteTable[local_4c] = 0xff;
-        }
+    for (s.scale_i = -0x400; s.scale_i <= 0x400; s.scale_i = s.scale_i + 1) {
+      if (s.scale_i < 0) {
+        /* fall through to out-of-range clamp below */
       }
       else {
-        g_waveletScaleToByteTable[local_4c] = (char)((local_4c * 0xff) / 0xf8);
+        if (s.scale_i <= 0xf8) {
+          /* (i*256 - i) / 0xf8 -> shl/sub/idiv */
+          g_waveletScaleToByteTable[s.scale_i] =
+              (char)(((s.scale_i << 8) - s.scale_i) / 0xf8);
+          continue;
+        }
+      }
+
+      if (s.scale_i < 0xa) {
+        g_waveletScaleToByteTable[s.scale_i] = 0;
+      }
+      else {
+        g_waveletScaleToByteTable[s.scale_i] = 0xff;
       }
     }
     g_waveletScaleToByteTableInit = 1;
   }
-  bVar8 = param_2 != (undefined8 *)0x0;
-  if (bVar8) {
-    MemZeroDwords(param_2,(int)(param_1[0x24] + 2000 + (param_1[0x24] + 2000 >> 0x1f & 3U)) >> 2);
+
+  if (param_2 == (undefined8 *)0x0) {
+    s.alloc_bytes = param_1[0x24] + 0x7d0;
+    s.dword_count = (int)(s.alloc_bytes + (s.alloc_bytes >> 0x1f & 3U)) >> 2;
+    param_2 = malloc(s.alloc_bytes);
+    MemZeroDwords(param_2,s.dword_count);
   }
   else {
-    param_2 = malloc(param_1[0x24] + 2000);
-    MemZeroDwords(param_2,(int)(param_1[0x24] + 2000 + (param_1[0x24] + 2000 >> 0x1f & 3U)) >> 2);
+    s.alloc_bytes = param_1[0x24] + 0x7d0;
+    s.dword_count = (int)(s.alloc_bytes + (s.alloc_bytes >> 0x1f & 3U)) >> 2;
+    MemZeroDwords(param_2,s.dword_count);
+    s.have_dst = 1;
   }
+
   _DAT_100ecb04 = Wvl_UnpackPieces((int)param_2,param_1);
+
   if (param_1[10] == 1) {
-    local_8 = 1;
+    s.pieces_per_row = 1;
   }
   else if (param_1[10] == 4) {
-    local_8 = 2;
+    s.pieces_per_row = 2;
   }
   else if (param_1[10] == 0x10) {
-    local_8 = 4;
+    s.pieces_per_row = 4;
   }
   else {
     assert(0,s_D__Newmagic_sources_NedCard_haar_1001e174,0x15e,
            s_wavelet_pieces_has_illegal_value_1001e14c,param_1[10]);
   }
-  iVar1 = param_1[7];
-  iVar3 = param_1[7] / local_8;
-  iVar2 = param_1[9];
-  iVar4 = param_1[8] / local_8;
-  for (local_48 = 0; local_48 < param_1[10]; local_48 = local_48 + 1) {
-    local_34 = iVar4;
-    local_2c = iVar3;
+
+  s.width_px = param_1[7];
+  s.block_width = param_1[7] / s.pieces_per_row;
+  s.base_size = param_1[9];
+  s.height_px = param_1[8];
+  s.block_height = param_1[8] / s.pieces_per_row;
+
+  for (s.piece_idx = 0; s.piece_idx < param_1[10]; s.piece_idx = s.piece_idx + 1) {
+    s.chroma_h = s.block_height;
+    s.chroma_w = s.block_width;
     if (*param_1 != 0) {
-      local_34 = (iVar4 / local_8) / (int)((param_1[10] == 1) + 1);
-      local_2c = (iVar3 / local_8) / (int)((param_1[10] == 1) + 1);
+      s.chroma_h = (s.block_height / s.pieces_per_row) / ((param_1[10] == 1) + 1);
+      s.chroma_w = (s.block_width / s.pieces_per_row) / ((param_1[10] == 1) + 1);
     }
-    piVar5 = (int *)((iVar3 * iVar3 + local_2c * local_2c * 2 + 0x40) * local_48 * 4 + (int)param_2)
-    ;
-    piVar6 = piVar5 + iVar3 * iVar3 + 0x20;
-    piVar7 = piVar6 + local_2c * local_2c + 0x20;
-    Haar2D_ReconstructInPlace(piVar5,iVar3,iVar2);
-    Haar2D_ReconstructInPlace(piVar6,local_2c,iVar2);
-    Haar2D_ReconstructInPlace(piVar7,local_2c,iVar2);
-    if (local_48 < param_1[10] / 2) {
-      local_50 = (undefined8 *)
-    YuvPlanesToBgr24(DAT_10032c98,piVar5,iVar3,iVar3,(int)piVar6,(int)piVar7,local_2c,local_2c,*param_1);
+
+    s.y_plane = (int *)((s.block_width * s.block_width + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4 +
+                        (int)param_2);
+    s.local_40 = (int)s.y_plane;
+    s.u_plane = (int *)(s.local_40 + s.block_width * s.block_width * 4 + 0x80);
+    s.v_plane = (int)s.u_plane + s.chroma_w * s.chroma_w * 4 + 0x80;
+
+    Haar2D_ReconstructInPlace(s.y_plane,s.block_width,s.base_size);
+    Haar2D_ReconstructInPlace(s.u_plane,s.chroma_w,s.base_size);
+    Haar2D_ReconstructInPlace((int *)s.v_plane,s.chroma_w,s.base_size);
+
+    if (s.piece_idx < param_1[10] / 2) {
+      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.y_plane,s.block_width,s.block_width,
+                                        (int)s.u_plane,s.v_plane,s.chroma_w,s.chroma_w,*param_1);
     }
-    else if (param_1[10] < 2) {
-      local_50 = (undefined8 *)
-    YuvPlanesToBgr24(DAT_10032c98,piVar5,iVar3,iVar4,(int)piVar6,(int)piVar7,local_2c,local_34,*param_1);
+    else if (param_1[10] <= 1) {
+      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.y_plane,s.block_width,s.block_height,
+                                        (int)s.u_plane,s.v_plane,s.chroma_w,s.chroma_h,*param_1);
     }
     else {
-      local_50 = (undefined8 *)
-    YuvPlanesToBgr24(DAT_10032c98,piVar5,iVar3,param_1[8] - iVar3,(int)piVar6,(int)piVar7,local_2c,local_34,
-                     *param_1);
+      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.y_plane,s.block_width,param_1[8] - s.block_width,
+                                        (int)s.u_plane,s.v_plane,s.chroma_w,s.chroma_h,*param_1);
     }
-    if (param_1[10] < 2) {
-      if (!bVar8) {
+
+    if (param_1[10] > 1) {     
+      CopyBgr24RectIntoStridedBuffer(param_2,(undefined8 *)s.bgr_tmp,(s.piece_idx % s.pieces_per_row) * (s.width_px / s.pieces_per_row),
+                                     (s.piece_idx / s.pieces_per_row) * (s.width_px / s.pieces_per_row),
+                                     s.block_width,s.block_width,s.width_px);
+      FreeIfNotNull((undefined8 *)s.bgr_tmp);
+    }
+    else {
+      if (s.have_dst == 0) {
         FreeIfNotNull(param_2);
       }
-      param_2 = local_50;
-    }
-    else {
-      CopyBgr24RectIntoStridedBuffer(param_2,local_50,(local_48 % local_8) * (iVar1 / local_8),
-                                     (local_48 / local_8) * (iVar1 / local_8),iVar3,iVar3,iVar1);
-      FreeIfNotNull(local_50);
+      param_2 = (undefined8 *)s.bgr_tmp;
     }
   }
   return param_2;
