@@ -16,6 +16,16 @@ typedef BOOL (WINAPI code)(HINSTANCE,DWORD,LPVOID);
 
 #define CONCAT12(x,y) ((undefined4)(((undefined1)(x)) | ((undefined4)(undefined2)(y) << 8)))
 
+// FUNCTION: DRAWCARDLIB 0x10155000
+void __fastcall FUN_10155000(undefined4 param_1,undefined4 param_2,ushort *param_3) {
+  //TODO: this needs to be decompiled into a separate static library
+}
+
+// FUNCTION: DRAWCARDLIB 0x10155484
+void FUN_10155484() {
+  //TODO: this needs to be decompiled into a separate static library
+}
+
 /* Globals referenced before their definitions (provide placeholders for the build). */
 undefined4 DAT_10021050[4];
 undefined4 DAT_10021078[4];
@@ -90,9 +100,6 @@ undefined4 DAT_10022428 = 0;
 
 /* Function prototypes (auto-generated). */
 #include "autoproto.h"
-
-void FUN_1000cde0() { return; }
-void FUN_1000b80f(void) { return; }
 
 // GLOBAL: DRAWCARDLIB 0x1000be0b
 pointer switchdataD_1000be0b = 0x1000BDDE;
@@ -570,6 +577,9 @@ char s__CARDS_DAT_10026a54[] = "\\CARDS.DAT";
 
 // GLOBAL: DRAWCARDLIB 0x10026a60
 char DAT_10026a60[] = "rb";
+
+// GLOBAL: DRAWCARDLIB 0x10026a64
+char DAT_10026a64[] = "File %s could not be opened: EXITING\r\n";
 
 // GLOBAL: DRAWCARDLIB 0x10026a94
 char s__assertFile_txt_10026a94[] = "\\assertFile.txt";
@@ -2700,8 +2710,8 @@ undefined4 PcxReadScanlineRle(byte *dstScanline)
 
 // FUNCTION: DRAWCARDLIB 0x100045ac
 undefined4
-PcxSave8bppImage(undefined *srcPixels,char *path,undefined4 srcStride,undefined4 unused_param_4,
-            undefined4 unused_param_5,undefined4 unused_param_6,int height)
+PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused_param_4,
+            undefined4 unused_param_5,int width,int height)
 
 {
   int local_100c;
@@ -2711,17 +2721,19 @@ PcxSave8bppImage(undefined *srcPixels,char *path,undefined4 srcStride,undefined4
   undefined *puStackY_20;
   undefined4 uStackY_1c;
   
-  FUN_1000ead0();
+  MSVC_StackProbe();
   uStackY_1c = 0x100045ce;
   gPcxOutFile = fopen(path,&DAT_10021fd8);
   uStackY_1c = 0x146;
   puStackY_20 = PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0;
   puStackY_24 = (undefined1 *)(uint)(gPcxOutFile != (FILE *)0x0);
   uStackY_28 = 0x100045fa;
-  FUN_1000c0f0();
+  FUN_1000c0f0(               (uint)(gPcxOutFile != (FILE *)0x0),
+               PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x146,
+               s_Error_Opening_File__s_10021fc0);
   gPcxPath = path;
   uStackY_1c = 0x10004612;
-  PcxWriteHeader();
+  PcxWriteHeader(width,(short)height);
   for (local_100c = 0; local_100c < height; local_100c = local_100c + 1) {
     uStackY_1c = unused_param_4;
     puStackY_20 = srcPixels;
@@ -2729,9 +2741,9 @@ PcxSave8bppImage(undefined *srcPixels,char *path,undefined4 srcStride,undefined4
     uStackY_28 = 0x1000465b;
     FUN_1000b80f();
     uStackY_1c = 0x1000466e;
-    PcxWriteScanlineRle();
+    PcxWriteScanlineRle(local_1008,width);
   }
-  PcxWritePalette256();
+  PcxWritePalette256(palette);
   fclose(gPcxOutFile);
   return 0;
 }
@@ -2854,29 +2866,29 @@ undefined4 prepare_fonts_and_imgs(void)
   undefined4 uVar2;
   CHAR local_10c [264];
   
-  strcpy_fast(&DAT_1003a090,&DAT_100f35b0);
-  strcat_fast(&DAT_1003a090,s__DuelArt_1002201c);
-  strcat_fast(&DAT_1003a090,s__Duel_dat_10022028);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0530m__TTF_10022034);
+  strcpy(&DAT_1003a090,&DAT_100f35b0);
+  strcat(&DAT_1003a090,s__DuelArt_1002201c);
+  strcat(&DAT_1003a090,s__Duel_dat_10022028);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0530m__TTF_10022034);
   AddFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Magis____TTF_10022044);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Magis____TTF_10022044);
   AddFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0127m__TTF_10022054);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0127m__TTF_10022054);
   AddFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0085m__TTF_10022064);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0085m__TTF_10022064);
   AddFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0298m__TTF_10022074);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0298m__TTF_10022074);
   AddFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0299m__TTF_10022084);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0299m__TTF_10022084);
   AddFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0300m__TTF_10022094);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0300m__TTF_10022094);
   AddFontResourceA(local_10c);
   sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&DAT_100f36c0);
   DAT_1003a198 = FUN_1000b700(local_10c);
@@ -2950,11 +2962,11 @@ undefined * FUN_10004e82(undefined4 param_1,int param_2)
   UINT local_8;
   
   memcpy(&DAT_1003a048,&DAT_10021fe0,0x3c);
-  strcpy_fast(local_6c,DAT_1002212c);
-  strcat_fast(local_6c,param_1);
+  strcpy(local_6c,DAT_1002212c);
+  strcat(local_6c,param_1);
   _DAT_1003a048 = GetPrivateProfileIntA(s_Fonts_10022134,local_6c,0x14,&DAT_1003a090);
-  strcpy_fast(local_6c,DAT_1002213c);
-  strcat_fast(local_6c,param_1);
+  strcpy(local_6c,DAT_1002213c);
+  strcat(local_6c,param_1);
   local_8 = GetPrivateProfileIntA(s_Fonts_10022144,local_6c,0,&DAT_1003a090);
   if (local_8 != 0) {
     _DAT_1003a058 = 700;
@@ -2962,8 +2974,8 @@ undefined * FUN_10004e82(undefined4 param_1,int param_2)
   if (param_2 != 0) {
     DAT_1003a05c = 1;
   }
-  strcpy_fast(local_6c,DAT_1002214c);
-  strcat_fast(local_6c,param_1);
+  strcpy(local_6c,DAT_1002214c);
+  strcat(local_6c,param_1);
   GetPrivateProfileStringA
             (s_Fonts_10022164,local_6c,s_MS_Sans_Serif_10022154,&DAT_1003a064,0x20,&DAT_1003a090);
   return &DAT_1003a048;
@@ -2975,29 +2987,29 @@ void FUN_10004f8e(void)
 {
   CHAR local_10c [264];
   
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Magim____TTF_1002216c);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Magim____TTF_1002216c);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0530m__TTF_1002217c);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0530m__TTF_1002217c);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Magis____TTF_1002218c);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Magis____TTF_1002218c);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0127m__TTF_1002219c);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0127m__TTF_1002219c);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0085m__TTF_100221ac);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0085m__TTF_100221ac);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0298m__TTF_100221bc);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0298m__TTF_100221bc);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0299m__TTF_100221cc);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0299m__TTF_100221cc);
   RemoveFontResourceA(local_10c);
-  strcpy_fast(local_10c,&DAT_100f35b0);
-  strcat_fast(local_10c,s__Tt0300m__TTF_100221dc);
+  strcpy(local_10c,&DAT_100f35b0);
+  strcat(local_10c,s__Tt0300m__TTF_100221dc);
   RemoveFontResourceA(local_10c);
   if (DAT_1003a198 != 0) {
     FUN_1000ac34(DAT_1003a198);
@@ -3353,7 +3365,7 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
     if ((param_3[0x1f] != 0) || (param_3[0x20] != 0)) {
       local_b0[0] = '\0';
       if (param_3[0x1f] == local_4f0) {
-        strcat_fast(local_b0,DAT_100221ec);
+        strcat(local_b0,DAT_100221ec);
       }
       else if (local_4f0 < (int)param_3[0x1f]) {
         iVar3 = param_3[0x1f] - local_4f0;
@@ -3367,9 +3379,9 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
         sVar2 = strlen(local_b0);
         wsprintfA(local_b0 + sVar2,pCVar5,uVar6);
       }
-      strcat_fast(local_b0,DAT_100221fc);
+      strcat(local_b0,DAT_100221fc);
       if (param_3[0x20] == local_4f0) {
-        strcat_fast(local_b0,DAT_10022200);
+        strcat(local_b0,DAT_10022200);
       }
       else if (local_4f0 < (int)param_3[0x20]) {
         iVar3 = param_3[0x20] - local_4f0;
@@ -3455,7 +3467,7 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
     }
     local_6c = IsBigArtRightSize(*param_3,param_4,local_504.right - local_504.left,
                                  local_504.bottom - local_504.top);
-    strcpy_fast(local_4ac,param_3[0x1d]);
+    strcpy(local_4ac,param_3[0x1d]);
     FUN_1000b06a(local_4ac,DAT_10022214,1,DAT_10022210);
     FUN_1000b06a(local_4ac,DAT_1002221c,1,DAT_10022218);
     FUN_1000b06a(local_4ac,DAT_10022224,1,DAT_10022220);
@@ -3621,61 +3633,61 @@ undefined4 FUN_10006a41(int *param_1)
   }
   else if (*param_1 == 0) {
     if (param_1 == &DAT_10039fcc) {
-      strcpy_fast(local_68,s_CARDBK_Green_10022260);
+      strcpy(local_68,s_CARDBK_Green_10022260);
     }
     else if (param_1 == &DAT_10039fd4) {
-      strcpy_fast(local_68,s_CARDBK_White_10022270);
+      strcpy(local_68,s_CARDBK_White_10022270);
     }
     else if (param_1 == &DAT_1003a034) {
-      strcpy_fast(local_68,s_CARDBK_Blue_10022280);
+      strcpy(local_68,s_CARDBK_Blue_10022280);
     }
     else if (param_1 == &DAT_1003a088) {
-      strcpy_fast(local_68,s_CARDBK_Black_1002228c);
+      strcpy(local_68,s_CARDBK_Black_1002228c);
     }
     else if (param_1 == &DAT_1003a03c) {
-      strcpy_fast(local_68,s_CARDBK_Red_1002229c);
+      strcpy(local_68,s_CARDBK_Red_1002229c);
     }
     else if (param_1 == &DAT_10039ff4) {
-      strcpy_fast(local_68,s_CARDBK_Gold_100222a8);
+      strcpy(local_68,s_CARDBK_Gold_100222a8);
     }
     else if (param_1 == &DAT_1003a024) {
-      strcpy_fast(local_68,s_CARDBK_Artifact_100222b4);
+      strcpy(local_68,s_CARDBK_Artifact_100222b4);
     }
     else if (param_1 == &DAT_10039fd8) {
-      strcpy_fast(local_68,s_CARDBK_GreenLand_100222c4);
+      strcpy(local_68,s_CARDBK_GreenLand_100222c4);
     }
     else if (param_1 == &DAT_10039ff0) {
-      strcpy_fast(local_68,s_CARDBK_WhiteLand_100222d8);
+      strcpy(local_68,s_CARDBK_WhiteLand_100222d8);
     }
     else if (param_1 == &DAT_1003a004) {
-      strcpy_fast(local_68,s_CARDBK_BlueLand_100222ec);
+      strcpy(local_68,s_CARDBK_BlueLand_100222ec);
     }
     else if (param_1 == &DAT_10039fe8) {
-      strcpy_fast(local_68,s_CARDBK_BlackLand_100222fc);
+      strcpy(local_68,s_CARDBK_BlackLand_100222fc);
     }
     else if (param_1 == &DAT_1003a00c) {
-      strcpy_fast(local_68,s_CARDBK_RedLand_10022310);
+      strcpy(local_68,s_CARDBK_RedLand_10022310);
     }
     else if (param_1 == &DAT_1003a014) {
-      strcpy_fast(local_68,s_CARDBK_DarklandsLand_10022320);
+      strcpy(local_68,s_CARDBK_DarklandsLand_10022320);
     }
     else if (param_1 == &DAT_10039fd0) {
-      strcpy_fast(local_68,s_CARDBK_FallenEmpiresLand_10022338);
+      strcpy(local_68,s_CARDBK_FallenEmpiresLand_10022338);
     }
     else if (param_1 == &DAT_1003a084) {
-      strcpy_fast(local_68,s_CARDBK_AntiquitiesLand_10022354);
+      strcpy(local_68,s_CARDBK_AntiquitiesLand_10022354);
     }
     else if (param_1 == &DAT_10039fc8) {
-      strcpy_fast(local_68,s_CARDBK_LegendsLand_1002236c);
+      strcpy(local_68,s_CARDBK_LegendsLand_1002236c);
     }
     else if (param_1 == &DAT_1003a028) {
-      strcpy_fast(local_68,s_CARDBK_ArabianNightsLand_10022380);
+      strcpy(local_68,s_CARDBK_ArabianNightsLand_10022380);
     }
     else if (param_1 == &DAT_1003a020) {
-      strcpy_fast(local_68,s_CARDBK_Special_1002239c);
+      strcpy(local_68,s_CARDBK_Special_1002239c);
     }
     else {
-      strcpy_fast(local_68,&DAT_100223ac);
+      strcpy(local_68,&DAT_100223ac);
     }
     if (local_68[0] != '\0') {
       sprintf(local_170,s__s__s_pic_100223b0,&DAT_100f36c0,local_68);
@@ -3898,10 +3910,10 @@ int FUN_10006ff3(int *param_1,int param_2)
     }
     if ((((local_18 == 0) && (local_50 == 0)) && (local_10 == 0)) &&
        (((local_8 == 0 && (local_14 == 0)) && ((local_58 == 0 && (local_54 == 0)))))) {
-      strcpy_fast(local_4c,&DAT_100223bc);
+      strcpy(local_4c,&DAT_100223bc);
     }
     if (param_2 != 0) {
-      strcpy_fast(param_2,local_4c);
+      strcpy(param_2,local_4c);
     }
   }
   return local_50;
@@ -4338,7 +4350,7 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,int param_3,int param_4,int par
   
                     /* 0x81b2  7  DrawSmallCardTitle */
   if (((param_1 != (HDC)0x0) && (param_2 != (int *)0x0)) && (param_3 != 0)) {
-    strcpy_fast(local_6c,param_3);
+    strcpy(local_6c,param_3);
     local_8 = SaveDC(param_1);
     SetMapMode(param_1,8);
     SetWindowExtEx(param_1,200,0x118,(LPSIZE)0x0);
@@ -4393,11 +4405,11 @@ undefined * FUN_10008370(int param_1,char *param_2,int param_3)
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
   _splitpath(param_2,(char *)0x0,local_314,local_210,local_110);
   if (DAT_1003a9ac == 0) {
-    strcpy_fast(local_41c,local_314);
-    strcat_fast(local_41c,s_SmallArt_cat_1002240c);
+    strcpy(local_41c,local_314);
+    strcat(local_41c,s_SmallArt_cat_1002240c);
     DAT_100223fc = FUN_1000b820(local_41c);
-    strcpy_fast(local_41c,local_314);
-    strcat_fast(local_41c,s_MedArt_cat_1002241c);
+    strcpy(local_41c,local_314);
+    strcat(local_41c,s_MedArt_cat_1002241c);
     DAT_10022400 = FUN_1000b820(local_41c);
     DAT_1003a9ac = 1;
   }
@@ -4412,16 +4424,16 @@ undefined * FUN_10008370(int param_1,char *param_2,int param_3)
     }
     DAT_100f1f68 = DAT_10022400;
   }
-  strcpy_fast(local_314,local_210);
-  strcat_fast(local_314,local_110);
+  strcpy(local_314,local_210);
+  strcat(local_314,local_110);
   _strlwr(local_314);
   if (local_c != (undefined *)0x0) {
     memset(local_c,0,0x1b0);
-    strcpy_fast(local_c + 0x9c,param_2);
+    strcpy(local_c + 0x9c,param_2);
     *(undefined **)(local_c + 0x1a0) = &DAT_100b5368;
     local_10 = FUN_1000bbf1(DAT_100f1f68,local_314,local_c + 0x1a0);
     if (local_10 == -1) {
-      strcat_fast(param_2,&DAT_10022428);
+      strcat(param_2,&DAT_10022428);
       OutputDebugStringA(param_2);
       LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
       local_c = (undefined *)0x0;
@@ -5084,7 +5096,7 @@ char * FUN_10009aff(char *param_1,int param_2,int param_3,int param_4)
   undefined4 uStackY_24;
   char *pcStackY_20;
   
-  FUN_1000ead0();
+  MSVC_StackProbe();
   local_1034 = 0;
   local_1048 = 0;
   local_102c = 0;
@@ -5655,10 +5667,10 @@ undefined4 FUN_1000acf5(void)
   PALETTEENTRY local_404 [256];
   
   local_51c = 1;
-  strcpy_fast(local_624,&DAT_100f35b0);
-  strcat_fast(local_624,s__DUELPALall_TR_10022508);
-  strcpy_fast(local_510,&DAT_100f35b0);
-  strcat_fast(local_510,s__DUEL_plogpal_10022518);
+  strcpy(local_624,&DAT_100f35b0);
+  strcat(local_624,s__DUELPALall_TR_10022508);
+  strcpy(local_510,&DAT_100f35b0);
+  strcat(local_510,s__DUEL_plogpal_10022518);
   local_408 = (LOGPALETTE *)FUN_10001033(local_624,local_510);
   if (local_408 == (LOGPALETTE *)0x0) {
     local_51c = 0;
@@ -5757,13 +5769,13 @@ void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
         local_3fc = local_3fc + 1;
       }
       else {
-        strcat_fast(local_3f8,param_4);
+        strcat(local_3f8,param_4);
         sVar1 = strlen(param_4);
         local_8 = local_8 + local_10;
         local_3fc = local_3fc + sVar1;
       }
     }
-    strcpy_fast(param_1,local_3f8);
+    strcpy(param_1,local_3f8);
   }
   return;
 }
@@ -5976,11 +5988,18 @@ int FUN_1000b7c9(void)
   return iVar1;
 }
 
-// LIBRARY: DRAWCARDLIB 0x1000b804 SYMBOL
-// FUN_1000b804
+// FUNCTION: DRAWCARDLIB 0x1000b804
+void FUN_1000b804(void)
+{
+  return;
+}
 
-// LIBRARY: DRAWCARDLIB 0x1000b80f SYMBOL
-// FUN_1000b80f
+
+// FUNCTION: DRAWCARDLIB 0x1000b80f
+void FUN_1000b80f(void) 
+{ 
+  return;
+}
 
 // FUNCTION: DRAWCARDLIB 0x1000b820
 int FUN_1000b820(char *param_1)
@@ -6004,7 +6023,7 @@ LAB_1000b874:
                    s_Too_many_open_Catalogs__Max__d_10026978,5);
       iVar1 = local_c * 0x114;
       *(undefined4 *)(&DAT_100f2e3c + iVar1) = 0;
-      strcpy_fast(iVar1 + 0x100f2e40,param_1);
+      strcpy(iVar1 + 0x100f2e40,param_1);
       pFVar3 = fopen(param_1,DAT_100269c0);
       *(FILE **)(&DAT_100f2e30 + iVar1) = pFVar3;
       pFVar3 = *(FILE **)(&DAT_100f2e30 + iVar1);
@@ -6147,7 +6166,7 @@ uint FUN_1000bc9a(byte *param_1)
   local_8 = 0;
   _splitpath((char *)param_1,local_134,local_124,(char *)&local_1c,local_134);
   param_1 = &local_1c;
-  strcat_fast(&local_1c,local_134);
+  strcat(&local_1c,local_134);
   while( true ) {
     iVar1 = (int)(char)*param_1;
     param_1 = param_1 + 1;
@@ -6207,20 +6226,20 @@ int read_cfg(undefined4 param_1)
   int aiStackY_4a384 [75993];
   int iVar2;
   
-  FUN_1000ead0();
+  MSVC_StackProbe();
   iVar2 = 1;
   _DAT_10124510 = param_1;
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
   GetModuleFileNameA((HMODULE)0x0,&DAT_100f35b0,0x105);
   pcVar1 = strrchr(&DAT_100f35b0,0x5c);
   *pcVar1 = '\0';
-  strcpy_fast();
-  strcat_fast();
+  strcpy((uint *)&DAT_100f36c0,(uint *)&DAT_100f35b0);
+  strcat((uint *)&DAT_100f36c0,(uint *)s__CARDART_10026a48);
   DAT_10021048 = 3;
   DAT_10124538 = 0x10;
   FUN_1000a5a0();
-  strcpy_fast();
-  strcat_fast();
+  strcpy(acStackY_4a4a0,(uint *)&DAT_100f35b0);
+  strcat(acStackY_4a4a0,(uint *)s__CARDS_DAT_10026a54);
   pFStackY_4a38c = fopen(acStackY_4a4a0,DAT_10026a60);
   if (pFStackY_4a38c == (FILE *)0x0) {
     iVar2 = 0;
@@ -6242,13 +6261,13 @@ int read_cfg(undefined4 param_1)
                  100);
         DAT_100f3833[iStackY_4a390 * 100] = 0;
       }
-      FUN_1000cde0();
+      FUN_1000cde0(_DstBuf);
     }
     fclose(pFStackY_4a38c);
   }
   if (iVar2 == 0) {
     for (iStackY_4a390 = 0; iStackY_4a390 < (int)sStackY_4a398; iStackY_4a390 = iStackY_4a390 + 1) {
-      strcpy_fast();
+      strcpy((uint *)(&DAT_100f37d0 + iStackY_4a390 * 100),(uint *)&DAT_10026a64);
     }
   }
   return iVar2;
@@ -6327,11 +6346,17 @@ void FUN_1000c206(int ok,const char *file,int line,const char *fmt,...)
   exit(0xff);
 }
 
+// FUNCTION: DRAWCARDLIB 0x1000cde0
+void FUN_1000cde0(undefined4 param_1)
+{
+  _free_dbg(param_1,1);
+  return;
+}
+
 // FUNCTION: DRAWCARDLIB 0x1000ead0
 /* WARNING: Unable to track spacebase fully for stack */
 
-void FUN_1000ead0(void)
-
+void MSVC_StackProbe(void)
 { 
   /*
   uint in_EAX;
@@ -6346,471 +6371,3 @@ void FUN_1000ead0(void)
   */
   return;
 }
-
-// FUNCTION: DRAWCARDLIB 0x1000ee60
-uint * strcpy_fast(uint *dst,uint *src)
-
-{
-  byte bVar1;
-  uint uVar2;
-  uint uVar3;
-  uint *puVar4;
-  
-  puVar4 = dst;
-  while (((uint)src & 3) != 0) {
-    bVar1 = (byte)*src;
-    uVar3 = (uint)bVar1;
-    src = (uint *)((int)src + 1);
-    if (bVar1 == 0) goto LAB_1000ef48;
-    *(byte *)puVar4 = bVar1;
-    puVar4 = (uint *)((int)puVar4 + 1);
-  }
-  do {
-    uVar2 = *src;
-    uVar3 = *src;
-    src = src + 1;
-    if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
-      if ((char)uVar3 == '\0') {
-LAB_1000ef48:
-        *(byte *)puVar4 = (byte)uVar3;
-        return dst;
-      }
-      if ((char)(uVar3 >> 8) == '\0') {
-        *(short *)puVar4 = (short)uVar3;
-        return dst;
-      }
-      if ((uVar3 & 0xff0000) == 0) {
-        *(short *)puVar4 = (short)uVar3;
-        *(byte *)((int)puVar4 + 2) = 0;
-        return dst;
-      }
-      if ((uVar3 & 0xff000000) == 0) {
-        *puVar4 = uVar3;
-        return dst;
-      }
-    }
-    *puVar4 = uVar3;
-    puVar4 = puVar4 + 1;
-  } while( true );
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000ee70
-uint * strcat_fast(uint *dst,uint *src)
-
-{
-  byte bVar1;
-  uint uVar2;
-  uint *puVar3;
-  uint uVar4;
-  uint *puVar5;
-  
-  puVar3 = dst;
-  do {
-    if (((uint)puVar3 & 3) == 0) goto LAB_1000ee8c;
-    uVar4 = *puVar3;
-    puVar3 = (uint *)((int)puVar3 + 1);
-  } while ((byte)uVar4 != 0);
-  goto LAB_1000eebf;
-  while( true ) {
-    if ((uVar4 & 0xff0000) == 0) {
-      puVar5 = (uint *)((int)puVar5 + 2);
-      goto joined_r0x1000eedb;
-    }
-    if ((uVar4 & 0xff000000) == 0) break;
-LAB_1000ee8c:
-    do {
-      puVar5 = puVar3;
-      puVar3 = puVar5 + 1;
-    } while (((*puVar5 ^ 0xffffffff ^ *puVar5 + 0x7efefeff) & 0x81010100) == 0);
-    uVar4 = *puVar5;
-    if ((char)uVar4 == '\0') goto joined_r0x1000eedb;
-    if ((char)(uVar4 >> 8) == '\0') {
-      puVar5 = (uint *)((int)puVar5 + 1);
-      goto joined_r0x1000eedb;
-    }
-  }
-LAB_1000eebf:
-  puVar5 = (uint *)((int)puVar3 + -1);
-joined_r0x1000eedb:
-  do {
-    if (((uint)src & 3) == 0) {
-      do {
-        uVar2 = *src;
-        uVar4 = *src;
-        src = src + 1;
-        if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
-          if ((char)uVar4 == '\0') {
-LAB_1000ef48:
-            *(byte *)puVar5 = (byte)uVar4;
-            return dst;
-          }
-          if ((char)(uVar4 >> 8) == '\0') {
-            *(short *)puVar5 = (short)uVar4;
-            return dst;
-          }
-          if ((uVar4 & 0xff0000) == 0) {
-            *(short *)puVar5 = (short)uVar4;
-            *(byte *)((int)puVar5 + 2) = 0;
-            return dst;
-          }
-          if ((uVar4 & 0xff000000) == 0) {
-            *puVar5 = uVar4;
-            return dst;
-          }
-        }
-        *puVar5 = uVar4;
-        puVar5 = puVar5 + 1;
-      } while( true );
-    }
-    bVar1 = (byte)*src;
-    uVar4 = (uint)bVar1;
-    src = (uint *)((int)src + 1);
-    if (bVar1 == 0) goto LAB_1000ef48;
-    *(byte *)puVar5 = bVar1;
-    puVar5 = (uint *)((int)puVar5 + 1);
-  } while( true );
-}
-
-// FUNCTION: DRAWCARDLIB 0x10010aa0
-int entry(undefined4 dll,int reason,undefined4 reserved)
-
-{
-  int local_8;
-
-  local_8 = 1;
-  if ((reason == 0) && (DAT_10026b98 == 0)) {
-    return 0;
-  }
-  if (DAT_10153660 != (code *)0x0) {
-    local_8 = (*DAT_10153660)(dll,reason,reserved);
-    if (local_8 == 0) {
-      return 0;
-    }
-  }
-  return FUN_1000bd90(dll,reason,reserved);
-}
-
-// FUNCTION: DRAWCARDLIB 0x10155000
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void __fastcall FUN_10155000(undefined4 param_1,undefined4 param_2,ushort *param_3)
-
-{
-#if 0
-  ushort uVar1;
-  uint uVar2;
-  undefined4 extraout_ECX;
-  undefined4 extraout_EDX;
-  undefined4 unaff_EBX;
-  ushort *puVar3;
-  ushort *puVar4;
-  
-  while( true ) {
-    puVar3 = DAT_100f3394;
-    if (PTR_DAT_1002252c <= DAT_100f3394) {
-      (*DAT_100f35a0)(param_2,param_1,unaff_EBX);
-      puVar3 = DAT_100f3394;
-    }
-    DAT_100f3394 = puVar3 + 1;
-    uVar1 = *puVar3;
-    if ((char)uVar1 == 'X') break;
-    puVar3 = &DAT_10022548;
-    if ((uVar1 == 0x304d) || (uVar1 == 0x314d)) {
-      if ((int)param_3 < 1) {
-        puVar3 = (ushort *)&DAT_1002254a;
-      }
-      else if (param_3 != (ushort *)0x1) {
-        puVar3 = param_3;
-      }
-    }
-    *puVar3 = uVar1;
-    puVar4 = puVar3;
-    if (PTR_DAT_1002252c <= DAT_100f3394) {
-      (*DAT_100f35a0)(param_2,param_1);
-    }
-    uVar1 = *DAT_100f3394;
-    DAT_100f3394 = DAT_100f3394 + 1;
-    puVar3[1] = uVar1;
-    puVar3 = puVar3 + 2;
-    for (uVar2 = (uint)(uVar1 >> 1); uVar2 != 0; uVar2 = uVar2 - 1) {
-      if (PTR_DAT_1002252c <= DAT_100f3394) {
-        (*DAT_100f35a0)();
-      }
-      uVar1 = *DAT_100f3394;
-      DAT_100f3394 = DAT_100f3394 + 1;
-      *puVar3 = uVar1;
-      puVar3 = puVar3 + 1;
-    }
-    param_1 = 0;
-    if (puVar4 == &DAT_10022548) {
-      FUN_1000b804(&DAT_10022548);
-      param_1 = extraout_ECX;
-      param_2 = extraout_EDX;
-    }
-  }
-  DAT_1002656d = (byte)(uVar1 >> 8) & 1;
-  if (PTR_DAT_1002252c <= DAT_100f3394) {
-    (*DAT_100f35a0)(param_2,param_1,unaff_EBX);
-  }
-  puVar3 = DAT_100f3394 + 1;
-  _DAT_10026550 = (uint)*DAT_100f3394;
-  if (PTR_DAT_1002252c <= puVar3) {
-    DAT_100f3394 = puVar3;
-    (*DAT_100f35a0)(param_2,param_1,unaff_EBX);
-    puVar3 = DAT_100f3394;
-  }
-  DAT_100f3394 = puVar3 + 1;
-  gImageWidth = (uint)*puVar3;
-  if (PTR_DAT_1002252c <= DAT_100f3394) {
-    (*DAT_100f35a0)(param_2,param_1,unaff_EBX);
-  }
-  gImageHeight = (uint)*DAT_100f3394;
-  DAT_100f3394 = DAT_100f3394 + 1;
-  FUN_10155245();
-  return;
-#endif
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
-  return;
-}
-
-// FUNCTION: DRAWCARDLIB 0x10155245
-void __fastcall FUN_10155245(undefined4 param_1,undefined4 param_2)
-
-{
-#if 0
-  ushort uVar1;
-  char cVar2;
-  int iVar3;
-  int iVar4;
-  
-  if (gImageWidth == 0 && gImageHeight == 0) {
-    return;
-  }
-  DAT_1002655c = 0;
-  DAT_1002655d = 0;
-  DAT_10026554 = &DAT_10026973;
-  if (PTR_DAT_1002252c <= DAT_100f3394) {
-    ((void (__cdecl *)(undefined4,undefined4))DAT_100f35a0)(param_2,param_1);
-  }
-  uVar1 = *DAT_100f3394;
-  DAT_10026568 = (uint)uVar1;
-  if (0xb < (byte)uVar1) {
-    DAT_10026568 = CONCAT31((uint3)(byte)(uVar1 >> 8),0xb);
-  }
-  DAT_1002655f = (undefined1)DAT_10026568;
-  DAT_1002656c = 8;
-  DAT_1002655e = 9;
-  DAT_10026560 = 0x1ff;
-  DAT_10026564 = 0x100;
-  iVar4 = 0;
-  iVar3 = 0x800;
-  DAT_100f3394 = DAT_100f3394 + 1;
-  do {
-    *(undefined2 *)((int)&DAT_10022548 + iVar4) = 0xffff;
-    iVar4 = iVar4 + 3;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  cVar2 = '\0';
-  iVar4 = 0;
-  iVar3 = 0x100;
-  do {
-    (&DAT_1002254a)[iVar4] = cVar2;
-    cVar2 = cVar2 + '\x01';
-    iVar4 = iVar4 + 3;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  return;
-#endif
-  (void)param_1;
-  (void)param_2;
-  return;
-}
-
-// FUNCTION: DRAWCARDLIB 0x101552b5
-void FUN_101552b5(void)
-
-{
-#if 0
-  char cVar1;
-  int iVar2;
-  int iVar3;
-  
-  DAT_1002655e = 9;
-  DAT_10026560 = 0x1ff;
-  DAT_10026564 = 0x100;
-  iVar3 = 0;
-  iVar2 = 0x800;
-  do {
-    *(undefined2 *)((int)&DAT_10022548 + iVar3) = 0xffff;
-    iVar3 = iVar3 + 3;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  cVar1 = '\0';
-  iVar3 = 0;
-  iVar2 = 0x100;
-  do {
-    (&DAT_1002254a)[iVar3] = cVar1;
-    cVar1 = cVar1 + '\x01';
-    iVar3 = iVar3 + 3;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  return;
-#endif
-  return;
-}
-
-// FUNCTION: DRAWCARDLIB 0x10155300
-/* WARNING: Unable to track spacebase fully for stack */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-void __fastcall FUN_10155300(uint param_1)
-
-{
-#if 0
-  char cVar1;
-  ushort uVar2;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  undefined4 uVar3;
-  undefined1 *puVar4;
-  undefined4 *puVar6;
-  char *unaff_EDI;
-  undefined4 *puVar5;
-  
-  if (DAT_1002656d != '\0') {
-    param_1 = param_1 + 1 >> 1;
-  }
-  LOCK();
-  UNLOCK();
-  uVar3 = DAT_10026564;
-  puVar4 = DAT_10026554;
-  DAT_10026554 = (undefined1 *)register0x00000010;
-  _DAT_10026558 = param_1;
-  do {
-    if (DAT_1002655c == '\0') {
-      puVar5 = (undefined4 *)(puVar4 + -4);
-      puVar4 = puVar4 + -4;
-      *puVar5 = 0x1015532c;
-      cVar1 = FUN_10155392();
-      uVar3 = extraout_EDX;
-      if (cVar1 == -0x70) {
-        puVar6 = (undefined4 *)(puVar4 + -4);
-        puVar4 = puVar4 + -4;
-        *puVar6 = 0x1015533c;
-        cVar1 = FUN_10155392();
-        uVar3 = extraout_EDX_00;
-        if (cVar1 != '\0') {
-          DAT_1002655c = cVar1 + -1;
-          goto LAB_10155350;
-        }
-        DAT_1002655d = -0x70;
-        cVar1 = DAT_1002655d;
-      }
-    }
-    else {
-LAB_10155350:
-      DAT_1002655c = DAT_1002655c + -1;
-      cVar1 = DAT_1002655d;
-    }
-    DAT_1002655d = cVar1;
-    if (DAT_1002656d == '\0') {
-      *unaff_EDI = DAT_1002655d;
-      unaff_EDI = unaff_EDI + 1;
-    }
-    else {
-      uVar2 = CONCAT11(DAT_1002655d,DAT_1002655d) & 0xff0f;
-      *(ushort *)unaff_EDI = CONCAT11((byte)(uVar2 >> 0xc),(char)uVar2);
-      unaff_EDI = unaff_EDI + 2;
-    }
-    _DAT_10026558 = _DAT_10026558 - 1;
-    if (_DAT_10026558 == 0) {
-      DAT_10026564 = uVar3;
-      LOCK();
-      DAT_10026554 = puVar4;
-      UNLOCK();
-      return;
-    }
-  } while( true );
-#endif
-  (void)param_1;
-  return;
-}
-
-// FUNCTION: DRAWCARDLIB 0x10155392
-undefined4 __fastcall FUN_10155392(undefined4 param_1,uint param_2,undefined4 param_3)
-
-{
-#if 0
-  int iVar1;
-  byte bVar2;
-  uint uVar3;
-  uint extraout_ECX;
-  uint uVar4;
-  ushort *unaff_ESI;
-  ushort *puVar5;
-  
-  uVar3 = DAT_1002656e;
-  if (&stack0x00000000 == (undefined1 *)0x1002696f) {
-    uVar4 = DAT_10026568 >> (0x10 - DAT_1002656c & 0x1f);
-    for (bVar2 = DAT_1002656c; (char)bVar2 < DAT_1002655e; bVar2 = bVar2 + 0x10) {
-      puVar5 = unaff_ESI;
-      if (PTR_DAT_1002252c <= unaff_ESI) {
-        (*DAT_100f35a0)();
-        puVar5 = DAT_100f3394;
-      }
-      unaff_ESI = puVar5 + 1;
-      DAT_10026568 = (uint)*puVar5;
-      uVar4 = uVar4 | DAT_10026568 << (bVar2 & 0x1f);
-    }
-    DAT_1002656c = bVar2 - DAT_1002655e;
-    uVar4 = uVar4 & DAT_10026560;
-    uVar3 = uVar4;
-    if ((int)param_2 <= (int)uVar4) {
-      uVar4 = DAT_1002656e;
-      uVar3 = param_2;
-    }
-    while( true ) {
-      iVar1 = uVar4 * 3;
-      if (*(short *)((int)&DAT_10022548 + iVar1) == -1) break;
-      uVar4 = CONCAT22((short)(uVar4 >> 0x10),*(short *)((int)&DAT_10022548 + iVar1));
-      param_3 = CONCAT31((int3)((uint)iVar1 >> 8),(&DAT_1002254a)[iVar1]);
-    }
-    DAT_10026572 = (&DAT_1002254a)[iVar1];
-    (&DAT_1002254a)[param_2 * 3] = DAT_10026572;
-    *(short *)((int)&DAT_10022548 + param_2 * 3) = (short)DAT_1002656e;
-    if ((int)DAT_10026560 < (int)(param_2 + 1)) {
-      DAT_1002655e = DAT_1002655e + '\x01';
-      DAT_10026560 = DAT_10026560 << 1 | 1;
-    }
-    if (DAT_1002655f < DAT_1002655e) {
-      FUN_101552b5();
-      uVar3 = extraout_ECX;
-    }
-  }
-  DAT_1002656e = uVar3;
-                     /* WARNING: Treating indirect jump as return */
-  return param_3;
-#endif
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
-  return 0;
-}
-
-// FUNCTION: DRAWCARDLIB 0x10155484
-void FUN_10155484(void)
-
-{
-#if 0
-  undefined4 uVar1;
-  
-  uVar1 = DAT_100f3394;
-  FUN_10155300(&stack0xfffffffc);
-  DAT_100f3394 = uVar1;
-  return;
-#endif
-  return;
-}
-

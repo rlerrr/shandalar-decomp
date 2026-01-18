@@ -113,6 +113,7 @@ int FUN_1000b745();
 void FUN_1000b778();
 void FUN_1000b7a2();
 int FUN_1000b7c9();
+void FUN_1000b80f();
 int FUN_1000b820();
 bool FUN_1000ba6a();
 undefined4 FUN_1000bb26();
@@ -124,15 +125,7 @@ int read_cfg();
 void FUN_1000c0ca();
 void FUN_1000c0f0();
 void FUN_1000c206();
-void FUN_1000ead0();
-uint * strcpy_fast();
-uint * strcat_fast();
-int entry();
-void __fastcall FUN_10155000(undefined4 param_1,undefined4 param_2,ushort *param_3);
-void __fastcall FUN_10155245(undefined4 param_1,undefined4 param_2);
-void FUN_101552b5();
-void __fastcall FUN_10155300(uint param_1);
-undefined4 __fastcall FUN_10155392(undefined4 param_1,uint param_2,undefined4 param_3);
-void FUN_10155484();
+void FUN_1000cde0(undefined4 param_1);
+void MSVC_StackProbe();
 
 #endif
