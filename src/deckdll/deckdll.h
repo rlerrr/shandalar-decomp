@@ -9,22 +9,29 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
-#include <shlwapi.h>
-
-// windows.h defines this to either LoadImageA or LoadImageW.
-// We want the function in image.dll.
-#undef LoadImage
-
-#define DECKBUILDER 1
 
 #include "../defs.h"
 #include "resources.h"
 
-struct DeckEntry;
-struct GlobalDeckEntry;
 
-extern "C"
+typedef struct GlobalDeckEntry_t
 {
+  csvid_t GDE_csvid;
+  iid_t GDE_iid;
+  int GDE_Available;
+  int GDE_DecksBits;
+} GlobalDeckEntry;
+
+typedef struct DeckEntry_t
+{
+  csvid_t DeckEntry_csvid;
+  int DeckEntry_Amount;
+  const char* DeckEntry_FullName;
+} DeckEntry;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
   // Our exports
   BOOL WINAPI DllEntryPoint(HINSTANCE dll, DWORD reason, LPVOID reserved);
   BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID reserved);
@@ -35,18 +42,11 @@ extern "C"
 					char* i_card_coded,
 					int (*check_card_count_fn)(const DeckEntry*, int, int),
 					int (*is_valid_card_fn)(int),
-					bool (*colors_match_fn)(iid_t, color_test_t),
-					int (*check_colors_inout_edited_deck_fn)(const GlobalDeckEntry*, int, bool));
+					BOOL (*colors_match_fn)(iid_t, color_test_t),
+					int (*check_colors_inout_edited_deck_fn)(const GlobalDeckEntry*, int, BOOL));
 
-  // Imports
-#define DLLIMPORT __attribute__((dllimport))
-  // from image.dll
-  DLLIMPORT HANDLE LoadImage(const char*, HPALETTE, int, int);
-  // from Drawcardlib.dll
-  DLLIMPORT int DrawFullCard(HDC hdc, const RECT* rect, const card_ptr_t* cp, int version, int big_art_style, int expand_text_box, const char* illus);
-  DLLIMPORT int DrawSmallCard(HDC hdc, const RECT* card_rect, const card_ptr_t* cp, int version, int mode, int player, int card);
+#ifdef __cplusplus
 };
-
-void fatal(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+#endif
 
 #endif

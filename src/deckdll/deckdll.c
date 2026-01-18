@@ -12,7 +12,6 @@
 #include <ctype.h>
 
 #include "deckdll.h"
-#include "File.h"
 
 //[[[ types and enums
 OP_BITWISE(color_test_t);
@@ -214,21 +213,6 @@ enum Abilities
   ABIL_GRANTS_SWAMPWALK			= 40,
   ABIL_GRANTS_TRAMPLE			= 41,
   ABIL_GRANTS_REACH			= 42,
-};
-
-struct GlobalDeckEntry
-{
-  csvid_t GDE_csvid;
-  iid_t GDE_iid;
-  int GDE_Available;
-  int GDE_DecksBits;
-};
-
-struct DeckEntry
-{
-  csvid_t DeckEntry_csvid;
-  int DeckEntry_Amount;
-  const char* DeckEntry_FullName;
 };
 
 enum OrigRaritySet: uint8_t

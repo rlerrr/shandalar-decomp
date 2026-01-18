@@ -67,30 +67,6 @@ typedef enum
   COLOR_TEST_ANY       = COLOR_TEST_ANY_COLORED | COLOR_TEST_COLORLESS,
 } color_test_t;
 
-#if defined(SHANDALAR) || defined(DECKBUILDER)
-// Hybrid, Phyrexian, purely-colorless, etc. mana costs
-enum hybrid_t: uint8_t
-{
-  HYBRID_0 = 0,
-
-  // 2-color hybrid
-  HYBRID_WU = (COLOR_TEST_WHITE|COLOR_TEST_BLUE),	HYBRID_WB = (COLOR_TEST_WHITE|COLOR_TEST_BLACK),
-  HYBRID_UB = (COLOR_TEST_BLUE |COLOR_TEST_BLACK),	HYBRID_UR = (COLOR_TEST_BLUE |COLOR_TEST_RED),
-  HYBRID_BR = (COLOR_TEST_BLACK|COLOR_TEST_RED),	HYBRID_BG = (COLOR_TEST_BLACK|COLOR_TEST_GREEN),
-  HYBRID_RG = (COLOR_TEST_RED  |COLOR_TEST_GREEN),	HYBRID_RW = (COLOR_TEST_RED  |COLOR_TEST_WHITE),
-  HYBRID_GW = (COLOR_TEST_GREEN|COLOR_TEST_WHITE),	HYBRID_GU = (COLOR_TEST_GREEN|COLOR_TEST_BLUE),
-  // reverse order, for convenience
-  HYBRID_UW = HYBRID_WU,	HYBRID_BW = HYBRID_WB,
-  HYBRID_BU = HYBRID_UB,	HYBRID_RU = HYBRID_UR,
-  HYBRID_RB = HYBRID_BR,	HYBRID_GB = HYBRID_BG,
-  HYBRID_GR = HYBRID_RG,	HYBRID_WR = HYBRID_RW,
-  HYBRID_WG = HYBRID_GW,	HYBRID_UG = HYBRID_GU,
-
-  // others
-  HYBRID_COLORLESS = COLOR_TEST_COLORLESS,	HYBRID_C = HYBRID_COLORLESS,
-};
-#endif
-
 /* event_t codes */
 typedef enum
 {
@@ -1232,9 +1208,6 @@ typedef enum
   CPF_IS_MELD			= 0x4,	// If also CPF_IS_TRANSFORMED_DFC, then it's the melded form, otherwise it's meldable.
 } CardPtrFlags;
 STATIC_ASSERT(sizeof(CardPtrFlags) == 4, CardPtrFlags_wrong_size);
-#ifdef SHANDALAR
-OP_BITWISE(CardPtrFlags);
-#endif
 
 /* Data struct */
 typedef struct
@@ -1253,13 +1226,10 @@ typedef struct
 	uint8_t req_colorless;
 	uint8_t req_black;
 	uint8_t req_blue;
-#if defined(SHANDALAR) || defined(DECKBUILDER)
-	int8_t req_hybrid;
-	hybrid_t hybrid_type;
-#else
+
 	uint8_t unknown0x2b;
 	uint8_t unknown0x2c;
-#endif
+	
 	uint8_t req_green;
 #ifdef SHANDALAR
 	mana_flags_t mana_flags;
