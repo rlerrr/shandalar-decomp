@@ -3,9 +3,14 @@
 
 #include <ctype.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "deckdll.h"
 #include "mystdbool.h"
+
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#endif
 
 typedef ptrdiff_t INT_PTR;
 
@@ -782,27 +787,31 @@ static void logf(const char *fmt, ...)
   fflush(stderr);
 }
 
-int readline(FILE* file, char* dest, int sz) {
-  dest[0] = dest[sz - 1] = 0;
-  fgets(dest, sz, file);
+char *readline(FILE* file, char* dest, int sz)
+{
+  int l;
+  char rest_of_line[512];
 
-  if (!dest[0])	// eof or other error
+  dest[0] = dest[sz - 1] = 0;
+  if (!fgets(dest, sz, file))
     return NULL;
 
-  int l = strlen(dest);
-  if (dest[l - 1] == '\n')
-    {
-      dest[l - 1] = 0;
-      return dest;
-    }
+  if (!dest[0])		/* eof or other error */
+    return NULL;
 
-  // Line in file too long; read until eol
-  char rest_of_line[512];
+  l = strlen(dest);
+  if (dest[l - 1] == '\n')
+  {
+    dest[l - 1] = 0;
+    return dest;
+  }
+
+  /* Line in file too long; read until eol */
   do
-    {
-      rest_of_line[510] = rest_of_line[511] = 0;
-      fgets(rest_of_line, 512, file);
-    } while (rest_of_line[0] && rest_of_line[510] && rest_of_line[510] != '\n');
+  {
+    rest_of_line[510] = rest_of_line[511] = 0;
+    fgets(rest_of_line, 512, file);
+  } while (rest_of_line[0] && rest_of_line[510] && rest_of_line[510] != '\n');
   return dest;
 }
 
@@ -812,6 +821,9 @@ load_text(const char *file_name, const char *section_name)
   char path[MAX_PATH];
   FILE* f;
   char line[160];
+  char section_line[160];
+  int num_text;
+  int i;
 
   strcpy(path, file_name);
   if (!strchr(path, '.'))
@@ -821,21 +833,20 @@ load_text(const char *file_name, const char *section_name)
   if (f == NULL)
     return -1;
 
-  char section_line[160];
   sprintf(section_line, "@%s", section_name);
 
   do
-    {
-      if (!readline(f, line, 160))
-  return -1;
-    } while (strcmp(line, section_line));
+  {
+    if (!readline(f, line, 160))
+      return -1;
+  } while (strcmp(line, section_line));
 
   readline(f, line, 160);
-  int num_text = atoi(line);
+  num_text = atoi(line);
   if (num_text < 0 || num_text >= 500)
     return -1;
 
-  for (int i = 0; i < num_text; ++i)
+  for (i = 0; i < num_text; ++i)
     if (!readline(f, text_lines[i], 128))
       return -1;
 
@@ -873,12 +884,22 @@ popup_loaded(HWND hwnd, const char *title, const char *msg, int msgbox_params)
 static int
 popup_loaded_with_args(HWND hwnd, const char *title, const char *msg, const char *sprintf_arg, int msgbox_params)
 {
-  char txt[128 + strlen(sprintf_arg)];
+  int buffer_size;
+  char *txt;
+  int result;
+
+  buffer_size = 128 + strlen(sprintf_arg) + 1;
+  txt = (char *)malloc(buffer_size);
+  if (!txt)
+    fatal("popup_loaded_with_args: out of memory");
+
   load_text("Menus", msg);
   sprintf(txt, text_lines[0], sprintf_arg);
 
   load_text("Menus", title);
-  return MessageBox(hwnd, txt, text_lines[0], msgbox_params);
+  result = MessageBox(hwnd, txt, text_lines[0], msgbox_params);
+  free(txt);
+  return result;
 }
 
 static void
@@ -983,6 +1004,7 @@ static int read_db_guts(void)
   char nul;
   card_ptr_t *cp;
   int i;
+  int j;
   char *p;
 
   global_db_read = true;
@@ -1054,7 +1076,7 @@ static int read_db_guts(void)
             if (p[0] == '|' && is_mana_letter[p[1]] && is_mana_letter[p[2]])
             {
               color_test_t cols = COLOR_TEST_0;
-              for (int j = 1; j <= 2; ++j)
+              for (j = 1; j <= 2; ++j)
                 switch (p[j])
                 {
                 case 'B':
@@ -1119,6 +1141,7 @@ static int read_db_guts(void)
 
   {
     FILE *dbinfo_dat = fopen("DBInfo.dat", "rb");
+    int raw_dbinfo_size;
     if (dbinfo_dat == NULL)
       return 0;
 
@@ -1126,7 +1149,7 @@ static int read_db_guts(void)
     if (record_size != global_available_slots)
       return 0;
 
-    int raw_dbinfo_size = 16 * record_size;
+    raw_dbinfo_size = 16 * record_size;
     if (!(global_raw_dbinfo = (char *)malloc(raw_dbinfo_size)))
       return 0;
 
@@ -1135,7 +1158,8 @@ static int read_db_guts(void)
 
   {
     FILE *rarity_dat = fopen("Rarity.dat", "rb");
-    if (!rarity_dat == NULL)
+    int raw_rarities_size;
+    if (rarity_dat == NULL)
       return 0;
 
     fread(&record_size, 1, 4, rarity_dat);
@@ -1147,7 +1171,7 @@ static int read_db_guts(void)
       fatal("Too many expansions\nRead %d from rarity.dat\nThis versions of DeckDll.dll supports only %d", global_num_expansions, 32 * EXPANSION_LIST_SIZE - 1);
 
     global_expansion_size = (3 * global_num_expansions + 7) >> 3;
-    int raw_rarities_size = record_size * global_expansion_size;
+    raw_rarities_size = record_size * global_expansion_size;
     if (!(global_raw_rarities = (char *)malloc(raw_rarities_size + 4)))
       return 0;
 
@@ -1191,9 +1215,10 @@ static void make_orig_rarities(void)
   {
     const card_ptr_t *cp = &cards_ptr[i];
     OrigRarities *r = &global_origrarities[i];
-
     int rs;
     uint32_t ex = cp->expansion;
+    uint32_t expr;
+    int j;
 
     if (ex & 2)
       rs = SET_ANTIQUITIES;
@@ -1246,8 +1271,8 @@ static void make_orig_rarities(void)
       break;
     }
 
-    uint32_t expr = cp->expansion_rarity;
-    for (int j = 0; j < 4; ++j, expr >>= 4)
+    expr = cp->expansion_rarity;
+    for (j = 0; j < 4; ++j, expr >>= 4)
     {
       int xr = expr & 0xf;
 
@@ -1430,7 +1455,9 @@ create_screen_dc(void)
 static void
 delete_pics(void)
 {
-  for (int i = 0; i < NUM_PICS; ++i)
+  int i;
+
+  for (i = 0; i < NUM_PICS; ++i)
     DELETE_OBJ(global_pics[i]);
 }
 
@@ -1478,8 +1505,9 @@ load_pics(void)
           "BtnBkg",
       };
   char *rval = NULL;
+  int i;
 
-  for (int i = 0; i < NUM_PICS; ++i)
+  for (i = 0; i < NUM_PICS; ++i)
   {
     char path[MAX_PATH * 3 + 60];
     sprintf(path, global_dbart_pattern, global_cfg_skin_name[0] ? global_cfg_skin_name : ".", picnames[i]);
@@ -1784,7 +1812,9 @@ init_palette(void)
            {0x01, 0x01, 0x01, 0x00},
            {0xFF, 0xFF, 0xFF, 0x00}}};
 
-  for (int i = 0; i < 256; ++i)
+  int i;
+
+  for (i = 0; i < 256; ++i)
   {
     PALETTEENTRY *pe = &pal256.palPalEntry[i];
     pe->peFlags = 2;
@@ -1798,17 +1828,19 @@ init_palette(void)
 static void
 delete_resources(void)
 {
+  int i;
+
   write_manalink_ini();
 
   if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR))
   {
-    for (int i = 0; i < global_deck_num_entries; ++i)
+    for (i = 0; i < global_deck_num_entries; ++i)
     {
       unsigned int v1 = global_deck[i].GDE_Available ? 0x80000 : 0;
       global_external_deck[i] = global_deck[i].GDE_iid | v1 | (global_deck[i].GDE_DecksBits << 16);
     }
 
-    for (int i = global_deck_num_entries; i < 500; ++i)
+    for (i = global_deck_num_entries; i < 500; ++i)
       global_external_deck[i] = -1;
 
     *global_external_current_deck = global_current_deck;
@@ -1833,13 +1865,14 @@ process_cue_cards(MSG *msg)
     {
       int msgnum;
       POINT screen_point;
+      HWND hwnd;
+      POINT client_point;
       GetCursorPos(&screen_point);
 
       KillTimer(global_main_hwnd, 0);
 
-      HWND hwnd = WindowFromPoint(screen_point);
-
-      POINT client_point = screen_point;
+      hwnd = WindowFromPoint(screen_point);
+      client_point = screen_point;
       ScreenToClient(hwnd, &client_point);
 
       if (msgnum = SendMessage(hwnd,
@@ -1857,11 +1890,14 @@ process_cue_cards(MSG *msg)
 
   case WM_MOUSEMOVE:
     POINT cur_point;
+    POINT last_point;
+    int dx;
+    int dy;
+    HWND last_hwnd;
     GetCursorPos(&cur_point);
 
-    POINT last_point = {0, 0};
-
-    int dx, dy;
+    last_point.x = 0;
+    last_point.y = 0;
     dx = abs(last_point.x - cur_point.x);
     dy = abs(last_point.y - cur_point.y);
 
@@ -1871,7 +1907,7 @@ process_cue_cards(MSG *msg)
 
       SetTimer(global_main_hwnd, 0, 500, NULL);
 
-      HWND last_hwnd = NULL;
+      last_hwnd = NULL;
       if (last_hwnd != msg->hwnd)
       {
         last_hwnd = msg->hwnd;
@@ -1904,6 +1940,11 @@ WPARAM WINAPI
 DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
 {
   RECT r;
+  HDC hdc;
+  HACCEL accel;
+  MSG msg;
+  const char *load_pic_err;
+  char load_pic_buf[MAX_PATH + 256];
   if (!global_db_read)
   {
     global_available_slots = read_db();
@@ -1950,7 +1991,7 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
   if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR))
     global_current_deck = *global_external_current_deck;
 
-  HDC hdc = GetDC(GetDesktopWindow());
+  hdc = GetDC(GetDesktopWindow());
 
   global_hdc = CreateCompatibleDC(hdc);
   global_hbmp = CreateCompatibleBitmap(hdc, 800, 800);
@@ -1971,12 +2012,10 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
     fatal_err("Fatal: Couldn't create the app-wide memory DC or bitmap", 0);
     return 0;
   }
-  const char *load_pic_err;
-  if (load_pic_err = load_pics())
+  if ((load_pic_err = load_pics()) != NULL)
   {
-    char buf[strlen(load_pic_err) + 80];
-    sprintf(buf, "Fatal: Couldn't load deck builder bitmap:\n%s", load_pic_err);
-    fatal_err(buf, 0);
+    sprintf(load_pic_buf, "Fatal: Couldn't load deck builder bitmap:\n%s", load_pic_err);
+    fatal_err(load_pic_buf, 0);
     return 0;
   }
 
@@ -2028,7 +2067,7 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
     return 0;
   }
 
-  HACCEL accel = LoadAccelerators(global_hinstance, MAKEINTRESOURCE(RES_ACCEL));
+  accel = LoadAccelerators(global_hinstance, MAKEINTRESOURCE(RES_ACCEL));
   if (!accel)
   {
     fatal_err("Fatal: Couldn't load the accelerator table", global_main_hwnd);
@@ -2039,7 +2078,6 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
   SetTimer(global_main_hwnd, 0, 500, NULL);
   SetForegroundWindow(global_main_hwnd);
 
-  MSG msg;
   while (GetMessage(&msg, NULL, 0, 0))
     if (!TranslateAccelerator(global_main_hwnd, accel, &msg) && !process_cue_cards(&msg))
     {
@@ -2200,13 +2238,17 @@ DllEntryPoint(HINSTANCE dll, DWORD reason, LPVOID reserved) // Stupidly enough, 
 static void
 clear_sound_imports_table(void)
 {
-  for (int i = 0; i <= SND_MAX; ++i)
+  int i;
+
+  for (i = 0; i <= SND_MAX; ++i)
     global_sound_fns[i] = NULL;
 }
 
 static bool
 init_sound_dll_impl(HWND hwnd, int a2, int a3) // returns false if needs cleanup
 {
+  int i;
+
   if (global_sound_status)
     return true;
 
@@ -2215,7 +2257,7 @@ init_sound_dll_impl(HWND hwnd, int a2, int a3) // returns false if needs cleanup
   if (!global_hmodule_magsnd_dll)
     return true;
 
-  for (int i = 0; i <= SND_MAX; ++i)
+  for (i = 0; i <= SND_MAX; ++i)
     if (!(global_sound_fns[i] = GetProcAddress(global_hmodule_magsnd_dll, i + 1)))
       return false;
 
@@ -2642,6 +2684,9 @@ show_dialog_movexcards(void)
 INT_PTR CALLBACK
 dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int i;
+  int j;
+
   switch (msg)
   {
   case WM_INITDIALOG:
@@ -2651,7 +2696,7 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     set_dlg_text(hdlg, RES_BUTTON_OK, text_lines[2]);
     set_dlg_text(hdlg, RES_BUTTON_CANCEL, text_lines[3]);
 
-    for (int i = 0; global_excessive_cards[i].DeckEntry_csvid >= 0; ++i)
+    for (i = 0; global_excessive_cards[i].DeckEntry_csvid >= 0; ++i)
       SendDlgItemMessage(hdlg, RES_INFOBOX_LIST, LB_ADDSTRING, 0, global_excessive_cards[i].DeckEntry_FullName);
 
     return 0;
@@ -2678,8 +2723,8 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       EndDialog(hdlg, 0);
     else if (LOWORD(wparam) == RES_BUTTON_OK)
     {
-      for (int i = 0; global_excessive_cards[i].DeckEntry_csvid >= 0; ++i)
-        for (int j = 0; j < global_deck_num_entries; ++j)
+      for (i = 0; global_excessive_cards[i].DeckEntry_csvid >= 0; ++i)
+        for (j = 0; j < global_deck_num_entries; ++j)
           if (global_deck[j].GDE_csvid == global_excessive_cards[i].DeckEntry_csvid && !global_deck[j].GDE_Available && global_excessive_cards[i].DeckEntry_Amount > 0)
           {
             global_deck[j].GDE_Available = 1;
@@ -2717,6 +2762,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   HWND hwnd;
   HDC hdc;
+  int i;
 
   switch (msg)
   {
@@ -2737,12 +2783,13 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
                               global_hinstance, 0))
     {
       char path[2 * MAX_PATH + 15 + 10];
+      int count;
       sprintf(path, "%s*.dck", global_playdeck_path);
 
       SendMessage(hwnd, LB_DIR, DDL_READWRITE, path);
-      int count = SendMessage(hwnd, LB_GETCOUNT, 0, 0);
+      count = SendMessage(hwnd, LB_GETCOUNT, 0, 0);
 
-      for (int i = 0; i < count; ++i)
+      for (i = 0; i < count; ++i)
       {
         char filename[MAX_PATH];
         SendMessage(hwnd, LB_GETTEXT, i, filename);
@@ -2918,6 +2965,8 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   switch (msg)
   {
   case WM_INITDIALOG:
+  {
+    int i;
     SetWindowText(hdlg, global_filter_dlg_title);
 
     load_text("Menus", "LONGLIST");
@@ -2952,13 +3001,13 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       pos = 0;
     }
 
-    for (int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
     {
       int idx = SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, m, pos, text_lines[i]);
       SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETITEMDATA, idx, i);
     }
 
-    for (int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
     {
       int j = SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_GETITEMDATA, i, 0);
       if (j >= 0)
@@ -2968,7 +3017,7 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       }
     }
 
-    for (int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
     {
       int idx = i >> 5;
       int bit = 1 << (i & 0x1F);
@@ -2980,6 +3029,7 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
     SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
     return 0;
+  }
 
   case WM_ERASEBKGND:
     hdc = wparam;
@@ -3014,7 +3064,10 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       break;
 
     case RES_BUTTON_OK:
+    {
       int buf[MAX_FILTER_SUBTYPE_SIZE];
+      int i;
+      int items;
       memset(buf, -1, sizeof buf);
 
       if (global_filter_subtype_dlg_mode)
@@ -3022,10 +3075,9 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       else
         memset(global_filter_creature_list, 0, sizeof global_filter_creature_list);
 
-      int items;
       items = SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, MAX_FILTER_SUBTYPE_SIZE, buf);
 
-      for (int i = 0; i < items; ++i)
+      for (i = 0; i < items; ++i)
         if (buf[i] != -1)
         {
           int idx = data1[buf[i]] >> 5;
@@ -3041,6 +3093,7 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       FREEZ(data1);
       FREEZ(data2);
       return 1;
+    }
 
     case RES_BUTTON_CANCEL:
       EndDialog(hdlg, 0);
@@ -3084,9 +3137,11 @@ show_dialog_filter_subtype(void)
 
 //[[[ stats dialog
 static bool
-check_restriction_impl(csvid_t csvid, Restriction::Enum rst)
+check_restriction_impl(csvid_t csvid, int rst)
 {
-  for (int i = 0; restrictions[i].restriction != Restriction::RST_0; ++i)
+  int i;
+
+  for (i = 0; restrictions[i].restriction != RST_0; ++i)
     if (restrictions[i].csvid == csvid && (restrictions[i].restriction & rst))
       return true;
   return false;
@@ -3095,19 +3150,19 @@ check_restriction_impl(csvid_t csvid, Restriction::Enum rst)
 static bool
 check_restricted(csvid_t csvid)
 {
-  return check_restriction_impl(csvid, Restriction::RST_RESTRICTED);
+  return check_restriction_impl(csvid, RST_RESTRICTED);
 }
 
 static bool
 check_banned(csvid_t csvid)
 {
-  return check_restriction_impl(csvid, Restriction::RST_BANNED);
+  return check_restriction_impl(csvid, RST_BANNED);
 }
 
 static bool
 check_ante(csvid_t csvid)
 {
-  return check_restriction_impl(csvid, Restriction::RST_ANTE);
+  return check_restriction_impl(csvid, RST_ANTE);
 }
 
 static bool
@@ -3143,7 +3198,8 @@ check_deck_type(void)
   int rval = DT_UNKNOWN;
 
   bool any_duplicate_nonbasics = false;
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  int i;
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
     if (!check_basic(global_edited_deck[i].DeckEntry_csvid))
     {
       if (global_edited_deck[i].DeckEntry_Amount > 1)
@@ -3155,7 +3211,7 @@ check_deck_type(void)
   if (!any_duplicate_nonbasics)
     return rval | DT_HIGHLANDER;
 
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
   {
     csvid_t csvid = global_edited_deck[i].DeckEntry_csvid;
     if (check_basic(csvid))
@@ -3222,8 +3278,19 @@ show_stats(HDC hdc, int word_width, int word_height)
 
   int stats[STAT1_MAX + 1][STAT2_MAX + 1];
   memset(stats, 0, sizeof stats);
+  int i;
+  int j;
+  int c;
+  int l;
+  int stepx;
+  int stepy;
+  int x;
+  int y;
+  int posx;
+  int textline;
+  int div;
 
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
   {
     csvid_t csvid = global_edited_deck[i].DeckEntry_csvid;
     int amt = global_edited_deck[i].DeckEntry_Amount;
@@ -3252,7 +3319,7 @@ show_stats(HDC hdc, int word_width, int word_height)
       break;
     case CP_TYPE_ARTIFACT:
       stat1 = STAT1_ARTIFACT;
-      for (int j = 0; j < 7; ++j)
+      for (j = 0; j < 7; ++j)
         if (cp->types[j] == SUBTYPE_CREATURE)
         {
           stat1 = STAT1_CREATURE;
@@ -3281,12 +3348,12 @@ show_stats(HDC hdc, int word_width, int word_height)
 
       add[STAT2_TOTAL] += amt;
 
-      for (int j = STAT2_0; j <= STAT2_MAX; ++j)
+      for (j = STAT2_0; j <= STAT2_MAX; ++j)
         stats[STAT1_MANASOURCE][j] += add[j];
 
       if (stat1 == STAT1_LAND)
       {
-        for (int j = STAT2_0; j <= STAT2_MAX; ++j)
+        for (j = STAT2_0; j <= STAT2_MAX; ++j)
           stats[STAT1_LAND][j] += add[j];
         continue;
       }
@@ -3333,8 +3400,8 @@ show_stats(HDC hdc, int word_width, int word_height)
     stats[stat1][STAT2_TOTAL] += amt;
   }
 
-  for (int i = STAT1_0 + 1; i < STAT1_MAX; ++i)
-    for (int j = STAT2_0; j <= STAT2_MAX; ++j)
+  for (i = STAT1_0 + 1; i < STAT1_MAX; ++i)
+    for (j = STAT2_0; j <= STAT2_MAX; ++j)
       stats[STAT1_TOTAL][j] += stats[i][j];
   //]]]
 
@@ -3343,27 +3410,27 @@ show_stats(HDC hdc, int word_width, int word_height)
   SetTextColor(hdc, global_colorref_lightgrey);
 
   // Column headers
-  int x = 40;
-  int y = 40;
+  x = 40;
+  y = 40;
   textout(hdc, x, y, text_lines[0]);
 
   x += word_width;
-  int stepx = (1000 - x) / 8;
+  stepx = (1000 - x) / 8;
   x += 80;
-  int posx = x;
-  for (int c = 1; c <= 7; ++c)
+  posx = x;
+  for (c = 1; c <= 7; ++c)
   {
     textout(hdc, x, y, text_lines[c]);
     x += stepx;
   }
 
-  int stepy = 65;
+  stepy = 65;
   y = 105;
-  for (int l = STAT1_0; l <= STAT1_TOTAL; ++l, y += stepy)
+  for (l = STAT1_0; l <= STAT1_TOTAL; ++l, y += stepy)
   {
     // Row header
     x = 40;
-    int textline = l == STAT1_TOTAL ? 7 : (8 + l);
+    textline = l == STAT1_TOTAL ? 7 : (8 + l);
     SetTextColor(hdc, l == STAT1_MANASOURCE ? global_colorref_lavender : global_colorref_lightgrey);
     textout(hdc, x, y, text_lines[textline]);
 
@@ -3375,12 +3442,12 @@ show_stats(HDC hdc, int word_width, int word_height)
     x = posx;
     if (l != STAT1_MANASOURCE)
       SetTextColor(hdc, global_colorref_flesh);
-    for (int c = STAT2_0; c <= STAT2_TOTAL; ++c, x += stepx)
+    for (c = STAT2_0; c <= STAT2_TOTAL; ++c, x += stepx)
       if (stats[l][c] == 0)
         textout(hdc, x, y, " " DASH);
       else
       {
-        int div;
+        div = 0;
         if (c == STAT2_TOTAL)
           div = stats[STAT1_TOTAL][STAT2_TOTAL];
         else
@@ -3421,6 +3488,8 @@ fill_stats_window(HDC hdc, RECT r, HFONT font)
 INT_PTR CALLBACK
 dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int x;
+  int y;
   switch (msg)
   {
   case WM_INITDIALOG:
@@ -3471,8 +3540,8 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     BITMAP bmp;
     GetObject(global_pics[33], sizeof(BITMAP), &bmp);
 
-    for (int x = 0; x < r.right; x += bmp.bmWidth)
-      for (int y = 0; y < r.bottom; y += bmp.bmHeight)
+    for (x = 0; x < r.right; x += bmp.bmWidth)
+      for (y = 0; y < r.bottom; y += bmp.bmHeight)
         BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, chdc, 0, 0, SRCCOPY);
 
     fill_stats_window(hdc, r, global_font_32);
@@ -3503,25 +3572,30 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 static void
 clear_packs(void)
 {
-  for (int c = 0; c <= PACK1_MAX; ++c)
-    for (int t = 0; t <= PACK2_MAX; ++t)
+  int c;
+  int t;
+  for (c = 0; c <= PACK1_MAX; ++c)
+    for (t = 0; t <= PACK2_MAX; ++t)
       Packs_clear(&global_packs[c][t]);
 }
 
 static void
 clear_packs_copy(void)
 {
-  for (int c = 0; c <= PACK1_MAX; ++c)
-    for (int t = 0; t <= PACK2_MAX; ++t)
+  int c;
+  int t;
+  for (c = 0; c <= PACK1_MAX; ++c)
+    for (t = 0; t <= PACK2_MAX; ++t)
       Packs_clear(&global_packs_copy[c][t]);
 }
 
 static void
 count_packs(void)
 {
+  int l;
   clear_packs();
 
-  for (int l = 0; l < global_edited_deck_num_entries; ++l)
+  for (l = 0; l < global_edited_deck_num_entries; ++l)
   {
     int col, typ;
     csvid_t csvid = global_edited_deck[l].DeckEntry_csvid;
@@ -3790,6 +3864,8 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 static void
 fill_back(HWND hwnd, HDC hdc)
 {
+  int x;
+  int y;
   HDC chdc = CreateCompatibleDC(hdc);
   gdi_flush(chdc);
   SelectObject(chdc, global_pics[16]);
@@ -3800,8 +3876,8 @@ fill_back(HWND hwnd, HDC hdc)
   BITMAP bmp;
   GetObject(global_pics[16], sizeof(BITMAP), &bmp);
 
-  for (int x = 0; x < rect.right; x += bmp.bmWidth)
-    for (int y = rect.bottom; y > -29; y -= bmp.bmHeight)
+  for (x = 0; x < rect.right; x += bmp.bmWidth)
+    for (y = rect.bottom; y > -29; y -= bmp.bmHeight)
       BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, chdc, 0, 0, SRCCOPY);
 
   DELETE_DC(chdc);
@@ -3915,6 +3991,7 @@ update_scroll_range(void)
 static void
 filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
 {
+  int i;
   int data = SendMessage(hwnd_listbox, LB_GETITEMDATA, SendMessage(hwnd_listbox, LB_GETCURSEL, 0, 0), 0);
 
   SendMessage(hwnd_listbox, LB_RESETCONTENT, 0, 0);
@@ -3943,7 +4020,7 @@ filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
   UpdateWindow(hwnd_listbox);
 
   int count = SendMessage(hwnd_listbox, LB_GETCOUNT, 0, 0);
-  for (int i = 0; i < count; ++i)
+  for (i = 0; i < count; ++i)
     SendMessage(hwnd_horzlist, 0x8001, 0, SendMessage(hwnd_listbox, LB_GETITEMDATA, i, 0));
 
   SendMessage(hwnd_horzlist, 0x8007, 0, 0);
@@ -3989,7 +4066,8 @@ wndproc_SearchClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 static void
 insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 {
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  int i;
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
     if (tgt_deck[i].DeckEntry_csvid == csvid)
     {
       tgt_deck[i].DeckEntry_Amount += num;
@@ -4004,7 +4082,9 @@ insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 static void
 remove_cards_from_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 {
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  int i;
+  int j;
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
     if (tgt_deck[i].DeckEntry_csvid == csvid)
     {
       if (tgt_deck[i].DeckEntry_Amount == num)
@@ -4026,7 +4106,7 @@ remove_cards_from_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
       num -= tgt_deck[i].DeckEntry_Amount;
       global_deck_num_cards -= tgt_deck[i].DeckEntry_Amount;
 
-      for (int j = i; j < global_edited_deck_num_entries - 1; ++j)
+      for (j = i; j < global_edited_deck_num_entries - 1; ++j)
         tgt_deck[j] = tgt_deck[j + 1];
 
       --global_edited_deck_num_entries;
@@ -4060,6 +4140,7 @@ delete_card_from_global_deck(csvid_t csvid, int num)
 static void
 move_colors_fromto_global_deck(bool move_into, int dlgbits)
 {
+  int i;
 #pragma message "Replaced in Shandalar"
 
   color_test_t dlgcolors = (dlgbits << 1) & (COLOR_TEST_ANY_COLORED | COLOR_TEST_ARTIFACT);
@@ -4067,7 +4148,7 @@ move_colors_fromto_global_deck(bool move_into, int dlgbits)
   if (!dlgcolors)
     return;
 
-  for (int i = 0; i < global_deck_num_entries; ++i)
+  for (i = 0; i < global_deck_num_entries; ++i)
   {
     GlobalDeckEntry *gd = &global_deck[i];
     if (gd->GDE_Available != (move_into ? 1 : 0))
@@ -4127,12 +4208,13 @@ set_smallcard_dimensions(void)
 static int
 check_colors_inout_edited_deck(bool currently_in)
 {
+  int i;
   if (global_check_colors_inout_edited_deck_fn)
     return global_check_colors_inout_edited_deck_fn(global_deck, global_deck_num_entries, currently_in);
 
   int dlgbits = 0;
   int currently_out = currently_in ? 0 : 1;
-  for (int i = 0; i < global_deck_num_entries; ++i)
+  for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_Available == currently_out)
     {
       const card_ptr_t *cp = &cards_ptr[global_deck[i].GDE_csvid];
@@ -4185,8 +4267,9 @@ check_colors_inout_edited_deck(bool currently_in)
 static int
 count_card_amount_outside_edited_deck(csvid_t csvid)
 {
+  int i;
   int count = 0;
-  for (int i = 0; i < global_deck_num_entries; ++i)
+  for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_csvid == csvid && !(global_deck[i].GDE_DecksBits & (1 << global_current_deck)))
       ++count;
 
@@ -4220,7 +4303,8 @@ draw_small_amount(int amount, RECT *rect)
 static iid_t
 get_iid_from_global_deck_card(csvid_t csvid)
 {
-  for (int i = 0; i < global_deck_num_entries; ++i)
+  int i;
+  for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_csvid == csvid)
       return global_deck[i].GDE_iid;
   return -1;
@@ -4229,6 +4313,7 @@ get_iid_from_global_deck_card(csvid_t csvid)
 static bool
 change_global_deck_card_availability(csvid_t csvid, int mode)
 {
+  int i;
   int old_avail, new_avail;
   if (mode == 0)
   {
@@ -4253,7 +4338,7 @@ change_global_deck_card_availability(csvid_t csvid, int mode)
   else
     return false;
 
-  for (int i = 0; i < global_deck_num_entries; ++i)
+  for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_csvid == csvid && global_deck[i].GDE_Available == old_avail)
     {
       global_deck[i].GDE_Available = new_avail;
@@ -4272,10 +4357,11 @@ change_global_deck_card_availability(csvid_t csvid, int mode)
 static void
 TENTATIVE_remove_selected_from_horzlist(HWND hwnd_listbox, HWND hwnd_horzlist)
 {
+  int n;
   int cursel = SendMessage(hwnd_listbox, LB_GETCURSEL, 0, 0);
   int count = SendMessage(hwnd_listbox, LB_GETCOUNT, 0, 0);
 
-  for (int n = 0; n < count;)
+  for (n = 0; n < count;)
     if (check_filters(SendMessage(hwnd_listbox, LB_GETITEMDATA, n, 0)))
       ++n;
     else
@@ -4315,6 +4401,7 @@ horzlist_prep_rectangle(HWND hwnd, int idx, RECT *rect)
 static void
 TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
 {
+  int i;
   int selected = SendMessage(hwnd_listbox, LB_GETCURSEL, 0, 0);
   int data = SendMessage(hwnd_listbox, LB_GETITEMDATA, selected, 0);
   int numitems = SendMessage(hwnd_listbox, LB_GETCOUNT, 0, 0);
@@ -4322,10 +4409,10 @@ TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
   uint8_t mem[global_available_slots];
   memset(mem, 0, global_available_slots);
 
-  for (int i = 0; i < numitems; ++i)
+  for (i = 0; i < numitems; ++i)
     mem[SendMessage(hwnd_listbox, LB_GETITEMDATA, i, 0)] = 1;
 
-  for (int i = 0; i < global_available_slots; ++i)
+  for (i = 0; i < global_available_slots; ++i)
   {
     csvid_t csvid = cards_ptr[i].id;
     if (!mem[csvid] && check_filters(csvid))
@@ -4338,7 +4425,7 @@ TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
 
   numitems = SendMessage(hwnd_listbox, LB_GETCOUNT, 0, 0);
   int found = 0;
-  for (int i = 0; i < numitems; ++i)
+  for (i = 0; i < numitems; ++i)
     if (SendMessage(hwnd_listbox, LB_GETITEMDATA, i, 0) == data)
     {
       found = i;
@@ -4362,6 +4449,7 @@ sub_40E8D0(csvid_t csvid, bool shifted)
   }
   else if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR | 0x20))
   {
+  int i;
     global_dlg_parameter = v3 = count_card_amount_outside_edited_deck(csvid);
 
     if (!show_dialog_movexcards())
@@ -4369,7 +4457,7 @@ sub_40E8D0(csvid_t csvid, bool shifted)
 
     v3 = MIN(v3, global_dlg_result);
 
-    for (int i = 0; i < v3; ++i)
+    for (i = 0; i < v3; ++i)
       change_global_deck_card_availability(csvid, 1);
 
     TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
@@ -4397,6 +4485,7 @@ refresh_numofcards_text(void)
 static bool
 sub_40E570(HWND hwnd, POINT p2, bool singleclick, bool shifted)
 {
+  int i;
   static POINT pt;
 
   int currsel = SendMessage(hwnd, 0x8003, 0, 0);
@@ -4456,7 +4545,7 @@ sub_40E570(HWND hwnd, POINT p2, bool singleclick, bool shifted)
     pt.x -= v8;
     pt.y -= v13;
 
-    for (int i = 0; i < amt; ++i)
+    for (i = 0; i < amt; ++i)
     {
       if (!SendMessage(v12, 0x84C8, csvid, MAKELONG(pt.x, pt.y)))
         MessageBeep(0);
@@ -4497,6 +4586,7 @@ sub_40E570(HWND hwnd, POINT p2, bool singleclick, bool shifted)
 LRESULT CALLBACK
 wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int i;
   static HDC comphdc = NULL;
   static int sellprice = 0;
   static csvid_t curr_csvid{-1};
@@ -4533,7 +4623,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     int max_index;
     max_index = MIN(left_pic_index + pics_inline, last_pic_index);
 
-    for (int i = left_pic_index; i < max_index; ++i)
+    for (i = left_pic_index; i < max_index; ++i)
     {
       horzlist_prep_rectangle(hwnd, i, &r);
 
@@ -4610,7 +4700,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
 
-    for (int i = left_pic_index; i < left_pic_index + pics_inline; ++i)
+    for (i = left_pic_index; i < left_pic_index + pics_inline; ++i)
     {
       horzlist_prep_rectangle(hwnd, i, &r);
       if (PtInRect(&r, p))
@@ -4797,7 +4887,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
       global_dlg_result = MIN(global_dlg_result, amt);
 
-      for (int i = 0; i < global_dlg_result; ++i)
+      for (i = 0; i < global_dlg_result; ++i)
         if (!delete_card_from_global_deck(curr_csvid, 1))
           break;
 
@@ -4866,7 +4956,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       SendMessage(GetParent(hwnd), WM_DELETEITEM, del.CtlID, &del);
     }
 
-    for (int i = wparam; i < last_pic_index - 1; ++i)
+    for (i = wparam; i < last_pic_index - 1; ++i)
       horz_list_addr[i] = horz_list_addr[i + 1];
 
     SetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX, --last_pic_index);
@@ -4927,7 +5017,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
     horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
 
-    for (int i = 0; i < last_pic_index; ++i)
+    for (i = 0; i < last_pic_index; ++i)
     {
       DELETEITEMSTRUCT del;
       del.CtlType = ODT_LISTBOX;
@@ -4988,7 +5078,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     int wanted_card;
     wanted_card = wparam;
-    for (int i = left_pic_index; i < max_idx; ++i)
+    for (i = left_pic_index; i < max_idx; ++i)
       if (horz_list_addr[i] == wanted_card)
       {
         horzlist_prep_rectangle(hwnd, i, &r);
@@ -5075,6 +5165,14 @@ add_smallcard_window(HWND hwnd_parent, Packs::Table tab)
 LRESULT CALLBACK
 wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int c;
+  int d;
+  int i;
+  int j;
+  int mosx;
+  int mosy;
+  int x;
+  int y;
   static int cleared_global_deck_num_entries = 0;
   static int cleared_global_deck_num_cards = 0;
 
@@ -5312,10 +5410,10 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     gdi_flush(hdc);
 
     HDC mosaics[5];
-    for (int i = 0; i < 5; ++i)
+    for (i = 0; i < 5; ++i)
       gdi_flush((mosaics[i] = CreateCompatibleDC(hdc)));
 
-    for (int i = 0; i < 5; ++i)
+    for (i = 0; i < 5; ++i)
       SelectObject(mosaics[i], global_pics[i + 6]);
 
     RECT r;
@@ -5327,7 +5425,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     int dx, dy, tgt_dx;
     dy = r.bottom / 5;
     tgt_dx = bmp.bmWidth * r.bottom / (bmp.bmHeight * 5); // = (width/height) * dy, after reordering for rounding
-    for (int i = 1; i < 100; ++i)
+    for (i = 1; i < 100; ++i)
     {
       dx = r.right / i;
       if (dx < tgt_dx)
@@ -5342,8 +5440,8 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       }
     }
 
-    for (int mosx = 0, x = 0; x < r.right; x += dx, ++mosx)
-      for (int y = 0, mosy = mosx; y < r.bottom; y += dy, ++mosy)
+    for (mosx = 0, x = 0; x < r.right; x += dx, ++mosx)
+      for (y = 0, mosy = mosx; y < r.bottom; y += dy, ++mosy)
         StretchBlt(hdc,
                    x, y,
                    dx, dy,
@@ -5353,7 +5451,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                    SRCCOPY);
 
     ReleaseDC(hwnd, hdc);
-    for (int i = 0; i < 5; ++i)
+    for (i = 0; i < 5; ++i)
       DELETE_DC(mosaics[i]);
 
     return 1;
@@ -5382,17 +5480,20 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     if (global_cfg_consolidate)
     {
-      for (int i = 0; i <= PACK1_MAX; ++i)
-        for (int j = 0; j <= PACK2_MAX; ++j)
-          for (int c = 0; c < global_packs[i][j].num; ++c)
+  int c;
+  int i;
+  int j;
+      for (i = 0; i <= PACK1_MAX; ++i)
+        for (j = 0; j <= PACK2_MAX; ++j)
+          for (c = 0; c < global_packs[i][j].num; ++c)
             add_smallcard_window(hwnd, global_packs[i][j].table[c]);
     }
     else
     {
-      for (int i = 0; i <= PACK1_MAX; ++i)
-        for (int j = 0; j <= PACK2_MAX; ++j)
-          for (int c = 0; c < global_packs[i][j].num; ++c)
-            for (int d = 0; d < global_packs[i][j].table[c].amt; ++d)
+      for (i = 0; i <= PACK1_MAX; ++i)
+        for (j = 0; j <= PACK2_MAX; ++j)
+          for (c = 0; c < global_packs[i][j].num; ++c)
+            for (d = 0; d < global_packs[i][j].table[c].amt; ++d)
               add_smallcard_window(hwnd, global_packs[i][j].table[c].csvid, 1);
     }
 
@@ -5462,6 +5563,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 static void
 TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, int singleclick)
 {
+  int i;
   csvid_t csvid = GetWindowLong(hwnd, CARD_CSVID_INDEX);
   int amt = GetWindowLong(hwnd, CARD_AMOUNT_INDEX);
 
@@ -5556,7 +5658,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
     }
   }
 
-  for (int i = 0; i < num; ++i)
+  for (i = 0; i < num; ++i)
     change_global_deck_card_availability(csvid, 0);
 
   remove_cards_from_deck(csvid, num, global_edited_deck);
@@ -5574,7 +5676,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
     p.x -= x;
     p.y -= y;
 
-    for (int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
     {
       if (!SendMessage(w, 0x84C8, csvid, MAKELONG(p.x, p.y)))
         MessageBeep(MB_OK);
@@ -5586,6 +5688,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
   }
   else if (w == global_horzlist_hwnd)
   {
+  int i;
     set_smallcard_dimensions();
 
     if (w != parent)
@@ -5595,7 +5698,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
         play_sound(3, 400, 0, 0);
     }
 
-    for (int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
       if (change_global_deck_card_availability(csvid, 3))
         TENTATIVE_scroll(global_listbox_hwnd, global_horzlist_hwnd);
 
@@ -5611,7 +5714,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
 
     change_global_deck_card_availability(csvid, 2);
 
-    for (int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
       if (!SendMessage(global_decksurface_hwnd, 0x84C8, csvid, MAKELONG(p.x, p.y)))
         MessageBeep(0);
 
@@ -5625,6 +5728,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
 LRESULT CALLBACK
 wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int i;
   RECT r;
   csvid_t csvid;
   int amt;
@@ -5683,7 +5787,7 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (global_dlg_result > amt)
       global_dlg_result = amt;
 
-    for (int i = 0; i < global_dlg_result; ++i)
+    for (i = 0; i < global_dlg_result; ++i)
       if (!delete_card_from_global_deck(csvid, 0))
         break;
 
@@ -5831,11 +5935,12 @@ enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 static void
 copy_deck_to_edit(void)
 {
+  int i;
   global_deck_num_entries = 0;
   global_deck_num_cards = 0;
   global_edited_deck_num_entries = 0;
 
-  for (int i = 0; i < 500; ++i)
+  for (i = 0; i < 500; ++i)
   {
     csvid_t csvid = CardIDFromType(global_external_deck[i]);
     if (!(csvid >= 0))
@@ -5861,6 +5966,7 @@ copy_deck_to_edit(void)
 static bool
 save_deck(const char *filename)
 {
+  int i;
   FILE *f = fopen(filename, "wt");
   if (!f.ok())
     return false;
@@ -5875,7 +5981,7 @@ save_deck(const char *filename)
   fprintf(f, ";%s\n", global_deck_comments);
   fprintf(f, "\n");
 
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
     fprintf(f, ".%d\t%d\t%s\n",
             global_edited_deck[i].DeckEntry_csvid,
             global_edited_deck[i].DeckEntry_Amount,
@@ -5903,6 +6009,7 @@ hashstr(const char *str)
 static void
 deck_parse_line(char *txt, csvid_t *csvid, int *num)
 {
+  int i;
   char *p = txt;
   csvid = atoi(p);
   while (*p && !isspace(*p))
@@ -5951,7 +6058,7 @@ deck_parse_line(char *txt, csvid_t *csvid, int *num)
     hashvals = malloc(global_available_slots * sizeof(PairIntPtr));
     memset(hashvals, 0, global_available_slots * sizeof(PairIntPtr));
 
-    for (int i = 0; i < global_available_slots; ++i)
+    for (i = 0; i < global_available_slots; ++i)
     {
       const card_ptr_t *cp = &cards_ptr[i];
       uint16_t key = hashstr(cp->full_name);
@@ -6069,6 +6176,7 @@ load_deck(char *filename)
 static int
 check_card_count(int idx)
 {
+  int i;
   if (global_check_card_count_fn)
     return global_check_card_count_fn(global_edited_deck, idx, global_deck_num_cards);
 
@@ -6076,7 +6184,7 @@ check_card_count(int idx)
   if (check_basic(csvid))
     return 0;
 
-  for (int i = 0; i < global_edited_deck_num_entries; ++i)
+  for (i = 0; i < global_edited_deck_num_entries; ++i)
     if (global_edited_deck[i].DeckEntry_csvid == csvid)
     {
       int lim = Scards[5].worldmagic_city ? 0 : 1;
@@ -6155,6 +6263,7 @@ draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN
 LRESULT CALLBACK
 wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int i;
   static HPEN pen_ltgrey = NULL, pen_medgrey = NULL;
   static HWND button_deckinfo = NULL, button_exit = NULL, button_deck1 = NULL, button_deck2 = NULL, button_deck3 = NULL;
   static HWND cardlistfilter_hwnd = NULL, search_hwnd = NULL;
@@ -6404,7 +6513,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     else
     {
       int num_failed = 0;
-      for (int i = 0; i < global_edited_deck_num_entries; ++i)
+      for (i = 0; i < global_edited_deck_num_entries; ++i)
       {
         int excess = check_card_count(i);
         if (excess > 0)
@@ -6570,7 +6679,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         leftpic = GetWindowLong(global_horzlist_hwnd, HORZLIST_LEFTPIC_INDEX);
         pics_inline = GetWindowLong(global_horzlist_hwnd, HORZLIST_PICSINLINE_INDEX);
 
-        for (int i = leftpic; ; ++i)
+        for (i = leftpic; ; ++i)
 	  {
 	    int rightpic = MIN(lastpic, leftpic + pics_inline);
 	    if (i >= rightpic)
@@ -6822,7 +6931,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       global_deck_num_cards = 0;
       global_edited_deck_num_entries = 0;
 
-      for (int i = 0; i < global_deck_num_entries; ++i)
+      for (i = 0; i < global_deck_num_entries; ++i)
         if (global_deck[i].GDE_DecksBits & (1 << global_current_deck))
         {
           global_deck[i].GDE_Available = 0;
@@ -7137,13 +7246,14 @@ toggle_filterbutton(int n)
 static void
 create_filter_menus(void)
 {
+  int i;
   int n;
 
 #define CREATE_FILTER_MENU(menu, name, base, condition, coda)      \
   if ((n = load_text("Menus", (name))) != -1)                      \
   {                                                                \
     (menu) = CreatePopupMenu();                                    \
-    for (int i = 0; i < n; ++i)                                    \
+    for (i = 0; i < n; ++i)                                    \
       condition                                                    \
       {                                                            \
         AppendMenu((menu), MF_ENABLED, i + (base), text_lines[i]); \
@@ -7206,7 +7316,8 @@ destroy_filter_menus(void)
 static bool
 check_card_global_deck_availability(csvid_t csvid)
 {
-  for (int i = 0; i < global_deck_num_entries; ++i)
+  int i;
+  for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_csvid == csvid && global_deck[i].GDE_Available == 1)
       return true;
 
@@ -7216,7 +7327,8 @@ check_card_global_deck_availability(csvid_t csvid)
 static bool
 check_expansion_list_filter(csvid_t csvid)
 {
-  for (int expid = 0; expid < global_num_expansions; ++expid)
+  int expid;
+  for (expid = 0; expid < global_num_expansions; ++expid)
     if ((1 << (expid & 0x1F)) & global_filter_expansion_list[expid / 32])
     {
       int bit_pos = expid * 3;
@@ -7268,9 +7380,11 @@ check_artifacts(int cardtype, int subtype1)
 static bool
 check_creature_list_filter(const card_ptr_t *cp)
 {
-  for (int crtid = 0; crtid < (CREATURE_LIST_SIZE * 32); ++crtid)
+  int crtid;
+  int i;
+  for (crtid = 0; crtid < (CREATURE_LIST_SIZE * 32); ++crtid)
     if ((1 << (crtid & 0x1F)) & global_filter_creature_list[crtid / 32])
-      for (int i = 0; i < 7; ++i)
+      for (i = 0; i < 7; ++i)
         if (cp->types[i] == crtid)
           return true;
 
@@ -7395,6 +7509,7 @@ check_rarity(csvid_t csvid, int cp_rarity)
 static bool
 check_abilities(csvid_t csvid, int num_abils, char *abils)
 {
+  int i;
   if (!(global_filter_abilities & 1))
     return true;
 
@@ -7403,7 +7518,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
   if (!native && !grants)
     return false;
 
-  for (int i = 0; i < num_abils; ++i)
+  for (i = 0; i < num_abils; ++i)
     switch (abils[i])
     {
 #define MATCH(native_or_granted, bit)                           \
@@ -7676,6 +7791,7 @@ check_filters(csvid_t csvid)
 LRESULT CALLBACK
 wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  int i;
   static RECT rect = {0, 0, 0, 0};
   static HDC chdc = NULL;
   static HBITMAP bmp = NULL;
@@ -7843,7 +7959,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     RECT r, r2;
     GetClientRect(hwnd, &r);
-    for (int i = 0; i < 35; ++i)
+    for (i = 0; i < 35; ++i)
     {
       filterbuttons_setcoords(&r, i, &r2);
       if (PtInRect(&r2, p))
