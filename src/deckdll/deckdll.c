@@ -17,7 +17,7 @@ typedef ptrdiff_t INT_PTR;
 typedef int (*Int_fn_int)(int);
 typedef int (*Int_fn_etc)(void);
 
-enum DBFlags
+typedef enum
 {
   DBFLAGS_0 = 0,
   DBFLAGS_SHANDALAR = 1,
@@ -25,9 +25,9 @@ enum DBFlags
   DBFLAGS_NOCARDCOUNTCHECK = 4,
   DBFLAGS_GAUNTLET = 8,
   DBFLAGS_EDITDECK = 0x40,
-};
+} DBFlags;
 
-enum DeckType
+typedef enum
 {
   DT_UNKNOWN = 0,
   DT_UNRESTRICTED = 0x1,
@@ -36,18 +36,18 @@ enum DeckType
   DT_TOURNAMENT_T1_5 = 0x8,
   DT_HIGHLANDER = 0x10,
   DT_HAS_ANTE = 0x20,
-};
+} DeckType;
 
-enum FilterExpansions
+typedef enum 
 {
   FE_0 = 0,
   FE_4TH_EDITION = 0x2,
   FE_REVISED = 0x20,
   FE_UNLIMITED = 0x1000,
   FE_EXPANSIONLIST = 0x8000,
-};
+} FilterExpansions;
 
-enum FilterColors
+typedef enum
 { // Using color_test_t would make too much sense.
   FC_0 = 0,
   FC_WHITE = 0x0002,
@@ -59,9 +59,9 @@ enum FilterColors
   FC_GOLD_ALL = 0x0100,
   FC_GOLD_ALLSELECTED = 0x0200,
   FC_GOLD_ANYSELECTED = 0x0400,
-};
+} FilterColors;
 
-enum FilterNum
+typedef enum
 {
   FN_0 = 0,
   FN_ENABLE = 0x1,
@@ -69,9 +69,9 @@ enum FilterNum
   FN_LT = 0x4,
   FN_EQ = 0x8,
   FN_CC_X = 0x10,
-};
+} FilterNum;
 
-enum FilterRarities
+typedef enum
 {
   FR_0 = 0,
   FR_ENABLE = 0x1,
@@ -80,9 +80,9 @@ enum FilterRarities
   FR_RARE = 0x8,
   FR_RESTRICTED = 0x10,
   FR_BANNED = 0x20,
-};
+} FilterRarities;
 
-enum FilterSets
+typedef enum
 {
   FS_0 = 0,
   FS_4TH_EDITION = 0x0002,
@@ -92,9 +92,9 @@ enum FilterSets
   FS_THE_DARK = 0x0040,
   FS_LEGENDS = 0x0100,
   FS_OTHER = 0x1000,
-};
+} FilterSets;
 
-enum FilterCardSetsFlags
+typedef enum
 { // Seems to be FilterSets rightshifted by one.  How inconvenient.  FSCF_Q_* values are tentative.
   FCSF_0 = 0,
   FCSF_Q_ENABLE = 0x0001,
@@ -104,9 +104,9 @@ enum FilterCardSetsFlags
   FCSF_THE_DARK = 0x0010,
   FCSF_LEGENDS = 0x0040,
   FCSF_Q_OTHER = 0x0400,
-};
+} FilterCardSetsFlags;
 
-enum FilterTypes
+typedef enum
 {
   FT_0 = 0,
   FT_LAND = 0x00000001,
@@ -134,9 +134,9 @@ enum FilterTypes
   FT_INSTANT = 0x00400000,
   FT_INTERRUPT = 0x00800000,
   FT_SORCERY = 0x01000000,
-};
+} FilterTypes;
 
-enum FilterAbilities
+typedef enum
 {
   FA_0 = 0,
   FA_ENABLE = 0x1,
@@ -156,7 +156,7 @@ enum FilterAbilities
   FA_DEATHTOUCH = 0x2000,
   FA_VIGILANCE = 0x4000,
   FA_HASTE = 0x8000,
-};
+} FilterAbilities;
 
 enum Abilities
 {
@@ -358,8 +358,8 @@ static char global_playdeck_path[MAX_PATH + 15] = {0};
 static char global_dbart_pattern[MAX_PATH + 45] = {0};
 //  ]]]
 
-static int global_db_flags_1 = DBFLAGS_0;
-static int global_db_flags_2 = DBFLAGS_0;
+static DBFlags global_db_flags_1 = DBFLAGS_0;
+static DBFlags global_db_flags_2 = DBFLAGS_0;
 
 //  [[[ configuration
 static bool global_cfg_consolidate = false;
@@ -524,22 +524,22 @@ static HDC global_screen_dc = NULL;
 //  ]]]
 
 //  [[[ filters
-static int global_filter_expansions = FE_0;
-static int global_filter_colors = FC_0;
-static int global_filter_cardsets = FS_0;
-static int global_filter_abilities = FA_0;
-static int global_filter_cardtypes = FT_0;
-static int global_filter_cardsets_flags = FCSF_0;
+static FilterExpansions global_filter_expansions = FE_0;
+static FilterColors global_filter_colors = FC_0;
+static FilterSets global_filter_cardsets = FS_0;
+static FilterAbilities global_filter_abilities = FA_0;
+static FilterTypes global_filter_cardtypes = FT_0;
+static FilterCardSetsFlags global_filter_cardsets_flags = FCSF_0;
 
-static int global_filter_casting_cost = FN_0;
+static FilterNum global_filter_casting_cost = FN_0;
 static int global_filter_casting_cost_value = 0;
 
-static int global_filter_power = FN_0;
+static FilterNum global_filter_power = FN_0;
 static int global_filter_power_value = 0;
-static int global_filter_toughness = FN_0;
+static FilterNum global_filter_toughness = FN_0;
 static int global_filter_toughness_value = 0;
 
-static int global_filter_rarity = FR_0;
+static FilterRarities global_filter_rarity = FR_0;
 
 #define CREATURE_LIST_SIZE 10
 // 1 bit per creature type, so 10 means a maximum of 320.  The highest used is currently 0xEA, for SUBTYPE_MOLE.
@@ -4774,10 +4774,10 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
       curr_csvid = SendMessage(hwnd, 0x8004, currsel, 0);
       iid_t iid = get_iid_from_global_deck_card(curr_csvid);
-      if (!iid.ok())
+      if (!(iid >= 0))
         return 0;
 
-      sellprice = SellPrice(iid.raw);
+      sellprice = SellPrice(iid);
     }
 
     load_text("Menus", "SELLCARD");
