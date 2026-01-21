@@ -5677,6 +5677,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 
   case WM_LBUTTONDOWN:
+  {
     BringWindowToTop(hwnd);
     SetFocus(global_main_hwnd);
     return 0;
@@ -6075,6 +6076,7 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 
   case WM_LBUTTONDBLCLK:
+  {
     if (!(global_db_flags_2 & DBFLAGS_SHANDALAR))
       return 0;
 

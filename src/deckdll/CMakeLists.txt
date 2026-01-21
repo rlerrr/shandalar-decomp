@@ -9,7 +9,7 @@ target_include_directories(deckdll PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(deckdll PRIVATE comctl32 gdi32 shlwapi)
+target_link_libraries(deckdll PRIVATE comctl32 gdi32)
 
 if (TARGET drawcardlib)
   target_link_libraries(deckdll PRIVATE drawcardlib)
