@@ -11,8 +11,8 @@
 #define DFLT_CTRL_STYLE		NOTAB_CTRL_STYLE | WS_TABSTOP
 
 1 VERSIONINFO
-FILEVERSION	7,0,0,1
-PRODUCTVERSION	3,0,0,0
+FILEVERSION	6,3,1,0
+PRODUCTVERSION	6,31
 FILEOS	VOS_NT_WINDOWS32
 FILETYPE	VFT_DLL
 BEGIN
@@ -21,13 +21,13 @@ BEGIN
 		BLOCK "040904B0"	// 0x0409 = US-English, 04B0 = Unicode
 		{
 			VALUE "CompanyName", "MicroProse Software"
-			VALUE "FileDescription", "DeckBuilder DLL"
-			VALUE "FileVersion", "7.0.0.1"
+			VALUE "FileDescription", "deckdll"
+			VALUE "FileVersion", "6.3.1.0"
 			VALUE "InternalName", "DeckDLL"
-			VALUE "LegalCopyright", "Copyright (c) 1996-2016"
-			VALUE "OriginalFilename", "DeckDLL.dll"
-			VALUE "ProductName", "Manalink 3.0"
-			VALUE "ProductVersion", "3.0"
+			VALUE "LegalCopyright", "Copyright (c) 1996"
+			VALUE "OriginalFilename", "deckdll.dll"
+			VALUE "ProductName", "MMicroProse Software deckdll"
+			VALUE "ProductVersion", "6.31"
 		}
 	}
 	BLOCK "VarFileInfo"

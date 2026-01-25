@@ -823,7 +823,6 @@ LRESULT CALLBACK wndproc_MainClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_TitleClass(HWND, UINT, WPARAM, LPARAM);
 //]]]
 
-// FUNCTION: DECKDLL 0x1001328b
 static void fatal_err(const char *text, HWND hwnd)
 {
   MessageBox(hwnd, text, 0, MB_SYSTEMMODAL | MB_ICONERROR);
@@ -1035,11 +1034,7 @@ draw_background(HDC hdc, RECT *r, HANDLE hbmp)
   LeaveCriticalSection(&global_critical_section_for_drawing);
 }
 
-static void
-set_dlg_text(HWND hdlg, int resource, const char *txt)
-{
-  SetWindowText(GetDlgItem(hdlg, resource), txt);
-}
+#define set_dlg_text(hdlg, resource, txt)  SetWindowText(GetDlgItem(hdlg, resource), txt)
 
 static void
 set_dlg_text_limited(HWND hdlg, int resource, const char *txt, int limit)
@@ -1086,7 +1081,6 @@ num_bits_set(unsigned int v)
   return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24; // count
 }
 
-// FUNCTION: DECKDLL 0x10025b40
 static int read_db_guts(void)
 {
   int record_size;
@@ -2029,7 +2023,7 @@ process_cue_cards(MSG *msg)
 
 /* stdcall version, perversely required to be at _DeckBuilderMain instead of _DeckBuilderMain@12, which makes it inconvenient and error-prone call correctly
  * external to the dll except from assembly */
-// FUNCTION: DECKDLL 0x100115e5
+// FUNCTION: DECKDLL 0x1000bcfd
 WPARAM WINAPI
 DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
 {
@@ -2192,6 +2186,7 @@ deckbuilder_main(HWND parent_hwnd, int db_flags_1, int db_flags_2)
   return DeckBuilderMain(parent_hwnd, db_flags_1, db_flags_2);
 }
 
+// FUNCTION: DECKDLL 0x10016dc0
 static bool
 register_class(const char *classname, WNDPROC wndproc, UINT style, int extra_size, HICON icon, HCURSOR cursor)
 {
@@ -2211,6 +2206,7 @@ register_class(const char *classname, WNDPROC wndproc, UINT style, int extra_siz
   return RegisterClass(&wnd_class);
 }
 
+// FUNCTION: DECKDLL 0x1000c27a
 static bool
 register_classes(void)
 {
@@ -2267,7 +2263,7 @@ register_classes(void)
                          arrow_cursor));
 }
 
-// FUNCTION: DECKDLL 0x_100111ef
+// FUNCTION: DECKDLL 0x1000b8df
 static bool
 init_deckbuilder(void)
 {
@@ -2302,7 +2298,7 @@ init_deckbuilder(void)
   return true;
 }
 
-// FUNCTION: DECKDLL 0x10011170
+// FUNCTION: DECKDLL 0x1000b860
 BOOL WINAPI
 DllMain(HINSTANCE dll, DWORD reason, LPVOID reserved)
 {
@@ -2499,7 +2495,7 @@ play_music(int a1, int a2, int a3)
 }
 //]]]
 
-//[[[ dialogs
+// FUNCTION: DECKDLL 0x10006e7f
 INT_PTR CALLBACK
 dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -2591,6 +2587,7 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
+// FUNCTION: DECKDLL 0x10006df3
 static void
 show_dialog_deckinfo(void)
 {
@@ -3837,7 +3834,7 @@ count_packs(void)
 }
 //]]]
 
-//[[[ CueCardClass
+// FUNCTION: DECKDLL 0x100213ee
 LRESULT CALLBACK
 wndproc_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -3953,7 +3950,7 @@ wndproc_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ TitleClass
+// FUNCTION: DECKDLL 0x1002764d
 LRESULT CALLBACK
 wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -4063,6 +4060,7 @@ fill_back(HWND hwnd, HDC hdc)
   DELETE_DC(chdc);
 }
 
+// FUNCTION: DECKDLL 0x10010f75
 LRESULT CALLBACK
 wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -4804,6 +4802,7 @@ sub_40E570(HWND hwnd, POINT p2, bool singleclick, bool shifted)
   return 1;
 }
 
+// FUNCTION: DECKDLL 0x1002887e
 LRESULT CALLBACK
 wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -5426,6 +5425,7 @@ add_smallcard_window_from_table(HWND hwnd_parent, Table tab)
   add_smallcard_window(hwnd_parent, tab.csvid, tab.amt);
 }
 
+// FUNCTION: DECKDLL 0x100012b7
 LRESULT CALLBACK
 wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -6041,6 +6041,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, in
     global_deck_was_edited = 0;
 }
 
+// FUNCTION: DECKDLL 0x1000810e
 LRESULT CALLBACK
 wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -6619,6 +6620,7 @@ draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN
   DrawText(hdc, txt, -1, &r, format);
 }
 
+// FUNCTION: DECKDLL 0x10016e4e
 LRESULT CALLBACK
 wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -8205,6 +8207,7 @@ check_filters(csvid_t csvid)
   return true;
 }
 
+// FUNCTION: DECKDLL 0x1001bcd5
 LRESULT CALLBACK
 wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {

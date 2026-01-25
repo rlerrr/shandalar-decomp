@@ -20,6 +20,8 @@ if (TARGET image)
 endif()
 
 if (MSVC)
+  target_compile_options(deckdll PRIVATE /Od /Zi)
+
   set_property(TARGET deckdll PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/DeckDll.def\"")
   set_property(TARGET deckdll APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/DeckDll.def")
 endif()
@@ -31,7 +33,7 @@ set_target_properties(deckdll PROPERTIES
 )
 
 if (MSVC_FOR_DECOMP)
-  set_property(TARGET deckdll PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  set_property(TARGET deckdll PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
 endif()
 
 reccmp_add_target(deckdll ID DECKDLL)
