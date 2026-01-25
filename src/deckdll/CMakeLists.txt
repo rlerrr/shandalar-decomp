@@ -1,4 +1,4 @@
-file(GLOB deckdll_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
+file(GLOB deckdll_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 
 set(deckdll_sources ${deckdll_c_sources} deckdll.rc)
 

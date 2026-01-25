@@ -2029,6 +2029,7 @@ process_cue_cards(MSG *msg)
 
 /* stdcall version, perversely required to be at _DeckBuilderMain instead of _DeckBuilderMain@12, which makes it inconvenient and error-prone call correctly
  * external to the dll except from assembly */
+// FUNCTION: DECKDLL 0x100115e5
 WPARAM WINAPI
 DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
 {
