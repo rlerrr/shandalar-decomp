@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "deckdll.h"
 #include "mystdbool.h"
@@ -16,7 +17,86 @@
 #define WM_MOUSEWHEEL 0x020A
 #endif
 
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#endif
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
+#endif
+
+#define SWAP(a, b)                                                      \
+  do                                                                     \
+  {                                                                      \
+    BYTE _swap_tmp = (BYTE)(a);                                          \
+    (a) = (BYTE)(b);                                                     \
+    (b) = _swap_tmp;                                                     \
+  } while (0)
+
 typedef ptrdiff_t INT_PTR;
+
+static int
+match_path_spec(const char *path, const char *spec);
+
+static int
+match_path_spec_char(char a, char b)
+{
+  return tolower((unsigned char)a) == tolower((unsigned char)b);
+}
+
+int
+PathMatchSpec(const char *path, const char *spec)
+{
+  return match_path_spec(path, spec);
+}
+
+static int
+match_path_spec(const char *path, const char *spec)
+{
+  while (*spec)
+  {
+    if (*spec == '*')
+    {
+      while (*spec == '*')
+        ++spec;
+      if (*spec == '\0')
+        return 1;
+      for (; *path; ++path)
+        if (match_path_spec(path, spec))
+          return 1;
+      return 0;
+    }
+    if (*spec == '?')
+    {
+      if (*path == '\0')
+        return 0;
+      ++path;
+      ++spec;
+      continue;
+    }
+    if (*path == '\0')
+      return 0;
+    if (!match_path_spec_char(*path, *spec))
+      return 0;
+    ++path;
+    ++spec;
+  }
+  return *path == '\0';
+}
+
+#ifndef snprintf
+int
+snprintf(char *buffer, size_t count, const char *fmt, ...)
+{
+  int result;
+  va_list ap;
+
+  va_start(ap, fmt);
+  result = _vsnprintf(buffer, (int)count, fmt, ap);
+  va_end(ap);
+
+  return result;
+}
+#endif
 
 typedef int (*Int_fn_int)(int);
 typedef int (WINAPI *Int_fn_etc)();
@@ -743,7 +823,7 @@ LRESULT CALLBACK wndproc_MainClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_TitleClass(HWND, UINT, WPARAM, LPARAM);
 //]]]
 
-// LIBRARY: DECKDLL 0x1001328b
+// FUNCTION: DECKDLL 0x1001328b
 static void fatal_err(const char *text, HWND hwnd)
 {
   MessageBox(hwnd, text, 0, MB_SYSTEMMODAL | MB_ICONERROR);
