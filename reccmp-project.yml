@@ -12,6 +12,11 @@ targets:
       allow_hash_mismatch: false
     report:
       ignore_functions: []
+  CDTOOLS:
+    filename: CDTOOLS.dll
+    source-root: src/cdtools
+    hash:
+      sha256: 62cf09a2a546f71d1ed5ee74f5f7a9f01321057007c9228c13adebc5f515625d
   DRAWCARDLIB:
     filename: Drawcardlib.dll
     source-root: src/drawcardlib

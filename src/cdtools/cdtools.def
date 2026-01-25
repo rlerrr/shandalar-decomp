@@ -1,0 +1,9 @@
+LIBRARY "cdtools.dll" BASE=0x10800000
+
+EXPORTS
+CheckOriginalCD
+CheckDoPCD
+CheckSotaCD
+IsCDDrive
+Autoplay_ShutDown
+Autoplay_Restore

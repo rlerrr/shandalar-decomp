@@ -22,6 +22,10 @@ if (SHANDALAR_BUILD_CARDARTLIB)
   add_subdirectory(cardartlib)
 endif()
 
+if (SHANDALAR_BUILD_CDTOOLS)
+  add_subdirectory(cdtools)
+endif()
+
 if (SHANDALAR_BUILD_DRAWCARDLIB)
   add_subdirectory(drawcardlib)
 endif()

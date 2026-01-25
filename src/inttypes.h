@@ -47,6 +47,7 @@ typedef long long longlong;
 typedef unsigned long long ulonglong;
 #endif
 
+#define CONCAT31(x,y) ((undefined4)(((undefined4)(x) << 8) | ((undefined1)((undefined1)(y)))))
 #define CONCAT11(x,y) ((undefined2)(((undefined1)(x)) | ((undefined2)((undefined1)(y)) << 8)))
 #define CONCAT44(x,y) ((undefined8)(((ulonglong)(x) << 32) | (undefined4)(y)))
 

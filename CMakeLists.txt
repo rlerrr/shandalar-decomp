@@ -10,6 +10,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/cmake/reccmp.cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 option(SHANDALAR_BUILD_CARDARTLIB "Build CardArtLib.dll" ON)
+option(SHANDALAR_BUILD_CDTOOLS "Build cdtools.dll" ON)
 option(SHANDALAR_BUILD_DRAWCARDLIB "Build Drawcardlib.dll" ON)
 option(SHANDALAR_BUILD_DECKDLL "Build DeckDll.dll" ON)
 option(SHANDALAR_BUILD_DECK "Build Deck.exe" ON)
