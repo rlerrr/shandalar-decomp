@@ -22,3 +22,8 @@ targets:
     source-root: src/deckdll
     hash:
       sha256: d441148eca203c496b116e9f5c146c80d71eecd2fd95eab1e4646e20766367ab
+  DECK:
+    filename: DECK.EXE
+    source-root: src/deck
+    hash:
+      sha256: 4c33775a7f6c091616bdb8ddf7a0bebfb972c0a9bfc2faddd8f2c9c82ec804b0

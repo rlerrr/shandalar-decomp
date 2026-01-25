@@ -8,8 +8,8 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 
 * cardartlib.dll (debug) : Library for decoding the game's card art assets (.cat files)
 * cdtools.dll (debug) : A small library of CD functions
-* deck.exe : A trivial wrapper for showing the deck builder UI
-* deckdll.dll : The deck builder UI implementation, imported by deck.exe and magic.exe
+* deck.exe (release /Od) : A trivial wrapper for showing the deck builder UI
+* deckdll.dll (static release /Od?) : The deck builder UI implementation, imported by deck.exe and magic.exe
 * drawcardlib.dll (debug) : Library for rendering full card representations
 * facemaker.exe : 
 * gcconn.dll (debug, C++) : Something about connection handling for manalink
@@ -17,7 +17,7 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * magsnd.dll : Presumably plays sound
 * magvid.dll : Presumably plays video
 * manalink.exe : Multiplayer
-* manalinkinterface.dll : Small dll with several exports, used by magic.exe not manalink.exe
+* manalinkinterface.dll (static release /Od?) : Small dll with several exports, used by magic.exe not manalink.exe
 * shandalar.exe : The overworld and adventure UI
 * statwin.dll (debug?, C++?) : Used by shandalar.exe
 
