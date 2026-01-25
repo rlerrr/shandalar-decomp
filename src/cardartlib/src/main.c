@@ -1049,7 +1049,7 @@ uint Catalog_MakeKeyFromPath(const char *path)
 // FUNCTION: CARDARTLIB 0x10001f40
 void MemZeroDwords(undefined8 *param_1,uint param_2)
 {
-  //TODO: I don't think MSVC can generate this??  This gotta be a library
+  //TODO: I don't think MSVC can generate this??  This gotta be inline asm
   __asm {
     mov edi, dword ptr param_1
     mov ecx, dword ptr param_2
@@ -2889,13 +2889,12 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
 }
 
 // FUNCTION: CARDARTLIB 0x10005cb4
-void RotateDwordsLeft1(undefined4 *param_1,uint param_2)
+void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 {
   undefined4 uVar1;  
   uVar1 = *param_1;
 
-  //TODO: how to get this to compile to "lea eax, [eax*4 - 4]"" ??
-  memcpy(param_1,param_1 + 1,param_2 * 4 - 4);
+  memcpy(param_1,param_1 + 1, (param_2 - 1) * 4);
   param_1[param_2 -1] = uVar1;
 }
 
@@ -3381,65 +3380,57 @@ void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,
 }
 
 // FUNCTION: CARDARTLIB 0x10007238
-void CopyBytes(void *dst,const void *src,size_t size)
+void CopyBytes(void *dst,const void *src,size_t num)
 {
-  uint uVar1;
-  undefined8 *dst_qword;
-  const undefined8 *src_qword;
-  unsigned char *dst_byte;
-  const unsigned char *src_byte;
-  
-  dst_qword = (undefined8 *)dst;
-  src_qword = (const undefined8 *)src;
-  for (uVar1 = (uint)size >> 3; uVar1 != 0; uVar1 = uVar1 - 1) {
-    *dst_qword = *src_qword;
-    src_qword = src_qword + 1;
-    dst_qword = dst_qword + 1;
+  //TODO: this looks like real inline asm but who knows
+  __asm {
+    mov edi, dst
+    mov esi, src
+    mov ecx, num
+    push ecx
+    shr ecx, 3
+    je 0x11
+    fld qword ptr [esi]
+    fstp qword ptr [edi]
+    add esi, 8
+    add edi, 8
+    dec ecx
+    jne -0x11
+    pop ecx
+    and ecx, 7
+    je 0x2
+    rep movsb
   }
-  dst_byte = (unsigned char *)dst_qword;
-  src_byte = (const unsigned char *)src_qword;
-  uVar1 = (uint)size & 7;
-  if (uVar1 != 0) {
-    for (; uVar1 != 0; uVar1 = uVar1 - 1) {
-      *dst_byte = *src_byte;
-      src_byte = src_byte + 1;
-      dst_byte = dst_byte + 1;
-    }
-  }
-  return;
 }
 
 // FUNCTION: CARDARTLIB 0x10007273
-void SetBytes(void *dst,uint value,size_t size)
-
+void SetBytes(void *dst, int value, size_t num)
 {
-  //TODO: memset((void *)param_1,(int)(param_2 & 0xff),param_3);
-  undefined8 uVar1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
-  longlong lVar5;
-  undefined8 *dst_qword;
-  unsigned char *dst_byte;
+  //This is weird because it doesn't do anything?
+  __int64 uVar1;
   
-  dst_qword = (undefined8 *)dst;
-  uVar2 = value << 8 | value;
-  uVar4 = (int)uVar2 >> 0x1f | ((int)uVar2 >> 0x1f) << 0x10 | uVar2 >> 0x10;
-  lVar5 = _allshl(0x20,uVar4);
-  uVar1 = CONCAT44(uVar4 | (uint)((ulonglong)lVar5 >> 0x20),uVar2 | uVar2 << 0x10 | (uint)lVar5);
-  iVar3 = ((uint)size >> 3) - 1;
-  do {
-    *dst_qword = uVar1;
-    dst_qword = dst_qword + 1;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  *dst_qword = uVar1;
-  dst_byte = (unsigned char *)dst_qword;
-  for (uVar4 = (uint)size & 7; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *dst_byte = (unsigned char)value;
-    dst_byte = dst_byte + 1;
+  uVar1 = (__int64)(value << 8 | value);
+  uVar1 |= uVar1 << 16;
+  uVar1 |= uVar1 << 32;
+
+  //TODO: this looks like real inline asm but who knows
+  __asm {
+    fld qword ptr [ebp - 8]
+    mov edi, dst
+    mov ecx, num
+    push ecx
+    shr ecx, 3
+    dec ecx
+    fst qword ptr [edi]
+    add edi, 8
+    dec ecx
+    jne -0xc
+    fstp qword ptr [edi]
+    pop ecx
+    and ecx, 7
+    mov eax, value
+    rep stosb
   }
-  return;
 }
 
 // FUNCTION: CARDARTLIB 0x100072dc
