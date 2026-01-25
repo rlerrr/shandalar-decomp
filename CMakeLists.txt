@@ -11,9 +11,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 option(SHANDALAR_BUILD_CARDARTLIB "Build CardArtLib.dll" ON)
 option(SHANDALAR_BUILD_DRAWCARDLIB "Build Drawcardlib.dll" ON)
-#option(SHANDALAR_BUILD_DECKDLL "Build DeckDll.dll" OFF)
+option(SHANDALAR_BUILD_DECKDLL "Build DeckDll.dll" ON)
 option(SHANDALAR_BUILD_DECK "Build Deck.exe" ON)
-option(SHANDALAR_USE_BOOST "Link CardArtLib with Boost filesystem/system" ON)
 
 math(EXPR bits "8 * ${CMAKE_SIZEOF_VOID_P}")
 message(STATUS "Building ${bits}-bit shandalar")
@@ -30,20 +29,6 @@ endif()
 message(STATUS "MSVC for decompilation: ${MSVC_FOR_DECOMP}")
 
 add_compile_definitions(WIN32 _WINDOWS)
-
-set(SHANDALAR_YASM "${PROJECT_SOURCE_DIR}/yasm.exe")
-if (EXISTS "${SHANDALAR_YASM}")
-  set(CMAKE_ASM_NASM_COMPILER "${SHANDALAR_YASM}" CACHE FILEPATH "NASM/YASM compiler" FORCE)
-endif()
-
-check_language(ASM_NASM)
-set(SHANDALAR_HAVE_NASM FALSE)
-if (CMAKE_ASM_NASM_COMPILER)
-  enable_language(ASM_NASM)
-  set(SHANDALAR_HAVE_NASM TRUE)
-else()
-  message(WARNING "ASM_NASM compiler not found; .asm files will be skipped.")
-endif()
 
 if (MSVC_FOR_DECOMP)
   set(CMAKE_C_FLAGS "/W3 /D \"WIN32\" /D \"_WINDOWS\"")

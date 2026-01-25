@@ -18,20 +18,6 @@ function(shandalar_add_def_import_library name def_file)
   endif()
 endfunction()
 
-function(shandalar_target_nasm_includes target)
-  set(asm_includes)
-  foreach(dir IN LISTS ARGN)
-    list(APPEND asm_includes "-I${dir}")
-  endforeach()
-  target_compile_options(${target} PRIVATE
-    $<$<COMPILE_LANGUAGE:ASM_NASM>:-f win32 -p nasm -r nasm -a x86 -m x86 ${asm_includes}>
-  )
-endfunction()
-
-if (MSVC)
-  shandalar_add_def_import_library(capturestackbacktrace "${SHANDALAR_SRC_ROOT}/ManalinkEh/capturestackbacktrace.def")
-endif()
-
 if (SHANDALAR_BUILD_CARDARTLIB)
   add_subdirectory(cardartlib)
 endif()
@@ -46,12 +32,4 @@ endif()
 
 if (SHANDALAR_BUILD_DECK)
   add_subdirectory(deck)
-endif()
-
-if (SHANDALAR_BUILD_MANALINKEH)
-  add_subdirectory(ManalinkEh)
-endif()
-
-if (SHANDALAR_BUILD_MANALINKEX)
-  add_subdirectory(manalinkex)
 endif()
