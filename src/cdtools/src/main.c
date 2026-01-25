@@ -4,12 +4,6 @@
 #include <winreg.h>
 #include "mystdbool.h"
 
-//TODO: wtf is a 3 byte??
-#define undefined3 undefined4
-
-//TODO: this from newer MSVC?
-#define LSTATUS LONG
-
 // GLOBAL: CDTOOLS 0x10010030
 char s_pctS_10010030[] = "%s\\";
 
@@ -67,6 +61,12 @@ char s__s__s_100100f0[] = "%s\\%s";
 // GLOBAL: CDTOOLS 0x100100f8
 char S_pctS_100100f8[] = "%s\\";
 
+// GLOBAL: CDTOOLS 0x100100fc
+char s_Testdir_tmp_100100fc[] = "%s\\Testdir.tmp";
+
+// GLOBAL: CDTOOLS 0x1001010c
+char DAT_1001010c[] = "wb";
+
 // GLOBAL: CDTOOLS 0x10010110
 char s_Software_Microsoft_Windows_Curre_10010110[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer";
 
@@ -89,318 +89,297 @@ char s_NoDriveTypeAutoRun_100101c4[] = "NoDriveTypeAutoRun";
 HINSTANCE DAT_100123cc = 0x0;
 
 // GLOBAL: CDTOOLS 0x100123d0
-undefined4 DAT_100123d0 = 0x00000007;
+undefined4 g_originalNoDriveTypeAutoRun = 0x00000007;
 
 // GLOBAL: CDTOOLS 0x100123d4
 undefined4 DAT_100123d4 = 0x0;
 
-// GLOBAL: CDTOOLS 0x10013520
-undefined4 DAT_10013520 = 0x00000000;
-
 // FUNCTION: CDTOOLS 0x10001000
 undefined4 __cdecl CheckOriginalCD(undefined4 param_1,int *param_2,undefined4 param_3)
-
 {
-  bool bVar1;
-  undefined3 extraout_var;
-  int iVar2;
-  undefined4 uVar3;
-  HANDLE pvVar4;
-  CHAR local_330 [3];
-  undefined1 local_32d;
-  CHAR local_22c [260];
-  int local_128;
-  int local_124;
-  int local_120;
-  DWORD local_11c;
-  DWORD local_118;
-  DWORD local_114;
-  DWORD local_110;
-  char local_10c [264];
+  struct {
+    HANDLE hFile;                /* EBP - 0x330 */
+    CHAR volumeName[0x104];      /* EBP - 0x32c */
+    CHAR fileSystemName[0x104];  /* EBP - 0x228 */
+    int result;                  /* EBP - 0x124 */
+    int tries;                   /* EBP - 0x120 */
+    int found;                   /* EBP - 0x11c */
+    DWORD volumeSerial;          /* EBP - 0x118 */
+    DWORD maximumComponentLength;/* EBP - 0x114 */
+    DWORD fileSystemFlags;       /* EBP - 0x110 */
+    DWORD fileSize;              /* EBP - 0x10c */
+    CHAR rootPath[0x108];        /* EBP - 0x108 */
+  } s;
   
-                    /* 0x1000  4  CheckOriginalCD */
-  local_120 = 0;
-  local_124 = 0;
-  while ((local_124 < *param_2 && (local_120 == 0))) {
-    bVar1 = IsCDDrive(param_3);
-    local_128 = CONCAT31(extraout_var,bVar1);
-    if (local_128 == 0) {
-      Sleep(1000);
-    }
-    else {
-      sprintf(local_10c,&s_pctS_10010030,param_3);
-      local_128 = GetVolumeInformationA
-                            (local_10c,local_330,0x104,&local_11c,&local_118,&local_114,local_22c,
-                             0x104);
-      local_32d = 0;
-      iVar2 = strcmp(local_330,&s_MTG_10010034);
-      if (iVar2 == 0) {
-        local_120 = 1;
+  for (s.found = 0, s.tries = 0; *param_2 > s.tries && s.found == 0; s.tries++) {
+    s.result = IsCDDrive(param_3);
+    if (s.result != 0) {
+      sprintf(s.rootPath, s_pctS_10010030, param_3);
+      s.result = GetVolumeInformationA(s.rootPath, s.volumeName, 0x104, &s.volumeSerial,
+                                      &s.maximumComponentLength, &s.fileSystemFlags,
+                                      s.fileSystemName, 0x104);
+      s.volumeName[3] = 0;
+      if (strcmp(s.volumeName, s_MTG_10010034) == 0) {
+        s.found = 1;
       }
       else {
         Sleep(1000);
       }
     }
-    local_124 = local_124 + 1;
-  }
-  if (local_120 == 0) {
-    uVar3 = 0;
-  }
-  else {
-    sprintf(local_10c,s__s__s_10010050,param_3,s_DuelSounds_Manaball_wav_10010038);
-    pvVar4 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
-    if (pvVar4 == (HANDLE)0xffffffff) {
-      sprintf(local_10c,s__s__s_1001006c,param_3,s_Sound_Locmus15_wav_10010058);
-      pvVar4 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
-      if (pvVar4 == (HANDLE)0xffffffff) {
-        uVar3 = 0;
-      }
-      else {
-        local_110 = GetFileSize(pvVar4,(LPDWORD)0x0);
-        if (local_110 == 0x307864) {
-          CloseHandle(pvVar4);
-          uVar3 = 1;
-        }
-        else {
-          CloseHandle(pvVar4);
-          uVar3 = 0;
-        }
-      }
-    }
     else {
-      CloseHandle(pvVar4);
-      uVar3 = 0;
+      Sleep(1000);
     }
   }
-  return uVar3;
+
+  if (s.found == 0) {
+    return 0;
+  }
+
+  sprintf(s.rootPath, s__s__s_10010050, param_3, s_DuelSounds_Manaball_wav_10010038);
+  s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
+  if (s.hFile != (HANDLE)-1) {
+    CloseHandle(s.hFile);
+    return 0;
+  }
+
+  sprintf(s.rootPath, s__s__s_1001006c, param_3, s_Sound_Locmus15_wav_10010058);
+  s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
+  if (s.hFile == (HANDLE)-1) {
+    return 0;
+  }
+
+  s.fileSize = GetFileSize(s.hFile, (LPDWORD)0x0);
+  if (s.fileSize != 0x307864) {
+    CloseHandle(s.hFile);
+    return 0;
+  }
+
+  CloseHandle(s.hFile);
+  return 1;
 }
 
 // FUNCTION: CDTOOLS 0x10001234
 undefined4 __cdecl CheckDoPCD(undefined4 param_1,int *param_2,undefined4 param_3)
-
 {
-  bool bVar1;
-  undefined3 extraout_var;
-  int iVar2;
-  undefined4 uVar3;
-  HANDLE pvVar4;
-  CHAR local_330 [3];
-  undefined1 local_32d;
-  CHAR local_22c [260];
-  int local_128;
-  int local_124;
-  int local_120;
-  DWORD local_11c;
-  DWORD local_118;
-  DWORD local_114;
-  DWORD local_110;
-  char local_10c [264];
+  struct {
+    HANDLE hFile;                /* EBP - 0x330 */
+    CHAR volumeName[0x104];      /* EBP - 0x32c */
+    CHAR fileSystemName[0x104];  /* EBP - 0x228 */
+    int result;                  /* EBP - 0x124 */
+    int tries;                   /* EBP - 0x120 */
+    int found;                   /* EBP - 0x11c */
+    DWORD volumeSerial;          /* EBP - 0x118 */
+    DWORD maximumComponentLength;/* EBP - 0x114 */
+    DWORD fileSystemFlags;       /* EBP - 0x110 */
+    DWORD fileSize;              /* EBP - 0x10c */
+    CHAR rootPath[0x108];        /* EBP - 0x108 */
+  } s;
   
-                    /* 0x1234  3  CheckDoPCD */
-  local_120 = 0;
-  local_124 = 0;
-  while ((local_124 < *param_2 && (local_120 == 0))) {
-    bVar1 = IsCDDrive(param_3);
-    local_128 = CONCAT31(extraout_var,bVar1);
-    if (local_128 == 0) {
-      Sleep(1000);
-    }
-    else {
-      sprintf(local_10c,&s_pctS_10010074,param_3);
-      local_128 = GetVolumeInformationA
-                            (local_10c,local_330,0x104,&local_11c,&local_118,&local_114,local_22c,
-                             0x104);
-      local_32d = 0;
-      iVar2 = strcmp(local_330,&s_MTG_10010078);
-      if (iVar2 == 0) {
-        local_120 = 1;
+  for (s.found = 0, s.tries = 0; *param_2 > s.tries && s.found == 0; s.tries++) {
+    s.result = IsCDDrive(param_3);
+    if (s.result != 0) {
+      sprintf(s.rootPath, s_pctS_10010074, param_3);
+      s.result = GetVolumeInformationA(s.rootPath, s.volumeName, 0x104, &s.volumeSerial,
+                                      &s.maximumComponentLength, &s.fileSystemFlags,
+                                      s.fileSystemName, 0x104);
+      s.volumeName[3] = 0;
+      if (strcmp(s.volumeName, s_MTG_10010078) == 0) {
+        s.found = 1;
       }
       else {
         Sleep(1000);
       }
     }
-    local_124 = local_124 + 1;
-  }
-  if (local_120 == 0) {
-    uVar3 = 0;
-  }
-  else {
-    sprintf(local_10c,s__s__s_10010090,param_3,s_DuelSounds_Deep_wav_1001007c);
-    pvVar4 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
-    if (pvVar4 == (HANDLE)0xffffffff) {
-      uVar3 = 0;
-    }
     else {
-      CloseHandle(pvVar4);
-      sprintf(local_10c,s__s__s_100100ac,param_3,s_Sound_Locmus15_wav_10010098);
-      pvVar4 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
-      if (pvVar4 == (HANDLE)0xffffffff) {
-        uVar3 = 0;
-      }
-      else {
-        local_110 = GetFileSize(pvVar4,(LPDWORD)0x0);
-        if (local_110 == 0x307864) {
-          CloseHandle(pvVar4);
-          uVar3 = 1;
-        }
-        else {
-          CloseHandle(pvVar4);
-          uVar3 = 0;
-        }
-      }
+      Sleep(1000);
     }
   }
-  return uVar3;
+
+  if (s.found == 0) {
+    return 0;
+  }
+  
+  sprintf(s.rootPath,s__s__s_10010090,param_3,s_DuelSounds_Deep_wav_1001007c);
+  s.hFile = CreateFileA(s.rootPath,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
+  if (s.hFile == (HANDLE)-1) {
+    return 0;
+  }
+
+  CloseHandle(s.hFile);
+  
+  sprintf(s.rootPath,s__s__s_100100ac,param_3,s_Sound_Locmus15_wav_10010098);
+  s.hFile = CreateFileA(s.rootPath,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
+  if (s.hFile == (HANDLE)-1) {      
+    return 0;
+  } 
+
+  s.fileSize = GetFileSize(s.hFile,(LPDWORD)0x0);
+  if (s.fileSize != 0x307864) {
+    CloseHandle(s.hFile);
+    return 0;
+  }
+
+  CloseHandle(s.hFile);
+  return 1;
 }
 
 // FUNCTION: CDTOOLS 0x10001468
 undefined4 __cdecl CheckSotaCD(undefined4 param_1,int *param_2,undefined4 param_3)
 
 {
-  bool bVar1;
-  undefined3 extraout_var;
-  int iVar2;
-  undefined4 uVar3;
-  HANDLE pvVar4;
-  CHAR local_330 [3];
-  undefined1 local_32d;
-  CHAR local_22c [260];
-  int local_128;
-  int local_124;
-  int local_120;
-  DWORD local_11c;
-  DWORD local_118;
-  DWORD local_114;
-  DWORD local_110;
-  char local_10c [264];
+  struct {
+    HANDLE hFile;                /* EBP - 0x330 */
+    CHAR volumeName[0x104];      /* EBP - 0x32c */
+    CHAR fileSystemName[0x104];  /* EBP - 0x228 */
+    int result;                  /* EBP - 0x124 */
+    int tries;                   /* EBP - 0x120 */
+    int found;                   /* EBP - 0x11c */
+    DWORD volumeSerial;          /* EBP - 0x118 */
+    DWORD maximumComponentLength;/* EBP - 0x114 */
+    DWORD fileSystemFlags;       /* EBP - 0x110 */
+    DWORD fileSize;              /* EBP - 0x10c */
+    CHAR rootPath[0x108];        /* EBP - 0x108 */
+  } s;
   
-                    /* 0x1468  5  CheckSotaCD */
-  local_120 = 0;
-  local_124 = 0;
-  while ((local_124 < *param_2 && (local_120 == 0))) {
-    bVar1 = IsCDDrive(param_3);
-    local_128 = CONCAT31(extraout_var,bVar1);
-    if (local_128 == 0) {
-      Sleep(1000);
-    }
-    else {
-      sprintf(local_10c,&s_pctS_100100b4,param_3);
-      local_128 = GetVolumeInformationA
-                            (local_10c,local_330,0x104,&local_11c,&local_118,&local_114,local_22c,
-                             0x104);
-      local_32d = 0;
-      iVar2 = strcmp(local_330,&s_MTG_100100b8);
-      if (iVar2 == 0) {
-        local_120 = 1;
+  for (s.found = 0, s.tries = 0; *param_2 > s.tries && s.found == 0; s.tries++) {
+    s.result = IsCDDrive(param_3);
+    if (s.result != 0) {
+      sprintf(s.rootPath, s_pctS_100100b4, param_3);
+      s.result = GetVolumeInformationA(s.rootPath, s.volumeName, 0x104, &s.volumeSerial,
+                                      &s.maximumComponentLength, &s.fileSystemFlags,
+                                      s.fileSystemName, 0x104);
+      s.volumeName[3] = 0;
+      if (strcmp(s.volumeName, s_MTG_100100b8) == 0) {
+        s.found = 1;
       }
       else {
         Sleep(1000);
       }
     }
-    local_124 = local_124 + 1;
-  }
-  if (local_120 == 0) {
-    uVar3 = 0;
-  }
-  else {
-    sprintf(local_10c,s__s__s_100100d4,param_3,s_DuelSounds_Manaball_wav_100100bc);
-    pvVar4 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
-    if (pvVar4 == (HANDLE)0xffffffff) {
-      uVar3 = 0;
-    }
     else {
-      CloseHandle(pvVar4);
-      sprintf(local_10c,s__s__s_100100f0,param_3,s_Sound_Locmus15_wav_100100dc);
-      pvVar4 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
-      if (pvVar4 == (HANDLE)0xffffffff) {
-        uVar3 = 0;
-      }
-      else {
-        local_110 = GetFileSize(pvVar4,(LPDWORD)0x0);
-        if (local_110 == 0x307864) {
-          CloseHandle(pvVar4);
-          uVar3 = 1;
-        }
-        else {
-          CloseHandle(pvVar4);
-          uVar3 = 0;
-        }
-      }
+      Sleep(1000);
     }
   }
-  return uVar3;
+
+  if (s.found == 0) {
+    return 0;
+  }
+
+  sprintf(s.rootPath,s__s__s_100100d4,param_3,s_DuelSounds_Manaball_wav_100100bc);
+  s.hFile = CreateFileA(s.rootPath,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
+  if (s.hFile == (HANDLE)-1) {
+    return 0;
+  }
+
+  CloseHandle(s.hFile);
+  sprintf(s.rootPath,s__s__s_100100f0,param_3,s_Sound_Locmus15_wav_100100dc);
+  s.hFile = CreateFileA(s.rootPath,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x80,(HANDLE)0x0);
+  if (s.hFile == (HANDLE)-1) {
+    return 0;
+  }
+
+  s.fileSize = GetFileSize(s.hFile,(LPDWORD)0x0);
+  if (s.fileSize != 0x307864) {
+    CloseHandle(s.hFile);
+    return 0;
+  }
+
+  CloseHandle(s.hFile);
+  return 1;
 }
 
 // FUNCTION: CDTOOLS 0x1000169C
 bool __cdecl IsCDDrive(undefined4 param_1)
 {
-  UINT UVar1;
-  char local_10c [264];
+  struct {
+    DWORD sectorsPerCluster; /* EBP - 0x224 */
+    FILE * testDirTmp; /* EBP - 0x220*/
+    DWORD numberOfFreeClusters; /* EBP - 0x21c */
+    DWORD bytesPerSector; /* EBP - 0x218 */
+    DWORD totalNumberOfClusters; /* EBP - 0x214 */
+    char idk [0x108]; /* EBP - 0x210*/
+    char rootPathName [0x106]; /* EBP - 0x108*/
+  } s;
   
-                    /* 0x169c  6  IsCDDrive */
-  sprintf(local_10c,&S_pctS_100100f8,param_1);
-  UVar1 = GetDriveTypeA(local_10c);
-  return UVar1 == 5;
+  sprintf(s.rootPathName,&S_pctS_100100f8,param_1);
+
+  //Rest of the code is unreachable?
+  if (GetDriveTypeA(s.rootPathName) == 5)
+    return 1;
+  else
+    return 0;
+
+  if (GetDiskFreeSpaceA(s.rootPathName,&s.sectorsPerCluster,
+                            &s.bytesPerSector,&s.numberOfFreeClusters,
+                            &s.totalNumberOfClusters) == 0) {
+    return 1;
+  }
+
+  if (s.sectorsPerCluster * s.bytesPerSector * s.numberOfFreeClusters != 0) 
+    return 0;
+
+  sprintf(s.idk,s_Testdir_tmp_100100fc, param_1);
+  s.testDirTmp = fopen(s.idk,&DAT_1001010c);
+  if (s.testDirTmp != 0) {
+    fclose(s.testDirTmp);
+    unlink(s.idk);
+    return 0;
+  }
+  
+  return 1;
 }
 
 // FUNCTION: CDTOOLS 0x100017C0
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
 undefined4 Autoplay_ShutDown(void)
-
 {
-  LSTATUS LVar1;
-  HKEY local_18;
-  BYTE local_14 [4];
-  DWORD local_10 [3];
+  struct {
+    HKEY hKey;
+    DWORD autoRunToSet;
+    DWORD lpcbData;
+    DWORD disableAutoRun;
+    DWORD noDriveTypeAutoRun;
+  } s;
   
-                    /* 0x17c0  2  Autoplay_ShutDown */
-  local_10[2] = 0x95;
-  local_10[1] = 0xff;
-  local_14[0] = 0xff;
-  local_14[1] = '\0';
-  local_14[2] = '\0';
-  local_14[3] = '\0';
-  local_10[0] = 4;
-  local_18 = (HKEY)0x0;
-  DAT_100123d0 = 0x95;
-  LVar1 = RegOpenKeyExA((HKEY)0x80000001,s_Software_Microsoft_Windows_Curre_10010110,0,0xf003f,
-                        &local_18);
-  if (LVar1 == 0) {
-    LVar1 = RegQueryValueExA(local_18,s_NoDriveTypeAutoRun_1001014c,(LPDWORD)0x0,(LPDWORD)0x0,
-                             &DAT_100123d0,local_10);
-    if (LVar1 == 0) {
-      RegSetValueExA(local_18,s_NoDriveTypeAutoRun_10010160,0,3,local_14,4);
+  s.noDriveTypeAutoRun = 0x95;
+  s.disableAutoRun = 0xff;
+  s.autoRunToSet = s.disableAutoRun;
+
+  s.lpcbData = 4;
+  s.hKey = (HKEY)0x0;
+  g_originalNoDriveTypeAutoRun = s.noDriveTypeAutoRun;
+
+  if (RegOpenKeyExA((HKEY)0x80000001,s_Software_Microsoft_Windows_Curre_10010110,0,0xf003f,
+                        &s.hKey) == 0) {
+
+    if (RegQueryValueExA(s.hKey,s_NoDriveTypeAutoRun_1001014c,(LPDWORD)0x0,(LPDWORD)0x0,
+                             &g_originalNoDriveTypeAutoRun,&s.lpcbData) == 0) {
+      RegSetValueExA(s.hKey,s_NoDriveTypeAutoRun_10010160,0,3,&s.autoRunToSet,4);
     }
     else {
-      DAT_100123d0 = local_10[2];
+      g_originalNoDriveTypeAutoRun = s.noDriveTypeAutoRun;
     }
-    RegFlushKey(local_18);
-    RegCloseKey(local_18);
+    RegFlushKey(s.hKey);
+    RegCloseKey(s.hKey);
   }
   DAT_100123d4 = RegisterWindowMessageA(s_QueryCancelAutoPlay_10010174);
   return 1;
 }
 
 // FUNCTION: CDTOOLS 0x10001893
-undefined4 Autoplay_Restore(void)
-
+BOOL Autoplay_Restore(void)
 {
-  LSTATUS LVar1;
-  HKEY local_c;
-  undefined4 local_8;
+  HKEY hKey;
+  BOOL result;
   
-                    /* 0x1893  1  Autoplay_Restore */
-  local_8 = 0;
-  LVar1 = RegOpenKeyExA((HKEY)0x80000001,s_Software_Microsoft_Windows_Curre_10010188,0,0xf003f,
-                        &local_c);
-  if (LVar1 == 0) {
-    local_8 = 1;
-    RegSetValueExA(local_c,s_NoDriveTypeAutoRun_100101c4,0,3,&DAT_100123d0,4);
-    RegFlushKey(local_c);
-    RegCloseKey(local_c);
+  result = 0;
+  if (RegOpenKeyExA((HKEY)0x80000001,s_Software_Microsoft_Windows_Curre_10010188,0,0xf003f,
+                        &hKey) == 0) {
+    result = 1;
+    RegSetValueExA(hKey,s_NoDriveTypeAutoRun_100101c4,0,3,&g_originalNoDriveTypeAutoRun,4);
+    RegFlushKey(hKey);
+    RegCloseKey(hKey);
   }
-  return local_8;
+  return result;
 }
 
 // FUNCTION: CDTOOLS 0x10001910
@@ -408,9 +387,9 @@ int WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID reserved)
 {
   DAT_100123cc = hDllHandle;
   switch(nReason) {
-    case 0:
-      break;
     case 1:
+      break;
+    case 0:
       break;
     case 2:
       break;
@@ -419,6 +398,3 @@ int WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID reserved)
   }
   return 1;
 }
-
-// LIBRARY: CDTOOLS 0x10002010 SYMBOL
-// _DllMainCRTStartup

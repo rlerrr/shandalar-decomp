@@ -10,7 +10,7 @@
 // FID_conflict:_remove
 
 // LIBRARY: CDTOOLS 0x10001B60 SYMBOL
-// FID_conflict:__unlink
+// _unlink
 
 // LIBRARY: CDTOOLS 0x10001B80 SYMBOL
 // _fclose
