@@ -17,7 +17,7 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * magsnd.dll : Presumably plays sound
 * magvid.dll : Presumably plays video
 * manalink.exe : Multiplayer
-* manalinkinterface.dll (static release /Od?) : Small dll with several exports, used by magic.exe not manalink.exe
+* manalinkinterface.dll (static release /Od) ![matching](https://img.shields.io/badge/matching-83.93%25-blue) : Small dll with several exports, used by magic.exe not manalink.exe
 * shandalar.exe : The overworld and adventure UI
 * statwin.dll (debug?, C++?) : Used by shandalar.exe
 

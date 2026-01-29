@@ -1,0 +1,21 @@
+LIBRARY "manalinkinterface.dll" BASE=0x10800000
+
+EXPORTS
+FamInterface_Flush
+FamInterface_SendPacket
+FamInterface_ReceivePacket
+FamInterface_WaitForOpponent
+FamInterface_Taunt
+FamInterface_SetDuelVersion
+FamInterface_SetDuelState
+FamInterface_GetDuelState
+FamInterface_PostDuelResult
+FamInterface_UpdateScreenName
+FamInterface_EndSession
+FamInterface_GoneToMovies
+FamInterface_IsManaLinkRunning
+FamInterface_IsNetworkAlive
+FamInterface_IsNetworkTEN
+FamInterface_IsHost
+FamInterface_HasOpponent
+FamInterface_SendFile
