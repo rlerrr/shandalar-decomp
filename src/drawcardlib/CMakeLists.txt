@@ -1,8 +1,9 @@
+file(GLOB drawcardlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+file(GLOB sidlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../sidlib/src/*.c")
+
 set(drawcardlib_sources
-  ../sidlib/src/pic.c
-  ../sidlib/src/pcxw.c
-  ../sidlib/src/support.c
-  src/main.c
+  ${drawcardlib_c_sources}
+  ${sidlib_c_sources}
 )
 
 add_library(drawcardlib SHARED ${drawcardlib_sources})

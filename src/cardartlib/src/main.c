@@ -28,13 +28,8 @@ STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 
 typedef BOOL (WINAPI code)(HINSTANCE, DWORD, LPVOID);
 
-// FUNCTION: CARDARTLIB 0x1000a210
-void FreeIfNotNull(void *ptr)
-{
-    _free_dbg(ptr, 1);
-}
-
 /* Forward declarations for globals referenced before their definitions. */
+void FreeIfNotNull(void *ptr);
 extern undefined4 DAT_100ed70c;
 extern undefined1 DAT_10031ca0[0x400];
 extern unsigned char DAT_100326d8[0x1000];
@@ -3860,4 +3855,9 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   }
 
   return s.out_base;
+}
+// FUNCTION: CARDARTLIB 0x1000a210
+void FreeIfNotNull(void *ptr)
+{
+    _free_dbg(ptr, 1);
 }

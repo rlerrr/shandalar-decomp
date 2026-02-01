@@ -1,4 +1,4 @@
-LIBRARY "DeckDll.dll" BASE=0x11000000
+LIBRARY "DeckDll.dll" BASE=0x10000000
 
 EXPORTS
 _OpponFace @ 2
