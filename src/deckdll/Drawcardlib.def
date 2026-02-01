@@ -1,5 +1,0 @@
-LIBRARY Drawcardlib.dll
-
-EXPORTS
-  DrawFullCard
-  DrawSmallCard

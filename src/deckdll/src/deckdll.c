@@ -434,7 +434,7 @@ enum SoundFn
 #define CUECARD_FONT_INDEX 0
 //]]]
 
-//[[[ globals and constants
+// GLOBAL: DECKDLL 0x101a88f4
 static HINSTANCE global_hinstance = NULL;
 
 static CRITICAL_SECTION global_critical_section_for_unknown;
@@ -448,52 +448,83 @@ static char global_playdeck_path[MAX_PATH + 15] = {0};
 static char global_dbart_pattern[MAX_PATH + 45] = {0};
 //  ]]]
 
+// GLOBAL: DECKDLL 0x10143fbc
 static DBFlags global_db_flags_1 = DBFLAGS_0;
+// GLOBAL: DECKDLL 0x1019f00c
 static DBFlags global_db_flags_2 = DBFLAGS_0;
-
-//  [[[ configuration
+// GLOBAL: DECKDLL 0x101bc0c4
 static bool global_cfg_consolidate = false;
+// GLOBAL: DECKDLL 0x101a8c72
 static bool global_cfg_effects = false;
 static bool global_cfg_expand_text = false;
+// GLOBAL: DECKDLL 0x101a8c71
 static bool global_cfg_music = false;
 static bool global_cfg_no_frame = false;
 static bool global_cfg_read_by_name = false;
 static bool global_cfg_view_all = false;
 #define MAX_NAMELEN 80
+
+// GLOBAL: DECKDLL 0x101a8c73
 static char global_cfg_player_name[MAX_NAMELEN] = {0};
+
+// GLOBAL: DECKDLL 0x101a8cc3;
 static char global_cfg_email[MAX_NAMELEN] = {0};
 static char global_cfg_skin_name[MAX_PATH + 1] = {0};
-//  ]]]
 
+// GLOBAL: DECKDLL 0x1012e898
 static int global_current_deck = 0;
+
+// GLOBAL: DECKDLL 0x10144370
 static int *global_external_current_deck = NULL;
 
+// GLOBAL: DECKDLL 0x101f1e80
 static int *global_external_deck = NULL;
 
+// GLOBACL: DECKDLL 0x1012ed80
 static GlobalDeckEntry global_deck[1000];
+// GLOBACL: DECKDLL 0x101a0ce0
 static int global_deck_num_cards = 0;
+
+// GLOBAL: DECKDLL 0x101a9694
 static int global_deck_num_entries = 0;
 
 static DeckEntry global_edited_deck[300];
+// GLOBAL: DECKDLL 0x101a0ce4
 static int global_edited_deck_num_entries = 0;
 
 static DeckEntry global_excessive_cards[201];
 
+// GLOBAL: DECKDLL 0x1012ea0c
 static bool global_deck_was_edited = false;
 static bool global_deckname_set = false;
 
+// GLOBAL: DECKDLL 0x1012dca0
 static char global_deckname[32] = {0};
+
+// GLOBAL: DECKDLL 0x10142814
 static char *global_external_deckname = NULL;
 
+// GLOBAL: DECKDLL 0x1012dcd4
 static char global_deck_author[81] = {0};
+// GLOBAL: DECKDLL 0x1012dda0
 static char global_deck_comments[404] = {0};
+
+// GLOBAL: DECKDLL 0x1012dd76
 static char global_deck_creation_date[22] = {0};
+// GLOBAL: DECKDLL 0x1012dcbf
 static char global_deck_description[21] = {0};
 static char global_deck_edition[16] = {0};
+
+// GLOBAL: DECKDLL 0x1012dd25
 static char global_deck_email[81] = {0};
+
+// GLOBAL: DECKDLL 0x101a8a70
 static char global_deck_filename[(MAX_PATH + 15) + 32 + 5] = {0};
+
+// GLOBAL: DECKDLL 0x1012dd8c
 static int global_deck_revision = 1;
 
+// GLOBAL: DECKDLL 0x101bc604
 static int global_dlg_parameter = 0;
 static int global_dlg_result = 0;
 
@@ -518,7 +549,10 @@ static COLORREF global_colorref_white = 0;
 #define NUM_PICS 37
 static HANDLE global_pics[NUM_PICS] = {0};
 
+// GLOBAL: DECKDLL 0x101a9704
 static HBITMAP global_hbmp = NULL;
+
+// GLOBAL: DECKDLL 0x101bc5fc
 static HGDIOBJ global_old_bmp_obj = NULL;
 
 static HPALETTE global_palette = NULL;
@@ -557,68 +591,104 @@ static HFONT global_font_28percent = NULL;
 static HFONT global_font_32 = NULL;
 //    ]]]
 
-//    [[[ window handles, width/heights, dcs, menus
+// GLOBAL: DECKDLL 0x101bbc28
 static HWND global_button_stats_hwnd = NULL;
+// GLOBAL: DECKDLL 0x1011279c
 static WNDPROC global_wndproc_std_ButtonClass = NULL;
-
+// GLOBAL: DECKDLL 0x101436b4
 static HWND global_cuecard_hwnd = NULL;
-
+// GLOBAL: DECKDLL 0x101a8a6c
 static HWND global_decksurface_hwnd = NULL;
+// GLOBAL: DECKDLL 0x100f2768
 static HMENU global_decksurface_popup = NULL;
-
+// GLOBAL: DECKDLL 0x101127a8
 static HMENU global_filtermenu_default = NULL;
+// GLOBAL: DECKDLL 0x101127d8
 static HMENU global_filtermenu_fourth = NULL;
+// GLOBAL: DECKDLL 0x101127b4
 static HMENU global_filtermenu_gold = NULL;
+// GLOBAL: DECKDLL 0x101127b8
 static HMENU global_filtermenu_land = NULL;
+// GLOBAL: DECKDLL 0x101127c8
 static HMENU global_filtermenu_artifact = NULL;
+// GLOBAL: DECKDLL 0x101127ac
 static HMENU global_filtermenu_creature = NULL;
+// GLOBAL: DECKDLL 0x101127c4
 static HMENU global_filtermenu_enchantment = NULL;
+// GLOBAL: DECKDLL 0x101127cc
 static HMENU global_filtermenu_castcost = NULL;
+// GLOBAL: DECKDLL 0x101127c0
 static HMENU global_filtermenu_power = NULL;
+// GLOBAL: DECKDLL 0x101127d0
 static HMENU global_filtermenu_toughness = NULL;
+// GLOBAL: DECKDLL 0x101127bc
 static HMENU global_filtermenu_ability = NULL;
+// GLOBAL: DECKDLL 0x101127d4
 static HMENU global_filtermenu_rarity = NULL;
+// GLOBAL: DECKDLL 0x101127b0
+static HMENU global_filtermenu_artist = NULL;
 static HMENU global_filtermenu_newexp = NULL;
 
 // These are never set false.
+// GLOBAL: DECKDLL 0x10113d0c
 static bool global_filtermenu_castcost_enabled = true;
+// GLOBAL: DECKDLL 0x10113d10
 static bool global_filtermenu_power_enabled = true;
+// GLOBAL: DECKDLL 0x10113d14
 static bool global_filtermenu_toughness_enabled = true;
+// GLOBAL: DECKDLL 0x10113d18
 static bool global_filtermenu_ability_enabled = true;
+// GLOBAL: DECKDLL 0x10113d1c
 static bool global_filtermenu_rarity_enabled = true;
+// GLOBAL: DECKDLL 0x10113d20
+static bool global_filtermenu_artist_enabled = NULL;
 static bool global_filtermenu_gold_enabled = true; // And this one isn't even used except for setting it true.
 
+// GLOBAL: DECKDLL 0x10132c38
 static HWND global_fullcard_hwnd = NULL;
 static HMENU global_fullcard_popup = NULL;
 
+// GLOBAL: DECKDLL 0x101bc444
 static HWND global_horzlist_hwnd = NULL;
+static HWND global_cardlistfilter_hwnd = NULL;
 static HMENU global_horzlist_popup = NULL;
 
+// GLOBAL: DECKDLL 0x101a8c64
 static HWND global_listbox_hwnd = NULL;
 
+// GLOBAL: DECKDLL 0x10144ef4
 static HWND global_main_hwnd = NULL;
 static int global_main_window_width = 0;
 static int global_main_window_height = 0;
 
 static WNDPROC global_wndproc_std_SearchClass = NULL;
 
+// GLOBAL: DECKDLL 0x10144eec
 static int global_smallcard_height = 0;
+// GLOBAL: DECKDLL 0x1013a17c
 static int global_smallcard_width = 0;
+
+// GLOBAL: DECKDLL 0x10141b4c
 static HMENU global_smallcard_popup = NULL;
 
+// GLOBAL: DECKDLL 0x10146df0
 static HWND global_title_hwnd = NULL;
 
+// GLOBAL: DECKDLL 0x1012566c
 static HDC global_hdc = NULL;
-static HDC global_screen_dc = NULL;
-//    ]]]
-//  ]]]
 
-//  [[[ filters
+// GLOBAL: DECKDLL 0x10035b38
+static HDC global_screen_dc = NULL;
+
 static FilterExpansions global_filter_expansions = FE_0;
+// GLOBAL: DECKDLL 0x101a9192
 static FilterColors global_filter_colors = FC_0;
+// GLOBAL: DECKDLL 0x101a9194
 static FilterSets global_filter_cardsets = FS_0;
 static FilterAbilities global_filter_abilities = FA_0;
+// GLOBAL: DECKDLL 0x101a9198
 static FilterTypes global_filter_cardtypes = FT_0;
+// GLOBAL: DECKDLL 0x10113d04
 static FilterCardSetsFlags global_filter_cardsets_flags = FCSF_0;
 
 static FilterNum global_filter_casting_cost = FN_0;
@@ -652,18 +722,27 @@ static uint32_t global_filter_expansion_list[EXPANSION_LIST_SIZE] = {0};
 
 static char global_search_string[264] = {0};
 
-//  [[[ sound
+// GLOBAL: DECKDLL 0x101054b8
 static HMODULE global_hmodule_magsnd_dll = NULL;
+
+// GLOBAL: DECKDLL 0x1003a864
 static int global_sound_status = 0; // 0 = not loaded, 1 = loaded and ok, 2 = loaded and error I think
 
-static bool global_sound_unk1 = false, global_sound_unk2 = false;
+// GLOBAL: DECKDLL 0x1003a868
+static bool global_sound_unk1 = false;
 
+// GLOBAL: DECKDLL 0x1003a860
+static bool global_sound_unk2 = false;
+
+// GLOBAL: DECKDLL 0x101054c0
 static Int_fn_etc global_sound_fns[SND_MAX + 1] = {0};
-//  ]]]
 
+// GLOBAL: DECKDLL 0x10191a50
 static Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
+// GLOBAL: DECKDLL 0x101e79a0
 static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
+// GLOBAL: DECKDLL 0x10132c50
 static char text_lines[500][128];
 
 //  [[[ card database
@@ -688,14 +767,23 @@ static bool (*global_colors_match_fn)(iid_t, color_test_t);
 static int (*global_check_colors_inout_edited_deck_fn)(const GlobalDeckEntry *, int, bool);
 //  ]]]
 
+// GLOBAL: DECKDLL 0x101bc440
 int *Gold = NULL;
+// GLOBAL: DECKDLL 0x10146aa0
 shandalar_worldmagic_t *Scards = NULL;
 // Why are these exported from here?  And with illegal names, no less?
 int _PlayerFace;
 int _OpponFace;
 
+// GLOBAL: DECKDLL 0x1019f824
 static Int_fn_int CardIDFromType = NULL;
+// GLOBAL: DECKDLL 0x10142818
 static Int_fn_int CardTypeFromID = NULL;
+// GLOBAL: DECKDLL 0x101a8934
+static Int_fn_int CardInDeck = NULL;
+// GLOBAL: DECKDLL 0x10143350
+static Int_fn_int SetCardInDeck = NULL;
+// GLOBAL: DECKDLL 0x10125eb4
 static Int_fn_int SellPrice = NULL;
 
 const Restriction restrictions[] =
@@ -823,6 +911,7 @@ LRESULT CALLBACK wndproc_MainClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_TitleClass(HWND, UINT, WPARAM, LPARAM);
 //]]]
 
+// FUNCTION: DECKDLL 0x1000d9a3
 static void fatal_err(const char *text, HWND hwnd)
 {
   MessageBox(hwnd, text, 0, MB_SYSTEMMODAL | MB_ICONERROR);
@@ -904,6 +993,7 @@ char *readline(FILE* file, char* dest, int sz)
   return dest;
 }
 
+// FUNCTION: DECKDLL 0x10028350
 static int
 load_text(const char *file_name, const char *section_name)
 {
@@ -991,6 +1081,7 @@ popup_loaded_with_args(HWND hwnd, const char *title, const char *msg, const char
   return result;
 }
 
+// FUNCTION: DECKDLL 0x1002349a
 static void
 gdi_flush(HDC hdc)
 {
@@ -1416,6 +1507,7 @@ cfg_write_int(int val, const char *keyname)
   cfg_write_str(buf, keyname);
 }
 
+// FUNCTION: DECKDLL 0x1000dca4
 static void
 write_manalink_ini(void)
 {
@@ -1453,6 +1545,7 @@ void Deckdll_initialize_for_shandalar(const card_ptr_t *i_raw_cards_ptr,
   global_using_main_db = true;
 }
 
+// FUNCTION: DECKDLL 0x1000d741
 static void
 delete_brushes(void)
 {
@@ -1461,6 +1554,7 @@ delete_brushes(void)
   DELETE_OBJ(global_brush_mediumgrey);
 }
 
+// FUNCTION: DECKDLL 0x1000d7ae
 static bool
 create_brushes(void)
 {
@@ -1481,6 +1575,7 @@ create_brushes(void)
   }
 }
 
+// FUNCTION: DECKDLL 0x1000d944
 static void
 delete_fonts(void)
 {
@@ -1491,6 +1586,7 @@ delete_fonts(void)
   DELETE_OBJ(global_font_32);
 }
 
+// FUNCTION: DECKDLL 0x10011680
 static void
 create_fonts(void)
 {
@@ -1513,6 +1609,7 @@ create_fonts(void)
   global_font_32 = CreateFontIndirect(&logfont);
 }
 
+// FUNCTION: DECKDLL 0x1002180d
 static void
 delete_screen_dc(void)
 {
@@ -1523,6 +1620,7 @@ delete_screen_dc(void)
   }
 }
 
+// FUNCTION: DECKDLL 0x100217b0
 static bool
 create_screen_dc(void)
 {
@@ -1537,6 +1635,7 @@ create_screen_dc(void)
   return global_screen_dc;
 }
 
+// FUNCTION: DECKDLL 0x1000d0ae
 static void
 delete_pics(void)
 {
@@ -1546,6 +1645,7 @@ delete_pics(void)
     DELETE_OBJ(global_pics[i]);
 }
 
+// FUNCTION: DECKDLL 0x1000c51f
 static const char *
 load_pics(void)
 {
@@ -1609,6 +1709,7 @@ load_pics(void)
   return rval;
 }
 
+// FUNCTION: DECKDLL 0x10024273
 static bool
 init_palette(void)
 {
@@ -1910,6 +2011,7 @@ init_palette(void)
   return global_palette;
 }
 
+// FUNCTION: DECKDLL 0x1000bbec
 static void
 delete_resources(void)
 {
@@ -2057,6 +2159,8 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
   CardIDFromType = (Int_fn_int)GET_IMPORT("CardIDFromType");
   SellPrice = (Int_fn_int)GET_IMPORT("SellPrice");
   CardTypeFromID = (Int_fn_int)GET_IMPORT("CardTypeFromID");
+  CardInDeck = (Int_fn_int)GET_IMPORT("CardInDeck");
+  SetCardInDeck = (Int_fn_int)GET_IMPORT("SetCardInDeck");
   global_external_deck = (int *)GET_IMPORT("deck");
   Gold = (int *)GET_IMPORT("Gold");
   Scards = (shandalar_worldmagic_t *)GET_IMPORT("Scards");
@@ -2322,9 +2426,8 @@ DllEntryPoint(HINSTANCE dll, DWORD reason, LPVOID reserved) // Stupidly enough, 
 {
   return DllMain(dll, reason, reserved);
 }
-//]]]
 
-//[[[ sounds
+// FUNCTION: DECKDLL 0x1002daee
 static void
 clear_sound_imports_table(void)
 {
@@ -2365,6 +2468,7 @@ init_sound_dll_impl(HWND hwnd, int a2, int a3) // returns false if needs cleanup
   return true;
 }
 
+// FUNCTION: DECKDLL 0x1002d2c0
 static void
 init_sound_dll(HWND hwnd, int a2, int a3)
 {
@@ -2375,6 +2479,7 @@ init_sound_dll(HWND hwnd, int a2, int a3)
   }
 }
 
+// FUNCTION: DECKDLL 0x1002d497
 static void
 sound_load(const char *path, int num, Sound *snd)
 {
@@ -2382,6 +2487,15 @@ sound_load(const char *path, int num, Sound *snd)
     (global_sound_fns[SND_LoadSnd])(path, num, snd);
 }
 
+// FUNCTION: DECKDLL 0x1002d850
+void set_sound_loop(int num, int num2)
+{
+  // set_sound_loop(num, 1) inlined:
+  if (global_sound_status == 1)
+    (global_sound_fns[SND_SetSndMarker])(num, num2);
+}
+
+// FUNCTION: DECKDLL 0x1001a8ca
 static void
 sound_init(const char *path, int num)
 {
@@ -2395,9 +2509,7 @@ sound_init(const char *path, int num)
 
   sound_load(path, num, &snd);
 
-  // set_sound_loop(num, 1) inlined:
-  if (global_sound_status == 1)
-    (global_sound_fns[SND_SetSndMarker])(num, 1);
+  set_sound_loop(num, 1);
 }
 
 static void
@@ -2407,6 +2519,7 @@ sound_stop(int a1)
     (global_sound_fns[SND_StopSnd])(a1);
 }
 
+// FUNCTION: DECKDLL 0x1001a62a
 static void
 init_sounds_and_music(void)
 {
@@ -2426,6 +2539,7 @@ init_sounds_and_music(void)
   sound_load(path, 5, 0);
 }
 
+// FUNCTION: DECKDLL 0x1002d4d3
 static void
 sound_unload(int idx)
 {
@@ -2433,16 +2547,8 @@ sound_unload(int idx)
     (global_sound_fns[SND_UnloadSnd])(idx);
 }
 
-static void
-free_sounds_and_music(void)
-{
-  sound_unload(1);
-  sound_unload(2);
-  sound_unload(3);
-  sound_unload(4);
-  sound_unload(5);
-
-  // sound_close() inlined:
+// FUNCTION: DECKDLL 0x1002d421
+static void sound_close() {
   if (global_sound_status)
   {
     global_sound_status = 0;
@@ -2459,6 +2565,19 @@ free_sounds_and_music(void)
   }
 }
 
+// FUNCTION: DECKDLL 0x1001a741
+static void
+free_sounds_and_music(void)
+{
+  sound_unload(1);
+  sound_unload(2);
+  sound_unload(3);
+  sound_unload(4);
+  sound_unload(5);
+
+}
+
+// FUNCTION: DECKDLL 0x1001a795
 static void
 play_sound(int a1, int a2, int a3, int a4)
 {
@@ -2477,6 +2596,7 @@ play_sound(int a1, int a2, int a3, int a4)
   (global_sound_fns[SND_PlaySnd])(a1, &snd);
 }
 
+// FUNCTION: DECKDLL 0x1001a80f
 static void
 play_music(int a1, int a2, int a3)
 {
@@ -2493,7 +2613,6 @@ play_music(int a1, int a2, int a3)
 
   (global_sound_fns[SND_PlaySnd])(a1, &snd);
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x10006e7f
 INT_PTR CALLBACK
@@ -2595,6 +2714,7 @@ show_dialog_deckinfo(void)
     MessageBox(global_main_hwnd, "Couldn't bring up the title dialog box", "", 0);
 }
 
+// FUNCTION: DECKDLL 0x10007bad
 INT_PTR CALLBACK
 dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -2681,6 +2801,7 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
+// FUNCTION: DECKDLL 0x10007b21
 static bool
 show_dialog_groupmove(void)
 {
@@ -2698,6 +2819,7 @@ show_dialog_groupmove(void)
   }
 }
 
+// FUNCTION: DECKDLL 0x10006aba
 INT_PTR CALLBACK
 dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -2772,6 +2894,7 @@ dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
+// FUNCTION: DECKDLL 0x10006960
 static INT_PTR
 show_dialog_sellxcards(void)
 {
@@ -2789,6 +2912,7 @@ show_dialog_sellxcards(void)
     return rval;
 }
 
+// FUNCTION: DECKDLL 0x10006a0d
 static INT_PTR
 show_dialog_movexcards(void)
 {
@@ -2805,6 +2929,7 @@ show_dialog_movexcards(void)
   return rval;
 }
 
+// FUNCTION: DECKDLL 0x1000774f
 INT_PTR CALLBACK
 dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -2864,6 +2989,7 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
+// FUNCTION: DECKDLL 0x100076c3
 static bool
 show_dialog_infobox(void)
 {
@@ -2881,6 +3007,7 @@ show_dialog_infobox(void)
   }
 }
 
+// FUNCTION: DECKDLL 0x10019fe9
 INT_PTR CALLBACK
 dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -2989,6 +3116,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
+// FUNCTION: DECKDLL 0x10019f4c
 static bool
 show_dialog_loaddeck(char *dest)
 {
@@ -3072,6 +3200,7 @@ dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
+// FUNCTION: DECKDLL 0x10020157
 static bool
 show_dialog_filter_gle(int textline)
 {
@@ -3092,6 +3221,7 @@ show_dialog_filter_gle(int textline)
   }
 }
 
+// FUNCTION: DECKDLL 0x10020636
 INT_PTR CALLBACK
 dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -3258,6 +3388,7 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
+// FUNCTION: DECKDLL 0x10020508
 static bool
 show_dialog_filter_subtype(void)
 {
@@ -3618,6 +3749,7 @@ show_stats(HDC hdc, int word_width, int word_height)
   //]]]
 }
 
+// FUNCTION: DECKDLL 0x1002dfd0
 static void
 fill_stats_window(HDC hdc, RECT r, HFONT font)
 {
@@ -3725,7 +3857,7 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ packs
+// FUNCTION: DECKDLL 0x1000679f
 static void
 clear_packs(void)
 {
@@ -3736,6 +3868,7 @@ clear_packs(void)
       Packs_clear(&global_packs[c][t]);
 }
 
+// FUNCTION: DECKDLL 0x1000687f
 static void
 clear_packs_copy(void)
 {
@@ -3746,6 +3879,7 @@ clear_packs_copy(void)
       Packs_clear(&global_packs_copy[c][t]);
 }
 
+// FUNCTION: DECKDLL 0x10005a9e
 static void
 count_packs(void)
 {
@@ -4175,6 +4309,7 @@ update_scroll_range(void)
   SetScrollRange(global_horzlist_hwnd, 0, 0, r, 0);
 }
 
+// FUNCTION: DECKDLL 0x1002ab15
 static void
 filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
 {
@@ -4257,7 +4392,7 @@ wndproc_SearchClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ HorzListClass and dependencies
+// FUNCTION: DECKDLL 0x1002b8f0
 static void
 insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 {
@@ -4277,6 +4412,7 @@ insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
   global_deck_num_cards += num;
 }
 
+// FUNCTION: DECKDLL 0x1002bcde
 static void
 remove_cards_from_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 {
@@ -4335,6 +4471,7 @@ delete_card_from_global_deck(csvid_t csvid, int num)
   return true;
 }
 
+// FUNCTION: DECKDLL 0x1002c6b5
 static void
 move_colors_fromto_global_deck(bool move_into, int dlgbits)
 {
@@ -4378,6 +4515,7 @@ move_colors_fromto_global_deck(bool move_into, int dlgbits)
   }
 }
 
+// FUNCTION: DECKDLL 0x1002cb92
 static void
 set_smallcard_dimensions(void)
 {
@@ -4404,6 +4542,7 @@ set_smallcard_dimensions(void)
   global_smallcard_height = h;
 }
 
+// FUNCTION: DECKDLL 0x1002c349
 static int
 check_colors_inout_edited_deck(bool currently_in)
 {
@@ -4512,6 +4651,7 @@ get_iid_from_global_deck_card(csvid_t csvid)
   return -1;
 }
 
+// FUNCTION: DECKDLL 0x10009187
 static bool
 change_global_deck_card_availability(csvid_t csvid, int mode)
 {
@@ -4556,6 +4696,7 @@ change_global_deck_card_availability(csvid_t csvid, int mode)
   return false;
 }
 
+// FUNCTION: DECKDLL 0x1002ad25
 static void
 TENTATIVE_remove_selected_from_horzlist(HWND hwnd_listbox, HWND hwnd_horzlist)
 {
@@ -4602,6 +4743,7 @@ horzlist_prep_rectangle(HWND hwnd, int idx, RECT *rect)
           r.left + w * (idx - lft + 1), r.bottom);
 }
 
+// FUNCTION: DECKDLL 0x1002ae78
 static void
 TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
 {
@@ -4651,8 +4793,9 @@ TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
   free(mem);
 }
 
+// FUNCTION: DECKDLL 0x1002b69d
 static int
-sub_40E8D0(csvid_t csvid, bool shifted)
+ask_movexcards(csvid_t csvid, bool shifted)
 {
   int v3;
   int i;
@@ -4687,6 +4830,7 @@ sub_40E8D0(csvid_t csvid, bool shifted)
   return v3;
 }
 
+// FUNCTION: DECKDLL 0x10019c42
 static void
 refresh_numofcards_text(void)
 {
@@ -4698,8 +4842,9 @@ refresh_numofcards_text(void)
   InvalidateRect(global_button_stats_hwnd, NULL, FALSE);
 }
 
+// FUNCTION: DECKDLL 0x1002b126
 static bool
-sub_40E570(HWND hwnd, POINT p2, bool singleclick, bool shifted)
+FUN_1002b126(HWND hwnd, POINT p2, bool singleclick, bool shifted)
 {
   int i;
   static POINT pt;
@@ -4753,7 +4898,7 @@ sub_40E570(HWND hwnd, POINT p2, bool singleclick, bool shifted)
 
   if (v12 == global_decksurface_hwnd)
   {
-    int amt = sub_40E8D0(csvid, shifted);
+    int amt = ask_movexcards(csvid, shifted);
     set_smallcard_dimensions();
     if (global_cfg_effects)
       play_sound(2, 400, 0, 0);
@@ -4974,7 +5119,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     SendMessage(hwnd, WM_MOUSEMOVE, wparam & ~MK_LBUTTON, lparam);
 
-    if (!sub_40E570(hwnd, p2, msg == WM_LBUTTONDOWN, wparam & MK_SHIFT))
+    if (!FUN_1002b126(hwnd, p2, msg == WM_LBUTTONDOWN, wparam & MK_SHIFT))
       MessageBeep(0);
 
     return 0;
@@ -5338,7 +5483,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ DeckSurfaceClass and dependencies
+// FUNCTION: DECKDLL 0x100057bc
 static void
 reset_dim_and_pos_all_cards(HWND hwnd, RECT *rect)
 {
@@ -5379,6 +5524,7 @@ reset_dim_and_pos_all_cards(HWND hwnd, RECT *rect)
   }
 }
 
+// FUNCTION: DECKDLL 0x1001a58e
 static bool
 ask_about_saving_deck(void)
 {
@@ -5388,6 +5534,7 @@ ask_about_saving_deck(void)
   return rval != IDCANCEL;
 }
 
+// FUNCTION: DECKDLL 0x100055cc
 static HWND
 find_wanted_window(HWND hwnd, csvid_t csvid)
 {
@@ -5401,6 +5548,7 @@ find_wanted_window(HWND hwnd, csvid_t csvid)
   return NULL;
 }
 
+// FUNCTION: DECKDLL 0x10006450
 static void
 add_smallcard_window(HWND hwnd_parent, csvid_t csvid, int num)
 {
@@ -5419,10 +5567,21 @@ add_smallcard_window(HWND hwnd_parent, csvid_t csvid, int num)
   }
 }
 
-static void
-add_smallcard_window_from_table(HWND hwnd_parent, Table tab)
+// FUNCTION: DECKDLL 0x100056bd
+static void invalidate_wanted_window(HWND hwnd, WPARAM wparam)
 {
-  add_smallcard_window(hwnd_parent, tab.csvid, tab.amt);
+  HWND w;
+  for (w = GetTopWindow(hwnd); w; w = GetWindow(w, GW_HWNDNEXT))
+    if (SendMessage(w, 0x8400, 0, 0) == wparam)
+      InvalidateRect(w, NULL, TRUE);
+}
+
+// FUNCTION: DECKDLL 0x1000572c
+void destroy_child_windows(HWND hwnd)
+{
+  HWND w;
+  for (w = GetTopWindow(hwnd); w; w = GetTopWindow(hwnd))
+    DestroyWindow(w);
 }
 
 // FUNCTION: DECKDLL 0x100012b7
@@ -5443,7 +5602,9 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   RECT r;
   HDC hdc;
   HDC hdc_local;
+  // GLOBAL: DECKDLL 0x1003105c
   static int cleared_global_deck_num_entries = 0;
+  // GLOBAL: DECKDLL 0x10031060
   static int cleared_global_deck_num_cards = 0;
   HDC mosaics[5];
   BITMAP bmp;
@@ -5776,12 +5937,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case 0x8401:
   {
-    // this inlines destroy_child_windows(), now unused
-    {
-      HWND w;
-      for (w = GetTopWindow(hwnd); w; w = GetTopWindow(hwnd))
-        DestroyWindow(w);
-    }
+    destroy_child_windows(hwnd);
 
     set_smallcard_dimensions();
 
@@ -5792,7 +5948,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       for (i = 0; i <= PACK1_MAX; ++i)
         for (j = 0; j <= PACK2_MAX; ++j)
           for (c = 0; c < global_packs[i][j].num; ++c)
-            add_smallcard_window_from_table(hwnd, global_packs[i][j].table[c]);
+            add_smallcard_window(hwnd, global_packs[i][j].table[c].csvid, global_packs[i][j].table[c].amt);
     }
     else
     {
@@ -5812,13 +5968,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case 0x8466:
   {
-    // this inlines invalidate_wanted_window(), itself now unused
-    {
-      HWND w;
-      for (w = GetTopWindow(hwnd); w; w = GetWindow(w, GW_HWNDNEXT))
-        if (SendMessage(w, 0x8400, 0, 0) == wparam)
-          InvalidateRect(w, NULL, TRUE);
-    }
+    invalidate_wanted_window(hwnd, wparam);
     return 0;
   }
 
@@ -5873,7 +6023,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ CardClass and dependencies
+// FUNCTION: DECKDLL 0x10008abf
 static void
 TENTATIVE_move_from_owned_cards(HWND hwnd, int x, int y, int shift2_unshift1, int singleclick)
 {
@@ -6218,7 +6368,7 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ ButtonClass and dependencies
+// FUNCTION: DECKDLL 0x100256c8
 static bool
 is_buttonclass(HWND hwnd)
 {
@@ -6231,6 +6381,7 @@ is_buttonclass(HWND hwnd)
   return !strcasecmp(classname, "Button");
 }
 
+// FUNCTION: DECKDLL 0x10025593
 LRESULT CALLBACK
 wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -6255,13 +6406,18 @@ wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ MainClass and dependencies
+// FUNCTION: DECKDLL 0x10025552
 BOOL CALLBACK
 enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 {
   if (is_buttonclass(hwnd))
     global_wndproc_std_ButtonClass = SetWindowLong(hwnd, GWL_WNDPROC, wndproc_ButtonClass);
   return TRUE;
+}
+
+// FUNCTION: DECKDLL 0x10025536
+void change_buttonclass_wndproc(HWND hwnd) {
+  EnumChildWindows(hwnd, enumfunc_change_buttonclass_wndproc, 0);
 }
 
 static void
@@ -6295,6 +6451,7 @@ copy_deck_to_edit(void)
   }
 }
 
+// FUNCTION: DECKDLL 0x1000e770
 static bool
 save_deck(const char *filename)
 {
@@ -6582,6 +6739,7 @@ draw_lines(HDC hdc, RECT *r, HGDIOBJ pen1, HPEN pen2, HPEN pen3)
   LineTo(hdc, r->right, r->bottom - 1);
 }
 
+// FUNCTION: DECKDLL 0x10024ed5
 static void
 draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN pen2, COLORREF col, UINT format)
 {
@@ -6625,9 +6783,23 @@ LRESULT CALLBACK
 wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   int i;
-  static HPEN pen_ltgrey = NULL, pen_medgrey = NULL;
-  static HWND button_deckinfo = NULL, button_exit = NULL, button_deck1 = NULL, button_deck2 = NULL, button_deck3 = NULL;
-  static HWND cardlistfilter_hwnd = NULL, search_hwnd = NULL;
+  static HPEN pen_ltgrey = NULL;
+  static HPEN pen_medgrey = NULL;
+
+  // GLOBAL: DECKDLL 0x101a8c24
+  static HWND button_deckinfo = NULL;
+  // GLOBAL: DECKDLL 0x1019e9d0
+  static HWND button_exit = NULL;
+  // GLOBAL: DECKDLL 0x1014263c
+  static HWND button_deck1 = NULL;
+  // GLOBAL: DECKDLL 0x1014250c
+  static HWND button_deck2 = NULL;
+  // GLOBAL: DECKDLL 0x101423cc
+  static HWND button_deck3 = NULL;
+  // GLOBAL: DECKDLL 0x1012e2d8
+  static HWND cardlistfilter_hwnd = NULL;
+  static HWND search_hwnd = NULL;
+  // GLOBAL: DECKDLL 0x10104b8c
   static HMENU popup = NULL;
 
   HDC hdc;
@@ -6826,7 +6998,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     SetFocus(global_horzlist_hwnd);
     load_text("Menus", "DECKINFO");
     SetWindowText(button_deckinfo, text_lines[0]);
-    EnumChildWindows(hwnd, enumfunc_change_buttonclass_wndproc, 0);
+    change_buttonclass_wndproc(hwnd);
     refresh_numofcards_text();
     if (!(global_db_flags_1 & DBFLAGS_SHANDALAR))
     {
@@ -7378,7 +7550,8 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 //]]]
 
-//[[[ CardListFilterClass, dependencies, and related
+
+// FUNCTION: DECKDLL 0x1001d67f
 static void
 filterbuttons_setcoords(const RECT *r, int button_number, RECT *rval)
 {
@@ -7419,6 +7592,7 @@ point_in_filterbutton(int button_number, RECT *r, POINT p)
   return PtInRect(&r2, p);
 }
 
+// FUNCTION: DECKDLL 0x1001eaa5
 static int
 get_filter_button_state(HWND hwnd, POINT p)
 {
@@ -7461,6 +7635,7 @@ select_filter_menu(HWND hwnd, POINT p)
 #undef CHECK_BUTTON
 }
 
+// FUNCTION: DECKDLL 0x1001d7bc
 static void
 draw_filter_button_3d(HDC hdc, RECT *r2, RECT *r3, bool pushed)
 {
@@ -7492,6 +7667,7 @@ draw_filter_button_3d(HDC hdc, RECT *r2, RECT *r3, bool pushed)
   FillRect(hdc, r3, GetStockObject(LTGRAY_BRUSH));
 }
 
+// FUNCTION: DECKDLL 0x1001da6f
 static void
 draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, int pic_number, bool pushed)
 {
@@ -7517,6 +7693,7 @@ draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, int pic_number
   SelectObject(global_hdc, global_hbmp);
 }
 
+// FUNCTION: DECKDLL 0x1001ddeb
 static void
 draw_filter_buttons(HDC hdc, const RECT *r)
 {
@@ -7536,6 +7713,7 @@ draw_filter_buttons(HDC hdc, const RECT *r)
   draw_filter_button_pic(hdc, r, 15, 22, global_filter_colors & FC_GREEN);
   draw_filter_button_pic(hdc, r, 13, 5, global_filter_colors & FC_BLACK);
   draw_filter_button_pic(hdc, r, 16, 21, global_filter_colors & FC_GOLD);
+
   draw_filter_button_pic(hdc, r, 17, 26, global_filter_cardtypes & FT_LAND);
   draw_filter_button_pic(hdc, r, 18, 3, global_filter_cardtypes & FT_ARTIFACT);
   draw_filter_button_pic(hdc, r, 19, 13, global_filter_cardtypes & FT_CREATURE);
@@ -7633,6 +7811,7 @@ toggle_filterbutton(int n)
   }
 }
 
+// FUNCTION: DECKDLL 0x1001f97e
 static void
 create_filter_menus(void)
 {
@@ -7682,14 +7861,18 @@ create_filter_menus(void)
 
   if (global_filtermenu_rarity_enabled)
     CREATE_FILTER_MENU(global_filtermenu_rarity, "RARITY", RES_FILTERMENU_RARITY_COMMON, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  
+  if (global_filtermenu_artist_enabled)
+    CREATE_FILTER_MENU(global_filtermenu_artist, "ARTIST", RES_FILTERMENU_RARITY_RARE, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
 
-  CREATE_FILTER_MENU(global_filtermenu_newexp, "NEWEXP", RES_FILTERMENU_EXPANSIONLIST, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  //CREATE_FILTER_MENU(global_filtermenu_newexp, "NEWEXP", RES_FILTERMENU_EXPANSIONLIST, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
 
 #undef CREATE_FILTER_MENU
 #undef FILTER_MENU_NO_CONDITION
 #undef FILTER_MENU_NO_CODA
 }
 
+// FUNCTION: DECKDLL 0x10020007
 static void
 destroy_filter_menus(void)
 {
@@ -7905,6 +8088,7 @@ check_toughness(int cp_toughness)
   return (!(global_filter_toughness & FN_ENABLE) || ((global_filter_toughness & FN_GT) && global_filter_toughness_value <= cp_toughness) || ((global_filter_toughness & FN_LT) && global_filter_toughness_value >= cp_toughness) || ((global_filter_toughness & FN_EQ) && global_filter_toughness_value == cp_toughness));
 }
 
+// FUNCTION: DECKDLL 0x1000ffbe
 static bool
 check_rarity(csvid_t csvid, int cp_rarity)
 {
@@ -7919,6 +8103,7 @@ check_rarity(csvid_t csvid, int cp_rarity)
   return (!(global_filter_rarity & FR_ENABLE) || ((global_filter_rarity & FR_COMMON) && cp_rarity <= 1) || ((global_filter_rarity & FR_UNCOMMON) && cp_rarity == 4) || ((global_filter_rarity & FR_RARE) && cp_rarity == 2) || ((global_filter_rarity & FR_RESTRICTED) && check_restricted(csvid)) || ((global_filter_rarity & FR_BANNED) && check_banned(csvid)));
 }
 
+// FUNCTION: DECKDLL 0x10010260
 static bool
 check_abilities(csvid_t csvid, int num_abils, char *abils)
 {
