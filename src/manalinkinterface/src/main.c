@@ -60,32 +60,11 @@ char s_Could_not_lock_down_the_packet_s_100091a4[] = "Could not lock down the pa
 // GLOBAL: MANALINKINTERFACE 0x100091D4
 char s_Wait_is_busy_100091d4[] = "Wait is busy";
 
-// GLOBAL: MANALINKINTERFACE 0x100091F0
-undefined4 DAT_100091f0 = 0x00000000;
-
-// GLOBAL: MANALINKINTERFACE 0x10009200
-undefined4 DAT_10009200 = 0x00000000;
-
-// GLOBAL: MANALINKINTERFACE 0x1000924C
-undefined4 DAT_1000924c = 0x00000000;
-
-// GLOBAL: MANALINKINTERFACE 0x10009250
-undefined4 DAT_10009250 = 0x00000000;
-
 // GLOBAL: MANALINKINTERFACE 0x1000b31c
-HINSTANCE DAT_1000b31c = 0x0;
+HINSTANCE global_hinstance;
 
 // GLOBAL: MANALINKINTERFACE 0x1000B320
-undefined4* g_FamInterfaceGpd_addr = 0x00000000;
-
-// GLOBAL: MANALINKINTERFACE 0x1000C448
-undefined4 DAT_1000c448 = 0x00000000;
-
-// GLOBAL: MANALINKINTERFACE 0x1000C44C
-undefined4 DAT_1000c44c = 0x00000000;
-
-// GLOBAL: MANALINKINTERFACE 0x1000C458
-undefined4 DAT_1000c458 = 0x00000000;
+undefined4* g_FamInterfaceGpd_addr;
 
 enum GpdFlags {
   GPD_FLAGS_ALIVE = 1,
@@ -102,7 +81,7 @@ int WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID reserved)
   switch (nReason) {
     case 1:
       DebugLog(s_DLL_PROCESS_ATTACH_1000903c, 0);
-      DAT_1000b31c = hDllHandle;
+      global_hinstance = hDllHandle;
       DisableThreadLibraryCalls(hDllHandle);
       if (g_fam_InterfaceMutex == (HANDLE)0x0) {
         g_fam_InterfaceMutex = CreateMutexA((LPSECURITY_ATTRIBUTES)0x0,0,s_fam_InterfaceMutex_10009050);

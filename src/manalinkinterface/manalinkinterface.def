@@ -1,4 +1,4 @@
-LIBRARY "manalinkinterface.dll" BASE=0x10800000
+LIBRARY "manalinkinterface.dll" BASE=0x10000000
 
 EXPORTS
 FamInterface_Flush

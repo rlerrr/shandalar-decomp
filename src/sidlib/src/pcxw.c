@@ -15,47 +15,83 @@ typedef unsigned short ushort;
 void FUN_1000c0f0(int ok, const char *file, int line, const char *fmt, ...);
 
 /* Placeholder globals for missing decompiler labels (PCXW-only). */
+// GLOBAL: DRAWCARDLIB 0x10021f18
 char DAT_10021f18[] = "rb";
+// GLOBAL: DRAWCARDLIB 0x10021f60
 char DAT_10021f60[] = "rb";
+// GLOBAL: DRAWCARDLIB 0x10021fd8
 char DAT_10021fd8[] = "w+b";
 
 /* PCXW globals */
+// GLOBAL: DRAWCARDLIB 0x10021ed0
 pointer PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = (pointer)0x10021EDC;
+// GLOBAL: DRAWCARDLIB 0x10021ed4
 undefined4 gPcxBufferWidth = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x10021ed8
 undefined4 gPcxBufferHeight = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x10021edc
 char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
+// GLOBAL: DRAWCARDLIB 0x10021f00
 char s_Error_Opening_File__s_10021f00[] = "Error Opening File %s\r\n";
+// GLOBAL: DRAWCARDLIB 0x10021f1c
 char s__s_Not_a_256_color_palettized_pc_10021f1c[] = "%s Not a 256 color palettized pcx file\r\n";
+// GLOBAL: DRAWCARDLIB 0x10021f48
 char s_Error_Opening_File__s_10021f48[] = "Error Opening File %s\r\n";
+// GLOBAL: DRAWCARDLIB 0x10021f64
 char s__s_Not_a_pcx_file_10021f64[] = "%s Not a pcx file\r\n";
+// GLOBAL: DRAWCARDLIB 0x10021f78
 char s__s_Not_a_version_5_pcx_file_10021f78[] = "%s Not a version 5 pcx file\r\n";
+// GLOBAL: DRAWCARDLIB 0x10021f98
 char s__s_is_not_in_a_recognizable_form_10021f98[] = "%s is not in a recognizable format\r\n";
+// GLOBAL: DRAWCARDLIB 0x10021fc0
 char s_Error_Opening_File__s_10021fc0[] = "Error Opening File %s\r\n";
 
+// GLOBAL: DRAWCARDLIB 0x10026548
 undefined4 gImageWidth = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x1002654c
 undefined4 gImageHeight = 0x00000000;
 
+// GLOBAL: DRAWCARDLIB 0x10127d30
 FILE *gPcxInFile = (FILE *)0x0;
+// GLOBAL: DRAWCARDLIB 0x10127d34
 FILE *gPcxOutFile = (FILE *)0x0;
+// GLOBAL: DRAWCARDLIB 0x10127d38
 char *gPcxPath = (char *)0x0;
+// GLOBAL: DRAWCARDLIB 0x10127d82
 undefined2 gPcxBytesPerLine = 0x0000;
 
+// GLOBAL: DRAWCARDLIB 0x10126d30
 undefined4 DAT_10126d30 = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d42
 undefined4 DAT_10127d42 = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d80
 undefined4 DAT_10127d80 = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d4c
 undefined4 _DAT_10127d4c = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d4e
 undefined4 _DAT_10127d4e = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d84
 undefined4 _DAT_10127d84 = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d86
 undefined4 _DAT_10127d86 = 0;
+// GLOBAL: DRAWCARDLIB 0x10127d88
 undefined4 _DAT_10127d88 = 0;
 
+// GLOBAL: DRAWCARDLIB 0x10127d40
 undefined1 DAT_10127d40 = 0x00;
+// GLOBAL: DRAWCARDLIB 0x10127d41
 undefined1 DAT_10127d41 = 0x00;
+// GLOBAL: DRAWCARDLIB 0x10127d43
 undefined1 DAT_10127d43 = 0x00;
+// GLOBAL: DRAWCARDLIB 0x10127d44
 undefined2 DAT_10127d44 = 0x0000;
+// GLOBAL: DRAWCARDLIB 0x10127d46
 undefined2 DAT_10127d46 = 0x0000;
+// GLOBAL: DRAWCARDLIB 0x10127d48
 undefined2 DAT_10127d48 = 0x0000;
+// GLOBAL: DRAWCARDLIB 0x10127d4a
 undefined2 DAT_10127d4a = 0x0000;
+// GLOBAL: DRAWCARDLIB 0x10127d81
 undefined1 DAT_10127d81 = 0x00;
 
 // FUNCTION: DRAWCARDLIB 0x1000b80f

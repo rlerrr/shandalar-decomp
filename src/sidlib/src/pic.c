@@ -82,18 +82,36 @@ undefined4 DAT_100f23b0 = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10022528
 // GLOBAL: DECKDLL 0x1003a840
 undefined1 *PTR_DAT_10022528 = &DAT_100f23b0;
+
+// GLOBAL: DRAWCARDLIB 0x1002252c
 ushort *PTR_DAT_1002252c = (ushort *)0x100F35A0;
+
+// GLOBAL: DRAWCARDLIB 0x10022530
 undefined4 DAT_10022530 = 0xFFFFFFFF;
+
+// GLOBAL: DRAWCARDLIB 0x1002253c
 char DAT_1002253c[] = ".pcx";
+
+// GLOBAL: DRAWCARDLIB 0x10022544
 char DAT_10022544[] = "rb";
 
+// GLOBAL: DRAWCARDLIB 0x100f2394
 undefined4 DAT_100f2394 = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x100f239c
 undefined4 DAT_100f239c = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x100f23a0
 undefined4 DAT_100f23a0 = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x100f23a4
 undefined4 DAT_100f23a4 = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x100f23a8
 undefined4 _DAT_100f23a8 = 0x00000000;
+
+// GLOBAL: DRAWCARDLIB 0x100f33a0
 undefined1 DAT_100f33a0[0x200];
+
+// GLOBAL: DRAWCARDLIB 0x100f3394
 ushort *DAT_100f3394 = (ushort *)0x0;
+// GLOBAL: DRAWCARDLIB 0x100f35a0
 void (__cdecl *DAT_100f35a0)() = (void (__cdecl *)())0x0;
 
 // FUNCTION: DRAWCARDLIB 0x10155000
@@ -101,12 +119,14 @@ void __fastcall FUN_10155000(undefined4 param_1,undefined4 param_2,ushort *param
   param_1 = param_1;
   param_2 = param_2;
   param_3 = param_3;
-  //TODO: this needs to be decompiled into a separate static library
+  //TODO: this needs to be decompiled into a separate static library.
+  //Address space layout indicates that's how it was done at Microprose at least
 }
 
 // FUNCTION: DRAWCARDLIB 0x10155484
 void FUN_10155484() {
   //TODO: this needs to be decompiled into a separate static library
+  //Address space layout indicates that's how it was done at Microprose at least
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b1e0
