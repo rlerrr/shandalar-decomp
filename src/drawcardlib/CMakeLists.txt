@@ -11,6 +11,10 @@ target_include_directories(drawcardlib PRIVATE
 
 target_link_libraries(drawcardlib PRIVATE gdi32)
 
+if (TARGET sidlib)
+  target_link_libraries(drawcardlib PRIVATE sidlib)
+endif()
+
 if (TARGET cardartlib)
   target_link_libraries(drawcardlib PRIVATE cardartlib)
 endif()
