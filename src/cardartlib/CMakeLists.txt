@@ -1,8 +1,6 @@
-set(cardartlib_sources
-  src/main.c
-)
+file(GLOB cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 
-add_library(cardartlib SHARED ${cardartlib_sources})
+add_library(cardartlib SHARED ${cardartlib_c_sources})
 
 target_include_directories(cardartlib PRIVATE
   "${PROJECT_SOURCE_DIR}/src"

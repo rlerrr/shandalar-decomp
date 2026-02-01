@@ -7,24 +7,8 @@
 #include "inttypes.h"
 #include "mystdbool.h"
 #include "defs.h"
-
-// SIZE 0xc
-typedef struct CatalogEntry {
-  int key;
-  uint offset;
-  uint size;
-} CatalogEntry;
-STATIC_ASSERT(sizeof(CatalogEntry) == 0xc, CatalogEntry_wrong_size);
-
-// SIZE 0x114
-typedef struct Catalog {
-  FILE *file;
-  int entry_count;
-  CatalogEntry *entries;
-  CatalogEntry *cached_entry;
-  char path[0x104];
-} Catalog;
-STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
+#include "catalog.h"
+#include "assert.h"
 
 typedef BOOL (WINAPI code)(HINSTANCE, DWORD, LPVOID);
 
@@ -38,36 +22,6 @@ extern undefined1 DAT_100ecb10[0x800];
 extern undefined1 DAT_10115cf0[0x800];
 extern undefined1 DAT_101164f0[0x800];
 
-// GLOBAL: CARDARTLIB 0x1001d05c
-char s__assertFile_txt_1001d05c[] = "\\assertFile.txt";
-
-// GLOBAL: CARDARTLIB 0x1001d06c
-char DAT_1001d06c[] = "at";
-
-// GLOBAL: CARDARTLIB 0x1001d070
-char s_File__s__Line__d_1001d070[] = "File-> %s, Line-> %d\n";
-
-// GLOBAL: CARDARTLIB 0x1001d088
-char s__s_s_1001d088[] = "%s%s\n";
-
-// GLOBAL: CARDARTLIB 0x1001d090
-char s_Assertion_Error_1001d090[] = "Assertion Error";
-
-// GLOBAL: CARDARTLIB 0x1001d0a0
-char s__assertFile_txt_1001d0a0[] = "\\assertFile.txt";
-
-// GLOBAL: CARDARTLIB 0x1001d0b0
-char DAT_1001d0b0[] = "at";
-
-// GLOBAL: CARDARTLIB 0x1001d0b4
-char s_File__s__Line__d_1001d0b4[] = "File-> %s, Line-> %d\n";
-
-// GLOBAL: CARDARTLIB 0x1001d0cc
-char s__s_s_1001d0cc[] = "%s%s\n";
-
-// GLOBAL: CARDARTLIB 0x1001d0d4
-char s_Assertion_Error_1001d0d4[] = "Assertion Error";
-
 // GLOBAL: CARDARTLIB 0x1001d0e4
 undefined4 DAT_1001d0e4 = 0x00000000;
 
@@ -76,24 +30,6 @@ char s__DUELPALall_TR_1001d0e8[] = "\\DUELPALall.TR";
 
 // GLOBAL: CARDARTLIB 0x1001d0f8
 char s__DUEL_plogpal_1001d0f8[] = "\\DUEL.plogpal";
-
-// GLOBAL: CARDARTLIB 0x1001d108
-undefined4 DAT_1001d108 = 0x00000000;
-
-// GLOBAL: CARDARTLIB 0x1001d10c
-char s_Too_many_open_Catalogs__Max__d_1001d10c[] = "Too many open Catalogs: Max %d\n";
-
-// GLOBAL: CARDARTLIB 0x1001d12c
-char s_D__Newmagic_sources_NedCard_Cata_1001d12c[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
-
-// GLOBAL: CARDARTLIB 0x1001d154
-char DAT_1001d154[] = "rb";
-
-// GLOBAL: CARDARTLIB 0x1001d158
-char s_Duplicate_short_name_found_in_ca_1001d158[] = "Duplicate short name found in catalogs\n%s entry %d and\n%s entry %d\nShortName value 0x%08lx";
-
-// GLOBAL: CARDARTLIB 0x1001d1b4
-char s_D__Newmagic_sources_NedCard_Cata_1001d1b4[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
 
 // GLOBAL: CARDARTLIB 0x1001d1dc
 undefined4 DAT_1001d1dc = 0x00000000;
@@ -212,26 +148,11 @@ int DAT_1001e0e0 = 0x00000004;
 // GLOBAL: CARDARTLIB 0x1001e118
 unsigned char * g_waveletScaleToByteTable = DAT_100326d8 + 0x400;
 
-// GLOBAL: CARDARTLIB 0x1001e11c
-undefined4 DAT_1001e11c = 0x00000001;
-
-// GLOBAL: CARDARTLIB 0x1001e120
-undefined4 DAT_1001e120 = 0x00000002;
-
 // GLOBAL: CARDARTLIB 0x1001e124
 undefined4 g_haarScratchInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001e128
 undefined1 * g_yuvClampTable = DAT_100eaf00 + 0x400;
-
-// GLOBAL: CARDARTLIB 0x1001e12c
-char s_SmallArt_cat_1001e12c[] = "SmallArt.cat";
-
-// GLOBAL: CARDARTLIB 0x1001e13c
-char s_MedArt_cat_1001e13c[] = "MedArt.cat";
-
-// GLOBAL: CARDARTLIB 0x1001e148
-char s__lf_1001e148[] = "\n";
 
 // GLOBAL: CARDARTLIB 0x1001e14c
 char s_wavelet_pieces_has_illegal_value_1001e14c[] = "wavelet pieces has illegal value: %d";
@@ -253,9 +174,6 @@ char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\Ned
 
 // GLOBAL: CARDARTLIB 0x1001e2a0
 int __proc_attached = 0;
-
-// GLOBAL: CARDARTLIB 0x10020210
-char g_assertMessageBuffer[2000];
 
 // GLOBAL: CARDARTLIB 0x100209e0
 undefined4 DAT_100209e0 = 0x00000000;
@@ -359,14 +277,8 @@ undefined1 DAT_100322d8 = 0x00;
 // GLOBAL: CARDARTLIB 0x100322d9
 undefined1 DAT_100322d9 = 0x00;
 
-// GLOBAL: CARDARTLIB 0x10032adc
-undefined4 DAT_10032adc = 0x00000000;
-
 // GLOBAL: CARDARTLIB 0x10032ae0
 undefined4 g_waveletScaleToByteTableInit = 0x00000000;
-
-// GLOBAL: CARDARTLIB 0x10032ae8
-int DAT_10032ae8[0x80];
 
 // GLOBAL: CARDARTLIB 0x10032b04
 undefined4 DAT_10032b04 = 0x00000000;
@@ -397,9 +309,6 @@ unsigned char DAT_100326d8[0x1000];
 
 // GLOBAL: CARDARTLIB 0x100ad498
 unsigned char DAT_100ad498[0x200];
-
-// GLOBAL: CARDARTLIB 0x100ea098
-undefined4 DAT_100ea098 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100ea09c
 undefined4 g_yuvClampTableInit = 0x00000000;
@@ -455,17 +364,11 @@ undefined1 DAT_101170f3 = 0x00;
 // GLOBAL: CARDARTLIB 0x10117210
 unsigned char DAT_10117210[0x80];
 
-// GLOBAL: CARDARTLIB 0x10117290
-Catalog DAT_10117290[5];
-
 // GLOBAL: CARDARTLIB 0x10117100
 void *DAT_10117100[0x41];
 
 // GLOBAL: CARDARTLIB 0x101177f4
 int g_versionedBigArtCount = 0x00000000;
-
-// GLOBAL: CARDARTLIB 0x10117800
-char DAT_10117800[0x105];
 
 // GLOBAL: CARDARTLIB 0x10117910
 char DAT_10117910[0x105];
@@ -484,9 +387,6 @@ CRITICAL_SECTION DAT_10117a20;
 
 // GLOBAL: CARDARTLIB 0x101221f0
 CRITICAL_SECTION DAT_101221f0;
-
-// GLOBAL: CARDARTLIB 0x101221d0
-CRITICAL_SECTION DAT_101221d0;
 
 // GLOBAL: CARDARTLIB 0x101200a0
 int g_cardPicCounts[2000];
@@ -522,7 +422,6 @@ VersionedArtCacheEntry g_versionedBigArtCache[0x14];
 
 void RotateDwordsLeft1(undefined4 *param_1,int param_2);
 uint * Wvl_DecodeToBgr24(uint *param_1,int *param_2,int param_3,int param_4);
-int * Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3);
 undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2);
 void DestroyPaletteOctree(void);
 int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,undefined4 bitstream_end);
@@ -553,68 +452,8 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
 
 
 // MATCHING
-// FUNCTION: CARDARTLIB 0x10001000
-void assert(int condition,char *file,int line,char *fmt,...)
-{
-  char local_114 [260];
-  time_t now;
-  FILE *logFile;
-  va_list args;
-
-  if (condition == 0) {
-    strcpy(local_114,DAT_10117800);
-    strcat(local_114,s__assertFile_txt_1001d05c);
-    logFile = fopen(local_114,DAT_1001d06c);
-
-    va_start(args,fmt);
-    if ((file != (char *)0x0) && (line != 0)) {
-      sprintf(g_assertMessageBuffer,s_File__s__Line__d_1001d070,file,line);
-    }
-
-    _vsnprintf(g_assertMessageBuffer + strlen(g_assertMessageBuffer),2000,fmt,args);
-    
-    time(&now);
-
-    fprintf(logFile,s__s_s_1001d088,ctime(&now),g_assertMessageBuffer);
-    fclose(logFile);
-
-    MessageBoxA((HWND)0x0,g_assertMessageBuffer,s_Assertion_Error_1001d090,0x1000);
-    exit(0xff);  
-  }
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10001116
-void assert_noabort(int condition,char *file,int line,char *fmt,...)
-{
-  char local_114 [260];
-  time_t now;
-  FILE *logFile;
-  va_list args;
-
-  if (condition == 0) {
-    strcpy(local_114,DAT_10117800);
-    strcat(local_114,s__assertFile_txt_1001d0a0);
-    logFile = fopen(local_114,DAT_1001d0b0);
-
-    va_start(args,fmt);
-    if ((file != (char *)0x0) && (line != 0)) {
-      sprintf(g_assertMessageBuffer,s_File__s__Line__d_1001d0b4,file,line);
-    }
-
-    _vsnprintf(g_assertMessageBuffer + strlen(g_assertMessageBuffer),2000,fmt,args);
-    
-    time(&now);
-
-    fprintf(logFile,s__s_s_1001d0cc,ctime(&now),g_assertMessageBuffer);
-    fclose(logFile);
-
-    MessageBoxA((HWND)0x0,g_assertMessageBuffer,s_Assertion_Error_1001d0d4,0x1000);
-  }
-}
-
-// MATCHING
 // FUNCTION: CARDARTLIB 0x10001220
+// FUNCTION: DRAWCARDLIB 0x1000a5a0
 static BOOL InitCardArtGdiResources(void)
 {
   BOOL iVar1 = 1;
@@ -639,6 +478,7 @@ static BOOL InitCardArtGdiResources(void)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100012a8
+// FUNCTION: DRAWCARDLIB 0x1000a628
 void ShutdownCardArtGdiResources(void)
 {
   if (DAT_1001d0e4 != (HDC)0x0) {
@@ -653,6 +493,7 @@ void ShutdownCardArtGdiResources(void)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100012fb
+// FUNCTION: DRAWCARDLIB 0x1000a67b
 static void ApplyCardArtPaletteToDc(HDC hdc)
 {
   SelectPalette(hdc,DAT_100209e0,0);
@@ -664,6 +505,7 @@ static void ApplyCardArtPaletteToDc(HDC hdc)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000134a
+// FUNCTION: DRAWCARDLIB 0x1000a6ca
 static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
                                           HBITMAP *out_bitmap,HGDIOBJ *out_prev_object,void **out_bits)
 {
@@ -727,6 +569,7 @@ static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITM
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100014d2
+// FUNCTION: DRAWCARDLIB 0x1000a852
 void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2)
 {
   if (param_1 != (HDC)0x0) {
@@ -739,6 +582,7 @@ void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001505
+// FUNCTION: DRAWCARDLIB 0x1000a885
 static BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 {
   BITMAP bm;
@@ -752,6 +596,7 @@ static BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000156d
+// FUNCTION: DRAWCARDLIB 0x1000a8ed
 static BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int src_x,int src_y,
                                    int src_width,int src_height)
 {
@@ -791,6 +636,7 @@ static BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitm
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100016b7
+// FUNCTION: DRAWCARDLIB 0x1000acf5
 static BOOL SetupDuelPalette(void)
 {
   //Stack layout won't behave
@@ -806,9 +652,9 @@ static BOOL SetupDuelPalette(void)
   } s;
   
   s.local_51c = 1;
-  strcpy((char *)s.local_624,DAT_10117800);
+  strcpy((char *)s.local_624,global_base_directory);
   strcat((char *)s.local_624,s__DUELPALall_TR_1001d0e8);
-  strcpy((char *)s.local_510,DAT_10117800);
+  strcpy((char *)s.local_510,global_base_directory);
   strcat((char *)s.local_510,s__DUEL_plogpal_1001d0f8);
   s.local_408 = (LOGPALETTE *)ReadPalette((char *)s.local_624,(char *)s.local_510);
   if (s.local_408 != (LOGPALETTE *)0x0) {
@@ -861,6 +707,7 @@ static BOOL SetupDuelPalette(void)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100019a8
+// FUNCTION: DRAWCARDLIB 0x1000afe6
 void DestroyCardArtPalette(void)
 {
   DeleteObject(DAT_100209e0);
@@ -868,180 +715,8 @@ void DestroyCardArtPalette(void)
   DestroyPaletteOctree();
 }
 
-// MATCHING
-// FUNCTION: CARDARTLIB 0x100019d0
-static int Catalog_Open(const char *catalog_path)
-{
-  //Stack layout won't behave
-  struct {
-    int iVar1; //ebp - 0x1c
-    int entry_index; //ebp - 0x18
-    Catalog *other_catalog; //ebp - 0x14
-    Catalog *catalog; //ebp - 0x10
-    
-    int other_slot; //ebp - 0xc
-    int slot_index; //ebp - 8
-    FILE *catalog_file; //ebp - 4
-  } s;
-
-  s.slot_index = -1;
-
-  for (s.other_slot = 0; s.other_slot < 5; s.other_slot++) {
-    if (DAT_10117290[s.other_slot].file == 0) {
-      s.slot_index = s.other_slot;
-      break;
-    }    
-  }
-  
-  assert((uint)(s.slot_index != -1),s_D__Newmagic_sources_NedCard_Cata_1001d12c,0x43,
-            s_Too_many_open_Catalogs__Max__d_1001d10c,5);
-            
-  s.catalog = &DAT_10117290[s.slot_index];
-  s.catalog->cached_entry = (CatalogEntry *)0x0;
-  strcpy(s.catalog->path,catalog_path);
-  s.catalog->file = fopen(catalog_path,&DAT_1001d154);
-  s.catalog_file = s.catalog->file;
-  if (s.catalog_file == (FILE *)0x0)
-    return 0;
-  
-  fread(&s.catalog->entry_count,4,1,s.catalog_file);
-  s.catalog->entries = (CatalogEntry *)malloc(s.catalog->entry_count * sizeof(CatalogEntry));
-  fread(s.catalog->entries,sizeof(CatalogEntry),(size_t)s.catalog->entry_count,s.catalog_file);
-  if (DAT_1001d108 != 0) {
-    for (s.other_slot = 0; s.other_slot < 5; s.other_slot = s.other_slot + 1) {
-      if (s.slot_index == s.other_slot) 
-        continue;
-        
-      if (DAT_10117290[s.other_slot].file == 0)
-        continue;
-
-      s.other_catalog = (Catalog *)((char *)&DAT_10117290 + s.other_slot * sizeof(Catalog));
-
-      for (s.entry_index = 0; 0 != s.catalog->entry_count; s.entry_index++) {
-        for (s.iVar1 = 0; s.iVar1 < s.other_catalog->entry_count; s.iVar1 = s.iVar1 + 1) {
-          assert(s.catalog->entries[s.entry_index].key - s.other_catalog->entries[s.entry_index].key != 0,
-                  s_D__Newmagic_sources_NedCard_Cata_1001d1b4,0x69,
-                  s_Duplicate_short_name_found_in_ca_1001d158,s.catalog->path,s.entry_index,
-                  s.other_catalog->path,s.iVar1,s.catalog->entries[s.entry_index].key);
-        }
-      }
-    }
-  }
-    
-  return s.slot_index + 1;
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10001c1a
-bool Catalog_Close(int handle)
-{
-  if (DAT_10117290[--handle].file == 0) 
-    return 0;
-  FreeIfNotNull(DAT_10117290[handle].entries);
-  fclose(DAT_10117290[handle].file);
-  DAT_10117290[handle].entries = (CatalogEntry *)0x0;
-  DAT_10117290[handle].file = (FILE *)0x0;
-  DAT_10117290[handle].entry_count = 0;
-  return 1;
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10001cd6
-static int CatalogEntry_CompareKey(const int *key, const CatalogEntry *entry)
-{
-  if (entry->key < *key) {
-    return 1;
-  }
-  else if (*key < entry->key) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10001d26
-CatalogEntry *Catalog_FindEntryCached(Catalog *catalog,const char *name)
-{
-  CatalogEntry *entry;
-  uint key;
-  
-  key = Catalog_MakeKeyFromPath(name);
-  if ((catalog->cached_entry != (CatalogEntry *)0x0) && (catalog->cached_entry->key == key)) {
-    return catalog->cached_entry;
-  }
-
-  entry = (CatalogEntry *)bsearch(&key,catalog->entries,(size_t)catalog->entry_count,sizeof(CatalogEntry),
-                                  CatalogEntry_CompareKey);
-  catalog->cached_entry = entry;    
-  return entry;
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10001da1
-size_t Catalog_ReadEntry(int catalog_handle,const char *name,void **buffer)
-
-{
-  Catalog *catalog;
-  CatalogEntry *entry;
-
-  catalog = (Catalog *)((char *)&DAT_10117290 + (catalog_handle + -1) * sizeof(Catalog));
-  entry = Catalog_FindEntryCached(catalog,name);
-  if (entry == (CatalogEntry *)0x0) {
-    return 0xffffffff;
-  }
-
-  if (*buffer == (void *)0x0) {
-    *buffer = malloc(entry->size + 0x10);
-  }
-  fseek(catalog->file,(long)entry->offset,0);
-  return fread(*buffer,1,entry->size,catalog->file);  
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10001e4a
-uint Catalog_MakeKeyFromPath(const char *path)
-{
-  //Stack layout is a disaster with weird padding
-  struct {
-    int acc_odd;
-    uint ext_buf[4];
-    char dir_buf[256];
-    
-    undefined4 key;
-    int pad0;
-    undefined4 filename_buf;
-    int pad1;
-    int pad2;
-    uint multiplier;
-    int ch;
-    int acc_even;
-  } s;
-
-  s.multiplier = 3;
-  s.pad0 = 0;
-  s.acc_odd = 0;
-  s.acc_even = 0;
-  _splitpath(path,(char *)s.ext_buf,s.dir_buf,(char *)&s.filename_buf,(char *)s.ext_buf);
-  path = (char *)&s.filename_buf;
-  strcat((char *)&s.filename_buf,(char *)s.ext_buf);
-  s.key = (undefined4)(((int)(signed char)path[1] ^ (int)(signed char)path[0]) << 0x18);
-
-  while ((s.ch = (int)(signed char)*(path++)) != 0) {
-    if ((s.multiplier & 1) != 0) {
-      s.acc_odd = s.multiplier * s.ch + s.acc_odd;
-    }
-    else {
-      s.acc_even = s.multiplier * s.ch + s.acc_even;
-    }
-    s.multiplier = s.multiplier + 1;
-  }
-
-  s.key = (undefined4)((uint)s.key | (s.acc_even * s.acc_odd & 0xffffffU));
-  return (uint)s.key;
-}
-
 // FUNCTION: CARDARTLIB 0x10001f40
+// FUNCTION: DRAWCARDLIB 0x10002ea0
 void MemZeroDwords(undefined8 *param_1,uint param_2)
 {
   //TODO: I don't think MSVC can generate this??  This gotta be inline asm
@@ -1074,6 +749,7 @@ void MemZeroDwords(undefined8 *param_1,uint param_2)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10002457
+// FUNCTION: DRAWCARDLIB 0x100033b7
 int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,undefined4 bitstream_end)
 {
   struct {
@@ -1131,6 +807,7 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
 }
 
 // FUNCTION: CARDARTLIB 0x100025cb
+// FUNCTION: DRAWCARDLIB 0x1000352b
 int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4 node_index_base)
 {
   struct {
@@ -1166,6 +843,7 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100026e3
+// FUNCTION: DRAWCARDLIB 0x10003643
 int Huffman13_BuildDecodeTable(int node_count)
 {
   struct {
@@ -1268,6 +946,7 @@ int Huffman13_BuildDecodeTable(int node_count)
 }
 
 // FUNCTION: CARDARTLIB 0x10002cde
+// FUNCTION: DRAWCARDLIB 0x10003c3e
 int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,undefined4 bitstream_end)
 {
   struct {
@@ -1371,6 +1050,7 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
 }
 
 // FUNCTION: CARDARTLIB 0x10002f70
+// FUNCTION: DRAWCARDLIB 0x10003ed0
 uint BitStream_ReadBits(uint bit_count)
 {
   uint bits_in_buf;
@@ -1401,6 +1081,7 @@ uint BitStream_ReadBits(uint bit_count)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10003060
+// FUNCTION: DRAWCARDLIB 0x10003fc0
 static uint BitStream_ReadBit(void)
 {
   uint result = 0;
@@ -1463,14 +1144,14 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   _DAT_10121fe4 = (undefined4)instance;
   InitializeCriticalSection(&DAT_10117a20);
   InitializeCriticalSection(&DAT_101221f0);
-  InitializeCriticalSection(&DAT_101221d0);
-  GetModuleFileNameA((HMODULE)0x0,&DAT_10117800,0x105);
-  s.last_slash = strrchr(&DAT_10117800,0x5c);
+  InitializeCriticalSection(&global_critical_section_for_catalog);
+  GetModuleFileNameA((HMODULE)0x0,&global_base_directory,0x105);
+  s.last_slash = strrchr(&global_base_directory,0x5c);
   *s.last_slash = '\0';
-  strcpy(DAT_10117910,DAT_10117800);
+  strcpy(DAT_10117910,global_base_directory);
   strcat(DAT_10117910,s__CARDART_1001d1e0);
   InitCardArtGdiResources();
-  strcpy(s.cards_dat_path,DAT_10117800);
+  strcpy(s.cards_dat_path,global_base_directory);
   strcat(s.cards_dat_path,s__CARDS_DAT_1001d1ec);
   s.cards_file = fopen(s.cards_dat_path,&s__rb_1001d1f8);
 
@@ -1521,7 +1202,7 @@ void CardArtLib_Shutdown(void)
   ShutdownCardArtGdiResources();
   DeleteCriticalSection(&DAT_10117a20);
   DeleteCriticalSection(&DAT_101221f0);
-  DeleteCriticalSection(&DAT_101221d0);
+  DeleteCriticalSection(&global_critical_section_for_catalog);
 }
 
 // FUNCTION: CARDARTLIB 0x10003480
@@ -1776,6 +1457,7 @@ void DestroyAllBigArts(void)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10003c70
+// FUNCTION: DRAWCARDLIB 0x1000a520
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
 {
   bmi->bmiHeader.biSize = sizeof(bmi->bmiHeader);
@@ -2231,6 +1913,7 @@ void DestroyAllVersionedSmallArts(void)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004a50
+// FUNCTION: DRAWCARDLIB 0x1000a520
 void * OctreeNode_Create(void)
 {
   void *_Dst;
@@ -2241,6 +1924,7 @@ void * OctreeNode_Create(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10004a83
+// FUNCTION: DRAWCARDLIB 0x10001033
 undefined2 * ReadPalette(char *param_1,char *param_2)
 {
   struct {
@@ -2310,6 +1994,7 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x10004cd7
+// FUNCTION: DRAWCARDLIB 0x10001287
 bool InitDiffSquaredLookupTable(void)
 {
   int local_c;
@@ -2327,6 +2012,7 @@ bool InitDiffSquaredLookupTable(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10004d49
+// FUNCTION: DRAWCARDLIB 0x100012f9
 void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 {
   int i;
@@ -2345,6 +2031,7 @@ void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 }
 
 // FUNCTION: CARDARTLIB 0x10004dc8
+// FUNCTION: DRAWCARDLIB 0x10001378
 int OctreeNode_FinalizeSubtree(OctNode *param_1)
 {
   struct {
@@ -2384,6 +2071,7 @@ int OctreeNode_FinalizeSubtree(OctNode *param_1)
 }
 
 // FUNCTION: CARDARTLIB 0x10004f07
+// FUNCTION: DRAWCARDLIB 0x100014b7
 undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int param_3)
 {
   int iVar2;
@@ -2408,6 +2096,7 @@ undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int p
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004fe1
+// FUNCTION: DRAWCARDLIB 0x10001591
 int Octree_Destroy(OctNode *rootPtr)
 {
   int i;
@@ -2433,6 +2122,7 @@ int Octree_Destroy(OctNode *rootPtr)
 }
 
 // FUNCTION: CARDARTLIB 0x1000508d
+// FUNCTION: DRAWCARDLIB 0x1000163d
 void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 {
   struct {
@@ -2451,6 +2141,7 @@ void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 }
 
 // FUNCTION: CARDARTLIB 0x100050f1
+// FUNCTION: DRAWCARDLIB 0x100016a1
 undefined4 InitOctreeBitTables(void)
 {
   struct {
@@ -2472,6 +2163,7 @@ undefined4 InitOctreeBitTables(void)
 }
 
 // FUNCTION: CARDARTLIB 0x100051f5
+// FUNCTION: DRAWCARDLIB 0x100017a5
 undefined4 Octree_FindNearestColor(uint param_1)
 {
   struct {
@@ -2550,6 +2242,7 @@ end:  ;
 }
 
 // FUNCTION: CARDARTLIB 0x10005383
+// FUNCTION: DRAWCARDLIB 0x10001933
 uint Octree_FindNearestPaletteIndex(uint param_1)
 {
   struct {
@@ -2622,6 +2315,7 @@ uint Octree_FindNearestPaletteIndex(uint param_1)
 }
 
 // FUNCTION: CARDARTLIB 0x100054fb
+// FUNCTION: DRAWCARDLIB 0x10001aab
 int Octree_FlattenLeafValues(int *param_1,int *param_2)
 {
   int i;
@@ -2642,6 +2336,7 @@ int Octree_FlattenLeafValues(int *param_1,int *param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x10005591
+// FUNCTION: DRAWCARDLIB 0x10001b41
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -2666,6 +2361,7 @@ undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int 
 }
 
 // FUNCTION: CARDARTLIB 0x10005629
+// FUNCTION: DRAWCARDLIB 0x10001bd9
 undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -2702,6 +2398,7 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 }
 
 // FUNCTION: CARDARTLIB 0x1000570f
+// FUNCTION: DRAWCARDLIB 0x10001cbf
 int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -2884,6 +2581,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
 }
 
 // FUNCTION: CARDARTLIB 0x10005cb4
+// FUNCTION: DRAWCARDLIB 0x10002264
 void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 {
   undefined4 uVar1;  
@@ -2894,6 +2592,7 @@ void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x10005cf5
+// FUNCTION: DRAWCARDLIB 0x100022a5
 undefined4 InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_base)
 {
   struct {
@@ -2931,6 +2630,7 @@ undefined4 InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_p
 }
 
 // FUNCTION: CARDARTLIB 0x100062c7
+// FUNCTION: DRAWCARDLIB 0x10002877
 undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -3099,6 +2799,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10006809
+// FUNCTION: DRAWCARDLIB 0x10002db9
 void DestroyPaletteOctree(void)
 {
   Octree_Destroy(g_paletteOctreeRoot);
@@ -3107,6 +2808,7 @@ void DestroyPaletteOctree(void)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000682c
+// FUNCTION: DRAWCARDLIB 0x10002ddc
 int Palette_FindNearestEntryIndex(int param_1,int param_2,int param_3,byte *param_4)
 {
   struct {
@@ -3133,100 +2835,14 @@ int Palette_FindNearestEntryIndex(int param_1,int param_2,int param_3,byte *para
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100068d0
+// FUNCTION: DRAWCARDLIB 0x10002e80
 uint Rgb888_QuantizeToF8(uint param_1)
 {
   return param_1 & 0xf8f8f8;
 }
 
-// FUNCTION: CARDARTLIB 0x100068f0
-int * Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3)
-{
-  size_t sVar1;
-  undefined8 *puVar2;
-  uint local_41c [66];
-  uint local_314 [65];
-  uint local_210 [64];
-  uint local_110 [64];
-  size_t local_10;
-  int *local_c;
-  int local_8;
-  
-  local_c = (int *)&DAT_10032ae8;
-  EnterCriticalSection(&DAT_101221d0);
-  _splitpath((char *)param_2,(char *)0x0,(char *)local_314,(char *)local_210,(char *)local_110);
-  if (DAT_10032adc == 0) {
-    strcpy((char *)local_41c,(char *)local_314);
-    strcat((char *)local_41c,s_SmallArt_cat_1001e12c);
-    DAT_1001e11c = Catalog_Open((char *)local_41c);
-    strcpy((char *)local_41c,(char *)local_314);
-    strcat((char *)local_41c,s_MedArt_cat_1001e13c);
-    DAT_1001e120 = Catalog_Open((char *)local_41c);
-    DAT_10032adc = 1;
-  }
-  sVar1 = strlen((char *)local_314);
-  local_8 = (int)local_314 + sVar1;
-  if (param_1 == 0) {
-    DAT_100ea098 = DAT_1001e11c;
-  }
-  else {
-    if (param_1 != 1) {
-      return (int *)0x0;
-    }
-    DAT_100ea098 = DAT_1001e120;
-  }
-  strcpy((char *)local_314,(char *)local_210);
-  strcat((char *)local_314,(char *)local_110);
-  _strlwr((char *)local_314);
-  if (local_c != (int *)0x0) {
-    memset(local_c,0,0x1b0);
-    strcpy((char *)(local_c + 0x27),(const char *)param_2);
-    local_c[0x68] = (int)&DAT_100ad498;
-    local_10 = Catalog_ReadEntry(DAT_100ea098,(char *)local_314,(void **)(local_c + 0x68));
-    if (local_10 == 0xffffffff) {
-      strcat((char *)param_2,s__lf_1001e148);
-      OutputDebugStringA((LPCSTR)param_2);
-      LeaveCriticalSection(&DAT_101221d0);
-      local_c = (int *)0x0;
-    }
-    else {
-      local_c[0x69] = local_10 - 0x9c;
-      memcpy(local_c,(void *)local_c[0x68],0x9c);
-      local_c[0x68] = local_c[0x68] + 0x9c;
-      if (local_c[10] == 4) {
-        local_c[7] = local_c[7] << 1;
-        local_c[8] = local_c[8] << 1;
-      }
-      if (param_3 != 0) {
-        puVar2 = Wvl_DecodeHaar(local_c,(undefined8 *)0x0);
-        local_c[0x6b] = (int)puVar2;
-        if (local_c[0x6b] == 0) {
-          Catalog_Unlock(local_c);
-          LeaveCriticalSection(&DAT_101221d0);
-          local_c = (int *)0x0;
-        }
-        else {
-          local_c[0x6a] = 1;
-          LeaveCriticalSection(&DAT_101221d0);
-        }
-      }
-    }
-  }
-  return local_c;
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10006bb5
-BOOL Catalog_Unlock(int unused)
-{
-  LeaveCriticalSection(&DAT_101221d0);
-
-  //Wonder what this did originally
-  if (unused == 0)
-    return 0;  
-  return 0;
-}
-
 // FUNCTION: CARDARTLIB 0x10006be3
+// FUNCTION: DRAWCARDLIB 0x10008663
 undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
 {
   struct {
@@ -3359,6 +2975,7 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x10007035
+// FUNCTION: DRAWCARDLIB 0x10008ab5
 void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,int dst_x,int dst_y,int rect_width,
                                int rect_height,int dst_stride_pixels)
 
@@ -3375,6 +2992,7 @@ void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,
 }
 
 // FUNCTION: CARDARTLIB 0x10007238
+// FUNCTION: DRAWCARDLIB 0x10008cb8
 void CopyBytes(void *dst,const void *src,size_t num)
 {
   //TODO: this looks like real inline asm but who knows
@@ -3399,6 +3017,7 @@ void CopyBytes(void *dst,const void *src,size_t num)
 }
 
 // FUNCTION: CARDARTLIB 0x10007273
+// FUNCTION: DRAWCARDLIB 0x10008cf3
 void SetBytes(void *dst, int value, size_t num)
 {
   //This is weird because it doesn't do anything?
@@ -3429,6 +3048,7 @@ void SetBytes(void *dst, int value, size_t num)
 }
 
 // FUNCTION: CARDARTLIB 0x100072dc
+// FUNCTION: DRAWCARDLIB 0x10008d5c
 void Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size)
 {
   struct {
@@ -3472,6 +3092,7 @@ void Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size)
 }
 
 // FUNCTION: CARDARTLIB 0x10007419
+// FUNCTION: DRAWCARDLIB 0x10008e99
 void Haar_CombineSumDiff(int *src_a,int *src_b,int *dst,int width,int rows,undefined4 src_stride_unused,int dst_stride)
 {
   struct {
@@ -3503,6 +3124,7 @@ void Haar_CombineSumDiff(int *src_a,int *src_b,int *dst,int width,int rows,undef
 }
 
 // FUNCTION: CARDARTLIB 0x100074ee
+// FUNCTION: DRAWCARDLIB 0x10008f6e
 void Haar_CombineSumDiffHalf(int *src_a,int *src_b,int *dst,int width,int rows,undefined4 src_stride_unused,int dst_stride)
 {
   struct {
@@ -3532,6 +3154,7 @@ void Haar_CombineSumDiffHalf(int *src_a,int *src_b,int *dst,int width,int rows,u
 }
 
 // FUNCTION: CARDARTLIB 0x100075ef
+// FUNCTION: DRAWCARDLIB 0x1000906f
 undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int height,int chroma_u,int chroma_v,
                  int chroma_stride,undefined4 unused_chroma_height,int chroma_is_420)
 
@@ -3618,6 +3241,7 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
 }
 
 // FUNCTION: CARDARTLIB 0x100078b8
+// FUNCTION: DRAWCARDLIB 0x10009338
 undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
 {
   struct {
@@ -3698,6 +3322,7 @@ undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
 }
 
 // FUNCTION: CARDARTLIB 0x1000807f
+// FUNCTION: DRAWCARDLIB 0x10009aff
 uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 {
   struct WvlDecodeToBgr24Stack {

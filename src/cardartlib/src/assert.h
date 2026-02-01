@@ -1,0 +1,8 @@
+#ifndef ASSERT_H
+#define ASSERT_H
+
+void assert(int condition,char *file,int line,char *fmt,...);
+
+extern char* global_base_directory;
+
+#endif
