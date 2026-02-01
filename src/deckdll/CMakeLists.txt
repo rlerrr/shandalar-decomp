@@ -20,7 +20,7 @@ if (TARGET image)
 endif()
 
 if (MSVC)
-  target_compile_options(deckdll PRIVATE /Od /Zi)
+  target_compile_options(deckdll PRIVATE /Od /Ob1 /Zi)
 
   set_property(TARGET deckdll PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/DeckDll.def\"")
   set_property(TARGET deckdll APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/DeckDll.def")
