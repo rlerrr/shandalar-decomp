@@ -9,6 +9,7 @@
 #include "inttypes.h"
 #include "mystdbool.h"
 #include "sidlib/pcxw.h"
+#include "sidlib/pic.h"
 
 typedef void * pointer;
 typedef char byte;
@@ -17,15 +18,7 @@ typedef BOOL (WINAPI code)(HINSTANCE,DWORD,LPVOID);
 
 #define CONCAT12(x,y) ((undefined4)(((undefined1)(x)) | ((undefined4)(undefined2)(y) << 8)))
 
-// FUNCTION: DRAWCARDLIB 0x10155000
-void __fastcall FUN_10155000(undefined4 param_1,undefined4 param_2,ushort *param_3) {
-  //TODO: this needs to be decompiled into a separate static library
-}
 
-// FUNCTION: DRAWCARDLIB 0x10155484
-void FUN_10155484() {
-  //TODO: this needs to be decompiled into a separate static library
-}
 
 /* Globals referenced before their definitions (provide placeholders for the build). */
 undefined4 DAT_10021050[4];
@@ -430,15 +423,6 @@ char s__DUELPALall_TR_10022508[] = "\\DUELPALall.TR";
 // GLOBAL: DRAWCARDLIB 0x10022518
 char s__DUEL_plogpal_10022518[] = "\\DUEL.plogpal";
 
-// GLOBAL: DRAWCARDLIB 0x10022528
-undefined1 *PTR_DAT_10022528 = (undefined1 *)0x100F23B0;
-
-// GLOBAL: DRAWCARDLIB 0x1002252c
-ushort *PTR_DAT_1002252c = (ushort *)0x100F35A0;
-
-// GLOBAL: DRAWCARDLIB 0x10022530
-undefined4 DAT_10022530 = 0xFFFFFFFF;
-
 // GLOBAL: DRAWCARDLIB 0x10022534
 undefined4 DAT_10022534 = 0x69627072;
 
@@ -447,12 +431,6 @@ undefined2 DAT_10022538 = 0x7374;
 
 // GLOBAL: DRAWCARDLIB 0x1002253a
 undefined1 DAT_1002253a = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x1002253c
-char DAT_1002253c[] = ".pcx";
-
-// GLOBAL: DRAWCARDLIB 0x10022544
-char DAT_10022544[] = "rb";
 
 // GLOBAL: DRAWCARDLIB 0x10022548
 undefined2 DAT_10022548 = 0x0000;
@@ -784,21 +762,6 @@ undefined1 DAT_100f1f7b = 0x00;
 // GLOBAL: DRAWCARDLIB 0x100f2378
 CRITICAL_SECTION DAT_100f2378;
 
-// GLOBAL: DRAWCARDLIB 0x100f2394
-undefined4 DAT_100f2394 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100f239c
-undefined4 DAT_100f239c = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100f23a0
-undefined4 DAT_100f23a0 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100f23a4
-undefined4 DAT_100f23a4 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100f23a8
-undefined4 _DAT_100f23a8 = 0x00000000;
-
 // GLOBAL: DRAWCARDLIB 0x100f2e30
 undefined1 DAT_100f2e30 = 0x00;
 
@@ -810,12 +773,6 @@ undefined1 DAT_100f2e38 = 0x00;
 
 // GLOBAL: DRAWCARDLIB 0x100f2e3c
 undefined1 DAT_100f2e3c = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x100f33a0
-undefined1 DAT_100f33a0[0x200];
-
-// GLOBAL: DRAWCARDLIB 0x100f23b0
-undefined4 DAT_100f23b0 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x100f23b4
 undefined4 DAT_100f23b4 = 0x00000000;
@@ -847,11 +804,6 @@ undefined4 DAT_100f23dc = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x100f23e0
 char DAT_100f23e0[2048];
 
-// GLOBAL: DRAWCARDLIB 0x100f3394
-ushort *DAT_100f3394 = (ushort *)0x0;
-
-// GLOBAL: DRAWCARDLIB 0x100f35a0
-void (__cdecl *DAT_100f35a0)() = (void (__cdecl *)())0x0;
 
 // GLOBAL: DRAWCARDLIB 0x100f37d0
 char DAT_100f37d0[100 * 1024];
@@ -2509,11 +2461,11 @@ undefined4 prepare_fonts_and_imgs(void)
   strcat(local_10c,s__Tt0300m__TTF_10022094);
   AddFontResourceA(local_10c);
   sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&DAT_100f36c0);
-  DAT_1003a198 = FUN_1000b700(local_10c);
+  DAT_1003a198 = load_pic(local_10c);
   sprintf(local_10c,s__s_CardSets_pic_100220b8,&DAT_100f36c0);
-  DAT_10039fe4 = FUN_1000b700(local_10c);
+  DAT_10039fe4 = load_pic(local_10c);
   sprintf(local_10c,s__s_CardBack_pic_100220c8,&DAT_100f36c0);
-  DAT_1003a010 = FUN_1000b700(local_10c);
+  DAT_1003a010 = load_pic(local_10c);
   pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardTitle_100220d8,0);
   DAT_1003a008 = CreateFontIndirectA(pLVar1);
   pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardSubtitle_100220e8,0);
@@ -3309,7 +3261,7 @@ undefined4 FUN_10006a41(int *param_1)
     }
     if (local_68[0] != '\0') {
       sprintf(local_170,s__s__s_pic_100223b0,&DAT_100f36c0,local_68);
-      iVar2 = FUN_1000b700(local_170);
+      iVar2 = load_pic(local_170);
       *param_1 = iVar2;
     }
     if (*param_1 == 0) {
@@ -4538,56 +4490,6 @@ int FUN_100095d8(HWND param_1,void *param_2,int param_3,int param_4,DWORD param_
   return iVar1;
 }
 
-// FUNCTION: DRAWCARDLIB 0x1000965b
-undefined4 * FUN_1000965b(undefined4 param_1,int param_2,int param_3)
-
-{
-  int local_10;
-  undefined4 *local_c;
-  undefined4 *local_8;
-  
-  if (param_3 == 8) {
-    local_8 = malloc(0x42c);
-  }
-  else if (param_3 == 0x18) {
-    local_8 = malloc(0x2c);
-  }
-  else {
-    local_8 = malloc(0x2c);
-  }
-  *local_8 = 0x28;
-  local_8[1] = param_1;
-  local_8[2] = -param_2;
-  *(undefined2 *)(local_8 + 3) = 1;
-  *(short *)((int)local_8 + 0xe) = (short)param_3;
-  local_8[4] = 0;
-  local_8[5] = 0;
-  local_8[6] = 0;
-  local_8[7] = 0;
-  if (param_3 == 8) {
-    local_8[8] = 0x100;
-    local_8[9] = 0x100;
-    local_c = local_8 + 10;
-    for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-      *(short *)local_c = (short)local_10;
-      local_c = (undefined4 *)((int)local_c + 2);
-    }
-  }
-  else {
-    local_8[8] = 0;
-    local_8[9] = 0;
-  }
-  return local_8;
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000977f
-undefined4 FUN_1000977f(undefined4 param_1)
-
-{
-  FUN_1000cde0(param_1);
-  return 1;
-}
-
 // FUNCTION: DRAWCARDLIB 0x100097a0
 /* WARNING: Removing unreachable block (ram,0x10009a01) */
 /* WARNING: Removing unreachable block (ram,0x10009a3b) */
@@ -4714,7 +4616,6 @@ char * FUN_10009aff(char *param_1,int param_2,int param_3,int param_4)
   undefined4 uStackY_24;
   char *pcStackY_20;
   
-  MSVC_StackProbe();
   local_1034 = 0;
   local_1048 = 0;
   local_102c = 0;
@@ -4990,18 +4891,6 @@ void FUN_1000a628(void)
   if (DAT_100f1f70 != 0) {
     FUN_1000afe6();
   }
-  return;
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000a67b
-void FUN_1000a67b(HDC param_1)
-
-{
-  SelectPalette(param_1,DAT_100f1f70,0);
-  RealizePalette(param_1);
-  GdiFlush();
-  SetDIBColorTable(param_1,0,0x100,(RGBQUAD *)&DAT_100f1f78);
-  SetStretchBltMode(param_1,3);
   return;
 }
 
@@ -5398,227 +5287,6 @@ void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
   return;
 }
 
-// FUNCTION: DRAWCARDLIB 0x1000b1e0
-undefined * FUN_1000b1e0(int param_1,int param_2,int param_3)
-
-{
-  int iVar1;
-  DWORD dwMaximumSizeLow;
-  undefined4 uVar2;
-  HANDLE pvVar3;
-  HDC pHVar4;
-  HBITMAP pHVar5;
-  undefined *puVar6;
-  uint uVar7;
-  
-  *(int *)(PTR_DAT_10022528 + 0x20) = param_1;
-  *(int *)(PTR_DAT_10022528 + 0x24) = param_2;
-  *(int *)(PTR_DAT_10022528 + 0x28) = param_3;
-  iVar1 = param_3 * param_1 + (param_3 * param_1 >> 0x1f & 7U);
-  uVar7 = iVar1 >> 0x1f;
-  if (((iVar1 >> 3 ^ uVar7) - uVar7 & 3 ^ uVar7) == uVar7) {
-    *(undefined4 *)(PTR_DAT_10022528 + 0x2c) = 0;
-  }
-  else {
-    iVar1 = param_3 * param_1 + (param_3 * param_1 >> 0x1f & 7U);
-    uVar7 = iVar1 >> 0x1f;
-    *(uint *)(PTR_DAT_10022528 + 0x2c) = 4 - (((iVar1 >> 3 ^ uVar7) - uVar7 & 3 ^ uVar7) - uVar7);
-  }
-  iVar1 = (param_1 + *(int *)(PTR_DAT_10022528 + 0x2c)) * param_3 * param_2;
-  dwMaximumSizeLow = ((int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3) + 0x10;
-  *(DWORD *)(PTR_DAT_10022528 + 0x1c) = dwMaximumSizeLow;
-  uVar2 = FUN_1000965b(param_1,param_2,param_3);
-  *(undefined4 *)(PTR_DAT_10022528 + 0x10) = uVar2;
-  if (*(int *)(PTR_DAT_10022528 + 0x10) == 0) {
-    puVar6 = (undefined *)0x0;
-  }
-  else {
-    pvVar3 = CreateFileMappingA((HANDLE)0xffffffff,(LPSECURITY_ATTRIBUTES)0x0,0x8000004,0,
-                                dwMaximumSizeLow,(LPCSTR)0x0);
-    *(HANDLE *)PTR_DAT_10022528 = pvVar3;
-    if (*(int *)PTR_DAT_10022528 == 0) {
-      FUN_1000977f(*(undefined4 *)(PTR_DAT_10022528 + 0x10));
-      puVar6 = (undefined *)0x0;
-    }
-    else {
-      pHVar4 = GetDC((HWND)0x0);
-      *(HDC *)(PTR_DAT_10022528 + 4) = pHVar4;
-      FUN_1000a67b(*(undefined4 *)(PTR_DAT_10022528 + 4));
-      pHVar5 = CreateDIBSection(*(HDC *)(PTR_DAT_10022528 + 4),
-                                *(BITMAPINFO **)(PTR_DAT_10022528 + 0x10),(uint)(param_3 == 8),
-                                (void **)(PTR_DAT_10022528 + 0x18),*(HANDLE *)PTR_DAT_10022528,0);
-      *(HBITMAP *)(PTR_DAT_10022528 + 8) = pHVar5;
-      ReleaseDC((HWND)0x0,*(HDC *)(PTR_DAT_10022528 + 4));
-      if (*(int *)(PTR_DAT_10022528 + 8) == 0) {
-        FUN_1000977f(*(undefined4 *)(PTR_DAT_10022528 + 0x10));
-        CloseHandle(*(HANDLE *)PTR_DAT_10022528);
-        puVar6 = (undefined *)0x0;
-      }
-      else {
-        FUN_1000977f(*(undefined4 *)(PTR_DAT_10022528 + 0x10));
-        puVar6 = PTR_DAT_10022528;
-      }
-    }
-  }
-  return puVar6;
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000b40f
-undefined4
-FUN_1000b40f(int param_1,undefined4 param_2,undefined4 param_3,char *param_4,undefined1 *param_5)
-
-{
-  char *_Str2;
-  int iVar1;
-  int local_414;
-  int local_410;
-  undefined1 local_40c [1024];
-  int local_c;
-  int local_8;
-  
-  local_8 = 8;
-  _Str2 = strchr(param_4,0x2e);
-  iVar1 = strcmpi(DAT_1002253c,_Str2);
-  if (iVar1 == 0) {
-    gPcxInFile = fopen(param_4,DAT_10022544);
-    if (gPcxInFile == (FILE *)0x0) {
-      return 0;
-    }
-    gPcxPath = param_4;
-    if (param_5 == (undefined1 *)0x1) {
-      param_5 = local_40c;
-    }
-    if (param_5 == (undefined1 *)0x0) {
-      PcxReadHeaderAndPalette(0);
-      if (param_1 < 0) {
-        gImageHeight = 0;
-      }
-      if ((int)gImageWidth % 3 == 0) {
-        local_410 = 0;
-      }
-      else {
-        local_410 = 4 - (int)gImageWidth % 3;
-      }
-      DAT_100f2394 = gImageWidth + local_410;
-      FUN_1000b1e0(DAT_100f2394,gImageHeight,local_8);
-      local_c = *(int *)(PTR_DAT_10022528 + 0x18);
-      for (DAT_100f239c = 0; DAT_100f239c < gImageHeight; DAT_100f239c = DAT_100f239c + 1) {
-        PcxReadScanlineRle(local_c);
-        local_c = local_c + ((int)(local_8 + (local_8 >> 0x1f & 7U)) >> 3) * DAT_100f2394;
-      }
-      fclose(gPcxInFile);
-    }
-    else {
-      PcxReadHeaderAndPalette(param_5 + 6);
-      *param_5 = 0x4d;
-      param_5[1] = 0x31;
-      *(undefined2 *)(param_5 + 2) = 0x300;
-      param_5[4] = 0;
-      param_5[5] = 0xff;
-    }
-  }
-  else {
-    DAT_100f23a0 = FUN_1000b745(param_4,0x8000);
-    if (DAT_100f23a0 == -1) {
-      return 0;
-    }
-    FUN_1000b7a2(DAT_100f23a0);
-    FUN_10155000(0,0,(ushort *)param_5);
-    if ((gImageWidth & 3) == 0) {
-      local_414 = 0;
-    }
-    else {
-      local_414 = 4 - (gImageWidth & 3);
-    }
-    DAT_100f2394 = gImageWidth + local_414;
-    iVar1 = FUN_1000b1e0(gImageWidth,gImageHeight,local_8);
-    if (iVar1 == 0) {
-      *(undefined4 *)(PTR_DAT_10022528 + 8) = 0;
-    }
-    else {
-      local_c = *(int *)(PTR_DAT_10022528 + 0x18);
-      DAT_100f239c = 0;
-      while (DAT_100f239c < gImageHeight) {
-        FUN_10155484(local_c,gImageWidth);
-        DAT_100f239c = DAT_100f239c + 1;
-        local_c = local_c + *(int *)(PTR_DAT_10022528 + 0x2c) +
-                            ((int)(gImageWidth * local_8 +
-                                  ((int)(gImageWidth * local_8) >> 0x1f & 7U)) >> 3);
-      }
-    }
-    FUN_1000b778(DAT_100f23a0);
-  }
-  return *(undefined4 *)(PTR_DAT_10022528 + 8);
-}
-
-// MATCHING
-// FUNCTION: DRAWCARDLIB 0x1000b700
-int FUN_1000b700(undefined4 param_1)
-{
-  int iVar1;
-  
-  iVar1 = FUN_1000b40f(0,0,0,param_1,0);
-  if (iVar1 != 0) {
-    CloseHandle(*(HANDLE *)PTR_DAT_10022528);
-  }
-  return iVar1;
-}
-
-// MATCHING
-// FUNCTION: DRAWCARDLIB 0x1000b745
-int FUN_1000b745(char *param_1,int param_2)
-{
-  int iVar1;
-  
-  iVar1 = _open(param_1,param_2);
-  _DAT_100f23a8 = 0xffffffff;
-  return iVar1;
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000b778
-void FUN_1000b778(int param_1)
-
-{
-  if (param_1 != DAT_10022530) {
-    _close(param_1);
-  }
-  return;
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000b7a2
-void FUN_1000b7a2(undefined4 param_1)
-
-{
-  DAT_100f23a4 = param_1;
-  DAT_100f3394 = PTR_DAT_1002252c;
-  DAT_100f35a0 = (void (__cdecl *)())FUN_1000b7c9;
-  return;
-}
-
-// MATCHING
-// FUNCTION: DRAWCARDLIB 0x1000b7c9
-int FUN_1000b7c9(void)
-{
-  int iVar1;
-  
-  iVar1 = _read(DAT_100f23a4,DAT_100f33a0,0x200);
-  DAT_100f3394 = (ushort *)DAT_100f33a0;
-  return iVar1;
-}
-
-// FUNCTION: DRAWCARDLIB 0x1000b804
-void FUN_1000b804(void)
-{
-  return;
-}
-
-
-// FUNCTION: DRAWCARDLIB 0x1000b80f
-void FUN_1000b80f(void) 
-{ 
-  return;
-}
-
 // FUNCTION: DRAWCARDLIB 0x1000b820
 int FUN_1000b820(char *param_1)
 
@@ -5844,7 +5512,6 @@ int read_cfg(undefined4 param_1)
   int aiStackY_4a384 [75993];
   int iVar2;
   
-  MSVC_StackProbe();
   iVar2 = 1;
   _DAT_10124510 = param_1;
   InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
@@ -5900,38 +5567,6 @@ void FUN_1000c0ca(void)
   return;
 }
 
-// FUNCTION: DRAWCARDLIB 0x1000c0f0
-void FUN_1000c0f0(int ok,const char *file,int line,const char *fmt,...)
-{
-  FILE *log;
-  time_t now;
-  size_t used;
-  va_list args;
-  
-  if (ok != 0) {
-    return;
-  }
-  
-  DAT_100f23e0[0] = '\0';
-  if ((file != (const char *)0x0) && (line != 0)) {
-    sprintf(DAT_100f23e0,s_File____s__Line____d_10026aa8,file,line);
-  }
-  used = strlen(DAT_100f23e0);
-  va_start(args,fmt);
-  _vsnprintf(DAT_100f23e0 + used,2000 - used,fmt,args);
-  va_end(args);
-  
-  now = time((time_t *)0x0);
-  log = fopen(s__assertFile_txt_10026a94,DAT_10026aa4);
-  if (log != (FILE *)0x0) {
-    fprintf(log,s__s_s_10026ac0,ctime(&now),DAT_100f23e0);
-    fclose(log);
-  }
-  
-  MessageBoxA((HWND)0x0,DAT_100f23e0,s_Assertion_Error_10026ac8,0x1000);
-  exit(0xff);
-}
-
 // FUNCTION: DRAWCARDLIB 0x1000c206
 void FUN_1000c206(int ok,const char *file,int line,const char *fmt,...)
 {
@@ -5971,21 +5606,3 @@ void FUN_1000cde0(undefined4 param_1)
   return;
 }
 
-// FUNCTION: DRAWCARDLIB 0x1000ead0
-/* WARNING: Unable to track spacebase fully for stack */
-
-void MSVC_StackProbe(void)
-{ 
-  /*
-  uint in_EAX;
-  undefined1 *puVar1;
-  undefined4 unaff_retaddr;
-  
-  puVar1 = &stack0x00000004;
-  for (; 0xfff < in_EAX; in_EAX = in_EAX - 0x1000) {
-    puVar1 = puVar1 + -0x1000;
-  }
-  *(undefined4 *)(puVar1 + (-4 - in_EAX)) = unaff_retaddr;
-  */
-  return;
-}

@@ -8,6 +8,7 @@
 
 #include "deckdll.h"
 #include "mystdbool.h"
+#include "sidlib/pic.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -1686,10 +1687,6 @@ delete_pics(void)
     DELETE_OBJ(global_pics[i]);
 }
 
-static HANDLE load_pic(char* filename) {
-  //TODO: this needs to load into sidlib or whatever
-}
-
 // FUNCTION: DECKDLL 0x1000c51f
 static const char *
 load_pics(void)
@@ -1742,7 +1739,7 @@ load_pics(void)
     char path[MAX_PATH * 3 + 60];
     sprintf(path, global_dbart_pattern, global_cfg_skin_name[0] ? global_cfg_skin_name : ".", picnames[i]);
 
-    if (!(global_pics[i] = load_pic(path)))
+    if (!(global_pics[i] = (HANDLE)load_pic(path)))
     {
       rval = strdup(path);
       break;

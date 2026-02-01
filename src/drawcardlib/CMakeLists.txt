@@ -1,4 +1,7 @@
 set(drawcardlib_sources
+  ../sidlib/src/pic.c
+  ../sidlib/src/pcxw.c
+  ../sidlib/src/support.c
   src/main.c
 )
 
@@ -10,10 +13,6 @@ target_include_directories(drawcardlib PRIVATE
 )
 
 target_link_libraries(drawcardlib PRIVATE gdi32)
-
-if (TARGET sidlib)
-  target_link_libraries(drawcardlib PRIVATE sidlib)
-endif()
 
 if (TARGET cardartlib)
   target_link_libraries(drawcardlib PRIVATE cardartlib)

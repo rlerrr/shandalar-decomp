@@ -116,6 +116,4 @@ void FUN_1000c0ca();
 void FUN_1000c0f0();
 void FUN_1000c206();
 void FUN_1000cde0(undefined4 param_1);
-void MSVC_StackProbe();
-
 #endif

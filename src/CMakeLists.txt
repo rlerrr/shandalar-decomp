@@ -26,10 +26,6 @@ if (SHANDALAR_BUILD_CDTOOLS)
   add_subdirectory(cdtools)
 endif()
 
-if (SHANDALAR_BUILD_SIDLIB)
-  add_subdirectory(sidlib)
-endif()
-
 if (SHANDALAR_BUILD_DRAWCARDLIB)
   add_subdirectory(drawcardlib)
 endif()

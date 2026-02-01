@@ -1,6 +1,12 @@
 file(GLOB deckdll_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 
-set(deckdll_sources ${deckdll_c_sources} deckdll.rc)
+set(deckdll_sources
+  ${deckdll_c_sources}
+  ../sidlib/src/pic.c
+  ../sidlib/src/pcxw.c
+  ../sidlib/src/support.c
+  deckdll.rc
+)
 
 add_library(deckdll SHARED ${deckdll_sources})
 

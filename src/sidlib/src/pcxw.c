@@ -13,8 +13,6 @@ typedef unsigned short ushort;
 
 /* External helpers (implemented elsewhere in the build). */
 void FUN_1000c0f0(int ok, const char *file, int line, const char *fmt, ...);
-void FUN_1000b80f(void);
-void MSVC_StackProbe(void);
 
 /* Placeholder globals for missing decompiler labels (PCXW-only). */
 char DAT_10021f18[] = "rb";
@@ -60,9 +58,14 @@ undefined2 DAT_10127d48 = 0x0000;
 undefined2 DAT_10127d4a = 0x0000;
 undefined1 DAT_10127d81 = 0x00;
 
+// FUNCTION: DRAWCARDLIB 0x1000b80f
+void FUN_1000b80f(void)
+{
+  return;
+}
+
 // FUNCTION: DRAWCARDLIB 0x10004050
 undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOut)
-
 {
   undefined1 *puVar1;
   uint uVar2;
@@ -220,7 +223,6 @@ PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused
   undefined *puStackY_20;
   undefined4 uStackY_1c;
   
-  MSVC_StackProbe();
   uStackY_1c = 0x100045ce;
   gPcxOutFile = fopen(path,&DAT_10021fd8);
   uStackY_1c = 0x146;

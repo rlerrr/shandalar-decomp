@@ -19,12 +19,12 @@ targets:
       sha256: 62cf09a2a546f71d1ed5ee74f5f7a9f01321057007c9228c13adebc5f515625d
   DRAWCARDLIB:
     filename: Drawcardlib.dll
-    source-root: src/drawcardlib
+    source-root: src
     hash:
       sha256: 2ed0b09249baee83891927f111588930ceef782f937ee7520c4b9759f1748b80
   DECKDLL:
     filename: DeckDll.dll
-    source-root: src/deckdll
+    source-root: src
     hash:
       sha256: d441148eca203c496b116e9f5c146c80d71eecd2fd95eab1e4646e20766367ab
   DECK:
