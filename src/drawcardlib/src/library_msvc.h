@@ -25,6 +25,9 @@
 // LIBRARY: DRAWCARDLIB 0x1000c850
 // realloc_help
 
+// LIBRARY: DRAWCARDLIB 0x1000cde0 SYMBOL
+// _free
+
 // LIBRARY: DRAWCARDLIB 0x1000ce00 SYMBOL
 // __free_dbg
 

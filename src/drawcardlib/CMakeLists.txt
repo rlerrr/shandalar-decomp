@@ -1,9 +1,12 @@
 file(GLOB drawcardlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB sidlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../sidlib/src/*.c")
+file(GLOB cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/*.c")
+list(FILTER cardartlib_c_sources EXCLUDE REGEX ".*main\\.c$")
 
 set(drawcardlib_sources
   ${drawcardlib_c_sources}
   ${sidlib_c_sources}
+  ${cardartlib_c_sources}
 )
 
 add_library(drawcardlib SHARED ${drawcardlib_sources})

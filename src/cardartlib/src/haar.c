@@ -13,7 +13,6 @@ undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24, int height, in
 int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24, int height, int width,
                                 int row_padding);
 void InitErrorDiffusionDeltaTables(int dither_kernel_id, int* delta_table_ptrs_base);
-void FreeIfNotNull(void *ptr);
 void MemZeroDwords(undefined8 *param_1, uint param_2);
 
 void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24, undefined8 *src_bgr24, int dst_x, int dst_y,
@@ -244,7 +243,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
   if (dither_kernel_id != DAT_1001e05c) {
     for (s.x = 0; s.x < 0x41; s.x = s.x + 1) {
       if (DAT_10117100[s.x] != (void *)0x0) {
-        FreeIfNotNull(DAT_10117100[s.x]);
+        free(DAT_10117100[s.x]);
         DAT_10117100[s.x] = (void *)0x0;
       }
     }
@@ -467,7 +466,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
   if (DAT_1001e060 != dither_kernel_id) {
     for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
       if (DAT_10117100[s.x] != (void *)0x0) {
-        FreeIfNotNull(DAT_10117100[s.x]);
+        free(DAT_10117100[s.x]);
         DAT_10117100[s.x] = (void *)0x0;
       }
     }
@@ -681,11 +680,11 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
       CopyBgr24RectIntoStridedBuffer(param_2,(undefined8 *)s.bgr_tmp,(s.piece_idx % s.pieces_per_row) * (s.width_px / s.pieces_per_row),
                                      (s.piece_idx / s.pieces_per_row) * (s.width_px / s.pieces_per_row),
                                      s.block_width,s.block_width,s.width_px);
-      FreeIfNotNull((undefined8 *)s.bgr_tmp);
+      free((undefined8 *)s.bgr_tmp);
     }
     else {
       if (s.have_dst == 0) {
-        FreeIfNotNull(param_2);
+        free(param_2);
       }
       param_2 = (undefined8 *)s.bgr_tmp;
     }

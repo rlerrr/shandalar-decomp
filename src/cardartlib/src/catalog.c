@@ -145,7 +145,7 @@ bool Catalog_Close(int handle)
 {
   if (DAT_10117290[--handle].file == 0)
     return 0;
-  FreeIfNotNull(DAT_10117290[handle].entries);
+  free(DAT_10117290[handle].entries);
   fclose(DAT_10117290[handle].file);
   DAT_10117290[handle].entries = (CatalogEntry *)0x0;
   DAT_10117290[handle].file = (FILE *)0x0;

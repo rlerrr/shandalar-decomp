@@ -10,7 +10,6 @@
 #include "palette.h"
 
 /* Forward declarations for globals referenced before their definitions. */
-void FreeIfNotNull(void *ptr);
 void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2);
 void DestroyCardArtPalette(void);
 undefined2 * ReadPalette(char *param_1,char *param_2);
@@ -82,7 +81,8 @@ undefined4 DAT_100209e4 = 0x00000000;
 RGBQUAD g_cardArtPalette[0x100];
 
 // GLOBAL: CARDARTLIB 0x10020de8
-CRITICAL_SECTION DAT_10020de8;
+// GLOBAL: DECKDLL 0x10104e38
+CRITICAL_SECTION global_critical_section_for_drawing;
 
 // GLOBAL: CARDARTLIB 0x10116cf0
 undefined2 DAT_10116cf0 = 0x0000;
@@ -145,7 +145,7 @@ BOOL InitCardArtGdiResources(void)
   if (DAT_1001d0e4 == 0) {
     CreateOffscreen32bppDibSection(10,10,(HDC *)&DAT_1001d0e4,(BITMAPINFO *)0x0,
                                   (HBITMAP *)&DAT_100209e4,(HGDIOBJ *)0x0,(void **)0x0);
-    InitializeCriticalSection(&DAT_10020de8);
+    InitializeCriticalSection(&global_critical_section_for_drawing);
   }
 
   if (DAT_1001d0e4 == 0)
@@ -165,7 +165,7 @@ void ShutdownCardArtGdiResources(void)
   if (DAT_1001d0e4 != (HDC)0x0) {
     checked_DeleteDC_DeleteObject(DAT_1001d0e4,DAT_100209e4);
     DAT_1001d0e4 = (HDC)0x0;
-    DeleteCriticalSection(&DAT_10020de8);
+    DeleteCriticalSection(&global_critical_section_for_drawing);
   }
   if (DAT_100209e0 != 0) {
     DestroyCardArtPalette();
@@ -181,12 +181,13 @@ void ApplyCardArtPaletteToDc(HDC hdc)
   RealizePalette(hdc);
   GdiFlush();
   SetDIBColorTable(hdc,0,0x100,g_cardArtPalette);
-  SetStretchBltMode(hdc,3);
+  SetStretchBltMode(hdc,COLORONCOLOR);
 }
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000134a
 // FUNCTION: DRAWCARDLIB 0x1000a6ca
+// FUNCTION: DECKDLL 0x10023503
 static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
                                           HBITMAP *out_bitmap,HGDIOBJ *out_prev_object,void **out_bits)
 {
@@ -251,6 +252,7 @@ static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITM
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100014d2
 // FUNCTION: DRAWCARDLIB 0x1000a852
+// FUNCTION: DECKDLL 0x1002368b
 void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2)
 {
   if (param_1 != (HDC)0x0) {
@@ -264,6 +266,7 @@ void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001505
 // FUNCTION: DRAWCARDLIB 0x1000a885
+// FUNCTION: DECKDLL 0x100237c0
 BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 {
   BITMAP bm;
@@ -278,7 +281,8 @@ BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000156d
 // FUNCTION: DRAWCARDLIB 0x1000a8ed
-static BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int src_x,int src_y,
+// FUNCTION: DECKDLL 0x10023828
+BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int src_x,int src_y,
                                    int src_width,int src_height)
 {
   //Stack layout won't behave
@@ -295,7 +299,7 @@ static BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitm
     return 0;
   }
 
-  EnterCriticalSection(&DAT_10020de8);
+  EnterCriticalSection(&global_critical_section_for_drawing);
   v.h = SelectObject(DAT_1001d0e4,bitmap);
   GetObjectA(bitmap,sizeof(v.bm),&v.bm);
 
@@ -311,14 +315,15 @@ static BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitm
     src_width <= v.bm.bmWidth ? src_width : v.bm.bmWidth,
     src_height <= v.bm.bmHeight ? src_height : v.bm.bmHeight, 0xcc0020);
   SelectObject(DAT_1001d0e4,v.h);
-  LeaveCriticalSection(&DAT_10020de8);
+  LeaveCriticalSection(&global_critical_section_for_drawing);
   return 1;
 }
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100016b7
 // FUNCTION: DRAWCARDLIB 0x1000acf5
-static BOOL SetupDuelPalette(void)
+// FUNCTION: DECKDLL 0x10024273
+BOOL SetupDuelPalette(void)
 {
   //Stack layout won't behave
   struct {
@@ -388,6 +393,7 @@ static BOOL SetupDuelPalette(void)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100019a8
 // FUNCTION: DRAWCARDLIB 0x1000afe6
+// FUNCTION: DECKDLL 0x10024564
 void DestroyCardArtPalette(void)
 {
   DeleteObject(DAT_100209e0);
@@ -395,10 +401,29 @@ void DestroyCardArtPalette(void)
   DestroyPaletteOctree();
 }
 
+// MATCHING
+// FUNCTION: CARDARTLIB 0x10003c70
+// FUNCTION: DRAWCARDLIB 0x1000a520
+// FUNCTION: DECKDLL 0x10016200
+void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
+{
+  bmi->bmiHeader.biSize = sizeof(bmi->bmiHeader);
+  bmi->bmiHeader.biWidth = width;
+  bmi->bmiHeader.biHeight = -height;
+  bmi->bmiHeader.biPlanes = 1;
+  bmi->bmiHeader.biBitCount = 0x18;
+  bmi->bmiHeader.biCompression = 0;
+  bmi->bmiHeader.biSizeImage = 0;
+  bmi->bmiHeader.biXPelsPerMeter = 0;
+  bmi->bmiHeader.biYPelsPerMeter = 0;
+  bmi->bmiHeader.biClrUsed = 0x100;
+  bmi->bmiHeader.biClrImportant = 0x100;
+}
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004a50
 // FUNCTION: DRAWCARDLIB 0x1000a520
+// FUNCTION: DECKDLL 0x100099b0
 void * OctreeNode_Create(void)
 {
   void *_Dst;
@@ -410,6 +435,7 @@ void * OctreeNode_Create(void)
 
 // FUNCTION: CARDARTLIB 0x10004a83
 // FUNCTION: DRAWCARDLIB 0x10001033
+// FUNCTION: DECKDLL 0x100099e4
 undefined2 * ReadPalette(char *param_1,char *param_2)
 {
   struct {
@@ -480,6 +506,7 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
 
 // FUNCTION: CARDARTLIB 0x10004cd7
 // FUNCTION: DRAWCARDLIB 0x10001287
+// FUNCTION: DECKDLL 0x10009c42
 bool InitDiffSquaredLookupTable(void)
 {
   int local_c;
@@ -498,6 +525,7 @@ bool InitDiffSquaredLookupTable(void)
 
 // FUNCTION: CARDARTLIB 0x10004d49
 // FUNCTION: DRAWCARDLIB 0x100012f9
+// FUNCTION: DECKDLL 0x10009cb4
 void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 {
   int i;
@@ -517,6 +545,7 @@ void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 
 // FUNCTION: CARDARTLIB 0x10004dc8
 // FUNCTION: DRAWCARDLIB 0x10001378
+// FUNCTION: DECKDLL 0x10009d33
 int OctreeNode_FinalizeSubtree(OctNode *param_1)
 {
   struct {
@@ -557,6 +586,7 @@ int OctreeNode_FinalizeSubtree(OctNode *param_1)
 
 // FUNCTION: CARDARTLIB 0x10004f07
 // FUNCTION: DRAWCARDLIB 0x100014b7
+// FUNCTION: DECKDLL 0x10009e73
 undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int param_3)
 {
   int iVar2;
@@ -582,6 +612,7 @@ undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int p
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004fe1
 // FUNCTION: DRAWCARDLIB 0x10001591
+// FUNCTION: DECKDLL 0x10009f53
 int Octree_Destroy(OctNode *rootPtr)
 {
   int i;
@@ -589,7 +620,7 @@ int Octree_Destroy(OctNode *rootPtr)
   
   result = 0;
   if (rootPtr->flags != 0) {   
-      FreeIfNotNull(rootPtr);
+      free(rootPtr);
       return 1;
   }
 
@@ -599,15 +630,16 @@ int Octree_Destroy(OctNode *rootPtr)
     }
   }
   if (rootPtr->list != 0) {
-    FreeIfNotNull(rootPtr->list);
+    free(rootPtr->list);
   }
-  FreeIfNotNull(rootPtr);
+  free(rootPtr);
 
   return result;
 }
 
 // FUNCTION: CARDARTLIB 0x1000508d
 // FUNCTION: DRAWCARDLIB 0x1000163d
+// FUNCTION: DECKDLL 0x1000a002
 void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 {
   struct {
@@ -627,6 +659,7 @@ void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 
 // FUNCTION: CARDARTLIB 0x100050f1
 // FUNCTION: DRAWCARDLIB 0x100016a1
+// FUNCTION: DECKDLL 0x1000a066
 undefined4 InitOctreeBitTables(void)
 {
   struct {
@@ -649,6 +682,7 @@ undefined4 InitOctreeBitTables(void)
 
 // FUNCTION: CARDARTLIB 0x100051f5
 // FUNCTION: DRAWCARDLIB 0x100017a5
+// FUNCTION: DECKDLL 0x1000a169
 undefined4 Octree_FindNearestColor(uint param_1)
 {
   struct {
@@ -728,6 +762,7 @@ end:  ;
 
 // FUNCTION: CARDARTLIB 0x10005383
 // FUNCTION: DRAWCARDLIB 0x10001933
+// FUNCTION: DECKDLL 0x1000a2f7
 uint Octree_FindNearestPaletteIndex(uint param_1)
 {
   struct {
@@ -801,6 +836,7 @@ uint Octree_FindNearestPaletteIndex(uint param_1)
 
 // FUNCTION: CARDARTLIB 0x100054fb
 // FUNCTION: DRAWCARDLIB 0x10001aab
+// FUNCTION: DECKDLL 0x1000a46f
 int Octree_FlattenLeafValues(int *param_1,int *param_2)
 {
   int i;
@@ -885,6 +921,7 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10006809
 // FUNCTION: DRAWCARDLIB 0x10002db9
+// FUNCTION: DECKDLL 0x1000b77c
 void DestroyPaletteOctree(void)
 {
   Octree_Destroy(g_paletteOctreeRoot);
@@ -894,6 +931,7 @@ void DestroyPaletteOctree(void)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000682c
 // FUNCTION: DRAWCARDLIB 0x10002ddc
+// FUNCTION: DECKDLL 0x1000b79f
 int Palette_FindNearestEntryIndex(int param_1,int param_2,int param_3,byte *param_4)
 {
   struct {
@@ -916,10 +954,4 @@ int Palette_FindNearestEntryIndex(int param_1,int param_2,int param_3,byte *para
     }
   }
   return s.local_10;
-}
-
-// FUNCTION: CARDARTLIB 0x1000a210
-void FreeIfNotNull(void *ptr)
-{
-    _free_dbg(ptr, 1);
 }

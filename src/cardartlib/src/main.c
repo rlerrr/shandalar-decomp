@@ -87,7 +87,6 @@ VersionedArtCacheEntry g_versionedSmallArtCache[100];
 VersionedArtCacheEntry g_versionedBigArtCache[0x14];
 
 void CardArtLib_Shutdown(void);
-void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height);
 VersionedArtCacheEntry * FindVersionedSmallArtCacheEntry(int id,int version);
 void DestroyVersionedSmallArt(int id,int version);
 void DestroyAllVersionedSmallArts(void);
@@ -443,24 +442,6 @@ void DestroyAllBigArts(void)
   }
   g_versionedBigArtCount = 0;
   LeaveCriticalSection(&global_critical_section_for_big_art);
-}
-
-// MATCHING
-// FUNCTION: CARDARTLIB 0x10003c70
-// FUNCTION: DRAWCARDLIB 0x1000a520
-void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
-{
-  bmi->bmiHeader.biSize = sizeof(bmi->bmiHeader);
-  bmi->bmiHeader.biWidth = width;
-  bmi->bmiHeader.biHeight = -height;
-  bmi->bmiHeader.biPlanes = 1;
-  bmi->bmiHeader.biBitCount = 0x18;
-  bmi->bmiHeader.biCompression = 0;
-  bmi->bmiHeader.biSizeImage = 0;
-  bmi->bmiHeader.biXPelsPerMeter = 0;
-  bmi->bmiHeader.biYPelsPerMeter = 0;
-  bmi->bmiHeader.biClrUsed = 0x100;
-  bmi->bmiHeader.biClrImportant = 0x100;
 }
 
 // FUNCTION: CARDARTLIB 0x10003cf0
