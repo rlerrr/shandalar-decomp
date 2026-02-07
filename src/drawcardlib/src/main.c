@@ -10,7 +10,9 @@
 #include "mystdbool.h"
 #include "sidlib/pcxw.h"
 #include "sidlib/pic.h"
+#include "cardartlib/src/assert.h"
 #include "cardartlib/src/palette.h"
+#include "cardartlib/src/catalog.h"
 
 /* Function prototypes (auto-generated). */
 #include "autoproto.h"
@@ -32,7 +34,6 @@ undefined4 DAT_1003a05c = 0;
 char DAT_1003a064[0x20];
 char DAT_1003a090[260];
 
-char DAT_100f35b0[0x105];
 char DAT_100f36c0[0x105];
 undefined4 DAT_100f5b5c = 0;
 undefined4 DAT_100f6908 = 0;
@@ -302,33 +303,6 @@ char DAT_10026a60[] = "rb";
 // GLOBAL: DRAWCARDLIB 0x10026a64
 char DAT_10026a64[] = "File %s could not be opened: EXITING\r\n";
 
-// GLOBAL: DRAWCARDLIB 0x10026a94
-char s__assertFile_txt_10026a94[] = "\\assertFile.txt";
-
-// GLOBAL: DRAWCARDLIB 0x10026aa4
-char DAT_10026aa4[] = "at";
-
-// GLOBAL: DRAWCARDLIB 0x10026aa8
-char s_File____s__Line____d_10026aa8[] = "File-> %s, Line-> %d\n";
-
-// GLOBAL: DRAWCARDLIB 0x10026ac0
-char s__s_s_10026ac0[] = "%s%s\n";
-
-// GLOBAL: DRAWCARDLIB 0x10026ac8
-char s_Assertion_Error_10026ac8[] = "Assertion Error";
-
-// GLOBAL: DRAWCARDLIB 0x10026ad8
-char s__assertFile_txt_10026ad8[] = "\\assertFile.txt";
-
-// GLOBAL: DRAWCARDLIB 0x10026aec
-char s_File____s__Line____d_10026aec[] = "File-> %s, Line-> %d\n";
-
-// GLOBAL: DRAWCARDLIB 0x10026b04
-char s__s_s_10026b04[] = "%s%s\n";
-
-// GLOBAL: DRAWCARDLIB 0x10026b0c
-char s_Assertion_Error_10026b0c[] = "Assertion Error";
-
 // GLOBAL: DRAWCARDLIB 0x10026b98
 undefined4 DAT_10026b98 = 0x00000000;
 
@@ -337,9 +311,6 @@ undefined1 DAT_10028af0 = 0x00;
 
 // GLOBAL: DRAWCARDLIB 0x10028af1
 undefined1 DAT_10028af1 = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x10028ef4
-undefined4 DAT_10028ef4 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10028ef8
 undefined4 DAT_10028ef8 = 0x00000000;
@@ -350,9 +321,6 @@ undefined1 DAT_10028f00 = 0x00;
 // GLOBAL: DRAWCARDLIB 0x10028f01
 undefined1 DAT_10028f01 = 0x00;
 
-// GLOBAL: DRAWCARDLIB 0x10029310
-undefined1 DAT_10029310 = 0x00;
-
 // GLOBAL: DRAWCARDLIB 0x10029311
 undefined1 DAT_10029311 = 0x00;
 
@@ -361,24 +329,6 @@ undefined4 DAT_1002931c = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10029320
 undefined4 DAT_10029320 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x10029324
-undefined4 DAT_10029324 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100293ac
-undefined4 DAT_100293ac = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x10029fb0
-uint *DAT_10029fb0 = (uint *)0x0;
-
-// GLOBAL: DRAWCARDLIB 0x10029fb8
-uint *DAT_10029fb8 = (uint *)0x0;
-
-// GLOBAL: DRAWCARDLIB 0x10029fbc
-undefined4 DAT_10029fbc = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x10029fc4
-undefined4 DAT_10029fc4 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fc8
 undefined4 DAT_10039fc8 = 0x00000000;
@@ -533,27 +483,6 @@ undefined4 DAT_100f1f68 = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x100f1f6c
 undefined4 DAT_100f1f6c = 0x00000000;
 
-// GLOBAL: DRAWCARDLIB 0x100f1f70
-undefined4 DAT_100f1f70 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100f1f74
-undefined4 DAT_100f1f74 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x100f1f78
-undefined1 DAT_100f1f78 = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x100f1f79
-undefined1 DAT_100f1f79 = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x100f1f7a
-undefined1 DAT_100f1f7a = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x100f1f7b
-undefined1 DAT_100f1f7b = 0x00;
-
-// GLOBAL: DRAWCARDLIB 0x100f2378
-CRITICAL_SECTION DAT_100f2378;
-
 // GLOBAL: DRAWCARDLIB 0x100f2e30
 undefined1 DAT_100f2e30 = 0x00;
 
@@ -593,10 +522,6 @@ undefined4 DAT_100f23d8 = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x100f23dc
 undefined4 DAT_100f23dc = 0x00000000;
 
-// GLOBAL: DRAWCARDLIB 0x100f23e0
-char DAT_100f23e0[2048];
-
-
 // GLOBAL: DRAWCARDLIB 0x100f37d0
 char DAT_100f37d0[100 * 1024];
 
@@ -605,9 +530,6 @@ char DAT_100f3833[100 * 1024];
 
 // GLOBAL: DRAWCARDLIB 0x10124510
 undefined4 _DAT_10124510 = 0x00000000;
-
-// GLOBAL: DRAWCARDLIB 0x10124520
-CRITICAL_SECTION DAT_10124520;
 
 // GLOBAL: DRAWCARDLIB 0x10124538
 undefined4 DAT_10124538 = 0x00000000;
@@ -634,28 +556,28 @@ undefined4 prepare_fonts_and_imgs(void)
   undefined4 uVar2;
   CHAR local_10c [264];
   
-  strcpy(&DAT_1003a090,&DAT_100f35b0);
+  strcpy(&DAT_1003a090,&global_base_directory);
   strcat(&DAT_1003a090,s__DuelArt_1002201c);
   strcat(&DAT_1003a090,s__Duel_dat_10022028);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0530m__TTF_10022034);
   AddFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Magis____TTF_10022044);
   AddFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0127m__TTF_10022054);
   AddFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0085m__TTF_10022064);
   AddFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0298m__TTF_10022074);
   AddFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0299m__TTF_10022084);
   AddFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0300m__TTF_10022094);
   AddFontResourceA(local_10c);
   sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&DAT_100f36c0);
@@ -755,28 +677,28 @@ void FUN_10004f8e(void)
 {
   CHAR local_10c [264];
   
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Magim____TTF_1002216c);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0530m__TTF_1002217c);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Magis____TTF_1002218c);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0127m__TTF_1002219c);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0085m__TTF_100221ac);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0298m__TTF_100221bc);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0299m__TTF_100221cc);
   RemoveFontResourceA(local_10c);
-  strcpy(local_10c,&DAT_100f35b0);
+  strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0300m__TTF_100221dc);
   RemoveFontResourceA(local_10c);
   if (DAT_1003a198 != 0) {
@@ -2173,7 +2095,7 @@ FUN_1000aab9(HDC param_1,int *param_2,HANDLE param_3,int param_4,int param_5,int
     uVar1 = 0;
   }
   else {
-    EnterCriticalSection((LPCRITICAL_SECTION)&DAT_100f2378);
+    EnterCriticalSection((LPCRITICAL_SECTION)&global_critical_section_for_drawing);
     local_10 = SaveDC(param_1);
     SelectObject(DAT_10022500,param_3);
     GetObjectA(param_3,0x18,local_2c);
@@ -2191,14 +2113,14 @@ FUN_1000aab9(HDC param_1,int *param_2,HANDLE param_3,int param_4,int param_5,int
     else {
       local_30 = param_2[3] - param_2[1];
     }
-    FUN_1000a67b(DAT_10022500);
+    ApplyCardArtPaletteToDc(DAT_10022500);
     StretchBlt(param_1,local_8,local_c,local_14,local_30,DAT_10022500,param_8,param_9,param_4,
                param_5,0x8800c6);
-    FUN_1000a67b(DAT_10022500);
+    ApplyCardArtPaletteToDc(DAT_10022500);
     StretchBlt(param_1,local_8,local_c,local_14,local_30,DAT_10022500,param_6,param_7,param_4,
                param_5,0xee0086);
     RestoreDC(param_1,local_10);
-    LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_100f2378);
+    LeaveCriticalSection((LPCRITICAL_SECTION)&global_critical_section_for_drawing);
     uVar1 = 1;
   }
   return uVar1;
@@ -2249,8 +2171,8 @@ void FUN_1000ac34(HANDLE param_1)
 uint FUN_1000b00c(int param_1)
 
 {
-  return CONCAT12((&DAT_100f1f78)[param_1 * 4],
-                  CONCAT11((&DAT_100f1f79)[param_1 * 4],(&DAT_100f1f7a)[param_1 * 4])) | 0x2000000;
+  return CONCAT12((&g_cardArtPalette)[param_1 * 4],
+                  CONCAT11((&g_cardArtPalette)[param_1 * 4],(&g_cardArtPalette)[param_1 * 4])) | 0x2000000;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b06a
@@ -2340,16 +2262,16 @@ int read_cfg(undefined4 param_1)
   
   iVar2 = 1;
   _DAT_10124510 = param_1;
-  InitializeCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
-  GetModuleFileNameA((HMODULE)0x0,&DAT_100f35b0,0x105);
-  pcVar1 = strrchr(&DAT_100f35b0,0x5c);
+  InitializeCriticalSection(&global_critical_section_for_catalog);
+  GetModuleFileNameA((HMODULE)0x0,&global_base_directory,0x105);
+  pcVar1 = strrchr(&global_base_directory,0x5c);
   *pcVar1 = '\0';
-  strcpy((uint *)&DAT_100f36c0,(uint *)&DAT_100f35b0);
+  strcpy((uint *)&DAT_100f36c0,(uint *)&global_base_directory);
   strcat((uint *)&DAT_100f36c0,(uint *)s__CARDART_10026a48);
   DAT_10021048 = 3;
   DAT_10124538 = 0x10;
   InitCardArtGdiResources();
-  strcpy(acStackY_4a4a0,(uint *)&DAT_100f35b0);
+  strcpy(acStackY_4a4a0,(uint *)&global_base_directory);
   strcat(acStackY_4a4a0,(uint *)s__CARDS_DAT_10026a54);
   pFStackY_4a38c = fopen(acStackY_4a4a0,DAT_10026a60);
   if (pFStackY_4a38c == (FILE *)0x0) {
@@ -2388,6 +2310,6 @@ int read_cfg(undefined4 param_1)
 void FUN_1000c0ca(void)
 {
   ShutdownCardArtGdiResources();
-  DeleteCriticalSection((LPCRITICAL_SECTION)&DAT_10124520);
+  DeleteCriticalSection(&global_critical_section_for_catalog);
   return;
 }

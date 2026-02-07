@@ -12,40 +12,48 @@
 #include "assert.h"
 
 // GLOBAL: CARDARTLIB 0x10021a88
+// GLOBAL: DRAWCARDLIB 0x10029fb0
 uint *DAT_10021a88 = (uint *)0x0;
 
 // GLOBAL: CARDARTLIB 0x10021a8c
+// GLOBAL: DRAWCARDLIB 0x10029fb4
 int DAT_10021a8c = 0;
 
 // GLOBAL: CARDARTLIB 0x10021a90
+// GLOBAL: DRAWCARDLIB 0x10029fb8
 int DAT_10021a90 = 0;
 
 // GLOBAL: CARDARTLIB 0x1001d1dc
+// GLOBAL: DRAWCARDLIB 0x10021ecc
 undefined4 DAT_1001d1dc = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10020e88
+// GLOBAL: DRAWCARDLIB 0x100293b0
 unsigned char DAT_10020e88[0x100 * 0xc];
-#define DAT_10020e8c DAT_10020e88[4]
-#define DAT_10020e90 DAT_10020e88[8]
 
 // GLOBAL: CARDARTLIB 0x10020e84
+// GLOBAL: DRAWCARDLIB 0x100293ac
 undefined4 DAT_10020e84 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10020e00
+// GLOBAL: DRAWCARDLIB 0x10029328
 uint DAT_10020e00[0x21];
 
 // GLOBAL: CARDARTLIB 0x10021a94
+// GLOBAL: DRAWCARDLIB 0x10029fbc
 undefined4 DAT_10021a94 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10021a98
+// GLOBAL: DRAWCARDLIB 0x10029fc0
 int DAT_10021a98 = 0;
 
 // GLOBAL: CARDARTLIB 0x10021a9c
+// GLOBAL: DRAWCARDLIB 0x10029fc4
 undefined4 DAT_10021a9c = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10021aa0
+// GLOBAL: DRAWCARDLIB 0x10029fc8
 unsigned char DAT_10021aa0[0x100 * 8];
-#define DAT_10021aa4 DAT_10021aa0[4]
 
 // FUNCTION: CARDARTLIB 0x10001f40
 // FUNCTION: DRAWCARDLIB 0x10002ea0
@@ -162,7 +170,7 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
   DAT_10021a94 = BitStream_ReadBits(0xd);
   for (s.i = 0; (int)DAT_10021a94 > s.i; s.i++) {
     ((uint *)&DAT_10021aa0)[s.i*2] = BitStream_ReadBits(0xd);
-    ((uint *)&DAT_10021aa4)[s.i*2] = BitStream_ReadBits(0xd);
+    ((uint *)&DAT_10021aa0)[s.i*2 + 1] = BitStream_ReadBits(0xd);
     s.result += 0x1a;
   }
   DAT_10021a98 = node_index_base;

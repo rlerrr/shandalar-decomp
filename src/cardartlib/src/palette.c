@@ -15,76 +15,98 @@ void DestroyCardArtPalette(void);
 undefined2 * ReadPalette(char *param_1,char *param_2);
 void DestroyPaletteOctree(void);
 
-extern undefined4 DAT_100ed70c;
-extern undefined1 DAT_100ecb10[0x800];
-extern undefined1 DAT_10115cf0[0x800];
-extern undefined1 DAT_101164f0[0x800];
+undefined4 DAT_100ed70c[0x100];
+extern undefined1 global_RedPathBitsTable[0x800];
+extern undefined1 global_GreenPathBitsTable[0x800];
+extern undefined1 global_BluePathBitsTable[0x800];
 
 // GLOBAL: CARDARTLIB 0x1001d0e4
+// GLOBAL: DRAWCARDLIB 0x10022500
 undefined4 DAT_1001d0e4 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d0e8
+// GLOBAL: DRAWCARDLIB 0x10022508
 char s__DUELPALall_TR_1001d0e8[] = "\\DUELPALall.TR";
 
 // GLOBAL: CARDARTLIB 0x1001d0f8
+// GLOBAL: DRAWCARDLIB 0x10022518
 char s__DUEL_plogpal_1001d0f8[] = "\\DUEL.plogpal";
 
 // GLOBAL: CARDARTLIB 0x1001d240
+// GLOBAL: DRAWCARDLIB 0x10021030
 int DAT_1001d240 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d244
+// GLOBAL: DRAWCARDLIB 0x10021034
 undefined4 * PTR_DAT_1001d244 = &DAT_100ed70c;
 
 // GLOBAL: CARDARTLIB 0x1001d248
+// GLOBAL: DRAWCARDLIB 0x10021038
 undefined4 global_diff_squared_initialized = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d24c
-undefined1 * PTR_DAT_1001d24c = DAT_101164f0;
+// GLOBAL: DRAWCARDLIB 0x1002103c
+undefined1 * global_PTR_BluePathBitsTable = global_BluePathBitsTable;
 
 // GLOBAL: CARDARTLIB 0x1001d250
-undefined1 * PTR_DAT_1001d250 = DAT_10115cf0;
+// GLOBAL: DRAWCARDLIB 0x10021040
+undefined1 * global_PTR_GreenPathBitsTable = global_GreenPathBitsTable;
 
 // GLOBAL: CARDARTLIB 0x1001d254
-undefined1 * PTR_DAT_1001d254 = DAT_100ecb10;
+// GLOBAL: DRAWCARDLIB 0x10021044
+undefined1 * global_PTR_RedPathBitsTable = global_RedPathBitsTable;
 
 // GLOBAL: CARDARTLIB 0x1001e064
+// GLOBAL: DRAWCARDLIB 0x10021e54
 char s__rt_1001e064[] = "rt";
 
 // GLOBAL: CARDARTLIB 0x1001e068
+// GLOBAL: DRAWCARDLIB 0x10021e58
 char s__d____d__d__d_1001e068[] = "%d - %d %d %d";
 
 // GLOBAL: CARDARTLIB 0x1001e078
+// GLOBAL: DRAWCARDLIB 0x10021e68
 char s__rb_1001e078[] = "rb";
 
 // GLOBAL: CARDARTLIB 0x1001e07c
+// GLOBAL: DRAWCARDLIB 0x10021e6c
 char s__sp_lf_1001e07c[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e080
+// GLOBAL: DRAWCARDLIB 0x10021e70
 char s__sp_lf__1001e080[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e084
+// GLOBAL: DRAWCARDLIB 0x10021e74
 char s__sp_lf__1001e084[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e088
+// GLOBAL: DRAWCARDLIB 0x10021e78
 char s__sp_lf__1001e088[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x1001e08c
+// GLOBAL: DRAWCARDLIB 0x10021e7c
 char s__sp_lf__1001e08c[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x100209e0
+// GLOBAL: DRAWCARDLIB 0x100f1f70
 undefined4 DAT_100209e0 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100209e4
+// GLOBAL: DRAWCARDLIB 0x100f1f74
 undefined4 DAT_100209e4 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100209e8
+// GLOBAL: DRAWCARDLIB 0x100f1f78
 RGBQUAD g_cardArtPalette[0x100];
 
 // GLOBAL: CARDARTLIB 0x10020de8
+// GLOBAL: DRAWCARDLIB 0x100f2378
 // GLOBAL: DECKDLL 0x10104e38
 CRITICAL_SECTION global_critical_section_for_drawing;
 
 // GLOBAL: CARDARTLIB 0x10116cf0
+// GLOBAL: DRAWCARDLIB 0x10152020
 undefined2 DAT_10116cf0 = 0x0000;
 
 typedef struct OctNode OctNode;
@@ -100,37 +122,47 @@ typedef struct OctNode {
 STATIC_ASSERT(sizeof(OctNode) == 0x30, OctNode_wrong_size);
 
 // GLOBAL: CARDARTLIB 0x10031ea4
+// GLOBAL: DRAWCARDLIB 0x10028ef4
 OctNode* g_paletteOctreeRoot = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10031eb0
 undefined1 DAT_10031eb0 = 0x00;
 
 // GLOBAL: CARDARTLIB 0x10031eb8
+// GLOBAL: DRAWCARDLIB 0x10028f08
 undefined4 _DAT_10031eb8 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10031ec0
+// GLOBAL: DRAWCARDLIB 0x10028f10
 uint g_paletteRgbTable[0x100];
 
 // GLOBAL: CARDARTLIB 0x100322c0
+// GLOBAL: DRAWCARDLIB 0x10029310
 undefined1 *g_octPathTmp = 0x00;
 
 // GLOBAL: CARDARTLIB 0x100322d4
+// GLOBAL: DRAWCARDLIB 0x10029324
 int DAT_100322d4 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100ecb10
-undefined1 DAT_100ecb10[0x800];
+// GLOBAL: DRAWCARDLIB 0x10127e40
+undefined1 global_RedPathBitsTable[0x800];
 
 // GLOBAL: CARDARTLIB 0x100ed310
+// GLOBAL: DRAWCARDLIB 0x10128640
 int DAT_100ed310[0x200 / 4];
 
 // GLOBAL: CARDARTLIB 0x100ed70c
-undefined4 DAT_100ed70c = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x10128a3c
+undefined4 DAT_100ed70c[0x100];
 
 // GLOBAL: CARDARTLIB 0x10115cf0
-undefined1 DAT_10115cf0[0x800];
+// GLOBAL: DRAWCARDLIB 0x10151020
+undefined1 global_GreenPathBitsTable[0x800];
 
 // GLOBAL: CARDARTLIB 0x101164f0
-undefined1 DAT_101164f0[0x800];
+// GLOBAL: DRAWCARDLIB 0x10151820
+undefined1 global_BluePathBitsTable[0x800];
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001220
@@ -422,7 +454,7 @@ void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004a50
-// FUNCTION: DRAWCARDLIB 0x1000a520
+// FUNCTION: DRAWCARDLIB 0x10001000
 // FUNCTION: DECKDLL 0x100099b0
 void * OctreeNode_Create(void)
 {
@@ -643,18 +675,18 @@ int Octree_Destroy(OctNode *rootPtr)
 void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 {
   struct {
-    int iVar2;
-    int iVar3;
-    int iVar1;
+    int part_g;
+    int part_b;
+    int part_r;
   } s;
   
-  s.iVar3 = (rgb & 0xff);
-  s.iVar2 = ((RGBQUAD *) &rgb)->rgbGreen;
-  s.iVar1 = ((rgb & 0xff0000) >> 0x10);
+  s.part_b = (rgb & 0xff);
+  s.part_g = ((RGBQUAD *) &rgb)->rgbGreen;
+  s.part_r = ((rgb & 0xff0000) >> 0x10);
 
-  *out_path_words = ((undefined8 *)DAT_100ecb10)[s.iVar1] | 
-    ((undefined8 *)DAT_10115cf0)[s.iVar2] | 
-    ((undefined8 *)DAT_101164f0)[s.iVar3];
+  *out_path_words = ((undefined8 *)global_RedPathBitsTable)[s.part_r] | 
+    ((undefined8 *)global_GreenPathBitsTable)[s.part_g] | 
+    ((undefined8 *)global_BluePathBitsTable)[s.part_b];
 }
 
 // FUNCTION: CARDARTLIB 0x100050f1
@@ -670,11 +702,11 @@ undefined4 InitOctreeBitTables(void)
   
   for (s.i = 0; s.i < 0x100; s.i++) {
     for (s.j = 0, s.local_10 = 0x80; s.j < 8; s.j++, s.local_10 = s.local_10 >> 1) {
-      PTR_DAT_1001d24c[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 4 : 0;
+      global_PTR_BluePathBitsTable[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 4 : 0;
 
-      PTR_DAT_1001d250[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 2 : 0;
+      global_PTR_GreenPathBitsTable[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 2 : 0;
 
-      PTR_DAT_1001d254[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 1 : 0;
+      global_PTR_RedPathBitsTable[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 1 : 0;
     }
   }
   return 0;

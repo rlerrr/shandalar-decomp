@@ -84,7 +84,6 @@ int FUN_1000a373();
 void FUN_1000a520();
 bool FUN_1000a5a0();
 void FUN_1000a628();
-void FUN_1000a67b();
 undefined4 FUN_1000a6ca();
 void FUN_1000a852();
 undefined4 FUN_1000a885();
