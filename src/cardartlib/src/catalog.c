@@ -1,4 +1,5 @@
 #include "catalog.h"
+#include "haar.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,10 +7,6 @@
 
 #include "defs.h"
 #include "assert.h"
-
-extern void FreeIfNotNull(void *ptr);
-
-extern undefined8 *Wvl_DecodeHaar(int *param_1,undefined8 *param_2);
 
 // GLOBAL: CARDARTLIB 0x10032adc
 undefined4 DAT_10032adc = 0x00000000;
