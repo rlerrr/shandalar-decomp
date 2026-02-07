@@ -1,10 +1,11 @@
-// Forward declarations for globals referenced elsewhere.
+#include <stdlib.h>
+#include <string.h>
+#include <windows.h>
 #include "haar.h"
 #include "assert.h"
 #include "huffman.h"
-#include <stdlib.h>
-#include <string.h>
 
+// Forward declarations for globals referenced elsewhere.
 int Palette_FindNearestEntryIndex(int param_1, int param_2, int param_3, byte *param_4);
 uint Rgb888_QuantizeToF8(uint param_1);
 void RotateDwordsLeft1(undefined4 *param_1, uint param_2);

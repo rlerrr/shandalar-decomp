@@ -1,7 +1,7 @@
 #ifndef CATALOG_H
 #define CATALOG_H
 
-#include "CardArtLib.h"
+#include <windows.h>
 #include "inttypes.h"
 #include "mystdbool.h"
 

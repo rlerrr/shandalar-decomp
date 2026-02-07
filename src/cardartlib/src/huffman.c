@@ -1,9 +1,9 @@
-#include "CardArtLib.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <windows.h>
 #include "inttypes.h"
 #include "mystdbool.h"
 #include "defs.h"

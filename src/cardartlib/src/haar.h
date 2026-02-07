@@ -1,7 +1,6 @@
 #ifndef HAAR_H
 #define HAAR_H
 
-#include "CardArtLib.h"
 #include "defs.h"
 #include "inttypes.h"
 #include "mystdbool.h"
