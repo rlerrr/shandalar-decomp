@@ -1,14 +1,13 @@
 // Forward declarations for globals referenced elsewhere.
 #include "haar.h"
 #include "assert.h"
+#include "huffman.h"
 #include <stdlib.h>
 #include <string.h>
 
 int Palette_FindNearestEntryIndex(int param_1, int param_2, int param_3, byte *param_4);
 uint Rgb888_QuantizeToF8(uint param_1);
 void RotateDwordsLeft1(undefined4 *param_1, uint param_2);
-int Huffman13_Init(undefined4 bitstream_start, undefined4 symbol_table, undefined4 node_index_base);
-int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords, uint *bitstream, undefined4 bitstream_end);
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24, int height, int width, int row_padding);
 int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24, int height, int width,
                                 int row_padding);
@@ -732,6 +731,37 @@ void CopyBytes(void *dst,const void *src,size_t num)
     and ecx, 7
     je 0x2
     rep movsb
+  }
+}
+
+// FUNCTION: CARDARTLIB 0x10007273
+// FUNCTION: DRAWCARDLIB 0x10008cf3
+void SetBytes(void *dst, int value, size_t num)
+{
+  //This is weird because it doesn't do anything?
+  __int64 uVar1;
+  
+  uVar1 = (__int64)(value << 8 | value);
+  uVar1 |= uVar1 << 16;
+  uVar1 |= uVar1 << 32;
+
+  //TODO: this looks like real inline asm but who knows
+  __asm {
+    fld qword ptr [ebp - 8]
+    mov edi, dst
+    mov ecx, num
+    push ecx
+    shr ecx, 3
+    dec ecx
+    fst qword ptr [edi]
+    add edi, 8
+    dec ecx
+    jne -0xc
+    fstp qword ptr [edi]
+    pop ecx
+    and ecx, 7
+    mov eax, value
+    rep stosb
   }
 }
 
