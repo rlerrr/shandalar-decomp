@@ -34,7 +34,7 @@ undefined4 DAT_1003a05c = 0;
 char DAT_1003a064[0x20];
 char DAT_1003a090[260];
 
-char DAT_100f36c0[0x105];
+char global_cardart_directory[0x105];
 undefined4 DAT_100f5b5c = 0;
 undefined4 DAT_100f6908 = 0;
 undefined4 DAT_100f77e0 = 0;
@@ -289,7 +289,7 @@ char s__s__s_pic_100223b0[] = "%s\\%s.pic";
 undefined4 DAT_10022500 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10022504
-undefined4 DAT_10022504 = 0xFFFFFFFF;
+undefined4 global_dwPlatformId = 0xFFFFFFFF;
 
 // GLOBAL: DRAWCARDLIB 0x10026a48
 char s__CARDART_10026a48[] = "\\CARDART";
@@ -298,7 +298,7 @@ char s__CARDART_10026a48[] = "\\CARDART";
 char s__CARDS_DAT_10026a54[] = "\\CARDS.DAT";
 
 // GLOBAL: DRAWCARDLIB 0x10026a60
-char DAT_10026a60[] = "rb";
+char s_rb_10026a60[] = "rb";
 
 // GLOBAL: DRAWCARDLIB 0x10026a64
 char DAT_10026a64[] = "File %s could not be opened: EXITING\r\n";
@@ -331,19 +331,19 @@ undefined4 DAT_1002931c = 0x00000000;
 undefined4 DAT_10029320 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fc8
-undefined4 DAT_10039fc8 = 0x00000000;
+undefined4 global_CARDBK_LegendsLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fcc
-undefined4 DAT_10039fcc = 0x00000000;
+undefined4 global_CARDBK_Green = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fd0
-undefined4 DAT_10039fd0 = 0x00000000;
+undefined4 global_CARDBK_FallenEmpiresLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fd4
-undefined4 DAT_10039fd4 = 0x00000000;
+undefined4 global_CARDBK_White = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fd8
-undefined4 DAT_10039fd8 = 0x00000000;
+undefined4 global_CARDBK_GreenLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fdc
 undefined4 DAT_10039fdc = 0x00000000;
@@ -355,16 +355,16 @@ undefined4 DAT_10039fe0 = 0x00000000;
 undefined4 DAT_10039fe4 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe8
-undefined4 DAT_10039fe8 = 0x00000000;
+undefined4 global_CARDBK_BlackLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fec
 undefined4 DAT_10039fec = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff0
-undefined4 DAT_10039ff0 = 0x00000000;
+undefined4 global_CARDBK_WhiteLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff4
-undefined4 DAT_10039ff4 = 0x00000000;
+undefined4 global_CARDBK_Gold = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff8
 undefined4 DAT_10039ff8 = 0x00000000;
@@ -376,19 +376,19 @@ undefined4 DAT_10039ffc = 0x00000000;
 undefined4 DAT_1003a000 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a004
-undefined4 DAT_1003a004 = 0x00000000;
+undefined4 global_CARDBK_BlueLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a008
 undefined4 DAT_1003a008 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a00c
-undefined4 DAT_1003a00c = 0x00000000;
+undefined4 global_CARDBK_RedLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a010
 undefined4 DAT_1003a010 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a014
-undefined4 DAT_1003a014 = 0x00000000;
+undefined4 global_CARDBK_DarklandsLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a018
 undefined4 DAT_1003a018 = 0x00000000;
@@ -397,13 +397,13 @@ undefined4 DAT_1003a018 = 0x00000000;
 undefined4 DAT_1003a01c = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a020
-undefined4 DAT_1003a020 = 0x00000000;
+undefined4 global_CARDBK_Special = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a024
-undefined4 DAT_1003a024 = 0x00000000;
+undefined4 global_CARDBK_Artifact = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a028
-undefined4 DAT_1003a028 = 0x00000000;
+undefined4 global_CARDBK_ArabianNightsLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a02c
 undefined4 DAT_1003a02c = 0x00000000;
@@ -412,22 +412,22 @@ undefined4 DAT_1003a02c = 0x00000000;
 undefined4 DAT_1003a030 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a034
-undefined4 DAT_1003a034 = 0x00000000;
+undefined4 global_CARDBK_Blue = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a038
 undefined4 DAT_1003a038 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a03c
-undefined4 DAT_1003a03c = 0x00000000;
+undefined4 global_CARDBK_Red = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a040
 undefined4 DAT_1003a040 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a084
-undefined4 DAT_1003a084 = 0x00000000;
+undefined4 global_CARDBK_AntiquitiesLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a088
-undefined4 DAT_1003a088 = 0x00000000;
+undefined4 global_CARDBK_Black = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a08c
 undefined4 DAT_1003a08c = 0x00000000;
@@ -580,11 +580,11 @@ undefined4 prepare_fonts_and_imgs(void)
   strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0300m__TTF_10022094);
   AddFontResourceA(local_10c);
-  sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&DAT_100f36c0);
+  sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&global_cardart_directory);
   DAT_1003a198 = load_pic(local_10c);
-  sprintf(local_10c,s__s_CardSets_pic_100220b8,&DAT_100f36c0);
+  sprintf(local_10c,s__s_CardSets_pic_100220b8,&global_cardart_directory);
   DAT_10039fe4 = load_pic(local_10c);
-  sprintf(local_10c,s__s_CardBack_pic_100220c8,&DAT_100f36c0);
+  sprintf(local_10c,s__s_CardBack_pic_100220c8,&global_cardart_directory);
   DAT_1003a010 = load_pic(local_10c);
   pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardTitle_100220d8,0);
   DAT_1003a008 = CreateFontIndirectA(pLVar1);
@@ -610,30 +610,30 @@ undefined4 prepare_fonts_and_imgs(void)
   DAT_1003a01c = CreatePen(0,0,DAT_1003a1a4);
   DAT_1003a030 = CreateSolidBrush(DAT_10039ffc);
   DAT_1003a038 = CreateSolidBrush(DAT_1003a02c);
-  DAT_1003a024 = 0;
-  DAT_10039ff4 = 0;
-  DAT_1003a03c = 0;
-  DAT_1003a088 = 0;
-  DAT_1003a034 = 0;
-  DAT_10039fd4 = 0;
-  DAT_10039fcc = 0;
-  DAT_1003a028 = 0;
-  DAT_10039fc8 = 0;
-  DAT_1003a084 = 0;
-  DAT_10039fd0 = 0;
-  DAT_1003a014 = 0;
-  DAT_1003a00c = 0;
-  DAT_10039fe8 = 0;
-  DAT_1003a004 = 0;
-  DAT_10039ff0 = 0;
-  DAT_10039fd8 = 0;
-  DAT_1003a020 = 0;
+  global_CARDBK_Artifact = 0;
+  global_CARDBK_Gold = 0;
+  global_CARDBK_Red = 0;
+  global_CARDBK_Black = 0;
+  global_CARDBK_Blue = 0;
+  global_CARDBK_White = 0;
+  global_CARDBK_Green = 0;
+  global_CARDBK_ArabianNightsLand = 0;
+  global_CARDBK_LegendsLand = 0;
+  global_CARDBK_AntiquitiesLand = 0;
+  global_CARDBK_FallenEmpiresLand = 0;
+  global_CARDBK_DarklandsLand = 0;
+  global_CARDBK_RedLand = 0;
+  global_CARDBK_BlackLand = 0;
+  global_CARDBK_BlueLand = 0;
+  global_CARDBK_WhiteLand = 0;
+  global_CARDBK_GreenLand = 0;
+  global_CARDBK_Special = 0;
   if ((((((DAT_1003a198 == 0) || (DAT_10039fe4 == 0)) || (DAT_1003a010 == 0)) ||
        ((DAT_1003a008 == (HFONT)0x0 || (DAT_10039fdc == (HFONT)0x0)))) ||
       ((DAT_1003a000 == (HFONT)0x0 || ((DAT_1003a040 == (HFONT)0x0 || (DAT_1003a018 == (HFONT)0x0)))
        ))) || ((DAT_1003a01c == (HPEN)0x0 ||
                ((DAT_1003a030 == (HBRUSH)0x0 || (DAT_1003a038 == (HBRUSH)0x0)))))) {
-    FUN_10004f8e();
+    DestroyAllResources();
     uVar2 = 0;
   }
   else {
@@ -671,9 +671,84 @@ undefined * FUN_10004e82(undefined4 param_1,int param_2)
   return &DAT_1003a048;
 }
 
-// FUNCTION: DRAWCARDLIB 0x10004f8e
-void FUN_10004f8e(void)
+void __inline DestroyAllCardBackgrounds_impl(void)
+{
+  if (global_CARDBK_Green != 0) {
+    DeleteAndCloseObject(global_CARDBK_Green);
+    global_CARDBK_Green = 0;
+  }
+  if (global_CARDBK_White != 0) {
+    DeleteAndCloseObject(global_CARDBK_White);
+    global_CARDBK_White = 0;
+  }
+  if (global_CARDBK_Blue != 0) {
+    DeleteAndCloseObject(global_CARDBK_Blue);
+    global_CARDBK_Blue = 0;
+  }
+  if (global_CARDBK_Black != 0) {
+    DeleteAndCloseObject(global_CARDBK_Black);
+    global_CARDBK_Black = 0;
+  }
+  if (global_CARDBK_Red != 0) {
+    DeleteAndCloseObject(global_CARDBK_Red);
+    global_CARDBK_Red = 0;
+  }
+  if (global_CARDBK_Gold != 0) {
+    DeleteAndCloseObject(global_CARDBK_Gold);
+    global_CARDBK_Gold = 0;
+  }
+  if (global_CARDBK_Artifact != 0) {
+    DeleteAndCloseObject(global_CARDBK_Artifact);
+    global_CARDBK_Artifact = 0;
+  }
+  if (global_CARDBK_GreenLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_GreenLand);
+    global_CARDBK_GreenLand = 0;
+  }
+  if (global_CARDBK_WhiteLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_WhiteLand);
+    global_CARDBK_WhiteLand = 0;
+  }
+  if (global_CARDBK_BlueLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_BlueLand);
+    global_CARDBK_BlueLand = 0;
+  }
+  if (global_CARDBK_BlackLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_BlackLand);
+    global_CARDBK_BlackLand = 0;
+  }
+  if (global_CARDBK_RedLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_RedLand);
+    global_CARDBK_RedLand = 0;
+  }
+  if (global_CARDBK_DarklandsLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_DarklandsLand);
+    global_CARDBK_DarklandsLand = 0;
+  }
+  if (global_CARDBK_FallenEmpiresLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_FallenEmpiresLand);
+    global_CARDBK_FallenEmpiresLand = 0;
+  }
+  if (global_CARDBK_AntiquitiesLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_AntiquitiesLand);
+    global_CARDBK_AntiquitiesLand = 0;
+  }
+  if (global_CARDBK_LegendsLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_LegendsLand);
+    global_CARDBK_LegendsLand = 0;
+  }
+  if (global_CARDBK_ArabianNightsLand != 0) {
+    DeleteAndCloseObject(global_CARDBK_ArabianNightsLand);
+    global_CARDBK_ArabianNightsLand = 0;
+  }
+  if (global_CARDBK_Special != 0) {
+    DeleteAndCloseObject(global_CARDBK_Special);
+    global_CARDBK_Special = 0;
+  }
+}
 
+// FUNCTION: DRAWCARDLIB 0x10004f8e
+void DestroyAllResources(void)
 {
   CHAR local_10c [264];
   
@@ -702,89 +777,20 @@ void FUN_10004f8e(void)
   strcat(local_10c,s__Tt0300m__TTF_100221dc);
   RemoveFontResourceA(local_10c);
   if (DAT_1003a198 != 0) {
-    FUN_1000ac34(DAT_1003a198);
+    DeleteAndCloseObject(DAT_1003a198);
     DAT_1003a198 = 0;
   }
   if (DAT_10039fe4 != 0) {
-    FUN_1000ac34(DAT_10039fe4);
+    DeleteAndCloseObject(DAT_10039fe4);
     DAT_10039fe4 = 0;
   }
   if (DAT_1003a010 != 0) {
-    FUN_1000ac34(DAT_1003a010);
+    DeleteAndCloseObject(DAT_1003a010);
     DAT_1003a010 = 0;
   }
-  if (DAT_10039fcc != 0) {
-    FUN_1000ac34(DAT_10039fcc);
-    DAT_10039fcc = 0;
-  }
-  if (DAT_10039fd4 != 0) {
-    FUN_1000ac34(DAT_10039fd4);
-    DAT_10039fd4 = 0;
-  }
-  if (DAT_1003a034 != 0) {
-    FUN_1000ac34(DAT_1003a034);
-    DAT_1003a034 = 0;
-  }
-  if (DAT_1003a088 != 0) {
-    FUN_1000ac34(DAT_1003a088);
-    DAT_1003a088 = 0;
-  }
-  if (DAT_1003a03c != 0) {
-    FUN_1000ac34(DAT_1003a03c);
-    DAT_1003a03c = 0;
-  }
-  if (DAT_10039ff4 != 0) {
-    FUN_1000ac34(DAT_10039ff4);
-    DAT_10039ff4 = 0;
-  }
-  if (DAT_1003a024 != 0) {
-    FUN_1000ac34(DAT_1003a024);
-    DAT_1003a024 = 0;
-  }
-  if (DAT_10039fd8 != 0) {
-    FUN_1000ac34(DAT_10039fd8);
-    DAT_10039fd8 = 0;
-  }
-  if (DAT_10039ff0 != 0) {
-    FUN_1000ac34(DAT_10039ff0);
-    DAT_10039ff0 = 0;
-  }
-  if (DAT_1003a004 != 0) {
-    FUN_1000ac34(DAT_1003a004);
-    DAT_1003a004 = 0;
-  }
-  if (DAT_10039fe8 != 0) {
-    FUN_1000ac34(DAT_10039fe8);
-    DAT_10039fe8 = 0;
-  }
-  if (DAT_1003a00c != 0) {
-    FUN_1000ac34(DAT_1003a00c);
-    DAT_1003a00c = 0;
-  }
-  if (DAT_1003a014 != 0) {
-    FUN_1000ac34(DAT_1003a014);
-    DAT_1003a014 = 0;
-  }
-  if (DAT_10039fd0 != 0) {
-    FUN_1000ac34(DAT_10039fd0);
-    DAT_10039fd0 = 0;
-  }
-  if (DAT_1003a084 != 0) {
-    FUN_1000ac34(DAT_1003a084);
-    DAT_1003a084 = 0;
-  }
-  if (DAT_10039fc8 != 0) {
-    FUN_1000ac34(DAT_10039fc8);
-    DAT_10039fc8 = 0;
-  }
-  if (DAT_1003a028 != 0) {
-    FUN_1000ac34(DAT_1003a028);
-    DAT_1003a028 = 0;
-  }
-  if (DAT_1003a020 != 0) {
-    FUN_1000ac34(DAT_1003a020);
-    DAT_1003a020 = 0;
-  }
+
+  DestroyAllCardBackgrounds_impl();
+  
   if (DAT_1003a008 != (HGDIOBJ)0x0) {
     DeleteObject(DAT_1003a008);
   }
@@ -821,87 +827,11 @@ void FUN_10004f8e(void)
     DeleteObject(DAT_1003a038);
   }
   DAT_1003a038 = (HGDIOBJ)0x0;
-  return;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000558b
-void DestroyAllCardBackgrounds(void)
-
-{
-                    /* 0x558b  2  DestroyAllCardBackgrounds */
-  if (DAT_10039fcc != 0) {
-    FUN_1000ac34(DAT_10039fcc);
-    DAT_10039fcc = 0;
-  }
-  if (DAT_10039fd4 != 0) {
-    FUN_1000ac34(DAT_10039fd4);
-    DAT_10039fd4 = 0;
-  }
-  if (DAT_1003a034 != 0) {
-    FUN_1000ac34(DAT_1003a034);
-    DAT_1003a034 = 0;
-  }
-  if (DAT_1003a088 != 0) {
-    FUN_1000ac34(DAT_1003a088);
-    DAT_1003a088 = 0;
-  }
-  if (DAT_1003a03c != 0) {
-    FUN_1000ac34(DAT_1003a03c);
-    DAT_1003a03c = 0;
-  }
-  if (DAT_10039ff4 != 0) {
-    FUN_1000ac34(DAT_10039ff4);
-    DAT_10039ff4 = 0;
-  }
-  if (DAT_1003a024 != 0) {
-    FUN_1000ac34(DAT_1003a024);
-    DAT_1003a024 = 0;
-  }
-  if (DAT_10039fd8 != 0) {
-    FUN_1000ac34(DAT_10039fd8);
-    DAT_10039fd8 = 0;
-  }
-  if (DAT_10039ff0 != 0) {
-    FUN_1000ac34(DAT_10039ff0);
-    DAT_10039ff0 = 0;
-  }
-  if (DAT_1003a004 != 0) {
-    FUN_1000ac34(DAT_1003a004);
-    DAT_1003a004 = 0;
-  }
-  if (DAT_10039fe8 != 0) {
-    FUN_1000ac34(DAT_10039fe8);
-    DAT_10039fe8 = 0;
-  }
-  if (DAT_1003a00c != 0) {
-    FUN_1000ac34(DAT_1003a00c);
-    DAT_1003a00c = 0;
-  }
-  if (DAT_1003a014 != 0) {
-    FUN_1000ac34(DAT_1003a014);
-    DAT_1003a014 = 0;
-  }
-  if (DAT_10039fd0 != 0) {
-    FUN_1000ac34(DAT_10039fd0);
-    DAT_10039fd0 = 0;
-  }
-  if (DAT_1003a084 != 0) {
-    FUN_1000ac34(DAT_1003a084);
-    DAT_1003a084 = 0;
-  }
-  if (DAT_10039fc8 != 0) {
-    FUN_1000ac34(DAT_10039fc8);
-    DAT_10039fc8 = 0;
-  }
-  if (DAT_1003a028 != 0) {
-    FUN_1000ac34(DAT_1003a028);
-    DAT_1003a028 = 0;
-  }
-  if (DAT_1003a020 != 0) {
-    FUN_1000ac34(DAT_1003a020);
-    DAT_1003a020 = 0;
-  }
-  return;
+void DestroyAllCardBackgrounds(void) {
+  DestroyAllCardBackgrounds_impl();
 }
 
 // FUNCTION: DRAWCARDLIB 0x10005830
@@ -1219,28 +1149,28 @@ undefined4 * FUN_100067c7(int param_1)
   undefined4 *local_8;
   
   if (*(int *)(param_1 + 0x10) == 1) {
-    local_8 = &DAT_1003a088;
+    local_8 = &global_CARDBK_Black;
   }
   else if (*(int *)(param_1 + 0x10) == 8) {
-    local_8 = &DAT_10039fd4;
+    local_8 = &global_CARDBK_White;
   }
   else if (*(int *)(param_1 + 0x10) == 7) {
-    local_8 = &DAT_1003a03c;
+    local_8 = &global_CARDBK_Red;
   }
   else if (*(int *)(param_1 + 0x10) == 5) {
-    local_8 = &DAT_10039fcc;
+    local_8 = &global_CARDBK_Green;
   }
   else if (*(int *)(param_1 + 0x10) == 2) {
-    local_8 = &DAT_1003a034;
+    local_8 = &global_CARDBK_Blue;
   }
   else if (*(int *)(param_1 + 0x10) == 4) {
-    local_8 = &DAT_10039ff4;
+    local_8 = &global_CARDBK_Gold;
   }
   else if (*(int *)(param_1 + 0x10) == 0) {
-    local_8 = &DAT_1003a024;
+    local_8 = &global_CARDBK_Artifact;
   }
   else if (*(int *)(param_1 + 0x10) == 3) {
-    local_8 = &DAT_1003a024;
+    local_8 = &global_CARDBK_Artifact;
   }
   else if (*(int *)(param_1 + 0x10) == 6) {
     if ((*(byte *)(param_1 + 0xc) & 2) == 0) {
@@ -1250,30 +1180,30 @@ undefined4 * FUN_100067c7(int param_1)
             if ((*(byte *)(param_1 + 0xc) & 8) == 0) {
               iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f952c);
               if (iVar1 == 0) {
-                local_8 = &DAT_10039fe8;
+                local_8 = &global_CARDBK_BlackLand;
               }
               else {
                 iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f8140);
                 if (iVar1 == 0) {
-                  local_8 = &DAT_10039ff0;
+                  local_8 = &global_CARDBK_WhiteLand;
                 }
                 else {
                   iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f77e0);
                   if (iVar1 == 0) {
-                    local_8 = &DAT_1003a00c;
+                    local_8 = &global_CARDBK_RedLand;
                   }
                   else {
                     iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f5b5c);
                     if (iVar1 == 0) {
-                      local_8 = &DAT_10039fd8;
+                      local_8 = &global_CARDBK_GreenLand;
                     }
                     else {
                       iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f6908);
                       if (iVar1 == 0) {
-                        local_8 = &DAT_1003a004;
+                        local_8 = &global_CARDBK_BlueLand;
                       }
                       else {
-                        local_8 = &DAT_1003a084;
+                        local_8 = &global_CARDBK_AntiquitiesLand;
                       }
                     }
                   }
@@ -1281,30 +1211,30 @@ undefined4 * FUN_100067c7(int param_1)
               }
             }
             else {
-              local_8 = &DAT_1003a084;
+              local_8 = &global_CARDBK_AntiquitiesLand;
             }
           }
           else {
-            local_8 = &DAT_10039fc8;
+            local_8 = &global_CARDBK_LegendsLand;
           }
         }
         else {
-          local_8 = &DAT_1003a014;
+          local_8 = &global_CARDBK_DarklandsLand;
         }
       }
       else {
-        local_8 = &DAT_1003a028;
+        local_8 = &global_CARDBK_ArabianNightsLand;
       }
     }
     else {
-      local_8 = &DAT_1003a084;
+      local_8 = &global_CARDBK_AntiquitiesLand;
     }
   }
   else if (*(int *)(param_1 + 0x10) == -1) {
-    local_8 = &DAT_1003a020;
+    local_8 = &global_CARDBK_Special;
   }
   else {
-    local_8 = &DAT_1003a024;
+    local_8 = &global_CARDBK_Artifact;
   }
   return local_8;
 }
@@ -1322,65 +1252,65 @@ undefined4 FUN_10006a41(int *param_1)
     uVar1 = 0;
   }
   else if (*param_1 == 0) {
-    if (param_1 == &DAT_10039fcc) {
+    if (param_1 == &global_CARDBK_Green) {
       strcpy(local_68,s_CARDBK_Green_10022260);
     }
-    else if (param_1 == &DAT_10039fd4) {
+    else if (param_1 == &global_CARDBK_White) {
       strcpy(local_68,s_CARDBK_White_10022270);
     }
-    else if (param_1 == &DAT_1003a034) {
+    else if (param_1 == &global_CARDBK_Blue) {
       strcpy(local_68,s_CARDBK_Blue_10022280);
     }
-    else if (param_1 == &DAT_1003a088) {
+    else if (param_1 == &global_CARDBK_Black) {
       strcpy(local_68,s_CARDBK_Black_1002228c);
     }
-    else if (param_1 == &DAT_1003a03c) {
+    else if (param_1 == &global_CARDBK_Red) {
       strcpy(local_68,s_CARDBK_Red_1002229c);
     }
-    else if (param_1 == &DAT_10039ff4) {
+    else if (param_1 == &global_CARDBK_Gold) {
       strcpy(local_68,s_CARDBK_Gold_100222a8);
     }
-    else if (param_1 == &DAT_1003a024) {
+    else if (param_1 == &global_CARDBK_Artifact) {
       strcpy(local_68,s_CARDBK_Artifact_100222b4);
     }
-    else if (param_1 == &DAT_10039fd8) {
+    else if (param_1 == &global_CARDBK_GreenLand) {
       strcpy(local_68,s_CARDBK_GreenLand_100222c4);
     }
-    else if (param_1 == &DAT_10039ff0) {
+    else if (param_1 == &global_CARDBK_WhiteLand) {
       strcpy(local_68,s_CARDBK_WhiteLand_100222d8);
     }
-    else if (param_1 == &DAT_1003a004) {
+    else if (param_1 == &global_CARDBK_BlueLand) {
       strcpy(local_68,s_CARDBK_BlueLand_100222ec);
     }
-    else if (param_1 == &DAT_10039fe8) {
+    else if (param_1 == &global_CARDBK_BlackLand) {
       strcpy(local_68,s_CARDBK_BlackLand_100222fc);
     }
-    else if (param_1 == &DAT_1003a00c) {
+    else if (param_1 == &global_CARDBK_RedLand) {
       strcpy(local_68,s_CARDBK_RedLand_10022310);
     }
-    else if (param_1 == &DAT_1003a014) {
+    else if (param_1 == &global_CARDBK_DarklandsLand) {
       strcpy(local_68,s_CARDBK_DarklandsLand_10022320);
     }
-    else if (param_1 == &DAT_10039fd0) {
+    else if (param_1 == &global_CARDBK_FallenEmpiresLand) {
       strcpy(local_68,s_CARDBK_FallenEmpiresLand_10022338);
     }
-    else if (param_1 == &DAT_1003a084) {
+    else if (param_1 == &global_CARDBK_AntiquitiesLand) {
       strcpy(local_68,s_CARDBK_AntiquitiesLand_10022354);
     }
-    else if (param_1 == &DAT_10039fc8) {
+    else if (param_1 == &global_CARDBK_LegendsLand) {
       strcpy(local_68,s_CARDBK_LegendsLand_1002236c);
     }
-    else if (param_1 == &DAT_1003a028) {
+    else if (param_1 == &global_CARDBK_ArabianNightsLand) {
       strcpy(local_68,s_CARDBK_ArabianNightsLand_10022380);
     }
-    else if (param_1 == &DAT_1003a020) {
+    else if (param_1 == &global_CARDBK_Special) {
       strcpy(local_68,s_CARDBK_Special_1002239c);
     }
     else {
       strcpy(local_68,&DAT_100223ac);
     }
     if (local_68[0] != '\0') {
-      sprintf(local_170,s__s__s_pic_100223b0,&DAT_100f36c0,local_68);
+      sprintf(local_170,s__s__s_pic_100223b0,&global_cardart_directory,local_68);
       iVar2 = load_pic(local_170);
       *param_1 = iVar2;
     }
@@ -2127,8 +2057,7 @@ FUN_1000aab9(HDC param_1,int *param_2,HANDLE param_3,int param_4,int param_5,int
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000ac34
-void FUN_1000ac34(HANDLE param_1)
-
+void DeleteAndCloseObject(HANDLE param_1)
 {
   int iVar1;
   DWORD *pDVar2;
@@ -2140,7 +2069,7 @@ void FUN_1000ac34(HANDLE param_1)
   int local_c;
   int local_8;
   
-  if (DAT_10022504 == -1) {
+  if (global_dwPlatformId == -1) {
     local_f4.dwOSVersionInfoSize = 0x94;
     pDVar2 = &local_f4.dwMajorVersion;
     for (iVar1 = 0x24; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -2149,10 +2078,11 @@ void FUN_1000ac34(HANDLE param_1)
     }
     GetVersionExA(&local_f4);
     if (local_f4.dwPlatformId == 1) {
-      DAT_10022504 = 1;
+      //Windows 95/98?
+      global_dwPlatformId = 1;
     }
     else {
-      DAT_10022504 = 0;
+      global_dwPlatformId = 0;
     }
   }
   if (param_1 != (HANDLE)0x0) {
@@ -2160,7 +2090,7 @@ void FUN_1000ac34(HANDLE param_1)
     local_60 = local_10;
     local_8 = local_48 + local_c;
     DeleteObject(param_1);
-    if ((local_60 != (HANDLE)0x0) && (DAT_10022504 != 0)) {
+    if ((local_60 != (HANDLE)0x0) && (global_dwPlatformId != 0)) {
       CloseHandle(local_60);
     }
   }
@@ -2225,8 +2155,8 @@ uint DLLMain(undefined4 param_1,uint param_2,undefined4 param_3)
   (void)param_3;
   switch(param_2) {
   case 0:
-    FUN_10004f8e();
-    FUN_1000c0ca();
+    DestroyAllResources();
+    DrawCardLib_Shutdown();
     param_2 = 1;
     break;
   case 1:
@@ -2247,15 +2177,14 @@ uint DLLMain(undefined4 param_1,uint param_2,undefined4 param_3)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 int read_cfg(undefined4 param_1)
-
 {
   char *pcVar1;
   void *_DstBuf;
-  char acStackY_4a4a0 [264];
-  size_t sStackY_4a398;
-  size_t sStackY_4a394;
+  char cards_dat_filename [264];
+  size_t global_available_slots;
+  size_t record_size;
   int iStackY_4a390;
-  FILE *pFStackY_4a38c;
+  FILE *cards_dat;
   undefined1 auStackY_4a388 [4];
   int aiStackY_4a384 [75993];
   int iVar2;
@@ -2266,28 +2195,28 @@ int read_cfg(undefined4 param_1)
   GetModuleFileNameA((HMODULE)0x0,&global_base_directory,0x105);
   pcVar1 = strrchr(&global_base_directory,0x5c);
   *pcVar1 = '\0';
-  strcpy((uint *)&DAT_100f36c0,(uint *)&global_base_directory);
-  strcat((uint *)&DAT_100f36c0,(uint *)s__CARDART_10026a48);
+  strcpy((uint *)&global_cardart_directory,(uint *)&global_base_directory);
+  strcat((uint *)&global_cardart_directory,(uint *)s__CARDART_10026a48);
   DAT_10021048 = 3;
   DAT_10124538 = 0x10;
   InitCardArtGdiResources();
-  strcpy(acStackY_4a4a0,(uint *)&global_base_directory);
-  strcat(acStackY_4a4a0,(uint *)s__CARDS_DAT_10026a54);
-  pFStackY_4a38c = fopen(acStackY_4a4a0,DAT_10026a60);
-  if (pFStackY_4a38c == (FILE *)0x0) {
+  strcpy(cards_dat_filename,(uint *)&global_base_directory);
+  strcat(cards_dat_filename,(uint *)s__CARDS_DAT_10026a54);
+  cards_dat = fopen(cards_dat_filename,s_rb_10026a60);
+  if (cards_dat == (FILE *)0x0) {
     iVar2 = 0;
   }
   else {
-    fread(&sStackY_4a398,4,1,pFStackY_4a38c);
-    fread(&sStackY_4a394,4,1,pFStackY_4a38c);
-    fread(auStackY_4a388,0x98,sStackY_4a398,pFStackY_4a38c);
-    _DstBuf = malloc(sStackY_4a394);
+    fread(&global_available_slots,4,1,cards_dat);
+    fread(&record_size,4,1,cards_dat);
+    fread(auStackY_4a388,0x98,global_available_slots,cards_dat);
+    _DstBuf = malloc(record_size);
     if (_DstBuf == (void *)0x0) {
       iVar2 = 0;
     }
     else {
-      fread(_DstBuf,1,sStackY_4a394,pFStackY_4a38c);
-      for (iStackY_4a390 = 0; iStackY_4a390 < (int)sStackY_4a398; iStackY_4a390 = iStackY_4a390 + 1)
+      fread(_DstBuf,1,record_size,cards_dat);
+      for (iStackY_4a390 = 0; iStackY_4a390 < (int)global_available_slots; iStackY_4a390 = iStackY_4a390 + 1)
       {
         aiStackY_4a384[iStackY_4a390 * 0x26] = aiStackY_4a384[iStackY_4a390 * 0x26] + (int)_DstBuf;
         strncpy(DAT_100f37d0 + iStackY_4a390 * 100,(char *)aiStackY_4a384[iStackY_4a390 * 0x26],
@@ -2296,10 +2225,10 @@ int read_cfg(undefined4 param_1)
       }
       free(_DstBuf);
     }
-    fclose(pFStackY_4a38c);
+    fclose(cards_dat);
   }
   if (iVar2 == 0) {
-    for (iStackY_4a390 = 0; iStackY_4a390 < (int)sStackY_4a398; iStackY_4a390 = iStackY_4a390 + 1) {
+    for (iStackY_4a390 = 0; iStackY_4a390 < (int)global_available_slots; iStackY_4a390 = iStackY_4a390 + 1) {
       strcpy((uint *)(&DAT_100f37d0 + iStackY_4a390 * 100),(uint *)&DAT_10026a64);
     }
   }
@@ -2307,7 +2236,7 @@ int read_cfg(undefined4 param_1)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000c0ca
-void FUN_1000c0ca(void)
+void DrawCardLib_Shutdown(void)
 {
   ShutdownCardArtGdiResources();
   DeleteCriticalSection(&global_critical_section_for_catalog);
