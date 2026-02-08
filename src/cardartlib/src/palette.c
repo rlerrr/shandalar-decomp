@@ -22,7 +22,8 @@ extern undefined1 global_BluePathBitsTable[0x800];
 
 // GLOBAL: CARDARTLIB 0x1001d0e4
 // GLOBAL: DRAWCARDLIB 0x10022500
-undefined4 DAT_1001d0e4 = 0x00000000;
+// GLOBAL: DECKDLL 0x10035b38
+HDC global_screen_dc;
 
 // GLOBAL: CARDARTLIB 0x1001d0e8
 // GLOBAL: DRAWCARDLIB 0x10022508
@@ -90,10 +91,12 @@ char s__sp_lf__1001e08c[] = " \n";
 
 // GLOBAL: CARDARTLIB 0x100209e0
 // GLOBAL: DRAWCARDLIB 0x100f1f70
-undefined4 DAT_100209e0 = 0x00000000;
+// GLOBAL: DECKDLL 0x10113ce8
+HPALETTE global_cart_art_hpalette;
 
 // GLOBAL: CARDARTLIB 0x100209e4
 // GLOBAL: DRAWCARDLIB 0x100f1f74
+// GLOBAL: DECKDLL 0x10104df0
 undefined4 DAT_100209e4 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100209e8
@@ -174,13 +177,13 @@ BOOL InitCardArtGdiResources(void)
   if (!SetupDuelPalette())
     iVar1 = 0;
 
-  if (DAT_1001d0e4 == 0) {
-    CreateOffscreen32bppDibSection(10,10,(HDC *)&DAT_1001d0e4,(BITMAPINFO *)0x0,
+  if (global_screen_dc == 0) {
+    CreateOffscreen32bppDibSection(10,10,(HDC *)&global_screen_dc,(BITMAPINFO *)0x0,
                                   (HBITMAP *)&DAT_100209e4,(HGDIOBJ *)0x0,(void **)0x0);
     InitializeCriticalSection(&global_critical_section_for_drawing);
   }
 
-  if (DAT_1001d0e4 == 0)
+  if (global_screen_dc == 0)
     iVar1=0;
   
   if (iVar1 == 0)
@@ -194,12 +197,12 @@ BOOL InitCardArtGdiResources(void)
 // FUNCTION: DRAWCARDLIB 0x1000a628
 void ShutdownCardArtGdiResources(void)
 {
-  if (DAT_1001d0e4 != (HDC)0x0) {
-    checked_DeleteDC_DeleteObject(DAT_1001d0e4,DAT_100209e4);
-    DAT_1001d0e4 = (HDC)0x0;
+  if (global_screen_dc != (HDC)0x0) {
+    checked_DeleteDC_DeleteObject(global_screen_dc,DAT_100209e4);
+    global_screen_dc = (HDC)0x0;
     DeleteCriticalSection(&global_critical_section_for_drawing);
   }
-  if (DAT_100209e0 != 0) {
+  if (global_cart_art_hpalette != 0) {
     DestroyCardArtPalette();
   }
 }
@@ -209,7 +212,7 @@ void ShutdownCardArtGdiResources(void)
 // FUNCTION: DRAWCARDLIB 0x1000a67b
 void ApplyCardArtPaletteToDc(HDC hdc)
 {
-  SelectPalette(hdc,DAT_100209e0,0);
+  SelectPalette(hdc,global_cart_art_hpalette,0);
   RealizePalette(hdc);
   GdiFlush();
   SetDIBColorTable(hdc,0,0x100,g_cardArtPalette);
@@ -332,7 +335,7 @@ BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int 
   }
 
   EnterCriticalSection(&global_critical_section_for_drawing);
-  v.h = SelectObject(DAT_1001d0e4,bitmap);
+  v.h = SelectObject(global_screen_dc,bitmap);
   GetObjectA(bitmap,sizeof(v.bm),&v.bm);
 
   v.dst_left = dst_rect->left;
@@ -341,12 +344,12 @@ BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int 
 
   v.dst_height = (dst_rect->bottom < dst_rect->top) ? v.bm.bmHeight : dst_rect->bottom - dst_rect->top;
 
-  ApplyCardArtPaletteToDc(DAT_1001d0e4);
+  ApplyCardArtPaletteToDc(global_screen_dc);
 
-  StretchBlt(dst_dc,v.dst_left,v.dst_top,v.dst_width,v.dst_height,DAT_1001d0e4,src_x,src_y,
+  StretchBlt(dst_dc,v.dst_left,v.dst_top,v.dst_width,v.dst_height,global_screen_dc,src_x,src_y,
     src_width <= v.bm.bmWidth ? src_width : v.bm.bmWidth,
     src_height <= v.bm.bmHeight ? src_height : v.bm.bmHeight, 0xcc0020);
-  SelectObject(DAT_1001d0e4,v.h);
+  SelectObject(global_screen_dc,v.h);
   LeaveCriticalSection(&global_critical_section_for_drawing);
   return 1;
 }
@@ -379,26 +382,26 @@ BOOL SetupDuelPalette(void)
     for (s.local_514 = 1; (int)s.local_514 < 0xff; s.local_514 = s.local_514 + 1) {
       s.local_408->palPalEntry[s.local_514].peFlags = '\x04';
     }
-    DAT_100209e0 = CreatePalette(s.local_408);
-    if (DAT_100209e0 != (HPALETTE)0x0) {
+    global_cart_art_hpalette = CreatePalette(s.local_408);
+    if (global_cart_art_hpalette != (HPALETTE)0x0) {
       s.local_628.peRed = 0xff;
       s.local_628.peGreen = 0xff;
       s.local_628.peBlue = 0xff;
       s.local_628.peFlags = '\0';
-      SetPaletteEntries(DAT_100209e0,0xff,1,&s.local_628);
+      SetPaletteEntries(global_cart_art_hpalette,0xff,1,&s.local_628);
       s.local_628.peRed = 0xfe;
       s.local_628.peGreen = 0xfe;
       s.local_628.peBlue = 0xfe;
       s.local_628.peFlags = '\x04';
-      SetPaletteEntries(DAT_100209e0,0xbf,1,&s.local_628);
+      SetPaletteEntries(global_cart_art_hpalette,0xbf,1,&s.local_628);
       for (s.local_514 = 0xec; (int)s.local_514 < 0xff; s.local_514 = s.local_514 + 1) {
         s.local_628.peRed = '\x01';
         s.local_628.peGreen = '\x01';
         s.local_628.peBlue = '\x01';
         s.local_628.peFlags = '\x04';
-        SetPaletteEntries(DAT_100209e0,s.local_514,1,&s.local_628);
+        SetPaletteEntries(global_cart_art_hpalette,s.local_514,1,&s.local_628);
       }
-      s.UVar1 = GetPaletteEntries(DAT_100209e0,0,0x100,s.local_404);
+      s.UVar1 = GetPaletteEntries(global_cart_art_hpalette,0,0x100,s.local_404);
       for (s.local_514 = 0; (int)s.local_514 < (int)s.UVar1; s.local_514 = s.local_514 + 1) {
         g_cardArtPalette[s.local_514].rgbBlue = s.local_404[s.local_514].peBlue;
         g_cardArtPalette[s.local_514].rgbGreen = s.local_404[s.local_514].peGreen;
@@ -428,8 +431,8 @@ BOOL SetupDuelPalette(void)
 // FUNCTION: DECKDLL 0x10024564
 void DestroyCardArtPalette(void)
 {
-  DeleteObject(DAT_100209e0);
-  DAT_100209e0 = (HGDIOBJ)0x0;
+  DeleteObject(global_cart_art_hpalette);
+  global_cart_art_hpalette = (HGDIOBJ)0x0;
   DestroyPaletteOctree();
 }
 

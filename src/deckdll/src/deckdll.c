@@ -542,7 +542,7 @@ static char global_loaddeck_dlg_filename[2 * MAX_PATH + 15 + 10];
 
 static bool global_filter_subtype_dlg_mode = false;
 // GLOBAL: DECKDLL 0x10104db0
-static char global_filter_dlg_title[128];
+static char global_filter_dlg_title[64];
 // GLOBAL: DECKDLL 0x10104d80
 static int global_filter_gle_dlg_value = 0;
 
@@ -688,9 +688,6 @@ static HWND global_title_hwnd;
 
 // GLOBAL: DECKDLL 0x1012566c
 static HDC global_hdc;
-
-// GLOBAL: DECKDLL 0x10035b38
-static HDC global_screen_dc;
 
 // GLOBAL: DECKDLL 0x101a9190
 static FilterExpansions global_filter_expansions = FE_0;

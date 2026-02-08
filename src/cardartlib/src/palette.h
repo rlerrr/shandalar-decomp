@@ -13,6 +13,7 @@ BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int 
 BOOL SetupDuelPalette(void);
 
 extern CRITICAL_SECTION global_critical_section_for_drawing;
+extern HDC global_screen_dc;
 extern RGBQUAD g_cardArtPalette[0x100];
 
 #endif

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <STDDEF.H>
 #include <string.h>
 #include <windows.h>
 #include "haar.h"
@@ -156,16 +157,16 @@ undefined4 global_color_depth = 0x00000000;
 int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
-    uint pixel_dword;       /* [ebp-0x94] */
-    uint masked_rgb;        /* [ebp-0x90] */
+    short *pixel_dword;     /* [ebp-0x94] (also reused as temp) */
+    int *pixel_rgb;         /* [ebp-0x90] */
     short *err_px;          /* [ebp-0x8c] */
-    int kernel_i;           /* [ebp-0x88] */
+    uint rgb_quant;         /* [ebp-0x88] */
     int byte_step;          /* [ebp-0x84] */
-    uint nearest_palette_rgb; /* [ebp-0x80] */
+    int local_80;           /* [ebp-0x80] */
     int x_start;            /* [ebp-0x7c] */
     undefined *kernel_ptr;  /* [ebp-0x78] */
     int kernel_count;       /* [ebp-0x74] */
-    uint r_clamped;         /* [ebp-0x70] */
+    int r_clamped;          /* [ebp-0x70] */
     int err_row_ptrs[6];    /* [ebp-0x6c] */
     int y;                  /* [ebp-0x54] */
     undefined2 local_50;    /* [ebp-0x50] */
@@ -179,9 +180,9 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
     int x_step;             /* [ebp-0x38] */
     uint g_clamped;         /* [ebp-0x34] */
     int err_g;              /* [ebp-0x30] */
-    undefined *k_it;        /* [ebp-0x2c] */
-    uint packed_clamped;    /* [ebp-0x28] */
-    uint tmp_rgb;           /* [ebp-0x24] */
+    int *k_it;              /* [ebp-0x2c] */
+    int rgb_clamped;        /* [ebp-0x28] */
+    uint packed_clamped;    /* [ebp-0x24] */
     undefined2 local_24;    /* [ebp-0x20] */
     undefined2 local_22;    /* [ebp-0x1e] */
     undefined2 local_20;    /* [ebp-0x1c] */
@@ -208,17 +209,17 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
   s.local_22 = 0xffff;
   s.local_20 = 0xffff;
   s.local_1e = 0;
-  s.nearest_palette_rgb = 0xffffffff;
+  s.local_80 = -1;
   s.x_step = 1;
-  s.packed_clamped = 0;
+  s.rgb_clamped = 0;
   s.kernel_ptr = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
-  s.clear_dwords = (uint)(width * 8 + 0x50U) >> 2;
-
+  s.clear_dwords = (uint)((width + 10) * 8) >> 2;
+  
   if (dither_kernel_id == 0) {
     DAT_1001e05c = dither_kernel_id;
     return 0;
   }
-  if (dither_kernel_id == 1) {
+  else if (dither_kernel_id == 1) {
     DAT_1001e05c = dither_kernel_id;
     return QuantizeBgr24ToNearestPaletteColorInPlace(bgr24,height,width,row_padding);
   }
@@ -240,14 +241,14 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
     DAT_100322d0 = 1;
   }
 
-  if (dither_kernel_id != DAT_1001e05c) {
-    for (s.x = 0; s.x < 0x41; s.x = s.x + 1) {
+  if (DAT_1001e05c != dither_kernel_id) {
+    for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
       if (DAT_10117100[s.x] != (void *)0x0) {
         free(DAT_10117100[s.x]);
         DAT_10117100[s.x] = (void *)0x0;
       }
     }
-    InitErrorDiffusionDeltaTables(dither_kernel_id,(int)DAT_10117100);
+    InitErrorDiffusionDeltaTables(dither_kernel_id,DAT_10117100);
     DAT_1001e05c = dither_kernel_id;
   }
 
@@ -269,69 +270,77 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
       s.byte_step = -3;
     }
 
-    s.byte_off = s.x_start;
-    s.byte_off = s.byte_off + s.x_start;
-    s.byte_off = s.byte_off + s.x_start;
-    for (s.x = s.x_start; s.x != s.x_end; s.x = s.x + s.x_step) {
-      s.pixel_dword = *(uint *)(s.byte_off + (int)bgr24);
-      s.masked_rgb = s.pixel_dword & 0xffffff;
-      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) & 0xff000000;
+    s.x = s.x_start;
+    s.byte_off = s.x_start + s.x_start + s.x_start;
+    for (; s.x != s.x_end; s.x = s.x + s.x_step, s.byte_off = s.byte_off + s.byte_step) {
+      s.packed_clamped = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xffffff;
+      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xff000000;
 
-      s.err_px = (short *)(s.err_row_ptrs[1] + (s.x << 3));
-      if (s.masked_rgb == 0) {
-        s.nearest_palette_rgb = 0;
-        s.r_clamped = 0;
-        s.g_clamped = 0;
-        s.b_clamped = 0;
+      s.err_px = (short *)s.err_row_ptrs[1] + (s.x << 2);
+
+      if (s.packed_clamped == 0) {
+        s.local_80 = 0;
+        s.r_clamped = s.local_80;
+        s.g_clamped = s.r_clamped;
+        s.b_clamped = s.g_clamped;
       }
-      else if (s.masked_rgb == 0xffffff) {
+      else if (s.packed_clamped == 0xffffff) {
         s.r_clamped = 0xff;
-        s.g_clamped = 0xff;
-        s.b_clamped = 0xff;
-        s.nearest_palette_rgb = 0xffffff;
+        s.g_clamped = s.r_clamped;
+        s.b_clamped = s.g_clamped;
+        s.local_80 = 0xffffff;
       }
       else {
-        s.b_clamped = (uint)(byte)PTR_DAT_1001e058[(s.pixel_dword & 0xff) + ((int)*s.err_px >> 8)];
-        s.g_clamped = (uint)(byte)PTR_DAT_1001e058[(s.masked_rgb >> 8 & 0xff) + ((int)s.err_px[1] >> 8)];
-        s.r_clamped = (uint)(byte)PTR_DAT_1001e058[(s.masked_rgb >> 0x10) + ((int)s.err_px[2] >> 8)];
-        s.masked_rgb = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
-        s.nearest_palette_rgb = Octree_FindNearestColor(s.masked_rgb);
+
+        s.b_clamped = s.packed_clamped & 0xff;
+        s.b_clamped += ((int)*s.err_px >> 8);
+        s.b_clamped = (uint)(byte)PTR_DAT_1001e058[s.b_clamped];
+
+        s.g_clamped = ((byte*)&s.packed_clamped)[1];
+        s.g_clamped += ((int)s.err_px[1] >> 8);
+        s.g_clamped = (uint)(byte)PTR_DAT_1001e058[s.g_clamped];
+
+        s.r_clamped = (s.packed_clamped & 0xff0000) >> 16;
+        s.r_clamped += ((int)s.err_px[2] >> 8);
+        s.r_clamped = (uint)(byte)PTR_DAT_1001e058[s.r_clamped];
+
+        s.packed_clamped = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
+        //if (s.packed_clamped == 0) {
+        //  s.local_80 = 0;
+        //}
+        //else if (s.packed_clamped == 0xffffff) {
+        //  s.local_80 = 0xffffff;
+        //}
+        //else {
+          s.local_80 = Octree_FindNearestColor(s.packed_clamped);
       }
+      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) | s.local_80;
 
-      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) | s.nearest_palette_rgb;
-
-      s.err_b = (int)s.b_clamped - (int)(s.nearest_palette_rgb & 0xff);
-      s.err_g = (int)s.g_clamped - (int)(s.nearest_palette_rgb >> 8 & 0xff);
-
+      s.err_b = s.b_clamped - (s.local_80 & 0xff);
+      s.err_g = s.g_clamped - (s.local_80 >> 8 & 0xff);
+      s.rgb_quant = s.r_clamped - ((uint)s.local_80 >> 16);
+      //s.err_row_ptrs[0] = 0;
       s.k_it = s.kernel_ptr;
-      for (s.kernel_i = 0; s.kernel_i < s.kernel_count; s.kernel_i = s.kernel_i + 1) {
-        s.tmp1 = *(int *)(s.k_it + 4);
-        s.tmp0 = *(int *)(s.k_it + 8);
-        s.tmp_rgb = *(uint *)(s.k_it + 0xc);
+      s.err_row_ptrs[0] = (s.kernel_count << 2) + s.k_it;
+      for (; s.err_row_ptrs[0] > s.k_it; s.k_it += 0x4) {
+        s.tmp1 = s.k_it[1];
+        s.tmp0 = s.k_it[2];
+        s.pixel_rgb = s.k_it[3];
+        s.pixel_dword = ((s.tmp1 + s.x) << 2) + (short *)(s.err_row_ptrs[s.tmp0 + 1]);
 
-        s.err_px = (short *)(s.err_row_ptrs[*(int *)(s.k_it + 8) + 1] +
-                          (*(int *)(s.k_it + 4) + s.x) * 8);
-
-        s.tmp0 = *(int *)((int)s.tmp_rgb + s.err_b * 4);
-        *s.err_px = (short)s.tmp0 + *s.err_px;
-        s.tmp0 = *(int *)((int)s.tmp_rgb + s.err_g * 4);
-        s.err_px[1] = (short)s.tmp0 + s.err_px[1];
-        s.tmp0 = *(int *)((int)s.tmp_rgb + (s.r_clamped - (s.nearest_palette_rgb >> 0x10)) * 4);
-        s.err_px[2] = (short)s.tmp0 + s.err_px[2];
-
-        s.k_it = s.k_it + 0x10;
+        s.pixel_dword[0] = s.pixel_rgb[s.err_b] + s.pixel_dword[0];
+        s.pixel_dword[1] = s.pixel_rgb[s.err_g] + s.pixel_dword[1];
+        s.pixel_dword[2] = s.pixel_rgb[s.rgb_quant] + s.pixel_dword[2];
       }
-      s.byte_off = s.byte_off + s.byte_step;
     }
 
-    RotateDwordsLeft1((undefined4 *)(s.err_row_ptrs + 1),DAT_1001d288[dither_kernel_id]);
+    RotateDwordsLeft1(s.err_row_ptrs + 1,DAT_1001d288[dither_kernel_id]);
     memset((void *)(s.err_row_ptrs[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
     if (serpentine != 0) {
       s.x_step = -s.x_step;
       s.kernel_ptr = (undefined *)((int)DAT_1001d2d8 + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
     }
   }
-  return height;
 }
 
 // FUNCTION: CARDARTLIB 0x10005cb4
@@ -388,8 +397,8 @@ void InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_ba
 undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
-    uint pixel_dword;       /* [ebp-0x94] (also reused as temp) */
-    uint pixel_rgb;         /* [ebp-0x90] */
+    short *pixel_dword;     /* [ebp-0x94] (also reused as temp) */
+    int *pixel_rgb;         /* [ebp-0x90] */
     short *err_px;          /* [ebp-0x8c] */
     uint rgb_quant;         /* [ebp-0x88] */
     int byte_step;          /* [ebp-0x84] */
@@ -397,7 +406,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
     int x_start;            /* [ebp-0x7c] */
     undefined *kernel_ptr;  /* [ebp-0x78] */
     int kernel_count;       /* [ebp-0x74] */
-    int kernel_i;           /* [ebp-0x70] */
+    int r_clamped;          /* [ebp-0x70] */
     int err_row_ptrs[6];    /* [ebp-0x6c] */
     int y;                  /* [ebp-0x54] */
     undefined2 local_50;    /* [ebp-0x50] */
@@ -411,7 +420,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
     int x_step;             /* [ebp-0x38] */
     uint g_clamped;         /* [ebp-0x34] */
     int err_g;              /* [ebp-0x30] */
-    undefined *k_it;        /* [ebp-0x2c] */
+    int *k_it;              /* [ebp-0x2c] */
     int rgb_clamped;        /* [ebp-0x28] */
     uint packed_clamped;    /* [ebp-0x24] */
     undefined2 local_24;    /* [ebp-0x20] */
@@ -444,7 +453,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
   s.x_step = 1;
   s.rgb_clamped = 0;
   s.kernel_ptr = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
-  s.clear_dwords = (uint)(width * 8 + 0x50) >> 2;
+  s.clear_dwords = (uint)((width + 10) * 8) >> 2;
 
   if (DAT_100322cc == 0) {
     for (s.x = -0x200; s.x < 0x200; s.x = s.x + 1) {
@@ -480,7 +489,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
   }
 
   s.kernel_count = DAT_1001d260[dither_kernel_id];
-  for (s.y = 0; s.y < height; s.y = s.y + 1) {
+  for (s.y = 0; s.y < height; s.y = s.y + 1, *(int *)&bgr24 += width * 3 + row_padding) {
     if (0 < s.x_step) {
       s.x_start = 0;
       s.x_end = width;
@@ -492,52 +501,54 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
       s.byte_step = -3;
     }
 
-    s.byte_off = s.x_start;
-    s.byte_off = s.byte_off + s.x_start;
-    s.byte_off = s.byte_off + s.x_start;
-    for (s.x = s.x_start; s.x != s.x_end; s.x = s.x + s.x_step) {
-      s.pixel_dword = *(uint *)(s.byte_off + (int)bgr24);
-      s.pixel_rgb = s.pixel_dword & 0xffffff;
-      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) & 0xff000000;
+    s.x = s.x_start;
+    s.byte_off = s.x_start + s.x_start + s.x_start;
+    for (; s.x != s.x_end; s.x = s.x + s.x_step, s.byte_off = s.byte_off + s.byte_step) {
+      s.packed_clamped = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xffffff;
+      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xff000000;
 
-      s.err_px = (short *)s.err_row_ptrs[1];
-      s.err_px = (short *)((int)s.err_px + (s.x << 3));
-      s.b_clamped = (uint)(byte)PTR_DAT_1001e058[(s.pixel_dword & 0xff) + ((int)*s.err_px >> 8)];
-      s.g_clamped = (uint)(byte)PTR_DAT_1001e058[(s.pixel_rgb >> 8 & 0xff) + ((int)s.err_px[1] >> 8)];
-      s.pixel_dword = (uint)(byte)PTR_DAT_1001e058[(s.pixel_rgb >> 0x10) + ((int)s.err_px[2] >> 8)];
+      s.err_px = (short *)s.err_row_ptrs[1] + (s.x << 2);
 
-      s.packed_clamped = s.g_clamped << 8 | s.pixel_dword << 0x10 | s.b_clamped;
+      s.b_clamped = s.packed_clamped & 0xff;
+      s.b_clamped += ((int)*s.err_px >> 8);
+      s.b_clamped = (uint)(byte)PTR_DAT_1001e058[s.b_clamped];
+
+      s.g_clamped = ((byte*)&s.packed_clamped)[1];
+      s.g_clamped += ((int)s.err_px[1] >> 8);
+      s.g_clamped = (uint)(byte)PTR_DAT_1001e058[s.g_clamped];
+
+      s.r_clamped = (s.packed_clamped & 0xff0000) >> 16;
+      s.r_clamped += ((int)s.err_px[2] >> 8);
+      s.r_clamped = (uint)(byte)PTR_DAT_1001e058[s.r_clamped];
+
+      s.packed_clamped = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
       if (s.packed_clamped == 0) {
-        s.rgb_quant = 0;
+        s.local_80 = 0;
       }
       else if (s.packed_clamped == 0xffffff) {
-        s.rgb_quant = 0xffffff;
+        s.local_80 = 0xffffff;
       }
       else {
-        s.rgb_quant = Rgb888_QuantizeToF8(s.packed_clamped);
+        s.local_80 = Rgb888_QuantizeToF8(s.packed_clamped);
       }
-      *(uint *)(s.byte_off + (int)bgr24) = *(uint *)(s.byte_off + (int)bgr24) | s.rgb_quant;
+      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) | s.local_80;
 
-      s.err_b = (int)s.b_clamped - (int)(s.rgb_quant & 0xff);
-      s.err_g = (int)s.g_clamped - (int)(s.rgb_quant >> 8 & 0xff);
+      s.err_b = s.b_clamped - (s.local_80 & 0xff);
+      s.err_g = s.g_clamped - (s.local_80 >> 8 & 0xff);
+      s.rgb_quant = s.r_clamped - (s.local_80 >> 16 & 0xff);
+      s.err_row_ptrs[0] = 0;
       s.k_it = s.kernel_ptr;
-      for (s.kernel_i = 0; s.kernel_i < s.kernel_count; s.kernel_i = s.kernel_i + 1) {
-        s.tmp1 = *(int *)(s.k_it + 4);
-        s.tmp0 = *(int *)(s.k_it + 8);
-        s.pixel_rgb = *(int *)(s.k_it + 0xc);
-        s.err_px = (short *)(s.err_row_ptrs[*(int *)(s.k_it + 8) + 1] +
-                          (*(int *)(s.k_it + 4) + s.x) * 8);
+      for (; s.err_row_ptrs[0] < s.kernel_count; s.err_row_ptrs[0]++, s.k_it += 0x4) {
+        s.tmp1 = s.k_it[1];
+        s.tmp0 = s.k_it[2];
+        s.pixel_rgb = s.k_it[3];
+        s.pixel_dword = (short *)(s.err_row_ptrs[s.tmp0 + 1] +
+                          (s.tmp1 + s.x) * 8);
 
-        s.tmp0 = *(int *)(s.pixel_rgb + s.err_b * 4);
-        *s.err_px = (short)s.tmp0 + *s.err_px;
-        s.tmp0 = *(int *)(s.pixel_rgb + s.err_g * 4);
-        s.err_px[1] = (short)s.tmp0 + s.err_px[1];
-        s.tmp0 = *(int *)(s.pixel_rgb + (s.pixel_dword - (s.rgb_quant >> 0x10 & 0xff)) * 4);
-        s.err_px[2] = (short)s.tmp0 + s.err_px[2];
-
-        s.k_it = s.k_it + 0x10;
+        s.pixel_dword[0] = s.pixel_rgb[s.err_b] + s.pixel_dword[0];
+        s.pixel_dword[1] = s.pixel_rgb[s.err_g] + s.pixel_dword[1];
+        s.pixel_dword[2] = s.pixel_rgb[s.rgb_quant] + s.pixel_dword[2];
       }
-      s.byte_off = s.byte_off + s.byte_step;
     }
 
     RotateDwordsLeft1(s.err_row_ptrs + 1,DAT_1001d288[dither_kernel_id]);
@@ -546,7 +557,6 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
       s.x_step = -s.x_step;
       s.kernel_ptr = (undefined *)((int)DAT_1001d2d8 + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
     }
-    *(int *)&bgr24 += width * 3 + row_padding;
   }
   return 1;
 }
@@ -580,7 +590,7 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
     int dword_count;     /* [ebp-0x18] */
     int block_width;     /* [ebp-0x14] */
     int block_height;    /* [ebp-0x10] */
-    int *y_plane;        /* [ebp-0xc] */
+    int y_plane;        /* [ebp-0xc] */
     int *u_plane;        /* [ebp-0x8] */
     int pieces_per_row;  /* [ebp-0x4] */
   } s;
@@ -588,19 +598,10 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
   s.have_dst = 0;
   if (g_waveletScaleToByteTableInit == 0) {
     for (s.scale_i = -0x400; s.scale_i <= 0x400; s.scale_i = s.scale_i + 1) {
-      if (s.scale_i < 0) {
-        /* fall through to out-of-range clamp below */
+      if (s.scale_i >= 0 && s.scale_i <= 0xf8) {
+          g_waveletScaleToByteTable[s.scale_i] = (char)((s.scale_i * 255) / 0xf8);
       }
-      else {
-        if (s.scale_i <= 0xf8) {
-          /* (i*256 - i) / 0xf8 -> shl/sub/idiv */
-          g_waveletScaleToByteTable[s.scale_i] =
-              (char)(((s.scale_i << 8) - s.scale_i) / 0xf8);
-          continue;
-        }
-      }
-
-      if (s.scale_i < 0xa) {
+      else if (s.scale_i < 0xa) {
         g_waveletScaleToByteTable[s.scale_i] = 0;
       }
       else {
@@ -611,15 +612,11 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
   }
 
   if (param_2 == (undefined8 *)0x0) {
-    s.alloc_bytes = param_1[0x24] + 0x7d0;
-    s.dword_count = (int)(s.alloc_bytes + (s.alloc_bytes >> 0x1f & 3U)) >> 2;
-    param_2 = malloc(s.alloc_bytes);
-    MemZeroDwords(param_2,s.dword_count);
+    param_2 = malloc(param_1[0x24] + 2000);
+    MemZeroDwords(param_2,(param_1[0x24] + 2000) / 4);
   }
   else {
-    s.alloc_bytes = param_1[0x24] + 0x7d0;
-    s.dword_count = (int)(s.alloc_bytes + (s.alloc_bytes >> 0x1f & 3U)) >> 2;
-    MemZeroDwords(param_2,s.dword_count);
+    MemZeroDwords(param_2,(param_1[0x24] + 2000) / 4);
     s.have_dst = 1;
   }
 
@@ -639,47 +636,56 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
            s_wavelet_pieces_has_illegal_value_1001e14c,param_1[10]);
   }
 
-  s.width_px = param_1[7];
+  s.chroma_h = param_1[7];
+  s.height_px = s.chroma_h;
   s.block_width = param_1[7] / s.pieces_per_row;
-  s.base_size = param_1[9];
-  s.height_px = param_1[8];
-  s.block_height = param_1[8] / s.pieces_per_row;
+  s.y_plane = s.block_width;
+  s.alloc_bytes = param_1[9];
+  s.base_size = param_1[8] / s.pieces_per_row;
+  s.width_px = &param_1[11];
+  s.local_34 = &param_1[15];
+  s.u_plane = &param_1[19];
 
   for (s.piece_idx = 0; s.piece_idx < param_1[10]; s.piece_idx = s.piece_idx + 1) {
-    s.chroma_h = s.block_height;
-    s.chroma_w = s.block_width;
+    //s.chroma_h = s.block_height;
+    //s.chroma_w = s.block_width;
     if (*param_1 != 0) {
-      s.chroma_h = (s.block_height / s.pieces_per_row) / ((param_1[10] == 1) + 1);
-      s.chroma_w = (s.block_width / s.pieces_per_row) / ((param_1[10] == 1) + 1);
+      s.chroma_w = (s.y_plane / s.pieces_per_row) / ((param_1[10] == 1) + 1);
+      //s.chroma_h = s.y_plane / s.pieces_per_row /  (param_1[10] <= 2 ? 2 : 1);
+      s.v_plane = (s.base_size / s.pieces_per_row) / ((param_1[10] == 1) + 1);
+    } else {
+      s.chroma_w = s.y_plane;
+      s.v_plane = s.base_size;
     }
 
-    s.y_plane = (int *)((s.block_width * s.block_width + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4 +
+    s.local_40 = (int *)((s.y_plane * s.y_plane + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4 +
                         (int)param_2);
-    s.local_40 = (int)s.y_plane;
-    s.u_plane = (int *)(s.local_40 + s.block_width * s.block_width * 4 + 0x80);
-    s.v_plane = (int)s.u_plane + s.chroma_w * s.chroma_w * 4 + 0x80;
+    //s. = (int)s.y_plane;
+    s.block_height = (int *)(s.local_40 + s.y_plane * s.y_plane * 4 + 0x80);
+    s.dword_count = (int)s.block_height + s.chroma_w * s.chroma_w * 4 + 0x80;
 
-    Haar2D_ReconstructInPlace(s.y_plane,s.block_width,s.base_size);
-    Haar2D_ReconstructInPlace(s.u_plane,s.chroma_w,s.base_size);
-    Haar2D_ReconstructInPlace((int *)s.v_plane,s.chroma_w,s.base_size);
+    Haar2D_ReconstructInPlace(s.local_40,s.y_plane, s.alloc_bytes);
+    Haar2D_ReconstructInPlace(s.block_height,s.chroma_w,s.alloc_bytes);
+    Haar2D_ReconstructInPlace(s.dword_count,s.chroma_w,s.alloc_bytes);
 
     if (s.piece_idx < param_1[10] / 2) {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.y_plane,s.block_width,s.block_width,
-                                        (int)s.u_plane,s.v_plane,s.chroma_w,s.chroma_w,*param_1);
+      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,s.y_plane,
+                                        s.block_height,s.dword_count,s.chroma_w,s.chroma_w,*param_1);
     }
     else if (param_1[10] <= 1) {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.y_plane,s.block_width,s.block_height,
-                                        (int)s.u_plane,s.v_plane,s.chroma_w,s.chroma_h,*param_1);
+      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,param_1[8] - s.block_width,
+                                        s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
     }
     else {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.y_plane,s.block_width,param_1[8] - s.block_width,
-                                        (int)s.u_plane,s.v_plane,s.chroma_w,s.chroma_h,*param_1);
+      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,s.base_size,
+                                        s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
     }
 
     if (param_1[10] > 1) {     
-      CopyBgr24RectIntoStridedBuffer(param_2,(undefined8 *)s.bgr_tmp,(s.piece_idx % s.pieces_per_row) * (s.width_px / s.pieces_per_row),
-                                     (s.piece_idx / s.pieces_per_row) * (s.width_px / s.pieces_per_row),
-                                     s.block_width,s.block_width,s.width_px);
+      CopyBgr24RectIntoStridedBuffer(param_2,(undefined8 *)s.bgr_tmp,
+                                      (s.height_px / s.pieces_per_row) * (s.piece_idx % s.pieces_per_row),
+                                      (s.height_px / s.pieces_per_row) * (s.piece_idx / s.pieces_per_row), s.y_plane,
+                                      s.y_plane,s.height_px,s.height_px);
       free((undefined8 *)s.bgr_tmp);
     }
     else {

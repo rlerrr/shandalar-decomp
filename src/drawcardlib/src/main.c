@@ -2311,5 +2311,4 @@ void FUN_1000c0ca(void)
 {
   ShutdownCardArtGdiResources();
   DeleteCriticalSection(&global_critical_section_for_catalog);
-  return;
 }
