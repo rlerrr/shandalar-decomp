@@ -1,6 +1,7 @@
 #include "catalog.h"
 #include "haar.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -255,79 +256,80 @@ uint Catalog_MakeKeyFromPath(const char *path)
 
 // FUNCTION: CARDARTLIB 0x100068f0
 // FUNCTION: DRAWCARDLIB 0x10008370
-int *Catalog_LoadWvlEntry(int param_1,uint *param_2,int param_3)
+int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 {
-  size_t sVar1;
-  undefined8 *puVar2;
-  uint local_41c [66];
-  uint local_314 [65];
-  uint local_210 [64];
-  uint local_110 [64];
-  size_t local_10;
-  int *local_c;
-  int local_8;
+  struct {
+    char fullpath[0x108]; /* [ebp-0x418] */
+    char dir[0x104];      /* [ebp-0x310] */
+    char fname[0x100];    /* [ebp-0x20c] */
+    char ext[0x100];      /* [ebp-0x10c] */
+    size_t entry_size;    /* [ebp-0x0c] */
+    int *entry;           /* [ebp-0x08] */
+    char *dir_end;        /* [ebp-0x04] */
+  } s;
 
-  local_c = (int *)&DAT_10032ae8;
+  s.entry = (int *)&DAT_10032ae8;
   EnterCriticalSection(&global_critical_section_for_catalog);
-  _splitpath((char *)param_2,(char *)0x0,(char *)local_314,(char *)local_210,(char *)local_110);
+  _splitpath(wvl_path, (char *)0x0, s.dir, s.fname, s.ext);
   if (DAT_10032adc == 0) {
-    strcpy((char *)local_41c,(char *)local_314);
-    strcat((char *)local_41c,s_SmallArt_cat_1001e12c);
-    DAT_1001e11c = Catalog_Open((char *)local_41c);
-    strcpy((char *)local_41c,(char *)local_314);
-    strcat((char *)local_41c,s_MedArt_cat_1001e13c);
-    DAT_1001e120 = Catalog_Open((char *)local_41c);
+    strcpy(s.fullpath, s.dir);
+    strcat(s.fullpath, s_SmallArt_cat_1001e12c);
+    DAT_1001e11c = Catalog_Open(s.fullpath);
+    strcpy(s.fullpath, s.dir);
+    strcat(s.fullpath, s_MedArt_cat_1001e13c);
+    DAT_1001e120 = Catalog_Open(s.fullpath);
     DAT_10032adc = 1;
   }
-  sVar1 = strlen((char *)local_314);
-  local_8 = (int)local_314 + sVar1;
-  if (param_1 == 0) {
+  s.dir_end = (ptrdiff_t)s.dir + strlen(s.dir);
+
+  if (catalog_id == 0) {
     DAT_100ea098 = DAT_1001e11c;
+  } else if (catalog_id == 1) {
+    DAT_100ea098 = DAT_1001e120;
+  } else {
+    /* NOTE: Original does not leave the critical section on this path. */
+    return (int *)0x0;
   }
-  else {
-    if (param_1 != 1) {
+
+  strcpy(s.dir, s.fname);
+  strcat(s.dir, s.ext);
+  _strlwr(s.dir);
+
+  if (s.entry != (int *)0x0) {
+    memset(s.entry, 0, 0x1b0);
+    strcpy((char *)(s.entry + 0x27), wvl_path);
+    s.entry[0x68] = (int)&DAT_100ad498;
+    s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)(s.entry + 0x68));
+    if (s.entry_size == (size_t)-1) {
+      strcat(wvl_path, s__lf_1001e148);
+      OutputDebugStringA((LPCSTR)wvl_path);
+      LeaveCriticalSection(&global_critical_section_for_catalog);
       return (int *)0x0;
     }
-    DAT_100ea098 = DAT_1001e120;
-  }
-  strcpy((char *)local_314,(char *)local_210);
-  strcat((char *)local_314,(char *)local_110);
-  _strlwr((char *)local_314);
-  if (local_c != (int *)0x0) {
-    memset(local_c,0,0x1b0);
-    strcpy((char *)(local_c + 0x27),(const char *)param_2);
-    local_c[0x68] = (int)&DAT_100ad498;
-    local_10 = Catalog_ReadEntry(DAT_100ea098,(char *)local_314,(void **)(local_c + 0x68));
-    if (local_10 == 0xffffffff) {
-      strcat((char *)param_2,s__lf_1001e148);
-      OutputDebugStringA((LPCSTR)param_2);
-      LeaveCriticalSection(&global_critical_section_for_catalog);
-      local_c = (int *)0x0;
+
+    s.entry[0x69] = s.entry_size - 0x9c;
+    memcpy(s.entry, (void *)s.entry[0x68], 0x9c);
+    s.entry[0x68] = s.entry[0x68] + 0x9c;
+    if (s.entry[10] == 4) {
+      s.entry[7] = s.entry[7] << 1;
+      s.entry[8] = s.entry[8] << 1;
     }
-    else {
-      local_c[0x69] = local_10 - 0x9c;
-      memcpy(local_c,(void *)local_c[0x68],0x9c);
-      local_c[0x68] = local_c[0x68] + 0x9c;
-      if (local_c[10] == 4) {
-        local_c[7] = local_c[7] << 1;
-        local_c[8] = local_c[8] << 1;
-      }
-      if (param_3 != 0) {
-        puVar2 = Wvl_DecodeHaar(local_c,(undefined8 *)0x0);
-        local_c[0x6b] = (int)puVar2;
-        if (local_c[0x6b] == 0) {
-          Catalog_Unlock(local_c);
-          LeaveCriticalSection(&global_critical_section_for_catalog);
-          local_c = (int *)0x0;
-        }
-        else {
-          local_c[0x6a] = 1;
-          LeaveCriticalSection(&global_critical_section_for_catalog);
-        }
+
+    if (decode_haar != 0) {
+      s.entry[0x6b] = (int)Wvl_DecodeHaar(s.entry, (undefined8 *)0x0);
+      if (s.entry[0x6b] != 0) {
+        s.entry[0x6a] = 1;
+        LeaveCriticalSection(&global_critical_section_for_catalog);
+      } else {
+        Catalog_Unlock((int)s.entry);
+        LeaveCriticalSection(&global_critical_section_for_catalog);
+        return (int *)0x0;
       }
     }
   }
-  return local_c;
+
+  /* NOTE: Original does not leave the critical section on this path. */
+  return s.entry;
 }
 
 // MATCHING

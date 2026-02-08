@@ -1,6 +1,6 @@
 file(GLOB deckdll_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB sidlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../sidlib/src/*.c")
-file(GLOB cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c")
+set(cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c")
 
 set(deckdll_sources
   ${deckdll_c_sources}

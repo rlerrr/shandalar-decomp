@@ -7,6 +7,7 @@
 #include "mystdbool.h"
 #include "sidlib/pcxw.h"
 #include "sidlib/pic.h"
+#include "cardartlib/src/palette.h"
 
 typedef unsigned short ushort;
 
@@ -67,15 +68,6 @@ undefined4 FUN_1000977f(undefined4 param_1)
   return 1;
 }
 
-// FUNCTION: DRAWCARDLIB 0x1000a67b
-void FUN_1000a67b(HDC param_1)
-
-{
-  GdiFlush();
-  SetStretchBltMode(param_1,3);
-  return;
-}
-
 // GLOBAL: DRAWCARDLIB 0x100f23b0
 undefined4 DAT_100f23b0 = 0x00000000;
 
@@ -131,7 +123,6 @@ void FUN_10155484() {
 
 // FUNCTION: DRAWCARDLIB 0x1000b1e0
 undefined * FUN_1000b1e0(int param_1,int param_2,int param_3)
-
 {
   int iVar1;
   DWORD dwMaximumSizeLow;
@@ -174,7 +165,7 @@ undefined * FUN_1000b1e0(int param_1,int param_2,int param_3)
     else {
       pHVar4 = GetDC((HWND)0x0);
       *(HDC *)(PTR_DAT_10022528 + 4) = pHVar4;
-      FUN_1000a67b(*(undefined4 *)(PTR_DAT_10022528 + 4));
+      ApplyCardArtPaletteToDc(*(undefined4 *)(PTR_DAT_10022528 + 4));
       pHVar5 = CreateDIBSection(*(HDC *)(PTR_DAT_10022528 + 4),
                                 *(BITMAPINFO **)(PTR_DAT_10022528 + 0x10),(uint)(param_3 == 8),
                                 (void **)(PTR_DAT_10022528 + 0x18),*(HANDLE *)PTR_DAT_10022528,0);

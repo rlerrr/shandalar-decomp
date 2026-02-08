@@ -6,13 +6,11 @@
 #include "inttypes.h"
 #include "mystdbool.h"
 #include "sidlib/pcxw.h"
+#include "cardartlib/src/assert.h"
 
 typedef void * pointer;
 typedef char byte;
 typedef unsigned short ushort;
-
-/* External helpers (implemented elsewhere in the build). */
-void FUN_1000c0f0(int ok, const char *file, int line, const char *fmt, ...);
 
 /* Placeholder globals for missing decompiler labels (PCXW-only). */
 // GLOBAL: DRAWCARDLIB 0x10021f18
@@ -113,7 +111,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
   int local_8;
   
   gPcxInFile = fopen(path,&DAT_10021f18);
-  FUN_1000c0f0(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
+  assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
                s_Error_Opening_File__s_10021f00,path);
   gPcxPath = path;
   PcxReadHeaderAndPalette(paletteOut);
@@ -123,7 +121,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
   else {
     local_18 = 0;
   }
-  FUN_1000c0f0(local_18,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x6f,
+  assert(local_18,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x6f,
                s__s_Not_a_256_color_palettized_pc_10021f1c,gPcxPath);
   uVar2 = 4 - (gImageWidth & 3);
   uVar5 = (int)uVar2 >> 0x1f;
@@ -165,7 +163,7 @@ bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
   int iVar1;
   
   gPcxInFile = fopen(path,&DAT_10021f60);
-  FUN_1000c0f0(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
+  assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
                s_Error_Opening_File__s_10021f48,path);
   gPcxPath = path;
   iVar1 = PcxReadHeaderAndPalette(paletteOut);
@@ -182,9 +180,9 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
   int local_8;
   
   fread(&DAT_10127d40,0x80,1,gPcxInFile);
-  FUN_1000c0f0(DAT_10127d40 == '\n',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xad,
+  assert(DAT_10127d40 == '\n',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xad,
                s__s_Not_a_pcx_file_10021f64,gPcxPath);
-  FUN_1000c0f0(DAT_10127d41 == '\x05',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xae,
+  assert(DAT_10127d41 == '\x05',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xae,
                s__s_Not_a_version_5_pcx_file_10021f78,gPcxPath);
   gImageWidth = ((uint)DAT_10127d48 - (uint)DAT_10127d44) + 1;
   gImageHeight = ((uint)DAT_10127d4a - (uint)DAT_10127d46) + 1;
@@ -202,7 +200,7 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
       fseek(gPcxInFile,0x80,0);
     }
     else {
-      FUN_1000c0f0(0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xd4,
+      assert(0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xd4,
                    s__s_is_not_in_a_recognizable_form_10021f98,gPcxPath);
     }
   }
@@ -265,7 +263,7 @@ PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused
   puStackY_20 = PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0;
   puStackY_24 = (undefined1 *)(uint)(gPcxOutFile != (FILE *)0x0);
   uStackY_28 = 0x100045fa;
-  FUN_1000c0f0(               (uint)(gPcxOutFile != (FILE *)0x0),
+  assert(               (uint)(gPcxOutFile != (FILE *)0x0),
                PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x146,
                s_Error_Opening_File__s_10021fc0);
   gPcxPath = path;

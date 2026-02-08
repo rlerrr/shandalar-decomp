@@ -26,6 +26,7 @@ These instructions apply to the entire repository.
 - Use `byte` casts on shift counts when you expect `mov cl, al` / `mov cl, [mem]` patterns.
 - For lookup tables, write `idx * 3` to encourage `lea reg, [reg + reg*2]` patterns (instead of more complex arithmetic).
 - Watch for signed compares against `0xFF`: `cmp reg, 0FFh` is `-1` (imm8 sign-extended), so match it in C as `== -1` when appropriate.
+- The order of parameters in `cmp` and other commutative opcodes like `test`, `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.  Don't bother trying.
 
 ## Build
 - Build the `cardartlib` target with: `nmake cardartlib`

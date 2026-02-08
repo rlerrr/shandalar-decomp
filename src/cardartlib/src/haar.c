@@ -829,7 +829,6 @@ void Haar_CombineSumDiff(int *src_a,int *src_b,int *dst,int width,int rows,undef
     for (; s.src_a_end > src_a; src_a++, src_b++, s.dst_row += dst_stride * 2) {
       *s.dst_row = *src_b + *src_a;
 
-      //s.dst_row[dst_stride] = *src_a - *src_b;
       *(int *)((char *)s.dst_row + dst_stride * 4) = *src_a - *src_b;
     }
     
@@ -859,11 +858,9 @@ void Haar_CombineSumDiffHalf(int *src_a,int *src_b,int *dst,int width,int rows,u
     for (; s.src_a_end > src_a; src_a++, src_b++, s.dst_row += dst_stride * 2) {
       *s.dst_row = (*src_b + *src_a) >> 1;
       *(int *)((char *)s.dst_row + dst_stride * 4) = (*src_a - *src_b) >> 1;
-      //s.dst_row[dst_stride] = (*src_a - *src_b) >> 1;
     }
-    
+
     *dst = (*src_b + *s.src_a_row0) >> 1;
-    //*(int *)((char *)dst + dst_stride * 4) = ((0 - *src_b) + *s.src_a_row0) >> 1;
     dst[dst_stride] = (*s.src_a_row0 - *src_b) >> 1;
   }
 }
@@ -900,8 +897,10 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
   }
   if (out_bgr24 == (undefined1 *)0x0) {
     out_bgr24 = malloc(width * width * 3 + 0x10);
+    s.out_base = out_bgr24;
+  } else {
+    s.out_base = out_bgr24;
   }
-  s.out_base = out_bgr24;
   for (s.row = 0; s.row < height; s.row = s.row + 1) {
     s.y = s.row;
     if (chroma_is_420 != 0) {
@@ -923,6 +922,7 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
           s.u = (s.chroma_u_ptr[((uint)(width - 1) - (uint)s.col) != 0] + *s.chroma_u_ptr) / 2;
           s.v = (s.chroma_v_ptr[((uint)(width - 1) - (uint)s.col) != 0] + *s.chroma_v_ptr) / 2;
         }
+
         s.red = ((s.v >> 3) + (s.v >> 1) + s.v) - 0x333 + s.y;
         s.blue = (s.u * 2) - 0x400 + s.y;
         s.green = (((s.y * 2) - (s.y >> 2)) - (s.red >> 1)) - ((s.blue >> 2) - (s.blue >> 4));
