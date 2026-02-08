@@ -396,7 +396,7 @@ uint BitStream_ReadBits(uint bit_count)
   uint bits_in_buf;
   uint result;
 
-  if (DAT_1001d1dc > bit_count) {
+  if (DAT_1001d1dc >= bit_count) {
     result = DAT_10020e00[0x20 - bit_count] & DAT_10020e84;
     DAT_10020e84 = DAT_10020e84 >> (byte)bit_count;
     DAT_1001d1dc = DAT_1001d1dc - bit_count;

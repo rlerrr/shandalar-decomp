@@ -663,7 +663,7 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
       s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,s.y_plane,
                                         s.block_height,s.dword_count,s.chroma_w,s.chroma_w,*param_1);
     }
-    else if (param_1[10] <= 1) {
+    else if (param_1[10] > 1) {
       s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,param_1[8] - s.block_width,
                                         s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
     }

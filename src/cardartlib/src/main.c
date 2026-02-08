@@ -814,7 +814,7 @@ bool ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height)
 
   cache_entry = FindVersionedSmallArtCacheEntry(id,version);
   if (cache_entry != (undefined *)0x0) {
-    if ((*(int *)(cache_entry + 8) == width) && (*(int *)(cache_entry + 0xc) == height)) {
+    if ((cache_entry->width == width) && (cache_entry->height == height)) {
       return 1;
     }
     else {

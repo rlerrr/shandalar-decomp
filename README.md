@@ -6,20 +6,22 @@ This project takes inspiration from the [LEGO Island Decompilation](https://gith
 ## Source Structure
 Within the `src` folder there should eventually be 1 directory for each of the game's 14 binaries (ignoring the 2 MSVCRT dlls).
 
-* cardartlib.dll (debug) ![matching](https://img.shields.io/badge/matching-95.73%25-blue) : Library for decoding the game's card art assets (.cat files)
+* cardartlib.dll (debug) ![matching](https://img.shields.io/badge/matching-96.92%25-blue) : Library for decoding the game's card art assets (.cat files)
 * cdtools.dll (debug) ![matching](https://img.shields.io/badge/matching-99.05%25-green) : A small library of CD functions
 * deck.exe (release /Od) ![matching](https://img.shields.io/badge/matching-99.62%25-green) : A trivial wrapper for showing the deck builder UI
-* deckdll.dll (static release /Od?) ![matching](https://img.shields.io/badge/matching-16.30%25-red) : The deck builder UI implementation, imported by deck.exe and magic.exe
-* drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-79.95%25-blue) : Library for rendering full card representations
+* deckdll.dll (static release /Od?) ![matching](https://img.shields.io/badge/matching-21.14%25-red) : The deck builder UI implementation, imported by deck.exe and magic.exe
+* drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-85.21%25-blue) : Library for rendering full card representations
 * facemaker.exe : 
-* gcconn.dll (debug, C++) : Something about connection handling for manalink
+* gcconn.dll (debug, C++) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
 * magic.exe : The duel UI
-* magsnd.dll : Presumably plays sound
-* magvid.dll : Presumably plays video
-* manalink.exe : Multiplayer
+* magsnd.dll (release C++) : Small dll that presumably plays sound
+* magvid.dll (release C++) : Presumably plays video
+* manalink.exe : Multiplayer.  Has a ton of debug logging with function/filenames embedded.
 * manalinkinterface.dll (static release /Od) ![matching](https://img.shields.io/badge/matching-100.00%25-green) : Small dll with several exports, used by magic.exe not manalink.exe
 * shandalar.exe : The overworld and adventure UI
 * statwin.dll (debug?, C++?) : Used by shandalar.exe
+
+There are a lot of individual binaries but a surprising amount of duplicated code.
 
 ## Ghidra
 Within the `ghidra` folder are scripts for aiding decompilation.
