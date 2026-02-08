@@ -1,4 +1,0 @@
-LIBRARY kernel32.dll
-
-EXPORTS
-  RtlCaptureStackBackTrace@16
