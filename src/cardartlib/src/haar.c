@@ -13,7 +13,7 @@ void RotateDwordsLeft1(undefined4 *param_1, uint param_2);
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24, int height, int width, int row_padding);
 int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24, int height, int width,
                                 int row_padding);
-void InitErrorDiffusionDeltaTables(int dither_kernel_id, int* delta_table_ptrs_base);
+int InitErrorDiffusionDeltaTables(int dither_kernel_id, int* delta_table_ptrs_base);
 void MemZeroDwords(undefined8 *param_1, uint param_2);
 
 void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24, undefined8 *src_bgr24, int dst_x, int dst_y,
@@ -45,16 +45,7 @@ int DAT_1001d288[8] = {0,0,2,2,3,2,3,3};
 int DAT_1001d2b0[0xa] = {0,0,16,16,42,32,32,48};
 
 // GLOBAL: CARDARTLIB 0x1001d2d8
-undefined1 DAT_1001d2d8[0xc];
-
-// GLOBAL: CARDARTLIB 0x1001d2e4
-undefined1 DAT_1001d2e4[0x6b4];
-
-// GLOBAL: CARDARTLIB 0x1001d998
-undefined1 DAT_1001d998[0xc];
-
-// GLOBAL: CARDARTLIB 0x1001d9a4
-undefined1 DAT_1001d9a4[0x6b4];
+undefined1 DAT_1001d2d8[0xd80];
 
 // GLOBAL: CARDARTLIB 0x10031ca0
 undefined1 DAT_10031ca0[0x400];
@@ -212,7 +203,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
   s.local_80 = -1;
   s.x_step = 1;
   s.rgb_clamped = 0;
-  s.kernel_ptr = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
+  s.kernel_ptr = &DAT_1001d2d8[(dither_kernel_id << 6) * 3];
   s.clear_dwords = (uint)((width + 10) * 8) >> 2;
   
   if (dither_kernel_id == 0) {
@@ -356,21 +347,21 @@ void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 
 // FUNCTION: CARDARTLIB 0x10005cf5
 // FUNCTION: DRAWCARDLIB 0x100022a5
-void InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_base)
+int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_base)
 {
   struct {
     int local_14;
-    int local_10;
-    int iVar2;
-    int iVar1;
+    int local_10; // EBP - 0xc
+    int iVar2; // EBP - 8
+    int iVar1; // EBP - 4
   } s;
   
   s.iVar1 = DAT_1001d2b0[dither_kernel_id] >> 1;
   for (s.local_10 = 0; s.local_10 < DAT_1001d260[dither_kernel_id]; s.local_10 = s.local_10 + 1) {
-    s.iVar2 = ((int *)((char *)DAT_1001d2d8 + dither_kernel_id * 0xc0))[s.local_10 * 4];
+    s.iVar2 = *(int*)&DAT_1001d2d8[(s.local_10 << 4) + ((dither_kernel_id << 6) * 3)];
+
     if (delta_table_ptrs_base[s.iVar2] != 0) {
-      ((int *)(DAT_1001d2e4 + dither_kernel_id * 0xc0))[s.local_10 * 4] =
-            delta_table_ptrs_base[s.iVar2] + 0x400;
+      *(int *)&DAT_1001d2d8[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x400;
       continue;
     }
     
@@ -381,13 +372,13 @@ void InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_ba
       *(int *)( delta_table_ptrs_base[s.iVar2] + 0x400 + s.local_14 * 4) =
             ((s.iVar2 * s.local_14 + s.iVar1) * 0x100) / DAT_1001d2b0[dither_kernel_id];
     }
-    ((int *)(DAT_1001d2e4 + dither_kernel_id * 0xc0))[s.local_10 * 4] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
+    *(int *)&DAT_1001d2d8[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
   }
   
   for (s.local_10 = 0; s.local_10 < DAT_1001d260[dither_kernel_id]; s.local_10 = s.local_10 + 1) {
-    s.iVar2 = ((int *)((char *)DAT_1001d998 + dither_kernel_id * 0xc0))[s.local_10 * 4];
+    s.iVar2 = *(int*)&DAT_1001d2d8[0xc + 0x6b4 + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)];
     
-    ((int *)(DAT_1001d9a4 + dither_kernel_id * 0xc0))[s.local_10 * 4] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
+    *(int*)&DAT_1001d2d8[0xc + 0x6b4 + 0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
   }
   return 0;
 }
@@ -452,7 +443,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
   s.local_80 = -1;
   s.x_step = 1;
   s.rgb_clamped = 0;
-  s.kernel_ptr = (undefined *)(((dither_kernel_id << 6) * 3) + (int)DAT_1001d2d8);
+  s.kernel_ptr = &DAT_1001d2d8[(dither_kernel_id << 6) * 3];
   s.clear_dwords = (uint)((width + 10) * 8) >> 2;
 
   if (DAT_100322cc == 0) {
@@ -555,7 +546,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
     memset((void *)(s.err_row_ptrs[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
     if (serpentine != 0) {
       s.x_step = -s.x_step;
-      s.kernel_ptr = (undefined *)((int)DAT_1001d2d8 + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
+      s.kernel_ptr = &DAT_1001d2d8[(uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0];
     }
   }
   return 1;
