@@ -103,13 +103,13 @@ char s_BigCardText_10022110[] = "BigCardText";
 char s_SmallCardTitle_1002211c[] = "SmallCardTitle";
 
 // GLOBAL: DRAWCARDLIB 0x1002212c
-char DAT_1002212c[] = "size";
+char s_size_1002212c[] = "size";
 
 // GLOBAL: DRAWCARDLIB 0x1002213c
-char DAT_1002213c[] = "bold";
+char s_bold_1002213c[] = "bold";
 
 // GLOBAL: DRAWCARDLIB 0x1002214c
-char DAT_1002214c[] = "font";
+char s_font_1002214c[] = "font";
 
 // GLOBAL: DRAWCARDLIB 0x10022134
 char s_Fonts_10022134[] = "Fonts";
@@ -169,64 +169,64 @@ char DAT_10022204[] = "%d+*";
 char DAT_1002220c[] = "%d";
 
 // GLOBAL: DRAWCARDLIB 0x10022210
-char DAT_10022210[] = "";
+char s_empty_10022210[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x10022214
-char DAT_10022214[] = "|H1";
+char s__H1_10022214[] = "|H1";
 
 // GLOBAL: DRAWCARDLIB 0x10022218
-char DAT_10022218[] = "";
+char s_empty_10022218[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x1002221c
-char DAT_1002221c[] = "|H2";
+char s__H2_1002221c[] = "|H2";
 
 // GLOBAL: DRAWCARDLIB 0x10022220
-char DAT_10022220[] = "";
+char s_empty_10022220[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x10022224
-char DAT_10022224[] = "|H3";
+char s__H3_10022224[] = "|H3";
 
 // GLOBAL: DRAWCARDLIB 0x10022228
-char DAT_10022228[] = "";
+char s_empty_10022228[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x1002222c
-char DAT_1002222c[] = "|H4";
+char S__H4_1002222c[] = "|H4";
 
 // GLOBAL: DRAWCARDLIB 0x10022230
-char DAT_10022230[] = "";
+char s_empty_10022230[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x10022234
-char DAT_10022234[] = "|H";
+char s__H_10022234[] = "|H";
 
 // GLOBAL: DRAWCARDLIB 0x10022238
-char DAT_10022238[] = "";
+char s_empty_10022238[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x1002223c
-char DAT_1002223c[] = "|S1";
+char s__S1_1002223c[] = "|S1";
 
 // GLOBAL: DRAWCARDLIB 0x10022240
-char DAT_10022240[] = "";
+char s_empty_10022240[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x10022244
-char DAT_10022244[] = "|S2";
+char s__S2_10022244[] = "|S2";
 
 // GLOBAL: DRAWCARDLIB 0x10022248
-char DAT_10022248[] = "";
+char s_empty_10022248[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x1002224c
-char DAT_1002224c[] = "|S3";
+char S__S3_1002224c[] = "|S3";
 
 // GLOBAL: DRAWCARDLIB 0x10022250
-char DAT_10022250[] = "";
+char s_empty_10022250[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x10022254
-char DAT_10022254[] = "|S4";
+char s__S4_10022254[] = "|S4";
 
 // GLOBAL: DRAWCARDLIB 0x10022258
-char DAT_10022258[] = "";
+char s_empty_10022258[] = "";
 
 // GLOBAL: DRAWCARDLIB 0x1002225c
-char DAT_1002225c[] = "|S";
+char s__S_1002225c[] = "|S";
 
 // GLOBAL: DRAWCARDLIB 0x10022260
 char s_CARDBK_Green_10022260[] = "CARDBK_Green";
@@ -301,7 +301,7 @@ char s__CARDS_DAT_10026a54[] = "\\CARDS.DAT";
 char s_rb_10026a60[] = "rb";
 
 // GLOBAL: DRAWCARDLIB 0x10026a64
-char DAT_10026a64[] = "File %s could not be opened: EXITING\r\n";
+char s_File__s_could_not_be_opened__EXITING_10026a64[] = "File %s could not be opened: EXITING\r\n";
 
 // GLOBAL: DRAWCARDLIB 0x10026b98
 undefined4 DAT_10026b98 = 0x00000000;
@@ -352,7 +352,7 @@ undefined4 DAT_10039fdc = 0x00000000;
 undefined4 DAT_10039fe0 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe4
-undefined4 DAT_10039fe4 = 0x00000000;
+undefined4 global_CardSets = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe8
 undefined4 global_CARDBK_BlackLand = 0x00000000;
@@ -385,7 +385,7 @@ undefined4 DAT_1003a008 = 0x00000000;
 undefined4 global_CARDBK_RedLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a010
-undefined4 DAT_1003a010 = 0x00000000;
+undefined4 global_CardBack = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a014
 undefined4 global_CARDBK_DarklandsLand = 0x00000000;
@@ -433,7 +433,7 @@ undefined4 global_CARDBK_Black = 0x00000000;
 undefined4 DAT_1003a08c = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a198
-undefined4 DAT_1003a198 = 0x00000000;
+undefined4 global_ManaSymbols = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a19c
 undefined4 DAT_1003a19c = 0x00000000;
@@ -552,8 +552,6 @@ undefined4 DAT_1012655c = 0x00000000;
 // FUNCTION: DRAWCARDLIB 0x10004970
 undefined4 prepare_fonts_and_imgs(void)
 {
-  LOGFONTA *pLVar1;
-  undefined4 uVar2;
   CHAR local_10c [264];
   
   strcpy(&DAT_1003a090,&global_base_directory);
@@ -581,23 +579,18 @@ undefined4 prepare_fonts_and_imgs(void)
   strcat(local_10c,s__Tt0300m__TTF_10022094);
   AddFontResourceA(local_10c);
   sprintf(local_10c,s__s_ManaSymbols_pic_100220a4,&global_cardart_directory);
-  DAT_1003a198 = load_pic(local_10c);
+  global_ManaSymbols = load_pic(local_10c);
   sprintf(local_10c,s__s_CardSets_pic_100220b8,&global_cardart_directory);
-  DAT_10039fe4 = load_pic(local_10c);
+  global_CardSets = load_pic(local_10c);
   sprintf(local_10c,s__s_CardBack_pic_100220c8,&global_cardart_directory);
-  DAT_1003a010 = load_pic(local_10c);
-  pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardTitle_100220d8,0);
-  DAT_1003a008 = CreateFontIndirectA(pLVar1);
-  pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardSubtitle_100220e8,0);
-  DAT_10039fdc = CreateFontIndirectA(pLVar1);
-  pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardPT_100220f8,0);
-  DAT_10039ff8 = CreateFontIndirectA(pLVar1);
-  pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardText_10022104,0);
-  DAT_1003a000 = CreateFontIndirectA(pLVar1);
-  pLVar1 = (LOGFONTA *)FUN_10004e82(s_BigCardText_10022110,1);
-  DAT_1003a040 = CreateFontIndirectA(pLVar1);
-  pLVar1 = (LOGFONTA *)FUN_10004e82(s_SmallCardTitle_1002211c,0);
-  DAT_1003a018 = CreateFontIndirectA(pLVar1);
+  global_CardBack = load_pic(local_10c);
+
+  DAT_1003a008 = CreateFontIndirectA(FUN_10004e82(s_BigCardTitle_100220d8,0));
+  DAT_10039fdc = CreateFontIndirectA(FUN_10004e82(s_BigCardSubtitle_100220e8,0));
+  DAT_10039ff8 = CreateFontIndirectA(FUN_10004e82(s_BigCardPT_100220f8,0));
+  DAT_1003a000 = CreateFontIndirectA(FUN_10004e82(s_BigCardText_10022104,0));
+  DAT_1003a040 = CreateFontIndirectA(FUN_10004e82(s_BigCardText_10022110,1));
+  DAT_1003a018 = CreateFontIndirectA(FUN_10004e82(s_SmallCardTitle_1002211c,0));
   DAT_10039ffc = FUN_1000b00c(0xbe);
   DAT_1003a02c = FUN_1000b00c(0xca);
   DAT_10039fec = FUN_1000b00c(0xc9);
@@ -611,51 +604,47 @@ undefined4 prepare_fonts_and_imgs(void)
   DAT_1003a030 = CreateSolidBrush(DAT_10039ffc);
   DAT_1003a038 = CreateSolidBrush(DAT_1003a02c);
   global_CARDBK_Artifact = 0;
-  global_CARDBK_Gold = 0;
-  global_CARDBK_Red = 0;
-  global_CARDBK_Black = 0;
-  global_CARDBK_Blue = 0;
-  global_CARDBK_White = 0;
-  global_CARDBK_Green = 0;
+  global_CARDBK_Gold = global_CARDBK_Artifact;
+  global_CARDBK_Red = global_CARDBK_Gold;
+  global_CARDBK_Black = global_CARDBK_Red;
+  global_CARDBK_Blue = global_CARDBK_Black;
+  global_CARDBK_White = global_CARDBK_Blue;
+  global_CARDBK_Green = global_CARDBK_White;
   global_CARDBK_ArabianNightsLand = 0;
-  global_CARDBK_LegendsLand = 0;
-  global_CARDBK_AntiquitiesLand = 0;
-  global_CARDBK_FallenEmpiresLand = 0;
-  global_CARDBK_DarklandsLand = 0;
-  global_CARDBK_RedLand = 0;
-  global_CARDBK_BlackLand = 0;
-  global_CARDBK_BlueLand = 0;
-  global_CARDBK_WhiteLand = 0;
-  global_CARDBK_GreenLand = 0;
+  global_CARDBK_LegendsLand = global_CARDBK_ArabianNightsLand;
+  global_CARDBK_AntiquitiesLand = global_CARDBK_LegendsLand;
+  global_CARDBK_FallenEmpiresLand = global_CARDBK_AntiquitiesLand;
+  global_CARDBK_DarklandsLand = global_CARDBK_FallenEmpiresLand;
+  global_CARDBK_RedLand = global_CARDBK_DarklandsLand;
+  global_CARDBK_BlackLand = global_CARDBK_RedLand;
+  global_CARDBK_BlueLand = global_CARDBK_BlackLand;
+  global_CARDBK_WhiteLand = global_CARDBK_BlueLand;
+  global_CARDBK_GreenLand = global_CARDBK_WhiteLand;
   global_CARDBK_Special = 0;
-  if ((((((DAT_1003a198 == 0) || (DAT_10039fe4 == 0)) || (DAT_1003a010 == 0)) ||
+  if ((((((global_ManaSymbols == 0) || (global_CardSets == 0)) || (global_CardBack == 0)) ||
        ((DAT_1003a008 == (HFONT)0x0 || (DAT_10039fdc == (HFONT)0x0)))) ||
       ((DAT_1003a000 == (HFONT)0x0 || ((DAT_1003a040 == (HFONT)0x0 || (DAT_1003a018 == (HFONT)0x0)))
        ))) || ((DAT_1003a01c == (HPEN)0x0 ||
                ((DAT_1003a030 == (HBRUSH)0x0 || (DAT_1003a038 == (HBRUSH)0x0)))))) {
     DestroyAllResources();
-    uVar2 = 0;
+    return 0;
   }
-  else {
-    uVar2 = 1;
-  }
-  return uVar2;
+
+  return 1;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004e82
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-undefined * FUN_10004e82(undefined4 param_1,int param_2)
+LOGFONTA * FUN_10004e82(char* param_1,int param_2)
 
 {
   CHAR local_6c [100];
   UINT local_8;
   
   memcpy(&DAT_1003a048,&DAT_10021fe0,0x3c);
-  strcpy(local_6c,DAT_1002212c);
+  strcpy(local_6c,s_size_1002212c);
   strcat(local_6c,param_1);
   _DAT_1003a048 = GetPrivateProfileIntA(s_Fonts_10022134,local_6c,0x14,&DAT_1003a090);
-  strcpy(local_6c,DAT_1002213c);
+  strcpy(local_6c,s_bold_1002213c);
   strcat(local_6c,param_1);
   local_8 = GetPrivateProfileIntA(s_Fonts_10022144,local_6c,0,&DAT_1003a090);
   if (local_8 != 0) {
@@ -664,7 +653,7 @@ undefined * FUN_10004e82(undefined4 param_1,int param_2)
   if (param_2 != 0) {
     DAT_1003a05c = 1;
   }
-  strcpy(local_6c,DAT_1002214c);
+  strcpy(local_6c,s_font_1002214c);
   strcat(local_6c,param_1);
   GetPrivateProfileStringA
             (s_Fonts_10022164,local_6c,s_MS_Sans_Serif_10022154,&DAT_1003a064,0x20,&DAT_1003a090);
@@ -776,17 +765,17 @@ void DestroyAllResources(void)
   strcpy(local_10c,&global_base_directory);
   strcat(local_10c,s__Tt0300m__TTF_100221dc);
   RemoveFontResourceA(local_10c);
-  if (DAT_1003a198 != 0) {
-    DeleteAndCloseObject(DAT_1003a198);
-    DAT_1003a198 = 0;
+  if (global_ManaSymbols != 0) {
+    DeleteAndCloseObject(global_ManaSymbols);
+    global_ManaSymbols = 0;
   }
-  if (DAT_10039fe4 != 0) {
-    DeleteAndCloseObject(DAT_10039fe4);
-    DAT_10039fe4 = 0;
+  if (global_CardSets != 0) {
+    DeleteAndCloseObject(global_CardSets);
+    global_CardSets = 0;
   }
-  if (DAT_1003a010 != 0) {
-    DeleteAndCloseObject(DAT_1003a010);
-    DAT_1003a010 = 0;
+  if (global_CardBack != 0) {
+    DeleteAndCloseObject(global_CardBack);
+    global_CardBack = 0;
   }
 
   DestroyAllCardBackgrounds_impl();
@@ -845,7 +834,7 @@ void DrawCardBack(HDC param_1,RECT *param_2)
   
                     /* 0x5830  3  DrawCardBack */
   if ((param_1 != (HDC)0x0) && (param_2 != (RECT *)0x0)) {
-    if (DAT_1003a010 == 0) {
+    if (global_CardBack == 0) {
       pHVar3 = GetStockObject(4);
       FillRect(param_1,param_2,pHVar3);
     }
@@ -862,7 +851,7 @@ void DrawCardBack(HDC param_1,RECT *param_2)
       FillRect(param_1,param_2,pHVar3);
       SetRect(&local_14,param_2->left + iVar1,param_2->top + iVar2,param_2->right - iVar1,
               param_2->bottom - iVar2);
-      DrawBitmapToRect(param_1,&local_14,DAT_1003a010);
+      DrawBitmapToRect(param_1,&local_14,global_CardBack);
     }
   }
   return;
@@ -959,8 +948,8 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
     if (local_4d8 != (HBRUSH)0x0) {
       DeleteObject(local_4d8);
     }
-    local_4ec = (int *)FUN_100067c7(param_3);
-    FUN_10006a41(local_4ec);
+    local_4ec = (int *)GetCardBackground(param_3);
+    LoadCardBackground(local_4ec);
     SetRect(&local_4e8,local_44,local_28,local_c4 - local_44,local_2c - local_28);
     if (*local_4ec == 0) {
       pHVar4 = GetStockObject(0);
@@ -1046,7 +1035,7 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
       FUN_10006eed(param_1,&local_24,param_3 + 10);
     }
     if (param_3[3] != -1) {
-      FUN_10006d5f(param_1,&local_14,param_3[3]);
+      DrawCardSet(param_1,&local_14,param_3[3]);
     }
     CopyRect(&local_504,&local_4d4);
     LPtoDP(param_1,(LPPOINT)&local_504,2);
@@ -1088,16 +1077,16 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
     local_6c = IsBigArtRightSize(*param_3,param_4,local_504.right - local_504.left,
                                  local_504.bottom - local_504.top);
     strcpy(local_4ac,param_3[0x1d]);
-    FUN_1000b06a(local_4ac,DAT_10022214,1,DAT_10022210);
-    FUN_1000b06a(local_4ac,DAT_1002221c,1,DAT_10022218);
-    FUN_1000b06a(local_4ac,DAT_10022224,1,DAT_10022220);
-    FUN_1000b06a(local_4ac,DAT_1002222c,1,DAT_10022228);
-    FUN_1000b06a(local_4ac,DAT_10022234,1,DAT_10022230);
-    FUN_1000b06a(local_4ac,DAT_1002223c,1,DAT_10022238);
-    FUN_1000b06a(local_4ac,DAT_10022244,1,DAT_10022240);
-    FUN_1000b06a(local_4ac,DAT_1002224c,1,DAT_10022248);
-    FUN_1000b06a(local_4ac,DAT_10022254,1,DAT_10022250);
-    FUN_1000b06a(local_4ac,DAT_1002225c,1,DAT_10022258);
+    ReplaceSubstring(local_4ac,s__H1_10022214,1,s_empty_10022210);
+    ReplaceSubstring(local_4ac,s__H2_1002221c,1,s_empty_10022218);
+    ReplaceSubstring(local_4ac,s__H3_10022224,1,s_empty_10022220);
+    ReplaceSubstring(local_4ac,S__H4_1002222c,1,s_empty_10022228);
+    ReplaceSubstring(local_4ac,s__H_10022234,1,s_empty_10022230);
+    ReplaceSubstring(local_4ac,s__S1_1002223c,1,s_empty_10022238);
+    ReplaceSubstring(local_4ac,s__S2_10022244,1,s_empty_10022240);
+    ReplaceSubstring(local_4ac,S__S3_1002224c,1,s_empty_10022248);
+    ReplaceSubstring(local_4ac,s__S4_10022254,1,s_empty_10022250);
+    ReplaceSubstring(local_4ac,s__S_1002225c,1,s_empty_10022258);
     SetTextColor(param_1,DAT_1003a1a0);
     SetBkMode(param_1,1);
     if (param_6 != 0) {
@@ -1142,7 +1131,7 @@ DrawFullCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param_4,uin
 }
 
 // FUNCTION: DRAWCARDLIB 0x100067c7
-undefined4 * FUN_100067c7(int param_1)
+undefined4 * GetCardBackground(int param_1)
 
 {
   int iVar1;
@@ -1240,7 +1229,7 @@ undefined4 * FUN_100067c7(int param_1)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006a41
-undefined4 FUN_10006a41(int *param_1)
+undefined4 LoadCardBackground(int *param_1)
 
 {
   undefined4 uVar1;
@@ -1328,7 +1317,7 @@ undefined4 FUN_10006a41(int *param_1)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006d5f
-void FUN_10006d5f(int param_1,int param_2,uint param_3)
+void DrawCardSet(int param_1,int param_2,uint param_3)
 
 {
   undefined1 local_44 [4];
@@ -1344,9 +1333,9 @@ void FUN_10006d5f(int param_1,int param_2,uint param_3)
   
   if ((((((param_1 != 0) && (param_2 != 0)) && ((param_3 & 0x800) == 0)) &&
        ((param_3 != 0xffffffff && ((param_3 & 0x10) == 0)))) &&
-      (((param_3 & 0x80) == 0 && (DAT_10039fe4 != (HANDLE)0x0)))) &&
+      (((param_3 & 0x80) == 0 && (global_CardSets != (HANDLE)0x0)))) &&
      (((param_3 & 0x2e) != 0 || ((param_3 & 0x100) != 0)))) {
-    GetObjectA(DAT_10039fe4,0x18,local_44);
+    GetObjectA(global_CardSets,0x18,local_44);
     local_24 = local_40 / 10;
     local_2c = local_3c;
     if ((param_3 & 0x20) == 0) {
@@ -1377,7 +1366,7 @@ void FUN_10006d5f(int param_1,int param_2,uint param_3)
     local_28 = (local_8 * local_24) / local_3c;
     SetRect(&local_1c,*(int *)(param_2 + 8) - local_28,*(int *)(param_2 + 4),*(int *)(param_2 + 8),
             *(int *)(param_2 + 4) + local_8);
-    FUN_1000aab9(param_1,&local_1c,DAT_10039fe4,local_24,local_2c,local_20,0,local_c,0);
+    DrawMaskedBitmapToRect(param_1,&local_1c,global_CardSets,local_24,local_2c,local_20,0,local_c,0);
   }
   return;
 }
@@ -1421,7 +1410,7 @@ void FUN_10006eed(int param_1,int param_2,char *param_3)
     while (*local_28 != '\0') {
       uVar2 = FUN_10007296(&local_28);
       local_30 = (uint)uVar2;
-      FUN_100074b2(param_1,local_30,local_2c,local_34,iVar3,local_24);
+      DrawManaSymbols(param_1,local_30,local_2c,local_34,iVar3,local_24);
       local_2c = local_2c + iVar3;
     }
   }
@@ -1613,7 +1602,7 @@ int FUN_10007296(int *param_1)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100074b2
-void FUN_100074b2(int param_1,char param_2,int param_3,int param_4,int param_5,int param_6)
+void DrawManaSymbols(int param_1,char param_2,int param_3,int param_4,int param_5,int param_6)
 
 {
   undefined1 local_3c [4];
@@ -1626,7 +1615,7 @@ void FUN_100074b2(int param_1,char param_2,int param_3,int param_4,int param_5,i
   int local_8;
   
   if (((param_1 != 0) && (-0x13 < param_2)) && (param_2 < '\0')) {
-    GetObjectA(DAT_1003a198,0x18,local_3c);
+    GetObjectA(global_ManaSymbols,0x18,local_3c);
     local_20 = local_34;
     local_24 = local_34;
     local_8 = local_38 - local_34;
@@ -1685,7 +1674,7 @@ void FUN_100074b2(int param_1,char param_2,int param_3,int param_4,int param_5,i
       local_1c = local_34 * 0x11;
     }
     SetRect(&local_18,param_3,param_4,param_5 + param_3,param_6 + param_4);
-    FUN_1000aab9(param_1,&local_18,DAT_1003a198,local_20,local_24,local_1c,0,local_8,0);
+    DrawMaskedBitmapToRect(param_1,&local_18,global_ManaSymbols,local_20,local_24,local_1c,0,local_8,0);
   }
   return;
 }
@@ -1835,7 +1824,7 @@ uint DrawManaText(HDC param_1,int *param_2,char *param_3,int param_4)
                       local_24 + (local_7c - local_24) / 2 + local_70);
             }
             else {
-              FUN_100074b2(param_1,*(undefined4 *)(local_b4 + local_6c),
+              DrawManaSymbols(param_1,*(undefined4 *)(local_b4 + local_6c),
                            local_60 + (iVar4 - local_80) / 2,local_70 + (local_7c - local_24) / 2,
                            local_80,local_24);
             }
@@ -1895,7 +1884,7 @@ void DrawSmallCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param
     SetViewportExtEx(param_1,param_2[2] - *param_2,param_2[3] - param_2[1],(LPSIZE)0x0);
     SetWindowOrgEx(param_1,0,0,(LPPOINT)0x0);
     SetViewportOrgEx(param_1,*param_2,param_2[1],(LPPOINT)0x0);
-    FUN_10008065(param_1,param_2,param_3);
+    DrawCardBackground(param_1,param_2,param_3);
     DrawSmallCardTitle(param_1,param_2,param_3[2],0,1);
     h = GetStockObject(5);
     SelectObject(param_1,h);
@@ -1926,8 +1915,7 @@ void DrawSmallCard(HDC param_1,int *param_2,undefined4 *param_3,undefined4 param
 }
 
 // FUNCTION: DRAWCARDLIB 0x10008065
-void FUN_10008065(HDC param_1,RECT *param_2,int param_3)
-
+void DrawCardBackground(HDC param_1,RECT *param_2,int cardBack)
 {
   HBRUSH hbr;
   undefined1 local_38 [4];
@@ -1938,9 +1926,9 @@ void FUN_10008065(HDC param_1,RECT *param_2,int param_3)
   undefined4 local_c;
   undefined4 local_8;
   
-  if (((param_1 != (HDC)0x0) && (param_2 != (RECT *)0x0)) && (param_3 != 0)) {
-    local_20 = (int *)FUN_100067c7(param_3);
-    FUN_10006a41(local_20);
+  if (((param_1 != (HDC)0x0) && (param_2 != (RECT *)0x0)) && (cardBack != 0)) {
+    local_20 = (int *)GetCardBackground(cardBack);
+    LoadCardBackground(local_20);
     if (*local_20 == 0) {
       hbr = GetStockObject(0);
       FillRect(param_1,param_2,hbr);
@@ -2009,7 +1997,7 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,int param_3,int param_4,int par
 
 // FUNCTION: DRAWCARDLIB 0x1000aab9
 undefined4
-FUN_1000aab9(HDC param_1,int *param_2,HANDLE param_3,int param_4,int param_5,int param_6,int param_7
+DrawMaskedBitmapToRect(HDC param_1,int *param_2,HANDLE param_3,int param_4,int param_5,int param_6,int param_7
             ,int param_8,int param_9)
 
 {
@@ -2045,10 +2033,10 @@ FUN_1000aab9(HDC param_1,int *param_2,HANDLE param_3,int param_4,int param_5,int
     }
     ApplyCardArtPaletteToDc(DAT_10022500);
     StretchBlt(param_1,local_8,local_c,local_14,local_30,DAT_10022500,param_8,param_9,param_4,
-               param_5,0x8800c6);
+               param_5,SRCAND);
     ApplyCardArtPaletteToDc(DAT_10022500);
     StretchBlt(param_1,local_8,local_c,local_14,local_30,DAT_10022500,param_6,param_7,param_4,
-               param_5,0xee0086);
+               param_5,SRCPAINT);
     RestoreDC(param_1,local_10);
     LeaveCriticalSection((LPCRITICAL_SECTION)&global_critical_section_for_drawing);
     uVar1 = 1;
@@ -2106,8 +2094,7 @@ uint FUN_1000b00c(int param_1)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b06a
-void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
-
+void ReplaceSubstring(char *inOutStr,char *needle,int caseSensitive,char *replacement)
 {
   size_t sVar1;
   int iVar2;
@@ -2117,16 +2104,16 @@ void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
   int local_c;
   char *local_8;
   
-  if ((((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) && (param_4 != (char *)0x0)) &&
-     ((sVar1 = strlen(param_1), sVar1 != 0 && (sVar1 = strlen(param_2), sVar1 != 0)))) {
-    local_10 = strlen(param_2);
-    local_8 = param_1;
+  if ((((inOutStr != (char *)0x0) && (needle != (char *)0x0)) && (replacement != (char *)0x0)) &&
+     ((sVar1 = strlen(inOutStr), sVar1 != 0 && (sVar1 = strlen(needle), sVar1 != 0)))) {
+    local_10 = strlen(needle);
+    local_8 = inOutStr;
     local_3f8[0] = '\0';
     local_3fc = 0;
     while (*local_8 != '\0') {
       local_c = 0;
-      if (((param_3 != 0) && (iVar2 = strncmp(local_8,param_2,local_10), iVar2 == 0)) ||
-         ((param_3 == 0 && (iVar2 = _strnicmp(local_8,param_2,local_10), iVar2 == 0)))) {
+      if (((caseSensitive != 0) && (iVar2 = strncmp(local_8,needle,local_10), iVar2 == 0)) ||
+         ((caseSensitive == 0 && (iVar2 = _strnicmp(local_8,needle,local_10), iVar2 == 0)))) {
         local_c = 1;
       }
       if (local_c == 0) {
@@ -2136,13 +2123,13 @@ void FUN_1000b06a(char *param_1,char *param_2,int param_3,char *param_4)
         local_3fc = local_3fc + 1;
       }
       else {
-        strcat(local_3f8,param_4);
-        sVar1 = strlen(param_4);
+        strcat(local_3f8,replacement);
+        sVar1 = strlen(replacement);
         local_8 = local_8 + local_10;
         local_3fc = local_3fc + sVar1;
       }
     }
-    strcpy(param_1,local_3f8);
+    strcpy(inOutStr,local_3f8);
   }
   return;
 }
@@ -2229,7 +2216,7 @@ int read_cfg(undefined4 param_1)
   }
   if (iVar2 == 0) {
     for (iStackY_4a390 = 0; iStackY_4a390 < (int)global_available_slots; iStackY_4a390 = iStackY_4a390 + 1) {
-      strcpy((uint *)(&DAT_100f37d0 + iStackY_4a390 * 100),(uint *)&DAT_10026a64);
+      strcpy((uint *)(&DAT_100f37d0 + iStackY_4a390 * 100),(uint *)&s_File__s_could_not_be_opened__EXITING_10026a64);
     }
   }
   return iVar2;

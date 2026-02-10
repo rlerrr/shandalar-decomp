@@ -45,9 +45,9 @@ char s__s_is_not_in_a_recognizable_form_10021f98[] = "%s is not in a recognizabl
 char s_Error_Opening_File__s_10021fc0[] = "Error Opening File %s\r\n";
 
 // GLOBAL: DRAWCARDLIB 0x10026548
-undefined4 gImageWidth = 0x00000000;
+int global_pcxw_image_width = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x1002654c
-undefined4 gImageHeight = 0x00000000;
+int global_pcxw_image_height = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10127d30
 FILE *gPcxInFile = (FILE *)0x0;
@@ -123,10 +123,10 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
   }
   assert(local_18,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x6f,
                s__s_Not_a_256_color_palettized_pc_10021f1c,gPcxPath);
-  uVar2 = 4 - (gImageWidth & 3);
+  uVar2 = 4 - (global_pcxw_image_width & 3);
   uVar5 = (int)uVar2 >> 0x1f;
   iVar3 = ((uVar2 ^ uVar5) - uVar5 & 3 ^ uVar5) - uVar5;
-  if ((gImageWidth == gPcxBufferWidth) && (gImageHeight == gPcxBufferHeight)) {
+  if ((global_pcxw_image_width == gPcxBufferWidth) && (global_pcxw_image_height == gPcxBufferHeight)) {
     memset(imagePixels,0,(gPcxBufferWidth + iVar3) * gPcxBufferHeight);
   }
   else {
@@ -136,17 +136,17 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
     GlobalUnlock(pvVar4);
     pvVar4 = GlobalHandle(imagePixels);
     GlobalFree(pvVar4);
-    pvVar4 = GlobalAlloc(0x40,(gImageWidth + iVar3) * gImageHeight);
+    pvVar4 = GlobalAlloc(0x40,(global_pcxw_image_width + iVar3) * global_pcxw_image_height);
     imagePixels = GlobalLock(pvVar4);
     pvVar4 = GlobalHandle(imagePixels);
     GlobalLock(pvVar4);
-    gPcxBufferWidth = gImageWidth;
-    gPcxBufferHeight = gImageHeight;
+    gPcxBufferWidth = global_pcxw_image_width;
+    gPcxBufferHeight = global_pcxw_image_height;
   }
   puVar1 = imagePixels;
-  for (local_8 = 0; local_8 < gImageHeight; local_8 = local_8 + 1) {
+  for (local_8 = 0; local_8 < global_pcxw_image_height; local_8 = local_8 + 1) {
     PcxReadScanlineRle(&DAT_10126d30);
-    for (local_14 = 0; local_14 < (int)gImageWidth; local_14 = local_14 + 1) {
+    for (local_14 = 0; local_14 < (int)global_pcxw_image_width; local_14 = local_14 + 1) {
       *imagePixels = (&DAT_10126d30)[local_14];
       imagePixels = imagePixels + 1;
     }
@@ -184,8 +184,8 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
                s__s_Not_a_pcx_file_10021f64,gPcxPath);
   assert(DAT_10127d41 == '\x05',PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xae,
                s__s_Not_a_version_5_pcx_file_10021f78,gPcxPath);
-  gImageWidth = ((uint)DAT_10127d48 - (uint)DAT_10127d44) + 1;
-  gImageHeight = ((uint)DAT_10127d4a - (uint)DAT_10127d46) + 1;
+  global_pcxw_image_width = ((uint)DAT_10127d48 - (uint)DAT_10127d44) + 1;
+  global_pcxw_image_height = ((uint)DAT_10127d4a - (uint)DAT_10127d46) + 1;
   if (paletteOut != (void *)0x0) {
     if ((DAT_10127d81 == '\x01') && (DAT_10127d43 == '\b')) {
       fseek(gPcxInFile,-0x300,2);

@@ -6,8 +6,8 @@
 #include "mystdbool.h"
 
 /* Globals shared with callers (kept for decomp matching). */
-extern undefined4 gImageWidth;
-extern undefined4 gImageHeight;
+extern int global_pcxw_image_width;
+extern int global_pcxw_image_height;
 extern FILE *gPcxInFile;
 extern char *gPcxPath;
 

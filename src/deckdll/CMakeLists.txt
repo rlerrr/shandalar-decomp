@@ -22,8 +22,9 @@ if (TARGET drawcardlib)
   target_link_libraries(deckdll PRIVATE drawcardlib)
 endif()
 
-if (TARGET image)
-  target_link_libraries(deckdll PRIVATE image)
+if (TARGET rpbits)
+  target_link_libraries(deckdll PRIVATE rpbits)
+  target_link_options(deckdll PRIVATE /BASE:0x101f7000)
 endif()
 
 if (MSVC)

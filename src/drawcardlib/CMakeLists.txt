@@ -22,6 +22,11 @@ if (TARGET cardartlib)
   target_link_libraries(drawcardlib PRIVATE cardartlib)
 endif()
 
+if (TARGET rpbits)
+  target_link_libraries(drawcardlib PRIVATE rpbits)
+  target_link_options(drawcardlib PRIVATE /BASE:0x10155000)
+endif()
+
 if (MSVC)
   # Force DrawCardLib to build with debug-style settings.
   target_compile_options(drawcardlib PRIVATE /Od /Ob1 /Zi)

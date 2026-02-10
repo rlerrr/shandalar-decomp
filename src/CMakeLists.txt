@@ -18,6 +18,8 @@ function(shandalar_add_def_import_library name def_file)
   endif()
 endfunction()
 
+add_subdirectory(rpbits)
+
 if (SHANDALAR_BUILD_CARDARTLIB)
   add_subdirectory(cardartlib)
 endif()
