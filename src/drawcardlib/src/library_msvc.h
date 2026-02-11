@@ -670,5 +670,7 @@
 // LIBRARY: DRAWCARDLIB 0x1001eb80 SYMBOL
 // __strnicmp
 
+// GLOBAL: DRAWCARDLIB 0x10026973
+// _crtDbgFlag
 
 #endif

@@ -14,11 +14,11 @@ typedef unsigned short ushort;
 
 /* Placeholder globals for missing decompiler labels (PCXW-only). */
 // GLOBAL: DRAWCARDLIB 0x10021f18
-char DAT_10021f18[] = "rb";
+char s_rb_10021f18[] = "rb";
 // GLOBAL: DRAWCARDLIB 0x10021f60
-char DAT_10021f60[] = "rb";
+char s_rb_10021f60[] = "rb";
 // GLOBAL: DRAWCARDLIB 0x10021fd8
-char DAT_10021fd8[] = "w+b";
+char s_w_b_10021fd8[] = "w+b";
 
 /* PCXW globals */
 // GLOBAL: DRAWCARDLIB 0x10021ed0
@@ -110,7 +110,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
   int local_14;
   int local_8;
   
-  gPcxInFile = fopen(path,&DAT_10021f18);
+  gPcxInFile = fopen(path,&s_rb_10021f18);
   assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
                s_Error_Opening_File__s_10021f00,path);
   gPcxPath = path;
@@ -162,7 +162,7 @@ bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 {
   int iVar1;
   
-  gPcxInFile = fopen(path,&DAT_10021f60);
+  gPcxInFile = fopen(path,&s_rb_10021f60);
   assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
                s_Error_Opening_File__s_10021f48,path);
   gPcxPath = path;
@@ -258,7 +258,7 @@ PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused
   undefined4 uStackY_1c;
   
   uStackY_1c = 0x100045ce;
-  gPcxOutFile = fopen(path,&DAT_10021fd8);
+  gPcxOutFile = fopen(path,&s_w_b_10021fd8);
   uStackY_1c = 0x146;
   puStackY_20 = PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0;
   puStackY_24 = (undefined1 *)(uint)(gPcxOutFile != (FILE *)0x0);

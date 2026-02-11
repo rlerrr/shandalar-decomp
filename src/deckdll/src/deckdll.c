@@ -1233,8 +1233,8 @@ static int read_db_guts(void)
         if (!cp->num_pics)
           cp->num_pics = 1;
 
-        cp->req_hybrid = 0;
-        cp->hybrid_type = HYBRID_0;
+        cp->req.req_hybrid = 0;
+        cp->req.hybrid_type = HYBRID_0;
 
         if (cp->color == CP_COLOR_MULTI && cp->mana_cost_text)
         {
@@ -1248,28 +1248,28 @@ static int read_db_guts(void)
                 {
                 case 'B':
                   cols |= COLOR_TEST_BLACK;
-                  if (cp->req_black > 0)
-                    --cp->req_black;
+                  if (cp->req.req_black > 0)
+                    --cp->req.req_black;
                   break;
                 case 'U':
                   cols |= COLOR_TEST_BLUE;
-                  if (cp->req_blue > 0)
-                    --cp->req_blue;
+                  if (cp->req.req_blue > 0)
+                    --cp->req.req_blue;
                   break;
                 case 'G':
                   cols |= COLOR_TEST_GREEN;
-                  if (cp->req_green > 0)
-                    --cp->req_green;
+                  if (cp->req.req_green > 0)
+                    --cp->req.req_green;
                   break;
                 case 'R':
                   cols |= COLOR_TEST_RED;
-                  if (cp->req_red > 0)
-                    --cp->req_red;
+                  if (cp->req.req_red > 0)
+                    --cp->req.req_red;
                   break;
                 case 'W':
                   cols |= COLOR_TEST_WHITE;
-                  if (cp->req_white > 0)
-                    --cp->req_white;
+                  if (cp->req.req_white > 0)
+                    --cp->req.req_white;
                   break;
                 default:
                   fatal("%s: can't parse hybrid mana cost (\"%s\"->\"%c%c%c\")", cp->full_name, cp->mana_cost_text, p[0], p[1], p[2]);
@@ -1279,16 +1279,16 @@ static int read_db_guts(void)
               // This works only because all hybrid_t values exactly match one of the subset of color_test_t's that can be constructed above
               hy = cols;
 
-              if (++cp->req_hybrid == 1)
+              if (++cp->req.req_hybrid == 1)
               {
                 if ((cols & ~COLOR_TEST_ANY_COLORED) || num_bits_set(cols & COLOR_TEST_ANY_COLORED) != 2)
                   fatal("%s: invalid hybrid mana cost (\"%s\"->\"%c%c%c\", 0x%x)", cp->full_name,
                         cp->mana_cost_text, p[0], p[1], p[2], cols);
-                cp->hybrid_type = hy;
+                cp->req.hybrid_type = hy;
               }
-              else if (cp->hybrid_type != hy)
+              else if (cp->req.hybrid_type != hy)
                 fatal("%s: mixed hybrid mana cost (\"%s\"->\"%c%c%c\", 0x%x, previously 0x%x)", cp->full_name,
-                      cp->mana_cost_text, p[0], p[1], p[2], hy, cp->hybrid_type);
+                      cp->mana_cost_text, p[0], p[1], p[2], hy, cp->req.hybrid_type);
 
               p += 2;
             }
@@ -3429,15 +3429,15 @@ show_stats(HDC hdc, int word_width, int word_height)
       break;
     case CP_COLOR_MULTI:
       stat2 = STAT2_MULTI;
-      if (cp->req_black || (cp->req_hybrid && (cp->hybrid_type & COLOR_TEST_BLACK)))
+      if (cp->req.req_black || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_BLACK)))
         stats[stat1][STAT2_BLACK] += amt;
-      if (cp->req_blue || (cp->req_hybrid && (cp->hybrid_type & COLOR_TEST_BLUE)))
+      if (cp->req.req_blue || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_BLUE)))
         stats[stat1][STAT2_BLUE] += amt;
-      if (cp->req_green || (cp->req_hybrid && (cp->hybrid_type & COLOR_TEST_GREEN)))
+      if (cp->req.req_green || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_GREEN)))
         stats[stat1][STAT2_GREEN] += amt;
-      if (cp->req_red || (cp->req_hybrid && (cp->hybrid_type & COLOR_TEST_RED)))
+      if (cp->req.req_red || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_RED)))
         stats[stat1][STAT2_RED] += amt;
-      if (cp->req_white || (cp->req_hybrid && (cp->hybrid_type & COLOR_TEST_WHITE)))
+      if (cp->req.req_white || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_WHITE)))
         stats[stat1][STAT2_WHITE] += amt;
       break;
     default:
@@ -7844,12 +7844,12 @@ check_casting_cost(const card_ptr_t *cp)
   if (!(global_filter_casting_cost & FN_ENABLE))
     return true;
 
-  colorless = cp->req_colorless;
+  colorless = cp->req.req_colorless;
   if (colorless >= 40)
     return global_filter_casting_cost & FN_CC_X;
   else
   {
-    int cmc = colorless + cp->req_black + cp->req_white + cp->req_red + cp->req_green + cp->req_blue + cp->req_hybrid;
+    int cmc = colorless + cp->req.req_black + cp->req.req_white + cp->req.req_red + cp->req.req_green + cp->req.req_blue + cp->req.req_hybrid;
     return (((global_filter_casting_cost & FN_GT) && global_filter_casting_cost_value <= cmc) || ((global_filter_casting_cost & FN_LT) && global_filter_casting_cost_value >= cmc) || ((global_filter_casting_cost & FN_EQ) && global_filter_casting_cost_value == cmc));
   }
 }
@@ -8040,20 +8040,20 @@ check_filters(csvid_t csvid)
     if (global_filter_colors & FC_GOLD_ALL)
       break;
 
-    if (cp->req_hybrid > 0)
-      cols = cp->hybrid_type; // This works because all hybrid_t values exactly match a color_test_t
+    if (cp->req.req_hybrid > 0)
+      cols = cp->req.hybrid_type; // This works because all hybrid_t values exactly match a color_test_t
     else
       cols = COLOR_TEST_0;
 
-    if (cp->req_white > 0)
+    if (cp->req.req_white > 0)
       cols |= COLOR_TEST_WHITE;
-    if (cp->req_blue > 0)
+    if (cp->req.req_blue > 0)
       cols |= COLOR_TEST_BLUE;
-    if (cp->req_black > 0)
+    if (cp->req.req_black > 0)
       cols |= COLOR_TEST_BLACK;
-    if (cp->req_red > 0)
+    if (cp->req.req_red > 0)
       cols |= COLOR_TEST_RED;
-    if (cp->req_green > 0)
+    if (cp->req.req_green > 0)
       cols |= COLOR_TEST_GREEN;
 
     if (global_filter_colors & FC_GOLD_ALLSELECTED)

@@ -16,7 +16,6 @@ int OpenPcxFile(char *param_1,int param_2);
 void ClosePcxFile(int param_1);
 void RpBits_Setup(undefined4 param_1);
 int RpBitsRefill(void);
-void FUN_1000b804(void);
 
 // FUNCTION: DRAWCARDLIB 0x1000965b
 BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
@@ -364,6 +363,6 @@ int RpBitsRefill(void)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b804
-void FUN_1000b804(void)
+void RpBits_DebugHook(void)
 {
 }

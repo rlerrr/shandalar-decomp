@@ -10,7 +10,7 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * cdtools.dll (debug) ![matching](https://img.shields.io/badge/matching-99.05%25-green) : A small library of CD functions
 * deck.exe (release /Od) ![matching](https://img.shields.io/badge/matching-99.62%25-green) : A trivial wrapper for showing the deck builder UI
 * deckdll.dll (static release /Od?) ![matching](https://img.shields.io/badge/matching-21.14%25-red) : The deck builder UI implementation, imported by deck.exe and magic.exe
-* drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-85.21%25-blue) : Library for rendering full card representations
+* drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-87.58%25-blue) : Library for rendering full card representations
 * facemaker.exe : 
 * gcconn.dll (debug, C++) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
 * magic.exe : The duel UI

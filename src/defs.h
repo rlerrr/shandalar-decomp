@@ -1231,20 +1231,7 @@ typedef enum
 } CardPtrFlags;
 STATIC_ASSERT(sizeof(CardPtrFlags) == 4, CardPtrFlags_wrong_size);
 
-/* Data struct */
-typedef struct
-{
-	PRIVATE_IN_SHANDALAR(uint32_t id;)
-	char*    full_name;
-	char*    name;
-	uint32_t expansion;
-	uint32_t color;		// 1:black 2:blue 3:artifact 4:gold 5:green 6:land 7:red 8:white
-	uint32_t card_type;	// 1:artifact 2:enchantment 3:instant 4:interrupt 5:land 6:sorcery 7:creature 8:token
-	uint16_t subtype1; /* 0x18 == 24 */
-	uint16_t subtype2;
-	const char* type_text;	// e.g. "Legendary Creature - Human"
-	uint32_t db_card_type_2;	// 1:ante 2:cardstealer 3:counter 4:directdamage 5:discard 6:drawer 7:lifegain 8:damageprevention 9:anti-land 10:manasource 11:bounce/untap/tap 12:pump
-	uint32_t rarity;	// 1:common 2:rare 3:dungeon/astral/promotional 4:uncommon (sic)
+typedef struct {
 	uint8_t req_colorless;
 	uint8_t req_black;
 	uint8_t req_blue;
@@ -1263,6 +1250,23 @@ typedef struct
 #endif
 	uint8_t req_red;
 	uint8_t req_white;
+} casting_cost_t;
+
+/* Data struct */
+typedef struct
+{
+	PRIVATE_IN_SHANDALAR(uint32_t id;) // 0x0
+	char*    full_name; // 0x4
+	char*    name; // 0x8
+	uint32_t expansion; // 0xc
+	uint32_t color;		// 1:black 2:blue 3:artifact 4:gold 5:green 6:land 7:red 8:white
+	uint32_t card_type;	// 1:artifact 2:enchantment 3:instant 4:interrupt 5:land 6:sorcery 7:creature 8:token
+	uint16_t subtype1; /* 0x18 == 24 */
+	uint16_t subtype2;
+	const char* type_text;	// e.g. "Legendary Creature - Human"
+	uint32_t db_card_type_2;	// 1:ante 2:cardstealer 3:counter 4:directdamage 5:discard 6:drawer 7:lifegain 8:damageprevention 9:anti-land 10:manasource 11:bounce/untap/tap 12:pump
+	uint32_t rarity;	// 1:common 2:rare 3:dungeon/astral/promotional 4:uncommon (sic)
+	casting_cost_t req;
 	uint8_t unused0x31;
 	uint16_t unused0x32;
 	CardPtrFlags flags;	// set only in Shandalar
