@@ -545,7 +545,6 @@ static char global_filter_dlg_title[64];
 // GLOBAL: DECKDLL 0x10104d80
 static int global_filter_gle_dlg_value = 0;
 
-//  [[[ display
 static HBRUSH global_brush_gold1 = NULL;
 static HBRUSH global_brush_gold2 = NULL;
 static HBRUSH global_brush_mediumgrey = NULL;
@@ -574,7 +573,6 @@ static POINT global_smallcard_smallest_size = {0, 0};
 static int global_smallcard_piclist_height = 0;
 static int global_smallcard_piclist_width = 0;
 
-//    [[[ fonts
 static LOGFONT global_logfont_template =
     {
         0,                           // lfHeight
@@ -599,7 +597,6 @@ static HFONT global_font_42unused = NULL;
 static HFONT global_font_40percent = NULL;
 static HFONT global_font_28percent = NULL;
 static HFONT global_font_32 = NULL;
-//    ]]]
 
 // GLOBAL: DECKDLL 0x101bbc28
 static HWND global_button_stats_hwnd;
@@ -611,6 +608,8 @@ static HWND global_cuecard_hwnd;
 static HWND global_decksurface_hwnd;
 // GLOBAL: DECKDLL 0x100f2768
 static HMENU global_decksurface_popup;
+// GLOBAL: DECKDLL 0x100f2840
+static HMENU global_tradesurface_popup;
 // GLOBAL: DECKDLL 0x101127a8
 static HMENU global_filtermenu_default;
 // GLOBAL: DECKDLL 0x101127d8
@@ -638,6 +637,7 @@ static HMENU global_filtermenu_rarity;
 // GLOBAL: DECKDLL 0x101127b0
 static HMENU global_filtermenu_artist;
 static HMENU global_filtermenu_newexp;
+
 
 // These are never set false.
 // GLOBAL: DECKDLL 0x10113d0c
@@ -736,7 +736,6 @@ static uint32_t global_filter_expansion_list[EXPANSION_LIST_SIZE] = {0};
 #if ((EXPANSION_LIST_SIZE * 32) > MAX_FILTER_SUBTYPE_SIZE)
 #error "sizeof global_filter_expansion_list > MAX_FILTER_SUBTYPE_SIZE"
 #endif
-//  ]]]
 
 static char global_search_string[264];
 
@@ -760,6 +759,7 @@ static Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 // GLOBAL: DECKDLL 0x101e79a0
 static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
+// This is really [225][128] ending at 0x10139CD0
 // GLOBAL: DECKDLL 0x10132c50
 static char text_lines[500][128];
 
@@ -779,15 +779,12 @@ static char *global_raw_rarities;
 // GLOBAL: DECKDLL 0x10145330
 static OrigRarities *global_origrarities;
 static bool global_db_read;
-//  ]]]
 
-//  [[[ low-level interface to Shandalar.dll
 static bool global_using_main_db = false;
 static int (*global_check_card_count_fn)(const DeckEntry *, int, int);
 static int (*global_is_valid_card_fn)(int);
 static bool (*global_colors_match_fn)(iid_t, color_test_t);
 static int (*global_check_colors_inout_edited_deck_fn)(const GlobalDeckEntry *, int, bool);
-//  ]]]
 
 // GLOBAL: DECKDLL 0x101bc440
 int *Gold;
@@ -930,6 +927,8 @@ LRESULT CALLBACK wndproc_FullCardClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_HorzListClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_MainClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_TitleClass(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND, UINT, WPARAM, LPARAM);
 
 // FUNCTION: DECKDLL 0x1000d9a3
 static void fatal_err(const char *text, HWND hwnd)
@@ -1976,61 +1975,58 @@ deckbuilder_main(HWND parent_hwnd, int db_flags_1, int db_flags_2)
   return DeckBuilderMain(parent_hwnd, db_flags_1, db_flags_2);
 }
 
+//TODO: call to RegisterClass seems to think it returns an int in orig?
 #define REGISTER_AND_RETURN_CLASS(classname, wndproc, style, extra_size, icon, cursor) WNDCLASS hwnd = {style, wndproc, 0, extra_size, global_hinstance, icon, cursor, NULL, NULL, classname}; if (!(RegisterClass(&hwnd) & 0x0000ffff)) return 0; return 1;
 
 // FUNCTION: DECKDLL 0x10001140
 bool register_DeckSurfaceClass(void)
 {
-  REGISTER_AND_RETURN_CLASS("DeckSurfaceClass",
-                         wndproc_DeckSurfaceClass,
-                         0,
-                         0,
-                         LoadIcon(0, IDI_APPLICATION),
-                         LoadCursor(0, IDC_ARROW));
+  WNDCLASS hwnd;
 
-  /*
-  if (AVar1 == 0) {
-    uVar2 = 0;
-  }
-  else {
-    local_2c.style = 0;
-    local_2c.lpfnWndProc = FUN_10002b0f;
-    local_2c.cbClsExtra = 0;
-    local_2c.cbWndExtra = 0;
-    local_2c.hInstance = global_hinstance;
-    local_2c.hIcon = LoadIconA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-    local_2c.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-    local_2c.hbrBackground = (HBRUSH)0x0;
-    local_2c.lpszMenuName = (LPCSTR)0x0;
-    local_2c.lpszClassName = s_MAGICDECK_SideboardSurfaceClass_100310b4;
-    AVar1 = RegisterClassA(&local_2c);
-    if (AVar1 == 0) {
-      uVar2 = 0;
-    }
-    else {
-      local_2c.style = 0;
-      local_2c.lpfnWndProc = FUN_10003f6a;
-      local_2c.cbClsExtra = 0;
-      local_2c.cbWndExtra = 0;
-      local_2c.hInstance = global_hinstance;
-      local_2c.hIcon = LoadIconA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-      local_2c.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-      local_2c.hbrBackground = (HBRUSH)0x0;
-      local_2c.lpszMenuName = (LPCSTR)0x0;
-      local_2c.lpszClassName = s_MAGICDECK_TradeSurfaceClass_100310d4;
-      AVar1 = RegisterClassA(&local_2c);
-      if (AVar1 == 0) {
-        uVar2 = 0;
-      }
-      else {
-        uVar2 = 1;
-      }
-    }
-  }
-  return uVar2;
-  */
+  hwnd.style = 0;
+  hwnd.lpfnWndProc = wndproc_DeckSurfaceClass;
+  hwnd.cbClsExtra = 0;
+  hwnd.cbWndExtra = 0;
+  hwnd.hInstance = global_hinstance;
+  hwnd.hIcon = LoadIcon(0, IDI_APPLICATION);
+  hwnd.hCursor = LoadCursor(0, IDC_ARROW);
+  hwnd.hbrBackground = (HBRUSH)0x0;
+  hwnd.lpszMenuName = (LPCSTR)0x0;
+  hwnd.lpszClassName = "MAGICDECK_DeckSurfaceClass";
+  
+  if (!(RegisterClassA(&hwnd) & 0x0000ffff))
+    return 0;  
+  
+  hwnd.style = 0;
+  hwnd.lpfnWndProc = wndproc_SideboardSurfaceClass;
+  hwnd.cbClsExtra = 0;
+  hwnd.cbWndExtra = 0;
+  hwnd.hInstance = global_hinstance;
+  hwnd.hIcon = LoadIcon(0, IDI_APPLICATION);
+  hwnd.hCursor = LoadCursor(0, IDC_ARROW);
+  hwnd.hbrBackground = (HBRUSH)0x0;
+  hwnd.lpszMenuName = (LPCSTR)0x0;
+  hwnd.lpszClassName = "MAGICDECK_SideboardSurfaceClass";
+
+  if (!(RegisterClassA(&hwnd) & 0x0000ffff))
+    return 0;
+
+  hwnd.style = 0;
+  hwnd.lpfnWndProc = wndproc_TradeSurfaceClass;
+  hwnd.cbClsExtra = 0;
+  hwnd.cbWndExtra = 0;
+  hwnd.hInstance = global_hinstance;
+  hwnd.hIcon = LoadIconA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  hwnd.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  hwnd.hbrBackground = (HBRUSH)0x0;
+  hwnd.lpszMenuName = (LPCSTR)0x0;
+  hwnd.lpszClassName = "MAGICDECK_TradeSurfaceClass";
+
+  if (!(RegisterClass(&hwnd) & 0x0000ffff)) 
+    return 0;
+    
+  return 1;
 }
-
 
 // FUNCTION: DECKDLL 0x10008080
 bool register_CardClass(void)
@@ -8583,4 +8579,16 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   default:
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
+}
+
+// FUNCTION: DECKDLL 0x10002b0f
+LRESULT CALLBACK
+wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+
+}
+
+// FUNCTION: DECKDLL 0x10003f6a
+LRESULT CALLBACK
+wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+
 }
