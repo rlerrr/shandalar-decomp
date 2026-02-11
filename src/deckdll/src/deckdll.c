@@ -434,7 +434,6 @@ enum SoundFn
 #define FULLCARD_EXPANDTEXT_INDEX 4
 
 #define CUECARD_FONT_INDEX 0
-//]]]
 
 // GLOBAL: DECKDLL 0x101a88f4
 static HINSTANCE global_hinstance = NULL;
@@ -663,6 +662,7 @@ static HMENU global_fullcard_popup;
 // GLOBAL: DECKDLL 0x101bc444
 static HWND global_horzlist_hwnd;
 static HWND global_cardlistfilter_hwnd;
+// GLOBAL: DECKDLL 0x101052c8
 static HMENU global_horzlist_popup;
 
 // GLOBAL: DECKDLL 0x101a8c64
@@ -775,6 +775,8 @@ static char *card_coded;
 static char *global_base_txt;
 static char *global_raw_dbinfo;
 static char *global_raw_rarities;
+
+// GLOBAL: DECKDLL 0x10145330
 static OrigRarities *global_origrarities;
 static bool global_db_read;
 //  ]]]
@@ -885,9 +887,7 @@ const Restriction restrictions[] =
 };
 
 #define DASH "\227"
-//]]]
 
-//[[[ macros and forward declarations
 #define FREEZ(memory) \
   do                  \
   {                   \
@@ -930,7 +930,6 @@ LRESULT CALLBACK wndproc_FullCardClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_HorzListClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_MainClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_TitleClass(HWND, UINT, WPARAM, LPARAM);
-//]]]
 
 // FUNCTION: DECKDLL 0x1000d9a3
 static void fatal_err(const char *text, HWND hwnd)
@@ -1121,9 +1120,7 @@ set_dlg_text_limited(HWND hdlg, int resource, const char *txt, int limit)
   SetWindowText(item, txt);
   SendMessage(item, EM_SETLIMITTEXT, limit, 0);
 }
-//]]]
 
-//[[[ cards.dat
 static __inline void
 translate_backslash_n_to_newline(char *str)
 {
@@ -1373,6 +1370,7 @@ read_db(void)
   return rval;
 }
 
+// FUNCTION: DECKDLL 0x1001b832
 static void make_orig_rarities(void)
 {
   int i;
@@ -1454,9 +1452,7 @@ static void make_orig_rarities(void)
     }
   }
 }
-//]]]
 
-//[[[ config file
 static int
 config_get_str(int size, const char *keyname, const char *deflt, char *rval)
 {
@@ -1512,9 +1508,7 @@ write_manalink_ini(void)
   cfg_write_int(global_cfg_view_all ? 1 : 0, "ViewAll");
   cfg_write_str(global_cfg_skin_name[0] ? global_cfg_skin_name : ".", "Skin");
 }
-//]]]
 
-//[[[ entry points/initialization/cleanup
 void Deckdll_initialize_for_shandalar(const card_ptr_t *i_raw_cards_ptr,
                                       int i_available_slots,
                                       char *i_card_coded,
@@ -1733,6 +1727,7 @@ delete_resources(void)
   SetCurrentDirectory(global_previous_directory);
 }
 
+// FUNCTION: DECKDLL 0x1000c337
 static bool
 process_cue_cards(MSG *msg)
 {
@@ -2200,7 +2195,7 @@ clear_sound_imports_table(void)
     global_sound_fns[i] = NULL;
 }
 
-static bool
+static __inline bool
 init_sound_dll_impl(HWND hwnd, int a2, int a3) // returns false if needs cleanup
 {
   int i;
@@ -3173,9 +3168,7 @@ show_dialog_filter_subtype(void)
     return false;
   }
 }
-//]]]
 
-//[[[ stats dialog
 static bool __inline
 check_restriction_impl(csvid_t csvid, int rst)
 {
@@ -3293,7 +3286,6 @@ check_deck_type(void)
 static void
 show_stats(HDC hdc, int word_width, int word_height)
 {
-  //[[[ prep_stats()
   enum Stat1
   {
     STAT1_MANASOURCE = 0,
@@ -3453,9 +3445,7 @@ show_stats(HDC hdc, int word_width, int word_height)
   for (i = STAT1_0 + 1; i < STAT1_MAX; ++i)
     for (j = STAT2_0; j <= STAT2_MAX; ++j)
       stats[STAT1_TOTAL][j] += stats[i][j];
-  //]]]
 
-  //[[[ show_stats_text(), show_stats_values()
   load_text("Menus", "STATSSCREEN");
   SetTextColor(hdc, global_colorref_lightgrey);
 
@@ -3517,7 +3507,6 @@ show_stats(HDC hdc, int word_width, int word_height)
     if (l == STAT1_ARTIFACT)
       y += word_height;
   }
-  //]]]
 }
 
 // FUNCTION: DECKDLL 0x1002dfd0
@@ -3627,7 +3616,6 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     return 0;
   }
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x1000679f
 static void
@@ -3738,7 +3726,6 @@ count_packs(void)
     Packs_add(&global_packs[col][typ], csvid, global_edited_deck[l].DeckEntry_Amount);
   }
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x100213ee
 LRESULT CALLBACK
@@ -3854,7 +3841,6 @@ wndproc_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x1002764d
 LRESULT CALLBACK
@@ -3940,9 +3926,7 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
 
-//[[[ FullCardClass and dependencies
 static void
 fill_back(HWND hwnd, HDC hdc)
 {
@@ -3991,7 +3975,7 @@ wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (card_to_draw >= 0)
       DrawFullCard(paintdc, &rect, &cards_ptr[card_to_draw], 0, 1, expanded_text, 0);
     else
-      fill_back(hwnd, paintdc);
+      DrawCardBack(hwnd, paintdc);
 
     EndPaint(hwnd, &paint);
     return 0;
@@ -4017,7 +4001,7 @@ wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     hdc = wparam;
     gdi_flush(hdc);
-    fill_back(hwnd, hdc);
+    DrawCardBack(hwnd, hdc);
     return 1;
   }
 
@@ -4069,9 +4053,7 @@ wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
 
-//[[[ SearchClass and dependencies
 static void
 update_scroll_range(void)
 {
@@ -4162,7 +4144,6 @@ wndproc_SearchClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   }
   return global_wndproc_std_SearchClass(hwnd, msg, wparam, lparam);
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x1002b8f0
 static void
@@ -4219,6 +4200,7 @@ remove_cards_from_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
     }
 }
 
+// FUNCTION: DECKDLL 0x100092c5
 static bool
 delete_card_from_global_deck(csvid_t csvid, int num)
 {
@@ -4377,6 +4359,7 @@ check_colors_inout_edited_deck(bool currently_in)
   return dlgbits;
 }
 
+// FUNCTION: DECKDLL 0x1002a9b5
 static int
 count_card_amount_outside_edited_deck(csvid_t csvid)
 {
@@ -4389,7 +4372,7 @@ count_card_amount_outside_edited_deck(csvid_t csvid)
   return count;
 }
 
-static void
+static __inline void
 draw_small_amount(int amount, RECT *rect)
 {
   int old_dc = SaveDC(global_hdc);
@@ -4413,6 +4396,7 @@ draw_small_amount(int amount, RECT *rect)
   RestoreDC(global_hdc, old_dc);
 }
 
+// FUNCTION: DECKDLL 0x100093cd
 static iid_t
 get_iid_from_global_deck_card(csvid_t csvid)
 {
@@ -4499,6 +4483,7 @@ TENTATIVE_remove_selected_from_horzlist(HWND hwnd_listbox, HWND hwnd_horzlist)
   }
 }
 
+// FUNCTION: DECKDLL 0x1002aa2b
 static void
 horzlist_prep_rectangle(HWND hwnd, int idx, RECT *rect)
 {
@@ -4725,7 +4710,9 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   int i;
   static HDC comphdc = NULL;
+  // GLOBAL: DECKDLL 0x1003a7cc
   static int sellprice = 0;
+  // GLOBAL: DECKDLL 0x10105310
   static csvid_t curr_csvid = -1;
 
   // common vars
@@ -5253,7 +5240,6 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x100057bc
 static void
@@ -5793,7 +5779,6 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x10008abf
 static void
@@ -6138,7 +6123,6 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x100256c8
 static bool
@@ -6176,7 +6160,6 @@ wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   return 0;
 }
-//]]]
 
 // FUNCTION: DECKDLL 0x10025552
 BOOL CALLBACK
@@ -6192,6 +6175,7 @@ void change_buttonclass_wndproc(HWND hwnd) {
   EnumChildWindows(hwnd, enumfunc_change_buttonclass_wndproc, 0);
 }
 
+// FUNCTION: DECKDLL 0x10019d9f
 static void
 copy_deck_to_edit(void)
 {
@@ -6465,6 +6449,7 @@ load_deck(char *filename)
   return SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
 }
 
+// FUNCTION: DECKDLL 0x1002b7bb
 static int
 check_card_count(int idx)
 {
@@ -7324,8 +7309,6 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
-
 
 // FUNCTION: DECKDLL 0x1001d67f
 static void
@@ -7360,7 +7343,7 @@ filterbuttons_setcoords(const RECT *r, int button_number, RECT *rval)
   OffsetRect(rval, (button_number - 4) * dx + extra_offset, 0);
 }
 
-static bool
+static __inline bool
 point_in_filterbutton(int button_number, RECT *r, POINT p)
 {
   RECT r2;
@@ -7396,6 +7379,7 @@ get_filter_button_state(HWND hwnd, POINT p)
 #undef CHECK_BUTTON
 }
 
+// FUNCTION: DECKDLL 0x1001f6f4
 static HMENU
 select_filter_menu(HWND hwnd, POINT p)
 {
@@ -7521,6 +7505,7 @@ draw_filter_buttons(HDC hdc, const RECT *r)
     draw_filter_button_pic(hdc, r, 28, 30, global_filter_rarity & FR_ENABLE);
 }
 
+// FUNCTION: DECKDLL 0x1001e4b6
 static bool
 toggle_filterbutton(int n)
 {
@@ -8599,4 +8584,3 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 }
-//]]]
