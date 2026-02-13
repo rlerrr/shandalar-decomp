@@ -1687,161 +1687,151 @@ undefined4 CalcDrawManaText(HDC dc,RECT *rect,char* text)
 // FUNCTION: DRAWCARDLIB 0x100077dd
 uint DrawManaText(HDC dc,RECT *param_2,char *text,int param_4)
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
-  int iVar4;
-  HGDIOBJ pvVar5;
-  size_t sVar6;
-  char local_b4 [52];
-  int local_80;
-  int local_7c;
-  size_t local_78;
-  int nSavedDC;
-  int local_70;
-  int local_6c;
-  char local_68;
-  uint local_64;
-  int local_60;
-  TEXTMETRICA local_5c;
-  int local_24;
-  RECT local_20;
-  SIZE local_10;
-  int local_8;
+  struct {
+    int line_height;
+    int symbol_step;
+    char buf [52];
+    int symbol_width;
+    int font_height;
+    int temp;
+    int nSavedDC;
+    int top;
+    int idx;
+    char symbol;
+    char pad_55[3];
+    uint max_width;
+    int left;
+    TEXTMETRICA text_metrics;
+    int symbol_height;
+    RECT rc;
+    SIZE size;
+    int height;
+  } s;
   
                     /* 0x77dd  5  DrawManaText */
-  if (((dc == (HDC)0x0) || (param_2 == (int *)0x0)) || (text == (char *)0x0)) {
-    uVar2 = 0;
+  if (((dc == (HDC)0x0) || (param_2 == (RECT *)0x0)) || (text == (char *)0x0)) {
+    return 0;
   }
-  else if (*text == '\0') {
-    uVar2 = 0;
+  if (*text == '\0') {
+    return 0;
   }
-  else {
-    nSavedDC = SaveDC(dc);
-    local_64 = 0;
-    local_8 = 0;
-    GetTextMetricsA(dc,&local_5c);
-    iVar3 = local_5c.tmExternalLeading + local_5c.tmHeight;
-    SetRect(&local_20,0,0,0,local_5c.tmHeight);
-    LPtoDP(dc,(LPPOINT)&local_20,2);
-    SetRect(&local_20,0,0,local_20.bottom - local_20.top,0);
-    DPtoLP(dc,(LPPOINT)&local_20,2);
-    local_80 = ((local_20.right - local_20.left) * 0x4b) / 100;
-    iVar4 = ((local_20.right - local_20.left) * 0x55) / 100;
-    local_24 = (local_5c.tmHeight * 0x4b) / 100;
-    local_7c = local_5c.tmHeight;
-    IntersectClipRect(dc,param_2->left,param_2->top,param_2->right + 1,param_2->bottom);
-    pvVar5 = GetStockObject(4);
-    SelectObject(dc,pvVar5);
-    pvVar5 = GetStockObject(8);
-    SelectObject(dc,pvVar5);
-    local_60 = param_2->left;
-    local_70 = param_2->top;
-    while (*text != '\0') {
-      if (*text == ' ') {
-        local_6c = 0;
-        local_b4[0] = *text;
-        iVar1 = local_6c;
-        while( true ) {
-          local_6c = iVar1 + 1;
-          text = text + 1;
-          if ((*text == '\0') || (*text != ' ')) break;
-          local_b4[iVar1 + 1] = *text;
-          iVar1 = local_6c;
-        }
-        local_b4[iVar1 + 1] = '\0';
-        GetTextExtentPoint32A(dc,local_b4,local_6c,&local_10);
-        local_60 = local_60 + local_10.cx;
+  s.nSavedDC = SaveDC(dc);
+  s.max_width = 0;
+  s.height = 0;
+  GetTextMetricsA(dc,&s.text_metrics);
+  s.line_height = s.text_metrics.tmExternalLeading + s.text_metrics.tmHeight;
+  SetRect(&s.rc,0,0,0,s.text_metrics.tmHeight);
+  LPtoDP(dc,(LPPOINT)&s.rc,2);
+  SetRect(&s.rc,0,0,s.rc.bottom - s.rc.top,0);
+  DPtoLP(dc,(LPPOINT)&s.rc,2);
+  s.symbol_width = ((s.rc.right - s.rc.left) * 0x4b) / 100;
+  s.symbol_step = ((s.rc.right - s.rc.left) * 0x55) / 100;
+  s.symbol_height = (s.text_metrics.tmHeight * 0x4b) / 100;
+  s.font_height = s.text_metrics.tmHeight;
+  IntersectClipRect(dc,param_2->left,param_2->top,param_2->right + 1,param_2->bottom);
+  SelectObject(dc,GetStockObject(4));
+  SelectObject(dc,GetStockObject(8));
+  s.left = param_2->left;
+  s.top = param_2->top;
+  while (*text != '\0') {
+    if (*text == ' ') {
+      s.idx = 0;
+      s.buf[s.idx] = *text;
+      while (1) {
+        text = text + 1;
+        s.idx = s.idx + 1;
+        if ((*text == '\0') || (*text != ' ')) break;
+        s.buf[s.idx] = *text;
       }
-      else if ((*text == '\0') || (*text != '\n')) {
-        local_68 = GetNextManaSymbol(&text);
-        if (local_68 == '\0') {
-          local_6c = 0;
-          local_b4[0] = *text;
-          iVar1 = local_6c;
-          while( true ) {
-            local_6c = iVar1 + 1;
-            text = text + 1;
-            if (((*text == '\0') || (*text == ' ')) ||
-               ((*text == '\n' || (*text == '|')))) break;
-            local_b4[iVar1 + 1] = *text;
-            iVar1 = local_6c;
-          }
-          local_b4[iVar1 + 1] = '\0';
-          GetTextExtentPoint32A(dc,local_b4,local_6c,&local_10);
-          if (param_2->right < local_10.cx + local_60) {
-            uVar2 = local_60 - param_2->left;
-            if (local_60 - param_2->left <= (int)local_64) {
-              uVar2 = local_64;
-            }
-            local_70 = local_70 + iVar3;
-            local_60 = param_2->left;
-            local_64 = uVar2;
-          }
-          sVar6 = strlen(local_b4);
-          TextOutA(dc,local_60,local_70,local_b4,sVar6);
-          local_60 = local_60 + local_10.cx;
+      s.buf[s.idx] = '\0';
+      GetTextExtentPoint32A(dc,s.buf,s.idx,&s.size);
+      s.left = s.left + s.size.cx;
+    }
+    else if ((*text == '\0') || (*text != '\n')) {
+      s.symbol = GetNextManaSymbol(&text);
+      if (s.symbol == '\0') {
+        s.idx = 0;
+        s.buf[s.idx] = *text;
+        while (1) {
+          text = text + 1;
+          s.idx = s.idx + 1;
+          if (((*text == '\0') || (*text == ' ')) || ((*text == '\n' || (*text == '|')))) break;
+          s.buf[s.idx] = *text;
         }
-        else {
-          local_6c = 0;
-          local_b4[0] = local_68;
-          while ((local_6c = local_6c + 1, *text != '\0' &&
-                 (local_68 = GetNextManaSymbol(&text), local_68 != '\0'))) {
-            local_b4[local_6c] = local_68;
+        s.buf[s.idx] = '\0';
+        GetTextExtentPoint32A(dc,s.buf,s.idx,&s.size);
+        if (param_2->right < s.size.cx + s.left) {
+          s.temp = s.left - param_2->left;
+          if (s.left - param_2->left <= (int)s.max_width) {
+            s.temp = (int)s.max_width;
           }
-          local_b4[local_6c] = '\0';
-          local_10.cx = local_6c * local_80;
-          if (param_2->right < local_10.cx + local_60) {
-            uVar2 = local_60 - param_2->left;
-            if (local_60 - param_2->left <= (int)local_64) {
-              uVar2 = local_64;
-            }
-            local_70 = local_70 + iVar3;
-            local_60 = param_2->left;
-            local_64 = uVar2;
-          }
-          local_78 = strlen(local_b4);
-          for (local_6c = 0; local_6c < (int)local_78; local_6c = local_6c + 1) {
-            if (param_4 == 0) {
-              Ellipse(dc,local_60 + (iVar4 - local_80) / 2,local_70 + (local_7c - local_24) / 2
-                      ,local_80 + (iVar4 - local_80) / 2 + local_60,
-                      local_24 + (local_7c - local_24) / 2 + local_70);
-            }
-            else {
-              DrawManaSymbol(dc,*(undefined4 *)(local_b4 + local_6c),
-                           local_60 + (iVar4 - local_80) / 2,local_70 + (local_7c - local_24) / 2,
-                           local_80,local_24);
-            }
-            local_60 = local_60 + iVar4;
-          }
-          if ((*text == ':') || (*text == ',')) {
-            local_b4[0] = *text;
-            text = text + 1;
-            local_6c = 1;
-            local_b4[1] = 0;
-            GetTextExtentPoint32A(dc,local_b4,1,&local_10);
-            sVar6 = strlen(local_b4);
-            TextOutA(dc,local_60,local_70,local_b4,sVar6);
-            local_60 = local_60 + local_10.cx;
-          }
+          s.top = s.top + s.line_height;
+          s.left = param_2->left;
+          s.max_width = s.temp;
         }
+        TextOutA(dc,s.left,s.top,s.buf,strlen(s.buf));
+        s.left = s.left + s.size.cx;
       }
       else {
-        text = text + 1;
-        local_70 = local_70 + iVar3 + iVar3 / 3;
-        local_60 = param_2->left;
+        s.idx = 0;
+        s.buf[s.idx] = s.symbol;
+        while (1) {
+          s.idx = s.idx + 1;
+          if (*text == '\0') break;
+          s.symbol = GetNextManaSymbol(&text);
+          if (s.symbol == '\0') break;
+          s.buf[s.idx] = s.symbol;
+        }
+        s.buf[s.idx] = '\0';
+        s.size.cx = s.idx * s.symbol_width;
+        if (param_2->right < s.size.cx + s.left) {
+          s.temp = s.left - param_2->left;
+          if (s.left - param_2->left <= (int)s.max_width) {
+            s.temp = (int)s.max_width;
+          }
+          s.top = s.top + s.line_height;
+          s.left = param_2->left;
+          s.max_width = s.temp;
+        }
+        s.temp = strlen(s.buf);
+        for (s.idx = 0; s.idx < s.temp; s.idx = s.idx + 1) {
+          if (param_4 == 0) {
+            Ellipse(dc,s.left + (s.symbol_step - s.symbol_width) / 2,
+                    s.top + (s.font_height - s.symbol_height) / 2,
+                    s.symbol_width + (s.symbol_step - s.symbol_width) / 2 + s.left,
+                    s.symbol_height + (s.font_height - s.symbol_height) / 2 + s.top);
+          }
+          else {
+            DrawManaSymbol(dc,s.buf[s.idx],s.left + (s.symbol_step - s.symbol_width) / 2,
+                         s.top + (s.font_height - s.symbol_height) / 2,s.symbol_width,s.symbol_height);
+          }
+          s.left = s.left + s.symbol_step;
+        }
+        if ((*text == ':') || (*text == ',')) {
+          s.buf[0] = *text;
+          text = text + 1;
+          s.idx = 1;
+          s.buf[1] = '\0';
+          GetTextExtentPoint32A(dc,s.buf,1,&s.size);
+          TextOutA(dc,s.left,s.top,s.buf,strlen(s.buf));
+          s.left = s.left + s.size.cx;
+        }
       }
     }
-    uVar2 = local_60 - param_2->left;
-    if (local_60 - param_2->left <= (int)local_64) {
-      uVar2 = local_64;
+    else {
+      text = text + 1;
+      s.top = s.top + s.line_height + s.line_height / 3;
+      s.left = param_2->left;
     }
-    local_8 = (iVar3 + local_70) - param_2->top;
-    local_64 = uVar2;
-    RestoreDC(dc,nSavedDC);
-    uVar2 = local_8 << 0x10 | local_64 & 0xffff;
   }
-  return uVar2;
+  s.temp = s.left - param_2->left;
+  if (s.left - param_2->left <= (int)s.max_width) {
+    s.temp = (int)s.max_width;
+  }
+  s.height = (s.line_height + s.top) - param_2->top;
+  s.max_width = s.temp;
+  RestoreDC(dc,s.nSavedDC);
+  return (s.height << 0x10) | (s.max_width & 0xffff);
 }
 
 // FUNCTION: DRAWCARDLIB 0x10007dd7
@@ -2087,40 +2077,47 @@ COLORREF GetPaletteColor(int index)
 // FUNCTION: DRAWCARDLIB 0x1000b06a
 void ReplaceSubstring(char *inOutStr,char *needle,int caseSensitive,char *replacement)
 {
-  size_t sVar1;
-  int iVar2;
-  int local_3fc;
-  char local_3f8 [1000];
-  size_t local_10;
-  int local_c;
-  char *local_8;
-  
-  if ((((inOutStr != (char *)0x0) && (needle != (char *)0x0)) && (replacement != (char *)0x0)) &&
-     ((sVar1 = strlen(inOutStr), sVar1 != 0 && (sVar1 = strlen(needle), sVar1 != 0)))) {
-    local_10 = strlen(needle);
-    local_8 = inOutStr;
-    local_3f8[0] = '\0';
-    local_3fc = 0;
-    while (*local_8 != '\0') {
-      local_c = 0;
-      if (((caseSensitive != 0) && (iVar2 = strncmp(local_8,needle,local_10), iVar2 == 0)) ||
-         ((caseSensitive == 0 && (iVar2 = _strnicmp(local_8,needle,local_10), iVar2 == 0)))) {
-        local_c = 1;
-      }
-      if (local_c == 0) {
-        local_3f8[local_3fc] = *local_8;
-        local_8 = local_8 + 1;
-        local_3f8[local_3fc + 1] = '\0';
-        local_3fc = local_3fc + 1;
-      }
-      else {
-        strcat(local_3f8,replacement);
-        sVar1 = strlen(replacement);
-        local_8 = local_8 + local_10;
-        local_3fc = local_3fc + sVar1;
+  // TODO: original looks like __asm to me
+  int outLen;
+  char outStr [1000];
+  size_t needleLen;
+  int matched;
+  char *cur;
+
+  if (((inOutStr != (char *)0x0) && (needle != (char *)0x0)) && (replacement != (char *)0x0)) {
+    if (strlen(inOutStr) != 0) {
+      if (strlen(needle) != 0) {
+        needleLen = strlen(needle);
+        cur = inOutStr;
+        outStr[0] = '\0';
+        outLen = 0;
+        while (*cur != '\0') {
+          matched = 0;
+          if (caseSensitive != 0) {
+            if (strncmp(cur,needle,needleLen) == 0) {
+              matched = 1;
+            }
+          }
+          else {
+            if (_strnicmp(cur,needle,needleLen) == 0) {
+              matched = 1;
+            }
+          }
+          if (matched == 0) {
+            outStr[outLen] = *cur;
+            cur++;
+            outLen++;
+            outStr[outLen] = '\0';
+          }
+          else {
+            strcat(outStr,replacement);
+            outLen += strlen(replacement);
+            cur += needleLen;
+          }
+        }
+        strcpy(inOutStr,outStr);
       }
     }
-    strcpy(inOutStr,local_3f8);
   }
   return;
 }

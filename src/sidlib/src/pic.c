@@ -338,9 +338,9 @@ int OpenPcxFile(char *param_1,int param_2)
 // FUNCTION: DRAWCARDLIB 0x1000b778
 void ClosePcxFile(int param_1)
 {
-  if (param_1 != DAT_10022530) {
-    _close(param_1);
-  }
+  if (param_1 == DAT_10022530) 
+    return;
+  _close(param_1);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b7a2
