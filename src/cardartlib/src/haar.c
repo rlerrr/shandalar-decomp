@@ -672,7 +672,8 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
                                         s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
     }
 
-    if (param_1[10] > 1) {     
+    if (param_1[10] > 1) {
+
       CopyBgr24RectIntoStridedBuffer(param_2,(undefined8 *)s.bgr_tmp,
                                       (s.height_px / s.pieces_per_row) * (s.piece_idx % s.pieces_per_row),
                                       (s.height_px / s.pieces_per_row) * (s.piece_idx / s.pieces_per_row), s.y_plane,
@@ -692,18 +693,15 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
 // FUNCTION: CARDARTLIB 0x10007035
 // FUNCTION: DRAWCARDLIB 0x10008ab5
 void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,int dst_x,int dst_y,int rect_width,
-                               int rect_height,int dst_stride_pixels)
-
+                               int rect_height,int dst_stride_pixels, int unused)
 {
-  undefined4 local_8;
+  int row;
   
-  dst_bgr24 = (undefined8 *)((int)dst_bgr24 + (dst_stride_pixels * dst_y + dst_x) * 3);
-  for (local_8 = 0; local_8 < rect_height; local_8 = local_8 + 1) {
-    CopyBytes(dst_bgr24,src_bgr24,rect_width * 3);
-    dst_bgr24 = (undefined8 *)((int)dst_bgr24 + dst_stride_pixels * 3);
-    src_bgr24 = (undefined8 *)((int)src_bgr24 + rect_width * 3);
+  *(int *)&dst_bgr24 += (dst_stride_pixels * dst_y + dst_x) * 3;
+
+  for (row = 0;row < rect_height;row = row + 1, *(int *)&dst_bgr24 += dst_stride_pixels * 3,*(int *)&src_bgr24 += rect_width * 3 ) {
+      CopyBytes(dst_bgr24,src_bgr24,rect_width * 3);
   }
-  return;
 }
 
 // FUNCTION: CARDARTLIB 0x10007238

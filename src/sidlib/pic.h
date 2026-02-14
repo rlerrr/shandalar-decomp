@@ -3,6 +3,6 @@
 
 #include <windows.h>
 
-int load_pic(char *filename);
+HBITMAP load_pic(char *filename);
 
 #endif

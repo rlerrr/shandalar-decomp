@@ -224,7 +224,7 @@ DIBSurface * CreateDIBSurface(int width,int height,int bitsPerPixel)
 
 // FUNCTION: DRAWCARDLIB 0x1000b40f
 // FUNCTION: DECKDLL 0x1002ceab
-undefined4
+HBITMAP
 LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,undefined1 *palette)
 {
   struct {
@@ -313,9 +313,9 @@ LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000b700
 // FUNCTION: DECKDLL 0x1002d1a1
-int load_pic(char *filename)
+HBITMAP load_pic(char *filename)
 {
-  int iVar1;
+  HBITMAP iVar1;
   
   iVar1 = LoadPicFile(0,0,0,filename,0);
   if (iVar1 != 0) {

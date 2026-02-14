@@ -18,6 +18,7 @@
 /* Function prototypes (auto-generated). */
 #include "autoproto.h"
 
+#pragma intrinsic(memset)
 
 typedef void * pointer;
 typedef char byte;
@@ -35,14 +36,24 @@ LOGFONTA global_temp_font;
 // GLOBAL: DRAWCARDLIB 0x1003a090
 char global_dual_dat_filename[260];
 
+// GLOBAL: DRAWCARDLIB 0x100f36c0
 char global_cardart_directory[0x105];
+
+// GLOBAL: DRAWCARDLIB 0x100f5b5c
 undefined4 DAT_100f5b5c = 0;
+// GLOBAL: DRAWCARDLIB 0x100f6908
 undefined4 DAT_100f6908 = 0;
+// GLOBAL: DRAWCARDLIB 0x100f77e0
 undefined4 DAT_100f77e0 = 0;
+// GLOBAL: DRAWCARDLIB 0x100f8140
 undefined4 DAT_100f8140 = 0;
+// GLOBAL: DRAWCARDLIB 0x100f952c
 undefined4 DAT_100f952c = 0;
+// GLOBAL: DRAWCARDLIB 0x10126554
 undefined4 DAT_10126554 = 0;
+// GLOBAL: DRAWCARDLIB 0x10128640
 undefined4 DAT_10128640 = 0;
+// GLOBAL: DRAWCARDLIB 0x100223ac
 undefined4 DAT_100223ac = 0;
 
 // GLOBAL: DRAWCARDLIB 0x100223bc
@@ -331,79 +342,79 @@ undefined4 DAT_1002931c = 0x00000000;
 undefined4 DAT_10029320 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fc8
-undefined4 global_CARDBK_LegendsLand = 0x00000000;
+HBITMAP global_CARDBK_LegendsLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fcc
-undefined4 global_CARDBK_Green = 0x00000000;
+HBITMAP global_CARDBK_Green = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fd0
-undefined4 global_CARDBK_FallenEmpiresLand = 0x00000000;
+HBITMAP global_CARDBK_FallenEmpiresLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fd4
-undefined4 global_CARDBK_White = 0x00000000;
+HBITMAP global_CARDBK_White = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fd8
-undefined4 global_CARDBK_GreenLand = 0x00000000;
+HBITMAP global_CARDBK_GreenLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fdc
-undefined4 DAT_10039fdc = 0x00000000;
+HFONT DAT_10039fdc = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe0
 COLORREF DAT_10039fe0 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe4
-undefined4 global_CardSets = 0x00000000;
+HBITMAP global_CardSets = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe8
-undefined4 global_CARDBK_BlackLand = 0x00000000;
+HBITMAP global_CARDBK_BlackLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039fec
 COLORREF DAT_10039fec = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff0
-undefined4 global_CARDBK_WhiteLand = 0x00000000;
+HBITMAP global_CARDBK_WhiteLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff4
-undefined4 global_CARDBK_Gold = 0x00000000;
+HBITMAP global_CARDBK_Gold = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff8
-undefined4 DAT_10039ff8 = 0x00000000;
+HFONT DAT_10039ff8 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10039ffc
 COLORREF DAT_10039ffc = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a000
-undefined4 DAT_1003a000 = 0x00000000;
+HFONT DAT_1003a000 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a004
-undefined4 global_CARDBK_BlueLand = 0x00000000;
+HBITMAP global_CARDBK_BlueLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a008
-undefined4 DAT_1003a008 = 0x00000000;
+HFONT DAT_1003a008 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a00c
-undefined4 global_CARDBK_RedLand = 0x00000000;
+HBITMAP global_CARDBK_RedLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a010
-undefined4 global_CardBack = 0x00000000;
+HBITMAP global_CardBack = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a014
-undefined4 global_CARDBK_DarklandsLand = 0x00000000;
+HBITMAP global_CARDBK_DarklandsLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a018
-undefined4 DAT_1003a018 = 0x00000000;
+HFONT DAT_1003a018 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a01c
 undefined4 DAT_1003a01c = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a020
-undefined4 global_CARDBK_Special = 0x00000000;
+HBITMAP global_CARDBK_Special = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a024
-undefined4 global_CARDBK_Artifact = 0x00000000;
+HBITMAP global_CARDBK_Artifact = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a028
-undefined4 global_CARDBK_ArabianNightsLand = 0x00000000;
+HBITMAP global_CARDBK_ArabianNightsLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a02c
 COLORREF DAT_1003a02c = 0x00000000;
@@ -412,28 +423,28 @@ COLORREF DAT_1003a02c = 0x00000000;
 undefined4 DAT_1003a030 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a034
-undefined4 global_CARDBK_Blue = 0x00000000;
+HBITMAP global_CARDBK_Blue = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a038
 undefined4 DAT_1003a038 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a03c
-undefined4 global_CARDBK_Red = 0x00000000;
+HBITMAP global_CARDBK_Red = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a040
-undefined4 DAT_1003a040 = 0x00000000;
+HFONT DAT_1003a040 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a084
-undefined4 global_CARDBK_AntiquitiesLand = 0x00000000;
+HBITMAP global_CARDBK_AntiquitiesLand = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a088
-undefined4 global_CARDBK_Black = 0x00000000;
+HBITMAP global_CARDBK_Black = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a08c
 COLORREF DAT_1003a08c = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a198
-undefined4 global_ManaSymbols = 0x00000000;
+HBITMAP global_ManaSymbols = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x1003a19c
 COLORREF DAT_1003a19c = 0x00000000;
@@ -826,32 +837,35 @@ void DestroyAllCardBackgrounds(void) {
 // FUNCTION: DRAWCARDLIB 0x10005830
 void DrawCardBack(HDC dc,RECT *rect)
 {
-  int iVar1;
-  int iVar2;
-  HBRUSH pHVar3;
-  RECT local_14;
+  struct {
+    int xInset;
+    int yInset;
+    RECT innerRect;
+  } s;
   
                     /* 0x5830  3  DrawCardBack */
-  if ((dc != (HDC)0x0) && (rect != (RECT *)0x0)) {
-    if (global_CardBack == 0) {
-      pHVar3 = GetStockObject(4);
-      FillRect(dc,rect,pHVar3);
+  if (dc == (HDC)0x0) {
+    return;
+  }
+  if (rect == (RECT *)0x0) {
+    return;
+  }
+  if (global_CardBack != 0) {
+    s.xInset = ((rect->right - rect->left) * 3) / 100;
+    if (s.xInset <= 1) {
+      s.xInset = 1;
     }
-    else {
-      iVar1 = ((rect->right - rect->left) * 3) / 100;
-      if (iVar1 < 2) {
-        iVar1 = 1;
-      }
-      iVar2 = ((rect->bottom - rect->top) * 2) / 100;
-      if (iVar2 < 2) {
-        iVar2 = 1;
-      }
-      pHVar3 = GetStockObject(4);
-      FillRect(dc,rect,pHVar3);
-      SetRect(&local_14,rect->left + iVar1,rect->top + iVar2,rect->right - iVar1,
-              rect->bottom - iVar2);
-      DrawBitmapToRect(dc,&local_14,global_CardBack);
+    s.yInset = ((rect->bottom - rect->top) * 2) / 100;
+    if (s.yInset <= 1) {
+      s.yInset = 1;
     }
+    FillRect(dc,rect,GetStockObject(4));
+    SetRect(&s.innerRect,rect->left + s.xInset,rect->top + s.yInset,rect->right - s.xInset,
+            rect->bottom - s.yInset);
+    DrawBitmapToRect(dc,&s.innerRect,global_CardBack);
+  }
+  else {
+    FillRect(dc,rect,GetStockObject(4));
   }
   return;
 }
@@ -862,511 +876,464 @@ DrawFullCard(HDC dc,RECT *rect,card_ptr_t *card,undefined4 param_4,uint param_5,
             int param_6,LPCSTR param_7)
 
 {
-  HGDIOBJ pvVar1;
-  size_t sVar2;
-  int iVar3;
-  HBRUSH pHVar4;
-  LPCSTR pCVar5;
-  undefined4 uVar6;
-  undefined1 local_578 [4];
-  int local_574;
-  int local_570;
-  int local_560;
-  undefined4 local_55c;
-  undefined4 local_558;
-  TEXTMETRICA local_554;
-  RECT local_51c;
-  int local_50c;
-  uint local_508;
-  RECT local_504;
-  LPCSTR local_4f4;
-  int local_4f0;
-  int *local_4ec;
-  RECT local_4e8;
-  HBRUSH local_4d8;
-  RECT local_4d4;
-  RECT local_4c4;
-  int local_4b4;
-  COLORREF local_4b0;
-  char rules_text [1000];
-  int local_c4;
-  RECT local_c0;
-  char local_b0 [52];
-  RECT local_7c;
-  undefined4 local_6c;
-  HANDLE local_68;
-  RECT local_64;
-  RECT local_54;
-  int local_44;
-  RECT local_40;
-  int nSavedDC;
-  int local_2c;
-  int local_28;
-  RECT local_24;
-  RECT local_14;
+  struct {
+    undefined1 pad_0 [0x18];
+    undefined1 local_578 [4];
+    int local_574;
+    int local_570;
+    int local_560;
+    undefined4 local_55c;
+    undefined4 local_558;
+    TEXTMETRICA local_554;
+    RECT local_51c;
+    int local_50c;
+    uint local_508;
+    RECT local_504;
+    LPCSTR local_4f4;
+    int local_4f0;
+    HBITMAP *backgroundPointer;
+    RECT local_4e8;
+    HBRUSH local_4d8;
+    RECT local_4d4;
+    RECT local_4c4;
+    int local_4b4;
+    COLORREF local_4b0;
+    char rules_text [1000];
+    int local_c4;
+    RECT local_c0;
+    char local_b0 [52];
+    RECT local_7c;
+    undefined4 local_6c;
+    HANDLE local_68;
+    RECT local_64;
+    RECT local_54;
+    int local_44;
+    RECT local_40;
+    int nSavedDC;
+    int local_2c;
+    int local_28;
+    RECT local_24;
+    RECT local_14;
+  } s;
+
   
                     /* 0x592c  4  DrawFullCard */
   if (((dc == (HDC)0x0) || (rect == (int *)0x0)) || (card == (undefined4 *)0x0)) {
-    local_6c = 0;
+    return 0;
+  }
+  s.nSavedDC = SaveDC(dc);
+  s.local_c4 = 200;
+  s.local_2c = 300;
+  SetMapMode(dc,7);
+  SetWindowExtEx(dc,s.local_c4,s.local_2c,(LPSIZE)0x0);
+  SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, (LPSIZE)0x0);
+  SetWindowOrgEx(dc,s.local_c4 / 2,s.local_2c / 2,(LPPOINT)0x0);
+  SetViewportOrgEx(dc,rect->left + (rect->right - rect->left) / 2,
+                   rect->top + (rect->bottom - rect->top) / 2,(LPPOINT)0x0);
+  s.local_44 = 6;
+  s.local_28 = 6;
+  SetRect(&s.local_40,10,5,0xbc,0x15);
+  SetRect(&s.local_24,0xc,8,0xbe,0x14);
+  SetRect(&s.local_4d4,0x15,0x19,0xb5,0xa4);
+  SetRect(&s.local_64,0xc,0xa8,0xba,0xb3);
+  SetRect(&s.local_14,0xc,0xa9,0xba,0xb4);
+  SetRect(&s.local_54,0x1c,0xb9,0xae,0x10c);
+  SetRect(&s.local_7c,0x14,0xb4,0xb6,0x10f);
+  SetRect(&s.local_c0,0xc,0x114,0xbc,0x124);
+  SetRect(&s.local_4c4,0xc,0x114,0xbc,0x124);
+  if (((card->expansion == -1) || ((card->expansion & 0x10) != 0)) ||
+     ((*(byte *)(card + 3) & 0x80) != 0)) {
+    s.local_4d8 = CreateSolidBrush(DAT_10039ffc);
+    SelectObject(dc,s.local_4d8);
   }
   else {
-    nSavedDC = SaveDC(dc);
-    local_c4 = 200;
-    local_2c = 300;
-    SetMapMode(dc,7);
-    SetWindowExtEx(dc,local_c4,local_2c,(LPSIZE)0x0);
-    SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, (LPSIZE)0x0);
-    SetWindowOrgEx(dc,local_c4 / 2,local_2c / 2,(LPPOINT)0x0);
-    SetViewportOrgEx(dc,rect->left + (rect->right - rect->left) / 2,
-                     rect->top + (rect->bottom - rect->top) / 2,(LPPOINT)0x0);
-    local_44 = 6;
-    local_28 = 6;
-    SetRect(&local_40,10,5,0xbc,0x15);
-    SetRect(&local_24,0xc,8,0xbe,0x14);
-    SetRect(&local_4d4,0x15,0x19,0xb5,0xa4);
-    SetRect(&local_64,0xc,0xa8,0xba,0xb3);
-    SetRect(&local_14,0xc,0xa9,0xba,0xb4);
-    SetRect(&local_54,0x1c,0xb9,0xae,0x10c);
-    SetRect(&local_7c,0x14,0xb4,0xb6,0x10f);
-    SetRect(&local_c0,0xc,0x114,0xbc,0x124);
-    SetRect(&local_4c4,0xc,0x114,0xbc,0x124);
-    if (((card->expansion == -1) || ((card->expansion & 0x10) != 0)) ||
-       ((*(byte *)(card + 3) & 0x80) != 0)) {
-      local_4d8 = CreateSolidBrush(DAT_10039ffc);
-      SelectObject(dc,local_4d8);
-    }
-    else {
-      local_4d8 = CreateSolidBrush(DAT_1003a02c);
-      SelectObject(dc,local_4d8);
-    }
-    pvVar1 = GetStockObject(8);
-    SelectObject(dc,pvVar1);
-    RoundRect(dc,0,0,local_c4,local_2c,local_44 / 2,local_28 / 2);
-    pvVar1 = GetStockObject(4);
-    SelectObject(dc,pvVar1);
-    if (local_4d8 != (HBRUSH)0x0) {
-      DeleteObject(local_4d8);
-    }
-    local_4ec = (int *)GetCardBackground(card);
-    LoadCardBackground(local_4ec);
-    SetRect(&local_4e8,local_44,local_28,local_c4 - local_44,local_2c - local_28);
-    if (*local_4ec == 0) {
-      pHVar4 = GetStockObject(0);
-      FillRect(dc,&local_4e8,pHVar4);
-    }
-    else {
-      DrawBitmapToRect(dc,&local_4e8,*local_4ec);
-    }
-    local_68 = (HANDLE)*local_4ec;
-    local_4b4 = 1;
-    local_4b0 = GetPaletteColor(0xbf);
-    SelectObject(dc,DAT_1003a008);
-    SetBkMode(dc,1);
-    SetTextColor(dc,DAT_10039fec);
-    OffsetRect(&local_40,local_4b4,local_4b4);
-    DrawTextA(dc,card->full_name,-1,&local_40,0x824);
-    OffsetRect(&local_40,-local_4b4,-local_4b4);
-    SetTextColor(dc,local_4b0);
-    DrawTextA(dc,card->full_name,-1,&local_40,0x824);
-    local_4f0 = 100;
-    SelectObject(dc,DAT_10039ff8);
-    if ((card->power != 0) || (card->toughness != 0)) {
-      local_b0[0] = '\0';
-      if (card->power == local_4f0) {
-        strcat(local_b0,DAT_100221ec);
-      }
-      else if (local_4f0 < card->power) {
-        iVar3 = card->power - local_4f0;
-        pCVar5 = DAT_100221f0;
-        sVar2 = strlen(local_b0);
-        wsprintfA(local_b0 + sVar2,pCVar5,iVar3);
-      }
-      else {
-        uVar6 = card->power;
-        pCVar5 = DAT_100221f8;
-        sVar2 = strlen(local_b0);
-        wsprintfA(local_b0 + sVar2,pCVar5,uVar6);
-      }
-      strcat(local_b0,DAT_100221fc);
-      if (card->toughness == local_4f0) {
-        strcat(local_b0,DAT_10022200);
-      }
-      else if (local_4f0 < card->toughness) {
-        iVar3 = card->toughness - local_4f0;
-        pCVar5 = DAT_10022204;
-        sVar2 = strlen(local_b0);
-        wsprintfA(local_b0 + sVar2,pCVar5,iVar3);
-      }
-      else {
-        uVar6 = card->toughness;
-        pCVar5 = DAT_1002220c;
-        sVar2 = strlen(local_b0);
-        wsprintfA(local_b0 + sVar2,pCVar5,uVar6);
-      }
-      SetTextColor(dc,DAT_10039fec);
-      OffsetRect(&local_4c4,local_4b4,local_4b4);
-      DrawTextA(dc,local_b0,-1,&local_4c4,0x26);
-      OffsetRect(&local_4c4,-local_4b4,-local_4b4);
-      SetTextColor(dc,local_4b0);
-      DrawTextA(dc,local_b0,-1,&local_4c4,0x26);
-    }
-    SelectObject(dc,DAT_10039fdc);
-    SetBkMode(dc,1);
-    if ((card->card_type != -1) && (card->card_type != 0)) {
-      local_4f4 = card->type_text;
-      SetTextColor(dc,DAT_10039fec);
-      OffsetRect(&local_64,local_4b4,local_4b4);
-      DrawTextA(dc,local_4f4,-1,&local_64,0x24);
-      OffsetRect(&local_64,-local_4b4,-local_4b4);
-      SetTextColor(dc,local_4b0);
-      DrawTextA(dc,local_4f4,-1,&local_64,0x24);
-    }
-    if (card->artist != 0) {
-      wsprintfA(local_b0,param_7,card->artist);
-      SetTextColor(dc,DAT_10039fec);
-      OffsetRect(&local_c0,local_4b4,local_4b4);
-      DrawTextA(dc,local_b0,-1,&local_c0,0x824);
-      OffsetRect(&local_c0,-local_4b4,-local_4b4);
-      SetTextColor(dc,local_4b0);
-      DrawTextA(dc,local_b0,-1,&local_c0,0x824);
-    }
-    if (((card->card_type != 5) && (card->card_type != 8)) && (card->card_type != 0)) {
-      DrawCastingCost(dc,&local_24,&card->req);
-    }
-    if (card->expansion != -1) {
-      DrawCardSet(dc,&local_14,card->expansion);
-    }
-    CopyRect(&local_504,&local_4d4);
-    LPtoDP(dc,(LPPOINT)&local_504,2);
-    if ((param_5 & 0xf) == 0) {
-      iVar3 = IsBigArtIn(card->id,param_4);
-      if (iVar3 == 0) {
-        DrawSmallArt(dc,&local_4d4,card->id,param_4);
-      }
-      else {
-        DrawBigArt(dc,&local_4d4,card->id,param_4);
-      }
-    }
-    else if ((param_5 & 0xf) == 1) {
-      iVar3 = IsBigArtIn(card->id,param_4);
-      if (iVar3 == 0) {
-        if (((param_5 & 0x10) != 0) && (iVar3 = IsSmallArtIn(card->id,param_4), iVar3 != 0)) {
-          DrawSmallArt(dc,&local_4d4,card->id,param_4);
-        }
-        LoadBigArt(card->id,param_4,local_504.right - local_504.left,
-                   local_504.bottom - local_504.top);
-      }
-      DrawBigArt(dc,&local_4d4,card->id,param_4);
-    }
-    else {
-      iVar3 = IsBigArtIn(card->id,param_4);
-      if (((iVar3 == 0) && ((param_5 & 0x10) != 0)) &&
-         (iVar3 = IsSmallArtIn(card->id,param_4), iVar3 != 0)) {
-        DrawSmallArt(dc,&local_4d4,card->id,param_4);
-      }
-      iVar3 = LoadBigArt(card->id,param_4,local_504.right - local_504.left,
-                         local_504.bottom - local_504.top);
-      if (iVar3 == 0) {
-        DrawSmallArt(dc,&local_4d4,card->id,param_4);
-      }
-      else {
-        DrawBigArt(dc,&local_4d4,card->id,param_4);
-      }
-    }
-    local_6c = IsBigArtRightSize(card->id,param_4,local_504.right - local_504.left,
-                                 local_504.bottom - local_504.top);
-    strcpy(rules_text,card->rules_text);
-    ReplaceSubstring(rules_text,s__H1_10022214,1,s_empty_10022210);
-    ReplaceSubstring(rules_text,s__H2_1002221c,1,s_empty_10022218);
-    ReplaceSubstring(rules_text,s__H3_10022224,1,s_empty_10022220);
-    ReplaceSubstring(rules_text,S__H4_1002222c,1,s_empty_10022228);
-    ReplaceSubstring(rules_text,s__H_10022234,1,s_empty_10022230);
-    ReplaceSubstring(rules_text,s__S1_1002223c,1,s_empty_10022238);
-    ReplaceSubstring(rules_text,s__S2_10022244,1,s_empty_10022240);
-    ReplaceSubstring(rules_text,S__S3_1002224c,1,s_empty_10022248);
-    ReplaceSubstring(rules_text,s__S4_10022254,1,s_empty_10022250);
-    ReplaceSubstring(rules_text,s__S_1002225c,1,s_empty_10022258);
-    SetTextColor(dc,DAT_1003a1a0);
-    SetBkMode(dc,1);
-    if (param_6 != 0) {
-      SelectObject(dc,DAT_1003a000);
-      local_508 = CalcDrawManaText(dc,&local_54,rules_text);
-      local_508 = local_508 >> 0x10;
-      GetTextMetricsA(dc,&local_554);
-      CopyRect(&local_51c,&local_54);
-      local_51c.top = local_51c.top + local_508 + local_554.tmHeight / 2;
-      SelectObject(dc,DAT_1003a040);
-      DrawTextA(dc,card->flavor_text,-1,&local_51c,0x410);
-      local_50c = local_51c.bottom - local_54.top;
-      if (local_54.bottom - local_54.top < local_50c) {
-        local_560 = local_54.top - local_7c.top;
-        local_54.top = local_54.bottom - local_50c;
-        local_7c.top = local_54.top - local_560;
-        if (local_68 == (HANDLE)0x0) {
-          pHVar4 = GetStockObject(0);
-          FillRect(dc,&local_7c,pHVar4);
-        }
-        else {
-          GetObjectA(local_68,0x18,local_578);
-          local_558 = 0x359;
-          local_55c = 0x140;
-          DrawBitmapSubrectToRect(dc,&local_7c,local_68,(local_574 * 0x49) / 1000,
-                       (local_570 * 0x25d) / 1000,(local_574 * 0x359) / 1000,
-                       (local_570 * 0x140) / 1000);
-        }
-      }
-    }
-    SelectObject(dc,DAT_1003a000);
-    local_508 = DrawManaText(dc,&local_54,rules_text,1);
-    local_508 = local_508 >> 0x10;
-    GetTextMetricsA(dc,&local_554);
-    CopyRect(&local_51c,&local_54);
-    local_51c.top = local_51c.top + local_508 + local_554.tmHeight / 3;
-    SelectObject(dc,DAT_1003a040);
-    DrawTextA(dc,card->flavor_text,-1,&local_51c,0x10);
-    RestoreDC(dc,nSavedDC);
+    s.local_4d8 = CreateSolidBrush(DAT_1003a02c);
+    SelectObject(dc,s.local_4d8);
   }
-  return local_6c;
+  SelectObject(dc,GetStockObject(8));
+  RoundRect(dc,0,0,s.local_c4,s.local_2c,s.local_44 / 2,s.local_28 / 2);
+  SelectObject(dc,GetStockObject(4));
+  if (s.local_4d8 != (HBRUSH)0x0) {
+    DeleteObject(s.local_4d8);
+  }
+  s.backgroundPointer = GetCardBackgroundPointer(card);
+  LoadCardBackground(s.backgroundPointer);
+  SetRect(&s.local_4e8,s.local_44,s.local_28,s.local_c4 - s.local_44,s.local_2c - s.local_28);
+  if (*s.backgroundPointer == 0) {
+    FillRect(dc,&s.local_4e8,GetStockObject(0));
+  }
+  else {
+    DrawBitmapToRect(dc,&s.local_4e8,*s.backgroundPointer);
+  }
+  s.local_4b4 = 1;
+  s.local_4b0 = GetPaletteColor(0xbf);
+  SelectObject(dc,DAT_1003a008);
+  SetBkMode(dc,1);
+  SetTextColor(dc,DAT_10039fec);
+  OffsetRect(&s.local_40,s.local_4b4,s.local_4b4);
+  DrawTextA(dc,card->full_name,-1,&s.local_40,0x824);
+  OffsetRect(&s.local_40,-s.local_4b4,-s.local_4b4);
+  SetTextColor(dc,s.local_4b0);
+  DrawTextA(dc,card->full_name,-1,&s.local_40,0x824);
+  SelectObject(dc,DAT_10039ff8);
+  if ((card->power != 0) || (card->toughness != 0)) {
+    s.local_b0[0] = '\0';
+    if (card->power == 100) {
+      strcat(s.local_b0,DAT_100221ec);
+    }
+    else if (100 < card->power) {
+      wsprintfA(s.local_b0 + strlen(s.local_b0),DAT_100221f0,card->power - 100);
+    }
+    else {
+      wsprintfA(s.local_b0 + strlen(s.local_b0),DAT_100221f8,card->power);
+    }
+    strcat(s.local_b0,DAT_100221fc);
+    if (card->toughness == 100) {
+      strcat(s.local_b0,DAT_10022200);
+    }
+    else if (100 < card->toughness) {
+      wsprintfA(s.local_b0 + strlen(s.local_b0),DAT_10022204,card->toughness - 100);
+    }
+    else {
+      wsprintfA(s.local_b0 + strlen(s.local_b0),DAT_1002220c,card->toughness);
+    }
+    SetTextColor(dc,DAT_10039fec);
+    OffsetRect(&s.local_4c4,s.local_4b4,s.local_4b4);
+    DrawTextA(dc,s.local_b0,-1,&s.local_4c4,0x26);
+    OffsetRect(&s.local_4c4,-s.local_4b4,-s.local_4b4);
+    SetTextColor(dc,s.local_4b0);
+    DrawTextA(dc,s.local_b0,-1,&s.local_4c4,0x26);
+  }
+  SelectObject(dc,DAT_10039fdc);
+  SetBkMode(dc,1);
+  if ((card->card_type != -1) && (card->card_type != 0)) {
+    SetTextColor(dc,DAT_10039fec);
+    OffsetRect(&s.local_64,s.local_4b4,s.local_4b4);
+    DrawTextA(dc,card->type_text,-1,&s.local_64,0x24);
+    OffsetRect(&s.local_64,-s.local_4b4,-s.local_4b4);
+    SetTextColor(dc,s.local_4b0);
+    DrawTextA(dc,card->type_text,-1,&s.local_64,0x24);
+  }
+  if (card->artist != 0) {
+    wsprintfA(s.local_b0,param_7,card->artist);
+    SetTextColor(dc,DAT_10039fec);
+    OffsetRect(&s.local_c0,s.local_4b4,s.local_4b4);
+    DrawTextA(dc,s.local_b0,-1,&s.local_c0,0x824);
+    OffsetRect(&s.local_c0,-s.local_4b4,-s.local_4b4);
+    SetTextColor(dc,s.local_4b0);
+    DrawTextA(dc,s.local_b0,-1,&s.local_c0,0x824);
+  }
+  if (((card->card_type != 5) && (card->card_type != 8)) && (card->card_type != 0)) {
+    DrawCastingCost(dc,&s.local_24,&card->req);
+  }
+  if (card->expansion != -1) {
+    DrawCardSet(dc,&s.local_14,card->expansion);
+  }
+  CopyRect(&s.local_504,&s.local_4d4);
+  LPtoDP(dc,(LPPOINT)&s.local_504,2);
+  if ((param_5 & 0xf) == 0) {
+    if (IsBigArtIn(card->id,param_4) == 0) {
+      DrawSmallArt(dc,&s.local_4d4,card->id,param_4);
+    }
+    else {
+      DrawBigArt(dc,&s.local_4d4,card->id,param_4);
+    }
+  }
+  else if ((param_5 & 0xf) == 1) {
+    if (IsBigArtIn(card->id,param_4) == 0) {
+      if (((param_5 & 0x10) != 0) && (IsSmallArtIn(card->id,param_4) != 0)) {
+        DrawSmallArt(dc,&s.local_4d4,card->id,param_4);
+      }
+      LoadBigArt(card->id,param_4,s.local_504.right - s.local_504.left,
+                 s.local_504.bottom - s.local_504.top);
+    }
+    DrawBigArt(dc,&s.local_4d4,card->id,param_4);
+  }
+  else {
+    if (((IsBigArtIn(card->id,param_4) == 0) && ((param_5 & 0x10) != 0)) &&
+       (IsSmallArtIn(card->id,param_4) != 0)) {
+      DrawSmallArt(dc,&s.local_4d4,card->id,param_4);
+    }
+    if (LoadBigArt(card->id,param_4,s.local_504.right - s.local_504.left,
+                       s.local_504.bottom - s.local_504.top) == 0) {
+      DrawSmallArt(dc,&s.local_4d4,card->id,param_4);
+    }
+    else {
+      DrawBigArt(dc,&s.local_4d4,card->id,param_4);
+    }
+  }
+  s.local_6c = IsBigArtRightSize(card->id,param_4,s.local_504.right - s.local_504.left,
+                               s.local_504.bottom - s.local_504.top);
+  strcpy(s.rules_text,card->rules_text);
+  ReplaceSubstring(s.rules_text,s__H1_10022214,1,s_empty_10022210);
+  ReplaceSubstring(s.rules_text,s__H2_1002221c,1,s_empty_10022218);
+  ReplaceSubstring(s.rules_text,s__H3_10022224,1,s_empty_10022220);
+  ReplaceSubstring(s.rules_text,S__H4_1002222c,1,s_empty_10022228);
+  ReplaceSubstring(s.rules_text,s__H_10022234,1,s_empty_10022230);
+  ReplaceSubstring(s.rules_text,s__S1_1002223c,1,s_empty_10022238);
+  ReplaceSubstring(s.rules_text,s__S2_10022244,1,s_empty_10022240);
+  ReplaceSubstring(s.rules_text,S__S3_1002224c,1,s_empty_10022248);
+  ReplaceSubstring(s.rules_text,s__S4_10022254,1,s_empty_10022250);
+  ReplaceSubstring(s.rules_text,s__S_1002225c,1,s_empty_10022258);
+  SetTextColor(dc,DAT_1003a1a0);
+  SetBkMode(dc,1);
+  if (param_6 != 0) {
+    SelectObject(dc,DAT_1003a000);
+    s.local_508 = CalcDrawManaText(dc,&s.local_54,s.rules_text);
+    s.local_508 = s.local_508 >> 0x10;
+    GetTextMetricsA(dc,&s.local_554);
+    CopyRect(&s.local_51c,&s.local_54);
+    s.local_51c.top = s.local_51c.top + s.local_508 + s.local_554.tmHeight / 2;
+    SelectObject(dc,DAT_1003a040);
+    DrawTextA(dc,card->flavor_text,-1,&s.local_51c,0x410);
+    s.local_50c = s.local_51c.bottom - s.local_54.top;
+    if (s.local_54.bottom - s.local_54.top < s.local_50c) {
+      s.local_560 = s.local_54.top - s.local_7c.top;
+      s.local_54.top = s.local_54.bottom - s.local_50c;
+      s.local_7c.top = s.local_54.top - s.local_560;
+      if (*s.backgroundPointer == 0) {
+        FillRect(dc,&s.local_7c,GetStockObject(0));
+      }
+      else {
+        GetObjectA((HANDLE)*s.backgroundPointer,0x18,s.local_578);
+        s.local_558 = 0x359;
+        s.local_55c = 0x140;
+        DrawBitmapSubrectToRect(dc,&s.local_7c,(HANDLE)*s.backgroundPointer,(s.local_574 * 0x49) / 1000,
+                     (s.local_570 * 0x25d) / 1000,(s.local_574 * 0x359) / 1000,
+                     (s.local_570 * 0x140) / 1000);
+      }
+    }
+  }
+  SelectObject(dc,DAT_1003a000);
+  s.local_508 = DrawManaText(dc,&s.local_54,s.rules_text,1);
+  s.local_508 = s.local_508 >> 0x10;
+  GetTextMetricsA(dc,&s.local_554);
+  CopyRect(&s.local_51c,&s.local_54);
+  s.local_51c.top = s.local_51c.top + s.local_508 + s.local_554.tmHeight / 3;
+  SelectObject(dc,DAT_1003a040);
+  DrawTextA(dc,card->flavor_text,-1,&s.local_51c,0x10);
+  RestoreDC(dc,s.nSavedDC);
+  return s.local_6c;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100067c7
-undefined4 * GetCardBackground(int param_1)
-
+HBITMAP * GetCardBackgroundPointer(int param_1)
 {
-  int iVar1;
-  undefined4 *local_8;
+  HBITMAP *result;
   
   if (*(int *)(param_1 + 0x10) == 1) {
-    local_8 = &global_CARDBK_Black;
+    result = &global_CARDBK_Black;
   }
   else if (*(int *)(param_1 + 0x10) == 8) {
-    local_8 = &global_CARDBK_White;
+    result = &global_CARDBK_White;
   }
   else if (*(int *)(param_1 + 0x10) == 7) {
-    local_8 = &global_CARDBK_Red;
+    result = &global_CARDBK_Red;
   }
   else if (*(int *)(param_1 + 0x10) == 5) {
-    local_8 = &global_CARDBK_Green;
+    result = &global_CARDBK_Green;
   }
   else if (*(int *)(param_1 + 0x10) == 2) {
-    local_8 = &global_CARDBK_Blue;
+    result = &global_CARDBK_Blue;
   }
   else if (*(int *)(param_1 + 0x10) == 4) {
-    local_8 = &global_CARDBK_Gold;
+    result = &global_CARDBK_Gold;
   }
   else if (*(int *)(param_1 + 0x10) == 0) {
-    local_8 = &global_CARDBK_Artifact;
+    result = &global_CARDBK_Artifact;
   }
   else if (*(int *)(param_1 + 0x10) == 3) {
-    local_8 = &global_CARDBK_Artifact;
+    result = &global_CARDBK_Artifact;
   }
   else if (*(int *)(param_1 + 0x10) == 6) {
-    if ((*(byte *)(param_1 + 0xc) & 2) == 0) {
-      if ((*(byte *)(param_1 + 0xc) & 4) == 0) {
-        if ((*(byte *)(param_1 + 0xc) & 0x20) == 0) {
-          if ((*(byte *)(param_1 + 0xd) & 1) == 0) {
-            if ((*(byte *)(param_1 + 0xc) & 8) == 0) {
-              iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f952c);
-              if (iVar1 == 0) {
-                local_8 = &global_CARDBK_BlackLand;
-              }
-              else {
-                iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f8140);
-                if (iVar1 == 0) {
-                  local_8 = &global_CARDBK_WhiteLand;
-                }
-                else {
-                  iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f77e0);
-                  if (iVar1 == 0) {
-                    local_8 = &global_CARDBK_RedLand;
-                  }
-                  else {
-                    iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f5b5c);
-                    if (iVar1 == 0) {
-                      local_8 = &global_CARDBK_GreenLand;
-                    }
-                    else {
-                      iVar1 = strcmp(*(char **)(param_1 + 4),&DAT_100f6908);
-                      if (iVar1 == 0) {
-                        local_8 = &global_CARDBK_BlueLand;
-                      }
-                      else {
-                        local_8 = &global_CARDBK_AntiquitiesLand;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else {
-              local_8 = &global_CARDBK_AntiquitiesLand;
-            }
-          }
-          else {
-            local_8 = &global_CARDBK_LegendsLand;
-          }
-        }
-        else {
-          local_8 = &global_CARDBK_DarklandsLand;
-        }
-      }
-      else {
-        local_8 = &global_CARDBK_ArabianNightsLand;
-      }
+    if ((*(byte *)(param_1 + 0xc) & 2) != 0) {
+      result = &global_CARDBK_AntiquitiesLand;
     }
     else {
-      local_8 = &global_CARDBK_AntiquitiesLand;
+      if ((*(byte *)(param_1 + 0xc) & 4) != 0) {
+        result = &global_CARDBK_ArabianNightsLand;
+      }
+      else {
+        if ((*(byte *)(param_1 + 0xc) & 0x20) != 0) {
+          result = &global_CARDBK_DarklandsLand;
+        }
+        else {
+          if ((*(byte *)(param_1 + 0xd) & 1) != 0) {
+            result = &global_CARDBK_LegendsLand;
+          }
+          else {
+            if ((*(byte *)(param_1 + 0xc) & 8) != 0) {
+              result = &global_CARDBK_AntiquitiesLand;
+            }
+            else {
+              if (strcmp(*(char **)(param_1 + 4),DAT_100f37d0 + 0x5d5c) == 0) {
+                result = &global_CARDBK_BlackLand;
+              }
+              else if (strcmp(*(char **)(param_1 + 4),DAT_100f37d0 + 0x4970) == 0) {
+                result = &global_CARDBK_WhiteLand;
+              }
+              else if (strcmp(*(char **)(param_1 + 4),DAT_100f37d0 + 0x4010) == 0) {
+                result = &global_CARDBK_RedLand;
+              }
+              else if (strcmp(*(char **)(param_1 + 4),DAT_100f37d0 + 0x238c) == 0) {
+                result = &global_CARDBK_GreenLand;
+              }
+              else if (strcmp(*(char **)(param_1 + 4),DAT_100f37d0 + 0x3138) == 0) {
+                result = &global_CARDBK_BlueLand;
+              }
+              else {
+                result = &global_CARDBK_AntiquitiesLand;
+              }
+            }
+          }
+        }
+      }
     }
   }
   else if (*(int *)(param_1 + 0x10) == -1) {
-    local_8 = &global_CARDBK_Special;
+    result = &global_CARDBK_Special;
   }
   else {
-    local_8 = &global_CARDBK_Artifact;
+    result = &global_CARDBK_Artifact;
   }
-  return local_8;
+  return result;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006a41
-undefined4 LoadCardBackground(int *param_1)
-
+BOOL LoadCardBackground(HBITMAP *outBitmap)
 {
-  undefined4 uVar1;
-  int iVar2;
-  char local_170 [264];
-  char local_68 [100];
+  struct {
+    char filepath [264];
+    char filename [100];
+  } s;
   
-  if (param_1 == (int *)0x0) {
-    uVar1 = 0;
+  if (outBitmap == (int *)0x0) {
+    return 0;
   }
-  else if (*param_1 == 0) {
-    if (param_1 == &global_CARDBK_Green) {
-      strcpy(local_68,s_CARDBK_Green_10022260);
-    }
-    else if (param_1 == &global_CARDBK_White) {
-      strcpy(local_68,s_CARDBK_White_10022270);
-    }
-    else if (param_1 == &global_CARDBK_Blue) {
-      strcpy(local_68,s_CARDBK_Blue_10022280);
-    }
-    else if (param_1 == &global_CARDBK_Black) {
-      strcpy(local_68,s_CARDBK_Black_1002228c);
-    }
-    else if (param_1 == &global_CARDBK_Red) {
-      strcpy(local_68,s_CARDBK_Red_1002229c);
-    }
-    else if (param_1 == &global_CARDBK_Gold) {
-      strcpy(local_68,s_CARDBK_Gold_100222a8);
-    }
-    else if (param_1 == &global_CARDBK_Artifact) {
-      strcpy(local_68,s_CARDBK_Artifact_100222b4);
-    }
-    else if (param_1 == &global_CARDBK_GreenLand) {
-      strcpy(local_68,s_CARDBK_GreenLand_100222c4);
-    }
-    else if (param_1 == &global_CARDBK_WhiteLand) {
-      strcpy(local_68,s_CARDBK_WhiteLand_100222d8);
-    }
-    else if (param_1 == &global_CARDBK_BlueLand) {
-      strcpy(local_68,s_CARDBK_BlueLand_100222ec);
-    }
-    else if (param_1 == &global_CARDBK_BlackLand) {
-      strcpy(local_68,s_CARDBK_BlackLand_100222fc);
-    }
-    else if (param_1 == &global_CARDBK_RedLand) {
-      strcpy(local_68,s_CARDBK_RedLand_10022310);
-    }
-    else if (param_1 == &global_CARDBK_DarklandsLand) {
-      strcpy(local_68,s_CARDBK_DarklandsLand_10022320);
-    }
-    else if (param_1 == &global_CARDBK_FallenEmpiresLand) {
-      strcpy(local_68,s_CARDBK_FallenEmpiresLand_10022338);
-    }
-    else if (param_1 == &global_CARDBK_AntiquitiesLand) {
-      strcpy(local_68,s_CARDBK_AntiquitiesLand_10022354);
-    }
-    else if (param_1 == &global_CARDBK_LegendsLand) {
-      strcpy(local_68,s_CARDBK_LegendsLand_1002236c);
-    }
-    else if (param_1 == &global_CARDBK_ArabianNightsLand) {
-      strcpy(local_68,s_CARDBK_ArabianNightsLand_10022380);
-    }
-    else if (param_1 == &global_CARDBK_Special) {
-      strcpy(local_68,s_CARDBK_Special_1002239c);
-    }
-    else {
-      strcpy(local_68,&DAT_100223ac);
-    }
-    if (local_68[0] != '\0') {
-      sprintf(local_170,s__s__s_pic_100223b0,&global_cardart_directory,local_68);
-      iVar2 = load_pic(local_170);
-      *param_1 = iVar2;
-    }
-    if (*param_1 == 0) {
-      uVar1 = 0;
-    }
-    else {
-      uVar1 = 1;
-    }
+  if (*outBitmap != 0) {
+    return 1;
+  }
+  if (outBitmap == &global_CARDBK_Green) {
+    strcpy(s.filename,s_CARDBK_Green_10022260);
+  }
+  else if (outBitmap == &global_CARDBK_White) {
+    strcpy(s.filename,s_CARDBK_White_10022270);
+  }
+  else if (outBitmap == &global_CARDBK_Blue) {
+    strcpy(s.filename,s_CARDBK_Blue_10022280);
+  }
+  else if (outBitmap == &global_CARDBK_Black) {
+    strcpy(s.filename,s_CARDBK_Black_1002228c);
+  }
+  else if (outBitmap == &global_CARDBK_Red) {
+    strcpy(s.filename,s_CARDBK_Red_1002229c);
+  }
+  else if (outBitmap == &global_CARDBK_Gold) {
+    strcpy(s.filename,s_CARDBK_Gold_100222a8);
+  }
+  else if (outBitmap == &global_CARDBK_Artifact) {
+    strcpy(s.filename,s_CARDBK_Artifact_100222b4);
+  }
+  else if (outBitmap == &global_CARDBK_GreenLand) {
+    strcpy(s.filename,s_CARDBK_GreenLand_100222c4);
+  }
+  else if (outBitmap == &global_CARDBK_WhiteLand) {
+    strcpy(s.filename,s_CARDBK_WhiteLand_100222d8);
+  }
+  else if (outBitmap == &global_CARDBK_BlueLand) {
+    strcpy(s.filename,s_CARDBK_BlueLand_100222ec);
+  }
+  else if (outBitmap == &global_CARDBK_BlackLand) {
+    strcpy(s.filename,s_CARDBK_BlackLand_100222fc);
+  }
+  else if (outBitmap == &global_CARDBK_RedLand) {
+    strcpy(s.filename,s_CARDBK_RedLand_10022310);
+  }
+  else if (outBitmap == &global_CARDBK_DarklandsLand) {
+    strcpy(s.filename,s_CARDBK_DarklandsLand_10022320);
+  }
+  else if (outBitmap == &global_CARDBK_FallenEmpiresLand) {
+    strcpy(s.filename,s_CARDBK_FallenEmpiresLand_10022338);
+  }
+  else if (outBitmap == &global_CARDBK_AntiquitiesLand) {
+    strcpy(s.filename,s_CARDBK_AntiquitiesLand_10022354);
+  }
+  else if (outBitmap == &global_CARDBK_LegendsLand) {
+    strcpy(s.filename,s_CARDBK_LegendsLand_1002236c);
+  }
+  else if (outBitmap == &global_CARDBK_ArabianNightsLand) {
+    strcpy(s.filename,s_CARDBK_ArabianNightsLand_10022380);
+  }
+  else if (outBitmap == &global_CARDBK_Special) {
+    strcpy(s.filename,s_CARDBK_Special_1002239c);
   }
   else {
-    uVar1 = 1;
+    strcpy(s.filename,&DAT_100223ac);
   }
-  return uVar1;
+  if (s.filename[0] != '\0') {
+    sprintf(s.filepath,s__s__s_pic_100223b0,&global_cardart_directory,s.filename);
+    *outBitmap = load_pic(s.filepath);
+  }
+  if (*outBitmap != 0) {
+    return 1;
+  }
+  else
+    return 0;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006d5f
 void DrawCardSet(int param_1,RECT* param_2,uint param_3)
 {
-  undefined1 local_44 [4];
-  int local_40;
-  int local_3c;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  RECT local_1c;
-  int local_c;
-  int local_8;
+  struct {
+    BITMAP bm; // ebp - 0x40
+    int cellH; //ebp - 0x24
+
+    int dstW; //ebp - 0x24
+    int cellW; // ebp - 0x20
+    int srcX; // ebp - 0x1c
+    RECT dstRect; // ebp - 0x18
+    int srcX2; // ebp - 8
+    int dstH;
+  } s;
   
-  if ((((((param_1 != 0) && (param_2 != 0)) && ((param_3 & 0x800) == 0)) &&
-       ((param_3 != 0xffffffff && ((param_3 & 0x10) == 0)))) &&
-      (((param_3 & 0x80) == 0 && (global_CardSets != (HANDLE)0x0)))) &&
-     (((param_3 & 0x2e) != 0 || ((param_3 & 0x100) != 0)))) {
-    GetObjectA(global_CardSets,0x18,local_44);
-    local_24 = local_40 / 10;
-    local_2c = local_3c;
-    if ((param_3 & 0x20) == 0) {
-      if ((param_3 & 0x100) == 0) {
-        if ((param_3 & 4) == 0) {
-          if ((param_3 & 2) == 0) {
-            if ((param_3 & 8) != 0) {
-              local_20 = local_24 << 3;
-            }
-          }
-          else {
-            local_20 = local_24 * 6;
-          }
-        }
-        else {
-          local_20 = local_24 << 2;
-        }
-      }
-      else {
-        local_20 = local_24 * 2;
-      }
-    }
-    else {
-      local_20 = 0;
-    }
-    local_c = local_24 + local_20;
-    local_8 = *(int *)(param_2 + 0xc) - *(int *)(param_2 + 4);
-    local_28 = (local_8 * local_24) / local_3c;
-    SetRect(&local_1c,*(int *)(param_2 + 8) - local_28,*(int *)(param_2 + 4),*(int *)(param_2 + 8),
-            *(int *)(param_2 + 4) + local_8);
-    DrawMaskedBitmapToRect(param_1,&local_1c,global_CardSets,local_24,local_2c,local_20,0,local_c,0);
+  if (param_1 == 0 || param_2 == (RECT *)0x0) {
+    return;
   }
-  return;
+  if ((param_3 & 0x800) != 0) {
+    return;
+  }
+  if (param_3 == 0xffffffff || (param_3 & 0x10) != 0 || (param_3 & 0x80) != 0) {
+    return;
+  }
+  if (global_CardSets != (HANDLE)0x0) {
+    if (((param_3 & 0x2e) == 0) && ((param_3 & 0x100) == 0)) {
+      return;
+    }
+    GetObjectA(global_CardSets,0x18,&s.bm);
+    s.cellW = s.bm.bmWidth / 10;
+    s.cellH = s.bm.bmHeight;
+    if ((param_3 & 0x20) != 0) {
+      s.srcX = 0;
+    }
+    else if ((param_3 & 0x100) != 0) {
+      s.srcX = s.cellW * 2;
+    }
+    else if ((param_3 & 4) != 0) {
+      s.srcX = s.cellW << 2;
+    }
+    else if ((param_3 & 2) != 0) {
+      s.srcX = s.cellW * 6;
+    }
+    else if ((param_3 & 8) != 0) {
+      s.srcX = s.cellW << 3;
+    }
+
+    s.srcX2 = s.cellW + s.srcX;
+    s.dstH = param_2->bottom - param_2->top;
+    s.dstW = (s.dstH * s.cellW) / s.cellH;
+    SetRect(&s.dstRect,param_2->right - s.dstW,param_2->top,param_2->right,param_2->top + s.dstH);
+    DrawMaskedBitmapToRect(param_1,&s.dstRect,global_CardSets,s.cellW,s.cellH,s.srcX,0,s.srcX2,0);
+  }
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006eed
@@ -1409,279 +1376,289 @@ void DrawCastingCost(HDC dc, RECT* param_2, casting_cost_t *castingCost)
 // FUNCTION: DRAWCARDLIB 0x10006ff3
 int BuildCostString(int *costReqs, char* costStringOut)
 {
-  int req_black;
-  int req_blue;
-  int length;
-  char result [52];
-  int req_colorless;
-  int req_red;
-  int req_white;
-  int done;
-  int req_green;
+  struct {
+    int req_black;
+    int req_blue;
+    int length;
+    char result[52];
+    int req_colorless;
+    int req_red;
+    int req_white;
+    int done;
+    int req_green;
+  } s;
   
   if ((costReqs == (int *)0x0) || (costStringOut == 0)) {
     return 0;
   }
 
-  req_white = costReqs[5];
-  req_green = costReqs[3];
-  req_red = costReqs[4];
-  req_black = costReqs[1];
-  req_blue = costReqs[2];
-  req_colorless = costReqs[0];
-  length = 0;
-  if (req_colorless != 0) {
-    if (req_colorless == -1) {
-      result[0] = '|';
-      result[1] = 'X';
-      length = 2;
+  s.req_white = costReqs[5];
+  s.req_green = costReqs[3];
+  s.req_red = costReqs[4];
+  s.req_black = costReqs[1];
+  s.req_blue = costReqs[2];
+  s.req_colorless = costReqs[0];
+  s.length = 0;
+  if (s.req_colorless != 0) {
+    if (s.req_colorless == -1) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'X';
+      s.length++;
     }
-    else if (req_colorless == 0x48) {
-      result[0] = '|';
-      result[1] = 'X';
-      length = 2;
+    else if (s.req_colorless == 0x48) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'X';
+      s.length++;
     }
-    else if (req_colorless == 0x28) {
-      result[0] = '|';
-      result[1] = 'X';
-      length = 2;
+    else if (s.req_colorless == 0x28) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'X';
+      s.length++;
     }
-    else if ((req_colorless < 1) || (9 < req_colorless)) {
-      if (req_colorless == 10) {
-        result[0] = '|';
-        result[1] = '1';
-        result[2] = 0x30;
-        length = 3;
-      }
+    else if ((s.req_colorless >= 1) && (9 >= s.req_colorless)) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = (char)(s.req_colorless + '0');
+      s.length++;
     }
-    else {
-      result[0] = '|';
-      result[1] = (char)req_colorless + '0';
-      length = 2;
-    }
-  }
-  done = 0;
-  while (done == 0) {
-    if (req_white == 0) {
-      if (req_green == 0) {
-        if (req_red == 0) {
-          if (req_black == 0) {
-            if (req_blue == 0) {
-              result[length] = '\0';
-              done = 1;
-            }
-            else {
-              result[length] = '|';
-              result[length + 1] = 'U';
-              length = length + 2;
-              req_blue = req_blue + -1;
-            }
-          }
-          else {
-            result[length] = '|';
-            result[length + 1] = 'B';
-            length = length + 2;
-            req_black = req_black + -1;
-          }
-        }
-        else {
-          result[length] = '|';
-          result[length + 1] = 'R';
-          length = length + 2;
-          req_red = req_red + -1;
-        }
-      }
-      else {
-        result[length] = '|';
-        result[length + 1] = 'G';
-        length = length + 2;
-        req_green = req_green + -1;
-      }
-    }
-    else {
-      result[length] = '|';
-      result[length + 1] = 'W';
-      length = length + 2;
-      req_white = req_white + -1;
+    else if (s.req_colorless == 10) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = '1';
+      s.length++;
+      s.result[s.length] = '0';
+      s.length++;
     }
   }
-  if ((((req_colorless == 0) && (length == 0)) && (req_white == 0)) && (((req_green == 0 && (req_red == 0)) && ((req_black == 0 && (req_blue == 0)))))) {
+  s.done = 0;
+  while (s.done == 0) {
+    if (s.req_white != 0) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'W';
+      s.length++;
+      s.req_white--;
+    }
+    else if (s.req_green != 0) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'G';
+      s.length++;
+      s.req_green--;
+    }
+    else if (s.req_red != 0) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'R';
+      s.length++;
+      s.req_red--;
+    }
+    else if (s.req_black != 0) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'B';
+      s.length++;
+      --s.req_black;
+    }
+    else if (s.req_blue != 0) {
+      s.result[s.length] = '|';
+      s.length++;
+      s.result[s.length] = 'U';
+      s.length++;
+      --s.req_blue;
+    }
+    else {
+      s.result[s.length] = '\0';
+      s.done = 1;
+    }
+  }
+  if ((((s.req_colorless == 0) && (s.length == 0)) && (s.req_white == 0)) &&
+      (((s.req_green == 0 && (s.req_red == 0)) && ((s.req_black == 0 && (s.req_blue == 0)))))) {
     // 0 cost
-    strcpy(result,&s__0_100223bc);
+    strcpy(s.result,&s__0_100223bc);
   }
   if (costStringOut != 0) {
-    strcpy(costStringOut,result);
+    strcpy(costStringOut,s.result);
   }
-  return length;
+  return s.length;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10007296
-char GetNextManaSymbol(char *param_1)
+int GetNextManaSymbol(char **param_1)
 {
-  char *chr;
-  char result;
+  struct {
+    char result;
+    char pad[3];
+    char *chr;
+  } s;
   
-  chr = (char *)*param_1;
-  result = '\0';
-  if (*chr == '|') {
-    if (chr[1] == 'X') {
-      result = -0x10;
+  s.chr = (char *)*param_1;
+  s.result = '\0';
+  if (*s.chr == '|') {
+    if (s.chr[1] == 'X') {
+      s.result = -0x10;
     }
-    else if ((chr[1] == '1') && (chr[2] == '0')) {
-      result = -0x11;
-      chr = chr + 1;
+    else if ((s.chr[1] == '1') && (s.chr[2] == '0')) {
+      s.result = -0x11;
+      s.chr = s.chr + 1;
     }
-    else if (chr[1] == '0') {
-      result = -0xf;
+    else if (s.chr[1] == '0') {
+      s.result = -0xf;
     }
-    else if (chr[1] == '1') {
-      result = -0xe;
+    else if (s.chr[1] == '1') {
+      s.result = -0xe;
     }
-    else if (chr[1] == '2') {
-      result = -0xd;
+    else if (s.chr[1] == '2') {
+      s.result = -0xd;
     }
-    else if (chr[1] == '3') {
-      result = -0xc;
+    else if (s.chr[1] == '3') {
+      s.result = -0xc;
     }
-    else if (chr[1] == '4') {
-      result = -0xb;
+    else if (s.chr[1] == '4') {
+      s.result = -0xb;
     }
-    else if (chr[1] == '5') {
-      result = -10;
+    else if (s.chr[1] == '5') {
+      s.result = -10;
     }
-    else if (chr[1] == '6') {
-      result = -9;
+    else if (s.chr[1] == '6') {
+      s.result = -9;
     }
-    else if (chr[1] == '7') {
-      result = -8;
+    else if (s.chr[1] == '7') {
+      s.result = -8;
     }
-    else if (chr[1] == '8') {
-      result = -7;
+    else if (s.chr[1] == '8') {
+      s.result = -7;
     }
-    else if (chr[1] == '9') {
-      result = -6;
+    else if (s.chr[1] == '9') {
+      s.result = -6;
     }
-    else if (chr[1] == 'T') {
-      result = -0x12;
+    else if (s.chr[1] == 'T') {
+      s.result = -0x12;
     }
-    else if (chr[1] == 'B') {
-      result = -2;
+    else if (s.chr[1] == 'B') {
+      s.result = -2;
     }
-    else if (chr[1] == 'U') {
-      result = -3;
+    else if (s.chr[1] == 'U') {
+      s.result = -3;
     }
-    else if (chr[1] == 'W') {
-      result = -5;
+    else if (s.chr[1] == 'W') {
+      s.result = -5;
     }
-    else if (chr[1] == 'G') {
-      result = -1;
+    else if (s.chr[1] == 'G') {
+      s.result = -1;
     }
-    else if (chr[1] == 'R') {
-      result = -4;
+    else if (s.chr[1] == 'R') {
+      s.result = -4;
     }
   }
-  if (result != '\0') {
-    chr++;
-    chr++;
+  if (s.result != '\0') {
+    s.chr++;
+    s.chr++;
   }
-  *param_1 = (int)chr;
-  return (int)result;
+  *param_1 = s.chr;
+  return (int)s.result;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100074b2
 void DrawManaSymbol(HDC dc,char param_2,int left,int top,int width,int height)
 {
-  undefined1 local_3c [4];
-  int local_38;
-  int local_34;
-  int local_24;
-  int local_20;
-  int local_1c;
-  RECT local_18;
-  int local_8;
+  struct {
+    BITMAP bm;
+    int hSrc;
+    int wSrc;
+    int symbolX;
+    RECT rect;
+    int maskX;
+  } s;
   
-  if (((dc != 0) && (-0x13 < param_2)) && (param_2 < '\0')) {
-    GetObjectA(global_ManaSymbols,0x18,local_3c);
-    local_20 = local_34;
-    local_24 = local_34;
-    local_8 = local_38 - local_34;
-    if (param_2 == -0x10) {
-      local_1c = 0;
-    }
-    else if (param_2 == -0xf) {
-      local_1c = local_34;
-    }
-    else if (param_2 == -0xe) {
-      local_1c = local_34 * 2;
-    }
-    else if (param_2 == -0xd) {
-      local_1c = local_34 * 3;
-    }
-    else if (param_2 == -0xc) {
-      local_1c = local_34 << 2;
-    }
-    else if (param_2 == -0xb) {
-      local_1c = local_34 * 5;
-    }
-    else if (param_2 == -10) {
-      local_1c = local_34 * 6;
-    }
-    else if (param_2 == -9) {
-      local_1c = local_34 * 7;
-    }
-    else if (param_2 == -8) {
-      local_1c = local_34 << 3;
-    }
-    else if (param_2 == -7) {
-      local_1c = local_34 * 9;
-    }
-    else if (param_2 == -6) {
-      local_1c = local_34 * 10;
-    }
-    else if (param_2 == -0x11) {
-      local_1c = local_34 * 0xb;
-    }
-    else if (param_2 == -5) {
-      local_1c = local_34 * 0xc;
-    }
-    else if (param_2 == -4) {
-      local_1c = local_34 * 0xd;
-    }
-    else if (param_2 == -3) {
-      local_1c = local_34 * 0xe;
-    }
-    else if (param_2 == -2) {
-      local_1c = local_34 * 0xf;
-    }
-    else if (param_2 == -1) {
-      local_1c = local_34 << 4;
-    }
-    else if (param_2 == -0x12) {
-      local_1c = local_34 * 0x11;
-    }
-    SetRect(&local_18,left,top,width + left,height + top);
-    DrawMaskedBitmapToRect(dc,&local_18,global_ManaSymbols,local_20,local_24,local_1c,0,local_8,0);
+  if (dc == (HDC)0x0) {
+    return;
   }
-  return;
+  if (param_2 < -0x12 || -1 < param_2) {
+    return;
+  }
+  GetObjectA(global_ManaSymbols,0x18,&s.bm);
+  s.wSrc = s.bm.bmHeight;
+  s.hSrc = s.wSrc;
+  s.maskX = s.bm.bmWidth - s.wSrc;
+  if (param_2 == -0x10) {
+    s.symbolX = 0;
+  }
+  else if (param_2 == -0xf) {
+    s.symbolX = s.wSrc;
+  }
+  else if (param_2 == -0xe) {
+    s.symbolX = s.wSrc * 2;
+  }
+  else if (param_2 == -0xd) {
+    s.symbolX = s.wSrc * 3;
+  }
+  else if (param_2 == -0xc) {
+    s.symbolX = s.wSrc << 2;
+  }
+  else if (param_2 == -0xb) {
+    s.symbolX = s.wSrc * 5;
+  }
+  else if (param_2 == -10) {
+    s.symbolX = (s.wSrc * 3) * 2;
+  }
+  else if (param_2 == -9) {
+    s.symbolX = s.wSrc * 7;
+  }
+  else if (param_2 == -8) {
+    s.symbolX = s.wSrc << 3;
+  }
+  else if (param_2 == -7) {
+    s.symbolX = s.wSrc * 9;
+  }
+  else if (param_2 == -6) {
+    s.symbolX = s.wSrc * 10;
+  }
+  else if (param_2 == -0x11) {
+    s.symbolX = s.wSrc * 0xb;
+  }
+  else if (param_2 == -5) {
+    s.symbolX = s.wSrc * 0xc;
+  }
+  else if (param_2 == -4) {
+    s.symbolX = s.wSrc * 0xd;
+  }
+  else if (param_2 == -3) {
+    s.symbolX = s.wSrc * 0xe;
+  }
+  else if (param_2 == -2) {
+    s.symbolX = s.wSrc * 0xf;
+  }
+  else if (param_2 == -1) {
+    s.symbolX = s.wSrc << 4;
+  }
+  else if (param_2 == -0x12) {
+    s.symbolX = s.wSrc * 17;
+  }
+  SetRect(&s.rect,left,top,width + left,height + top);
+  DrawMaskedBitmapToRect(dc,&s.rect,global_ManaSymbols,s.wSrc,s.hSrc,s.symbolX,0,s.maskX,0);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000775c
 undefined4 CalcDrawManaText(HDC dc,RECT *rect,char* text)
 {
-  undefined4 uVar1;
-  int nSavedDC;
+  struct {
+    int nSavedDC;
+    undefined4 result;
+  } s;
   
-                    /* 0x775c  1  CalcDrawManaText */
-  if (((dc == (HDC)0x0) || (rect == 0)) || (text == 0)) {
-    uVar1 = 0;
+                     /* 0x775c  1  CalcDrawManaText */
+  if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (text == (char *)0x0)) {
+    return 0;
   }
-  else {
-    nSavedDC = SaveDC(dc);
-    IntersectClipRect(dc,0,0,1,1);
-    uVar1 = DrawManaText(dc,rect,text,0);
-    RestoreDC(dc,nSavedDC);
-  }
-  return uVar1;
+  s.nSavedDC = SaveDC(dc);
+  IntersectClipRect(dc,0,0,1,1);
+  s.result = DrawManaText(dc,rect,text,0);
+  RestoreDC(dc,s.nSavedDC);
+  return s.result;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100077dd
@@ -1737,42 +1714,30 @@ uint DrawManaText(HDC dc,RECT *param_2,char *text,int param_4)
     if (*text == ' ') {
       s.idx = 0;
       s.buf[s.idx] = *text;
-      while (1) {
-        text = text + 1;
-        s.idx = s.idx + 1;
-        if ((*text == '\0') || (*text != ' ')) break;
-        s.buf[s.idx] = *text;
+      text = text + 1;
+      s.idx = s.idx + 1;
+      while (*text != '\0') {
+        if (*text == ' ') {
+          s.buf[s.idx] = *text;
+          text = text + 1;
+          s.idx = s.idx + 1;
+        }
+        else {
+          break;
+        }
       }
       s.buf[s.idx] = '\0';
       GetTextExtentPoint32A(dc,s.buf,s.idx,&s.size);
       s.left = s.left + s.size.cx;
     }
-    else if ((*text == '\0') || (*text != '\n')) {
+    else if (*text == '\n') {
+      text = text + 1;
+      s.top = s.top + s.line_height + s.line_height / 3;
+      s.left = param_2->left;
+    }
+    else {
       s.symbol = GetNextManaSymbol(&text);
-      if (s.symbol == '\0') {
-        s.idx = 0;
-        s.buf[s.idx] = *text;
-        while (1) {
-          text = text + 1;
-          s.idx = s.idx + 1;
-          if (((*text == '\0') || (*text == ' ')) || ((*text == '\n' || (*text == '|')))) break;
-          s.buf[s.idx] = *text;
-        }
-        s.buf[s.idx] = '\0';
-        GetTextExtentPoint32A(dc,s.buf,s.idx,&s.size);
-        if (param_2->right < s.size.cx + s.left) {
-          s.temp = s.left - param_2->left;
-          if (s.left - param_2->left <= (int)s.max_width) {
-            s.temp = (int)s.max_width;
-          }
-          s.top = s.top + s.line_height;
-          s.left = param_2->left;
-          s.max_width = s.temp;
-        }
-        TextOutA(dc,s.left,s.top,s.buf,strlen(s.buf));
-        s.left = s.left + s.size.cx;
-      }
-      else {
+      if (s.symbol != '\0') {
         s.idx = 0;
         s.buf[s.idx] = s.symbol;
         while (1) {
@@ -1783,53 +1748,69 @@ uint DrawManaText(HDC dc,RECT *param_2,char *text,int param_4)
           s.buf[s.idx] = s.symbol;
         }
         s.buf[s.idx] = '\0';
-        s.size.cx = s.idx * s.symbol_width;
+        s.size.cx = s.idx;
+        s.size.cx = s.size.cx * s.symbol_width;
         if (param_2->right < s.size.cx + s.left) {
-          s.temp = s.left - param_2->left;
-          if (s.left - param_2->left <= (int)s.max_width) {
-            s.temp = (int)s.max_width;
+          if ((int)s.max_width < s.left - param_2->left) {
+            s.max_width = s.left - param_2->left;
           }
           s.top = s.top + s.line_height;
           s.left = param_2->left;
-          s.max_width = s.temp;
         }
         s.temp = strlen(s.buf);
-        for (s.idx = 0; s.idx < s.temp; s.idx = s.idx + 1) {
-          if (param_4 == 0) {
+        for (s.idx = 0; s.temp > s.idx; s.idx = s.idx + 1) {
+          if (param_4 != 0) {
+            DrawManaSymbol(dc,s.buf[s.idx],s.left + (s.symbol_step - s.symbol_width) / 2,
+                         s.top + (s.font_height - s.symbol_height) / 2,s.symbol_width,s.symbol_height);
+          }
+          else {
             Ellipse(dc,s.left + (s.symbol_step - s.symbol_width) / 2,
                     s.top + (s.font_height - s.symbol_height) / 2,
                     s.symbol_width + (s.symbol_step - s.symbol_width) / 2 + s.left,
                     s.symbol_height + (s.font_height - s.symbol_height) / 2 + s.top);
           }
-          else {
-            DrawManaSymbol(dc,s.buf[s.idx],s.left + (s.symbol_step - s.symbol_width) / 2,
-                         s.top + (s.font_height - s.symbol_height) / 2,s.symbol_width,s.symbol_height);
-          }
           s.left = s.left + s.symbol_step;
         }
         if ((*text == ':') || (*text == ',')) {
-          s.buf[0] = *text;
+          s.idx = 0;
+          s.buf[s.idx] = *text;
           text = text + 1;
-          s.idx = 1;
-          s.buf[1] = '\0';
-          GetTextExtentPoint32A(dc,s.buf,1,&s.size);
+          s.idx = s.idx + 1;
+          s.buf[s.idx] = '\0';
+          GetTextExtentPoint32A(dc,s.buf,s.idx,&s.size);
           TextOutA(dc,s.left,s.top,s.buf,strlen(s.buf));
           s.left = s.left + s.size.cx;
         }
       }
-    }
-    else {
-      text = text + 1;
-      s.top = s.top + s.line_height + s.line_height / 3;
-      s.left = param_2->left;
+      else {
+        s.idx = 0;
+        s.buf[s.idx] = *text;
+        text = text + 1;
+        s.idx = s.idx + 1;
+        while (*text != '\0') {
+          if ((*text == ' ') || (*text == '\n') || (*text == '|')) break;
+          s.buf[s.idx] = *text;
+          text = text + 1;
+          s.idx = s.idx + 1;
+        }
+        s.buf[s.idx] = '\0';
+        GetTextExtentPoint32A(dc,s.buf,s.idx,&s.size);
+        if (param_2->right < s.size.cx + s.left) {
+          if ((int)s.max_width < s.left - param_2->left) {
+            s.max_width = s.left - param_2->left;
+          }
+          s.top = s.top + s.line_height;
+          s.left = param_2->left;
+        }
+        TextOutA(dc,s.left,s.top,s.buf,s.idx);
+        s.left = s.left + s.size.cx;
+      }
     }
   }
-  s.temp = s.left - param_2->left;
-  if (s.left - param_2->left <= (int)s.max_width) {
-    s.temp = (int)s.max_width;
+  if ((int)s.max_width < s.left - param_2->left) {
+    s.max_width = s.left - param_2->left;
   }
   s.height = (s.line_height + s.top) - param_2->top;
-  s.max_width = s.temp;
   RestoreDC(dc,s.nSavedDC);
   return (s.height << 0x10) | (s.max_width & 0xffff);
 }
@@ -1837,52 +1818,50 @@ uint DrawManaText(HDC dc,RECT *param_2,char *text,int param_4)
 // FUNCTION: DRAWCARDLIB 0x10007dd7
 void DrawSmallCard(HDC dc,RECT *rect,undefined4 *param_3,undefined4 param_4,int param_5)
 {
-  HGDIOBJ h;
-  int iVar1;
-  RECT local_34;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int nSavedDC;
+  struct {
+    RECT artRect;
+    int artTop;
+    int artLeft;
+    int cardHeight;
+    int cardWidth;
+    int artHeight;
+    int status;
+    int artWidth;
+    int nSavedDC;
+  } s;
   
                     /* 0x7dd7  6  DrawSmallCard */
   if (((dc != (HDC)0x0) && (rect != (int *)0x0)) && (param_3 != (undefined4 *)0x0)) {
-    nSavedDC = SaveDC(dc);
+    s.nSavedDC = SaveDC(dc);
     SetMapMode(dc,8);
     SetWindowExtEx(dc,200,0x118,(LPSIZE)0x0);
     SetViewportExtEx(dc,rect->right - rect->left,rect->bottom - rect->top,(LPSIZE)0x0);
     SetWindowOrgEx(dc,0,0,(LPPOINT)0x0);
-    SetViewportOrgEx(dc,rect,rect->top,(LPPOINT)0x0);
+    SetViewportOrgEx(dc,rect->left,rect->top,(LPPOINT)0x0);
     DrawCardBackground(dc,rect,param_3);
     DrawSmallCardTitle(dc,rect,param_3[2],0,1);
-    h = GetStockObject(5);
-    SelectObject(dc,h);
+    SelectObject(dc,GetStockObject(5));
     SelectObject(dc,DAT_1003a01c);
     Rectangle(dc,0,0,200,0x118);
     SetMapMode(dc,1);
-    local_18 = rect->right - rect->left;
-    local_1c = rect->bottom - rect->top;
-    local_20 = (local_18 * 0x12) / 0xe4;
-    local_24 = (local_1c * 8) / 100 + (local_1c * 0xb) / 100 + -2;
-    local_c = ((local_18 * 0xd3) / 0xe4 - local_20) + 1;
-    local_14 = (local_1c * 0xb2) / 0xbf - local_24;
-    SetRect(&local_34,local_20,local_24,local_c + local_20,local_14 + local_24);
-    iVar1 = IsSmallArtIn(*param_3,param_4);
-    if (iVar1 == 0) {
-      LoadSmallArt(*param_3,param_4,local_c,local_14);
+    s.cardWidth = rect->right - rect->left;
+    s.cardHeight = rect->bottom - rect->top;
+    s.artLeft = (s.cardWidth * 0x12) / 0xe4;
+    s.artTop = (s.cardHeight * 8) / 100 + (s.cardHeight * 0xb) / 100 + -2;
+    s.artWidth = ((s.cardWidth * 0xd3) / 0xe4 - s.artLeft) + 1;
+    s.artHeight = (s.cardHeight * 0xb2) / 0xbf - s.artTop;
+    SetRect(&s.artRect,s.artLeft,s.artTop,s.artWidth + s.artLeft,s.artHeight + s.artTop);
+    if (IsSmallArtIn(*param_3,param_4) == 0) {
+      LoadSmallArt(*param_3,param_4,s.artWidth,s.artHeight);
     }
     else if (param_5 != 0) {
-      ReloadSmallArtIfWrongSize(*param_3,param_4,local_c,local_14);
+      ReloadSmallArtIfWrongSize(*param_3,param_4,s.artWidth,s.artHeight);
     }
-    local_10 = DrawSmallArt(dc,&local_34,*param_3,param_4);
-    if (local_10 == 0) {
-      DrawBigArt(dc,&local_34,*param_3,param_4);
+    s.status = DrawSmallArt(dc,&s.artRect,*param_3,param_4);
+    if (s.status == 0) {
+      DrawBigArt(dc,&s.artRect,*param_3,param_4);
     }
-    RestoreDC(dc,nSavedDC);
+    RestoreDC(dc,s.nSavedDC);
   }
   return;
 }
@@ -1890,31 +1869,32 @@ void DrawSmallCard(HDC dc,RECT *rect,undefined4 *param_3,undefined4 param_4,int 
 // FUNCTION: DRAWCARDLIB 0x10008065
 void DrawCardBackground(HDC param_1,RECT *param_2,int cardBack)
 {
-  HBRUSH hbr;
-  undefined1 local_38 [4];
-  undefined4 local_34;
-  int local_30;
-  int *local_20;
-  RECT local_1c;
-  undefined4 local_c;
-  undefined4 local_8;
+  struct {
+    int scaledHeight;
+    BITMAP bm;
+    HBITMAP *backgroundPointer;
+    RECT dstRect;
+    int sectionTop;
+    int sectionHeight;
+  } s;
   
   if (((param_1 != (HDC)0x0) && (param_2 != (RECT *)0x0)) && (cardBack != 0)) {
-    local_20 = (int *)GetCardBackground(cardBack);
-    LoadCardBackground(local_20);
-    if (*local_20 == 0) {
-      hbr = GetStockObject(0);
-      FillRect(param_1,param_2,hbr);
+    s.backgroundPointer = GetCardBackgroundPointer(cardBack);
+    LoadCardBackground(s.backgroundPointer);
+    if (*s.backgroundPointer != 0) {
+      GetObjectA(*s.backgroundPointer,0x18,&s.bm);
+      SetRect(&s.dstRect,0,0,200,0x118);
+      DrawBitmapSubrectToRect(param_1,&s.dstRect,*s.backgroundPointer,0,0,s.bm.bmWidth,
+                   (s.bm.bmHeight * 0x3b) / 100);
+      s.scaledHeight = (((s.bm.bmHeight * 0x3b) / 100) * 0xb) / 100;
+      s.sectionHeight = 0x1e;
+      s.sectionTop = 0x16;
+      SetRect(&s.dstRect,0,s.sectionTop,200,s.sectionHeight + s.sectionTop);
+      DrawBitmapSubrectToRect(param_1,&s.dstRect,*s.backgroundPointer,0,2,s.bm.bmWidth,
+                   s.scaledHeight + 2);
     }
     else {
-      GetObjectA((HANDLE)*local_20,0x18,local_38);
-      SetRect(&local_1c,0,0,200,0x118);
-      DrawBitmapSubrectToRect(param_1,&local_1c,*local_20,0,0,local_34,(local_30 * 0x3b) / 100);
-      local_8 = 0x1e;
-      local_c = 0x16;
-      SetRect(&local_1c,0,0x16,200,0x34);
-      DrawBitmapSubrectToRect(param_1,&local_1c,*local_20,0,2,local_34,
-                   (((local_30 * 0x3b) / 100) * 0xb) / 100 + 2);
+      FillRect(param_1,param_2,GetStockObject(0));
     }
   }
   return;
@@ -1924,122 +1904,109 @@ void DrawCardBackground(HDC param_1,RECT *param_2,int cardBack)
 void DrawSmallCardTitle(HDC param_1,int *param_2,int param_3,int param_4,int param_5)
 
 {
-  size_t sVar1;
-  COLORREF local_70;
-  char local_6c [100];
-  int nSavedDC;
+  struct {
+    COLORREF titleColor;
+    char titleText[100];
+    int nSavedDC;
+  } s;
   
-                    /* 0x81b2  7  DrawSmallCardTitle */
-  if (((param_1 != (HDC)0x0) && (param_2 != (int *)0x0)) && (param_3 != 0)) {
-    strcpy(local_6c,param_3);
-    nSavedDC = SaveDC(param_1);
-    SetMapMode(param_1,8);
-    SetWindowExtEx(param_1,200,0x118,(LPSIZE)0x0);
-    SetViewportExtEx(param_1,param_2[2] - *param_2,param_2[3] - param_2[1],(LPSIZE)0x0);
-    SetWindowOrgEx(param_1,0,0,(LPPOINT)0x0);
-    SetViewportOrgEx(param_1,*param_2,param_2[1],(LPPOINT)0x0);
-    if (param_4 == 0) {
-      local_70 = DAT_10039fe0;
-    }
-    else if (param_4 == 2) {
-      local_70 = DAT_1003a08c;
-    }
-    else {
-      local_70 = DAT_1003a19c;
-    }
-    SelectObject(param_1,DAT_1003a018);
-    SetTextAlign(param_1,0);
-    if (param_5 == 0) {
-      SetBkMode(param_1,2);
-      SetBkColor(param_1,DAT_1012655c);
-    }
-    else {
-      SetBkMode(param_1,1);
-    }
-    SetTextColor(param_1,DAT_10039fec);
-    sVar1 = strlen(local_6c);
-    TextOutA(param_1,5,1,local_6c,sVar1);
-    SetTextColor(param_1,local_70);
-    SetBkMode(param_1,1);
-    sVar1 = strlen(local_6c);
-    TextOutA(param_1,2,-2,local_6c,sVar1);
-    RestoreDC(param_1,nSavedDC);
+                     /* 0x81b2  7  DrawSmallCardTitle */
+  if (((param_1 == (HDC)0x0) || (param_2 == (int *)0x0)) || (param_3 == 0)) {
+    return;
   }
-  return;
+  strcpy(s.titleText,(char *)param_3);
+  s.nSavedDC = SaveDC(param_1);
+  SetMapMode(param_1,8);
+  SetWindowExtEx(param_1,200,0x118,(LPSIZE)0x0);
+  SetViewportExtEx(param_1,param_2[2] - *param_2,param_2[3] - param_2[1],(LPSIZE)0x0);
+  SetWindowOrgEx(param_1,0,0,(LPPOINT)0x0);
+  SetViewportOrgEx(param_1,*param_2,param_2[1],(LPPOINT)0x0);
+  if (param_4 == 0) {
+    s.titleColor = DAT_10039fe0;
+  }
+  else if (param_4 == 2) {
+    s.titleColor = DAT_1003a08c;
+  }
+  else {
+    s.titleColor = DAT_1003a19c;
+  }
+  SelectObject(param_1,DAT_1003a018);
+  SetTextAlign(param_1,0);
+  if (param_5 == 0) {
+    SetBkMode(param_1,2);
+    SetBkColor(param_1,DAT_1012655c);
+  }
+  else {
+    SetBkMode(param_1,1);
+  }
+  SetTextColor(param_1,DAT_10039fec);
+  TextOutA(param_1,5,1,s.titleText,strlen(s.titleText));
+  SetTextColor(param_1,s.titleColor);
+  SetBkMode(param_1,1);
+  TextOutA(param_1,2,-2,s.titleText,strlen(s.titleText));
+  RestoreDC(param_1,s.nSavedDC);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000aab9
-undefined4
+BOOL
 DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,int param_6,int param_7
             ,int param_8,int param_9)
 
 {
-  undefined4 uVar1;
-  int hDest;
-  undefined1 local_2c [24];
-  int wDest;
-  int nSavedDC;
-  int local_c;
-  int local_8;
+  struct {
+    int hDest;
+    BITMAP bm;
+    int wDest;
+    int nSavedDC;
+    int yDest;
+    int xDest;
+  } s;
   
-  if (((dc == (HDC)0x0) || (rect == (int *)0x0)) || (param_3 == (HANDLE)0x0)) {
-    uVar1 = 0;
+  if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (param_3 == (HANDLE)0x0)) {
+    return 0;
+  }
+  EnterCriticalSection(&global_critical_section_for_drawing);
+  s.nSavedDC = SaveDC(dc);
+  SelectObject(global_screen_dc,param_3);
+  GetObjectA(param_3,0x18,&s.bm);
+  s.xDest = rect->left;
+  s.yDest = rect->top;
+  if (rect->right >= rect->left) {
+    s.wDest = rect->right - rect->left;
   }
   else {
-    EnterCriticalSection(&global_critical_section_for_drawing);
-    nSavedDC = SaveDC(dc);
-    SelectObject(global_screen_dc,param_3);
-    GetObjectA(param_3,0x18,local_2c);
-    local_8 = rect->left;
-    local_c = rect->top;
-    if (rect->right < rect->left) {
-      wDest = wSrc;
-    }
-    else {
-      wDest = rect->right - rect->left;
-    }
-    if (rect->bottom < rect->top) {
-      hDest = hSrc;
-    }
-    else {
-      hDest = rect->bottom - rect->top;
-    }
-    ApplyCardArtPaletteToDc(global_screen_dc);
-    StretchBlt(dc,local_8,local_c,wDest,hDest,global_screen_dc,param_8,param_9,wSrc,
-               hSrc,SRCAND);
-    ApplyCardArtPaletteToDc(global_screen_dc);
-    StretchBlt(dc,local_8,local_c,wDest,hDest,global_screen_dc,param_6,param_7,wSrc,
-               hSrc,SRCPAINT);
-    RestoreDC(dc,nSavedDC);
-    LeaveCriticalSection(&global_critical_section_for_drawing);
-    uVar1 = 1;
+    s.wDest = wSrc;
   }
-  return uVar1;
+  if (rect->top <= rect->bottom) {
+    s.hDest = rect->bottom - rect->top;
+  }
+  else {
+    s.hDest = hSrc;
+  }
+  ApplyCardArtPaletteToDc(global_screen_dc);
+  StretchBlt(dc,s.xDest,s.yDest,s.wDest,s.hDest,global_screen_dc,param_8,param_9,wSrc,hSrc,SRCAND);
+  ApplyCardArtPaletteToDc(global_screen_dc);
+  StretchBlt(dc,s.xDest,s.yDest,s.wDest,s.hDest,global_screen_dc,param_6,param_7,wSrc,hSrc,SRCPAINT);
+  RestoreDC(dc,s.nSavedDC);
+  LeaveCriticalSection(&global_critical_section_for_drawing);
+  return 1;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000ac34
 void DeleteAndCloseObject(HANDLE param_1)
 {
-  int iVar1;
-  DWORD *pDVar2;
-  OSVERSIONINFOA local_f4;
-  HANDLE local_60;
-  undefined1 local_5c [20];
-  int local_48;
-  HANDLE local_10;
-  int local_c;
-  int local_8;
+  struct {
+    OSVERSIONINFOA ver;
+    HANDLE sectionHandle;
+    DIBSECTION dibSection;
+    char *bitsPointer;
+  } s;
   
   if (global_dwPlatformId == -1) {
-    local_f4.dwOSVersionInfoSize = 0x94;
-    pDVar2 = &local_f4.dwMajorVersion;
-    for (iVar1 = 0x24; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *pDVar2 = 0;
-      pDVar2 = pDVar2 + 1;
-    }
-    GetVersionExA(&local_f4);
-    if (local_f4.dwPlatformId == 1) {
-      //Windows 95/98?
+    s.ver.dwOSVersionInfoSize = 0x94;
+    memset(&s.ver.dwMajorVersion,0,0x90);
+    GetVersionExA(&s.ver);
+    if (s.ver.dwPlatformId == 1) {
       global_dwPlatformId = 1;
     }
     else {
@@ -2047,15 +2014,17 @@ void DeleteAndCloseObject(HANDLE param_1)
     }
   }
   if (param_1 != (HANDLE)0x0) {
-    GetObjectA(param_1,0x54,local_5c);
-    local_60 = local_10;
-    local_8 = local_48 + local_c;
+    GetObjectA(param_1,0x54,&s.dibSection);
+    s.sectionHandle = s.dibSection.dshSection;
+    s.bitsPointer = (char *)s.dibSection.dsBm.bmBits;
+    s.bitsPointer += s.dibSection.dsOffset;
     DeleteObject(param_1);
-    if ((local_60 != (HANDLE)0x0) && (global_dwPlatformId != 0)) {
-      CloseHandle(local_60);
+    if (s.sectionHandle != (HANDLE)0x0) {
+      if (global_dwPlatformId != 0) {
+        CloseHandle(s.sectionHandle);
+      }
     }
   }
-  return;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b00c
@@ -2077,49 +2046,45 @@ COLORREF GetPaletteColor(int index)
 // FUNCTION: DRAWCARDLIB 0x1000b06a
 void ReplaceSubstring(char *inOutStr,char *needle,int caseSensitive,char *replacement)
 {
-  // TODO: original looks like __asm to me
-  int outLen;
-  char outStr [1000];
-  size_t needleLen;
-  int matched;
-  char *cur;
+  struct {
+    int outLen;
+    char outStr [1000];
+    size_t needleLen;
+    int matched;
+    char *cur;
+  } s;
 
-  if (((inOutStr != (char *)0x0) && (needle != (char *)0x0)) && (replacement != (char *)0x0)) {
-    if (strlen(inOutStr) != 0) {
-      if (strlen(needle) != 0) {
-        needleLen = strlen(needle);
-        cur = inOutStr;
-        outStr[0] = '\0';
-        outLen = 0;
-        while (*cur != '\0') {
-          matched = 0;
-          if (caseSensitive != 0) {
-            if (strncmp(cur,needle,needleLen) == 0) {
-              matched = 1;
-            }
-          }
-          else {
-            if (_strnicmp(cur,needle,needleLen) == 0) {
-              matched = 1;
-            }
-          }
-          if (matched == 0) {
-            outStr[outLen] = *cur;
-            cur++;
-            outLen++;
-            outStr[outLen] = '\0';
-          }
-          else {
-            strcat(outStr,replacement);
-            outLen += strlen(replacement);
-            cur += needleLen;
-          }
-        }
-        strcpy(inOutStr,outStr);
-      }
+  if (((inOutStr == (char *)0x0) || (needle == (char *)0x0)) || (replacement == (char *)0x0)) {
+    return;
+  }
+
+  if (strlen(inOutStr) == 0 || strlen(needle) == 0) {
+    return;
+  }
+
+  s.needleLen = strlen(needle);
+  s.cur = inOutStr;
+  s.outStr[0] = '\0';
+  s.outLen = 0;
+  while (*s.cur != '\0') {
+    s.matched = 0;
+    if ((caseSensitive != 0 && strncmp(s.cur,needle,s.needleLen) == 0) 
+      || (caseSensitive == 0 && _strnicmp(s.cur,needle,s.needleLen) == 0)) {
+        s.matched = 1;
+    }
+    if (s.matched != 0) {
+      strcat(s.outStr,replacement);
+      s.outLen += strlen(replacement);
+      s.cur += s.needleLen;      
+    }
+    else {
+      s.outStr[s.outLen] = *s.cur;
+      s.cur++;
+      s.outLen++;
+      s.outStr[s.outLen] = '\0';
     }
   }
-  return;
+  strcpy(inOutStr,s.outStr);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000bd90
@@ -2153,61 +2118,64 @@ uint DLLMain(undefined4 param_1,uint param_2,undefined4 param_3)
 
 int read_cfg(undefined4 param_1)
 {
-  char *pcVar1;
-  void *_DstBuf;
-  char cards_dat_filename [264];
-  size_t global_available_slots;
-  size_t record_size;
-  int iStackY_4a390;
-  FILE *cards_dat;
-  undefined1 auStackY_4a388 [4];
-  int aiStackY_4a384 [75993];
-  int iVar2;
+  struct {
+    char *lastSlash;
+    void *recordBuf;
+    char cards_dat_filename[264];
+    size_t global_available_slots;
+    size_t record_size;
+    int slotIndex;
+    FILE *cards_dat;
+    int record_table_pad0;
+    int record_table[75993];
+    char pad_18[0x18];
+    int result;
+  } s;
   
-  iVar2 = 1;
+  s.result = 1;
   _DAT_10124510 = param_1;
   InitializeCriticalSection(&global_critical_section_for_catalog);
-  GetModuleFileNameA((HMODULE)0x0,&global_base_directory,0x105);
-  pcVar1 = strrchr(&global_base_directory,0x5c);
-  *pcVar1 = '\0';
-  strcpy((uint *)&global_cardart_directory,(uint *)&global_base_directory);
-  strcat((uint *)&global_cardart_directory,(uint *)s__CARDART_10026a48);
+  GetModuleFileNameA((HMODULE)0x0,global_base_directory,0x105);
+  s.lastSlash = strrchr(global_base_directory,'\\');
+  *s.lastSlash = '\0';
+  strcpy(global_cardart_directory,global_base_directory);
+  strcat(global_cardart_directory,s__CARDART_10026a48);
   DAT_10021048 = 3;
   DAT_10124538 = 0x10;
   InitCardArtGdiResources();
-  strcpy(cards_dat_filename,(uint *)&global_base_directory);
-  strcat(cards_dat_filename,(uint *)s__CARDS_DAT_10026a54);
-  cards_dat = fopen(cards_dat_filename,s_rb_10026a60);
-  if (cards_dat == (FILE *)0x0) {
-    iVar2 = 0;
-  }
-  else {
-    fread(&global_available_slots,4,1,cards_dat);
-    fread(&record_size,4,1,cards_dat);
-    fread(auStackY_4a388,0x98,global_available_slots,cards_dat);
-    _DstBuf = malloc(record_size);
-    if (_DstBuf == (void *)0x0) {
-      iVar2 = 0;
+  strcpy(s.cards_dat_filename,global_base_directory);
+  strcat(s.cards_dat_filename,s__CARDS_DAT_10026a54);
+  s.cards_dat = fopen(s.cards_dat_filename,s_rb_10026a60);
+  if (s.cards_dat != (FILE *)0x0) {
+    fread(&s.global_available_slots,4,1,s.cards_dat);
+    fread(&s.record_size,4,1,s.cards_dat);
+    fread(&s.record_table_pad0,0x98,s.global_available_slots,s.cards_dat);
+    s.recordBuf = malloc(s.record_size);
+    if (s.recordBuf != (void *)0x0) {
+      fread(s.recordBuf,1,s.record_size,s.cards_dat);
+      for (s.slotIndex = 0; (int)s.global_available_slots > s.slotIndex;
+          s.slotIndex = s.slotIndex + 1) {
+        s.record_table[s.slotIndex * 0x26] = s.record_table[s.slotIndex * 0x26] + (int)s.recordBuf;
+        strncpy(DAT_100f37d0 + s.slotIndex * 100,(char *)s.record_table[s.slotIndex * 0x26],100);
+        DAT_100f3833[s.slotIndex * 100] = 0;
+      }
+      free(s.recordBuf);
     }
     else {
-      fread(_DstBuf,1,record_size,cards_dat);
-      for (iStackY_4a390 = 0; iStackY_4a390 < (int)global_available_slots; iStackY_4a390 = iStackY_4a390 + 1)
-      {
-        aiStackY_4a384[iStackY_4a390 * 0x26] = aiStackY_4a384[iStackY_4a390 * 0x26] + (int)_DstBuf;
-        strncpy(DAT_100f37d0 + iStackY_4a390 * 100,(char *)aiStackY_4a384[iStackY_4a390 * 0x26],
-                 100);
-        DAT_100f3833[iStackY_4a390 * 100] = 0;
-      }
-      free(_DstBuf);
+      s.result = 0;
     }
-    fclose(cards_dat);
+    fclose(s.cards_dat);
   }
-  if (iVar2 == 0) {
-    for (iStackY_4a390 = 0; iStackY_4a390 < (int)global_available_slots; iStackY_4a390 = iStackY_4a390 + 1) {
-      strcpy((uint *)(&DAT_100f37d0 + iStackY_4a390 * 100),(uint *)&s_File__s_could_not_be_opened__EXITING_10026a64);
+  else {
+    s.result = 0;
+  }
+  if (s.result == 0) {
+    for (s.slotIndex = 0; (int)s.global_available_slots > s.slotIndex;
+        s.slotIndex = s.slotIndex + 1) {
+      strcpy(DAT_100f37d0 + s.slotIndex * 100,s_File__s_could_not_be_opened__EXITING_10026a64);
     }
   }
-  return iVar2;
+  return s.result;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000c0ca

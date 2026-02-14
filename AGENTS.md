@@ -27,6 +27,8 @@ These instructions apply to the entire repository.
 - For lookup tables, write `idx * 3` to encourage `lea reg, [reg + reg*2]` patterns (instead of more complex arithmetic).
 - Watch for signed compares against `0xFF`: `cmp reg, 0FFh` is `-1` (imm8 sign-extended), so match it in C as `== -1` when appropriate.
 - The order of parameters in `cmp` and other commutative opcodes like `test`, `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.  Don't bother trying.
+- `register` on variables is ignored.  If a "variable" doesn't get written to the stack it's not actually a variable.
+- `imul` and `idiv` are aggressively avoided when multiplying and dividing by constants.  "Weird" math is probably multiplying or dividing by a non-power-of-2 constant.
 
 ## Build
 - Build the `cardartlib` target with: `nmake cardartlib`
