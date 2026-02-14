@@ -148,59 +148,59 @@ undefined4 global_color_depth = 0x00000000;
 int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
-    short *pixel_dword;     /* [ebp-0x94] (also reused as temp) */
-    int *pixel_rgb;         /* [ebp-0x90] */
+    short *err_cell;        /* [ebp-0x94] (also reused as temp) */
+    int *delta_table;       /* [ebp-0x90] */
     short *err_px;          /* [ebp-0x8c] */
-    uint rgb_quant;         /* [ebp-0x88] */
-    int byte_step;          /* [ebp-0x84] */
-    int local_80;           /* [ebp-0x80] */
+    int err_r;              /* [ebp-0x88] */
+    int x_byte_step;        /* [ebp-0x84] */
+    int nearest_rgb;        /* [ebp-0x80] */
     int x_start;            /* [ebp-0x7c] */
     undefined *kernel_ptr;  /* [ebp-0x78] */
     int kernel_count;       /* [ebp-0x74] */
     int r_clamped;          /* [ebp-0x70] */
     int err_row_ptrs[6];    /* [ebp-0x6c] */
     int y;                  /* [ebp-0x54] */
-    undefined2 local_50;    /* [ebp-0x50] */
-    undefined2 local_4e;    /* [ebp-0x4e] */
-    undefined2 local_4c_w;  /* [ebp-0x4c] */
-    undefined2 local_4a;    /* [ebp-0x4a] */
+    undefined2 pad_50;      /* [ebp-0x50] */
+    undefined2 pad_4e;      /* [ebp-0x4e] */
+    undefined2 pad_4c_w;    /* [ebp-0x4c] */
+    undefined2 pad_4a;      /* [ebp-0x4a] */
     int x;                  /* [ebp-0x48] */
-    int tmp0;               /* [ebp-0x44] */
-    int tmp1;               /* [ebp-0x40] */
+    int k_row;              /* [ebp-0x44] */
+    int k_x_off;            /* [ebp-0x40] */
     int err_b;              /* [ebp-0x3c] */
     int x_step;             /* [ebp-0x38] */
     uint g_clamped;         /* [ebp-0x34] */
     int err_g;              /* [ebp-0x30] */
     int *k_it;              /* [ebp-0x2c] */
     int rgb_clamped;        /* [ebp-0x28] */
-    uint packed_clamped;    /* [ebp-0x24] */
-    undefined2 local_24;    /* [ebp-0x20] */
-    undefined2 local_22;    /* [ebp-0x1e] */
-    undefined2 local_20;    /* [ebp-0x1c] */
-    undefined2 local_1e;    /* [ebp-0x1a] */
+    uint src_rgb;           /* [ebp-0x24] */
+    undefined2 pad_20;      /* [ebp-0x20] */
+    undefined2 pad_1e;      /* [ebp-0x1e] */
+    undefined2 pad_1c;      /* [ebp-0x1c] */
+    undefined2 pad_1a;      /* [ebp-0x1a] */
     int x_end;              /* [ebp-0x18] */
     uint clear_dwords;      /* [ebp-0x14] */
-    undefined2 local_10;    /* [ebp-0x10] */
-    undefined2 local_e;     /* [ebp-0xe] */
-    undefined2 local_c_w;   /* [ebp-0xc] */
-    undefined2 local_a;     /* [ebp-0xa] */
-    int byte_off;           /* [ebp-0x8] */
+    undefined2 pad_10;      /* [ebp-0x10] */
+    undefined2 pad_e;       /* [ebp-0xe] */
+    undefined2 pad_c_w;     /* [ebp-0xc] */
+    undefined2 pad_a;       /* [ebp-0xa] */
+    int x_byte_off;         /* [ebp-0x8] */
     uint b_clamped;         /* [ebp-0x4] */
   } s;
 
-  s.local_10 = 0;
-  s.local_e = 0;
-  s.local_c_w = 0;
-  s.local_a = 0;
-  s.local_50 = 0;
-  s.local_4e = 0;
-  s.local_4c_w = 0;
-  s.local_4a = 0;
-  s.local_24 = 0xffff;
-  s.local_22 = 0xffff;
-  s.local_20 = 0xffff;
-  s.local_1e = 0;
-  s.local_80 = -1;
+  s.pad_10 = 0;
+  s.pad_e = 0;
+  s.pad_c_w = 0;
+  s.pad_a = 0;
+  s.pad_50 = 0;
+  s.pad_4e = 0;
+  s.pad_4c_w = 0;
+  s.pad_4a = 0;
+  s.pad_20 = 0xffff;
+  s.pad_1e = 0xffff;
+  s.pad_1c = 0xffff;
+  s.pad_1a = 0;
+  s.nearest_rgb = -1;
   s.x_step = 1;
   s.rgb_clamped = 0;
   s.kernel_ptr = &DAT_1001d2d8[(dither_kernel_id << 6) * 3];
@@ -253,75 +253,69 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
     if (0 < s.x_step) {
       s.x_start = 0;
       s.x_end = width;
-      s.byte_step = 3;
+      s.x_byte_step = 3;
     }
     else {
       s.x_start = width + -1;
       s.x_end = -1;
-      s.byte_step = -3;
+      s.x_byte_step = -3;
     }
 
     s.x = s.x_start;
-    s.byte_off = s.x_start + s.x_start + s.x_start;
-    for (; s.x != s.x_end; s.x = s.x + s.x_step, s.byte_off = s.byte_off + s.byte_step) {
-      s.packed_clamped = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xffffff;
-      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xff000000;
+    s.x_byte_off = s.x_start + s.x_start + s.x_start;
+    for (; s.x != s.x_end; s.x = s.x + s.x_step, s.x_byte_off = s.x_byte_off + s.x_byte_step) {
+      s.src_rgb = *(uint *)(s.x_byte_off + (ptrdiff_t)bgr24) & 0xffffff;
+      *(uint *)&((byte*)bgr24)[s.x_byte_off] = *(uint *)(s.x_byte_off + (ptrdiff_t)bgr24) & 0xff000000;
 
       s.err_px = (short *)s.err_row_ptrs[1] + (s.x << 2);
 
-      if (s.packed_clamped == 0) {
-        s.local_80 = 0;
-        s.r_clamped = s.local_80;
+      if (s.src_rgb == 0) {
+        s.nearest_rgb = 0;
+        s.r_clamped = s.nearest_rgb;
         s.g_clamped = s.r_clamped;
         s.b_clamped = s.g_clamped;
       }
-      else if (s.packed_clamped == 0xffffff) {
+      else if (s.src_rgb == 0xffffff) {
         s.r_clamped = 0xff;
         s.g_clamped = s.r_clamped;
         s.b_clamped = s.g_clamped;
-        s.local_80 = 0xffffff;
+        s.nearest_rgb = 0xffffff;
       }
       else {
 
-        s.b_clamped = s.packed_clamped & 0xff;
+        s.b_clamped = s.src_rgb & 0xff;
         s.b_clamped += ((int)*s.err_px >> 8);
         s.b_clamped = (uint)(byte)PTR_DAT_1001e058[s.b_clamped];
 
-        s.g_clamped = ((byte*)&s.packed_clamped)[1];
+        s.g_clamped = ((byte*)&s.src_rgb)[1];
         s.g_clamped += ((int)s.err_px[1] >> 8);
         s.g_clamped = (uint)(byte)PTR_DAT_1001e058[s.g_clamped];
 
-        s.r_clamped = (s.packed_clamped & 0xff0000) >> 16;
+        s.r_clamped = (s.src_rgb & 0xff0000) >> 16;
         s.r_clamped += ((int)s.err_px[2] >> 8);
         s.r_clamped = (uint)(byte)PTR_DAT_1001e058[s.r_clamped];
 
-        s.packed_clamped = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
-        //if (s.packed_clamped == 0) {
-        //  s.local_80 = 0;
-        //}
-        //else if (s.packed_clamped == 0xffffff) {
-        //  s.local_80 = 0xffffff;
-        //}
-        //else {
-          s.local_80 = Octree_FindNearestColor(s.packed_clamped);
+        s.src_rgb = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
+ 
+        s.nearest_rgb = Octree_FindNearestColor(s.src_rgb);
       }
-      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) | s.local_80;
+      *(uint *)&((byte*)bgr24)[s.x_byte_off] = *(uint *)(s.x_byte_off + (ptrdiff_t)bgr24) | s.nearest_rgb;
 
-      s.err_b = s.b_clamped - (s.local_80 & 0xff);
-      s.err_g = s.g_clamped - (s.local_80 >> 8 & 0xff);
-      s.rgb_quant = s.r_clamped - ((uint)s.local_80 >> 16);
+      s.err_b = s.b_clamped - (s.nearest_rgb & 0xff);
+      s.err_g = s.g_clamped - (s.nearest_rgb >> 8 & 0xff);
+      s.err_r = s.r_clamped - ((uint)s.nearest_rgb >> 16);
       //s.err_row_ptrs[0] = 0;
       s.k_it = s.kernel_ptr;
       s.err_row_ptrs[0] = (s.kernel_count << 2) + s.k_it;
       for (; s.err_row_ptrs[0] > s.k_it; s.k_it += 0x4) {
-        s.tmp1 = s.k_it[1];
-        s.tmp0 = s.k_it[2];
-        s.pixel_rgb = s.k_it[3];
-        s.pixel_dword = ((s.tmp1 + s.x) << 2) + (short *)(s.err_row_ptrs[s.tmp0 + 1]);
+        s.k_x_off = s.k_it[1];
+        s.k_row = s.k_it[2];
+        s.delta_table = s.k_it[3];
+        s.err_cell = ((s.k_x_off + s.x) << 2) + (short *)(s.err_row_ptrs[s.k_row + 1]);
 
-        s.pixel_dword[0] = s.pixel_rgb[s.err_b] + s.pixel_dword[0];
-        s.pixel_dword[1] = s.pixel_rgb[s.err_g] + s.pixel_dword[1];
-        s.pixel_dword[2] = s.pixel_rgb[s.rgb_quant] + s.pixel_dword[2];
+        s.err_cell[0] = s.delta_table[s.err_b] + s.err_cell[0];
+        s.err_cell[1] = s.delta_table[s.err_g] + s.err_cell[1];
+        s.err_cell[2] = s.delta_table[s.err_r] + s.err_cell[2];
       }
     }
 
@@ -388,59 +382,59 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_bas
 undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
-    short *pixel_dword;     /* [ebp-0x94] (also reused as temp) */
-    int *pixel_rgb;         /* [ebp-0x90] */
+    short *err_cell;        /* [ebp-0x94] (also reused as temp) */
+    int *delta_table;       /* [ebp-0x90] */
     short *err_px;          /* [ebp-0x8c] */
-    uint rgb_quant;         /* [ebp-0x88] */
-    int byte_step;          /* [ebp-0x84] */
-    int local_80;           /* [ebp-0x80] */
+    int err_r;              /* [ebp-0x88] */
+    int x_byte_step;        /* [ebp-0x84] */
+    int quant_rgb;          /* [ebp-0x80] */
     int x_start;            /* [ebp-0x7c] */
     undefined *kernel_ptr;  /* [ebp-0x78] */
     int kernel_count;       /* [ebp-0x74] */
     int r_clamped;          /* [ebp-0x70] */
     int err_row_ptrs[6];    /* [ebp-0x6c] */
     int y;                  /* [ebp-0x54] */
-    undefined2 local_50;    /* [ebp-0x50] */
-    undefined2 local_4e;    /* [ebp-0x4e] */
-    undefined2 local_4c_w;  /* [ebp-0x4c] */
-    undefined2 local_4a;    /* [ebp-0x4a] */
+    undefined2 pad_50;      /* [ebp-0x50] */
+    undefined2 pad_4e;      /* [ebp-0x4e] */
+    undefined2 pad_4c_w;    /* [ebp-0x4c] */
+    undefined2 pad_4a;      /* [ebp-0x4a] */
     int x;                  /* [ebp-0x48] */
-    int tmp0;               /* [ebp-0x44] */
-    int tmp1;               /* [ebp-0x40] */
+    int k_row;              /* [ebp-0x44] */
+    int k_x_off;            /* [ebp-0x40] */
     int err_b;              /* [ebp-0x3c] */
     int x_step;             /* [ebp-0x38] */
     uint g_clamped;         /* [ebp-0x34] */
     int err_g;              /* [ebp-0x30] */
     int *k_it;              /* [ebp-0x2c] */
     int rgb_clamped;        /* [ebp-0x28] */
-    uint packed_clamped;    /* [ebp-0x24] */
-    undefined2 local_24;    /* [ebp-0x20] */
-    undefined2 local_22;    /* [ebp-0x1e] */
-    undefined2 local_20;    /* [ebp-0x1c] */
-    undefined2 local_1e;    /* [ebp-0x1a] */
+    uint src_rgb;           /* [ebp-0x24] */
+    undefined2 pad_20;      /* [ebp-0x20] */
+    undefined2 pad_1e;      /* [ebp-0x1e] */
+    undefined2 pad_1c;      /* [ebp-0x1c] */
+    undefined2 pad_1a;      /* [ebp-0x1a] */
     int x_end;              /* [ebp-0x18] */
     uint clear_dwords;      /* [ebp-0x14] */
-    undefined2 local_10;    /* [ebp-0x10] */
-    undefined2 local_e;     /* [ebp-0xe] */
-    undefined2 local_c_w;   /* [ebp-0xc] */
-    undefined2 local_a;     /* [ebp-0xa] */
-    int byte_off;           /* [ebp-0x8] */
+    undefined2 pad_10;      /* [ebp-0x10] */
+    undefined2 pad_e;       /* [ebp-0xe] */
+    undefined2 pad_c_w;     /* [ebp-0xc] */
+    undefined2 pad_a;       /* [ebp-0xa] */
+    int x_byte_off;         /* [ebp-0x8] */
     uint b_clamped;         /* [ebp-0x4] */
   } s;
 
-  s.local_10 = 0;
-  s.local_e = 0;
-  s.local_c_w = 0;
-  s.local_a = 0;
-  s.local_50 = 0;
-  s.local_4e = 0;
-  s.local_4c_w = 0;
-  s.local_4a = 0;
-  s.local_24 = 0xffff;
-  s.local_22 = 0xffff;
-  s.local_20 = 0xffff;
-  s.local_1e = 0;
-  s.local_80 = -1;
+  s.pad_10 = 0;
+  s.pad_e = 0;
+  s.pad_c_w = 0;
+  s.pad_a = 0;
+  s.pad_50 = 0;
+  s.pad_4e = 0;
+  s.pad_4c_w = 0;
+  s.pad_4a = 0;
+  s.pad_20 = 0xffff;
+  s.pad_1e = 0xffff;
+  s.pad_1c = 0xffff;
+  s.pad_1a = 0;
+  s.quant_rgb = -1;
   s.x_step = 1;
   s.rgb_clamped = 0;
   s.kernel_ptr = &DAT_1001d2d8[(dither_kernel_id << 6) * 3];
@@ -484,61 +478,61 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
     if (0 < s.x_step) {
       s.x_start = 0;
       s.x_end = width;
-      s.byte_step = 3;
+      s.x_byte_step = 3;
     }
     else {
       s.x_start = width + -1;
       s.x_end = -1;
-      s.byte_step = -3;
+      s.x_byte_step = -3;
     }
 
     s.x = s.x_start;
-    s.byte_off = s.x_start + s.x_start + s.x_start;
-    for (; s.x != s.x_end; s.x = s.x + s.x_step, s.byte_off = s.byte_off + s.byte_step) {
-      s.packed_clamped = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xffffff;
-      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) & 0xff000000;
+    s.x_byte_off = s.x_start + s.x_start + s.x_start;
+    for (; s.x != s.x_end; s.x = s.x + s.x_step, s.x_byte_off = s.x_byte_off + s.x_byte_step) {
+      s.src_rgb = *(uint *)(s.x_byte_off + (ptrdiff_t)bgr24) & 0xffffff;
+      *(uint *)&((byte*)bgr24)[s.x_byte_off] = *(uint *)(s.x_byte_off + (ptrdiff_t)bgr24) & 0xff000000;
 
       s.err_px = (short *)s.err_row_ptrs[1] + (s.x << 2);
 
-      s.b_clamped = s.packed_clamped & 0xff;
+      s.b_clamped = s.src_rgb & 0xff;
       s.b_clamped += ((int)*s.err_px >> 8);
       s.b_clamped = (uint)(byte)PTR_DAT_1001e058[s.b_clamped];
 
-      s.g_clamped = ((byte*)&s.packed_clamped)[1];
+      s.g_clamped = ((byte*)&s.src_rgb)[1];
       s.g_clamped += ((int)s.err_px[1] >> 8);
       s.g_clamped = (uint)(byte)PTR_DAT_1001e058[s.g_clamped];
 
-      s.r_clamped = (s.packed_clamped & 0xff0000) >> 16;
+      s.r_clamped = (s.src_rgb & 0xff0000) >> 16;
       s.r_clamped += ((int)s.err_px[2] >> 8);
       s.r_clamped = (uint)(byte)PTR_DAT_1001e058[s.r_clamped];
 
-      s.packed_clamped = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
-      if (s.packed_clamped == 0) {
-        s.local_80 = 0;
+      s.src_rgb = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
+      if (s.src_rgb == 0) {
+        s.quant_rgb = 0;
       }
-      else if (s.packed_clamped == 0xffffff) {
-        s.local_80 = 0xffffff;
+      else if (s.src_rgb == 0xffffff) {
+        s.quant_rgb = 0xffffff;
       }
       else {
-        s.local_80 = Rgb888_QuantizeToF8(s.packed_clamped);
+        s.quant_rgb = Rgb888_QuantizeToF8(s.src_rgb);
       }
-      *(uint *)&((byte*)bgr24)[s.byte_off] = *(uint *)(s.byte_off + (ptrdiff_t)bgr24) | s.local_80;
+      *(uint *)&((byte*)bgr24)[s.x_byte_off] = *(uint *)(s.x_byte_off + (ptrdiff_t)bgr24) | s.quant_rgb;
 
-      s.err_b = s.b_clamped - (s.local_80 & 0xff);
-      s.err_g = s.g_clamped - (s.local_80 >> 8 & 0xff);
-      s.rgb_quant = s.r_clamped - (s.local_80 >> 16 & 0xff);
+      s.err_b = s.b_clamped - (s.quant_rgb & 0xff);
+      s.err_g = s.g_clamped - (s.quant_rgb >> 8 & 0xff);
+      s.err_r = s.r_clamped - (s.quant_rgb >> 16 & 0xff);
       s.err_row_ptrs[0] = 0;
       s.k_it = s.kernel_ptr;
       for (; s.err_row_ptrs[0] < s.kernel_count; s.err_row_ptrs[0]++, s.k_it += 0x4) {
-        s.tmp1 = s.k_it[1];
-        s.tmp0 = s.k_it[2];
-        s.pixel_rgb = s.k_it[3];
-        s.pixel_dword = (short *)(s.err_row_ptrs[s.tmp0 + 1] +
-                          (s.tmp1 + s.x) * 8);
+        s.k_x_off = s.k_it[1];
+        s.k_row = s.k_it[2];
+        s.delta_table = s.k_it[3];
+        s.err_cell = (short *)(s.err_row_ptrs[s.k_row + 1] +
+                          (s.k_x_off + s.x) * 8);
 
-        s.pixel_dword[0] = s.pixel_rgb[s.err_b] + s.pixel_dword[0];
-        s.pixel_dword[1] = s.pixel_rgb[s.err_g] + s.pixel_dword[1];
-        s.pixel_dword[2] = s.pixel_rgb[s.rgb_quant] + s.pixel_dword[2];
+        s.err_cell[0] = s.delta_table[s.err_b] + s.err_cell[0];
+        s.err_cell[1] = s.delta_table[s.err_g] + s.err_cell[1];
+        s.err_cell[2] = s.delta_table[s.err_r] + s.err_cell[2];
       }
     }
 
