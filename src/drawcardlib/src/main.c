@@ -2088,29 +2088,26 @@ void ReplaceSubstring(char *inOutStr,char *needle,int caseSensitive,char *replac
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000bd90
-uint DLLMain(undefined4 param_1,uint param_2,undefined4 param_3)
+BOOL WINAPI DLLMain(undefined4 hinst, uint reason, undefined4 reserved)
 {
-  uint uVar1;
-  
-  (void)param_3;
-  switch(param_2) {
+  undefined4 result;
+
+  (void)reserved;
+  switch(reason) {
+  case 1:
+    result = 1;
+    result &= read_cfg(hinst);
+    result &= prepare_fonts_and_imgs();
+    return (BOOL)result;
+  case 2:
+    return (BOOL)1;
+  case 3:
+    return (BOOL)1;
   case 0:
     DestroyAllResources();
     DrawCardLib_Shutdown();
-    param_2 = 1;
-    break;
-  case 1:
-    uVar1 = read_cfg(param_1);
-    param_2 = prepare_fonts_and_imgs();
-    param_2 = uVar1 & 1 & param_2;
-    break;
-  case 2:
-    param_2 = 1;
-    break;
-  case 3:
-    param_2 = 1;
+    return (BOOL)1;
   }
-  return param_2;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000be22
