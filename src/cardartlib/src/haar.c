@@ -36,34 +36,34 @@ undefined4 global_dither_kernel_id = 0x00000000;
 undefined4 global_serpentine = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d260
-int DAT_1001d260[0xa] = {0,0,2,4,12,7,10,12,12,0};
+int g_ditherKernelTapCounts[0xa] = {0,0,2,4,12,7,10,12,12,0};
 
 // GLOBAL: CARDARTLIB 0x1001d288
-int DAT_1001d288[8] = {0,0,2,2,3,2,3,3};
+int g_ditherKernelErrorRowCounts[8] = {0,0,2,2,3,2,3,3};
 
 // GLOBAL: CARDARTLIB 0x1001d2b0
-int DAT_1001d2b0[0xa] = {0,0,16,16,42,32,32,48};
+int g_ditherKernelDivisors[0xa] = {0,0,16,16,42,32,32,48};
 
 // GLOBAL: CARDARTLIB 0x1001d2d8
-undefined1 DAT_1001d2d8[0xd80];
+undefined1 g_ditherKernelTable[0xd80];
 
 // GLOBAL: CARDARTLIB 0x10031ca0
-undefined1 DAT_10031ca0[0x400];
+undefined1 g_u8ClampTableStorage[0x400];
 
 // GLOBAL: CARDARTLIB 0x1001e058
-undefined1 * PTR_DAT_1001e058 = DAT_10031ca0 + 0x200;
+undefined1 *g_u8ClampTable = g_u8ClampTableStorage + 0x200;
 
 // GLOBAL: CARDARTLIB 0x1001e05c
-undefined4 DAT_1001e05c = 0xFFFFFFFF;
+undefined4 g_paletteDitherKernelCachedId = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e060
-undefined4 DAT_1001e060 = 0xFFFFFFFF;
+undefined4 g_rgbQuantKernelCachedId = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e0e0
-int DAT_1001e0e0 = 0x00000004;
+int g_rowAlignBytes = 0x00000004;
 
 // GLOBAL: CARDARTLIB 0x100326d8
-unsigned char DAT_100326d8[0x1000];
+unsigned char g_waveletScaleTableStorage[0x1000];
 
 // GLOBAL: CARDARTLIB 0x1001e090
 char s_Not_enough_memory_for_delta_arra_1001e090[] = "Not enough memory for delta array\r\n";
@@ -72,16 +72,16 @@ char s_Not_enough_memory_for_delta_arra_1001e090[] = "Not enough memory for delt
 char s_D__Newmagic_sources_NedCard_Pale_1001e0b4[] = "D:\\Newmagic\\sources\\NedCard\\Palette.c";
 
 // GLOBAL: CARDARTLIB 0x1001e118
-unsigned char * g_waveletScaleToByteTable = DAT_100326d8 + 0x400;
+unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x1001e124
 undefined4 g_haarScratchInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100eaf00
-undefined1 DAT_100eaf00[0x2000];
+undefined1 g_yuvClampTableStorage[0x2000];
 
 // GLOBAL: CARDARTLIB 0x1001e128
-undefined1 * g_yuvClampTable = DAT_100eaf00 + 0x400;
+undefined1 * g_yuvClampTable = g_yuvClampTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x10032ae0
 undefined4 g_waveletScaleToByteTableInit = 0x00000000;
@@ -108,28 +108,28 @@ char s_Only_Works_on_24_bit_images_1001e1dc[] = "Only Works on 24 bit images\n";
 char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\NedCard\\haar.c";
 
 // GLOBAL: CARDARTLIB 0x10032c98
-undefined1 DAT_10032c98[0x2000];
+undefined1 g_haarDecodeScratch[0x2000];
 
 // GLOBAL: CARDARTLIB 0x100ad498
-unsigned char DAT_100ad498[0x200];
+unsigned char g_defaultPalette256[0x200];
 
 // GLOBAL: CARDARTLIB 0x100edb10
-undefined1 DAT_100edb10[5 * 0x8060];
+undefined1 g_errorDiffusionRowStorage[5 * 0x8060];
 
 // GLOBAL: CARDARTLIB 0x100ecb04
-undefined4 _DAT_100ecb04 = 0x00000000;
+BOOL g_unpackResultUnused = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322cc
-undefined4 DAT_100322cc = 0x00000000;
+undefined4 g_rgbQuantClampInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322d0
-undefined4 DAT_100322d0 = 0x00000000;
+undefined4 g_paletteClampInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322d8
-undefined1 DAT_100322d8 = 0x00;
+undefined1 g_haarUnused_100322d8 = 0x00;
 
 // GLOBAL: CARDARTLIB 0x100322d9
-undefined1 DAT_100322d9 = 0x00;
+undefined1 g_haarUnused_100322d9 = 0x00;
 
 // GLOBAL: CARDARTLIB 0x100ea31c
 int *g_haarScratchB = (int *)0x0;
@@ -138,7 +138,7 @@ int *g_haarScratchB = (int *)0x0;
 int *g_haarScratchA = (int *)0x0;
 
 // GLOBAL: CARDARTLIB 0x10117100
-void *DAT_10117100[0x41];
+void *g_errorDiffusionDeltaTablePtrs[0x41];
 
 // GLOBAL: CARDARTLIB 0x101221e8
 undefined4 global_color_depth = 0x00000000;
@@ -203,52 +203,52 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
   s.nearest_rgb = -1;
   s.x_step = 1;
   s.rgb_clamped = 0;
-  s.kernel_ptr = &DAT_1001d2d8[(dither_kernel_id << 6) * 3];
+  s.kernel_ptr = &g_ditherKernelTable[(dither_kernel_id << 6) * 3];
   s.clear_dwords = (uint)((width + 10) * 8) >> 2;
   
   if (dither_kernel_id == 0) {
-    DAT_1001e05c = dither_kernel_id;
+    g_paletteDitherKernelCachedId = dither_kernel_id;
     return 0;
   }
   else if (dither_kernel_id == 1) {
-    DAT_1001e05c = dither_kernel_id;
+    g_paletteDitherKernelCachedId = dither_kernel_id;
     return QuantizeBgr24ToNearestPaletteColorInPlace(bgr24,height,width,row_padding);
   }
 
-  if (DAT_100322d0 == 0) {
+  if (g_paletteClampInit == 0) {
     for (s.x = -0x200; s.x < 0x200; s.x = s.x + 1) {
       if ((0 <= s.x) && (s.x <= 0xff)) {
-        PTR_DAT_1001e058[s.x] = (undefined1)s.x;
+        g_u8ClampTable[s.x] = (undefined1)s.x;
       }
       else {
         if (s.x < 0) {
-          PTR_DAT_1001e058[s.x] = 0;
+          g_u8ClampTable[s.x] = 0;
         }
         else {
-          PTR_DAT_1001e058[s.x] = 0xff;
+          g_u8ClampTable[s.x] = 0xff;
         }
       }
     }
-    DAT_100322d0 = 1;
+    g_paletteClampInit = 1;
   }
 
-  if (DAT_1001e05c != dither_kernel_id) {
+  if (g_paletteDitherKernelCachedId != dither_kernel_id) {
     for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
-      if (DAT_10117100[s.x] != (void *)0x0) {
-        free(DAT_10117100[s.x]);
-        DAT_10117100[s.x] = (void *)0x0;
+      if (g_errorDiffusionDeltaTablePtrs[s.x] != (void *)0x0) {
+        free(g_errorDiffusionDeltaTablePtrs[s.x]);
+        g_errorDiffusionDeltaTablePtrs[s.x] = (void *)0x0;
       }
     }
-    InitErrorDiffusionDeltaTables(dither_kernel_id,DAT_10117100);
-    DAT_1001e05c = dither_kernel_id;
+    InitErrorDiffusionDeltaTables(dither_kernel_id,g_errorDiffusionDeltaTablePtrs);
+    g_paletteDitherKernelCachedId = dither_kernel_id;
   }
 
   for (s.x = 0; (uint)s.x < 5; s.x = s.x + 1) {
-    SetBytes((void *)(DAT_100edb10 + s.x * 0x8060),0,0x8060);
-    s.err_row_ptrs[s.x + 1] = (int)(DAT_100edb10 + s.x * 0x8060) + 0x28;
+    SetBytes((void *)(g_errorDiffusionRowStorage + s.x * 0x8060),0,0x8060);
+    s.err_row_ptrs[s.x + 1] = (int)(g_errorDiffusionRowStorage + s.x * 0x8060) + 0x28;
   }
 
-  s.kernel_count = DAT_1001d260[dither_kernel_id];
+  s.kernel_count = g_ditherKernelTapCounts[dither_kernel_id];
   for (s.y = 0; s.y < height; s.y = s.y + 1, *(int *)&bgr24 += width * 3 + row_padding) {
     if (0 < s.x_step) {
       s.x_start = 0;
@@ -285,15 +285,15 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
 
         s.b_clamped = s.src_rgb & 0xff;
         s.b_clamped += ((int)*s.err_px >> 8);
-        s.b_clamped = (uint)(byte)PTR_DAT_1001e058[s.b_clamped];
+        s.b_clamped = (uint)(byte)g_u8ClampTable[s.b_clamped];
 
         s.g_clamped = ((byte*)&s.src_rgb)[1];
         s.g_clamped += ((int)s.err_px[1] >> 8);
-        s.g_clamped = (uint)(byte)PTR_DAT_1001e058[s.g_clamped];
+        s.g_clamped = (uint)(byte)g_u8ClampTable[s.g_clamped];
 
         s.r_clamped = (s.src_rgb & 0xff0000) >> 16;
         s.r_clamped += ((int)s.err_px[2] >> 8);
-        s.r_clamped = (uint)(byte)PTR_DAT_1001e058[s.r_clamped];
+        s.r_clamped = (uint)(byte)g_u8ClampTable[s.r_clamped];
 
         s.src_rgb = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
  
@@ -319,11 +319,11 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
       }
     }
 
-    RotateDwordsLeft1(s.err_row_ptrs + 1,DAT_1001d288[dither_kernel_id]);
-    memset((void *)(s.err_row_ptrs[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
+    RotateDwordsLeft1(s.err_row_ptrs + 1,g_ditherKernelErrorRowCounts[dither_kernel_id]);
+    memset((void *)(s.err_row_ptrs[g_ditherKernelErrorRowCounts[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
     if (serpentine != 0) {
       s.x_step = -s.x_step;
-      s.kernel_ptr = (undefined *)((int)DAT_1001d2d8 + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
+      s.kernel_ptr = (undefined *)((int)g_ditherKernelTable + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
     }
   }
 }
@@ -350,12 +350,12 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_bas
     int iVar1; // EBP - 4
   } s;
   
-  s.iVar1 = DAT_1001d2b0[dither_kernel_id] >> 1;
-  for (s.local_10 = 0; s.local_10 < DAT_1001d260[dither_kernel_id]; s.local_10 = s.local_10 + 1) {
-    s.iVar2 = *(int*)&DAT_1001d2d8[(s.local_10 << 4) + ((dither_kernel_id << 6) * 3)];
+  s.iVar1 = g_ditherKernelDivisors[dither_kernel_id] >> 1;
+  for (s.local_10 = 0; s.local_10 < g_ditherKernelTapCounts[dither_kernel_id]; s.local_10 = s.local_10 + 1) {
+    s.iVar2 = *(int*)&g_ditherKernelTable[(s.local_10 << 4) + ((dither_kernel_id << 6) * 3)];
 
     if (delta_table_ptrs_base[s.iVar2] != 0) {
-      *(int *)&DAT_1001d2d8[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x400;
+      *(int *)&g_ditherKernelTable[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x400;
       continue;
     }
     
@@ -364,15 +364,15 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_bas
             0x4fd,s_Not_enough_memory_for_delta_arra_1001e090);
     for (s.local_14 = -0x100; s.local_14 < 0x100; s.local_14 = s.local_14 + 1) {
       *(int *)( delta_table_ptrs_base[s.iVar2] + 0x400 + s.local_14 * 4) =
-            ((s.iVar2 * s.local_14 + s.iVar1) * 0x100) / DAT_1001d2b0[dither_kernel_id];
+            ((s.iVar2 * s.local_14 + s.iVar1) * 0x100) / g_ditherKernelDivisors[dither_kernel_id];
     }
-    *(int *)&DAT_1001d2d8[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
+    *(int *)&g_ditherKernelTable[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
   }
   
-  for (s.local_10 = 0; s.local_10 < DAT_1001d260[dither_kernel_id]; s.local_10 = s.local_10 + 1) {
-    s.iVar2 = *(int*)&DAT_1001d2d8[0xc + 0x6b4 + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)];
+  for (s.local_10 = 0; s.local_10 < g_ditherKernelTapCounts[dither_kernel_id]; s.local_10 = s.local_10 + 1) {
+    s.iVar2 = *(int*)&g_ditherKernelTable[0xc + 0x6b4 + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)];
     
-    *(int*)&DAT_1001d2d8[0xc + 0x6b4 + 0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
+    *(int*)&g_ditherKernelTable[0xc + 0x6b4 + 0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
   }
   return 0;
 }
@@ -437,43 +437,43 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
   s.quant_rgb = -1;
   s.x_step = 1;
   s.rgb_clamped = 0;
-  s.kernel_ptr = &DAT_1001d2d8[(dither_kernel_id << 6) * 3];
+  s.kernel_ptr = &g_ditherKernelTable[(dither_kernel_id << 6) * 3];
   s.clear_dwords = (uint)((width + 10) * 8) >> 2;
 
-  if (DAT_100322cc == 0) {
+  if (g_rgbQuantClampInit == 0) {
     for (s.x = -0x200; s.x < 0x200; s.x = s.x + 1) {
       if ((0 <= s.x) && (s.x <= 0xff)) {
-        PTR_DAT_1001e058[s.x] = (undefined1)s.x;
+        g_u8ClampTable[s.x] = (undefined1)s.x;
       }
       else {
         if (s.x < 0) {
-          PTR_DAT_1001e058[s.x] = 0;
+          g_u8ClampTable[s.x] = 0;
         }
         else {
-          PTR_DAT_1001e058[s.x] = 0xff;
+          g_u8ClampTable[s.x] = 0xff;
         }
       }
     }
-    DAT_100322cc = 1;
+    g_rgbQuantClampInit = 1;
   }
 
-  if (DAT_1001e060 != dither_kernel_id) {
+  if (g_rgbQuantKernelCachedId != dither_kernel_id) {
     for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
-      if (DAT_10117100[s.x] != (void *)0x0) {
-        free(DAT_10117100[s.x]);
-        DAT_10117100[s.x] = (void *)0x0;
+      if (g_errorDiffusionDeltaTablePtrs[s.x] != (void *)0x0) {
+        free(g_errorDiffusionDeltaTablePtrs[s.x]);
+        g_errorDiffusionDeltaTablePtrs[s.x] = (void *)0x0;
       }
     }
-    InitErrorDiffusionDeltaTables(dither_kernel_id,DAT_10117100);
-    DAT_1001e060 = dither_kernel_id;
+    InitErrorDiffusionDeltaTables(dither_kernel_id,g_errorDiffusionDeltaTablePtrs);
+    g_rgbQuantKernelCachedId = dither_kernel_id;
   }
 
   for (s.x = 0; (uint)s.x < 5; s.x = s.x + 1) {
-    memset((void *)(DAT_100edb10 + s.x * 0x8060),0,0x8060);
-    s.err_row_ptrs[s.x + 1] = (int)(DAT_100edb10 + s.x * 0x8060) + 0x28;
+    memset((void *)(g_errorDiffusionRowStorage + s.x * 0x8060),0,0x8060);
+    s.err_row_ptrs[s.x + 1] = (int)(g_errorDiffusionRowStorage + s.x * 0x8060) + 0x28;
   }
 
-  s.kernel_count = DAT_1001d260[dither_kernel_id];
+  s.kernel_count = g_ditherKernelTapCounts[dither_kernel_id];
   for (s.y = 0; s.y < height; s.y = s.y + 1, *(int *)&bgr24 += width * 3 + row_padding) {
     if (0 < s.x_step) {
       s.x_start = 0;
@@ -496,15 +496,15 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
 
       s.b_clamped = s.src_rgb & 0xff;
       s.b_clamped += ((int)*s.err_px >> 8);
-      s.b_clamped = (uint)(byte)PTR_DAT_1001e058[s.b_clamped];
+      s.b_clamped = (uint)(byte)g_u8ClampTable[s.b_clamped];
 
       s.g_clamped = ((byte*)&s.src_rgb)[1];
       s.g_clamped += ((int)s.err_px[1] >> 8);
-      s.g_clamped = (uint)(byte)PTR_DAT_1001e058[s.g_clamped];
+      s.g_clamped = (uint)(byte)g_u8ClampTable[s.g_clamped];
 
       s.r_clamped = (s.src_rgb & 0xff0000) >> 16;
       s.r_clamped += ((int)s.err_px[2] >> 8);
-      s.r_clamped = (uint)(byte)PTR_DAT_1001e058[s.r_clamped];
+      s.r_clamped = (uint)(byte)g_u8ClampTable[s.r_clamped];
 
       s.src_rgb = s.g_clamped << 8 | s.r_clamped << 0x10 | s.b_clamped;
       if (s.src_rgb == 0) {
@@ -536,11 +536,11 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
       }
     }
 
-    RotateDwordsLeft1(s.err_row_ptrs + 1,DAT_1001d288[dither_kernel_id]);
-    memset((void *)(s.err_row_ptrs[DAT_1001d288[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
+    RotateDwordsLeft1(s.err_row_ptrs + 1,g_ditherKernelErrorRowCounts[dither_kernel_id]);
+    memset((void *)(s.err_row_ptrs[g_ditherKernelErrorRowCounts[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
     if (serpentine != 0) {
       s.x_step = -s.x_step;
-      s.kernel_ptr = &DAT_1001d2d8[(uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0];
+      s.kernel_ptr = &g_ditherKernelTable[(uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0];
     }
   }
   return 1;
@@ -605,7 +605,7 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
     s.have_dst = 1;
   }
 
-  _DAT_100ecb04 = Wvl_UnpackPieces((int)param_2,param_1);
+  g_unpackResultUnused = Wvl_UnpackPieces((int)param_2,param_1);
 
   if (param_1[10] == 1) {
     s.pieces_per_row = 1;
@@ -654,15 +654,15 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
     Haar2D_ReconstructInPlace(s.dword_count,s.chroma_w,s.alloc_bytes);
 
     if (s.piece_idx < param_1[10] / 2) {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,s.y_plane,
+      s.bgr_tmp = (int)YuvPlanesToBgr24(g_haarDecodeScratch,s.local_40,s.y_plane,s.y_plane,
                                         s.block_height,s.dword_count,s.chroma_w,s.chroma_w,*param_1);
     }
     else if (param_1[10] > 1) {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,param_1[8] - s.block_width,
+      s.bgr_tmp = (int)YuvPlanesToBgr24(g_haarDecodeScratch,s.local_40,s.y_plane,param_1[8] - s.block_width,
                                         s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
     }
     else {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(DAT_10032c98,s.local_40,s.y_plane,s.base_size,
+      s.bgr_tmp = (int)YuvPlanesToBgr24(g_haarDecodeScratch,s.local_40,s.y_plane,s.base_size,
                                         s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
     }
 
@@ -949,7 +949,7 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
 
 // FUNCTION: CARDARTLIB 0x100078b8
 // FUNCTION: DRAWCARDLIB 0x10009338
-undefined4 Wvl_UnpackPieces(int param_1,int *param_2)
+BOOL Wvl_UnpackPieces(int param_1,int *param_2)
 {
   struct {
     byte *dst_y;        /* ebp - 0x3c */
@@ -1095,16 +1095,16 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   if (wvl_entry[0x6a] != 0) {
     s.decoded = (byte *)wvl_entry[0x6b];
   } else {
-    s.decoded = (byte *)Wvl_DecodeHaar(wvl_entry,(undefined8 *)&DAT_10032c98);
+    s.decoded = (byte *)Wvl_DecodeHaar(wvl_entry,(undefined8 *)&g_haarDecodeScratch);
   }
 
   s.src_width = wvl_entry[7];
   s.tmp_8 = 3;
   s.zero_1010 = 0;
-  s.row_pad = (DAT_1001e0e0 - (width * 3) % DAT_1001e0e0) % DAT_1001e0e0;
+  s.row_pad = (g_rowAlignBytes - (width * 3) % g_rowAlignBytes) % g_rowAlignBytes;
 
   if (param_1 == (uint *)0) {
-    param_1 = (uint *)&DAT_100ad498;
+    param_1 = (uint *)&g_defaultPalette256;
     s.out_base = param_1;
   } else {
     s.out_base = param_1;

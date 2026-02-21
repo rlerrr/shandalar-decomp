@@ -31,7 +31,7 @@ CRITICAL_SECTION global_critical_section_for_catalog;
 // GLOBAL: CARDARTLIB 0x10032ae8
 int DAT_10032ae8[0x80];
 
-extern undefined1 DAT_100ad498[0x200];
+extern unsigned char g_defaultPalette256[0x200];
 
 // GLOBAL: CARDARTLIB 0x1001d12c
 char s_D__Newmagic_sources_NedCard_Cata_1001d12c[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
@@ -298,7 +298,7 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
   if (s.entry != (int *)0x0) {
     memset(s.entry, 0, 0x1b0);
     strcpy((char *)(s.entry + 0x27), wvl_path);
-    s.entry[0x68] = (int)&DAT_100ad498;
+    s.entry[0x68] = (int)&g_defaultPalette256;
     s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)(s.entry + 0x68));
     if (s.entry_size == (size_t)-1) {
       strcat(wvl_path, s__lf_1001e148);
