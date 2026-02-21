@@ -38,59 +38,82 @@ STATIC_ASSERT(sizeof(PcxHeader_t) == 0x80, PCXHEADER_wrong_size);
 
 /* Placeholder globals for missing decompiler labels (PCXW-only). */
 // GLOBAL: DRAWCARDLIB 0x10021f18
+// GLOBAL: DECKDLL 0x1003395c
 char s_rb_10021f18[] = "rb";
 // GLOBAL: DRAWCARDLIB 0x10021f60
+// GLOBAL: DECKDLL 0x100339a4
 char s_rb_10021f60[] = "rb";
 // GLOBAL: DRAWCARDLIB 0x10021fd8
+// GLOBAL: DECKDLL 0x10033a1c
 char s_w_b_10021fd8[] = "w+b";
 
 /* PCXW globals */
 // GLOBAL: DRAWCARDLIB 0x10021ed0
+// GLOBAL: DECKDLL 0x10033914
 pointer PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = (pointer)0x10021EDC;
 // GLOBAL: DRAWCARDLIB 0x10021ed4
+// GLOBAL: DECKDLL 0x10033918
 undefined4 gPcxBufferWidth = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10021ed8
+// GLOBAL: DECKDLL 0x1003391c
 undefined4 gPcxBufferHeight = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10021edc
+// GLOBAL: DECKDLL 0x10033920
 char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
 // GLOBAL: DRAWCARDLIB 0x10021f00
+// GLOBAL: DECKDLL 0x10033944
 char s_Error_Opening_File__s_10021f00[] = "Error Opening File %s\r\n";
 // GLOBAL: DRAWCARDLIB 0x10021f1c
+// GLOBAL: DECKDLL 0x10033960
 char s__s_Not_a_256_color_palettized_pc_10021f1c[] = "%s Not a 256 color palettized pcx file\r\n";
 // GLOBAL: DRAWCARDLIB 0x10021f48
+// GLOBAL: DECKDLL 0x1003398c
 char s_Error_Opening_File__s_10021f48[] = "Error Opening File %s\r\n";
 // GLOBAL: DRAWCARDLIB 0x10021f64
+// GLOBAL: DECKDLL 0x100339a8
 char s__s_Not_a_pcx_file_10021f64[] = "%s Not a pcx file\r\n";
 // GLOBAL: DRAWCARDLIB 0x10021f78
+// GLOBAL: DECKDLL 0x100339bc
 char s__s_Not_a_version_5_pcx_file_10021f78[] = "%s Not a version 5 pcx file\r\n";
 // GLOBAL: DRAWCARDLIB 0x10021f98
+// GLOBAL: DECKDLL 0x100339dc
 char s__s_is_not_in_a_recognizable_form_10021f98[] = "%s is not in a recognizable format\r\n";
 // GLOBAL: DRAWCARDLIB 0x10021fc0
+// GLOBAL: DECKDLL 0x10033a04
 char s_Error_Opening_File__s_10021fc0[] = "Error Opening File %s\r\n";
 
 // GLOBAL: DRAWCARDLIB 0x10026548
+// GLOBAL: DECKDLL 0x1003a344
 int global_pcxw_image_width = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x1002654c
+// GLOBAL: DECKDLL 0x1003a348
 int global_pcxw_image_height = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10127d30
+// GLOBAL: DECKDLL 0x10113960
 FILE *gPcxInFile = (FILE *)0x0;
 // GLOBAL: DRAWCARDLIB 0x10127d34
+// GLOBAL: DECKDLL 0x10113964
 FILE *gPcxOutFile = (FILE *)0x0;
 // GLOBAL: DRAWCARDLIB 0x10127d38
+// GLOBAL: DECKDLL 0x10113968
 char *gPcxPath = (char *)0x0;
 
 // GLOBAL: DRAWCARDLIB 0x10126d30
+// GLOBAL: DECKDLL 0x10112960
 undefined4 DAT_10126d30 = 0;
 // GLOBAL: DRAWCARDLIB 0x10127d40
+// GLOBAL: DECKDLL 0x10113970
 PcxHeader_t gPcxHeader;
 
 // FUNCTION: DRAWCARDLIB 0x1000b80f
+// FUNCTION: DECKDLL 0x1002d2b3
 void FUN_1000b80f(byte *dstScanline,undefined *srcPixels,undefined4 arg3,undefined4 arg4,int width)
 {
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004050
+// FUNCTION: DECKDLL 0x10016280
 undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOut)
 {
   struct {
@@ -144,6 +167,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004267
+// FUNCTION: DECKDLL 0x1001649a
 bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 {
   gPcxInFile = fopen(path,&s_rb_10021f60);
@@ -159,6 +183,7 @@ bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100042ea
+// FUNCTION: DECKDLL 0x1001651f
 undefined4 PcxReadHeaderAndPalette(void *paletteOut)
 {
   int local_8;
@@ -193,6 +218,7 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100044d0
+// FUNCTION: DECKDLL 0x10016708
 undefined4 PcxReadScanlineRle(char *dstScanline)
 {
   struct {
@@ -235,6 +261,7 @@ undefined4 PcxReadScanlineRle(char *dstScanline)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100045ac
+// FUNCTION: DECKDLL 0x100167e6
 undefined4
 PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused_param_4,
             undefined4 unused_param_5,int width,int height)
@@ -263,6 +290,7 @@ PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000469c
+// FUNCTION: DECKDLL 0x100168d8
 undefined4 PcxWriteHeader(int width,int height)
 {
   gPcxHeader.manufacturer = 0x0a;
@@ -287,6 +315,7 @@ undefined4 PcxWriteHeader(int width,int height)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004760
+// FUNCTION: DECKDLL 0x1001699d
 undefined4 PcxWriteScanlineRle(char *srcScanline,int widthBytes)
 {
   struct {
@@ -324,6 +353,7 @@ undefined4 PcxWriteScanlineRle(char *srcScanline,int widthBytes)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004873
+// FUNCTION: DECKDLL 0x10016ab3
 void PcxWriteRleByte(byte value)
 {
   byte buff [4];
@@ -336,6 +366,7 @@ void PcxWriteRleByte(byte value)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100048c0
+// FUNCTION: DECKDLL 0x10016b02
 int CountRepeats(unsigned char value,unsigned char *buffer,int maxCount)
 {
   struct {
@@ -359,6 +390,7 @@ int CountRepeats(unsigned char value,unsigned char *buffer,int maxCount)
 
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000491f
+// FUNCTION: DECKDLL 0x10016b61
 undefined4 PcxWritePalette256(void *palette)
 {
   undefined1 local_8 [4];

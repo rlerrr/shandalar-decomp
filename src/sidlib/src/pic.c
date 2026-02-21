@@ -18,6 +18,7 @@ void RpBits_Setup(undefined4 param_1);
 int RpBitsRefill(void);
 
 // FUNCTION: DRAWCARDLIB 0x1000965b
+// FUNCTION: DECKDLL 0x100010a0
 BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
 {
   short *color;
@@ -60,6 +61,7 @@ BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000977f
+// FUNCTION: DECKDLL 0x10001120
 BOOL FreeBitmapInfo(void* param_1)
 {
   free(param_1);
@@ -82,6 +84,7 @@ typedef struct DIBSurface {
 } DIBSurface;
 
 // GLOBAL: DRAWCARDLIB 0x100f23b0
+// GLOBAL: DECKDLL 0x10105338
 DIBSurface DAT_100f23b0;
 
 // GLOBAL: DRAWCARDLIB 0x10022528
@@ -89,39 +92,51 @@ DIBSurface DAT_100f23b0;
 DIBSurface *global_dibSurface = &DAT_100f23b0;
 
 // GLOBAL: DRAWCARDLIB 0x100f35a0
+// GLOBAL: DECKDLL 0x10105730
 void (__cdecl *rpbits_stream_refill)() = (void (__cdecl *)())0x0;
 
 // GLOBAL: DRAWCARDLIB 0x1002252c
+// GLOBAL: DECKDLL 0x1003a844
 ushort *rpbits_stream_end = &rpbits_stream_refill;
 
 // GLOBAL: DRAWCARDLIB 0x10022530
+// GLOBAL: DECKDLL 0x1003a848
 undefined4 DAT_10022530 = 0xFFFFFFFF;
 
 // GLOBAL: DRAWCARDLIB 0x1002253c
+// GLOBAL: DECKDLL 0x1003a854
 char s_pcx_1002253c[] = ".pcx";
 
 // GLOBAL: DRAWCARDLIB 0x10022544
+// GLOBAL: DECKDLL 0x1003a85c
 char s_rb_10022544[] = "rb";
 
 // GLOBAL: DRAWCARDLIB 0x100f2394
+// GLOBAL: DECKDLL 0x1010531c
 int DAT_100f2394 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x100f239c
+// GLOBAL: DECKDLL 0x10105324
 undefined4 global_pcx_lineNum = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a0
+// GLOBAL: DECKDLL 0x10105328
 int global_pcxFileDescriptor = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a4
+// GLOBAL: DECKDLL 0x1010532c
 undefined4 rpbits_file_descriptor = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a8
+// GLOBAL: DECKDLL 0x10105330
 undefined4 _DAT_100f23a8 = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x100f33a0
+// GLOBAL: DECKDLL 0x10105530
 undefined1 rpbits_buffer[0x200];
 
 // GLOBAL: DRAWCARDLIB 0x100f3394
+// GLOBAL: DECKDLL 0x1010552c
 byte *rpbits_stream_ptr;
 
 // LIBRARY: DRAWCARDLIB 0x10155000 SYMBOL
@@ -151,6 +166,7 @@ void RpBits_DecodeImage(void *dst, int count);
 // _RpBits_DecodeRun
 
 // FUNCTION: DRAWCARDLIB 0x1000b1e0
+// FUNCTION: DECKDLL 0x1002cc80
 DIBSurface * CreateDIBSurface(int width,int height,int bitsPerPixel)
 {
   // Gotta be leftover debugging or something
@@ -326,6 +342,7 @@ HBITMAP load_pic(char *filename)
 
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000b745
+// FUNCTION: DECKDLL 0x1002d1e6
 int OpenPcxFile(char *param_1,int param_2)
 {
   int iVar1;
@@ -336,6 +353,7 @@ int OpenPcxFile(char *param_1,int param_2)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b778
+// FUNCTION: DECKDLL 0x1002d21a
 void ClosePcxFile(int param_1)
 {
   if (param_1 == DAT_10022530) 
@@ -344,6 +362,7 @@ void ClosePcxFile(int param_1)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b7a2
+// FUNCTION: DECKDLL 0x1002d245
 void RpBits_Setup(int fileDescriptor)
 {
   rpbits_file_descriptor = fileDescriptor;
@@ -353,6 +372,7 @@ void RpBits_Setup(int fileDescriptor)
 
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000b7c9
+// FUNCTION: DECKDLL 0x1002d26c
 int RpBitsRefill(void)
 {
   int iVar1;
@@ -363,6 +383,7 @@ int RpBitsRefill(void)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b804
+// FUNCTION: DECKDLL 0x1002d2a8
 void RpBits_DebugHook(void)
 {
 }
