@@ -30,4 +30,4 @@ if (MSVC_FOR_DECOMP)
   set_property(TARGET manalinkinterface PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
 
-reccmp_add_target(manalinkinterface ID manalinkinterface)
+reccmp_add_target(manalinkinterface ID MANALINKINTERFACE)

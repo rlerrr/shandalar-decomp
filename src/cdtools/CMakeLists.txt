@@ -32,4 +32,4 @@ if (MSVC_FOR_DECOMP)
   set_property(TARGET cdtools PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
 endif()
 
-reccmp_add_target(cdtools ID cdtools)
+reccmp_add_target(cdtools ID CDTOOLS)
