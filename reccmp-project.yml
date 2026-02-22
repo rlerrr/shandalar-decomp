@@ -37,3 +37,8 @@ targets:
     source-root: src/manalinkinterface
     hash:
       sha256: ce1ef29feb4dcae75eba964b8aca0e233aae1ab89ffec569345cc98c18002d09
+  MAGSND:
+    filename: MAGSND.DLL
+    source-root: src/magsnd
+    hash:
+      sha256: 213b7dc2e1d0eed131d38485cba8004c1d7760f8ff0a94486b86bba5f3aeba9e

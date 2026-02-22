@@ -1,0 +1,31 @@
+LIBRARY "magsnd.dll" BASE=0x10000000
+
+EXPORTS
+InitSnd @1
+ReleaseSnd @2
+LoadSnd @3
+UnloadSnd @4
+UnloadAllSnds @5
+PlaySnd @6
+PlaySndFile @7
+StopSnd @8
+StopAllSnds @9
+PlayMidiFile @10
+SetPitch @11
+GetPitch @12
+SetVol @13
+GetVol @14
+SetPan @15
+GetPan @16
+UpdateSnd @17
+SetSndMarker @18
+PlaySndMarker @19
+GetSndTime @20
+ResetSnd @21
+GetSndState @22
+GetAVISndBuff @23
+ReleaseAVISndBuff @24
+GetSndHWND @25
+IsSndLoaded @26
+GetLRUSnd @27
+

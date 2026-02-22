@@ -43,3 +43,7 @@ endif()
 if (SHANDALAR_BUILD_MANALINKINTERFACE)
   add_subdirectory(manalinkinterface)
 endif()
+
+if (SHANDALAR_BUILD_MAGSND)
+  add_subdirectory(magsnd)
+endif()

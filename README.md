@@ -14,8 +14,8 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * facemaker.exe : 
 * gcconn.dll (debug, C++) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
 * magic.exe : The duel UI
-* magsnd.dll (release C++) : Small dll that presumably plays sound
-* magvid.dll (release C++) : Presumably plays video
+* magsnd.dll (release C++) ![matching](https://img.shields.io/badge/matching-19.67%25-red) : Small dll that presumably plays sound
+* magvid.dll (release C++) : Presumably plays video.  Only referenced by statwin.
 * manalink.exe : Multiplayer.  Has a ton of debug logging with function/filenames embedded.  Called `FamiliarWS` internally?
 * manalinkinterface.dll (static release /Od) ![matching](https://img.shields.io/badge/matching-100.00%25-green) : Small dll with several exports, used by magic.exe not manalink.exe
 * shandalar.exe : The overworld and adventure UI

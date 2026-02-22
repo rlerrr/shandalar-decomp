@@ -918,6 +918,7 @@ int Octree_FlattenLeafValues(int *param_1,int *param_2)
   return result;
 }
 
+// This maybe shouldn't be in palette, it's not in DECKDLL
 // FUNCTION: CARDARTLIB 0x10005591
 // FUNCTION: DRAWCARDLIB 0x10001b41
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int width,int row_padding)
@@ -943,6 +944,7 @@ undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int 
   return 0;
 }
 
+// This maybe shouldn't be in palette, it's not in DECKDLL
 // FUNCTION: CARDARTLIB 0x10005629
 // FUNCTION: DRAWCARDLIB 0x10001bd9
 undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width,int row_padding)

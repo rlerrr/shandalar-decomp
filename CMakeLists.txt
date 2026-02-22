@@ -15,6 +15,7 @@ option(SHANDALAR_BUILD_DRAWCARDLIB "Build Drawcardlib.dll" ON)
 option(SHANDALAR_BUILD_DECKDLL "Build DeckDll.dll" ON)
 option(SHANDALAR_BUILD_DECK "Build Deck.exe" ON)
 option(SHANDALAR_BUILD_MANALINKINTERFACE "Build manalinkinterface.dll" ON)
+option(SHANDALAR_BUILD_MAGSND "Build magsnd.dll" ON)
 
 math(EXPR bits "8 * ${CMAKE_SIZEOF_VOID_P}")
 message(STATUS "Building ${bits}-bit shandalar")
