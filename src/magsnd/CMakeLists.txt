@@ -11,6 +11,7 @@ target_include_directories(magsnd PRIVATE
 target_link_libraries(magsnd PRIVATE dsound winmm user32 vfw32)
 
 if (MSVC)
+  target_compile_options(magsnd PRIVATE /Od /Zi)
   set_property(TARGET magsnd PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/magsnd.def\"")
   set_property(TARGET magsnd APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/magsnd.def")
   target_link_options(magsnd PRIVATE /BASE:0x10000000)
