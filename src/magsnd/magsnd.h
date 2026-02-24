@@ -38,7 +38,7 @@ int __cdecl PlaySndMarker(int num, uint marker);
 undefined4 __cdecl GetSndTime(int num, uint *out_time);
 undefined4 __cdecl ResetSnd(void);
 undefined4 __cdecl GetSndState(int num, undefined4 *out_state);
-undefined4 __cdecl GetAVISndBuff(int param_1, uint param_2);
+void * __cdecl GetAVISndBuff(int param_1, uint param_2);
 undefined4 __cdecl ReleaseAVISndBuff(int param_1);
 undefined4 __cdecl GetSndHWND(void);
 undefined4 __cdecl IsSndLoaded(int num, undefined4 *out_loaded);

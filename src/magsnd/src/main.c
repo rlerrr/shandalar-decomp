@@ -13,6 +13,77 @@ typedef int (__stdcall code)();
 
 HRESULT WINAPI DirectSoundCreate(const GUID *lpGuid, void **ppDS, void *pUnkOuter);
 
+/*
+ * Internal structures inferred from magsnd.dll usage.
+ *
+ * Notes:
+ * - `SndInstance` objects are allocated as 0x204 bytes (see FUN_10005480).
+ * - Many fields are still unknown; only offsets observed in code are named.
+ * - Keep MSVC 4.20/C89 compatibility; avoid relying on `sizeof(SndInstance)` for layout.
+ */
+
+#pragma pack(push, 1)
+typedef struct SndWaveFormatTagChannels {
+  unsigned short wFormatTag;     /* +0x00 */
+  unsigned short nChannels;      /* +0x02 */
+  uint nSamplesPerSec;   /* +0x04 */
+  uint nAvgBytesPerSec;  /* +0x08 */
+  unsigned short nBlockAlign;    /* +0x0c */
+  unsigned short wBitsPerSample; /* +0x0e */
+  unsigned short cbSize;         /* +0x10 */
+} SndWaveFormat;
+#pragma pack(pop)
+
+typedef struct SndDsBufferDesc {
+  uint dwSize;        /* +0x00 */
+  uint dwFlags;       /* +0x04 */
+  uint dwBufferBytes; /* +0x08 */
+  uint dwReserved;    /* +0x0c */
+  void *lpwfxFormat;  /* +0x10 */
+} SndDsBufferDesc;
+
+typedef struct SndInstance SndInstance;
+struct SndInstance {
+  void *streamOrMmio;      /* 0x000: PAVISTREAM for AVI path, otherwise used as opaque */
+  uint flags;              /* 0x004 */
+  uint flags2;             /* 0x008 */
+  uint lruCounter;         /* 0x00c */
+  int slotIndex;           /* 0x010 */
+  int loadId;              /* 0x014 */
+  int activeMarkerIndex;   /* 0x018 */
+  byte pad_01c[0x30 - 0x1c];
+  uint markerCount;        /* 0x030 */
+  void *markers[0x11];     /* 0x034 */
+  SndWaveFormat waveFmt;   /* 0x078 (18 bytes) */
+  unsigned short pad_08a;  /* 0x08a */
+  int blockBytes;          /* 0x08c */
+  int blockScale;          /* 0x090 */
+  int blockCount;          /* 0x094 */
+  byte pad_098[0xa4 - 0x98];
+  void *dsLockedPtr;       /* 0x0a4: pointer from IDirectSoundBuffer::Lock */
+  SndDsBufferDesc dsDesc;  /* 0x0a8 (DSBUFFERDESC, size 0x14) */
+  void *dsBuffer;          /* 0x0bc: LPDIRECTSOUNDBUFFER */
+  byte pad_0c0[0x180 - 0xc0];
+  MMIOINFO mmioInfo;       /* 0x180 */
+  HMMIO hMmio;             /* 0x1c8 */
+  int dataBytes;           /* 0x1cc */
+  uint writeCursorBytes;   /* 0x1d0 */
+  uint readCursorBytes;    /* 0x1d4 */
+  uint ringCursorBytes;    /* 0x1d8 */
+  uint timeBytes;          /* 0x1dc */
+  int mmioBaseOffset;      /* 0x1e0 */
+  byte pad_1e4[0x1f8 - 0x1e4];
+  SndInstance *prevActive; /* 0x1f8 */
+  SndInstance *nextActive; /* 0x200 */
+};
+
+extern byte g_sndSlots;
+
+static SndInstance **SndSlotPtr(int idx)
+{
+  return (SndInstance **)((byte *)&g_sndSlots + idx * 4);
+}
+
 undefined4 __cdecl InitSnd(int param_1, undefined4 param_2, byte param_3);
 void __cdecl ReleaseSnd(void);
 undefined4 __cdecl GetSndHWND(void);
@@ -36,7 +107,7 @@ int __cdecl PlaySndMarker(int param_1, uint param_2);
 undefined4 __cdecl GetSndTime(int param_1, uint *param_2);
 undefined4 __cdecl ResetSnd(void);
 undefined4 __cdecl GetSndState(int param_1, undefined4 *param_2);
-undefined4 __cdecl GetAVISndBuff(int param_1, uint param_2);
+void * __cdecl GetAVISndBuff(int param_1, uint param_2);
 undefined4 __cdecl ReleaseAVISndBuff(int param_1);
 undefined4 __cdecl IsSndLoaded(int param_1, undefined4 *param_2);
 undefined4 __cdecl GetLRUSnd(int *param_1, int param_2, int param_3);
@@ -50,13 +121,14 @@ undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
 void __cdecl FUN_1000448d(void);
 void CALLBACK FUN_100043e9(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
 void __cdecl FUN_10004986(undefined4 *param_1);
-undefined4 __cdecl LoadFromFile(char *filename, int *outSnd);
-undefined4 __cdecl LoadWaveMmio(LPSTR filename, int *outSnd, undefined4 scratch);
+undefined4 __cdecl LoadFromFile(char *filename, SndInstance **outSnd);
+undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4 scratch);
 undefined4 __cdecl FUN_10004e4c(undefined4 *param_1, int param_2);
-undefined4 __cdecl PrimeAviAudio(undefined4 *snd, undefined4 unused);
-undefined4 __cdecl LoadAviAudioStream(void *stream, int *outSnd, undefined4 scratch);
-void __cdecl FUN_10005770(undefined4 *param_1, undefined4 param_2);
-void * __cdecl FUN_10005480(int *param_1, undefined4 param_2, undefined4 *param_3, undefined4 param_4);
+undefined4 __cdecl PrimeAviAudio(SndInstance *sndObj, undefined4 unused);
+undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefined4 scratch);
+void __cdecl FUN_10005770(SndInstance *sndObj, undefined4 param_2);
+SndInstance * __cdecl FUN_10005480(int *param_1, undefined4 param_2, undefined4 *param_3, undefined4 param_4);
+undefined4 __cdecl FUN_10005562(SndInstance *param_1);
 void * __cdecl operator_new(unsigned int size);
 void __cdecl operator_delete(void *p);
 
@@ -268,21 +340,21 @@ int __cdecl LoadSnd(LPSTR param_1,int param_2,Sound *param_3)
   }
   if ((param_3 != (Sound *)0) && ((*(uint *)((char *)param_3 + 0x1c) >> 2 & 1) != 0)) {
     if ((*(uint *)((char *)param_3 + 0x1c) >> 4 & 1) == 0) {
-      s.local_4 = LoadWaveMmio(param_1,(int *)(&g_sndSlots + param_2 * 4),0);
+      s.local_4 = LoadWaveMmio(param_1,SndSlotPtr(param_2),0);
       if (s.local_4 != 0) {
         *(undefined4 *)(&g_sndSlots + param_2 * 4) = 0;
         return s.local_4;
       }
-      FUN_10004e4c(*(undefined4 **)(&g_sndSlots + param_2 * 4),0);
+      FUN_10004e4c((undefined4 *)*SndSlotPtr(param_2),0);
     }
     else {
-      s.local_4 = LoadAviAudioStream((void *)param_1,(int *)(&g_sndSlots + param_2 * 4),0);
+      s.local_4 = LoadAviAudioStream((void *)param_1,SndSlotPtr(param_2),0);
       if (s.local_4 != 0) {
         *(undefined4 *)(&g_sndSlots + param_2 * 4) = 0;
         return s.local_4;
       }
       if ((*(uint *)((char *)param_3 + 0x1c) >> 5 & 1) == 0) {
-        PrimeAviAudio(*(undefined4 **)(&g_sndSlots + param_2 * 4),0);
+        PrimeAviAudio(*SndSlotPtr(param_2),0);
         *(uint *)(*(int *)(&g_sndSlots + param_2 * 4) + 8) =
              *(uint *)(*(int *)(&g_sndSlots + param_2 * 4) + 8) & 0xffffffbf;
       }
@@ -299,7 +371,7 @@ int __cdecl LoadSnd(LPSTR param_1,int param_2,Sound *param_3)
          *(uint *)(*(int *)(&g_sndSlots + param_2 * 4) + 8) | 2;
   }
   else {
-    s.local_4 = LoadFromFile(param_1,(int *)(&g_sndSlots + param_2 * 4));
+    s.local_4 = LoadFromFile(param_1,SndSlotPtr(param_2));
     if (s.local_4 != 0) {
       *(undefined4 *)(&g_sndSlots + param_2 * 4) = 0;
       return s.local_4;
@@ -345,7 +417,7 @@ undefined4 __cdecl UnloadSnd(int param_1)
           }
         }
       }
-      FUN_10005562(*(void **)(&g_sndSlots + param_1 * 4));
+      FUN_10005562(*SndSlotPtr(param_1));
       *(undefined4 *)(&g_sndSlots + param_1 * 4) = 0;
       LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
       uVar1 = 0;
@@ -519,7 +591,7 @@ int __cdecl PlaySndFile(LPSTR param_1,int param_2,Sound *param_3)
     LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
     return 2;
   }
-  s.local_c = LoadWaveMmio(param_1,(int *)(&g_sndSlots + param_2 * 4),s.local_8);
+  s.local_c = LoadWaveMmio(param_1,SndSlotPtr(param_2),s.local_8);
   if (s.local_c != 0) {
     LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
     return s.local_c;
@@ -585,7 +657,7 @@ int __cdecl PlaySndFile(LPSTR param_1,int param_2,Sound *param_3)
   (**(code **)(**(int **)(*(int *)(&g_sndSlots + param_2 * 4) + 0xbc) + 0x40))
             (*(undefined4 *)(*(int *)(&g_sndSlots + param_2 * 4) + 0xbc),s.local_14);
   *(int *)(*(int *)(&g_sndSlots + param_2 * 4) + 0x1e8) = s.local_14;
-  FUN_10004e4c(*(undefined4 **)(&g_sndSlots + param_2 * 4),0);
+  FUN_10004e4c((undefined4 *)*SndSlotPtr(param_2),0);
   (**(code **)(**(int **)(*(int *)(&g_sndSlots + param_2 * 4) + 0xbc) + 0x30))
             (*(undefined4 *)(*(int *)(&g_sndSlots + param_2 * 4) + 0xbc),0,0,1);
   (**(code **)(**(int **)(*(int *)(&g_sndSlots + param_2 * 4) + 0xbc) + 0x10))
@@ -607,7 +679,7 @@ int __cdecl FUN_10001e52(undefined4 *param_1,int param_2)
   
   iVar1 = param_1[0xd];
   piVar2 = param_1 + param_2 + 0xd;
-  iVar3 = LoadWaveMmio((LPSTR)*param_1,piVar2,0x10);
+  iVar3 = LoadWaveMmio((LPSTR)*param_1,(SndInstance **)piVar2,0x10);
   if ((iVar3 == 0) &&
      (iVar3 = FUN_10004e4c((undefined4 *)*piVar2,*(int *)(iVar1 + (param_2 * 3 + -3) * 8 + 0x14)),
      iVar3 == 0)) {
@@ -1325,10 +1397,11 @@ undefined4 __cdecl GetLRUSnd(int *param_1,int param_2,int param_3)
 }
 
 // FUNCTION: MAGSND 0x100033A2
-undefined4 __cdecl GetAVISndBuff(int param_1,uint param_2)
+void * __cdecl GetAVISndBuff(int param_1,uint param_2)
 
 {
-  undefined4 local_28;
+  SndInstance *sndObj;
+  void *local_28;
   int local_24;
   undefined4 local_20;
   uint local_1c;
@@ -1352,6 +1425,7 @@ undefined4 __cdecl GetAVISndBuff(int param_1,uint param_2)
       local_28 = 0;
     }
     else if ((*(uint *)(local_24 + 4) >> 7 & 1) == 0) {
+      sndObj = (SndInstance *)local_24;
       local_1c = param_2 % *(uint *)(local_24 + 0x94);
       local_8 = *(int *)(local_24 + 0x8c) * local_1c;
       local_18 = (**(code **)(**(int **)(local_24 + 0xbc) + 0x2c))
@@ -1360,7 +1434,7 @@ undefined4 __cdecl GetAVISndBuff(int param_1,uint param_2)
                             0);
       if (local_18 == 0) {
         if (local_14 == 0) {
-          *(undefined4 *)(local_24 + 0xa4) = local_28;
+          sndObj->dsLockedPtr = (void *)local_28;
           *(uint *)(local_24 + 4) = *(uint *)(local_24 + 4) | 0x80;
           LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
         }
@@ -1390,6 +1464,7 @@ undefined4 __cdecl GetAVISndBuff(int param_1,uint param_2)
 undefined4 __cdecl ReleaseAVISndBuff(int param_1)
 
 {
+  SndInstance *sndObj;
   int iVar1;
   undefined4 uVar2;
   
@@ -1405,18 +1480,21 @@ undefined4 __cdecl ReleaseAVISndBuff(int param_1)
       LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
       uVar2 = 0xe;
     }
-    else if (*(int *)(iVar1 + 0xa4) == 0) {
+    else {
+      sndObj = (SndInstance *)iVar1;
+      if (sndObj->dsLockedPtr == (void *)0x0) {
       LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
       uVar2 = 0xf;
     }
     else {
       (**(code **)(**(int **)(iVar1 + 0xbc) + 0x4c))
-                (*(undefined4 *)(iVar1 + 0xbc),*(undefined4 *)(iVar1 + 0xa4),
+                (*(undefined4 *)(iVar1 + 0xbc),sndObj->dsLockedPtr,
                  *(undefined4 *)(iVar1 + 0x8c),0,0);
       *(uint *)(iVar1 + 4) = *(uint *)(iVar1 + 4) & 0xffffff7f;
-      *(undefined4 *)(iVar1 + 0xa4) = 0;
+      sndObj->dsLockedPtr = (void *)0x0;
       LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
       uVar2 = 0;
+    }
     }
   }
   else {
@@ -1900,7 +1978,7 @@ void FUN_1000448d(void)
 }
 
 // FUNCTION: MAGSND 0x100044F0
-undefined4 __cdecl LoadFromFile(char *filename,int *outSnd)
+undefined4 __cdecl LoadFromFile(char *filename,SndInstance **outSnd)
 
 {
   FILE *_File;
@@ -1911,14 +1989,14 @@ undefined4 __cdecl LoadFromFile(char *filename,int *outSnd)
     uVar1 = 7;
   }
   else {
-    uVar1 = FUN_100049fe(_File,outSnd);
+    uVar1 = FUN_100049fe(_File,(int *)outSnd);
     fclose(_File);
   }
   return uVar1;
 }
 
 // FUNCTION: MAGSND 0x1000454F
-undefined4 __cdecl LoadWaveMmio(LPSTR filename,int *outSnd,undefined4 scratch)
+undefined4 __cdecl LoadWaveMmio(LPSTR filename,SndInstance **outSnd,undefined4 scratch)
 
 {
   undefined4 uVar1;
@@ -1970,16 +2048,16 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename,int *outSnd,undefined4 scratch)
             local_20 = local_70.lBufOffset;
             scratch = 0xe8;
             pvVar4 = FUN_10005480(DAT_100084f0,0x10000,(undefined4 *)local_84,0xe8);
-            *outSnd = (int)pvVar4;
+            *outSnd = (SndInstance *)pvVar4;
             if (*outSnd == 0) {
               mmioClose(local_8,0);
               uVar1 = 9;
             }
             else {
-              *(LONG *)(*outSnd + 0x1e0) = local_20;
-              *(HMMIO *)(*outSnd + 0x1c8) = local_8;
-              memcpy((void *)(*outSnd + 0x180), &local_70.dwFlags, 0x12 * sizeof(DWORD));
-              *(DWORD *)(*outSnd + 0x1cc) = local_98.cksize;
+              *(LONG *)((int)*outSnd + 0x1e0) = local_20;
+              *(HMMIO *)((int)*outSnd + 0x1c8) = local_8;
+              memcpy((void *)((int)*outSnd + 0x180), &local_70, sizeof(MMIOINFO));
+              *(DWORD *)((int)*outSnd + 0x1cc) = local_98.cksize;
               sVar5 = strlen(filename);
               pvVar4 = operator_new(sVar5 + 1);
               *(void **)*outSnd = pvVar4;
@@ -2002,21 +2080,21 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename,int *outSnd,undefined4 scratch)
                   memcpy((void *)(iVar7 + 0x1c), &local_98.ckid, 5 * sizeof(FOURCC));
                   LVar6 = mmioRead(local_8,(HPSTR)(iVar7 + 0x30),4);
                   if (LVar6 != 4) {
-                    FUN_10005562((void *)*outSnd);
+                    FUN_10005562(*outSnd);
                     mmioClose(local_8,0);
                     return 8;
                   }
                   pvVar4 = operator_new(*(int *)(iVar7 + 0x30) * 0x18);
                   *(void **)(iVar7 + 0x34) = pvVar4;
                   if (*(int *)(iVar7 + 0x34) == 0) {
-                    FUN_10005562((void *)*outSnd);
+                    FUN_10005562(*outSnd);
                     mmioClose(local_8,0);
                     return 3;
                   }
                   local_24 = *(int *)(iVar7 + 0x30) * 0x18;
                   LVar6 = mmioRead(local_8,*(HPSTR *)(iVar7 + 0x34),local_24);
                   if (LVar6 != local_24) {
-                    FUN_10005562((void *)*outSnd);
+                    FUN_10005562(*outSnd);
                     mmioClose(local_8,0);
                     operator_delete(*(void **)(iVar7 + 0x34));
                     return 8;
@@ -2139,12 +2217,12 @@ undefined4 __cdecl FUN_100049fe(FILE *param_1,int *param_2)
               }
             }
             else {
-              FUN_10005562((void *)*param_2);
+              FUN_10005562((SndInstance *)*param_2);
               uVar1 = 9;
             }
           }
           else {
-            FUN_10005562((void *)*param_2);
+            FUN_10005562((SndInstance *)*param_2);
             uVar1 = 9;
           }
         }
@@ -2161,17 +2239,19 @@ undefined4 __cdecl FUN_100049fe(FILE *param_1,int *param_2)
 undefined4 __cdecl FUN_10004c8a(int param_1,int param_2)
 
 {
+  SndInstance *sndObj;
   ushort uVar1;
   int iVar2;
   int iVar3;
   
-  mmioGetInfo(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
-  uVar1 = *(ushort *)(param_1 + 0x84);
-  iVar2 = *(int *)(param_1 + 0x1e0);
-  iVar3 = FUN_100058d0(param_1 + 0x180);
-  mmioSeek(*(HMMIO *)(param_1 + 0x1c8),((uint)uVar1 * param_2 + iVar2) - iVar3,1);
-  mmioGetInfo(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
-  mmioAdvance(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
+  sndObj = (SndInstance *)param_1;
+  mmioGetInfo(sndObj->hMmio,(LPMMIOINFO)&sndObj->mmioInfo,0);
+  uVar1 = sndObj->waveFmt.nBlockAlign;
+  iVar2 = sndObj->mmioBaseOffset;
+  iVar3 = FUN_100058d0((int)&sndObj->mmioInfo);
+  mmioSeek(sndObj->hMmio,((uint)uVar1 * param_2 + iVar2) - iVar3,1);
+  mmioGetInfo(sndObj->hMmio,(LPMMIOINFO)&sndObj->mmioInfo,0);
+  mmioAdvance(sndObj->hMmio,(LPMMIOINFO)&sndObj->mmioInfo,0);
   return 0;
 }
 
@@ -2311,7 +2391,7 @@ undefined4 __cdecl FUN_10004e4c(undefined4 *param_1,int param_2)
         mmioAdvance((HMMIO)param_1[0x72],(LPMMIOINFO)(param_1 + 0x60),0);
       }
       else {
-        FUN_10005770(param_1,param_2);
+        FUN_10005770((SndInstance *)param_1,param_2);
       }
       local_24 = local_4c;
       if (0xffff < local_4c) {
@@ -2327,7 +2407,7 @@ undefined4 __cdecl FUN_10004e4c(undefined4 *param_1,int param_2)
       }
       else {
         FUN_10004986(param_1);
-        FUN_10005562(param_1);
+        FUN_10005562((SndInstance *)param_1);
         uVar1 = 9;
       }
     }
@@ -2338,7 +2418,7 @@ undefined4 __cdecl FUN_10004e4c(undefined4 *param_1,int param_2)
       else {
         FUN_1000575e();
       }
-      FUN_10005562(param_1);
+      FUN_10005562((SndInstance *)param_1);
       uVar1 = 9;
     }
   }
@@ -2346,7 +2426,7 @@ undefined4 __cdecl FUN_10004e4c(undefined4 *param_1,int param_2)
 }
 
 // FUNCTION: MAGSND 0x1000524C
-undefined4 __cdecl PrimeAviAudio(undefined4 *snd,undefined4 unused)
+undefined4 __cdecl PrimeAviAudio(SndInstance *sndObj,undefined4 unused)
 
 {
   undefined4 uVar1;
@@ -2364,86 +2444,86 @@ undefined4 __cdecl PrimeAviAudio(undefined4 *snd,undefined4 unused)
   int local_8;
 
   (void)unused;
-  local_24 = snd[0x25] * snd[0x23];
-  local_8 = (**(code **)(*(int *)snd[0x2f] + 0x2c))
-                      (snd[0x2f],0,local_24,&local_34,&local_c,&local_18,&local_14,0);
+  local_24 = sndObj->blockCount * (uint)sndObj->blockBytes;
+  local_8 = (**(code **)(*(int *)sndObj->dsBuffer + 0x2c))
+                      (sndObj->dsBuffer,0,local_24,&local_34,&local_c,&local_18,&local_14,0);
   if (local_8 == 0) {
     if (local_18 == 0) {
-      snd[0x76] = 0;
-      snd[0x74] = 0;
-      snd[0x75] = 0;
+      sndObj->ringCursorBytes = 0;
+      sndObj->writeCursorBytes = 0;
+      sndObj->readCursorBytes = 0;
       local_1c = local_34;
       local_10 = 0;
-      local_28 = (uint)snd[0x23] / (uint)snd[0x24];
+      local_28 = (uint)sndObj->blockBytes / (uint)sndObj->blockScale;
       local_8 = 0;
-      for (local_30 = 0; local_30 < (uint)snd[0x25]; local_30 = local_30 + 1) {
-        AVIStreamRead(*snd,local_10,local_28,local_1c,snd[0x23],local_2c,local_20);
-        snd[0x76] = snd[0x76] + snd[0x23];
-        snd[0x76] = (uint)snd[0x76] % (uint)snd[0x2c];
-        snd[0x74] = snd[0x74] + snd[0x23];
-        snd[0x75] = snd[0x75] + snd[0x23];
-        local_1c = local_1c + snd[0x23];
+      for (local_30 = 0; local_30 < (uint)sndObj->blockCount; local_30 = local_30 + 1) {
+        AVIStreamRead(sndObj->streamOrMmio,local_10,local_28,local_1c,sndObj->blockBytes,local_2c,local_20);
+        sndObj->ringCursorBytes = sndObj->ringCursorBytes + sndObj->blockBytes;
+        sndObj->ringCursorBytes = (uint)sndObj->ringCursorBytes % (uint)sndObj->dsDesc.dwBufferBytes;
+        sndObj->writeCursorBytes = sndObj->writeCursorBytes + sndObj->blockBytes;
+        sndObj->readCursorBytes = sndObj->readCursorBytes + sndObj->blockBytes;
+        local_1c = local_1c + sndObj->blockBytes;
         local_10 = local_10 + local_28;
       }
-      local_8 = (**(code **)(*(int *)snd[0x2f] + 0x4c))
-                          (snd[0x2f],local_34,local_c,local_18,local_14);
+      local_8 = (**(code **)(*(int *)sndObj->dsBuffer + 0x4c))
+                          (sndObj->dsBuffer,local_34,local_c,local_18,local_14);
       if (local_8 == 0) {
         uVar1 = 0;
       }
       else {
-        FUN_10004986(snd);
-        FUN_10005562(snd);
+        FUN_10004986((undefined4 *)sndObj);
+        FUN_10005562(sndObj);
         uVar1 = 9;
       }
     }
     else {
-      (**(code **)(*(int *)snd[0x2f] + 0x4c))(snd[0x2f],local_34,local_c,local_18,local_14);
+      (**(code **)(*(int *)sndObj->dsBuffer + 0x4c))(sndObj->dsBuffer,local_34,local_c,local_18,local_14);
       FUN_1000575e();
-      FUN_10005562(snd);
+      FUN_10005562(sndObj);
       uVar1 = 9;
     }
   }
   else {
     FUN_1000575e();
-    FUN_10005562(snd);
+    FUN_10005562(sndObj);
     uVar1 = 9;
   }
   return uVar1;
 }
 
 // FUNCTION: MAGSND 0x10005480
-void * __cdecl FUN_10005480(int *param_1,undefined4 param_2,undefined4 *param_3,undefined4 param_4)
+SndInstance * __cdecl FUN_10005480(int *param_1,undefined4 param_2,undefined4 *param_3,undefined4 param_4)
 
 {
-  void *_Dst;
+  SndInstance *sndObj;
   int iVar1;
   
-  _Dst = operator_new(0x204);
-  memset(_Dst,0,0x204);
-  *(undefined4 *)((int)_Dst + 0xa8) = 0x14;
-  *(undefined4 *)((int)_Dst + 0xac) = param_4;
-  *(undefined4 *)((int)_Dst + 0xb0) = param_2;
-  *(undefined4 **)((int)_Dst + 0xb8) = param_3;
-  *(undefined4 *)((int)_Dst + 0x78) = *param_3;
-  *(undefined4 *)((int)_Dst + 0x7c) = param_3[1];
-  *(undefined4 *)((int)_Dst + 0x80) = param_3[2];
-  *(undefined4 *)((int)_Dst + 0x84) = param_3[3];
-  *(undefined2 *)((int)_Dst + 0x88) = *(undefined2 *)(param_3 + 4);
-  iVar1 = (**(code **)(*param_1 + 0xc))(param_1,(int)_Dst + 0xa8,(int)_Dst + 0xbc,0);
+  sndObj = (SndInstance *)operator_new(0x204);
+  memset(sndObj,0,0x204);
+  sndObj->dsDesc.dwSize = 0x14;
+  sndObj->dsDesc.dwFlags = param_4;
+  sndObj->dsDesc.dwBufferBytes = param_2;
+  sndObj->dsDesc.lpwfxFormat = param_3;
+  *(undefined4 *)&sndObj->waveFmt = *param_3;
+  *(undefined4 *)((byte *)&sndObj->waveFmt + 4) = param_3[1];
+  *(undefined4 *)((byte *)&sndObj->waveFmt + 8) = param_3[2];
+  *(undefined4 *)((byte *)&sndObj->waveFmt + 0xc) = param_3[3];
+  *(undefined2 *)((byte *)&sndObj->waveFmt + 0x10) = *(undefined2 *)(param_3 + 4);
+  iVar1 = (**(code **)(*param_1 + 0xc))(param_1,(int)&sndObj->dsDesc,(int)&sndObj->dsBuffer,0);
   if (iVar1 != 0) {
-    operator_delete(_Dst);
-    _Dst = (void *)0x0;
+    operator_delete(sndObj);
+    sndObj = (SndInstance *)0x0;
   }
-  return _Dst;
+  return sndObj;
 }
 
 // FUNCTION: MAGSND 0x10005562
-undefined4 __cdecl FUN_10005562(void *param_1)
+undefined4 __cdecl FUN_10005562(SndInstance *param_1)
 
 {
   undefined4 uVar1;
   
-  if (param_1 == (void *)0x0) {
+  if (param_1 == (SndInstance *)0x0) {
     uVar1 = 5;
   }
   else {
@@ -2455,11 +2535,12 @@ undefined4 __cdecl FUN_10005562(void *param_1)
 }
 
 // FUNCTION: MAGSND 0x100055BB
-undefined4 __cdecl LoadAviAudioStream(void *stream,int *outSnd,undefined4 scratch)
+undefined4 __cdecl LoadAviAudioStream(void *stream,SndInstance **outSnd,undefined4 scratch)
 
 {
   undefined4 uVar1;
   void *pvVar2;
+  SndInstance *sndObj;
   int iVar3;
   undefined4 *puVar4;
   undefined4 *puVar5;
@@ -2485,28 +2566,29 @@ undefined4 __cdecl LoadAviAudioStream(void *stream,int *outSnd,undefined4 scratc
     scratch = 0xe8;
     local_9c = local_68 * 0xb;
     pvVar2 = FUN_10005480(DAT_100084f0,local_9c,local_fc,0xe8);
-    *outSnd = (int)pvVar2;
+    *outSnd = (SndInstance *)pvVar2;
     if (*outSnd == 0) {
       uVar1 = 9;
     }
     else {
-      *(undefined4 *)(*outSnd + 0x1e0) = 0;
-      *(undefined4 *)(*outSnd + 0x1c8) = 0;
+      sndObj = *outSnd;
+      sndObj->mmioBaseOffset = 0;
+      sndObj->hMmio = (HMMIO)0;
       puVar4 = local_e8;
-      puVar5 = (undefined4 *)(*outSnd + 0x180);
+      puVar5 = (undefined4 *)&sndObj->mmioInfo;
       for (iVar3 = 0x12; iVar3 != 0; iVar3 = iVar3 + -1) {
         *puVar5 = *puVar4;
         puVar4 = puVar4 + 1;
         puVar5 = puVar5 + 1;
       }
-      *(int *)(*outSnd + 0x1cc) = local_98;
-      *(void **)*outSnd = stream;
-      *(uint *)(*outSnd + 8) = *(uint *)(*outSnd + 8) | 0x20;
-      *(uint *)(*outSnd + 8) = *(uint *)(*outSnd + 8) | 2;
-      *(int *)(*outSnd + 0x8c) = local_68;
-      *(int *)(*outSnd + 0x90) = local_60;
-      *(undefined4 *)(*outSnd + 0x94) = 0xb;
-      *(undefined4 *)(*outSnd + 0x1dc) = 0;
+      sndObj->dataBytes = local_98;
+      sndObj->streamOrMmio = stream;
+      sndObj->flags2 = sndObj->flags2 | 0x20;
+      sndObj->flags2 = sndObj->flags2 | 2;
+      sndObj->blockBytes = local_68;
+      sndObj->blockScale = local_60;
+      sndObj->blockCount = 0xb;
+      sndObj->timeBytes = 0;
       uVar1 = 0;
     }
   }
@@ -2519,13 +2601,15 @@ undefined4 __cdecl LoadAviAudioStream(void *stream,int *outSnd,undefined4 scratc
 // FUNCTION: MAGSND 0x10005770
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void __cdecl FUN_10005770(undefined4 *param_1,undefined4 param_2)
+void __cdecl FUN_10005770(SndInstance *sndObj,undefined4 param_2)
 
 {
+  undefined4 *param_1;
   int local_1c;
   undefined4 local_c;
   size_t local_8;
   
+  param_1 = (undefined4 *)sndObj;
   local_c = 0;
   local_8 = param_1[0x74] - param_1[0x75];
   if (param_1[0x68] - param_1[0x67] != local_8) {
@@ -2551,7 +2635,10 @@ void __cdecl FUN_10005770(undefined4 *param_1,undefined4 param_2)
 int __cdecl FUN_100058d0(int param_1)
 
 {
-  return *(int *)(param_1 + 0x2c) - (*(int *)(param_1 + 0x20) - *(int *)(param_1 + 0x1c));
+  MMIOINFO *info;
+  
+  info = (MMIOINFO *)param_1;
+  return (int)info->lDiskOffset - ((int)info->pchEndWrite - (int)info->pchEndRead);
 }
 
 // FUNCTION: MAGSND 0x1000575E
