@@ -845,14 +845,15 @@ undefined4 __cdecl StopSnd(int param_1)
 
 // FUNCTION: MAGSND 0x10002676
 void StopAllSnds(void)
-
 {
   int local_8;
   
                      /* 0x2676  9  StopAllSnds */
   EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  for (local_8 = g_activeSndListHead; local_8 != 0; local_8 = *(int *)(local_8 + 0x200)) {
+  local_8 = g_activeSndListHead;
+  while (local_8 != 0) {
     StopSnd(*(int *)(local_8 + 0x10));
+    local_8 = *(int *)(local_8 + 0x200);
   }
   LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
   return;
@@ -1131,7 +1132,7 @@ undefined4 UpdateSnd(void)
         s.next = *(undefined4 **)((char *)s.node + 0x200);
         UnloadSnd(*(int *)((char *)s.node + 0x10));
         s.node = s.next;
-        break;
+        continue;
       }
     }
     s.node = *(undefined4 **)((char *)s.node + 0x1f8);
