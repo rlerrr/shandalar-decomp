@@ -76,17 +76,15 @@ struct SndInstance {
   int pan;                     /* 0x1e8 */
   int playbackRateHz;          /* 0x1ec */
   int volume;                  /* 0x1f0 */
-  byte pad_1f4[0x1f8 - 0x1f4];
-  SndInstance *prevActive; /* 0x1f8 */
-  SndInstance *nextActive; /* 0x200 */
+  SndInstance *updatePrev;     /* 0x1f4: used by AddToUpdateList/RemoveFromUpdateList */
+  SndInstance *updateNext;     /* 0x1f8 */
+  SndInstance *activePrev;     /* 0x1fc: used by AddToActiveList/RemoveFromActiveList */
+  SndInstance *activeNext;     /* 0x200 */
 };
 
 extern byte g_sndSlots;
 
-static SndInstance **SndSlotPtr(int idx)
-{
-  return (SndInstance **)((byte *)&g_sndSlots + idx * 4);
-}
+#define SndSlotPtr(idx) ((SndInstance **)((byte *)&g_sndSlots + (idx) * 4))
 
 undefined4 __cdecl InitSnd(int param_1, undefined4 param_2, byte param_3);
 void __cdecl ReleaseSnd(void);
@@ -117,10 +115,10 @@ undefined4 __cdecl IsSndLoaded(int param_1, undefined4 *param_2);
 undefined4 __cdecl GetLRUSnd(int *param_1, int param_2, int param_3);
 
 void __cdecl FUN_10003748(int param_1);
-void __cdecl FUN_10004239(int param_1);
-void __cdecl FUN_10004292(int param_1);
-void __cdecl FUN_10004311(int param_1);
-void __cdecl FUN_1000436a(int param_1);
+void __cdecl AddToUpdateList(int param_1);
+void __cdecl RemoveFromUpdateList(int param_1);
+void __cdecl AddToActiveList(int param_1);
+void __cdecl RemoveFromActiveList(int param_1);
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
 void __cdecl FUN_1000448d(void);
 void CALLBACK FUN_100043e9(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
@@ -140,16 +138,16 @@ void __cdecl operator_delete(void *p);
 typedef unsigned short ushort;
 
 // GLOBAL: MAGSND 0x10007040
-byte DAT_10007040[0x14];
+byte g_primaryDsDesc[0x14];
 
 // GLOBAL: MAGSND 0x10007058
-byte DAT_10007058[0x12];
+byte g_primaryWaveFormat[0x12];
 
 // GLOBAL: MAGSND 0x1000708C
-char DAT_1000708c[] = "rb";
+char g_fileModeRb[] = "rb";
 
 // GLOBAL: MAGSND 0x10007030
-undefined4 _DAT_10007030 = 0x00000000;
+undefined4 g_sndLoadSerial = 0x00000000;
 
 // GLOBAL: MAGSND 0x100070A8
 byte g_sndSlots;
@@ -173,28 +171,28 @@ CRITICAL_SECTION g_sndCs;
 undefined4 g_activeSndListHead = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007014
-undefined4 DAT_10007014 = 0x00000000;
+undefined4 g_activeSndTail = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007018
-undefined4 DAT_10007018 = 0x00000000;
+undefined4 g_updateSndHead = 0x00000000;
 
 // GLOBAL: MAGSND 0x1000701C
-undefined4 DAT_1000701c = 0x00000000;
+undefined4 g_updateSndTail = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007020
-undefined4 DAT_10007020 = 0x00000001;
+undefined4 g_updateTimerEnabled = 0x00000001;
 
 // GLOBAL: MAGSND 0x10007024
 undefined4 g_updateTimerActive = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007028
-undefined4 DAT_10007028 = 0x00000000;
+undefined4 g_updateTimerUsers = 0x00000000;
 
 // GLOBAL: MAGSND 0x1000702C
 undefined4 g_updateResolutionMs = 0x00000019;
 
 // GLOBAL: MAGSND 0x10007034
-undefined4 DAT_10007034 = 0x00000000;
+undefined4 g_sndRefCount = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007038
 undefined4 DAT_10007038 = 0x00000000;
@@ -212,7 +210,7 @@ undefined4 g_updatePeriodMs = 0x00000021;
 undefined4 DAT_10007090 = 0x00000000;
 
 // GLOBAL: MAGSND 0x100070A0
-int *DAT_100070a0 = (int *)0x0;
+int *g_primaryDsBuffer = (int *)0x0;
 
 // GLOBAL: MAGSND 0x100084E8
 undefined4 g_sndHwnd = 0x00000000;
@@ -238,16 +236,16 @@ undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,byte param_3)
   
                      /* 0x1000  1  InitSnd */
   if ((param_3 & 2) != 0) {
-    if (DAT_10007034 == 0) {
+    if (g_sndRefCount == 0) {
       return 4;
     }
   }
   if ((param_3 & 2) != 0) {
-    if (DAT_10007034 != 0) {
+    if (g_sndRefCount != 0) {
       return 0;
     }
   }
-  if (DAT_10007034 == 0) {
+  if (g_sndRefCount == 0) {
     if (param_1 != 0) {
       local_8 = DirectSoundCreate(0,&g_directSound,0);
       if (local_8 != 0) {
@@ -258,17 +256,19 @@ undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,byte param_3)
         ReleaseSnd();
         return 4;
       }
-      local_8 = (**(code **)(*g_directSound + 0xc))(g_directSound,&DAT_10007040,&DAT_100070a0,0);
+      local_8 = (**(code **)(*g_directSound + 0xc))(g_directSound,&g_primaryDsDesc,&g_primaryDsBuffer
+                                                    ,0);
       if (local_8 != 0) {
         ReleaseSnd();
         return 4;
       }
-      local_8 = (**(code **)(*DAT_100070a0 + 0x38))(DAT_100070a0,&DAT_10007058);
+      local_8 = (**(code **)(*g_primaryDsBuffer + 0x38))(g_primaryDsBuffer,&g_primaryWaveFormat);
       if (local_8 != 0) {
-        (**(code **)(*DAT_100070a0 + 0x14))(DAT_100070a0,&DAT_10007058,0x12,&local_4);
+        (**(code **)(*g_primaryDsBuffer + 0x14))(g_primaryDsBuffer,&g_primaryWaveFormat,0x12,
+                                                &local_4);
       }
       g_sndHwnd = param_1;
-      DAT_10007034 = DAT_10007034 + 1;
+      g_sndRefCount = g_sndRefCount + 1;
       InitializeCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
     }
   }
@@ -276,7 +276,7 @@ undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,byte param_3)
     if (g_updateTimerActive != 0) {
       FUN_1000448d();
     }
-    DAT_10007020 = 0;
+    g_updateTimerEnabled = 0;
   }
   return 0;
 }
@@ -286,7 +286,7 @@ void ReleaseSnd(void)
 
 {
                     /* 0x1176  2  ReleaseSnd */
-  if (DAT_10007034 == 0)
+  if (g_sndRefCount == 0)
     return;
 
   UnloadAllSnds();
@@ -296,7 +296,7 @@ void ReleaseSnd(void)
   (**(code **)(*g_directSound + 8))(g_directSound);
   g_directSound = (int *)0x0;
   g_sndHwnd = 0;
-  DAT_10007034 = 0;
+  g_sndRefCount = 0;
   DeleteCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
   return;
 }
@@ -367,11 +367,11 @@ int __cdecl LoadSnd(LPSTR param_1,int param_2,Sound *param_3)
         *(uint *)(*(int *)(SndSlotPtr(param_2)) + 8) =
              *(uint *)(*(int *)(SndSlotPtr(param_2)) + 8) | 0x40;
       }
-      _DAT_10007030 = _DAT_10007030 + 1;
+      g_sndLoadSerial = g_sndLoadSerial + 1;
     }
     *(uint *)(*(int *)(SndSlotPtr(param_2)) + 4) =
          *(uint *)(*(int *)(SndSlotPtr(param_2)) + 4) | 0x20;
-    FUN_10004239(*(int *)(SndSlotPtr(param_2)));
+    AddToUpdateList(*(int *)(SndSlotPtr(param_2)));
     *(uint *)(*(int *)(SndSlotPtr(param_2)) + 8) =
          *(uint *)(*(int *)(SndSlotPtr(param_2)) + 8) | 2;
   }
@@ -383,7 +383,7 @@ int __cdecl LoadSnd(LPSTR param_1,int param_2,Sound *param_3)
     }
   }
   EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  FUN_10004311(*(int *)(SndSlotPtr(param_2)));
+  AddToActiveList(*(int *)(SndSlotPtr(param_2)));
   *(int *)(*(int *)(SndSlotPtr(param_2)) + 0x10) = param_2;
   if ((param_3 != (Sound *)0) && (*(int *)((char *)param_3 + 0x18) != 0)) {
     *(undefined4 *)(*(int *)(SndSlotPtr(param_2)) + 0x14) = *(undefined4 *)((char *)param_3 + 0x18);
@@ -408,9 +408,9 @@ undefined4 __cdecl UnloadSnd(int param_1)
     }
     else {
       FUN_100026d1(param_1);
-      FUN_1000436a(*(int *)(SndSlotPtr(param_1)));
+      RemoveFromActiveList(*(int *)(SndSlotPtr(param_1)));
       if ((*(uint *)(*(int *)(SndSlotPtr(param_1)) + 8) >> 1 & 1) != 0) {
-        FUN_10004292(*(int *)(SndSlotPtr(param_1)));
+        RemoveFromUpdateList(*(int *)(SndSlotPtr(param_1)));
         if ((*(uint *)(*(int *)(SndSlotPtr(param_1)) + 8) >> 5 & 1) == 0) {
           FUN_10004986(*(undefined4 **)(SndSlotPtr(param_1)));
           for (local_8 = 0; local_8 < *(uint *)(*(int *)(SndSlotPtr(param_1)) + 0x30);
@@ -499,13 +499,13 @@ int __cdecl FUN_10001701(undefined4 *param_1,int *param_2)
     if ((*(byte *)(param_1 + 1) & 1) != 0) {
       FUN_100026d1(param_1[4]);
     }
-    if (((DAT_10007020 == 1) && (g_updateTimerActive == 0)) &&
+    if (((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0)) &&
        (local_8 = StartUpdateTimer(g_updateResolutionMs), local_8 != 0)) {
       UnloadSnd(param_1[4]);
       return local_8;
     }
-    if (DAT_10007020 != 0) {
-      DAT_10007028 = DAT_10007028 + 1;
+    if (g_updateTimerEnabled != 0) {
+      g_updateTimerUsers = g_updateTimerUsers + 1;
     }
     local_14 = local_14 | 1;
     local_18 = (int *)param_1[0x2f];
@@ -601,9 +601,9 @@ int __cdecl PlaySndFile(LPSTR param_1,int param_2,Sound *param_3)
     LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
     return s.local_c;
   }
-  FUN_10004311(*(int *)(SndSlotPtr(param_2)));
-  FUN_10004239(*(int *)(SndSlotPtr(param_2)));
-  if ((DAT_10007020 == 1) && (g_updateTimerActive == 0)) {
+  AddToActiveList(*(int *)(SndSlotPtr(param_2)));
+  AddToUpdateList(*(int *)(SndSlotPtr(param_2)));
+  if ((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0)) {
     s.local_c = StartUpdateTimer(g_updateResolutionMs);
     if (s.local_c != 0) {
       UnloadSnd(param_2);
@@ -689,7 +689,7 @@ int __cdecl FUN_10001e52(undefined4 *param_1,int param_2)
      (iVar3 = FUN_10004e4c((undefined4 *)*piVar2,*(int *)(iVar1 + (param_2 * 3 + -3) * 8 + 0x14)),
      iVar3 == 0)) {
     *(uint *)(*piVar2 + 4) = *(uint *)(*piVar2 + 4) | 0x20;
-    FUN_10004239(*piVar2);
+    AddToUpdateList(*piVar2);
     *(uint *)(*piVar2 + 8) = *(uint *)(*piVar2 + 8) | 2;
     *(uint *)(*piVar2 + 8) = *(uint *)(*piVar2 + 8) | 0x10;
     *(uint *)(*piVar2 + 8) = param_1[2] & 1 | *(uint *)(*piVar2 + 8) & 0xfffffffe;
@@ -747,8 +747,8 @@ void __cdecl FUN_1000208c(int *param_1,int *param_2)
   *(undefined4 *)(*param_1 + 0x10) = *(undefined4 *)(iVar1 + 0x10);
   *(uint *)(iVar1 + 8) = *(uint *)(iVar1 + 8) | 0x10;
   *(uint *)(*param_1 + 8) = *(uint *)(*param_1 + 8) & 0xffffffef;
-  FUN_1000436a(iVar1);
-  FUN_10004311(*param_1);
+  RemoveFromActiveList(iVar1);
+  AddToActiveList(*param_1);
   return;
 }
 
@@ -987,7 +987,8 @@ undefined4 __cdecl FUN_100026d1(int param_1)
           local_10 = local_10 + 1;
         }
       }
-      else if ((0 < DAT_10007028) && (DAT_10007028 = DAT_10007028 + -1, DAT_10007028 == 0)) {
+      else if ((0 < g_updateTimerUsers) &&
+              (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
         FUN_1000448d();
       }
       *(uint *)(*(int *)(SndSlotPtr(param_1)) + 4) =
@@ -1181,7 +1182,7 @@ undefined4 UpdateSnd(void)
   }
 
   EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  s.node = DAT_10007018;
+  s.node = g_updateSndHead;
   while (s.node != (undefined4 *)0x0) {
     if ((*(byte *)(s.node + 1) & 1) != 0) {
       if (((uint)s.node[1] >> 1 & 1) != 0) {
@@ -1680,7 +1681,8 @@ void __cdecl FUN_10003748(int param_1)
   }
   else {
     (**(code **)(**(int **)(param_1 + 0xbc) + 0x48))(*(undefined4 *)(param_1 + 0xbc));
-    if ((0 < DAT_10007028) && (DAT_10007028 = DAT_10007028 + -1, DAT_10007028 == 0)) {
+    if ((0 < g_updateTimerUsers) &&
+        (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
       FUN_1000448d();
     }
     *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xfffffffe;
@@ -1780,7 +1782,8 @@ undefined4 __cdecl FUN_10003d60(undefined4 *param_1)
     }
     else {
       (**(code **)(*(int *)param_1[0x2f] + 0x48))(param_1[0x2f]);
-      if ((0 < DAT_10007028) && (DAT_10007028 = DAT_10007028 + -1, DAT_10007028 == 0)) {
+      if ((0 < g_updateTimerUsers) &&
+          (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
         FUN_1000448d();
       }
       param_1[1] = param_1[1] & 0xfffffffe;
@@ -1850,22 +1853,22 @@ undefined4 __cdecl FUN_100040c9(int param_1,int *param_2)
 }
 
 // FUNCTION: MAGSND 0x10004239
-void __cdecl FUN_10004239(int param_1)
+void __cdecl AddToUpdateList(int param_1)
 
 {
-  if (DAT_10007018 == 0) {
-    DAT_10007018 = param_1;
+  if (g_updateSndHead == 0) {
+    g_updateSndHead = param_1;
   }
   else {
-    *(int *)(DAT_1000701c + 0x1f8) = param_1;
-    *(int *)(param_1 + 500) = DAT_1000701c;
+    *(int *)(g_updateSndTail + 0x1f8) = param_1;
+    *(int *)(param_1 + 500) = g_updateSndTail;
   }
-  DAT_1000701c = param_1;
+  g_updateSndTail = param_1;
   return;
 }
 
 // FUNCTION: MAGSND 0x10004292
-void __cdecl FUN_10004292(int param_1)
+void __cdecl RemoveFromUpdateList(int param_1)
 
 {
   int iVar1;
@@ -1877,34 +1880,34 @@ void __cdecl FUN_10004292(int param_1)
   iVar3 = iVar2;
   if (iVar1 != 0) {
     *(int *)(iVar1 + 0x1f8) = iVar2;
-    iVar3 = DAT_10007018;
+    iVar3 = g_updateSndHead;
   }
-  DAT_10007018 = iVar3;
+  g_updateSndHead = iVar3;
   if (iVar2 != 0) {
     *(int *)(iVar2 + 500) = iVar1;
-    iVar1 = DAT_1000701c;
+    iVar1 = g_updateSndTail;
   }
-  DAT_1000701c = iVar1;
+  g_updateSndTail = iVar1;
   return;
 }
 
 // FUNCTION: MAGSND 0x10004311
-void __cdecl FUN_10004311(int param_1)
+void __cdecl AddToActiveList(int param_1)
 
 {
   if (g_activeSndListHead == 0) {
     g_activeSndListHead = param_1;
   }
   else {
-    *(int *)(DAT_10007014 + 0x200) = param_1;
-    *(int *)(param_1 + 0x1fc) = DAT_10007014;
+    *(int *)(g_activeSndTail + 0x200) = param_1;
+    *(int *)(param_1 + 0x1fc) = g_activeSndTail;
   }
-  DAT_10007014 = param_1;
+  g_activeSndTail = param_1;
   return;
 }
 
 // FUNCTION: MAGSND 0x1000436A
-void __cdecl FUN_1000436a(int param_1)
+void __cdecl RemoveFromActiveList(int param_1)
 
 {
   int iVar1;
@@ -1921,9 +1924,9 @@ void __cdecl FUN_1000436a(int param_1)
   g_activeSndListHead = iVar3;
   if (iVar2 != 0) {
     *(int *)(iVar2 + 0x1fc) = iVar1;
-    iVar1 = DAT_10007014;
+    iVar1 = g_activeSndTail;
   }
-  DAT_10007014 = iVar1;
+  g_activeSndTail = iVar1;
   return;
 }
 
@@ -1989,7 +1992,7 @@ undefined4 __cdecl LoadFromFile(char *filename,SndInstance **outSnd)
   FILE *_File;
   undefined4 uVar1;
 
-  _File = fopen(filename,DAT_1000708c);
+  _File = fopen(filename,g_fileModeRb);
   if (_File == (FILE *)0x0) {
     uVar1 = 7;
   }
