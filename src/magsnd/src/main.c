@@ -1,6 +1,7 @@
 #include "magsnd.h"
 #include "defs.h"
 #include "mystdbool.h"
+#include <DSOUND.H>
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,41 +9,20 @@
 #include <mmsystem.h>
 #include <vfw.h>
 
+#pragma intrinsic(memcpy)
+
 typedef unsigned char byte;
 typedef int (__stdcall code)();
 
-HRESULT WINAPI DirectSoundCreate(const GUID *lpGuid, void **ppDS, void *pUnkOuter);
-
-/*
- * Internal structures inferred from magsnd.dll usage.
- *
- * Notes:
- * - `SndInstance` objects are allocated as 0x204 bytes (see FUN_10005480).
- * - Many fields are still unknown; only offsets observed in code are named.
- * - Keep MSVC 4.20/C89 compatibility; avoid relying on `sizeof(SndInstance)` for layout.
- */
-
-#pragma pack(push, 1)
-typedef struct SndWaveFormatTagChannels {
-  unsigned short wFormatTag;     /* +0x00 */
-  unsigned short nChannels;      /* +0x02 */
-  uint nSamplesPerSec;   /* +0x04 */
-  uint nAvgBytesPerSec;  /* +0x08 */
-  unsigned short nBlockAlign;    /* +0x0c */
-  unsigned short wBitsPerSample; /* +0x0e */
-  unsigned short cbSize;         /* +0x10 */
-} SndWaveFormat;
-#pragma pack(pop)
-
-typedef struct SndDsBufferDesc {
-  uint dwSize;        /* +0x00 */
-  uint dwFlags;       /* +0x04 */
-  uint dwBufferBytes; /* +0x08 */
-  uint dwReserved;    /* +0x0c */
-  void *lpwfxFormat;  /* +0x10 */
-} SndDsBufferDesc;
-
 typedef struct SndInstance SndInstance;
+typedef struct SndDuplicateBufferEntry SndDuplicateBufferEntry;
+
+struct SndDuplicateBufferEntry {
+  LPDIRECTSOUNDBUFFER buffer; /* 0x000 */
+  int reserved1;              /* 0x004 */
+  int reserved2;              /* 0x008 */
+};
+
 struct SndInstance {
   void *streamOrMmio;      /* 0x000: PAVISTREAM for AVI path, otherwise used as opaque */
   uint flags;              /* 0x004 */
@@ -53,17 +33,18 @@ struct SndInstance {
   int activeMarkerIndex;   /* 0x018 */
   byte pad_01c[0x30 - 0x1c];
   uint markerCount;        /* 0x030 */
-  void *markers[0x11];     /* 0x034 */
-  SndWaveFormat waveFmt;   /* 0x078 (18 bytes) */
+  SndInstance *markers[0x11];     /* 0x034 */
+  WAVEFORMATEX waveFmt;   /* 0x078 (18 bytes) */
   unsigned short pad_08a;  /* 0x08a */
   int blockBytes;          /* 0x08c */
   int blockScale;          /* 0x090 */
   int blockCount;          /* 0x094 */
-  byte pad_098[0xa4 - 0x98];
+  byte pad_098[0xa0 - 0x98];
+  uint timeEventCount;     /* 0x0a0 */
   void *dsLockedPtr;       /* 0x0a4: pointer from IDirectSoundBuffer::Lock */
-  SndDsBufferDesc dsDesc;  /* 0x0a8 (DSBUFFERDESC, size 0x14) */
-  void *dsBuffer;          /* 0x0bc: LPDIRECTSOUNDBUFFER */
-  byte pad_0c0[0x180 - 0xc0];
+  DSBUFFERDESC dsDesc;  /* 0x0a8 (DSBUFFERDESC, size 0x14) */
+  LPDIRECTSOUNDBUFFER dsBuffer;          /* 0x0bc: LPDIRECTSOUNDBUFFER */
+  SndDuplicateBufferEntry duplicateBuffers[0x10]; /* 0x0c0 - 0x180 */
   MMIOINFO mmioInfo;       /* 0x180 */
   HMMIO hMmio;             /* 0x1c8 */
   int dataBytes;           /* 0x1cc */
@@ -81,8 +62,7 @@ struct SndInstance {
   SndInstance *activePrev;     /* 0x1fc: used by AddToActiveList/RemoveFromActiveList */
   SndInstance *activeNext;     /* 0x200 */
 };
-
-
+STATIC_ASSERT(sizeof(SndInstance) == 0x204, SndInstance_wrong_size);
 
 undefined4 __cdecl InitSnd(int param_1, undefined4 param_2, byte param_3);
 void __cdecl ReleaseSnd(void);
@@ -92,10 +72,10 @@ undefined4 __cdecl UnloadSnd(int param_1);
 undefined4 __cdecl UnloadAllSnds(void);
 undefined4 __cdecl PlaySnd(int param_1, Sound *param_2);
 int __cdecl PlaySndFile(LPSTR param_1, int param_2, Sound *param_3);
-undefined4 __cdecl StopSnd(int param_1);
+undefined4 __cdecl StopSnd(int slot);
 void __cdecl StopAllSnds(void);
 undefined4 __cdecl PlayMidiFile(void);
-undefined4 __cdecl SetPitch(int param_1, undefined4 param_2);
+undefined4 __cdecl SetPitch(int slot, undefined4 pitchHz);
 undefined4 __cdecl GetPitch(void);
 undefined4 __cdecl SetVol(int param_1, uint param_2);
 undefined4 __cdecl GetVol(void);
@@ -103,7 +83,9 @@ undefined4 __cdecl SetPan(int param_1, int param_2);
 undefined4 __cdecl GetPan(void);
 undefined4 __cdecl UpdateSnd(void);
 int __cdecl SetSndMarker(int param_1, uint param_2);
-int __cdecl PlaySndMarker(int param_1, uint param_2);
+int __cdecl PlaySndMarker(int slot, uint markerIndex);
+int __cdecl LoadMarkerInstance(SndInstance *parent, int markerIndex);
+int __cdecl PrimeMarkerInstance(SndInstance *parent, int markerIndex);
 undefined4 __cdecl GetSndTime(int param_1, uint *param_2);
 undefined4 __cdecl ResetSnd(void);
 undefined4 __cdecl GetSndState(int param_1, undefined4 *param_2);
@@ -113,19 +95,19 @@ undefined4 __cdecl IsSndLoaded(int param_1, undefined4 *param_2);
 undefined4 __cdecl GetLRUSnd(int *param_1, int param_2, int param_3);
 
 void __cdecl FUN_10003748(int param_1);
-void __cdecl AddToUpdateList(int param_1);
-void __cdecl RemoveFromUpdateList(int param_1);
-void __cdecl AddToActiveList(int param_1);
-void __cdecl RemoveFromActiveList(int param_1);
+void __cdecl AddToUpdateList(SndInstance *snd);
+void __cdecl RemoveFromUpdateList(SndInstance *snd);
+void __cdecl AddToActiveList(SndInstance *snd);
+void __cdecl RemoveFromActiveList(SndInstance *snd);
 undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2);
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
 void __cdecl StopUpdateTimer(void);
 void CALLBACK UpdateTimerProc(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
-void __cdecl CloseMmioAndFreeSource(undefined4 *param_1);
+void __cdecl CloseMmioAndFreeSource(SndInstance *snd);
 undefined4 __cdecl LoadFromFile(char *filename, SndInstance **outSnd);
 undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4 scratch);
-undefined4 __cdecl PrimeDsBufferFromSource(undefined4 *param_1, int param_2);
-undefined4 __cdecl PrimeAviAudio(SndInstance *sndObj, undefined4 unused);
+undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int param_2);
+undefined4 __cdecl PrimeAviAudio(undefined4 *param_1);
 undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefined4 scratch);
 void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample);
 int __cdecl MmioTellFromInfo(MMIOINFO *info);
@@ -145,11 +127,23 @@ typedef struct SndTimeSample {
   uint unused0c;
 } SndTimeSample;
 
+// GLOBAL: MAGSND 0x10006000
+double g_sndTimeDiv_88200 = 88.2;
+
+// GLOBAL: MAGSND 0x10006008
+double g_sndTimeDiv_44100 = 44.1;
+
+// GLOBAL: MAGSND 0x10006010
+double g_sndTimeDiv_22050 = 22.05;
+
+// GLOBAL: MAGSND 0x10006018
+double g_sndTimeDiv_11025 = 11.025;
+
 // GLOBAL: MAGSND 0x10007040
-byte g_primaryDsDesc[0x14];
+DSBUFFERDESC g_primaryDsDesc;
 
 // GLOBAL: MAGSND 0x10007058
-byte g_primaryWaveFormat[0x12];
+WAVEFORMATEX g_primaryWaveFormat;
 
 // GLOBAL: MAGSND 0x1000708C
 char g_fileModeRb[] = "rb";
@@ -172,16 +166,16 @@ SndTimeSample g_sndTimeSamples[0x100];
 CRITICAL_SECTION g_sndCs;
 
 // GLOBAL: MAGSND 0x10007010
-undefined4 g_activeSndListHead = 0x00000000;
+SndInstance *g_activeSndListHead = (SndInstance *)0x0;
 
 // GLOBAL: MAGSND 0x10007014
-undefined4 g_activeSndTail = 0x00000000;
+SndInstance *g_activeSndTail = (SndInstance *)0x0;
 
 // GLOBAL: MAGSND 0x10007018
-undefined4 g_updateSndHead = 0x00000000;
+SndInstance *g_updateSndHead = (SndInstance *)0x0;
 
 // GLOBAL: MAGSND 0x1000701C
-undefined4 g_updateSndTail = 0x00000000;
+SndInstance *g_updateSndTail = (SndInstance *)0x0;
 
 // GLOBAL: MAGSND 0x10007020
 undefined4 g_updateTimerEnabled = 0x00000001;
@@ -190,7 +184,7 @@ undefined4 g_updateTimerEnabled = 0x00000001;
 undefined4 g_updateTimerActive = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007028
-undefined4 g_updateTimerUsers = 0x00000000;
+int g_updateTimerUsers = 0x00000000;
 
 // GLOBAL: MAGSND 0x1000702C
 undefined4 g_updateResolutionMs = 0x00000019;
@@ -214,13 +208,13 @@ undefined4 g_updatePeriodMs = 0x00000021;
 undefined4 DAT_10007090 = 0x00000000;
 
 // GLOBAL: MAGSND 0x100070A0
-int *g_primaryDsBuffer = (int *)0x0;
+LPDIRECTSOUNDBUFFER g_primaryDsBuffer;
 
 // GLOBAL: MAGSND 0x100084E8
 undefined4 g_sndHwnd = 0x00000000;
 
 // GLOBAL: MAGSND 0x100084F0
-int *g_directSound = (int *)0x0;
+IDirectSound *g_directSound = (int *)0x0;
 
 // GLOBAL: MAGSND 0x100084F4
 undefined4 g_updateTimerId = 0x00000000;
@@ -232,48 +226,46 @@ TIMECAPS g_timeCaps = {0};
 code *DAT_10008590 = (code *)0x0;
 
 // FUNCTION: MAGSND 0x10001000
-undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,byte param_3)
-
+undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,uint param_3)
 {
-  int local_8;
-  undefined4 local_4;
+  struct {
+    HRESULT local_8;
+    DWORD format;
+  } s;
   
-                     /* 0x1000  1  InitSnd */
-  if ((param_3 & 2) != 0) {
+  if (param_3 & (byte)0x2) {
     if (g_sndRefCount == 0) {
       return 4;
     }
   }
-  if ((param_3 & 2) != 0) {
+  if (param_3 & 2) {
     if (g_sndRefCount != 0) {
       return 0;
     }
   }
   if (g_sndRefCount == 0) {
     if (param_1 != 0) {
-      local_8 = DirectSoundCreate(0,&g_directSound,0);
-      if (local_8 != 0) {
+      s.local_8 = DirectSoundCreate(0,&g_directSound,0);
+      if (s.local_8 != 0) {
         return 4;
       }
-      local_8 = (**(code **)(*g_directSound + 0x18))(g_directSound,param_1,3);
-      if (local_8 != 0) {
+      s.local_8 = g_directSound->lpVtbl->SetCooperativeLevel(g_directSound,param_1,3);
+      if (s.local_8 != 0) {
         ReleaseSnd();
         return 4;
       }
-      local_8 = (**(code **)(*g_directSound + 0xc))(g_directSound,&g_primaryDsDesc,&g_primaryDsBuffer
-                                                    ,0);
-      if (local_8 != 0) {
+      s.local_8 = g_directSound->lpVtbl->CreateSoundBuffer(g_directSound, &g_primaryDsDesc, &g_primaryDsBuffer, 0);
+      if (s.local_8 != 0) {
         ReleaseSnd();
         return 4;
       }
-      local_8 = (**(code **)(*g_primaryDsBuffer + 0x38))(g_primaryDsBuffer,&g_primaryWaveFormat);
-      if (local_8 != 0) {
-        (**(code **)(*g_primaryDsBuffer + 0x14))(g_primaryDsBuffer,&g_primaryWaveFormat,0x12,
-                                                &local_4);
+      s.local_8 = g_primaryDsBuffer->lpVtbl->SetFormat(g_primaryDsBuffer, &g_primaryWaveFormat);
+      if (s.local_8 != 0) {
+        g_primaryDsBuffer->lpVtbl->GetFormat(g_primaryDsBuffer, &g_primaryWaveFormat, 0x12, &s.format);
       }
       g_sndHwnd = param_1;
       g_sndRefCount = g_sndRefCount + 1;
-      InitializeCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+      InitializeCriticalSection(&g_sndCs);
     }
   }
   if ((param_3 & 1) != 0) {
@@ -287,9 +279,7 @@ undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,byte param_3)
 
 // FUNCTION: MAGSND 0x10001176
 void ReleaseSnd(void)
-
 {
-                    /* 0x1176  2  ReleaseSnd */
   if (g_sndRefCount == 0)
     return;
 
@@ -297,11 +287,11 @@ void ReleaseSnd(void)
   if (g_updateTimerActive != 0) {
     StopUpdateTimer();
   }
-  (**(code **)(*g_directSound + 8))(g_directSound);
+  g_directSound->lpVtbl->Release(g_directSound);
   g_directSound = (int *)0x0;
   g_sndHwnd = 0;
   g_sndRefCount = 0;
-  DeleteCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  DeleteCriticalSection(&g_sndCs);
   return;
 }
 
@@ -314,694 +304,681 @@ undefined4 GetSndHWND(void)
 }
 
 // FUNCTION: MAGSND 0x100011FD
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-int __cdecl LoadSnd(LPSTR param_1,int param_2,Sound *param_3)
-
+int __cdecl LoadSnd(LPSTR path,int slot,Sound *sound)
 {
-  struct {
-    int local_4;
-  } s;
+  int result;
 
-                    /* 0x11fd  3  LoadSnd */
-  if ((param_3 != (Sound *)0) && ((*(uint *)((char *)param_3 + 0x1c) >> 4 & 1) != 0) &&
-     (param_2 != 0)) {
-    if (0x10f < param_2) {
+  if ((sound != (Sound *)0) && ((sound->field_1C >> 4 & 1U) != 0) && (slot != 0)) {
+    if (0x10f < slot || slot < 0x100) {
       return 5;
     }
-    if (param_2 < 0x100) {
-      return 5;
-    }
-    if ((int)g_sndSlots[param_2] != 0) {
+    if (g_sndSlots[slot] != (SndInstance *)0x0) {
       return 0;
-    }
+    } 
   }
   else {
-    if (0x100 < param_2) {
+   if (0x100 < slot || slot < 0) {
       return 5;
     }
-    if (param_2 < 0) {
-      return 5;
-    }
-    if ((int)g_sndSlots[param_2] != 0) {
+    if (g_sndSlots[slot] != (SndInstance *)0x0) {
       return 0;
     }
   }
-  if ((param_3 != (Sound *)0) && ((*(uint *)((char *)param_3 + 0x1c) >> 2 & 1) != 0)) {
-    if ((*(uint *)((char *)param_3 + 0x1c) >> 4 & 1) == 0) {
-      s.local_4 = LoadWaveMmio(param_1,(&g_sndSlots[param_2]),0);
-      if (s.local_4 != 0) {
-        g_sndSlots[param_2] = (SndInstance *)0;
-        return s.local_4;
+  if ((sound != (Sound *)0) && ((sound->field_1C >> 2 & 1U) != 0)) {   
+    if ((sound->field_1C >> 4 & 1U) != 0) {
+      result = LoadAviAudioStream((void *)path,(&g_sndSlots[slot]),0);
+      if (result != 0) {
+        g_sndSlots[slot] = (SndInstance *)0;
+        return result;
       }
-      PrimeDsBufferFromSource((undefined4 *)g_sndSlots[param_2],0);
-    }
-    else {
-      s.local_4 = LoadAviAudioStream((void *)param_1,(&g_sndSlots[param_2]),0);
-      if (s.local_4 != 0) {
-        g_sndSlots[param_2] = (SndInstance *)0;
-        return s.local_4;
-      }
-      if ((*(uint *)((char *)param_3 + 0x1c) >> 5 & 1) == 0) {
-        PrimeAviAudio(g_sndSlots[param_2],0);
-        *(uint *)((int)g_sndSlots[param_2] + 8) =
-             *(uint *)((int)g_sndSlots[param_2] + 8) & 0xffffffbf;
+      if ((sound->field_1C >> 5 & 1U) != 0) {
+        g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 0x40;
       }
       else {
-        *(uint *)((int)g_sndSlots[param_2] + 8) =
-             *(uint *)((int)g_sndSlots[param_2] + 8) | 0x40;
+        ((undefined4 (__cdecl *)(undefined4 *,int))PrimeAviAudio)((undefined4 *)g_sndSlots[slot],0);
+        g_sndSlots[slot]->flags2 &= ~0x40u;
       }
-      g_sndLoadSerial = g_sndLoadSerial + 1;
+      g_sndLoadSerial += 1;
     }
-    *(uint *)((int)g_sndSlots[param_2] + 4) =
-         *(uint *)((int)g_sndSlots[param_2] + 4) | 0x20;
-    AddToUpdateList((int)g_sndSlots[param_2]);
-    *(uint *)((int)g_sndSlots[param_2] + 8) =
-         *(uint *)((int)g_sndSlots[param_2] + 8) | 2;
+    else {
+      result = LoadWaveMmio(path,(&g_sndSlots[slot]),0);
+      if (result != 0) {
+        g_sndSlots[slot] = (SndInstance *)0;
+        return result;
+      }
+      PrimeDsBufferFromSource(g_sndSlots[slot],0);
+    }
+    g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 0x20;
+    AddToUpdateList(g_sndSlots[slot]);
+    g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 2;
   }
   else {
-    s.local_4 = LoadFromFile(param_1,(&g_sndSlots[param_2]));
-    if (s.local_4 != 0) {
-      g_sndSlots[param_2] = (SndInstance *)0;
-      return s.local_4;
+     result = LoadFromFile(path,(&g_sndSlots[slot]));
+    if (result != 0) {
+      g_sndSlots[slot] = (SndInstance *)0;
+      return result;
     }
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  AddToActiveList((int)g_sndSlots[param_2]);
-  *(int *)((int)g_sndSlots[param_2] + 0x10) = param_2;
-  if ((param_3 != (Sound *)0) && (*(int *)((char *)param_3 + 0x18) != 0)) {
-    *(undefined4 *)((int)g_sndSlots[param_2] + 0x14) = *(undefined4 *)((char *)param_3 + 0x18);
+  
+  EnterCriticalSection(&g_sndCs);
+  AddToActiveList(g_sndSlots[slot]);
+  g_sndSlots[slot]->slotIndex = slot;
+  if ((sound != (Sound *)0) && (sound->field_18 != 0)) {
+    g_sndSlots[slot]->loadId = sound->field_18;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x100014BA
-undefined4 __cdecl UnloadSnd(int param_1)
-
+undefined4 __cdecl UnloadSnd(int slot)
 {
-  undefined4 uVar1;
-  uint local_8;
-  
-                    /* 0x14ba  4  UnloadSnd */
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    if ((int)g_sndSlots[param_1] == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 1;
-    }
-    else {
-      FUN_100026d1(param_1);
-      RemoveFromActiveList((int)g_sndSlots[param_1]);
-      if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 1 & 1) != 0) {
-        RemoveFromUpdateList((int)g_sndSlots[param_1]);
-        if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 5 & 1) == 0) {
-          CloseMmioAndFreeSource((undefined4 *)g_sndSlots[param_1]);
-          for (local_8 = 0; local_8 < *(uint *)((int)g_sndSlots[param_1] + 0x30);
-              local_8 = local_8 + 1) {
-            if (*(int *)((int)g_sndSlots[param_1] + 0x38 + local_8 * 4) != 0) {
-              CloseMmioAndFreeSource(*(undefined4 **)
-                            ((int)g_sndSlots[param_1] + 0x38 + local_8 * 4));
-            }
-          }
+  uint i;
+
+  if ((slot > 0x10f) || (0 > slot)) {
+    return 5;
+  }
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[slot] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  FUN_100026d1(slot);
+  RemoveFromActiveList(g_sndSlots[slot]);
+  if (((g_sndSlots[slot]->flags2 >> 1) & 1) != 0) {
+    RemoveFromUpdateList(g_sndSlots[slot]);
+    if (((g_sndSlots[slot]->flags2 >> 5) & 1) == 0) {
+      CloseMmioAndFreeSource(g_sndSlots[slot]);
+      for (i = 0; i < g_sndSlots[slot]->markerCount; i = i + 1) {
+        if (g_sndSlots[slot]->markers[i + 1] != (void *)0x0) {
+          CloseMmioAndFreeSource(g_sndSlots[slot]->markers[i + 1]);
         }
       }
-      DestroySndInstance(g_sndSlots[param_1]);
-      g_sndSlots[param_1] = (SndInstance *)0;
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 0;
     }
   }
-  else {
-    uVar1 = 5;
-  }
-  return uVar1;
+  DestroySndInstance(g_sndSlots[slot]);
+  g_sndSlots[slot] = (SndInstance *)0;
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000161D
 undefined4 UnloadAllSnds(void)
-
 {
-                    /* 0x161d  5  UnloadAllSnds */
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  while (g_activeSndListHead != 0) {
-    UnloadSnd(*(int *)(g_activeSndListHead + 0x10));
+  EnterCriticalSection(&g_sndCs);
+  while (g_activeSndListHead != (SndInstance *)0x0) {
+    UnloadSnd(g_activeSndListHead->slotIndex);
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10001668
-undefined4 __cdecl PlaySnd(int param_1,Sound *param_2)
-
+undefined4 __cdecl PlaySnd(int slot,Sound *sound)
 {
-  undefined4 local_4;
-  
-                     /* 0x1668  6  PlaySnd */
-  if (0x10f < param_1 || param_1 < 0) {
+  int unused;
+  if (0x10f < slot || slot < 0) {
     return 5;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  if ((int)g_sndSlots[param_1] == 0) {
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[slot] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  local_4 = FUN_10001701((undefined4 *)g_sndSlots[param_1],(int *)param_2);
-  *(int *)((int)g_sndSlots[param_1] + 0xc) =
-       *(int *)((int)g_sndSlots[param_1] + 0xc) + 1;
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  unused = FUN_10001701(g_sndSlots[slot],(int *)sound);
+  g_sndSlots[slot]->lruCounter++;
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10001701
-int __cdecl FUN_10001701(undefined4 *param_1,int *param_2)
+int __cdecl FUN_10001701(SndInstance *snd,int *param_2)
 
 {
-  int iVar1;
-  int local_1c;
-  int *local_18;
-  uint local_14;
-  int local_10;
-  int local_c;
-  int local_8;
-  
-  local_14 = 0;
-  local_c = 0;
-  if (((uint)param_1[2] >> 1 & 1) == 0) {
-    if ((param_2 == (int *)0x0) || (((uint)param_2[7] >> 1 & 1) == 0)) {
-      iVar1 = AcquireFreeDsBuffer((int)param_1,(int *)&local_18);
-      if (iVar1 != 0) {
-        return iVar1;
+  struct {
+    int freqValue;
+    LPDIRECTSOUNDBUFFER dsBuffer;
+    int sampleRate;
+    int panValue;
+    uint playFlags;
+    int result;
+  } s;
+
+  s.dsBuffer = snd->dsBuffer;
+  s.freqValue = 0;
+  s.sampleRate = 0;
+  s.panValue = 0;
+  s.playFlags = 0;
+  s.result = 0;
+  if (((snd->flags2 >> 1) & 1) != 0) {
+    if ((snd->flags & 1) != 0) {
+      FUN_100026d1(snd->slotIndex);
+    }
+    if ((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0)) {
+      s.result = StartUpdateTimer(g_updateResolutionMs);
+      if (s.result != 0) {
+        UnloadSnd(snd->slotIndex);
+        return s.result;
       }
-      local_8 = 0;
-    }
-    else {
-      local_18 = (int *)param_1[0x2f];
-    }
-  }
-  else {
-    if ((*(byte *)(param_1 + 1) & 1) != 0) {
-      FUN_100026d1(param_1[4]);
-    }
-    if (((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0)) &&
-       (local_8 = StartUpdateTimer(g_updateResolutionMs), local_8 != 0)) {
-      UnloadSnd(param_1[4]);
-      return local_8;
     }
     if (g_updateTimerEnabled != 0) {
       g_updateTimerUsers = g_updateTimerUsers + 1;
     }
-    local_14 = local_14 | 1;
-    local_18 = (int *)param_1[0x2f];
-    if ((((uint)param_1[1] >> 5 & 1) == 0) && (local_8 = FUN_10003656(param_1), local_8 != 0)) {
-      UnloadSnd(param_1[4]);
-      return local_8;
+    s.playFlags |= 1;
+    if (((snd->flags >> 5) & 1) == 0) {
+      s.result = FUN_10003656(snd);
+      if (s.result != 0) {
+        UnloadSnd(snd->slotIndex);
+        return s.result;
+      }
+    }
+  }
+  else {
+    if ((param_2 == (int *)0x0) || (((uint)param_2[7] >> 1 & 1) == 0)) {
+      s.result = AcquireFreeDsBuffer((int)snd,(int *)&s.dsBuffer);
+      if (s.result != 0) {
+        return s.result;
+      }
+      snd->dsBuffer = s.dsBuffer;
+    }
+    else {
+      s.dsBuffer = snd->dsBuffer;
     }
   }
   if (param_2 == (int *)0x0) {
-    local_1c = 0;
-    param_1[0x7c] = 400;
-    local_c = param_1[0x1f];
-    param_1[0x7b] = local_c;
-    local_10 = 0;
-    param_1[0x7a] = 0;
+    s.freqValue = 0;
+    s.sampleRate = snd->waveFmt.nSamplesPerSec;
+    s.panValue = 0;
+    snd->volume = 400;
+    snd->playbackRateHz = s.sampleRate;
+    snd->pan = 0;
   }
   else {
-    local_1c = *param_2;
-    if (400 < local_1c) {
-      local_1c = 400;
+    int targetVolume;
+
+    targetVolume = *param_2;
+    if (targetVolume > 400) {
+      targetVolume = 400;
     }
-    param_1[0x7c] = local_1c;
-    local_1c = (local_1c * 5 + -2000) * 2;
+    snd->volume = targetVolume;
+    s.freqValue = (targetVolume * 5 + -2000) * 2;
     if (param_2[1] == 0) {
-      local_c = param_1[0x1f];
+      s.sampleRate = snd->waveFmt.nSamplesPerSec;
     }
     else {
-      local_c = param_2[1];
+      s.sampleRate = param_2[1];
     }
-    param_1[0x7b] = local_c;
+    snd->playbackRateHz = s.sampleRate;
     if (param_2[2] == 0) {
-      local_10 = 0;
+      s.panValue = 0;
     }
     else {
-      local_10 = param_2[2];
+      s.panValue = param_2[2];
     }
-    param_1[0x7a] = local_10;
-    local_10 = local_10 * 10;
+    snd->pan = s.panValue;
+    s.panValue = s.panValue * 10;
     if ((*(byte *)(param_2 + 7) & 1) != 0) {
-      local_14 = local_14 | 1;
-      param_1[2] = param_1[2] | 1;
+      s.playFlags |= 1;
+      snd->flags2 |= 1;
     }
     if (((uint)param_2[7] >> 3 & 1) != 0) {
-      param_1[2] = param_1[2] | 4;
+      snd->flags2 |= 4;
     }
   }
-  (**(code **)(*local_18 + 0x3c))(local_18,local_1c);
-  (**(code **)(*local_18 + 0x44))(local_18,local_c);
-  (**(code **)(*local_18 + 0x40))(local_18,local_10);
-  (**(code **)(*local_18 + 0x34))(local_18,0);
-  iVar1 = (**(code **)(*local_18 + 0x30))(local_18,0,0,local_14);
-  if (iVar1 == 0) {
-    param_1[1] = param_1[1] | 1;
-    param_1[1] = param_1[1] & 0xffffffdf;
-    iVar1 = 0;
+  s.dsBuffer->lpVtbl->SetVolume(s.dsBuffer,s.freqValue);
+  s.dsBuffer->lpVtbl->SetFrequency(s.dsBuffer,s.sampleRate);
+  s.dsBuffer->lpVtbl->SetPan(s.dsBuffer,s.panValue);
+  s.dsBuffer->lpVtbl->SetCurrentPosition(s.dsBuffer,0);
+  s.result = s.dsBuffer->lpVtbl->Play(s.dsBuffer,0,0,s.playFlags);
+  if (s.result == 0) {
+    snd->flags |= 1;
+    snd->flags &= 0xffffffdf;
+    return 0;
   }
-  else {
-    iVar1 = 9;
-  }
-  return iVar1;
+  return 9;
 }
 
 // FUNCTION: MAGSND 0x10001A1F
-int __cdecl PlaySndFile(LPSTR param_1,int param_2,Sound *param_3)
+int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *param_3)
 
 {
   struct {
     undefined1 local_1c[4];
-    int local_18;
-    int local_14;
-    int local_10;
+    int volume;
+    int pan;
+    int nSamplesPerSec;
     int local_c;
     undefined4 local_8;
   } s;
 
-                    /* 0x1a1f  7  PlaySndFile */
   s.local_8 = 0;
-  s.local_18 = 0;
-  s.local_10 = 0;
-  if ((0xff < param_2) || (param_2 < 0)) {
+  s.volume = 0;
+  s.nSamplesPerSec = 0;
+  if ((0xff < slot) || (slot < 0)) {
     return 5;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  if ((int)g_sndSlots[param_2] != 0) {
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  EnterCriticalSection(&g_sndCs);
+  if ((int)g_sndSlots[slot] != 0) {
+    LeaveCriticalSection(&g_sndCs);
     return 2;
   }
-  s.local_c = LoadWaveMmio(param_1,(&g_sndSlots[param_2]),s.local_8);
+  s.local_c = LoadWaveMmio(filename,(&g_sndSlots[slot]),s.local_8);
   if (s.local_c != 0) {
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+    LeaveCriticalSection(&g_sndCs);
     return s.local_c;
   }
-  AddToActiveList((int)g_sndSlots[param_2]);
-  AddToUpdateList((int)g_sndSlots[param_2]);
+  AddToActiveList(g_sndSlots[slot]);
+  AddToUpdateList(g_sndSlots[slot]);
   if ((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0)) {
     s.local_c = StartUpdateTimer(g_updateResolutionMs);
     if (s.local_c != 0) {
-      UnloadSnd(param_2);
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+      UnloadSnd(slot);
+      LeaveCriticalSection(&g_sndCs);
       return s.local_c;
     }
   }
-  g_sndSlots[param_2]->slotIndex = param_2;
+  g_sndSlots[slot]->slotIndex = slot;
   if (param_3 != (Sound *)0) {
-    s.local_18 = param_3->field_0;
-    g_sndSlots[param_2]->volume = s.local_18;
-    if (400 < s.local_18) {
-      s.local_18 = 400;
+    s.volume = param_3->field_0;
+    g_sndSlots[slot]->volume = s.volume;
+    if (400 < s.volume) {
+      s.volume = 400;
     }
-    s.local_14 = s.local_18 * 5 - 2000;
-    s.local_14 = s.local_14 + s.local_14;
-    s.local_18 = s.local_14;
+    s.volume = (s.volume * 5 - 2000) * 2;
     if (param_3->field_4 != 0) {
-      s.local_10 = param_3->field_4;
+      s.nSamplesPerSec = param_3->field_4;
     }
     else {
-      s.local_10 = (int)g_sndSlots[param_2]->waveFmt.nSamplesPerSec;
+      s.nSamplesPerSec = (int)g_sndSlots[slot]->waveFmt.nSamplesPerSec;
     }
-    g_sndSlots[param_2]->playbackRateHz = s.local_10;
-    s.local_14 = 0;
+    g_sndSlots[slot]->playbackRateHz = s.nSamplesPerSec;
+
     if (param_3->field_8 != 0) {
-      s.local_14 = param_3->field_8;
+      s.pan = param_3->field_8;      
+    } else {
+      s.pan = 0;
     }
-    g_sndSlots[param_2]->pan = s.local_14;
-    s.local_14 = s.local_14 * 10;
-    if ((*(byte *)((char *)param_3 + 0x1c) & 1) != 0) {
-      *(uint *)((int)g_sndSlots[param_2] + 8) = *(uint *)((int)g_sndSlots[param_2] + 8) | 1;
+    g_sndSlots[slot]->pan = s.pan;
+    s.pan = s.pan * 10;
+    if (param_3->field_1C & 1) {
+      g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 1;
     }
     if (((uint)((int *)param_3)[7] >> 3 & 1) != 0) {
-      *(uint *)((int)g_sndSlots[param_2] + 8) = *(uint *)((int)g_sndSlots[param_2] + 8) | 4;
+      g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 4;
     }
   }
   else {
-    s.local_18 = 0;
-    g_sndSlots[param_2]->volume = 400;
-    s.local_10 = (int)g_sndSlots[param_2]->waveFmt.nSamplesPerSec;
-    g_sndSlots[param_2]->playbackRateHz = s.local_10;
-    s.local_14 = 0;
-    g_sndSlots[param_2]->pan = 0;
+    s.volume = 0;
+    g_sndSlots[slot]->volume = 400;
+    s.nSamplesPerSec = (int)g_sndSlots[slot]->waveFmt.nSamplesPerSec;
+    g_sndSlots[slot]->playbackRateHz = s.nSamplesPerSec;
+    s.pan = 0;
+    g_sndSlots[slot]->pan = s.pan;
   }
-  *(uint *)((int)g_sndSlots[param_2] + 8) = *(uint *)((int)g_sndSlots[param_2] + 8) | 2;
-  (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x3c))
-            (g_sndSlots[param_2]->dsBuffer,s.local_18);
-  g_sndSlots[param_2]->volume = s.local_18;
-  (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x44))
-            (g_sndSlots[param_2]->dsBuffer,s.local_10);
-  g_sndSlots[param_2]->playbackRateHz = s.local_10;
-  (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x40))
-            (g_sndSlots[param_2]->dsBuffer,s.local_14);
-  g_sndSlots[param_2]->pan = s.local_14;
-  PrimeDsBufferFromSource((undefined4 *)g_sndSlots[param_2],0);
-  (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x30))
-            (g_sndSlots[param_2]->dsBuffer,0,0,1);
-  (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x10))
-            (g_sndSlots[param_2]->dsBuffer,(int)&g_sndSlots[param_2]->ringCursorBytes,s.local_1c);
-  *(uint *)((int)g_sndSlots[param_2] + 4) = *(uint *)((int)g_sndSlots[param_2] + 4) | 1;
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 2;
+
+  g_sndSlots[slot]->dsBuffer->lpVtbl->SetVolume(g_sndSlots[slot]->dsBuffer, s.volume);
+  g_sndSlots[slot]->volume = s.volume;
+
+  g_sndSlots[slot]->dsBuffer->lpVtbl->SetFrequency(g_sndSlots[slot]->dsBuffer,s.nSamplesPerSec);
+  g_sndSlots[slot]->playbackRateHz = s.nSamplesPerSec;
+
+  g_sndSlots[slot]->dsBuffer->lpVtbl->SetPan(g_sndSlots[slot]->dsBuffer,s.pan);
+  g_sndSlots[slot]->pan = s.pan;
+
+  PrimeDsBufferFromSource(g_sndSlots[slot],0);
+  
+  g_sndSlots[slot]->dsBuffer->lpVtbl->Play(g_sndSlots[slot]->dsBuffer,0,0,1);
+  g_sndSlots[slot]->dsBuffer->lpVtbl->GetCurrentPosition(g_sndSlots[slot]->dsBuffer,(int)&g_sndSlots[slot]->ringCursorBytes,s.local_1c);
+  g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 1;
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10001E52
-int __cdecl LoadMarkerInstance(undefined4 *param_1,int param_2)
-
+int __cdecl LoadMarkerInstance(SndInstance *parent,int markerIndex)
 {
-  int iVar1;
-  int *piVar2;
-  int iVar3;
-  
-  iVar1 = param_1[0xd];
-  piVar2 = param_1 + param_2 + 0xd;
-  iVar3 = LoadWaveMmio((LPSTR)*param_1,(SndInstance **)piVar2,0x10);
-  if ((iVar3 == 0) &&
-     (iVar3 = PrimeDsBufferFromSource((undefined4 *)*piVar2,*(int *)(iVar1 + (param_2 * 3 + -3) * 8 + 0x14)),
-     iVar3 == 0)) {
-    *(uint *)(*piVar2 + 4) = *(uint *)(*piVar2 + 4) | 0x20;
-    AddToUpdateList(*piVar2);
-    *(uint *)(*piVar2 + 8) = *(uint *)(*piVar2 + 8) | 2;
-    *(uint *)(*piVar2 + 8) = *(uint *)(*piVar2 + 8) | 0x10;
-    *(uint *)(*piVar2 + 8) = param_1[2] & 1 | *(uint *)(*piVar2 + 8) & 0xfffffffe;
-    *(undefined4 *)(*piVar2 + 0x10) = param_1[4];
+  struct {
+    SndInstance **slotPtr;
+    int entryIndex;
+    char *markerEntry;
+    int result;
+    int primeOffset;
+  } s;
+
+  s.result = 0;
+  s.primeOffset= 0;
+  s.entryIndex = 0;
+
+  s.markerEntry = &parent->markers[markerIndex * 3 - 3];
+  s.slotPtr = &parent->markers[markerIndex - 1] + 1;
+  s.result = LoadWaveMmio((LPSTR)parent->streamOrMmio,s.slotPtr,0x10);
+  if (s.result != 0) {
+    return s.result;
   }
-  return iVar3;
+  
+  s.primeOffset = *(int *)(s.markerEntry + 0x14);
+  s.result = PrimeDsBufferFromSource(*s.slotPtr,s.primeOffset);
+  if (s.result != 0) {
+    return s.result;
+  }
+
+  (*s.slotPtr)->flags = (int)(*s.slotPtr)->flags | 0x20;
+  AddToUpdateList(*s.slotPtr);
+  (*s.slotPtr)->flags2 = (int)(*s.slotPtr)->flags2 | 2;
+  (*s.slotPtr)->flags2 = (int)(*s.slotPtr)->flags2 | 0x10;
+  (*s.slotPtr)->flags2 = (parent->flags2 & 1) | ((*s.slotPtr)->flags2 & 0xfffffffe);
+  (*s.slotPtr)->slotIndex = parent->slotIndex;
+  return s.result;
 }
 
 // FUNCTION: MAGSND 0x10001F6F
-int __cdecl PrimeMarkerInstance(int param_1,int param_2)
+int __cdecl PrimeMarkerInstance(SndInstance *parent,int markerIndex)
 
 {
-  undefined4 *puVar1;
-  int iVar2;
-  
-  if (((*(uint *)(param_1 + 4) >> 6 & 1) == 0) || (*(int *)(param_1 + 0x18) != param_2 + -1)) {
-    puVar1 = *(undefined4 **)(param_1 + 0x34 + param_2 * 4);
-    iVar2 = PrimeDsBufferFromSource(puVar1,*(int *)(*(int *)(param_1 + 0x34) + (param_2 * 3 + -3) * 8 + 0x14));
-    if (iVar2 == 0) {
-      puVar1[1] = puVar1[1] | 0x20;
-      puVar1[1] = puVar1[1] & 0xfffffffb;
-      puVar1[1] = puVar1[1] & 0xffffffef;
-      puVar1[0x76] = 0;
-      puVar1[2] = *(uint *)(param_1 + 8) & 1 | puVar1[2] & 0xfffffffe;
-      puVar1[0x7c] = *(undefined4 *)(param_1 + 0x1f0);
-      puVar1[0x7b] = *(undefined4 *)(param_1 + 0x1ec);
-      puVar1[0x7a] = *(undefined4 *)(param_1 + 0x1e8);
-      iVar2 = 0;
+  struct {
+    int entryIndex;
+    SndInstance *marker;
+    char *markerEntry;
+    int primeOffset;
+    int result;
+  } s;
+
+  s.primeOffset = 0;
+  s.result = 0;
+  s.entryIndex = 0;
+
+  if (((parent->flags >> 6) & 1) != 0) {
+    if (parent->activeMarkerIndex == markerIndex - 1) {
+      return 0xd;
     }
   }
-  else {
-    iVar2 = 0xd;
+ 
+  s.markerEntry = (char *)parent->markers[0xd] + (markerIndex * 3 - 3) * 8;
+  s.marker = parent->markers[markerIndex];
+  s.primeOffset = *(int *)(s.markerEntry + 0x14);
+  s.result = PrimeDsBufferFromSource(s.marker,s.primeOffset);
+  if (s.result != 0) {
+    return s.result;
   }
-  return iVar2;
+
+  s.marker->flags |= 0x20;
+  s.marker->flags &= 0xfffffffb;
+  s.marker->flags &= 0xffffffef;
+  s.marker->ringCursorBytes = 0;
+  s.marker->flags2 = (parent->flags2 & 1) | (s.marker->flags2 & 0xfffffffe);
+  s.marker->volume = parent->volume;
+  s.marker->playbackRateHz = parent->playbackRateHz;
+  s.marker->pan = parent->pan;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000208C
 void __cdecl SwapActiveInstances(int *param_1,int *param_2)
 
 {
-  int iVar1;
-  undefined4 local_c;
-  
-  iVar1 = *param_1;
+  struct {
+    int i;
+    int old;
+  } s;
+
+  s.old = *param_1;
   *param_1 = *param_2;
-  for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-    if (*(int *)(iVar1 + 0x38 + local_c * 4) == *param_1) {
-      *(int *)(*param_1 + 0x38 + local_c * 4) = iVar1;
+  s.i = 0;
+  for (; s.i < 0x10; s.i = s.i + 1) {
+    if (*(int *)(s.old + 0x38 + s.i * 4) == *param_1) {
+      *(int *)(*param_1 + 0x38 + s.i * 4) = s.old;
     }
     else {
-      *(undefined4 *)(*param_1 + 0x38 + local_c * 4) = *(undefined4 *)(iVar1 + 0x38 + local_c * 4);
+      *(int *)(*param_1 + 0x38 + s.i * 4) = *(int *)(s.old + 0x38 + s.i * 4);
     }
-    *(undefined4 *)(iVar1 + 0x38 + local_c * 4) = 0;
+    *(undefined4 *)(s.old + 0x38 + s.i * 4) = 0;
   }
-  *(undefined4 *)(*param_1 + 0x10) = *(undefined4 *)(iVar1 + 0x10);
-  *(uint *)(iVar1 + 8) = *(uint *)(iVar1 + 8) | 0x10;
+  *(int *)(*param_1 + 0x10) = *(int *)(s.old + 0x10);
+  *(uint *)(s.old + 8) = *(uint *)(s.old + 8) | 0x10;
   *(uint *)(*param_1 + 8) = *(uint *)(*param_1 + 8) & 0xffffffef;
-  RemoveFromActiveList(iVar1);
-  AddToActiveList(*param_1);
+  RemoveFromActiveList((SndInstance *)s.old);
+  AddToActiveList((SndInstance *)*param_1);
   return;
 }
 
 // FUNCTION: MAGSND 0x1000215C
-int __cdecl SetSndMarker(int param_1,uint param_2)
-
-{
-  undefined4 *puVar1;
-  int local_8;
-  
-                    /* 0x215c  18  SetSndMarker */
-  if ((param_1 < 0x100) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    puVar1 = (undefined4 *)g_sndSlots[param_1];
-    if (puVar1 == (undefined4 *)0x0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      local_8 = 1;
-    }
-    else if ((puVar1[0xc] == 0) || ((uint)puVar1[0xc] < param_2)) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      local_8 = 5;
-    }
-    else {
-      if (puVar1[param_2 + 0xd] == 0) {
-        local_8 = LoadMarkerInstance(puVar1,param_2);
-      }
-      else {
-        local_8 = PrimeMarkerInstance((int)puVar1,param_2);
-      }
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    }
-  }
-  else {
-    local_8 = 5;
-  }
-  return local_8;
-}
-
-// FUNCTION: MAGSND 0x10002249
-int __cdecl PlaySndMarker(int param_1,uint param_2)
-
-{
-  undefined4 *puVar1;
-  int iVar2;
-  int local_24;
-  undefined4 local_20;
-  undefined4 local_1c;
-  uint local_8;
-  
-                    /* 0x2249  19  PlaySndMarker */
-  if ((param_1 < 0x100) && (-1 < param_1)) {
-    if (((int)param_2 < 0x11) && (-1 < (int)param_2)) {
-      EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      iVar2 = (int)g_sndSlots[param_1];
-      if (iVar2 == 0) {
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        iVar2 = 1;
-      }
-      else if ((*(int *)(iVar2 + 0x30) == 0) || (*(uint *)(iVar2 + 0x30) < param_2)) {
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        iVar2 = 5;
-      }
-      else {
-        puVar1 = *(undefined4 **)(iVar2 + 0x34 + param_2 * 4);
-        if (puVar1 == (undefined4 *)0x0) {
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-          iVar2 = 1;
-        }
-        else if (((uint)puVar1[1] >> 5 & 1) == 0) {
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-          iVar2 = 1;
-        }
-        else {
-          if ((*(byte *)(iVar2 + 4) & 1) != 0) {
-            FUN_100026d1(param_1);
-          }
-          puVar1[0x7c] = *(undefined4 *)((int)g_sndSlots[param_1] + 0x1f0);
-          local_24 = puVar1[0x7c];
-          puVar1[0x7b] = *(undefined4 *)((int)g_sndSlots[param_1] + 0x1ec);
-          local_20 = puVar1[0x7b];
-          puVar1[0x7a] = *(undefined4 *)((int)g_sndSlots[param_1] + 0x1e8);
-          local_1c = puVar1[0x7a];
-          local_8 = puVar1[2] & 1 | local_8 & 0xfffffffe;
-          iVar2 = FUN_10001701(puVar1,&local_24);
-          if (iVar2 == 0) {
-            *(uint *)((int)g_sndSlots[param_1] + 4) =
-                 *(uint *)((int)g_sndSlots[param_1] + 4) | 0x40;
-            *(uint *)((int)g_sndSlots[param_1] + 0x18) = param_2 - 1;
-            *(uint *)((int)g_sndSlots[param_1] + 4) =
-                 *(uint *)((int)g_sndSlots[param_1] + 4) | 1;
-          }
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        }
-      }
-    }
-    else {
-      iVar2 = 5;
-    }
-  }
-  else {
-    iVar2 = 5;
-  }
-  return iVar2;
-}
-
-// FUNCTION: MAGSND 0x1000246E
-undefined4 __cdecl StopSnd(int param_1)
+int __cdecl SetSndMarker(int slot,uint markerIndex)
 
 {
   struct {
-    int local_14;
-    int *local_10;
-    int local_c;
-    int local_8;
-    int local_4;
-  } s;
+    SndInstance *snd;
+    int result;
+  } local;
 
-                     /* 0x246e  8  StopSnd */
-  if (0x10f < param_1) {
+
+                    /* 0x215c  18  SetSndMarker */
+  if ((slot > 0xff) || (slot < 0)) {
     return 5;
   }
-  if (param_1 < 0) {
-    return 5;
-  }
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  if ((int)g_sndSlots[param_1] == 0) {
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+
+  EnterCriticalSection(&g_sndCs);
+  local.snd = g_sndSlots[slot];
+  if (local.snd == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if ((*(uint *)((int)g_sndSlots[param_1] + 4) >> 6 & 1) != 0) {
-    s.local_4 = *(int *)((int)g_sndSlots[param_1] + 0x18);
-    s.local_8 = *(int *)((int)g_sndSlots[param_1] + 0x38 + s.local_4 * 4);
-    if (s.local_8 == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      return 1;
-    }
-    *(uint *)(s.local_8 + 4) = *(uint *)(s.local_8 + 4) | 2;
+  if ((local.snd->markerCount == 0) || (local.snd->markerCount <= markerIndex)) {
+    LeaveCriticalSection(&g_sndCs);
+    return 5;
+  }
+  if (local.snd->markers[markerIndex] != (void *)0x0) {
+    local.result = PrimeMarkerInstance(local.snd,markerIndex);
   }
   else {
-    if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 1 & 1) != 0) {
-      *(uint *)((int)g_sndSlots[param_1] + 4) =
-           *(uint *)((int)g_sndSlots[param_1] + 4) | 2;
+    local.result = LoadMarkerInstance(local.snd,markerIndex);
+  }
+  LeaveCriticalSection(&g_sndCs);
+  return local.result;
+}
+
+// FUNCTION: MAGSND 0x10002249
+int __cdecl PlaySndMarker(int slot,uint markerIndex)
+
+{
+  int result;
+  SndInstance *snd;
+  SndInstance *marker;
+  int volume;
+
+  if ((slot > 0xff) || (slot < 0)) {
+    return 5;
+  }
+  if (((int)markerIndex > 0x10) || ((int)markerIndex < 0)) {
+    return 5;
+  }
+  EnterCriticalSection(&g_sndCs);
+  snd = g_sndSlots[slot];
+  if (snd == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  if ((snd->markerCount == 0) || (snd->markerCount <= markerIndex)) {
+    LeaveCriticalSection(&g_sndCs);
+    return 5;
+  }
+  marker = snd->markers[markerIndex];
+  if (marker == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  if (((marker->flags2 >> 5) & 1) == 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+
+  if ((snd->flags & 1) != 0) {
+    FUN_100026d1(slot);
+  }
+
+  volume = snd->volume;
+  marker->volume = volume;
+  marker->playbackRateHz = snd->playbackRateHz;
+  marker->pan = snd->pan;
+
+  result = FUN_10001701((undefined4 *)marker,&volume);
+  if (result == 0) {
+    snd->flags |= 0x40;
+    snd->activeMarkerIndex = markerIndex - 1;
+    snd->flags |= 1;
+  }
+  LeaveCriticalSection(&g_sndCs);
+  return result;
+}
+
+// FUNCTION: MAGSND 0x1000246E
+undefined4 __cdecl StopSnd(int slot)
+
+{
+  struct {
+    int status;
+    int markerIndex;
+    SndInstance *marker;
+    int *dupEntry;
+    uint i;
+  } s;
+  
+                     /* 0x246e  8  StopSnd */
+  if ((0x10f < slot) || (slot < 0)) {
+    return 5;
+  }
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[slot] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  if (((g_sndSlots[slot]->flags >> 6) & 1) != 0) {
+    s.markerIndex = g_sndSlots[slot]->activeMarkerIndex;
+    s.marker = g_sndSlots[slot]->markers[s.markerIndex + 1];
+    if (s.marker == (SndInstance *)0x0) {
+      LeaveCriticalSection(&g_sndCs);
+      return 1;
+    }
+    s.marker->flags |= 2;
+  }
+  else {
+    if (((g_sndSlots[slot]->flags2 >> 1) & 1) != 0) {
+      g_sndSlots[slot]->flags |= 2;
     }
     else {
-      s.local_14 = (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x48))
-                        (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc));
-      if (s.local_14 != 0) {
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+      s.status = (**(code **)(**(int **)((int)g_sndSlots[slot] + 0xbc) + 0x48))
+                       (*(undefined4 *)((int)g_sndSlots[slot] + 0xbc));
+      if (s.status != 0) {
+        LeaveCriticalSection(&g_sndCs);
         return 9;
       }
     }
   }
-  if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 1 & 1) == 0) {
-    for (s.local_c = 0; s.local_c < 0x10; s.local_c = s.local_c + 1) {
-      s.local_10 = (int *)((int)g_sndSlots[param_1] + s.local_c * 0xc + 0xc0);
-      if (*s.local_10 == 0) {
+  if (((g_sndSlots[slot]->flags2 >> 1) & 1) == 0) {
+    for (s.i = 0; s.i < 0x10; s.i = s.i + 1) {
+      s.dupEntry = (int *)((int)g_sndSlots[slot] + s.i * 0xc + 0xc0);
+      if (*s.dupEntry == 0) {
         break;
       }
-      s.local_14 = (**(code **)(*(int *)*s.local_10 + 0x48))(*s.local_10);
-      if (s.local_14 != 0) {
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+      s.status = (**(code **)(*(int *)*s.dupEntry + 0x48))(*s.dupEntry);
+      if (s.status != 0) {
+        LeaveCriticalSection(&g_sndCs);
         return 9;
       }
     }
-    *(uint *)((int)g_sndSlots[param_1] + 4) =
-         *(uint *)((int)g_sndSlots[param_1] + 4) & 0xfffffffe;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  else if (g_updateTimerUsers > 0) {
+    g_updateTimerUsers = g_updateTimerUsers - 1;
+    if (g_updateTimerUsers == 0) {
+      StopUpdateTimer();
+    }
+  }
+  g_sndSlots[slot]->flags &= ~1;
+  g_sndSlots[slot]->flags &= ~2;
+  g_sndSlots[slot]->flags |= 4;
+  g_sndSlots[slot]->flags &= ~0x20;
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10002676
 void StopAllSnds(void)
 {
-  int local_8;
-  
-                     /* 0x2676  9  StopAllSnds */
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  local_8 = g_activeSndListHead;
-  while (local_8 != 0) {
-    StopSnd(*(int *)(local_8 + 0x10));
-    local_8 = *(int *)(local_8 + 0x200);
+  SndInstance *node;
+  EnterCriticalSection(&g_sndCs);
+  node = g_activeSndListHead;
+  while (node != (SndInstance *)0x0) {
+    StopSnd(node->slotIndex);
+    node = node->activeNext;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  LeaveCriticalSection(&g_sndCs);
   return;
 }
 
 // FUNCTION: MAGSND 0x100026D1
-undefined4 __cdecl FUN_100026d1(int param_1)
+undefined4 __cdecl FUN_100026d1(int slot)
+{ 
+  struct {
+    int status;
+    LPLPDIRECTSOUNDBUFFER subPtr;
+    int i;
+    SndInstance *markerInstance;
+    int markerIndex;
+  } s;
 
-{
-  undefined4 uVar1;
-  int iVar2;
-  int *piVar3;
-  int iVar4;
-  int local_10;
-  
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    if ((int)g_sndSlots[param_1] == 0) {
-      uVar1 = 1;
+  if (slot > 0x10f || slot < 0) {
+    return 5;
+  }
+  if (g_sndSlots[slot] == (SndInstance *)0x0) {
+    return 1;
+  }
+  if (((g_sndSlots[slot]->flags >> 6) & 1) != 0) {
+    s.markerIndex = g_sndSlots[slot]->activeMarkerIndex;
+    s.markerInstance = g_sndSlots[slot]->markers[s.markerIndex + 1];
+    if (s.markerInstance == 0) {
+      return 1;
     }
-    else {
-      if ((*(uint *)((int)g_sndSlots[param_1] + 4) >> 6 & 1) == 0) {
-        iVar4 = (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x48))
-                          (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc));
-        if (iVar4 != 0) {
-          return 9;
-        }
-      }
-      else {
-        iVar4 = *(int *)((int)g_sndSlots[param_1] + 0x38 +
-                        *(int *)((int)g_sndSlots[param_1] + 0x18) * 4);
-        if (iVar4 == 0) {
-          return 1;
-        }
-        iVar2 = (**(code **)(**(int **)(iVar4 + 0xbc) + 0x48))(*(undefined4 *)(iVar4 + 0xbc));
-        if (iVar2 != 0) {
-          return 9;
-        }
-        *(uint *)((int)g_sndSlots[param_1] + 4) =
-             *(uint *)((int)g_sndSlots[param_1] + 4) & 0xffffffbf;
-        *(uint *)(iVar4 + 4) = *(uint *)(iVar4 + 4) & 0xfffffffe;
-        *(uint *)(iVar4 + 4) = *(uint *)(iVar4 + 4) & 0xfffffffd;
-        *(uint *)(iVar4 + 4) = *(uint *)(iVar4 + 4) | 4;
-        *(uint *)(iVar4 + 4) = *(uint *)(iVar4 + 4) & 0xffffffdf;
-      }
-      if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 1 & 1) == 0) {
-        local_10 = 0;
-        while ((local_10 < 0x10 &&
-               (piVar3 = (int *)((int)g_sndSlots[param_1] + local_10 * 0xc + 0xc0),
-               *piVar3 != 0))) {
-          iVar4 = (**(code **)(*(int *)*piVar3 + 0x48))(*piVar3);
-          if (iVar4 != 0) {
-            return 9;
-          }
-          local_10 = local_10 + 1;
-        }
-      }
-      else if ((0 < g_updateTimerUsers) &&
-              (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
-        StopUpdateTimer();
-      }
-      *(uint *)((int)g_sndSlots[param_1] + 4) =
-           *(uint *)((int)g_sndSlots[param_1] + 4) & 0xfffffffe;
-      *(uint *)((int)g_sndSlots[param_1] + 4) =
-           *(uint *)((int)g_sndSlots[param_1] + 4) & 0xfffffffd;
-      *(uint *)((int)g_sndSlots[param_1] + 4) =
-           *(uint *)((int)g_sndSlots[param_1] + 4) | 4;
-      *(uint *)((int)g_sndSlots[param_1] + 4) =
-           *(uint *)((int)g_sndSlots[param_1] + 4) & 0xffffffdf;
-      uVar1 = 0;
+
+    s.status = s.markerInstance->dsBuffer->lpVtbl->Stop(s.markerInstance->dsBuffer);
+    if (s.status != 0) {
+      return 9;
     }
+    g_sndSlots[slot]->flags &= 0xffffffbf;
+    s.markerInstance->flags &=0xfffffffe;
+    s.markerInstance->flags &= 0xfffffffd;
+    s.markerInstance->flags = (int)s.markerInstance->flags | 4;
+    s.markerInstance->flags &= 0xffffffdf;
   }
   else {
-    uVar1 = 5;
+    s.status = g_sndSlots[slot]->dsBuffer->lpVtbl->Stop(g_sndSlots[slot]->dsBuffer);
+    if (s.status != 0) {
+      return 9;
+    }
   }
-  return uVar1;
+  if (((g_sndSlots[slot]->flags2 >> 1) & 1) == 0) {
+    for (s.i = 0; s.i < 0x10; s.i = s.i + 1) {
+      s.subPtr = &g_sndSlots[slot]->duplicateBuffers[s.i].buffer;
+      if ((*s.subPtr)!= 0x0) {        
+        s.status = (*s.subPtr)->lpVtbl->Stop(*s.subPtr);
+        if (s.status != 0) {
+          return 9;
+        }
+      }
+      else
+        break;
+    }
+  }
+  else if (g_updateTimerUsers > 0) {
+    g_updateTimerUsers = g_updateTimerUsers - 1;
+    if (g_updateTimerUsers == 0) {
+      StopUpdateTimer();
+    }
+  }
+  g_sndSlots[slot]->flags &= 0xfffffffe;
+  g_sndSlots[slot]->flags &= 0xfffffffd;
+  g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 4;
+  g_sndSlots[slot]->flags &= 0xffffffdf;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000290C
@@ -1013,38 +990,34 @@ undefined4 PlayMidiFile(void)
 }
 
 // FUNCTION: MAGSND 0x1000291E
-undefined4 __cdecl SetPitch(int param_1,undefined4 param_2)
+undefined4 __cdecl SetPitch(int slot,undefined4 pitchHz)
 
 {
-  undefined4 uVar1;
-  int *piVar2;
-  int local_8;
-  
+  struct {
+    LPLPDIRECTSOUNDBUFFER duplicatePtr;
+    int index;
+  } s;
+
                     /* 0x291e  11  SetPitch */
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    if ((int)g_sndSlots[param_1] == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 1;
-    }
-    else {
-      (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x44))
-                (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc),param_2);
-      local_8 = 0;
-      while ((local_8 < 0x10 &&
-             (piVar2 = (int *)((int)g_sndSlots[param_1] + local_8 * 0xc + 0xc0),
-             *piVar2 != 0))) {
-        (**(code **)(*(int *)*piVar2 + 0x44))(*piVar2,param_2);
-        local_8 = local_8 + 1;
-      }
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 0;
-    }
+  if ((0x10f < slot) || (slot < 0)) {
+    return 5;
   }
-  else {
-    uVar1 = 5;
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[slot] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
   }
-  return uVar1;
+
+  g_sndSlots[slot]->dsBuffer->lpVtbl->SetFrequency(g_sndSlots[slot]->dsBuffer,pitchHz);
+  for (s.index = 0; s.index < 0x10; s.index = s.index + 1) {
+    s.duplicatePtr = &g_sndSlots[slot]->duplicateBuffers[s.index].buffer;
+    if (*s.duplicatePtr == (LPDIRECTSOUNDBUFFER)0x0) {
+      break;
+    }
+    (*s.duplicatePtr)->lpVtbl->SetFrequency(*s.duplicatePtr,pitchHz);
+  }
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10002A24
@@ -1061,55 +1034,62 @@ undefined4 GetPitch(void)
 undefined4 __cdecl SetVol(int param_1,uint param_2)
 
 {
-  int iVar1;
-  undefined4 uVar2;
-  int *piVar3;
-  int local_10;
-  
+  struct {
+    undefined4 result;
+    int i;
+    int markerInst;
+    int markerIndex;
+  } s;
+
                     /* 0x2a36  13  SetVol */
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    if ((int)g_sndSlots[param_1] == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar2 = 1;
+  s.result = 0;
+
+  if (param_1 > 0x10f) {
+    return 5;
+  }
+  if (param_1 < 0) {
+    return 5;
+  }
+  EnterCriticalSection(&g_sndCs);
+  if ((int)g_sndSlots[param_1] == 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  if (400 < param_2) {
+    param_2 = 400;
+  }
+  if (param_2 < 0) {
+    param_2 = 0;
+  }
+
+  if ((*(uint *)((int)g_sndSlots[param_1] + 4) >> 6 & 1) != 0) {
+    s.markerIndex = *(int *)((int)g_sndSlots[param_1] + 0x18);
+    s.markerInst = *(int *)((int)g_sndSlots[param_1] + s.markerIndex * 4 + 0x38);
+    if (s.markerInst == 0) {
+      LeaveCriticalSection(&g_sndCs);
+      return 1;
     }
-    else {
-      if (400 < param_2) {
-        param_2 = 400;
-      }
-      if ((*(uint *)((int)g_sndSlots[param_1] + 4) >> 6 & 1) == 0) {
-        *(uint *)((int)g_sndSlots[param_1] + 0x1f0) = param_2;
-        *(uint *)((int)g_sndSlots[param_1] + 0x1f0) = param_2;
-        param_2 = (param_2 * 5 + -2000) * 2;
-        (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x3c))
-                  (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc),param_2);
-      }
-      else {
-        iVar1 = *(int *)((int)g_sndSlots[param_1] + 0x38 +
-                        *(int *)((int)g_sndSlots[param_1] + 0x18) * 4);
-        if (iVar1 == 0) {
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-          return 1;
-        }
-        *(uint *)(iVar1 + 0x1f0) = param_2;
-        param_2 = (param_2 * 5 + -2000) * 2;
-        (**(code **)(**(int **)(iVar1 + 0xbc) + 0x3c))(*(undefined4 *)(iVar1 + 0xbc),param_2);
-      }
-      local_10 = 0;
-      while ((local_10 < 0x10 &&
-             (piVar3 = (int *)((int)g_sndSlots[param_1] + local_10 * 0xc + 0xc0),
-             *piVar3 != 0))) {
-        (**(code **)(*(int *)*piVar3 + 0x3c))(*piVar3,param_2);
-        local_10 = local_10 + 1;
-      }
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar2 = 0;
-    }
+    *(uint *)(s.markerInst + 0x1f0) = param_2;
+    param_2 = (param_2 * 5 + -2000) * 2;
+    (**(code **)(**(int **)(s.markerInst + 0xbc) + 0x3c))
+              (*(undefined4 *)(s.markerInst + 0xbc),param_2);
   }
   else {
-    uVar2 = 5;
+    *(uint *)((int)g_sndSlots[param_1] + 0x1f0) = param_2;
+    *(uint *)((int)g_sndSlots[param_1] + 0x1f0) = param_2;
+    param_2 = (param_2 * 5 + -2000) * 2;
+    (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x3c))
+              (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc),param_2);
   }
-  return uVar2;
+  for (s.i = 0; s.i < 0x10; s.i = s.i + 1) {
+    s.markerInst = *(int *)((int)g_sndSlots[param_1] + s.i * 0xc + 0xc0);
+    if (s.markerInst == 0) {
+      break;
+    }
+    (**(code **)(*(int *)s.markerInst + 0x3c))(s.markerInst,param_2);
+  }
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10002C32
@@ -1121,38 +1101,37 @@ undefined4 GetVol(void)
 }
 
 // FUNCTION: MAGSND 0x10002C44
-undefined4 __cdecl SetPan(int param_1,int param_2)
+undefined4 __cdecl SetPan(int slot,int pan)
 
 {
-  undefined4 uVar1;
-  int *piVar2;
-  int local_8;
-  
-                    /* 0x2c44  15  SetPan */
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    if ((int)g_sndSlots[param_1] == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 1;
-    }
-    else {
-      (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x40))
-                (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc),param_2 * 10);
-      local_8 = 0;
-      while ((local_8 < 0x10 &&
-             (piVar2 = (int *)((int)g_sndSlots[param_1] + local_8 * 0xc + 0xc0),
-             *piVar2 != 0))) {
-        (**(code **)(*(int *)*piVar2 + 0x40))(*piVar2,param_2 * 10);
-        local_8 = local_8 + 1;
-      }
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 0;
-    }
+  struct {
+    LPLPDIRECTSOUNDBUFFER slot;
+    int index;
+  } s;
+
+  s.slot = 0;
+  if ((0x10f < slot) || (slot < 0)) {
+    return 5;
   }
-  else {
-    uVar1 = 5;
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[slot] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
   }
-  return uVar1;
+
+  pan = (pan * 5) * 2;
+  //pan = pan + pan;
+  g_sndSlots[slot]->dsBuffer->lpVtbl->SetPan(g_sndSlots[slot]->dsBuffer,pan);
+  for (s.index = 0; s.index < 0x10; s.index++) {
+    s.slot = &g_sndSlots[slot]->duplicateBuffers[s.index].buffer;
+    if (*s.slot != NULL) {
+      (*s.slot)->lpVtbl->SetPan(*s.slot, pan);
+    }
+    else
+      break;
+  }
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10002D55
@@ -1168,8 +1147,8 @@ undefined4 UpdateSnd(void)
 
 {
   struct {
-    undefined4 *node;
-    undefined4 *next;
+    SndInstance *node;
+    SndInstance *next;
   } s;
   
                      /* 0x2d67  17  UpdateSnd */
@@ -1177,159 +1156,140 @@ undefined4 UpdateSnd(void)
     return 0xd;
   }
 
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  EnterCriticalSection(&g_sndCs);
   s.node = g_updateSndHead;
-  while (s.node != (undefined4 *)0x0) {
-    if ((*(byte *)(s.node + 1) & 1) != 0) {
-      if (((uint)s.node[1] >> 1 & 1) != 0) {
-        if ((uint)s.node[0x7c] > 5) {
-          s.node[0x7c] = s.node[0x7c] - 5;
+  while (s.node != (SndInstance *)0x0) {
+    if ((s.node->flags & 1) != 0) {
+      if (((s.node->flags >> 1) & 1) != 0) {
+        if ((uint)s.node->volume > 5) {
+          s.node->volume = s.node->volume - 5;
         }
         else {
-          s.node[0x7c] = 0;
+          s.node->volume = 0;
         }
-        SetVol(*(int *)((char *)s.node + 0x10), *(int *)((char *)s.node + 0x1f0));
+        SetVol(s.node->slotIndex, s.node->volume);
       }
   
-      if (((uint)s.node[2] >> 5 & 1) != 0) {
-        if (((uint)s.node[2] >> 6 & 1) == 0) {
-          FUN_10003d60(s.node);
+      if (((s.node->flags2 >> 5) & 1) != 0) {
+        if (((s.node->flags2 >> 6) & 1) == 0) {
+          FUN_10003d60((undefined4 *)s.node);
         }
       }
       else {
-        FUN_10003748((int)s.node);
+        FUN_10003748((int)(s.node));
       }
     }
   
-    if (((uint)s.node[1] >> 2 & 1) != 0) {
-      if (((uint)s.node[2] >> 2 & 1) != 0) {
-        s.next = *(undefined4 **)((char *)s.node + 0x200);
-        UnloadSnd(*(int *)((char *)s.node + 0x10));
+    if (((s.node->flags >> 2) & 1) != 0) {
+      if (((s.node->flags2 >> 2) & 1) != 0) {
+        s.next = s.node->activeNext;
+        UnloadSnd(s.node->slotIndex);
         s.node = s.next;
         continue;
       }
     }
-    s.node = *(undefined4 **)((char *)s.node + 0x1f8);
+    s.node = s.node->updateNext;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10002EB5
 undefined4 __cdecl GetSndTime(int param_1,uint *param_2)
-
 {
-  undefined4 uVar1;
-  uint uVar2;
-  uint local_20;
-  int local_1c;
-  uint local_18;
-  double local_14;
-  uint local_c;
-  undefined1 local_8 [4];
-  
-                    /* 0x2eb5  20  GetSndTime */
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    if ((int)g_sndSlots[param_1] == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 1;
-    }
-    else {
-      local_1c = (int)g_sndSlots[param_1];
-      (**(code **)(**(int **)(local_1c + 0xbc) + 0x10))
-                (*(undefined4 *)(local_1c + 0xbc),&local_20,local_8);
-      local_18 = *(uint *)(local_1c + 0x1dc) % *(uint *)(local_1c + 0xb0);
-      if (local_18 < local_20) {
-        *(int *)(local_1c + 0x1dc) = *(int *)(local_1c + 0x1dc) + (local_20 - local_18);
-      }
-      else {
-        *(int *)(local_1c + 0x1dc) =
-             *(int *)(local_1c + 0x1dc) + (*(int *)(local_1c + 0xb0) - local_18);
-        *(int *)(local_1c + 0x1dc) = *(int *)(local_1c + 0x1dc) + local_20;
-      }
-      if ((*(uint *)(local_1c + 8) >> 5 & 1) != 0) {
-        local_c = *(uint *)(local_1c + 0x1dc) / *(uint *)(local_1c + 0x8c);
-        while (*(uint *)(local_1c + 0xa0) < local_c) {
-          PostMessageA(g_sndHwnd,0x3bd,0,local_c);
-          *(int *)(local_1c + 0xa0) = *(int *)(local_1c + 0xa0) + 1;
-        }
-      }
-      local_14 = (double)*(uint *)(local_1c + 0x1dc);
-      if (*(int *)(local_1c + 0x80) == 0x15888) {
-        uVar2 = ftol();
-        *param_2 = uVar2;
-      }
-      else if (*(int *)(local_1c + 0x80) == 0xac44) {
-        uVar2 = ftol();
-        *param_2 = uVar2;
-      }
-      else if (*(int *)(local_1c + 0x80) == 0x5622) {
-        uVar2 = ftol();
-        *param_2 = uVar2;
-      }
-      else {
-        if (*(int *)(local_1c + 0x80) != 0x2b11) {
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-          return 8;
-        }
-        uVar2 = ftol();
-        *param_2 = uVar2;
-      }
-      g_sndTimeSamples[g_sndTimeSampleIndex].prevTime = g_lastSndTime;
-      g_sndTimeSamples[g_sndTimeSampleIndex].currTime = *param_2;
-      g_sndTimeSampleIndex = g_sndTimeSampleIndex + 1;
-      g_sndTimeSampleIndex = g_sndTimeSampleIndex & 0xff;
-      if (*param_2 < g_lastSndTime) {
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        uVar1 = 5;
-      }
-      else {
-        g_lastSndTime = *param_2;
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        uVar1 = 0;
-      }
-    }
+  // TODO: this has QWORD alignment problems
+  struct  {
+    int64_t local_24;
+    uint local_1c;
+    SndInstance *local_18;
+    uint local_14;
+    double local_10;
+    uint local_8;
+    undefined1 local_4 [4];
+  } s;
+
+                     /* 0x2eb5  20  GetSndTime */
+  if (0x10f < param_1 || param_1 < 0) {
+    return 5;
+  }
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[param_1] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  s.local_18 = g_sndSlots[param_1];
+  s.local_18->dsBuffer->lpVtbl->GetCurrentPosition(s.local_18->dsBuffer,&s.local_1c,s.local_4);
+  s.local_14 = s.local_18->timeBytes % s.local_18->dsDesc.dwBufferBytes;
+  if (s.local_14 < s.local_1c) {
+    s.local_18->timeBytes += (s.local_1c - s.local_14);
   }
   else {
-    uVar1 = 5;
+    s.local_18->timeBytes += (s.local_18->dsDesc.dwBufferBytes - s.local_14);
+    s.local_18->timeBytes += s.local_1c;
   }
-  return uVar1;
+  if (((s.local_18->flags2 >> 5) & 1) != 0) {
+    s.local_8 = s.local_18->timeBytes / s.local_18->blockBytes;
+    while (s.local_18->timeEventCount < s.local_8) {
+      PostMessageA(g_sndHwnd,0x3bd,0,s.local_8);
+      s.local_18->timeEventCount++;
+    }
+  }
+  s.local_24 = s.local_18->timeBytes;
+  s.local_10 = s.local_24;
+  if (s.local_18->waveFmt.nAvgBytesPerSec == 0x15888) {
+    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_88200);
+  }
+  else if (s.local_18->waveFmt.nAvgBytesPerSec == 0xac44) {
+    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_44100);
+  }
+  else if (s.local_18->waveFmt.nAvgBytesPerSec == 0x5622) {
+    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_22050);
+  }
+  else if (s.local_18->waveFmt.nAvgBytesPerSec == 0x2b11) {
+    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_11025);
+  }
+  else {
+    
+    LeaveCriticalSection(&g_sndCs);
+    return 8;
+  }
+  g_sndTimeSamples[g_sndTimeSampleIndex].prevTime = g_lastSndTime;
+  g_sndTimeSamples[g_sndTimeSampleIndex].currTime = *param_2;
+  g_sndTimeSampleIndex = g_sndTimeSampleIndex + 1;
+  g_sndTimeSampleIndex = g_sndTimeSampleIndex & 0xff;
+  if (*param_2 < g_lastSndTime) {
+    LeaveCriticalSection(&g_sndCs);
+    return 5;
+  }
+  g_lastSndTime = *param_2;
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000314D
 undefined4 __cdecl GetSndState(int param_1,undefined4 *param_2)
 
 {
-  undefined4 uVar1;
-  
-                    /* 0x314d  22  GetSndState */
-  if ((param_1 < 0x110) && (-1 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    if ((int)g_sndSlots[param_1] == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 1;
-    }
-    else {
-      if ((*(byte *)((int)g_sndSlots[param_1] + 4) & 1) == 0) {
-        if ((*(uint *)((int)g_sndSlots[param_1] + 4) >> 3 & 1) == 0) {
-          *param_2 = 0;
-        }
-        else {
-          *param_2 = 2;
-        }
-      }
-      else {
-        *param_2 = 1;
-      }
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar1 = 0;
-    }
+                     /* 0x314d  22  GetSndState */
+  if ((0x10f < param_1) || (param_1 < 0)) {
+    return 5;
+  }
+  EnterCriticalSection(&g_sndCs);
+  if (g_sndSlots[param_1] == (SndInstance *)0x0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 1;
+  }
+  if ((*(byte *)((int)g_sndSlots[param_1] + 4) & 1) != 0) {
+    *param_2 = 1;
+  }
+  else if (((*(uint *)((int)g_sndSlots[param_1] + 4) >> 3) & 1) != 0) {
+    *param_2 = 2;
   }
   else {
-    uVar1 = 5;
+    *param_2 = 0;
   }
-  return uVar1;
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000320D
@@ -1344,20 +1304,23 @@ undefined4 ResetSnd(void)
 undefined4 __cdecl IsSndLoaded(int param_1,undefined4 *param_2)
 
 {
-  int local_8;
+  int activeNode;
   
                      /* 0x321f  26  IsSndLoaded */
-  if (0 < param_1) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    for (local_8 = g_activeSndListHead; local_8 != 0; local_8 = *(int *)(local_8 + 0x200)) {
-      if (*(int *)(local_8 + 0x14) == param_1) {
-        *param_2 = *(undefined4 *)(local_8 + 0x10);
-        LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        return 1;
-      }
-    }
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+  if (param_1 <= 0) {
+    return 0;
   }
+  EnterCriticalSection(&g_sndCs);
+  activeNode = (int)g_activeSndListHead;
+  while (activeNode != 0) {
+    if (*(int *)(activeNode + 0x14) == param_1) {
+      *param_2 = *(undefined4 *)(activeNode + 0x10);
+      LeaveCriticalSection(&g_sndCs);
+      return 1;
+    }
+    activeNode = *(int *)(activeNode + 0x200);
+  }
+  LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
@@ -1365,144 +1328,157 @@ undefined4 __cdecl IsSndLoaded(int param_1,undefined4 *param_2)
 undefined4 __cdecl GetLRUSnd(int *param_1,int param_2,int param_3)
 
 {
-  int local_14;
-  int local_10;
-  uint local_c;
-  undefined4 local_8;
+  struct {
+    int local_10;
+    int local_c;
+    uint local_8;
+    int local_4;
+  } s;
   
                     /* 0x32ad  27  GetLRUSnd */
-  local_8 = 0;
-  local_c = 0xffffffff;
-  if (((param_3 == 0) || (param_3 <= param_2)) || (0xff < param_3)) {
-    local_10 = 0;
+  s.local_4 = 0;
+  s.local_8 = -1;
+  if (param_3 == 0) {
+    s.local_c = 0;
     param_3 = 0xff;
   }
   else {
-    local_10 = param_2;
+    if (param_3 <= param_2) {
+      s.local_c = 0;
+      param_3 = 0xff;
+    }
+    else {
+      if (param_3 < 0x100) {
+        s.local_c = param_2;
+      }
+      else {
+        s.local_c = 0;
+        param_3 = 0xff;
+      }
+    }
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  while (local_10 < param_3) {
-    if ((int)g_sndSlots[local_10] == 0) {
-      local_14 = local_10;
-      local_8 = 1;
+  EnterCriticalSection(&g_sndCs);
+  for (; s.local_c < param_3; s.local_c = s.local_c + 1) {
+    if ((int)g_sndSlots[s.local_c] == 0) {
+      s.local_10 = s.local_c;
+      s.local_4 = 1;
       break;
     }
-    if (*(uint *)((int)g_sndSlots[local_10] + 0xc) < local_c) {
-      local_c = *(uint *)((int)g_sndSlots[local_10] + 0xc);
-      local_14 = *(int *)((int)g_sndSlots[local_10] + 0x10);
+    if (*(uint *)((int)g_sndSlots[s.local_c] + 0xc) < s.local_8) {
+      s.local_8 = *(uint *)((int)g_sndSlots[s.local_c] + 0xc);
+      s.local_10 = *(int *)((int)g_sndSlots[s.local_c] + 0x10);
     }
-    local_10 = local_10 + 1;
   }
-  *param_1 = local_14;
-  LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  return local_8;
+  *param_1 = s.local_10;
+  LeaveCriticalSection(&g_sndCs);
+  return s.local_4;
 }
 
 // FUNCTION: MAGSND 0x100033A2
 void * __cdecl GetAVISndBuff(int param_1,uint param_2)
 
 {
-  SndInstance *sndObj;
-  void *local_28;
-  int local_24;
-  undefined4 local_20;
-  uint local_1c;
-  int local_18;
-  int local_14;
-  undefined4 local_10;
-  undefined4 local_c;
-  int local_8;
-  
+  struct {
+    void *ptr1;
+    int slot;
+    undefined4 zero1;
+    uint blockIndex;
+    int hr;
+    void *ptr2;
+    uint bytes2;
+    uint bytes1;
+    int offset;
+  } s;
+
                     /* 0x33a2  23  GetAVISndBuff */
-  local_28 = 0;
-  local_14 = 0;
-  local_c = 0;
-  local_10 = 0;
-  local_20 = 0;
-  if ((param_1 < 0x110) && (0xff < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    local_24 = (int)g_sndSlots[param_1];
-    if (local_24 == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      local_28 = 0;
-    }
-    else if ((*(uint *)(local_24 + 4) >> 7 & 1) == 0) {
-      sndObj = (SndInstance *)local_24;
-      local_1c = param_2 % *(uint *)(local_24 + 0x94);
-      local_8 = *(int *)(local_24 + 0x8c) * local_1c;
-      local_18 = (**(code **)(**(int **)(local_24 + 0xbc) + 0x2c))
-                           (*(undefined4 *)(local_24 + 0xbc),local_8,
-                            *(undefined4 *)(local_24 + 0x8c),&local_28,&local_c,&local_14,&local_10,
-                            0);
-      if (local_18 == 0) {
-        if (local_14 == 0) {
-          sndObj->dsLockedPtr = (void *)local_28;
-          *(uint *)(local_24 + 4) = *(uint *)(local_24 + 4) | 0x80;
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-        }
-        else {
-          (**(code **)(**(int **)(local_24 + 0xbc) + 0x4c))
-                    (*(undefined4 *)(local_24 + 0xbc),local_28,local_c,local_14,local_10);
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-          local_28 = 0;
-        }
-      }
-      else {
-        local_28 = 0;
-      }
-    }
-    else {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      local_28 = 0;
-    }
+  s.ptr1 = 0;
+  s.ptr2 = 0;
+  s.bytes1 = 0;
+  s.bytes2 = 0;
+  s.zero1 = 0;
+
+  if (param_1 > 0x10f) {
+    return 0;
   }
-  else {
-    local_28 = 0;
+  if (param_1 < 0x100) {
+    return 0;
   }
-  return local_28;
+  EnterCriticalSection(&g_sndCs);
+  s.slot = (int)g_sndSlots[param_1];
+  if (s.slot == 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 0;
+  }
+  if (((*(uint *)(s.slot + 4) >> 7) & 1) != 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 0;
+  }
+
+  s.blockIndex = param_2 % *(uint *)(s.slot + 0x94);
+  s.offset = *(int *)(s.slot + 0x8c) * s.blockIndex;
+  s.hr = (**(code **)(**(int **)(s.slot + 0xbc) + 0x2c))
+               (*(undefined4 *)(s.slot + 0xbc),s.offset,*(undefined4 *)(s.slot + 0x8c),
+                &s.ptr1,&s.bytes1,&s.ptr2,&s.bytes2,0);
+  if (s.hr != 0) {
+    return 0;
+  }
+  if (s.ptr2 != 0) {
+    (**(code **)(**(int **)(s.slot + 0xbc) + 0x4c))
+              (*(undefined4 *)(s.slot + 0xbc),s.ptr1,s.bytes1,s.ptr2,s.bytes2);
+    LeaveCriticalSection(&g_sndCs);
+    return 0;
+  }
+  *(void **)(s.slot + 0xa4) = s.ptr1;
+  *(uint *)(s.slot + 4) = *(uint *)(s.slot + 4) | 0x80;
+  LeaveCriticalSection(&g_sndCs);
+  return s.ptr1;
 }
 
 // FUNCTION: MAGSND 0x1000352C
 undefined4 __cdecl ReleaseAVISndBuff(int param_1)
 
 {
-  SndInstance *sndObj;
-  int iVar1;
-  undefined4 uVar2;
-  
+  struct {
+    int local_18;
+    int local_14;
+    int local_10;
+    int local_c;
+    int local_8;
+    int local_4;
+  } s;
+
                     /* 0x352c  24  ReleaseAVISndBuff */
-  if ((param_1 < 0x110) && (0xff < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-    iVar1 = (int)g_sndSlots[param_1];
-    if (iVar1 == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar2 = 0;
-    }
-    else if ((*(uint *)(iVar1 + 4) >> 7 & 1) == 0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar2 = 0xe;
-    }
-    else {
-      sndObj = (SndInstance *)iVar1;
-      if (sndObj->dsLockedPtr == (void *)0x0) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar2 = 0xf;
-    }
-    else {
-      (**(code **)(**(int **)(iVar1 + 0xbc) + 0x4c))
-                (*(undefined4 *)(iVar1 + 0xbc),sndObj->dsLockedPtr,
-                 *(undefined4 *)(iVar1 + 0x8c),0,0);
-      *(uint *)(iVar1 + 4) = *(uint *)(iVar1 + 4) & 0xffffff7f;
-      sndObj->dsLockedPtr = (void *)0x0;
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-      uVar2 = 0;
-    }
-    }
+  s.local_18 = 0;
+  s.local_c = 0;
+  s.local_4 = 0;
+  s.local_8 = 0;
+  s.local_10 = 0;
+
+  if ((param_1 > 0x10f) || (param_1 < 0x100)) {
+    return 0;
   }
-  else {
-    uVar2 = 0;
+
+  EnterCriticalSection(&g_sndCs);
+  s.local_14 = (int)g_sndSlots[param_1];
+  if (s.local_14 == 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 0;
   }
-  return uVar2;
+  if (((*(uint *)(s.local_14 + 4) >> 7) & 1) == 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 0xe;
+  }
+  if (*(int *)(s.local_14 + 0xa4) == 0) {
+    LeaveCriticalSection(&g_sndCs);
+    return 0xf;
+  }
+  (**(code **)(**(int **)(s.local_14 + 0xbc) + 0x4c))
+            (*(undefined4 *)(s.local_14 + 0xbc),*(undefined4 *)(s.local_14 + 0xa4),
+             *(undefined4 *)(s.local_14 + 0x8c),0,0);
+  *(uint *)(s.local_14 + 4) = *(uint *)(s.local_14 + 4) & 0xffffff7f;
+  *(undefined4 *)(s.local_14 + 0xa4) = 0;
+  LeaveCriticalSection(&g_sndCs);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10003656
@@ -1529,7 +1505,7 @@ int __cdecl FUN_10003656(undefined4 *param_1)
     }
   }
   else {
-    PrimeAviAudio(param_1,0);
+    PrimeAviAudio((undefined4 *)param_1);
   }
   param_1[1] = param_1[1] | 0x20;
   return 0;
@@ -1538,391 +1514,392 @@ int __cdecl FUN_10003656(undefined4 *param_1)
 // FUNCTION: MAGSND 0x10003748
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void __cdecl FUN_10003748(int param_1)
-
+void __cdecl FUN_10003748(SndInstance * snd)
 {
-  uint uVar1;
-  int local_38;
-  int local_34;
-  void *local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_24;
-  undefined4 local_20;
-  int local_1c;
-  uint local_18;
-  int local_14;
-  void *local_10;
-  size_t local_c;
-  size_t local_8;
-  
-  local_20 = 0;
-  local_34 = 0;
-  local_18 = 0;
-  local_2c = 0;
-  local_24 = 0;
-  local_1c = 0;
-  local_30 = (void *)0x0;
-  local_10 = (void *)0x0;
-  local_8 = 0;
-  local_c = 0;
-  local_28 = 0;
-  EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  (**(code **)(**(int **)(param_1 + 0xbc) + 0x10))
-            (*(undefined4 *)(param_1 + 0xbc),&local_34,&local_20);
-  *(int *)(param_1 + 0x1dc) =
-       *(int *)(param_1 + 0x1dc) + (local_34 - *(int *)(param_1 + 0x1dc) & 0xffffU);
-  if (*(uint *)(param_1 + 0x1cc) < *(uint *)(param_1 + 0x1dc)) {
-    *(int *)(param_1 + 0x1dc) = *(int *)(param_1 + 0x1dc) - *(int *)(param_1 + 0x1cc);
+  struct {
+    int local_34;
+    uint local_30;
+    void *local_2c;
+    uint local_28;
+    uint local_24;
+    uint local_20;
+    uint local_1c;
+    uint local_18;
+    uint local_14;
+    int local_10;
+    void *local_c;
+    size_t local_8;
+    size_t local_4;
+  } s;
+
+  s.local_1c = 0;
+  s.local_30 = 0;
+  s.local_14 = 0;
+  s.local_28 = 0;
+  s.local_20 = 0;
+  s.local_18 = 0;
+  s.local_2c = (void *)0x0;
+  s.local_c = (void *)0x0;
+  s.local_4 = 0;
+  s.local_8 = 0;
+  s.local_24 = 0;
+
+  EnterCriticalSection(&g_sndCs);
+  snd->dsBuffer->lpVtbl->GetCurrentPosition(snd->dsBuffer,&s.local_30,&s.local_1c);
+  snd->timeBytes += (s.local_30 - snd->timeBytes & 0xffff);
+  if (snd->dataBytes < snd->timeBytes) {
+    snd->timeBytes -= snd->dataBytes;
   }
-  if ((((*(uint *)(param_1 + 4) >> 4 & 1) == 0) || (*(uint *)(param_1 + 0x1d4) < 0x10000)) &&
-     (((*(uint *)(param_1 + 4) >> 1 & 1) == 0 || (*(int *)(param_1 + 0x1f0) != 0)))) {
-    uVar1 = local_34 - *(int *)(param_1 + 0x1d8) & 0xffff;
-    local_24 = *(int *)(param_1 + 0x1cc) - *(int *)(param_1 + 0x1d0);
-    if ((*(uint *)(param_1 + 4) >> 4 & 1) == 0) {
-      local_2c = *(int *)(param_1 + 0x1d0) - *(int *)(param_1 + 0x1d4);
-      if (0x10000 < local_2c) {
+  if ((((snd->flags >> 4) & 1) != 0 && (0x10000 <= snd->readCursorBytes)) ||
+     (((snd->flags >> 1) & 1) != 0 && (snd->volume == 0))) {
+    snd->dsBuffer->lpVtbl->Stop(snd->dsBuffer);
+    if (g_updateTimerUsers > 0 && --g_updateTimerUsers == 0) {
+      StopUpdateTimer();
+    }
+    snd->flags &= 0xfffffffe;
+    snd->flags &= 0xfffffffd;
+    snd->flags = (int)snd->flags | 4;
+    snd->flags &= 0xffffffdf;
+    if (((snd->flags2 >> 4) & 1) != 0) {
+      g_sndSlots[snd->slotIndex]->flags &= 0xffffffbf;
+      g_sndSlots[snd->slotIndex]->flags &= 0xfffffffe;
+    }
+    LeaveCriticalSection(&g_sndCs);
+  }
+  else {
+    s.local_14 = (int)(s.local_30 - snd->ringCursorBytes & 0xffff);
+    s.local_20 = snd->dataBytes - snd->writeCursorBytes;
+    if (((snd->flags >> 4) & 1) == 0) {
+      s.local_28 = snd->writeCursorBytes - snd->readCursorBytes;
+      if (0x10000 < s.local_28) {
         _DAT_1000707c = _DAT_1000707c + 1;
       }
     }
     else {
-      local_2c = 0;
+      s.local_28 = 0;
     }
-    local_1c = local_24 + local_2c;
-    local_18 = uVar1;
-    if (local_1c == 0) {
-      local_18 = 0;
-      local_28 = uVar1;
+    s.local_18 = s.local_20 + s.local_28;
+    if (s.local_18 == 0) {
+      s.local_24 = s.local_14;
+      s.local_14 = 0U;
     }
-    if ((local_18 == 0) && (local_28 == 0)) {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+    if ((s.local_14 == 0) && (s.local_24 == 0)) {
+      LeaveCriticalSection(&g_sndCs);
     }
     else {
-      if (local_2c < local_18) {
-        local_18 = local_2c;
+      if (s.local_28 < s.local_14) {
+        s.local_14 = s.local_28;
       }
-      if (local_28 + local_18 != 0) {
-        local_14 = (**(code **)(**(int **)(param_1 + 0xbc) + 0x2c))
-                             (*(undefined4 *)(param_1 + 0xbc),*(undefined4 *)(param_1 + 0x1d8),
-                              local_28 + local_18,&local_30,&local_8,&local_10,&local_c,0);
-        if (local_14 != 0) {
-          LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+      if (s.local_24 + s.local_14 != 0) {
+        s.local_10 = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer,snd->ringCursorBytes,
+                          s.local_24 + s.local_14,&s.local_2c,&s.local_4,&s.local_c,&s.local_8,0);
+        if (s.local_10 != 0) {
+          LeaveCriticalSection(&g_sndCs);
           return;
         }
-        *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 0x80;
-        if (local_28 == 0) {
-          mmioGetInfo(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
-          memmove(local_30,*(void **)(param_1 + 0x19c),local_8);
-          *(int *)(param_1 + 0x19c) = *(int *)(param_1 + 0x19c) + local_8;
-          if (local_10 != (void *)0x0) {
-            memmove(local_10,*(void **)(param_1 + 0x19c),local_c);
-            *(int *)(param_1 + 0x19c) = *(int *)(param_1 + 0x19c) + local_c;
+        snd->flags = (int)snd->flags | 0x80;
+        if (s.local_24 == 0) {
+          mmioGetInfo(snd->hMmio,&snd->mmioInfo,0);
+          memmove(s.local_2c,snd->mmioInfo.pchNext,s.local_4);
+          snd->mmioInfo.pchNext += s.local_4;
+          if (s.local_c != (void *)0x0) {
+            memmove(s.local_c,snd->mmioInfo.pchNext,s.local_8);
+            snd->mmioInfo.pchNext += s.local_8;
           }
-          mmioSetInfo(*(HMMIO *)(param_1 + 0x1c8),(LPCMMIOINFO)(param_1 + 0x180),0);
-          local_2c = local_2c - local_18;
-          local_1c = local_1c - local_18;
-          *(int *)(param_1 + 0x1d4) = *(int *)(param_1 + 0x1d4) + local_18;
+          mmioSetInfo(snd->hMmio,&snd->mmioInfo,0);
+          s.local_28 -= s.local_14;
+          s.local_18 -= s.local_14;
+          snd->readCursorBytes += s.local_14;
         }
         else {
-          if (*(short *)(param_1 + 0x86) == 8) {
-            local_38 = 0x80;
+          if (snd->waveFmt.wBitsPerSample == 8) {
+            s.local_34 = 0x80;
           }
           else {
-            local_38 = 0;
+            s.local_34 = 0;
           }
-          memset(local_30,local_38,local_8);
-          if (local_10 != (void *)0x0) {
-            memset(local_10,local_38,local_c);
+          memset(s.local_2c,s.local_34,s.local_4);
+          if (s.local_c != (void *)0x0) {
+            memset(s.local_c,s.local_34,s.local_8);
           }
-          *(int *)(param_1 + 0x1d4) = *(int *)(param_1 + 0x1d4) + local_28;
+          snd->readCursorBytes += s.local_24;
         }
-        *(uint *)(param_1 + 0x1d8) = *(int *)(param_1 + 0x1d8) + local_28 + local_18 & 0xffff;
-        (**(code **)(**(int **)(param_1 + 0xbc) + 0x4c))
-                  (*(undefined4 *)(param_1 + 0xbc),local_30,local_8,local_10,local_c);
-        *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xffffff7f;
+        snd->ringCursorBytes = (snd->ringCursorBytes + s.local_24 + s.local_14) & 0xffff;
+        snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.local_2c,s.local_4,s.local_c,s.local_8);
+        snd->flags &= 0xffffff7f;
       }
-      if (((local_1c != 0) && (local_24 != 0)) && ((local_2c == 0 || (local_2c < local_18 * 2)))) {
-        mmioAdvance(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
-        if (local_24 < *(int *)(param_1 + 0x194) - local_2c) {
-          *(int *)(param_1 + 0x1d0) = *(int *)(param_1 + 0x1d0) + local_24;
+      if (((s.local_18 != 0) && (s.local_20 > 0)) &&
+         ((s.local_28 == 0 || (s.local_28 < s.local_14 * 2)))) {
+        mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
+        if (s.local_20 < snd->mmioInfo.cchBuffer - s.local_28) {
+          snd->writeCursorBytes += s.local_20;
         }
         else {
-          *(int *)(param_1 + 0x1d0) =
-               *(int *)(param_1 + 0x1d0) + (*(int *)(param_1 + 0x194) - local_2c);
+          snd->writeCursorBytes += snd->mmioInfo.cchBuffer - s.local_28;
         }
       }
-      if (local_1c == 0) {
-        if ((*(byte *)(param_1 + 8) & 1) == 0) {
-          if ((*(uint *)(param_1 + 4) >> 4 & 1) == 0) {
-            *(undefined4 *)(param_1 + 0x1e4) = *(undefined4 *)(param_1 + 0x1d8);
-            *(undefined4 *)(param_1 + 0x1d4) = 0;
-            *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 0x10;
+      if (s.local_18 == 0) {
+        if ((snd->flags2 & 1) != 0) {
+          snd->mmioInfo.pchNext = snd->mmioInfo.pchEndRead;
+          mmioSetInfo(snd->hMmio,&snd->mmioInfo,0);
+          mmioSeek(snd->hMmio,snd->mmioBaseOffset,0);
+          mmioGetInfo(snd->hMmio,&snd->mmioInfo,0);
+          mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
+          snd->writeCursorBytes = (uint)(snd->mmioInfo.pchNext - snd->mmioInfo.pchBuffer);
+          if (snd->dataBytes < snd->writeCursorBytes) {
+            snd->writeCursorBytes = snd->dataBytes;
           }
+          snd->readCursorBytes = 0;
+         
         }
-        else {
-          *(undefined4 *)(param_1 + 0x19c) = *(undefined4 *)(param_1 + 0x1a0);
-          mmioSetInfo(*(HMMIO *)(param_1 + 0x1c8),(LPCMMIOINFO)(param_1 + 0x180),0);
-          mmioSeek(*(HMMIO *)(param_1 + 0x1c8),*(LONG *)(param_1 + 0x1e0),0);
-          mmioGetInfo(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
-          mmioAdvance(*(HMMIO *)(param_1 + 0x1c8),(LPMMIOINFO)(param_1 + 0x180),0);
-          *(int *)(param_1 + 0x1d0) = *(int *)(param_1 + 0x19c) - *(int *)(param_1 + 0x198);
-          if (*(uint *)(param_1 + 0x1cc) < *(uint *)(param_1 + 0x1d0)) {
-            *(undefined4 *)(param_1 + 0x1d0) = *(undefined4 *)(param_1 + 0x1cc);
-          }
-          *(undefined4 *)(param_1 + 0x1d4) = 0;
+        else if (((snd->flags >> 4) & 1) == 0) {
+          snd->ringCursorSavedBytes = snd->ringCursorBytes;
+          snd->readCursorBytes = 0;
+          snd->flags = (int)snd->flags | 0x10;
         }
       }
-      LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+      LeaveCriticalSection(&g_sndCs);
+      return;
     }
   }
-  else {
-    (**(code **)(**(int **)(param_1 + 0xbc) + 0x48))(*(undefined4 *)(param_1 + 0xbc));
-    if ((0 < g_updateTimerUsers) &&
-        (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
-      StopUpdateTimer();
-    }
-    *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xfffffffe;
-    *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xfffffffd;
-    *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 4;
-    *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xffffffdf;
-    if ((*(uint *)(param_1 + 8) >> 4 & 1) != 0) {
-      *(uint *)((int)g_sndSlots[*(int *)(param_1 + 0x10)] + 4) =
-           *(uint *)((int)g_sndSlots[*(int *)(param_1 + 0x10)] + 4) & 0xffffffbf;
-      *(uint *)((int)g_sndSlots[*(int *)(param_1 + 0x10)] + 4) =
-           *(uint *)((int)g_sndSlots[*(int *)(param_1 + 0x10)] + 4) & 0xfffffffe;
-    }
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
-  }
-  return;
 }
 
 // FUNCTION: MAGSND 0x10003D60
 undefined4 __cdecl FUN_10003d60(undefined4 *param_1)
-
 {
-  uint uVar1;
-  uint uVar2;
-  uint local_48;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
-  undefined4 local_38;
-  uint local_34;
-  uint local_30;
-  undefined1 local_2c [4];
-  undefined4 local_28;
-  undefined4 local_24;
-  uint local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  uint local_c;
-  uint local_8;
-  
-  local_28 = 0;
-  local_48 = 0;
-  local_40 = 0;
-  local_38 = 0;
-  local_24 = 0;
-  local_44 = 0;
-  local_10 = 0;
-  local_8 = 0;
-  local_c = 0;
-  local_3c = 0;
-  (**(code **)(*(int *)param_1[0x2f] + 0x10))(param_1[0x2f],&local_48,&local_28);
-  local_34 = (uint)param_1[0x77] % (uint)param_1[0x2c];
-  if (local_34 < local_48) {
-    param_1[0x77] = param_1[0x77] + (local_48 - local_34);
+  struct {
+    uint local_48;
+    uint local_44;
+    void *local_40;
+    uint local_3c;
+    uint local_38;
+    uint local_34;
+    uint local_30;
+    uint local_2c;
+    long local_28;
+    uint local_24;
+    uint local_20;
+    uint local_1c;
+    long local_18;
+    uint local_14;
+    int local_10;
+    void *local_c;
+    uint local_8;
+    uint local_4;
+  } s;
+
+  s.local_24 = 0;
+  s.local_44 = 0;
+  s.local_3c = 0;
+  s.local_34 = 0;
+  s.local_20 = 0;
+  s.local_40 = (void *)0x0;
+  s.local_c = (void *)0x0;
+  s.local_4 = 0;
+  s.local_8 = 0;
+  s.local_38 = 0;
+
+  (**(code **)(*(int *)param_1[0x2f] + 0x10))(param_1[0x2f],&s.local_44,&s.local_24);
+
+  s.local_30 = (uint)param_1[0x77] % (uint)param_1[0x2c];
+  if (s.local_44 > s.local_30) {
+    param_1[0x77] = param_1[0x77] + (s.local_44 - s.local_30);
   }
   else {
-    param_1[0x77] = param_1[0x77] + (param_1[0x2c] - local_34);
-    param_1[0x77] = param_1[0x77] + local_48;
+    param_1[0x77] = param_1[0x77] + ((uint)param_1[0x2c] - s.local_30);
+    param_1[0x77] = param_1[0x77] + s.local_44;
   }
-  local_30 = local_48 / (uint)param_1[0x23];
-  local_20 = (uint)param_1[0x76] / (uint)param_1[0x23];
-  if (local_30 != local_20) {
-    if (((((uint)param_1[1] >> 4 & 1) == 0) || ((uint)param_1[0x75] < (uint)param_1[0x2c])) &&
-       ((((uint)param_1[1] >> 1 & 1) == 0 || (param_1[0x7c] != 0)))) {
-      local_18 = param_1[0x23];
-      if (((uint)param_1[1] >> 4 & 1) == 0) {
-        uVar1 = param_1[0x74];
-        uVar2 = param_1[0x24];
-        local_14 = (**(code **)(*(int *)param_1[0x2f] + 0x2c))
-                             (param_1[0x2f],param_1[0x76],local_18,&local_44,&local_8,&local_10,
-                              &local_c,0);
-        if (local_14 != 0) {
-          return 10;
-        }
-        AVIStreamRead(*param_1,uVar1 / uVar2,local_8 / (uint)param_1[0x24],local_44,local_8,local_2c
-                      ,&local_1c);
-        if (local_10 != 0) {
-          AVIStreamRead(*param_1,local_1c + uVar1 / uVar2,local_c / (uint)param_1[0x24],local_10,
-                        local_c,local_2c,&local_1c);
-        }
-        param_1[0x76] = param_1[0x76] + local_18;
-        param_1[0x76] = (uint)param_1[0x76] % (uint)param_1[0x2c];
-        param_1[0x74] = param_1[0x74] + local_18;
-        param_1[0x75] = param_1[0x75] + local_18;
-        if ((uint)param_1[0x73] <= (uint)param_1[0x74]) {
-          param_1[1] = param_1[1] | 0x10;
-          param_1[0x75] = 0;
-        }
-        (**(code **)(*(int *)param_1[0x2f] + 0x4c))(param_1[0x2f],local_44,local_8,local_10,local_c)
-        ;
-        param_1[1] = param_1[1] & 0xffffff7f;
-      }
-      else {
-        param_1[0x75] = param_1[0x75] + local_18;
-      }
-    }
-    else {
-      (**(code **)(*(int *)param_1[0x2f] + 0x48))(param_1[0x2f]);
-      if ((0 < g_updateTimerUsers) &&
-          (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
-        StopUpdateTimer();
-      }
-      param_1[1] = param_1[1] & 0xfffffffe;
-      param_1[1] = param_1[1] & 0xfffffffd;
-      param_1[1] = param_1[1] | 4;
-      param_1[1] = param_1[1] & 0xffffffdf;
-      param_1[0x77] = 0;
-    }
+
+  s.local_2c = s.local_44 / (uint)param_1[0x23];
+  s.local_1c = (uint)param_1[0x76] / (uint)param_1[0x23];
+  if (s.local_2c == s.local_1c) {
+    return 0;
   }
+
+  if (((((uint)param_1[1] >> 4 & 1) != 0) && ((uint)param_1[0x2c] <= (uint)param_1[0x75])) ||
+     ((((uint)param_1[1] >> 1 & 1) != 0) && (param_1[0x7c] == 0))) {
+    (**(code **)(*(int *)param_1[0x2f] + 0x48))(param_1[0x2f]);
+    if (g_updateTimerUsers > 0 && --g_updateTimerUsers == 0) {
+      StopUpdateTimer();
+    }
+    param_1[1] = param_1[1] & 0xfffffffe;
+    param_1[1] = param_1[1] & 0xfffffffd;
+    param_1[1] = (int)param_1[1] | 4;
+    param_1[1] = param_1[1] & 0xffffffdf;
+    param_1[0x77] = 0;
+    return 0;
+  }
+
+  s.local_14 = (uint)param_1[0x23];
+  if (((uint)param_1[1] >> 4 & 1) == 0) {
+    s.local_48 = (uint)param_1[0x74] / (uint)param_1[0x24];
+    s.local_10 = (**(code **)(*(int *)param_1[0x2f] + 0x2c))
+                         (param_1[0x2f],param_1[0x76],s.local_14,&s.local_40,&s.local_4,&s.local_c,
+                          &s.local_8,0);
+    if (s.local_10 != 0) {
+      return 10;
+    }
+    AVIStreamRead((PAVISTREAM)*param_1,(LONG)s.local_48,(LONG)(s.local_4 / (uint)param_1[0x24]),
+                  s.local_40,(LONG)s.local_4,&s.local_28,&s.local_18);
+    if (s.local_c != (void *)0x0) {
+      AVIStreamRead((PAVISTREAM)*param_1,(LONG)(s.local_18 + s.local_48),
+                    (LONG)(s.local_8 / (uint)param_1[0x24]),s.local_c,(LONG)s.local_8,&s.local_28,
+                    &s.local_18);
+    }
+    param_1[0x76] = param_1[0x76] + s.local_14;
+    param_1[0x76] = (uint)param_1[0x76] % (uint)param_1[0x2c];
+    param_1[0x74] = param_1[0x74] + s.local_14;
+    param_1[0x75] = param_1[0x75] + s.local_14;
+    if ((uint)param_1[0x73] <= (uint)param_1[0x74]) {
+      param_1[1] = (int)param_1[1] | 0x10;
+      param_1[0x75] = 0;
+    }
+    (**(code **)(*(int *)param_1[0x2f] + 0x4c))
+              (param_1[0x2f],s.local_40,s.local_4,s.local_c,s.local_8);
+    param_1[1] = param_1[1] & 0xffffff7f;
+  }
+  else {
+    param_1[0x75] = param_1[0x75] + s.local_14;
+  }
+
   return 0;
 }
 
 // FUNCTION: MAGSND 0x100040C9
 undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
-
 {
-  int iVar1;
-  undefined4 uVar2;
-  byte local_1c [4];
-  undefined4 local_18;
-  undefined4 local_14;
-  int *local_10;
-  int local_c;
-  int *local_8;
-  
-  local_10 = *(int **)(param_1 + 0xbc);
-  local_8 = local_10;
-  iVar1 = (**(code **)(*local_10 + 0x24))(local_10,local_1c);
-  if (iVar1 == 0) {
-    if ((local_1c[0] & 2) == 0) {
-      if ((local_1c[0] & 1) == 0) {
-        *param_2 = (int)local_8;
-        uVar2 = 0;
-      }
-      else {
-        for (local_c = 0; local_14 = 0, local_c < 0x10; local_c = local_c + 1) {
-          local_10 = *(int **)(param_1 + 0xc0 + local_c * 0xc);
-          if (local_10 == (int *)0x0) {
-            iVar1 = (**(code **)(*g_directSound + 0x14))(g_directSound,local_8,&local_18);
-            if (iVar1 != 0) {
-              return 9;
-            }
-            *(undefined4 *)(param_1 + 0xc0 + local_c * 0xc) = local_18;
-            *param_2 = *(int *)(param_1 + 0xc0 + local_c * 0xc);
-            return 0;
-          }
-          iVar1 = (**(code **)(*local_10 + 0x24))(local_10,local_1c);
-          if (iVar1 != 0) {
-            return 9;
-          }
-          if ((local_1c[0] & 1) == 0) {
-            *param_2 = (int)local_10;
-            return 0;
-          }
+  struct {
+    uint status;
+    undefined4 dupOut;
+    int hr;
+    int *buffer;
+    int index;
+    int *candidate;
+  } s;
+
+  s.buffer = *(int **)(param_1 + 0xbc);
+  s.candidate = s.buffer;
+  s.hr = (**(code **)(*s.buffer + 0x24))(s.buffer,&s.status);
+  if (s.hr != 0) {
+    return 9;
+  }
+  if ((s.status & 2) != 0) {
+    return 9;
+  }
+  if ((s.status & 1) != 0) {
+    for (s.index = 0; s.index < 0x10; s.index = s.index + 1) {
+      s.buffer = *(int **)(param_1 + 0xc0 + s.index * 0xc);
+      if (s.buffer != (int *)0x0) {
+        s.hr = (**(code **)(*s.buffer + 0x24))(s.buffer,&s.status);
+        if (s.hr != 0) {
+          return 9;
         }
-        uVar2 = 9;
+        if ((s.status & 1) != 0) {
+          continue;
+        }
+        else {
+          *param_2 = (int)s.buffer;
+          return 0;
+        }
+      } else {
+        s.hr = g_directSound->lpVtbl->DuplicateSoundBuffer(g_directSound,s.candidate,&s.dupOut);
+        if (s.hr != 0) {
+          return 9;
+        } else {
+          *(undefined4 *)(param_1 + 0xc0 + s.index * 0xc) = s.dupOut;
+          *param_2 = *(int *)(param_1 + 0xc0 + s.index * 0xc);
+          return 0;
+        }
       }
     }
-    else {
-      uVar2 = 9;
-    }
+  } else {
+    *param_2 = (int)s.candidate;
+    return 0;
   }
-  else {
-    uVar2 = 9;
-  }
-  return uVar2;
+  return 9;
 }
 
 // FUNCTION: MAGSND 0x10004239
-void __cdecl AddToUpdateList(int param_1)
+void __cdecl AddToUpdateList(SndInstance *snd)
 
 {
-  if (g_updateSndHead == 0) {
-    g_updateSndHead = param_1;
+  if (g_updateSndHead == (SndInstance *)0x0) {
+    g_updateSndHead = snd;
+    g_updateSndTail = g_updateSndHead;
   }
   else {
-    *(int *)(g_updateSndTail + 0x1f8) = param_1;
-    *(int *)(param_1 + 500) = g_updateSndTail;
+    g_updateSndTail->updateNext = snd;
+    snd->updatePrev = g_updateSndTail;
+    g_updateSndTail = snd;
   }
-  g_updateSndTail = param_1;
   return;
 }
 
 // FUNCTION: MAGSND 0x10004292
-void __cdecl RemoveFromUpdateList(int param_1)
+void __cdecl RemoveFromUpdateList(SndInstance *snd)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  SndInstance *prev;
+  SndInstance *next;
   
-  iVar1 = *(int *)(param_1 + 500);
-  iVar2 = *(int *)(param_1 + 0x1f8);
-  iVar3 = iVar2;
-  if (iVar1 != 0) {
-    *(int *)(iVar1 + 0x1f8) = iVar2;
-    iVar3 = g_updateSndHead;
+  prev = (SndInstance *)0x0;
+  next = (SndInstance *)0x0;
+  prev = snd->updatePrev;
+  next = snd->updateNext;
+  if (prev != (SndInstance *)0x0) {
+    prev->updateNext = next;
   }
-  g_updateSndHead = iVar3;
-  if (iVar2 != 0) {
-    *(int *)(iVar2 + 500) = iVar1;
-    iVar1 = g_updateSndTail;
+  else {
+    g_updateSndHead = next;
   }
-  g_updateSndTail = iVar1;
+  if (next != (SndInstance *)0x0) {
+    next->updatePrev = prev;
+  }
+  else {
+    g_updateSndTail = prev;
+  }
   return;
 }
 
 // FUNCTION: MAGSND 0x10004311
-void __cdecl AddToActiveList(int param_1)
+void __cdecl AddToActiveList(SndInstance *snd)
 
 {
-  if (g_activeSndListHead == 0) {
-    g_activeSndListHead = param_1;
+  if (g_activeSndListHead == (SndInstance *)0x0) {
+    g_activeSndListHead = snd;
+    g_activeSndTail = g_activeSndListHead;
   }
   else {
-    *(int *)(g_activeSndTail + 0x200) = param_1;
-    *(int *)(param_1 + 0x1fc) = g_activeSndTail;
+    g_activeSndTail->activeNext = snd;
+    snd->activePrev = g_activeSndTail;
+    g_activeSndTail = snd;
   }
-  g_activeSndTail = param_1;
   return;
 }
 
 // FUNCTION: MAGSND 0x1000436A
-void __cdecl RemoveFromActiveList(int param_1)
+void __cdecl RemoveFromActiveList(SndInstance *snd)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  SndInstance *prev;
+  SndInstance *next;
   
-  iVar1 = *(int *)(param_1 + 0x1fc);
-  iVar2 = *(int *)(param_1 + 0x200);
-  iVar3 = iVar2;
-  if (iVar1 != 0) {
-    *(int *)(iVar1 + 0x200) = iVar2;
-    iVar3 = g_activeSndListHead;
+  prev = (SndInstance *)0x0;
+  next = (SndInstance *)0x0;
+  prev = snd->activePrev;
+  next = snd->activeNext;
+  if (prev != (SndInstance *)0x0) {
+    prev->activeNext = next;
   }
-  g_activeSndListHead = iVar3;
-  if (iVar2 != 0) {
-    *(int *)(iVar2 + 0x1fc) = iVar1;
-    iVar1 = g_activeSndTail;
+  else {
+    g_activeSndListHead = next;
   }
-  g_activeSndTail = iVar1;
+  if (next != (SndInstance *)0x0) {
+    next->activePrev = prev;
+  }
+  else {
+    g_activeSndTail = prev;
+  }
   return;
 }
 
@@ -1943,27 +1920,18 @@ void __cdecl RemoveFromActiveList(int param_1)
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs)
 
 {
-  MMRESULT MVar1;
-  undefined4 uVar2;
-
   (void)resolutionMs;
-  MVar1 = timeGetDevCaps(&g_timeCaps,8);
-  if (MVar1 == 0) {
-    timeBeginPeriod(g_updatePeriodMs);
-    g_updateTimerId = timeSetEvent(g_updatePeriodMs,g_timeCaps.wPeriodMin,UpdateTimerProc,0x100084e8,1);
-    if (g_updateTimerId == 0) {
-      timeEndPeriod(g_updatePeriodMs);
-      uVar2 = 0xc;
-    }
-    else {
-      g_updateTimerActive = 1;
-      uVar2 = 0;
-    }
+  if (timeGetDevCaps(&g_timeCaps,8) != 0) {
+    return 0xc;
   }
-  else {
-    uVar2 = 0xc;
+  timeBeginPeriod(g_updatePeriodMs);
+  g_updateTimerId = timeSetEvent(g_updatePeriodMs,g_timeCaps.wPeriodMin,UpdateTimerProc,(DWORD)g_sndHwnd,1);
+  if (g_updateTimerId == 0) {
+    timeEndPeriod(g_updatePeriodMs);
+    return 0xc;
   }
-  return uVar2;
+  g_updateTimerActive = 1;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000448D
@@ -1971,12 +1939,12 @@ void StopUpdateTimer(void)
 
 {
   if (g_updateTimerActive != 0) {
-    EnterCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+    EnterCriticalSection(&g_sndCs);
     timeKillEvent(g_updateTimerId);
     g_updateTimerId = 0;
     timeEndPeriod(g_updatePeriodMs);
     g_updateTimerActive = 0;
-    LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
+    LeaveCriticalSection(&g_sndCs);
   }
   return;
 }
@@ -1985,162 +1953,127 @@ void StopUpdateTimer(void)
 undefined4 __cdecl LoadFromFile(char *filename,SndInstance **outSnd)
 
 {
-  FILE *_File;
-  undefined4 uVar1;
+  FILE *file;
+  undefined4 status;
 
-  _File = fopen(filename,g_fileModeRb);
-  if (_File == (FILE *)0x0) {
-    uVar1 = 7;
+  file = fopen(filename,g_fileModeRb);
+  if (file == (FILE *)0x0) {
+    return 7;
   }
-  else {
-    uVar1 = LoadWaveFromFileHandle(_File,(int *)outSnd);
-    fclose(_File);
-  }
-  return uVar1;
+  status = LoadWaveFromFileHandle(file,(int *)outSnd);
+  fclose(file);
+  return status;
 }
 
 // FUNCTION: MAGSND 0x1000454F
 undefined4 __cdecl LoadWaveMmio(LPSTR filename,SndInstance **outSnd,undefined4 scratch)
 
 {
-  undefined4 uVar1;
-  MMRESULT MVar2;
-  DWORD DVar3;
-  void *pvVar4;
-  size_t sVar5;
-  LONG LVar6;
-  int iVar7;
-  int iVar8;
-  MMIOINFO *p_Var9;
-  MMCKINFO *p_Var10;
-  DWORD *pDVar11;
-  FOURCC *pFVar12;
-  MMCKINFO local_98;
-  char local_84 [16];
-  undefined2 local_74;
-  MMIOINFO local_70;
-  undefined4 local_28;
-  DWORD local_24;
-  LONG local_20;
-  MMCKINFO local_1c;
-  HMMIO local_8;
-
-  local_28 = 0;
-  memset(&local_70,0,0x48);
-  local_70.cchBuffer = 0x10000;
-  local_8 = mmioOpenA(filename,&local_70,0x10000);
-  if (local_8 == (HMMIO)0x0) {
-    uVar1 = 7;
+  struct {
+    undefined4 local_a0;
+    undefined4 local_9c;
+    MMCKINFO local_98;
+    char local_84[16];
+    undefined2 local_74;
+    byte pad_72[6];
+    MMIOINFO local_70;
+    undefined4 local_28;
+    DWORD local_24;
+    LONG local_20;
+    MMCKINFO local_1c;
+    HMMIO local_8;
+  } s;
+  
+  s.local_28 = 0;
+  memset(&s.local_70,0,0x48);
+  s.local_70.cchBuffer = 0x10000;
+  s.local_8 = mmioOpenA(filename,&s.local_70,0x10000);
+  if (s.local_8 == (HMMIO)0x0) {
+    return 7;
   }
-  else {
-    local_1c.fccType = 0x45564157;
-    MVar2 = mmioDescend(local_8,&local_1c,(MMCKINFO *)0x0,0x20);
-    if (MVar2 == 0) {
-      local_98.ckid = 0x20746d66;
-      MVar2 = mmioDescend(local_8,&local_98,&local_1c,0x10);
-      if (MVar2 == 0) {
-        local_24 = local_98.cksize;
-        DVar3 = mmioRead(local_8,local_84,local_98.cksize);
-        if (DVar3 == local_24) {
-          local_74 = 0;
-          mmioAscend(local_8,&local_98,0);
-          local_98.ckid = 0x61746164;
-          MVar2 = mmioDescend(local_8,&local_98,&local_1c,0x10);
-          if (MVar2 == 0) {
-            mmioGetInfo(local_8,&local_70,0);
-            mmioAdvance(local_8,&local_70,0);
-            local_20 = local_70.lBufOffset;
-            scratch = 0xe8;
-            pvVar4 = FUN_10005480(g_directSound,0x10000,(undefined4 *)local_84,0xe8);
-            *outSnd = (SndInstance *)pvVar4;
-            if (*outSnd == 0) {
-              mmioClose(local_8,0);
-              uVar1 = 9;
-            }
-            else {
-              *(LONG *)((int)*outSnd + 0x1e0) = local_20;
-              *(HMMIO *)((int)*outSnd + 0x1c8) = local_8;
-              memcpy((void *)((int)*outSnd + 0x180), &local_70, sizeof(MMIOINFO));
-              *(DWORD *)((int)*outSnd + 0x1cc) = local_98.cksize;
-              sVar5 = strlen(filename);
-              pvVar4 = operator_new(sVar5 + 1);
-              *(void **)*outSnd = pvVar4;
-              if (*(int *)*outSnd == 0) {
-                mmioClose(local_8,0);
-                uVar1 = 3;
-              }
-              else {
-                strcpy(*(char **)*outSnd,filename);
-                *(uint *)(*outSnd + 8) = *(uint *)(*outSnd + 8) & 0xffffffdf;
-                *(uint *)(*outSnd + 8) = *(uint *)(*outSnd + 8) | 2;
-                *(undefined4 *)(*outSnd + 0x8c) = 0;
-                *(undefined4 *)(*outSnd + 0x90) = 0;
-                *(undefined4 *)(*outSnd + 0x94) = 0;
-                mmioAscend(local_8,&local_98,0);
-                local_98.ckid = 0x20657563;
-                MVar2 = mmioDescend(local_8,&local_98,&local_1c,0x10);
-                if (MVar2 == 0) {
-                  iVar7 = *outSnd;
-                  memcpy((void *)(iVar7 + 0x1c), &local_98.ckid, 5 * sizeof(FOURCC));
-                  LVar6 = mmioRead(local_8,(HPSTR)(iVar7 + 0x30),4);
-                  if (LVar6 != 4) {
-                    DestroySndInstance(*outSnd);
-                    mmioClose(local_8,0);
-                    return 8;
-                  }
-                  pvVar4 = operator_new(*(int *)(iVar7 + 0x30) * 0x18);
-                  *(void **)(iVar7 + 0x34) = pvVar4;
-                  if (*(int *)(iVar7 + 0x34) == 0) {
-                    DestroySndInstance(*outSnd);
-                    mmioClose(local_8,0);
-                    return 3;
-                  }
-                  local_24 = *(int *)(iVar7 + 0x30) * 0x18;
-                  LVar6 = mmioRead(local_8,*(HPSTR *)(iVar7 + 0x34),local_24);
-                  if (LVar6 != local_24) {
-                    DestroySndInstance(*outSnd);
-                    mmioClose(local_8,0);
-                    operator_delete(*(void **)(iVar7 + 0x34));
-                    return 8;
-                  }
-                }
-                uVar1 = 0;
-              }
-            }
-          }
-          else {
-            mmioClose(local_8,0);
-            uVar1 = 8;
-          }
-        }
-        else {
-          mmioClose(local_8,0);
-          uVar1 = 8;
-        }
-      }
-      else {
-        mmioClose(local_8,0);
-        uVar1 = 8;
-      }
+  s.local_1c.fccType = 0x45564157;
+  if (mmioDescend(s.local_8,&s.local_1c,(MMCKINFO *)0x0,0x20) != 0) {
+    mmioClose(s.local_8,0);
+    return 8;
+  }
+  s.local_98.ckid = 0x20746d66;
+  if (mmioDescend(s.local_8,&s.local_98,&s.local_1c,0x10) != 0) {
+    mmioClose(s.local_8,0);
+    return 8;
+  }
+  s.local_24 = s.local_98.cksize;
+  if (mmioRead(s.local_8,s.local_84,s.local_98.cksize) != s.local_24) {
+    mmioClose(s.local_8,0);
+    return 8;
+  }
+  s.local_74 = 0;
+  mmioAscend(s.local_8,&s.local_98,0);
+  s.local_98.ckid = 0x61746164;
+  if (mmioDescend(s.local_8,&s.local_98,&s.local_1c,0x10) != 0) {
+    mmioClose(s.local_8,0);
+    return 8;
+  }
+  mmioGetInfo(s.local_8,&s.local_70,0);
+  mmioAdvance(s.local_8,&s.local_70,0);
+  s.local_20 = s.local_70.lBufOffset;
+  scratch = 0xe8;
+  *outSnd = FUN_10005480(g_directSound,0x10000,(undefined4 *)s.local_84,0xe8);
+  if (*outSnd == (SndInstance *)0x0) {
+    mmioClose(s.local_8,0);
+    return 9;
+  }
+  (*outSnd)->mmioBaseOffset = s.local_20;
+  (*outSnd)->hMmio = s.local_8;
+  *(MMIOINFO *)((byte *)*outSnd + 0x180) = s.local_70;
+  (*outSnd)->dataBytes = s.local_98.cksize;
+  (*outSnd)->streamOrMmio = operator_new(strlen(filename) + 1);
+  if ((*outSnd)->streamOrMmio == (void *)0x0) {
+    mmioClose(s.local_8,0);
+    return 3;
+  }
+  strcpy((char *)(*outSnd)->streamOrMmio,filename);
+  (*outSnd)->flags2 = (*outSnd)->flags2 & 0xffffffdf;
+  (*outSnd)->flags2 = (*outSnd)->flags2 | 2;
+  (*outSnd)->blockBytes = 0;
+  (*outSnd)->blockScale = 0;
+  (*outSnd)->blockCount = 0;
+  mmioAscend(s.local_8,&s.local_98,0);
+  s.local_98.ckid = 0x20657563;
+  if (mmioDescend(s.local_8,&s.local_98,&s.local_1c,0x10) == 0) {
+    *(MMCKINFO *)((byte *)*outSnd + 0x1c) = s.local_98;
+    if (mmioRead(s.local_8,(HPSTR)((byte *)*outSnd + 0x30),4) != 4) {
+      DestroySndInstance(*outSnd);
+      mmioClose(s.local_8,0);
+      return 8;
     }
-    else {
-      mmioClose(local_8,0);
-      uVar1 = 8;
+    *(void **)((byte *)*outSnd + 0x34) =
+         operator_new(*(int *)((byte *)*outSnd + 0x30) * 0x18);
+    if (*(void **)((byte *)*outSnd + 0x34) == (void *)0x0) {
+      DestroySndInstance(*outSnd);
+      mmioClose(s.local_8,0);
+      return 3;
+    }
+    s.local_24 = *(int *)((byte *)*outSnd + 0x30) * 0x18;
+    if (mmioRead(s.local_8,*(HPSTR *)((byte *)*outSnd + 0x34),s.local_24) != (LONG)s.local_24) {
+      DestroySndInstance(*outSnd);
+      mmioClose(s.local_8,0);
+      operator_delete(*(void **)((byte *)*outSnd + 0x34));
+      return 8;
     }
   }
-  return uVar1;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10004986
-void __cdecl CloseMmioAndFreeSource(undefined4 *param_1)
+void __cdecl CloseMmioAndFreeSource(SndInstance *snd)
 
 {
-  mmioClose((HMMIO)param_1[0x72],0);
-  if (param_1[0xd] != 0) {
-    operator_delete((void *)param_1[0xd]);
+  mmioClose(snd->hMmio,0);
+  if (snd->markers[0] != 0) {
+    operator_delete(snd->markers[0]);
   }
-  if (((uint)param_1[2] >> 5 & 1) == 0) {
-    operator_delete((void *)*param_1);
+  if (((snd->flags2 >> 5) & 1) == 0) {
+    operator_delete(snd->streamOrMmio);
   }
   return;
 }
@@ -2149,94 +2082,79 @@ void __cdecl CloseMmioAndFreeSource(undefined4 *param_1)
 undefined4 __cdecl LoadWaveFromFileHandle(FILE *param_1,int *param_2)
 
 {
-  undefined4 uVar1;
-  int iVar2;
-  void *pvVar3;
-  undefined4 local_50 [4];
-  undefined2 local_40;
-  void *local_3c;
-  int local_38;
-  uint local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
-  undefined4 local_24;
-  undefined4 local_20;
-  undefined1 local_1c [4];
-  undefined4 local_18;
-  int local_14;
-  size_t local_10;
-  size_t local_c;
-  undefined4 local_8;
-  
-  local_3c = (void *)0x0;
-  local_24 = 0;
-  local_10 = 0;
-  local_20 = 0;
-  local_c = 0;
-  local_8 = 0;
-  local_34 = 0;
-  local_38 = 0;
-  fseek(param_1,0,0);
-  fread(&local_30,1,0xc,param_1);
-  local_34 = local_2c + local_38 + 8;
-  if ((local_30 == 0x46464952) && (local_28 == 0x45564157)) {
-    iVar2 = FindRiffChunk(param_1,0x20746d66,local_38,local_34);
-    if (iVar2 == 0) {
-      uVar1 = 8;
-    }
-    else {
-      fread(local_1c,1,8,param_1);
-      fread(local_50,1,0x10,param_1);
-      local_40 = 0;
-      iVar2 = FindRiffChunk(param_1,0x61746164,local_38,local_34);
-      if (iVar2 == 0) {
-        uVar1 = 8;
-      }
-      else {
-        fread(local_1c,1,8,param_1);
-        local_8 = 0xea;
-        pvVar3 = FUN_10005480(g_directSound,local_18,local_50,0xea);
-        *param_2 = (int)pvVar3;
-        if (*param_2 == 0) {
-          uVar1 = 9;
-        }
-        else {
-          local_14 = (**(code **)(**(int **)(*param_2 + 0xbc) + 0x2c))
-                               (*(undefined4 *)(*param_2 + 0xbc),0,local_18,&local_3c,&local_10,
-                                &local_24,&local_20,0);
-          if (local_14 == 0) {
-            local_c = fread(local_3c,1,local_10,param_1);
-            if (local_10 == local_c) {
-              local_14 = (**(code **)(**(int **)(*param_2 + 0xbc) + 0x4c))
-                                   (*(undefined4 *)(*param_2 + 0xbc),local_3c,local_10,local_24,
-                                    local_20);
-              if (local_14 == 0) {
-                uVar1 = 0;
-              }
-              else {
-                (**(code **)(**(int **)(*param_2 + 0xbc) + 8))(*(undefined4 *)(*param_2 + 0xbc));
-                operator_delete((void *)*param_2);
-                uVar1 = 9;
-              }
-            }
-            else {
-              DestroySndInstance((SndInstance *)*param_2);
-              uVar1 = 9;
-            }
-          }
-          else {
-            DestroySndInstance((SndInstance *)*param_2);
-            uVar1 = 9;
-          }
-        }
-      }
-    }
+  int createFlags;
+  int bytesRead;
+  int bytes1;
+  int lockHr;
+  int chunkHdr[2];
+  int bytes2;
+  void *ptr2;
+  int waveTag;
+  int riffSize;
+  int riffTag;
+  int riffEnd;
+  int seek0;
+  void *ptr1;
+  undefined2 cbSize;
+  undefined4 waveFmt[4];
+  int tmp_50;
+  int tmp_54;
+
+  ptr1 = (void *)0x0;
+  ptr2 = (void *)0x0;
+  bytes1 = 0;
+  bytes2 = 0;
+  bytesRead = 0;
+  createFlags = 0;
+  riffEnd = 0;
+  seek0 = 0;
+
+  fseek(param_1,seek0,0);
+  fread(&riffTag,1,0xc,param_1);
+  riffEnd = riffSize + seek0 + 8;
+  if ((riffTag != 0x46464952) || (waveTag != 0x45564157)) {
+    return 8;
   }
-  else {
-    uVar1 = 8;
+
+  if (FindRiffChunk(param_1,0x20746d66,seek0,(uint)riffEnd) == 0) {
+    return 8;
   }
-  return uVar1;
+  fread(chunkHdr,1,8,param_1);
+  fread(waveFmt,1,0x10,param_1);
+  cbSize = 0;
+  if (FindRiffChunk(param_1,0x61746164,seek0,(uint)riffEnd) == 0) {
+    return 8;
+  }
+  fread(chunkHdr,1,8,param_1);
+  createFlags = 0xea;
+  ptr1 = FUN_10005480(g_directSound,chunkHdr[1],waveFmt,createFlags);
+  *param_2 = (int)ptr1;
+  if (*param_2 == 0) {
+    return 9;
+  }
+
+  lockHr = (**(code **)(**(int **)(*param_2 + 0xbc) + 0x2c))
+                       (*(undefined4 *)(*param_2 + 0xbc),0,chunkHdr[1],&ptr1,&bytes1,&ptr2,&bytes2,
+                        0);
+  if (lockHr != 0) {
+    DestroySndInstance((SndInstance *)*param_2);
+    return 9;
+  }
+  bytesRead = fread(ptr1,1,chunkHdr[1],param_1);
+  if (bytesRead != bytes1) {
+    DestroySndInstance((SndInstance *)*param_2);
+    return 9;
+  }
+  lockHr = (**(code **)(**(int **)(*param_2 + 0xbc) + 0x4c))
+                       (*(undefined4 *)(*param_2 + 0xbc),ptr1,bytes1,ptr2,bytes2);
+  if (lockHr != 0) {
+    (**(code **)(**(int **)(*param_2 + 0xbc) + 8))(*(undefined4 *)(*param_2 + 0xbc));
+    tmp_50 = *param_2;
+    tmp_54 = tmp_50;
+    operator_delete((void *)tmp_54);
+    return 9;
+  }
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10004C8A
@@ -2261,267 +2179,261 @@ undefined4 __cdecl SeekMmioToSample(SndInstance *sndObj,int param_2)
 undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint param_4)
 
 {
-  undefined4 uVar1;
-  int local_1c;
-  uint local_18;
-  uint local_14;
-  int local_10 [3];
-  
+  struct {
+    int chunk[2];
+    int pos;
+    int hdr[3];
+  } s;
+
   fseek(param_1,param_3,0);
-  fread(local_10,1,0xc,param_1);
-  if (local_10[0] == param_2) {
+  fread(s.hdr,1,0xc,param_1);
+  if (s.hdr[0] == param_2) {
     fseek(param_1,param_3,0);
-    uVar1 = 1;
+    return 1;
   }
-  else {
-    while( true ) {
-      local_14 = ftell(param_1);
-      fread(&local_1c,1,8,param_1);
-      if (param_4 <= local_14) break;
-      if (local_1c == param_2) {
-        fseek(param_1,local_14,0);
-        return 1;
-      }
-      local_14 = ftell(param_1);
-      if ((local_18 & 1) != 0) {
-        local_18 = local_18 + 1;
-      }
-      fseek(param_1,local_18,1);
+  while (1) {
+    s.pos = ftell(param_1);
+    fread(s.chunk,1,8,param_1);
+    if (param_4 <= (uint)s.pos) {
+      fseek(param_1,param_3,0);
+      return 0;
     }
-    fseek(param_1,param_3,0);
-    uVar1 = 0;
+    if (s.chunk[0] == param_2) {
+      fseek(param_1,s.pos,0);
+      return 1;
+    }
+    s.pos = ftell(param_1);
+    if ((s.chunk[1] & 1) != 0) {
+      s.chunk[1] = s.chunk[1] + 1;
+    }
+    fseek(param_1,s.chunk[1],1);
   }
-  return uVar1;
 }
 
 // FUNCTION: MAGSND 0x10004E4C
-undefined4 __cdecl PrimeDsBufferFromSource(undefined4 *param_1,int param_2)
-
+undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int param_2)
 {
-  undefined4 uVar1;
-  int local_4c;
-  int local_44;
-  HPSTR local_40;
-  int local_3c;
-  int local_38;
-  undefined4 local_34;
-  size_t local_30;
-  HPSTR local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  undefined4 local_1c;
-  undefined4 local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  undefined4 local_8;
+  struct {
+    int local_48;
+    int local_44;
+    int local_40;
+    HPSTR local_3c;
+    int local_38;
+    int local_34;
+    int local_30;
+    int local_2c;
+    HPSTR local_28;
+    int local_24;
+    int local_20;
+    int local_1c;
+    HPSTR local_18;
+    int local_14;
+    int local_10;
+    int local_c;
+    int local_8;
+    int local_4;
+  } s;
+
+  s.local_3c = (HPSTR)0x0;
+  s.local_18 = (HPSTR)0x0;
+  s.local_28 = (HPSTR)0x0;
+  s.local_4 = 0;
+  s.local_14 = 0;
+  s.local_30 = 0;
+  s.local_34 = 0;
+  if (((snd->flags2 >> 5) & 1) == 0) {
+    SeekMmioToSample(snd,param_2);
+  }
+
+  s.local_38 = (uint)snd->waveFmt.nBlockAlign * param_2;
+  s.local_1c = s.local_38;
+  s.local_24 = snd->dataBytes;
+  s.local_48 = s.local_24 - s.local_1c;
+  s.local_2c = 0x10000;
+  s.local_44 = 0;
+  s.local_8 = s.local_38;
   
-  local_40 = (HPSTR)0x0;
-  local_1c = 0;
-  local_2c = (HPSTR)0x0;
-  local_8 = 0;
-  local_18 = 0;
-  local_34 = 0;
-  local_38 = 0;
-  if (((uint)param_1[2] >> 5 & 1) == 0) {
-    SeekMmioToSample((SndInstance *)param_1,param_2);
+  if ((s.local_38 < 0) || (s.local_24 < s.local_38)) {
+    return 5;
   }
-  local_3c = (uint)*(ushort *)(param_1 + 0x21) * param_2;
-  local_28 = param_1[0x73];
-  local_4c = local_28 - local_3c;
-  local_30 = 0x10000;
-  if ((local_3c < 0) || (local_28 < local_3c)) {
-    uVar1 = 5;
+  
+  s.local_10 = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer,0,0x10000,&s.local_3c,&s.local_4,&s.local_18,&s.local_14,0);
+  if (s.local_10 != 0) {
+    if (((snd->flags2 >> 5) & 1) != 0) {
+      FUN_1000575e((undefined4 *)snd);
+    }
+    else {
+      CloseMmioAndFreeSource(snd);
+    }
+    DestroySndInstance(snd);
+    return 9;
   }
-  else {
-    local_20 = local_3c;
-    local_c = local_3c;
-    local_14 = (**(code **)(*(int *)param_1[0x2f] + 0x2c))
-                         (param_1[0x2f],0,0x10000,&local_40,&local_8,&local_1c,&local_18,0);
-    if (local_14 == 0) {
-      local_2c = local_40;
-      local_14 = 0;
-      while (local_38 == 0) {
-        if (local_4c < (int)local_30) {
-          if (((uint)param_1[2] >> 5 & 1) == 0) {
-            local_10 = mmioRead((HMMIO)param_1[0x72],local_2c,local_4c);
-          }
-          else {
-            AVIStreamRead(*param_1,param_2,
-                          (int)(0x10000 /
-                               (ulonglong)(longlong)(int)(uint)*(ushort *)(param_1 + 0x21)),local_2c
-                          ,local_4c,&local_10,0);
-          }
-          local_2c = local_2c + local_10;
-          local_30 = local_30 - local_10;
-          local_4c = 0;
-          local_20 = param_1[0x73];
-          if ((*(byte *)(param_1 + 2) & 1) == 0) {
-            memset(local_2c,0,local_30);
-            local_38 = 1;
-          }
-           else {
-             if (((uint)param_1[2] >> 5 & 1) == 0) {
-              SeekMmioToSample((SndInstance *)param_1,0);
-             }
-             local_20 = 0;
-             local_4c = param_1[0x73];
-             local_c = 0;
-           }
-        }
-        else {
-          if (((uint)param_1[2] >> 5 & 1) == 0) {
-            local_10 = mmioRead((HMMIO)param_1[0x72],local_2c,local_30);
-          }
-          else {
-            AVIStreamRead(*param_1,param_2,
-                          (int)(0x10000 /
-                               (ulonglong)(longlong)(int)(uint)*(ushort *)(param_1 + 0x21)),local_2c
-                          ,0x10000,&local_10,&local_44);
-          }
-          local_30 = local_30 - local_10;
-          local_c = local_c + local_10;
-          local_4c = local_4c - local_10;
-          local_20 = local_20 + local_10;
-          param_2 = param_2 + local_44;
-          local_38 = 1;
-        }
-      }
-      mmioGetInfo((HMMIO)param_1[0x72],(LPMMIOINFO)(param_1 + 0x60),0);
-      if (((uint)param_1[2] >> 5 & 1) == 0) {
-        mmioAdvance((HMMIO)param_1[0x72],(LPMMIOINFO)(param_1 + 0x60),0);
+
+  s.local_28 = s.local_3c;
+  while (s.local_34 == 0) {
+    if (s.local_48 < s.local_2c) {
+    if (((snd->flags2 >> 5) & 1) == 0) {
+      s.local_c = mmioRead(snd->hMmio,s.local_28,s.local_48);
+    }
+    else {
+      s.local_40 = (int)snd->waveFmt.nBlockAlign;
+      s.local_30 = 0x10000 / s.local_40;
+      AVIStreamRead((PAVISTREAM)snd->streamOrMmio,param_2,s.local_30,s.local_28,s.local_48,&s.local_c,0);
+    }
+      s.local_28 = s.local_28 + s.local_c;
+      s.local_2c = s.local_2c - s.local_c;
+      s.local_48 = 0;
+      s.local_20 = snd->dataBytes;
+      if ((snd->flags2 & 1) == 0) {
+        memset(s.local_28,0,(size_t)s.local_2c);
+        s.local_34 = 1;
       }
       else {
-        RefillAviMmioBuffer((SndInstance *)param_1,param_2);
-      }
-      local_24 = local_4c;
-      if (0xffff < local_4c) {
-        local_24 = 0x10000;
-      }
-      param_1[0x74] = param_1[0x73] - (local_4c - local_24);
-      param_1[0x75] = param_1[0x73] - local_4c;
-      param_1[0x76] = 0;
-      local_14 = (**(code **)(*(int *)param_1[0x2f] + 0x4c))
-                           (param_1[0x2f],local_40,local_8,local_1c,local_18);
-      if (local_14 == 0) {
-        uVar1 = 0;
-      }
-      else {
-        CloseMmioAndFreeSource(param_1);
-        DestroySndInstance((SndInstance *)param_1);
-        uVar1 = 9;
+        if (((snd->flags2 >> 5) & 1) == 0) {
+          SeekMmioToSample(snd,0);
+        }
+        s.local_20 = 0;
+        s.local_48 = snd->dataBytes;
+        s.local_8 = 0;
       }
     }
     else {
-      if (((uint)param_1[2] >> 5 & 1) == 0) {
-        CloseMmioAndFreeSource(param_1);
+      if (((snd->flags2 >> 5) & 1) == 0) {
+        s.local_c = mmioRead(snd->hMmio,s.local_28,s.local_2c);
       }
       else {
-        FUN_1000575e();
+        s.local_40 = (int)snd->waveFmt.nBlockAlign;
+        s.local_30 = 0x10000 / s.local_40;
+        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,param_2,s.local_30,s.local_28,0x10000,&s.local_c,
+                      &s.local_44);
       }
-      DestroySndInstance((SndInstance *)param_1);
-      uVar1 = 9;
+      s.local_2c = s.local_2c - s.local_c;
+      s.local_8 = s.local_8 + s.local_c;
+      s.local_48 = s.local_48 - s.local_c;
+      s.local_20 = s.local_20 + s.local_c;
+      param_2 = param_2 + s.local_44;
+      s.local_34 = 1;
     }
   }
-  return uVar1;
+
+  mmioGetInfo(snd->hMmio,&snd->mmioInfo,0);
+  if (((snd->flags2 >> 5) & 1) == 0) {
+    mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
+  }
+  else {
+    RefillAviMmioBuffer(snd,param_2);
+  }
+
+  s.local_20 = s.local_48;
+  if (0xffff < s.local_48) {
+    s.local_20 = 0x10000;
+  }
+  snd->writeCursorBytes = snd->dataBytes - (s.local_48 - s.local_20);
+  snd->readCursorBytes = snd->dataBytes - s.local_48;
+  snd->ringCursorBytes = 0;
+  
+  s.local_10 = snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.local_3c,s.local_4,s.local_18,s.local_14);
+  if (s.local_10 != 0) {
+    CloseMmioAndFreeSource(snd);
+    DestroySndInstance(snd);
+    return 9;
+  }
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x1000524C
-undefined4 __cdecl PrimeAviAudio(SndInstance *sndObj,undefined4 unused)
+undefined4 __cdecl PrimeAviAudio(undefined4 *param_1)
 
 {
-  undefined4 uVar1;
-  int local_34;
-  uint local_30;
-  undefined1 local_2c [4];
-  uint local_28;
-  int local_24;
-  undefined1 local_20 [4];
-  int local_1c;
-  int local_18;
-  undefined4 local_14;
-  int local_10;
-  undefined4 local_c;
-  int local_8;
-
-  (void)unused;
-  local_24 = sndObj->blockCount * (uint)sndObj->blockBytes;
-  local_8 = (**(code **)(*(int *)sndObj->dsBuffer + 0x2c))
-                      (sndObj->dsBuffer,0,local_24,&local_34,&local_c,&local_18,&local_14,0);
-  if (local_8 == 0) {
-    if (local_18 == 0) {
-      sndObj->ringCursorBytes = 0;
-      sndObj->writeCursorBytes = 0;
-      sndObj->readCursorBytes = 0;
-      local_1c = local_34;
-      local_10 = 0;
-      local_28 = (uint)sndObj->blockBytes / (uint)sndObj->blockScale;
-      local_8 = 0;
-      for (local_30 = 0; local_30 < (uint)sndObj->blockCount; local_30 = local_30 + 1) {
-        AVIStreamRead(sndObj->streamOrMmio,local_10,local_28,local_1c,sndObj->blockBytes,local_2c,local_20);
-        sndObj->ringCursorBytes = sndObj->ringCursorBytes + sndObj->blockBytes;
-        sndObj->ringCursorBytes = (uint)sndObj->ringCursorBytes % (uint)sndObj->dsDesc.dwBufferBytes;
-        sndObj->writeCursorBytes = sndObj->writeCursorBytes + sndObj->blockBytes;
-        sndObj->readCursorBytes = sndObj->readCursorBytes + sndObj->blockBytes;
-        local_1c = local_1c + sndObj->blockBytes;
-        local_10 = local_10 + local_28;
-      }
-      local_8 = (**(code **)(*(int *)sndObj->dsBuffer + 0x4c))
-                          (sndObj->dsBuffer,local_34,local_c,local_18,local_14);
-      if (local_8 == 0) {
-        uVar1 = 0;
-      }
-      else {
-        CloseMmioAndFreeSource((undefined4 *)sndObj);
-        DestroySndInstance(sndObj);
-        uVar1 = 9;
-      }
-    }
-    else {
-      (**(code **)(*(int *)sndObj->dsBuffer + 0x4c))(sndObj->dsBuffer,local_34,local_c,local_18,local_14);
-      FUN_1000575e();
-      DestroySndInstance(sndObj);
-      uVar1 = 9;
-    }
+  struct {
+    int local_30;
+    uint local_2c;
+    undefined1 local_28[4];
+    uint local_24;
+    int local_20;
+    undefined1 local_1c[4];
+    int local_18;
+    int local_14;
+    int local_10;
+    int local_c;
+    uint local_8;
+    int local_4;
+  } s;
+  
+  s.local_20 = param_1[0x25];
+  s.local_20 = s.local_20 * param_1[0x23];
+  s.local_4 = (**(code **)(*(int *)param_1[0x2f] + 0x2c))
+                   (param_1[0x2f],0,s.local_20,&s.local_30,&s.local_8,&s.local_14,&s.local_10,0);
+  if (s.local_4 != 0) {
+    FUN_1000575e(param_1);
+    DestroySndInstance((SndInstance *)param_1);
+    return 9;
   }
-  else {
-    FUN_1000575e();
-    DestroySndInstance(sndObj);
-    uVar1 = 9;
+  if (s.local_14 != 0) {
+    (**(code **)(*(int *)param_1[0x2f] + 0x4c))
+              (param_1[0x2f],s.local_30,s.local_8,s.local_14,s.local_10);
+    FUN_1000575e(param_1);
+    DestroySndInstance((SndInstance *)param_1);
+    return 9;
   }
-  return uVar1;
+  param_1[0x76] = 0;
+  param_1[0x74] = 0;
+  param_1[0x75] = 0;
+  s.local_18 = s.local_30;
+  s.local_c = 0;
+  s.local_24 = (uint)param_1[0x23] / (uint)param_1[0x24];
+  s.local_4 = 0;
+  for (s.local_2c = 0; s.local_2c < (uint)param_1[0x25]; s.local_2c = s.local_2c + 1) {
+    AVIStreamRead((PAVISTREAM)*param_1,s.local_c,s.local_24,(void *)s.local_18,param_1[0x23],s.local_28,
+                  s.local_1c);
+    param_1[0x76] = param_1[0x76] + param_1[0x23];
+    param_1[0x76] = (uint)param_1[0x76] % (uint)param_1[0x2c];
+    param_1[0x74] = param_1[0x74] + param_1[0x23];
+    param_1[0x75] = param_1[0x75] + param_1[0x23];
+    s.local_18 = s.local_18 + param_1[0x23];
+    s.local_c = s.local_c + s.local_24;
+  }
+  s.local_4 = (**(code **)(*(int *)param_1[0x2f] + 0x4c))
+                   (param_1[0x2f],s.local_30,s.local_8,s.local_14,s.local_10);
+  if (s.local_4 == 0) {
+    return 0;
+  }
+  CloseMmioAndFreeSource((SndInstance *)param_1);
+  DestroySndInstance((SndInstance *)param_1);
+  return 9;
 }
 
 // FUNCTION: MAGSND 0x10005480
-SndInstance * __cdecl FUN_10005480(int *param_1,undefined4 param_2,undefined4 *param_3,undefined4 param_4)
-
+SndInstance * __cdecl FUN_10005480(IDirectSound *dSound,DWORD dwBufferBytes,WAVEFORMATEX *wfxFormat,DWORD dwFlags)
 {
-  SndInstance *sndObj;
-  int iVar1;
+  struct {
+    void *local_10;
+    void *local_c;
+    int local_8;
+    SndInstance *result;
+  } s;
   
-  sndObj = (SndInstance *)operator_new(0x204);
-  memset(sndObj,0,0x204);
-  sndObj->dsDesc.dwSize = 0x14;
-  sndObj->dsDesc.dwFlags = param_4;
-  sndObj->dsDesc.dwBufferBytes = param_2;
-  sndObj->dsDesc.lpwfxFormat = param_3;
-  *(undefined4 *)&sndObj->waveFmt = *param_3;
-  *(undefined4 *)((byte *)&sndObj->waveFmt + 4) = param_3[1];
-  *(undefined4 *)((byte *)&sndObj->waveFmt + 8) = param_3[2];
-  *(undefined4 *)((byte *)&sndObj->waveFmt + 0xc) = param_3[3];
-  *(undefined2 *)((byte *)&sndObj->waveFmt + 0x10) = *(undefined2 *)(param_3 + 4);
-  iVar1 = (**(code **)(*param_1 + 0xc))(param_1,(int)&sndObj->dsDesc,(int)&sndObj->dsBuffer,0);
-  if (iVar1 != 0) {
-    operator_delete(sndObj);
-    sndObj = (SndInstance *)0x0;
+  s.result = (SndInstance *)operator_new(0x204);
+  memset(s.result,0,0x204);
+  s.result->dsDesc.dwSize = 0x14;
+  s.result->dsDesc.dwFlags = dwFlags;
+  s.result->dsDesc.dwBufferBytes = dwBufferBytes;
+  s.result->dsDesc.lpwfxFormat = wfxFormat;
+  memcpy(&s.result->waveFmt, wfxFormat, sizeof(WAVEFORMATEX));
+
+  s.local_8 = dSound->lpVtbl->CreateSoundBuffer(dSound,&s.result->dsDesc,&s.result->dsBuffer,0);
+  if (s.local_8 != 0) {
+    s.local_c = s.result;
+    s.local_10 = s.local_c;
+    operator_delete(s.local_10);
+    return (SndInstance *)0x0;
   }
-  return sndObj;
+  else
+    return s.result;
 }
 
 // FUNCTION: MAGSND 0x10005562
 undefined4 __cdecl DestroySndInstance(SndInstance *param_1)
-
 {
   undefined4 uVar1;
   
@@ -2540,64 +2452,44 @@ undefined4 __cdecl DestroySndInstance(SndInstance *param_1)
 undefined4 __cdecl LoadAviAudioStream(void *stream,SndInstance **outSnd,undefined4 scratch)
 
 {
-  undefined4 uVar1;
-  void *pvVar2;
-  SndInstance *sndObj;
-  int iVar3;
-  undefined4 *puVar4;
-  undefined4 *puVar5;
-  undefined4 local_fc [4];
-  undefined2 local_ec;
-  undefined4 local_e8 [18];
-  undefined1 local_a0 [4];
-  int local_9c;
-  int local_98;
-  undefined4 local_94;
-  int local_90 [8];
-  int local_70;
-  int local_68;
-  int local_60;
-
-  local_94 = 0x12;
-  AVIStreamInfoA((PAVISTREAM)stream,local_90,0x8c);
-  if (local_90[0] == 0x73647561) {
-    AVIStreamRead((PAVISTREAM)stream,0,1,0,0,local_a0,0);
-    local_98 = local_60 * local_70;
-    AVIStreamReadFormat((PAVISTREAM)stream,0,local_fc,&local_94);
-    local_ec = 0;
-    scratch = 0xe8;
-    local_9c = local_68 * 0xb;
-    pvVar2 = FUN_10005480(g_directSound,local_9c,local_fc,0xe8);
-    *outSnd = (SndInstance *)pvVar2;
-    if (*outSnd == 0) {
-      uVar1 = 9;
-    }
-    else {
-      sndObj = *outSnd;
-      sndObj->mmioBaseOffset = 0;
-      sndObj->hMmio = (HMMIO)0;
-      puVar4 = local_e8;
-      puVar5 = (undefined4 *)&sndObj->mmioInfo;
-      for (iVar3 = 0x12; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *puVar5 = *puVar4;
-        puVar4 = puVar4 + 1;
-        puVar5 = puVar5 + 1;
-      }
-      sndObj->dataBytes = local_98;
-      sndObj->streamOrMmio = stream;
-      sndObj->flags2 = sndObj->flags2 | 0x20;
-      sndObj->flags2 = sndObj->flags2 | 2;
-      sndObj->blockBytes = local_68;
-      sndObj->blockScale = local_60;
-      sndObj->blockCount = 0xb;
-      sndObj->timeBytes = 0;
-      uVar1 = 0;
-    }
+  struct {
+    WAVEFORMATEX local_fc;
+    byte pad_e6[2];
+    MMIOINFO local_e8;
+    LONG local_9c;
+    int local_98;
+    int local_94;
+    int local_90;
+    AVISTREAMINFOA local_8c;
+  } s;
+  
+  s.local_90 = 0x12;
+  AVIStreamInfoA((PAVISTREAM)stream,&s.local_8c,0x8c);
+  if (s.local_8c.fccType != 0x73647561) {
+    return 8;
   }
-  else {
-    uVar1 = 8;
+  AVIStreamRead((PAVISTREAM)stream,0,1,0,0,&s.local_9c,0);
+  s.local_94 = (int)s.local_8c.dwSampleSize * (int)s.local_8c.dwLength;
+  AVIStreamReadFormat((PAVISTREAM)stream,0,&s.local_fc,(LONG *)&s.local_90);
+  s.local_fc.cbSize = 0;
+  scratch = 0xe8;
+  s.local_98 = (int)s.local_8c.dwSuggestedBufferSize * 0xb;
+  *outSnd = FUN_10005480(g_directSound,s.local_98,&s.local_fc,scratch);
+  if (*outSnd == (SndInstance *)0x0) {
+    return 9;
   }
-  return uVar1;
+  (*outSnd)->mmioBaseOffset = 0;
+  (*outSnd)->hMmio = (HMMIO)0;
+  (*outSnd)->mmioInfo = s.local_e8;
+  (*outSnd)->dataBytes = s.local_94;
+  (*outSnd)->streamOrMmio = stream;
+  (*outSnd)->flags2 = (*outSnd)->flags2 | 0x20;
+  (*outSnd)->flags2 = (*outSnd)->flags2 | 2;
+  (*outSnd)->blockBytes = s.local_8c.dwSuggestedBufferSize;
+  (*outSnd)->blockScale = s.local_8c.dwSampleSize;
+  (*outSnd)->blockCount = 0xb;
+  (*outSnd)->timeBytes = 0;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10005770
@@ -2636,7 +2528,7 @@ void __cdecl RefillAviMmioBuffer(SndInstance *sndObj,long streamStartSample)
 int __cdecl MmioTellFromInfo(MMIOINFO *info) { return (int)info->lDiskOffset - ((int)info->pchEndRead - (int)info->pchNext); }
 
 // FUNCTION: MAGSND 0x1000575E
-undefined4 FUN_1000575e(void) { return 0; }
+undefined4 __cdecl FUN_1000575e(undefined4 *param_1) { (void)param_1; return 0; }
 
 long __cdecl ftol(void)
 {
