@@ -117,17 +117,20 @@ void __cdecl AddToUpdateList(int param_1);
 void __cdecl RemoveFromUpdateList(int param_1);
 void __cdecl AddToActiveList(int param_1);
 void __cdecl RemoveFromActiveList(int param_1);
+undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2);
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
-void __cdecl FUN_1000448d(void);
+void __cdecl StopUpdateTimer(void);
 void CALLBACK UpdateTimerProc(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
-void __cdecl FUN_10004986(undefined4 *param_1);
+void __cdecl CloseMmioAndFreeSource(undefined4 *param_1);
 undefined4 __cdecl LoadFromFile(char *filename, SndInstance **outSnd);
 undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4 scratch);
-undefined4 __cdecl FUN_10004e4c(undefined4 *param_1, int param_2);
+undefined4 __cdecl PrimeDsBufferFromSource(undefined4 *param_1, int param_2);
 undefined4 __cdecl PrimeAviAudio(SndInstance *sndObj, undefined4 unused);
 undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefined4 scratch);
 void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample);
 int __cdecl MmioTellFromInfo(MMIOINFO *info);
+undefined4 __cdecl LoadWaveFromFileHandle(FILE *param_1,int *param_2);
+undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint param_4);
 SndInstance * __cdecl FUN_10005480(int *param_1, undefined4 param_2, undefined4 *param_3, undefined4 param_4);
 undefined4 __cdecl DestroySndInstance(SndInstance *param_1);
 void * __cdecl operator_new(unsigned int size);
@@ -275,7 +278,7 @@ undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,byte param_3)
   }
   if ((param_3 & 1) != 0) {
     if (g_updateTimerActive != 0) {
-      FUN_1000448d();
+      StopUpdateTimer();
     }
     g_updateTimerEnabled = 0;
   }
@@ -292,7 +295,7 @@ void ReleaseSnd(void)
 
   UnloadAllSnds();
   if (g_updateTimerActive != 0) {
-    FUN_1000448d();
+    StopUpdateTimer();
   }
   (**(code **)(*g_directSound + 8))(g_directSound);
   g_directSound = (int *)0x0;
@@ -351,7 +354,7 @@ int __cdecl LoadSnd(LPSTR param_1,int param_2,Sound *param_3)
         g_sndSlots[param_2] = (SndInstance *)0;
         return s.local_4;
       }
-      FUN_10004e4c((undefined4 *)g_sndSlots[param_2],0);
+      PrimeDsBufferFromSource((undefined4 *)g_sndSlots[param_2],0);
     }
     else {
       s.local_4 = LoadAviAudioStream((void *)param_1,(&g_sndSlots[param_2]),0);
@@ -413,11 +416,11 @@ undefined4 __cdecl UnloadSnd(int param_1)
       if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 1 & 1) != 0) {
         RemoveFromUpdateList((int)g_sndSlots[param_1]);
         if ((*(uint *)((int)g_sndSlots[param_1] + 8) >> 5 & 1) == 0) {
-          FUN_10004986((undefined4 *)g_sndSlots[param_1]);
+          CloseMmioAndFreeSource((undefined4 *)g_sndSlots[param_1]);
           for (local_8 = 0; local_8 < *(uint *)((int)g_sndSlots[param_1] + 0x30);
               local_8 = local_8 + 1) {
             if (*(int *)((int)g_sndSlots[param_1] + 0x38 + local_8 * 4) != 0) {
-              FUN_10004986(*(undefined4 **)
+              CloseMmioAndFreeSource(*(undefined4 **)
                             ((int)g_sndSlots[param_1] + 0x38 + local_8 * 4));
             }
           }
@@ -486,7 +489,7 @@ int __cdecl FUN_10001701(undefined4 *param_1,int *param_2)
   local_c = 0;
   if (((uint)param_1[2] >> 1 & 1) == 0) {
     if ((param_2 == (int *)0x0) || (((uint)param_2[7] >> 1 & 1) == 0)) {
-      iVar1 = FUN_100040c9((int)param_1,(int *)&local_18);
+      iVar1 = AcquireFreeDsBuffer((int)param_1,(int *)&local_18);
       if (iVar1 != 0) {
         return iVar1;
       }
@@ -657,7 +660,7 @@ int __cdecl PlaySndFile(LPSTR param_1,int param_2,Sound *param_3)
   (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x40))
             (g_sndSlots[param_2]->dsBuffer,s.local_14);
   g_sndSlots[param_2]->pan = s.local_14;
-  FUN_10004e4c((undefined4 *)g_sndSlots[param_2],0);
+  PrimeDsBufferFromSource((undefined4 *)g_sndSlots[param_2],0);
   (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x30))
             (g_sndSlots[param_2]->dsBuffer,0,0,1);
   (**(code **)(*(int *)g_sndSlots[param_2]->dsBuffer + 0x10))
@@ -668,7 +671,7 @@ int __cdecl PlaySndFile(LPSTR param_1,int param_2,Sound *param_3)
 }
 
 // FUNCTION: MAGSND 0x10001E52
-int __cdecl FUN_10001e52(undefined4 *param_1,int param_2)
+int __cdecl LoadMarkerInstance(undefined4 *param_1,int param_2)
 
 {
   int iVar1;
@@ -679,7 +682,7 @@ int __cdecl FUN_10001e52(undefined4 *param_1,int param_2)
   piVar2 = param_1 + param_2 + 0xd;
   iVar3 = LoadWaveMmio((LPSTR)*param_1,(SndInstance **)piVar2,0x10);
   if ((iVar3 == 0) &&
-     (iVar3 = FUN_10004e4c((undefined4 *)*piVar2,*(int *)(iVar1 + (param_2 * 3 + -3) * 8 + 0x14)),
+     (iVar3 = PrimeDsBufferFromSource((undefined4 *)*piVar2,*(int *)(iVar1 + (param_2 * 3 + -3) * 8 + 0x14)),
      iVar3 == 0)) {
     *(uint *)(*piVar2 + 4) = *(uint *)(*piVar2 + 4) | 0x20;
     AddToUpdateList(*piVar2);
@@ -692,7 +695,7 @@ int __cdecl FUN_10001e52(undefined4 *param_1,int param_2)
 }
 
 // FUNCTION: MAGSND 0x10001F6F
-int __cdecl FUN_10001f6f(int param_1,int param_2)
+int __cdecl PrimeMarkerInstance(int param_1,int param_2)
 
 {
   undefined4 *puVar1;
@@ -700,7 +703,7 @@ int __cdecl FUN_10001f6f(int param_1,int param_2)
   
   if (((*(uint *)(param_1 + 4) >> 6 & 1) == 0) || (*(int *)(param_1 + 0x18) != param_2 + -1)) {
     puVar1 = *(undefined4 **)(param_1 + 0x34 + param_2 * 4);
-    iVar2 = FUN_10004e4c(puVar1,*(int *)(*(int *)(param_1 + 0x34) + (param_2 * 3 + -3) * 8 + 0x14));
+    iVar2 = PrimeDsBufferFromSource(puVar1,*(int *)(*(int *)(param_1 + 0x34) + (param_2 * 3 + -3) * 8 + 0x14));
     if (iVar2 == 0) {
       puVar1[1] = puVar1[1] | 0x20;
       puVar1[1] = puVar1[1] & 0xfffffffb;
@@ -720,7 +723,7 @@ int __cdecl FUN_10001f6f(int param_1,int param_2)
 }
 
 // FUNCTION: MAGSND 0x1000208C
-void __cdecl FUN_1000208c(int *param_1,int *param_2)
+void __cdecl SwapActiveInstances(int *param_1,int *param_2)
 
 {
   int iVar1;
@@ -766,10 +769,10 @@ int __cdecl SetSndMarker(int param_1,uint param_2)
     }
     else {
       if (puVar1[param_2 + 0xd] == 0) {
-        local_8 = FUN_10001e52(puVar1,param_2);
+        local_8 = LoadMarkerInstance(puVar1,param_2);
       }
       else {
-        local_8 = FUN_10001f6f((int)puVar1,param_2);
+        local_8 = PrimeMarkerInstance((int)puVar1,param_2);
       }
       LeaveCriticalSection((LPCRITICAL_SECTION)&g_sndCs);
     }
@@ -982,7 +985,7 @@ undefined4 __cdecl FUN_100026d1(int param_1)
       }
       else if ((0 < g_updateTimerUsers) &&
               (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
-        FUN_1000448d();
+        StopUpdateTimer();
       }
       *(uint *)((int)g_sndSlots[param_1] + 4) =
            *(uint *)((int)g_sndSlots[param_1] + 4) & 0xfffffffe;
@@ -1520,7 +1523,7 @@ int __cdecl FUN_10003656(undefined4 *param_1)
   if (((uint)param_1[2] >> 5 & 1) == 0) {
     param_1[0x67] = param_1[0x68];
     mmioSetInfo((HMMIO)param_1[0x72],(LPCMMIOINFO)(param_1 + 0x60),0);
-    iVar1 = FUN_10004e4c(param_1,0);
+    iVar1 = PrimeDsBufferFromSource(param_1,0);
     if (iVar1 != 0) {
       return iVar1;
     }
@@ -1676,7 +1679,7 @@ void __cdecl FUN_10003748(int param_1)
     (**(code **)(**(int **)(param_1 + 0xbc) + 0x48))(*(undefined4 *)(param_1 + 0xbc));
     if ((0 < g_updateTimerUsers) &&
         (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
-      FUN_1000448d();
+      StopUpdateTimer();
     }
     *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xfffffffe;
     *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & 0xfffffffd;
@@ -1777,7 +1780,7 @@ undefined4 __cdecl FUN_10003d60(undefined4 *param_1)
       (**(code **)(*(int *)param_1[0x2f] + 0x48))(param_1[0x2f]);
       if ((0 < g_updateTimerUsers) &&
           (g_updateTimerUsers = g_updateTimerUsers + -1, g_updateTimerUsers == 0)) {
-        FUN_1000448d();
+        StopUpdateTimer();
       }
       param_1[1] = param_1[1] & 0xfffffffe;
       param_1[1] = param_1[1] & 0xfffffffd;
@@ -1790,7 +1793,7 @@ undefined4 __cdecl FUN_10003d60(undefined4 *param_1)
 }
 
 // FUNCTION: MAGSND 0x100040C9
-undefined4 __cdecl FUN_100040c9(int param_1,int *param_2)
+undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
 
 {
   int iVar1;
@@ -1964,7 +1967,7 @@ undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs)
 }
 
 // FUNCTION: MAGSND 0x1000448D
-void FUN_1000448d(void)
+void StopUpdateTimer(void)
 
 {
   if (g_updateTimerActive != 0) {
@@ -1990,7 +1993,7 @@ undefined4 __cdecl LoadFromFile(char *filename,SndInstance **outSnd)
     uVar1 = 7;
   }
   else {
-    uVar1 = FUN_100049fe(_File,(int *)outSnd);
+    uVar1 = LoadWaveFromFileHandle(_File,(int *)outSnd);
     fclose(_File);
   }
   return uVar1;
@@ -2129,7 +2132,7 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename,SndInstance **outSnd,undefined4 s
 }
 
 // FUNCTION: MAGSND 0x10004986
-void __cdecl FUN_10004986(undefined4 *param_1)
+void __cdecl CloseMmioAndFreeSource(undefined4 *param_1)
 
 {
   mmioClose((HMMIO)param_1[0x72],0);
@@ -2143,7 +2146,7 @@ void __cdecl FUN_10004986(undefined4 *param_1)
 }
 
 // FUNCTION: MAGSND 0x100049FE
-undefined4 __cdecl FUN_100049fe(FILE *param_1,int *param_2)
+undefined4 __cdecl LoadWaveFromFileHandle(FILE *param_1,int *param_2)
 
 {
   undefined4 uVar1;
@@ -2178,7 +2181,7 @@ undefined4 __cdecl FUN_100049fe(FILE *param_1,int *param_2)
   fread(&local_30,1,0xc,param_1);
   local_34 = local_2c + local_38 + 8;
   if ((local_30 == 0x46464952) && (local_28 == 0x45564157)) {
-    iVar2 = FUN_10004d3f(param_1,0x20746d66,local_38,local_34);
+    iVar2 = FindRiffChunk(param_1,0x20746d66,local_38,local_34);
     if (iVar2 == 0) {
       uVar1 = 8;
     }
@@ -2186,7 +2189,7 @@ undefined4 __cdecl FUN_100049fe(FILE *param_1,int *param_2)
       fread(local_1c,1,8,param_1);
       fread(local_50,1,0x10,param_1);
       local_40 = 0;
-      iVar2 = FUN_10004d3f(param_1,0x61746164,local_38,local_34);
+      iVar2 = FindRiffChunk(param_1,0x61746164,local_38,local_34);
       if (iVar2 == 0) {
         uVar1 = 8;
       }
@@ -2255,7 +2258,7 @@ undefined4 __cdecl SeekMmioToSample(SndInstance *sndObj,int param_2)
 }
 
 // FUNCTION: MAGSND 0x10004D3F
-undefined4 __cdecl FUN_10004d3f(FILE *param_1,int param_2,long param_3,uint param_4)
+undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint param_4)
 
 {
   undefined4 uVar1;
@@ -2292,7 +2295,7 @@ undefined4 __cdecl FUN_10004d3f(FILE *param_1,int param_2,long param_3,uint para
 }
 
 // FUNCTION: MAGSND 0x10004E4C
-undefined4 __cdecl FUN_10004e4c(undefined4 *param_1,int param_2)
+undefined4 __cdecl PrimeDsBufferFromSource(undefined4 *param_1,int param_2)
 
 {
   undefined4 uVar1;
@@ -2405,14 +2408,14 @@ undefined4 __cdecl FUN_10004e4c(undefined4 *param_1,int param_2)
         uVar1 = 0;
       }
       else {
-        FUN_10004986(param_1);
+        CloseMmioAndFreeSource(param_1);
         DestroySndInstance((SndInstance *)param_1);
         uVar1 = 9;
       }
     }
     else {
       if (((uint)param_1[2] >> 5 & 1) == 0) {
-        FUN_10004986(param_1);
+        CloseMmioAndFreeSource(param_1);
       }
       else {
         FUN_1000575e();
@@ -2470,7 +2473,7 @@ undefined4 __cdecl PrimeAviAudio(SndInstance *sndObj,undefined4 unused)
         uVar1 = 0;
       }
       else {
-        FUN_10004986((undefined4 *)sndObj);
+        CloseMmioAndFreeSource((undefined4 *)sndObj);
         DestroySndInstance(sndObj);
         uVar1 = 9;
       }
