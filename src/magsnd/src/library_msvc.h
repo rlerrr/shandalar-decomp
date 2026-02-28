@@ -1,40 +1,25 @@
 #if 0
 
-// LIBRARY: MAGSND 0x100058F4 SYMBOL
-// AVIStreamRead
-
-// LIBRARY: MAGSND 0x100058FA SYMBOL
-// AVIStreamReadFormat
-
-// LIBRARY: MAGSND 0x10005900 SYMBOL
-// AVIStreamInfoA
-
-// LIBRARY: MAGSND 0x10005906 SYMBOL
-// DirectSoundCreate
-
 // LIBRARY: MAGSND 0x1000590C SYMBOL
-// ftol
+// _ftol
 
 // LIBRARY: MAGSND 0x10005920 SYMBOL
-// memset
+// _memset
 
 // LIBRARY: MAGSND 0x10005926 SYMBOL
-// operator_delete
+// _operator_delete
 
 // LIBRARY: MAGSND 0x1000592C SYMBOL
-// operator_new
+// _operator_new
 
 // LIBRARY: MAGSND 0x10005932 SYMBOL
-// strcpy
+// _strcpy
 
 // LIBRARY: MAGSND 0x10005938 SYMBOL
-// strlen
+// _strlen
 
 // LIBRARY: MAGSND 0x10005940 SYMBOL
 // __CRT_INIT@12
-
-// LIBRARY: MAGSND 0x10005B70 SYMBOL
-// initterm
 
 // LIBRARY: MAGSND 0x10005B80 SYMBOL
 // _DllMain@12
