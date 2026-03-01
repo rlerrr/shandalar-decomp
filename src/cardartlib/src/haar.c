@@ -30,48 +30,61 @@ undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int he
 undefined4 Wvl_UnpackPieces(byte *param_1, int *param_2);
 
 // GLOBAL: CARDARTLIB 0x1001d258
+// GLOBAL: DRAWCARDLIB 0x10021048
 undefined4 global_dither_kernel_id = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d25c
+// GLOBAL: DRAWCARDLIB 0x1002104c
 undefined4 global_serpentine = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d260
+// GLOBAL: DRAWCARDLIB 0x10021050
 int g_ditherKernelTapCounts[0xa] = {0,0,2,4,12,7,10,12,12,0};
 
 // GLOBAL: CARDARTLIB 0x1001d288
+// GLOBAL: DRAWCARDLIB 0x10021078
 int g_ditherKernelErrorRowCounts[8] = {0,0,2,2,3,2,3,3};
 
 // GLOBAL: CARDARTLIB 0x1001d2b0
+// GLOBAL: DRAWCARDLIB 0x100210a0
 int g_ditherKernelDivisors[0xa] = {0,0,16,16,42,32,32,48};
 
 // GLOBAL: CARDARTLIB 0x1001d2d8
+// GLOBAL: DRAWCARDLIB 0x100210c8
 undefined1 g_ditherKernelTable[0xd80];
 
 // GLOBAL: CARDARTLIB 0x10031ca0
 undefined1 g_u8ClampTableStorage[0x400];
 
 // GLOBAL: CARDARTLIB 0x1001e058
+// GLOBAL: DRAWCARDLIB 0x10021e48
 undefined1 *g_u8ClampTable = g_u8ClampTableStorage + 0x200;
 
 // GLOBAL: CARDARTLIB 0x1001e05c
+// GLOBAL: DRAWCARDLIB 0x10021e4c
 undefined4 g_paletteDitherKernelCachedId = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e060
+// GLOBAL: DRAWCARDLIB 0x10021e50
 undefined4 g_rgbQuantKernelCachedId = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e0e0
+// GLOBAL: DRAWCARDLIB 0x100223c0
 int g_rowAlignBytes = 0x00000004;
 
 // GLOBAL: CARDARTLIB 0x100326d8
 unsigned char g_waveletScaleTableStorage[0x1000];
 
 // GLOBAL: CARDARTLIB 0x1001e090
+// GLOBAL: DRAWCARDLIB 0x10021e80
 char s_Not_enough_memory_for_delta_arra_1001e090[] = "Not enough memory for delta array\r\n";
 
 // GLOBAL: CARDARTLIB 0x1001e0b4
+// GLOBAL: DRAWCARDLIB 0x10021ea4
 char s_D__Newmagic_sources_NedCard_Pale_1001e0b4[] = "D:\\Newmagic\\sources\\NedCard\\Palette.c";
 
 // GLOBAL: CARDARTLIB 0x1001e118
+// GLOBAL: DRAWCARDLIB 0x100223f8
 unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x1001e124
@@ -84,45 +97,59 @@ undefined1 g_yuvClampTableStorage[0x2000];
 undefined1 * g_yuvClampTable = g_yuvClampTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x10032ae0
+// GLOBAL: DRAWCARDLIB 0x1003a9b0
 undefined4 g_waveletScaleToByteTableInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100ea09c
+// GLOBAL: DRAWCARDLIB 0x100f1f6c
 undefined4 g_yuvClampTableInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001e14c
+// GLOBAL: DRAWCARDLIB 0x1002242c
 char s_wavelet_pieces_has_illegal_value_1001e14c[] = "wavelet pieces has illegal value: %d";
 
 // GLOBAL: CARDARTLIB 0x1001e174
+// GLOBAL: DRAWCARDLIB 0x10022454
 char s_D__Newmagic_sources_NedCard_haar_1001e174[] = "D:\\Newmagic\\sources\\NedCard\\haar.c";
 
 // GLOBAL: CARDARTLIB 0x1001e198
+// GLOBAL: DRAWCARDLIB 0x10022478
 char s_Only_Works_on_24_bit_images_1001e198[] = "Only Works on 24 bit images\n";
 
 // GLOBAL: CARDARTLIB 0x1001e1b8
+// GLOBAL: DRAWCARDLIB 0x10022498
 char s_D__Newmagic_sources_NedCard_haar_1001e1b8[] = "D:\\Newmagic\\sources\\NedCard\\haar.c";
 
 // GLOBAL: CARDARTLIB 0x1001e1dc
+// GLOBAL: DRAWCARDLIB 0x100224bc
 char s_Only_Works_on_24_bit_images_1001e1dc[] = "Only Works on 24 bit images\n";
 
 // GLOBAL: CARDARTLIB 0x1001e1fc
+// GLOBAL: DRAWCARDLIB 0x100224dc
 char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\NedCard\\haar.c";
 
 // GLOBAL: CARDARTLIB 0x10032c98
+// GLOBAL: DRAWCARDLIB 0x1003ab68
 undefined1 g_haarDecodeScratch[0x2000];
 
 // GLOBAL: CARDARTLIB 0x100ad498
+// GLOBAL: DRAWCARDLIB 0x100b5368
 unsigned char g_defaultPalette256[0x200];
 
 // GLOBAL: CARDARTLIB 0x100edb10
+// GLOBAL: DRAWCARDLIB 0x10128e40
 undefined1 g_errorDiffusionRowStorage[5 * 0x8060];
 
 // GLOBAL: CARDARTLIB 0x100ecb04
+// GLOBAL: DRAWCARDLIB 0x10126554
 BOOL g_unpackResultUnused = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322cc
+// GLOBAL: DRAWCARDLIB 0x1002931c
 undefined4 g_rgbQuantClampInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322d0
+// GLOBAL: DRAWCARDLIB 0x10029320
 undefined4 g_paletteClampInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100322d8
@@ -138,9 +165,11 @@ int *g_haarScratchB = (int *)0x0;
 int *g_haarScratchA = (int *)0x0;
 
 // GLOBAL: CARDARTLIB 0x10117100
+// GLOBAL: DRAWCARDLIB 0x10152430
 void *g_errorDiffusionDeltaTablePtrs[0x41];
 
 // GLOBAL: CARDARTLIB 0x101221e8
+// GLOBAL: DRAWCARDLIB 0x10124538
 undefined4 global_color_depth = 0x00000000;
 
 // FUNCTION: CARDARTLIB 0x1000570f
@@ -1129,7 +1158,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
       param_1[1] = ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
       param_1[2] = ((int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
 
-      param_1 = (uint *)((int)param_1 + 3);
+      param_1 += 3;
     }
   }
 
@@ -1144,7 +1173,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 
   s.row_bytes = width * 3 + s.row_pad;
   if (height < wvl_entry[8]) {
-    memcpy(s.x_map,(void *)((wvl_entry[8] - 1) * s.row_bytes + (int)s.out_base),s.row_bytes);
+    memcpy(s.x_map,&s.out_base[(wvl_entry[8] - 1) * s.row_bytes], s.row_bytes);
   }
 
   for (s.x = 0; s.x < width; s.x++) {

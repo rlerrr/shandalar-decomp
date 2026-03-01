@@ -5,27 +5,20 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef DEFS_H
-	struct card_data_t;
-	struct card_ptr_t;
-#endif
-
-	int LoadBigArt(int id, int version, int width, int height);
-	int LoadSmallArt(int id, int version, int width, int height);
-	void DestroyBigArt(int id, int version);
-	void DestroySmallArt(int id, int version);
-	int IsBigArtRightSize(int id, int version, int width, int height);
-	int IsSmallArtRightSize(int id, int version, int width, int height);
-	void DestroyAllBigArts(void);
-	void DestroyAllSmallArts(void);
-	int IsBigArtIn(int id, int version);
-	int IsSmallArtIn(int id, int version);
-	int ReloadBigArtIfWrongSize(int id, int version, int width, int height);
-	int ReloadSmallArtIfWrongSize(int id, int version, int width, int height);
-	int DrawBigArt(HDC hdc, const RECT* rect, int id, int version);
-	int DrawSmallArt(HDC hdc, const RECT* rect, int id, int version);
-	//void Cardartlib_initialize_for_shandalar(card_data_t* real_cards_data, card_ptr_t* real_cards_ptr);
+	__declspec(dllimport) int LoadBigArt(int id, int version, int width, int height);
+	__declspec(dllimport) int LoadSmallArt(int id, int version, int width, int height);
+	__declspec(dllimport) void DestroyBigArt(int id, int version);
+	__declspec(dllimport) void DestroySmallArt(int id, int version);
+	__declspec(dllimport) int IsBigArtRightSize(int id, int version, int width, int height);
+	__declspec(dllimport) int IsSmallArtRightSize(int id, int version, int width, int height);
+	__declspec(dllimport) void DestroyAllBigArts(void);
+	__declspec(dllimport) void DestroyAllSmallArts(void);
+	__declspec(dllimport) int IsBigArtIn(int id, int version);
+	__declspec(dllimport) int IsSmallArtIn(int id, int version);
+	__declspec(dllimport) int ReloadBigArtIfWrongSize(int id, int version, int width, int height);
+	__declspec(dllimport) int ReloadSmallArtIfWrongSize(int id, int version, int width, int height);
+	__declspec(dllimport) int DrawBigArt(HDC hdc, const RECT* rect, int id, int version);
+	__declspec(dllimport) int DrawSmallArt(HDC hdc, const RECT* rect, int id, int version);
 	int WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID reserved);
 #ifdef __cplusplus
 }

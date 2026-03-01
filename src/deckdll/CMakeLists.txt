@@ -28,7 +28,7 @@ if (TARGET rpbits)
 endif()
 
 if (MSVC)
-  target_compile_options(deckdll PRIVATE /Od /Ob1 /Zi)
+  target_compile_options(deckdll PRIVATE /Od /Ob1 /Zi /DDECKDLL)
 
   set_property(TARGET deckdll PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/DeckDll.def\"")
   set_property(TARGET deckdll APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/DeckDll.def")

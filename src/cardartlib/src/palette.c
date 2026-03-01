@@ -197,12 +197,15 @@ undefined1 global_BluePathBitsTable[0x800];
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001220
 // FUNCTION: DRAWCARDLIB 0x1000a5a0
+// FUNCTION: DECKDLL 0x100217b0
 BOOL InitCardArtGdiResources(void)
 {
-  BOOL iVar1 = 1;
+  BOOL result = 1;
   
+#ifndef DECKDLL
   if (!SetupDuelPalette())
-    iVar1 = 0;
+    result = 0;
+#endif
 
   if (global_screen_dc == 0) {
     CreateOffscreen32bppDibSection(10,10,(HDC *)&global_screen_dc,(BITMAPINFO *)0x0,
@@ -211,17 +214,20 @@ BOOL InitCardArtGdiResources(void)
   }
 
   if (global_screen_dc == 0)
-    iVar1=0;
-  
-  if (iVar1 == 0)
+    result=0;
+    
+#ifndef DECKDLL
+  if (result == 0)
     ShutdownCardArtGdiResources();
+#endif
 
-  return iVar1;
+  return result;
 }
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100012a8
 // FUNCTION: DRAWCARDLIB 0x1000a628
+// FUNCTION: DECKDLL 0x1002180d
 void ShutdownCardArtGdiResources(void)
 {
   if (global_screen_dc != (HDC)0x0) {
@@ -229,14 +235,17 @@ void ShutdownCardArtGdiResources(void)
     global_screen_dc = (HDC)0x0;
     DeleteCriticalSection(&global_critical_section_for_drawing);
   }
+#ifndef DECKDLL
   if (global_cart_art_hpalette != 0) {
     DestroyCardArtPalette();
   }
+#endif
 }
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100012fb
 // FUNCTION: DRAWCARDLIB 0x1000a67b
+// FUNCTION: DECKDLL 0x1002349a
 void ApplyCardArtPaletteToDc(HDC hdc)
 {
   SelectPalette(hdc,global_cart_art_hpalette,0);

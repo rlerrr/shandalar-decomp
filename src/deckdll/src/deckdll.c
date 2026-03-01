@@ -10,6 +10,8 @@
 #include "mystdbool.h"
 #include "sidlib/pic.h"
 #include "cardartlib/src/palette.h"
+#include "magsnd.h"
+#include "drawcardlib/Drawcardlib.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -101,7 +103,6 @@ snprintf(char *buffer, size_t count, const char *fmt, ...)
 #endif
 
 typedef int (*Int_fn_int)(int);
-typedef int (WINAPI *Int_fn_etc)();
 
 typedef enum
 {
@@ -112,17 +113,6 @@ typedef enum
   DBFLAGS_GAUNTLET = 8,
   DBFLAGS_EDITDECK = 0x40,
 } DBFlags;
-
-typedef enum
-{
-  DT_UNKNOWN = 0,
-  DT_UNRESTRICTED = 0x1,
-  DT_WILD = 0x2,
-  DT_RESTRICTED_T1 = 0x4,
-  DT_TOURNAMENT_T1_5 = 0x8,
-  DT_HIGHLANDER = 0x10,
-  DT_HAS_ANTE = 0x20,
-} DeckType;
 
 typedef enum 
 {
@@ -375,50 +365,6 @@ typedef struct PairIntPtr_t
   struct PairIntPtr_t *next;
 } PairIntPtr;
 
-typedef struct Sound_t
-{ // very little idea what any of these fields do.
-  int volume; // 0x00
-  int sampleRate; // 0x04
-  int pan; // 0x08
-  int field_C; // 0x0c
-  int field_10; // 0x10
-  int field_14; // 0x14
-  int loadId; // 0x18
-  int flags; // 0x1c
-} Sound;
-
-enum SoundFn
-{
-  SND_InitSnd = 0,
-  SND_ReleaseSnd = 1,
-  SND_LoadSnd = 2,
-  SND_UnloadSnd = 3,
-  SND_UnloadAllSnds = 4,
-  SND_PlaySnd = 5,
-  SND_PlaySndFile = 6,
-  SND_StopSnd = 7,
-  SND_StopAllSnds = 8,
-  SND_PlayMidiFile = 9,
-  SND_SetPitch = 10,
-  SND_GetPitch = 11,
-  SND_SetVol = 12,
-  SND_GetVol = 13,
-  SND_SetPan = 14,
-  SND_GetPan = 15,
-  SND_UpdateSnd = 16,
-  SND_SetSndMarker = 17,
-  SND_PlaySndMarker = 18,
-  SND_GetSndTime = 19,
-  SND_ResetSnd = 20,
-  SND_GetSndState = 21,
-  SND_GetAVISndBuff = 22,
-  SND_ReleaseAVISndBuff = 23,
-  SND_GetSndHWND = 24,
-  SND_IsSndLoaded = 25,
-  SND_GetLRUSnd = 26,
-  SND_MAX = SND_GetLRUSnd,
-};
-
 #define HORZLIST_LASTPIC_INDEX 0
 #define HORZLIST_ADDR_INDEX 4
 #define HORZLIST_CURRSEL_INDEX 8
@@ -483,18 +429,18 @@ static int *global_external_current_deck = NULL;
 // GLOBAL: DECKDLL 0x101f1e80
 static int *global_external_deck = NULL;
 
-// GLOBACL: DECKDLL 0x1012ed80
+// GLOBAL: DECKDLL 0x1012ed80
 static GlobalDeckEntry global_deck[1000];
-// GLOBACL: DECKDLL 0x101a0ce0
+// GLOBAL: DECKDLL 0x101a0ce0
 static int global_deck_num_cards = 0;
 
 // GLOBAL: DECKDLL 0x101a9694
 static int global_deck_num_entries = 0;
 
 // GLOBAL: DECKDLL 0x1019fed0
-static DeckEntry global_edited_deck[300];
+DeckEntry global_edited_deck[300];
 // GLOBAL: DECKDLL 0x101a0ce4
-static int global_edited_deck_num_entries = 0;
+int global_edited_deck_num_entries = 0;
 // GLOBAL: DECKDLL 0x10144710
 static DeckEntry global_excessive_cards[201];
 
@@ -504,7 +450,7 @@ static bool global_deck_was_edited = false;
 static bool global_deckname_set = false;
 
 // GLOBAL: DECKDLL 0x1012dca0
-static char global_deckname[32];
+char global_deckname[32];
 
 // GLOBAL: DECKDLL 0x10142814
 static char *global_external_deckname = NULL;
@@ -549,14 +495,14 @@ static HBRUSH global_brush_gold1 = NULL;
 static HBRUSH global_brush_gold2 = NULL;
 static HBRUSH global_brush_mediumgrey = NULL;
 
-static COLORREF global_colorref_darkgrey = 0;
-static COLORREF global_colorref_flesh = 0;
-static COLORREF global_colorref_lavender = 0;
-static COLORREF global_colorref_lightgrey = 0;
-static COLORREF global_colorref_white = 0;
+COLORREF global_colorref_darkgrey = 0;
+COLORREF global_colorref_flesh = 0;
+COLORREF global_colorref_lavender = 0;
+COLORREF global_colorref_lightgrey = 0;
+COLORREF global_colorref_white = 0;
 
 #define NUM_PICS 37
-static HANDLE global_pics[NUM_PICS] = {0};
+HANDLE global_pics[NUM_PICS] = {0};
 
 // GLOBAL: DECKDLL 0x101a9704
 static HBITMAP global_hbmp = NULL;
@@ -566,9 +512,20 @@ static HGDIOBJ global_old_bmp_obj = NULL;
 
 static HPALETTE global_palette = NULL;
 
-static POINT global_smallcard_normal_size = {0, 0};
-static POINT global_smallcard_smaller_size = {0, 0};
-static POINT global_smallcard_smallest_size = {0, 0};
+// GLOBAL: DECKDLL 0x10113cec
+static int global_smallcard_normal_width = 0;
+// GLOBAL: DECKDLL 0x1012e4f4
+static int global_smallcard_normal_height = 0;
+
+// GLOBAL: DECKDLL 0x101bc448
+static int global_smallcard_smaller_width = 0;
+// GLOBAL: DECKDLL 0x10113cf0
+static int global_smallcard_smaller_height = 0;
+
+// GLOBAL: DECKDLL 0x10143fc0
+static int global_smallcard_smallest_width = 0;
+// GLOBAL: DECKDLL 0x1014532c
+static int global_smallcard_smallest_height = 0;
 
 static int global_smallcard_piclist_height = 0;
 static int global_smallcard_piclist_width = 0;
@@ -592,11 +549,11 @@ static LOGFONT global_logfont_template =
             'T', 'r', 'e', 'b', 'u', 'c', 'h', 'e', 't', ' ', 'M', 'S', '\0',
             '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'} // lfFaceName[LF_FACESIZE]
 };
-static HFONT global_font_42 = NULL;
-static HFONT global_font_42unused = NULL;
-static HFONT global_font_40percent = NULL;
-static HFONT global_font_28percent = NULL;
-static HFONT global_font_32 = NULL;
+HFONT global_font_42 = NULL;
+HFONT global_font_42unused = NULL;
+HFONT global_font_40percent = NULL;
+HFONT global_font_28percent = NULL;
+HFONT global_font_32 = NULL;
 
 // GLOBAL: DECKDLL 0x101bbc28
 static HWND global_button_stats_hwnd;
@@ -739,21 +696,6 @@ static uint32_t global_filter_expansion_list[EXPANSION_LIST_SIZE] = {0};
 
 static char global_search_string[264];
 
-// GLOBAL: DECKDLL 0x101054b8
-static HMODULE global_hmodule_magsnd_dll;
-
-// GLOBAL: DECKDLL 0x1003a864
-static int global_sound_status = 0; // 0 = not loaded, 1 = loaded and ok, 2 = loaded and error I think
-
-// GLOBAL: DECKDLL 0x1003a868
-static bool global_sound_unk1 = false;
-
-// GLOBAL: DECKDLL 0x1003a860
-static bool global_sound_unk2 = false;
-
-// GLOBAL: DECKDLL 0x101054c0
-static Int_fn_etc global_sound_fns[SND_MAX + 1];
-
 // GLOBAL: DECKDLL 0x10191a50
 static Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 // GLOBAL: DECKDLL 0x101e79a0
@@ -761,13 +703,13 @@ static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
 // This is really [225][128] ending at 0x10139CD0
 // GLOBAL: DECKDLL 0x10132c50
-static char text_lines[500][128];
+char text_lines[500][128];
 
 // GLOBAL: DECKDLL 0x101427b4
 static int global_available_slots = 0;
 static int global_num_expansions = 0;
 static int global_expansion_size = 0;
-static const card_ptr_t *cards_ptr;
+const card_ptr_t *cards_ptr;
 // GLOBAL: DECKDLL 0x10147220
 static card_ptr_t *global_raw_cards_ptr;
 static char *card_coded;
@@ -883,8 +825,6 @@ const Restriction restrictions[] =
         {CARD_ID_AIR_ELEMENTAL, RST_0},
 };
 
-#define DASH "\227"
-
 #define FREEZ(memory) \
   do                  \
   {                   \
@@ -930,8 +870,10 @@ LRESULT CALLBACK wndproc_TitleClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND, UINT, WPARAM, LPARAM);
 
+INT_PTR CALLBACK dlgproc_DeckStats(HWND, UINT, WPARAM, LPARAM);
+
 // FUNCTION: DECKDLL 0x1000d9a3
-static void fatal_err(const char *text, HWND hwnd)
+static int fatal_err(const char *text, HWND hwnd)
 {
   MessageBox(hwnd, text, 0, MB_SYSTEMMODAL | MB_ICONERROR);
 
@@ -939,6 +881,7 @@ static void fatal_err(const char *text, HWND hwnd)
     SendMessage(hwnd, WM_CLOSE, 0, 0);
   else
     PostQuitMessage(1);
+  return 0;
 }
 
 void fatal(const char *fmt, ...)
@@ -1013,8 +956,7 @@ char *readline(FILE* file, char* dest, int sz)
 }
 
 // FUNCTION: DECKDLL 0x10028350
-static int
-load_text(const char *file_name, const char *section_name)
+int load_text(const char *file_name, const char *section_name)
 {
   char path[MAX_PATH];
   FILE* f;
@@ -1056,7 +998,7 @@ static __inline void textout(HDC hdc, int x, int y, const char *txt)
   TextOut(hdc, x, y, txt, strlen(txt));
 }
 
-static void textoutf(HDC hdc, int x, int y, const char *fmt, ...)
+static __inline void textoutf(HDC hdc, int x, int y, const char *fmt, ...)
 {
   char buf[512];
   int len;
@@ -1098,16 +1040,6 @@ popup_loaded_with_args(HWND hwnd, const char *title, const char *msg, const char
   result = MessageBox(hwnd, txt, text_lines[0], msgbox_params);
   free(txt);
   return result;
-}
-
-// FUNCTION: DECKDLL 0x1002349a
-static void
-gdi_flush(HDC hdc)
-{
-  SelectPalette(hdc, global_palette, 0);
-  RealizePalette(hdc);
-  GdiFlush();
-  SetStretchBltMode(hdc, COLORONCOLOR);
 }
 
 #define set_dlg_text(hdlg, resource, txt)  SetWindowText(GetDlgItem(hdlg, resource), txt)
@@ -1572,6 +1504,7 @@ delete_fonts(void)
 }
 
 // FUNCTION: DECKDLL 0x10011680
+// FUNCTION: MAGIC 0x556490
 static void
 create_fonts(void)
 {
@@ -1592,32 +1525,6 @@ create_fonts(void)
 
   logfont.lfHeight = 32;
   global_font_32 = CreateFontIndirect(&logfont);
-}
-
-// FUNCTION: DECKDLL 0x1002180d
-static void
-delete_screen_dc(void)
-{
-  if (global_screen_dc) // Check not redundant with DELETE_DC() because of the DeleteCriticalSection call
-  {
-    DELETE_DC(global_screen_dc);
-    DeleteCriticalSection(&global_critical_section_for_drawing);
-  }
-}
-
-// FUNCTION: DECKDLL 0x100217b0
-static bool
-create_screen_dc(void)
-{
-  if (!global_screen_dc)
-  {
-    HDC hdc = GetDC(NULL);
-    global_screen_dc = CreateCompatibleDC(hdc);
-    ReleaseDC(NULL, hdc);
-    InitializeCriticalSection(&global_critical_section_for_drawing);
-  }
-
-  return global_screen_dc;
 }
 
 // FUNCTION: DECKDLL 0x1000d0ae
@@ -1696,9 +1603,10 @@ load_pics(void)
 }
 
 // FUNCTION: DECKDLL 0x1000bbec
-static void
+static int
 delete_resources(void)
 {
+  unsigned int v1;
   int i;
 
   write_manalink_ini();
@@ -1707,8 +1615,11 @@ delete_resources(void)
   {
     for (i = 0; i < global_deck_num_entries; ++i)
     {
-      unsigned int v1 = global_deck[i].GDE_Available ? 0x80000 : 0;
-      global_external_deck[i] = global_deck[i].GDE_iid | v1 | (global_deck[i].GDE_DecksBits << 16);
+      v1 = 0;
+      if (global_deck[i].GDE_Available)
+        v1 |= 0x4000;
+      v1 |= global_deck[i].GDE_DecksBits << 16;
+      global_external_deck[i] = global_deck[i].GDE_iid | v1;
     }
 
     for (i = global_deck_num_entries; i < 500; ++i)
@@ -1718,12 +1629,14 @@ delete_resources(void)
   }
 
   delete_pics();
-  DELETE_OBJ(global_palette);
+  
   delete_brushes();
-  DELETE_DC(global_hdc);
-  DELETE_OBJ(global_hbmp);
+  DestroyCardArtPalette();
   delete_fonts();
-  SetCurrentDirectory(global_previous_directory);
+  DeleteDC(global_hdc);
+  DeleteObject(global_hbmp);
+  chdir(global_previous_directory);
+  return 0;
 }
 
 // FUNCTION: DECKDLL 0x1000c337
@@ -1878,13 +1791,13 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
     return 0;
   }
 
-  gdi_flush(global_hdc);
+  ApplyCardArtPaletteToDc(global_hdc);
 
   global_old_bmp_obj = SelectObject(global_hdc, global_hbmp);
 
   ReleaseDC(GetDesktopWindow(), hdc);
 
-  if (!create_screen_dc())
+  if (!InitCardArtGdiResources())
   {
     fatal_err("Fatal: Couldn't create the app-wide memory DC or bitmap", 0);
     return 0;
@@ -1963,8 +1876,10 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
     }
 
   delete_resources();
-  delete_screen_dc();
+  ShutdownCardArtGdiResources();
   DeleteCriticalSection(&global_critical_section_for_unknown);
+  
+  free_db();
 
   return msg.wParam;
 }
@@ -2123,8 +2038,9 @@ register_classes(void)
 
 // FUNCTION: DECKDLL 0x1000b8df
 static bool
-init_deckbuilder(void)
-{
+init_deckbuilder(HINSTANCE dll, int unused)
+{  
+  global_hinstance = dll;
   global_deck_was_edited = false;
   global_deckname_set = false;
   global_current_deck = 0;
@@ -2160,17 +2076,19 @@ init_deckbuilder(void)
 BOOL WINAPI
 DllMain(HINSTANCE dll, DWORD reason, LPVOID reserved)
 {
+  int result;
+
   switch (reason)
   {
-  case DLL_PROCESS_DETACH:
-    free_db();
-    return 1;
-
   case DLL_PROCESS_ATTACH:
-    global_hinstance = dll;
-    return init_deckbuilder() ? 1 : 0;
-
-  default:
+    result = 1;
+    init_deckbuilder(dll, 0);
+    return result;    
+  case DLL_THREAD_ATTACH:
+    return 1;
+  case DLL_THREAD_DETACH:
+    return 1;
+  case DLL_PROCESS_DETACH:
     return 1;
   }
 }
@@ -2179,74 +2097,6 @@ BOOL WINAPI
 DllEntryPoint(HINSTANCE dll, DWORD reason, LPVOID reserved) // Stupidly enough, there's a direct reference to this alternate name.
 {
   return DllMain(dll, reason, reserved);
-}
-
-// FUNCTION: DECKDLL 0x1002daee
-static void
-clear_sound_imports_table(void)
-{
-  int i;
-
-  for (i = 0; i <= SND_MAX; ++i)
-    global_sound_fns[i] = NULL;
-}
-
-static __inline bool
-init_sound_dll_impl(HWND hwnd, int a2, int a3) // returns false if needs cleanup
-{
-  int i;
-
-  if (global_sound_status)
-    return true;
-
-  global_hmodule_magsnd_dll = LoadLibrary("magsnd");
-
-  if (!global_hmodule_magsnd_dll)
-    return true;
-
-  for (i = 0; i <= SND_MAX; ++i)
-    if (!(global_sound_fns[i] = GetProcAddress(global_hmodule_magsnd_dll, i + 1)))
-      return false;
-
-  if (!hwnd && !(a3 & 2))
-    return false;
-
-  if ((global_sound_fns[SND_InitSnd])(hwnd, a2, a3))
-    return false;
-
-  global_sound_unk1 = true;
-  if (a3 & 2)
-    global_sound_unk2 = true;
-  global_sound_status = 1;
-
-  return true;
-}
-
-// FUNCTION: DECKDLL 0x1002d2c0
-static void
-init_sound_dll(HWND hwnd, int a2, int a3)
-{
-  if (!init_sound_dll_impl(hwnd, a2, a3))
-  {
-    FreeLibrary(global_hmodule_magsnd_dll);
-    clear_sound_imports_table();
-  }
-}
-
-// FUNCTION: DECKDLL 0x1002d497
-static void
-sound_load(const char *path, int num, Sound *snd)
-{
-  if (global_sound_status)
-    (global_sound_fns[SND_LoadSnd])(path, num, snd);
-}
-
-// FUNCTION: DECKDLL 0x1002d850
-void set_sound_loop(int num, int num2)
-{
-  // set_sound_loop(num, 1) inlined:
-  if (global_sound_status == 1)
-    (global_sound_fns[SND_SetSndMarker])(num, num2);
 }
 
 // FUNCTION: DECKDLL 0x1001a8ca
@@ -2259,19 +2109,14 @@ sound_init(const char *path, int num)
     return;
 
   memset(&snd, 0, sizeof(Sound));
+  snd.flags = (int)snd.flags | 4;
   snd.volume = 400;
+  snd.sampleRate = 0;
+  snd.pan = 0;
 
   sound_load(path, num, &snd);
 
   set_sound_loop(num, 1);
-}
-
-// FUNCTION: DECKDLL 0x1002d5c2
-static void
-sound_stop(int a1)
-{
-  if (global_sound_status && global_sound_status != 2)
-    (global_sound_fns[SND_StopSnd])(a1);
 }
 
 // FUNCTION: DECKDLL 0x1001a62a
@@ -2294,32 +2139,6 @@ init_sounds_and_music(void)
   sound_load(path, 5, 0);
 }
 
-// FUNCTION: DECKDLL 0x1002d4d3
-static void
-sound_unload(int idx)
-{
-  if (global_sound_status)
-    (global_sound_fns[SND_UnloadSnd])(idx);
-}
-
-// FUNCTION: DECKDLL 0x1002d421
-static void sound_close() {
-  if (global_sound_status)
-  {
-    global_sound_status = 0;
-
-    if (global_sound_unk1 && !global_sound_unk2)
-      (global_sound_fns[SND_ReleaseSnd])();
-
-    FreeLibrary(global_hmodule_magsnd_dll);
-
-    clear_sound_imports_table();
-
-    global_hmodule_magsnd_dll = NULL;
-    global_sound_unk1 = global_sound_unk2 = false;
-  }
-}
-
 // FUNCTION: DECKDLL 0x1001a741
 static void
 free_sounds_and_music(void)
@@ -2328,8 +2147,8 @@ free_sounds_and_music(void)
   sound_unload(2);
   sound_unload(3);
   sound_unload(4);
-  sound_unload(5);
-
+  sound_unload(5);                    
+  sound_close();
 }
 
 // FUNCTION: DECKDLL 0x1001a795
@@ -2338,7 +2157,7 @@ play_sound(int a1, int a2, int a3, int a4)
 {
   Sound snd;
 
-  if ((global_db_flags_1 & DBFLAGS_SHANDALAR) || global_sound_status == 0 || global_sound_status == 2)
+  if (global_db_flags_1 & DBFLAGS_SHANDALAR)
     return;
 
   memset(&snd, 0, sizeof(Sound));
@@ -2346,9 +2165,9 @@ play_sound(int a1, int a2, int a3, int a4)
   snd.sampleRate = 22050 * a3 / 100;
   snd.pan = 4 * a4;
   snd.flags &= ~1;
-  snd.flags &= ~10;
+  snd.flags &= ~0x10;
 
-  (global_sound_fns[SND_PlaySnd])(a1, &snd);
+  sound_play(a1, &snd);
 }
 
 // FUNCTION: DECKDLL 0x1001a80f
@@ -2357,16 +2176,16 @@ play_music(int a1, int a2, int a3)
 {
   Sound snd;
 
-  if ((global_db_flags_1 & DBFLAGS_SHANDALAR) || global_sound_status == 0 || global_sound_status == 2)
+  if (global_db_flags_1 & DBFLAGS_SHANDALAR)
     return;
 
   memset(&snd, 0, sizeof(Sound));
   snd.volume = 4 * a2;
   snd.sampleRate = 22050;
   snd.pan = 4 * a3;
-  snd.flags |= 1;
+  snd.flags = (int)snd.flags | 1;
 
-  (global_sound_fns[SND_PlaySnd])(a1, &snd);
+  sound_play(a1, &snd);
 }
 
 // FUNCTION: DECKDLL 0x10006e7f
@@ -2407,7 +2226,7 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_ERASEBKGND:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[23]);
@@ -2418,7 +2237,7 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORSTATIC:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
   }
@@ -2505,7 +2324,7 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_ERASEBKGND:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[19]);
@@ -2516,7 +2335,7 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORSTATIC:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
   }
@@ -2613,7 +2432,7 @@ dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_ERASEBKGND:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[19]);
@@ -2624,7 +2443,7 @@ dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORSTATIC:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
   }
@@ -2709,7 +2528,7 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_ERASEBKGND:
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[23]);
@@ -2718,7 +2537,7 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
 
@@ -2836,7 +2655,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_ERASEBKGND:
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[23]);
@@ -2845,7 +2664,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
 
@@ -2917,7 +2736,7 @@ dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     RECT r;
 
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[19]);
@@ -2928,7 +2747,7 @@ dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORSTATIC:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
   }
@@ -3061,7 +2880,7 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     RECT r;
 
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hdlg, &r);
     DrawBitmapToRect(hdc, &r, global_pics[19]);
@@ -3072,7 +2891,7 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORSTATIC:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
   }
@@ -3177,29 +2996,25 @@ check_restriction_impl(csvid_t csvid, int rst)
 }
 
 // FUNCTION: DECKDLL 0x1001013d
-static bool
-check_restricted(csvid_t csvid)
+bool check_restricted(csvid_t csvid)
 {
   return check_restriction_impl(csvid, RST_RESTRICTED);
 }
 
 // FUNCTION: DECKDLL 0x1001019e
-static bool
-check_banned(csvid_t csvid)
+bool check_banned(csvid_t csvid)
 {
   return check_restriction_impl(csvid, RST_BANNED);
 }
 
 // FUNCTION: DECKDLL 0x100101ff
-static bool
-check_ante(csvid_t csvid)
+bool check_ante(csvid_t csvid)
 {
   return check_restriction_impl(csvid, RST_ANTE);
 }
 
 // FUNCTION: DECKDLL 0x100100e6
-static bool
-check_basic(csvid_t csvid)
+bool check_basic(csvid_t csvid)
 {
   switch (csvid)
   {
@@ -3222,394 +3037,6 @@ check_basic(csvid_t csvid)
 
   default:
     return false;
-  }
-}
-
-// FUNCTION: DECKDLL 0x1002f0ec
-static int
-check_deck_type(void)
-{
-  int rval = DT_UNKNOWN;
-
-  bool any_duplicate_nonbasics = false;
-  int i;
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
-    if (!check_basic(global_edited_deck[i].DeckEntry_csvid))
-    {
-      if (global_edited_deck[i].DeckEntry_Amount > 1)
-        any_duplicate_nonbasics = true;
-      if (check_ante(global_edited_deck[i].DeckEntry_csvid))
-        rval |= DT_HAS_ANTE;
-    }
-
-  if (!any_duplicate_nonbasics)
-    return rval | DT_HIGHLANDER;
-
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
-  {
-    csvid_t csvid;
-    int num;
-
-    csvid = global_edited_deck[i].DeckEntry_csvid;
-    if (check_basic(csvid))
-      continue;
-
-    if (check_banned(csvid))
-    {
-      rval |= DT_UNRESTRICTED;
-      continue;
-    }
-
-    num = global_edited_deck[i].DeckEntry_Amount;
-    if (num > 4)
-    {
-      rval |= DT_UNRESTRICTED;
-      continue;
-    }
-
-    if (!check_restricted(csvid))
-      rval |= DT_TOURNAMENT_T1_5;
-    else if (num <= 1)
-      rval |= DT_RESTRICTED_T1;
-    else
-      rval |= DT_WILD;
-  }
-
-  return rval;
-}
-
-// FUNCTION: DECKDLL 0x1002e9ee
-static void
-show_stats(HDC hdc, int word_width, int word_height)
-{
-  enum Stat1
-  {
-    STAT1_MANASOURCE = 0,
-    STAT1_CREATURE = 1,
-    STAT1_ENCHANTMENT = 2,
-    STAT1_SORCERY = 3,
-    STAT1_INSTANT = 4,
-    STAT1_INTERRUPT = 5,
-    STAT1_LAND = 6,
-    STAT1_ARTIFACT = 7,
-    STAT1_TOTAL = 8,
-
-    STAT1_0 = 0,
-    STAT1_MAX = STAT1_TOTAL,
-  };
-
-  enum Stat2
-  {
-    STAT2_BLACK = 0,
-    STAT2_BLUE = 1,
-    STAT2_GREEN = 2,
-    STAT2_RED = 3,
-    STAT2_WHITE = 4,
-    STAT2_COLORLESS = 5,
-    STAT2_MULTI = 6,
-    STAT2_TOTAL = STAT2_MULTI,
-
-    STAT2_0 = 0,
-    STAT2_MAX = STAT2_TOTAL,
-  };
-
-  int stats[STAT1_MAX + 1][STAT2_MAX + 1];
-  int i;
-  int j;
-  int c;
-  int l;
-  int stepx;
-  int stepy;
-  int x;
-  int y;
-  int posx;
-  int textline;
-  int div;
-
-  memset(stats, 0, sizeof stats);
-
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
-  {
-    csvid_t csvid = global_edited_deck[i].DeckEntry_csvid;
-    int amt = global_edited_deck[i].DeckEntry_Amount;
-    const card_ptr_t *cp = &cards_ptr[csvid];
-
-    int stat1;
-    int stat2;
-    switch (cp->card_type)
-    {
-    case CP_TYPE_CREATURE:
-      stat1 = STAT1_CREATURE;
-      break;
-    case CP_TYPE_ENCHANTMENT:
-      stat1 = STAT1_ENCHANTMENT;
-      break;
-    case CP_TYPE_SORCERY:
-      stat1 = STAT1_SORCERY;
-      break;
-    case CP_TYPE_INSTANT:
-      stat1 = STAT1_INSTANT;
-      break;
-    case CP_TYPE_INTERRUPT:
-      stat1 = STAT1_INTERRUPT;
-      break;
-    case CP_TYPE_LAND:
-      stat1 = STAT1_LAND;
-      break;
-    case CP_TYPE_ARTIFACT:
-      stat1 = STAT1_ARTIFACT;
-      for (j = 0; j < 7; ++j)
-        if (cp->types[j] == SUBTYPE_CREATURE)
-        {
-          stat1 = STAT1_CREATURE;
-          break;
-        }
-      break;
-    default:
-      continue;
-    }
-
-    if (cp->mana_source_colors & (COLOR_TEST_ANY_COLORED | COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT))
-    {
-      int add[STAT2_MAX + 1] = {0};
-      if (cp->mana_source_colors & (COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT))
-        add[STAT2_COLORLESS] += amt;
-      if (cp->mana_source_colors & COLOR_TEST_BLACK)
-        add[STAT2_BLACK] += amt;
-      if (cp->mana_source_colors & COLOR_TEST_BLUE)
-        add[STAT2_BLUE] += amt;
-      if (cp->mana_source_colors & COLOR_TEST_GREEN)
-        add[STAT2_GREEN] += amt;
-      if (cp->mana_source_colors & COLOR_TEST_RED)
-        add[STAT2_RED] += amt;
-      if (cp->mana_source_colors & COLOR_TEST_WHITE)
-        add[STAT2_WHITE] += amt;
-
-      add[STAT2_TOTAL] += amt;
-
-      for (j = STAT2_0; j <= STAT2_MAX; ++j)
-        stats[STAT1_MANASOURCE][j] += add[j];
-
-      if (stat1 == STAT1_LAND)
-      {
-        for (j = STAT2_0; j <= STAT2_MAX; ++j)
-          stats[STAT1_LAND][j] += add[j];
-        continue;
-      }
-    }
-
-    switch (cp->color)
-    {
-    case CP_COLOR_BLACK:
-      stat2 = STAT2_BLACK;
-      break;
-    case CP_COLOR_BLUE:
-      stat2 = STAT2_BLUE;
-      break;
-    case CP_COLOR_GREEN:
-      stat2 = STAT2_GREEN;
-      break;
-    case CP_COLOR_RED:
-      stat2 = STAT2_RED;
-      break;
-    case CP_COLOR_WHITE:
-      stat2 = STAT2_WHITE;
-      break;
-    case CP_COLOR_MULTI:
-      stat2 = STAT2_MULTI;
-      if (cp->req.req_black || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_BLACK)))
-        stats[stat1][STAT2_BLACK] += amt;
-      if (cp->req.req_blue || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_BLUE)))
-        stats[stat1][STAT2_BLUE] += amt;
-      if (cp->req.req_green || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_GREEN)))
-        stats[stat1][STAT2_GREEN] += amt;
-      if (cp->req.req_red || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_RED)))
-        stats[stat1][STAT2_RED] += amt;
-      if (cp->req.req_white || (cp->req.req_hybrid && (cp->req.hybrid_type & COLOR_TEST_WHITE)))
-        stats[stat1][STAT2_WHITE] += amt;
-      break;
-    default:
-      stat2 = STAT2_COLORLESS;
-      break;
-    }
-    if (stat2 != STAT2_MULTI)
-      stats[stat1][stat2] += amt;
-
-    stats[stat1][STAT2_TOTAL] += amt;
-  }
-
-  for (i = STAT1_0 + 1; i < STAT1_MAX; ++i)
-    for (j = STAT2_0; j <= STAT2_MAX; ++j)
-      stats[STAT1_TOTAL][j] += stats[i][j];
-
-  load_text("Menus", "STATSSCREEN");
-  SetTextColor(hdc, global_colorref_lightgrey);
-
-  // Column headers
-  x = 40;
-  y = 40;
-  textout(hdc, x, y, text_lines[0]);
-
-  x += word_width;
-  stepx = (1000 - x) / 8;
-  x += 80;
-  posx = x;
-  for (c = 1; c <= 7; ++c)
-  {
-    textout(hdc, x, y, text_lines[c]);
-    x += stepx;
-  }
-
-  stepy = 65;
-  y = 105;
-  for (l = STAT1_0; l <= STAT1_TOTAL; ++l, y += stepy)
-  {
-    // Row header
-    x = 40;
-    textline = l == STAT1_TOTAL ? 7 : (8 + l);
-    SetTextColor(hdc, l == STAT1_MANASOURCE ? global_colorref_lavender : global_colorref_lightgrey);
-    textout(hdc, x, y, text_lines[textline]);
-
-    // Extra word below "Non-creature".
-    if (l == STAT1_ARTIFACT)
-      textout(hdc, x, y + word_height, text_lines[textline + 1]);
-
-    // Values
-    x = posx;
-    if (l != STAT1_MANASOURCE)
-      SetTextColor(hdc, global_colorref_flesh);
-    for (c = STAT2_0; c <= STAT2_TOTAL; ++c, x += stepx)
-      if (stats[l][c] == 0)
-        textout(hdc, x, y, " " DASH);
-      else
-      {
-        div = 0;
-        if (c == STAT2_TOTAL)
-          div = stats[STAT1_TOTAL][STAT2_TOTAL];
-        else
-          div = stats[l][STAT2_TOTAL];
-
-        if (div)
-          div = (100 * stats[l][c] + div / 2) / div;
-
-        textoutf(hdc, x, y, "(%d) %d%%", stats[l][c], div);
-      }
-
-    // Extra space below "Mana Sources"
-    if (l == STAT1_MANASOURCE)
-      y += word_height / 2;
-
-    // Extra space below "Non-creature".
-    if (l == STAT1_ARTIFACT)
-      y += word_height;
-  }
-}
-
-// FUNCTION: DECKDLL 0x1002dfd0
-static void
-fill_stats_window(HDC hdc, RECT r, HFONT font)
-{
-  SIZE sz;
-
-  SetMapMode(hdc, MM_ANISOTROPIC);
-  SetWindowExtEx(hdc, 1000, 750, NULL);
-  SetViewportExtEx(hdc, r.right - r.left, r.bottom - r.top, NULL);
-  SelectObject(hdc, font);
-  SetBkMode(hdc, TRANSPARENT);
-
-  GetTextExtentPoint32(hdc, "Enchantments", strlen("Enchantments"), &sz);
-
-  show_stats(hdc, sz.cx, sz.cy);
-}
-
-// FUNCTION: DECKDLL 0x1002db30
-INT_PTR CALLBACK
-dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  int x;
-  int y;
-  HDC hdc;
-  HDC chdc;
-  RECT r;
-  BITMAP bmp;
-  switch (msg)
-  {
-  case WM_INITDIALOG:
-  {
-    char txt[512]; // 128 + 2 + 32 + 128 + 3 + 127 = 420, and might as well be a bit wider just in case
-    char *p;
-    DeckType decktype;
-    const char *decktxt;
-
-    load_text("Menus", "STATSDIALOG");
-    p = txt + sprintf(txt, "%s: %s " DASH " ", text_lines[0], global_deckname);
-
-    load_text("Menus", "MULTIDECKTYPES");
-    decktype = check_deck_type();
-    if (decktype & DT_UNRESTRICTED)
-      decktxt = text_lines[1];
-    else if (decktype & DT_WILD)
-      decktxt = text_lines[2];
-    else if (decktype & DT_RESTRICTED_T1)
-      decktxt = text_lines[3];
-    else if (decktype & DT_TOURNAMENT_T1_5)
-      decktxt = text_lines[4];
-    else if (decktype & DT_HIGHLANDER)
-      decktxt = text_lines[5];
-    else
-      decktxt = text_lines[0];
-
-    p += sprintf(p, "%s", decktxt);
-
-    if (decktype & DT_HAS_ANTE)
-      p += sprintf(p, " / %s", &text_lines[7][1]);
-
-    SetWindowText(hdlg, txt);
-
-    return 0;
-  }
-
-  case WM_ERASEBKGND:
-  {
-    hdc = wparam;
-    gdi_flush(hdc);
-
-    chdc = CreateCompatibleDC(hdc);
-    gdi_flush(chdc);
-
-    SelectObject(chdc, global_pics[33]);
-
-    GetClientRect(hdlg, &r);
-
-    GetObject(global_pics[33], sizeof(BITMAP), &bmp);
-
-    for (x = 0; x < r.right; x += bmp.bmWidth)
-      for (y = 0; y < r.bottom; y += bmp.bmHeight)
-        BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, chdc, 0, 0, SRCCOPY);
-
-    fill_stats_window(hdc, r, global_font_32);
-
-    DELETE_DC(chdc);
-
-    return 1;
-  }
-
-  case WM_CTLCOLORBTN:
-  case WM_CTLCOLORSTATIC:
-    hdc = wparam;
-    gdi_flush(hdc);
-    SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
-
-  case WM_COMMAND:
-  {
-    if (LOWORD(wparam) == RES_BUTTON_OK || LOWORD(wparam) == RES_BUTTON_CANCEL)
-      EndDialog(hdlg, 0);
-    return 1;
-  }
-
-  default:
-    return 0;
   }
 }
 
@@ -3745,7 +3172,7 @@ wndproc_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       HBRUSH brush2;
       char txt[100];
 
-      gdi_flush(paintdc);
+      ApplyCardArtPaletteToDc(paintdc);
 
       GetClientRect(hwnd, &r);
 
@@ -3812,7 +3239,7 @@ wndproc_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     if (hdc_local = GetDC(hwnd))
     {
-      gdi_flush(hdc_local);
+      ApplyCardArtPaletteToDc(hdc_local);
       SelectObject(hdc_local, font);
 
       GetTextExtentPoint32(hdc_local, str, strlen(str), &sz);
@@ -3856,7 +3283,7 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     RECT rect;
 
     paintdc = BeginPaint(hwnd, &paint);
-    gdi_flush(paintdc);
+    ApplyCardArtPaletteToDc(paintdc);
     GetClientRect(hwnd, &rect);
     InflateRect(&rect, -5, -5);
 
@@ -3892,10 +3319,10 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_ERASEBKGND:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     chdc = CreateCompatibleDC(hdc);
-    gdi_flush(chdc);
+    ApplyCardArtPaletteToDc(chdc);
 
     SelectObject(chdc, global_pics[17]);
 
@@ -3933,7 +3360,7 @@ fill_back(HWND hwnd, HDC hdc)
   HDC chdc;
 
   chdc = CreateCompatibleDC(hdc);
-  gdi_flush(chdc);
+  ApplyCardArtPaletteToDc(chdc);
   SelectObject(chdc, global_pics[16]);
 
   GetClientRect(hwnd, &rect);
@@ -3966,7 +3393,7 @@ wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     GetClientRect(hwnd, &rect);
 
-    gdi_flush(paintdc);
+    ApplyCardArtPaletteToDc(paintdc);
 
     if (card_to_draw >= 0)
       DrawFullCard(paintdc, &rect, &cards_ptr[card_to_draw], 0, 1, expanded_text, 0);
@@ -3996,7 +3423,7 @@ wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     HDC hdc;
 
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     DrawCardBack(hwnd, hdc);
     return 1;
   }
@@ -4269,27 +3696,41 @@ move_colors_fromto_global_deck(bool move_into, int dlgbits)
 static void
 set_smallcard_dimensions(void)
 {
-  int num = global_cfg_consolidate ? global_edited_deck_num_entries : global_deck_num_cards;
-
-  int w, h;
-  if (num < 75)
-  {
-    w = global_smallcard_normal_size.x;
-    h = global_smallcard_normal_size.y;
-  }
-  else if (num < 132)
-  {
-    w = global_smallcard_smaller_size.x;
-    h = global_smallcard_smaller_size.y;
+  if (global_cfg_consolidate) {
+    if (global_edited_deck_num_entries < 75)
+    {
+      global_smallcard_width = global_smallcard_normal_width;
+      global_smallcard_height = global_smallcard_normal_height;
+    }
+    else if (global_edited_deck_num_entries < 132)
+    {
+      global_smallcard_width = global_smallcard_smaller_width;
+      global_smallcard_height = global_smallcard_smaller_height;
+    }
+    else
+    {
+      global_smallcard_width = global_smallcard_smallest_width;
+      global_smallcard_height = global_smallcard_smallest_height;
+    }
   }
   else
   {
-    w = global_smallcard_smallest_size.x;
-    h = global_smallcard_smallest_size.y;
+    if (global_deck_num_cards < 75)
+    {
+      global_smallcard_width = global_smallcard_normal_width;
+      global_smallcard_height = global_smallcard_normal_height;
+    }
+    else if (global_deck_num_cards < 132)
+    {
+      global_smallcard_width = global_smallcard_smaller_width;
+      global_smallcard_height = global_smallcard_smaller_height;
+    }
+    else
+    {
+      global_smallcard_width = global_smallcard_smallest_width;
+      global_smallcard_height = global_smallcard_smallest_height;
+    }
   }
-
-  global_smallcard_width = w;
-  global_smallcard_height = h;
 }
 
 // FUNCTION: DECKDLL 0x1002c349
@@ -4735,7 +4176,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
 
     hdc = BeginPaint(hwnd, &paint);
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     GetClientRect(hwnd, &r);
     GetObject(global_pics[15], sizeof(BITMAP), &bmp);
@@ -4793,9 +4234,9 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     global_horzlist_popup = CreatePopupMenu();
 
     hdc_local = GetDC(hwnd);
-    gdi_flush(hdc_local);
+    ApplyCardArtPaletteToDc(hdc_local);
     comphdc = CreateCompatibleDC(hdc_local);
-    gdi_flush(comphdc);
+    ApplyCardArtPaletteToDc(comphdc);
     ReleaseDC(hwnd, hdc_local);
     return 0;
 
@@ -5292,14 +4733,14 @@ ask_about_saving_deck(void)
 static HWND
 find_wanted_window(HWND hwnd, csvid_t csvid)
 {
+  HWND result = 0;
   HWND w = GetTopWindow(hwnd);
-  while (w)
+  for (;w;w = GetWindow(w, GW_HWNDNEXT))
   {
-    if (SendMessage(w, 0x8400, 0, 0) == csvid)
-      return w;
-    w = GetWindow(w, GW_HWNDNEXT);
+    if (SendMessage(w, 0x400, 0, 0) == csvid)
+      result = w;
   }
-  return NULL;
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x10006450
@@ -5324,9 +4765,10 @@ add_smallcard_window(HWND hwnd_parent, csvid_t csvid, int num)
 // FUNCTION: DECKDLL 0x100056bd
 static void invalidate_wanted_window(HWND hwnd, WPARAM wparam)
 {
+  int result = 0;
   HWND w;
   for (w = GetTopWindow(hwnd); w; w = GetWindow(w, GW_HWNDNEXT))
-    if (SendMessage(w, 0x8400, 0, 0) == wparam)
+    if (SendMessage(w, 0x400, 0, 0) == wparam)
       InvalidateRect(w, NULL, TRUE);
 }
 
@@ -5334,7 +4776,7 @@ static void invalidate_wanted_window(HWND hwnd, WPARAM wparam)
 void destroy_child_windows(HWND hwnd)
 {
   HWND w;
-  for (w = GetTopWindow(hwnd); w; w = GetTopWindow(hwnd))
+  while (w = GetTopWindow(hwnd))
     DestroyWindow(w);
 }
 
@@ -5627,10 +5069,10 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_ERASEBKGND:
   {
     hdc = wparam;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     for (i = 0; i < 5; ++i)
-      gdi_flush((mosaics[i] = CreateCompatibleDC(hdc)));
+      ApplyCardArtPaletteToDc((mosaics[i] = CreateCompatibleDC(hdc)));
 
     for (i = 0; i < 5; ++i)
       SelectObject(mosaics[i], global_pics[i + 6]);
@@ -5965,7 +5407,7 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     csvid = GetWindowLong(hwnd, CARD_CSVID_INDEX);
     paintdc = BeginPaint(hwnd, &paint);
     GetClientRect(hwnd, &r);
-    gdi_flush(paintdc);
+    ApplyCardArtPaletteToDc(paintdc);
     DrawSmallCard(global_hdc, &r, &cards_ptr[csvid], 0, 1, -1, -1);
     if (amt > 1)
       draw_small_amount(amt, &r);
@@ -6496,7 +5938,42 @@ draw_lines(HDC hdc, RECT *r, HGDIOBJ pen1, HPEN pen2, HPEN pen3)
   LineTo(hdc, r->right, r->bottom - 1);
 }
 
+// FUNCTION: DECKDLL 0x10023972
+// FUNCTION: MAGIC 0x492b16
+BOOL TileBitmapIntoRect(HDC hdc, RECT *r, HBITMAP bmp)
+{
+  int saved;
+  int x;
+  int y;
+  BITMAP bm;
+
+  if (!hdc || !r || !bmp)
+      return FALSE;
+
+  saved = SaveDC(hdc);
+  IntersectClipRect(hdc, r->left, r->top, r->right, r->bottom);
+
+  bm;
+  GetObject(bmp, sizeof(bm), &bm);
+
+  for (x = r->left; x < r->right; x += bm.bmWidth) {
+    for (y = r->top; y < r->bottom; y += bm.bmHeight) {
+      DrawBitmapSubrectToRect(
+          hdc,
+          x, y,
+          bmp,
+          0, 0,
+          bm.bmWidth, bm.bmHeight
+      );
+    }
+  }
+
+  RestoreDC(hdc, saved);
+  return TRUE;
+}
+
 // FUNCTION: DECKDLL 0x10024ed5
+// FUNCTION: MAGIC 0x49407b
 static void
 draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN pen2, COLORREF col, UINT format)
 {
@@ -6504,12 +5981,12 @@ draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN
   RECT r;
   char txt[80];
   hdc = item->hDC;
-  gdi_flush(hdc);
+  ApplyCardArtPaletteToDc(hdc);
   CopyRect(&r, &item->rcItem);
   OffsetRect(&r, -item->rcItem.left, -item->rcItem.top);
 
   if (hbmp_bkgrd)
-    DrawBitmapToRect(hdc, &r, hbmp_bkgrd);
+    TileBitmapIntoRect(hdc, &r, hbmp_bkgrd);
   else if (brush)
     FillRect(hdc, &r, brush);
 
@@ -6854,10 +6331,10 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     LockWindowUpdate(hwnd);
 
     global_smallcard_width =
-        global_smallcard_normal_size.x =
+        global_smallcard_normal_width =
             global_smallcard_piclist_width =
                 global_smallcard_height =
-                    global_smallcard_normal_size.y =
+                    global_smallcard_normal_width =
                         global_smallcard_piclist_height = global_main_window_height * 0.18;
 
     pics_inline = global_main_window_width / (global_smallcard_width * 1.1);
@@ -6866,8 +6343,8 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     SetWindowLong(global_horzlist_hwnd, HORZLIST_PICSINLINE_INDEX, pics_inline);
     SetWindowLong(global_horzlist_hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX, global_main_window_width / pics_inline);
 
-    global_smallcard_smaller_size.x = global_smallcard_smaller_size.y = global_smallcard_width * 0.8;
-    global_smallcard_smallest_size.x = global_smallcard_smallest_size.y = global_smallcard_width * 0.7;
+    global_smallcard_smaller_width = global_smallcard_smaller_height = global_smallcard_width * 0.8;
+    global_smallcard_smallest_width = global_smallcard_smallest_height = global_smallcard_width * 0.7;
 
     memcpy(&font, &global_logfont_template, sizeof(LOGFONT));
 
@@ -6883,7 +6360,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     hgt33 = 33 * global_main_window_height / 100;
 
     hdc_local = GetDC(hwnd);
-    gdi_flush(hdc_local);
+    ApplyCardArtPaletteToDc(hdc_local);
 
     GetTextExtentPoint32(hdc_local, "Load new deck", strlen("Load new deck"), &sz);
     sz.cx += 10;
@@ -7003,7 +6480,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     DELETE_OBJ(global_hbmp);
 
     hdc = GetDC(hwnd);
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     global_hbmp = CreateCompatibleBitmap(hdc, LOWORD(lparam), HIWORD(lparam));
 
@@ -7061,7 +6538,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   {
     HDC hdc_local = (HDC)wparam;
     hdc = hdc_local;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetTextColor(hdc, GetFocus() == lparam ? global_colorref_white : global_colorref_darkgrey);
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
@@ -7071,7 +6548,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   {
     HDC hdc_local = (HDC)wparam;
     hdc = hdc_local;
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     SetTextColor(hdc, RGB(0, 0, 0));
     return global_listbox_hwnd == lparam ? global_brush_gold1 : global_brush_gold2;
   }
@@ -7455,7 +6932,7 @@ draw_filter_buttons(HDC hdc, const RECT *r)
 {
   HDC chdc = CreateCompatibleDC(hdc);
   BITMAP bmp;
-  gdi_flush(chdc);
+  ApplyCardArtPaletteToDc(chdc);
 
   SelectObject(chdc, global_pics[15]);
   GetObject(global_pics[15], sizeof(BITMAP), &bmp);
@@ -8186,7 +7663,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   {
     PAINTSTRUCT paint;
     hdc = BeginPaint(hwnd, &paint);
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
     BitBlt(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, chdc, 0, 0, SRCCOPY);
     EndPaint(hwnd, &paint);
     return 0;
@@ -8559,10 +8036,10 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     DELETE_DC(chdc);
     hdc = GetDC(hwnd);
-    gdi_flush(hdc);
+    ApplyCardArtPaletteToDc(hdc);
 
     chdc = CreateCompatibleDC(hdc);
-    gdi_flush(chdc);
+    ApplyCardArtPaletteToDc(chdc);
 
     bmp = CreateCompatibleBitmap(hdc, rect.right - rect.left, rect.bottom - rect.top);
     SelectObject(chdc, bmp);

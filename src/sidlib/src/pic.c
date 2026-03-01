@@ -17,6 +17,11 @@ void ClosePcxFile(int param_1);
 void RpBits_Setup(undefined4 param_1);
 int RpBitsRefill(void);
 
+#ifdef DECKDLL
+//For some reason these are actually optimized in deckdll?
+#pragma optimize( "gy", on )
+#endif
+
 // FUNCTION: DRAWCARDLIB 0x1000965b
 // FUNCTION: DECKDLL 0x100010a0
 BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
@@ -67,6 +72,10 @@ BOOL FreeBitmapInfo(void* param_1)
   free(param_1);
   return 1;
 }
+
+#ifdef DECKDLL
+#pragma optimize( "", on )
+#endif
 
 typedef struct DIBSurface {
     HANDLE      hMapping;        // 0x00
@@ -231,10 +240,10 @@ DIBSurface * CreateDIBSurface(int width,int height,int bitsPerPixel)
   if (!global_dibSurface->hBitmap) {
     FreeBitmapInfo(global_dibSurface->pBitmapInfo);
     CloseHandle(global_dibSurface->hMapping);
-  } else {
-    FreeBitmapInfo(global_dibSurface->pBitmapInfo);
+    return 0;
   }
-
+  
+  FreeBitmapInfo(global_dibSurface->pBitmapInfo);
   return global_dibSurface;
 }
 
