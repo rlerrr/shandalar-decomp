@@ -16,7 +16,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24
 int InitErrorDiffusionDeltaTables(int dither_kernel_id, int* delta_table_ptrs_base);
 void MemZeroDwords(undefined8 *param_1, uint param_2);
 
-void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24, undefined8 *src_bgr24, int dst_x, int dst_y,
+void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24, byte *src_bgr24, int dst_x, int dst_y,
                                     int rect_width, int rect_height, int dst_stride_pixels);
 void CopyBytes(void *dst, const void *src, size_t size);
 void SetBytes(void *dst, int value, size_t num);
@@ -27,7 +27,7 @@ void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int ro
                              undefined4 src_stride_unused, int dst_stride);
 undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int* chroma_u, int* chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420);
-undefined4 Wvl_UnpackPieces(int param_1, int *param_2);
+undefined4 Wvl_UnpackPieces(byte *param_1, int *param_2);
 
 // GLOBAL: CARDARTLIB 0x1001d258
 undefined4 global_dither_kernel_id = 0x00000000;
@@ -556,27 +556,27 @@ uint Rgb888_QuantizeToF8(uint param_1)
 
 // FUNCTION: CARDARTLIB 0x10006be3
 // FUNCTION: DRAWCARDLIB 0x10008663
-undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
+byte * Wvl_DecodeHaar(int *param_1,byte *param_2)
 {
   struct {
-    int bgr_tmp;         /* [ebp-0x4c] */
+    byte *bgr_tmp;       /* [ebp-0x4c] */
     int scale_i;         /* [ebp-0x48] */
     int piece_idx;       /* [ebp-0x44] */
-    int local_40;        /* [ebp-0x40] */
+    int *y_plane;        /* [ebp-0x40] */
     int have_dst;        /* [ebp-0x3c] */
-    int chroma_h;        /* [ebp-0x38] */
-    int local_34;        /* [ebp-0x34] */
-    int v_plane;         /* [ebp-0x30] */
+    int image_size;      /* [ebp-0x38] */
+    int *unused2;        /* [ebp-0x34] */
+    int chroma_base;     /* [ebp-0x30] */
     int height_px;       /* [ebp-0x2c] */
     int chroma_w;        /* [ebp-0x28] */
-    int width_px;        /* [ebp-0x24] */
+    int *unused1;        /* [ebp-0x24] */
     int base_size;       /* [ebp-0x20] */
     int alloc_bytes;     /* [ebp-0x1c] */
-    int dword_count;     /* [ebp-0x18] */
+    int *v_plane;        /* [ebp-0x18] */
     int block_width;     /* [ebp-0x14] */
-    int block_height;    /* [ebp-0x10] */
-    int y_plane;        /* [ebp-0xc] */
-    int *u_plane;        /* [ebp-0x8] */
+    int *u_plane;        /* [ebp-0x10] */
+    int block_height;    /* [ebp-0xc] */
+    int* unused3;        /* [ebp-0x8] */
     int pieces_per_row;  /* [ebp-0x4] */
   } s;
 
@@ -596,7 +596,7 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
     g_waveletScaleToByteTableInit = 1;
   }
 
-  if (param_2 == (undefined8 *)0x0) {
+  if (param_2 == NULL) {
     param_2 = malloc(param_1[0x24] + 2000);
     MemZeroDwords(param_2,(param_1[0x24] + 2000) / 4);
   }
@@ -605,7 +605,7 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
     s.have_dst = 1;
   }
 
-  g_unpackResultUnused = Wvl_UnpackPieces((int)param_2,param_1);
+  g_unpackResultUnused = Wvl_UnpackPieces(param_2,param_1);
 
   if (param_1[10] == 1) {
     s.pieces_per_row = 1;
@@ -621,61 +621,59 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
            s_wavelet_pieces_has_illegal_value_1001e14c,param_1[10]);
   }
 
-  s.chroma_h = param_1[7];
-  s.height_px = s.chroma_h;
+  s.image_size = param_1[7];
+  s.height_px = s.image_size;
   s.block_width = param_1[7] / s.pieces_per_row;
-  s.y_plane = s.block_width;
+  s.block_height = s.block_width;
   s.alloc_bytes = param_1[9];
   s.base_size = param_1[8] / s.pieces_per_row;
-  s.width_px = &param_1[11];
-  s.local_34 = &param_1[15];
-  s.u_plane = &param_1[19];
+  s.unused1 = &param_1[11];
+  s.unused2 = &param_1[15];
+  s.unused3 = &param_1[19];
 
   for (s.piece_idx = 0; s.piece_idx < param_1[10]; s.piece_idx = s.piece_idx + 1) {
     if (*param_1 != 0) {
-      s.chroma_w = (s.y_plane / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
-      s.v_plane = (s.base_size / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
+      s.chroma_w = (s.block_height / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
+      s.chroma_base = (s.base_size / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
     } else {
-      s.chroma_w = s.y_plane;
-      s.v_plane = s.base_size;
+      s.chroma_w = s.block_height;
+      s.chroma_base = s.base_size;
     }
 
-    s.local_40 = (int *)((s.y_plane * s.y_plane + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4 +
-                        (int)param_2);
-    //s. = (int)s.y_plane;
-    s.block_height = (int *)(s.local_40 + s.y_plane * s.y_plane * 4 + 0x80);
-    s.dword_count = (int)s.block_height + s.chroma_w * s.chroma_w * 4 + 0x80;
+    s.y_plane = &param_2[(s.block_height * s.block_height + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4];
+    s.u_plane = &s.y_plane[s.block_height * s.block_height] + 0x20;
+    s.v_plane = &s.u_plane[s.chroma_w * s.chroma_w] + 0x20;
 
-    Haar2D_ReconstructInPlace(s.local_40,s.y_plane, s.alloc_bytes);
-    Haar2D_ReconstructInPlace(s.block_height,s.chroma_w,s.alloc_bytes);
-    Haar2D_ReconstructInPlace(s.dword_count,s.chroma_w,s.alloc_bytes);
+    Haar2D_ReconstructInPlace(s.y_plane,s.block_height, s.alloc_bytes);
+    Haar2D_ReconstructInPlace(s.u_plane,s.chroma_w,s.alloc_bytes);
+    Haar2D_ReconstructInPlace(s.v_plane,s.chroma_w,s.alloc_bytes);
 
     if (s.piece_idx < param_1[10] / 2) {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(g_haarDecodeScratch,s.local_40,s.y_plane,s.y_plane,
-                                        s.block_height,s.dword_count,s.chroma_w,s.chroma_w,*param_1);
+      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,s.block_height,
+                                        s.u_plane,s.v_plane,s.chroma_w,s.chroma_w,*param_1);
     }
     else if (param_1[10] > 1) {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(g_haarDecodeScratch,s.local_40,s.y_plane,param_1[8] - s.block_width,
-                                        s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
+      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,param_1[8] - s.block_width,
+                                        s.u_plane,s.v_plane,s.chroma_w,s.chroma_base,*param_1);
     }
     else {
-      s.bgr_tmp = (int)YuvPlanesToBgr24(g_haarDecodeScratch,s.local_40,s.y_plane,s.base_size,
-                                        s.block_height,s.dword_count,s.chroma_w,s.v_plane,*param_1);
+      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,s.base_size,
+                                         s.u_plane,s.v_plane,s.chroma_w,s.chroma_base,*param_1);
     }
 
     if (param_1[10] > 1) {
 
-      CopyBgr24RectIntoStridedBuffer(param_2,(undefined8 *)s.bgr_tmp,
+      CopyBgr24RectIntoStridedBuffer(param_2,s.bgr_tmp,
                                       (s.height_px / s.pieces_per_row) * (s.piece_idx % s.pieces_per_row),
-                                      (s.height_px / s.pieces_per_row) * (s.piece_idx / s.pieces_per_row), s.y_plane,
-                                      s.y_plane,s.height_px,s.height_px);
-      free((undefined8 *)s.bgr_tmp);
+                                      (s.height_px / s.pieces_per_row) * (s.piece_idx / s.pieces_per_row), s.block_height,
+                                      s.block_height,s.height_px,s.height_px);
+      free(s.bgr_tmp);
     }
     else {
       if (s.have_dst == 0) {
         free(param_2);
       }
-      param_2 = (undefined8 *)s.bgr_tmp;
+      param_2 = s.bgr_tmp;
     }
   }
   return param_2;
@@ -683,14 +681,14 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
 
 // FUNCTION: CARDARTLIB 0x10007035
 // FUNCTION: DRAWCARDLIB 0x10008ab5
-void CopyBgr24RectIntoStridedBuffer(undefined8 *dst_bgr24,undefined8 *src_bgr24,int dst_x,int dst_y,int rect_width,
+void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24,byte *src_bgr24,int dst_x,int dst_y,int rect_width,
                                int rect_height,int dst_stride_pixels, int unused)
 {
   int row;
   
-  *(int *)&dst_bgr24 += (dst_stride_pixels * dst_y + dst_x) * 3;
+  dst_bgr24 += (dst_stride_pixels * dst_y + dst_x) * 3;
 
-  for (row = 0;row < rect_height;row = row + 1, *(int *)&dst_bgr24 += dst_stride_pixels * 3,*(int *)&src_bgr24 += rect_width * 3 ) {
+  for (row = 0;row < rect_height;row = row + 1, dst_bgr24 += dst_stride_pixels * 3, src_bgr24 += rect_width * 3 ) {
       CopyBytes(dst_bgr24,src_bgr24,rect_width * 3);
   }
 }
@@ -943,7 +941,7 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
 
 // FUNCTION: CARDARTLIB 0x100078b8
 // FUNCTION: DRAWCARDLIB 0x10009338
-BOOL Wvl_UnpackPieces(int param_1,int *param_2)
+BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
 {
   struct {
     byte *dst_y;        /* ebp - 0x3c */
@@ -986,7 +984,7 @@ BOOL Wvl_UnpackPieces(int param_1,int *param_2)
       Huffman13_Init((undefined4)s.bitstream,(undefined4)s.symbol_table,(undefined4)s.node_count);
 
   for (s.layer = 0; s.layer < s.wvl[10]; s.layer = s.layer + 1) {
-    s.dst_y = (byte *)(param_1 + (((s.tmp + 0x40) * s.layer) << 2));
+    s.dst_y = &param_1[(((s.tmp + 0x40) * s.layer) << 2)];
 
     s.dst_u = &s.dst_y[((s.full_w * s.full_h) << 2)] + 0x80;
 
@@ -1031,7 +1029,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     int row_padding;
     int y_step;
     int x_step;
-    uint *out_base;
+    byte *out_base;
     uint x_map[4096];
     byte *decoded; // ebp - 0x104c
     int y; // ebp - 0x1048
@@ -1089,7 +1087,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   if (wvl_entry[0x6a] != 0) {
     s.decoded = (byte *)wvl_entry[0x6b];
   } else {
-    s.decoded = (byte *)Wvl_DecodeHaar(wvl_entry,(undefined8 *)&g_haarDecodeScratch);
+    s.decoded = Wvl_DecodeHaar(wvl_entry,&g_haarDecodeScratch);
   }
 
   s.src_width = wvl_entry[7];
@@ -1113,7 +1111,6 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     }    
   }
 
-  //param_1 = s.out_base;
   if (wvl_entry[8] < height) {
     param_1 += (height - wvl_entry[8]) * (s.row_pad + width * 3);
     s.out_ptr = param_1;
@@ -1129,8 +1126,8 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
       s.src_ptr = (byte *)(s.tmp_4 + (((int)*s.x_map_ptr >> 8) * 3));
 
       param_1[0] = ((int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
-      param_1[1] =  ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
-      param_1[2] =  ((int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
+      param_1[1] = ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
+      param_1[2] = ((int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
 
       param_1 = (uint *)((int)param_1 + 3);
     }
@@ -1151,7 +1148,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   }
 
   for (s.x = 0; s.x < width; s.x++) {
-    param_1 = (uint *)((int)s.out_base + s.x * 3);
+    param_1 = &s.out_base[s.x * 3];
     s.tmp_4 = (int*)(s.out_ptr + s.x*3);
     s.y_map_ptr = s.y_map;
     
@@ -1165,9 +1162,9 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   }
 
   if (height < wvl_entry[8]) {
-    memcpy((void *)((height - 1) * s.row_bytes + (int)s.out_base),s.x_map,s.row_bytes);
+    memcpy(&s.out_base[(height - 1) * s.row_bytes],s.x_map,s.row_bytes);
   } else {
-    memset((void *)((height - 1) * s.row_bytes + (int)s.out_base),0,s.row_bytes);
+    memset(&s.out_base[(height - 1) * s.row_bytes],0,s.row_bytes);
   }
 
   s.unk_5060 = 4;
