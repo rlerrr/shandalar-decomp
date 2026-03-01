@@ -70,51 +70,51 @@ undefined4 __cdecl GetSndHWND(void);
 int __cdecl LoadSnd(LPSTR param_1, int param_2, Sound *param_3);
 undefined4 __cdecl UnloadSnd(int param_1);
 undefined4 __cdecl UnloadAllSnds(void);
-undefined4 __cdecl PlaySnd(int param_1, Sound *param_2);
-int __cdecl PlaySndFile(LPSTR param_1, int param_2, Sound *param_3);
+undefined4 __cdecl PlaySnd(int slot, Sound *sound);
+int __cdecl PlaySndFile(LPSTR filename, int slot, Sound *sound);
 undefined4 __cdecl StopSnd(int slot);
 void __cdecl StopAllSnds(void);
 undefined4 __cdecl PlayMidiFile(void);
 undefined4 __cdecl SetPitch(int slot, undefined4 pitchHz);
 undefined4 __cdecl GetPitch(void);
-undefined4 __cdecl SetVol(int param_1, uint param_2);
+undefined4 __cdecl SetVol(int slot, uint volume);
 undefined4 __cdecl GetVol(void);
-undefined4 __cdecl SetPan(int param_1, int param_2);
+undefined4 __cdecl SetPan(int slot, int pan);
 undefined4 __cdecl GetPan(void);
 undefined4 __cdecl UpdateSnd(void);
-int __cdecl SetSndMarker(int param_1, uint param_2);
+int __cdecl SetSndMarker(int slot, uint markerIndex);
 int __cdecl PlaySndMarker(int slot, uint markerIndex);
 int __cdecl LoadMarkerInstance(SndInstance *parent, int markerIndex);
 int __cdecl PrimeMarkerInstance(SndInstance *parent, int markerIndex);
-undefined4 __cdecl GetSndTime(int param_1, uint *param_2);
+undefined4 __cdecl GetSndTime(int slot, uint *timeMs);
 undefined4 __cdecl ResetSnd(void);
-undefined4 __cdecl GetSndState(int param_1, undefined4 *param_2);
-void * __cdecl GetAVISndBuff(int param_1, uint param_2);
-undefined4 __cdecl ReleaseAVISndBuff(int param_1);
-undefined4 __cdecl IsSndLoaded(int param_1, undefined4 *param_2);
-undefined4 __cdecl GetLRUSnd(int *param_1, int param_2, int param_3);
+undefined4 __cdecl GetSndState(int slot, undefined4 *outState);
+void * __cdecl GetAVISndBuff(int slot, uint bytesRequested);
+undefined4 __cdecl ReleaseAVISndBuff(int slot);
+undefined4 __cdecl IsSndLoaded(int slot, undefined4 *outLoaded);
+undefined4 __cdecl GetLRUSnd(int *outSlot, int loadId, int skipSlot);
 
-void __cdecl FUN_10003748(int param_1);
+void __cdecl FUN_10003748(int value);
 void __cdecl AddToUpdateList(SndInstance *snd);
 void __cdecl RemoveFromUpdateList(SndInstance *snd);
 void __cdecl AddToActiveList(SndInstance *snd);
 void __cdecl RemoveFromActiveList(SndInstance *snd);
-undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2);
+undefined4 __cdecl AcquireFreeDsBuffer(int slot,int *outBuffer);
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
 void __cdecl StopUpdateTimer(void);
 void CALLBACK UpdateTimerProc(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
 void __cdecl CloseMmioAndFreeSource(SndInstance *snd);
 undefined4 __cdecl LoadFromFile(char *filename, SndInstance **outSnd);
 undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4 scratch);
-undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int param_2);
-undefined4 __cdecl PrimeAviAudio(undefined4 *param_1);
+undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample);
+undefined4 __cdecl PrimeAviAudio(undefined4 *snd);
 undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefined4 scratch);
 void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample);
 int __cdecl MmioTellFromInfo(MMIOINFO *info);
-undefined4 __cdecl LoadWaveFromFileHandle(FILE *param_1,int *param_2);
-undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint param_4);
-SndInstance * __cdecl FUN_10005480(int *param_1, undefined4 param_2, undefined4 *param_3, undefined4 param_4);
-undefined4 __cdecl DestroySndInstance(SndInstance *param_1);
+undefined4 __cdecl LoadWaveFromFileHandle(FILE *file,int *outSource);
+undefined4 __cdecl FindRiffChunk(FILE *file,int riffType,long chunkOffset,uint chunkSize);
+SndInstance * __cdecl FUN_10005480(int *sndData, undefined4 aviStream, undefined4 *streamInfo, undefined4 waveFormatTag);
+undefined4 __cdecl DestroySndInstance(SndInstance *snd);
 void * __cdecl operator_new(unsigned int size);
 void __cdecl operator_delete(void *p);
 
@@ -432,7 +432,7 @@ undefined4 __cdecl PlaySnd(int slot,Sound *sound)
 }
 
 // FUNCTION: MAGSND 0x10001701
-int __cdecl FUN_10001701(SndInstance *snd,int *param_2)
+int __cdecl FUN_10001701(SndInstance *snd,int *playConfig)
 
 {
   struct {
@@ -474,7 +474,7 @@ int __cdecl FUN_10001701(SndInstance *snd,int *param_2)
     }
   }
   else {
-    if ((param_2 == (int *)0x0) || (((uint)param_2[7] >> 1 & 1) == 0)) {
+    if ((playConfig == (int *)0x0) || (((uint)playConfig[7] >> 1 & 1) == 0)) {
       s.result = AcquireFreeDsBuffer((int)snd,(int *)&s.dsBuffer);
       if (s.result != 0) {
         return s.result;
@@ -485,7 +485,7 @@ int __cdecl FUN_10001701(SndInstance *snd,int *param_2)
       s.dsBuffer = snd->dsBuffer;
     }
   }
-  if (param_2 == (int *)0x0) {
+  if (playConfig == (int *)0x0) {
     s.freqValue = 0;
     s.sampleRate = snd->waveFmt.nSamplesPerSec;
     s.panValue = 0;
@@ -496,32 +496,32 @@ int __cdecl FUN_10001701(SndInstance *snd,int *param_2)
   else {
     int targetVolume;
 
-    targetVolume = *param_2;
+    targetVolume = *playConfig;
     if (targetVolume > 400) {
       targetVolume = 400;
     }
     snd->volume = targetVolume;
     s.freqValue = (targetVolume * 5 + -2000) * 2;
-    if (param_2[1] == 0) {
+    if (playConfig[1] == 0) {
       s.sampleRate = snd->waveFmt.nSamplesPerSec;
     }
     else {
-      s.sampleRate = param_2[1];
+      s.sampleRate = playConfig[1];
     }
     snd->playbackRateHz = s.sampleRate;
-    if (param_2[2] == 0) {
+    if (playConfig[2] == 0) {
       s.panValue = 0;
     }
     else {
-      s.panValue = param_2[2];
+      s.panValue = playConfig[2];
     }
     snd->pan = s.panValue;
     s.panValue = s.panValue * 10;
-    if ((*(byte *)(param_2 + 7) & 1) != 0) {
+    if ((*(byte *)(playConfig + 7) & 1) != 0) {
       s.playFlags |= 1;
       snd->flags2 |= 1;
     }
-    if (((uint)param_2[7] >> 3 & 1) != 0) {
+    if (((uint)playConfig[7] >> 3 & 1) != 0) {
       snd->flags2 |= 4;
     }
   }
@@ -639,36 +639,36 @@ int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *param_3)
 int __cdecl LoadMarkerInstance(SndInstance *parent,int markerIndex)
 {
   struct {
-    SndInstance **slotPtr;
-    int entryIndex;
-    char *markerEntry;
+    SndInstance **markerSlot;
+    int markerMetaIndex;
+    char *markerMeta;
     int result;
-    int primeOffset;
+    int markerStartSample;
   } s;
 
   s.result = 0;
-  s.primeOffset= 0;
-  s.entryIndex = 0;
+  s.markerStartSample= 0;
+  s.markerMetaIndex = 0;
 
-  s.markerEntry = &parent->markers[markerIndex * 3 - 3];
-  s.slotPtr = &parent->markers[markerIndex - 1] + 1;
-  s.result = LoadWaveMmio((LPSTR)parent->streamOrMmio,s.slotPtr,0x10);
+  s.markerMeta = &parent->markers[markerIndex * 3 - 3];
+  s.markerSlot = &parent->markers[markerIndex - 1] + 1;
+  s.result = LoadWaveMmio((LPSTR)parent->streamOrMmio,s.markerSlot,0x10);
   if (s.result != 0) {
     return s.result;
   }
   
-  s.primeOffset = *(int *)(s.markerEntry + 0x14);
-  s.result = PrimeDsBufferFromSource(*s.slotPtr,s.primeOffset);
+  s.markerStartSample = *(int *)(s.markerMeta + 0x14);
+  s.result = PrimeDsBufferFromSource(*s.markerSlot,s.markerStartSample);
   if (s.result != 0) {
     return s.result;
   }
 
-  (*s.slotPtr)->flags = (int)(*s.slotPtr)->flags | 0x20;
-  AddToUpdateList(*s.slotPtr);
-  (*s.slotPtr)->flags2 = (int)(*s.slotPtr)->flags2 | 2;
-  (*s.slotPtr)->flags2 = (int)(*s.slotPtr)->flags2 | 0x10;
-  (*s.slotPtr)->flags2 = (parent->flags2 & 1) | ((*s.slotPtr)->flags2 & 0xfffffffe);
-  (*s.slotPtr)->slotIndex = parent->slotIndex;
+  (*s.markerSlot)->flags = (int)(*s.markerSlot)->flags | 0x20;
+  AddToUpdateList(*s.markerSlot);
+  (*s.markerSlot)->flags2 = (int)(*s.markerSlot)->flags2 | 2;
+  (*s.markerSlot)->flags2 = (int)(*s.markerSlot)->flags2 | 0x10;
+  (*s.markerSlot)->flags2 = (parent->flags2 & 1) | ((*s.markerSlot)->flags2 & 0xfffffffe);
+  (*s.markerSlot)->slotIndex = parent->slotIndex;
   return s.result;
 }
 
@@ -677,16 +677,16 @@ int __cdecl PrimeMarkerInstance(SndInstance *parent,int markerIndex)
 
 {
   struct {
-    int entryIndex;
-    SndInstance *marker;
-    char *markerEntry;
-    int primeOffset;
+    int markerMetaIndex;
+    SndInstance *markerInstance;
+    char *markerMeta;
+    int markerStartSample;
     int result;
   } s;
 
-  s.primeOffset = 0;
+  s.markerStartSample = 0;
   s.result = 0;
-  s.entryIndex = 0;
+  s.markerMetaIndex = 0;
 
   if (((parent->flags >> 6) & 1) != 0) {
     if (parent->activeMarkerIndex == markerIndex - 1) {
@@ -694,27 +694,27 @@ int __cdecl PrimeMarkerInstance(SndInstance *parent,int markerIndex)
     }
   }
  
-  s.markerEntry = (char *)parent->markers[0xd] + (markerIndex * 3 - 3) * 8;
-  s.marker = parent->markers[markerIndex];
-  s.primeOffset = *(int *)(s.markerEntry + 0x14);
-  s.result = PrimeDsBufferFromSource(s.marker,s.primeOffset);
+  s.markerMeta = (char *)parent->markers[0xd] + (markerIndex * 3 - 3) * 8;
+  s.markerInstance = parent->markers[markerIndex];
+  s.markerStartSample = *(int *)(s.markerMeta + 0x14);
+  s.result = PrimeDsBufferFromSource(s.markerInstance,s.markerStartSample);
   if (s.result != 0) {
     return s.result;
   }
 
-  s.marker->flags |= 0x20;
-  s.marker->flags &= 0xfffffffb;
-  s.marker->flags &= 0xffffffef;
-  s.marker->ringCursorBytes = 0;
-  s.marker->flags2 = (parent->flags2 & 1) | (s.marker->flags2 & 0xfffffffe);
-  s.marker->volume = parent->volume;
-  s.marker->playbackRateHz = parent->playbackRateHz;
-  s.marker->pan = parent->pan;
+  s.markerInstance->flags |= 0x20;
+  s.markerInstance->flags &= 0xfffffffb;
+  s.markerInstance->flags &= 0xffffffef;
+  s.markerInstance->ringCursorBytes = 0;
+  s.markerInstance->flags2 = (parent->flags2 & 1) | (s.markerInstance->flags2 & 0xfffffffe);
+  s.markerInstance->volume = parent->volume;
+  s.markerInstance->playbackRateHz = parent->playbackRateHz;
+  s.markerInstance->pan = parent->pan;
   return 0;
 }
 
 // FUNCTION: MAGSND 0x1000208C
-void __cdecl SwapActiveInstances(int *param_1,int *param_2)
+void __cdecl SwapActiveInstances(int *activeInstanceSlot,int *newInstanceSlot)
 
 {
   struct {
@@ -722,23 +722,23 @@ void __cdecl SwapActiveInstances(int *param_1,int *param_2)
     int old;
   } s;
 
-  s.old = *param_1;
-  *param_1 = *param_2;
+  s.old = *activeInstanceSlot;
+  *activeInstanceSlot = *newInstanceSlot;
   s.i = 0;
   for (; s.i < 0x10; s.i = s.i + 1) {
-    if (*(int *)(s.old + 0x38 + s.i * 4) == *param_1) {
-      *(int *)(*param_1 + 0x38 + s.i * 4) = s.old;
+    if (*(int *)(s.old + 0x38 + s.i * 4) == *activeInstanceSlot) {
+      *(int *)(*activeInstanceSlot + 0x38 + s.i * 4) = s.old;
     }
     else {
-      *(int *)(*param_1 + 0x38 + s.i * 4) = *(int *)(s.old + 0x38 + s.i * 4);
+      *(int *)(*activeInstanceSlot + 0x38 + s.i * 4) = *(int *)(s.old + 0x38 + s.i * 4);
     }
     *(undefined4 *)(s.old + 0x38 + s.i * 4) = 0;
   }
-  *(int *)(*param_1 + 0x10) = *(int *)(s.old + 0x10);
+  *(int *)(*activeInstanceSlot + 0x10) = *(int *)(s.old + 0x10);
   *(uint *)(s.old + 8) = *(uint *)(s.old + 8) | 0x10;
-  *(uint *)(*param_1 + 8) = *(uint *)(*param_1 + 8) & 0xffffffef;
+  *(uint *)(*activeInstanceSlot + 8) = *(uint *)(*activeInstanceSlot + 8) & 0xffffffef;
   RemoveFromActiveList((SndInstance *)s.old);
-  AddToActiveList((SndInstance *)*param_1);
+  AddToActiveList((SndInstance *)*activeInstanceSlot);
   return;
 }
 
@@ -821,7 +821,7 @@ int __cdecl PlaySndMarker(int slot,uint markerIndex)
   marker->playbackRateHz = snd->playbackRateHz;
   marker->pan = snd->pan;
 
-  result = FUN_10001701((undefined4 *)marker,&volume);
+  result = FUN_10001701(marker,&volume);
   if (result == 0) {
     snd->flags |= 0x40;
     snd->activeMarkerIndex = markerIndex - 1;
@@ -2211,54 +2211,54 @@ undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint par
 }
 
 // FUNCTION: MAGSND 0x10004E4C
-undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int param_2)
+undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample)
 {
   struct {
-    int local_48;
-    int local_44;
-    int local_40;
-    HPSTR local_3c;
-    int local_38;
-    int local_34;
-    int local_30;
-    int local_2c;
-    HPSTR local_28;
-    int local_24;
-    int local_20;
-    int local_1c;
-    HPSTR local_18;
-    int local_14;
-    int local_10;
-    int local_c;
-    int local_8;
-    int local_4;
+    int bytesRemainingInData;
+    int samplesReadAdvance;
+    int blockAlignCopy;
+    HPSTR lockPtr1;
+    int startOffsetBytes;
+    int done;
+    int streamSampleCount;
+    int bytesRemainingToFill;
+    HPSTR writePtr;
+    int sourceTotalBytes;
+    int wrapWindowBytes;
+    int sourceOffsetBytes;
+    HPSTR lockPtr2;
+    int lockSize2;
+    int lockHr;
+    int bytesRead;
+    int streamByteOffset;
+    int lockSize1;
   } s;
 
-  s.local_3c = (HPSTR)0x0;
-  s.local_18 = (HPSTR)0x0;
-  s.local_28 = (HPSTR)0x0;
-  s.local_4 = 0;
-  s.local_14 = 0;
-  s.local_30 = 0;
-  s.local_34 = 0;
+  s.lockPtr1 = (HPSTR)0x0;
+  s.lockPtr2 = (HPSTR)0x0;
+  s.writePtr = (HPSTR)0x0;
+  s.lockSize1 = 0;
+  s.lockSize2 = 0;
+  s.streamSampleCount = 0;
+  s.done = 0;
   if (((snd->flags2 >> 5) & 1) == 0) {
-    SeekMmioToSample(snd,param_2);
+    SeekMmioToSample(snd,startSample);
   }
 
-  s.local_38 = (uint)snd->waveFmt.nBlockAlign * param_2;
-  s.local_1c = s.local_38;
-  s.local_24 = snd->dataBytes;
-  s.local_48 = s.local_24 - s.local_1c;
-  s.local_2c = 0x10000;
-  s.local_44 = 0;
-  s.local_8 = s.local_38;
+  s.startOffsetBytes = (uint)snd->waveFmt.nBlockAlign * startSample;
+  s.sourceOffsetBytes = s.startOffsetBytes;
+  s.sourceTotalBytes = snd->dataBytes;
+  s.bytesRemainingInData = s.sourceTotalBytes - s.sourceOffsetBytes;
+  s.bytesRemainingToFill = 0x10000;
+  s.samplesReadAdvance = 0;
+  s.streamByteOffset = s.startOffsetBytes;
   
-  if ((s.local_38 < 0) || (s.local_24 < s.local_38)) {
+  if ((s.startOffsetBytes < 0) || (s.sourceTotalBytes < s.startOffsetBytes)) {
     return 5;
   }
   
-  s.local_10 = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer,0,0x10000,&s.local_3c,&s.local_4,&s.local_18,&s.local_14,0);
-  if (s.local_10 != 0) {
+  s.lockHr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer,0,0x10000,&s.lockPtr1,&s.lockSize1,&s.lockPtr2,&s.lockSize2,0);
+  if (s.lockHr != 0) {
     if (((snd->flags2 >> 5) & 1) != 0) {
       FUN_1000575e((undefined4 *)snd);
     }
@@ -2269,50 +2269,50 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int param_2)
     return 9;
   }
 
-  s.local_28 = s.local_3c;
-  while (s.local_34 == 0) {
-    if (s.local_48 < s.local_2c) {
-    if (((snd->flags2 >> 5) & 1) == 0) {
-      s.local_c = mmioRead(snd->hMmio,s.local_28,s.local_48);
-    }
-    else {
-      s.local_40 = (int)snd->waveFmt.nBlockAlign;
-      s.local_30 = 0x10000 / s.local_40;
-      AVIStreamRead((PAVISTREAM)snd->streamOrMmio,param_2,s.local_30,s.local_28,s.local_48,&s.local_c,0);
-    }
-      s.local_28 = s.local_28 + s.local_c;
-      s.local_2c = s.local_2c - s.local_c;
-      s.local_48 = 0;
-      s.local_20 = snd->dataBytes;
+  s.writePtr = s.lockPtr1;
+  while (s.done == 0) {
+    if (s.bytesRemainingInData < s.bytesRemainingToFill) {
+      if (((snd->flags2 >> 5) & 1) == 0) {
+        s.bytesRead = mmioRead(snd->hMmio,s.writePtr,s.bytesRemainingInData);
+      }
+      else {
+        s.blockAlignCopy = (int)snd->waveFmt.nBlockAlign;
+        s.streamSampleCount = 0x10000 / s.blockAlignCopy;
+        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,startSample,s.streamSampleCount,s.writePtr,s.bytesRemainingInData,&s.bytesRead,0);
+      }
+      s.writePtr = s.writePtr + s.bytesRead;
+      s.bytesRemainingToFill = s.bytesRemainingToFill - s.bytesRead;
+      s.bytesRemainingInData = 0;
+      s.wrapWindowBytes = snd->dataBytes;
       if ((snd->flags2 & 1) == 0) {
-        memset(s.local_28,0,(size_t)s.local_2c);
-        s.local_34 = 1;
+        memset(s.writePtr,0,(size_t)s.bytesRemainingToFill);
+        s.done = 1;
       }
       else {
         if (((snd->flags2 >> 5) & 1) == 0) {
           SeekMmioToSample(snd,0);
         }
-        s.local_20 = 0;
-        s.local_48 = snd->dataBytes;
-        s.local_8 = 0;
+        s.wrapWindowBytes = 0;
+        s.bytesRemainingInData = snd->dataBytes;
+        s.streamByteOffset = 0;
       }
     }
     else {
       if (((snd->flags2 >> 5) & 1) == 0) {
-        s.local_c = mmioRead(snd->hMmio,s.local_28,s.local_2c);
+        s.bytesRead = mmioRead(snd->hMmio,s.writePtr,s.bytesRemainingToFill);
       }
       else {
-        s.local_40 = (int)snd->waveFmt.nBlockAlign;
-        s.local_30 = 0x10000 / s.local_40;
-        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,param_2,s.local_30,s.local_28,0x10000,&s.local_c,
-                      &s.local_44);
+        s.blockAlignCopy = (int)snd->waveFmt.nBlockAlign;
+        s.streamSampleCount = 0x10000 / s.blockAlignCopy;
+        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,startSample,s.streamSampleCount,s.writePtr,0x10000,&s.bytesRead,
+                      &s.samplesReadAdvance);
       }
-      s.local_2c = s.local_2c - s.local_c;
-      s.local_8 = s.local_8 + s.local_c;
-      s.local_48 = s.local_48 - s.local_c;
-      s.local_20 = s.local_20 + s.local_c;
-      param_2 = param_2 + s.local_44;
-      s.local_34 = 1;
+      s.bytesRemainingToFill = s.bytesRemainingToFill - s.bytesRead;
+      s.streamByteOffset = s.streamByteOffset + s.bytesRead;
+      s.bytesRemainingInData = s.bytesRemainingInData - s.bytesRead;
+      s.wrapWindowBytes = s.wrapWindowBytes + s.bytesRead;
+      startSample = startSample + s.samplesReadAdvance;
+      s.done = 1;
     }
   }
 
@@ -2321,19 +2321,19 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int param_2)
     mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
   }
   else {
-    RefillAviMmioBuffer(snd,param_2);
+    RefillAviMmioBuffer(snd,startSample);
   }
 
-  s.local_20 = s.local_48;
-  if (0xffff < s.local_48) {
-    s.local_20 = 0x10000;
+  s.wrapWindowBytes = s.bytesRemainingInData;
+  if (0xffff < s.bytesRemainingInData) {
+    s.wrapWindowBytes = 0x10000;
   }
-  snd->writeCursorBytes = snd->dataBytes - (s.local_48 - s.local_20);
-  snd->readCursorBytes = snd->dataBytes - s.local_48;
+  snd->writeCursorBytes = snd->dataBytes - (s.bytesRemainingInData - s.wrapWindowBytes);
+  snd->readCursorBytes = snd->dataBytes - s.bytesRemainingInData;
   snd->ringCursorBytes = 0;
   
-  s.local_10 = snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.local_3c,s.local_4,s.local_18,s.local_14);
-  if (s.local_10 != 0) {
+  s.lockHr = snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.lockPtr1,s.lockSize1,s.lockPtr2,s.lockSize2);
+  if (s.lockHr != 0) {
     CloseMmioAndFreeSource(snd);
     DestroySndInstance(snd);
     return 9;
