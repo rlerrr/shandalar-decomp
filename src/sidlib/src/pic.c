@@ -14,7 +14,7 @@ typedef unsigned short ushort;
 /* Local helpers moved with load_pic(). */
 int OpenPcxFile(char *param_1,int param_2);
 void ClosePcxFile(int param_1);
-void RpBits_Setup(undefined4 param_1);
+void RpBits_Setup(int fileDescriptor);
 int RpBitsRefill(void);
 
 #ifdef DECKDLL
@@ -53,7 +53,7 @@ BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
     bmi->bmiHeader.biClrUsed = 256;
     bmi->bmiHeader.biClrImportant = 256;
 
-    color = &bmi->bmiColors[0];
+    color = (short *)&bmi->bmiColors[0];
     for (i = 0; i < 256; i++) {
       *color++ = i;
     }
@@ -106,7 +106,7 @@ void (__cdecl *rpbits_stream_refill)() = (void (__cdecl *)())0x0;
 
 // GLOBAL: DRAWCARDLIB 0x1002252c
 // GLOBAL: DECKDLL 0x1003a844
-ushort *rpbits_stream_end = &rpbits_stream_refill;
+ushort *rpbits_stream_end = (ushort *)&rpbits_stream_refill;
 
 // GLOBAL: DRAWCARDLIB 0x10022530
 // GLOBAL: DECKDLL 0x1003a848
@@ -182,7 +182,7 @@ DIBSurface * CreateDIBSurface(int width,int height,int bitsPerPixel)
   char unused[16] = "rpbits";
   struct {
     DWORD imageSize;
-    HDC screenDC;
+    int screenDC;
   } s;
 
   // Store basic parameters
@@ -256,7 +256,7 @@ LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,
     int local_414;
     int local_410;
     undefined1 local_40c [1024];
-    int local_c;
+    char *local_c;
     int bitsPerPixel;
   } s;
   
@@ -295,8 +295,8 @@ LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,
       }
       DAT_100f2394 = global_pcxw_image_width + s.local_410;
       CreateDIBSurface(DAT_100f2394,global_pcxw_image_height,s.bitsPerPixel);
-      s.local_c = global_dibSurface->pBits;
-      for (global_pcx_lineNum = 0; global_pcx_lineNum < global_pcxw_image_height; global_pcx_lineNum++, 
+      s.local_c = (char *)global_dibSurface->pBits;
+      for (global_pcx_lineNum = 0; (int)global_pcx_lineNum < global_pcxw_image_height; global_pcx_lineNum++, 
           s.local_c += (s.bitsPerPixel / 8 * DAT_100f2394)) {
         PcxReadScanlineRle(s.local_c);
       }
@@ -318,9 +318,9 @@ LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,
       DAT_100f2394 = global_pcxw_image_width + s.local_414;
 
       if (CreateDIBSurface(global_pcxw_image_width,global_pcxw_image_height,s.bitsPerPixel) != 0) {        
-        s.local_c = global_dibSurface->pBits;
+        s.local_c = (char *)global_dibSurface->pBits;
         
-        for (global_pcx_lineNum = 0;global_pcx_lineNum < global_pcxw_image_height; global_pcx_lineNum++,
+        for (global_pcx_lineNum = 0;(int)global_pcx_lineNum < global_pcxw_image_height; global_pcx_lineNum++,
             s.local_c += global_dibSurface->rowPadding + (global_pcxw_image_width * s.bitsPerPixel) / 8) {
           RpBits_DecodeImage(s.local_c,global_pcxw_image_width);
         }
@@ -365,7 +365,7 @@ int OpenPcxFile(char *param_1,int param_2)
 // FUNCTION: DECKDLL 0x1002d21a
 void ClosePcxFile(int param_1)
 {
-  if (param_1 == DAT_10022530) 
+  if (param_1 == (int)DAT_10022530) 
     return;
   _close(param_1);
 }
@@ -375,7 +375,7 @@ void ClosePcxFile(int param_1)
 void RpBits_Setup(int fileDescriptor)
 {
   rpbits_file_descriptor = fileDescriptor;
-  rpbits_stream_ptr = rpbits_stream_end;
+  rpbits_stream_ptr = (byte *)rpbits_stream_end;
   rpbits_stream_refill = (void (__cdecl *)())RpBitsRefill;
 }
 

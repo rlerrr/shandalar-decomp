@@ -53,10 +53,10 @@ char s_w_b_10021fd8[] = "w+b";
 pointer PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = (pointer)0x10021EDC;
 // GLOBAL: DRAWCARDLIB 0x10021ed4
 // GLOBAL: DECKDLL 0x10033918
-undefined4 gPcxBufferWidth = 0x00000000;
+int gPcxBufferWidth = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10021ed8
 // GLOBAL: DECKDLL 0x1003391c
-undefined4 gPcxBufferHeight = 0x00000000;
+int gPcxBufferHeight = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10021edc
 // GLOBAL: DECKDLL 0x10033920
 char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
@@ -124,7 +124,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
     int row;
   } s;
   
-  gPcxInFile = fopen(path,&s_rb_10021f18);
+  gPcxInFile = fopen(path,s_rb_10021f18);
   assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
                s_Error_Opening_File__s_10021f00,path);
   gPcxPath = path;
@@ -170,7 +170,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
 // FUNCTION: DECKDLL 0x1001649a
 bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 {
-  gPcxInFile = fopen(path,&s_rb_10021f60);
+  gPcxInFile = fopen(path,s_rb_10021f60);
   assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
                s_Error_Opening_File__s_10021f48,path);
   gPcxPath = path;
@@ -331,7 +331,7 @@ undefined4 PcxWriteScanlineRle(char *srcScanline,int widthBytes)
   while (s.pos < widthBytes) {
     *(unsigned char *)&s.value = *(unsigned char *)srcScanline;
     if ((widthBytes - s.pos == 1) || ((unsigned char)srcScanline[1] != (unsigned char)s.value)) {
-      PcxWriteRleByte(s.value);
+      PcxWriteRleByte((unsigned char)s.value);
       s.pos = s.pos + 1;
       srcScanline = srcScanline + 1;
     }
@@ -354,7 +354,7 @@ undefined4 PcxWriteScanlineRle(char *srcScanline,int widthBytes)
 
 // FUNCTION: DRAWCARDLIB 0x10004873
 // FUNCTION: DECKDLL 0x10016ab3
-void PcxWriteRleByte(byte value)
+void PcxWriteRleByte(unsigned char value)
 {
   byte buff [4];
   

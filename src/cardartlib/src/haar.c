@@ -28,7 +28,7 @@ void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int ro
                              undefined4 src_stride_unused, int dst_stride);
 undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int* chroma_u, int* chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420);
-undefined4 Wvl_UnpackPieces(byte *param_1, int *param_2);
+BOOL Wvl_UnpackPieces(byte *param_1, int *param_2);
 
 // GLOBAL: CARDARTLIB 0x1001d258
 // GLOBAL: DRAWCARDLIB 0x10021048

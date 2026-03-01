@@ -18,10 +18,10 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut);
 undefined4 PcxReadScanlineRle(char *dstScanline);
 undefined4 PcxSave8bppImage(undefined *srcPixels, char *path, void *palette, undefined4 unused_param_4,
                             undefined4 unused_param_5, int width, int height);
-undefined4 PcxWriteHeader(undefined4 width, short height);
+undefined4 PcxWriteHeader(int width, int height);
 undefined4 PcxWriteScanlineRle(char *srcScanline, int widthBytes);
-void PcxWriteRleByte(char value);
-int CountRepeats(char value, char *buffer, int maxCount);
+void PcxWriteRleByte(unsigned char value);
+int CountRepeats(unsigned char value, unsigned char *buffer, int maxCount);
 undefined4 PcxWritePalette256(void *palette);
 
 #endif
