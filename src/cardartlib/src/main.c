@@ -36,16 +36,16 @@ char s__s__04d_c_WVL_1001d224[] = "%s\\%04d%c.WVL";
 char s__s__04d_WVL_1001d234[] = "%s\\%04d.WVL";
 
 // GLOBAL: CARDARTLIB 0x101177f4
-int g_versionedBigArtCount = 0x00000000;
+int g_versionedBigArtCount;
 
 // GLOBAL: CARDARTLIB 0x10117910
 char global_cartart_directory[0x105];
 
 // GLOBAL: CARDARTLIB 0x10121fe0
-int g_versionedSmallArtCount = 0x00000000;
+int g_versionedSmallArtCount;
 
 // GLOBAL: CARDARTLIB 0x10121fe4
-undefined4 global_hinstance = 0x00000000;
+undefined4 global_hinstance;
 
 // GLOBAL: CARDARTLIB 0x10117a20
 CRITICAL_SECTION global_critical_section_for_small_art;

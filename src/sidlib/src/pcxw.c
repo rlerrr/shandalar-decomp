@@ -36,7 +36,6 @@ typedef struct {
 
 STATIC_ASSERT(sizeof(PcxHeader_t) == 0x80, PCXHEADER_wrong_size);
 
-/* Placeholder globals for missing decompiler labels (PCXW-only). */
 // GLOBAL: DRAWCARDLIB 0x10021f18
 // GLOBAL: DECKDLL 0x1003395c
 char s_rb_10021f18[] = "rb";
@@ -47,10 +46,6 @@ char s_rb_10021f60[] = "rb";
 // GLOBAL: DECKDLL 0x10033a1c
 char s_w_b_10021fd8[] = "w+b";
 
-/* PCXW globals */
-// GLOBAL: DRAWCARDLIB 0x10021ed0
-// GLOBAL: DECKDLL 0x10033914
-pointer PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = (pointer)0x10021EDC;
 // GLOBAL: DRAWCARDLIB 0x10021ed4
 // GLOBAL: DECKDLL 0x10033918
 int gPcxBufferWidth = 0x00000000;
@@ -60,6 +55,11 @@ int gPcxBufferHeight = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10021edc
 // GLOBAL: DECKDLL 0x10033920
 char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
+
+// GLOBAL: DRAWCARDLIB 0x10021ed0
+// GLOBAL: DECKDLL 0x10033914
+char* PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = s_D__Newmagic_sources_sidlib_Pcxw__10021edc;
+
 // GLOBAL: DRAWCARDLIB 0x10021f00
 // GLOBAL: DECKDLL 0x10033944
 char s_Error_Opening_File__s_10021f00[] = "Error Opening File %s\r\n";
@@ -91,17 +91,17 @@ int global_pcxw_image_height = 0x00000000;
 
 // GLOBAL: DRAWCARDLIB 0x10127d30
 // GLOBAL: DECKDLL 0x10113960
-FILE *gPcxInFile = (FILE *)0x0;
+FILE *gPcxInFile;
 // GLOBAL: DRAWCARDLIB 0x10127d34
 // GLOBAL: DECKDLL 0x10113964
-FILE *gPcxOutFile = (FILE *)0x0;
+FILE *gPcxOutFile;
 // GLOBAL: DRAWCARDLIB 0x10127d38
 // GLOBAL: DECKDLL 0x10113968
-char *gPcxPath = (char *)0x0;
+char *gPcxPath;
 
 // GLOBAL: DRAWCARDLIB 0x10126d30
 // GLOBAL: DECKDLL 0x10112960
-undefined4 DAT_10126d30 = 0;
+undefined4 DAT_10126d30;
 // GLOBAL: DRAWCARDLIB 0x10127d40
 // GLOBAL: DECKDLL 0x10113970
 PcxHeader_t gPcxHeader;

@@ -48,18 +48,21 @@ int g_ditherKernelErrorRowCounts[8] = {0,0,2,2,3,2,3,3};
 
 // GLOBAL: CARDARTLIB 0x1001d2b0
 // GLOBAL: DRAWCARDLIB 0x100210a0
-int g_ditherKernelDivisors[0xa] = {0,0,16,16,42,32,32,48};
+int g_ditherKernelDivisors[0xa] = {0,0,16,16,42,32,32,48,236,0};
 
 // GLOBAL: CARDARTLIB 0x1001d2d8
 // GLOBAL: DRAWCARDLIB 0x100210c8
-undefined1 g_ditherKernelTable[0xd80];
+undefined1 g_ditherKernelTable[0xd80] = {
+#include "g_ditherKernelTable.inc"
+};
 
 // GLOBAL: CARDARTLIB 0x10031ca0
+// GLOBAL: DRAWCARDLIB 0x10028cf0
 undefined1 g_u8ClampTableStorage[0x400];
 
 // GLOBAL: CARDARTLIB 0x1001e058
 // GLOBAL: DRAWCARDLIB 0x10021e48
-undefined1 *g_u8ClampTable = g_u8ClampTableStorage + 0x200;
+undefined1 *g_u8ClampTable = g_u8ClampTableStorage;
 
 // GLOBAL: CARDARTLIB 0x1001e05c
 // GLOBAL: DRAWCARDLIB 0x10021e4c
@@ -74,6 +77,7 @@ undefined4 g_rgbQuantKernelCachedId = 0xFFFFFFFF;
 int g_rowAlignBytes = 0x00000004;
 
 // GLOBAL: CARDARTLIB 0x100326d8
+// GLOBAL: DRAWCARDLIB 0x1003a5a8
 unsigned char g_waveletScaleTableStorage[0x1000];
 
 // GLOBAL: CARDARTLIB 0x1001e090
@@ -86,24 +90,31 @@ char s_D__Newmagic_sources_NedCard_Pale_1001e0b4[] = "D:\\Newmagic\\sources\\Ned
 
 // GLOBAL: CARDARTLIB 0x1001e118
 // GLOBAL: DRAWCARDLIB 0x100223f8
+#ifdef DRAWCARDLIB
 unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
+#else
+unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage;
+#endif
 
 // GLOBAL: CARDARTLIB 0x1001e124
+// GLOBAL: DRAWCARDLIB 0x10022404
 undefined4 g_haarScratchInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100eaf00
+// GLOBAL: DRAWCARDLIB 0x10124950
 undefined1 g_yuvClampTableStorage[0x2000];
 
 // GLOBAL: CARDARTLIB 0x1001e128
-undefined1 * g_yuvClampTable = g_yuvClampTableStorage + 0x400;
+// GLOBAL: DRAWCARDLIB 0x10022408
+undefined1 * g_yuvClampTable = g_yuvClampTableStorage;
 
 // GLOBAL: CARDARTLIB 0x10032ae0
 // GLOBAL: DRAWCARDLIB 0x1003a9b0
-undefined4 g_waveletScaleToByteTableInit = 0x00000000;
+undefined4 g_waveletScaleToByteTableInit;
 
 // GLOBAL: CARDARTLIB 0x100ea09c
 // GLOBAL: DRAWCARDLIB 0x100f1f6c
-undefined4 g_yuvClampTableInit = 0x00000000;
+undefined4 g_yuvClampTableInit;
 
 // GLOBAL: CARDARTLIB 0x1001e14c
 // GLOBAL: DRAWCARDLIB 0x1002242c
@@ -143,27 +154,23 @@ undefined1 g_errorDiffusionRowStorage[5 * 0x8060];
 
 // GLOBAL: CARDARTLIB 0x100ecb04
 // GLOBAL: DRAWCARDLIB 0x10126554
-BOOL g_unpackResultUnused = 0x00000000;
+BOOL g_unpackResultUnused;
 
 // GLOBAL: CARDARTLIB 0x100322cc
 // GLOBAL: DRAWCARDLIB 0x1002931c
-undefined4 g_rgbQuantClampInit = 0x00000000;
+undefined4 g_rgbQuantClampInit;
 
 // GLOBAL: CARDARTLIB 0x100322d0
 // GLOBAL: DRAWCARDLIB 0x10029320
-undefined4 g_paletteClampInit = 0x00000000;
-
-// GLOBAL: CARDARTLIB 0x100322d8
-undefined1 g_haarUnused_100322d8 = 0x00;
-
-// GLOBAL: CARDARTLIB 0x100322d9
-undefined1 g_haarUnused_100322d9 = 0x00;
+undefined4 g_paletteClampInit;
 
 // GLOBAL: CARDARTLIB 0x100ea31c
-int *g_haarScratchB = (int *)0x0;
+// GLOBAL: DRAWCARDLIB 0x10124540
+int *g_haarScratchB;
 
 // GLOBAL: CARDARTLIB 0x100ea320
-int *g_haarScratchA = (int *)0x0;
+// GLOBAL: DRAWCARDLIB 0x10124544
+int *g_haarScratchA;
 
 // GLOBAL: CARDARTLIB 0x10117100
 // GLOBAL: DRAWCARDLIB 0x10152430
@@ -171,7 +178,7 @@ void *g_errorDiffusionDeltaTablePtrs[0x41];
 
 // GLOBAL: CARDARTLIB 0x101221e8
 // GLOBAL: DRAWCARDLIB 0x10124538
-undefined4 global_color_depth = 0x00000000;
+undefined4 global_color_depth;
 
 // FUNCTION: CARDARTLIB 0x1000570f
 // FUNCTION: DRAWCARDLIB 0x10001cbf

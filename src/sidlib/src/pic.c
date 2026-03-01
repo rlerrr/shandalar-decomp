@@ -102,7 +102,7 @@ DIBSurface *global_dibSurface = &DAT_100f23b0;
 
 // GLOBAL: DRAWCARDLIB 0x100f35a0
 // GLOBAL: DECKDLL 0x10105730
-void (__cdecl *rpbits_stream_refill)() = (void (__cdecl *)())0x0;
+void (__cdecl *rpbits_stream_refill)();
 
 // GLOBAL: DRAWCARDLIB 0x1002252c
 // GLOBAL: DECKDLL 0x1003a844
@@ -122,23 +122,23 @@ char s_rb_10022544[] = "rb";
 
 // GLOBAL: DRAWCARDLIB 0x100f2394
 // GLOBAL: DECKDLL 0x1010531c
-int DAT_100f2394 = 0x00000000;
+int DAT_100f2394;
 
 // GLOBAL: DRAWCARDLIB 0x100f239c
 // GLOBAL: DECKDLL 0x10105324
-undefined4 global_pcx_lineNum = 0x00000000;
+undefined4 global_pcx_lineNum;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a0
 // GLOBAL: DECKDLL 0x10105328
-int global_pcxFileDescriptor = 0x00000000;
+int global_pcxFileDescriptor;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a4
 // GLOBAL: DECKDLL 0x1010532c
-undefined4 rpbits_file_descriptor = 0x00000000;
+undefined4 rpbits_file_descriptor;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a8
 // GLOBAL: DECKDLL 0x10105330
-undefined4 _DAT_100f23a8 = 0x00000000;
+undefined4 _DAT_100f23a8;
 
 // GLOBAL: DRAWCARDLIB 0x100f33a0
 // GLOBAL: DECKDLL 0x10105530

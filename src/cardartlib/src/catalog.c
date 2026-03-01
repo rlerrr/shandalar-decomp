@@ -10,18 +10,23 @@
 #include "assert.h"
 
 // GLOBAL: CARDARTLIB 0x10032adc
-undefined4 DAT_10032adc = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x1003a9ac
+undefined4 DAT_10032adc;
 
 // GLOBAL: CARDARTLIB 0x100ea098
-undefined4 DAT_100ea098 = 0x00000000;
+// GLOBAL: DRAWCARDLIB 0x100f1f68
+undefined4 DAT_100ea098;
 
 // GLOBAL: CARDARTLIB 0x1001d108
+// GLOBAL: DRAWCARDLIB 0x10026974
 undefined4 DAT_1001d108 = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001e11c
+// GLOBAL: DRAWCARDLIB 0x100223fc
 undefined4 DAT_1001e11c = 0x00000001;
 
 // GLOBAL: CARDARTLIB 0x1001e120
+// GLOBAL: DRAWCARDLIB 0x10022400
 undefined4 DAT_1001e120 = 0x00000002;
 
 // GLOBAL: CARDARTLIB 0x101221d0
@@ -29,32 +34,41 @@ undefined4 DAT_1001e120 = 0x00000002;
 CRITICAL_SECTION global_critical_section_for_catalog;
 
 // GLOBAL: CARDARTLIB 0x10032ae8
+// GLOBAL: DRAWCARDLIB 0x1003a9b8
 int DAT_10032ae8[0x80];
 
 extern unsigned char g_defaultPalette256[0x200];
 
 // GLOBAL: CARDARTLIB 0x1001d12c
+// GLOBAL: DRAWCARDLIB 0x10026998
 char s_D__Newmagic_sources_NedCard_Cata_1001d12c[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
 
 // GLOBAL: CARDARTLIB 0x1001d1b4
+// GLOBAL: DRAWCARDLIB 0x10026a20
 char s_D__Newmagic_sources_NedCard_Cata_1001d1b4[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
 
 // GLOBAL: CARDARTLIB 0x1001d10c
+// GLOBAL: DRAWCARDLIB 0x10026978
 char s_Too_many_open_Catalogs__Max__d_1001d10c[] = "Too many open Catalogs: Max %d\n";
 
 // GLOBAL: CARDARTLIB 0x1001d158
+// GLOBAL: DRAWCARDLIB 0x100269c4
 char s_Duplicate_short_name_found_in_ca_1001d158[] = "Duplicate short name found in catalogs\n%s entry %d and\n%s entry %d\nShortName value 0x%08lx";
 
 // GLOBAL: CARDARTLIB 0x1001e12c
+// GLOBAL: DRAWCARDLIB 0x1002240c
 char s_SmallArt_cat_1001e12c[] = "SmallArt.cat";
 
 // GLOBAL: CARDARTLIB 0x1001e13c
+// GLOBAL: DRAWCARDLIB 0x1002241c
 char s_MedArt_cat_1001e13c[] = "MedArt.cat";
 
 // GLOBAL: CARDARTLIB 0x1001e148
+// GLOBAL: DRAWCARDLIB 0x10022428
 char s__lf_1001e148[] = "\n";
 
 // GLOBAL: CARDARTLIB 0x1001d154
+// GLOBAL: DRAWCARDLIB 0x100269c0
 char s_rb_1001d154[] = "rb";
 
 // SIZE 0xc
@@ -76,6 +90,7 @@ typedef struct Catalog {
 STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 
 // GLOBAL: CARDARTLIB 0x10117290
+// GLOBAL: DRAWCARDLIB 0x100f2e30
 Catalog DAT_10117290[5];
 
 uint Catalog_MakeKeyFromPath(const char *path);
