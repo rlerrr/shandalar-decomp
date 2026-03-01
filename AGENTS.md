@@ -30,6 +30,12 @@ These instructions apply to the entire repository.
 - `register` on variables is ignored.  If a "variable" doesn't get written to the stack it's not actually a variable.
 - `imul` and `idiv` are aggressively avoided when multiplying and dividing by constants.  "Weird" math is probably multiplying or dividing by a non-power-of-2 constant.
 
+## Matching Tips from Ghidra output
+- Ghidra is pretty cavalier about restructuring control flow in a way that makes matching difficult:
+  - if/else blocks are frequently swapped.  An inverted conditional jump instruction followed by a large difference is a dead giveaway of this.
+  - Early returns are sometimes swapped for large if blocks.
+- Ghidra likes to convert `mov eax {literal}; jmp;` to `returnVal = {literal}; jmp;`, inventing a return variable that doesn't exist.
+
 ## Build
 - Build the `cardartlib` target with: `nmake cardartlib`
 

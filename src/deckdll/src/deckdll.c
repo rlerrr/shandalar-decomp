@@ -377,14 +377,14 @@ typedef struct PairIntPtr_t
 
 typedef struct Sound_t
 { // very little idea what any of these fields do.
-  int field_0;
-  int field_4;
-  int field_8;
-  int field_C;
-  int field_10;
-  int field_14;
-  int field_18;
-  int field_1C;
+  int volume; // 0x00
+  int sampleRate; // 0x04
+  int pan; // 0x08
+  int field_C; // 0x0c
+  int field_10; // 0x10
+  int field_14; // 0x14
+  int loadId; // 0x18
+  int flags; // 0x1c
 } Sound;
 
 enum SoundFn
@@ -2259,7 +2259,7 @@ sound_init(const char *path, int num)
     return;
 
   memset(&snd, 0, sizeof(Sound));
-  snd.field_0 = 400;
+  snd.volume = 400;
 
   sound_load(path, num, &snd);
 
@@ -2342,11 +2342,11 @@ play_sound(int a1, int a2, int a3, int a4)
     return;
 
   memset(&snd, 0, sizeof(Sound));
-  snd.field_0 = 4 * a2;
-  snd.field_4 = 22050 * a3 / 100;
-  snd.field_8 = 4 * a4;
-  snd.field_1C &= ~1;
-  snd.field_1C &= ~10;
+  snd.volume = 4 * a2;
+  snd.sampleRate = 22050 * a3 / 100;
+  snd.pan = 4 * a4;
+  snd.flags &= ~1;
+  snd.flags &= ~10;
 
   (global_sound_fns[SND_PlaySnd])(a1, &snd);
 }
@@ -2361,10 +2361,10 @@ play_music(int a1, int a2, int a3)
     return;
 
   memset(&snd, 0, sizeof(Sound));
-  snd.field_0 = 4 * a2;
-  snd.field_4 = 22050;
-  snd.field_8 = 4 * a3;
-  snd.field_1C |= 1;
+  snd.volume = 4 * a2;
+  snd.sampleRate = 22050;
+  snd.pan = 4 * a3;
+  snd.flags |= 1;
 
   (global_sound_fns[SND_PlaySnd])(a1, &snd);
 }

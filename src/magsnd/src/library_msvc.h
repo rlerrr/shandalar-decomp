@@ -24,6 +24,8 @@
 // LIBRARY: MAGSND 0x10005B80 SYMBOL
 // _DllMain@12
 
+// GLOBAL: MAGSND 0x10008590
+// __pRawDllMain
 
 #endif
 

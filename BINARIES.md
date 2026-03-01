@@ -33,7 +33,7 @@
 * MAGVID.DLL `md5: 5a6bd7bb72db815210e1e575b1c19eb3`
 * STATWIN.DLL `MD5: 7d4310510608ea0d91b2b1feab93a4cd`
 
-#### Manalink 1.3 (Patched via mtg_13us.exe)
+#### Manalink 1.3 -- Patched via mtg_13us.exe/[mtg_13us.zip](https://archive.org/details/score54cd)
 * cardartlib.dll `md5: C0D4000DD51613A213DEAD84E92911F8`
 * CdTools.dll `md5: 646B6AD6F55171D43B3B2860BA69BF78`
 * DECK.EXE `md5: 2551E5F72A7B776BC7FB23A13753C19F`
@@ -44,9 +44,6 @@
 * Manalink.exe `md5: DAC6D638FA91C049913B7861DAEEE3E9`
 * ManalinkInterface.dll `md5: 3980049A8E5B8EC7AD39CF89810283D5`
 * shandalar.exe `md5: 4CED8EC9392BE23AF6670E28ECB373DE`
-
-#### Manalink 1.3 (From mtg_13us.zip)
-* shandalar.exe `md5: CED8EC9392BE23AF6670E28ECB373DE`
 
 #### ["Shandalar 2015"](https://github.com/ShandalarMagic/Shandalar)
 * CardArtLib.dll `md5: 8AA469B5B80B377CC8AFCA4C7978EBDB`

@@ -17,6 +17,14 @@ typedef int (__stdcall code)();
 typedef struct SndInstance SndInstance;
 typedef struct SndDuplicateBufferEntry SndDuplicateBufferEntry;
 
+//Why on earth is this a thing?
+#define MAGSND_DELETE(toDelete) \
+do { \
+  void * tmp1 = toDelete; \
+  void * tmp2 = tmp1; \
+  operator_delete(tmp2); \
+} while(false);
+
 struct SndDuplicateBufferEntry {
   LPDIRECTSOUNDBUFFER buffer; /* 0x000 */
   int reserved1;              /* 0x004 */
@@ -31,12 +39,12 @@ struct SndInstance {
   int slotIndex;           /* 0x010 */
   int loadId;              /* 0x014 */
   int activeMarkerIndex;   /* 0x018 */
-  byte pad_01c[0x30 - 0x1c];
+  MMCKINFO mmck;        /* 0x01c */
   uint markerCount;        /* 0x030 */
   SndInstance *markers[0x11];     /* 0x034 */
   WAVEFORMATEX waveFmt;   /* 0x078 (18 bytes) */
   unsigned short pad_08a;  /* 0x08a */
-  int blockBytes;          /* 0x08c */
+  uint blockBytes;          /* 0x08c */
   int blockScale;          /* 0x090 */
   int blockCount;          /* 0x094 */
   byte pad_098[0xa0 - 0x98];
@@ -55,7 +63,7 @@ struct SndInstance {
   int mmioBaseOffset;          /* 0x1e0 */
   uint ringCursorSavedBytes;   /* 0x1e4 */
   int pan;                     /* 0x1e8 */
-  int playbackRateHz;          /* 0x1ec */
+  int sampleRate;          /* 0x1ec */
   int volume;                  /* 0x1f0 */
   SndInstance *updatePrev;     /* 0x1f4: used by AddToUpdateList/RemoveFromUpdateList */
   SndInstance *updateNext;     /* 0x1f8 */
@@ -64,10 +72,8 @@ struct SndInstance {
 };
 STATIC_ASSERT(sizeof(SndInstance) == 0x204, SndInstance_wrong_size);
 
-undefined4 __cdecl InitSnd(int param_1, undefined4 param_2, byte param_3);
 void __cdecl ReleaseSnd(void);
-undefined4 __cdecl GetSndHWND(void);
-int __cdecl LoadSnd(LPSTR param_1, int param_2, Sound *param_3);
+int __cdecl LoadSnd(LPSTR param_1, int slot, Sound *param_3);
 undefined4 __cdecl UnloadSnd(int param_1);
 undefined4 __cdecl UnloadAllSnds(void);
 undefined4 __cdecl PlaySnd(int slot, Sound *sound);
@@ -107,13 +113,13 @@ void __cdecl CloseMmioAndFreeSource(SndInstance *snd);
 undefined4 __cdecl LoadFromFile(char *filename, SndInstance **outSnd);
 undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4 scratch);
 undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample);
-undefined4 __cdecl PrimeAviAudio(undefined4 *snd);
+undefined4 __cdecl PrimeAviAudio(SndInstance *snd, int unused);
 undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefined4 scratch);
 void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample);
 int __cdecl MmioTellFromInfo(MMIOINFO *info);
-undefined4 __cdecl LoadWaveFromFileHandle(FILE *file,int *outSource);
+undefined4 __cdecl LoadWaveFromFileHandle(FILE *file, SndInstance **outSnd);
 undefined4 __cdecl FindRiffChunk(FILE *file,int riffType,long chunkOffset,uint chunkSize);
-SndInstance * __cdecl FUN_10005480(int *sndData, undefined4 aviStream, undefined4 *streamInfo, undefined4 waveFormatTag);
+SndInstance * __cdecl CreateSndInstance(IDirectSound *dSound,DWORD dwBufferBytes,WAVEFORMATEX *wfxFormat,DWORD dwFlags);
 undefined4 __cdecl DestroySndInstance(SndInstance *snd);
 void * __cdecl operator_new(unsigned int size);
 void __cdecl operator_delete(void *p);
@@ -140,10 +146,10 @@ double g_sndTimeDiv_22050 = 22.05;
 double g_sndTimeDiv_11025 = 11.025;
 
 // GLOBAL: MAGSND 0x10007040
-DSBUFFERDESC g_primaryDsDesc;
+DSBUFFERDESC g_primaryDsDesc = {20, 1, 0, 0, NULL};
 
 // GLOBAL: MAGSND 0x10007058
-WAVEFORMATEX g_primaryWaveFormat;
+WAVEFORMATEX g_primaryWaveFormat = {1, 2, 22050, 88200, 4, 16, 0};
 
 // GLOBAL: MAGSND 0x1000708C
 char g_fileModeRb[] = "rb";
@@ -204,17 +210,14 @@ uint g_sndTimeSampleIndex = 0x00000000;
 // GLOBAL: MAGSND 0x10007080
 undefined4 g_updatePeriodMs = 0x00000021;
 
-// GLOBAL: MAGSND 0x10007090
-undefined4 DAT_10007090 = 0x00000000;
-
 // GLOBAL: MAGSND 0x100070A0
 LPDIRECTSOUNDBUFFER g_primaryDsBuffer;
 
 // GLOBAL: MAGSND 0x100084E8
-undefined4 g_sndHwnd = 0x00000000;
+HWND g_sndHwnd = 0x00000000;
 
 // GLOBAL: MAGSND 0x100084F0
-IDirectSound *g_directSound = (int *)0x0;
+IDirectSound *g_directSound = NULL;
 
 // GLOBAL: MAGSND 0x100084F4
 undefined4 g_updateTimerId = 0x00000000;
@@ -222,11 +225,8 @@ undefined4 g_updateTimerId = 0x00000000;
 // GLOBAL: MAGSND 0x100084F8
 TIMECAPS g_timeCaps = {0};
 
-// GLOBAL: MAGSND 0x10008590
-code *DAT_10008590 = (code *)0x0;
-
 // FUNCTION: MAGSND 0x10001000
-undefined4 __cdecl InitSnd(int param_1,undefined4 param_2,uint param_3)
+undefined4 __cdecl InitSnd(HWND param_1,undefined4 param_2,uint param_3)
 {
   struct {
     HRESULT local_8;
@@ -288,7 +288,7 @@ void ReleaseSnd(void)
     StopUpdateTimer();
   }
   g_directSound->lpVtbl->Release(g_directSound);
-  g_directSound = (int *)0x0;
+  g_directSound = NULL;
   g_sndHwnd = 0;
   g_sndRefCount = 0;
   DeleteCriticalSection(&g_sndCs);
@@ -296,10 +296,8 @@ void ReleaseSnd(void)
 }
 
 // FUNCTION: MAGSND 0x100011E8
-undefined4 GetSndHWND(void)
-
+HWND GetSndHWND(void)
 {
-                    /* 0x11e8  25  GetSndHWND */
   return g_sndHwnd;
 }
 
@@ -308,7 +306,7 @@ int __cdecl LoadSnd(LPSTR path,int slot,Sound *sound)
 {
   int result;
 
-  if ((sound != (Sound *)0) && ((sound->field_1C >> 4 & 1U) != 0) && (slot != 0)) {
+  if ((sound != (Sound *)0) && ((sound->flags >> 4 & 1U) != 0) && (slot != 0)) {
     if (0x10f < slot || slot < 0x100) {
       return 5;
     }
@@ -324,18 +322,18 @@ int __cdecl LoadSnd(LPSTR path,int slot,Sound *sound)
       return 0;
     }
   }
-  if ((sound != (Sound *)0) && ((sound->field_1C >> 2 & 1U) != 0)) {   
-    if ((sound->field_1C >> 4 & 1U) != 0) {
+  if ((sound != (Sound *)0) && ((sound->flags >> 2 & 1U) != 0)) {   
+    if ((sound->flags >> 4 & 1U) != 0) {
       result = LoadAviAudioStream((void *)path,(&g_sndSlots[slot]),0);
       if (result != 0) {
         g_sndSlots[slot] = (SndInstance *)0;
         return result;
       }
-      if ((sound->field_1C >> 5 & 1U) != 0) {
+      if ((sound->flags >> 5 & 1U) != 0) {
         g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 0x40;
       }
       else {
-        ((undefined4 (__cdecl *)(undefined4 *,int))PrimeAviAudio)((undefined4 *)g_sndSlots[slot],0);
+        PrimeAviAudio(g_sndSlots[slot],0);
         g_sndSlots[slot]->flags2 &= ~0x40u;
       }
       g_sndLoadSerial += 1;
@@ -363,8 +361,8 @@ int __cdecl LoadSnd(LPSTR path,int slot,Sound *sound)
   EnterCriticalSection(&g_sndCs);
   AddToActiveList(g_sndSlots[slot]);
   g_sndSlots[slot]->slotIndex = slot;
-  if ((sound != (Sound *)0) && (sound->field_18 != 0)) {
-    g_sndSlots[slot]->loadId = sound->field_18;
+  if ((sound != (Sound *)0) && (sound->loadId != 0)) {
+    g_sndSlots[slot]->loadId = sound->loadId;
   }
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -425,32 +423,32 @@ undefined4 __cdecl PlaySnd(int slot,Sound *sound)
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  unused = FUN_10001701(g_sndSlots[slot],(int *)sound);
+  unused = FUN_10001701(g_sndSlots[slot], sound);
   g_sndSlots[slot]->lruCounter++;
   LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
+#define ONE 1
+
 // FUNCTION: MAGSND 0x10001701
-int __cdecl FUN_10001701(SndInstance *snd,int *playConfig)
+int __cdecl FUN_10001701(SndInstance *snd, Sound *sound)
 
 {
   struct {
-    int freqValue;
-    LPDIRECTSOUNDBUFFER dsBuffer;
-    int sampleRate;
-    int panValue;
-    uint playFlags;
-    int result;
+    int result2; // ebp - 0x1c
+    int freqValue; // ebp - 0x18
+    LPDIRECTSOUNDBUFFER dsBuffer; // ebp - 0x14
+    uint playFlags; // ebp - 0x10
+    int panValue; // ebp - 0xc
+    int sampleRate; // ebp - 0x8
+    int result; // ebp - 0x4
   } s;
 
-  s.dsBuffer = snd->dsBuffer;
+  s.playFlags = 0;
   s.freqValue = 0;
   s.sampleRate = 0;
-  s.panValue = 0;
-  s.playFlags = 0;
-  s.result = 0;
-  if (((snd->flags2 >> 1) & 1) != 0) {
+  if (((snd->flags2 >> ONE) & 1) != 0) {
     if ((snd->flags & 1) != 0) {
       FUN_100026d1(snd->slotIndex);
     }
@@ -465,6 +463,7 @@ int __cdecl FUN_10001701(SndInstance *snd,int *playConfig)
       g_updateTimerUsers = g_updateTimerUsers + 1;
     }
     s.playFlags |= 1;
+    s.dsBuffer = snd->dsBuffer;
     if (((snd->flags >> 5) & 1) == 0) {
       s.result = FUN_10003656(snd);
       if (s.result != 0) {
@@ -474,72 +473,74 @@ int __cdecl FUN_10001701(SndInstance *snd,int *playConfig)
     }
   }
   else {
-    if ((playConfig == (int *)0x0) || (((uint)playConfig[7] >> 1 & 1) == 0)) {
+    if ((sound == NULL) || ((sound->flags >> 1 & 1) == 0)) {
       s.result = AcquireFreeDsBuffer((int)snd,(int *)&s.dsBuffer);
       if (s.result != 0) {
         return s.result;
       }
-      snd->dsBuffer = s.dsBuffer;
     }
     else {
       s.dsBuffer = snd->dsBuffer;
     }
   }
-  if (playConfig == (int *)0x0) {
-    s.freqValue = 0;
-    s.sampleRate = snd->waveFmt.nSamplesPerSec;
-    s.panValue = 0;
-    snd->volume = 400;
-    snd->playbackRateHz = s.sampleRate;
-    snd->pan = 0;
-  }
-  else {
-    int targetVolume;
-
-    targetVolume = *playConfig;
-    if (targetVolume > 400) {
-      targetVolume = 400;
+  if (sound != NULL) { 
+    s.freqValue = sound->volume;
+    if (s.freqValue > 400) {
+      s.freqValue = 400;
     }
-    snd->volume = targetVolume;
-    s.freqValue = (targetVolume * 5 + -2000) * 2;
-    if (playConfig[1] == 0) {
+    snd->volume = s.freqValue;
+    s.freqValue = (s.freqValue - 400) * 10;
+    if (sound->sampleRate != 0) {
+      s.sampleRate = sound->sampleRate;      
+    }
+    else {
       s.sampleRate = snd->waveFmt.nSamplesPerSec;
     }
-    else {
-      s.sampleRate = playConfig[1];
+    snd->sampleRate = s.sampleRate;
+    if (sound->pan != 0) {
+      s.panValue = sound->pan;
     }
-    snd->playbackRateHz = s.sampleRate;
-    if (playConfig[2] == 0) {
+    else {
       s.panValue = 0;
-    }
-    else {
-      s.panValue = playConfig[2];
     }
     snd->pan = s.panValue;
     s.panValue = s.panValue * 10;
-    if ((*(byte *)(playConfig + 7) & 1) != 0) {
+    if ((sound->flags & 1) != 0) {
       s.playFlags |= 1;
-      snd->flags2 |= 1;
+      snd->flags2 = (int)snd->flags2 | 1;
     }
-    if (((uint)playConfig[7] >> 3 & 1) != 0) {
-      snd->flags2 |= 4;
+    if ((sound->flags >> 3 & 1) != 0) {
+      snd->flags2 = (int)snd->flags2 | 4;
     }
+  }
+  else {
+    s.freqValue = 0;
+    snd->volume = 400;
+    s.sampleRate = snd->waveFmt.nSamplesPerSec;
+    snd->sampleRate = s.sampleRate;
+    s.panValue = 0;
+    snd->pan = 0;
   }
   s.dsBuffer->lpVtbl->SetVolume(s.dsBuffer,s.freqValue);
   s.dsBuffer->lpVtbl->SetFrequency(s.dsBuffer,s.sampleRate);
   s.dsBuffer->lpVtbl->SetPan(s.dsBuffer,s.panValue);
   s.dsBuffer->lpVtbl->SetCurrentPosition(s.dsBuffer,0);
-  s.result = s.dsBuffer->lpVtbl->Play(s.dsBuffer,0,0,s.playFlags);
-  if (s.result == 0) {
-    snd->flags |= 1;
-    snd->flags &= 0xffffffdf;
-    return 0;
+  if (s.dsBuffer->lpVtbl->Play(s.dsBuffer,0,0,s.playFlags)) {
+    s.result2 = 1;
+  } else {
+    s.result2 = 0;
   }
-  return 9;
+  if (s.result2 != 0) {
+    return 9;
+  } 
+
+  snd->flags = (int)snd->flags | 1;
+  snd->flags &= 0xffffffdf;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10001A1F
-int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *param_3)
+int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *sound)
 
 {
   struct {
@@ -578,32 +579,32 @@ int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *param_3)
     }
   }
   g_sndSlots[slot]->slotIndex = slot;
-  if (param_3 != (Sound *)0) {
-    s.volume = param_3->field_0;
+  if (sound != (Sound *)0) {
+    s.volume = sound->volume;
     g_sndSlots[slot]->volume = s.volume;
     if (400 < s.volume) {
       s.volume = 400;
     }
-    s.volume = (s.volume * 5 - 2000) * 2;
-    if (param_3->field_4 != 0) {
-      s.nSamplesPerSec = param_3->field_4;
+    s.volume = (s.volume - 400) * 10;
+    if (sound->sampleRate != 0) {
+      s.nSamplesPerSec = sound->sampleRate;
     }
     else {
       s.nSamplesPerSec = (int)g_sndSlots[slot]->waveFmt.nSamplesPerSec;
     }
-    g_sndSlots[slot]->playbackRateHz = s.nSamplesPerSec;
+    g_sndSlots[slot]->sampleRate = s.nSamplesPerSec;
 
-    if (param_3->field_8 != 0) {
-      s.pan = param_3->field_8;      
+    if (sound->pan != 0) {
+      s.pan = sound->pan;      
     } else {
       s.pan = 0;
     }
     g_sndSlots[slot]->pan = s.pan;
     s.pan = s.pan * 10;
-    if (param_3->field_1C & 1) {
+    if (sound->flags & 1) {
       g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 1;
     }
-    if (((uint)((int *)param_3)[7] >> 3 & 1) != 0) {
+    if ((sound->flags >> 3 & 1) != 0) {
       g_sndSlots[slot]->flags2 = (int)g_sndSlots[slot]->flags2 | 4;
     }
   }
@@ -611,7 +612,7 @@ int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *param_3)
     s.volume = 0;
     g_sndSlots[slot]->volume = 400;
     s.nSamplesPerSec = (int)g_sndSlots[slot]->waveFmt.nSamplesPerSec;
-    g_sndSlots[slot]->playbackRateHz = s.nSamplesPerSec;
+    g_sndSlots[slot]->sampleRate = s.nSamplesPerSec;
     s.pan = 0;
     g_sndSlots[slot]->pan = s.pan;
   }
@@ -621,7 +622,7 @@ int __cdecl PlaySndFile(LPSTR filename,int slot,Sound *param_3)
   g_sndSlots[slot]->volume = s.volume;
 
   g_sndSlots[slot]->dsBuffer->lpVtbl->SetFrequency(g_sndSlots[slot]->dsBuffer,s.nSamplesPerSec);
-  g_sndSlots[slot]->playbackRateHz = s.nSamplesPerSec;
+  g_sndSlots[slot]->sampleRate = s.nSamplesPerSec;
 
   g_sndSlots[slot]->dsBuffer->lpVtbl->SetPan(g_sndSlots[slot]->dsBuffer,s.pan);
   g_sndSlots[slot]->pan = s.pan;
@@ -641,7 +642,7 @@ int __cdecl LoadMarkerInstance(SndInstance *parent,int markerIndex)
   struct {
     SndInstance **markerSlot;
     int markerMetaIndex;
-    char *markerMeta;
+    SndInstance **markerMeta;
     int result;
     int markerStartSample;
   } s;
@@ -657,7 +658,7 @@ int __cdecl LoadMarkerInstance(SndInstance *parent,int markerIndex)
     return s.result;
   }
   
-  s.markerStartSample = *(int *)(s.markerMeta + 0x14);
+  s.markerStartSample = (*s.markerMeta)->loadId;
   s.result = PrimeDsBufferFromSource(*s.markerSlot,s.markerStartSample);
   if (s.result != 0) {
     return s.result;
@@ -674,18 +675,17 @@ int __cdecl LoadMarkerInstance(SndInstance *parent,int markerIndex)
 
 // FUNCTION: MAGSND 0x10001F6F
 int __cdecl PrimeMarkerInstance(SndInstance *parent,int markerIndex)
-
 {
   struct {
     int markerMetaIndex;
     SndInstance *markerInstance;
-    char *markerMeta;
-    int markerStartSample;
+    SndInstance *markerMeta;
     int result;
+    int markerStartSample;
   } s;
 
-  s.markerStartSample = 0;
   s.result = 0;
+  s.markerStartSample = 0;
   s.markerMetaIndex = 0;
 
   if (((parent->flags >> 6) & 1) != 0) {
@@ -694,28 +694,27 @@ int __cdecl PrimeMarkerInstance(SndInstance *parent,int markerIndex)
     }
   }
  
-  s.markerMeta = (char *)parent->markers[0xd] + (markerIndex * 3 - 3) * 8;
+  s.markerMeta = parent->markers[(markerIndex - 1) * 6];
   s.markerInstance = parent->markers[markerIndex];
-  s.markerStartSample = *(int *)(s.markerMeta + 0x14);
+  s.markerStartSample = s.markerMeta->loadId;
   s.result = PrimeDsBufferFromSource(s.markerInstance,s.markerStartSample);
   if (s.result != 0) {
     return s.result;
   }
 
-  s.markerInstance->flags |= 0x20;
+  s.markerInstance->flags = (int)s.markerInstance->flags | 0x20;
   s.markerInstance->flags &= 0xfffffffb;
   s.markerInstance->flags &= 0xffffffef;
   s.markerInstance->ringCursorBytes = 0;
   s.markerInstance->flags2 = (parent->flags2 & 1) | (s.markerInstance->flags2 & 0xfffffffe);
   s.markerInstance->volume = parent->volume;
-  s.markerInstance->playbackRateHz = parent->playbackRateHz;
+  s.markerInstance->sampleRate = parent->sampleRate;
   s.markerInstance->pan = parent->pan;
   return 0;
 }
 
 // FUNCTION: MAGSND 0x1000208C
 void __cdecl SwapActiveInstances(int *activeInstanceSlot,int *newInstanceSlot)
-
 {
   struct {
     int i;
@@ -735,7 +734,7 @@ void __cdecl SwapActiveInstances(int *activeInstanceSlot,int *newInstanceSlot)
     *(undefined4 *)(s.old + 0x38 + s.i * 4) = 0;
   }
   *(int *)(*activeInstanceSlot + 0x10) = *(int *)(s.old + 0x10);
-  *(uint *)(s.old + 8) = *(uint *)(s.old + 8) | 0x10;
+  *(uint *)(s.old + 8) = *(int *)(s.old + 8) | 0x10;
   *(uint *)(*activeInstanceSlot + 8) = *(uint *)(*activeInstanceSlot + 8) & 0xffffffef;
   RemoveFromActiveList((SndInstance *)s.old);
   AddToActiveList((SndInstance *)*activeInstanceSlot);
@@ -743,48 +742,49 @@ void __cdecl SwapActiveInstances(int *activeInstanceSlot,int *newInstanceSlot)
 }
 
 // FUNCTION: MAGSND 0x1000215C
-int __cdecl SetSndMarker(int slot,uint markerIndex)
-
+int __cdecl SetSndMarker(int slot, uint markerIndex)
 {
   struct {
     SndInstance *snd;
     int result;
-  } local;
+  } s;
 
-
-                    /* 0x215c  18  SetSndMarker */
+  s.result = 0;
   if ((slot > 0xff) || (slot < 0)) {
     return 5;
   }
 
   EnterCriticalSection(&g_sndCs);
-  local.snd = g_sndSlots[slot];
-  if (local.snd == (SndInstance *)0x0) {
+  s.snd = g_sndSlots[slot];
+  if (s.snd == (SndInstance *)0x0) {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if ((local.snd->markerCount == 0) || (local.snd->markerCount <= markerIndex)) {
+  if ((s.snd->markerCount == 0) || (s.snd->markerCount < markerIndex)) {
     LeaveCriticalSection(&g_sndCs);
     return 5;
   }
-  if (local.snd->markers[markerIndex] != (void *)0x0) {
-    local.result = PrimeMarkerInstance(local.snd,markerIndex);
+  if (s.snd->markers[markerIndex] != (void *)0x0) {
+    s.result = PrimeMarkerInstance(s.snd,markerIndex);
   }
   else {
-    local.result = LoadMarkerInstance(local.snd,markerIndex);
+    s.result = LoadMarkerInstance(s.snd,markerIndex);
   }
   LeaveCriticalSection(&g_sndCs);
-  return local.result;
+  return s.result;
 }
 
 // FUNCTION: MAGSND 0x10002249
 int __cdecl PlaySndMarker(int slot,uint markerIndex)
-
 {
-  int result;
-  SndInstance *snd;
-  SndInstance *marker;
-  int volume;
+  struct {
+    SndInstance *marker; // ebp - 0x2c
+    SndInstance *snd; // ebp - 0x28
+    int result; // ebp - 0x24
+    Sound sound; // ebp - 0x20
+  } s;
+
+  s.result = 0;
 
   if ((slot > 0xff) || (slot < 0)) {
     return 5;
@@ -793,60 +793,62 @@ int __cdecl PlaySndMarker(int slot,uint markerIndex)
     return 5;
   }
   EnterCriticalSection(&g_sndCs);
-  snd = g_sndSlots[slot];
-  if (snd == (SndInstance *)0x0) {
+  s.snd = g_sndSlots[slot];
+  if (s.snd == (SndInstance *)0x0) {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if ((snd->markerCount == 0) || (snd->markerCount <= markerIndex)) {
+  if ((s.snd->markerCount == 0) || (s.snd->markerCount < markerIndex)) {
     LeaveCriticalSection(&g_sndCs);
     return 5;
   }
-  marker = snd->markers[markerIndex];
-  if (marker == (SndInstance *)0x0) {
+  s.marker = s.snd->markers[markerIndex];
+  if (s.marker == (SndInstance *)0x0) {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if (((marker->flags2 >> 5) & 1) == 0) {
+  if (((s.marker->flags >> 5) & 1) == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
 
-  if ((snd->flags & 1) != 0) {
+  if ((s.snd->flags & 1) != 0) {
     FUN_100026d1(slot);
   }
 
-  volume = snd->volume;
-  marker->volume = volume;
-  marker->playbackRateHz = snd->playbackRateHz;
-  marker->pan = snd->pan;
+  s.marker->volume = g_sndSlots[slot]->volume;
+  s.sound.volume = s.marker->volume;
+  s.marker->sampleRate = g_sndSlots[slot]->sampleRate;
+  s.sound.sampleRate = s.marker->sampleRate;
+  s.marker->pan  = g_sndSlots[slot]->pan;
+  s.sound.pan = s.marker->pan;
+  s.sound.flags = (s.marker->flags2 & 1) | (s.sound.flags & 0xfffffffe);
 
-  result = FUN_10001701(marker,&volume);
-  if (result == 0) {
-    snd->flags |= 0x40;
-    snd->activeMarkerIndex = markerIndex - 1;
-    snd->flags |= 1;
+  s.result = FUN_10001701(s.marker, &s.sound);
+  if (s.result == 0) {
+    g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 0x40;
+    g_sndSlots[slot]->activeMarkerIndex = markerIndex - 1;
+    g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 1;
   }
   LeaveCriticalSection(&g_sndCs);
-  return result;
+  return s.result;
 }
 
 // FUNCTION: MAGSND 0x1000246E
 undefined4 __cdecl StopSnd(int slot)
-
 {
   struct {
     int status;
-    int markerIndex;
+    SndDuplicateBufferEntry *duplicateBuffer;
+    int i;
     SndInstance *marker;
-    int *dupEntry;
-    uint i;
+    int markerIndex;
   } s;
   
-                     /* 0x246e  8  StopSnd */
   if ((0x10f < slot) || (slot < 0)) {
     return 5;
   }
+
   EnterCriticalSection(&g_sndCs);
   if (g_sndSlots[slot] == (SndInstance *)0x0) {
     LeaveCriticalSection(&g_sndCs);
@@ -859,15 +861,14 @@ undefined4 __cdecl StopSnd(int slot)
       LeaveCriticalSection(&g_sndCs);
       return 1;
     }
-    s.marker->flags |= 2;
+    s.marker->flags = (int)s.marker->flags | 2;
   }
   else {
     if (((g_sndSlots[slot]->flags2 >> 1) & 1) != 0) {
-      g_sndSlots[slot]->flags |= 2;
+      g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 2;
     }
     else {
-      s.status = (**(code **)(**(int **)((int)g_sndSlots[slot] + 0xbc) + 0x48))
-                       (*(undefined4 *)((int)g_sndSlots[slot] + 0xbc));
+      s.status = g_sndSlots[slot]->dsBuffer->lpVtbl->Stop(g_sndSlots[slot]->dsBuffer);
       if (s.status != 0) {
         LeaveCriticalSection(&g_sndCs);
         return 9;
@@ -875,28 +876,21 @@ undefined4 __cdecl StopSnd(int slot)
     }
   }
   if (((g_sndSlots[slot]->flags2 >> 1) & 1) == 0) {
-    for (s.i = 0; s.i < 0x10; s.i = s.i + 1) {
-      s.dupEntry = (int *)((int)g_sndSlots[slot] + s.i * 0xc + 0xc0);
-      if (*s.dupEntry == 0) {
+    for (s.i = 0; s.i < 0x10; s.i++) {
+      s.duplicateBuffer = &g_sndSlots[slot]->duplicateBuffers[s.i];      
+      if (s.duplicateBuffer->buffer != 0) {
+        s.status = s.duplicateBuffer->buffer->lpVtbl->Stop(s.duplicateBuffer->buffer);
+        if (s.status != 0) {
+          LeaveCriticalSection(&g_sndCs);
+          return 9;
+        }
+      }
+      else
         break;
-      }
-      s.status = (**(code **)(*(int *)*s.dupEntry + 0x48))(*s.dupEntry);
-      if (s.status != 0) {
-        LeaveCriticalSection(&g_sndCs);
-        return 9;
-      }
     }
+    g_sndSlots[slot]->flags &= ~1;
   }
-  else if (g_updateTimerUsers > 0) {
-    g_updateTimerUsers = g_updateTimerUsers - 1;
-    if (g_updateTimerUsers == 0) {
-      StopUpdateTimer();
-    }
-  }
-  g_sndSlots[slot]->flags &= ~1;
-  g_sndSlots[slot]->flags &= ~2;
-  g_sndSlots[slot]->flags |= 4;
-  g_sndSlots[slot]->flags &= ~0x20;
+
   LeaveCriticalSection(&g_sndCs);
   return 0;
 }
@@ -991,17 +985,17 @@ undefined4 PlayMidiFile(void)
 
 // FUNCTION: MAGSND 0x1000291E
 undefined4 __cdecl SetPitch(int slot,undefined4 pitchHz)
-
 {
   struct {
     LPLPDIRECTSOUNDBUFFER duplicatePtr;
     int index;
   } s;
 
-                    /* 0x291e  11  SetPitch */
+  s.duplicatePtr = 0;
   if ((0x10f < slot) || (slot < 0)) {
     return 5;
   }
+
   EnterCriticalSection(&g_sndCs);
   if (g_sndSlots[slot] == (SndInstance *)0x0) {
     LeaveCriticalSection(&g_sndCs);
@@ -1011,10 +1005,11 @@ undefined4 __cdecl SetPitch(int slot,undefined4 pitchHz)
   g_sndSlots[slot]->dsBuffer->lpVtbl->SetFrequency(g_sndSlots[slot]->dsBuffer,pitchHz);
   for (s.index = 0; s.index < 0x10; s.index = s.index + 1) {
     s.duplicatePtr = &g_sndSlots[slot]->duplicateBuffers[s.index].buffer;
-    if (*s.duplicatePtr == (LPDIRECTSOUNDBUFFER)0x0) {
-      break;
+    if (*s.duplicatePtr != (LPDIRECTSOUNDBUFFER)0x0) {
+      (*s.duplicatePtr)->lpVtbl->SetFrequency(*s.duplicatePtr,pitchHz);
     }
-    (*s.duplicatePtr)->lpVtbl->SetFrequency(*s.duplicatePtr,pitchHz);
+    else
+      break;
   }
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -1022,71 +1017,62 @@ undefined4 __cdecl SetPitch(int slot,undefined4 pitchHz)
 
 // FUNCTION: MAGSND 0x10002A24
 undefined4 GetPitch(void)
-
 {
-                    /* 0x2a24  12  GetPitch */
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10002A36
-/* WARNING: Removing unreachable block (ram,0x10002ab6) */
-
-undefined4 __cdecl SetVol(int param_1,uint param_2)
-
+undefined4 __cdecl SetVol(int slot,uint volume)
 {
   struct {
-    undefined4 result;
+    SndDuplicateBufferEntry *duplicateBuffer;
     int i;
-    int markerInst;
+    SndInstance *markerInst;
     int markerIndex;
   } s;
 
-                    /* 0x2a36  13  SetVol */
-  s.result = 0;
+  s.duplicateBuffer = 0;
 
-  if (param_1 > 0x10f) {
-    return 5;
-  }
-  if (param_1 < 0) {
+  if (slot > 0x10f || slot < 0) {
     return 5;
   }
   EnterCriticalSection(&g_sndCs);
-  if ((int)g_sndSlots[param_1] == 0) {
+  if ((int)g_sndSlots[slot] == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if (400 < param_2) {
-    param_2 = 400;
+  if (400 < volume) {
+    volume = 400;
   }
-  if (param_2 < 0) {
-    param_2 = 0;
+  if (volume < 0) {
+    volume = 0;
   }
 
-  if ((*(uint *)((int)g_sndSlots[param_1] + 4) >> 6 & 1) != 0) {
-    s.markerIndex = *(int *)((int)g_sndSlots[param_1] + 0x18);
-    s.markerInst = *(int *)((int)g_sndSlots[param_1] + s.markerIndex * 4 + 0x38);
+  if ((*(uint *)((int)g_sndSlots[slot] + 4) >> 6 & 1) != 0) {
+    s.markerIndex = g_sndSlots[slot]->activeMarkerIndex;
+    s.markerInst = g_sndSlots[slot]->markers[s.markerIndex + 1];
     if (s.markerInst == 0) {
       LeaveCriticalSection(&g_sndCs);
       return 1;
+    } else {
+      s.markerInst->volume = volume;
+      volume = (volume - 400) * 10;
+      s.markerInst->dsBuffer->lpVtbl->SetVolume(s.markerInst->dsBuffer, volume);
     }
-    *(uint *)(s.markerInst + 0x1f0) = param_2;
-    param_2 = (param_2 * 5 + -2000) * 2;
-    (**(code **)(**(int **)(s.markerInst + 0xbc) + 0x3c))
-              (*(undefined4 *)(s.markerInst + 0xbc),param_2);
   }
   else {
-    *(uint *)((int)g_sndSlots[param_1] + 0x1f0) = param_2;
-    *(uint *)((int)g_sndSlots[param_1] + 0x1f0) = param_2;
-    param_2 = (param_2 * 5 + -2000) * 2;
-    (**(code **)(**(int **)((int)g_sndSlots[param_1] + 0xbc) + 0x3c))
-              (*(undefined4 *)((int)g_sndSlots[param_1] + 0xbc),param_2);
+    g_sndSlots[slot]->volume = volume;
+    g_sndSlots[slot]->volume = volume;
+    volume = (volume - 400) * 10;
+    g_sndSlots[slot]->dsBuffer->lpVtbl->SetVolume(g_sndSlots[slot]->dsBuffer, volume);
   }
   for (s.i = 0; s.i < 0x10; s.i = s.i + 1) {
-    s.markerInst = *(int *)((int)g_sndSlots[param_1] + s.i * 0xc + 0xc0);
-    if (s.markerInst == 0) {
-      break;
+    s.duplicateBuffer = &g_sndSlots[slot]->duplicateBuffers[s.i];
+    if (s.duplicateBuffer->buffer != 0) {      
+      s.duplicateBuffer->buffer->lpVtbl->SetVolume(s.duplicateBuffer->buffer, volume);
     }
-    (**(code **)(*(int *)s.markerInst + 0x3c))(s.markerInst,param_2);
+    else
+    break;
   }
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -1136,22 +1122,18 @@ undefined4 __cdecl SetPan(int slot,int pan)
 
 // FUNCTION: MAGSND 0x10002D55
 undefined4 GetPan(void)
-
 {
-                    /* 0x2d55  16  GetPan */
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10002D67
 undefined4 UpdateSnd(void)
-
 {
   struct {
     SndInstance *node;
     SndInstance *next;
   } s;
   
-                     /* 0x2d67  17  UpdateSnd */
   if (DAT_1000706c != 0) {
     return 0xd;
   }
@@ -1176,39 +1158,36 @@ undefined4 UpdateSnd(void)
         }
       }
       else {
-        FUN_10003748((int)(s.node));
+        FUN_10003748(s.node);
       }
     }
   
-    if (((s.node->flags >> 2) & 1) != 0) {
-      if (((s.node->flags2 >> 2) & 1) != 0) {
-        s.next = s.node->activeNext;
-        UnloadSnd(s.node->slotIndex);
-        s.node = s.next;
-        continue;
-      }
+    if (((s.node->flags >> 2) & 1) != 0 && ((s.node->flags2 >> 2) & 1) != 0) {
+      s.next = s.node->activeNext;
+      UnloadSnd(s.node->slotIndex);
+      s.node = s.next;
     }
-    s.node = s.node->updateNext;
+    else
+      s.node = s.node->updateNext;
+
   }
   LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
+#pragma pack(push,4)
 // FUNCTION: MAGSND 0x10002EB5
-undefined4 __cdecl GetSndTime(int param_1,uint *param_2)
+undefined4 __cdecl GetSndTime(int param_1,uint *outSndTime)
 {
-  // TODO: this has QWORD alignment problems
-  struct  {
-    int64_t local_24;
-    uint local_1c;
+  struct {
+    unsigned long local_1c;
     SndInstance *local_18;
     uint local_14;
     double local_10;
     uint local_8;
-    undefined1 local_4 [4];
+    unsigned long local_4;
   } s;
 
-                     /* 0x2eb5  20  GetSndTime */
   if (0x10f < param_1 || param_1 < 0) {
     return 5;
   }
@@ -1218,7 +1197,7 @@ undefined4 __cdecl GetSndTime(int param_1,uint *param_2)
     return 1;
   }
   s.local_18 = g_sndSlots[param_1];
-  s.local_18->dsBuffer->lpVtbl->GetCurrentPosition(s.local_18->dsBuffer,&s.local_1c,s.local_4);
+  s.local_18->dsBuffer->lpVtbl->GetCurrentPosition(s.local_18->dsBuffer,&s.local_1c,&s.local_4);
   s.local_14 = s.local_18->timeBytes % s.local_18->dsDesc.dwBufferBytes;
   if (s.local_14 < s.local_1c) {
     s.local_18->timeBytes += (s.local_1c - s.local_14);
@@ -1234,19 +1213,18 @@ undefined4 __cdecl GetSndTime(int param_1,uint *param_2)
       s.local_18->timeEventCount++;
     }
   }
-  s.local_24 = s.local_18->timeBytes;
-  s.local_10 = s.local_24;
+  s.local_10 = (double)s.local_18->timeBytes;
   if (s.local_18->waveFmt.nAvgBytesPerSec == 0x15888) {
-    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_88200);
+    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_88200);
   }
   else if (s.local_18->waveFmt.nAvgBytesPerSec == 0xac44) {
-    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_44100);
+    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_44100);
   }
   else if (s.local_18->waveFmt.nAvgBytesPerSec == 0x5622) {
-    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_22050);
+    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_22050);
   }
   else if (s.local_18->waveFmt.nAvgBytesPerSec == 0x2b11) {
-    *param_2 = (uint)(long)(s.local_10 / g_sndTimeDiv_11025);
+    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_11025);
   }
   else {
     
@@ -1254,23 +1232,22 @@ undefined4 __cdecl GetSndTime(int param_1,uint *param_2)
     return 8;
   }
   g_sndTimeSamples[g_sndTimeSampleIndex].prevTime = g_lastSndTime;
-  g_sndTimeSamples[g_sndTimeSampleIndex].currTime = *param_2;
+  g_sndTimeSamples[g_sndTimeSampleIndex].currTime = *outSndTime;
   g_sndTimeSampleIndex = g_sndTimeSampleIndex + 1;
   g_sndTimeSampleIndex = g_sndTimeSampleIndex & 0xff;
-  if (*param_2 < g_lastSndTime) {
+  if (*outSndTime < g_lastSndTime) {
     LeaveCriticalSection(&g_sndCs);
     return 5;
   }
-  g_lastSndTime = *param_2;
+  g_lastSndTime = *outSndTime;
   LeaveCriticalSection(&g_sndCs);
   return 0;
 }
+#pragma pack(pop)
 
 // FUNCTION: MAGSND 0x1000314D
-undefined4 __cdecl GetSndState(int param_1,undefined4 *param_2)
-
+undefined4 __cdecl GetSndState(int param_1,undefined4 *outSndState)
 {
-                     /* 0x314d  22  GetSndState */
   if ((0x10f < param_1) || (param_1 < 0)) {
     return 5;
   }
@@ -1279,14 +1256,14 @@ undefined4 __cdecl GetSndState(int param_1,undefined4 *param_2)
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if ((*(byte *)((int)g_sndSlots[param_1] + 4) & 1) != 0) {
-    *param_2 = 1;
+  if ((g_sndSlots[param_1]->flags & 1) != 0) {
+    *outSndState = 1;
   }
-  else if (((*(uint *)((int)g_sndSlots[param_1] + 4) >> 3) & 1) != 0) {
-    *param_2 = 2;
+  else if (((g_sndSlots[param_1]->flags >> 3) & 1) != 0) {
+    *outSndState = 2;
   }
   else {
-    *param_2 = 0;
+    *outSndState = 0;
   }
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -1326,47 +1303,35 @@ undefined4 __cdecl IsSndLoaded(int param_1,undefined4 *param_2)
 
 // FUNCTION: MAGSND 0x100032AD
 undefined4 __cdecl GetLRUSnd(int *param_1,int param_2,int param_3)
-
 {
   struct {
     int local_10;
-    int local_c;
+    int slot;
     uint local_8;
     int local_4;
   } s;
   
-                    /* 0x32ad  27  GetLRUSnd */
   s.local_4 = 0;
   s.local_8 = -1;
-  if (param_3 == 0) {
-    s.local_c = 0;
-    param_3 = 0xff;
+  if (param_3 != 0 && param_3 > param_2 && param_3 < 0x100) {
+    s.slot = param_2;
   }
   else {
-    if (param_3 <= param_2) {
-      s.local_c = 0;
-      param_3 = 0xff;
-    }
-    else {
-      if (param_3 < 0x100) {
-        s.local_c = param_2;
-      }
-      else {
-        s.local_c = 0;
-        param_3 = 0xff;
-      }
-    }
+    s.slot = 0;
+    param_3 = 0xff;
   }
+
   EnterCriticalSection(&g_sndCs);
-  for (; s.local_c < param_3; s.local_c = s.local_c + 1) {
-    if ((int)g_sndSlots[s.local_c] == 0) {
-      s.local_10 = s.local_c;
+  for (; s.slot < param_3; s.slot = s.slot + 1) {
+    if (g_sndSlots[s.slot] != 0) {
+      if (g_sndSlots[s.slot]->lruCounter < s.local_8) {
+        s.local_8 = g_sndSlots[s.slot]->lruCounter;
+        s.local_10 = g_sndSlots[s.slot]->slotIndex;
+      }
+    } else {
+      s.local_10 = s.slot;
       s.local_4 = 1;
       break;
-    }
-    if (*(uint *)((int)g_sndSlots[s.local_c] + 0xc) < s.local_8) {
-      s.local_8 = *(uint *)((int)g_sndSlots[s.local_c] + 0xc);
-      s.local_10 = *(int *)((int)g_sndSlots[s.local_c] + 0x10);
     }
   }
   *param_1 = s.local_10;
@@ -1375,12 +1340,11 @@ undefined4 __cdecl GetLRUSnd(int *param_1,int param_2,int param_3)
 }
 
 // FUNCTION: MAGSND 0x100033A2
-void * __cdecl GetAVISndBuff(int param_1,uint param_2)
-
+void * __cdecl GetAVISndBuff(int slot,uint param_2)
 {
   struct {
     void *ptr1;
-    int slot;
+    SndInstance *slot;
     undefined4 zero1;
     uint blockIndex;
     int hr;
@@ -1390,130 +1354,123 @@ void * __cdecl GetAVISndBuff(int param_1,uint param_2)
     int offset;
   } s;
 
-                    /* 0x33a2  23  GetAVISndBuff */
   s.ptr1 = 0;
   s.ptr2 = 0;
   s.bytes1 = 0;
   s.bytes2 = 0;
   s.zero1 = 0;
 
-  if (param_1 > 0x10f) {
-    return 0;
-  }
-  if (param_1 < 0x100) {
+  if (slot > 0x10f || slot < 0x100) {
     return 0;
   }
   EnterCriticalSection(&g_sndCs);
-  s.slot = (int)g_sndSlots[param_1];
+  s.slot = g_sndSlots[slot];
   if (s.slot == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
-  if (((*(uint *)(s.slot + 4) >> 7) & 1) != 0) {
+  if (((s.slot->flags >> 7) & 1) != 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
 
-  s.blockIndex = param_2 % *(uint *)(s.slot + 0x94);
-  s.offset = *(int *)(s.slot + 0x8c) * s.blockIndex;
-  s.hr = (**(code **)(**(int **)(s.slot + 0xbc) + 0x2c))
-               (*(undefined4 *)(s.slot + 0xbc),s.offset,*(undefined4 *)(s.slot + 0x8c),
+  s.blockIndex = param_2 % s.slot->blockCount;
+  s.offset = s.slot->blockBytes * s.blockIndex;
+  s.hr = s.slot->dsBuffer->lpVtbl->Lock(
+               s.slot->dsBuffer,s.offset,s.slot->blockBytes,
                 &s.ptr1,&s.bytes1,&s.ptr2,&s.bytes2,0);
   if (s.hr != 0) {
     return 0;
   }
   if (s.ptr2 != 0) {
-    (**(code **)(**(int **)(s.slot + 0xbc) + 0x4c))
-              (*(undefined4 *)(s.slot + 0xbc),s.ptr1,s.bytes1,s.ptr2,s.bytes2);
+    s.slot->dsBuffer->lpVtbl->Unlock(s.slot->dsBuffer,s.ptr1,s.bytes1,s.ptr2,s.bytes2);
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
-  *(void **)(s.slot + 0xa4) = s.ptr1;
-  *(uint *)(s.slot + 4) = *(uint *)(s.slot + 4) | 0x80;
+  s.slot->dsLockedPtr = s.ptr1;
+  s.slot->flags = (int)s.slot->flags | 0x80;
   LeaveCriticalSection(&g_sndCs);
   return s.ptr1;
 }
 
 // FUNCTION: MAGSND 0x1000352C
-undefined4 __cdecl ReleaseAVISndBuff(int param_1)
-
+undefined4 __cdecl ReleaseAVISndBuff(int slot)
 {
   struct {
     int local_18;
-    int local_14;
+    SndInstance * slot;
     int local_10;
     int local_c;
     int local_8;
     int local_4;
   } s;
 
-                    /* 0x352c  24  ReleaseAVISndBuff */
   s.local_18 = 0;
   s.local_c = 0;
   s.local_4 = 0;
   s.local_8 = 0;
   s.local_10 = 0;
 
-  if ((param_1 > 0x10f) || (param_1 < 0x100)) {
+  if ((slot > 0x10f) || (slot < 0x100)) {
     return 0;
   }
 
   EnterCriticalSection(&g_sndCs);
-  s.local_14 = (int)g_sndSlots[param_1];
-  if (s.local_14 == 0) {
+  s.slot = g_sndSlots[slot];
+  if (s.slot == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
-  if (((*(uint *)(s.local_14 + 4) >> 7) & 1) == 0) {
+  if (((s.slot->flags >> 7) & 1) == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0xe;
   }
-  if (*(int *)(s.local_14 + 0xa4) == 0) {
+  if (s.slot->dsLockedPtr == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0xf;
   }
-  (**(code **)(**(int **)(s.local_14 + 0xbc) + 0x4c))
-            (*(undefined4 *)(s.local_14 + 0xbc),*(undefined4 *)(s.local_14 + 0xa4),
-             *(undefined4 *)(s.local_14 + 0x8c),0,0);
-  *(uint *)(s.local_14 + 4) = *(uint *)(s.local_14 + 4) & 0xffffff7f;
-  *(undefined4 *)(s.local_14 + 0xa4) = 0;
+  s.slot->dsBuffer->lpVtbl->Unlock(s.slot->dsBuffer, s.slot->dsLockedPtr,s.slot->blockBytes,0,0);
+  s.slot->flags &= 0xffffff7f;
+  s.slot->dsLockedPtr = 0;
   LeaveCriticalSection(&g_sndCs);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10003656
-int __cdecl FUN_10003656(undefined4 *param_1)
-
+int __cdecl FUN_10003656(SndInstance *snd)
 {
-  int iVar1;
+  struct {
+    MMIOINFO *mmioInfo;
+    int result;
+  } s;
   
-  param_1[1] = param_1[1] & 0xfffffffe;
-  param_1[1] = param_1[1] & 0xfffffffd;
-  param_1[1] = param_1[1] & 0xffffffef;
-  param_1[1] = param_1[1] & 0xfffffffb;
-  param_1[0x74] = 0;
-  param_1[0x75] = 0;
-  param_1[0x76] = 0;
-  param_1[0x77] = 0;
+  snd->flags &= 0xfffffffe;
+  snd->flags &= 0xfffffffd;
+  snd->flags &= 0xffffffef;
+  snd->flags &= 0xfffffffb;
+  snd->writeCursorBytes = 0;
+  snd->readCursorBytes = 0;
+  snd->ringCursorBytes = 0;
+  snd->timeBytes = 0;
   g_lastSndTime = 0;
-  if (((uint)param_1[2] >> 5 & 1) == 0) {
-    param_1[0x67] = param_1[0x68];
-    mmioSetInfo((HMMIO)param_1[0x72],(LPCMMIOINFO)(param_1 + 0x60),0);
-    iVar1 = PrimeDsBufferFromSource(param_1,0);
-    if (iVar1 != 0) {
-      return iVar1;
+  if ((snd->flags2 >> 5 & 1) != 0) {
+    PrimeAviAudio(snd, 0);
+  } else {
+    s.mmioInfo = &snd->mmioInfo;
+    s.mmioInfo->pchNext = s.mmioInfo->pchEndRead;
+
+    mmioSetInfo(snd->hMmio, s.mmioInfo, 0);
+
+    s.result = PrimeDsBufferFromSource(snd, 0);
+    if (s.result != 0) {
+      return s.result;
     }
   }
-  else {
-    PrimeAviAudio((undefined4 *)param_1);
-  }
-  param_1[1] = param_1[1] | 0x20;
+  snd->flags = (int)snd->flags | 0x20;
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10003748
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
 void __cdecl FUN_10003748(SndInstance * snd)
 {
   struct {
@@ -1789,7 +1746,7 @@ undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
   if ((s.status & 1) != 0) {
     for (s.index = 0; s.index < 0x10; s.index = s.index + 1) {
       s.buffer = *(int **)(param_1 + 0xc0 + s.index * 0xc);
-      if (s.buffer != (int *)0x0) {
+      if (s.buffer != NULL) {
         s.hr = (**(code **)(*s.buffer + 0x24))(s.buffer,&s.status);
         if (s.hr != 0) {
           return 9;
@@ -1918,14 +1875,13 @@ void __cdecl RemoveFromActiveList(SndInstance *snd)
 
 // FUNCTION: MAGSND 0x10004400
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs)
-
 {
   (void)resolutionMs;
   if (timeGetDevCaps(&g_timeCaps,8) != 0) {
     return 0xc;
   }
   timeBeginPeriod(g_updatePeriodMs);
-  g_updateTimerId = timeSetEvent(g_updatePeriodMs,g_timeCaps.wPeriodMin,UpdateTimerProc,(DWORD)g_sndHwnd,1);
+  g_updateTimerId = timeSetEvent(g_updatePeriodMs,g_timeCaps.wPeriodMin,UpdateTimerProc,&g_sndHwnd,1);
   if (g_updateTimerId == 0) {
     timeEndPeriod(g_updatePeriodMs);
     return 0xc;
@@ -1966,98 +1922,106 @@ undefined4 __cdecl LoadFromFile(char *filename,SndInstance **outSnd)
 }
 
 // FUNCTION: MAGSND 0x1000454F
-undefined4 __cdecl LoadWaveMmio(LPSTR filename,SndInstance **outSnd,undefined4 scratch)
-
+undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4 dwFlags)
 {
+  typedef struct SndInstanceSlice_t {
+    MMCKINFO mmck; /* 0x01c */
+    uint markerCount; /* 0x030 */
+    SndInstance *markers[0x11]; /* 0x034 */
+  } SndInstanceSlice;
+
   struct {
-    undefined4 local_a0;
-    undefined4 local_9c;
-    MMCKINFO local_98;
-    char local_84[16];
-    undefined2 local_74;
-    byte pad_72[6];
-    MMIOINFO local_70;
-    undefined4 local_28;
-    DWORD local_24;
-    LONG local_20;
-    MMCKINFO local_1c;
-    HMMIO local_8;
+    SndInstanceSlice *sndInstanceHacked;
+    MMCKINFO riffChunk;
+    WAVEFORMATEX riffHeader; // ebp - 0x80
+    byte padbytes[2];
+    MMIOINFO pmmioinfo;
+    undefined4 unused; // ebp - 0x24
+    DWORD riffChunkSize; // ebp - 0x20
+    LONG mmioBaseOffset; // ebp - 0x1c
+    MMCKINFO riff; // ebp - 0x18
+    HMMIO fileHandle; // ebp - 0x4
   } s;
-  
-  s.local_28 = 0;
-  memset(&s.local_70,0,0x48);
-  s.local_70.cchBuffer = 0x10000;
-  s.local_8 = mmioOpenA(filename,&s.local_70,0x10000);
-  if (s.local_8 == (HMMIO)0x0) {
+
+  s.unused = 0;
+  memset(&s.pmmioinfo,0,sizeof(MMIOINFO));
+  s.pmmioinfo.cchBuffer = 0x10000;
+  s.fileHandle = mmioOpenA(filename,&s.pmmioinfo,0x10000);
+  if (s.fileHandle == (HMMIO)0x0) {
     return 7;
   }
-  s.local_1c.fccType = 0x45564157;
-  if (mmioDescend(s.local_8,&s.local_1c,(MMCKINFO *)0x0,0x20) != 0) {
-    mmioClose(s.local_8,0);
+  s.riff.fccType = 0x45564157;
+  if (mmioDescend(s.fileHandle,&s.riff,(MMCKINFO *)0x0,MMIO_FINDRIFF) != 0) {
+    mmioClose(s.fileHandle,0);
     return 8;
   }
-  s.local_98.ckid = 0x20746d66;
-  if (mmioDescend(s.local_8,&s.local_98,&s.local_1c,0x10) != 0) {
-    mmioClose(s.local_8,0);
+  s.riffChunk.ckid = 0x20746d66;
+  if (mmioDescend(s.fileHandle,&s.riffChunk,&s.riff,MMIO_FINDCHUNK) != 0) {
+    mmioClose(s.fileHandle,0);
     return 8;
   }
-  s.local_24 = s.local_98.cksize;
-  if (mmioRead(s.local_8,s.local_84,s.local_98.cksize) != s.local_24) {
-    mmioClose(s.local_8,0);
+  s.riffChunkSize = s.riffChunk.cksize;
+  if (mmioRead(s.fileHandle,&s.riffHeader,s.riffChunkSize) != s.riffChunkSize) {
+    mmioClose(s.fileHandle,0);
     return 8;
   }
-  s.local_74 = 0;
-  mmioAscend(s.local_8,&s.local_98,0);
-  s.local_98.ckid = 0x61746164;
-  if (mmioDescend(s.local_8,&s.local_98,&s.local_1c,0x10) != 0) {
-    mmioClose(s.local_8,0);
+
+  s.riffHeader.cbSize = 0;
+  mmioAscend(s.fileHandle,&s.riffChunk,0);
+  s.riffChunk.ckid = 0x61746164;
+  if (mmioDescend(s.fileHandle,&s.riffChunk,&s.riff,0x10) != 0) {
+    mmioClose(s.fileHandle,0);
     return 8;
   }
-  mmioGetInfo(s.local_8,&s.local_70,0);
-  mmioAdvance(s.local_8,&s.local_70,0);
-  s.local_20 = s.local_70.lBufOffset;
-  scratch = 0xe8;
-  *outSnd = FUN_10005480(g_directSound,0x10000,(undefined4 *)s.local_84,0xe8);
-  if (*outSnd == (SndInstance *)0x0) {
-    mmioClose(s.local_8,0);
-    return 9;
-  }
-  (*outSnd)->mmioBaseOffset = s.local_20;
-  (*outSnd)->hMmio = s.local_8;
-  *(MMIOINFO *)((byte *)*outSnd + 0x180) = s.local_70;
-  (*outSnd)->dataBytes = s.local_98.cksize;
-  (*outSnd)->streamOrMmio = operator_new(strlen(filename) + 1);
-  if ((*outSnd)->streamOrMmio == (void *)0x0) {
-    mmioClose(s.local_8,0);
-    return 3;
-  }
-  strcpy((char *)(*outSnd)->streamOrMmio,filename);
-  (*outSnd)->flags2 = (*outSnd)->flags2 & 0xffffffdf;
-  (*outSnd)->flags2 = (*outSnd)->flags2 | 2;
-  (*outSnd)->blockBytes = 0;
-  (*outSnd)->blockScale = 0;
-  (*outSnd)->blockCount = 0;
-  mmioAscend(s.local_8,&s.local_98,0);
-  s.local_98.ckid = 0x20657563;
-  if (mmioDescend(s.local_8,&s.local_98,&s.local_1c,0x10) == 0) {
-    *(MMCKINFO *)((byte *)*outSnd + 0x1c) = s.local_98;
-    if (mmioRead(s.local_8,(HPSTR)((byte *)*outSnd + 0x30),4) != 4) {
-      DestroySndInstance(*outSnd);
-      mmioClose(s.local_8,0);
-      return 8;
-    }
-    *(void **)((byte *)*outSnd + 0x34) =
-         operator_new(*(int *)((byte *)*outSnd + 0x30) * 0x18);
-    if (*(void **)((byte *)*outSnd + 0x34) == (void *)0x0) {
-      DestroySndInstance(*outSnd);
-      mmioClose(s.local_8,0);
+  mmioGetInfo(s.fileHandle,&s.pmmioinfo,0);
+  mmioAdvance(s.fileHandle,&s.pmmioinfo,0);
+  s.mmioBaseOffset = s.pmmioinfo.lBufOffset;
+  dwFlags = 0xe8;
+  *outSnd = CreateSndInstance(g_directSound, 0x10000, &s.riffHeader, dwFlags);
+  if (*outSnd != (SndInstance *)0x0) {    
+    (*outSnd)->mmioBaseOffset = s.mmioBaseOffset;
+    (*outSnd)->hMmio = s.fileHandle;
+    (*outSnd)->mmioInfo = s.pmmioinfo;
+    (*outSnd)->dataBytes = s.riffChunk.cksize;
+    (*outSnd)->streamOrMmio = operator_new(strlen(filename) + 1);
+    if ((*outSnd)->streamOrMmio != (void *)0x0) {
+      strcpy((char *)(*outSnd)->streamOrMmio,filename);
+    } else {
+      mmioClose(s.fileHandle,0);
       return 3;
     }
-    s.local_24 = *(int *)((byte *)*outSnd + 0x30) * 0x18;
-    if (mmioRead(s.local_8,*(HPSTR *)((byte *)*outSnd + 0x34),s.local_24) != (LONG)s.local_24) {
+    (*outSnd)->flags2 = (*outSnd)->flags2 & 0xffffffdf;
+    (*outSnd)->flags2 = (int)(*outSnd)->flags2 | 2;
+    (*outSnd)->blockBytes = 0;
+    (*outSnd)->blockScale = 0;
+    (*outSnd)->blockCount = 0;
+  } else {
+    mmioClose(s.fileHandle,0);
+    return 9;
+  }
+  mmioAscend(s.fileHandle,&s.riffChunk,0);
+  s.riffChunk.ckid = 0x20657563;
+
+  if (mmioDescend(s.fileHandle,&s.riffChunk,&s.riff,0x10) == 0) {
+    //TODO: this is fuckin weird no?
+    s.sndInstanceHacked = &(*outSnd)->mmck;
+    memcpy(s.sndInstanceHacked, &s.riffChunk, sizeof(MMCKINFO));
+    if (mmioRead(s.fileHandle, &s.sndInstanceHacked->markerCount, 4) != 4) {
       DestroySndInstance(*outSnd);
-      mmioClose(s.local_8,0);
-      operator_delete(*(void **)((byte *)*outSnd + 0x34));
+      mmioClose(s.fileHandle,0);
+      return 8;
+    }
+    s.sndInstanceHacked->markers[0] = operator_new(s.sndInstanceHacked->markerCount * 0x18);
+    if (s.sndInstanceHacked->markers[0] == (void *)0x0) {
+      DestroySndInstance(*outSnd);
+      mmioClose(s.fileHandle,0);
+      return 3;
+    }
+    s.riffChunkSize = s.sndInstanceHacked->markerCount * 0x18;
+    if (mmioRead(s.fileHandle,s.sndInstanceHacked->markers[0],s.riffChunkSize) != (LONG)s.riffChunkSize) {
+      DestroySndInstance(*outSnd);
+      mmioClose(s.fileHandle,0);
+      MAGSND_DELETE(s.sndInstanceHacked->markers[0]);
       return 8;
     }
   }
@@ -2066,92 +2030,99 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename,SndInstance **outSnd,undefined4 s
 
 // FUNCTION: MAGSND 0x10004986
 void __cdecl CloseMmioAndFreeSource(SndInstance *snd)
-
 {
+  struct {
+    void * tmp4;
+    void * tmp3;
+    void * tmp2;
+    void * tmp1;
+  } s;
+
   mmioClose(snd->hMmio,0);
   if (snd->markers[0] != 0) {
-    operator_delete(snd->markers[0]);
+    s.tmp1 = snd->markers[0];
+    s.tmp3 = s.tmp1;
+    operator_delete(s.tmp3);
   }
   if (((snd->flags2 >> 5) & 1) == 0) {
-    operator_delete(snd->streamOrMmio);
+    s.tmp2 = snd->streamOrMmio;
+    s.tmp4 = s.tmp2;
+    operator_delete(s.tmp4);
   }
   return;
 }
 
 // FUNCTION: MAGSND 0x100049FE
-undefined4 __cdecl LoadWaveFromFileHandle(FILE *param_1,int *param_2)
-
+undefined4 __cdecl LoadWaveFromFileHandle(FILE *file, SndInstance **outSnd)
 {
-  int createFlags;
-  int bytesRead;
-  int bytes1;
-  int lockHr;
-  int chunkHdr[2];
-  int bytes2;
-  void *ptr2;
-  int waveTag;
-  int riffSize;
-  int riffTag;
-  int riffEnd;
-  int seek0;
-  void *ptr1;
-  undefined2 cbSize;
-  undefined4 waveFmt[4];
-  int tmp_50;
-  int tmp_54;
+  struct {
+    undefined4 waveFmt[4];
+    undefined2 cbSize;
+    void *ptr1; // ebp - 0x38
+    int seek0;
+    int riffEnd;
+    int riffTag;
+    int riffSize;
+    int waveTag;
+    void *ptr2; // ebp - 0x20
+    int bytes2; // ebp - 0x1c
+    int chunkHdr[2];
+    HRESULT lockHr;
+    int bytes1; // ebp - 0xc
+    int bytesRead; // ebp - 0x8
+    int createFlags; // ebp - 0x4
+  } s;
 
-  ptr1 = (void *)0x0;
-  ptr2 = (void *)0x0;
-  bytes1 = 0;
-  bytes2 = 0;
-  bytesRead = 0;
-  createFlags = 0;
-  riffEnd = 0;
-  seek0 = 0;
+  s.ptr1 = (void *)0x0;
+  s.ptr2 = (void *)0x0;
+  s.bytes1 = 0;
+  s.bytes2 = 0;
+  s.bytesRead = 0;
+  s.createFlags = 0;
+  s.riffEnd = 0;
+  s.seek0 = 0;
 
-  fseek(param_1,seek0,0);
-  fread(&riffTag,1,0xc,param_1);
-  riffEnd = riffSize + seek0 + 8;
-  if ((riffTag != 0x46464952) || (waveTag != 0x45564157)) {
+  fseek(file,s.seek0,0);
+
+  //This reads riffTag, riffSize, and waveTag
+  fread(&s.riffTag,1,0xc,file);
+  s.riffEnd = s.riffSize + s.seek0 + 8;
+  if ((s.riffTag != 0x46464952) || (s.waveTag != 0x45564157)) {
     return 8;
   }
 
-  if (FindRiffChunk(param_1,0x20746d66,seek0,(uint)riffEnd) == 0) {
+  if (FindRiffChunk(file,0x20746d66,s.seek0,(uint)s.riffEnd) == 0) {
     return 8;
   }
-  fread(chunkHdr,1,8,param_1);
-  fread(waveFmt,1,0x10,param_1);
-  cbSize = 0;
-  if (FindRiffChunk(param_1,0x61746164,seek0,(uint)riffEnd) == 0) {
+  fread(s.chunkHdr,1,8,file);
+  fread(s.waveFmt,1,0x10,file);
+  s.cbSize = 0;
+  if (FindRiffChunk(file,0x61746164,s.seek0,(uint)s.riffEnd) == 0) {
     return 8;
   }
-  fread(chunkHdr,1,8,param_1);
-  createFlags = 0xea;
-  ptr1 = FUN_10005480(g_directSound,chunkHdr[1],waveFmt,createFlags);
-  *param_2 = (int)ptr1;
-  if (*param_2 == 0) {
+  fread(s.chunkHdr,1,8,file);
+  s.createFlags = 0xea;
+
+  *outSnd  = CreateSndInstance(g_directSound,s.chunkHdr[1],s.waveFmt,s.createFlags);
+  //*outSnd = s.bytes1;
+  if (*outSnd == 0) {
     return 9;
   }
 
-  lockHr = (**(code **)(**(int **)(*param_2 + 0xbc) + 0x2c))
-                       (*(undefined4 *)(*param_2 + 0xbc),0,chunkHdr[1],&ptr1,&bytes1,&ptr2,&bytes2,
-                        0);
-  if (lockHr != 0) {
-    DestroySndInstance((SndInstance *)*param_2);
+  s.lockHr = (*outSnd)->dsBuffer->lpVtbl->Lock((*outSnd)->dsBuffer,0,s.chunkHdr[1],&s.ptr1,&s.bytes1,&s.ptr2,&s.bytes2,0);
+  if (s.lockHr != 0) {
+    DestroySndInstance(*outSnd);
     return 9;
   }
-  bytesRead = fread(ptr1,1,chunkHdr[1],param_1);
-  if (bytesRead != bytes1) {
-    DestroySndInstance((SndInstance *)*param_2);
+  s.bytesRead = fread(s.ptr1,1,s.bytes1,file);
+  if (s.bytesRead != s.bytes1) {
+    DestroySndInstance(*outSnd);
     return 9;
   }
-  lockHr = (**(code **)(**(int **)(*param_2 + 0xbc) + 0x4c))
-                       (*(undefined4 *)(*param_2 + 0xbc),ptr1,bytes1,ptr2,bytes2);
-  if (lockHr != 0) {
-    (**(code **)(**(int **)(*param_2 + 0xbc) + 8))(*(undefined4 *)(*param_2 + 0xbc));
-    tmp_50 = *param_2;
-    tmp_54 = tmp_50;
-    operator_delete((void *)tmp_54);
+  s.lockHr = (*outSnd)->dsBuffer->lpVtbl->Unlock((*outSnd)->dsBuffer,s.ptr1,s.bytes1,s.ptr2,s.bytes2);
+  if (s.lockHr != 0) {
+    (*outSnd)->dsBuffer->lpVtbl->Release((*outSnd)->dsBuffer);
+    MAGSND_DELETE(*outSnd);
     return 9;
   }
   return 0;
@@ -2159,17 +2130,18 @@ undefined4 __cdecl LoadWaveFromFileHandle(FILE *param_1,int *param_2)
 
 // FUNCTION: MAGSND 0x10004C8A
 undefined4 __cdecl SeekMmioToSample(SndInstance *sndObj,int param_2)
-
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  struct {
+    int iVar1;
+    int iVar3;
+    int iVar2;
+  }s;
 
   mmioGetInfo(sndObj->hMmio,(LPMMIOINFO)&sndObj->mmioInfo,0);
-  iVar1 = (int)(uint)sndObj->waveFmt.nBlockAlign;
-  iVar2 = iVar1 * param_2 + sndObj->mmioBaseOffset;
-  iVar3 = MmioTellFromInfo(&sndObj->mmioInfo);
-  mmioSeek(sndObj->hMmio,iVar2 - iVar3,1);
+  s.iVar2 = sndObj->waveFmt.nBlockAlign * param_2 + sndObj->mmioBaseOffset;
+  s.iVar3 = MmioTellFromInfo(&sndObj->mmioInfo);
+  s.iVar1 = s.iVar2 - s.iVar3;
+  mmioSeek(sndObj->hMmio,s.iVar1,1);
   mmioGetInfo(sndObj->hMmio,(LPMMIOINFO)&sndObj->mmioInfo,0);
   mmioAdvance(sndObj->hMmio,(LPMMIOINFO)&sndObj->mmioInfo,0);
   return 0;
@@ -2177,7 +2149,6 @@ undefined4 __cdecl SeekMmioToSample(SndInstance *sndObj,int param_2)
 
 // FUNCTION: MAGSND 0x10004D3F
 undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint param_4)
-
 {
   struct {
     int chunk[2];
@@ -2199,39 +2170,42 @@ undefined4 __cdecl FindRiffChunk(FILE *param_1,int param_2,long param_3,uint par
       return 0;
     }
     if (s.chunk[0] == param_2) {
-      fseek(param_1,s.pos,0);
-      return 1;
+      break;
     }
+
     s.pos = ftell(param_1);
     if ((s.chunk[1] & 1) != 0) {
       s.chunk[1] = s.chunk[1] + 1;
     }
     fseek(param_1,s.chunk[1],1);
   }
+  
+  fseek(param_1,s.pos,0);
+  return 1;
 }
 
 // FUNCTION: MAGSND 0x10004E4C
 undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample)
 {
   struct {
-    int bytesRemainingInData;
-    int samplesReadAdvance;
-    int blockAlignCopy;
-    HPSTR lockPtr1;
-    int startOffsetBytes;
-    int done;
-    int streamSampleCount;
-    int bytesRemainingToFill;
-    HPSTR writePtr;
-    int sourceTotalBytes;
-    int wrapWindowBytes;
-    int sourceOffsetBytes;
-    HPSTR lockPtr2;
-    int lockSize2;
-    int lockHr;
-    int bytesRead;
-    int streamByteOffset;
-    int lockSize1;
+    int bytesRemainingInData; // ebp - 0x48
+    int samplesReadAdvance; // ebp - 0x44
+    int blockAlignCopy; // ebp - 0x40
+    HPSTR lockPtr1; // ebp - 0x3c
+    int startOffsetBytes; // ebp - 0x38
+    int done; // ebp - 0x34
+    int streamSampleCount; // ebp - 0x30
+    int bytesRemainingToFill; // ebp - 0x2c
+    HPSTR writePtr; // ebp - 0x28
+    int sourceTotalBytes; // ebp - 0x24
+    int wrapWindowBytes; // ebp - 0x20
+    int sourceOffsetBytes; // ebp - 0x1c
+    HPSTR lockPtr2; // ebp - 0x18
+    int lockSize2; // ebp - 0x14
+    int lockHr; // ebp - 0x10
+    int bytesRead; // ebp - 0xc
+    int streamByteOffset; // ebp - 0x8
+    int lockSize1; // ebp - 0x4
   } s;
 
   s.lockPtr1 = (HPSTR)0x0;
@@ -2271,19 +2245,33 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample)
 
   s.writePtr = s.lockPtr1;
   while (s.done == 0) {
-    if (s.bytesRemainingInData < s.bytesRemainingToFill) {
-      if (((snd->flags2 >> 5) & 1) == 0) {
-        s.bytesRead = mmioRead(snd->hMmio,s.writePtr,s.bytesRemainingInData);
+    if (s.bytesRemainingInData >= s.bytesRemainingToFill) {
+      if (((snd->flags2 >> 5) & 1) != 0) {
+        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,startSample,0x10000 / snd->waveFmt.nBlockAlign,s.writePtr,0x10000,&s.bytesRead,
+                      &s.blockAlignCopy);
       }
       else {
-        s.blockAlignCopy = (int)snd->waveFmt.nBlockAlign;
-        s.streamSampleCount = 0x10000 / s.blockAlignCopy;
-        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,startSample,s.streamSampleCount,s.writePtr,s.bytesRemainingInData,&s.bytesRead,0);
+        s.bytesRead = mmioRead(snd->hMmio,s.writePtr,s.bytesRemainingToFill);
+      }
+      s.bytesRemainingToFill = s.bytesRemainingToFill - s.bytesRead;
+      s.samplesReadAdvance += s.bytesRead;
+      s.streamByteOffset += s.bytesRead;
+      s.bytesRemainingInData = s.bytesRemainingInData - s.bytesRead;
+      s.sourceOffsetBytes += s.bytesRead;
+      startSample = startSample + s.blockAlignCopy;
+      s.done = 1;
+    }
+    else {
+      if (((snd->flags2 >> 5) & 1) != 0) {
+        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,startSample,0x10000 / snd->waveFmt.nBlockAlign,s.writePtr,s.bytesRemainingInData,&s.bytesRead,0);
+      }
+      else {
+        s.bytesRead = mmioRead(snd->hMmio,s.writePtr,s.bytesRemainingInData);
       }
       s.writePtr = s.writePtr + s.bytesRead;
       s.bytesRemainingToFill = s.bytesRemainingToFill - s.bytesRead;
       s.bytesRemainingInData = 0;
-      s.wrapWindowBytes = snd->dataBytes;
+      s.sourceOffsetBytes = snd->dataBytes;
       if ((snd->flags2 & 1) == 0) {
         memset(s.writePtr,0,(size_t)s.bytesRemainingToFill);
         s.done = 1;
@@ -2292,42 +2280,23 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample)
         if (((snd->flags2 >> 5) & 1) == 0) {
           SeekMmioToSample(snd,0);
         }
-        s.wrapWindowBytes = 0;
+        s.sourceOffsetBytes = 0;
         s.bytesRemainingInData = snd->dataBytes;
         s.streamByteOffset = 0;
+        s.samplesReadAdvance = 0;
       }
-    }
-    else {
-      if (((snd->flags2 >> 5) & 1) == 0) {
-        s.bytesRead = mmioRead(snd->hMmio,s.writePtr,s.bytesRemainingToFill);
-      }
-      else {
-        s.blockAlignCopy = (int)snd->waveFmt.nBlockAlign;
-        s.streamSampleCount = 0x10000 / s.blockAlignCopy;
-        AVIStreamRead((PAVISTREAM)snd->streamOrMmio,startSample,s.streamSampleCount,s.writePtr,0x10000,&s.bytesRead,
-                      &s.samplesReadAdvance);
-      }
-      s.bytesRemainingToFill = s.bytesRemainingToFill - s.bytesRead;
-      s.streamByteOffset = s.streamByteOffset + s.bytesRead;
-      s.bytesRemainingInData = s.bytesRemainingInData - s.bytesRead;
-      s.wrapWindowBytes = s.wrapWindowBytes + s.bytesRead;
-      startSample = startSample + s.samplesReadAdvance;
-      s.done = 1;
     }
   }
 
   mmioGetInfo(snd->hMmio,&snd->mmioInfo,0);
-  if (((snd->flags2 >> 5) & 1) == 0) {
-    mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
-  }
-  else {
+  if (((snd->flags2 >> 5) & 1) != 0) {
     RefillAviMmioBuffer(snd,startSample);
   }
-
-  s.wrapWindowBytes = s.bytesRemainingInData;
-  if (0xffff < s.bytesRemainingInData) {
-    s.wrapWindowBytes = 0x10000;
+  else {
+    mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
   }
+
+  s.wrapWindowBytes = min(0x10000, s.bytesRemainingInData);
   snd->writeCursorBytes = snd->dataBytes - (s.bytesRemainingInData - s.wrapWindowBytes);
   snd->readCursorBytes = snd->dataBytes - s.bytesRemainingInData;
   snd->ringCursorBytes = 0;
@@ -2342,11 +2311,10 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd,int startSample)
 }
 
 // FUNCTION: MAGSND 0x1000524C
-undefined4 __cdecl PrimeAviAudio(undefined4 *param_1)
-
+undefined4 __cdecl PrimeAviAudio(SndInstance *snd, int unused)
 {
   struct {
-    int local_30;
+    int buff;
     uint local_2c;
     undefined1 local_28[4];
     uint local_24;
@@ -2360,51 +2328,47 @@ undefined4 __cdecl PrimeAviAudio(undefined4 *param_1)
     int local_4;
   } s;
   
-  s.local_20 = param_1[0x25];
-  s.local_20 = s.local_20 * param_1[0x23];
-  s.local_4 = (**(code **)(*(int *)param_1[0x2f] + 0x2c))
-                   (param_1[0x2f],0,s.local_20,&s.local_30,&s.local_8,&s.local_14,&s.local_10,0);
+  s.local_20 = snd->blockCount * snd->blockBytes;
+  s.local_4 = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer,0,s.local_20,&s.buff,&s.local_8,&s.local_14,&s.local_10,0);
   if (s.local_4 != 0) {
-    FUN_1000575e(param_1);
-    DestroySndInstance((SndInstance *)param_1);
+    FUN_1000575e(snd);
+    DestroySndInstance(snd);
     return 9;
   }
   if (s.local_14 != 0) {
-    (**(code **)(*(int *)param_1[0x2f] + 0x4c))
-              (param_1[0x2f],s.local_30,s.local_8,s.local_14,s.local_10);
-    FUN_1000575e(param_1);
-    DestroySndInstance((SndInstance *)param_1);
+    snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.buff,s.local_8,s.local_14,s.local_10);
+    FUN_1000575e(snd);
+    DestroySndInstance(snd);
     return 9;
   }
-  param_1[0x76] = 0;
-  param_1[0x74] = 0;
-  param_1[0x75] = 0;
-  s.local_18 = s.local_30;
+  snd->ringCursorBytes = 0;
+  snd->writeCursorBytes = 0;
+  snd->readCursorBytes = 0;
+  s.local_18 = s.buff;
   s.local_c = 0;
-  s.local_24 = (uint)param_1[0x23] / (uint)param_1[0x24];
-  s.local_4 = 0;
-  for (s.local_2c = 0; s.local_2c < (uint)param_1[0x25]; s.local_2c = s.local_2c + 1) {
-    AVIStreamRead((PAVISTREAM)*param_1,s.local_c,s.local_24,(void *)s.local_18,param_1[0x23],s.local_28,
+  s.local_24 = snd->blockBytes / snd->blockScale;
+  //s.local_4 = 0;
+  for (s.local_2c = 0; s.local_2c < snd->blockCount; s.local_2c = s.local_2c + 1) {
+    AVIStreamRead((PAVISTREAM*)snd->streamOrMmio,s.local_c,s.local_24,(void *)s.local_18,snd->blockBytes,s.local_28,
                   s.local_1c);
-    param_1[0x76] = param_1[0x76] + param_1[0x23];
-    param_1[0x76] = (uint)param_1[0x76] % (uint)param_1[0x2c];
-    param_1[0x74] = param_1[0x74] + param_1[0x23];
-    param_1[0x75] = param_1[0x75] + param_1[0x23];
-    s.local_18 = s.local_18 + param_1[0x23];
+    snd->ringCursorBytes = snd->ringCursorBytes + snd->blockBytes;
+    snd->ringCursorBytes = snd->ringCursorBytes % snd->dsDesc.dwBufferBytes;
+    snd->writeCursorBytes = snd->writeCursorBytes + snd->blockBytes;
+    snd->readCursorBytes = snd->readCursorBytes + snd->blockBytes;
+    s.local_18 += (int)snd->blockBytes;
     s.local_c = s.local_c + s.local_24;
   }
-  s.local_4 = (**(code **)(*(int *)param_1[0x2f] + 0x4c))
-                   (param_1[0x2f],s.local_30,s.local_8,s.local_14,s.local_10);
-  if (s.local_4 == 0) {
-    return 0;
+  s.local_4 = snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.buff,s.local_8,s.local_14,s.local_10);
+  if (s.local_4 != 0) {
+    CloseMmioAndFreeSource((SndInstance *)snd);
+    DestroySndInstance((SndInstance *)snd);
+    return 9;
   }
-  CloseMmioAndFreeSource((SndInstance *)param_1);
-  DestroySndInstance((SndInstance *)param_1);
-  return 9;
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x10005480
-SndInstance * __cdecl FUN_10005480(IDirectSound *dSound,DWORD dwBufferBytes,WAVEFORMATEX *wfxFormat,DWORD dwFlags)
+SndInstance * __cdecl CreateSndInstance(IDirectSound *dSound,DWORD dwBufferBytes,WAVEFORMATEX *wfxFormat,DWORD dwFlags)
 {
   struct {
     void *local_10;
@@ -2413,8 +2377,8 @@ SndInstance * __cdecl FUN_10005480(IDirectSound *dSound,DWORD dwBufferBytes,WAVE
     SndInstance *result;
   } s;
   
-  s.result = (SndInstance *)operator_new(0x204);
-  memset(s.result,0,0x204);
+  s.result = (SndInstance *)operator_new(sizeof(SndInstance));
+  memset(s.result, 0, sizeof(SndInstance));
   s.result->dsDesc.dwSize = 0x14;
   s.result->dsDesc.dwFlags = dwFlags;
   s.result->dsDesc.dwBufferBytes = dwBufferBytes;
@@ -2433,19 +2397,15 @@ SndInstance * __cdecl FUN_10005480(IDirectSound *dSound,DWORD dwBufferBytes,WAVE
 }
 
 // FUNCTION: MAGSND 0x10005562
-undefined4 __cdecl DestroySndInstance(SndInstance *param_1)
+undefined4 __cdecl DestroySndInstance(SndInstance *snd)
 {
-  undefined4 uVar1;
-  
-  if (param_1 == (SndInstance *)0x0) {
-    uVar1 = 5;
+  if (snd == (SndInstance *)0x0) {
+    return 5;
   }
-  else {
-    (**(code **)(**(int **)((int)param_1 + 0xbc) + 8))(*(undefined4 *)((int)param_1 + 0xbc));
-    operator_delete(param_1);
-    uVar1 = 0;
-  }
-  return uVar1;
+
+  snd->dsBuffer->lpVtbl->Release(snd->dsBuffer);
+  MAGSND_DELETE(snd);
+  return 0;
 }
 
 // FUNCTION: MAGSND 0x100055BB
@@ -2474,50 +2434,58 @@ undefined4 __cdecl LoadAviAudioStream(void *stream,SndInstance **outSnd,undefine
   s.local_fc.cbSize = 0;
   scratch = 0xe8;
   s.local_98 = (int)s.local_8c.dwSuggestedBufferSize * 0xb;
-  *outSnd = FUN_10005480(g_directSound,s.local_98,&s.local_fc,scratch);
-  if (*outSnd == (SndInstance *)0x0) {
-    return 9;
+  *outSnd = CreateSndInstance(g_directSound,s.local_98,&s.local_fc,scratch);
+  if (*outSnd != (SndInstance *)0x0) {
+    (*outSnd)->mmioBaseOffset = 0;
+    (*outSnd)->hMmio = (HMMIO)0;
+    (*outSnd)->mmioInfo = s.local_e8;
+    (*outSnd)->dataBytes = s.local_94;
+    (*outSnd)->streamOrMmio = stream;
+    (*outSnd)->flags2 = (int)(*outSnd)->flags2 | 0x20;
+    (*outSnd)->flags2 = (int)(*outSnd)->flags2 | 2;
+    (*outSnd)->blockBytes = s.local_8c.dwSuggestedBufferSize;
+    (*outSnd)->blockScale = s.local_8c.dwSampleSize;
+    (*outSnd)->blockCount = 0xb;
+    (*outSnd)->timeBytes = 0;
   }
-  (*outSnd)->mmioBaseOffset = 0;
-  (*outSnd)->hMmio = (HMMIO)0;
-  (*outSnd)->mmioInfo = s.local_e8;
-  (*outSnd)->dataBytes = s.local_94;
-  (*outSnd)->streamOrMmio = stream;
-  (*outSnd)->flags2 = (*outSnd)->flags2 | 0x20;
-  (*outSnd)->flags2 = (*outSnd)->flags2 | 2;
-  (*outSnd)->blockBytes = s.local_8c.dwSuggestedBufferSize;
-  (*outSnd)->blockScale = s.local_8c.dwSampleSize;
-  (*outSnd)->blockCount = 0xb;
-  (*outSnd)->timeBytes = 0;
+  else
+    return 9;
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10005770
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
 void __cdecl RefillAviMmioBuffer(SndInstance *sndObj,long streamStartSample)
-
 {
-  int local_1c;
-  long local_c;
-  size_t local_8;
+  struct {
+    int local_1c;
+    int local_18;
+    int local_14;
+    int local_10;
+    int local_c;
+    long local_8;
+    size_t local_4;
+  } s;
 
-  local_c = 0;
-  local_8 = (size_t)(sndObj->writeCursorBytes - sndObj->readCursorBytes);
-  if (((int)sndObj->mmioInfo.pchEndRead - (int)sndObj->mmioInfo.pchNext) != (int)local_8) {
+  s.local_8 = 0;
+  s.local_c = 0;
+  s.local_14 = 0;
+  s.local_1c = 0;
+  s.local_4 = sndObj->writeCursorBytes - sndObj->readCursorBytes;
+  if ((sndObj->mmioInfo.pchEndRead - sndObj->mmioInfo.pchNext) != s.local_4) {
     g_mmioInfoMismatchCount = g_mmioInfoMismatchCount + 1;
   }
-  local_1c = (int)sndObj->mmioInfo.cchBuffer - (int)local_8;
-  if (((int)sndObj->dataBytes - (int)sndObj->writeCursorBytes) < local_1c) {
-    local_1c = (int)sndObj->dataBytes - (int)sndObj->writeCursorBytes;
+  s.local_10 = sndObj->dataBytes - sndObj->writeCursorBytes;
+  s.local_18 = sndObj->mmioInfo.cchBuffer - s.local_4;
+  if (s.local_18 > s.local_10) {    
+    s.local_18 = s.local_10;
   }
-  if (local_8 != 0) {
-    memmove((void *)sndObj->mmioInfo.pchBuffer,(void *)sndObj->mmioInfo.pchNext,local_8);
+  if (s.local_4 != 0) {
+    memmove((void *)sndObj->mmioInfo.pchBuffer,(void *)sndObj->mmioInfo.pchNext,s.local_4);
   }
-  sndObj->mmioInfo.pchNext = sndObj->mmioInfo.pchBuffer + local_8;
+  sndObj->mmioInfo.pchNext = &sndObj->mmioInfo.pchBuffer[s.local_4];
   AVIStreamRead((PAVISTREAM)sndObj->streamOrMmio,streamStartSample,
-                local_1c / (int)(uint)sndObj->waveFmt.nBlockAlign,sndObj->mmioInfo.pchNext,local_1c,
-                &local_c,0);
+                s.local_18 / (int)(uint)sndObj->waveFmt.nBlockAlign,sndObj->mmioInfo.pchNext,s.local_18,
+                &s.local_8,0);
   sndObj->mmioInfo.pchEndRead = sndObj->mmioInfo.pchBuffer + sndObj->mmioInfo.cchBuffer;
   sndObj->mmioInfo.pchNext = sndObj->mmioInfo.pchBuffer;
   mmioSetInfo(sndObj->hMmio,&sndObj->mmioInfo,0);
@@ -2528,7 +2496,7 @@ void __cdecl RefillAviMmioBuffer(SndInstance *sndObj,long streamStartSample)
 int __cdecl MmioTellFromInfo(MMIOINFO *info) { return (int)info->lDiskOffset - ((int)info->pchEndRead - (int)info->pchNext); }
 
 // FUNCTION: MAGSND 0x1000575E
-undefined4 __cdecl FUN_1000575e(undefined4 *param_1) { (void)param_1; return 0; }
+undefined4 __cdecl FUN_1000575e(SndInstance *snd) { (void)snd; return 0; }
 
 long __cdecl ftol(void)
 {
@@ -2545,3 +2513,4 @@ void __cdecl operator_delete(void *p)
   if (p)
     free(p);
 }
+

@@ -25,7 +25,7 @@ void Haar_CombineSumDiff(int *src_a, int *src_b, int *dst, int width, int rows, 
                          int dst_stride);
 void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int rows,
                              undefined4 src_stride_unused, int dst_stride);
-undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int chroma_u, int chroma_v,
+undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int* chroma_u, int* chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420);
 undefined4 Wvl_UnpackPieces(int param_1, int *param_2);
 
@@ -632,12 +632,9 @@ undefined8 * Wvl_DecodeHaar(int *param_1,undefined8 *param_2)
   s.u_plane = &param_1[19];
 
   for (s.piece_idx = 0; s.piece_idx < param_1[10]; s.piece_idx = s.piece_idx + 1) {
-    //s.chroma_h = s.block_height;
-    //s.chroma_w = s.block_width;
     if (*param_1 != 0) {
-      s.chroma_w = (s.y_plane / s.pieces_per_row) / ((param_1[10] == 1) + 1);
-      //s.chroma_h = s.y_plane / s.pieces_per_row /  (param_1[10] <= 2 ? 2 : 1);
-      s.v_plane = (s.base_size / s.pieces_per_row) / ((param_1[10] == 1) + 1);
+      s.chroma_w = (s.y_plane / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
+      s.v_plane = (s.base_size / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
     } else {
       s.chroma_w = s.y_plane;
       s.v_plane = s.base_size;
@@ -859,7 +856,7 @@ void Haar_CombineSumDiffHalf(int *src_a,int *src_b,int *dst,int width,int rows,u
 
 // FUNCTION: CARDARTLIB 0x100075ef
 // FUNCTION: DRAWCARDLIB 0x1000906f
-undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int height,int chroma_u,int chroma_v,
+undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int height,int* chroma_u,int* chroma_v,
                  int chroma_stride,undefined4 unused_chroma_height,int chroma_is_420)
 
 {
@@ -893,17 +890,17 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
   } else {
     s.out_base = out_bgr24;
   }
-  for (s.row = 0; s.row < height; s.row = s.row + 1) {
-    s.y = s.row;
+
+  for (s.row = 0; s.row < height; s.row++) {
     if (chroma_is_420 != 0) {
-      s.y = s.y / 2;
+      s.chroma_u_ptr = &chroma_u[s.row / 2 * chroma_stride];
+      s.chroma_v_ptr = &chroma_v[s.row / 2 * chroma_stride];
+    } else {
+      s.chroma_u_ptr = &chroma_u[s.row * chroma_stride];
+      s.chroma_v_ptr = &chroma_v[s.row * chroma_stride];
     }
 
-    s.y = (s.y * chroma_stride) << 2;
-    s.chroma_u_ptr = (int *)(chroma_u + s.y);
-    s.chroma_v_ptr = (int *)(chroma_v + s.y);
-
-    for (s.col = 0; s.col < width; s.col = s.col + 1, luma = luma + 1, out_bgr24 = out_bgr24 + 3) {
+    for (s.col = 0; s.col < width; s.col++, luma++, out_bgr24 += 3) {
       s.y = *luma;
 
       if (chroma_is_420 != 0) {
@@ -911,34 +908,31 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
           s.u = *s.chroma_u_ptr;
           s.v = *s.chroma_v_ptr;
         } else {
-          s.u = (s.chroma_u_ptr[((uint)(width - 1) - (uint)s.col) != 0] + *s.chroma_u_ptr) / 2;
-          s.v = (s.chroma_v_ptr[((uint)(width - 1) - (uint)s.col) != 0] + *s.chroma_v_ptr) / 2;
+          s.u = (*s.chroma_u_ptr + s.chroma_u_ptr[((uint)(width - 1) - (uint)s.col) != 0]) / 2;
+          s.v = (*s.chroma_v_ptr + s.chroma_v_ptr[((uint)(width - 1) - (uint)s.col) != 0]) / 2;
         }
 
         s.red = ((s.v >> 3) + (s.v >> 1) + s.v) - 0x333 + s.y;
         s.blue = (s.u * 2) - 0x400 + s.y;
-        s.green = (((s.y * 2) - (s.y >> 2)) - (s.red >> 1)) - ((s.blue >> 2) - (s.blue >> 4));
+      } else {
+        s.u = *s.chroma_u_ptr;
+        s.v = *s.chroma_v_ptr;
+        
+        s.red = ((s.v >> 3) + (s.v >> 1) + s.v) - 0x333 + s.y;
+        s.blue = (s.u * 2) - 0x400 + s.y;
+      }
 
-        out_bgr24[0] = g_yuvClampTable[s.blue];
-        out_bgr24[1] = g_yuvClampTable[s.green];
-        out_bgr24[2] = g_yuvClampTable[s.red];
+      s.green = (((s.y * 2) - (s.y >> 2)) - (s.red >> 1)) - ((s.blue >> 2) - (s.blue >> 4));
+      out_bgr24[0] = g_yuvClampTable[s.blue];
+      out_bgr24[1] = g_yuvClampTable[s.green];
+      out_bgr24[2] = g_yuvClampTable[s.red];
 
+      if (chroma_is_420 != 0) {
         if ((s.col & 1) != 0) {
           s.chroma_u_ptr = s.chroma_u_ptr + 1;
           s.chroma_v_ptr = s.chroma_v_ptr + 1;
         }
       } else {
-        s.u = *s.chroma_u_ptr;
-        s.v = *s.chroma_v_ptr;
-
-        s.red = ((s.v >> 3) + (s.v >> 1) + s.v) - 0x333 + s.y;
-        s.blue = (s.u * 2) - 0x400 + s.y;
-        s.green = (((s.y * 2) - (s.y >> 2)) - (s.red >> 1)) - ((s.blue >> 2) - (s.blue >> 4));
-
-        out_bgr24[0] = g_yuvClampTable[s.blue];
-        out_bgr24[1] = g_yuvClampTable[s.green];
-        out_bgr24[2] = g_yuvClampTable[s.red];
-
         s.chroma_u_ptr = s.chroma_u_ptr + 1;
         s.chroma_v_ptr = s.chroma_v_ptr + 1;
       }
@@ -971,14 +965,17 @@ BOOL Wvl_UnpackPieces(int param_1,int *param_2)
 
   s.wvl = param_2;
 
-  s.full_w = s.wvl[7] / (2 - (s.wvl[10] < 2));
+  s.full_w = s.wvl[7] / ((s.wvl[10] == 1) ? 1 : 2);
   s.full_h = s.full_w;
-  s.chroma_w = s.full_w / (2 - (s.wvl[0] < 1));
+  s.chroma_w = s.full_h / ((s.wvl[0] == 0) ? 1 : 2);
   s.chroma_h = s.chroma_w;
+  
+  s.bitstream = param_2[0x68];
+  s.huff_data = s.bitstream;
   s.base_size = s.wvl[9];
 
-  s.huff_data = (byte *)s.wvl[0x68];
-  s.bitstream = s.huff_data;
+  s.tmp = (s.full_w * s.full_h) + s.chroma_w * s.chroma_h * 2;
+
   s.node_count = *(int *)s.bitstream;
   s.bitstream = s.bitstream + 4;
   s.symbol_table = (uint *)s.bitstream;
@@ -989,14 +986,11 @@ BOOL Wvl_UnpackPieces(int param_1,int *param_2)
       Huffman13_Init((undefined4)s.bitstream,(undefined4)s.symbol_table,(undefined4)s.node_count);
 
   for (s.layer = 0; s.layer < s.wvl[10]; s.layer = s.layer + 1) {
-    s.tmp = s.chroma_w * s.chroma_h;
-    s.tmp = (s.full_w * s.full_h) + s.tmp * 2;
-    s.tmp = s.tmp + 0x40;
-    s.dst_y = (byte *)(param_1 + ((s.tmp * s.layer) << 2));
+    s.dst_y = (byte *)(param_1 + (((s.tmp + 0x40) * s.layer) << 2));
 
-    s.dst_u += (s.full_w * s.full_h) << 2 + 0x80;
+    s.dst_u = &s.dst_y[((s.full_w * s.full_h) << 2)] + 0x80;
 
-    s.dst_v += (s.chroma_w * s.chroma_h) << 2 + 0x80;
+    s.dst_v = &s.dst_u[((s.chroma_w * s.chroma_h) << 2)] + 0x80;
 
     memcpy(s.dst_y,s.bitstream,(s.base_size * s.base_size) << 2);
 

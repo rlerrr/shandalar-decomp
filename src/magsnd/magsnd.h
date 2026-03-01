@@ -6,17 +6,17 @@
 
 typedef struct Sound_t
 {
-  int field_0;
-  int field_4;
-  int field_8;
-  int field_C;
-  int field_10;
-  int field_14;
-  int field_18;
-  int field_1C;
+  int volume; // 0x00
+  int sampleRate; // 0x04
+  int pan; // 0x08
+  int field_C; // 0x0c
+  int field_10; // 0x10
+  int field_14; // 0x14
+  int loadId; // 0x18
+  int flags; // 0x1c
 } Sound;
 
-undefined4 __cdecl InitSnd(int hwnd_as_int, undefined4 unused, BYTE flags);
+undefined4 __cdecl InitSnd(HWND hwnd, undefined4 unused, BYTE flags);
 void __cdecl ReleaseSnd(void);
 int __cdecl LoadSnd(LPSTR path, int num, Sound *snd);
 undefined4 __cdecl UnloadSnd(int num);
@@ -40,7 +40,7 @@ undefined4 __cdecl ResetSnd(void);
 undefined4 __cdecl GetSndState(int num, undefined4 *out_state);
 void * __cdecl GetAVISndBuff(int param_1, uint param_2);
 undefined4 __cdecl ReleaseAVISndBuff(int param_1);
-undefined4 __cdecl GetSndHWND(void);
+HWND __cdecl GetSndHWND(void);
 undefined4 __cdecl IsSndLoaded(int num, undefined4 *out_loaded);
 undefined4 __cdecl GetLRUSnd(int *out_num, int start, int end);
 
