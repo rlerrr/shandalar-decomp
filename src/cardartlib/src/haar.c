@@ -14,10 +14,11 @@ undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24, int height, in
 int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24, int height, int width,
                                 int row_padding);
 int InitErrorDiffusionDeltaTables(int dither_kernel_id, int* delta_table_ptrs_base);
+int Octree_FindNearestColor(uint param_1);
 void MemZeroDwords(undefined8 *param_1, uint param_2);
 
 void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24, byte *src_bgr24, int dst_x, int dst_y,
-                                    int rect_width, int rect_height, int dst_stride_pixels);
+                                    int rect_width, int rect_height, int dst_stride_pixels, int unused);
 void CopyBytes(void *dst, const void *src, size_t size);
 void SetBytes(void *dst, int value, size_t num);
 void Haar2D_ReconstructInPlace(int *coeffs, int full_size, int base_size);
@@ -261,14 +262,14 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
     g_paletteClampInit = 1;
   }
 
-  if (g_paletteDitherKernelCachedId != dither_kernel_id) {
+  if ((int)g_paletteDitherKernelCachedId != dither_kernel_id) {
     for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
       if (g_errorDiffusionDeltaTablePtrs[s.x] != (void *)0x0) {
         free(g_errorDiffusionDeltaTablePtrs[s.x]);
         g_errorDiffusionDeltaTablePtrs[s.x] = (void *)0x0;
       }
     }
-    InitErrorDiffusionDeltaTables(dither_kernel_id,g_errorDiffusionDeltaTablePtrs);
+    InitErrorDiffusionDeltaTables(dither_kernel_id,(int *)g_errorDiffusionDeltaTablePtrs);
     g_paletteDitherKernelCachedId = dither_kernel_id;
   }
 
@@ -334,12 +335,12 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
       s.err_g = s.g_clamped - (s.nearest_rgb >> 8 & 0xff);
       s.err_r = s.r_clamped - ((uint)s.nearest_rgb >> 16);
       //s.err_row_ptrs[0] = 0;
-      s.k_it = s.kernel_ptr;
-      s.err_row_ptrs[0] = (s.kernel_count << 2) + s.k_it;
-      for (; s.err_row_ptrs[0] > s.k_it; s.k_it += 0x4) {
+      s.k_it = (int *)s.kernel_ptr;
+      s.err_row_ptrs[0] = (s.kernel_count << 2) + (int)s.k_it;
+      for (; s.err_row_ptrs[0] > (int)s.k_it; s.k_it += 0x4) {
         s.k_x_off = s.k_it[1];
         s.k_row = s.k_it[2];
-        s.delta_table = s.k_it[3];
+        s.delta_table = (int *)s.k_it[3];
         s.err_cell = ((s.k_x_off + s.x) << 2) + (short *)(s.err_row_ptrs[s.k_row + 1]);
 
         s.err_cell[0] = s.delta_table[s.err_b] + s.err_cell[0];
@@ -388,7 +389,7 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_bas
       continue;
     }
     
-    delta_table_ptrs_base[s.iVar2] = malloc(0x800);
+    delta_table_ptrs_base[s.iVar2] = (int)malloc(0x800);
     assert((uint)(delta_table_ptrs_base[s.iVar2] != 0),s_D__Newmagic_sources_NedCard_Pale_1001e0b4,
             0x4fd,s_Not_enough_memory_for_delta_arra_1001e090);
     for (s.local_14 = -0x100; s.local_14 < 0x100; s.local_14 = s.local_14 + 1) {
@@ -486,14 +487,14 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
     g_rgbQuantClampInit = 1;
   }
 
-  if (g_rgbQuantKernelCachedId != dither_kernel_id) {
+  if ((int)g_rgbQuantKernelCachedId != dither_kernel_id) {
     for (s.x = 0; (uint)s.x < 0x41; s.x = s.x + 1) {
       if (g_errorDiffusionDeltaTablePtrs[s.x] != (void *)0x0) {
         free(g_errorDiffusionDeltaTablePtrs[s.x]);
         g_errorDiffusionDeltaTablePtrs[s.x] = (void *)0x0;
       }
     }
-    InitErrorDiffusionDeltaTables(dither_kernel_id,g_errorDiffusionDeltaTablePtrs);
+    InitErrorDiffusionDeltaTables(dither_kernel_id,(int *)g_errorDiffusionDeltaTablePtrs);
     g_rgbQuantKernelCachedId = dither_kernel_id;
   }
 
@@ -551,11 +552,11 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
       s.err_g = s.g_clamped - (s.quant_rgb >> 8 & 0xff);
       s.err_r = s.r_clamped - (s.quant_rgb >> 16 & 0xff);
       s.err_row_ptrs[0] = 0;
-      s.k_it = s.kernel_ptr;
+      s.k_it = (int *)s.kernel_ptr;
       for (; s.err_row_ptrs[0] < s.kernel_count; s.err_row_ptrs[0]++, s.k_it += 0x4) {
         s.k_x_off = s.k_it[1];
         s.k_row = s.k_it[2];
-        s.delta_table = s.k_it[3];
+        s.delta_table = (int *)s.k_it[3];
         s.err_cell = (short *)(s.err_row_ptrs[s.k_row + 1] +
                           (s.k_x_off + s.x) * 8);
 
@@ -627,10 +628,10 @@ byte * Wvl_DecodeHaar(int *param_1,byte *param_2)
 
   if (param_2 == NULL) {
     param_2 = malloc(param_1[0x24] + 2000);
-    MemZeroDwords(param_2,(param_1[0x24] + 2000) / 4);
+    MemZeroDwords((undefined8 *)param_2,(param_1[0x24] + 2000) / 4);
   }
   else {
-    MemZeroDwords(param_2,(param_1[0x24] + 2000) / 4);
+    MemZeroDwords((undefined8 *)param_2,(param_1[0x24] + 2000) / 4);
     s.have_dst = 1;
   }
 
@@ -669,7 +670,7 @@ byte * Wvl_DecodeHaar(int *param_1,byte *param_2)
       s.chroma_base = s.base_size;
     }
 
-    s.y_plane = &param_2[(s.block_height * s.block_height + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4];
+    s.y_plane = (int *)&param_2[(s.block_height * s.block_height + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4];
     s.u_plane = &s.y_plane[s.block_height * s.block_height] + 0x20;
     s.v_plane = &s.u_plane[s.chroma_w * s.chroma_w] + 0x20;
 
@@ -788,7 +789,7 @@ void Haar2D_ReconstructInPlace(int *coeffs,int full_size,int base_size)
     int *haarScratchA; // ebp - 0x14
     int *haarScratchB; // ebp - 0x10
     int i; // ebp - 0xc
-    int pad2; // ebp - 8
+    int *pad2; // ebp - 8
     int *pad3; // ebp - 4
   } s;
   
@@ -997,7 +998,7 @@ BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
   s.chroma_w = s.full_h / ((s.wvl[0] == 0) ? 1 : 2);
   s.chroma_h = s.chroma_w;
   
-  s.bitstream = param_2[0x68];
+  s.bitstream = (byte *)param_2[0x68];
   s.huff_data = s.bitstream;
   s.base_size = s.wvl[9];
 
@@ -1087,7 +1088,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     int tmp_10; // ebp - 0x10
     int tmp_c; // ebp - 0xc
     int tmp_8; // ebp - 0x8
-    int tmp_4; // ebp - 0x4
+    byte *tmp_4; // ebp - 0x4
   } s;
 
   s.x_acc = 0;
@@ -1096,7 +1097,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   s.out_start = (byte *)0;
   s.x_map_ptr = s.x_map;
   s.y_map_ptr = s.y_map;
-  if (param_1 != (uint *)0) {
+  if (param_1 != (byte *)0) {
     s.out_nonnull = 1;
   } else {
     s.out_nonnull = 0;
@@ -1116,7 +1117,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   if (wvl_entry[0x6a] != 0) {
     s.decoded = (byte *)wvl_entry[0x6b];
   } else {
-    s.decoded = Wvl_DecodeHaar(wvl_entry,&g_haarDecodeScratch);
+    s.decoded = Wvl_DecodeHaar(wvl_entry,g_haarDecodeScratch);
   }
 
   s.src_width = wvl_entry[7];
@@ -1124,8 +1125,8 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   s.zero_1010 = 0;
   s.row_pad = (g_rowAlignBytes - (width * 3) % g_rowAlignBytes) % g_rowAlignBytes;
 
-  if (param_1 == (uint *)0) {
-    param_1 = (uint *)&g_defaultPalette256;
+  if (param_1 == (byte *)0) {
+    param_1 = (byte *)&g_defaultPalette256;
     s.out_base = param_1;
   } else {
     s.out_base = param_1;
@@ -1148,11 +1149,11 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     s.out_ptr = (byte *)param_1;
   
   for (s.y = 0; s.y < wvl_entry[8]; s.y += 1, param_1 += s.row_pad) {
-    s.tmp_4 = (int)s.decoded + (s.src_width * s.tmp_8 + s.zero_1010) * s.y;
+    s.tmp_4 = s.decoded + (s.src_width * s.tmp_8 + s.zero_1010) * s.y;
     s.x_map_ptr = s.x_map;
 
     for (s.x = 0; s.x < width; s.x += 1, s.x_map_ptr += 1) {
-      s.src_ptr = (byte *)(s.tmp_4 + (((int)*s.x_map_ptr >> 8) * 3));
+      s.src_ptr = s.tmp_4 + (((int)*s.x_map_ptr >> 8) * 3);
 
       param_1[0] = ((int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
       param_1[1] = ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
@@ -1178,11 +1179,11 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
 
   for (s.x = 0; s.x < width; s.x++) {
     param_1 = &s.out_base[s.x * 3];
-    s.tmp_4 = (int*)(s.out_ptr + s.x*3);
+    s.tmp_4 = s.out_ptr + s.x*3;
     s.y_map_ptr = s.y_map;
     
     for (s.y = 0; s.y < height - 1; s.y++, s.y_map_ptr++, param_1 += s.row_bytes) {
-      s.src_ptr = MIN((int)*s.y_map_ptr >> 8, wvl_entry[8] - 2) * s.row_bytes + s.tmp_4;
+      s.src_ptr = (byte *)(MIN((int)*s.y_map_ptr >> 8, wvl_entry[8] - 2) * s.row_bytes + (int)s.tmp_4);
 
       param_1[0] = ((int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
       param_1[1] = ((int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
@@ -1199,13 +1200,13 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   s.unk_5060 = 4;
   s.row_padding = (s.unk_5060 - ((width * 3) % s.unk_5060)) % s.unk_5060;
   if (global_dither_kernel_id == 0) {
-    QuantizeBgr24ToNearestPaletteColorInPlace(s.out_base,height,width,s.row_padding);
+    QuantizeBgr24ToNearestPaletteColorInPlace((uint *)s.out_base,height,width,s.row_padding);
   } else if (global_color_depth == 16) {
-    DitherBgr24ToRgbQuantizedF8(global_dither_kernel_id,global_serpentine,s.out_base,height,width,s.row_padding);
+    DitherBgr24ToRgbQuantizedF8(global_dither_kernel_id,global_serpentine,(uint *)s.out_base,height,width,s.row_padding);
   } else if (global_color_depth == 8) {
-    DitherBgr24ToPaletteColors(global_dither_kernel_id,global_serpentine,s.out_base,height,width,s.row_padding);
+    DitherBgr24ToPaletteColors(global_dither_kernel_id,global_serpentine,(uint *)s.out_base,height,width,s.row_padding);
   }
 
-  return s.out_base;
+  return (uint *)s.out_base;
 }
 

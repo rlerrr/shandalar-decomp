@@ -78,6 +78,8 @@ STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 // GLOBAL: CARDARTLIB 0x10117290
 Catalog DAT_10117290[5];
 
+uint Catalog_MakeKeyFromPath(const char *path);
+
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100019d0
 // FUNCTION: DRAWCARDLIB 0x1000b820
@@ -108,7 +110,7 @@ static int Catalog_Open(const char *catalog_path)
   s.catalog = &DAT_10117290[s.slot_index];
   s.catalog->cached_entry = (CatalogEntry *)0x0;
   strcpy(s.catalog->path,catalog_path);
-  s.catalog->file = fopen(catalog_path,&s_rb_1001d154);
+  s.catalog->file = fopen(catalog_path,s_rb_1001d154);
   s.catalog_file = s.catalog->file;
   if (s.catalog_file == (FILE *)0x0)
     return 0;
@@ -179,7 +181,7 @@ CatalogEntry *Catalog_FindEntryCached(Catalog *catalog,const char *name)
   uint key;
 
   key = Catalog_MakeKeyFromPath(name);
-  if ((catalog->cached_entry != (CatalogEntry *)0x0) && (catalog->cached_entry->key == key)) {
+  if ((catalog->cached_entry != (CatalogEntry *)0x0) && ((uint)catalog->cached_entry->key == key)) {
     return catalog->cached_entry;
   }
 
@@ -218,14 +220,12 @@ uint Catalog_MakeKeyFromPath(const char *path)
 {
   struct {
     int acc_odd;
-    uint ext_buf[4];
+    char ext_buf[16];
     char dir_buf[256];
 
-    undefined4 key;
+    uint key;
     int pad0;
-    undefined4 filename_buf;
-    int pad1;
-    int pad2;
+    char filename_buf[12];
     uint multiplier;
     int ch;
     int acc_even;
@@ -235,9 +235,9 @@ uint Catalog_MakeKeyFromPath(const char *path)
   s.pad0 = 0;
   s.acc_odd = 0;
   s.acc_even = 0;
-  _splitpath(path,(char *)s.ext_buf,s.dir_buf,(char *)&s.filename_buf,(char *)s.ext_buf);
-  path = (char *)&s.filename_buf;
-  strcat((char *)&s.filename_buf,(char *)s.ext_buf);
+  _splitpath(path,s.ext_buf,s.dir_buf,s.filename_buf,s.ext_buf);
+  path = s.filename_buf;
+  strcat(s.filename_buf,s.ext_buf);
   s.key = (undefined4)(((int)(signed char)path[1] ^ (int)(signed char)path[0]) << 0x18);
 
   while ((s.ch = (int)(signed char)*(path++)) != 0) {
@@ -280,7 +280,7 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
     DAT_1001e120 = Catalog_Open(s.fullpath);
     DAT_10032adc = 1;
   }
-  s.dir_end = (ptrdiff_t)s.dir + strlen(s.dir);
+  s.dir_end = s.dir + strlen(s.dir);
 
   if (catalog_id == 0) {
     DAT_100ea098 = DAT_1001e11c;
@@ -316,12 +316,12 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
     }
 
     if (decode_haar != 0) {
-      s.entry[0x6b] = (int)Wvl_DecodeHaar(s.entry, (undefined8 *)0x0);
+      s.entry[0x6b] = (int)Wvl_DecodeHaar(s.entry, (byte *)0x0);
       if (s.entry[0x6b] != 0) {
         s.entry[0x6a] = 1;
         LeaveCriticalSection(&global_critical_section_for_catalog);
       } else {
-        Catalog_Unlock((int)s.entry);
+        Catalog_Unlock(s.entry);
         LeaveCriticalSection(&global_critical_section_for_catalog);
         return (int *)0x0;
       }
@@ -335,7 +335,7 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10006bb5
 // FUNCTION: DRAWCARDLIB 0x10008635
-BOOL Catalog_Unlock(int unused)
+BOOL Catalog_Unlock(void *unused)
 {
   LeaveCriticalSection(&global_critical_section_for_catalog);
 

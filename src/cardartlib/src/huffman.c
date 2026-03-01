@@ -11,6 +11,10 @@
 #include "haar.h"
 #include "assert.h"
 
+static uint BitStream_ReadBits(uint bit_count);
+static uint BitStream_ReadBit(void);
+int Huffman13_BuildDecodeTable(int node_count);
+
 // GLOBAL: CARDARTLIB 0x10021a88
 // GLOBAL: DRAWCARDLIB 0x10029fb0
 uint *DAT_10021a88 = (uint *)0x0;
@@ -105,8 +109,8 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
 
   s.local_14 = 0;
   s.out_base = out_dwords;
-  DAT_10021a88 = bitstream_start;
-  DAT_10021a8c = DAT_10021a88;
+  DAT_10021a88 = (uint *)bitstream_start;
+  DAT_10021a8c = (int)DAT_10021a88;
   DAT_10021a90 = bitstream_end;
   DAT_1001d1dc = 0;
   s.lookahead = (int)BitStream_ReadBits(8);
@@ -162,8 +166,8 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
     DAT_10020e00[s.i] = 0xffffffff >> (byte)s.i;
   }
 
-  DAT_10021a88 = bitstream_start;
-  DAT_10021a8c = DAT_10021a88;
+  DAT_10021a88 = (uint *)bitstream_start;
+  DAT_10021a8c = (int)DAT_10021a88;
   DAT_10021a90 = 100000;
   DAT_1001d1dc = 0;
   DAT_10020e84 = DAT_1001d1dc;
@@ -307,7 +311,7 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
   s.out_base = out_dwords;
 
   DAT_10021a88 = bitstream;
-  DAT_10021a8c = DAT_10021a88;
+  DAT_10021a8c = (int)DAT_10021a88;
   DAT_10021a90 = bitstream_end;
 
   if (((uint)bitstream & 3) == 0) {

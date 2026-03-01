@@ -6,7 +6,7 @@
 #include "mystdbool.h"
 
 int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar);
-BOOL Catalog_Unlock(int unused);
+BOOL Catalog_Unlock(void *unused);
 
 extern CRITICAL_SECTION global_critical_section_for_catalog;
 

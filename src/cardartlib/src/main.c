@@ -1,4 +1,3 @@
-#include "CardArtLib.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -87,9 +86,26 @@ VersionedArtCacheEntry g_versionedSmallArtCache[100];
 VersionedArtCacheEntry g_versionedBigArtCache[0x14];
 
 void CardArtLib_Shutdown(void);
+int LoadBigArt(int id,int version,int width,int height);
+int LoadSmallArt(int id,int version,int width,int height);
+void DestroyBigArt(int id,int version);
+void DestroySmallArt(int id,int version);
+int IsBigArtRightSize(int id,int version,int width,int height);
+void DestroyAllBigArts(void);
+void DestroyAllSmallArts(void);
+int IsBigArtIn(int id,int version);
+int IsSmallArtIn(int id,int version);
+int ReloadBigArtIfWrongSize(int id,int version,int width,int height);
+bool ReloadSmallArtIfWrongSize(int id,int version,int width,int height);
+int DrawBigArt(HDC hdc,RECT *rect,int id,int version);
+int DrawSmallArt(HDC hdc,RECT *rect,int id,int version);
 VersionedArtCacheEntry * FindVersionedSmallArtCacheEntry(int id,int version);
 void DestroyVersionedSmallArt(int id,int version);
 void DestroyAllVersionedSmallArts(void);
+static BOOL CardArtLib_Initialize(HINSTANCE instance);
+int LoadVersionedSmallArt(int id,int version,int width,int height);
+int DrawVersionedSmallArt(HDC hdc,RECT *rect,int id,int version);
+bool ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height);
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100030f0
@@ -134,15 +150,15 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   InitializeCriticalSection(&global_critical_section_for_small_art);
   InitializeCriticalSection(&global_critical_section_for_big_art);
   InitializeCriticalSection(&global_critical_section_for_catalog);
-  GetModuleFileNameA((HMODULE)0x0,&global_base_directory,0x105);
-  s.last_slash = strrchr(&global_base_directory,0x5c);
+  GetModuleFileNameA((HMODULE)0x0,global_base_directory,0x105);
+  s.last_slash = strrchr(global_base_directory,0x5c);
   *s.last_slash = '\0';
   strcpy(global_cartart_directory,global_base_directory);
   strcat(global_cartart_directory,s__CARDART_1001d1e0);
   InitCardArtGdiResources();
   strcpy(s.cards_dat_path,global_base_directory);
   strcat(s.cards_dat_path,s__CARDS_DAT_1001d1ec);
-  s.cards_file = fopen(s.cards_dat_path,&s__rb_1001d1f8);
+  s.cards_file = fopen(s.cards_dat_path,s__rb_1001d1f8);
 
   if (s.cards_file != (FILE *)0x0) {
     fread(&s.card_count,4,1,s.cards_file);
@@ -245,7 +261,7 @@ int LoadBigArt(int id,int version,int width,int height)
     InitBitmapInfo24bppTopDown(&s.bmi,width,height);
     s.bitmap = CreateDIBSection(s.mem_dc,&s.bmi,0,&s.dib_bits,(HANDLE)0x0,0);
     if (s.bitmap != (HBITMAP)0x0) {
-      s.decoded = Wvl_DecodeToBgr24((uint *)0x0,s.wvl_entry,width,height);
+      s.decoded = Wvl_DecodeToBgr24((byte *)0x0,s.wvl_entry,width,height);
       if (s.decoded != (uint *)0x0) {
         if ((-(width + width - width) & 3U) != 0) {
           s.align_bytes = 4 - (-(width + width - width) & 3U);
@@ -301,7 +317,7 @@ int IsBigArtIn(int id,int version)
 
   for (s.i = 0; s.i < g_versionedBigArtCount && s.result == 0; s.i++) {
     if (g_versionedBigArtCache[s.i].id == id && g_versionedBigArtCache[s.i].version == version) {
-      s.result = &g_versionedBigArtCache[s.i];
+      s.result = (int)&g_versionedBigArtCache[s.i];
     }
   }
 
@@ -485,14 +501,14 @@ int LoadSmallArt(int id,int version,int width,int height)
   ReleaseDC(GetDesktopWindow(),s.desktop_hdc);
 
   sprintf((char *)s.wvl_path,s__s__04d_WVL_1001d218,&global_cartart_directory,id);
-  s.wvl_entry = Catalog_LoadWvlEntry(0,s.wvl_path,0);
+  s.wvl_entry = Catalog_LoadWvlEntry(0,(char *)s.wvl_path,0);
   if (s.wvl_entry != (int *)0x0) {
     s.hdc = GetDC((HWND)0x0);
     ApplyCardArtPaletteToDc(s.hdc);
     InitBitmapInfo24bppTopDown(&s.bmi,width,height);
     s.hbm = CreateDIBSection(s.hdc,&s.bmi,0,&s.dib_bits,(HANDLE)0x0,0);
     if (s.hbm != (HBITMAP)0x0) {
-      s.decoded_bgr = Wvl_DecodeToBgr24((uint *)0x0,s.wvl_entry,width,height);
+      s.decoded_bgr = Wvl_DecodeToBgr24((byte *)0x0,s.wvl_entry,width,height);
       if (s.decoded_bgr != (uint *)0x0) {
         do {
           if ((-(width + width - width) & 3) != 0) {
@@ -538,7 +554,7 @@ int IsSmallArtIn(int id,int version)
   }
 
   if (g_cardPicCounts[id] > 1) {
-    if (FindVersionedSmallArtCacheEntry(id,version) != (undefined *)0x0) {
+    if (FindVersionedSmallArtCacheEntry(id,version) != (VersionedArtCacheEntry *)0x0) {
       return 1;
     } else {
       return 0;
@@ -697,14 +713,14 @@ int LoadVersionedSmallArt(int id,int version,int width,int height)
     sprintf((char *)s.wvl_path,s__s__04d_WVL_1001d234,&global_cartart_directory,id);
   }
 
-  s.wvl_entry = Catalog_LoadWvlEntry(0,s.wvl_path,0);
+  s.wvl_entry = Catalog_LoadWvlEntry(0,(char *)s.wvl_path,0);
   if (s.wvl_entry != (int *)0x0) {
     s.hdc = GetDC((HWND)0x0);
     ApplyCardArtPaletteToDc(s.hdc);
     InitBitmapInfo24bppTopDown(&s.bmi,width,height);
     s.hbm = CreateDIBSection(s.hdc,&s.bmi,0,&s.dib_bits,(HANDLE)0x0,0);
     if (s.hbm != (HBITMAP)0x0) {
-      s.decoded_bgr = Wvl_DecodeToBgr24((uint *)0x0,s.wvl_entry,width,height);
+      s.decoded_bgr = Wvl_DecodeToBgr24((byte *)0x0,s.wvl_entry,width,height);
       if (s.decoded_bgr != (uint *)0x0) {
         if ((-(width + width - width) & 3) != 0) {
           s.row_pad = 4 - (-(width + width - width) & 3);
@@ -813,7 +829,7 @@ bool ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height)
   }
 
   cache_entry = FindVersionedSmallArtCacheEntry(id,version);
-  if (cache_entry != (undefined *)0x0) {
+  if (cache_entry != (VersionedArtCacheEntry *)0x0) {
     if ((cache_entry->width == width) && (cache_entry->height == height)) {
       return 1;
     }

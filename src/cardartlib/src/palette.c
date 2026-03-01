@@ -9,11 +9,30 @@
 #include "assert.h"
 #include "palette.h"
 
+typedef struct OctNode OctNode;
+
+// SIZE 0x30
+typedef struct OctNode {
+    unsigned int      flags;          /* +0 : low byte == 1 => leaf */
+    unsigned int      palette_idx;    /* +4 */
+    OctNode           *children[8];   /* +8 */
+    byte              *list;          /* +0x28 */
+    int               list_count;     /* +0x2C */
+};
+STATIC_ASSERT(sizeof(OctNode) == 0x30, OctNode_wrong_size);
+
 /* Forward declarations for globals referenced before their definitions. */
 void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2);
 void DestroyCardArtPalette(void);
 undefined2 * ReadPalette(char *param_1,char *param_2);
 void DestroyPaletteOctree(void);
+BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
+                                           HBITMAP *out_bmp_optional,HGDIOBJ *obj_to_select_optional,void **out_bits_optional);
+int Octree_Destroy(OctNode *rootPtr);
+undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int param_3);
+int OctreeNode_FinalizeSubtree(OctNode *param_1);
+undefined4 InitOctreeBitTables(void);
+bool InitDiffSquaredLookupTable(void);
 
 undefined4 DAT_100ed70c[0x100];
 extern undefined1 global_RedPathBitsTable[0x800];
@@ -43,7 +62,7 @@ int DAT_1001d240 = 0x00000000;
 // GLOBAL: CARDARTLIB 0x1001d244
 // GLOBAL: DRAWCARDLIB 0x10021034
 // GLOBAL: DECKDLL 0x10031934
-undefined4 * PTR_DAT_1001d244 = &DAT_100ed70c;
+undefined4 * PTR_DAT_1001d244 = DAT_100ed70c;
 
 // GLOBAL: CARDARTLIB 0x1001d248
 // GLOBAL: DRAWCARDLIB 0x10021038
@@ -129,18 +148,6 @@ CRITICAL_SECTION global_critical_section_for_drawing;
 // GLOBAL: DRAWCARDLIB 0x10152020
 // GLOBAL: DECKDLL 0x101e6a60
 undefined2 DAT_10116cf0 = 0x0000;
-
-typedef struct OctNode OctNode;
-
-// SIZE 0x30
-typedef struct OctNode {
-    unsigned int      flags;          /* +0 : low byte == 1 => leaf */
-    unsigned int      palette_idx;    /* +4 */
-    OctNode           *children[8];   /* +8 */
-    byte              *list;          /* +0x28 */
-    int               list_count;     /* +0x2C */
-};
-STATIC_ASSERT(sizeof(OctNode) == 0x30, OctNode_wrong_size);
 
 // GLOBAL: CARDARTLIB 0x10031ea4
 // GLOBAL: DRAWCARDLIB 0x10028ef4
@@ -231,7 +238,7 @@ BOOL InitCardArtGdiResources(void)
 void ShutdownCardArtGdiResources(void)
 {
   if (global_screen_dc != (HDC)0x0) {
-    checked_DeleteDC_DeleteObject(global_screen_dc,DAT_100209e4);
+    checked_DeleteDC_DeleteObject(global_screen_dc,(HGDIOBJ)DAT_100209e4);
     global_screen_dc = (HDC)0x0;
     DeleteCriticalSection(&global_critical_section_for_drawing);
   }
@@ -529,7 +536,7 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
     return 0;
   }
 
-  if (g_paletteOctreeRoot != (int *)0x0) {
+  if (g_paletteOctreeRoot != (OctNode *)0x0) {
     Octree_Destroy(g_paletteOctreeRoot);
   }
   g_paletteOctreeRoot = OctreeNode_Create();
@@ -772,10 +779,10 @@ undefined4 Octree_FindNearestColor(uint param_1)
     byte *path;       /* ebp - 4 */
   } s;
 
-  s.path = &g_octPathTmp;
+  s.path = (byte *)&g_octPathTmp;
   s.node = g_paletteOctreeRoot;
 
-  Octree_BuildPathBytesFromRgb(param_1,&g_octPathTmp);
+  Octree_BuildPathBytesFromRgb(param_1,(undefined8 *)&g_octPathTmp);
 
   //TODO: how on earth can you mimic this with /Od?
   __asm {
@@ -855,7 +862,7 @@ uint Octree_FindNearestPaletteIndex(uint param_1)
   s.pbVar5 = &DAT_10031eb0;
   s.node = g_paletteOctreeRoot;
   
-  Octree_BuildPathBytesFromRgb(param_1,(uint *)&DAT_10031eb0);
+  Octree_BuildPathBytesFromRgb(param_1,(undefined8 *)&DAT_10031eb0);
 
   //TODO: how on earth can you mimic this with /Od?
   __asm {
@@ -998,7 +1005,7 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 void DestroyPaletteOctree(void)
 {
   Octree_Destroy(g_paletteOctreeRoot);
-  g_paletteOctreeRoot = (int *)0x0;
+  g_paletteOctreeRoot = (OctNode *)0x0;
 }
 
 // MATCHING
