@@ -29,6 +29,7 @@ These instructions apply to the entire repository.
 - The order of parameters in `cmp` and other commutative opcodes like `test`, `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.  Don't bother trying.
 - `register` on variables is ignored.  If a "variable" doesn't get written to the stack it's not actually a variable.
 - `imul` and `idiv` are aggressively avoided when multiplying and dividing by constants.  "Weird" math is probably multiplying or dividing by a non-power-of-2 constant.
+- `switch()` statements can compile using several different strategies, including various jump tables.  Don't try to convert them to other control flow structures (`if`, `goto`, etc..).  Once the rest of the function is close they'll fall into place.
 
 ## Matching Tips from Ghidra output
 - Ghidra is pretty cavalier about restructuring control flow in a way that makes matching difficult:

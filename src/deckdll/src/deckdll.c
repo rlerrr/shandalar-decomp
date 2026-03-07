@@ -436,6 +436,8 @@ static int global_deck_num_cards = 0;
 
 // GLOBAL: DECKDLL 0x101a9694
 static int global_deck_num_entries = 0;
+// GLOBAL: DECKDLL 0x1012e88c
+static int global_deck_num_entries_copy = 0;
 
 // GLOBAL: DECKDLL 0x1019fed0
 DeckEntry global_edited_deck[300];
@@ -494,6 +496,20 @@ static int global_filter_gle_dlg_value = 0;
 static HBRUSH global_brush_gold1 = NULL;
 static HBRUSH global_brush_gold2 = NULL;
 static HBRUSH global_brush_mediumgrey = NULL;
+static HBRUSH global_create_brush_0 = NULL;
+static HBRUSH global_create_brush_1 = NULL;
+static HBRUSH global_create_brush_2 = NULL;
+static HBRUSH global_create_brush_3 = NULL;
+static HBRUSH global_create_brush_4 = NULL;
+static HBRUSH global_create_brush_5 = NULL;
+static HBRUSH global_create_brush_6 = NULL;
+static HANDLE global_delete_brush_handle_0 = NULL;
+static HANDLE global_delete_brush_handle_1 = NULL;
+static HANDLE global_delete_brush_handle_2 = NULL;
+static HANDLE global_delete_brush_handle_3 = NULL;
+static HANDLE global_delete_brush_handle_4 = NULL;
+static HANDLE global_delete_brush_handle_5 = NULL;
+static HANDLE global_delete_brush_handle_6 = NULL;
 
 COLORREF global_colorref_darkgrey = 0;
 COLORREF global_colorref_flesh = 0;
@@ -554,6 +570,57 @@ HFONT global_font_42unused = NULL;
 HFONT global_font_40percent = NULL;
 HFONT global_font_28percent = NULL;
 HFONT global_font_32 = NULL;
+
+static int global_fonts_init_state = 0;
+
+static HBITMAP global_damage_pic = NULL;
+static HBITMAP global_card_counters_pic = NULL;
+static HBITMAP global_mana_symbols_pic = NULL;
+static HBITMAP global_abilities_pic = NULL;
+static HBITMAP global_mana_stripes_pic = NULL;
+static HBITMAP global_summon_pic = NULL;
+static HBITMAP global_dying_pic = NULL;
+static HBITMAP global_target_pic = NULL;
+static HBITMAP global_cant_target_pic = NULL;
+static HBITMAP global_will_untap_pic = NULL;
+
+static HFONT global_smallcard_pt_font = NULL;
+static HFONT global_damage_font = NULL;
+static HFONT global_idtag_font = NULL;
+
+static COLORREF global_palette_col_c9 = 0;
+static COLORREF global_palette_col_9e_a = 0;
+static COLORREF global_palette_col_9e_b = 0;
+static COLORREF global_palette_col_7c = 0;
+static COLORREF global_palette_col_2f = 0;
+static COLORREF global_palette_col_bf = 0;
+static COLORREF global_palette_col_5d = 0;
+static COLORREF global_palette_col_1f = 0;
+
+static HPEN global_pen_palette_5d = NULL;
+static HPEN global_pen_palette_1f = NULL;
+static HPEN global_debug_pens[10] = {0};
+
+static LOGFONT global_font_template_ini = {
+    0,                           // lfHeight
+    0,                           // lfWidth
+    0,                           // lfEscapement
+    0,                           // lfOrientation
+    FW_NORMAL,                   // lfWeight
+    FALSE,                       // lfItalic
+    FALSE,                       // lfUnderline
+    FALSE,                       // lfStrikeOut
+    ANSI_CHARSET,                // lfCharSet
+    OUT_DEFAULT_PRECIS,          // lfOutPrecision
+    CLIP_DEFAULT_PRECIS,         // lfClipPrecision
+    DEFAULT_QUALITY,             // lfQuality
+    DEFAULT_PITCH | FF_DONTCARE, // lfPitchAndFamily
+    {
+        'M', 'S', ' ', 'S', 'a', 'n', 's', ' ', 'S', 'e', 'r', 'i', 'f', '\0',
+        '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+        '\0', '\0', '\0', '\0', '\0', '\0'} // lfFaceName[LF_FACESIZE]
+};
+static LOGFONT global_font_from_ini;
 
 // GLOBAL: DECKDLL 0x101bbc28
 static HWND global_button_stats_hwnd;
@@ -711,7 +778,8 @@ static int global_num_expansions = 0;
 static int global_expansion_size = 0;
 const card_ptr_t *cards_ptr;
 // GLOBAL: DECKDLL 0x10147220
-static card_ptr_t *global_raw_cards_ptr;
+static card_ptr_t global_raw_cards_storage[1000];
+static card_ptr_t *global_raw_cards_ptr = global_raw_cards_storage;
 static char *card_coded;
 // GLOBAL: DECKDLL 0x1012df3c
 static char *global_base_txt;
@@ -719,10 +787,11 @@ static char *global_raw_dbinfo;
 static char *global_raw_rarities;
 
 // GLOBAL: DECKDLL 0x10145330
-static OrigRarities *global_origrarities;
+static OrigRarities global_origrarities[1000];
 static bool global_db_read;
 
 static bool global_using_main_db = false;
+static char *global_deckbuilder_csv_raw;
 static int (*global_check_card_count_fn)(const DeckEntry *, int, int);
 static int (*global_is_valid_card_fn)(int);
 static bool (*global_colors_match_fn)(iid_t, color_test_t);
@@ -858,6 +927,8 @@ const Restriction restrictions[] =
 #define RECT_HEIGHT(which) ((which).bottom - (which).top)
 
 static bool check_filters(csvid_t csvid);
+static int FUN_1002709f(unsigned int param_1, int param_2);
+static unsigned int FUN_100271e3(unsigned char param_1);
 
 LRESULT CALLBACK wndproc_CardClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_CardListFilterClass(HWND, UINT, WPARAM, LPARAM);
@@ -958,39 +1029,60 @@ char *readline(FILE* file, char* dest, int sz)
 // FUNCTION: DECKDLL 0x10028350
 int load_text(const char *file_name, const char *section_name)
 {
-  char path[MAX_PATH];
+  char section_line[80];
+  char path[128];
+  char line[80];
   FILE* f;
-  char line[160];
-  char section_line[160];
-  int num_text;
+  unsigned int num_text;
   int i;
 
-  strcpy(path, file_name);
-  if (!strchr(path, '.'))
+  strcpy(section_line, "@");
+  strcat(section_line, section_name);
+  strcat(section_line, "\n");
+
+  strcpy(path, global_base_directory);
+  strcat(path, "\\");
+  strcat(path, file_name);
+  if (!strchr(file_name, '.'))
     strcat(path, ".txt");
-  
+
   f = fopen(path, "rt");
   if (f == NULL)
     return -1;
 
-  sprintf(section_line, "@%s", section_name);
-
-  do
+  while (1)
   {
-    if (!readline(f, line, 160))
+    if (!strcmp(section_line, line))
+    {
+      fscanf(f, "%d", &num_text);
+      fgets(line, 80, f);
+      if (num_text > 225)
+      {
+        fclose(f);
+        return -1;
+      }
+      i = 0;
+      while (1)
+      {
+        if (i >= (int)num_text)
+        {
+          fclose(f);
+          return num_text;
+        }
+        if (!fgets(text_lines[i], 80, f))
+          break;
+        text_lines[i][strlen(text_lines[i])] = 0;
+        ++i;
+      }
+      fclose(f);
       return -1;
-  } while (strcmp(line, section_line));
+    }
+    if (!fgets(line, 80, f))
+      break;
+  }
 
-  readline(f, line, 160);
-  num_text = atoi(line);
-  if (num_text < 0 || num_text >= 500)
-    return -1;
-
-  for (i = 0; i < num_text; ++i)
-    if (!readline(f, text_lines[i], 128))
-      return -1;
-
-  return num_text;
+  fclose(f);
+  return -1;
 }
 
 static __inline void textout(HDC hdc, int x, int y, const char *txt)
@@ -1087,191 +1179,283 @@ num_bits_set(unsigned int v)
   return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24; // count
 }
 
+static char read_db_empty_rules[1];
+static char read_db_empty_flavor[1];
+static const char *const read_db_artist_names[] = {
+    "None",
+    "Amy Weber",
+    "Andi Rusu",
+    "Anson Maddocks",
+    "Anthony Waters",
+    "Brian Snoddy",
+    "Bryon Wackwitz",
+    "Christopher Rush",
+    "Cornelius Brudi",
+    "Dameon Willich",
+    "Dan Frazier",
+    "Daniel Gelon",
+    "Dennis Detwiller",
+    "Douglas Shuler",
+    "Drew Tucker",
+    "Edward Beard Jr.",
+    "Fay Jones",
+    "Frank Frazier",
+    "Harold McNeill",
+    "Heather Hudson",
+    "Jeff A. Menges",
+    "Jesper Myrfors",
+    "Julie Baroh",
+    "Justin Hampton",
+    "Kaja & Phil Foglio",
+    "Kaja Foglio",
+    "Ken Meyer Jr.",
+    "Kerstin Kaman",
+    "Kev Brockschmidt",
+    "Kristen Bishop",
+    "Liz Danforth",
+    "Margaret Organ-Kean",
+    "Mark Poole",
+    "Mark Tedin",
+    "Melissa Benson",
+    "Michael Whelan",
+    "Mike Kimble",
+    "Nicola Leonard",
+    "Nene Thomas",
+    "Pat Morrissey",
+    "Pete Venters",
+    "Phil Foglio",
+    "Quinton Hoover",
+    "Randy Asplund-Faith",
+    "Richard Kane-Ferguson",
+    "Richard Thomas",
+    "Rob Alexander",
+    "Ron Spencer",
+    "Sandra Everingham",
+    "Scott Kirschner",
+    "Susan Van Camp",
+    "Tom Wanerstrand",
+    "Unknown",
+};
+
 // FUNCTION: DECKDLL 0x1001a940
-static int read_db_guts(void)
+static int read_db_guts(const char *cards_dat_filename)
 {
-  int record_size;
-  unsigned int offset;
-  char nul;
   card_ptr_t *cp;
   int i;
   int j;
+  char flavor_text_buf[1000];
   char *p;
+  char rules_text_buf[1000];
+  size_t record_size;
+  FILE *cards_dat;
+  unsigned int offset;
 
-  global_db_read = true;
+  cards_dat = fopen(cards_dat_filename, "rb");
+  if (cards_dat == NULL)
+    return 0;
 
-  if (!global_using_main_db)
+  fread(&global_available_slots, 4, 1, cards_dat);
+  fread(&record_size, 4, 1, cards_dat);
+
+  global_base_txt = (char *)malloc(record_size);
+  if (global_base_txt == NULL)
   {
+    fclose(cards_dat);
+    return 0;
+  }
+
+  fread(global_raw_cards_storage, 152, global_available_slots, cards_dat);
+  fread(global_base_txt, 1, record_size, cards_dat);
+  fclose(cards_dat);
+
+  global_raw_cards_ptr = global_raw_cards_storage;
+  cards_ptr = global_raw_cards_storage;
+
+  offset = (unsigned int)global_base_txt;
+
+  for (i = 0; i < global_available_slots; ++i)
+  {
+    cp = &global_raw_cards_storage[i];
+    cp->full_name += offset;
+    cp->name += offset;
+    cp->type_text += offset;
+    cp->rules_text += offset;
+    cp->flavor_text += offset;
+
+    if (!strcasecmp(cp->rules_text, "None"))
+      cp->rules_text = read_db_empty_rules;
+
+    if (!strcasecmp(cp->flavor_text, "None"))
+      cp->flavor_text = read_db_empty_flavor;
+    else if (!strcasecmp(cp->flavor_text, "Blank"))
+      cp->flavor_text = read_db_empty_flavor;
+
+    cp->artist = read_db_artist_names[(int)cp->artist];
+
+    if (cp->num_pics == 0)
+      cp->num_pics = 1;
+  }
+
+  for (i = 0; i < global_available_slots; ++i)
+    if (global_raw_cards_storage[i].expansion & 0x40)
+      global_raw_cards_storage[i].expansion = 0x80;
+
+  for (i = 0; i < global_available_slots; ++i)
+    if (global_raw_cards_storage[i].req.req_colorless == 0x11)
+      global_raw_cards_storage[i].req.req_colorless = 10;
+
+  for (i = 0; i < global_available_slots; ++i)
+  {
+    j = 0;
+    for (p = global_raw_cards_storage[i].rules_text; *p; ++p)
     {
-      FILE *cards_dat = fopen("Cards.dat", "r");
-      if (cards_dat == NULL)
-        return 0;
-
-      fread(&global_available_slots, 1, 4, cards_dat);
-      fread(&record_size, 1, 4, cards_dat);
-
-      if (!(global_raw_cards_ptr = (card_ptr_t *)malloc(152 * global_available_slots)) || !(card_coded = (char *)malloc((global_available_slots + 7) >> 3)) || !(global_base_txt = (char *)malloc(record_size))) {
-        fclose(cards_dat);
-        return 0;
-      }
-
-      fread(global_raw_cards_ptr, 1, 152 * global_available_slots, cards_dat);
-      fread(global_base_txt, 1, record_size, cards_dat);
-
-      fread(&record_size, 1, 4, cards_dat);
-      if (record_size > ((global_available_slots + 7) >> 3))
+      if ((*p == '\\' && p[1] == '\\') || (*p == '\\' && p[1] == 'n'))
       {
-        fatal_err("Fatal error: inconsistent available_slots and card_coded record_size in Cards.dat", 0);
-        return 0;
+        ++p;
+        rules_text_buf[j] = '\n';
       }
-      fread(card_coded, 1, record_size, cards_dat);
-      fclose(cards_dat);
+      else
+        rules_text_buf[j] = *p;
+
+      ++j;
     }
 
+    rules_text_buf[j] = '\0';
+    strcpy(global_raw_cards_storage[i].rules_text, rules_text_buf);
+  }
+
+  for (i = 0; i < global_available_slots; ++i)
+  {
+    j = 0;
+    for (p = global_raw_cards_storage[i].flavor_text; *p; ++p)
     {
-      bool is_mana_letter[256] = {0};
-      is_mana_letter['B'] = true;
-      is_mana_letter['U'] = true;
-      is_mana_letter['G'] = true;
-      is_mana_letter['R'] = true;
-      is_mana_letter['W'] = true;
-
-      nul = 0;
-
-      offset = (unsigned int)global_base_txt;
-
-      cp = global_raw_cards_ptr;
-      for (i = 0; i < global_available_slots; ++i, ++cp)
+      if ((*p == '\\' && p[1] == '\\') || (*p == '\\' && p[1] == 'n'))
       {
-        cp->full_name += offset;
-        cp->name += offset;
-        cp->type_text += offset;
-        cp->artist = "None";
-        if (cp->mana_cost_text)
-          cp->mana_cost_text += offset;
-        cp->rules_text += offset;
-        cp->flavor_text += offset;
-
-        if (!cp->rules_text || !strcasecmp(cp->rules_text, "None"))
-          cp->rules_text = &nul;
-
-        if (!cp->flavor_text || !strcasecmp(cp->flavor_text, "None") || !strcasecmp(cp->flavor_text, "Blank"))
-          cp->flavor_text = &nul;
-
-        if (!cp->num_pics)
-          cp->num_pics = 1;
-
-        cp->req.req_hybrid = 0;
-        cp->req.hybrid_type = HYBRID_0;
-
-        if (cp->color == CP_COLOR_MULTI && cp->mana_cost_text)
-        {
-          for (p = cp->mana_cost_text; *p; ++p)
-            if (p[0] == '|' && is_mana_letter[p[1]] && is_mana_letter[p[2]])
-            {
-              color_test_t cols = COLOR_TEST_0;
-              hybrid_t hy;
-              for (j = 1; j <= 2; ++j)
-                switch (p[j])
-                {
-                case 'B':
-                  cols |= COLOR_TEST_BLACK;
-                  if (cp->req.req_black > 0)
-                    --cp->req.req_black;
-                  break;
-                case 'U':
-                  cols |= COLOR_TEST_BLUE;
-                  if (cp->req.req_blue > 0)
-                    --cp->req.req_blue;
-                  break;
-                case 'G':
-                  cols |= COLOR_TEST_GREEN;
-                  if (cp->req.req_green > 0)
-                    --cp->req.req_green;
-                  break;
-                case 'R':
-                  cols |= COLOR_TEST_RED;
-                  if (cp->req.req_red > 0)
-                    --cp->req.req_red;
-                  break;
-                case 'W':
-                  cols |= COLOR_TEST_WHITE;
-                  if (cp->req.req_white > 0)
-                    --cp->req.req_white;
-                  break;
-                default:
-                  fatal("%s: can't parse hybrid mana cost (\"%s\"->\"%c%c%c\")", cp->full_name, cp->mana_cost_text, p[0], p[1], p[2]);
-                  break;
-                }
-
-              // This works only because all hybrid_t values exactly match one of the subset of color_test_t's that can be constructed above
-              hy = cols;
-
-              if (++cp->req.req_hybrid == 1)
-              {
-                if ((cols & ~COLOR_TEST_ANY_COLORED) || num_bits_set(cols & COLOR_TEST_ANY_COLORED) != 2)
-                  fatal("%s: invalid hybrid mana cost (\"%s\"->\"%c%c%c\", 0x%x)", cp->full_name,
-                        cp->mana_cost_text, p[0], p[1], p[2], cols);
-                cp->req.hybrid_type = hy;
-              }
-              else if (cp->req.hybrid_type != hy)
-                fatal("%s: mixed hybrid mana cost (\"%s\"->\"%c%c%c\", 0x%x, previously 0x%x)", cp->full_name,
-                      cp->mana_cost_text, p[0], p[1], p[2], hy, cp->req.hybrid_type);
-
-              p += 2;
-            }
-        }
+        ++p;
+        flavor_text_buf[j] = '\n';
       }
+      else
+        flavor_text_buf[j] = *p;
 
-      for (i = 0; i < global_available_slots; ++i)
-      {
-        cp = &global_raw_cards_ptr[i];
-        translate_backslash_n_to_newline(cp->rules_text);
-        translate_backslash_n_to_newline(cp->flavor_text);
-      }
+      ++j;
     }
 
-    cards_ptr = global_raw_cards_ptr;
+    flavor_text_buf[j] = '\0';
+    strcpy(global_raw_cards_storage[i].flavor_text, flavor_text_buf);
   }
 
+  for (i = 0; i < global_available_slots; ++i)
   {
-    FILE *dbinfo_dat = fopen("DBInfo.dat", "rb");
-    int raw_dbinfo_size;
-    if (dbinfo_dat == NULL)
-      return 0;
-
-    fread(&record_size, 1, 4, dbinfo_dat);
-    if (record_size != global_available_slots)
-      return 0;
-
-    raw_dbinfo_size = 16 * record_size;
-    if (!(global_raw_dbinfo = (char *)malloc(raw_dbinfo_size)))
-      return 0;
-
-    fread(global_raw_dbinfo, 1, raw_dbinfo_size, dbinfo_dat);
+    cp = &global_raw_cards_storage[i];
+    cp->sleight_color = 0;
+    cp->hack_colors = 0;
+    cp->currently_zero_for_all_cards = 0;
+    cp->enchant_type = 0;
+    cp->hack_mode = 0;
   }
 
-  {
-    FILE *rarity_dat = fopen("Rarity.dat", "rb");
-    int raw_rarities_size;
-    if (rarity_dat == NULL)
-      return 0;
+#define SET_HACK(idx, col)                        \
+  global_raw_cards_storage[(idx)].hack_colors = (col); \
+  global_raw_cards_storage[(idx)].currently_zero_for_all_cards = 0; \
+  global_raw_cards_storage[(idx)].enchant_type = 0; \
+  global_raw_cards_storage[(idx)].hack_mode = 0
 
-    fread(&record_size, 1, 4, rarity_dat);
-    if (record_size != global_available_slots)
-      return 0;
+  global_raw_cards_storage[0x227].sleight_color = 0x28;
+  global_raw_cards_storage[8].sleight_color = 2;
+  global_raw_cards_storage[0x10].sleight_color = 0x20;
+  global_raw_cards_storage[0x13].sleight_color = 2;
+  global_raw_cards_storage[0x16].sleight_color = 0x10;
+  global_raw_cards_storage[0x17].sleight_color = 4;
+  global_raw_cards_storage[0x20].sleight_color = 0x10;
+  global_raw_cards_storage[0x21].sleight_color = 2;
+  global_raw_cards_storage[0x22].sleight_color = 4;
+  global_raw_cards_storage[0x23].sleight_color = 8;
+  global_raw_cards_storage[0x24].sleight_color = 0x10;
+  global_raw_cards_storage[0x25].sleight_color = 0x20;
+  global_raw_cards_storage[0x33].sleight_color = 0x20;
+  global_raw_cards_storage[0x34].sleight_color = 4;
+  global_raw_cards_storage[0x3a].sleight_color = 8;
+  global_raw_cards_storage[0x3b].sleight_color = 2;
+  global_raw_cards_storage[0x51].sleight_color = 2;
+  global_raw_cards_storage[100].sleight_color = 0x20;
+  global_raw_cards_storage[0x69].sleight_color = 8;
+  global_raw_cards_storage[0x7b].sleight_color = 0x10;
+  global_raw_cards_storage[0x80].sleight_color = 0x20;
+  global_raw_cards_storage[0x8e].sleight_color = 2;
+  global_raw_cards_storage[0x8f].sleight_color = 8;
+  global_raw_cards_storage[0x1b7].sleight_color = 4;
+  global_raw_cards_storage[0x367].sleight_color = 2;
+  global_raw_cards_storage[0xaf].sleight_color = 2;
+  global_raw_cards_storage[0xc4].sleight_color = 0x20;
+  global_raw_cards_storage[199].sleight_color = 4;
+  global_raw_cards_storage[200].sleight_color = 0x10;
+  global_raw_cards_storage[0x30d].sleight_color = 0x20;
+  global_raw_cards_storage[0xee].sleight_color = 0x30;
+  global_raw_cards_storage[0x16c].sleight_color = 4;
+  global_raw_cards_storage[0xf2].sleight_color = 2;
+  global_raw_cards_storage[0xf5].sleight_color = 4;
+  global_raw_cards_storage[0xf6].sleight_color = 2;
+  global_raw_cards_storage[0x353].sleight_color = 2;
+  global_raw_cards_storage[0x11b].sleight_color = 2;
+  global_raw_cards_storage[0x11c].sleight_color = 0x20;
+  global_raw_cards_storage[0x120].sleight_color = 8;
 
-    fread(&global_num_expansions, 1, 4, rarity_dat);
-    if (global_num_expansions >= 32 * EXPANSION_LIST_SIZE)
-      fatal("Too many expansions\nRead %d from rarity.dat\nThis versions of DeckDll.dll supports only %d", global_num_expansions, 32 * EXPANSION_LIST_SIZE - 1);
+  SET_HACK(0x125, 2);
+  SET_HACK(7, 8);
+  SET_HACK(0x18, 2);
+  SET_HACK(0x1a, 0x10);
+  SET_HACK(0x132, 0x10);
+  SET_HACK(0x2d, 0x30);
+  SET_HACK(0x4d, 2);
+  SET_HACK(0x56, 0x20);
+  SET_HACK(0x5f, 8);
+  SET_HACK(0x66, 0x10);
+  SET_HACK(0x3a9, 0x10);
+  SET_HACK(0x1ab, 4);
+  SET_HACK(0x7f, 4);
+  SET_HACK(0x86, 2);
+  SET_HACK(0x88, 2);
+  SET_HACK(0x154, 4);
+  SET_HACK(0x90, 8);
+  SET_HACK(0x93, 8);
+  SET_HACK(0x96, 4);
+  SET_HACK(0x2cf, 2);
+  SET_HACK(0x367, 2);
+  SET_HACK(0xae, 2);
+  SET_HACK(0xba, 4);
+  SET_HACK(0xda, 4);
+  SET_HACK(0x30e, 4);
+  SET_HACK(0xde, 8);
+  SET_HACK(900, 2);
+  SET_HACK(0xfd, 4);
+  SET_HACK(0x109, 0x10);
+  SET_HACK(0x123, 2);
 
-    global_expansion_size = (3 * global_num_expansions + 7) >> 3;
-    raw_rarities_size = record_size * global_expansion_size;
-    if (!(global_raw_rarities = (char *)malloc(raw_rarities_size + 4)))
-      return 0;
+  global_raw_cards_storage[0x1c2].sleight_color = 0x10;
+  global_raw_cards_storage[0x225].sleight_color = 2;
+  global_raw_cards_storage[0xd2].sleight_color = 2;
+  global_raw_cards_storage[0x60].sleight_color = 0x10;
 
-    fread(global_raw_rarities, 1, raw_rarities_size, rarity_dat);
-  }
+  SET_HACK(0x196, 4);
+  SET_HACK(0x1a0, 8);
+  SET_HACK(0x1b5, 8);
+  SET_HACK(0x1b8, 4);
+  SET_HACK(0x1c5, 4);
+  SET_HACK(0x1c7, 4);
+  SET_HACK(9, 0x12);
+  SET_HACK(0xc, 10);
+  SET_HACK(0xbd, 0x30);
+  SET_HACK(0xd4, 0x28);
+  SET_HACK(0xd8, 0x22);
+  SET_HACK(0xdb, 2);
+  SET_HACK(0xf1, 0x18);
+  SET_HACK(0xfc, 0xc);
+  SET_HACK(0xfe, 0x24);
+  SET_HACK(0x102, 6);
+  SET_HACK(0x10a, 0x14);
+  SET_HACK(0x60, 0x10);
+
+#undef SET_HACK
 
   return global_available_slots;
 }
@@ -1285,103 +1469,159 @@ free_db(void)
   if (!global_using_main_db)
   {
     FREEZ(global_base_txt);
-    FREEZ(global_raw_cards_ptr);
     FREEZ(card_coded);
   }
 
+  global_raw_cards_ptr = global_raw_cards_storage;
   cards_ptr = NULL;
 }
 
 static int
 read_db(void)
 {
-  int rval = read_db_guts();
+  int rval = read_db_guts("Cards.dat");
+  if (rval)
+    global_db_read = true;
   if (!rval)
     free_db();
   return rval;
 }
 
-// FUNCTION: DECKDLL 0x1001b832
-static void make_orig_rarities(void)
+// FUNCTION: DECKDLL 0x1001b510
+static char *
+CsvParseNextField(char **txt)
 {
-  int i;
-  global_origrarities = (OrigRarities *)malloc(sizeof(OrigRarities) * global_available_slots);
+  char *field;
+  char *next;
 
-  for (i = 0; i < global_available_slots; ++i)
+  field = *txt;
+
+  if (*field == '"')
   {
-    const card_ptr_t *cp = &cards_ptr[i];
-    OrigRarities *r = &global_origrarities[i];
-    int rs;
-    uint32_t ex = cp->expansion;
-    uint32_t expr;
-    int j;
+    field += 1;
+    next = strchr(field, '"');
+    *next = '\0';
+    if (next[1] == ',')
+      next += 2;
+    else
+      next += 3;
+  }
+  else
+  {
+    char *comma = strchr(field, ',');
+    char *cr = strchr(field, '\r');
 
-    if (ex & 2)
-      rs = SET_ANTIQUITIES;
-    else if (ex & 4)
-      rs = SET_ARABIAN_NIGHTS;
-    else if (ex & 8)
-      rs = SET_ASTRAL;
-    else if (ex & 0x20)
-      rs = SET_THE_DARK;
-    else if (ex & 0x100)
-      rs = SET_LEGENDS;
-    else if (ex & 0x200)
-      rs = SET_PROMO;
-    else if (ex & 0x800)
-      rs = SET_UNLIMITED;
-    else if ((ex & 0x40) || ((ex & 0x1000) && global_cfg_view_all))
-      rs = SET_8TH_EDITION;
-    else if (ex & 0x10)
-      rs = SET_FALLEN_EMPIRES;
-    else if (ex & 0x80)
-      rs = SET_TEMPEST;
-    else if (ex & 0x400)
-      rs = SET_RANDOM;
+    if (!comma || cr <= comma)
+    {
+      *cr = '\0';
+      next = cr + 2;
+    }
     else
     {
-      r->set = SET_INVALID;
-      r->rarity = 0;
-      r->exp_rarities[0] = '-';
-      r->exp_rarities[1] = '-';
-      r->exp_rarities[2] = '-';
-      r->exp_rarities[3] = '-';
-      continue;
-    }
-
-    r->set = rs;
-
-    switch (BYTE0(cp->rarity))
-    {
-    case 1:
-      r->rarity = 'C';
-      break;
-    case 4:
-      r->rarity = 'U';
-      break;
-    case 2:
-      r->rarity = 'R';
-      break;
-    default:
-      r->rarity = '-';
-      break;
-    }
-
-    expr = cp->expansion_rarity;
-    for (j = 0; j < 4; ++j, expr >>= 4)
-    {
-      int xr = expr & 0xf;
-
-      if (!xr || xr > 9)
-        r->exp_rarities[j] = '-';
-      else if (xr < 5)
-        r->exp_rarities[j] = 'U';
-      else if (xr < 9)
-        r->exp_rarities[j] = 'C';
-      else
-        r->exp_rarities[j] = 'R';
+      *comma = '\0';
+      next = comma + 1;
     }
   }
+
+  *txt = field;
+  return next;
+}
+
+// FUNCTION: DECKDLL 0x1001b832
+static int
+make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
+{
+  int rval = 0;
+  int i;
+  HANDLE hfile;
+  DWORD size;
+  DWORD bytes_read;
+  char *line;
+  char *next;
+  char set_names[7][15] = {
+      "Antiquities",
+      "Arabian",
+      "Astral",
+      "The Dark",
+      "Legends",
+      "Promo",
+      "Unlimited",
+  };
+
+  for (i = 0; i < global_available_slots; ++i)
+    ((unsigned char *)orig_rarities)[i * 6] = SET_INVALID;
+
+  hfile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+  if (hfile != INVALID_HANDLE_VALUE)
+  {
+    size = GetFileSize(hfile, NULL);
+    global_deckbuilder_csv_raw = (char *)malloc(size + 1);
+    if (global_deckbuilder_csv_raw)
+    {
+      ReadFile(hfile, global_deckbuilder_csv_raw, size, &bytes_read, NULL);
+      line = global_deckbuilder_csv_raw;
+      line = strchr(global_deckbuilder_csv_raw, '\n');
+      line += 1;
+      line = strchr(line, '\n');
+
+      for (i = 0; i < global_available_slots; ++i, line += 1)
+      {
+        unsigned char set_id;
+
+        next = line;
+        next = CsvParseNextField(&line);
+        line = next;
+        next = CsvParseNextField(&line);
+        line = next;
+        next = CsvParseNextField(&line);
+
+        for (set_id = 0; set_id < 7 && strcmp(set_names[set_id], line); ++set_id)
+          ;
+
+        if (set_id == 7)
+        {
+          ((unsigned char *)orig_rarities)[i * 6] = SET_INVALID;
+          ((char *)orig_rarities)[i * 6 + 2] = '-';
+          ((char *)orig_rarities)[i * 6 + 3] = '-';
+          ((char *)orig_rarities)[i * 6 + 4] = '-';
+          ((char *)orig_rarities)[i * 6 + 5] = '-';
+        }
+        else
+        {
+          ((unsigned char *)orig_rarities)[i * 6] = set_id;
+
+          line = next;
+          next = CsvParseNextField(&line);
+          ((char *)orig_rarities)[i * 6 + 1] = *line;
+
+          line = next;
+          next = CsvParseNextField(&line);
+          ((char *)orig_rarities)[i * 6 + 2] = *line;
+
+          line = next;
+          next = CsvParseNextField(&line);
+          ((char *)orig_rarities)[i * 6 + 3] = *line;
+
+          line = next;
+          next = CsvParseNextField(&line);
+          ((char *)orig_rarities)[i * 6 + 4] = *line;
+
+          line = next;
+          next = CsvParseNextField(&line);
+          ((char *)orig_rarities)[i * 6 + 5] = *line;
+        }
+
+        line = next;
+        line = strchr(next, '\n');
+      }
+
+      rval = 1;
+    }
+
+    CloseHandle(hfile);
+  }
+
+  return rval;
 }
 
 static int
@@ -1400,16 +1640,67 @@ config_get_int(int deflt, const char *keyname)
 static void
 read_manalink_ini(void)
 {
-  global_cfg_consolidate = config_get_int(1, "Consolidate");
-  global_cfg_music = config_get_int(1, "Music");
-  global_cfg_effects = config_get_int(1, "Effects");
-  global_cfg_no_frame = config_get_int(0, "NoFrame");
-  global_cfg_expand_text = config_get_int(0, "ExpandTextOnBigCard");
-  global_cfg_read_by_name = config_get_int(0, "ReadByName");
-  global_cfg_view_all = config_get_int(0, "ViewAll");
-  config_get_str(MAX_NAMELEN, "Name", "User", global_cfg_player_name);
-  config_get_str(MAX_NAMELEN, "Email", "User E-Mail", global_cfg_email);
-  config_get_str(MAX_PATH, "Skin", ".", global_cfg_skin_name);
+  HKEY key;
+  BYTE buf[100];
+  DWORD buflen;
+
+  if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DeckBuilderOptions", 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS)
+  {
+    buflen = 10;
+    if (RegQueryValueEx(key, "Consolidate", NULL, NULL, buf, &buflen) == ERROR_SUCCESS)
+      sscanf((char *)buf, "%d", &global_cfg_consolidate);
+    else
+      global_cfg_consolidate = 1;
+
+    if (RegQueryValueEx(key, "Music", NULL, NULL, buf, &buflen) == ERROR_SUCCESS)
+      sscanf((char *)buf, "%d", &global_cfg_music);
+    else
+      global_cfg_music = 1;
+
+    if (RegQueryValueEx(key, "Effects", NULL, NULL, buf, &buflen) == ERROR_SUCCESS)
+      sscanf((char *)buf, "%d", &global_cfg_effects);
+    else
+      global_cfg_effects = 1;
+
+    RegCloseKey(key);
+  }
+  else
+  {
+    global_cfg_consolidate = 1;
+    global_cfg_music = 1;
+    global_cfg_effects = 1;
+  }
+
+  if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering", 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS)
+  {
+    buflen = 100;
+    if (RegQueryValueEx(key, "Name", NULL, NULL, buf, &buflen) == ERROR_SUCCESS)
+      strcpy(global_cfg_player_name, (char *)buf);
+    else
+      strcpy(global_cfg_player_name, "User");
+
+    buflen = 100;
+    if (RegQueryValueEx(key, "Email", NULL, NULL, buf, &buflen) == ERROR_SUCCESS)
+      strcpy(global_cfg_email, (char *)buf);
+    else
+      strcpy(global_cfg_email, "User E-Mail");
+
+    RegCloseKey(key);
+  }
+  else
+    strcpy(global_cfg_email, "User E-Mail");
+
+  if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions", 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS)
+  {
+    buflen = 100;
+    if (RegQueryValueEx(key, "ExpandTextOnBigCard", NULL, NULL, buf, &buflen) == ERROR_SUCCESS)
+      sscanf((char *)buf, "%d", &global_cfg_expand_text);
+    else
+      global_cfg_expand_text = 0;
+    RegCloseKey(key);
+  }
+  else
+    global_cfg_expand_text = 0;
 }
 
 static void
@@ -1430,14 +1721,43 @@ cfg_write_int(int val, const char *keyname)
 static void
 write_manalink_ini(void)
 {
-  cfg_write_int(global_cfg_consolidate ? 1 : 0, "Consolidate");
-  cfg_write_int(global_cfg_music ? 1 : 0, "Music");
-  cfg_write_int(global_cfg_effects ? 1 : 0, "Effects");
-  cfg_write_int(global_cfg_no_frame ? 1 : 0, "NoFrame");
-  cfg_write_int(global_cfg_expand_text ? 1 : 0, "ExpandTextOnBigCard");
-  cfg_write_int(global_cfg_read_by_name ? 1 : 0, "ReadByName");
-  cfg_write_int(global_cfg_view_all ? 1 : 0, "ViewAll");
-  cfg_write_str(global_cfg_skin_name[0] ? global_cfg_skin_name : ".", "Skin");
+  LONG status;
+  size_t len;
+  HKEY key;
+  BYTE buf[12];
+  DWORD disposition;
+
+  status = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DeckBuilderOptions",
+                          0, NULL, 0, 0xF003F, NULL, &key, &disposition);
+  if (status == ERROR_SUCCESS)
+  {
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_consolidate);
+    len = strlen((char *)buf);
+    RegSetValueEx(key, "Consolidate", 0, 1, buf, len + 1);
+
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_music);
+    len = strlen((char *)buf);
+    RegSetValueEx(key, "Music", 0, 1, buf, len + 1);
+
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_effects);
+    len = strlen((char *)buf);
+    RegSetValueEx(key, "Effects", 0, 1, buf, len + 1);
+
+    RegFlushKey(key);
+    RegCloseKey(key);
+  }
+
+  status = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions",
+                          0, NULL, 0, 0xF003F, NULL, &key, &disposition);
+  if (status == ERROR_SUCCESS)
+  {
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_expand_text);
+    len = strlen((char *)buf);
+    RegSetValueEx(key, "ExpandTextOnBigCard", 0, 1, buf, len + 1);
+
+    RegFlushKey(key);
+    RegCloseKey(key);
+  }
 }
 
 void Deckdll_initialize_for_shandalar(const card_ptr_t *i_raw_cards_ptr,
@@ -1462,144 +1782,503 @@ void Deckdll_initialize_for_shandalar(const card_ptr_t *i_raw_cards_ptr,
   global_using_main_db = true;
 }
 
+static void delete_and_close_object(HANDLE obj);
+
 // FUNCTION: DECKDLL 0x1000d741
 static void
 delete_brushes(void)
 {
-  DELETE_OBJ(global_brush_gold1);
-  DELETE_OBJ(global_brush_gold2);
-  DELETE_OBJ(global_brush_mediumgrey);
+  delete_and_close_object(global_delete_brush_handle_0);
+  delete_and_close_object(global_delete_brush_handle_1);
+  delete_and_close_object(global_delete_brush_handle_2);
+  delete_and_close_object(global_delete_brush_handle_3);
+  delete_and_close_object(global_delete_brush_handle_4);
+  delete_and_close_object(global_delete_brush_handle_5);
+  delete_and_close_object(global_delete_brush_handle_6);
 }
 
 // FUNCTION: DECKDLL 0x1000d7ae
 static bool
 create_brushes(void)
 {
-  global_colorref_white = PALETTEINDEX(191);  // 254, 254, 254
-  global_colorref_darkgrey = PALETTEINDEX(1); // 26, 24, 28
-  global_colorref_flesh = PALETTERGB(205, 176, 143);
-  global_colorref_lavender = PALETTERGB(174, 178, 239);
-  global_colorref_lightgrey = PALETTERGB(247, 247, 246);
-  global_brush_mediumgrey = CreateSolidBrush(PALETTEINDEX(134)); // 144, 143, 142
-  global_brush_gold1 = CreateSolidBrush(PALETTERGB(128, 128, 80));
-  global_brush_gold2 = CreateSolidBrush(PALETTERGB(128, 128, 80));
-  if (global_brush_gold1 && global_brush_gold2 && global_brush_mediumgrey)
-    return true;
-  else
+  global_create_brush_0 = CreateSolidBrush(0x24a3230);
+  global_create_brush_1 = CreateSolidBrush(0x2508080);
+  global_create_brush_2 = CreateSolidBrush(0x2508080);
+  global_create_brush_3 = CreateSolidBrush(0x2508080);
+  global_create_brush_4 = CreateSolidBrush(0x2508080);
+  global_create_brush_5 = CreateSolidBrush(0x2508080);
+  global_create_brush_6 = CreateSolidBrush(0x2508080);
+
+  if (!global_create_brush_0 || !global_create_brush_1 || !global_create_brush_2 ||
+      !global_create_brush_3 || !global_create_brush_4 || !global_create_brush_5 ||
+      !global_create_brush_6)
   {
-    delete_brushes();
+    if (global_create_brush_0)
+      DeleteObject(global_create_brush_0);
+    if (global_create_brush_1)
+      DeleteObject(global_create_brush_1);
+    if (global_create_brush_2)
+      DeleteObject(global_create_brush_2);
+    if (global_create_brush_3)
+      DeleteObject(global_create_brush_3);
+    if (global_create_brush_4)
+      DeleteObject(global_create_brush_4);
+    if (global_create_brush_5)
+      DeleteObject(global_create_brush_5);
+    if (global_create_brush_6)
+      DeleteObject(global_create_brush_6);
     return false;
   }
+
+  return true;
 }
 
 // FUNCTION: DECKDLL 0x1000d944
 static void
 delete_fonts(void)
 {
-  DELETE_OBJ(global_font_42);
-  DELETE_OBJ(global_font_40percent);
-  DELETE_OBJ(global_font_28percent);
-  DELETE_OBJ(global_font_42unused);
-  DELETE_OBJ(global_font_32);
+  DeleteObject(global_create_brush_0);
+  DeleteObject(global_create_brush_1);
+  DeleteObject(global_create_brush_2);
+  DeleteObject(global_create_brush_3);
+  DeleteObject(global_create_brush_4);
+  DeleteObject(global_create_brush_5);
+  DeleteObject(global_create_brush_6);
 }
+
+// FUNCTION: DECKDLL 0x10025727
+static LOGFONT *
+LoadFontFromIni(char *name, int italic)
+{
+  char key[100];
+  UINT bold;
+
+  memcpy(&global_font_from_ini, &global_font_template_ini, sizeof(LOGFONT));
+
+  strcpy(key, "size");
+  strcat(key, name);
+  global_font_from_ini.lfHeight = GetPrivateProfileIntA("Fonts", key, 0x14, global_manalink_ini_path);
+
+  strcpy(key, "bold");
+  strcat(key, name);
+  bold = GetPrivateProfileIntA("Fonts", key, 0, global_manalink_ini_path);
+  if (bold != 0)
+    global_font_from_ini.lfWeight = FW_BOLD;
+
+  if (italic != 0)
+    global_font_from_ini.lfItalic = TRUE;
+
+  strcpy(key, "font");
+  strcat(key, name);
+  GetPrivateProfileStringA("Fonts", key, "MS Sans Serif",
+                           global_font_from_ini.lfFaceName, 0x20, global_manalink_ini_path);
+  return &global_font_from_ini;
+}
+
+// FUNCTION: DECKDLL 0x10025b00
+static COLORREF
+GetPaletteColor(int index)
+{
+  struct
+  {
+    int g;
+    int r;
+    int b;
+  } rgb;
+
+  rgb.r = g_cardArtPalette[index].rgbRed;
+  rgb.g = g_cardArtPalette[index].rgbGreen;
+  rgb.b = g_cardArtPalette[index].rgbBlue;
+  return ((BYTE)rgb.g << 8) | (BYTE)rgb.r | ((BYTE)rgb.b << 16) | 0x02000000;
+}
+
+static void delete_and_close_object(HANDLE obj);
+static void destroy_create_fonts_resources(void);
 
 // FUNCTION: DECKDLL 0x10011680
 // FUNCTION: MAGIC 0x556490
-static void
+static bool
 create_fonts(void)
 {
-  LOGFONT logfont;
-  memcpy(&logfont, &global_logfont_template, sizeof(LOGFONT));
+  LOGFONT *font;
+  HPEN pen;
+  char path[MAX_PATH + 4];
+  int local_c;
+  int local_8;
 
-  logfont.lfHeight = 42;
-  global_font_42 = CreateFontIndirect(&logfont);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0530m_.TTF");
+  AddFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Magis___.TTF");
+  AddFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0127m_.TTF");
+  AddFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0085m_.TTF");
+  AddFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0298m_.TTF");
+  AddFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0299m_.TTF");
+  AddFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0300m_.TTF");
+  AddFontResourceA(path);
 
-  logfont.lfHeight = 38;
-  global_font_40percent = CreateFontIndirect(&logfont);
+  global_fonts_init_state = 3;
 
-  logfont.lfHeight = 28;
-  global_font_28percent = CreateFontIndirect(&logfont);
+  sprintf(path, "%s\\Damage.pic", global_base_directory);
+  global_damage_pic = load_pic(path);
+  sprintf(path, "%s\\CardCounters.pic", global_base_directory);
+  global_card_counters_pic = load_pic(path);
+  sprintf(path, "%s\\ManaSymbols.pic", global_base_directory);
+  global_mana_symbols_pic = load_pic(path);
+  sprintf(path, "%s\\Abilities.pic", global_base_directory);
+  global_abilities_pic = load_pic(path);
+  sprintf(path, "%s\\ManaStripes.pic", global_base_directory);
+  global_mana_stripes_pic = load_pic(path);
+  sprintf(path, "%s\\Summon.pic", global_base_directory);
+  global_summon_pic = load_pic(path);
+  sprintf(path, "%s\\Dying.pic", global_base_directory);
+  global_dying_pic = load_pic(path);
+  sprintf(path, "%s\\Target.pic", global_base_directory);
+  global_target_pic = load_pic(path);
+  sprintf(path, "%s\\CantTarget.pic", global_base_directory);
+  global_cant_target_pic = load_pic(path);
+  sprintf(path, "%s\\WillUntap.pic", global_base_directory);
+  global_will_untap_pic = load_pic(path);
 
-  logfont.lfHeight = 42;
-  global_font_42unused = CreateFontIndirect(&logfont);
+  font = LoadFontFromIni("SmallCardPT", 0);
+  global_smallcard_pt_font = CreateFontIndirectA(font);
+  font = LoadFontFromIni("Damage", 0);
+  global_damage_font = CreateFontIndirectA(font);
+  font = LoadFontFromIni("IDTag", 0);
+  global_idtag_font = CreateFontIndirectA(font);
 
-  logfont.lfHeight = 32;
-  global_font_32 = CreateFontIndirect(&logfont);
+  global_palette_col_c9 = GetPaletteColor(0xc9);
+  global_palette_col_9e_a = GetPaletteColor(0x9e);
+  global_palette_col_9e_b = GetPaletteColor(0x9e);
+  global_palette_col_7c = GetPaletteColor(0x7c);
+  global_palette_col_2f = GetPaletteColor(0x2f);
+  global_palette_col_bf = GetPaletteColor(0xbf);
+  global_palette_col_5d = GetPaletteColor(0x5d);
+  global_palette_col_1f = GetPaletteColor(0x1f);
+  global_pen_palette_5d = CreatePen(6, 2, global_palette_col_5d);
+  global_pen_palette_1f = CreatePen(6, 2, global_palette_col_1f);
+
+  local_8 = 1;
+  for (local_c = 0; local_c < 10; ++local_c)
+  {
+    pen = CreatePen(6, 3, ((local_c * 0x14 & 0xffU) << 8) |
+                              (unsigned int)(BYTE)((char)local_c * '\n') |
+                              ((unsigned int)(BYTE)((char)local_c * 'K') << 16));
+    global_debug_pens[local_c] = pen;
+    if (global_debug_pens[local_c] == (HPEN)0)
+      local_8 = 0;
+  }
+
+  if (!global_damage_pic || !global_card_counters_pic || !global_mana_symbols_pic ||
+      !global_abilities_pic || !global_mana_stripes_pic || !global_summon_pic ||
+      !global_dying_pic || !global_target_pic || !global_cant_target_pic ||
+      !global_will_untap_pic || !global_smallcard_pt_font || !global_damage_font ||
+      !global_idtag_font || !global_pen_palette_5d || !global_pen_palette_1f || !local_8)
+  {
+    destroy_create_fonts_resources();
+    return false;
+  }
+
+  return true;
+}
+
+// FUNCTION: DECKDLL 0x10011c41
+static void
+destroy_create_fonts_resources(void)
+{
+  char path[MAX_PATH + 4];
+  int i;
+
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Magim___.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0530m_.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Magis___.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0127m_.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0085m_.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0298m_.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0299m_.TTF");
+  RemoveFontResourceA(path);
+  strcpy(path, global_base_directory);
+  strcat(path, "\\Tt0300m_.TTF");
+  RemoveFontResourceA(path);
+
+  if (global_damage_pic)
+  {
+    delete_and_close_object(global_damage_pic);
+    global_damage_pic = NULL;
+  }
+  if (global_card_counters_pic)
+  {
+    delete_and_close_object(global_card_counters_pic);
+    global_card_counters_pic = NULL;
+  }
+  if (global_mana_symbols_pic)
+  {
+    delete_and_close_object(global_mana_symbols_pic);
+    global_mana_symbols_pic = NULL;
+  }
+  if (global_abilities_pic)
+  {
+    delete_and_close_object(global_abilities_pic);
+    global_abilities_pic = NULL;
+  }
+  if (global_mana_stripes_pic)
+  {
+    delete_and_close_object(global_mana_stripes_pic);
+    global_mana_stripes_pic = NULL;
+  }
+  if (global_summon_pic)
+  {
+    delete_and_close_object(global_summon_pic);
+    global_summon_pic = NULL;
+  }
+  if (global_dying_pic)
+  {
+    delete_and_close_object(global_dying_pic);
+    global_dying_pic = NULL;
+  }
+  if (global_target_pic)
+  {
+    delete_and_close_object(global_target_pic);
+    global_target_pic = NULL;
+  }
+  if (global_cant_target_pic)
+  {
+    delete_and_close_object(global_cant_target_pic);
+    global_cant_target_pic = NULL;
+  }
+  if (global_will_untap_pic)
+  {
+    delete_and_close_object(global_will_untap_pic);
+    global_will_untap_pic = NULL;
+  }
+
+  if (global_smallcard_pt_font)
+    DeleteObject(global_smallcard_pt_font);
+  global_smallcard_pt_font = NULL;
+  if (global_damage_font)
+    DeleteObject(global_damage_font);
+  global_damage_font = NULL;
+  if (global_idtag_font)
+    DeleteObject(global_idtag_font);
+  global_idtag_font = NULL;
+  if (global_pen_palette_5d)
+    DeleteObject(global_pen_palette_5d);
+  global_pen_palette_5d = NULL;
+  if (global_pen_palette_1f)
+    DeleteObject(global_pen_palette_1f);
+  global_pen_palette_1f = NULL;
+
+  for (i = 0; i < 10; ++i)
+    if (global_debug_pens[i])
+    {
+      DeleteObject(global_debug_pens[i]);
+      global_debug_pens[i] = NULL;
+    }
+}
+
+static int global_deleteobj_platform_id = -1;
+
+// FUNCTION: DECKDLL 0x1002417b
+static void
+delete_and_close_object(HANDLE obj)
+{
+  struct
+  {
+    OSVERSIONINFOA ver;
+    HANDLE section_handle;
+    DIBSECTION dib_section;
+    char *bits_pointer;
+  } s;
+
+  if (global_deleteobj_platform_id == -1)
+  {
+    s.ver.dwOSVersionInfoSize = 0x94;
+    memset(&s.ver.dwMajorVersion, 0, 0x90);
+    GetVersionExA(&s.ver);
+    if (s.ver.dwPlatformId == 1)
+      global_deleteobj_platform_id = 1;
+    else
+      global_deleteobj_platform_id = 0;
+  }
+
+  if (obj != (HANDLE)0)
+  {
+    GetObjectA(obj, 0x54, &s.dib_section);
+    s.section_handle = s.dib_section.dshSection;
+    s.bits_pointer = (char *)s.dib_section.dsBm.bmBits;
+    s.bits_pointer += s.dib_section.dsOffset;
+    DeleteObject(obj);
+    if (s.section_handle != (HANDLE)0 && global_deleteobj_platform_id != 0)
+      CloseHandle(s.section_handle);
+  }
 }
 
 // FUNCTION: DECKDLL 0x1000d0ae
 static void
 delete_pics(void)
 {
-  int i;
+#define DELETE_PIC(idx)                                   \
+  if (global_pics[(idx)] != (HANDLE)0)                    \
+  {                                                        \
+    delete_and_close_object(global_pics[(idx)]);          \
+    global_pics[(idx)] = (HANDLE)0;                       \
+  }
 
-  for (i = 0; i < NUM_PICS; ++i)
-    DELETE_OBJ(global_pics[i]);
+  DELETE_PIC(0);
+  DELETE_PIC(1);
+  DELETE_PIC(2);
+  DELETE_PIC(3);
+  DELETE_PIC(4);
+  DELETE_PIC(5);
+  DELETE_PIC(6);
+  DELETE_PIC(7);
+  DELETE_PIC(8);
+  DELETE_PIC(9);
+  DELETE_PIC(10);
+  DELETE_PIC(11);
+  DELETE_PIC(12);
+  DELETE_PIC(13);
+  DELETE_PIC(14);
+  DELETE_PIC(15);
+  DELETE_PIC(16);
+  DELETE_PIC(17);
+  DELETE_PIC(18);
+  DELETE_PIC(19);
+  DELETE_PIC(20);
+  DELETE_PIC(21);
+  DELETE_PIC(22);
+  DELETE_PIC(23);
+  DELETE_PIC(24);
+  DELETE_PIC(25);
+  DELETE_PIC(26);
+  DELETE_PIC(27);
+  DELETE_PIC(28);
+  DELETE_PIC(29);
+  DELETE_PIC(30);
+  DELETE_PIC(31);
+  DELETE_PIC(32);
+  DELETE_PIC(33);
+  DELETE_PIC(34);
+  DELETE_PIC(35);
+  DELETE_PIC(36);
+
+#undef DELETE_PIC
 }
 
 // FUNCTION: DECKDLL 0x1000c51f
-static const char *
+static bool
 load_pics(void)
 {
-  const char *picnames[NUM_PICS] =
-      {
-          "Ability",
-          "Antiquit",
-          "Arabnite",
-          "Artifact",
-          "Astral",
-          "Black",
-          "Bldr01c",
-          "Bldr02c",
-          "Bldr03c",
-          "Bldr04c",
-          "Bldr05c",
-          "Blue",
-          "CastCost",
-          "Creature",
-          "Dark",
-          "Dekbar1",
-          "Dektile4",
-          "Dektit1",
-          "Enchant",
-          "FilterBkg",
-          "Fourth",
-          "Gold",
-          "Green",
-          "InfoBkg",
-          "Instant",
-          "Interrupt",
-          "Land",
-          "Legends",
-          "Other",
-          "Power",
-          "Rarity",
-          "Red",
-          "Sorcery",
-          "Statbak1",
-          "Tough",
-          "White",
-          "BtnBkg",
-      };
-  char *rval = NULL;
-  int i;
+  char path[MAX_PATH + 4];
 
-  for (i = 0; i < NUM_PICS; ++i)
+  global_fonts_init_state = 3;
+
+  sprintf(path, "%s\\Artifact.pic", global_base_directory);
+  global_pics[3] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\CastCost.pic", global_base_directory);
+  global_pics[12] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Creature.pic", global_base_directory);
+  global_pics[13] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Enchant.pic", global_base_directory);
+  global_pics[18] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Instant.pic", global_base_directory);
+  global_pics[24] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Interrupt.pic", global_base_directory);
+  global_pics[25] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Land.pic", global_base_directory);
+  global_pics[26] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Power.pic", global_base_directory);
+  global_pics[29] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Sorcery.pic", global_base_directory);
+  global_pics[32] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Tough.pic", global_base_directory);
+  global_pics[34] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Artist.pic", global_base_directory);
+  global_pics[35] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Rarity.pic", global_base_directory);
+  global_pics[30] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Ability.pic", global_base_directory);
+  global_pics[0] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\All_Butn.pic", global_base_directory);
+  global_pics[36] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Astral.pic", global_base_directory);
+  global_pics[4] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Arabnite.pic", global_base_directory);
+  global_pics[2] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Antiquit.pic", global_base_directory);
+  global_pics[1] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Legends.pic", global_base_directory);
+  global_pics[27] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Dark.pic", global_base_directory);
+  global_pics[14] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Green.pic", global_base_directory);
+  global_pics[22] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Yellow.pic", global_base_directory);
+  global_pics[21] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Blue.pic", global_base_directory);
+  global_pics[11] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Grey.pic", global_base_directory);
+  global_pics[5] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\Red.pic", global_base_directory);
+  global_pics[31] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\dektile4.pic", global_base_directory);
+  global_pics[16] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\dekbar1.pic", global_base_directory);
+  global_pics[15] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\dektit1.pic", global_base_directory);
+  global_pics[17] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\statbak1.pic", global_base_directory);
+  global_pics[33] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\bldr01c.pic", global_base_directory);
+  global_pics[6] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\bldr02c.pic", global_base_directory);
+  global_pics[7] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\bldr03c.pic", global_base_directory);
+  global_pics[8] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\bldr04c.pic", global_base_directory);
+  global_pics[9] = (HANDLE)load_pic(path);
+  sprintf(path, "%s\\bldr05c.pic", global_base_directory);
+  global_pics[10] = (HANDLE)load_pic(path);
+
+  if (!global_pics[16] || !global_pics[15] || !global_pics[17] || !global_pics[33] ||
+      !global_pics[6] || !global_pics[7] || !global_pics[8] || !global_pics[9] ||
+      !global_pics[10] || !global_pics[35] || !global_pics[30] || !global_pics[0] ||
+      !global_pics[3] || !global_pics[12] || !global_pics[13] || !global_pics[18] ||
+      !global_pics[24] || !global_pics[25] || !global_pics[26] || !global_pics[29] ||
+      !global_pics[32] || !global_pics[34] || !global_pics[36] || !global_pics[4] ||
+      !global_pics[22] || !global_pics[21] || !global_pics[11] || !global_pics[5] ||
+      !global_pics[31] || !global_pics[2] || !global_pics[1] || !global_pics[14] ||
+      !global_pics[27])
   {
-    char path[MAX_PATH * 3 + 60];
-    sprintf(path, global_dbart_pattern, global_cfg_skin_name[0] ? global_cfg_skin_name : ".", picnames[i]);
-
-    if (!(global_pics[i] = (HANDLE)load_pic(path)))
-    {
-      rval = strdup(path);
-      break;
-    }
+    delete_pics();
+    return false;
   }
 
-  if (rval)
-    delete_pics();
-
-  return rval;
+  return true;
 }
 
 // FUNCTION: DECKDLL 0x1000bbec
@@ -1643,80 +2322,61 @@ delete_resources(void)
 static bool
 process_cue_cards(MSG *msg)
 {
-  switch (msg->message)
+  POINT point;
+  POINT screen_point;
+  HWND hwnd;
+  POINT client_point;
+  LRESULT msgnum;
+  int iVar2;
+  int iVar3;
+  static int last_cursor_x = 0;
+  static int last_cursor_y = 0;
+  static HWND last_hwnd = NULL;
+
+  if (msg->message == WM_TIMER && msg->hwnd == global_main_hwnd && msg->wParam == 0)
   {
-  case WM_TIMER:
-    if (msg->hwnd == global_main_hwnd && msg->wParam == 0)
-    {
-      int msgnum;
-      POINT screen_point;
-      HWND hwnd;
-      POINT client_point;
-      GetCursorPos(&screen_point);
+    GetCursorPos(&screen_point);
+    KillTimer(global_main_hwnd, 0);
 
-      KillTimer(global_main_hwnd, 0);
-
-      hwnd = WindowFromPoint(screen_point);
-      client_point = screen_point;
-      ScreenToClient(hwnd, &client_point);
-
-      if (msgnum = SendMessage(hwnd,
-                               0x8465,
-                               0,
-                               MAKELONG(client_point.x, client_point.y)))
-        SendMessage(global_cuecard_hwnd,
-                    0x8400,
-                    MAKELONG(screen_point.x + 5, screen_point.y + 15),
-                    (LPARAM)(text_lines[msgnum - 1]));
-
-      return true;
-    }
-    return false;
-
-  case WM_MOUSEMOVE:
+    point.x = screen_point.x;
+    point.y = screen_point.y;
+    hwnd = WindowFromPoint(point);
+    client_point.x = screen_point.x;
+    client_point.y = screen_point.y;
+    ScreenToClient(hwnd, &client_point);
+    msgnum = SendMessage(hwnd, 0x465, 0, ((client_point.y << 16) | (client_point.x & 0xffffU)));
+    if (msgnum != 0)
+      SendMessage(global_cuecard_hwnd, 0x400,
+                  (((screen_point.y + 0xf) << 16) | ((screen_point.x + 5) & 0xffffU)),
+                  (LPARAM)(text_lines + msgnum - 1));
+    return true;
+  }
+  else if (msg->message == WM_MOUSEMOVE)
   {
-    POINT cur_point;
-    POINT last_point;
-    int dx;
-    int dy;
-    HWND last_hwnd;
-    GetCursorPos(&cur_point);
-
-    last_point.x = 0;
-    last_point.y = 0;
-    dx = abs(last_point.x - cur_point.x);
-    dy = abs(last_point.y - cur_point.y);
-
-    if (dx + dy >= 2)
+    GetCursorPos(&screen_point);
+    iVar2 = abs(last_cursor_y - screen_point.y);
+    iVar3 = abs(last_cursor_x - screen_point.x);
+    if (iVar2 + iVar3 < 2)
+      return false;
+    else
     {
-      last_point = cur_point;
-
+      last_cursor_x = screen_point.x;
+      last_cursor_y = screen_point.y;
       SetTimer(global_main_hwnd, 0, 500, NULL);
-
-      last_hwnd = NULL;
       if (last_hwnd != msg->hwnd)
       {
         last_hwnd = msg->hwnd;
         ShowWindow(global_cuecard_hwnd, SW_HIDE);
       }
+      return false;
     }
-    return false;
   }
-
-  case WM_LBUTTONDOWN:
-  case WM_LBUTTONUP:
-  case WM_LBUTTONDBLCLK:
-  case WM_RBUTTONDOWN:
-  case WM_RBUTTONUP:
-  case WM_RBUTTONDBLCLK:
-  case WM_MBUTTONDOWN:
-  case WM_MBUTTONUP:
-  case WM_MBUTTONDBLCLK:
+  else if ((unsigned int)msg->message < WM_MOUSEMOVE || (unsigned int)msg->message > WM_MBUTTONDBLCLK)
+    return false;
+  else
+  {
     KillTimer(global_main_hwnd, 0);
     ShowWindow(global_cuecard_hwnd, SW_HIDE);
-    return false;
-
-  default:
     return false;
   }
 }
@@ -1731,8 +2391,6 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
   HDC hdc;
   HACCEL accel;
   MSG msg;
-  const char *load_pic_err;
-  char load_pic_buf[MAX_PATH + 256];
   if (!global_db_read)
   {
     global_available_slots = read_db();
@@ -1802,10 +2460,9 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
     fatal_err("Fatal: Couldn't create the app-wide memory DC or bitmap", 0);
     return 0;
   }
-  if ((load_pic_err = load_pics()) != NULL)
+  if (!load_pics())
   {
-    sprintf(load_pic_buf, "Fatal: Couldn't load deck builder bitmap:\n%s", load_pic_err);
-    fatal_err(load_pic_buf, 0);
+    fatal_err("Fatal: Couldn't load deck builder bitmap", 0);
     return 0;
   }
 
@@ -1817,7 +2474,7 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
 
   create_fonts();
 
-  make_orig_rarities();
+  make_orig_rarities("DeckBuilder.csv", global_origrarities);
 
   if (global_db_flags_1 & DBFLAGS_SHANDALAR)
   {
@@ -2779,21 +3436,32 @@ dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 static bool
 show_dialog_filter_gle(int textline)
 {
+  INT_PTR dialog_result;
+  int rval;
+
   load_text("Menus", "POWERTOUGHNESSCC");
-  strcpy(global_filter_dlg_title, text_lines[textline]);
+  if (textline == 0x17)
+    strcpy(global_filter_dlg_title, text_lines[0]);
+  else if (textline == 0x18)
+    strcpy(global_filter_dlg_title, text_lines[1]);
+  else if (textline == 0x19)
+    strcpy(global_filter_dlg_title, text_lines[2]);
+  else
+    strcpy(global_filter_dlg_title, "Filter Dialog");
 
-  switch (DialogBoxParam(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_ASK_VALUE), global_main_hwnd, dlgproc_FilterGLE, 0))
+  dialog_result = DialogBoxParam(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_ASK_VALUE),
+                                 global_main_hwnd, dlgproc_FilterGLE, 0);
+  if (dialog_result == -1)
   {
-  case 1:
-    return true;
-
-  case -1:
     MessageBox(global_main_hwnd, "Couldn't bring up the filter dialog box", "", MB_OK);
-    return false;
-
-  default:
-    return false;
+    rval = 0;
   }
+  else if (dialog_result == 0)
+    rval = 0;
+  else if (dialog_result == 1)
+    rval = 1;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x10020636
@@ -3044,22 +3712,34 @@ bool check_basic(csvid_t csvid)
 static void
 clear_packs(void)
 {
-  int c;
-  int t;
-  for (c = 0; c <= PACK1_MAX; ++c)
-    for (t = 0; t <= PACK2_MAX; ++t)
-      Packs_clear(&global_packs[c][t]);
+  int i;
+
+  for (i = 0; i < 6; ++i)
+  {
+    global_packs[i][0].num = 0;
+    global_packs[i][1].num = 0;
+    global_packs[i][2].num = 0;
+    global_packs[i][3].num = 0;
+    global_packs[i][4].num = 0;
+    global_packs[i][5].num = 0;
+  }
 }
 
 // FUNCTION: DECKDLL 0x1000687f
 static void
 clear_packs_copy(void)
 {
-  int c;
-  int t;
-  for (c = 0; c <= PACK1_MAX; ++c)
-    for (t = 0; t <= PACK2_MAX; ++t)
-      Packs_clear(&global_packs_copy[c][t]);
+  int i;
+
+  for (i = 0; i < 6; ++i)
+  {
+    global_packs_copy[i][0].num = 0;
+    global_packs_copy[i][1].num = 0;
+    global_packs_copy[i][2].num = 0;
+    global_packs_copy[i][3].num = 0;
+    global_packs_copy[i][4].num = 0;
+    global_packs_copy[i][5].num = 0;
+  }
 }
 
 // FUNCTION: DECKDLL 0x10005a9e
@@ -3067,86 +3747,264 @@ static void
 count_packs(void)
 {
   int l;
-  clear_packs();
+  for (l = 0; l < 6; ++l)
+  {
+    global_packs[l][0].num = 0;
+    global_packs[l][1].num = 0;
+    global_packs[l][2].num = 0;
+    global_packs[l][3].num = 0;
+    global_packs[l][4].num = 0;
+    global_packs[l][5].num = 0;
+  }
 
   for (l = 0; l < global_edited_deck_num_entries; ++l)
   {
-    int col, typ;
-    csvid_t csvid = global_edited_deck[l].DeckEntry_csvid;
-    const card_ptr_t *cp = &cards_ptr[csvid];
+    unsigned int csvid;
+    int amt;
 
-    switch (cp->color)
+    csvid = global_edited_deck[l].DeckEntry_csvid;
+    amt = global_edited_deck[l].DeckEntry_Amount;
+
+    if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_LAND)
     {
-    case CP_COLOR_RED:
-      col = PACK1_RED;
-      break;
-    case CP_COLOR_BLACK:
-      col = PACK1_BLACK;
-      break;
-    case CP_COLOR_BLUE:
-      col = PACK1_BLUE;
-      break;
-    case CP_COLOR_GREEN:
-      col = PACK1_GREEN;
-      break;
-    case CP_COLOR_WHITE:
-      col = PACK1_WHITE;
-      break;
-    default:
-      col = PACK1_OTHER;
-      break;
-    }
-
-    switch (cp->card_type)
-    {
-    case CP_TYPE_CREATURE:
-      typ = PACK2_CREATURE;
-      break;
-    case CP_TYPE_ENCHANTMENT:
-      typ = PACK2_ENCHANTMENT;
-      break;
-    case CP_TYPE_SORCERY:
-      typ = PACK2_SORCERY;
-      break;
-    case CP_TYPE_INTERRUPT:
-      typ = PACK2_INTERRUPT;
-      break;
-    case CP_TYPE_INSTANT:
-      typ = PACK2_INSTANT;
-      break;
-
-    case CP_TYPE_LAND: // weird case here
-      typ = PACK2_LAND;
-      switch (cp->id)
+      if (strcmp(global_raw_cards_ptr[csvid].full_name, "Mountain") == 0)
       {
-      case CARD_ID_MOUNTAIN:
-        col = PACK1_RED;
-        break;
-      case CARD_ID_PLAINS:
-        col = PACK1_WHITE;
-        break;
-      case CARD_ID_FOREST:
-        col = PACK1_GREEN;
-        break;
-      case CARD_ID_SWAMP:
-        col = PACK1_BLACK;
-        break;
-      case CARD_ID_ISLAND:
-        col = PACK1_BLUE;
-        break;
-      default:
-        col = PACK1_OTHER;
-        break;
+        global_packs[PACK1_RED][PACK2_LAND].table[global_packs[PACK1_RED][PACK2_LAND].num].csvid = csvid;
+        global_packs[PACK1_RED][PACK2_LAND].table[global_packs[PACK1_RED][PACK2_LAND].num].amt = amt;
+        ++global_packs[PACK1_RED][PACK2_LAND].num;
       }
-      break;
-
-    default: // even weirder case here
-      col = PACK1_OTHER;
-      typ = PACK2_INSTANT;
-      break;
+      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Plains") == 0)
+      {
+        global_packs[PACK1_WHITE][PACK2_LAND].table[global_packs[PACK1_WHITE][PACK2_LAND].num].csvid = csvid;
+        global_packs[PACK1_WHITE][PACK2_LAND].table[global_packs[PACK1_WHITE][PACK2_LAND].num].amt = amt;
+        ++global_packs[PACK1_WHITE][PACK2_LAND].num;
+      }
+      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Forest") == 0)
+      {
+        global_packs[PACK1_GREEN][PACK2_LAND].table[global_packs[PACK1_GREEN][PACK2_LAND].num].csvid = csvid;
+        global_packs[PACK1_GREEN][PACK2_LAND].table[global_packs[PACK1_GREEN][PACK2_LAND].num].amt = amt;
+        ++global_packs[PACK1_GREEN][PACK2_LAND].num;
+      }
+      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Swamp") == 0)
+      {
+        global_packs[PACK1_BLACK][PACK2_LAND].table[global_packs[PACK1_BLACK][PACK2_LAND].num].csvid = csvid;
+        global_packs[PACK1_BLACK][PACK2_LAND].table[global_packs[PACK1_BLACK][PACK2_LAND].num].amt = amt;
+        ++global_packs[PACK1_BLACK][PACK2_LAND].num;
+      }
+      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Island") == 0)
+      {
+        global_packs[PACK1_BLUE][PACK2_LAND].table[global_packs[PACK1_BLUE][PACK2_LAND].num].csvid = csvid;
+        global_packs[PACK1_BLUE][PACK2_LAND].table[global_packs[PACK1_BLUE][PACK2_LAND].num].amt = amt;
+        ++global_packs[PACK1_BLUE][PACK2_LAND].num;
+      }
+      else
+      {
+        global_packs[PACK1_OTHER][PACK2_LAND].table[global_packs[PACK1_OTHER][PACK2_LAND].num].csvid = csvid;
+        global_packs[PACK1_OTHER][PACK2_LAND].table[global_packs[PACK1_OTHER][PACK2_LAND].num].amt = amt;
+        ++global_packs[PACK1_OTHER][PACK2_LAND].num;
+      }
     }
-
-    Packs_add(&global_packs[col][typ], csvid, global_edited_deck[l].DeckEntry_Amount);
+    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_CREATURE)
+    {
+      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
+      {
+        global_packs[PACK1_RED][PACK2_CREATURE].table[global_packs[PACK1_RED][PACK2_CREATURE].num].csvid = csvid;
+        global_packs[PACK1_RED][PACK2_CREATURE].table[global_packs[PACK1_RED][PACK2_CREATURE].num].amt = amt;
+        ++global_packs[PACK1_RED][PACK2_CREATURE].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
+      {
+        global_packs[PACK1_BLACK][PACK2_CREATURE].table[global_packs[PACK1_BLACK][PACK2_CREATURE].num].csvid = csvid;
+        global_packs[PACK1_BLACK][PACK2_CREATURE].table[global_packs[PACK1_BLACK][PACK2_CREATURE].num].amt = amt;
+        ++global_packs[PACK1_BLACK][PACK2_CREATURE].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
+      {
+        global_packs[PACK1_BLUE][PACK2_CREATURE].table[global_packs[PACK1_BLUE][PACK2_CREATURE].num].csvid = csvid;
+        global_packs[PACK1_BLUE][PACK2_CREATURE].table[global_packs[PACK1_BLUE][PACK2_CREATURE].num].amt = amt;
+        ++global_packs[PACK1_BLUE][PACK2_CREATURE].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
+      {
+        global_packs[PACK1_GREEN][PACK2_CREATURE].table[global_packs[PACK1_GREEN][PACK2_CREATURE].num].csvid = csvid;
+        global_packs[PACK1_GREEN][PACK2_CREATURE].table[global_packs[PACK1_GREEN][PACK2_CREATURE].num].amt = amt;
+        ++global_packs[PACK1_GREEN][PACK2_CREATURE].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
+      {
+        global_packs[PACK1_WHITE][PACK2_CREATURE].table[global_packs[PACK1_WHITE][PACK2_CREATURE].num].csvid = csvid;
+        global_packs[PACK1_WHITE][PACK2_CREATURE].table[global_packs[PACK1_WHITE][PACK2_CREATURE].num].amt = amt;
+        ++global_packs[PACK1_WHITE][PACK2_CREATURE].num;
+      }
+      else
+      {
+        global_packs[PACK1_OTHER][PACK2_CREATURE].table[global_packs[PACK1_OTHER][PACK2_CREATURE].num].csvid = csvid;
+        global_packs[PACK1_OTHER][PACK2_CREATURE].table[global_packs[PACK1_OTHER][PACK2_CREATURE].num].amt = amt;
+        ++global_packs[PACK1_OTHER][PACK2_CREATURE].num;
+      }
+    }
+    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_ENCHANTMENT)
+    {
+      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
+      {
+        global_packs[PACK1_RED][PACK2_ENCHANTMENT].table[global_packs[PACK1_RED][PACK2_ENCHANTMENT].num].csvid = csvid;
+        global_packs[PACK1_RED][PACK2_ENCHANTMENT].table[global_packs[PACK1_RED][PACK2_ENCHANTMENT].num].amt = amt;
+        ++global_packs[PACK1_RED][PACK2_ENCHANTMENT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
+      {
+        global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].num].csvid = csvid;
+        global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].num].amt = amt;
+        ++global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
+      {
+        global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].num].csvid = csvid;
+        global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].num].amt = amt;
+        ++global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
+      {
+        global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].table[global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].num].csvid = csvid;
+        global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].table[global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].num].amt = amt;
+        ++global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
+      {
+        global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].table[global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].num].csvid = csvid;
+        global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].table[global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].num].amt = amt;
+        ++global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].num;
+      }
+      else
+      {
+        global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].table[global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].num].csvid = csvid;
+        global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].table[global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].num].amt = amt;
+        ++global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].num;
+      }
+    }
+    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_SORCERY)
+    {
+      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
+      {
+        global_packs[PACK1_RED][PACK2_SORCERY].table[global_packs[PACK1_RED][PACK2_SORCERY].num].csvid = csvid;
+        global_packs[PACK1_RED][PACK2_SORCERY].table[global_packs[PACK1_RED][PACK2_SORCERY].num].amt = amt;
+        ++global_packs[PACK1_RED][PACK2_SORCERY].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
+      {
+        global_packs[PACK1_BLACK][PACK2_SORCERY].table[global_packs[PACK1_BLACK][PACK2_SORCERY].num].csvid = csvid;
+        global_packs[PACK1_BLACK][PACK2_SORCERY].table[global_packs[PACK1_BLACK][PACK2_SORCERY].num].amt = amt;
+        ++global_packs[PACK1_BLACK][PACK2_SORCERY].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
+      {
+        global_packs[PACK1_BLUE][PACK2_SORCERY].table[global_packs[PACK1_BLUE][PACK2_SORCERY].num].csvid = csvid;
+        global_packs[PACK1_BLUE][PACK2_SORCERY].table[global_packs[PACK1_BLUE][PACK2_SORCERY].num].amt = amt;
+        ++global_packs[PACK1_BLUE][PACK2_SORCERY].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
+      {
+        global_packs[PACK1_GREEN][PACK2_SORCERY].table[global_packs[PACK1_GREEN][PACK2_SORCERY].num].csvid = csvid;
+        global_packs[PACK1_GREEN][PACK2_SORCERY].table[global_packs[PACK1_GREEN][PACK2_SORCERY].num].amt = amt;
+        ++global_packs[PACK1_GREEN][PACK2_SORCERY].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
+      {
+        global_packs[PACK1_WHITE][PACK2_SORCERY].table[global_packs[PACK1_WHITE][PACK2_SORCERY].num].csvid = csvid;
+        global_packs[PACK1_WHITE][PACK2_SORCERY].table[global_packs[PACK1_WHITE][PACK2_SORCERY].num].amt = amt;
+        ++global_packs[PACK1_WHITE][PACK2_SORCERY].num;
+      }
+      else
+      {
+        global_packs[PACK1_OTHER][PACK2_SORCERY].table[global_packs[PACK1_OTHER][PACK2_SORCERY].num].csvid = csvid;
+        global_packs[PACK1_OTHER][PACK2_SORCERY].table[global_packs[PACK1_OTHER][PACK2_SORCERY].num].amt = amt;
+        ++global_packs[PACK1_OTHER][PACK2_SORCERY].num;
+      }
+    }
+    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_INTERRUPT)
+    {
+      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
+      {
+        global_packs[PACK1_RED][PACK2_INTERRUPT].table[global_packs[PACK1_RED][PACK2_INTERRUPT].num].csvid = csvid;
+        global_packs[PACK1_RED][PACK2_INTERRUPT].table[global_packs[PACK1_RED][PACK2_INTERRUPT].num].amt = amt;
+        ++global_packs[PACK1_RED][PACK2_INTERRUPT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
+      {
+        global_packs[PACK1_BLACK][PACK2_INTERRUPT].table[global_packs[PACK1_BLACK][PACK2_INTERRUPT].num].csvid = csvid;
+        global_packs[PACK1_BLACK][PACK2_INTERRUPT].table[global_packs[PACK1_BLACK][PACK2_INTERRUPT].num].amt = amt;
+        ++global_packs[PACK1_BLACK][PACK2_INTERRUPT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
+      {
+        global_packs[PACK1_BLUE][PACK2_INTERRUPT].table[global_packs[PACK1_BLUE][PACK2_INTERRUPT].num].csvid = csvid;
+        global_packs[PACK1_BLUE][PACK2_INTERRUPT].table[global_packs[PACK1_BLUE][PACK2_INTERRUPT].num].amt = amt;
+        ++global_packs[PACK1_BLUE][PACK2_INTERRUPT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
+      {
+        global_packs[PACK1_GREEN][PACK2_INTERRUPT].table[global_packs[PACK1_GREEN][PACK2_INTERRUPT].num].csvid = csvid;
+        global_packs[PACK1_GREEN][PACK2_INTERRUPT].table[global_packs[PACK1_GREEN][PACK2_INTERRUPT].num].amt = amt;
+        ++global_packs[PACK1_GREEN][PACK2_INTERRUPT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
+      {
+        global_packs[PACK1_WHITE][PACK2_INTERRUPT].table[global_packs[PACK1_WHITE][PACK2_INTERRUPT].num].csvid = csvid;
+        global_packs[PACK1_WHITE][PACK2_INTERRUPT].table[global_packs[PACK1_WHITE][PACK2_INTERRUPT].num].amt = amt;
+        ++global_packs[PACK1_WHITE][PACK2_INTERRUPT].num;
+      }
+      else
+      {
+        global_packs[PACK1_OTHER][PACK2_INTERRUPT].table[global_packs[PACK1_OTHER][PACK2_INTERRUPT].num].csvid = csvid;
+        global_packs[PACK1_OTHER][PACK2_INTERRUPT].table[global_packs[PACK1_OTHER][PACK2_INTERRUPT].num].amt = amt;
+        ++global_packs[PACK1_OTHER][PACK2_INTERRUPT].num;
+      }
+    }
+    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_INSTANT)
+    {
+      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
+      {
+        global_packs[PACK1_RED][PACK2_INSTANT].table[global_packs[PACK1_RED][PACK2_INSTANT].num].csvid = csvid;
+        global_packs[PACK1_RED][PACK2_INSTANT].table[global_packs[PACK1_RED][PACK2_INSTANT].num].amt = amt;
+        ++global_packs[PACK1_RED][PACK2_INSTANT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
+      {
+        global_packs[PACK1_BLACK][PACK2_INSTANT].table[global_packs[PACK1_BLACK][PACK2_INSTANT].num].csvid = csvid;
+        global_packs[PACK1_BLACK][PACK2_INSTANT].table[global_packs[PACK1_BLACK][PACK2_INSTANT].num].amt = amt;
+        ++global_packs[PACK1_BLACK][PACK2_INSTANT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
+      {
+        global_packs[PACK1_BLUE][PACK2_INSTANT].table[global_packs[PACK1_BLUE][PACK2_INSTANT].num].csvid = csvid;
+        global_packs[PACK1_BLUE][PACK2_INSTANT].table[global_packs[PACK1_BLUE][PACK2_INSTANT].num].amt = amt;
+        ++global_packs[PACK1_BLUE][PACK2_INSTANT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
+      {
+        global_packs[PACK1_GREEN][PACK2_INSTANT].table[global_packs[PACK1_GREEN][PACK2_INSTANT].num].csvid = csvid;
+        global_packs[PACK1_GREEN][PACK2_INSTANT].table[global_packs[PACK1_GREEN][PACK2_INSTANT].num].amt = amt;
+        ++global_packs[PACK1_GREEN][PACK2_INSTANT].num;
+      }
+      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
+      {
+        global_packs[PACK1_WHITE][PACK2_INSTANT].table[global_packs[PACK1_WHITE][PACK2_INSTANT].num].csvid = csvid;
+        global_packs[PACK1_WHITE][PACK2_INSTANT].table[global_packs[PACK1_WHITE][PACK2_INSTANT].num].amt = amt;
+        ++global_packs[PACK1_WHITE][PACK2_INSTANT].num;
+      }
+      else
+      {
+        global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].csvid = csvid;
+        global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].amt = amt;
+        ++global_packs[PACK1_OTHER][PACK2_INSTANT].num;
+      }
+    }
+    else
+    {
+      global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].csvid = csvid;
+      global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].amt = amt;
+      ++global_packs[PACK1_OTHER][PACK2_INSTANT].num;
+    }
   }
 }
 
@@ -3650,43 +4508,72 @@ delete_card_from_global_deck(csvid_t csvid, int num)
 
 // FUNCTION: DECKDLL 0x1002c6b5
 static void
-move_colors_fromto_global_deck(bool move_into, int dlgbits)
+move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
 {
   int i;
-#pragma message("Replaced in Shandalar")
-
-  color_test_t dlgcolors = (dlgbits << 1) & (COLOR_TEST_ANY_COLORED | COLOR_TEST_ARTIFACT);
-
-  if (!dlgcolors)
-    return;
-
-  for (i = 0; i < global_deck_num_entries; ++i)
+  if (move_into == 1)
   {
-    GlobalDeckEntry *gd = &global_deck[i];
-    const card_ptr_t *cp;
-    if (gd->GDE_Available != (move_into ? 1 : 0))
-      continue;
-
-    cp = &cards_ptr[gd->GDE_csvid];
-    if (global_colors_match_fn ? global_colors_match_fn(gd->GDE_iid, dlgcolors)
-                               : (((dlgcolors & COLOR_TEST_BLACK) && (cp->color == CP_COLOR_BLACK || gd->GDE_iid == 0))    // swamp
-                                  || ((dlgcolors & COLOR_TEST_BLUE) && (cp->color == CP_COLOR_BLUE || gd->GDE_iid == 1))   // island
-                                  || ((dlgcolors & COLOR_TEST_GREEN) && (cp->color == CP_COLOR_GREEN || gd->GDE_iid == 2)) // forest
-                                  || ((dlgcolors & COLOR_TEST_RED) && (cp->color == CP_COLOR_RED || gd->GDE_iid == 3))     // mountain
-                                  || ((dlgcolors & COLOR_TEST_WHITE) && (cp->color == CP_COLOR_WHITE || gd->GDE_iid == 4)) // plains
-                                  || ((dlgcolors & COLOR_TEST_ARTIFACT) && cp->card_type == CP_TYPE_ARTIFACT)))
+    for (i = 0; i < global_deck_num_entries; ++i)
     {
-      if (move_into)
+      if (global_deck[i].GDE_Available == 1)
       {
-        gd->GDE_Available = 0;
-        gd->GDE_DecksBits |= 1 << global_current_deck;
-        insert_cards_into_deck(gd->GDE_csvid, 1, global_edited_deck);
+        if ((((dlgbits & 1) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLACK) &&
+             ((dlgbits & 2) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLUE) &&
+             ((dlgbits & 4) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_GREEN) &&
+             ((dlgbits & 8) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_RED) &&
+             ((dlgbits & 0x10) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_WHITE) &&
+             ((dlgbits & 0x20) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].card_type != CP_TYPE_ARTIFACT)))
+        {
+          if ((((dlgbits & 1) != 0 && global_deck[i].GDE_iid == 0) ||   // swamp
+               ((dlgbits & 2) != 0 && global_deck[i].GDE_iid == 1) ||   // island
+               ((dlgbits & 4) != 0 && global_deck[i].GDE_iid == 2) ||   // forest
+               ((dlgbits & 8) != 0 && global_deck[i].GDE_iid == 3) ||   // mountain
+               ((dlgbits & 0x10) != 0 && global_deck[i].GDE_iid == 4))) // plains
+          {
+            global_deck[i].GDE_Available = 0;
+            global_deck[i].GDE_DecksBits |= 1 << global_current_deck;
+            insert_cards_into_deck(global_deck[i].GDE_csvid, 1, global_edited_deck);
+          }
+        }
+        else
+        {
+          global_deck[i].GDE_Available = 0;
+          global_deck[i].GDE_DecksBits |= 1 << global_current_deck;
+          insert_cards_into_deck(global_deck[i].GDE_csvid, 1, global_edited_deck);
+        }
       }
-      else
+    }
+  }
+  else
+  {
+    for (i = 0; i < global_deck_num_entries; ++i)
+    {
+      if (global_deck[i].GDE_Available == 0)
       {
-        gd->GDE_Available = 1;
-        gd->GDE_DecksBits &= ~(1 << global_current_deck);
-        remove_cards_from_deck(gd->GDE_csvid, 1, global_edited_deck);
+        if ((((dlgbits & 1) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLACK) &&
+             ((dlgbits & 2) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLUE) &&
+             ((dlgbits & 4) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_GREEN) &&
+             ((dlgbits & 8) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_RED) &&
+             ((dlgbits & 0x10) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_WHITE) &&
+             ((dlgbits & 0x20) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].card_type != CP_TYPE_ARTIFACT)))
+        {
+          if ((((dlgbits & 1) != 0 && global_deck[i].GDE_iid == 0) ||   // swamp
+               ((dlgbits & 2) != 0 && global_deck[i].GDE_iid == 1) ||   // island
+               ((dlgbits & 4) != 0 && global_deck[i].GDE_iid == 2) ||   // forest
+               ((dlgbits & 8) != 0 && global_deck[i].GDE_iid == 3) ||   // mountain
+               ((dlgbits & 0x10) != 0 && global_deck[i].GDE_iid == 4))) // plains
+          {
+            global_deck[i].GDE_Available = 1;
+            global_deck[i].GDE_DecksBits &= ~(1 << global_current_deck);
+            remove_cards_from_deck(global_deck[i].GDE_csvid, 1, global_edited_deck);
+          }
+        }
+        else
+        {
+          global_deck[i].GDE_Available = 1;
+          global_deck[i].GDE_DecksBits &= ~(1 << global_current_deck);
+          remove_cards_from_deck(global_deck[i].GDE_csvid, 1, global_edited_deck);
+        }
       }
     }
   }
@@ -3739,60 +4626,71 @@ check_colors_inout_edited_deck(bool currently_in)
 {
   int i;
   int dlgbits;
-  int currently_out;
-
-  if (global_check_colors_inout_edited_deck_fn)
-    return global_check_colors_inout_edited_deck_fn(global_deck, global_deck_num_entries, currently_in);
 
   dlgbits = 0;
-  currently_out = currently_in ? 0 : 1;
-  for (i = 0; i < global_deck_num_entries; ++i)
-    if (global_deck[i].GDE_Available == currently_out)
+  if (currently_in == 1)
+  {
+    for (i = 0; i < global_deck_num_entries; ++i)
     {
-      const card_ptr_t *cp = &cards_ptr[global_deck[i].GDE_csvid];
-      switch (cp->color)
+      if (global_deck[i].GDE_Available == 0)
       {
-      case CP_COLOR_BLACK:
-        dlgbits |= 1;
-        break;
-      case CP_COLOR_BLUE:
-        dlgbits |= 2;
-        break;
-      case CP_COLOR_GREEN:
-        dlgbits |= 4;
-        break;
-      case CP_COLOR_RED:
-        dlgbits |= 8;
-        break;
-      case CP_COLOR_WHITE:
-        dlgbits |= 0x10;
-        break;
-      default:
-        break;
-      }
-      if (cp->card_type == CP_TYPE_ARTIFACT)
-        dlgbits |= 0x20;
-      switch (global_deck[i].GDE_iid)
-      {
-      case 0: /*swamp*/
-        dlgbits |= 1;
-        break;
-      case 1: /*island*/
-        dlgbits |= 2;
-        break;
-      case 2: /*forest*/
-        dlgbits |= 4;
-        break;
-      case 3: /*mountain*/
-        dlgbits |= 8;
-        break;
-      case 4: /*plains*/
-        dlgbits |= 0x10;
-        break;
-      default:
-        break;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_BLACK)
+          dlgbits |= 1;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_BLUE)
+          dlgbits |= 2;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_GREEN)
+          dlgbits |= 4;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_RED)
+          dlgbits |= 8;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_WHITE)
+          dlgbits |= 0x10;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].card_type == CP_TYPE_ARTIFACT)
+          dlgbits |= 0x20;
+        if (global_deck[i].GDE_iid == 0)
+          dlgbits |= 1;
+        else if (global_deck[i].GDE_iid == 1)
+          dlgbits |= 2;
+        else if (global_deck[i].GDE_iid == 2)
+          dlgbits |= 4;
+        else if (global_deck[i].GDE_iid == 3)
+          dlgbits |= 8;
+        else if (global_deck[i].GDE_iid == 4)
+          dlgbits |= 0x10;
       }
     }
+  }
+  else
+  {
+    for (i = 0; i < global_deck_num_entries; ++i)
+    {
+      if (global_deck[i].GDE_Available == 1)
+      {
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_BLACK)
+          dlgbits |= 1;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_BLUE)
+          dlgbits |= 2;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_GREEN)
+          dlgbits |= 4;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_RED)
+          dlgbits |= 8;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].color == CP_COLOR_WHITE)
+          dlgbits |= 0x10;
+        if (global_raw_cards_ptr[global_deck[i].GDE_csvid].card_type == CP_TYPE_ARTIFACT)
+          dlgbits |= 0x20;
+        if (global_deck[i].GDE_iid == 0)
+          dlgbits |= 1;
+        else if (global_deck[i].GDE_iid == 1)
+          dlgbits |= 2;
+        else if (global_deck[i].GDE_iid == 2)
+          dlgbits |= 4;
+        else if (global_deck[i].GDE_iid == 3)
+          dlgbits |= 8;
+        else if (global_deck[i].GDE_iid == 4)
+          dlgbits |= 0x10;
+      }
+    }
+  }
+
   return dlgbits;
 }
 
@@ -3921,20 +4819,26 @@ TENTATIVE_remove_selected_from_horzlist(HWND hwnd_listbox, HWND hwnd_horzlist)
 }
 
 // FUNCTION: DECKDLL 0x1002aa2b
-static void
+static int
 horzlist_prep_rectangle(HWND hwnd, int idx, RECT *rect)
 {
   RECT r;
-  int w;
-  int lft;
+  WORD w;
+  WORD lft;
+  WORD pics;
 
+  w = GetWindowWord(hwnd, 10);
+  lft = GetWindowWord(hwnd, 8);
+  pics = GetWindowWord(hwnd, 12);
   GetClientRect(hwnd, &r);
-  w = GetWindowLong(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX);
-  lft = GetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX);
 
-  SetRect(rect,
-          r.left + w * (idx - lft), r.top,
-          r.left + w * (idx - lft + 1), r.bottom);
+  SetRect(rect, (idx - (unsigned int)lft) * (unsigned int)w + r.left, r.top,
+          ((idx - (unsigned int)lft) + 1) * (unsigned int)w + r.left, r.bottom);
+
+  if (idx < (int)(unsigned int)lft || (int)((unsigned int)pics + (unsigned int)lft) < idx)
+    return 0;
+  else
+    return 1;
 }
 
 // FUNCTION: DECKDLL 0x1002ae78
@@ -3991,37 +4895,43 @@ TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
 static int
 ask_movexcards(csvid_t csvid, bool shifted)
 {
-  int v3;
-  int i;
+  int iVar1;
+  int local_c;
+  int local_8;
 
-  v3 = 0;
-  if (!shifted)
+  local_8 = 0;
+  if (shifted == 1)
   {
-    v3 = 1;
-    if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR | 0x20) && change_global_deck_card_availability(csvid, 1))
+    if ((global_db_flags_1 & 0x61) == 0)
+    {
+      show_dialog_movexcards();
+      local_8 = global_dlg_result;
+    }
+    else
+    {
+      local_8 = count_card_amount_outside_edited_deck(csvid);
+      global_dlg_parameter = local_8;
+      iVar1 = show_dialog_movexcards();
+      if (iVar1 == 0)
+        global_dlg_result = 0;
+      if (global_dlg_result < local_8)
+        local_8 = global_dlg_result;
+
+      for (local_c = 0; local_c < local_8; local_c = local_c + 1)
+        change_global_deck_card_availability(csvid, 1);
+
       TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
-  }
-  else if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR | 0x20))
-  {
-    global_dlg_parameter = v3 = count_card_amount_outside_edited_deck(csvid);
-
-    if (!show_dialog_movexcards())
-      global_dlg_result = 0;
-
-    v3 = MIN(v3, global_dlg_result);
-
-    for (i = 0; i < v3; ++i)
-      change_global_deck_card_availability(csvid, 1);
-
-    TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
+    }
   }
   else
   {
-    show_dialog_movexcards();
-    v3 = global_dlg_result;
+    local_8 = 1;
+    if ((global_db_flags_1 & 0x61) != 0 &&
+        (iVar1 = change_global_deck_card_availability(csvid, 1), iVar1 != 0))
+      TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
   }
 
-  return v3;
+  return local_8;
 }
 
 // FUNCTION: DECKDLL 0x10019c42
@@ -5804,83 +6714,96 @@ deck_parse_line(char *txt, csvid_t *csvid, int *num)
 }
 
 // FUNCTION: DECKDLL 0x1000e90f
-static bool
+static int
 load_deck(char *filename)
 {
+  size_t len;
   FILE *f;
-  char deckname[32];
-  char deck_description[22];
-  char deck_author[82];
-  char deck_email[82];
-  char deck_creation_date[23];
-  char deck_revision[17];
-  char deck_edition[17];
-  char deck_comments[402];
-  char txt[512];
+  char txt[500];
   csvid_t csvid;
   int num;
 
   f = fopen(filename, "rt");
   if (f == 0)
-    return false;
+    return 0;
 
-  memset(global_edited_deck, 0, sizeof global_edited_deck);
+  memset(global_edited_deck, 0, 0x1464);
 
-  global_deck_num_cards = global_edited_deck_num_entries = 0;
   if (global_db_flags_1 & DBFLAGS_GAUNTLET)
-    global_deck_num_entries = 0;
+  {
+    global_deck_num_entries_copy = 0;
+    global_deck_num_entries = global_deck_num_entries_copy;
+  }
 
-  readline(f, deckname, sizeof deckname);
-  if (deckname[0] != ';')
-    return false;
-  strcpy(global_deckname, deckname + 1);
+  fgets(txt, 0x1f, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deckname, &txt[1], 0x1f);
 
-  readline(f, deck_description, sizeof deck_description);
-  if (deck_description[0] != ';')
-    return false;
-  strcpy(global_deck_description, deck_description + 1);
+  fgets(txt, 0x15, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deck_description, &txt[1], 0x15);
 
-  readline(f, deck_author, sizeof deck_author);
-  if (deck_author[0] != ';')
-    return false;
-  strcpy(global_deck_author, deck_author + 1);
+  fgets(txt, 0x51, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deck_author, &txt[1], 0x51);
 
-  readline(f, deck_email, sizeof deck_email);
-  if (deck_email[0] != ';')
-    return false;
-  strcpy(global_deck_email, deck_email + 1);
+  fgets(txt, 0x51, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deck_email, &txt[1], 0x51);
 
-  readline(f, deck_creation_date, sizeof deck_creation_date);
-  if (deck_creation_date[0] != ';')
-    return false;
-  strcpy(global_deck_creation_date, deck_creation_date + 1);
+  fgets(txt, 0x16, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deck_creation_date, &txt[1], 0x16);
 
-  readline(f, deck_revision, sizeof deck_revision);
-  if (deck_revision[0] != ';')
-    return false;
-  global_deck_revision = atoi(&deck_revision[1]);
+  fgets(txt, 0x10, f);
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  if (txt[0] != ';')
+    return 0;
+  global_deck_revision = atoi(&txt[1]);
 
-  readline(f, deck_edition, sizeof deck_edition);
-  if (deck_edition[0] != ';')
-    return false;
-  strcpy(global_deck_edition, deck_edition + 1);
+  fgets(txt, 0x10, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deck_edition, &txt[1], 0x10);
 
-  readline(f, deck_comments, sizeof deck_comments);
-  if (deck_comments[0] != ';')
-    return false;
-  strcpy(global_deck_comments, deck_comments + 1);
+  fgets(txt, 0x191, f);
+  if (txt[0] != ';')
+    return 0;
+  len = strlen(txt);
+  txt[len - 1] = 0;
+  strncpy(global_deck_comments, &txt[1], 0x191);
 
-  while (readline(f, txt, sizeof txt) && txt[0] != 'v') {
+  while (readline(f, txt, 0x200) && txt[0] != 'v') {
     if (txt[0] == '.')
     {
       if (txt[1] == 'v')
         break;
-      deck_parse_line(&txt[1], &csvid, &num);
-      if (num > 0)
+      sscanf(txt, ".%d %d", &csvid, &num);
+      if (num == 0)
+        insert_cards_into_deck(csvid, 0, global_edited_deck);
+      else
         insert_cards_into_deck(csvid, num, global_edited_deck);
     }
   }
-    
+
   fclose(f);
 
   count_packs();
@@ -5889,26 +6812,24 @@ load_deck(char *filename)
 
 // FUNCTION: DECKDLL 0x1002b7bb
 static int
-check_card_count(int idx)
+check_card_count(int csvid)
 {
+  int limit;
   int i;
-  csvid_t csvid;
-  if (global_check_card_count_fn)
-    return global_check_card_count_fn(global_edited_deck, idx, global_deck_num_cards);
+  limit = Scards[5].worldmagic_city == 0;
 
-  csvid = global_edited_deck[idx].DeckEntry_csvid;
-  if (check_basic(csvid))
-    return 0;
-
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
-    if (global_edited_deck[i].DeckEntry_csvid == csvid)
-    {
-      int lim = Scards[5].worldmagic_city ? 0 : 1;
-      if (global_deck_num_cards >= 59)
-        return global_edited_deck[i].DeckEntry_Amount - (99 * lim + 4);
-      else
-        return global_edited_deck[i].DeckEntry_Amount - (lim + 3);
-    }
+  if (global_deck_num_cards < 59)
+  {
+    for (i = 0; i < global_edited_deck_num_entries; ++i)
+      if (global_edited_deck[i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
+        return global_edited_deck[i].DeckEntry_Amount - (limit + 3);
+  }
+  else
+  {
+    for (i = 0; i < global_edited_deck_num_entries; ++i)
+      if (global_edited_deck[i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
+        return global_edited_deck[i].DeckEntry_Amount - (limit * 99 + 4);
+  }
 
   return 0;
 }
@@ -6282,7 +7203,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       int num_failed = 0;
       for (i = 0; i < global_edited_deck_num_entries; ++i)
       {
-        int excess = check_card_count(i);
+        int excess = check_card_count(global_edited_deck[i].DeckEntry_csvid);
         if (excess > 0)
         {
           global_excessive_cards[num_failed].DeckEntry_csvid = global_edited_deck[i].DeckEntry_csvid;
@@ -6784,36 +7705,44 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x1001d67f
-static void
+static int
 filterbuttons_setcoords(const RECT *r, int button_number, RECT *rval)
 {
+  RECT temp_rect;
   int w;
-  int dx;
-  int extra_offset;
 
-  if ((global_db_flags_1 & DBFLAGS_SHANDALAR) && button_number < 10)
+  if (((global_db_flags_1 & DBFLAGS_SHANDALAR) && button_number < 10) ||
+      (!FUN_100271e3(2) && (button_number == 7 || button_number == 8)) ||
+      (!FUN_100271e3(4) && (button_number == 9 || button_number == 10)))
   {
     SetRect(rval, -100, -100, -100, -100);
-    return;
+    return 1;
   }
 
-  w = r->right - r->left - 12;
-  if (w < 0)
-    w = 1;
+  w = r->right - r->left - 2;
+  SetRect(&temp_rect, r->left + 1, r->top + 1, r->left + w + 1, r->bottom - 2);
+  OffsetRect(&temp_rect, w * (button_number - 5), 0);
 
-  dx = w / 25;
+  if (button_number > 10)
+  {
+    temp_rect.left += 6;
+    temp_rect.right += 6;
+  }
 
-  if (button_number >= 24)
-    extra_offset = 12;
-  else if (button_number >= 19)
-    extra_offset = 8;
-  else if (button_number >= 11)
-    extra_offset = 4;
-  else
-    extra_offset = 0;
+  if (button_number >= 18)
+  {
+    temp_rect.left += 6;
+    temp_rect.right += 6;
+  }
 
-  SetRect(rval, r->left + 1, r->top + 1, r->left + 1 + dx, r->bottom - 2);
-  OffsetRect(rval, (button_number - 4) * dx + extra_offset, 0);
+  if (button_number > 22)
+  {
+    temp_rect.left += 8;
+    temp_rect.right += 8;
+  }
+
+  CopyRect(rval, &temp_rect);
+  return 1;
 }
 
 static __inline bool
@@ -6982,66 +7911,110 @@ draw_filter_buttons(HDC hdc, const RECT *r)
 static bool
 toggle_filterbutton(int n)
 {
+  int rval;
+
   switch (n)
   {
-#define TOGGLE(var, val) (((var) ^= (val)), ((var) & (val)))
+  case 1:
+    global_filter_cardsets ^= 0x800;
+    return (global_filter_cardsets & 0x800) ? true : false;
+  case 2:
+    global_filter_cardsets ^= 0x200;
+    return (global_filter_cardsets & 0x200) ? true : false;
+  case 3:
+    global_filter_cardsets ^= 0x400;
+    return (global_filter_cardsets & 0x400) ? true : false;
   case 4:
-    return TOGGLE(global_filter_cardsets, FS_OTHER);
+    global_filter_cardsets ^= FS_OTHER;
+    return (global_filter_cardsets & FS_OTHER) ? true : false;
   case 5:
-    return TOGGLE(global_filter_cardsets, FS_4TH_EDITION);
+    global_filter_cardsets ^= FS_4TH_EDITION;
+    return (global_filter_cardsets & FS_4TH_EDITION) ? true : false;
   case 6:
-    return TOGGLE(global_filter_cardsets, FS_ASTRAL);
+    global_filter_cardsets ^= FS_ASTRAL;
+    return (global_filter_cardsets & FS_ASTRAL) ? true : false;
   case 7:
-    return TOGGLE(global_filter_cardsets, FS_ARABIAN_NIGHTS);
+    if (!(global_filter_cardsets_flags & FCSF_ARABIAN_NIGHTS))
+      return false;
+    global_filter_cardsets ^= FS_ARABIAN_NIGHTS;
+    return (global_filter_cardsets & FS_ARABIAN_NIGHTS) ? true : false;
   case 8:
-    return TOGGLE(global_filter_cardsets, FS_ANTIQUITIES);
+    if (!(global_filter_cardsets_flags & FCSF_ANTIQUITIES))
+      return false;
+    global_filter_cardsets ^= FS_ANTIQUITIES;
+    return (global_filter_cardsets & FS_ANTIQUITIES) ? true : false;
   case 9:
-    return TOGGLE(global_filter_cardsets, FS_LEGENDS);
+    if (!(global_filter_cardsets_flags & FCSF_LEGENDS))
+      return false;
+    global_filter_cardsets ^= FS_LEGENDS;
+    return (global_filter_cardsets & FS_LEGENDS) ? true : false;
   case 10:
-    return TOGGLE(global_filter_cardsets, FS_THE_DARK);
+    if (!(global_filter_cardsets_flags & FCSF_THE_DARK))
+      return false;
+    global_filter_cardsets ^= FS_THE_DARK;
+    return (global_filter_cardsets & FS_THE_DARK) ? true : false;
 
   case 11:
-    return TOGGLE(global_filter_colors, FC_WHITE);
+    global_filter_colors ^= FC_WHITE;
+    return (global_filter_colors & FC_WHITE) ? true : false;
   case 12:
-    return TOGGLE(global_filter_colors, FC_BLUE);
+    global_filter_colors ^= FC_BLUE;
+    return (global_filter_colors & FC_BLUE) ? true : false;
   case 13:
-    return TOGGLE(global_filter_colors, FC_BLACK);
+    global_filter_colors ^= FC_BLACK;
+    return (global_filter_colors & FC_BLACK) ? true : false;
   case 14:
-    return TOGGLE(global_filter_colors, FC_RED);
+    global_filter_colors ^= FC_RED;
+    return (global_filter_colors & FC_RED) ? true : false;
   case 15:
-    return TOGGLE(global_filter_colors, FC_GREEN);
+    global_filter_colors ^= FC_GREEN;
+    return (global_filter_colors & FC_GREEN) ? true : false;
   case 16:
-    return TOGGLE(global_filter_colors, FC_GOLD);
+    global_filter_cardtypes ^= FT_LAND;
+    return (global_filter_cardtypes & FT_LAND) ? true : false;
 
   case 17:
-    return TOGGLE(global_filter_cardtypes, FT_LAND);
+    global_filter_cardtypes ^= FT_ARTIFACT;
+    return (global_filter_cardtypes & FT_ARTIFACT) ? true : false;
   case 18:
-    return TOGGLE(global_filter_cardtypes, FT_ARTIFACT);
+    global_filter_cardtypes ^= FT_CREATURE;
+    return (global_filter_cardtypes & FT_CREATURE) ? true : false;
   case 19:
-    return TOGGLE(global_filter_cardtypes, FT_CREATURE);
+    global_filter_cardtypes ^= FT_ENCHANTMENT;
+    return (global_filter_cardtypes & FT_ENCHANTMENT) ? true : false;
   case 20:
-    return TOGGLE(global_filter_cardtypes, FT_ENCHANTMENT);
+    global_filter_cardtypes ^= FT_ENCHANTMENT_PERMANENT;
+    return (global_filter_cardtypes & FT_ENCHANTMENT_PERMANENT) ? true : false;
   case 21:
-    return TOGGLE(global_filter_cardtypes, FT_INSTANT);
+    global_filter_cardtypes ^= FT_ENCHANTMENT_PLAYER;
+    return (global_filter_cardtypes & FT_ENCHANTMENT_PLAYER) ? true : false;
   case 22:
-    return TOGGLE(global_filter_cardtypes, FT_INTERRUPT);
+    global_filter_cardtypes ^= FT_ENCHANTMENT_INSTANT;
+    return (global_filter_cardtypes & FT_ENCHANTMENT_INSTANT) ? true : false;
   case 23:
-    return TOGGLE(global_filter_cardtypes, FT_SORCERY);
+    global_filter_casting_cost ^= FN_ENABLE;
+    return (global_filter_casting_cost & FN_ENABLE) ? false : true;
 
   case 24:
-    return !TOGGLE(global_filter_casting_cost, FN_ENABLE);
+    global_filter_power ^= FN_ENABLE;
+    return (global_filter_power & FN_ENABLE) ? false : true;
   case 25:
-    return !TOGGLE(global_filter_power, FN_ENABLE);
+    global_filter_toughness ^= FN_ENABLE;
+    return (global_filter_toughness & FN_ENABLE) ? false : true;
   case 26:
-    return !TOGGLE(global_filter_toughness, FN_ENABLE);
+    global_filter_abilities ^= FA_ENABLE;
+    return (global_filter_abilities & FA_ENABLE) ? false : true;
   case 27:
-    return !TOGGLE(global_filter_abilities, FA_ENABLE);
+    global_filter_rarity ^= FR_ENABLE;
+    return (global_filter_rarity & FR_ENABLE) ? false : true;
   case 28:
-    return !TOGGLE(global_filter_rarity, FR_ENABLE);
+    rval = ((unsigned char *)&global_filter_rarity)[1];
+    rval ^= 1;
+    ((unsigned char *)&global_filter_rarity)[1] = rval;
+    return (rval & 1) ? false : true;
 
   default:
     return false;
-#undef TOGGLE
   }
 }
 
@@ -7163,173 +8136,328 @@ is_valid_card(csvid_t csvid)
     return (csvid < global_available_slots && (global_cfg_view_all || (card_coded[csvid / 8] & (1 << (csvid % 8)))));
 }
 
+static int
+FUN_1000e20a(unsigned int *param_1)
+{
+  *param_1 = 0xFFFFFFFF;
+  return 0;
+}
+
+// FUNCTION: DECKDLL 0x100271e3
+static unsigned int
+FUN_100271e3(unsigned char param_1)
+{
+  unsigned int local_8;
+  unsigned int local_4;
+
+  local_4 = 0;
+  if (param_1 & 1)
+    return 1;
+
+  local_8 = 0;
+  if (FUN_1000e20a(&local_8) != 0)
+    return 0;
+
+  if ((param_1 & 1) && (local_8 & 0x400000))
+    local_4 = 1;
+  else if ((param_1 & 2) && (local_8 & 0x100))
+    local_4 = 1;
+  else if ((param_1 & 4) && (local_8 & 0x800))
+    local_4 = 1;
+  else if ((param_1 & 8) && (local_8 & 0x20000))
+    local_4 = 1;
+  else if ((param_1 & 0x10) && (local_8 & 0x10000000))
+    local_4 = 1;
+  else
+    local_4 = 0;
+
+  return local_4;
+}
+
+// FUNCTION: DECKDLL 0x1002709f
+static int
+FUN_1002709f(unsigned int param_1, int param_2)
+{
+  int local_4;
+
+  local_4 = 1;
+  if (param_2 == 1)
+  {
+    if (FUN_100271e3(2) == 0)
+      local_4 = 0;
+  }
+  if (param_2 == 2)
+  {
+    if (FUN_100271e3(4) == 0)
+      local_4 = 0;
+  }
+  if (((((int)param_1 < 0) || (0x3FF < (int)param_1)) || (param_2 < 0)) || (2 < param_2))
+    local_4 = 0;
+
+  if ((*(unsigned int *)(card_coded + param_2 * 0x80 + ((int)(param_1 & 0xFFFFFFE0) >> 3)) &
+       (1 << ((unsigned char)param_1 & 0x1F))) == 0)
+    local_4 = 0;
+
+  return local_4;
+}
+
 // FUNCTION: DECKDLL 0x10010c57
 static bool
-check_set_availability(csvid_t csvid, unsigned int allowed_sets)
+check_set_availability(csvid_t csvid, unsigned char allowed_sets)
 {
-  OrigRarities *r;
-  int rs;
+  int set;
+  bool bit20a;
+  int bit80;
+  int bit40;
+  int bit20b;
+  int bit10;
+  int bit08;
+  int bit02;
+  int bit01;
+  int bit04;
 
-  if (!is_valid_card(csvid))
+  bit80 = 0;
+  bit40 = 0;
+  bit20b = 0;
+  bit20a = false;
+  bit10 = 0;
+  bit08 = 0;
+  bit02 = 0;
+  bit01 = 0;
+  bit04 = 0;
+
+  if (FUN_1002709f(csvid, 0) == 0 && FUN_1002709f(csvid, 1) == 0 && FUN_1002709f(csvid, 2) == 0)
     return false;
 
-  r = &global_origrarities[csvid];
-  rs = r->set;
-
-  if (rs == SET_INVALID)
+  set = global_origrarities[csvid].set;
+  if (set == -1)
     return false;
 
-  return (((allowed_sets & 1) && r->exp_rarities[1] != '-') || ((allowed_sets & 4) && r->exp_rarities[0] != '-') || ((allowed_sets & 2) && rs == SET_UNLIMITED) || ((allowed_sets & 8) && rs == SET_ARABIAN_NIGHTS) || ((allowed_sets & 0x10) && !r->set) || ((allowed_sets & 0x20) && (rs == SET_ASTRAL || rs == SET_PROMO)) || ((allowed_sets & 0x40) && rs == SET_LEGENDS) || ((allowed_sets & 0x80) && rs == SET_THE_DARK) || ((allowed_sets & 0x100) && rs == SET_8TH_EDITION) || ((allowed_sets & 0x200) && rs == SET_FALLEN_EMPIRES) || ((allowed_sets & 0x800) && rs == SET_RANDOM) || ((allowed_sets & 0x400) && rs == SET_TEMPEST));
+  if ((allowed_sets & 1) != 0)
+    bit01 = (global_origrarities[csvid].exp_rarities[1] != '-') ? 1 : 0;
+
+  if ((allowed_sets & 4) != 0)
+    bit04 = (global_origrarities[csvid].exp_rarities[0] != '-') ? 1 : 0;
+
+  if ((allowed_sets & 2) != 0)
+    bit02 = (set == SET_UNLIMITED) ? 1 : 0;
+
+  if ((allowed_sets & 8) != 0)
+    bit08 = (set == SET_ARABIAN_NIGHTS) ? 1 : 0;
+
+  if ((allowed_sets & 0x10) != 0)
+    bit10 = (set == SET_ANTIQUITIES) ? 1 : 0;
+
+  if ((allowed_sets & 0x20) != 0)
+  {
+    bit20a = (set == SET_ASTRAL);
+    bit20b = (set == SET_PROMO) ? 1 : 0;
+  }
+
+  if ((allowed_sets & 0x40) != 0)
+    bit40 = (set == SET_LEGENDS) ? 1 : 0;
+
+  if ((allowed_sets & 0x80) != 0)
+    bit80 = (set == SET_THE_DARK) ? 1 : 0;
+
+  return (bit80 | bit40 | bit20b | bit20a | bit10 | bit08 | bit02 | bit01 | bit04) != 0;
 }
 
 // FUNCTION: DECKDLL 0x1000fa34
 static bool
-check_lands(int cardtype, int mana_source_colors)
+check_lands(int cardtype, int db_card_type_2)
 {
-  return ((global_filter_cardtypes & FT_LAND) && ((global_filter_cardtypes & FT_LAND_LAND_AND_MANA && cardtype == CP_TYPE_LAND && mana_source_colors) || (global_filter_cardtypes & FT_LAND_LAND_ONLY && cardtype == CP_TYPE_LAND && !mana_source_colors) || (global_filter_cardtypes & FT_LAND_MANA_ONLY && cardtype != CP_TYPE_LAND && mana_source_colors)));
+  int rval;
+
+  rval = 0;
+  if (((unsigned char)global_filter_cardtypes & FT_LAND) == 0)
+    return rval;
+
+  if (((unsigned char)global_filter_cardtypes & FT_LAND_LAND_AND_MANA) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 == 10)
+    rval = 1;
+  if (((unsigned char)global_filter_cardtypes & FT_LAND_LAND_ONLY) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 != 10)
+    rval = 1;
+  if (((unsigned char)global_filter_cardtypes & FT_LAND_MANA_ONLY) != 0 && cardtype != CP_TYPE_LAND && db_card_type_2 == 10)
+    rval = 1;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000fade
 static bool
 check_artifacts(int cardtype, int subtype1)
 {
-  return (cardtype == CP_TYPE_ARTIFACT && (global_filter_cardtypes & FT_ARTIFACT) && (subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE ? (global_filter_cardtypes & FT_ARTIFACT_CREATURE) : (global_filter_cardtypes & FT_ARTIFACT_NON_CREATURE)));
+  int rval;
+
+  rval = 0;
+  if (cardtype == CP_TYPE_ARTIFACT && ((unsigned char)global_filter_cardtypes & FT_ARTIFACT) != 0)
+  {
+    if (((unsigned char)global_filter_cardtypes & FT_ARTIFACT_CREATURE) != 0 &&
+        subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
+      rval = 1;
+
+    if (((unsigned char)global_filter_cardtypes & FT_ARTIFACT_NON_CREATURE) != 0 &&
+        subtype1 != HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
+      rval = 1;
+  }
+  else
+    rval = 0;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x10010bcf
 static bool
-check_creature_list_filter(const card_ptr_t *cp)
+check_creature_list_filter(int subtype1)
 {
-  int crtid;
-  int i;
-  for (crtid = 0; crtid < (CREATURE_LIST_SIZE * 32); ++crtid)
-    if ((1 << (crtid & 0x1F)) & global_filter_creature_list[crtid / 32])
-      for (i = 0; i < 7; ++i)
-        if (cp->types[i] == crtid)
-          return true;
+  int local_c;
+  int local_8;
+
+  local_c = 0;
+  do
+  {
+    if (6 < local_c)
+      return false;
+
+    for (local_8 = 0; local_8 < 0x20; ++local_8)
+      if ((global_filter_creature_list[local_c] & (1 << ((unsigned char)local_8 & 0x1f))) != 0 &&
+          ((local_c * 0x20) + local_8 + 1) == subtype1)
+        return true;
+
+    local_c = local_c + 1;
+  } while (1);
 
   return false;
 }
 
 // FUNCTION: DECKDLL 0x1000fb56
 static bool
-check_creatures(const card_ptr_t *cp)
+check_creatures(int cardtype, int subtype1)
 {
-  if (!(global_filter_cardtypes & FT_CREATURE))
-    return false;
+  int rval;
+  unsigned char *f;
 
-  if (((global_filter_cardtypes & FT_CREATURE_CREATURE) && cp->card_type == CP_TYPE_CREATURE) || ((global_filter_cardtypes & FT_CREATURE_TOKEN) && cp->card_type == CP_TYPE_TOKEN))
-    return true;
+  rval = 0;
+  f = (unsigned char *)&global_filter_cardtypes;
 
-  if ((global_filter_cardtypes & FT_CREATURE_ARTIFACT) && cp->card_type == CP_TYPE_ARTIFACT && cp->subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
-    return true;
+  if (((unsigned char)global_filter_cardtypes & FT_CREATURE) == 0)
+    return rval;
 
-  if (global_filter_cardtypes & FT_CREATURE_LIST)
-    return check_creature_list_filter(cp);
+  if ((f[1] & 1) != 0 && cardtype == CP_TYPE_CREATURE)
+    rval = 1;
 
-  return false;
+  if ((f[1] & 2) != 0 && cardtype == CP_TYPE_TOKEN)
+    rval = 1;
+
+  if ((f[1] & 4) != 0 &&
+      cardtype == CP_TYPE_ARTIFACT &&
+      subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
+    rval = 1;
+
+  if ((f[1] & 8) != 0 &&
+      check_creature_list_filter(subtype1))
+    rval = 1;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000fc14
 static bool
-check_enchantments(const card_ptr_t *cp)
+check_enchantments(int cardtype, int subtype1)
 {
-  uint16_t s1;
-  uint16_t s2;
-  bool world;
-  bool land;
-  bool creature_nonwall;
-  bool creature_or_wall;
-  bool artifact;
-  bool enchant;
-  bool player;
-  bool instant;
-  bool permanent;
-  bool aura_or_world;
+  int rval = 0;
+  unsigned char *f = (unsigned char *)&global_filter_cardtypes;
 
-  if (!(global_filter_cardtypes & FT_ENCHANTMENT) || cp->card_type != CP_TYPE_ENCHANTMENT)
-    return false;
+  if ((f[1] & 0x10) == 0 || cardtype != CP_TYPE_ENCHANTMENT)
+    return rval;
 
-  s1 = cp->subtype1;
-  s2 = cp->subtype2;
+  if ((f[1] & 0x20) && subtype1 == 0xd3)
+    rval = 1;
+  if ((f[1] & 0x40) && subtype1 == 0xcd)
+    rval = 1;
+  if ((f[1] & 0x80) && subtype1 == 0x6c)
+    rval = 1;
+  if ((f[2] & 0x01) && subtype1 == 0x2c)
+    rval = 1;
+  if ((f[2] & 0x02) && subtype1 == 0x0b)
+    rval = 1;
+  if ((f[2] & 0x04) && subtype1 == 0x44)
+    rval = 1;
+  if (subtype1 == 0xc5)
+    rval = 1;
 
-  world = s1 == HARDCODED_SUBTYPE_WORLD || s2 == HARDCODED_SUBTYPE_WORLD;
-  if (world && (global_filter_cardtypes & FT_ENCHANTMENT_WORLD))
-    return true;
-
-  land = s1 == HARDCODED_SUBTYPE_LAND || s2 == HARDCODED_SUBTYPE_LAND;
-  if (land && (global_filter_cardtypes & FT_ENCHANTMENT_LAND))
-    return true;
-
-  creature_nonwall = (s1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE || s2 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE);
-  creature_or_wall = creature_nonwall || s1 == HARDCODED_SUBTYPE_WALL || s2 == HARDCODED_SUBTYPE_WALL;
-  if (creature_or_wall && (global_filter_cardtypes & FT_ENCHANTMENT_CREATURE))
-    return true;
-
-  artifact = s1 == HARDCODED_SUBTYPE_ARTIFACT || s2 == HARDCODED_SUBTYPE_ARTIFACT;
-  if (artifact && (global_filter_cardtypes & FT_ENCHANTMENT_ARTIFACT))
-    return true;
-
-  enchant = s1 == HARDCODED_SUBTYPE_ENCHANTMENT || s2 == HARDCODED_SUBTYPE_ENCHANTMENT;
-  if (enchant && (global_filter_cardtypes & FT_ENCHANTMENT_ENCHANT))
-    return true;
-
-  player = s1 == HARDCODED_SUBTYPE_PLAYER || s2 == HARDCODED_SUBTYPE_PLAYER;
-  if (player && (global_filter_cardtypes & FT_ENCHANTMENT_PLAYER))
-    return true;
-
-  instant = s1 == HARDCODED_SUBTYPE_INSTANT || s2 == HARDCODED_SUBTYPE_INSTANT;
-  if (instant && (global_filter_cardtypes & FT_ENCHANTMENT_INSTANT))
-    return true;
-
-  permanent = s1 == HARDCODED_SUBTYPE_PERMANENT || s2 == HARDCODED_SUBTYPE_PERMANENT;
-  if (permanent && (global_filter_cardtypes & FT_ENCHANTMENT_PERMANENT))
-    return true;
-
-  aura_or_world = world || land || creature_or_wall || artifact || enchant || player || instant || permanent;
-  if (!aura_or_world && (global_filter_cardtypes & FT_ENCHANTMENT_ENCHANTMENTS))
-    return true;
-
-  return false;
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000fd1e
 static bool
-check_casting_cost(const card_ptr_t *cp)
+check_casting_cost(csvid_t csvid, char *entry)
 {
-  int colorless;
+  int cmc;
+  char txt[84];
+  int rval = 0;
+
+  if (entry == NULL)
+  {
+    sprintf(txt, "Card Number %d does not have a valid cast cost!", csvid);
+    MessageBox(global_main_hwnd, txt, "Card Error", MB_ICONSTOP);
+    return 0;
+  }
 
   if (!(global_filter_casting_cost & FN_ENABLE))
-    return true;
+    return 1;
 
-  colorless = cp->req.req_colorless;
-  if (colorless >= 40)
-    return global_filter_casting_cost & FN_CC_X;
-  else
-  {
-    int cmc = colorless + cp->req.req_black + cp->req.req_white + cp->req.req_red + cp->req.req_green + cp->req.req_blue + cp->req.req_hybrid;
-    return (((global_filter_casting_cost & FN_GT) && global_filter_casting_cost_value <= cmc) || ((global_filter_casting_cost & FN_LT) && global_filter_casting_cost_value >= cmc) || ((global_filter_casting_cost & FN_EQ) && global_filter_casting_cost_value == cmc));
-  }
+  if (*entry == '(')
+    return (global_filter_casting_cost & FN_CC_X) ? 1 : 0;
+
+  cmc = (int)entry[2] + (int)entry[5] + (int)entry[7] + (int)entry[8] + (int)entry[1] + (int)entry[0];
+
+  if ((global_filter_casting_cost & FN_GT) && global_filter_casting_cost_value <= cmc)
+    rval = 1;
+  if ((global_filter_casting_cost & FN_LT) && cmc <= global_filter_casting_cost_value)
+    rval = 1;
+  if ((global_filter_casting_cost & FN_EQ) && global_filter_casting_cost_value == cmc)
+    rval = 1;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000fe6e
 static bool
 check_power(int cp_power)
 {
-  if (cp_power > 0)
-    cp_power &= 0xFFF;
+  int rval = 0;
 
-  return (!(global_filter_power & FN_ENABLE) || ((global_filter_power & FN_GT) && global_filter_power_value <= cp_power) || ((global_filter_power & FN_LT) && global_filter_power_value >= cp_power) || ((global_filter_power & FN_EQ) && global_filter_power_value == cp_power));
+  if (((char)global_filter_power & FN_ENABLE) == 0)
+    return 1;
+
+  if (((char)global_filter_power & FN_GT) && (short)global_filter_power_value <= cp_power)
+    rval = 1;
+  if (((char)global_filter_power & FN_LT) && cp_power <= (short)global_filter_power_value)
+    rval = 1;
+  if (((char)global_filter_power & FN_EQ) && (short)global_filter_power_value == cp_power)
+    rval = 1;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000ff16
 static bool
 check_toughness(int cp_toughness)
 {
-  if (cp_toughness > 0)
-    cp_toughness &= 0xFFF;
+  int rval = 0;
 
-  return (!(global_filter_toughness & FN_ENABLE) || ((global_filter_toughness & FN_GT) && global_filter_toughness_value <= cp_toughness) || ((global_filter_toughness & FN_LT) && global_filter_toughness_value >= cp_toughness) || ((global_filter_toughness & FN_EQ) && global_filter_toughness_value == cp_toughness));
+  if (((char)global_filter_toughness & FN_ENABLE) == 0)
+    return 1;
+
+  if (((char)global_filter_toughness & FN_GT) && (short)global_filter_toughness_value <= cp_toughness)
+    rval = 1;
+  if (((char)global_filter_toughness & FN_LT) && cp_toughness <= (short)global_filter_toughness_value)
+    rval = 1;
+  if (((char)global_filter_toughness & FN_EQ) && (short)global_filter_toughness_value == cp_toughness)
+    rval = 1;
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000ffbe
@@ -7352,295 +8480,352 @@ static bool
 check_abilities(csvid_t csvid, int num_abils, char *abils)
 {
   int i;
-  bool native;
-  bool grants;
+  int native;
+  int grants;
+  char txt[80];
 
-  if (!(global_filter_abilities & 1))
+  native = 0;
+  grants = 0;
+
+  if (!abils)
+  {
+    sprintf(txt, "Card Number %d does not have a valid ability value!", csvid);
+    MessageBox(global_main_hwnd, txt, "Card Error", MB_ICONERROR);
+    return false;
+  }
+
+  if (!(global_filter_abilities & FA_ENABLE))
     return true;
 
-  native = global_filter_abilities & 2;
-  grants = global_filter_abilities & 4;
+  if (global_filter_abilities & FA_NATIVE)
+    native = 1;
+  if (global_filter_abilities & FA_GRANTS)
+    grants = 1;
+
   if (!native && !grants)
     return false;
 
   for (i = 0; i < num_abils; ++i)
-    switch (abils[i])
+  {
+    if ((global_filter_abilities & FA_FLYING) != 0)
     {
-#define MATCH(native_or_granted, bit)                           \
-  if ((native_or_granted) && (global_filter_abilities & (bit))) \
-    return true;                                                \
-  else                                                          \
-    break
-
-    case ABIL_NATIVE_FLYING:
-      MATCH(native, FA_FLYING);
-    case ABIL_GRANTS_FLYING:
-      MATCH(grants, FA_FLYING);
-
-    case ABIL_NATIVE_FIRSTSTRIKE:
-      MATCH(native, FA_FIRSTSTRIKE); // or double strike
-    case ABIL_GRANTS_FIRSTSTRIKE:
-      MATCH(grants, FA_FIRSTSTRIKE); // or double strike
-
-    case ABIL_NATIVE_TRAMPLE:
-      MATCH(native, FA_TRAMPLE);
-    case ABIL_GRANTS_TRAMPLE:
-      MATCH(grants, FA_TRAMPLE);
-
-    case ABIL_NATIVE_REGENERATION:
-      MATCH(native, FA_REGENERATION);
-    case ABIL_GRANTS_REGENERATION:
-      MATCH(grants, FA_REGENERATION);
-
-    case ABIL_NATIVE_BANDING:
-      MATCH(native, FA_BANDING);
-    case ABIL_GRANTS_BANDING:
-      MATCH(grants, FA_BANDING);
-
-    case ABIL_NATIVE_PROTECTION_FROM_BLACK:
-      MATCH(native, FA_PROTECTION);
-    case ABIL_NATIVE_PROTECTION_FROM_RED:
-      MATCH(native, FA_PROTECTION);
-    case ABIL_NATIVE_PROTECTION_FROM_WHITE:
-      MATCH(native, FA_PROTECTION);
-    case ABIL_GRANTS_PROTECTION_FROM_BLACK:
-      MATCH(grants, FA_PROTECTION);
-    case ABIL_GRANTS_PROTECTION_FROM_RED:
-      MATCH(grants, FA_PROTECTION);
-    case ABIL_GRANTS_PROTECTION_FROM_WHITE:
-      MATCH(grants, FA_PROTECTION);
-    case ABIL_GRANTS_PROTECTION_FROM_BLUE:
-      MATCH(grants, FA_PROTECTION);
-    case ABIL_GRANTS_PROTECTION_FROM_GREEN:
-      MATCH(grants, FA_PROTECTION);
-    case ABIL_GRANTS_PROTECTION_FROM_ARTIFACTS:
-      MATCH(grants, FA_PROTECTION);
-
-    case ABIL_NATIVE_DESERTWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_NATIVE_FORESTWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_NATIVE_ISLANDWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_NATIVE_LEGENDARY_LANDWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_NATIVE_MOUNTAINWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_NATIVE_PLAINSWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_NATIVE_SWAMPWALK:
-      MATCH(native, FA_LANDWALK);
-    case ABIL_GRANTS_FORESTWALK:
-      MATCH(grants, FA_LANDWALK);
-    case ABIL_GRANTS_ISLANDWALK:
-      MATCH(grants, FA_LANDWALK);
-    case ABIL_GRANTS_MOUNTAINWALK:
-      MATCH(grants, FA_LANDWALK);
-    case ABIL_GRANTS_PLAINSWALK:
-      MATCH(grants, FA_LANDWALK);
-    case ABIL_GRANTS_SWAMPWALK:
-      MATCH(grants, FA_LANDWALK);
-
-    case ABIL_NATIVE_INFECT:
-      MATCH(native, FA_INFECT);
-
-    case ABIL_NATIVE_RAMPAGE:
-      MATCH(native, FA_RAMPAGE);
-    case ABIL_GRANTS_RAMPAGE:
-      MATCH(grants, FA_RAMPAGE);
-
-    case ABIL_NATIVE_REACH:
-      MATCH(native, FA_REACH);
-    case ABIL_GRANTS_REACH:
-      MATCH(grants, FA_REACH);
-
-    case ABIL_NATIVE_DEATHTOUCH:
-      MATCH(native, FA_DEATHTOUCH);
-    case ABIL_GRANTS_DEATHTOUCH:
-      MATCH(grants, FA_DEATHTOUCH);
-
-    case ABIL_NATIVE_VIGILANCE:
-      MATCH(native, FA_VIGILANCE);
-    case ABIL_GRANTS_VIGILANCE:
-      MATCH(grants, FA_VIGILANCE);
-
-    case ABIL_NATIVE_HASTE:
-      MATCH(native, FA_HASTE);
-    case ABIL_GRANTS_HASTE:
-      MATCH(grants, FA_HASTE);
-
-#undef MATCH
+      if (abils[i] == ABIL_NATIVE_FLYING && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_FLYING && grants)
+        return true;
     }
 
+    if ((global_filter_abilities & FA_FIRSTSTRIKE) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_FIRSTSTRIKE && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_FIRSTSTRIKE && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_TRAMPLE) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_TRAMPLE && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_TRAMPLE && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_REGENERATION) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_REGENERATION && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_REGENERATION && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_BANDING) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_BANDING && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_BANDING && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_PROTECTION) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_PROTECTION_FROM_BLACK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_PROTECTION_FROM_RED && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_PROTECTION_FROM_WHITE && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_BLACK && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_RED && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_WHITE && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_BLUE && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_GREEN && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_ARTIFACTS && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_LANDWALK) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_DESERTWALK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_FORESTWALK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_ISLANDWALK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_LEGENDARY_LANDWALK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_MOUNTAINWALK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_PLAINSWALK && native)
+        return true;
+      if (abils[i] == ABIL_NATIVE_SWAMPWALK && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_FORESTWALK && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_ISLANDWALK && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_MOUNTAINWALK && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_PLAINSWALK && grants)
+        return true;
+      if (abils[i] == ABIL_GRANTS_SWAMPWALK && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_INFECT) != 0 && abils[i] == ABIL_NATIVE_INFECT && native)
+      return true;
+
+    if ((global_filter_abilities & FA_RAMPAGE) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_RAMPAGE && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_RAMPAGE && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_REACH) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_REACH && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_REACH && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_DEATHTOUCH) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_DEATHTOUCH && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_DEATHTOUCH && grants)
+        return true;
+    }
+
+    if ((global_filter_abilities & FA_VIGILANCE) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_VIGILANCE && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_VIGILANCE && grants)
+        return true;
+    }
+
+    if (((int)(short)global_filter_abilities & FA_HASTE) != 0)
+    {
+      if (abils[i] == ABIL_NATIVE_HASTE && native)
+        return true;
+      if (abils[i] == ABIL_GRANTS_HASTE && grants)
+        return true;
+    }
+  }
+
   return false;
+}
+
+static uint32_t global_filter_artist_bitmask_low = 0xFFFFFFFF;
+static uint32_t global_filter_artist_bitmask_high = 0xFFFFFFFF;
+
+// FUNCTION: DECKDLL 0x10010b1e
+static int
+find_artist_name_idx(char *artist, int num_artists)
+{
+  int m;
+  int cmp;
+  int l;
+  int r;
+
+  l = 0;
+  r = num_artists - 1;
+  while (1)
+  {
+    while (1)
+    {
+      if (r < l)
+        return -1;
+
+      m = (r + l) / 2;
+      cmp = strcmp(read_db_artist_names[m], artist);
+      if (cmp >= 0)
+        break;
+
+      l = m + 1;
+    }
+
+    cmp = strcmp(read_db_artist_names[m], artist);
+    if (cmp <= 0)
+      break;
+
+    r = m - 1;
+  }
+
+  return m;
+}
+
+// FUNCTION: DECKDLL 0x10010a72
+static bool
+check_artist_filter(csvid_t csvid, char *artist)
+{
+  char txt[80];
+  int idx;
+  bool rval;
+
+  rval = false;
+  if (artist == NULL)
+  {
+    sprintf(txt, "Card Number %d does not have a valid artist value!", csvid);
+    rval = false;
+  }
+  else if ((((unsigned char *)&global_filter_rarity)[1] & 1) == 0)
+    rval = true;
+  else
+  {
+    idx = find_artist_name_idx(artist, sizeof(read_db_artist_names) / sizeof(read_db_artist_names[0]));
+    if (idx >= 0)
+    {
+      if (idx < 32)
+      {
+        if ((global_filter_artist_bitmask_low & (1 << ((unsigned char)idx & 0x1f))) != 0)
+          rval = true;
+      }
+      else if ((global_filter_artist_bitmask_high & (1 << ((unsigned char)idx & 0x1f))) != 0)
+        rval = true;
+    }
+  }
+
+  return rval;
 }
 
 // FUNCTION: DECKDLL 0x1000f1a5
 static bool
 check_filters(csvid_t csvid)
 {
-  const card_ptr_t *cp = &cards_ptr[csvid];
+  unsigned int power;
+  unsigned int toughness;
+  unsigned int rarity;
+  bool color_ok;
+  bool type_ok;
+  int subtype1;
+  int local_c;
+  int i;
+  int artist_ok;
+  unsigned char setmask;
+  char *artist;
+  casting_cost_t *req;
+  unsigned int db_card_type_2;
+  unsigned int cardtype;
+  unsigned int color;
+  unsigned int toughness_ok;
+  unsigned int power_ok;
+  unsigned int rarity_ok;
   char *abils;
 
-  if (!strcmp(cp->full_name, "Blank") || !strcmp(cp->full_name, "Empty") || !strcmp(cp->full_name, "None"))
-    return false;
-
-  if ((global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR | 0x20)) && !check_card_global_deck_availability(csvid))
-    return false;
-
-  switch (cp->color)
+  i = strcmp(global_raw_cards_ptr[csvid].full_name, "Blank");
+  if (i == 0)
   {
-  case CP_COLOR_MULTI:
-  {
-    color_test_t cols;
-    if (!(global_filter_colors & FC_GOLD))
-      return false;
-    if (global_filter_colors & FC_GOLD_ALL)
-      break;
-
-    if (cp->req.req_hybrid > 0)
-      cols = cp->req.hybrid_type; // This works because all hybrid_t values exactly match a color_test_t
-    else
-      cols = COLOR_TEST_0;
-
-    if (cp->req.req_white > 0)
-      cols |= COLOR_TEST_WHITE;
-    if (cp->req.req_blue > 0)
-      cols |= COLOR_TEST_BLUE;
-    if (cp->req.req_black > 0)
-      cols |= COLOR_TEST_BLACK;
-    if (cp->req.req_red > 0)
-      cols |= COLOR_TEST_RED;
-    if (cp->req.req_green > 0)
-      cols |= COLOR_TEST_GREEN;
-
-    if (global_filter_colors & FC_GOLD_ALLSELECTED)
-    {
-      if (!(global_filter_colors & FC_WHITE) != !(cols & COLOR_TEST_WHITE))
-        return false;
-      if (!(global_filter_colors & FC_BLUE) != !(cols & COLOR_TEST_BLUE))
-        return false;
-      if (!(global_filter_colors & FC_BLACK) != !(cols & COLOR_TEST_BLACK))
-        return false;
-      if (!(global_filter_colors & FC_RED) != !(cols & COLOR_TEST_RED))
-        return false;
-      if (!(global_filter_colors & FC_GREEN) != !(cols & COLOR_TEST_GREEN))
-        return false;
-    }
-    else
-    {
-      if (!((cols & COLOR_TEST_WHITE) && (global_filter_colors & FC_WHITE)) && !((cols & COLOR_TEST_BLUE) && (global_filter_colors & FC_BLUE)) && !((cols & COLOR_TEST_BLACK) && (global_filter_colors & FC_BLACK)) && !((cols & COLOR_TEST_RED) && (global_filter_colors & FC_RED)) && !((cols & COLOR_TEST_GREEN) && (global_filter_colors & FC_GREEN)))
-        return false;
-    }
-    break;
+    local_c = 0;
   }
-
-  case CP_COLOR_WHITE:
-    if (!(global_filter_colors & FC_WHITE))
-      return false;
-    else
-      break;
-
-  case CP_COLOR_BLUE:
-    if (!(global_filter_colors & FC_BLUE))
-      return false;
-    else
-      break;
-
-  case CP_COLOR_BLACK:
-    if (!(global_filter_colors & FC_BLACK))
-      return false;
-    else
-      break;
-
-  case CP_COLOR_RED:
-    if (!(global_filter_colors & FC_RED))
-      return false;
-    else
-      break;
-
-  case CP_COLOR_GREEN:
-    if (!(global_filter_colors & FC_GREEN))
-      return false;
-    else
-      break;
-
-  case CP_COLOR_LESS:
-  case CP_COLOR_LAND:
-  case CP_COLOR_ARTIFACT:
-    break;
-
-  default:
-    return false;
-  }
-
-  if (global_filter_expansions & FE_EXPANSIONLIST)
+  else if (((global_db_flags_1 & 0x61) == 0) || ((i = check_card_global_deck_availability(csvid)) != 0))
   {
-    if (!is_valid_card(csvid) || !check_expansion_list_filter(csvid))
-      return false;
+    color = global_raw_cards_ptr[csvid].color;
+    cardtype = global_raw_cards_ptr[csvid].card_type;
+    subtype1 = global_raw_cards_ptr[csvid].subtype1;
+    db_card_type_2 = global_raw_cards_ptr[csvid].db_card_type_2;
+    req = &global_raw_cards_ptr[csvid].req;
+    power = global_raw_cards_ptr[csvid].power;
+    toughness = global_raw_cards_ptr[csvid].toughness;
+    artist = (char *)global_raw_cards_ptr[csvid].artist;
+    rarity = global_raw_cards_ptr[csvid].rarity;
+
+    if (color == CP_COLOR_LESS)
+      color_ok = true;
+    else if ((((color == CP_COLOR_WHITE) && ((global_filter_colors & FC_WHITE) != 0)) ||
+              (((color == CP_COLOR_GREEN) && ((global_filter_colors & FC_GREEN) != 0)) ||
+               (((color == CP_COLOR_RED) && ((global_filter_colors & FC_RED) != 0)) ||
+                ((color == CP_COLOR_BLACK) && ((global_filter_colors & FC_BLACK) != 0))))) ||
+             (((color == CP_COLOR_BLUE) && ((global_filter_colors & FC_BLUE) != 0)) ||
+              color == CP_COLOR_LAND || color == CP_COLOR_ARTIFACT))
+      color_ok = true;
+    else
+      color_ok = false;
+
+    setmask = 0;
+    if ((global_filter_cardsets & FS_4TH_EDITION) != 0)
+    {
+      setmask = (global_filter_expansions & FE_4TH_EDITION) != 0;
+      if ((global_filter_expansions & FE_UNLIMITED) != 0)
+        setmask |= 2;
+      if ((global_filter_expansions & FE_REVISED) != 0)
+        setmask |= 4;
+    }
+    if ((global_filter_cardsets & FS_ASTRAL) != 0)
+      setmask |= 0x20;
+    if ((global_filter_cardsets & FS_ARABIAN_NIGHTS) != 0)
+      setmask |= 8;
+    if ((global_filter_cardsets & FS_ANTIQUITIES) != 0)
+      setmask |= 0x10;
+    if ((global_filter_cardsets & FS_LEGENDS) != 0)
+      setmask |= 0x40;
+    if ((global_filter_cardsets & FS_THE_DARK) != 0)
+      setmask |= 0x80;
+
+    i = check_lands(cardtype, db_card_type_2);
+    if (((((i == 0) &&
+           ((i = check_artifacts(cardtype, subtype1)), i == 0)) &&
+          (((i = check_creatures(cardtype, subtype1)), i == 0) &&
+           ((i = check_enchantments(cardtype, subtype1)), i == 0))) &&
+         (((cardtype != CP_TYPE_INSTANT || ((((unsigned char *)&global_filter_cardtypes)[2] & 8) == 0)) &&
+           (cardtype != CP_TYPE_INTERRUPT || ((((unsigned char *)&global_filter_cardtypes)[2] & 0x10) == 0)))) &&
+        (cardtype != CP_TYPE_SORCERY || ((((unsigned char *)&global_filter_cardtypes)[2] & 0x20) == 0))))
+      type_ok = false;
+    else
+      type_ok = true;
+
+    i = check_casting_cost(csvid, (char *)req);
+    power_ok = check_power(power & 0xfff) != 0;
+    toughness_ok = check_toughness(toughness & 0xfff) != 0;
+    rarity_ok = check_rarity(csvid, rarity) != 0;
+    abils = ((char *)&global_raw_cards_ptr[csvid]) + 0x88;
+    artist_ok = check_artist_filter(csvid, artist);
+
+    if (color_ok &&
+        check_set_availability(csvid, setmask) &&
+        type_ok &&
+        i != 0 &&
+        power_ok != 0 &&
+        toughness_ok != 0 &&
+        rarity_ok != 0 &&
+        check_abilities(csvid, 4, abils) != 0 &&
+        artist_ok != 0)
+      local_c = 1;
+    else
+      local_c = 0;
   }
   else
-  {
-    int allowed_sets_mask = 0;
+    local_c = 0;
 
-    if (global_filter_cardsets & FS_4TH_EDITION)
-    {
-      if (global_filter_expansions & 0x2)
-        allowed_sets_mask = 1;
-      if (global_filter_expansions & 0x1000)
-        allowed_sets_mask |= 2;
-      if (global_filter_expansions & 0x20)
-        allowed_sets_mask |= 4;
-    }
-
-    if (global_filter_cardsets & FS_ASTRAL)
-      allowed_sets_mask |= 0x20;
-
-    if (global_filter_cardsets & FS_ARABIAN_NIGHTS)
-      allowed_sets_mask |= 8;
-
-    if (global_filter_cardsets & FS_ANTIQUITIES)
-      allowed_sets_mask |= 0x10;
-
-    if (global_filter_cardsets & FS_LEGENDS)
-      allowed_sets_mask |= 0x40;
-
-    if (global_filter_cardsets & FS_OTHER)
-    {
-      if (global_filter_expansions & 0x0100)
-        allowed_sets_mask |= 0x100;
-      if (global_filter_expansions & 0x0200)
-        allowed_sets_mask |= 0x200;
-      if (global_filter_expansions & 0x0400)
-        allowed_sets_mask |= 0x400;
-      if (global_filter_expansions & 0x0800)
-        allowed_sets_mask |= 0x800;
-    }
-
-    if (global_filter_cardsets & FS_THE_DARK)
-      allowed_sets_mask |= 0x80;
-
-    if (!check_set_availability(csvid, allowed_sets_mask))
-      return false;
-  }
-
-  // char* entry = &global_raw_dbinfo[16 * csvid];
-  abils = &global_raw_dbinfo[16 * csvid + 8];
-  // int dbcardtype2 = *entry;
-
-  if (!check_lands(cp->card_type, cp->mana_source_colors & (COLOR_TEST_ANY | COLOR_TEST_ARTIFACT)) && 
-      !check_artifacts(cp->card_type, cp->subtype1) && 
-      !check_creatures(cp) && 
-      !check_enchantments(cp) && 
-      !(cp->card_type == CP_TYPE_INSTANT && (global_filter_cardtypes & FT_INSTANT)) && 
-      !(cp->card_type == CP_TYPE_INTERRUPT && (global_filter_cardtypes & FT_INTERRUPT)) && 
-      !(cp->card_type == CP_TYPE_SORCERY && (global_filter_cardtypes & FT_SORCERY)))
-    return false;
-
-  if (!check_casting_cost(cp) || !check_power(cp->power) || !check_toughness(cp->toughness) || !check_rarity(csvid, cp->rarity) || !check_abilities(csvid, 4, abils))
-    return false;
-
-  return true;
+  return local_c;
 }
 
 // FUNCTION: DECKDLL 0x1001bcd5
