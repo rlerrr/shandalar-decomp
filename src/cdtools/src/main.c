@@ -86,13 +86,13 @@ char s_Software_Microsoft_Windows_Curre_10010188[] = "Software\\Microsoft\\Windo
 char s_NoDriveTypeAutoRun_100101c4[] = "NoDriveTypeAutoRun";
 
 // GLOBAL: CDTOOLS 0x100123cc
-HINSTANCE DAT_100123cc = 0x0;
+HINSTANCE DAT_100123cc;
 
 // GLOBAL: CDTOOLS 0x100123d0
-undefined4 g_originalNoDriveTypeAutoRun = 0x00000007;
+undefined4 g_originalNoDriveTypeAutoRun;
 
 // GLOBAL: CDTOOLS 0x100123d4
-undefined4 DAT_100123d4 = 0x0;
+undefined4 DAT_100123d4;
 
 // FUNCTION: CDTOOLS 0x10001000
 undefined4 __cdecl CheckOriginalCD(undefined4 param_1,int *param_2,undefined4 param_3)
