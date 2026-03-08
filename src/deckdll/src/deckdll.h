@@ -242,8 +242,8 @@ typedef struct Table_t
 
 typedef struct Packs_t
 {
-  int num;
   Table table[300];
+  int num;
 } Packs;
 
 typedef struct GlobalDeckEntry_t

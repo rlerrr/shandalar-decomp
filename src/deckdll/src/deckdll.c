@@ -325,9 +325,9 @@ HDC global_hdc;
 
 static char global_search_string[264];
 
-// GLOBAL: DECKDLL 0x10191a50
+// GLOBAL: DECKDLL 0x101915a0
 static Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
-// GLOBAL: DECKDLL 0x101e79a0
+// GLOBAL: DECKDLL 0x101e74f0
 static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
 // This is really [225][128] ending at 0x10139CD0
