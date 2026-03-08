@@ -28,95 +28,9 @@
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 #endif
 
-#define SWAP(a, b)                                                      \
-  do                                                                     \
-  {                                                                      \
-    BYTE _swap_tmp = (BYTE)(a);                                          \
-    (a) = (BYTE)(b);                                                     \
-    (b) = _swap_tmp;                                                     \
-  } while (0)
-
 typedef ptrdiff_t INT_PTR;
 
-static int
-match_path_spec(const char *path, const char *spec);
-
-static int
-match_path_spec_char(char a, char b)
-{
-  return tolower((unsigned char)a) == tolower((unsigned char)b);
-}
-
-int
-PathMatchSpec(const char *path, const char *spec)
-{
-  return match_path_spec(path, spec);
-}
-
-static int
-match_path_spec(const char *path, const char *spec)
-{
-  while (*spec)
-  {
-    if (*spec == '*')
-    {
-      while (*spec == '*')
-        ++spec;
-      if (*spec == '\0')
-        return 1;
-      for (; *path; ++path)
-        if (match_path_spec(path, spec))
-          return 1;
-      return 0;
-    }
-    if (*spec == '?')
-    {
-      if (*path == '\0')
-        return 0;
-      ++path;
-      ++spec;
-      continue;
-    }
-    if (*path == '\0')
-      return 0;
-    if (!match_path_spec_char(*path, *spec))
-      return 0;
-    ++path;
-    ++spec;
-  }
-  return *path == '\0';
-}
-
-#ifndef snprintf
-int
-snprintf(char *buffer, size_t count, const char *fmt, ...)
-{
-  int result;
-  va_list ap;
-
-  va_start(ap, fmt);
-  result = _vsnprintf(buffer, (int)count, fmt, ap);
-  va_end(ap);
-
-  return result;
-}
-#endif
-
 typedef int (*Int_fn_int)(int);
-
-void Packs_clear(Packs *packs) { packs->num = 0; }
-void Packs_add(Packs *packs, csvid_t csvid, int amt)
-{
-  packs->table[packs->num].csvid = csvid;
-  packs->table[packs->num].amt = amt;
-  ++packs->num;
-}
-
-typedef struct PairIntPtr_t
-{
-  int val;
-  struct PairIntPtr_t *next;
-} PairIntPtr;
 
 #define HORZLIST_LASTPIC_INDEX 0
 #define HORZLIST_ADDR_INDEX 4
@@ -3984,7 +3898,7 @@ filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
   newsel = -1;
   cp = &cards_ptr[0];
   for (csvid = 0; csvid < global_available_slots; ++csvid, ++cp)
-    if (check_filters(csvid) && (global_search_string[0] == '\0' || (global_search_string[0] == '*' && global_search_string[1] == '\0') || PathMatchSpec(cp->name, global_search_string) || PathMatchSpec(cp->rules_text, global_search_string)))
+    if (check_filters(csvid))
     {
       int idx = SendMessage(hwnd_listbox, LB_ADDSTRING, 0, cp->full_name);
       SendMessage(hwnd_listbox, LB_SETITEMDATA, idx, csvid);
@@ -6199,136 +6113,6 @@ save_deck(const char *filename)
             global_edited_deck[i].DeckEntry_FullName);
 
   return true;
-}
-
-static uint16_t
-hashstr(const char *str)
-{
-  /* Exceedingly simple string hasher - takes the low-order 5 bits of each character in the string (which is case-insensitive for simple ascii) and
-   * progressively xors it into the return value.  Produces relatively few collisions for our data set, roughly the same as MurmurHash. */
-  uint32_t val = 0;
-  int pos = 0;
-  {
-    const char *p;
-    for (p = str; *p; ++p)
-    {
-      unsigned int bits = *p & 0x1F;
-      val ^= bits << pos;
-      pos = (pos + 5) & 0xF;
-    }
-  }
-  return (val ^ (val >> 16)) & 0xFFFF;
-}
-
-static void
-deck_parse_line(char *txt, csvid_t *csvid, int *num)
-{
-  int i;
-  char *p = txt;
-  int count;
-  csvid_t val;
-  bool found;
-  static PairIntPtr **hashmap = NULL;
-  static PairIntPtr *hashvals = NULL;
-  PairIntPtr *q;
-  int l;
-  uint16_t key;
-
-  val = (csvid_t)atoi(p);
-  while (*p && !isspace(*p))
-    ++p;
-  while (*p && isspace(*p))
-    ++p;
-  count = atoi(p);
-
-  if (count <= 0)
-  {
-    *csvid = -1;
-    *num = 0;
-    return;
-  }
-
-  if (!global_cfg_read_by_name)
-  {
-    if (val < 0 || val >= global_available_slots)
-    {
-      val = -1;
-      count = 0;
-    }
-    *csvid = val;
-    *num = count;
-    return;
-  }
-
-  while (*p && !isspace(*p))
-    ++p;
-  while (*p && isspace(*p))
-    ++p;
-
-  if (!hashmap)
-  {
-    hashmap = malloc(0x10000 * sizeof(PairIntPtr *));
-    memset(hashmap, 0, 0x10000 * sizeof(PairIntPtr *));
-
-    hashvals = malloc(global_available_slots * sizeof(PairIntPtr));
-    memset(hashvals, 0, global_available_slots * sizeof(PairIntPtr));
-
-    for (i = 0; i < global_available_slots; ++i)
-    {
-      const card_ptr_t *cp = &cards_ptr[i];
-      uint16_t key = hashstr(cp->full_name);
-      hashvals[i].val = i;
-      hashvals[i].next = hashmap[key];
-      hashmap[key] = &hashvals[i];
-    }
-  }
-
-  l = strlen(p);
-  while (l > 0 && isspace(p[--l]))
-    p[l] = 0;
-
-  key = hashstr(p);
-
-  found = false;
-  for (q = hashmap[key]; q; q = q->next)
-    if (!strcasecmp(p, cards_ptr[q->val].full_name))
-    {
-      found = true;
-      break;
-    }
-
-  if (!found)
-  {
-    if (val < 0 || val >= global_available_slots)
-    {
-      char buf[512];
-      snprintf(buf, 512, ("Name \"%s\" (%d) not found - %d card%s.\n"
-                          "Skipped."),
-               p, val, count, count > 0 ? "s" : "");
-      buf[511] = 0;
-      MessageBox(NULL, buf, "Warning", MB_OK);
-      val = -1;
-      count = 0;
-    }
-    else
-    {
-      char buf[512];
-      snprintf(buf, 512, ("Name \"%s\" (%d) not found - %d card%s.\n"
-                          "Current card with this id is \"%s\".\n"
-                          "Use it?  (If you answer \"No\", the card will be skipped."),
-               p, val, count, count > 0 ? "s" : "",
-               cards_ptr[val].full_name);
-      buf[511] = 0;
-      if (MessageBox(NULL, buf, "Warning", MB_YESNO) != IDYES)
-      {
-        val = -1;
-        count = 0;
-      }
-    }
-  }
-
-  *csvid = val;
-  *num = count;
 }
 
 // FUNCTION: DECKDLL 0x1000e90f
