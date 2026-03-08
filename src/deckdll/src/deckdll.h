@@ -246,8 +246,6 @@ typedef struct Packs_t
   int num;
 } Packs;
 
-
-
 typedef struct GlobalDeckEntry_t
 {
   csvid_t GDE_csvid;
@@ -262,6 +260,45 @@ typedef struct DeckEntry_t
   int DeckEntry_Amount;
   const char* DeckEntry_FullName;
 } DeckEntry;
+
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#endif
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
+#endif
+
+#define FREEZ(memory) \
+  do                  \
+  {                   \
+    if (memory)       \
+    {                 \
+      free(memory);   \
+      memory = NULL;  \
+    }                 \
+  } while (0)
+
+#define DELETE_IMPL(fn, obj) \
+  do                         \
+  {                          \
+    if (obj)                 \
+    {                        \
+      fn(obj);               \
+      obj = NULL;            \
+    }                        \
+  } while (0)
+
+#define DELETE_DC(obj) DELETE_IMPL(DeleteDC, obj)
+#define DELETE_OBJ(obj) DELETE_IMPL(DeleteObject, obj)
+#define DESTROY_MENU(obj) DELETE_IMPL(DestroyMenu, obj)
+
+#define CHECKMENU_IF(menu, cmd, val) CheckMenuItem((menu), (cmd), MF_BYCOMMAND | ((val) ? MF_CHECKED : MF_UNCHECKED))
+
+// only used to choose which background music to play, so that's ok.  Evaluates lo twice.
+#define RANDRANGE(lo, hi) ((rand() / (RAND_MAX + 1.0)) * ((hi) - (lo) + 1) + (lo))
+
+#define RECT_WIDTH(which) ((which).right - (which).left)
+#define RECT_HEIGHT(which) ((which).bottom - (which).top)
 
 #ifdef __cplusplus
 extern "C" {
