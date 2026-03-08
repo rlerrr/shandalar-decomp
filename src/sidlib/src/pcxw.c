@@ -279,7 +279,7 @@ PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused
                PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x146,
                s_Error_Opening_File__s_10021fc0,path);
   gPcxPath = path;
-  PcxWriteHeader(width,(short)height);
+  PcxWriteHeader(width, height);
   for (s.row = 0; s.row < height; s.row = s.row + 1) {
     FUN_1000b80f((byte *)s.scanline,srcPixels,unused_param_4,(undefined4)(s.row + (int)unused_param_5),width);
     PcxWriteScanlineRle((char *)s.scanline,width);

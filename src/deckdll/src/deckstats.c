@@ -10,7 +10,6 @@
 typedef ptrdiff_t INT_PTR;
 
 extern char text_lines[500][128];
-extern HANDLE *global_pics;
 
 extern int global_edited_deck_num_entries;
 extern DeckEntry global_edited_deck[300];

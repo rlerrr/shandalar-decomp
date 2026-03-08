@@ -10,13 +10,18 @@ These instructions apply to the entire repository.
   - A single `jmp` with a small offset is often the start of a for loop, jumping over the increment/decrement statement which MSVC always puts at the top of the loop.
   - Other single `jmp` instructions are usually an `else` or an early `return`.
   - Two `jmp`s in a row is very commonly a `return` followed by an `else` block.
-- If the compiler’s stack layout won’t match, you may force a stable layout by grouping locals in a single struct:
-  - Example: `struct { int var1; int var2; } s;`
-  - Prefer expanding this struct rather than adding loose locals.
-  - If the stack is already laid out as a struct don't attempt to "unwrap" it.
 - If a 100% match seems impossible fall back to the best possible match.
 - Do not attempt to fix any perceived bugs in the code.  We aim to faithfully match the original in all aspects.
 - Ignore files in the Ghidra folder, especially magic-trace.c which has nothing to do with the current task.
+
+## Stack Layout Matching Tips
+- If the compiler’s stack layout won’t match, you may force a stable layout by grouping locals in a single struct:
+  - This is VERY EFFECTIVE at reducing noise in the diff!
+  - Example: `struct { int var1; int var2; } s;`
+  - Prefer expanding this struct rather than adding loose locals.
+  - If the stack is already laid out as a struct don't attempt to "unwrap" it.
+- Keep in mind that the stack grows downwards towards negative EBP offsets.
+- Ghidra local variable names generally have their EBP negative offset as a suffix, but off by 4 bytes compared to reccmp output.
 
 ## Matching Tips (MSVC 4.20)
 - Prefer compound assignments to coax “op [mem], reg” codegen:
@@ -26,10 +31,12 @@ These instructions apply to the entire repository.
 - Use `byte` casts on shift counts when you expect `mov cl, al` / `mov cl, [mem]` patterns.
 - For lookup tables, write `idx * 3` to encourage `lea reg, [reg + reg*2]` patterns (instead of more complex arithmetic).
 - Watch for signed compares against `0xFF`: `cmp reg, 0FFh` is `-1` (imm8 sign-extended), so match it in C as `== -1` when appropriate.
+- Bitwise comparisons like `(var & 0x2000) != 0` will often compile to `test byte ptr [var+1],0x20` comparing a single byte as if the original was a byte array.
 - The order of parameters in `cmp` and other commutative opcodes like `test`, `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.  Don't bother trying.
 - `register` on variables is ignored.  If a "variable" doesn't get written to the stack it's not actually a variable.
 - `imul` and `idiv` are aggressively avoided when multiplying and dividing by constants.  "Weird" math is probably multiplying or dividing by a non-power-of-2 constant.
 - `switch()` statements can compile using several different strategies, including various jump tables.  Don't try to convert them to other control flow structures (`if`, `goto`, etc..).  Once the rest of the function is close they'll fall into place.
+- MSVC seems to always copy the `switch()` variable to a new stack slot.
 
 ## Matching Tips from Ghidra output
 - Ghidra is pretty cavalier about restructuring control flow in a way that makes matching difficult:
@@ -43,12 +50,12 @@ These instructions apply to the entire repository.
 ## Check Assembly Match (reccmp)
 - Use `reccmp-reccmp` to compare the recompiled function against the original:
   - PowerShell example:
-    - `$env:PYTHONUTF8='1'; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX`
+    - `$env:PYTHONUTF8='1'; nmake | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX`
   - Note: set `PYTHONUTF8=1` to avoid Windows console encoding issues in verbose output.
 - The hex address (`0xXXXXXXXX`) comes from the `reccmp`-style comment immediately above the function implementation, e.g.:
   - `// FUNCTION: CARDARTLIB 0x10002f70`
 - Prefer writing `reccmp` logs into `temp/` and keep them out of git:
   - `mkdir -Force temp | Out-Null`
-  - `$env:PYTHONUTF8='1'; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX *> temp\\reccmp_0xXXXXXXXX.txt`
+  - `$env:PYTHONUTF8='1'; nmake | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX *> temp\\reccmp_0xXXXXXXXX.txt`
 
 </INSTRUCTIONS>

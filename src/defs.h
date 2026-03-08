@@ -1251,6 +1251,7 @@ typedef struct {
 	uint8_t req_red;
 	uint8_t req_white;
 } casting_cost_t;
+STATIC_ASSERT(sizeof(casting_cost_t) == 9, casting_cost_t_wrong_size);
 
 /* Data struct */
 typedef struct
@@ -1259,15 +1260,15 @@ typedef struct
 	char*    full_name; // 0x4
 	char*    name; // 0x8
 	uint32_t expansion; // 0xc
-	uint32_t color;		// 1:black 2:blue 3:artifact 4:gold 5:green 6:land 7:red 8:white
-	uint32_t card_type;	// 1:artifact 2:enchantment 3:instant 4:interrupt 5:land 6:sorcery 7:creature 8:token
+	uint32_t color;	// 0x10	// 1:black 2:blue 3:artifact 4:gold 5:green 6:land 7:red 8:white
+	uint32_t card_type;	// 0x14 // 1:artifact 2:enchantment 3:instant 4:interrupt 5:land 6:sorcery 7:creature 8:token
 	uint16_t subtype1; /* 0x18 == 24 */
-	uint16_t subtype2;
-	const char* type_text;	// e.g. "Legendary Creature - Human"
-	uint32_t db_card_type_2;	// 1:ante 2:cardstealer 3:counter 4:directdamage 5:discard 6:drawer 7:lifegain 8:damageprevention 9:anti-land 10:manasource 11:bounce/untap/tap 12:pump
-	uint32_t rarity;	// 1:common 2:rare 3:dungeon/astral/promotional 4:uncommon (sic)
-	casting_cost_t req;
-	uint8_t unused0x31;
+	uint16_t subtype2; // 0x1c
+	const char* type_text;	// 0x20 // e.g. "Legendary Creature - Human"
+	uint32_t db_card_type_2; // 0x24	// 1:ante 2:cardstealer 3:counter 4:directdamage 5:discard 6:drawer 7:lifegain 8:damageprevention 9:anti-land 10:manasource 11:bounce/untap/tap 12:pump
+	uint32_t rarity; // 0x28	// 1:common 2:rare 3:dungeon/astral/promotional 4:uncommon (sic)
+	casting_cost_t req; // 0x2c
+	uint8_t unused0x31; 
 	uint16_t unused0x32;
 	CardPtrFlags flags;	// set only in Shandalar
 	uint32_t unused0x38;
@@ -1294,9 +1295,10 @@ typedef struct
 	int32_t expansion_rarity;
 	char*   rules_text;
 	char*   flavor_text;
-	int32_t power;
-	int32_t toughness;
-	int16_t types[7];
+	int32_t power; // 0x7c
+	int32_t toughness; // 0x80
+	int16_t types[2]; // 0x84
+	char abilities[10]; // 0x88
 	PRIVATE_IN_SHANDALAR(int8_t  mana_source_colors;)
 	int8_t  inflatable;
 	uint8_t hack_colors;	// In Shandalar: color_test_t of |Hlandtypes appearing in rules text or type text

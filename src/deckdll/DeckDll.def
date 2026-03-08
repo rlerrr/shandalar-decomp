@@ -1,9 +1,9 @@
 LIBRARY "DeckDll.dll" BASE=0x10000000
 
 EXPORTS
-_OpponFace @ 2
-Gold @ 3
-Scards @ 4
-DeckBuilderMain
-_PlayerFace @ 6
-DllEntryPoint @ 1
+DeckBuilderMain @ 1
+Gold @ 2
+Scards @ 3
+_OpponFace @ 4
+_PlayerFace @ 5
+deck @ 6

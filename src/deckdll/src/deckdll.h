@@ -207,7 +207,7 @@ enum OrigRaritySet
 
 typedef struct OrigRarities_t
 {
-  uint8_t set;
+  int8_t set;
   char rarity;
   char exp_rarities[4];
 } OrigRarities;
@@ -308,14 +308,7 @@ extern "C" {
   BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID reserved);
   WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
   WPARAM deckbuilder_main(HWND parent_hwnd, int db_flags_1, int db_flags_2);
-  void Deckdll_initialize_for_shandalar(const card_ptr_t* i_raw_cards_ptr,
-					int i_available_slots,
-					char* i_card_coded,
-					int (*check_card_count_fn)(const DeckEntry*, int, int),
-					int (*is_valid_card_fn)(int),
-					BOOL (*colors_match_fn)(iid_t, color_test_t),
-					int (*check_colors_inout_edited_deck_fn)(const GlobalDeckEntry*, int, BOOL));
-
+  void delete_and_close_object(HANDLE obj);
 #ifdef __cplusplus
 };
 #endif

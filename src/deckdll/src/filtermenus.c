@@ -7,7 +7,33 @@
 typedef ptrdiff_t INT_PTR;
 
 extern char text_lines[500][128];
-extern HANDLE *global_pics;
+extern HANDLE global_pic_ability;
+extern HANDLE global_pic_antiquit;
+extern HANDLE global_pic_arabnite;
+extern HANDLE global_pic_artifact;
+extern HANDLE global_pic_astral;
+extern HANDLE global_pic_grey;
+extern HANDLE global_pic_blue;
+extern HANDLE global_pic_castcost;
+extern HANDLE global_pic_creature;
+extern HANDLE global_pic_dark;
+extern HANDLE global_pic_dekbar1;
+extern HANDLE global_pic_enchant;
+extern HANDLE global_pic_fourth;
+extern HANDLE global_pic_yellow;
+extern HANDLE global_pic_green;
+extern HANDLE global_pic_instant;
+extern HANDLE global_pic_interrupt;
+extern HANDLE global_pic_land;
+extern HANDLE global_pic_legends;
+extern HANDLE global_pic_power;
+extern HANDLE global_pic_rarity;
+extern HANDLE global_pic_red;
+extern HANDLE global_pic_sorcery;
+extern HANDLE global_pic_statbak1;
+extern HANDLE global_pic_tough;
+extern HANDLE global_pic_artist;
+extern HANDLE global_pic_all_butn;
 extern DBFlags global_db_flags_1;
 extern bool global_cfg_effects;
 
@@ -20,21 +46,25 @@ extern HWND global_listbox_hwnd;
 extern HWND global_horzlist_hwnd;
 extern int global_dlg_parameter;
 extern char global_base_directory[];
+extern char global_duelart_path[];
 
 int load_text(const char *file_name, const char *section_name);
 void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist);
 void play_sound(int a1, int a2, int a3, int a4);
-unsigned int FUN_100271e3(unsigned char param_1);
+unsigned int HasExpansion(unsigned char param_1);
 
-//Forward declarations
+static void rotatem();
+
+// Forward declarations
 static bool show_dialog_filter_gle(int textline);
-static bool show_dialog_filter_subtype(void);
-
-static bool global_filter_subtype_dlg_mode = false;
+static int show_dialog_filter_subtype(int mode);
 // GLOBAL: DECKDLL 0x10104db0
 static char global_filter_dlg_title[64];
 // GLOBAL: DECKDLL 0x10104d80
 static int global_filter_gle_dlg_value = 0;
+
+// GLOBAL: DECKDLL 0x10104d84
+static HANDLE global_filter_creature_background_pic;
 
 // GLOBAL: DECKDLL 0x101127a8
 static HMENU global_filtermenu_default;
@@ -77,37 +107,38 @@ static bool global_filtermenu_ability_enabled = true;
 static bool global_filtermenu_rarity_enabled = true;
 // GLOBAL: DECKDLL 0x10113d20
 static bool global_filtermenu_artist_enabled = NULL;
+// GLOBAL: DECKDLL 0x10113d08
 static bool global_filtermenu_gold_enabled = true; // And this one isn't even used except for setting it true.
 
 // GLOBAL: DECKDLL 0x101a9190
-FilterExpansions global_filter_expansions = FE_0;
+short global_filter_expansions = FE_0;
 // GLOBAL: DECKDLL 0x101a9192
-FilterColors global_filter_colors = FC_0;
+short global_filter_colors = FC_0;
 // GLOBAL: DECKDLL 0x101a9194
-FilterSets global_filter_cardsets = FS_0;
-FilterAbilities global_filter_abilities = FA_0;
+short global_filter_cardsets = FS_0;
 // GLOBAL: DECKDLL 0x101a9198
 FilterTypes global_filter_cardtypes = FT_0;
-// GLOBAL: DECKDLL 0x10113d04
-FilterCardSetsFlags global_filter_cardsets_flags = FCSF_0;
 // GLOBAL: DECKDLL 0x101a91b8
-FilterNum global_filter_casting_cost = FN_0;
+char global_filter_casting_cost = FN_0;
 // GLOBAL: DECKDLL 0x101a91ba
-int global_filter_casting_cost_value = 0;
-
+short global_filter_casting_cost_value = 0;
 // GLOBAL: DECKDLL 0x101a91bc
-FilterNum global_filter_power = FN_0;
+char global_filter_power = FN_0;
 // GLOBAL: DECKDLL 0x101a91be
-int global_filter_power_value = 0;
+short global_filter_power_value = 0;
 // GLOBAL: DECKDLL 0x101a91c0
-FilterNum global_filter_toughness = FN_0;
+char global_filter_toughness = FN_0;
 // GLOBAL: DECKDLL 0x101a91c2
-int global_filter_toughness_value = 0;
-
+short global_filter_toughness_value = 0;
+// GLOBAL: DECKDLL 0x101a91c4
+short global_filter_abilities = FA_0;
 // GLOBAL: DECKDLL 0x101a91c6
-FilterRarities global_filter_rarity = FR_0;
+char global_filter_rarity = FR_0;
+// GLOBAL: DECKDLL 0x101a91c7
+char global_filter_artist = 0;
 
-
+// GLOBAL: DECKDLL 0x10113d04
+short global_filter_cardsets_flags = FCSF_0;
 
 #define CREATURE_LIST_SIZE 10
 // 1 bit per creature type, so 10 means a maximum of 320.  The highest used is currently 0xEA, for SUBTYPE_MOLE.
@@ -123,6 +154,9 @@ uint32_t global_filter_expansion_list[EXPANSION_LIST_SIZE] = {0};
 
 // GLOBAL: DECKDLL 0x10104d9c
 static HANDLE global_filter_subtype_background_pic;
+
+// GLOBAL: DECKDLL 0x10104de4
+static HANDLE global_filter_gle_background_pic;
 
 // And for both, they're limited by constants in dlgproc_FilterSubtype() to 320 entries.
 #define MAX_FILTER_SUBTYPE_SIZE 320
@@ -141,8 +175,8 @@ filterbuttons_setcoords(const RECT *r, int button_number, RECT *rval)
   int w;
 
   if (((global_db_flags_1 & DBFLAGS_SHANDALAR) && button_number < 10) ||
-      (!FUN_100271e3(2) && (button_number == 7 || button_number == 8)) ||
-      (!FUN_100271e3(4) && (button_number == 9 || button_number == 10)))
+      (!HasExpansion(2) && (button_number == 7 || button_number == 8)) ||
+      (!HasExpansion(4) && (button_number == 9 || button_number == 10)))
   {
     SetRect(rval, -100, -100, -100, -100);
     return 1;
@@ -260,19 +294,96 @@ draw_filter_button_3d(HDC hdc, RECT *r2, RECT *r3, bool pushed)
 
 // FUNCTION: DECKDLL 0x1001da6f
 static void
-draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, int pic_number, bool pushed)
+draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, bool pushed)
 {
-  RECT r2, r3;
-  HANDLE hbmp;
+  RECT r3;
   BITMAP bmp;
 
-  filterbuttons_setcoords(r, button_number, &r2);
-  draw_filter_button_3d(hdc, &r2, &r3, pushed);
+  draw_filter_button_3d(hdc, (RECT *)r, &r3, pushed);
   InflateRect(&r3, -1, -1);
 
-  hbmp = global_pics[pic_number];
-  SelectObject(global_hdc, hbmp);
-  GetObject(hbmp, sizeof(BITMAP), &bmp);
+  GetObject(global_pic_yellow, sizeof(BITMAP), &bmp);
+  switch (button_number)
+  {
+  case 1:
+    SelectObject(global_hdc, global_pic_fourth);
+    break;
+  default:
+    SelectObject(global_hdc, global_pic_red);
+    break;
+  case 5:
+    SelectObject(global_hdc, global_pic_all_butn);
+    break;
+  case 6:
+    SelectObject(global_hdc, global_pic_astral);
+    break;
+  case 7:
+    SelectObject(global_hdc, global_pic_arabnite);
+    break;
+  case 8:
+    SelectObject(global_hdc, global_pic_antiquit);
+    break;
+  case 9:
+    SelectObject(global_hdc, global_pic_legends);
+    break;
+  case 10:
+    SelectObject(global_hdc, global_pic_dark);
+    break;
+  case 11:
+    SelectObject(global_hdc, global_pic_yellow);
+    break;
+  case 12:
+    SelectObject(global_hdc, global_pic_blue);
+    break;
+  case 13:
+    SelectObject(global_hdc, global_pic_grey);
+    break;
+  case 14:
+    SelectObject(global_hdc, global_pic_red);
+    break;
+  case 15:
+    SelectObject(global_hdc, global_pic_green);
+    break;
+  case 16:
+    SelectObject(global_hdc, global_pic_land);
+    break;
+  case 17:
+    SelectObject(global_hdc, global_pic_artifact);
+    break;
+  case 18:
+    SelectObject(global_hdc, global_pic_creature);
+    break;
+  case 19:
+    SelectObject(global_hdc, global_pic_enchant);
+    break;
+  case 20:
+    SelectObject(global_hdc, global_pic_instant);
+    break;
+  case 21:
+    SelectObject(global_hdc, global_pic_interrupt);
+    break;
+  case 22:
+    SelectObject(global_hdc, global_pic_sorcery);
+    break;
+  case 23:
+    SelectObject(global_hdc, global_pic_castcost);
+    break;
+  case 24:
+    SelectObject(global_hdc, global_pic_power);
+    break;
+  case 25:
+    SelectObject(global_hdc, global_pic_tough);
+    break;
+  case 26:
+    SelectObject(global_hdc, global_pic_ability);
+    break;
+  case 27:
+    SelectObject(global_hdc, global_pic_rarity);
+    break;
+  case 28:
+    SelectObject(global_hdc, global_pic_artist);
+    break;
+  }
   StretchBlt(hdc,
              r3.left, r3.top,
              r3.right - r3.left,
@@ -290,158 +401,217 @@ draw_filter_buttons(HDC hdc, const RECT *r)
 {
   HDC chdc = CreateCompatibleDC(hdc);
   BITMAP bmp;
+  RECT r2;
   ApplyCardArtPaletteToDc(chdc);
 
-  SelectObject(chdc, global_pics[15]);
-  GetObject(global_pics[15], sizeof(BITMAP), &bmp);
+  SelectObject(chdc, global_pic_dekbar1);
+  GetObject(global_pic_dekbar1, sizeof(BITMAP), &bmp);
 
   StretchBlt(hdc, 0, 0, r->right, r->bottom, chdc, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
   DELETE_DC(chdc);
 
-  draw_filter_button_pic(hdc, r, 11, 35, global_filter_colors & FC_WHITE);
-  draw_filter_button_pic(hdc, r, 14, 31, global_filter_colors & FC_RED);
-  draw_filter_button_pic(hdc, r, 12, 11, global_filter_colors & FC_BLUE);
-  draw_filter_button_pic(hdc, r, 15, 22, global_filter_colors & FC_GREEN);
-  draw_filter_button_pic(hdc, r, 13, 5, global_filter_colors & FC_BLACK);
-  draw_filter_button_pic(hdc, r, 16, 21, global_filter_colors & FC_GOLD);
+#define DRAW_FILTER_BUTTON(btn, state)    \
+  filterbuttons_setcoords(r, (btn), &r2); \
+  draw_filter_button_pic(hdc, &r2, (btn), (state))
 
-  draw_filter_button_pic(hdc, r, 17, 26, global_filter_cardtypes & FT_LAND);
-  draw_filter_button_pic(hdc, r, 18, 3, global_filter_cardtypes & FT_ARTIFACT);
-  draw_filter_button_pic(hdc, r, 19, 13, global_filter_cardtypes & FT_CREATURE);
-  draw_filter_button_pic(hdc, r, 20, 18, global_filter_cardtypes & FT_ENCHANTMENT);
-  draw_filter_button_pic(hdc, r, 21, 24, global_filter_cardtypes & FT_INSTANT);
-  draw_filter_button_pic(hdc, r, 22, 25, global_filter_cardtypes & FT_INTERRUPT);
-  draw_filter_button_pic(hdc, r, 23, 32, global_filter_cardtypes & FT_SORCERY);
+  DRAW_FILTER_BUTTON(11, global_filter_colors & FC_WHITE);
+  DRAW_FILTER_BUTTON(14, global_filter_colors & FC_RED);
+  DRAW_FILTER_BUTTON(12, global_filter_colors & FC_BLUE);
+  DRAW_FILTER_BUTTON(15, global_filter_colors & FC_GREEN);
+  DRAW_FILTER_BUTTON(13, global_filter_colors & FC_BLACK);
+  DRAW_FILTER_BUTTON(16, global_filter_colors & FC_GOLD);
+
+  DRAW_FILTER_BUTTON(17, global_filter_cardtypes & FT_LAND);
+  DRAW_FILTER_BUTTON(18, global_filter_cardtypes & FT_ARTIFACT);
+  DRAW_FILTER_BUTTON(19, global_filter_cardtypes & FT_CREATURE);
+  DRAW_FILTER_BUTTON(20, global_filter_cardtypes & FT_ENCHANTMENT);
+  DRAW_FILTER_BUTTON(21, global_filter_cardtypes & FT_INSTANT);
+  DRAW_FILTER_BUTTON(22, global_filter_cardtypes & FT_INTERRUPT);
+  DRAW_FILTER_BUTTON(23, global_filter_cardtypes & FT_SORCERY);
 
   if (global_filter_cardsets_flags & FCSF_Q_ENABLE)
   {
-    draw_filter_button_pic(hdc, r, 5, 20, global_filter_cardsets & FS_4TH_EDITION);
-    draw_filter_button_pic(hdc, r, 6, 4, global_filter_cardsets & FS_ASTRAL);
-    draw_filter_button_pic(hdc, r, 8, 1, global_filter_cardsets & FS_ANTIQUITIES);
-    draw_filter_button_pic(hdc, r, 10, 14, global_filter_cardsets & FS_THE_DARK);
-    draw_filter_button_pic(hdc, r, 7, 2, global_filter_cardsets & FS_ARABIAN_NIGHTS);
-    draw_filter_button_pic(hdc, r, 9, 27, global_filter_cardsets & FS_LEGENDS);
-    draw_filter_button_pic(hdc, r, 4, 28, global_filter_cardsets & FS_OTHER);
+    DRAW_FILTER_BUTTON(5, global_filter_cardsets & FS_4TH_EDITION);
+    DRAW_FILTER_BUTTON(6, global_filter_cardsets & FS_ASTRAL);
+    DRAW_FILTER_BUTTON(8, global_filter_cardsets & FS_ANTIQUITIES);
+    DRAW_FILTER_BUTTON(10, global_filter_cardsets & FS_THE_DARK);
+    DRAW_FILTER_BUTTON(7, global_filter_cardsets & FS_ARABIAN_NIGHTS);
+    DRAW_FILTER_BUTTON(9, global_filter_cardsets & FS_LEGENDS);
+    DRAW_FILTER_BUTTON(4, global_filter_cardsets & FS_OTHER);
   }
 
   if (global_filtermenu_castcost_enabled)
-    draw_filter_button_pic(hdc, r, 24, 12, global_filter_casting_cost & FN_ENABLE);
+    DRAW_FILTER_BUTTON(24, global_filter_casting_cost & FN_ENABLE);
   if (global_filtermenu_power_enabled)
-    draw_filter_button_pic(hdc, r, 25, 29, global_filter_power & FN_ENABLE);
+    DRAW_FILTER_BUTTON(25, global_filter_power & FN_ENABLE);
   if (global_filtermenu_toughness_enabled)
-    draw_filter_button_pic(hdc, r, 26, 34, global_filter_toughness & FN_ENABLE);
+    DRAW_FILTER_BUTTON(26, global_filter_toughness & FN_ENABLE);
   if (global_filtermenu_ability_enabled)
-    draw_filter_button_pic(hdc, r, 27, 0, global_filter_abilities & FA_ENABLE);
+    DRAW_FILTER_BUTTON(27, global_filter_abilities & FA_ENABLE);
   if (global_filtermenu_rarity_enabled)
-    draw_filter_button_pic(hdc, r, 28, 30, global_filter_rarity & FR_ENABLE);
+    DRAW_FILTER_BUTTON(28, global_filter_rarity & FR_ENABLE);
+
+#undef DRAW_FILTER_BUTTON
 }
 
 // FUNCTION: DECKDLL 0x1001e4b6
 static bool
 toggle_filterbutton(int n)
 {
-  int rval;
-
   switch (n)
   {
-  case 1:
-    global_filter_cardsets ^= 0x800;
-    return (global_filter_cardsets & 0x800) ? true : false;
-  case 2:
-    global_filter_cardsets ^= 0x200;
-    return (global_filter_cardsets & 0x200) ? true : false;
-  case 3:
-    global_filter_cardsets ^= 0x400;
-    return (global_filter_cardsets & 0x400) ? true : false;
-  case 4:
-    global_filter_cardsets ^= FS_OTHER;
-    return (global_filter_cardsets & FS_OTHER) ? true : false;
-  case 5:
-    global_filter_cardsets ^= FS_4TH_EDITION;
-    return (global_filter_cardsets & FS_4TH_EDITION) ? true : false;
-  case 6:
-    global_filter_cardsets ^= FS_ASTRAL;
-    return (global_filter_cardsets & FS_ASTRAL) ? true : false;
-  case 7:
-    if (!(global_filter_cardsets_flags & FCSF_ARABIAN_NIGHTS))
-      return false;
-    global_filter_cardsets ^= FS_ARABIAN_NIGHTS;
-    return (global_filter_cardsets & FS_ARABIAN_NIGHTS) ? true : false;
-  case 8:
-    if (!(global_filter_cardsets_flags & FCSF_ANTIQUITIES))
-      return false;
-    global_filter_cardsets ^= FS_ANTIQUITIES;
-    return (global_filter_cardsets & FS_ANTIQUITIES) ? true : false;
-  case 9:
-    if (!(global_filter_cardsets_flags & FCSF_LEGENDS))
-      return false;
-    global_filter_cardsets ^= FS_LEGENDS;
-    return (global_filter_cardsets & FS_LEGENDS) ? true : false;
-  case 10:
-    if (!(global_filter_cardsets_flags & FCSF_THE_DARK))
-      return false;
-    global_filter_cardsets ^= FS_THE_DARK;
-    return (global_filter_cardsets & FS_THE_DARK) ? true : false;
-
   case 11:
     global_filter_colors ^= FC_WHITE;
-    return (global_filter_colors & FC_WHITE) ? true : false;
-  case 12:
-    global_filter_colors ^= FC_BLUE;
-    return (global_filter_colors & FC_BLUE) ? true : false;
-  case 13:
-    global_filter_colors ^= FC_BLACK;
-    return (global_filter_colors & FC_BLACK) ? true : false;
-  case 14:
-    global_filter_colors ^= FC_RED;
-    return (global_filter_colors & FC_RED) ? true : false;
+    if (global_filter_colors & FC_WHITE)
+      return true;
+    return false;
   case 15:
     global_filter_colors ^= FC_GREEN;
-    return (global_filter_colors & FC_GREEN) ? true : false;
+    if (global_filter_colors & FC_GREEN)
+      return true;
+    return false;
+  case 14:
+    global_filter_colors ^= FC_RED;
+    if (global_filter_colors & FC_RED)
+      return true;
+    return false;
+  case 13:
+    global_filter_colors ^= FC_BLACK;
+    if (global_filter_colors & FC_BLACK)
+      return true;
+    return false;
+  case 12:
+    global_filter_colors ^= FC_BLUE;
+    if (global_filter_colors & FC_BLUE)
+      return true;
+    return false;
+  case 4:
+    global_filter_cardsets ^= FS_OTHER;
+    if (global_filter_cardsets & FS_OTHER)
+      return true;
+    return false;
+  case 7:
+    if (global_filter_cardsets_flags & FCSF_ARABIAN_NIGHTS)
+    {
+      global_filter_cardsets ^= FS_ARABIAN_NIGHTS;
+      if (global_filter_cardsets & FS_ARABIAN_NIGHTS)
+        return true;
+    }
+    return false;
+  case 8:
+    if (global_filter_cardsets_flags & FCSF_ANTIQUITIES)
+    {
+      global_filter_cardsets ^= FS_ANTIQUITIES;
+      if (global_filter_cardsets & FS_ANTIQUITIES)
+        return true;
+    }
+    return false;
+  case 10:
+    if (global_filter_cardsets_flags & FCSF_THE_DARK)
+    {
+      global_filter_cardsets ^= FS_THE_DARK;
+      if (global_filter_cardsets & FS_THE_DARK)
+        return true;
+    }
+    return false;
+  case 6:
+    global_filter_cardsets ^= FS_ASTRAL;
+    if (global_filter_cardsets & FS_ASTRAL)
+      return true;
+    return false;
+  case 5:
+    global_filter_cardsets ^= FS_4TH_EDITION;
+    if (global_filter_cardsets & FS_4TH_EDITION)
+      return true;
+    return false;
+  case 9:
+    if (global_filter_cardsets_flags & FCSF_LEGENDS)
+    {
+      global_filter_cardsets ^= FS_LEGENDS;
+      if (global_filter_cardsets & FS_LEGENDS)
+        return true;
+    }
+    return false;
+  case 3:
+    global_filter_cardsets ^= 0x400;
+    if (global_filter_cardsets & 0x400)
+      return true;
+    return false;
+  case 1:
+    global_filter_cardsets ^= 0x800;
+    if (global_filter_cardsets & 0x800)
+      return true;
+    return false;
+  case 2:
+    global_filter_cardsets ^= 0x200;
+    if (global_filter_cardsets & 0x200)
+      return true;
+    return false;
   case 16:
     global_filter_cardtypes ^= FT_LAND;
-    return (global_filter_cardtypes & FT_LAND) ? true : false;
-
+    if (global_filter_cardtypes & FT_LAND)
+      return true;
+    return false;
   case 17:
     global_filter_cardtypes ^= FT_ARTIFACT;
-    return (global_filter_cardtypes & FT_ARTIFACT) ? true : false;
+    if (global_filter_cardtypes & FT_ARTIFACT)
+      return true;
+    return false;
   case 18:
     global_filter_cardtypes ^= FT_CREATURE;
-    return (global_filter_cardtypes & FT_CREATURE) ? true : false;
+    if (global_filter_cardtypes & FT_CREATURE)
+      return true;
+    return false;
   case 19:
     global_filter_cardtypes ^= FT_ENCHANTMENT;
-    return (global_filter_cardtypes & FT_ENCHANTMENT) ? true : false;
+    if (global_filter_cardtypes & FT_ENCHANTMENT)
+      return true;
+    return false;
   case 20:
     global_filter_cardtypes ^= FT_ENCHANTMENT_PERMANENT;
-    return (global_filter_cardtypes & FT_ENCHANTMENT_PERMANENT) ? true : false;
+    if (global_filter_cardtypes & FT_ENCHANTMENT_PERMANENT)
+      return true;
+    return false;
   case 21:
     global_filter_cardtypes ^= FT_ENCHANTMENT_PLAYER;
-    return (global_filter_cardtypes & FT_ENCHANTMENT_PLAYER) ? true : false;
+    if (global_filter_cardtypes & FT_ENCHANTMENT_PLAYER)
+      return true;
+    return false;
   case 22:
     global_filter_cardtypes ^= FT_ENCHANTMENT_INSTANT;
-    return (global_filter_cardtypes & FT_ENCHANTMENT_INSTANT) ? true : false;
+    if (global_filter_cardtypes & FT_ENCHANTMENT_INSTANT)
+      return true;
+    return false;
   case 23:
     global_filter_casting_cost ^= FN_ENABLE;
-    return (global_filter_casting_cost & FN_ENABLE) ? false : true;
-
+    if (global_filter_casting_cost & FN_ENABLE)
+      return false;
+    return true;
   case 24:
     global_filter_power ^= FN_ENABLE;
-    return (global_filter_power & FN_ENABLE) ? false : true;
+    if (global_filter_power & FN_ENABLE)
+      return false;
+    return true;
   case 25:
     global_filter_toughness ^= FN_ENABLE;
-    return (global_filter_toughness & FN_ENABLE) ? false : true;
+    if (global_filter_toughness & FN_ENABLE)
+      return false;
+    return true;
   case 26:
     global_filter_abilities ^= FA_ENABLE;
-    return (global_filter_abilities & FA_ENABLE) ? false : true;
+    if (global_filter_abilities & FA_ENABLE)
+      return false;
+    return true;
   case 27:
     global_filter_rarity ^= FR_ENABLE;
-    return (global_filter_rarity & FR_ENABLE) ? false : true;
+    if (global_filter_rarity & FR_ENABLE)
+      return false;
+    return true;
   case 28:
-    rval = ((unsigned char *)&global_filter_rarity)[1];
-    rval ^= 1;
-    ((unsigned char *)&global_filter_rarity)[1] = rval;
-    return (rval & 1) ? false : true;
-
+    global_filter_artist ^= 1;
+    if (global_filter_artist & 1)
+      return false;
+    return true;
   default:
     return false;
   }
@@ -461,7 +631,7 @@ create_filter_menus(void)
   if ((n = load_text("Menus", (name))) != -1)                      \
   {                                                                \
     (menu) = CreatePopupMenu();                                    \
-    for (i = 0; i < n; ++i)                                    \
+    for (i = 0; i < n; ++i)                                        \
       condition                                                    \
       {                                                            \
         AppendMenu((menu), MF_ENABLED, i + (base), text_lines[i]); \
@@ -501,7 +671,7 @@ create_filter_menus(void)
   if (global_filtermenu_artist_enabled)
     CREATE_FILTER_MENU(global_filtermenu_artist, "ARTIST", RES_FILTERMENU_RARITY_RARE, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
 
-  //CREATE_FILTER_MENU(global_filtermenu_newexp, "NEWEXP", RES_FILTERMENU_EXPANSIONLIST, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  // CREATE_FILTER_MENU(global_filtermenu_newexp, "NEWEXP", RES_FILTERMENU_EXPANSIONLIST, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
 
 #undef CREATE_FILTER_MENU
 #undef FILTER_MENU_NO_CONDITION
@@ -808,8 +978,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
 
         case RES_FILTERMENU_CREATURE_LIST:
-      global_filter_subtype_dlg_mode = false;
-      if (!show_dialog_filter_subtype())
+      if (!show_dialog_filter_subtype(1))
         break;
 
       if (!(global_filter_cardtypes & FT_CREATURE_LIST))
@@ -890,8 +1059,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case TOGGLE_3SETS_FILTER(RES_FILTERMENU_FOURTH_FOURTH, FE_4TH_EDITION, FE_REVISED, FE_UNLIMITED); break;
 
         case RES_FILTERMENU_EXPANSIONLIST:
-      global_filter_subtype_dlg_mode = true;
-      if (show_dialog_filter_subtype())
+      if (show_dialog_filter_subtype(0))
         refresh_filters = true;
       break;
 
@@ -942,68 +1110,71 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   }
 }
 
-#define set_dlg_text(hdlg, resource, txt)  SetWindowText(GetDlgItem(hdlg, resource), txt)
+#define set_dlg_text(hdlg, resource, txt) SetWindowText(GetDlgItem(hdlg, resource), txt)
 
 // FUNCTION: DECKDLL 0x10020273
-INT_PTR CALLBACK
-dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC hdc;
+  int pad_end;
 
+  /* Stack layout is extremely sensitive; keep locals grouped. */
+  struct {
+    RECT r;             /* [ebp-0x128] */
+    LPARAM lparam_copy; /* [ebp-0x118] */
+    HDC hdc;            /* [ebp-0x114] */
+    int nMaxCount;      /* [ebp-0x110] */
+    char buf[264];      /* [ebp-0x10c] */
+  } s;
+
+  pad_end = 0;
   switch (msg)
   {
   case WM_INITDIALOG:
   {
-    char txt[24];
+    sprintf(s.buf, "%d", global_dlg_parameter);
+    SetWindowTextA(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), s.buf);
 
-    sprintf(txt, "%d", global_dlg_parameter);
-    SetWindowText(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), txt);
+    load_text("menus", "OKCANCEL");
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
+    SetWindowTextA(hdlg, global_filter_dlg_title);
 
-    load_text("Menus", "OKCANCEL");
-    set_dlg_text(hdlg, RES_BUTTON_OK, text_lines[0]);
-    set_dlg_text(hdlg, RES_BUTTON_CANCEL, text_lines[1]);
-    SetWindowText(hdlg, global_filter_dlg_title);
+    sprintf(s.buf, "%s\\GAUN_Options.pic", global_duelart_path);
+    global_filter_gle_background_pic = (HANDLE)load_pic(s.buf);
     return 0;
   }
 
   case WM_ERASEBKGND:
-  {
-    RECT r;
-
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-
-    GetClientRect(hdlg, &r);
-    DrawBitmapToRect(hdc, &r, global_pics[19]);
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    GetClientRect(hdlg, &s.r);
+    if (global_filter_gle_background_pic == (HANDLE)0)
+      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(2));
+    else
+      DrawBitmapToRect(s.hdc, &s.r, global_filter_gle_background_pic);
     return 1;
-  }
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-  {
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
-  }
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc, 1);
+    return (INT_PTR)GetStockObject(5);
 
   case WM_COMMAND:
-  {
-    if (LOWORD(wparam) == RES_BUTTON_CANCEL)
+    if (((unsigned int)wparam & 0xffff) == RES_BUTTON_OK)
+    {
+      s.nMaxCount = 0x105;
+      GetWindowTextA(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), s.buf, s.nMaxCount);
+      global_filter_gle_dlg_value = atoi(s.buf);
+      EndDialog(hdlg, 1);
+    }
+    else if (((unsigned int)wparam & 0xffff) == RES_BUTTON_CANCEL)
     {
       EndDialog(hdlg, 0);
     }
-    else if (LOWORD(wparam) == RES_BUTTON_OK)
-    {
-      char val[262];
-
-      GetWindowText(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), val, 261);
-      val[261] = 0;
-      global_filter_gle_dlg_value = atoi(val);
-      EndDialog(hdlg, 1);
-    }
     return 1;
-  }
 
   default:
     return 0;
@@ -1016,7 +1187,7 @@ static bool show_dialog_filter_gle(int textline)
   INT_PTR dialog_result;
   int rval;
 
-  load_text("Menus", "POWERTOUGHNESSCC");
+  load_text("menus", "POWERTOUGHNESSCC");
   if (textline == 0x17)
     strcpy(global_filter_dlg_title, text_lines[0]);
   else if (textline == 0x18)
@@ -1042,102 +1213,123 @@ static bool show_dialog_filter_gle(int textline)
 }
 
 // FUNCTION: DECKDLL 0x10020636
-INT_PTR CALLBACK
-dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC hdc;
-  RECT r;
-  int i;
-  int num;
-  int selected[0x34];
-  char path[264];
-  uint32_t mask_lo;
-  uint32_t mask_hi;
+  /* Stack layout is extremely sensitive; keep locals grouped. */
+  struct {
+    RECT r;
+    unsigned int local_1f4;
+    HDC local_1f0;
+    unsigned int local_1ec;
+    int local_1e8;
+    union {
+      struct {
+        int selected[0x33];
+        char path[264];
+      } sp;
+      int selected_overflow[0x34]; /* intentional 4-byte overflow into path */
+    } u;
+    unsigned int pad_after_union;
+    unsigned int local_10;
+    unsigned int local_8;
+    unsigned int local_4;
+  } s;
+  UINT msg_local;
+  unsigned int pad_20c;
 
-  switch (msg)
+#define QMASK (*(unsigned __int64 *)&s.local_8)
+
+  msg_local = msg;
+  switch (msg_local)
   {
   case WM_INITDIALOG:
-    SetWindowText(hdlg, global_filter_dlg_title);
+    SetWindowTextA(hdlg, global_filter_dlg_title);
 
     load_text("menus", "LONGLIST");
-    SetWindowText(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), text_lines[0]);
-    SetWindowText(GetDlgItem(hdlg, RES_FILTERLIST_SELECTALL), text_lines[1]);
-    SetWindowText(GetDlgItem(hdlg, RES_FILTERLIST_CLEARALL), text_lines[2]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_FILTERLIST_SELECTALL), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_FILTERLIST_CLEARALL), text_lines[2]);
 
     load_text("menus", "OKCANCEL");
-    SetWindowText(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
-    SetWindowText(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
-    num = load_text("menus", "ARTISTNAMES");
-    SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, FALSE, 0);
-    ShowWindow(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), SW_HIDE);
+    s.local_10 = (unsigned int)load_text("menus", "ARTISTNAMES");
+    SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+    ShowWindow(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), 0);
 
-    if (num != -1)
-      for (i = 0; i < num; ++i)
-        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_ADDSTRING, 0, (LPARAM)text_lines[i]);
-
-    for (i = 0; i < 0x34; ++i)
+    if (s.local_10 != 0xffffffff)
     {
-      mask_lo = (uint32_t)1 << (byte)i;
-      mask_hi = (i >= 32) ? ((uint32_t)1 << (byte)(i - 32)) : 0;
-
-      if (!(global_filter_expansion_list[1] & mask_hi) && !(global_filter_expansion_list[0] & mask_lo))
-        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, FALSE, i);
-      else
-        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, TRUE, i);
+      QMASK = 0;
+      while ((signed __int64)QMASK < (signed __int64)(int)s.local_10)
+      {
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_ADDSTRING, 0,
+                            (LPARAM)(text_lines[0] + (int)(QMASK * 0x80)));
+        QMASK = QMASK + 1;
+      }
     }
 
-    SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
-    SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
-    sprintf(path, "%s\\GAUN_Options.pic", global_base_directory);
-    global_filter_subtype_background_pic = (HANDLE)load_pic(path);
+    for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
+    {
+      QMASK = (unsigned __int64)1;
+      QMASK = QMASK << (unsigned char)s.local_1e8;
+
+      if (((global_filter_expansion_list[1] & (unsigned int)(QMASK >> 0x20)) == 0) && ((global_filter_expansion_list[0] & (unsigned int)QMASK) == 0))
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
+      else
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
+    }
+
+    SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
+    SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+    sprintf(s.u.sp.path, "%s\\GAUN_Options.pic", global_duelart_path);
+    global_filter_subtype_background_pic = (HANDLE)load_pic(s.u.sp.path);
     return 0;
 
   case WM_ERASEBKGND:
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    GetClientRect(hdlg, &r);
+    s.local_1f0 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.local_1f0);
+    GetClientRect(hdlg, &s.r);
 
-    if (!global_filter_subtype_background_pic)
-      FillRect(hdc, &r, GetStockObject(GRAY_BRUSH));
+    if (global_filter_subtype_background_pic)
+      DrawBitmapToRect(s.local_1f0, &s.r, global_filter_subtype_background_pic);
     else
-      DrawBitmapToRect(hdc, &r, global_filter_subtype_background_pic);
+      FillRect(s.local_1f0, &s.r, (HBRUSH)GetStockObject(2));
     return 1;
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    (void)lparam;
-    SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
+    s.local_1f0 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.local_1f0);
+    s.local_1f4 = (unsigned int)lparam;
+    SetBkMode(s.local_1f0, 1);
+    return (INT_PTR)GetStockObject(5);
 
   case WM_COMMAND:
     if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)
     {
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, FALSE, 0);
-      for (i = 0x32; i >= 0; --i)
-        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, TRUE, i);
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+      for (s.local_1e8 = 0x32; -1 < s.local_1e8; s.local_1e8 = s.local_1e8 + -1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
       return 1;
     }
 
     if (LOWORD(wparam) == RES_BUTTON_OK)
     {
-      for (i = 0; i < 0x34; ++i)
-        selected[i] = -1;
-
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0x33, (LPARAM)selected);
+      for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
+        s.u.selected_overflow[s.local_1e8] = -1;
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0x33, (LPARAM)s.u.sp.selected);
       global_filter_expansion_list[0] = 0;
       global_filter_expansion_list[1] = 0;
 
-      for (i = 0; i < 0x34; ++i)
-        if (selected[i] != -1)
+      for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
+        if (s.u.selected_overflow[s.local_1e8] != -1)
         {
-          mask_lo = (uint32_t)1 << (byte)selected[i];
-          mask_hi = (selected[i] >= 32) ? ((uint32_t)1 << (byte)(selected[i] - 32)) : 0;
-          global_filter_expansion_list[0] |= mask_lo;
-          global_filter_expansion_list[1] |= mask_hi;
+          QMASK = (unsigned __int64)1;
+          QMASK = QMASK << (unsigned char)s.u.selected_overflow[s.local_1e8];
+          global_filter_expansion_list[0] |= (unsigned int)QMASK;
+          global_filter_expansion_list[1] |= (unsigned int)(QMASK >> 0x20);
         }
 
       EndDialog(hdlg, 1);
@@ -1152,10 +1344,159 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
     if (LOWORD(wparam) == RES_FILTERLIST_CLEARALL)
     {
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, FALSE, 0);
-      for (i = 0; i < 0x33; ++i)
-        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, FALSE, i);
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+      for (s.local_1e8 = 0; s.local_1e8 < 0x33; s.local_1e8 = s.local_1e8 + 1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+      return 1;
+    }
+
+    return 1;
+
+  default:
+    return 0;
+  }
+#undef QMASK
+}
+
+// FUNCTION: DECKDLL 0x10020c7a
+INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  /* Stack layout is extremely sensitive; keep locals grouped. */
+  struct {
+    RECT r;
+    unsigned int local_4ac;
+    HDC local_4a8;
+    unsigned int local_4a4;
+    int local_4a0;
+    int local_49c;
+    int selected[0xe0];
+    char path[264];
+    unsigned int pad_after_path;
+    int local_10;
+    int local_c;
+    unsigned int local_8;
+  } s;
+  UINT msg_local;
+  unsigned int pad_4c4;
+
+  msg_local = msg;
+  switch (msg_local)
+  {
+  case WM_INITDIALOG:
+    SetWindowTextA(hdlg, global_filter_dlg_title);
+
+    load_text("menus", "LONGLIST");
+    SetWindowTextA(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_FILTERLIST_SELECTALL), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_FILTERLIST_CLEARALL), text_lines[2]);
+
+    load_text("menus", "OKCANCEL");
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
+
+    s.local_8 = (unsigned int)load_text("menus", "CREATURENAMES");
+    SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+
+    if (global_filter_cardtypes & FT_CREATURE_LIST)
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_ENABLEFILTER, BM_SETCHECK, 1, 0);
+
+    if (s.local_8 != 0xffffffff)
+      for (s.local_c = 0; s.local_c < (int)s.local_8; s.local_c = s.local_c + 1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_INSERTSTRING, 0xffffffff, (LPARAM)(text_lines + s.local_c));
+
+    for (s.local_10 = 0; s.local_10 < 7; s.local_10 = s.local_10 + 1)
+      for (s.local_c = 0; s.local_c < 0x20; s.local_c = s.local_c + 1)
+      {
+        if ((global_filter_creature_list[s.local_10] & (1U << ((unsigned char)s.local_c & 0x1f))) == 0)
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_10 * 0x20 + s.local_c);
+        else
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_10 * 0x20 + s.local_c);
+      }
+
+    SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
+    SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+
+    sprintf(s.path, "%s\\GAUN_Options.pic", global_duelart_path);
+    global_filter_creature_background_pic = (HANDLE)load_pic(s.path);
+    return 0;
+
+  case WM_ERASEBKGND:
+    s.local_4a8 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.local_4a8);
+    GetClientRect(hdlg, &s.r);
+
+    if (global_filter_creature_background_pic)
+      DrawBitmapToRect(s.local_4a8, &s.r, global_filter_creature_background_pic);
+    else
+      FillRect(s.local_4a8, &s.r, (HBRUSH)GetStockObject(2));
+    return 1;
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.local_4a8 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.local_4a8);
+    s.local_4ac = (unsigned int)lparam;
+    SetBkMode(s.local_4a8, 1);
+    return (INT_PTR)GetStockObject(5);
+
+  case WM_COMMAND:
+    if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)
+    {
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+      for (s.local_c = 0xdc; -1 < s.local_c; s.local_c = s.local_c + -1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_c);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+      return 1;
+    }
+
+    if (LOWORD(wparam) == RES_BUTTON_OK)
+    {
+      for (s.local_49c = 0; s.local_49c < 0xe0; s.local_49c = s.local_49c + 1)
+        s.selected[s.local_49c] = -1;
+
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0xdd, (LPARAM)s.selected);
+      for (s.local_49c = 0; s.local_49c < 7; s.local_49c = s.local_49c + 1)
+        global_filter_creature_list[s.local_49c] = 0;
+
+      for (s.local_4a0 = 0; s.local_4a0 < 7; s.local_4a0 = s.local_4a0 + 1)
+        for (s.local_49c = 0; s.local_49c < 0xdd; s.local_49c = s.local_49c + 1)
+          if (((s.selected[s.local_49c] != -1) && (s.local_4a0 * 0x20 <= s.selected[s.local_49c])) &&
+              (s.selected[s.local_49c] < (s.local_4a0 + 1) * 0x20))
+          {
+            global_filter_creature_list[s.local_4a0] |=
+                1U << ((((unsigned char)s.selected[s.local_49c] ^ (unsigned char)(s.selected[s.local_49c] >> 0x1f)) - (unsigned char)(s.selected[s.local_49c] >> 0x1f) & 0x1f ^
+                         (unsigned char)(s.selected[s.local_49c] >> 0x1f)) -
+                        (unsigned char)(s.selected[s.local_49c] >> 0x1f) &
+                    0x1f);
+          }
+
+      if (global_filter_creature_background_pic)
+        delete_and_close_object(global_filter_creature_background_pic);
+      EndDialog(hdlg, 1);
+      return 1;
+    }
+
+    if (LOWORD(wparam) == RES_BUTTON_CANCEL)
+    {
+      if (global_filter_creature_background_pic)
+        delete_and_close_object(global_filter_creature_background_pic);
+      EndDialog(hdlg, 0);
+      return 1;
+    }
+
+    if (LOWORD(wparam) == RES_FILTERLIST_CLEARALL)
+    {
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+      for (s.local_c = 0; s.local_c < 0xdd; s.local_c = s.local_c + 1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_c);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+      return 1;
+    }
+
+    if (LOWORD(wparam) == RES_FILTERLIST_ENABLEFILTER)
+    {
+      global_filter_cardtypes ^= FT_CREATURE_LIST;
       return 1;
     }
 
@@ -1167,21 +1508,34 @@ dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10020508
-static bool show_dialog_filter_subtype(void)
+static int show_dialog_filter_subtype(int mode)
 {
-  load_text("Menus", "FILTERDIALOGTITLE");
-  strcpy(global_filter_dlg_title, text_lines[global_filter_subtype_dlg_mode ? 0 : 1]);
+  int dialog_result;
+  int rval;
 
-  switch (DialogBoxParam(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_FILTER_LIST), global_main_hwnd, dlgproc_FilterSubtype, 0))
+  load_text("menus", "FILTERDIALOGTITLE");
+  if (mode == 0)
+    strcpy(global_filter_dlg_title, text_lines[0]);
+  else if (mode == 1)
+    strcpy(global_filter_dlg_title, text_lines[1]);
+  else
+    strcpy(global_filter_dlg_title, text_lines[2]);
+
+  if (mode == 0)
+    dialog_result = DialogBoxParamA(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_FILTER_LIST), global_main_hwnd, dlgproc_FilterSubtype, 0);
+  else
+    dialog_result = DialogBoxParamA(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_FILTER_LIST), global_main_hwnd, dlgproc_FilterCreatureList, 0);
+
+  if (dialog_result == -1)
   {
-  case 1:
-    return true;
-
-  case -1:
-    MessageBox(global_main_hwnd, "Couldn't bring up the filter dialog box", "", MB_OK);
-    return false;
-
-  default:
-    return false;
+    MessageBoxA(global_main_hwnd, "Couldn't bring up the filter dialog box", "", MB_OK);
+    rval = 0;
   }
+  else if (dialog_result == 0)
+    rval = 0;
+  else if (dialog_result == 1)
+    rval = 1;
+
+  return rval;
 }
+

@@ -4,29 +4,30 @@
 
 extern HWND global_main_hwnd;
 extern bool global_cfg_view_all;
-extern char *card_coded;
 
 extern int global_deck_num_entries;
 extern GlobalDeckEntry global_deck[];
 extern int global_available_slots;
+extern card_ptr_t global_raw_cards_storage[1000];
 extern card_ptr_t *global_raw_cards_ptr;
-extern const char *const read_db_artist_names[];
+extern const char read_db_artist_names[][100];
 extern DBFlags global_db_flags_1;
 
 extern OrigRarities global_origrarities[];
 
-extern FilterAbilities global_filter_abilities;
-extern FilterSets global_filter_cardsets;
+extern short global_filter_abilities;
+extern short global_filter_cardsets;
 extern FilterTypes global_filter_cardtypes;
-extern FilterNum global_filter_casting_cost;
-extern int global_filter_casting_cost_value;
-extern FilterNum global_filter_power;
-extern int global_filter_power_value;
-extern FilterNum global_filter_toughness;
-extern int global_filter_toughness_value;
-extern FilterRarities global_filter_rarity;
-extern FilterColors global_filter_colors;
-extern FilterExpansions global_filter_expansions;
+extern char global_filter_casting_cost;
+extern short global_filter_casting_cost_value;
+extern char global_filter_power;
+extern short global_filter_power_value;
+extern char global_filter_toughness;
+extern short global_filter_toughness_value;
+extern char global_filter_rarity;
+extern short global_filter_colors;
+extern short global_filter_expansions;
+extern char global_filter_artist;
 
 extern int global_num_expansions;
 extern int global_expansion_size;
@@ -36,6 +37,8 @@ extern uint32_t global_filter_creature_list[];
 extern char *global_raw_rarities;
 
 extern int (*global_is_valid_card_fn)(int);
+
+int IsCardAvailable(csvid_t csvid, int param_2);
 
 enum Restriction
 {
@@ -129,60 +132,50 @@ const Restriction restrictions[] =
         {CARD_ID_AIR_ELEMENTAL, RST_0},
 };
 
-static bool __inline
-check_restriction_impl(csvid_t csvid, int rst)
-{
-  int i;
-
-  for (i = 0; restrictions[i].restriction != RST_0; ++i)
-    if (restrictions[i].csvid == csvid && (restrictions[i].restriction & rst))
-      return true;
-  return false;
-}
-
 // FUNCTION: DECKDLL 0x1001013d
 bool check_restricted(csvid_t csvid)
 {
-  return check_restriction_impl(csvid, RST_RESTRICTED);
+  int i;
+
+  for (i = 0; i < 35; ++i)
+    if (restrictions[i].csvid == csvid && (restrictions[i].restriction & RST_RESTRICTED))
+      return true;
+  return false;
 }
 
 // FUNCTION: DECKDLL 0x1001019e
 bool check_banned(csvid_t csvid)
 {
-  return check_restriction_impl(csvid, RST_BANNED);
+  int i;
+
+  for (i = 0; i < 35; ++i)
+    if (restrictions[i].csvid == csvid && (restrictions[i].restriction & RST_BANNED))
+      return true;
+  return false;
 }
 
 // FUNCTION: DECKDLL 0x100101ff
 bool check_ante(csvid_t csvid)
 {
-  return check_restriction_impl(csvid, RST_ANTE);
+  int i;
+
+  for (i = 0; i < 35; ++i)
+    if (restrictions[i].csvid == csvid && (restrictions[i].restriction & RST_ANTE))
+      return true;
+  return false;
 }
 
 // FUNCTION: DECKDLL 0x100100e6
 bool check_basic(csvid_t csvid)
 {
-  switch (csvid)
-  {
-  case CARD_ID_SWAMP:
-  case CARD_ID_ISLAND:
-  case CARD_ID_FOREST:
-  case CARD_ID_MOUNTAIN:
-  case CARD_ID_PLAINS:
-  case CARD_ID_SNOW_COVERED_SWAMP:
-  case CARD_ID_SNOW_COVERED_ISLAND:
-  case CARD_ID_SNOW_COVERED_FOREST:
-  case CARD_ID_SNOW_COVERED_MOUNTAIN:
-  case CARD_ID_SNOW_COVERED_PLAINS:
-    // case CARD_ID_WASTES:
-
-    // not basic lands, but still basic
-  case CARD_ID_RELENTLESS_RATS:
-  case CARD_ID_SHADOWBORN_APOSTLE:
+  if (csvid == CARD_ID_SWAMP ||
+      csvid == CARD_ID_ISLAND ||
+      csvid == CARD_ID_FOREST ||
+      csvid == CARD_ID_MOUNTAIN ||
+      csvid == CARD_ID_PLAINS)
     return true;
 
-  default:
-    return false;
-  }
+  return false;
 }
 
 
@@ -215,205 +208,119 @@ check_expansion_list_filter(csvid_t csvid)
   return false;
 }
 
-static bool
-is_valid_card(csvid_t csvid)
-{
-  if (global_is_valid_card_fn)
-    return global_is_valid_card_fn(csvid);
-  else
-    return (csvid < global_available_slots && (global_cfg_view_all || (card_coded[csvid / 8] & (1 << (csvid % 8)))));
-}
-
-static int
-FUN_1000e20a(unsigned int *param_1)
-{
-  *param_1 = 0xFFFFFFFF;
-  return 0;
-}
-
-// FUNCTION: DECKDLL 0x100271e3
-unsigned int
-FUN_100271e3(unsigned char param_1)
-{
-  unsigned int local_8;
-  unsigned int local_4;
-
-  local_4 = 0;
-  if (param_1 & 1)
-    return 1;
-
-  local_8 = 0;
-  if (FUN_1000e20a(&local_8) != 0)
-    return 0;
-
-  if ((param_1 & 1) && (local_8 & 0x400000))
-    local_4 = 1;
-  else if ((param_1 & 2) && (local_8 & 0x100))
-    local_4 = 1;
-  else if ((param_1 & 4) && (local_8 & 0x800))
-    local_4 = 1;
-  else if ((param_1 & 8) && (local_8 & 0x20000))
-    local_4 = 1;
-  else if ((param_1 & 0x10) && (local_8 & 0x10000000))
-    local_4 = 1;
-  else
-    local_4 = 0;
-
-  return local_4;
-}
-
-// FUNCTION: DECKDLL 0x1002709f
-static int
-FUN_1002709f(unsigned int param_1, int param_2)
-{
-  int local_4;
-
-  local_4 = 1;
-  if (param_2 == 1)
-  {
-    if (FUN_100271e3(2) == 0)
-      local_4 = 0;
-  }
-  if (param_2 == 2)
-  {
-    if (FUN_100271e3(4) == 0)
-      local_4 = 0;
-  }
-  if (((((int)param_1 < 0) || (0x3FF < (int)param_1)) || (param_2 < 0)) || (2 < param_2))
-    local_4 = 0;
-
-  if ((*(unsigned int *)(card_coded + param_2 * 0x80 + ((int)(param_1 & 0xFFFFFFE0) >> 3)) &
-       (1 << ((unsigned char)param_1 & 0x1F))) == 0)
-    local_4 = 0;
-
-  return local_4;
-}
-
 // FUNCTION: DECKDLL 0x10010c57
 static bool
 check_set_availability(csvid_t csvid, unsigned char allowed_sets)
 {
-  int set;
-  bool bit20a;
-  int bit80;
-  int bit40;
-  int bit20b;
-  int bit10;
-  int bit08;
-  int bit02;
-  int bit01;
-  int bit04;
+  int bits[9];
 
-  bit80 = 0;
-  bit40 = 0;
-  bit20b = 0;
-  bit20a = false;
-  bit10 = 0;
-  bit08 = 0;
-  bit02 = 0;
-  bit01 = 0;
-  bit04 = 0;
+  bits[5] = 0;
+  bits[8] = bits[5];
+  bits[6] = bits[8];
+  bits[2] = bits[6];
+  bits[0] = bits[2];
+  bits[7] = bits[0];
+  bits[1] = bits[7];
+  bits[4] = bits[1];
+  bits[3] = bits[4];
 
-  if (FUN_1002709f(csvid, 0) == 0 && FUN_1002709f(csvid, 1) == 0 && FUN_1002709f(csvid, 2) == 0)
+  if (IsCardAvailable(csvid, 0) == 0 && IsCardAvailable(csvid, 1) == 0 && IsCardAvailable(csvid, 2) == 0)
     return false;
 
-  set = global_origrarities[csvid].set;
-  if (set == -1)
+  if (global_origrarities[csvid].set == -1)
     return false;
 
-  if ((allowed_sets & 1) != 0)
-    bit01 = (global_origrarities[csvid].exp_rarities[1] != '-') ? 1 : 0;
+  if (allowed_sets & 0x1)
+    bits[3] = (global_origrarities[csvid].exp_rarities[1] != '-') ? 1 : 0;
 
-  if ((allowed_sets & 4) != 0)
-    bit04 = (global_origrarities[csvid].exp_rarities[0] != '-') ? 1 : 0;
+  if (allowed_sets & 0x4)
+    bits[4] = (global_origrarities[csvid].exp_rarities[0] != '-') ? 1 : 0;
 
-  if ((allowed_sets & 2) != 0)
-    bit02 = (set == SET_UNLIMITED) ? 1 : 0;
+  if (allowed_sets & 0x2)
+    bits[1] = (global_origrarities[csvid].set == SET_UNLIMITED) ? 1 : 0;
 
-  if ((allowed_sets & 8) != 0)
-    bit08 = (set == SET_ARABIAN_NIGHTS) ? 1 : 0;
+  if (allowed_sets & 0x8)
+    bits[7] = (global_origrarities[csvid].set == SET_ARABIAN_NIGHTS) ? 1 : 0;
 
-  if ((allowed_sets & 0x10) != 0)
-    bit10 = (set == SET_ANTIQUITIES) ? 1 : 0;
+  if (allowed_sets & 0x10)
+    bits[0] = (global_origrarities[csvid].set == SET_ANTIQUITIES) ? 1 : 0;
 
-  if ((allowed_sets & 0x20) != 0)
+  if (allowed_sets & 0x20)
   {
-    bit20a = (set == SET_ASTRAL);
-    bit20b = (set == SET_PROMO) ? 1 : 0;
+    bits[2] = (global_origrarities[csvid].set == SET_ASTRAL);
+    bits[6] = (global_origrarities[csvid].set == SET_PROMO) ? 1 : 0;
   }
 
-  if ((allowed_sets & 0x40) != 0)
-    bit40 = (set == SET_LEGENDS) ? 1 : 0;
+  if (allowed_sets & 0x40)
+    bits[8] = (global_origrarities[csvid].set == SET_LEGENDS) ? 1 : 0;
 
-  if ((allowed_sets & 0x80) != 0)
-    bit80 = (set == SET_THE_DARK) ? 1 : 0;
+  if (allowed_sets & 0x80)
+    bits[5] = (global_origrarities[csvid].set == SET_THE_DARK) ? 1 : 0;
 
-  return (bit80 | bit40 | bit20b | bit20a | bit10 | bit08 | bit02 | bit01 | bit04) != 0;
+  return bits[5] | bits[8] | bits[6] | bits[2] | bits[0] | bits[7] | bits[1] | bits[3] | bits[4];
 }
 
 // FUNCTION: DECKDLL 0x1000fa34
 static bool
 check_lands(int cardtype, int db_card_type_2)
 {
-  int rval;
+  struct
+  {
+    int rval;
+  } s;
 
-  rval = 0;
-  if (((unsigned char)global_filter_cardtypes & FT_LAND) == 0)
-    return rval;
+  s.rval = 0;
+  if ((global_filter_cardtypes & FT_LAND) == 0)
+    return s.rval;
 
-  if (((unsigned char)global_filter_cardtypes & FT_LAND_LAND_AND_MANA) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 == 10)
-    rval = 1;
-  if (((unsigned char)global_filter_cardtypes & FT_LAND_LAND_ONLY) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 != 10)
-    rval = 1;
-  if (((unsigned char)global_filter_cardtypes & FT_LAND_MANA_ONLY) != 0 && cardtype != CP_TYPE_LAND && db_card_type_2 == 10)
-    rval = 1;
+  if ((global_filter_cardtypes & FT_LAND_LAND_AND_MANA) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 == 10)
+    s.rval = 1;
+  if ((global_filter_cardtypes & FT_LAND_LAND_ONLY) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 != 10)
+    s.rval = 1;
+  if ((global_filter_cardtypes & FT_LAND_MANA_ONLY) != 0 && cardtype != CP_TYPE_LAND && db_card_type_2 == 10)
+    s.rval = 1;
 
-  return rval;
+  return s.rval;
 }
 
 // FUNCTION: DECKDLL 0x1000fade
 static bool
 check_artifacts(int cardtype, int subtype1)
 {
-  int rval;
-
-  rval = 0;
-  if (cardtype == CP_TYPE_ARTIFACT && ((unsigned char)global_filter_cardtypes & FT_ARTIFACT) != 0)
-  {
-    if (((unsigned char)global_filter_cardtypes & FT_ARTIFACT_CREATURE) != 0 &&
-        subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
-      rval = 1;
-
-    if (((unsigned char)global_filter_cardtypes & FT_ARTIFACT_NON_CREATURE) != 0 &&
-        subtype1 != HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
-      rval = 1;
+  int result = 0;
+  if (cardtype != CP_TYPE_ARTIFACT || (global_filter_cardtypes & FT_ARTIFACT) == 0) {
+    return result;
   }
-  else
-    rval = 0;
 
-  return rval;
+  if ((global_filter_cardtypes & FT_ARTIFACT_CREATURE) != 0 &&
+      subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
+    result = 1;
+
+  if ((global_filter_cardtypes & FT_ARTIFACT_NON_CREATURE) != 0 &&
+      subtype1 != HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
+    result = 1;
+
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x10010bcf
 static bool
 check_creature_list_filter(int subtype1)
 {
-  int local_c;
-  int local_8;
+  struct {
+    int i;
+    int j;
+  } s;
 
-  local_c = 0;
-  do
+  for (s.i = 0; s.i < 7; s.i++)
   {
-    if (6 < local_c)
-      return false;
-
-    for (local_8 = 0; local_8 < 0x20; ++local_8)
-      if ((global_filter_creature_list[local_c] & (1 << ((unsigned char)local_8 & 0x1f))) != 0 &&
-          ((local_c * 0x20) + local_8 + 1) == subtype1)
-        return true;
-
-    local_c = local_c + 1;
-  } while (1);
+    for (s.j = 0; s.j < 0x20; s.j++)
+    {
+      if ((global_filter_creature_list[s.i] & (1 << (byte)s.j)) != 0)
+        if (s.i * 0x20 + s.j + 1 == subtype1)
+          return true;
+    }
+  }
 
   return false;
 }
@@ -422,59 +329,59 @@ check_creature_list_filter(int subtype1)
 static bool
 check_creatures(int cardtype, int subtype1)
 {
-  int rval;
-  unsigned char *f;
 
-  rval = 0;
-  f = (unsigned char *)&global_filter_cardtypes;
+  int result = 0;
+  if ((global_filter_cardtypes & FT_CREATURE) == 0)
+  {
+    return result;
+  }
 
-  if (((unsigned char)global_filter_cardtypes & FT_CREATURE) == 0)
-    return rval;
+  if ((global_filter_cardtypes & 0x100) != 0 && cardtype == CP_TYPE_CREATURE)
+    result = 1;
 
-  if ((f[1] & 1) != 0 && cardtype == CP_TYPE_CREATURE)
-    rval = 1;
+  if ((global_filter_cardtypes & 0x200) != 0 && cardtype == CP_TYPE_TOKEN)
+    result = 1;
 
-  if ((f[1] & 2) != 0 && cardtype == CP_TYPE_TOKEN)
-    rval = 1;
-
-  if ((f[1] & 4) != 0 &&
+  if ((global_filter_cardtypes & 0x400) != 0 &&
       cardtype == CP_TYPE_ARTIFACT &&
       subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
-    rval = 1;
+    result = 1;
 
-  if ((f[1] & 8) != 0 &&
-      check_creature_list_filter(subtype1))
-    rval = 1;
+  if ((global_filter_cardtypes & 0x800) != 0)
+  {
+    if (check_creature_list_filter(subtype1) != 0)
+      result = 1;
+  }
 
-  return rval;
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x1000fc14
 static bool
 check_enchantments(int cardtype, int subtype1)
 {
-  int rval = 0;
-  unsigned char *f = (unsigned char *)&global_filter_cardtypes;
+  int result = 0;
+  if ((global_filter_cardtypes & 0x1000) == 0 || cardtype != CP_TYPE_ENCHANTMENT)
+  {
+    return result;
+  }
 
-  if ((f[1] & 0x10) == 0 || cardtype != CP_TYPE_ENCHANTMENT)
-    return rval;
-
-  if ((f[1] & 0x20) && subtype1 == 0xd3)
-    rval = 1;
-  if ((f[1] & 0x40) && subtype1 == 0xcd)
-    rval = 1;
-  if ((f[1] & 0x80) && subtype1 == 0x6c)
-    rval = 1;
-  if ((f[2] & 0x01) && subtype1 == 0x2c)
-    rval = 1;
-  if ((f[2] & 0x02) && subtype1 == 0x0b)
-    rval = 1;
-  if ((f[2] & 0x04) && subtype1 == 0x44)
-    rval = 1;
+  if ((global_filter_cardtypes & 0x2000) != 0 && subtype1 == 0xd3)
+    result = 1;
+  if ((global_filter_cardtypes & 0x4000) != 0 && subtype1 == 0xcd)
+    result = 1;
+  if ((global_filter_cardtypes & 0x8000) != 0 && subtype1 == 0x6c)
+    result = 1;
+  if ((global_filter_cardtypes & 0x10000) != 0 && subtype1 == 0x2c)
+    result = 1;
+  if ((global_filter_cardtypes & 0x20000) != 0 && subtype1 == 0x0b)
+    result = 1;
+  if ((global_filter_cardtypes & 0x40000) != 0 && subtype1 == 0x44)
+    result = 1;
   if (subtype1 == 0xc5)
-    rval = 1;
+    result = 1;
 
-  return rval;
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x1000fd1e
@@ -482,32 +389,39 @@ static bool
 check_casting_cost(csvid_t csvid, char *entry)
 {
   int cmc;
-  char txt[84];
-  int rval = 0;
+  int result = 0;
 
   if (entry == NULL)
   {
+    char txt[80];
     sprintf(txt, "Card Number %d does not have a valid cast cost!", csvid);
     MessageBox(global_main_hwnd, txt, "Card Error", MB_ICONSTOP);
     return 0;
   }
-
-  if (!(global_filter_casting_cost & FN_ENABLE))
+  
+  if ((global_filter_casting_cost & FN_ENABLE) == 0)
+  {
     return 1;
+  }
 
   if (*entry == '(')
-    return (global_filter_casting_cost & FN_CC_X) ? 1 : 0;
+  {
+    if ((global_filter_casting_cost & FN_CC_X) != 0)
+      return 1;
+    else
+      return 0;
+  }
 
   cmc = (int)entry[2] + (int)entry[5] + (int)entry[7] + (int)entry[8] + (int)entry[1] + (int)entry[0];
 
   if ((global_filter_casting_cost & FN_GT) && global_filter_casting_cost_value <= cmc)
-    rval = 1;
+    result = 1;
   if ((global_filter_casting_cost & FN_LT) && cmc <= global_filter_casting_cost_value)
-    rval = 1;
+    result = 1;
   if ((global_filter_casting_cost & FN_EQ) && global_filter_casting_cost_value == cmc)
-    rval = 1;
+    result = 1;
 
-  return rval;
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x1000fe6e
@@ -516,14 +430,14 @@ check_power(int cp_power)
 {
   int rval = 0;
 
-  if (((char)global_filter_power & FN_ENABLE) == 0)
+  if ((global_filter_power & FN_ENABLE) == 0)
     return 1;
 
-  if (((char)global_filter_power & FN_GT) && (short)global_filter_power_value <= cp_power)
+  if ((global_filter_power & FN_GT) && global_filter_power_value <= cp_power)
     rval = 1;
-  if (((char)global_filter_power & FN_LT) && cp_power <= (short)global_filter_power_value)
+  if ((global_filter_power & FN_LT) && cp_power <= global_filter_power_value)
     rval = 1;
-  if (((char)global_filter_power & FN_EQ) && (short)global_filter_power_value == cp_power)
+  if ((global_filter_power & FN_EQ) && global_filter_power_value == cp_power)
     rval = 1;
 
   return rval;
@@ -535,14 +449,14 @@ check_toughness(int cp_toughness)
 {
   int rval = 0;
 
-  if (((char)global_filter_toughness & FN_ENABLE) == 0)
+  if ((global_filter_toughness & FN_ENABLE) == 0)
     return 1;
 
-  if (((char)global_filter_toughness & FN_GT) && (short)global_filter_toughness_value <= cp_toughness)
+  if ((global_filter_toughness & FN_GT) && global_filter_toughness_value <= cp_toughness)
     rval = 1;
-  if (((char)global_filter_toughness & FN_LT) && cp_toughness <= (short)global_filter_toughness_value)
+  if ((global_filter_toughness & FN_LT) && cp_toughness <= global_filter_toughness_value)
     rval = 1;
-  if (((char)global_filter_toughness & FN_EQ) && (short)global_filter_toughness_value == cp_toughness)
+  if ((global_filter_toughness & FN_EQ) && global_filter_toughness_value == cp_toughness)
     rval = 1;
 
   return rval;
@@ -552,33 +466,51 @@ check_toughness(int cp_toughness)
 static bool
 check_rarity(csvid_t csvid, int cp_rarity)
 {
+  int result = 0;
   if (cp_rarity >= 5)
   {
     char txt[80];
     sprintf(txt, "Card Number %d does not have a valid rarity value!", csvid);
     MessageBox(global_main_hwnd, txt, "Card Error", MB_ICONERROR);
-    return false;
+    return 0;
   }
 
-  return (!(global_filter_rarity & FR_ENABLE) || ((global_filter_rarity & FR_COMMON) && cp_rarity <= 1) || ((global_filter_rarity & FR_UNCOMMON) && cp_rarity == 4) || ((global_filter_rarity & FR_RARE) && cp_rarity == 2) || ((global_filter_rarity & FR_RESTRICTED) && check_restricted(csvid)) || ((global_filter_rarity & FR_BANNED) && check_banned(csvid)));
+  if ((global_filter_rarity & FR_ENABLE) == 0)
+    return 1;
+
+  if ((global_filter_rarity & FR_COMMON) && cp_rarity <= 1)
+    result = 1;
+  if ((global_filter_rarity & FR_UNCOMMON) && cp_rarity == 4)
+    result = 1;
+  if ((global_filter_rarity & FR_RARE) && cp_rarity == 2)
+    result = 1;
+  if ((global_filter_rarity & FR_RESTRICTED) && check_restricted(csvid))
+    result = 1;
+  if ((global_filter_rarity & FR_BANNED) && check_banned(csvid))
+    result = 1;
+
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x10010260
 static bool
 check_abilities(csvid_t csvid, int num_abils, char *abils)
 {
-  int i;
-  int native;
-  int grants;
-  char txt[80];
+  struct
+  {
+    char txt[80];
+    int native; // ebp - 0xc
+    int grants; // ebp - 0x8
+    int i; // ebp - 0x4
+  } s;
 
-  native = 0;
-  grants = 0;
+  s.native = 0;
+  s.grants = 0;
 
   if (!abils)
   {
-    sprintf(txt, "Card Number %d does not have a valid ability value!", csvid);
-    MessageBox(global_main_hwnd, txt, "Card Error", MB_ICONERROR);
+    sprintf(s.txt, "Card Number %d does not have a valid abilities value!", csvid);
+    MessageBox(global_main_hwnd, s.txt, "Card Error", MB_ICONERROR);
     return false;
   }
 
@@ -586,145 +518,145 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
     return true;
 
   if (global_filter_abilities & FA_NATIVE)
-    native = 1;
+    s.native = 1;
   if (global_filter_abilities & FA_GRANTS)
-    grants = 1;
+    s.grants = 1;
 
-  if (!native && !grants)
+  if (!s.native && !s.grants)
     return false;
 
-  for (i = 0; i < num_abils; ++i)
+  for (s.i = 0; s.i < num_abils; ++s.i)
   {
     if ((global_filter_abilities & FA_FLYING) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_FLYING && native)
+      if (abils[s.i] == ABIL_NATIVE_FLYING && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_FLYING && grants)
+      if (abils[s.i] == ABIL_GRANTS_FLYING && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_FIRSTSTRIKE) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_FIRSTSTRIKE && native)
+      if (abils[s.i] == ABIL_NATIVE_FIRSTSTRIKE && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_FIRSTSTRIKE && grants)
+      if (abils[s.i] == ABIL_GRANTS_FIRSTSTRIKE && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_TRAMPLE) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_TRAMPLE && native)
+      if (abils[s.i] == ABIL_NATIVE_TRAMPLE && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_TRAMPLE && grants)
+      if (abils[s.i] == ABIL_GRANTS_TRAMPLE && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_REGENERATION) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_REGENERATION && native)
+      if (abils[s.i] == ABIL_NATIVE_REGENERATION && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_REGENERATION && grants)
+      if (abils[s.i] == ABIL_GRANTS_REGENERATION && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_BANDING) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_BANDING && native)
+      if (abils[s.i] == ABIL_NATIVE_BANDING && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_BANDING && grants)
+      if (abils[s.i] == ABIL_GRANTS_BANDING && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_PROTECTION) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_PROTECTION_FROM_BLACK && native)
+      if (abils[s.i] == ABIL_NATIVE_PROTECTION_FROM_BLACK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_PROTECTION_FROM_RED && native)
+      if (abils[s.i] == ABIL_NATIVE_PROTECTION_FROM_RED && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_PROTECTION_FROM_WHITE && native)
+      if (abils[s.i] == ABIL_NATIVE_PROTECTION_FROM_WHITE && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_BLACK && grants)
+      if (abils[s.i] == ABIL_GRANTS_PROTECTION_FROM_BLACK && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_RED && grants)
+      if (abils[s.i] == ABIL_GRANTS_PROTECTION_FROM_RED && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_WHITE && grants)
+      if (abils[s.i] == ABIL_GRANTS_PROTECTION_FROM_WHITE && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_BLUE && grants)
+      if (abils[s.i] == ABIL_GRANTS_PROTECTION_FROM_BLUE && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_GREEN && grants)
+      if (abils[s.i] == ABIL_GRANTS_PROTECTION_FROM_GREEN && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_PROTECTION_FROM_ARTIFACTS && grants)
+      if (abils[s.i] == ABIL_GRANTS_PROTECTION_FROM_ARTIFACTS && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_LANDWALK) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_DESERTWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_DESERTWALK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_FORESTWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_FORESTWALK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_ISLANDWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_ISLANDWALK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_LEGENDARY_LANDWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_LEGENDARY_LANDWALK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_MOUNTAINWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_MOUNTAINWALK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_PLAINSWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_PLAINSWALK && s.native)
         return true;
-      if (abils[i] == ABIL_NATIVE_SWAMPWALK && native)
+      if (abils[s.i] == ABIL_NATIVE_SWAMPWALK && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_FORESTWALK && grants)
+      if (abils[s.i] == ABIL_GRANTS_FORESTWALK && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_ISLANDWALK && grants)
+      if (abils[s.i] == ABIL_GRANTS_ISLANDWALK && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_MOUNTAINWALK && grants)
+      if (abils[s.i] == ABIL_GRANTS_MOUNTAINWALK && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_PLAINSWALK && grants)
+      if (abils[s.i] == ABIL_GRANTS_PLAINSWALK && s.grants)
         return true;
-      if (abils[i] == ABIL_GRANTS_SWAMPWALK && grants)
+      if (abils[s.i] == ABIL_GRANTS_SWAMPWALK && s.grants)
         return true;
     }
 
-    if ((global_filter_abilities & FA_INFECT) != 0 && abils[i] == ABIL_NATIVE_INFECT && native)
+    if ((global_filter_abilities & FA_INFECT) != 0 && abils[s.i] == ABIL_NATIVE_INFECT && s.native)
       return true;
 
     if ((global_filter_abilities & FA_RAMPAGE) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_RAMPAGE && native)
+      if (abils[s.i] == ABIL_NATIVE_RAMPAGE && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_RAMPAGE && grants)
+      if (abils[s.i] == ABIL_GRANTS_RAMPAGE && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_REACH) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_REACH && native)
+      if (abils[s.i] == ABIL_NATIVE_REACH && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_REACH && grants)
+      if (abils[s.i] == ABIL_GRANTS_REACH && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_DEATHTOUCH) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_DEATHTOUCH && native)
+      if (abils[s.i] == ABIL_NATIVE_DEATHTOUCH && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_DEATHTOUCH && grants)
+      if (abils[s.i] == ABIL_GRANTS_DEATHTOUCH && s.grants)
         return true;
     }
 
     if ((global_filter_abilities & FA_VIGILANCE) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_VIGILANCE && native)
+      if (abils[s.i] == ABIL_NATIVE_VIGILANCE && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_VIGILANCE && grants)
+      if (abils[s.i] == ABIL_GRANTS_VIGILANCE && s.grants)
         return true;
     }
 
-    if (((int)(short)global_filter_abilities & FA_HASTE) != 0)
+    if (((int)global_filter_abilities & FA_HASTE) != 0)
     {
-      if (abils[i] == ABIL_NATIVE_HASTE && native)
+      if (abils[s.i] == ABIL_NATIVE_HASTE && s.native)
         return true;
-      if (abils[i] == ABIL_GRANTS_HASTE && grants)
+      if (abils[s.i] == ABIL_GRANTS_HASTE && s.grants)
         return true;
     }
   }
@@ -732,185 +664,185 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
   return false;
 }
 
-static uint32_t global_filter_artist_bitmask_low = 0xFFFFFFFF;
-static uint32_t global_filter_artist_bitmask_high = 0xFFFFFFFF;
+// GLOBAL: DECKDLL 0x1012e75c
+static int num_artists = 53;
+
+// GLOBAL: DECKDLL 0x101bc600
+static int check_filters_debug_log_enabled;
+// GLOBAL: DECKDLL 0x10142640
+static FILE *check_filters_debug_log_file;
 
 // FUNCTION: DECKDLL 0x10010b1e
 static int
 find_artist_name_idx(char *artist, int num_artists)
 {
-  int m;
-  int cmp;
-  int l;
-  int r;
+  struct {
+    int l; // ebp - 0xc
+    int m; // ebp - 0x8
+    int r; // ebp - 0x4
+  } s;
 
-  l = 0;
-  r = num_artists - 1;
-  while (1)
+  s.l = 0;
+  s.r = num_artists - 1;
+  while (s.r >= s.l)
   {
-    while (1)
+    s.m = (s.r + s.l) / 2;
+    if (strcmp(read_db_artist_names[s.m], artist) < 0)
     {
-      if (r < l)
-        return -1;
-
-      m = (r + l) / 2;
-      cmp = strcmp(read_db_artist_names[m], artist);
-      if (cmp >= 0)
-        break;
-
-      l = m + 1;
+      s.l = s.m + 1;
     }
-
-    cmp = strcmp(read_db_artist_names[m], artist);
-    if (cmp <= 0)
-      break;
-
-    r = m - 1;
+    else if (strcmp(read_db_artist_names[s.m], artist) > 0)
+    {
+      s.r = s.m - 1;
+    }
+    else
+    {
+      return s.m;
+    }
   }
-
-  return m;
+  return -1;
 }
 
 // FUNCTION: DECKDLL 0x10010a72
 static bool
 check_artist_filter(csvid_t csvid, char *artist)
 {
-  char txt[80];
-  int idx;
-  bool rval;
+  struct
+  {
+    int idx_hi;
+    uint32_t low;
+    unsigned __int64 enabled;
+    char txt[80];
+    unsigned __int64 mask;
+    int rval;
+  } s;
 
-  rval = false;
+  s.rval = 0;
   if (artist == NULL)
   {
-    sprintf(txt, "Card Number %d does not have a valid artist value!", csvid);
-    rval = false;
-  }
-  else if ((((unsigned char *)&global_filter_rarity)[1] & 1) == 0)
-    rval = true;
-  else
-  {
-    idx = find_artist_name_idx(artist, 53);
-    if (idx >= 0)
-    {
-      if (idx < 32)
-      {
-        if ((global_filter_artist_bitmask_low & (1 << ((unsigned char)idx & 0x1f))) != 0)
-          rval = true;
-      }
-      else if ((global_filter_artist_bitmask_high & (1 << ((unsigned char)idx & 0x1f))) != 0)
-        rval = true;
-    }
+    sprintf(s.txt, "Card Number %d does not have a valid artist name!", csvid);
+    return false;
   }
 
-  return rval;
+  if ((global_filter_artist & 0x1) == 0)
+    return true;
+
+  //TODO: What in the fuck is going on here?
+  if ((global_filter_expansion_list[14]) & ((unsigned __int64)1 << (uint8_t)find_artist_name_idx(artist, num_artists)))
+      return 1;
+
+  return s.rval;
 }
 
 // FUNCTION: DECKDLL 0x1000f1a5
 bool check_filters(csvid_t csvid)
 {
-  unsigned int power;
-  unsigned int toughness;
-  unsigned int rarity;
-  bool color_ok;
-  bool type_ok;
-  int subtype1;
-  int local_c;
-  int i;
-  int artist_ok;
-  unsigned char setmask;
-  char *artist;
-  casting_cost_t *req;
-  unsigned int db_card_type_2;
-  unsigned int cardtype;
-  unsigned int color;
-  unsigned int toughness_ok;
-  unsigned int power_ok;
-  unsigned int rarity_ok;
-  char *abils;
-
-  i = strcmp(global_raw_cards_ptr[csvid].full_name, "Blank");
-  if (i == 0)
+  struct
   {
-    local_c = 0;
-  }
-  else if (((global_db_flags_1 & 0x61) == 0) || ((i = check_card_global_deck_availability(csvid)) != 0))
-  {
-    color = global_raw_cards_ptr[csvid].color;
-    cardtype = global_raw_cards_ptr[csvid].card_type;
-    subtype1 = global_raw_cards_ptr[csvid].subtype1;
-    db_card_type_2 = global_raw_cards_ptr[csvid].db_card_type_2;
-    req = &global_raw_cards_ptr[csvid].req;
-    power = global_raw_cards_ptr[csvid].power;
-    toughness = global_raw_cards_ptr[csvid].toughness;
-    artist = (char *)global_raw_cards_ptr[csvid].artist;
-    rarity = global_raw_cards_ptr[csvid].rarity;
+    unsigned int setmask; // ebp - 0x88
+    int set_ok;
+    unsigned int power; // ebp - 0x80
+    int i; // ebp - 0x7c
+    int subtypes; // ebp - 0x78
+    bool type_ok; // ebp - 0x74
+    bool color_ok; // ebp - 0x70
+    int abils_ok; // ebp - 0x6c
+    int artist_ok; // ebp - 0x68
+    unsigned int color; // ebp - 0x64
+    unsigned int toughness; // ebp - 0x60
+    unsigned int rarity; // ebp - 0x5c
+    char *abils;
+    char txt[52]; // ebp - 0x54
+    unsigned int rarity_ok; // ebp - 0x20
+    unsigned int db_card_type_2; // ebp - 0x1c
+    char *artist; // ebp - 0x18
+    casting_cost_t *req; // ebp - 0x14
+    unsigned int toughness_ok; // ebp - 0x10
+    unsigned int cardtype; // ebp - 0xc
+    int local_c; // ebp - 0x8
+    unsigned int power_ok; // ebp - 0x4
+  } s;
 
-    if (color == CP_COLOR_LESS)
-      color_ok = true;
-    else if ((((color == CP_COLOR_WHITE) && ((global_filter_colors & FC_WHITE) != 0)) ||
-              (((color == CP_COLOR_GREEN) && ((global_filter_colors & FC_GREEN) != 0)) ||
-               (((color == CP_COLOR_RED) && ((global_filter_colors & FC_RED) != 0)) ||
-                ((color == CP_COLOR_BLACK) && ((global_filter_colors & FC_BLACK) != 0))))) ||
-             (((color == CP_COLOR_BLUE) && ((global_filter_colors & FC_BLUE) != 0)) ||
-              color == CP_COLOR_LAND || color == CP_COLOR_ARTIFACT))
-      color_ok = true;
-    else
-      color_ok = false;
+  if (strcmp(global_raw_cards_storage[csvid].full_name, "Blank") == 0)
+    return 0;
+  if ((global_db_flags_1 & 0x61) != 0 && check_card_global_deck_availability(csvid) == 0)
+    return 0;
 
-    setmask = 0;
-    if ((global_filter_cardsets & FS_4TH_EDITION) != 0)
-    {
-      setmask = (global_filter_expansions & FE_4TH_EDITION) != 0;
-      if ((global_filter_expansions & FE_UNLIMITED) != 0)
-        setmask |= 2;
-      if ((global_filter_expansions & FE_REVISED) != 0)
-        setmask |= 4;
-    }
-    if ((global_filter_cardsets & FS_ASTRAL) != 0)
-      setmask |= 0x20;
-    if ((global_filter_cardsets & FS_ARABIAN_NIGHTS) != 0)
-      setmask |= 8;
-    if ((global_filter_cardsets & FS_ANTIQUITIES) != 0)
-      setmask |= 0x10;
-    if ((global_filter_cardsets & FS_LEGENDS) != 0)
-      setmask |= 0x40;
-    if ((global_filter_cardsets & FS_THE_DARK) != 0)
-      setmask |= 0x80;
+  s.color = global_raw_cards_storage[csvid].color;
+  s.cardtype = global_raw_cards_storage[csvid].card_type;
+  s.subtypes = *(int *)&global_raw_cards_storage[csvid].subtype1;
+  s.db_card_type_2 = global_raw_cards_storage[csvid].db_card_type_2;
+  s.req = &global_raw_cards_storage[csvid].req;
+  s.power = global_raw_cards_storage[csvid].power;
+  s.toughness = global_raw_cards_storage[csvid].toughness;
+  s.abils = global_raw_cards_storage[csvid].abilities;
+  s.artist = global_raw_cards_storage[csvid].artist;
+  s.rarity = global_raw_cards_storage[csvid].rarity;
 
-    i = check_lands(cardtype, db_card_type_2);
-    if (((((i == 0) &&
-           ((i = check_artifacts(cardtype, subtype1)), i == 0)) &&
-          (((i = check_creatures(cardtype, subtype1)), i == 0) &&
-           ((i = check_enchantments(cardtype, subtype1)), i == 0))) &&
-         (((cardtype != CP_TYPE_INSTANT || ((((unsigned char *)&global_filter_cardtypes)[2] & 8) == 0)) &&
-           (cardtype != CP_TYPE_INTERRUPT || ((((unsigned char *)&global_filter_cardtypes)[2] & 0x10) == 0)))) &&
-        (cardtype != CP_TYPE_SORCERY || ((((unsigned char *)&global_filter_cardtypes)[2] & 0x20) == 0))))
-      type_ok = false;
-    else
-      type_ok = true;
-
-    i = check_casting_cost(csvid, (char *)req);
-    power_ok = check_power(power & 0xfff) != 0;
-    toughness_ok = check_toughness(toughness & 0xfff) != 0;
-    rarity_ok = check_rarity(csvid, rarity) != 0;
-    abils = ((char *)&global_raw_cards_ptr[csvid]) + 0x88;
-    artist_ok = check_artist_filter(csvid, artist);
-
-    if (color_ok &&
-        check_set_availability(csvid, setmask) &&
-        type_ok &&
-        i != 0 &&
-        power_ok != 0 &&
-        toughness_ok != 0 &&
-        rarity_ok != 0 &&
-        check_abilities(csvid, 4, abils) != 0 &&
-        artist_ok != 0)
-      local_c = 1;
-    else
-      local_c = 0;
-  }
+  if (s.color == CP_COLOR_LESS)
+    s.color_ok = true;
+  else if (((((s.color == CP_COLOR_WHITE) && ((global_filter_colors & FC_WHITE) != 0)) ||
+             ((s.color == CP_COLOR_GREEN) && ((global_filter_colors & FC_GREEN) != 0))) ||
+            ((s.color == CP_COLOR_RED) && ((global_filter_colors & FC_RED) != 0))) ||
+           (((s.color == CP_COLOR_BLACK) && ((global_filter_colors & FC_BLACK) != 0)) ||
+            (((s.color == CP_COLOR_BLUE) && ((global_filter_colors & FC_BLUE) != 0)) ||
+             s.color == CP_COLOR_LAND || s.color == CP_COLOR_ARTIFACT)))
+    s.color_ok = true;
   else
-    local_c = 0;
+    s.color_ok = false;
 
-  return local_c;
+  s.setmask = 0;
+  if ((global_filter_cardsets & FS_4TH_EDITION) != 0)
+  {
+    if ((global_filter_expansions & FE_4TH_EDITION) != 0)
+      s.setmask |= 1;
+    if ((global_filter_expansions & FE_UNLIMITED) != 0)
+      s.setmask |= 2;
+    if ((global_filter_expansions & FE_REVISED) != 0)
+      s.setmask |= 4;
+  }
+  if ((global_filter_cardsets & FS_ASTRAL) != 0)
+    s.setmask |= 0x20;
+  if ((global_filter_cardsets & FS_ARABIAN_NIGHTS) != 0)
+    s.setmask |= 8;
+  if ((global_filter_cardsets & FS_ANTIQUITIES) != 0)
+    s.setmask |= 0x10;
+  if ((global_filter_cardsets & FS_LEGENDS) != 0)
+    s.setmask |= 0x40;
+  if ((global_filter_cardsets & FS_THE_DARK) != 0)
+    s.setmask |= 0x80;
+  s.set_ok = check_set_availability(csvid, s.setmask) ? 1 : 0;
+
+  if (check_lands(s.cardtype, s.db_card_type_2) || 
+      check_artifacts(s.cardtype, s.subtypes) ||
+      check_creatures(s.cardtype, s.subtypes) ||
+      check_enchantments(s.cardtype, s.subtypes) ||
+      (s.cardtype == CP_TYPE_INSTANT && (global_filter_cardtypes & 0x80000) != 0) ||
+      (s.cardtype == CP_TYPE_INTERRUPT && (global_filter_cardtypes & 0x100000) != 0) ||
+      (s.cardtype == CP_TYPE_SORCERY && (global_filter_cardtypes & 0x200000) != 0))
+    s.type_ok = true;
+  else
+    s.type_ok = false;
+
+  s.i = check_casting_cost(csvid, (char *)s.req) ? 1 : 0;
+  s.power_ok = check_power(s.power & 0xfff) ? 1 : 0;
+  s.toughness_ok = check_toughness(s.toughness & 0xfff) ? 1 : 0;
+  s.rarity_ok = check_rarity(csvid, s.rarity) ? 1 : 0;
+  s.abils_ok = check_abilities(csvid, 4, s.abils) ? 1 : 0;
+  s.artist_ok = check_artist_filter(csvid, s.artist) ? 1 : 0;
+
+  if (s.color_ok && s.set_ok != 0 && s.type_ok &&
+      s.i != 0 && s.power_ok != 0 && s.toughness_ok != 0 && s.rarity_ok != 0 &&
+      s.abils_ok != 0 && s.artist_ok != 0)
+    s.local_c = 1;
+  else
+    s.local_c = 0;
+
+  if (check_filters_debug_log_enabled != 0 && s.local_c != 0)
+  {
+    sprintf(s.txt, "%d\n", csvid);
+    fprintf(check_filters_debug_log_file, s.txt);
+  }
+
+  return s.local_c;
 }
