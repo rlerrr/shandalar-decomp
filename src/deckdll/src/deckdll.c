@@ -1860,7 +1860,7 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
 
   GetCurrentDirectory(MAX_PATH + 1, global_previous_directory);
   SetCurrentDirectory(global_base_directory);
-
+ 
 #define GET_IMPORT(proc_name) (GetProcAddress(GetModuleHandle(NULL), proc_name))
   CardIDFromType = (Int_fn_int)GET_IMPORT("CardIDFromType");
   SellPrice = (Int_fn_int)GET_IMPORT("SellPrice");
@@ -2853,266 +2853,127 @@ clear_packs_copy(void)
 static void
 count_packs(void)
 {
-  int l;
-  for (l = 0; l < 6; ++l)
+  struct {
+    int amt;
+    int l;
+    unsigned int csvid;
+  }s;
+#define STORE_PACK(p1, p2)                                                                         \
+  do                                                                                                \
+  {                                                                                                 \
+    *(unsigned int *)&global_packs[(p1)][(p2)].table[global_packs[(p1)][(p2)].num] = ((unsigned int)s.amt << 16) | s.csvid;      \
+    ++global_packs[(p1)][(p2)].num;                                                                 \
+  } while (0)
+
+  for (s.l = 0; s.l < 6; ++s.l)
   {
-    global_packs[l][0].num = 0;
-    global_packs[l][1].num = 0;
-    global_packs[l][2].num = 0;
-    global_packs[l][3].num = 0;
-    global_packs[l][4].num = 0;
-    global_packs[l][5].num = 0;
+    global_packs[s.l][0].num = 0;
+    global_packs[s.l][1].num = 0;
+    global_packs[s.l][2].num = 0;
+    global_packs[s.l][3].num = 0;
+    global_packs[s.l][4].num = 0;
+    global_packs[s.l][5].num = 0;
   }
 
-  for (l = 0; l < global_edited_deck_num_entries; ++l)
+  for (s.l = 0; s.l < global_edited_deck_num_entries; ++s.l)
   {
-    unsigned int csvid;
-    int amt;
+    s.csvid = global_edited_deck[s.l].DeckEntry_csvid;
+    s.amt = global_edited_deck[s.l].DeckEntry_Amount;
 
-    csvid = global_edited_deck[l].DeckEntry_csvid;
-    amt = global_edited_deck[l].DeckEntry_Amount;
-
-    if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_LAND)
+    if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_LAND)
     {
-      if (strcmp(global_raw_cards_ptr[csvid].full_name, "Mountain") == 0)
-      {
-        global_packs[PACK1_RED][PACK2_LAND].table[global_packs[PACK1_RED][PACK2_LAND].num].csvid = csvid;
-        global_packs[PACK1_RED][PACK2_LAND].table[global_packs[PACK1_RED][PACK2_LAND].num].amt = amt;
-        ++global_packs[PACK1_RED][PACK2_LAND].num;
-      }
-      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Plains") == 0)
-      {
-        global_packs[PACK1_WHITE][PACK2_LAND].table[global_packs[PACK1_WHITE][PACK2_LAND].num].csvid = csvid;
-        global_packs[PACK1_WHITE][PACK2_LAND].table[global_packs[PACK1_WHITE][PACK2_LAND].num].amt = amt;
-        ++global_packs[PACK1_WHITE][PACK2_LAND].num;
-      }
-      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Forest") == 0)
-      {
-        global_packs[PACK1_GREEN][PACK2_LAND].table[global_packs[PACK1_GREEN][PACK2_LAND].num].csvid = csvid;
-        global_packs[PACK1_GREEN][PACK2_LAND].table[global_packs[PACK1_GREEN][PACK2_LAND].num].amt = amt;
-        ++global_packs[PACK1_GREEN][PACK2_LAND].num;
-      }
-      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Swamp") == 0)
-      {
-        global_packs[PACK1_BLACK][PACK2_LAND].table[global_packs[PACK1_BLACK][PACK2_LAND].num].csvid = csvid;
-        global_packs[PACK1_BLACK][PACK2_LAND].table[global_packs[PACK1_BLACK][PACK2_LAND].num].amt = amt;
-        ++global_packs[PACK1_BLACK][PACK2_LAND].num;
-      }
-      else if (strcmp(global_raw_cards_ptr[csvid].full_name, "Island") == 0)
-      {
-        global_packs[PACK1_BLUE][PACK2_LAND].table[global_packs[PACK1_BLUE][PACK2_LAND].num].csvid = csvid;
-        global_packs[PACK1_BLUE][PACK2_LAND].table[global_packs[PACK1_BLUE][PACK2_LAND].num].amt = amt;
-        ++global_packs[PACK1_BLUE][PACK2_LAND].num;
-      }
+      if (strcmp(global_raw_cards_storage[s.csvid].full_name, "Mountain") == 0)
+        STORE_PACK(PACK1_RED, PACK2_LAND);
+      else if (strcmp(global_raw_cards_storage[s.csvid].full_name, "Plains") == 0)
+        STORE_PACK(PACK1_WHITE, PACK2_LAND);
+      else if (strcmp(global_raw_cards_storage[s.csvid].full_name, "Forest") == 0)
+        STORE_PACK(PACK1_GREEN, PACK2_LAND);
+      else if (strcmp(global_raw_cards_storage[s.csvid].full_name, "Swamp") == 0)
+        STORE_PACK(PACK1_BLACK, PACK2_LAND);
+      else if (strcmp(global_raw_cards_storage[s.csvid].full_name, "Island") == 0)
+        STORE_PACK(PACK1_BLUE, PACK2_LAND);
       else
-      {
-        global_packs[PACK1_OTHER][PACK2_LAND].table[global_packs[PACK1_OTHER][PACK2_LAND].num].csvid = csvid;
-        global_packs[PACK1_OTHER][PACK2_LAND].table[global_packs[PACK1_OTHER][PACK2_LAND].num].amt = amt;
-        ++global_packs[PACK1_OTHER][PACK2_LAND].num;
-      }
+        STORE_PACK(PACK1_OTHER, PACK2_LAND);
     }
-    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_CREATURE)
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_CREATURE)
     {
-      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
-      {
-        global_packs[PACK1_RED][PACK2_CREATURE].table[global_packs[PACK1_RED][PACK2_CREATURE].num].csvid = csvid;
-        global_packs[PACK1_RED][PACK2_CREATURE].table[global_packs[PACK1_RED][PACK2_CREATURE].num].amt = amt;
-        ++global_packs[PACK1_RED][PACK2_CREATURE].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
-      {
-        global_packs[PACK1_BLACK][PACK2_CREATURE].table[global_packs[PACK1_BLACK][PACK2_CREATURE].num].csvid = csvid;
-        global_packs[PACK1_BLACK][PACK2_CREATURE].table[global_packs[PACK1_BLACK][PACK2_CREATURE].num].amt = amt;
-        ++global_packs[PACK1_BLACK][PACK2_CREATURE].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
-      {
-        global_packs[PACK1_BLUE][PACK2_CREATURE].table[global_packs[PACK1_BLUE][PACK2_CREATURE].num].csvid = csvid;
-        global_packs[PACK1_BLUE][PACK2_CREATURE].table[global_packs[PACK1_BLUE][PACK2_CREATURE].num].amt = amt;
-        ++global_packs[PACK1_BLUE][PACK2_CREATURE].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
-      {
-        global_packs[PACK1_GREEN][PACK2_CREATURE].table[global_packs[PACK1_GREEN][PACK2_CREATURE].num].csvid = csvid;
-        global_packs[PACK1_GREEN][PACK2_CREATURE].table[global_packs[PACK1_GREEN][PACK2_CREATURE].num].amt = amt;
-        ++global_packs[PACK1_GREEN][PACK2_CREATURE].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
-      {
-        global_packs[PACK1_WHITE][PACK2_CREATURE].table[global_packs[PACK1_WHITE][PACK2_CREATURE].num].csvid = csvid;
-        global_packs[PACK1_WHITE][PACK2_CREATURE].table[global_packs[PACK1_WHITE][PACK2_CREATURE].num].amt = amt;
-        ++global_packs[PACK1_WHITE][PACK2_CREATURE].num;
-      }
+      if (global_raw_cards_storage[s.csvid].color == CP_COLOR_RED)
+        STORE_PACK(PACK1_RED, PACK2_CREATURE);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLACK)
+        STORE_PACK(PACK1_BLACK, PACK2_CREATURE);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLUE)
+        STORE_PACK(PACK1_BLUE, PACK2_CREATURE);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_GREEN)
+        STORE_PACK(PACK1_GREEN, PACK2_CREATURE);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_WHITE)
+        STORE_PACK(PACK1_WHITE, PACK2_CREATURE);
       else
-      {
-        global_packs[PACK1_OTHER][PACK2_CREATURE].table[global_packs[PACK1_OTHER][PACK2_CREATURE].num].csvid = csvid;
-        global_packs[PACK1_OTHER][PACK2_CREATURE].table[global_packs[PACK1_OTHER][PACK2_CREATURE].num].amt = amt;
-        ++global_packs[PACK1_OTHER][PACK2_CREATURE].num;
-      }
+        STORE_PACK(PACK1_OTHER, PACK2_CREATURE);
     }
-    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_ENCHANTMENT)
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_ENCHANTMENT)
     {
-      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
-      {
-        global_packs[PACK1_RED][PACK2_ENCHANTMENT].table[global_packs[PACK1_RED][PACK2_ENCHANTMENT].num].csvid = csvid;
-        global_packs[PACK1_RED][PACK2_ENCHANTMENT].table[global_packs[PACK1_RED][PACK2_ENCHANTMENT].num].amt = amt;
-        ++global_packs[PACK1_RED][PACK2_ENCHANTMENT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
-      {
-        global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].num].csvid = csvid;
-        global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].num].amt = amt;
-        ++global_packs[PACK1_BLACK][PACK2_ENCHANTMENT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
-      {
-        global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].num].csvid = csvid;
-        global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].table[global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].num].amt = amt;
-        ++global_packs[PACK1_BLUE][PACK2_ENCHANTMENT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
-      {
-        global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].table[global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].num].csvid = csvid;
-        global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].table[global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].num].amt = amt;
-        ++global_packs[PACK1_GREEN][PACK2_ENCHANTMENT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
-      {
-        global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].table[global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].num].csvid = csvid;
-        global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].table[global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].num].amt = amt;
-        ++global_packs[PACK1_WHITE][PACK2_ENCHANTMENT].num;
-      }
+      if (global_raw_cards_storage[s.csvid].color == CP_COLOR_RED)
+        STORE_PACK(PACK1_RED, PACK2_ENCHANTMENT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLACK)
+        STORE_PACK(PACK1_BLACK, PACK2_ENCHANTMENT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLUE)
+        STORE_PACK(PACK1_BLUE, PACK2_ENCHANTMENT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_GREEN)
+        STORE_PACK(PACK1_GREEN, PACK2_ENCHANTMENT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_WHITE)
+        STORE_PACK(PACK1_WHITE, PACK2_ENCHANTMENT);
       else
-      {
-        global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].table[global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].num].csvid = csvid;
-        global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].table[global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].num].amt = amt;
-        ++global_packs[PACK1_OTHER][PACK2_ENCHANTMENT].num;
-      }
+        STORE_PACK(PACK1_OTHER, PACK2_ENCHANTMENT);
     }
-    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_SORCERY)
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_SORCERY)
     {
-      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
-      {
-        global_packs[PACK1_RED][PACK2_SORCERY].table[global_packs[PACK1_RED][PACK2_SORCERY].num].csvid = csvid;
-        global_packs[PACK1_RED][PACK2_SORCERY].table[global_packs[PACK1_RED][PACK2_SORCERY].num].amt = amt;
-        ++global_packs[PACK1_RED][PACK2_SORCERY].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
-      {
-        global_packs[PACK1_BLACK][PACK2_SORCERY].table[global_packs[PACK1_BLACK][PACK2_SORCERY].num].csvid = csvid;
-        global_packs[PACK1_BLACK][PACK2_SORCERY].table[global_packs[PACK1_BLACK][PACK2_SORCERY].num].amt = amt;
-        ++global_packs[PACK1_BLACK][PACK2_SORCERY].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
-      {
-        global_packs[PACK1_BLUE][PACK2_SORCERY].table[global_packs[PACK1_BLUE][PACK2_SORCERY].num].csvid = csvid;
-        global_packs[PACK1_BLUE][PACK2_SORCERY].table[global_packs[PACK1_BLUE][PACK2_SORCERY].num].amt = amt;
-        ++global_packs[PACK1_BLUE][PACK2_SORCERY].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
-      {
-        global_packs[PACK1_GREEN][PACK2_SORCERY].table[global_packs[PACK1_GREEN][PACK2_SORCERY].num].csvid = csvid;
-        global_packs[PACK1_GREEN][PACK2_SORCERY].table[global_packs[PACK1_GREEN][PACK2_SORCERY].num].amt = amt;
-        ++global_packs[PACK1_GREEN][PACK2_SORCERY].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
-      {
-        global_packs[PACK1_WHITE][PACK2_SORCERY].table[global_packs[PACK1_WHITE][PACK2_SORCERY].num].csvid = csvid;
-        global_packs[PACK1_WHITE][PACK2_SORCERY].table[global_packs[PACK1_WHITE][PACK2_SORCERY].num].amt = amt;
-        ++global_packs[PACK1_WHITE][PACK2_SORCERY].num;
-      }
+      if (global_raw_cards_storage[s.csvid].color == CP_COLOR_RED)
+        STORE_PACK(PACK1_RED, PACK2_SORCERY);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLACK)
+        STORE_PACK(PACK1_BLACK, PACK2_SORCERY);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLUE)
+        STORE_PACK(PACK1_BLUE, PACK2_SORCERY);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_GREEN)
+        STORE_PACK(PACK1_GREEN, PACK2_SORCERY);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_WHITE)
+        STORE_PACK(PACK1_WHITE, PACK2_SORCERY);
       else
-      {
-        global_packs[PACK1_OTHER][PACK2_SORCERY].table[global_packs[PACK1_OTHER][PACK2_SORCERY].num].csvid = csvid;
-        global_packs[PACK1_OTHER][PACK2_SORCERY].table[global_packs[PACK1_OTHER][PACK2_SORCERY].num].amt = amt;
-        ++global_packs[PACK1_OTHER][PACK2_SORCERY].num;
-      }
+        STORE_PACK(PACK1_OTHER, PACK2_SORCERY);
     }
-    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_INTERRUPT)
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_INTERRUPT)
     {
-      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
-      {
-        global_packs[PACK1_RED][PACK2_INTERRUPT].table[global_packs[PACK1_RED][PACK2_INTERRUPT].num].csvid = csvid;
-        global_packs[PACK1_RED][PACK2_INTERRUPT].table[global_packs[PACK1_RED][PACK2_INTERRUPT].num].amt = amt;
-        ++global_packs[PACK1_RED][PACK2_INTERRUPT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
-      {
-        global_packs[PACK1_BLACK][PACK2_INTERRUPT].table[global_packs[PACK1_BLACK][PACK2_INTERRUPT].num].csvid = csvid;
-        global_packs[PACK1_BLACK][PACK2_INTERRUPT].table[global_packs[PACK1_BLACK][PACK2_INTERRUPT].num].amt = amt;
-        ++global_packs[PACK1_BLACK][PACK2_INTERRUPT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
-      {
-        global_packs[PACK1_BLUE][PACK2_INTERRUPT].table[global_packs[PACK1_BLUE][PACK2_INTERRUPT].num].csvid = csvid;
-        global_packs[PACK1_BLUE][PACK2_INTERRUPT].table[global_packs[PACK1_BLUE][PACK2_INTERRUPT].num].amt = amt;
-        ++global_packs[PACK1_BLUE][PACK2_INTERRUPT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
-      {
-        global_packs[PACK1_GREEN][PACK2_INTERRUPT].table[global_packs[PACK1_GREEN][PACK2_INTERRUPT].num].csvid = csvid;
-        global_packs[PACK1_GREEN][PACK2_INTERRUPT].table[global_packs[PACK1_GREEN][PACK2_INTERRUPT].num].amt = amt;
-        ++global_packs[PACK1_GREEN][PACK2_INTERRUPT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
-      {
-        global_packs[PACK1_WHITE][PACK2_INTERRUPT].table[global_packs[PACK1_WHITE][PACK2_INTERRUPT].num].csvid = csvid;
-        global_packs[PACK1_WHITE][PACK2_INTERRUPT].table[global_packs[PACK1_WHITE][PACK2_INTERRUPT].num].amt = amt;
-        ++global_packs[PACK1_WHITE][PACK2_INTERRUPT].num;
-      }
+      if (global_raw_cards_storage[s.csvid].color == CP_COLOR_RED)
+        STORE_PACK(PACK1_RED, PACK2_INTERRUPT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLACK)
+        STORE_PACK(PACK1_BLACK, PACK2_INTERRUPT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLUE)
+        STORE_PACK(PACK1_BLUE, PACK2_INTERRUPT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_GREEN)
+        STORE_PACK(PACK1_GREEN, PACK2_INTERRUPT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_WHITE)
+        STORE_PACK(PACK1_WHITE, PACK2_INTERRUPT);
       else
-      {
-        global_packs[PACK1_OTHER][PACK2_INTERRUPT].table[global_packs[PACK1_OTHER][PACK2_INTERRUPT].num].csvid = csvid;
-        global_packs[PACK1_OTHER][PACK2_INTERRUPT].table[global_packs[PACK1_OTHER][PACK2_INTERRUPT].num].amt = amt;
-        ++global_packs[PACK1_OTHER][PACK2_INTERRUPT].num;
-      }
+        STORE_PACK(PACK1_OTHER, PACK2_INTERRUPT);
     }
-    else if (global_raw_cards_ptr[csvid].card_type == CP_TYPE_INSTANT)
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_INSTANT)
     {
-      if (global_raw_cards_ptr[csvid].color == CP_COLOR_RED)
-      {
-        global_packs[PACK1_RED][PACK2_INSTANT].table[global_packs[PACK1_RED][PACK2_INSTANT].num].csvid = csvid;
-        global_packs[PACK1_RED][PACK2_INSTANT].table[global_packs[PACK1_RED][PACK2_INSTANT].num].amt = amt;
-        ++global_packs[PACK1_RED][PACK2_INSTANT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLACK)
-      {
-        global_packs[PACK1_BLACK][PACK2_INSTANT].table[global_packs[PACK1_BLACK][PACK2_INSTANT].num].csvid = csvid;
-        global_packs[PACK1_BLACK][PACK2_INSTANT].table[global_packs[PACK1_BLACK][PACK2_INSTANT].num].amt = amt;
-        ++global_packs[PACK1_BLACK][PACK2_INSTANT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_BLUE)
-      {
-        global_packs[PACK1_BLUE][PACK2_INSTANT].table[global_packs[PACK1_BLUE][PACK2_INSTANT].num].csvid = csvid;
-        global_packs[PACK1_BLUE][PACK2_INSTANT].table[global_packs[PACK1_BLUE][PACK2_INSTANT].num].amt = amt;
-        ++global_packs[PACK1_BLUE][PACK2_INSTANT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_GREEN)
-      {
-        global_packs[PACK1_GREEN][PACK2_INSTANT].table[global_packs[PACK1_GREEN][PACK2_INSTANT].num].csvid = csvid;
-        global_packs[PACK1_GREEN][PACK2_INSTANT].table[global_packs[PACK1_GREEN][PACK2_INSTANT].num].amt = amt;
-        ++global_packs[PACK1_GREEN][PACK2_INSTANT].num;
-      }
-      else if (global_raw_cards_ptr[csvid].color == CP_COLOR_WHITE)
-      {
-        global_packs[PACK1_WHITE][PACK2_INSTANT].table[global_packs[PACK1_WHITE][PACK2_INSTANT].num].csvid = csvid;
-        global_packs[PACK1_WHITE][PACK2_INSTANT].table[global_packs[PACK1_WHITE][PACK2_INSTANT].num].amt = amt;
-        ++global_packs[PACK1_WHITE][PACK2_INSTANT].num;
-      }
+      if (global_raw_cards_storage[s.csvid].color == CP_COLOR_RED)
+        STORE_PACK(PACK1_RED, PACK2_INSTANT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLACK)
+        STORE_PACK(PACK1_BLACK, PACK2_INSTANT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLUE)
+        STORE_PACK(PACK1_BLUE, PACK2_INSTANT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_GREEN)
+        STORE_PACK(PACK1_GREEN, PACK2_INSTANT);
+      else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_WHITE)
+        STORE_PACK(PACK1_WHITE, PACK2_INSTANT);
       else
-      {
-        global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].csvid = csvid;
-        global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].amt = amt;
-        ++global_packs[PACK1_OTHER][PACK2_INSTANT].num;
-      }
+        STORE_PACK(PACK1_OTHER, PACK2_INSTANT);
     }
     else
-    {
-      global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].csvid = csvid;
-      global_packs[PACK1_OTHER][PACK2_INSTANT].table[global_packs[PACK1_OTHER][PACK2_INSTANT].num].amt = amt;
-      ++global_packs[PACK1_OTHER][PACK2_INSTANT].num;
-    }
+      STORE_PACK(PACK1_OTHER, PACK2_INSTANT);
   }
+#undef STORE_PACK
 }
 
 // FUNCTION: DECKDLL 0x100213ee

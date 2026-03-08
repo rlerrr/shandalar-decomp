@@ -5,6 +5,7 @@
 #include "deckdll.h"
 #include "resources.h"
 #include "cardartlib/src/palette.h"
+#include "sidlib/pic.h"
 
 typedef ptrdiff_t INT_PTR;
 
@@ -23,6 +24,7 @@ extern COLORREF global_colorref_lightgrey;
 extern COLORREF global_colorref_white;
 
 extern HFONT global_font_32;
+extern char global_base_directory[];
 
 bool check_restricted(csvid_t csvid);
 bool check_banned(csvid_t csvid);
@@ -99,6 +101,15 @@ check_deck_type(void)
 // GLOBAL: DECKDLL 0x101053a8
 static int global_deck_stats[9][7];
 
+// GLOBAL: DECKDLL 0x10105368
+static LOGFONT global_stats_font_desc;
+
+// GLOBAL: DECKDLL 0x101054a4
+static HFONT global_stats_font;
+
+// GLOBAL: DECKDLL 0x101054a8
+static HANDLE global_stats_pic;
+
 // GLOBAL: DECKDLL 0x101054ac
 static COLORREF global_colorref_stats_lightgrey;
 
@@ -120,43 +131,43 @@ build_deck_stats_table(void)
   int csvid;
   int amt;
   int num_five_color_lands;
-  const card_ptr_t *cp;
 
   num_five_color_lands = 0;
-  memset(global_deck_stats, 0, sizeof(global_deck_stats));
+  for (i = 0; i < 9; ++i)
+    for (j = 0; j < 7; ++j)
+      global_deck_stats[i][j] = 0;
 
   for (i = 0; i < global_edited_deck_num_entries; ++i)
   {
     csvid = global_edited_deck[i].DeckEntry_csvid;
     amt = global_edited_deck[i].DeckEntry_Amount;
-    cp = &cards_ptr[csvid];
 
-    if (cp->card_type == CP_TYPE_CREATURE)
+    if (cards_ptr[csvid].card_type == CP_TYPE_CREATURE)
       row = 1;
-    else if (cp->card_type == CP_TYPE_ENCHANTMENT)
+    else if (cards_ptr[csvid].card_type == CP_TYPE_ENCHANTMENT)
       row = 2;
-    else if (cp->card_type == CP_TYPE_SORCERY)
+    else if (cards_ptr[csvid].card_type == CP_TYPE_SORCERY)
       row = 3;
-    else if (cp->card_type == CP_TYPE_INSTANT)
+    else if (cards_ptr[csvid].card_type == CP_TYPE_INSTANT)
       row = 4;
-    else if (cp->card_type == CP_TYPE_INTERRUPT)
+    else if (cards_ptr[csvid].card_type == CP_TYPE_INTERRUPT)
       row = 5;
-    else if (cp->card_type == CP_TYPE_LAND)
+    else if (cards_ptr[csvid].card_type == CP_TYPE_LAND)
       row = 6;
-    else if (cp->card_type == CP_TYPE_ARTIFACT)
+    else if (cards_ptr[csvid].card_type == CP_TYPE_ARTIFACT)
       row = 7;
     else
       continue;
 
-    if (cp->color == CP_COLOR_BLACK)
+    if (cards_ptr[csvid].color == CP_COLOR_BLACK)
       col = 0;
-    else if (cp->color == CP_COLOR_BLUE)
+    else if (cards_ptr[csvid].color == CP_COLOR_BLUE)
       col = 1;
-    else if (cp->color == CP_COLOR_GREEN)
+    else if (cards_ptr[csvid].color == CP_COLOR_GREEN)
       col = 2;
-    else if (cp->color == CP_COLOR_RED)
+    else if (cards_ptr[csvid].color == CP_COLOR_RED)
       col = 3;
-    else if (cp->color == CP_COLOR_WHITE)
+    else if (cards_ptr[csvid].color == CP_COLOR_WHITE)
       col = 4;
     else
       col = -1;
@@ -180,7 +191,7 @@ build_deck_stats_table(void)
     if (row == 7)
     {
       col = 5;
-      if (cp->subtype1 == 0x2c && cp->subtype2 == 0)
+      if (cards_ptr[csvid].subtype1 == 0x2c && cards_ptr[csvid].subtype2 == 0)
         row = 1;
     }
 
@@ -190,7 +201,7 @@ build_deck_stats_table(void)
       continue;
     }
 
-    if (cp->db_card_type_2 == 10)
+    if (cards_ptr[csvid].db_card_type_2 == 10)
     {
       if (csvid == 0xf || csvid == 0x11 || csvid == 0x193 || csvid == 0x1b9)
       {
@@ -452,93 +463,108 @@ fill_stats_window(HDC hdc, RECT r, HFONT font)
 INT_PTR CALLBACK
 dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  int x;
-  int y;
   HDC hdc;
   HDC chdc;
   RECT r;
   BITMAP bmp;
+  char txt[264];
+  int x;
+  int y;
+  unsigned int decktype;
+  static const LOGFONT stats_logfont_template = {
+      0,                           // lfHeight
+      0,                           // lfWidth
+      0,                           // lfEscapement
+      0,                           // lfOrientation
+      FW_NORMAL,                   // lfWeight
+      FALSE,                       // lfItalic
+      FALSE,                       // lfUnderline
+      FALSE,                       // lfStrikeOut
+      ANSI_CHARSET,                // lfCharSet
+      OUT_DEFAULT_PRECIS,          // lfOutPrecision
+      CLIP_DEFAULT_PRECIS,         // lfClipPrecision
+      DEFAULT_QUALITY,             // lfQuality
+      DEFAULT_PITCH | FF_DONTCARE, // lfPitchAndFamily
+      {
+          'T', 'r', 'e', 'b', 'u', 'c', 'h', 'e', 't', ' ', 'M', 'S', '\0',
+          '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'} // lfFaceName[LF_FACESIZE]
+  };
+
   switch (msg)
   {
   case WM_INITDIALOG:
-  {
-    char txt[512]; // 128 + 2 + 32 + 128 + 3 + 127 = 420, and might as well be a bit wider just in case
-    char *p;
-    DeckType decktype;
-    const char *decktxt;
-
-    global_colorref_stats_lightgrey = PALETTERGB(0xf7, 0xf7, 0xf6);
-    global_colorref_stats_lavender = PALETTERGB(0xae, 0xb2, 0xef);
-    global_colorref_stats_flesh = PALETTERGB(0xcd, 0xb0, 0x8f);
-
-    load_text("Menus", "STATSDIALOG");
-    p = txt + sprintf(txt, "%s: %s " DASH " ", text_lines[0], global_deckname);
-
-    load_text("Menus", "MULTIDECKTYPES");
+    load_text("menus", "STATSDIALOG");
+    strcpy(txt, text_lines[0]);
+    strcat(txt, ": ");
+    strcat(txt, global_deckname);
+    strcat(txt, "  - ");
     decktype = check_deck_type();
+    load_text("MP_UIStrings.txt", "SHELLPAGE_MULTIDUEL");
     if (decktype & DT_UNRESTRICTED)
-      decktxt = text_lines[1];
+      strcat(txt, text_lines[1]);
     else if (decktype & DT_WILD)
-      decktxt = text_lines[2];
+      strcat(txt, text_lines[2]);
     else if (decktype & DT_RESTRICTED_T1)
-      decktxt = text_lines[3];
+      strcat(txt, text_lines[3]);
     else if (decktype & DT_TOURNAMENT_T1_5)
-      decktxt = text_lines[4];
+      strcat(txt, text_lines[4]);
     else if (decktype & DT_HIGHLANDER)
-      decktxt = text_lines[5];
+      strcat(txt, text_lines[5]);
     else
-      decktxt = text_lines[0];
-
-    p += sprintf(p, "%s", decktxt);
+      strcat(txt, "Unknown");
 
     if (decktype & DT_HAS_ANTE)
-      p += sprintf(p, " / %s", &text_lines[7][1]);
+    {
+      strcat(txt, " / ");
+      strcat(txt, text_lines[7] + 1);
+    }
 
-    SetWindowText(hdlg, txt);
-
+    SetWindowTextA(hdlg, txt);
+    sprintf(txt, "%s\\GAUN_Options.pic", global_base_directory);
+    global_stats_pic = (HANDLE)load_pic(txt);
+    memcpy(&global_stats_font_desc, &stats_logfont_template, sizeof(LOGFONT));
+    global_stats_font_desc.lfHeight = 30;
+    strcpy(global_stats_font_desc.lfFaceName, "Cheltenham ITC Bold BT");
+    global_stats_font = CreateFontIndirectA(&global_stats_font_desc);
+    global_colorref_stats_lavender = PALETTERGB(0xae, 0xb2, 0xef);
+    global_colorref_stats_lightgrey = PALETTERGB(0xf7, 0xf7, 0xf6);
+    global_colorref_stats_flesh = PALETTERGB(0xcd, 0xb0, 0x8f);
     return 0;
-  }
 
   case WM_ERASEBKGND:
-  {
-    hdc = wparam;
+    hdc = (HDC)wparam;
     ApplyCardArtPaletteToDc(hdc);
-
+    GetClientRect(hdlg, &r);
     chdc = CreateCompatibleDC(hdc);
     ApplyCardArtPaletteToDc(chdc);
-
-    SelectObject(chdc, global_pics[33]);
-
-    GetClientRect(hdlg, &r);
-
-    GetObject(global_pics[33], sizeof(BITMAP), &bmp);
-
+    SelectObject(chdc, global_stats_pic);
+    GetObjectA(global_stats_pic, sizeof(BITMAP), &bmp);
     for (x = 0; x < r.right; x += bmp.bmWidth)
       for (y = 0; y < r.bottom; y += bmp.bmHeight)
         BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, chdc, 0, 0, SRCCOPY);
 
-    fill_stats_window(hdc, r, global_font_32);
-
+    fill_stats_window(hdc, r, global_stats_font);
     DeleteDC(chdc);
-
     return 1;
-  }
+
+  case WM_COMMAND:
+    if (LOWORD(wparam) == RES_BUTTON_OK || LOWORD(wparam) == RES_BUTTON_CANCEL)
+    {
+      DeleteObject(global_stats_font);
+      if (global_stats_pic)
+        DeleteObject(global_stats_pic);
+      EndDialog(hdlg, 0);
+    }
+    return 1;
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-    hdc = wparam;
+    hdc = (HDC)wparam;
     ApplyCardArtPaletteToDc(hdc);
+    (void)lparam;
     SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
-
-  case WM_COMMAND:
-  {
-    if (LOWORD(wparam) == RES_BUTTON_OK || LOWORD(wparam) == RES_BUTTON_CANCEL)
-      EndDialog(hdlg, 0);
-    return 1;
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
   }
 
-  default:
-    return 0;
-  }
+  return 0;
 }

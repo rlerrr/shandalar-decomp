@@ -2,6 +2,7 @@
 #include "deckdll.h"
 #include "mystdbool.h"
 #include "cardartlib/src/palette.h"
+#include "sidlib/pic.h"
 
 typedef ptrdiff_t INT_PTR;
 
@@ -18,6 +19,7 @@ extern HWND global_main_hwnd;
 extern HWND global_listbox_hwnd;
 extern HWND global_horzlist_hwnd;
 extern int global_dlg_parameter;
+extern char global_base_directory[];
 
 int load_text(const char *file_name, const char *section_name);
 void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist);
@@ -116,7 +118,11 @@ uint32_t global_filter_creature_list[CREATURE_LIST_SIZE] = {0};
 
 #define EXPANSION_LIST_SIZE 8
 // 1 bit per expansion, so 8 means a maximum of 256.  We currently have 159, including 8 "Format" expansions at the start and 8 "Future Expansion" at the end.
+// GLOBAL: DECKDLL 0x101a91c8
 uint32_t global_filter_expansion_list[EXPANSION_LIST_SIZE] = {0};
+
+// GLOBAL: DECKDLL 0x10104d9c
+static HANDLE global_filter_subtype_background_pic;
 
 // And for both, they're limited by constants in dlgproc_FilterSubtype() to 320 entries.
 #define MAX_FILTER_SUBTYPE_SIZE 320
@@ -1039,162 +1045,120 @@ static bool show_dialog_filter_gle(int textline)
 INT_PTR CALLBACK
 dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  static int *data1 = NULL;
-  static int *data2 = NULL;
   HDC hdc;
+  RECT r;
+  int i;
+  int num;
+  int selected[0x34];
+  char path[264];
+  uint32_t mask_lo;
+  uint32_t mask_hi;
 
   switch (msg)
   {
   case WM_INITDIALOG:
-  {
-    int i;
-    int num;
-    bool checked;
-    int m;
-    int pos;
-
     SetWindowText(hdlg, global_filter_dlg_title);
 
-    load_text("Menus", "LONGLIST");
-    set_dlg_text(hdlg, RES_FILTERLIST_ENABLEFILTER, text_lines[0]);
-    set_dlg_text(hdlg, RES_FILTERLIST_SELECTALL, text_lines[1]);
-    set_dlg_text(hdlg, RES_FILTERLIST_CLEARALL, text_lines[2]);
+    load_text("menus", "LONGLIST");
+    SetWindowText(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), text_lines[0]);
+    SetWindowText(GetDlgItem(hdlg, RES_FILTERLIST_SELECTALL), text_lines[1]);
+    SetWindowText(GetDlgItem(hdlg, RES_FILTERLIST_CLEARALL), text_lines[2]);
 
-    load_text("Menus", "OKCANCEL");
-    set_dlg_text(hdlg, RES_BUTTON_OK, text_lines[0]);
-    set_dlg_text(hdlg, RES_BUTTON_CANCEL, text_lines[1]);
+    load_text("menus", "OKCANCEL");
+    SetWindowText(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowText(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
-    num = load_text("Menus", global_filter_subtype_dlg_mode ? "EXPANSIONNAMES" : "CREATURETYPES");
-
-    data1 = malloc(MAX_FILTER_SUBTYPE_SIZE * sizeof(int));
-    data2 = malloc(MAX_FILTER_SUBTYPE_SIZE * sizeof(int));
+    num = load_text("menus", "ARTISTNAMES");
     SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, FALSE, 0);
+    ShowWindow(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), SW_HIDE);
 
-    checked = global_filter_subtype_dlg_mode ? (global_filter_expansions & FE_EXPANSIONLIST) : (global_filter_cardtypes & FT_CREATURE_LIST);
-    SendDlgItemMessage(hdlg, RES_FILTERLIST_ENABLEFILTER, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+    if (num != -1)
+      for (i = 0; i < num; ++i)
+        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_ADDSTRING, 0, (LPARAM)text_lines[i]);
 
-    if (global_filter_subtype_dlg_mode)
+    for (i = 0; i < 0x34; ++i)
     {
-      m = LB_INSERTSTRING;
-      pos = -1;
-    }
-    else
-    {
-      m = LB_ADDSTRING;
-      pos = 0;
-    }
+      mask_lo = (uint32_t)1 << (byte)i;
+      mask_hi = (i >= 32) ? ((uint32_t)1 << (byte)(i - 32)) : 0;
 
-    for (i = 0; i < num; ++i)
-    {
-      int idx = SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, m, pos, text_lines[i]);
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETITEMDATA, idx, i);
-    }
-
-    for (i = 0; i < num; ++i)
-    {
-      int j = SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_GETITEMDATA, i, 0);
-      if (j >= 0)
-      {
-        data1[i] = j;
-        data2[j] = i;
-      }
-    }
-
-    for (i = 0; i < num; ++i)
-    {
-      int idx = i >> 5;
-      int bit = 1 << (i & 0x1F);
-
-      bool sel = global_filter_subtype_dlg_mode ? (global_filter_expansion_list[idx] & bit) : (global_filter_creature_list[idx] & bit);
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, sel, data2[i]);
+      if (!(global_filter_expansion_list[1] & mask_hi) && !(global_filter_expansion_list[0] & mask_lo))
+        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, FALSE, i);
+      else
+        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, TRUE, i);
     }
 
     SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
     SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
+    sprintf(path, "%s\\GAUN_Options.pic", global_base_directory);
+    global_filter_subtype_background_pic = (HANDLE)load_pic(path);
     return 0;
-  }
 
   case WM_ERASEBKGND:
-  {
-    RECT r;
-
     hdc = wparam;
     ApplyCardArtPaletteToDc(hdc);
-
     GetClientRect(hdlg, &r);
-    DrawBitmapToRect(hdc, &r, global_pics[19]);
+
+    if (!global_filter_subtype_background_pic)
+      FillRect(hdc, &r, GetStockObject(GRAY_BRUSH));
+    else
+      DrawBitmapToRect(hdc, &r, global_filter_subtype_background_pic);
     return 1;
-  }
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-  {
     hdc = wparam;
     ApplyCardArtPaletteToDc(hdc);
+    (void)lparam;
     SetBkMode(hdc, TRANSPARENT);
     return GetStockObject(HOLLOW_BRUSH);
-  }
 
   case WM_COMMAND:
-    switch (LOWORD(wparam))
+    if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)
     {
-    case RES_FILTERLIST_CLEARALL:
       SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, FALSE, 0);
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, FALSE, -1);
+      for (i = 0x32; i >= 0; --i)
+        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, TRUE, i);
       SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
-      break;
+      return 1;
+    }
 
-    case RES_FILTERLIST_ENABLEFILTER:
-      if (global_filter_subtype_dlg_mode)
-        global_filter_expansions ^= FE_EXPANSIONLIST;
-      else
-        global_filter_cardtypes ^= FT_CREATURE_LIST;
-      break;
-
-    case RES_BUTTON_OK:
+    if (LOWORD(wparam) == RES_BUTTON_OK)
     {
-      int buf[MAX_FILTER_SUBTYPE_SIZE];
-      int i;
-      int items;
-      memset(buf, -1, sizeof buf);
+      for (i = 0; i < 0x34; ++i)
+        selected[i] = -1;
 
-      if (global_filter_subtype_dlg_mode)
-        memset(global_filter_expansion_list, 0, sizeof global_filter_expansion_list);
-      else
-        memset(global_filter_creature_list, 0, sizeof global_filter_creature_list);
+      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0x33, (LPARAM)selected);
+      global_filter_expansion_list[0] = 0;
+      global_filter_expansion_list[1] = 0;
 
-      items = SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, MAX_FILTER_SUBTYPE_SIZE, buf);
-
-      for (i = 0; i < items; ++i)
-        if (buf[i] != -1)
+      for (i = 0; i < 0x34; ++i)
+        if (selected[i] != -1)
         {
-          int idx = data1[buf[i]] >> 5;
-          int bit = 1 << (data1[buf[i]] & 0x1f);
-
-          if (global_filter_subtype_dlg_mode)
-            global_filter_expansion_list[idx] |= bit;
-          else
-            global_filter_creature_list[idx] |= bit;
+          mask_lo = (uint32_t)1 << (byte)selected[i];
+          mask_hi = (selected[i] >= 32) ? ((uint32_t)1 << (byte)(selected[i] - 32)) : 0;
+          global_filter_expansion_list[0] |= mask_lo;
+          global_filter_expansion_list[1] |= mask_hi;
         }
 
       EndDialog(hdlg, 1);
-      FREEZ(data1);
-      FREEZ(data2);
       return 1;
     }
 
-    case RES_BUTTON_CANCEL:
+    if (LOWORD(wparam) == RES_BUTTON_CANCEL)
+    {
       EndDialog(hdlg, 0);
-      FREEZ(data1);
-      FREEZ(data2);
       return 1;
+    }
 
-    case RES_FILTERLIST_SELECTALL:
+    if (LOWORD(wparam) == RES_FILTERLIST_CLEARALL)
+    {
       SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, FALSE, 0);
-      SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, TRUE, -1);
+      for (i = 0; i < 0x33; ++i)
+        SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, FALSE, i);
       SendDlgItemMessage(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, TRUE, 0);
       return 1;
     }
+
     return 1;
 
   default:

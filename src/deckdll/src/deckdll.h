@@ -236,14 +236,14 @@ enum Pack2
 
 typedef struct Table_t
 {
-  csvid_t csvid;
-  int amt;
+  unsigned short csvid;
+  unsigned short amt;
 } Table;
 
 typedef struct Packs_t
 {
-  Table table[300];
   int num;
+  Table table[300];
 } Packs;
 
 typedef struct GlobalDeckEntry_t
