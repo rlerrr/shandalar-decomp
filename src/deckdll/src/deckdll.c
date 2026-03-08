@@ -9,6 +9,7 @@
 #include "deckdll.h"
 #include "mystdbool.h"
 #include "sidlib/pic.h"
+#include "cardartlib/src/assert.h"
 #include "cardartlib/src/palette.h"
 #include "magsnd.h"
 #include "drawcardlib/Drawcardlib.h"
@@ -54,8 +55,6 @@ static HINSTANCE global_hinstance = NULL;
 // GLOBAL: DECKDLL 0x101a9710
 static CRITICAL_SECTION global_critical_section_for_unknown;
 
-// GLOBAL: DECKDLL 0x10113d30
-char global_base_directory[MAX_PATH + 1];
 // GLOBAL: DECKDLL 0x10146bb0
 static char global_previous_directory[MAX_PATH + 1];
 static char global_manalink_ini_path[MAX_PATH + 15];
