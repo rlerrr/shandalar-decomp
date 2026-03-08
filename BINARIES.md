@@ -45,6 +45,42 @@
 * ManalinkInterface.dll `md5: 3980049A8E5B8EC7AD39CF89810283D5`
 * shandalar.exe `md5: 4CED8EC9392BE23AF6670E28ECB373DE`
 
+#### "Manalink 1.3.2" by Mok
+* CardArtLib.dll `md5: C0D4000DD51613A213DEAD84E92911F8`
+    * Unmodified surprisingly
+* CDtools.dll `md5: 21F0F2F2279EF80834D6BCB088E1D235`
+    * Modified surprisingly?
+* DeckDLL.dll `md5: C508D77521F48067DB26E8233BDD2520`
+* Drawcardlib.dll `md5: 92219E4AEF13D9672703B82579EF6EF6`
+* Magic.exe `md5: BEA2818FE072E63B3AD334CC0253C014`
+    * Close to the same size as original, lots of functions still match original.
+* Manalink.exe `md5: 54BA6B0212EDD23877730876DFC4C9DB`
+* Shandalar.exe `md5: 98D1A3298774AB5CE18437C2DBE01AC8`
+    * 1054 matching functions vs 1.3.  Functions don't align with original (probably re-assembled/re-compiled).
+
+#### "Manalink 2.0"
+Has a lot of random binaries included.  Multiple large magic.exes and older manalinkeh.dll source code.
+
+#### "Magic 2010"
+* CardArtLib.dll `md5: 3433F883AE568EC1B8CCBEE4BF0CA2A6`
+* DeckDLL.dll `md5: FC77F4BDE21A164E789680018402D292`
+* DrawCardLib.dll `md5: 407A191C61177AAF6569101F8AA58FE3`
+* Magic.exe `md5: 8BE57ED81A75CF029317EB5784CF9B28`
+* ManaLink.exe `md5: 8280D799AC791E70F75A5826C3AF350B`
+* ManalinkEh.dll `md5: E0EFC674707CD110EB1A475EA0E17F11`
+* ManalinkEx.dll `md5: 18DFF1F8345682FBBDE831E1BEE4FF7C`
+* MTGLauncher.exe `md5: F72DA0D7DCFF4F18BBD4B066FF763250`
+* Shandalar.exe `md5: 5938EA9246DC4A1A40B4FF81A1C10EDD`
+    * 1054 matching functions vs 1.3
+
+#### "Shandalar 2012 revisited"
+* CardArtLib.dll `md5: 9654289bdceffabf444e644953b46304`
+* DrawCardLib.dll `md5: 05c79d31e968589428753ca9d695302c`
+* Deckdll.dll `md5: a6b5ca24c328dd76e98bd0ab24c173ce`
+* shandalar.exe `md5: 318955b0164d04fb5fcab37e9335efd6`
+    * 1038 matching functions vs 1.3
+Does NOT contain magic.exe/manalink.exe
+
 #### ["Shandalar 2015"](https://github.com/ShandalarMagic/Shandalar)
 * CardArtLib.dll `md5: 8AA469B5B80B377CC8AFCA4C7978EBDB`
     * Has source
@@ -57,18 +93,17 @@
 * FaceMaker.exe `md5: 9C6792143D51729379A91B238A34189D`
 * image.dll `md5: F1C388BCF64FB4A57733E2693D038272`
 * Magic.exe  `md5: 6A6672769238436B6701688BD0EDE350`
-    * Mok's modified magic.exe
     * Has partial symbols in `src/Magic-trace.c`
-    * I don't think decompilation is reasonably possible.  It contains a LOT of functions with nonstandard (possibly Delphi?) calling conventions that cannot be recreated in C.
+    * Seems to be the target for patches in `src/patches` (already applied) which also contain some potentially useful symbols.
 * Manalink.exe
     * Conspicuously missing?  Was this merged into magic.exe somehow?
 * ManalinkEh.dll `md5: AB1DD0CDACA732BD0A1E4B4F660ADE7C`
     * Has source
 * ManalinkEx.dll `md5: E9EF26A0C5290B6E0562379FAA5EE74D`
-    * Has source? basically empty
+    * Has source? basically empty -- This is just intended to allocate static memory for other stuff.  Sounds like it's deprecated due to needing to use address space explicitly.
 * RC.exe `md5: CA493006D55EBDA9F97C7848CEE144A7`
     * Seems to be: https://github.com/AlbertoMGV/ScreenResolutionChanger
 * Shandalar.dll `md5: FD60F1222AB4E8CB8371BFC1A1C8B11F`
     * I believe this is Korath's mod.  Absolutely massive C++ binary with embedded symbols.  Think a non-public git repo exists.
 * Shandalar.exe `md5: 944D0B9F0548193812A02ABB48D983FA`
-    * I believe this is a modified 1.3 binary with hooks to shandalar.dll?
+    * I believe this is a modified '2012' binary with hooks to shandalar.dll?  Binary is very similar and functions are still aligned.
