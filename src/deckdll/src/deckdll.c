@@ -4434,8 +4434,7 @@ refresh_numofcards_text(void)
 }
 
 // FUNCTION: DECKDLL 0x1002b126
-static bool
-FUN_1002b126(HWND hwnd, int singleclick, int shifted)
+static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shifted)
 {
   struct
   {
@@ -4753,7 +4752,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     global_main_mouse_pt = p;
     global_horzlist_mouse_pt = p2;
-    if (!FUN_1002b126(hwnd, msg == WM_LBUTTONDOWN, wparam & MK_SHIFT))
+    if (!handle_card_list_click_or_drag(hwnd, msg == WM_LBUTTONDOWN, wparam & MK_SHIFT))
       MessageBeep(0);
 
     return 0;
