@@ -2360,8 +2360,6 @@ FUN_1001b5e7(const char *newdata_csv_path, int available_slots)
   return 1;
 }
 
-#pragma optimize("s", on)
-
 // FUNCTION: DECKDLL 0x1000b8df
 static int
 init_deckbuilder(HINSTANCE dll, int unused)
@@ -2437,8 +2435,6 @@ init_deckbuilder(HINSTANCE dll, int unused)
 
   return 0;
 }
-
-#pragma optimize("", on)
 
 // FUNCTION: DECKDLL 0x1000b860
 BOOL WINAPI DllMain(HINSTANCE dll, DWORD reason, LPVOID reserved)
@@ -2939,8 +2935,6 @@ static bool show_dialog_movexcards(void)
   return s.result;
 }
 
-#pragma optimize("s", on)
-
 // FUNCTION: DECKDLL 0x1000774f
 INT_PTR CALLBACK
 dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -3062,8 +3056,6 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     }
   }
 }
-
-#pragma optimize("", on)
 
 // FUNCTION: DECKDLL 0x100076c3
 static bool show_dialog_infobox(void)
