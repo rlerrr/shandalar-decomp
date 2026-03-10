@@ -15,6 +15,7 @@ extern int global_edited_deck_num_entries;
 extern DeckEntry global_edited_deck[300];
 extern char global_deckname[32];
 extern const card_ptr_t *cards_ptr;
+extern card_ptr_t global_raw_cards_storage[1000];
 
 extern COLORREF global_colorref_darkgrey;
 extern COLORREF global_colorref_flesh;
@@ -48,53 +49,55 @@ typedef enum
 static int
 check_deck_type(void)
 {
-  int rval = DT_UNKNOWN;
-
-  bool any_duplicate_nonbasics = false;
-  int i;
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
-    if (!check_basic(global_edited_deck[i].DeckEntry_csvid))
-    {
-      if (global_edited_deck[i].DeckEntry_Amount > 1)
-        any_duplicate_nonbasics = true;
-      if (check_ante(global_edited_deck[i].DeckEntry_csvid))
-        rval |= DT_HAS_ANTE;
-    }
-
-  if (!any_duplicate_nonbasics)
-    return rval | DT_HIGHLANDER;
-
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
+  struct
   {
-    csvid_t csvid;
+    int all_unique_nonbasics;
+    int i;
+    int rval;
     int num;
+    int csvid;
+  } s;
 
-    csvid = global_edited_deck[i].DeckEntry_csvid;
-    if (check_basic(csvid))
-      continue;
+  s.rval = DT_UNKNOWN;
+  s.all_unique_nonbasics = 1;
 
-    if (check_banned(csvid))
+  for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
+    if (!check_basic(global_edited_deck[s.i].DeckEntry_csvid))
     {
-      rval |= DT_UNRESTRICTED;
-      continue;
+      if (global_edited_deck[s.i].DeckEntry_Amount > 1)
+        s.all_unique_nonbasics = 0;
+      if (check_ante(global_edited_deck[s.i].DeckEntry_csvid))
+        s.rval |= DT_HAS_ANTE;
     }
 
-    num = global_edited_deck[i].DeckEntry_Amount;
-    if (num > 4)
-    {
-      rval |= DT_UNRESTRICTED;
-      continue;
-    }
+  if (s.all_unique_nonbasics)
+    return s.rval | DT_HIGHLANDER;
 
-    if (!check_restricted(csvid))
-      rval |= DT_TOURNAMENT_T1_5;
-    else if (num <= 1)
-      rval |= DT_RESTRICTED_T1;
-    else
-      rval |= DT_WILD;
+  for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
+  {
+    s.csvid = global_edited_deck[s.i].DeckEntry_csvid;
+    s.num = global_edited_deck[s.i].DeckEntry_Amount;
+    if (!check_basic(s.csvid))
+    {
+      if (check_banned(s.csvid))
+        s.rval |= DT_UNRESTRICTED;
+      else if (check_restricted(s.csvid))
+      {
+        if (s.num > 4)
+          s.rval |= DT_UNRESTRICTED;
+        else if (s.num > 1)
+          s.rval |= DT_WILD;
+        else
+          s.rval |= DT_RESTRICTED_T1;
+      }
+      else if (s.num > 4)
+        s.rval |= DT_UNRESTRICTED;
+      else
+        s.rval |= DT_TOURNAMENT_T1_5;
+    }
   }
 
-  return rval;
+  return s.rval;
 }
 
 // GLOBAL: DECKDLL 0x101053a8
@@ -122,316 +125,328 @@ static COLORREF global_colorref_stats_flesh;
 static void
 build_deck_stats_table(void)
 {
-  int i;
-  int j;
-  int k;
-  int row;
-  int col;
-  int csvid;
-  int amt;
-  int num_five_color_lands;
-
-  num_five_color_lands = 0;
-  for (i = 0; i < 9; ++i)
-    for (j = 0; j < 7; ++j)
-      global_deck_stats[i][j] = 0;
-
-  for (i = 0; i < global_edited_deck_num_entries; ++i)
+  struct
   {
-    csvid = global_edited_deck[i].DeckEntry_csvid;
-    amt = global_edited_deck[i].DeckEntry_Amount;
+    int col;
+    int amt;
+    int num_five_color_lands;
+    int row;
+    int csvid;
+    int i;
+    int j;
+  } s;
 
-    if (cards_ptr[csvid].card_type == CP_TYPE_CREATURE)
-      row = 1;
-    else if (cards_ptr[csvid].card_type == CP_TYPE_ENCHANTMENT)
-      row = 2;
-    else if (cards_ptr[csvid].card_type == CP_TYPE_SORCERY)
-      row = 3;
-    else if (cards_ptr[csvid].card_type == CP_TYPE_INSTANT)
-      row = 4;
-    else if (cards_ptr[csvid].card_type == CP_TYPE_INTERRUPT)
-      row = 5;
-    else if (cards_ptr[csvid].card_type == CP_TYPE_LAND)
-      row = 6;
-    else if (cards_ptr[csvid].card_type == CP_TYPE_ARTIFACT)
-      row = 7;
+  s.num_five_color_lands = 0;
+  for (s.j = 0; s.j < 9; ++s.j)
+    for (s.i = 0; s.i < 7; ++s.i)
+      global_deck_stats[s.j][s.i] = 0;
+
+  for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
+  {
+    s.csvid = global_edited_deck[s.i].DeckEntry_csvid;
+    s.amt = global_edited_deck[s.i].DeckEntry_Amount;
+
+    if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_CREATURE)
+      s.row = 1;
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_ENCHANTMENT)
+      s.row = 2;
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_SORCERY)
+      s.row = 3;
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_INSTANT)
+      s.row = 4;
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_INTERRUPT)
+      s.row = 5;
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_ARTIFACT)
+      s.row = 7;
+    else if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_LAND)
+      s.row = 6;
     else
       continue;
 
-    if (cards_ptr[csvid].color == CP_COLOR_BLACK)
-      col = 0;
-    else if (cards_ptr[csvid].color == CP_COLOR_BLUE)
-      col = 1;
-    else if (cards_ptr[csvid].color == CP_COLOR_GREEN)
-      col = 2;
-    else if (cards_ptr[csvid].color == CP_COLOR_RED)
-      col = 3;
-    else if (cards_ptr[csvid].color == CP_COLOR_WHITE)
-      col = 4;
+    if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLACK)
+      s.col = 0;
+    else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_BLUE)
+      s.col = 1;
+    else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_GREEN)
+      s.col = 2;
+    else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_RED)
+      s.col = 3;
+    else if (global_raw_cards_storage[s.csvid].color == CP_COLOR_WHITE)
+      s.col = 4;
     else
-      col = -1;
+      s.col = -1;
 
-    if (row == 6)
+    if (s.row == 6)
     {
-      if (csvid == 0xa4)
-        col = 3;
-      else if (csvid == 0x5b)
-        col = 2;
-      else if (csvid == 0x7e)
-        col = 1;
-      else if (csvid == 0xbc)
-        col = 4;
-      else if (csvid == 0xef)
-        col = 0;
+      if (s.csvid == 0xa4)
+        s.col = 3;
+      else if (s.csvid == 0x5b)
+        s.col = 2;
+      else if (s.csvid == 0x7e)
+        s.col = 1;
+      else if (s.csvid == 0xbc)
+        s.col = 4;
+      else if (s.csvid == 0xef)
+        s.col = 0;
       else
-        col = 5;
+        s.col = 5;
     }
 
-    if (row == 7)
+    if (s.row == 7)
     {
-      col = 5;
-      if (cards_ptr[csvid].subtype1 == 0x2c && cards_ptr[csvid].subtype2 == 0)
-        row = 1;
+      s.col = 5;
+      if (*(int *)&global_raw_cards_storage[s.csvid].subtype1 == 0x2c &&
+          *(int *)&global_raw_cards_storage[s.csvid].subtype2 == 0)
+        s.row = 1;
     }
 
-    if (col == -1)
+    if (s.col == -1)
     {
       MessageBox(NULL, "Color is -1", "Stats Error", 0);
       continue;
     }
 
-    if (cards_ptr[csvid].db_card_type_2 == 10)
+    if (global_raw_cards_storage[s.csvid].db_card_type_2 == 10)
     {
-      if (csvid == 0xf || csvid == 0x11 || csvid == 0x193 || csvid == 0x1b9)
+      if (s.csvid == 0xf || s.csvid == 0x11 || s.csvid == 0x193 || s.csvid == 0x1b9)
       {
-        num_five_color_lands += amt;
-        global_deck_stats[0][0] += amt;
-        global_deck_stats[0][1] += amt;
-        global_deck_stats[0][2] += amt;
-        global_deck_stats[0][3] += amt;
-        global_deck_stats[0][4] += amt;
+        s.num_five_color_lands += s.amt;
+        global_deck_stats[0][0] += s.amt;
+        global_deck_stats[0][1] += s.amt;
+        global_deck_stats[0][2] += s.amt;
+        global_deck_stats[0][3] += s.amt;
+        global_deck_stats[0][4] += s.amt;
       }
-      else if (csvid == 0xa5)
-        global_deck_stats[0][2] += amt;
-      else if (csvid == 0xa6)
-        global_deck_stats[0][0] += amt;
-      else if (csvid == 0xa7)
-        global_deck_stats[0][4] += amt;
-      else if (csvid == 0xa8)
-        global_deck_stats[0][3] += amt;
-      else if (csvid == 0xa9)
-        global_deck_stats[0][1] += amt;
-      else if (csvid == 9)
+      else if (s.csvid == 0xa5)
+        global_deck_stats[0][2] += s.amt;
+      else if (s.csvid == 0xa6)
+        global_deck_stats[0][0] += s.amt;
+      else if (s.csvid == 0xa7)
+        global_deck_stats[0][4] += s.amt;
+      else if (s.csvid == 0xa8)
+        global_deck_stats[0][3] += s.amt;
+      else if (s.csvid == 0xa9)
+        global_deck_stats[0][1] += s.amt;
+      else if (s.csvid == 9)
       {
-        global_deck_stats[0][0] += amt;
-        global_deck_stats[0][3] += amt;
+        global_deck_stats[0][0] += s.amt;
+        global_deck_stats[0][3] += s.amt;
       }
-      else if (csvid == 0xc)
+      else if (s.csvid == 0xc)
       {
-        global_deck_stats[0][0] += amt;
-        global_deck_stats[0][2] += amt;
+        global_deck_stats[0][0] += s.amt;
+        global_deck_stats[0][2] += s.amt;
       }
-      else if (csvid == 0xbd)
+      else if (s.csvid == 0xbd)
       {
-        global_deck_stats[0][3] += amt;
-        global_deck_stats[0][4] += amt;
+        global_deck_stats[0][3] += s.amt;
+        global_deck_stats[0][4] += s.amt;
       }
-      else if (csvid == 0xd4)
+      else if (s.csvid == 0xd4)
       {
-        global_deck_stats[0][4] += amt;
-        global_deck_stats[0][2] += amt;
+        global_deck_stats[0][4] += s.amt;
+        global_deck_stats[0][2] += s.amt;
       }
-      else if (csvid == 0xd8)
+      else if (s.csvid == 0xd8)
       {
-        global_deck_stats[0][4] += amt;
-        global_deck_stats[0][0] += amt;
+        global_deck_stats[0][4] += s.amt;
+        global_deck_stats[0][0] += s.amt;
       }
-      else if (csvid == 0xf1)
+      else if (s.csvid == 0xf1)
       {
-        global_deck_stats[0][3] += amt;
-        global_deck_stats[0][2] += amt;
+        global_deck_stats[0][3] += s.amt;
+        global_deck_stats[0][2] += s.amt;
       }
-      else if (csvid == 0xfc)
+      else if (s.csvid == 0xfc)
       {
-        global_deck_stats[0][1] += amt;
-        global_deck_stats[0][2] += amt;
+        global_deck_stats[0][1] += s.amt;
+        global_deck_stats[0][2] += s.amt;
       }
-      else if (csvid == 0xfe)
+      else if (s.csvid == 0xfe)
       {
-        global_deck_stats[0][4] += amt;
-        global_deck_stats[0][1] += amt;
+        global_deck_stats[0][4] += s.amt;
+        global_deck_stats[0][1] += s.amt;
       }
-      else if (csvid == 0x102)
+      else if (s.csvid == 0x102)
       {
-        global_deck_stats[0][1] += amt;
-        global_deck_stats[0][0] += amt;
+        global_deck_stats[0][1] += s.amt;
+        global_deck_stats[0][0] += s.amt;
       }
-      else if (csvid == 0x10a)
+      else if (s.csvid == 0x10a)
       {
-        global_deck_stats[0][1] += amt;
-        global_deck_stats[0][3] += amt;
+        global_deck_stats[0][1] += s.amt;
+        global_deck_stats[0][3] += s.amt;
       }
       else
-        global_deck_stats[0][col] += amt;
+        global_deck_stats[0][s.col] += s.amt;
     }
 
-    global_deck_stats[row][col] += amt;
+    global_deck_stats[s.row][s.col] += s.amt;
   }
 
-  for (i = 0; i < 8; ++i)
-    for (j = 0; j < 6; ++j)
-      global_deck_stats[i][6] += global_deck_stats[i][j];
+  for (s.i = 0; s.i < 8; ++s.i)
+    for (s.j = 0; s.j < 6; ++s.j)
+      global_deck_stats[s.i][6] += global_deck_stats[s.i][s.j];
 
-  global_deck_stats[0][6] += num_five_color_lands * -4;
+  global_deck_stats[0][6] += s.num_five_color_lands * -4;
 
-  for (j = 0; j < 6; ++j)
-    for (k = 0; k < 8; ++k)
-      if (k != 0)
-        global_deck_stats[8][j] += global_deck_stats[k][j];
+  for (s.j = 0; s.j < 6; ++s.j)
+    for (s.i = 0; s.i < 8; ++s.i)
+      if (s.i != 0)
+        global_deck_stats[8][s.j] += global_deck_stats[s.i][s.j];
 
-  for (k = 0; k < 8; ++k)
-    if (k != 0)
-      global_deck_stats[8][6] += global_deck_stats[k][6];
+  for (s.i = 0; s.i < 8; ++s.i)
+    if (s.i != 0)
+      global_deck_stats[8][6] += global_deck_stats[s.i][6];
 }
 
 // FUNCTION: DECKDLL 0x1002e3fd
 static void
-show_stats(HDC hdc, int word_width, int word_height, int *stepx, int *stepy, int *posx, int *starty)
+show_stats(HDC hdc, SIZE word_size, int *stepx, int *stepy, int *posx, int *starty)
 {
-  char buf[264];
-  int x;
-  int y;
-  int u;
-  int len;
+  struct
+  {
+    char buf[260];
+    int u;
+    int y;
+    int x;
+  } s;
 
-  load_text("Menus", "STATSSCREEN");
+  load_text("menus", "STATSSCREEN");
   SetTextColor(hdc, global_colorref_stats_lightgrey);
 
-  x = 20;
-  y = 20;
-  wsprintf(buf, text_lines[0]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
+  s.x = 20;
+  s.y = 20;
+  wsprintf(s.buf, text_lines[0]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
 
-  u = 1000 - (x + word_width);
-  *stepx = (u + (((unsigned int)u >> 31) & 7)) >> 3;
-  x = x + word_width + 80;
-  *posx = x;
+  s.x += word_size.cx;
+  s.u = 1000 - s.x;
+  *stepx = (s.u + ((s.u >> 31) & 7)) >> 3;
+  s.x += word_size.cy + 80;
+  *posx = s.x;
 
-  wsprintf(buf, text_lines[1]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  x += *stepx;
-  wsprintf(buf, text_lines[2]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  x += *stepx;
-  wsprintf(buf, text_lines[3]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  x += *stepx;
-  wsprintf(buf, text_lines[4]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  x += *stepx;
-  wsprintf(buf, text_lines[5]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  x += *stepx;
-  wsprintf(buf, text_lines[6]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  x += *stepx;
-  wsprintf(buf, text_lines[7]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
+  wsprintf(s.buf, text_lines[1]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.x += *stepx;
+  wsprintf(s.buf, text_lines[2]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.x += *stepx;
+  wsprintf(s.buf, text_lines[3]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.x += *stepx;
+  wsprintf(s.buf, text_lines[4]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.x += *stepx;
+  wsprintf(s.buf, text_lines[5]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.x += *stepx;
+  wsprintf(s.buf, text_lines[6]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.x += *stepx;
+  wsprintf(s.buf, text_lines[7]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
 
   *stepy = 65;
   *starty = *stepy + 20;
   SetTextColor(hdc, global_colorref_stats_lavender);
-  x = 20;
-  y = *starty;
-  wsprintf(buf, text_lines[8]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
+  s.x = 20;
+  s.y = *starty;
+  wsprintf(s.buf, text_lines[8]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
 
   SetTextColor(hdc, global_colorref_stats_lightgrey);
-  y = y + word_height / 2 + *stepy;
-  for (u = 9; u < 16; ++u)
-  {
-    wsprintf(buf, text_lines[u]);
-    len = strlen(buf);
-    TextOut(hdc, x, y, buf, len);
-    y += *stepy;
-  }
-  y += word_height;
-  wsprintf(buf, text_lines[16]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
-  y += *stepy;
-  wsprintf(buf, text_lines[7]);
-  len = strlen(buf);
-  TextOut(hdc, x, y, buf, len);
+  s.y = s.y + word_size.cy / 2 + *stepy;
+  wsprintf(s.buf, text_lines[9]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[10]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[11]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[12]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[13]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[14]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[15]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  s.y += word_size.cy;
+  wsprintf(s.buf, text_lines[16]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+  s.y += *stepy;
+  wsprintf(s.buf, text_lines[7]);
+  TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
 }
 
 // FUNCTION: DECKDLL 0x1002e096
 static void
-show_stats_values(HDC hdc, int unused_word_width, int word_height, int stepx, int stepy, int posx, int starty)
+show_stats_values(HDC hdc, SIZE word_size, int stepx, int stepy, int posx, int starty)
 {
-  char buf[264];
-  int c;
-  int l;
-  int percent;
-  int x;
-  int y;
-
-  y = starty;
-  SetTextColor(hdc, global_colorref_stats_flesh);
-  for (l = 0; l < 9; ++l)
+  struct
   {
-    x = posx;
-    if (l == 1)
-      y += word_height / 2;
+    char buf[264];
+    int percent;
+    int l;
+    int y;
+    int c;
+    int x;
+  } s;
 
-    for (c = 0; c < 7; ++c)
+  s.y = starty;
+  SetTextColor(hdc, global_colorref_stats_flesh);
+  for (s.l = 0; s.l < 9; ++s.l)
+  {
+    s.x = posx;
+    if (s.l == 1)
+      s.y += word_size.cy / 2;
+
+    for (s.c = 0; s.c < 7; ++s.c)
     {
-      if (l == 0)
+      if (s.l == 0)
         SetTextColor(hdc, global_colorref_stats_lavender);
       else
         SetTextColor(hdc, global_colorref_stats_flesh);
 
-      if (global_deck_stats[l][c] == 0)
+      if (global_deck_stats[s.l][s.c] == 0)
       {
-        percent = 0;
-        wsprintf(buf, "  -", global_deck_stats[l][c], percent);
+        s.percent = 0;
+        wsprintf(s.buf, "  -", global_deck_stats[s.l][s.c], s.percent);
       }
-      else if (l == 8 || c == 6)
+      else if (s.l == 8 || s.c == 6)
       {
-        if (global_deck_stats[l][c] == 0 || global_deck_stats[8][6] == 0)
-          percent = 0;
+        if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[8][6] == 0)
+          s.percent = 0;
         else
-          percent = (global_deck_stats[l][c] * 100 + (global_deck_stats[8][6] >> 1)) / global_deck_stats[8][6];
+          s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[8][6] >> 1)) / global_deck_stats[8][6];
 
-        wsprintf(buf, "(%d) %d%%", global_deck_stats[l][c], percent);
+        wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
       }
       else
       {
-        if (global_deck_stats[l][c] == 0 || global_deck_stats[l][6] == 0)
-          percent = 0;
+        if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[s.l][6] == 0)
+          s.percent = 0;
         else
-          percent = (global_deck_stats[l][c] * 100 + (global_deck_stats[l][6] >> 1)) / global_deck_stats[l][6];
+          s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[s.l][6] >> 1)) / global_deck_stats[s.l][6];
 
-        wsprintf(buf, "(%d) %d%%", global_deck_stats[l][c], percent);
+        wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
       }
 
-      TextOut(hdc, x, y, buf, strlen(buf));
-      x += stepx;
+      TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
+      s.x += stepx;
     }
 
-    if (l == 7)
-      y += word_height + stepy;
+    if (s.l == 7)
+      s.y += word_size.cy + stepy;
     else
-      y += stepy;
+      s.y += stepy;
   }
 }
 
@@ -439,11 +454,14 @@ show_stats_values(HDC hdc, int unused_word_width, int word_height, int stepx, in
 static void
 fill_stats_window(HDC hdc, RECT r, HFONT font)
 {
-  SIZE sz;
-  int stepx;
-  int stepy;
-  int posx;
-  int starty;
+  struct
+  {
+    int posx;  // ebp - 0x18
+    int stepy; // ebp - 0x14
+    SIZE sz;
+    int starty; // ebp - 0x8
+    int stepx;  // ebp - 0x4
+  } s;
 
   build_deck_stats_table();
   SetMapMode(hdc, MM_ANISOTROPIC);
@@ -452,10 +470,10 @@ fill_stats_window(HDC hdc, RECT r, HFONT font)
   SelectObject(hdc, font);
   SetBkMode(hdc, TRANSPARENT);
 
-  GetTextExtentPoint32(hdc, "Enchantments", strlen("Enchantments"), &sz);
+  GetTextExtentPoint32(hdc, "Enchantments", 0xc, &s.sz);
 
-  show_stats(hdc, sz.cx, sz.cy, &stepx, &stepy, &posx, &starty);
-  show_stats_values(hdc, sz.cx, sz.cy, stepx, stepy, posx, starty);
+  show_stats(hdc, s.sz, &s.stepx, &s.stepy, &s.posx, &s.starty);
+  show_stats_values(hdc, s.sz, s.stepx, s.stepy, s.posx, s.starty);
 }
 
 // FUNCTION: DECKDLL 0x1002db30

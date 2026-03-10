@@ -45,7 +45,7 @@ These instructions apply to the entire repository.
 - Ghidra likes to convert `mov eax {literal}; jmp;` to `returnVal = {literal}; jmp;`, inventing a return variable that doesn't exist.
 
 ## Build
-- Build the `cardartlib` target with: `nmake cardartlib`
+- Build with: `nmake`
 
 ## Check Assembly Match (reccmp)
 - Use `reccmp-reccmp` to compare the recompiled function against the original:

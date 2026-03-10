@@ -155,6 +155,8 @@ undefined2 DAT_10116cf0;
 OctNode* g_paletteOctreeRoot;
 
 // GLOBAL: CARDARTLIB 0x10031eb0
+// GLOBAL: DRAWCARDLIB 0x10028f00
+// GLOBAL: DECKDLL 0x100f2c78
 undefined1 DAT_10031eb0;
 
 // GLOBAL: CARDARTLIB 0x10031eb8
@@ -169,7 +171,7 @@ uint g_paletteRgbTable[0x100];
 
 // GLOBAL: CARDARTLIB 0x100322c0
 // GLOBAL: DRAWCARDLIB 0x10029310
-// GLOBAL: DECKDLL 0x100f2c78
+// GLOBAL: DECKDLL 0x100f3088
 undefined1 *g_octPathTmp;
 
 // GLOBAL: CARDARTLIB 0x100322d4
@@ -208,9 +210,9 @@ undefined1 global_BluePathBitsTable[0x800];
 // FUNCTION: DECKDLL 0x100217b0
 BOOL InitCardArtGdiResources(void)
 {
+#ifndef DECKDLL
   BOOL result = 1;
   
-#ifndef DECKDLL
   if (!SetupDuelPalette())
     result = 0;
 #endif
@@ -221,15 +223,20 @@ BOOL InitCardArtGdiResources(void)
     InitializeCriticalSection(&global_critical_section_for_drawing);
   }
 
+#ifndef DECKDLL
   if (global_screen_dc == 0)
     result=0;
     
-#ifndef DECKDLL
   if (result == 0)
     ShutdownCardArtGdiResources();
-#endif
 
   return result;
+#else  
+  if (global_screen_dc == 0)
+    return 0;
+  
+  return 1;
+#endif
 }
 
 // MATCHING

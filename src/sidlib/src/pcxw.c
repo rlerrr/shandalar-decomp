@@ -153,10 +153,9 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
     gPcxBufferHeight = global_pcxw_image_height;
   }
 
-  for (s.row = 0;; s.row = s.row + 1) {
-    if ((int)global_pcxw_image_height <= s.row) break;
+  for (s.row = 0; global_pcxw_image_height > s.row; s.row = s.row + 1) {
     PcxReadScanlineRle((byte *)&DAT_10126d30);
-    for (s.col = 0; s.col < (int)global_pcxw_image_width; s.col = s.col + 1) {
+    for (s.col = 0; s.col < global_pcxw_image_width; s.col = s.col + 1) {
       *imagePixels = *((byte *)&DAT_10126d30 + s.col);
       imagePixels = imagePixels + 1;
     }
@@ -243,7 +242,7 @@ undefined4 PcxReadScanlineRle(char *dstScanline)
           dstScanline = dstScanline + 1;
         }
 
-        s.bytesRemaining -= s.runCount;
+        s.bytesRemaining -= (uint)s.runCount;
       }
       else {
         *dstScanline = (char)s.b;

@@ -56,7 +56,7 @@ void ScrubString(char *param_1)
 }
 
 // FUNCTION: DECKDLL 0x1000de56
-void __cdecl ReverseBits32(uint *param_1)
+void ReverseBits32(uint *param_1)
 {
   int i;
   uint result = 0;
@@ -77,7 +77,8 @@ void __cdecl ReverseBits32(uint *param_1)
 // FUNCTION: DECKDLL 0x1000deb9
 int InitLicenseSecretsFromRegistry(void)
 {
-  struct {
+  struct
+  {
     int pad2;
     size_t sVar1;
     int pad;
@@ -147,18 +148,18 @@ int InitLicenseSecretsFromRegistry(void)
   ScrubString(s__100330b8);
   s.local_418 = strlen((char *)s.local_40c);
 
-  for (s.local_420 = 0; strlen((char *)s.local_40c) < 0x10; )
+  for (s.local_420 = 0; strlen((char *)s.local_40c) < 0x10;)
   {
     s.local_40c[s.local_418] = s.local_40c[s.local_420];
     s.local_420 = s.local_420 + 1;
     s.local_418++;
     s.local_40c[s.local_418] = '\0';
   }
-  
-  //NOTE: this DEPENDS on stack layout, reading out of bounds intentionally
+
+  // NOTE: this DEPENDS on stack layout, reading out of bounds intentionally
   s.local_c = (void *)((int)&s.i + strlen((char *)s.local_40c));
   memcpy(&DAT_101bc878, s.local_c, 4);
-  s.local_c +=4;
+  s.local_c += 4;
   memcpy(&DAT_101bc87c, s.local_c, 4);
   s.local_c = NULL;
   RegCloseKey(s.local_410);
@@ -173,22 +174,23 @@ int InitLicenseSecretsFromRegistry(void)
 // FUNCTION: DECKDLL 0x1000e20a
 static int ValidateRegistrySerial(uint32_t *out_value)
 {
-  struct {
+  struct
+  {
     int regPathLength; // ebp - 0x40
-    uint8_t *buf; // ebp - 0x3c
-    uint32_t i; // ebp - 0x38
-    int sumpt8; // ebp - 0x34
-    int sumpt7; // ebp - 0x30
-    char *pad6; // ebp - 0x2c
+    uint8_t *buf;      // ebp - 0x3c
+    uint32_t i;        // ebp - 0x38
+    int sumpt8;        // ebp - 0x34
+    int sumpt7;        // ebp - 0x30
+    char *pad6;        // ebp - 0x2c
     uint32_t checksum; // ebp - 0x28
-    int sumpt6; // ebp - 0x24
-    uint32_t size; // ebp - 0x20
-    int sumpt5; // ebp - 0x1c
-    HKEY hKey; 
-    int sumpt4; // ebp - 0x14
-    int sumpt3; // ebp - 0x10
-    int sumpt2; // ebp - 0xc
-    uint32_t type; // ebp - 0x8
+    int sumpt6;        // ebp - 0x24
+    uint32_t size;     // ebp - 0x20
+    int sumpt5;        // ebp - 0x1c
+    HKEY hKey;
+    int sumpt4;      // ebp - 0x14
+    int sumpt3;      // ebp - 0x10
+    int sumpt2;      // ebp - 0xc
+    uint32_t type;   // ebp - 0x8
     uint32_t sumpt1; // ebp - 0x4
   } s;
 
@@ -249,45 +251,44 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   s.pad6 += 4;
   memcpy(&DAT_101bc870, s.pad6, 4); // part B
   s.pad6 += 4;
-  memcpy(&s.checksum, s.pad6, 4);     // checksum
+  memcpy(&s.checksum, s.pad6, 4); // checksum
   s.pad6 = NULL;
   s.checksum ^= DAT_101bc874;
 
   // ------------------------------------------------------------
   // Nibble checksum verification
   // ------------------------------------------------------------
-  *(byte*)&s.sumpt1 = ((DAT_101bc86c >> 24) & 0xF);
-  *(byte*)&s.sumpt2 = ((DAT_101bc86c >> 16) & 0xF);
-  *(byte*)&s.sumpt3 = ((DAT_101bc86c >> 8) & 0xF);
-  *(byte*)&s.sumpt4 = ((DAT_101bc86c >> 0) & 0xF);
-  *(byte*)&s.sumpt5 = ((DAT_101bc870 >> 24) & 0xF);
-  *(byte*)&s.sumpt6 = ((DAT_101bc870 >> 16) & 0xF);
-  *(byte*)&s.sumpt7 = ((DAT_101bc870 >> 8) & 0xF);
-  *(byte*)&s.sumpt8 = ((DAT_101bc870 >> 0) & 0xF);
+  *(byte *)&s.sumpt1 = ((DAT_101bc86c >> 24) & 0xF);
+  *(byte *)&s.sumpt2 = ((DAT_101bc86c >> 16) & 0xF);
+  *(byte *)&s.sumpt3 = ((DAT_101bc86c >> 8) & 0xF);
+  *(byte *)&s.sumpt4 = ((DAT_101bc86c >> 0) & 0xF);
+  *(byte *)&s.sumpt5 = ((DAT_101bc870 >> 24) & 0xF);
+  *(byte *)&s.sumpt6 = ((DAT_101bc870 >> 16) & 0xF);
+  *(byte *)&s.sumpt7 = ((DAT_101bc870 >> 8) & 0xF);
+  *(byte *)&s.sumpt8 = ((DAT_101bc870 >> 0) & 0xF);
 
-  //*(byte*)&s.sum = 
+  //*(byte*)&s.sum =
 
   if ((
-    *(byte*)&s.sumpt1 +
-    *(byte*)&s.sumpt2 +
-    *(byte*)&s.sumpt3 +
-    *(byte*)&s.sumpt4 +
-    *(byte*)&s.sumpt5 +
-    *(byte*)&s.sumpt6 +
-    *(byte*)&s.sumpt7 +
-    *(byte*)&s.sumpt8
-  ) != s.checksum)
+          *(byte *)&s.sumpt1 +
+          *(byte *)&s.sumpt2 +
+          *(byte *)&s.sumpt3 +
+          *(byte *)&s.sumpt4 +
+          *(byte *)&s.sumpt5 +
+          *(byte *)&s.sumpt6 +
+          *(byte *)&s.sumpt7 +
+          *(byte *)&s.sumpt8) != s.checksum)
     return 2;
- 
+
   // ------------------------------------------------------------
   // Serial decryption / mixing
-  // ------------------------------------------------------------ 
-  
+  // ------------------------------------------------------------
+
   DAT_101bc86c ^= DAT_101bc878;
   DAT_101bc870 ^= DAT_101bc87c;
 
-  //TODO: this is almost possible using _rotl/_rotr
-  //the push/pop make no sense even for an inlined function
+  // TODO: this is almost possible using _rotl/_rotr
+  // the push/pop make no sense even for an inlined function
   __asm {
     push eax
     rol dword ptr [DAT_101bc874], 6

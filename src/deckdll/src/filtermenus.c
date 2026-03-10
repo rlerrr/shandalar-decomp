@@ -92,6 +92,8 @@ static HMENU global_filtermenu_ability;
 static HMENU global_filtermenu_rarity;
 // GLOBAL: DECKDLL 0x101127b0
 static HMENU global_filtermenu_artist;
+
+// TODO: this is fake
 static HMENU global_filtermenu_newexp;
 
 // These are never set false.
@@ -171,8 +173,12 @@ static HANDLE global_filter_gle_background_pic;
 static int
 filterbuttons_setcoords(const RECT *r, int button_number, RECT *rval)
 {
-  RECT temp_rect;
-  int w;
+  struct
+  {
+    int idk;
+    RECT temp_rect;
+    int height;
+  } s;
 
   if (((global_db_flags_1 & DBFLAGS_SHANDALAR) && button_number < 10) ||
       (!HasExpansion(2) && (button_number == 7 || button_number == 8)) ||
@@ -182,65 +188,99 @@ filterbuttons_setcoords(const RECT *r, int button_number, RECT *rval)
     return 1;
   }
 
-  w = r->right - r->left - 2;
-  SetRect(&temp_rect, r->left + 1, r->top + 1, r->left + w + 1, r->bottom - 2);
-  OffsetRect(&temp_rect, w * (button_number - 5), 0);
+  s.height = r->bottom - r->top - 2;
+  s.idk = 0;
+  SetRect(&s.temp_rect, r->left + 1, r->top + 1, r->left + s.height + 1, r->bottom - 2);
+  OffsetRect(&s.temp_rect, (s.idk + s.height) * (button_number - 5), 0);
 
   if (button_number > 10)
   {
-    temp_rect.left += 6;
-    temp_rect.right += 6;
+    s.temp_rect.left += 6;
+    s.temp_rect.right += 6;
   }
 
   if (button_number >= 18)
   {
-    temp_rect.left += 6;
-    temp_rect.right += 6;
+    s.temp_rect.left += 6;
+    s.temp_rect.right += 6;
   }
 
   if (button_number > 22)
   {
-    temp_rect.left += 8;
-    temp_rect.right += 8;
+    s.temp_rect.left += 8;
+    s.temp_rect.right += 8;
   }
 
-  CopyRect(rval, &temp_rect);
+  CopyRect(rval, &s.temp_rect);
   return 1;
-}
-
-static __inline bool
-point_in_filterbutton(int button_number, RECT *r, POINT p)
-{
-  RECT r2;
-  filterbuttons_setcoords(r, button_number, &r2);
-  return PtInRect(&r2, p);
 }
 
 // FUNCTION: DECKDLL 0x1001eaa5
 static int
-get_filter_button_state(HWND hwnd, POINT p)
+get_filter_button_state(HWND hwnd, WPARAM wparam, LPARAM lparam)
 {
-#define CHECK_BUTTON(button_number, txthdr, var, bit) \
-  if (point_in_filterbutton(button_number, &r, p))    \
-  {                                                   \
-    if (load_text("CueCards", txthdr) == -1)          \
-      return 0;                                       \
-    return (var & bit) ? 1 : 2;                       \
+  struct
+  {
+    POINT p; // ebp - 0x2c
+    int pad; // ebp - 0x24
+    RECT r;  // ebp - 0x20
+    RECT r2; // ebp - 0x10
+  } s;
+
+  s.p.x = lparam & 0xffff;
+  s.p.y = (lparam >> 0x10) & 0xffff;
+
+  GetClientRect(hwnd, &s.r);
+
+#define CHECK_BUTTON(button_number, txthdr, var, bit)  \
+  filterbuttons_setcoords(&s.r, button_number, &s.r2); \
+  if (PtInRect(&s.r2, s.p))                            \
+  {                                                    \
+    if ((s.pad = load_text("cuecards", txthdr)) == -1) \
+      return 0;                                        \
+    return (var & bit) ? 1 : 2;                        \
   }
 
-#define CHECK_BUTTON_CONDITIONAL(button_number, txthdr, var, bit, additional_condition) \
-  if (additional_condition point_in_filterbutton(button_number, &r, p))                 \
-  {                                                                                     \
-    if (load_text("CueCards", txthdr) == -1)                                            \
-      return 0;                                                                         \
-    return (var & bit) ? 1 : 2;                                                         \
+  CHECK_BUTTON(11, "WHITE", global_filter_colors, FC_WHITE);
+  CHECK_BUTTON(15, "GREEN", global_filter_colors, FC_GREEN);
+  CHECK_BUTTON(14, "RED", global_filter_colors, FC_RED);
+  CHECK_BUTTON(13, "BLACK", global_filter_colors, FC_BLACK);
+  CHECK_BUTTON(12, "BLUE", global_filter_colors, FC_BLUE);
+  if (global_filter_cardsets_flags & FCSF_THE_DARK)
+  {
+    CHECK_BUTTON(10, "DARK", global_filter_cardsets, FS_THE_DARK);
   }
+  if (global_filter_cardsets_flags & FCSF_ARABIAN_NIGHTS)
+  {
+    CHECK_BUTTON(7, "ARABIAN", global_filter_cardsets, FS_ARABIAN_NIGHTS);
+  }
+  if (global_filter_cardsets_flags & FCSF_ANTIQUITIES)
+  {
+    CHECK_BUTTON(8, "ANTIQUITIES", global_filter_cardsets, FS_ANTIQUITIES);
+  }
+  CHECK_BUTTON(6, "ASTRAL", global_filter_cardsets, FS_ASTRAL);
+  if (global_filter_cardsets_flags & FCSF_LEGENDS)
+  {
+    CHECK_BUTTON(9, "LEGENDS", global_filter_cardsets, FS_LEGENDS);
+  }
+  CHECK_BUTTON(5, "FOURTH", global_filter_cardsets, FS_4TH_EDITION);
+  CHECK_BUTTON(3, "PROMO", global_filter_cardsets, FS_UNK2);
+  CHECK_BUTTON(1, "RESTRICTED", global_filter_cardsets, FS_UNK3);
+  CHECK_BUTTON(16, "LAND", global_filter_cardtypes, FT_LAND);
+  CHECK_BUTTON(17, "ARTIFACT", global_filter_cardtypes, FT_ARTIFACT);
+  CHECK_BUTTON(18, "CREATURE", global_filter_cardtypes, FT_CREATURE);
+  CHECK_BUTTON(19, "ENCHANTMENT", global_filter_cardtypes, FT_ENCHANTMENT);
+  CHECK_BUTTON(20, "INSTANT", global_filter_cardtypes, FT_INSTANT);
+  CHECK_BUTTON(21, "INTERRUPT", global_filter_cardtypes, FT_INTERRUPT);
+  CHECK_BUTTON(22, "SORCERY", global_filter_cardtypes, FT_SORCERY);
+  CHECK_BUTTON(23, "CASTCOST", global_filter_casting_cost, FN_ENABLE);
+  CHECK_BUTTON(24, "POWER", global_filter_power, FN_ENABLE);
+  CHECK_BUTTON(25, "TOUGHNESS", global_filter_toughness, FN_ENABLE);
+  CHECK_BUTTON(26, "ABILITY", global_filter_abilities, FA_ENABLE);
+  CHECK_BUTTON(27, "RARITY", global_filter_rarity, FR_ENABLE);
+  CHECK_BUTTON(28, "ARTIST", global_filter_artist, 1);
 
-  RECT r;
-  GetClientRect(hwnd, &r);
-
-  CHECK_BUTTON(11, "WHITE", global_filter_colors, FC_WHITE)
-  else CHECK_BUTTON(15, "GREEN", global_filter_colors, FC_GREEN) else CHECK_BUTTON(14, "RED", global_filter_colors, FC_RED) else CHECK_BUTTON(13, "BLACK", global_filter_colors, FC_BLACK) else CHECK_BUTTON(16, "GOLD", global_filter_colors, FC_GOLD) else CHECK_BUTTON(12, "BLUE", global_filter_colors, FC_BLUE) else CHECK_BUTTON_CONDITIONAL(10, "DARK", global_filter_cardsets, FS_THE_DARK, (global_filter_cardsets_flags & FCSF_THE_DARK) &&) else CHECK_BUTTON_CONDITIONAL(7, "ARABIAN", global_filter_cardsets, FS_ARABIAN_NIGHTS, (global_filter_cardsets_flags & FCSF_ARABIAN_NIGHTS) &&) else CHECK_BUTTON_CONDITIONAL(8, "ANTIQUITIES", global_filter_cardsets, FS_ANTIQUITIES, (global_filter_cardsets_flags & FCSF_ANTIQUITIES) &&) else CHECK_BUTTON(6, "ASTRAL", global_filter_cardsets, FS_ASTRAL) else CHECK_BUTTON_CONDITIONAL(9, "LEGENDS", global_filter_cardsets, FS_LEGENDS, (global_filter_cardsets_flags & FCSF_LEGENDS) &&) else CHECK_BUTTON(5, "FOURTH", global_filter_cardsets, FS_4TH_EDITION) else CHECK_BUTTON(4, "EIGHT", global_filter_cardsets, FS_OTHER) else CHECK_BUTTON(17, "LAND", global_filter_cardtypes, FT_LAND) else CHECK_BUTTON(18, "ARTIFACT", global_filter_cardtypes, FT_ARTIFACT) else CHECK_BUTTON(19, "CREATURE", global_filter_cardtypes, FT_CREATURE) else CHECK_BUTTON(20, "ENCHANTMENT", global_filter_cardtypes, FT_ENCHANTMENT) else CHECK_BUTTON(21, "INSTANT", global_filter_cardtypes, FT_INSTANT) else CHECK_BUTTON(22, "INTERRUPT", global_filter_cardtypes, FT_INTERRUPT) else CHECK_BUTTON(23, "SORCERY", global_filter_cardtypes, FT_SORCERY) else CHECK_BUTTON(24, "CASTCOST", global_filter_casting_cost, FN_ENABLE) else CHECK_BUTTON(25, "POWER", global_filter_power, FN_ENABLE) else CHECK_BUTTON(26, "TOUGHNESS", global_filter_toughness, FN_ENABLE) else CHECK_BUTTON(27, "ABILITY", global_filter_abilities, FA_ENABLE) else CHECK_BUTTON(28, "RARITY", global_filter_rarity, FR_ENABLE) else return 0;
+  return 0;
 #undef CHECK_BUTTON
 }
 
@@ -248,16 +288,54 @@ get_filter_button_state(HWND hwnd, POINT p)
 static HMENU
 select_filter_menu(HWND hwnd, POINT p)
 {
-#define CHECK_BUTTON(button_number, menu)          \
-  if (point_in_filterbutton(button_number, &r, p)) \
-    return menu;
-
-  RECT r;
+  RECT r, r2;
   GetClientRect(hwnd, &r);
+  filterbuttons_setcoords(&r, 5, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_fourth;
 
-  CHECK_BUTTON(4, global_filtermenu_newexp)
-  else CHECK_BUTTON(16, global_filtermenu_gold) else CHECK_BUTTON(5, global_filtermenu_fourth) else CHECK_BUTTON(17, global_filtermenu_land) else CHECK_BUTTON(18, global_filtermenu_artifact) else CHECK_BUTTON(19, global_filtermenu_creature) else CHECK_BUTTON(20, global_filtermenu_enchantment) else CHECK_BUTTON(24, global_filtermenu_castcost) else CHECK_BUTTON(25, global_filtermenu_power) else CHECK_BUTTON(26, global_filtermenu_toughness) else CHECK_BUTTON(27, global_filtermenu_ability) else CHECK_BUTTON(28, global_filtermenu_rarity) else return global_filtermenu_default;
-#undef CHECK_BUTTON
+  filterbuttons_setcoords(&r, 16, &r2);
+  filterbuttons_setcoords(&r, 16, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_land;
+
+  filterbuttons_setcoords(&r, 17, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_artifact;
+
+  filterbuttons_setcoords(&r, 18, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_creature;
+
+  filterbuttons_setcoords(&r, 19, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_enchantment;
+
+  filterbuttons_setcoords(&r, 23, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_castcost;
+
+  filterbuttons_setcoords(&r, 24, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_power;
+
+  filterbuttons_setcoords(&r, 25, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_toughness;
+
+  filterbuttons_setcoords(&r, 26, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_ability;
+
+  filterbuttons_setcoords(&r, 27, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_rarity;
+
+  filterbuttons_setcoords(&r, 28, &r2);
+  if (PtInRect(&r2, p))
+    return global_filtermenu_artist;
+
+  return global_filtermenu_default;
 }
 
 // FUNCTION: DECKDLL 0x1001d7bc
@@ -271,7 +349,10 @@ draw_filter_button_3d(HDC hdc, RECT *r2, RECT *r3, bool pushed)
     FillRect(hdc, &r4, GetStockObject(DKGRAY_BRUSH));
     SetRect(&r4, r2->left + 1, r2->top + 1, r2->left + 2, r2->bottom);
     FillRect(hdc, &r4, GetStockObject(DKGRAY_BRUSH));
-    SetRect(r3, r2->left + 3, r2->top + 3, r2->right, r2->bottom);
+    if (r3)
+      SetRect(r3, r2->left + 3, r2->top + 3, r2->right, r2->bottom);
+
+    FillRect(hdc, r3, GetStockObject(LTGRAY_BRUSH));
   }
   else
   {
@@ -287,19 +368,21 @@ draw_filter_button_3d(HDC hdc, RECT *r2, RECT *r3, bool pushed)
     FillRect(hdc, &r4, GetStockObject(DKGRAY_BRUSH));
     SetRect(&r4, r2->left + 1, r2->bottom - 1, r2->right, r2->bottom);
     FillRect(hdc, &r4, GetStockObject(DKGRAY_BRUSH));
-    SetRect(r3, r2->left + 1, r2->top + 1, r2->right - 2, r2->bottom - 2);
+    if (r3)
+      SetRect(r3, r2->left + 1, r2->top + 1, r2->right - 2, r2->bottom - 2);
+
+    FillRect(hdc, r3, GetStockObject(LTGRAY_BRUSH));
   }
-  FillRect(hdc, r3, GetStockObject(LTGRAY_BRUSH));
 }
 
 // FUNCTION: DECKDLL 0x1001da6f
 static void
-draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, bool pushed)
+draw_filter_button_pic(HDC hdc, RECT *r, int button_number, int pushed)
 {
   RECT r3;
   BITMAP bmp;
 
-  draw_filter_button_3d(hdc, (RECT *)r, &r3, pushed);
+  draw_filter_button_3d(hdc, r, &r3, pushed);
   InflateRect(&r3, -1, -1);
 
   GetObject(global_pic_yellow, sizeof(BITMAP), &bmp);
@@ -308,7 +391,9 @@ draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, bool pushed)
   case 1:
     SelectObject(global_hdc, global_pic_fourth);
     break;
-  default:
+  case 2:
+  case 3:
+  case 4:
     SelectObject(global_hdc, global_pic_red);
     break;
   case 5:
@@ -383,6 +468,9 @@ draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, bool pushed)
   case 28:
     SelectObject(global_hdc, global_pic_artist);
     break;
+  default:
+    SelectObject(global_hdc, global_pic_red);
+    break;
   }
   StretchBlt(hdc,
              r3.left, r3.top,
@@ -399,59 +487,75 @@ draw_filter_button_pic(HDC hdc, const RECT *r, int button_number, bool pushed)
 static void
 draw_filter_buttons(HDC hdc, const RECT *r)
 {
-  HDC chdc = CreateCompatibleDC(hdc);
-  BITMAP bmp;
-  RECT r2;
-  ApplyCardArtPaletteToDc(chdc);
+  struct
+  {
+    HDC chdc;
+    BITMAP bmp;
+    RECT r2;
+  } s;
 
-  SelectObject(chdc, global_pic_dekbar1);
-  GetObject(global_pic_dekbar1, sizeof(BITMAP), &bmp);
+  s.chdc = CreateCompatibleDC(hdc);
+  ApplyCardArtPaletteToDc(s.chdc);
 
-  StretchBlt(hdc, 0, 0, r->right, r->bottom, chdc, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
-  DELETE_DC(chdc);
+  SelectObject(s.chdc, global_pic_dekbar1);
+  GetObject(global_pic_dekbar1, sizeof(BITMAP), &s.bmp);
 
-#define DRAW_FILTER_BUTTON(btn, state)    \
-  filterbuttons_setcoords(r, (btn), &r2); \
-  draw_filter_button_pic(hdc, &r2, (btn), (state))
+  StretchBlt(hdc, 0, 0, r->right, r->bottom, s.chdc, 0, 0, s.bmp.bmWidth, s.bmp.bmHeight, SRCCOPY);
+  DeleteDC(s.chdc);
+
+#define DRAW_FILTER_BUTTON(btn, state)                  \
+  do                                                    \
+  {                                                     \
+    filterbuttons_setcoords(&r, (btn), &s.r2);          \
+    draw_filter_button_pic(hdc, &s.r2, (btn), (state)); \
+  } while (false)
+
+#define DRAW_FILTER_BUTTON_CONDITIONAL(btn, state, cond) \
+  if (cond)                                              \
+  {                                                      \
+    DRAW_FILTER_BUTTON(btn, state);                      \
+  }
 
   DRAW_FILTER_BUTTON(11, global_filter_colors & FC_WHITE);
   DRAW_FILTER_BUTTON(14, global_filter_colors & FC_RED);
   DRAW_FILTER_BUTTON(12, global_filter_colors & FC_BLUE);
   DRAW_FILTER_BUTTON(15, global_filter_colors & FC_GREEN);
   DRAW_FILTER_BUTTON(13, global_filter_colors & FC_BLACK);
-  DRAW_FILTER_BUTTON(16, global_filter_colors & FC_GOLD);
 
-  DRAW_FILTER_BUTTON(17, global_filter_cardtypes & FT_LAND);
-  DRAW_FILTER_BUTTON(18, global_filter_cardtypes & FT_ARTIFACT);
-  DRAW_FILTER_BUTTON(19, global_filter_cardtypes & FT_CREATURE);
-  DRAW_FILTER_BUTTON(20, global_filter_cardtypes & FT_ENCHANTMENT);
-  DRAW_FILTER_BUTTON(21, global_filter_cardtypes & FT_INSTANT);
-  DRAW_FILTER_BUTTON(22, global_filter_cardtypes & FT_INTERRUPT);
-  DRAW_FILTER_BUTTON(23, global_filter_cardtypes & FT_SORCERY);
+  DRAW_FILTER_BUTTON_CONDITIONAL(16, global_filter_colors & FC_GOLD, global_filtermenu_gold_enabled);
 
-  if (global_filter_cardsets_flags & FCSF_Q_ENABLE)
-  {
-    DRAW_FILTER_BUTTON(5, global_filter_cardsets & FS_4TH_EDITION);
-    DRAW_FILTER_BUTTON(6, global_filter_cardsets & FS_ASTRAL);
-    DRAW_FILTER_BUTTON(8, global_filter_cardsets & FS_ANTIQUITIES);
-    DRAW_FILTER_BUTTON(10, global_filter_cardsets & FS_THE_DARK);
-    DRAW_FILTER_BUTTON(7, global_filter_cardsets & FS_ARABIAN_NIGHTS);
-    DRAW_FILTER_BUTTON(9, global_filter_cardsets & FS_LEGENDS);
-    DRAW_FILTER_BUTTON(4, global_filter_cardsets & FS_OTHER);
-  }
+  DRAW_FILTER_BUTTON(16, global_filter_cardtypes & FT_LAND);
+  DRAW_FILTER_BUTTON(17, global_filter_cardtypes & FT_ARTIFACT);
+  DRAW_FILTER_BUTTON(18, global_filter_cardtypes & FT_CREATURE);
+  DRAW_FILTER_BUTTON(19, global_filter_cardtypes & FT_ENCHANTMENT);
 
-  if (global_filtermenu_castcost_enabled)
-    DRAW_FILTER_BUTTON(24, global_filter_casting_cost & FN_ENABLE);
-  if (global_filtermenu_power_enabled)
-    DRAW_FILTER_BUTTON(25, global_filter_power & FN_ENABLE);
-  if (global_filtermenu_toughness_enabled)
-    DRAW_FILTER_BUTTON(26, global_filter_toughness & FN_ENABLE);
-  if (global_filtermenu_ability_enabled)
-    DRAW_FILTER_BUTTON(27, global_filter_abilities & FA_ENABLE);
-  if (global_filtermenu_rarity_enabled)
-    DRAW_FILTER_BUTTON(28, global_filter_rarity & FR_ENABLE);
+  DRAW_FILTER_BUTTON(20, global_filter_cardtypes & FT_INSTANT);
+  DRAW_FILTER_BUTTON(21, global_filter_cardtypes & FT_INTERRUPT);
+  DRAW_FILTER_BUTTON(22, global_filter_cardtypes & FT_SORCERY);
+
+  DRAW_FILTER_BUTTON_CONDITIONAL(5, global_filter_cardsets & FS_4TH_EDITION, global_filter_cardsets_flags & FCSF_Q_ENABLE);
+  DRAW_FILTER_BUTTON_CONDITIONAL(6, global_filter_cardsets & FS_ASTRAL, global_filter_cardsets_flags & FCSF_Q_ASTRAL);
+  DRAW_FILTER_BUTTON_CONDITIONAL(8, global_filter_cardsets & FS_ANTIQUITIES, global_filter_cardsets_flags & FCSF_ANTIQUITIES);
+  DRAW_FILTER_BUTTON_CONDITIONAL(10, global_filter_cardsets & FS_THE_DARK, global_filter_cardsets_flags & FCSF_THE_DARK);
+  DRAW_FILTER_BUTTON_CONDITIONAL(7, global_filter_cardsets & FS_ARABIAN_NIGHTS, global_filter_cardsets_flags & FCSF_ARABIAN_NIGHTS);
+  DRAW_FILTER_BUTTON_CONDITIONAL(9, global_filter_cardsets & FS_LEGENDS, global_filter_cardsets_flags & FCSF_LEGENDS);
+
+  DRAW_FILTER_BUTTON_CONDITIONAL(2, global_filter_cardsets & FS_UNK1, global_filter_cardsets_flags & FCSF_UNK1);
+  DRAW_FILTER_BUTTON_CONDITIONAL(3, global_filter_cardsets & FS_UNK2, global_filter_cardsets_flags & FCSF_UNK2);
+  DRAW_FILTER_BUTTON_CONDITIONAL(1, global_filter_cardsets & FS_UNK3, global_filter_cardsets_flags & FCSF_UNK3);
+
+  DRAW_FILTER_BUTTON_CONDITIONAL(4, global_filter_cardsets & FS_OTHER, global_filter_cardsets_flags & FCSF_Q_OTHER);
+
+  DRAW_FILTER_BUTTON_CONDITIONAL(23, global_filter_casting_cost & FN_ENABLE, global_filtermenu_castcost_enabled);
+  DRAW_FILTER_BUTTON_CONDITIONAL(24, global_filter_power & FN_ENABLE, global_filtermenu_power_enabled);
+  DRAW_FILTER_BUTTON_CONDITIONAL(25, global_filter_toughness & FN_ENABLE, global_filtermenu_toughness_enabled);
+  DRAW_FILTER_BUTTON_CONDITIONAL(26, global_filter_abilities & FA_ENABLE, global_filtermenu_ability_enabled);
+  DRAW_FILTER_BUTTON_CONDITIONAL(27, global_filter_rarity & FR_ENABLE, global_filtermenu_rarity_enabled);
+
+  DRAW_FILTER_BUTTON_CONDITIONAL(28, global_filter_artist & FR_ENABLE, global_filtermenu_artist_enabled);
 
 #undef DRAW_FILTER_BUTTON
+#undef DRAW_FILTER_BUTTON_CONDITIONAL
 }
 
 // FUNCTION: DECKDLL 0x1001e4b6
@@ -533,18 +637,18 @@ toggle_filterbutton(int n)
     }
     return false;
   case 3:
-    global_filter_cardsets ^= 0x400;
-    if (global_filter_cardsets & 0x400)
+    global_filter_cardsets ^= FS_UNK2;
+    if (global_filter_cardsets & FS_UNK2)
       return true;
     return false;
   case 1:
-    global_filter_cardsets ^= 0x800;
-    if (global_filter_cardsets & 0x800)
+    global_filter_cardsets ^= FS_UNK3;
+    if (global_filter_cardsets & FS_UNK3)
       return true;
     return false;
   case 2:
-    global_filter_cardsets ^= 0x200;
-    if (global_filter_cardsets & 0x200)
+    global_filter_cardsets ^= FS_UNK1;
+    if (global_filter_cardsets & FS_UNK1)
       return true;
     return false;
   case 16:
@@ -568,18 +672,18 @@ toggle_filterbutton(int n)
       return true;
     return false;
   case 20:
-    global_filter_cardtypes ^= FT_ENCHANTMENT_PERMANENT;
-    if (global_filter_cardtypes & FT_ENCHANTMENT_PERMANENT)
+    global_filter_cardtypes ^= FT_INSTANT;
+    if (global_filter_cardtypes & FT_INSTANT)
       return true;
     return false;
   case 21:
-    global_filter_cardtypes ^= FT_ENCHANTMENT_PLAYER;
-    if (global_filter_cardtypes & FT_ENCHANTMENT_PLAYER)
+    global_filter_cardtypes ^= FT_INTERRUPT;
+    if (global_filter_cardtypes & FT_INTERRUPT)
       return true;
     return false;
   case 22:
-    global_filter_cardtypes ^= FT_ENCHANTMENT_INSTANT;
-    if (global_filter_cardtypes & FT_ENCHANTMENT_INSTANT)
+    global_filter_cardtypes ^= FT_SORCERY;
+    if (global_filter_cardtypes & FT_SORCERY)
       return true;
     return false;
   case 23:
@@ -618,83 +722,184 @@ toggle_filterbutton(int n)
 }
 
 // FUNCTION: DECKDLL 0x1001f97e
-static void
-create_filter_menus(void)
+static void create_filter_menus(void)
 {
-#define FILTER_MENU_NO_CONDITION
-#define FILTER_MENU_NO_CODA
+  //TODO: why are the RES_ consts here fucked up?
 
-  int i;
-  int n;
+  struct
+  {
+    int i;
+    int n;
+  } s;
 
-#define CREATE_FILTER_MENU(menu, name, base, condition, coda)      \
-  if ((n = load_text("Menus", (name))) != -1)                      \
-  {                                                                \
-    (menu) = CreatePopupMenu();                                    \
-    for (i = 0; i < n; ++i)                                        \
-      condition                                                    \
-      {                                                            \
-        AppendMenu((menu), MF_ENABLED, i + (base), text_lines[i]); \
-      }                                                            \
-    coda;                                                          \
+  s.n = load_text("menus", "FILTERS");
+  if (s.n != -1)
+  {
+    global_filtermenu_default = CreatePopupMenu();
+    for (s.i = 0; s.i < s.n; ++s.i)
+      AppendMenu(global_filtermenu_default, MF_ENABLED, s.i + RES_FILTERMENU_MAINMENUBUTTONS_ON, text_lines[s.i]);
   }
 
-  CREATE_FILTER_MENU(global_filtermenu_default, "FILTERS", RES_FILTERMENU_MAINMENUBUTTONS_ON, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
-  CREATE_FILTER_MENU(global_filtermenu_fourth, "FOURTH", RES_FILTERMENU_FOURTH_UNLIMITED, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
-  CREATE_FILTER_MENU(global_filtermenu_gold, "GOLD", RES_FILTERMENU_GOLD_ALL, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
-  CREATE_FILTER_MENU(global_filtermenu_land, "LAND", RES_FILTERMENU_LAND_LANDANDMANA, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
-  CREATE_FILTER_MENU(global_filtermenu_artifact, "ARTIFACT", RES_FILTERMENU_ARTIFACT_CREATURES, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  s.n = load_text("menusx1", "FOURTH");
+  if (s.n != -1)
+  {
+    global_filtermenu_fourth = CreatePopupMenu();
+    for (s.i = 0; s.i < s.n; ++s.i)
+      AppendMenu(global_filtermenu_fourth, MF_ENABLED, s.i + RES_FILTERMENU_FOURTH_UNLIMITED, text_lines[s.i]);
+  }
 
-  CREATE_FILTER_MENU(global_filtermenu_creature, "CREATURE", RES_FILTERMENU_CREATURE_CREATURE,
-                     if ((global_db_flags_1 & DBFLAGS_STANDALONE) || i != 1),
-                     InsertMenu(global_filtermenu_creature, (global_db_flags_1 & DBFLAGS_STANDALONE) ? n - 1 : n - 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL));
+  if (global_filtermenu_gold_enabled & 0x40)
+  {
+    s.n = load_text("menus", "GOLD");
+    if (s.n != -1)
+    {
+      global_filtermenu_gold = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_gold, MF_ENABLED, s.i + RES_FILTERMENU_GOLD_ALL, text_lines[s.i]);
+    }
+  }
 
-  CREATE_FILTER_MENU(global_filtermenu_enchantment, "ENCHANTMENT", RES_FILTERMENU_ENCHANTMENT_ENCHANTMENTS, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  s.n = load_text("menus", "LAND");
+  if (s.n != -1)
+  {
+    global_filtermenu_land = CreatePopupMenu();
+    for (s.i = 0; s.i < s.n; ++s.i)
+      AppendMenu(global_filtermenu_land, MF_ENABLED, s.i + RES_FILTERMENU_LAND_LANDANDMANA, text_lines[s.i]);
+  }
 
-  if (global_filtermenu_castcost_enabled)
-    CREATE_FILTER_MENU(global_filtermenu_castcost, "CASTCOST", RES_FILTERMENU_COST_GREATER, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  s.n = load_text("menus", "ARTIFACT");
+  if (s.n != -1)
+  {
+    global_filtermenu_artifact = CreatePopupMenu();
+    for (s.i = 0; s.i < s.n; ++s.i)
+      AppendMenu(global_filtermenu_artifact, MF_ENABLED, s.i + RES_FILTERMENU_ARTIFACT_CREATURES, text_lines[s.i]);
+  }
 
-  if (global_filtermenu_power_enabled)
-    CREATE_FILTER_MENU(global_filtermenu_power, "POWER", RES_FILTERMENU_POWER_GREATER, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  s.n = load_text("menus", "CREATURE");
+  if (s.n != -1)
+  {
+    global_filtermenu_creature = CreatePopupMenu();
+    if (global_db_flags_1 & DBFLAGS_STANDALONE)
+    {
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_creature, MF_ENABLED, s.i + RES_FILTERMENU_CREATURE_CREATURE, text_lines[s.i]);
+      InsertMenu(global_filtermenu_creature, s.i - 1, MF_BYPOSITION, MF_SEPARATOR, NULL);
+    }
+    else
+    {
+      for (s.i = 0; s.i < s.n; ++s.i)
+        if (s.i != 1)
+          AppendMenu(global_filtermenu_creature, MF_ENABLED, s.i + RES_FILTERMENU_CREATURE_CREATURE, text_lines[s.i]);
+      InsertMenu(global_filtermenu_creature, s.i - 2, MF_BYPOSITION, MF_SEPARATOR, NULL);
+    }
+  }
 
-  if (global_filtermenu_toughness_enabled)
-    CREATE_FILTER_MENU(global_filtermenu_toughness, "TOUGHNESS", RES_FILTERMENU_TOUGHNESS_GREATER, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  s.n = load_text("menus", "ENCHANTMENT");
+  if (s.n != -1)
+  {
+    global_filtermenu_enchantment = CreatePopupMenu();
+    for (s.i = 0; s.i < s.n; ++s.i)
+      AppendMenu(global_filtermenu_enchantment, MF_ENABLED, s.i + RES_FILTERMENU_ENCHANTMENT_ENCHANTMENTS, text_lines[s.i]);
+  }
 
-  if (global_filtermenu_ability_enabled)
-    CREATE_FILTER_MENU(global_filtermenu_ability, "ABILITY", RES_FILTERMENU_ABILITY_NATIVE,
-                       FILTER_MENU_NO_CONDITION,
-                       InsertMenu(global_filtermenu_ability, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL));
+  if (global_filtermenu_castcost_enabled & 1)
+  {
+    s.n = load_text("menus", "CASTCOST");
+    if (s.n != -1)
+    {
+      global_filtermenu_castcost = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_castcost, MF_ENABLED, s.i + RES_FILTERMENU_COST_GREATER, text_lines[s.i]);
+    }
+  }
 
-  if (global_filtermenu_rarity_enabled)
-    CREATE_FILTER_MENU(global_filtermenu_rarity, "RARITY", RES_FILTERMENU_RARITY_COMMON, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  if (global_filtermenu_power_enabled & 1)
+  {
+    s.n = load_text("menus", "POWER");
+    if (s.n != -1)
+    {
+      global_filtermenu_power = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_power, MF_ENABLED, s.i + RES_FILTERMENU_POWER_GREATER, text_lines[s.i]);
+    }
+  }
 
-  if (global_filtermenu_artist_enabled)
-    CREATE_FILTER_MENU(global_filtermenu_artist, "ARTIST", RES_FILTERMENU_RARITY_RARE, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  if (global_filtermenu_toughness_enabled & 1)
+  {
+    s.n = load_text("menus", "TOUGHNESS");
+    if (s.n != -1)
+    {
+      global_filtermenu_toughness = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_toughness, MF_ENABLED, s.i + RES_FILTERMENU_TOUGHNESS_GREATER, text_lines[s.i]);
+    }
+  }
 
-  // CREATE_FILTER_MENU(global_filtermenu_newexp, "NEWEXP", RES_FILTERMENU_EXPANSIONLIST, FILTER_MENU_NO_CONDITION, FILTER_MENU_NO_CODA);
+  if (global_filtermenu_ability_enabled & 1)
+  {
+    s.n = load_text("menus", "ABILITY");
+    if (s.n != -1)
+    {
+      global_filtermenu_ability = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_ability, MF_ENABLED, s.i + RES_FILTERMENU_ABILITY_NATIVE, text_lines[s.i]);
+    }
+    InsertMenu(global_filtermenu_ability, 2, MF_BYPOSITION, MF_SEPARATOR, NULL);
+  }
 
-#undef CREATE_FILTER_MENU
-#undef FILTER_MENU_NO_CONDITION
-#undef FILTER_MENU_NO_CODA
+  if (global_filtermenu_rarity_enabled & 1)
+  {
+    s.n = load_text("menus", "RARITY");
+    if (s.n != -1)
+    {
+      global_filtermenu_rarity = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_rarity, MF_ENABLED, s.i + RES_FILTERMENU_RARITY_COMMON, text_lines[s.i]);
+    }
+  }
+
+  if (global_filtermenu_artist_enabled & 1)
+  {
+    s.n = load_text("menus", "ARTIST");
+    if (s.n != -1)
+    {
+      global_filtermenu_artist = CreatePopupMenu();
+      for (s.i = 0; s.i < s.n; ++s.i)
+        AppendMenu(global_filtermenu_artist, MF_ENABLED, s.i + RES_FILTERMENU_RARITY_RARE, text_lines[s.i]);
+    }
+  }
 }
 
 // FUNCTION: DECKDLL 0x10020007
 static void
 destroy_filter_menus(void)
 {
-  DESTROY_MENU(global_filtermenu_default);
-  DESTROY_MENU(global_filtermenu_fourth);
-  DESTROY_MENU(global_filtermenu_gold);
-  DESTROY_MENU(global_filtermenu_land);
-  DESTROY_MENU(global_filtermenu_artifact);
-  DESTROY_MENU(global_filtermenu_creature);
-  DESTROY_MENU(global_filtermenu_enchantment);
-  DESTROY_MENU(global_filtermenu_castcost);
-  DESTROY_MENU(global_filtermenu_power);
-  DESTROY_MENU(global_filtermenu_toughness);
-  DESTROY_MENU(global_filtermenu_ability);
-  DESTROY_MENU(global_filtermenu_rarity);
-  DESTROY_MENU(global_filtermenu_newexp);
+  if (global_filtermenu_default)
+    DestroyMenu(global_filtermenu_default);
+  if (global_filtermenu_fourth)
+    DestroyMenu(global_filtermenu_fourth);
+  if (global_filtermenu_gold)
+    DestroyMenu(global_filtermenu_gold);
+  if (global_filtermenu_land)
+    DestroyMenu(global_filtermenu_land);
+  if (global_filtermenu_artifact)
+    DestroyMenu(global_filtermenu_artifact);
+  if (global_filtermenu_creature)
+    DestroyMenu(global_filtermenu_creature);
+  if (global_filtermenu_enchantment)
+    DestroyMenu(global_filtermenu_enchantment);
+  if (global_filtermenu_castcost)
+    DestroyMenu(global_filtermenu_castcost);
+  if (global_filtermenu_power)
+    DestroyMenu(global_filtermenu_power);
+  if (global_filtermenu_toughness)
+    DestroyMenu(global_filtermenu_toughness);
+  if (global_filtermenu_ability)
+    DestroyMenu(global_filtermenu_ability);
+  if (global_filtermenu_rarity)
+    DestroyMenu(global_filtermenu_rarity);
+  if (global_filtermenu_artist)
+    DestroyMenu(global_filtermenu_artist);
 }
 
 // FUNCTION: DECKDLL 0x1001bcd5
@@ -728,7 +933,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     global_filter_expansions = FE_4TH_EDITION | FE_REVISED | FE_UNLIMITED | 0x0F00;
 
-    global_filter_cardtypes = (FT_LAND | FT_ARTIFACT | FT_CREATURE | FT_ENCHANTMENT | FT_INSTANT | FT_INTERRUPT | FT_SORCERY | FT_ARTIFACT_NON_CREATURE | FT_ARTIFACT_CREATURE | FT_LAND_LAND_AND_MANA | FT_LAND_LAND_ONLY | FT_CREATURE_CREATURE | FT_CREATURE_TOKEN | FT_CREATURE_ARTIFACT | (FT_ENCHANTMENT_ENCHANTMENTS | FT_ENCHANTMENT_WORLD | FT_ENCHANTMENT_LAND | FT_ENCHANTMENT_CREATURE | FT_ENCHANTMENT_ARTIFACT | FT_ENCHANTMENT_ENCHANT | FT_ENCHANTMENT_PERMANENT | FT_ENCHANTMENT_PLAYER | FT_ENCHANTMENT_INSTANT));
+    global_filter_cardtypes = (FT_LAND | FT_ARTIFACT | FT_CREATURE | FT_ENCHANTMENT | FT_INSTANT | FT_INTERRUPT | FT_SORCERY | FT_ARTIFACT_NON_CREATURE | FT_ARTIFACT_CREATURE | FT_LAND_LAND_AND_MANA | FT_LAND_LAND_ONLY | FT_CREATURE_CREATURE | FT_CREATURE_TOKEN | FT_CREATURE_ARTIFACT);
 
     global_filter_casting_cost = FN_GT;
     global_filter_casting_cost_value = 0;
@@ -799,6 +1004,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       CHECKMENU_IF(global_filtermenu_creature, RES_FILTERMENU_CREATURE_ARTIFACT, global_filter_cardtypes & FT_CREATURE_ARTIFACT);
       CHECKMENU_IF(global_filtermenu_creature, RES_FILTERMENU_CREATURE_LIST, global_filter_cardtypes & FT_CREATURE_LIST);
     }
+    /*
     else if (menu == global_filtermenu_enchantment)
     {
       CHECKMENU_IF(global_filtermenu_enchantment, RES_FILTERMENU_ENCHANTMENT_ENCHANTMENTS, global_filter_cardtypes & FT_ENCHANTMENT_ENCHANTMENTS);
@@ -811,6 +1017,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       CHECKMENU_IF(global_filtermenu_enchantment, RES_FILTERMENU_ENCHANTMENT_PLAYER, global_filter_cardtypes & FT_ENCHANTMENT_PLAYER);
       CHECKMENU_IF(global_filtermenu_enchantment, RES_FILTERMENU_ENCHANTMENT_INSTANT, global_filter_cardtypes & FT_ENCHANTMENT_INSTANT);
     }
+    */
     else if (menu == global_filtermenu_castcost)
     {
       CHECKMENU_IF(global_filtermenu_castcost, RES_FILTERMENU_COST_GREATER, global_filter_casting_cost & FN_GT);
@@ -996,17 +1203,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         refresh_filters = true;
       break;
 
-    case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_ENCHANTMENTS, global_filter_cardtypes, FT_ENCHANTMENT_ENCHANTMENTS, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_WORLD, global_filter_cardtypes, FT_ENCHANTMENT_WORLD, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_LAND, global_filter_cardtypes, FT_ENCHANTMENT_LAND, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_CREATURE, global_filter_cardtypes, FT_ENCHANTMENT_CREATURE, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_ARTIFACT, global_filter_cardtypes, FT_ENCHANTMENT_ARTIFACT, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_ENCHANT, global_filter_cardtypes, FT_ENCHANTMENT_ENCHANT, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_PERMANENT, global_filter_cardtypes, FT_ENCHANTMENT_PERMANENT, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_PLAYER, global_filter_cardtypes, FT_ENCHANTMENT_PLAYER, FT_ENCHANTMENT); break;
-        case TOGGLE_FILTER(RES_FILTERMENU_ENCHANTMENT_INSTANT, global_filter_cardtypes, FT_ENCHANTMENT_INSTANT, FT_ENCHANTMENT); break;
-
-        case GLE_FILTER(RES_FILTERMENU_COST, global_filter_casting_cost, 0); break;
+    case GLE_FILTER(RES_FILTERMENU_COST, global_filter_casting_cost, 0); break;
 
         case RES_FILTERMENU_COST_X:
       global_filter_casting_cost &= FN_ENABLE;
@@ -1101,9 +1298,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return 0;
 
   case 0x8465:
-    p.x = GET_X_LPARAM(lparam);
-    p.y = GET_Y_LPARAM(lparam);
-    return get_filter_button_state(hwnd, p);
+    return get_filter_button_state(hwnd, wparam, lparam);
 
   default:
     return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -1115,18 +1310,16 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 // FUNCTION: DECKDLL 0x10020273
 INT_PTR CALLBACK dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  int pad_end;
-
-  /* Stack layout is extremely sensitive; keep locals grouped. */
-  struct {
-    RECT r;             /* [ebp-0x128] */
-    LPARAM lparam_copy; /* [ebp-0x118] */
-    HDC hdc;            /* [ebp-0x114] */
-    int nMaxCount;      /* [ebp-0x110] */
-    char buf[264];      /* [ebp-0x10c] */
+  struct
+  {
+    HDC hdc;
+    RECT r;
+    LPARAM lparam_copy; // ebp - 0x114
+    HDC hdc2;           // ebp - 0x110
+    INT_PTR pad;
+    char buf[264];
   } s;
 
-  pad_end = 0;
   switch (msg)
   {
   case WM_INITDIALOG:
@@ -1144,29 +1337,10 @@ INT_PTR CALLBACK dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lp
     return 0;
   }
 
-  case WM_ERASEBKGND:
-    s.hdc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.hdc);
-    GetClientRect(hdlg, &s.r);
-    if (global_filter_gle_background_pic == (HANDLE)0)
-      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(2));
-    else
-      DrawBitmapToRect(s.hdc, &s.r, global_filter_gle_background_pic);
-    return 1;
-
-  case WM_CTLCOLORBTN:
-  case WM_CTLCOLORSTATIC:
-    s.hdc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.hdc);
-    s.lparam_copy = lparam;
-    SetBkMode(s.hdc, 1);
-    return (INT_PTR)GetStockObject(5);
-
   case WM_COMMAND:
     if (((unsigned int)wparam & 0xffff) == RES_BUTTON_OK)
     {
-      s.nMaxCount = 0x105;
-      GetWindowTextA(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), s.buf, s.nMaxCount);
+      GetWindowTextA(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), s.buf, 0x105);
       global_filter_gle_dlg_value = atoi(s.buf);
       EndDialog(hdlg, 1);
     }
@@ -1174,6 +1348,24 @@ INT_PTR CALLBACK dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lp
     {
       EndDialog(hdlg, 0);
     }
+    return 1;
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.hdc2 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc2);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc2, 1);
+    s.pad = (INT_PTR)GetStockObject(5);
+    return s.pad;
+  case WM_ERASEBKGND:
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    GetClientRect(hdlg, &s.r);
+    if (global_filter_gle_background_pic != (HANDLE)0)
+      DrawBitmapToRect(s.hdc, &s.r, global_filter_gle_background_pic);
+    else
+      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(2));
     return 1;
 
   default:
@@ -1216,14 +1408,17 @@ static bool show_dialog_filter_gle(int textline)
 INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   /* Stack layout is extremely sensitive; keep locals grouped. */
-  struct {
+  struct
+  {
     RECT r;
     unsigned int local_1f4;
     HDC local_1f0;
     unsigned int local_1ec;
     int local_1e8;
-    union {
-      struct {
+    union
+    {
+      struct
+      {
         int selected[0x33];
         char path[264];
       } sp;
@@ -1234,13 +1429,10 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
     unsigned int local_8;
     unsigned int local_4;
   } s;
-  UINT msg_local;
-  unsigned int pad_20c;
 
 #define QMASK (*(unsigned __int64 *)&s.local_8)
 
-  msg_local = msg;
-  switch (msg_local)
+  switch (msg)
   {
   case WM_INITDIALOG:
     SetWindowTextA(hdlg, global_filter_dlg_title);
@@ -1274,10 +1466,10 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
       QMASK = (unsigned __int64)1;
       QMASK = QMASK << (unsigned char)s.local_1e8;
 
-      if (((global_filter_expansion_list[1] & (unsigned int)(QMASK >> 0x20)) == 0) && ((global_filter_expansion_list[0] & (unsigned int)QMASK) == 0))
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
-      else
+      if ((global_filter_expansion_list[1] & (unsigned int)(QMASK >> 0x20)) || (global_filter_expansion_list[0] & (unsigned int)QMASK))
         SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
+      else
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
     }
 
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
@@ -1363,7 +1555,8 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
 INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   /* Stack layout is extremely sensitive; keep locals grouped. */
-  struct {
+  struct
+  {
     RECT r;
     unsigned int local_4ac;
     HDC local_4a8;
@@ -1377,11 +1570,8 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     int local_c;
     unsigned int local_8;
   } s;
-  UINT msg_local;
-  unsigned int pad_4c4;
 
-  msg_local = msg;
-  switch (msg_local)
+  switch (msg)
   {
   case WM_INITDIALOG:
     SetWindowTextA(hdlg, global_filter_dlg_title);
@@ -1408,10 +1598,10 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     for (s.local_10 = 0; s.local_10 < 7; s.local_10 = s.local_10 + 1)
       for (s.local_c = 0; s.local_c < 0x20; s.local_c = s.local_c + 1)
       {
-        if ((global_filter_creature_list[s.local_10] & (1U << ((unsigned char)s.local_c & 0x1f))) == 0)
-          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_10 * 0x20 + s.local_c);
-        else
+        if (global_filter_creature_list[s.local_10] & (1U << ((unsigned char)s.local_c & 0x1f)))
           SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_10 * 0x20 + s.local_c);
+        else
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_10 * 0x20 + s.local_c);
       }
 
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
@@ -1466,9 +1656,9 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
           {
             global_filter_creature_list[s.local_4a0] |=
                 1U << ((((unsigned char)s.selected[s.local_49c] ^ (unsigned char)(s.selected[s.local_49c] >> 0x1f)) - (unsigned char)(s.selected[s.local_49c] >> 0x1f) & 0x1f ^
-                         (unsigned char)(s.selected[s.local_49c] >> 0x1f)) -
-                        (unsigned char)(s.selected[s.local_49c] >> 0x1f) &
-                    0x1f);
+                        (unsigned char)(s.selected[s.local_49c] >> 0x1f)) -
+                           (unsigned char)(s.selected[s.local_49c] >> 0x1f) &
+                       0x1f);
           }
 
       if (global_filter_creature_background_pic)
@@ -1538,4 +1728,3 @@ static int show_dialog_filter_subtype(int mode)
 
   return rval;
 }
-

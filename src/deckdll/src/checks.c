@@ -665,7 +665,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
 }
 
 // GLOBAL: DECKDLL 0x1012e75c
-static int num_artists = 53;
+static int global_num_artists = 53;
 
 // GLOBAL: DECKDLL 0x101bc600
 static int check_filters_debug_log_enabled;
@@ -728,7 +728,7 @@ check_artist_filter(csvid_t csvid, char *artist)
     return true;
 
   //TODO: What in the fuck is going on here?
-  if ((global_filter_expansion_list[14]) & ((unsigned __int64)1 << (uint8_t)find_artist_name_idx(artist, num_artists)))
+  if ((global_filter_expansion_list[14]) & ((unsigned __int64)1 << (uint8_t)find_artist_name_idx(artist, global_num_artists)))
       return 1;
 
   return s.rval;
