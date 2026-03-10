@@ -127,13 +127,13 @@ build_deck_stats_table(void)
 {
   struct
   {
+    int j;
+    int i;
     int col;
     int amt;
     int num_five_color_lands;
     int row;
     int csvid;
-    int i;
-    int j;
   } s;
 
   s.num_five_color_lands = 0;
@@ -420,23 +420,26 @@ show_stats_values(HDC hdc, SIZE word_size, int stepx, int stepy, int posx, int s
         s.percent = 0;
         wsprintf(s.buf, "  -", global_deck_stats[s.l][s.c], s.percent);
       }
-      else if (s.l == 8 || s.c == 6)
-      {
-        if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[8][6] == 0)
-          s.percent = 0;
-        else
-          s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[8][6] >> 1)) / global_deck_stats[8][6];
-
-        wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
-      }
       else
       {
-        if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[s.l][6] == 0)
-          s.percent = 0;
-        else
-          s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[s.l][6] >> 1)) / global_deck_stats[s.l][6];
+        if (s.l == 8 || s.c == 6)
+        {
+          if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[8][6] == 0)
+            s.percent = 0;
+          else
+            s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[8][6] >> 1)) / global_deck_stats[8][6];
 
-        wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
+          wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
+        }
+        else
+        {
+          if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[s.l][6] == 0)
+            s.percent = 0;
+          else
+            s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[s.l][6] >> 1)) / global_deck_stats[s.l][6];
+
+          wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
+        }
       }
 
       TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));

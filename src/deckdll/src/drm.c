@@ -58,20 +58,25 @@ void ScrubString(char *param_1)
 // FUNCTION: DECKDLL 0x1000de56
 void ReverseBits32(uint *param_1)
 {
-  int i;
-  uint result = 0;
-  uint local_8 = 1;
-  uint local_c = 0x80000000;
-  for (i = 0; i < 0x20; i++)
+  struct
   {
-    if ((local_8 & *param_1) != 0)
-    {
-      result = result | local_c;
-    }
-    local_8 <<= 1;
-    local_c >>= 1;
+    int i;
+    uint result;
+    uint local_c;
+    uint local_8;
+  } s;
+
+  s.result = 0;
+  s.local_8 = 1;
+  s.local_c = 0x80000000;
+  for (s.i = 0; s.i < 0x20; s.i++)
+  {
+    if ((s.local_8 & *param_1) != 0)
+      s.result |= s.local_c;
+    s.local_8 <<= 1;
+    s.local_c >>= 1;
   }
-  *param_1 = result;
+  *param_1 = s.result;
 }
 
 // FUNCTION: DECKDLL 0x1000deb9

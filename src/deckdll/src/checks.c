@@ -709,15 +709,14 @@ check_artist_filter(csvid_t csvid, char *artist)
 {
   struct
   {
-    int idx_hi;
-    uint32_t low;
-    unsigned __int64 enabled;
-    char txt[80];
-    unsigned __int64 mask;
-    int rval;
+    char txt[80]; /* ebp - 0x5c */
+    int idx; /* ebp - 0xc */
+    int idx_hi; /* ebp - 0x8 */
+    int rval; /* ebp - 0x4 */
   } s;
 
   s.rval = 0;
+
   if (artist == NULL)
   {
     sprintf(s.txt, "Card Number %d does not have a valid artist name!", csvid);
@@ -727,9 +726,12 @@ check_artist_filter(csvid_t csvid, char *artist)
   if ((global_filter_artist & 0x1) == 0)
     return true;
 
-  //TODO: What in the fuck is going on here?
-  if ((global_filter_expansion_list[14]) & ((unsigned __int64)1 << (uint8_t)find_artist_name_idx(artist, global_num_artists)))
-      return 1;
+  s.idx = find_artist_name_idx(artist, global_num_artists);
+  s.idx_hi = s.idx >> 31;
+
+  /* Uses global_filter_expansion_list[14..15] as a 64-bit bitfield. */
+  if ((*(unsigned __int64 *)&global_filter_expansion_list[14] & ((unsigned __int64)1 << (unsigned char)s.idx)) != 0)
+    return true;
 
   return s.rval;
 }
