@@ -1,6 +1,5 @@
-#include "defs.h"
 #include "mystdbool.h"
-#include "deckdll.h"
+#include "filtermenus.h"
 
 extern HWND global_main_hwnd;
 extern bool global_cfg_view_all;
@@ -15,24 +14,10 @@ extern DBFlags global_db_flags_1;
 
 extern OrigRarities global_origrarities[];
 
-extern short global_filter_abilities;
-extern short global_filter_cardsets;
-extern FilterTypes global_filter_cardtypes;
-extern char global_filter_casting_cost;
-extern short global_filter_casting_cost_value;
-extern char global_filter_power;
-extern short global_filter_power_value;
-extern char global_filter_toughness;
-extern short global_filter_toughness_value;
-extern char global_filter_rarity;
-extern short global_filter_colors;
-extern short global_filter_expansions;
-extern char global_filter_artist;
+extern struct global_filters_t global_filters;
 
 extern int global_num_expansions;
 extern int global_expansion_size;
-extern uint32_t global_filter_expansion_list[];
-extern uint32_t global_filter_creature_list[];
 
 extern char *global_raw_rarities;
 
@@ -180,8 +165,7 @@ bool check_basic(csvid_t csvid)
 
 
 // FUNCTION: DECKDLL 0x1000f719
-static bool
-check_card_global_deck_availability(csvid_t csvid)
+static bool check_card_global_deck_availability(csvid_t csvid)
 {
   int i;
   for (i = 0; i < global_deck_num_entries; ++i)
@@ -191,12 +175,11 @@ check_card_global_deck_availability(csvid_t csvid)
   return false;
 }
 
-static bool
-check_expansion_list_filter(csvid_t csvid)
+static bool check_expansion_list_filter(csvid_t csvid)
 {
   int expid;
   for (expid = 0; expid < global_num_expansions; ++expid)
-    if ((1 << (expid & 0x1F)) & global_filter_expansion_list[expid / 32])
+    if ((1 << (expid & 0x1F)) & global_filters.expansion_list[expid / 32])
     {
       int bit_pos = expid * 3;
       int bit_mask = 7 << (bit_pos & 7);
@@ -270,14 +253,14 @@ check_lands(int cardtype, int db_card_type_2)
   } s;
 
   s.rval = 0;
-  if ((global_filter_cardtypes & FT_LAND) == 0)
+  if ((global_filters.cardtypes & FT_LAND) == 0)
     return s.rval;
 
-  if ((global_filter_cardtypes & FT_LAND_LAND_AND_MANA) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 == 10)
+  if ((global_filters.cardtypes & FT_LAND_LAND_AND_MANA) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 == 10)
     s.rval = 1;
-  if ((global_filter_cardtypes & FT_LAND_LAND_ONLY) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 != 10)
+  if ((global_filters.cardtypes & FT_LAND_LAND_ONLY) != 0 && cardtype == CP_TYPE_LAND && db_card_type_2 != 10)
     s.rval = 1;
-  if ((global_filter_cardtypes & FT_LAND_MANA_ONLY) != 0 && cardtype != CP_TYPE_LAND && db_card_type_2 == 10)
+  if ((global_filters.cardtypes & FT_LAND_MANA_ONLY) != 0 && cardtype != CP_TYPE_LAND && db_card_type_2 == 10)
     s.rval = 1;
 
   return s.rval;
@@ -288,15 +271,15 @@ static bool
 check_artifacts(int cardtype, int subtype1)
 {
   int result = 0;
-  if (cardtype != CP_TYPE_ARTIFACT || (global_filter_cardtypes & FT_ARTIFACT) == 0) {
+  if (cardtype != CP_TYPE_ARTIFACT || (global_filters.cardtypes & FT_ARTIFACT) == 0) {
     return result;
   }
 
-  if ((global_filter_cardtypes & FT_ARTIFACT_CREATURE) != 0 &&
+  if ((global_filters.cardtypes & FT_ARTIFACT_CREATURE) != 0 &&
       subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
     result = 1;
 
-  if ((global_filter_cardtypes & FT_ARTIFACT_NON_CREATURE) != 0 &&
+  if ((global_filters.cardtypes & FT_ARTIFACT_NON_CREATURE) != 0 &&
       subtype1 != HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
     result = 1;
 
@@ -316,7 +299,7 @@ check_creature_list_filter(int subtype1)
   {
     for (s.j = 0; s.j < 0x20; s.j++)
     {
-      if ((global_filter_creature_list[s.i] & (1 << (byte)s.j)) != 0)
+      if ((global_filters.creature_list[s.i] & (1 << (byte)s.j)) != 0)
         if (s.i * 0x20 + s.j + 1 == subtype1)
           return true;
     }
@@ -331,23 +314,23 @@ check_creatures(int cardtype, int subtype1)
 {
 
   int result = 0;
-  if ((global_filter_cardtypes & FT_CREATURE) == 0)
+  if ((global_filters.cardtypes & FT_CREATURE) == 0)
   {
     return result;
   }
 
-  if ((global_filter_cardtypes & 0x100) != 0 && cardtype == CP_TYPE_CREATURE)
+  if ((global_filters.cardtypes & 0x100) != 0 && cardtype == CP_TYPE_CREATURE)
     result = 1;
 
-  if ((global_filter_cardtypes & 0x200) != 0 && cardtype == CP_TYPE_TOKEN)
+  if ((global_filters.cardtypes & 0x200) != 0 && cardtype == CP_TYPE_TOKEN)
     result = 1;
 
-  if ((global_filter_cardtypes & 0x400) != 0 &&
+  if ((global_filters.cardtypes & 0x400) != 0 &&
       cardtype == CP_TYPE_ARTIFACT &&
       subtype1 == HARDCODED_SUBTYPE_ARTIFACT_CREATURE_OR_AURA_MOSTLY_WITH_ENCHANT_CREATURE)
     result = 1;
 
-  if ((global_filter_cardtypes & 0x800) != 0)
+  if ((global_filters.cardtypes & 0x800) != 0)
   {
     if (check_creature_list_filter(subtype1) != 0)
       result = 1;
@@ -361,22 +344,22 @@ static bool
 check_enchantments(int cardtype, int subtype1)
 {
   int result = 0;
-  if ((global_filter_cardtypes & 0x1000) == 0 || cardtype != CP_TYPE_ENCHANTMENT)
+  if ((global_filters.cardtypes & 0x1000) == 0 || cardtype != CP_TYPE_ENCHANTMENT)
   {
     return result;
   }
 
-  if ((global_filter_cardtypes & 0x2000) != 0 && subtype1 == 0xd3)
+  if ((global_filters.cardtypes & 0x2000) != 0 && subtype1 == 0xd3)
     result = 1;
-  if ((global_filter_cardtypes & 0x4000) != 0 && subtype1 == 0xcd)
+  if ((global_filters.cardtypes & 0x4000) != 0 && subtype1 == 0xcd)
     result = 1;
-  if ((global_filter_cardtypes & 0x8000) != 0 && subtype1 == 0x6c)
+  if ((global_filters.cardtypes & 0x8000) != 0 && subtype1 == 0x6c)
     result = 1;
-  if ((global_filter_cardtypes & 0x10000) != 0 && subtype1 == 0x2c)
+  if ((global_filters.cardtypes & 0x10000) != 0 && subtype1 == 0x2c)
     result = 1;
-  if ((global_filter_cardtypes & 0x20000) != 0 && subtype1 == 0x0b)
+  if ((global_filters.cardtypes & 0x20000) != 0 && subtype1 == 0x0b)
     result = 1;
-  if ((global_filter_cardtypes & 0x40000) != 0 && subtype1 == 0x44)
+  if ((global_filters.cardtypes & 0x40000) != 0 && subtype1 == 0x44)
     result = 1;
   if (subtype1 == 0xc5)
     result = 1;
@@ -399,14 +382,14 @@ check_casting_cost(csvid_t csvid, char *entry)
     return 0;
   }
   
-  if ((global_filter_casting_cost & FN_ENABLE) == 0)
+  if ((global_filters.casting_cost & FN_ENABLE) == 0)
   {
     return 1;
   }
 
   if (*entry == '(')
   {
-    if ((global_filter_casting_cost & FN_CC_X) != 0)
+    if ((global_filters.casting_cost & FN_CC_X) != 0)
       return 1;
     else
       return 0;
@@ -414,11 +397,11 @@ check_casting_cost(csvid_t csvid, char *entry)
 
   cmc = (int)entry[2] + (int)entry[5] + (int)entry[7] + (int)entry[8] + (int)entry[1] + (int)entry[0];
 
-  if ((global_filter_casting_cost & FN_GT) && global_filter_casting_cost_value <= cmc)
+  if ((global_filters.casting_cost & FN_GT) && global_filters.casting_cost_value <= cmc)
     result = 1;
-  if ((global_filter_casting_cost & FN_LT) && cmc <= global_filter_casting_cost_value)
+  if ((global_filters.casting_cost & FN_LT) && cmc <= global_filters.casting_cost_value)
     result = 1;
-  if ((global_filter_casting_cost & FN_EQ) && global_filter_casting_cost_value == cmc)
+  if ((global_filters.casting_cost & FN_EQ) && global_filters.casting_cost_value == cmc)
     result = 1;
 
   return result;
@@ -430,14 +413,14 @@ check_power(int cp_power)
 {
   int rval = 0;
 
-  if ((global_filter_power & FN_ENABLE) == 0)
+  if ((global_filters.power & FN_ENABLE) == 0)
     return 1;
 
-  if ((global_filter_power & FN_GT) && global_filter_power_value <= cp_power)
+  if ((global_filters.power & FN_GT) && global_filters.power_value <= cp_power)
     rval = 1;
-  if ((global_filter_power & FN_LT) && cp_power <= global_filter_power_value)
+  if ((global_filters.power & FN_LT) && cp_power <= global_filters.power_value)
     rval = 1;
-  if ((global_filter_power & FN_EQ) && global_filter_power_value == cp_power)
+  if ((global_filters.power & FN_EQ) && global_filters.power_value == cp_power)
     rval = 1;
 
   return rval;
@@ -449,14 +432,14 @@ check_toughness(int cp_toughness)
 {
   int rval = 0;
 
-  if ((global_filter_toughness & FN_ENABLE) == 0)
+  if ((global_filters.toughness & FN_ENABLE) == 0)
     return 1;
 
-  if ((global_filter_toughness & FN_GT) && global_filter_toughness_value <= cp_toughness)
+  if ((global_filters.toughness & FN_GT) && global_filters.toughness_value <= cp_toughness)
     rval = 1;
-  if ((global_filter_toughness & FN_LT) && cp_toughness <= global_filter_toughness_value)
+  if ((global_filters.toughness & FN_LT) && cp_toughness <= global_filters.toughness_value)
     rval = 1;
-  if ((global_filter_toughness & FN_EQ) && global_filter_toughness_value == cp_toughness)
+  if ((global_filters.toughness & FN_EQ) && global_filters.toughness_value == cp_toughness)
     rval = 1;
 
   return rval;
@@ -475,18 +458,18 @@ check_rarity(csvid_t csvid, int cp_rarity)
     return 0;
   }
 
-  if ((global_filter_rarity & FR_ENABLE) == 0)
+  if ((global_filters.rarity & FR_ENABLE) == 0)
     return 1;
 
-  if ((global_filter_rarity & FR_COMMON) && cp_rarity <= 1)
+  if ((global_filters.rarity & FR_COMMON) && cp_rarity <= 1)
     result = 1;
-  if ((global_filter_rarity & FR_UNCOMMON) && cp_rarity == 4)
+  if ((global_filters.rarity & FR_UNCOMMON) && cp_rarity == 4)
     result = 1;
-  if ((global_filter_rarity & FR_RARE) && cp_rarity == 2)
+  if ((global_filters.rarity & FR_RARE) && cp_rarity == 2)
     result = 1;
-  if ((global_filter_rarity & FR_RESTRICTED) && check_restricted(csvid))
+  if ((global_filters.rarity & FR_RESTRICTED) && check_restricted(csvid))
     result = 1;
-  if ((global_filter_rarity & FR_BANNED) && check_banned(csvid))
+  if ((global_filters.rarity & FR_BANNED) && check_banned(csvid))
     result = 1;
 
   return result;
@@ -514,12 +497,12 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
     return false;
   }
 
-  if (!(global_filter_abilities & FA_ENABLE))
+  if (!(global_filters.abilities & FA_ENABLE))
     return true;
 
-  if (global_filter_abilities & FA_NATIVE)
+  if (global_filters.abilities & FA_NATIVE)
     s.native = 1;
-  if (global_filter_abilities & FA_GRANTS)
+  if (global_filters.abilities & FA_GRANTS)
     s.grants = 1;
 
   if (!s.native && !s.grants)
@@ -527,7 +510,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
 
   for (s.i = 0; s.i < num_abils; ++s.i)
   {
-    if ((global_filter_abilities & FA_FLYING) != 0)
+    if ((global_filters.abilities & FA_FLYING) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_FLYING && s.native)
         return true;
@@ -535,7 +518,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_FIRSTSTRIKE) != 0)
+    if ((global_filters.abilities & FA_FIRSTSTRIKE) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_FIRSTSTRIKE && s.native)
         return true;
@@ -543,7 +526,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_TRAMPLE) != 0)
+    if ((global_filters.abilities & FA_TRAMPLE) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_TRAMPLE && s.native)
         return true;
@@ -551,7 +534,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_REGENERATION) != 0)
+    if ((global_filters.abilities & FA_REGENERATION) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_REGENERATION && s.native)
         return true;
@@ -559,7 +542,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_BANDING) != 0)
+    if ((global_filters.abilities & FA_BANDING) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_BANDING && s.native)
         return true;
@@ -567,7 +550,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_PROTECTION) != 0)
+    if ((global_filters.abilities & FA_PROTECTION) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_PROTECTION_FROM_BLACK && s.native)
         return true;
@@ -589,7 +572,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_LANDWALK) != 0)
+    if ((global_filters.abilities & FA_LANDWALK) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_DESERTWALK && s.native)
         return true;
@@ -617,10 +600,10 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_INFECT) != 0 && abils[s.i] == ABIL_NATIVE_INFECT && s.native)
+    if ((global_filters.abilities & FA_INFECT) != 0 && abils[s.i] == ABIL_NATIVE_INFECT && s.native)
       return true;
 
-    if ((global_filter_abilities & FA_RAMPAGE) != 0)
+    if ((global_filters.abilities & FA_RAMPAGE) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_RAMPAGE && s.native)
         return true;
@@ -628,7 +611,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_REACH) != 0)
+    if ((global_filters.abilities & FA_REACH) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_REACH && s.native)
         return true;
@@ -636,7 +619,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_DEATHTOUCH) != 0)
+    if ((global_filters.abilities & FA_DEATHTOUCH) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_DEATHTOUCH && s.native)
         return true;
@@ -644,7 +627,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if ((global_filter_abilities & FA_VIGILANCE) != 0)
+    if ((global_filters.abilities & FA_VIGILANCE) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_VIGILANCE && s.native)
         return true;
@@ -652,7 +635,7 @@ check_abilities(csvid_t csvid, int num_abils, char *abils)
         return true;
     }
 
-    if (((int)global_filter_abilities & FA_HASTE) != 0)
+    if (((int)global_filters.abilities & FA_HASTE) != 0)
     {
       if (abils[s.i] == ABIL_NATIVE_HASTE && s.native)
         return true;
@@ -703,37 +686,31 @@ find_artist_name_idx(char *artist, int num_artists)
   return -1;
 }
 
+// Don't touch this, code is super weird and this will eventually match!
 // FUNCTION: DECKDLL 0x10010a72
-static bool
+static int
 check_artist_filter(csvid_t csvid, char *artist)
 {
-  struct
-  {
-    char txt[80]; /* ebp - 0x5c */
-    int idx; /* ebp - 0xc */
-    int idx_hi; /* ebp - 0x8 */
-    int rval; /* ebp - 0x4 */
-  } s;
+  char txt[80]; /* ebp - 0x5c */
+  unsigned __int64 idx;     /* ebp - 0xc */
+  int result;    /* ebp - 0x4 */
 
-  s.rval = 0;
+  result = 0;
 
   if (artist == NULL)
   {
-    sprintf(s.txt, "Card Number %d does not have a valid artist name!", csvid);
-    return false;
+    sprintf(txt, "Card Number %d does not have a valid artist name!", csvid);
+    return 0;
   }
 
-  if ((global_filter_artist & 0x1) == 0)
-    return true;
+  if ((global_filters.artist & 0x1) == 0)
+    return 1;
 
-  s.idx = find_artist_name_idx(artist, global_num_artists);
-  s.idx_hi = s.idx >> 31;
+  /* Uses global_filters.expansion_list[0..1] as a 64-bit bitfield, but accessed via its position after global_filters.expansions. */
+  if ((*(unsigned __int64 *)&global_filters.expansion_list & ((unsigned __int64)1 << (idx = find_artist_name_idx(artist, global_num_artists)))) != 0)
+    return 1;
 
-  /* Uses global_filter_expansion_list[14..15] as a 64-bit bitfield. */
-  if ((*(unsigned __int64 *)&global_filter_expansion_list[14] & ((unsigned __int64)1 << (unsigned char)s.idx)) != 0)
-    return true;
-
-  return s.rval;
+  return result;
 }
 
 // FUNCTION: DECKDLL 0x1000f1a5
@@ -783,35 +760,35 @@ bool check_filters(csvid_t csvid)
 
   if (s.color == CP_COLOR_LESS)
     s.color_ok = true;
-  else if (((((s.color == CP_COLOR_WHITE) && ((global_filter_colors & FC_WHITE) != 0)) ||
-             ((s.color == CP_COLOR_GREEN) && ((global_filter_colors & FC_GREEN) != 0))) ||
-            ((s.color == CP_COLOR_RED) && ((global_filter_colors & FC_RED) != 0))) ||
-           (((s.color == CP_COLOR_BLACK) && ((global_filter_colors & FC_BLACK) != 0)) ||
-            (((s.color == CP_COLOR_BLUE) && ((global_filter_colors & FC_BLUE) != 0)) ||
+  else if (((((s.color == CP_COLOR_WHITE) && ((global_filters.colors & FC_WHITE) != 0)) ||
+             ((s.color == CP_COLOR_GREEN) && ((global_filters.colors & FC_GREEN) != 0))) ||
+            ((s.color == CP_COLOR_RED) && ((global_filters.colors & FC_RED) != 0))) ||
+           (((s.color == CP_COLOR_BLACK) && ((global_filters.colors & FC_BLACK) != 0)) ||
+            (((s.color == CP_COLOR_BLUE) && ((global_filters.colors & FC_BLUE) != 0)) ||
              s.color == CP_COLOR_LAND || s.color == CP_COLOR_ARTIFACT)))
     s.color_ok = true;
   else
     s.color_ok = false;
 
   s.setmask = 0;
-  if ((global_filter_cardsets & FS_4TH_EDITION) != 0)
+  if ((global_filters.cardsets & FS_4TH_EDITION) != 0)
   {
-    if ((global_filter_expansions & FE_4TH_EDITION) != 0)
+    if ((global_filters.expansions & FE_4TH_EDITION) != 0)
       s.setmask |= 1;
-    if ((global_filter_expansions & FE_UNLIMITED) != 0)
+    if ((global_filters.expansions & FE_UNLIMITED) != 0)
       s.setmask |= 2;
-    if ((global_filter_expansions & FE_REVISED) != 0)
+    if ((global_filters.expansions & FE_REVISED) != 0)
       s.setmask |= 4;
   }
-  if ((global_filter_cardsets & FS_ASTRAL) != 0)
+  if ((global_filters.cardsets & FS_ASTRAL) != 0)
     s.setmask |= 0x20;
-  if ((global_filter_cardsets & FS_ARABIAN_NIGHTS) != 0)
+  if ((global_filters.cardsets & FS_ARABIAN_NIGHTS) != 0)
     s.setmask |= 8;
-  if ((global_filter_cardsets & FS_ANTIQUITIES) != 0)
+  if ((global_filters.cardsets & FS_ANTIQUITIES) != 0)
     s.setmask |= 0x10;
-  if ((global_filter_cardsets & FS_LEGENDS) != 0)
+  if ((global_filters.cardsets & FS_LEGENDS) != 0)
     s.setmask |= 0x40;
-  if ((global_filter_cardsets & FS_THE_DARK) != 0)
+  if ((global_filters.cardsets & FS_THE_DARK) != 0)
     s.setmask |= 0x80;
   s.set_ok = check_set_availability(csvid, s.setmask) ? 1 : 0;
 
@@ -819,9 +796,9 @@ bool check_filters(csvid_t csvid)
       check_artifacts(s.cardtype, s.subtypes) ||
       check_creatures(s.cardtype, s.subtypes) ||
       check_enchantments(s.cardtype, s.subtypes) ||
-      (s.cardtype == CP_TYPE_INSTANT && (global_filter_cardtypes & 0x80000) != 0) ||
-      (s.cardtype == CP_TYPE_INTERRUPT && (global_filter_cardtypes & 0x100000) != 0) ||
-      (s.cardtype == CP_TYPE_SORCERY && (global_filter_cardtypes & 0x200000) != 0))
+      (s.cardtype == CP_TYPE_INSTANT && (global_filters.cardtypes & 0x80000) != 0) ||
+      (s.cardtype == CP_TYPE_INTERRUPT && (global_filters.cardtypes & 0x100000) != 0) ||
+      (s.cardtype == CP_TYPE_SORCERY && (global_filters.cardtypes & 0x200000) != 0))
     s.type_ok = true;
   else
     s.type_ok = false;
