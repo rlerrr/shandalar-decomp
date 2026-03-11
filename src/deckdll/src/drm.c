@@ -71,7 +71,7 @@ void ReverseBits32(uint *param_1)
   s.local_c = 0x80000000;
   for (s.i = 0; s.i < 0x20; s.i++)
   {
-    if ((s.local_8 & *param_1) != 0)
+    if ((*param_1 & s.local_8) != 0)
       s.result |= s.local_c;
     s.local_8 <<= 1;
     s.local_c >>= 1;
