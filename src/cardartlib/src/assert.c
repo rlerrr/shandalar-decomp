@@ -63,6 +63,7 @@ char g_assertMessageBuffer[2000];
 // GLOBAL: CARDARTLIB 0x10117800
 // GLOBAL: DRAWCARDLIB 0x100f35b0
 // GLOBAL: DECKDLL 0x10113d30
+// GLOBAL: MAGIC 0x7755d0
 char global_base_directory[0x105];
 
 // MATCHING

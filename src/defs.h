@@ -1029,6 +1029,8 @@ typedef struct card_instance_struct
 #endif
 } PACKED card_instance_t;
 
+typedef int (__cdecl *card_function_pointer)(int player, int card, event_t event);
+
 /* Data struct */
 typedef struct
 {
@@ -1051,7 +1053,7 @@ typedef struct
   int16_t	toughness;
   uint8_t	new_field;	//ct_all.csv:Extra Flags (Unused)..Modifies Casting Cost
   uint8_t	reserved3;	//ct_all.csv:Unused (next to Code Address)
-  uint32_t	code_pointer;
+  card_function_pointer	code_pointer;
   uint32_t	static_ability;	//ct_all.csv:Ability:Unknown..Ability:Swampwalk
   uint32_t	extra_ability;	//ct_all.csv:Flags:Play Cost..Flags:Activate
   uint8_t	rarity; // unused in current Manalink

@@ -493,19 +493,25 @@ static Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
 // This is really [225][128] ending at 0x10139CD0
+// TODO: Looks like [250][300] in magic.exe
 // GLOBAL: DECKDLL 0x10132c50
+// GLOBAL: MAGIC 0x894490
 char text_lines[225][128];
 
 // GLOBAL: DECKDLL 0x101427b4
+// GLOBAL: MAGIC 0x8b1e40
 int global_available_slots = 0;
 int global_num_expansions = 0;
 int global_expansion_size = 0;
 const card_ptr_t *cards_ptr;
+
 // GLOBAL: DECKDLL 0x10147220
+// GLOBAL: MAGIC 0x8ce0c0
 card_ptr_t global_raw_cards_storage[1000];
 card_ptr_t *global_raw_cards_ptr = global_raw_cards_storage;
 
 // GLOBAL: DECKDLL 0x1012df3c
+// GLOBAL: MAGIC 0x7a5ae0
 static char *global_base_txt;
 static char *global_raw_dbinfo;
 char *global_raw_rarities;
@@ -640,6 +646,7 @@ char *readline(FILE *file, char *dest, int sz)
 }
 
 // FUNCTION: DECKDLL 0x10028350
+// FUNCTION: MAGIC 0x4ea900
 int load_text(const char *file_name, const char *section_name)
 {
   struct
@@ -854,6 +861,7 @@ const char *const_db_artist_names[] = {
 };
 
 // FUNCTION: DECKDLL 0x1001a940
+// FUNCTION: MAGIC 0x451d30
 static int read_db_guts(char *cards_dat_filename)
 {
   struct read_db_guts_locals
