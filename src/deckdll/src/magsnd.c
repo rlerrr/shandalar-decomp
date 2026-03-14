@@ -78,8 +78,6 @@ typedef struct SndApiVTable {
 } SndApiVTable;
 
 // GLOBAL: DECKDLL 0x101054c0
-// GLOBAL: MAGIC 0x775340
-// GLOBAL: SHANDALAR 0x72dca0
 // GLOBAL: MAGVID 0x10028a50
 // GLOBAL: STATWIN 0x10017da0
 static SndApiVTable global_sound_vtable;
@@ -87,7 +85,6 @@ typedef int (WINAPI *Int_fn_etc)();
 #define global_sound_fns ((Int_fn_etc*)(void*)&global_sound_vtable)
 
 // FUNCTION: DECKDLL 0x1002d4d3
-// FUNCTION: MAGIC 0x484461
 int sound_unload(int idx)
 {
   if (global_sound_status ==0)
@@ -98,7 +95,6 @@ int sound_unload(int idx)
 }
 
 // FUNCTION: DECKDLL 0x1002d421
-// FUNCTION: MAGIC 0x4843af
 void sound_close() {
   if (!global_sound_status)
     return;
@@ -118,7 +114,6 @@ void sound_close() {
 }
 
 // FUNCTION: DECKDLL 0x1002d534
-// FUNCTION: MAGIC 0x4844c2
 int sound_play(int num, Sound *snd)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2)) {
@@ -140,7 +135,6 @@ int sound_stop(int a1)
 }
 
 // FUNCTION: DECKDLL 0x1002daee
-// FUNCTION: MAGIC 0x484a7c
 void clear_sound_imports_table(void)
 {
   int i;
@@ -150,8 +144,6 @@ void clear_sound_imports_table(void)
 }
 
 // FUNCTION: DECKDLL 0x1002d2c0
-// FUNCTION: MAGIC 0x484250
-// FUNCTION: SHANDALAR 0x566f70
 // FUNCTION: MAGVID 0x10008010
 // FUNCTION: STATWIN 0x10002da0
 int init_sound_dll(HWND hwnd, int a2, int a3)
@@ -198,7 +190,6 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 }
 
 // FUNCTION: DECKDLL 0x1002d497
-// FUNCTION: MAGIC 0x484425
 int sound_load(const char *path, int num, Sound *snd)
 {
   if (global_sound_status == 0)

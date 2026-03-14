@@ -6,8 +6,6 @@
 #pragma intrinsic(_rotr)
 
 // GLOBAL: DECKDLL 0x10035b88
-// GLOBAL: MAGIC 0x56fd68
-// GLOBAL: SHANDALAR 0x57f970
 uint8_t card_coded[3][128];
 
 // GLOBAL: DECKDLL 0x10033008
@@ -348,8 +346,6 @@ unsigned int HasExpansion(unsigned char param_1)
 }
 
 // FUNCTION: DECKDLL 0x1002709f
-// FUNCTION: MAGIC 0x496251
-// FUNCTION: SHANDALAR 0x4669e0
 int IsCardAvailable(csvid_t csvid, int expansion)
 {
   int result;
