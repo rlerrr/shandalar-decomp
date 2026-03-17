@@ -62,5 +62,6 @@ if (MSVC_FOR_DECOMP)
 endif()
 
 add_subdirectory(src)
+add_subdirectory(tools)
 
 reccmp_configure()

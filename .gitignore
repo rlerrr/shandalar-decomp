@@ -4,6 +4,7 @@
 *.pdb
 *.exp
 *.lib
+*.ilk
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
