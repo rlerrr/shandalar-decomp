@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import csv
 import re
-from collections import Counter
 from itertools import zip_longest
 from pathlib import Path
 
@@ -12,6 +11,7 @@ from pathlib import Path
 def parse_args() -> argparse.Namespace:
     script_dir = Path(__file__).resolve().parent
     tools_dir = script_dir.parent
+    repo_dir = tools_dir.parent
 
     parser = argparse.ArgumentParser(
         description="Generate card stub functions from magic/shandalar card_data CSV dumps."
@@ -33,8 +33,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default=str(script_dir / "generated_card_stubs.c"),
-        help="Path to output .c file",
+        default=str(repo_dir / "src" / "cards" / "cards.c"),
+        help="Path to output .c file (default: src/cards/cards.c)",
+    )
+    parser.add_argument(
+        "--output-h",
+        default=str(repo_dir / "src" / "cards" / "cards.h"),
+        help="Path to output .h file (default: src/cards/cards.h)",
     )
     return parser.parse_args()
 
@@ -101,17 +106,24 @@ def generate_stubs(
     magic_rows: list[dict[str, str]],
     shandalar_rows: list[dict[str, str]],
     cards_name_by_id: dict[str, str],
-) -> tuple[list[str], int, int]:
+) -> tuple[list[str], list[str], int, int, int, int]:
     stubs: list[str] = []
+    prototypes: list[str] = []
     used_names: dict[str, int] = {}
     fallback_name_count = 0
-    skipped_conflict_count = 0
-    emitted_dummy_none = False
+    reused_pair_count = 0
+    reused_pair_name_conflict_count = 0
+    magic_ptr_pair_conflict_count = 0
+    shandalar_ptr_pair_conflict_count = 0
     dummy_magic_ptr = "0x0053aa50"
     dummy_shandalar_ptr = "0x00488ca0"
 
-    magic_ptr_counts: Counter[str] = Counter()
-    shandalar_ptr_counts: Counter[str] = Counter()
+    pair_to_suffix: dict[tuple[str, str], str] = {}
+    pair_to_candidate_suffix: dict[tuple[str, str], str] = {}
+    ordered_pairs: list[tuple[str, str]] = []
+
+    magic_ptr_to_shandalar_ptr: dict[str, str] = {}
+    shandalar_ptr_to_magic_ptr: dict[str, str] = {}
 
     for row_index, rows in enumerate(zip_longest(magic_rows, shandalar_rows), start=1):
         magic_row, shandalar_row = rows
@@ -134,38 +146,23 @@ def generate_stubs(
         if not magic_ptr or not shandalar_ptr:
             raise ValueError(f"Missing code_pointer at row {row_index}, id {magic_id!r}.")
 
-        magic_ptr_counts[magic_ptr] += 1
-        shandalar_ptr_counts[shandalar_ptr] += 1
+        pair = (magic_ptr, shandalar_ptr)
 
-    for row_index, rows in enumerate(zip_longest(magic_rows, shandalar_rows), start=1):
-        magic_row, shandalar_row = rows
-        if magic_row is None or shandalar_row is None:
-            raise ValueError(
-                "Input CSV row counts do not match while zipping: "
-                f"mismatch at row {row_index}."
-            )
+        # Track pointer pairing mismatches across executables; still emit stubs.
+        existing_shandalar_ptr = magic_ptr_to_shandalar_ptr.get(magic_ptr)
+        if existing_shandalar_ptr is None:
+            magic_ptr_to_shandalar_ptr[magic_ptr] = shandalar_ptr
+        elif existing_shandalar_ptr != shandalar_ptr:
+            magic_ptr_pair_conflict_count += 1
 
-        magic_id = magic_row.get("id", "").strip()
-        shandalar_id = shandalar_row.get("id", "").strip()
-        if magic_id != shandalar_id:
-            raise ValueError(
-                f"ID mismatch at row {row_index}: magic id {magic_id!r}, "
-                f"shandalar id {shandalar_id!r}."
-            )
-
-        magic_ptr = normalize_pointer(magic_row.get("code_pointer", ""))
-        shandalar_ptr = normalize_pointer(shandalar_row.get("code_pointer", ""))
-        if not magic_ptr or not shandalar_ptr:
-            raise ValueError(f"Missing code_pointer at row {row_index}, id {magic_id!r}.")
+        existing_magic_ptr = shandalar_ptr_to_magic_ptr.get(shandalar_ptr)
+        if existing_magic_ptr is None:
+            shandalar_ptr_to_magic_ptr[shandalar_ptr] = magic_ptr
+        elif existing_magic_ptr != magic_ptr:
+            shandalar_ptr_pair_conflict_count += 1
 
         if magic_ptr == dummy_magic_ptr and shandalar_ptr == dummy_shandalar_ptr:
-            if emitted_dummy_none:
-                continue
-            emitted_dummy_none = True
-            suffix = "dummy"
-        elif magic_ptr_counts[magic_ptr] > 1 or shandalar_ptr_counts[shandalar_ptr] > 1:
-            skipped_conflict_count += 1
-            continue
+            candidate_suffix = "dummy"
         else:
             card_name = cards_name_by_id.get(magic_id, "").strip()
             if card_name.lower() == "none":
@@ -178,8 +175,16 @@ def generate_stubs(
                         "and fallback dump name is missing."
                     )
                 fallback_name_count += 1
+            candidate_suffix = sanitize_name(card_name)
 
-            suffix = sanitize_name(card_name)
+        if pair in pair_to_suffix:
+            reused_pair_count += 1
+            if pair_to_candidate_suffix.get(pair) != candidate_suffix:
+                reused_pair_name_conflict_count += 1
+            continue
+
+        suffix = candidate_suffix
+        pair_to_candidate_suffix[pair] = candidate_suffix
 
         if suffix in used_names:
             used_names[suffix] += 1
@@ -187,6 +192,12 @@ def generate_stubs(
         else:
             used_names[suffix] = 0
 
+        pair_to_suffix[pair] = suffix
+        ordered_pairs.append(pair)
+
+    for magic_ptr, shandalar_ptr in ordered_pairs:
+        suffix = pair_to_suffix[(magic_ptr, shandalar_ptr)]
+        prototypes.append(f"int card_{suffix}(int player, int card, event_t event);")
         stubs.append(
             "\n".join(
                 (
@@ -200,7 +211,14 @@ def generate_stubs(
             )
         )
 
-    return stubs, fallback_name_count, skipped_conflict_count
+    return (
+        stubs,
+        prototypes,
+        fallback_name_count,
+        reused_pair_count,
+        reused_pair_name_conflict_count,
+        magic_ptr_pair_conflict_count + shandalar_ptr_pair_conflict_count,
+    )
 
 
 def main() -> int:
@@ -216,23 +234,37 @@ def main() -> int:
     cards_rows = read_csv_rows(cards_path)
 
     cards_name_by_id = build_cards_name_lookup(cards_rows)
-    stubs, fallback_name_count, skipped_conflict_count = generate_stubs(
+    stubs, prototypes, fallback_name_count, reused_pair_count, reused_pair_name_conflict_count, ptr_pair_conflict_count = generate_stubs(
         magic_rows, shandalar_rows, cards_name_by_id
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text("\n\n".join(stubs) + "\n", encoding="utf-8")
+    output_path.write_text('#include "defs.h"\n\n' + "\n\n".join(stubs) + "\n", encoding="utf-8")
     print(f"Wrote {len(stubs)} stubs to {output_path}")
-    if skipped_conflict_count:
+    if reused_pair_count:
+        print(f"Reused {reused_pair_count} duplicate code_pointer pairs (kept first name).")
+    if reused_pair_name_conflict_count:
         print(
-            "Skipped "
-            f"{skipped_conflict_count} rows due to conflicting reused code pointers."
+            "Saw "
+            f"{reused_pair_name_conflict_count} duplicate pairs with conflicting names "
+            "(kept first name)."
+        )
+    if ptr_pair_conflict_count:
+        print(
+            "Saw "
+            f"{ptr_pair_conflict_count} pointer pairing mismatches between magic/shandalar "
+            "(emitted stubs anyway)."
         )
     if fallback_name_count:
         print(
             "Used fallback names from card_data CSV for "
             f"{fallback_name_count} rows with missing/None names in Cards.csv."
         )
+
+    header_path = Path(args.output_h)
+    header_path.parent.mkdir(parents=True, exist_ok=True)
+    header_path.write_text('#include "defs.h"\n' + "\n".join(prototypes) + "\n", encoding="utf-8")
+    print(f"Wrote {len(prototypes)} prototypes to {header_path}")
     return 0
 
 
