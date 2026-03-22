@@ -51,3 +51,7 @@ endif()
 if (SHANDALAR_BUILD_MAGSND)
   add_subdirectory(magsnd)
 endif()
+
+if (SHANDALAR_BUILD_SHANDALAR)
+  add_subdirectory(shandalar)
+endif()
