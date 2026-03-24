@@ -1509,7 +1509,7 @@ GetPaletteColor(int index)
   rgb.r = g_cardArtPalette[index].rgbRed;
   rgb.g = g_cardArtPalette[index].rgbGreen;
   rgb.b = g_cardArtPalette[index].rgbBlue;
-  return ((BYTE)rgb.g << 8) | (BYTE)rgb.r | ((BYTE)rgb.b << 16) | 0x02000000;
+  return (COLORREF)(0x02000000 | (DWORD)MAKEWORD((BYTE)rgb.r, (BYTE)rgb.g) | ((DWORD)(BYTE)rgb.b << 16));
 }
 
 void delete_and_close_object(HANDLE obj);
@@ -3954,6 +3954,62 @@ insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
   }
 }
 
+// FUNCTION: DECKDLL 0x1002bb7f
+static void __cdecl
+FUN_1002bb7f(int which, int csvid, int num, int deck_base)
+{
+  struct
+  {
+    int base;
+    int *count_ptr;
+  } s;
+
+  if (which == 0)
+  {
+    s.base = deck_base + 0x117c;
+    s.count_ptr = (int *)(deck_base + 0x11f4);
+  }
+  else if (which == 1)
+  {
+    s.base = deck_base + 0x11f8;
+    s.count_ptr = (int *)(deck_base + 0x1270);
+  }
+  else if (which == 2)
+  {
+    s.base = deck_base + 0x1274;
+    s.count_ptr = (int *)(deck_base + 0x12ec);
+  }
+  else if (which == 5)
+  {
+    s.base = deck_base + 0x13e8;
+    s.count_ptr = (int *)(deck_base + 0x1460);
+  }
+  else if (which == 4)
+  {
+    s.base = deck_base + 0x136c;
+    s.count_ptr = (int *)(deck_base + 0x13e4);
+  }
+  else if (which == 3)
+  {
+    s.base = deck_base + 0x12f0;
+    s.count_ptr = (int *)(deck_base + 0x1368);
+  }
+  else if (which == 6)
+  {
+    s.base = deck_base + 0x1100;
+    s.count_ptr = (int *)(deck_base + 0x1178);
+  }
+  else
+  {
+    return;
+  }
+
+  *(int *)(s.base + *s.count_ptr * 0xc) = csvid;
+  *(int *)(s.base + 4 + *s.count_ptr * 0xc) = num;
+  *(char **)(s.base + 8 + *s.count_ptr * 0xc) = global_raw_cards_storage[csvid].full_name;
+  *s.count_ptr = *s.count_ptr + 1;
+}
+
 // FUNCTION: DECKDLL 0x1002bcde
 static void remove_cards_from_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 {
@@ -4042,14 +4098,13 @@ FUN_1002bed0(int which, int csvid, int num, int deck_base)
     s.base = deck_base + 0x1008;
     s.count_ptr = (int *)(deck_base + 0x1080);
   }
-  else
+  else if (which == 3)
   {
-    if (which != 3)
-      return;
-
     s.base = deck_base + 0xF8C;
     s.count_ptr = (int *)(deck_base + 0x1004);
   }
+  else
+    return;
 
   s.i = 0;
   s.found = 0;
@@ -4063,9 +4118,9 @@ FUN_1002bed0(int which, int csvid, int num, int deck_base)
       {
         for (s.idx = s.i; s.idx < *s.count_ptr - 1; s.idx++)
         {
-          ((int *)s.base)[s.idx * 3] = ((int *)s.base)[s.idx * 3 + 3];
-          ((int *)s.base)[s.idx * 3 + 1] = ((int *)s.base)[s.idx * 3 + 4];
-          ((int *)s.base)[s.idx * 3 + 2] = ((int *)s.base)[s.idx * 3 + 5];
+          ((int *)s.base)[s.idx * 3] = ((int *)s.base)[(s.idx + 1) * 3];
+          ((int *)s.base)[s.idx * 3 + 1] = ((int *)s.base)[(s.idx + 1) * 3 + 1];
+          ((int *)s.base)[s.idx * 3 + 2] = ((int *)s.base)[(s.idx + 1) * 3 + 2];
         }
         *s.count_ptr = *s.count_ptr + -1;
       }
@@ -4080,9 +4135,9 @@ FUN_1002bed0(int which, int csvid, int num, int deck_base)
 
         for (s.idx = s.i; s.idx < *s.count_ptr - 1; s.idx++)
         {
-          ((int *)s.base)[s.idx * 3] = ((int *)s.base)[s.idx * 3 + 3];
-          ((int *)s.base)[s.idx * 3 + 1] = ((int *)s.base)[s.idx * 3 + 4];
-          ((int *)s.base)[s.idx * 3 + 2] = ((int *)s.base)[s.idx * 3 + 5];
+          ((int *)s.base)[s.idx * 3] = ((int *)s.base)[(s.idx + 1) * 3];
+          ((int *)s.base)[s.idx * 3 + 1] = ((int *)s.base)[(s.idx + 1) * 3 + 1];
+          ((int *)s.base)[s.idx * 3 + 2] = ((int *)s.base)[(s.idx + 1) * 3 + 2];
         }
         *s.count_ptr = *s.count_ptr + -1;
       }
@@ -4134,14 +4189,13 @@ FUN_1002c161(int which, int csvid, int num, int deck_base)
     s.base = deck_base + 0x12F0;
     s.count_ptr = (int *)(deck_base + 0x1368);
   }
-  else
+  else if (which == 6)
   {
-    if (which != 6)
-      return;
-
     s.base = deck_base + 0x1100;
     s.count_ptr = (int *)(deck_base + 0x1178);
   }
+  else
+    return;
 
   s.i = 0;
   s.done = 0;
@@ -4151,9 +4205,9 @@ FUN_1002c161(int which, int csvid, int num, int deck_base)
     {
       for (s.idx = s.i; s.idx < *s.count_ptr - 1; s.idx++)
       {
-        ((int *)s.base)[s.idx * 3] = ((int *)s.base)[s.idx * 3 + 3];
-        ((int *)s.base)[s.idx * 3 + 1] = ((int *)s.base)[s.idx * 3 + 4];
-        ((int *)s.base)[s.idx * 3 + 2] = ((int *)s.base)[s.idx * 3 + 5];
+        ((int *)s.base)[s.idx * 3] = ((int *)s.base)[(s.idx + 1) * 3];
+        ((int *)s.base)[s.idx * 3 + 1] = ((int *)s.base)[(s.idx + 1) * 3 + 1];
+        ((int *)s.base)[s.idx * 3 + 2] = ((int *)s.base)[(s.idx + 1) * 3 + 2];
       }
       *s.count_ptr = *s.count_ptr + -1;
 
@@ -4177,8 +4231,7 @@ static int delete_card_from_global_deck(csvid_t csvid, int num)
 
   s.i = 0;
   s.found = 0;
-  for (;s.i < global_deck_num_entries && s.found == 0; s.i++)
-  {
+  for (; s.i < global_deck_num_entries && s.found == 0; s.i++)
     if (global_deck[s.i].GDE_csvid == csvid && global_deck[s.i].GDE_Available == num)
     {
       s.idx = s.i;
@@ -4186,7 +4239,6 @@ static int delete_card_from_global_deck(csvid_t csvid, int num)
       if (num == 0)
         remove_cards_from_deck(csvid, 1, global_edited_deck);
     }
-  }
 
   if (!s.found)
     return 0;
@@ -4397,8 +4449,8 @@ count_card_amount_outside_edited_deck(csvid_t csvid)
 {
   int i;
   int count = 0;
-  for (i = 0; i < global_deck_num_entries; ++i)
-    if (global_deck[i].GDE_csvid == csvid && !(global_deck[i].GDE_DecksBits & (1 << global_current_deck)))
+  for (i = 0; global_deck_num_entries > i; ++i)
+    if (global_deck[i].GDE_csvid == csvid && !(global_deck[i].GDE_DecksBits & (1 << (unsigned char)global_current_deck)))
       ++count;
 
   return count;
@@ -6413,19 +6465,24 @@ load_deck(char *filename)
 {
   struct
   {
-    size_t lens[8];
-    int pad_before_f;
-    FILE *f;
-    char txt[500];
-    int tail_pad;
-    int num;
-    csvid_t csvid;
+    size_t len_comments;  /* ebp - 0x224 */
+    size_t len_edition;   /* ebp - 0x220 */
+    size_t len_revision;  /* ebp - 0x21c */
+    size_t len_date;      /* ebp - 0x218 */
+    size_t len_email;     /* ebp - 0x214 */
+    size_t len_author;    /* ebp - 0x210 */
+    size_t len_deckname2; /* ebp - 0x20c */
+    size_t len_deckname1; /* ebp - 0x208 */
+    FILE *f;              /* ebp - 0x204 */
+    char txt[500];        /* ebp - 0x200 */
+    int ok;               /* ebp - 0xc */
+    int num;              /* ebp - 0x8 */
+    csvid_t csvid;        /* ebp - 0x4 */
   } s;
 
-  s.pad_before_f = 0;
   s.f = fopen(filename, "rt");
   if (s.f == 0)
-    return 0;
+    goto fail;
 
   memset(global_edited_deck, 0, 0x1464);
 
@@ -6438,41 +6495,41 @@ load_deck(char *filename)
   fgets(s.txt, 0x1f, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[0] = strlen(s.txt);
-  s.txt[s.lens[0] - 1] = 0;
+  s.len_deckname1 = strlen(s.txt);
+  s.txt[s.len_deckname1 - 1] = 0;
   strncpy(global_deckname, &s.txt[1], 0x1f);
 
   fgets(s.txt, 0x15, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[1] = strlen(s.txt);
-  s.txt[s.lens[1] - 1] = 0;
+  s.len_deckname2 = strlen(s.txt);
+  s.txt[s.len_deckname2 - 1] = 0;
   strncpy(global_deckname + 0x1f, &s.txt[1], 0x15);
 
   fgets(s.txt, 0x51, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[2] = strlen(s.txt);
-  s.txt[s.lens[2] - 1] = 0;
+  s.len_author = strlen(s.txt);
+  s.txt[s.len_author - 1] = 0;
   strncpy(global_deckname + 0x34, &s.txt[1], 0x51);
 
   fgets(s.txt, 0x51, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[3] = strlen(s.txt);
-  s.txt[s.lens[3] - 1] = 0;
+  s.len_email = strlen(s.txt);
+  s.txt[s.len_email - 1] = 0;
   strncpy(global_deckname + 0x85, &s.txt[1], 0x51);
 
   fgets(s.txt, 0x16, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[4] = strlen(s.txt);
-  s.txt[s.lens[4] - 1] = 0;
+  s.len_date = strlen(s.txt);
+  s.txt[s.len_date - 1] = 0;
   strncpy(global_deckname + 0xd6, &s.txt[1], 0x16);
 
   fgets(s.txt, 0x10, s.f);
-  s.lens[5] = strlen(s.txt);
-  s.txt[s.lens[5] - 1] = 0;
+  s.len_revision = strlen(s.txt);
+  s.txt[s.len_revision - 1] = 0;
   if (s.txt[0] != ';')
     return 0;
   global_deck_revision = atoi(&s.txt[1]);
@@ -6480,61 +6537,127 @@ load_deck(char *filename)
   fgets(s.txt, 0x10, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[6] = strlen(s.txt);
-  s.txt[s.lens[6] - 1] = 0;
+  s.len_edition = strlen(s.txt);
+  s.txt[s.len_edition - 1] = 0;
   strncpy(global_deckname + 0xf0, &s.txt[1], 0x10);
 
   fgets(s.txt, 0x191, s.f);
   if (s.txt[0] != ';')
     return 0;
-  s.lens[7] = strlen(s.txt);
-  s.txt[s.lens[7] - 1] = 0;
+  s.len_comments = strlen(s.txt);
+  s.txt[s.len_comments - 1] = 0;
   strncpy(global_deckname + 0x100, &s.txt[1], 0x191);
 
-  while (1)
+  while (1
+         && (int)FUN_1000edea(s.f, s.txt) != -1
+         && FUN_1000ee98(s.txt) == 0)
   {
-    if (((int (*)(FILE *, char *, int))readline)(s.f, s.txt, 0x200) == -1)
-      break;
-    if (s.txt[0] == 'v')
-      break;
-
-    if (s.txt[0] == '.')
+    if (FUN_1000ee5d(s.txt))
     {
-      if (s.txt[1] == 'v')
-        break;
       sscanf(s.txt, ".%d %d", &s.csvid, &s.num);
       if (s.num == 0)
-        insert_cards_into_deck(s.csvid, 0, global_edited_deck);
+        FUN_1002bb7f(6, s.csvid, 0, (int)global_edited_deck);
       else
         insert_cards_into_deck(s.csvid, s.num, global_edited_deck);
     }
   }
 
   fclose(s.f);
+  s.ok = 1;
+  goto after;
 
-  count_packs();
-  return SendMessage(global_decksurface_hwnd, 0x401, 0, 0);
+fail:
+  s.ok = 0;
+
+after:
+  if (s.ok != 0)
+  {
+    count_packs();
+    s.ok = SendMessage(global_decksurface_hwnd, 0x401, 0, 0);
+  }
+  return s.ok;
+}
+
+// FUNCTION: DECKDLL 0x1000edea
+static int __cdecl
+FUN_1000edea(FILE *file, char *dest)
+{
+  int len;
+  int ch;
+
+  len = 0;
+  for (;;)
+  {
+    ch = fgetc(file);
+    if (ch != '\n')
+    {
+      if (ch != -1)
+      {
+        *dest = (char)ch;
+        dest++;
+        len++;
+        continue;
+      }
+    }
+    break;
+  }
+  *dest = 0;
+  if (ch == -1)
+    return -1;
+  return len;
+}
+
+// FUNCTION: DECKDLL 0x1000ee5d
+static int __cdecl
+FUN_1000ee5d(char *line)
+{
+  if (*line == '.' && line[1] != 'v')
+    return 1;
+  return 0;
+}
+
+// FUNCTION: DECKDLL 0x1000ee98
+static int __cdecl
+FUN_1000ee98(char *line)
+{
+  if (*line == 'v')
+    return 1;
+  if (*line == '.' && line[1] == 'v')
+    return 1;
+  return 0;
 }
 
 // FUNCTION: DECKDLL 0x1002b7bb
 static int
 check_card_count(int csvid)
 {
-  int limit;
-  int i;
-  limit = Scards[5].worldmagic_city == 0;
+  struct
+  {
+    int i;
+    unsigned int limit;
+  } s;
+
+  s.limit = Scards[5].worldmagic_city == 0;
 
   if (global_deck_num_cards < 59)
   {
-    for (i = 0; i < global_edited_deck_num_entries; ++i)
-      if (global_edited_deck[i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
-        return global_edited_deck[i].DeckEntry_Amount - (limit + 3);
+    for (s.i = 0;; ++s.i)
+    {
+      if (s.i >= global_edited_deck_num_entries)
+        break;
+      if (global_edited_deck[s.i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
+        return global_edited_deck[s.i].DeckEntry_Amount - (s.limit + 3);
+    }
   }
   else
   {
-    for (i = 0; i < global_edited_deck_num_entries; ++i)
-      if (global_edited_deck[i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
-        return global_edited_deck[i].DeckEntry_Amount - (limit * 99 + 4);
+    for (s.i = 0;; ++s.i)
+    {
+      if (s.i >= global_edited_deck_num_entries)
+        break;
+      if (global_edited_deck[s.i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
+        return global_edited_deck[s.i].DeckEntry_Amount - (s.limit * 99 + 4);
+    }
   }
 
   return 0;
