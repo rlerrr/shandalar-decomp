@@ -6,13 +6,6 @@ targets:
       sha256: 74a36dcd1c79b3009d19c79df169eacc31f91723dbc44f78fae5fa30cf15b5ed
     data_sources:
       - ghidra/cardartlib.csv
-    ghidra:
-      ignore_types: []
-      ignore_functions: []
-      name_substitutions: []
-      allow_hash_mismatch: false
-    report:
-      ignore_functions: []
   CDTOOLS:
     filename: CDTOOLS.dll
     source-root: src/cdtools
@@ -42,11 +35,15 @@ targets:
     source-root: src
     hash:
       sha256: 84cc693685ef8cc5475b338e3cd6f52e5fa527b8f68204576c431a29a4d2f2f4
+    data_sources:
+      - ghidra/magic.csv
   SHANDALAR:
     filename: shandalar.exe
     source-root: src
     hash:
       sha256: edaacde9b8c2d77743282a58010bb4ce0ae22415db84c42c4c54de63025849f4
+    data_sources:
+      - ghidra/shandalar.csv
   MANALINKINTERFACE:
     filename: manalinkinterface.dll
     source-root: src/manalinkinterface

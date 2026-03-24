@@ -15,7 +15,7 @@ import csv
 import glob
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 
 @dataclass
@@ -55,6 +55,10 @@ def parse_size(value: str, row_number: int) -> int:
         return int(s, 16)
 
     raise ValueError(f"row {row_number}: invalid orig_size value '{value}'")
+
+
+def parse_cli_address(value: str) -> int:
+    return parse_address(value, 1)
 
 
 def load_symbols(csv_path: Path) -> List[Symbol]:
@@ -109,6 +113,51 @@ def classify_delta(expected_next: int, next_address: int, delta: int) -> str:
         if delta > align_pad:
             return "alignment_plus_extra"
     return "probable_noncode_gap"
+
+
+def find_probable_noncode_fixes(
+    symbols: List[Symbol], below_address: int
+) -> Dict[int, int]:
+    fixes: Dict[int, int] = {}
+    for current, nxt in zip(symbols, symbols[1:]):
+        expected_next = current.address + current.size
+        delta = nxt.address - expected_next
+        category = classify_delta(expected_next, nxt.address, delta)
+        if category != "probable_noncode_gap" or delta <= 0:
+            continue
+        if current.address >= below_address:
+            continue
+        fixes[current.row_number] = nxt.address - current.address
+    return fixes
+
+
+def apply_fixes_to_csv(csv_path: Path, fixes: Dict[int, int]) -> int:
+    if not fixes:
+        return 0
+
+    with csv_path.open("r", newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        if reader.fieldnames is None:
+            raise ValueError("CSV has no header")
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+
+    applied = 0
+    for idx, row in enumerate(rows, start=2):
+        if idx not in fixes:
+            continue
+        row["orig_size"] = str(fixes[idx])
+        applied += 1
+
+    if applied == 0:
+        return 0
+
+    with csv_path.open("w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return applied
 
 
 def check_gaps(symbols: List[Symbol], csv_path: Path, show_alignment: bool) -> int:
@@ -198,6 +247,16 @@ def main() -> int:
         action="store_true",
         help="Also print likely pure 16-byte alignment padding gaps.",
     )
+    parser.add_argument(
+        "--fix-probable-noncode-below",
+        type=parse_cli_address,
+        metavar="ADDR",
+        help=(
+            "Automatically update orig_size in-place for rows where the gap to the "
+            "next symbol is classified as probable_noncode_gap and the current row "
+            "address is below ADDR (hex, with or without 0x)."
+        ),
+    )
     args = parser.parse_args()
 
     files = expand_inputs(args.inputs)
@@ -212,6 +271,17 @@ def main() -> int:
 
         try:
             symbols = load_symbols(csv_file)
+            if args.fix_probable_noncode_below is not None:
+                fixes = find_probable_noncode_fixes(
+                    symbols, args.fix_probable_noncode_below
+                )
+                applied = apply_fixes_to_csv(csv_file, fixes)
+                print(
+                    f"{csv_file}: applied {applied} probable_noncode_gap fix(es) "
+                    f"below 0x{args.fix_probable_noncode_below:08x}"
+                )
+                if applied:
+                    symbols = load_symbols(csv_file)
             total_issues += check_gaps(symbols, csv_file, args.show_alignment)
             files_checked += 1
         except Exception as exc:
