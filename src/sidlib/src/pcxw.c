@@ -353,6 +353,7 @@ undefined4 PcxWriteScanlineRle(char *srcScanline,int widthBytes)
 
 // FUNCTION: DRAWCARDLIB 0x10004873
 // FUNCTION: DECKDLL 0x10016ab3
+// FUNCTION: MAGIC 0x004995d7
 void PcxWriteRleByte(unsigned char value)
 {
   byte buff [4];
@@ -366,6 +367,7 @@ void PcxWriteRleByte(unsigned char value)
 
 // FUNCTION: DRAWCARDLIB 0x100048c0
 // FUNCTION: DECKDLL 0x10016b02
+// FUNCTION: MAGIC 0x00499626
 int CountRepeats(unsigned char value,unsigned char *buffer,int maxCount)
 {
   struct {

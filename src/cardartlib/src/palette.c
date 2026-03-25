@@ -208,6 +208,7 @@ undefined1 global_BluePathBitsTable[0x800];
 // FUNCTION: CARDARTLIB 0x10001220
 // FUNCTION: DRAWCARDLIB 0x1000a5a0
 // FUNCTION: DECKDLL 0x100217b0
+// FUNCTION: MAGIC 0x00491e80
 BOOL InitCardArtGdiResources(void)
 {
 #ifndef DECKDLL
@@ -243,6 +244,7 @@ BOOL InitCardArtGdiResources(void)
 // FUNCTION: CARDARTLIB 0x100012a8
 // FUNCTION: DRAWCARDLIB 0x1000a628
 // FUNCTION: DECKDLL 0x1002180d
+// FUNCTION: MAGIC 0x00491edd
 void ShutdownCardArtGdiResources(void)
 {
   if (global_screen_dc != (HDC)0x0) {
@@ -261,6 +263,7 @@ void ShutdownCardArtGdiResources(void)
 // FUNCTION: CARDARTLIB 0x100012fb
 // FUNCTION: DRAWCARDLIB 0x1000a67b
 // FUNCTION: DECKDLL 0x1002349a
+// FUNCTION: MAGIC 0x00493bfa
 void ApplyCardArtPaletteToDc(HDC hdc)
 {
   SelectPalette(hdc,global_cart_art_hpalette,0);
@@ -274,6 +277,7 @@ void ApplyCardArtPaletteToDc(HDC hdc)
 // FUNCTION: CARDARTLIB 0x1000134a
 // FUNCTION: DRAWCARDLIB 0x1000a6ca
 // FUNCTION: DECKDLL 0x10023503
+// FUNCTION: MAGIC 0x00493c63
 static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
                                           HBITMAP *out_bitmap,HGDIOBJ *out_prev_object,void **out_bits)
 {
@@ -339,6 +343,7 @@ static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITM
 // FUNCTION: CARDARTLIB 0x100014d2
 // FUNCTION: DRAWCARDLIB 0x1000a852
 // FUNCTION: DECKDLL 0x1002368b
+// FUNCTION: MAGIC 0x00493deb
 void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2)
 {
   if (param_1 != (HDC)0x0) {
@@ -353,6 +358,7 @@ void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2)
 // FUNCTION: CARDARTLIB 0x10001505
 // FUNCTION: DRAWCARDLIB 0x1000a885
 // FUNCTION: DECKDLL 0x100237c0
+// FUNCTION: MAGIC 0x00493f24
 BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 {
   BITMAP bm;
@@ -368,6 +374,7 @@ BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 // FUNCTION: CARDARTLIB 0x1000156d
 // FUNCTION: DRAWCARDLIB 0x1000a8ed
 // FUNCTION: DECKDLL 0x10023828
+// FUNCTION: MAGIC 0x00493f8c
 BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int src_x,int src_y,
                                    int src_width,int src_height)
 {
@@ -409,6 +416,7 @@ BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int 
 // FUNCTION: CARDARTLIB 0x100016b7
 // FUNCTION: DRAWCARDLIB 0x1000acf5
 // FUNCTION: DECKDLL 0x10024273
+// FUNCTION: MAGIC 0x004949d9
 BOOL SetupDuelPalette(void)
 {
   //Stack layout won't behave
@@ -480,6 +488,7 @@ BOOL SetupDuelPalette(void)
 // FUNCTION: CARDARTLIB 0x100019a8
 // FUNCTION: DRAWCARDLIB 0x1000afe6
 // FUNCTION: DECKDLL 0x10024564
+// FUNCTION: MAGIC 0x00494cca
 void DestroyCardArtPalette(void)
 {
   DeleteObject(global_cart_art_hpalette);
@@ -491,6 +500,7 @@ void DestroyCardArtPalette(void)
 // FUNCTION: CARDARTLIB 0x10003c70
 // FUNCTION: DRAWCARDLIB 0x1000a520
 // FUNCTION: DECKDLL 0x10016200
+// FUNCTION: MAGIC 0x004ecd40
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
 {
   bmi->bmiHeader.biSize = sizeof(bmi->bmiHeader);
@@ -510,6 +520,7 @@ void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
 // FUNCTION: CARDARTLIB 0x10004a50
 // FUNCTION: DRAWCARDLIB 0x10001000
 // FUNCTION: DECKDLL 0x100099b0
+// FUNCTION: MAGIC 0x004b9c20
 void * OctreeNode_Create(void)
 {
   void *_Dst;
@@ -522,6 +533,7 @@ void * OctreeNode_Create(void)
 // FUNCTION: CARDARTLIB 0x10004a83
 // FUNCTION: DRAWCARDLIB 0x10001033
 // FUNCTION: DECKDLL 0x100099e4
+// FUNCTION: MAGIC 0x004b9c54
 undefined2 * ReadPalette(char *param_1,char *param_2)
 {
   struct {
@@ -593,6 +605,7 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
 // FUNCTION: CARDARTLIB 0x10004cd7
 // FUNCTION: DRAWCARDLIB 0x10001287
 // FUNCTION: DECKDLL 0x10009c42
+// FUNCTION: MAGIC 0x004b9eb2
 bool InitDiffSquaredLookupTable(void)
 {
   int local_c;
@@ -612,6 +625,7 @@ bool InitDiffSquaredLookupTable(void)
 // FUNCTION: CARDARTLIB 0x10004d49
 // FUNCTION: DRAWCARDLIB 0x100012f9
 // FUNCTION: DECKDLL 0x10009cb4
+// FUNCTION: MAGIC 0x004b9f24
 void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 {
   int i;
@@ -632,6 +646,7 @@ void OctreeNode_CollectLeafIndices(OctNode *param_1,int param_2,int *param_3)
 // FUNCTION: CARDARTLIB 0x10004dc8
 // FUNCTION: DRAWCARDLIB 0x10001378
 // FUNCTION: DECKDLL 0x10009d33
+// FUNCTION: MAGIC 0x004b9fa3
 int OctreeNode_FinalizeSubtree(OctNode *param_1)
 {
   struct {
@@ -699,6 +714,7 @@ undefined4 Octree_InsertPathString(OctNode *param_1,char *param_2,unsigned int p
 // FUNCTION: CARDARTLIB 0x10004fe1
 // FUNCTION: DRAWCARDLIB 0x10001591
 // FUNCTION: DECKDLL 0x10009f53
+// FUNCTION: MAGIC 0x004ba1c3
 int Octree_Destroy(OctNode *rootPtr)
 {
   int i;
@@ -769,6 +785,7 @@ undefined4 InitOctreeBitTables(void)
 // FUNCTION: CARDARTLIB 0x100051f5
 // FUNCTION: DRAWCARDLIB 0x100017a5
 // FUNCTION: DECKDLL 0x1000a169
+// FUNCTION: MAGIC 0x004ba3da
 undefined4 Octree_FindNearestColor(uint param_1)
 {
   struct {
@@ -849,6 +866,7 @@ end:  ;
 // FUNCTION: CARDARTLIB 0x10005383
 // FUNCTION: DRAWCARDLIB 0x10001933
 // FUNCTION: DECKDLL 0x1000a2f7
+// FUNCTION: MAGIC 0x004ba568
 uint Octree_FindNearestPaletteIndex(uint param_1)
 {
   struct {
@@ -923,6 +941,7 @@ uint Octree_FindNearestPaletteIndex(uint param_1)
 // FUNCTION: CARDARTLIB 0x100054fb
 // FUNCTION: DRAWCARDLIB 0x10001aab
 // FUNCTION: DECKDLL 0x1000a46f
+// FUNCTION: MAGIC 0x004ba6e0
 int Octree_FlattenLeafValues(int *param_1,int *param_2)
 {
   int i;
@@ -1010,6 +1029,7 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 // FUNCTION: CARDARTLIB 0x10006809
 // FUNCTION: DRAWCARDLIB 0x10002db9
 // FUNCTION: DECKDLL 0x1000b77c
+// FUNCTION: MAGIC 0x004bb9f2
 void DestroyPaletteOctree(void)
 {
   Octree_Destroy(g_paletteOctreeRoot);

@@ -1,7 +1,16 @@
 file(GLOB magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB cards_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cards/*.c")
+file(GLOB sidlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../sidlib/src/*.c")
+set(cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/haar.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/huffman.c")
 
-set(magic_sources ${cards_c_sources} ${magic_c_sources} magic.rc)
+set(magic_sources
+  ${cards_c_sources}
+  ${magic_c_sources}
+  ${sidlib_c_sources}
+  ${cardartlib_c_sources}
+  magic.rc
+)
+
 
 add_executable(magic ${magic_sources})
 
@@ -18,6 +27,11 @@ endif()
 
 if (TARGET manalinkinterface)
   target_link_libraries(magic PRIVATE manalinkinterface)
+endif()
+
+if (TARGET rpbits)
+  target_link_libraries(magic PRIVATE rpbits)
+  target_link_options(magic PRIVATE /BASE:0x10155000)
 endif()
 
 if (MSVC)

@@ -338,6 +338,7 @@ LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000b700
 // FUNCTION: DECKDLL 0x1002d1a1
+// FUNCTION: MAGIC 0x004856b5
 HBITMAP load_pic(char *filename)
 {
   HBITMAP iVar1;
@@ -352,6 +353,7 @@ HBITMAP load_pic(char *filename)
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000b745
 // FUNCTION: DECKDLL 0x1002d1e6
+// FUNCTION: MAGIC 0x004856fa
 int OpenPcxFile(char *param_1,int param_2)
 {
   int iVar1;
@@ -363,6 +365,7 @@ int OpenPcxFile(char *param_1,int param_2)
 
 // FUNCTION: DRAWCARDLIB 0x1000b778
 // FUNCTION: DECKDLL 0x1002d21a
+// FUNCTION: MAGIC 0x0048572e
 void ClosePcxFile(int param_1)
 {
   if (param_1 == (int)DAT_10022530) 
@@ -372,6 +375,7 @@ void ClosePcxFile(int param_1)
 
 // FUNCTION: DRAWCARDLIB 0x1000b7a2
 // FUNCTION: DECKDLL 0x1002d245
+// FUNCTION: MAGIC 0x00485759
 void RpBits_Setup(int fileDescriptor)
 {
   rpbits_file_descriptor = fileDescriptor;
@@ -382,6 +386,7 @@ void RpBits_Setup(int fileDescriptor)
 // MATCHING
 // FUNCTION: DRAWCARDLIB 0x1000b7c9
 // FUNCTION: DECKDLL 0x1002d26c
+// FUNCTION: MAGIC 0x00485780
 int RpBitsRefill(void)
 {
   int iVar1;

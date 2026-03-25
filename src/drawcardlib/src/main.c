@@ -1352,6 +1352,7 @@ int BuildCostString(int *costReqs, char* costStringOut)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10007296
+// FUNCTION: MAGIC 0x0055d9ed
 int GetNextManaSymbol(char **param_1)
 {
   struct {
@@ -1798,8 +1799,8 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,char* name,int param_4,int para
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000aab9
-BOOL
-DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,int param_6,int param_7
+// FUNCTION: MAGIC 0x00494270
+BOOL DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,int param_6,int param_7
             ,int param_8,int param_9)
 
 {

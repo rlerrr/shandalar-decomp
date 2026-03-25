@@ -367,6 +367,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
 
 // FUNCTION: CARDARTLIB 0x10005cb4
 // FUNCTION: DRAWCARDLIB 0x10002264
+// FUNCTION: MAGIC 0x004bae9a
 void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 {
   undefined4 uVar1;  
@@ -586,6 +587,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100068d0
 // FUNCTION: DRAWCARDLIB 0x10002e80
+// FUNCTION: MAGIC 0x004bbac0
 uint Rgb888_QuantizeToF8(uint param_1)
 {
   return param_1 & 0xf8f8f8;

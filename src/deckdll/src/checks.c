@@ -151,6 +151,7 @@ bool check_ante(csvid_t csvid)
 }
 
 // FUNCTION: DECKDLL 0x100100e6
+// FUNCTION: MAGIC 0x004e0225
 bool check_basic(csvid_t csvid)
 {
   if (csvid == CARD_ID_SWAMP ||

@@ -85,6 +85,7 @@ typedef int (WINAPI *Int_fn_etc)();
 #define global_sound_fns ((Int_fn_etc*)(void*)&global_sound_vtable)
 
 // FUNCTION: DECKDLL 0x1002d4d3
+// FUNCTION: MAGIC 0x004859f1
 int sound_unload(int idx)
 {
   if (global_sound_status ==0)
@@ -95,6 +96,7 @@ int sound_unload(int idx)
 }
 
 // FUNCTION: DECKDLL 0x1002d421
+// FUNCTION: MAGIC 0x0048593f
 void sound_close() {
   if (!global_sound_status)
     return;
@@ -135,6 +137,7 @@ int sound_stop(int a1)
 }
 
 // FUNCTION: DECKDLL 0x1002daee
+// FUNCTION: MAGIC 0x0048600c
 void clear_sound_imports_table(void)
 {
   int i;
@@ -190,6 +193,7 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 }
 
 // FUNCTION: DECKDLL 0x1002d497
+// FUNCTION: MAGIC 0x004859b5
 int sound_load(const char *path, int num, Sound *snd)
 {
   if (global_sound_status == 0)

@@ -48,6 +48,7 @@ int DAT_101bc878;
 int DAT_101bc87c;
 
 // FUNCTION: DECKDLL 0x1000de30
+// FUNCTION: MAGIC 0x0043d210
 void ScrubString(char *param_1)
 {
   memset(param_1, 0x20, strlen(param_1));
@@ -78,6 +79,7 @@ void ReverseBits32(uint *param_1)
 }
 
 // FUNCTION: DECKDLL 0x1000deb9
+// FUNCTION: MAGIC 0x0043d29b
 int InitLicenseSecretsFromRegistry(void)
 {
   struct
@@ -175,6 +177,7 @@ int InitLicenseSecretsFromRegistry(void)
 // 1 = registry / allocation failure
 // 2 = invalid serial
 // FUNCTION: DECKDLL 0x1000e20a
+// FUNCTION: MAGIC 0x0043d5ec
 static int ValidateRegistrySerial(uint32_t *out_value)
 {
   struct
@@ -346,6 +349,7 @@ unsigned int HasExpansion(unsigned char param_1)
 }
 
 // FUNCTION: DECKDLL 0x1002709f
+// FUNCTION: MAGIC 0x00497811
 int IsCardAvailable(csvid_t csvid, int expansion)
 {
   int result;
