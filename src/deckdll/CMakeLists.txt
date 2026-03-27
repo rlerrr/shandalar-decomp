@@ -24,7 +24,6 @@ endif()
 
 if (TARGET rpbits)
   target_link_libraries(deckdll PRIVATE rpbits)
-  target_link_options(deckdll PRIVATE /BASE:0x101f7000)
 endif()
 
 if (MSVC)

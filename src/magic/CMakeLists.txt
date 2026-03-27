@@ -11,7 +11,6 @@ set(magic_sources
   magic.rc
 )
 
-
 add_executable(magic ${magic_sources})
 
 target_include_directories(magic PRIVATE
@@ -31,7 +30,6 @@ endif()
 
 if (TARGET rpbits)
   target_link_libraries(magic PRIVATE rpbits)
-  target_link_options(magic PRIVATE /BASE:0x10155000)
 endif()
 
 if (MSVC)
