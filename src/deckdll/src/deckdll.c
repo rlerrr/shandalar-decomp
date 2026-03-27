@@ -498,16 +498,19 @@ static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 char text_lines[225][128];
 
 // GLOBAL: DECKDLL 0x101427b4
+// GLOBAL: MAGIC 0x8b40d0
 int global_available_slots = 0;
 int global_num_expansions = 0;
 int global_expansion_size = 0;
 const card_ptr_t *cards_ptr;
 
 // GLOBAL: DECKDLL 0x10147220
-card_ptr_t global_raw_cards_storage[1000];
+// GLOBAL: MAGIC 0x8d0350
+card_ptr_t global_raw_cards_storage[2000];
 card_ptr_t *global_raw_cards_ptr = global_raw_cards_storage;
 
 // GLOBAL: DECKDLL 0x1012df3c
+// GLOBAL: MAGIC 0x7a7d70
 static char *global_base_txt;
 static char *global_raw_dbinfo;
 char *global_raw_rarities;
@@ -799,6 +802,7 @@ const char s_Button_1003628c[] = "Button";
 const char read_db_artist_names[100][100];
 
 // GLOBAL: DECKDLL 0x10033e48
+// GLOBAL: MAGIC 0x57b668
 const char *const_db_artist_names[] = {
     "None",
     "Amy Weber",
@@ -856,6 +860,7 @@ const char *const_db_artist_names[] = {
 };
 
 // FUNCTION: DECKDLL 0x1001a940
+// FUNCTION: MAGIC 0x452cf0
 static int read_db_guts(char *cards_dat_filename)
 {
   struct read_db_guts_locals
@@ -1115,8 +1120,8 @@ read_db(void)
 }
 
 // FUNCTION: DECKDLL 0x1001b510
-static char *
-CsvParseNextField(char **txt)
+// FUNCTION: MAGIC 0x00453a46
+static char * CsvParseNextField(char **txt)
 {
   struct
   {
@@ -1464,8 +1469,8 @@ delete_fonts(void)
 }
 
 // FUNCTION: DECKDLL 0x10025727
-static LOGFONT *
-LoadFontFromIni(char *name, int italic)
+// FUNCTION: MAGIC 0x00495e95
+static LOGFONT *LoadFontFromIni(char *name, int italic)
 {
   struct
   {
@@ -1496,8 +1501,8 @@ LoadFontFromIni(char *name, int italic)
 }
 
 // FUNCTION: DECKDLL 0x10025b00
-static COLORREF
-GetPaletteColor(int index)
+// FUNCTION: MAGIC 0x0049626e
+static COLORREF GetPaletteColor(int index)
 {
   struct
   {
@@ -1516,8 +1521,8 @@ void delete_and_close_object(HANDLE obj);
 static void destroy_create_fonts_resources(void);
 
 // FUNCTION: DECKDLL 0x10011680
-static bool
-create_fonts(void)
+// FUNCTION: MAGIC 0x00558fb0
+static bool create_fonts(void)
 {
   LOGFONT *font;
   struct
@@ -1616,8 +1621,8 @@ create_fonts(void)
 }
 
 // FUNCTION: DECKDLL 0x10011c41
-static void
-destroy_create_fonts_resources(void)
+// FUNCTION: MAGIC 0x00559571
+static void destroy_create_fonts_resources(void)
 {
   struct
   {
@@ -1731,6 +1736,7 @@ static int global_deleteobj_platform_id = -1;
 #pragma intrinsic(memset)
 
 // FUNCTION: DECKDLL 0x1002417b
+// FUNCTION: MAGIC 0x004948e1
 void delete_and_close_object(HANDLE obj)
 {
   struct
@@ -2624,85 +2630,147 @@ play_music(int a1, int a2, int a3)
 INT_PTR CALLBACK
 dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC hdc;
-  RECT r;
-  char buf[261];
-  char *p;
-  char *q;
+  /* Stack layout is extremely sensitive; keep locals grouped. */
+  struct
+  {
+    RECT r;             /* [ebp-0x134] */
+    LPARAM lparam_copy; /* [ebp-0x124] */
+    HDC hdc;            /* [ebp-0x120] */
+    int local_118;      /* [ebp-0x118] */
+    char buf[264];      /* [ebp-0x114] */
+    int local_10;       /* padding */
+    int local_c;        /* [ebp-0x0c] */
+    char *p;            /* [ebp-0x08] */
+    int pad_4;          /* [ebp-0x04] */
+  } s;
 
   switch (msg)
   {
   case WM_INITDIALOG:
-    load_text("Menus", "TITLEDIALOG");
-    SetWindowText(hdlg, text_lines[0]);
-    set_dlg_text(hdlg, RES_DECKINFO_DECKTITLE, text_lines[1]);
-    set_dlg_text(hdlg, RES_DECKINFO_DESCRIPTION, text_lines[2]);
-    set_dlg_text(hdlg, RES_DECKINFO_NAME, text_lines[3]);
-    set_dlg_text(hdlg, RES_DECKINFO_EMAIL, text_lines[4]);
-    set_dlg_text(hdlg, RES_DECKINFO_DATE, text_lines[5]);
-    set_dlg_text(hdlg, RES_DECKINFO_COMMENT, text_lines[7]);
-    set_dlg_text(hdlg, RES_DECKINFO_VERSION, text_lines[8]);
+    load_text("menus", "TITLEDIALOG");
+    SetWindowTextA(hdlg, text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION), text_lines[2]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME), text_lines[3]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL), text_lines[4]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE), text_lines[5]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES), text_lines[6]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT), text_lines[7]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_VERSION), text_lines[8]);
 
-    load_text("Menus", "OKCANCEL");
-    set_dlg_text(hdlg, RES_BUTTON_OK, text_lines[0]);
-    set_dlg_text(hdlg, RES_BUTTON_CANCEL, text_lines[1]);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT, global_deckname, 28);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT, global_deck_description, 18);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_NAME_EDITTEXT, global_deck_author, 78);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_EMAIL_EDITTEXT, global_deck_email, 78);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_DATE_EDITTEXT, global_deck_creation_date, 19);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_VERSION_EDITTEXT, "4th Edition", 13);
-    set_dlg_text_limited(hdlg, RES_DECKINFO_COMMENT_EDITTEXT, global_deck_comments, 398);
+    load_text("menus", "OKCANCEL");
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), global_deckname);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), EM_LIMITTEXT, 0x1c, 0);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deckname + 0x1f);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), EM_LIMITTEXT, 0x12, 0);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deck_author);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), EM_LIMITTEXT, 0x4e, 0);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deck_email);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), EM_LIMITTEXT, 0x4e, 0);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deck_creation_date);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), EM_LIMITTEXT, 0x13, 0);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), "4th Edition");
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), EM_LIMITTEXT, 0xd, 0);
+
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deck_comments);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), EM_LIMITTEXT, 0x18e, 0);
+
+    s.local_c = load_text("menus", "DECKFACES");
+    for (s.local_118 = 0; s.local_118 < s.local_c; s.local_118 = s.local_118 + 1)
+      SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_ADDSTRING, 0, (LPARAM)(text_lines + s.local_118));
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_SETCURSEL, global_deck_revision - 1, 0);
+
+    sprintf(s.buf, "%s\\GAUN_Results.pic", global_duelart_path);
+    global_deckinfo_pic = load_pic(s.buf);
     return 0;
 
   case WM_ERASEBKGND:
   {
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-
-    GetClientRect(hdlg, &r);
-    DrawBitmapToRect(hdc, &r, global_deckinfo_pic);
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    GetClientRect(hdlg, &s.r);
+    if (global_deckinfo_pic == (HANDLE)0)
+    {
+      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
+    }
+    else
+    {
+      DrawBitmapToRect(s.hdc, &s.r, global_deckinfo_pic);
+    }
     return 1;
   }
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
   {
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc, TRANSPARENT);
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
   }
 
   case WM_COMMAND:
   {
-    if (LOWORD(wparam) == RES_BUTTON_CANCEL)
-      EndDialog(hdlg, 0);
-    else if (LOWORD(wparam) == RES_BUTTON_OK)
+    if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_OK)
     {
-      GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), buf, 261);
-
-      for (p = buf, q = buf; (*p = *q); ++p, ++q)
-        if (*p == '.')
-          --p;
-
-      if (strcmp(buf, global_deckname))
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), s.buf, 0x105);
+      s.p = s.buf;
+      while (*s.p != '\0')
       {
-        global_deck_was_edited = global_deckname_set = true;
-        strcpy(global_deckname, buf);
+        if (*s.p == '.')
+          strcpy(s.p, s.p + 1);
+        else
+          s.p = s.p + 1;
       }
+      s.buf[s.local_118] = '\0';
+      if (strcmp(s.buf, global_deckname) != 0)
+      {
+        global_deck_was_edited = 1;
+        global_deckname_set = 1;
+      }
+      strcpy(global_deckname, s.buf);
 
-      GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deck_description, 21);
-      GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deck_author, 81);
-      GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deck_email, 81);
-      GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deck_creation_date, 22);
-      global_deck_revision = 1;
-      global_deck_edition[GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), global_deck_edition, 16)] = 0;
-      GetWindowText(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deck_comments, 401);
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deckname + 0x1f, 0x15);
+      global_deckname[s.local_118 + 0x1f] = '\0';
 
-      sprintf(global_deck_filename, "%s%s.dck", global_playdeck_path, global_deckname);
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deck_author, 0x51);
+      global_deck_author[s.local_118] = '\0';
 
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deck_email, 0x51);
+      global_deck_email[s.local_118] = '\0';
+
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deck_creation_date, 0x16);
+      global_deck_creation_date[s.local_118] = '\0';
+
+      global_deck_revision = SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_GETCURSEL, 0, 0) + 1;
+
+      GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), global_deck_edition, 0x10);
+
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deck_comments, 0x191);
+      global_deck_comments[s.local_118] = '\0';
+
+      strcpy(global_deck_filename, global_playdeck_path);
+      strcat(global_deck_filename, "\\");
+      strcat(global_deck_filename, global_deckname);
+      strcat(global_deck_filename, ".dck");
       EndDialog(hdlg, 1);
+      if (global_deckinfo_pic != (HANDLE)0)
+        delete_and_close_object(global_deckinfo_pic);
+    }
+    else if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_CANCEL)
+    {
+      if (global_deckinfo_pic != (HANDLE)0)
+        delete_and_close_object(global_deckinfo_pic);
+      EndDialog(hdlg, 0);
     }
     return 1;
   }
@@ -2739,82 +2807,103 @@ static bool show_dialog_deckinfo(void)
 }
 
 // FUNCTION: DECKDLL 0x10007bad
-INT_PTR CALLBACK dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK
+dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC hdc;
-  RECT r;
+  /* Stack layout is extremely sensitive; keep locals grouped. */
+  struct
+  {
+    RECT r;             /* [ebp-0x128] */
+    LPARAM lparam_copy; /* [ebp-0x118] */
+    HDC hdc;            /* [ebp-0x114] */
+    int pad_110;        /* [ebp-0x110] */
+    char path[264];     /* [ebp-0x10c] */
+    int pad_4;          /* [ebp-0x04] */
+  } s;
 
   switch (msg)
   {
   case WM_INITDIALOG:
   {
-    load_text("Menus", "GROUPMOVE");
-    SetWindowText(hdlg, text_lines[0]);
-    set_dlg_text(hdlg, RES_GROUPMOVE_BUTTON_BLACK, text_lines[1]);
-    set_dlg_text(hdlg, RES_GROUPMOVE_BUTTON_BLUE, text_lines[2]);
-    set_dlg_text(hdlg, RES_GROUPMOVE_BUTTON_GREEN, text_lines[3]);
-    set_dlg_text(hdlg, RES_GROUPMOVE_BUTTON_RED, text_lines[4]);
-    set_dlg_text(hdlg, RES_GROUPMOVE_BUTTON_WHITE, text_lines[5]);
-    set_dlg_text(hdlg, RES_GROUPMOVE_BUTTON_ARTIFACT, text_lines[6]);
+    load_text("menus", "GROUPMOVE");
+    SetWindowTextA(hdlg, text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_BLACK), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_BLUE), text_lines[2]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_GREEN), text_lines[3]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_RED), text_lines[4]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_WHITE), text_lines[5]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_ARTIFACT), text_lines[6]);
 
-    load_text("Menus", "OKCANCEL");
-    set_dlg_text(hdlg, RES_BUTTON_OK, text_lines[0]);
-    set_dlg_text(hdlg, RES_BUTTON_CANCEL, text_lines[1]);
+    load_text("menus", "OKCANCEL");
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
-    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_BLACK), !!(global_dlg_parameter & 1));
-    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_BLUE), !!(global_dlg_parameter & 2));
-    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_GREEN), !!(global_dlg_parameter & 4));
-    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_RED), !!(global_dlg_parameter & 8));
-    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_WHITE), !!(global_dlg_parameter & 0x10));
-    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_ARTIFACT), !!(global_dlg_parameter & 0x20));
+    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_BLACK), global_dlg_parameter & 1);
+    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_BLUE), (global_dlg_parameter & 2U) >> 1);
+    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_GREEN), (global_dlg_parameter & 4U) >> 2);
+    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_RED), (global_dlg_parameter & 8U) >> 3);
+    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_WHITE), (global_dlg_parameter & 0x10U) >> 4);
+    EnableWindow(GetDlgItem(hdlg, RES_GROUPMOVE_BUTTON_ARTIFACT), (global_dlg_parameter & 0x20U) >> 5);
+
+    sprintf(s.path, "%s\\GAUN_Options.pic", global_duelart_path);
+    global_groupmove_pic = load_pic(s.path);
     return 0;
   }
 
   case WM_ERASEBKGND:
   {
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
 
-    GetClientRect(hdlg, &r);
-    DrawBitmapToRect(hdc, &r, global_groupmove_pic);
+    GetClientRect(hdlg, &s.r);
+    if (global_groupmove_pic == (HANDLE)0)
+    {
+      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
+    }
+    else
+    {
+      DrawBitmapToRect(s.hdc, &s.r, global_groupmove_pic);
+    }
     return 1;
   }
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
   {
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc, TRANSPARENT);
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
   }
 
   case WM_COMMAND:
   {
-    switch (LOWORD(wparam))
+    if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_OK)
     {
-    case RES_BUTTON_OK:
       global_dlg_result = 0;
       if (IsDlgButtonChecked(hdlg, RES_GROUPMOVE_BUTTON_BLACK))
-        global_dlg_result |= COLOR_TEST_BLACK;
+        global_dlg_result |= 1;
       if (IsDlgButtonChecked(hdlg, RES_GROUPMOVE_BUTTON_BLUE))
-        global_dlg_result |= COLOR_TEST_BLUE;
+        global_dlg_result |= 2;
       if (IsDlgButtonChecked(hdlg, RES_GROUPMOVE_BUTTON_GREEN))
-        global_dlg_result |= COLOR_TEST_GREEN;
+        global_dlg_result |= 4;
       if (IsDlgButtonChecked(hdlg, RES_GROUPMOVE_BUTTON_RED))
-        global_dlg_result |= COLOR_TEST_RED;
+        global_dlg_result |= 8;
       if (IsDlgButtonChecked(hdlg, RES_GROUPMOVE_BUTTON_WHITE))
-        global_dlg_result |= COLOR_TEST_WHITE;
+        global_dlg_result |= 0x10;
       if (IsDlgButtonChecked(hdlg, RES_GROUPMOVE_BUTTON_ARTIFACT))
-        global_dlg_result |= COLOR_TEST_ARTIFACT;
-      global_dlg_result >>= 1;
+        global_dlg_result |= 0x20;
+      if (global_groupmove_pic != (HANDLE)0)
+        delete_and_close_object(global_groupmove_pic);
       EndDialog(hdlg, 1);
-      break;
-
-    case RES_BUTTON_CANCEL:
+    }
+    else if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_CANCEL)
+    {
+      if (global_groupmove_pic != (HANDLE)0)
+        delete_and_close_object(global_groupmove_pic);
       global_dlg_result = 0;
       EndDialog(hdlg, 0);
-      break;
     }
     return 1;
   }
@@ -2855,75 +2944,49 @@ INT_PTR CALLBACK dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
-    int pad0;
-    UINT msg_copy;
-    RECT client_rect;
-    LPARAM lparam_copy;
-    HDC hdc_copy;
-    int text_len;
-    char path[264];
-    char edit_txt[12];
-    RECT rect_main;
-    RECT rect_dlg;
+    HDC hdc_erase;      /* [ebp-0x158] */
+    RECT client_rect;   /* [ebp-0x154] */
+    LPARAM lparam_copy; /* [ebp-0x144] */
+    HDC hdc_copy;       /* [ebp-0x140] */
+    HGDIOBJ pv;         /* [ebp-0x13c] */
+    int text_len;       /* [ebp-0x138] */
+    char path[264];     /* [ebp-0x134] */
+    char edit_txt[12];  /* [ebp-0x2c] */
+    RECT rect_main;     /* [ebp-0x20] */
+    RECT rect_dlg;      /* [ebp-0x10] */
   } s;
 
-  s.msg_copy = msg;
-  switch (s.msg_copy)
+  switch (msg)
   {
   case WM_INITDIALOG:
   {
     sprintf(s.edit_txt, "%d", global_dlg_parameter);
     SetWindowTextA(hdlg, global_ask_x_dlg_title);
-    SetWindowTextA(GetDlgItem(hdlg, 1000), s.edit_txt);
+    SetWindowTextA(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), s.edit_txt);
 
     load_text("menus", "OKCANCEL");
-    SetWindowTextA(GetDlgItem(hdlg, 1), text_lines[0]);
-    SetWindowTextA(GetDlgItem(hdlg, 2), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
     GetWindowRect(global_main_hwnd, &s.rect_main);
     GetWindowRect(hdlg, &s.rect_dlg);
     SetWindowPos(hdlg, (HWND)0,
                  s.rect_main.left +
-                     ((s.rect_main.right - s.rect_main.left) - (s.rect_dlg.right - s.rect_dlg.left)) / 2,
+                      ((s.rect_main.right - s.rect_main.left) - (s.rect_dlg.right - s.rect_dlg.left)) / 2,
                  s.rect_main.top +
-                     ((s.rect_main.bottom - s.rect_main.top) - (s.rect_dlg.bottom - s.rect_dlg.top)) / 2,
-                 0, 0, 5);
+                      ((s.rect_main.bottom - s.rect_main.top) - (s.rect_dlg.bottom - s.rect_dlg.top)) / 2,
+                 0, 0, (SWP_NOSIZE | SWP_NOZORDER));
 
     sprintf(s.path, "%s\\GAUN_Options.pic", global_duelart_path);
     global_gaun_options_pic = load_pic(s.path);
     return 0;
   }
 
-  case WM_ERASEBKGND:
-  {
-    ApplyCardArtPaletteToDc((HDC)wparam);
-    GetClientRect(hdlg, &s.client_rect);
-    if (global_gaun_options_pic == (HANDLE)0)
-    {
-      FillRect((HDC)wparam, &s.client_rect, (HBRUSH)GetStockObject(2));
-    }
-    else
-    {
-      DrawBitmapToRect((HDC)wparam, &s.client_rect, global_gaun_options_pic);
-    }
-    return 1;
-  }
-
-  case WM_CTLCOLORBTN:
-  case WM_CTLCOLORSTATIC:
-  {
-    s.hdc_copy = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.hdc_copy);
-    s.lparam_copy = lparam;
-    SetBkMode(s.hdc_copy, 1);
-    return (INT_PTR)GetStockObject(5);
-  }
-
   case WM_COMMAND:
   {
-    if (LOWORD(wparam) == 1)
+    if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_OK)
     {
-      s.text_len = GetWindowTextA(GetDlgItem(hdlg, 1000), s.edit_txt, 10);
+      s.text_len = GetWindowTextA(GetDlgItem(hdlg, RES_ASKVALUE_EDITTEXT), s.edit_txt, 10);
       s.edit_txt[s.text_len] = '\0';
       global_dlg_result = atoi(s.edit_txt);
       EndDialog(hdlg, 1);
@@ -2932,7 +2995,7 @@ INT_PTR CALLBACK dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
         delete_and_close_object(global_gaun_options_pic);
       }
     }
-    else if (LOWORD(wparam) == 2)
+    else if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_CANCEL)
     {
       if (global_gaun_options_pic != (HANDLE)0)
       {
@@ -2943,6 +3006,29 @@ INT_PTR CALLBACK dlgproc_AskX(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     }
     return 1;
   }
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.hdc_copy = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_copy);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc_copy, TRANSPARENT);
+    s.pv = GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)s.pv;
+
+  case WM_ERASEBKGND:
+    s.hdc_erase = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_erase);
+    GetClientRect(hdlg, &s.client_rect);
+    if (global_gaun_options_pic != (HANDLE)0)
+    {
+      DrawBitmapToRect(s.hdc_erase, &s.client_rect, global_gaun_options_pic);
+    }
+    else
+    {
+      FillRect(s.hdc_erase, &s.client_rect, (HBRUSH)GetStockObject(GRAY_BRUSH));
+    }
+    return 1;
   }
   return 0;
 }
@@ -3011,10 +3097,10 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   struct
   {
     int tmp;              /* [ebp-0x138] */
-    RECT r;               /* [ebp-0x134] */
-    LPARAM lparam_copy;   /* [ebp-0x124] */
-    HDC hdc;              /* [ebp-0x120] */
-    unsigned int pad_11c; /* [ebp-0x11c] */
+    HDC hdc_erase;        /* [ebp-0x134] */
+    RECT r;               /* [ebp-0x130] */
+    LPARAM lparam_copy;   /* [ebp-0x120] */
+    HDC hdc_ctl;          /* [ebp-0x11c] */
     HGDIOBJ hobj;         /* [ebp-0x118] */
     char local_118[264];  /* [ebp-0x114] */
     int j;                /* [ebp-0x0c] */
@@ -3022,106 +3108,101 @@ dlgproc_InfoBox(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     int done;             /* [ebp-0x04] */
   } s;
 
+  switch (msg)
   {
-    UINT msg_copy;
-    msg_copy = msg;
-    switch (msg_copy)
-    {
-    case WM_INITDIALOG:
-      load_text("menus", "EXTRACARDSDIALOG");
-      SetWindowTextA(hdlg, text_lines[0]);
-      SetWindowTextA(GetDlgItem(hdlg, RES_INFOBOX_DESCRIPTION), text_lines[1]);
-      SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[2]);
-      SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[3]);
+  case WM_INITDIALOG:
+    load_text("menus", "EXTRACARDSDIALOG");
+    SetWindowTextA(hdlg, text_lines[0]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_INFOBOX_DESCRIPTION), text_lines[1]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[2]);
+    SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[3]);
 
+    s.done = 0;
+    s.idx = s.done;
+    while (s.done == 0)
+    {
+      if (((int *)global_excessive_cards)[s.idx * 3] != -1)
+      {
+        s.tmp = s.idx * 3;
+        s.idx = s.idx + 1;
+        SendDlgItemMessageA(hdlg, RES_INFOBOX_LIST, LB_ADDSTRING, 0, ((LPARAM *)global_excessive_cards)[s.tmp + 2]);
+      }
+      else
+      {
+        s.done = 1;
+      }
+    }
+
+    sprintf(s.local_118, "%s\\GAUN_Results.pic", global_duelart_path);
+    global_gaun_results_pic = load_pic(s.local_118);
+    return 0;
+
+  case WM_COMMAND:
+    if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_OK)
+    {
       s.done = 0;
       s.idx = s.done;
       while (s.done == 0)
       {
-        if (((int *)global_excessive_cards)[s.idx * 3] == -1)
+        if (((int *)global_excessive_cards)[s.idx * 3] != -1)
         {
-          s.done = 1;
+          for (s.j = 0; s.j < global_deck_num_entries; ++s.j)
+          {
+            if ((global_deck[s.j].GDE_csvid == ((int *)global_excessive_cards)[s.idx * 3]) &&
+                (global_deck[s.j].GDE_Available == 0) &&
+                (0 < ((int *)global_excessive_cards)[s.idx * 3 + 1]))
+            {
+              global_deck[s.j].GDE_Available = 1;
+              global_deck[s.j].GDE_DecksBits &= ~(1 << ((unsigned char)global_current_deck & 0x1f));
+              ((int *)global_excessive_cards)[s.idx * 3 + 1] = ((int *)global_excessive_cards)[s.idx * 3 + 1] + -1;
+            }
+          }
+          ++s.idx;
         }
         else
         {
-          s.tmp = s.idx * 3;
-          ++s.idx;
-          SendDlgItemMessageA(hdlg, RES_INFOBOX_LIST, LB_ADDSTRING, 0,
-                              ((LPARAM *)global_excessive_cards)[s.tmp + 2]);
+          s.done = 1;
         }
       }
 
-      sprintf(s.local_118, "%s\\GAUN_Results.pic", global_duelart_path);
-      global_gaun_results_pic = load_pic(s.local_118);
-      return 0;
-
-    case WM_ERASEBKGND:
-      s.hdc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.hdc);
-      GetClientRect(hdlg, &s.r);
-
-      if (global_gaun_results_pic == (HANDLE)0)
-      {
-        FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(2));
-      }
-      else
-      {
-        DrawBitmapToRect(s.hdc, &s.r, global_gaun_results_pic);
-      }
-      return 1;
-
-    case WM_COMMAND:
-      if (LOWORD(wparam) == RES_BUTTON_OK)
-      {
-        s.done = 0;
-        s.idx = s.done;
-        while (s.done == 0)
-        {
-          if (((int *)global_excessive_cards)[s.idx * 3] == -1)
-          {
-            s.done = 1;
-          }
-          else
-          {
-            for (s.j = 0; s.j < global_deck_num_entries; ++s.j)
-            {
-              if ((global_deck[s.j].GDE_csvid == ((int *)global_excessive_cards)[s.idx * 3]) &&
-                  (global_deck[s.j].GDE_Available == 0) &&
-                  (0 < ((int *)global_excessive_cards)[s.idx * 3 + 1]))
-              {
-                global_deck[s.j].GDE_Available = 1;
-                global_deck[s.j].GDE_DecksBits &= ~(1 << ((unsigned char)global_current_deck & 0x1f));
-                ((int *)global_excessive_cards)[s.idx * 3 + 1] = ((int *)global_excessive_cards)[s.idx * 3 + 1] + -1;
-              }
-            }
-            ++s.idx;
-          }
-        }
-
-        EndDialog(hdlg, 1);
-        if (global_gaun_results_pic != (HANDLE)0)
-          delete_and_close_object(global_gaun_results_pic);
-      }
-      else if (LOWORD(wparam) == RES_BUTTON_CANCEL)
-      {
-        if (global_gaun_results_pic != (HANDLE)0)
-          delete_and_close_object(global_gaun_results_pic);
-        EndDialog(hdlg, 0);
-      }
-      return 1;
-
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLORSTATIC:
-      s.hdc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.hdc);
-      s.lparam_copy = lparam;
-      SetBkMode(s.hdc, 1);
-      s.hobj = GetStockObject(5);
-      return (INT_PTR)s.hobj;
-
-    default:
-      return 0;
+      EndDialog(hdlg, 1);
+      if (global_gaun_results_pic != (HANDLE)0)
+        delete_and_close_object(global_gaun_results_pic);
     }
+    else if ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_CANCEL)
+    {
+      if (global_gaun_results_pic != (HANDLE)0)
+        delete_and_close_object(global_gaun_results_pic);
+      EndDialog(hdlg, 0);
+    }
+    return 1;
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.hdc_ctl = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_ctl);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc_ctl, TRANSPARENT);
+    s.hobj = GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)s.hobj;
+
+  case WM_ERASEBKGND:
+    s.hdc_erase = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_erase);
+    GetClientRect(hdlg, &s.r);
+
+    if (global_gaun_results_pic != (HANDLE)0)
+    {
+      DrawBitmapToRect(s.hdc_erase, &s.r, global_gaun_results_pic);
+    }
+    else
+    {
+      FillRect(s.hdc_erase, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
+    }
+    return 1;
+
+  default:
+    return 0;
   }
 }
 
@@ -3187,14 +3268,14 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_INITDIALOG:
       load_text("menus", "LOADDECKDIALOG");
       SetWindowTextA(hdlg, text_lines[0]);
-      SetWindowTextA(GetDlgItem(hdlg, 0xffff), text_lines[1]);
+      SetWindowTextA(GetDlgItem(hdlg, RES_LOADDECK_PLAYERDECK), text_lines[1]);
 
       load_text("menus", "OKCANCEL");
-      SetWindowTextA(GetDlgItem(hdlg, 1), text_lines[0]);
-      SetWindowTextA(GetDlgItem(hdlg, 2), text_lines[1]);
+      SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
+      SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
       s.hwnd_list = CreateWindowExA(0, "LISTBOX", "",
-                                    0x40a00003,
+                                    (WS_CHILD | WS_BORDER | WS_VSCROLL | LBS_NOTIFY | LBS_SORT),
                                     0, 0, 0, 0,
                                     hdlg, (HMENU)0, global_hinstance, (LPVOID)0);
       if (s.hwnd_list == (HWND)0)
@@ -3253,7 +3334,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       return 0;
 
     case WM_COMMAND:
-      if ((wparam & 0xFFFF) == 1)
+      if ((wparam & 0xFFFF) == RES_BUTTON_OK)
       {
         s.sel = SendDlgItemMessageA(hdlg, RES_LOADDECK_DECKLIST, CB_GETCURSEL, 0, 0);
         SendDlgItemMessageA(hdlg, RES_LOADDECK_DECKLIST, CB_GETLBTEXT, s.sel, (LPARAM)s.filename);
@@ -3264,7 +3345,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
         }
         EndDialog(hdlg, 1);
       }
-      else if ((wparam & 0xFFFF) == 2)
+      else if ((wparam & 0xFFFF) == RES_BUTTON_CANCEL)
       {
         if (global_loaddeck_pic != (HANDLE)0)
         {
@@ -3279,8 +3360,8 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       s.hdc_copy = (HDC)wparam;
       ApplyCardArtPaletteToDc(s.hdc_copy);
       s.lparam_copy = lparam;
-      SetBkMode(s.hdc_copy, 1);
-      return s.pad_500 = GetStockObject(5);
+      SetBkMode(s.hdc_copy, TRANSPARENT);
+      return (INT_PTR)(s.pad_500 = (int)GetStockObject(HOLLOW_BRUSH));
 
     case WM_ERASEBKGND:
       s.pad = (HDC)wparam;
@@ -6330,6 +6411,7 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x100256c8
+// FUNCTION: MAGIC 0x00495e36
 static int is_buttonclass(HWND hwnd)
 {
   char classname[0x64];
@@ -6345,8 +6427,8 @@ static int is_buttonclass(HWND hwnd)
 }
 
 // FUNCTION: DECKDLL 0x10025593
-LRESULT CALLBACK
-wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+// FUNCTION: MAGIC 0x00495d01
+LRESULT CALLBACK wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   if (msg == WM_KILLFOCUS)
     lparam = hwnd;
@@ -6369,8 +6451,8 @@ wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10025552
-BOOL CALLBACK
-enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
+// FUNCTION: MAGIC 0x00495cc0
+BOOL CALLBACK enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 {
   if (is_buttonclass(hwnd))
     global_wndproc_std_ButtonClass = SetWindowLong(hwnd, GWL_WNDPROC, wndproc_ButtonClass);
@@ -6378,6 +6460,7 @@ enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10025536
+// FUNCTION: MAGIC 0x00495ca4
 void change_buttonclass_wndproc(HWND hwnd)
 {
   EnumChildWindows(hwnd, enumfunc_change_buttonclass_wndproc, 0);
@@ -6689,6 +6772,7 @@ draw_lines(HDC hdc, RECT *r, HGDIOBJ pen1, HPEN pen2, HPEN pen3)
 }
 
 // FUNCTION: DECKDLL 0x10023972
+// FUNCTION: MAGIC 0x004940d6
 BOOL TileBitmapIntoRect(HDC hdc, RECT *r, HBITMAP bmp)
 {
   struct

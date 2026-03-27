@@ -25,6 +25,8 @@ extern COLORREF global_colorref_white;
 
 extern HFONT global_font_32;
 extern char global_base_directory[];
+extern char global_duelart_path[];
+extern HANDLE global_pic_statbak1;
 
 bool check_restricted(csvid_t csvid);
 bool check_banned(csvid_t csvid);
@@ -120,6 +122,24 @@ static COLORREF global_colorref_stats_lavender;
 
 // GLOBAL: DECKDLL 0x101054b4
 static COLORREF global_colorref_stats_flesh;
+
+// GLOBAL: DECKDLL 0x1003a878
+static const LOGFONT stats_logfont_template = {
+    0,         /* lfHeight */
+    0,         /* lfWidth */
+    0,         /* lfEscapement */
+    0,         /* lfOrientation */
+    FW_NORMAL, /* lfWeight (0x190) */
+    0,         /* lfItalic */
+    0,         /* lfUnderline */
+    0,         /* lfStrikeOut */
+    0,         /* lfCharSet */
+    0,         /* lfOutPrecision */
+    0,         /* lfClipPrecision */
+    0,         /* lfQuality */
+    0,         /* lfPitchAndFamily */
+    {0}        /* lfFaceName */
+};
 
 // FUNCTION: DECKDLL 0x1002e9ee
 static void
@@ -483,107 +503,97 @@ fill_stats_window(HDC hdc, RECT r, HFONT font)
 INT_PTR CALLBACK
 dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC hdc;
-  HDC chdc;
-  RECT r;
-  BITMAP bmp;
-  char txt[264];
-  int x;
-  int y;
-  unsigned int decktype;
-  static const LOGFONT stats_logfont_template = {
-      0,                           // lfHeight
-      0,                           // lfWidth
-      0,                           // lfEscapement
-      0,                           // lfOrientation
-      FW_NORMAL,                   // lfWeight
-      FALSE,                       // lfItalic
-      FALSE,                       // lfUnderline
-      FALSE,                       // lfStrikeOut
-      ANSI_CHARSET,                // lfCharSet
-      OUT_DEFAULT_PRECIS,          // lfOutPrecision
-      CLIP_DEFAULT_PRECIS,         // lfClipPrecision
-      DEFAULT_QUALITY,             // lfQuality
-      DEFAULT_PITCH | FF_DONTCARE, // lfPitchAndFamily
-      {
-          'T', 'r', 'e', 'b', 'u', 'c', 'h', 'e', 't', ' ', 'M', 'S', '\0',
-          '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'} // lfFaceName[LF_FACESIZE]
-  };
+  /* Stack layout is extremely sensitive; keep locals grouped. */
+  struct
+  {
+    HDC hdc_erase;        /* [ebp-0x150] */
+    RECT client;          /* [ebp-0x14c] */
+    LPARAM lparam_copy;   /* [ebp-0x13c] */
+    HDC hdc_ctl;          /* [ebp-0x138] */
+    HGDIOBJ brush;        /* [ebp-0x134] */
+    HDC chdc;             /* [ebp-0x130] */
+    char txt[264];        /* [ebp-0x12c] */
+    BITMAP bmp;           /* [ebp-0x24] */
+    int y;                /* [ebp-0x0c] */
+    int x;                /* [ebp-0x08] */
+    unsigned int decktype; /* [ebp-0x04] */
+  } s;
 
   switch (msg)
   {
   case WM_INITDIALOG:
     load_text("menus", "STATSDIALOG");
-    strcpy(txt, text_lines[0]);
-    strcat(txt, ": ");
-    strcat(txt, global_deckname);
-    strcat(txt, "  - ");
-    decktype = check_deck_type();
+    strcpy(s.txt, text_lines[0]);
+    strcat(s.txt, ": ");
+    strcat(s.txt, global_deckname);
+    strcat(s.txt, "  - ");
+    s.decktype = check_deck_type();
     load_text("MP_UIStrings.txt", "SHELLPAGE_MULTIDUEL");
-    if (decktype & DT_UNRESTRICTED)
-      strcat(txt, text_lines[1]);
-    else if (decktype & DT_WILD)
-      strcat(txt, text_lines[2]);
-    else if (decktype & DT_RESTRICTED_T1)
-      strcat(txt, text_lines[3]);
-    else if (decktype & DT_TOURNAMENT_T1_5)
-      strcat(txt, text_lines[4]);
-    else if (decktype & DT_HIGHLANDER)
-      strcat(txt, text_lines[5]);
+    if (s.decktype & DT_UNRESTRICTED)
+      strcat(s.txt, text_lines[1]);
+    else if (s.decktype & DT_WILD)
+      strcat(s.txt, text_lines[2]);
+    else if (s.decktype & DT_RESTRICTED_T1)
+      strcat(s.txt, text_lines[3]);
+    else if (s.decktype & DT_TOURNAMENT_T1_5)
+      strcat(s.txt, text_lines[4]);
+    else if (s.decktype & DT_HIGHLANDER)
+      strcat(s.txt, text_lines[5]);
     else
-      strcat(txt, "Unknown");
+      strcat(s.txt, "Unknown");
 
-    if (decktype & DT_HAS_ANTE)
+    if (s.decktype & DT_HAS_ANTE)
     {
-      strcat(txt, " / ");
-      strcat(txt, text_lines[7] + 1);
+      strcat(s.txt, " / ");
+      strcat(s.txt, text_lines[7] + 1);
     }
 
-    SetWindowTextA(hdlg, txt);
-    sprintf(txt, "%s\\GAUN_Options.pic", global_base_directory);
-    global_stats_pic = (HANDLE)load_pic(txt);
+    SetWindowTextA(hdlg, s.txt);
+    sprintf(s.txt, "%s\\GAUN_Options.pic", global_duelart_path);
+    global_stats_pic = (HANDLE)load_pic(s.txt);
     memcpy(&global_stats_font_desc, &stats_logfont_template, sizeof(LOGFONT));
     global_stats_font_desc.lfHeight = 30;
     strcpy(global_stats_font_desc.lfFaceName, "Cheltenham ITC Bold BT");
     global_stats_font = CreateFontIndirectA(&global_stats_font_desc);
-    global_colorref_stats_lavender = PALETTERGB(0xae, 0xb2, 0xef);
-    global_colorref_stats_lightgrey = PALETTERGB(0xf7, 0xf7, 0xf6);
-    global_colorref_stats_flesh = PALETTERGB(0xcd, 0xb0, 0x8f);
+    global_colorref_stats_lavender = 0x02efb2ae;
+    global_colorref_stats_lightgrey = 0x02f6f7f7;
+    global_colorref_stats_flesh = 0x028fb0cd;
     return 0;
 
-  case WM_ERASEBKGND:
-    hdc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    GetClientRect(hdlg, &r);
-    chdc = CreateCompatibleDC(hdc);
-    ApplyCardArtPaletteToDc(chdc);
-    SelectObject(chdc, global_stats_pic);
-    GetObjectA(global_stats_pic, sizeof(BITMAP), &bmp);
-    for (x = 0; x < r.right; x += bmp.bmWidth)
-      for (y = 0; y < r.bottom; y += bmp.bmHeight)
-        BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, chdc, 0, 0, SRCCOPY);
-
-    fill_stats_window(hdc, r, global_stats_font);
-    DeleteDC(chdc);
-    return 1;
-
   case WM_COMMAND:
-    if (LOWORD(wparam) == RES_BUTTON_OK || LOWORD(wparam) == RES_BUTTON_CANCEL)
+    if (((((unsigned int)wparam) & 0xffff) == RES_BUTTON_OK) || ((((unsigned int)wparam) & 0xffff) == RES_BUTTON_CANCEL))
     {
       DeleteObject(global_stats_font);
       if (global_stats_pic)
-        DeleteObject(global_stats_pic);
+        delete_and_close_object(global_stats_pic);
       EndDialog(hdlg, 0);
     }
     return 1;
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-    hdc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    (void)lparam;
-    SetBkMode(hdc, TRANSPARENT);
-    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
+    s.hdc_ctl = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_ctl);
+    s.lparam_copy = lparam;
+    SetBkMode(s.hdc_ctl, TRANSPARENT);
+    s.brush = GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)s.brush;
+
+  case WM_ERASEBKGND:
+    s.hdc_erase = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_erase);
+    GetClientRect(hdlg, &s.client);
+    s.chdc = CreateCompatibleDC(s.hdc_erase);
+    ApplyCardArtPaletteToDc(s.chdc);
+    SelectObject(s.chdc, (HGDIOBJ)global_pic_statbak1);
+    GetObjectA((HGDIOBJ)global_pic_statbak1, sizeof(BITMAP), &s.bmp);
+    for (s.x = 0; s.client.right > s.x; s.x = s.x + s.bmp.bmWidth)
+      for (s.y = 0; s.client.bottom > s.y; s.y = s.y + s.bmp.bmHeight)
+        BitBlt(s.hdc_erase, s.x, s.y, s.bmp.bmWidth, s.bmp.bmHeight, s.chdc, 0, 0, SRCCOPY);
+
+    fill_stats_window(s.hdc_erase, s.client, global_stats_font);
+    DeleteDC(s.chdc);
+    return 1;
   }
 
   return 0;
