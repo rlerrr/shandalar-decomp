@@ -1310,8 +1310,8 @@ INT_PTR CALLBACK dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lp
     s.hdc2 = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.hdc2);
     s.lparam_copy = lparam;
-    SetBkMode(s.hdc2, 1);
-    s.pad = (INT_PTR)GetStockObject(5);
+    SetBkMode(s.hdc2, TRANSPARENT);
+    s.pad = (INT_PTR)GetStockObject(HOLLOW_BRUSH);
     return s.pad;
   case WM_ERASEBKGND:
     s.hdc = (HDC)wparam;
@@ -1320,7 +1320,7 @@ INT_PTR CALLBACK dlgproc_FilterGLE(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lp
     if (global_filter_gle_background_pic != (HANDLE)0)
       DrawBitmapToRect(s.hdc, &s.r, global_filter_gle_background_pic);
     else
-      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(2));
+      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
     return 1;
 
   default:
@@ -1441,7 +1441,7 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
     if (global_filter_subtype_background_pic)
       DrawBitmapToRect(s.local_1f0, &s.r, global_filter_subtype_background_pic);
     else
-      FillRect(s.local_1f0, &s.r, (HBRUSH)GetStockObject(2));
+      FillRect(s.local_1f0, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
     return 1;
 
   case WM_CTLCOLORBTN:
@@ -1449,8 +1449,8 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
     s.local_1f0 = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.local_1f0);
     s.local_1f4 = (unsigned int)lparam;
-    SetBkMode(s.local_1f0, 1);
-    return (INT_PTR)GetStockObject(5);
+    SetBkMode(s.local_1f0, TRANSPARENT);
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
 
   case WM_COMMAND:
     if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)
@@ -1574,7 +1574,7 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     if (global_filter_creature_background_pic)
       DrawBitmapToRect(s.local_4a8, &s.r, global_filter_creature_background_pic);
     else
-      FillRect(s.local_4a8, &s.r, (HBRUSH)GetStockObject(2));
+      FillRect(s.local_4a8, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
     return 1;
 
   case WM_CTLCOLORBTN:
@@ -1582,8 +1582,8 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     s.local_4a8 = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.local_4a8);
     s.local_4ac = (unsigned int)lparam;
-    SetBkMode(s.local_4a8, 1);
-    return (INT_PTR)GetStockObject(5);
+    SetBkMode(s.local_4a8, TRANSPARENT);
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
 
   case WM_COMMAND:
     if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)

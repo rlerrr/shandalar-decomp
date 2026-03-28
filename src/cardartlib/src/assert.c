@@ -70,6 +70,7 @@ char global_base_directory[0x105];
 // FUNCTION: CARDARTLIB 0x10001000
 // FUNCTION: DRAWCARDLIB 0x1000c0f0
 // FUNCTION: DECKDLL 0x1000eef0
+// FUNCTION: MAGIC 0x004da0e0
 void assert(int condition,char *file,int line,char *fmt,...)
 {
   char local_114 [260];
