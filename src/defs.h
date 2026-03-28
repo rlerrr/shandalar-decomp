@@ -855,10 +855,6 @@ typedef enum
 typedef int csvid_t;
 typedef int iid_t;
 
-#ifdef SHANDALAR
-struct card_aux_t;
-#endif
-
 /* Info struct */
 typedef struct card_instance_struct
 {
@@ -884,69 +880,44 @@ typedef struct card_instance_struct
   int8_t	initial_color;		/*  0x25 */	// Shandalar: untouched
   int16_t	unused0x26;			/*  0x26 */	// Exe version of rampage() uses this as temporary storage. (!)  That's no longer called, and the data's otherwise entirely untouched.  Shandalar: untouched
   uint32_t	regen_status;		/*  0x28 */	// Keywords.
-#ifdef SHANDALAR
-  card_aux_t* aux;
-  uint32_t	unused30;
-#else
+
   uint8_t	mana_to_untap[8];	/*  0x2C */	// No longer used in Manalink, but still read by the exe in one place and still written in one place.  To reclaim, make check_untap_payment() just return 0, and rewrite setup_upkeep_costs_and_set_untap_cost() to not touch it.
-#endif
+
   int16_t	power;				/*  0x34 */
   uint8_t	number_of_targets;	/*  0x36 */
   uint8_t	unknown0x37;		/*  0x37 */	// Used only on damage cards, apparently for temporary storage
   int32_t	info_slot;			/*  0x38 */
-  uint32_t	original_internal_card_id;	/*  0x3C */ // Mok : CD_CardIDinCT_Parent
+  card_id_t	original_internal_card_id;	/*  0x3C */ // Mok : CD_CardIDinCT_Parent
   uint8_t	color_id[6];		/*  0x40 */ // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
   uint16_t	backup_internal_card_id;	/*  0x46 */ // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
   int32_t	damage_source_card;	/*  0x48 */ /* damage source card */
-#ifndef SHANDALAR
+
   uint32_t	eot_toughness;		/*  0x4C */	// Bytes 0 and 1 manipulate text-modifiers on csvid=903 effect cards; otherwise reserved for individual card use.
-#else
-  union {
-	  uint32_t eot_toughness;
-	  struct {
-		  uint8_t eot_toughness0;
-		  uint8_t eot_toughness1;
-		  uint8_t eot_toughness2;
-		  uint8_t eot_toughness3;
-	  };
-  };
-#endif
+
   int8_t	damage_target_player;	/*  0x50 */	// Player of card this aura or effect card is attached to.
-#ifdef SHANDALAR
-  counter_t special_counter_type;
-  counter_t counter2_type;
-  counter_t counter3_type;
-#else
+
   uint8_t	special_counter_type;	/*  0x51 */
   uint8_t	unk52;				/*  0x52 */	// Entirely untouched by exe.
   uint8_t	unk53;				/*  0x53 */	// Entirely untouched by exe.
-#endif
+
   uint32_t	timestamp;			/*  0x54 */
   uint8_t	mana_color;			/*  0x58 */
-#ifdef SHANDALAR
-  counter_t counter4_type;
-  counter_t counter5_type;
-  counter_t counter6_type;
-#else
+
   uint8_t	card_color;			/*  0x59 */
   uint8_t	unk5a;				/*  0x5A */
   uint8_t	unk5b;				/*  0x5B */
-#endif
+
   uint32_t	upkeep_flags;		/*  0x5C */	// Eventual candidate for reclamation.  Used in: Curse Artifact, Mishra's War Machine, Brass Man, Colossus of Sardia, Elder Spawn, Cyclone, 0x434040, 0x435b50, 0x436740, 0x437620, 0x437670, Copper Tablet, Mana Crypt, Ghazban Ogre, Serendib Djinn, Juzam Djinn, Yawgmoth Demon, 0x475a30, 0x476b90, 0x477410, Feedback, Power Leak, Energy Flux, Erosion, Cursed Land, Karma, Sunken City, Stasis, Magnetic Mountain, Power Surge, Wanderlust, Unstable Mutation, Warp Artifact, Power Struggle, Conversion, Junun Efreet, Phantasmal Forces, Force of Nature, Cosmic Horror, Lord of the Pit, 0x4d9a30.
   int32_t	attack_rating;		/*  0x60 */
   uint16_t	display_pic_csv_id;	/*  0x64 */
   uint16_t	display_pic_num;	/*  0x66 */
   uint8_t	kill_code;			/*  0x68 */
-#ifdef SHANDALAR
-  counter_t counter7_type;
-  uint8_t	counters6;
-  uint8_t	counters7;
-#else
+
   uint8_t	unk69;				/*  0x69 */	// Entirely untouched by exe.
   uint8_t	unk6A;				/*  0x6A */	// Entirely untouched by exe.
   uint8_t	unk6B;				/*  0x6B */	// Entirely untouched by exe.
-#endif
-  int32_t	internal_card_id;	/*  0x6C */
+
+  card_id_t	internal_card_id;	/*  0x6C */
   uint32_t	unknown0x70;		/*  0x70 */ /* activateability */
   target_t	targets[19];		/*  0x74 */
   int32_t	parent_controller;	/* 0x10C */
@@ -976,17 +947,10 @@ typedef struct
   uint8_t	secret;
   char		name[18];       /* 0x01 */
   uint8_t	reserved1[17];
-  uint16_t	id;	/* 0x24 */
-  uint16_t	reserved2;
+  card_id_t	id;	/* 0x24 */
   uint8_t	type;	// ct_all.csv:Type:Effect..Type::Land
   uint8_t	subtype;	// ct_all.csv:Family
   uint8_t	color;	// ct_all.csv:Color Unused..Color Colorless
-/*
-  uint8_t  cc[3];
-  uint16_t power;
-  uint16_t toughness;
-  uint16_t reserved3;
-*/
   uint8_t	cc[3];	// 0:colored mana, 1:colorless mana, 2:flags
   int16_t	power;
   int16_t	toughness;
@@ -1169,19 +1133,10 @@ typedef struct {
 	uint8_t req_colorless;
 	uint8_t req_black;
 	uint8_t req_blue;
-#if defined(SHANDALAR) || defined(DECKBUILDER)
-	int8_t req_hybrid;
-	hybrid_t hybrid_type;
-#else
 	uint8_t req_hybrid;
 	uint8_t hybrid_type;
-#endif
 	uint8_t req_green;
-#ifdef SHANDALAR
-	mana_flags_t mana_flags;
-#else
 	uint8_t unknown0x2e;
-#endif
 	uint8_t req_red;
 	uint8_t req_white;
 } casting_cost_t;
@@ -1190,7 +1145,7 @@ STATIC_ASSERT(sizeof(casting_cost_t) == 9, casting_cost_t_wrong_size);
 /* Data struct */
 typedef struct
 {
-	uint32_t id; // 0x0
+	card_id_t id; // 0x0
 	char*    full_name; // 0x4
 	char*    name; // 0x8
 	uint32_t expansion; // 0xc
