@@ -29,12 +29,6 @@
 #define STATIC_ASSERT(e, msg)	enum { static_assertion__##msg = 1/(e) }
 #endif
 
-#ifdef SHANDALAR
-#define PRIVATE_IN_SHANDALAR(arg) private: arg public:
-#else
-#define PRIVATE_IN_SHANDALAR(arg) arg
-#endif
-
 /* Colors */
 typedef enum
 {
@@ -712,11 +706,7 @@ typedef enum {
 } destroys_if_blocked_t;
 
 // Counter indices.
-#ifdef SHANDALAR
-enum counter_t: uint8_t
-#else
 typedef enum
-#endif
 {
 	COUNTER_P1_P1		= 0,
 	COUNTER_M1_M1		= 1,
@@ -860,13 +850,7 @@ typedef enum
 
 	COUNTER_end,
 	COUNTER_invalid		= 255,
-#ifndef SHANDALAR
 } counter_t;
-#else
-	COUNTER_ANY = COUNTER_end,
-};
-STATIC_ASSERT(sizeof(counter_t) == 1, counter_t_wrong_size);
-#endif
 
 typedef int csvid_t;
 typedef int iid_t;
@@ -893,11 +877,11 @@ typedef struct card_instance_struct
   uint32_t	unknown0x14;		/*  0x14 */	// activating trigger
   uint32_t	token_status;		/*  0x18 */
   int16_t	counter_toughness;	/*  0x1C */
-  PRIVATE_IN_SHANDALAR(int8_t	color;)				/*  0x1E */
+  int8_t	color;				/*  0x1E */
   int8_t	destroys_if_blocked;/*  0x1F */	/* Formerly enemy_against_color.  Uses values in destroys_if_blocked_t.  Set to 0 at the start of EVENT_CHANGE_TYPE, and should be reset in response.  AI hinting only. */
   int32_t	dummy3;				/*  0x20 */	// A dynamically-created internal_card_id stored here on a card in play, or in internal_card_id in any card, won't get reaped in end_turn_phase()
   uint8_t	blocking;			/*  0x24 */	// Banding id, if attacking
-  PRIVATE_IN_SHANDALAR(int8_t	initial_color;)		/*  0x25 */	// Shandalar: untouched
+  int8_t	initial_color;		/*  0x25 */	// Shandalar: untouched
   int16_t	unused0x26;			/*  0x26 */	// Exe version of rampage() uses this as temporary storage. (!)  That's no longer called, and the data's otherwise entirely untouched.  Shandalar: untouched
   uint32_t	regen_status;		/*  0x28 */	// Keywords.
 #ifdef SHANDALAR
@@ -910,9 +894,9 @@ typedef struct card_instance_struct
   uint8_t	number_of_targets;	/*  0x36 */
   uint8_t	unknown0x37;		/*  0x37 */	// Used only on damage cards, apparently for temporary storage
   int32_t	info_slot;			/*  0x38 */
-  PRIVATE_IN_SHANDALAR(uint32_t	original_internal_card_id;)	/*  0x3C */ // Mok : CD_CardIDinCT_Parent
+  uint32_t	original_internal_card_id;	/*  0x3C */ // Mok : CD_CardIDinCT_Parent
   uint8_t	color_id[6];		/*  0x40 */ // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
-  PRIVATE_IN_SHANDALAR(uint16_t	backup_internal_card_id;)	/*  0x46 */ // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
+  uint16_t	backup_internal_card_id;	/*  0x46 */ // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
   int32_t	damage_source_card;	/*  0x48 */ /* damage source card */
 #ifndef SHANDALAR
   uint32_t	eot_toughness;		/*  0x4C */	// Bytes 0 and 1 manipulate text-modifiers on csvid=903 effect cards; otherwise reserved for individual card use.
@@ -938,7 +922,7 @@ typedef struct card_instance_struct
   uint8_t	unk53;				/*  0x53 */	// Entirely untouched by exe.
 #endif
   uint32_t	timestamp;			/*  0x54 */
-  PRIVATE_IN_SHANDALAR(uint8_t	mana_color;)			/*  0x58 */
+  uint8_t	mana_color;			/*  0x58 */
 #ifdef SHANDALAR
   counter_t counter4_type;
   counter_t counter5_type;
@@ -950,7 +934,7 @@ typedef struct card_instance_struct
 #endif
   uint32_t	upkeep_flags;		/*  0x5C */	// Eventual candidate for reclamation.  Used in: Curse Artifact, Mishra's War Machine, Brass Man, Colossus of Sardia, Elder Spawn, Cyclone, 0x434040, 0x435b50, 0x436740, 0x437620, 0x437670, Copper Tablet, Mana Crypt, Ghazban Ogre, Serendib Djinn, Juzam Djinn, Yawgmoth Demon, 0x475a30, 0x476b90, 0x477410, Feedback, Power Leak, Energy Flux, Erosion, Cursed Land, Karma, Sunken City, Stasis, Magnetic Mountain, Power Surge, Wanderlust, Unstable Mutation, Warp Artifact, Power Struggle, Conversion, Junun Efreet, Phantasmal Forces, Force of Nature, Cosmic Horror, Lord of the Pit, 0x4d9a30.
   int32_t	attack_rating;		/*  0x60 */
-  PRIVATE_IN_SHANDALAR(uint16_t	display_pic_csv_id;)	/*  0x64 */
+  uint16_t	display_pic_csv_id;	/*  0x64 */
   uint16_t	display_pic_num;	/*  0x66 */
   uint8_t	kill_code;			/*  0x68 */
 #ifdef SHANDALAR
@@ -962,7 +946,7 @@ typedef struct card_instance_struct
   uint8_t	unk6A;				/*  0x6A */	// Entirely untouched by exe.
   uint8_t	unk6B;				/*  0x6B */	// Entirely untouched by exe.
 #endif
-  PRIVATE_IN_SHANDALAR(int32_t	internal_card_id;)	/*  0x6C */
+  int32_t	internal_card_id;	/*  0x6C */
   uint32_t	unknown0x70;		/*  0x70 */ /* activateability */
   target_t	targets[19];		/*  0x74 */
   int32_t	parent_controller;	/* 0x10C */
@@ -981,53 +965,8 @@ typedef struct card_instance_struct
   uint8_t	upkeep_white;		/* 0x129 */
   uint8_t	upkeep_artmana;		/* 0x12A */
   uint8_t	counters_m1m1;		/* 0x12B */	// Shandalar: untouched
-#ifdef SHANDALAR	// strongly-typed accessors
-  iid_t original_iid(void) const				{ return iid_t(original_internal_card_id); }
-  void set_original_iid(iid_t iid_val)			{ original_internal_card_id = iid_val.raw; }
-  csvid_t display_pic_csvid(void) const			{ return csvid_t(display_pic_csv_id); }
-  void set_display_pic_csvid(csvid_t csvid_val)	{ display_pic_csv_id = csvid_val.raw & 0xFFFF; }
-  iid_t backup_iid(void) const					{ return iid_t(backup_internal_card_id); }
-  void set_backup_iid(iid_t iid_val)			{ backup_internal_card_id = iid_val.raw & 0xFFFF; }
-  iid_t cur_iid(void) const						{ return iid_t(internal_card_id); }
-  void set_cur_iid(iid_t iid_val)				{ internal_card_id = iid_val.raw; }
-  iid_t iid(void) const							{ iid_t id{internal_card_id};	if (!id.ok()) id = iid_t(backup_internal_card_id);	return id; }
-
-  keyword2_t keywords2(void) const;
-  void set_keywords2(keyword2_t kw2_val);
-  void add_keywords2(keyword2_t kw2_val);
-  void remove_keywords2(keyword2_t kw2_val);
-
-  instance_flags_t flags(void) const			{ return (instance_flags_t)(uint8_t)initial_color; }
-  void set_flags(instance_flags_t if_val)		{ initial_color = (int8_t)(uint8_t)if_val; }
-  void add_flags(instance_flags_t if_val)		{ initial_color |= (int8_t)(uint8_t)if_val; }
-  void remove_flags(instance_flags_t if_val)	{ initial_color &= ~(int8_t)(uint8_t)if_val; }
-
-  // Conveniences.  "(inst->damage_target_player, inst->damage_target_card)" is too verbose.
-  target_t attached_to(void) const				{ return {damage_target_player, damage_target_card}; }
-  bool attached_to(target_t t) const			{ return damage_target_card == t.card && damage_target_player == t.player; }
-  bool attached_to(int p, int c) const			{ return damage_target_card == c && damage_target_player == p; }
-  card_instance_struct* attached_to_inst(void) const;	// get_card_instance(attached_to())
-  bool attached_to(type_t typ) const;			// damage_target_card >= 0 && damage_target_player >= 0 && (type(attached_to()) & typ)
-  void attach_to(int p, int c)					{ damage_target_player = p;	damage_target_card = c; }
-  void attach_to(target_t t)					{ attach_to(t.player, t.card); }
-
-  target_t damage_source(void) const			{ return {damage_source_player, damage_source_card}; }
-  bool damage_source(target_t t) const			{ return damage_source_card == t.card && damage_source_player == t.player; }
-  bool damage_source(int p, int c) const		{ return damage_source_card == c && damage_source_player == p; }
-  card_instance_struct* damage_source_inst(void) const;	// get_card_instance(damage_source())
-
-  target_t parent(void) const					{ return {parent_controller, parent_card}; }
-  bool parent(target_t t) const					{ return parent_card == t.card && parent_controller == t.player; }
-  bool parent(int p, int c) const				{ return parent_card == c && parent_controller == p; }
-  card_instance_struct* parent_inst(void) const;	// get_card_instance(parent())
-
-  color_test_t colors(void) const				{ return static_cast<color_test_t>(static_cast<uint8_t>(color)); }
-  color_test_t set_colors(color_test_t val)		{ return static_cast<color_test_t>(static_cast<uint8_t>(color = val)); }
-
-  color_test_t mana_colors(void) const			{ return static_cast<color_test_t>(mana_color); }
-  color_test_t set_mana_colors(color_test_t val){ return static_cast<color_test_t>(mana_color = val); }
-#endif
 } PACKED card_instance_t;
+STATIC_ASSERT(sizeof(card_instance_t) == 300, card_instance_t_wrong_size);
 
 typedef int (__cdecl *card_function_pointer)(int player, int card, event_t event);
 
@@ -1037,11 +976,11 @@ typedef struct
   uint8_t	secret;
   char		name[18];       /* 0x01 */
   uint8_t	reserved1[17];
-  PRIVATE_IN_SHANDALAR(uint16_t	id;)	/* 0x24 */
+  uint16_t	id;	/* 0x24 */
   uint16_t	reserved2;
   uint8_t	type;	// ct_all.csv:Type:Effect..Type::Land
   uint8_t	subtype;	// ct_all.csv:Family
-  PRIVATE_IN_SHANDALAR(uint8_t	color;)	// ct_all.csv:Color Unused..Color Colorless
+  uint8_t	color;	// ct_all.csv:Color Unused..Color Colorless
 /*
   uint8_t  cc[3];
   uint16_t power;
@@ -1061,13 +1000,6 @@ typedef struct
   uint8_t	expansion; // unused in current Manalink
   uint8_t	creature_rating;	// only -2 through 3 are accepted by ct2exe
   uint8_t	reserved4[4];
-#ifdef SHANDALAR
-  csvid_t csvid(void) const			{ return csvid_t(id); }
-  void set_csvid(csvid_t csvid_val)	{ id = csvid_val.raw & 0xFFFF; }
-
-  color_test_t colors(void) const				{ return static_cast<color_test_t>(color); }
-  color_test_t set_colors(color_test_t val)		{ return static_cast<color_test_t>(color = val); }
-#endif
 } PACKED card_data_t;
 STATIC_ASSERT(sizeof(card_data_t) == 72, card_data_t_wrong_size);
 
@@ -1258,7 +1190,7 @@ STATIC_ASSERT(sizeof(casting_cost_t) == 9, casting_cost_t_wrong_size);
 /* Data struct */
 typedef struct
 {
-	PRIVATE_IN_SHANDALAR(uint32_t id;) // 0x0
+	uint32_t id; // 0x0
 	char*    full_name; // 0x4
 	char*    name; // 0x8
 	uint32_t expansion; // 0xc
@@ -1301,20 +1233,13 @@ typedef struct
 	int32_t toughness; // 0x80
 	int16_t types[2]; // 0x84
 	char abilities[10]; // 0x88
-	PRIVATE_IN_SHANDALAR(int8_t  mana_source_colors;)
+	int8_t  mana_source_colors;
 	int8_t  inflatable;
 	uint8_t hack_colors;	// In Shandalar: color_test_t of |Hlandtypes appearing in rules text or type text
 	uint8_t currently_zero_for_all_cards;
 	uint8_t enchant_type;	// // bits 0-3: Enchant Type OWN; bits 4-7: Enchant Type OPP.  In Shandalar: zero.
 	uint8_t hack_mode;		// In Shandalar: zero
-#ifdef SHANDALAR
-	csvid_t csvid(void) const	{ return csvid_t(id); }
-	void set_csvid(csvid_t csvid_val)	{ id = csvid_val.raw & 0xFFFF; }
-
-	color_test_t mana_colors(void) const			{ return static_cast<color_test_t>(static_cast<uint8_t>(mana_source_colors)); }
-	color_test_t set_mana_colors(color_test_t val)	{ return static_cast<color_test_t>(static_cast<uint8_t>(mana_source_colors = val)); }
-#endif
-	} card_ptr_t; /* need better name here */
+} card_ptr_t; /* need better name here */
 STATIC_ASSERT(sizeof(card_ptr_t) == 152, card_ptr_t_wrong_size);
 
 typedef struct
@@ -1948,13 +1873,9 @@ typedef enum{ // results from EVENT_PAY_FLASHBACK_COST
 // Stuff required for "countering an activated ability", by Korath
 typedef struct
 {
-  PRIVATE_IN_SHANDALAR(int16_t internal_card_id;)
+  int16_t internal_card_id;
   int8_t generating_event;
   int8_t unknown_sdt;           // seems to usually be a player.  I don't see anything that accesses it directly.
-#ifdef SHANDALAR
-  iid_t iid(void) const			{ return iid_t(internal_card_id); }
-  void set_iid(iid_t iid_val)	{ internal_card_id = iid_val.raw; }
-#endif
 } PACKED stack_data_t;
 
 typedef enum {
@@ -2007,27 +1928,13 @@ typedef enum {
 
 typedef struct
 {
-#ifdef SHANDALAR
-private:
-#endif
 	uint8_t poison_;		// Do not access directly; in Manalink, use POISON_COUNTERS() to access, poison() to add, and raw_set_poison() to remove
 	uint8_t experience_;	// Do not access directly; in Manalink, use EXPERIENCE_COUNTERS() to access, add_experience() to add, and raw_set_experience() to remove
-#ifdef SHANDALAR
-public:
-#endif
 	uint8_t unused1;
 	uint8_t unused2;
 
-#ifdef SHANDALAR
-	uint8_t poison(void) const					{ return poison_; }
-	uint8_t experience(void) const				{ return experience_; }
-	void raw_set_poison(uint8_t new_val)		{ poison_ = new_val; }	// always go through poison(player, number_of_counters = 1) in engine.cpp
-	void raw_set_experience(uint8_t new_val)	{ experience_ = new_val; }	// always go through add_experience(player, number_of_counters = 1) in engine.cpp
-#  define POISON_COUNTERS(p)	(player_counters[(p)].poison())
-#else
 #  define POISON_COUNTERS(p)		(player_counters[(p)].poison_ + 0)
 #  define EXPERIENCE_COUNTERS(p)	(player_counters[(p)].experience_ + 0)
-#endif
 } PlayerCounters;
 
 typedef enum {
