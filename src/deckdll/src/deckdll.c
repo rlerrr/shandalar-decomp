@@ -143,31 +143,13 @@ static int global_supports_palette = 0;
 static int global_color_depth = 0;
 
 // GLOBAL: DECKDLL 0x1012dca0
-char global_deckname[32];
+GlobalDeckInfoBlob global_deckinfo;
 
 // GLOBAL: DECKDLL 0x10142814
 static char *global_external_deckname = NULL;
 
-// GLOBAL: DECKDLL 0x1012dcd4
-static char global_deck_author[81];
-// GLOBAL: DECKDLL 0x1012dda0
-static char global_deck_comments[404];
-
-// GLOBAL: DECKDLL 0x1012dd76
-static char global_deck_creation_date[22];
-// GLOBAL: DECKDLL 0x1012dcbf
-static char global_deck_description[21];
-// GLOBAL: DECKDLL 0x1012dd90
-static char global_deck_edition[16];
-
-// GLOBAL: DECKDLL 0x1012dd25
-static char global_deck_email[81];
-
 // GLOBAL: DECKDLL 0x101a8a70
 static char global_deck_filename[(MAX_PATH + 15) + 32 + 5];
-
-// GLOBAL: DECKDLL 0x1012dd8c
-static int global_deck_revision = 1;
 
 // GLOBAL: DECKDLL 0x101bc604
 int global_dlg_parameter = 0;
@@ -2662,31 +2644,31 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
     SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
-    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), global_deckname);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), global_deckinfo.deckname);
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKTITLE_EDITTEXT), EM_LIMITTEXT, 0x1c, 0);
 
-    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deckname + 0x1f);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deckinfo.description);
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), EM_LIMITTEXT, 0x12, 0);
 
-    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deck_author);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deckinfo.author);
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), EM_LIMITTEXT, 0x4e, 0);
 
-    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deck_email);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deckinfo.email);
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), EM_LIMITTEXT, 0x4e, 0);
 
-    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deck_creation_date);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deckinfo.creation_date);
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), EM_LIMITTEXT, 0x13, 0);
 
     SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), "4th Edition");
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), EM_LIMITTEXT, 0xd, 0);
 
-    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deck_comments);
+    SetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deckinfo.comments);
     SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), EM_LIMITTEXT, 0x18e, 0);
 
     s.local_c = load_text("menus", "DECKFACES");
     for (s.local_118 = 0; s.local_118 < s.local_c; s.local_118 = s.local_118 + 1)
       SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_ADDSTRING, 0, (LPARAM)(text_lines + s.local_118));
-    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_SETCURSEL, global_deck_revision - 1, 0);
+    SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_SETCURSEL, global_deckinfo.revision - 1, 0);
 
     sprintf(s.buf, "%s\\GAUN_Results.pic", global_duelart_path);
     global_deckinfo_pic = load_pic(s.buf);
@@ -2732,35 +2714,35 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
           s.p = s.p + 1;
       }
       s.buf[s.local_118] = '\0';
-      if (strcmp(s.buf, global_deckname) != 0)
+      if (strcmp(s.buf, global_deckinfo.deckname) != 0)
       {
         global_deck_was_edited = 1;
         global_deckname_set = 1;
       }
-      strcpy(global_deckname, s.buf);
+      strcpy(global_deckinfo.deckname, s.buf);
 
-      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deckname + 0x1f, 0x15);
-      global_deckname[s.local_118 + 0x1f] = '\0';
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DESCRIPTION_EDITTEXT), global_deckinfo.description, 0x15);
+      global_deckinfo.description[s.local_118] = '\0';
 
-      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deck_author, 0x51);
-      global_deck_author[s.local_118] = '\0';
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_NAME_EDITTEXT), global_deckinfo.author, 0x51);
+      global_deckinfo.author[s.local_118] = '\0';
 
-      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deck_email, 0x51);
-      global_deck_email[s.local_118] = '\0';
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_EMAIL_EDITTEXT), global_deckinfo.email, 0x51);
+      global_deckinfo.email[s.local_118] = '\0';
 
-      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deck_creation_date, 0x16);
-      global_deck_creation_date[s.local_118] = '\0';
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_DATE_EDITTEXT), global_deckinfo.creation_date, 0x16);
+      global_deckinfo.creation_date[s.local_118] = '\0';
 
-      global_deck_revision = SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_GETCURSEL, 0, 0) + 1;
+      global_deckinfo.revision = SendMessageA(GetDlgItem(hdlg, RES_DECKINFO_DECKFACES_COMBOBOX), LB_GETCURSEL, 0, 0) + 1;
 
-      GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), global_deck_edition, 0x10);
+      GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_VERSION_EDITTEXT), global_deckinfo.edition, 0x10);
 
-      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deck_comments, 0x191);
-      global_deck_comments[s.local_118] = '\0';
+      s.local_118 = GetWindowTextA(GetDlgItem(hdlg, RES_DECKINFO_COMMENT_EDITTEXT), global_deckinfo.comments, 0x191);
+      global_deckinfo.comments[s.local_118] = '\0';
 
       strcpy(global_deck_filename, global_playdeck_path);
       strcat(global_deck_filename, "\\");
-      strcat(global_deck_filename, global_deckname);
+      strcat(global_deck_filename, global_deckinfo.deckname);
       strcat(global_deck_filename, ".dck");
       EndDialog(hdlg, 1);
       if (global_deckinfo_pic != (HANDLE)0)
@@ -2813,12 +2795,12 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   /* Stack layout is extremely sensitive; keep locals grouped. */
   struct
   {
-    RECT r;             /* [ebp-0x128] */
-    LPARAM lparam_copy; /* [ebp-0x118] */
-    HDC hdc;            /* [ebp-0x114] */
-    int pad_110;        /* [ebp-0x110] */
-    char path[264];     /* [ebp-0x10c] */
-    int pad_4;          /* [ebp-0x04] */
+    HDC hdc_erase;      /* [ebp-0x128] */
+    RECT r;             /* [ebp-0x124] */
+    LPARAM lparam_copy; /* [ebp-0x114] */
+    HDC hdc;            /* [ebp-0x110] */
+    HGDIOBJ pv;         /* [ebp-0x10c] */
+    char path[264];     /* [ebp-0x108] */
   } s;
 
   switch (msg)
@@ -2852,17 +2834,17 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_ERASEBKGND:
   {
-    s.hdc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.hdc);
+    s.hdc_erase = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_erase);
 
     GetClientRect(hdlg, &s.r);
     if (global_groupmove_pic == (HANDLE)0)
     {
-      FillRect(s.hdc, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
+      FillRect(s.hdc_erase, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
     }
     else
     {
-      DrawBitmapToRect(s.hdc, &s.r, global_groupmove_pic);
+      DrawBitmapToRect(s.hdc_erase, &s.r, global_groupmove_pic);
     }
     return 1;
   }
@@ -2874,7 +2856,8 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     ApplyCardArtPaletteToDc(s.hdc);
     s.lparam_copy = lparam;
     SetBkMode(s.hdc, TRANSPARENT);
-    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
+    s.pv = GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)s.pv;
   }
 
   case WM_COMMAND:
@@ -3711,7 +3694,7 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     GetClientRect(hwnd, &rect);
     InflateRect(&rect, -5, -5);
 
-    if (strlen(global_deckname) >= 20)
+    if (strlen(global_deckinfo.deckname) >= 20)
       SelectObject(paintdc, global_font_28percent);
     else
       SelectObject(paintdc, global_font_40percent);
@@ -3725,12 +3708,12 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     rect.left += 3;
     rect.top += 3;
     SetTextColor(paintdc, PALETTERGB(20, 46, 77));
-    DrawText(paintdc, global_deckname, strlen(global_deckname), &rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+    DrawText(paintdc, global_deckinfo.deckname, strlen(global_deckinfo.deckname), &rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 
     rect.left -= 3;
     rect.top -= 3;
     SetTextColor(paintdc, PALETTERGB(243, 209, 175));
-    DrawText(paintdc, global_deckname, strlen(global_deckname), &rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+    DrawText(paintdc, global_deckinfo.deckname, strlen(global_deckinfo.deckname), &rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 
     EndPaint(hwnd, &paint);
     return 0;
@@ -5300,7 +5283,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
       load_text("Menus", "PRICE");
       sprintf(buf, text_lines[0], *Gold);
-      strncpy(global_deckname, buf, 12);
+      strncpy(global_deckinfo.deckname, buf, 12);
 
       InvalidateRect(global_title_hwnd, NULL, TRUE);
       TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
@@ -5780,7 +5763,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
       if (!global_deck_was_edited || ask_about_saving_deck())
       {
-        global_deck_revision = 1;
+        global_deckinfo.revision = 1;
         global_deck_num_cards = 0;
         global_edited_deck_num_entries = 0;
 
@@ -5797,15 +5780,15 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
 
         load_text("Menus", "NEWDECK");
-        sprintf(global_deckname, text_lines[0]);
+        sprintf(global_deckinfo.deckname, text_lines[0]);
 
-        global_deck_comments[0] = 0;
-        global_deck_description[0] = 0;
+        global_deckinfo.comments[0] = 0;
+        global_deckinfo.description[0] = 0;
 
-        strcpy(global_deck_author, global_cfg_player_name);
-        strcpy(global_deck_email, global_cfg_email);
+        strcpy(global_deckinfo.author, global_cfg_player_name);
+        strcpy(global_deckinfo.email, global_cfg_email);
 
-        GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, NULL, "dd/MM/yyyy", global_deck_creation_date, 22);
+        GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, NULL, "dd/MM/yyyy", global_deckinfo.creation_date, 22);
 
         show_dialog_deckinfo();
       }
@@ -6313,7 +6296,7 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     load_text("Menus", "PRICE");
     sprintf(buf, text_lines[0], *Gold);
-    strncpy(global_deckname, buf, 12); // That's peculiar.
+    strncpy(global_deckinfo.deckname, buf, 12); // That's peculiar.
     InvalidateRect(global_title_hwnd, NULL, TRUE);
 
     if (global_dlg_result >= amt)
@@ -6519,14 +6502,14 @@ save_deck(const char *filename)
   s.f = fopen(filename, "wt");
   if (s.f != 0)
   {
-    fprintf(s.f, ";%s\n", global_deckname);
-    fprintf(s.f, ";%s\n", global_deckname + 0x1f);
-    fprintf(s.f, ";%s\n", global_deckname + 0x34);
-    fprintf(s.f, ";%s\n", global_deckname + 0x85);
-    fprintf(s.f, ";%s\n", global_deckname + 0xd6);
-    fprintf(s.f, ";%d\n", global_deck_revision);
-    fprintf(s.f, ";%s\n", global_deckname + 0xf0);
-    fprintf(s.f, ";%s\n", global_deckname + 0x100);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname + 0x1f);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname + 0x34);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname + 0x85);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname + 0xd6);
+    fprintf(s.f, ";%d\n", global_deckinfo.revision);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname + 0xf0);
+    fprintf(s.f, ";%s\n", global_deckinfo.deckname + 0x100);
     fprintf(s.f, "\n");
 
     for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
@@ -6580,56 +6563,56 @@ load_deck(char *filename)
     return 0;
   s.len_deckname1 = strlen(s.txt);
   s.txt[s.len_deckname1 - 1] = 0;
-  strncpy(global_deckname, &s.txt[1], 0x1f);
+  strncpy(global_deckinfo.deckname, &s.txt[1], 0x1f);
 
   fgets(s.txt, 0x15, s.f);
   if (s.txt[0] != ';')
     return 0;
   s.len_deckname2 = strlen(s.txt);
   s.txt[s.len_deckname2 - 1] = 0;
-  strncpy(global_deckname + 0x1f, &s.txt[1], 0x15);
+  strncpy(global_deckinfo.deckname + 0x1f, &s.txt[1], 0x15);
 
   fgets(s.txt, 0x51, s.f);
   if (s.txt[0] != ';')
     return 0;
   s.len_author = strlen(s.txt);
   s.txt[s.len_author - 1] = 0;
-  strncpy(global_deckname + 0x34, &s.txt[1], 0x51);
+  strncpy(global_deckinfo.deckname + 0x34, &s.txt[1], 0x51);
 
   fgets(s.txt, 0x51, s.f);
   if (s.txt[0] != ';')
     return 0;
   s.len_email = strlen(s.txt);
   s.txt[s.len_email - 1] = 0;
-  strncpy(global_deckname + 0x85, &s.txt[1], 0x51);
+  strncpy(global_deckinfo.deckname + 0x85, &s.txt[1], 0x51);
 
   fgets(s.txt, 0x16, s.f);
   if (s.txt[0] != ';')
     return 0;
   s.len_date = strlen(s.txt);
   s.txt[s.len_date - 1] = 0;
-  strncpy(global_deckname + 0xd6, &s.txt[1], 0x16);
+  strncpy(global_deckinfo.deckname + 0xd6, &s.txt[1], 0x16);
 
   fgets(s.txt, 0x10, s.f);
   s.len_revision = strlen(s.txt);
   s.txt[s.len_revision - 1] = 0;
   if (s.txt[0] != ';')
     return 0;
-  global_deck_revision = atoi(&s.txt[1]);
+  global_deckinfo.revision = atoi(&s.txt[1]);
 
   fgets(s.txt, 0x10, s.f);
   if (s.txt[0] != ';')
     return 0;
   s.len_edition = strlen(s.txt);
   s.txt[s.len_edition - 1] = 0;
-  strncpy(global_deckname + 0xf0, &s.txt[1], 0x10);
+  strncpy(global_deckinfo.deckname + 0xf0, &s.txt[1], 0x10);
 
   fgets(s.txt, 0x191, s.f);
   if (s.txt[0] != ';')
     return 0;
   s.len_comments = strlen(s.txt);
   s.txt[s.len_comments - 1] = 0;
-  strncpy(global_deckname + 0x100, &s.txt[1], 0x191);
+  strncpy(global_deckinfo.deckname + 0x100, &s.txt[1], 0x191);
 
   while (1
          && (int)FUN_1000edea(s.f, s.txt) != -1
@@ -6944,23 +6927,23 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       char buf[160];
       load_text("Menus", "GOLDTITLE");
       sprintf(buf, text_lines[0], *Gold);
-      strncpy(global_deckname, buf, 12);
+      strncpy(global_deckinfo.deckname, buf, 12);
     }
     else if (global_db_flags_1 & DBFLAGS_EDITDECK)
-      strcpy(global_deckname, " ");
+      strcpy(global_deckinfo.deckname, " ");
     else
     {
       load_text("Menus", "NEWDECK");
-      sprintf(global_deckname, text_lines[0]);
+      sprintf(global_deckinfo.deckname, text_lines[0]);
     }
 
-    global_deck_comments[0] = 0;
-    global_deck_description[0] = 0;
-    global_deck_revision = 1;
-    strcpy(global_deck_author, global_cfg_player_name);
-    strcpy(global_deck_email, global_cfg_email);
+    global_deckinfo.comments[0] = 0;
+    global_deckinfo.description[0] = 0;
+    global_deckinfo.revision = 1;
+    strcpy(global_deckinfo.author, global_cfg_player_name);
+    strcpy(global_deckinfo.email, global_cfg_email);
 
-    GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, NULL, "dd/MM/yyyy", global_deck_creation_date, 22);
+    GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, NULL, "dd/MM/yyyy", global_deckinfo.creation_date, 22);
 
     if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_GAUNTLET | DBFLAGS_SHANDALAR))
       copy_deck_to_edit();
@@ -7512,7 +7495,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
           popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKLOADERROR", global_deck_filename, MB_ICONINFORMATION);
 
           load_text("Menus", "NEWDECK");
-          sprintf(global_deckname, text_lines[0]);
+          sprintf(global_deckinfo.deckname, text_lines[0]);
 
           sprintf(global_deck_filename, "%sNew.dck", global_playdeck_path);
         }
@@ -7521,7 +7504,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case RES_MAINMENU_SAVEDECK:
       load_text("Menus", "NEWDECK");
-      if (!strcmp(global_deckname, text_lines[0]) || !global_deckname[0])
+      if (!strcmp(global_deckinfo.deckname, text_lines[0]) || !global_deckinfo.deckname[0])
       {
         popup_loaded(hwnd, "DECKBUILDER", "NAMEYOURDECK", MB_ICONINFORMATION);
         show_dialog_deckinfo();
@@ -7537,7 +7520,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       if (global_deck_num_cards > 500 || global_edited_deck_num_entries > 200)
         popup_loaded(hwnd, "DECKBUILDER", "TOOMANYCARDS", MB_ICONINFORMATION);
 
-      sprintf(global_deck_filename, "%s%s.dck", global_playdeck_path, global_deckname);
+      sprintf(global_deck_filename, "%s%s.dck", global_playdeck_path, global_deckinfo.deckname);
 
       if (global_deckname_set)
       {
@@ -7548,7 +7531,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
           fclose(f);
 
-          rval = popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKEXISTS", global_deckname, MB_ICONQUESTION | MB_YESNOCANCEL);
+          rval = popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKEXISTS", global_deckinfo.deckname, MB_ICONQUESTION | MB_YESNOCANCEL);
           if (rval == IDNO || rval == IDCANCEL)
             return 2;
         }
@@ -7558,12 +7541,12 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       global_deck_was_edited = false;
 
       if (save_deck(global_deck_filename))
-        popup_loaded_with_args(hwnd, "DECKBUILDER", "SAVED", global_deckname, MB_ICONINFORMATION);
+        popup_loaded_with_args(hwnd, "DECKBUILDER", "SAVED", global_deckinfo.deckname, MB_ICONINFORMATION);
       else
-        popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKSAVEERROR", global_deckname, MB_ICONINFORMATION);
+        popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKSAVEERROR", global_deckinfo.deckname, MB_ICONINFORMATION);
 
       if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_GAUNTLET | DBFLAGS_NOCARDCOUNTCHECK))
-        strcpy(global_external_deckname, global_deckname);
+        strcpy(global_external_deckname, global_deckinfo.deckname);
 
       return 6;
 

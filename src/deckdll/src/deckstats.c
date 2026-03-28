@@ -13,7 +13,7 @@ extern char text_lines[500][128];
 
 extern int global_edited_deck_num_entries;
 extern DeckEntry global_edited_deck[300];
-extern char global_deckname[32];
+extern GlobalDeckInfoBlob global_deckinfo;;
 extern const card_ptr_t *cards_ptr;
 extern card_ptr_t global_raw_cards_storage[1000];
 
@@ -525,7 +525,7 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     load_text("menus", "STATSDIALOG");
     strcpy(s.txt, text_lines[0]);
     strcat(s.txt, ": ");
-    strcat(s.txt, global_deckname);
+    strcat(s.txt, global_deckinfo.deckname);
     strcat(s.txt, "  - ");
     s.decktype = check_deck_type();
     load_text("MP_UIStrings.txt", "SHELLPAGE_MULTIDUEL");

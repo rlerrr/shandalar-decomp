@@ -243,6 +243,19 @@ typedef struct Packs_t
   int num;
 } Packs;
 
+typedef struct GlobalDeckInfoBlob_t
+{
+  char deckname[31];     /* 0x000 */
+  char description[21];  /* 0x01f */
+  char author[81];       /* 0x034 */
+  char email[81];        /* 0x085 */
+  char creation_date[22];/* 0x0d6 */
+  int revision;          /* 0x0ec */
+  char edition[16];      /* 0x0f0 */
+  char comments[404];    /* 0x100 */
+} GlobalDeckInfoBlob;
+STATIC_ASSERT(sizeof(GlobalDeckInfoBlob) == 0x294, GlobalDeckInfoBlob_wrong_size);
+
 typedef struct GlobalDeckEntry_t
 {
   csvid_t GDE_csvid;
