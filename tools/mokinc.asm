@@ -1,0 +1,457 @@
+; event_t 
+CP_UNTAP_PHASE   = 1
+CP_UPKEEP_PHASE    = 4
+CP_PHASE_DRAW  = 0Ah
+CP_PHASE_MAIN  = 14h
+CP_PHASE_DECLARE_ATTACKERS  = 15h
+CP_COMBAT_OPPONENTS_DECLARED  =   1Ah
+CP_GET_MAX_HAND_SIZE  =   1Fh
+CP_DAMAGE_DEALT    = 21h
+CP_PHASE_CLEANUP  = 22h
+CP_DAMAGE_PREVENTION  =   25h
+CP_REDUCE_DAMAGE  = 26h
+CP_RECALC_POWER    = 32h
+CP_RECALC_TOUGHNESS  = 33h
+CP_RECALC_ABILITIES  = 34h
+CP_RECALC_GETDAMAGE  = 35h
+CP_RECALC_COLOR    = 36h
+CP_ADD_COUNTERSPELL_CHANCE  = 38h
+CP_CHECK_CAN_INF_POWER   = 39h
+CP_CHECK_CAN_INF_TOUGHNESS  = 3Ah
+CP_RECALC_POSSIBLE_P_T_CHANGES   = 3Bh
+CP_RECALC_IDinCT  = 3Ch
+CP_NEW_TURN  = 6Ah
+CP_PLAYCARD_STACK  = 6Ch
+CP_ACTIVATE_STACK  = 6Dh
+CP_RESOLVE_DAMAGE  = 6Eh
+CP_USE_REGENERATION  = 70h
+CP_PLAYCARD_RESOLVE  = 71h
+CP_ACTIVATE_RESOLVE  = 72h
+CP_CHECK_ACTIVATE_POSSIBLE  = 73h
+CP_CHECK_PLAY_POSSIBLE   = 74h
+CP_BURY_CARD  =   77h
+CP_DECLARE_BLOCKERS  = 78h
+CP_DECLARE_ATTACKERS  =   79h
+CP_CHECK_PROCESS_POSSIBLE  = 7Dh
+CP_PROCESS_ACTIVATE  = 7Eh
+CP_CALC_MAXMANA    = 7Fh
+CP_UNK_80  = 80h
+CP_TAP    = 81h
+CP_CHECK_CAN_UNTAP  = 82h
+CP_UNTAP  = 83h
+CP_SET_UNTAP_COST  = 84h
+CP_SET_UPKEEP_COST  = 85h
+CP_UPKEEP_PAYMENT_FAILED  = 86h
+CP_CHECK_UPKEEP_PAYMENT    = 87h
+CP_CHECK_UNTAP_PAYMENT   = 88h
+CP_FORCE_ATTACK    = 89h
+CP_ATTACK_RATING  = 8Ah
+CP_BLOCK_RATING    = 8Bh
+CP_CHECK_POSSIBLE_ABILITIES  = 8Ch
+CP_DISCARD  = 8Dh
+CP_UNK_8E  = 8Eh
+CP_CHECK_CAN_WASTE_MANA_IN_POOL    = 8Fh
+CP_GET_SELECTED_CARD  =   90h
+CP_PLAY_ABILITY    = 91h
+CP_BEFORE_COMBAT  = 92h
+CP_VARIABLE_MANA_SOURCE    = 93h
+CP_CARDCONTROLLED  = 94h
+CP_DISABLE_ABILITIES  =   0A0h
+CP_ENABLE_ABILITIES  = 0A1h
+CP_ADDITIONAL_PLAYCOST   = 0A2h
+CP_ADDITIONAL_ABILITYCOST  = 0A3h
+CP_ADDITIONAL_SELFCOST   = 0A4h
+CP_PAY_SELFCOST    = 0A5h
+CP_MODIFY_PRODUCED_MANA    = 0A6h
+CP_AFTER_DAMAGE    = 0A7h
+CP_AI_CALC  = 0C7h
+
+; trigger_t
+TRIGGER_BEGINUPKEEP  = 0C9h
+TRIGGER_UPKEEP   = 0CAh
+TRIGGER_ENDUPKEEP  = 0CBh
+TRIGGER_ENDOFCOMBAT  = 0CCh
+TRIGGER_ENDOFTURN  = 0CDh
+TRIGGER_DRAWPHASE  = 0CEh
+TRIGGER_DRAWCARD  = 0CFh
+TRIGGER_CARDDRAWN  = 0D0h
+TRIGGER_DISCARDCARD  = 0D1h
+TRIGGER_TAPCARD    = 0D2h
+TRIGGER_PLAYCARD  = 0D3h
+TRIGGER_CARDLEAVINGPLAY    = 0D4h
+TRIGGER_CARDTOGRAVEYARD    = 0D5h
+TRIGGER_GRAVEYARDORDER   = 0D6h
+TRIGGER_DAMAGEDEALING  = 0D7h
+TRIGGER_PERMANENTTOHAND    = 0D8h
+TRIGGER_CHOOSEATTACKERS    = 0D9h
+TRIGGER_CHOOSEBLOCKERS   = 0DAh
+TRIGGER_CARDINTOPLAY  =   0DBh
+TRIGGER_PAIDATTACK  = 0DCh
+TRIGGER_PAIDBLOCK  = 0DDh
+TRIGGER_ATTACKSELECTED   = 0DEh
+TRIGGER_BLOCKSELECTED  = 0DFh
+TRIGGER_GAINLIFE  = 0E0h
+TRIGGER_ENDDAMAGEPREVENTION  = 0E1h
+TRIGGER_ENDDRAW    = 0E2h
+TRIGGER_ENDMAIN    = 0E3h
+TRIGGER_ENDDISCARD  = 0E4h
+
+; keyword_t
+ABILITY_SWAMPWALK  = 1
+ABILITY_ISLANDWALK  = 2
+ABILITY_FORESTWALK  = 4
+ABILITY_MOUNTAINWALK  =   8
+ABILITY_PLAINSWALK  = 10h
+ABILITY_FLYING   = 20h
+ABILITY_BANDING    = 40h
+ABILITY_TRAMPLE    = 80h
+ABILITY_FIRSTSTRIKE  = 100h
+ABILITY_REGENERATION  =   200h
+ABILITY_WEB  = 400h
+ABILITY_PROT_BLACK  = 800h
+ABILITY_PROT_BLUE  = 1000h
+ABILITY_PROT_GREEN  = 2000h
+ABILITY_PROT_RED  = 4000h
+ABILITY_PROT_WHITE  = 8000h
+ABILITY_PROT_ARTIFACT  = 10000h
+ABILITY_PROT_ENCHANTMENT  = 20000h
+ABILITY_PROT_INSTANT  =   40000h
+ABILITY_PROT_INTERRUPT   = 80000h
+ABILITY_PROT_SORCERY  =   100000h
+ABILITY_BANDING_WHEN_ATTACKING   = 200000h
+ABILITY_TRANSFORMED  = 1000000h
+ABILITY_TOUGHNESS_CHANGED  = 2000000h
+ABILITY_POWER_CHANGED  = 4000000h
+ABILITY_ADDED  = 8000000h
+ABILITY_COLOR_CHANGED  = 10000000h
+ABILITY_POWERTRAMPLE  =   20000000h
+ABILITY_DOUBLESTRIKE  =   40000000h
+
+
+; phase_t
+PHASE_START  = 0
+PHASE_UNTAP  = 1
+PHASE_BEGINUPKEEP  = 2
+PHASE_UNK_3  = 3
+PHASE_UPKEEP  =   4
+PHASE_UNK_5  = 5
+PHASE_DRAW  = 0Ah
+PHASE_MAIN  = 14h
+PHASE_DECLARE_ATTACKERS    = 15h
+PHASE_DECLARE_ATTACKERS_FASTEFFECTS  = 16h
+PHASE_DECLARE_BLOCKERS   = 17h
+PHASE_DECLARE_BLOCKERS_FASTEFFECTS  = 18h
+PHASE_FIRSTSTRIKE_RESOLUTION  =   19h
+PHASE_COMBATDAMAGE_RESOLUTION  = 1Ah
+PHASE_COMBATDAMAGE_RESOLUTION2   = 1Bh
+PHASE_MAIN_AFTERCOMBAT   = 1Eh
+PHASE_DISCARD  = 1Fh
+PHASE_CLEANUP2   = 20h
+PHASE_UNK_21  =   21h
+PHASE_CLEANUP  = 22h
+PHASE_DAMAGE_PREVENTION    = 25h
+
+; card_instance_t
+CD   struc ;   (sizeof=0x184)
+CD_Counters db ?
+CD_Counters_m0m2 db ?
+CD_Counters_m1m1 db ?
+CD_Counters_m0m1 db ?
+CD_DestCard_Card dd ?
+CD_FLAGS08 dd ?
+CD_SourceCard_Player db   ?
+CD_UNUSED0D db ?
+CD_Toughness dw   ?
+CD_ReceivedDamage dw ?
+CD_Additional_Power dw ?
+CD_ActivatingTrigger dd   ?
+CD_FLAGS18 dd ?
+CD_Additional_Toughness   dw ?
+CD_Color db ?
+CD_LethalAgainstColorCreatures db ?
+CD_NewCreatedType_CT_ID   dd ?
+CD_OpponentOrBandedAttacker db ?
+CD_InitialColor   db ?
+CD_Rampage db ?
+CD_UNUSED27 db ?
+CD_Abilities dd   ?
+CD_ManaToUntap_Colorless db ?
+CD_ManaToUntap_Black db   ?
+CD_ManaToUntap_Blue db ?
+CD_ManaToUntap_Green db   ?
+CD_ManaToUntap_Red db ?
+CD_ManaToUntap_White db   ?
+CD_ManaToUntap_Artifact   db ?
+CD_ManaToUntap_Unk db ?
+CD_Power dw ?
+CD_NumberOfTargets db ?
+CD_UNK37 db ?
+CD_Parameter1 dd ?
+CD_CardIDinCT_Parent dd   ?
+CD_ColorlessColor_ColorID db ?
+CD_BlackColor_ColorID db ?
+CD_BlueColor_ColorID db   ?
+CD_GreenColor_ColorID db ?
+CD_RedColor_ColorID db ?
+CD_WhiteColor_ColorID db ?
+CD_ArtifactColor_ColorID db ?
+CD_UNUSED47 db ?
+CD_SourceCard_Card dd ?
+CD_Parameter2 dd ?
+CD_DestCard_Player db ?
+CD_UNK51 db ?
+CD_UNK52 db ?
+CD_UNK53 db ?
+CD_TimeStamp dd   ?
+CD_AvailableManaColors db ?
+CD_InitialManaColors db   ?
+CD_UNK5A db ?
+CD_UNK5B db ?
+CD_UpkeepFlags dd ?
+CD_AttackRating   dd ?
+CD_DisplayPicCardID dw ?
+CD_DisplayPicNumber dw ?
+CD_DeathType db   ?
+CD_UNK69 db ?
+CD_UNK6A db ?
+CD_UNK6B db ?
+CD_CardIDinCT dd ?
+CD_UNK70 dd ?
+CD_TargetCard_Player dd   ?
+CD_TargetCard_ID dd ?
+CD_TargetCard2_Player dd ?
+CD_TargetCard2_ID dd ?
+CD_Target3 dd 34 dup(?)
+CD_ParentCard_Player dd   ?
+CD_ParentCard_Card dd ?
+CD_ColorlessLandColor db ?
+CD_BlackLandColor db ?
+CD_BlueLandColor db ?
+CD_GreenLandColor db ?
+CD_RedLandColor   db ?
+CD_WhiteLandColor db ?
+CD_Counters_m2m1 db ?
+CD_Counters_p1p2 db ?
+CD_UntapFlags dd ?
+CD_Counters_p1p1 db ?
+CD_Counters_p1p0 db ?
+CD_Counters_p0p1 db ?
+CD_Counters_p2p2 db ?
+CD_UpkeepMana_Colorless   db ?
+CD_UpkeepMana_Black db ?
+CD_UpkeepMana_Blue db ?
+CD_UpkeepMana_Green db ?
+CD_UpkeepMana_Red db ?
+CD_UpkeepMana_White db ?
+CD_UpkeepMana_Artifact db ?
+CD_UpkeepMana_Unk db ?
+
+
+
+CD_CT_UNK00 db ?
+CD_CT_ShortName   db 35 dup(?)
+CD_CT_CardID dd   ?
+CD_CT_CardType db ?
+CD_CT_Family db   ?
+CD_CT_Color db ?
+CD_CT_ReqColorMana db ?
+CD_CT_ReqColorlessMana db ?
+CD_CT_CardFlags3 db ?
+CD_CT_Power dw ?
+CD_CT_Toughness   dw ?
+CD_CT_UNUSED32 db ?
+CD_CT_UNUSED33 db ?
+CD_CT_Code dd ?
+CD_CT_Abilities   dd ?
+CD_CT_CardFlags2 dd ?
+CD_CT_Rarity db   ?
+CD_CT_PlayActivatePhases db ?
+CD_CT_Expansion   dw ?
+CD_CT_StrengthRating dd   ?
+CD_CT_Abilities2 dd ?
+CD_Abilities2 dd ?
+CD_InitialIDinCT dw ?
+CD_Subtype1 dw ?
+CD_Subtype2 dw ?
+CD_Subtype3 dw ?
+CD   ends
+
+
+; card_data_t
+CT struc   ; (sizeof=0x48)
+CT_UNK00 db ?
+CT_ShortName db   35 dup(?)      ; string(C)
+CT_CardID dd ?
+CT_CardType db ?         ; enum CardTypes
+CT_Family db ?            ; enum FAMILIES
+CT_Color db ?            ; enum CTColors
+CT_ReqColorMana   db ?
+CT_ReqColorlessMana db ?
+CT_CardFlags3 db ?
+CT_Power dw ?
+CT_Toughness dw   ?
+CT_UNUSED32 db ?
+CT_UNUSED33 db ?
+CT_Code   dd ?
+CT_Abilities dd   ?         ; enum Abilities
+CT_CardFlags2 dd ?         ; enum CTFLAGS2
+CT_Rarity db ?
+CT_PlayActivatePhases db ?      ; enum ACTPHASES
+CT_Expansion dw   ?
+CT_StrengthRating dd ?
+CardTable ends
+
+
+; card_ptr_t:
+CDAT   struc ;   (sizeof=0x98)
+CDAT_ID   dd ?
+CDAT_FullName dd ?
+CDAT_Name dd ?
+CDAT_Expansion dd ?
+CDAT_Color dd ?
+CDAT_CardType dd ?
+CDAT_Subtype dw   ?
+CDAT_Subtype2 dw ?
+CDAT_TypeText dd ?
+CDAT_DB_CardType2 dd ?
+CDAT_Rarity dd ?
+CDAT_ReqColorlessMana db ?
+CDAT_ReqBlackMana db ?
+CDAT_ReqBlueMana db ?
+CDAT_UNK2B db ?
+CDAT_UNK2C db ?
+CDAT_ReqGreenMana db ?
+CDAT_UNK2E db ?
+CDAT_ReqRedMana   db ?
+CDAT_ReqWhiteMana db ?
+CDAT_UNK31 db 15 dup(?)
+CDAT_Artist dd ?
+CDAT_NumPictures dd ?
+CDAT_UNK48 dd ?
+CDAT_AI_Modifiers1 dd ?
+CDAT_AI_Modifiers2 dd ?
+CDAT_AI_IncPower db ?
+CDAT_AI_IncToughness db   ?
+CDAT_AI_Power db ?
+CDAT_AI_Toughness db ?
+CDAT_AI_BaseValue dw ?
+CDAT_AI_Dependencies dw   ?
+CDAT_AI_SleightColor dd   ?
+CDAT_AI_ValueAgainstColor dw ?
+CDAT_AI_ValueForColor dw ?
+CDAT_AI_ValueCountsAsColor dw ?
+CDAT_AI_ValueAgainstLand dw ?
+CDAT_AI_ValueForLand dw   ?
+CDAT_AI_ValueCountsAsLand dw ?
+CDAT_AI_Abilities dd ?
+CDAT_ExpRarity dd ?
+CDAT_DescText1 dd ?
+CDAT_DescText2 dd ?
+CDAT_Power dd ?
+CDAT_Toughness dd ?
+CDAT_NumOfDBAbilities dd ?
+CDAT_DBA1 db ?
+CDAT_DBA2 db ?
+CDAT_DBA3 db ?
+CDAT_DBA4 db ?
+CDAT_DBA5 db ?
+CDAT_DBA6 db ?
+CDAT_DBA7 db ?
+CDAT_DBA8 db ?
+CDAT_UNK90 db ?
+CDAT_UNK91 db ?
+CDAT_ManaSourceColors db ?
+CDAT_Inflatable   db ?
+CDAT_AI_HackColor dd ?
+CDAT   ends
+
+
+; values of "state" in your card_instance_t:
+; enum CDFLAGS08 (bitfield)
+F08_JUSTDRAWN  = 1
+F08_INPLAY  = 2
+F08_ATTACKING  = 4
+F08_BLOCKING  =   8
+F08_TAPPED  = 10h
+F08_CAST_UNRESOLVED  = 20h
+F08_ATTACKED  =   40h
+F08_SPELL_CAST   = 80h
+F08_PROCESSING   = 100h
+F08_ISBLOCKED  = 200h
+F08_UNK400  = 400h
+F08_UNK800  = 800h
+F08_OWNER_PLAYER_2  = 1000h
+F08_NOTAPWHENATTACKING   = 2000h
+F08_BLOCKED  = 4000h
+F08_MUSTATTACK   = 8000h
+F08_SICKNESS  =   10000h
+F08_JUSTSUMMONED  = 20000h
+F08_NOAUTOTAP  = 40000h
+F08_UNK80000  =   80000h
+F08_NO_MULTI_TARGET  = 100000h
+F08_TARGET  = 200000h
+F08_POWERSTRUGGLE  = 400000h
+F08_PHASED  = 800000h
+F08_NOTCRCANATTACK  = 1000000h
+F08_NOTCRCANBLOCK  = 2000000h
+
+; values of "token_status" in your card_instance_t:
+; enum CDFLAGS18 (bitfield)
+F18_HACKED  = 2
+F18_SLEIGHTED  = 4
+F18_ERASECOMPLETELY  = 8
+F18_TOKEN  = 10h
+F18_PERMANENT  = 20h
+F18_TEMPORARY_CREATURE   = 40h
+F18_DYING  = 80h
+F18_TIMEWALK  =   100h
+F18_WALLCANATTACK  = 800h
+F18_FORCECOLOR   = 2000h
+F18_BERSERK  = 4000h
+F18_CANTATTACK   = 8000h
+F18_INVISIBLE_FX  = 10000h
+F18_COMBATDAMAGE  = 40000h
+F18_TRAMPLEDAMAGE  = 80000h
+F18_FIRSTSTRIKEDAMAGE  = 100000h
+F18_ISLANDSANCTUARY  = 400000h
+F18_CANTREGENERATE  = 800000h
+F18_CONTROLLED   = 1000000h
+F18_BASICLAND_DEPENDANT    = 2000000h
+F18_CANTBEDESTROYED  = 4000000h
+F18_SPECIAL_BLOCKER  = 8000000h
+F18_NOLEAVEPLAY    = 40000000h
+
+; values of "static_ability" in your card_data_t:
+; enum CTFLAGS2   (bitfield)
+CTF_ACTIVATE  =   1
+CTF_ACTIVATE_INTERRUPT   = 2
+CTF_PROTECT  = 4
+CTF_INF_POWER  = 8
+CTF_INF_TOUGHNESS  = 10h
+CTF_COUNTERS  =   20h
+CTF_UNK40  = 40h
+CTF_UNK80  = 80h
+CTF_UNK100  = 100h
+CTF_UNK200  = 200h
+CTF_UNK400  = 400h
+CTF_UNK800  = 800h
+CTF_MANASOURCE   = 1000h
+CTF_INTERRUPT  = 2000h
+CTF_UNK4000  = 4000h
+CTF_BECAMECREATURE  = 8000h
+CTF_PAID_MANASOURCE  = 10000h
+CTF_ACT_USE_X  = 20000h
+CTF_MARTYR  = 40000h
+CTF_SELECTATTACK  = 80000h
+CTF_SELECTBLOCK    = 100000h
+CTF_LICH  = 200000h
+CTF_PAIDATTACK   = 400000h
+CTF_PAIDBLOCK  = 800000h
+CTF_FORCEATTACK    = 1000000h
+CTF_BEFORECOMBAT  = 2000000h
+CTF_DECLAREATTACK  = 4000000h
+CTF_FELLWARSTONE  = 8000000h
+CTF_CONTROLLED   = 10000000h
+CTF_UNK20000000    = 20000000h
+CTF_PLAYCOST  =   40000000h
+CTF_ABILITYCOST    = 80000000h
