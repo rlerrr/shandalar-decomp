@@ -172,88 +172,6 @@ typedef enum
   EVENT_PLANESWALK_OUT		= 0xC1,
   EVENT_RESOLVE_SPLICE		= 0xC2,
   EVENT_SHOULD_AI_PLAY		= 0xC7,
-
-  /* Cards in the exe only look at the low-order byte, so for example a custom event value of 0x181 would be treated the same as EVENT_TAP_CARD.  No exe-coded
-   * card responds directly to an event of value 0, so adding new events that end in 0x00 should be reasonably safe.  Ideally, they should only be sent to
-   * functions known to be coded in C; enough cards forward event untouched to exe functions that it's not particularly useful to check. */
-  EVENT_SET_LEGACY_EFFECT_NAME	= 0x100,
-  EVENT_SET_LEGACY_EFFECT_TEXT	= 0x200,
-  EVENT_TRIGGER_RESOLVED		= 0x300,	// Sent at the end of every card's EVENT_RESOLVE_TRIGGER.  Notably, trigger_condition is inaccessible.
-  EVENT_BECAME_MONSTROUS		= 0x400,
-  //0x500 unused
-  EVENT_CAN_MOVE_AURA			= 0x600,
-  EVENT_MOVE_AURA				= 0x700,
-  EVENT_RESOLVE_MOVING_AURA		= 0x800,
-  EVENT_PHASING					= 0x900,
-  EVENT_UPKEEP_TRIGGER_ABILITY	= 0xA00,
-  EVENT_END_TRIGGER				= 0xB00,	/* Sent as a trigger finishes being dispatched.  Mainly intended to finalize optional triggers; also handy to use
-											   for things that should happen exactly once at a time a trigger is sent, but not actually light up in the UI. */
-  EVENT_TAPPED_TO_PLAY_ABILITY	= 0xC00,	/* Sent after EVENT_TAP_CARD when a card becomes tapped as a result of EVENT_ACTIVATE, but not when a card becomes
-											 * tapped by tap_card().  So each EVENT_ACTIVATE results in either EVENT_PLAY_ABILITY, or EVENT_TAP_CARD followed
-											 * by EVENT_TAPPED_TO_PLAY_ABILITY. */
-  EVENT_END_OF_UNTAP_STEP			= 0xD00,
-  EVENT_PHASE_CHANGED				= 0xE00,	// Beware; may be sent more than once for the same phase.
-  EVENT_RESOLVE_THIS_DIES_TRIGGER	= 0xF00,	// Transparently sent by this_dies_trigger().
-  EVENT_CHECK_DESTROY_IF_BLOCKED	= 0x1000,	/* Set event_result |= 1 if (affected_card_controller,affected_card) would destroy/exile/etc.
-												 * (attacking_card_controller, attacking_card) if one would block the other; |= 2 if affected would be
-												 * destoyed/etc.  DIFB_ASK_CARD must be set on (affected_card_controller, affected_card) for it to get this
-												 * event, or DIFB_ASK_ALL_CARDS set on any card on the battlefield. */
-  EVENT_BEGIN_TURN					= 0x1100,	// Beginning of a non-skipped turn.
-  EVENT_CAN_CHANGE_TARGET			= 0x1200,
-  EVENT_CHANGE_TARGET				= 0x1300,
-  EVENT_STATIC_EFFECTS				= 0x1400,	/* Handle things that should happen "continuously".  Gets sent only to a card's own function.  Removing a card
-												 * from play or putting an effect onto the stack will make this get called again, so beware loops. */
-  EVENT_MANA_POOL_DRAINING			= 0x1500,	// Sent as a player's mana pool is being set to 0.  Will probably only be sent if a specific player_bits[] or event_flags bit is set.
-  EVENT_CHOOSING_TO_UNTAP			= 0x1600,	// Transparently sent by choosing_to_untap().
-  EVENT_TRANSFORMED					= 0x1700,
-  EVENT_ENTERING_THE_BATTLEFIELD_AS_CLONE	= 0x1800,	// Needed because EVENT_RESOLVE_SPELL (the proper time for "As [something] enters the battlefield" replacement events) only gets sent to the resolving spell.
-  EVENT_RESOLVE_ACTIVATED_GRAVEYARD_ABILITY = 0x1900,
-  EVENT_RETURN_TO_PLAY_FROM_GRAVE_MODIFIED	= 0x1A00,
-  EVENT_ANOTHER_PERMANENT_HAS_TRANSFORMED	= 0x1B00,
-  EVENT_PLAY_FIRST_HALF						= 0x1C00, // For "split" cards
-  EVENT_PLAY_SECOND_HALF					= 0x1D00, // For "split" cards
-  EVENT_HAS_MORPH							= 0x1E00, // Needed to discriminate if the card has originally Morph
-#ifdef SHANDALAR
-  EVENT_SKIP_PHASE							= 0x1F00,	// Set event_result|=1 to skip this phase, |=2 to skip this phase as a temporary effect (you can check event_result&2 to see if something else already skipped it like this), or |=4 to skip the rest of the turn without even a cleanup step.  Currently only sent in Shandalar, and only for the untap, upkeep, and draw phases.
-  EVENT_IS_DISABLING_AURA					= 0x2000,	// Return 1 if this aura prevents the creature it's enchanting from attacking, 2 if it prevents blocking, 3 if it prevents both.  Interpret broadly (e.g., Paralyze does both).
-  EVENT_AURA_IS_ENCHANTING_NONPREFERRED		= 0x2100,	// Return 1 if this aura has a preferred target controller and it's enchanting the other player's permanents, e.g. a Pacifism on its owner's own creature.
-  EVENT_AURA_IS_CONTROLCHANGER				= 0x2200,	// Return 1 if this card reads similar to "You control enchanted/equipped/otherwise-attached-to object".
-  EVENT_AURA_IS_ENCHANT_CREATURE			= 0x2300,	// Return TYPE_CREATURE if this card is an aura with enchant creature, e.g. for Tallowisp or Rootwater Shaman.  (Not "enchant creature you control" or anything like that.)
-  EVENT_BEGIN_GAME							= 0x2400,	// Sent to all cards in each player's hand immediately before the first turn of a game.
-  EVENT_HAS_ACTIVATION_FOR_T				= 0x2500,	// Return nonzero if this is a permanent with an activated ability with T in its cost.
-  EVENT_CANT_TRANSFORM						= 0x2600,	// Set event_result=1 if {affected_card_controller, affected_card} can't transform.
-#endif
-  EVENT_EFFECT_CREATED						= 0x2700,	// Shandalar: sent to each effect card immediately after it's created.  Manalink: the same, but only for a handful of specific effects.
-  EVENT_RESOLVE_GENERAL_EFFECT				= 0x2800,	// Sent by some general effect implementations, like legacy_permanents_destroyed_this_way()'s, to their original cards' functions.  player and card will be that of the effect card, so the original source will be get_card_instance(player, card)->damage_source().
-#ifdef SHANDALAR
-  EVENT_EQUIPMENT_UNATTACHED				= 0x2900,	// Sent to an equipment (that's still in play) when it becomes unattached from something (that's still in play).  Previously-attached object will no longer be in damage_target_player/card, but will still be in damage_source_player/card.  Generally you need a TRIGGER_LEAVES_PLAY handler for when the equipment itself leaves play, too.
-  EVENT_PLACED_IN_GRAVEYARD					= 0x2A00,	// Sent to a card after it's been placed in a graveyard.  Player is the card's owner; card is the position in the graveyard.  Only sent to certain cards (currently only Nether Shadow).  This event is likely to be removed in the future.
-  EVENT_QUERY_BUSHIDO						= 0x2B00,	// Sent to a card to determine how many points of Bushido it has.  Card function should return the amount directly.
-  EVENT_QUERY_MODULAR						= 0x2C00,	// Sent to a card to determine how many points of Modular it has.  Card function should return the amount directly.  (Modular-Sunburst returns 5.)
-  EVENT_OVERRIDE_RULES_TEXT					= 0x2D00,	// Return a nonzero pointer to a string (which should be static or a constant; it gets copied first thing after the call) to display arbitrary rules text on a card.  Any inspection of the card should be via get_displayed_card_instance().  2000 chars maximum.  If an effect card has BYTE0(eot_toughness) = 66, it will also get sent this; if it's 67, it'll get sent both this and EVENT_OVERRIDE_TITLE_TEXT.
-  EVENT_AURA_COULD_ATTACH_IF_PUT_ON_BF		= 0x2E00,	// Works just like EVENT_CAN_CAST, but for an Aura card, should be able to "target" cards with shroud, hexproof, and similar.  Non-Aura cards will return 0 if passed this message, of course.  If attacking_card_controller != -1, checks specifically if it could attach to {attacking_card_controller, attacking_card}.  Returns value both directly and in event_result.
-  EVENT_PREFERRED_COUNTERS					= 0x2F00,	// Query a card for its preferred counter type, which it should return directly.  Returning COUNTER_P1_P1 (== 0) means no preference; avoid +/- counters.  player and card are unset.
-  EVENT_BEGIN_TRIGGER						= 0x3000,	// Sent as a trigger begins being dispatched.  Mainly intended to initialize storage.
-  EVENT_NONPERMANENT_GRAVEYARD_FROM_PLAY	= 0x3100,	// Identical to EVENT_GRAVEYARD_FROM_PLAY, but sent for non-permanent, non-effect cards.  (Only permanents and effects get EVENT_GRAVEYARD_FROM_PLAY, irritatingly.)
-  EVENT_QUERY_VANISHING						= 0x3200,	// Sent to a card to determine whether it has Vanishing.  Card function should return nonzero directly if so.
-  EVENT_AFTER_CHANGE_TYPE					= 0x3300,	// Dispatched immediately after EVENT_CHANGE_TYPE is globally recomputed, before anything else is.  For global settings that depend on a card's current name that have to happen in timestamp order but before EVENT_SET_COLOR/EVENT_ABILITIES/EVENT_TOUGHNESS/EVENT_POWER, like Painter's Servant.  Only done if at least one card has EA_AFTER_CHANGE_TYPE set.
-  EVENT_QUERY_CAN_LOSE_THE_GAME				= 0x3400,	// Sent to see if affected_card_controller can lose the game.  event_result is a bitfield, defined in shandalar.h as LossReason.  Remove the appropriate bits from event_result to prevent loss for a given reason, or set it to 0 to prevent loss entirely.
-  EVENT_SPECULATIVE_LIFE					= 0x3500,	// Sent to change affected_card_controller's life value during AI speculation, after adjustment for lifelink and an initial penalty for starting below 0.  affected_card is the player being assessed, which is not necessarily affected_card_controller.  Stored in event_result.  Requires event_flags & EA_LICH.  Intended for Lich-like effects, where the AI is substituting some other value for life.
-#endif
-  EVENT_SUBTYPE								= 0x3600,	// In Manalink, sent only to one card whose subtype is being queried, with event_result preset to a specific subtype.  Set event_result to 0 to indicate it has the subtype, otherwise leave it alone.
-  EVENT_FIGHT								= 0x3700,
-  EVENT_QUERY_AWAKEN						= 0x3800,	// Return nonzero to indicate this card has awaken.  player and card will be 0; affected_card_controller and affected_card are undefined.
-#ifdef SHANDALAR
-  EVENT_COPY_SPELL							= 0x3900,	// Replaces EVENT_CAST_SPELL when a card is copied by a "Copy spell and choose new targets" effect.  See copy_spell_may_choose_new_targets in events.cpp for details.
-  EVENT_AURA_ATTACHING						= 0x3A00,	// Sent to an aura (only) just before it moves from one enchanted object from another.  The new object will be in aura_inst->targets[0]; the old one will still be in aura_inst->attached_to().  Intended primarily for AI and to update recalculation flags on the two objects.
-  EVENT_AURA_ATTACHED						= 0x3B00,	// Sent to all cards just after an aura becomes attached to a new object, whether or not it was previously attached to another.  affected_card_controller/affected_card is the aura; the new object is now in aura_inst->attached_to().
-  EVENT_FINALIZE_ACTIVATION					= 0x3C00,	// Fake event checked for by ACTIVATION() macros after paying costs.  Used to robustly set accumulate-and-fire globals. :(
-  EVENT_ABILITIES_NOT_IN_PLAY				= 0x3D00,	// Equivalent to EVENT_ABILITIES, but sent only for cards in hands or on the stack (and in particular, sent even to other cards for them, unlike EVENT_ABILITIES)
-  EVENT_END_COMBAT							= 0x3E00,	// Sent for "until end of combat" effects, after TRIGGER_END_COMBAT (if that's sent).
-  EVENT_PROT_MISC							= 0x3F00,	// Sent to cards with KEYWORD2_PROT_MISC set, or to all cards if KEYWORD2_GRANTED_PROT_MISC is set, to see if the card has protection from {attacking_Card_controller,attacking_card}.  BYTE3 of event_result will be set to 'd', 'e', 'q', 'b', or 't' to indicate whether it's checking damage, enchanting, equipping, blocking, or targeting.  Set BYTE0 of event_result to 1 to indicate protection.
-  EVENT_OVERRIDE_TITLE_TEXT					= 0x4000,	// Return a nonzero pointer to a string (which should be static or a constant; it gets copied first thing after the call) to display arbitrary rules text on a card.  Any inspection of the card should be via get_displayed_card_instance().  100 characters maximum.  Currently only sent for effect cards: if an effect card has BYTE0(eot_toughness) = 68, it will get sent this; if it's 67, it'll get sent both this and EVENT_OVERRIDE_RULES_TEXT.  (It doesn't get sent to real cards or activation cards because of wndproc_CardClass WM_USER+0x32, not to activation cards because of draw_smallcard_activation_card, and not to draw-a-card cards because of wndproc_CardClass WM_PAINT.)
-  EVENT_CAN_PLAY_OTHER						= 0x4100,	// Dispatched whenever EVENT_CAN_CAST is (and returns true) if event_flags & EA_CAN_PLAY_OTHER.  affected_card_controller/affected_card is the card being cast (if from a hand), attacking_card_controller to the player casting it, and attacking_card to its iid.  Any card can respond to that by setting event_result = 0 to prevent casting.
-#endif
 } event_t;
 
 /* Trigger conditions */
@@ -852,6 +770,35 @@ typedef enum
 	COUNTER_invalid		= 255,
 } counter_t;
 
+typedef enum CDFLAGS08 {
+    F08_JUSTDRAWN              = 0x1,
+    F08_INPLAY                 = 0x2,
+    F08_ATTACKING              = 0x4,
+    F08_BLOCKING               = 0x8,
+    F08_TAPPED                 = 0x10,
+    F08_CAST_UNRESOLVED        = 0x20,
+    F08_ATTACKED               = 0x40,
+    F08_SPELL_CAST             = 0x80,
+    F08_PROCESSING             = 0x100,
+    F08_ISBLOCKED              = 0x200,
+    F08_UNK400                 = 0x400,
+    F08_UNK800                 = 0x800,
+    F08_OWNER_PLAYER_2         = 0x1000,
+    F08_NOTAPWHENATTACKING     = 0x2000,
+    F08_BLOCKED                = 0x4000,
+    F08_MUSTATTACK             = 0x8000,
+    F08_SICKNESS               = 0x10000,
+    F08_JUSTSUMMONED           = 0x20000,
+    F08_NOAUTOTAP              = 0x40000,
+    F08_UNK80000               = 0x80000,
+    F08_NO_MULTI_TARGET        = 0x100000,
+    F08_TARGET                 = 0x200000,
+    F08_POWERSTRUGGLE          = 0x400000,
+    F08_PHASED                 = 0x800000,
+    F08_NOTCRCANATTACK         = 0x1000000,
+    F08_NOTCRCANBLOCK          = 0x2000000
+} card_instance_state_t;
+
 typedef int csvid_t;
 typedef int iid_t;
 
@@ -864,14 +811,14 @@ typedef struct card_instance_struct
   uint8_t	counters3;			/*  0x02 */	// Originally -1/-1 counters from Unstable Mutation
   uint8_t	counters4;			/*  0x03 */	// Originally -0/-1 counters
   int32_t	damage_target_card;	/*  0x04 */	// Card this aura or effect card is attached to.
-  uint32_t	state;				/*  0x08 */
+  card_instance_state_t	state;  /*  0x08 */
   int8_t	damage_source_player;	/*  0x0C */ //  int32_t  damage_source_player;
   int8_t	unused0;			/*  0x0D */	// Shandalar: untouched
   int16_t	toughness;			/*  0x0E */
   uint16_t	damage_on_card;		/*  0x10 */
   int16_t	counter_power;		/*  0x12 */
   uint32_t	unknown0x14;		/*  0x14 */	// activating trigger
-  uint32_t	token_status;		/*  0x18 */
+  status_t	token_status;		/*  0x18 */
   int16_t	counter_toughness;	/*  0x1C */
   int8_t	color;				/*  0x1E */
   int8_t	destroys_if_blocked;/*  0x1F */	/* Formerly enemy_against_color.  Uses values in destroys_if_blocked_t.  Set to 0 at the start of EVENT_CHANGE_TYPE, and should be reset in response.  AI hinting only. */
@@ -939,6 +886,49 @@ typedef struct card_instance_struct
 } PACKED card_instance_t;
 STATIC_ASSERT(sizeof(card_instance_t) == 300, card_instance_t_wrong_size);
 
+/* Extra ability is cards_data */
+typedef enum
+{
+	EA_ACT_ABILITY		= 0x1,
+	EA_ACT_INTERRUPT	= 0x2,
+	EA_PROTECT			= 0x4,
+	EA_INF_POWER		= 0x8,
+	EA_INF_TOUGHNESS	= 0x10,
+	EA_COUNTERS			= 0x20,
+	EA_UNK40			= 0x40,		// copper tablet/disrupting scepter
+	EA_UNK80			= 0x80,		// Shandalar: more expensive?
+	EA_UNK100			= 0x100,	// Shandalar: card may be put in a dungeon; not selectable in cardpicker
+	EA_UNK200			= 0x200,	// Shandalar: double cost?
+	EA_UNK400			= 0x400,	// Shandalar: rarer?  Lich, most Arabian Nights and Antiquities cards
+	EA_UNK800			= 0x800,	// Shandalar: card not selectable in cardpicker.  Unclear if this is its primary function or a side effect.
+	EA_MANA_SOURCE		= 0x1000,
+	EA_INTERRUPT		= 0x2000,
+	EA_UNK4000			= 0x4000,	// Interrupt effects
+	EA_BECAME_CREATURE	= 0x8000,
+	EA_PAID_MANASOURCE	= 0x10000,
+	EA_ACT_USE_X		= 0x20000,
+
+	// The following bits, up to and including EA_CONTROLLED, are set in event_flags at the end of get_abilities(...EVENT_CHANGE_TYPE).
+	EA_MARTYR			= 0x40000,	// Veteran Bodyguard-like effects
+	EA_SELECT_ATTACK	= 0x80000,
+	EA_SELECT_BLOCK		= 0x100000,
+	EA_LICH				= 0x200000,
+	EA_PAID_ATTACK		= 0x400000,
+	EA_PAID_BLOCK		= 0x800000,
+
+	EA_FORCE_ATTACK		= 0x1000000,
+
+	EA_BEFORE_COMBAT	= 0x2000000,
+	EA_DECLARE_ATTACK	= 0x4000000,
+	EA_FELLWAR_STONE	= 0x8000000,
+	EA_CONTROLLED		= 0x10000000,	// EVENT_CARDCONTROLLED is only sent if there's at least one card in play with this set
+
+	EA_UNK20000000		= 0x20000000,	// Completely unused.
+	EA_PLAY_COST		= 0x40000000,	// If set, this specific card receives EVENT_MODIFY_COST_GLOBAL events to change other spells' casting costs.
+
+	EA_ABILITY_COST		= 0x80000000,
+} extra_abilities_t;
+
 typedef int (__cdecl *card_function_pointer)(int player, int card, event_t event);
 
 /* Data struct */
@@ -957,8 +947,8 @@ typedef struct
   uint8_t	new_field;	//ct_all.csv:Extra Flags (Unused)..Modifies Casting Cost
   uint8_t	reserved3;	//ct_all.csv:Unused (next to Code Address)
   card_function_pointer	code_pointer;
-  uint32_t	static_ability;	//ct_all.csv:Ability:Unknown..Ability:Swampwalk
-  uint32_t	extra_ability;	//ct_all.csv:Flags:Play Cost..Flags:Activate
+  keyword_t	static_ability;	//ct_all.csv:Ability:Unknown..Ability:Swampwalk
+  extra_abilities_t	extra_ability;	//ct_all.csv:Flags:Play Cost..Flags:Activate
   uint8_t	rarity; // unused in current Manalink
   uint8_t	act_phases;	//ct_all.csv:Activate after Combat..Play before Combat
   uint8_t	expansion; // unused in current Manalink
@@ -1028,57 +1018,6 @@ typedef enum
 	SUB_LEGENDARY_LAND	= 15,
 	SUB_ENCHANT_WORLD	= 16,
 } subtype_in_card_data_t;
-
-/* Extra ability is cards_data */
-typedef enum
-{
-	EA_ACT_ABILITY		= 0x1,
-	EA_ACT_INTERRUPT	= 0x2,
-	EA_PROTECT			= 0x4,
-	EA_INF_POWER		= 0x8,
-	EA_INF_TOUGHNESS	= 0x10,
-	EA_COUNTERS			= 0x20,
-	EA_UNK40			= 0x40,		// copper tablet/disrupting scepter
-	EA_UNK80			= 0x80,		// Shandalar: more expensive?
-	EA_UNK100			= 0x100,	// Shandalar: card may be put in a dungeon; not selectable in cardpicker
-	EA_UNK200			= 0x200,	// Shandalar: double cost?
-	EA_UNK400			= 0x400,	// Shandalar: rarer?  Lich, most Arabian Nights and Antiquities cards
-	EA_UNK800			= 0x800,	// Shandalar: card not selectable in cardpicker.  Unclear if this is its primary function or a side effect.
-	EA_MANA_SOURCE		= 0x1000,
-	EA_INTERRUPT		= 0x2000,
-	EA_UNK4000			= 0x4000,	// Interrupt effects
-	EA_BECAME_CREATURE	= 0x8000,
-	EA_PAID_MANASOURCE	= 0x10000,
-	EA_ACT_USE_X		= 0x20000,
-
-	// The following bits, up to and including EA_CONTROLLED, are set in event_flags at the end of get_abilities(...EVENT_CHANGE_TYPE).
-	EA_MARTYR			= 0x40000,	// Veteran Bodyguard-like effects
-	EA_SELECT_ATTACK	= 0x80000,
-	EA_SELECT_BLOCK		= 0x100000,
-	EA_LICH				= 0x200000,
-	EA_PAID_ATTACK		= 0x400000,
-	EA_PAID_BLOCK		= 0x800000,
-#ifdef SHANDALAR
-	EA_AFTER_CHANGE_TYPE= 0x1000000,
-#else
-	EA_FORCE_ATTACK		= 0x1000000,
-#endif
-	EA_BEFORE_COMBAT	= 0x2000000,
-	EA_DECLARE_ATTACK	= 0x4000000,
-	EA_FELLWAR_STONE	= 0x8000000,
-	EA_CONTROLLED		= 0x10000000,	// EVENT_CARDCONTROLLED is only sent if there's at least one card in play with this set
-	// End of bits checked in event_flags in Manalink; Shandalar uses two more.
-
-#ifdef SHANDALAR
-	EA_CAN_PLAY_OTHER	= 0x20000000,	// If set, each check of EVENT_CAN_CAST is followed by a global dispatch of EVENT_CAN_PLAY_OTHER, with affected_card/controller set to the card being cast (if from a hand), attacking_card_controller to the player casting it, and attacking_card to its iid.  Any card can respond to that by setting event_result = 0 to prevent casting.
-	EA_MODIFY_COST_GLOBAL=0x40000000,	// In Shandalar, EVENT_MODIFY_COST_GLOBAL is sent to all cards if any on the bf have this bit set.
-	// End of bits checked in event_flags in Shandalar.
-#else
-	EA_UNK20000000		= 0x20000000,	// Completely unused.
-	EA_PLAY_COST		= 0x40000000,	// If set, this specific card receives EVENT_MODIFY_COST_GLOBAL events to change other spells' casting costs.
-#endif
-	EA_ABILITY_COST		= 0x80000000,
-} extra_abilities_t;
 
 #ifdef SHANDALAR
 enum mana_flags_t: uint8_t
