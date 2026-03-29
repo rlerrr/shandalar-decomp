@@ -1,6 +1,6 @@
 # `stubgen`
 
-Generates a `.c` file containing card stub functions with paired reccmp
+Generates a `.c` and `.h` file containing card stub functions with paired reccmp
 annotations from:
 
 - `carddata_dump/magic_card_data.csv`
