@@ -679,7 +679,7 @@ toggle_filterbutton(int n)
 // FUNCTION: DECKDLL 0x1001f97e
 static void create_filter_menus(void)
 {
-  //TODO: why are the RES_ consts here fucked up?
+  // TODO: why are the RES_ consts here fucked up?
 
   struct
   {
@@ -1096,11 +1096,11 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   if (valbase & FN_ENABLE)                         \
   refresh_filters = true
 
-#define TOGGLE_3SETS_FILTER(button, tgt, other1, other2)                                   \
-  button:                                                                                  \
+#define TOGGLE_3SETS_FILTER(button, tgt, other1, other2)                                     \
+  button:                                                                                    \
   if (!(global_filters.expansions & tgt) || (global_filters.expansions & (other1 | other2))) \
-    global_filters.expansions ^= tgt;                                                       \
-  if (global_filters.cardsets & FS_4TH_EDITION)                                             \
+    global_filters.expansions ^= tgt;                                                        \
+  if (global_filters.cardsets & FS_4TH_EDITION)                                              \
   refresh_filters = true
 
     case RES_FILTERMENU_GOLD_ALL:
@@ -1365,21 +1365,16 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
   /* Stack layout is extremely sensitive; keep locals grouped. */
   struct
   {
+    HDC hdc2; // ebp - 0x204
     RECT r;
     unsigned int local_1f4;
-    HDC local_1f0;
-    unsigned int local_1ec;
+    HDC hdc; // ebp - 0x1ec
+    HGDIOBJ local_1ec; // ebp - 0x1e8
     int local_1e8;
-    union
-    {
-      struct
-      {
-        int selected[0x33];
-        char path[264];
-      } sp;
-      int selected_overflow[0x34]; /* intentional 4-byte overflow into path */
-    } u;
-    unsigned int pad_after_union;
+
+    int selected[0x33];
+    char path[264];
+
     unsigned int local_10;
     unsigned int local_8;
     unsigned int local_4;
@@ -1416,88 +1411,80 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
       }
     }
 
-    for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
+    QMASK = 0;
+    while ((signed __int64)QMASK < 0x34)
     {
-      QMASK = (unsigned __int64)1;
-      QMASK = QMASK << (unsigned char)s.local_1e8;
-
-      if ((global_filters.expansion_list[1] & (unsigned int)(QMASK >> 0x20)) || (global_filters.expansion_list[0] & (unsigned int)QMASK))
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
+      if ((global_filters.expansion_list[1] & (unsigned int)(((unsigned __int64)1 << (unsigned char)QMASK) >> 0x20)) ||
+          (global_filters.expansion_list[0] & (unsigned int)((unsigned __int64)1 << (unsigned char)QMASK)))
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, (LPARAM)QMASK);
       else
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, (LPARAM)QMASK);
+
+      QMASK = QMASK + 1;
     }
 
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
-    sprintf(s.u.sp.path, "%s\\GAUN_Options.pic", global_duelart_path);
-    global_filter_subtype_background_pic = (HANDLE)load_pic(s.u.sp.path);
+    sprintf(s.path, "%s\\GAUN_Options.pic", global_duelart_path);
+    global_filter_subtype_background_pic = (HANDLE)load_pic(s.path);
     return 0;
 
-  case WM_ERASEBKGND:
-    s.local_1f0 = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.local_1f0);
-    GetClientRect(hdlg, &s.r);
+  case WM_COMMAND:
+    switch (LOWORD(wparam)) {
+      case RES_BUTTON_OK:
+        for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
+          s.selected[s.local_1e8] = -1;
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0x33, (LPARAM)s.selected);
+        global_filters.expansion_list[0] = 0;
+        global_filters.expansion_list[1] = 0;
 
-    if (global_filter_subtype_background_pic)
-      DrawBitmapToRect(s.local_1f0, &s.r, global_filter_subtype_background_pic);
-    else
-      FillRect(s.local_1f0, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
-    return 1;
+        for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
+          if (s.selected[s.local_1e8] != -1)
+          {
+            QMASK = (unsigned __int64)1;
+            QMASK = QMASK << (unsigned char)s.selected[s.local_1e8];
+            global_filters.expansion_list[0] |= (unsigned int)QMASK;
+            global_filters.expansion_list[1] |= (unsigned int)(QMASK >> 0x20);
+          }
+
+        EndDialog(hdlg, 1);
+        return 1;
+      case RES_FILTERLIST_SELECTALL:
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+        for (s.local_1e8 = 0x32; -1 < s.local_1e8; s.local_1e8 = s.local_1e8 + -1)
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+        return 1;
+      case RES_BUTTON_CANCEL:
+        EndDialog(hdlg, 0);
+        return 1;
+      case RES_FILTERLIST_CLEARALL:
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+        for (s.local_1e8 = 0; s.local_1e8 < 0x33; s.local_1e8 = s.local_1e8 + 1)
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+        return 1;
+      default:
+         return 1;
+    } 
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-    s.local_1f0 = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.local_1f0);
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
     s.local_1f4 = (unsigned int)lparam;
-    SetBkMode(s.local_1f0, TRANSPARENT);
-    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
+    SetBkMode(s.hdc, TRANSPARENT);
+    return (INT_PTR)s.local_1ec = GetStockObject(HOLLOW_BRUSH);
 
-  case WM_COMMAND:
-    if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)
-    {
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_1e8 = 0x32; -1 < s.local_1e8; s.local_1e8 = s.local_1e8 + -1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
-      return 1;
-    }
+  case WM_ERASEBKGND:
+    s.hdc2 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc2);
+    GetClientRect(hdlg, &s.r);
 
-    if (LOWORD(wparam) == RES_BUTTON_OK)
-    {
-      for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
-        s.u.selected_overflow[s.local_1e8] = -1;
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0x33, (LPARAM)s.u.sp.selected);
-      global_filters.expansion_list[0] = 0;
-      global_filters.expansion_list[1] = 0;
-
-      for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
-        if (s.u.selected_overflow[s.local_1e8] != -1)
-        {
-          QMASK = (unsigned __int64)1;
-          QMASK = QMASK << (unsigned char)s.u.selected_overflow[s.local_1e8];
-          global_filters.expansion_list[0] |= (unsigned int)QMASK;
-          global_filters.expansion_list[1] |= (unsigned int)(QMASK >> 0x20);
-        }
-
-      EndDialog(hdlg, 1);
-      return 1;
-    }
-
-    if (LOWORD(wparam) == RES_BUTTON_CANCEL)
-    {
-      EndDialog(hdlg, 0);
-      return 1;
-    }
-
-    if (LOWORD(wparam) == RES_FILTERLIST_CLEARALL)
-    {
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_1e8 = 0; s.local_1e8 < 0x33; s.local_1e8 = s.local_1e8 + 1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
-      return 1;
-    }
-
+    if (global_filter_subtype_background_pic)
+      DrawBitmapToRect(s.hdc2, &s.r, global_filter_subtype_background_pic);
+    else
+      FillRect(s.hdc2, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
     return 1;
 
   default:
@@ -1512,18 +1499,18 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
   /* Stack layout is extremely sensitive; keep locals grouped. */
   struct
   {
+    HDC hdc2; // ebp - 0x4bc
     RECT r;
     unsigned int local_4ac;
-    HDC local_4a8;
-    unsigned int local_4a4;
+    HDC hdc;                // ebp - 0x4a4
+    HGDIOBJ local_4a4; // ebp - 0x4a0
     int local_4a0;
     int local_49c;
     int selected[0xe0];
     char path[264];
-    unsigned int pad_after_path;
     int local_10;
-    int local_c;
-    unsigned int local_8;
+    int local_c; // ebp - 0x8
+    unsigned int local_8; // ebp - 0x4
   } s;
 
   switch (msg)
@@ -1553,7 +1540,7 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     for (s.local_10 = 0; s.local_10 < 7; s.local_10 = s.local_10 + 1)
       for (s.local_c = 0; s.local_c < 0x20; s.local_c = s.local_c + 1)
       {
-        if (global_filters.creature_list[s.local_10] & (1U << ((unsigned char)s.local_c & 0x1f)))
+        if (global_filters.creature_list[s.local_10] & (1U << (unsigned char)s.local_c))
           SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_10 * 0x20 + s.local_c);
         else
           SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_10 * 0x20 + s.local_c);
@@ -1566,37 +1553,10 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     global_filter_creature_background_pic = (HANDLE)load_pic(s.path);
     return 0;
 
-  case WM_ERASEBKGND:
-    s.local_4a8 = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.local_4a8);
-    GetClientRect(hdlg, &s.r);
-
-    if (global_filter_creature_background_pic)
-      DrawBitmapToRect(s.local_4a8, &s.r, global_filter_creature_background_pic);
-    else
-      FillRect(s.local_4a8, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
-    return 1;
-
-  case WM_CTLCOLORBTN:
-  case WM_CTLCOLORSTATIC:
-    s.local_4a8 = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.local_4a8);
-    s.local_4ac = (unsigned int)lparam;
-    SetBkMode(s.local_4a8, TRANSPARENT);
-    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
-
   case WM_COMMAND:
-    if (LOWORD(wparam) == RES_FILTERLIST_SELECTALL)
+    switch (LOWORD(wparam))
     {
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_c = 0xdc; -1 < s.local_c; s.local_c = s.local_c + -1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_c);
-      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
-      return 1;
-    }
-
-    if (LOWORD(wparam) == RES_BUTTON_OK)
-    {
+    case RES_BUTTON_OK:
       for (s.local_49c = 0; s.local_49c < 0xe0; s.local_49c = s.local_49c + 1)
         s.selected[s.local_49c] = -1;
 
@@ -1610,41 +1570,59 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
               (s.selected[s.local_49c] < (s.local_4a0 + 1) * 0x20))
           {
             global_filters.creature_list[s.local_4a0] |=
-                1U << ((((unsigned char)s.selected[s.local_49c] ^ (unsigned char)(s.selected[s.local_49c] >> 0x1f)) - (unsigned char)(s.selected[s.local_49c] >> 0x1f) & 0x1f ^
-                        (unsigned char)(s.selected[s.local_49c] >> 0x1f)) -
-                           (unsigned char)(s.selected[s.local_49c] >> 0x1f) &
-                       0x1f);
+                1U << (s.selected[s.local_49c] % 32);
           }
 
       if (global_filter_creature_background_pic)
         delete_and_close_object(global_filter_creature_background_pic);
       EndDialog(hdlg, 1);
       return 1;
-    }
 
-    if (LOWORD(wparam) == RES_BUTTON_CANCEL)
-    {
+    case RES_BUTTON_CANCEL:
       if (global_filter_creature_background_pic)
         delete_and_close_object(global_filter_creature_background_pic);
       EndDialog(hdlg, 0);
       return 1;
-    }
 
-    if (LOWORD(wparam) == RES_FILTERLIST_CLEARALL)
-    {
+    case RES_FILTERLIST_SELECTALL:
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
+      for (s.local_c = 0xdc; -1 < s.local_c; s.local_c = s.local_c + -1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_c);
+      SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
+      return 1;
+
+    case RES_FILTERLIST_CLEARALL:
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
       for (s.local_c = 0; s.local_c < 0xdd; s.local_c = s.local_c + 1)
         SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_c);
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
       return 1;
-    }
 
-    if (LOWORD(wparam) == RES_FILTERLIST_ENABLEFILTER)
-    {
+    case RES_FILTERLIST_ENABLEFILTER:
       global_filters.cardtypes ^= FT_CREATURE_LIST;
+      return 1;
+
+    default:
       return 1;
     }
 
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
+    s.local_4ac = (unsigned int)lparam;
+    SetBkMode(s.hdc, TRANSPARENT);
+    return (INT_PTR)s.local_4a4 = GetStockObject(HOLLOW_BRUSH);
+
+  case WM_ERASEBKGND:
+    s.hdc2 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc2);
+    GetClientRect(hdlg, &s.r);
+
+    if (global_filter_creature_background_pic)
+      DrawBitmapToRect(s.hdc2, &s.r, global_filter_creature_background_pic);
+    else
+      FillRect(s.hdc2, &s.r, (HBRUSH)GetStockObject(GRAY_BRUSH));
     return 1;
 
   default:

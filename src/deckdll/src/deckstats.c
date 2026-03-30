@@ -13,7 +13,8 @@ extern char text_lines[500][128];
 
 extern int global_edited_deck_num_entries;
 extern DeckEntry global_edited_deck[300];
-extern GlobalDeckInfoBlob global_deckinfo;;
+extern GlobalDeckInfoBlob global_deckinfo;
+;
 extern const card_ptr_t *cards_ptr;
 extern card_ptr_t global_raw_cards_storage[1000];
 
@@ -475,7 +476,7 @@ show_stats_values(HDC hdc, SIZE word_size, int stepx, int stepy, int posx, int s
 
 // FUNCTION: DECKDLL 0x1002dfd0
 static void
-fill_stats_window(HDC hdc, RECT r, HFONT font)
+fill_stats_window(HDC hdc, LONG left, LONG top, LONG right, LONG bottom, HFONT font)
 {
   struct
   {
@@ -489,7 +490,7 @@ fill_stats_window(HDC hdc, RECT r, HFONT font)
   build_deck_stats_table();
   SetMapMode(hdc, MM_ANISOTROPIC);
   SetWindowExtEx(hdc, 1000, 750, NULL);
-  SetViewportExtEx(hdc, r.right - r.left, r.bottom - r.top, NULL);
+  SetViewportExtEx(hdc, right - left, bottom - top, NULL);
   SelectObject(hdc, font);
   SetBkMode(hdc, TRANSPARENT);
 
@@ -506,16 +507,16 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   /* Stack layout is extremely sensitive; keep locals grouped. */
   struct
   {
-    HDC hdc_erase;        /* [ebp-0x150] */
-    RECT client;          /* [ebp-0x14c] */
-    LPARAM lparam_copy;   /* [ebp-0x13c] */
-    HDC hdc_ctl;          /* [ebp-0x138] */
-    HGDIOBJ brush;        /* [ebp-0x134] */
-    HDC chdc;             /* [ebp-0x130] */
-    char txt[264];        /* [ebp-0x12c] */
-    BITMAP bmp;           /* [ebp-0x24] */
-    int y;                /* [ebp-0x0c] */
-    int x;                /* [ebp-0x08] */
+    HDC hdc_erase;         /* [ebp-0x150] */
+    RECT client;           /* [ebp-0x14c] */
+    LPARAM lparam_copy;    /* [ebp-0x13c] */
+    HDC hdc_ctl;           /* [ebp-0x138] */
+    HGDIOBJ brush;         /* [ebp-0x134] */
+    HDC chdc;              /* [ebp-0x130] */
+    char txt[264];         /* [ebp-0x12c] */
+    BITMAP bmp;            /* [ebp-0x24] */
+    int y;                 /* [ebp-0x0c] */
+    int x;                 /* [ebp-0x08] */
     unsigned int decktype; /* [ebp-0x04] */
   } s;
 
@@ -591,10 +592,11 @@ dlgproc_DeckStats(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
       for (s.y = 0; s.client.bottom > s.y; s.y = s.y + s.bmp.bmHeight)
         BitBlt(s.hdc_erase, s.x, s.y, s.bmp.bmWidth, s.bmp.bmHeight, s.chdc, 0, 0, SRCCOPY);
 
-    fill_stats_window(s.hdc_erase, s.client, global_stats_font);
+    fill_stats_window(s.hdc_erase, s.client.left, s.client.top, s.client.right, s.client.bottom, global_stats_font);
     DeleteDC(s.chdc);
     return 1;
-  }
 
-  return 0;
+  default:
+    return 0;
+  }
 }
