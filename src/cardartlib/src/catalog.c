@@ -175,6 +175,8 @@ bool Catalog_Close(int handle)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001cd6
 // FUNCTION: DRAWCARDLIB 0x1000bb26
+// FUNCTION: DECKDLL 0x1000974a
+// FUNCTION: MAGIC 0x0040cd3c
 static int CatalogEntry_CompareKey(const int *key, const CatalogEntry *entry)
 {
   if (entry->key < *key) {
@@ -190,6 +192,8 @@ static int CatalogEntry_CompareKey(const int *key, const CatalogEntry *entry)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001d26
 // FUNCTION: DRAWCARDLIB 0x1000bb76
+// FUNCTION: DECKDLL 0x1000979a
+// FUNCTION: MAGIC 0x0040cd8c
 CatalogEntry *Catalog_FindEntryCached(Catalog *catalog,const char *name)
 {
   CatalogEntry *entry;
@@ -209,6 +213,8 @@ CatalogEntry *Catalog_FindEntryCached(Catalog *catalog,const char *name)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001da1
 // FUNCTION: DRAWCARDLIB 0x1000bbf1
+// FUNCTION: DECKDLL 0x10009816
+// FUNCTION: MAGIC 0x0040ce08
 size_t Catalog_ReadEntry(int catalog_handle,const char *name,void **buffer)
 
 {
@@ -231,6 +237,8 @@ size_t Catalog_ReadEntry(int catalog_handle,const char *name,void **buffer)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10001e4a
 // FUNCTION: DRAWCARDLIB 0x1000bc9a
+// FUNCTION: DECKDLL 0x100098c2
+// FUNCTION: MAGIC 0x0040ceb4
 uint Catalog_MakeKeyFromPath(const char *path)
 {
   struct {
@@ -271,6 +279,7 @@ uint Catalog_MakeKeyFromPath(const char *path)
 
 // FUNCTION: CARDARTLIB 0x100068f0
 // FUNCTION: DRAWCARDLIB 0x10008370
+// FUNCTION: MAGIC 0x0041f670
 int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 {
   struct {
