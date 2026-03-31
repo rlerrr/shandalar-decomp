@@ -40,6 +40,7 @@ typedef struct Restriction_t
 } Restriction;
 
 // GLOBAL: DECKDLL 0x10033278
+// GLOBAL: MAGIC 0x0057a4f8
 const Restriction restrictions[] =
     {
         {CARD_ID_AMULET_OF_QUOZ, RST_ANTE | RST_BANNED},
@@ -118,6 +119,7 @@ const Restriction restrictions[] =
 };
 
 // FUNCTION: DECKDLL 0x1001013d
+// FUNCTION: MAGIC 0x004e0291
 bool check_restricted(csvid_t csvid)
 {
   int i;
@@ -129,6 +131,7 @@ bool check_restricted(csvid_t csvid)
 }
 
 // FUNCTION: DECKDLL 0x1001019e
+// FUNCTION: MAGIC 0x004e02f6
 bool check_banned(csvid_t csvid)
 {
   int i;
@@ -140,6 +143,7 @@ bool check_banned(csvid_t csvid)
 }
 
 // FUNCTION: DECKDLL 0x100101ff
+// FUNCTION: MAGIC 0x004e035b
 bool check_ante(csvid_t csvid)
 {
   int i;
