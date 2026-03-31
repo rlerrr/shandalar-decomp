@@ -27,6 +27,7 @@
 typedef ptrdiff_t INT_PTR;
 
 typedef int (*Int_fn_int)(int);
+void change_buttonclass_wndproc(HWND hwnd);
 
 #define HORZLIST_LASTPIC_INDEX 0
 #define HORZLIST_ADDR_INDEX 4
@@ -71,9 +72,9 @@ int global_DIB_debug = 0;
 // GLOBAL: DECKDLL 0x10143fbc
 DBFlags global_db_flags_1 = DBFLAGS_0;
 // GLOBAL: DECKDLL 0x1019f00c
-static DBFlags global_db_flags_2 = DBFLAGS_0;
+DBFlags global_db_flags_2 = DBFLAGS_0;
 // GLOBAL: DECKDLL 0x101bc0c4
-static bool global_cfg_consolidate = false;
+bool global_cfg_consolidate = false;
 // GLOBAL: DECKDLL 0x101a8c70
 static signed char global_cfg_consolidate_from_registry = 0;
 // GLOBAL: DECKDLL 0x101a8c72
@@ -81,17 +82,17 @@ signed char global_cfg_effects = 0;
 // GLOBAL: DECKDLL 0x101a8d13
 static signed char global_cfg_expand_text = 0;
 // GLOBAL: DECKDLL 0x101a8c71
-static signed char global_cfg_music = 0;
+signed char global_cfg_music = 0;
 static bool global_cfg_no_frame = false;
 static bool global_cfg_read_by_name = false;
 bool global_cfg_view_all = false;
 #define MAX_NAMELEN 80
 
 // GLOBAL: DECKDLL 0x101a8c73
-static char global_cfg_player_name[MAX_NAMELEN];
+char global_cfg_player_name[MAX_NAMELEN];
 
 // GLOBAL: DECKDLL 0x101a8cc3;
-static char global_cfg_email[MAX_NAMELEN];
+char global_cfg_email[MAX_NAMELEN];
 static char global_cfg_skin_name[MAX_PATH + 1];
 
 // GLOBAL: DECKDLL 0x1012e898
@@ -106,7 +107,7 @@ int *deck = NULL;
 // GLOBAL: DECKDLL 0x1012ed80
 GlobalDeckEntry global_deck[1000];
 // GLOBAL: DECKDLL 0x101a0ce0
-static int global_deck_num_cards = 0;
+int global_deck_num_cards = 0;
 
 // GLOBAL: DECKDLL 0x101a9694
 int global_deck_num_entries = 0;
@@ -121,7 +122,7 @@ int global_edited_deck_num_entries = 0;
 static DeckEntry global_excessive_cards[201];
 
 // GLOBAL: DECKDLL 0x1012ea0c
-static bool global_deck_was_edited = false;
+bool global_deck_was_edited = false;
 // GLOBAL: DECKDLL 0x1014436c
 static bool global_deckname_set = false;
 // GLOBAL: DECKDLL 0x1019f010
@@ -154,7 +155,7 @@ static char global_deck_filename[(MAX_PATH + 15) + 32 + 5];
 // GLOBAL: DECKDLL 0x101bc604
 int global_dlg_parameter = 0;
 // GLOBAL: DECKDLL 0x101423d0
-static int global_dlg_result = 0;
+int global_dlg_result = 0;
 // GLOBAL: DECKDLL 0x10143ae0
 static char global_ask_x_dlg_title[128];
 // GLOBAL: DECKDLL 0x101127e0
@@ -176,7 +177,7 @@ static HBRUSH global_create_brush_4 = NULL;
 // GLOBAL: DECKDLL 0x1012e894
 static HBRUSH global_create_brush_5 = NULL;
 // GLOBAL: DECKDLL 0x10132c3c
-static HBRUSH global_create_brush_6 = NULL;
+HBRUSH global_create_brush_6 = NULL;
 // GLOBAL: DECKDLL 0x1012e890
 static HANDLE global_delete_brush_handle_0 = NULL;
 // GLOBAL: DECKDLL 0x10142efc
@@ -279,8 +280,6 @@ static HGDIOBJ global_old_bmp_obj = NULL;
 
 // GLOBAL: DECKDLL 0x10125e0c
 static HFONT DAT_10125e0c = NULL;
-
-static HPALETTE global_palette = NULL;
 
 // GLOBAL: DECKDLL 0x10113cec
 static int global_smallcard_normal_width = 0;
@@ -403,16 +402,10 @@ static LOGFONT global_font_from_ini;
 
 // GLOBAL: DECKDLL 0x101bbc28
 static HWND global_button_stats_hwnd;
-// GLOBAL: DECKDLL 0x1011279c
-static WNDPROC global_wndproc_std_ButtonClass;
 // GLOBAL: DECKDLL 0x101436b4
 static HWND global_cuecard_hwnd;
-// GLOBAL: DECKDLL 0x101a8a6c
-static HWND global_decksurface_hwnd;
-// GLOBAL: DECKDLL 0x100f2768
-static HMENU global_decksurface_popup;
-// GLOBAL: DECKDLL 0x100f2840
-static HMENU global_tradesurface_popup;
+
+extern HWND global_decksurface_hwnd;
 
 // GLOBAL: DECKDLL 0x100f2848
 static HANDLE global_gaun_options_pic;
@@ -445,21 +438,21 @@ static int global_main_window_height = 0;
 static WNDPROC global_wndproc_std_SearchClass;
 
 // GLOBAL: DECKDLL 0x10144eec
-static int global_smallcard_height = 0;
+int global_smallcard_height = 0;
 // GLOBAL: DECKDLL 0x1013a17c
-static int global_smallcard_width = 0;
+int global_smallcard_width = 0;
 
 // GLOBAL: DECKDLL 0x10141b4c
 static HMENU global_smallcard_popup;
 
 // GLOBAL: DECKDLL 0x10146df0
-static HWND global_title_hwnd;
+HWND global_title_hwnd;
 
 // GLOBAL: DECKDLL 0x10125a3c
-static HWND global_unknown_10125a3c;
+HWND global_unknown_10125a3c;
 
 // GLOBAL: DECKDLL 0x10144b04
-static HWND global_unknown_10144b04;
+HWND global_unknown_10144b04;
 
 // GLOBAL: DECKDLL 0x1012566c
 HDC global_hdc;
@@ -473,9 +466,9 @@ static POINT global_main_mouse_pt;
 static char global_search_string[264];
 
 // GLOBAL: DECKDLL 0x101915a0
-static Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
+Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 // GLOBAL: DECKDLL 0x101e74f0
-static Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
+Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
 // Different sizes in magic.exe/shandalar.exe vs deckdll.dll for some reason
 #ifdef DECKDLL
@@ -784,9 +777,6 @@ static char read_db_empty_flavor[1];
 
 // GLOBAL: DECKDLL 0x10036210
 const char s__08x_DestroyDIBSection__file_map_10036210[] = "  %08x DestroyDIBSection (file mapping: %08x)\n";
-
-// GLOBAL: DECKDLL 0x1003628c
-const char s_Button_1003628c[] = "Button";
 
 // GLOBAL: DECKDLL 0x1003181c
 static const char s_PRICE_1003181c[8] = "PRICE";
@@ -2780,7 +2770,7 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10006df3
-static bool show_dialog_deckinfo(void)
+bool show_dialog_deckinfo(void)
 {
   struct
   {
@@ -2914,7 +2904,7 @@ dlgproc_GroupMove(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10007b21
-static bool show_dialog_groupmove(void)
+bool show_dialog_groupmove(void)
 {
   struct
   {
@@ -3415,7 +3405,7 @@ static bool show_dialog_loaddeck(char *dest)
 }
 
 // FUNCTION: DECKDLL 0x1000679f
-static void
+void
 clear_packs(void)
 {
   int i;
@@ -3432,7 +3422,7 @@ clear_packs(void)
 }
 
 // FUNCTION: DECKDLL 0x1000687f
-static void
+void
 clear_packs_copy(void)
 {
   int i;
@@ -3449,7 +3439,7 @@ clear_packs_copy(void)
 }
 
 // FUNCTION: DECKDLL 0x10005a9e
-static void
+void
 count_packs(void)
 {
   struct
@@ -4005,7 +3995,7 @@ wndproc_SearchClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x1002b8f0
-static void
+void
 insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
 {
   struct
@@ -4037,8 +4027,73 @@ insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck)
   }
 }
 
+// FUNCTION: DECKDLL 0x1002b9dc
+void __cdecl
+FUN_1002b9dc(int param_1, int param_2, int param_3, int param_4)
+{
+  int *piVar1;
+  bool bVar2;
+  int local_14;
+  int local_10;
+  int *local_c;
+
+  if (param_1 == 0)
+  {
+    local_14 = param_4 + 0xe18;
+    local_c = (int *)(param_4 + 0xe90);
+  }
+  else if (param_1 == 1)
+  {
+    local_14 = param_4 + 0xe94;
+    local_c = (int *)(param_4 + 0xf0c);
+  }
+  else if (param_1 == 2)
+  {
+    local_14 = param_4 + 0xf10;
+    local_c = (int *)(param_4 + 0xf88);
+  }
+  else if (param_1 == 5)
+  {
+    local_14 = param_4 + 0x1084;
+    local_c = (int *)(param_4 + 0x10fc);
+  }
+  else if (param_1 == 4)
+  {
+    local_14 = param_4 + 0x1008;
+    local_c = (int *)(param_4 + 0x1080);
+  }
+  else
+  {
+    if (param_1 != 3)
+      return;
+    local_14 = param_4 + 0xf8c;
+    local_c = (int *)(param_4 + 0x1004);
+  }
+
+  local_10 = 0;
+  bVar2 = false;
+  while ((local_10 < *local_c) && (!bVar2))
+  {
+    if (*(int *)(local_14 + local_10 * 0xc) == param_2)
+    {
+      piVar1 = (int *)(local_14 + 4 + local_10 * 0xc);
+      *piVar1 = *piVar1 + param_3;
+      bVar2 = true;
+    }
+    local_10 = local_10 + 1;
+  }
+
+  if (!bVar2)
+  {
+    *(int *)(local_14 + *local_c * 0xc) = param_2;
+    *(int *)(local_14 + 4 + *local_c * 0xc) = param_3;
+    *(char **)(local_14 + 8 + *local_c * 0xc) = global_raw_cards_storage[param_2].full_name;
+    *local_c = *local_c + 1;
+  }
+}
+
 // FUNCTION: DECKDLL 0x1002bb7f
-static void __cdecl
+void __cdecl
 FUN_1002bb7f(int which, int csvid, int num, int deck_base)
 {
   struct
@@ -4335,7 +4390,7 @@ static int delete_card_from_global_deck(csvid_t csvid, int num)
 }
 
 // FUNCTION: DECKDLL 0x1002c6b5
-static void
+void
 move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
 {
   int i;
@@ -4408,7 +4463,7 @@ move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
 }
 
 // FUNCTION: DECKDLL 0x1002cb92
-static void
+void
 set_smallcard_dimensions(void)
 {
   if (global_cfg_consolidate)
@@ -4450,7 +4505,7 @@ set_smallcard_dimensions(void)
 }
 
 // FUNCTION: DECKDLL 0x1002c349
-static int
+int
 check_colors_inout_edited_deck(bool currently_in)
 {
   struct
@@ -4807,7 +4862,7 @@ ask_movexcards(csvid_t csvid, bool shifted)
 }
 
 // FUNCTION: DECKDLL 0x10019c42
-static void
+void
 refresh_numofcards_text(void)
 {
   char buf[80];
@@ -5508,7 +5563,7 @@ wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x100057bc
-static void
+void
 reset_dim_and_pos_all_cards(HWND hwnd, RECT *rect)
 {
   struct
@@ -5546,7 +5601,7 @@ reset_dim_and_pos_all_cards(HWND hwnd, RECT *rect)
 }
 
 // FUNCTION: DECKDLL 0x1001a58e
-static int ask_about_saving_deck(void)
+int ask_about_saving_deck(void)
 {
   int rval;
   char txt[128];
@@ -5558,505 +5613,6 @@ static int ask_about_saving_deck(void)
   if (rval == IDYES)
     rval = SendMessage(global_main_hwnd, WM_COMMAND, RES_MAINMENU_SAVEDECK, 0);
   return rval;
-}
-
-// FUNCTION: DECKDLL 0x100055cc
-static HWND
-find_wanted_window(HWND hwnd, csvid_t csvid)
-{
-  HWND result = 0;
-  HWND w = GetTopWindow(hwnd);
-  for (; w; w = GetWindow(w, GW_HWNDNEXT))
-  {
-    if (SendMessage(w, 0x400, 0, 0) == csvid)
-      result = w;
-  }
-  return result;
-}
-
-// FUNCTION: DECKDLL 0x10006450
-static int add_smallcard_window(HWND hwnd_parent, csvid_t csvid, int num)
-{
-  HWND hwnd;
-
-  hwnd = CreateWindowEx(0, "MAGICDECK_CardClass", "",
-                        WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
-                        0, 0, global_smallcard_width, global_smallcard_height,
-                        hwnd_parent,
-                        1,
-                        global_hinstance, csvid);
-  if (hwnd)
-  {
-    BringWindowToTop(hwnd);
-    SendMessage(hwnd, 0x401, num, 0);
-  }
-  else
-    return 0;
-
-  return 1;
-}
-
-// FUNCTION: DECKDLL 0x100056bd
-static void invalidate_wanted_window(HWND hwnd, WPARAM wparam)
-{
-  int result = 0;
-  HWND w;
-  for (w = GetTopWindow(hwnd); w; w = GetWindow(w, GW_HWNDNEXT))
-    if (SendMessage(w, 0x400, 0, 0) == wparam)
-      InvalidateRect(w, NULL, TRUE);
-}
-
-// FUNCTION: DECKDLL 0x1000572c
-void destroy_child_windows(HWND hwnd)
-{
-  HWND w;
-  while (w = GetTopWindow(hwnd))
-    DestroyWindow(w);
-}
-
-// FUNCTION: DECKDLL 0x100012b7
-LRESULT CALLBACK
-wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  int c;
-  int d;
-  int i;
-  int j;
-  int mosx;
-  int mosy;
-  int x;
-  int y;
-  int dx;
-  int dy;
-  int tgt_dx;
-  RECT r;
-  HDC hdc;
-  HDC hdc_local;
-  // GLOBAL: DECKDLL 0x1003105c
-  static int cleared_global_deck_num_entries = 0;
-  // GLOBAL: DECKDLL 0x10031060
-  static int cleared_global_deck_num_cards = 0;
-  HDC mosaics[5];
-  BITMAP bmp;
-
-  switch (msg)
-  {
-  case WM_CREATE:
-    if (global_db_flags_1 & (DBFLAGS_GAUNTLET | DBFLAGS_NOCARDCOUNTCHECK))
-    {
-      clear_packs();
-      clear_packs_copy();
-    }
-
-    global_decksurface_popup = CreatePopupMenu();
-
-    if (global_db_flags_1 & DBFLAGS_STANDALONE)
-    {
-      load_text("Menus", "DECKSURFACE_STANDALONE");
-
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_NEWDECK, text_lines[0]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_LOADDECK, text_lines[1]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_SAVEDECK, text_lines[2]);
-
-      AppendMenu(global_decksurface_popup, MF_SEPARATOR, 0, NULL);
-
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[3]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_CLEARDECK, text_lines[4]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_SORTDECK, text_lines[5]);
-
-      AppendMenu(global_decksurface_popup, MF_SEPARATOR, 0, NULL);
-
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_MINIMIZE, text_lines[6]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_MUSIC, text_lines[7]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_EFFECTS, text_lines[8]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_EXIT, text_lines[9]);
-    }
-    else if (global_db_flags_1 & DBFLAGS_GAUNTLET)
-    {
-      load_text("Menus", "DECKSURFACE_GAUNTLET");
-
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_NEWDECK, text_lines[0]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_LOADDECK, text_lines[1]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_SAVEDECK, text_lines[2]);
-
-      AppendMenu(global_decksurface_popup, MF_SEPARATOR, 0, NULL);
-
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[3]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_CLEARDECK, text_lines[4]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_SORTDECK, text_lines[5]);
-
-      AppendMenu(global_decksurface_popup, MF_SEPARATOR, 0, NULL);
-
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_MUSIC, text_lines[6]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_EFFECTS, text_lines[7]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_EXIT, text_lines[8]);
-    }
-    else
-    {
-      load_text("Menus", "DECKSURFACE_ADVENTURE");
-      if (global_db_flags_2 & DBFLAGS_SHANDALAR)
-      {
-        AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_COLORINTODECK, text_lines[0]);
-        AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_COLOROUTOFDECK, text_lines[1]);
-
-        AppendMenu(global_decksurface_popup, MF_SEPARATOR, 0, NULL);
-      }
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[2]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_SORTDECK, text_lines[3]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_MUSIC, text_lines[4]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_EFFECTS, text_lines[5]);
-      AppendMenu(global_decksurface_popup, MF_ENABLED, RES_MENU_EXIT, text_lines[6]);
-    }
-
-    return 0;
-
-  case WM_INITMENU:
-    CHECKMENU_IF(global_decksurface_popup, RES_MENU_CONSOLIDATE, global_cfg_consolidate);
-    CHECKMENU_IF(global_decksurface_popup, RES_MENU_EFFECTS, global_cfg_effects);
-    CHECKMENU_IF(global_decksurface_popup, RES_MENU_MUSIC, global_cfg_music);
-    return 0;
-
-  case WM_COMMAND:
-    switch (LOWORD(wparam))
-    {
-    case RES_MENU_CONSOLIDATE:
-    {
-      global_cfg_consolidate = !global_cfg_consolidate;
-      SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-      return 0;
-    }
-
-    case RES_MENU_REFRESH:
-    {
-      RECT r;
-      GetClientRect(hwnd, &r);
-      InflateRect(&r, -5, -5);
-      LockWindowUpdate(global_main_hwnd);
-      reset_dim_and_pos_all_cards(hwnd, &r);
-      LockWindowUpdate(NULL);
-      return 0;
-    }
-
-    case RES_MENU_CLEARDECK:
-    {
-      if (global_edited_deck_num_entries)
-      {
-        global_deck_was_edited = false;
-        memcpy(&global_packs_copy[0][0], &global_packs[0][0], sizeof global_packs);
-        clear_packs();
-
-        cleared_global_deck_num_entries = global_edited_deck_num_entries;
-        global_edited_deck_num_entries = 0;
-
-        cleared_global_deck_num_cards = global_deck_num_cards;
-        global_deck_num_cards = 0;
-
-        RemoveMenu(global_decksurface_popup, RES_MENU_CLEARDECK, MF_BYCOMMAND);
-        load_text("Menus", "DECKCLEAR_RESTORE");
-        InsertMenu(global_decksurface_popup, RES_MENU_SORTDECK, MF_BYCOMMAND | MF_ENABLED, RES_MENU_RESTOREDECK, text_lines[1]);
-        SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-      }
-      return 0;
-    }
-
-    case RES_MENU_RESTOREDECK:
-    {
-      memcpy(&global_packs[0][0], &global_packs_copy[0][0], sizeof global_packs);
-      clear_packs_copy();
-      global_deck_was_edited = true;
-
-      global_edited_deck_num_entries = cleared_global_deck_num_entries;
-      cleared_global_deck_num_entries = 0;
-
-      global_deck_num_cards = cleared_global_deck_num_cards;
-      cleared_global_deck_num_cards = 0;
-
-      load_text("Menus", "DECKCLEAR_RESTORE");
-      InsertMenu(global_decksurface_popup, RES_MENU_SORTDECK, MF_BYCOMMAND | MF_ENABLED, RES_MENU_CLEARDECK, text_lines[0]);
-      DeleteMenu(global_decksurface_popup, RES_MENU_RESTOREDECK, MF_BYCOMMAND);
-      SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-      return 0;
-    }
-
-    case RES_MENU_NEWDECK:
-    {
-      if (!global_deck_was_edited || ask_about_saving_deck())
-      {
-        global_deckinfo.revision = 1;
-        global_deck_num_cards = 0;
-        global_edited_deck_num_entries = 0;
-
-        InvalidateRect(global_title_hwnd, NULL, TRUE);
-
-        clear_packs();
-        clear_packs_copy();
-
-        if (DeleteMenu(global_decksurface_popup, RES_MENU_RESTOREDECK, MF_BYCOMMAND))
-        {
-          load_text("Menus", "DECKCLEAR_RESTORE");
-          InsertMenu(global_decksurface_popup, RES_MENU_SORTDECK, MF_BYCOMMAND | MF_ENABLED, RES_MENU_CLEARDECK, text_lines[0]);
-        }
-        SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-
-        load_text("Menus", "NEWDECK");
-        sprintf(global_deckinfo.deckname, text_lines[0]);
-
-        global_deckinfo.comments[0] = 0;
-        global_deckinfo.description[0] = 0;
-
-        strcpy(global_deckinfo.author, global_cfg_player_name);
-        strcpy(global_deckinfo.email, global_cfg_email);
-
-        GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, NULL, "dd/MM/yyyy", global_deckinfo.creation_date, 22);
-
-        show_dialog_deckinfo();
-      }
-      return 0;
-    }
-
-    case RES_MENU_LOADDECK:
-    {
-      if (DeleteMenu(global_decksurface_popup, RES_MENU_RESTOREDECK, MF_BYCOMMAND))
-      {
-        load_text("Menus", "DECKCLEAR_RESTORE");
-        InsertMenu(global_decksurface_popup, RES_MENU_SORTDECK, MF_BYCOMMAND | MF_ENABLED, RES_MENU_CLEARDECK, text_lines[0]);
-      }
-      SendMessage(global_main_hwnd, WM_COMMAND, RES_MAINMENU_LOADDECK, 0);
-      return 0;
-    }
-
-    case RES_MENU_SAVEDECK:
-    {
-      SendMessage(global_main_hwnd, WM_COMMAND, RES_MAINMENU_SAVEDECK, 0);
-      return 0;
-    }
-
-    case RES_MENU_EXIT:
-    {
-      SendMessage(global_main_hwnd, WM_CLOSE, 0, 0);
-      return 0;
-    }
-
-    case RES_MENU_SORTDECK:
-    {
-      SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-      return 0;
-    }
-
-    case RES_MENU_MUSIC:
-    {
-      SendMessage(global_main_hwnd, WM_COMMAND, RES_MAINMENU_MUSIC, 0);
-      return 0;
-    }
-
-    case RES_MENU_EFFECTS:
-    {
-      SendMessage(global_main_hwnd, WM_COMMAND, RES_MAINMENU_EFFECTS, 0);
-      return 0;
-    }
-
-    case RES_MENU_MINIMIZE:
-    {
-      SendMessage(global_main_hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-      SendMessage(GetParent(global_main_hwnd), WM_SYSCOMMAND, SC_MINIMIZE, 0);
-      return 0;
-    }
-
-    case RES_MENU_COLORINTODECK:
-    case RES_MENU_COLOROUTOFDECK:
-    {
-      global_dlg_parameter = check_colors_inout_edited_deck(LOWORD(wparam) == RES_MENU_COLOROUTOFDECK);
-      if (show_dialog_groupmove())
-      {
-        move_colors_fromto_global_deck(LOWORD(wparam) == RES_MENU_COLORINTODECK, global_dlg_result);
-        count_packs();
-        SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-        filter_cards_in_lists(global_listbox_hwnd, global_horzlist_hwnd);
-      }
-      return 0;
-    }
-
-    default:
-      return 0;
-    }
-
-  case WM_DESTROY:
-    DESTROY_MENU(global_decksurface_popup);
-    return 0;
-
-  case WM_SIZE:
-  {
-    HWND w = GetTopWindow(hwnd);
-
-    while (w)
-    {
-      SetWindowPos(w, NULL, 0, 0, global_smallcard_width, global_smallcard_height, SWP_NOZORDER | SWP_NOMOVE);
-      w = GetWindow(w, GW_HWNDNEXT);
-    }
-
-    if (global_decksurface_hwnd)
-      SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-
-    return 0;
-  }
-
-  case WM_ERASEBKGND:
-  {
-    HANDLE mosaic_pics[5];
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-
-    mosaic_pics[0] = global_pic_bldr01c;
-    mosaic_pics[1] = global_pic_bldr02c;
-    mosaic_pics[2] = global_pic_bldr03c;
-    mosaic_pics[3] = global_pic_bldr04c;
-    mosaic_pics[4] = global_pic_bldr05c;
-
-    for (i = 0; i < 5; ++i)
-      ApplyCardArtPaletteToDc((mosaics[i] = CreateCompatibleDC(hdc)));
-
-    for (i = 0; i < 5; ++i)
-      SelectObject(mosaics[i], mosaic_pics[i]);
-
-    GetClientRect(hwnd, &r);
-    GetObject(global_pic_bldr01c, sizeof(BITMAP), &bmp);
-
-    dy = r.bottom / 5;
-    tgt_dx = bmp.bmWidth * r.bottom / (bmp.bmHeight * 5); // = (width/height) * dy, after reordering for rounding
-    for (i = 1; i < 100; ++i)
-    {
-      dx = r.right / i;
-      if (dx < tgt_dx)
-      {
-        if (i != 1) // already as wide as it can go
-        {
-          int old_dx = r.right / (i - 1);
-          if (abs(tgt_dx - old_dx) < abs(tgt_dx - dx)) // overshot?
-            dx = old_dx;
-        }
-        break;
-      }
-    }
-
-    for (mosx = 0, x = 0; x < r.right; x += dx, ++mosx)
-      for (y = 0, mosy = mosx; y < r.bottom; y += dy, ++mosy)
-        StretchBlt(hdc,
-                   x, y,
-                   dx, dy,
-                   mosaics[mosy % 5],
-                   0, 0,
-                   bmp.bmWidth, bmp.bmHeight,
-                   SRCCOPY);
-
-    ReleaseDC(hwnd, hdc);
-    for (i = 0; i < 5; ++i)
-      DELETE_DC(mosaics[i]);
-
-    return 1;
-  }
-
-  case WM_LBUTTONDOWN:
-  {
-    BringWindowToTop(hwnd);
-    SetFocus(global_main_hwnd);
-    return 0;
-  }
-
-  case WM_RBUTTONDOWN:
-  {
-    POINT p;
-    p.x = GET_X_LPARAM(lparam);
-    p.y = GET_Y_LPARAM(lparam);
-    ClientToScreen(hwnd, &p);
-    TrackPopupMenu(global_decksurface_popup, TPM_RIGHTBUTTON, p.x, p.y, 0, hwnd, NULL);
-    return 0;
-  }
-
-  case 0x8401:
-  {
-    destroy_child_windows(hwnd);
-
-    set_smallcard_dimensions();
-
-    LockWindowUpdate(global_main_hwnd);
-
-    if (global_cfg_consolidate)
-    {
-      for (i = 0; i <= PACK1_MAX; ++i)
-        for (j = 0; j <= PACK2_MAX; ++j)
-          for (c = 0; c < global_packs[i][j].num; ++c)
-            add_smallcard_window(hwnd, global_packs[i][j].table[c].csvid, global_packs[i][j].table[c].amt);
-    }
-    else
-    {
-      for (i = 0; i <= PACK1_MAX; ++i)
-        for (j = 0; j <= PACK2_MAX; ++j)
-          for (c = 0; c < global_packs[i][j].num; ++c)
-            for (d = 0; d < global_packs[i][j].table[c].amt; ++d)
-              add_smallcard_window(hwnd, global_packs[i][j].table[c].csvid, 1);
-    }
-
-    LockWindowUpdate(0);
-
-    SendMessage(hwnd, WM_COMMAND, RES_MENU_REFRESH, 0);
-    refresh_numofcards_text();
-    return 1;
-  }
-
-  case 0x8466:
-  {
-    invalidate_wanted_window(hwnd, wparam);
-    return 0;
-  }
-
-  case 0x84c8:
-  {
-    int rval;
-    rval = 1;
-
-    {
-      csvid_t csvid = (csvid_t)wparam;
-
-      HWND hwnd_card;
-
-      if (global_cfg_consolidate && (hwnd_card = find_wanted_window(hwnd, csvid)))
-      {
-        insert_cards_into_deck(csvid, 1, global_edited_deck);
-        SendMessage(hwnd_card, 0x8401, 1 + SendMessage(hwnd_card, 0x8402, 0, 0), 0);
-      }
-      else
-      {
-        hwnd_card = CreateWindowEx(0, "CardClass", "",
-                                   WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
-                                   GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), global_smallcard_width, global_smallcard_height,
-                                   hwnd,
-                                   1,
-                                   global_hinstance, csvid);
-        if (hwnd_card)
-        {
-          BringWindowToTop(hwnd_card);
-          insert_cards_into_deck(csvid, 1, global_edited_deck);
-          SendMessage(hwnd, WM_COMMAND, RES_MENU_REFRESH, 0);
-        }
-        else
-          rval = 0;
-      }
-    }
-
-    if (cleared_global_deck_num_entries)
-    {
-      load_text("Menus", "DECKCLEAR_RESTORE");
-      InsertMenu(global_decksurface_popup, RES_MENU_SORTDECK, MF_BYCOMMAND | MF_ENABLED, RES_MENU_CLEARDECK, text_lines[0]);
-      RemoveMenu(global_decksurface_popup, RES_MENU_RESTOREDECK, MF_BYCOMMAND);
-      cleared_global_deck_num_cards = 0;
-      cleared_global_deck_num_entries = 0;
-    }
-    return rval;
-  }
-
-  default:
-    return DefWindowProc(hwnd, msg, wparam, lparam);
-  }
 }
 
 // FUNCTION: DECKDLL 0x10008abf
@@ -6466,162 +6022,6 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   return 0;
 }
 
-// FUNCTION: DECKDLL 0x10025d1b
-static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
-{
-  int *args;
-
-  args = (int *)lparam;
-  if (GetParent(child_hwnd) == (HWND)*args)
-    SendMessageA(child_hwnd, args[1], args[2], args[3]);
-  return TRUE;
-}
-
-// FUNCTION: DECKDLL 0x10025b5e
-static int __cdecl FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
-{
-  HWND parent;
-  DWORD procid_src;
-  DWORD procid_dst;
-  DWORD tid_src;
-  DWORD tid_dst;
-  HDC hdc;
-  UINT changed;
-  struct
-  {
-    HWND hwnd;
-    UINT msg;
-    HWND wparam;
-    LPARAM lparam;
-  } args;
-
-  if (msg == WM_QUERYNEWPALETTE)
-  {
-    UnrealizeObject(global_palette);
-    hdc = GetDC(hwnd);
-    SelectPalette(hdc, global_palette, FALSE);
-    changed = RealizePalette(hdc);
-    if (changed != 0)
-      InvalidateRect(hwnd, NULL, TRUE);
-    ReleaseDC(hwnd, hdc);
-    return 1;
-  }
-
-  if (msg < WM_PALETTEISCHANGING || WM_PALETTECHANGED < msg)
-    return 0;
-
-  if (wparam_hwnd != hwnd)
-  {
-    tid_src = GetWindowThreadProcessId(wparam_hwnd, &procid_src);
-    tid_dst = GetWindowThreadProcessId(hwnd, &procid_dst);
-    (void)tid_src;
-    (void)tid_dst;
-
-    if (procid_dst == procid_src)
-    {
-      parent = GetParent(hwnd);
-      if (parent == NULL)
-      {
-        hdc = GetDC(hwnd);
-        SelectPalette(hdc, global_palette, TRUE);
-        InvalidateRect(hwnd, NULL, TRUE);
-        ReleaseDC(hwnd, hdc);
-      }
-      else
-      {
-        if ((GetWindowLongA(hwnd, GWL_STYLE) & WS_CHILD) == 0)
-          InvalidateRect(hwnd, NULL, TRUE);
-      }
-    }
-    else
-      InvalidateRect(hwnd, NULL, TRUE);
-  }
-
-  if (msg == WM_PALETTECHANGED)
-  {
-    args.hwnd = hwnd;
-    args.msg = msg;
-    args.wparam = wparam_hwnd;
-    args.lparam = lparam;
-    EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&args);
-  }
-
-  return 0;
-}
-
-// FUNCTION: DECKDLL 0x100256c8
-// FUNCTION: MAGIC 0x00495e36
-static int is_buttonclass(HWND hwnd)
-{
-  char classname[0x64];
-
-  if (hwnd == (HWND)0)
-    return 0;
-
-  GetClassNameA(hwnd, classname, 0x64);
-  if (!_strcmpi(classname, s_Button_1003628c))
-    return 1;
-  else
-    return 0;
-}
-
-// FUNCTION: DECKDLL 0x10025593
-// FUNCTION: MAGIC 0x00495d01
-LRESULT CALLBACK wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  struct
-  {
-    HWND local_10;
-    HWND local_c;
-    LRESULT local_8;
-  } s;
-
-  if ((msg == WM_SETFOCUS) || (msg == WM_KILLFOCUS))
-  {
-    if (msg == WM_SETFOCUS)
-    {
-      s.local_c = hwnd;
-      s.local_10 = (HWND)wparam;
-    }
-    else
-    {
-      s.local_10 = hwnd;
-      s.local_c = (HWND)wparam;
-    }
-    if (is_buttonclass(s.local_c) == 0)
-      s.local_c = (HWND)0;
-    if (is_buttonclass(s.local_10) == 0)
-      s.local_10 = (HWND)0;
-    SendMessageA(GetParent(hwnd), WM_USER + 0xC8, (WPARAM)s.local_c, (LPARAM)s.local_10);
-    s.local_8 = 0;
-  }
-  else if ((msg == WM_PALETTECHANGED) || (msg == WM_PALETTEISCHANGING) || (msg == WM_QUERYNEWPALETTE))
-  {
-    s.local_8 = CallWindowProcA(global_wndproc_std_ButtonClass, hwnd, msg, wparam, lparam);
-    FUN_10025b5e(hwnd, msg, (HWND)wparam, lparam);
-  }
-  else
-    s.local_8 = CallWindowProcA(global_wndproc_std_ButtonClass, hwnd, msg, wparam, lparam);
-
-  return s.local_8;
-}
-
-// FUNCTION: DECKDLL 0x10025552
-// FUNCTION: MAGIC 0x00495cc0
-BOOL CALLBACK enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
-{
-  if (is_buttonclass(hwnd))
-    global_wndproc_std_ButtonClass = SetWindowLong(hwnd, GWL_WNDPROC, wndproc_ButtonClass);
-  return TRUE;
-}
-
-// FUNCTION: DECKDLL 0x10025536
-// FUNCTION: MAGIC 0x00495ca4
-void change_buttonclass_wndproc(HWND hwnd)
-{
-  EnumChildWindows(hwnd, enumfunc_change_buttonclass_wndproc, 0);
-}
-
 // FUNCTION: DECKDLL 0x10019d9f
 static void copy_deck_to_edit(void)
 {
@@ -6898,31 +6298,6 @@ check_card_count(int csvid)
   }
 
   return 0;
-}
-
-static __inline void
-draw_lines(HDC hdc, RECT *r, HGDIOBJ pen1, HPEN pen2, HPEN pen3)
-{
-  // top and left border
-  SelectObject(hdc, pen1);
-  MoveToEx(hdc, 0, 0, NULL);
-  LineTo(hdc, r->right, 0);
-  MoveToEx(hdc, 0, 0, NULL);
-  LineTo(hdc, 0, r->bottom);
-
-  // top and left border, moved inward by 1 px
-  SelectObject(hdc, pen2);
-  MoveToEx(hdc, 1, 1, NULL);
-  LineTo(hdc, r->right - 1, 1);
-  MoveToEx(hdc, 1, 1, NULL);
-  LineTo(hdc, 1, r->bottom - 1);
-
-  // bottom and right border
-  SelectObject(hdc, pen3);
-  MoveToEx(hdc, r->right - 1, 1, NULL);
-  LineTo(hdc, r->right - 1, r->bottom);
-  MoveToEx(hdc, 1, r->bottom - 1, NULL);
-  LineTo(hdc, r->right, r->bottom - 1);
 }
 
 // FUNCTION: DECKDLL 0x10023972
@@ -7823,16 +7198,4 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
-}
-
-// FUNCTION: DECKDLL 0x10002b0f
-LRESULT CALLBACK
-wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-}
-
-// FUNCTION: DECKDLL 0x10003f6a
-LRESULT CALLBACK
-wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
 }
