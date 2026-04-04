@@ -278,16 +278,6 @@ typedef struct DeckEntry_t
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 #endif
 
-#define FREEZ(memory) \
-  do                  \
-  {                   \
-    if (memory)       \
-    {                 \
-      free(memory);   \
-      memory = NULL;  \
-    }                 \
-  } while (0)
-
 #define DELETE_IMPL(fn, obj) \
   do                         \
   {                          \

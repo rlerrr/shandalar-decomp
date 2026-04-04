@@ -8,18 +8,12 @@ extern int global_deck_num_entries;
 extern GlobalDeckEntry global_deck[];
 extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[1000];
-extern card_ptr_t *global_raw_cards_ptr;
 extern const char read_db_artist_names[][100];
 extern DBFlags global_db_flags_1;
 
 extern OrigRarities global_origrarities[];
 
 extern struct global_filters_t global_filters;
-
-extern int global_num_expansions;
-extern int global_expansion_size;
-
-extern char *global_raw_rarities;
 
 extern int (*global_is_valid_card_fn)(int);
 
@@ -176,22 +170,6 @@ static bool check_card_global_deck_availability(csvid_t csvid)
   for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_csvid == csvid && global_deck[i].GDE_Available == 1)
       return true;
-
-  return false;
-}
-
-static bool check_expansion_list_filter(csvid_t csvid)
-{
-  int expid;
-  for (expid = 0; expid < global_num_expansions; ++expid)
-    if ((1 << (expid & 0x1F)) & global_filters.expansion_list[expid / 32])
-    {
-      int bit_pos = expid * 3;
-      int bit_mask = 7 << (bit_pos & 7);
-      int offset = (csvid * global_expansion_size) + (bit_pos / 8);
-      if ((MAKEWORD(global_raw_rarities[offset], global_raw_rarities[offset + 1]) & bit_mask) >> (bit_pos & 0x7))
-        return true;
-    }
 
   return false;
 }

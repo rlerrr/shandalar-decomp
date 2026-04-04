@@ -1,0 +1,470 @@
+#include "defs.h"
+#include "deckdll.h"
+#include <WINDOWS.H>
+#include <STDIO.H>
+
+// GLOBAL: DECKDLL 0x100355d8
+static char read_db_empty_rules[1];
+// GLOBAL: DECKDLL 0x100355ec
+static char read_db_empty_flavor[1];
+
+// GLOBAL: DECKDLL 0x10033e48
+// GLOBAL: MAGIC 0x57b668
+static const char *const_db_artist_names[] = {
+    "None",
+    "Amy Weber",
+    "Andi Rusu",
+    "Anson Maddocks",
+    "Anthony Waters",
+    "Brian Snoddy",
+    "Bryon Wackwitz",
+    "Christopher Rush",
+    "Cornelius Brudi",
+    "Dameon Willich",
+    "Dan Frazier",
+    "Daniel Gelon",
+    "Dennis Detwiller",
+    "Douglas Shuler",
+    "Drew Tucker",
+    "Edward Beard Jr.",
+    "Fay Jones",
+    "Frank Frazier",
+    "Harold McNeill",
+    "Heather Hudson",
+    "Jeff A. Menges",
+    "Jesper Myrfors",
+    "Julie Baroh",
+    "Justin Hampton",
+    "Kaja & Phil Foglio",
+    "Kaja Foglio",
+    "Ken Meyer Jr.",
+    "Kerstin Kaman",
+    "Kev Brockschmidt",
+    "Kristen Bishop",
+    "Liz Danforth",
+    "Margaret Organ-Kean",
+    "Mark Poole",
+    "Mark Tedin",
+    "Melissa Benson",
+    "Michael Whelan",
+    "Mike Kimble",
+    "Nicola Leonard",
+    "Nene Thomas",
+    "Pat Morrissey",
+    "Pete Venters",
+    "Phil Foglio",
+    "Quinton Hoover",
+    "Randy Asplund-Faith",
+    "Richard Kane-Ferguson",
+    "Richard Thomas",
+    "Rob Alexander",
+    "Ron Spencer",
+    "Sandra Everingham",
+    "Scott Kirschner",
+    "Susan Van Camp",
+    "Tom Wanerstrand",
+    "Unknown",
+};
+
+// GLOBAL: DECKDLL 0x101427b4
+// GLOBAL: MAGIC 0x8b40d0
+int global_available_slots = 0;
+
+// GLOBAL: DECKDLL 0x10147220
+// GLOBAL: MAGIC 0x8d0350
+card_ptr_t global_raw_cards_storage[2000];
+
+// GLOBAL: DECKDLL 0x1012d7d0
+static char *global_deckbuilder_csv_raw;
+
+// GLOBAL: DECKDLL 0x1012df3c
+// GLOBAL: MAGIC 0x7a7d70
+static char *global_base_txt;
+
+// FUNCTION: DECKDLL 0x1001a940
+// FUNCTION: MAGIC 0x452cf0
+int read_db_guts(char *cards_dat_filename)
+{    
+  struct read_db_guts_locals
+  {
+    int init_idx;               /* local_808 */
+    int flavor_out_idx;         /* local_804 */
+    int flavor_card_idx;        /* local_800 */
+    char flavor_text_buf[1000]; /* local_7fc */
+    char *flavor_in;            /* local_414 */
+    int rules_out_idx;          /* local_410 */
+    int rules_card_idx;         /* local_40c */
+    char rules_text_buf[1000];  /* local_408 */
+    char *rules_in;             /* local_20 */
+    int req_idx;                /* local_1c */
+    int exp_idx;                /* local_18 */
+    card_ptr_t *cp;
+    size_t record_size;
+    int card_idx; /* local_c */
+    FILE *cards_dat;
+  } locals;
+
+  locals.cards_dat = fopen(cards_dat_filename, "rb");
+  if (locals.cards_dat == NULL)
+    return 0;
+
+  fread(&global_available_slots, 4, 1, locals.cards_dat);
+  fread(&locals.record_size, 4, 1, locals.cards_dat);
+
+  global_base_txt = (char *)malloc(locals.record_size);
+  if (global_base_txt == NULL)
+  {
+    fclose(locals.cards_dat);
+    return 0;
+  }
+
+  fread(global_raw_cards_storage, 0x98, global_available_slots, locals.cards_dat);
+  fread(global_base_txt, 1, locals.record_size, locals.cards_dat);
+  fclose(locals.cards_dat);
+
+  for (locals.card_idx = 0; locals.card_idx < global_available_slots; locals.card_idx += 1)
+  {
+    *(int *)&global_raw_cards_storage[locals.card_idx].full_name += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[locals.card_idx].name += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[locals.card_idx].type_text += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[locals.card_idx].rules_text += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[locals.card_idx].flavor_text += (int)global_base_txt;
+
+    if (_strcmpi(global_raw_cards_storage[locals.card_idx].rules_text, "None") == 0)
+      global_raw_cards_storage[locals.card_idx].rules_text = read_db_empty_rules;
+
+    if ((_strcmpi(global_raw_cards_storage[locals.card_idx].flavor_text, "None") == 0) ||
+        (_strcmpi(global_raw_cards_storage[locals.card_idx].flavor_text, "Blank") == 0))
+      global_raw_cards_storage[locals.card_idx].flavor_text = read_db_empty_flavor;
+
+    global_raw_cards_storage[locals.card_idx].artist =
+        const_db_artist_names[(int)global_raw_cards_storage[locals.card_idx].artist];
+
+    if (global_raw_cards_storage[locals.card_idx].num_pics == 0)
+      global_raw_cards_storage[locals.card_idx].num_pics = 1;
+  }
+
+  for (locals.exp_idx = 0; locals.exp_idx < global_available_slots; locals.exp_idx += 1)
+    if (global_raw_cards_storage[locals.exp_idx].expansion & 0x40)
+      global_raw_cards_storage[locals.exp_idx].expansion = 0x80;
+
+  for (locals.req_idx = 0; locals.req_idx < global_available_slots; locals.req_idx += 1)
+    if ((signed char)global_raw_cards_storage[locals.req_idx].req.req_colorless == 0x11)
+      global_raw_cards_storage[locals.req_idx].req.req_colorless = 10;
+
+  for (locals.rules_card_idx = 0; locals.rules_card_idx < global_available_slots;
+       locals.rules_card_idx += 1)
+  {
+    locals.rules_out_idx = 0;
+    for (locals.rules_in = global_raw_cards_storage[locals.rules_card_idx].rules_text;
+         *locals.rules_in;)
+    {
+      if (((*locals.rules_in == '\\') && (locals.rules_in[1] == '\\')) ||
+          ((*locals.rules_in == '\\') && (locals.rules_in[1] == 'n')))
+      {
+        locals.rules_in += 1;
+        locals.rules_text_buf[locals.rules_out_idx] = '\n';
+        locals.rules_out_idx += 1;
+      }
+      else
+      {
+        locals.rules_text_buf[locals.rules_out_idx] = *locals.rules_in;
+        locals.rules_out_idx += 1;
+      }
+
+      locals.rules_in += 1;
+    }
+
+    locals.rules_text_buf[locals.rules_out_idx] = '\0';
+    strcpy(global_raw_cards_storage[locals.rules_card_idx].rules_text, locals.rules_text_buf);
+  }
+
+  for (locals.flavor_card_idx = 0; locals.flavor_card_idx < global_available_slots;
+       locals.flavor_card_idx += 1)
+  {
+    locals.flavor_out_idx = 0;
+    for (locals.flavor_in = global_raw_cards_storage[locals.flavor_card_idx].flavor_text;
+         *locals.flavor_in;)
+    {
+      if (((*locals.flavor_in == '\\') && (locals.flavor_in[1] == '\\')) ||
+          ((*locals.flavor_in == '\\') && (locals.flavor_in[1] == 'n')))
+      {
+        locals.flavor_in += 1;
+        locals.flavor_text_buf[locals.flavor_out_idx] = '\n';
+        locals.flavor_out_idx += 1;
+      }
+      else
+      {
+        locals.flavor_text_buf[locals.flavor_out_idx] = *locals.flavor_in;
+        locals.flavor_out_idx += 1;
+      }
+
+      locals.flavor_in += 1;
+    }
+
+    locals.flavor_text_buf[locals.flavor_out_idx] = '\0';
+    strcpy(global_raw_cards_storage[locals.flavor_card_idx].flavor_text, locals.flavor_text_buf);
+  }
+
+#define SET_HACK(idx, col) \
+  *(int *)&global_raw_cards_storage[(idx)].hack_colors = (col)
+
+  for (locals.init_idx = 0; locals.init_idx < global_available_slots; locals.init_idx += 1)
+  {
+    global_raw_cards_storage[locals.init_idx].sleight_color = 0;
+    SET_HACK(locals.init_idx, 0);
+  }
+
+  global_raw_cards_storage[0x227].sleight_color = 0x28;
+  global_raw_cards_storage[8].sleight_color = 2;
+  global_raw_cards_storage[0x10].sleight_color = 0x20;
+  global_raw_cards_storage[0x13].sleight_color = 2;
+  global_raw_cards_storage[0x16].sleight_color = 0x10;
+  global_raw_cards_storage[0x17].sleight_color = 4;
+  global_raw_cards_storage[0x20].sleight_color = 0x10;
+  global_raw_cards_storage[0x21].sleight_color = 2;
+  global_raw_cards_storage[0x22].sleight_color = 4;
+  global_raw_cards_storage[0x23].sleight_color = 8;
+  global_raw_cards_storage[0x24].sleight_color = 0x10;
+  global_raw_cards_storage[0x25].sleight_color = 0x20;
+  global_raw_cards_storage[0x33].sleight_color = 0x20;
+  global_raw_cards_storage[0x34].sleight_color = 4;
+  global_raw_cards_storage[0x3a].sleight_color = 8;
+  global_raw_cards_storage[0x3b].sleight_color = 2;
+  global_raw_cards_storage[0x51].sleight_color = 2;
+  global_raw_cards_storage[100].sleight_color = 0x20;
+  global_raw_cards_storage[0x69].sleight_color = 8;
+  global_raw_cards_storage[0x7b].sleight_color = 0x10;
+  global_raw_cards_storage[0x80].sleight_color = 0x20;
+  global_raw_cards_storage[0x8e].sleight_color = 2;
+  global_raw_cards_storage[0x8f].sleight_color = 8;
+  global_raw_cards_storage[0x1b7].sleight_color = 4;
+  global_raw_cards_storage[0x367].sleight_color = 2;
+  global_raw_cards_storage[0xaf].sleight_color = 2;
+  global_raw_cards_storage[0xc4].sleight_color = 0x20;
+  global_raw_cards_storage[199].sleight_color = 4;
+  global_raw_cards_storage[200].sleight_color = 0x10;
+  global_raw_cards_storage[0x30d].sleight_color = 0x20;
+  global_raw_cards_storage[0xee].sleight_color = 0x30;
+  global_raw_cards_storage[0x16c].sleight_color = 4;
+  global_raw_cards_storage[0xf2].sleight_color = 2;
+  global_raw_cards_storage[0xf5].sleight_color = 4;
+  global_raw_cards_storage[0xf6].sleight_color = 2;
+  global_raw_cards_storage[0x353].sleight_color = 2;
+  global_raw_cards_storage[0x11b].sleight_color = 2;
+  global_raw_cards_storage[0x11c].sleight_color = 0x20;
+  global_raw_cards_storage[0x120].sleight_color = 8;
+
+  SET_HACK(0x125, 2);
+  SET_HACK(7, 8);
+  SET_HACK(0x18, 2);
+  SET_HACK(0x1a, 0x10);
+  SET_HACK(0x132, 0x10);
+  SET_HACK(0x2d, 0x30);
+  SET_HACK(0x4d, 2);
+  SET_HACK(0x56, 0x20);
+  SET_HACK(0x5f, 8);
+  SET_HACK(0x66, 0x10);
+  SET_HACK(0x3a9, 0x10);
+  SET_HACK(0x1ab, 4);
+  SET_HACK(0x7f, 4);
+  SET_HACK(0x86, 2);
+  SET_HACK(0x88, 2);
+  SET_HACK(0x154, 4);
+  SET_HACK(0x90, 8);
+  SET_HACK(0x93, 8);
+  SET_HACK(0x96, 4);
+  SET_HACK(0x2cf, 2);
+  SET_HACK(0x367, 2);
+  SET_HACK(0xae, 2);
+  SET_HACK(0xba, 4);
+  SET_HACK(0xda, 4);
+  SET_HACK(0x30e, 4);
+  SET_HACK(0xde, 8);
+  SET_HACK(900, 2);
+  SET_HACK(0xfd, 4);
+  SET_HACK(0x109, 0x10);
+  SET_HACK(0x123, 2);
+
+  global_raw_cards_storage[0x1c2].sleight_color = 0x10;
+  global_raw_cards_storage[0x225].sleight_color = 2;
+  global_raw_cards_storage[0xd2].sleight_color = 2;
+  global_raw_cards_storage[0x60].sleight_color = 0x10;
+
+  SET_HACK(0x196, 4);
+  SET_HACK(0x1a0, 8);
+  SET_HACK(0x1b5, 8);
+  SET_HACK(0x1b8, 4);
+  SET_HACK(0x1c5, 4);
+  SET_HACK(0x1c7, 4);
+  SET_HACK(9, 0x12);
+  SET_HACK(0xc, 10);
+  SET_HACK(0xbd, 0x30);
+  SET_HACK(0xd4, 0x28);
+  SET_HACK(0xd8, 0x22);
+  SET_HACK(0xdb, 2);
+  SET_HACK(0xf1, 0x18);
+  SET_HACK(0xfc, 0xc);
+  SET_HACK(0xfe, 0x24);
+  SET_HACK(0x102, 6);
+  SET_HACK(0x10a, 0x14);
+  SET_HACK(0x60, 0x10);
+
+#undef SET_HACK
+
+  return global_available_slots;
+}
+
+// FUNCTION: DECKDLL 0x1001b510
+// FUNCTION: MAGIC 0x00453a46
+static char *CsvParseNextField(char **txt)
+{
+  struct
+  {
+    char *cr;
+    char *next;
+    char *comma;
+    char *p;
+    char *field;
+  } s;
+
+  s.field = *txt;
+
+  if (*s.field == 0x22)
+  {
+    s.field += 1;
+    s.p = strchr(s.field, 0x22);
+    *s.p = '\0';
+    s.p++;
+    if (*s.p == 0x2c)
+      s.next = s.p + 1;
+    else
+      s.next = s.p + 2;
+  }
+  else
+  {
+    s.comma = strchr(s.field, 0x2c);
+    s.cr = strchr(s.field, 0xd);
+    if (s.comma != NULL && s.cr > s.comma)
+    {
+      *s.comma = '\0';
+      s.next = s.comma + 1;
+    }
+    else
+    {
+      *s.cr = '\0';
+      s.next = s.cr + 2;
+    }
+  }
+
+  *txt = s.field;
+  return s.next;
+}
+
+// FUNCTION: DECKDLL 0x1001b832
+// FUNCTION: MAGIC 0x00453d68
+int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
+{
+  struct
+  {
+    HANDLE hfile;     /* ebp - 0x8c */
+    int rval;         /* ebp - 0x88 */
+    DWORD bytes_read; /* ebp - 0x84 */
+    DWORD size;       /* ebp - 0x80 */
+    char *next;       /* ebp - 0x7c */
+    char set_id;      /* ebp - 0x78 */
+    char pad_set_id[3];
+    int i;      /* ebp - 0x74 */
+    char *line; /* ebp - 0x70 */
+  } s;
+  char set_names[7][15] = {
+      "Antiquities",
+      "Arabian",
+      "Astral",
+      "Dark",
+      "Legends",
+      "Promo",
+      "Unlimited",
+  };
+
+  s.rval = 0;
+  for (s.i = 0;; s.i++)
+  {
+    if (global_available_slots <= s.i)
+      break;
+    ((unsigned char *)orig_rarities)[s.i * 6] = SET_INVALID;
+  }
+
+  s.hfile = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+  if (s.hfile != INVALID_HANDLE_VALUE)
+  {
+    s.size = GetFileSize(s.hfile, NULL);
+    global_deckbuilder_csv_raw = (char *)malloc(s.size + 1);
+    if (global_deckbuilder_csv_raw)
+    {
+      ReadFile(s.hfile, global_deckbuilder_csv_raw, s.size, &s.bytes_read, NULL);
+      s.line = global_deckbuilder_csv_raw;
+      s.line = strchr(s.line, '\n') + 1;
+      s.line = strchr(s.line, '\n') + 1;
+
+      for (s.i = 0;; s.i = s.i + 1)
+      {
+        if (global_available_slots <= s.i)
+          break;
+        s.next = s.line;
+        s.next = CsvParseNextField(&s.line);
+        s.line = s.next;
+        s.next = CsvParseNextField(&s.line);
+        s.line = s.next;
+        s.next = CsvParseNextField(&s.line);
+
+        s.set_id = '\0';
+        while (s.set_id < '\a' && strcmp(set_names[s.set_id], s.line))
+          s.set_id = s.set_id + '\x01';
+
+        if (s.set_id == '\a')
+        {
+          ((unsigned char *)orig_rarities)[s.i * 6] = SET_INVALID;
+          ((char *)orig_rarities)[s.i * 6 + 2] = '-';
+          ((char *)orig_rarities)[s.i * 6 + 3] = '-';
+          ((char *)orig_rarities)[s.i * 6 + 4] = '-';
+          ((char *)orig_rarities)[s.i * 6 + 5] = '-';
+        }
+        else
+        {
+          ((char *)orig_rarities)[s.i * 6] = s.set_id;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          ((char *)orig_rarities)[s.i * 6 + 1] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          ((char *)orig_rarities)[s.i * 6 + 2] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          ((char *)orig_rarities)[s.i * 6 + 3] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          ((char *)orig_rarities)[s.i * 6 + 4] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          ((char *)orig_rarities)[s.i * 6 + 5] = *s.line;
+        }
+
+        s.line = s.next;
+        s.line = strchr(s.next, '\n') + 1;
+      }
+
+      s.rval = 1;
+    }
+
+    CloseHandle(s.hfile);
+  }
+
+  return s.rval;
+}
