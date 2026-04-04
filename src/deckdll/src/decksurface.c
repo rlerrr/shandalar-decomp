@@ -53,35 +53,6 @@ extern void __cdecl add_or_increment_sideboard_bucket_entry(int param_1, int par
 extern void __cdecl append_trade_bucket_entry(int which, int csvid, int num, FullDeck *deck_base);
 extern void ApplyCardArtPaletteToDc(HDC hdc);
 
-// Sideboard and trade groups are stored in global_edited_deck.
-#define DAT_101a0ce8 (global_edited_deck.sideboard[0].entries)
-#define DAT_101a0d60 (global_edited_deck.sideboard[0].total)
-#define DAT_101a0d64 (global_edited_deck.sideboard[1].entries)
-#define DAT_101a0ddc (global_edited_deck.sideboard[1].total)
-#define DAT_101a0de0 (global_edited_deck.sideboard[2].entries)
-#define DAT_101a0e58 (global_edited_deck.sideboard[2].total)
-#define DAT_101a0e5c (global_edited_deck.sideboard[3].entries)
-#define DAT_101a0ed4 (global_edited_deck.sideboard[3].total)
-#define DAT_101a0ed8 (global_edited_deck.sideboard[4].entries)
-#define DAT_101a0f50 (global_edited_deck.sideboard[4].total)
-#define DAT_101a0f54 (global_edited_deck.sideboard[5].entries)
-#define DAT_101a0fcc (global_edited_deck.sideboard[5].total)
-
-#define DAT_101a0fd0 (global_edited_deck.trade[0].entries)
-#define DAT_101a1048 (global_edited_deck.trade[0].total)
-#define DAT_101a104c (global_edited_deck.trade[1].entries)
-#define DAT_101a10c4 (global_edited_deck.trade[1].total)
-#define DAT_101a10c8 (global_edited_deck.trade[2].entries)
-#define DAT_101a1140 (global_edited_deck.trade[2].total)
-#define DAT_101a1144 (global_edited_deck.trade[3].entries)
-#define DAT_101a11bc (global_edited_deck.trade[3].total)
-#define DAT_101a11c0 (global_edited_deck.trade[4].entries)
-#define DAT_101a1238 (global_edited_deck.trade[4].total)
-#define DAT_101a123c (global_edited_deck.trade[5].entries)
-#define DAT_101a12b4 (global_edited_deck.trade[5].total)
-#define DAT_101a12b8 (global_edited_deck.trade[6].entries)
-#define DAT_101a1330 (global_edited_deck.trade[6].total)
-
 // GLOBAL: DECKDLL 0x101a8a6c
 HWND global_decksurface_hwnd;
 // GLOBAL: DECKDLL 0x100f2768
@@ -1014,166 +985,166 @@ LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wpara
     destroy_child_windows(hwnd);
     if (global_cfg_consolidate != 0)
     {
-      for (s.local_10 = 0; DAT_101a0d60 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[0].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
         s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031218, DAT_10031214,
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x0, global_hinstance,
-                                    (LPVOID)DAT_101a0ce8[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.sideboard[0].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
-          SendMessageA(s.local_8, 0x401, DAT_101a0ce8[s.local_10].DeckEntry_Amount, 0);
+          SendMessageA(s.local_8, 0x401, global_edited_deck.sideboard[0].entries[s.local_10].DeckEntry_Amount, 0);
         else
           s.local_c = 0;
       }
-      for (s.local_10 = 0; DAT_101a0ddc > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[1].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
         s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031230, DAT_1003122c,
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x1, global_hinstance,
-                                    (LPVOID)DAT_101a0d64[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.sideboard[1].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
-          SendMessageA(s.local_8, 0x401, DAT_101a0d64[s.local_10].DeckEntry_Amount, 0);
+          SendMessageA(s.local_8, 0x401, global_edited_deck.sideboard[1].entries[s.local_10].DeckEntry_Amount, 0);
         else
           s.local_c = 0;
       }
-      for (s.local_10 = 0; DAT_101a0e58 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[2].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
         s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031248, DAT_10031244,
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x2, global_hinstance,
-                                    (LPVOID)DAT_101a0de0[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.sideboard[2].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
-          SendMessageA(s.local_8, 0x401, DAT_101a0de0[s.local_10].DeckEntry_Amount, 0);
+          SendMessageA(s.local_8, 0x401, global_edited_deck.sideboard[2].entries[s.local_10].DeckEntry_Amount, 0);
         else
           s.local_c = 0;
       }
-      for (s.local_10 = 0; DAT_101a0ed4 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[3].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
         s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031260, DAT_1003125c,
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x3, global_hinstance,
-                                    (LPVOID)DAT_101a0e5c[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.sideboard[3].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
-          SendMessageA(s.local_8, 0x401, DAT_101a0e5c[s.local_10].DeckEntry_Amount, 0);
+          SendMessageA(s.local_8, 0x401, global_edited_deck.sideboard[3].entries[s.local_10].DeckEntry_Amount, 0);
         else
           s.local_c = 0;
       }
-      for (s.local_10 = 0; DAT_101a0fcc > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[5].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
         s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031278, DAT_10031274,
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x5, global_hinstance,
-                                    (LPVOID)DAT_101a0f54[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.sideboard[5].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
-          SendMessageA(s.local_8, 0x401, DAT_101a0f54[s.local_10].DeckEntry_Amount, 0);
+          SendMessageA(s.local_8, 0x401, global_edited_deck.sideboard[5].entries[s.local_10].DeckEntry_Amount, 0);
         else
           s.local_c = 0;
       }
-      for (s.local_10 = 0; DAT_101a0f50 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[4].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
         s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031290, DAT_1003128c,
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x4, global_hinstance,
-                                    (LPVOID)DAT_101a0ed8[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.sideboard[4].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
-          SendMessageA(s.local_8, 0x401, DAT_101a0ed8[s.local_10].DeckEntry_Amount, 0);
+          SendMessageA(s.local_8, 0x401, global_edited_deck.sideboard[4].entries[s.local_10].DeckEntry_Amount, 0);
         else
           s.local_c = 0;
       }
     }
     else
     {
-      for (s.local_10 = 0; DAT_101a0d60 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[0].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
-        for (s.local_14 = 0; DAT_101a0ce8[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
+        for (s.local_14 = 0; global_edited_deck.sideboard[0].entries[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
         {
           if ((s.local_c == 0) ||
               ((s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_100312a8, DAT_100312a4,
                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                             0, 0, global_smallcard_width, global_smallcard_height,
                                             hwnd, (HMENU)0x0, global_hinstance,
-                                            (LPVOID)DAT_101a0ce8[s.local_10].DeckEntry_csvid)) == NULL))
+                                            (LPVOID)global_edited_deck.sideboard[0].entries[s.local_10].DeckEntry_csvid)) == NULL))
             s.local_c = 0;
           else
             s.local_c = 1;
         }
       }
-      for (s.local_10 = 0; DAT_101a0ddc > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[1].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
-        for (s.local_14 = 0; DAT_101a0d64[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
+        for (s.local_14 = 0; global_edited_deck.sideboard[1].entries[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
         {
           if ((s.local_c == 0) ||
               ((s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_100312c0, DAT_100312bc,
                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                             0, 0, global_smallcard_width, global_smallcard_height,
                                             hwnd, (HMENU)0x1, global_hinstance,
-                                            (LPVOID)DAT_101a0d64[s.local_10].DeckEntry_csvid)) == NULL))
+                                            (LPVOID)global_edited_deck.sideboard[1].entries[s.local_10].DeckEntry_csvid)) == NULL))
             s.local_c = 0;
           else
             s.local_c = 1;
         }
       }
-      for (s.local_10 = 0; DAT_101a0e58 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[2].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
-        for (s.local_14 = 0; DAT_101a0de0[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
+        for (s.local_14 = 0; global_edited_deck.sideboard[2].entries[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
         {
           if ((s.local_c == 0) ||
               ((s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_100312d8, DAT_100312d4,
                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                             0, 0, global_smallcard_width, global_smallcard_height,
                                             hwnd, (HMENU)0x2, global_hinstance,
-                                            (LPVOID)DAT_101a0de0[s.local_10].DeckEntry_csvid)) == NULL))
+                                            (LPVOID)global_edited_deck.sideboard[2].entries[s.local_10].DeckEntry_csvid)) == NULL))
             s.local_c = 0;
           else
             s.local_c = 1;
         }
       }
-      for (s.local_10 = 0; DAT_101a0ed4 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[3].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
-        for (s.local_14 = 0; DAT_101a0e5c[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
+        for (s.local_14 = 0; global_edited_deck.sideboard[3].entries[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
         {
           if ((s.local_c == 0) ||
               ((s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_100312f0, DAT_100312ec,
                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                             0, 0, global_smallcard_width, global_smallcard_height,
                                             hwnd, (HMENU)0x3, global_hinstance,
-                                            (LPVOID)DAT_101a0e5c[s.local_10].DeckEntry_csvid)) == NULL))
+                                            (LPVOID)global_edited_deck.sideboard[3].entries[s.local_10].DeckEntry_csvid)) == NULL))
             s.local_c = 0;
           else
             s.local_c = 1;
         }
       }
-      for (s.local_10 = 0; DAT_101a0fcc > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[5].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
-        for (s.local_14 = 0; DAT_101a0f54[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
+        for (s.local_14 = 0; global_edited_deck.sideboard[5].entries[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
         {
           if ((s.local_c == 0) ||
               ((s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031308, DAT_10031304,
                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                             0, 0, global_smallcard_width, global_smallcard_height,
                                             hwnd, (HMENU)0x5, global_hinstance,
-                                            (LPVOID)DAT_101a0f54[s.local_10].DeckEntry_csvid)) == NULL))
+                                            (LPVOID)global_edited_deck.sideboard[5].entries[s.local_10].DeckEntry_csvid)) == NULL))
             s.local_c = 0;
           else
             s.local_c = 1;
         }
       }
-      for (s.local_10 = 0; DAT_101a0f50 > s.local_10; s.local_10 = s.local_10 + 1)
+      for (s.local_10 = 0; global_edited_deck.sideboard[4].total > s.local_10; s.local_10 = s.local_10 + 1)
       {
-        for (s.local_14 = 0; DAT_101a0ed8[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
+        for (s.local_14 = 0; global_edited_deck.sideboard[4].entries[s.local_10].DeckEntry_Amount > s.local_14; s.local_14 = s.local_14 + 1)
         {
           if ((s.local_c == 0) ||
               ((s.local_8 = CreateWindowExA(0, s_MAGICDECK_CardClass_10031320, DAT_1003131c,
                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                             0, 0, global_smallcard_width, global_smallcard_height,
                                             hwnd, (HMENU)0x4, global_hinstance,
-                                            (LPVOID)DAT_101a0ed8[s.local_10].DeckEntry_csvid)) == NULL))
+                                            (LPVOID)global_edited_deck.sideboard[4].entries[s.local_10].DeckEntry_csvid)) == NULL))
             s.local_c = 0;
           else
             s.local_c = 1;
@@ -1250,23 +1221,23 @@ LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wpara
       break;
 
     case RES_MENU_CLEARDECK:
-      if (((((DAT_101a0d60 != 0) || (DAT_101a0ddc != 0)) || (DAT_101a0e58 != 0)) ||
-           ((DAT_101a0ed4 != 0 || (DAT_101a0f50 != 0)))) ||
-          (DAT_101a0fcc != 0))
+      if (((((global_edited_deck.sideboard[0].total != 0) || (global_edited_deck.sideboard[1].total != 0)) || (global_edited_deck.sideboard[2].total != 0)) ||
+           ((global_edited_deck.sideboard[3].total != 0 || (global_edited_deck.sideboard[4].total != 0)))) ||
+          (global_edited_deck.sideboard[5].total != 0))
       {
-        DAT_10031064 = DAT_101a0d60;
-        DAT_10031068 = DAT_101a0ddc;
-        DAT_1003106c = DAT_101a0e58;
-        DAT_10031070 = DAT_101a0ed4;
-        DAT_10031074 = DAT_101a0f50;
-        DAT_10031078 = DAT_101a0fcc;
+        DAT_10031064 = global_edited_deck.sideboard[0].total;
+        DAT_10031068 = global_edited_deck.sideboard[1].total;
+        DAT_1003106c = global_edited_deck.sideboard[2].total;
+        DAT_10031070 = global_edited_deck.sideboard[3].total;
+        DAT_10031074 = global_edited_deck.sideboard[4].total;
+        DAT_10031078 = global_edited_deck.sideboard[5].total;
 
-        DAT_101a0e58 = 0;
-        DAT_101a0ddc = DAT_101a0e58;
-        DAT_101a0d60 = DAT_101a0ddc;
-        DAT_101a0fcc = 0;
-        DAT_101a0f50 = DAT_101a0fcc;
-        DAT_101a0ed4 = DAT_101a0f50;
+        global_edited_deck.sideboard[2].total = 0;
+        global_edited_deck.sideboard[1].total = global_edited_deck.sideboard[2].total;
+        global_edited_deck.sideboard[0].total = global_edited_deck.sideboard[1].total;
+        global_edited_deck.sideboard[5].total = 0;
+        global_edited_deck.sideboard[4].total = global_edited_deck.sideboard[5].total;
+        global_edited_deck.sideboard[3].total = global_edited_deck.sideboard[4].total;
 
         DeleteMenu(DAT_100f2844, RES_MENU_CLEARDECK, 0);
         AppendMenuA(DAT_100f2844, MF_ENABLED, RES_MENU_RESTOREDECK, s__Restore_sideboard_10031360);
@@ -1275,12 +1246,12 @@ LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wpara
       break;
 
     case RES_MENU_RESTOREDECK:
-      DAT_101a0d60 = DAT_10031064;
-      DAT_101a0ddc = DAT_10031068;
-      DAT_101a0e58 = DAT_1003106c;
-      DAT_101a0ed4 = DAT_10031070;
-      DAT_101a0f50 = DAT_10031074;
-      DAT_101a0fcc = DAT_10031078;
+      global_edited_deck.sideboard[0].total = DAT_10031064;
+      global_edited_deck.sideboard[1].total = DAT_10031068;
+      global_edited_deck.sideboard[2].total = DAT_1003106c;
+      global_edited_deck.sideboard[3].total = DAT_10031070;
+      global_edited_deck.sideboard[4].total = DAT_10031074;
+      global_edited_deck.sideboard[5].total = DAT_10031078;
 
       DAT_1003106c = 0;
       DAT_10031068 = DAT_1003106c;
@@ -1448,7 +1419,7 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
   case 0x401:
     s.local_c = 1;
     destroy_child_windows(hwnd);
-    for (s.local_10 = 0; s.local_10 < DAT_101a1048; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[0].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1456,14 +1427,14 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x6, global_hinstance,
-                                    (LPVOID)DAT_101a0fd0[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[0].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
           s.local_c = 0;
       }
     }
-    for (s.local_10 = 0; s.local_10 < DAT_101a10c4; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[1].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1471,14 +1442,14 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x0, global_hinstance,
-                                    (LPVOID)DAT_101a104c[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[1].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
           s.local_c = 0;
       }
     }
-    for (s.local_10 = 0; s.local_10 < DAT_101a1140; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[2].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1486,14 +1457,14 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x1, global_hinstance,
-                                    (LPVOID)DAT_101a10c8[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[2].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
           s.local_c = 0;
       }
     }
-    for (s.local_10 = 0; s.local_10 < DAT_101a11bc; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[3].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1501,14 +1472,14 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x2, global_hinstance,
-                                    (LPVOID)DAT_101a1144[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[3].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
           s.local_c = 0;
       }
     }
-    for (s.local_10 = 0; s.local_10 < DAT_101a1238; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[4].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1516,14 +1487,14 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x3, global_hinstance,
-                                    (LPVOID)DAT_101a11c0[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[4].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
           s.local_c = 0;
       }
     }
-    for (s.local_10 = 0; s.local_10 < DAT_101a1330; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[6].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1531,14 +1502,14 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x5, global_hinstance,
-                                    (LPVOID)DAT_101a12b8[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[6].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
           s.local_c = 0;
       }
     }
-    for (s.local_10 = 0; s.local_10 < DAT_101a12b4; s.local_10 = s.local_10 + 1)
+    for (s.local_10 = 0; s.local_10 < global_edited_deck.trade[5].total; s.local_10 = s.local_10 + 1)
     {
       if (s.local_c != 0)
       {
@@ -1546,7 +1517,7 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                     0, 0, global_smallcard_width, global_smallcard_height,
                                     hwnd, (HMENU)0x4, global_hinstance,
-                                    (LPVOID)DAT_101a123c[s.local_10].DeckEntry_csvid);
+                                    (LPVOID)global_edited_deck.trade[5].entries[s.local_10].DeckEntry_csvid);
         if (s.local_8 != NULL)
           s.local_c = 1;
         else
@@ -1630,25 +1601,25 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
       break;
 
     case RES_MENU_CLEARDECK:
-      if (((((DAT_101a1048 != 0) || (DAT_101a10c4 != 0)) || (DAT_101a1140 != 0)) ||
-           ((DAT_101a11bc != 0 || (DAT_101a1238 != 0)))) ||
-          ((DAT_101a12b4 != 0 || (DAT_101a1330 != 0))))
+      if (((((global_edited_deck.trade[0].total != 0) || (global_edited_deck.trade[1].total != 0)) || (global_edited_deck.trade[2].total != 0)) ||
+           ((global_edited_deck.trade[3].total != 0 || (global_edited_deck.trade[4].total != 0)))) ||
+          ((global_edited_deck.trade[5].total != 0 || (global_edited_deck.trade[6].total != 0))))
       {
-        DAT_1003107c = DAT_101a1048;
-        DAT_10031080 = DAT_101a10c4;
-        DAT_10031084 = DAT_101a1140;
-        DAT_10031088 = DAT_101a11bc;
-        DAT_1003108c = DAT_101a1238;
-        DAT_10031090 = DAT_101a12b4;
-        DAT_10031094 = DAT_101a1330;
+        DAT_1003107c = global_edited_deck.trade[0].total;
+        DAT_10031080 = global_edited_deck.trade[1].total;
+        DAT_10031084 = global_edited_deck.trade[2].total;
+        DAT_10031088 = global_edited_deck.trade[3].total;
+        DAT_1003108c = global_edited_deck.trade[4].total;
+        DAT_10031090 = global_edited_deck.trade[5].total;
+        DAT_10031094 = global_edited_deck.trade[6].total;
 
-        DAT_101a11bc = 0;
-        DAT_101a1140 = DAT_101a11bc;
-        DAT_101a10c4 = DAT_101a1140;
-        DAT_101a1048 = DAT_101a10c4;
-        DAT_101a1330 = 0;
-        DAT_101a12b4 = DAT_101a1330;
-        DAT_101a1238 = DAT_101a12b4;
+        global_edited_deck.trade[3].total = 0;
+        global_edited_deck.trade[2].total = global_edited_deck.trade[3].total;
+        global_edited_deck.trade[1].total = global_edited_deck.trade[2].total;
+        global_edited_deck.trade[0].total = global_edited_deck.trade[1].total;
+        global_edited_deck.trade[6].total = 0;
+        global_edited_deck.trade[5].total = global_edited_deck.trade[6].total;
+        global_edited_deck.trade[4].total = global_edited_deck.trade[5].total;
 
         load_text(s_menus_10031544, s_DECKSURFACE_TRADE_10031530);
         DeleteMenu(global_tradesurface_popup, RES_MENU_CLEARDECK, 0);
@@ -1658,13 +1629,13 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
       break;
 
     case RES_MENU_RESTOREDECK:
-      DAT_101a1048 = DAT_1003107c;
-      DAT_101a10c4 = DAT_10031080;
-      DAT_101a1140 = DAT_10031084;
-      DAT_101a11bc = DAT_10031088;
-      DAT_101a1238 = DAT_1003108c;
-      DAT_101a12b4 = DAT_10031090;
-      DAT_101a1330 = DAT_10031094;
+      global_edited_deck.trade[0].total = DAT_1003107c;
+      global_edited_deck.trade[1].total = DAT_10031080;
+      global_edited_deck.trade[2].total = DAT_10031084;
+      global_edited_deck.trade[3].total = DAT_10031088;
+      global_edited_deck.trade[4].total = DAT_1003108c;
+      global_edited_deck.trade[5].total = DAT_10031090;
+      global_edited_deck.trade[6].total = DAT_10031094;
 
       DAT_10031088 = 0;
       DAT_10031084 = DAT_10031088;
