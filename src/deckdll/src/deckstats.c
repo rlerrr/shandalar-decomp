@@ -3,6 +3,7 @@
 #include "mystdbool.h"
 #include "defs.h"
 #include "deckdll.h"
+#include "full_deck.h"
 #include "resources.h"
 #include "cardartlib/src/palette.h"
 #include "sidlib/pic.h"
@@ -12,7 +13,7 @@ typedef ptrdiff_t INT_PTR;
 extern char text_lines[500][128];
 
 extern int global_edited_deck_num_entries;
-extern DeckEntry global_edited_deck[300];
+extern FullDeck global_edited_deck;
 extern GlobalDeckInfoBlob global_deckinfo;
 ;
 extern const card_ptr_t *cards_ptr;
@@ -65,11 +66,11 @@ check_deck_type(void)
   s.all_unique_nonbasics = 1;
 
   for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
-    if (!check_basic(global_edited_deck[s.i].DeckEntry_csvid))
+    if (!check_basic(global_edited_deck.entries[s.i].DeckEntry_csvid))
     {
-      if (global_edited_deck[s.i].DeckEntry_Amount > 1)
+      if (global_edited_deck.entries[s.i].DeckEntry_Amount > 1)
         s.all_unique_nonbasics = 0;
-      if (check_ante(global_edited_deck[s.i].DeckEntry_csvid))
+      if (check_ante(global_edited_deck.entries[s.i].DeckEntry_csvid))
         s.rval |= DT_HAS_ANTE;
     }
 
@@ -78,8 +79,8 @@ check_deck_type(void)
 
   for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
   {
-    s.csvid = global_edited_deck[s.i].DeckEntry_csvid;
-    s.num = global_edited_deck[s.i].DeckEntry_Amount;
+    s.csvid = global_edited_deck.entries[s.i].DeckEntry_csvid;
+    s.num = global_edited_deck.entries[s.i].DeckEntry_Amount;
     if (!check_basic(s.csvid))
     {
       if (check_banned(s.csvid))
@@ -164,8 +165,8 @@ build_deck_stats_table(void)
 
   for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
   {
-    s.csvid = global_edited_deck[s.i].DeckEntry_csvid;
-    s.amt = global_edited_deck[s.i].DeckEntry_Amount;
+    s.csvid = global_edited_deck.entries[s.i].DeckEntry_csvid;
+    s.amt = global_edited_deck.entries[s.i].DeckEntry_Amount;
 
     if (global_raw_cards_storage[s.csvid].card_type == CP_TYPE_CREATURE)
       s.row = 1;
@@ -342,9 +343,8 @@ show_stats(HDC hdc, SIZE word_size, int *stepx, int *stepy, int *posx, int *star
   TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
 
   s.x += word_size.cx;
-  s.u = 1000 - s.x;
-  *stepx = (s.u + ((s.u >> 31) & 7)) >> 3;
-  s.x += word_size.cy + 80;
+  *stepx = (1000 - s.x) / 8;
+  s.x += 0x50;
   *posx = s.x;
 
   wsprintf(s.buf, text_lines[1]);
@@ -377,7 +377,8 @@ show_stats(HDC hdc, SIZE word_size, int *stepx, int *stepy, int *posx, int *star
   TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
 
   SetTextColor(hdc, global_colorref_stats_lightgrey);
-  s.y = s.y + word_size.cy / 2 + *stepy;
+  s.y += word_size.cy / 2;
+  s.y += *stepy;
   wsprintf(s.buf, text_lines[9]);
   TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
   s.y += *stepy;
@@ -398,7 +399,7 @@ show_stats(HDC hdc, SIZE word_size, int *stepx, int *stepy, int *posx, int *star
   s.y += *stepy;
   wsprintf(s.buf, text_lines[15]);
   TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
-  s.y += *stepy;
+  //  s.y += *stepy;
   s.y += word_size.cy;
   wsprintf(s.buf, text_lines[16]);
   TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));

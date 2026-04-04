@@ -1,4 +1,5 @@
 #include "deckdll.h"
+#include "full_deck.h"
 #include "mystdbool.h"
 
 extern HINSTANCE global_hinstance;
@@ -29,7 +30,7 @@ extern HANDLE global_pic_bldr02c;
 extern HANDLE global_pic_bldr03c;
 extern HANDLE global_pic_bldr04c;
 extern HANDLE global_pic_bldr05c;
-extern DeckEntry global_edited_deck[300];
+extern FullDeck global_edited_deck;
 extern Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 extern Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 extern char text_lines[225][128];
@@ -47,66 +48,39 @@ extern int ask_about_saving_deck(void);
 extern bool show_dialog_deckinfo(void);
 extern bool show_dialog_groupmove(void);
 extern void refresh_numofcards_text(void);
-extern void insert_cards_into_deck(csvid_t csvid, int num, DeckEntry *tgt_deck);
-extern void __cdecl FUN_1002b9dc(int param_1, int param_2, int param_3, int param_4);
-extern void __cdecl FUN_1002bb7f(int which, int csvid, int num, int deck_base);
+extern void insert_cards_into_deck(csvid_t csvid, int num, FullDeck *tgt_deck);
+extern void __cdecl add_or_increment_sideboard_bucket_entry(int param_1, int param_2, int param_3, FullDeck *param_4);
+extern void __cdecl append_trade_bucket_entry(int which, int csvid, int num, FullDeck *deck_base);
 extern void ApplyCardArtPaletteToDc(HDC hdc);
 
-// Sideboard surface groups (6): 10 entries each + per-group counts.
-// GLOBAL: DECKDLL 0x101a0ce8
-static DeckEntry DAT_101a0ce8[10];
-// GLOBAL: DECKDLL 0x101a0d60
-static int DAT_101a0d60;
-// GLOBAL: DECKDLL 0x101a0d64
-static DeckEntry DAT_101a0d64[10];
-// GLOBAL: DECKDLL 0x101a0ddc
-static int DAT_101a0ddc;
-// GLOBAL: DECKDLL 0x101a0de0
-static DeckEntry DAT_101a0de0[10];
-// GLOBAL: DECKDLL 0x101a0e58
-static int DAT_101a0e58;
-// GLOBAL: DECKDLL 0x101a0e5c
-static DeckEntry DAT_101a0e5c[10];
-// GLOBAL: DECKDLL 0x101a0ed4
-static int DAT_101a0ed4;
-// GLOBAL: DECKDLL 0x101a0ed8
-static DeckEntry DAT_101a0ed8[10];
-// GLOBAL: DECKDLL 0x101a0f50
-static int DAT_101a0f50;
-// GLOBAL: DECKDLL 0x101a0f54
-static DeckEntry DAT_101a0f54[10];
-// GLOBAL: DECKDLL 0x101a0fcc
-static int DAT_101a0fcc;
+// Sideboard and trade groups are stored in global_edited_deck.
+#define DAT_101a0ce8 (global_edited_deck.sideboard[0].entries)
+#define DAT_101a0d60 (global_edited_deck.sideboard[0].total)
+#define DAT_101a0d64 (global_edited_deck.sideboard[1].entries)
+#define DAT_101a0ddc (global_edited_deck.sideboard[1].total)
+#define DAT_101a0de0 (global_edited_deck.sideboard[2].entries)
+#define DAT_101a0e58 (global_edited_deck.sideboard[2].total)
+#define DAT_101a0e5c (global_edited_deck.sideboard[3].entries)
+#define DAT_101a0ed4 (global_edited_deck.sideboard[3].total)
+#define DAT_101a0ed8 (global_edited_deck.sideboard[4].entries)
+#define DAT_101a0f50 (global_edited_deck.sideboard[4].total)
+#define DAT_101a0f54 (global_edited_deck.sideboard[5].entries)
+#define DAT_101a0fcc (global_edited_deck.sideboard[5].total)
 
-// Trade surface groups (7): 10 entries each + per-group counts.
-// GLOBAL: DECKDLL 0x101a0fd0
-static DeckEntry DAT_101a0fd0[10];
-// GLOBAL: DECKDLL 0x101a1048
-static int DAT_101a1048;
-// GLOBAL: DECKDLL 0x101a104c
-static DeckEntry DAT_101a104c[10];
-// GLOBAL: DECKDLL 0x101a10c4
-static int DAT_101a10c4;
-// GLOBAL: DECKDLL 0x101a10c8
-static DeckEntry DAT_101a10c8[10];
-// GLOBAL: DECKDLL 0x101a1140
-static int DAT_101a1140;
-// GLOBAL: DECKDLL 0x101a1144
-static DeckEntry DAT_101a1144[10];
-// GLOBAL: DECKDLL 0x101a11bc
-static int DAT_101a11bc;
-// GLOBAL: DECKDLL 0x101a11c0
-static DeckEntry DAT_101a11c0[10];
-// GLOBAL: DECKDLL 0x101a1238
-static int DAT_101a1238;
-// GLOBAL: DECKDLL 0x101a123c
-static DeckEntry DAT_101a123c[10];
-// GLOBAL: DECKDLL 0x101a12b4
-static int DAT_101a12b4;
-// GLOBAL: DECKDLL 0x101a12b8
-static DeckEntry DAT_101a12b8[10];
-// GLOBAL: DECKDLL 0x101a1330
-static int DAT_101a1330;
+#define DAT_101a0fd0 (global_edited_deck.trade[0].entries)
+#define DAT_101a1048 (global_edited_deck.trade[0].total)
+#define DAT_101a104c (global_edited_deck.trade[1].entries)
+#define DAT_101a10c4 (global_edited_deck.trade[1].total)
+#define DAT_101a10c8 (global_edited_deck.trade[2].entries)
+#define DAT_101a1140 (global_edited_deck.trade[2].total)
+#define DAT_101a1144 (global_edited_deck.trade[3].entries)
+#define DAT_101a11bc (global_edited_deck.trade[3].total)
+#define DAT_101a11c0 (global_edited_deck.trade[4].entries)
+#define DAT_101a1238 (global_edited_deck.trade[4].total)
+#define DAT_101a123c (global_edited_deck.trade[5].entries)
+#define DAT_101a12b4 (global_edited_deck.trade[5].total)
+#define DAT_101a12b8 (global_edited_deck.trade[6].entries)
+#define DAT_101a1330 (global_edited_deck.trade[6].total)
 
 // GLOBAL: DECKDLL 0x101a8a6c
 HWND global_decksurface_hwnd;
@@ -952,7 +926,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
       if (global_cfg_consolidate && (hwnd_card = find_wanted_window(hwnd, csvid)))
       {
-        insert_cards_into_deck(csvid, 1, global_edited_deck);
+        insert_cards_into_deck(csvid, 1, &global_edited_deck);
         SendMessage(hwnd_card, 0x8401, 1 + SendMessage(hwnd_card, 0x8402, 0, 0), 0);
       }
       else
@@ -966,7 +940,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         if (hwnd_card)
         {
           BringWindowToTop(hwnd_card);
-          insert_cards_into_deck(csvid, 1, global_edited_deck);
+          insert_cards_into_deck(csvid, 1, &global_edited_deck);
           SendMessage(hwnd, WM_COMMAND, RES_MENU_REFRESH, 0);
         }
         else
@@ -1396,13 +1370,13 @@ LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wpara
       else
       {
         BringWindowToTop(s.local_20);
-        FUN_1002b9dc((int)s.local_1c, (int)s.local_18, 1, (int)global_edited_deck);
+        add_or_increment_sideboard_bucket_entry((int)s.local_1c, (int)s.local_18, 1, &global_edited_deck);
         SendMessageA(hwnd, WM_COMMAND, RES_MENU_REFRESH, 0);
       }
     }
     else
     {
-      FUN_1002b9dc((int)s.local_1c, (int)s.local_18, 1, (int)global_edited_deck);
+      add_or_increment_sideboard_bucket_entry((int)s.local_1c, (int)s.local_18, 1, &global_edited_deck);
       s.local_30 = SendMessageA(s.local_20, 0x402, 0, 0);
       SendMessageA(s.local_20, 0x401, s.local_30 + 1, 0);
     }
@@ -1779,7 +1753,7 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
     else
     {
       BringWindowToTop(s.local_1c);
-      FUN_1002bb7f((int)s.local_18, (int)s.local_14, 1, (int)global_edited_deck);
+      append_trade_bucket_entry((int)s.local_18, (int)s.local_14, 1, &global_edited_deck);
       SendMessageA(hwnd, WM_COMMAND, RES_MENU_REFRESH, 0);
     }
 

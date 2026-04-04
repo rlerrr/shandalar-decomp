@@ -20,7 +20,7 @@ static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10025b5e
-static int __cdecl FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
+static int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
 {
   HWND parent;
   DWORD procid_src;
@@ -37,8 +37,46 @@ static int __cdecl FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lp
     LPARAM lparam;
   } args;
 
-  if (msg == WM_QUERYNEWPALETTE)
+  switch (msg)
   {
+  case WM_PALETTEISCHANGING:
+    parent = wparam_hwnd;
+    if (parent != hwnd)
+    {
+      tid_src = GetWindowThreadProcessId(wparam_hwnd, &procid_src);
+      tid_dst = GetWindowThreadProcessId(hwnd, &procid_dst);
+      (void)tid_src;
+      (void)tid_dst;
+
+      if (procid_dst == procid_src)
+      {
+        parent = GetParent(hwnd);
+        if (parent == NULL)
+        {
+          hdc = GetDC(hwnd);
+          SelectPalette(hdc, global_cart_art_hpalette, TRUE);
+          InvalidateRect(hwnd, NULL, TRUE);
+          ReleaseDC(hwnd, hdc);
+        }
+        else
+        {
+          if ((GetWindowLongA(hwnd, GWL_STYLE) & WS_CHILD) == 0)
+            InvalidateRect(hwnd, NULL, TRUE);
+        }
+      }
+      else
+        InvalidateRect(hwnd, NULL, TRUE);
+    }
+
+  case WM_PALETTECHANGED:
+    args.hwnd = hwnd;
+    args.msg = msg;
+    args.wparam = wparam_hwnd;
+    args.lparam = lparam;
+    EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&args);
+    return 0;
+
+  case WM_QUERYNEWPALETTE:
     UnrealizeObject(global_cart_art_hpalette);
     hdc = GetDC(hwnd);
     SelectPalette(hdc, global_cart_art_hpalette, FALSE);
@@ -48,46 +86,6 @@ static int __cdecl FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lp
     ReleaseDC(hwnd, hdc);
     return 1;
   }
-
-  if (msg < WM_PALETTEISCHANGING || WM_PALETTECHANGED < msg)
-    return 0;
-
-  if (wparam_hwnd != hwnd)
-  {
-    tid_src = GetWindowThreadProcessId(wparam_hwnd, &procid_src);
-    tid_dst = GetWindowThreadProcessId(hwnd, &procid_dst);
-    (void)tid_src;
-    (void)tid_dst;
-
-    if (procid_dst == procid_src)
-    {
-      parent = GetParent(hwnd);
-      if (parent == NULL)
-      {
-        hdc = GetDC(hwnd);
-        SelectPalette(hdc, global_cart_art_hpalette, TRUE);
-        InvalidateRect(hwnd, NULL, TRUE);
-        ReleaseDC(hwnd, hdc);
-      }
-      else
-      {
-        if ((GetWindowLongA(hwnd, GWL_STYLE) & WS_CHILD) == 0)
-          InvalidateRect(hwnd, NULL, TRUE);
-      }
-    }
-    else
-      InvalidateRect(hwnd, NULL, TRUE);
-  }
-
-  if (msg == WM_PALETTECHANGED)
-  {
-    args.hwnd = hwnd;
-    args.msg = msg;
-    args.wparam = wparam_hwnd;
-    args.lparam = lparam;
-    EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&args);
-  }
-
   return 0;
 }
 
