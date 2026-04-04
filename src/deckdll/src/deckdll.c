@@ -1007,6 +1007,7 @@ static COLORREF GetPaletteColor(int index)
 
 void delete_and_close_object(HANDLE obj);
 static void destroy_create_fonts_resources(void);
+void draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN pen2, COLORREF col, int do_focus, UINT format);
 
 // FUNCTION: DECKDLL 0x10011680
 // FUNCTION: MAGIC 0x00558fb0
@@ -5795,134 +5796,6 @@ check_card_count(int csvid)
   }
 
   return 0;
-}
-
-// FUNCTION: DECKDLL 0x10023972
-// FUNCTION: MAGIC 0x004940d6
-BOOL TileBitmapIntoRect(HDC hdc, RECT *r, HBITMAP bmp)
-{
-  struct
-  {
-    BITMAP bm;
-    RECT dst;
-    int y;
-    int saved;
-    int x;
-  } s;
-
-  if (!hdc || !r || !bmp)
-    return FALSE;
-
-  s.saved = SaveDC(hdc);
-  IntersectClipRect(hdc, r->left, r->top, r->right, r->bottom);
-
-  GetObjectA(bmp, 0x18, &s.bm);
-
-  for (s.x = r->left; s.x < r->right; s.x += s.bm.bmWidth)
-  {
-    for (s.y = r->top; s.y < r->bottom; s.y += s.bm.bmHeight)
-    {
-      SetRect(&s.dst, s.x, s.y, s.x - 1, s.y - 1);
-      DrawBitmapSubrectToRect(hdc, &s.dst, bmp, 0, 0, s.bm.bmWidth, s.bm.bmHeight);
-    }
-  }
-
-  RestoreDC(hdc, s.saved);
-  return TRUE;
-}
-
-// FUNCTION: DECKDLL 0x10024ed5
-// FUNCTION: MAGIC 0x0049563b
-static void draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN pen2, COLORREF col, int do_focus, UINT format)
-{
-  struct
-  {
-    HDC hdc;       /* ebp - 0x64 */
-    RECT focus;    /* ebp - 0x60 */
-    HGDIOBJ hfont; /* ebp - 0x50 */
-    RECT r;        /* ebp - 0x4c */
-    char txt[52];  /* ebp - 0x3c */
-    SIZE sz;       /* ebp - 0xc */
-  } s;
-
-  s.hdc = item->hDC;
-  CopyRect(&s.r, &item->rcItem);
-  GetWindowText(item->hwndItem, s.txt, 0x32);
-  ApplyCardArtPaletteToDc(s.hdc);
-
-  OffsetRect(&s.r, -item->rcItem.left, -item->rcItem.top);
-
-  if (item->itemState & ODS_SELECTED)
-  {
-    if (brush)
-      FillRect(s.hdc, &s.r, brush);
-    else if (hbmp_bkgrd)
-      TileBitmapIntoRect(s.hdc, &s.r, hbmp_bkgrd);
-
-    SelectObject(s.hdc, GetStockObject(BLACK_PEN));
-    MoveToEx(s.hdc, 0, 0, NULL);
-    LineTo(s.hdc, s.r.right, 0);
-    MoveToEx(s.hdc, 0, 0, NULL);
-    LineTo(s.hdc, 0, s.r.bottom);
-
-    SelectObject(s.hdc, pen2);
-    MoveToEx(s.hdc, 1, 1, NULL);
-    LineTo(s.hdc, s.r.right - 1, 1);
-    MoveToEx(s.hdc, 1, 1, NULL);
-    LineTo(s.hdc, 1, s.r.bottom - 1);
-
-    SelectObject(s.hdc, pen1);
-    MoveToEx(s.hdc, s.r.right - 1, 1, NULL);
-    LineTo(s.hdc, s.r.right - 1, s.r.bottom);
-    MoveToEx(s.hdc, 1, s.r.bottom - 1, NULL);
-    LineTo(s.hdc, s.r.right, s.r.bottom - 1);
-
-    OffsetRect(&s.r, 2, 2);
-  }
-  else
-  {
-    if (brush)
-      FillRect(s.hdc, &s.r, brush);
-    else if (hbmp_bkgrd)
-      TileBitmapIntoRect(s.hdc, &s.r, hbmp_bkgrd);
-
-    SelectObject(s.hdc, pen1);
-    MoveToEx(s.hdc, 0, 0, NULL);
-    LineTo(s.hdc, s.r.right, 0);
-    MoveToEx(s.hdc, 0, 0, NULL);
-    LineTo(s.hdc, 0, s.r.bottom);
-    MoveToEx(s.hdc, 1, 1, NULL);
-    LineTo(s.hdc, s.r.right - 1, 1);
-    MoveToEx(s.hdc, 1, 1, NULL);
-    LineTo(s.hdc, 1, s.r.bottom - 1);
-
-    SelectObject(s.hdc, pen2);
-    MoveToEx(s.hdc, s.r.right - 1, 1, NULL);
-    LineTo(s.hdc, s.r.right - 1, s.r.bottom);
-    MoveToEx(s.hdc, 1, s.r.bottom - 1, NULL);
-    LineTo(s.hdc, s.r.right, s.r.bottom - 1);
-    MoveToEx(s.hdc, s.r.right - 2, 2, NULL);
-    LineTo(s.hdc, s.r.right - 2, s.r.bottom - 1);
-    MoveToEx(s.hdc, 2, s.r.bottom - 2, NULL);
-    LineTo(s.hdc, s.r.right - 1, s.r.bottom - 2);
-  }
-
-  SetBkMode(s.hdc, TRANSPARENT);
-  SetTextColor(s.hdc, col);
-  s.hfont = (HGDIOBJ)SendMessageA(item->hwndItem, WM_GETFONT, 0, 0);
-  SelectObject(s.hdc, s.hfont);
-  DrawTextA(s.hdc, s.txt, -1, &s.r, format);
-
-  if (do_focus && (item->itemState & ODS_FOCUS))
-  {
-    GetTextExtentPoint32A(s.hdc, s.txt, strlen(s.txt), &s.sz);
-
-    s.focus.left = (s.r.right - s.r.left) / 2 - s.sz.cx / 2 - 3;
-    s.focus.right = s.sz.cx + s.focus.left + 6;
-    s.focus.top = (s.r.bottom - s.r.top) / 2 - s.sz.cy / 2 - 3;
-    s.focus.bottom = s.sz.cy + s.focus.top + 6;
-    DrawFocusRect(s.hdc, &s.focus);
-  }
 }
 
 // FUNCTION: DECKDLL 0x10024e48
