@@ -1,5 +1,4 @@
 #include "catalog.h"
-#include "haar.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -9,33 +8,13 @@
 #include "defs.h"
 #include "assert.h"
 
-// GLOBAL: CARDARTLIB 0x10032adc
-// GLOBAL: DRAWCARDLIB 0x1003a9ac
-undefined4 DAT_10032adc;
-
-// GLOBAL: CARDARTLIB 0x100ea098
-// GLOBAL: DRAWCARDLIB 0x100f1f68
-undefined4 DAT_100ea098;
-
 // GLOBAL: CARDARTLIB 0x1001d108
 // GLOBAL: DRAWCARDLIB 0x10026974
 undefined4 DAT_1001d108 = 0x00000000;
 
-// GLOBAL: CARDARTLIB 0x1001e11c
-// GLOBAL: DRAWCARDLIB 0x100223fc
-undefined4 DAT_1001e11c = 0x00000001;
-
-// GLOBAL: CARDARTLIB 0x1001e120
-// GLOBAL: DRAWCARDLIB 0x10022400
-undefined4 DAT_1001e120 = 0x00000002;
-
 // GLOBAL: CARDARTLIB 0x101221d0
 // GLOBAL: DRAWCARDLIB 0x10124520
 CRITICAL_SECTION global_critical_section_for_catalog;
-
-// GLOBAL: CARDARTLIB 0x10032ae8
-// GLOBAL: DRAWCARDLIB 0x1003a9b8
-int DAT_10032ae8[0x80];
 
 extern unsigned char g_defaultPalette256[0x200];
 
@@ -54,18 +33,6 @@ char s_Too_many_open_Catalogs__Max__d_1001d10c[] = "Too many open Catalogs: Max 
 // GLOBAL: CARDARTLIB 0x1001d158
 // GLOBAL: DRAWCARDLIB 0x100269c4
 char s_Duplicate_short_name_found_in_ca_1001d158[] = "Duplicate short name found in catalogs\n%s entry %d and\n%s entry %d\nShortName value 0x%08lx";
-
-// GLOBAL: CARDARTLIB 0x1001e12c
-// GLOBAL: DRAWCARDLIB 0x1002240c
-char s_SmallArt_cat_1001e12c[] = "SmallArt.cat";
-
-// GLOBAL: CARDARTLIB 0x1001e13c
-// GLOBAL: DRAWCARDLIB 0x1002241c
-char s_MedArt_cat_1001e13c[] = "MedArt.cat";
-
-// GLOBAL: CARDARTLIB 0x1001e148
-// GLOBAL: DRAWCARDLIB 0x10022428
-char s__lf_1001e148[] = "\n";
 
 // GLOBAL: CARDARTLIB 0x1001d154
 // GLOBAL: DRAWCARDLIB 0x100269c0
@@ -91,6 +58,7 @@ STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 
 // GLOBAL: CARDARTLIB 0x10117290
 // GLOBAL: DRAWCARDLIB 0x100f2e30
+// GLOBAL: DECKDLL 0x101e6f80
 Catalog DAT_10117290[5];
 
 uint Catalog_MakeKeyFromPath(const char *path);
@@ -98,7 +66,7 @@ uint Catalog_MakeKeyFromPath(const char *path);
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100019d0
 // FUNCTION: DRAWCARDLIB 0x1000b820
-static int Catalog_Open(const char *catalog_path)
+int Catalog_Open(const char *catalog_path)
 {
   struct {
     int iVar1;
@@ -275,85 +243,6 @@ uint Catalog_MakeKeyFromPath(const char *path)
 
   s.key = (undefined4)((uint)s.key | (s.acc_even * s.acc_odd & 0xffffffU));
   return (uint)s.key;
-}
-
-// FUNCTION: CARDARTLIB 0x100068f0
-// FUNCTION: DRAWCARDLIB 0x10008370
-// FUNCTION: MAGIC 0x0041f670
-int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
-{
-  struct {
-    char fullpath[0x108]; /* [ebp-0x418] */
-    char dir[0x104];      /* [ebp-0x310] */
-    char fname[0x100];    /* [ebp-0x20c] */
-    char ext[0x100];      /* [ebp-0x10c] */
-    size_t entry_size;    /* [ebp-0x0c] */
-    int *entry;           /* [ebp-0x08] */
-    char *dir_end;        /* [ebp-0x04] */
-  } s;
-
-  s.entry = (int *)&DAT_10032ae8;
-  EnterCriticalSection(&global_critical_section_for_catalog);
-  _splitpath(wvl_path, (char *)0x0, s.dir, s.fname, s.ext);
-  if (DAT_10032adc == 0) {
-    strcpy(s.fullpath, s.dir);
-    strcat(s.fullpath, s_SmallArt_cat_1001e12c);
-    DAT_1001e11c = Catalog_Open(s.fullpath);
-    strcpy(s.fullpath, s.dir);
-    strcat(s.fullpath, s_MedArt_cat_1001e13c);
-    DAT_1001e120 = Catalog_Open(s.fullpath);
-    DAT_10032adc = 1;
-  }
-  s.dir_end = s.dir + strlen(s.dir);
-
-  if (catalog_id == 0) {
-    DAT_100ea098 = DAT_1001e11c;
-  } else if (catalog_id == 1) {
-    DAT_100ea098 = DAT_1001e120;
-  } else {
-    /* NOTE: Original does not leave the critical section on this path. */
-    return (int *)0x0;
-  }
-
-  strcpy(s.dir, s.fname);
-  strcat(s.dir, s.ext);
-  _strlwr(s.dir);
-
-  if (s.entry != (int *)0x0) {
-    memset(s.entry, 0, 0x1b0);
-    strcpy((char *)(s.entry + 0x27), wvl_path);
-    s.entry[0x68] = (int)&g_defaultPalette256;
-    s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)(s.entry + 0x68));
-    if (s.entry_size == (size_t)-1) {
-      strcat(wvl_path, s__lf_1001e148);
-      OutputDebugStringA((LPCSTR)wvl_path);
-      LeaveCriticalSection(&global_critical_section_for_catalog);
-      return (int *)0x0;
-    }
-
-    s.entry[0x69] = s.entry_size - 0x9c;
-    memcpy(s.entry, (void *)s.entry[0x68], 0x9c);
-    s.entry[0x68] = s.entry[0x68] + 0x9c;
-    if (s.entry[10] == 4) {
-      s.entry[7] = s.entry[7] << 1;
-      s.entry[8] = s.entry[8] << 1;
-    }
-
-    if (decode_haar != 0) {
-      s.entry[0x6b] = (int)Wvl_DecodeHaar(s.entry, (byte *)0x0);
-      if (s.entry[0x6b] != 0) {
-        s.entry[0x6a] = 1;
-        LeaveCriticalSection(&global_critical_section_for_catalog);
-      } else {
-        Catalog_Unlock(s.entry);
-        LeaveCriticalSection(&global_critical_section_for_catalog);
-        return (int *)0x0;
-      }
-    }
-  }
-
-  /* NOTE: Original does not leave the critical section on this path. */
-  return s.entry;
 }
 
 // MATCHING

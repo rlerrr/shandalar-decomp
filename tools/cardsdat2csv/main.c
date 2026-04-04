@@ -188,9 +188,7 @@ csv_write_card(FILE *out, int csvid, const card_ptr_t *c)
   fputc(',', out);
   csv_write_hex_u32(out, (unsigned long)c->card_type);
   fputc(',', out);
-  csv_write_u32(out, (unsigned long)c->subtype1);
-  fputc(',', out);
-  csv_write_u32(out, (unsigned long)c->subtype2);
+  csv_write_u32(out, (unsigned long)c->subtype);
   fputc(',', out);
   csv_write_escaped(out, c->type_text);
   fputc(',', out);
@@ -309,7 +307,7 @@ csv_write_card(FILE *out, int csvid, const card_ptr_t *c)
 static void
 csv_write_header(FILE *out)
 {
-  fputs("csvid,id,full_name,name,expansion,color,card_type,subtype1,subtype2,type_text,db_card_type_2,rarity,"
+  fputs("csvid,id,full_name,name,expansion,color,card_type,subtype,type_text,db_card_type_2,rarity,"
         "req_colorless,req_black,req_blue,req_hybrid,hybrid_type,req_green,unknown0x2e,req_red,req_white,"
         "unused0x31,unused0x32,flags,unused0x38,unused0x3c,artist,num_pics,mana_cost_text_raw,"
         "ai_modifiers1,ai_modifiers2,ai_inc_power,ai_inc_toughness,ai_power,ai_toughness,ai_base_value,ai_dependencies,"

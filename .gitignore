@@ -22,3 +22,6 @@ install_manifest.txt
 reccmp-user.yml
 reccmp-build.yml
 temp/
+.cache/
+.vs/
+out/

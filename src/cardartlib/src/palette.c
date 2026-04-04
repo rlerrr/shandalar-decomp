@@ -765,18 +765,18 @@ void Octree_BuildPathBytesFromRgb(uint rgb,undefined8 *out_path_words)
 undefined4 InitOctreeBitTables(void)
 {
   struct {
-    int local_10;
-    int j;
-    int i;
+    int local_10; /* ebp - 0xc */
+    int j;        /* ebp - 0x8 */
+    int i;        /* ebp - 0x4 */
   } s;
   
   for (s.i = 0; s.i < 0x100; s.i++) {
-    for (s.j = 0, s.local_10 = 0x80; s.j < 8; s.j++, s.local_10 = s.local_10 >> 1) {
-      global_PTR_BluePathBitsTable[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 4 : 0;
+    for (s.j = 0, s.local_10 = 0x80; s.j < 8; s.j++, s.local_10 >>= 1) {
+      global_PTR_BluePathBitsTable[s.j + s.i * 8] = (s.local_10 & s.i) != 0 ? 4 : 0;
 
-      global_PTR_GreenPathBitsTable[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 2 : 0;
+      global_PTR_GreenPathBitsTable[s.j + s.i * 8] = (s.local_10 & s.i) != 0 ? 2 : 0;
 
-      global_PTR_RedPathBitsTable[s.i * 8 + s.j] = (s.i & s.local_10) != 0 ? 1 : 0;
+      global_PTR_RedPathBitsTable[s.j + s.i * 8] = (s.local_10 & s.i) != 0 ? 1 : 0;
     }
   }
   return 0;

@@ -3,6 +3,7 @@ These instructions apply to the entire repository.
 
 ## Decomp / Matching Rules
 - Toolchain: MSVC 4.20 (C89 only). Avoid C99+ features (e.g., declarations after statements, `for (int i=...)`, `stdint.h` assumptions, etc.).
+- All binaries are compiled with the `/Od` flag, aka disable optimizations.  Usually the assembly output is very predictable from the input C code.
 - Try to update local variable names while matching.
 - Never use inline assembly (`__asm`, `asm`, etc.).
 - Try hard not to use `goto`. Most `jmp` patterns translate to structured control flow:

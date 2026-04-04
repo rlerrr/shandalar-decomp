@@ -84,7 +84,7 @@ static char *global_base_txt;
 // FUNCTION: DECKDLL 0x1001a940
 // FUNCTION: MAGIC 0x452cf0
 int read_db_guts(char *cards_dat_filename)
-{    
+{
   struct read_db_guts_locals
   {
     int init_idx;               /* local_808 */
@@ -377,6 +377,7 @@ int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
     int i;      /* ebp - 0x74 */
     char *line; /* ebp - 0x70 */
   } s;
+
   char set_names[7][15] = {
       "Antiquities",
       "Arabian",
@@ -388,11 +389,9 @@ int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
   };
 
   s.rval = 0;
-  for (s.i = 0;; s.i++)
+  for (s.i = 0; s.i < global_available_slots; s.i++)
   {
-    if (global_available_slots <= s.i)
-      break;
-    ((unsigned char *)orig_rarities)[s.i * 6] = SET_INVALID;
+    orig_rarities[s.i].set = SET_INVALID;
   }
 
   s.hfile = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
@@ -408,10 +407,8 @@ int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
       s.line = strchr(s.line, '\n') + 1;
       s.line = strchr(s.line, '\n') + 1;
 
-      for (s.i = 0;; s.i = s.i + 1)
+      for (s.i = 0; s.i < global_available_slots; s.i = s.i + 1)
       {
-        if (global_available_slots <= s.i)
-          break;
         s.next = s.line;
         s.next = CsvParseNextField(&s.line);
         s.line = s.next;
@@ -419,45 +416,47 @@ int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
         s.line = s.next;
         s.next = CsvParseNextField(&s.line);
 
-        s.set_id = '\0';
-        while (s.set_id < '\a' && strcmp(set_names[s.set_id], s.line))
-          s.set_id = s.set_id + '\x01';
-
-        if (s.set_id == '\a')
+        for (s.set_id = '\0'; s.set_id < '\a'; s.set_id++)
         {
-          ((unsigned char *)orig_rarities)[s.i * 6] = SET_INVALID;
-          ((char *)orig_rarities)[s.i * 6 + 2] = '-';
-          ((char *)orig_rarities)[s.i * 6 + 3] = '-';
-          ((char *)orig_rarities)[s.i * 6 + 4] = '-';
-          ((char *)orig_rarities)[s.i * 6 + 5] = '-';
+          if (!strcmp(set_names[s.set_id], s.line))
+            break;
+        }
+
+        if (s.set_id != '\a')
+        {
+          orig_rarities[s.i].set = s.set_id;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          orig_rarities[s.i].rarity = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          orig_rarities[s.i].exp_rarities[0] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          orig_rarities[s.i].exp_rarities[1] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          orig_rarities[s.i].exp_rarities[2] = *s.line;
+
+          s.line = s.next;
+          s.next = CsvParseNextField(&s.line);
+          orig_rarities[s.i].exp_rarities[3] = *s.line;
         }
         else
         {
-          ((char *)orig_rarities)[s.i * 6] = s.set_id;
-
-          s.line = s.next;
-          s.next = CsvParseNextField(&s.line);
-          ((char *)orig_rarities)[s.i * 6 + 1] = *s.line;
-
-          s.line = s.next;
-          s.next = CsvParseNextField(&s.line);
-          ((char *)orig_rarities)[s.i * 6 + 2] = *s.line;
-
-          s.line = s.next;
-          s.next = CsvParseNextField(&s.line);
-          ((char *)orig_rarities)[s.i * 6 + 3] = *s.line;
-
-          s.line = s.next;
-          s.next = CsvParseNextField(&s.line);
-          ((char *)orig_rarities)[s.i * 6 + 4] = *s.line;
-
-          s.line = s.next;
-          s.next = CsvParseNextField(&s.line);
-          ((char *)orig_rarities)[s.i * 6 + 5] = *s.line;
+          orig_rarities[s.i].set = SET_INVALID;
+          orig_rarities[s.i].exp_rarities[0] = '-';
+          orig_rarities[s.i].exp_rarities[1] = '-';
+          orig_rarities[s.i].exp_rarities[2] = '-';
+          orig_rarities[s.i].exp_rarities[3] = '-';
         }
 
         s.line = s.next;
-        s.line = strchr(s.next, '\n') + 1;
+        s.line = strchr(s.line, '\n') + 1;
       }
 
       s.rval = 1;

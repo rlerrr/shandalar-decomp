@@ -3,6 +3,7 @@
 #include <string.h>
 #include <windows.h>
 #include "haar.h"
+#include "catalog.h"
 #include "assert.h"
 #include "huffman.h"
 
@@ -29,6 +30,10 @@ void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int ro
 undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int* chroma_u, int* chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420);
 BOOL Wvl_UnpackPieces(byte *param_1, int *param_2);
+
+// GLOBAL: CARDARTLIB 0x100ea098
+// GLOBAL: DRAWCARDLIB 0x100f1f68
+undefined4 DAT_100ea098;
 
 // GLOBAL: CARDARTLIB 0x1001d258
 // GLOBAL: DRAWCARDLIB 0x10021048
@@ -76,9 +81,37 @@ undefined4 g_rgbQuantKernelCachedId = 0xFFFFFFFF;
 // GLOBAL: DRAWCARDLIB 0x100223c0
 int g_rowAlignBytes = 0x00000004;
 
+// GLOBAL: CARDARTLIB 0x1001e12c
+// GLOBAL: DRAWCARDLIB 0x1002240c
+char s_SmallArt_cat_1001e12c[] = "SmallArt.cat";
+
+// GLOBAL: CARDARTLIB 0x1001e13c
+// GLOBAL: DRAWCARDLIB 0x1002241c
+char s_MedArt_cat_1001e13c[] = "MedArt.cat";
+
+// GLOBAL: CARDARTLIB 0x1001e148
+// GLOBAL: DRAWCARDLIB 0x10022428
+char s__lf_1001e148[] = "\n";
+
 // GLOBAL: CARDARTLIB 0x100326d8
 // GLOBAL: DRAWCARDLIB 0x1003a5a8
 unsigned char g_waveletScaleTableStorage[0x1000];
+
+// GLOBAL: CARDARTLIB 0x10032adc
+// GLOBAL: DRAWCARDLIB 0x1003a9ac
+undefined4 DAT_10032adc;
+
+// GLOBAL: CARDARTLIB 0x1001e11c
+// GLOBAL: DRAWCARDLIB 0x100223fc
+undefined4 DAT_1001e11c = 0x00000001;
+
+// GLOBAL: CARDARTLIB 0x1001e120
+// GLOBAL: DRAWCARDLIB 0x10022400
+undefined4 DAT_1001e120 = 0x00000002;
+
+// GLOBAL: CARDARTLIB 0x10032ae8
+// GLOBAL: DRAWCARDLIB 0x1003a9b8
+int DAT_10032ae8[0x80];
 
 // GLOBAL: CARDARTLIB 0x1001e090
 // GLOBAL: DRAWCARDLIB 0x10021e80
@@ -88,11 +121,11 @@ char s_Not_enough_memory_for_delta_arra_1001e090[] = "Not enough memory for delt
 // GLOBAL: DRAWCARDLIB 0x10021ea4
 char s_D__Newmagic_sources_NedCard_Pale_1001e0b4[] = "D:\\Newmagic\\sources\\NedCard\\Palette.c";
 
-// GLOBAL: CARDARTLIB 0x1001e118
-// GLOBAL: DRAWCARDLIB 0x100223f8
 #ifdef DRAWCARDLIB
+// GLOBAL: DRAWCARDLIB 0x100223f8
 unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
 #else
+// GLOBAL: CARDARTLIB 0x1001e118
 unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage;
 #endif
 
@@ -195,7 +228,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
     undefined *kernel_ptr;  /* [ebp-0x78] */
     int kernel_count;       /* [ebp-0x74] */
     int r_clamped;          /* [ebp-0x70] */
-    int err_row_ptrs[6];    /* [ebp-0x6c] */
+    int* err_row_ptrs[6];   /* [ebp-0x6c] */
     int y;                  /* [ebp-0x54] */
     undefined2 pad_50;      /* [ebp-0x50] */
     undefined2 pad_4e;      /* [ebp-0x4e] */
@@ -341,10 +374,10 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
       s.err_b = s.b_clamped - (s.nearest_rgb & 0xff);
       s.err_g = s.g_clamped - (s.nearest_rgb >> 8 & 0xff);
       s.err_r = s.r_clamped - ((uint)s.nearest_rgb >> 16);
-      //s.err_row_ptrs[0] = 0;
+      
       s.k_it = (int *)s.kernel_ptr;
-      s.err_row_ptrs[0] = (s.kernel_count << 2) + (int)s.k_it;
-      for (; s.err_row_ptrs[0] > (int)s.k_it; s.k_it += 0x4) {
+      s.err_row_ptrs[0] = &s.k_it[s.kernel_count * 4];
+      for (; s.err_row_ptrs[0] > s.k_it; s.k_it += 0x4) {
         s.k_x_off = s.k_it[1];
         s.k_row = s.k_it[2];
         s.delta_table = (int *)s.k_it[3];
@@ -357,7 +390,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
     }
 
     RotateDwordsLeft1(s.err_row_ptrs + 1,g_ditherKernelErrorRowCounts[dither_kernel_id]);
-    memset((void *)(s.err_row_ptrs[g_ditherKernelErrorRowCounts[dither_kernel_id]] + -0x28),0,s.clear_dwords << 2);
+    memset((void *)(s.err_row_ptrs[g_ditherKernelErrorRowCounts[dither_kernel_id]] + -10),0,s.clear_dwords << 2);
     if (serpentine != 0) {
       s.x_step = -s.x_step;
       s.kernel_ptr = (undefined *)((int)g_ditherKernelTable + (uint)(s.x_step == -1) * 0x6c0 + dither_kernel_id * 0xc0);
@@ -591,6 +624,86 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
 uint Rgb888_QuantizeToF8(uint param_1)
 {
   return param_1 & 0xf8f8f8;
+}
+
+
+// FUNCTION: CARDARTLIB 0x100068f0
+// FUNCTION: DRAWCARDLIB 0x10008370
+// FUNCTION: MAGIC 0x0041f670
+int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
+{
+  struct {
+    char fullpath[0x108]; /* [ebp-0x418] */
+    char dir[0x104];      /* [ebp-0x310] */
+    char fname[0x100];    /* [ebp-0x20c] */
+    char ext[0x100];      /* [ebp-0x10c] */
+    size_t entry_size;    /* [ebp-0x0c] */
+    int *entry;           /* [ebp-0x08] */
+    char *dir_end;        /* [ebp-0x04] */
+  } s;
+
+  s.entry = (int *)&DAT_10032ae8;
+  EnterCriticalSection(&global_critical_section_for_catalog);
+  _splitpath(wvl_path, (char *)0x0, s.dir, s.fname, s.ext);
+  if (DAT_10032adc == 0) {
+    strcpy(s.fullpath, s.dir);
+    strcat(s.fullpath, s_SmallArt_cat_1001e12c);
+    DAT_1001e11c = Catalog_Open(s.fullpath);
+    strcpy(s.fullpath, s.dir);
+    strcat(s.fullpath, s_MedArt_cat_1001e13c);
+    DAT_1001e120 = Catalog_Open(s.fullpath);
+    DAT_10032adc = 1;
+  }
+  s.dir_end = s.dir + strlen(s.dir);
+
+  if (catalog_id == 0) {
+    DAT_100ea098 = DAT_1001e11c;
+  } else if (catalog_id == 1) {
+    DAT_100ea098 = DAT_1001e120;
+  } else {
+    /* NOTE: Original does not leave the critical section on this path. */
+    return (int *)0x0;
+  }
+
+  strcpy(s.dir, s.fname);
+  strcat(s.dir, s.ext);
+  _strlwr(s.dir);
+
+  if (s.entry != (int *)0x0) {
+    memset(s.entry, 0, 0x1b0);
+    strcpy((char *)(s.entry + 0x27), wvl_path);
+    s.entry[0x68] = (int)&g_defaultPalette256;
+    s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)(s.entry + 0x68));
+    if (s.entry_size == (size_t)-1) {
+      strcat(wvl_path, s__lf_1001e148);
+      OutputDebugStringA((LPCSTR)wvl_path);
+      LeaveCriticalSection(&global_critical_section_for_catalog);
+      return (int *)0x0;
+    }
+
+    s.entry[0x69] = s.entry_size - 0x9c;
+    memcpy(s.entry, (void *)s.entry[0x68], 0x9c);
+    s.entry[0x68] = s.entry[0x68] + 0x9c;
+    if (s.entry[10] == 4) {
+      s.entry[7] = s.entry[7] << 1;
+      s.entry[8] = s.entry[8] << 1;
+    }
+
+    if (decode_haar != 0) {
+      s.entry[0x6b] = (int)Wvl_DecodeHaar(s.entry, (byte *)0x0);
+      if (s.entry[0x6b] != 0) {
+        s.entry[0x6a] = 1;
+        LeaveCriticalSection(&global_critical_section_for_catalog);
+      } else {
+        Catalog_Unlock(s.entry);
+        LeaveCriticalSection(&global_critical_section_for_catalog);
+        return (int *)0x0;
+      }
+    }
+  }
+
+  /* NOTE: Original does not leave the critical section on this path. */
+  return s.entry;
 }
 
 // FUNCTION: CARDARTLIB 0x10006be3

@@ -1,5 +1,6 @@
 set(manalinkinterface_sources
-  src/main.c
+  src/main.c  
+  manalinkinterface.rc
 )
 
 add_library(manalinkinterface SHARED ${manalinkinterface_sources})

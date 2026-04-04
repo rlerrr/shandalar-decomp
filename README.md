@@ -1,11 +1,11 @@
 # Shandalar Decompilation
 An attempt at decompiling the 1997 video game [Magic: the Gathering](https://en.wikipedia.org/wiki/Magic:_The_Gathering_(1997_video_game)) (Version 1.3, English). It aims to be as accurate as possible, matching the recompiled instructions to the original machine code as much as possible.
 
-This repository does **not** contain any game assets. An existing copy of the game is required.
+This repository does **not** contain any game assets. An existing copy of the game is required.  Since it aims to match the original binaries as much as possible, modded assets will probably **not** work.
 
 This project takes inspiration from the [LEGO Island Decompilation](https://github.com/isledecomp) project which also targets a game originally released in 1997 built in MSVC 4.20.  The [reccmp](github.com/isledecomp/reccmp) project in particular is crucial for creating a matching binary.
 
-A lot has been decompiled with AI assistance using OpenAI's Codex.  
+A lot has been decompiled with AI assistance.
 
 ## Source Structure
 Within the `src` folder there should eventually be 1 directory for each of the game's 14 binaries (ignoring the 2 MSVCRT dlls).
@@ -13,16 +13,16 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * cardartlib.dll (debug) ![matching](https://img.shields.io/badge/matching-98.23%25-green) : Library for decoding the game's card art assets (.cat files) Called `Nedcard` internally?
 * cdtools.dll (debug) ![matching](https://img.shields.io/badge/matching-99.05%25-green) : A small library of CD functions
 * deck.exe (release /Od) ![matching](https://img.shields.io/badge/matching-99.62%25-green) : A trivial wrapper for showing the deck builder UI
-* deckdll.dll (release /Od) ![matching](https://img.shields.io/badge/matching-93.60%25-blue) : The deck builder UI implementation, imported by deck.exe, magic.exe and shandalar.exe
+* deckdll.dll (release /Od) ![matching](https://img.shields.io/badge/matching-95.88%25-blue) : The deck builder UI implementation, imported by deck.exe, magic.exe and shandalar.exe
 * drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-98.32%25-green) : Library for rendering full card representations
 * facemaker.exe : 
 * gcconn.dll (debug, C++) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
-* magic.exe  ![matching](https://img.shields.io/badge/matching-7.78%25-red) : The duel UI.  Shares a tremendous amount of code with shandalar.exe
+* magic.exe : The duel UI.  Shares a tremendous amount of code with shandalar.exe
 * magsnd.dll (release /Od) ![matching](https://img.shields.io/badge/matching-99.15%25-green) : Small dll that wraps DirectSound
 * magvid.dll (release C++) : Presumably plays video.  Only referenced by statwin.
 * manalink.exe : Multiplayer.  Has a ton of debug logging with function/filenames embedded.  Called `FamiliarWS` internally?
 * manalinkinterface.dll (static release /Od) ![matching](https://img.shields.io/badge/matching-100.00%25-green) : Small dll with several exports, used by magic.exe not manalink.exe
-* shandalar.exe ![matching](https://img.shields.io/badge/matching-4.17%25-red) : The overworld and adventure UI
+* shandalar.exe : The main game.
 * statwin.dll (debug?, C++?) : Used by shandalar.exe
 
 Additionally:

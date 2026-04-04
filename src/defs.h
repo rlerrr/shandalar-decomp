@@ -1090,8 +1090,7 @@ typedef struct
 	uint32_t expansion; // 0xc
 	uint32_t color;	// 0x10	// 1:black 2:blue 3:artifact 4:gold 5:green 6:land 7:red 8:white
 	uint32_t card_type;	// 0x14 // 1:artifact 2:enchantment 3:instant 4:interrupt 5:land 6:sorcery 7:creature 8:token
-	uint16_t subtype1; /* 0x18 == 24 */
-	uint16_t subtype2; // 0x1c
+	uint32_t subtype; /* 0x18 == 24 */
 	const char* type_text;	// 0x20 // e.g. "Legendary Creature - Human"
 	uint32_t db_card_type_2; // 0x24	// 1:ante 2:cardstealer 3:counter 4:directdamage 5:discard 6:drawer 7:lifegain 8:damageprevention 9:anti-land 10:manasource 11:bounce/untap/tap 12:pump
 	uint32_t rarity; // 0x28	// 1:common 2:rare 3:dungeon/astral/promotional 4:uncommon (sic)

@@ -1,7 +1,7 @@
 #ifndef MYSTDBOOL_H
 #define MYSTDBOOL_H
 
-#define bool  int
+typedef int bool;
 #define true  1
 #define false 0
 

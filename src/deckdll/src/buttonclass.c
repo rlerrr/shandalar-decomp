@@ -22,71 +22,77 @@ static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
 // FUNCTION: DECKDLL 0x10025b5e
 static int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
 {
-  HWND parent;
-  DWORD procid_src;
-  DWORD procid_dst;
-  DWORD tid_src;
-  DWORD tid_dst;
-  HDC hdc;
-  UINT changed;
   struct
   {
-    HWND hwnd;
-    UINT msg;
-    HWND wparam;
-    LPARAM lparam;
-  } args;
+    HDC hdc2; // ebp - 0x38
+    struct
+    {
+      HWND hwnd;     // ebp - 0x34
+      UINT msg;      // ebp - 0x30
+      HWND wparam;   // ebp - 0x2c
+      LPARAM lparam; // ebp - 0x28
+      int pad1;
+      int pad2;
+      int pad3;
+    } args;
+
+    DWORD tid_dst;    // ebp - 0x18
+    HDC hdc;          // ebp - 0x14
+    DWORD tid_src;    // ebp - 0x10
+    DWORD procid_dst; // ebp - 0xc
+    HWND hwnd;        // ebp - 0x8
+    int procid_src;   // ebp - 0x4
+  } s;
 
   switch (msg)
   {
   case WM_PALETTEISCHANGING:
-    parent = wparam_hwnd;
-    if (parent != hwnd)
-    {
-      tid_src = GetWindowThreadProcessId(wparam_hwnd, &procid_src);
-      tid_dst = GetWindowThreadProcessId(hwnd, &procid_dst);
-      (void)tid_src;
-      (void)tid_dst;
-
-      if (procid_dst == procid_src)
-      {
-        parent = GetParent(hwnd);
-        if (parent == NULL)
-        {
-          hdc = GetDC(hwnd);
-          SelectPalette(hdc, global_cart_art_hpalette, TRUE);
-          InvalidateRect(hwnd, NULL, TRUE);
-          ReleaseDC(hwnd, hdc);
-        }
-        else
-        {
-          if ((GetWindowLongA(hwnd, GWL_STYLE) & WS_CHILD) == 0)
-            InvalidateRect(hwnd, NULL, TRUE);
-        }
-      }
-      else
-        InvalidateRect(hwnd, NULL, TRUE);
-    }
-
   case WM_PALETTECHANGED:
-    args.hwnd = hwnd;
-    args.msg = msg;
-    args.wparam = wparam_hwnd;
-    args.lparam = lparam;
-    EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&args);
+    s.hwnd = wparam_hwnd;
+    if (s.hwnd != hwnd)
+    {
+      s.tid_src = GetWindowThreadProcessId(s.hwnd, &s.procid_src);
+      s.tid_dst = GetWindowThreadProcessId(hwnd, &s.procid_dst);
+
+      if (s.procid_src != s.procid_dst)
+      {
+        InvalidateRect(hwnd, NULL, TRUE);
+      }
+      else if (GetParent(hwnd) == NULL)
+      {
+        s.hdc = GetDC(hwnd);
+        SelectPalette(s.hdc, global_cart_art_hpalette, TRUE);
+        InvalidateRect(hwnd, NULL, TRUE);
+        ReleaseDC(hwnd, s.hdc);
+      }
+      else if (!(GetWindowLongA(hwnd, GWL_STYLE) & WS_CHILD))
+      {
+        InvalidateRect(hwnd, NULL, TRUE);
+      }
+    }
+    if (msg == WM_PALETTECHANGED)
+    {
+      s.args.hwnd = hwnd;
+      s.args.msg = msg;
+      s.args.wparam = wparam_hwnd;
+      s.args.lparam = lparam;
+      EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&s.args);
+    }
     return 0;
 
   case WM_QUERYNEWPALETTE:
     UnrealizeObject(global_cart_art_hpalette);
-    hdc = GetDC(hwnd);
-    SelectPalette(hdc, global_cart_art_hpalette, FALSE);
-    changed = RealizePalette(hdc);
-    if (changed != 0)
+    s.hdc2 = GetDC(hwnd);
+    SelectPalette(s.hdc2, global_cart_art_hpalette, FALSE);
+
+    if (RealizePalette(s.hdc2))
       InvalidateRect(hwnd, NULL, TRUE);
-    ReleaseDC(hwnd, hdc);
+
+    ReleaseDC(hwnd, s.hdc2);
     return 1;
+  default:
+    return 0;
   }
-  return 0;
 }
 
 // FUNCTION: DECKDLL 0x100256c8

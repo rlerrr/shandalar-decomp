@@ -13,7 +13,7 @@ xor eax, edx
 sub eax, edx 
 ```
 
-See very strange function @ DECKDLL `0x10010a72`.  MSVC rarely uses `esi` but does here via inling assignment
+See very strange function @ DECKDLL `0x10010a72` and `0x10020636`.  MSVC rarely uses `esi` but does here via inling assignment
 
 ```asm
 call find_artist_name_idx (FUNCTION)
@@ -52,4 +52,15 @@ mov cl, al
 shl ebx, cl
 mov eax, dword ptr [ebp - 0x49c]
 or dword ptr [eax*4 + global_filters+12 (OFFSET)], ebx
+```
+
+`((unsigned int)x >= 1) ? 8 : 0`
+
+Generates:
+
+```asm
+cmp dword ptr [x (DATA)], 1
+mov eax, 0
+adc eax, -1
+and eax, 8
 ```

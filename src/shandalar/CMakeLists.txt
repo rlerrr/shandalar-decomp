@@ -1,7 +1,11 @@
 file(GLOB shandalar_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB cards_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cards/*.c")
 
-set(shandalar_sources ${cards_c_sources} ${shandalar_c_sources} shandalar.rc)
+set(shandalar_sources
+  ${cards_c_sources}
+  ${shandalar_c_sources} 
+  shandalar.rc
+)
 
 add_executable(shandalar ${shandalar_sources})
 

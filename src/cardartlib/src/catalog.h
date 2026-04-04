@@ -5,7 +5,7 @@
 #include "inttypes.h"
 #include "mystdbool.h"
 
-int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar);
+int Catalog_Open(const char *catalog_path);
 BOOL Catalog_Unlock(void *unused);
 
 extern CRITICAL_SECTION global_critical_section_for_catalog;

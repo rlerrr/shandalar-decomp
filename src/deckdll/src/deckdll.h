@@ -44,6 +44,7 @@ typedef enum
   FC_GOLD_ALL = 0x0100,
   FC_GOLD_ALLSELECTED = 0x0200,
   FC_GOLD_ANYSELECTED = 0x0400,
+  FC_GOLD_ALLUNKNOWN = 0x0800,
 } FilterColors;
 
 typedef enum
@@ -113,6 +114,12 @@ typedef enum
   FT_CREATURE_ARTIFACT = 0x400,
   FT_CREATURE_LIST = 0x800,
   FT_ENCHANTMENT = 0x1000,
+  FT_ENCHANTMENT_LAND = 0x2000,
+  FT_ENCHANTMENT_CREATURE = 0x4000,
+  FT_ENCHANTMENT_ARTIFACT = 0x8000,
+  FT_ENCHANTMENT_ENCHANT = 0x10000,
+  FT_ENCHANTMENT_PERMANENT = 0x20000,
+  FT_ENCHANTMENT_PLAYER = 0x40000,
   FT_INSTANT = 0x80000,
   FT_INTERRUPT = 0x100000,
   FT_SORCERY = 0x200000,
@@ -231,10 +238,13 @@ enum Pack2
   PACK2_MAX = PACK2_INSTANT,
 };
 
-typedef struct Table_t
+typedef union Table_t
 {
-  unsigned short csvid;
-  unsigned short amt;
+  struct split {
+    unsigned short csvid;
+    unsigned short amt;
+  };
+  int val;
 } Table;
 
 typedef struct Packs_t
@@ -256,6 +266,18 @@ typedef struct GlobalDeckInfoBlob_t
 } GlobalDeckInfoBlob;
 STATIC_ASSERT(sizeof(GlobalDeckInfoBlob) == 0x294, GlobalDeckInfoBlob_wrong_size);
 
+#define MAX_NAMELEN 80
+
+typedef struct GlobalConfig_t {
+  signed char consolidate_from_registry;
+  signed char music;
+  signed char effects;
+  char player_name[MAX_NAMELEN];
+  char email[MAX_NAMELEN];
+  signed char expand_text;
+} GlobalConfig;
+STATIC_ASSERT(sizeof(struct GlobalConfig_t) == 164, GlobalConfig_t_wrong_size);
+
 typedef struct GlobalDeckEntry_t
 {
   csvid_t GDE_csvid;
@@ -272,10 +294,10 @@ typedef struct DeckEntry_t
 } DeckEntry;
 
 #ifndef GET_X_LPARAM
-#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#define GET_X_LPARAM(lp) ((lp) & 0xFFFF)
 #endif
 #ifndef GET_Y_LPARAM
-#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
+#define GET_Y_LPARAM(lp) (((lp) >> 16) & 0xFFFF)
 #endif
 
 #define DELETE_IMPL(fn, obj) \

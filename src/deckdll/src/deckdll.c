@@ -25,24 +25,35 @@
 #define WM_MOUSEWHEEL 0x020A
 #endif
 
+#define MAKELONG2(a, b) ((LONG)(((a) & 0xffff) | ((DWORD)((WORD)(b))) << 16))
+#define MAKELONG3(a, b) ((LONG)(((a) & 0xffff) | ((DWORD)((b) & 0xffff)) << 16))
+
 typedef ptrdiff_t INT_PTR;
 
 typedef int (*Int_fn_int)(int);
 void change_buttonclass_wndproc(HWND hwnd);
+extern int global_num_artists;
 
-#define HORZLIST_LASTPIC_INDEX 0
-#define HORZLIST_ADDR_INDEX 4
-#define HORZLIST_CURRSEL_INDEX 8
-#define HORZLIST_LEFTPIC_INDEX 12
-#define HORZLIST_WIDTHPLUSSPACE_INDEX 16
-#define HORZLIST_PICSINLINE_INDEX 20
-#define HORZLIST_SIZE_INDEX 24
+// GLOBAL: DECKDLL 0x10030030
+int HORZLIST_LASTPIC_INDEX = 0;
+// GLOBAL: DECKDLL 0x10030034
+int HORZLIST_ADDR_INDEX = 2;
+// GLOBAL: DECKDLL 0x10030038
+int HORZLIST_CURRSEL_INDEX = 6;
+// GLOBAL: DECKDLL 0x1003003c
+int HORZLIST_LEFTPIC_INDEX = 8;
+// GLOBAL: DECKDLL 0x10030040
+int HORZLIST_WIDTHPLUSSPACE_INDEX = 10;
+// GLOBAL: DECKDLL 0x10030044
+int HORZLIST_PICSINLINE_INDEX = 12;
+
+// GLOBAL: DECKDLL 0x10030000
+static int DAT_10030000 = 0;
+// GLOBAL: DECKDLL 0x10030004
+static int DAT_10030004 = 4;
 
 #define CARD_CSVID_INDEX 0
 #define CARD_AMOUNT_INDEX 4
-
-#define FULLCARD_CSVID_INDEX 0
-#define FULLCARD_EXPANDTEXT_INDEX 4
 
 #define CUECARD_FONT_INDEX 0
 
@@ -63,7 +74,7 @@ static char global_cardart_path[MAX_PATH + 15];
 // GLOBAL: DECKDLL 0x10144f50
 char global_duelart_path[MAX_PATH + 15];
 // GLOBAL: DECKDLL 0x10143d80
-static char global_dbart_path[MAX_PATH + 15];
+static char global_dbart_path[264];
 // GLOBAL: DECKDLL 0x101bbf50
 static char global_duel_dat_path[MAX_PATH + 15];
 
@@ -76,25 +87,19 @@ DBFlags global_db_flags_1 = DBFLAGS_0;
 DBFlags global_db_flags_2 = DBFLAGS_0;
 // GLOBAL: DECKDLL 0x101bc0c4
 bool global_cfg_consolidate = false;
+
+// GLOBAL: DECKDLL 0x101a8a70
+static char global_deck_filename[(MAX_PATH + 15) + 32 + 5];
+
+// GLOBAL: DECKDLL 0x101a8c64
+HWND global_listbox_hwnd;
+
 // GLOBAL: DECKDLL 0x101a8c70
-static signed char global_cfg_consolidate_from_registry = 0;
-// GLOBAL: DECKDLL 0x101a8c72
-signed char global_cfg_effects = 0;
-// GLOBAL: DECKDLL 0x101a8d13
-static signed char global_cfg_expand_text = 0;
-// GLOBAL: DECKDLL 0x101a8c71
-signed char global_cfg_music = 0;
+struct GlobalConfig_t global_cfg;
+
 static bool global_cfg_no_frame = false;
 static bool global_cfg_read_by_name = false;
 bool global_cfg_view_all = false;
-#define MAX_NAMELEN 80
-
-// GLOBAL: DECKDLL 0x101a8c73
-char global_cfg_player_name[MAX_NAMELEN];
-
-// GLOBAL: DECKDLL 0x101a8cc3;
-char global_cfg_email[MAX_NAMELEN];
-static char global_cfg_skin_name[MAX_PATH + 1];
 
 // GLOBAL: DECKDLL 0x1012e898
 static int global_current_deck = 0;
@@ -123,7 +128,7 @@ FullDeck global_edited_deck;
 // GLOBAL: DECKDLL 0x101a0ce4
 int global_edited_deck_num_entries = 0;
 // GLOBAL: DECKDLL 0x10144710
-static DeckEntry global_excessive_cards[201];
+static DeckEntry global_excessive_cards[84];
 
 // GLOBAL: DECKDLL 0x1012ea0c
 bool global_deck_was_edited = false;
@@ -153,20 +158,18 @@ GlobalDeckInfoBlob global_deckinfo;
 // GLOBAL: DECKDLL 0x10142814
 static char *global_external_deckname = NULL;
 
-// GLOBAL: DECKDLL 0x101a8a70
-static char global_deck_filename[(MAX_PATH + 15) + 32 + 5];
-
 // GLOBAL: DECKDLL 0x101bc604
 int global_dlg_parameter = 0;
 // GLOBAL: DECKDLL 0x101423d0
 int global_dlg_result = 0;
 // GLOBAL: DECKDLL 0x10143ae0
-static char global_ask_x_dlg_title[128];
+static char global_ask_x_dlg_title[52];
 // GLOBAL: DECKDLL 0x101127e0
-static char global_loaddeck_dlg_filename[2 * MAX_PATH + 15 + 10];
+static char global_loaddeck_dlg_filename[MAX_PATH + 15 + 10];
 
 static HBRUSH global_brush_gold1 = NULL;
 static HBRUSH global_brush_gold2 = NULL;
+// GLOBAL: DECKDLL 0x10104c94
 static HBRUSH global_brush_mediumgrey = NULL;
 // GLOBAL: DECKDLL 0x101a9654
 static HBRUSH global_create_brush_0 = NULL;
@@ -179,7 +182,7 @@ static HBRUSH global_create_brush_3 = NULL;
 // GLOBAL: DECKDLL 0x10142f00
 static HBRUSH global_create_brush_4 = NULL;
 // GLOBAL: DECKDLL 0x1012e894
-static HBRUSH global_create_brush_5 = NULL;
+HBRUSH global_create_brush_5 = NULL;
 // GLOBAL: DECKDLL 0x10132c3c
 HBRUSH global_create_brush_6 = NULL;
 // GLOBAL: DECKDLL 0x1012e890
@@ -197,10 +200,14 @@ static HANDLE global_delete_brush_handle_5 = NULL;
 // GLOBAL: DECKDLL 0x101a9708
 static HANDLE global_delete_brush_handle_6 = NULL;
 
+// GLOBAL: DECKDLL 0x10104d74
 COLORREF global_colorref_darkgrey = 0;
+// GLOBAL: DECKDLL 0x10104c90
 COLORREF global_colorref_flesh = 0;
 COLORREF global_colorref_lavender = 0;
+// GLOBAL: DECKDLL 0x10104d70
 COLORREF global_colorref_lightgrey = 0;
+// GLOBAL: DECKDLL 0x10104ca0
 COLORREF global_colorref_white = 0;
 
 // GLOBAL: DECKDLL 0x10113f6c
@@ -286,42 +293,25 @@ static HGDIOBJ global_old_bmp_obj = NULL;
 static HFONT DAT_10125e0c = NULL;
 
 // GLOBAL: DECKDLL 0x10113cec
-static int global_smallcard_normal_width = 0;
+int global_smallcard_normal_width = 0;
 // GLOBAL: DECKDLL 0x1012e4f4
-static int global_smallcard_normal_height = 0;
+int global_smallcard_normal_height = 0;
 
 // GLOBAL: DECKDLL 0x101bc448
-static int global_smallcard_smaller_width = 0;
+int global_smallcard_smaller_width = 0;
 // GLOBAL: DECKDLL 0x10113cf0
-static int global_smallcard_smaller_height = 0;
+int global_smallcard_smaller_height = 0;
 
 // GLOBAL: DECKDLL 0x10143fc0
-static int global_smallcard_smallest_width = 0;
+int global_smallcard_smallest_width = 0;
 // GLOBAL: DECKDLL 0x1014532c
-static int global_smallcard_smallest_height = 0;
+int global_smallcard_smallest_height = 0;
 
-static int global_smallcard_piclist_height = 0;
-static int global_smallcard_piclist_width = 0;
+// GLOBAL: DECKDLL 0x10132c40
+int global_smallcard_piclist_height = 0;
+// GLOBAL: DECKDLL 0x10143e88
+int global_smallcard_piclist_width = 0;
 
-static LOGFONT global_logfont_template =
-    {
-        0,                           // lfHeight
-        0,                           // lfWidth
-        0,                           // lfEscapement
-        0,                           // lfOrientation
-        FW_NORMAL,                   // lfWeight
-        FALSE,                       // lfItalic
-        FALSE,                       // lfUnderline
-        FALSE,                       // lfStrikeOut
-        ANSI_CHARSET,                // lfCharSet
-        OUT_DEFAULT_PRECIS,          // lfOutPrecision
-        CLIP_DEFAULT_PRECIS,         // lfClipPrecision
-        DEFAULT_QUALITY,             // lfQuality
-        DEFAULT_PITCH | FF_DONTCARE, // lfPitchAndFamily
-        {
-            'T', 'r', 'e', 'b', 'u', 'c', 'h', 'e', 't', ' ', 'M', 'S', '\0',
-            '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'} // lfFaceName[LF_FACESIZE]
-};
 HFONT global_font_42 = NULL;
 HFONT global_font_42unused = NULL;
 HFONT global_font_40percent = NULL;
@@ -410,6 +400,7 @@ static HWND global_button_stats_hwnd;
 static HWND global_cuecard_hwnd;
 
 extern HWND global_decksurface_hwnd;
+extern HPALETTE global_cart_art_hpalette;
 
 // GLOBAL: DECKDLL 0x100f2848
 static HANDLE global_gaun_options_pic;
@@ -427,19 +418,18 @@ static HMENU global_fullcard_popup;
 
 // GLOBAL: DECKDLL 0x101bc444
 HWND global_horzlist_hwnd;
-static HWND global_cardlistfilter_hwnd;
+// GLOBAL: DECKDLL 0x101052c0
+static POINT DAT_101052c0;
 // GLOBAL: DECKDLL 0x101052c8
 static HMENU global_horzlist_popup;
 
-// GLOBAL: DECKDLL 0x101a8c64
-HWND global_listbox_hwnd;
+// GLOBAL: DECKDLL 0x1012e2d8
+HWND cardlistfilter_hwnd;
 
 // GLOBAL: DECKDLL 0x10144ef4
 HWND global_main_hwnd;
 static int global_main_window_width = 0;
 static int global_main_window_height = 0;
-
-static WNDPROC global_wndproc_std_SearchClass;
 
 // GLOBAL: DECKDLL 0x10144eec
 int global_smallcard_height = 0;
@@ -510,6 +500,10 @@ static Int_fn_int SellPrice;
 
 bool check_filters(csvid_t csvid);
 int InitLicenseSecretsFromRegistry(void);
+
+/* Defined in filtermenus.c (original binary uses these in wndproc_MainClass). */
+extern int check_filters_debug_log_enabled;
+extern FILE *check_filters_debug_log_file;
 
 LRESULT CALLBACK wndproc_CardClass(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK wndproc_CardListFilterClass(HWND, UINT, WPARAM, LPARAM);
@@ -607,91 +601,6 @@ int load_text(const char *file_name, const char *section_name)
   return s.num_text;
 }
 
-static __inline void textout(HDC hdc, int x, int y, const char *txt)
-{
-  TextOut(hdc, x, y, txt, strlen(txt));
-}
-
-static __inline void textoutf(HDC hdc, int x, int y, const char *fmt, ...)
-{
-  char buf[512];
-  int len;
-
-  va_list args;
-  va_start(args, fmt);
-  len = _vsnprintf(buf, 512, fmt, args);
-  va_end(args);
-  TextOut(hdc, x, y, buf, len);
-}
-
-static __inline int
-popup_loaded(HWND hwnd, const char *title, const char *msg, int msgbox_params)
-{
-  char txt[128];
-  load_text("Menus", msg);
-  strcpy(txt, text_lines[0]);
-
-  load_text("Menus", title);
-  return MessageBox(hwnd, txt, text_lines[0], msgbox_params);
-}
-
-static __inline int
-popup_loaded_with_args(HWND hwnd, const char *title, const char *msg, const char *sprintf_arg, int msgbox_params)
-{
-  int buffer_size;
-  char *txt;
-  int result;
-
-  buffer_size = 128 + strlen(sprintf_arg) + 1;
-  txt = (char *)malloc(buffer_size);
-  if (!txt)
-    fatal("popup_loaded_with_args: out of memory");
-
-  load_text("Menus", msg);
-  sprintf(txt, text_lines[0], sprintf_arg);
-
-  load_text("Menus", title);
-  result = MessageBox(hwnd, txt, text_lines[0], msgbox_params);
-  free(txt);
-  return result;
-}
-
-#define set_dlg_text(hdlg, resource, txt) SetWindowText(GetDlgItem(hdlg, resource), txt)
-
-static void
-set_dlg_text_limited(HWND hdlg, int resource, const char *txt, int limit)
-{
-  HWND item = GetDlgItem(hdlg, resource);
-  SetWindowText(item, txt);
-  SendMessage(item, EM_SETLIMITTEXT, limit, 0);
-}
-
-static __inline void
-translate_backslash_n_to_newline(char *str)
-{
-  char *p;
-  for (p = str;; ++p, ++str)
-    switch (*str)
-    {
-    case '\0':
-      *p = 0;
-      return;
-
-    case '\\':
-      if (*(str + 1) == 'n' || *(str + 1) == 'N')
-      {
-        *p = '\n';
-        ++str;
-        break;
-      }
-      // else fall through
-
-    default:
-      *p = *str;
-      break;
-    }
-}
-
 // GLOBAL: DECKDLL 0x10036210
 const char s__08x_DestroyDIBSection__file_map_10036210[] = "  %08x DestroyDIBSection (file mapping: %08x)\n";
 
@@ -707,7 +616,7 @@ static const char s_SELLCARD_10031830[12] = "SELLCARD";
 static const char s_menus_1003183c[8] = "menus";
 
 // GLOBAL: DECKDLL 0x1019c020
-const char read_db_artist_names[100][100];
+char read_db_artist_names[100][100];
 
 // FUNCTION: DECKDLL 0x1000d9f1
 static void
@@ -724,59 +633,59 @@ read_manalink_ini(void)
   {
     s.buflen = 10;
     if (RegQueryValueEx(s.key, "Consolidate", NULL, NULL, s.buf, &s.buflen) == ERROR_SUCCESS)
-      sscanf((char *)s.buf, "%d", (int *)&global_cfg_consolidate_from_registry);
+      sscanf((char *)s.buf, "%d", (int *)&global_cfg.consolidate_from_registry);
     else
-      global_cfg_consolidate_from_registry = 1;
+      global_cfg.consolidate_from_registry = 1;
 
     if (RegQueryValueEx(s.key, "Music", NULL, NULL, s.buf, &s.buflen) == ERROR_SUCCESS)
-      sscanf((char *)s.buf, "%d", (int *)((char *)&global_cfg_consolidate_from_registry + 1));
+      sscanf((char *)s.buf, "%d", (int *)((char *)&global_cfg.consolidate_from_registry + 1));
     else
-      global_cfg_music = 1;
+      global_cfg.music = 1;
 
     if (RegQueryValueEx(s.key, "Effects", NULL, NULL, s.buf, &s.buflen) == ERROR_SUCCESS)
-      sscanf((char *)s.buf, "%d", (int *)((char *)&global_cfg_consolidate_from_registry + 2));
+      sscanf((char *)s.buf, "%d", (int *)((char *)&global_cfg.consolidate_from_registry + 2));
     else
-      global_cfg_effects = 1;
+      global_cfg.effects = 1;
 
     RegCloseKey(s.key);
   }
   else
   {
-    global_cfg_consolidate_from_registry = 1;
-    global_cfg_music = 1;
-    global_cfg_effects = 1;
+    global_cfg.consolidate_from_registry = 1;
+    global_cfg.music = 1;
+    global_cfg.effects = 1;
   }
 
   if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering", 0, KEY_QUERY_VALUE, &s.key) == ERROR_SUCCESS)
   {
     s.buflen = 100;
     if (RegQueryValueEx(s.key, "Name", NULL, NULL, s.buf, &s.buflen) == ERROR_SUCCESS)
-      strcpy(global_cfg_player_name, (char *)s.buf);
+      strcpy(global_cfg.player_name, (char *)s.buf);
     else
-      strcpy(global_cfg_player_name, "User");
+      strcpy(global_cfg.player_name, "User");
 
     s.buflen = 100;
     if (RegQueryValueEx(s.key, "Email", NULL, NULL, s.buf, &s.buflen) == ERROR_SUCCESS)
-      strcpy(global_cfg_email, (char *)s.buf);
+      strcpy(global_cfg.email, (char *)s.buf);
     else
-      strcpy(global_cfg_email, "User E-Mail");
+      strcpy(global_cfg.email, "User E-Mail");
 
     RegCloseKey(s.key);
   }
   else
-    strcpy(global_cfg_email, "User E-Mail");
+    strcpy(global_cfg.email, "User E-Mail");
 
   if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions", 0, KEY_QUERY_VALUE, &s.key) == ERROR_SUCCESS)
   {
     s.buflen = 100;
     if (RegQueryValueEx(s.key, "ExpandTextOnBigCard", NULL, NULL, s.buf, &s.buflen) == ERROR_SUCCESS)
-      sscanf((char *)s.buf, "%d", &global_cfg_expand_text);
+      sscanf((char *)s.buf, "%d", &global_cfg.expand_text);
     else
-      global_cfg_expand_text = 0;
+      global_cfg.expand_text = 0;
     RegCloseKey(s.key);
   }
   else
-    global_cfg_expand_text = 0;
+    global_cfg.expand_text = 0;
 }
 
 static void
@@ -804,13 +713,13 @@ write_manalink_ini(void)
   if (RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DeckBuilderOptions",
                      0, NULL, 0, 0xF003F, NULL, &key, &disposition) == ERROR_SUCCESS)
   {
-    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_consolidate_from_registry);
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg.consolidate_from_registry);
     RegSetValueEx(key, "Consolidate", 0, 1, buf, strlen((char *)buf) + 1);
 
-    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_music);
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg.music);
     RegSetValueEx(key, "Music", 0, 1, buf, strlen((char *)buf) + 1);
 
-    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_effects);
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg.effects);
     RegSetValueEx(key, "Effects", 0, 1, buf, strlen((char *)buf) + 1);
 
     RegFlushKey(key);
@@ -820,7 +729,7 @@ write_manalink_ini(void)
   if (RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions",
                      0, NULL, 0, 0xF003F, NULL, &key, &disposition) == ERROR_SUCCESS)
   {
-    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg_expand_text);
+    wsprintf((char *)buf, "%d", (int)(signed char)global_cfg.expand_text);
     RegSetValueEx(key, "ExpandTextOnBigCard", 0, 1, buf, strlen((char *)buf) + 1);
 
     RegFlushKey(key);
@@ -949,7 +858,6 @@ void draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1,
 // FUNCTION: MAGIC 0x00558fb0
 static bool create_fonts(void)
 {
-  LOGFONT *font;
   struct
   {
     char path[MAX_PATH + 4]; /* big buffer first */
@@ -981,33 +889,30 @@ static bool create_fonts(void)
 
   global_fonts_init_state = 3;
 
-  sprintf(s.path, "%s\\Damage.pic", global_base_directory);
+  sprintf(s.path, "%s\\Damage.pic", global_cardart_path);
   global_damage_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\CardCounters.pic", global_base_directory);
+  sprintf(s.path, "%s\\CardCounters.pic", global_cardart_path);
   global_card_counters_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\ManaSymbols.pic", global_base_directory);
+  sprintf(s.path, "%s\\ManaSymbols.pic", global_cardart_path);
   global_mana_symbols_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\Abilities.pic", global_base_directory);
+  sprintf(s.path, "%s\\Abilities.pic", global_cardart_path);
   global_abilities_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\ManaStripes.pic", global_base_directory);
+  sprintf(s.path, "%s\\ManaStripes.pic", global_cardart_path);
   global_mana_stripes_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\Summon.pic", global_base_directory);
+  sprintf(s.path, "%s\\Summon.pic", global_cardart_path);
   global_summon_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\Dying.pic", global_base_directory);
+  sprintf(s.path, "%s\\Dying.pic", global_cardart_path);
   global_dying_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\Target.pic", global_base_directory);
+  sprintf(s.path, "%s\\Target.pic", global_cardart_path);
   global_target_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\CantTarget.pic", global_base_directory);
+  sprintf(s.path, "%s\\CantTarget.pic", global_cardart_path);
   global_cant_target_pic = load_pic(s.path);
-  sprintf(s.path, "%s\\WillUntap.pic", global_base_directory);
+  sprintf(s.path, "%s\\WillUntap.pic", global_cardart_path);
   global_will_untap_pic = load_pic(s.path);
 
-  font = LoadFontFromIni("SmallCardPT", 0);
-  global_smallcard_pt_font = CreateFontIndirectA(font);
-  font = LoadFontFromIni("Damage", 0);
-  global_damage_font = CreateFontIndirectA(font);
-  font = LoadFontFromIni("IDTag", 0);
-  global_idtag_font = CreateFontIndirectA(font);
+  global_smallcard_pt_font = CreateFontIndirectA(LoadFontFromIni("SmallCardPT", 0));
+  global_damage_font = CreateFontIndirectA(LoadFontFromIni("Damage", 0));
+  global_idtag_font = CreateFontIndirectA(LoadFontFromIni("IDTag", 0));
 
   global_palette_col_c9 = GetPaletteColor(0xc9);
   global_palette_col_9e_a = GetPaletteColor(0x9e);
@@ -1020,14 +925,13 @@ static bool create_fonts(void)
   global_pen_palette_5d = CreatePen(6, 2, global_palette_col_5d);
   global_pen_palette_1f = CreatePen(6, 2, global_palette_col_1f);
 
-  s.local_8 = 1;
-  for (s.local_c = 0; s.local_c < 10; ++s.local_c)
+  for (s.local_c = 0, s.local_8 = 1; s.local_c < 10; ++s.local_c)
   {
     global_debug_pens[s.local_c] =
         CreatePen(6, 3,
-                  ((s.local_c * 0x14 & 0xffU) << 8) |
-                      (unsigned int)(BYTE)((char)s.local_c * '\n') |
-                      ((unsigned int)(BYTE)((char)s.local_c * 'K') << 16));
+                  ((unsigned int)(BYTE)(s.local_c * 75) << 16) |
+                      ((unsigned int)(BYTE)(s.local_c * 20) << 8) |
+                      (unsigned int)(BYTE)(s.local_c * 10));
     if (global_debug_pens[s.local_c] == (HPEN)0)
       s.local_8 = 0;
   }
@@ -1428,8 +1332,7 @@ delete_resources(void)
 }
 
 // FUNCTION: DECKDLL 0x1000c337
-static bool
-process_cue_cards(MSG *msg)
+bool process_cue_cards(MSG *msg)
 {
   struct
   {
@@ -1438,8 +1341,12 @@ process_cue_cards(MSG *msg)
     HWND hwnd;          /* ebp - 0xc */
     POINT client_point; /* ebp - 0x8 */
   } s;
+
+  // GLOBAL: DECKDLL 0x100327d0
   static int last_cursor_x = 0;
+  // GLOBAL: DECKDLL 0x100327d4
   static int last_cursor_y = 0;
+  // GLOBAL: DECKDLL 0x100f30a0
   static HWND last_hwnd = NULL;
 
   if (msg->message == WM_TIMER && msg->hwnd == global_main_hwnd && msg->wParam == 0)
@@ -1454,40 +1361,40 @@ process_cue_cards(MSG *msg)
     s.msgnum = SendMessage(s.hwnd,
                            0x465,
                            0,
-                           (((s.client_point.y & 0xffff) << 16) | (s.client_point.x & 0xffff)));
+                           MAKELONG2(s.client_point.x, s.client_point.y));
     if (s.msgnum != 0)
       SendMessage(global_cuecard_hwnd,
                   0x400,
-                  ((((s.screen_point.y + 0xf) & 0xffff) << 16) | ((s.screen_point.x + 5) & 0xffff)),
+                  MAKELONG3(s.screen_point.x + 5, s.screen_point.y + 0xf),
                   (LPARAM)text_lines[s.msgnum - 1]);
     return true;
   }
-  else if (msg->message == WM_MOUSEMOVE)
+
+  if (msg->message == WM_MOUSEMOVE)
   {
     GetCursorPos(&s.screen_point);
     if (abs(last_cursor_y - s.screen_point.y) + abs(last_cursor_x - s.screen_point.x) < 2)
       return false;
-    else
+
+    last_cursor_x = s.screen_point.x;
+    last_cursor_y = s.screen_point.y;
+    SetTimer(global_main_hwnd, 0, 500, NULL);
+    if (last_hwnd != msg->hwnd)
     {
-      last_cursor_x = s.screen_point.x;
-      last_cursor_y = s.screen_point.y;
-      SetTimer(global_main_hwnd, 0, 500, NULL);
-      if (last_hwnd != msg->hwnd)
-      {
-        last_hwnd = msg->hwnd;
-        ShowWindow(global_cuecard_hwnd, SW_HIDE);
-      }
-      return false;
+      last_hwnd = msg->hwnd;
+      ShowWindow(global_cuecard_hwnd, SW_HIDE);
     }
-  }
-  else if ((unsigned int)msg->message < WM_MOUSEMOVE || (unsigned int)msg->message > WM_MBUTTONDBLCLK)
     return false;
-  else
+  }
+
+  if ((unsigned int)msg->message >= WM_MOUSEMOVE && (unsigned int)msg->message <= WM_MBUTTONDBLCLK)
   {
     KillTimer(global_main_hwnd, 0);
     ShowWindow(global_cuecard_hwnd, SW_HIDE);
     return false;
   }
+
+  return false;
 }
 
 /* stdcall version exported without stdcall suffix; used by assembly and external callers. */
@@ -1857,7 +1764,7 @@ init_deckbuilder(HINSTANCE dll, int unused)
     return 0;
 
   read_manalink_ini();
-  global_cfg_consolidate = (int)(signed char)global_cfg_consolidate_from_registry;
+  global_cfg_consolidate = (int)(signed char)global_cfg.consolidate_from_registry;
   global_deck_was_edited = 0;
   global_deckname_set = 0;
   global_deckbuilder_unknown_1019f010 = 0;
@@ -3002,339 +2909,371 @@ void count_packs(void)
 LRESULT CALLBACK
 wndproc_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC paintdc;
-  HFONT font;
-  HDC hdc;
+  // GLOBAL: DECKDLL 0x10030028
+  static int DAT_10030028 = 0;
+
+  struct
+  {
+    char txt[100]; /* matches [ebp-0x104] */
+    HDC paintdc;
+    PAINTSTRUCT paint;
+    HBRUSH brush_inner;
+    RECT rect_inner;
+    HBRUSH brush_outer;
+    RECT rect_client;
+    int height;
+    HDC hdc_local;
+    int width;
+    UINT y;
+    UINT x;
+    LPCSTR str;
+    SIZE sz;
+    HFONT font;
+    RECT rect_parent;
+  } s;
 
   switch (msg)
   {
-  case WM_PAINT:
-  {
-    PAINTSTRUCT paint;
+  case 0x400:
+    s.font = (HFONT)GetWindowLongA(hwnd, DAT_10030028);
 
-    if (paintdc = BeginPaint(hwnd, &paint))
+    s.x = (UINT)wparam & 0xFFFF;
+    s.y = ((UINT)wparam >> 16) & 0xFFFF;
+    s.str = (LPCSTR)lparam;
+
+    s.hdc_local = GetDC(hwnd);
+    if (s.hdc_local != 0)
     {
-      HFONT cue_font = GetWindowLong(hwnd, CUECARD_FONT_INDEX);
-      RECT r;
-      HBRUSH brush1;
-      HBRUSH brush2;
-      char txt[100];
+      ApplyCardArtPaletteToDc(s.hdc_local);
+      SelectObject(s.hdc_local, s.font);
 
-      ApplyCardArtPaletteToDc(paintdc);
+      GetTextExtentPointA(s.hdc_local, s.str, lstrlenA(s.str), &s.sz);
 
-      GetClientRect(hwnd, &r);
+      s.width = s.sz.cx + 10;
+      s.height = s.sz.cy + 6;
 
-      brush1 = CreateSolidBrush(PALETTERGB(127, 127, 127));
-      FillRect(paintdc, &r, brush1);
+      ReleaseDC(hwnd, s.hdc_local);
 
-      r.right -= 2;
-      r.bottom -= 2;
-      brush2 = CreateSolidBrush(PALETTERGB(210, 190, 150));
-      FillRect(paintdc, &r, brush2);
+      GetClientRect(GetParent(hwnd), &s.rect_parent);
+      if (s.rect_parent.right < s.width + (int)s.x)
+        s.x = s.rect_parent.right - s.width;
 
-      SetTextColor(paintdc, PALETTERGB(0, 0, 0));
-      SetBkMode(paintdc, TRANSPARENT);
-      GetWindowText(hwnd, txt, 100);
-      SelectObject(paintdc, cue_font);
-      DrawText(paintdc, txt, -1, &r, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-
-      EndPaint(hwnd, &paint);
-
-      DELETE_OBJ(brush1);
-      DELETE_OBJ(brush2);
-    }
-    return 0;
-  }
-
-  case WM_CREATE:
-  {
-    if (font = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
-                          OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Verdana"))
-    {
-      SetWindowLong(hwnd, CUECARD_FONT_INDEX, font);
-      return 0;
-    }
-    else
-      return -1;
-  }
-
-  case WM_DESTROY:
-    if (font = GetWindowLong(hwnd, CUECARD_FONT_INDEX))
-      DeleteObject(font);
-    return 0;
-
-  case WM_KEYDOWN:
-    SetFocus(global_main_hwnd);
-    PostMessage(GetFocus(), WM_KEYDOWN, wparam, lparam);
-    return 0;
-
-  case 0x8400:
-  {
-    int x;
-    int y;
-    char *str;
-    HDC hdc_local;
-    SIZE sz;
-    int width;
-    int height;
-    RECT r_local;
-
-    font = GetWindowLong(hwnd, CUECARD_FONT_INDEX);
-
-    x = LOWORD(wparam);
-    y = HIWORD(wparam);
-    str = lparam;
-
-    if (hdc_local = GetDC(hwnd))
-    {
-      ApplyCardArtPaletteToDc(hdc_local);
-      SelectObject(hdc_local, font);
-
-      GetTextExtentPoint32(hdc_local, str, strlen(str), &sz);
-      width = sz.cx + 10;
-      height = sz.cy + 6;
-
-      ReleaseDC(hwnd, hdc_local);
-
-      GetClientRect(GetParent(hwnd), &r_local);
-      if (x > r_local.right - width)
-        x = r_local.right - width;
-
-      MoveWindow(hwnd, x, y, width, height, TRUE);
-      SetWindowText(hwnd, str);
+      MoveWindow(hwnd, s.x, s.y, s.width, s.height, TRUE);
+      SetWindowTextA(hwnd, s.str);
       ShowWindow(hwnd, SW_SHOW);
       InvalidateRect(hwnd, NULL, TRUE);
     }
     return 0;
-  }
+
+  case WM_CREATE:
+    s.font = CreateFontA(12, 0, 0, 0, 400, 0, 0, 0, 0, 4, 0, 0, 0, "Arial");
+    if (s.font == 0)
+      return -1;
+    SetWindowLongA(hwnd, DAT_10030028, (LONG)s.font);
+    return 0;
+
+  case WM_DESTROY:
+
+#ifdef MODERN_FIXES
+    s.font = (HFONT)GetWindowLong(hwnd, DAT_10030028);
+#else
+    s.font = (HFONT)GetWindowWord(hwnd, DAT_10030028);
+#endif
+
+    if (s.font != 0)
+      DeleteObject(s.font);
+    return 0;
+
+  case WM_KEYDOWN:
+    SetFocus(global_main_hwnd);
+    PostMessageA(GetFocus(), msg, wparam, lparam);
+    return 0;
+
+  case WM_PAINT:
+
+#ifdef MODERN_FIXES
+    s.font = (HFONT)GetWindowLong(hwnd, DAT_10030028);
+#else
+    s.font = (HFONT)GetWindowWord(hwnd, DAT_10030028);
+#endif
+
+    s.paintdc = BeginPaint(hwnd, &s.paint);
+    if (s.paintdc != 0)
+    {
+
+      ApplyCardArtPaletteToDc(s.paintdc);
+
+      GetClientRect(hwnd, &s.rect_client);
+
+      s.brush_inner = CreateSolidBrush(PALETTERGB(210, 190, 150));
+      s.brush_outer = CreateSolidBrush(PALETTERGB(127, 127, 127));
+
+      SetRect(&s.rect_inner,
+              s.rect_client.left,
+              s.rect_client.top,
+              s.rect_client.right - 2,
+              s.rect_client.bottom - 2);
+      FillRect(s.paintdc, &s.rect_client, s.brush_outer);
+      FillRect(s.paintdc, &s.rect_inner, s.brush_inner);
+
+      SetTextColor(s.paintdc, PALETTERGB(0, 0, 0));
+      SetBkMode(s.paintdc, TRANSPARENT);
+      GetWindowTextA(hwnd, s.txt, 100);
+      SelectObject(s.paintdc, s.font);
+      DrawTextA(s.paintdc,
+                s.txt,
+                -1,
+                &s.rect_inner,
+                DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+
+      EndPaint(hwnd, &s.paint);
+
+      DeleteObject(s.brush_inner);
+      DeleteObject(s.brush_outer);
+    }
+    return 0;
 
   default:
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
+
+  return 0;
 }
 
 // FUNCTION: DECKDLL 0x1002764d
 LRESULT CALLBACK
 wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  HDC hdc;
-  HDC chdc;
-  RECT r;
-  BITMAP bmp;
+  struct
+  {
+    HDC chdc; // ebp - 0x80
+    HDC hdc;  // ebp - 0x7c
+    BITMAP bmp;
+    PAINTSTRUCT paint;
+    RECT rect2; // ebp - 0x20
+    RECT rect;  // ebp - 0x10
+  } s;
+
+  // TitleClass fonts.
+  // GLOBAL: DECKDLL 0x10105280
+  static LOGFONT DAT_10105280;
+  // GLOBAL: DECKDLL 0x10105278
+  static HFONT DAT_10105278;
+  // GLOBAL: DECKDLL 0x101052bc
+  static HFONT DAT_101052bc;
+  // GLOBAL: DECKDLL 0x100362d8
+  static LOGFONT titleClass_fontTemplate = {
+      0,        // lfHeight
+      0,        // lfWidth
+      0,        // lfEscapement
+      0,        // lfOrientation
+      FW_NORMAL // lfWeight
+  };
 
   switch (msg)
   {
-  case WM_PAINT:
-  {
-    PAINTSTRUCT paint;
-    HDC paintdc;
-    RECT rect;
-
-    paintdc = BeginPaint(hwnd, &paint);
-    ApplyCardArtPaletteToDc(paintdc);
-    GetClientRect(hwnd, &rect);
-    InflateRect(&rect, -5, -5);
-
-    if (strlen(global_deckinfo.deckname) >= 20)
-      SelectObject(paintdc, global_font_28percent);
-    else
-      SelectObject(paintdc, global_font_40percent);
-
-    SetBkMode(paintdc, TRANSPARENT);
-    SetMapMode(paintdc, MM_ANISOTROPIC);
-
-    SetWindowExtEx(paintdc, RECT_WIDTH(rect), RECT_HEIGHT(rect), NULL);
-    SetViewportExtEx(paintdc, RECT_WIDTH(rect), RECT_HEIGHT(rect), NULL);
-
-    rect.left += 3;
-    rect.top += 3;
-    SetTextColor(paintdc, PALETTERGB(20, 46, 77));
-    DrawText(paintdc, global_deckinfo.deckname, strlen(global_deckinfo.deckname), &rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-
-    rect.left -= 3;
-    rect.top -= 3;
-    SetTextColor(paintdc, PALETTERGB(243, 209, 175));
-    DrawText(paintdc, global_deckinfo.deckname, strlen(global_deckinfo.deckname), &rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-
-    EndPaint(hwnd, &paint);
-    return 0;
-  }
-
   case WM_CREATE:
+    memcpy(&DAT_10105280, &titleClass_fontTemplate, 0x3c);
+    strcpy(DAT_10105280.lfFaceName, "Cheltenham ITC Bold BT");
+    DAT_10105280.lfHeight = 0x32;
+    DAT_10105278 = CreateFontIndirect(&DAT_10105280);
+    DAT_10105280.lfHeight = 0x1e;
+    DAT_101052bc = CreateFontIndirect(&DAT_10105280);
+    return 0;
+
   case WM_DESTROY:
+    DeleteObject(DAT_10105278);
+    DeleteObject(DAT_101052bc);
     return 0;
 
   case WM_ERASEBKGND:
   {
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
+    s.hdc = wparam;
+    ApplyCardArtPaletteToDc(s.hdc);
 
-    chdc = CreateCompatibleDC(hdc);
-    ApplyCardArtPaletteToDc(chdc);
+    s.chdc = CreateCompatibleDC(s.hdc);
+    ApplyCardArtPaletteToDc(s.chdc);
 
-    SelectObject(chdc, global_pic_dektit1);
+    SelectObject(s.chdc, global_pic_dektit1);
 
-    GetClientRect(hwnd, &r);
+    GetClientRect(hwnd, &s.rect);
 
-    GetObject(global_pic_dektit1, sizeof(BITMAP), &bmp);
+    GetObject(global_pic_dektit1, sizeof(BITMAP), &s.bmp);
 
-    StretchBlt(hdc, 0, 0, r.right, r.bottom, chdc, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
+    StretchBlt(s.hdc, 0, 0, s.rect.right, s.rect.bottom, s.chdc, 0, 0, s.bmp.bmWidth, s.bmp.bmHeight, SRCCOPY);
 
-    DELETE_DC(chdc);
+    DeleteDC(s.chdc);
     return 1;
   }
+
+  case WM_PAINT:
+    s.hdc = BeginPaint(hwnd, &s.paint);
+    ApplyCardArtPaletteToDc(s.hdc);
+    GetClientRect(hwnd, &s.rect);
+    InflateRect(&s.rect, -5, -5);
+    CopyRect(&s.rect2, &s.rect);
+
+    if (strlen(global_deckinfo.deckname) < 12)
+      SelectObject(s.hdc, DAT_10105278);
+    else
+      SelectObject(s.hdc, DAT_101052bc);
+
+    SetBkMode(s.hdc, TRANSPARENT);
+    SetMapMode(s.hdc, MM_ANISOTROPIC);
+
+    SetWindowExtEx(s.hdc, s.rect2.right - s.rect2.left, 0x46, NULL);
+    SetViewportExtEx(s.hdc, s.rect2.right - s.rect2.left, s.rect2.bottom - s.rect2.top, NULL);
+
+    s.rect2.left = s.rect2.left + 3;
+    s.rect2.top = s.rect2.top + 3;
+    SetTextColor(s.hdc, PALETTERGB(20, 46, 77));
+    DrawTextA(s.hdc, global_deckinfo.deckname, strlen(global_deckinfo.deckname), &s.rect2, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+
+    s.rect2.left = s.rect2.left + -3;
+    s.rect2.top = s.rect2.top + -3;
+    SetTextColor(s.hdc, PALETTERGB(243, 209, 175));
+    DrawTextA(s.hdc, global_deckinfo.deckname, strlen(global_deckinfo.deckname), &s.rect2, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+
+    EndPaint(hwnd, &s.paint);
+    return 0;
 
   case WM_LBUTTONDOWN:
   case WM_RBUTTONDOWN:
-    if (!(global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR)))
-    {
-      show_dialog_deckinfo();
-      InvalidateRect(hwnd, NULL, TRUE);
-    }
+    if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR))
+      return 0;
+
+    show_dialog_deckinfo();
+    InvalidateRect(hwnd, NULL, TRUE);
     return 0;
 
   default:
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
-}
 
-static void
-fill_back(HWND hwnd, HDC hdc)
-{
-  int x;
-  int y;
-  RECT rect;
-  BITMAP bmp;
-  HDC chdc;
-
-  chdc = CreateCompatibleDC(hdc);
-  ApplyCardArtPaletteToDc(chdc);
-  SelectObject(chdc, global_pic_dektile4);
-
-  GetClientRect(hwnd, &rect);
-  GetObject(global_pic_dektile4, sizeof(BITMAP), &bmp);
-
-  for (x = 0; x < rect.right; x += bmp.bmWidth)
-    for (y = rect.bottom; y > -29; y -= bmp.bmHeight)
-      BitBlt(hdc, x, y, bmp.bmWidth, bmp.bmHeight, chdc, 0, 0, SRCCOPY);
-
-  DELETE_DC(chdc);
+  return 0;
 }
 
 // FUNCTION: DECKDLL 0x10010f75
-LRESULT CALLBACK
-wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK wndproc_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  int card_to_draw, expanded_text, wanted_card;
+  // GLOBAL: DECKDLL 0x10030010
+  static int FULLCARD_CSVID_INDEX = 4;
+  // GLOBAL: DECKDLL 0x10030014
+  static int FULLCARD_EXPANDTEXT_INDEX = 8;
+
+  int card_to_draw;
+  uint expanded_text;
+  int wanted_card;
   switch (msg)
   {
-  case WM_PAINT:
-  {
-    PAINTSTRUCT paint;
-    HDC paintdc;
-    RECT rect;
 
-    card_to_draw = GetWindowLong(hwnd, FULLCARD_CSVID_INDEX);
-    expanded_text = GetWindowLong(hwnd, FULLCARD_EXPANDTEXT_INDEX);
-
-    paintdc = BeginPaint(hwnd, &paint);
-
-    GetClientRect(hwnd, &rect);
-
-    ApplyCardArtPaletteToDc(paintdc);
-
-    if (card_to_draw >= 0)
-      DrawFullCard(paintdc, &rect, &global_raw_cards_storage[card_to_draw], 0, 1, expanded_text, 0);
-    else
-      DrawCardBack(hwnd, paintdc);
-
-    EndPaint(hwnd, &paint);
+  case 0x466:
+    wanted_card = wparam;
+    card_to_draw = GetWindowLongA(hwnd, FULLCARD_CSVID_INDEX);
+    if (wanted_card == card_to_draw)
+      InvalidateRect(hwnd, NULL, 0);
     return 0;
-  }
+
+  case 0x400:
+    card_to_draw = wparam;
+    if (GetWindowLongA(hwnd, FULLCARD_CSVID_INDEX) != card_to_draw)
+    {
+      if (card_to_draw < 0 && global_edited_deck.entries[0].DeckEntry_Amount > 0)
+        card_to_draw = global_edited_deck.entries[0].DeckEntry_csvid;
+      SetWindowLongA(hwnd, FULLCARD_CSVID_INDEX, card_to_draw);
+      InvalidateRect(hwnd, NULL, 0);
+    }
+    return 0;
+
+  case 0x402:
+    expanded_text = (WORD)GetWindowWord(hwnd, FULLCARD_EXPANDTEXT_INDEX);
+    return expanded_text;
+
+  case 0x401:
+    expanded_text = wparam;
+    SetWindowWord(hwnd, FULLCARD_EXPANDTEXT_INDEX, (WORD)expanded_text);
+    InvalidateRect(hwnd, NULL, 0);
+    CheckMenuItem(global_fullcard_popup, RES_FULLCARDMENU_EXPAND,
+                  (expanded_text >= 1) ? MF_CHECKED : 0);
+    return expanded_text;
+
+  case WM_COMMAND:
+    if ((wparam & 0xffff) == RES_FULLCARDMENU_EXPAND)
+    {
+      if (!SendMessageA(hwnd, 0x402, 0, 0))
+        SendMessageA(hwnd, 0x401, 1, 0);
+      else
+        SendMessageA(hwnd, 0x401, 0, 0);
+    }
+    return 0;
 
   case WM_CREATE:
     global_fullcard_popup = CreatePopupMenu();
-    load_text("Menus", "FULLCARD");
-    AppendMenu(global_fullcard_popup, MF_STRING, RES_FULLCARDMENU_EXPAND, text_lines[0]);
-    SetWindowLong(hwnd, FULLCARD_CSVID_INDEX, -1);
-    SetWindowLong(hwnd, FULLCARD_EXPANDTEXT_INDEX, global_cfg_expand_text);
-    CHECKMENU_IF(global_fullcard_popup, RES_FULLCARDMENU_EXPAND, global_cfg_expand_text);
+    load_text("menus", "FULLCARD");
+    AppendMenuA(global_fullcard_popup, 0, RES_FULLCARDMENU_EXPAND, text_lines[0]);
+    card_to_draw = -1;
+    SetWindowLongA(hwnd, FULLCARD_CSVID_INDEX, card_to_draw);
+    expanded_text = global_cfg.expand_text;
+    SetWindowWord(hwnd, FULLCARD_EXPANDTEXT_INDEX, (WORD)expanded_text);
+    CheckMenuItem(global_fullcard_popup, RES_FULLCARDMENU_EXPAND,
+                  (expanded_text >= 1) ? MF_CHECKED : 0);
     return 0;
 
   case WM_DESTROY:
-    global_cfg_expand_text = GetWindowLong(hwnd, FULLCARD_EXPANDTEXT_INDEX);
-    DESTROY_MENU(global_fullcard_popup);
+    global_cfg.expand_text = (char)GetWindowWord(hwnd, FULLCARD_EXPANDTEXT_INDEX);
+    DestroyMenu(global_fullcard_popup);
     return 0;
 
-  case WM_ERASEBKGND:
+  case WM_PAINT:
   {
-    HDC hdc;
+    struct
+    {
+      HDC hdc;           // ebp - 0x60
+      PAINTSTRUCT paint; // ebp - 0x5c
+      RECT rect;         // ebp - 0x1c
+    } s;
 
-    hdc = wparam;
-    ApplyCardArtPaletteToDc(hdc);
-    DrawCardBack(hwnd, hdc);
-    return 1;
+    card_to_draw = GetWindowLong(hwnd, FULLCARD_CSVID_INDEX);
+    expanded_text = GetWindowWord(hwnd, FULLCARD_EXPANDTEXT_INDEX);
+
+    s.hdc = BeginPaint(hwnd, &s.paint);
+
+    GetClientRect(hwnd, &s.rect);
+
+    ApplyCardArtPaletteToDc(s.hdc);
+
+    if (card_to_draw < 0)
+    {
+      DrawCardBack(s.hdc, &s.rect);
+    }
+    else
+    {
+      uint cardid;
+      FillRect(global_hdc, &s.rect, global_create_brush_0);
+      cardid = DrawFullCard(global_hdc, &s.rect, &global_raw_cards_storage[card_to_draw], 0, 1, expanded_text, global_artistline);
+      BitBlt(s.hdc, 0, 0, s.rect.right, s.rect.bottom, global_hdc, 0, 0, SRCCOPY);
+    }
+
+    EndPaint(hwnd, &s.paint);
+    return 0;
   }
 
   case WM_RBUTTONDOWN:
   {
-    POINT point;
-
-    point.x = GET_X_LPARAM(lparam);
-    point.y = GET_Y_LPARAM(lparam);
-    ClientToScreen(hwnd, &point);
-
-    TrackPopupMenu(global_fullcard_popup, TPM_RIGHTBUTTON, point.x, point.y, 0, hwnd, NULL);
+    POINT pt;
+    pt.x = (int)(short)LOWORD(lparam);
+    pt.y = (int)(short)HIWORD(lparam);
+    ClientToScreen(hwnd, &pt);
+    TrackPopupMenu(global_fullcard_popup, 2, pt.x, pt.y, 0, hwnd, NULL);
     return 0;
   }
-
-  case WM_COMMAND:
-    if (LOWORD(wparam) == RES_FULLCARDMENU_EXPAND)
-      SendMessage(hwnd, 0x8401, SendMessage(hwnd, 0x8402, 0, 0) ? 0 : 1, 0);
-    return 0;
-
-  case 0x8400:
-    card_to_draw = wparam;
-    if (GetWindowLong(hwnd, FULLCARD_CSVID_INDEX) != card_to_draw)
-    {
-      if (card_to_draw < 0 && global_edited_deck.entries[0].DeckEntry_Amount > 0)
-        card_to_draw = global_edited_deck.entries[0].DeckEntry_csvid;
-      SetWindowLong(hwnd, FULLCARD_CSVID_INDEX, card_to_draw);
-      InvalidateRect(hwnd, NULL, FALSE);
-    }
-    return 0;
-
-  case 0x8401:
-    expanded_text = wparam;
-    SetWindowLong(hwnd, FULLCARD_EXPANDTEXT_INDEX, expanded_text);
-    InvalidateRect(hwnd, NULL, FALSE);
-    CHECKMENU_IF(global_fullcard_popup, RES_FULLCARDMENU_EXPAND, expanded_text);
-    return expanded_text;
-
-  case 0x8402:
-    return GetWindowLong(hwnd, FULLCARD_EXPANDTEXT_INDEX);
-
-  case 0x8466:
-    wanted_card = wparam;
-    if (wanted_card == GetWindowLong(hwnd, FULLCARD_CSVID_INDEX))
-      InvalidateRect(hwnd, NULL, FALSE);
-    return 0;
 
   default:
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
-}
 
-static void
-update_scroll_range(void)
-{
-  int r = GetWindowLong(global_horzlist_hwnd, HORZLIST_LASTPIC_INDEX) - GetWindowLong(global_horzlist_hwnd, HORZLIST_PICSINLINE_INDEX);
-  if (r < 0)
-    r = 0;
-  SetScrollRange(global_horzlist_hwnd, 0, 0, r, 0);
+  return 0;
 }
-
-#define MAKELONG2(a, b) ((LONG)(((a) & 0xffff) | ((DWORD)((WORD)(b))) << 16))
 
 // FUNCTION: DECKDLL 0x1002ab15
 void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
@@ -3392,40 +3331,6 @@ void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
   SendMessage(GetParent(hwnd_horzlist), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_horzlist), 1), hwnd_horzlist);
 }
 
-static void
-make_new_search(HWND hwnd)
-{
-  char *p;
-
-  global_search_string[256] = 0;
-  global_search_string[0] = '*';
-
-  SendMessage(hwnd, WM_GETTEXT, 255, &global_search_string[1]);
-
-  p = &global_search_string[strlen(global_search_string)];
-  if (p == global_search_string)
-    strcpy(global_search_string, "*");
-  else if (*(p - 1) != '*')
-    strcpy(p, "*");
-
-  SendMessage(global_horzlist_hwnd, 0x8007, 0, 0);
-  filter_cards_in_lists(global_listbox_hwnd, global_horzlist_hwnd);
-}
-
-LRESULT CALLBACK
-wndproc_SearchClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  if (msg == WM_KILLFOCUS)
-    make_new_search(hwnd);
-  else if (msg == WM_CHAR && wparam == '\r')
-  {
-    make_new_search(hwnd);
-    SetFocus(global_horzlist_hwnd);
-    return 0;
-  }
-  return global_wndproc_std_SearchClass(hwnd, msg, wparam, lparam);
-}
-
 // FUNCTION: DECKDLL 0x1002b8f0
 void insert_cards_into_deck(csvid_t csvid, int num, FullDeck *tgt_deck)
 {
@@ -3458,7 +3363,7 @@ void insert_cards_into_deck(csvid_t csvid, int num, FullDeck *tgt_deck)
 }
 
 // FUNCTION: DECKDLL 0x1002b9dc
-void add_or_increment_sideboard_bucket_entry(int param_1, int param_2, int param_3, FullDeck *param_4)
+void add_or_increment_sideboard_bucket_entry(int which, csvid_t csvid, int num, FullDeck *tgt_deck)
 {
   struct
   {
@@ -3468,35 +3373,35 @@ void add_or_increment_sideboard_bucket_entry(int param_1, int param_2, int param
     int found;
   } s;
 
-  if (param_1 == 0)
+  if (which == 0)
   {
-    s.bucket = &param_4->sideboard[0];
-    s.count_ptr = &param_4->sideboard[0].total;
+    s.bucket = &tgt_deck->sideboard[0];
+    s.count_ptr = &tgt_deck->sideboard[0].total;
   }
-  else if (param_1 == 1)
+  else if (which == 1)
   {
-    s.bucket = &param_4->sideboard[1];
-    s.count_ptr = &param_4->sideboard[1].total;
+    s.bucket = &tgt_deck->sideboard[1];
+    s.count_ptr = &tgt_deck->sideboard[1].total;
   }
-  else if (param_1 == 2)
+  else if (which == 2)
   {
-    s.bucket = &param_4->sideboard[2];
-    s.count_ptr = &param_4->sideboard[2].total;
+    s.bucket = &tgt_deck->sideboard[2];
+    s.count_ptr = &tgt_deck->sideboard[2].total;
   }
-  else if (param_1 == 5)
+  else if (which == 5)
   {
-    s.bucket = &param_4->sideboard[5];
-    s.count_ptr = &param_4->sideboard[5].total;
+    s.bucket = &tgt_deck->sideboard[5];
+    s.count_ptr = &tgt_deck->sideboard[5].total;
   }
-  else if (param_1 == 4)
+  else if (which == 4)
   {
-    s.bucket = &param_4->sideboard[4];
-    s.count_ptr = &param_4->sideboard[4].total;
+    s.bucket = &tgt_deck->sideboard[4];
+    s.count_ptr = &tgt_deck->sideboard[4].total;
   }
-  else if (param_1 == 3)
+  else if (which == 3)
   {
-    s.bucket = &param_4->sideboard[3];
-    s.count_ptr = &param_4->sideboard[3].total;
+    s.bucket = &tgt_deck->sideboard[3];
+    s.count_ptr = &tgt_deck->sideboard[3].total;
   }
   else
   {
@@ -3507,19 +3412,17 @@ void add_or_increment_sideboard_bucket_entry(int param_1, int param_2, int param
   s.i = 0;
   s.found = 0;
   for (; (s.i < *s.count_ptr) && (!s.found); s.i++)
-  {
-    if (s.bucket->entries[s.i].DeckEntry_csvid == param_2)
+    if (s.bucket->entries[s.i].DeckEntry_csvid == csvid)
     {
-      s.bucket->entries[s.i].DeckEntry_Amount += param_3;
+      s.bucket->entries[s.i].DeckEntry_Amount += num;
       s.found = 1;
     }
-  }
 
   if (!s.found)
   {
-    s.bucket->entries[*s.count_ptr].DeckEntry_csvid = param_2;
-    s.bucket->entries[*s.count_ptr].DeckEntry_Amount = param_3;
-    s.bucket->entries[*s.count_ptr].DeckEntry_FullName = global_raw_cards_storage[param_2].full_name;
+    s.bucket->entries[*s.count_ptr].DeckEntry_csvid = csvid;
+    s.bucket->entries[*s.count_ptr].DeckEntry_Amount = num;
+    s.bucket->entries[*s.count_ptr].DeckEntry_FullName = global_raw_cards_storage[csvid].full_name;
     *s.count_ptr = *s.count_ptr + 1;
   }
 }
@@ -3822,7 +3725,7 @@ static int delete_card_from_global_deck(csvid_t csvid, int num)
 }
 
 // FUNCTION: DECKDLL 0x1002c6b5
-void move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
+void move_colors_fromto_global_deck(int move_into, unsigned int dlgbits)
 {
   int i;
   if (move_into == 1)
@@ -3831,25 +3734,22 @@ void move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
     {
       if (global_deck[i].GDE_Available == 1)
       {
-        if ((((dlgbits & 1) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLACK) &&
-             ((dlgbits & 2) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLUE) &&
-             ((dlgbits & 4) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_GREEN) &&
-             ((dlgbits & 8) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_RED) &&
-             ((dlgbits & 0x10) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_WHITE) &&
-             ((dlgbits & 0x20) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].card_type != CP_TYPE_ARTIFACT)))
+        if ((((dlgbits & 1) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_BLACK) ||
+             ((dlgbits & 2) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_BLUE) ||
+             ((dlgbits & 4) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_GREEN) ||
+             ((dlgbits & 8) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_RED) ||
+             ((dlgbits & 0x10) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_WHITE) ||
+             ((dlgbits & 0x20) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].card_type == CP_TYPE_ARTIFACT)))
         {
-          if ((((dlgbits & 1) != 0 && global_deck[i].GDE_iid == 0) ||   // swamp
-               ((dlgbits & 2) != 0 && global_deck[i].GDE_iid == 1) ||   // island
-               ((dlgbits & 4) != 0 && global_deck[i].GDE_iid == 2) ||   // forest
-               ((dlgbits & 8) != 0 && global_deck[i].GDE_iid == 3) ||   // mountain
-               ((dlgbits & 0x10) != 0 && global_deck[i].GDE_iid == 4))) // plains
-          {
-            global_deck[i].GDE_Available = 0;
-            global_deck[i].GDE_DecksBits |= 1 << global_current_deck;
-            insert_cards_into_deck(global_deck[i].GDE_csvid, 1, &global_edited_deck);
-          }
+          global_deck[i].GDE_Available = 0;
+          global_deck[i].GDE_DecksBits |= 1 << global_current_deck;
+          insert_cards_into_deck(global_deck[i].GDE_csvid, 1, &global_edited_deck);
         }
-        else
+        else if ((((dlgbits & 1) != 0 && global_deck[i].GDE_iid == 0) ||   // swamp
+                  ((dlgbits & 2) != 0 && global_deck[i].GDE_iid == 1) ||   // island
+                  ((dlgbits & 4) != 0 && global_deck[i].GDE_iid == 2) ||   // forest
+                  ((dlgbits & 8) != 0 && global_deck[i].GDE_iid == 3) ||   // mountain
+                  ((dlgbits & 0x10) != 0 && global_deck[i].GDE_iid == 4))) // plains
         {
           global_deck[i].GDE_Available = 0;
           global_deck[i].GDE_DecksBits |= 1 << global_current_deck;
@@ -3864,12 +3764,18 @@ void move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
     {
       if (global_deck[i].GDE_Available == 0)
       {
-        if ((((dlgbits & 1) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLACK) &&
-             ((dlgbits & 2) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_BLUE) &&
-             ((dlgbits & 4) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_GREEN) &&
-             ((dlgbits & 8) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_RED) &&
-             ((dlgbits & 0x10) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].color != CP_COLOR_WHITE) &&
-             ((dlgbits & 0x20) == 0 || global_raw_cards_storage[global_deck[i].GDE_csvid].card_type != CP_TYPE_ARTIFACT)))
+        if ((((dlgbits & 1) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_BLACK) ||
+             ((dlgbits & 2) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_BLUE) ||
+             ((dlgbits & 4) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_GREEN) ||
+             ((dlgbits & 8) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_RED) ||
+             ((dlgbits & 0x10) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].color == CP_COLOR_WHITE) ||
+             ((dlgbits & 0x20) != 0 && global_raw_cards_storage[global_deck[i].GDE_csvid].card_type == CP_TYPE_ARTIFACT)))
+        {
+          global_deck[i].GDE_Available = 1;
+          global_deck[i].GDE_DecksBits &= ~(1 << global_current_deck);
+          remove_cards_from_deck(global_deck[i].GDE_csvid, 1, &global_edited_deck);
+        }
+        else
         {
           if ((((dlgbits & 1) != 0 && global_deck[i].GDE_iid == 0) ||   // swamp
                ((dlgbits & 2) != 0 && global_deck[i].GDE_iid == 1) ||   // island
@@ -3881,12 +3787,6 @@ void move_colors_fromto_global_deck(int move_into, unsigned char dlgbits)
             global_deck[i].GDE_DecksBits &= ~(1 << global_current_deck);
             remove_cards_from_deck(global_deck[i].GDE_csvid, 1, &global_edited_deck);
           }
-        }
-        else
-        {
-          global_deck[i].GDE_Available = 1;
-          global_deck[i].GDE_DecksBits &= ~(1 << global_current_deck);
-          remove_cards_from_deck(global_deck[i].GDE_csvid, 1, &global_edited_deck);
         }
       }
     }
@@ -4016,35 +3916,12 @@ count_card_amount_outside_edited_deck(csvid_t csvid)
 {
   int i;
   int count = 0;
-  for (i = 0; global_deck_num_entries > i; ++i)
+
+  for (i = 0; i < global_deck_num_entries; ++i)
     if (global_deck[i].GDE_csvid == csvid && !(global_deck[i].GDE_DecksBits & (1 << (unsigned char)global_current_deck)))
       ++count;
 
   return count;
-}
-
-static __inline void
-draw_small_amount(int amount, RECT *rect)
-{
-  int old_dc = SaveDC(global_hdc);
-
-  SetMapMode(global_hdc, MM_ANISOTROPIC);
-  SetWindowExtEx(global_hdc, 200, 280, 0);
-  SetViewportExtEx(global_hdc, rect->right - rect->left, rect->bottom - rect->top, NULL);
-  SetViewportOrgEx(global_hdc, rect->left, rect->top, NULL);
-
-  SetBkMode(global_hdc, TRANSPARENT);
-
-  SelectObject(global_hdc, global_font_42);
-  SetTextAlign(global_hdc, TA_RIGHT);
-
-  SetTextColor(global_hdc, RGB(0, 0, 0));
-  textoutf(global_hdc, 195, 3, "%d", amount);
-
-  SetTextColor(global_hdc, PALETTERGB(0xFF, 0xD9, 0x27));
-  textoutf(global_hdc, 192, 0, "%d", amount);
-
-  RestoreDC(global_hdc, old_dc);
 }
 
 // FUNCTION: DECKDLL 0x100093cd
@@ -4091,10 +3968,8 @@ change_global_deck_card_availability(csvid_t csvid, int mode)
   else
     return false;
 
-  for (s.i = 0;; ++s.i)
+  for (s.i = 0; global_deck_num_entries > s.i; ++s.i)
   {
-    if (global_deck_num_entries <= s.i)
-      break;
     if (global_deck[s.i].GDE_csvid == csvid && global_deck[s.i].GDE_Available == s.old_avail)
     {
       global_deck[s.i].GDE_Available = s.new_avail;
@@ -4157,16 +4032,9 @@ int horzlist_prep_rectangle(HWND hwnd, int idx, RECT *rect)
   WORD lft;
   WORD pics;
 
-  // GLOBAL: DECKDLL 0x10030040
-  static int DAT_10030040 = 10;
-  // GLOBAL: DECKDLL 0x1003003c
-  static int DAT_1003003c = 8;
-  // GLOBAL: DECKDLL 0x10030044
-  static int DAT_10030044 = 12;
-
-  w = GetWindowWord(hwnd, DAT_10030040);
-  lft = GetWindowWord(hwnd, DAT_1003003c);
-  pics = GetWindowWord(hwnd, DAT_10030044);
+  w = GetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX);
+  lft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
+  pics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
   GetClientRect(hwnd, &r);
 
   SetRect(rect, (idx - lft) * w + r.left, r.top,
@@ -4219,21 +4087,20 @@ TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
   }
 
   s.count = SendMessageA(hwnd_listbox, 0x18b, 0, 0);
-  s.tmp = 0;
+  s.sel = 0;
   s.i = 0;
   s.done = 0;
-  while ((int)s.i < s.count && s.done == 0)
+  for (; (int)s.i < s.count && s.done == 0; s.i++)
   {
     if (SendMessageA(hwnd_listbox, 0x199, s.i, 0) == (LRESULT)s.data)
     {
-      s.tmp = s.i;
+      s.sel = s.i;
       s.done = 1;
     }
-    s.i = s.i + 1;
   }
 
-  SendMessageA(hwnd_listbox, 0x186, s.tmp, 0);
-  SendMessageA(hwnd_horzlist, 0x186, s.tmp, 0);
+  SendMessageA(hwnd_listbox, 0x186, s.sel, 0);
+  SendMessageA(hwnd_horzlist, 0x186, s.sel, 0);
   SendMessageA(GetParent(hwnd_listbox), 0x111, (GetDlgCtrlID(hwnd_listbox) & 0xffff) | 0x10000,
                (LPARAM)hwnd_listbox);
 }
@@ -4261,13 +4128,9 @@ ask_movexcards(csvid_t csvid, bool shifted)
       if (s.local_8 > global_dlg_result)
         s.local_8 = global_dlg_result;
 
-      s.local_c = 0;
-      while (1)
+      for (s.local_c = 0; s.local_8 > s.local_c; s.local_c++)
       {
-        if (s.local_8 <= s.local_c)
-          break;
         change_global_deck_card_availability(csvid, 1);
-        ++s.local_c;
       }
 
       TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
@@ -4352,20 +4215,13 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
     GetCursorPos(&global_main_mouse_pt);
 
     s.target_hwnd = WindowFromPoint(global_main_mouse_pt);
-    for (;;)
+    while (s.target_hwnd != (HWND)0 &&
+           s.target_hwnd != global_main_hwnd &&
+           s.target_hwnd != global_decksurface_hwnd &&
+           s.target_hwnd != global_unknown_10144b04 &&
+           s.target_hwnd != global_unknown_10125a3c &&
+           s.target_hwnd != global_horzlist_hwnd)
     {
-      if (s.target_hwnd == (HWND)0)
-        break;
-      if (s.target_hwnd == global_main_hwnd)
-        break;
-      if (s.target_hwnd == global_decksurface_hwnd)
-        break;
-      if (s.target_hwnd == global_unknown_10144b04)
-        break;
-      if (s.target_hwnd == global_unknown_10125a3c)
-        break;
-      if (s.target_hwnd == global_horzlist_hwnd)
-        break;
       s.target_hwnd = GetParent(s.target_hwnd);
     }
   }
@@ -4378,7 +4234,7 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
   {
     s.amt = ask_movexcards((int)s.itemdata, shifted);
     set_smallcard_dimensions();
-    if (global_cfg_effects != 0)
+    if (global_cfg.effects != 0)
       play_sound(2, 400, 0, 0);
 
     global_deck_was_edited = 1;
@@ -4395,16 +4251,16 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
     }
 
     count_packs();
-    if ((global_db_flags_1 & 0x20) == 0)
+    if ((global_db_flags_1 & 0x20) != 0)
+    {
+      SendMessageA(global_horzlist_hwnd, 0x186, 0, 0);
+      SendMessageA(global_listbox_hwnd, 0x186, 0, 0);
+    }
+    else
     {
       SendMessageA(global_fullcard_hwnd, 0x400, (WPARAM)s.itemdata, 0);
       SendMessageA(global_horzlist_hwnd, 0x186, s.wParam, 0);
       SendMessageA(global_listbox_hwnd, 0x186, s.wParam, 0);
-    }
-    else
-    {
-      SendMessageA(global_horzlist_hwnd, 0x186, 0, 0);
-      SendMessageA(global_listbox_hwnd, 0x186, 0, 0);
     }
 
     if ((global_db_flags_1 & 0x41) != 0)
@@ -4413,7 +4269,7 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
   else if ((s.target_hwnd == global_unknown_10125a3c) || (s.target_hwnd == global_unknown_10144b04))
   {
     s.amt = ask_movexcards((int)s.itemdata, shifted);
-    if (global_cfg_effects != 0)
+    if (global_cfg.effects != 0)
       play_sound(2, 400, 0, 0);
 
     global_deck_was_edited = 1;
@@ -4425,16 +4281,16 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
         MessageBeep(0);
     }
 
-    if ((global_db_flags_1 & 0x20) == 0)
+    if ((global_db_flags_1 & 0x20) != 0)
+    {
+      SendMessageA(global_horzlist_hwnd, 0x186, 0, 0);
+      SendMessageA(global_listbox_hwnd, 0x186, 0, 0);
+    }
+    else
     {
       SendMessageA(global_fullcard_hwnd, 0x400, (WPARAM)s.itemdata, 0);
       SendMessageA(global_horzlist_hwnd, 0x186, s.wParam, 0);
       SendMessageA(global_listbox_hwnd, 0x186, s.wParam, 0);
-    }
-    else
-    {
-      SendMessageA(global_horzlist_hwnd, 0x186, 0, 0);
-      SendMessageA(global_listbox_hwnd, 0x186, 0, 0);
     }
   }
   else
@@ -4452,542 +4308,840 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
 }
 
 // FUNCTION: DECKDLL 0x1002887e
-LRESULT CALLBACK
-wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  int i;
-  static HDC comphdc = NULL;
-  // GLOBAL: DECKDLL 0x1003a7cc
-  static int sellprice = 0;
-  // GLOBAL: DECKDLL 0x10105310
-  static csvid_t curr_csvid = -1;
+  // GLOBAL: DECKDLL 0x10105740
+  static HDC DAT_10105740 = NULL;
+  // GLOBAL: DECKDLL 0x101052d0
+  static LOGFONT DAT_101052d0;
+  // GLOBAL: DECKDLL 0x1010530c
+  static HFONT DAT_1010530c = NULL;
 
-  // common vars
-  char buf[300];
-  HDC hdc;
-  HDC hdc_local;
-  RECT r;
-  POINT p, p2;
-  int last_pic_index, left_pic_index, pics_inline, currsel;
-  int *horz_list_addr;
+  // GLOBAL: DECKDLL 0x1003a7cc
+  static int sellprice;
+  // GLOBAL: DECKDLL 0x10105310
+  static csvid_t curr_csvid;
+  // GLOBAL: DECKDLL 0x1003a790
+  static LOGFONT horzListClass_fontTemplate = {
+      0,        // lfHeight
+      0,        // lfWidth
+      0,        // lfEscapement
+      0,        // lfOrientation
+      FW_NORMAL // lfWeight
+  };
+
+  struct
+  {
+    HRGN hrgn;         /* ebp - 0x22c */
+    HGDIOBJ h;         /* ebp - 0x228 */
+    RECT r_small;      /* ebp - 0x224 */
+    int paint_amt;     /* ebp - 0x214 */
+    HDC hdc;           /* ebp - 0x210 */
+    BITMAP bmp;        /* ebp - 0x20c */
+    PAINTSTRUCT paint; /* ebp - 0x1f4 */
+
+    int paint_idx; /* ebp - 0x1b4 */
+    int save;      /* ebp - 0x1b0 */
+
+    RECT paint_r;    /* ebp - 0x1ac */
+    int paint_csvid; /* ebp - 0x19c */
+
+    POINT mm_pt;    /* ebp - 0x198 */
+    int mm_i;       /* ebp - 0x190 */
+    int mm_hit_idx; /* ebp - 0x18c */
+    RECT mm_r;      /* ebp - 0x188 */
+    int mm_hit;     /* ebp - 0x178 */
+
+    int scrollpos;    /* ebp - 0x174 */
+    int minpos;       /* ebp - 0x170 */
+    int page_amt;     /* ebp - 0x16c */
+    WORD scroll_code; /* ebp - 0x168 */
+    int maxpos;       /* ebp - 0x164 */
+    uint wLast_int;   /* ebp - 0x160 */
+    int tgt;          /* ebp - 0x15c */
+
+    HDC hdc_local; /* ebp - 0x158 */
+    RECT create_r; /* ebp - 0x154 */
+    int pad_144;   /* ebp - 0x144 */
+
+    DELETEITEMSTRUCT del2; /* ebp - 0x140 */
+    int last_pic_index;    /* ebp - 0x12c */
+    int left_pic_index;    /* ebp - 0x128 */
+    int pad_124;           /* ebp - 0x124 */
+
+    RECT r6;              /* ebp - 0x120 */
+    int scrollMinPos;     /* ebp - 0x110 */
+    int scrollMaxPos;     /* ebp - 0x10c */
+    DELETEITEMSTRUCT del; /* ebp - 0x108 */
+    int oldidx;           /* ebp - 0xf4 */
+    int getInx;           /* ebp - 0xf0 */
+    int insert_index;     /* ebp - 0xec */
+    int insert_loop_idx;  /* ebp - 0xe8 */
+    RECT r5;              /* ebp - 0xe4 */
+    int item_idx;         /* ebp - 0xd4 */
+    RECT r4;              /* ebp - 0xd0 */
+    UINT local_c0;        /* ebp - 0xc0 */
+    RECT r7;              /* ebp - 0xb0 */
+
+    WORD wOldSel;    /* ebp - 0xac */
+    WORD wOldSelPad; /* ebp - 0xaa */
+    RECT r2;         /* ebp - 0xa8 */
+
+    unsigned int wanted_card; /* ebp - 0x98 */
+    int idx;                  /* ebp - 0x94 */
+    RECT r3;                  /* ebp - 0x90 */
+    WORD wPics;               /* ebp - 0x80 */
+    WORD wPicsPad;            /* ebp - 0x7e */
+    int *horz_list_addr;      /* ebp - 0x7c */
+
+    MSG m;          /* ebp - 0x78 */
+    int amt;        /* ebp - 0x5c */
+    int currsel;    /* ebp - 0x58 */
+    POINT p;        /* ebp - 0x54 */
+    int j;          /* ebp - 0x4c */
+    WORD wWidth;    /* ebp - 0x48 */
+    WORD wWidthPad; /* ebp - 0x46 */
+    iid_t iid;      /* ebp - 0x44 */
+    char buf[32];   /* ebp - 0x40 */
+
+    int i;           /* ebp - 0x20 */
+    WORD wNewSel;    /* ebp - 0x1c */
+    WORD wNewSelPad; /* ebp - 0x1a */
+    WORD wLeft;      /* ebp - 0x18 */
+    RECT r;          /* ebp - 0x14 */
+    WORD wLast;      /* ebp - 4 */
+    WORD wLastPad;   /* ebp - 2 */
+  } s;
 
   switch (msg)
   {
-  case WM_PAINT:
+  case 0x464:
+    SendMessageA(global_main_hwnd, 0x466, (WPARAM)wparam, (LPARAM)hwnd);
+    return 0;
+
+  case 0x466:
   {
-    BITMAP bmp;
-    HGDIOBJ h;
-    int max_index;
-    PAINTSTRUCT paint;
 
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-    left_pic_index = GetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX);
-    pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
+    s.wanted_card = (unsigned int)wparam;
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
 
-    hdc = BeginPaint(hwnd, &paint);
-    ApplyCardArtPaletteToDc(hdc);
-
-    GetClientRect(hwnd, &r);
-    GetObject(global_pic_dekbar1, sizeof(BITMAP), &bmp);
-
-    h = SelectObject(comphdc, global_pic_dekbar1);
-    StretchBlt(hdc, 0, 0, r.right, r.bottom, comphdc, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
-    SelectObject(comphdc, h);
-
-    max_index = MIN(left_pic_index + pics_inline, last_pic_index);
-
-    for (i = left_pic_index; i < max_index; ++i)
+    for (s.idx = s.wLeft; MIN(s.wLast, s.wPics + s.wLeft) > s.idx; s.idx++)
     {
-      RECT r2;
-      csvid_t csvid;
-      int amt;
-
-      horzlist_prep_rectangle(hwnd, i, &r);
-      SetRect(&r2, 0, 0, global_smallcard_piclist_width, global_smallcard_piclist_height);
-      csvid = (csvid_t)horz_list_addr[i];
-      amt = count_card_amount_outside_edited_deck(csvid);
-      DrawSmallCard(global_hdc, &r2, &global_raw_cards_storage[csvid], 0, 1, 0, 0);
-      if (amt > 1 && (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_SHANDALAR)))
-        draw_small_amount(amt, &r2);
-
-      r.left += (r.right - r.left - global_smallcard_piclist_width) / 2;
-      r.top += (r.bottom - r.top - global_smallcard_piclist_height) / 2;
-      BitBlt(hdc, r.left, r.top, global_smallcard_piclist_width, global_smallcard_piclist_height, global_hdc, 0, 0, SRCCOPY);
-    }
-    EndPaint(hwnd, &paint);
-    return 0;
-  }
-
-  case WM_CREATE:
-    pics_inline = 7;
-
-    GetClientRect(hwnd, &r);
-    if (global_smallcard_piclist_width > 0 && r.right)
-    {
-      pics_inline = (r.right - 4) / global_smallcard_piclist_width;
-      if ((r.right - 4) % global_smallcard_piclist_width >= global_smallcard_piclist_width / 4)
-        ++pics_inline;
-    }
-
-    SetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX, 0);
-    SetWindowLong(hwnd, HORZLIST_ADDR_INDEX, malloc(sizeof(int)));
-    SetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX, -1);
-    SetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX, 0);
-    SetWindowLong(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX, global_smallcard_piclist_width);
-    SetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX, pics_inline);
-
-    update_scroll_range();
-
-    SetScrollPos(hwnd, SB_HORZ, -1, TRUE);
-
-    global_horzlist_popup = CreatePopupMenu();
-
-    hdc_local = GetDC(hwnd);
-    ApplyCardArtPaletteToDc(hdc_local);
-    comphdc = CreateCompatibleDC(hdc_local);
-    ApplyCardArtPaletteToDc(comphdc);
-    ReleaseDC(hwnd, hdc_local);
-    return 0;
-
-  case WM_DESTROY:
-    free(GetWindowLong(hwnd, HORZLIST_ADDR_INDEX));
-    DESTROY_MENU(global_horzlist_popup);
-    DELETE_DC(comphdc);
-    return 0;
-
-  case WM_MOUSEMOVE:
-  {
-    static POINT last_mousepos = {0, 0};
-    int dx;
-    int dy;
-
-    p.x = GET_X_LPARAM(lparam);
-    p.y = GET_Y_LPARAM(lparam);
-
-    dx = abs(last_mousepos.x - p.x);
-    dy = abs(last_mousepos.y - p.y);
-    if (dx + dy < 2)
-      return 0;
-
-    last_mousepos = p;
-
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    left_pic_index = GetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX);
-    if (last_pic_index <= 0 || left_pic_index < 0)
-      return 0;
-
-    pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
-
-    for (i = left_pic_index; i < left_pic_index + pics_inline; ++i)
-    {
-      horzlist_prep_rectangle(hwnd, i, &r);
-      if (PtInRect(&r, p))
+      if ((unsigned int)s.horz_list_addr[s.idx] == s.wanted_card)
       {
-        if (SendMessage(hwnd, 0x8003, 0, 0) != i)
-        {
-          SendMessage(hwnd, 0x8007, i, 0);
-          SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwnd), 1), hwnd);
-        }
-        break;
+        horzlist_prep_rectangle(hwnd, (int)s.idx, &s.r3);
+        InvalidateRect(hwnd, &s.r3, 0);
       }
     }
-
     return 0;
   }
 
-  case WM_MOUSEWHEEL:
-    SendMessage(hwnd, WM_HSCROLL, SHIWORD(wparam) < 0 ? 1 : 0, 0);
-    return 0;
+  case LB_GETCURSEL:
+    return s.wNewSel = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
 
-  case WM_LBUTTONDOWN:
-  case WM_LBUTTONDBLCLK:
-    if (!(global_db_flags_2 & DBFLAGS_SHANDALAR))
-      return 0;
-
-    GetCursorPos(&p);
-    p2 = p;
-    ScreenToClient(global_main_hwnd, &p);
-    ScreenToClient(global_horzlist_hwnd, &p2);
-
-    if (msg == WM_LBUTTONDOWN)
-    {
-      MSG m;
-      Sleep(GetDoubleClickTime());
-      if (PeekMessage(&m, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, PM_NOREMOVE))
-        return 0;
-    }
-
-    SetFocus(hwnd);
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    if (last_pic_index <= 0)
-      return 0;
-
-    SendMessage(hwnd, WM_MOUSEMOVE, wparam & ~MK_LBUTTON, lparam);
-
-    global_main_mouse_pt = p;
-    global_horzlist_mouse_pt = p2;
-    if (!handle_card_list_click_or_drag(hwnd, msg == WM_LBUTTONDOWN, wparam & MK_SHIFT))
-      MessageBeep(0);
-
-    return 0;
-
-  case WM_RBUTTONDOWN:
-    if (!(global_db_flags_2 & DBFLAGS_STANDALONE))
-      return 0;
-
-    SetFocus(hwnd);
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    if (last_pic_index <= 0)
-      return 0;
-
-    SendMessage(hwnd, WM_MOUSEMOVE, wparam & ~MK_RBUTTON, lparam);
-
-    p.x = GET_X_LPARAM(lparam);
-    p.y = GET_Y_LPARAM(lparam);
-
-    currsel = SendMessage(hwnd, 0x8003, 0, 0);
-    horzlist_prep_rectangle(global_horzlist_hwnd, currsel, &r);
-    if (!PtInRect(&r, p))
-      return 0;
-
-    ScreenToClient(global_main_hwnd, &p);
-
-    {
-      iid_t iid;
-      curr_csvid = SendMessage(hwnd, 0x8004, currsel, 0);
-      iid = get_iid_from_global_deck_card(curr_csvid);
-      if (!(iid >= 0))
-        return 0;
-
-      sellprice = SellPrice(iid);
-    }
-
-    load_text("Menus", "SELLCARD");
-    sprintf(buf, text_lines[0], sellprice);
-    AppendMenu(global_horzlist_popup, MF_ENABLED, RES_SELLMENU_SELLCARDFORX, buf);
-
-    ClientToScreen(hwnd, &p);
-    TrackPopupMenu(global_horzlist_popup, TPM_RIGHTBUTTON, p.x + 10, p.y + 10, 0, hwnd, NULL);
-    DeleteMenu(global_horzlist_popup, RES_SELLMENU_SELLCARDFORX, MF_BYCOMMAND);
-    return 0;
-
-  case WM_HSCROLL:
+  case LB_SETCURSEL:
   {
-    int scrollpos;
-    int minpos;
-    int maxpos;
-    int tgt;
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+    s.wOldSel = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
+    s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
 
-    pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
-    scrollpos = GetScrollPos(hwnd, 0);
-    GetScrollRange(hwnd, SB_HORZ, &minpos, &maxpos);
-
-    switch (LOWORD(wparam))
+    s.wNewSel = (WORD)wparam;
+    if (s.wNewSel >= 0 && s.wNewSel < s.wLast)
     {
-    case SB_LINELEFT:
-      tgt = scrollpos - 1;
-      break;
-    case SB_LINERIGHT:
-      tgt = scrollpos + 1;
-      break;
-    case SB_PAGELEFT:
-      tgt = scrollpos - pics_inline;
-      break;
-    case SB_PAGERIGHT:
-      tgt = scrollpos + pics_inline;
-      break;
-    case SB_LEFT:
-      tgt = minpos;
-      break;
-    case SB_RIGHT:
-      tgt = maxpos;
-      break;
-    case SB_THUMBPOSITION:
-      tgt = HIWORD(wparam);
-      break;
-    default:
-      tgt = scrollpos;
-      break;
-    }
+      SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
 
-    tgt = MAX(minpos, tgt);
-    tgt = MIN(maxpos, tgt);
-    if (tgt != scrollpos)
-    {
-      left_pic_index = tgt;
-      SetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX, tgt);
+      if (s.wOldSel >= 0 && s.wOldSel < s.wLast)
+      {
+        horzlist_prep_rectangle(hwnd, s.wOldSel, &s.r2);
+        // InvalidateRect(hwnd, &s.r2, 0);
+      }
+      horzlist_prep_rectangle(hwnd, s.wNewSel, &s.r2);
+      // InvalidateRect(hwnd, &s.r2, 0);
       UpdateWindow(hwnd);
-      ScrollWindow(hwnd, GetWindowLong(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX) * (scrollpos - left_pic_index), 0, NULL, NULL);
-      SetScrollPos(hwnd, SB_HORZ, left_pic_index, TRUE);
-      InvalidateRect(hwnd, NULL, FALSE);
+
+      if (s.wNewSel < s.wLeft)
+      {
+        SendMessageA(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.wNewSel), 0);
+      }
+
+      if ((s.wPics + s.wLeft - 1) < s.wNewSel)
+      {
+        SendMessageA(hwnd, WM_HSCROLL, MAKELONG3(SB_THUMBPOSITION, s.wNewSel - s.wPics + 1), 0);
+      }
+      return 0;
     }
+    else
+      return -1;
+  }
+
+  case LB_SETITEMHEIGHT:
+  {
+    s.local_c0 = (UINT)lparam & 0xffff;
+
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+
+    s.wWidth = (WORD)(s.local_c0 + 8);
+
+    SetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX, s.wWidth);
+
+    GetClientRect(hwnd, &s.r7);
+
+    s.wPics = (s.r7.right - 4) / s.wWidth;
+    if (((s.r7.right - 4) % s.wWidth) >= (s.wWidth >> 2))
+      ++s.wPics;
+
+    SetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX, s.wPics);
+
+    SetScrollRange(hwnd, SB_HORZ, 0, s.wLast - s.wPics + 1, 0);
+    InvalidateRect(hwnd, 0, 1);
+    return 0;
+  }
+
+  case LB_ADDSTRING:
+  {
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+
+    s.item_idx = s.wLast;
+    s.horz_list_addr = (int *)realloc(s.horz_list_addr, (s.wLast + 1) * 4);
+    if (s.horz_list_addr)
+    {
+
+      s.horz_list_addr[s.wLast] = (int)lparam;
+      SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, ++s.wLast);
+      SetWindowLongA(hwnd, HORZLIST_ADDR_INDEX, (LONG)s.horz_list_addr);
+
+      SetScrollRange(hwnd, SB_HORZ, 0, s.wLast - s.wPics + 1, 0);
+      horzlist_prep_rectangle(hwnd, s.item_idx, &s.r4);
+      InvalidateRect(hwnd, &s.r4, 1);
+
+      return s.item_idx;
+    }
+    else
+      return -2;
+  }
+
+  case LB_INSERTSTRING:
+  {
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+
+    s.insert_index = (int)wparam;
+    if (s.insert_index == -1)
+    {
+      return SendMessageA(hwnd, LB_ADDSTRING, 0, lparam);
+    }
+
+    if (s.insert_index >= (int)(unsigned int)s.wLast)
+    {
+      return SendMessageA(hwnd, LB_ADDSTRING, 0, lparam);
+    }
+
+    if (s.insert_index < -1 || s.insert_index >= s.wLast)
+    {
+      return -1;
+    }
+
+    s.horz_list_addr = (int *)realloc(s.horz_list_addr, (s.wLast + 1) * 4);
+    if (s.horz_list_addr)
+    {
+
+      for (s.insert_loop_idx = s.wLast; s.insert_index < s.insert_loop_idx; s.insert_loop_idx--)
+      {
+        s.horz_list_addr[s.insert_loop_idx] = s.horz_list_addr[s.insert_loop_idx - 1];
+      }
+      s.horz_list_addr[s.insert_index] = (int)lparam;
+
+      SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, ++s.wLast);
+      SetWindowLongA(hwnd, HORZLIST_ADDR_INDEX, (LONG)s.horz_list_addr);
+      SetScrollRange(hwnd, SB_HORZ, 0, s.wLast - s.wPics + 1, 0);
+
+      horzlist_prep_rectangle(hwnd, s.insert_index, &s.r5);
+      s.r5.right = 2000;
+      InvalidateRect(hwnd, &s.r5, 1);
+
+      return s.insert_index;
+    }
+    else
+      return -2;
+  }
+
+  case LB_GETITEMDATA:
+  {
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.getInx = wparam;
+    if (s.getInx >= 0 && s.getInx < s.wLast)
+      return s.horz_list_addr[s.getInx];
+    else
+      return -1;
+  }
+
+  case LB_RESETCONTENT:
+  {
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+
+    s.oldidx = 0;
+    for (; s.wLast > s.oldidx; s.oldidx++)
+    {
+      s.del.CtlType = ODT_LISTBOX;
+      s.del.CtlID = GetDlgCtrlID(hwnd);
+      s.del.itemID = s.oldidx;
+      s.del.hwndItem = hwnd;
+      s.del.itemData = (unsigned int)s.horz_list_addr[s.oldidx];
+
+      SendMessageA(GetParent(hwnd), WM_DELETEITEM, (WPARAM)GetDlgCtrlID(hwnd), (LPARAM)&s.del);
+    }
+
+    s.horz_list_addr = (int *)realloc(s.horz_list_addr, 4);
+
+    s.wLast = 0;
+    s.wNewSel = (WORD)-1;
+    s.wLeft = 0;
+
+    SetWindowLongA(hwnd, HORZLIST_ADDR_INDEX, (LONG)s.horz_list_addr);
+    SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, s.wLast);
+    SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+    SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
+
+    SetScrollRange(hwnd, SB_HORZ, 0, -1, 0);
+    SetScrollPos(hwnd, SB_HORZ, s.wNewSel, 1);
+    InvalidateRect(hwnd, 0, 1);
 
     return 0;
   }
 
-  case WM_KEYDOWN:
-    switch (wparam)
+  case LB_GETTOPINDEX:
+    s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
+    return (LRESULT)(s.wLeft);
+
+  case LB_SETTOPINDEX:
+    s.wLeft = (WORD)wparam;
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+
+    if (s.wLeft >= 0 && s.wLast > s.wLeft)
     {
-    case VK_UP:
-    case VK_LEFT:
-      SendMessage(hwnd, WM_HSCROLL, SB_LINELEFT, 0);
-      break;
-    case VK_DOWN:
-    case VK_RIGHT:
-      SendMessage(hwnd, WM_HSCROLL, SB_LINERIGHT, 0);
-      break;
-    case VK_PRIOR:
-      SendMessage(hwnd, WM_HSCROLL, SB_PAGELEFT, 0);
-      break;
-    case VK_NEXT:
-      SendMessage(hwnd, WM_HSCROLL, SB_PAGERIGHT, 0);
-      break;
-    case VK_HOME:
-      SendMessage(hwnd, WM_HSCROLL, SB_LEFT, 0);
-      break;
-    case VK_END:
-      SendMessage(hwnd, WM_HSCROLL, SB_RIGHT, 0);
-      break;
+      SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
+      SendMessageA(hwnd, 0x114, (WPARAM)MAKELONG(SB_THUMBPOSITION, s.wLeft), 0);
+      return 0;
     }
-    return 0;
+    else
+      return -1;
+
+  case LB_DELETESTRING:
+  {
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    // if ((int)(unsigned int)wparam >= s.last_pic_index)
+    //   return -1;
+
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.wNewSel = (int)(short)GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
+    s.wLeft = (int)(short)GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
+    s.last_pic_index = (int)wparam;
+    if (s.last_pic_index >= 0 && s.last_pic_index < s.wLast)
+    {
+      s.del2.CtlType = ODT_LISTBOX;
+      s.del2.CtlID = GetDlgCtrlID(hwnd);
+      s.del2.itemID = s.last_pic_index;
+      s.del2.hwndItem = hwnd;
+      s.del2.itemData = (unsigned int)s.horz_list_addr[s.last_pic_index];
+
+      SendMessageA(GetParent(hwnd), WM_DELETEITEM, (WPARAM)GetDlgCtrlID(hwnd), (LPARAM)&s.del2);
+
+      for (s.left_pic_index = s.last_pic_index; s.left_pic_index < s.wLast - 1; ++s.left_pic_index)
+        s.horz_list_addr[s.left_pic_index] = s.horz_list_addr[s.left_pic_index + 1];
+
+      SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, --s.wLast);
+
+      if (s.wLast - 1 < s.wNewSel)
+      {
+        SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, --s.wNewSel);
+      }
+
+      if (s.wLeft > s.wLast - 1)
+      {
+        SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, --s.wLeft);
+      }
+
+      // s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+      // s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+      GetScrollRange(hwnd, 0, &s.scrollMinPos, &s.scrollMaxPos);
+      SetScrollRange(hwnd, 0, s.scrollMinPos, s.scrollMaxPos - 1, 1);
+
+      horzlist_prep_rectangle(hwnd, s.last_pic_index, &s.r6);
+      s.r6.right = GetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX) * (s.wLast + 1);
+      s.r6.left = MAX(s.r6.left, 0);
+      InvalidateRect(hwnd, &s.r6, 1);
+
+      if (!s.wLast)
+      {
+        s.wNewSel = -1;
+        s.wLeft = 0;
+        SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+        SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
+      }
+
+      return s.wLast;
+    }
+    else
+      return -1;
+  }
 
   case WM_CHAR:
-    SendMessage(global_listbox_hwnd, WM_CHAR, wparam, lparam);
-    currsel = SendMessage(global_listbox_hwnd, LB_GETCURSEL, 0, 0);
-    SendMessage(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, currsel), 0);
-    SendMessage(hwnd, 0x8007, currsel, 0);
-    SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwnd), 1), hwnd);
+    if (wparam == 27)
+    {
+      SendMessageA(global_main_hwnd, 0x10, 0, 0);
+      return 0;
+    }
+
+    SendMessageA(global_listbox_hwnd, msg, wparam, lparam);
+    s.pad_144 = (int)SendMessageA(global_listbox_hwnd, LB_GETCURSEL, 0, 0);
+    SendMessageA(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.pad_144), 0);
+    SendMessageA(hwnd, LB_SETCURSEL, s.pad_144, 0);
+    SendMessageA(GetParent(hwnd), WM_COMMAND, (GetDlgCtrlID(hwnd) & 0xffff) | 0x10000, (LPARAM)hwnd);
     return 0;
 
   case WM_COMMAND:
   {
-    int amt;
-    int move_into_flag;
-
-    switch (LOWORD(wparam))
+    switch ((unsigned int)wparam & 0xffff)
     {
     case 1:
-      amt = count_card_amount_outside_edited_deck(curr_csvid);
+      *(WORD *)&s.amt = (WORD)count_card_amount_outside_edited_deck(curr_csvid);
 
       global_dlg_parameter = 1;
       global_dlg_result = 1;
-      if ((amt > 1 && show_dialog_sellxcards() == 0) || !global_dlg_result)
+
+      if ((s.amt & 0xffff) > 1)
+        if (show_dialog_sellxcards() == 0)
+          return 0;
+
+      if (!global_dlg_result)
         return 0;
+      else if ((s.amt & 0xffff) < global_dlg_result)
+        global_dlg_result = s.amt & 0xffff;
 
-      global_dlg_result = MIN(global_dlg_result, amt);
-
-      for (i = 0; i < global_dlg_result; ++i)
+      for (s.i = 0, s.j = 0; s.j < global_dlg_result && !s.i; s.j++)
         if (!delete_card_from_global_deck(curr_csvid, 1))
-          break;
+          s.i = 1;
 
       *Gold += global_dlg_result * sellprice;
 
-      load_text("Menus", "PRICE");
-      sprintf(buf, text_lines[0], *Gold);
-      strncpy(global_deckinfo.deckname, buf, 12);
+      load_text("menus", "PRICE");
+      sprintf(s.buf, text_lines[0], *Gold);
+      strncpy(global_deckinfo.deckname, s.buf, 12);
 
-      InvalidateRect(global_title_hwnd, NULL, TRUE);
+      InvalidateRect(global_title_hwnd, NULL, 1);
       TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
-      InvalidateRect(global_horzlist_hwnd, NULL, FALSE);
-      return 0;
-
+      InvalidateRect(global_horzlist_hwnd, 0, 0);
+      break;
     case 2:
-    case 3:
-      move_into_flag = LOWORD(wparam) == 2;
-
-      global_dlg_parameter = check_colors_inout_edited_deck(move_into_flag);
+      global_dlg_parameter = check_colors_inout_edited_deck(1);
       show_dialog_groupmove();
-      move_colors_fromto_global_deck(move_into_flag, global_dlg_result);
-
+      move_colors_fromto_global_deck(1, global_dlg_result);
       TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
-      InvalidateRect(global_horzlist_hwnd, 0, TRUE);
+      InvalidateRect(global_horzlist_hwnd, 0, 1);
 
-      SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
-      InvalidateRect(global_decksurface_hwnd, NULL, TRUE);
-      return 0;
+      SendMessage(global_decksurface_hwnd, 0x401, 0, 0);
+      InvalidateRect(global_decksurface_hwnd, 0, 1);
+      break;
+    case 3:
+      global_dlg_parameter = check_colors_inout_edited_deck(0);
+      show_dialog_groupmove();
+      move_colors_fromto_global_deck(0, global_dlg_result);
+      TENTATIVE_remove_selected_from_horzlist(global_listbox_hwnd, global_horzlist_hwnd);
+      InvalidateRect(global_horzlist_hwnd, 0, 1);
 
-    default:
-      return 0;
+      SendMessage(global_decksurface_hwnd, 0x401, 0, 0);
+      InvalidateRect(global_decksurface_hwnd, 0, 1);
+      break;
     }
-  }
-
-  case 0x8001:
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-    horz_list_addr = realloc(horz_list_addr, 4 * last_pic_index + 4);
-    if (!horz_list_addr)
-      return 0;
-
-    horz_list_addr[last_pic_index++] = lparam;
-    SetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX, last_pic_index);
-    SetWindowLong(hwnd, HORZLIST_ADDR_INDEX, horz_list_addr);
-    update_scroll_range();
-    InvalidateRect(hwnd, NULL, TRUE);
-    return last_pic_index;
-
-  case 0x8002:
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    if (wparam >= last_pic_index)
-      return -1;
-
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-    currsel = GetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX);
-    left_pic_index = GetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX);
-
-    {
-      DELETEITEMSTRUCT del;
-      del.CtlType = ODT_LISTBOX;
-      del.itemID = wparam;
-      del.hwndItem = hwnd;
-      del.itemData = horz_list_addr[wparam];
-      del.CtlID = GetDlgCtrlID(hwnd);
-
-      SendMessage(GetParent(hwnd), WM_DELETEITEM, del.CtlID, &del);
-    }
-
-    for (i = wparam; i < last_pic_index - 1; ++i)
-      horz_list_addr[i] = horz_list_addr[i + 1];
-
-    SetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX, --last_pic_index);
-
-    if (last_pic_index - 1 < currsel)
-      SetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX, --currsel);
-
-    if (last_pic_index - 1 < left_pic_index)
-      SetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX, --left_pic_index);
-
-    update_scroll_range();
-    InvalidateRect(hwnd, NULL, TRUE);
-
-    if (!last_pic_index)
-    {
-      SetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX, -1);
-      SetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX, 0);
-    }
-
-    return last_pic_index;
-
-  case 0x8003:
-    return GetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX);
-
-  case 0x8004:
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    if (wparam < 0 || wparam >= last_pic_index)
-      return -1;
-
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-    return horz_list_addr[wparam];
-
-  case 0x8005:
-  {
-    int insert_index;
-    int idx;
-
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    insert_index = wparam;
-    if (insert_index >= last_pic_index)
-      return SendMessage(hwnd, 0x8001, 0, lparam);
-
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-    horz_list_addr = realloc(horz_list_addr, 4 * last_pic_index + 4);
-
-    if (!horz_list_addr)
-      return -2;
-
-    for (idx = last_pic_index; idx > 0 && idx != insert_index; --idx)
-      horz_list_addr[idx] = horz_list_addr[idx - 1];
-
-    horz_list_addr[idx] = lparam;
-    SetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX, last_pic_index + 1);
-    SetWindowLong(hwnd, HORZLIST_ADDR_INDEX, horz_list_addr);
-    update_scroll_range();
-    InvalidateRect(hwnd, NULL, TRUE);
-    return insert_index;
-  }
-
-  case 0x8006:
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-
-    for (i = 0; i < last_pic_index; ++i)
-    {
-      DELETEITEMSTRUCT del;
-      del.CtlType = ODT_LISTBOX;
-      del.itemID = i;
-      del.hwndItem = hwnd;
-      del.itemData = horz_list_addr[i];
-      del.CtlID = GetDlgCtrlID(hwnd);
-
-      SendMessage(GetParent(hwnd), WM_DELETEITEM, del.CtlID, &del);
-    }
-
-    horz_list_addr = realloc(horz_list_addr, 4);
-    SetWindowLong(hwnd, HORZLIST_ADDR_INDEX, horz_list_addr);
-    SetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX, 0);
-    SetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX, -1);
-    SetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX, 0);
-    SetScrollRange(hwnd, SB_HORZ, 0, -1, FALSE);
-    SetScrollPos(hwnd, SB_HORZ, 0, TRUE);
-    InvalidateRect(hwnd, NULL, TRUE);
-    return 0;
-
-  case 0x8007:
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    currsel = wparam;
-    if (currsel >= last_pic_index)
-      return -1;
-
-    pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
-    left_pic_index = GetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX);
-    SetWindowLong(hwnd, HORZLIST_CURRSEL_INDEX, currsel);
-
-    if (currsel < left_pic_index)
-      SendMessage(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, currsel), 0);
-    else if (currsel >= left_pic_index + pics_inline)
-      SendMessage(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, currsel - pics_inline + 1), 0);
-
-    return 0;
-
-  case 0x8008:
-  {
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
-    SetScrollRange(hwnd, SB_HORZ, 0, MAX(0, last_pic_index - pics_inline), TRUE);
-    InvalidateRect(hwnd, NULL, TRUE);
     return 0;
   }
 
-  case 0x8464:
-    SendMessage(global_main_hwnd, 0x8466, wparam, hwnd);
+  case WM_CREATE:
+  {
+    GetClientRect(hwnd, &s.create_r);
+
+    s.horz_list_addr = (int *)malloc(4);
+
+    s.wLast = 0;
+    s.wNewSel = (WORD)-1;
+    s.wLeft = 0;
+
+    s.wWidth = (WORD)global_smallcard_piclist_width;
+    if ((int)(unsigned int)s.wWidth > 0)
+      s.wPics = (WORD)((s.create_r.right - 4) / s.wWidth);
+    else
+      s.wPics = 0;
+
+    SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, s.wLast);
+    SetWindowLongA(hwnd, HORZLIST_ADDR_INDEX, (LONG)s.horz_list_addr);
+    SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+    SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
+
+    SetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX, s.wWidth);
+    SetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX, s.wPics);
+
+    SetScrollRange(hwnd, SB_HORZ, 0, s.wLast - s.wPics + 1, 0);
+    SetScrollPos(hwnd, SB_HORZ, s.wNewSel, 1);
+
+    global_horzlist_popup = CreatePopupMenu();
+
+    s.hdc_local = GetDC(hwnd);
+    ApplyCardArtPaletteToDc(s.hdc_local);
+    DAT_10105740 = CreateCompatibleDC(s.hdc_local);
+    ApplyCardArtPaletteToDc(DAT_10105740);
+    ReleaseDC(hwnd, s.hdc_local);
+
+    if (!DAT_1010530c)
+    {
+      memcpy(&DAT_101052d0, &horzListClass_fontTemplate, sizeof(LOGFONT));
+      DAT_101052d0.lfHeight = 0x2a;
+      DAT_101052d0.lfWeight = 0x1f4;
+      strcpy(DAT_101052d0.lfFaceName, "Kudos Condensed SSi");
+      DAT_1010530c = CreateFontIndirectA(&DAT_101052d0);
+    }
+
+    return 0;
+  }
+
+  case WM_DESTROY:
+  {
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    free(s.horz_list_addr);
+
+    DestroyMenu(global_horzlist_popup);
+    DeleteDC(DAT_10105740);
+    if (DAT_1010530c)
+      DeleteObject(DAT_1010530c);
+    DAT_1010530c = 0;
+    return 0;
+  }
+
+  case WM_HSCROLL:
+  {
+    s.wWidth = GetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+
+    s.scrollpos = GetScrollPos(hwnd, SB_HORZ);
+    GetScrollRange(hwnd, SB_HORZ, &s.minpos, &s.maxpos);
+
+    s.page_amt = s.wPics;
+    s.wLast_int = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.scroll_code = (WORD)wparam;
+
+    if (s.scroll_code == SB_TOP)
+      s.tgt = s.minpos;
+    else if (s.scroll_code == SB_LINEUP)
+      s.tgt = s.scrollpos - 1;
+    else if (s.scroll_code == SB_PAGEUP)
+      s.tgt = s.scrollpos - s.page_amt;
+    else if (s.scroll_code == SB_THUMBPOSITION)
+      s.tgt = GET_Y_LPARAM(wparam);
+    else if (s.scroll_code == SB_PAGEDOWN)
+      s.tgt = s.page_amt + s.scrollpos;
+    else if (s.scroll_code == SB_LINEDOWN)
+      s.tgt = s.scrollpos + 1;
+    else if (s.scroll_code == SB_BOTTOM)
+      s.tgt = s.maxpos;
+    else
+      s.tgt = s.scrollpos;
+
+    if (s.tgt < s.minpos)
+      s.tgt = s.minpos;
+    if (s.tgt > s.maxpos)
+      s.tgt = s.maxpos;
+
+    if (s.scrollpos != s.tgt)
+    {
+      s.wLeft = (WORD)s.tgt;
+      SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
+      UpdateWindow(hwnd);
+
+      ScrollWindow(hwnd, (s.scrollpos - s.tgt) * s.wWidth, 0, 0, 0);
+      SetScrollPos(hwnd, SB_HORZ, s.tgt, 1);
+      InvalidateRect(hwnd, NULL, 0);
+    }
+    return 0;
+  }
+
+  case WM_KEYDOWN:
+    if (wparam == VK_UP || wparam == VK_LEFT)
+    {
+      SendMessageA(hwnd, WM_HSCROLL, SB_LINELEFT, 0);
+    }
+    else if (wparam == VK_DOWN || wparam == VK_RIGHT)
+    {
+      SendMessageA(hwnd, WM_HSCROLL, SB_LINERIGHT, 0);
+    }
+    else if (wparam == VK_PRIOR)
+    {
+      SendMessageA(hwnd, WM_HSCROLL, SB_PAGELEFT, 0);
+    }
+    else if (wparam == VK_NEXT)
+    {
+      SendMessageA(hwnd, WM_HSCROLL, SB_PAGERIGHT, 0);
+    }
+    else if (wparam == VK_HOME)
+    {
+      SendMessageA(hwnd, WM_HSCROLL, SB_LEFT, 0);
+    }
+    else if (wparam == VK_END)
+    {
+      SendMessageA(hwnd, WM_HSCROLL, SB_RIGHT, 0);
+    }
     return 0;
 
-  case 0x8466:
+  case WM_LBUTTONDBLCLK:
   {
-    int max_idx;
-    int wanted_card;
+    if ((global_db_flags_2 & 1) == 0)
+      return 0;
 
-    last_pic_index = GetWindowLong(hwnd, HORZLIST_LASTPIC_INDEX);
-    horz_list_addr = GetWindowLong(hwnd, HORZLIST_ADDR_INDEX);
-    left_pic_index = GetWindowLong(hwnd, HORZLIST_LEFTPIC_INDEX);
-    pics_inline = GetWindowLong(hwnd, HORZLIST_PICSINLINE_INDEX);
+    GetCursorPos(&s.p);
+    GetCursorPos((LPPOINT)&global_horzlist_mouse_pt);
+    ScreenToClient(global_main_hwnd, &s.p);
+    ScreenToClient(global_horzlist_hwnd, (LPPOINT)&global_horzlist_mouse_pt);
 
-    max_idx = MIN(last_pic_index, left_pic_index + pics_inline);
-    wanted_card = wparam;
+    SetFocus(hwnd);
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    if (s.wLast > 0)
+    {
+      SendMessageA(hwnd, WM_MOUSEMOVE, wparam & ~MK_LBUTTON, lparam);
 
-    for (i = left_pic_index; i < max_idx; ++i)
-      if (horz_list_addr[i] == wanted_card)
+      if ((wparam & MK_SHIFT))
       {
-        horzlist_prep_rectangle(hwnd, i, &r);
-        InvalidateRect(hwnd, &r, FALSE);
+        if (!handle_card_list_click_or_drag(hwnd, 0, 1))
+        {
+          MessageBeep(0);
+          return 0;
+        }
+      }
+      else if (!handle_card_list_click_or_drag(hwnd, 0, 0))
+      {
+        MessageBeep(0);
+        return 0;
+      }
+    }
+
+    return 0;
+  }
+
+  case WM_LBUTTONDOWN:
+  {
+    if ((global_db_flags_2 & 1) == 0)
+      return 0;
+
+    GetCursorPos(&s.p);
+    GetCursorPos((LPPOINT)&global_horzlist_mouse_pt);
+    ScreenToClient(global_main_hwnd, &s.p);
+    ScreenToClient(global_horzlist_hwnd, (LPPOINT)&global_horzlist_mouse_pt);
+
+    s.j = GetDoubleClickTime();
+    Sleep(s.j);
+    if (PeekMessageA(&s.m, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0))
+      return 0;
+
+    SetFocus(hwnd);
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    if (s.wLast > 0)
+    {
+      SendMessageA(hwnd, WM_MOUSEMOVE, wparam & ~MK_LBUTTON, lparam);
+
+      if ((wparam & MK_SHIFT))
+      {
+        if (!handle_card_list_click_or_drag(hwnd, 1, 1))
+        {
+          MessageBeep(0);
+          return 0;
+        }
+      }
+      else if (!handle_card_list_click_or_drag(hwnd, 1, 0))
+      {
+        MessageBeep(0);
+        return 0;
+      }
+    }
+    return 0;
+  }
+
+  case WM_MOUSEMOVE:
+  {
+    if (abs(DAT_101052c0.y - GET_Y_LPARAM(lparam)) +
+            abs(DAT_101052c0.x - GET_X_LPARAM(lparam)) <
+        2)
+      return 0;
+
+    DAT_101052c0.x = GET_X_LPARAM(lparam);
+    DAT_101052c0.y = GET_Y_LPARAM(lparam);
+
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
+    s.wWidth = GetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+
+    if (s.wLast > 0)
+    {
+      s.mm_pt.x = GET_X_LPARAM(lparam);
+      s.mm_pt.y = GET_Y_LPARAM(lparam);
+
+      s.mm_i = s.wLeft;
+      s.mm_hit = 0;
+      for (; s.wPics + s.wLeft >= s.mm_i; s.mm_i++)
+      {
+        if (s.mm_hit == 0)
+        {
+          horzlist_prep_rectangle(hwnd, s.mm_i, &s.mm_r);
+          if (PtInRect(&s.mm_r, s.mm_pt))
+          {
+            s.mm_hit = 1;
+            s.mm_hit_idx = s.mm_i;
+          }
+        }
       }
 
+      if (s.mm_hit != 0)
+      {
+        if (SendMessageA(hwnd, LB_GETCURSEL, 0, 0) != s.mm_hit_idx)
+        {
+          SendMessageA(hwnd, LB_SETCURSEL, (WPARAM)s.mm_hit_idx, 0);
+          SendMessageA(GetParent(hwnd), WM_COMMAND, (GetDlgCtrlID(hwnd) & 0xffff) | 0x10000, (LPARAM)hwnd);
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  case WM_PAINT:
+  {
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
+    s.wNewSel = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
+    s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
+    s.wWidth = GetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX);
+    s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
+
+    s.hdc = BeginPaint(hwnd, &s.paint);
+    ApplyCardArtPaletteToDc(s.hdc);
+
+    s.hrgn = CreateRectRgn(0, 0, global_smallcard_piclist_width, global_smallcard_piclist_height);
+
+    GetClientRect(hwnd, &s.paint_r);
+    GetObjectA(global_pic_dekbar1, sizeof(BITMAP), &s.bmp);
+
+    s.h = SelectObject(DAT_10105740, global_pic_dekbar1);
+    StretchBlt(s.hdc, 0, 0, s.paint_r.right, s.paint_r.bottom, DAT_10105740, 0, 0, s.bmp.bmWidth, s.bmp.bmHeight, SRCCOPY);
+    SelectObject(DAT_10105740, s.h);
+
+    for (s.paint_idx = s.wLeft;
+         MIN(s.wLast, s.wPics + s.wLeft) > s.paint_idx;
+         s.paint_idx++)
+    {
+      horzlist_prep_rectangle(hwnd, (int)s.paint_idx, &s.paint_r);
+      s.paint_csvid = s.horz_list_addr[s.paint_idx];
+
+      SetRect(&s.r_small, 0, 0, global_smallcard_piclist_width, global_smallcard_piclist_height);
+
+      SetRectRgn(s.hrgn, s.r_small.left, s.r_small.top, s.r_small.right, s.r_small.bottom);
+      SelectClipRgn(global_hdc, s.hrgn);
+
+      s.paint_amt = count_card_amount_outside_edited_deck((csvid_t)s.paint_csvid);
+      DrawSmallCard(global_hdc, &s.r_small, &global_raw_cards_storage[s.paint_csvid], 1, 1);
+
+      if ((global_db_flags_1 & 0x41) != 0 && (1 < s.paint_amt))
+      {
+        sprintf(s.buf, "%d", s.paint_amt);
+
+        s.save = SaveDC(global_hdc);
+        SetMapMode(global_hdc, 8);
+        SetWindowExtEx(global_hdc, 200, 0x118, 0);
+        SetViewportExtEx(global_hdc, s.r_small.right - s.r_small.left, s.r_small.bottom - s.r_small.top, 0);
+        SetViewportOrgEx(global_hdc, s.r_small.left, s.r_small.top, 0);
+
+        SetBkMode(global_hdc, 1);
+        SelectObject(global_hdc, DAT_1010530c);
+        SetTextAlign(global_hdc, 0);
+
+        SetTextColor(global_hdc, 0x010000C9);
+
+        TextOutA(global_hdc, 0xc8 - (int)(strlen(s.buf) * 0x10) + 3, 3, s.buf, (int)strlen(s.buf));
+
+        SetTextColor(global_hdc, 0x02FEFEFE);
+        SetBkMode(global_hdc, 1);
+
+        TextOutA(global_hdc, 0xc8 - (int)(strlen(s.buf) * 0x10), 0, s.buf, (int)strlen(s.buf));
+
+        RestoreDC(global_hdc, s.save);
+      }
+
+      SelectClipRgn(global_hdc, 0);
+
+      s.paint_r.left += (s.paint_r.right - s.paint_r.left - global_smallcard_piclist_width) / 2;
+      s.paint_r.top += (s.paint_r.bottom - s.paint_r.top - global_smallcard_piclist_height) / 2;
+
+      BitBlt(s.hdc, s.paint_r.left, s.paint_r.top, global_smallcard_piclist_width, global_smallcard_piclist_height,
+             global_hdc, 0, 0, SRCCOPY);
+    }
+
+    EndPaint(hwnd, &s.paint);
+    DeleteObject(s.hrgn);
+    return 0;
+  }
+
+  case WM_RBUTTONDOWN:
+  {
+    if ((global_db_flags_2 & 2) == 0)
+      return 0;
+
+    SetFocus(hwnd);
+    s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
+    if (s.wLast > 0)
+    {
+      SendMessageA(hwnd, WM_MOUSEMOVE, wparam & ~MK_RBUTTON, lparam);
+
+      s.p.x = GET_X_LPARAM(lparam);
+      s.p.y = GET_Y_LPARAM(lparam);
+
+      s.currsel = (int)SendMessageA(hwnd, LB_GETCURSEL, 0, 0);
+      horzlist_prep_rectangle(global_horzlist_hwnd, s.currsel, &s.r);
+      if (!PtInRect(&s.r, s.p))
+        return 0;
+
+      ScreenToClient(global_main_hwnd, &s.p);
+
+      curr_csvid = (csvid_t)SendMessageA(hwnd, LB_GETITEMDATA, s.currsel, 0);
+      s.iid = get_iid_from_global_deck_card(curr_csvid);
+      if (s.iid == -1)
+        return 0;
+
+      sellprice = SellPrice(s.iid);
+
+      load_text("menus", "SELLCARD");
+      sprintf(s.buf, text_lines[0], sellprice);
+
+      AppendMenuA(global_horzlist_popup, 0, 1, s.buf);
+
+      ClientToScreen(hwnd, &s.p);
+      TrackPopupMenu(global_horzlist_popup, 2, s.p.x + 10, s.p.y + 10, 0, hwnd, 0);
+      DeleteMenu(global_horzlist_popup, 1, 0);
+    }
     return 0;
   }
 
   default:
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
+
+  return 0;
 }
 
 // FUNCTION: DECKDLL 0x100057bc
@@ -5048,25 +5202,25 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
 {
   struct
   {
-    unsigned int amt32; /* ebp - 0x38 */
-    POINT pt;           /* ebp - 0x34 */
-    int ctrl_id;        /* ebp - 0x2c */
-    int i;              /* ebp - 0x28 */
-    HWND new_hwnd;      /* ebp - 0x24 */
-    unsigned int num;   /* ebp - 0x20 (low word) */
-    HWND parent;        /* ebp - 0x1c */
-    RECT r;             /* ebp - 0x18 */
-    csvid_t csvid;      /* ebp - 0x8 */
-    HWND target;        /* ebp - 0x4 */
+    WORD amt32;    /* ebp - 0x38 */
+    POINT pt;      /* ebp - 0x34 */
+    int ctrl_id;   /* ebp - 0x2c */
+    int i;         /* ebp - 0x28 */
+    HWND new_hwnd; /* ebp - 0x24 */
+    int num;       /* ebp - 0x20 (low word) */
+    HWND parent;   /* ebp - 0x1c */
+    RECT r;        /* ebp - 0x18 */
+    csvid_t csvid; /* ebp - 0x8 */
+    HWND target;   /* ebp - 0x4 */
   } s;
 
-  s.csvid = (csvid_t)GetWindowLongA(hwnd, 0);
-  *(WORD *)&s.amt32 = GetWindowWord(hwnd, 4);
+  s.csvid = (csvid_t)GetWindowLongA(hwnd, DAT_10030000);
+  s.amt32 = GetWindowWord(hwnd, DAT_10030004);
   s.parent = GetParent(hwnd);
   s.ctrl_id = GetDlgCtrlID(hwnd);
   GetWindowRect(hwnd, &s.r);
 
-  if ((s.amt32 & 0xFFFF) >= 2)
+  if (s.amt32 >= 2)
   {
     s.pt.x = s.r.left;
     s.pt.y = s.r.top;
@@ -5075,7 +5229,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
 
     s.new_hwnd = CreateWindowExA(0, "MAGICDECK_CardClass", "", 0x54000000, s.pt.x, s.pt.y, global_smallcard_width,
                                  global_smallcard_height, s.parent, (HMENU)1, global_hinstance, (LPVOID)s.csvid);
-    SendMessageA(s.new_hwnd, 0x401, (s.amt32 & 0xFFFF) - 1, 0);
+    SendMessageA(s.new_hwnd, 0x401, s.amt32 - 1, 0);
     BringWindowToTop(s.new_hwnd);
   }
 
@@ -5092,11 +5246,16 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
     DestroyWindow(hwnd);
 
     GetCursorPos(&s.pt);
-    for (s.target = WindowFromPoint(s.pt);
-         s.target != NULL && s.target != global_main_hwnd && s.target != global_decksurface_hwnd &&
-         s.target != global_unknown_10144b04 && s.target != global_unknown_10125a3c && s.target != global_horzlist_hwnd;
-         s.target = GetParent(s.target))
+    s.target = WindowFromPoint(s.pt);
+    while (
+        s.target != NULL &&
+        s.target != global_main_hwnd &&
+        s.target != global_decksurface_hwnd &&
+        s.target != global_unknown_10144b04 &&
+        s.target != global_unknown_10125a3c &&
+        s.target != global_horzlist_hwnd)
     {
+      s.target = GetParent(s.target);
     }
   }
   else
@@ -5109,32 +5268,32 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
   *(WORD *)&s.num = 1;
   if (global_decksurface_hwnd == s.parent)
   {
-    if (shift2_unshift1 < 2)
+    if (shift2_unshift1 > 1)
     {
-      SendMessageA(s.new_hwnd, 0x401, (s.amt32 & 0xFFFF) - 1, 0);
-      *(WORD *)&s.num = 1;
-    }
-    else
-    {
-      global_dlg_parameter = (unsigned int)(s.amt32 & 0xFFFF);
+      global_dlg_parameter = s.amt32;
       if (!show_dialog_movexcards())
         global_dlg_result = 0;
 
-      if (global_dlg_result < 1)
+      if (global_dlg_result <= 0)
       {
-        SendMessageA(s.new_hwnd, 0x401, (unsigned int)(s.amt32 & 0xFFFF), 0);
-        s.num &= 0xFFFF0000;
+        SendMessageA(s.new_hwnd, 0x401, s.amt32, 0);
+        *(WORD *)&s.num = 0;
       }
-      else if (global_dlg_result < (int)(unsigned int)(s.amt32 & 0xFFFF))
+      else if (global_dlg_result >= s.amt32)
       {
-        SendMessageA(s.new_hwnd, 0x401, (unsigned int)(s.amt32 & 0xFFFF) - global_dlg_result, 0);
-        *(WORD *)&s.num = (WORD)global_dlg_result;
+        DestroyWindow(s.new_hwnd);
+        *(WORD *)&s.num = s.amt32;
       }
       else
       {
-        DestroyWindow(s.new_hwnd);
-        *(WORD *)&s.num = (WORD)(s.amt32 & 0xFFFF);
+        SendMessageA(s.new_hwnd, 0x401, s.amt32 - global_dlg_result, 0);
+        *(WORD *)&s.num = (WORD)global_dlg_result;
       }
+    }
+    else
+    {
+      SendMessageA(s.new_hwnd, 0x401, s.amt32 - 1, 0);
+      *(WORD *)&s.num = 1;
     }
 
     for (s.i = 0; s.i < (int)(s.num & 0xFFFF); s.i++)
@@ -5146,11 +5305,11 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
   }
   else if (global_unknown_10144b04 == s.parent)
   {
-    remove_or_decrement_sideboard_bucket_entry(s.ctrl_id, (int)s.csvid, 1, &global_edited_deck);
+    remove_or_decrement_sideboard_bucket_entry(s.ctrl_id, (int)s.csvid, s.num & 0xffff, &global_edited_deck);
   }
   else
   {
-    remove_trade_bucket_entries(s.ctrl_id, (int)s.csvid, 1, &global_edited_deck);
+    remove_trade_bucket_entries(s.ctrl_id, (int)s.csvid, s.num & 0xffff, &global_edited_deck);
   }
 
   if (s.target == global_decksurface_hwnd)
@@ -5178,7 +5337,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
 
     ScreenToClient(s.target, &s.pt);
     if (s.target == global_unknown_10125a3c)
-      s.num &= 0xFFFF0000;
+      *(short *)&s.num = 0;
 
     for (s.i = 0; s.i < (int)(s.num & 0xFFFF); s.i++)
       if (!SendMessageA(s.target, 0x4C8, (WPARAM)s.csvid, MAKELONG(s.pt.x, s.pt.y)))
@@ -5190,7 +5349,7 @@ TENTATIVE_move_from_owned_cards(HWND hwnd, POINT point, int shift2_unshift1, int
     if (s.target != s.parent)
     {
       global_deck_was_edited = 1;
-      if (global_cfg_effects != 0)
+      if (global_cfg.effects != 0)
         play_sound(3, 400, 0, 0);
     }
 
@@ -5224,13 +5383,9 @@ LRESULT CALLBACK
 wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   // GLOBAL: DECKDLL 0x100f2858
-  static POINT DAT_100f2858 = {0, 0};
+  static POINT DAT_100f2858;
   // GLOBAL: DECKDLL 0x100f2860
-  static int DAT_100f2860 = 0;
-  // GLOBAL: DECKDLL 0x10030000
-  static int DAT_10030000 = 0;
-  // GLOBAL: DECKDLL 0x10030004
-  static int DAT_10030004 = 4;
+  static int DAT_100f2860;
 
   struct
   {
@@ -5339,8 +5494,8 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if ((global_db_flags_2 & 1) == 0)
       return 0;
 
-    DAT_100f2858.x = (UINT)lparam & 0xFFFF;
-    DAT_100f2858.y = ((UINT)lparam >> 16) & 0xffff;
+    DAT_100f2858.x = GET_X_LPARAM(lparam);
+    DAT_100f2858.y = GET_Y_LPARAM(lparam);
     if ((wparam & MK_SHIFT) != 0)
       TENTATIVE_move_from_owned_cards(hwnd, DAT_100f2858, 2, 0);
     else
@@ -5359,8 +5514,8 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (PeekMessageA(&s.local_70, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0) != 0)
       return 0;
 
-    DAT_100f2858.x = (UINT)lparam & 0xFFFF;
-    DAT_100f2858.y = ((UINT)lparam >> 16) & 0xffff;
+    DAT_100f2858.x = GET_X_LPARAM(lparam);
+    DAT_100f2858.y = GET_Y_LPARAM(lparam);
     if ((wparam & MK_SHIFT) != 0)
       TENTATIVE_move_from_owned_cards(hwnd, DAT_100f2858, 2, 1);
     else
@@ -5408,8 +5563,8 @@ wndproc_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_RBUTTONDOWN:
   {
-    s.local_50.x = (unsigned short)lparam;
-    s.local_50.y = ((uint)lparam >> 16) & 0xffffU;
+    s.local_50.x = GET_X_LPARAM(lparam);
+    s.local_50.y = GET_Y_LPARAM(lparam);
     if ((global_db_flags_1 & DBFLAGS_STANDALONE) != 0)
     {
       ClientToScreen(hwnd, &s.local_50);
@@ -5648,26 +5803,18 @@ static int FUN_1000edea(FILE *file, char *dest)
   int len;
   int ch;
 
-  len = 0;
-  for (;;)
+  for (len = 0; (ch = fgetc(file)) != '\n' && ch != -1;)
   {
-    ch = fgetc(file);
-    if (ch != '\n')
-    {
-      if (ch != -1)
-      {
-        *dest = (char)ch;
-        dest++;
-        len++;
-        continue;
-      }
-    }
-    break;
+    *dest = (char)ch;
+    dest++;
+    len++;
   }
+
   *dest = 0;
   if (ch == -1)
     return -1;
-  return len;
+  else
+    return len;
 }
 
 // FUNCTION: DECKDLL 0x1000ee5d
@@ -5702,20 +5849,16 @@ check_card_count(int csvid)
 
   if (global_deck_num_cards < 59)
   {
-    for (s.i = 0;; ++s.i)
+    for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
     {
-      if (s.i >= global_edited_deck_num_entries)
-        break;
       if (global_edited_deck.entries[s.i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
         return global_edited_deck.entries[s.i].DeckEntry_Amount - (s.limit + 3);
     }
   }
   else
   {
-    for (s.i = 0;; ++s.i)
+    for (s.i = 0; s.i < global_edited_deck_num_entries; ++s.i)
     {
-      if (s.i >= global_edited_deck_num_entries)
-        break;
       if (global_edited_deck.entries[s.i].DeckEntry_csvid == csvid && CardTypeFromID(csvid) > 4)
         return global_edited_deck.entries[s.i].DeckEntry_Amount - (s.limit * 99 + 4);
     }
@@ -5725,609 +5868,352 @@ check_card_count(int csvid)
 }
 
 // FUNCTION: DECKDLL 0x10024e48
-void FUN_10024e48(int param_1, HBRUSH param_2, HGDIOBJ param_3, HGDIOBJ param_4, COLORREF param_5, int param_6)
+void FUN_10024e48(DRAWITEMSTRUCT *item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF col, int do_focus)
 {
-  draw_item(param_1, param_2, (HANDLE)0x0, param_3, param_4, param_5, param_6, 0x25);
+  draw_item(item, brush, (HANDLE)0x0, pen1, pen2, col, do_focus, 0x25);
+}
+
+// FUNCTION: DECKDLL 0x1000942e
+static void FUN_1000942e(HWND hwnd, int csvid)
+{
+  (void)hwnd;
+  (void)csvid;
+}
+
+struct WndprocMainClassLocals
+{
+  int border_adjust;     /* ebp - 0xb40 */
+  int margin8;           /* ebp - 0xb3c */
+  int fullcard_height;   /* ebp - 0xb38 */
+  int horzlist_hgt6;     /* ebp - 0xb34 */
+  int decksurface_x;     /* ebp - 0xb30 */
+  LONG horzlist_style;   /* ebp - 0xb2c */
+  int title_height;      /* ebp - 0xb28 */
+  RECT rect_load_button; /* ebp - 0xb24 */
+  int decksurface_top;   /* ebp - 0xb14 */
+
+  int main_h; /* ebp - 0xb10 */
+  int ten;    /* ebp - 0xb0c */
+
+  RECT rect_cardlistfilter; /* ebp - 0xb08 */
+  HDC pad_b0c;              /* ebp - 0xb04 */
+  int main_w;               /* ebp - 0xaf4 */
+  int cardlistfilter_hgt;   /* ebp - 0xaf0 */
+
+  RECT rect_title;    /* ebp - 0xaec */
+  RECT rect_pad_adc;  /* ebp - 0xadc */
+  RECT rect_fullcard; /* ebp - 0xacc */
+  int third_w;        /* ebp - 0xabc */
+
+  SIZE sz;               /* ebp - 0xab8 */
+  RECT rect_horzlist;    /* ebp - 0xab0 */
+  RECT rect_decksurface; /* ebp - 0xaa0 */
+  POINT pad_a90;         /* ebp - 0xa90 */
+
+  HWND hwnd_a8c; /* ebp - 0xa8c */
+  MEASUREITEMSTRUCT *pad_a8c;
+  HWND pad_a88;
+
+  RECT rect_stats; /* ebp - 0xa84 */
+  BITMAP bmp_a6c;  /* ebp - 0xa6c */
+  int fill_y;      /* ebp - 0xa54 */
+  int pics_inline; /* ebp - 0xa50 */
+
+  RECT r;     /* ebp - 0xa4c */
+  int fill_x; /* ebp - 0xa3c */
+
+  COLORREF item_col; /* ebp - 0xa38 */
+  HWND tgt;          /* ebp - 0xa38 */
+  int cursel;        /* ebp - 0xa34 */
+  HDC pad_a30;
+
+  HWND hwnd2; /* ebp - 0xa28 */
+  HWND hwnd1; /* ebp - 0xa24 */
+
+  HDC pad_a20;
+  HGDIOBJ pad_a1c;
+  HWND pad_a18;
+  HDC pad_a14;
+  WPARAM pad_a10;
+
+  int csvidraw;     /* ebp - 0xa0c */
+  int csvid;        /* ebp - 0xa08 */
+  int unique_count; /* ebp - 0xa04 */
+
+  int local_a00[100];   /* ebp - 0xa00 */
+  int pad_870;          /* ebp - 0x870 */
+  char local_86c[2000]; /* ebp - 0x86c */
+
+  HWND cmd_hwnd;        /* ebp - 0x9c */
+  HWND cmd_tgt;         /* ebp - 0x98 */
+  int cmd_cursel;       /* ebp - 0x94 */
+  LRESULT cmd_itemdata; /* ebp - 0x90 */
+
+  HDC hdc_local;    /* ebp - 0x8c */
+  HDC hdc;          /* ebp - 0x88 */
+  WPARAM wparam_84; /* ebp - 0x84 */
+
+  LPARAM lparam_copy; /* ebp - 0x80 */
+  WPARAM wparam_copy; /* ebp - 0x7c */
+
+  WORD wPicsInline; /* ebp - 0x78 */
+  WORD wPicsInlinePad;
+  FILE *f;               /* ebp - 0x74 */
+  int *horz_list_addr;   /* ebp - 0x70 */
+  int i;                 /* ebp - 0x6c */
+  unsigned int artist_i; /* ebp - 0x68 */
+
+  HDC fill_chdc; /* ebp - 0x64 */
+  char buf[76];  /* ebp - 0x60 */
+
+  unsigned int pad_14;
+
+  WORD wLeft;       /* ebp - 0x10 */
+  WORD wLeftPad;    /* ebp - 0xe */
+  int excess;       /* ebp - 0xc */
+  int check_excess; /* ebp - 8 */
+  WORD wLast;       /* ebp - 4 */
+  WORD wLastPad;    /* ebp - 2 */
+};
+
+// FUNCTION: DECKDLL 0x10019ed5
+static void
+FUN_10019ed5(int csvid, int *list, int *count)
+{
+  int i;
+
+  for (i = 0; i < *count; ++i)
+  {
+    if (list[i] == csvid)
+      return;
+  }
+
+  list[*count] = csvid;
+  *count = *count + 1;
 }
 
 // FUNCTION: DECKDLL 0x10016e4e
 LRESULT CALLBACK
 wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  int i;
+  struct WndprocMainClassLocals s;
+  // GLOBAL: DECKDLL 0x10104c98
   static HPEN pen_ltgrey = NULL;
+  // GLOBAL: DECKDLL 0x10104c9c
   static HPEN pen_medgrey = NULL;
-
+  // GLOBAL: DECKDLL 0x10104ca4
+  static HGDIOBJ mainclass_destroy_obj = NULL;
+  // wndproc_MainClass statics
   // GLOBAL: DECKDLL 0x101a8c24
-  static HWND button_deckinfo = NULL;
+  static HWND button_deckinfo;
   // GLOBAL: DECKDLL 0x1019e9d0
-  static HWND button_exit = NULL;
+  static HWND button_exit;
   // GLOBAL: DECKDLL 0x1014263c
-  static HWND button_deck1 = NULL;
+  static HWND button_deck1;
   // GLOBAL: DECKDLL 0x1014250c
-  static HWND button_deck2 = NULL;
+  static HWND button_deck2;
   // GLOBAL: DECKDLL 0x101423cc
-  static HWND button_deck3 = NULL;
-  // GLOBAL: DECKDLL 0x1012e2d8
-  static HWND cardlistfilter_hwnd = NULL;
-  static HWND search_hwnd = NULL;
+  static HWND button_deck3;
   // GLOBAL: DECKDLL 0x10104b8c
-  static HMENU popup = NULL;
+  static HMENU popup;
+  // GLOBAL: DECKDLL 0x10035208
+  static const char wndname_title[] = "";
+  // GLOBAL: DECKDLL 0x10035224
+  static const char wndname_fullcard[] = "";
+  // GLOBAL: DECKDLL 0x1003523c
+  static const char wndname_decksurface[] = "";
+  // GLOBAL: DECKDLL 0x1003525c
+  static const char wndname_button_stats[] = "";
+  // GLOBAL: DECKDLL 0x10035268
+  static const char wndname_button_deckinfo[] = "";
+  // GLOBAL: DECKDLL 0x10035274
+  static const char wndname_button_exit[] = "";
+  // GLOBAL: DECKDLL 0x10035280
+  static const char wndname_button_deck1[] = "";
+  // GLOBAL: DECKDLL 0x1003528c
+  static const char wndname_button_deck2[] = "";
+  // GLOBAL: DECKDLL 0x10035298
+  static const char wndname_button_deck3[] = "";
+  // GLOBAL: DECKDLL 0x100352a4
+  static const char wndname_listbox[] = "";
+  // GLOBAL: DECKDLL 0x100352b0
+  static const char wndname_horzlist[] = "";
+  // GLOBAL: DECKDLL 0x100352cc
+  static const char wndname_cardlistfilter[] = "";
 
-  HDC hdc;
+  // GLOBAL: DECKDLL 0x10034f08
+  static LOGFONT mainClass_fontTemplate = {
+      0,         // lfHeight
+      0,         // lfWidth
+      0,         // lfEscapement
+      0,         // lfOrientation
+      FW_NORMAL, // lfWeight
+  };
+  // GLOBAL: DECKDLL 0x10104b50
+  static LOGFONT DAT_10104b50;
 
   switch (msg)
   {
-  case WM_CREATE:
-    pen_ltgrey = CreatePen(PS_SOLID, 0, PALETTEINDEX(193)); // 203, 203, 203
-    pen_medgrey = CreatePen(PS_SOLID, 0, PALETTEINDEX(22)); // 79, 78, 78
-    // memcpy(&unk_4150C8, &global_logfont_template, 0x3Cu);	unused
+  case 0x466:
+    s.wparam_copy = wparam;
+    s.lparam_copy = lparam;
+    if ((HWND)s.lparam_copy != global_fullcard_hwnd)
+      SendMessage(global_fullcard_hwnd, 0x466, s.wparam_copy, 0);
+    return 0;
 
-    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR))
-      init_sound_dll(hwnd, 0, 0);
-
-    init_sounds_and_music();
-
-    sprintf(global_deck_filename, "%sNew.dck", global_playdeck_path);
-
-    if (global_db_flags_1 & DBFLAGS_SHANDALAR)
+  case WM_PALETTECHANGED:
+    s.wparam_84 = wparam;
+    if (hwnd != (HWND)s.wparam_84)
     {
-      char buf[160];
-      load_text("Menus", "GOLDTITLE");
-      sprintf(buf, text_lines[0], *Gold);
-      strncpy(global_deckinfo.deckname, buf, 12);
-    }
-    else if (global_db_flags_1 & DBFLAGS_EDITDECK)
-      strcpy(global_deckinfo.deckname, " ");
-    else
-    {
-      load_text("Menus", "NEWDECK");
-      sprintf(global_deckinfo.deckname, text_lines[0]);
-    }
-
-    global_deckinfo.comments[0] = 0;
-    global_deckinfo.description[0] = 0;
-    global_deckinfo.revision = 1;
-    strcpy(global_deckinfo.author, global_cfg_player_name);
-    strcpy(global_deckinfo.email, global_cfg_email);
-
-    GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, NULL, "dd/MM/yyyy", global_deckinfo.creation_date, 22);
-
-    if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_GAUNTLET | DBFLAGS_SHANDALAR))
-      copy_deck_to_edit();
-
-    global_title_hwnd = CreateWindowEx(0, "TitleClass", "",
-                                       WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-                                       0, 0, 0, 0,
-                                       hwnd,
-                                       1,
-                                       global_hinstance, 0);
-
-    global_fullcard_hwnd = CreateWindowEx(0, "FullCardClass", "",
-                                          WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-                                          0, 0, 0, 0,
-                                          hwnd,
-                                          2,
-                                          global_hinstance, 0);
-
-    global_decksurface_hwnd = CreateWindowEx(0, "DeckSurfaceClass", "",
-                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_BORDER,
-                                             0, 0, 0, 0,
-                                             hwnd,
-                                             7,
-                                             global_hinstance, 0);
-
-    global_button_stats_hwnd = CreateWindowEx(0, "BUTTON", "",
-                                              WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
-                                              0, 0, 0, 0,
-                                              hwnd,
-                                              RES_MAINMENU_BUTTON_STATS,
-                                              global_hinstance, 0);
-
-    button_deckinfo = CreateWindowEx(0, "BUTTON", "",
-                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
-                                     0, 0, 0, 0,
-                                     hwnd,
-                                     RES_MAINMENU_BUTTON_DECKINFO,
-                                     global_hinstance, 0);
-
-    button_exit = CreateWindowEx(0, "BUTTON", "",
-                                 WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
-                                 0, 0, 0, 0,
-                                 hwnd,
-                                 RES_MAINMENU_BUTTON_EXIT,
-                                 global_hinstance, 0);
-
-    button_deck1 = CreateWindowEx(0, "BUTTON", "",
-                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
-                                  0, 0, 0, 0,
-                                  hwnd,
-                                  RES_MAINMENU_BUTTON_DECK_1,
-                                  global_hinstance, 0);
-
-    button_deck2 = CreateWindowEx(0, "BUTTON", "",
-                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
-                                  0, 0, 0, 0,
-                                  hwnd,
-                                  RES_MAINMENU_BUTTON_DECK_2,
-                                  global_hinstance, 0);
-
-    button_deck3 = CreateWindowEx(0, "BUTTON", "",
-                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
-                                  0, 0, 0, 0,
-                                  hwnd,
-                                  RES_MAINMENU_BUTTON_DECK_3,
-                                  global_hinstance, 0);
-
-    global_listbox_hwnd = CreateWindowEx(0, "LISTBOX", "",
-                                         (WS_CHILDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL | WS_THICKFRAME | LBS_NOINTEGRALHEIGHT | LBS_HASSTRINGS | LBS_OWNERDRAWFIXED | LBS_SORT),
-                                         0, 0, 0, 0,
-                                         hwnd,
-                                         4,
-                                         global_hinstance, 0);
-
-    global_horzlist_hwnd = CreateWindowEx(0, "HorzListClass", "",
-                                          WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL,
-                                          0, 0, 0, 0,
-                                          hwnd,
-                                          5,
-                                          global_hinstance, 0);
-
-    cardlistfilter_hwnd = CreateWindowEx(0, "CardListFilterClass", "",
-                                         WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-                                         0, 0, 0, 0,
-                                         hwnd,
-                                         3,
-                                         global_hinstance, 0);
-
-    popup = CreatePopupMenu();
-    global_smallcard_popup = CreatePopupMenu();
-
-    search_hwnd = CreateWindowEx(0, "EDIT", "",
-                                 WS_CHILDWINDOW | WS_VISIBLE | ES_AUTOHSCROLL,
-                                 0, 0, 0, 0,
-                                 hwnd,
-                                 8,
-                                 global_hinstance, 0);
-    if (!search_hwnd || !global_title_hwnd || !global_fullcard_hwnd || !global_listbox_hwnd || !global_horzlist_hwnd || !cardlistfilter_hwnd || !global_decksurface_hwnd || !popup)
-    {
-      DESTROY_MENU(popup);
-      DESTROY_MENU(global_smallcard_popup);
-      return -1;
-    }
-
-    global_wndproc_std_SearchClass = SetWindowLong(search_hwnd, GWL_WNDPROC, wndproc_SearchClass);
-
-    SendMessage(global_listbox_hwnd, LB_SETTOPINDEX, 0, 0);
-    SendMessage(global_listbox_hwnd, LB_SETCURSEL, 0, 0);
-    SendMessage(global_horzlist_hwnd, 0x8007, 0, 0);
-
-    {
-      csvid_t csvid = SendMessage(global_horzlist_hwnd, 0x8004, 0, 0);
-      if (!(csvid >= 0) && global_deck_num_entries)
-        csvid = global_deck[0].GDE_csvid;
-      SendMessage(global_fullcard_hwnd, 0x8400, csvid, 0);
-    }
-
-    if (global_db_flags_1 & DBFLAGS_STANDALONE)
-    {
-      load_text("Menus", "MAINMENU_STANDALONE");
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_NEWDECK, text_lines[0]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_LOADDECK, text_lines[1]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_SAVEDECK, text_lines[2]);
-      AppendMenu(popup, MF_SEPARATOR, 0, 0);
-      AppendMenu(popup, MF_ENABLED, RES_FULLCARDMENU_EXPAND, text_lines[3]);
-      AppendMenu(popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[4]);
-      AppendMenu(popup, MF_SEPARATOR, 0, 0);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_MINIMIZE, text_lines[5]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_MUSIC, text_lines[6]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EFFECTS, text_lines[7]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EXIT, text_lines[8]);
-    }
-    else if (global_db_flags_1 & DBFLAGS_GAUNTLET)
-    {
-      load_text("Menus", "MAINMENU_GAUNTLET");
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_NEWDECK, text_lines[0]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_LOADDECK, text_lines[1]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_SAVEDECK, text_lines[2]);
-      AppendMenu(popup, MF_SEPARATOR, 0, 0);
-      AppendMenu(popup, MF_ENABLED, RES_FULLCARDMENU_EXPAND, text_lines[3]);
-      AppendMenu(popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[4]);
-      AppendMenu(popup, MF_SEPARATOR, 0, 0);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_MUSIC, text_lines[5]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EFFECTS, text_lines[6]);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EXIT, text_lines[7]);
-    }
-    else
-    {
-      load_text("Menus", "MAINMENU_ADVENTURE");
-      AppendMenu(popup, MF_ENABLED, RES_FULLCARDMENU_EXPAND, text_lines[0]);
-      AppendMenu(popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[1]);
-      AppendMenu(popup, MF_SEPARATOR, 0, 0);
-      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EXIT, text_lines[2]);
-    }
-
-    SetFocus(global_horzlist_hwnd);
-    load_text("Menus", "DECKINFO");
-    SetWindowText(button_deckinfo, text_lines[0]);
-    change_buttonclass_wndproc(hwnd);
-    refresh_numofcards_text();
-    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR))
-    {
-      load_text("Menus", "EXIT");
-      SetWindowText(button_exit, text_lines[1]);
-    }
-    else
-    {
-      load_text("Menus", "EXIT");
-      SetWindowText(button_exit, text_lines[0]);
-
-      load_text("Menus", "DECKNUMBERS");
-      SetWindowText(button_deck1, text_lines[0]);
-      SetWindowText(button_deck2, text_lines[1]);
-      SetWindowText(button_deck3, text_lines[2]);
-
-      switch (global_current_deck)
+      if (global_main_hwnd != (HWND)s.wparam_84)
       {
-      case 0:
-        SetWindowText(button_deck1, text_lines[3]);
-        break;
-      case 1:
-        SetWindowText(button_deck2, text_lines[4]);
-        break;
-      case 2:
-        SetWindowText(button_deck3, text_lines[5]);
-        break;
+        s.hdc = GetDC(hwnd);
+        SelectPalette(s.hdc, global_cart_art_hpalette, TRUE);
+        if (RealizePalette(s.hdc))
+          InvalidateRect(hwnd, NULL, FALSE);
+        ReleaseDC(hwnd, s.hdc);
       }
     }
     return 0;
 
-  case WM_INITMENU:
-    CHECKMENU_IF(popup, RES_FULLCARDMENU_EXPAND, SendMessage(global_fullcard_hwnd, 0x8402, 0, 0));
-    CHECKMENU_IF(popup, RES_MAINMENU_EFFECTS, global_cfg_effects);
-    CHECKMENU_IF(popup, RES_MAINMENU_MUSIC, global_cfg_music);
-    CHECKMENU_IF(popup, RES_MENU_CONSOLIDATE, global_cfg_consolidate);
-    return 0;
+  case WM_QUERYNEWPALETTE:
+    s.hdc_local = GetDC(hwnd);
+    SelectPalette(s.hdc_local, global_cart_art_hpalette, FALSE);
+    if (RealizePalette(s.hdc_local))
+      InvalidateRect(hwnd, NULL, FALSE);
+    ReleaseDC(hwnd, s.hdc_local);
+    return 1;
 
   case WM_CLOSE:
-    if (global_db_flags_1 & (DBFLAGS_GAUNTLET | DBFLAGS_STANDALONE | DBFLAGS_NOCARDCOUNTCHECK))
+    if ((global_db_flags_1 & 0x0a) || (global_db_flags_1 & 4))
     {
       if (!global_deck_was_edited || ask_about_saving_deck() != 2)
         DestroyWindow(global_main_hwnd);
     }
     else
     {
-      int num_failed = 0;
-      for (i = 0; i < global_edited_deck_num_entries; ++i)
+      s.artist_i = 0;
+      s.i = 0;
+      s.excess = 0;
+      for (; global_edited_deck_num_entries > (int)s.artist_i; ++s.artist_i)
       {
-        int excess = check_card_count(global_edited_deck.entries[i].DeckEntry_csvid);
-        if (excess > 0)
+        s.check_excess = check_card_count(global_edited_deck.entries[s.artist_i].DeckEntry_csvid);
+        if (s.check_excess > 0)
         {
-          global_excessive_cards[num_failed].DeckEntry_csvid = global_edited_deck.entries[i].DeckEntry_csvid;
-          global_excessive_cards[num_failed].DeckEntry_Amount = excess;
-          global_excessive_cards[num_failed].DeckEntry_FullName = global_edited_deck.entries[i].DeckEntry_FullName;
-          ++num_failed;
+          global_excessive_cards[s.i].DeckEntry_csvid = global_edited_deck.entries[s.artist_i].DeckEntry_csvid;
+          global_excessive_cards[s.i].DeckEntry_Amount = s.check_excess;
+          global_excessive_cards[s.i].DeckEntry_FullName =
+              global_raw_cards_storage[global_edited_deck.entries[s.artist_i].DeckEntry_csvid].full_name;
+          ++s.i;
+          s.excess = 1;
         }
       }
-      global_excessive_cards[num_failed].DeckEntry_csvid = -1;
+      global_excessive_cards[s.i].DeckEntry_csvid = -1;
 
-      if (!num_failed || show_dialog_infobox())
+      if (s.excess)
+      {
+        if (show_dialog_infobox())
+          DestroyWindow(global_main_hwnd);
+      }
+      else
         DestroyWindow(global_main_hwnd);
     }
     return 0;
 
-  case WM_DESTROY:
-    DELETE_OBJ(pen_ltgrey);
-    DELETE_OBJ(pen_medgrey);
-    DESTROY_MENU(popup);
-    DESTROY_MENU(global_smallcard_popup);
-    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR))
-      free_sounds_and_music();
-    PostQuitMessage(0);
-    return 0;
-
-  case WM_QUERYENDSESSION:
-    return (!global_deck_was_edited || ask_about_saving_deck() != 2) ? 1 : 0;
-
-  case WM_SETFOCUS:
-    SetFocus(global_horzlist_hwnd);
-    return 0;
-
-  case WM_SIZE:
-  {
-    int pics_inline;
-    LOGFONT font;
-    int hgt6;
-    int hgt33;
-    HDC hdc_local;
-    SIZE sz;
-    RECT rect_title, rect_fullcard, rect_horzlist, rect_cardlistfilter, rect_decksurface, rect_stats;
-
-    global_main_window_width = LOWORD(lparam);
-    global_main_window_height = HIWORD(lparam);
-
-    LockWindowUpdate(hwnd);
-
-    global_smallcard_width =
-        global_smallcard_normal_width =
-            global_smallcard_piclist_width =
-                global_smallcard_height =
-                    global_smallcard_normal_width =
-                        global_smallcard_piclist_height = global_main_window_height * 0.18;
-
-    pics_inline = global_main_window_width / (global_smallcard_width * 1.1);
-    if (pics_inline <= 0)
-      pics_inline = 1;
-    SetWindowLong(global_horzlist_hwnd, HORZLIST_PICSINLINE_INDEX, pics_inline);
-    SetWindowLong(global_horzlist_hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX, global_main_window_width / pics_inline);
-
-    global_smallcard_smaller_width = global_smallcard_smaller_height = global_smallcard_width * 0.8;
-    global_smallcard_smallest_width = global_smallcard_smallest_height = global_smallcard_width * 0.7;
-
-    memcpy(&font, &global_logfont_template, sizeof(LOGFONT));
-
-    DELETE_OBJ(global_font_28percent);
-    font.lfHeight = 280 * global_main_window_height / 10000;
-    global_font_28percent = CreateFontIndirect(&font);
-
-    DELETE_OBJ(global_font_40percent);
-    font.lfHeight = 400 * global_main_window_height / 10000;
-    global_font_40percent = CreateFontIndirect(&font);
-
-    hgt6 = 6 * global_main_window_height / 100;
-    hgt33 = 33 * global_main_window_height / 100;
-
-    hdc_local = GetDC(hwnd);
-    ApplyCardArtPaletteToDc(hdc_local);
-
-    GetTextExtentPoint32(hdc_local, "Load new deck", strlen("Load new deck"), &sz);
-    sz.cx += 10;
-    sz.cy += sz.cy / 2;
-
-    ReleaseDC(hwnd, hdc_local);
-
-#define MOVEWINDOW_TL_BR(hwnd, rect) MoveWindow(hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, FALSE)
-#define MOVEWINDOW_TL_WH(hwnd, rect) MoveWindow(hwnd, rect.left, rect.top, rect.right, rect.bottom, FALSE)
-
-    SetRect(&rect_title,
-            0, 0,
-            hgt33, 10 * global_main_window_height / 100);
-
-    SetRect(&rect_fullcard,
-            0, rect_title.bottom,
-            hgt33, rect_title.bottom + 5900 * global_main_window_height / 10000);
-
-    SetRect(&rect_horzlist,
-            0, global_main_window_height - 22 * global_main_window_height / 100,
-            global_main_window_width, global_main_window_height);
-
-    SetRect(&rect_cardlistfilter,
-            rect_horzlist.left, rect_horzlist.top - hgt6,
-            rect_horzlist.right, rect_horzlist.top);
-
-    SetRect(&rect_decksurface,
-            rect_fullcard.right, 0,
-            global_main_window_width, rect_fullcard.bottom);
-
-    MOVEWINDOW_TL_BR(global_title_hwnd, rect_title);
-    MOVEWINDOW_TL_BR(global_fullcard_hwnd, rect_fullcard);
-    MOVEWINDOW_TL_BR(global_decksurface_hwnd, rect_decksurface);
-
-    rect_horzlist.top = rect_horzlist.bottom - global_smallcard_piclist_height - 8 - GetSystemMetrics(SM_CYHSCROLL);
-    MOVEWINDOW_TL_BR(global_horzlist_hwnd, rect_horzlist);
-
-    rect_cardlistfilter.top = rect_horzlist.top - hgt6;
-    rect_cardlistfilter.bottom = rect_horzlist.top;
-    MOVEWINDOW_TL_BR(cardlistfilter_hwnd, rect_cardlistfilter);
-
-    SetRect(&rect_stats, rect_decksurface.left, rect_decksurface.bottom, (rect_decksurface.right - rect_decksurface.left) / 3, rect_cardlistfilter.top - rect_decksurface.bottom - 3);
-
-    MOVEWINDOW_TL_WH(global_button_stats_hwnd, rect_stats);
-    MoveWindow(button_exit, rect_stats.left + 2 * rect_stats.right, rect_stats.top, rect_stats.right, rect_stats.bottom, 0);
-
-#undef MOVEWINDOW_TL_BR
-#undef MOVEWINDOW_TL_WH
-
-    MoveWindow(search_hwnd,
-               rect_title.left + ((rect_title.right - (600 * rect_title.right / 1000)) / 2),
-               rect_stats.top,
-               600 * rect_title.right / 1000,
-               700 * MAX(rect_stats.bottom, 0) / 1000,
-               FALSE);
-
-    SendMessage(search_hwnd, WM_SETFONT, global_font_28percent, 0);
-
-    if (global_db_flags_1 & DBFLAGS_SHANDALAR)
-    {
-      int x = rect_stats.left + rect_stats.right;
-      MoveWindow(button_deck1,
-                 x, rect_stats.top,
-                 rect_stats.right / 3, rect_stats.bottom,
-                 FALSE);
-      MoveWindow(button_deck2,
-                 x + rect_stats.right / 3, rect_stats.top,
-                 rect_stats.right / 3, rect_stats.bottom,
-                 FALSE);
-      MoveWindow(button_deck3,
-                 x + 2 * rect_stats.right / 3, rect_stats.top,
-                 rect_stats.right / 3, rect_stats.bottom,
-                 FALSE);
-    }
-    else
-      MoveWindow(button_deckinfo,
-                 rect_stats.left + rect_stats.right, rect_stats.top,
-                 rect_stats.right, rect_stats.bottom,
-                 FALSE);
-
-    SendMessage(global_horzlist_hwnd, 0x8008, 0, global_smallcard_piclist_width);
-    SendMessage(cardlistfilter_hwnd, 0x8402,
-                MAKELONG(rect_cardlistfilter.left, rect_cardlistfilter.right),
-                MAKELONG(rect_cardlistfilter.top, rect_cardlistfilter.bottom));
-
-#if 0 // ...doesn't actually do anything.
-	int lastpic, leftpic, pics_inline;
-        lastpic = GetWindowLong(global_horzlist_hwnd, HORZLIST_LASTPIC_INDEX);
-        leftpic = GetWindowLong(global_horzlist_hwnd, HORZLIST_LEFTPIC_INDEX);
-        pics_inline = GetWindowLong(global_horzlist_hwnd, HORZLIST_PICSINLINE_INDEX);
-
-        for (i = leftpic; ; ++i)
-	  {
-	    int rightpic = MIN(lastpic, leftpic + pics_inline);
-	    if (i >= rightpic)
-	      break;
-	  }
-#endif
-
-    InvalidateRect(hwnd, NULL, TRUE);
-
-    BringWindowToTop(global_title_hwnd);
-    BringWindowToTop(cardlistfilter_hwnd);
-    BringWindowToTop(global_horzlist_hwnd);
-    BringWindowToTop(global_button_stats_hwnd);
-    BringWindowToTop(button_deckinfo);
-    BringWindowToTop(button_exit);
-
-    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR) && global_cfg_music)
-      play_music(1, 400, 0);
-
-    return 0;
-  }
-
-  case WM_DISPLAYCHANGE:
-    SelectObject(global_hdc, global_old_bmp_obj);
-    DELETE_OBJ(global_hbmp);
-
-    hdc = GetDC(hwnd);
-    ApplyCardArtPaletteToDc(hdc);
-
-    global_hbmp = CreateCompatibleBitmap(hdc, LOWORD(lparam), HIWORD(lparam));
-
-    ReleaseDC(hwnd, hdc);
-
-    SelectObject(global_hdc, global_hbmp);
-
-    if (global_hbmp)
-      ShowWindow(hwnd, SW_SHOW);
-    else
-    {
-      MessageBox(hwnd,
-                 ("Not enough system memory to run at this screen resolution.\n"
-                  "\n"
-                  "Change it back to a smaller size before continuing.\n"
-                  "(The game will hide itself until then)"),
-                 "Deck Builder",
-                 MB_ICONWARNING);
-      ShowWindow(hwnd, SW_HIDE);
-    }
-
-    MoveWindow(hwnd, 0, 0, LOWORD(lparam), HIWORD(lparam), TRUE);
-    return 0;
-
-  case WM_ERASEBKGND:
-    fill_back(hwnd, wparam);
-    return 1;
-
-  case WM_DRAWITEM:
-  {
-    DRAWITEMSTRUCT *item;
-    item = (DRAWITEMSTRUCT *)lparam;
-    FUN_10024e48(item, global_brush_mediumgrey, global_pic_all_butn, pen_ltgrey, pen_medgrey,
-                 GetFocus() == item->hwndItem && (item->itemState & ODS_SELECTED) ? global_colorref_white : RGB(0, 0, 0),
-                 GetFocus() == item->hwndItem,
-                 DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-    return 1;
-  }
-
-  case WM_MEASUREITEM:
-  {
-    MEASUREITEMSTRUCT *measure;
-    measure = (MEASUREITEMSTRUCT *)lparam;
-    if (measure->CtlID == 4)
-    {
-      RECT r;
-      GetClientRect(GetDlgItem(hwnd, wparam), &r);
-      measure->itemWidth = r.right;
-      measure->itemHeight = r.bottom / 8;
-    }
-    return 0;
-  }
-
-  case WM_CTLCOLORBTN:
-  case WM_CTLCOLORSTATIC:
-  {
-    HDC hdc_local = (HDC)wparam;
-    hdc = hdc_local;
-    ApplyCardArtPaletteToDc(hdc);
-    SetTextColor(hdc, GetFocus() == lparam ? global_colorref_white : global_colorref_darkgrey);
-    SetBkMode(hdc, TRANSPARENT);
-    return GetStockObject(HOLLOW_BRUSH);
-  }
-
-  case WM_CTLCOLORLISTBOX:
-  {
-    HDC hdc_local = (HDC)wparam;
-    hdc = hdc_local;
-    ApplyCardArtPaletteToDc(hdc);
-    SetTextColor(hdc, RGB(0, 0, 0));
-    return global_listbox_hwnd == lparam ? global_brush_gold1 : global_brush_gold2;
-  }
-
-  case WM_CTLCOLOREDIT:
-  {
-    HDC hdc_local = (HDC)wparam;
-    hdc = hdc_local;
-    SetTextColor(hdc, RGB(0, 0, 0));
-    SetBkColor(hdc, RGB(176, 176, 176));
-    return global_brush_mediumgrey;
-  }
-
-  case WM_RBUTTONDOWN:
-  {
-    POINT p;
-    p.x = GET_X_LPARAM(lparam);
-    p.y = GET_Y_LPARAM(lparam);
-    ClientToScreen(hwnd, &p);
-    TrackPopupMenu(popup, TPM_RIGHTBUTTON, p.x, p.y, 0, hwnd, NULL);
-    return 0;
-  }
-
   case WM_COMMAND:
   {
-    switch (LOWORD(wparam))
+    switch ((int)wparam & 0xffff)
     {
-    case RES_FULLCARDMENU_EXPAND:
-      SendMessage(global_fullcard_hwnd, WM_COMMAND, wparam, lparam);
+    case RES_UNK:
+      if (global_deckbuilder_unknown_1019f010 != 0)
+        global_deckbuilder_unknown_1019f010 = 0;
+      else
+        global_deckbuilder_unknown_1019f010 = 1;
       break;
 
     case 4:
     case 5:
     {
-      HWND w = (HWND)lparam;
-      HWND tgt = LOWORD(wparam) == 4 ? global_horzlist_hwnd : global_listbox_hwnd;
-      int cursel;
-      int csvidraw;
-      if (HIWORD(wparam) != 1)
-        break;
+      s.cmd_hwnd = (HWND)lparam;
+      if (((unsigned int)wparam & 0xffff) == 4)
+        s.cmd_tgt = global_horzlist_hwnd;
+      else
+        s.cmd_tgt = global_listbox_hwnd;
 
-      cursel = SendMessage(w, w == global_horzlist_hwnd ? 0x8003 : LB_GETCURSEL, 0, 0);
-      csvidraw = SendMessage(w, w == global_horzlist_hwnd ? 0x8004 : LB_GETITEMDATA, cursel, 0);
-      SendMessage(global_fullcard_hwnd, 0x8400, csvidraw, 0);
+      if ((((unsigned int)wparam >> 16) & 0xffff) == 1)
+      {
+        s.cmd_cursel = SendMessage(s.cmd_hwnd, LB_GETCURSEL, 0, 0);
+        s.cmd_itemdata = SendMessage(s.cmd_hwnd, LB_GETITEMDATA, s.cmd_cursel, 0);
+        SendMessage(global_fullcard_hwnd, 0x400, s.cmd_itemdata, 0);
 
-      cursel = SendMessage(w, w == global_horzlist_hwnd ? 0x8003 : LB_GETCURSEL, 0, 0);
-      SendMessage(tgt, w == global_horzlist_hwnd ? 0x8007 : LB_SETCURSEL, cursel, 0);
+        s.cmd_cursel = SendMessage(s.cmd_hwnd, LB_GETCURSEL, 0, 0);
+        SendMessage(s.cmd_tgt, LB_SETCURSEL, s.cmd_cursel, 0);
+      }
       break;
     }
 
-    case RES_MAINMENU_BUTTON_STATS:
-      DialogBoxParam(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_DECKSTATS), global_main_hwnd, dlgproc_DeckStats, 0);
-      break;
+    case 10:
+    {
+      s.unique_count = 0;
 
-    case RES_MENU_CONSOLIDATE:
-      SendMessage(global_decksurface_hwnd, WM_COMMAND, wparam, lparam);
+      for (s.local_a00[0] = 0; global_edited_deck_num_entries > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[0].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[0].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.local_a00[0] = 0; global_edited_deck.sideboard[0].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.sideboard[0].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[1].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[1].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.local_a00[0] = 0; global_edited_deck.sideboard[1].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.sideboard[1].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[2].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[2].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.local_a00[0] = 0; global_edited_deck.sideboard[2].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.sideboard[2].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[3].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[3].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.local_a00[0] = 0; global_edited_deck.sideboard[3].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.sideboard[3].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[4].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[4].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.local_a00[0] = 0; global_edited_deck.sideboard[5].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.sideboard[5].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[5].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[5].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.local_a00[0] = 0; global_edited_deck.sideboard[4].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.sideboard[4].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      for (s.local_a00[0] = 0; global_edited_deck.trade[6].total > s.local_a00[0]; ++s.local_a00[0])
+        FUN_10019ed5(global_edited_deck.trade[6].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+
+      s.csvid = 0;
+      strcpy(s.local_86c, "The following cards are not in 4th edition:\n");
+
+      for (s.local_a00[0] = 0; s.local_a00[0] < s.unique_count; ++s.local_a00[0])
+      {
+        if (!check_filters(s.local_a00[s.local_a00[0] + 1]))
+        {
+          strcat(s.local_86c, global_raw_cards_storage[s.local_a00[s.local_a00[0] + 1]].full_name);
+          strcat(s.local_86c, "\n");
+          ++s.csvid;
+        }
+      }
+
+      if (s.csvid)
+        MessageBoxA(hwnd, s.local_86c, "Checking deck for legal cards", 0);
+      else
+        MessageBoxA(hwnd, "All cards are in 4th edition", "Checking deck for legal cards", 0);
       break;
+    }
 
     case RES_MAINMENU_NEWDECK:
-      SendMessage(global_decksurface_hwnd, WM_COMMAND, RES_MENU_NEWDECK, 0);
+      SendMessage(global_decksurface_hwnd, RES_MENU_NEWDECK, 0, 0);
       break;
 
     case RES_MAINMENU_LOADDECK:
@@ -6340,47 +6226,67 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         }
         else
         {
-          popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKLOADERROR", global_deck_filename, MB_ICONINFORMATION);
+          load_text("menus", "DECKLOADERROR");
+          sprintf(s.buf, text_lines[0], global_deck_filename);
 
-          load_text("Menus", "NEWDECK");
+          load_text("menus", "DECKBUILDER");
+          MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONHAND);
+
+          load_text("menus", "NEWDECK");
           sprintf(global_deckinfo.deckname, text_lines[0]);
 
-          sprintf(global_deck_filename, "%sNew.dck", global_playdeck_path);
+          strcpy(global_deck_filename, global_playdeck_path);
+          strcat(global_deck_filename, "\\new.dck");
         }
       }
       break;
 
     case RES_MAINMENU_SAVEDECK:
-      load_text("Menus", "NEWDECK");
+      load_text("menus", "NEWDECK");
       if (!strcmp(global_deckinfo.deckname, text_lines[0]) || !global_deckinfo.deckname[0])
       {
-        popup_loaded(hwnd, "DECKBUILDER", "NAMEYOURDECK", MB_ICONINFORMATION);
+        load_text("menus", "NAMEYOURDECK");
+        strcpy(s.buf, text_lines[0]);
+        load_text("menus", "DECKBUILDER");
+        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
         show_dialog_deckinfo();
         return 2;
       }
 
       if (global_deck_num_cards < 40)
       {
-        popup_loaded(hwnd, "DECKBUILDER", "TOOFEWCARDS", MB_ICONINFORMATION);
+        load_text("menus", "TOOFEWCARDS");
+        strcpy(s.buf, text_lines[0]);
+        load_text("menus", "DECKBUILDER");
+        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
         return 2;
       }
 
       if (global_deck_num_cards > 500 || global_edited_deck_num_entries > 200)
-        popup_loaded(hwnd, "DECKBUILDER", "TOOMANYCARDS", MB_ICONINFORMATION);
+      {
+        load_text("menus", "TOOMANYCARDS");
+        strcpy(s.buf, text_lines[0]);
+        load_text("menus", "DECKBUILDER");
+        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+      }
 
-      sprintf(global_deck_filename, "%s%s.dck", global_playdeck_path, global_deckinfo.deckname);
+      strcpy(global_deck_filename, global_playdeck_path);
+      strcat(global_deck_filename, "\\");
+      strcat(global_deck_filename, global_deckinfo.deckname);
+      strcat(global_deck_filename, ".dck");
 
       if (global_deckname_set)
       {
-        FILE *f = fopen(global_deck_filename, "rt");
-        if (f != NULL)
+        s.f = fopen(global_deck_filename, "rt");
+        if (s.f != NULL)
         {
-          int rval;
+          fclose(s.f);
 
-          fclose(f);
-
-          rval = popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKEXISTS", global_deckinfo.deckname, MB_ICONQUESTION | MB_YESNOCANCEL);
-          if (rval == IDNO || rval == IDCANCEL)
+          load_text("menus", "DECKEXISTS");
+          sprintf(s.buf, text_lines[0], global_deckinfo.deckname);
+          load_text("menus", "DECKBUILDER");
+          s.artist_i = MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONQUESTION | MB_YESNOCANCEL);
+          if (s.artist_i == IDCANCEL || s.artist_i == IDNO)
             return 2;
         }
       }
@@ -6389,21 +6295,40 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       global_deck_was_edited = false;
 
       if (save_deck(global_deck_filename))
-        popup_loaded_with_args(hwnd, "DECKBUILDER", "SAVED", global_deckinfo.deckname, MB_ICONINFORMATION);
+      {
+        load_text("menus", "SAVED");
+        sprintf(s.buf, text_lines[0], global_deckinfo.deckname);
+        load_text("menus", "DECKBUILDER");
+        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+      }
       else
-        popup_loaded_with_args(hwnd, "DECKBUILDER", "DECKSAVEERROR", global_deckinfo.deckname, MB_ICONINFORMATION);
+      {
+        load_text("menus", "DECKSAVEERROR");
+        sprintf(s.buf, text_lines[0], global_deckinfo.deckname);
+        load_text("menus", "DECKBUILDER");
+        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+      }
 
       if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_GAUNTLET | DBFLAGS_NOCARDCOUNTCHECK))
         strcpy(global_external_deckname, global_deckinfo.deckname);
 
       return 6;
 
+    case RES_FULLCARDMENU_EXPAND:
+      SendMessage(global_fullcard_hwnd, msg, wparam, lparam);
+      break;
+
+    case RES_MENU_CONSOLIDATE:
+      SendMessage(global_decksurface_hwnd, msg, wparam, lparam);
+      break;
+
     case RES_MAINMENU_EFFECTS:
-      global_cfg_effects = !global_cfg_effects;
+      global_cfg.effects ^= 1;
       break;
 
     case RES_MAINMENU_MUSIC:
-      if ((global_cfg_music = !global_cfg_music))
+      global_cfg.music ^= 1;
+      if (global_cfg.music)
         play_music(1, 400, 0);
       else
         sound_stop(1);
@@ -6418,6 +6343,10 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       SendMessage(global_main_hwnd, WM_CLOSE, 0, 0);
       break;
 
+    case RES_MAINMENU_BUTTON_STATS:
+      DialogBoxParam(global_hinstance, MAKEINTRESOURCE(RES_DIALOG_DECKSTATS), global_main_hwnd, dlgproc_DeckStats, 0);
+      break;
+
     case RES_MAINMENU_BUTTON_DECKINFO:
       show_dialog_deckinfo();
       InvalidateRect(global_title_hwnd, 0, TRUE);
@@ -6429,75 +6358,677 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       if (!(global_db_flags_2 & DBFLAGS_SHANDALAR))
         break;
 
-      load_text("Menus", "DECKNUMBERS");
+      load_text("menus", "DECKNUMBERS");
       SetWindowText(button_deck1, text_lines[0]);
       SetWindowText(button_deck2, text_lines[1]);
       SetWindowText(button_deck3, text_lines[2]);
 
-      global_current_deck = LOWORD(wparam) - RES_MAINMENU_BUTTON_DECK_1;
+      global_current_deck = (((unsigned int)wparam & 0xffff) - RES_MAINMENU_BUTTON_DECK_1);
       global_deck_num_cards = 0;
       global_edited_deck_num_entries = 0;
 
-      for (i = 0; i < global_deck_num_entries; ++i)
-        if (global_deck[i].GDE_DecksBits & (1 << global_current_deck))
+      for (s.artist_i = 0; global_deck_num_entries > (int)s.artist_i; ++s.artist_i)
+        if (global_deck[s.artist_i].GDE_DecksBits & (1 << global_current_deck))
         {
-          global_deck[i].GDE_Available = 0;
-          insert_cards_into_deck(global_deck[i].GDE_csvid, 1, &global_edited_deck);
+          global_deck[s.artist_i].GDE_Available = 0;
+          insert_cards_into_deck(global_deck[s.artist_i].GDE_csvid, 1, &global_edited_deck);
         }
         else
-          global_deck[i].GDE_Available = 1;
+          global_deck[s.artist_i].GDE_Available = 1;
 
       count_packs();
 
-      SendMessage(global_decksurface_hwnd, 0x8401, 0, 0);
+      SendMessage(global_decksurface_hwnd, 0x401, 0, 0);
 
       filter_cards_in_lists(global_listbox_hwnd, global_horzlist_hwnd);
 
-      switch (global_current_deck)
-      {
-      case 0:
+      if (global_current_deck == 0)
         SetWindowText(button_deck1, text_lines[3]);
-        break;
-      case 1:
+      else if (global_current_deck == 1)
         SetWindowText(button_deck2, text_lines[4]);
-        break;
-      case 2:
+      else if (global_current_deck == 2)
         SetWindowText(button_deck3, text_lines[5]);
-        break;
-      }
 
       SetFocus(global_horzlist_hwnd);
 
+      break;
+    default:
       break;
     }
     return 0;
   }
 
-  case 0x8466:
-    if (lparam != global_fullcard_hwnd)
-      SendMessage(global_fullcard_hwnd, 0x8466, wparam, 0);
+  case WM_CREATE:
+    if (check_filters_debug_log_enabled != 0)
+    {
+      check_filters_debug_log_file = fopen("CardIDs.TXT", "wt");
+      if (check_filters_debug_log_file == NULL)
+      {
+        check_filters_debug_log_enabled = 0;
+        MessageBoxA(hwnd, "Could not create CARDID.TXT", "Deck Builder Error", MB_ICONHAND);
+      }
+    }
+
+    global_colorref_lightgrey = PALETTEINDEX(7);
+    global_colorref_darkgrey = PALETTEINDEX(1);
+    global_brush_mediumgrey = CreateSolidBrush(PALETTEINDEX(0x86));
+    pen_ltgrey = CreatePen(0, 0, PALETTEINDEX(0xC1));
+    pen_medgrey = CreatePen(0, 0, PALETTEINDEX(0x16));
+    global_colorref_flesh = PALETTEINDEX(1);
+    global_colorref_white = PALETTEINDEX(0xBF);
+
+    memcpy(&DAT_10104b50, &mainClass_fontTemplate, sizeof(LOGFONT));
+    DAT_10104b50.lfHeight = 0x2a;
+    DAT_10104b50.lfWeight = 500;
+    strcpy(DAT_10104b50.lfFaceName, "Kudos Condensed SSi");
+    DAT_10125e0c = CreateFontIndirectA(&DAT_10104b50);
+
+    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR))
+      init_sound_dll(hwnd, 0, 0);
+
+    init_sounds_and_music();
+
+    strcpy(global_deck_filename, global_playdeck_path);
+    strcat(global_deck_filename, "\\new.dck");
+
+    global_num_artists = load_text("menus", "ARTISTNAMES");
+    for (s.artist_i = 0; global_num_artists > (int)s.artist_i; s.artist_i = s.artist_i + 1)
+      strcpy(read_db_artist_names[s.artist_i], text_lines[s.artist_i]);
+
+    if (global_db_flags_1 & DBFLAGS_SHANDALAR)
+    {
+      load_text("menus", "GOLDTITLE");
+      sprintf(s.buf, text_lines[0], *Gold);
+      strncpy(global_deckinfo.deckname, s.buf, 12);
+    }
+    else if (global_db_flags_1 & DBFLAGS_EDITDECK)
+    {
+      global_deckinfo.deckname[0] = ' ';
+      global_deckinfo.deckname[1] = '\0';
+    }
+    else
+    {
+      load_text("menus", "NEWDECK");
+      sprintf(global_deckinfo.deckname, text_lines[0]);
+    }
+
+    global_deckinfo.description[0] = global_deckinfo.comments[0] = 0;
+    global_deckinfo.revision = 1;
+    strcpy(global_deckinfo.author, global_cfg.player_name);
+    strcpy(global_deckinfo.email, global_cfg.email);
+
+    GetDateFormatA(LOCALE_SYSTEM_DEFAULT, 0, NULL, "MMMM dd',' yyyy", global_deckinfo.creation_date, 22);
+
+    if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_GAUNTLET | DBFLAGS_SHANDALAR))
+      copy_deck_to_edit();
+
+    global_title_hwnd = CreateWindowEx(0, "MAGICDECK_TitleClass", wndname_title,
+                                       WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+                                       0, 0, 0, 0,
+                                       hwnd,
+                                       1,
+                                       global_hinstance, 0);
+
+    global_fullcard_hwnd = CreateWindowEx(0, "MagicFullCardClass", wndname_fullcard,
+                                          WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+                                          0, 0, 0, 0,
+                                          hwnd,
+                                          2,
+                                          global_hinstance, 0);
+
+    global_decksurface_hwnd = CreateWindowEx(0, "MAGICDECK_DeckSurfaceClass", wndname_decksurface,
+                                             WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_BORDER,
+                                             0, 0, 0, 0,
+                                             hwnd,
+                                             7,
+                                             global_hinstance, 0);
+
+    global_button_stats_hwnd = CreateWindowEx(0, "BUTTON", wndname_button_stats,
+                                              WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
+                                              0, 0, 0, 0,
+                                              hwnd,
+                                              RES_MAINMENU_BUTTON_STATS,
+                                              global_hinstance, 0);
+
+    button_deckinfo = CreateWindowEx(0, "BUTTON", wndname_button_deckinfo,
+                                     WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
+                                     0, 0, 0, 0,
+                                     hwnd,
+                                     RES_MAINMENU_BUTTON_DECKINFO,
+                                     global_hinstance, 0);
+
+    button_exit = CreateWindowEx(0, "BUTTON", wndname_button_exit,
+                                 WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
+                                 0, 0, 0, 0,
+                                 hwnd,
+                                 RES_MAINMENU_BUTTON_EXIT,
+                                 global_hinstance, 0);
+
+    button_deck1 = CreateWindowEx(0, "BUTTON", wndname_button_deck1,
+                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
+                                  0, 0, 0, 0,
+                                  hwnd,
+                                  RES_MAINMENU_BUTTON_DECK_1,
+                                  global_hinstance, 0);
+
+    button_deck2 = CreateWindowEx(0, "BUTTON", wndname_button_deck2,
+                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
+                                  0, 0, 0, 0,
+                                  hwnd,
+                                  RES_MAINMENU_BUTTON_DECK_2,
+                                  global_hinstance, 0);
+
+    button_deck3 = CreateWindowEx(0, "BUTTON", wndname_button_deck3,
+                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
+                                  0, 0, 0, 0,
+                                  hwnd,
+                                  RES_MAINMENU_BUTTON_DECK_3,
+                                  global_hinstance, 0);
+
+    global_listbox_hwnd = CreateWindowEx(0, "LISTBOX", wndname_listbox,
+                                         (WS_CHILDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL | WS_THICKFRAME | LBS_NOINTEGRALHEIGHT | LBS_HASSTRINGS | LBS_OWNERDRAWFIXED | LBS_SORT),
+                                         0, 0, 0, 0,
+                                         hwnd,
+                                         4,
+                                         global_hinstance, 0);
+
+    global_horzlist_hwnd = CreateWindowEx(0, "MAGICDECK_HorzListClass", wndname_horzlist,
+                                          WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL,
+                                          0, 0, 0, 0,
+                                          hwnd,
+                                          5,
+                                          global_hinstance, 0);
+
+    cardlistfilter_hwnd = CreateWindowEx(0, "MAGICDECK_CardListFiltersClass", wndname_cardlistfilter,
+                                         WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+                                         0, 0, 0, 0,
+                                         hwnd,
+                                         3,
+                                         global_hinstance, 0);
+
+    popup = CreatePopupMenu();
+    global_smallcard_popup = CreatePopupMenu();
+
+    if (!global_title_hwnd || !global_fullcard_hwnd || !global_listbox_hwnd || !global_horzlist_hwnd || !cardlistfilter_hwnd || !global_decksurface_hwnd || !popup)
+    {
+      if (popup)
+        DestroyMenu(popup);
+      if (global_smallcard_popup)
+        DestroyMenu(global_smallcard_popup);
+      return -1;
+    }
+
+    SendMessage(global_listbox_hwnd, LB_SETTOPINDEX, 0, 0);
+    SendMessage(global_listbox_hwnd, LB_SETCURSEL, 0, 0);
+    SendMessage(global_horzlist_hwnd, LB_SETCURSEL, 0, 0);
+
+    {
+      s.csvidraw = SendMessage(global_horzlist_hwnd, LB_GETITEMDATA, 0, 0);
+      if (s.csvidraw == -1 && global_deck_num_entries)
+        s.csvidraw = global_deck[0].GDE_csvid;
+      SendMessage(global_fullcard_hwnd, 0x400, s.csvidraw, 0);
+    }
+
+    if (global_db_flags_1 & DBFLAGS_STANDALONE)
+    {
+      load_text("menus", "MAINMENU_STANDALONE");
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_NEWDECK, text_lines[0]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_LOADDECK, text_lines[1]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_SAVEDECK, text_lines[2]);
+      AppendMenu(popup, MF_SEPARATOR, 0, 0);
+      AppendMenu(popup, MF_ENABLED, RES_FULLCARDMENU_EXPAND, text_lines[3]);
+      AppendMenu(popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[4]);
+      AppendMenu(popup, MF_SEPARATOR, 0, 0);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_MINIMIZE, text_lines[5]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_MUSIC, text_lines[6]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EFFECTS, text_lines[7]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EXIT, text_lines[8]);
+    }
+    else if (global_db_flags_1 & DBFLAGS_GAUNTLET)
+    {
+      load_text("menus", "MAINMENU_GAUNTLET");
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_NEWDECK, text_lines[0]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_LOADDECK, text_lines[1]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_SAVEDECK, text_lines[2]);
+      AppendMenu(popup, MF_SEPARATOR, 0, 0);
+      AppendMenu(popup, MF_ENABLED, RES_FULLCARDMENU_EXPAND, text_lines[3]);
+      AppendMenu(popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[4]);
+      AppendMenu(popup, MF_SEPARATOR, 0, 0);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_MUSIC, text_lines[5]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EFFECTS, text_lines[6]);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EXIT, text_lines[7]);
+    }
+    else
+    {
+      load_text("menus", "MAINMENU_ADVENTURE");
+      AppendMenu(popup, MF_ENABLED, RES_FULLCARDMENU_EXPAND, text_lines[0]);
+      AppendMenu(popup, MF_ENABLED, RES_MENU_CONSOLIDATE, text_lines[1]);
+      AppendMenu(popup, MF_SEPARATOR, 0, 0);
+      AppendMenu(popup, MF_ENABLED, RES_MAINMENU_EXIT, text_lines[2]);
+    }
+
+    SetFocus(global_horzlist_hwnd);
+    load_text("menus", "DECKINFO");
+    SetWindowText(button_deckinfo, text_lines[0]);
+    change_buttonclass_wndproc(hwnd);
+    refresh_numofcards_text();
+    if ((global_db_flags_1 & DBFLAGS_SHANDALAR))
+    {
+      load_text("menus", "EXIT");
+      SetWindowText(button_exit, text_lines[0]);
+
+      load_text("menus", "DECKNUMBERS");
+      SetWindowText(button_deck1, text_lines[0]);
+      SetWindowText(button_deck2, text_lines[1]);
+      SetWindowText(button_deck3, text_lines[2]);
+      if (global_current_deck == 0)
+      {
+        SetWindowText(button_deck1, text_lines[3]);
+      }
+      else if (global_current_deck == 1)
+      {
+        SetWindowText(button_deck2, text_lines[4]);
+      }
+      else if (global_current_deck == 2)
+      {
+        SetWindowText(button_deck3, text_lines[5]);
+      }
+    }
+    else
+    {
+      load_text("menus", "EXIT");
+      SetWindowText(button_exit, text_lines[1]);
+    }
     return 0;
 
-  case 0x84c8:
+  case WM_CTLCOLORLISTBOX:
   {
-    HWND hwnd1, hwnd2;
-    hwnd1 = wparam;
-    hwnd2 = lparam;
-    if (GetDlgItem(hwnd, RES_MAINMENU_BUTTON_STATS) == hwnd1 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECKINFO) == hwnd1 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_EXIT) == hwnd1 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_1) == hwnd1 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_2) == hwnd1 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_3) == hwnd1)
-      SendMessage(hwnd, 0x8401, GetDlgCtrlID(hwnd1), 0);
+    s.pad_a10 = wparam;
+    ApplyCardArtPaletteToDc((HDC)s.pad_a10);
+    s.pad_a14 = (HDC)lparam;
+    SetTextColor((HDC)s.pad_a10, RGB(0, 0, 0));
+    if (global_listbox_hwnd == (HWND)s.pad_a14)
+      return global_create_brush_3;
     else
-      SendMessage(hwnd, 0x8401, 1, 0);
+      return global_create_brush_4;
+  }
 
-    if (hwnd1)
-      InvalidateRect(hwnd1, NULL, TRUE);
+  case WM_DESTROY:
+    if (global_brush_mediumgrey)
+      DeleteObject(global_brush_mediumgrey);
+    if (pen_ltgrey)
+      DeleteObject(pen_ltgrey);
+    if (pen_medgrey)
+      DeleteObject(pen_medgrey);
 
-    if (hwnd2)
-      InvalidateRect(hwnd2, NULL, TRUE);
+    s.pad_a18 = SendMessageA(global_title_hwnd, 0x31, 0, 0);
+    SendMessageA(global_title_hwnd, 0x30, 0, 0);
+    if (s.pad_a18)
+      DeleteObject(s.pad_a18);
+
+    if (DAT_10125e0c)
+    {
+      DeleteObject(DAT_10125e0c);
+    }
+    DAT_10125e0c = 0;
+
+    if (popup)
+      DestroyMenu(popup);
+    if (global_smallcard_popup)
+      DestroyMenu(global_smallcard_popup);
+    if (mainclass_destroy_obj)
+      DeleteObject(mainclass_destroy_obj);
+    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR))
+      free_sounds_and_music();
+    if (check_filters_debug_log_file != NULL)
+    {
+      fclose(check_filters_debug_log_file);
+      check_filters_debug_log_file = NULL;
+    }
+    PostQuitMessage(0);
+    return 0;
+
+  case WM_DISPLAYCHANGE:
+    global_color_depth = (int)wparam;
+    SelectObject(global_hdc, global_old_bmp_obj);
+    DeleteObject(global_hbmp);
+
+    s.pad_a1c = GetDC(hwnd);
+    ApplyCardArtPaletteToDc(s.pad_a1c);
+
+    global_hbmp = CreateCompatibleBitmap(s.pad_a1c, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+
+    ReleaseDC(hwnd, s.pad_a1c);
+
+    SelectObject(global_hdc, global_hbmp);
+
+    if (!global_hbmp)
+    {
+      MessageBox(hwnd,
+                 ("Not enough system memory to run at this screen resolution.\n"
+                  "\n"
+                  "Change it back to a smaller size before continuing (the game will hide itself until then)."),
+                 "Magic: The Gathering",
+                 MB_ICONWARNING);
+      ShowWindow(hwnd, SW_HIDE);
+    }
+    else
+      ShowWindow(hwnd, SW_SHOW);
+
+    MoveWindow(hwnd, 0, 0, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), TRUE);
+    return 0;
+
+  case 0x4c8:
+  {
+    s.pad_a20 = (HDC)wparam;
+    s.hwnd1 = (HWND)lparam;
+    if (GetDlgItem(hwnd, RES_MAINMENU_BUTTON_STATS) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECKINFO) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_EXIT) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_1) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_2) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_3) == (HWND)s.pad_a20)
+      SendMessage(hwnd, 0x401, GetDlgCtrlID((HWND)s.pad_a20), 0);
+    else
+      SendMessage(hwnd, 0x401, 1, 0);
+
+    if (s.pad_a20)
+      InvalidateRect((HWND)s.pad_a20, NULL, TRUE);
+
+    if (s.hwnd1)
+      InvalidateRect(s.hwnd1, NULL, TRUE);
 
     return 0;
   }
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+  {
+    s.pad_a30 = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.pad_a30);
+    s.tgt = (HWND)lparam;
+    s.cursel = GetDlgCtrlID(s.tgt);
+    if (GetFocus() == s.tgt)
+      SetTextColor(s.pad_a30, global_colorref_white);
+    else
+      SetTextColor(s.pad_a30, global_colorref_darkgrey);
+    SetBkMode(s.pad_a30, TRANSPARENT);
+    s.hwnd2 = (HWND)GetStockObject(HOLLOW_BRUSH);
+    return (HBRUSH)s.hwnd2;
+  }
+
+  case WM_DRAWITEM:
+  {
+    s.item_col = (COLORREF)lparam;
+
+    if (GetFocus() == ((DRAWITEMSTRUCT *)s.item_col)->hwndItem)
+      s.fill_x = global_colorref_white;
+    else
+    {
+      if (((DRAWITEMSTRUCT *)s.item_col)->itemState & 2)
+        s.fill_x = 0x10000c6;
+      else
+        s.fill_x = global_colorref_flesh;
+    }
+
+    FUN_10024e48((DRAWITEMSTRUCT *)s.item_col, global_brush_mediumgrey, pen_ltgrey, pen_medgrey, s.fill_x, 0);
+    return 1;
+  }
+
+  case WM_ERASEBKGND:
+    s.rect_stats.bottom = (LONG)wparam;
+    ApplyCardArtPaletteToDc((HDC)s.rect_stats.bottom);
+    s.fill_chdc = CreateCompatibleDC((HDC)s.rect_stats.bottom);
+    ApplyCardArtPaletteToDc(s.fill_chdc);
+    SelectObject(s.fill_chdc, global_pic_dektile4);
+
+    GetClientRect(hwnd, &s.r);
+    GetObjectA(global_pic_dektile4, sizeof(BITMAP), &s.bmp_a6c);
+
+    for (s.pics_inline = 0; s.r.right > s.pics_inline; s.pics_inline += 0x20)
+      for (s.fill_y = s.r.bottom; s.fill_y > -0x1d; s.fill_y -= 0x1d)
+        BitBlt((HDC)s.rect_stats.bottom, s.pics_inline, s.fill_y, s.bmp_a6c.bmWidth, s.bmp_a6c.bmHeight, s.fill_chdc, 0, 0, SRCCOPY);
+
+    DeleteDC(s.fill_chdc);
+    return 1;
+
+  case WM_INITMENU:
+    CHECKMENU_IF(popup, RES_FULLCARDMENU_EXPAND, SendMessage(global_fullcard_hwnd, 0x402, 0, 0));
+    CHECKMENU_IF(popup, RES_MAINMENU_EFFECTS, global_cfg.effects);
+    CHECKMENU_IF(popup, RES_MAINMENU_MUSIC, global_cfg.music);
+    CHECKMENU_IF(popup, RES_MENU_CONSOLIDATE, global_cfg_consolidate);
+    return 0;
+
+  case WM_MEASUREITEM:
+  {
+    s.pad_a8c = (MEASUREITEMSTRUCT *)lparam;
+    s.hwnd_a8c = GetDlgItem(hwnd, wparam);
+    GetClientRect(s.hwnd_a8c, (RECT *)&s.pad_a88);
+
+    if (s.pad_a8c->CtlID == 4)
+    {
+      s.pad_a8c->itemWidth = s.rect_stats.top;
+      s.pad_a8c->itemHeight = s.rect_stats.right / 8;
+    }
+    return 0;
+  }
+
+  case WM_RBUTTONDOWN:
+  {
+    s.pad_a90.x = GET_X_LPARAM(lparam);
+    s.pad_a90.y = GET_Y_LPARAM(lparam);
+    ClientToScreen(hwnd, &s.pad_a90);
+    TrackPopupMenu(popup, TPM_RIGHTBUTTON, s.pad_a90.x, s.pad_a90.y, 0, hwnd, NULL);
+    return 0;
+  }
+
+  case WM_SETFOCUS:
+    SetFocus(global_horzlist_hwnd);
+    return 0;
+
+  case WM_SIZE:
+  {
+    s.main_w = (int)((unsigned int)lparam & 0xffff);
+    s.main_h = (int)(((unsigned int)lparam >> 16) & 0xffff);
+    // global_main_window_width = s.main_w;
+    // global_main_window_height = s.main_h;
+
+    LockWindowUpdate(hwnd);
+
+    s.margin8 = 8;
+    s.ten = 0xa;
+
+    s.third_w = s.main_w / 3 - 0x35;
+    s.fullcard_height = ((s.main_h - s.ten * 4) * 64) / 100 - 0xd;
+    s.horzlist_hgt6 = (s.main_h - s.ten * 4) * 11 * 2 / 100;
+    s.title_height = 10 * (s.main_h - s.ten * 4) / 100;
+    s.cardlistfilter_hgt = 6 * (s.main_h - s.ten * 4) / 100;
+
+    s.pad_b0c = (LONG)GetDC(hwnd);
+    ApplyCardArtPaletteToDc(s.pad_b0c);
+    GetTextExtentPointA(s.pad_b0c, "Load new deck", 0xd, &s.sz);
+    s.sz.cx += 0xa;
+    s.sz.cy += s.sz.cy / 2;
+    ReleaseDC(hwnd, s.pad_b0c);
+
+    SetRect(&s.rect_title,
+            s.margin8, s.ten,
+            s.third_w + s.margin8, s.title_height + s.ten);
+
+    SetRect(&s.rect_fullcard,
+            s.margin8, s.rect_title.bottom + s.ten,
+            s.third_w + s.margin8,
+            (s.rect_title.bottom - s.ten) + s.fullcard_height);
+
+    SetRect(&s.rect_horzlist,
+            s.margin8, (s.main_h - s.ten) - s.horzlist_hgt6,
+            s.main_w - s.margin8, s.main_h - s.ten);
+
+    SetRect(&s.rect_cardlistfilter,
+            s.rect_horzlist.left, s.rect_horzlist.top - s.cardlistfilter_hgt,
+            s.rect_horzlist.right, s.rect_horzlist.top);
+
+    SetRect(&s.rect_load_button,
+            s.main_w - s.margin8 - s.sz.cx,
+            s.ten,
+            s.main_w - s.margin8,
+            s.sz.cy * 2 + s.ten / 2 + s.ten);
+
+    SetRect(&s.rect_decksurface,
+            s.rect_fullcard.right + s.margin8, 0,
+            s.main_w, s.rect_fullcard.bottom);
+
+    MoveWindow(global_title_hwnd,
+               s.rect_title.left, s.rect_title.top,
+               s.rect_title.right - s.rect_title.left,
+               s.rect_title.bottom - s.rect_title.top,
+               TRUE);
+
+    MoveWindow(global_fullcard_hwnd,
+               s.rect_fullcard.left, s.rect_fullcard.top,
+               s.rect_fullcard.right - s.rect_fullcard.left,
+               s.rect_fullcard.bottom - s.rect_fullcard.top,
+               TRUE);
+
+    s.decksurface_top = s.rect_decksurface.top;
+    s.decksurface_x = s.rect_decksurface.left;
+
+    MoveWindow(global_decksurface_hwnd,
+               s.rect_decksurface.left, s.rect_decksurface.top,
+               s.rect_decksurface.right - s.rect_decksurface.left,
+               s.rect_decksurface.bottom - s.rect_decksurface.top,
+               TRUE);
+
+    s.horzlist_style = GetWindowLongA(global_horzlist_hwnd, GWL_STYLE);
+    if (s.horzlist_style & WS_BORDER)
+      s.border_adjust = GetSystemMetrics(SM_CXBORDER) * 2;
+    else
+      s.border_adjust = 0;
+
+    s.rect_horzlist.top = s.rect_horzlist.bottom - global_smallcard_piclist_height - 8 -
+                          GetSystemMetrics(SM_CYHSCROLL) - s.border_adjust;
+
+    s.rect_cardlistfilter.bottom = s.rect_horzlist.top;
+    s.rect_cardlistfilter.top = s.rect_cardlistfilter.bottom - s.cardlistfilter_hgt;
+
+    MoveWindow(cardlistfilter_hwnd,
+               s.rect_cardlistfilter.left, s.rect_cardlistfilter.top,
+               s.rect_cardlistfilter.right - s.rect_cardlistfilter.left,
+               s.rect_cardlistfilter.bottom - s.rect_cardlistfilter.top,
+               TRUE);
+
+    MoveWindow(global_horzlist_hwnd,
+               s.rect_horzlist.left, s.rect_horzlist.top,
+               s.rect_horzlist.right - s.rect_horzlist.left,
+               s.rect_horzlist.bottom - s.rect_horzlist.top,
+               TRUE);
+
+    // TODO : huh?
+    if (false)
+    {
+      s.rect_fullcard.bottom = s.rect_cardlistfilter.top + 4;
+      s.rect_decksurface.bottom = s.rect_cardlistfilter.top + 4;
+
+      MoveWindow(global_fullcard_hwnd,
+                 s.rect_fullcard.left, s.rect_fullcard.top,
+                 s.rect_fullcard.right - s.rect_fullcard.left,
+                 s.rect_fullcard.bottom - s.rect_fullcard.top,
+                 TRUE);
+
+      s.decksurface_top = s.rect_decksurface.top + GetSystemMetrics(SM_CYCAPTION) * 2;
+      s.decksurface_x = s.rect_decksurface.left;
+
+      MoveWindow(global_decksurface_hwnd,
+                 s.decksurface_x, s.decksurface_top,
+                 s.rect_decksurface.right - s.decksurface_x,
+                 s.rect_decksurface.bottom - s.decksurface_top,
+                 TRUE);
+
+      s.decksurface_x += 0x2a;
+      s.decksurface_top -= GetSystemMetrics(SM_CYCAPTION);
+      MoveWindow(global_unknown_10125a3c,
+                 s.decksurface_x, s.decksurface_top,
+                 s.rect_decksurface.right - s.decksurface_x,
+                 s.rect_decksurface.bottom - s.decksurface_top,
+                 TRUE);
+
+      s.decksurface_x += 0x2a;
+      s.decksurface_top -= GetSystemMetrics(SM_CYCAPTION);
+      MoveWindow(global_unknown_10144b04,
+                 s.decksurface_x, s.decksurface_top,
+                 s.rect_decksurface.right - s.decksurface_x,
+                 s.rect_decksurface.bottom - s.decksurface_top,
+                 TRUE);
+    }
+    SetRect(&s.rect_pad_adc,
+            s.rect_decksurface.left, s.rect_decksurface.bottom,
+            (s.rect_decksurface.right - s.rect_decksurface.left) / 3,
+            s.rect_cardlistfilter.top - s.rect_decksurface.bottom - 3);
+
+    MoveWindow(global_button_stats_hwnd,
+               s.rect_pad_adc.left, s.rect_pad_adc.top,
+               s.rect_pad_adc.right, s.rect_pad_adc.bottom,
+               TRUE);
+
+    MoveWindow(button_exit,
+               s.rect_pad_adc.left + s.rect_pad_adc.right * 2, s.rect_pad_adc.top,
+               s.rect_pad_adc.right, s.rect_pad_adc.bottom,
+               TRUE);
+
+    if (global_db_flags_1 & DBFLAGS_SHANDALAR)
+    {
+      MoveWindow(button_deck1,
+                 s.rect_pad_adc.left + s.rect_pad_adc.right, s.rect_pad_adc.top,
+                 s.rect_pad_adc.right / 3, s.rect_pad_adc.bottom,
+                 TRUE);
+      MoveWindow(button_deck2,
+                 s.rect_pad_adc.left + s.rect_pad_adc.right + s.rect_pad_adc.right / 3, s.rect_pad_adc.top,
+                 s.rect_pad_adc.right / 3, s.rect_pad_adc.bottom,
+                 TRUE);
+      MoveWindow(button_deck3,
+                 s.rect_pad_adc.left + s.rect_pad_adc.right + 2 * s.rect_pad_adc.right / 3, s.rect_pad_adc.top,
+                 s.rect_pad_adc.right / 3, s.rect_pad_adc.bottom,
+                 TRUE);
+    }
+    else
+      MoveWindow(button_deckinfo,
+                 s.rect_pad_adc.left + s.rect_pad_adc.right, s.rect_pad_adc.top,
+                 s.rect_pad_adc.right, s.rect_pad_adc.bottom,
+                 TRUE);
+
+    SendMessageA(global_horzlist_hwnd, 0x1a0, 0, (LPARAM)(unsigned short)global_smallcard_piclist_width);
+    SendMessage(cardlistfilter_hwnd, 0x402,
+                MAKELONG(s.rect_cardlistfilter.left, s.rect_cardlistfilter.right),
+                MAKELONG(s.rect_cardlistfilter.top, s.rect_cardlistfilter.bottom));
+
+    s.wLast = GetWindowWord(global_horzlist_hwnd, HORZLIST_LASTPIC_INDEX);
+    s.horz_list_addr = (int *)GetWindowLongA(global_horzlist_hwnd, HORZLIST_ADDR_INDEX);
+    s.wLeft = GetWindowWord(global_horzlist_hwnd, HORZLIST_LEFTPIC_INDEX);
+    s.wPicsInline = GetWindowWord(global_horzlist_hwnd, HORZLIST_PICSINLINE_INDEX);
+
+    for (s.artist_i = s.wLeft;
+         MIN(s.wPicsInline + s.wLeft, s.wLast) > (int)s.artist_i;
+         ++s.artist_i)
+      FUN_1000942e(global_horzlist_hwnd, s.horz_list_addr[s.artist_i]);
+
+    BringWindowToTop(global_title_hwnd);
+    BringWindowToTop(cardlistfilter_hwnd);
+    BringWindowToTop(global_horzlist_hwnd);
+    BringWindowToTop(global_button_stats_hwnd);
+    BringWindowToTop(button_deckinfo);
+    BringWindowToTop(button_exit);
+    LockWindowUpdate(0);
+
+    if (!(global_db_flags_1 & DBFLAGS_SHANDALAR) && global_cfg.music)
+      play_music(1, 400, 0);
+
+    return 0;
+  }
+
+  case WM_QUERYENDSESSION:
+    if (!global_deck_was_edited || ask_about_saving_deck() != 2)
+      return 1;
+
+    return 0;
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
+
+  return 0;
 }

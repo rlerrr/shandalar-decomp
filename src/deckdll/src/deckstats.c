@@ -217,8 +217,7 @@ build_deck_stats_table(void)
     if (s.row == 7)
     {
       s.col = 5;
-      if (*(int *)&global_raw_cards_storage[s.csvid].subtype1 == 0x2c &&
-          *(int *)&global_raw_cards_storage[s.csvid].subtype2 == 0)
+      if (global_raw_cards_storage[s.csvid].subtype == 0x2c)
         s.row = 1;
     }
 
@@ -306,16 +305,16 @@ build_deck_stats_table(void)
     global_deck_stats[s.row][s.col] += s.amt;
   }
 
-  for (s.i = 0; s.i < 8; ++s.i)
-    for (s.j = 0; s.j < 6; ++s.j)
-      global_deck_stats[s.i][6] += global_deck_stats[s.i][s.j];
+  for (s.j = 0; s.j < 8; ++s.j)
+    for (s.i = 0; s.i < 6; ++s.i)
+      global_deck_stats[s.j][6] += global_deck_stats[s.j][s.i];
 
-  global_deck_stats[0][6] += s.num_five_color_lands * -4;
+  global_deck_stats[0][6] -= s.num_five_color_lands * 4;
 
-  for (s.j = 0; s.j < 6; ++s.j)
-    for (s.i = 0; s.i < 8; ++s.i)
-      if (s.i != 0)
-        global_deck_stats[8][s.j] += global_deck_stats[s.i][s.j];
+  for (s.i = 0; s.i < 6; ++s.i)
+    for (s.j = 0; s.j < 8; ++s.j)
+      if (s.j != 0)
+        global_deck_stats[8][s.i] += global_deck_stats[s.j][s.i];
 
   for (s.i = 0; s.i < 8; ++s.i)
     if (s.i != 0)
@@ -414,12 +413,11 @@ show_stats_values(HDC hdc, SIZE word_size, int stepx, int stepy, int posx, int s
 {
   struct
   {
-    char buf[264];
-    int percent;
-    int l;
-    int y;
-    int c;
-    int x;
+    char buf[264]; // ebp - 0x118
+    int l;         // ebp - 0x10
+    int y;         // ebp - 0xc
+    int c;         // ebp - 8
+    int x;         // ebp - 4
   } s;
 
   s.y = starty;
@@ -437,41 +435,48 @@ show_stats_values(HDC hdc, SIZE word_size, int stepx, int stepy, int posx, int s
       else
         SetTextColor(hdc, global_colorref_stats_flesh);
 
-      if (global_deck_stats[s.l][s.c] == 0)
-      {
-        s.percent = 0;
-        wsprintf(s.buf, "  -", global_deck_stats[s.l][s.c], s.percent);
-      }
-      else
+      if (global_deck_stats[s.l][s.c] != 0)
       {
         if (s.l == 8 || s.c == 6)
         {
+          int percent;
           if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[8][6] == 0)
-            s.percent = 0;
+            percent = 0;
           else
-            s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[8][6] >> 1)) / global_deck_stats[8][6];
+            percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[8][6] >> 1)) / global_deck_stats[8][6];
 
-          wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
+          wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], percent);
         }
         else
         {
+          int percent;
           if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[s.l][6] == 0)
-            s.percent = 0;
+            percent = 0;
           else
-            s.percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[s.l][6] >> 1)) / global_deck_stats[s.l][6];
+            percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[s.l][6] >> 1)) / global_deck_stats[s.l][6];
 
-          wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], s.percent);
+          wsprintf(s.buf, "(%d) %d%%", global_deck_stats[s.l][s.c], percent);
         }
+      }
+      else
+      {
+        int percent;
+        if (global_deck_stats[s.l][s.c] == 0 || global_deck_stats[s.l][6] == 0)
+          percent = 0;
+        else
+          percent = (global_deck_stats[s.l][s.c] * 100 + (global_deck_stats[s.l][6] >> 1)) / global_deck_stats[s.l][6];
+
+        wsprintf(s.buf, "  -", global_deck_stats[s.l][s.c], percent);
       }
 
       TextOut(hdc, s.x, s.y, s.buf, strlen(s.buf));
       s.x += stepx;
     }
 
-    if (s.l == 7)
-      s.y += word_size.cy + stepy;
-    else
+    if (s.l != 7)
       s.y += stepy;
+    else
+      s.y += word_size.cy + stepy;
   }
 }
 
