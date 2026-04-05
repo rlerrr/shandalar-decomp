@@ -63,6 +63,9 @@ unsigned char DAT_10021aa0[0x100 * 8];
 // FUNCTION: DRAWCARDLIB 0x10002ea0
 void MemZeroDwords(undefined8 *param_1,uint param_2)
 {
+#ifdef MODERN_FIXES
+  memset(param_1,0,(size_t)param_2 * 4);
+#else
   //TODO: I don't think MSVC can generate this??  This gotta be inline asm
   __asm {
     mov edi, dword ptr param_1
@@ -94,6 +97,7 @@ void MemZeroDwords(undefined8 *param_1,uint param_2)
     mov byte ptr [edi], 0
   memzero_done:
   }
+#endif
 }
 
 // MATCHING

@@ -61,13 +61,13 @@ undefined1 g_ditherKernelTable[0xd80] = {
 #include "g_ditherKernelTable.inc"
 };
 
-// GLOBAL: CARDARTLIB 0x10031ca0
-// GLOBAL: DRAWCARDLIB 0x10028cf0
+// GLOBAL: CARDARTLIB 0x10031aa0
+// GLOBAL: DRAWCARDLIB 0x10028af0
 undefined1 g_u8ClampTableStorage[0x400];
 
 // GLOBAL: CARDARTLIB 0x1001e058
 // GLOBAL: DRAWCARDLIB 0x10021e48
-undefined1 *g_u8ClampTable = g_u8ClampTableStorage;
+undefined1 *g_u8ClampTable = g_u8ClampTableStorage + 0x200;
 
 // GLOBAL: CARDARTLIB 0x1001e05c
 // GLOBAL: DRAWCARDLIB 0x10021e4c
@@ -93,9 +93,9 @@ char s_MedArt_cat_1001e13c[] = "MedArt.cat";
 // GLOBAL: DRAWCARDLIB 0x10022428
 char s__lf_1001e148[] = "\n";
 
-// GLOBAL: CARDARTLIB 0x100326d8
-// GLOBAL: DRAWCARDLIB 0x1003a5a8
-unsigned char g_waveletScaleTableStorage[0x1000];
+// GLOBAL: CARDARTLIB 0x100322d8
+// GLOBAL: DRAWCARDLIB 0x1003a1a8
+unsigned char g_waveletScaleTableStorage[0x800];
 
 // GLOBAL: CARDARTLIB 0x10032adc
 // GLOBAL: DRAWCARDLIB 0x1003a9ac
@@ -111,7 +111,7 @@ undefined4 DAT_1001e120 = 0x00000002;
 
 // GLOBAL: CARDARTLIB 0x10032ae8
 // GLOBAL: DRAWCARDLIB 0x1003a9b8
-int DAT_10032ae8[0x80];
+int DAT_10032ae8[0x6c];
 
 // GLOBAL: CARDARTLIB 0x1001e090
 // GLOBAL: DRAWCARDLIB 0x10021e80
@@ -121,13 +121,9 @@ char s_Not_enough_memory_for_delta_arra_1001e090[] = "Not enough memory for delt
 // GLOBAL: DRAWCARDLIB 0x10021ea4
 char s_D__Newmagic_sources_NedCard_Pale_1001e0b4[] = "D:\\Newmagic\\sources\\NedCard\\Palette.c";
 
-#ifdef DRAWCARDLIB
+// GLOBAL: CARDARTLIB 0x1001e118
 // GLOBAL: DRAWCARDLIB 0x100223f8
 unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
-#else
-// GLOBAL: CARDARTLIB 0x1001e118
-unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage;
-#endif
 
 // GLOBAL: CARDARTLIB 0x1001e124
 // GLOBAL: DRAWCARDLIB 0x10022404
@@ -135,7 +131,7 @@ undefined4 g_haarScratchInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100eaf00
 // GLOBAL: DRAWCARDLIB 0x10124950
-undefined1 g_yuvClampTableStorage[0x2000];
+undefined1 g_yuvClampTableStorage[0x1c00];
 
 // GLOBAL: CARDARTLIB 0x1001e128
 // GLOBAL: DRAWCARDLIB 0x10022408
@@ -175,7 +171,7 @@ char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\Ned
 
 // GLOBAL: CARDARTLIB 0x10032c98
 // GLOBAL: DRAWCARDLIB 0x1003ab68
-undefined1 g_haarDecodeScratch[0x2000];
+undefined1 g_haarDecodeScratch[0x100000];//[0x7a800];
 
 // GLOBAL: CARDARTLIB 0x100ad498
 // GLOBAL: DRAWCARDLIB 0x100b5368
@@ -849,6 +845,9 @@ void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24,byte *src_bgr24,int dst_x,in
 // FUNCTION: DRAWCARDLIB 0x10008cb8
 void CopyBytes(void *dst,const void *src,size_t num)
 {
+#ifdef MODERN_FIXES
+  memcpy(dst,src,num);
+#else
   //TODO: this looks like real inline asm but who knows
   __asm {
     mov edi, dst
@@ -871,12 +870,16 @@ void CopyBytes(void *dst,const void *src,size_t num)
     rep movsb
   copy_bytes_done:
   }
+#endif
 }
 
 // FUNCTION: CARDARTLIB 0x10007273
 // FUNCTION: DRAWCARDLIB 0x10008cf3
 void SetBytes(void *dst, int value, size_t num)
 {
+#ifdef MODERN_FIXES
+  memset(dst,value,num);
+#else
   //This is weird because it doesn't do anything?
   __int64 uVar1;
   
@@ -903,6 +906,7 @@ void SetBytes(void *dst, int value, size_t num)
     mov eax, value
     rep stosb
   }
+#endif
 }
 
 // FUNCTION: CARDARTLIB 0x100072dc

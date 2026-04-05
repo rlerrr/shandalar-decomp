@@ -1817,7 +1817,7 @@ void ReplaceSubstring(char *inOutStr,char *needle,int caseSensitive,char *replac
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000bd90
-BOOL WINAPI DLLMain(undefined4 hinst, uint reason, undefined4 reserved)
+BOOL WINAPI DllMain(undefined4 hinst, uint reason, undefined4 reserved)
 {
   undefined4 result;
 
@@ -1859,9 +1859,19 @@ int read_cfg(undefined4 param_1)
   s.result = 1;
   _DAT_10124510 = param_1;
   InitializeCriticalSection(&global_critical_section_for_catalog);
-  GetModuleFileNameA((HMODULE)0x0,global_base_directory,0x105);
-  s.lastSlash = strrchr(global_base_directory,'\\');
+
+#ifdef _DEBUG
+  // Allow debugging directly from output directory
+  if (getcwd(global_base_directory, sizeof(global_base_directory)) == NULL)
+  {
+      return 0;
+  }
+#else
+  GetModuleFileNameA((HMODULE)0x0, global_base_directory, 0x105);
+  s.lastSlash = strrchr(global_base_directory, '\\');
   *s.lastSlash = '\0';
+#endif
+
   strcpy(global_cardart_directory,global_base_directory);
   strcat(global_cardart_directory,s__CARDART_10026a48);
   global_dither_kernel_id = 3;

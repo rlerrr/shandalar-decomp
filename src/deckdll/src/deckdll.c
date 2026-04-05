@@ -1729,7 +1729,7 @@ register_classes(void)
 }
 
 // GLOBAL: DECKDLL 0x10104d78
-static int global_unknown_10104d78 = 0;
+static int global_unknown_10104d78;
 
 // FUNCTION: DECKDLL 0x1000f190
 static int __stdcall

@@ -150,9 +150,19 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   InitializeCriticalSection(&global_critical_section_for_small_art);
   InitializeCriticalSection(&global_critical_section_for_big_art);
   InitializeCriticalSection(&global_critical_section_for_catalog);
-  GetModuleFileNameA((HMODULE)0x0,global_base_directory,0x105);
-  s.last_slash = strrchr(global_base_directory,0x5c);
+
+#ifdef _DEBUG
+  // Allow debugging directly from output directory
+  if (getcwd(global_base_directory, sizeof(global_base_directory)) == NULL)
+  {
+      return 0;
+  }
+#else
+  GetModuleFileNameA((HMODULE)0x0, global_base_directory, 0x105);
+  s.last_slash = strrchr(global_base_directory, 0x5c);
   *s.last_slash = '\0';
+#endif
+
   strcpy(global_cartart_directory,global_base_directory);
   strcat(global_cartart_directory,s__CARDART_1001d1e0);
   InitCardArtGdiResources();
