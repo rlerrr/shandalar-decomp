@@ -26,7 +26,7 @@ static const char *const_db_artist_names[] = {
     "Dennis Detwiller",
     "Douglas Shuler",
     "Drew Tucker",
-    "Edward Beard Jr.",
+    "Edward Beard\xB8 Jr.",
     "Fay Jones",
     "Frank Frazier",
     "Harold McNeill",
@@ -49,7 +49,7 @@ static const char *const_db_artist_names[] = {
     "Michael Whelan",
     "Mike Kimble",
     "Nicola Leonard",
-    "Nene Thomas",
+    "N\xE8N\xE8 Thomas",
     "Pat Morrissey",
     "Pete Venters",
     "Phil Foglio",
@@ -62,13 +62,13 @@ static const char *const_db_artist_names[] = {
     "Sandra Everingham",
     "Scott Kirschner",
     "Susan Van Camp",
-    "Tom Wanerstrand",
+    "Tom W\xE4nerstrand",
     "Unknown",
 };
 
 // GLOBAL: DECKDLL 0x101427b4
 // GLOBAL: MAGIC 0x8b40d0
-int global_available_slots = 0;
+int global_available_slots;
 
 // GLOBAL: DECKDLL 0x10147220
 // GLOBAL: MAGIC 0x8d0350

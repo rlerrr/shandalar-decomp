@@ -544,9 +544,9 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   WndprocDeckSurfaceLocals s;
   // GLOBAL: DECKDLL 0x1003105c
-  static int cleared_global_deck_num_entries;
+  static int cleared_global_deck_num_entries = 0;
   // GLOBAL: DECKDLL 0x10031060
-  static int cleared_global_deck_num_cards;
+  static int cleared_global_deck_num_cards = 0;
   // GLOBAL: DECKDLL 0x101f1e40
   static char mosaic_order[50];
 
@@ -1111,17 +1111,17 @@ LRESULT CALLBACK wndproc_SideboardSurfaceClass(HWND hwnd, UINT msg, WPARAM wpara
 {
   // Sideboard "clear/restore" saved totals.
   // GLOBAL: DECKDLL 0x10031064
-  static int saved_sideboard_total_none;
+  static int saved_sideboard_total_none = 0;
   // GLOBAL: DECKDLL 0x10031068
-  static int saved_sideboard_total_black;
+  static int saved_sideboard_total_black = 0;
   // GLOBAL: DECKDLL 0x1003106c
-  static int saved_sideboard_total_blue;
+  static int saved_sideboard_total_blue = 0;
   // GLOBAL: DECKDLL 0x10031070
-  static int saved_sideboard_total_green;
+  static int saved_sideboard_total_green = 0;
   // GLOBAL: DECKDLL 0x10031074
-  static int saved_sideboard_total_white;
+  static int saved_sideboard_total_white = 0;
   // GLOBAL: DECKDLL 0x10031078
-  static int saved_sideboard_total_red;
+  static int saved_sideboard_total_red = 0;
 
   struct
   {
@@ -1548,19 +1548,19 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
 {
   // Trade "clear/restore" saved totals.
   // GLOBAL: DECKDLL 0x1003107c
-  static int saved_trade_total_deck;
+  static int saved_trade_total_deck = 0;
   // GLOBAL: DECKDLL 0x10031080
-  static int saved_trade_total_none;
+  static int saved_trade_total_none = 0;
   // GLOBAL: DECKDLL 0x10031084
-  static int saved_trade_total_black;
+  static int saved_trade_total_black = 0;
   // GLOBAL: DECKDLL 0x10031088
-  static int saved_trade_total_blue;
+  static int saved_trade_total_blue = 0;
   // GLOBAL: DECKDLL 0x1003108c
-  static int saved_trade_total_green;
+  static int saved_trade_total_green = 0;
   // GLOBAL: DECKDLL 0x10031090
-  static int saved_trade_total_white;
+  static int saved_trade_total_white = 0;
   // GLOBAL: DECKDLL 0x10031094
-  static int saved_trade_total_red;
+  static int saved_trade_total_red = 0;
 
   struct
   {

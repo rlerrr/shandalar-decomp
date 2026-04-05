@@ -79,10 +79,10 @@ static char global_dbart_path[264];
 static char global_duel_dat_path[MAX_PATH + 15];
 
 // GLOBAL: DECKDLL 0x10143c4c
-int global_DIB_debug = 0;
+int global_DIB_debug;
 
 // GLOBAL: DECKDLL 0x10143fbc
-DBFlags global_db_flags_1 = DBFLAGS_0;
+DBFlags global_db_flags_1;
 // GLOBAL: DECKDLL 0x1019f00c
 DBFlags global_db_flags_2 = DBFLAGS_0;
 // GLOBAL: DECKDLL 0x101bc0c4
@@ -102,10 +102,10 @@ static bool global_cfg_read_by_name = false;
 bool global_cfg_view_all = false;
 
 // GLOBAL: DECKDLL 0x1012e898
-static int global_current_deck = 0;
+static int global_current_deck;
 
 // GLOBAL: DECKDLL 0x10144370
-static int *global_external_current_deck = NULL;
+static int *global_external_current_deck;
 
 // GLOBAL: DECKDLL 0x101f1e80
 int *deck = NULL;
@@ -118,7 +118,7 @@ int global_deck_num_cards = 0;
 // GLOBAL: DECKDLL 0x101a9694
 int global_deck_num_entries = 0;
 // GLOBAL: DECKDLL 0x1012e88c
-static int global_deck_num_entries_copy = 0;
+static int global_deck_num_entries_copy;
 
 // STATIC_ASSERT(sizeof(FullDeck) == 0x1464, full_deck_wrong_size);
 
@@ -131,9 +131,9 @@ int global_edited_deck_num_entries = 0;
 static DeckEntry global_excessive_cards[84];
 
 // GLOBAL: DECKDLL 0x1012ea0c
-bool global_deck_was_edited = false;
+bool global_deck_was_edited;
 // GLOBAL: DECKDLL 0x1014436c
-static bool global_deckname_set = false;
+static bool global_deckname_set;
 // GLOBAL: DECKDLL 0x1019f010
 static int global_deckbuilder_unknown_1019f010 = 0;
 
@@ -144,10 +144,10 @@ static char global_ui_strings_filename[MAX_PATH + 1];
 static char global_artistline[128];
 
 // GLOBAL: DECKDLL 0x1012df44
-static int global_unknown_1012df44 = 0;
+static int global_unknown_1012df44;
 
 // GLOBAL: DECKDLL 0x1012df34
-static int global_supports_palette = 0;
+static int global_supports_palette;
 
 // GLOBAL: DECKDLL 0x101bbefc
 static int global_color_depth = 0;
@@ -156,12 +156,12 @@ static int global_color_depth = 0;
 GlobalDeckInfoBlob global_deckinfo;
 
 // GLOBAL: DECKDLL 0x10142814
-static char *global_external_deckname = NULL;
+static char *global_external_deckname;
 
 // GLOBAL: DECKDLL 0x101bc604
 int global_dlg_parameter = 0;
 // GLOBAL: DECKDLL 0x101423d0
-int global_dlg_result = 0;
+int global_dlg_result;
 // GLOBAL: DECKDLL 0x10143ae0
 static char global_ask_x_dlg_title[52];
 // GLOBAL: DECKDLL 0x101127e0
@@ -170,116 +170,116 @@ static char global_loaddeck_dlg_filename[MAX_PATH + 15 + 10];
 static HBRUSH global_brush_gold1 = NULL;
 static HBRUSH global_brush_gold2 = NULL;
 // GLOBAL: DECKDLL 0x10104c94
-static HBRUSH global_brush_mediumgrey = NULL;
+static HBRUSH global_brush_mediumgrey;
 // GLOBAL: DECKDLL 0x101a9654
 static HBRUSH global_create_brush_0 = NULL;
 // GLOBAL: DECKDLL 0x10144c40
-static HBRUSH global_create_brush_1 = NULL;
+static HBRUSH global_create_brush_1;
 // GLOBAL: DECKDLL 0x1012d68c
-static HBRUSH global_create_brush_2 = NULL;
+static HBRUSH global_create_brush_2;
 // GLOBAL: DECKDLL 0x10139f14
-static HBRUSH global_create_brush_3 = NULL;
+static HBRUSH global_create_brush_3;
 // GLOBAL: DECKDLL 0x10142f00
-static HBRUSH global_create_brush_4 = NULL;
+static HBRUSH global_create_brush_4;
 // GLOBAL: DECKDLL 0x1012e894
-HBRUSH global_create_brush_5 = NULL;
+HBRUSH global_create_brush_5;
 // GLOBAL: DECKDLL 0x10132c3c
-HBRUSH global_create_brush_6 = NULL;
+HBRUSH global_create_brush_6;
 // GLOBAL: DECKDLL 0x1012e890
-static HANDLE global_delete_brush_handle_0 = NULL;
+static HANDLE global_delete_brush_handle_0;
 // GLOBAL: DECKDLL 0x10142efc
-static HANDLE global_delete_brush_handle_1 = NULL;
+static HANDLE global_delete_brush_handle_1;
 // GLOBAL: DECKDLL 0x101bbf00
 static HANDLE global_delete_brush_handle_2 = NULL;
 // GLOBAL: DECKDLL 0x10139e2c
-static HANDLE global_delete_brush_handle_3 = NULL;
+static HANDLE global_delete_brush_handle_3;
 // GLOBAL: DECKDLL 0x1014470c
-static HANDLE global_delete_brush_handle_4 = NULL;
+static HANDLE global_delete_brush_handle_4;
 // GLOBAL: DECKDLL 0x1012e62c
-static HANDLE global_delete_brush_handle_5 = NULL;
+static HANDLE global_delete_brush_handle_5;
 // GLOBAL: DECKDLL 0x101a9708
 static HANDLE global_delete_brush_handle_6 = NULL;
 
 // GLOBAL: DECKDLL 0x10104d74
-COLORREF global_colorref_darkgrey = 0;
+COLORREF global_colorref_darkgrey;
 // GLOBAL: DECKDLL 0x10104c90
-COLORREF global_colorref_flesh = 0;
+COLORREF global_colorref_flesh;
 COLORREF global_colorref_lavender = 0;
 // GLOBAL: DECKDLL 0x10104d70
-COLORREF global_colorref_lightgrey = 0;
+COLORREF global_colorref_lightgrey;
 // GLOBAL: DECKDLL 0x10104ca0
-COLORREF global_colorref_white = 0;
+COLORREF global_colorref_white;
 
 // GLOBAL: DECKDLL 0x10113f6c
-HANDLE global_pic_ability = NULL;
+HANDLE global_pic_ability;
 // GLOBAL: DECKDLL 0x1014422c
-HANDLE global_pic_antiquit = NULL;
+HANDLE global_pic_antiquit;
 // GLOBAL: DECKDLL 0x10143b14
-HANDLE global_pic_arabnite = NULL;
+HANDLE global_pic_arabnite;
 // GLOBAL: DECKDLL 0x10125ba4
-HANDLE global_pic_artifact = NULL;
+HANDLE global_pic_artifact;
 // GLOBAL: DECKDLL 0x10146df4
-HANDLE global_pic_astral = NULL;
+HANDLE global_pic_astral;
 // GLOBAL: DECKDLL 0x1012d7d4
-HANDLE global_pic_grey = NULL;
+HANDLE global_pic_grey;
 // GLOBAL: DECKDLL 0x1012d7bc
-HANDLE global_pic_bldr01c = NULL;
+HANDLE global_pic_bldr01c;
 // GLOBAL: DECKDLL 0x1012d7c0
-HANDLE global_pic_bldr02c = NULL;
+HANDLE global_pic_bldr02c;
 // GLOBAL: DECKDLL 0x1012d7c8
-HANDLE global_pic_bldr03c = NULL;
+HANDLE global_pic_bldr03c;
 // GLOBAL: DECKDLL 0x1012d7cc
-HANDLE global_pic_bldr04c = NULL;
+HANDLE global_pic_bldr04c;
 // GLOBAL: DECKDLL 0x1012d7c4
-HANDLE global_pic_bldr05c = NULL;
+HANDLE global_pic_bldr05c;
 // GLOBAL: DECKDLL 0x1019f74c
 HANDLE global_pic_blue = NULL;
 // GLOBAL: DECKDLL 0x10144ef0
-HANDLE global_pic_castcost = NULL;
+HANDLE global_pic_castcost;
 // GLOBAL: DECKDLL 0x1012e2d4
-HANDLE global_pic_creature = NULL;
+HANDLE global_pic_creature;
 // GLOBAL: DECKDLL 0x10141b84
-HANDLE global_pic_dark = NULL;
+HANDLE global_pic_dark;
 // GLOBAL: DECKDLL 0x1012e89c
-HANDLE global_pic_dekbar1 = NULL;
+HANDLE global_pic_dekbar1;
 // GLOBAL: DECKDLL 0x101bc43c
 HANDLE global_pic_dektile4 = NULL;
 // GLOBAL: DECKDLL 0x101bc484
 HANDLE global_pic_dektit1 = NULL;
 // GLOBAL: DECKDLL 0x10144230
-HANDLE global_pic_enchant = NULL;
+HANDLE global_pic_enchant;
 // GLOBAL: DECKDLL 0x100f2854
-HANDLE global_groupmove_pic = NULL;
+HANDLE global_groupmove_pic;
 // GLOBAL: DECKDLL 0x1019e9d4
 HANDLE global_pic_fourth = NULL;
 // GLOBAL: DECKDLL 0x10132c34
-HANDLE global_pic_yellow = NULL;
+HANDLE global_pic_yellow;
 // GLOBAL: DECKDLL 0x10125668
-HANDLE global_pic_green = NULL;
+HANDLE global_pic_green;
 // GLOBAL: DECKDLL 0x100f284c
-HANDLE global_deckinfo_pic = NULL;
+HANDLE global_deckinfo_pic;
 // GLOBAL: DECKDLL 0x1012dc54
-HANDLE global_pic_instant = NULL;
+HANDLE global_pic_instant;
 // GLOBAL: DECKDLL 0x1012df38
-HANDLE global_pic_interrupt = NULL;
+HANDLE global_pic_interrupt;
 // GLOBAL: DECKDLL 0x101a970c
 HANDLE global_pic_land = NULL;
 // GLOBAL: DECKDLL 0x1014294c
-HANDLE global_pic_legends = NULL;
+HANDLE global_pic_legends;
 // GLOBAL: DECKDLL 0x1019eedc
 HANDLE global_pic_power = NULL;
 // GLOBAL: DECKDLL 0x10113e38
-HANDLE global_pic_rarity = NULL;
+HANDLE global_pic_rarity;
 // GLOBAL: DECKDLL 0x10139cd0
-HANDLE global_pic_red = NULL;
+HANDLE global_pic_red;
 // GLOBAL: DECKDLL 0x101140b4
-HANDLE global_pic_sorcery = NULL;
+HANDLE global_pic_sorcery;
 // GLOBAL: DECKDLL 0x1019f828
 HANDLE global_pic_statbak1 = NULL;
 // GLOBAL: DECKDLL 0x10144c3c
-HANDLE global_pic_tough = NULL;
+HANDLE global_pic_tough;
 // GLOBAL: DECKDLL 0x10146b60
-HANDLE global_pic_artist = NULL;
+HANDLE global_pic_artist;
 // GLOBAL: DECKDLL 0x1019e9cc
 HANDLE global_pic_all_butn = NULL;
 
@@ -290,27 +290,27 @@ HBITMAP global_hbmp = NULL;
 static HGDIOBJ global_old_bmp_obj = NULL;
 
 // GLOBAL: DECKDLL 0x10125e0c
-static HFONT DAT_10125e0c = NULL;
+static HFONT DAT_10125e0c;
 
 // GLOBAL: DECKDLL 0x10113cec
-int global_smallcard_normal_width = 0;
+int global_smallcard_normal_width;
 // GLOBAL: DECKDLL 0x1012e4f4
-int global_smallcard_normal_height = 0;
+int global_smallcard_normal_height;
 
 // GLOBAL: DECKDLL 0x101bc448
 int global_smallcard_smaller_width = 0;
 // GLOBAL: DECKDLL 0x10113cf0
-int global_smallcard_smaller_height = 0;
+int global_smallcard_smaller_height;
 
 // GLOBAL: DECKDLL 0x10143fc0
-int global_smallcard_smallest_width = 0;
+int global_smallcard_smallest_width;
 // GLOBAL: DECKDLL 0x1014532c
-int global_smallcard_smallest_height = 0;
+int global_smallcard_smallest_height;
 
 // GLOBAL: DECKDLL 0x10132c40
-int global_smallcard_piclist_height = 0;
+int global_smallcard_piclist_height;
 // GLOBAL: DECKDLL 0x10143e88
-int global_smallcard_piclist_width = 0;
+int global_smallcard_piclist_width;
 
 HFONT global_font_42 = NULL;
 HFONT global_font_42unused = NULL;
@@ -322,56 +322,56 @@ HFONT global_font_32 = NULL;
 static int global_fonts_init_state = 0;
 
 // GLOBAL: DECKDLL 0x10104abc
-static HBITMAP global_damage_pic = NULL;
+static HBITMAP global_damage_pic;
 // GLOBAL: DECKDLL 0x101048b0
-static HBITMAP global_card_counters_pic = NULL;
+static HBITMAP global_card_counters_pic;
 // GLOBAL: DECKDLL 0x10104ac4
-static HBITMAP global_mana_symbols_pic = NULL;
+static HBITMAP global_mana_symbols_pic;
 // GLOBAL: DECKDLL 0x10104aac
-static HBITMAP global_abilities_pic = NULL;
+static HBITMAP global_abilities_pic;
 // GLOBAL: DECKDLL 0x10104718
-static HBITMAP global_mana_stripes_pic = NULL;
+static HBITMAP global_mana_stripes_pic;
 // GLOBAL: DECKDLL 0x101048b4
-static HBITMAP global_summon_pic = NULL;
+static HBITMAP global_summon_pic;
 // GLOBAL: DECKDLL 0x10104564
-static HBITMAP global_dying_pic = NULL;
+static HBITMAP global_dying_pic;
 // GLOBAL: DECKDLL 0x10104714
-static HBITMAP global_target_pic = NULL;
+static HBITMAP global_target_pic;
 // GLOBAL: DECKDLL 0x10104ab8
-static HBITMAP global_cant_target_pic = NULL;
+static HBITMAP global_cant_target_pic;
 // GLOBAL: DECKDLL 0x1010456c
-static HBITMAP global_will_untap_pic = NULL;
+static HBITMAP global_will_untap_pic;
 
 // GLOBAL: DECKDLL 0x10104710
-static HFONT global_smallcard_pt_font = NULL;
+static HFONT global_smallcard_pt_font;
 // GLOBAL: DECKDLL 0x1010452c
-static HFONT global_damage_font = NULL;
+static HFONT global_damage_font;
 // GLOBAL: DECKDLL 0x101048b8
-static HFONT global_idtag_font = NULL;
+static HFONT global_idtag_font;
 
 // GLOBAL: DECKDLL 0x1010470c
-static COLORREF global_palette_col_c9 = 0;
+static COLORREF global_palette_col_c9;
 // GLOBAL: DECKDLL 0x10104ac0
-static COLORREF global_palette_col_9e_a = 0;
+static COLORREF global_palette_col_9e_a;
 // GLOBAL: DECKDLL 0x10104700
-static COLORREF global_palette_col_9e_b = 0;
+static COLORREF global_palette_col_9e_b;
 // GLOBAL: DECKDLL 0x10104528
-static COLORREF global_palette_col_7c = 0;
+static COLORREF global_palette_col_7c;
 // GLOBAL: DECKDLL 0x10104704
-static COLORREF global_palette_col_2f = 0;
+static COLORREF global_palette_col_2f;
 // GLOBAL: DECKDLL 0x10104708
-static COLORREF global_palette_col_bf = 0;
+static COLORREF global_palette_col_bf;
 // GLOBAL: DECKDLL 0x10104568
-static COLORREF global_palette_col_5d = 0;
+static COLORREF global_palette_col_5d;
 // GLOBAL: DECKDLL 0x10104ab4
-static COLORREF global_palette_col_1f = 0;
+static COLORREF global_palette_col_1f;
 
 // GLOBAL: DECKDLL 0x10104ab0
-static HPEN global_pen_palette_5d = NULL;
+static HPEN global_pen_palette_5d;
 // GLOBAL: DECKDLL 0x10104afc
-static HPEN global_pen_palette_1f = NULL;
+static HPEN global_pen_palette_1f;
 // GLOBAL: DECKDLL 0x10104a50
-static HPEN global_debug_pens[10] = {0};
+static HPEN global_debug_pens[10];
 
 static LOGFONT global_font_template_ini = {
     0,                           // lfHeight
@@ -432,9 +432,9 @@ static int global_main_window_width = 0;
 static int global_main_window_height = 0;
 
 // GLOBAL: DECKDLL 0x10144eec
-int global_smallcard_height = 0;
+int global_smallcard_height;
 // GLOBAL: DECKDLL 0x1013a17c
-int global_smallcard_width = 0;
+int global_smallcard_width;
 
 // GLOBAL: DECKDLL 0x10141b4c
 static HMENU global_smallcard_popup;
@@ -1347,7 +1347,7 @@ bool process_cue_cards(MSG *msg)
   // GLOBAL: DECKDLL 0x100327d4
   static int last_cursor_y = 0;
   // GLOBAL: DECKDLL 0x100f30a0
-  static HWND last_hwnd = NULL;
+  static HWND last_hwnd;
 
   if (msg->message == WM_TIMER && msg->hwnd == global_main_hwnd && msg->wParam == 0)
   {
@@ -1658,7 +1658,7 @@ bool register_MainClass(void)
 bool register_CardListFilterClass(void)
 {
   // GLOBAL: DECKDLL 0x10030024
-  static int DAT_10030024 = 0xe;
+  static int DAT_10030024 = 4;
   REGISTER_AND_RETURN_CLASS("MAGICDECK_CardListFiltersClass",
                             wndproc_CardListFilterClass,
                             CS_HREDRAW | CS_VREDRAW,
@@ -4319,14 +4319,14 @@ static bool handle_card_list_click_or_drag(HWND hwnd, int singleclick, int shift
 LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   // GLOBAL: DECKDLL 0x10105740
-  static HDC DAT_10105740 = NULL;
+  static HDC DAT_10105740;
   // GLOBAL: DECKDLL 0x101052d0
   static LOGFONT DAT_101052d0;
   // GLOBAL: DECKDLL 0x1010530c
-  static HFONT DAT_1010530c = NULL;
+  static HFONT DAT_1010530c;
 
   // GLOBAL: DECKDLL 0x1003a7cc
-  static int sellprice;
+  static int sellprice = 0;
   // GLOBAL: DECKDLL 0x10105310
   static csvid_t curr_csvid;
   // GLOBAL: DECKDLL 0x1003a790
@@ -6006,11 +6006,11 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct WndprocMainClassLocals s;
   // GLOBAL: DECKDLL 0x10104c98
-  static HPEN pen_ltgrey = NULL;
+  static HPEN pen_ltgrey;
   // GLOBAL: DECKDLL 0x10104c9c
-  static HPEN pen_medgrey = NULL;
+  static HPEN pen_medgrey;
   // GLOBAL: DECKDLL 0x10104ca4
-  static HGDIOBJ mainclass_destroy_obj = NULL;
+  static HGDIOBJ mainclass_destroy_obj;
   // wndproc_MainClass statics
   // GLOBAL: DECKDLL 0x101a8c24
   static HWND button_deckinfo;

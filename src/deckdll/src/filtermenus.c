@@ -81,7 +81,7 @@ static void rotatem();
 static bool show_dialog_filter_gle(int textline);
 static int show_dialog_filter_subtype(int mode);
 // GLOBAL: DECKDLL 0x10104d80
-static int global_filter_gle_dlg_value = 0;
+static int global_filter_gle_dlg_value;
 
 // GLOBAL: DECKDLL 0x10104d84
 static HANDLE global_filter_creature_background_pic;
@@ -137,25 +137,25 @@ static HMENU global_filtermenu_newexp;
 
 // These are never set false.
 // GLOBAL: DECKDLL 0x10113d0c
-static bool global_filtermenu_castcost_enabled = true;
+static bool global_filtermenu_castcost_enabled;
 // GLOBAL: DECKDLL 0x10113d10
-static bool global_filtermenu_power_enabled = true;
+static bool global_filtermenu_power_enabled;
 // GLOBAL: DECKDLL 0x10113d14
-static bool global_filtermenu_toughness_enabled = true;
+static bool global_filtermenu_toughness_enabled;
 // GLOBAL: DECKDLL 0x10113d18
-static bool global_filtermenu_ability_enabled = true;
+static bool global_filtermenu_ability_enabled;
 // GLOBAL: DECKDLL 0x10113d1c
-static bool global_filtermenu_rarity_enabled = true;
+static bool global_filtermenu_rarity_enabled;
 // GLOBAL: DECKDLL 0x10113d20
-static bool global_filtermenu_artist_enabled = true;
+static bool global_filtermenu_artist_enabled;
 // GLOBAL: DECKDLL 0x10113d08
-static bool global_filtermenu_gold_enabled = true; // And this one isn't even used except for setting it true.
+static bool global_filtermenu_gold_enabled;
 
 // GLOBAL: DECKDLL 0x101a9190
 struct global_filters_t global_filters;
 
 // GLOBAL: DECKDLL 0x10113d04
-short global_filter_cardsets_flags = FCSF_0;
+short global_filter_cardsets_flags;
 
 // GLOBAL: DECKDLL 0x10104d9c
 static HANDLE global_filter_subtype_background_pic;
