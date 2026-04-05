@@ -68,26 +68,31 @@ void MemZeroDwords(undefined8 *param_1,uint param_2)
     mov edi, dword ptr param_1
     mov ecx, dword ptr param_2
     test edi, 4
-    je 0xd
+    je memzero_aligned
     mov byte ptr [edi], 0
     add edi, 4
     dec ecx
-    jle 0x2e
+    jle memzero_done
+  memzero_aligned:
     push ecx
     shr ecx, 1
     dec ecx
-    jl 0x16
+    jl memzero_tail
     fldz
-    je 0xc
+    je memzero_store_last_qword
+  memzero_qword_loop:
     fst qword ptr [edi]
     add edi, 8
     dec ecx
-    jne -0xc
+    jne memzero_qword_loop
+  memzero_store_last_qword:
     fstp qword ptr [edi]
+  memzero_tail:
     pop ecx
     and ecx, 1
-    je 0x3
+    je memzero_done
     mov byte ptr [edi], 0
+  memzero_done:
   }
 }
 

@@ -33,3 +33,9 @@ Additionally:
 See [LEGO Island Decompilation](https://github.com/isledecomp)
 
 A copy of [MSVC 4.20](https://github.com/itsmattkc/MSVC420) and [MASM](https://github.com/qb40/masm) are needed, as well as a recent version of [CMake](https://cmake.org/)
+
+In order to enable fixes for running on modern windows invoke CMake like:
+```shell
+cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSHANDALAR_MODERN_FIXES=ON
+``` 
+ See `MODERN_FIXES` flag use in code for what that means precisely.

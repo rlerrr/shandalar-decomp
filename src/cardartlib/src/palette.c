@@ -24,7 +24,7 @@ STATIC_ASSERT(sizeof(OctNode) == 0x30, OctNode_wrong_size);
 /* Forward declarations for globals referenced before their definitions. */
 void checked_DeleteDC_DeleteObject(HDC param_1,HGDIOBJ param_2);
 void DestroyCardArtPalette(void);
-undefined2 * ReadPalette(char *param_1,char *param_2);
+undefined2 * ReadPalette(char *palette_text_path,char *palette_binary_path);
 void DestroyPaletteOctree(void);
 BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
                                            HBITMAP *out_bmp_optional,HGDIOBJ *obj_to_select_optional,void **out_bits_optional);
@@ -534,25 +534,25 @@ void * OctreeNode_Create(void)
 // FUNCTION: DRAWCARDLIB 0x10001033
 // FUNCTION: DECKDLL 0x100099e4
 // FUNCTION: MAGIC 0x004b9c54
-undefined2 * ReadPalette(char *param_1,char *param_2)
+undefined2 * ReadPalette(char *palette_text_path,char *palette_binary_path)
 {
   struct {
-    uint rgbTemp;
-    char local_120 [256];
-    int local_20;
-    int local_1c;
-    FILE *local_18;
-    char *local_14;
-    int local_10;
-    uint local_c;
-    undefined2 *local_8;
+    uint rgb_color;
+    char line[256];
+    int palette_index;
+    int green;
+    FILE *palette_file;
+    char *path_start;
+    int red;
+    uint blue;
+    undefined2 *palette_data;
   } s;
   
-  s.local_20 = 0;
-  s.local_8 = &DAT_10116cf0;
-  *s.local_8 = 0x300;
-  s.local_18 = fopen(param_1,s__rt_1001e064);
-  if (s.local_18 == (FILE *)0x0) {
+  s.palette_index = 0;
+  s.palette_data = &DAT_10116cf0;
+  *s.palette_data = 0x300;
+  s.palette_file = fopen(palette_text_path,s__rt_1001e064);
+  if (s.palette_file == (FILE *)0x0) {
     return 0;
   }
 
@@ -560,46 +560,52 @@ undefined2 * ReadPalette(char *param_1,char *param_2)
     Octree_Destroy(g_paletteOctreeRoot);
   }
   g_paletteOctreeRoot = OctreeNode_Create();
-  fgets(s.local_120,0xff,s.local_18);
-  while ((s.local_18->_flag & 0x10) == 0) {
-    sscanf(s.local_120,s__d____d__d__d_1001e068,&s.local_20,&s.local_10,&s.local_1c,&s.local_c);
-    s.local_14 = strchr(s.local_120,0x2d) + 1;
-    s.local_14 = strchr(s.local_14,0x2d) + 1;
+#ifdef MODERN_FIXES
+  while (fgets(s.line,0xff,s.palette_file) != (char *)0x0) {
+#else
+  fgets(s.line,0xff,s.palette_file);
+  while ((s.palette_file->_flag & 0x10) == 0) {
+#endif
+    sscanf(s.line,s__d____d__d__d_1001e068,&s.palette_index,&s.red,&s.green,&s.blue);
+    s.path_start = strchr(s.line,0x2d) + 1;
+    s.path_start = strchr(s.path_start,0x2d) + 1;
 
-    Octree_InsertPathString(g_paletteOctreeRoot,s.local_14,s.local_20);
-    s.rgbTemp = s.local_10 << 0x10 | s.local_1c << 8 | s.local_c;
-    ((uint *)g_paletteRgbTable)[s.local_20] = s.rgbTemp;
-    *(undefined1 *)(s.local_8 + s.local_20 * 2 + 2) = (undefined1)s.local_10;
-    *(undefined1 *)((int)s.local_8 + s.local_20 * 4 + 5) = (undefined1)s.local_1c;
-    *(undefined1 *)(s.local_8 + s.local_20 * 2 + 3) = (undefined1)s.local_c;
-    if ((s.local_20 == 0) || (s.local_20 == 0xff)) {
-      *(undefined1 *)((int)s.local_8 + s.local_20 * 4 + 7) = 0;
+    Octree_InsertPathString(g_paletteOctreeRoot,s.path_start,s.palette_index);
+    s.rgb_color = s.red << 0x10 | s.green << 8 | s.blue;
+    ((uint *)g_paletteRgbTable)[s.palette_index] = s.rgb_color;
+    *(undefined1 *)(s.palette_data + s.palette_index * 2 + 2) = (undefined1)s.red;
+    *(undefined1 *)((int)s.palette_data + s.palette_index * 4 + 5) = (undefined1)s.green;
+    *(undefined1 *)(s.palette_data + s.palette_index * 2 + 3) = (undefined1)s.blue;
+    if ((s.palette_index == 0) || (s.palette_index == 0xff)) {
+      *(undefined1 *)((int)s.palette_data + s.palette_index * 4 + 7) = 0;
     }
     else {
-      *(undefined1 *)((int)s.local_8 + s.local_20 * 4 + 7) = 1;
+      *(undefined1 *)((int)s.palette_data + s.palette_index * 4 + 7) = 1;
     }
-    fgets(s.local_120,0xff,s.local_18);
+#ifndef MODERN_FIXES
+    fgets(s.line,0xff,s.palette_file);
+#endif
   }
   DAT_100322d4 = 0;
   DAT_1001d240 = DAT_100322d4;
   _DAT_10031eb8 = OctreeNode_FinalizeSubtree(g_paletteOctreeRoot);
   DAT_1001d240 = DAT_1001d240 + -1;
-  s.local_8[1] = 0x100;
-  fclose(s.local_18);
-  s.local_18 = (FILE *)0x0;
-  if (param_2 != (char *)0x0) {
-    s.local_18 = fopen(param_2,s__rb_1001e078);
+  s.palette_data[1] = 0x100;
+  fclose(s.palette_file);
+  s.palette_file = (FILE *)0x0;
+  if (palette_binary_path != (char *)0x0) {
+    s.palette_file = fopen(palette_binary_path,s__rb_1001e078);
   }
-  if (s.local_18 != (FILE *)0x0) {
-    fread(&DAT_10116cf0,0x404,1,s.local_18);
-    fclose(s.local_18);
+  if (s.palette_file != (FILE *)0x0) {
+    fread(&DAT_10116cf0,0x404,1,s.palette_file);
+    fclose(s.palette_file);
   }
-  *(undefined1 *)((int)s.local_8 + 0x403) = 0;
-  *(undefined1 *)((int)s.local_8 + 7) = *(undefined1 *)((int)s.local_8 + 0x403);
+  *(undefined1 *)((int)s.palette_data + 0x403) = 0;
+  *(undefined1 *)((int)s.palette_data + 7) = *(undefined1 *)((int)s.palette_data + 0x403);
   InitOctreeBitTables();
   InitDiffSquaredLookupTable();
 
-  return s.local_8;
+  return s.palette_data;
 }
 
 // FUNCTION: CARDARTLIB 0x10004cd7

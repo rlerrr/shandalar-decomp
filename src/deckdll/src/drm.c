@@ -39,7 +39,7 @@ uint32_t DAT_101bc86c;
 int DAT_101bc870;
 
 // GLOBAL: DECKDLL 0x101bc874
-int DAT_101bc874;
+int global_Windows_FirstInstallDateTime;
 
 // GLOBAL: DECKDLL 0x101bc878
 int DAT_101bc878;
@@ -82,92 +82,97 @@ void ReverseBits32(uint *param_1)
 // FUNCTION: MAGIC 0x0043d29b
 int InitLicenseSecretsFromRegistry(void)
 {
+#ifndef MODERN_FIXES
   struct
   {
-    int pad2;
-    size_t sVar1;
-    int pad;
+    int sProductIdLength;
+    size_t sFirstInstallDateTimeLength;
+    int sWindowsCurrentVersionKeyLength;
     int local_420;
-    DWORD local_41c;
-    size_t local_418;
+    DWORD lpcbData;
+    size_t winProductIdLength;
     uint i;
-    HKEY local_410;
-    BYTE local_40c[1024];
-    char *local_c;
-    DWORD local_8;
+    HKEY hKey;
+    BYTE winProductId[1024];
+    char *prodKeyPtr;
+    DWORD lpType;
   } s;
 
-  s.local_c = NULL;
+  s.prodKeyPtr = NULL;
+  // This generates "SOFTWARE\Microsoft\Windows\CurrentVersion"
   for (s.i = 0; strlen(s__100330c8) > s.i; s.i++)
   {
     s__100330c8[s.i] = DAT_10033008[s.i] ^ 0x41;
   }
-  s.pad = strlen(s__100330c8);
-  s__100330c8[s.pad] = '\0';
+  s.sWindowsCurrentVersionKeyLength = strlen(s__100330c8);
+  s__100330c8[s.sWindowsCurrentVersionKeyLength] = '\0';
 
-  if (RegOpenKeyA((HKEY)0x80000002, s__100330c8, &s.local_410) != 0)
+  if (RegOpenKeyA((HKEY)0x80000002, s__100330c8, &s.hKey) != 0)
   {
     ScrubString(s__100330c8);
     return 1;
   }
 
   ScrubString(s__100330c8);
-  s.local_8 = 4;
-  s.local_41c = 4;
+  s.lpType = 4;
+  s.lpcbData = 4;
 
+  // This generates "FirstInstallDateTime" which is a Windows 95/98/ME thing
   for (s.i = 0; strlen(s__100330f8) > s.i; s.i++)
   {
     s__100330f8[s.i] = DAT_10033060[s.i] ^ 0x41;
   }
 
-  s.sVar1 = strlen(s__100330f8);
-  s__100330f8[s.sVar1] = '\0';
+  s.sFirstInstallDateTimeLength = strlen(s__100330f8);
+  s__100330f8[s.sFirstInstallDateTimeLength] = '\0';
 
-  if (RegQueryValueExA(s.local_410, s__100330f8, (LPDWORD)0x0, &s.local_8, (LPBYTE)&DAT_101bc874,
-                       &s.local_41c) != 0)
+  if (RegQueryValueExA(s.hKey, s__100330f8, (LPDWORD)0x0, &s.lpType, (LPBYTE)&global_Windows_FirstInstallDateTime, &s.lpcbData) != 0)
   {
     ScrubString(s__100330f8);
-    RegCloseKey(s.local_410);
+    RegCloseKey(s.hKey);
     return 1;
   }
 
   ScrubString(s__100330f8);
-  s.local_8 = 1;
-  s.local_41c = 0x400;
+  s.lpType = 1;
+  s.lpcbData = 0x400;
 
+  // This generates "ProductId"
   for (s.i = 0; strlen(s__100330b8) > s.i; s.i++)
   {
     s__100330b8[s.i] = DAT_10033078[s.i] ^ 0x41;
   }
 
-  s.pad2 = strlen(s__100330b8);
-  s__100330b8[s.pad2] = '\0';
+  s.sProductIdLength = strlen(s__100330b8);
+  s__100330b8[s.sProductIdLength] = '\0';
 
-  if (RegQueryValueExA(s.local_410, s__100330b8, (LPDWORD)0x0, &s.local_8, s.local_40c, &s.local_41c) != 0)
+  if (RegQueryValueExA(s.hKey, s__100330b8, (LPDWORD)0x0, &s.lpType, s.winProductId, &s.lpcbData) != 0)
   {
     ScrubString(s__100330b8);
-    RegCloseKey(s.local_410);
+    RegCloseKey(s.hKey);
     return 1;
   }
 
   ScrubString(s__100330b8);
-  s.local_418 = strlen((char *)s.local_40c);
+  s.winProductIdLength = strlen((char *)s.winProductId);
 
-  for (s.local_420 = 0; strlen((char *)s.local_40c) < 0x10;)
+  // Repeats product key into itself up to 16 chars
+  for (s.local_420 = 0; strlen((char *)s.winProductId) < 0x10;)
   {
-    s.local_40c[s.local_418] = s.local_40c[s.local_420];
+    s.winProductId[s.winProductIdLength] = s.winProductId[s.local_420];
     s.local_420 = s.local_420 + 1;
-    s.local_418++;
-    s.local_40c[s.local_418] = '\0';
+    s.winProductIdLength++;
+    s.winProductId[s.winProductIdLength] = '\0';
   }
 
-  // NOTE: this DEPENDS on stack layout, reading out of bounds intentionally
-  s.local_c = (void *)((int)&s.i + strlen((char *)s.local_40c));
-  memcpy(&DAT_101bc878, s.local_c, 4);
-  s.local_c += 4;
-  memcpy(&DAT_101bc87c, s.local_c, 4);
-  s.local_c = NULL;
-  RegCloseKey(s.local_410);
+  // Using product key as entropy in a weird way
+  s.prodKeyPtr = &s.winProductId[strlen((char *)s.winProductId) - s.i + 1];
+  memcpy(&DAT_101bc878, s.prodKeyPtr, 4);
+  s.prodKeyPtr += 4;
+  memcpy(&DAT_101bc87c, s.prodKeyPtr, 4);
+  s.prodKeyPtr = NULL;
+  RegCloseKey(s.hKey);
+#endif
   return 0;
 }
 
@@ -259,7 +264,7 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   s.pad6 += 4;
   memcpy(&s.checksum, s.pad6, 4); // checksum
   s.pad6 = NULL;
-  s.checksum ^= DAT_101bc874;
+  s.checksum ^= global_Windows_FirstInstallDateTime;
 
   // ------------------------------------------------------------
   // Nibble checksum verification
@@ -297,15 +302,15 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   // the push/pop make no sense even for an inlined function
   __asm {
     push eax
-    rol dword ptr [DAT_101bc874], 6
+    rol dword ptr [global_Windows_FirstInstallDateTime], 6
     mov eax, dword ptr [DAT_101bc86c]
-    xor eax, dword ptr [DAT_101bc874]
+    xor eax, dword ptr [global_Windows_FirstInstallDateTime]
     mov dword ptr [DAT_101bc86c], eax
-    ror dword ptr [DAT_101bc874], 0xc
+    ror dword ptr [global_Windows_FirstInstallDateTime], 0xc
     mov eax, dword ptr [DAT_101bc870]
-    xor eax, dword ptr [DAT_101bc874]
+    xor eax, dword ptr [global_Windows_FirstInstallDateTime]
     mov dword ptr [DAT_101bc870], eax
-    rol dword ptr [DAT_101bc874], 6
+    rol dword ptr [global_Windows_FirstInstallDateTime], 6
     pop eax
   }
 

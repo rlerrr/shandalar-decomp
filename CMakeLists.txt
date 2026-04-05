@@ -18,6 +18,7 @@ option(SHANDALAR_BUILD_MAGIC "Build Magic.exe" ON)
 option(SHANDALAR_BUILD_SHANDALAR "Build Shandalar.exe" ON)
 option(SHANDALAR_BUILD_MANALINKINTERFACE "Build manalinkinterface.dll" ON)
 option(SHANDALAR_BUILD_MAGSND "Build magsnd.dll" ON)
+set(SHANDALAR_MODERN_FIXES_DEFAULT OFF)
 
 math(EXPR bits "8 * ${CMAKE_SIZEOF_VOID_P}")
 message(STATUS "Building ${bits}-bit shandalar")
@@ -33,7 +34,15 @@ if (MSVC)
 endif()
 message(STATUS "MSVC for decompilation: ${MSVC_FOR_DECOMP}")
 
+if (NOT MSVC_FOR_DECOMP)
+  set(SHANDALAR_MODERN_FIXES_DEFAULT ON)
+endif()
+option(SHANDALAR_MODERN_FIXES "Enable modern compiler compatibility fixes" ${SHANDALAR_MODERN_FIXES_DEFAULT})
+
 add_compile_definitions(WIN32 _WINDOWS)
+if (SHANDALAR_MODERN_FIXES)
+  add_compile_definitions(MODERN_FIXES)
+endif()
 
 if (MSVC_FOR_DECOMP)
   set(CMAKE_C_FLAGS "/W3 /D \"WIN32\" /D \"_WINDOWS\"")

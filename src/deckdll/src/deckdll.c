@@ -1770,9 +1770,16 @@ init_deckbuilder(HINSTANCE dll, int unused)
   global_deckbuilder_unknown_1019f010 = 0;
   global_current_deck = 0;
 
+#ifdef _DEBUG
+  // Allow debugging directly from output directory
+  if (getcwd(global_base_directory, sizeof(global_base_directory)) == NULL) {
+      return ;
+  }
+#else
   GetModuleFileNameA(0, global_base_directory, 0x105);
   s.pcVar3 = strrchr(global_base_directory, '\\');
   *s.pcVar3 = 0;
+#endif
 
   strcpy(global_manalink_ini_path, global_base_directory);
   strcpy(global_playdeck_path, global_base_directory);

@@ -856,17 +856,20 @@ void CopyBytes(void *dst,const void *src,size_t num)
     mov ecx, num
     push ecx
     shr ecx, 3
-    je 0x11
+    je copy_bytes_tail
+  copy_bytes_qword_loop:
     fld qword ptr [esi]
     fstp qword ptr [edi]
     add esi, 8
     add edi, 8
     dec ecx
-    jne -0x11
+    jne copy_bytes_qword_loop
+  copy_bytes_tail:
     pop ecx
     and ecx, 7
-    je 0x2
+    je copy_bytes_done
     rep movsb
+  copy_bytes_done:
   }
 }
 
@@ -889,10 +892,11 @@ void SetBytes(void *dst, int value, size_t num)
     push ecx
     shr ecx, 3
     dec ecx
+  set_bytes_qword_loop:
     fst qword ptr [edi]
     add edi, 8
     dec ecx
-    jne -0xc
+    jne set_bytes_qword_loop
     fstp qword ptr [edi]
     pop ecx
     and ecx, 7

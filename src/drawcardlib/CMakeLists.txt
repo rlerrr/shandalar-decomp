@@ -24,7 +24,7 @@ endif()
 
 if (TARGET rpbits)
   target_link_libraries(drawcardlib PRIVATE rpbits)
-  target_link_options(drawcardlib PRIVATE /BASE:0x10155000)
+  target_link_options(drawcardlib PRIVATE)
 endif()
 
 if (MSVC)
