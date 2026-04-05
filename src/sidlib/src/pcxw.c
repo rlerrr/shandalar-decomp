@@ -101,7 +101,8 @@ char *gPcxPath;
 
 // GLOBAL: DRAWCARDLIB 0x10126d30
 // GLOBAL: DECKDLL 0x10112960
-undefined4 DAT_10126d30;
+byte gPcxScanlineBuffer[0x1000];
+
 // GLOBAL: DRAWCARDLIB 0x10127d40
 // GLOBAL: DECKDLL 0x10113970
 PcxHeader_t gPcxHeader;
@@ -154,9 +155,9 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
   }
 
   for (s.row = 0; global_pcxw_image_height > s.row; s.row = s.row + 1) {
-    PcxReadScanlineRle((byte *)&DAT_10126d30);
+    PcxReadScanlineRle((char *)gPcxScanlineBuffer);
     for (s.col = 0; s.col < global_pcxw_image_width; s.col = s.col + 1) {
-      *imagePixels = *((byte *)&DAT_10126d30 + s.col);
+      *imagePixels = gPcxScanlineBuffer[s.col];
       imagePixels = imagePixels + 1;
     }
     imagePixels = imagePixels + s.padBytes;

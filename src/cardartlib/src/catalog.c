@@ -109,7 +109,7 @@ int Catalog_Open(const char *catalog_path)
       if (DAT_10117290[s.other_slot].file == 0)
         continue;
 
-      s.other_catalog = (Catalog *)((char *)&DAT_10117290 + s.other_slot * sizeof(Catalog));
+      s.other_catalog = &DAT_10117290[s.other_slot];
 
       for (s.entry_index = 0; 0 != s.catalog->entry_count; s.entry_index++) {
         for (s.iVar1 = 0; s.iVar1 < s.other_catalog->entry_count; s.iVar1 = s.iVar1 + 1) {
@@ -189,7 +189,7 @@ size_t Catalog_ReadEntry(int catalog_handle,const char *name,void **buffer)
   Catalog *catalog;
   CatalogEntry *entry;
 
-  catalog = (Catalog *)((char *)&DAT_10117290 + (catalog_handle + -1) * sizeof(Catalog));
+  catalog = &DAT_10117290[catalog_handle + -1];
   entry = Catalog_FindEntryCached(catalog,name);
   if (entry == (CatalogEntry *)0x0) {
     return 0xffffffff;

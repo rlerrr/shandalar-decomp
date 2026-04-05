@@ -42,7 +42,7 @@ int OctreeNode_FinalizeSubtree(OctNode *node);
 undefined4 InitOctreeBitTables(void);
 bool InitDiffSquaredLookupTable(void);
 
-int g_diff_squared_table[0x200];
+extern int g_diff_squared_table[0x200];
 extern undefined1 global_RedPathBitsTable[0x800];
 extern undefined1 global_GreenPathBitsTable[0x800];
 extern undefined1 global_BluePathBitsTable[0x800];
@@ -70,7 +70,7 @@ int g_octree_depth_max = 0x00000000;
 // GLOBAL: CARDARTLIB 0x1001d244
 // GLOBAL: DRAWCARDLIB 0x10021034
 // GLOBAL: DECKDLL 0x10031934
-int * g_diff_squared_table_mid_ptr = &g_diff_squared_table[0x100];
+int * g_diff_squared_table_mid_ptr = &g_diff_squared_table[0xFF];
 
 // GLOBAL: CARDARTLIB 0x1001d248
 // GLOBAL: DRAWCARDLIB 0x10021038

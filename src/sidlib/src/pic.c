@@ -104,9 +104,12 @@ DIBSurface *global_dibSurface = &DAT_100f23b0;
 // GLOBAL: DECKDLL 0x10105730
 void (__cdecl *rpbits_stream_refill)();
 
+extern byte rpbits_buffer[0x200];
+
+// This points off the end of the array, which yields a reccmp warning but oh well
 // GLOBAL: DRAWCARDLIB 0x1002252c
 // GLOBAL: DECKDLL 0x1003a844
-ushort *rpbits_stream_end = (ushort *)&rpbits_stream_refill;
+byte *rpbits_stream_end = rpbits_buffer + 0x200;
 
 // GLOBAL: DRAWCARDLIB 0x10022530
 // GLOBAL: DECKDLL 0x1003a848
@@ -142,7 +145,7 @@ undefined4 _DAT_100f23a8;
 
 // GLOBAL: DRAWCARDLIB 0x100f33a0
 // GLOBAL: DECKDLL 0x10105530
-undefined1 rpbits_buffer[0x200];
+byte rpbits_buffer[0x200];
 
 // GLOBAL: DRAWCARDLIB 0x100f3394
 // GLOBAL: DECKDLL 0x1010552c
@@ -294,8 +297,8 @@ LoadPicFile(int param_1,undefined4 param_2,undefined4 param_3,char *pcxFilename,
       if (param_1 < 0) {
         global_pcxw_image_height = 0;
       }
-      if ((int)global_pcxw_image_width % 3 != 0) {
-        s.local_410 = 4 - (int)global_pcxw_image_width % 3;
+      if ((global_pcxw_image_width & 3) != 0) {
+        s.local_410 = 4 - (global_pcxw_image_width & 3);
       }
       else {
         s.local_410 = 0;

@@ -4,8 +4,6 @@ targets:
     source_root: src/cardartlib
     hash:
       sha256: 74a36dcd1c79b3009d19c79df169eacc31f91723dbc44f78fae5fa30cf15b5ed
-    data_sources:
-      - ghidra/cardartlib.csv
   CDTOOLS:
     filename: CDTOOLS.dll
     source-root: src/cdtools
@@ -16,8 +14,6 @@ targets:
     source-root: src
     hash:
       sha256: 2ed0b09249baee83891927f111588930ceef782f937ee7520c4b9759f1748b80
-    data_sources:
-      - ghidra/drawcardlib.csv
   DECKDLL:
     filename: DeckDll.dll
     source-root: src
