@@ -165,8 +165,8 @@ int InitLicenseSecretsFromRegistry(void)
     s.winProductId[s.winProductIdLength] = '\0';
   }
 
-  // Using product key as entropy in a weird way
-  s.prodKeyPtr = &s.winProductId[strlen((char *)s.winProductId) - s.i + 1];
+  // Using product key as entropy in a weird way (just the last 8 chars)
+  s.prodKeyPtr = &(s.winProductId - 8)[strlen((char *)s.winProductId)];
   memcpy(&DAT_101bc878, s.prodKeyPtr, 4);
   s.prodKeyPtr += 4;
   memcpy(&DAT_101bc87c, s.prodKeyPtr, 4);

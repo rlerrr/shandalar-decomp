@@ -1772,8 +1772,9 @@ init_deckbuilder(HINSTANCE dll, int unused)
 
 #ifdef _DEBUG
   // Allow debugging directly from output directory
-  if (getcwd(global_base_directory, sizeof(global_base_directory)) == NULL) {
-      return ;
+  if (getcwd(global_base_directory, sizeof(global_base_directory)) == NULL)
+  {
+    return 0;
   }
 #else
   GetModuleFileNameA(0, global_base_directory, 0x105);
