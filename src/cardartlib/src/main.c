@@ -231,7 +231,7 @@ int LoadBigArt(int id,int version,int width,int height)
     HBITMAP bitmap;           /* -0x44 */
     HDC mem_dc;               /* -0x40 */
     int ok;                   /* -0x3c */
-    int *wvl_entry;           /* -0x38 */
+    WvlEntry *wvl_entry;      /* -0x38 */
     void *dib_bits;           /* -0x34 */
     uint *decoded;            /* -0x30 */
     BITMAPINFO bmi;           /* -0x2c */
@@ -265,7 +265,7 @@ int LoadBigArt(int id,int version,int width,int height)
   ReleaseDC(GetDesktopWindow(),s.desktop_hdc);
 
   s.wvl_entry = Catalog_LoadWvlEntry(1,s.wvl_path,0);
-  if (s.wvl_entry != (int *)0x0) {
+  if (s.wvl_entry != (WvlEntry *)0x0) {
     s.mem_dc = GetDC((HWND)0x0);
     ApplyCardArtPaletteToDc(s.mem_dc);
     InitBitmapInfo24bppTopDown(&s.bmi,width,height);
@@ -480,7 +480,7 @@ int LoadSmallArt(int id,int version,int width,int height)
     HBITMAP hbm;
     HDC hdc;
     int ok;
-    int *wvl_entry;
+    WvlEntry *wvl_entry;
     void *dib_bits;
     uint *decoded_bgr;
     BITMAPINFO bmi;
@@ -512,7 +512,7 @@ int LoadSmallArt(int id,int version,int width,int height)
 
   sprintf((char *)s.wvl_path,s__s__04d_WVL_1001d218,&global_cartart_directory,id);
   s.wvl_entry = Catalog_LoadWvlEntry(0,(char *)s.wvl_path,0);
-  if (s.wvl_entry != (int *)0x0) {
+  if (s.wvl_entry != (WvlEntry *)0x0) {
     s.hdc = GetDC((HWND)0x0);
     ApplyCardArtPaletteToDc(s.hdc);
     InitBitmapInfo24bppTopDown(&s.bmi,width,height);
@@ -692,7 +692,7 @@ int LoadVersionedSmallArt(int id,int version,int width,int height)
     HBITMAP hbm;
     HDC hdc;
     int ok;
-    int *wvl_entry;
+    WvlEntry *wvl_entry;
     void *dib_bits;
     uint *decoded_bgr;
     BITMAPINFO bmi;
@@ -724,7 +724,7 @@ int LoadVersionedSmallArt(int id,int version,int width,int height)
   }
 
   s.wvl_entry = Catalog_LoadWvlEntry(0,(char *)s.wvl_path,0);
-  if (s.wvl_entry != (int *)0x0) {
+  if (s.wvl_entry != (WvlEntry *)0x0) {
     s.hdc = GetDC((HWND)0x0);
     ApplyCardArtPaletteToDc(s.hdc);
     InitBitmapInfo24bppTopDown(&s.bmi,width,height);

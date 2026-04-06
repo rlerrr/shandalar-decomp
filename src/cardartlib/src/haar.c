@@ -29,7 +29,7 @@ void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int ro
                              undefined4 src_stride_unused, int dst_stride);
 undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int* chroma_u, int* chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420);
-BOOL Wvl_UnpackPieces(byte *param_1, int *param_2);
+BOOL Wvl_UnpackPieces(byte *param_1, WvlEntry *param_2);
 
 // GLOBAL: CARDARTLIB 0x100ea098
 // GLOBAL: DRAWCARDLIB 0x100f1f68
@@ -111,7 +111,7 @@ undefined4 DAT_1001e120 = 0x00000002;
 
 // GLOBAL: CARDARTLIB 0x10032ae8
 // GLOBAL: DRAWCARDLIB 0x1003a9b8
-int DAT_10032ae8[0x6c];
+WvlEntry DAT_10032ae8;
 
 // GLOBAL: CARDARTLIB 0x1001e090
 // GLOBAL: DRAWCARDLIB 0x10021e80
@@ -171,7 +171,7 @@ char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\Ned
 
 // GLOBAL: CARDARTLIB 0x10032c98
 // GLOBAL: DRAWCARDLIB 0x1003ab68
-undefined1 g_haarDecodeScratch[0x100000];//[0x7a800];
+undefined1 g_haarDecodeScratch[0x7a800];
 
 // GLOBAL: CARDARTLIB 0x100ad498
 // GLOBAL: DRAWCARDLIB 0x100b5368
@@ -626,7 +626,7 @@ uint Rgb888_QuantizeToF8(uint param_1)
 // FUNCTION: CARDARTLIB 0x100068f0
 // FUNCTION: DRAWCARDLIB 0x10008370
 // FUNCTION: MAGIC 0x0041f670
-int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
+WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 {
   struct {
     char fullpath[0x108]; /* [ebp-0x418] */
@@ -634,11 +634,11 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
     char fname[0x100];    /* [ebp-0x20c] */
     char ext[0x100];      /* [ebp-0x10c] */
     size_t entry_size;    /* [ebp-0x0c] */
-    int *entry;           /* [ebp-0x08] */
+    WvlEntry *entry;      /* [ebp-0x08] */
     char *dir_end;        /* [ebp-0x04] */
   } s;
 
-  s.entry = (int *)&DAT_10032ae8;
+  s.entry = &DAT_10032ae8;
   EnterCriticalSection(&global_critical_section_for_catalog);
   _splitpath(wvl_path, (char *)0x0, s.dir, s.fname, s.ext);
   if (DAT_10032adc == 0) {
@@ -658,42 +658,42 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
     DAT_100ea098 = DAT_1001e120;
   } else {
     /* NOTE: Original does not leave the critical section on this path. */
-    return (int *)0x0;
+    return (WvlEntry *)0x0;
   }
 
   strcpy(s.dir, s.fname);
   strcat(s.dir, s.ext);
   _strlwr(s.dir);
 
-  if (s.entry != (int *)0x0) {
+  if (s.entry != (WvlEntry *)0x0) {
     memset(s.entry, 0, 0x1b0);
-    strcpy((char *)(s.entry + 0x27), wvl_path);
-    s.entry[0x68] = (int)&g_defaultPalette256;
-    s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)(s.entry + 0x68));
+    strcpy(s.entry->wvl_path, wvl_path);
+    s.entry->data_ptr = (byte *)&g_defaultPalette256;
+    s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)&s.entry->data_ptr);
     if (s.entry_size == (size_t)-1) {
       strcat(wvl_path, s__lf_1001e148);
       OutputDebugStringA((LPCSTR)wvl_path);
       LeaveCriticalSection(&global_critical_section_for_catalog);
-      return (int *)0x0;
+      return (WvlEntry *)0x0;
     }
 
-    s.entry[0x69] = s.entry_size - 0x9c;
-    memcpy(s.entry, (void *)s.entry[0x68], 0x9c);
-    s.entry[0x68] = s.entry[0x68] + 0x9c;
-    if (s.entry[10] == 4) {
-      s.entry[7] = s.entry[7] << 1;
-      s.entry[8] = s.entry[8] << 1;
+    s.entry->data_size = s.entry_size - 0x9c;
+    memcpy(s.entry, s.entry->data_ptr, 0x9c);
+    s.entry->data_ptr = s.entry->data_ptr + 0x9c;
+    if (s.entry->pieces == 4) {
+      s.entry->width = s.entry->width << 1;
+      s.entry->height = s.entry->height << 1;
     }
 
     if (decode_haar != 0) {
-      s.entry[0x6b] = (int)Wvl_DecodeHaar(s.entry, (byte *)0x0);
-      if (s.entry[0x6b] != 0) {
-        s.entry[0x6a] = 1;
+      s.entry->decoded_ptr = Wvl_DecodeHaar(s.entry, (byte *)0x0);
+      if (s.entry->decoded_ptr != 0) {
+        s.entry->decoded_flag = 1;
         LeaveCriticalSection(&global_critical_section_for_catalog);
       } else {
         Catalog_Unlock(s.entry);
         LeaveCriticalSection(&global_critical_section_for_catalog);
-        return (int *)0x0;
+        return (WvlEntry *)0x0;
       }
     }
   }
@@ -704,7 +704,7 @@ int *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 
 // FUNCTION: CARDARTLIB 0x10006be3
 // FUNCTION: DRAWCARDLIB 0x10008663
-byte * Wvl_DecodeHaar(int *param_1,byte *param_2)
+byte * Wvl_DecodeHaar(WvlEntry *param_1,byte *param_2)
 {
   struct {
     byte *bgr_tmp;       /* [ebp-0x4c] */
@@ -745,44 +745,44 @@ byte * Wvl_DecodeHaar(int *param_1,byte *param_2)
   }
 
   if (param_2 == NULL) {
-    param_2 = malloc(param_1[0x24] + 2000);
-    MemZeroDwords((undefined8 *)param_2,(param_1[0x24] + 2000) / 4);
+    param_2 = malloc(param_1->decode_bytes + 2000);
+    MemZeroDwords((undefined8 *)param_2,(param_1->decode_bytes + 2000) / 4);
   }
   else {
-    MemZeroDwords((undefined8 *)param_2,(param_1[0x24] + 2000) / 4);
+    MemZeroDwords((undefined8 *)param_2,(param_1->decode_bytes + 2000) / 4);
     s.have_dst = 1;
   }
 
   g_unpackResultUnused = Wvl_UnpackPieces(param_2,param_1);
 
-  if (param_1[10] == 1) {
+  if (param_1->pieces == 1) {
     s.pieces_per_row = 1;
   }
-  else if (param_1[10] == 4) {
+  else if (param_1->pieces == 4) {
     s.pieces_per_row = 2;
   }
-  else if (param_1[10] == 0x10) {
+  else if (param_1->pieces == 0x10) {
     s.pieces_per_row = 4;
   }
   else {
     assert(0,s_D__Newmagic_sources_NedCard_haar_1001e174,0x15e,
-           s_wavelet_pieces_has_illegal_value_1001e14c,param_1[10]);
+           s_wavelet_pieces_has_illegal_value_1001e14c,param_1->pieces);
   }
 
-  s.image_size = param_1[7];
+  s.image_size = param_1->width;
   s.height_px = s.image_size;
-  s.block_width = param_1[7] / s.pieces_per_row;
+  s.block_width = param_1->width / s.pieces_per_row;
   s.block_height = s.block_width;
-  s.alloc_bytes = param_1[9];
-  s.base_size = param_1[8] / s.pieces_per_row;
-  s.unused1 = &param_1[11];
-  s.unused2 = &param_1[15];
-  s.unused3 = &param_1[19];
+  s.alloc_bytes = param_1->base_size;
+  s.base_size = param_1->height / s.pieces_per_row;
+  s.unused1 = &param_1->unk_2c;
+  s.unused2 = &param_1->unk_3c;
+  s.unused3 = &param_1->unk_4c;
 
-  for (s.piece_idx = 0; s.piece_idx < param_1[10]; s.piece_idx = s.piece_idx + 1) {
-    if (*param_1 != 0) {
-      s.chroma_w = (s.block_height / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
-      s.chroma_base = (s.base_size / s.pieces_per_row) / (((param_1[10] == 1) ? 2 : 1));
+  for (s.piece_idx = 0; s.piece_idx < param_1->pieces; s.piece_idx = s.piece_idx + 1) {
+    if (param_1->chroma_is_420 != 0) {
+      s.chroma_w = (s.block_height / s.pieces_per_row) / (((param_1->pieces == 1) ? 2 : 1));
+      s.chroma_base = (s.base_size / s.pieces_per_row) / (((param_1->pieces == 1) ? 2 : 1));
     } else {
       s.chroma_w = s.block_height;
       s.chroma_base = s.base_size;
@@ -796,20 +796,20 @@ byte * Wvl_DecodeHaar(int *param_1,byte *param_2)
     Haar2D_ReconstructInPlace(s.u_plane,s.chroma_w,s.alloc_bytes);
     Haar2D_ReconstructInPlace(s.v_plane,s.chroma_w,s.alloc_bytes);
 
-    if (s.piece_idx < param_1[10] / 2) {
+    if (s.piece_idx < param_1->pieces / 2) {
       s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,s.block_height,
-                                        s.u_plane,s.v_plane,s.chroma_w,s.chroma_w,*param_1);
+                                        s.u_plane,s.v_plane,s.chroma_w,s.chroma_w,param_1->chroma_is_420);
     }
-    else if (param_1[10] > 1) {
-      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,param_1[8] - s.block_width,
-                                        s.u_plane,s.v_plane,s.chroma_w,s.chroma_base,*param_1);
+    else if (param_1->pieces > 1) {
+      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,param_1->height - s.block_width,
+                                        s.u_plane,s.v_plane,s.chroma_w,s.chroma_base,param_1->chroma_is_420);
     }
     else {
       s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch,s.y_plane,s.block_height,s.base_size,
-                                         s.u_plane,s.v_plane,s.chroma_w,s.chroma_base,*param_1);
+                                         s.u_plane,s.v_plane,s.chroma_w,s.chroma_base,param_1->chroma_is_420);
     }
 
-    if (param_1[10] > 1) {
+    if (param_1->pieces > 1) {
 
       CopyBgr24RectIntoStridedBuffer(param_2,s.bgr_tmp,
                                       (s.height_px / s.pieces_per_row) * (s.piece_idx % s.pieces_per_row),
@@ -1101,11 +1101,11 @@ undefined1 * YuvPlanesToBgr24(undefined1 *out_bgr24,int *luma,int width,int heig
 
 // FUNCTION: CARDARTLIB 0x100078b8
 // FUNCTION: DRAWCARDLIB 0x10009338
-BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
+BOOL Wvl_UnpackPieces(byte *param_1,WvlEntry *param_2)
 {
   struct {
     byte *dst_y;        /* ebp - 0x3c */
-    int *wvl;           /* ebp - 0x38 */
+    WvlEntry *wvl;      /* ebp - 0x38 */
     int node_count;     /* ebp - 0x34 */
     int chroma_w;       /* ebp - 0x30 */
     int base_size;      /* ebp - 0x2c */
@@ -1123,14 +1123,14 @@ BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
 
   s.wvl = param_2;
 
-  s.full_w = s.wvl[7] / ((s.wvl[10] == 1) ? 1 : 2);
+  s.full_w = s.wvl->width / ((s.wvl->pieces == 1) ? 1 : 2);
   s.full_h = s.full_w;
-  s.chroma_w = s.full_h / ((s.wvl[0] == 0) ? 1 : 2);
+  s.chroma_w = s.full_h / ((s.wvl->chroma_is_420 == 0) ? 1 : 2);
   s.chroma_h = s.chroma_w;
   
-  s.bitstream = (byte *)param_2[0x68];
+  s.bitstream = param_2->data_ptr;
   s.huff_data = s.bitstream;
-  s.base_size = s.wvl[9];
+  s.base_size = s.wvl->base_size;
 
   s.tmp = (s.full_w * s.full_h) + s.chroma_w * s.chroma_h * 2;
 
@@ -1143,7 +1143,7 @@ BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
       s.bitstream +
       Huffman13_Init((undefined4)s.bitstream,(undefined4)s.symbol_table,(undefined4)s.node_count);
 
-  for (s.layer = 0; s.layer < s.wvl[10]; s.layer = s.layer + 1) {
+  for (s.layer = 0; s.layer < s.wvl->pieces; s.layer = s.layer + 1) {
     s.dst_y = &param_1[(((s.tmp + 0x40) * s.layer) << 2)];
 
     s.dst_u = &s.dst_y[((s.full_w * s.full_h) << 2)] + 0x80;
@@ -1156,8 +1156,8 @@ BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
 
     s.bitstream += (s.base_size * s.base_size) << 2;
 
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_y,(uint *)s.bitstream,s.wvl[s.layer + 0x17]);
-    s.bitstream = s.bitstream + s.wvl[s.layer + 0x17];
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_y,(uint *)s.bitstream,s.wvl->huff_bytes_y[s.layer]);
+    s.bitstream = s.bitstream + s.wvl->huff_bytes_y[s.layer];
 
     memcpy(s.dst_u,s.bitstream,(s.base_size * s.base_size) << 2);
 
@@ -1165,8 +1165,8 @@ BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
 
     s.bitstream += (s.base_size * s.base_size) << 2;
 
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_u,(uint *)s.bitstream,s.wvl[s.layer + 0x1b]);
-    s.bitstream = s.bitstream + s.wvl[s.layer + 0x1b];
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_u,(uint *)s.bitstream,s.wvl->huff_bytes_u[s.layer]);
+    s.bitstream = s.bitstream + s.wvl->huff_bytes_u[s.layer];
 
     memcpy(s.dst_v,s.bitstream,(s.base_size * s.base_size) << 2);
 
@@ -1174,15 +1174,15 @@ BOOL Wvl_UnpackPieces(byte *param_1,int *param_2)
 
     s.bitstream += (s.base_size * s.base_size) << 2;
 
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_v,(uint *)s.bitstream,s.wvl[s.layer + 0x1f]);
-    s.bitstream = s.bitstream + s.wvl[s.layer + 0x1f];
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_v,(uint *)s.bitstream,s.wvl->huff_bytes_v[s.layer]);
+    s.bitstream = s.bitstream + s.wvl->huff_bytes_v[s.layer];
   }
   return 0;
 }
 
 // FUNCTION: CARDARTLIB 0x1000807f
 // FUNCTION: DRAWCARDLIB 0x10009aff
-uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
+uint * Wvl_DecodeToBgr24(byte *param_1,WvlEntry *wvl_entry,int width,int height)
 {
   struct WvlDecodeToBgr24Stack {
     int unk_5060;
@@ -1233,24 +1233,24 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     s.out_nonnull = 0;
   }
 
-  if (wvl_entry == (int *)0) {
+  if (wvl_entry == (WvlEntry *)0) {
     return (uint *)0;
   }
 
-  s.x_scale = wvl_entry[7];
-  s.y_scale = wvl_entry[8];
+  s.x_scale = wvl_entry->width;
+  s.y_scale = wvl_entry->height;
   s.x_scale <<= 0x10;
   s.y_scale <<= 0x10;
   s.x_step = s.x_scale / width;
   s.y_step = s.y_scale / height;
 
-  if (wvl_entry[0x6a] != 0) {
-    s.decoded = (byte *)wvl_entry[0x6b];
+  if (wvl_entry->decoded_flag != 0) {
+    s.decoded = wvl_entry->decoded_ptr;
   } else {
     s.decoded = Wvl_DecodeHaar(wvl_entry,g_haarDecodeScratch);
   }
 
-  s.src_width = wvl_entry[7];
+  s.src_width = wvl_entry->width;
   s.tmp_8 = 3;
   s.zero_1010 = 0;
   s.row_pad = (g_rowAlignBytes - (width * 3) % g_rowAlignBytes) % g_rowAlignBytes;
@@ -1271,14 +1271,14 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     }    
   }
 
-  if (wvl_entry[8] < height) {
-    param_1 += (height - wvl_entry[8]) * (s.row_pad + width * 3);
+  if (wvl_entry->height < height) {
+    param_1 += (height - wvl_entry->height) * (s.row_pad + width * 3);
     s.out_ptr = param_1;
   }
   else
     s.out_ptr = (byte *)param_1;
   
-  for (s.y = 0; s.y < wvl_entry[8]; s.y += 1, param_1 += s.row_pad) {
+  for (s.y = 0; s.y < wvl_entry->height; s.y += 1, param_1 += s.row_pad) {
     s.tmp_4 = s.decoded + (s.src_width * s.tmp_8 + s.zero_1010) * s.y;
     s.x_map_ptr = s.x_map;
 
@@ -1303,8 +1303,8 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
   }
 
   s.row_bytes = width * 3 + s.row_pad;
-  if (height < wvl_entry[8]) {
-    memcpy(s.x_map,&s.out_base[(wvl_entry[8] - 1) * s.row_bytes], s.row_bytes);
+  if (height < wvl_entry->height) {
+    memcpy(s.x_map,&s.out_base[(wvl_entry->height - 1) * s.row_bytes], s.row_bytes);
   }
 
   for (s.x = 0; s.x < width; s.x++) {
@@ -1313,7 +1313,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     s.y_map_ptr = s.y_map;
     
     for (s.y = 0; s.y < height - 1; s.y++, s.y_map_ptr++, param_1 += s.row_bytes) {
-      s.src_ptr = (byte *)(MIN((int)*s.y_map_ptr >> 8, wvl_entry[8] - 2) * s.row_bytes + (int)s.tmp_4);
+      s.src_ptr = (byte *)(MIN((int)*s.y_map_ptr >> 8, wvl_entry->height - 2) * s.row_bytes + (int)s.tmp_4);
 
       param_1[0] = ((int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
       param_1[1] = ((int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
@@ -1321,7 +1321,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,int *wvl_entry,int width,int height)
     }
   }
 
-  if (height < wvl_entry[8]) {
+  if (height < wvl_entry->height) {
     memcpy(&s.out_base[(height - 1) * s.row_bytes],s.x_map,s.row_bytes);
   } else {
     memset(&s.out_base[(height - 1) * s.row_bytes],0,s.row_bytes);
