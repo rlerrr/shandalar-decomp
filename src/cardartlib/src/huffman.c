@@ -57,7 +57,7 @@ undefined4 g_symbolTable;
 
 // GLOBAL: CARDARTLIB 0x10021aa0
 // GLOBAL: DRAWCARDLIB 0x10029fc8
-unsigned char g_treeNodeTable[0x100 * 8];
+unsigned char g_treeNodeTable[0x10000];
 
 // FUNCTION: CARDARTLIB 0x10001f40
 // FUNCTION: DRAWCARDLIB 0x10002ea0
@@ -376,22 +376,22 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
 
         s.tree_node = s.leaf_sym - g_nodeBase;
 
-        if (s.tree_node < 0) {
-          if (s.leaf_sym == 0) {
-            s.run_len10 = (int)BitStream_ReadBits(10);
-            if (s.run_len10 < 0) {
-              break;
-            }
+          if (s.tree_node < 0) {
+            if (s.leaf_sym == 0) {
+              s.run_len10 = (int)BitStream_ReadBits(10);
+              if (s.run_len10 < 0) {
+                break;
+              }
 
-            MemZeroDwords(out_dwords, (uint)s.run_len10);
-            *(int *)&out_dwords += (s.run_len10 << 2);
+              MemZeroDwords(out_dwords, (uint)s.run_len10);
+              *(int *)&out_dwords += (s.run_len10 << 2);
+            }
+            else {
+              *(int *)out_dwords = *(int *)(g_symbolTable + s.leaf_sym * 4);
+              out_dwords = (undefined8 *)((int)out_dwords + 4);
+            }
+            break;
           }
-          else {
-            *(int *)out_dwords = *(int *)(g_symbolTable + s.leaf_sym * 4);
-            out_dwords = (undefined8 *)((int)out_dwords + 4);
-          }
-          break;
-        }
       }
     
       s.lookahead = (int)BitStream_ReadBits(8);
