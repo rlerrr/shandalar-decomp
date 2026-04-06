@@ -17,47 +17,47 @@ int Huffman13_BuildDecodeTable(int node_count);
 
 // GLOBAL: CARDARTLIB 0x10021a88
 // GLOBAL: DRAWCARDLIB 0x10029fb0
-uint *DAT_10021a88;
+uint *g_bitstreamCursor;
 
 // GLOBAL: CARDARTLIB 0x10021a8c
 // GLOBAL: DRAWCARDLIB 0x10029fb4
-int DAT_10021a8c;
+int g_bitstreamBase;
 
 // GLOBAL: CARDARTLIB 0x10021a90
 // GLOBAL: DRAWCARDLIB 0x10029fb8
-int DAT_10021a90;
+int g_bitstreamEnd;
 
 // GLOBAL: CARDARTLIB 0x1001d1dc
 // GLOBAL: DRAWCARDLIB 0x10021ecc
-undefined4 DAT_1001d1dc = 0x00000000;
+undefined4 g_bitsRemaining = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10020e88
 // GLOBAL: DRAWCARDLIB 0x100293b0
-unsigned char DAT_10020e88[0x100 * 0xc];
+unsigned char g_decodeLookup[0x100 * 0xc];
 
 // GLOBAL: CARDARTLIB 0x10020e84
 // GLOBAL: DRAWCARDLIB 0x100293ac
-undefined4 DAT_10020e84;
+undefined4 g_bitBuffer;
 
 // GLOBAL: CARDARTLIB 0x10020e00
 // GLOBAL: DRAWCARDLIB 0x10029328
-uint DAT_10020e00[0x21];
+uint g_bitMaskTable[0x21];
 
 // GLOBAL: CARDARTLIB 0x10021a94
 // GLOBAL: DRAWCARDLIB 0x10029fbc
-undefined4 DAT_10021a94;
+undefined4 g_nodeCount;
 
 // GLOBAL: CARDARTLIB 0x10021a98
 // GLOBAL: DRAWCARDLIB 0x10029fc0
-int DAT_10021a98;
+int g_nodeBase;
 
 // GLOBAL: CARDARTLIB 0x10021a9c
 // GLOBAL: DRAWCARDLIB 0x10029fc4
-undefined4 DAT_10021a9c;
+undefined4 g_symbolTable;
 
 // GLOBAL: CARDARTLIB 0x10021aa0
 // GLOBAL: DRAWCARDLIB 0x10029fc8
-unsigned char DAT_10021aa0[0x100 * 8];
+unsigned char g_treeNodeTable[0x100 * 8];
 
 // FUNCTION: CARDARTLIB 0x10001f40
 // FUNCTION: DRAWCARDLIB 0x10002ea0
@@ -118,15 +118,15 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
 
   s.local_14 = 0;
   s.out_base = out_dwords;
-  DAT_10021a88 = (uint *)bitstream_start;
-  DAT_10021a8c = (int)DAT_10021a88;
-  DAT_10021a90 = bitstream_end;
-  DAT_1001d1dc = 0;
+  g_bitstreamCursor = (uint *)bitstream_start;
+  g_bitstreamBase = (int)g_bitstreamCursor;
+  g_bitstreamEnd = bitstream_end;
+  g_bitsRemaining = 0;
   s.lookahead = (int)BitStream_ReadBits(8);
   while (s.lookahead != -1) {
-    if (*(int *)(DAT_10020e88 + s.lookahead * 0xc) < 0x7fffffff) {
-      s.bit_count = *(uint *)(DAT_10020e88 + s.lookahead * 0xc + 4);
-      *(undefined4 *)out_dwords = *(undefined4 *)(DAT_10020e88 + s.lookahead * 0xc);
+    if (*(int *)(g_decodeLookup + s.lookahead * 0xc) < 0x7fffffff) {
+      s.bit_count = *(uint *)(g_decodeLookup + s.lookahead * 0xc + 4);
+      *(undefined4 *)out_dwords = *(undefined4 *)(g_decodeLookup + s.lookahead * 0xc);
       out_dwords = out_dwords + 1;
       s.lookahead = s.lookahead >> (byte)s.bit_count;
       s.new_bits = BitStream_ReadBits(s.bit_count);
@@ -138,17 +138,17 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
       }
     }
     else {
-      s.node = *(int *)(DAT_10020e88 + s.lookahead * 0xc + 8);
+      s.node = *(int *)(g_decodeLookup + s.lookahead * 0xc + 8);
       while ((s.bit = BitStream_ReadBit()) != 0xffffffff) {
         if (s.bit != 0) {
-          s.symbol = *(int *)(DAT_10021aa0 + s.node * 8);
+          s.symbol = *(int *)(g_treeNodeTable + s.node * 8);
         }
         else {
-          s.symbol = *(int *)(DAT_10021aa0 + s.node * 8 + 4);
+          s.symbol = *(int *)(g_treeNodeTable + s.node * 8 + 4);
         }
-        s.node = s.symbol - DAT_10021a98;
+        s.node = s.symbol - g_nodeBase;
         if (s.node < 0) {
-          *(undefined4 *)out_dwords = *(undefined4 *)(DAT_10021a9c + s.symbol * 4);
+          *(undefined4 *)out_dwords = *(undefined4 *)(g_symbolTable + s.symbol * 4);
           out_dwords = out_dwords + 1;
           break;
         }
@@ -172,23 +172,23 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
   s.i = 0;
   
   for (; s.i < 0x20; s.i++) {
-    DAT_10020e00[s.i] = 0xffffffff >> (byte)s.i;
+    g_bitMaskTable[s.i] = 0xffffffff >> (byte)s.i;
   }
 
-  DAT_10021a88 = (uint *)bitstream_start;
-  DAT_10021a8c = (int)DAT_10021a88;
-  DAT_10021a90 = 100000;
-  DAT_1001d1dc = 0;
-  DAT_10020e84 = DAT_1001d1dc;
-  DAT_10021a94 = BitStream_ReadBits(0xd);
-  for (s.i = 0; (int)DAT_10021a94 > s.i; s.i++) {
-    ((uint *)&DAT_10021aa0)[s.i*2] = BitStream_ReadBits(0xd);
-    ((uint *)&DAT_10021aa0)[s.i*2 + 1] = BitStream_ReadBits(0xd);
+  g_bitstreamCursor = (uint *)bitstream_start;
+  g_bitstreamBase = (int)g_bitstreamCursor;
+  g_bitstreamEnd = 100000;
+  g_bitsRemaining = 0;
+  g_bitBuffer = g_bitsRemaining;
+  g_nodeCount = BitStream_ReadBits(0xd);
+  for (s.i = 0; (int)g_nodeCount > s.i; s.i++) {
+    ((uint *)&g_treeNodeTable)[s.i*2] = BitStream_ReadBits(0xd);
+    ((uint *)&g_treeNodeTable)[s.i*2 + 1] = BitStream_ReadBits(0xd);
     s.result += 0x1a;
   }
-  DAT_10021a98 = node_index_base;
-  DAT_10021a9c = symbol_table;
-  Huffman13_BuildDecodeTable(DAT_10021a94);
+  g_nodeBase = node_index_base;
+  g_symbolTable = symbol_table;
+  Huffman13_BuildDecodeTable(g_nodeCount);
 
   s.result = (s.result / 8) + ((s.result & 7) != 0);
   return s.result;
@@ -241,12 +241,12 @@ int Huffman13_BuildDecodeTable(int node_count)
     s.depth++;
 
     if (s.bits[s.prev_depth] != 0) {
-      s.sym = ((int *)DAT_10021aa0)[s.node * 2];
+      s.sym = ((int *)g_treeNodeTable)[s.node * 2];
     } else {
-      s.sym = ((int *)DAT_10021aa0)[s.node * 2 + 1];
+      s.sym = ((int *)g_treeNodeTable)[s.node * 2 + 1];
     }
 
-    s.node = s.sym - DAT_10021a98;
+    s.node = s.sym - g_nodeBase;
     s.node_stack[s.depth] = s.node;
 
     if (s.node < 0) {
@@ -259,9 +259,9 @@ int Huffman13_BuildDecodeTable(int node_count)
 
       for (s.i = 0; s.i < s.pow2[8 - s.depth]; s.i++) {
         s.suffix = s.i << (byte)s.depth;
-        ((int *)(DAT_10020e88 + 4))[((s.suffix | s.prefix) * 3)] = s.depth;
-        ((int *)(DAT_10020e88 + 0))[((s.suffix | s.prefix) * 3)] = ((int *)DAT_10021a9c)[s.sym];
-        ((int *)(DAT_10020e88 + 8))[((s.suffix | s.prefix) * 3)] = -1;
+        ((int *)(g_decodeLookup + 4))[((s.suffix | s.prefix) * 3)] = s.depth;
+        ((int *)(g_decodeLookup + 0))[((s.suffix | s.prefix) * 3)] = ((int *)g_symbolTable)[s.sym];
+        ((int *)(g_decodeLookup + 8))[((s.suffix | s.prefix) * 3)] = -1;
       }
 
       s.bits[s.depth] = 1;
@@ -276,9 +276,9 @@ int Huffman13_BuildDecodeTable(int node_count)
         s.bit_i_8++;
       }
 
-      ((int *)(DAT_10020e88 + 0))[(s.prefix * 3)] = 0x7fffffff;
-      ((int *)(DAT_10020e88 + 4))[(s.prefix * 3)] = s.depth;
-      ((int *)(DAT_10020e88 + 8))[(s.prefix * 3)] = s.node;
+      ((int *)(g_decodeLookup + 0))[(s.prefix * 3)] = 0x7fffffff;
+      ((int *)(g_decodeLookup + 4))[(s.prefix * 3)] = s.depth;
+      ((int *)(g_decodeLookup + 8))[(s.prefix * 3)] = s.node;
 
       s.bits[s.depth] = 1;
       s.depth--;
@@ -319,40 +319,40 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
   s.zero = 0;
   s.out_base = out_dwords;
 
-  DAT_10021a88 = bitstream;
-  DAT_10021a8c = (int)DAT_10021a88;
-  DAT_10021a90 = bitstream_end;
+  g_bitstreamCursor = bitstream;
+  g_bitstreamBase = (int)g_bitstreamCursor;
+  g_bitstreamEnd = bitstream_end;
 
   if (((uint)bitstream & 3) == 0) {
-    DAT_1001d1dc = 0;
-    DAT_10020e84 = DAT_1001d1dc;
+    g_bitsRemaining = 0;
+    g_bitBuffer = g_bitsRemaining;
   } else {
     s.align_bytes = 4 - ((uint)bitstream & 3);
-    DAT_1001d1dc = s.align_bytes * 8;
-    DAT_10020e84 = 0xffffffffU >> (0x20U - DAT_1001d1dc) & *bitstream;
-    *(int *)&DAT_10021a88 += s.align_bytes;
+    g_bitsRemaining = s.align_bytes * 8;
+    g_bitBuffer = 0xffffffffU >> (0x20U - g_bitsRemaining) & *bitstream;
+    *(int *)&g_bitstreamCursor += s.align_bytes;
   }
 
   s.lookahead = (int)BitStream_ReadBits(8);
 
   while (s.lookahead != -1) {
-    if (((int *)DAT_10020e88)[s.lookahead * 3] < 0x7fffffff) {
-      s.bit_count = ((int *)(DAT_10020e88 + 4))[s.lookahead * 3];
+    if (((int *)g_decodeLookup)[s.lookahead * 3] < 0x7fffffff) {
+      s.bit_count = ((int *)(g_decodeLookup + 4))[s.lookahead * 3];
 
-      if (((int *)DAT_10020e88)[s.lookahead * 3] == (int)0x80000000) {
+      if (((int *)g_decodeLookup)[s.lookahead * 3] == (int)0x80000000) {
         s.run_bits = (int)BitStream_ReadBits((uint)(s.bit_count + 2));
         if (s.run_bits < 0) {
           break;
         }
 
-        s.run_bits = (s.lookahead >> (byte)s.bit_count) | (s.run_bits << (8 - s.bit_count));
+        s.run_bits = (s.run_bits << (8 - s.bit_count)) | (s.lookahead >> (byte)s.bit_count);
 
         MemZeroDwords(out_dwords, (uint)s.run_bits);
         *(int *)&out_dwords += (s.run_bits << 2);
         s.lookahead = (int)BitStream_ReadBits(8);
       }
       else {
-        *(int *)out_dwords = ((int *)DAT_10020e88)[s.lookahead * 3];
+        *(int *)out_dwords = ((int *)g_decodeLookup)[s.lookahead * 3];
         out_dwords = (undefined8 *)((int)out_dwords + 4);
 
         s.lookahead = s.lookahead >> (byte)s.bit_count;
@@ -365,16 +365,16 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
       }
     }
     else {
-      s.tree_node = ((int *)(DAT_10020e88 + 8))[s.lookahead * 3];
+      s.tree_node = ((int *)(g_decodeLookup + 8))[s.lookahead * 3];
 
       while ((s.bit = (int)BitStream_ReadBit()) != -1) {
         if (s.bit != 0) {
-          s.leaf_sym = ((int *)DAT_10021aa0)[s.tree_node * 2];
+          s.leaf_sym = ((int *)g_treeNodeTable)[s.tree_node * 2];
         } else {
-          s.leaf_sym = ((int *)DAT_10021aa0)[s.tree_node * 2 + 1];
+          s.leaf_sym = ((int *)g_treeNodeTable)[s.tree_node * 2 + 1];
         }
 
-        s.tree_node = s.leaf_sym - DAT_10021a98;
+        s.tree_node = s.leaf_sym - g_nodeBase;
 
         if (s.tree_node < 0) {
           if (s.leaf_sym == 0) {
@@ -387,7 +387,7 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
             *(int *)&out_dwords += (s.run_len10 << 2);
           }
           else {
-            *(int *)out_dwords = *(int *)(DAT_10021a9c + s.leaf_sym * 4);
+            *(int *)out_dwords = *(int *)(g_symbolTable + s.leaf_sym * 4);
             out_dwords = (undefined8 *)((int)out_dwords + 4);
           }
           break;
@@ -409,25 +409,25 @@ uint BitStream_ReadBits(uint bit_count)
   uint bits_in_buf;
   uint result;
 
-  if (DAT_1001d1dc >= bit_count) {
-    result = DAT_10020e00[0x20 - bit_count] & DAT_10020e84;
-    DAT_10020e84 = DAT_10020e84 >> (byte)bit_count;
-    DAT_1001d1dc = DAT_1001d1dc - bit_count;
+  if (g_bitsRemaining >= bit_count) {
+    result = g_bitMaskTable[0x20 - bit_count] & g_bitBuffer;
+    g_bitBuffer = g_bitBuffer >> (byte)bit_count;
+    g_bitsRemaining = g_bitsRemaining - bit_count;
     return result;
   } else {
-    bits_in_buf = DAT_1001d1dc;
-    result = DAT_10020e84;
-    bit_count = (int) bit_count - (int)DAT_1001d1dc;
+    bits_in_buf = g_bitsRemaining;
+    result = g_bitBuffer;
+    bit_count = (int) bit_count - (int)g_bitsRemaining;
 
-    if ((int)DAT_10021a88 - DAT_10021a8c + 4 >= DAT_10021a90) {
+    if ((int)g_bitstreamCursor - g_bitstreamBase + 4 >= g_bitstreamEnd) {
       return 0xffffffff;
     }
 
-    DAT_10020e84 = *DAT_10021a88;
-    DAT_10021a88 = DAT_10021a88 + 1;
-    result = result | (DAT_10020e00[0x20 - bit_count] & DAT_10020e84) << (byte)bits_in_buf;
-    DAT_10020e84 = DAT_10020e84 >> (byte)bit_count;
-    DAT_1001d1dc = 0x20 - bit_count;
+    g_bitBuffer = *g_bitstreamCursor;
+    g_bitstreamCursor = g_bitstreamCursor + 1;
+    result = result | (g_bitMaskTable[0x20 - bit_count] & g_bitBuffer) << (byte)bits_in_buf;
+    g_bitBuffer = g_bitBuffer >> (byte)bit_count;
+    g_bitsRemaining = 0x20 - bit_count;
   }
   return result;
 }
@@ -439,18 +439,19 @@ static uint BitStream_ReadBit(void)
 {
   uint result = 0;
   
-  if (DAT_1001d1dc == 0) {
-    if (DAT_10021a90 <= (int)DAT_10021a88 - DAT_10021a8c) {
+  if (g_bitsRemaining == 0) {
+    if (g_bitstreamEnd <= (int)g_bitstreamCursor - g_bitstreamBase) {
       return 0xffffffff;
     }
-    DAT_10020e84 = *DAT_10021a88;
-    DAT_10021a88 = DAT_10021a88 + 1;
-    DAT_1001d1dc = 0x20;
+    g_bitBuffer = *g_bitstreamCursor;
+    g_bitstreamCursor = g_bitstreamCursor + 1;
+    g_bitsRemaining = 0x20;
   }
-  if ((DAT_10020e84 & 1) != 0)
+  if ((g_bitBuffer & 1) != 0)
     result = 1;
 
-  DAT_10020e84 = DAT_10020e84 >> 1;
-  DAT_1001d1dc = DAT_1001d1dc + -1;
+  g_bitBuffer = g_bitBuffer >> 1;
+  g_bitsRemaining = g_bitsRemaining + -1;
   return result;
 }
+

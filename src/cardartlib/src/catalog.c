@@ -16,8 +16,6 @@ undefined4 DAT_1001d108 = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10124520
 CRITICAL_SECTION global_critical_section_for_catalog;
 
-extern unsigned char g_defaultPalette256[0x200];
-
 // GLOBAL: CARDARTLIB 0x1001d12c
 // GLOBAL: DRAWCARDLIB 0x10026998
 char s_D__Newmagic_sources_NedCard_Cata_1001d12c[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";

@@ -74,7 +74,7 @@ typedef struct VersionedArtCacheEntry {
   void *bits;
   int width;
   int height;
-  int id;
+  card_id_t id;
   int version;
 } VersionedArtCacheEntry;
 STATIC_ASSERT(sizeof(VersionedArtCacheEntry) == 0x18, VersionedArtCacheEntry_wrong_size);
@@ -86,26 +86,26 @@ VersionedArtCacheEntry g_versionedSmallArtCache[100];
 VersionedArtCacheEntry g_versionedBigArtCache[0x14];
 
 void CardArtLib_Shutdown(void);
-int LoadBigArt(int id,int version,int width,int height);
-int LoadSmallArt(int id,int version,int width,int height);
-void DestroyBigArt(int id,int version);
-void DestroySmallArt(int id,int version);
-int IsBigArtRightSize(int id,int version,int width,int height);
+int LoadBigArt(card_id_t id,int version,int width,int height);
+int LoadSmallArt(card_id_t id,int version,int width,int height);
+void DestroyBigArt(card_id_t id,int version);
+void DestroySmallArt(card_id_t id,int version);
+int IsBigArtRightSize(card_id_t id,int version,int width,int height);
 void DestroyAllBigArts(void);
 void DestroyAllSmallArts(void);
-int IsBigArtIn(int id,int version);
-int IsSmallArtIn(int id,int version);
-int ReloadBigArtIfWrongSize(int id,int version,int width,int height);
-bool ReloadSmallArtIfWrongSize(int id,int version,int width,int height);
-int DrawBigArt(HDC hdc,RECT *rect,int id,int version);
-int DrawSmallArt(HDC hdc,RECT *rect,int id,int version);
-VersionedArtCacheEntry * FindVersionedSmallArtCacheEntry(int id,int version);
-void DestroyVersionedSmallArt(int id,int version);
+int IsBigArtIn(card_id_t id,int version);
+int IsSmallArtIn(card_id_t id,int version);
+int ReloadBigArtIfWrongSize(card_id_t id,int version,int width,int height);
+bool ReloadSmallArtIfWrongSize(card_id_t id,int version,int width,int height);
+int DrawBigArt(HDC hdc,RECT *rect,card_id_t id,int version);
+int DrawSmallArt(HDC hdc,RECT *rect,card_id_t id,int version);
+VersionedArtCacheEntry * FindVersionedSmallArtCacheEntry(card_id_t id,int version);
+void DestroyVersionedSmallArt(card_id_t id,int version);
 void DestroyAllVersionedSmallArts(void);
 static BOOL CardArtLib_Initialize(HINSTANCE instance);
-int LoadVersionedSmallArt(int id,int version,int width,int height);
-int DrawVersionedSmallArt(HDC hdc,RECT *rect,int id,int version);
-bool ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height);
+int LoadVersionedSmallArt(card_id_t id,int version,int width,int height);
+int DrawVersionedSmallArt(HDC hdc,RECT *rect,card_id_t id,int version);
+bool ReloadVersionedSmallArtIfWrongSize(card_id_t id,int version,int width,int height);
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100030f0
@@ -221,7 +221,7 @@ void CardArtLib_Shutdown(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10003480
-int LoadBigArt(int id,int version,int width,int height)
+int LoadBigArt(card_id_t id,int version,int width,int height)
 {
   struct {
     int align_bytes;          /* -0x158 */
@@ -312,7 +312,7 @@ int LoadBigArt(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x100037ba
-int IsBigArtIn(int id,int version)
+int IsBigArtIn(card_id_t id,int version)
 {
   struct {
     int result;
@@ -338,7 +338,7 @@ int IsBigArtIn(int id,int version)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10003867
-int IsBigArtRightSize(int id,int version,int width,int height)
+int IsBigArtRightSize(card_id_t id,int version,int width,int height)
 {
   int local_8 = 0;
   if (id == -1) {
@@ -357,7 +357,7 @@ int IsBigArtRightSize(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x100038ed
-int DrawBigArt(HDC hdc,RECT *rect,int id,int version)
+int DrawBigArt(HDC hdc,RECT *rect,card_id_t id,int version)
 {
   struct {
     int result;
@@ -397,7 +397,7 @@ int DrawBigArt(HDC hdc,RECT *rect,int id,int version)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100039ef
-int ReloadBigArtIfWrongSize(int id,int version,int width,int height)
+int ReloadBigArtIfWrongSize(card_id_t id,int version,int width,int height)
 {
   if (id == -1) {
     return 0;
@@ -417,7 +417,7 @@ int ReloadBigArtIfWrongSize(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x10003a80
-void DestroyBigArt(int id,int version)
+void DestroyBigArt(card_id_t id,int version)
 {
   struct {
     int j;
@@ -471,7 +471,7 @@ void DestroyAllBigArts(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10003cf0
-int LoadSmallArt(int id,int version,int width,int height)
+int LoadSmallArt(card_id_t id,int version,int width,int height)
 {
   struct {
     int row_pad;
@@ -557,7 +557,7 @@ int LoadSmallArt(int id,int version,int width,int height)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10003fb4
-int IsSmallArtIn(int id,int version)
+int IsSmallArtIn(card_id_t id,int version)
 {
   if (id == -1) {
     return 0;
@@ -580,7 +580,7 @@ int IsSmallArtIn(int id,int version)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x1000403d
-int DrawSmallArt(HDC hdc,RECT *rect,int id,int version)
+int DrawSmallArt(HDC hdc,RECT *rect,card_id_t id,int version)
 {
   int result;
   if ((hdc == (HDC)0x0) || (rect == (RECT *)0x0)) {
@@ -612,7 +612,7 @@ int DrawSmallArt(HDC hdc,RECT *rect,int id,int version)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10004128
-bool ReloadSmallArtIfWrongSize(int id,int version,int width,int height)
+bool ReloadSmallArtIfWrongSize(card_id_t id,int version,int width,int height)
 {
   struct {
     int result;
@@ -651,7 +651,7 @@ bool ReloadSmallArtIfWrongSize(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x10004251
-void DestroySmallArt(int id,int version)
+void DestroySmallArt(card_id_t id,int version)
 {
   if (id == -1) 
     return;
@@ -684,7 +684,7 @@ void DestroyAllSmallArts(void)
 }
 
 // FUNCTION: CARDARTLIB 0x10004346
-int LoadVersionedSmallArt(int id,int version,int width,int height)
+int LoadVersionedSmallArt(card_id_t id,int version,int width,int height)
 {
   struct {
     int row_pad;
@@ -770,7 +770,7 @@ int LoadVersionedSmallArt(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x100045fe
-VersionedArtCacheEntry *FindVersionedSmallArtCacheEntry(int id,int version)
+VersionedArtCacheEntry *FindVersionedSmallArtCacheEntry(card_id_t id,int version)
 {
   int i;
   VersionedArtCacheEntry *ptr;
@@ -793,7 +793,7 @@ VersionedArtCacheEntry *FindVersionedSmallArtCacheEntry(int id,int version)
 }
 
 // FUNCTION: CARDARTLIB 0x100046aa
-int DrawVersionedSmallArt(HDC hdc,RECT *rect,int id,int version)
+int DrawVersionedSmallArt(HDC hdc,RECT *rect,card_id_t id,int version)
 {
   struct {
     int local_14;
@@ -830,7 +830,7 @@ int DrawVersionedSmallArt(HDC hdc,RECT *rect,int id,int version)
 
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100047ab
-bool ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height)
+bool ReloadVersionedSmallArtIfWrongSize(card_id_t id,int version,int width,int height)
 {
   VersionedArtCacheEntry *cache_entry;
 
@@ -857,7 +857,7 @@ bool ReloadVersionedSmallArtIfWrongSize(int id,int version,int width,int height)
 }
 
 // FUNCTION: CARDARTLIB 0x1000485a
-void DestroyVersionedSmallArt(int id,int version)
+void DestroyVersionedSmallArt(card_id_t id,int version)
 {
   struct {
     int j;    
