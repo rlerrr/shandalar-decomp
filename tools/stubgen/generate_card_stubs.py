@@ -12,9 +12,13 @@ def parse_args() -> argparse.Namespace:
     script_dir = Path(__file__).resolve().parent
     tools_dir = script_dir.parent
     repo_dir = tools_dir.parent
+    default_output_dir = repo_dir / "src" / "shandalar" / "src" / "cards"
 
     parser = argparse.ArgumentParser(
-        description="Generate card stub functions from magic/shandalar card_data CSV dumps."
+        description=(
+            "Generate card stub functions from magic/shandalar card_data CSV dumps "
+            "and split them by Original Set from Rarity.csv."
+        )
     )
     parser.add_argument(
         "--magic-csv",
@@ -32,14 +36,29 @@ def parse_args() -> argparse.Namespace:
         help="Path to Cards.csv",
     )
     parser.add_argument(
-        "--output",
-        default=str(repo_dir / "src" / "cards" / "cards.c"),
-        help="Path to output .c file (default: src/cards/cards.c)",
+        "--rarity-csv",
+        default=r"C:\Magic\Program\Rarity.csv",
+        help="Path to Rarity.csv",
     )
     parser.add_argument(
+        "--output-dir",
+        "--output",
+        dest="output_dir",
+        default=str(default_output_dir),
+        help=(
+            "Directory for generated .c files (one per set). "
+            "Default: src/shandalar/src/cards"
+        ),
+    )
+    parser.add_argument(
+        "--output-h-dir",
         "--output-h",
-        default=str(repo_dir / "src" / "cards" / "cards.h"),
-        help="Path to output .h file (default: src/cards/cards.h)",
+        dest="output_h_dir",
+        default=str(default_output_dir),
+        help=(
+            "Directory for generated .h files (one per set). "
+            "Default: src/shandalar/src/cards"
+        ),
     )
     return parser.parse_args()
 
@@ -88,27 +107,91 @@ def sanitize_name(name: str) -> str:
     return suffix
 
 
+def sanitize_filename(name: str) -> str:
+    filename = re.sub(r"[^A-Za-z0-9]+", "_", name.strip().lower()).strip("_")
+    if not filename:
+        return "unknown_set"
+    return filename
+
+
+def normalize_card_id(card_id: str) -> str:
+    card_id = card_id.strip()
+    if not card_id:
+        return ""
+    if not card_id.isdigit():
+        return card_id
+    return str(int(card_id, 10))
+
+
 def build_cards_name_lookup(cards_rows: list[dict[str, str]]) -> dict[str, str]:
     names_by_id: dict[str, str] = {}
     for row in cards_rows:
-        card_id = row.get("id", "").strip()
+        card_id = normalize_card_id(row.get("id", ""))
         card_name = row.get("name", "").strip()
         if card_id and card_name and card_id not in names_by_id:
             names_by_id[card_id] = card_name
     return names_by_id
 
 
+def build_rarity_set_lookup(rarity_rows: list[dict[str, str]]) -> dict[str, str]:
+    set_by_id: dict[str, str] = {}
+
+    for row_index, row in enumerate(rarity_rows, start=2):
+        game_id = normalize_card_id(row.get("Game ID", ""))
+        original_set = row.get("Original Set", "").strip()
+
+        if not game_id:
+            continue
+        if not game_id.isdigit():
+            continue
+        if not original_set:
+            raise ValueError(
+                f"Missing Original Set in Rarity.csv at data row {row_index}, Game ID {game_id!r}."
+            )
+        if game_id not in set_by_id:
+            set_by_id[game_id] = original_set
+
+    return set_by_id
+
+
 def normalize_pointer(pointer: str) -> str:
     return pointer.strip().lower()
+
+
+def append_group_entry(
+    stubs_by_set: dict[str, list[str]],
+    prototypes_by_set: dict[str, list[str]],
+    set_filenames: list[str],
+    set_filename: str,
+    prototype: str,
+    stub: str,
+) -> None:
+    if set_filename not in stubs_by_set:
+        stubs_by_set[set_filename] = []
+        prototypes_by_set[set_filename] = []
+        set_filenames.append(set_filename)
+
+    prototypes_by_set[set_filename].append(prototype)
+    stubs_by_set[set_filename].append(stub)
 
 
 def generate_stubs(
     magic_rows: list[dict[str, str]],
     shandalar_rows: list[dict[str, str]],
     cards_name_by_id: dict[str, str],
-) -> tuple[list[str], list[str], int, int, int, int]:
-    stubs: list[str] = []
-    prototypes: list[str] = []
+    set_by_id: dict[str, str],
+) -> tuple[
+    dict[str, list[str]],
+    dict[str, list[str]],
+    list[str],
+    int,
+    int,
+    int,
+    int,
+]:
+    stubs_by_set: dict[str, list[str]] = {}
+    prototypes_by_set: dict[str, list[str]] = {}
+    set_filenames: list[str] = []
     used_names: dict[str, int] = {}
     fallback_name_count = 0
     reused_pair_count = 0
@@ -120,6 +203,7 @@ def generate_stubs(
 
     pair_to_suffix: dict[tuple[str, str], str] = {}
     pair_to_candidate_suffix: dict[tuple[str, str], str] = {}
+    pair_to_set_filename: dict[tuple[str, str], str] = {}
     ordered_pairs: list[tuple[str, str]] = []
 
     magic_ptr_to_shandalar_ptr: dict[str, str] = {}
@@ -133,8 +217,8 @@ def generate_stubs(
                 f"mismatch at row {row_index}."
             )
 
-        magic_id = magic_row.get("id", "").strip()
-        shandalar_id = shandalar_row.get("id", "").strip()
+        magic_id = normalize_card_id(magic_row.get("id", ""))
+        shandalar_id = normalize_card_id(shandalar_row.get("id", ""))
         if magic_id != shandalar_id:
             raise ValueError(
                 f"ID mismatch at row {row_index}: magic id {magic_id!r}, "
@@ -147,8 +231,15 @@ def generate_stubs(
             raise ValueError(f"Missing code_pointer at row {row_index}, id {magic_id!r}.")
 
         pair = (magic_ptr, shandalar_ptr)
+        original_set = set_by_id.get(magic_id)
+        if original_set is None:
+            if pair == (dummy_magic_ptr, dummy_shandalar_ptr):
+                set_filename = "dummy"
+            else:
+                raise ValueError(f"Could not find Game ID {magic_id!r} in Rarity.csv.")
+        else:
+            set_filename = sanitize_filename(original_set)
 
-        # Track pointer pairing mismatches across executables; still emit stubs.
         existing_shandalar_ptr = magic_ptr_to_shandalar_ptr.get(magic_ptr)
         if existing_shandalar_ptr is None:
             magic_ptr_to_shandalar_ptr[magic_ptr] = shandalar_ptr
@@ -185,6 +276,7 @@ def generate_stubs(
 
         suffix = candidate_suffix
         pair_to_candidate_suffix[pair] = candidate_suffix
+        pair_to_set_filename[pair] = set_filename
 
         if suffix in used_names:
             used_names[suffix] += 1
@@ -196,29 +288,68 @@ def generate_stubs(
         ordered_pairs.append(pair)
 
     for magic_ptr, shandalar_ptr in ordered_pairs:
-        suffix = pair_to_suffix[(magic_ptr, shandalar_ptr)]
-        prototypes.append(f"int card_{suffix}(int player, int card, event_t event);")
-        stubs.append(
-            "\n".join(
-                (
-                    f"// FUNCTION: MAGIC {magic_ptr}",
-                    f"// FUNCTION: SHANDALAR {shandalar_ptr}",
-                    f"int card_{suffix}(int player, int card, event_t event)",
-                    "{",
-                    "",
-                    "}",
-                )
+        pair = (magic_ptr, shandalar_ptr)
+        suffix = pair_to_suffix[pair]
+        set_filename = pair_to_set_filename[pair]
+        prototype = f"int card_{suffix}(int player, int card, event_t event);"
+        stub = "\n".join(
+            (
+                f"// FUNCTION: MAGIC {magic_ptr}",
+                f"// FUNCTION: SHANDALAR {shandalar_ptr}",
+                f"int card_{suffix}(int player, int card, event_t event)",
+                "{",
+                "",
+                "}",
             )
+        )
+        append_group_entry(
+            stubs_by_set,
+            prototypes_by_set,
+            set_filenames,
+            set_filename,
+            prototype,
+            stub,
         )
 
     return (
-        stubs,
-        prototypes,
+        stubs_by_set,
+        prototypes_by_set,
+        set_filenames,
         fallback_name_count,
         reused_pair_count,
         reused_pair_name_conflict_count,
         magic_ptr_pair_conflict_count + shandalar_ptr_pair_conflict_count,
     )
+
+
+def write_grouped_outputs(
+    output_dir: Path,
+    header_dir: Path,
+    set_filenames: list[str],
+    stubs_by_set: dict[str, list[str]],
+    prototypes_by_set: dict[str, list[str]],
+) -> tuple[int, int]:
+    total_stub_count = 0
+    total_prototype_count = 0
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    header_dir.mkdir(parents=True, exist_ok=True)
+
+    for set_filename in set_filenames:
+        stubs = stubs_by_set[set_filename]
+        prototypes = prototypes_by_set[set_filename]
+        c_path = output_dir / f"{set_filename}.c"
+        h_path = header_dir / f"{set_filename}.h"
+
+        c_path.write_text('#include "defs.h"\n\n' + "\n\n".join(stubs) + "\n", encoding="utf-8")
+        h_path.write_text('#include "defs.h"\n' + "\n".join(prototypes) + "\n", encoding="utf-8")
+
+        total_stub_count += len(stubs)
+        total_prototype_count += len(prototypes)
+        print(f"Wrote {len(stubs)} stubs to {c_path}")
+        print(f"Wrote {len(prototypes)} prototypes to {h_path}")
+
+    return total_stub_count, total_prototype_count
 
 
 def main() -> int:
@@ -227,22 +358,41 @@ def main() -> int:
     magic_path = Path(args.magic_csv)
     shandalar_path = Path(args.shandalar_csv)
     cards_path = Path(args.cards_csv)
-    output_path = Path(args.output)
+    rarity_path = Path(args.rarity_csv)
+    output_dir = Path(args.output_dir)
+    header_dir = Path(args.output_h_dir)
 
     magic_rows = read_csv_rows(magic_path)
     shandalar_rows = read_csv_rows(shandalar_path)
     cards_rows = read_csv_rows(cards_path)
+    rarity_rows = read_csv_rows(rarity_path)
 
     cards_name_by_id = build_cards_name_lookup(cards_rows)
-    stubs, prototypes, fallback_name_count, reused_pair_count, reused_pair_name_conflict_count, ptr_pair_conflict_count = generate_stubs(
-        magic_rows, shandalar_rows, cards_name_by_id
+    set_by_id = build_rarity_set_lookup(rarity_rows)
+    (
+        stubs_by_set,
+        prototypes_by_set,
+        set_filenames,
+        fallback_name_count,
+        reused_pair_count,
+        reused_pair_name_conflict_count,
+        ptr_pair_conflict_count,
+    ) = generate_stubs(magic_rows, shandalar_rows, cards_name_by_id, set_by_id)
+
+    total_stub_count, total_prototype_count = write_grouped_outputs(
+        output_dir,
+        header_dir,
+        set_filenames,
+        stubs_by_set,
+        prototypes_by_set,
     )
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text('#include "defs.h"\n\n' + "\n\n".join(stubs) + "\n", encoding="utf-8")
-    print(f"Wrote {len(stubs)} stubs to {output_path}")
+    print(
+        f"Generated {total_stub_count} stubs and {total_prototype_count} prototypes "
+        f"across {len(set_filenames)} set files."
+    )
     if reused_pair_count:
-        print(f"Reused {reused_pair_count} duplicate code_pointer pairs (kept first name).")
+        print(f"Reused {reused_pair_count} duplicate code_pointer pairs (kept first name/set).")
     if reused_pair_name_conflict_count:
         print(
             "Saw "
@@ -260,11 +410,6 @@ def main() -> int:
             "Used fallback names from card_data CSV for "
             f"{fallback_name_count} rows with missing/None names in Cards.csv."
         )
-
-    header_path = Path(args.output_h)
-    header_path.parent.mkdir(parents=True, exist_ok=True)
-    header_path.write_text('#include "defs.h"\n' + "\n".join(prototypes) + "\n", encoding="utf-8")
-    print(f"Wrote {len(prototypes)} prototypes to {header_path}")
     return 0
 
 

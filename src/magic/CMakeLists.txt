@@ -1,5 +1,4 @@
-file(GLOB magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
-file(GLOB cards_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cards/*.c")
+file(GLOB_RECURSE magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 set(drawcardlib_c_sources 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pcxw.c" 
