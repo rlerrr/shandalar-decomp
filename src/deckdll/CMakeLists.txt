@@ -1,10 +1,20 @@
 file(GLOB deckdll_c_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
-file(GLOB sidlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../sidlib/src/*.c")
-set(cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/catalog.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c")
+
+set(cardartlib_c_sources 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/catalog.c" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c"
+)
+
+set(drawcardlib_c_sources 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pcxw.c" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/drawing.c" 
+)
 
 set(deckdll_sources
   ${deckdll_c_sources}
-  ${sidlib_c_sources}
+  ${drawcardlib_c_sources}
   ${cardartlib_c_sources}
   deckdll.rc
 )

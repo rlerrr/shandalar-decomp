@@ -11,7 +11,7 @@
 #include "deckdll.h"
 #include "full_deck.h"
 #include "mystdbool.h"
-#include "sidlib/pic.h"
+#include "drawcardlib/src/pic.h"
 #include "cardartlib/src/assert.h"
 #include "cardartlib/src/palette.h"
 #include "magsnd.h"

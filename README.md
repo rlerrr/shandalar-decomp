@@ -28,8 +28,7 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * statwin.dll (debug?, C++?) : Used by shandalar.exe
 
 Additionally:
-* rpbits : Assembly library for decoding part of the MicroProse `.pic` format.  Doesn't seem to be representable in C even via `__asm`
-* sidlib : C code for decoding `.pic` and `.pcx` (among other things).
+* rpbits : Assembly static library for decoding part of the MicroProse `.pic` format.  Doesn't seem to be representable in C even via `__asm`
 
 ## Building
 

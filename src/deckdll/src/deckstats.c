@@ -6,7 +6,7 @@
 #include "full_deck.h"
 #include "resources.h"
 #include "cardartlib/src/palette.h"
-#include "sidlib/pic.h"
+#include "drawcardlib/src/pic.h"
 
 typedef ptrdiff_t INT_PTR;
 

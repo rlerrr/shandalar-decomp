@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "defs.h"
-#include "sidlib/pcxw.h"
+#include "pcxw.h"
 #include "cardartlib/src/assert.h"
 
 #pragma intrinsic(abs)

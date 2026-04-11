@@ -8,8 +8,8 @@
 #include <io.h>
 #include "mystdbool.h"
 #include "defs.h"
-#include "sidlib/pcxw.h"
-#include "sidlib/pic.h"
+#include "pcxw.h"
+#include "pic.h"
 #include "cardartlib/CardArtLib.h"
 #include "cardartlib/src/assert.h"
 #include "cardartlib/src/palette.h"

@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include "inttypes.h"
 #include "mystdbool.h"
-#include "sidlib/pcxw.h"
-#include "sidlib/pic.h"
+#include "pcxw.h"
+#include "pic.h"
 #include "cardartlib/src/palette.h"
 
 typedef unsigned short ushort;

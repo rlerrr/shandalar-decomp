@@ -2,7 +2,7 @@
 #include "filtermenus.h"
 #include "mystdbool.h"
 #include "cardartlib/src/palette.h"
-#include "sidlib/pic.h"
+#include "drawcardlib/src/pic.h"
 
 bool check_restricted(csvid_t csvid);
 bool check_banned(csvid_t csvid);

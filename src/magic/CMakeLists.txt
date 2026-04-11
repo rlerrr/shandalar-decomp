@@ -1,13 +1,17 @@
 file(GLOB magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB cards_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cards/*.c")
-file(GLOB sidlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../sidlib/src/*.c")
+set(drawcardlib_c_sources 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pcxw.c" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/drawing.c" 
+)
 set(cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/catalog.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/haar.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/huffman.c")
 set(deckdll_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/buttonclass.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/card_db.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/checks.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/drm.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c")
 
 set(magic_sources
   ${cards_c_sources}
   ${magic_c_sources}
-  ${sidlib_c_sources}
+  ${drawcardlib_c_sources}
   ${cardartlib_c_sources}
   ${deckdll_c_sources}
   magic.rc
