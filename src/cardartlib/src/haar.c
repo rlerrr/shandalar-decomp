@@ -129,13 +129,13 @@ unsigned char * g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
 // GLOBAL: DRAWCARDLIB 0x10022404
 undefined4 g_haarScratchInit = 0x00000000;
 
-// GLOBAL: CARDARTLIB 0x100eaf00
-// GLOBAL: DRAWCARDLIB 0x10124950
-undefined1 g_yuvClampTableStorage[0x1c00];
+// GLOBAL: CARDARTLIB 0x100eaB00
+// GLOBAL: DRAWCARDLIB 0x10124550
+undefined1 g_yuvClampTableStorage[0x2000];
 
 // GLOBAL: CARDARTLIB 0x1001e128
 // GLOBAL: DRAWCARDLIB 0x10022408
-undefined1 * g_yuvClampTable = g_yuvClampTableStorage;
+undefined1 * g_yuvClampTable = g_yuvClampTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x10032ae0
 // GLOBAL: DRAWCARDLIB 0x1003a9b0
@@ -169,13 +169,19 @@ char s_Only_Works_on_24_bit_images_1001e1dc[] = "Only Works on 24 bit images\n";
 // GLOBAL: DRAWCARDLIB 0x100224dc
 char s_D__Newmagic_sources_NedCard_haar_1001e1fc[] = "D:\\Newmagic\\sources\\NedCard\\haar.c";
 
+#ifdef MODERN_FIXES
+// Scratch space needed is dependant on screen size, allocate some bigass buffers to support 4k
+undefined1 g_haarDecodeScratch[0x7a800 * 10];
+unsigned char g_catalogReadScratch[0x3CC00 * 10];
+#else
 // GLOBAL: CARDARTLIB 0x10032c98
 // GLOBAL: DRAWCARDLIB 0x1003ab68
 undefined1 g_haarDecodeScratch[0x7a800];
 
 // GLOBAL: CARDARTLIB 0x100ad498
 // GLOBAL: DRAWCARDLIB 0x100b5368
-unsigned char g_defaultPalette256[0x200];
+unsigned char g_catalogReadScratch[0x3CC00];
+#endif
 
 // GLOBAL: CARDARTLIB 0x100edb10
 // GLOBAL: DRAWCARDLIB 0x10128e40
@@ -668,7 +674,7 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
   if (s.entry != (WvlEntry *)0x0) {
     memset(s.entry, 0, 0x1b0);
     strcpy(s.entry->wvl_path, wvl_path);
-    s.entry->data_ptr = (byte *)&g_defaultPalette256;
+    s.entry->data_ptr = (byte *)&g_catalogReadScratch;
     s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)&s.entry->data_ptr);
     if (s.entry_size == (size_t)-1) {
       strcat(wvl_path, s__lf_1001e148);
@@ -1256,7 +1262,7 @@ uint * Wvl_DecodeToBgr24(byte *param_1,WvlEntry *wvl_entry,int width,int height)
   s.row_pad = (g_rowAlignBytes - (width * 3) % g_rowAlignBytes) % g_rowAlignBytes;
 
   if (param_1 == (byte *)0) {
-    param_1 = (byte *)&g_defaultPalette256;
+    param_1 = g_catalogReadScratch;
     s.out_base = param_1;
   } else {
     s.out_base = param_1;
