@@ -95,7 +95,7 @@ char s__lf_1001e148[] = "\n";
 
 // GLOBAL: CARDARTLIB 0x100322d8
 // GLOBAL: DRAWCARDLIB 0x1003a1a8
-unsigned char g_waveletScaleTableStorage[0x800];
+unsigned char g_waveletScaleTableStorage[0x801];
 
 // GLOBAL: CARDARTLIB 0x10032adc
 // GLOBAL: DRAWCARDLIB 0x1003a9ac
