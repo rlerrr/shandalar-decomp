@@ -1,12 +1,12 @@
-#include "antiquities.h"
-#include "arabian.h"
-#include "astral.h"
-#include "dark.h"
-#include "legends.h"
-#include "promo.h"
-#include "token.h"
-#include "unlimited.h"
-#include "utility.h"
+#include "cards/antiquities.h"
+#include "cards/arabian.h"
+#include "cards/astral.h"
+#include "cards/dark.h"
+#include "cards/legends.h"
+#include "cards/promo.h"
+#include "cards/token.h"
+#include "cards/unlimited.h"
+#include "cards/utility.h"
 
 // GLOBAL: MAGIC 0x561960
 // GLOBAL: SHANDALAR 0x594208

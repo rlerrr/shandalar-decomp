@@ -1,157 +1,505 @@
 #include "defs.h"
+#include "../global_state.h"
+
+extern int affected_card;
+extern int affected_card_controller;
+extern int active_player;
+extern int attacking_card;
+extern int attacking_card_controller;
+extern int basiclandtypes_controlled[2][8];
+extern int card_on_stack;
+extern int card_on_stack_controller;
+extern int current_phase;
+extern int current_turn;
+extern int event_result;
+extern int human_player;
+extern int spell_fizzled;
+extern int trigger_condition;
+extern int unk_00896534;
+extern int unk_008a9000;
+extern int unk_009266a4;
+extern int unk_00926804;
+extern int unk_0093d848;
+extern int unk_00939520[2][8];
+extern int unk_00939530[2][8];
+extern char text_lines[249][300];
+extern card_data_t global_cards_data[];
+
+int can_target(target_definition_t *td);
+int charge_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white);
+void default_target_definition(int player, int card, target_definition_t *td, int type);
+int damage_player(int target_player, int amount, int source_player, int source_card);
+void FUN_00432f00(int player, unsigned int color, int amount);
+void FUN_004e4ff3(int a1);
+void FUN_004e503e(int a1);
+int FUN_004eaf09(int player, unsigned int color, int amount);
+int FUN_004ef850(int a1, int a2, int a3, int a4, int a5);
+int FUN_00485060(int player, int card, int (__cdecl *callback)(int, int, int, int, int), int who_to_check);
+void FUN_00542a2a(int player, int card);
+
+int get_abilities(int player, int card, event_t event, int new_attacking_card);
+int get_hacked_color(int player, int card, int orig_color);
+int get_sleighted_color(int player, int card, int orig_color);
+int get_sleighted_color_test(int player, int card, int orig_color_test);
+int has_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white);
+int is_animated_and_sick(int player, int card);
+int is_in_play(int player, int card);
+int is_tapped(int player, int card);
+void kill_card(int player, int card, kill_t kill_mode);
+void load_text(int file_name, const char *section_name);
+int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
+int FUN_005058b1(int player, int card, event_t event, color_test_t available_colors);
+void FUN_0054ac4d(int player, int card);
+int FUN_0054af10(int player, int card, event_t event, int amount);
+int regenerate(int player, int card, event_t event, int color, int amount);
+int select_target(int player, int card, target_definition_t *td, const char *prompt, target_t *ret_location);
+int tap_card(int player, int card);
+int validate_target(int player, int card, target_definition_t *td, int target_number);
+void vigilance(int player, int card, event_t event);
+void FUN_0054e470(int player, int card, int color);
+
+
+card_instance_t __inline *get_card_instance(int player, int card)
+{
+  return &global_card_instances[player][card];
+}
+
 
 // FUNCTION: MAGIC 0x004b6120
 // FUNCTION: SHANDALAR 0x00429ee0
 int card_swamp(int player, int card, event_t event)
 {
-
+  return mana_producer_sound_on_resolve(player, card, event, COLOR_BLACK);
 }
 
 // FUNCTION: MAGIC 0x004b6146
 // FUNCTION: SHANDALAR 0x00429f06
 int card_island(int player, int card, event_t event)
 {
-
+  return mana_producer_sound_on_resolve(player, card, event, COLOR_BLUE);
 }
 
 // FUNCTION: MAGIC 0x004b616c
 // FUNCTION: SHANDALAR 0x00429f2c
 int card_forest(int player, int card, event_t event)
 {
-
+  return mana_producer_sound_on_resolve(player, card, event, COLOR_GREEN);
 }
 
 // FUNCTION: MAGIC 0x004b6192
 // FUNCTION: SHANDALAR 0x00429f52
 int card_mountain(int player, int card, event_t event)
 {
-
+  return mana_producer_sound_on_resolve(player, card, event, COLOR_RED);
 }
 
 // FUNCTION: MAGIC 0x004b61b8
 // FUNCTION: SHANDALAR 0x00429f78
 int card_plains(int player, int card, event_t event)
 {
-
+  return mana_producer_sound_on_resolve(player, card, event, COLOR_WHITE);
 }
 
 // FUNCTION: MAGIC 0x00505dd2
 // FUNCTION: SHANDALAR 0x00555e68
 int card_badlands(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "BADLANDS");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00505e42
 // FUNCTION: SHANDALAR 0x00555ed8
 int card_bayou(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "BAYOU");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00505eb2
 // FUNCTION: SHANDALAR 0x00555f48
 int card_plateau(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "PLATEAU");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00505f22
 // FUNCTION: SHANDALAR 0x00555fb8
 int card_savannah(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "SAVANNAH");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00505f92
 // FUNCTION: SHANDALAR 0x00556028
 int card_scrubland(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "SCRUBLAND");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00506002
 // FUNCTION: SHANDALAR 0x00556098
 int card_taiga(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "TAIGA");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00506072
 // FUNCTION: SHANDALAR 0x00556108
 int card_tropical_island(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "TROPICAL_ISLAND");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x005060e2
 // FUNCTION: SHANDALAR 0x00556178
 int card_tundra(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "TUNDRA");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x00506152
 // FUNCTION: SHANDALAR 0x005561e8
 int card_underground_sea(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "UNDERGROUND_SEA");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x005061c2
 // FUNCTION: SHANDALAR 0x00556258
 int card_volcanic_island(int player, int card, event_t event)
 {
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"promptsX1.txt", "VOLCANIC_ISLAND");
+  }
 
+  return FUN_005058b1(player, card, event, *(char *)(card * 300 + player * 0xb0f4 + (int)global_card_instances + 0x58));
 }
 
 // FUNCTION: MAGIC 0x0053aa50
 // FUNCTION: SHANDALAR 0x00488ca0
 int card_dummy(int player, int card, event_t event)
 {
-
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00545c2e
 // FUNCTION: SHANDALAR 0x00493e75
 int card_northern_paladin(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  target_definition_t td;
 
+  instance = get_card_instance(player, card);
+
+  default_target_definition(player, card, &td, TYPE_PERMANENT);
+  td.zone = TARGET_ZONE_IN_PLAY;
+  td.required_color = get_sleighted_color_test(player, card, COLOR_TEST_BLACK);
+  td.required_subtype = ~SUBTYPE_WALL;
+
+  if (event == EVENT_CAN_ACTIVATE) {
+    return !is_tapped(player, card)
+           && !is_animated_and_sick(player, card)
+           && has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 2)
+           && can_target(&td);
+  }
+
+  if (event == EVENT_ACTIVATE) {
+    charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 2);
+    if (spell_fizzled) {
+      return 0;
+    }
+
+    load_text((int)"prompts.txt", "NORTHERN_PALADIN");
+    instance->number_of_targets = 0;
+    if (!select_target(player, card, &td, text_lines[0], &instance->targets[0])) {
+      spell_fizzled = 1;
+      return 0;
+    }
+
+    instance->number_of_targets = 1;
+    tap_card(player, card);
+    return 0;
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION) {
+    default_target_definition(player, card, &td, TYPE_PERMANENT);
+    td.zone = TARGET_ZONE_IN_PLAY;
+    td.required_color = get_sleighted_color_test(instance->parent_controller,
+                                                 instance->parent_card,
+                                                 COLOR_TEST_BLACK);
+    td.required_subtype = ~SUBTYPE_WALL;
+    if (validate_target(player, card, &td, 0)) {
+      kill_card(instance->targets[0].player, instance->targets[0].card, KILL_DESTROY);
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054920c
 // FUNCTION: SHANDALAR 0x0049744a
 int card_serra_angel(int player, int card, event_t event)
 {
+  if (affected_card == card && affected_card_controller == player) {
+    *(unsigned int *)(player * 0xb0f4 + card * 300 + (int)global_card_instances + 8) |= STATE_VIGILANCE;
+  }
 
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x0047c736
+static int veteran_bodyguard_prevent_damage_callback(int source_player,
+                                                     int source_card,
+                                                     int player,
+                                                     int card,
+                                                     int internal_card_id)
+{
+  int card_id;
+  int pending_event;
+  int result;
+
+  result = 0;
+  card_id = global_cards_data[global_card_instances[source_player][source_card].internal_card_id].id;
+
+  if (unk_009266a4 == internal_card_id
+      && global_card_instances[player][card].info_slot != 0
+      && global_card_instances[player][card].damage_target_player == source_player
+      && global_card_instances[player][card].damage_target_card == -1
+      && ((card_id == CARD_ID_VETERAN_BODYGUARD
+           && (global_card_instances[player][card].token_status & 0x140000) != 0)
+          || (card_id == CARD_ID_MARTYRS_OF_KORLIS
+              && (global_card_instances[player][card].eot_toughness & 0x40) != 0))) {
+    pending_event = global_card_instances[source_player][source_card].info_slot;
+    if (pending_event == EVENT_TRIGGER) {
+      result = 1;
+      event_result = 2;
+    } else if (pending_event == EVENT_RESOLVE_TRIGGER) {
+      global_card_instances[player][card].damage_target_player = (char)source_player;
+      global_card_instances[player][card].damage_target_card = source_card;
+    }
+  }
+
+  return result;
+}
+
+// FUNCTION: MAGIC 0x0047c8ca
+static int veteran_bodyguard_mark_other_protectors(int unused,
+                                                   int source_card,
+                                                   int player,
+                                                   int card,
+                                                   int internal_card_id)
+{
+  (void)unused;
+
+  if ((global_cards_data[internal_card_id].id == CARD_ID_VETERAN_BODYGUARD
+       || global_cards_data[internal_card_id].id == CARD_ID_MARTYRS_OF_KORLIS)
+      && card != source_card) {
+    global_card_instances[player][card].eot_toughness = 1;
+  }
+
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x0047c948
+static int veteran_bodyguard_or_martyrs_present(int unused1,
+                                                int unused2,
+                                                int unused3,
+                                                int unused4,
+                                                int internal_card_id)
+{
+  int result;
+
+  (void)unused1;
+  (void)unused2;
+  (void)unused3;
+  (void)unused4;
+
+  result = 0;
+  if (global_cards_data[internal_card_id].id == CARD_ID_VETERAN_BODYGUARD
+      || global_cards_data[internal_card_id].id == CARD_ID_MARTYRS_OF_KORLIS) {
+    result = 1;
+    event_result = result;
+  }
+
+  return result;
 }
 
 // FUNCTION: MAGIC 0x0047c4e9
 // FUNCTION: SHANDALAR 0x0047ffee
 int card_veteran_bodyguard(int player, int card, event_t event)
 {
+  if (event == EVENT_RESOLVE_SPELL) {
+    if (FUN_00485060(player, card, veteran_bodyguard_or_martyrs_present, player) != -1) {
+      global_card_instances[player][card].eot_toughness = 1;
+    }
+  }
 
+  if (trigger_condition == TRIGGER_END_DAMAGE_PREV
+      && global_card_instances[player][card].eot_toughness == 0
+      && (global_card_instances[player][card].state & F08_TAPPED) == 0
+      && affected_card == card
+      && affected_card_controller == player
+      && current_turn == player
+      && player != human_player
+      && is_in_play(player, card)
+      && (current_phase == 0x1a || current_phase == 0x19)) {
+    global_card_instances[player][card].info_slot = event;
+    if (event == EVENT_TRIGGER) {
+      if (FUN_00485060(player, card, veteran_bodyguard_prevent_damage_callback, -1) != -1) {
+        event_result |= 2;
+      }
+    }
+    if (event == EVENT_RESOLVE_TRIGGER) {
+      FUN_00485060(player, card, veteran_bodyguard_prevent_damage_callback, -1);
+      FUN_00485060(player, card, veteran_bodyguard_mark_other_protectors, player);
+    }
+  }
+
+  if (event == EVENT_CLEANUP && affected_card == card && affected_card_controller == player) {
+    global_card_instances[player][card].eot_toughness = 0;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00548bd9
 // FUNCTION: SHANDALAR 0x00496e1d
 int card_samite_healer(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  card_instance_t *target;
+  target_definition_t td;
 
+  instance = get_card_instance(player, card);
+
+  default_target_definition(player, card, &td, TYPE_CREATURE);
+  td.zone = TARGET_ZONE_IN_PLAY;
+  td.required_state = TARGET_STATE_DAMAGED;
+  td.required_subtype = ~SUBTYPE_WALL;
+
+  if (event == EVENT_CAN_ACTIVATE) {
+    return !is_tapped(player, card)
+           && !is_animated_and_sick(player, card)
+           && can_target(&td);
+  }
+
+  if (event == EVENT_ACTIVATE) {
+    load_text((int)"prompts.txt", "SAMITE_HEALER");
+    instance->number_of_targets = 0;
+    if (!select_target(player, card, &td, text_lines[0], &instance->targets[0])) {
+      spell_fizzled = 1;
+      return 0;
+    }
+
+    instance->number_of_targets = 1;
+    tap_card(player, card);
+    return 0;
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION) {
+    default_target_definition(player, card, &td, TYPE_CREATURE);
+    td.zone = TARGET_ZONE_IN_PLAY;
+    td.required_state = TARGET_STATE_DAMAGED;
+    td.required_subtype = ~SUBTYPE_WALL;
+    if (validate_target(player, card, &td, 0)) {
+      target = get_card_instance(instance->targets[0].player, instance->targets[0].card);
+      if (target->damage_on_card != 0) {
+        --target->damage_on_card;
+      }
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054e36e
 // FUNCTION: SHANDALAR 0x0049c5b0
 int card_white_knight(int player, int card, event_t event)
 {
+  int saved_event_result;
 
+  if (event == EVENT_ABILITIES
+      && affected_card == card
+      && affected_card_controller == player) {
+    event_result |= KEYWORD_PROT_BLACK << (((char)get_sleighted_color(player, card, COLOR_BLACK) - 1U) & 0x1f);
+    saved_event_result = event_result;
+    FUN_0054e470(player, card, COLOR_BLACK);
+    event_result = saved_event_result;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054baf9
 // FUNCTION: SHANDALAR 0x00499d35
 int card_orcish_artillery(int player, int card, event_t event)
 {
+  if (event == EVENT_CAN_ACTIVATE) {
+    return (global_card_instances[player][card].state & (F08_TAPPED | F08_JUSTSUMMONED)) == 0;
+  }
 
+  if (event == EVENT_GET_SELECTED_CARD) {
+    FUN_004e4ff3(1);
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE) {
+    if (unk_008a9000 != 1) {
+      load_text((int)"prompts.txt", "ORCISH_ARTILLERY");
+    }
+    FUN_0054ac4d(player, card);
+    if (spell_fizzled != 1) {
+      global_card_instances[player][card].state |= F08_TAPPED;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION) {
+    if (FUN_0054af10(player, card, EVENT_RESOLVE_ACTIVATION, 2) != 0) {
+      damage_player(player, 3, card_on_stack_controller, card_on_stack);
+    }
+
+    global_card_instances[global_card_instances[player][card].parent_controller]
+                         [global_card_instances[player][card].parent_card]
+                             .number_of_targets = 0;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054060c
@@ -165,14 +513,80 @@ int card_dragon_whelp(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048f20f
 int card_goblin_balloon_brigade(int player, int card, event_t event)
 {
+  int result;
 
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player) {
+    global_card_instances[player][card].info_slot = 0x20;
+    result = 0;
+  } else if (event == EVENT_UNTAP_PHASE) {
+    ++unk_00939530[player][0];
+    result = 0;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    if (global_card_instances[player][card].info_slot == 0 || FUN_004eaf09(player, COLOR_RED, 1) == 0) {
+      result = 0;
+    } else {
+      result = 1;
+    }
+  } else if (event == EVENT_ACTIVATE) {
+    result = FUN_004eaf09(player, COLOR_RED, 1);
+    if (result != 0) {
+      FUN_00432f00(player, COLOR_RED, 1);
+      if (spell_fizzled != 1) {
+        global_card_instances[player][card].parent_controller = player;
+        global_card_instances[player][card].parent_card = card;
+        global_card_instances[player][card].number_of_targets = 1;
+        if (active_player == player && (unk_00926804 & 2) == 0) {
+          global_card_instances[player][card].info_slot = 0;
+        }
+      }
+    }
+    result = 0;
+  } else if (event == EVENT_RESOLVE_ACTIVATION) {
+    if (global_card_instances[global_card_instances[player][card].parent_controller]
+                             [global_card_instances[player][card].parent_card]
+                                 .internal_card_id == -1) {
+      spell_fizzled = 1;
+    } else {
+      global_card_instances[global_card_instances[player][card].parent_controller]
+                           [global_card_instances[player][card].parent_card]
+                               .number_of_targets = 0;
+      global_card_instances[global_card_instances[player][card].parent_controller]
+                           [global_card_instances[player][card].parent_card]
+                               .info_slot = 0x20;
+      result = FUN_004ef850(card_on_stack_controller,
+                            card_on_stack,
+                            unk_00896534,
+                            card_on_stack_controller,
+                            card_on_stack);
+      if (result != -1) {
+        global_card_instances[player][result].info_slot = 0x20;
+      }
+    }
+    result = 0;
+  } else {
+    result = 0;
+  }
+
+  return result;
 }
 
 // FUNCTION: MAGIC 0x00549451
 // FUNCTION: SHANDALAR 0x0049768d
 int card_goblin_king(int player, int card, event_t event)
 {
+  if (is_in_play(player, card)
+      && is_in_play(affected_card_controller, affected_card)
+      && global_cards_data[global_card_instances[affected_card_controller][affected_card].internal_card_id].subtype
+             == 3) {
+    if (event == EVENT_ABILITIES) {
+      event_result |= 1 << (((char)get_hacked_color(player, card, COLOR_RED) - 1U) & 0x1f);
+    }
+    if (event == EVENT_POWER || event == EVENT_TOUGHNESS) {
+      ++event_result;
+    }
+  }
 
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004732e4
@@ -186,7 +600,19 @@ int card_granite_gargoyle(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00490853
 int card_keldon_warlord(int player, int card, event_t event)
 {
+  int legacy_card;
 
+  if (event == EVENT_RESOLVE_SPELL) {
+    legacy_card = FUN_004ef850(player, card, unk_0093d848, player, card);
+    if (legacy_card != -1) {
+      global_card_instances[player][legacy_card].eot_toughness = 0x80d;
+      global_card_instances[player][legacy_card].token_status = 0x10020;
+      global_card_instances[player][card].damage_source_player = (char)player;
+      global_card_instances[player][card].damage_source_card = legacy_card;
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0047894c
@@ -200,7 +626,26 @@ int card_rock_hydra(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047d1d2
 int card_sedge_troll(int player, int card, event_t event)
 {
+  if (card == affected_card && player == affected_card_controller) {
+    if (basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLACK)] > 0) {
+      if (event == EVENT_POWER) {
+        ++event_result;
+      }
+      if (event == EVENT_TOUGHNESS) {
+        ++event_result;
+      }
+    }
+  }
 
+  if (event == EVENT_UNTAP_PHASE) {
+    unk_00939520[player][get_hacked_color(player, card, COLOR_BLACK)] += 2;
+  }
+
+  if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION) {
+    return regenerate(player, card, event, 1, 1);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0053fe1c
@@ -228,21 +673,53 @@ int card_uthden_troll(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048b5a9
 int card_ironclaw_orcs(int player, int card, event_t event)
 {
+  if (event == EVENT_BLOCK_LEGALITY && affected_card == card && affected_card_controller == player) {
+    if (get_abilities(attacking_card_controller, attacking_card, EVENT_POWER, card) > 1) {
+      event_result = 1;
+    }
+  }
 
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054b8ad
 // FUNCTION: SHANDALAR 0x00499ae9
 int card_lord_of_atlantis(int player, int card, event_t event)
 {
+  if (is_in_play(player, card)
+      && is_in_play(affected_card_controller, affected_card)
+      && global_cards_data[global_card_instances[affected_card_controller][affected_card].internal_card_id].subtype
+             == 1) {
+    if (event == EVENT_ABILITIES) {
+      event_result |= 1 << (((char)get_hacked_color(player, card, COLOR_BLUE) - 1U) & 0x1f);
+    } else if (event == EVENT_POWER || event == EVENT_TOUGHNESS) {
+      ++event_result;
+    } else if (event == EVENT_GRAVEYARD_FROM_PLAY
+               && (global_card_instances[player][card].token_status & 0x80) != 0) {
+      global_card_instances[affected_card_controller][affected_card].regen_status |= 0xe000000;
+    }
+  }
 
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054b360
 // FUNCTION: SHANDALAR 0x0049959d
 int card_sea_serpent(int player, int card, event_t event)
 {
+  if (is_in_play(player, card)) {
+    if (basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLUE)] == 0) {
+      kill_card(player, card, KILL_DESTROY);
+    }
+  }
 
+  if (event == EVENT_ATTACK_LEGALITY) {
+    if (basiclandtypes_controlled[1 - player][get_hacked_color(player, card, COLOR_BLUE)] == 0) {
+      event_result = 1;
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00470140

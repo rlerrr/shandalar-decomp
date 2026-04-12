@@ -39,7 +39,7 @@ endif()
 
 if (MSVC)
   target_link_options(magic PRIVATE "/SUBSYSTEM:WINDOWS")
-  target_compile_options(magic PRIVATE /Od /Zi)
+  target_compile_options(magic PRIVATE /Od /Ob1 /Zi)
 endif()
 
 if (MSVC_FOR_DECOMP)
