@@ -149,6 +149,7 @@ void clear_sound_imports_table(void)
 // FUNCTION: DECKDLL 0x1002d2c0
 // FUNCTION: MAGVID 0x10008010
 // FUNCTION: STATWIN 0x10002da0
+// FUNCTION: MAGIC 0x004857e0
 int init_sound_dll(HWND hwnd, int a2, int a3)
 {
   int i;
