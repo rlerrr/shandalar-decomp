@@ -19,6 +19,8 @@
 // GLOBAL: SHANDALAR 0x8ca270
 GLOBAL_STATE_GLOBAL card_instance_t global_card_instances[2][151];
 
+#define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
+
 // GLOBAL: MAGIC 0x939810
 // GLOBAL: SHANDALAR 0x94d930
 GLOBAL_STATE_GLOBAL int global_graveyard_slots[2][500];
