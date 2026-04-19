@@ -14,6 +14,7 @@ int can_target(target_definition_t *td)
   return td != NULL;
 }
 
+// FUNCTION: MAGIC 0x00435e27
 int charge_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white)
 {
   (void)player;
@@ -204,6 +205,7 @@ int FUN_00485060(int player, int card, in_play_card_callback_t callback, int who
   return result;
 }
 
+// FUNCTION: MAGIC 0x004eb23d
 int has_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white)
 {
   (void)player;
@@ -217,6 +219,7 @@ int has_mana_for_activated_ability(int player, int card, int colorless, int blac
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004b4654
 int add_card_to_hand(int player, int internal_card_id)
 {
   int card;
@@ -234,11 +237,13 @@ int add_card_to_hand(int player, int internal_card_id)
   return card;
 }
 
+// FUNCTION: MAGIC 0x00500135
 int create_a_card_type(int internal_card_id)
 {
   return internal_card_id;
 }
 
+// FUNCTION: MAGIC 0x00442b42
 int dispatch_event_to_single_card(int player,
                                   int card,
                                   event_t event,
@@ -283,17 +288,20 @@ int dispatch_event_to_single_card(int player,
   return result;
 }
 
+// FUNCTION: MAGIC 0x004428be
 int dispatch_event(int player, int card, event_t event)
 {
   return dispatch_event_to_single_card(player, card, event, 1 - player, -1);
 }
 
+// FUNCTION: MAGIC 0x0043e18b
 int FUN_0043e18b(int player)
 {
   (void)player;
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004a6968
 void TENTATIVE_reassess_all_cards(void)
 {
 }
@@ -503,11 +511,13 @@ int do_dialog(int who_chooses,
   return ai_choice;
 }
 
+// FUNCTION: MAGIC 0x004eada9
 void declare_mana_available(int player, color_t color, int amount)
 {
   raw_mana_available[player][color] += amount;
 }
 
+// FUNCTION: MAGIC 0x004eaec1
 void undeclare_mana_available_and_produce_it(int player, color_t color, int amount)
 {
   if (raw_mana_available[player][color] >= amount) {
@@ -517,12 +527,14 @@ void undeclare_mana_available_and_produce_it(int player, color_t color, int amou
   }
 }
 
+// FUNCTION: MAGIC 0x0051a41c
 void FUN_0051a41c(int player, int card)
 {
   dispatch_event_to_single_card(player, card, EVENT_CAST_SPELL, 1 - player, -1);
   dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
 }
 
+// FUNCTION: MAGIC 0x005513d7
 void FUN_005513d7(int player, int card, int amount)
 {
   (void)player;
@@ -530,6 +542,7 @@ void FUN_005513d7(int player, int card, int amount)
   (void)amount;
 }
 
+// FUNCTION: MAGIC 0x004a686a
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors)
 {
   (void)player;
@@ -556,20 +569,24 @@ int choose_a_color(int player, const char *prompt, int unused1, int unused2, uns
   return -1;
 }
 
+// FUNCTION: MAGIC 0x00464a57
 int FUN_00464a57(int maximum)
 {
   (void)maximum;
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004e4f11
 void FUN_004e4f11(void)
 {
 }
 
+// FUNCTION: MAGIC 0x004e5089
 void FUN_004e5089(void)
 {
 }
 
+// FUNCTION: MAGIC 0x0048463d
 int FUN_0048463d(int player, int card, int amount)
 {
   (void)player;
@@ -578,6 +595,7 @@ int FUN_0048463d(int player, int card, int amount)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x00483489
 int FUN_00483489(int player, int card, int amount)
 {
   (void)player;
@@ -586,6 +604,7 @@ int FUN_00483489(int player, int card, int amount)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004bff5a
 int FUN_004bff5a(int player, int card)
 {
   (void)player;
@@ -593,6 +612,7 @@ int FUN_004bff5a(int player, int card)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004c081a
 int FUN_004c081a(int player, int card)
 {
   (void)player;
@@ -600,6 +620,7 @@ int FUN_004c081a(int player, int card)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004c0880
 int FUN_004c0880(int internal_card_id, int extra)
 {
   (void)internal_card_id;
@@ -607,6 +628,7 @@ int FUN_004c0880(int internal_card_id, int extra)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004848a0
 void gain_life(int player, int amount)
 {
   life[player] += amount;
@@ -653,6 +675,7 @@ void load_text(int file_name, const char *section_name)
   text_lines[0][0] = 0;
 }
 
+// FUNCTION: MAGIC 0x0043e668
 void discard(int player, int flags, int player_who_controls_effect)
 {
   (void)player;
@@ -788,12 +811,14 @@ void vigilance(int player, int card, event_t event)
   (void)event;
 }
 
+// FUNCTION: MAGIC 0x00542a2a
 void FUN_00542a2a(int player, int card)
 {
   (void)player;
   (void)card;
 }
 
+// FUNCTION: MAGIC 0x0054ac4d
 void FUN_0054ac4d(int player, int card, int amount)
 {
   (void)player;
@@ -801,6 +826,7 @@ void FUN_0054ac4d(int player, int card, int amount)
   (void)amount;
 }
 
+// FUNCTION: MAGIC 0x0054af10
 int FUN_0054af10(int player, int card, event_t event, int amount)
 {
   (void)player;
