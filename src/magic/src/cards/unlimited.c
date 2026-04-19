@@ -3737,7 +3737,87 @@ int card_instill_energy(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ebfa3
 int card_lifeforce(int player, int card, event_t event)
 {
+  int color;
 
+  if (event == EVENT_CAN_CAST) {
+    return 1;
+  } else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) {
+    ai_modifier += basiclandtypes_controlled[1 - player][COLOR_GREEN] * 5 + 0x18;
+    return 0;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    if (card_on_stack_controller == -1) {
+      return 0;
+    }
+    if (((unk_008b4278 & 0x20) != 0)
+        && (has_mana_for_activated_ability(player, card, 0, 0, 0, 2, 0, 0) != 0)) {
+      color = get_sleighted_color(player, card, COLOR_BLACK);
+      if (FUN_004bdc06(card_on_stack_controller,
+                       card_on_stack,
+                       (char *)0,
+                       player,
+                       2,
+                       2,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0,
+                       1 << (((unsigned char)color) & 0x1f),
+                       0,
+                       -1,
+                       -1,
+                       -1,
+                       -1,
+                       2,
+                       0,
+                       0)
+          != 0) {
+        return 99;
+      }
+    }
+    return 0;
+  } else if ((event == EVENT_ACTIVATE) && (card_on_stack_controller != -1)) {
+    if (has_mana_for_activated_ability(player, card, 0, 0, 0, 2, 0, 0) != 0) {
+      charge_mana_for_activated_ability(player, card, 0, 0, 0, 2, 0, 0);
+      if (spell_fizzled != 1) {
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = card_on_stack_controller;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = card_on_stack;
+      }
+    }
+    return 0;
+  } else {
+    if (event == EVENT_RESOLVE_ACTIVATION) {
+      color = get_sleighted_color(player, card, COLOR_BLACK);
+      if (FUN_004bdc06(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                       PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                       (char *)0,
+                       player,
+                       2,
+                       2,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0,
+                       1 << (((unsigned char)color) & 0x1f),
+                       0,
+                       -1,
+                       -1,
+                       -1,
+                       -1,
+                       2,
+                       0,
+                       0)
+          == 0) {
+        spell_fizzled = 1;
+      } else {
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                  PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                  KILL_BURY);
+      }
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x00523a60
@@ -3840,7 +3920,109 @@ int card_living_artifact(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004faf62
 int card_earthbind(int player, int card, event_t event)
 {
+  target_t selected_target;
+  unsigned int illegal_abilities;
 
+  if (event == EVENT_CAN_CAST) {
+    FUN_004e4ff3(0);
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        1 - player,
+                        0x200,
+                        2,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0);
+  } else {
+    if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) {
+      load_text((int)"promptsX1.txt", "EARTHBIND");
+      illegal_abilities = FUN_0053aa74(player, card);
+      if (C_real_select_target(player,
+                               2,
+                               1 - player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               illegal_abilities,
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               text_lines[0],
+                               1,
+                               &selected_target)
+          == 0) {
+        spell_fizzled = 1;
+      } else {
+        PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets] =
+            selected_target;
+        ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+        if ((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status
+             & KEYWORD_FLYING)
+            == 0) {
+          ai_modifier += -0x60;
+        } else {
+          ai_modifier += 0x18;
+        }
+      }
+    }
+    if (event == EVENT_RESOLVE_SPELL) {
+      if (FUN_004bdc06(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                       PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                       (char *)0,
+                       player,
+                       2,
+                       2,
+                       0x200,
+                       2,
+                       0,
+                       0,
+                       FUN_0053aa74(player, card),
+                       0,
+                       0,
+                       -1,
+                       -1,
+                       -1,
+                       -1,
+                       0,
+                       0,
+                       0)
+          == 0) {
+        kill_card(player, card, KILL_BURY);
+        spell_fizzled = 1;
+      } else {
+        PLAYER_CARD_INSTANCE(player, card).damage_target_player =
+            (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+        PLAYER_CARD_INSTANCE(player, card).damage_target_card =
+            PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+      }
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
+    }
+    if ((((event == EVENT_ABILITIES)
+          && (PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card))
+         && ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller))
+        && (affected_card != -1)) {
+      event_result &= 0xffffffdf;
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x0052b842
@@ -3946,7 +4128,165 @@ int card_burrowing(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004df65e
 int card_firebreathing(int player, int card, event_t event)
 {
+  int amount;
+  int color;
+  int effect_card;
 
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        0x200,
+                        2,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0);
+  } else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) {
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    if (unk_008a9000 != 1) {
+      load_text((int)"prompts.txt", "FIREBREATHING");
+    }
+    if (FUN_00551638(player, player, card) == 0) {
+      spell_fizzled = 1;
+    } else if ((player == active_player) && ((unk_00926804 & 2) == 0)) {
+      ai_modifier += -0x60;
+      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player) {
+        ai_modifier += 0xc;
+      } else {
+        ai_modifier += -0xc;
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_SPELL) {
+    if (FUN_004bdc06(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                     (char *)0,
+                     player,
+                     2,
+                     2,
+                     0x200,
+                     2,
+                     0,
+                     0,
+                     FUN_0053aa74(player, card),
+                     0,
+                     0,
+                     -1,
+                     -1,
+                     -1,
+                     -1,
+                     0,
+                     0,
+                     0)
+        == 0) {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player =
+          (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card =
+          PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    }
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
+    return 0;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    return has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 1, 0);
+  } else if (event == EVENT_ACTIVATE) {
+    if (has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 1, 0) != 0) {
+      if (player == human_player) {
+        color = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+        if (raw_mana_available[player][color] == 0) {
+          FUN_00432f00(player, 4, -1);
+        } else {
+          charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 1, 0);
+          amount = 1;
+        }
+        if (amount < 1) {
+          spell_fizzled = 1;
+        } else {
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness = amount;
+        }
+      } else {
+        color = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+        if (raw_mana_available[player][color] == 0) {
+          FUN_00432f00(player, 4, 1);
+        } else {
+          charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 1, 0);
+        }
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+      }
+      if (spell_fizzled == 1) {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      } else {
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0) {
+          PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
+        }
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_ACTIVATION) {
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .internal_card_id
+        == -1) {
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .info_slot &= 0xffff;
+      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+               .info_slot
+           & 0x80000)
+          != 0) {
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .info_slot &= 0xfff7ffff;
+        effect_card = FUN_004ef850(card_on_stack_controller,
+                                   card_on_stack,
+                                   unk_008a8de8,
+                                   (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                   PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+        if (effect_card != -1) {
+          *(short *)&PLAYER_CARD_INSTANCE(player, effect_card).display_pic_csv_id =
+              (short)PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+          PLAYER_CARD_INSTANCE(player, effect_card).info_slot |= 0x80000;
+        }
+      }
+    }
+    return 0;
+  } else {
+    if (event == EVENT_SHOULD_AI_PLAY) {
+      if (player == active_player) {
+        ai_modifier += (basiclandtypes_controlled[player][COLOR_RED] * 3 + 3) * 4;
+      } else {
+        ai_modifier += (basiclandtypes_controlled[player][COLOR_RED] * 3 + 3) * -4;
+      }
+    }
+    if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY)) {
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x00522fdc
@@ -3960,7 +4300,22 @@ int card_manabarbs(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004db096
 int card_orcish_oriflamme(int player, int card, event_t event)
 {
-
+  if (event == EVENT_POWER) {
+    if (((PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).state & STATE_ATTACKING) != 0)
+        && (player == human_player)
+        && (player == affected_card_controller)
+        && is_in_play(player, card)) {
+      ++event_result;
+    }
+    return 0;
+  } else if (event == EVENT_CAN_CAST) {
+    return 1;
+  } else {
+    if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) {
+      ai_modifier += hand_count[player] * 0xc;
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x005230ea
@@ -3974,63 +4329,304 @@ int card_mana_flare(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004dd9ef
 int card_holy_armor(int player, int card, event_t event)
 {
+  int amount;
+  int color;
+  int effect_card;
 
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        0x200,
+                        2,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0);
+  } else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) {
+    ai_modifier += 0x18;
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    if (unk_008a9000 != 1) {
+      load_text((int)"prompts.txt", "HOLY_ARMOR");
+    }
+    if (FUN_00551638(player, player, card) == 0) {
+      spell_fizzled = 1;
+    } else if ((player == active_player) && ((unk_00926804 & 2) == 0)) {
+      ai_modifier += -0x30;
+      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player) {
+        ai_modifier += 0xc;
+      } else {
+        ai_modifier += -0xc;
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_SPELL) {
+    if (FUN_004bdc06(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                     (char *)0,
+                     player,
+                     2,
+                     2,
+                     0x200,
+                     2,
+                     0,
+                     0,
+                     FUN_0053aa74(player, card),
+                     0,
+                     0,
+                     -1,
+                     -1,
+                     -1,
+                     -1,
+                     0,
+                     0,
+                     0)
+        == 0) {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player =
+          (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card =
+          PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    }
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
+    return 0;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    return has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1);
+  } else if (event == EVENT_ACTIVATE) {
+    if (has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1) != 0) {
+      color = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+      if (player == human_player) {
+        if (raw_mana_available[player][color] == 0) {
+          FUN_00432f00(player, 5, -1);
+        } else {
+          charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1);
+          amount = 1;
+        }
+        if (amount < 1) {
+          spell_fizzled = 1;
+        } else {
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness = amount;
+        }
+      } else {
+        if (raw_mana_available[player][color] == 0) {
+          FUN_00432f00(player, 5, 1);
+        } else {
+          charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1);
+        }
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+      }
+      if (spell_fizzled == 1) {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      } else {
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0) {
+          PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
+        }
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_ACTIVATION) {
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .internal_card_id
+        == -1) {
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .info_slot += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .info_slot &= 0xffff00ff;
+      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+               .info_slot
+           & 0x80000)
+          != 0) {
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .info_slot &= 0xfff7ffff;
+        effect_card = FUN_004ef850(card_on_stack_controller,
+                                   card_on_stack,
+                                   unk_008a8de8,
+                                   (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                   PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+        if (effect_card != -1) {
+          *(short *)&PLAYER_CARD_INSTANCE(player, effect_card).initial_color =
+              (short)PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+          PLAYER_CARD_INSTANCE(player, effect_card).info_slot |= 0x80000;
+        }
+      }
+    }
+    return 0;
+  } else {
+    if (event == EVENT_SHOULD_AI_PLAY) {
+      if (player == active_player) {
+        ai_modifier += basiclandtypes_controlled[player][COLOR_WHITE] * 0xc;
+      } else {
+        ai_modifier += basiclandtypes_controlled[player][COLOR_WHITE] * -0xc;
+      }
+    }
+    if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY)) {
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x0052e233
 // FUNCTION: SHANDALAR 0x004e5a30
 int card_castle(int player, int card, event_t event)
 {
+  if ((event == EVENT_TOUGHNESS) && is_in_play(player, card)) {
+    if ((player == affected_card_controller)
+        && ((PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).state & 0x14) == 0)
+        && is_in_play(affected_card_controller, affected_card)) {
+      event_result += 2;
+    }
+    return 0;
+  }
 
+  return event == EVENT_CAN_CAST;
 }
 
 // FUNCTION: MAGIC 0x0052dae0
 // FUNCTION: SHANDALAR 0x004e52db
 int card_holy_strength(int player, int card, event_t event)
 {
+  if ((((event == EVENT_CAST_SPELL) && (affected_card == card))
+       && (affected_card_controller == player))
+      && (unk_008a9000 != 1)) {
+    load_text((int)"prompts.txt", "HOLY_STRENGTH");
+  }
 
+  return FUN_0052dd74(player, card, event, 1, 2);
 }
 
 // FUNCTION: MAGIC 0x0052e2ed
 // FUNCTION: SHANDALAR 0x004e5aea
 int card_black_ward(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x0052e324
 // FUNCTION: SHANDALAR 0x004e5b21
 int card_green_ward(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x0052e35b
 // FUNCTION: SHANDALAR 0x004e5b58
 int card_blue_ward(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x0052e392
 // FUNCTION: SHANDALAR 0x004e5b8f
 int card_red_ward(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x0052e3c9
 // FUNCTION: SHANDALAR 0x004e5bc6
 int card_white_ward(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x0052112c
 // FUNCTION: SHANDALAR 0x004d8911
 int card_karma(int player, int card, event_t event)
 {
+  int color;
+  int damage;
 
+  if (event == EVENT_CAN_CAST) {
+    return 1;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    if (((current_phase == EVENT_UPKEEP_PHASE)
+         && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
+        && ((unk_00742f60 == human_player)
+            && ((color = FUN_005001e0(player, card, 1),
+                 basiclandtypes_controlled[unk_00742f60][color] != 0)))) {
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness |= 0x101;
+      unk_008b3270 |= 3;
+      return 1;
+    }
+    return 0;
+  } else if (((event == EVENT_UPKEEP_PHASE) && (affected_card == card))
+             && (affected_card_controller == player)) {
+    PLAYER_CARD_INSTANCE(player, card).state |= 1;
+    unk_007a7c1c = 1;
+    event_result |= 1;
+    return 0;
+  } else if (event == EVENT_UPKEEP_COSTS_UNPAID) {
+    color = FUN_005001e0(player, card, 1);
+    damage_player(human_player,
+                  basiclandtypes_controlled[human_player][color],
+                  card_on_stack_controller,
+                  card_on_stack);
+    return 0;
+  } else {
+    if (event == EVENT_CLEANUP) {
+      PLAYER_CARD_INSTANCE(player, card).state &= 0xfffffffe;
+    }
+    if (event == EVENT_SHOULD_AI_PLAY) {
+      damage_player(1 - human_player,
+                    basiclandtypes_controlled[1 - human_player][FUN_005001e0(player, card, 1)],
+                    player,
+                    card);
+      if (is_in_play(player, card)) {
+        color = FUN_005001e0(player, card, 1);
+        if (basiclandtypes_controlled[unk_008b35ec][color] != 0) {
+          damage = 0x18 - life[unk_008b35ec] / basiclandtypes_controlled[unk_008b35ec][color];
+          if (damage < 2) {
+            damage = 1;
+          }
+          ai_modifier += damage * 0x18;
+        }
+        color = FUN_005001e0(player, card, 1);
+        if (basiclandtypes_controlled[active_player][color] != 0) {
+          damage = 0x18 - life[active_player] / basiclandtypes_controlled[active_player][color];
+          if (damage < 2) {
+            damage = 1;
+          }
+          ai_modifier += damage * -0x18;
+        }
+      }
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x00438b5c
@@ -4044,42 +4640,65 @@ int card_farmstead(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ea30b
 int card_co_p_white(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x00532ad7
 // FUNCTION: SHANDALAR 0x004ea2d4
 int card_co_p_black(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x00532b7c
 // FUNCTION: SHANDALAR 0x004ea379
 int card_co_p_blue(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x00532b45
 // FUNCTION: SHANDALAR 0x004ea342
 int card_co_p_red(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x00532bb3
 // FUNCTION: SHANDALAR 0x004ea3b0
 int card_co_p_green(int player, int card, event_t event)
 {
-
+  (void)player;
+  (void)card;
+  (void)event;
 }
 
 // FUNCTION: MAGIC 0x0052398e
 // FUNCTION: SHANDALAR 0x004db180
 int card_crusade(int player, int card, event_t event)
 {
+  int color;
 
+  if ((event == EVENT_POWER || event == EVENT_TOUGHNESS) && is_in_play(player, card)) {
+    if (is_in_play(affected_card_controller, affected_card)) {
+      color = get_sleighted_color(player, card, 5);
+      if ((1 << (((unsigned char)color) & 0x1f)
+           & (int)PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).color) != 0) {
+        ++event_result;
+      }
+    }
+    return 0;
+  }
+
+  return event == EVENT_CAN_CAST;
 }
 
 // FUNCTION: MAGIC 0x004ab9c2
@@ -4093,7 +4712,169 @@ int card_blaze_of_glory(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004de7f8
 int card_blessing(int player, int card, event_t event)
 {
+  int amount;
+  int color;
+  int effect_card;
 
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        0x200,
+                        2,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0);
+  } else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) {
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    if (unk_008a9000 != 1) {
+      load_text((int)"prompts.txt", "BLESSING");
+    }
+    if (FUN_00551638(player, player, card) == 0) {
+      spell_fizzled = 1;
+    } else if ((player == active_player) && ((unk_00926804 & 2) == 0)) {
+      ai_modifier += -0x60;
+      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player) {
+        ai_modifier += 0xc;
+      } else {
+        ai_modifier += -0xc;
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_SPELL) {
+    if (FUN_004bdc06(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                     (char *)0,
+                     player,
+                     2,
+                     2,
+                     0x200,
+                     2,
+                     0,
+                     0,
+                     FUN_0053aa74(player, card),
+                     0,
+                     0,
+                     -1,
+                     -1,
+                     -1,
+                     -1,
+                     0,
+                     0,
+                     0)
+        == 0) {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player =
+          (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card =
+          PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    }
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
+    return 0;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    return has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1);
+  } else if (event == EVENT_ACTIVATE) {
+    if (has_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1) != 0) {
+      color = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+      if (player == human_player) {
+        if (raw_mana_available[player][color] == 0) {
+          FUN_00432f00(player, 5, -1);
+        } else {
+          charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1);
+          amount = 1;
+        }
+        if (amount < 1) {
+          spell_fizzled = 1;
+        } else {
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness = amount;
+        }
+      } else {
+        if (raw_mana_available[player][color] == 0) {
+          FUN_00432f00(player, 5, 1);
+        } else {
+          charge_mana_for_activated_ability(player, card, 0, 0, 0, 0, 0, 1);
+        }
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+      }
+      if (spell_fizzled == 1) {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      } else {
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0) {
+          PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
+        }
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_ACTIVATION) {
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .internal_card_id
+        == -1) {
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .info_slot += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
+      *(char *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                     PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+           .number_of_targets = 0;
+      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+               .info_slot
+           & 0x80000)
+          != 0) {
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .info_slot &= 0xfff7ffff;
+        effect_card = FUN_004ef850(card_on_stack_controller,
+                                   card_on_stack,
+                                   unk_008a8de8,
+                                   (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                   PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+        if (effect_card != -1) {
+          *(short *)&PLAYER_CARD_INSTANCE(player, effect_card).display_pic_csv_id =
+              (short)PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+          *(short *)&PLAYER_CARD_INSTANCE(player, effect_card).initial_color =
+              (short)PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+          PLAYER_CARD_INSTANCE(player, effect_card).info_slot |= 0x80000;
+        }
+      }
+    }
+    return 0;
+  } else {
+    if (event == EVENT_SHOULD_AI_PLAY) {
+      if (player == active_player) {
+        ai_modifier += (basiclandtypes_controlled[player][COLOR_WHITE] * 3 + 6) * 4;
+      } else {
+        ai_modifier += (basiclandtypes_controlled[player][COLOR_WHITE] * 3 + 6) * -4;
+      }
+    }
+    if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY)) {
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    }
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x00533bc2
