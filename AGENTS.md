@@ -46,17 +46,17 @@ These instructions apply to the entire repository.
 - Ghidra likes to convert `mov eax {literal}; jmp;` to `returnVal = {literal}; jmp;`, inventing a return variable that doesn't exist.
 
 ## Build
-- Build with: `nmake`
+- Build with: `make.bat`
 
 ## Check Assembly Match (reccmp)
 - Use `reccmp-reccmp` to compare the recompiled function against the original:
   - PowerShell example:
-    - `$env:PYTHONUTF8='1'; nmake | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX`
+    - `$env:PYTHONUTF8='1'; make.bat | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX`
   - Note: set `PYTHONUTF8=1` to avoid Windows console encoding issues in verbose output.
 - The hex address (`0xXXXXXXXX`) comes from the `reccmp`-style comment immediately above the function implementation, e.g.:
   - `// FUNCTION: CARDARTLIB 0x10002f70`
 - Prefer writing `reccmp` logs into `temp/` and keep them out of git:
   - `mkdir -Force temp | Out-Null`
-  - `$env:PYTHONUTF8='1'; nmake | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX *> temp\\reccmp_0xXXXXXXXX.txt`
+  - `$env:PYTHONUTF8='1'; make.bat | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX *> temp\\reccmp_0xXXXXXXXX.txt`
 
 </INSTRUCTIONS>
