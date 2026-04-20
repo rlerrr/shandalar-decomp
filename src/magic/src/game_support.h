@@ -7,25 +7,59 @@
 extern card_data_t global_cards_data[];
 
 int can_target(target_definition_t *td);
+void FUN_0040246a(int player, int amount);
 int add_card_to_hand(int player, int internal_card_id);
 int charge_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white);
 int create_a_card_type(int internal_card_id);
 void default_target_definition(int player, int card, target_definition_t *td, int type);
+int damage_creature(int target_player, int target_card, int amount, int source_player, int source_card);
 int damage_player(int target_player, int amount, int source_player, int source_card);
 int dispatch_event(int player, int card, event_t event);
 int FUN_0043e18b(int player);
 int FUN_00442763(int color_test);
+int FUN_00404c4c(int player, int internal_card_id);
+int FUN_00404cff(int player, int internal_card_id, int who_to_check);
+int FUN_0041f4c0(int player, int card, event_t event, int color);
+int FUN_0041c752(int player, int card, int event, int amount);
+int FUN_00435e27(int player, int card, int color, int amount);
+int FUN_00437375(int player, int card, int internal_card_id);
+int FUN_0043c7ab(int who_is_being_divided, int player, int card);
+int FUN_0044125c(int player, int card);
+int FUN_00443ee2(int player, int card, int event, int extra, int prompt);
+int FUN_0041626b(int player, int card, int event, int color);
+void FUN_00419667(int target_player, int target_card, int damage_target_player);
+int FUN_00441514(int player, int card);
+int FUN_004087cc(int player, unsigned int type);
+int FUN_00442763(int color_test);
 int FUN_00464a57(int maximum);
+int FUN_004832f4(int player, unsigned char type);
 int FUN_004c0a36(int a1, int a2, int a3);
+int FUN_00484581(int internal_card_id, int color);
 int FUN_0048463d(int player, int card, int amount);
+void FUN_004817fd(int player);
+void FUN_004b15f7(int player, int graveyard_index);
+int FUN_004b42aa(int player, int *graveyard, int count, char (*lines)[300], int a5, int *a6);
+void FUN_004b5cf5(int player, int internal_card_id);
 int FUN_004b5f03(int card_id);
-void FUN_00432f00(int player, unsigned int color, int amount);
+int FUN_00432f00(int player, unsigned int color, int amount);
+int FUN_004a62d7(int player,
+                 int *graveyard,
+                 void *available,
+                 int count,
+                 int prompt,
+                 int a6,
+                 int selected,
+                 int a8,
+                 int a9);
 int dispatch_event_to_single_card(int player,
                                   int card,
                                   event_t event,
                                   int new_attacking_card_controller,
                                   int new_attacking_card);
 int FUN_005001e0(int player, int card, int value);
+void FUN_005001c4(int internal_card_id);
+int FUN_0050026d(int player, int card, int value);
+int FUN_00534ddb(int player, int mode);
 int FUN_004bd7d0(int *param_1,
                  int param_2,
                  int param_3,
@@ -49,6 +83,7 @@ int get_color_from_color_test(char color_test);
 void FUN_004a61d6(char *text);
 void gain_life(int player, int amount);
 void discard(int player, int flags, int player_who_controls_effect);
+void declare_mana_available_hex(int player, color_test_t colors, int amount);
 int do_dialog(int who_chooses,
               int bigcard_player,
               int bigcard_card,
@@ -56,14 +91,21 @@ int do_dialog(int who_chooses,
               int smallcard_card,
               const char *options,
               int ai_choice);
+void undeclare_mana_available_hex(int player, color_test_t color, int amount);
+void play_sound_effect(int sound_id);
 void FUN_004e4ff3(int a1);
 void FUN_004e4f11(void);
 void FUN_004e503e(int a1);
 void FUN_004e5089(void);
 void FUN_004e51bb(void);
+void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
 int FUN_004eaf09(int player, unsigned int color, int amount);
+int FUN_004eb23d(int player, int card, unsigned int color, int amount);
 int FUN_004ef850(int a1, int a2, int a3, int a4, int a5);
+int FUN_004f7783(int player, int card);
 int FUN_00482a97(int player, int card, unsigned int flags);
+int FUN_00483190(int player, int card, int source_player, int source_card, int internal_card_id);
+int FUN_00483242(int player, int card, int source_player, int source_card, int internal_card_id);
 int FUN_00485060(int player, int card, int (__cdecl *callback)(int, int, int, int, int), int who_to_check);
 unsigned int FUN_0053aa74(int player, int card);
 void FUN_00542a2a(int player, int card);
@@ -72,6 +114,7 @@ int FUN_005493a6(int player, int card, int internal_card_id);
 int FUN_00551638(int player, unsigned int preferred_controller, int card);
 int FUN_00551b60(int player, unsigned int preferred_controller, int card);
 void FUN_0055117d(int (__cdecl *callback)(int, int, int), int who_to_check);
+void FUN_00551334(int player, int card);
 void FUN_00551572(int player, int card, int amount);
 void FUN_005514cd(int player, int card, int amount);
 void TENTATIVE_reassess_all_cards(void);
@@ -128,8 +171,11 @@ int is_tapped(int player, int card);
 void kill_card(int player, int card, kill_t kill_mode);
 void load_text(int file_name, const char *section_name);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
+int produce_mana(int player, color_t color, int amount);
+int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);
 int FUN_005058b1(int player, int card, event_t event, color_test_t available_colors);
 void FUN_0051a41c(int player, int card);
+int obliterate_top_card_of_stack(void);
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors);
 void FUN_0054ac4d();
 int FUN_0054af10(int player, int card, event_t event, int amount);
@@ -144,6 +190,44 @@ void vigilance(int player, int card, event_t event);
 void FUN_0054e470(int player, int card, int color);
 void add_special_counter(int player, int card);
 int TENTATIVE_set_timestamps(int player, int card);
+int sacrifice_a_land(int player);
+int FUN_00551921(int player);
+int FUN_00466e6d(int player, int card, int target_player);
+int FUN_004823a5(int player, int card);
+int FUN_0051c73d(int player, int card, int internal_card_id);
+int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type);
+int choose_a_number(int player, const char* prompt, int maxnum);
+void real_put_on_top_of_deck(int player, int internal_card_id);
+int FUN_004b413c(int player,
+                 int *internal_card_ids,
+                 int *damage_amounts,
+                 int count,
+                 int title,
+                 int allow_cancel,
+                 char *prompt);
+int FUN_004b41f2(int player,
+                 int *graveyard,
+                 int *allowed_cards,
+                 int count,
+                 const char *prompt,
+                 int allow_cancel,
+                 int *title);
+int FUN_00483e3e(int player, unsigned int type_mask);
+int drain_power_draw_mana_from_land(int player, int card, int internal_card_id);
+int FUN_00481e25(int player, int card, int event);
+int FUN_004821f5(int source_player, int source_card, int test_player, int test_card, int internal_card_id);
+void remove_card_from_deck(int player, int position);
+void FUN_004b59b2(int player, int deck_owner);
+int FUN_0052d761(int source_player, int source_card, int test_player, int test_card, int internal_card_id);
+int FUN_0054dccd(int player, int card);
+int FUN_005510dc(int player, unsigned char type_mask);
+int regenerate_or_graveyard_triggers(void);
+int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
+void FUN_004faee2(int player, int card, int color_from, unsigned char color_to);
+void FUN_004fb8fd(int player, int card, int color_from, unsigned char color_to);
 void __stdcall Sleep(unsigned long dwMilliseconds);
 
 #endif
+
+
+
