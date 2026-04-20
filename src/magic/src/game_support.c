@@ -482,6 +482,125 @@ int FUN_00481e25(int player, int card, int event)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x0048194e
+int FUN_0048194e(int preferred_player, int only_player, int *target_data)
+{
+  int mana_colors[8];
+  int card_colors[8];
+  int land_scores[8];
+  int player;
+  int card;
+  int color;
+  int best_land_color;
+  int best_card_color;
+  int best_score;
+  int current_score;
+  unsigned int colors;
+  int internal_card_id;
+
+  target_data[1] = -1;
+  target_data[0] = -1;
+
+  for (color = 0; color < 6; ++color) {
+    card_colors[color] = 0;
+    land_scores[color] = 0;
+    mana_colors[color] = 0;
+  }
+
+  for (player = 0; player < 2; ++player) {
+    if (only_player == -1 || player == only_player) {
+      for (card = 0; card < active_cards_count[player]; ++card) {
+        if (PLAYER_CARD_INSTANCE(player, card).internal_card_id != -1) {
+          if ((PLAYER_CARD_INSTANCE(player, card).state & 0x800022) == 2) {
+            if ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].extra_ability & 0x1000) != 0) {
+              for (color = 1; color < 6; ++color) {
+                if (((int)(char)PLAYER_CARD_INSTANCE(player, card).mana_color
+                     & (1 << (((unsigned char)color) & 0x1f))) != 0) {
+                  ++mana_colors[color];
+                }
+              }
+            }
+            if ((PLAYER_CARD_INSTANCE(player, card).color & 0x3e) != 0) {
+              for (color = 1; color < 6; ++color) {
+                if ((PLAYER_CARD_INSTANCE(player, card).color & (1 << (((unsigned char)color) & 0x1f))) != 0) {
+                  ++land_scores[color];
+                }
+              }
+            }
+          } else if (preferred_player == only_player || only_player == -1) {
+            colors = (unsigned int)(char)global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].color;
+            for (color = 1; color < 6; ++color) {
+              if ((colors & (1 << (((unsigned char)color) & 0x1f))) != 0) {
+                ++card_colors[color];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  best_card_color = 0;
+  best_land_color = 0;
+  for (color = 1; color < 6; ++color) {
+    if (land_scores[best_land_color] < land_scores[color]) {
+      best_land_color = color;
+    }
+    if (card_colors[best_card_color] < card_colors[color]) {
+      best_card_color = color;
+    }
+  }
+
+  best_score = -1;
+  for (player = 0; player < 2; ++player) {
+    if (only_player == -1 || player == only_player) {
+      for (card = 0; card < active_cards_count[player]; ++card) {
+        if (is_in_play(player, card)
+            && (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_LAND) != 0) {
+          current_score = 0;
+          if ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].extra_ability & 1) != 0) {
+            current_score = 2;
+            if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0) {
+              current_score = 5;
+            }
+          }
+          if ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].extra_ability & 0x1000) != 0) {
+            current_score += 1;
+            colors = (unsigned int)(char)PLAYER_CARD_INSTANCE(player, card).mana_color;
+            for (color = 1; color < 6; ++color) {
+              if ((colors & (1 << (((unsigned char)color) & 0x1f))) != 0) {
+                internal_card_id = 4 - mana_colors[color];
+                if (internal_card_id < 1) {
+                  internal_card_id = 0;
+                }
+                current_score += internal_card_id;
+              }
+            }
+            if (best_land_color != 0 && (colors & (1 << (((unsigned char)best_land_color) & 0x1f))) != 0) {
+              ++current_score;
+            }
+            if ((preferred_player == only_player || only_player == -1)
+                && best_card_color != 0
+                && (colors & (1 << (((unsigned char)best_card_color) & 0x1f))) != 0) {
+              ++current_score;
+            }
+          }
+          if ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0) {
+            ++current_score;
+          }
+          if (best_score < current_score) {
+            best_score = current_score;
+            target_data[0] = player;
+            target_data[1] = card;
+          }
+        }
+      }
+    }
+  }
+
+  return target_data[0] != -1;
+}
+
 // FUNCTION: MAGIC 0x004821f5
 int FUN_004821f5(int source_player, int source_card, int test_player, int test_card, int internal_card_id)
 {
@@ -3454,4 +3573,29 @@ void real_put_on_top_of_deck(int player, int internal_card_id)
     global_library[player][index] = global_library[player][index - 1];
   }
   global_library[player][0] = internal_card_id;
+}
+
+// FUNCTION: MAGIC 0x005180ed
+int FUN_005180ed(int a1, int a2, int player, int card, int internal_card_id)
+{
+  if (internal_card_id == unk_0093933c
+      && PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller
+      && PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card) {
+    event_result = 1;
+    return 1;
+  }
+
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x0051819c
+int FUN_0051819c(int parent_player, int parent_card, int player, int card, int internal_card_id)
+{
+  if (internal_card_id == unk_0093933c
+      && PLAYER_CARD_INSTANCE(player, card).damage_source_player == parent_player
+      && PLAYER_CARD_INSTANCE(player, card).blocking == parent_card) {
+    kill_card(player, card, KILL_DESTROY);
+  }
+
+  return 0;
 }

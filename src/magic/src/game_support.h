@@ -42,6 +42,8 @@ int FUN_004b42aa(int player, int *graveyard, int count, char (*lines)[300], int 
 void FUN_004b5cf5(int player, int internal_card_id);
 int FUN_004b5f03(int card_id);
 int FUN_00432f00(int player, unsigned int color, int amount);
+int FUN_005180ed(int a1, int a2, int player, int card, int internal_card_id);
+int FUN_0051819c(int parent_player, int parent_card, int player, int card, int internal_card_id);
 int FUN_004a62d7(int player,
                  int *graveyard,
                  void *available,
@@ -213,6 +215,7 @@ int FUN_004b41f2(int player,
                  int allow_cancel,
                  int *title);
 int FUN_00483e3e(int player, unsigned int type_mask);
+int FUN_0048194e(int preferred_player, int only_player, int *target_data);
 int drain_power_draw_mana_from_land(int player, int card, int internal_card_id);
 int FUN_00481e25(int player, int card, int event);
 int FUN_004821f5(int source_player, int source_card, int test_player, int test_card, int internal_card_id);
