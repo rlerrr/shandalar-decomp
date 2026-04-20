@@ -24,6 +24,7 @@ int FUN_0041c752(int player, int card, int event, int amount);
 int FUN_00435e27(int player, int card, int color, int amount);
 int FUN_00437375(int player, int card, int internal_card_id);
 int FUN_0043c7ab(int who_is_being_divided, int player, int card);
+int FUN_0043b4f3(int player, int amount);
 int FUN_0044125c(int player, int card);
 int FUN_00443ee2(int player, int card, int event, int extra, int prompt);
 int FUN_0041626b(int player, int card, int event, int color);
@@ -38,6 +39,7 @@ int FUN_00484581(int internal_card_id, int color);
 int FUN_0048463d(int player, int card, int amount);
 void FUN_004817fd(int player);
 void FUN_004b15f7(int player, int graveyard_index);
+void FUN_004b4110(int player);
 int FUN_004b42aa(int player, int *graveyard, int count, char (*lines)[300], int a5, int *a6);
 void FUN_004b5cf5(int player, int internal_card_id);
 int FUN_004b5f03(int card_id);
@@ -61,6 +63,9 @@ int dispatch_event_to_single_card(int player,
 int FUN_005001e0(int player, int card, int value);
 void FUN_005001c4(int internal_card_id);
 int FUN_0050026d(int player, int card, int value);
+int FUN_0052adf2(int player, int card);
+int FUN_0052e400(int player, int card, int event, int color);
+int FUN_00532bea(int player, int card, int event, int color);
 int FUN_00534ddb(int player, int mode);
 int FUN_004bd7d0(int *param_1,
                  int param_2,
@@ -115,6 +120,7 @@ int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int to
 int FUN_005493a6(int player, int card, int internal_card_id);
 int FUN_00551638(int player, unsigned int preferred_controller, int card);
 int FUN_00551b60(int player, unsigned int preferred_controller, int card);
+int FUN_00551ed7(int player, unsigned int preferred_controller, int card);
 void FUN_0055117d(int (__cdecl *callback)(int, int, int), int who_to_check);
 void FUN_00551334(int player, int card);
 void FUN_00551572(int player, int card, int amount);

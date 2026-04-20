@@ -1689,9 +1689,346 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0047a847
 // FUNCTION: SHANDALAR 0x0047e344
+// FUNCTION: MAGIC 0x0047c409
+static int C_vesuvan_doppelganger_helper(int source_player,
+                                         int source_card,
+                                         int player,
+                                         int card,
+                                         int internal_card_id)
+{
+  if ((global_cards_data[internal_card_id].type & TYPE_EFFECT)
+      && (PLAYER_CARD_INSTANCE(player, card).token_status & STATUS_PERMANENT)
+      && PLAYER_CARD_INSTANCE(player, card).damage_source_player == source_player
+      && PLAYER_CARD_INSTANCE(player, card).damage_source_card == source_card) {
+    kill_card(player, card, KILL_DESTROY);
+  }
+
+  return 0;
+}
+
 int card_vesuvan_doppelganger(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  card_instance_t* parent;
+  card_instance_t* data_card;
+  card_instance_t* target_instance;
+  target_t selected_target;
+  int data_card_location;
+  int data_card_controller;
+  int data_card_slot;
+  int target_data_card_location;
+  int source_internal_card_id;
+  int copied_internal_id;
+  int lookup_player;
+  int lookup_card;
+  unsigned int result;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  parent = instance;
+  data_card = (card_instance_t*)0;
+  data_card_location = -1;
+  data_card_controller = -1;
+  data_card_slot = -1;
+  result = 0;
+
+  if (event == EVENT_RESOLVE_ACTIVATION && instance->parent_controller != -1 && instance->parent_card != -1) {
+    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+  }
+
+  if (is_in_play(parent == instance ? player : instance->parent_controller,
+                 parent == instance ? card : instance->parent_card)) {
+    if (parent->internal_card_id == unk_0091a80c) {
+      lookup_player = card_on_stack_controller;
+      lookup_card = card_on_stack;
+    } else if (parent == instance) {
+      lookup_player = player;
+      lookup_card = card;
+    } else {
+      lookup_player = instance->parent_controller;
+      lookup_card = instance->parent_card;
+    }
+
+    data_card_location = FUN_00485060(lookup_player, lookup_card, clone_find_data_card_callback, -1);
+    if (data_card_location != -1) {
+      data_card_controller = (data_card_location >> 8) & 0xff;
+      data_card_slot = data_card_location & 0xff;
+      data_card = &PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot);
+    }
+  }
+
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        0x200,
+                        TYPE_CREATURE,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                        0,
+                        0);
+  }
+
+  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+    load_text((int)"prompts.txt", "VESUVAN_DOPPELGANGER");
+    if (!C_real_select_target(player,
+                              2,
+                              2,
+                              TARGET_ZONE_IN_PLAY,
+                              TYPE_CREATURE,
+                              TYPE_NONE,
+                              0,
+                              FUN_0053aa74(player, card),
+                              COLOR_TEST_0,
+                              COLOR_TEST_0,
+                              -1,
+                              ~SUB_WALL,
+                              -1,
+                              -1,
+                              TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                              0,
+                              0,
+                              text_lines[0],
+                              1,
+                              &selected_target)) {
+      spell_fizzled = 1;
+    } else {
+      instance->targets[0].player = selected_target.player;
+      instance->targets[0].card = selected_target.card;
+      instance->number_of_targets = 1;
+    }
+  }
+
+  if (event == EVENT_RESOLVE_SPELL) {
+    if (!C_real_validate_target(instance->targets[0].player,
+                                instance->targets[0].card,
+                                (char *)0,
+                                player,
+                                2,
+                                2,
+                                TARGET_ZONE_IN_PLAY,
+                                TYPE_CREATURE,
+                                TYPE_NONE,
+                                0,
+                                FUN_0053aa74(player, card),
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                -1,
+                                ~SUB_WALL,
+                                -1,
+                                -1,
+                                TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                                0,
+                                0)) {
+      instance->number_of_targets = 0;
+      kill_card(player, card, KILL_DESTROY);
+    } else {
+      selected_target = instance->targets[0];
+      target_instance = &PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card);
+      if (global_cards_data[target_instance->internal_card_id].id == CARD_ID_VESUVAN_DOPPELGANGER) {
+        target_data_card_location =
+            FUN_00485060(selected_target.player, selected_target.card, clone_find_data_card_callback, -1);
+        if (target_data_card_location == -1) {
+          source_internal_card_id = 0;
+        } else {
+          source_internal_card_id =
+              PLAYER_CARD_INSTANCE((target_data_card_location >> 8) & 0xff, target_data_card_location & 0xff)
+                  .info_slot;
+        }
+      } else {
+        source_internal_card_id = target_instance->internal_card_id;
+      }
+
+      data_card_slot = add_card_to_hand(player, FUN_004b5f03(CARD_ID_DATA_CARD));
+      if (data_card_slot != -1) {
+        data_card = &PLAYER_CARD_INSTANCE(player, data_card_slot);
+        data_card->state = ((((unsigned int)(((player == 0) - 1) >> 8)) & 0x1000) | STATE_IN_PLAY);
+        data_card->token_status |= 0x10008;
+        data_card->damage_target_player = (char)player;
+        data_card->damage_target_card = card;
+        copied_internal_id = create_a_card_type(source_internal_card_id);
+        if (copied_internal_id != -1) {
+          instance->internal_card_id = copied_internal_id;
+          instance->dummy3 = copied_internal_id;
+          instance->regen_status |= 0x1000000;
+          instance->state &= 0xffffdfff;
+          instance->color = global_cards_data[copied_internal_id].color;
+          if ((global_cards_data[copied_internal_id].type & TYPE_ARTIFACT) != 0) {
+            ++artifact_cards_in_play[player];
+          }
+          if ((global_cards_data[copied_internal_id].type & TYPE_ENCHANTMENT) != 0) {
+            ++enchantments_in_play[player];
+          }
+          card_types_in_play[player] |= global_cards_data[copied_internal_id].type;
+          data_card->info_slot = source_internal_card_id;
+          data_card->eot_toughness |= global_cards_data[source_internal_card_id].extra_ability & 1;
+          dispatch_event_to_single_card(player, card, EVENT_CAST_SPELL, 1 - player, -1);
+          dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
+          global_cards_data[copied_internal_id].code_pointer =
+              global_cards_data[target_instance->internal_card_id].code_pointer;
+          global_cards_data[copied_internal_id].extra_ability |= 1;
+        }
+      }
+      instance->number_of_targets = 0;
+    }
+  }
+
+  if (event == EVENT_CHANGE_TYPE && (unk_008b4278 & 0x20000) == 0 && card == affected_card
+      && player == affected_card_controller && is_in_play(player, card)) {
+    event_result = instance->dummy3;
+  }
+
+  if (event == EVENT_CAN_ACTIVATE) {
+    if (current_phase == EVENT_UPKEEP_PHASE && player == current_turn && player == unk_00742f60
+        && data_card != (card_instance_t*)0 && (data_card->eot_toughness & 2) == 0
+        && FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        0x200,
+                        TYPE_CREATURE,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                        0,
+                        0)) {
+      result = 1;
+    }
+  }
+
+  if (event == EVENT_ACTIVATE && card == affected_card && player == affected_card_controller
+      && current_phase == EVENT_UPKEEP_PHASE && player == current_turn && player == unk_00742f60
+      && data_card != (card_instance_t*)0 && (data_card->eot_toughness & 2) == 0) {
+    load_text((int)"prompts.txt", "VESUVAN_DOPPELGANGER");
+    if (!C_real_select_target(player,
+                              2,
+                              2,
+                              TARGET_ZONE_IN_PLAY,
+                              TYPE_CREATURE,
+                              TYPE_NONE,
+                              0,
+                              FUN_0053aa74(player, card),
+                              COLOR_TEST_0,
+                              COLOR_TEST_0,
+                              -1,
+                              ~SUB_WALL,
+                              -1,
+                              -1,
+                              TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                              0,
+                              0,
+                              text_lines[0],
+                              1,
+                              &selected_target)) {
+      spell_fizzled = 1;
+    } else {
+      instance->targets[0].player = selected_target.player;
+      instance->targets[0].card = selected_target.card;
+      instance->number_of_targets = 1;
+      data_card->eot_toughness |= 6;
+    }
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION && parent != instance) {
+    if (data_card != (card_instance_t*)0 && (data_card->eot_toughness & 4) != 0) {
+      if (C_real_validate_target(instance->targets[0].player,
+                                 instance->targets[0].card,
+                                 (char *)0,
+                                 player,
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 FUN_0053aa74(instance->parent_controller, instance->parent_card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                                 0,
+                                 0)) {
+        target_instance = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
+        if (global_cards_data[target_instance->internal_card_id].id == CARD_ID_VESUVAN_DOPPELGANGER) {
+          target_data_card_location =
+              FUN_00485060(instance->targets[0].player, instance->targets[0].card, clone_find_data_card_callback, -1);
+          if (target_data_card_location == -1) {
+            source_internal_card_id = 0;
+          } else {
+            source_internal_card_id =
+                PLAYER_CARD_INSTANCE((target_data_card_location >> 8) & 0xff, target_data_card_location & 0xff)
+                    .info_slot;
+          }
+        } else {
+          source_internal_card_id = target_instance->internal_card_id;
+        }
+
+        copied_internal_id = create_a_card_type(source_internal_card_id);
+        if (copied_internal_id != -1) {
+          parent->internal_card_id = copied_internal_id;
+          parent->dummy3 = copied_internal_id;
+          parent->regen_status |= 0x1000000;
+          parent->state &= 0xffffdfff;
+          parent->color = global_cards_data[copied_internal_id].color;
+          data_card->info_slot = source_internal_card_id;
+          data_card->eot_toughness &= ~1;
+          data_card->eot_toughness |= global_cards_data[source_internal_card_id].extra_ability & 1;
+          FUN_00485060(instance->parent_controller,
+                       instance->parent_card,
+                       C_vesuvan_doppelganger_helper,
+                       -1);
+          dispatch_event_to_single_card(instance->parent_controller,
+                                        instance->parent_card,
+                                        EVENT_CAST_SPELL,
+                                        1 - instance->parent_controller,
+                                        -1);
+          dispatch_event_to_single_card(instance->parent_controller,
+                                        instance->parent_card,
+                                        EVENT_RESOLVE_SPELL,
+                                        1 - instance->parent_controller,
+                                        -1);
+          global_cards_data[copied_internal_id].code_pointer =
+              global_cards_data[target_instance->internal_card_id].code_pointer;
+          global_cards_data[copied_internal_id].extra_ability |= 1;
+        }
+      }
+
+      data_card->eot_toughness &= ~4;
+    }
+
+    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+  }
+
+  if (event == EVENT_CLEANUP && data_card != (card_instance_t*)0) {
+    data_card->eot_toughness &= ~2;
+  }
+
+  if (parent == instance && (instance->state & STATE_INVISIBLE) == 0
+      && data_card != (card_instance_t*)0 && data_card->info_slot != 0) {
+    result |= global_cards_data[data_card->info_slot].code_pointer(player, card, event);
+  }
+
+  return result;
 }
 
 // FUNCTION: MAGIC 0x0053f22d
@@ -2681,7 +3018,114 @@ int card_phantasmal_terrain(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e7006
 int card_copy_artifact(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  card_instance_t *target;
+  target_t selected_target;
+  int copied_internal_id;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  target = (card_instance_t *)0;
+  selected_target.player = 0;
+  selected_target.card = 0;
+  copied_internal_id = -1;
+
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        TARGET_ZONE_IN_PLAY,
+                        TYPE_ARTIFACT,
+                        TYPE_NONE,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        0xffffffff,
+                        0xffffffff,
+                        TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                        0,
+                        0);
+  } else if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+    if (unk_008a9000 != 1) {
+      load_text("prompts.txt", "COPY_ARTIFACT");
+    }
+
+    if (C_real_select_target(player,
+                             2,
+                             2,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_ARTIFACT,
+                             TYPE_NONE,
+                             0,
+                             FUN_0053aa74(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                             0,
+                             0,
+                             text_lines[0],
+                             1,
+                             &selected_target) == 0) {
+      spell_fizzled = 1;
+    } else {
+      instance->targets[0] = selected_target;
+      instance->number_of_targets = 1;
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_SPELL) {
+    if (C_real_validate_target(instance->targets[0].player,
+                               instance->targets[0].card,
+                               (char *)0,
+                               player,
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_ARTIFACT,
+                               TYPE_NONE,
+                               0,
+                               FUN_0053aa74(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                               0,
+                               0) == 0) {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    } else {
+      target = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
+      copied_internal_id = create_a_card_type(target->original_internal_card_id);
+      if (copied_internal_id != -1) {
+        instance->dummy3 = copied_internal_id;
+        instance->internal_card_id = copied_internal_id;
+        instance->regen_status = 0x1000000;
+        global_cards_data[copied_internal_id].type |= TYPE_ENCHANTMENT;
+        instance->color = target->color;
+        FUN_0051a41c(player, card);
+      }
+    }
+
+    instance->number_of_targets = 0;
+    return 0;
+  } else {
+    if (event == EVENT_CHANGE_TYPE && (unk_008b4278 & 0x20000) == 0 && card == affected_card
+        && player == affected_card_controller && is_in_play(player, card)) {
+      event_result = instance->dummy3;
+    }
+
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x00534336
@@ -3375,7 +3819,112 @@ int card_wild_growth(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e8d27
 int card_regeneration(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  card_instance_t *parent;
+  card_instance_t *target;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  parent = (card_instance_t *)0;
+  target = (card_instance_t *)0;
+
+  if (event == EVENT_UNTAP_PHASE) {
+    unk_00939520[player][3] += 2;
+  }
+
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        TARGET_ZONE_IN_PLAY,
+                        TYPE_CREATURE,
+                        TYPE_NONE,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        0xffffffff,
+                        0xffffffff,
+                        0,
+                        0,
+                        0);
+  } else if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+    if (unk_008a9000 != 1) {
+      load_text("prompts.txt", "REGENERATION");
+    }
+
+    if (!FUN_00551638(player, player, card)) {
+      spell_fizzled = 1;
+    }
+
+    if (spell_fizzled != 1 && player == active_player && (unk_00926804 & 2) == 0) {
+      target = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
+      if ((target->regen_status & 0x200) != 0 || instance->targets[0].player == unk_008b35ec) {
+        ai_modifier -= 0x30;
+      }
+      if (FUN_0052adf2(player, card) != 0) {
+        ai_modifier -= 0x60;
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_SPELL) {
+    if (C_real_validate_target(instance->targets[0].player,
+                               instance->targets[0].card,
+                               (char *)0,
+                               player,
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               FUN_0053aa74(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0) == 0) {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    } else {
+      instance->damage_target_player = instance->targets[0].player;
+      instance->damage_target_card = instance->targets[0].card;
+    }
+    instance->number_of_targets = 0;
+    return 0;
+  } else if (event == EVENT_CAN_ACTIVATE && (unk_008b4278 & 0x200) != 0 && instance->info_slot == 0) {
+    target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
+    if (FUN_004eb23d(player, card, 3, 1) != 0 && target->kill_code == KILL_DESTROY
+        && (target->state & 0x800002) == STATE_IN_PLAY) {
+      return 99;
+    }
+    return 0;
+  } else if (event == EVENT_GET_SELECTED_CARD) {
+    FUN_004e4ff3(0);
+    return 0;
+  } else if (event == EVENT_ACTIVATE && (unk_008b4278 & 0x200) != 0) {
+    FUN_00435e27(player, card, 3, 1);
+    if (spell_fizzled != 1) {
+      unk_007a7c1c = 1;
+      ++instance->info_slot;
+    }
+    return 0;
+  } else {
+    if (event == EVENT_RESOLVE_ACTIVATION && (unk_008b4278 & 0x200) != 0) {
+      parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+      parent->info_slot = 0;
+      FUN_00542a2a(instance->damage_target_player, instance->damage_target_card);
+    }
+
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x005293ba
@@ -3618,7 +4167,143 @@ int card_wanderlust(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e384b
 int card_instill_energy(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  card_instance_t *target;
+  int selected_color;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        TARGET_ZONE_IN_PLAY,
+                        TYPE_CREATURE,
+                        TYPE_NONE,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        0xffffffff,
+                        0xffffffff,
+                        0,
+                        0,
+                        0);
+  } else if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player) {
+    if (unk_008a9000 != 1) {
+      load_text("prompts.txt", "INSTILL_ENERGY");
+    }
+
+    if (!FUN_00551638(player, player, card)) {
+      spell_fizzled = 1;
+    }
+
+    if (spell_fizzled != 1 && player == active_player) {
+      target = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
+      if (global_cards_data[target->internal_card_id].subtype == SUB_WALL
+          && (target->token_status & STATUS_WALL_CAN_ATTACK) == 0) {
+        ai_modifier -= 0x30;
+      }
+      if ((global_cards_data[target->internal_card_id].extra_ability & 1) != 0
+          && instance->targets[0].player == player) {
+        ai_modifier += 0x30;
+      }
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_SPELL) {
+    if (C_real_validate_target(instance->targets[0].player,
+                               instance->targets[0].card,
+                               (char *)0,
+                               player,
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               FUN_0053aa74(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0) == 0) {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    } else {
+      instance->damage_target_player = instance->targets[0].player;
+      instance->damage_target_card = instance->targets[0].card;
+      target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
+      if ((target->state & STATE_IN_PLAY) != 0) {
+        instance->eot_toughness = 1;
+        target->state &= 0xfffcffff;
+      }
+    }
+    instance->number_of_targets = 0;
+    return 0;
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    selected_color = FUN_00442763((unsigned char)instance->color);
+    if (unk_0072c440[selected_color] == 0 || FUN_004eb23d(player, card, 7, 0) != 0) {
+      if (instance->info_slot == 0 && affected_card_controller == human_player
+          && (instance->state & STATE_INVISIBLE) == 0) {
+        return 1;
+      }
+    }
+    return 0;
+  } else if (event == EVENT_ACTIVATE && instance->info_slot == 0) {
+    selected_color = FUN_00442763((unsigned char)instance->color);
+    if (unk_0072c440[selected_color] != 0) {
+      FUN_00435e27(player, card, 0, 0);
+    }
+
+    if (spell_fizzled != 1) {
+      ++instance->info_slot;
+    }
+    return 0;
+  } else if (event == EVENT_RESOLVE_ACTIVATION) {
+    target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
+    if (target->internal_card_id == -1) {
+      spell_fizzled = 1;
+    } else {
+      target->state &= ~STATE_TAPPED;
+    }
+    return 0;
+  } else {
+    if (trigger_condition == TRIGGER_LEAVE_PLAY && affected_card == card && affected_card_controller == player
+        && instance->eot_toughness != 0 && instance->damage_target_player != -1
+        && PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id != -1
+        && trigger_cause_controller == player && trigger_cause == card && current_turn == player) {
+      if (event == EVENT_TRIGGER) {
+        event_result |= 2;
+      }
+      if (event == EVENT_RESOLVE_TRIGGER) {
+        PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).state |= 0x30000;
+      }
+    }
+
+    if (event == EVENT_CLEANUP && affected_card == card && affected_card_controller == player) {
+      instance->eot_toughness = 0;
+      instance->info_slot = 0;
+    }
+
+    if (event == EVENT_CARDCONTROLLED && instance->damage_target_card == affected_card
+        && instance->damage_target_player == affected_card_controller && affected_card != -1) {
+      target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
+      if ((target->state & STATE_IN_PLAY) != 0) {
+        instance->eot_toughness = 1;
+        target->state &= 0xfffcffff;
+      }
+    }
+
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x005347a7
@@ -3801,7 +4486,142 @@ int card_aspect_of_wolf(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d92a4
 int card_living_artifact(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  int ai_scale;
+  int color_index;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  ai_scale = 0;
+  color_index = 0;
+
+  if (event == EVENT_DEAL_DAMAGE && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4) {
+    if (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player == player
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == -1
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0) {
+      instance->eot_toughness += PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot;
+    }
+    return 0;
+  } else {
+    if (trigger_condition == TRIGGER_DEAL_DAMAGE && affected_card == card && affected_card_controller == player
+        && instance->eot_toughness != 0 && current_turn == player) {
+      if (event == EVENT_TRIGGER) {
+        event_result |= 2;
+      }
+      if (event == EVENT_RESOLVE_TRIGGER) {
+        FUN_005513d7(player, card, instance->eot_toughness);
+        instance->eot_toughness = 0;
+      }
+    }
+
+    if (event == EVENT_CAN_CAST) {
+      return FUN_004bd7d0((int *)0,
+                          0,
+                          player,
+                          2,
+                          2,
+                          TARGET_ZONE_IN_PLAY,
+                          TYPE_ARTIFACT,
+                          TYPE_NONE,
+                          0,
+                          FUN_0053aa74(player, card),
+                          0,
+                          0,
+                          -1,
+                          -1,
+                          0xffffffff,
+                          0xffffffff,
+                          0,
+                          0,
+                          0);
+    } else if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+      if (unk_008a9000 != 1) {
+        load_text("prompts.txt", "LIVING_ARTIFACT");
+      }
+
+      if (!FUN_00551ed7(player, 2, card)) {
+        spell_fizzled = 1;
+      }
+
+      if (spell_fizzled != 1) {
+        if (life[player] < life[1 - player]) {
+          ai_scale = 3;
+        } else {
+          ai_scale = 1;
+        }
+
+        if (instance->targets[0].player == unk_008b35ec) {
+          ai_modifier += global_cards_data[PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card)
+                                               .internal_card_id]
+                             .cc[1]
+                         * ai_scale * 0x18;
+        }
+        if (instance->targets[0].player == active_player) {
+          ai_modifier += (ai_scale * 0x18) / 2;
+        }
+      }
+      return 0;
+    } else if (event == EVENT_RESOLVE_SPELL) {
+      if (C_real_validate_target(instance->targets[0].player,
+                                 instance->targets[0].card,
+                                 (char *)0,
+                                 player,
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_ARTIFACT,
+                                 TYPE_NONE,
+                                 0,
+                                 FUN_0053aa74(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0) == 0) {
+        kill_card(player, card, KILL_BURY);
+        spell_fizzled = 1;
+      } else {
+        instance->damage_target_player = instance->targets[0].player;
+        instance->damage_target_card = instance->targets[0].card;
+      }
+      instance->number_of_targets = 0;
+      return 0;
+    } else if (event == EVENT_CAN_ACTIVATE) {
+      if (current_phase == 4 && player == human_player && player == unk_00742f60 && instance->info_slot == 0
+          && C_get_special_counters(player, card) != 0) {
+        color_index = FUN_00442763((unsigned char)instance->color);
+        if (unk_0072c440[color_index] == 0 || FUN_004eb23d(player, card, 7, 0) != 0) {
+          if (player == active_player && (unk_00926804 & 2) == 0) {
+            unk_008b3270 |= 3;
+          }
+          return 1;
+        }
+      }
+      return 0;
+    } else if (event == EVENT_ACTIVATE && card == affected_card && player == affected_card_controller) {
+      color_index = FUN_00442763((unsigned char)instance->color);
+      if (unk_0072c440[color_index] != 0) {
+        FUN_00435e27(player, card, 0, 0);
+      }
+      if (spell_fizzled != 1) {
+        ++instance->info_slot;
+        FUN_00551334(player, card);
+      }
+      return 0;
+    } else if (event == EVENT_RESOLVE_ACTIVATION) {
+      gain_life(player, 1);
+      return 0;
+    } else {
+      if (event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY) {
+        instance->info_slot = 0;
+        instance->eot_toughness = 0;
+      }
+      return 0;
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x004385c3
@@ -4181,7 +5001,24 @@ int card_firebreathing(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004da7c9
 int card_manabarbs(int player, int card, event_t event)
 {
+  if ((event == EVENT_TAP_CARD) && is_in_play(player, card)) {
+    if ((global_cards_data[PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id].type
+         & TYPE_LAND)
+        && produced_mana_color != -1) {
+      damage_player(affected_card_controller, 1, player, card);
+    }
+    return 0;
+  }
 
+  if (event == EVENT_CAN_CAST) {
+    return 1;
+  }
+
+  if (event == EVENT_SHOULD_AI_PLAY && card == affected_card && player == affected_card_controller) {
+    ai_modifier += (basiclandtypes_controlled[active_player][7] - basiclandtypes_controlled[human_player][7]) * 0x18;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x005238a7
@@ -4210,7 +5047,57 @@ int card_orcish_oriflamme(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004da8d7
 int card_mana_flare(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  int current_internal_id;
+  int color_index;
+  int color_count;
+  unsigned char land_color;
 
+  if ((event == EVENT_COUNT_MANA)
+      && (global_cards_data[PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id].type
+          & TYPE_LAND)) {
+    instance = &PLAYER_CARD_INSTANCE(affected_card_controller, affected_card);
+    if ((instance->state & STATE_TAPPED) == 0) {
+      land_color = (unsigned char)instance->color;
+      color_count = 0;
+      for (color_index = 0; color_index < 7; ++color_index) {
+        if ((land_color & (1 << ((unsigned char)color_index & 0x1f))) != 0) {
+          ++color_count;
+        }
+      }
+
+      if (color_count == 0) {
+        declare_mana_available(affected_card_controller, FUN_00442763(land_color), 1);
+      } else {
+        declare_mana_available_hex(affected_card_controller, land_color, 1);
+      }
+    }
+    return 0;
+  }
+
+  if ((event == EVENT_TAP_CARD) && is_in_play(player, card)) {
+    instance = &PLAYER_CARD_INSTANCE(affected_card_controller, affected_card);
+    if (instance->internal_card_id == -1) {
+      current_internal_id = instance->original_internal_card_id;
+    } else {
+      current_internal_id = instance->internal_card_id;
+    }
+
+    if ((global_cards_data[current_internal_id].type & TYPE_LAND) != 0 && produced_mana_color != -1) {
+      produce_mana(affected_card_controller, produced_mana_color, 1);
+    }
+    return 0;
+  }
+
+  if (event == EVENT_CAN_CAST) {
+    return 1;
+  }
+
+  if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player) {
+    ai_modifier += 0x30;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00526202
@@ -4411,45 +5298,35 @@ int card_holy_strength(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e5aea
 int card_black_ward(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_BLACK));
 }
 
 // FUNCTION: MAGIC 0x0052e324
 // FUNCTION: SHANDALAR 0x004e5b21
 int card_green_ward(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_GREEN));
 }
 
 // FUNCTION: MAGIC 0x0052e35b
 // FUNCTION: SHANDALAR 0x004e5b58
 int card_blue_ward(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_BLUE));
 }
 
 // FUNCTION: MAGIC 0x0052e392
 // FUNCTION: SHANDALAR 0x004e5b8f
 int card_red_ward(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_RED));
 }
 
 // FUNCTION: MAGIC 0x0052e3c9
 // FUNCTION: SHANDALAR 0x004e5bc6
 int card_white_ward(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_WHITE));
 }
 
 // FUNCTION: MAGIC 0x0052112c
@@ -4521,52 +5398,150 @@ int card_karma(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fb4fd
 int card_farmstead(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  card_instance_t *parent;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  parent = (card_instance_t *)0;
+
+  if (event == EVENT_CAN_CAST) {
+    return FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        2,
+                        player,
+                        TARGET_ZONE_IN_PLAY,
+                        TYPE_LAND,
+                        TYPE_NONE,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        0xffffffff,
+                        0xffffffff,
+                        0,
+                        0,
+                        0);
+  } else {
+    if (event == EVENT_CAST_SPELL && affected_card == card && player == affected_card_controller) {
+      load_text("promptsX1.txt", "FARMSTEAD");
+      if (!FUN_00551b60(player, player, card)) {
+        spell_fizzled = 1;
+      }
+      if (spell_fizzled != 1) {
+        if (instance->targets[0].player == unk_008b35ec) {
+          ai_modifier -= 0x60;
+        }
+        if (instance->targets[0].player == active_player) {
+          ai_modifier += 0x30;
+        }
+      }
+    }
+
+    if (event == EVENT_RESOLVE_SPELL) {
+      if (C_real_validate_target(instance->targets[0].player,
+                                 instance->targets[0].card,
+                                 (char *)0,
+                                 player,
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_LAND,
+                                 TYPE_NONE,
+                                 0,
+                                 FUN_0053aa74(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0) == 0) {
+        kill_card(player, card, KILL_BURY);
+        spell_fizzled = 1;
+      } else {
+        instance->damage_target_player = instance->targets[0].player;
+        instance->damage_target_card = instance->targets[0].card;
+      }
+      instance->number_of_targets = 0;
+    }
+
+    if (event == EVENT_CAN_ACTIVATE) {
+      if (current_phase == 4 && instance->damage_target_player == human_player && instance->info_slot == 0
+          && FUN_004eb23d(player, card, 5, 2) != 0) {
+        if (player == active_player && (unk_00926804 & 2) == 0
+            && (FUN_00464a57(100) < ((basiclandtypes_controlled[player][COLOR_WHITE] + 1) / 2) * 0x14
+                || life[active_player] < 5)) {
+          unk_008b3270 |= 3;
+        }
+        return 1;
+      }
+      return 0;
+    } else {
+      if (event == EVENT_ACTIVATE) {
+        ++instance->info_slot;
+        FUN_00435e27(player, card, 5, 2);
+        if (spell_fizzled == 1) {
+          instance->info_slot = 0;
+        } else {
+          instance->targets[0].player = instance->damage_target_player;
+          instance->targets[0].card = -1;
+          instance->number_of_targets = 1;
+        }
+      }
+
+      if (event == EVENT_RESOLVE_ACTIVATION) {
+        gain_life(instance->targets[0].player, 1);
+        parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+        parent->number_of_targets = 0;
+      }
+
+      if (event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY) {
+        instance->info_slot = 0;
+      }
+
+      return 0;
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x00532b0e
 // FUNCTION: SHANDALAR 0x004ea30b
 int card_co_p_white(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_WHITE));
 }
 
 // FUNCTION: MAGIC 0x00532ad7
 // FUNCTION: SHANDALAR 0x004ea2d4
 int card_co_p_black(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_BLACK));
 }
 
 // FUNCTION: MAGIC 0x00532b7c
 // FUNCTION: SHANDALAR 0x004ea379
 int card_co_p_blue(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_BLUE));
 }
 
 // FUNCTION: MAGIC 0x00532b45
 // FUNCTION: SHANDALAR 0x004ea342
 int card_co_p_red(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_RED));
 }
 
 // FUNCTION: MAGIC 0x00532bb3
 // FUNCTION: SHANDALAR 0x004ea3b0
 int card_co_p_green(int player, int card, event_t event)
 {
-  (void)player;
-  (void)card;
-  (void)event;
+  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_GREEN));
 }
 
 // FUNCTION: MAGIC 0x0052398e
@@ -4593,7 +5568,95 @@ int card_crusade(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a3232
 int card_blaze_of_glory(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  target_t selected_target;
 
+  if (event == EVENT_CAN_CAST) {
+    if (current_phase == PHASE_BEFORE_BLOCKING
+        && FUN_004bd7d0((int *)0,
+                        0,
+                        player,
+                        1 - current_turn,
+                        1 - current_turn,
+                        0x200,
+                        TYPE_CREATURE,
+                        0,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0)) {
+      return 1;
+    }
+  } else {
+    instance = &PLAYER_CARD_INSTANCE(player, card);
+    if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+      load_text((int)"prompts.txt", "BLAZE_OF_GLORY");
+      if (!C_real_select_target(player,
+                                1 - current_turn,
+                                1 - current_turn,
+                                TARGET_ZONE_IN_PLAY,
+                                TYPE_CREATURE,
+                                TYPE_NONE,
+                                0,
+                                FUN_0053aa74(player, card),
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                -1,
+                                ~SUB_WALL,
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                0,
+                                text_lines[0],
+                                1,
+                                &selected_target)) {
+        spell_fizzled = 1;
+      } else {
+        instance->targets[0].player = selected_target.player;
+        instance->targets[0].card = selected_target.card;
+        instance->number_of_targets = 1;
+      }
+    }
+
+    if (event == EVENT_RESOLVE_SPELL) {
+      if (!C_real_validate_target(instance->targets[0].player,
+                                  instance->targets[0].card,
+                                  (char *)0,
+                                  player,
+                                  1 - current_turn,
+                                  1 - current_turn,
+                                  TARGET_ZONE_IN_PLAY,
+                                  TYPE_CREATURE,
+                                  TYPE_NONE,
+                                  0,
+                                  FUN_0053aa74(player, card),
+                                  COLOR_TEST_0,
+                                  COLOR_TEST_0,
+                                  -1,
+                                  ~SUB_WALL,
+                                  -1,
+                                  -1,
+                                  0,
+                                  0,
+                                  0)) {
+        spell_fizzled = 1;
+      } else {
+        FUN_004ef850(player, card, unk_008a8df0, instance->targets[0].player, instance->targets[0].card);
+      }
+      instance->number_of_targets = 0;
+      kill_card(player, card, KILL_DESTROY);
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0052700b
@@ -5289,7 +6352,162 @@ int card_earthquake(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044aaee
 int card_fireball(int player, int card, event_t event)
 {
+  card_instance_t *instance;
+  card_instance_t *replay_instance;
+  int possible_targets;
+  int num_targets;
+  int per_target_damage;
+  int target_index;
+  int invalid_targets;
+  int player_target_selected;
+  unsigned int illegal_abilities;
+  target_t chosen_target;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  replay_instance = (card_instance_t *)0;
+  possible_targets = 0;
+  num_targets = 0;
+  per_target_damage = 0;
+  target_index = 0;
+  invalid_targets = 0;
+  player_target_selected = 0;
+  illegal_abilities = 0;
+  chosen_target.player = 0;
+  chosen_target.card = 0;
+
+  if (event == EVENT_CAN_CAST) {
+    if (player == unk_008b35ec || (unk_00926804 & 2) != 0) {
+      unk_0091bfb4 = 1;
+    } else if (FUN_004eaf09(player, 7, 2) == 0) {
+      return 0;
+    }
+
+    return 1;
+  } else {
+    if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+      per_target_damage = FUN_00404c4c(player, instance->internal_card_id);
+      ai_modifier -= 0x48 / per_target_damage;
+      instance->info_slot = x_value;
+
+      if (unk_008a9000 == 1) {
+        if ((unk_008b4278 & 0x400) == 0) {
+          illegal_abilities = FUN_0053aa74(player, card);
+          FUN_004bd7d0(&possible_targets,
+                       0,
+                       player,
+                       2,
+                       1 - player,
+                       TARGET_ZONE_IN_PLAY,
+                       TYPE_CREATURE,
+                       TYPE_NONE,
+                       0,
+                       illegal_abilities,
+                       0,
+                       0,
+                       -1,
+                       -1,
+                       0xffffffff,
+                       0xffffffff,
+                       0,
+                       0,
+                       0);
+          ++possible_targets;
+          if (possible_targets > 5) {
+            possible_targets = 5;
+          }
+          unk_00939340 = FUN_004c0a36(FUN_00464a57((x_value + 1) / 2) + 1, 1, possible_targets);
+        } else {
+          replay_instance = &PLAYER_CARD_INSTANCE(unk_008ce508, unk_008ce4f4);
+          unk_00939340 = replay_instance->number_of_targets;
+        }
+
+        FUN_004e4f11();
+      } else {
+        FUN_004e5089();
+      }
+
+      num_targets = unk_00939340;
+      if (num_targets == 99) {
+        num_targets = 1;
+      }
+      if (num_targets < 1) {
+        num_targets = 1;
+      }
+
+      per_target_damage = x_value - num_targets;
+      player_target_selected = 0;
+
+      for (target_index = 0; target_index < num_targets; ++target_index) {
+        do {
+          FUN_0054ac4d(player, card);
+          if (player_target_selected == 0) {
+            break;
+          }
+        } while (instance->targets[0].card == -1);
+
+        chosen_target = instance->targets[0];
+        instance->targets[num_targets - 1 - target_index] = chosen_target;
+        if (chosen_target.card == -1) {
+          player_target_selected = 1;
+        } else {
+          PLAYER_CARD_INSTANCE(chosen_target.player, chosen_target.card).state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
+        }
+      }
+
+      instance->number_of_targets = num_targets;
+      instance->info_slot = (per_target_damage + 1) / num_targets;
+
+      for (target_index = 0; target_index < num_targets; ++target_index) {
+        if (instance->targets[target_index].card != -1) {
+          PLAYER_CARD_INSTANCE(instance->targets[target_index].player, instance->targets[target_index].card).state
+              &= 0xffcfffff;
+        }
+      }
+    }
+
+    if (event == EVENT_RESOLVE_SPELL) {
+      invalid_targets = 0;
+      illegal_abilities = FUN_0053aa74(player, card);
+
+      for (target_index = 0; target_index < instance->number_of_targets; ++target_index) {
+        chosen_target = instance->targets[target_index];
+        if (C_real_validate_target(chosen_target.player,
+                                   chosen_target.card,
+                                   (char *)0,
+                                   player,
+                                   2,
+                                   2,
+                                   TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
+                                   TYPE_CREATURE,
+                                   TYPE_NONE,
+                                   0,
+                                   illegal_abilities,
+                                   COLOR_TEST_0,
+                                   COLOR_TEST_0,
+                                   -1,
+                                   ~SUB_WALL,
+                                   -1,
+                                   -1,
+                                   0,
+                                   0,
+                                   0) == 0) {
+          ++invalid_targets;
+        } else {
+          instance->targets[0] = chosen_target;
+          FUN_0054af10(player, card, EVENT_RESOLVE_SPELL, instance->info_slot);
+        }
+      }
+
+      if (instance->number_of_targets == invalid_targets) {
+        spell_fizzled = 1;
+      }
+
+      instance->number_of_targets = 0;
+      kill_card(player, card, KILL_BURY);
+    }
+
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x00408c24
@@ -13105,7 +14323,156 @@ int card_siren_s_call(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00448a30
 int card_volcanic_eruption(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  unsigned int* state_ptr;
+  target_t selected_target;
+  int required_subtype;
+  int current_target;
+  int selecting_done;
+  int invalid_targets;
+  int damage_effect_card;
+  char prompt[52];
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+
+  if (event == EVENT_CAN_CAST) {
+    FUN_004bd7d0(unk_00743038 == 0 ? &max_x_value : (int*)0,
+                 0,
+                 player,
+                 2,
+                 2,
+                 TARGET_ZONE_IN_PLAY,
+                 TYPE_NONE,
+                 TYPE_NONE,
+                 0,
+                 FUN_0053aa74(player, card),
+                 0,
+                 0,
+                 FUN_005001e0(player, card, 4) - 1,
+                 -1,
+                 -1,
+                 -1,
+                 0,
+                 0,
+                 0);
+    if (player == human_player && (unk_00926804 & 2) == 0
+        && (max_x_value == 0 || FUN_004eaf09(player, 7, 4) == 0)) {
+      return 0;
+    }
+    return 1;
+  }
+
+  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
+    ai_modifier -= 0x24 / FUN_00404c4c(player, instance->internal_card_id);
+    instance->number_of_targets = 0;
+    required_subtype = FUN_005001e0(player, card, 4) - 1;
+    current_target = 0;
+    selecting_done = 0;
+
+    while (current_target < x_value && selecting_done == 0 && spell_fizzled != 1) {
+      if (unk_008a9000 != 1) {
+        load_text((int)"prompts.txt", "VOLCANIC_ERUPTION");
+        sprintf(prompt, text_lines[0], current_target + 1, x_value);
+      }
+
+      if (!C_real_select_target(player,
+                                2,
+                                1 - player,
+                                TARGET_ZONE_IN_PLAY,
+                                TYPE_NONE,
+                                TYPE_NONE,
+                                0,
+                                FUN_0053aa74(player, card),
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                required_subtype,
+                                ~SUB_WALL,
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                0,
+                                prompt,
+                                1,
+                                &selected_target)) {
+        if (selected_target.card == -1) {
+          spell_fizzled = 1;
+        } else {
+          selecting_done = 1;
+        }
+      } else {
+        state_ptr = (unsigned int*)&PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state;
+        *state_ptr |= 0x300000;
+        TENTATIVE_reassess_all_cards();
+        instance->targets[instance->number_of_targets].player = selected_target.player;
+        instance->targets[instance->number_of_targets].card = selected_target.card;
+        ++instance->number_of_targets;
+      }
+
+      ++current_target;
+    }
+
+    for (current_target = 0; current_target < instance->number_of_targets; ++current_target) {
+      state_ptr = (unsigned int*)&PLAYER_CARD_INSTANCE(instance->targets[current_target].player,
+                                                       instance->targets[current_target].card).state;
+      *state_ptr &= 0xffcfffff;
+    }
+
+    if (spell_fizzled == 1) {
+      instance->number_of_targets = 0;
+    }
+  }
+
+  if (event == EVENT_RESOLVE_SPELL) {
+    required_subtype = FUN_005001e0(player, card, 4) - 1;
+    invalid_targets = 0;
+
+    for (current_target = 0; current_target < instance->number_of_targets; ++current_target) {
+      if (!C_real_validate_target(instance->targets[current_target].player,
+                                  instance->targets[current_target].card,
+                                  (char*)0,
+                                  player,
+                                  2,
+                                  2,
+                                  TARGET_ZONE_IN_PLAY,
+                                  TYPE_NONE,
+                                  TYPE_NONE,
+                                  0,
+                                  FUN_0053aa74(player, card),
+                                  COLOR_TEST_0,
+                                  COLOR_TEST_0,
+                                  required_subtype,
+                                  ~SUB_WALL,
+                                  -1,
+                                  -1,
+                                  0,
+                                  0,
+                                  0)) {
+        ++invalid_targets;
+      } else {
+        kill_card(instance->targets[current_target].player,
+                  instance->targets[current_target].card,
+                  KILL_DESTROY);
+      }
+    }
+
+    if (instance->number_of_targets == invalid_targets) {
+      spell_fizzled = 1;
+    }
+
+    if (spell_fizzled != 1 && (damage_effect_card = add_card_to_hand(player, unk_00939348)) != -1) {
+      PLAYER_CARD_INSTANCE(player, damage_effect_card).original_internal_card_id = instance->internal_card_id;
+      PLAYER_CARD_INSTANCE(player, damage_effect_card).state |= 2;
+      PLAYER_CARD_INSTANCE(player, damage_effect_card).eot_toughness = 0x109;
+      PLAYER_CARD_INSTANCE(player, damage_effect_card).info_slot = instance->number_of_targets - invalid_targets;
+      TENTATIVE_set_timestamps(player, damage_effect_card);
+    }
+
+    instance->number_of_targets = 0;
+    kill_card(player, card, KILL_BURY);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0040a9ed
@@ -13173,7 +14540,154 @@ int card_darkpact(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00474970
 int card_demonic_hordes(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  target_t selected_target;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+
+  if (event == EVENT_CAN_ACTIVATE) {
+    if ((instance->state & 0x20010) == 0
+        && FUN_004bd7d0((int*)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        TARGET_ZONE_IN_PLAY,
+                        TYPE_LAND,
+                        TYPE_NONE,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0) != 0) {
+      return 1;
+    }
+  } else if (event == EVENT_GET_SELECTED_CARD) {
+    FUN_004e4ff3(0);
+  } else {
+    if (event == EVENT_ACTIVATE) {
+      load_text((int)"promptsX1.txt", "DEMONIC_HORDES");
+      if (!FUN_00551b60(player, 2, card)) {
+        spell_fizzled = 1;
+      } else {
+        instance->state |= 0x10;
+        ai_modifier += instance->targets[0].player == player ? -24 : 36;
+      }
+
+      if (spell_fizzled == 1) {
+        instance->number_of_targets = 0;
+      }
+    }
+
+    if (event == EVENT_RESOLVE_ACTIVATION) {
+      if (!C_real_validate_target(instance->targets[0].player,
+                                  instance->targets[0].card,
+                                  (char*)0,
+                                  player,
+                                  2,
+                                  2,
+                                  TARGET_ZONE_IN_PLAY,
+                                  TYPE_LAND,
+                                  TYPE_NONE,
+                                  0,
+                                  FUN_0053aa74(player, card),
+                                  COLOR_TEST_0,
+                                  COLOR_TEST_0,
+                                  -1,
+                                  ~SUB_WALL,
+                                  -1,
+                                  -1,
+                                  0,
+                                  0,
+                                  0)) {
+        spell_fizzled = 1;
+      } else {
+        kill_card(instance->targets[0].player, instance->targets[0].card, KILL_DESTROY);
+      }
+
+      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    }
+
+    if (event == EVENT_SETUP_UPKEEP_COSTS && card == affected_card && player == affected_card_controller
+        && player == human_player && unk_00742f60 == player) {
+      instance->upkeep_flags |= 1;
+      instance->upkeep_black += 3;
+    }
+
+    if (event == EVENT_UPKEEP_COSTS_UNPAID) {
+      selected_target.player = -1;
+      selected_target.card = -1;
+
+      if (FUN_004bd7d0((int*)0,
+                       0,
+                       player,
+                       player,
+                       player,
+                       TARGET_ZONE_IN_PLAY,
+                       TYPE_LAND,
+                       TYPE_NONE,
+                       0,
+                       0,
+                       0,
+                       0,
+                       -1,
+                       -1,
+                       -1,
+                       -1,
+                       0,
+                       0,
+                       0) != 0) {
+        load_text((int)"promptsX1.txt", "DEMONIC_HORDES_2");
+        if (human_player == player || (unk_00926804 & 2) != 0) {
+          C_real_select_target(player,
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_LAND,
+                               TYPE_NONE,
+                               0,
+                               0,
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               text_lines[0],
+                               0,
+                               &selected_target);
+        } else if (FUN_0048194e(1 - player, player, (int*)&selected_target)) {
+          do_dialog(player,
+                    player,
+                    0,
+                    selected_target.player,
+                    selected_target.card,
+                    text_lines[1],
+                    0);
+        }
+
+        if (selected_target.player != -1) {
+          if (unk_008a9000 != 1) {
+            play_sound_effect(WAV_SACRFICE);
+          }
+          kill_card(selected_target.player, selected_target.card, KILL_SACRIFICE);
+        }
+      }
+
+      instance->state |= 0x10;
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0040aee0
@@ -13252,7 +14766,140 @@ int card_fork(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048fdcb
 int card_gaea_s_liege(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  int effect_card;
+  target_t selected_target;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+
+  if (event == EVENT_RESOLVE_SPELL) {
+    effect_card = FUN_004ef850(player, card, unk_0093d848, player, card);
+    if (effect_card != -1) {
+      PLAYER_CARD_INSTANCE(player, effect_card).info_slot = 3;
+      PLAYER_CARD_INSTANCE(player, effect_card).eot_toughness = 0x10d;
+      PLAYER_CARD_INSTANCE(player, effect_card).token_status = 0x10020;
+      PLAYER_CARD_INSTANCE(player, effect_card).token_status |= 0x2000000;
+      instance->damage_source_player = (char)player;
+      instance->damage_source_card = effect_card;
+    }
+  } else if (((event == EVENT_POWER) || (event == EVENT_TOUGHNESS))
+             && card == affected_card && player == affected_card_controller) {
+    if ((instance->state & STATE_ATTACKING) == 0) {
+      PLAYER_CARD_INSTANCE((int)instance->damage_source_player, instance->damage_source_card)
+          .eot_toughness |= 1;
+      PLAYER_CARD_INSTANCE((int)instance->damage_source_player, instance->damage_source_card)
+          .eot_toughness &= 0xfffffffd;
+    } else {
+      PLAYER_CARD_INSTANCE((int)instance->damage_source_player, instance->damage_source_card)
+          .eot_toughness |= 2;
+      PLAYER_CARD_INSTANCE((int)instance->damage_source_player, instance->damage_source_card)
+          .eot_toughness &= 0xfffffffe;
+    }
+  } else if (event == EVENT_CAN_ACTIVATE) {
+    if ((instance->state & 0x20010) == 0
+        && FUN_004bd7d0((int*)0,
+                        0,
+                        player,
+                        2,
+                        2,
+                        TARGET_ZONE_IN_PLAY,
+                        TYPE_LAND,
+                        TYPE_NONE,
+                        0,
+                        FUN_0053aa74(player, card),
+                        0,
+                        0,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        0) != 0) {
+      return 1;
+    }
+  } else if (event == EVENT_GET_SELECTED_CARD) {
+    FUN_004e4ff3(0);
+  } else if (event == EVENT_ACTIVATE) {
+    if (unk_008a9000 != 1) {
+      load_text((int)"prompts.txt", "GAEAS_LIEGE");
+    }
+
+    if (!C_real_select_target(player,
+                              2,
+                              1 - player,
+                              TARGET_ZONE_IN_PLAY,
+                              TYPE_LAND,
+                              TYPE_NONE,
+                              0,
+                              FUN_0053aa74(player, card),
+                              COLOR_TEST_0,
+                              COLOR_TEST_0,
+                              -1,
+                              ~SUB_WALL,
+                              -1,
+                              -1,
+                              0,
+                              0,
+                              0,
+                              text_lines[0],
+                              1,
+                              &selected_target)) {
+      spell_fizzled = 1;
+    } else {
+      instance->targets[0].player = selected_target.player;
+      instance->targets[0].card = selected_target.card;
+      instance->number_of_targets = 1;
+      instance->state |= 0x10;
+    }
+  } else if (event == EVENT_RESOLVE_ACTIVATION) {
+    selected_target.player = instance->targets[0].player;
+    selected_target.card = instance->targets[0].card;
+
+    if (!C_real_validate_target(selected_target.player,
+                                selected_target.card,
+                                (char*)0,
+                                player,
+                                2,
+                                2,
+                                TARGET_ZONE_IN_PLAY,
+                                TYPE_LAND,
+                                TYPE_NONE,
+                                0,
+                                FUN_0053aa74(player, card),
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                -1,
+                                ~SUB_WALL,
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                0)) {
+      spell_fizzled = 1;
+    } else {
+      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 3;
+      effect_card = FUN_004ef850(card_on_stack_controller,
+                                 card_on_stack,
+                                 unk_008b49c4,
+                                 selected_target.player,
+                                 selected_target.card);
+      if (effect_card != -1) {
+        PLAYER_CARD_INSTANCE(card_on_stack_controller, effect_card).token_status |= 0x11020;
+      }
+    }
+
+    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+  } else if ((event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY)
+             && card == affected_card
+             && player == affected_card_controller
+             && (instance->info_slot & 0x4000) != 0) {
+    instance->info_slot &= 0xffffbfff;
+    C_get_abilities(player, card, EVENT_POWER, -1);
+    C_get_abilities(player, card, EVENT_TOUGHNESS, -1);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0043a7ae
@@ -13729,7 +15376,79 @@ int card_library_of_leng(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fd8eb
 int card_lich(int player, int card, event_t event)
 {
+  card_instance_t* instance;
+  card_instance_t* damage_card;
+  int current_card;
 
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+
+  if (is_in_play(player, card) && life[player] != -99) {
+    life[player] = 0;
+    for (current_card = 0; current_card < active_cards_count[player]; ++current_card) {
+      if (is_in_play(player, current_card)
+          && (global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].type
+              & (TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND)) != 0) {
+        ++life[player];
+      }
+    }
+  }
+
+  if (event == EVENT_CAN_CAST) {
+    return 1;
+  } else {
+    if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller
+        && active_player == player) {
+      ai_modifier -= life[player] - 5;
+    }
+
+    if (event == EVENT_RESOLVE_SPELL) {
+      unk_008b44d0[player] = 1;
+    }
+
+    if (event == EVENT_DEAL_DAMAGE
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player == player
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == -1
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0) {
+      instance->targets[instance->info_slot].player = affected_card_controller;
+      instance->targets[instance->info_slot].card = affected_card;
+      ++instance->info_slot;
+    }
+
+    if (trigger_condition == TRIGGER_DEAL_DAMAGE
+        && card == affected_card
+        && player == affected_card_controller
+        && instance->info_slot != 0
+        && player == current_turn) {
+      if (event == EVENT_TRIGGER) {
+        event_result |= RESOLVE_TRIGGER_MANDATORY;
+      }
+
+      if (event == EVENT_RESOLVE_TRIGGER) {
+        do {
+          damage_card = &PLAYER_CARD_INSTANCE(instance->targets[instance->info_slot - 1].player,
+                                              instance->targets[instance->info_slot - 1].card);
+          FUN_0043b4f3(player, damage_card->info_slot);
+          --instance->info_slot;
+          if (instance->info_slot == 0) {
+            break;
+          }
+        } while (life[player] != -99);
+      }
+    }
+
+    if (event == EVENT_GRAVEYARD_FROM_PLAY && card == affected_card && player == affected_card_controller) {
+      if (is_in_play(player, card)) {
+        if (unk_008a9000 == 1) {
+          life[player] = -99;
+        } else {
+          FUN_004b4110(player);
+        }
+      }
+    }
+
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x0051b55f
