@@ -1687,8 +1687,6 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
   return result;
 }
 
-// FUNCTION: MAGIC 0x0047a847
-// FUNCTION: SHANDALAR 0x0047e344
 // FUNCTION: MAGIC 0x0047c409
 static int C_vesuvan_doppelganger_helper(int source_player,
                                          int source_card,
@@ -1706,6 +1704,8 @@ static int C_vesuvan_doppelganger_helper(int source_player,
   return 0;
 }
 
+// FUNCTION: MAGIC 0x0047a847
+// FUNCTION: SHANDALAR 0x0047e344
 int card_vesuvan_doppelganger(int player, int card, event_t event)
 {
   card_instance_t* instance;
