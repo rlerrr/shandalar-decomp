@@ -94,6 +94,24 @@ int FUN_00404cff(int player, int internal_card_id, int who_to_check)
   return result;
 }
 
+// FUNCTION: MAGIC 0x00449bef
+void FUN_00449bef(char *name)
+{
+  char *source;
+
+  if (name == 0) {
+    return;
+  }
+
+  source = unk_009266d0;
+  while (*source != '\0' && *source != '-') {
+    *name = *source;
+    ++source;
+    ++name;
+  }
+  *name = '\0';
+}
+
 // FUNCTION: MAGIC 0x00435e27
 int charge_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white)
 {
@@ -1526,7 +1544,6 @@ int FUN_004eaf09(int player, unsigned int color, int amount)
   return 0;
 }
 
-// FUNCTION: MAGIC 0x004eb23d
 int FUN_004eb23d(int player, int card, unsigned int color, int amount)
 {
   int color_index;
@@ -1604,7 +1621,6 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
   return 0;
 }
 
-// FUNCTION: MAGIC 0x00442763
 int FUN_00442763(int color_test)
 {
   if ((color_test & 2) != 0) {
@@ -1665,7 +1681,6 @@ int FUN_0041f4c0(int player, int card, event_t event, int color)
   return 0;
 }
 
-// FUNCTION: MAGIC 0x00435e27
 int FUN_00435e27(int player, int card, int color, int amount)
 {
   int color_index;
@@ -2216,7 +2231,7 @@ int FUN_004bd7d0(int *param_1,
 }
 
 // FUNCTION: MAGIC 0x004bdc06
-unsigned int __stdcall C_real_validate_target(int tgt_player,
+unsigned int C_real_validate_target(int tgt_player,
                                               int tgt_card,
                                               char *return_error_str,
                                               int who_chooses,
@@ -3099,7 +3114,6 @@ int FUN_0041626b(int player, int card, int event, int color)
   return 0;
 }
 
-// FUNCTION: MAGIC 0x0050026d
 int FUN_0050026d(int player, int card, int value)
 {
   if (*((char *)&PLAYER_CARD_INSTANCE(player, card).token_status + value) != 0) {

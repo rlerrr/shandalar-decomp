@@ -5,10 +5,10 @@
 
 // Single header library style
 #ifdef GLOBAL_STATE_IMPL
-#define GLOBAL_STATE_GLOBAL
+
 #define GLOBAL_STATE_INIT(value) = value
 #else
-#define GLOBAL_STATE_GLOBAL extern
+#define extern 
 #define GLOBAL_STATE_INIT(value)
 #endif
 
@@ -17,17 +17,17 @@
 
 // GLOBAL: MAGIC 0x8b60f0
 // GLOBAL: SHANDALAR 0x8ca270
-GLOBAL_STATE_GLOBAL card_instance_t global_card_instances[2][151];
+extern card_instance_t global_card_instances[2][151];
 
 #define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
 
 // GLOBAL: MAGIC 0x939810
 // GLOBAL: SHANDALAR 0x94d930
-GLOBAL_STATE_GLOBAL int global_graveyard_slots[2][500];
+extern int global_graveyard_slots[2][500];
 
 // TODO: is this actually int???
 // GLOBAL: MAGIC 0x8cecc0
-GLOBAL_STATE_GLOBAL char global_ante_cards[2][16];
+extern char global_ante_cards[2][16];
 
 typedef struct
 {
@@ -36,336 +36,339 @@ typedef struct
 } csvid_and_numcards;
 
 // GLOBAL: MAGIC 0x0056fb20
-GLOBAL_STATE_GLOBAL csvid_and_numcards initial_library[2][200];
+extern csvid_and_numcards initial_library[2][200];
 
 // GLOBAL: MAGIC 0x008cc980
-GLOBAL_STATE_GLOBAL int global_exile[2][500];
+extern int global_exile[2][500];
 
 // GLOBAL: MAGIC 0x00895210
-GLOBAL_STATE_GLOBAL int global_library[2][500];
+extern int global_library[2][500];
 
 // GLOBAL: MOK 0x507ec0
 // GLOBAL: MAGIC 0x0093a990
-GLOBAL_STATE_GLOBAL int TENTATIVE_timestamp_player[500];
+extern int TENTATIVE_timestamp_player[500];
 
 // GLOBAL: MOK 0x5076f0
 // GLOBAL: MAGIC 0x8b5910
-GLOBAL_STATE_GLOBAL int TENTATIVE_timestamp_card[500];
+extern int TENTATIVE_timestamp_card[500];
 
 // GLOBAL: MOK 0x5096b0
 // GLOBAL: MAGIC 0x9251e0
-GLOBAL_STATE_GLOBAL target_t global_stack_cards[32];
+extern target_t global_stack_cards[32];
 
 // GLOBAL: MOK 0x5097b0
 // GLOBAL: MAGIC 0x926810
-GLOBAL_STATE_GLOBAL target_t global_stack_damage_targets[32];
+extern target_t global_stack_damage_targets[32];
 
 // GLOBAL: MAGIC 0x0078944c
-GLOBAL_STATE_GLOBAL int unk_0078944c;
+extern int unk_0078944c;
 
 // GLOBAL: MAGIC 0x00789450
-GLOBAL_STATE_GLOBAL int event_result;
+extern int event_result;
 
 // GLOBAL: MAGIC 0x007894a0
-GLOBAL_STATE_GLOBAL int unk_007894a0;
+extern int unk_007894a0;
 
 // GLOBAL: MAGIC 0x00789314
-GLOBAL_STATE_GLOBAL int unk_00789314;
+extern int unk_00789314;
 
 // GLOBAL: MAGIC 0x008b426c
-GLOBAL_STATE_GLOBAL int spell_fizzled;
+extern int spell_fizzled;
 
 // GLOBAL: MAGIC 0x00777be0
-GLOBAL_STATE_GLOBAL int active_cards_count[2];
+extern int active_cards_count[2];
 
 // GLOBAL: MAGIC 0x00939048
-GLOBAL_STATE_GLOBAL trigger_t trigger_condition;
+extern trigger_t trigger_condition;
 
 // GLOBAL: MAGIC 0x00938e2c
-GLOBAL_STATE_GLOBAL int unk_00938e2c;
+extern int unk_00938e2c;
 
 // GLOBAL: MAGIC 0x00939338
-GLOBAL_STATE_GLOBAL int current_phase;
+extern int current_phase;
 
 // GLOBAL: MAGIC 0x0093933c
-GLOBAL_STATE_GLOBAL int unk_0093933c;
+extern int unk_0093933c;
 
 // GLOBAL: MAGIC 0x00939340
-GLOBAL_STATE_GLOBAL int unk_00939340;
+extern int unk_00939340;
 
 // GLOBAL: MAGIC 0x00939348
-GLOBAL_STATE_GLOBAL int unk_00939348;
+extern int unk_00939348;
 
 // GLOBAL: MAGIC 0x00939180
-GLOBAL_STATE_GLOBAL int unk_00939180[32];
+extern int unk_00939180[32];
 
 // GLOBAL: MAGIC 0x0093b280
-GLOBAL_STATE_GLOBAL int unk_0093b280[2][151][2][4];
+extern int unk_0093b280[2][151][2][4];
 
 // GLOBAL: MAGIC 0x00895030
-GLOBAL_STATE_GLOBAL int unk_00895030[32];
+extern int unk_00895030[32];
 
 // GLOBAL: MAGIC 0x007a7750
-GLOBAL_STATE_GLOBAL int unk_007a7750[32];
+extern int unk_007a7750[32];
 
 // GLOBAL: MAGIC 0x008b497c
-GLOBAL_STATE_GLOBAL int current_turn;
+extern int current_turn;
 
 // GLOBAL: MAGIC 0x008b32b8
-GLOBAL_STATE_GLOBAL int active_player;
+extern int active_player;
 
 // GLOBAL: MAGIC 0x008b2934
-GLOBAL_STATE_GLOBAL int unk_008b2934;
+extern int unk_008b2934;
 // GLOBAL: MAGIC 0x008b3104
-GLOBAL_STATE_GLOBAL int unk_008b3104;
+extern int unk_008b3104;
 
 // GLOBAL: MAGIC 0x00742f80
-GLOBAL_STATE_GLOBAL int unk_00742f80[2][8];
+extern int unk_00742f80[2][8];
 
 // GLOBAL: MAGIC 0x007161e0
-GLOBAL_STATE_GLOBAL int unk_007161e0[2][11];
+extern int unk_007161e0[2][11];
 // GLOBAL: MAGIC 0x007161d8
-GLOBAL_STATE_GLOBAL int unk_007161d8;
+extern int unk_007161d8;
 
 // GLOBAL: MAGIC 0x00716030
-GLOBAL_STATE_GLOBAL int raw_mana_available_hex[2][51];
+extern int raw_mana_available_hex[2][51];
 
 // GLOBAL: MAGIC 0x0072c440
-GLOBAL_STATE_GLOBAL int unk_0072c440[8];
+extern int unk_0072c440[8];
 
 // GLOBAL: MAGIC 0x00742fe0
-GLOBAL_STATE_GLOBAL int basiclandtypes_controlled[2][8];
+extern int basiclandtypes_controlled[2][8];
 
 // GLOBAL: MAGIC 0x00743040
-GLOBAL_STATE_GLOBAL int raw_mana_available[2][8];
+extern int raw_mana_available[2][8];
 
 // GLOBAL: MAGIC 0x0074305c
-GLOBAL_STATE_GLOBAL int total_raw_mana_available[2];
+extern int total_raw_mana_available[2];
 
 // GLOBAL: MAGIC 0x00715fb0
-GLOBAL_STATE_GLOBAL int unk_00715fb0;
+extern int unk_00715fb0;
 
 // GLOBAL: MAGIC 0x00715fa8
-GLOBAL_STATE_GLOBAL int unk_00715fa8;
+extern int unk_00715fa8;
 
 // GLOBAL: MAGIC 0x00791554
-GLOBAL_STATE_GLOBAL int human_player;
+extern int human_player;
 
 // GLOBAL: MAGIC 0x008cfd78
-GLOBAL_STATE_GLOBAL int hand_count[2];
+extern int hand_count[2];
 
 // GLOBAL: MAGIC 0x007ab2b8
-GLOBAL_STATE_GLOBAL int trigger_cause_controller;
+extern int trigger_cause_controller;
 
 // GLOBAL: MAGIC 0x008cee74
-GLOBAL_STATE_GLOBAL int trigger_cause;
+extern int trigger_cause;
 
 // GLOBAL: MAGIC 0x008cfd88
-GLOBAL_STATE_GLOBAL int artifact_cards_in_play[2];
+extern int artifact_cards_in_play[2];
 
 // GLOBAL: MAGIC 0x008cfd90
-GLOBAL_STATE_GLOBAL int enchantments_in_play[2];
+extern int enchantments_in_play[2];
 // GLOBAL: MAGIC 0x008cfdac
-GLOBAL_STATE_GLOBAL int unk_008cfdac;
+extern int unk_008cfdac;
 // GLOBAL: MAGIC 0x008cfdb0
-GLOBAL_STATE_GLOBAL int unk_008cfdb0;
+extern int unk_008cfdb0;
 
 // GLOBAL: MAGIC 0x00742f60
-GLOBAL_STATE_GLOBAL int unk_00742f60;
+extern int unk_00742f60;
 
 // GLOBAL: MAGIC 0x00743038
-GLOBAL_STATE_GLOBAL int unk_00743038;
+extern int unk_00743038;
 
 // GLOBAL: MAGIC 0x007a7c1c
-GLOBAL_STATE_GLOBAL int unk_007a7c1c;
+extern int unk_007a7c1c;
 
 // GLOBAL: MAGIC 0x007a7d88
-GLOBAL_STATE_GLOBAL int unk_007a7d88[2];
+extern int unk_007a7d88[2];
 
 // GLOBAL: MAGIC 0x007a7d80
-GLOBAL_STATE_GLOBAL int unk_007a7d80[2];
+extern int unk_007a7d80[2];
 
 // GLOBAL: MAGIC 0x008b3270
-GLOBAL_STATE_GLOBAL int unk_008b3270;
+extern int unk_008b3270;
 
 // GLOBAL: MAGIC 0x008b35ec
-GLOBAL_STATE_GLOBAL int unk_008b35ec;
+extern int unk_008b35ec;
 
 // GLOBAL: MAGIC 0x008b3bd4
-GLOBAL_STATE_GLOBAL int unk_008b3bd4;
+extern int unk_008b3bd4;
 
 // GLOBAL: MAGIC 0x008b4270
-GLOBAL_STATE_GLOBAL int life[2];
+extern int life[2];
 
 // GLOBAL: MAGIC 0x008b49c4
-GLOBAL_STATE_GLOBAL int unk_008b49c4;
+extern int unk_008b49c4;
 
 // GLOBAL: MAGIC 0x008b4278
-GLOBAL_STATE_GLOBAL int unk_008b4278;
+extern int unk_008b4278;
 
 // GLOBAL: MAGIC 0x00743094
-GLOBAL_STATE_GLOBAL int unk_00743094;
+extern int unk_00743094;
 
 // GLOBAL: MAGIC 0x00789734
-GLOBAL_STATE_GLOBAL int unk_00789734;
+extern int unk_00789734;
 
 // GLOBAL: MAGIC 0x00789b80
-GLOBAL_STATE_GLOBAL int unk_00789b80;
+extern int unk_00789b80;
 
 // GLOBAL: MAGIC 0x007abc78
-GLOBAL_STATE_GLOBAL int unk_007abc78;
+extern int unk_007abc78;
 
 // GLOBAL: MAGIC 0x007a7d64
-GLOBAL_STATE_GLOBAL int unk_007a7d64;
+extern int unk_007a7d64;
 
-GLOBAL_STATE_GLOBAL int unk_00896534;
-GLOBAL_STATE_GLOBAL int unk_008a9000;
-GLOBAL_STATE_GLOBAL int unk_008a8de8;
+extern int unk_00896534;
+extern int unk_008a9000;
+extern int unk_008a8de8;
 // GLOBAL: MAGIC 0x008a8df0
-GLOBAL_STATE_GLOBAL int unk_008a8df0;
+extern int unk_008a8df0;
 
 // GLOBAL: MAGIC 0x008a8c38
-GLOBAL_STATE_GLOBAL unsigned int card_types_in_play[2];
+extern unsigned int card_types_in_play[2];
 
 // GLOBAL: MAGIC 0x008a8c20
-GLOBAL_STATE_GLOBAL int unk_008a8c20;
+extern int unk_008a8c20;
 // GLOBAL: MAGIC 0x008a8c34
-GLOBAL_STATE_GLOBAL int unk_008a8c34;
+extern int unk_008a8c34;
 
 // GLOBAL: MAGIC 0x008ce4f4
-GLOBAL_STATE_GLOBAL int unk_008ce4f4 GLOBAL_STATE_INIT(-1);
+extern int unk_008ce4f4 GLOBAL_STATE_INIT(-1);
 
 // GLOBAL: MAGIC 0x008ce508
-GLOBAL_STATE_GLOBAL int unk_008ce508 GLOBAL_STATE_INIT(-1);
+extern int unk_008ce508 GLOBAL_STATE_INIT(-1);
 
 // GLOBAL: MAGIC 0x008ce510
-GLOBAL_STATE_GLOBAL int unk_008ce510;
+extern int unk_008ce510;
 
 // GLOBAL: MAGIC 0x008ce518
-GLOBAL_STATE_GLOBAL int unk_008ce518;
+extern int unk_008ce518;
 
 // GLOBAL: MAGIC 0x0091a80c
-GLOBAL_STATE_GLOBAL int unk_0091a80c;
+extern int unk_0091a80c;
 
 // GLOBAL: MAGIC 0x0091bfb4
-GLOBAL_STATE_GLOBAL int unk_0091bfb4;
+extern int unk_0091bfb4;
 
 // GLOBAL: MAGIC 0x00925d3c
-GLOBAL_STATE_GLOBAL int unk_00925d3c;
+extern int unk_00925d3c;
 // GLOBAL: MAGIC 0x00925d38
-GLOBAL_STATE_GLOBAL int unk_00925d38;
+extern int unk_00925d38;
 
 // GLOBAL: MAGIC 0x009252e0
-GLOBAL_STATE_GLOBAL int unk_009252e0;
+extern int unk_009252e0;
 
 // GLOBAL: MAGIC 0x008b60e0
-GLOBAL_STATE_GLOBAL int unk_008b60e0;
+extern int unk_008b60e0;
 
 // GLOBAL: MAGIC 0x0079140c
-GLOBAL_STATE_GLOBAL int unk_0079140c;
+extern int unk_0079140c;
 
 // GLOBAL: MAGIC 0x007abc7c
-GLOBAL_STATE_GLOBAL int unk_007abc7c;
+extern int unk_007abc7c;
 
 // GLOBAL: MAGIC 0x0092664c
-GLOBAL_STATE_GLOBAL int unk_0092664c[8];
+extern int unk_0092664c[8];
 
 // GLOBAL: MAGIC 0x00926664
-GLOBAL_STATE_GLOBAL int produced_mana_color;
-GLOBAL_STATE_GLOBAL int unk_009266a4;
-GLOBAL_STATE_GLOBAL int unk_009266ac;
-GLOBAL_STATE_GLOBAL int unk_00926804;
-GLOBAL_STATE_GLOBAL int unk_0093d848;
+extern int produced_mana_color;
+extern int unk_009266a4;
+extern int unk_009266ac;
+extern int unk_00926804;
+extern int unk_0093d848;
 
 // GLOBAL: MAGIC 0x008cc840
-GLOBAL_STATE_GLOBAL int unk_008cc840;
+extern int unk_008cc840;
 
 // GLOBAL: MAGIC 0x0093f4b8
-GLOBAL_STATE_GLOBAL int unk_0093f4b8;
+extern int unk_0093f4b8;
 
 // GLOBAL: MAGIC: SHANDALAR 0x008a8df8
-GLOBAL_STATE_GLOBAL int LEGACY_EFFECT_PUMP;
+extern int LEGACY_EFFECT_PUMP;
 
 // GLOBAL: MAGIC 0x008b3d10
-GLOBAL_STATE_GLOBAL int unk_008b3d10;
+extern int unk_008b3d10;
 
 // GLOBAL: MAGIC 0x008b40f4
-GLOBAL_STATE_GLOBAL int x_value;
+extern int x_value;
 
 // GLOBAL: MAGIC 0x008b44d0
-GLOBAL_STATE_GLOBAL int unk_008b44d0[2];
+extern int unk_008b44d0[2];
 
 // GLOBAL: MAGIC 0x008ce568
-GLOBAL_STATE_GLOBAL int max_x_value;
+extern int max_x_value;
 
 // GLOBAL: MAGIC 0x008cf1ac
-GLOBAL_STATE_GLOBAL int unk_008cf1ac;
+extern int unk_008cf1ac;
 
 // GLOBAL: MAGIC 0x008cf1b4
-GLOBAL_STATE_GLOBAL int unk_008cf1b4;
+extern int unk_008cf1b4;
 
 // GLOBAL: MAGIC 0x008cf1bc
-GLOBAL_STATE_GLOBAL int unk_008cf1bc;
+extern int unk_008cf1bc;
 
 // GLOBAL: MAGIC 0x008cf1c0
-GLOBAL_STATE_GLOBAL int unk_008cf1c0[2][8];
+extern int unk_008cf1c0[2][8];
 
 // GLOBAL: MAGIC 0x008cf1d4
-GLOBAL_STATE_GLOBAL int landsofcolor_controlled[2][8];
+extern int landsofcolor_controlled[2][8];
 
 // GLOBAL: MAGIC 0x00939520
-GLOBAL_STATE_GLOBAL int unk_00939520[2][8];
+extern int unk_00939520[2][8];
 
 // GLOBAL: MAGIC 0x00939530
-GLOBAL_STATE_GLOBAL int unk_00939530[2][8];
+extern int unk_00939530[2][8];
 
 // GLOBAL: MAGIC 0x0093950c
-GLOBAL_STATE_GLOBAL int ai_modifier;
-GLOBAL_STATE_GLOBAL char text_lines[249][300];
+extern int ai_modifier;
 
+
+// GLOBAL: SHANDALAR 0x008aa920
+extern char text_lines[249][300];
+ 
 // GLOBAL: MAGIC 0x0093dabc
 // GLOBAL: SHANDALAR 0x008cd928
-GLOBAL_STATE_GLOBAL int affected_card GLOBAL_STATE_INIT(-1);
-GLOBAL_STATE_GLOBAL int affected_card_controller GLOBAL_STATE_INIT(-1);
+extern int affected_card;
+
+// GLOBAL: MAGIC 0x008cd928
+extern int affected_card_controller;
 // GLOBAL: MAGIC 0x0093a808
-GLOBAL_STATE_GLOBAL int attacking_card_controller GLOBAL_STATE_INIT(-1);
+extern int attacking_card_controller;
 // GLOBAL: MAGIC 0x008ce530
-GLOBAL_STATE_GLOBAL int attacking_card GLOBAL_STATE_INIT(-1);
+extern int attacking_card;
 // GLOBAL: MAGIC 0x0093b160
-GLOBAL_STATE_GLOBAL int card_on_stack_controller GLOBAL_STATE_INIT(-1);
+extern int card_on_stack_controller;
 // GLOBAL: MAGIC 0x0091ce2c
-GLOBAL_STATE_GLOBAL int card_on_stack GLOBAL_STATE_INIT(-1);
+extern int card_on_stack;
 // GLOBAL: MAGIC 0x008a9000
-GLOBAL_STATE_GLOBAL int unk_008a9000;
+extern int unk_008a9000;
 // GLOBAL: MAGIC 0x008a9194
-GLOBAL_STATE_GLOBAL int unk_008a9194;
+extern int unk_008a9194;
 // GLOBAL: MAGIC 0x00926804
-GLOBAL_STATE_GLOBAL int unk_00926804;
+extern int unk_00926804;
 // GLOBAL: MAGIC 0x00939330
-GLOBAL_STATE_GLOBAL int unk_00939330;
+extern int unk_00939330;
 // GLOBAL: MAGIC 0x007a7c58
-GLOBAL_STATE_GLOBAL int unk_007a7c58[2];
-// GLOBAL: MAGIC 0x00926664
-GLOBAL_STATE_GLOBAL int unk_00926664;
+extern int unk_007a7c58[2];
+extern int unk_00926664;
+// GLOBAL: MAGIC 0x009266d0
+extern char unk_009266d0[260];
 
 // GLOBAL: MAGIC 0x007a79b0
-GLOBAL_STATE_GLOBAL int unk_007a79b0[2];
+extern int unk_007a79b0[2];
 
 // GLOBAL: MAGIC 0x00789108
-GLOBAL_STATE_GLOBAL int unk_00789108;
+extern int unk_00789108;
 
 // GLOBAL: MAGIC 0x008cefb8
-GLOBAL_STATE_GLOBAL int unk_008cefb8;
+extern int unk_008cefb8;
 
 // GLOBAL: MAGIC 0x008d0340
-GLOBAL_STATE_GLOBAL int unk_008d0340;
+extern int unk_008d0340;
 
 // GLOBAL: MAGIC 0x0091c4fc
-GLOBAL_STATE_GLOBAL int unk_0091c4fc;
+extern int unk_0091c4fc;
 
-#undef GLOBAL_STATE_GLOBAL
+#undef extern
 #undef GLOBAL_STATE_INIT
 #endif
-
-
-

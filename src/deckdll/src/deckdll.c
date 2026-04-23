@@ -464,14 +464,8 @@ Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 // GLOBAL: DECKDLL 0x101e74f0
 Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 
-// Different sizes in magic.exe/shandalar.exe vs deckdll.dll for some reason
-#ifdef DECKDLL
 // GLOBAL: DECKDLL 0x10132c50
 char text_lines[225][128];
-#else
-// GLOBAL: SHANDALAR 0x008aa920
-char text_lines[250][300];
-#endif
 
 extern int global_available_slots;
 
@@ -543,7 +537,6 @@ void fatal(const char *fmt, ...)
 }
 
 // FUNCTION: DECKDLL 0x10028350
-// FUNCTION: SHANDALAR 0x0056ca10
 int load_text(const char *file_name, const char *section_name)
 {
   struct

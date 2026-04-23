@@ -19,6 +19,7 @@ int FUN_0043e18b(int player);
 int FUN_00442763(int color_test);
 int FUN_00404c4c(int player, int internal_card_id);
 int FUN_00404cff(int player, int internal_card_id, int who_to_check);
+void FUN_00449bef(char *name);
 int FUN_0041f4c0(int player, int card, event_t event, int color);
 int FUN_0041c752(int player, int card, int event, int amount);
 int FUN_00435e27(int player, int card, int color, int amount);
@@ -149,7 +150,7 @@ int C_real_select_target(int who_chooses,
                          target_t *ret_tgt);
 int C_get_abilities(int player, int card, event_t event, int new_attacking_card);
 unsigned int C_get_special_counters(int player, int card);
-unsigned int __stdcall C_real_validate_target(int tgt_player,
+unsigned int C_real_validate_target(int tgt_player,
                                               int tgt_card,
                                               char *return_error_str,
                                               int who_chooses,
@@ -237,6 +238,5 @@ void FUN_004fb8fd(int player, int card, int color_from, unsigned char color_to);
 void __stdcall Sleep(unsigned long dwMilliseconds);
 
 #endif
-
 
 
