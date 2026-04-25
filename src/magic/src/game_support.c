@@ -37,7 +37,7 @@ int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
                                 TYPE_ARTIFACT,
                                 TYPE_NONE,
                                 0,
-                                FUN_0053aa74(player, card),
+                                get_protections_from(player, card),
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
                                 -1,
@@ -280,10 +280,10 @@ int FUN_00484581(int internal_card_id, int color)
 }
 
 // FUNCTION: MAGIC 0x0053aa74
-unsigned int FUN_0053aa74(int player, int card)
+unsigned int get_protections_from(int player, int card)
 {
   unsigned char type;
-  unsigned int illegal_abilities;
+  keyword_t illegal_abilities;
   int internal_card_id;
 
   illegal_abilities = 0;
@@ -295,19 +295,19 @@ unsigned int FUN_0053aa74(int player, int card)
   }
 
   if ((type & TYPE_SORCERY) != 0) {
-    illegal_abilities = 0x100000;
+    illegal_abilities = KEYWORD_PROT_SORCERIES;
   }
   if ((type & TYPE_INSTANT) != 0) {
-    illegal_abilities |= 0x40000;
+    illegal_abilities |= KEYWORD_PROT_INSTANTS;
   }
   if ((type & TYPE_INTERRUPT) != 0) {
-    illegal_abilities |= 0x80000;
+    illegal_abilities |= KEYWORD_PROT_INTERRUPTS;
   }
   if ((type & TYPE_ENCHANTMENT) != 0) {
-    illegal_abilities |= 0x20000;
+    illegal_abilities |= KEYWORD_PROT_ENCHANTMENTS;
   }
   if ((type & TYPE_ARTIFACT) != 0) {
-    illegal_abilities |= 0x10000;
+    illegal_abilities |= KEYWORD_PROT_ARTIFACTS;
   }
 
   return (0x800 << (((char)get_color_from_color_test(global_card_instances[player][card].color) - 1U)
@@ -335,13 +335,16 @@ int FUN_004a62d7(int player,
   (void)a8;
   (void)a9;
 
+  if (unk_008a9000 == 1) {
+    return 1;
+  }
   if (selected == 0 || count < 1 || graveyard == NULL || graveyard[0] == -1) {
     return 0;
   }
 
   selected_ptr = (int *)selected;
   available_array = (int *)available;
-  if (((active_player == player) && ((unk_00926804 & 2) == 0)) || unk_008a9000 == 1) {
+  if (((active_player == player) && ((unk_00926804 & 2) == 0))) {
     *selected_ptr = FUN_004087cc(player, TYPE_CREATURE);
     return *selected_ptr != -1;
   }
@@ -1104,7 +1107,7 @@ int FUN_00551638(int player, unsigned int preferred_controller, int card)
                                 TYPE_CREATURE,
                                 TYPE_NONE,
                                 0,
-                                FUN_0053aa74(player, card),
+                                get_protections_from(player, card),
                                 0,
                                 0,
                                 -1,
@@ -1141,7 +1144,7 @@ int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int to
                         2,
                         0,
                         0,
-                        FUN_0053aa74(player, card),
+                        get_protections_from(player, card),
                         0,
                         0,
                         -1,
@@ -1179,7 +1182,7 @@ int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int to
                                TYPE_CREATURE,
                                TYPE_NONE,
                                0,
-                               FUN_0053aa74(player, card),
+                               get_protections_from(player, card),
                                COLOR_TEST_0,
                                COLOR_TEST_0,
                                -1,
@@ -1222,6 +1225,7 @@ int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int to
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004a63b8
 int do_dialog(int who_chooses,
               int bigcard_player,
               int bigcard_card,
@@ -1593,19 +1597,19 @@ int FUN_004eb23d(int player, int card, unsigned int color, int amount)
     if (unk_0072c440[color_index] < 1) {
       return 1;
     }
+    color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
     return FUN_004eaf09(player, 7, unk_0072c440[color_index]);
   }
 
-  if (FUN_004eaf09(player, color, amount) == 0) {
-    return 0;
+  color_index = FUN_004eaf09(player, color, amount);
+  if (color_index != 0) {
+    if (unk_0072c440[FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
+      color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
+      return FUN_004eaf09(player, 7, unk_0072c440[color_index] + amount);
+    }
   }
 
-  color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
-  if (unk_0072c440[color_index] > 0) {
-    return FUN_004eaf09(player, 7, unk_0072c440[color_index] + amount);
-  }
-
-  return 1;
+  return color_index;
 }
 
 // FUNCTION: MAGIC 0x004ef850
@@ -1903,7 +1907,7 @@ int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag)
                         TYPE_CREATURE,
                         TYPE_NONE,
                         0,
-                        FUN_0053aa74(player, card),
+                        get_protections_from(player, card),
                         COLOR_TEST_0,
                         COLOR_TEST_0,
                         -1,
@@ -1920,7 +1924,7 @@ int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag)
     spell_fizzled = !FUN_00551638(player, player, card);
   }
   if (event == EVENT_RESOLVE_SPELL) {
-    illegal_abilities = FUN_0053aa74(player, card);
+    illegal_abilities = get_protections_from(player, card);
     if (!C_real_validate_target(instance->targets[0].player,
                                 instance->targets[0].card,
                                 (char *)0,
@@ -2203,7 +2207,7 @@ int FUN_00551b60(int player, unsigned int preferred_controller, int card)
                                 TYPE_LAND,
                                 TYPE_NONE,
                                 0,
-                                FUN_0053aa74(player, card),
+                                get_protections_from(player, card),
                                 0,
                                 0,
                                 -1,
@@ -3534,12 +3538,12 @@ int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type
 
   if (event == EVENT_CAN_CAST) {
     return FUN_004bd7d0((int*)0, 0, player, 2, 2, 0x200, required_type, 0, 0,
-                        FUN_0053aa74(player, card), 0, 0, -1, -1, -1, -1, 0, 0, 0);
+                        get_protections_from(player, card), 0, 0, -1, -1, -1, -1, 0, 0, 0);
   }
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player) {
     if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY, required_type, TYPE_NONE, 0,
-                              FUN_0053aa74(player, card), COLOR_TEST_0, COLOR_TEST_0, -1,
+                              get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1,
                               ~SUB_WALL, -1, -1, 0, 0, 0, text_lines[0], 1, &target)) {
       spell_fizzled = 1;
     } else {
@@ -3553,7 +3557,7 @@ int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type
   if (event == EVENT_RESOLVE_SPELL) {
     if (!C_real_validate_target(instance->targets[0].player, instance->targets[0].card, (char*)0,
                                 player, 2, 2, TARGET_ZONE_IN_PLAY, required_type, TYPE_NONE, 0,
-                                FUN_0053aa74(player, card), COLOR_TEST_0, COLOR_TEST_0, -1,
+                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1,
                                 ~SUB_WALL, -1, -1, 0, 0, 0)) {
       kill_card(player, card, KILL_BURY);
       spell_fizzled = 1;
@@ -3955,7 +3959,7 @@ int FUN_0052e400(int player, int card, int event, int color)
                         TYPE_CREATURE,
                         TYPE_NONE,
                         0,
-                        FUN_0053aa74(player, card),
+                        get_protections_from(player, card),
                         0,
                         0,
                         -1,
@@ -4000,7 +4004,7 @@ int FUN_0052e400(int player, int card, int event, int color)
                                  TYPE_CREATURE,
                                  TYPE_NONE,
                                  0,
-                                 FUN_0053aa74(player, card),
+                                 get_protections_from(player, card),
                                  COLOR_TEST_0,
                                  COLOR_TEST_0,
                                  -1,

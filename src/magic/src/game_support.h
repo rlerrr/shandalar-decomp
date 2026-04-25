@@ -114,7 +114,7 @@ int FUN_00482a97(int player, int card, unsigned int flags);
 int FUN_00483190(int player, int card, int source_player, int source_card, int internal_card_id);
 int FUN_00483242(int player, int card, int source_player, int source_card, int internal_card_id);
 int FUN_00485060(int player, int card, int (__cdecl *callback)(int, int, int, int, int), int who_to_check);
-unsigned int FUN_0053aa74(int player, int card);
+unsigned int get_protections_from(int player, int card);
 void FUN_00542a2a(int player, int card);
 int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int toughness_modifier);
 int FUN_005493a6(int player, int card, int internal_card_id);

@@ -495,37 +495,37 @@ typedef enum
 /* Static Abilities */
 typedef enum
 {
-  KEYWORD_SWAMPWALK       = 1 <<  0,
-  KEYWORD_ISLANDWALK      = 1 <<  1,
-  KEYWORD_FORESTWALK      = 1 <<  2,
-  KEYWORD_MOUNTAINWALK    = 1 <<  3,
-  KEYWORD_PLAINSWALK      = 1 <<  4,
-  KEYWORD_FLYING          = 1 <<  5,
-  KEYWORD_BANDING         = 1 <<  6,
-  KEYWORD_TRAMPLE         = 1 <<  7,
-  KEYWORD_FIRST_STRIKE    = 1 <<  8,
-  KEYWORD_REGENERATION    = 1 <<  9,
-  KEYWORD_REACH           = 1 << 10,
-  KEYWORD_PROT_BLACK      = 1 << 11,
-  KEYWORD_PROT_BLUE       = 1 << 12,
-  KEYWORD_PROT_GREEN      = 1 << 13,
-  KEYWORD_PROT_RED        = 1 << 14,
-  KEYWORD_PROT_WHITE      = 1 << 15,
-  KEYWORD_PROT_ARTIFACTS  = 1 << 16,
-  KEYWORD_SHROUD          = 1 << 17, /* Supposed to be prot. enchantments, someone has redefined it... */
-  KEYWORD_PROT_INSTANTS   = 1 << 18,
-  KEYWORD_PROT_INTERRUPTS = 1 << 19, // Actually, used for the "Changeling" ability
-  KEYWORD_PROT_SORCERIES  = 1 << 20,
-  KEYWORD_PROT_CREATURES  = 1 << 21, /* SkyMagic editor claims this is banding when attacking. Another double use? */
-  KEYWORD_PROT_LANDS      = 1 << 22,
-  KEYWORD_DEFENDER        = 1 << 23,
+  KEYWORD_SWAMPWALK         = 1 <<  0,
+  KEYWORD_ISLANDWALK        = 1 <<  1,
+  KEYWORD_FORESTWALK        = 1 <<  2,
+  KEYWORD_MOUNTAINWALK      = 1 <<  3,
+  KEYWORD_PLAINSWALK        = 1 <<  4,
+  KEYWORD_FLYING            = 1 <<  5,
+  KEYWORD_BANDING           = 1 <<  6,
+  KEYWORD_TRAMPLE           = 1 <<  7,
+  KEYWORD_FIRST_STRIKE      = 1 <<  8,
+  KEYWORD_REGENERATION      = 1 <<  9,
+  KEYWORD_REACH             = 1 << 10,
+  KEYWORD_PROT_BLACK        = 1 << 11,
+  KEYWORD_PROT_BLUE         = 1 << 12,
+  KEYWORD_PROT_GREEN        = 1 << 13,
+  KEYWORD_PROT_RED          = 1 << 14,
+  KEYWORD_PROT_WHITE        = 1 << 15,
+  KEYWORD_PROT_ARTIFACTS    = 1 << 16,
+  KEYWORD_PROT_ENCHANTMENTS = 1 << 17,
+  KEYWORD_PROT_INSTANTS     = 1 << 18,
+  KEYWORD_PROT_INTERRUPTS   = 1 << 19, // Actually, used for the "Changeling" ability
+  KEYWORD_PROT_SORCERIES    = 1 << 20,
+  KEYWORD_PROT_CREATURES    = 1 << 21, /* SkyMagic editor claims this is banding when attacking. Another double use? */
+  KEYWORD_PROT_LANDS        = 1 << 22,
+  KEYWORD_DEFENDER          = 1 << 23,
   KEYWORD_RECALC_CHANGE_TYPE=1<< 24,//0x1000000
-  KEYWORD_RECALC_TOUGHNESS= 1 << 25,//0x2000000
-  KEYWORD_RECALC_POWER    = 1 << 26,//0x4000000
-  KEYWORD_RECALC_ABILITIES= 1 << 27,//0x8000000
-  KEYWORD_RECALC_SET_COLOR= 1 << 28,//0x10000000
-  KEYWORD_INFECT          = 1 << 29,// 0x20000000,	// Previously something else; I suspect fear.  Still checked in one place in the exe.
-  KEYWORD_DOUBLE_STRIKE   = 1 << 30,//0x40000100,
+  KEYWORD_RECALC_TOUGHNESS  = 1 << 25,//0x2000000
+  KEYWORD_RECALC_POWER      = 1 << 26,//0x4000000
+  KEYWORD_RECALC_ABILITIES  = 1 << 27,//0x8000000
+  KEYWORD_RECALC_SET_COLOR  = 1 << 28,//0x10000000
+  KEYWORD_INFECT            = 1 << 29,// 0x20000000,	// Previously something else; I suspect fear.  Still checked in one place in the exe.
+  KEYWORD_DOUBLE_STRIKE     = 1 << 30,//0x40000100,
 /*
   1<<31 is apparently Murk Dwellers' pump-when-not-blocked ability.
 */

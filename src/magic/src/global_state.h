@@ -219,7 +219,7 @@ extern int unk_007abc78;
 extern int unk_007a7d64;
 
 extern int unk_00896534;
-extern int unk_008a9000;
+// GLOBAL: MAGIC 0x008a8de8
 extern int unk_008a8de8;
 // GLOBAL: MAGIC 0x008a8df0
 extern int unk_008a8df0;
@@ -274,7 +274,7 @@ extern int unk_0092664c[8];
 extern int produced_mana_color;
 extern int unk_009266a4;
 extern int unk_009266ac;
-extern int unk_00926804;
+// GLOBAL: MAGIC 0x0093d848
 extern int unk_0093d848;
 
 // GLOBAL: MAGIC 0x008cc840
@@ -283,7 +283,7 @@ extern int unk_008cc840;
 // GLOBAL: MAGIC 0x0093f4b8
 extern int unk_0093f4b8;
 
-// GLOBAL: MAGIC: SHANDALAR 0x008a8df8
+// GLOBAL: SHANDALAR 0x008a8df8
 extern int LEGACY_EFFECT_PUMP;
 
 // GLOBAL: MAGIC 0x008b3d10
