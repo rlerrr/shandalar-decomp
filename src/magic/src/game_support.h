@@ -44,7 +44,7 @@ void FUN_004b4110(int player);
 int FUN_004b42aa(int player, int *graveyard, int count, char (*lines)[300], int a5, int *a6);
 void FUN_004b5cf5(int player, int internal_card_id);
 int FUN_004b5f03(int card_id);
-int FUN_00432f00(int player, unsigned int color, int amount);
+int charge_mana(int player, unsigned int color, int amount);
 int FUN_005180ed(int a1, int a2, int player, int card, int internal_card_id);
 int FUN_0051819c(int parent_player, int parent_card, int player, int card, int internal_card_id);
 int FUN_004a62d7(int player,
@@ -67,25 +67,36 @@ int FUN_0052adf2(int player, int card);
 int FUN_0052e400(int player, int card, int event, int color);
 int FUN_00532bea(int player, int card, int event, int color);
 int FUN_00534ddb(int player, int mode);
-int FUN_004bd7d0(int *param_1,
-                 int param_2,
-                 int param_3,
-                 unsigned int param_4,
-                 unsigned int param_5,
-                 unsigned int param_6,
-                 unsigned int param_7,
-                 unsigned int param_8,
-                 unsigned int param_9,
-                 unsigned int param_10,
-                 unsigned int param_11,
-                 unsigned int param_12,
-                 int param_13,
-                 int param_14,
-                 unsigned int param_15,
-                 unsigned int param_16,
-                 unsigned int param_17,
-                 unsigned int param_18,
-                 unsigned int param_19);
+/* target_source_mode:
+ *   0 = check direct player/card targets
+ *   1 = check damage-card target player/card
+ *   2 = check damage-card source player/card
+ */
+typedef enum {
+  TARGET_SCAN_DIRECT = 0,
+  TARGET_SCAN_DAMAGE_TARGET = 1,
+  TARGET_SCAN_DAMAGE_SOURCE = 2
+} target_scan_mode_t;
+
+int real_target_available(int *num_valid_targets,
+                  target_scan_mode_t target_source_mode,
+                  int who_chooses,
+                  unsigned int allowed_controller,
+                  unsigned int preferred_controller,
+                 target_zone_t zone,
+                 type_t required_type,
+                 type_t illegal_type,
+                 keyword_t required_abilities,
+                 keyword_t illegal_abilities,
+                 color_test_t required_color,
+                 color_test_t illegal_color,
+                 int extra,
+                 subtype_in_card_data_t required_subtype,
+                 int required_power,
+                 int required_toughness,
+                 target_special_t special,
+                 target_state_t required_state,
+                 target_state_t illegal_state);
 int get_color_from_color_test(char color_test);
 void FUN_004a61d6(char *text);
 void gain_life(int player, int amount);
@@ -106,14 +117,14 @@ void FUN_004e503e(int a1);
 void FUN_004e5089(void);
 void FUN_004e51bb(void);
 void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
-int FUN_004eaf09(int player, unsigned int color, int amount);
+int has_mana(int player, unsigned int color, int amount);
 int FUN_004eb23d(int player, int card, unsigned int color, int amount);
-int FUN_004ef850(int a1, int a2, int a3, int a4, int a5);
+int create_legacy_effec(int a1, int a2, int a3, int a4, int a5);
 int FUN_004f7783(int player, int card);
 int FUN_00482a97(int player, int card, unsigned int flags);
 int FUN_00483190(int player, int card, int source_player, int source_card, int internal_card_id);
 int FUN_00483242(int player, int card, int source_player, int source_card, int internal_card_id);
-int FUN_00485060(int player, int card, int (__cdecl *callback)(int, int, int, int, int), int who_to_check);
+int dispatch_function_to_all_cards_in_play(int player, int card, int (__cdecl *callback)(int, int, int, int, int), int who_to_check);
 unsigned int get_protections_from(int player, int card);
 void FUN_00542a2a(int player, int card);
 int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int toughness_modifier);
@@ -181,7 +192,7 @@ int load_text(const char * file_name, const char *section_name);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
 int produce_mana(int player, color_t color, int amount);
 int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);
-int FUN_005058b1(int player, int card, event_t event, color_test_t available_colors);
+int tap_for_multicolor_mana(int player, int card, event_t event, color_test_t available_colors);
 void FUN_0051a41c(int player, int card);
 int obliterate_top_card_of_stack(void);
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors);
@@ -237,5 +248,3 @@ void FUN_004fb8fd(int player, int card, int color_from, unsigned char color_to);
 void __stdcall Sleep(unsigned long dwMilliseconds);
 
 #endif
-
-

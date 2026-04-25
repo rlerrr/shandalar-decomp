@@ -500,7 +500,7 @@ int FUN_00481e25(int player, int card, int event)
     event_result = 1;
   }
 
-  FUN_00485060(player, card, FUN_004821f5, -1);
+  dispatch_function_to_all_cards_in_play(player, card, FUN_004821f5, -1);
 
   if (trigger_condition == 0xdf
       && card == affected_card
@@ -796,8 +796,9 @@ int FUN_004b42aa(int player, int *graveyard, int count, char (*lines)[300], int 
   return -1;
 }
 
+// FUNCTION: MOK 0x00459AA0
 // FUNCTION: MAGIC 0x00485060
-int FUN_00485060(int player, int card, in_play_card_callback_t callback, int who_to_check)
+int dispatch_function_to_all_cards_in_play(int player, int card, in_play_card_callback_t callback, int who_to_check)
 {
   int saved_event_result;
   int result;
@@ -1135,8 +1136,8 @@ int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int to
   int preferred_controller;
 
   if (event == EVENT_CAN_CAST) {
-    return FUN_004bd7d0((int *)0,
-                        0,
+    return real_target_available((int *)0,
+                        TARGET_SCAN_DIRECT,
                         player,
                         2,
                         2,
@@ -1523,8 +1524,9 @@ int produce_mana(int player, color_t color, int amount)
   return raw_mana_available[player][color];
 }
 
+// FUNCTION: MOK 0x004a9310
 // FUNCTION: MAGIC 0x005058b1
-int FUN_005058b1(int player, int card, event_t event, color_test_t available_colors)
+int tap_for_multicolor_mana(int player, int card, event_t event, color_test_t available_colors)
 {
   (void)player;
   (void)card;
@@ -1558,8 +1560,9 @@ int FUN_004c0a36(int a1, int a2, int a3)
   return a1;
 }
 
+// FUNCTION: MOK 0x0042de60
 // FUNCTION: MAGIC 0x00432f00
-int FUN_00432f00(int player, unsigned int color, int amount)
+int charge_mana(int player, color_t color, int amount)
 {
   (void)player;
   (void)color;
@@ -1573,14 +1576,16 @@ void FUN_004e4ff3(int a1)
   (void)a1;
 }
 
+// FUNCTION: MOK 0x00499010
 // FUNCTION: MAGIC 0x004e503e
 void FUN_004e503e(int a1)
 {
   (void)a1;
 }
 
+// FUNCTION: MOK 0x0049d510
 // FUNCTION: MAGIC 0x004eaf09
-int FUN_004eaf09(int player, unsigned int color, int amount)
+int has_mana(int player, unsigned int color, int amount)
 {
   (void)player;
   (void)color;
@@ -1598,28 +1603,24 @@ int FUN_004eb23d(int player, int card, unsigned int color, int amount)
       return 1;
     }
     color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
-    return FUN_004eaf09(player, 7, unk_0072c440[color_index]);
+    return has_mana(player, 7, unk_0072c440[color_index]);
   }
 
-  color_index = FUN_004eaf09(player, color, amount);
+  color_index = has_mana(player, color, amount);
   if (color_index != 0) {
     if (unk_0072c440[FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
       color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
-      return FUN_004eaf09(player, 7, unk_0072c440[color_index] + amount);
+      return has_mana(player, 7, unk_0072c440[color_index] + amount);
     }
   }
 
   return color_index;
 }
 
+// FUNCTION: MOK 0x004a09a0
 // FUNCTION: MAGIC 0x004ef850
-int FUN_004ef850(int a1, int a2, int a3, int a4, int a5)
+int create_legacy_effec(int player,int card,int legacy_iid,int target_player,int target_card)
 {
-  (void)a1;
-  (void)a2;
-  (void)a3;
-  (void)a4;
-  (void)a5;
   return -1;
 }
 
@@ -1732,7 +1733,7 @@ int FUN_00435e27(int player, int card, int color, int amount)
 
   color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
   unk_008ce510 += unk_0072c440[color_index];
-  result = FUN_00432f00(player, color, amount) - unk_0072c440[color_index];
+  result = charge_mana(player, color, amount) - unk_0072c440[color_index];
   if (spell_fizzled == 1) {
     result = 0;
   }
@@ -1814,7 +1815,7 @@ int FUN_0043c7ab(int who_is_being_divided, int player, int card)
             & TYPE_CREATURE) != 0
         && ((*(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(who_is_being_divided, current_card) + 0x24) & 0x20)
             == 0)) {
-      legacy_card = FUN_004ef850(player, card, unk_008b3bd4, who_is_being_divided, current_card);
+      legacy_card = create_legacy_effec(player, card, unk_008b3bd4, who_is_being_divided, current_card);
       if (legacy_card != -1) {
         if (power_total[1 - bank] < power_total[bank]) {
           bank ^= 1;
@@ -1898,8 +1899,8 @@ int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag)
   keyword_t illegal_abilities;
 
   if (event == EVENT_CAN_CAST) {
-    return FUN_004bd7d0((int *)0,
-                        0,
+    return real_target_available((int *)0,
+                        TARGET_SCAN_DIRECT,
                         player,
                         2,
                         2,
@@ -2230,48 +2231,165 @@ int FUN_00551b60(int player, unsigned int preferred_controller, int card)
 }
 
 // FUNCTION: MAGIC 0x004bd7d0
-int FUN_004bd7d0(int *param_1,
-                 int param_2,
-                 int param_3,
-                 unsigned int param_4,
-                 unsigned int param_5,
-                 unsigned int param_6,
-                 unsigned int param_7,
-                 unsigned int param_8,
-                 unsigned int param_9,
-                 unsigned int param_10,
-                 unsigned int param_11,
-                 unsigned int param_12,
-                 int param_13,
-                 int param_14,
-                 unsigned int param_15,
-                 unsigned int param_16,
-                 unsigned int param_17,
-                 unsigned int param_18,
-                 unsigned int param_19)
+/* target_source_mode:
+ *   0 = scan direct player/card targets
+ *   1 = scan damage cards by damage_target_player/card
+ *   2 = scan damage cards by damage_source_player/card
+ */
+int real_target_available(int *num_valid_targets,
+                 target_scan_mode_t target_source_mode,
+                 int who_chooses,
+                 unsigned int allowed_controller,
+                 unsigned int preferred_controller,
+                 target_zone_t zone,
+                 type_t required_type,
+                 type_t illegal_type,
+                 keyword_t required_abilities,
+                 keyword_t illegal_abilities,
+                 color_test_t required_color,
+                 color_test_t illegal_color,
+                 int extra,
+                 subtype_in_card_data_t required_subtype,
+                 int required_power,
+                 int required_toughness,
+                 target_special_t special,
+                 target_state_t required_state,
+                 target_state_t illegal_state)
 {
-  (void)param_2;
-  (void)param_3;
-  (void)param_4;
-  (void)param_5;
-  (void)param_6;
-  (void)param_7;
-  (void)param_8;
-  (void)param_9;
-  (void)param_10;
-  (void)param_11;
-  (void)param_12;
-  (void)param_13;
-  (void)param_14;
-  (void)param_15;
-  (void)param_16;
-  (void)param_17;
-  (void)param_18;
-  (void)param_19;
-  if (param_1 != NULL) {
-    *param_1 = 0;
+  int stop_on_first;
+  int count;
+  int found_any;
+  int done;
+  int player_index;
+  unsigned int scan_player;
+  int current_card;
+  int target_card;
+  unsigned int target_player;
+  int target_is_valid;
+  int max_cards;
+
+  stop_on_first = num_valid_targets == NULL;
+  count = 0;
+  found_any = 0;
+  done = 0;
+
+  if (target_source_mode != 0 && target_source_mode != 1 && target_source_mode != 2) {
+    return 0;
   }
-  return 0;
+
+  for (player_index = 0; player_index < 2; ++player_index) {
+    if (C_real_validate_target(player_index,
+                               -1,
+                               (char *)0,
+                               who_chooses,
+                               allowed_controller,
+                               preferred_controller,
+                               zone,
+                               required_type,
+                               illegal_type,
+                               required_abilities,
+                               illegal_abilities,
+                               required_color,
+                               illegal_color,
+                               extra,
+                               required_subtype,
+                               required_power,
+                               required_toughness,
+                               special,
+                               required_state,
+                               illegal_state) != 0) {
+      found_any = 1;
+      ++count;
+      if (stop_on_first) {
+        done = 1;
+      }
+    }
+  }
+
+  if (unk_008b35ec == who_chooses || (unk_00926804 & 2) != 0) {
+    if ((allowed_controller & 2) == 0) {
+      scan_player = 1;
+    } else {
+      scan_player = 0;
+    }
+  } else if ((preferred_controller & 2) == 0 && (preferred_controller & 1) == 0) {
+    scan_player = 0;
+  } else {
+    scan_player = 1;
+  }
+
+  player_index = 0;
+  while (player_index < 2 && !done) {
+    current_card = 0;
+    for (;;) {
+      max_cards = active_cards_count[1];
+      if (active_cards_count[0] > max_cards) {
+        max_cards = active_cards_count[0];
+      }
+
+      if (current_card >= max_cards || done) {
+        break;
+      }
+
+      if (PLAYER_CARD_INSTANCE(scan_player, current_card).internal_card_id != -1) {
+        if (target_source_mode == 0) {
+          target_player = scan_player;
+          target_card = current_card;
+          target_is_valid = 1;
+        } else if (target_source_mode == 1) {
+          target_is_valid = PLAYER_CARD_INSTANCE(scan_player, current_card).internal_card_id == unk_009266a4;
+          if (target_is_valid) {
+            target_player = (unsigned char)PLAYER_CARD_INSTANCE(scan_player, current_card).damage_target_player;
+            target_card = PLAYER_CARD_INSTANCE(scan_player, current_card).damage_target_card;
+          }
+        } else if (PLAYER_CARD_INSTANCE(scan_player, current_card).internal_card_id == unk_009266a4) {
+          target_player = (unsigned char)PLAYER_CARD_INSTANCE(scan_player, current_card).damage_source_player;
+          target_card = PLAYER_CARD_INSTANCE(scan_player, current_card).damage_source_card;
+          target_is_valid = 1;
+        } else {
+          target_is_valid = 0;
+        }
+
+        if (target_is_valid
+            && C_real_validate_target(target_player,
+                                      target_card,
+                                      (char *)0,
+                                      who_chooses,
+                                      allowed_controller,
+                                      preferred_controller,
+                                      zone,
+                                      required_type,
+                                      illegal_type,
+                                      required_abilities,
+                                      illegal_abilities,
+                                      required_color,
+                                      illegal_color,
+                                      extra,
+                                      required_subtype,
+                                      required_power,
+                                      required_toughness,
+                                      special,
+                                      required_state,
+                                      illegal_state) != 0) {
+          found_any = 1;
+          ++count;
+          if (stop_on_first) {
+            done = 1;
+          }
+        }
+      }
+
+      ++current_card;
+    }
+
+    ++player_index;
+    scan_player = 1 - scan_player;
+  }
+
+  if (num_valid_targets != NULL) {
+    *num_valid_targets = count;
+  }
+  return found_any;
 }
 
 // FUNCTION: MAGIC 0x004bdc06
@@ -3142,7 +3260,7 @@ int FUN_0041626b(int player, int card, int event, int color)
       }
       if (event == EVENT_RESOLVE_TRIGGER) {
         FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
-        FUN_00432f00(player, 0, 1);
+        charge_mana(player, 0, 1);
         obliterate_top_card_of_stack();
         if (spell_fizzled != 1) {
           dispatch_event(player, card, EVENT_PLAY_ABILITY);
@@ -3537,7 +3655,7 @@ int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type
   instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST) {
-    return FUN_004bd7d0((int*)0, 0, player, 2, 2, 0x200, required_type, 0, 0,
+    return real_target_available((int*)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, required_type, 0, 0,
                         get_protections_from(player, card), 0, 0, -1, -1, -1, -1, 0, 0, 0);
   }
 
@@ -3605,8 +3723,8 @@ int FUN_0043b4f3(int player, int amount)
   char prompt[300];
   target_t target;
 
-  FUN_004bd7d0(&max_targets,
-               0,
+  real_target_available(&max_targets,
+               TARGET_SCAN_DIRECT,
                player,
                (unsigned char)player,
                (unsigned char)player,
@@ -3810,8 +3928,8 @@ int FUN_00532bea(int player, int card, int event, int color)
 
     if (event == EVENT_CAN_ACTIVATE) {
       if ((unk_008b4278 & 4) == 0 || FUN_004eb23d(player, card, 7, 1) == 0
-          || FUN_004bd7d0((int *)0,
-                          0,
+          || real_target_available((int *)0,
+                          TARGET_SCAN_DIRECT,
                           player,
                           2,
                           2,
@@ -3950,8 +4068,8 @@ int FUN_0052e400(int player, int card, int event, int color)
   ward_color = 1 << ((unsigned char)color & 0x1f);
 
   if (event == EVENT_CAN_CAST) {
-    return FUN_004bd7d0((int *)0,
-                        0,
+    return real_target_available((int *)0,
+                        TARGET_SCAN_DIRECT,
                         player,
                         2,
                         2,
