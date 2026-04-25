@@ -322,10 +322,10 @@ extern int unk_00939530[2][8];
 // GLOBAL: MAGIC 0x0093950c
 extern int ai_modifier;
 
-
+// GLOBAL: MAGIC 0x00896720
 // GLOBAL: SHANDALAR 0x008aa920
 extern char text_lines[249][300];
- 
+
 // GLOBAL: MAGIC 0x0093dabc
 // GLOBAL: SHANDALAR 0x008cd928
 extern int affected_card;

@@ -307,7 +307,7 @@ int islandhome(int, int, event_t);
 int is_legal_block(int blocking_player, int blocking_card, int blocked_player, int blocked_card);
 int is_tapped(int, int);
 void kill_card(int, int, kill_t);
-void load_text(int, const char *);
+int load_text(const char *, const char *);
 int mana_producer_fixed(int, int, event_t, int);
 void obliterate_top_card_of_stack(void);
 void put_card_or_activation_onto_stack(int player, int card, event_t event, int unknown1, int unknown2);	// unknown1 is almost always 0, occasionally player.  unknown2 always 0.  A reference to the card is put onto the stack for EVENT_RESOLVE_SPELL/EVENT_RESOLVE_TRIGGER, otherwise an activation card is created and put there instead.

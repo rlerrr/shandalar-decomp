@@ -4,6 +4,7 @@
 int gain_life_or_prevent_damage(int player, int card, event_t event, int amount);
 int FUN_004f6311(int player, int card, int internal_card_id);
 
+// FUNCTION: MAGIC 0x00431e02
 static int helper_destroy_basiclandtype(int source_player,
                                         int source_card,
                                         int test_player,
@@ -18,7 +19,6 @@ static int helper_destroy_basiclandtype(int source_player,
 
   return 0;
 }
-
 
 // FUNCTION: MAGIC 0x004b6120
 // FUNCTION: SHANDALAR 0x00429ee0
@@ -2776,7 +2776,7 @@ int card_evil_presence(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
       PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
-      land_type = FUN_005001e0(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
+      land_type = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                            PLAYER_CARD_INSTANCE(player, card).damage_target_card)
           .internal_card_id = land_type - 1;
@@ -2792,7 +2792,7 @@ int card_evil_presence(int player, int card, event_t event)
              && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller)
                  && (affected_card != -1))))
         && is_in_play(player, card)) {
-      land_type = FUN_005001e0(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
+      land_type = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
       event_result = land_type - 1;
     }
     return 0;
@@ -3780,7 +3780,7 @@ int card_lifetap(int player, int card, event_t event)
     return 1;
   } else {
     if ((event == EVENT_TAP_CARD) && (affected_card_controller != player)) {
-      color = FUN_005001e0(player, card, 3);
+      color = get_hacked_color(player, card, 3);
       if (FUN_0048463d(affected_card_controller, affected_card, color) != 0) {
         gain_life(player, 1);
         return 0;
@@ -3788,7 +3788,7 @@ int card_lifetap(int player, int card, event_t event)
     }
     if ((((event == EVENT_CAST_SPELL) || (event == EVENT_SHOULD_AI_PLAY)) && (affected_card == card))
         && (affected_card_controller == player)) {
-      color = FUN_005001e0(player, card, 3);
+      color = get_hacked_color(player, card, 3);
       ai_modifier += (basiclandtypes_controlled[unk_008b35ec][color] * 3 + 3) * 8;
     }
     return 0;
@@ -4537,14 +4537,14 @@ int card_aspect_of_wolf(int player, int card, event_t event)
          && (PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card))
         && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller)
             && ((affected_card != -1) && is_in_play(player, card)))) {
-      color = FUN_005001e0(player, card, 3);
+      color = get_hacked_color(player, card, 3);
       event_result += basiclandtypes_controlled[player][color] / 2;
     }
     if (((event == EVENT_TOUGHNESS)
          && (PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card))
         && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller)
             && ((affected_card != -1) && is_in_play(player, card)))) {
-      color = FUN_005001e0(player, card, 3);
+      color = get_hacked_color(player, card, 3);
       event_result += (basiclandtypes_controlled[player][color] + 1) / 2;
     }
     return 0;
@@ -4815,7 +4815,7 @@ int card_burrowing(int player, int card, event_t event)
     load_text((int)"prompts.txt", "BURROWING");
   }
 
-  color = FUN_005001e0(player, card, 4);
+  color = get_hacked_color(player, card, 4);
   color_keyword = 1 << (((char)color - 1U) & 0x1f);
   if (event == EVENT_CAN_CAST) {
     return FUN_004bd7d0((int *)0,
@@ -5395,35 +5395,35 @@ int card_holy_strength(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e5aea
 int card_black_ward(int player, int card, event_t event)
 {
-  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_BLACK));
+  return FUN_0052e400(player, card, event, get_sleighted_color(player, card, COLOR_BLACK));
 }
 
 // FUNCTION: MAGIC 0x0052e324
 // FUNCTION: SHANDALAR 0x004e5b21
 int card_green_ward(int player, int card, event_t event)
 {
-  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_GREEN));
+  return FUN_0052e400(player, card, event, get_sleighted_color(player, card, COLOR_GREEN));
 }
 
 // FUNCTION: MAGIC 0x0052e35b
 // FUNCTION: SHANDALAR 0x004e5b58
 int card_blue_ward(int player, int card, event_t event)
 {
-  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_BLUE));
+  return FUN_0052e400(player, card, event, get_sleighted_color(player, card, COLOR_BLUE));
 }
 
 // FUNCTION: MAGIC 0x0052e392
 // FUNCTION: SHANDALAR 0x004e5b8f
 int card_red_ward(int player, int card, event_t event)
 {
-  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_RED));
+  return FUN_0052e400(player, card, event, get_sleighted_color(player, card, COLOR_RED));
 }
 
 // FUNCTION: MAGIC 0x0052e3c9
 // FUNCTION: SHANDALAR 0x004e5bc6
 int card_white_ward(int player, int card, event_t event)
 {
-  return FUN_0052e400(player, card, event, FUN_0050026d(player, card, COLOR_WHITE));
+  return FUN_0052e400(player, card, event, get_sleighted_color(player, card, COLOR_WHITE));
 }
 
 // FUNCTION: MAGIC 0x0052112c
@@ -5439,7 +5439,7 @@ int card_karma(int player, int card, event_t event)
     if (((current_phase == EVENT_UPKEEP_PHASE)
          && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
         && ((unk_00742f60 == human_player)
-            && ((color = FUN_005001e0(player, card, 1),
+            && ((color = get_hacked_color(player, card, 1),
                  basiclandtypes_controlled[unk_00742f60][color] != 0)))) {
       PLAYER_CARD_INSTANCE(player, card).eot_toughness |= 0x101;
       unk_008b3270 |= 3;
@@ -5453,7 +5453,7 @@ int card_karma(int player, int card, event_t event)
     event_result |= 1;
     return 0;
   } else if (event == EVENT_UPKEEP_COSTS_UNPAID) {
-    color = FUN_005001e0(player, card, 1);
+    color = get_hacked_color(player, card, 1);
     damage_player(human_player,
                   basiclandtypes_controlled[human_player][color],
                   card_on_stack_controller,
@@ -5465,11 +5465,11 @@ int card_karma(int player, int card, event_t event)
     }
     if (event == EVENT_SHOULD_AI_PLAY) {
       damage_player(1 - human_player,
-                    basiclandtypes_controlled[1 - human_player][FUN_005001e0(player, card, 1)],
+                    basiclandtypes_controlled[1 - human_player][get_hacked_color(player, card, 1)],
                     player,
                     card);
       if (is_in_play(player, card)) {
-        color = FUN_005001e0(player, card, 1);
+        color = get_hacked_color(player, card, 1);
         if (basiclandtypes_controlled[unk_008b35ec][color] != 0) {
           damage = 0x18 - life[unk_008b35ec] / basiclandtypes_controlled[unk_008b35ec][color];
           if (damage < 2) {
@@ -5477,7 +5477,7 @@ int card_karma(int player, int card, event_t event)
           }
           ai_modifier += damage * 0x18;
         }
-        color = FUN_005001e0(player, card, 1);
+        color = get_hacked_color(player, card, 1);
         if (basiclandtypes_controlled[active_player][color] != 0) {
           damage = 0x18 - life[active_player] / basiclandtypes_controlled[active_player][color];
           if (damage < 2) {
@@ -5610,35 +5610,35 @@ int card_farmstead(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ea30b
 int card_co_p_white(int player, int card, event_t event)
 {
-  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_WHITE));
+  return FUN_00532bea(player, card, event, get_sleighted_color(player, card, COLOR_WHITE));
 }
 
 // FUNCTION: MAGIC 0x00532ad7
 // FUNCTION: SHANDALAR 0x004ea2d4
 int card_co_p_black(int player, int card, event_t event)
 {
-  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_BLACK));
+  return FUN_00532bea(player, card, event, get_sleighted_color(player, card, COLOR_BLACK));
 }
 
 // FUNCTION: MAGIC 0x00532b7c
 // FUNCTION: SHANDALAR 0x004ea379
 int card_co_p_blue(int player, int card, event_t event)
 {
-  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_BLUE));
+  return FUN_00532bea(player, card, event, get_sleighted_color(player, card, COLOR_BLUE));
 }
 
 // FUNCTION: MAGIC 0x00532b45
 // FUNCTION: SHANDALAR 0x004ea342
 int card_co_p_red(int player, int card, event_t event)
 {
-  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_RED));
+  return FUN_00532bea(player, card, event, get_sleighted_color(player, card, COLOR_RED));
 }
 
 // FUNCTION: MAGIC 0x00532bb3
 // FUNCTION: SHANDALAR 0x004ea3b0
 int card_co_p_green(int player, int card, event_t event)
 {
-  return FUN_00532bea(player, card, event, FUN_0050026d(player, card, COLOR_GREEN));
+  return FUN_00532bea(player, card, event, get_sleighted_color(player, card, COLOR_GREEN));
 }
 
 // FUNCTION: MAGIC 0x0052398e
@@ -5957,8 +5957,8 @@ int card_conversion(int player, int card, event_t event)
 
   if ((event == EVENT_SET_COLOR) && ((unk_008b4278 & 0x200) == 0) && is_in_play(player, card)
       && is_in_play(affected_card_controller, affected_card)
-      && FUN_00484581(affected_card_controller, FUN_005001e0(player, card, 4)) != 0) {
-    event_result = FUN_005001e0(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
+      && FUN_00484581(affected_card_controller, get_hacked_color(player, card, 4)) != 0) {
+    event_result = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
   }
 
   return 0;
@@ -6655,7 +6655,7 @@ int card_flashfires(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    PLAYER_CARD_INSTANCE(player, card).info_slot = FUN_005001e0(player, card, 5);
+    PLAYER_CARD_INSTANCE(player, card).info_slot = get_hacked_color(player, card, 5);
     FUN_00485060(player, card, helper_destroy_basiclandtype, -1);
     kill_card(player, card, KILL_BURY);
   }
@@ -6875,7 +6875,7 @@ int card_tsunami(int player, int card, event_t event)
         if (is_in_play(current_player, current_card)
             && (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type
                 & TYPE_LAND) != 0) {
-          if (FUN_0048463d(current_player, current_card, FUN_005001e0(player, card, 2)) != 0) {
+          if (FUN_0048463d(current_player, current_card, get_hacked_color(player, card, 2)) != 0) {
             kill_card(current_player, current_card, KILL_DESTROY);
           }
         }
@@ -7124,7 +7124,7 @@ int card_gauntlet_of_might(int player, int card, event_t event)
   if ((event == EVENT_POWER || event == EVENT_TOUGHNESS) && is_in_play(player, card)
       && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
           || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))) {
-    chosen_color = FUN_0050026d(player, card, 4);
+    chosen_color = get_sleighted_color(player, card, 4);
     affected_color = (unsigned char)PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).color;
     if (((1 << ((unsigned char)chosen_color & 0x1f)) & affected_color) != 0) {
       ++event_result;
@@ -7132,7 +7132,7 @@ int card_gauntlet_of_might(int player, int card, event_t event)
   }
 
   if (event == EVENT_TAP_CARD) {
-    chosen_color = FUN_005001e0(player, card, 4);
+    chosen_color = get_hacked_color(player, card, 4);
     if (FUN_0048463d(affected_card_controller, affected_card, chosen_color) != 0 && is_in_play(player, card)
         && ((((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
              || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))
@@ -7142,7 +7142,7 @@ int card_gauntlet_of_might(int player, int card, event_t event)
   }
 
   if (event == EVENT_COUNT_MANA) {
-    chosen_color = FUN_005001e0(player, card, 4);
+    chosen_color = get_hacked_color(player, card, 4);
     if (FUN_0048463d(affected_card_controller, affected_card, chosen_color) != 0 && is_in_play(player, card)
         && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
             || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))) {
@@ -7924,7 +7924,7 @@ int card_sunglasses_of_urza(int player, int card, event_t event)
   if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player
       && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
           || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))) {
-    FUN_004eaceb(player, FUN_0050026d(player, card, 5), FUN_0050026d(player, card, 4));
+    FUN_004eaceb(player, get_sleighted_color(player, card, 5), get_sleighted_color(player, card, 4));
   }
 
   return 0;
@@ -9033,7 +9033,7 @@ int card_terror(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST) {
     FUN_004e4ff3(0);
-    illegal_color = 1 << ((unsigned char)FUN_0050026d(player, card, 1) & 0x1f);
+    illegal_color = 1 << ((unsigned char)get_sleighted_color(player, card, 1) & 0x1f);
     return FUN_004bd7d0((int *)0,
                         0,
                         player,
@@ -9057,7 +9057,7 @@ int card_terror(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (player == affected_card_controller)) {
     load_text((int)"prompts.txt", "TERROR");
-    illegal_color = 1 << ((unsigned char)FUN_0050026d(player, card, 1) & 0x1f);
+    illegal_color = 1 << ((unsigned char)get_sleighted_color(player, card, 1) & 0x1f);
     if (!C_real_select_target(player,
                               2,
                               1 - player,
@@ -9085,7 +9085,7 @@ int card_terror(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    illegal_color = 1 << ((unsigned char)FUN_0050026d(player, card, 1) & 0x1f);
+    illegal_color = 1 << ((unsigned char)get_sleighted_color(player, card, 1) & 0x1f);
     if (!C_real_validate_target(instance->targets[0].player,
                                 instance->targets[0].card,
                                 (char *)0,
@@ -9641,7 +9641,7 @@ int card_purelace(int player, int card, event_t event)
       spell_fizzled = 1;
     } else {
       color = FUN_00442763(global_cards_data[instance->internal_card_id].color);
-      color = FUN_0050026d(player, card, color);
+      color = get_sleighted_color(player, card, color);
       target_instance = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
       target_instance->color = (char)(1 << ((unsigned char)color & 0x1f));
       target_instance->state |= 0x2000;
@@ -9787,12 +9787,12 @@ int card_blue_elemental_blast(int player, int card, event_t event)
 	if (event == EVENT_CAN_CAST) {
 		if (unk_008ce508 == -1) {
 			FUN_004e4ff3(0);
-			color = FUN_0050026d(player, card, 4);
+			color = get_sleighted_color(player, card, 4);
 			return FUN_004bd7d0((int*)0, 0, player, 2, 2, 0x200, 0x1047, 0, 0,
 								FUN_0053aa74(player, card), 1 << ((unsigned char)color & 0x1f), 0, -1, -1,
 								0xffffffff, 0xffffffff, 0, 0, 0);
 		}
-		color = FUN_0050026d(player, card, 4);
+		color = get_sleighted_color(player, card, 4);
 		return C_real_validate_target(unk_008ce508, unk_008ce4f4, (char*)0, player, 2, 2, 0,
 									  TYPE_NONE, TYPE_NONE, 0, 0, 1 << ((unsigned char)color & 0x1f),
 									  COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
@@ -9803,7 +9803,7 @@ int card_blue_elemental_blast(int player, int card, event_t event)
 	if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller)) {
 		if (unk_008ce508 == -1) {
 			load_text((int)"prompts.txt", "BLUE_ELEMENTAL_BLAST");
-			color = FUN_0050026d(player, card, 4);
+			color = get_sleighted_color(player, card, 4);
 			if (!C_real_select_target(player, 2, 1-player, TARGET_ZONE_IN_PLAY,
 									  TARGET_TYPE_TOKEN|TYPE_ARTIFACT|TYPE_ENCHANTMENT|TYPE_CREATURE|TYPE_LAND,
 									  TYPE_NONE, 0, FUN_0053aa74(player, card),
@@ -9825,14 +9825,14 @@ int card_blue_elemental_blast(int player, int card, event_t event)
 	if (event == EVENT_RESOLVE_SPELL) {
 		valid = 0;
 		if (unk_008ce508 == -1) {
-			color = FUN_0050026d(player, card, 4);
+			color = get_sleighted_color(player, card, 4);
 			valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
 										   (char*)0, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE,
 										   TYPE_NONE, 0, FUN_0053aa74(player, card),
 										   1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, ~SUB_WALL,
 										   -1, -1, 0, 0, 0);
 		} else {
-			color = FUN_0050026d(player, card, 4);
+			color = get_sleighted_color(player, card, 4);
 			valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
 										   (char*)0, player, 2, 2, 0, TYPE_NONE, TYPE_NONE, 0, 0,
 										   1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, ~SUB_WALL,
@@ -10057,12 +10057,12 @@ int card_red_elemental_blast(int player, int card, event_t event)
 	if (event == EVENT_CAN_CAST) {
 		if (unk_008ce508 == -1) {
 			FUN_004e4ff3(0);
-			color = FUN_0050026d(player, card, 2);
+			color = get_sleighted_color(player, card, 2);
 			return FUN_004bd7d0((int*)0, 0, player, 2, 2, 0x200, 0x1047, 0, 0,
 								FUN_0053aa74(player, card), 1 << ((unsigned char)color & 0x1f), 0, -1, -1,
 								0xffffffff, 0xffffffff, 0, 0, 0);
 		}
-		color = FUN_0050026d(player, card, 2);
+		color = get_sleighted_color(player, card, 2);
 		return C_real_validate_target(unk_008ce508, unk_008ce4f4, (char*)0, player, 2, 2, 0,
 									  TYPE_NONE, TYPE_NONE, 0, 0, 1 << ((unsigned char)color & 0x1f),
 									  COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
@@ -10073,7 +10073,7 @@ int card_red_elemental_blast(int player, int card, event_t event)
 	if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller)) {
 		if (unk_008ce508 == -1) {
 			load_text((int)"prompts.txt", "RED_ELEMENTAL_BLAST");
-			color = FUN_0050026d(player, card, 2);
+			color = get_sleighted_color(player, card, 2);
 			if (!C_real_select_target(player, 2, 1-player, TARGET_ZONE_IN_PLAY,
 									  TARGET_TYPE_TOKEN|TYPE_ARTIFACT|TYPE_ENCHANTMENT|TYPE_CREATURE|TYPE_LAND,
 									  TYPE_NONE, 0, FUN_0053aa74(player, card),
@@ -10095,14 +10095,14 @@ int card_red_elemental_blast(int player, int card, event_t event)
 	if (event == EVENT_RESOLVE_SPELL) {
 		valid = 0;
 		if (unk_008ce508 == -1) {
-			color = FUN_0050026d(player, card, 2);
+			color = get_sleighted_color(player, card, 2);
 			valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
 										   (char*)0, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE,
 										   TYPE_NONE, 0, FUN_0053aa74(player, card),
 										   1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, ~SUB_WALL,
 										   -1, -1, 0, 0, 0);
 		} else {
-			color = FUN_0050026d(player, card, 2);
+			color = get_sleighted_color(player, card, 2);
 			valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
 										   (char*)0, player, 2, 2, 0, TYPE_NONE, TYPE_NONE, 0, 0,
 										   1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, ~SUB_WALL,
@@ -10973,7 +10973,7 @@ int card_black_knight(int player, int card, event_t event)
   unsigned int saved_event_result;
 
   if ((event == 0x34) && (card == card_on_stack) && (player == card_on_stack_controller)) {
-    color = FUN_0050026d(player, card, 5);
+    color = get_sleighted_color(player, card, 5);
     event_result |= 0x800 << ((((unsigned char)color) - 1U) & 0x1f);
     saved_event_result = event_result;
     FUN_0054e470(player, card, 5);
@@ -11094,7 +11094,7 @@ int card_fear(int player, int card, event_t event)
       && instance->damage_target_card == attacking_card
       && instance->damage_target_player == attacking_card_controller
       && (instance->state & 0x20) == 0) {
-    color = FUN_0050026d(player, card, 1);
+    color = get_sleighted_color(player, card, 1);
     if ((global_cards_data[PLAYER_CARD_INSTANCE(card_on_stack_controller, card_on_stack).internal_card_id].type
          & TYPE_ARTIFACT) == 0
         && (((1 << ((unsigned char)color & 0x1f))
@@ -13612,7 +13612,7 @@ int card_magical_hack(int player, int card, event_t event)
              & STATUS_HACKED)
             != 0) {
           old_color = FUN_00442763((unsigned char)available_colors);
-          old_color = FUN_005001e0(instance->targets[0].player, instance->targets[0].card, old_color);
+          old_color = get_hacked_color(instance->targets[0].player, instance->targets[0].card, old_color);
           available_colors = 1 << ((unsigned char)old_color & 0x1f);
         }
 
@@ -13737,7 +13737,7 @@ int card_sleight_of_mind(int player, int card, event_t event)
              & STATUS_SLEIGHTED)
             != 0) {
           old_color = FUN_00442763((unsigned char)available_colors);
-          old_color = FUN_0050026d(instance->targets[0].player, instance->targets[0].card, old_color);
+          old_color = get_sleighted_color(instance->targets[0].player, instance->targets[0].card, old_color);
           available_colors = 1 << ((unsigned char)old_color & 0x1f);
         }
 
@@ -14170,7 +14170,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
   int can_activate;
 
   instance = &PLAYER_CARD_INSTANCE(player, card);
-  chosen_land_type = FUN_005001e0(player, card, 1) - 1;
+  chosen_land_type = get_hacked_color(player, card, 1) - 1;
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player) {
     TENTATIVE_set_timestamps(player, card);
@@ -14293,7 +14293,7 @@ int card_island_sanctuary(int player, int card, event_t event)
                     & TYPE_CREATURE) != 0
                 && (PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).regen_status & 0x20) == 0
                 && (PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).regen_status
-                    & (1U << (((unsigned char)FUN_005001e0(player, card, 2) - 1) & 0x1f))) == 0
+                    & (1U << (((unsigned char)get_hacked_color(player, card, 2) - 1) & 0x1f))) == 0
                 && (global_cards_data[PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).internal_card_id].subtype != 0
                     || (PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).token_status & 0x800) != 0)) {
               found_attacker = 1;
@@ -14319,7 +14319,7 @@ int card_island_sanctuary(int player, int card, event_t event)
       if (legacy_card != -1) {
         PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x400020;
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot
-            = (1 << (((unsigned char)FUN_005001e0(player, card, 2) - 1) & 0x1f)) | 0x20;
+            = (1 << (((unsigned char)get_hacked_color(player, card, 2) - 1) & 0x1f)) | 0x20;
         if ((PLAYER_CARD_INSTANCE(player, card).token_status & 2) != 0) {
           PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 2;
           for (index = 0; index < 6; ++index) {
@@ -14518,7 +14518,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
                  FUN_0053aa74(player, card),
                  0,
                  0,
-                 FUN_005001e0(player, card, 4) - 1,
+                 get_hacked_color(player, card, 4) - 1,
                  -1,
                  -1,
                  -1,
@@ -14535,7 +14535,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller) {
     ai_modifier -= 0x24 / FUN_00404c4c(player, instance->internal_card_id);
     instance->number_of_targets = 0;
-    required_subtype = FUN_005001e0(player, card, 4) - 1;
+    required_subtype = get_hacked_color(player, card, 4) - 1;
     current_target = 0;
     selecting_done = 0;
 
@@ -14594,7 +14594,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    required_subtype = FUN_005001e0(player, card, 4) - 1;
+    required_subtype = get_hacked_color(player, card, 4) - 1;
     invalid_targets = 0;
 
     for (current_target = 0; current_target < instance->number_of_targets; ++current_target) {
@@ -15212,7 +15212,7 @@ int card_living_lands(int player, int card, event_t event)
     return 1;
   }
 
-  instance->info_slot = FUN_005001e0(player, card, 3);
+  instance->info_slot = get_hacked_color(player, card, 3);
 
   if (event == 0x3c && is_in_play(player, card)) {
     if ((unk_008b4278 & 0x20000) == 0) {
@@ -15277,7 +15277,7 @@ int card_kormus_bell(int player, int card, event_t event)
     return 1;
   }
 
-  instance->info_slot = FUN_005001e0(player, card, 1);
+  instance->info_slot = get_hacked_color(player, card, 1);
 
   if (event == 0x3c && is_in_play(player, card)
       && ((instance->state & STATE_TAPPED) == 0
@@ -15775,7 +15775,7 @@ int card_deathgrip(int player, int card, event_t event)
       return 0;
     }
     if ((unk_008b4278 & 0x20) != 0 && FUN_004eb23d(player, card, COLOR_BLACK, 2) != 0) {
-      chosen_color = FUN_0050026d(player, card, 3);
+      chosen_color = get_sleighted_color(player, card, 3);
       if (C_real_validate_target(unk_008ce508,
                                  unk_008ce4f4,
                                  (char*)0,
@@ -15813,7 +15813,7 @@ int card_deathgrip(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION) {
-    chosen_color = FUN_0050026d(player, card, 3);
+    chosen_color = get_sleighted_color(player, card, 3);
     if (!C_real_validate_target(instance->targets[0].player,
                                 instance->targets[0].card,
                                 (char*)0,
@@ -15998,7 +15998,7 @@ int card_gloom(int player, int card, event_t event)
   int chosen_color;
 
   if (event == 0x7f && affected_card == card && affected_card_controller == player) {
-    chosen_color = FUN_0050026d(player, card, 5);
+    chosen_color = get_sleighted_color(player, card, 5);
     unk_0072c440[chosen_color] += 3;
     return 0;
   }
@@ -16008,9 +16008,9 @@ int card_gloom(int player, int card, event_t event)
   }
 
   if ((event == EVENT_CAST_SPELL || event == 199) && affected_card == card && affected_card_controller == player) {
-    chosen_color = FUN_0050026d(player, card, 5);
+    chosen_color = get_sleighted_color(player, card, 5);
     ai_modifier += ((basiclandtypes_controlled[1 - player][chosen_color]
-                     - basiclandtypes_controlled[player][FUN_0050026d(player, card, 5)] * 2)
+                     - basiclandtypes_controlled[player][get_sleighted_color(player, card, 5)] * 2)
                     * 3
                     + 3)
                    * 4;
@@ -16018,12 +16018,3 @@ int card_gloom(int player, int card, event_t event)
 
   return 0;
 }
-
-
-
-
-
-
-
-
-

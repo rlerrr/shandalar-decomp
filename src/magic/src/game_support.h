@@ -61,9 +61,8 @@ int dispatch_event_to_single_card(int player,
                                   event_t event,
                                   int new_attacking_card_controller,
                                   int new_attacking_card);
-int FUN_005001e0(int player, int card, int value);
+int get_hacked_color(int player, int card, int value);
 void FUN_005001c4(int internal_card_id);
-int FUN_0050026d(int player, int card, int value);
 int FUN_0052adf2(int player, int card);
 int FUN_0052e400(int player, int card, int event, int color);
 int FUN_00532bea(int player, int card, int event, int color);
@@ -178,7 +177,7 @@ int is_animated_and_sick(int player, int card);
 int is_in_play(int player, int card);
 int is_tapped(int player, int card);
 void kill_card(int player, int card, kill_t kill_mode);
-void load_text(int file_name, const char *section_name);
+int load_text(const char * file_name, const char *section_name);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
 int produce_mana(int player, color_t color, int amount);
 int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);

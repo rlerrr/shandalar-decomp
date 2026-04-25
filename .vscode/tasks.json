@@ -9,7 +9,7 @@
             "command": "cmd.exe",
             "args": [
                 "/c",
-                "\"C:\\bin\\MSVC420\\bin\\VCVARS32.BAT\" x86 && nmake"
+                "\"C:\\bin\\MSVC420\\bin\\VCVARS32.BAT\" x86 && make.bat"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

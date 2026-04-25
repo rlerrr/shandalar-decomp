@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include "cardartlib/src/assert.h"
 #include "game_support.h"
 
 typedef int (__cdecl *in_play_card_callback_t)(int source_player,
@@ -149,6 +151,7 @@ int is_in_play(int player, int card)
          && (global_card_instances[player][card].state & F08_INPLAY) != 0;
 }
 
+// FUNCTION: MAGIC 0x005001e0
 int get_hacked_color(int player, int card, int orig_color)
 {
   if ((char)global_card_instances[player][card].hack_mode[orig_color] != 0) {
@@ -358,19 +361,6 @@ int get_sleighted_color_test(int player, int card, int orig_color_test)
   (void)player;
   (void)card;
   return orig_color_test;
-}
-
-// FUNCTION: MAGIC 0x005001e0
-int FUN_005001e0(int player, int card, int value)
-{
-  char *mapping;
-
-  mapping = (char *)&global_card_instances[player][card].counters;
-  if (mapping[value] != 0) {
-    value = mapping[value];
-  }
-
-  return value;
 }
 
 // FUNCTION: MAGIC 0x004b5f03
@@ -1446,11 +1436,61 @@ void kill_card(int player, int card, kill_t kill_mode)
 }
 
 // FUNCTION: MAGIC 0x004ec830
-void load_text(int file_name, const char *section_name)
+int load_text(const char * file_name, const char *section_name)
 {
-  (void)file_name;
-  (void)section_name;
-  text_lines[0][0] = 0;
+ struct
+  {
+    FILE *f;
+    char line[300];
+    char path[128];
+    char section_line[300]; // ebp - 0x134
+    unsigned int num_text;
+    int i;
+  } s;
+
+  strcpy(s.section_line, "@");
+  strcat(s.section_line, section_name);
+  strcat(s.section_line, "\n");
+
+  strcpy(s.path, global_base_directory);
+  strcat(s.path, "\\");
+  strcat(s.path, file_name);
+  //if (!strchr(file_name, '.'))
+  //  strcat(s.path, ".txt");
+
+  s.f = fopen(s.path, "rt");
+  if (s.f == NULL)
+    return -1;
+
+  while (strcmp(s.section_line, s.line))
+  {
+    if (!fgets(s.line, 300, s.f))
+    {
+      fclose(s.f);
+      return -1;
+    }
+  }
+
+  fscanf(s.f, "%d", &s.num_text);
+  fgets(s.line, 300, s.f);
+  if (s.num_text > 225)
+  {
+    fclose(s.f);
+    return -1;
+  }
+
+  for (s.i = 0; s.i < (int)s.num_text; s.i++)
+  {
+    if (!fgets(text_lines[s.i], 300, s.f))
+    {
+      fclose(s.f);
+      return -1;
+    }
+    text_lines[s.i][strlen(text_lines[s.i]) - 1] = 0;
+  }
+
+  fclose(s.f);
+  return s.num_text;
 }
 
 // FUNCTION: MAGIC 0x0043e668
@@ -3083,7 +3123,7 @@ int FUN_0041626b(int player, int card, int event, int color)
       && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
           || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))
       && is_in_play(player, card) && has_mana_for_activated_ability(player, card, 1, 0, 0, 0, 0, 0)) {
-    target_color = FUN_0050026d(player, card, color);
+    target_color = get_sleighted_color(player, card, color);
     if (((1 << ((unsigned char)target_color & 0x1f))
          & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).color) != 0
         && PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id != -1
@@ -3112,15 +3152,6 @@ int FUN_0041626b(int player, int card, int event, int color)
   }
 
   return 0;
-}
-
-int FUN_0050026d(int player, int card, int value)
-{
-  if (*((char *)&PLAYER_CARD_INSTANCE(player, card).token_status + value) != 0) {
-    value = *((char *)&PLAYER_CARD_INSTANCE(player, card).token_status + value);
-  }
-
-  return value;
 }
 
 // FUNCTION: MAGIC 0x00534ddb
@@ -3374,7 +3405,7 @@ int FUN_00466e6d(int player, int card, int target_player)
   int found;
 
   found = 0;
-  land_type = FUN_005001e0(player, card, 1);
+  land_type = get_hacked_color(player, card, 1);
   if (target_player == -1) {
     target_player = 1 - player;
   }
@@ -4006,7 +4037,7 @@ int FUN_0052e400(int player, int card, int event, int color)
 
     if (instance->damage_target_card == affected_card && instance->damage_target_player == affected_card_controller
         && affected_card != -1 && (instance->state & STATE_INVISIBLE) == 0 && event == EVENT_ABILITIES) {
-      protection_color = FUN_0050026d(player, card, color);
+      protection_color = get_sleighted_color(player, card, color);
       event_result |= 0x800 << (((unsigned char)protection_color - 1) & 0x1f);
     }
 
