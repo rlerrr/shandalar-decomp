@@ -820,7 +820,7 @@ typedef struct card_instance_struct
   uint32_t	unknown0x14;		/*  0x14 */	// activating trigger
   status_t	token_status;		/*  0x18 */
   int16_t	counter_toughness;	/*  0x1C */
-  int8_t	color;				/*  0x1E */
+  int8_t	color;				/*  0x1E */ // 8 bit version of color_test_t
   int8_t	destroys_if_blocked;/*  0x1F */	/* Formerly enemy_against_color.  Uses values in destroys_if_blocked_t.  Set to 0 at the start of EVENT_CHANGE_TYPE, and should be reset in response.  AI hinting only. */
   int32_t	dummy3;				/*  0x20 */	// A dynamically-created internal_card_id stored here on a card in play, or in internal_card_id in any card, won't get reaped in end_turn_phase()
   uint8_t	blocking;			/*  0x24 */	// Banding id, if attacking

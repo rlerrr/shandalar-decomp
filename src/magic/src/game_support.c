@@ -22,15 +22,13 @@ int can_target(target_definition_t *td)
 // FUNCTION: MAGIC 0x00551ed7
 int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
 {
-  int result;
-  unsigned char target_number;
   target_t selected_target;
 
   if (preferred_controller == -1) {
     preferred_controller = 2;
   }
 
-  result = C_real_select_target(player,
+  if (C_real_select_target(player,
                                 2,
                                 preferred_controller,
                                 TARGET_ZONE_IN_PLAY,
@@ -49,14 +47,16 @@ int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
                                 0,
                                 text_lines[0],
                                 1,
-                                &selected_target);
-  if (result != 0) {
-    target_number = global_card_instances[player][card].number_of_targets;
-    global_card_instances[player][card].targets[target_number] = selected_target;
-    ++global_card_instances[player][card].number_of_targets;
-  }
+                                &selected_target)) {
 
-  return result != 0;
+    global_card_instances[player][card].targets[global_card_instances[player][card].number_of_targets].player = selected_target.player;
+    global_card_instances[player][card].targets[global_card_instances[player][card].number_of_targets].card = selected_target.card;
+    ++global_card_instances[player][card].number_of_targets;
+
+    return 1;
+  }
+  else
+    return 0;
 }
 
 // FUNCTION: MAGIC 0x00404c4c
@@ -114,7 +114,6 @@ void FUN_00449bef(char *name)
   *name = '\0';
 }
 
-// FUNCTION: MAGIC 0x00435e27
 int charge_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white)
 {
   (void)player;
@@ -690,7 +689,7 @@ void FUN_004b59b2(int player, int deck_owner)
   }
 
   for (current_slot = 0; current_slot < deck_size; ++current_slot) {
-    swap_slot = current_slot + FUN_00464a57(deck_size - current_slot);
+    swap_slot = current_slot + internal_rand(deck_size - current_slot);
     if (swap_slot < deck_size && global_library[deck_owner][swap_slot] != -1) {
       temp = global_library[deck_owner][swap_slot];
       global_library[deck_owner][swap_slot] = global_library[deck_owner][current_slot];
@@ -923,7 +922,7 @@ int damage_creature(int target_player, int target_card, int amount, int source_p
   return result;
 }
 
-// FUNCTION: MAGIC 0x004eb23d
+
 int has_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white)
 {
   (void)player;
@@ -936,6 +935,7 @@ int has_mana_for_activated_ability(int player, int card, int colorless, int blac
   (void)white;
   return 0;
 }
+
 
 // FUNCTION: MAGIC 0x004b4654
 int add_card_to_hand(int player, int internal_card_id)
@@ -1336,8 +1336,9 @@ int choose_a_color(int player, const char *prompt, int unused1, int unused2, uns
   return -1;
 }
 
+// FUNCTION: MOK 0x0044e050
 // FUNCTION: MAGIC 0x00464a57
-int FUN_00464a57(int maximum)
+int internal_rand(int maximum)
 {
   (void)maximum;
   return 0;
@@ -1593,23 +1594,25 @@ int has_mana(int player, unsigned int color, int amount)
   return 0;
 }
 
-int FUN_004eb23d(int player, int card, unsigned int color, int amount)
+// FUNCTION: MOK 0x0049d710
+// FUNCTION: MAGIC 0x004eb23d
+int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 {
   int color_index;
 
   if (amount == 0) {
-    color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
+    color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
     if (unk_0072c440[color_index] < 1) {
       return 1;
     }
-    color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
+    color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
     return has_mana(player, 7, unk_0072c440[color_index]);
   }
 
   color_index = has_mana(player, color, amount);
   if (color_index != 0) {
-    if (unk_0072c440[FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
-      color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
+    if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
+      color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
       return has_mana(player, 7, unk_0072c440[color_index] + amount);
     }
   }
@@ -1666,7 +1669,9 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
   return 0;
 }
 
-int FUN_00442763(int color_test)
+// FUNCTION: MOK 0x004358f0
+// FUNCTION: MAGIC 0x00442763
+color_t single_color_test_bit_to_color_t(color_test_t color_test)
 {
   if ((color_test & 2) != 0) {
     return 1;
@@ -1726,12 +1731,14 @@ int FUN_0041f4c0(int player, int card, event_t event, int color)
   return 0;
 }
 
-int FUN_00435e27(int player, int card, int color, int amount)
+// FUNCTION: MOK 0x004302c0
+// FUNCTION: MAGIC 0x00435e27
+int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
 {
   int color_index;
   int result;
 
-  color_index = FUN_00442763(PLAYER_CARD_INSTANCE(player, card).color);
+  color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
   unk_008ce510 += unk_0072c440[color_index];
   result = charge_mana(player, color, amount) - unk_0072c440[color_index];
   if (spell_fizzled == 1) {
@@ -1808,7 +1815,7 @@ int FUN_0043c7ab(int who_is_being_divided, int player, int card)
 
   power_total[0] = 0;
   power_total[1] = 0;
-  bank = FUN_00464a57(2);
+  bank = internal_rand(2);
   for (current_card = 0; current_card < active_cards_count[who_is_being_divided]; ++current_card) {
     if (is_in_play(who_is_being_divided, current_card)
         && (global_cards_data[PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).internal_card_id].type
@@ -3244,7 +3251,7 @@ int FUN_0041626b(int player, int card, int event, int color)
   if (trigger_condition == 0xd3 && affected_card == card && affected_card_controller == player && player == current_turn
       && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
           || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))
-      && is_in_play(player, card) && has_mana_for_activated_ability(player, card, 1, 0, 0, 0, 0, 0)) {
+      && is_in_play(player, card) && has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0)) {
     target_color = get_sleighted_color(player, card, color);
     if (((1 << ((unsigned char)target_color & 0x1f))
          & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).color) != 0
@@ -3755,7 +3762,7 @@ int FUN_0043b4f3(int player, int amount)
       target.player = player;
       do {
         do {
-          unk_00939340 = FUN_00464a57(active_cards_count[player]);
+          unk_00939340 = internal_rand(active_cards_count[player]);
           target.card = unk_00939340;
         } while (!is_in_play(target.player, target.card));
         instance = &PLAYER_CARD_INSTANCE(target.player, target.card);
@@ -3927,7 +3934,7 @@ int FUN_00532bea(int player, int card, int event, int color)
     }
 
     if (event == EVENT_CAN_ACTIVATE) {
-      if ((unk_008b4278 & 4) == 0 || FUN_004eb23d(player, card, 7, 1) == 0
+      if ((unk_008b4278 & 4) == 0 || has_mana_w_global_cost_mod(player, card, 7, 1) == 0
           || real_target_available((int *)0,
                           TARGET_SCAN_DIRECT,
                           player,
@@ -3952,7 +3959,7 @@ int FUN_00532bea(int player, int card, int event, int color)
       return 99;
     } else {
       if (event == EVENT_ACTIVATE && (instance->state & STATE_INVISIBLE) == 0) {
-        FUN_00435e27(player, card, 0, 1);
+        charge_mana_w_global_cost_mod(player, card, 0, 1);
         if (spell_fizzled != 1) {
           if (unk_008a9000 != 1) {
             load_text("prompts.txt", "CIRCLE_OF_PROTECTION");
