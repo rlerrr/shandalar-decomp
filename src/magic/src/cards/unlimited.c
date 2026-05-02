@@ -1301,7 +1301,7 @@ int card_uthden_troll(int player, int card, event_t event)
 {
   unsigned int color;
 
-  color = get_color_from_color_test(
+  color = single_color_test_bit_to_color_t(
       *(char *)&global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].color);
   if (event == EVENT_UNTAP_PHASE) {
     ((int *)((char *)unk_00939520 + player * 0x20))[color] += 2;
@@ -3344,7 +3344,7 @@ int card_psychic_venom(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).targets[0].card = selected_target.card;
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       if (selected_target.player == unk_008b35ec) {
-        land_color = get_color_from_color_test(
+        land_color = single_color_test_bit_to_color_t(
             global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card)
                                   .internal_card_id]
                 .color);
@@ -4984,7 +4984,7 @@ int card_firebreathing(int player, int card, event_t event)
     return has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 1, 0);
   } else if (event == EVENT_GET_SELECTED_CARD) {
     if (player == human_player) {
-      local = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+      local = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (raw_mana_available[player][local] == 0) {
         FUN_004e503e(0);
       } else {
@@ -5001,7 +5001,7 @@ int card_firebreathing(int player, int card, event_t event)
     if (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 1, 0) != 0) {
       local = 0;
       if (player == human_player) {
-        local = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+        local = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
         if (raw_mana_available[player][local] == 0) {
           charge_mana(player, 4, -1);
         } else {
@@ -5014,7 +5014,7 @@ int card_firebreathing(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).eot_toughness = local;
         }
       } else {
-        local = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+        local = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
         if (raw_mana_available[player][local] == 0) {
           charge_mana(player, 4, 1);
         } else {
@@ -5159,7 +5159,7 @@ int card_mana_flare(int player, int card, event_t event)
       if (locals.color_count > 0) {
         declare_mana_available_hex(affected_card_controller, locals.land_color, 1);
       } else {
-        declare_mana_available(affected_card_controller, get_color_from_color_test(locals.land_color), 1);
+        declare_mana_available(affected_card_controller, single_color_test_bit_to_color_t(locals.land_color), 1);
       }
     }
     return 0;
@@ -5279,7 +5279,7 @@ int card_holy_armor(int player, int card, event_t event)
     return has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
   } else if (event == EVENT_ACTIVATE) {
     if (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1) != 0) {
-      color = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+      color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (player == human_player) {
         if (raw_mana_available[player][color] == 0) {
           charge_mana(player, 5, -1);
@@ -5838,7 +5838,7 @@ int card_blessing(int player, int card, event_t event)
     return has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
   } else if (event == EVENT_ACTIVATE) {
     if (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1) != 0) {
-      color = get_color_from_color_test((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
+      color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (player == human_player) {
         if (raw_mana_available[player][color] == 0) {
           charge_mana(player, 5, -1);

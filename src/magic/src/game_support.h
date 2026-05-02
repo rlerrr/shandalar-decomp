@@ -96,7 +96,6 @@ int real_target_available(int *num_valid_targets,
                  target_special_t special,
                  target_state_t required_state,
                  target_state_t illegal_state);
-int get_color_from_color_test(char color_test);
 void FUN_004a61d6(char *text);
 void gain_life(int player, int amount);
 void discard(int player, int flags, int player_who_controls_effect);

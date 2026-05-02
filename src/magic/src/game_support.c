@@ -170,8 +170,9 @@ int get_sleighted_color(int player, int card, int orig_color)
   return orig_color;
 }
 
+// FUNCTION: MOK 0x004358f0
 // FUNCTION: MAGIC 0x00442763
-int get_color_from_color_test(char color_test)
+color_t single_color_test_bit_to_color_t(color_test_t color_test)
 {
   if ((color_test & COLOR_TEST_BLACK) != 0) {
     return COLOR_BLACK;
@@ -309,7 +310,7 @@ unsigned int get_protections_from(int player, int card)
     illegal_abilities |= KEYWORD_PROT_ARTIFACTS;
   }
 
-  return (0x800 << (((char)get_color_from_color_test(global_card_instances[player][card].color) - 1U)
+  return (0x800 << (((char)single_color_test_bit_to_color_t(global_card_instances[player][card].color) - 1U)
                     & 0x1f))
          | illegal_abilities;
 }
@@ -1603,17 +1604,17 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
   if (amount == 0) {
     color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
     if (unk_0072c440[color_index] < 1) {
-      return 1;
-    }
-    color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
-    return has_mana(player, 7, unk_0072c440[color_index]);
-  }
-
-  color_index = has_mana(player, color, amount);
-  if (color_index != 0) {
-    if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
+      color_index = 1;
+    } else {
       color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
-      return has_mana(player, 7, unk_0072c440[color_index] + amount);
+      color_index = has_mana(player, COLOR_ANY, unk_0072c440[color_index]);
+    }
+  } else {
+    color_index = has_mana(player, color, amount);
+    if (color_index != 0
+        && unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
+      color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
+      color_index = has_mana(player, COLOR_ANY, unk_0072c440[color_index] + amount);
     }
   }
 
@@ -1666,28 +1667,6 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
   (void)card;
   (void)event;
   (void)new_attacking_card;
-  return 0;
-}
-
-// FUNCTION: MOK 0x004358f0
-// FUNCTION: MAGIC 0x00442763
-color_t single_color_test_bit_to_color_t(color_test_t color_test)
-{
-  if ((color_test & 2) != 0) {
-    return 1;
-  }
-  if ((color_test & 4) != 0) {
-    return 2;
-  }
-  if ((color_test & 8) != 0) {
-    return 3;
-  }
-  if ((color_test & 0x10) != 0) {
-    return 4;
-  }
-  if ((color_test & 0x20) != 0) {
-    return 5;
-  }
   return 0;
 }
 
@@ -4198,3 +4177,4 @@ int FUN_0052e400(int player, int card, int event, int color)
     return 0;
   }
 }
+
