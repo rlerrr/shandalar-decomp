@@ -337,7 +337,7 @@ int card_veteran_bodyguard(int player, int card, event_t event)
     }
   }
 
-  if (trigger_condition == TRIGGER_END_DAMAGE_PREV && PLAYER_CARD_INSTANCE(player, card).eot_toughness == 0 && (PLAYER_CARD_INSTANCE(player, card).state & F08_TAPPED) == 0 && affected_card == card && affected_card_controller == player && current_turn == player && player != human_player && is_in_play(player, card) && (current_phase == 0x1a || current_phase == 0x19))
+  if (trigger_condition == TRIGGER_END_DAMAGE_PREV && PLAYER_CARD_INSTANCE(player, card).eot_toughness == 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && affected_card == card && affected_card_controller == player && current_turn == player && player != human_player && is_in_play(player, card) && (current_phase == 0x1a || current_phase == 0x19))
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot = event;
     if (event == EVENT_TRIGGER)
@@ -3986,7 +3986,7 @@ int card_creature_bond(int player, int card, event_t event)
     {
       PLAYER_CARD_INSTANCE(player, effect_card).original_internal_card_id =
           PLAYER_CARD_INSTANCE(player, card).internal_card_id;
-      PLAYER_CARD_INSTANCE(player, effect_card).state |= F08_INPLAY;
+      PLAYER_CARD_INSTANCE(player, effect_card).state |= STATE_IN_PLAY;
       *(int *)&PLAYER_CARD_INSTANCE(player, effect_card).display_pic_csv_id = 0x32;
       PLAYER_CARD_INSTANCE(player, effect_card).info_slot =
           C_get_abilities(affected_card_controller, affected_card, EVENT_TOUGHNESS, -1);

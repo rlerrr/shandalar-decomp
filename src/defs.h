@@ -369,11 +369,7 @@ typedef enum
   STATE_TAPPED					= 0x10,
   STATE_INVISIBLE				= 0x20,		// Mok --> CAST_UNRESOLVED	On the stack.  If STATE_IN_PLAY also set, then no longer interruptible.
   STATE_ATTACKED				= 0x40,		// Previously STATE_ATTACKING this turn, but no longer attacking
-#ifdef SHANDALAR
   STATE_SUMMONSICK				= 0x80,		// Entered the battlefield or changed control since start of controller's last turn
-#else
-  STATE_JUST_CAST				= 0x80,		// Card still in interrupt window, I think.
-#endif
   STATE_PROCESSING				= 0x100,
   STATE_ISBLOCKED				= 0x200,	// Card was blocked this combat.
   STATE_PLAYED_FROM_HAND		= 0x400,	// Not what it says.
@@ -382,29 +378,18 @@ typedef enum
   STATE_VIGILANCE				= 0x2000,	// Must be set continuously during EVENT_ABILITIES.
   STATE_BLOCKED					= 0x4000,	// Previously STATE_BLOCKING this turn, but no longer blocking
   STATE_UNKNOWN8000				= 0x8000,	// Means something similar to "Already chosen to attack or block".
-#ifdef SHANDALAR
   STATE_SUMMONSICK_NOATTACK		= 0x10000,	// Unable to attack due to summoning sickness.  Temporarily removable with haste or Instill Energy.
   STATE_SUMMONSICK_NOTAP		= 0x20000,	// Unable to tap as a cost due to summoning sickness.  Temporarily removable with hase or Thousand-Year Elixir.
-#else
-  STATE_SICKNESS_UNUSED			= 0x10000,
-  STATE_SUMMON_SICK				= 0x20000,
-#endif
   STATE_NO_AUTO_TAPPING			= 0x40000,
-#ifdef SHANDALAR
   STATE_ETB_THIS_TURN			= 0x80000,	// Almost the same as STATE_SUMMONSICK, but not added when control changes, and cleared at the start of every turn
-#else
-  STATE_UNUSED80000				= 0x80000,
-#endif
   STATE_CANNOT_TARGET			= 0x100000,
   STATE_TARGETTED				= 0x200000,
   STATE_POWER_STRUGGLE			= 0x400000,	// Seems to be set on control effects to indicate who should gain control when the effect goes away if damage_source_player/card is unset
   STATE_OUBLIETTED				= 0x800000,	// Phased
   STATE_NONCREATURE_CAN_ATTACK	= 0x1000000,
   STATE_NONCREATURE_CAN_BLOCK	= 0x2000000,
-#ifdef SHANDALAR
   STATE_ACCEPT_OPTIONAL_TRIGGER	= 0x4000000,
   STATE_DECLINE_OPTIONAL_TRIGGER= 0x8000000,
-#endif
   STATE_IS_TRIGGERING			= 0x10000000,
   STATE_DONT_RECOPY_ONTO_STACK	= 0x20000000,	// If set during EVENT_ACTIVATE, then don't copy the card back into its (already-existing) activation card on the stack.  Caller's responsibility to either update all relevant values there (per recopy_card_onto_stack), or simply not handle EVENT_RESOLVE_ACTIVATION.  Bit is removed when recopying is skipped.  Works only for activation, not casting.
 } state_t;
@@ -770,34 +755,6 @@ typedef enum
 	COUNTER_invalid		= 255,
 } counter_t;
 
-typedef enum CDFLAGS08 {
-    F08_JUSTDRAWN              = 0x1,
-    F08_INPLAY                 = 0x2,
-    F08_ATTACKING              = 0x4,
-    F08_BLOCKING               = 0x8,
-    F08_TAPPED                 = 0x10,
-    F08_CAST_UNRESOLVED        = 0x20,
-    F08_ATTACKED               = 0x40,
-    F08_SPELL_CAST             = 0x80,
-    F08_PROCESSING             = 0x100,
-    F08_ISBLOCKED              = 0x200,
-    F08_UNK400                 = 0x400,
-    F08_UNK800                 = 0x800,
-    F08_OWNER_PLAYER_2         = 0x1000,
-    F08_NOTAPWHENATTACKING     = 0x2000,
-    F08_BLOCKED                = 0x4000,
-    F08_MUSTATTACK             = 0x8000,
-    F08_SICKNESS               = 0x10000,
-    F08_JUSTSUMMONED           = 0x20000,
-    F08_NOAUTOTAP              = 0x40000,
-    F08_UNK80000               = 0x80000,
-    F08_NO_MULTI_TARGET        = 0x100000,
-    F08_TARGET                 = 0x200000,
-    F08_POWERSTRUGGLE          = 0x400000,
-    F08_PHASED                 = 0x800000,
-    F08_NOTCRCANATTACK         = 0x1000000,
-    F08_NOTCRCANBLOCK          = 0x2000000
-} card_instance_state_t;
 
 typedef int csvid_t;
 typedef int iid_t;
@@ -811,7 +768,7 @@ typedef struct card_instance_struct
   uint8_t	counters3;			/*  0x02 */	// Originally -1/-1 counters from Unstable Mutation
   uint8_t	counters4;			/*  0x03 */	// Originally -0/-1 counters
   int32_t	damage_target_card;	/*  0x04 */	// Card this aura or effect card is attached to.
-  card_instance_state_t	state;  /*  0x08 */
+  state_t	state;  			/*  0x08 */
   int8_t	damage_source_player;	/*  0x0C */ //  int32_t  damage_source_player;
   int8_t	unused0;			/*  0x0D */	// Shandalar: untouched
   int16_t	toughness;			/*  0x0E */

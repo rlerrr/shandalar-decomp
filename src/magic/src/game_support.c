@@ -153,7 +153,7 @@ void default_target_definition(int player, int card, target_definition_t *td, in
 // FUNCTION: MAGIC 0x004464f0
 int is_in_play(int player, int card)
 {
-  return player >= 0 && player < 2 && card >= 0 && card < active_cards_count[player] && global_card_instances[player][card].internal_card_id != -1 && (global_card_instances[player][card].state & F08_INPLAY) != 0;
+  return player >= 0 && player < 2 && card >= 0 && card < active_cards_count[player] && global_card_instances[player][card].internal_card_id != -1 && (global_card_instances[player][card].state & STATE_IN_PLAY) != 0;
 }
 
 // FUNCTION: MAGIC 0x005001e0
@@ -2076,10 +2076,41 @@ void discard(int player, int flags, int player_who_controls_effect)
 // FUNCTION: MAGIC 0x004b99d0
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color)
 {
-  (void)player;
-  (void)card;
-  (void)event;
-  (void)color;
+  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  {
+    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0
+         || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)
+        && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    {
+      declare_mana_available(player, color, 1);
+    }
+    return 0;
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0
+        && ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0
+            || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    undeclare_mana_available_and_produce_it(player, color, 1);
+    PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    unk_0092664c[6] = color;
+    return 0;
+  }
+
+  if (event == EVENT_TAP_CARD && unk_008a9000 != 1)
+  {
+    play_sound_effect(color + WAV_GREY);
+  }
+
   return 0;
 }
 
@@ -2095,10 +2126,129 @@ int produce_mana(int player, color_t color, int amount)
 // FUNCTION: MAGIC 0x005058b1
 int tap_for_multicolor_mana(int player, int card, event_t event, color_test_t available_colors)
 {
-  (void)player;
-  (void)card;
-  (void)event;
-  (void)available_colors;
+  int color;
+  int first_available_color;
+  int num_available_colors;
+  color_test_t colors_to_choose_from;
+
+  if (event == EVENT_TAP_CARD && unk_008a9000 != 1)
+  {
+    play_sound_effect(PLAYER_CARD_INSTANCE(player, card).internal_card_id + 0x16);
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0
+        && ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0
+            || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    if (unk_00938e2c == 1 || unk_00938e2c == 0x40 || unk_00938e2c == 0x41)
+    {
+      color = -1;
+      first_available_color = 0;
+      while (first_available_color < 7 && color == -1)
+      {
+        if ((available_colors & (1 << ((unsigned char)first_available_color & 0x1f))) != 0)
+        {
+          color = first_available_color;
+        }
+        ++first_available_color;
+      }
+    }
+    else
+    {
+      if (unk_00938e2c == 0)
+      {
+        colors_to_choose_from = available_colors;
+      }
+      else
+      {
+        colors_to_choose_from = available_colors & unk_00938e2c;
+      }
+
+      first_available_color = -1;
+      num_available_colors = 0;
+      for (color = 0; color < 7; ++color)
+      {
+        if ((colors_to_choose_from & (1 << ((unsigned char)color & 0x1f))) != COLOR_TEST_0)
+        {
+          ++num_available_colors;
+          if (first_available_color == -1)
+          {
+            first_available_color = color;
+          }
+        }
+      }
+
+      if (player == active_player && (unk_00926804 & 2) == 0)
+      {
+        color = first_available_color;
+      }
+      else if (num_available_colors == 1)
+      {
+        color = choose_a_color(player, text_lines[0], 1, -1, colors_to_choose_from);
+      }
+      else
+      {
+        color = choose_a_color(player, text_lines[0], 1, -1, available_colors);
+      }
+    }
+
+    if (color == -1)
+    {
+      spell_fizzled = 1;
+    }
+    else
+    {
+      produce_mana(player, color, 1);
+      undeclare_mana_available_hex(player, color, 1);
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+      unk_0092664c[6] = color;
+
+      if (player == active_player && (unk_00926804 & 2) == 0)
+      {
+        load_text("promptsX1.txt", "MULTI_LANDS");
+        switch (color)
+        {
+        case COLOR_BLACK:
+          do_dialog(player, player, card, -1, -1, text_lines[0], 0);
+          break;
+
+        case COLOR_BLUE:
+          do_dialog(player, player, card, -1, -1, text_lines[1], 0);
+          break;
+
+        case COLOR_GREEN:
+          do_dialog(player, player, card, -1, -1, text_lines[2], 0);
+          break;
+
+        case COLOR_RED:
+          do_dialog(player, player, card, -1, -1, text_lines[3], 0);
+          break;
+
+        case COLOR_WHITE:
+          do_dialog(player, player, card, -1, -1, text_lines[4], 0);
+          break;
+        }
+      }
+    }
+  }
+
+  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller
+      && ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0
+          || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)
+      && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+  {
+    declare_mana_available_hex(player, available_colors, 1);
+  }
+
   return 0;
 }
 
@@ -5282,7 +5432,7 @@ unsigned int C_real_validate_target(int tgt_player,
           bVar20 = 1;
           strcat(local_d0, error_wall);
         }
-        if ((special & TARGET_SPECIAL_SPELL_ON_STACK) != 0 && ((unk_008ce508 == -1 || tgt_player != unk_008ce508) || unk_008ce4f4 != tgt_card || (instance->state & STATE_JUST_CAST) != 0))
+        if ((special & TARGET_SPECIAL_SPELL_ON_STACK) != 0 && ((unk_008ce508 == -1 || tgt_player != unk_008ce508) || unk_008ce4f4 != tgt_card || (instance->state & STATE_SUMMONSICK) != 0))
         {
           bVar20 = 1;
           strcat(local_d0, error_stack);
@@ -5373,12 +5523,12 @@ unsigned int C_real_validate_target(int tgt_player,
             strcat(local_d0, error_enchanted);
           }
         }
-        if ((required_state & TARGET_STATE_JUST_CAST) != 0 && (instance->state & STATE_JUST_CAST) == 0)
+        if ((required_state & TARGET_STATE_JUST_CAST) != 0 && (instance->state & STATE_SUMMONSICK) == 0)
         {
           bVar20 = 1;
           strcat(local_d0, error_just_cast);
         }
-        if ((required_state & TARGET_STATE_SPELL_RESOLVED) != 0 && ((instance->state & STATE_JUST_CAST) == 0 || (instance->state & STATE_INVISIBLE) != 0))
+        if ((required_state & TARGET_STATE_SPELL_RESOLVED) != 0 && ((instance->state & STATE_SUMMONSICK) == 0 || (instance->state & STATE_INVISIBLE) != 0))
         {
           bVar20 = 1;
           strcat(local_d0, error_spell_resolved);
@@ -5452,12 +5602,12 @@ unsigned int C_real_validate_target(int tgt_player,
             strcat(local_d0, error_enchanted);
           }
         }
-        if ((illegal_state & TARGET_STATE_JUST_CAST) != 0 && (instance->state & STATE_JUST_CAST) != 0)
+        if ((illegal_state & TARGET_STATE_JUST_CAST) != 0 && (instance->state & STATE_SUMMONSICK) != 0)
         {
           bVar20 = 1;
           strcat(local_d0, error_just_cast);
         }
-        if ((illegal_state & TARGET_STATE_SPELL_RESOLVED) != 0 && (instance->state & STATE_JUST_CAST) != 0 && (instance->state & STATE_INVISIBLE) == 0)
+        if ((illegal_state & TARGET_STATE_SPELL_RESOLVED) != 0 && (instance->state & STATE_SUMMONSICK) != 0 && (instance->state & STATE_INVISIBLE) == 0)
         {
           bVar20 = 1;
           strcat(local_d0, error_spell_resolved);
@@ -5582,7 +5732,7 @@ void FUN_00419667(int target_player, int target_card, int damage_target_player)
 // FUNCTION: MAGIC 0x00441514
 int has_vigilance(int player, int card)
 {
-  if (PLAYER_CARD_INSTANCE(player, card).state & F08_NOTAPWHENATTACKING)
+  if (PLAYER_CARD_INSTANCE(player, card).state & STATE_VIGILANCE)
     return 1;
 
   return 0;
