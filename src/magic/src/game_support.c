@@ -851,8 +851,8 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
 char *FUN_0044a3bf(int player, int card)
 {
   struct {
-    char temporary_name[52];
     int transformed_csvid;
+    char temporary_name[52];
     int source_card_data;
     int source_player;
     unsigned int choice;
@@ -870,32 +870,31 @@ char *FUN_0044a3bf(int player, int card)
   locals.csvid = CardIDFromType(locals.type);
   locals.card_name = unk_0056e49c;
   if (locals.csvid != -1) {
-    if (unk_0092666c == locals.csvid) {
-      locals.type = FUN_004a583e(player, card);
-      locals.csvid = CardIDFromType(locals.type);
+    if (locals.csvid == unk_0092666c) {
+      locals.csvid = CardIDFromType(FUN_004a583e(player, card));
     }
 
     locals.choice = (unsigned int)PLAYER_CARD_INSTANCE(player, card).display_pic_csv_id;
     locals.source_player = (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player;
     locals.source_card_data = PLAYER_CARD_INSTANCE(player, card).damage_source_card;
 
-    if (unk_007a7d64 == locals.csvid) {
+    if (locals.csvid == unk_007a7d64) {
       strcpy(unk_00637670, unk_008cfd30);
-    } else if (unk_00789b80 == locals.csvid) {
-      sprintf(unk_00637670, unk_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).damage_source_card));
-    } else if (unk_008cf1ac == locals.csvid) {
+    } else if (locals.csvid == unk_00789b80) {
+      sprintf(unk_00637670, unk_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).info_slot));
+    } else if (locals.csvid == unk_008cf1ac) {
       strcpy(unk_00637670, unk_008cf040);
-    } else if (unk_00789734 == locals.csvid) {
+    } else if (locals.csvid == unk_00789734) {
       strcpy(unk_00637670, unk_00777e64[locals.choice].name_at_0);
-    } else if (unk_008a8de8 == locals.csvid) {
+    } else if (locals.csvid == unk_008a8de8) {
       strcpy(unk_00637670, unk_00777e64[locals.choice].name_at_8);
-    } else if (unk_009266ac == locals.csvid) {
+    } else if (locals.csvid == unk_009266ac) {
       strcpy(unk_00637670, unk_008b4330);
     } else {
       unk_00637670[0] = '\0';
     }
 
-    if (unk_00789734 == locals.csvid && 0 < PLAYER_CARD_INSTANCE(player, card).eot_toughness) {
+    if (locals.csvid == unk_00789734 && 0 < (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness) {
       strcpy(locals.temporary_name, unk_00637670);
       FUN_0055d802(unk_00637670, locals.temporary_name, PLAYER_CARD_INSTANCE(player, card).eot_toughness);
     }
@@ -1548,11 +1547,15 @@ int FUN_004e1c81()
 // FUNCTION: MAGIC 0x00464a57
 int internal_rand(int maximum)
 {
+  int result;
+
   if (maximum > 1) {
-    return rand() % maximum;
+    result = rand() % maximum;
+  } else {
+    result = 0;
   }
 
-  return 0;
+  return result;
 }
 
 // FUNCTION: MAGIC 0x004e4f11
@@ -1836,22 +1839,23 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 {
   int result;
 
+  result = 0;
+
   if (amount == 0) {
-    if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] <= 0) {
-      result = 1;
-    } else {
+    if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
       result = has_mana(
-          player, COLOR_ANY,
-          unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)]);
+          player, 7, unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)]);
+    } else {
+      result = 1;
     }
   } else {
     result = has_mana(player, color, amount);
     if (result != 0) {
       if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
         result = has_mana(
-            player, COLOR_ANY,
-            unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)]
-                + amount);
+            player,
+            7,
+            unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] + amount);
       }
     }
   }
@@ -2305,39 +2309,41 @@ void FUN_0054e470(int player, int card, int color)
 // FUNCTION: MAGIC 0x0055d802
 void FUN_0055d802(char *out, char *in, int choice)
 {
-  char *write_ptr;
-  int done;
-  int matched;
-  char *scan;
+  struct {
+    char *write_ptr;
+    int done;
+    int matched;
+    char *scan;
+  } s;
 
   if (out == NULL || in == NULL) {
     return;
   }
 
-  done = 0;
-  matched = 0;
-  scan = in;
-  while (done == 0) {
-    while (*scan != '\0' && strncmp(scan, unk_0057f758, 2) != 0) {
-      ++scan;
+  s.done = 0;
+  s.matched = 0;
+  s.scan = in;
+  while (s.done == 0) {
+    while (*s.scan != '\0' && strncmp(s.scan, unk_0057f758, 2) != 0) {
+      ++s.scan;
     }
 
-    if (*scan == '\0') {
-      done = 1;
+    if (*s.scan == '\0') {
+      s.done = 1;
     } else {
-      ++scan;
-      ++scan;
-      if (atoi(scan) == choice) {
-        matched = 1;
-        ++scan;
-        write_ptr = out;
-        while (*scan != '\0' && strncmp(scan, unk_0057f75c, 2) != 0) {
-          *write_ptr = *scan;
-          ++scan;
-          ++write_ptr;
+      ++s.scan;
+      ++s.scan;
+      if (atoi(s.scan) == choice) {
+        s.matched = 1;
+        ++s.scan;
+        s.write_ptr = out;
+        while (*s.scan != '\0' && strncmp(s.scan, unk_0057f75c, 2) != 0) {
+          *s.write_ptr = *s.scan;
+          ++s.scan;
+          ++s.write_ptr;
         }
-        *write_ptr = '\0';
-        done = 1;
+        *s.write_ptr = '\0';
+        s.done = 1;
       }
     }
   }
@@ -2346,7 +2352,7 @@ void FUN_0055d802(char *out, char *in, int choice)
 // FUNCTION: MAGIC 0x00495311
 char *FUN_00495311(int value)
 {
-  if (value < 0 || 0xd3 < value) {
+  if (value < 0 || value >= 0xd4) {
     return unk_005724ac;
   }
 
@@ -2844,12 +2850,12 @@ int CardTypeFromID(int csvid)
   }
 
   result = -1;
-  internal_card_id = 0;
-  while (*(int *)&global_cards_data[internal_card_id].id != -1 && result == -1) {
-    if (*(int *)&global_cards_data[internal_card_id].id == csvid) {
-      result = internal_card_id;
+  for (internal_card_id = 0; *(int *)&global_cards_data[internal_card_id].id != -1; ++internal_card_id) {
+    if (result == -1) {
+      if (*(int *)&global_cards_data[internal_card_id].id == csvid) {
+        result = internal_card_id;
+      }
     }
-    ++internal_card_id;
   }
 
   return result;
@@ -3033,29 +3039,30 @@ int real_target_available(int *num_valid_targets,
                  target_state_t required_state,
                  target_state_t illegal_state)
 {
-  int stop_on_first;
-  int count;
-  int found_any;
-  int done;
-  int player_index;
-  unsigned int scan_player;
-  int current_card;
-  int target_card;
-  unsigned int target_player;
-  int target_is_valid;
-  int max_cards;
+  struct {
+    int target_card;
+    int player_index;
+    int target_is_valid;
+    int found_any;
+    int stop_on_first;
+    int count;
+    int done;
+    int target_player;
+    int current_card;
+    int scan_player;
+  } s;
 
-  stop_on_first = num_valid_targets == NULL;
-  count = 0;
-  found_any = 0;
-  done = 0;
+  s.stop_on_first = num_valid_targets == NULL;
+  s.count = 0;
+  s.found_any = 0;
 
   if (target_source_mode != 0 && target_source_mode != 1 && target_source_mode != 2) {
     return 0;
   }
 
-  for (player_index = 0; player_index < 2; ++player_index) {
-    if (C_real_validate_target(player_index,
+  s.done = 0;
+  for (s.player_index = 0; s.player_index < 2; ++s.player_index) {
+    if (C_real_validate_target(s.player_index,
                                -1,
                                (char *)0,
                                who_chooses,
@@ -3075,98 +3082,93 @@ int real_target_available(int *num_valid_targets,
                                special,
                                required_state,
                                illegal_state) != 0) {
-      found_any = 1;
-      ++count;
-      if (stop_on_first) {
-        done = 1;
+      s.found_any = 1;
+      ++s.count;
+      if (s.stop_on_first) {
+        s.done = 1;
       }
     }
   }
 
   if (unk_008b35ec == who_chooses || (unk_00926804 & 2) != 0) {
     if ((allowed_controller & 2) == 0) {
-      scan_player = 1;
+      s.scan_player = 1;
     } else {
-      scan_player = 0;
+      s.scan_player = 0;
     }
-  } else if ((preferred_controller & 2) == 0 && (preferred_controller & 1) == 0) {
-    scan_player = 0;
+  } else if ((preferred_controller & 2) != 0 || (preferred_controller & 1) != 0) {
+    s.scan_player = 1;
   } else {
-    scan_player = 1;
+    s.scan_player = 0;
   }
 
-  player_index = 0;
-  while (player_index < 2 && !done) {
-    current_card = 0;
-    for (;;) {
-      max_cards = active_cards_count[1];
-      if (active_cards_count[0] > max_cards) {
-        max_cards = active_cards_count[0];
-      }
-
-      if (current_card >= max_cards || done) {
-        break;
-      }
-
-      if (PLAYER_CARD_INSTANCE(scan_player, current_card).internal_card_id != -1) {
-        if (target_source_mode == 0) {
-          target_player = scan_player;
-          target_card = current_card;
-          target_is_valid = 1;
-        } else if (target_source_mode == 1) {
-          target_is_valid = PLAYER_CARD_INSTANCE(scan_player, current_card).internal_card_id == unk_009266a4;
-          if (target_is_valid) {
-            target_player = (unsigned char)PLAYER_CARD_INSTANCE(scan_player, current_card).damage_target_player;
-            target_card = PLAYER_CARD_INSTANCE(scan_player, current_card).damage_target_card;
+  s.player_index = 0;
+  while (s.player_index < 2) {
+    if (!s.done) {
+      for (s.current_card = 0;
+           s.current_card < (active_cards_count[1] > active_cards_count[0] ? active_cards_count[1]
+                                                                           : active_cards_count[0]);
+           ++s.current_card) {
+        if (PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).internal_card_id != -1) {
+          if (target_source_mode == 0) {
+            s.target_player = s.scan_player;
+            s.target_card = s.current_card;
+            s.target_is_valid = 1;
+          } else if (target_source_mode == 1) {
+            if (PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).internal_card_id == unk_009266a4) {
+              s.target_player = (char)PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).damage_target_player;
+              s.target_card = PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).damage_target_card;
+              s.target_is_valid = 1;
+            } else {
+              s.target_is_valid = 0;
+            }
+          } else if (PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).internal_card_id == unk_009266a4) {
+            s.target_player = (char)PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).damage_source_player;
+            s.target_card = PLAYER_CARD_INSTANCE(s.scan_player, s.current_card).damage_source_card;
+            s.target_is_valid = 1;
+          } else {
+            s.target_is_valid = 0;
           }
-        } else if (PLAYER_CARD_INSTANCE(scan_player, current_card).internal_card_id == unk_009266a4) {
-          target_player = (unsigned char)PLAYER_CARD_INSTANCE(scan_player, current_card).damage_source_player;
-          target_card = PLAYER_CARD_INSTANCE(scan_player, current_card).damage_source_card;
-          target_is_valid = 1;
-        } else {
-          target_is_valid = 0;
-        }
 
-        if (target_is_valid
-            && C_real_validate_target(target_player,
-                                      target_card,
-                                      (char *)0,
-                                      who_chooses,
-                                      allowed_controller,
-                                      preferred_controller,
-                                      zone,
-                                      required_type,
-                                      illegal_type,
-                                      required_abilities,
-                                      illegal_abilities,
-                                      required_color,
-                                      illegal_color,
-                                      extra,
-                                      required_subtype,
-                                      required_power,
-                                      required_toughness,
-                                      special,
-                                      required_state,
-                                      illegal_state) != 0) {
-          found_any = 1;
-          ++count;
-          if (stop_on_first) {
-            done = 1;
+          if (s.target_is_valid
+              && C_real_validate_target(s.target_player,
+                                        s.target_card,
+                                        (char *)0,
+                                        who_chooses,
+                                        allowed_controller,
+                                        preferred_controller,
+                                        zone,
+                                        required_type,
+                                        illegal_type,
+                                        required_abilities,
+                                        illegal_abilities,
+                                        required_color,
+                                        illegal_color,
+                                        extra,
+                                        required_subtype,
+                                        required_power,
+                                        required_toughness,
+                                        special,
+                                        required_state,
+                                        illegal_state) != 0) {
+            s.found_any = 1;
+            ++s.count;
+            if (s.stop_on_first) {
+              s.done = 1;
+            }
           }
         }
       }
-
-      ++current_card;
     }
 
-    ++player_index;
-    scan_player = 1 - scan_player;
+    ++s.player_index;
+    s.scan_player = 1 - s.scan_player;
   }
 
   if (num_valid_targets != NULL) {
-    *num_valid_targets = count;
+    *num_valid_targets = s.count;
   }
-  return found_any;
+  return s.found_any;
 }
 
 // FUNCTION: MAGIC 0x004bdc06

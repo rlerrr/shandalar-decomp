@@ -157,7 +157,7 @@ void FUN_004e51bb(void);
 void FUN_0055d802(char *out, char *in, int choice);
 void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
 int has_mana(int player, unsigned int color, int amount);
-int has_mana_w_global_cost_mod(int player, int card, unsigned int color, int amount);
+int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount);
 int create_legacy_effec(int a1, int a2, int a3, int a4, int a5);
 int FUN_004f7783(int player, int card);
 int FUN_00482a97(int player, int card, unsigned int flags);
