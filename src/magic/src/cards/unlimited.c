@@ -606,7 +606,7 @@ int card_dragon_whelp(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
             .info_slot &= 0xfff7ffff;
-        result = create_legacy_effec(card_on_stack_controller,
+        result = create_legacy_effect(card_on_stack_controller,
                               card_on_stack,
                               LEGACY_EFFECT_PUMP,
                               card_on_stack_controller,
@@ -695,7 +695,7 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .info_slot = 0x20;
-      legacy_card = create_legacy_effec(card_on_stack_controller,
+      legacy_card = create_legacy_effect(card_on_stack_controller,
                                  card_on_stack,
                                  unk_00896534,
                                  card_on_stack_controller,
@@ -798,7 +798,7 @@ int card_granite_gargoyle(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                PLAYER_CARD_INSTANCE(player, card).parent_card)
               .info_slot &= 0xfff7ffff;
-          legacy_card = create_legacy_effec(card_on_stack_controller,
+          legacy_card = create_legacy_effect(card_on_stack_controller,
                                      card_on_stack,
                                      LEGACY_EFFECT_PUMP,
                                      card_on_stack_controller,
@@ -842,7 +842,7 @@ int card_keldon_warlord(int player, int card, event_t event)
   int legacy_card;
 
   if (event == EVENT_RESOLVE_SPELL) {
-    legacy_card = create_legacy_effec(player, card, unk_0093d848, player, card);
+    legacy_card = create_legacy_effect(player, card, unk_0093d848, player, card);
     if (legacy_card != -1) {
       PLAYER_CARD_INSTANCE(player, legacy_card).eot_toughness = 0x80d;
       PLAYER_CARD_INSTANCE(player, legacy_card).token_status = 0x10020;
@@ -875,7 +875,7 @@ int card_rock_hydra(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    local_c = create_legacy_effec(player, card, unk_0093d848, player, card);
+    local_c = create_legacy_effect(player, card, unk_0093d848, player, card);
     if (local_c != -1) {
       uVar3 = C_get_special_counters(player, card);
       PLAYER_CARD_INSTANCE(player, local_c).info_slot = (uVar3 << 8) | uVar3;
@@ -1132,7 +1132,7 @@ int card_shivan_dragon(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
             .info_slot &= 0xfff7ffff;
-        legacy_card = create_legacy_effec(card_on_stack_controller,
+        legacy_card = create_legacy_effect(card_on_stack_controller,
                                    card_on_stack,
                                    LEGACY_EFFECT_PUMP,
                                    card_on_stack_controller,
@@ -1275,7 +1275,7 @@ int card_stone_giant(int player, int card, event_t event)
     if (target_result == 0) {
       spell_fizzled = 1;
     } else {
-      legacy_card = create_legacy_effec(card_on_stack_controller,
+      legacy_card = create_legacy_effect(card_on_stack_controller,
                                  card_on_stack,
                                  unk_00896534,
                                  selected_target.player,
@@ -1608,7 +1608,7 @@ int card_wall_of_water(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
             .info_slot &= 0xfff7ffff;
-        legacy_card = create_legacy_effec(card_on_stack_controller,
+        legacy_card = create_legacy_effect(card_on_stack_controller,
                                    card_on_stack,
                                    LEGACY_EFFECT_PUMP,
                                    card_on_stack_controller,
@@ -2374,7 +2374,7 @@ int card_frozen_shade(int player, int card, event_t event)
                                                   PLAYER_CARD_INSTANCE(player, card).parent_card)
                  .info_slot;
         *state_ptr &= 0xfff7ffff;
-        result = create_legacy_effec(card_on_stack_controller,
+        result = create_legacy_effect(card_on_stack_controller,
                               card_on_stack,
                               LEGACY_EFFECT_PUMP,
                               card_on_stack_controller,
@@ -2414,7 +2414,7 @@ int card_nightmare(int player, int card, event_t event)
   int legacy_effect_card;
 
   if (event == EVENT_RESOLVE_SPELL) {
-    legacy_effect_card = create_legacy_effec(player, card, unk_0093d848, player, card);
+    legacy_effect_card = create_legacy_effect(player, card, unk_0093d848, player, card);
     if (legacy_effect_card != -1) {
       PLAYER_CARD_INSTANCE(player, legacy_effect_card).info_slot = 1;
       PLAYER_CARD_INSTANCE(player, legacy_effect_card).eot_toughness = 0x10d;
@@ -5055,7 +5055,7 @@ int card_firebreathing(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
             .info_slot &= 0xfff7ffff;
-        local = create_legacy_effec(card_on_stack_controller,
+        local = create_legacy_effect(card_on_stack_controller,
                              card_on_stack,
                              unk_008a8de8,
                              (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -5333,7 +5333,7 @@ int card_holy_armor(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
             .info_slot &= 0xfff7ffff;
-        effect_card = create_legacy_effec(card_on_stack_controller,
+        effect_card = create_legacy_effect(card_on_stack_controller,
                                    card_on_stack,
                                    unk_008a8de8,
                                    (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -5746,7 +5746,7 @@ int card_blaze_of_glory(int player, int card, event_t event)
                                0,
                                0,
                                0)) {
-      create_legacy_effec(player, card, unk_008a8df0, selected_target.player, selected_target.card);
+      create_legacy_effect(player, card, unk_008a8df0, selected_target.player, selected_target.card);
     } else {
       spell_fizzled = 1;
     }
@@ -5895,7 +5895,7 @@ int card_blessing(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
             .info_slot &= 0xfff7ffff;
-        effect_card = create_legacy_effec(card_on_stack_controller,
+        effect_card = create_legacy_effect(card_on_stack_controller,
                                    card_on_stack,
                                    unk_008a8de8,
                                    (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -6339,7 +6339,7 @@ int card_disintegrate(int player, int card, event_t event)
     target_card = instance->targets[0].card;
     damage_dealt = FUN_0054af10(player, card, EVENT_RESOLVE_SPELL, instance->info_slot);
     if (damage_dealt != 0 && target_card != -1) {
-      legacy_card = create_legacy_effec(player, card, unk_008b3d10, target_player, target_card);
+      legacy_card = create_legacy_effect(player, card, unk_008b3d10, target_player, target_card);
       if (legacy_card != -1) {
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x200;
       }
@@ -7892,7 +7892,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
         int legacy_card;
 
         legacy_card =
-            create_legacy_effec(card_on_stack_controller, card_on_stack, unk_00896534, selected_target.player, selected_target.card);
+            create_legacy_effect(card_on_stack_controller, card_on_stack, unk_00896534, selected_target.player, selected_target.card);
         if (legacy_card != -1) {
           PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x40;
         }
@@ -8139,7 +8139,7 @@ int card_guardian_angel(int player, int card, event_t event)
       } else {
         damage->info_slot = 0;
       }
-      create_legacy_effec(player,
+      create_legacy_effect(player,
                    card,
                    unk_008cf1bc,
                    (int)damage->damage_source_player,
@@ -8351,7 +8351,7 @@ int card_righteousness(int player, int card, event_t event)
                                 0)) {
       spell_fizzled = 1;
     } else {
-      effect_card = create_legacy_effec(player, card, LEGACY_EFFECT_PUMP, selected_target.player, selected_target.card);
+      effect_card = create_legacy_effect(player, card, LEGACY_EFFECT_PUMP, selected_target.player, selected_target.card);
       if (effect_card != -1) {
         PLAYER_CARD_INSTANCE(player, effect_card).counter_power = 7;
         PLAYER_CARD_INSTANCE(player, effect_card).power = 7;
@@ -8716,7 +8716,7 @@ int card_jump(int player, int card, event_t event)
                                 0)) {
       spell_fizzled = 1;
     } else {
-      effect_card = create_legacy_effec(player, card, unk_00896534, target_player, target_card);
+      effect_card = create_legacy_effect(player, card, unk_00896534, target_player, target_card);
       if (effect_card != -1) {
         PLAYER_CARD_INSTANCE(player, effect_card).token_status = 0;
         PLAYER_CARD_INSTANCE(player, effect_card).regen_status = 0x20;
@@ -9010,7 +9010,7 @@ int card_howl_from_beyond(int player, int card, event_t event)
       spell_fizzled = 1;
     } else {
       effect_card =
-          create_legacy_effec(player, card, LEGACY_EFFECT_PUMP, instance->targets[0].player, instance->targets[0].card);
+          create_legacy_effect(player, card, LEGACY_EFFECT_PUMP, instance->targets[0].player, instance->targets[0].card);
       if (effect_card != -1) {
         PLAYER_CARD_INSTANCE(player, effect_card).counter_power = (short)instance->info_slot;
       }
@@ -9375,7 +9375,7 @@ int card_berserk(int player, int card, event_t event)
       spell_fizzled = 1;
     } else {
       effect_card =
-          create_legacy_effec(player, card, unk_008b49c4, instance->targets[0].player, instance->targets[0].card);
+          create_legacy_effect(player, card, unk_008b49c4, instance->targets[0].player, instance->targets[0].card);
       if (effect_card != -1) {
         PLAYER_CARD_INSTANCE(player, effect_card).info_slot = 0x80;
         PLAYER_CARD_INSTANCE(player, effect_card).counter_power =
@@ -9457,7 +9457,7 @@ int card_giant_growth(int player, int card, event_t event)
       spell_fizzled = 1;
     } else {
       effect_card =
-          create_legacy_effec(player, card, LEGACY_EFFECT_PUMP, instance->targets[0].player, instance->targets[0].card);
+          create_legacy_effect(player, card, LEGACY_EFFECT_PUMP, instance->targets[0].player, instance->targets[0].card);
       if (effect_card != -1) {
         PLAYER_CARD_INSTANCE(player, effect_card).counter_power = 3;
         PLAYER_CARD_INSTANCE(player, effect_card).power = 3;
@@ -9710,7 +9710,7 @@ int card_raging_river(int player, int card, event_t event)
                                   &target)) {
           done = 1;
         } else {
-          legacy_card = create_legacy_effec(player, card, unk_008b3bd4, target.player, target.card);
+          legacy_card = create_legacy_effect(player, card, unk_008b3bd4, target.player, target.card);
           if (legacy_card != -1) {
             PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 2;
           }
@@ -9724,7 +9724,7 @@ int card_raging_river(int player, int card, event_t event)
                 & TYPE_CREATURE) != 0
             && selected_cards[current_card] == 0
             && ((*(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(defender, current_card) + 0x24) & 0x20) == 0)) {
-          legacy_card = create_legacy_effec(player, card, unk_008b3bd4, defender, current_card);
+          legacy_card = create_legacy_effect(player, card, unk_008b3bd4, defender, current_card);
           if (legacy_card != -1) {
             PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 1;
           }
@@ -9747,7 +9747,7 @@ int card_raging_river(int player, int card, event_t event)
       event_result |= 2;
     }
     if (event == 0x7e) {
-      legacy_card = create_legacy_effec(player, card, unk_008b3bd4, trigger_cause_controller, trigger_cause);
+      legacy_card = create_legacy_effect(player, card, unk_008b3bd4, trigger_cause_controller, trigger_cause);
       load_text((int)"promptsX1.txt", "RAGING_RIVER2");
       sprintf(message, " %s\n %s", "Attack from left bank", "Attack from right bank");
       if (do_dialog(player, player, card, -1, -1, message, 0) == 0) {
@@ -10952,7 +10952,7 @@ int card_plague_rats(int player, int card, event_t event)
   int legacy_card;
 
   if (event == EVENT_RESOLVE_SPELL) {
-    legacy_card = create_legacy_effec(player, card, unk_0093d848, player, card);
+    legacy_card = create_legacy_effect(player, card, unk_0093d848, player, card);
     if (legacy_card != -1) {
       *(int *)((char *)&PLAYER_CARD_INSTANCE(player, legacy_card) + 0x34) = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
       PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x20f;
@@ -11353,7 +11353,7 @@ int card_dwarven_warriors(int player, int card, event_t event)
                                 0)) {
       spell_fizzled = 1;
     } else {
-      create_legacy_effec(card_on_stack_controller, card_on_stack, unk_007abc7c, target.player, target.card);
+      create_legacy_effect(card_on_stack_controller, card_on_stack, unk_007abc7c, target.player, target.card);
     }
     parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
     parent->number_of_targets = 0;
@@ -11536,7 +11536,7 @@ int card_nettling_imp(int player, int card, event_t event)
                                   TARGET_STATE_SUMMONING_SICK)) {
         spell_fizzled = 1;
       } else {
-        create_legacy_effec(card_on_stack_controller, card_on_stack, unk_0079140c, target.player, target.card);
+        create_legacy_effect(card_on_stack_controller, card_on_stack, unk_0079140c, target.player, target.card);
       }
       parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
       parent->number_of_targets = 0;
@@ -13214,7 +13214,7 @@ int card_channel(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    create_legacy_effec(player, card, unk_008a8c34, -1, -1);
+    create_legacy_effect(player, card, unk_008a8c34, -1, -1);
     declare_mana_available(player, COLOR_COLORLESS, 1);
     kill_card(player, card, KILL_BURY);
   }
@@ -13504,7 +13504,7 @@ int card_thicket_basilisk(int player, int card, event_t event)
             && blocking_iid != -1
             && global_cards_data[blocking_iid].subtype != 0
             && (global_cards_data[blocking_iid].type & TYPE_CREATURE) != 0) {
-          create_legacy_effec(player, card, unk_008b3104, opponent, current_card);
+          create_legacy_effect(player, card, unk_008b3104, opponent, current_card);
         }
       }
     }
@@ -13516,7 +13516,7 @@ int card_thicket_basilisk(int player, int card, event_t event)
         if (blocking_iid != -1
             && global_cards_data[blocking_iid].subtype != 0
             && (global_cards_data[blocking_iid].type & TYPE_CREATURE) != 0) {
-          create_legacy_effec(player, card, unk_008b3104, opponent, instance->blocking);
+          create_legacy_effect(player, card, unk_008b3104, opponent, instance->blocking);
         }
       } else {
         for (current_card = 0; current_card < active_cards_count[opponent]; ++current_card) {
@@ -13525,7 +13525,7 @@ int card_thicket_basilisk(int player, int card, event_t event)
               && PLAYER_CARD_INSTANCE(opponent, current_card).blocking == grouped_blocker
               && global_cards_data[blocking_iid].subtype != 0
               && (global_cards_data[blocking_iid].type & TYPE_CREATURE) != 0) {
-            create_legacy_effec(player, card, unk_008b3104, opponent, current_card);
+            create_legacy_effect(player, card, unk_008b3104, opponent, current_card);
           }
         }
       }
@@ -13951,7 +13951,7 @@ int card_time_walk(int player, int card, event_t event)
       }
     }
 
-    effect_card = create_legacy_effec(player, card, unk_008b49c4, -1, -1);
+    effect_card = create_legacy_effect(player, card, unk_008b49c4, -1, -1);
     if (effect_card != -1) {
       PLAYER_CARD_INSTANCE(player, effect_card).token_status |= 0x120;
     }
@@ -14036,7 +14036,7 @@ int card_time_vault(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .info_slot = 1;
-    effect_card = create_legacy_effec(card_on_stack_controller, card_on_stack, unk_008b49c4, -1, -1);
+    effect_card = create_legacy_effect(card_on_stack_controller, card_on_stack, unk_008b49c4, -1, -1);
     if (effect_card != -1) {
       PLAYER_CARD_INSTANCE(player, effect_card).token_status |= 0x120;
     }
@@ -14230,7 +14230,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
                                 TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0)) {
       spell_fizzled = 1;
     } else {
-      legacy_card = create_legacy_effec(affected_card_controller, affected_card, unk_00789108,
+      legacy_card = create_legacy_effect(affected_card_controller, affected_card, unk_00789108,
                                  instance->targets[0].player, instance->targets[0].card);
       if (legacy_card != -1) {
         legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
@@ -14244,7 +14244,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
   }
 
   if (event == 0x77 && affected_card == card && affected_card_controller == player) {
-    legacy_card = create_legacy_effec(player, card, unk_00789108, -1, -1);
+    legacy_card = create_legacy_effect(player, card, unk_00789108, -1, -1);
     if (legacy_card != -1) {
       legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
       legacy->timestamp = instance->timestamp;
@@ -14315,7 +14315,7 @@ int card_island_sanctuary(int player, int card, event_t event)
     if (event == 0x7e) {
       PLAYER_CARD_INSTANCE(player, card).info_slot &= ~1;
       unk_007a79b0[player] |= 1;
-      legacy_card = create_legacy_effec(player, card, unk_008b49c4, -1, -1);
+      legacy_card = create_legacy_effect(player, card, unk_008b49c4, -1, -1);
       if (legacy_card != -1) {
         PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x400020;
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot
@@ -14482,7 +14482,7 @@ int card_siren_s_call(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    create_legacy_effec(player, card, unk_00789314, -1, -1);
+    create_legacy_effect(player, card, unk_00789314, -1, -1);
     kill_card(player, card, KILL_DESTROY);
   }
 
@@ -14943,7 +14943,7 @@ int card_gaea_s_liege(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_RESOLVE_SPELL) {
-    effect_card = create_legacy_effec(player, card, unk_0093d848, player, card);
+    effect_card = create_legacy_effect(player, card, unk_0093d848, player, card);
     if (effect_card != -1) {
       PLAYER_CARD_INSTANCE(player, effect_card).info_slot = 3;
       PLAYER_CARD_INSTANCE(player, effect_card).eot_toughness = 0x10d;
@@ -15049,7 +15049,7 @@ int card_gaea_s_liege(int player, int card, event_t event)
       spell_fizzled = 1;
     } else {
       PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 3;
-      effect_card = create_legacy_effec(card_on_stack_controller,
+      effect_card = create_legacy_effect(card_on_stack_controller,
                                  card_on_stack,
                                  unk_008b49c4,
                                  selected_target.player,
@@ -15219,7 +15219,7 @@ int card_living_lands(int player, int card, event_t event)
       unk_008b4278 |= 0x10000;
     } else if (FUN_00484581(event_result, instance->info_slot) != 0
                && dispatch_function_to_all_cards_in_play(player, card, FUN_005180ed, player) == -1) {
-      effect_card = create_legacy_effec(player, card, unk_0093933c, affected_card_controller, affected_card);
+      effect_card = create_legacy_effect(player, card, unk_0093933c, affected_card_controller, affected_card);
       if (effect_card != -1) {
         effect_instance = &PLAYER_CARD_INSTANCE(player, effect_card);
         effect_instance->info_slot = instance->info_slot;
@@ -15286,7 +15286,7 @@ int card_kormus_bell(int player, int card, event_t event)
       unk_008b4278 |= 0x10000;
     } else if (FUN_00484581(event_result, instance->info_slot) != 0
                && dispatch_function_to_all_cards_in_play(player, card, FUN_005180ed, player) == -1) {
-      effect_card = create_legacy_effec(player, card, unk_0093933c, affected_card_controller, affected_card);
+      effect_card = create_legacy_effect(player, card, unk_0093933c, affected_card_controller, affected_card);
       if (effect_card != -1) {
         effect_instance = &PLAYER_CARD_INSTANCE(player, effect_card);
         effect_instance->info_slot = instance->info_slot;
@@ -15745,7 +15745,7 @@ int card_fog(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL) {
-    create_legacy_effec(player, card, unk_007894a0, -1, -1);
+    create_legacy_effect(player, card, unk_007894a0, -1, -1);
     kill_card(player, card, KILL_BURY);
   }
 

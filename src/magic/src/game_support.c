@@ -1865,7 +1865,7 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 
 // FUNCTION: MOK 0x004a09a0
 // FUNCTION: MAGIC 0x004ef850
-int create_legacy_effec(int player,int card,int legacy_iid,int target_player,int target_card)
+int create_legacy_effect(int player,int card,int legacy_iid,int target_player,int target_card)
 {
   return -1;
 }
@@ -2043,7 +2043,7 @@ int FUN_0043c7ab(int who_is_being_divided, int player, int card)
             & TYPE_CREATURE) != 0
         && ((*(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(who_is_being_divided, current_card) + 0x24) & 0x20)
             == 0)) {
-      legacy_card = create_legacy_effec(player, card, unk_008b3bd4, who_is_being_divided, current_card);
+      legacy_card = create_legacy_effect(player, card, unk_008b3bd4, who_is_being_divided, current_card);
       if (legacy_card != -1) {
         if (power_total[1 - bank] < power_total[bank]) {
           bank ^= 1;
