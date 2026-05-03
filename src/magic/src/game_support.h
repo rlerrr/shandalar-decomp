@@ -23,6 +23,7 @@ void FUN_00449bef(char *name);
 int FUN_0041f4c0(int player, int card, event_t event, int color);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
+int FUN_004962cc(int window, unsigned int message, int other_window, int data);
 int FUN_00437375(int player, int card, int internal_card_id);
 int FUN_0043c7ab(int who_is_being_divided, int player, int card);
 int FUN_0043b4f3(int player, int amount);
@@ -31,6 +32,11 @@ int FUN_00443ee2(int player, int card, int event, int extra, int prompt);
 int FUN_0041626b(int player, int card, int event, int color);
 void FUN_00419667(int target_player, int target_card, int damage_target_player);
 int FUN_00441514(int player, int card);
+char *FUN_0044a3bf(int player, int card);
+void FUN_0044a796(int player, int card);
+char *FUN_00495311(int value);
+int CardIDFromType(unsigned int type);
+int CardTypeFromID(int csvid);
 int FUN_004087cc(int player, unsigned int type);
 int internal_rand(int maximum);
 int FUN_004832f4(int player, unsigned char type);
@@ -40,12 +46,43 @@ int FUN_0048463d(int player, int card, int amount);
 void FUN_004817fd(int player);
 void FUN_004b15f7(int player, int graveyard_index);
 void FUN_004b4110(int player);
-int FUN_004b42aa(int player, int *graveyard, int count, char (*lines)[300], int a5, int *a6);
-void FUN_004b5cf5(int player, int internal_card_id);
-int FUN_004b5f03(int card_id);
+int show_deck(int player, int *cards, int count, void *context, int suppress_done_txt, char *prompt);
+int FUN_004483be(int player, int card);
+int FUN_004487d8(int player, int card);
+int FUN_00448857(int player, int card);
+  void FUN_004b5cf5(int player, int internal_card_id);
+  int FUN_004b5f03(int card_id);
 int charge_mana(int player, unsigned int color, int amount);
 int FUN_005180ed(int a1, int a2, int player, int card, int internal_card_id);
 int FUN_0051819c(int parent_player, int parent_card, int player, int card, int internal_card_id);
+int FUN_004a61fe(int *graveyard,
+                 int count,
+                 void *context,
+                 unsigned int big_card_mode,
+                 char *prompt);
+int FUN_0049e6aa(int *graveyard,
+                 int *alternate_csvids,
+                 int *available,
+                 int count,
+                 void *context,
+                 unsigned int big_card_mode,
+                 char *prompt);
+void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color);
+void FUN_0049fdf9(int brush1, int pen1, int pen2, int pen3, int brush2);
+void AddCardToCLPacket(unsigned short card_in_packet);
+int GetCardFromCLPacket(int packet_index);
+int FUN_00501143(int player, char packet_type);
+int FUN_00501c19(int player, int packet_type, unsigned char *packet);
+int FUN_0049e8bb(int player,
+                 int *graveyard,
+                 int unused,
+                 void *available,
+                 int count,
+                 int prompt_lines,
+                 int num_prompt_lines,
+                 int selected_indices,
+                 int highlighted_choices,
+                 int max_choices);
 int FUN_004a62d7(int player,
                  int *graveyard,
                  void *available,
@@ -55,6 +92,9 @@ int FUN_004a62d7(int player,
                  int selected,
                  int a8,
                  int a9);
+int FUN_004a583e(int player, int card);
+int FUN_004a587c(int player, int card);
+int FUN_004a58ba(int player, int card);
 int dispatch_event_to_single_card(int player,
                                   int card,
                                   event_t event,
@@ -114,6 +154,7 @@ void FUN_004e4f11(void);
 void FUN_004e503e(int a1);
 void FUN_004e5089(void);
 void FUN_004e51bb(void);
+void FUN_0055d802(char *out, char *in, int choice);
 void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
 int has_mana(int player, unsigned int color, int amount);
 int has_mana_w_global_cost_mod(int player, int card, unsigned int color, int amount);

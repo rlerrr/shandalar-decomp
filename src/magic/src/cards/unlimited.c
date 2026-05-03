@@ -6130,7 +6130,7 @@ int card_raise_dead(int player, int card, event_t event)
         }
         do {
           locals.graveyard_index =
-              FUN_004b42aa(player, global_graveyard_slots[player], 500, text_lines, 0, unk_008a8c20);
+              show_deck(player, global_graveyard_slots[player], 500, text_lines, 0, unk_008a8c20);
         } while (locals.graveyard_index != -1
                  && (global_cards_data[global_graveyard_slots[player][locals.graveyard_index]].type
                      & TYPE_CREATURE) == 0);
@@ -6820,7 +6820,7 @@ int card_regrowth(int player, int card, event_t event)
           load_text("prompts.txt", "REGROWTH");
         }
         locals.graveyard_index =
-            FUN_004b42aa(player, global_graveyard_slots[player], 500, text_lines, 0, unk_008a8c20);
+            show_deck(player, global_graveyard_slots[player], 500, text_lines, 0, unk_008a8c20);
       }
 
       if (locals.graveyard_index == -1 || global_graveyard_slots[player][locals.graveyard_index] == -1) {
@@ -12139,7 +12139,7 @@ int card_demonic_tutor(int player, int card, event_t event)
       }
     } else {
       load_text((int)"prompts.txt", "DEMONIC_TUTOR");
-      found_card = FUN_004b42aa(player, global_library[player], 500, text_lines, 1, &unk_008a8c20);
+      found_card = show_deck(player, global_library[player], 500, text_lines, 1, &unk_008a8c20);
     }
 
     if (found_card != -1 && global_library[player][found_card] != -1) {
@@ -15501,7 +15501,7 @@ int card_glasses_of_urza(int player, int card, event_t event)
       }
     }
 
-    FUN_004b42aa(player, internal_card_ids, count, (char (*)[300])0x89684c, 0, &unk_008a8c20);
+    show_deck(player, internal_card_ids, count, (char (*)[300])0x89684c, 0, &unk_008a8c20);
   }
 
   return 0;

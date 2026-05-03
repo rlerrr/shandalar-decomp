@@ -9,6 +9,7 @@ const char s_Button_1003628c[] = "Button";
 static WNDPROC global_wndproc_std_ButtonClass;
 
 // FUNCTION: DECKDLL 0x10025d1b
+// FUNCTION: MAGIC 0x00496489
 static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
 {
   int *args;
@@ -20,6 +21,7 @@ static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
 }
 
 // FUNCTION: DECKDLL 0x10025b5e
+// FUNCTION: MAGIC 0x004962cc
 static int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
 {
   struct

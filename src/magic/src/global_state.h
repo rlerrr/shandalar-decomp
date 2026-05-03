@@ -15,9 +15,17 @@
 // See manalink.lds and ai.c for more some of these addresses and types
 // A lot of these can potentially be correlated through save_or_load_ver1 and save_or_load_ver2
 
+// GLOBAL: MOK 0x4ef540
 // GLOBAL: MAGIC 0x8b60f0
 // GLOBAL: SHANDALAR 0x8ca270
 extern card_instance_t global_card_instances[2][151];
+
+// GLOBAL: MAGIC 0x00789110
+extern char unk_00789110[24];
+
+// GLOBAL: MOK 0x543c10
+// GLOBAL: MAGIC 0x00791560
+extern card_instance_t global_displayed_card_instances[2][151];
 
 #define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
 
@@ -34,6 +42,15 @@ typedef struct
   int csvid;
   int numcards;
 } csvid_and_numcards;
+
+typedef struct
+{
+  char *name_at_0;
+  int unk_4;
+  char *name_at_8;
+  int unk_c;
+  int unk_10;
+} name_table_entry_t;
 
 // GLOBAL: MAGIC 0x0056fb20
 extern csvid_and_numcards initial_library[2][200];
@@ -108,6 +125,9 @@ extern int unk_00895030[32];
 // GLOBAL: MAGIC 0x007a7750
 extern int unk_007a7750[32];
 
+// GLOBAL: MAGIC 0x00777e64
+extern name_table_entry_t unk_00777e64[866];
+
 // GLOBAL: MAGIC 0x008b497c
 extern int current_turn;
 
@@ -121,6 +141,9 @@ extern int unk_008b3104;
 
 // GLOBAL: MAGIC 0x00742f80
 extern int unk_00742f80[2][8];
+
+// GLOBAL: MAGIC 0x00742fc4
+extern int unk_00742fc4;
 
 // GLOBAL: MAGIC 0x007161e0
 extern int unk_007161e0[2][11];
@@ -218,6 +241,12 @@ extern int unk_007abc78;
 // GLOBAL: MAGIC 0x007a7d64
 extern int unk_007a7d64;
 
+// GLOBAL: MAGIC 0x007a7d08
+extern char unk_007a7d08;
+
+// GLOBAL: MAGIC 0x007a7d0c
+extern int unk_007a7d0c;
+
 extern int unk_00896534;
 // GLOBAL: MAGIC 0x008a8de8
 extern int unk_008a8de8;
@@ -270,10 +299,20 @@ extern int unk_007abc7c;
 // GLOBAL: MAGIC 0x0092664c
 extern int unk_0092664c[8];
 
+// GLOBAL: MAGIC 0x0092666c
+extern int unk_0092666c;
+
 // GLOBAL: MAGIC 0x00926664
 extern int produced_mana_color;
 extern int unk_009266a4;
 extern int unk_009266ac;
+
+// GLOBAL: MAGIC 0x00926750
+extern char unk_00926750[300];
+
+// GLOBAL: MAGIC 0x00926930
+extern char unk_00926930[212][300];
+
 // GLOBAL: MAGIC 0x0093d848
 extern int unk_0093d848;
 
@@ -283,11 +322,53 @@ extern int unk_008cc840;
 // GLOBAL: MAGIC 0x0093f4b8
 extern int unk_0093f4b8;
 
+// GLOBAL: MAGIC 0x0055e0cc
+extern int unk_0055e0cc;
+
+// GLOBAL: MAGIC 0x00572920
+extern char unk_00572920[16];
+
+// GLOBAL: MAGIC 0x00572930
+extern char unk_00572930[16];
+
+// GLOBAL: MAGIC 0x00950810
+extern int (__stdcall *IAT_SelectPalette)(int hdc, int hpalette, int force_background);
+
 // GLOBAL: SHANDALAR 0x008a8df8
 extern int LEGACY_EFFECT_PUMP;
 
 // GLOBAL: MAGIC 0x008b3d10
 extern int unk_008b3d10;
+
+// GLOBAL: MAGIC 0x008b28f8
+extern int unk_008b28f8;
+
+// GLOBAL: MAGIC 0x0091ca90
+extern char unk_0091ca90;
+
+// GLOBAL: MAGIC 0x0091ca92
+extern short unk_0091ca92;
+
+// GLOBAL: MAGIC 0x0091ca94
+extern short unk_0091ca94;
+
+// GLOBAL: MAGIC 0x0091ca96
+extern short unk_0091ca96;
+
+// GLOBAL: MAGIC 0x0091ca98
+extern short *unk_0091ca98;
+
+// GLOBAL: MAGIC 0x0091d07c
+extern int unk_0091d07c;
+
+// GLOBAL: MAGIC 0x00925bb8
+extern int unk_00925bb8;
+
+// GLOBAL: MAGIC 0x00925030
+extern int unk_00925030;
+
+// GLOBAL: MAGIC 0x008b40e0
+extern int unk_008b40e0;
 
 // GLOBAL: MAGIC 0x008b40f4
 extern int x_value;
@@ -326,6 +407,15 @@ extern int ai_modifier;
 // GLOBAL: SHANDALAR 0x008aa920
 extern char text_lines[249][300];
 
+// GLOBAL: MAGIC 0x008b4330
+extern char unk_008b4330[300];
+
+// GLOBAL: MAGIC 0x008cfd30
+extern char unk_008cfd30[300];
+
+// GLOBAL: MAGIC 0x008cf040
+extern char unk_008cf040[300];
+
 // GLOBAL: MAGIC 0x0093dabc
 // GLOBAL: SHANDALAR 0x008cd928
 extern int affected_card;
@@ -334,6 +424,79 @@ extern int affected_card;
 extern int affected_card_controller;
 // GLOBAL: MAGIC 0x0093a808
 extern int attacking_card_controller;
+
+// GLOBAL: MAGIC 0x0056e49c
+extern char unk_0056e49c[64];
+
+// GLOBAL: MAGIC 0x00573364
+extern char unk_00573364[12];
+
+// GLOBAL: MAGIC 0x00573370
+extern char unk_00573370[12];
+
+// GLOBAL: MAGIC 0x00573380
+extern char unk_00573380[12];
+
+// GLOBAL: MAGIC 0x005724ac
+extern char unk_005724ac[300];
+
+// GLOBAL: MAGIC 0x0057a75c
+extern int unk_0057a75c;
+
+// GLOBAL: MAGIC 0x0057aae8
+extern int unk_0057aae8;
+
+// GLOBAL: MAGIC 0x0057d9f0
+extern int unk_0057d9f0;
+
+// GLOBAL: MAGIC 0x0057d9f4
+extern int unk_0057d9f4;
+
+// GLOBAL: MAGIC 0x0057f758
+extern char unk_0057f758[4];
+
+// GLOBAL: MAGIC 0x0057f75c
+extern char unk_0057f75c[4];
+
+// GLOBAL: MAGIC 0x00637670
+extern char unk_00637670[300];
+
+// GLOBAL: MAGIC 0x006a1db8
+extern int unk_006a1db8[256];
+
+// GLOBAL: MAGIC 0x006a21b8
+extern int unk_006a21b8[256];
+
+// GLOBAL: MAGIC 0x006a5f18
+extern int unk_006a5f18[256];
+
+// GLOBAL: MAGIC 0x006a6ae8
+extern int unk_006a6ae8[256];
+
+// GLOBAL: MAGIC 0x006a6ee8
+extern int unk_006a6ee8[256];
+
+// GLOBAL: MAGIC 0x006a8258
+extern int unk_006a8258[256];
+
+// GLOBAL: MAGIC 0x006a8660
+extern int unk_006a8660[256];
+
+// GLOBAL: MAGIC 0x00748770
+extern char unk_00748770[3000];
+
+// GLOBAL: MAGIC 0x0074309c
+extern int unk_0074309c;
+
+// GLOBAL: MAGIC 0x007462a0
+extern int unk_007462a0;
+
+// GLOBAL: MAGIC 0x007463dc
+extern int unk_007463dc;
+
+// GLOBAL: MAGIC 0x007497b0
+extern int unk_007497b0;
+
 // GLOBAL: MAGIC 0x008ce530
 extern int attacking_card;
 // GLOBAL: MAGIC 0x0093b160
