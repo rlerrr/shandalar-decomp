@@ -7501,7 +7501,7 @@ int card_meekstone(int player, int card, event_t event)
       if (is_in_play(unk_008b35ec, current_card)
           && C_get_abilities(unk_008b35ec, current_card, EVENT_POWER, -1) > 2) {
         if ((PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).state & STATE_TAPPED) == 0) {
-          if (!FUN_00441514(unk_008b35ec, current_card)) {
+          if (!has_vigilance(unk_008b35ec, current_card)) {
             ai_delta += C_get_abilities(unk_008b35ec, current_card, EVENT_POWER, -1);
           }
         } else if (PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).untap_status == 0) {
@@ -7511,7 +7511,7 @@ int card_meekstone(int player, int card, event_t event)
 
       if (is_in_play(active_player, current_card) && C_get_abilities(active_player, current_card, EVENT_POWER, -1) > 2) {
         if ((PLAYER_CARD_INSTANCE(active_player, current_card).state & STATE_TAPPED) == 0) {
-          if (!FUN_00441514(active_player, current_card)) {
+          if (!has_vigilance(active_player, current_card)) {
             ai_delta -= C_get_abilities(active_player, current_card, EVENT_POWER, -1);
           }
         } else if (PLAYER_CARD_INSTANCE(active_player, current_card).untap_status == 0) {
@@ -12884,7 +12884,7 @@ int card_stasis(int player, int card, event_t event)
             && (global_cards_data[PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).internal_card_id].type
                 & TYPE_CREATURE) != 0) {
           if ((PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).state & STATE_TAPPED) == 0) {
-            if (FUN_00441514(unk_008b35ec, current_card) == 0) {
+            if (has_vigilance(unk_008b35ec, current_card) == 0) {
               ai_tweak += PLAYER_CARD_INSTANCE(unk_008b35ec, current_card).power;
             }
           } else {
@@ -12896,7 +12896,7 @@ int card_stasis(int player, int card, event_t event)
             && (global_cards_data[PLAYER_CARD_INSTANCE(active_player, current_card).internal_card_id].type
                 & TYPE_CREATURE) != 0) {
           if ((PLAYER_CARD_INSTANCE(active_player, current_card).state & STATE_TAPPED) == 0) {
-            if (FUN_00441514(active_player, current_card) == 0) {
+            if (has_vigilance(active_player, current_card) == 0) {
               ai_tweak -= PLAYER_CARD_INSTANCE(active_player, current_card).power;
             }
           } else {
@@ -15952,7 +15952,7 @@ int card_power_sink(int player, int card, event_t event)
           }
         }
 
-        unk_008ce510 = instance->info_slot;
+        unk_008ce510[6] = instance->info_slot;
         for (current_card = 0; current_card < active_cards_count[target_player] && mana_paid < instance->info_slot;
              ++current_card) {
           if (is_in_play(target_player, current_card)) {
@@ -15976,7 +15976,7 @@ int card_power_sink(int player, int card, event_t event)
             }
           }
         }
-        unk_008ce510 = 0;
+        unk_008ce510[6] = 0;
       }
 
       if (mana_paid < instance->info_slot) {

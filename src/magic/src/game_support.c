@@ -1,8 +1,12 @@
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <windows.h>
 #include "cardartlib/src/assert.h"
 #include "game_support.h"
+
+typedef ptrdiff_t INT_PTR;
 
 typedef int (__cdecl *in_play_card_callback_t)(int source_player,
                                                int source_card,
@@ -11,14 +15,6 @@ typedef int (__cdecl *in_play_card_callback_t)(int source_player,
                                                int internal_card_id);
 
 extern card_ptr_t global_raw_cards_storage[2000];
-extern int __stdcall PostMessageA(void* hwnd, unsigned int msg, unsigned int wparam, int lparam);
-extern void __stdcall ExitThread(unsigned int exit_code);
-extern void __stdcall EnterCriticalSection(void *critical_section);
-extern void __stdcall LeaveCriticalSection(void *critical_section);
-extern int __stdcall LoadIconA(int hinstance, const char *icon_name);
-extern int __stdcall LoadCursorA(int hinstance, const char *cursor_name);
-extern unsigned short __stdcall RegisterClassA(void *wndclass);
-extern long __stdcall DialogBoxParamA(int hinstance, const char *template_name, int parent, void *dialog_proc, long init_param);
 
 int can_target(target_definition_t *td)
 {
@@ -169,11 +165,12 @@ int get_hacked_color(int player, int card, int orig_color)
 // FUNCTION: MAGIC 0x0050026d
 int get_sleighted_color(int player, int card, int orig_color)
 {
-  if ((char)global_card_instances[player][card].color_id[orig_color] != 0) {
-    orig_color = (char)global_card_instances[player][card].color_id[orig_color];
+  if ((char)global_card_instances[player][card].color_id[orig_color] == 0) {
+    return orig_color;
   }
-
-  return orig_color;
+  else {
+    return (char)global_card_instances[player][card].color_id[orig_color];
+  }
 }
 
 // FUNCTION: MOK 0x004358f0
@@ -267,7 +264,7 @@ int FUN_004832f4(int player, unsigned char type)
 }
 
 // FUNCTION: MAGIC 0x00484581
-int FUN_00484581(int internal_card_id, int color)
+int FUN_00484581(int internal_card_id, color_t color)
 {
   int result;
 
@@ -277,7 +274,7 @@ int FUN_00484581(int internal_card_id, int color)
     result = 1;
   }
   if ((char)global_cards_data[internal_card_id].subtype == 12
-      && ((1 << ((unsigned char)color & 0x1f))
+      && ((1 << color)
           & (int)*(char *)&PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).mana_color) != 0) {
     result = 1;
   }
@@ -729,7 +726,7 @@ int FUN_0054dccd(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x005510dc
-int FUN_005510dc(int player, unsigned char type_mask)
+int FUN_005510dc(int player, int type_mask)
 {
   int current_card;
 
@@ -796,7 +793,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
   } else if (unk_00742fc4 == 0) {
     ReadPalette(unk_00573364, (char *)0);
     FUN_004e1c81(0, 0);
-    IAT_SelectPalette(unk_0074309c, unk_007463dc, 0);
+    SelectPalette(unk_0074309c, unk_007463dc, 0);
     FUN_004e1da6(unk_00573370);
     FUN_004e1d91(1, 0, 0, unk_00573380, &unk_007462a0);
     FUN_004e1d6d(unk_0057a75c, 0, 0, 0x280, 0x1e0, unk_007497b0, 0, 0, unk_0057d9f0, unk_0057d9f4);
@@ -967,8 +964,8 @@ int FUN_00448857(int player, int card)
   if (internal_card_id == -1) {
     return -1;
   }
-
-  return *(int *)&global_cards_data[internal_card_id].id;
+  else
+    return *(int *)&global_cards_data[internal_card_id].id;
 }
 
 // FUNCTION: MOK 0x00459AA0
@@ -1227,18 +1224,15 @@ int TENTATIVE_set_timestamps(int player, int card)
 {
   int slot;
 
-  slot = 0;
-  while (slot < 500 && TENTATIVE_timestamp_player[slot] != -1) {
-    ++slot;
+  for (slot = 0; slot < 500; slot++) {
+    if (TENTATIVE_timestamp_player[slot] == -1) {
+      TENTATIVE_timestamp_player[slot] = player;
+      TENTATIVE_timestamp_card[slot] = card;
+      global_card_instances[player][card].timestamp = slot;   
+      return slot;
+    }
   }
-  if (slot >= 500) {
-    return -1;
-  }
-
-  TENTATIVE_timestamp_player[slot] = player;
-  TENTATIVE_timestamp_card[slot] = card;
-  global_card_instances[player][card].timestamp = slot;
-  return slot;
+  return -1;
 }
 
 // FUNCTION: MAGIC 0x005493a6
@@ -1741,9 +1735,120 @@ int load_text(const char * file_name, const char *section_name)
 // FUNCTION: MAGIC 0x0043e668
 void discard(int player, int flags, int player_who_controls_effect)
 {
-  (void)player;
-  (void)flags;
-  (void)player_who_controls_effect;
+  struct {
+    int tries; // ebp - 0x4cc
+    int selected_card; // ebp - 0x4c8
+    target_t target;
+    char prompt[600];
+    char prompt_line_2[300];
+    int dialog_result;
+    char prompt_line_1[300];
+    int current_card;
+    unsigned int found;
+  } s;
+
+  s.tries = 0;
+
+  if (hand_count[player] <= 0)
+    return;
+
+  if ((active_player == player && (unk_00926804 & 2) == 0 && (hand_count[player] + unk_007161d8) <= 0)) 
+    return;
+
+    if (((unk_008b35ec == player || (unk_00926804 & 2) != 0) && unk_008a9000 != 1) && flags == 0) {
+      load_text((int)"prompts.txt", "PROMPT_DISCARDACARD");
+      C_real_select_target(player,
+                           player,
+                           player,
+                           TARGET_ZONE_HAND,
+                           TYPE_NONE,
+                           TYPE_NONE,
+                           0,
+                           0,
+                           COLOR_TEST_0,
+                           COLOR_TEST_0,
+                           -1,
+                           ~SUB_WALL,
+                           -1,
+                           -1,
+                           0,
+                           0,
+                           0,
+                           text_lines[0],
+                           0,
+                           &s.target);
+      s.selected_card = s.target.card;
+    } else {
+      s.found = 0;
+      if ((unk_00926804 & 2) != 0 && active_player == player) {
+        TENTATIVE_wait_for_network_result(player, 0x14);
+        s.selected_card = unk_007a7d0c;
+        if (s.selected_card == -1)
+          s.found = 0;
+        else
+          s.found=1;
+      } else {
+        s.tries = 0;
+        do {
+          s.selected_card = internal_rand(active_cards_count[player]);
+          if (PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id != -1
+              && (PLAYER_CARD_INSTANCE(player, s.selected_card).state & 2) == 0
+              && (PLAYER_CARD_INSTANCE(player, s.selected_card).state & 0x20) == 0) {
+            s.found = 1;
+          }
+        } while (s.found == 0 && ++s.tries < 999);
+
+        if (s.found == 0) {          
+          for (s.current_card = 0;s.current_card < active_cards_count[player] && s.found == 0; s.current_card++) {
+            if (PLAYER_CARD_INSTANCE(player, s.current_card).internal_card_id != -1
+                && (PLAYER_CARD_INSTANCE(player, s.current_card).state & 2) == 0
+                && (PLAYER_CARD_INSTANCE(player, s.current_card).state & 0x20) == 0) {
+              s.found = 1;
+              s.selected_card = s.current_card;
+            }
+          }
+        }
+
+        if ((unk_00926804 & 2) != 0 && unk_008b35ec == player) {
+          if (s.found == 0) {
+            s.selected_card = -1;
+          }
+          unk_007a7d0c = s.selected_card;
+          unk_007a7d08 = 0x14;
+          TENTATIVE_send_network_result(player, 0x14);
+        }
+      }
+
+    if ((unk_007a79b0[player] & 2) == 0 || player_who_controls_effect != 0) {
+      if (active_player == player && (unk_00926804 & 2) == 0 && unk_008a9000 != 1) {
+        if (flags) {
+          load_text("prompts.txt", "PROMPT_DISCARDACARD");
+          do_dialog(player, player, s.selected_card, -1, -1, text_lines[1], 0);
+        } else {
+          load_text("prompts.txt", "PROMPT_DISCARDACARD");
+          do_dialog(player, player, s.selected_card, -1, -1, text_lines[2], 0);
+        }
+      }
+      FUN_0043ec38(player, s.selected_card);
+    } else {
+      load_text("prompts.txt", "PROMPT_DISCARDACARD");
+      strcpy(s.prompt_line_1, text_lines[3]);
+      strcpy(s.prompt_line_2, text_lines[4]);
+      sprintf(s.prompt, " %s\n %s", s.prompt_line_1, s.prompt_line_2);
+      s.dialog_result = do_dialog(player, player, s.selected_card, -1, -1, s.prompt, 0);
+      if (s.dialog_result == 0) {
+        real_put_on_top_of_deck(player, PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id);
+        PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id = -1;
+        FUN_004a61a1(player, s.selected_card, 10, 1);
+        if (unk_008a9000 != 1) {
+          play_sound_effect(WAV_DISCARD);
+        }
+        --hand_count[player];
+      } else {
+        FUN_0043ec38(player, s.selected_card);
+      }
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x004b99d0
@@ -1810,6 +1915,570 @@ int charge_mana(int player, color_t color, int amount)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004346ab
+int FUN_004346ab(int *mana_cost, int required_colorless, int max_x)
+{
+  int color;
+  
+  for (color = 0;color < 7; color++) {
+    if (mana_cost[color] > 0) {
+      return 0;
+    }
+
+    if (mana_cost[color] == -1 && max_x != -1 && required_colorless < max_x) {
+      return 0;
+    }
+
+    if (mana_cost[color] == -1 && max_x == -1) {
+      return 0;
+    }    
+  }
+
+  return 1;
+}
+
+// FUNCTION: MAGIC 0x00434746
+unsigned int FUN_00434746(int *mana)
+{
+  int color;
+  unsigned int result;
+
+  result = 0;
+  for (color = 0; color < 7; ++color) {
+    if (mana[color] != 0) {
+      result = result | (1 << (unsigned char)color);
+    }
+  }
+
+  return result;
+}
+
+// FUNCTION: MAGIC 0x00435c91
+int FUN_00435c91(int color, int amount)
+{
+  int result;
+
+  result = unk_005607e0;
+  if (0 < unk_005607e0) {
+    unk_00637558[unk_005607e0 - 1][color] += amount;
+  }
+  return 0 < result;
+}
+
+// FUNCTION: MAGIC 0x004eae77
+int unproduce_mana(int player, int color, int amount)
+{
+  raw_mana_available[player][color] -= amount;
+  total_raw_mana_available[player] -= amount;
+  return raw_mana_available[player][color];
+}
+
+// FUNCTION: MAGIC 0x00435b18
+void FUN_00435b18(int *mana_cost,
+                 int cost_color,
+                 int amount,
+                 int *special_mana,
+                 int max_x,
+                 int player,
+                 int mana_color,
+                 int *mana_paid_by_color,
+                 int *total_mana_paid)
+{
+  (void)max_x;
+
+  unproduce_mana(player, mana_color, amount);
+  if (mana_cost[cost_color] == -1) {
+    *special_mana += amount;
+  } else {
+    mana_cost[cost_color] -= amount;
+  }
+  mana_paid_by_color[mana_color] += amount;
+  FUN_00435c91(mana_color, amount);
+  *total_mana_paid += amount;
+}
+
+// FUNCTION: MAGIC 0x0043410a
+void FUN_0043410a(int player, int *mana_paid_by_color, int *total_mana_paid, int max_colorless)
+{
+  unsigned short produced_color;
+  unsigned int special_mana;
+  int slot;
+  int color;
+
+  for (color = 0; color < 7; ++color) {
+    while (unk_008ce510[color] > 0 && raw_mana_available[player][color] > 0) {
+      FUN_00435b18(unk_008ce510, color, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
+    }
+  }
+
+  while (unk_008ce510[6] > 0 && raw_mana_available[player][0] > 0 && max_colorless < unk_008ce510[6]) {
+    FUN_00435b18(unk_008ce510, 6, 1, (int *)0, 0, player, 0, mana_paid_by_color, total_mana_paid);
+  }
+
+  slot = 0;
+  while (slot < 10 && unk_007161e0[player][slot] != -1) {
+    produced_color = (unsigned short)unk_007161e0[player][slot];
+    special_mana = (unsigned int)unk_007161e0[player][slot];
+    while (raw_mana_available[player][produced_color] > 0 && unk_008ce510[special_mana >> 16] > 0) {
+      FUN_00435b18(
+          unk_008ce510, special_mana >> 16, 1, (int *)0, 0, player, produced_color, mana_paid_by_color, total_mana_paid);
+    }
+    slot = slot + 1;
+  }
+}
+
+// FUNCTION: MAGIC 0x004342b3
+void FUN_004342b3(int player,
+                 int *mana_paid_by_color,
+                 int *total_mana_paid,
+                 int max_colorless,
+                 int *special_mana_override,
+                 int max_x)
+{
+  unsigned short produced_color;
+  unsigned int special_mana;
+  int slot;
+  int color;
+
+  for (color = 0; color < 7; ++color) {
+    if (unk_008ce510[color] == -1) {
+      while (raw_mana_available[player][color] > 0 && (x_value < max_x || max_x == -1)) {
+        FUN_00435b18(
+            unk_008ce510, color, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
+      }
+    }
+  }
+
+  if (unk_008ce510[6] == -1) {
+    while (raw_mana_available[player][0] > 0 && max_colorless < unk_008ce510[6] &&
+           (x_value < max_x || max_x == -1)) {
+      FUN_00435b18(
+          unk_008ce510, 6, 1, special_mana_override, max_x, player, 0, mana_paid_by_color, total_mana_paid);
+    }
+  }
+
+  slot = 0;
+  while (slot < 10 && unk_007161e0[player][slot] != -1) {
+    produced_color = (unsigned short)unk_007161e0[player][slot];
+    special_mana = (unsigned int)unk_007161e0[player][slot];
+    if (unk_008ce510[special_mana >> 16] == -1) {
+      while (raw_mana_available[player][produced_color] > 0 && (x_value < max_x || max_x == -1)) {
+        FUN_00435b18(unk_008ce510,
+                     special_mana >> 16,
+                     1,
+                     special_mana_override,
+                     max_x,
+                     player,
+                     produced_color,
+                     mana_paid_by_color,
+                     total_mana_paid);
+      }
+    }
+    slot = slot + 1;
+  }
+}
+
+// FUNCTION: MAGIC 0x004344b0
+void FUN_004344b0(int player,
+                 int *mana_paid_by_color,
+                 int *total_mana_paid,
+                 int max_colorless,
+                 int *special_mana_override,
+                 int max_x)
+{
+  int color;
+
+  if (unk_008ce510[6] != 0) {
+    for (color = 0; color < 7; ++color) {
+      if (unk_008ce510[6] < 1) {
+        while (raw_mana_available[player][color] > 0 && unk_008ce510[6] == -1 &&
+               (max_x == -1 || max_colorless < max_x - x_value)) {
+          FUN_00435b18(
+              unk_008ce510, 6, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
+        }
+      } else {
+        while (raw_mana_available[player][color] > 0 && max_colorless < unk_008ce510[6]) {
+          FUN_00435b18(unk_008ce510, 6, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
+        }
+      }
+    }
+  }
+
+  if (unk_008ce510[0] != 0) {
+    for (color = 0; color < 7; ++color) {
+      if (color != 6) {
+        if (unk_008ce510[0] == -1) {
+          while (raw_mana_available[player][color] > 0 && (x_value < max_x || max_x == -1)) {
+            FUN_00435b18(
+                unk_008ce510, 0, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
+          }
+        } else {
+          while (unk_008ce510[0] > 0 && raw_mana_available[player][color] > 0) {
+            FUN_00435b18(unk_008ce510, 0, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
+          }
+        }
+      }
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x00435b88
+int FUN_00435b88(int *mana_cost,
+                 int cost_color,
+                 int *mana_available,
+                 int mana_color,
+                 int allow_multi_pay,
+                 int max_x,
+                 int x_paid)
+{
+  int amount;
+
+  if (allow_multi_pay == 0) {
+    amount = 1;
+  } else if (mana_cost[cost_color] == -1) {
+    if (max_x == -1) {
+      amount = mana_available[mana_color];
+    } else {
+      amount = mana_available[mana_color];
+      if (max_x - x_paid <= amount) {
+        amount = max_x - x_paid;
+      }
+    }
+  } else {
+    amount = mana_cost[cost_color];
+    if (mana_available[mana_color] <= amount) {
+      amount = mana_available[mana_color];
+    }
+  }
+
+  return amount;
+}
+
+// FUNCTION: MAGIC 0x00435db0
+int FUN_00435db0(int *mana_paid_by_color)
+{
+  int color;
+
+  if (unk_005607e0 > 0) {
+    for (color = 0; color < 7; ++color) {
+      unk_00637558[unk_005607e0 - 1][color] -= mana_paid_by_color[color];
+    }
+
+    return 1;
+  }else {    
+    return 0;
+  }
+}
+
+// FUNCTION: MAGIC 0x00435643
+int FUN_00435643(int player, int card, unsigned char activation_flags)
+{
+  struct {
+    int internal_card_id;
+    int result;
+    int csvid;
+  } s;
+
+  s.internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+  s.csvid = *(int *)&global_cards_data[s.internal_card_id].id;
+  s.result = 1;
+
+  if ((PLAYER_CARD_INSTANCE(player, card).state & 0x800002) == 2
+      && (global_cards_data[s.internal_card_id].extra_ability & 0x1000) != 0
+      && (global_cards_data[s.internal_card_id].extra_ability & 0x10000) == 0) {
+    if ((activation_flags & 1) != 0
+        && (s.internal_card_id < 5 || s.csvid == 0x366 || PLAYER_CARD_INSTANCE(player, card).mana_color == '@')) {
+      s.result = 0;
+    }
+    if ((activation_flags & 2) != 0
+        && (global_cards_data[s.internal_card_id].type & TYPE_LAND) != 0
+        && s.internal_card_id > 4
+        && s.csvid != 0x366
+        && PLAYER_CARD_INSTANCE(player, card).mana_color != '@') {
+      s.result = 0;
+    }
+    if ((activation_flags & 4) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & 0x40000) != 0) {
+      s.result = 0;
+    }
+    if ((activation_flags & 8) != 0 && (global_cards_data[s.internal_card_id].type & TYPE_ENCHANTMENT) != 0) {
+      s.result = 0;
+    }
+    if ((activation_flags & 0x10) != 0 && (global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0) {
+      s.result = 0;
+    }
+  } else {
+    s.result = 0;
+  }
+
+  return s.result;
+}
+
+// FUNCTION: MAGIC 0x00435881
+int FUN_00435881(int player, int card)
+{
+  struct {
+    int old_max_x_value;
+    int result;
+    int saved_mana_cost[8];
+    int old_x_value;
+    int color;
+  } s;
+  unsigned int original_state;
+
+  s.old_x_value = x_value;
+  if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0
+      || ((((unsigned int)PLAYER_CARD_INSTANCE(player, card).untap_status & 3) != 0)
+          && (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0)) {
+    s.result = 0;
+  } else {
+    x_value = 0;
+    s.old_max_x_value = max_x_value;
+    max_x_value = -1;
+    for (s.color = 0; s.color < 7; ++s.color) {
+      s.saved_mana_cost[s.color] = unk_008ce510[s.color];
+      unk_008ce510[s.color] = 0;
+    }
+    FUN_00443ee2(player, card, 0x72, player, 0);
+    unk_00938e2c = FUN_00434746(s.saved_mana_cost);
+    unk_00926664 = -1;
+    original_state = PLAYER_CARD_INSTANCE(player, card).state;
+    dispatch_event_to_single_card(player, card, EVENT_ACTIVATE, 1 - player, -1);
+    unk_00938e2c = 0;
+    if (spell_fizzled == 1) {
+      spell_fizzled = 0;
+      obliterate_top_card_of_stack();
+      s.result = 0;
+    } else {
+      if ((original_state & STATE_TAPPED) == 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0) {
+        dispatch_event(player, card, EVENT_TAP_CARD);
+      }
+      if (unk_008a9000 != 1) {
+        play_sound_effect(WAV_TAP);
+      }
+      resolve_top_card_on_stack();
+      s.result = 1;
+    }
+    max_x_value = s.old_max_x_value;
+    x_value = s.old_x_value;
+    for (s.color = 0; s.color < 7; ++s.color) {
+      unk_008ce510[s.color] = s.saved_mana_cost[s.color];
+    }
+  }
+
+  return s.result;
+}
+
+// FUNCTION: MAGIC 0x00434af9
+int FUN_00434af9(int player,
+                int *mana_paid_by_color,
+                int *total_mana_paid,
+                unsigned char activation_flags,
+                int include_special_mana)
+{
+  struct {
+    int current_card;
+    int color;
+    int dual_mana_slot;
+    int max_colorless;
+    int can_activate;
+    unsigned char produced_color;
+    unsigned char special_color;
+    int any_variable_costs;
+  } s;
+  int result;
+
+  s.any_variable_costs = 0;
+  for (s.color = 0; s.color < 7; ++s.color) {
+    if (unk_008ce510[s.color] == -1) {
+      s.any_variable_costs = 1;
+    }
+  }
+
+  if (player == active_player && (unk_00926804 & 2) != 0) {
+    result = 0;
+    while (result != -1) {
+      TENTATIVE_wait_for_network_result(player, 0x10);
+      result = unk_007a7d0c;
+      if (unk_007a7d0c != -1 && FUN_00435881(player, unk_007a7d0c) != 0) {
+        s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
+        s.current_card = has_mana(player, COLOR_ANY, 1);
+        s.max_colorless -= s.current_card;
+        FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
+        FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+        FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+      }
+    }
+    copy_mana_pool_to_display();
+  } else {
+    result = FUN_004346ab(unk_008ce510, x_value, max_x_value);
+    if (result == 0) {
+      for (s.current_card = 0; s.current_card < active_cards_count[player]; ++s.current_card) {
+        result = FUN_00435643(player, s.current_card, activation_flags);
+        if (result != 0
+            && dispatch_event_to_single_card(player, s.current_card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0) {
+          s.can_activate = 0;
+          for (s.color = 0; s.color < 7; ++s.color) {
+            if (unk_008ce510[s.color] > 0
+                && (((unsigned int)(1 << (unsigned char)s.color)
+                     & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0)) {
+              s.can_activate = 1;
+            } else if (unk_008ce510[s.color] == -1
+                       && x_value < max_x_value
+                       && max_x_value != -1
+                       && (((unsigned int)(1 << (unsigned char)s.color)
+                            & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color)
+                           != 0)) {
+              s.can_activate = 1;
+            }
+          }
+          if (include_special_mana != 0 && !s.can_activate) {
+            s.dual_mana_slot = 0;
+            while (s.dual_mana_slot < 10 && unk_007161e0[player][s.dual_mana_slot] != -1) {
+              s.produced_color = (unsigned char)unk_007161e0[player][s.dual_mana_slot];
+              if (unk_008ce510[unk_007161e0[player][s.dual_mana_slot] >> 16] > 0
+                  && (((unsigned int)(1 << s.produced_color)
+                       & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0)) {
+                s.can_activate = 1;
+              } else if (unk_008ce510[unk_007161e0[player][s.dual_mana_slot] >> 16] == -1
+                         && x_value < max_x_value
+                         && max_x_value != -1
+                         && (((unsigned int)(1 << s.produced_color)
+                              & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color)
+                             != 0)) {
+                s.can_activate = 1;
+              }
+              ++s.dual_mana_slot;
+            }
+          }
+          if (s.can_activate) {
+            if ((unk_00926804 & 2) != 0) {
+              unk_007a7d08 = 0x10;
+              unk_007a7d0c = s.current_card;
+              TENTATIVE_send_network_result(player, 0x10);
+              Sleep(0x32);
+            }
+            if (FUN_00435881(player, s.current_card) != 0) {
+              s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
+              result = has_mana(player, COLOR_ANY, 1);
+              s.max_colorless -= result;
+              FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
+              FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+              FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+            }
+          }
+        }
+      }
+    }
+
+    result = FUN_004346ab(unk_008ce510, x_value, max_x_value);
+    if (result == 0 && (unk_008ce510[0] != 0 || unk_008ce510[6] != 0)) {
+      for (s.current_card = 0; s.current_card < active_cards_count[player]; ++s.current_card) {
+        result = FUN_00435643(player, s.current_card, activation_flags);
+        if (result != 0
+            && dispatch_event_to_single_card(player, s.current_card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0) {
+          s.can_activate = 0;
+          if (unk_008ce510[0] < 1) {
+            if (unk_008ce510[0] == -1 && x_value < max_x_value && max_x_value != -1) {
+              s.can_activate = 1;
+            } else if (unk_008ce510[6] < 1) {
+              if (unk_008ce510[6] == -1 && x_value < max_x_value && max_x_value != -1) {
+                s.can_activate = 1;
+              }
+            } else {
+              s.can_activate = 1;
+            }
+          } else {
+            s.can_activate = 1;
+          }
+          if (PLAYER_CARD_INSTANCE(player, s.current_card).mana_color == '@' && unk_008ce510[6] == 0) {
+            s.can_activate = 0;
+          }
+          if (s.can_activate) {
+            if ((unk_00926804 & 2) != 0) {
+              unk_007a7d08 = 0x10;
+              unk_007a7d0c = s.current_card;
+              TENTATIVE_send_network_result(player, 0x10);
+              Sleep(0x32);
+            }
+            if (FUN_00435881(player, s.current_card) != 0) {
+              s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
+              result = has_mana(player, COLOR_ANY, 1);
+              s.max_colorless -= result;
+              FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
+              FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+              FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+            }
+          }
+        }
+      }
+    }
+
+    result = FUN_004346ab(unk_008ce510, x_value, max_x_value);
+    if (result == 0 && s.any_variable_costs && max_x_value == -1) {
+      for (s.current_card = 0; s.current_card < active_cards_count[player]; ++s.current_card) {
+        result = FUN_00435643(player, s.current_card, activation_flags);
+        if (result != 0
+            && dispatch_event_to_single_card(player, s.current_card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0) {
+          s.any_variable_costs = 0;
+          for (s.color = 1; s.color < 7; ++s.color) {
+            if (max_x_value == -1
+                && unk_008ce510[s.color] == -1
+                && (((unsigned int)(1 << (unsigned char)s.color)
+                     & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0)) {
+              s.any_variable_costs = 1;
+            } else if (max_x_value == -1 && unk_008ce510[0] == -1) {
+              s.any_variable_costs = 1;
+            } else if (max_x_value == -1 && unk_008ce510[6] == -1) {
+              s.any_variable_costs = 1;
+            }
+          }
+          if (PLAYER_CARD_INSTANCE(player, s.current_card).mana_color == '@' && unk_008ce510[6] != -1) {
+            s.any_variable_costs = 0;
+          }
+          if (include_special_mana != 0 && !s.any_variable_costs) {
+            s.dual_mana_slot = 0;
+            while (s.dual_mana_slot < 10 && unk_007161e0[player][s.dual_mana_slot] != -1) {
+              s.special_color = (unsigned char)unk_007161e0[player][s.dual_mana_slot];
+              if (max_x_value == -1
+                  && unk_008ce510[unk_007161e0[player][s.dual_mana_slot] >> 16] == -1
+                  && (((unsigned int)(1 << s.special_color)
+                       & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0)) {
+                s.any_variable_costs = 1;
+              }
+              ++s.dual_mana_slot;
+            }
+          }
+          if (s.any_variable_costs) {
+            if ((unk_00926804 & 2) != 0) {
+              unk_007a7d08 = 0x10;
+              unk_007a7d0c = s.current_card;
+              TENTATIVE_send_network_result(player, 0x10);
+              Sleep(0x32);
+            }
+            if (FUN_00435881(player, s.current_card) != 0) {
+              s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
+              result = has_mana(player, COLOR_ANY, 1);
+              s.max_colorless -= result;
+              FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
+              FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+              FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+            }
+          }
+        }
+      }
+    }
+
+    if ((unk_00926804 & 2) != 0) {
+      unk_007a7d08 = 0x10;
+      unk_007a7d0c = -1;
+      TENTATIVE_send_network_result(player, 0x10);
+    }
+    copy_mana_pool_to_display();
+  }
+
+  return 1;
+}
+
 // FUNCTION: MAGIC 0x004e4ff3
 void FUN_004e4ff3(int a1)
 {
@@ -1843,31 +2512,119 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 
   if (amount == 0) {
     if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
-      result = has_mana(
+      return has_mana(
           player, 7, unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)]);
-    } else {
-      result = 1;
     }
+
+    return 1;
   } else {
     result = has_mana(player, color, amount);
     if (result != 0) {
       if (unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] > 0) {
-        result = has_mana(
+        return has_mana(
             player,
             7,
             unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)] + amount);
       }
+      else {
+        return result;
+      }
     }
   }
 
-  return result;
+  return 0;
 }
 
 // FUNCTION: MOK 0x004a09a0
 // FUNCTION: MAGIC 0x004ef850
-int create_legacy_effect(int player,int card,int legacy_iid,int target_player,int target_card)
+int create_legacy_effect(int player, int card, int legacy_iid, int target_player, int target_card)
 {
-  return -1;
+  int legacy_card;
+  int display_pic_num;
+  int source_internal_card_id;
+
+  legacy_card = add_card_to_hand(player, legacy_iid);
+  if (legacy_card != -1 && card != -1) {
+    if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == -1
+        || PLAYER_CARD_INSTANCE(player, card).internal_card_id == unk_0091a80c) {
+      source_internal_card_id = PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
+    } else {
+      source_internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+    }
+
+  PLAYER_CARD_INSTANCE(player, legacy_card).state = player == 0 ? 2 : 0x1002;
+    PLAYER_CARD_INSTANCE(player, legacy_card).mana_color = PLAYER_CARD_INSTANCE(player, card).mana_color;
+    PLAYER_CARD_INSTANCE(player, legacy_card).color = PLAYER_CARD_INSTANCE(player, card).color;
+    PLAYER_CARD_INSTANCE(player, legacy_card).damage_source_player = (char)player;
+    PLAYER_CARD_INSTANCE(player, legacy_card).damage_source_card = card;
+    display_pic_num = FUN_004964dd(*(int *)&global_cards_data[source_internal_card_id].id, player, card);
+    *(int *)&PLAYER_CARD_INSTANCE(player, legacy_card).display_pic_csv_id =
+        (display_pic_num << 16) | *(unsigned int *)&global_cards_data[source_internal_card_id].id;
+    PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player = (char)target_player;
+    PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_card = target_card;
+
+    if (target_player != -1 && target_card != -1) {
+      PLAYER_CARD_INSTANCE(target_player, target_card).regen_status |= 0x0f000000;
+    }
+
+    PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= PLAYER_CARD_INSTANCE(player, card).token_status & 6;
+    memcpy(PLAYER_CARD_INSTANCE(player, legacy_card).color_id, PLAYER_CARD_INSTANCE(player, card).color_id, 6);
+    memcpy(PLAYER_CARD_INSTANCE(player, legacy_card).hack_mode, PLAYER_CARD_INSTANCE(player, card).hack_mode, 6);
+  }
+
+  return legacy_card;
+}
+
+// FUNCTION: MAGIC 0x0043ec38
+int FUN_0043ec38(int player, int card)
+{
+  dispatch_event_to_single_card(player, card, EVENT_DISCARD, 1 - player, -1);
+  FUN_004b14f5(player, card);
+  PLAYER_CARD_INSTANCE(player, card).internal_card_id = -1;
+  FUN_004a61a1(player,card,11,1);
+  if (unk_008a9000 != 1) {
+    play_sound_effect(WAV_DISCARD);
+  }
+  --hand_count[player];
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x00446c95
+void FUN_00446c95(void)
+{
+  return;
+}
+
+// FUNCTION: MAGIC 0x004a61a1
+void FUN_004a61a1(int player, int card, int unk1, int unk2)
+{
+  if (unk_008a9000 != 1) {
+    FUN_00446c95();
+  }
+}
+
+// FUNCTION: MAGIC 0x004b14f5
+void FUN_004b14f5(int player, int card)
+{
+  int graveyard_index;
+  int original_internal_card_id;
+  unsigned int graveyard_player;
+
+  original_internal_card_id = PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
+  graveyard_player = (PLAYER_CARD_INSTANCE(player, card).state & 0x1000) != 0;
+  unk_007a7c58[graveyard_player] |= global_cards_data[original_internal_card_id].type;
+
+  graveyard_index = 0;
+  while (graveyard_index < 500) {
+    if (global_graveyard_slots[graveyard_player][graveyard_index] == -1) {
+      break;
+    }
+    ++graveyard_index;
+  }
+
+  if (graveyard_index < 500) {
+    global_graveyard_slots[graveyard_player][graveyard_index] = original_internal_card_id;
+  }
 }
 
 // FUNCTION: MAGIC 0x004b5cf5
@@ -1905,11 +2662,221 @@ int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int 
 // FUNCTION: MAGIC 0x00441f16
 int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
 {
-  (void)player;
-  (void)card;
-  (void)event;
-  (void)new_attacking_card;
-  return 0;
+  card_instance_t *instance;
+  card_instance_t *test_instance;
+  unsigned int base_abilities;
+  unsigned int current_abilities;
+  unsigned int hidden_abilities;
+  unsigned int result;
+  int current_color;
+  int raw_card_data;
+  int saved_event_state;
+  int test_card;
+  int test_player;
+  int token_color;
+
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  saved_event_state = unk_00712938;
+  ++unk_0093f9c0;
+  affected_card_controller = player;
+  affected_card = card;
+  unk_008b4dd0 = instance->internal_card_id;
+  unk_008cf6d4 = (int)(char)global_cards_data[unk_008b4dd0].color;
+  attacking_card = new_attacking_card;
+
+  switch (event) {
+    case EVENT_POWER:
+      if ((instance->state & 0x800002) == 2) {
+        result = (int)global_cards_data[unk_008b4dd0].power & 0xffffbfff;
+      } else {
+        result = (unsigned int)global_cards_data[unk_008b4dd0].power;
+      }
+      result += instance->counter_power;
+      if ((instance->regen_status & 0x04000000) != 0) {
+        instance->regen_status &= 0xfbffffff;
+        event_result = result;
+      } else {
+        event_result = (unsigned int)instance->power;
+      }
+      if ((int)event_result < 0) {
+        event_result = 0;
+      }
+      if ((instance->token_status & 0x4000) != 0) {
+        event_result <<= 1;
+      }
+      break;
+
+    case EVENT_TOUGHNESS:
+      if ((instance->state & 0x800002) == 2) {
+        result = (int)global_cards_data[unk_008b4dd0].toughness & 0xffffbfff;
+      } else {
+        result = (unsigned int)global_cards_data[unk_008b4dd0].toughness;
+      }
+      result += instance->counter_toughness;
+      if ((instance->regen_status & 0x02000000) != 0) {
+        instance->regen_status &= 0xfdffffff;
+        event_result = result;
+      } else {
+        event_result = (unsigned int)instance->toughness;
+      }
+      break;
+
+    case EVENT_ABILITIES:
+      base_abilities = global_cards_data[unk_008b4dd0].static_ability;
+      hidden_abilities = instance->regen_status & 0x07000000;
+      result = base_abilities | hidden_abilities;
+      if ((base_abilities & 0x1ff81f) != 0) {
+        current_abilities = 0;
+        for (current_color = 0; current_color < 5; ++current_color) {
+          if ((result & (1 << current_color)) != 0) {
+            current_abilities |= 1 << ((char)get_hacked_color(player, card, current_color + 1) - 1);
+          }
+          if ((result & (0x800 << current_color)) != 0) {
+            current_abilities |= 0x800 << ((char)get_sleighted_color(player, card, current_color + 1) - 1);
+          }
+        }
+        result = (base_abilities & 0xffe007e0) | hidden_abilities | current_abilities;
+      }
+      if ((instance->regen_status & 0x08000000) != 0) {
+        instance->regen_status &= 0xf7ffffff;
+        event_result = result;
+      } else {
+        event_result = instance->regen_status;
+      }
+      break;
+
+    case EVENT_RECALC_DAMAGE:
+      event_result = (unsigned int)(short)instance->damage_on_card;
+      break;
+
+    case EVENT_SET_COLOR:
+      event_result = (unsigned int)(char)global_cards_data[unk_008b4dd0].color;
+      break;
+
+    case EVENT_CHANGE_TYPE:
+      if (((instance->internal_card_id < unk_009266a4) || (unk_009266a4 + 0x2d <= instance->internal_card_id))
+          && instance->internal_card_id != -1) {
+        result = instance->original_internal_card_id;
+        if ((instance->regen_status & 0x01000000) != 0) {
+          instance->internal_card_id = instance->original_internal_card_id;
+          instance->regen_status &= 0xfeffffff;
+          instance->mana_color = global_cards_data[instance->original_internal_card_id].color;
+          instance->destroys_if_blocked = 0;
+          event_result = result;
+        } else {
+          event_result = instance->internal_card_id;
+        }
+      } else {
+        event_result = instance->internal_card_id;
+      }
+      break;
+
+    default:
+      event_result = 0;
+      break;
+  }
+
+  result = event_result;
+  if (is_in_play(player, card)
+      && event == EVENT_TOUGHNESS
+      && (global_cards_data[unk_008b4dd0].type & TYPE_CREATURE) != 0
+      && ((int)result < 1 || (int)result <= (int)(short)instance->damage_on_card)
+      && ((*((char *)instance + 0x1b) & 4) == 0)
+      && trigger_condition == -1
+      && (unk_008b4278 & 0x204) == 0) {
+    kill_card(player, card, KILL_DESTROY);
+    regenerate_or_graveyard_triggers();
+  }
+
+  if (event == EVENT_POWER) {
+    instance->power = (short)result;
+  }
+  if (event == EVENT_TOUGHNESS) {
+    instance->toughness = (short)result;
+  }
+  if (event == EVENT_ABILITIES) {
+    instance->regen_status = result;
+  }
+  if (event != EVENT_CHANGE_TYPE) {
+    unk_00712938 = saved_event_state;
+    return result;
+  }
+
+  instance->internal_card_id = result;
+  if ((global_cards_data[result].extra_ability & 0x1000) != 0) {
+    raw_card_data = *(int *)&global_cards_data[result].id;
+    if (raw_card_data < 0x12d) {
+      if (raw_card_data == 0x12c) {
+        instance->mana_color = 1;
+      } else if (raw_card_data == 0xf) {
+        instance->mana_color = 0x3e;
+      } else if (global_cards_data[result].subtype == 0x0c && (instance->token_status & 2) != 0) {
+        token_color = global_cards_data[result].color;
+        instance->mana_color = (unsigned char)token_color;
+      } else {
+        instance->mana_color = global_cards_data[result].color;
+      }
+    } else if (raw_card_data < 0x13a) {
+      if (raw_card_data == 0x139) {
+        instance->mana_color = 2;
+      } else if (raw_card_data == 0x134) {
+        instance->mana_color = 0x10;
+      } else if (global_cards_data[result].subtype == 0x0c && (instance->token_status & 2) != 0) {
+        token_color = global_cards_data[result].color;
+        instance->mana_color = (unsigned char)token_color;
+      } else {
+        instance->mana_color = global_cards_data[result].color;
+      }
+    } else if (raw_card_data < 0x194) {
+      if (raw_card_data == 0x193) {
+        instance->mana_color = 0x3e;
+      } else if (raw_card_data != 0x13e) {
+        if (global_cards_data[result].subtype == 0x0c && (instance->token_status & 2) != 0) {
+          token_color = global_cards_data[result].color;
+          instance->mana_color = (unsigned char)token_color;
+        } else {
+          instance->mana_color = global_cards_data[result].color;
+        }
+      }
+    } else if (raw_card_data == 0x272) {
+      instance->mana_color = 1;
+    } else if (raw_card_data == 0x27b) {
+      instance->mana_color = 0x10;
+    } else if (raw_card_data == 0x366) {
+      instance->mana_color = (unsigned char)instance->info_slot;
+    } else if (global_cards_data[result].subtype == 0x0c && (instance->token_status & 2) != 0) {
+      token_color = global_cards_data[result].color;
+      instance->mana_color = (unsigned char)token_color;
+    } else {
+      instance->mana_color = global_cards_data[result].color;
+    }
+  }
+
+  if ((instance->token_status & 0x40) != 0 && (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0) {
+    for (test_player = 0; test_player < 2; ++test_player) {
+      test_instance = global_card_instances[test_player];
+      for (test_card = 0; test_card < active_cards_count[test_player]; ++test_card) {
+        if (test_instance->internal_card_id != -1
+            && (test_instance->state & 0x800002) == 2
+            && test_instance->damage_target_player == player
+            && test_instance->damage_target_card == card
+            && (global_cards_data[test_instance->internal_card_id].type & TYPE_ENCHANTMENT) != 0
+            && *(int *)&global_raw_cards_storage[*(int *)&global_cards_data[test_instance->internal_card_id].id]
+                    .subtype
+                   == 0x2c) {
+          kill_card(test_player, test_card, KILL_SACRIFICE);
+        }
+        ++test_instance;
+      }
+    }
+  }
+
+  if ((instance->state & 2) != 0) {
+    unk_007abc78 |= global_cards_data[instance->internal_card_id].extra_ability & 0x1ffc0000;
+  }
+
+  unk_00712938 = saved_event_state;
+  return result;
 }
 
 // FUNCTION: MAGIC 0x00500a13
@@ -1960,7 +2927,7 @@ int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
   int result;
 
   color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
-  unk_008ce510 += unk_0072c440[color_index];
+  unk_008ce510[color_index] += unk_0072c440[color_index];
   result = charge_mana(player, color, amount) - unk_0072c440[color_index];
   if (spell_fizzled == 1) {
     result = 0;
@@ -2281,11 +3248,103 @@ void FUN_00542a2a(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0054ac4d
-void FUN_0054ac4d(int player, int card, int amount)
+int FUN_0054ac4d(int player, int card)
 {
-  (void)player;
-  (void)card;
-  (void)amount;
+  struct {
+    char (*prompt)[300];
+    int target_card;
+    target_t target;
+    int unused;
+  } s;
+
+  s.unused = 0;
+  if (unk_008b35ec == player || (unk_00926804 & 2) != 0) {
+    if (unk_008a9000 == 1) {
+      s.target_card = -1;
+      unk_00742fcc = 1 - player;
+    } else {
+      if (C_real_select_target(player,
+                               2,
+                               1 - player,
+                               TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               text_lines[0],
+                               1,
+                               &s.target) == 0) {
+        spell_fizzled = 1;
+        s.target_card = -1;
+        unk_00742fcc = -1;
+      } else {
+        s.target_card = s.target.card;
+        unk_00742fcc = s.target.player;
+      }
+    }
+  } else {
+    if (unk_008a9000 == 1) {
+      unk_00939340 = internal_rand(3) == 0;
+      FUN_004e4f11();
+    } else {
+      FUN_004e5089();
+    }
+
+    if (unk_00939340 == 0) {
+      s.prompt = text_lines;
+
+      C_real_select_target(player,
+                           2,
+                           1 - player,
+                           TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
+                           TYPE_CREATURE,
+                           TYPE_NONE,
+                           0,
+                           get_protections_from(player, card),
+                           COLOR_TEST_0,
+                           COLOR_TEST_0,
+                           -1,
+                           ~SUB_WALL,
+                           -1,
+                           -1,
+                           0,
+                           0,
+                           0,
+                           *s.prompt,
+                           1,
+                           &s.target);
+      s.target_card = s.target.card;
+      unk_00742fcc = s.target.player;
+    } else {
+      s.target_card = -1;
+      unk_00742fcc = 1 - player;
+      if (unk_008a9000 == 1) {
+        unk_00939340 = 0;
+        unk_00925bb8 = ((unk_00742fcc == 0) ? 0 : 0x01000000) | 0xff;
+        FUN_004e4f11();
+      } else {
+        FUN_004e5089();
+      }
+    }
+  }
+
+  if (spell_fizzled != 1) {
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = s.target_card;
+    PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)unk_00742fcc;
+    PLAYER_CARD_INSTANCE(player, card).upkeep_blue = 1;
+    return 1;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054af10
@@ -2355,20 +3414,20 @@ char *FUN_00495311(int value)
   if (value < 0 || value >= 0xd4) {
     return unk_005724ac;
   }
-
-  return unk_00926930[value];
+  else
+    return unk_00926930[value];
 }
 
 // FUNCTION: MAGIC 0x0049ebde
-long FUN_0049ebde(int dialog_window, unsigned int message, int wparam_dc, int *lparam_data)
+INT_PTR CALLBACK FUN_0049ebde(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM lparam_data)
 {
   unsigned int command;
   int result;
 
-  (void)dialog_window;
+  (void)hwnd;
   (void)lparam_data;
 
-  switch (message) {
+  switch (msg) {
     case 0x10:
     case 0x201:
       return 1;
@@ -2391,7 +3450,7 @@ long FUN_0049ebde(int dialog_window, unsigned int message, int wparam_dc, int *l
       return 0;
   }
 
-  if (message > 0x30e && message < 0x312) {
+  if (msg > 0x30e && msg < 0x312) {
     result = 0;
   } else {
     result = 0;
@@ -2401,7 +3460,7 @@ long FUN_0049ebde(int dialog_window, unsigned int message, int wparam_dc, int *l
 }
 
 // FUNCTION: MAGIC 0x0049fe68
-long FUN_0049fe68(int card_window, unsigned int message, int wparam_window, long *lparam_data)
+INT_PTR WINAPI FUN_0049fe68(HWND card_window, UINT message, WPARAM wparam_window, LPARAM lparam_data)
 {
   (void)card_window;
   (void)wparam_window;
@@ -2501,35 +3560,24 @@ int FUN_0049e6aa(int *graveyard,
     char title[12];
     int index;
   } dialog_box_data_t;
-  typedef struct {
-    unsigned int style;
-    void *window_proc;
-    int class_extra_bytes;
-    int window_extra_bytes;
-    int hinstance;
-    int hicon;
-    int hcursor;
-    int background_brush;
-    char *menu_name;
-    char *class_name;
-  } local_wndclass_t;
+
   dialog_box_data_t locals;
-  local_wndclass_t wndclass;
+  WNDCLASS wndclass;
 
   if (count < 1 || graveyard == NULL || graveyard[0] == -1) {
     return -1;
   }
 
   wndclass.style = 0;
-  wndclass.window_proc = FUN_0049fe68;
-  wndclass.class_extra_bytes = 0;
-  wndclass.window_extra_bytes = unk_0055e0cc;
-  wndclass.hinstance = unk_00925030;
-  wndclass.hicon = LoadIconA(0, (const char *)0x7f00);
-  wndclass.hcursor = LoadCursorA(0, (const char *)0x7f00);
-  wndclass.background_brush = 6;
-  wndclass.menu_name = 0;
-  wndclass.class_name = unk_00572920;
+  wndclass.lpfnWndProc = FUN_0049fe68;
+  wndclass.cbClsExtra = 0;
+  wndclass.cbWndExtra = unk_0055e0cc;
+  wndclass.hInstance = unk_00925030;
+  wndclass.hIcon = LoadIconA(0, (const char *)0x7f00);
+  wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
+  wndclass.hbrBackground = 6;
+  wndclass.lpszMenuName = 0;
+  wndclass.lpszClassName = unk_00572920;
   RegisterClassA(&wndclass);
 
   locals.context = context;
@@ -2560,7 +3608,7 @@ int FUN_0049e6aa(int *graveyard,
     strcpy(locals.title, unk_00572930);
   }
 
-  return DialogBoxParamA(unk_00925030, (const char *)0xe9, unk_008cf1b4, FUN_0049ebde, (long)&locals.context);
+  return DialogBoxParam(unk_00925030, (const char *)0xe9, unk_008cf1b4, FUN_0049ebde, (long)&locals.context);
 }
 
 // FUNCTION: MAGIC 0x0049e8bb
@@ -2819,13 +3867,15 @@ int FUN_004a58ba(int player, int card)
   if (player == -1 || card == -1) {
     return -1;
   }
-
-  internal_card_id = FUN_004a587c(player, card);
-  if (internal_card_id == -1) {
-    return -1;
+  else {
+    internal_card_id = FUN_004a587c(player, card);
+    if (internal_card_id == -1) {
+      return -1;
+    }
+    else {
+      return *(int *)&global_cards_data[internal_card_id].id;
+    }
   }
-
-  return *(int *)&global_cards_data[internal_card_id].id;
 }
 
 // FUNCTION: MAGIC 0x004a59ad
@@ -2834,9 +3884,10 @@ int CardIDFromType(unsigned int type)
   if (type == -1) {
     return -1;
   }
-
-  type &= 0xfff;
-  return *(int *)&global_cards_data[type].id;
+  else {
+    type &= 0xfff;
+    return *(int *)&global_cards_data[type].id;
+  }
 }
 
 // FUNCTION: MAGIC 0x004a5929
@@ -2848,17 +3899,15 @@ int CardTypeFromID(int csvid)
   if (csvid == -1) {
     return -1;
   }
-
-  result = -1;
-  for (internal_card_id = 0; *(int *)&global_cards_data[internal_card_id].id != -1; ++internal_card_id) {
-    if (result == -1) {
-      if (*(int *)&global_cards_data[internal_card_id].id == csvid) {
+  else {
+    result = -1;
+    for (internal_card_id = 0; global_cards_data[internal_card_id].id != -1 && result == -1; ++internal_card_id) {
+      if (global_cards_data[internal_card_id].id == csvid) {
         result = internal_card_id;
       }
     }
+    return result;
   }
-
-  return result;
 }
 
 // FUNCTION: MAGIC 0x004a61d6
@@ -3805,7 +4854,7 @@ void FUN_00551572(int player, int card, int amount)
 // FUNCTION: MAGIC 0x005515f5
 unsigned int C_get_special_counters(int player, int card)
 {
-  return global_card_instances[player][card].special_counters;
+  return *(int*)&global_card_instances[player][card].special_counters & 0xff;
 }
 
 // FUNCTION: MAGIC 0x00419667
@@ -3832,9 +4881,12 @@ void FUN_00419667(int target_player, int target_card, int damage_target_player)
 }
 
 // FUNCTION: MAGIC 0x00441514
-int FUN_00441514(int player, int card)
+int has_vigilance(int player, int card)
 {
-  return (PLAYER_CARD_INSTANCE(player, card).state & 0x2000) != 0;
+  if (PLAYER_CARD_INSTANCE(player, card).state & F08_NOTAPWHENATTACKING)
+    return 1;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00443ee2
@@ -4008,6 +5060,370 @@ int obliterate_top_card_of_stack(void)
   }
 
   return 0;
+}
+
+// FUNCTION: MAGIC 0x00444505
+int resolve_top_card_on_stack(void)
+{
+  int player;
+  int card;
+  int current_internal_id;
+
+  if (unk_008b2934 > 0) {
+    --unk_008b2934;
+    player = global_stack_cards[unk_008b2934].player;
+    card = global_stack_cards[unk_008b2934].card;
+    current_internal_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+    if (current_internal_id == unk_0091a80c) {
+      current_internal_id = PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
+    }
+    if (PLAYER_CARD_INSTANCE(player, card).internal_card_id != -1) {
+      if ((char)(unk_00939180[unk_008b2934] >> 0x10) == '~') {
+        FUN_004b082f(player, card, (unk_00939180[unk_008b2934] >> 0x10) & 0xff, unk_00939180[unk_008b2934] >> 0x18);
+      } else if ((PLAYER_CARD_INSTANCE(player, card).upkeep_flags & 8) == 0) {
+        if ((PLAYER_CARD_INSTANCE(player, card).upkeep_flags & 0x80) == 0) {
+          dispatch_event_to_single_card(player,
+                                        card,
+                                        (unk_00939180[unk_008b2934] >> 0x10) & 0xff,
+                                        1 - player,
+                                        -1);
+        } else {
+          if ((PLAYER_CARD_INSTANCE(player, card).upkeep_flags & 0x40) != 0) {
+            PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                 PLAYER_CARD_INSTANCE(player, card).parent_card)
+                .untap_status &= ~0x10;
+            dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                          PLAYER_CARD_INSTANCE(player, card).parent_card,
+                                          EVENT_UNTAP_CARD,
+                                          1 - player,
+                                          -1);
+          }
+          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                               PLAYER_CARD_INSTANCE(player, card).parent_card)
+              .state &= ~0x80;
+        }
+      } else {
+        if ((PLAYER_CARD_INSTANCE(player, card).upkeep_flags & 0x200) == 0) {
+          dispatch_event_to_single_card(player, card, EVENT_UPKEEP_COSTS_UNPAID, 1 - player, -1);
+          if (PLAYER_CARD_INSTANCE(player, card).internal_card_id != -1
+              && (PLAYER_CARD_INSTANCE(player, card).upkeep_flags & 2) != 0) {
+            kill_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                      PLAYER_CARD_INSTANCE(player, card).parent_card,
+                      KILL_BURY);
+          }
+        }
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                             PLAYER_CARD_INSTANCE(player, card).parent_card)
+            .state &= ~0x208;
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                             PLAYER_CARD_INSTANCE(player, card).parent_card)
+            .state |= 4;
+      }
+      if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == unk_0091a80c) {
+        kill_card(player, card, KILL_REMOVE);
+      }
+    }
+    global_stack_cards[unk_008b2934].player = -1;
+    FUN_00441d78();
+    if (unk_0091a6d0 < 2 && ((unk_008b4278 & 0x200) == 0 || unk_008b2934 == 0)) {
+      FUN_004afa4b();
+      regenerate_or_graveyard_triggers();
+    }
+  }
+
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x004482f3
+int copy_mana_pool_to_display(void)
+{
+  if (unk_008a9000 != 1) {
+    EnterCriticalSection((void *)&unk_00789110);
+    memcpy(unk_00896670, raw_mana_available[0], 0x1c);
+    memcpy(unk_007ab290, raw_mana_available[1], 0x1c);
+    LeaveCriticalSection((void *)&unk_00789110);
+    SendMessageA((void *)unk_008ce534, 0x432, 0, 0);
+    SendMessageA((void *)unk_00939344, 0x432, 0, 0);
+  }
+
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x00441d78
+void FUN_00441d78(void)
+{
+  int player;
+  int card;
+  card_instance_t *instance;
+
+  for (player = 0; player < 2; ++player) {
+    instance = global_card_instances[player];
+    for (card = 0; card < active_cards_count[player]; ++card) {
+      if ((instance->state & 0x800002) == 2 && instance->internal_card_id != -1) {
+        instance->regen_status |= 0x0f000000;
+        C_get_abilities(player, card, EVENT_CHANGE_TYPE, -1);
+      }
+      ++instance;
+    }
+  }
+
+  C_count_colors_of_lands_in_play();
+  count_mana();
+
+  for (player = 0; player < 2; ++player) {
+    instance = global_card_instances[player];
+    for (card = 0; card < active_cards_count[player]; ++card) {
+      if (is_in_play(player, card)
+          && (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE)
+          && (short)instance->damage_on_card < C_get_abilities(player, card, EVENT_TOUGHNESS, -1)) {
+        C_get_abilities(player, card, EVENT_POWER, -1);
+      }
+      ++instance;
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x004afa4b
+void FUN_004afa4b(void)
+{
+  if ((unk_008b4278 & 2) == 0) {
+    return;
+  }
+
+  unk_008b4278 &= ~2;
+  unk_008b4278 |= 4;
+  TENTATIVE_reassess_all_cards();
+}
+
+// FUNCTION: MAGIC 0x004b082f
+int FUN_004b082f(int player, int card, event_t event, int extra)
+{
+  if (event == EVENT_TRIGGER && ((PLAYER_CARD_INSTANCE(player, card).state & 0x100) != 0 || unk_00777850 != 0)) {
+    return 0;
+  }
+
+  if (trigger_condition < 200) {
+    return 0;
+  }
+
+  event_result = 0;
+  affected_card_controller = player;
+  affected_card = card;
+  unk_008cfd20 = extra;
+  attacking_card = -1;
+  C_dispatch_event_raw(event);
+  return event_result;
+}
+
+// FUNCTION: MAGIC 0x0044295b
+void C_dispatch_event_raw(event_t event)
+{
+  struct {
+    card_instance_t *instance;
+    unsigned int timestamp_slot;
+    int card;
+    unsigned int saved_trigger_condition;
+    int player;
+  } locals;
+
+  locals.saved_trigger_condition = unk_00712938;
+  unk_008cc844 = event;
+  for (locals.timestamp_slot = 0; (int)locals.timestamp_slot < 500; ++locals.timestamp_slot) {
+    if (TENTATIVE_timestamp_player[locals.timestamp_slot] == -1) {
+      break;
+    }
+
+    locals.player = TENTATIVE_timestamp_player[locals.timestamp_slot];
+    locals.card = TENTATIVE_timestamp_card[locals.timestamp_slot];
+    locals.instance = &PLAYER_CARD_INSTANCE(locals.player, locals.card);
+    if (locals.instance->timestamp != (int)locals.timestamp_slot) {
+      continue;
+    }
+    if (locals.instance->internal_card_id == -1) {
+      continue;
+    }
+    if ((locals.instance->state & 0x800000) != 0) {
+      continue;
+    }
+    if ((locals.instance->state & 2) != 0 || (locals.instance->state & 0x20) != 0) {
+
+      unk_00789a48 = locals.player * 0x80 + locals.card;
+      (*global_cards_data[locals.instance->internal_card_id].code_pointer)(locals.player, locals.card, event);
+      if (event == EVENT_DECLARE_ATTACKERS
+          && locals.player == human_player
+          && (locals.instance->state & 0x14) == 4
+          && !has_vigilance(locals.player, locals.card)) {
+        locals.instance->state |= 0x10;
+        produced_mana_color = -1;
+        dispatch_event(locals.player, locals.card, EVENT_TAP_CARD);
+        FUN_004afa4b(human_player);
+        regenerate_or_graveyard_triggers();
+      }
+    }
+  }
+  if (event == EVENT_DECLARE_ATTACKERS && locals.player == human_player) {
+    FUN_00441d78();
+  }
+  if (unk_00789308 != -1) {
+    (*global_cards_data[unk_00789308].code_pointer)(0, 0x94, event);
+  }
+  unk_00712938 = locals.saved_trigger_condition;
+}
+
+// FUNCTION: MAGIC 0x004a6d0e
+void count_mana(void)
+{
+  struct {
+    card_instance_t *instance;
+    int current_card;
+    int player;
+  } locals;
+
+  for (locals.current_card = 0; locals.current_card <= 7; ++locals.current_card) {
+    unk_0072c440[locals.current_card] = 0;
+    unk_00742f90[locals.current_card] = unk_0072c440[locals.current_card];
+    unk_00742f70[locals.current_card] = unk_00742f90[locals.current_card];
+  }
+  unk_007160fc = -1;
+  raw_mana_available_hex[0][0] = unk_007160fc;
+  unk_0071620c = -1;
+  unk_007161e0[0][0] = unk_0071620c;
+  for (locals.player = 0; locals.player < 2; ++locals.player) {
+    locals.instance = global_card_instances[locals.player];
+    for (locals.current_card = 0; locals.current_card < active_cards_count[locals.player];
+         ++locals.current_card, ++locals.instance) {
+      if (locals.instance->internal_card_id == -1) {
+        continue;
+      }
+      
+      if ((global_cards_data[locals.instance->internal_card_id].extra_ability & 0x1000) != 0
+          && (locals.instance->state & 0x800012) == 2) {
+        dispatch_event(locals.player, locals.current_card, EVENT_COUNT_MANA);
+      }
+      if (*(int *)&global_cards_data[locals.instance->internal_card_id].id == 0xee
+          && (locals.instance->state & 0x800012) == 2) {
+        dispatch_event_to_single_card(locals.player, locals.current_card, EVENT_COUNT_MANA, -1, -1);
+      }
+      if (*(int *)&global_cards_data[locals.instance->internal_card_id].id == 100
+          && (locals.instance->state & 0x800002) == 2) {
+        dispatch_event_to_single_card(locals.player, locals.current_card, EVENT_COUNT_MANA, -1, -1);
+      }
+    }
+  }
+  if ((unk_007abc78 & 0x08000000) != 0) {
+    for (locals.player = 0; locals.player < 2; ++locals.player) {
+      locals.instance = global_card_instances[locals.player];
+      for (locals.current_card = 0; locals.current_card < active_cards_count[locals.player];
+           ++locals.current_card, ++locals.instance) {
+        if (locals.instance->internal_card_id == -1) {
+          continue;
+        } 
+        
+        if (global_cards_data[locals.instance->internal_card_id].code_pointer == card_fellwar_stone
+                   && (locals.instance->state & 0x800012) == 2) {
+          dispatch_event_to_single_card(locals.player, locals.current_card, EVENT_VARIABLE_MANA_SRC, -1, -1);
+        }
+      }
+    }
+  }
+}
+// FUNCTION: MAGIC 0x004a6faa
+void C_count_colors_of_lands_in_play(void)
+{
+  int player;
+  int card;
+  int internal_card_id;
+  int csvid;
+
+  for (card = 0; card < 8; ++card) {
+    unk_00743000[0][card] = 0;
+    basiclandtypes_controlled[0][card] = unk_00743000[0][card];
+    unk_00743000[1][card] = 0;
+    basiclandtypes_controlled[1][card] = unk_00743000[1][card];
+  }
+  unk_00743080[0] = 0;
+  unk_00743080[1] = 0;
+
+  for (player = 0; player < 2; ++player) {
+    for (card = 0; card < active_cards_count[player]; ++card) {
+      internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+      if (is_in_play(player, card) && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0) {
+        unk_00743080[player] |= (unsigned char)PLAYER_CARD_INSTANCE(player, card).mana_color;
+        if (internal_card_id < 5) {
+          ++basiclandtypes_controlled[player][internal_card_id];
+        } else if (internal_card_id < 0xf || unk_0093f4b8 <= internal_card_id) {
+          csvid = *(int *)&global_cards_data[internal_card_id].id;
+          if (csvid < 0xd) {
+            if (csvid == 0xc) {
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+            } else if (csvid == 9) {
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+            } else {
+              ++basiclandtypes_controlled[player][0];
+            }
+          } else {
+            switch (csvid) {
+            case 0x5b:
+              ++basiclandtypes_controlled[player][3];
+              break;
+            case 0x7e:
+              ++basiclandtypes_controlled[player][2];
+              break;
+            case 0xa4:
+              ++basiclandtypes_controlled[player][4];
+              break;
+            case 0xbc:
+              ++basiclandtypes_controlled[player][5];
+              break;
+            case 0xbd:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+              break;
+            case 0xd4:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+              break;
+            case 0xd8:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+              break;
+            case 0xef:
+              ++basiclandtypes_controlled[player][1];
+              break;
+            case 0xf1:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+              break;
+            case 0xfc:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+              break;
+            case 0xfe:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+              break;
+            case 0x102:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+              break;
+            case 0x10a:
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+              ++basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+              break;
+            default:
+              ++basiclandtypes_controlled[player][0];
+              break;
+            }
+          }
+        } else {
+          ++basiclandtypes_controlled[player][0];
+        }
+        ++basiclandtypes_controlled[player][7];
+      }
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x0041626b
@@ -4232,17 +5648,18 @@ int sacrifice_a_land(int player)
 {
   target_t target;
 
-  if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0, 0,
+  if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0, 0,
                             COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
                             text_lines[0], 0, &target)) {
-    return 0;
-  }
 
-  if (unk_008a9000 != 1) {
-    play_sound_effect(WAV_SACRFICE);
+    if (unk_008a9000 != 1) {
+      play_sound_effect(WAV_SACRFICE);
+    }
+    kill_card(target.player, target.card, KILL_SACRIFICE);
+
+    return 1;
   }
-  kill_card(target.player, target.card, KILL_SACRIFICE);
-  return 1;
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00551921
@@ -4479,11 +5896,6 @@ int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type
 
   return 0;
 }
-
-
-extern int unk_008b2938;
-extern int unk_008b293c;
-
 // FUNCTION: MAGIC 0x004a67bd
 int choose_a_number(int player, const char* prompt, int maxnum)
 {
@@ -4970,4 +6382,5 @@ int FUN_0052e400(int player, int card, int event, int color)
     return 0;
   }
 }
+
 

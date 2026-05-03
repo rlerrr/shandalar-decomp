@@ -31,7 +31,7 @@ int FUN_0044125c(int player, int card);
 int FUN_00443ee2(int player, int card, int event, int extra, int prompt);
 int FUN_0041626b(int player, int card, int event, int color);
 void FUN_00419667(int target_player, int target_card, int damage_target_player);
-int FUN_00441514(int player, int card);
+int has_vigilance(int player, int card);
 char *FUN_0044a3bf(int player, int card);
 void FUN_0044a796(int player, int card);
 char *FUN_00495311(int value);
@@ -50,9 +50,57 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
 int FUN_004483be(int player, int card);
 int FUN_004487d8(int player, int card);
 int FUN_00448857(int player, int card);
-  void FUN_004b5cf5(int player, int internal_card_id);
-  int FUN_004b5f03(int card_id);
+int FUN_0043ec38(int player, int card);
+void FUN_00446c95(void);
+void FUN_004a61a1(int player, int card, int unk1, int unk2);
+void FUN_004b14f5(int player, int card);
+void FUN_004b5cf5(int player, int internal_card_id);
+int FUN_004b5f03(int card_id);
 int charge_mana(int player, unsigned int color, int amount);
+void FUN_0043410a(int player, int *mana_paid_by_color, int *total_mana_paid, int max_colorless);
+void FUN_004342b3(int player,
+                  int *mana_paid_by_color,
+                  int *total_mana_paid,
+                  int max_colorless,
+                  int *special_mana,
+                  int max_x);
+void FUN_004344b0(int player,
+                  int *mana_paid_by_color,
+                  int *total_mana_paid,
+                  int max_colorless,
+                  int *special_mana,
+                  int max_x);
+int FUN_00435643(int player, int card, unsigned char activation_flags);
+int FUN_00435881(int player, int card);
+int FUN_00434af9(int player,
+                 int *mana_paid_by_color,
+                 int *total_mana_paid,
+                 unsigned char activation_flags,
+                 int include_special_mana);
+int FUN_00435c91(int color, int amount);
+int unproduce_mana(int player, int color, int amount);
+int FUN_00435b88(int *mana_cost,
+                 int cost_color,
+                 int *mana_available,
+                 int mana_color,
+                 int allow_multi_pay,
+                 int max_x,
+                 int x_paid);
+int copy_mana_pool_to_display(void);
+int resolve_top_card_on_stack(void);
+void FUN_00441d78(void);
+void FUN_004afa4b(void);
+int FUN_004b082f(int player, int card, int event, int extra);
+void FUN_00435b18(int *mana_cost,
+                  int cost_color,
+                  int amount,
+                  int *special_mana,
+                  int max_x,
+                  int player,
+                  int mana_color,
+                  int *mana_paid_by_color,
+                  int *total_mana_paid);
+int FUN_00435db0(int *mana_paid_by_color);
 int FUN_005180ed(int a1, int a2, int player, int card, int internal_card_id);
 int FUN_0051819c(int parent_player, int parent_card, int player, int card, int internal_card_id);
 int FUN_004a61fe(int *graveyard,
@@ -111,31 +159,32 @@ int FUN_00534ddb(int player, int mode);
  *   1 = check damage-card target player/card
  *   2 = check damage-card source player/card
  */
-typedef enum {
+typedef enum
+{
   TARGET_SCAN_DIRECT = 0,
   TARGET_SCAN_DAMAGE_TARGET = 1,
   TARGET_SCAN_DAMAGE_SOURCE = 2
 } target_scan_mode_t;
 
 int real_target_available(int *num_valid_targets,
-                  target_scan_mode_t target_source_mode,
-                  int who_chooses,
-                  unsigned int allowed_controller,
-                  unsigned int preferred_controller,
-                 target_zone_t zone,
-                 type_t required_type,
-                 type_t illegal_type,
-                 keyword_t required_abilities,
-                 keyword_t illegal_abilities,
-                 color_test_t required_color,
-                 color_test_t illegal_color,
-                 int extra,
-                 subtype_in_card_data_t required_subtype,
-                 int required_power,
-                 int required_toughness,
-                 target_special_t special,
-                 target_state_t required_state,
-                 target_state_t illegal_state);
+                          target_scan_mode_t target_source_mode,
+                          int who_chooses,
+                          unsigned int allowed_controller,
+                          unsigned int preferred_controller,
+                          target_zone_t zone,
+                          type_t required_type,
+                          type_t illegal_type,
+                          keyword_t required_abilities,
+                          keyword_t illegal_abilities,
+                          color_test_t required_color,
+                          color_test_t illegal_color,
+                          int extra,
+                          subtype_in_card_data_t required_subtype,
+                          int required_power,
+                          int required_toughness,
+                          target_special_t special,
+                          target_state_t required_state,
+                          target_state_t illegal_state);
 void FUN_004a61d6(char *text);
 void gain_life(int player, int amount);
 void discard(int player, int flags, int player_who_controls_effect);
@@ -158,12 +207,16 @@ void FUN_0055d802(char *out, char *in, int choice);
 void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
 int has_mana(int player, unsigned int color, int amount);
 int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount);
-int create_legacy_effect(int a1, int a2, int a3, int a4, int a5);
+void count_mana(void);
+void C_count_colors_of_lands_in_play(void);
+void C_dispatch_event_raw(event_t event);
+int create_legacy_effect(int player, int card, int legacy_iid, int target_player, int target_card);
 int FUN_004f7783(int player, int card);
 int FUN_00482a97(int player, int card, unsigned int flags);
 int FUN_00483190(int player, int card, int source_player, int source_card, int internal_card_id);
 int FUN_00483242(int player, int card, int source_player, int source_card, int internal_card_id);
-int dispatch_function_to_all_cards_in_play(int player, int card, int (__cdecl *callback)(int, int, int, int, int), int who_to_check);
+int dispatch_function_to_all_cards_in_play(int player, int card, int(__cdecl *callback)(int, int, int, int, int), int who_to_check);
+int card_fellwar_stone(int player, int card, event_t event);
 unsigned int get_protections_from(int player, int card);
 void FUN_00542a2a(int player, int card);
 int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int toughness_modifier);
@@ -171,7 +224,7 @@ int FUN_005493a6(int player, int card, int internal_card_id);
 int FUN_00551638(int player, unsigned int preferred_controller, int card);
 int FUN_00551b60(int player, unsigned int preferred_controller, int card);
 int FUN_00551ed7(int player, unsigned int preferred_controller, int card);
-void FUN_0055117d(int (__cdecl *callback)(int, int, int), int who_to_check);
+void FUN_0055117d(int(__cdecl *callback)(int, int, int), int who_to_check);
 void FUN_00551334(int player, int card);
 void FUN_00551572(int player, int card, int amount);
 void FUN_005514cd(int player, int card, int amount);
@@ -200,25 +253,25 @@ int C_real_select_target(int who_chooses,
 int C_get_abilities(int player, int card, event_t event, int new_attacking_card);
 unsigned int C_get_special_counters(int player, int card);
 unsigned int C_real_validate_target(int tgt_player,
-                                              int tgt_card,
-                                              char *return_error_str,
-                                              int who_chooses,
-                                              int allowed_controller,
-                                              int preferred_controller,
-                                              target_zone_t zone,
-                                              type_t required_type,
-                                              type_t illegal_type,
-                                              keyword_t required_abilities,
-                                              keyword_t illegal_abilities,
-                                              color_test_t required_color,
-                                              color_test_t illegal_color,
-                                              int extra,
-                                              subtype_in_card_data_t required_subtype,
-                                              int power_requirement,
-                                              int toughness_requirement,
-                                              target_special_t special,
-                                              target_state_t required_state,
-                                              target_state_t illegal_state);
+                                    int tgt_card,
+                                    char *return_error_str,
+                                    int who_chooses,
+                                    int allowed_controller,
+                                    int preferred_controller,
+                                    target_zone_t zone,
+                                    type_t required_type,
+                                    type_t illegal_type,
+                                    keyword_t required_abilities,
+                                    keyword_t illegal_abilities,
+                                    color_test_t required_color,
+                                    color_test_t illegal_color,
+                                    int extra,
+                                    subtype_in_card_data_t required_subtype,
+                                    int power_requirement,
+                                    int toughness_requirement,
+                                    target_special_t special,
+                                    target_state_t required_state,
+                                    target_state_t illegal_state);
 int get_hacked_color(int player, int card, int orig_color);
 int get_sleighted_color(int player, int card, int orig_color);
 int get_sleighted_color_test(int player, int card, int orig_color_test);
@@ -227,7 +280,7 @@ int is_animated_and_sick(int player, int card);
 int is_in_play(int player, int card);
 int is_tapped(int player, int card);
 void kill_card(int player, int card, kill_t kill_mode);
-int load_text(const char * file_name, const char *section_name);
+int load_text(const char *file_name, const char *section_name);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
 int produce_mana(int player, color_t color, int amount);
 int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);
@@ -235,7 +288,7 @@ int tap_for_multicolor_mana(int player, int card, event_t event, color_test_t av
 void FUN_0051a41c(int player, int card);
 int obliterate_top_card_of_stack(void);
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors);
-void FUN_0054ac4d();
+int FUN_0054ac4d(int player, int card);
 int FUN_0054af10(int player, int card, event_t event, int amount);
 int FUN_0054276d(int player, int card, event_t event, unsigned int color, int amount);
 void FUN_005513d7(int player, int card, int amount);
@@ -254,7 +307,7 @@ int FUN_00466e6d(int player, int card, int target_player);
 int FUN_004823a5(int player, int card);
 int FUN_0051c73d(int player, int card, int internal_card_id);
 int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type);
-int choose_a_number(int player, const char* prompt, int maxnum);
+int choose_a_number(int player, const char *prompt, int maxnum);
 void real_put_on_top_of_deck(int player, int internal_card_id);
 int FUN_004b413c(int player,
                  int *internal_card_ids,
@@ -279,7 +332,7 @@ void remove_card_from_deck(int player, int position);
 void FUN_004b59b2(int player, int deck_owner);
 int FUN_0052d761(int source_player, int source_card, int test_player, int test_card, int internal_card_id);
 int FUN_0054dccd(int player, int card);
-int FUN_005510dc(int player, unsigned char type_mask);
+int FUN_005510dc(int player, int type_mask);
 int regenerate_or_graveyard_triggers(void);
 int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
 void FUN_004faee2(int player, int card, int color_from, unsigned char color_to);

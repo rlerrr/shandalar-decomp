@@ -8,7 +8,7 @@
 
 #define GLOBAL_STATE_INIT(value) = value
 #else
-#define extern 
+#define extern
 #define GLOBAL_STATE_INIT(value)
 #endif
 
@@ -83,6 +83,12 @@ extern int unk_0078944c;
 // GLOBAL: MAGIC 0x00789450
 extern int event_result;
 
+// GLOBAL: MAGIC 0x00777850
+extern int unk_00777850;
+
+// GLOBAL: MAGIC 0x00712938
+extern int unk_00712938;
+
 // GLOBAL: MAGIC 0x007894a0
 extern int unk_007894a0;
 
@@ -144,11 +150,17 @@ extern int unk_00742f80[2][8];
 
 // GLOBAL: MAGIC 0x00742fc4
 extern int unk_00742fc4;
+// GLOBAL: MAGIC 0x00742fcc
+extern int unk_00742fcc;
 
 // GLOBAL: MAGIC 0x007161e0
 extern int unk_007161e0[2][11];
 // GLOBAL: MAGIC 0x007161d8
 extern int unk_007161d8;
+// GLOBAL: MAGIC 0x007160fc
+extern int unk_007160fc;
+// GLOBAL: MAGIC 0x0071620c
+extern int unk_0071620c;
 
 // GLOBAL: MAGIC 0x00716030
 extern int raw_mana_available_hex[2][51];
@@ -158,9 +170,21 @@ extern int unk_0072c440[8];
 
 // GLOBAL: MAGIC 0x00742fe0
 extern int basiclandtypes_controlled[2][8];
+// GLOBAL: MAGIC 0x00742f90
+extern int unk_00742f90[8];
+// GLOBAL: MAGIC 0x00742f70
+extern int unk_00742f70[8];
+
+// GLOBAL: MAGIC 0x00743000
+extern int unk_00743000[2][8];
+// GLOBAL: MAGIC 0x00743080
+extern int unk_00743080[2];
 
 // GLOBAL: MAGIC 0x00743040
 extern int raw_mana_available[2][8];
+
+// GLOBAL: MAGIC 0x007ab290
+extern int unk_007ab290[7];
 
 // GLOBAL: MAGIC 0x0074305c
 extern int total_raw_mana_available[2];
@@ -173,6 +197,10 @@ extern int unk_00715fa8;
 
 // GLOBAL: MAGIC 0x00791554
 extern int human_player;
+// GLOBAL: MAGIC 0x00789a48
+extern int unk_00789a48;
+// GLOBAL: MAGIC 0x00789308
+extern int unk_00789308;
 
 // GLOBAL: MAGIC 0x008cfd78
 extern int hand_count[2];
@@ -226,8 +254,14 @@ extern int unk_008b49c4;
 // GLOBAL: MAGIC 0x008b4278
 extern int unk_008b4278;
 
+// GLOBAL: MAGIC 0x008b4dd0
+extern int unk_008b4dd0;
+
 // GLOBAL: MAGIC 0x00743094
 extern int unk_00743094;
+
+// GLOBAL: MAGIC 0x00789a44
+extern int unk_00789a44;
 
 // GLOBAL: MAGIC 0x00789734
 extern int unk_00789734;
@@ -240,6 +274,9 @@ extern int unk_007abc78;
 
 // GLOBAL: MAGIC 0x007a7d64
 extern int unk_007a7d64;
+
+// GLOBAL: MAGIC 0x007a7d6c
+extern int unk_007a7d6c;
 
 // GLOBAL: MAGIC 0x007a7d08
 extern char unk_007a7d08;
@@ -268,16 +305,34 @@ extern int unk_008ce4f4 GLOBAL_STATE_INIT(-1);
 extern int unk_008ce508 GLOBAL_STATE_INIT(-1);
 
 // GLOBAL: MAGIC 0x008ce510
-extern int unk_008ce510;
+extern int unk_008ce510[7];
 
 // GLOBAL: MAGIC 0x008ce518
 extern int unk_008ce518;
 
+// GLOBAL: MAGIC 0x008ce534
+extern int unk_008ce534;
+
+// GLOBAL: MAGIC 0x00896670
+extern int unk_00896670[7];
+
 // GLOBAL: MAGIC 0x0091a80c
 extern int unk_0091a80c;
 
+// GLOBAL: MAGIC 0x0091a6d0
+extern int unk_0091a6d0;
+
+// GLOBAL: MAGIC 0x00637558
+extern int unk_00637558[10][7];
+
+// GLOBAL: MAGIC 0x005607e0
+extern int unk_005607e0;
+
 // GLOBAL: MAGIC 0x0091bfb4
 extern int unk_0091bfb4;
+
+// GLOBAL: MAGIC 0x00939344
+extern int unk_00939344;
 
 // GLOBAL: MAGIC 0x00925d3c
 extern int unk_00925d3c;
@@ -302,10 +357,19 @@ extern int unk_0092664c[8];
 // GLOBAL: MAGIC 0x0092666c
 extern int unk_0092666c;
 
+// GLOBAL: MAGIC 0x0092674c
+extern int unk_0092674c;
+
 // GLOBAL: MAGIC 0x00926664
 extern int produced_mana_color;
 extern int unk_009266a4;
 extern int unk_009266ac;
+
+// GLOBAL: MAGIC 0x0092607c
+extern int unk_0092607c;
+
+// GLOBAL: MAGIC 0x00926080
+extern char unk_00926080;
 
 // GLOBAL: MAGIC 0x00926750
 extern char unk_00926750[300];
@@ -316,8 +380,13 @@ extern char unk_00926930[212][300];
 // GLOBAL: MAGIC 0x0093d848
 extern int unk_0093d848;
 
+// GLOBAL: MAGIC 0x0093f9c0
+extern int unk_0093f9c0;
+
 // GLOBAL: MAGIC 0x008cc840
 extern int unk_008cc840;
+// GLOBAL: MAGIC 0x008cc844
+extern int unk_008cc844;
 
 // GLOBAL: MAGIC 0x0093f4b8
 extern int unk_0093f4b8;
@@ -331,9 +400,6 @@ extern char unk_00572920[16];
 // GLOBAL: MAGIC 0x00572930
 extern char unk_00572930[16];
 
-// GLOBAL: MAGIC 0x00950810
-extern int (__stdcall *IAT_SelectPalette)(int hdc, int hpalette, int force_background);
-
 // GLOBAL: SHANDALAR 0x008a8df8
 extern int LEGACY_EFFECT_PUMP;
 
@@ -342,6 +408,18 @@ extern int unk_008b3d10;
 
 // GLOBAL: MAGIC 0x008b28f8
 extern int unk_008b28f8;
+
+// GLOBAL: MAGIC 0x008b27f0
+extern char unk_008b27f0;
+
+// GLOBAL: MAGIC 0x008b2938
+extern char unk_008b2938;
+
+// GLOBAL: MAGIC 0x008b34a0
+extern char unk_008b34a0;
+
+// GLOBAL: MAGIC 0x008b60e8
+extern int unk_008b60e8;
 
 // GLOBAL: MAGIC 0x0091ca90
 extern char unk_0091ca90;
@@ -367,6 +445,9 @@ extern int unk_00925bb8;
 // GLOBAL: MAGIC 0x00925030
 extern int unk_00925030;
 
+// GLOBAL: MAGIC 0x009251b0
+extern char unk_009251b0;
+
 // GLOBAL: MAGIC 0x008b40e0
 extern int unk_008b40e0;
 
@@ -381,6 +462,15 @@ extern int max_x_value;
 
 // GLOBAL: MAGIC 0x008cf1ac
 extern int unk_008cf1ac;
+
+// GLOBAL: MAGIC 0x008cf6d4
+extern int unk_008cf6d4;
+
+// GLOBAL: MAGIC 0x008cf200
+extern char unk_008cf200;
+
+// GLOBAL: MAGIC 0x008cf3a0
+extern char unk_008cf3a0;
 
 // GLOBAL: MAGIC 0x008cf1b4
 extern int unk_008cf1b4;
@@ -415,6 +505,9 @@ extern char unk_008cfd30[300];
 
 // GLOBAL: MAGIC 0x008cf040
 extern char unk_008cf040[300];
+
+// GLOBAL: MAGIC 0x008cfd20
+extern int unk_008cfd20;
 
 // GLOBAL: MAGIC 0x0093dabc
 // GLOBAL: SHANDALAR 0x008cd928
