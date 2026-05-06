@@ -260,9 +260,6 @@ extern int unk_008b4dd0;
 // GLOBAL: MAGIC 0x00743094
 extern int unk_00743094;
 
-// GLOBAL: MAGIC 0x00789a44
-extern int unk_00789a44;
-
 // GLOBAL: MAGIC 0x00789734
 extern int unk_00789734;
 
@@ -274,15 +271,6 @@ extern int unk_007abc78;
 
 // GLOBAL: MAGIC 0x007a7d64
 extern int unk_007a7d64;
-
-// GLOBAL: MAGIC 0x007a7d6c
-extern int unk_007a7d6c;
-
-// GLOBAL: MAGIC 0x007a7d08
-extern char unk_007a7d08;
-
-// GLOBAL: MAGIC 0x007a7d0c
-extern int unk_007a7d0c;
 
 extern int unk_00896534;
 // GLOBAL: MAGIC 0x008a8de8
@@ -365,12 +353,6 @@ extern int produced_mana_color;
 extern int unk_009266a4;
 extern int unk_009266ac;
 
-// GLOBAL: MAGIC 0x0092607c
-extern int unk_0092607c;
-
-// GLOBAL: MAGIC 0x00926080
-extern char unk_00926080;
-
 // GLOBAL: MAGIC 0x00926750
 extern char unk_00926750[300];
 
@@ -409,44 +391,11 @@ extern int unk_008b3d10;
 // GLOBAL: MAGIC 0x008b28f8
 extern int unk_008b28f8;
 
-// GLOBAL: MAGIC 0x008b27f0
-extern char unk_008b27f0;
-
-// GLOBAL: MAGIC 0x008b2938
-extern char unk_008b2938;
-
-// GLOBAL: MAGIC 0x008b34a0
-extern char unk_008b34a0;
-
-// GLOBAL: MAGIC 0x008b60e8
-extern int unk_008b60e8;
-
-// GLOBAL: MAGIC 0x0091ca90
-extern char unk_0091ca90;
-
-// GLOBAL: MAGIC 0x0091ca92
-extern short unk_0091ca92;
-
-// GLOBAL: MAGIC 0x0091ca94
-extern short unk_0091ca94;
-
-// GLOBAL: MAGIC 0x0091ca96
-extern short unk_0091ca96;
-
-// GLOBAL: MAGIC 0x0091ca98
-extern short *unk_0091ca98;
-
-// GLOBAL: MAGIC 0x0091d07c
-extern int unk_0091d07c;
-
 // GLOBAL: MAGIC 0x00925bb8
 extern int unk_00925bb8;
 
 // GLOBAL: MAGIC 0x00925030
 extern int unk_00925030;
-
-// GLOBAL: MAGIC 0x009251b0
-extern char unk_009251b0;
 
 // GLOBAL: MAGIC 0x008b40e0
 extern int unk_008b40e0;
@@ -465,12 +414,6 @@ extern int unk_008cf1ac;
 
 // GLOBAL: MAGIC 0x008cf6d4
 extern int unk_008cf6d4;
-
-// GLOBAL: MAGIC 0x008cf200
-extern char unk_008cf200;
-
-// GLOBAL: MAGIC 0x008cf3a0
-extern char unk_008cf3a0;
 
 // GLOBAL: MAGIC 0x008cf1b4
 extern int unk_008cf1b4;

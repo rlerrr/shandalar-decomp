@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "global_state.h"
+#include "network.h"
 
 extern card_data_t global_cards_data[];
 
@@ -117,20 +118,6 @@ int FUN_0049e6aa(int *graveyard,
                  char *prompt);
 void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color);
 void FUN_0049fdf9(int brush1, int pen1, int pen2, int pen3, int brush2);
-void AddCardToCLPacket(unsigned short card_in_packet);
-int GetCardFromCLPacket(int packet_index);
-int FUN_00501143(int player, char packet_type);
-int FUN_00501c19(int player, int packet_type, unsigned char *packet);
-int FUN_0049e8bb(int player,
-                 int *graveyard,
-                 int unused,
-                 void *available,
-                 int count,
-                 int prompt_lines,
-                 int num_prompt_lines,
-                 int selected_indices,
-                 int highlighted_choices,
-                 int max_choices);
 int FUN_004a62d7(int player,
                  int *graveyard,
                  void *available,
