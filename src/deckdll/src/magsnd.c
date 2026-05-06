@@ -116,6 +116,7 @@ void sound_close() {
 }
 
 // FUNCTION: DECKDLL 0x1002d534
+// FUNCTION: MAGIC 0x00485a52
 int sound_play(int num, Sound *snd)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2)) {
@@ -212,4 +213,24 @@ int set_sound_loop(int num, int num2)
 
   global_sound_vtable.SetSndMarker(num, num2);
   return;
+}
+
+// FUNCTION: MAGIC 0x00485f81
+int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2)) {
+    return 0;
+  }
+
+  return global_sound_vtable.IsSndLoaded(sound_id, (DWORD *)out_loaded_sound_num);
+}
+
+// FUNCTION: MAGIC 0x00485fc3
+int sound_get_lru(int *out_num, int start, int end)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2)) {
+    return 4;
+  }
+
+  return global_sound_vtable.GetLRUSnd(out_num, start, end);
 }

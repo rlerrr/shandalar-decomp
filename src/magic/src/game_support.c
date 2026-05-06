@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "cardartlib/src/assert.h"
+#include "deckdll/src/magsnd.h"
 #include "game_support.h"
 
 typedef ptrdiff_t INT_PTR;
@@ -3487,9 +3488,181 @@ int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
 }
 
 // FUNCTION: MAGIC 0x0044331f
-void play_sound_effect(int sound_id)
+void play_sound_effect(wav_t sound_id)
 {
-  (void)sound_id;
+  static const char *sound_filenames[] = {
+      "artifact.wav",       "buried.wav",          "draw.wav",            "enchant.wav",      "endphase.wav",
+      "endturn.wav",        "instant.wav",         "interupt.wav",        "grey.wav",         "black.wav",
+      "blue.wav",           "green.wav",           "red.wav",             "white.wav",        "lifeloss.wav",
+      "sacrfice.wav",       "sorcery.wav",         "summon.wav",          "tap.wav",          "untap.wav",
+      "attack2.wav",        "block2.wav",          "damage.wav",          "destroy.wav",      "discard.wav",
+      "kill.wav",           "regen.wav",           "blackred.wav",        "greenblack.wav",   "whitered.wav",
+      "whitegreen.wav",     "blackwhite.wav",      "greenred.wav",        "greenblue.wav",    "whiteblue.wav",
+      "blueblack.wav",      "redblue.wav",         "counter.wav",         "fastfx.wav",       "changec.wav",
+      "changet.wav",        "control.wav",         "manaburn.wav",        "shuffle.wav",      "shell_loseduel.wav",
+      "shell_winduel.wav",  "aswanjag.wav",        "callgrav.wav",        "faerdrag.wav",     "gembazar.wav",
+      "necrazar.wav",       "polkamix.wav",        "pandora.wav",         "prsmdrag.wav",     "pwrstrgl.wav",
+      "catatap.wav",        "orcart.wav",          "whimsy.wav",          "rainbowk.wav",     "toss.wav",
+      "shell_shandalar.wav","shell_tooltime.wav",  "shell_helpme.wav",    "shell_hallofrecords.wav", "shell_duelmenow.wav",
+      "exp1_openfoil.wav",  "exp1_openbox.wav",    "exp1_outofpack.wav",  "exp1_backinpack.wav"};
+  struct
+  {
+    char path[264];
+    int replacement_result;
+    int sound_num;
+    Sound sound;
+  } s;
+  int found_sound;
+
+  s.sound_num = sound_id;
+  s.sound.volume = 300;
+  s.sound.sampleRate = 0;
+  s.sound.pan = 0;
+  s.sound.field_C = 0;
+  s.sound.field_10 = 0;
+  s.sound.field_14 = 0;
+  s.sound.loadId = sound_id;
+  s.sound.flags = 0;
+
+  if (unk_008a9000 == 1)
+{
+    return;
+  }
+
+  if (sound_id < 0x14)
+  {
+    sound_play(sound_id, 0);
+    return;
+  }
+
+  if (sound_id < 0x27)
+  {
+    found_sound = sound_is_loaded(sound_id, &s.sound_num);
+    if (found_sound == 0)
+    {
+      s.replacement_result = sound_get_lru(&s.sound_num, 0x14, 0x16);
+      if (s.replacement_result == 0)
+      {
+        sound_unload(s.sound_num);
+      }
+      else if (s.replacement_result != 1)
+      {
+        return;
+      }
+
+      strcpy(s.path, global_base_directory);
+      strcat(s.path, "\\");
+      strcat(s.path, "DuelSounds\\");
+      strcat(s.path, sound_filenames[sound_id]);
+      sound_load(s.path, s.sound_num, &s.sound);
+    }
+
+    sound_play(s.sound_num, 0);
+    return;
+  }
+
+  if (sound_id < 0x2e)
+  {
+    found_sound = sound_is_loaded(sound_id, &s.sound_num);
+    if (found_sound == 0)
+    {
+      s.replacement_result = sound_get_lru(&s.sound_num, 0x27, 0x27);
+      if (s.replacement_result == 0)
+      {
+        sound_unload(s.sound_num);
+      }
+      else if (s.replacement_result != 1)
+      {
+        return;
+      }
+
+      strcpy(s.path, global_base_directory);
+      strcat(s.path, "\\");
+      strcat(s.path, "DuelSounds\\");
+      strcat(s.path, sound_filenames[sound_id]);
+      sound_load(s.path, s.sound_num, &s.sound);
+    }
+
+    sound_play(s.sound_num, 0);
+    return;
+  }
+
+  if (sound_id < 0x3c)
+  {
+    s.sound.volume = 400;
+    found_sound = sound_is_loaded(sound_id, &s.sound_num);
+    if (sound_id == WAV_CATATAP)
+    {
+      s.sound.field_14 = -1;
+    }
+    else
+    {
+      s.sound.flags |= 4;
+    }
+
+    if (found_sound == 0)
+    {
+      strcpy(s.path, global_base_directory);
+      strcat(s.path, "\\");
+      strcat(s.path, "DuelSounds\\");
+      strcat(s.path, sound_filenames[sound_id]);
+      sound_load(s.path, s.sound_num, &s.sound);
+    }
+
+    sound_play(s.sound_num, &s.sound);
+    return;
+  }
+
+  if (sound_id < 0x41)
+  {
+    found_sound = sound_is_loaded(sound_id, &s.sound_num);
+    if (found_sound == 0)
+    {
+      s.replacement_result = sound_get_lru(&s.sound_num, 0x3c, 0x40);
+      if (s.replacement_result == 0)
+      {
+        sound_unload(s.sound_num);
+      }
+      else if (s.replacement_result != 1)
+      {
+        return;
+      }
+
+      strcpy(s.path, global_base_directory);
+      strcat(s.path, "\\");
+      strcat(s.path, "DuelSounds\\");
+      strcat(s.path, sound_filenames[sound_id]);
+      sound_load(s.path, s.sound_num, &s.sound);
+    }
+
+    sound_play(s.sound_num, 0);
+    return;
+  }
+
+  if (sound_id < 0x45)
+  {
+    found_sound = sound_is_loaded(sound_id, &s.sound_num);
+    if (found_sound == 0)
+    {
+      s.replacement_result = sound_get_lru(&s.sound_num, 0x41, 0x44);
+      if (s.replacement_result == 0)
+      {
+        sound_unload(s.sound_num);
+      }
+      else if (s.replacement_result != 1)
+      {
+        return;
+      }
+
+      strcpy(s.path, global_base_directory);
+      strcat(s.path, "\\");
+      strcat(s.path, "DuelSounds\\");
+      strcat(s.path, sound_filenames[sound_id]);
+      sound_load(s.path, s.sound_num, &s.sound);
+    }
+
+    sound_play(s.sound_num, 0);
+  }
 }
 
 // FUNCTION: MAGIC 0x004faee2
