@@ -30,6 +30,9 @@ NETWORK_EXTERN char unk_00926080;
 // GLOBAL: MAGIC 0x008b27f0
 NETWORK_EXTERN char unk_008b27f0;
 
+// GLOBAL: MAGIC 0x008b27f4
+NETWORK_EXTERN unsigned char DAT_008b27f4[0x4c];
+
 // GLOBAL: MAGIC 0x008b2938
 NETWORK_EXTERN char unk_008b2938;
 
@@ -77,6 +80,8 @@ int FUN_0049e8bb(int player,
                  int highlighted_choices,
                  int max_choices);
 
+void FUN_00501d78(int player);
+void FUN_00501deb(int player);
 int TENTATIVE_wait_for_network_result(int player, signed int packet_type);
 int TENTATIVE_send_network_result(int player, signed int packet_type);
 

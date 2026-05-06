@@ -706,3 +706,37 @@ int TENTATIVE_send_network_result(int player, signed int packet_type)
 
   return 0;
 }
+
+// FUNCTION: MAGIC 0x00501d78
+void FUN_00501d78(int player)
+{
+  int phase;
+
+  unk_008b27f0 = 0x13;
+  for (phase = 0; phase < 0x26; ++phase)
+  {
+    DAT_008b27f4[phase] = (DAT_007abc90[0x26 + phase] & 1) << 2;
+    DAT_008b27f4[0x26 + phase] = (DAT_007abc90[phase] & 1) << 2;
+  }
+
+  TENTATIVE_send_network_result(player, 0x13);
+}
+
+// FUNCTION: MAGIC 0x00501deb
+void FUN_00501deb(int player)
+{
+  int phase;
+  int target_player;
+
+  if (TENTATIVE_wait_for_network_result(player, 0x13) != 0)
+  {
+    for (target_player = 0; target_player < 2; ++target_player)
+    {
+      for (phase = 0; phase < 0x26; ++phase)
+      {
+        DAT_007abc90[target_player * 0x26 + phase] =
+            DAT_008b27f4[target_player * 0x26 + phase] | (DAT_007abc90[target_player * 0x26 + phase] & 3);
+      }
+    }
+  }
+}

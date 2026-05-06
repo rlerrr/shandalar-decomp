@@ -40,6 +40,14 @@ int CardIDFromType(unsigned int type);
 int CardTypeFromID(int csvid);
 int FUN_004087cc(int player, unsigned int type);
 int internal_rand(int maximum);
+int FUN_0044aa01(void);
+int FUN_0044541f(int param_1);
+int FUN_00445b56(int player, int card);
+void FUN_004460d3(void);
+int FUN_0043fdb3(int player, int target_player, int target_card);
+unsigned int FUN_00447f80(void);
+int FUN_004b0047(int player, int card);
+void FUN_004e1cd1(void);
 int FUN_004832f4(int player, unsigned char type);
 int FUN_004c0a36(int a1, int a2, int a3);
 int FUN_00484581(int internal_card_id, int color);
@@ -90,8 +98,11 @@ int FUN_00435b88(int *mana_cost,
 int copy_mana_pool_to_display(void);
 int resolve_top_card_on_stack(void);
 void FUN_00441d78(void);
-void FUN_004afa4b(void);
+void FUN_004afa4b();
 int FUN_004b082f(int player, int card, int event, int extra);
+void push_affected_card_stack(void);
+void pop_affected_card_stack(void);
+int card_death_ward(int player, int card, event_t event);
 void FUN_00435b18(int *mana_cost,
                   int cost_color,
                   int amount,
@@ -190,10 +201,13 @@ void FUN_004e4f11(void);
 void FUN_004e503e(int a1);
 void FUN_004e5089(void);
 void FUN_004e51bb(void);
+void FUN_004aff25(void);
+unsigned int FUN_004e1b6f(void);
 void FUN_0055d802(char *out, char *in, int choice);
 void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
 int has_mana(int player, unsigned int color, int amount);
 int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount);
+int FUN_004eaf09(int player, color_t color, int amount);
 void count_mana(void);
 void C_count_colors_of_lands_in_play(void);
 void C_dispatch_event_raw(event_t event);
@@ -215,7 +229,7 @@ void FUN_0055117d(int(__cdecl *callback)(int, int, int), int who_to_check);
 void FUN_00551334(int player, int card);
 void FUN_00551572(int player, int card, int amount);
 void FUN_005514cd(int player, int card, int amount);
-void TENTATIVE_reassess_all_cards(void);
+void TENTATIVE_reassess_all_cards();
 
 int C_real_select_target(int who_chooses,
                          int allowed_controller,

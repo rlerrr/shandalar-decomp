@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "cardartlib/src/assert.h"
+#include "cardartlib/src/palette.h"
 #include "deckdll/src/magsnd.h"
 #include "game_support.h"
 
@@ -16,6 +17,39 @@ typedef int(__cdecl *in_play_card_callback_t)(int source_player,
                                               int internal_card_id);
 
 extern card_ptr_t global_raw_cards_storage[2000];
+
+typedef struct
+{
+  int arg_2;
+  int arg_5;
+  int arg_6;
+  int arg_7;
+  int arg_8;
+  int allow_cancel;
+  char prompt[200];
+  int allow_ai_player;
+  int allow_human_player;
+} target_selection_request_t;
+
+typedef struct
+{
+  char packet_type;
+  char pad_1[3];
+  int result;
+  int selection_code;
+  int previous_player;
+  int previous_phase;
+  int target_card;
+  int target_player;
+  int aux_player;
+  int aux_phase;
+  int aux_controller;
+  char thread_exit_code;
+} target_selection_network_packet_t;
+
+int FUN_0048930a(void);
+int FUN_00489362(void);
+int GetNextManaSymbol(char **param_1);
 
 int can_target(target_definition_t *td)
 {
@@ -1376,8 +1410,501 @@ void FUN_0040246a(int player, int amount)
 }
 
 // FUNCTION: MAGIC 0x004a6968
-void TENTATIVE_reassess_all_cards(void)
+void TENTATIVE_reassess_all_cards()
 {
+  int player;
+  int card;
+  int card_status;
+  card_instance_t* instance;
+  unsigned char* instance_bytes;
+
+  count_mana();
+  if (_DAT_00742fbc == 0 && trigger_condition == -1)
+  {
+    _DAT_00743024 = 0;
+  }
+
+  for (player = 0; player < 2; ++player)
+  {
+    for (card = 0; card < active_cards_count[player]; ++card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(player, card);
+      if (instance->internal_card_id != -1 && (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) != 0)
+      {
+        C_get_abilities(player, card, EVENT_CHANGE_TYPE, -1);
+      }
+    }
+  }
+
+  C_count_colors_of_lands_in_play();
+  for (player = 0; player < 2; ++player)
+  {
+    for (card = 0; card < active_cards_count[player]; ++card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(player, card);
+      if (instance->internal_card_id != -1)
+      {
+        instance_bytes = (unsigned char*)instance;
+        if ((global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) != 0 || (instance_bytes[0x13] & 4) != 0)
+        {
+          C_get_abilities(player, card, EVENT_ABILITIES, -1);
+        }
+        if (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE)
+        {
+          C_get_abilities(player, card, EVENT_POWER, -1);
+          C_get_abilities(player, card, EVENT_TOUGHNESS, -1);
+        }
+      }
+    }
+  }
+
+  if (unk_008a9000 != 1)
+  {
+    unk_008b3270 = 0;
+    for (player = 0; player < 2; ++player)
+    {
+      for (card = 0; card < active_cards_count[player]; ++card)
+      {
+        instance = &PLAYER_CARD_INSTANCE(player, card);
+        if (instance->internal_card_id != -1)
+        {
+          card_status = FUN_004b0047(player, card);
+          *(int*)((char*)instance + 0x68) = card_status;
+        }
+      }
+    }
+
+    if (unk_00742fc4 == 0)
+    {
+      FUN_004e1cd1();
+    }
+    else
+    {
+      SendMessageA((HWND)unk_008cf1b4, 0x464, 0xffff, 0);
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x004b0047
+int FUN_004b0047(int player, int card)
+{
+  int result;
+  int trigger_result;
+  int in_play;
+  card_instance_t* instance;
+  card_data_t* card_data;
+  unsigned int state;
+  unsigned int upkeep_flags;
+  unsigned int type;
+  unsigned int extra_ability;
+
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  state = instance->state;
+  upkeep_flags = instance->upkeep_flags;
+  in_play = is_in_play(player, card);
+  card_data = &global_cards_data[instance->internal_card_id];
+  type = (unsigned int)card_data->type;
+  extra_ability = (unsigned int)card_data->extra_ability;
+
+  unk_00743038 = 1;
+  instance->state |= 0x800;
+
+  if (in_play != 0
+      && current_phase == 0x15
+      && player == human_player
+      && (state & 0x8000) != 0
+      && (state & 4) == 0
+      && FUN_0044125c(player, card) != 0)
+  {
+    result = 2;
+  }
+  else if (in_play != 0 && trigger_condition != -1)
+  {
+    if (instance->unknown0x14 == trigger_condition)
+    {
+      if (current_turn == player)
+      {
+        trigger_result = 2;
+      }
+      else
+      {
+        trigger_result = 0;
+      }
+    }
+    else
+    {
+      trigger_result = FUN_004c0a36(FUN_004b082f(player, card, EVENT_TRIGGER, player), 0, 2);
+    }
+
+    if (trigger_result == 0)
+    {
+      result = 0;
+    }
+    else
+    {
+      DAT_007ab2bc |= 1 << ((unsigned char)trigger_result & 0x1f);
+      DAT_00791410 += 1;
+      result = trigger_result;
+    }
+  }
+  else
+  {
+    if (in_play == 0 && trigger_condition != -1 && card_data->code_pointer != card_death_ward)
+    {
+      result = 0;
+    }
+    else if (in_play != 0 && current_phase == 1)
+    {
+      push_affected_card_stack();
+      affected_card_controller = player;
+      affected_card = card;
+      event_result = 0;
+      C_dispatch_event_raw(EVENT_TRIGGER);
+      result = event_result;
+      pop_affected_card_stack();
+    }
+    else if (player == active_player)
+    {
+      if ((DAT_007aadec == 4 && (upkeep_flags & 1) != 0) || (DAT_007aadec == 10 && unk_008b28f8 == instance->internal_card_id))
+      {
+        unk_008b3270 |= 3;
+        DAT_007ab2bc |= 4;
+        result = 2;
+      }
+      else
+      {
+        instance->state &= ~0x800;
+        result = 0;
+      }
+    }
+    else if (_DAT_00742fbc == 0 && (current_phase == 0x15 || current_phase == 0x17))
+    {
+      if (in_play != 0 && (state & 0x10) == 0 && ((type & TYPE_CREATURE) != 0 || (state & 0x3000000) != 0))
+      {
+        if (player == human_player && FUN_0044125c(player, card) != 0 && (state & 0x10000) == 0)
+        {
+          unk_00743038 = 0;
+          return 0x10;
+        }
+        if (player != human_player && unk_008b60e0 != 0 && (state & 8) == 0)
+        {
+          unk_00743038 = 0;
+          return 0x20;
+        }
+      }
+
+      instance->state &= ~0x800;
+      result = 0;
+    }
+    else
+    {
+      if (in_play == 0)
+      {
+        if ((state & 0xa0) != 0)
+        {
+          instance->state &= ~0x800;
+          unk_00743038 = 0;
+          return 0;
+        }
+
+        single_color_test_bit_to_color_t((int)(char)card_data->color);
+        if (_DAT_00742fbc == 0 || (type & DAT_00742f68) != 0)
+        {
+          if ((type & TYPE_LAND) != 0)
+          {
+            if (player == human_player && (unk_008b4278 & 1) == 0 && (current_phase == 0x14 || current_phase == 0x1e))
+            {
+              unk_00743038 = 0;
+              return 4;
+            }
+
+            instance->state &= ~0x800;
+            unk_00743038 = 0;
+            return 0;
+          }
+
+          if ((((unk_008b35ec == human_player
+                 && (((_DAT_00742fbc != 0 && (type & 0x30) != 0) || current_phase == 0x14) || current_phase == 0x1e))
+                || (unk_008b35ec != human_player
+                    && _DAT_00742fbc != 0
+                    && ((type & 0x10) != 0 || (type & 0x20) != 0)))
+               && FUN_0043fdb3(player, player, card) != 0
+               && (((unk_008b4278 & 4) == 0 || (extra_ability & 0x3004) != 0)
+                   && ((type & 0x42) != 0 || dispatch_event_to_single_card(player, card, EVENT_CAN_CAST, 1 - player, -1) != 0))))
+          {
+            unk_00743038 = 0;
+            return 4;
+          }
+        }
+      }
+      else
+      {
+        if (DAT_007aadec == 4 && (upkeep_flags & 1) != 0)
+        {
+          unk_008b3270 |= 3;
+          DAT_007ab2bc |= 4;
+          unk_00743038 = 0;
+          return 2;
+        }
+
+        if (DAT_007aadec == 4
+            && (upkeep_flags & 0x10) != 0
+            && (upkeep_flags & 0x88) == 0
+            && FUN_00445b56(player, card) != 0)
+        {
+          DAT_007ab2bc |= 2;
+          unk_00743038 = 0;
+          return 8;
+        }
+
+        if ((state & 0x10) == 0
+            && (type & TYPE_CREATURE) != 0
+            && _DAT_00742fbc == 0
+            && player == human_player
+            && current_phase < 0x1b
+            && FUN_0044125c(player, card) != 0
+            && (((instance->token_status & 3) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0))
+        {
+          _DAT_00743024 = 1;
+        }
+
+        if ((((extra_ability & 0x1000) != 0
+              && (state & 0x10) == 0
+              && (((instance->token_status & 3) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0))
+             || ((extra_ability & 1) != 0 && (DAT_00742f68 & 0x10) != 0)
+             || ((extra_ability & 2) != 0 && (DAT_00742f68 & 0x20) != 0))
+            && (((unk_008b4278 & 4) == 0 || (extra_ability & 0x5004) != 0)
+                && ((unk_008b3270 &= ~2), (state & 0x20) == 0)
+                && dispatch_event_to_single_card(player, card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0))
+        {
+          if ((unk_008b3270 & 2) != 0)
+          {
+            DAT_007ab2bc |= 4;
+            unk_00743038 = 0;
+            return 2;
+          }
+
+          DAT_007ab2bc |= 2;
+          unk_00743038 = 0;
+          return 8;
+        }
+      }
+
+      instance->state &= ~0x800;
+      result = 0;
+    }
+  }
+
+  unk_00743038 = 0;
+  return result;
+}
+
+// FUNCTION: MAGIC 0x004e1cd1
+void FUN_004e1cd1(void)
+{
+}
+
+// FUNCTION: MAGIC 0x004eaf09
+int FUN_004eaf09(int player, color_t color, int amount)
+{
+  int result;
+  int available_mana;
+  unsigned int interchangeable_colors;
+  color_t effective_color;
+  int current_color;
+  int special_mana;
+  int xmana;
+  unsigned char mana_source_color;
+
+  if (color == COLOR_ARTIFACT || color == COLOR_COLORLESS)
+  {
+    effective_color = COLOR_ANY;
+  }
+  else
+  {
+    effective_color = color;
+  }
+
+  if (amount == 0)
+  {
+    return 1;
+  }
+
+  interchangeable_colors = 0;
+  for (current_color = 0; current_color < 10 && unk_007161e0[player][current_color] != -1; ++current_color)
+  {
+    if (effective_color == (color_t)((unsigned int)unk_007161e0[player][current_color] >> 16))
+    {
+      mana_source_color = (unsigned char)(unsigned short)unk_007161e0[player][current_color];
+      interchangeable_colors |= 1 << (mana_source_color & 0x1f);
+    }
+  }
+
+  available_mana = raw_mana_available[player][effective_color];
+  for (current_color = COLOR_COLORLESS; current_color < 7; ++current_color)
+  {
+    if (effective_color != current_color && (interchangeable_colors & (1 << ((unsigned char)current_color & 0x1f))) != 0)
+    {
+      available_mana += raw_mana_available[player][current_color];
+    }
+  }
+
+  special_mana = unk_00742f70[player * 8 + effective_color];
+  for (current_color = COLOR_COLORLESS; current_color < 7; ++current_color)
+  {
+    if (effective_color != current_color && (interchangeable_colors & (1 << ((unsigned char)current_color & 0x1f))) != 0)
+    {
+      special_mana += unk_00742f70[player * 8 + current_color];
+    }
+  }
+
+  xmana = 0;
+  for (current_color = 0; current_color < 0x32 && raw_mana_available_hex[player][current_color] != -1; ++current_color)
+  {
+    if (effective_color == COLOR_ANY)
+    {
+      xmana += raw_mana_available_hex[player][current_color] >> 16;
+    }
+    else if ((raw_mana_available_hex[player][current_color] & (1 << ((unsigned char)effective_color & 0x1f))) == 0)
+    {
+      if ((interchangeable_colors & raw_mana_available_hex[player][current_color]) != 0)
+      {
+        xmana += raw_mana_available_hex[player][current_color] >> 16;
+      }
+    }
+    else
+    {
+      xmana += raw_mana_available_hex[player][current_color] >> 16;
+    }
+  }
+
+  if (color == COLOR_ANY || color == COLOR_COLORLESS)
+  {
+    result = (((available_mana - raw_mana_available[player][COLOR_ARTIFACT]) + special_mana) - unk_00742f70[player * 8 + COLOR_ARTIFACT]) + xmana;
+  }
+  else
+  {
+    result = xmana + special_mana + available_mana;
+  }
+
+  if (result < amount)
+  {
+    result = 0;
+  }
+
+  return result;
+}
+
+// FUNCTION: MAGIC 0x0043fdb3
+int FUN_0043fdb3(int player, int target_player, int target_card)
+{
+  int internal_card_id;
+  int color;
+  int colored_cost;
+  int colorless_cost;
+
+  if (player == -1 || target_player == -1 || target_card == -1)
+  {
+    return 0;
+  }
+
+  internal_card_id = PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id;
+  if (internal_card_id == -1)
+  {
+    return 0;
+  }
+
+  colored_cost = (int)(char)global_cards_data[internal_card_id].cc[0];
+  colorless_cost = (int)(char)global_cards_data[internal_card_id].cc[1];
+  if ((global_cards_data[internal_card_id].type & TYPE_ARTIFACT) == 0)
+  {
+    color = single_color_test_bit_to_color_t((int)(char)global_cards_data[internal_card_id].color);
+    if (has_mana_w_global_cost_mod(player, target_card, color, colored_cost) == 0)
+    {
+      return 0;
+    }
+
+    if (colorless_cost > 0 && has_mana_w_global_cost_mod(player, target_card, COLOR_ANY, colored_cost + colorless_cost) == 0)
+    {
+      return 0;
+    }
+  }
+  else if (FUN_004eaf09(player, COLOR_ARTIFACT, colored_cost + colorless_cost) == 0)
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
+// FUNCTION: MAGIC 0x00442dac
+void push_affected_card_stack(void)
+{
+  if (DAT_00561268 < 0x20)
+  {
+    DAT_0093f4c0[DAT_00561268][0] = affected_card_controller;
+    DAT_0093f4c0[DAT_00561268][1] = affected_card;
+    DAT_0093f4c0[DAT_00561268][2] = unk_008b4dd0;
+    DAT_0093f4c0[DAT_00561268][3] = unk_008cf6d4;
+    DAT_0093f4c0[DAT_00561268][4] = attacking_card_controller;
+    DAT_0093f4c0[DAT_00561268][5] = attacking_card;
+    DAT_0093f4c0[DAT_00561268][6] = event_result;
+    DAT_00561268 += 1;
+  }
+}
+
+// FUNCTION: MAGIC 0x00442e62
+void pop_affected_card_stack(void)
+{
+  if (DAT_00561268 > 0)
+  {
+    DAT_00561268 -= 1;
+  }
+
+  affected_card_controller = DAT_0093f4c0[DAT_00561268][0];
+  affected_card = DAT_0093f4c0[DAT_00561268][1];
+  unk_008b4dd0 = DAT_0093f4c0[DAT_00561268][2];
+  unk_008cf6d4 = DAT_0093f4c0[DAT_00561268][3];
+  attacking_card_controller = DAT_0093f4c0[DAT_00561268][4];
+  attacking_card = DAT_0093f4c0[DAT_00561268][5];
+  event_result = DAT_0093f4c0[DAT_00561268][6];
+}
+
+// FUNCTION: MAGIC 0x00445b56
+int FUN_00445b56(int player, int card)
+{
+  int total_paid;
+  int current_color;
+  card_instance_t* instance;
+  unsigned char* instance_bytes;
+
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  if ((instance->state & 0x10) == 0)
+  {
+    return 0;
+  }
+
+  instance_bytes = (unsigned char*)instance;
+  total_paid = 0;
+  for (current_color = COLOR_BLACK; current_color < 7; ++current_color)
+  {
+    if ((char)instance_bytes[0x2c + current_color] != 0)
+    {
+      if (FUN_004eaf09(player, (color_t)current_color, (int)(char)instance_bytes[0x2c + current_color]) == 0)
+      {
+        return 0;
+      }
+      total_paid += (int)(char)instance_bytes[0x2c + current_color];
+    }
+  }
+
+  if (FUN_004eaf09(player, COLOR_ANY, (int)(char)instance_bytes[0x2c] + total_paid) == 0)
+  {
+    return 0;
+  }
+
+  dispatch_event_to_single_card(player, card, EVENT_CHECK_UNTAP_PAYMENT, 1 - player, -1);
+  return DAT_008cf1b8 == 0;
 }
 
 // FUNCTION: MAGIC 0x00445918
@@ -3974,8 +4501,57 @@ void vigilance(int player, int card, event_t event)
 // FUNCTION: MAGIC 0x00542a2a
 void FUN_00542a2a(int player, int card)
 {
-  (void)player;
-  (void)card;
+  struct
+  {
+    int found_linked_card;
+    int test_player;
+    int test_card;
+  } s;
+  card_instance_t* instance;
+  card_instance_t* test_instance;
+
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  s.test_player = 0;
+  s.found_linked_card = 0;
+  while (s.test_player < 2 && !s.found_linked_card)
+  {
+    s.test_card = 0;
+    while (s.test_card < active_cards_count[s.test_player] && !s.found_linked_card)
+    {
+      test_instance = &PLAYER_CARD_INSTANCE(s.test_player, s.test_card);
+      if (is_in_play(s.test_player, s.test_card) &&
+          test_instance->damage_target_player == player &&
+          test_instance->damage_target_card == card &&
+          ((test_instance->internal_card_id == unk_008b49c4 && (((unsigned char*)test_instance)[0x1a] & 0x80) != 0) ||
+           test_instance->internal_card_id == unk_008b3d10))
+      {
+        s.found_linked_card = 1;
+      }
+      else
+      {
+        ++s.test_card;
+      }
+    }
+    if (!s.found_linked_card)
+    {
+      ++s.test_player;
+    }
+  }
+
+  if (!s.found_linked_card)
+  {
+    ((unsigned char*)instance)[0x68] = 0;
+    *(int *)((char*)instance + 0x14) = 0;
+    *(short *)((char*)instance + 0x10) = 0;
+    FUN_004f7783(player, card);
+    if (unk_008a9000 != 1)
+    {
+      play_sound_effect(0x1a);
+    }
+    *(unsigned int *)((char*)instance + 0x18) &= 0xffffff7f;
+    ((unsigned char*)instance)[0x24] = 0xff;
+    *(unsigned int *)((char*)instance + 8) &= 0xfffffff3;
+  }
 }
 
 // FUNCTION: MAGIC 0x0054ac4d
@@ -4182,47 +4758,451 @@ char *FUN_00495311(int value)
 // FUNCTION: MAGIC 0x0049ebde
 INT_PTR CALLBACK FUN_0049ebde(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM lparam_data)
 {
-  unsigned int command;
-  int result;
+  UINT command;
+  int button_index;
+  int button_x;
+  int button_y;
+  int columns;
+  int rows;
+  int title_bar_height;
+  int client_bottom;
+  int frame_width;
+  int row;
+  int right_border_width;
+  int bottom_border_height;
+  int window_style;
+  int scroll_pos;
+  int scroll_min;
+  int scroll_max;
+  int new_scroll_pos;
+  int current_button_state;
+  int destroy_result;
+  int nc_calc_result;
+  int client_top_limit;
+  int width;
+  int height;
+  LONG long_result;
+  RECT rect;
+  RECT client_rect;
+  RECT window_rect;
+  RECT title_rect;
+  RECT scroll_rect;
+  RECT erase_rect;
+  SIZE text_extent;
+  HDC dc;
+  HDC screen_dc;
+  HGDIOBJ old_obj;
+  HWND card_window;
+  LONG has_selection;
+  DWORD style;
+  UINT flags;
+  BOOL has_menu;
+  char title_text[100];
+  int* dialog_data;
 
-  (void)hwnd;
-  (void)lparam_data;
-
-  switch (msg)
+  if (msg < 0x15)
   {
-  case 0x10:
-  case 0x201:
-    return 1;
-
-  case 0x14:
-    return 1;
-
-  case 0x100:
-    return 1;
-
-  case 0x111:
-    command = (unsigned int)wparam_dc & 0xffff;
-    if (command == 1 || command == 2 || command >= 10)
+    if (msg == 0x14)
     {
+      dc = (HDC)wparam_dc;
+      ApplyCardArtPaletteToDc(dc);
+      GetClientRect(hwnd, &erase_rect);
+      FillRect(dc, &erase_rect, (HBRUSH)DAT_00638c40);
       return 1;
     }
-    return 1;
-
-  case 0x110:
-  case 0x115:
-    return 0;
+    if (msg == 0x10)
+    {
+destroy_window:
+      destroy_result = GetWindowLongA(hwnd, 8);
+      if (destroy_result == 0)
+      {
+        FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
+        EndDialog(hwnd, -1);
+      }
+      return 1;
+    }
   }
-
-  if (msg > 0x30e && msg < 0x312)
+  else if (msg < 0xa2)
   {
-    result = 0;
+    if (msg == 0xa1)
+    {
+      if ((HDC)wparam_dc == (HDC)0xc8)
+      {
+        SendMessageA(hwnd, 0x10, 0, 0);
+        long_result = 0;
+      }
+      else
+      {
+        long_result = DefWindowProcA(hwnd, 0xa1, wparam_dc, lparam_data);
+      }
+      SetWindowLongA(hwnd, 0, long_result);
+      return 1;
+    }
+    if (msg == 0x84)
+    {
+      nc_calc_result = DefWindowProcA(hwnd, 0x84, wparam_dc, lparam_data);
+      if (nc_calc_result == 8 || nc_calc_result == 2)
+      {
+        screen_dc = GetDC(0);
+        GetTextExtentPoint32A(screen_dc, (LPCSTR)((char*)DAT_00638ba4 + 0x1780), strlen((char*)DAT_00638ba4 + 0x1780), &text_extent);
+        ReleaseDC(0, screen_dc);
+        GetClientRect(hwnd, &rect);
+        MapWindowPoints(hwnd, 0, (LPPOINT)&rect, 2);
+        if (rect.right - text_extent.cx <= (int)((unsigned long)lparam_data & 0xffff))
+        {
+          nc_calc_result = 200;
+        }
+      }
+      SetWindowLongA(hwnd, 0, nc_calc_result);
+      return 1;
+    }
+    if (msg > 0x84 && msg < 0x87)
+    {
+      has_selection = GetWindowLongA(hwnd, 8);
+      GetWindowRect(hwnd, &window_rect);
+      OffsetRect(&window_rect, -window_rect.left, -window_rect.top);
+      if (window_rect.right != window_rect.left && window_rect.bottom != window_rect.top)
+      {
+        if (msg == 0x85)
+        {
+          DefWindowProcA(hwnd, 0x85, wparam_dc, lparam_data);
+        }
+        current_button_state = (msg != 0x85);
+        dc = GetWindowDC(hwnd);
+        if (dc != 0)
+        {
+          ApplyCardArtPaletteToDc(dc);
+          GetWindowRect(hwnd, &window_rect);
+          GetClientRect(hwnd, &client_rect);
+          MapWindowPoints(hwnd, 0, (LPPOINT)&client_rect, 2);
+          OffsetRect(&client_rect, -window_rect.left, -window_rect.top);
+          OffsetRect(&window_rect, -window_rect.left, -window_rect.top);
+          GetWindowTextA(hwnd, title_text, 100);
+          right_border_width = client_rect.left - window_rect.left;
+          bottom_border_height = window_rect.bottom - client_rect.bottom;
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, 0, 0, 0);
+          LineTo(dc, window_rect.right - 1, 0);
+          SelectObject(dc, (HGDIOBJ)DAT_00638b68);
+          for (row = 1; row <= bottom_border_height - 2; ++row)
+          {
+            MoveToEx(dc, 1, row, 0);
+            LineTo(dc, (window_rect.right - right_border_width) + 1, row);
+          }
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, right_border_width - 1, bottom_border_height - 1, 0);
+          LineTo(dc, window_rect.right - right_border_width, bottom_border_height - 1);
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, 0, 0, 0);
+          LineTo(dc, 0, window_rect.bottom - 1);
+          SelectObject(dc, (HGDIOBJ)DAT_00638b68);
+          for (row = 1; row <= right_border_width - 2; ++row)
+          {
+            MoveToEx(dc, row, 1, 0);
+            LineTo(dc, row, window_rect.bottom - 1);
+          }
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, client_rect.left - 1, bottom_border_height - 1, 0);
+          LineTo(dc, client_rect.left - 1, client_rect.bottom + 1);
+          old_obj = GetStockObject(7);
+          SelectObject(dc, old_obj);
+          MoveToEx(dc, window_rect.right - 1, 0, 0);
+          LineTo(dc, window_rect.right - 1, window_rect.bottom);
+          SelectObject(dc, (HGDIOBJ)DAT_00638b70);
+          for (row = 1, frame_width = window_rect.right - 2; row <= right_border_width - 2; ++row, --frame_width)
+          {
+            MoveToEx(dc, frame_width, 1, 0);
+            LineTo(dc, frame_width, window_rect.bottom - 1);
+          }
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, window_rect.right - right_border_width, bottom_border_height - 1, 0);
+          LineTo(dc, window_rect.right - right_border_width, client_rect.bottom + 1);
+          old_obj = GetStockObject(7);
+          SelectObject(dc, old_obj);
+          MoveToEx(dc, 0, window_rect.bottom - 1, 0);
+          LineTo(dc, window_rect.right, window_rect.bottom - 1);
+          SelectObject(dc, (HGDIOBJ)DAT_00638b70);
+          for (row = 1, frame_width = window_rect.bottom - 2; row <= bottom_border_height - 2; ++row, --frame_width)
+          {
+            MoveToEx(dc, 1, frame_width, 0);
+            LineTo(dc, window_rect.right - 1, frame_width);
+          }
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, right_border_width - 1, window_rect.bottom - bottom_border_height, 0);
+          LineTo(dc, window_rect.right - 2, window_rect.bottom - bottom_border_height);
+          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
+          MoveToEx(dc, client_rect.left, client_rect.top - 1, 0);
+          LineTo(dc, window_rect.right - right_border_width, client_rect.top - 1);
+          SetRect(&title_rect, client_rect.left, bottom_border_height, window_rect.right - right_border_width, client_rect.top - 1);
+          FillRect(dc, &title_rect, (HBRUSH)DAT_00638bf4);
+          SetTextColor(dc, DAT_00638c6c);
+          SetBkMode(dc, 1);
+          title_rect.left += 5;
+          DrawTextA(dc, title_text, -1, &title_rect, 0x24);
+          if (has_selection == 0)
+          {
+            DrawTextA(dc, (LPCSTR)((char*)DAT_00638ba4 + 0x1780), -1, &title_rect, 0x26);
+          }
+          ReleaseDC(hwnd, dc);
+        }
+        SetWindowLongA(hwnd, 0, current_button_state);
+        return 1;
+      }
+      return DefWindowProcA(hwnd, msg, wparam_dc, lparam_data);
+    }
+  }
+  else if (msg < 0x111)
+  {
+    if (msg == 0x110)
+    {
+      dialog_data = (int*)lparam_data;
+      DAT_00638ba4 = dialog_data;
+      SetWindowLongA(hwnd, 8, dialog_data[0x5df]);
+      DAT_00638c08 = 0;
+      FUN_0049fd0c(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
+      SetWindowTextA(hwnd, (LPCSTR)*DAT_00638ba4);
+      columns = DAT_00638ba4[0x5dd];
+      DAT_00638b80 = (DAT_008a9190 * 2) / 3;
+      DAT_00638c84 = (DAT_008cf1b0 * 2) / 3;
+      DAT_00638b48 = 8;
+      DAT_00638b34 = 8;
+      rows = 6;
+      if (columns % 6 == 1)
+      {
+        rows = 5;
+      }
+      title_bar_height = columns / rows;
+      if (columns % rows > 0)
+      {
+        ++title_bar_height;
+      }
+      client_top_limit = 4;
+      SetRect(&rect, 0, 0, (DAT_00638b80 + 8) * rows + 8, (DAT_00638c84 + 8) * title_bar_height + 8);
+      style = GetWindowLongA(hwnd, -0x10);
+      SetWindowLongA(hwnd, -0x10, style & 0xffdfffff);
+      if (client_top_limit < title_bar_height)
+      {
+        style = GetWindowLongA(hwnd, -0x10);
+        SetWindowLongA(hwnd, -0x10, style | 0x200000);
+        SetScrollRange(hwnd, 1, 0, rect.bottom - ((DAT_00638c84 + DAT_00638b34) * client_top_limit + DAT_00638b34), 1);
+        SetScrollPos(hwnd, 1, 0, 1);
+        rect.bottom = (DAT_00638c84 + DAT_00638b34) * client_top_limit + rect.top + DAT_00638b34;
+        rect.right += GetSystemMetrics(2);
+      }
+      has_menu = 0;
+      window_style = GetWindowLongA(hwnd, -0x10);
+      AdjustWindowRect(&rect, window_style, has_menu);
+      flags = 4;
+      height = rect.bottom - rect.top;
+      width = rect.right - rect.left;
+      button_y = (GetSystemMetrics(1) - (rect.bottom - rect.top)) / 2;
+      button_x = (GetSystemMetrics(0) - (rect.right - rect.left)) / 2;
+      SetWindowPos(hwnd, 0, button_x, button_y, width, height, flags);
+      button_x = DAT_00638b48;
+      button_y = DAT_00638b34;
+      GetClientRect(hwnd, &rect);
+      for (button_index = 0; button_index < DAT_00638ba4[0x5dd]; ++button_index)
+      {
+        card_window = CreateWindowExA(0, unk_00572920, unk_00572930 + 4, 0x50000000, button_x, button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(button_index + 10),
+                                      (HINSTANCE)unk_00925030, (LPVOID)DAT_00638ba4[button_index + 1]);
+        if (DAT_00638ba4[0x5de] != 0)
+        {
+          SendMessageA(card_window, 0x414, 1, DAT_00638ba4[button_index + 0x1f5]);
+        }
+        button_x += DAT_00638b48 + DAT_00638b80;
+        if (rect.right < button_x + DAT_00638b80)
+        {
+          button_y += DAT_00638c84 + DAT_00638b34;
+          button_x = DAT_00638b48;
+        }
+      }
+      SetFocus(hwnd);
+      return 0;
+    }
+    if (msg == 0x100)
+    {
+      if ((HDC)wparam_dc == (HDC)0x22)
+      {
+        SendMessageA(hwnd, 0x115, 3, 0);
+      }
+      else if ((HDC)wparam_dc == (HDC)0x21)
+      {
+        SendMessageA(hwnd, 0x115, 2, 0);
+      }
+      else if ((HDC)wparam_dc == (HDC)0x28)
+      {
+        SendMessageA(hwnd, 0x115, 1, 0);
+      }
+      else if ((HDC)wparam_dc == (HDC)0x26)
+      {
+        SendMessageA(hwnd, 0x115, 0, 0);
+      }
+      else if ((HDC)wparam_dc == (HDC)0x1b)
+      {
+        SendMessageA(hwnd, 0x10, 0, 0);
+      }
+      return 1;
+    }
+  }
+  else if (msg < 0x116)
+  {
+    if (msg == 0x115)
+    {
+      scroll_pos = GetScrollPos(hwnd, 1);
+      GetScrollRange(hwnd, 1, &scroll_min, &scroll_max);
+      GetClientRect(hwnd, &scroll_rect);
+      frame_width = DAT_00638c84 + DAT_00638b34;
+      client_bottom = scroll_rect.bottom - DAT_00638b34;
+      switch ((unsigned int)wparam_dc & 0xffff)
+      {
+      case 0:
+        new_scroll_pos = scroll_pos - frame_width;
+        break;
+      case 1:
+        new_scroll_pos = scroll_pos + frame_width;
+        break;
+      case 2:
+      case 4:
+      case 5:
+        new_scroll_pos = (unsigned int)wparam_dc >> 16;
+        break;
+      case 3:
+        new_scroll_pos = scroll_pos + client_bottom;
+        break;
+      default:
+        new_scroll_pos = scroll_pos;
+        break;
+      }
+      if (new_scroll_pos < scroll_min)
+      {
+        new_scroll_pos = scroll_min;
+      }
+      if (new_scroll_pos > scroll_max)
+      {
+        new_scroll_pos = scroll_max;
+      }
+      ScrollWindow(hwnd, 0, -(new_scroll_pos - scroll_pos), 0, 0);
+      SetScrollPos(hwnd, 1, new_scroll_pos, 1);
+      return 1;
+    }
+    if (msg == 0x111)
+    {
+      command = (unsigned int)wparam_dc & 0xffff;
+      dialog_data = (int*)lparam_data;
+      has_selection = GetWindowLongA(hwnd, 8);
+      if (command == 2 || command == 1)
+      {
+        if (has_selection == 0)
+        {
+          FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
+          EndDialog(hwnd, -1);
+        }
+      }
+      else if (dialog_data != 0 && *((int*)DAT_00638ba4 + command + 0x3df) != 0)
+      {
+        button_index = command - 10;
+        FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
+        EndDialog(hwnd, button_index);
+      }
+      return 1;
+    }
   }
   else
   {
-    result = 0;
+    if (msg == 0x201)
+    {
+      goto destroy_window;
+    }
+    if (msg > 0x30e && msg < 0x312)
+    {
+      return FUN_004962cc((int)hwnd, msg, (int)wparam_dc, (int)lparam_data);
+    }
   }
 
-  return result;
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x00496489
+BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
+{
+  if (GetParent(child_hwnd) == *(HWND*)lparam)
+  {
+    SendMessageA(child_hwnd, *(UINT*)(lparam + 4), *(WPARAM*)(lparam + 8), *(LPARAM*)(lparam + 12));
+  }
+
+  return 1;
+}
+
+// FUNCTION: MAGIC 0x004962cc
+int FUN_004962cc(int window, unsigned int message, int other_window, int data)
+{
+  HDC dc;
+  DWORD source_process_id;
+  DWORD target_process_id;
+  HWND hwnd;
+  HWND other_hwnd;
+  struct
+  {
+    HWND hwnd;
+    UINT message;
+    HWND other_window;
+    LPARAM data;
+  } forwarded_message;
+
+  hwnd = (HWND)window;
+  other_hwnd = (HWND)other_window;
+  if (message == 0x30f)
+  {
+    UnrealizeObject((HGDIOBJ)DAT_00777844);
+    dc = GetDC(hwnd);
+    SelectPalette(dc, (HPALETTE)DAT_00777844, 0);
+    if (RealizePalette(dc) != 0)
+    {
+      InvalidateRect(hwnd, 0, 1);
+    }
+    ReleaseDC(hwnd, dc);
+    return 1;
+  }
+
+  if (message < 0x310 || message > 0x311)
+  {
+    return 0;
+  }
+
+  if (other_hwnd != hwnd)
+  {
+    GetWindowThreadProcessId(other_hwnd, &source_process_id);
+    GetWindowThreadProcessId(hwnd, &target_process_id);
+    if (source_process_id == target_process_id)
+    {
+      if (GetParent(hwnd) == 0)
+      {
+        dc = GetDC(hwnd);
+        SelectPalette(dc, (HPALETTE)DAT_00777844, 1);
+        InvalidateRect(hwnd, 0, 1);
+        ReleaseDC(hwnd, dc);
+      }
+      else if ((GetWindowLongA(hwnd, -0x10) & 0x40000000) == 0)
+      {
+        InvalidateRect(hwnd, 0, 1);
+      }
+    }
+    else
+    {
+      InvalidateRect(hwnd, 0, 1);
+    }
+  }
+
+  if (message == 0x311)
+  {
+    forwarded_message.hwnd = hwnd;
+    forwarded_message.message = message;
+    forwarded_message.other_window = other_hwnd;
+    forwarded_message.data = data;
+    EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&forwarded_message);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0049fe68
@@ -4553,6 +5533,390 @@ int FUN_00482a97(int player, int card, unsigned int flags)
   return found;
 }
 
+// FUNCTION: MAGIC 0x0055d91b
+int FUN_0055d91b(HDC dc, char *text)
+{
+  int symbol;
+  BOOL has_abc_widths;
+  int char_width;
+  int text_width;
+  char mana_symbol;
+  TEXTMETRICA text_metrics;
+  ABC abc_widths;
+
+  if (text == NULL)
+  {
+    text_width = 0;
+  }
+  else
+  {
+    GetTextMetricsA(dc, &text_metrics);
+    text_width = 0;
+    while (*text != '\0')
+    {
+      symbol = GetNextManaSymbol(&text);
+      mana_symbol = (char)symbol;
+      if (mana_symbol == '\0')
+      {
+        has_abc_widths = GetCharABCWidthsA(dc, (int)*text, (int)*text, &abc_widths);
+        if (!has_abc_widths)
+        {
+          GetCharWidthA(dc, (int)*text, (int)*text, &char_width);
+          text_width += char_width;
+        }
+        else
+        {
+          text_width += abc_widths.abcA + abc_widths.abcB + abc_widths.abcC;
+        }
+        ++text;
+      }
+      else
+      {
+        text_width += text_metrics.tmHeight;
+      }
+    }
+  }
+
+  return text_width;
+}
+
+// FUNCTION: MAGIC 0x0049535a
+int FUN_0049535a(HWND window, char *text)
+{
+  int text_width;
+  HGDIOBJ font;
+  HDC dc;
+  char window_text[200];
+  TEXTMETRICA text_metrics;
+
+  if (window == NULL)
+  {
+    text_width = 0;
+  }
+  else
+  {
+    font = (HGDIOBJ)SendMessageA(window, 0x31, 0, 0);
+    if (text == NULL)
+    {
+      GetWindowTextA(window, window_text, 200);
+    }
+    else
+    {
+      strcpy(window_text, text);
+    }
+
+    dc = GetDC(window);
+    ApplyCardArtPaletteToDc(dc);
+    if (font != NULL)
+    {
+      SelectObject(dc, font);
+    }
+
+    text_width = FUN_0055d91b(dc, window_text);
+    GetTextMetricsA(dc, &text_metrics);
+    text_width += text_metrics.tmHeight * 3;
+    ReleaseDC(window, dc);
+  }
+
+  return text_width;
+}
+
+// FUNCTION: MAGIC 0x004480e4
+void FUN_004480e4(char *text)
+{
+  int screen_width;
+  int screen_height;
+  int tooltip_height;
+  int tooltip_width;
+  int tooltip_x;
+  int tooltip_y;
+  int cursor_height;
+  POINT cursor_pos;
+  char *tooltip_text;
+
+  if (text == NULL)
+  {
+    tooltip_text = "";
+  }
+  else
+  {
+    tooltip_text = text;
+  }
+
+  if (DAT_0091c998 != 0)
+  {
+    if (*tooltip_text == '\0')
+    {
+      ShowWindow((HWND)DAT_007a7d74, 0);
+      SetWindowTextA((HWND)DAT_007a7d74, tooltip_text);
+    }
+    else
+    {
+      screen_width = GetSystemMetrics(0);
+      screen_height = GetSystemMetrics(1);
+      if (DAT_0091c974 == 0)
+      {
+        tooltip_height = (GetSystemMetrics(1) * 3) / 100;
+        if (tooltip_height < 0x13)
+        {
+          tooltip_height = 0x12;
+        }
+
+        tooltip_width = FUN_0049535a((HWND)DAT_007a7d74, tooltip_text);
+        tooltip_width += tooltip_height * 2;
+        tooltip_x = (screen_width - (screen_width * 0x14) / 100) - tooltip_width;
+        tooltip_y = (screen_height - tooltip_height) / 2;
+      }
+      else
+      {
+        tooltip_height = (GetSystemMetrics(1) * 2) / 100;
+        if (tooltip_height < 0xd)
+        {
+          tooltip_height = 0xc;
+        }
+
+        tooltip_width = FUN_0049535a((HWND)DAT_007a7d74, tooltip_text);
+        tooltip_width += tooltip_height * 2;
+        GetCursorPos(&cursor_pos);
+        cursor_height = GetSystemMetrics(0xe);
+        cursor_pos.y += cursor_height;
+        if (screen_width < cursor_pos.x + tooltip_width)
+        {
+          cursor_pos.x = screen_width - tooltip_width;
+        }
+        if (screen_height < cursor_pos.y + tooltip_height)
+        {
+          cursor_pos.y = screen_height - tooltip_height;
+        }
+        tooltip_x = cursor_pos.x;
+        tooltip_y = cursor_pos.y;
+      }
+
+      SetWindowPos((HWND)DAT_007a7d74, (HWND)0, tooltip_x, tooltip_y, tooltip_width, tooltip_height, 4);
+      SetWindowTextA((HWND)DAT_007a7d74, tooltip_text);
+      ShowWindow((HWND)DAT_007a7d74, 5);
+      BringWindowToTop((HWND)DAT_007a7d74);
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x004466b5
+int FUN_004466b5(int who_chooses,
+                 int arg_2,
+                 char *prompt,
+                 int allow_cancel,
+                 int arg_5,
+                 int arg_6,
+                 int arg_7,
+                 int arg_8,
+                 int *out_selection_code,
+                 int *out_target_player,
+                 int allow_ai_player,
+                 int allow_human_player)
+{
+  BOOL bigcard_visible;
+  POINT cursor_pos;
+  HWND cursor_window;
+  char prompt_buffer[200];
+  char status_text[500];
+  int selection_code;
+  int target_player;
+  int target_card;
+  int result;
+  WPARAM thread_exit_code;
+  target_selection_request_t request;
+  target_selection_network_packet_t *packet;
+
+  thread_exit_code = 0;
+  if (prompt == NULL)
+  {
+    strcpy(prompt_buffer, "");
+    strcpy(status_text, "");
+  }
+  else
+  {
+    strcpy(prompt_buffer, prompt);
+    strcpy(status_text, "");
+    strcat(status_text, prompt);
+  }
+
+  EnterCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+  if (DAT_007abc74 != -1)
+  {
+    if ((unk_00926804 & 2) == 0)
+    {
+      DAT_007abc74 = -1;
+    }
+
+    bigcard_visible = IsWindowVisible((HWND)DAT_008a8dec);
+    if (!bigcard_visible)
+    {
+      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
+    }
+    else
+    {
+      InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
+    }
+  }
+  LeaveCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+
+  TENTATIVE_reassess_all_cards();
+  GetCursorPos(&cursor_pos);
+  cursor_window = WindowFromPoint(cursor_pos);
+  SendMessageA(cursor_window, 0x20, (WPARAM)cursor_window, 0x2000001);
+
+  request.arg_2 = arg_2;
+  request.arg_5 = arg_5;
+  request.arg_6 = arg_6;
+  request.arg_7 = arg_7;
+  request.arg_8 = arg_8;
+  request.allow_cancel = allow_cancel;
+  strcpy(request.prompt, prompt_buffer);
+  request.allow_ai_player = allow_ai_player;
+  request.allow_human_player = allow_human_player;
+
+  if (who_chooses == unk_008b35ec || (unk_00926804 & 2) == 0)
+  {
+    if (DAT_0093d840 != 0)
+    {
+      play_sound_effect(0x25);
+      DAT_0093d840 = 0;
+    }
+
+    if (DAT_007aaeec == 0 || current_phase != 10 || *(int *)&unk_009266d0[0x7c] != 0)
+    {
+      result = SendMessageA((HWND)unk_008cf1b4, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
+      target_player = out_target_player[0];
+      target_card = out_target_player[1];
+    }
+    else
+    {
+      result = 0;
+      selection_code = -2;
+      target_card = -2;
+      target_player = -1;
+      thread_exit_code = 0;
+      unk_00716244 = -1;
+      unk_00716248 = -1;
+      unk_00715fb0 = 0;
+      DAT_0072c8e0 = 0;
+      DAT_00715fa4 = 0;
+    }
+
+    if ((unk_00926804 & 2) != 0)
+    {
+      packet = (target_selection_network_packet_t *)&unk_008cf200;
+      packet->packet_type = 0xc;
+      packet->result = result;
+      packet->selection_code = selection_code;
+      if (unk_00716244 == -1)
+      {
+        packet->previous_player = unk_00716244;
+      }
+      else
+      {
+        packet->previous_player = 1 - unk_00716244;
+      }
+      packet->previous_phase = unk_00716248;
+      packet->target_card = target_card;
+      if (result == 0)
+      {
+        packet->target_player = target_player;
+      }
+      else
+      {
+        packet->target_player = 1 - target_player;
+      }
+      packet->aux_player = unk_00715fb0;
+      packet->aux_phase = DAT_0072c8e0;
+      packet->aux_controller = 1 - DAT_00715fa4;
+      packet->thread_exit_code = 1 - (char)thread_exit_code;
+      TENTATIVE_send_network_result(who_chooses, 0xc);
+      Sleep(0xfa);
+      FUN_00501d78(who_chooses);
+    }
+  }
+  else
+  {
+    FUN_004a61d6("");
+    DAT_0093d840 = 1;
+    TENTATIVE_wait_for_network_result(who_chooses, 0xc);
+    packet = (target_selection_network_packet_t *)&unk_008cf200;
+    result = packet->result;
+    selection_code = packet->selection_code;
+    _DAT_00743034 = packet->previous_player;
+    unk_007161d4 = packet->previous_phase;
+    target_card = packet->target_card;
+    target_player = packet->target_player;
+    unk_00715fb0 = packet->aux_player;
+    DAT_0072c8e0 = packet->aux_phase;
+    DAT_00715fa4 = packet->aux_controller;
+    thread_exit_code = (WPARAM)packet->thread_exit_code;
+    FUN_00501deb(who_chooses);
+    FUN_004a61d6("");
+  }
+
+  *out_selection_code = selection_code;
+  *out_target_player = target_player;
+  out_target_player[1] = target_card;
+  FUN_004480e4(NULL);
+
+  if (selection_code != -5)
+  {
+    GetCursorPos(&cursor_pos);
+    cursor_window = WindowFromPoint(cursor_pos);
+    SendMessageA(cursor_window, 0x20, (WPARAM)cursor_window, 0x2000001);
+    EnterCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+    if (_DAT_0074303c == -2)
+    {
+      if (unk_00716248 == -1)
+      {
+        if ((unk_00926804 & 2) == 0)
+        {
+          DAT_007abc74 = -1;
+          DAT_007aa928 = -1;
+        }
+        else
+        {
+          DAT_007aa928 = unk_00716244;
+          DAT_007abc74 = unk_00716248;
+        }
+      }
+      else
+      {
+        DAT_007aa928 = unk_00716244;
+        DAT_007abc74 = unk_00716248;
+      }
+    }
+    else if ((unk_00926804 & 2) == 0)
+    {
+      DAT_007abc74 = -1;
+      DAT_007aa928 = -1;
+    }
+    else
+    {
+      DAT_007aa928 = unk_00716244;
+      DAT_007abc74 = unk_00716248;
+    }
+
+    bigcard_visible = IsWindowVisible((HWND)DAT_008a8dec);
+    if (!bigcard_visible)
+    {
+      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
+    }
+    else
+    {
+      InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
+    }
+    LeaveCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+    return result;
+  }
+
+  PostMessageA((HWND)unk_008cf1b4, 0x401, thread_exit_code, 0);
+  ExitThread((DWORD)thread_exit_code);
+  return 0;
+}
+
 // FUNCTION: MAGIC 0x004c0080
 int C_real_select_target(int who_chooses,
                          int allowed_controller,
@@ -4575,31 +5939,330 @@ int C_real_select_target(int who_chooses,
                          int allow_cancel,
                          target_t *ret_tgt)
 {
-  (void)who_chooses;
-  (void)allowed_controller;
-  (void)preferred_controller;
-  (void)zone;
-  (void)required_type;
-  (void)illegal_type;
-  (void)required_abilities;
-  (void)illegal_abilities;
-  (void)required_color;
-  (void)illegal_color;
-  (void)extra;
-  (void)required_subtype;
-  (void)power_requirement;
-  (void)toughness_requirement;
-  (void)special;
-  (void)required_state;
-  (void)illegal_state;
-  (void)prompt;
-  (void)allow_cancel;
-  if (ret_tgt != NULL)
+  struct
   {
-    ret_tgt->player = -1;
-    ret_tgt->card = -1;
+    int selection_code;
+    int selected_player;
+    int selected_card;
+    int retry_selection;
+    char validation_message[32];
+    char target_error[200];
+    int valid_cards[60];
+    int valid_count;
+    int current_card;
+    int current_player;
+    int valid_players[60];
+    int allow_human_player;
+    int window_was_visible;
+    int result;
+    int allow_ai_player;
+  } s;
+  unsigned int is_valid_target;
+  size_t error_length;
+  char *selection_prompt;
+  int selected_internal_card_id;
+
+  if (((who_chooses == 1 && (unk_00926804 & 2) == 0) || unk_008a9000 == 1) || unk_009252e0 != 0)
+  {
+    if ((DAT_00777854 & 1) != 0 && (allowed_controller & 2) != 0)
+    {
+      preferred_controller = allowed_controller;
+    }
+
+    if (zone == 0 || (zone & TARGET_ZONE_PLAYERS) != 0)
+    {
+      if ((preferred_controller & 2) == 0)
+      {
+        if ((preferred_controller & 1) == 0)
+        {
+          s.allow_human_player = 1;
+          s.allow_ai_player = 0;
+        }
+        else
+        {
+          s.allow_human_player = 0;
+          s.allow_ai_player = 1;
+        }
+      }
+      else
+      {
+        s.allow_human_player = 1;
+        s.allow_ai_player = 1;
+      }
+    }
+    else
+    {
+      s.allow_human_player = 0;
+      s.allow_ai_player = 0;
+    }
+
+    if (spell_fizzled == 1)
+    {
+      s.result = 0;
+    }
+    else
+    {
+      s.valid_count = 0;
+      for (s.current_player = 0; s.current_player < 2; ++s.current_player)
+      {
+        for (s.current_card = 0; s.current_card < active_cards_count[s.current_player]; ++s.current_card)
+        {
+          if (PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id != -1)
+          {
+            is_valid_target = C_real_validate_target(s.current_player,
+                                                     s.current_card,
+                                                     NULL,
+                                                     who_chooses,
+                                                     allowed_controller,
+                                                     preferred_controller,
+                                                     zone,
+                                                     required_type,
+                                                     illegal_type,
+                                                     required_abilities,
+                                                     illegal_abilities,
+                                                     required_color,
+                                                     illegal_color,
+                                                     extra,
+                                                     required_subtype,
+                                                     power_requirement,
+                                                     toughness_requirement,
+                                                     special,
+                                                     required_state,
+                                                     illegal_state);
+            if (is_valid_target != 0)
+            {
+              s.valid_players[s.valid_count] = s.current_player;
+              s.valid_cards[s.valid_count] = s.current_card;
+              ++s.valid_count;
+            }
+          }
+        }
+      }
+
+      if (s.allow_ai_player != 0)
+      {
+        s.valid_players[s.valid_count] = 1;
+        s.valid_cards[s.valid_count] = -1;
+        ++s.valid_count;
+      }
+      if (s.allow_human_player != 0)
+      {
+        s.valid_players[s.valid_count] = 0;
+        s.valid_cards[s.valid_count] = -1;
+        ++s.valid_count;
+      }
+
+      if (s.valid_count == 0)
+      {
+        s.result = 0;
+      }
+      else
+      {
+        if (unk_008a9000 == 1)
+        {
+          unk_00939340 = internal_rand(s.valid_count);
+          unk_00925bb8 = (((s.valid_players[unk_00939340] == 0) ? 0 : 0x100)
+                          | (s.valid_cards[unk_00939340] & 0xff))
+                         | 0x4000;
+          unk_0057aae8 = 3;
+          FUN_004e4f11();
+        }
+        else
+        {
+          unk_0057aae8 = 3;
+          FUN_004e5089();
+          if (unk_00939340 == 99 || s.valid_count <= unk_00939340)
+          {
+            unk_00939340 = internal_rand(s.valid_count);
+          }
+        }
+
+        unk_00742fcc = s.valid_players[unk_00939340];
+        ret_tgt->player = s.valid_players[unk_00939340];
+        ret_tgt->card = s.valid_cards[unk_00939340];
+        s.result = 1;
+      }
+    }
   }
-  return 0;
+  else
+  {
+    if (zone == 0 || (zone & TARGET_ZONE_PLAYERS) != 0)
+    {
+      if ((allowed_controller & 2) == 0)
+      {
+        if ((allowed_controller & 1) == 0)
+        {
+          s.allow_human_player = 1;
+          s.allow_ai_player = 0;
+        }
+        else
+        {
+          s.allow_human_player = 0;
+          s.allow_ai_player = 1;
+        }
+      }
+      else
+      {
+        s.allow_human_player = 1;
+        s.allow_ai_player = 1;
+      }
+    }
+    else
+    {
+      s.allow_human_player = 0;
+      s.allow_ai_player = 0;
+    }
+
+    s.window_was_visible = FUN_0048930a();
+    s.retry_selection = 1;
+    while (s.retry_selection != 0)
+    {
+      if (prompt == NULL)
+      {
+        selection_prompt = unk_00748770;
+      }
+      else
+      {
+        selection_prompt = prompt;
+      }
+
+      s.result = FUN_004466b5(who_chooses,
+                              -1,
+                              selection_prompt,
+                              allow_cancel,
+                              -1,
+                              -1,
+                              -1,
+                              -1,
+                              &s.selection_code,
+                              &s.selected_player,
+                              s.allow_ai_player,
+                              s.allow_human_player);
+      if (s.result == 0)
+      {
+        if (s.selection_code != -3 && s.selection_code == -2)
+        {
+          if (unk_00716244 == -1 && unk_00716248 == -1)
+          {
+            ret_tgt->player = s.selected_player;
+            ret_tgt->card = s.selected_card;
+            s.retry_selection = 0;
+          }
+          else if ((zone & TARGET_ZONE_0x2000) != 0)
+          {
+            ret_tgt->player = -1;
+            ret_tgt->card = -3;
+            s.retry_selection = 0;
+          }
+        }
+      }
+      else
+      {
+        selected_internal_card_id = PLAYER_CARD_INSTANCE(s.selected_player, s.selected_card).internal_card_id;
+        if (selected_internal_card_id < 0
+            || (special & TARGET_SPECIAL_ALLOW_MULTIBLOCKER) != 0
+            || global_cards_data[selected_internal_card_id].code_pointer != FUN_00481e25)
+        {
+          is_valid_target = C_real_validate_target(s.selected_player,
+                                                   s.selected_card,
+                                                   s.target_error,
+                                                   who_chooses,
+                                                   allowed_controller,
+                                                   preferred_controller,
+                                                   zone,
+                                                   required_type,
+                                                   illegal_type,
+                                                   required_abilities,
+                                                   illegal_abilities,
+                                                   required_color,
+                                                   illegal_color,
+                                                   extra,
+                                                   required_subtype,
+                                                   power_requirement,
+                                                   toughness_requirement,
+                                                   special,
+                                                   required_state,
+                                                   illegal_state);
+          if (is_valid_target == 0)
+          {
+            error_length = strlen(s.target_error);
+            if (error_length == 0)
+            {
+              strcpy(s.validation_message, "");
+            }
+            else
+            {
+              sprintf(s.validation_message, "%s", s.target_error);
+            }
+
+            if (unk_008a9000 != 1)
+            {
+              FUN_004a61d6(s.validation_message);
+              Sleep(2000);
+              FUN_004a61d6("");
+            }
+          }
+          else
+          {
+            ret_tgt->player = s.selected_player;
+            ret_tgt->card = s.selected_card;
+            s.retry_selection = 0;
+          }
+        }
+        else
+        {
+          sprintf(s.validation_message, "%s", "");
+          if (unk_008a9000 != 1)
+          {
+            FUN_004a61d6(s.validation_message);
+            Sleep(2000);
+            FUN_004a61d6("");
+          }
+        }
+      }
+    }
+
+    if (s.window_was_visible == 0)
+    {
+      FUN_00489362();
+    }
+    if (s.result != 0)
+    {
+      DAT_0072c8e4 = 0;
+    }
+    FUN_004a61d6("");
+    strcpy(text_lines[0], "");
+  }
+
+  return s.result;
+}
+
+// FUNCTION: MAGIC 0x0048930a
+int FUN_0048930a(void)
+{
+  int visible;
+
+  visible = IsWindowVisible((HWND)DAT_00637e58);
+  if (!visible && IsWindowVisible((HWND)DAT_0091c0f0))
+  {
+    SendMessageA((HWND)DAT_0091c0f0, 0x111, 0x65, 0);
+  }
+
+  return visible;
+}
+
+// FUNCTION: MAGIC 0x00489362
+int FUN_00489362(void)
+{
+  int hidden;
+
+  hidden = !IsWindowVisible((HWND)DAT_00637e58);
+  if (!hidden && !IsWindowVisible((HWND)DAT_0091c0f0))
+  {
+    SendMessageA((HWND)DAT_0091c0f0, 0x111, 0x66, 0);
+  }
+
+  return hidden;
 }
 
 // FUNCTION: MAGIC 0x00551b60
@@ -5983,16 +7646,222 @@ void FUN_00441d78(void)
 }
 
 // FUNCTION: MAGIC 0x004afa4b
-void FUN_004afa4b(void)
+void FUN_004afa4b()
 {
+  struct
+  {
+    int test_player;
+    int test_card;
+  } s;
+  card_instance_t* instance;
+
   if ((unk_008b4278 & 2) == 0)
   {
     return;
   }
-
   unk_008b4278 &= ~2;
   unk_008b4278 |= 4;
-  TENTATIVE_reassess_all_cards();
+  TENTATIVE_reassess_all_cards(0, 0xff);
+
+  for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  {
+    for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(s.test_player, s.test_card);
+      if (instance->internal_card_id == unk_009266a4 &&
+          is_in_play(s.test_player, s.test_card) &&
+          (instance->state & 0x10) == 0)
+      {
+        dispatch_event(s.test_player, s.test_card, 0x21);
+      }
+    }
+  }
+
+  for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  {
+    for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(s.test_player, s.test_card);
+      if (instance->internal_card_id == unk_009266a4 &&
+          is_in_play(s.test_player, s.test_card) &&
+          (instance->state & 0x10) == 0)
+      {
+        dispatch_event(s.test_player, s.test_card, 0x6e);
+      }
+    }
+  }
+
+  for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  {
+    for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(s.test_player, s.test_card);
+      if (instance->internal_card_id == unk_009266a4 && is_in_play(s.test_player, s.test_card))
+      {
+        if ((instance->state & 0x10) == 0)
+        {
+          unk_008b4278 |= 2;
+        }
+        else
+        {
+          kill_card(s.test_player, s.test_card, 1);
+        }
+      }
+    }
+  }
+
+  FUN_004aff25();
+  unk_008b4278 &= ~4;
+}
+
+// FUNCTION: MAGIC 0x004aff25
+void FUN_004aff25(void)
+{
+  int player;
+  int card;
+  int toughness;
+  card_instance_t* instance;
+
+  for (player = 0; player < 2; ++player)
+  {
+    for (card = 0; card < active_cards_count[player]; ++card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(player, card);
+      if (is_in_play(player, card) && (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE))
+      {
+        toughness = (short)instance->damage_on_card;
+        if (C_get_abilities(player, card, EVENT_TOUGHNESS, -1) <= toughness)
+        {
+          if (unk_008a9000 != 1)
+          {
+            play_sound_effect(0x19);
+          }
+          kill_card(player, card, 2);
+        }
+      }
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x0044aa01
+int FUN_0044aa01(void)
+{
+  if ((unk_00926804 & 2) == 0)
+  {
+    if (unk_00716248 != -1 && unk_008a9000 != 1)
+    {
+      if (current_phase < unk_00716248 || human_player != unk_00716244)
+      {
+        return 1;
+      }
+      if (trigger_condition != -1 && unk_00716248 == current_phase)
+      {
+        return 1;
+      }
+      if (unk_00716248 < current_phase && human_player == unk_00716244)
+      {
+        unk_00716244 = -1;
+        unk_00716248 = -1;
+      }
+    }
+  }
+  else if ((unk_00716248 != -1 || unk_007161d4 != -1) && unk_008a9000 != 1)
+  {
+    return 0;
+  }
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x0044541f
+int FUN_0044541f(int param_1)
+{
+  int can_respond;
+
+  can_respond = 0;
+  if (param_1 == 0)
+  {
+    if ((unk_008b35ec == human_player && (DAT_007abc90[human_player * 0x26 + current_phase] & 4) != 0) || (active_player == human_player && (DAT_007abc90[human_player * 0x26 + current_phase] & 1) != 0))
+    {
+      can_respond = 1;
+    }
+    if (active_player == human_player)
+    {
+      if (unk_00716244 == human_player && current_phase == unk_00716248)
+      {
+        can_respond = 1;
+      }
+    }
+    else if (_DAT_00743034 == human_player && unk_007161d4 == current_phase)
+    {
+      can_respond = 1;
+    }
+  }
+  else
+  {
+    if ((unk_008b35ec == human_player && (DAT_007abc90[human_player * 0x26 + current_phase] & 1) != 0) || (active_player == human_player && (DAT_007abc90[human_player * 0x26 + current_phase] & 4) != 0))
+    {
+      can_respond = 1;
+    }
+    if (unk_008b35ec == human_player)
+    {
+      if (unk_00716244 == human_player && current_phase == unk_00716248)
+      {
+        can_respond = 1;
+      }
+    }
+    else if (_DAT_00743034 == human_player && unk_007161d4 == current_phase)
+    {
+      can_respond = 1;
+    }
+  }
+
+  if (FUN_0044aa01() == 0 && can_respond)
+  {
+    return 1;
+  }
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x004460d3
+void FUN_004460d3(void)
+{
+  int player;
+  int card;
+  int counter;
+  card_instance_t* instance;
+  unsigned char* instance_bytes;
+
+  for (player = 0; player < 2; ++player)
+  {
+    for (card = 0; card < active_cards_count[player]; ++card)
+    {
+      instance = &PLAYER_CARD_INSTANCE(player, card);
+      instance_bytes = (unsigned char*)instance;
+      if ((instance_bytes[0x54] & 4) == 0 && is_in_play(player, card))
+      {
+        for (counter = 0; counter < 7; ++counter)
+        {
+          instance_bytes[counter + 0x24] = 0;
+          instance_bytes[counter + 0x11c] = instance_bytes[counter + 0x24];
+        }
+        *(int*)(instance_bytes + 0x54) = 0;
+        dispatch_event(player, card, 0x85);
+        dispatch_event(player, card, 0x84);
+      }
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x00447f80
+unsigned int FUN_00447f80(void)
+{
+  return (GetTickCount() - unk_0093f4b4 - unk_007abc84) / 0x37;
+}
+
+// FUNCTION: MAGIC 0x004e1b6f
+unsigned int FUN_004e1b6f(void)
+{
+  return FUN_00447f80();
 }
 
 // FUNCTION: MAGIC 0x004b082f
