@@ -82,7 +82,7 @@ int FUN_0049e8bb(int player,
     }
 
     locals.show_bigcard = (unsigned int)(locals.selected_count < highlighted_choices);
-    selection = FUN_0049e6aa(locals.graveyard_copy,
+    selection = show_cardlist(locals.graveyard_copy,
                              0,
                              locals.available_cards,
                              count,

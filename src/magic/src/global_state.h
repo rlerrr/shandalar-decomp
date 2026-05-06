@@ -154,8 +154,6 @@ extern int unk_00742f80[2][8];
 extern int unk_00742fc4;
 // GLOBAL: MAGIC 0x00742fcc
 extern int unk_00742fcc;
-// GLOBAL: MAGIC 0x00777844
-extern int DAT_00777844;
 // GLOBAL: MAGIC 0x00742fbc
 extern int _DAT_00742fbc;
 // GLOBAL: MAGIC 0x00743024
@@ -414,15 +412,6 @@ extern int unk_0093f4b8;
 // GLOBAL: MAGIC 0x0093f4b4
 extern int unk_0093f4b4;
 
-// GLOBAL: MAGIC 0x0055e0cc
-extern int unk_0055e0cc;
-
-// GLOBAL: MAGIC 0x00572920
-extern char unk_00572920[16];
-
-// GLOBAL: MAGIC 0x00572930
-extern char unk_00572930[16];
-
 // GLOBAL: SHANDALAR 0x008a8df8
 extern int LEGACY_EFFECT_PUMP;
 
@@ -458,8 +447,6 @@ extern int unk_008cf6d4;
 
 // GLOBAL: MAGIC 0x008cf1b4
 extern int unk_008cf1b4;
-// GLOBAL: MAGIC 0x008cf1b0
-extern int DAT_008cf1b0;
 // GLOBAL: MAGIC 0x008cf1b8
 extern int DAT_008cf1b8;
 
@@ -588,12 +575,6 @@ extern int card_on_stack;
 extern int unk_008a9000;
 // GLOBAL: MAGIC 0x008a9194
 extern int unk_008a9194;
-// GLOBAL: MAGIC 0x008a9190
-extern int DAT_008a9190;
-// GLOBAL: MAGIC 0x008a8d78
-extern int DAT_008a8d78;
-// GLOBAL: MAGIC 0x008a8dec
-extern int DAT_008a8dec;
 // GLOBAL: MAGIC 0x00926804
 extern int unk_00926804;
 // GLOBAL: MAGIC 0x00939330
@@ -606,14 +587,6 @@ extern int unk_007abc84;
 extern int DAT_007abc74;
 // GLOBAL: MAGIC 0x007abc90
 extern unsigned char DAT_007abc90[0x4c];
-// GLOBAL: MAGIC 0x007aa928
-extern int DAT_007aa928;
-// GLOBAL: MAGIC 0x007aaeec
-extern int DAT_007aaeec;
-// GLOBAL: MAGIC 0x007a7d74
-extern int DAT_007a7d74;
-// GLOBAL: MAGIC 0x00777854
-extern int DAT_00777854;
 extern int unk_00926664;
 // GLOBAL: MAGIC 0x009266d0
 extern char unk_009266d0[260];
@@ -632,41 +605,6 @@ extern int unk_008d0340;
 
 // GLOBAL: MAGIC 0x0091c4fc
 extern int unk_0091c4fc;
-
-// GLOBAL: MAGIC 0x00638b34
-extern int DAT_00638b34;
-// GLOBAL: MAGIC 0x00638b48
-extern int DAT_00638b48;
-// GLOBAL: MAGIC 0x00638b68
-extern int DAT_00638b68;
-// GLOBAL: MAGIC 0x00638b70
-extern int DAT_00638b70;
-// GLOBAL: MAGIC 0x00638b80
-extern int DAT_00638b80;
-// GLOBAL: MAGIC 0x00638ba4
-extern int* DAT_00638ba4;
-// GLOBAL: MAGIC 0x00638bf4
-extern int DAT_00638bf4;
-// GLOBAL: MAGIC 0x00638c08
-extern int DAT_00638c08;
-// GLOBAL: MAGIC 0x00638c40
-extern int DAT_00638c40;
-// GLOBAL: MAGIC 0x00638c44
-extern int DAT_00638c44;
-// GLOBAL: MAGIC 0x00638c6c
-extern int DAT_00638c6c;
-// GLOBAL: MAGIC 0x00638c84
-extern int DAT_00638c84;
-// GLOBAL: MAGIC 0x00637e58
-extern int DAT_00637e58;
-// GLOBAL: MAGIC 0x0091c0f0
-extern int DAT_0091c0f0;
-// GLOBAL: MAGIC 0x0091c974
-extern int DAT_0091c974;
-// GLOBAL: MAGIC 0x0091c998
-extern int DAT_0091c998;
-// GLOBAL: MAGIC 0x0093d840
-extern int DAT_0093d840;
 
 #undef extern
 #undef GLOBAL_STATE_INIT

@@ -120,7 +120,7 @@ int FUN_004a61fe(int *graveyard,
                  void *context,
                  unsigned int big_card_mode,
                  char *prompt);
-int FUN_0049e6aa(int *graveyard,
+int show_cardlist(int *graveyard,
                  int *alternate_csvids,
                  int *available,
                  int count,
