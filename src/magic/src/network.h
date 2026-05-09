@@ -1,6 +1,7 @@
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
+#include <windows.h>
 #include "defs.h"
 
 #ifdef NETWORK_IMPL
@@ -10,7 +11,7 @@
 #endif
 
 // GLOBAL: MAGIC 0x00789a44
-NETWORK_EXTERN int unk_00789a44;
+NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 
 // GLOBAL: MAGIC 0x007a7d6c
 NETWORK_EXTERN int unk_007a7d6c;

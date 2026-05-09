@@ -12,7 +12,7 @@ target_link_libraries(cardartlib PRIVATE gdi32 user32)
 
 if (MSVC)
   # Force CardArtLib to build with debug-style settings.
-  target_compile_options(cardartlib PRIVATE /Od /Zi)
+  target_compile_options(cardartlib PRIVATE /Od /Zi /DCARDARTLIB)
   target_compile_definitions(cardartlib PRIVATE _DEBUG DEBUG)
 
   set_property(TARGET cardartlib PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/CardArtLib.def\"")

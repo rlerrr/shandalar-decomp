@@ -4,8 +4,11 @@
 #include <STDIO.H>
 
 // GLOBAL: DECKDLL 0x100355d8
+// GLOBAL: MAGIC 0x0056eab4
 static char read_db_empty_rules[1];
+
 // GLOBAL: DECKDLL 0x100355ec
+// GLOBAL: MAGIC 0x0056eac8
 static char read_db_empty_flavor[1];
 
 // GLOBAL: DECKDLL 0x10033e48

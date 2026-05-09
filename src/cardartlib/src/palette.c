@@ -53,16 +53,6 @@ extern undefined1 global_BluePathBitsTable[0x800];
 // GLOBAL: MAGIC 0x00571d18
 HDC global_screen_dc = (HDC)0x0;
 
-// GLOBAL: CARDARTLIB 0x1001d0e8
-// GLOBAL: DRAWCARDLIB 0x10022508
-// GLOBAL: DECKDLL 0x10036240
-char s__DUELPALall_TR_1001d0e8[] = "\\DUELPALall.TR";
-
-// GLOBAL: CARDARTLIB 0x1001d0f8
-// GLOBAL: DRAWCARDLIB 0x10022518
-// GLOBAL: DECKDLL 0x10036250
-char s__DUEL_plogpal_1001d0f8[] = "\\DUEL.plogpal";
-
 // GLOBAL: CARDARTLIB 0x1001d240
 // GLOBAL: DRAWCARDLIB 0x10021030
 // GLOBAL: DECKDLL 0x10031930
@@ -93,46 +83,6 @@ undefined1 * global_PTR_GreenPathBitsTable = global_GreenPathBitsTable;
 // GLOBAL: DECKDLL 0x10031944
 undefined1 * global_PTR_RedPathBitsTable = global_RedPathBitsTable;
 
-// GLOBAL: CARDARTLIB 0x1001e064
-// GLOBAL: DRAWCARDLIB 0x10021e54
-// GLOBAL: DECKDLL 0x10032754
-char s__rt_1001e064[] = "rt";
-
-// GLOBAL: CARDARTLIB 0x1001e068
-// GLOBAL: DRAWCARDLIB 0x10021e58
-// GLOBAL: DECKDLL 0x10032758
-char s__d____d__d__d_1001e068[] = "%d - %d %d %d";
-
-// GLOBAL: CARDARTLIB 0x1001e078
-// GLOBAL: DRAWCARDLIB 0x10021e68
-// GLOBAL: DECKDLL 0x10032768
-char s__rb_1001e078[] = "rb";
-
-// GLOBAL: CARDARTLIB 0x1001e07c
-// GLOBAL: DRAWCARDLIB 0x10021e6c
-// GLOBAL: DECKDLL 0x1003276c
-char s__sp_lf_1001e07c[] = " \n";
-
-// GLOBAL: CARDARTLIB 0x1001e080
-// GLOBAL: DRAWCARDLIB 0x10021e70
-// GLOBAL: DECKDLL 0x10032770
-char s__sp_lf__1001e080[] = " \n";
-
-// GLOBAL: CARDARTLIB 0x1001e084
-// GLOBAL: DRAWCARDLIB 0x10021e74
-// GLOBAL: DECKDLL 0x10032774
-char s__sp_lf__1001e084[] = " \n";
-
-// GLOBAL: CARDARTLIB 0x1001e088
-// GLOBAL: DRAWCARDLIB 0x10021e78
-// GLOBAL: DECKDLL 0x10032778
-char s__sp_lf__1001e088[] = " \n";
-
-// GLOBAL: CARDARTLIB 0x1001e08c
-// GLOBAL: DRAWCARDLIB 0x10021e7c
-// GLOBAL: DECKDLL 0x1003277c
-char s__sp_lf__1001e08c[] = " \n";
-
 // GLOBAL: CARDARTLIB 0x100209e0
 // GLOBAL: DRAWCARDLIB 0x100f1f70
 // GLOBAL: DECKDLL 0x10113ce8
@@ -142,11 +92,13 @@ HPALETTE global_cart_art_hpalette;
 // GLOBAL: CARDARTLIB 0x100209e4
 // GLOBAL: DRAWCARDLIB 0x100f1f74
 // GLOBAL: DECKDLL 0x10104df0
+// GLOBAL: MAGIC 0x00638640
 HBITMAP g_offscreen_bitmap;
 
 // GLOBAL: CARDARTLIB 0x100209e8
 // GLOBAL: DRAWCARDLIB 0x100f1f78
 // GLOBAL: DECKDLL 0x10142f50
+// GLOBAL: MAGIC 0x008b49d0
 RGBQUAD g_cardArtPalette[0x100];
 
 // GLOBAL: CARDARTLIB 0x10020de8
@@ -217,7 +169,7 @@ undefined1 global_BluePathBitsTable[0x800];
 // FUNCTION: MAGIC 0x00491e80
 BOOL InitCardArtGdiResources(void)
 {
-#ifndef DECKDLL
+#if defined(CARDARTLIB) || defined(DRAWCARDLIB)
   BOOL result = 1;
   
   if (!SetupDuelPalette())
@@ -230,7 +182,7 @@ BOOL InitCardArtGdiResources(void)
     InitializeCriticalSection(&global_critical_section_for_drawing);
   }
 
-#ifndef DECKDLL
+#if defined(CARDARTLIB) || defined(DRAWCARDLIB)
   if (global_screen_dc == 0)
     result=0;
     
@@ -258,7 +210,7 @@ void ShutdownCardArtGdiResources(void)
     global_screen_dc = (HDC)0x0;
     DeleteCriticalSection(&global_critical_section_for_drawing);
   }
-#ifndef DECKDLL
+#if defined(CARDARTLIB) || defined(DRAWCARDLIB)
   if (global_cart_art_hpalette != 0) {
     DestroyCardArtPalette();
   }
@@ -284,7 +236,7 @@ void ApplyCardArtPaletteToDc(HDC hdc)
 // FUNCTION: DRAWCARDLIB 0x1000a6ca
 // FUNCTION: DECKDLL 0x10023503
 // FUNCTION: MAGIC 0x00493c63
-static BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
+BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO *bmi_optional,
                                           HBITMAP *out_bitmap,HGDIOBJ *out_prev_object,void **out_bits)
 {
   //Stack layout won't behave
@@ -439,9 +391,9 @@ BOOL SetupDuelPalette(void)
   
   s.success = 1;
   strcpy((char *)s.palette_text_path,global_base_directory);
-  strcat((char *)s.palette_text_path,s__DUELPALall_TR_1001d0e8);
+  strcat((char *)s.palette_text_path,"\\DUELPALall.TR");
   strcpy((char *)s.palette_bin_path,global_base_directory);
-  strcat((char *)s.palette_bin_path,s__DUEL_plogpal_1001d0f8);
+  strcat((char *)s.palette_bin_path,"\\DUEL.plogpal");
   s.log_palette = (LOGPALETTE *)ReadPalette((char *)s.palette_text_path,(char *)s.palette_bin_path);
   if (s.log_palette != (LOGPALETTE *)0x0) {
     for (s.i = 1; (int)s.i < 0xff; s.i = s.i + 1) {
@@ -557,7 +509,7 @@ PaletteLog * ReadPalette(char *palette_text_path,char *palette_binary_path)
   s.palette_index = 0;
   s.palette_data = &g_palette_log;
   s.palette_data->palVersion = 0x300;
-  s.palette_file = fopen(palette_text_path,s__rt_1001e064);
+  s.palette_file = fopen(palette_text_path,"rt");
   if (s.palette_file == (FILE *)0x0) {
     return 0;
   }
@@ -572,7 +524,7 @@ PaletteLog * ReadPalette(char *palette_text_path,char *palette_binary_path)
   fgets(s.line,0xff,s.palette_file);
   while ((s.palette_file->_flag & 0x10) == 0) {
 #endif
-    sscanf(s.line,s__d____d__d__d_1001e068,&s.palette_index,&s.red,&s.green,&s.blue);
+    sscanf(s.line,"%d - %d %d %d",&s.palette_index,&s.red,&s.green,&s.blue);
     s.path_start = strchr(s.line,0x2d) + 1;
     s.path_start = strchr(s.path_start,0x2d) + 1;
 
@@ -600,7 +552,7 @@ PaletteLog * ReadPalette(char *palette_text_path,char *palette_binary_path)
   fclose(s.palette_file);
   s.palette_file = (FILE *)0x0;
   if (palette_binary_path != (char *)0x0) {
-    s.palette_file = fopen(palette_binary_path,s__rb_1001e078);
+    s.palette_file = fopen(palette_binary_path,"rb");
   }
   if (s.palette_file != (FILE *)0x0) {
     fread(&g_palette_log,0x404,1,s.palette_file);
@@ -704,7 +656,7 @@ undefined4 Octree_InsertPathString(OctNode *node,char *path_str,unsigned int pal
 {
   int child_index;
 
-  path_str += strspn(path_str,s__sp_lf_1001e07c);
+  path_str += strspn(path_str," \n");
   while (*path_str != '\0') {
     child_index = atoi(path_str);
     if (node->children[child_index] == 0) {
@@ -713,9 +665,9 @@ undefined4 Octree_InsertPathString(OctNode *node,char *path_str,unsigned int pal
     node = node->children[child_index];
 
     path_str += strspn(path_str +=  
-        strcspn(path_str + strspn(path_str,s__sp_lf__1001e088),s__sp_lf__1001e084) + 
-        strspn(path_str,s__sp_lf__1001e080)
-      ,s__sp_lf__1001e08c);
+        strcspn(path_str + strspn(path_str," \n")," \n") + 
+        strspn(path_str," \n")
+      ," \n");
   }
   node->flags = 1;
   node->palette_idx = palette_index;
@@ -1074,4 +1026,22 @@ int Palette_FindNearestEntryIndex(int target_r,int target_g,int target_b,byte *p
     }
   }
   return s.best_index;
+}
+
+// FUNCTION: DRAWCARDLIB 0x1000b00c
+// FUNCTION: DECKDLL 0x10025b00
+// FUNCTION: MAGIC 0x0049626e
+COLORREF GetPaletteColor(int index)
+{
+  struct
+  {
+    int g;
+    int r;
+    int b;
+  } rgb;
+
+  rgb.r = g_cardArtPalette[index].rgbRed;
+  rgb.g = g_cardArtPalette[index].rgbGreen;
+  rgb.b = g_cardArtPalette[index].rgbBlue;
+  return (COLORREF)(0x02000000 | (DWORD)MAKEWORD((BYTE)rgb.r, (BYTE)rgb.g) | ((DWORD)(BYTE)rgb.b << 16));
 }

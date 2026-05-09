@@ -1,7 +1,8 @@
-#include "manalinkinterface.h"
 #include <stdio.h>
+#include <windows.h>
 #include <winnt.h>
 #include <winreg.h>
+#include "inttypes.h"
 #include "mystdbool.h"
 
 void DebugLog(char* str, int idk);

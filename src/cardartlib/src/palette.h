@@ -3,14 +3,17 @@
 
 #include <windows.h>
 
-void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height);
+void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
 void ApplyCardArtPaletteToDc(HDC hdc);
 void ShutdownCardArtGdiResources(void);
 BOOL InitCardArtGdiResources(void);
-BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap);
-BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int src_x,int src_y,
-                                   int src_width,int src_height);
+BOOL DrawBitmapToRect(HDC dst_dc, const RECT *dst_rect, HBITMAP bitmap);
+BOOL DrawBitmapSubrectToRect(HDC dst_dc, const RECT *dst_rect, HBITMAP bitmap, int src_x, int src_y,
+                             int src_width, int src_height);
+BOOL CreateOffscreen32bppDibSection(int width, int height, HDC *out_dc, BITMAPINFO *bmi_optional,
+                                    HBITMAP *out_bitmap, HGDIOBJ *out_prev_object, void **out_bits);
 BOOL SetupDuelPalette(void);
+COLORREF GetPaletteColor(int index);
 
 extern CRITICAL_SECTION global_critical_section_for_drawing;
 extern HDC global_screen_dc;

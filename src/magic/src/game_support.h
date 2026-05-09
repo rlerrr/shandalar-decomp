@@ -187,7 +187,7 @@ int real_target_available(int *num_valid_targets,
                           target_state_t required_state,
                           target_state_t illegal_state);
 void FUN_004a61d6(char *text);
-void gain_life(int player, int amount);
+void gain_life(int player, int amount, int casting_player, int card);
 void discard(int player, int flags, int player_who_controls_effect);
 void declare_mana_available_hex(int player, color_test_t colors, int amount);
 int do_dialog(int who_chooses,
@@ -347,6 +347,5 @@ int regenerate_or_graveyard_triggers(void);
 int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
 void FUN_004faee2(int player, int card, int color_from, unsigned char color_to);
 void FUN_004fb8fd(int player, int card, int color_from, unsigned char color_to);
-void __stdcall Sleep(unsigned long dwMilliseconds);
 
 #endif

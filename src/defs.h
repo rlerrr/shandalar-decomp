@@ -764,10 +764,10 @@ typedef int iid_t;
 typedef struct card_instance_struct
 {
   /* some values might be padding */
-  uint8_t	special_counters;	/*  0x00 */
-  uint8_t	counters2;			/*  0x01 */	// Originally -0/-2 counters from Spirit Shackle
-  uint8_t	counters3;			/*  0x02 */	// Originally -1/-1 counters from Unstable Mutation
-  uint8_t	counters4;			/*  0x03 */	// Originally -0/-1 counters
+  uint32_t	special_counters;	/*  0x00 */
+  //uint8_t	counters2;			/*  0x01 */	// Originally -0/-2 counters from Spirit Shackle
+  //uint8_t	counters3;			/*  0x02 */	// Originally -1/-1 counters from Unstable Mutation
+  //uint8_t	counters4;			/*  0x03 */	// Originally -0/-1 counters
   int32_t	damage_target_card;	/*  0x04 */	// Card this aura or effect card is attached to.
   state_t	state;  			/*  0x08 */
   int8_t	damage_source_player;	/*  0x0C */ //  int32_t  damage_source_player;

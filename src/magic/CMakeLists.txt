@@ -17,10 +17,10 @@ set(deckdll_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/checks.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/drm.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/shared_resources.c"
 )
 
 set(magic_sources
-  ${cards_c_sources}
   ${magic_c_sources}
   ${drawcardlib_c_sources}
   ${cardartlib_c_sources}

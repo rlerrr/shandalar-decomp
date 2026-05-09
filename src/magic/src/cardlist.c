@@ -334,7 +334,7 @@ destroy_window:
       for (button_index = 0; button_index < DAT_00638ba4[0x5dd]; ++button_index)
       {
         card_window = CreateWindowExA(0, s_ShowListCard_00572920, unk_00572930 + 4, 0x50000000, button_x, button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(button_index + 10),
-                                      (HINSTANCE)unk_00925030, (LPVOID)DAT_00638ba4[button_index + 1]);
+                                      global_hinstance, (LPVOID)DAT_00638ba4[button_index + 1]);
         if (DAT_00638ba4[0x5de] != 0)
         {
           SendMessageA(card_window, 0x414, 1, DAT_00638ba4[button_index + 0x1f5]);
@@ -623,7 +623,7 @@ int show_cardlist(int *graveyard,
   wndclass.lpfnWndProc = wndproc_ShowListCard;
   wndclass.cbClsExtra = 0;
   wndclass.cbWndExtra = unk_0055e0cc;
-  wndclass.hInstance = unk_00925030;
+  wndclass.hInstance = global_hinstance;
   wndclass.hIcon = LoadIconA(0, (const char *)0x7f00);
   wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
   wndclass.hbrBackground = 6;
@@ -669,5 +669,5 @@ int show_cardlist(int *graveyard,
     strcpy(locals.title, unk_00572930);
   }
 
-  return DialogBoxParam(unk_00925030, (const char *)0xe9, unk_008cf1b4, dlgfunc_show_deck, (long)&locals.context);
+  return DialogBoxParam(global_hinstance, (const char *)0xe9, unk_008cf1b4, dlgfunc_show_deck, (long)&locals.context);
 }

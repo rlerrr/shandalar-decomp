@@ -867,7 +867,7 @@ int raw_do_dialog(int bigcard_player,
   s.prompt = prompt;
   s.dialog_mode = dialog_mode;
 
-  dialog_result = DialogBoxParamA((HINSTANCE)unk_00925030, (LPCSTR)0xdf, (HWND)unk_008cf1b4, FUN_00506fa0, (LPARAM)&s);
+  dialog_result = DialogBoxParamA(global_hinstance, (LPCSTR)0xdf, (HWND)unk_008cf1b4, FUN_00506fa0, (LPARAM)&s);
   if (dialog_result == 0)
   {
     return -1;
@@ -1569,7 +1569,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                          DAT_008cf1b0,
                                          hwnd,
                                          (HMENU)1,
-                                         (HINSTANCE)unk_00925030,
+                                         global_hinstance,
                                          &smallcard_player);
       (void)smallcard_window;
     }

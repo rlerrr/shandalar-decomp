@@ -20,6 +20,7 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern int DAT_00777854;
 
 int GetNextManaSymbol(char **param_1);
+int choose_a_color_dialog(int player, const char *prompt, int use_color_names_instead_of_land, int ai_choice, unsigned int available_colors);
 
 int can_target(target_definition_t *td)
 {
@@ -1990,41 +1991,44 @@ void FUN_0051a41c(int player, int card)
 // FUNCTION: MAGIC 0x005513d7
 void FUN_005513d7(int player, int card, int amount)
 {
-  (void)player;
-  (void)card;
-  (void)amount;
+  if ((PLAYER_CARD_INSTANCE(player, card).special_counters & 0xffu) == 0xffu)
+    return;
+
+  PLAYER_CARD_INSTANCE(player, card).special_counters =
+      ((PLAYER_CARD_INSTANCE(player, card).special_counters + amount) & 0xff) |
+      (PLAYER_CARD_INSTANCE(player, card).special_counters & 0xffffff00);
+
+  if (unk_008a9000 != 1)
+  {
+    play_sound_effect(ICON_HASTE);
+  }
 }
 
 // FUNCTION: MAGIC 0x004a686a
-int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors)
+int choose_a_color(int player, const char *prompt, int use_color_names_instead_of_land, int ai_choice, unsigned int available_colors)
 {
-  (void)player;
-  (void)prompt;
-  (void)unused1;
-  (void)unused2;
+  int chosen_color;
 
-  if ((available_colors & COLOR_TEST_WHITE) != 0)
+  if (unk_008a9000 == 1)
   {
-    return COLOR_WHITE;
-  }
-  if ((available_colors & COLOR_TEST_BLUE) != 0)
-  {
-    return COLOR_BLUE;
-  }
-  if ((available_colors & COLOR_TEST_BLACK) != 0)
-  {
-    return COLOR_BLACK;
-  }
-  if ((available_colors & COLOR_TEST_RED) != 0)
-  {
-    return COLOR_RED;
-  }
-  if ((available_colors & COLOR_TEST_GREEN) != 0)
-  {
-    return COLOR_GREEN;
+    return ai_choice;
   }
 
-  return -1;
+  if (active_player == player && (unk_00926804 & 2) != 0)
+  {
+    TENTATIVE_wait_for_network_result(player, 0xf);
+    return DAT_008b293c;
+  }
+
+  chosen_color = choose_a_color_dialog(player, prompt, use_color_names_instead_of_land, ai_choice, available_colors);
+  if (player == unk_008b35ec && (unk_00926804 & 2) != 0)
+  {
+    unk_008b2938 = '\x0f';
+    DAT_008b293c = chosen_color;
+    TENTATIVE_send_network_result(player, 0xf);
+  }
+
+  return chosen_color;
 }
 
 // FUNCTION: MOK 0x0044e050
@@ -2112,10 +2116,42 @@ void FUN_004e5089(void)
 // FUNCTION: MAGIC 0x0048463d
 int FUN_0048463d(int player, int card, int amount)
 {
-  (void)player;
-  (void)card;
-  (void)amount;
-  return 0;
+  struct
+  {
+    int result;
+    int internal_card_id;
+  } s;
+  card_instance_t *player_instances;
+
+  s.result = 0;
+  player_instances = global_card_instances[player];
+
+  if (player_instances[card].internal_card_id == -1)
+  {
+    s.internal_card_id = player_instances[card].original_internal_card_id;
+  }
+  else
+  {
+    s.internal_card_id = player_instances[card].internal_card_id;
+  }
+
+  if (player == -1 || card == -1)
+  {
+    s.result = 0;
+  }
+  else
+  {
+    if ((char)global_cards_data[s.internal_card_id].subtype == 13 && *(int *)&global_cards_data[s.internal_card_id].id == unk_0092664c[amount])
+    {
+      s.result = 1;
+    }
+    if ((char)global_cards_data[s.internal_card_id].subtype == 12 && ((1 << (unsigned char)amount) & (int)(char)player_instances[card].mana_color) != 0)
+    {
+      s.result = 1;
+    }
+  }
+
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x004817fd
@@ -2159,9 +2195,27 @@ int FUN_00483489(int player, int card, int amount)
 // FUNCTION: MAGIC 0x004bff5a
 int FUN_004bff5a(int player, int card)
 {
-  (void)player;
-  (void)card;
-  return 0;
+  struct
+  {
+    int result;
+    int test_card;
+    int test_player;
+  } s;
+
+  s.result = 0;
+  for (s.test_player = 0; s.test_player < 2 && s.result == 0; ++s.test_player)
+  {
+    for (s.test_card = 0; s.test_card < active_cards_count[s.test_player] && s.result == 0; ++s.test_card)
+    {
+      if (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).internal_card_id == unk_009266a4 &&
+          PLAYER_CARD_INSTANCE(s.test_player, s.test_card).damage_target_player == player &&
+          PLAYER_CARD_INSTANCE(s.test_player, s.test_card).damage_target_card == card)
+      {
+        s.result = 1;
+      }
+    }
+  }
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x004c081a
@@ -2175,14 +2229,38 @@ int FUN_004c081a(int player, int card)
 // FUNCTION: MAGIC 0x004c0880
 int FUN_004c0880(int internal_card_id, int extra)
 {
-  (void)internal_card_id;
-  (void)extra;
-  return 0;
+  int result;
+
+  result = 0;
+  if (extra == 0 && (extra == internal_card_id || *(int *)&global_cards_data[internal_card_id].id == unk_0092664c[1]))
+  {
+    result = 1;
+  }
+  if (extra == 1 && (extra == internal_card_id || *(int *)&global_cards_data[internal_card_id].id == unk_0092664c[2]))
+  {
+    result = 1;
+  }
+  if (extra == 2 && (extra == internal_card_id || *(int *)&global_cards_data[internal_card_id].id == unk_0092664c[3]))
+  {
+    result = 1;
+  }
+  if (extra == 3 && (extra == internal_card_id || *(int *)&global_cards_data[internal_card_id].id == unk_0092664c[4]))
+  {
+    result = 1;
+  }
+  if (extra == 4 && (extra == internal_card_id || *(int *)&global_cards_data[internal_card_id].id == unk_0092664c[5]))
+  {
+    result = 1;
+  }
+  return result;
 }
 
 // FUNCTION: MAGIC 0x004848a0
-void gain_life(int player, int amount)
+void gain_life(int player, int amount, int casting_player, int card)
 {
+  // Unused?
+  (void)casting_player;
+  (void)card;
   life[player] += amount;
 }
 
@@ -2269,7 +2347,7 @@ void FUN_004b1670(int player, int internal_card_id)
 
   if (unk_008a9000 != 1 && (global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0)
   {
-    play_sound_effect(0x17);
+    play_sound_effect(WAV_DESTROY);
   }
 
   exile_index = 0;
@@ -2345,12 +2423,12 @@ int FUN_004b0c12(int player, int card)
           {
             if ((global_cards_data[original_internal_card_id].type & 0x38) == 0)
             {
-              play_sound_effect(1);
+              play_sound_effect(WAV_BURIED);
             }
           }
           else
           {
-            play_sound_effect(0x19);
+            play_sound_effect(WAV_KILL);
           }
         }
 
@@ -2655,46 +2733,46 @@ void discard(int player, int flags, int player_who_controls_effect)
         TENTATIVE_send_network_result(player, 0x14);
       }
     }
+  }
 
-    if ((unk_007a79b0[player] & 2) == 0 || player_who_controls_effect != 0)
+  if ((unk_007a79b0[player] & 2) == 0 || player_who_controls_effect != 0)
+  {
+    if (active_player == player && (unk_00926804 & 2) == 0 && unk_008a9000 != 1)
     {
-      if (active_player == player && (unk_00926804 & 2) == 0 && unk_008a9000 != 1)
+      if (flags)
       {
-        if (flags)
-        {
-          load_text("", "PROMPT_DISCARDACARD");
-          do_dialog(player, player, s.selected_card, -1, -1, text_lines[1], 0);
-        }
-        else
-        {
-          load_text("", "PROMPT_DISCARDACARD");
-          do_dialog(player, player, s.selected_card, -1, -1, text_lines[2], 0);
-        }
-      }
-      FUN_0043ec38(player, s.selected_card);
-    }
-    else
-    {
-      load_text("", "PROMPT_DISCARDACARD");
-      strcpy(s.prompt_line_1, text_lines[3]);
-      strcpy(s.prompt_line_2, text_lines[4]);
-      sprintf(s.prompt, " %s\n %s", s.prompt_line_1, s.prompt_line_2);
-      s.dialog_result = do_dialog(player, player, s.selected_card, -1, -1, s.prompt, 0);
-      if (s.dialog_result == 0)
-      {
-        real_put_on_top_of_deck(player, PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id);
-        PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id = -1;
-        FUN_004a61a1(player, s.selected_card, 10, 1);
-        if (unk_008a9000 != 1)
-        {
-          play_sound_effect(WAV_DISCARD);
-        }
-        --hand_count[player];
+        load_text("", "PROMPT_DISCARDACARD");
+        do_dialog(player, player, s.selected_card, -1, -1, text_lines[1], 0);
       }
       else
       {
-        FUN_0043ec38(player, s.selected_card);
+        load_text("", "PROMPT_DISCARDACARD");
+        do_dialog(player, player, s.selected_card, -1, -1, text_lines[2], 0);
       }
+    }
+    FUN_0043ec38(player, s.selected_card);
+  }
+  else
+  {
+    load_text("", "PROMPT_DISCARDACARD");
+    strcpy(s.prompt_line_1, text_lines[3]);
+    strcpy(s.prompt_line_2, text_lines[4]);
+    sprintf(s.prompt, " %s\n %s", s.prompt_line_1, s.prompt_line_2);
+    s.dialog_result = do_dialog(player, player, s.selected_card, -1, -1, s.prompt, 0);
+    if (s.dialog_result == 0)
+    {
+      real_put_on_top_of_deck(player, PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id);
+      PLAYER_CARD_INSTANCE(player, s.selected_card).internal_card_id = -1;
+      FUN_004a61a1(player, s.selected_card, 10, 1);
+      if (unk_008a9000 != 1)
+      {
+        play_sound_effect(WAV_DISCARD);
+      }
+      --hand_count[player];
+    }
+    else
+    {
+      FUN_0043ec38(player, s.selected_card);
     }
   }
 }
@@ -5127,7 +5205,7 @@ void FUN_00542a2a(int player, int card)
     FUN_004f7783(player, card);
     if (unk_008a9000 != 1)
     {
-      play_sound_effect(0x1a);
+      play_sound_effect(WAV_REGEN);
     }
     *(unsigned int *)((char *)instance + 0x18) &= 0xffffff7f;
     ((unsigned char *)instance)[0x24] = 0xff;
@@ -6543,7 +6621,7 @@ void FUN_00551572(int player, int card, int amount)
 // FUNCTION: MAGIC 0x005515f5
 unsigned int C_get_special_counters(int player, int card)
 {
-  return *(int *)&global_card_instances[player][card].special_counters & 0xff;
+  return global_card_instances[player][card].special_counters & 0xff;
 }
 
 // FUNCTION: MAGIC 0x00419667
@@ -7009,7 +7087,7 @@ void FUN_004aff25(void)
         {
           if (unk_008a9000 != 1)
           {
-            play_sound_effect(0x19);
+            play_sound_effect(WAV_KILL);
           }
           kill_card(player, card, 2);
         }

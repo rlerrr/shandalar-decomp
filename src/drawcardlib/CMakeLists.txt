@@ -27,7 +27,7 @@ endif()
 
 if (MSVC)
   # Force DrawCardLib to build with debug-style settings.
-  target_compile_options(drawcardlib PRIVATE /Od /Ob1 /Zi)
+  target_compile_options(drawcardlib PRIVATE /Od /Ob1 /Zi /DDRAWCARDLIB)
   target_compile_definitions(drawcardlib PRIVATE _DEBUG DEBUG)
 
   set_property(TARGET drawcardlib PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/Drawcardlib.def\"")

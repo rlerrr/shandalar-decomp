@@ -1,6 +1,7 @@
 #ifndef __GLOBAL_STATE_H__
 #define __GLOBAL_STATE_H__
 
+#include <windows.h>
 #include "defs.h"
 
 // Single header library style
@@ -437,7 +438,7 @@ extern int unk_008b28f8;
 extern int unk_00925bb8;
 
 // GLOBAL: MAGIC 0x00925030
-extern int unk_00925030;
+extern HINSTANCE global_hinstance;
 
 // GLOBAL: MAGIC 0x008b40e0
 extern int unk_008b40e0;

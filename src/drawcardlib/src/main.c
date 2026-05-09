@@ -1756,22 +1756,6 @@ void DeleteAndCloseObject(HANDLE param_1)
   }
 }
 
-// FUNCTION: DRAWCARDLIB 0x1000b00c
-COLORREF GetPaletteColor(int index)
-{
-  struct {
-    int g;
-    int r;
-    int b;
-  } rgb;
-
-  rgb.r = g_cardArtPalette[index].rgbRed;
-  rgb.g = g_cardArtPalette[index].rgbGreen;
-  rgb.b = g_cardArtPalette[index].rgbBlue;
-
-  return ((byte)rgb.g << 8) | (byte)rgb.r | ((byte)rgb.b << 16) | 0x02000000;
-}
-
 // FUNCTION: DRAWCARDLIB 0x1000b06a
 void ReplaceSubstring(char *inOutStr,char *needle,int caseSensitive,char *replacement)
 {
