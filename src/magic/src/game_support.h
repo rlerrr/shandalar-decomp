@@ -291,7 +291,7 @@ int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);
 void FUN_0051a41c(int player, int card);
 int obliterate_top_card_of_stack(void);
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors);
-int FUN_0054ac4d(int player, int card);
+int FUN_0054ac4d(int player, int card, int damage_unused);
 int FUN_0054af10(int player, int card, event_t event, int amount);
 int FUN_0054276d(int player, int card, event_t event, unsigned int color, int amount);
 void FUN_005513d7(int player, int card, int amount);

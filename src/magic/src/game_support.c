@@ -5214,7 +5214,7 @@ void FUN_00542a2a(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0054ac4d
-int FUN_0054ac4d(int player, int card)
+int FUN_0054ac4d(int player, int card, int damage_unused)
 {
   struct
   {
@@ -5227,50 +5227,54 @@ int FUN_0054ac4d(int player, int card)
   s.unused = 0;
   if (unk_008b35ec == player || (unk_00926804 & 2) != 0)
   {
-    if (unk_008a9000 == 1)
+    if (unk_008a9000 != 1)
     {
-      s.target_card = -1;
-      unk_00742fcc = 1 - player;
-    }
-    else
-    {
-      if (C_real_select_target(player,
-                               2,
-                               1 - player,
-                               TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
-                               TYPE_CREATURE,
-                               TYPE_NONE,
-                               0,
-                               get_protections_from(player, card),
-                               COLOR_TEST_0,
-                               COLOR_TEST_0,
-                               -1,
-                               ~SUB_WALL,
-                               -1,
-                               -1,
-                               0,
-                               0,
-                               0,
-                               text_lines[0],
-                               1,
-                               &s.target) == 0)
+      if (!C_real_select_target(player,
+                                2,
+                                1 - player,
+                                TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
+                                TYPE_CREATURE,
+                                TYPE_NONE,
+                                0,
+                                get_protections_from(player, card),
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                -1,
+                                ~SUB_WALL,
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                0,
+                                text_lines[0],
+                                1,
+                                &s.target) == 0)
+      {
+        s.target_card = s.target.card;
+        unk_00742fcc = s.target.player;
+      }
+      else
       {
         spell_fizzled = 1;
         s.target_card = -1;
         unk_00742fcc = -1;
       }
-      else
-      {
-        s.target_card = s.target.card;
-        unk_00742fcc = s.target.player;
-      }
+    }
+    else
+    {
+      s.target_card = -1;
+      unk_00742fcc = 1 - player;
     }
   }
   else
   {
     if (unk_008a9000 == 1)
     {
-      unk_00939340 = internal_rand(3) == 0;
+      if (internal_rand(3) != 0)
+        unk_00939340 = 0;
+      else
+        unk_00939340 = 1;
+
       FUN_004e4f11();
     }
     else
@@ -5280,7 +5284,10 @@ int FUN_0054ac4d(int player, int card)
 
     if (unk_00939340 == 0)
     {
-      s.prompt = text_lines;
+      if (unk_008a9000 == 1)
+        s.prompt = "";
+      else
+        s.prompt = text_lines;
 
       C_real_select_target(player,
                            2,
@@ -5312,7 +5319,7 @@ int FUN_0054ac4d(int player, int card)
       if (unk_008a9000 == 1)
       {
         unk_00939340 = 0;
-        unk_00925bb8 = ((unk_00742fcc == 0) ? 0 : 0x01000000) | 0xff;
+        unk_00925bb8 = ((unk_00742fcc == 0) ? 0 : 0x100) | 0xff;
         FUN_004e4f11();
       }
       else
@@ -5324,13 +5331,13 @@ int FUN_0054ac4d(int player, int card)
 
   if (spell_fizzled != 1)
   {
-    PLAYER_CARD_INSTANCE(player, card).eot_toughness = s.target_card;
-    PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)unk_00742fcc;
-    PLAYER_CARD_INSTANCE(player, card).upkeep_blue = 1;
+    PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.target_card;
+    PLAYER_CARD_INSTANCE(player, card).targets[0].player = unk_00742fcc;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     return 1;
   }
-
-  return 0;
+  else
+    return 0;
 }
 
 // FUNCTION: MAGIC 0x0054af10

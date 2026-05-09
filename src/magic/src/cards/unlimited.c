@@ -191,7 +191,7 @@ int helper_lucky_charm(int player, int card, int event, int color)
     ai_modifier += basiclandtypes_controlled[active_player][color] * 0xc;
   }
 
-  if (trigger_condition == 0xd3 && affected_card == card && affected_card_controller == player && player == current_turn && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)) && is_in_play(player, card) && has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0))
+  if (trigger_condition == 0xd3 && affected_card == card && affected_card_controller == player && player == current_turn && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)) && is_in_play(player, card) && has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1))
   {
     target_color = get_sleighted_color(player, card, color);
     if (((1 << ((unsigned char)target_color & 0x1f)) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).color) != 0 && PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id != -1 && global_cards_data[PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id].type != TYPE_LAND)
@@ -210,7 +210,7 @@ int helper_lucky_charm(int player, int card, int event, int color)
       if (event == EVENT_RESOLVE_TRIGGER)
       {
         FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
-        charge_mana(player, 0, 1);
+        charge_mana(player, COLOR_COLORLESS, 1);
         obliterate_top_card_of_stack();
         if (spell_fizzled != 1)
         {
@@ -5675,7 +5675,7 @@ int card_lifeforce(int player, int card, event_t event)
     {
       return 0;
     }
-    if (((unk_008b4278 & 0x20) != 0) && (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 2, 0, 0) != 0))
+    if (((unk_008b4278 & 0x20) != 0) && (has_mana_w_global_cost_mod(player, card, COLOR_GREEN, 2) != 0))
     {
       color = get_sleighted_color(player, card, COLOR_BLACK);
       if (C_real_validate_target(card_on_stack_controller,
@@ -5706,9 +5706,9 @@ int card_lifeforce(int player, int card, event_t event)
   }
   else if ((event == EVENT_ACTIVATE) && (card_on_stack_controller != -1))
   {
-    if (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 2, 0, 0) != 0)
+    if (has_mana_w_global_cost_mod(player, card, COLOR_GREEN, 2) != 0)
     {
-      charge_mana_w_global_cost_mod(player, card, 0, 0, 0, 2, 0, 0);
+      charge_mana_w_global_cost_mod(player, card, COLOR_GREEN, 2);
       if (spell_fizzled != 1)
       {
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = card_on_stack_controller;
@@ -6641,22 +6641,22 @@ int card_holy_armor(int player, int card, event_t event)
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
-    return has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
+    return has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
   }
   else if (event == EVENT_ACTIVATE)
   {
-    if (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1) != 0)
+    if (has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1) != 0)
     {
       color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (player == human_player)
       {
         if (raw_mana_available[player][color] == 0)
         {
-          charge_mana(player, 5, -1);
+          charge_mana(player, COLOR_WHITE, -1);
         }
         else
         {
-          charge_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
+          charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
           amount = 1;
         }
         if (amount < 1)
@@ -6672,11 +6672,11 @@ int card_holy_armor(int player, int card, event_t event)
       {
         if (raw_mana_available[player][color] == 0)
         {
-          charge_mana(player, 5, 1);
+          charge_mana(player, COLOR_WHITE, 1);
         }
         else
         {
-          charge_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
+          charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
         }
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
       }
@@ -7291,22 +7291,22 @@ int card_blessing(int player, int card, event_t event)
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
-    return has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
+    return has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
   }
   else if (event == EVENT_ACTIVATE)
   {
-    if (has_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1) != 0)
+    if (has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1) != 0)
     {
       color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (player == human_player)
       {
         if (raw_mana_available[player][color] == 0)
         {
-          charge_mana(player, 5, -1);
+          charge_mana(player, COLOR_WHITE, -1);
         }
         else
         {
-          charge_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
+          charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
           amount = 1;
         }
         if (amount < 1)
@@ -7322,11 +7322,11 @@ int card_blessing(int player, int card, event_t event)
       {
         if (raw_mana_available[player][color] == 0)
         {
-          charge_mana(player, 5, 1);
+          charge_mana(player, COLOR_WHITE, 1);
         }
         else
         {
-          charge_mana_w_global_cost_mod(player, card, 0, 0, 0, 0, 0, 1);
+          charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
         }
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
       }
@@ -7739,7 +7739,7 @@ int card_drain_life(int player, int card, event_t event)
     {
       load_text((int)"prompts.txt", "DRAIN_LIFE");
     }
-    FUN_0054ac4d(player, card);
+    FUN_0054ac4d(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
   }
 
   if (event == EVENT_RESOLVE_SPELL)
@@ -7874,7 +7874,7 @@ int card_disintegrate(int player, int card, event_t event)
     {
       load_text((int)"prompts.txt", "DISINTEGRATE");
     }
-    FUN_0054ac4d(player, card);
+    FUN_0054ac4d(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
     ai_modifier -= 0x30 / FUN_00404c4c(player, instance->internal_card_id);
   }
 
@@ -8148,7 +8148,7 @@ int card_fireball(int player, int card, event_t event)
         {
           do
           {
-            FUN_0054ac4d(player, card);
+            FUN_0054ac4d(player, card, s.damage_per_target);
             if (s.player_target_selected[0] == 0)
             {
               break;
@@ -8883,7 +8883,7 @@ int card_conservator(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((unk_008b4278 & 4) == 0 || is_animated_and_sick(player, card) || (instance->state & STATE_TAPPED) || !has_mana_w_global_cost_mod(player, card, 3, 0, 0, 0, 0, 0) || !real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, unk_009266a4, ~SUB_WALL, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
+    if ((unk_008b4278 & 4) == 0 || is_animated_and_sick(player, card) || (instance->state & STATE_TAPPED) || !has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3) || !real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, unk_009266a4, ~SUB_WALL, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
     {
       return 0;
     }
@@ -8898,7 +8898,7 @@ int card_conservator(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE && (instance->state & STATE_TAPPED) == 0)
   {
-    charge_mana_w_global_cost_mod(player, card, 3, 0, 0, 0, 0, 0);
+    charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3);
     if (spell_fizzled != 1)
     {
       instance->number_of_targets = 0;
@@ -9157,7 +9157,7 @@ int card_jade_monolith(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((unk_008b4278 & 4) != 0 && has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && real_target_available((int *)0, TARGET_SCAN_DAMAGE_TARGET, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, TARGET_STATE_DAMAGED, 0))
+    if ((unk_008b4278 & 4) != 0 && has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && real_target_available((int *)0, TARGET_SCAN_DAMAGE_TARGET, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, TARGET_STATE_DAMAGED, 0))
     {
       return 99;
     }
@@ -9168,9 +9168,9 @@ int card_jade_monolith(int player, int card, event_t event)
   }
   else
   {
-    if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0))
+    if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1))
     {
-      charge_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0);
+      charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1);
       if (spell_fizzled != 1)
       {
         if (unk_008a9000 != 1)
@@ -9263,16 +9263,16 @@ int card_jayemdae_tome(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (has_mana_w_global_cost_mod(player, card, 4, 0, 0, 0, 0, 0) && !is_animated_and_sick(player, card) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    if (has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 4) && !is_animated_and_sick(player, card) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {
       return 1;
     }
     return 0;
   }
 
-  if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, 4, 0, 0, 0, 0, 0))
+  if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 4))
   {
-    charge_mana_w_global_cost_mod(player, card, 4, 0, 0, 0, 0, 0);
+    charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 4);
     if (spell_fizzled != 1)
     {
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
@@ -9468,7 +9468,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (has_mana_w_global_cost_mod(player, card, 3, 0, 0, 0, 0, 0) && !is_animated_and_sick(player, card) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    if (has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3) && !is_animated_and_sick(player, card) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {
       return 1;
     }
@@ -9481,7 +9481,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
   {
     if (event == EVENT_ACTIVATE)
     {
-      charge_mana_w_global_cost_mod(player, card, 3, 0, 0, 0, 0, 0);
+      charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3);
       if (spell_fizzled != 1)
       {
         if (unk_008a9000 != 1)
@@ -9569,7 +9569,7 @@ int card_soul_net(int player, int card, event_t event)
   {
     if (event == EVENT_TRIGGER)
     {
-      if (!has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0))
+      if (!has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1))
       {
         instance->info_slot = 0;
       }
@@ -9585,7 +9585,7 @@ int card_soul_net(int player, int card, event_t event)
     if (event == EVENT_RESOLVE_TRIGGER)
     {
       FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
-      charge_mana(player, 0, 1);
+      charge_mana(player, COLOR_COLORLESS, 1);
       obliterate_top_card_of_stack();
       if (spell_fizzled == 1)
       {
@@ -9594,7 +9594,7 @@ int card_soul_net(int player, int card, event_t event)
       else
       {
         dispatch_event(player, card, EVENT_PLAY_ABILITY);
-        gain_life(player, 1, player, card, player, card);
+        gain_life(player, 1, player, card);
         --instance->info_slot;
       }
     }
@@ -9712,7 +9712,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (!is_animated_and_sick(player, card) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0) && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0))
+    if (!is_animated_and_sick(player, card) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1) && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0))
     {
       return 1;
     }
@@ -9723,9 +9723,9 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
   }
   else
   {
-    if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0))
+    if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1))
     {
-      charge_mana_w_global_cost_mod(player, card, 1, 0, 0, 0, 0, 0);
+      charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1);
       if (spell_fizzled != 1)
       {
         if (unk_008a9000 != 1)
@@ -10622,7 +10622,7 @@ int card_psionic_blast(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text((int)"promptsX1.txt", "PSIONIC_BLAST");
-    FUN_0054ac4d(player, card);
+    FUN_0054ac4d(player, card, 4);
     if (player == active_player)
     {
       ai_modifier += (3 - PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).toughness) * 0xc;
@@ -11362,7 +11362,7 @@ int card_lightning_bolt(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text((int)"prompts.txt", "LIGHTNING_BOLT");
-    FUN_0054ac4d(player, card);
+    FUN_0054ac4d(player, card, 3);
     if (spell_fizzled != 1)
     {
       ai_modifier -= 0x24;
