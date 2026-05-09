@@ -89,6 +89,13 @@ extern int unk_00777850;
 // GLOBAL: MAGIC 0x00712938
 extern int unk_00712938;
 
+// GLOBAL: MAGIC 0x00708d88
+extern int DAT_00708d88;
+// GLOBAL: MAGIC 0x00708d94
+extern int DAT_00708d94;
+// GLOBAL: MAGIC 0x00708d98
+extern int DAT_00708d98;
+
 // GLOBAL: MAGIC 0x007894a0
 extern int unk_007894a0;
 
@@ -236,6 +243,8 @@ extern int hand_count[2];
 extern int trigger_cause_controller;
 // GLOBAL: MAGIC 0x007ab2bc
 extern int DAT_007ab2bc;
+// GLOBAL: MAGIC 0x007ab2cc
+extern int (__cdecl *DAT_007ab2cc)(int, int);
 
 // GLOBAL: MAGIC 0x008cee74
 extern int trigger_cause;
@@ -328,6 +337,9 @@ extern int unk_008ce510[7];
 
 // GLOBAL: MAGIC 0x008ce518
 extern int unk_008ce518;
+
+// GLOBAL: MAGIC 0x008ce52c
+extern int DAT_008ce52c;
 
 // GLOBAL: MAGIC 0x008ce534
 extern int unk_008ce534;
@@ -581,12 +593,21 @@ extern int unk_00926804;
 extern int unk_00939330;
 // GLOBAL: MAGIC 0x007a7c58
 extern int unk_007a7c58[2];
+// GLOBAL: MAGIC 0x007a7c60
+extern char DAT_007a7c60[300];
 // GLOBAL: MAGIC 0x007abc84
 extern int unk_007abc84;
 // GLOBAL: MAGIC 0x007abc74
 extern int DAT_007abc74;
 // GLOBAL: MAGIC 0x007abc90
 extern unsigned char DAT_007abc90[0x4c];
+// GLOBAL: MAGIC 0x007aaef0
+extern char DAT_007aaef0;
+// GLOBAL: MAGIC 0x008a8ed0
+extern char DAT_008a8ed0;
+// GLOBAL: MAGIC 0x0091c840
+extern char DAT_0091c840;
+// GLOBAL: MAGIC 0x00926664
 extern int unk_00926664;
 // GLOBAL: MAGIC 0x009266d0
 extern char unk_009266d0[260];
@@ -596,7 +617,6 @@ extern int unk_007a79b0[2];
 
 // GLOBAL: MAGIC 0x00789108
 extern int unk_00789108;
-
 // GLOBAL: MAGIC 0x008cefb8
 extern int unk_008cefb8;
 
@@ -605,6 +625,12 @@ extern int unk_008d0340;
 
 // GLOBAL: MAGIC 0x0091c4fc
 extern int unk_0091c4fc;
+
+// GLOBAL: MAGIC 0x0091b280
+extern int DAT_0091b280;
+
+// GLOBAL: MAGIC 0x0091b150
+extern char DAT_0091b150[300];
 
 #undef extern
 #undef GLOBAL_STATE_INIT

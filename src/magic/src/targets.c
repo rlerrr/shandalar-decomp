@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stdio.h>
 #include <string.h>
 #include "cardartlib/src/palette.h"
 #include "game_support.h"
@@ -484,6 +485,7 @@ int C_real_select_target(int who_chooses,
     int selection_code;
     int selected_player;
     int selected_card;
+    int show_validation_message;
     int retry_selection;
     char validation_message[32];
     char target_error[200];
@@ -498,7 +500,6 @@ int C_real_select_target(int who_chooses,
     int allow_ai_player;
   } s;
   unsigned int is_valid_target;
-  size_t error_length;
   char *selection_prompt;
   int selected_internal_card_id;
 
@@ -725,11 +726,11 @@ int C_real_select_target(int who_chooses,
                                                    illegal_state);
           if (is_valid_target == 0)
           {
-            error_length = strlen(s.target_error);
-            if (error_length == 0)
+            s.show_validation_message = 1;
+            if (strlen(s.target_error) == 0)
             {
               strcpy(s.validation_message, "");
-  }
+            }
             else
             {
               sprintf(s.validation_message, "%s", s.target_error);
@@ -744,6 +745,7 @@ int C_real_select_target(int who_chooses,
           }
           else
           {
+            s.show_validation_message = 0;
             ret_tgt->player = s.selected_player;
             ret_tgt->card = s.selected_card;
             s.retry_selection = 0;
@@ -751,6 +753,7 @@ int C_real_select_target(int who_chooses,
         }
         else
         {
+          s.show_validation_message = 1;
           sprintf(s.validation_message, "%s", "");
           if (unk_008a9000 != 1)
           {

@@ -21,7 +21,6 @@ color_t single_color_test_bit_to_color_t(color_test_t color_test);
 int FUN_00404c4c(int player, int internal_card_id);
 int FUN_00404cff(int player, int internal_card_id, int who_to_check);
 void FUN_00449bef(char *name);
-int FUN_0041f4c0(int player, int card, event_t event, int color);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
 int FUN_004962cc(int window, unsigned int message, int other_window, int data);
@@ -30,11 +29,8 @@ int FUN_0043c7ab(int who_is_being_divided, int player, int card);
 int FUN_0043b4f3(int player, int amount);
 int FUN_0044125c(int player, int card);
 int FUN_00443ee2(int player, int card, int event, int extra, int prompt);
-int FUN_0041626b(int player, int card, int event, int color);
 void FUN_00419667(int target_player, int target_card, int damage_target_player);
 int has_vigilance(int player, int card);
-char *FUN_0044a3bf(int player, int card);
-void FUN_0044a796(int player, int card);
 char *FUN_00495311(int value);
 int CardIDFromType(unsigned int type);
 int CardTypeFromID(int csvid);
@@ -44,6 +40,18 @@ int FUN_0044aa01(void);
 int FUN_0044541f(int param_1);
 int FUN_00445b56(int player, int card);
 void FUN_004460d3(void);
+int FUN_004466b5(int who_chooses,
+                 int arg_2,
+                 char *prompt,
+                 int allow_cancel,
+                 int arg_5,
+                 int arg_6,
+                 int arg_7,
+                 int arg_8,
+                 int *out_selection_code,
+                 int *out_target_player,
+                 int allow_ai_player,
+                 int allow_human_player);
 int FUN_0043fdb3(int player, int target_player, int target_card);
 unsigned int FUN_00447f80(void);
 int FUN_004b0047(int player, int card);
@@ -56,16 +64,16 @@ void FUN_004817fd(int player);
 void FUN_004b15f7(int player, int graveyard_index);
 void FUN_004b4110(int player);
 int show_deck(int player, int *cards, int count, void *context, int suppress_done_txt, char *prompt);
-int FUN_004483be(int player, int card);
-int FUN_004487d8(int player, int card);
-int FUN_00448857(int player, int card);
 int FUN_0043ec38(int player, int card);
 void FUN_00446c95(void);
 void FUN_004a61a1(int player, int card, int unk1, int unk2);
 void FUN_004b14f5(int player, int card);
 void FUN_004b5cf5(int player, int internal_card_id);
 int FUN_004b5f03(int card_id);
-int charge_mana(int player, unsigned int color, int amount);
+int charge_mana(int player, color_t color, int amount);
+int FUN_004346ab(int *mana_cost, int required_colorless, int max_x);
+unsigned int FUN_00434746(int *mana);
+int FUN_0043479e(char *prompt, int *mana_cost, int x_paid, int max_x);
 void FUN_0043410a(int player, int *mana_paid_by_color, int *total_mana_paid, int max_colorless);
 void FUN_004342b3(int player,
                   int *mana_paid_by_color,
@@ -138,9 +146,6 @@ int FUN_004a62d7(int player,
                  int selected,
                  int a8,
                  int a9);
-int FUN_004a583e(int player, int card);
-int FUN_004a587c(int player, int card);
-int FUN_004a58ba(int player, int card);
 int dispatch_event_to_single_card(int player,
                                   int card,
                                   event_t event,
@@ -149,8 +154,6 @@ int dispatch_event_to_single_card(int player,
 int get_hacked_color(int player, int card, int value);
 void FUN_005001c4(int internal_card_id);
 int FUN_0052adf2(int player, int card);
-int FUN_0052e400(int player, int card, int event, int color);
-int FUN_00532bea(int player, int card, int event, int color);
 int FUN_00534ddb(int player, int mode);
 /* target_source_mode:
  *   0 = check direct player/card targets
@@ -205,9 +208,8 @@ void FUN_004aff25(void);
 unsigned int FUN_004e1b6f(void);
 void FUN_0055d802(char *out, char *in, int choice);
 void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
-int has_mana(int player, unsigned int color, int amount);
+int has_mana(int player, color_t color, int amount);
 int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount);
-int FUN_004eaf09(int player, color_t color, int amount);
 void count_mana(void);
 void C_count_colors_of_lands_in_play(void);
 void C_dispatch_event_raw(event_t event);
@@ -284,8 +286,8 @@ void kill_card(int player, int card, kill_t kill_mode);
 int load_text(const char *file_name, const char *section_name);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
 int produce_mana(int player, color_t color, int amount);
+int FUN_0043ece1(int player, int card);
 int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);
-int tap_for_multicolor_mana(int player, int card, event_t event, color_test_t available_colors);
 void FUN_0051a41c(int player, int card);
 int obliterate_top_card_of_stack(void);
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors);
@@ -304,6 +306,13 @@ void add_special_counter(int player, int card);
 int TENTATIVE_set_timestamps(int player, int card);
 int sacrifice_a_land(int player);
 int FUN_00551921(int player);
+int FUN_004e9c50(int player,
+                 int arg_2,
+                 int player_to_check,
+                 unsigned int required_type,
+                 unsigned int required_color,
+                 char *prompt,
+                 int dialog_mode);
 int FUN_00466e6d(int player, int card, int target_player);
 int FUN_004823a5(int player, int card);
 int FUN_0051c73d(int player, int card, int internal_card_id);
