@@ -68,21 +68,26 @@ static const char *const_db_artist_names[] = {
 
 // GLOBAL: DECKDLL 0x101427b4
 // GLOBAL: MAGIC 0x8b40d0
+// GLOBAL: SHANDALAR 0x008c8250
 int global_available_slots;
 
 // GLOBAL: DECKDLL 0x10147220
 // GLOBAL: MAGIC 0x8d0350
+// GLOBAL: SHANDALAR 0x008e44a0
 card_ptr_t global_raw_cards_storage[2000];
 
 // GLOBAL: DECKDLL 0x1012d7d0
+// GLOBAL: MAGIC 0x791558
 static char *global_deckbuilder_csv_raw;
 
 // GLOBAL: DECKDLL 0x1012df3c
 // GLOBAL: MAGIC 0x7a7d70
+// GLOBAL: SHANDALAR 0x007beafc
 static char *global_base_txt;
 
 // FUNCTION: DECKDLL 0x1001a940
 // FUNCTION: MAGIC 0x452cf0
+// FUNCTION: SHANDALAR 0x004424b0
 int read_db_guts(char *cards_dat_filename)
 {
   struct read_db_guts_locals
@@ -309,6 +314,50 @@ int read_db_guts(char *cards_dat_filename)
   SET_HACK(0x102, 6);
   SET_HACK(0x10a, 0x14);
   SET_HACK(0x60, 0x10);
+
+  //For some reason NOT included in deck builder?
+#ifndef DECKDLL
+  global_raw_cards_storage[603].sleight_color = 0x10;
+  global_raw_cards_storage[605].sleight_color = 0x10;
+  global_raw_cards_storage[704].sleight_color = 0x10;
+  global_raw_cards_storage[730].sleight_color = 0x20;
+  global_raw_cards_storage[844].sleight_color = 2;
+  global_raw_cards_storage[338].sleight_color = 0x10;
+  global_raw_cards_storage[596].sleight_color = 2;
+  global_raw_cards_storage[316].sleight_color = 2;
+  global_raw_cards_storage[374].sleight_color = 0x20;
+  global_raw_cards_storage[692].sleight_color = 0x20;
+  global_raw_cards_storage[355].sleight_color = 4;
+  global_raw_cards_storage[793].sleight_color = 4;
+  global_raw_cards_storage[564].sleight_color = 0x20;
+  global_raw_cards_storage[579].sleight_color = 0x30;
+  global_raw_cards_storage[660].sleight_color = 0x12;
+  global_raw_cards_storage[335].sleight_color = 8;
+  global_raw_cards_storage[375].sleight_color = 0x20;
+  global_raw_cards_storage[686].sleight_color = 0x10;
+  global_raw_cards_storage[621].sleight_color = 0x10;
+  global_raw_cards_storage[345].sleight_color = 0x20;
+
+  SET_HACK(612, 4);
+  SET_HACK(590, 8);
+  SET_HACK(774, 0x20);
+  SET_HACK(552, 8);
+  SET_HACK(715, 0x10);
+  SET_HACK(940, 4);
+  SET_HACK(323, 8);
+  SET_HACK(730, 0x10);
+  SET_HACK(827, 4);
+  SET_HACK(951, 4);
+  SET_HACK(315, 0x10);
+  SET_HACK(335, 8);
+  SET_HACK(727, 2);
+  SET_HACK(796, 0x20);
+  SET_HACK(385, 4);
+  SET_HACK(299, 0x10);
+  SET_HACK(621, 4);
+  SET_HACK(332, 0x10);
+  SET_HACK(389, 0xa);
+#endif
 
 #undef SET_HACK
 

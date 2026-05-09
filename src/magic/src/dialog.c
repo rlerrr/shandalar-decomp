@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <windows.h>
 #include "cardartlib/src/palette.h"
+#include "drawcardlib/Drawcardlib.h"
 #include "game_support.h"
 
 typedef ptrdiff_t INT_PTR;
@@ -271,8 +272,6 @@ int FUN_004964dd(int card_id, int player, int card);
 unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, int param_6, int param_7);
 void FUN_00559bc1(int dc, int rect, int player, int card);
 void FUN_00559e9c(int dc, int rect, int card_id, int player, int card);
-void DrawCardBack(HDC dc, RECT *rect);
-unsigned int DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, unsigned int version, unsigned int param_5, int expanded_text, LPCSTR param_7);
 int FUN_004a583e(int player, int card);
 int FUN_004a587c(int player, int card);
 int FUN_004a58ba(int player, int card);
@@ -492,20 +491,15 @@ void FUN_00449706(int player, int card, char *text)
 // FUNCTION: MAGIC 0x00449990
 unsigned int FUN_00449990(int player, int card)
 {
-  int displayed_card_type;
+  int result;
 
   if (FUN_004483be(player, card) != 0)
-  {
-    displayed_card_type = -1;
-  }
-  else
-  {
-    EnterCriticalSection((void *)&unk_00789110);
-    displayed_card_type = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
-    LeaveCriticalSection((void *)&unk_00789110);
-  }
+    return -1;
 
-  return displayed_card_type;
+  EnterCriticalSection((void *)&unk_00789110);
+  result = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
+  LeaveCriticalSection((void *)&unk_00789110);
+  return result;
 }
 
 // FUNCTION: MAGIC 0x00449a0f
@@ -513,6 +507,7 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
 {
   if (FUN_004483be(player, card) != 0)
     return;
+    
   if (displayed_player_and_card == NULL)
     return;
 
@@ -1090,7 +1085,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
   memcpy(&locals.card_data, global_raw_cards_storage + locals.card_id, 0x98);
   locals.color_test = FUN_00449057(player, card);
   locals.number_of_colors = 0;
-  for (locals.color_index = 1; locals.color_index < 6; ++locals.color_index)
+  for (locals.color_index = 1; locals.color_index <= 5; ++locals.color_index)
   {
     if ((locals.color_test & (1 << (unsigned char)locals.color_index)) != 0)
     {
@@ -1098,7 +1093,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
     }
   }
 
-  if (locals.number_of_colors >= 2)
+  if (locals.number_of_colors > 1)
   {
     locals.card_data.color = 4;
   }
@@ -1460,30 +1455,6 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     locals.card_data.rules_text = DAT_00708da8;
     DrawFullCard((HDC)dc, (RECT *)rect, &locals.card_data, locals.display_version, 2, DAT_0091c980, &DAT_00789130);
   }
-}
-
-void DrawCardBack(HDC dc, RECT *rect)
-{
-  (void)dc;
-  (void)rect;
-}
-
-unsigned int DrawFullCard(HDC dc,
-                          RECT *rect,
-                          card_ptr_t *card,
-                          unsigned int version,
-                          unsigned int param_5,
-                          int expanded_text,
-                          LPCSTR param_7)
-{
-  (void)dc;
-  (void)rect;
-  (void)card;
-  (void)version;
-  (void)param_5;
-  (void)expanded_text;
-  (void)param_7;
-  return 0;
 }
 
 // FUNCTION: MAGIC 0x00506fa0

@@ -12,8 +12,7 @@ char s_ShowListCard_00572920[16] = "ShowListCard";
 int unk_0055e0cc;
 // GLOBAL: MAGIC 0x00572930
 char unk_00572930[16];
-// GLOBAL: MAGIC 0x00777844
-int DAT_00777844;
+
 // GLOBAL: MAGIC 0x008a9190
 int DAT_008a9190;
 // GLOBAL: MAGIC 0x008cf1b0
@@ -44,6 +43,7 @@ int DAT_00638c6c;
 // GLOBAL: MAGIC 0x00638c84
 int DAT_00638c84;
 
+extern HPALETTE global_cart_art_hpalette;
 
 // FUNCTION: MAGIC 0x0049fd0c
 void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
@@ -483,9 +483,9 @@ int FUN_004962cc(int window, unsigned int message, int other_window, int data)
   other_hwnd = (HWND)other_window;
   if (message == 0x30f)
   {
-    UnrealizeObject((HGDIOBJ)DAT_00777844);
+    UnrealizeObject((HGDIOBJ)global_cart_art_hpalette);
     dc = GetDC(hwnd);
-    SelectPalette(dc, (HPALETTE)DAT_00777844, 0);
+    SelectPalette(dc, (HPALETTE)global_cart_art_hpalette, 0);
     if (RealizePalette(dc) != 0)
     {
       InvalidateRect(hwnd, 0, 1);
@@ -508,7 +508,7 @@ int FUN_004962cc(int window, unsigned int message, int other_window, int data)
       if (GetParent(hwnd) == 0)
       {
         dc = GetDC(hwnd);
-        SelectPalette(dc, (HPALETTE)DAT_00777844, 1);
+        SelectPalette(dc, (HPALETTE)global_cart_art_hpalette, 1);
         InvalidateRect(hwnd, 0, 1);
         ReleaseDC(hwnd, dc);
       }

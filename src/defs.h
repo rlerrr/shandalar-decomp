@@ -380,6 +380,7 @@ typedef enum
   STATE_UNKNOWN8000				= 0x8000,	// Means something similar to "Already chosen to attack or block".
   STATE_SUMMONSICK_NOATTACK		= 0x10000,	// Unable to attack due to summoning sickness.  Temporarily removable with haste or Instill Energy.
   STATE_SUMMONSICK_NOTAP		= 0x20000,	// Unable to tap as a cost due to summoning sickness.  Temporarily removable with hase or Thousand-Year Elixir.
+  STATE_SUMMONSICK_BOTH 		= STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP,
   STATE_NO_AUTO_TAPPING			= 0x40000,
   STATE_ETB_THIS_TURN			= 0x80000,	// Almost the same as STATE_SUMMONSICK, but not added when control changes, and cleared at the start of every turn
   STATE_CANNOT_TARGET			= 0x100000,
@@ -772,7 +773,7 @@ typedef struct card_instance_struct
   int8_t	damage_source_player;	/*  0x0C */ //  int32_t  damage_source_player;
   int8_t	unused0;			/*  0x0D */	// Shandalar: untouched
   int16_t	toughness;			/*  0x0E */
-  uint16_t	damage_on_card;		/*  0x10 */
+  int16_t	damage_on_card;		/*  0x10 */
   int16_t	counter_power;		/*  0x12 */
   uint32_t	unknown0x14;		/*  0x14 */	// activating trigger
   status_t	token_status;		/*  0x18 */
@@ -805,7 +806,7 @@ typedef struct card_instance_struct
   uint8_t	unk53;				/*  0x53 */	// Entirely untouched by exe.
 
   uint32_t	timestamp;			/*  0x54 */
-  uint8_t	mana_color;			/*  0x58 */
+  int8_t	mana_color;			/*  0x58 */
 
   uint8_t	card_color;			/*  0x59 */
   uint8_t	unk5a;				/*  0x5A */

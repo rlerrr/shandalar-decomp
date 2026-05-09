@@ -8,6 +8,7 @@
 static HMODULE global_hmodule_magsnd_dll;
 
 // GLOBAL: DECKDLL 0x1003a864
+// GLOBAL: MAGIC 0x00570f50
 static int global_sound_status = 0; // 0 = not loaded, 1 = loaded and ok, 2 = loaded and error I think
 
 // GLOBAL: DECKDLL 0x1003a868
@@ -80,6 +81,7 @@ typedef struct SndApiVTable {
 // GLOBAL: DECKDLL 0x101054c0
 // GLOBAL: MAGVID 0x10028a50
 // GLOBAL: STATWIN 0x10017da0
+// GLOBAL: MAGIC 0x007775d0
 static SndApiVTable global_sound_vtable;
 typedef int (WINAPI *Int_fn_etc)();
 #define global_sound_fns ((Int_fn_etc*)(void*)&global_sound_vtable)

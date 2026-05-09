@@ -517,9 +517,6 @@ extern char unk_00573370[12];
 // GLOBAL: MAGIC 0x00573380
 extern char unk_00573380[12];
 
-// GLOBAL: MAGIC 0x005724ac
-extern char unk_005724ac[300];
-
 // GLOBAL: MAGIC 0x0057a75c
 extern int unk_0057a75c;
 

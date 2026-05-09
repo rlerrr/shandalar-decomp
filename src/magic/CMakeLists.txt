@@ -4,8 +4,20 @@ set(drawcardlib_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pcxw.c" 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/drawing.c" 
 )
-set(cardartlib_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/catalog.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/haar.c" "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/huffman.c")
-set(deckdll_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/buttonclass.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/card_db.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/checks.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/drm.c" "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c")
+set(cardartlib_c_sources
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/assert.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/catalog.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/palette.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/haar.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cardartlib/src/huffman.c"
+)
+set(deckdll_c_sources
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/buttonclass.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/card_db.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/checks.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/drm.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c"
+)
 
 set(magic_sources
   ${cards_c_sources}
@@ -24,6 +36,10 @@ target_include_directories(magic PRIVATE
 )
 
 target_link_libraries(magic PRIVATE gdi32 user32)
+
+if (TARGET drawcardlib)
+  target_link_libraries(magic PRIVATE drawcardlib)
+endif()
 
 if (TARGET deckdll)
   target_link_libraries(magic PRIVATE deckdll)

@@ -57,6 +57,7 @@ STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 // GLOBAL: CARDARTLIB 0x10117290
 // GLOBAL: DRAWCARDLIB 0x100f2e30
 // GLOBAL: DECKDLL 0x101e6f80
+// GLOBAL: MAGIC 0x0094ea50
 Catalog DAT_10117290[5];
 
 uint Catalog_MakeKeyFromPath(const char *path);

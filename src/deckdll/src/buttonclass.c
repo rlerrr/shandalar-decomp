@@ -2,10 +2,8 @@
 
 extern HPALETTE global_cart_art_hpalette;
 
-// GLOBAL: DECKDLL 0x1003628c
-const char s_Button_1003628c[] = "Button";
-
 // GLOBAL: DECKDLL 0x1011279c
+// GLOBAL: MAGIC 0x007775b0
 static WNDPROC global_wndproc_std_ButtonClass;
 
 // FUNCTION: DECKDLL 0x10025d1b
@@ -107,7 +105,7 @@ static int is_buttonclass(HWND hwnd)
     return 0;
 
   GetClassNameA(hwnd, classname, 0x64);
-  if (!_strcmpi(classname, s_Button_1003628c))
+  if (!_strcmpi(classname, "Button"))
     return 1;
   else
     return 0;

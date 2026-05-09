@@ -83,12 +83,12 @@ int FUN_0049e8bb(int player,
 
     locals.show_bigcard = (unsigned int)(locals.selected_count < highlighted_choices);
     selection = show_cardlist(locals.graveyard_copy,
-                             0,
-                             locals.available_cards,
-                             count,
-                             &unk_008b40e0,
-                             locals.show_bigcard,
-                             locals.prompt);
+                              0,
+                              locals.available_cards,
+                              count,
+                              &unk_008b40e0,
+                              locals.show_bigcard,
+                              locals.prompt);
     if (selection == -1)
     {
       locals.stop_selection = 1;
@@ -267,15 +267,16 @@ void append_to_trace_txt(char *text)
 {
   FILE *trace_file;
 
-  if (unk_008a9000 != 1)
-  {
-    trace_file = fopen("Trace.txt", "at");
-    if (trace_file != NULL)
-    {
-      fwrite(text, strlen(text), 1, trace_file);
-      fclose(trace_file);
-    }
-  }
+  if (unk_008a9000 == 1)
+    return;
+
+  trace_file = fopen("Trace.txt", "at");
+
+  if (trace_file == NULL)
+    return;
+
+  fwrite(text, strlen(text), 1, trace_file);
+  fclose(trace_file);
 }
 
 // FUNCTION: MAGIC 0x00500a40
@@ -322,10 +323,10 @@ void FUN_00500b2c(int expected_packet_number, int actual_packet_number)
 void FUN_00500bb0(int expected_packet_type, int actual_packet_type)
 {
   static const char *packet_names[] = {
-      "NULL",        "COINTOSS",    "ANTE",       "HAND",       "LIBRARY",
-      "PLAYORDRAW",  "MULLIGAN",    "DUELPARAMETERS", "GUESTRESPONSE", "STARTDUEL",
-      "DUELRESULTS", "SAVEDGAME",   "PICKACARD",  "NEWFULLCARD","QUESTION",
-      "QUESTIONMANA","GRABMANA",    "XPOOL",      "CHEATCARD",  "PHASESTOPPER"};
+      "NULL", "COINTOSS", "ANTE", "HAND", "LIBRARY",
+      "PLAYORDRAW", "MULLIGAN", "DUELPARAMETERS", "GUESTRESPONSE", "STARTDUEL",
+      "DUELRESULTS", "SAVEDGAME", "PICKACARD", "NEWFULLCARD", "QUESTION",
+      "QUESTIONMANA", "GRABMANA", "XPOOL", "CHEATCARD", "PHASESTOPPER"};
   char message[100];
   char trace[500];
 
