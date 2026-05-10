@@ -17,13 +17,14 @@ void ClosePcxFile(int param_1);
 void RpBits_Setup(int fileDescriptor);
 int RpBitsRefill(void);
 
-#ifdef DECKDLL
+#if defined(DECKDLL) || defined(FACEMAKER)
 // For some reason these are actually optimized in deckdll?
 #pragma optimize("gy", on)
 #endif
 
 // FUNCTION: DRAWCARDLIB 0x1000965b
 // FUNCTION: DECKDLL 0x100010a0
+// FUNCTION: FACEMAKER 0x00407a90
 BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
 {
   short *color;
