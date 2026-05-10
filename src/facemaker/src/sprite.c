@@ -14,18 +14,18 @@ int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
 size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height);
 
-extern int FUN_00406da0(int page_number, int x, int y);
-extern void FUN_004075d0(unsigned int *param_1, int param_2, int param_3, int param_4,
+extern int ReadGraphicsPixel(int page_number, int x, int y);
+extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                                  unsigned int param_5);
-extern void FUN_004076c0(unsigned int *param_1, int param_2, int param_3, int param_4,
+extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                                  unsigned int param_5);
-extern void FUN_0040a130(int page_number, char *path);
+extern void LoadPcxIntoPageNoPalette(int page_number, char *path);
 extern void BeginSpriteEncodeSession(void);
 extern void FinalizeSpriteEncodeSession(void);
-extern int *DAT_004199c8;
-extern int *DAT_004199cc;
-extern FacemakerWindowBounds *PTR_DAT_0040c0ac;
-extern char DAT_0040d224[];
+extern int *g_sprite_blob_base;
+extern int *g_sprite_blob_cursor;
+extern FacemakerWindowBounds *g_face_fullscreen_bounds;
+extern char g_file_read_mode[];
 
 // FUNCTION: FACEMAKER 0x00405261
 int IsSpriteTileEmpty(int page_number, int x, int y, unsigned int width, int height)
@@ -43,7 +43,7 @@ int IsSpriteTileEmpty(int page_number, int x, int y, unsigned int width, int hei
   {
     tile_scan.current_y = y;
     y = y + 1;
-    FUN_004076c0((unsigned int *)tile_scan.row, 2, x, tile_scan.current_y, width);
+    ReadGraphicsScanline((unsigned int *)tile_scan.row, 2, x, tile_scan.current_y, width);
     for (tile_scan.pixel_index = 0; tile_scan.pixel_index < (int)width;
          tile_scan.pixel_index = tile_scan.pixel_index + 1)
     {
@@ -111,7 +111,7 @@ int ReplacePaletteIndexInRect(int *page, int x, int y, unsigned int width, int h
 
   for (row_index = 0; row_index < height; row_index = row_index + 1)
   {
-    FUN_004076c0((unsigned int *)local_800, *page, x, row_index + y, width);
+    ReadGraphicsScanline((unsigned int *)local_800, *page, x, row_index + y, width);
     for (pixel_index = 0; pixel_index < (int)width; pixel_index = pixel_index + 1)
     {
       if (local_800[pixel_index] == from_color)
@@ -119,7 +119,7 @@ int ReplacePaletteIndexInRect(int *page, int x, int y, unsigned int width, int h
         local_800[pixel_index] = to_color;
       }
     }
-    FUN_004075d0((unsigned int *)local_800, *page, x, row_index + y, width);
+    WriteGraphicsScanline((unsigned int *)local_800, *page, x, row_index + y, width);
   }
   return height;
 }
@@ -193,8 +193,8 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
   {
     return LoadSpriteGroupsFromFile(base_path, group_frame_counts, group_entries, first_sprite_out);
   }
-  FUN_0040a130(2, face_loader.local_34c);
-  ReplacePaletteIndexInRect((int *)PTR_DAT_0040c0ac, 0, 0, 0x22c, 0x158, 0x6d, 0);
+  LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
+  ReplacePaletteIndexInRect((int *)g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
   BeginSpriteEncodeSession();
   *first_sprite_out = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
   face_loader.current_sprite = *first_sprite_out;
@@ -251,8 +251,8 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
         break;
       }
       _findclose(face_loader.pcx_find_handle);
-      FUN_0040a130(2, face_loader.local_34c);
-      ReplacePaletteIndexInRect((int *)PTR_DAT_0040c0ac, 0, 0, 0x22c, 0x158, 0x6d, 0);
+      LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
+      ReplacePaletteIndexInRect((int *)g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
     }
   }
   FinalizeSpriteEncodeSession();
@@ -265,19 +265,19 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
 // FUNCTION: FACEMAKER 0x00408900
 void BeginSpriteEncodeSession(void)
 {
-  DAT_004199c8 = malloc(0x200000);
-  DAT_004199cc = DAT_004199c8;
+  g_sprite_blob_base = malloc(0x200000);
+  g_sprite_blob_cursor = g_sprite_blob_base;
 }
 
 // FUNCTION: FACEMAKER 0x00408920
 void FinalizeSpriteEncodeSession(void)
 {
-  *DAT_004199cc = -1;
-  DAT_004199c8 = _expand((void *)DAT_004199c8, (int)DAT_004199cc + (0x10 - (int)DAT_004199c8));
+  *g_sprite_blob_cursor = -1;
+  g_sprite_blob_base = _expand((void *)g_sprite_blob_base, (int)g_sprite_blob_cursor + (0x10 - (int)g_sprite_blob_base));
 }
 
 // FUNCTION: FACEMAKER 0x00408950
-void FUN_00408950(void *memory)
+void FreeSpriteBlob(void *memory)
 {
   free(memory);
 }
@@ -305,7 +305,7 @@ int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
   int *sprite_data;
 
   entry_count = 0;
-  file = fopen(sprite_path, DAT_0040d224);
+  file = fopen(sprite_path, g_file_read_mode);
   assert((int)file, "D:\\NewMagic\\sources\\sidlib\\sprite.c", 0xa3,
          "Could not open Sprite File %s\n", sprite_path);
   file_handle = _fileno(file);
@@ -360,7 +360,7 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
   else
   {
     border_left = (int)(width != 0xfffffffe);
-    sampled = FUN_00406da0(page_number, probe_x, probe_y);
+    sampled = ReadGraphicsPixel(page_number, probe_x, probe_y);
     run_end = width + 2;
     if (width == 0xfffffffe)
     {
@@ -372,7 +372,7 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
     {
       do
       {
-        sampled_next = FUN_00406da0(page_number, i, probe_y);
+        sampled_next = ReadGraphicsPixel(page_number, i, probe_y);
         if (sampled_next != sampled)
         {
           break;
@@ -396,13 +396,13 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
   else
   {
     i = 0;
-    sampled = FUN_00406da0(page_number, probe_x, probe_y);
+    sampled = ReadGraphicsPixel(page_number, probe_x, probe_y);
     run_end = height + 2;
     if (0 < run_end)
     {
       do
       {
-        sampled_next = FUN_00406da0(page_number, probe_x, probe_y);
+        sampled_next = ReadGraphicsPixel(page_number, probe_x, probe_y);
         if (sampled_next != sampled)
         {
           break;
@@ -418,11 +418,11 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
     }
   }
 
-  sprite = (EncodedImage *)DAT_004199cc;
+  sprite = (EncodedImage *)g_sprite_blob_cursor;
   write_cursor = (int *)sprite->spans;
   do
   {
-    FUN_004076c0((unsigned int *)line_buffer, page_number, x, y + line_index, width);
+    ReadGraphicsScanline((unsigned int *)line_buffer, page_number, x, y + line_index, width);
     scan = line_buffer;
     run_offset = width;
     first_char = line_buffer[0];
@@ -500,26 +500,26 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
         write_ptr = write_ptr + 1;
       }
     }
-    FUN_004076c0((unsigned int *)line_buffer, page_number, x, y + line_index + 1, width);
+    ReadGraphicsScanline((unsigned int *)line_buffer, page_number, x, y + line_index + 1, width);
   }
 
   first_char = *(char *)((int)write_cursor - 1);
-  DAT_004199cc = write_cursor;
+  g_sprite_blob_cursor = write_cursor;
   while (first_char == -1)
   {
     sprite->row_count = sprite->row_count - 1;
-    first_char = *(char *)((int)DAT_004199cc - 2);
-    DAT_004199cc = (int *)((int)DAT_004199cc - 1);
+    first_char = *(char *)((int)g_sprite_blob_cursor - 2);
+    g_sprite_blob_cursor = (int *)((int)g_sprite_blob_cursor - 1);
   }
-  if (((unsigned int)DAT_004199cc & 1) != 0)
+  if (((unsigned int)g_sprite_blob_cursor & 1) != 0)
   {
-    DAT_004199cc = (int *)((int)DAT_004199cc + 1);
+    g_sprite_blob_cursor = (int *)((int)g_sprite_blob_cursor + 1);
   }
-  if (((unsigned int)DAT_004199cc & 2) != 0)
+  if (((unsigned int)g_sprite_blob_cursor & 2) != 0)
   {
-    DAT_004199cc = (int *)((int)DAT_004199cc + 2);
+    g_sprite_blob_cursor = (int *)((int)g_sprite_blob_cursor + 2);
   }
-  *DAT_004199cc = -1;
-  sprite->total_size = (int)DAT_004199cc - (int)sprite;
+  *g_sprite_blob_cursor = -1;
+  sprite->total_size = (int)g_sprite_blob_cursor - (int)sprite;
   return sprite;
 }

@@ -64,235 +64,235 @@ typedef union FaceSpriteRootStorage
   EncodedImage *flat[0x108];
 } FaceSpriteRootStorage;
 
-extern DIBSurface *FUN_00406810(int width, int height, int bits_per_pixel);
-extern DIBSurface *FUN_004069e0(int page_number, int width, int height, int bits_per_pixel);
-extern int FUN_004065e0();
-extern int FUN_004065f0(char *executable_name, char *config_name);
-extern DIBSurface *FUN_00406610(void);
-extern DIBSurface *FUN_00406620(int page_number);
-extern DIBSurface *FUN_00406650(void);
-extern void FUN_00406bd0(int page_number, DIBSurface *page);
+extern DIBSurface *InitializeGraphicsSystem(int width, int height, int bits_per_pixel);
+extern DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
+extern int LegacyInitNoop();
+extern int LoadFontConfigIfPresent(char *executable_name, char *config_name);
+extern DIBSurface *GetPrimaryPage(void);
+extern DIBSurface *GetPageByNumber(int page_number);
+extern DIBSurface *InitializeGraphicsSystemDefaultMode(void);
+extern void SetGraphicsPage(int page_number, DIBSurface *page);
 extern char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[];
-extern int FUN_00407b10(char *path);
-extern int FUN_00407c20(int font_id, FILE *file);
-extern void FUN_00407210(int *dst, unsigned int dst_x, int dst_y, unsigned int width,
+extern int LoadFontCollection(char *path);
+extern int LoadBitmapFontFromFile(int font_id, FILE *file);
+extern void BlitGraphicsRect(int *dst, unsigned int dst_x, int dst_y, unsigned int width,
                          DWORD height, int *src, int src_x, int src_y);
-extern void FUN_00407190(int *dst, int x, int y, int char_code);
+extern void PutGraphicsPixel(int *dst, int x, int y, int char_code);
 extern void DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *encoded_image);
 extern void DrawEncodedImageResampled(int *dst, int x, int y, int width, int height,
                                       EncodedImage *encoded_image);
-extern void FUN_00409eb0(int page_number, int x, int y, char *path, void *opaque);
-extern unsigned int FUN_00402600(int value);
-extern void FUN_00402621(int *dst, int dst_x, int dst_y, int width, int height, int *src,
+extern void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
+extern unsigned int ScaleUiCoordinate(int value);
+extern void BlitScaledRect(int *dst, int dst_x, int dst_y, int width, int height, int *src,
                          int src_x, int src_y);
 extern void DrawEncodedImageAutoScale(int *dst, int x, int y, EncodedImage *encoded_image);
-extern int FUN_00407e20(int font_id, unsigned int point_size, char *font_file, char *font_name,
+extern int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name,
                         int weight, DWORD italic);
-extern void FUN_00406cc0(int enabled);
-extern int FUN_004093d0(void);
-extern void FUN_0040a110(int page_number, char *path);
+extern void PresentGraphicsPage(int enabled);
+extern int InitializeLegacyVideoStub(void);
+extern void LoadPcxIntoPage(int page_number, char *path);
 extern size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 extern int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
-extern int FUN_004086c0(int *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y,
+extern int DrawTextFormatted(int *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y,
                         int *arg9);
-extern void FUN_00407570(void *dst, int dst_x, int dst_y, int src_w, int src_h, void *src,
+extern void StretchBlitGraphicsRect(void *dst, int dst_x, int dst_y, int src_w, int src_h, void *src,
                          int src_x, int src_y, int copy_w, int copy_h);
-extern int FUN_0040369c(void);
-extern void FUN_00402717(int *page, int x, int y, EncodedImage *encoded_image);
-extern void FUN_00402743(int *page, int x, int y, unsigned int width, int height);
-extern int FUN_00402edc(int selected_face_index);
+extern int InitializeFaceMakerAssets(void);
+extern void DrawFaceLayerUnscaled(int *page, int x, int y, EncodedImage *encoded_image);
+extern void DrawTransparentOverlayMask(int *page, int x, int y, unsigned int width, int height);
+extern int LoadSelectedFaceSet(int selected_face_index);
 extern int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **group_entries,
                              EncodedImage **first_sprite_out);
-extern int FUN_00406369(void);
-extern void FUN_004063f0(WPARAM wparam, LPARAM lparam);
-extern int FUN_00402a84(FaceControl *control);
-extern int FUN_00402ad9(FaceControl *control);
-extern void FUN_00402841(FaceControl *control);
-extern int FUN_00402a42(FaceControl *control);
-extern int FUN_00402b24(FaceControl *control);
-extern int FUN_00402d30(FaceControl *control);
-extern void FUN_004033c9(FaceControl *control);
-extern void FUN_00403573(int index, int selected);
-extern int FUN_004028d1(FaceControl *control, int mode);
-extern void FUN_004032e4(void);
+extern int ShowSaveFaceDialog(void);
+extern void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
+extern int DisableFaceControl(FaceControl *control);
+extern int EnableFaceControl(FaceControl *control);
+extern void AcceptFaceSelection(FaceControl *control);
+extern int CycleFaceSet(FaceControl *control);
+extern int ScrollFaceSetList(FaceControl *control);
+extern int AdjustVisibleFaceVariant(FaceControl *control);
+extern void ComposeSelectedFaceImage(FaceControl *control);
+extern void DrawFaceSlotEntry(int index, int selected);
+extern int DrawFaceControl(FaceControl *control, int mode);
+extern void RedrawFaceCompositePreview(void);
 extern void BeginSpriteEncodeSession(void);
-extern void FUN_0040a130(int page_number, char *path);
-extern int FUN_00407f30(int font_id, unsigned int style);
-extern void FUN_004088d0(int *dst, int text_id, int x, int y, char *text);
+extern void LoadPcxIntoPageNoPalette(int page_number, char *path);
+extern int SetFontStyleSize(int font_id, unsigned int style);
+extern void DrawTextAt(int *dst, int text_id, int x, int y, char *text);
 extern EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width,
                                           int height);
-extern int FUN_00409420(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
+extern int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
                         char *param_7);
 extern void FinalizeSpriteEncodeSession(void);
-extern void FUN_00408950(void *memory);
-extern int FUN_00405f38(void);
-extern int FUN_00405f60(void);
-extern int FUN_00406590(void);
-extern int FUN_004065a0(void);
-extern int FUN_004093e0(void);
-extern void FUN_004075d0(unsigned int *param_1, int param_2, int param_3, int param_4,
+extern void FreeSpriteBlob(void *memory);
+extern int ConsumeUiTickCount(void);
+extern int PeekUiTickCount(void);
+extern int HasQueuedKeyInput(void);
+extern int PopQueuedKeyInput(void);
+extern int CleanupLegacyVideoStub(void);
+extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                          unsigned int param_5);
-extern void FUN_004076c0(unsigned int *param_1, int param_2, int param_3, int param_4,
+extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                          unsigned int param_5);
-extern ATOM FUN_0040a330(HINSTANCE hInstance);
-extern HWND FUN_0040a3c0(HINSTANCE hInstance, HWND parent_hwnd);
-extern int FUN_0040a730(int enabled, int mode);
-extern int FUN_00406d00(int page_number, int color_index);
+extern ATOM RegisterPaletteClass(HINSTANCE hInstance);
+extern HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd);
+extern int AnimatePaletteToColor(int enabled, int mode);
+extern int ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 extern void RpBits_ApplyPalette(short *palette_data_words);
-extern void FUN_0040aa20(double *dst, double *src, unsigned int size);
-extern int DAT_0040d088;
-extern int DAT_00426570;
-extern RGBQUAD DAT_00426580[256];
-extern unsigned int DAT_00425e20[0xc8];
-extern unsigned int DAT_00420df0[0xc8];
-extern int DAT_00421110[0x400];
-extern int DAT_0041f5f0[0x301];
-extern int DAT_004201f4[0x2ff];
-extern unsigned char *PTR_DAT_0040d2e4;
-extern FontSlot DAT_004233d0[0x10];
-extern char DAT_0040d224[];
+extern void CopyBytesAsmCompat(double *dst, double *src, unsigned int size);
+extern int g_frontbuffer_direct_blit_enabled;
+extern int g_graphics_bpp;
+extern RGBQUAD g_palette_rgb[256];
+extern unsigned int g_palette_data_words[0xc8];
+extern unsigned int g_palette_transition_source_words[0xc8];
+extern int g_palette_transition_work_words[0x400];
+extern int g_palette_transition_hsv[0x301];
+extern int g_palette_transition_value_step[0x2ff];
+extern unsigned char *g_palette_rgb_bytes;
+extern FontSlot g_font_slots[0x10];
+extern char g_file_read_mode[];
 extern __declspec(dllimport) int *__p___mb_cur_max(void);
 extern __declspec(dllimport) unsigned short **__p__pctype(void);
 extern __declspec(dllimport) int _isctype(int c, int type);
 
 // GLOBAL: FACEMAKER 0x0040c010
-FacemakerWindowBounds DAT_0040c010 = {0, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &DAT_0040c010};
+FacemakerWindowBounds g_face_preview_page_bounds = {0, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &g_face_preview_page_bounds};
 
 // GLOBAL: FACEMAKER 0x0040c038
-FacemakerWindowBounds DAT_0040c038 = {1, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &DAT_0040c038};
+FacemakerWindowBounds g_face_work_page_bounds = {1, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &g_face_work_page_bounds};
 
 // GLOBAL: FACEMAKER 0x0040c060
-FacemakerWindowBounds DAT_0040c060 = {2, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &DAT_0040c060};
+FacemakerWindowBounds g_face_aux_page_bounds = {2, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &g_face_aux_page_bounds};
 
 // GLOBAL: FACEMAKER 0x0040c088
-FacemakerWindowBounds DAT_0040c088 = {2, 0, 0, 0x320, 0x258, 1, 0x9f, 4, 0, &DAT_0040c088};
+FacemakerWindowBounds g_face_fullscreen_page_bounds = {2, 0, 0, 0x320, 0x258, 1, 0x9f, 4, 0, &g_face_fullscreen_page_bounds};
 
 // GLOBAL: FACEMAKER 0x0040c034
-FacemakerWindowBounds *PTR_DAT_0040c034 = &DAT_0040c010;
+FacemakerWindowBounds *g_face_preview_bounds = &g_face_preview_page_bounds;
 
 // GLOBAL: FACEMAKER 0x0040c05c
-FacemakerWindowBounds *PTR_DAT_0040c05c = &DAT_0040c038;
+FacemakerWindowBounds *g_face_work_bounds = &g_face_work_page_bounds;
 
 // GLOBAL: FACEMAKER 0x0040c0ac
-FacemakerWindowBounds *PTR_DAT_0040c0ac = &DAT_0040c088;
+FacemakerWindowBounds *g_face_fullscreen_bounds = &g_face_fullscreen_page_bounds;
 
 // GLOBAL: FACEMAKER 0x0040c9e4
-int DAT_0040c9e4 = 1;
+int g_use_desktop_palette = 1;
 
 // GLOBAL: FACEMAKER 0x0040c9e0
-int DAT_0040c9e0 = 0x42;
+int g_ui_timer_interval_ms = 0x42;
 
 // GLOBAL: FACEMAKER 0x0040c9e8
-int DAT_0040c9e8 = 0;
+int g_ui_tick_count = 0;
 
 // GLOBAL: FACEMAKER 0x0040c188
-int DAT_0040c188 = 0;
+int g_legacy_video_state = 0;
 
 // GLOBAL: FACEMAKER 0x0040c190
-int DAT_0040c190 = 0x18b;
+int g_face_slot_arrow_x_table_base = 0x18b;
 
 // GLOBAL: FACEMAKER 0x0040c194
-int DAT_0040c194 = 0xd9;
+int g_face_slot_arrow_y_table_base = 0xd9;
 
 // GLOBAL: FACEMAKER 0x0040c1c0
-int DAT_0040c1c0 = 0xdd;
+int g_face_variant_arrow_x_table_base = 0xdd;
 
 // GLOBAL: FACEMAKER 0x0040c1c4
-int DAT_0040c1c4 = 0x8a;
+int g_face_variant_arrow_y_table_base = 0x8a;
 
 // GLOBAL: FACEMAKER 0x0040c1e0
-int DAT_0040c1e0 = 1000;
+int g_face_set_total = 1000;
 
 // GLOBAL: FACEMAKER 0x0040c1e4
-int DAT_0040c1e4 = 0;
+int g_selected_face_set_index = 0;
 
 // GLOBAL: FACEMAKER 0x0040c1e8
-FaceControl DAT_0040c1e8[0x15] = {
-    {0, 0, 0x40, 0x20, FUN_004028d1, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}},
-    {0xce, 0x24, 0x56, 0x21, FUN_004028d1, FUN_004033c9, 0, 0, 0, {0, 0, 0, 0}},
-    {0xce, 0x56, 0x56, 0x21, FUN_004028d1, FUN_00402841, 0, 0, 0, {0, 0, 0, 0}},
-    {0xe0, 0x8a, 0x30, 0x21, FUN_004028d1, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}},
-    {0xd8, 0xbc, 0x40, 0x21, FUN_004028d1, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}},
-    {0xb9, 0x8a, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402a42, -1, 0, 0, {0, 0, 0, 0}},
-    {0x111, 0x8a, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402a42, 1, 0, 0, {0, 0, 0, 0}},
-    {0xb1, 0xbc, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402b24, -1, 0, 0, {0, 0, 0, 0}},
-    {0x119, 0xbc, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402b24, 1, 0, 0, {0, 0, 0, 0}},
-    {0x167, 0xd9, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 0, -1, 0, {0, 0, 0, 0}},
-    {0x194, 0xd9, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 0, 1, 0, {0, 0, 0, 0}},
-    {0x206, 0xd9, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 1, -1, 0, {0, 0, 0, 0}},
-    {0x233, 0xd9, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 1, 1, 0, {0, 0, 0, 0}},
-    {0x29, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 2, -1, 0, {0, 0, 0, 0}},
-    {0x56, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 2, 1, 0, {0, 0, 0, 0}},
-    {0xc8, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 3, -1, 0, {0, 0, 0, 0}},
-    {0xf5, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 3, 1, 0, {0, 0, 0, 0}},
-    {0x167, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 4, -1, 0, {0, 0, 0, 0}},
-    {0x194, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 4, 1, 0, {0, 0, 0, 0}},
-    {0x206, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 5, -1, 0, {0, 0, 0, 0}},
-    {0x233, 0x1b8, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402d30, 5, 1, 0, {0, 0, 0, 0}}};
+FaceControl g_face_controls[0x15] = {
+    {0, 0, 0x40, 0x20, DrawFaceControl, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}},
+    {0xce, 0x24, 0x56, 0x21, DrawFaceControl, ComposeSelectedFaceImage, 0, 0, 0, {0, 0, 0, 0}},
+    {0xce, 0x56, 0x56, 0x21, DrawFaceControl, AcceptFaceSelection, 0, 0, 0, {0, 0, 0, 0}},
+    {0xe0, 0x8a, 0x30, 0x21, DrawFaceControl, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}},
+    {0xd8, 0xbc, 0x40, 0x21, DrawFaceControl, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}},
+    {0xb9, 0x8a, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)CycleFaceSet, -1, 0, 0, {0, 0, 0, 0}},
+    {0x111, 0x8a, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)CycleFaceSet, 1, 0, 0, {0, 0, 0, 0}},
+    {0xb1, 0xbc, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)ScrollFaceSetList, -1, 0, 0, {0, 0, 0, 0}},
+    {0x119, 0xbc, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)ScrollFaceSetList, 1, 0, 0, {0, 0, 0, 0}},
+    {0x167, 0xd9, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 0, -1, 0, {0, 0, 0, 0}},
+    {0x194, 0xd9, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 0, 1, 0, {0, 0, 0, 0}},
+    {0x206, 0xd9, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 1, -1, 0, {0, 0, 0, 0}},
+    {0x233, 0xd9, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 1, 1, 0, {0, 0, 0, 0}},
+    {0x29, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 2, -1, 0, {0, 0, 0, 0}},
+    {0x56, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 2, 1, 0, {0, 0, 0, 0}},
+    {0xc8, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 3, -1, 0, {0, 0, 0, 0}},
+    {0xf5, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 3, 1, 0, {0, 0, 0, 0}},
+    {0x167, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 4, -1, 0, {0, 0, 0, 0}},
+    {0x194, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 4, 1, 0, {0, 0, 0, 0}},
+    {0x206, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 5, -1, 0, {0, 0, 0, 0}},
+    {0x233, 0x1b8, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)AdjustVisibleFaceVariant, 5, 1, 0, {0, 0, 0, 0}}};
 
 // GLOBAL: FACEMAKER 0x0040c208
-int DAT_0040c208 = 0;
+int g_face_controls_start_mode = 0;
 
 // GLOBAL: FACEMAKER 0x0040c284
-FaceControl DAT_0040c284 = {
-    0xe0, 0x8a, 0x30, 0x21, FUN_004028d1, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}};
+FaceControl g_face_control_top_panel_overlay = {
+    0xe0, 0x8a, 0x30, 0x21, DrawFaceControl, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}};
 
 // GLOBAL: FACEMAKER 0x0040c2b8
-FaceControl DAT_0040c2b8 = {
-    0xd8, 0xbc, 0x40, 0x21, FUN_004028d1, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}};
+FaceControl g_face_control_bottom_panel_overlay = {
+    0xd8, 0xbc, 0x40, 0x21, DrawFaceControl, (FaceControlCallback)0, 0, 0, 0, {0, 0, 0, 0}};
 
 // GLOBAL: FACEMAKER 0x0040c354
-FaceControl DAT_0040c354 = {
-    0xb1, 0xbc, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402b24, -1, 0, 0, {0, 0, 0, 0}};
+FaceControl g_face_control_list_scroll_up_overlay = {
+    0xb1, 0xbc, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)ScrollFaceSetList, -1, 0, 0, {0, 0, 0, 0}};
 
 // GLOBAL: FACEMAKER 0x0040c388
-FaceControl DAT_0040c388 = {
-    0x119, 0xbc, 0x25, 0x1d, FUN_004028d1, (FaceControlCallback)FUN_00402b24, 1, 0, 0, {0, 0, 0, 0}};
+FaceControl g_face_control_list_scroll_down_overlay = {
+    0x119, 0xbc, 0x25, 0x1d, DrawFaceControl, (FaceControlCallback)ScrollFaceSetList, 1, 0, 0, {0, 0, 0, 0}};
 
 // GLOBAL: FACEMAKER 0x0041afb4
 HDC global_main_hdc;
 
 // GLOBAL: FACEMAKER 0x0041ae40
-char DAT_0041ae40[0x105];
+char g_module_path_buffer[0x105];
 
 // GLOBAL: FACEMAKER 0x0041b024
-char DAT_0041b024[4];
+char g_original_working_dir[4];
 
 // GLOBAL: FACEMAKER 0x0041af50
-char DAT_0041af50[0x64];
+char g_default_face_filename[0x64];
 
 // GLOBAL: FACEMAKER 0x0041afc0
-char DAT_0041afc0[0x64];
+char g_save_dialog_title[0x64];
 
 // GLOBAL: FACEMAKER 0x0041b028
-HWND DAT_0041b028;
+HWND g_main_hwnd;
 
 // GLOBAL: FACEMAKER 0x0041b030
-char DAT_0041b030[0x105];
+char g_face_output_path[0x105];
 
 // GLOBAL: FACEMAKER 0x0041c140
-HINSTANCE DAT_0041c140;
+HINSTANCE g_app_instance;
 
 // GLOBAL: FACEMAKER 0x0041c144
-int DAT_0041c144;
+int g_ui_ready;
 
 // GLOBAL: FACEMAKER 0x00412488
-HWND DAT_00412488;
+HWND g_palette_hwnd;
 
 // GLOBAL: FACEMAKER 0x0041248c
-int DAT_0041248c;
+int g_palette_class_registered;
 
 // GLOBAL: FACEMAKER 0x00412490
-int DAT_00412490;
+int g_main_timer_id;
 
 // GLOBAL: FACEMAKER 0x004128a0
-unsigned int DAT_004128a0[0x32];
+unsigned int g_key_input_queue[0x32];
 
 // GLOBAL: FACEMAKER 0x00412968
-int DAT_00412968;
+int g_keyboard_init_done;
 
 // GLOBAL: FACEMAKER 0x0041c150
-char *DAT_0041c150[1000];
+char *g_face_set_gender_tags[1000];
 
 // GLOBAL: FACEMAKER 0x0041d110
 int global_screen_width;
@@ -301,7 +301,7 @@ int global_screen_width;
 int global_screen_height;
 
 // GLOBAL: FACEMAKER 0x0041d120
-char *DAT_0041d120[1000];
+char *g_face_set_display_names[1000];
 
 // GLOBAL: FACEMAKER 0x0041d0f0
 FaceSpriteRootStorage g_face_sprite_roots;
@@ -316,7 +316,7 @@ EncodedImage *g_face_control_odd_sprites[4];
 int g_face_group_count;
 
 // GLOBAL: FACEMAKER 0x0041e420
-char DAT_0041e420[0x80];
+char g_face_button_text_buffer[0x80];
 
 // GLOBAL: FACEMAKER 0x0041e4a0
 EncodedImage *g_face_scroll_arrow_sprite;
@@ -334,13 +334,13 @@ EncodedImage *g_face_slot_background_sprite;
 EncodedImage *g_face_control1_sprites[4];
 
 // GLOBAL: FACEMAKER 0x0041e4f0
-int DAT_0041e4f0;
+int g_worker_should_exit;
 
 // GLOBAL: FACEMAKER 0x0041e500
 EncodedImage *g_face_control0_sprites[3];
 
 // GLOBAL: FACEMAKER 0x0041e50c
-int DAT_0041e50c;
+int g_face_composite_ready;
 
 // GLOBAL: FACEMAKER 0x0041e510
 EncodedImage *g_face_control2_sprites[4];
@@ -355,38 +355,38 @@ int g_face_group_frame_counts[10];
 EncodedImage *g_face_control3_sprites[2];
 
 // GLOBAL: FACEMAKER 0x0041e560
-int DAT_0041e560;
+int g_ignore_mouse_hit_test;
 
 // GLOBAL: FACEMAKER 0x0041e570
-char *DAT_0041e570[1000];
+char *g_face_set_names[1000];
 
 // GLOBAL: FACEMAKER 0x0041e0c0
-int DAT_0041e0c0;
+int g_face_list_scroll_offset;
 
 // GLOBAL: FACEMAKER 0x0041e0d0
 FaceSpriteEntryStorage g_face_sprite_entries;
 
 // GLOBAL: FACEMAKER 0x0041e564
-int DAT_0041e564;
+int g_worker_exit_code;
 
-extern DIBSurface *DAT_00426540[10];
-extern int DAT_00426568;
-extern int DAT_0042656c;
+extern DIBSurface *g_graphics_pages[10];
+extern int g_graphics_height;
+extern int g_graphics_width;
 
 // GLOBAL: FACEMAKER 0x00423338
-int DAT_00423338;
+int g_mouse_y;
 
 // GLOBAL: FACEMAKER 0x0042333c
-int DAT_0042333c;
+int g_mouse_x;
 
 // GLOBAL: FACEMAKER 0x00423334
-int DAT_00423334;
+int g_mouse_button_down;
 
 // GLOBAL: FACEMAKER 0x00423340
-int DAT_00423340;
+int g_mouse_button_mask;
 
 // GLOBAL: FACEMAKER 0x0040c62c
-char DAT_0040c62c[] = "wt";
+char g_text_write_mode[] = "wt";
 
 // GLOBAL: FACEMAKER 0x0040c630
 char s_FaceMostRecent_txt_0040c630[] = "FaceMostRecent.txt";
@@ -398,7 +398,7 @@ char s__d___s_0040c644[] = "%d, %s";
 char s_FaceArt__0040c64c[] = "FaceArt/";
 
 // GLOBAL: FACEMAKER 0x0040c658
-char DAT_0040c658[] = "rt";
+char g_text_read_mode[] = "rt";
 
 // GLOBAL: FACEMAKER 0x0040c65c
 char s_FaceButtons_txt_0040c65c[] = "FaceButtons.txt";
@@ -422,7 +422,7 @@ char s_FaceArt_facebut1_pcx_0040c6a0[] = "FaceArt/facebut1.pcx";
 char s_FaceArt_facfrsh2New_pcx_0040c6b8[] = "FaceArt/facfrsh2New.pcx";
 
 // GLOBAL: FACEMAKER 0x0040c6d0
-char DAT_0040c6d0[] = "rt";
+char g_text_read_mode_alt[] = "rt";
 
 // GLOBAL: FACEMAKER 0x0040c6d4
 char s_FaceData_txt_0040c6d4[] = "FaceData.txt";
@@ -440,7 +440,7 @@ char s___pic_0040cae0[] = "*.pic";
 char s___pic_0040cae8[] = "*.pic";
 
 // GLOBAL: FACEMAKER 0x0040caf0
-unsigned char DAT_0040caf0[0x1000] = {
+unsigned char g_virtual_key_char_map[0x1000] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     2, 0, 27, 1, 2, 0, 27, 1, 2, 0, 27, 1, 0, 0, 0, 0,
     2, 0, 49, 2, 2, 0, 33, 2, 0, 0, 0, 0, 2, 0, 0, 120,
@@ -453,22 +453,22 @@ char s_Current_Palette_0040cab0[] = "Current Palette";
 char s_ShowPaletteClass_0040cac0[] = "ShowPaletteClass";
 
 // GLOBAL: FACEMAKER 0x0040d084
-int DAT_0040d084 = 0;
+int g_key_input_queue_count = 0;
 
 // GLOBAL: FACEMAKER 0x00412088
-char DAT_00412088[0x400];
+char g_open_file_filter_buffer[0x400];
 
 // FUNCTION: FACEMAKER 0x00406253
-void FUN_00406253(HWND owner_hwnd, OPENFILENAMEA *open_file, char *initial_file, char *pattern,
+void InitOpenFileDialog(HWND owner_hwnd, OPENFILENAMEA *open_file, char *initial_file, char *pattern,
                   char *file_buffer)
 {
-  memset(DAT_00412088, 0, 0x400);
-  strcpy(DAT_00412088, initial_file);
-  strcpy(DAT_00412088 + strlen(DAT_00412088) + 1, pattern);
+  memset(g_open_file_filter_buffer, 0, 0x400);
+  strcpy(g_open_file_filter_buffer, initial_file);
+  strcpy(g_open_file_filter_buffer + strlen(g_open_file_filter_buffer) + 1, pattern);
   open_file->lStructSize = 0x4c;
   open_file->hwndOwner = owner_hwnd;
   open_file->hInstance = (HINSTANCE)0;
-  open_file->lpstrFilter = DAT_00412088;
+  open_file->lpstrFilter = g_open_file_filter_buffer;
   open_file->lpstrCustomFilter = (LPSTR)0;
   open_file->nMaxCustFilter = 0;
   open_file->nFilterIndex = 0;
@@ -477,7 +477,7 @@ void FUN_00406253(HWND owner_hwnd, OPENFILENAMEA *open_file, char *initial_file,
   open_file->lpstrFileTitle = (LPSTR)0;
   open_file->nMaxFileTitle = 0x200;
   open_file->lpstrInitialDir = s_PlayFace_0040cad4;
-  open_file->lpstrTitle = DAT_0041afc0;
+  open_file->lpstrTitle = g_save_dialog_title;
   open_file->Flags = 0x6000c;
   open_file->nFileOffset = 0;
   open_file->nFileExtension = 0;
@@ -488,7 +488,7 @@ void FUN_00406253(HWND owner_hwnd, OPENFILENAMEA *open_file, char *initial_file,
 }
 
 // FUNCTION: FACEMAKER 0x00406369
-int FUN_00406369(void)
+int ShowSaveFaceDialog(void)
 {
   struct
   {
@@ -496,10 +496,10 @@ int FUN_00406369(void)
     int save_result;
   } s;
 
-  strcpy(DAT_0041b030, s___pic_0040cae0);
-  FUN_00406253(DAT_0041b028, &s.open_file, DAT_0041af50, s___pic_0040cae8, DAT_0041b030);
+  strcpy(g_face_output_path, s___pic_0040cae0);
+  InitOpenFileDialog(g_main_hwnd, &s.open_file, g_default_face_filename, s___pic_0040cae8, g_face_output_path);
   s.save_result = GetSaveFileNameA(&s.open_file);
-  DAT_00423334 = 0;
+  g_mouse_button_down = 0;
   if (s.save_result != 0)
     return 1;
   else
@@ -509,7 +509,7 @@ int FUN_00406369(void)
 #pragma optimize("gy", on)
 
 // FUNCTION: FACEMAKER 0x004063f0
-void FUN_004063f0(WPARAM wparam, LPARAM lparam)
+void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
 {
   (void)wparam;
   {
@@ -524,7 +524,7 @@ void FUN_004063f0(WPARAM wparam, LPARAM lparam)
     unsigned short translated_char;
 
     modifier_mode = 0;
-    tmp_state = DAT_00412968;
+    tmp_state = g_keyboard_init_done;
     if (tmp_state == 0)
     {
       while (GetAsyncKeyState(0x12) != 0)
@@ -533,10 +533,10 @@ void FUN_004063f0(WPARAM wparam, LPARAM lparam)
       while (GetAsyncKeyState(0x11) != 0)
       {
       }
-      DAT_00412968 = 1;
+      g_keyboard_init_done = 1;
     }
 
-    tmp_state = DAT_0040d084;
+    tmp_state = g_key_input_queue_count;
     if (tmp_state == 0x31)
     {
       MessageBeep(-1);
@@ -557,11 +557,11 @@ void FUN_004063f0(WPARAM wparam, LPARAM lparam)
       mb_cur_max = __p___mb_cur_max();
       if (*mb_cur_max > 1)
       {
-        ctype_mask = _isctype(*(unsigned short *)(DAT_0040caf0 + virtual_key * 0x10 + 2) & 0xff, 0x103);
+        ctype_mask = _isctype(*(unsigned short *)(g_virtual_key_char_map + virtual_key * 0x10 + 2) & 0xff, 0x103);
       }
       else
       {
-        repeat_count = (int)(unsigned int)*(unsigned short *)(DAT_0040caf0 + virtual_key * 0x10 + 2);
+        repeat_count = (int)(unsigned int)*(unsigned short *)(g_virtual_key_char_map + virtual_key * 0x10 + 2);
         pctype_table = __p__pctype();
         ctype_mask = (int)((*pctype_table)[repeat_count & 0xff] & 0x103);
       }
@@ -586,26 +586,26 @@ void FUN_004063f0(WPARAM wparam, LPARAM lparam)
     }
 
     table_offset = (int)(modifier_mode + virtual_key * 4) * 4;
-    if (DAT_0040caf0[table_offset] != '\0')
+    if (g_virtual_key_char_map[table_offset] != '\0')
     {
-      translated_char = *(unsigned short *)(DAT_0040caf0 + table_offset + 2);
+      translated_char = *(unsigned short *)(g_virtual_key_char_map + table_offset + 2);
       repeat_count = (int)((unsigned int)lparam & 0xffff);
-      if ((int)repeat_count >= (0x32 - DAT_0040d084))
+      if ((int)repeat_count >= (0x32 - g_key_input_queue_count))
       {
-        repeat_count = (0x32 - DAT_0040d084);
+        repeat_count = (0x32 - g_key_input_queue_count);
       }
 
       if (repeat_count != 0)
       {
         unsigned int *dst_char;
 
-        dst_char = DAT_004128a0 + DAT_0040d084;
+        dst_char = g_key_input_queue + g_key_input_queue_count;
         do
         {
           repeat_count = repeat_count - 1;
           *dst_char = (unsigned int)translated_char;
           dst_char = dst_char + 1;
-          DAT_0040d084 = DAT_0040d084 + 1;
+          g_key_input_queue_count = g_key_input_queue_count + 1;
         } while (repeat_count != 0);
       }
     }
@@ -613,7 +613,7 @@ void FUN_004063f0(WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: FACEMAKER 0x0040a330
-ATOM FUN_0040a330(HINSTANCE hInstance)
+ATOM RegisterPaletteClass(HINSTANCE hInstance)
 {
   WNDCLASSA wndclass;
 
@@ -631,14 +631,14 @@ ATOM FUN_0040a330(HINSTANCE hInstance)
 }
 
 // FUNCTION: FACEMAKER 0x0040a3c0
-HWND FUN_0040a3c0(HINSTANCE hInstance, HWND parent_hwnd)
+HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd)
 {
   return CreateWindowExA(0, s_ShowPaletteClass_0040cac0, s_Current_Palette_0040cab0, 0x80c80000,
                          100, 0x32, 0x100, 0x100, parent_hwnd, (HMENU)0, hInstance, (LPVOID)0);
 }
 
 // FUNCTION: FACEMAKER 0x0040a440
-int *FUN_0040a440(int *dst, int *src)
+int *ConvertRgbToHsv(int *dst, int *src)
 {
   int green;
   int blue;
@@ -711,7 +711,7 @@ int *FUN_0040a440(int *dst, int *src)
 }
 
 // FUNCTION: FACEMAKER 0x0040a5a0
-unsigned int *FUN_0040a5a0(unsigned int *dst, int *src)
+unsigned int *ConvertHsvToRgb(unsigned int *dst, int *src)
 {
   int saturation;
   unsigned int value_8bit;
@@ -796,7 +796,7 @@ unsigned int *FUN_0040a5a0(unsigned int *dst, int *src)
 }
 
 // FUNCTION: FACEMAKER 0x0040a730
-int FUN_0040a730(int param_1, int param_2)
+int AnimatePaletteToColor(int param_1, int param_2)
 {
   unsigned char *puVar1;
   int iVar2;
@@ -821,13 +821,13 @@ int FUN_0040a730(int param_1, int param_2)
   unsigned int local_10[4];
 
   iVar2 = 0x4000 / param_2;
-  if (DAT_00426570 != 8)
+  if (g_graphics_bpp != 8)
   {
     return 0;
   }
 
-  piVar3 = (int *)DAT_00425e20;
-  piVar10 = (int *)DAT_00420df0;
+  piVar3 = (int *)g_palette_data_words;
+  piVar10 = (int *)g_palette_transition_source_words;
   for (iVar7 = 0xc0; iVar7 != 0; iVar7 = iVar7 - 1)
   {
     *piVar10 = *piVar3;
@@ -838,29 +838,29 @@ int FUN_0040a730(int param_1, int param_2)
   local_2c = param_1;
   local_28 = param_1;
   local_24 = param_1;
-  piVar3 = FUN_0040a440((int *)local_10, &local_2c);
+  piVar3 = ConvertRgbToHsv((int *)local_10, &local_2c);
   local_1c = *piVar3;
   local_18 = piVar3[1];
   local_14 = piVar3[2];
   sVar9 = 0;
-  RpBits_ApplyPalette((short *)DAT_00425e20);
+  RpBits_ApplyPalette((short *)g_palette_data_words);
   iVar7 = local_18;
 
   do
   {
     iVar11 = (int)sVar9;
     iVar8 = iVar11 * 4;
-    pbVar4 = PTR_DAT_0040d2e4 + iVar11 * 3;
-    DAT_00421110[iVar8] = (unsigned int)*pbVar4;
-    DAT_00421110[iVar8 + 1] = (unsigned int)pbVar4[1];
-    DAT_00421110[iVar8 + 2] = (unsigned int)pbVar4[2];
-    piVar3 = FUN_0040a440((int *)local_10, DAT_00421110 + iVar8);
-    DAT_0041f5f0[iVar11 * 3] = *piVar3;
-    DAT_0041f5f0[iVar11 * 3 + 1] = piVar3[1];
-    DAT_0041f5f0[iVar11 * 3 + 2] = piVar3[2];
-    iVar8 = (iVar7 - DAT_0041f5f0[iVar11 * 3 + 1]) / param_2;
-    DAT_004201f4[iVar11 * 3] = iVar8;
-    if (DAT_0041f5f0[iVar11 * 3 + 1] < iVar7)
+    pbVar4 = g_palette_rgb_bytes + iVar11 * 3;
+    g_palette_transition_work_words[iVar8] = (unsigned int)*pbVar4;
+    g_palette_transition_work_words[iVar8 + 1] = (unsigned int)pbVar4[1];
+    g_palette_transition_work_words[iVar8 + 2] = (unsigned int)pbVar4[2];
+    piVar3 = ConvertRgbToHsv((int *)local_10, g_palette_transition_work_words + iVar8);
+    g_palette_transition_hsv[iVar11 * 3] = *piVar3;
+    g_palette_transition_hsv[iVar11 * 3 + 1] = piVar3[1];
+    g_palette_transition_hsv[iVar11 * 3 + 2] = piVar3[2];
+    iVar8 = (iVar7 - g_palette_transition_hsv[iVar11 * 3 + 1]) / param_2;
+    g_palette_transition_value_step[iVar11 * 3] = iVar8;
+    if (g_palette_transition_hsv[iVar11 * 3 + 1] < iVar7)
     {
       iVar5 = 0x1000;
     }
@@ -869,7 +869,7 @@ int FUN_0040a730(int param_1, int param_2)
       iVar5 = -0x1000;
     }
     sVar9 = sVar9 + 1;
-    DAT_004201f4[iVar11 * 3] = iVar5 / param_2 + iVar8;
+    g_palette_transition_value_step[iVar11 * 3] = iVar5 / param_2 + iVar8;
   } while (sVar9 < 0x100);
 
   local_3e = 1;
@@ -883,15 +883,15 @@ int FUN_0040a730(int param_1, int param_2)
         iVar7 = (int)sVar9;
         if (local_14 == 0)
         {
-          local_38 = DAT_0041f5f0[iVar7 * 3];
-          local_34 = DAT_0041f5f0[iVar7 * 3 + 1];
-          local_30 = DAT_0041f5f0[iVar7 * 3 + 2] - iVar2;
-          DAT_0041f5f0[iVar7 * 3 + 2] = local_30;
+          local_38 = g_palette_transition_hsv[iVar7 * 3];
+          local_34 = g_palette_transition_hsv[iVar7 * 3 + 1];
+          local_30 = g_palette_transition_hsv[iVar7 * 3 + 2] - iVar2;
+          g_palette_transition_hsv[iVar7 * 3 + 2] = local_30;
         }
         else
         {
-          local_38 = DAT_0041f5f0[iVar7 * 3];
-          local_34 = DAT_004201f4[iVar7 * 3] * (int)local_3e + DAT_0041f5f0[iVar7 * 3 + 1];
+          local_38 = g_palette_transition_hsv[iVar7 * 3];
+          local_34 = g_palette_transition_value_step[iVar7 * 3] * (int)local_3e + g_palette_transition_hsv[iVar7 * 3 + 1];
           if (0xfbf < local_34)
           {
             local_34 = 0xfc0;
@@ -902,12 +902,12 @@ int FUN_0040a730(int param_1, int param_2)
           }
 
           iVar8 = iVar2;
-          if (local_14 < DAT_0041f5f0[iVar7 * 3 + 2])
+          if (local_14 < g_palette_transition_hsv[iVar7 * 3 + 2])
           {
             iVar8 = -iVar2;
           }
-          DAT_0041f5f0[iVar7 * 3 + 2] = DAT_0041f5f0[iVar7 * 3 + 2] + iVar8;
-          local_30 = DAT_0041f5f0[iVar7 * 3 + 2];
+          g_palette_transition_hsv[iVar7 * 3 + 2] = g_palette_transition_hsv[iVar7 * 3 + 2] + iVar8;
+          local_30 = g_palette_transition_hsv[iVar7 * 3 + 2];
           if (0x3fbf < local_30)
           {
             local_30 = 0x3fc0;
@@ -922,18 +922,18 @@ int FUN_0040a730(int param_1, int param_2)
         iVar11 = (int)sVar9;
         sVar9 = sVar9 + 1;
         iVar8 = iVar11 * 4;
-        piVar3 = (int *)FUN_0040a5a0(local_10, &local_38);
-        DAT_00421110[iVar8] = *piVar3;
-        DAT_00421110[iVar8 + 1] = piVar3[1];
+        piVar3 = (int *)ConvertHsvToRgb(local_10, &local_38);
+        g_palette_transition_work_words[iVar8] = *piVar3;
+        g_palette_transition_work_words[iVar8 + 1] = piVar3[1];
         iVar7 = iVar11 * 3;
-        DAT_00421110[iVar8 + 2] = piVar3[2];
-        puVar1 = PTR_DAT_0040d2e4;
-        DAT_00421110[iVar8 + 3] = piVar3[3];
-        puVar1[iVar7] = (unsigned char)DAT_00421110[iVar8];
-        PTR_DAT_0040d2e4[iVar7 + 1] = (unsigned char)DAT_00421110[iVar8 + 1];
-        PTR_DAT_0040d2e4[iVar7 + 2] = (unsigned char)DAT_00421110[iVar8 + 2];
+        g_palette_transition_work_words[iVar8 + 2] = piVar3[2];
+        puVar1 = g_palette_rgb_bytes;
+        g_palette_transition_work_words[iVar8 + 3] = piVar3[3];
+        puVar1[iVar7] = (unsigned char)g_palette_transition_work_words[iVar8];
+        g_palette_rgb_bytes[iVar7 + 1] = (unsigned char)g_palette_transition_work_words[iVar8 + 1];
+        g_palette_rgb_bytes[iVar7 + 2] = (unsigned char)g_palette_transition_work_words[iVar8 + 2];
       } while (sVar9 < 0x100);
-      RpBits_ApplyPalette((short *)DAT_00425e20);
+      RpBits_ApplyPalette((short *)g_palette_data_words);
       local_3e = local_3e + 1;
     } while (local_3e <= param_2);
   }
@@ -944,22 +944,22 @@ int FUN_0040a730(int param_1, int param_2)
     iVar2 = (int)sVar9;
     sVar9 = sVar9 + 1;
     iVar2 = iVar2 * 3;
-    PTR_DAT_0040d2e4[iVar2] = (unsigned char)local_2c;
-    PTR_DAT_0040d2e4[iVar2 + 1] = (unsigned char)local_28;
-    PTR_DAT_0040d2e4[iVar2 + 2] = (unsigned char)local_24;
+    g_palette_rgb_bytes[iVar2] = (unsigned char)local_2c;
+    g_palette_rgb_bytes[iVar2 + 1] = (unsigned char)local_28;
+    g_palette_rgb_bytes[iVar2 + 2] = (unsigned char)local_24;
   } while (sVar9 < 0x100);
 
-  RpBits_ApplyPalette((short *)DAT_00425e20);
-  return FUN_00406d00(0, 0);
+  RpBits_ApplyPalette((short *)g_palette_data_words);
+  return ClearGraphicsPageWithPaletteColor(0, 0);
 }
 
 // FUNCTION: FACEMAKER 0x004065f0
-int FUN_004065f0(char *executable_name, char *config_name)
+int LoadFontConfigIfPresent(char *executable_name, char *config_name)
 {
   (void)executable_name;
   if (config_name != (char *)0)
   {
-    return FUN_00407b10(config_name);
+    return LoadFontCollection(config_name);
   }
   return 0;
 }
@@ -968,70 +968,70 @@ int FUN_004065f0(char *executable_name, char *config_name)
 #pragma intrinsic(memcpy)
 
 // FUNCTION: FACEMAKER 0x00406590
-int FUN_00406590(void)
+int HasQueuedKeyInput(void)
 {
-  return DAT_0040d084 != 0;
+  return g_key_input_queue_count != 0;
 }
 
 // FUNCTION: FACEMAKER 0x004065a0
-int FUN_004065a0(void)
+int PopQueuedKeyInput(void)
 {
-  int queue_value;
-  int queue_index;
+  int queued_key;
+  int queued_key_count;
 
-  if (DAT_0040d084 == 0)
+  if (g_key_input_queue_count == 0)
   {
     return 0;
   }
 
-  queue_value = DAT_004128a0[0];
-  DAT_0040d084 = DAT_0040d084 - 1;
-  if (DAT_0040d084 != 0)
+  queued_key = g_key_input_queue[0];
+  g_key_input_queue_count = g_key_input_queue_count - 1;
+  if (g_key_input_queue_count != 0)
   {
-    queue_index = DAT_0040d084;
-    memcpy(DAT_004128a0, DAT_004128a0 + 1, queue_index * 4);
+    queued_key_count = g_key_input_queue_count;
+    memcpy(g_key_input_queue, g_key_input_queue + 1, queued_key_count * 4);
   }
-  return queue_value;
+  return queued_key;
 }
 
 #pragma optimize("gy", on)
 
 // FUNCTION: FACEMAKER 0x004065e0
-int FUN_004065e0()
+int LegacyInitNoop()
 {
   return 0;
 }
 
 // FUNCTION: FACEMAKER 0x00406610
-DIBSurface *FUN_00406610(void)
+DIBSurface *GetPrimaryPage(void)
 {
-  return FUN_00406650();
+  return InitializeGraphicsSystemDefaultMode();
 }
 
 // FUNCTION: FACEMAKER 0x00406620
-DIBSurface *FUN_00406620(int page_number)
+DIBSurface *GetPageByNumber(int page_number)
 {
   if (page_number == 0)
   {
-    return FUN_00406650();
+    return InitializeGraphicsSystemDefaultMode();
   }
-  return FUN_004069e0(page_number, DAT_0042656c, DAT_00426568, 8);
+  return CreateGraphicsPage(page_number, g_graphics_width, g_graphics_height, 8);
 }
 
 #pragma optimize("", off)
 
 // FUNCTION: FACEMAKER 0x00402600
-unsigned int FUN_00402600(int value)
+unsigned int ScaleUiCoordinate(int value)
 {
   return (unsigned int)((global_screen_width * value) / 0x280);
 }
 
 // FUNCTION: FACEMAKER 0x00402621
-void FUN_00402621(int *dst, int dst_x, int dst_y, int width, int height, int *src, int src_x,
+void BlitScaledRect(int *dst, int dst_x, int dst_y, int width, int height, int *src, int src_x,
                   int src_y)
 {
-  FUN_00407210(dst, FUN_00402600(dst_x), FUN_00402600(dst_y), FUN_00402600(width),
-               FUN_00402600(height), src, FUN_00402600(src_x), FUN_00402600(src_y));
+  BlitGraphicsRect(dst, ScaleUiCoordinate(dst_x), ScaleUiCoordinate(dst_y), ScaleUiCoordinate(width),
+               ScaleUiCoordinate(height), src, ScaleUiCoordinate(src_x), ScaleUiCoordinate(src_y));
 }
 
 // FUNCTION: FACEMAKER 0x0040268a
@@ -1046,28 +1046,28 @@ void DrawEncodedImageAutoScale(int *dst, int x, int y, EncodedImage *encoded_ima
   }
   else
   {
-    DrawEncodedImageResampled(dst, FUN_00402600(x), FUN_00402600(y),
-                              FUN_00402600((int)local_encoded_image->width),
-                              FUN_00402600((int)local_encoded_image->height), encoded_image);
+    DrawEncodedImageResampled(dst, ScaleUiCoordinate(x), ScaleUiCoordinate(y),
+                              ScaleUiCoordinate((int)local_encoded_image->width),
+                              ScaleUiCoordinate((int)local_encoded_image->height), encoded_image);
   }
 }
 
 // FUNCTION: FACEMAKER 0x004093d0
 #pragma optimize("gty", on)
-int FUN_004093d0(void)
+int InitializeLegacyVideoStub(void)
 {
   return -1;
 }
 
 // FUNCTION: FACEMAKER 0x004093e0
-int FUN_004093e0(void)
+int CleanupLegacyVideoStub(void)
 {
   return -1;
 }
 #pragma optimize("", on)
 
 // FUNCTION: FACEMAKER 0x0040369c
-int FUN_0040369c(void)
+int InitializeFaceMakerAssets(void)
 {
   struct
   {
@@ -1096,12 +1096,12 @@ int FUN_0040369c(void)
   local.style_values[3] = 10;
   local.button_text_ids[0] = 2;
 
-  local.file = fopen(s_FaceButtons_txt_0040c65c, DAT_0040c658);
-  fscanf(local.file, s________c_0040c66c, DAT_0041afc0);
-  fscanf(local.file, s________c_0040c678, DAT_0041af50);
+  local.file = fopen(s_FaceButtons_txt_0040c65c, g_text_read_mode);
+  fscanf(local.file, s________c_0040c66c, g_save_dialog_title);
+  fscanf(local.file, s________c_0040c678, g_default_face_filename);
   for (local.loop_index = 0; local.loop_index < 4; local.loop_index = local.loop_index + 1)
   {
-    fscanf(local.file, s________c_0040c684, DAT_0041e420 + local.loop_index * 0x20);
+    fscanf(local.file, s________c_0040c684, g_face_button_text_buffer + local.loop_index * 0x20);
   }
 
   fscanf(local.file, s__d__d__d__d__d_0040c690, local.button_text_ids, local.style_values,
@@ -1109,20 +1109,20 @@ int FUN_0040369c(void)
   fclose(local.file);
 
   BeginSpriteEncodeSession();
-  FUN_0040a130(2, s_FaceArt_facebut1_pcx_0040c6a0);
-  *(int *)((char *)PTR_DAT_0040c0ac + 0x20) = local.button_text_ids[0];
+  LoadPcxIntoPageNoPalette(2, s_FaceArt_facebut1_pcx_0040c6a0);
+  *(int *)((char *)g_face_fullscreen_bounds + 0x20) = local.button_text_ids[0];
 
   for (local.loop_index = 0; local.loop_index < 4;
        local.loop_index = local.loop_index + 1, local.control_slot = local.control_slot + 1)
   {
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
-    FUN_00407f30(local.button_text_ids[0], local.style_values[local.loop_index]);
-    FUN_004088d0((int *)PTR_DAT_0040c0ac, local.button_text_ids[local.loop_index + 1],
-                 local.face_slot_x + 0x2b, local.style_values[5] + 0xe, DAT_0041e420 + 0x20);
+    SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
+    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+                 local.face_slot_x + 0x2b, local.style_values[5] + 0xe, g_face_button_text_buffer + 0x20);
     g_face_control1_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x56, 0x21);
-    DAT_0040c1e8[1].page_by_mode[local.loop_index] = g_face_control1_sprites[local.loop_index];
+    g_face_controls[1].page_by_mode[local.loop_index] = g_face_control1_sprites[local.loop_index];
   }
 
   for (local.loop_index = 0; local.loop_index < 4;
@@ -1130,12 +1130,12 @@ int FUN_0040369c(void)
   {
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
-    FUN_00407f30(local.button_text_ids[0], local.style_values[local.loop_index]);
-    FUN_004088d0((int *)PTR_DAT_0040c0ac, local.button_text_ids[local.loop_index + 1],
-                 local.face_slot_x + 0x2b, local.style_values[5] + 0xe, DAT_0041e420);
+    SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
+    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+                 local.face_slot_x + 0x2b, local.style_values[5] + 0xe, g_face_button_text_buffer);
     g_face_control2_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x56, 0x21);
-    DAT_0040c1e8[2].page_by_mode[local.loop_index] = g_face_control2_sprites[local.loop_index];
+    g_face_controls[2].page_by_mode[local.loop_index] = g_face_control2_sprites[local.loop_index];
   }
 
   for (local.loop_index = 0; local.loop_index < 4;
@@ -1148,7 +1148,7 @@ int FUN_0040369c(void)
     for (local.style_values[4] = 5; local.style_values[4] < 0x14;
          local.style_values[4] = local.style_values[4] + 2)
     {
-      DAT_0040c1e8[local.style_values[4]].page_by_mode[local.loop_index] =
+      g_face_controls[local.style_values[4]].page_by_mode[local.loop_index] =
           g_face_control_odd_sprites[local.loop_index];
     }
   }
@@ -1163,7 +1163,7 @@ int FUN_0040369c(void)
     for (local.style_values[4] = 6; local.style_values[4] < 0x16;
          local.style_values[4] = local.style_values[4] + 2)
     {
-      DAT_0040c1e8[local.style_values[4]].page_by_mode[local.loop_index] =
+      g_face_controls[local.style_values[4]].page_by_mode[local.loop_index] =
           g_face_control_even_sprites[local.loop_index];
     }
   }
@@ -1175,7 +1175,7 @@ int FUN_0040369c(void)
     local.style_values[5] = (local.control_slot / 5) * 0x60;
     g_face_control0_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x40, 0x20);
-    DAT_0040c1e8[0].page_by_mode[local.loop_index] = g_face_control0_sprites[local.loop_index];
+    g_face_controls[0].page_by_mode[local.loop_index] = g_face_control0_sprites[local.loop_index];
   }
 
   for (local.loop_index = 0; local.loop_index < 2;
@@ -1183,12 +1183,12 @@ int FUN_0040369c(void)
   {
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
-    FUN_00407f30(local.button_text_ids[0], local.style_values[local.loop_index]);
-    FUN_004088d0((int *)PTR_DAT_0040c0ac, local.button_text_ids[local.loop_index + 1],
-                 local.face_slot_x + 0x20, local.style_values[5] + 0xe, DAT_0041e420 + 0x40);
+    SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
+    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+                 local.face_slot_x + 0x20, local.style_values[5] + 0xe, g_face_button_text_buffer + 0x40);
     g_face_control3_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x40, 0x1d);
-    DAT_0040c1e8[3].page_by_mode[local.loop_index] = g_face_control3_sprites[local.loop_index];
+    g_face_controls[3].page_by_mode[local.loop_index] = g_face_control3_sprites[local.loop_index];
   }
 
   for (local.loop_index = 0; local.loop_index < 2;
@@ -1196,12 +1196,12 @@ int FUN_0040369c(void)
   {
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
-    FUN_00407f30(local.button_text_ids[0], local.style_values[local.loop_index]);
-    FUN_004088d0((int *)PTR_DAT_0040c0ac, local.button_text_ids[local.loop_index + 1],
-                 local.face_slot_x + 0x20, local.style_values[5] + 0xe, DAT_0041e420 + 0x60);
+    SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
+    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+                 local.face_slot_x + 0x20, local.style_values[5] + 0xe, g_face_button_text_buffer + 0x60);
     g_face_control4_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x40, 0x1d);
-    DAT_0040c1e8[4].page_by_mode[local.loop_index] = g_face_control4_sprites[local.loop_index];
+    g_face_controls[4].page_by_mode[local.loop_index] = g_face_control4_sprites[local.loop_index];
   }
 
   local.face_slot_x = (local.control_slot % 5) * 0x70;
@@ -1215,21 +1215,21 @@ int FUN_0040369c(void)
   g_face_scroll_divider_sprite =
       EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 3, 0x1d);
 
-  FUN_0040a130(2, s_FaceArt_facfrsh2New_pcx_0040c6b8);
+  LoadPcxIntoPageNoPalette(2, s_FaceArt_facfrsh2New_pcx_0040c6b8);
   g_face_slot_background_sprite = EncodeSpriteFromPage(2, 0, 0, 0x8a, 0xac);
   FinalizeSpriteEncodeSession();
 
-  local.file = fopen(s_FaceData_txt_0040c6d4, DAT_0040c6d0);
+  local.file = fopen(s_FaceData_txt_0040c6d4, g_text_read_mode_alt);
   local.face_slot_x = _fileno(local.file);
   local.style_values[5] = _filelength(local.face_slot_x);
   local.scan_ptr = malloc(local.style_values[5]);
-  DAT_0041d120[0] = local.scan_ptr;
-  local.scan_ptr = DAT_0041d120[0];
+  g_face_set_display_names[0] = local.scan_ptr;
+  local.scan_ptr = g_face_set_display_names[0];
   fread(local.scan_ptr, local.style_values[5], 1, local.file);
   fclose(local.file);
 
-  DAT_0040c1e0 = 1;
-  DAT_0041d120[0] = local.scan_ptr;
+  g_face_set_total = 1;
+  g_face_set_display_names[0] = local.scan_ptr;
   local.scan_ptr = local.scan_ptr + 1;
   local.loop_index = 1;
   while (local.loop_index < local.style_values[5])
@@ -1239,18 +1239,18 @@ int FUN_0040369c(void)
       *local.scan_ptr = '\0';
       if (local.scan_ptr[1] != '\n')
       {
-        DAT_0041d120[DAT_0040c1e0] = local.scan_ptr + 1;
-        DAT_0040c1e0 = DAT_0040c1e0 + 1;
+        g_face_set_display_names[g_face_set_total] = local.scan_ptr + 1;
+        g_face_set_total = g_face_set_total + 1;
       }
     }
     local.loop_index = local.loop_index + 1;
     local.scan_ptr = local.scan_ptr + 1;
   }
 
-  DAT_0040c1e0 = DAT_0040c1e0 - 1;
-  for (local.loop_index = 0; local.loop_index < DAT_0040c1e0; local.loop_index = local.loop_index + 1)
+  g_face_set_total = g_face_set_total - 1;
+  for (local.loop_index = 0; local.loop_index < g_face_set_total; local.loop_index = local.loop_index + 1)
   {
-    local.scan_ptr = DAT_0041d120[local.loop_index];
+    local.scan_ptr = g_face_set_display_names[local.loop_index];
     while (*local.scan_ptr != ',')
     {
       local.scan_ptr = local.scan_ptr + 1;
@@ -1260,7 +1260,7 @@ int FUN_0040369c(void)
     {
       local.scan_ptr = local.scan_ptr + 1;
     } while (*local.scan_ptr == ' ' || *local.scan_ptr == '\t');
-    DAT_0041e570[local.loop_index] = local.scan_ptr;
+    g_face_set_names[local.loop_index] = local.scan_ptr;
     while (*local.scan_ptr != ',' && *local.scan_ptr != ' ' && *local.scan_ptr != '\t')
     {
       local.scan_ptr = local.scan_ptr + 1;
@@ -1271,21 +1271,21 @@ int FUN_0040369c(void)
     {
       local.scan_ptr = local.scan_ptr + 1;
     } while (*local.scan_ptr == ' ' || *local.scan_ptr == '\t');
-    DAT_0041c150[local.loop_index] = local.scan_ptr;
+    g_face_set_gender_tags[local.loop_index] = local.scan_ptr;
   }
 
   return 0;
 }
 
 // FUNCTION: FACEMAKER 0x00402717
-void FUN_00402717(int *page, int x, int y, EncodedImage *encoded_image)
+void DrawFaceLayerUnscaled(int *page, int x, int y, EncodedImage *encoded_image)
 {
   EncodedImage *tmp = encoded_image;
   DrawEncodedImageUnscaled(page, x, y, encoded_image);
 }
 
 // FUNCTION: FACEMAKER 0x00402743
-void FUN_00402743(int *page, int x, int y, unsigned int width, int height)
+void DrawTransparentOverlayMask(int *page, int x, int y, unsigned int width, int height)
 {
   struct
   {
@@ -1296,7 +1296,7 @@ void FUN_00402743(int *page, int x, int y, unsigned int width, int height)
 
   for (local.row = 0; local.row < height; local.row = local.row + 1)
   {
-    FUN_004076c0((unsigned int *)local.row_pixels, *page, x, local.row + y, width);
+    ReadGraphicsScanline((unsigned int *)local.row_pixels, *page, x, local.row + y, width);
     for (local.pixel = 0; local.pixel < (int)width; local.pixel = local.pixel + 1)
     {
       if (local.row_pixels[local.pixel] == '\0')
@@ -1308,12 +1308,12 @@ void FUN_00402743(int *page, int x, int y, unsigned int width, int height)
         local.row_pixels[local.pixel] = '\0';
       }
     }
-    FUN_004075d0((unsigned int *)local.row_pixels, *page, width + x, local.row + y, width);
+    WriteGraphicsScanline((unsigned int *)local.row_pixels, *page, width + x, local.row + y, width);
   }
 }
 
 // FUNCTION: FACEMAKER 0x00402edc
-int FUN_00402edc(int selected_face_index)
+int LoadSelectedFaceSet(int selected_face_index)
 {
   int face_slot_x;
   int face_slot_y;
@@ -1322,38 +1322,38 @@ int FUN_00402edc(int selected_face_index)
 
   if (g_face_sprite_roots.first != (EncodedImage *)0)
   {
-    FUN_00408950(g_face_sprite_roots.first);
+    FreeSpriteBlob(g_face_sprite_roots.first);
   }
 
   strcpy(face_art_path, s_FaceArt__0040c64c);
-  strcat(face_art_path, DAT_0041e570[selected_face_index]);
+  strcat(face_art_path, g_face_set_names[selected_face_index]);
   g_face_group_count =
       LoadFaceSpriteSet(face_art_path, g_face_group_frame_counts, g_face_sprite_entries.flat,
                         g_face_sprite_roots.flat);
 
   if (g_face_group_count <= 6)
   {
-    FUN_00402a84((FaceControl *)((int)DAT_0040c1e8 + 0x16c));
-    FUN_00402a84((FaceControl *)((int)DAT_0040c1e8 + 0x1a0));
+    DisableFaceControl((FaceControl *)((int)g_face_controls + 0x16c));
+    DisableFaceControl((FaceControl *)((int)g_face_controls + 0x1a0));
     for (control_index = 9; control_index < g_face_group_count * 2 + 9;
          control_index = control_index + 1)
     {
       if ((control_index & 1) != 0)
       {
-        FUN_00402ad9(&DAT_0040c1e8[control_index]);
+        EnableFaceControl(&g_face_controls[control_index]);
       }
       else if (g_face_group_frame_counts[(control_index - 9) / 2] == 1)
       {
-        FUN_00402a84(&DAT_0040c1e8[control_index]);
+        DisableFaceControl(&g_face_controls[control_index]);
       }
       else
       {
-        FUN_00402ad9(&DAT_0040c1e8[control_index]);
+        EnableFaceControl(&g_face_controls[control_index]);
       }
     }
     for (; control_index < 0x15; control_index = control_index + 1)
     {
-      FUN_00402a84(&DAT_0040c1e8[control_index]);
+      DisableFaceControl(&g_face_controls[control_index]);
     }
   }
   else
@@ -1362,76 +1362,78 @@ int FUN_00402edc(int selected_face_index)
     {
       if ((control_index & 1) != 0)
       {
-        FUN_00402ad9(&DAT_0040c1e8[control_index]);
+        EnableFaceControl(&g_face_controls[control_index]);
       }
       else if (g_face_group_frame_counts[(control_index - 9) / 2] == 1)
       {
-        FUN_00402a84(&DAT_0040c1e8[control_index]);
+        DisableFaceControl(&g_face_controls[control_index]);
       }
       else
       {
-        FUN_00402ad9(&DAT_0040c1e8[control_index]);
+        EnableFaceControl(&g_face_controls[control_index]);
       }
     }
-    FUN_00402a84((FaceControl *)((int)DAT_0040c1e8 + 0x16c));
-    FUN_00402ad9((FaceControl *)((int)DAT_0040c1e8 + 0x1a0));
+    DisableFaceControl((FaceControl *)((int)g_face_controls + 0x16c));
+    EnableFaceControl((FaceControl *)((int)g_face_controls + 0x1a0));
   }
 
   for (control_index = 0; control_index < 0x15; control_index = control_index + 1)
   {
-    FUN_004028d1(&DAT_0040c1e8[control_index], 0);
+    DrawFaceControl(&g_face_controls[control_index], 0);
   }
   memset(g_face_variant_index, 0, sizeof(g_face_variant_index));
-  DAT_0041e0c0 = 0;
+  g_face_list_scroll_offset = 0;
 
   for (control_index = 0; control_index < MIN(g_face_group_count, 6);
        control_index = control_index + 1)
   {
-    FUN_00403573(control_index, 0);
+    DrawFaceSlotEntry(control_index, 0);
   }
 
   for (; control_index < 6; control_index = control_index + 1)
   {
     face_slot_x = ((control_index + 2) % 4) * 0x9f + 0xd;
     face_slot_y = ((control_index + 2) / 4) * 0xdf + 0x24;
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y,
+    DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
                               g_face_slot_background_sprite);
-    FUN_00402621((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y, 0x89, 0xac,
-                 (int *)PTR_DAT_0040c034, face_slot_x, face_slot_y);
+    BlitScaledRect((int *)g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xac,
+                 (int *)g_face_preview_bounds, face_slot_x, face_slot_y);
   }
-  FUN_004032e4();
+  RedrawFaceCompositePreview();
   return selected_face_index;
 }
 
 // FUNCTION: FACEMAKER 0x00402841
-void FUN_00402841(FaceControl *control)
+void AcceptFaceSelection(FaceControl *control)
 {
   FILE *recent_face_file;
 
-  if (DAT_0041e50c == 0 && DAT_0040c9e4 == 0)
+  if (g_face_composite_ready == 0 && g_use_desktop_palette == 0)
   {
-    FUN_004033c9(control);
+    ComposeSelectedFaceImage(control);
   }
 
-  recent_face_file = fopen(s_FaceMostRecent_txt_0040c630, DAT_0040c62c);
+  recent_face_file = fopen(s_FaceMostRecent_txt_0040c630, g_text_write_mode);
   if (recent_face_file != (FILE *)0)
   {
-    fprintf(recent_face_file, s__d___s_0040c644, DAT_0040c1e4, DAT_0041e570[DAT_0040c1e4]);
+    fprintf(recent_face_file, s__d___s_0040c644, g_selected_face_set_index,
+            g_face_set_names[g_selected_face_set_index]);
     fclose(recent_face_file);
   }
-  DAT_0041e4f0 = 1;
+  g_worker_should_exit = 1;
 }
 
 // FUNCTION: FACEMAKER 0x00402a42
-int FUN_00402a42(FaceControl *control)
+int CycleFaceSet(FaceControl *control)
 {
-  DAT_0040c1e4 = (control->value_index + DAT_0040c1e4 + DAT_0040c1e0) % DAT_0040c1e0;
-  FUN_00402edc(DAT_0040c1e4);
-  return DAT_0040c1e4;
+  g_selected_face_set_index =
+      (control->value_index + g_selected_face_set_index + g_face_set_total) % g_face_set_total;
+  LoadSelectedFaceSet(g_selected_face_set_index);
+  return g_selected_face_set_index;
 }
 
 // FUNCTION: FACEMAKER 0x00402b24
-int FUN_00402b24(FaceControl *control)
+int ScrollFaceSetList(FaceControl *control)
 {
   int control_index;
   int visible_face_index;
@@ -1441,214 +1443,217 @@ int FUN_00402b24(FaceControl *control)
     return 0;
   }
 
-  DAT_0041e0c0 = DAT_0041e0c0 + control->value_index;
-  DAT_0041e0c0 = (DAT_0041e0c0 <= 0) ? 0 : DAT_0041e0c0;
-  DAT_0041e0c0 = MIN(g_face_group_count - 6, DAT_0041e0c0);
+  g_face_list_scroll_offset = g_face_list_scroll_offset + control->value_index;
+  g_face_list_scroll_offset =
+      (g_face_list_scroll_offset <= 0) ? 0 : g_face_list_scroll_offset;
+  g_face_list_scroll_offset = MIN(g_face_group_count - 6, g_face_list_scroll_offset);
 
   for (control_index = 9; control_index < 0x15; control_index = control_index + 2)
   {
-    visible_face_index = DAT_0041e0c0 + (control_index - 9) / 2;
+    visible_face_index = g_face_list_scroll_offset + (control_index - 9) / 2;
     if (g_face_variant_index[visible_face_index] == -1)
     {
-      FUN_00402a84(&DAT_0040c1e8[control_index]);
+      DisableFaceControl(&g_face_controls[control_index]);
     }
     else
     {
-      FUN_00402ad9(&DAT_0040c1e8[control_index]);
+      EnableFaceControl(&g_face_controls[control_index]);
     }
 
     if (g_face_group_frame_counts[visible_face_index] - 1 == g_face_variant_index[visible_face_index])
     {
-      FUN_00402a84(&DAT_0040c1e8[control_index + 1]);
+      DisableFaceControl(&g_face_controls[control_index + 1]);
     }
     else
     {
-      FUN_00402ad9(&DAT_0040c1e8[control_index + 1]);
+      EnableFaceControl(&g_face_controls[control_index + 1]);
     }
   }
 
   for (control_index = 0; control_index < 6; control_index = control_index + 1)
   {
-    FUN_00403573(control_index, 0);
+    DrawFaceSlotEntry(control_index, 0);
   }
 
-  if (DAT_0041e0c0 == 0)
+  if (g_face_list_scroll_offset == 0)
   {
-    FUN_00402a84(&DAT_0040c1e8[7]);
-    FUN_00402ad9(&DAT_0040c1e8[8]);
+    DisableFaceControl(&g_face_controls[7]);
+    EnableFaceControl(&g_face_controls[8]);
   }
-  else if (g_face_group_count - 6 == DAT_0041e0c0)
+  else if (g_face_group_count - 6 == g_face_list_scroll_offset)
   {
-    FUN_00402a84(&DAT_0040c1e8[8]);
-    FUN_00402ad9(&DAT_0040c1e8[7]);
+    DisableFaceControl(&g_face_controls[8]);
+    EnableFaceControl(&g_face_controls[7]);
   }
   else
   {
-    FUN_00402ad9(&DAT_0040c1e8[7]);
-    FUN_00402ad9(&DAT_0040c1e8[8]);
+    EnableFaceControl(&g_face_controls[7]);
+    EnableFaceControl(&g_face_controls[8]);
   }
 
-  return DAT_0041e0c0;
+  return g_face_list_scroll_offset;
 }
 
 // FUNCTION: FACEMAKER 0x00402d30
-int FUN_00402d30(FaceControl *control)
+int AdjustVisibleFaceVariant(FaceControl *control)
 {
   struct
   {
-    FaceControl *sibling_control_third;
-    int button_index;
-    int temp_0c;
-    int face_index;
-    int value_delta;
+    FaceControl *sibling_control;
+    int sibling_control_addr;
+    int temp_value;
+    int visible_face_index;
+    int next_variant_index;
   } local;
 
-  local.face_index = control->value_index + DAT_0041e0c0;
-  local.value_delta = control->value_delta;
-  g_face_variant_index[local.face_index] = g_face_variant_index[local.face_index] + local.value_delta;
-  local.value_delta = g_face_variant_index[local.face_index];
-  if (local.value_delta <= -1)
+  local.visible_face_index = control->value_index + g_face_list_scroll_offset;
+  local.next_variant_index = control->value_delta;
+  g_face_variant_index[local.visible_face_index] =
+      g_face_variant_index[local.visible_face_index] + local.next_variant_index;
+  local.next_variant_index = g_face_variant_index[local.visible_face_index];
+  if (local.next_variant_index <= -1)
   {
-    local.value_delta = -1;
+    local.next_variant_index = -1;
   }
-  g_face_variant_index[local.face_index] = local.value_delta;
+  g_face_variant_index[local.visible_face_index] = local.next_variant_index;
 
-  local.value_delta = g_face_group_frame_counts[local.face_index] - 1;
-  local.temp_0c = g_face_variant_index[local.face_index];
-  if (local.value_delta >= local.temp_0c)
+  local.next_variant_index = g_face_group_frame_counts[local.visible_face_index] - 1;
+  local.temp_value = g_face_variant_index[local.visible_face_index];
+  if (local.next_variant_index >= local.temp_value)
   {
-    local.value_delta = local.temp_0c;
+    local.next_variant_index = local.temp_value;
   }
-  g_face_variant_index[local.face_index] = local.value_delta;
-  FUN_00403573(local.face_index - DAT_0041e0c0, 1);
+  g_face_variant_index[local.visible_face_index] = local.next_variant_index;
+  DrawFaceSlotEntry(local.visible_face_index - g_face_list_scroll_offset, 1);
 
-  if (g_face_variant_index[local.face_index] == -1)
+  if (g_face_variant_index[local.visible_face_index] == -1)
   {
-    FUN_00402a84(control);
-    if ((((int)control - (int)DAT_0040c1e8) / 0x34 & 1) != 0)
+    DisableFaceControl(control);
+    if ((((int)control - (int)g_face_controls) / 0x34 & 1) != 0)
     {
-      local.temp_0c = (int)(control + 1);
+      local.temp_value = (int)(control + 1);
     }
     else
     {
-      local.temp_0c = (int)(control - 1);
+      local.temp_value = (int)(control - 1);
     }
-    FUN_00402ad9((FaceControl *)local.temp_0c);
+    EnableFaceControl((FaceControl *)local.temp_value);
   }
-  else if (g_face_group_frame_counts[local.face_index] - 1 == g_face_variant_index[local.face_index])
+  else if (g_face_group_frame_counts[local.visible_face_index] - 1 ==
+           g_face_variant_index[local.visible_face_index])
   {
-    FUN_00402a84(control);
-    if ((((int)control - (int)DAT_0040c1e8) / 0x34 & 1) != 0)
+    DisableFaceControl(control);
+    if ((((int)control - (int)g_face_controls) / 0x34 & 1) != 0)
     {
-      local.button_index = (int)(control + 1);
+      local.sibling_control_addr = (int)(control + 1);
     }
     else
     {
-      local.button_index = (int)(control - 1);
+      local.sibling_control_addr = (int)(control - 1);
     }
-    FUN_00402ad9((FaceControl *)local.button_index);
+    EnableFaceControl((FaceControl *)local.sibling_control_addr);
   }
   else
   {
-    FUN_00402ad9(control);
-    if ((((int)control - (int)DAT_0040c1e8) / 0x34 & 1) != 0)
+    EnableFaceControl(control);
+    if ((((int)control - (int)g_face_controls) / 0x34 & 1) != 0)
     {
-      local.sibling_control_third = control + 1;
+      local.sibling_control = control + 1;
     }
     else
     {
-      local.sibling_control_third = control - 1;
+      local.sibling_control = control - 1;
     }
-    FUN_00402ad9(local.sibling_control_third);
+    EnableFaceControl(local.sibling_control);
   }
 
-  return g_face_variant_index[local.face_index];
+  return g_face_variant_index[local.visible_face_index];
 }
 
 // FUNCTION: FACEMAKER 0x004033c9
-void FUN_004033c9(FaceControl *control)
+void ComposeSelectedFaceImage(FaceControl *control)
 {
   int face_index;
 
   (void)control;
 
-  FUN_00406d00(2, 0);
-  FUN_00402717((int *)PTR_DAT_0040c0ac, 0, 0, g_face_sprite_roots.first);
+  ClearGraphicsPageWithPaletteColor(2, 0);
+  DrawFaceLayerUnscaled((int *)g_face_fullscreen_bounds, 0, 0, g_face_sprite_roots.first);
   for (face_index = 0; face_index < g_face_group_count; face_index = face_index + 1)
   {
     if (g_face_variant_index[face_index] >= 0 &&
         g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]] != (EncodedImage *)0)
     {
-      FUN_00402717((int *)PTR_DAT_0040c0ac, 0, 0,
+      DrawFaceLayerUnscaled((int *)g_face_fullscreen_bounds, 0, 0,
                    g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]]);
     }
   }
 
-  FUN_00402743((int *)PTR_DAT_0040c0ac, 0, 0, 0x8a, 0xaa);
-  DAT_0041e50c = 1;
-  if (DAT_0040c9e4 != 0)
+  DrawTransparentOverlayMask((int *)g_face_fullscreen_bounds, 0, 0, 0x8a, 0xaa);
+  g_face_composite_ready = 1;
+  if (g_use_desktop_palette != 0)
   {
-    if (SendMessageA(DAT_0041b028, 0x111, 0x9c47, 0) != 0)
+    if (SendMessageA(g_main_hwnd, 0x111, 0x9c47, 0) != 0)
     {
-      FUN_00409420(2, 0, 0, 0x114, 0xaa, 0, DAT_0041b030);
+      ExportEncodedImage(2, 0, 0, 0x114, 0xaa, 0, g_face_output_path);
     }
   }
   else
   {
-    if (DAT_0041c150[DAT_0040c1e4][0] == 'm')
+    if (g_face_set_gender_tags[g_selected_face_set_index][0] == 'm')
     {
-      FUN_00407190((int *)PTR_DAT_0040c0ac, 0, 200, 0x6d);
+      PutGraphicsPixel((int *)g_face_fullscreen_bounds, 0, 200, 0x6d);
     }
     else
     {
-      FUN_00407190((int *)PTR_DAT_0040c0ac, 0, 200, 0x66);
+      PutGraphicsPixel((int *)g_face_fullscreen_bounds, 0, 200, 0x66);
     }
-    FUN_004075d0((unsigned int *)DAT_0041d120[DAT_0040c1e4], 2, 1, 200,
-                 (unsigned int)strlen(DAT_0041d120[DAT_0040c1e4]));
+    WriteGraphicsScanline((unsigned int *)g_face_set_display_names[g_selected_face_set_index], 2, 1, 200,
+                 (unsigned int)strlen(g_face_set_display_names[g_selected_face_set_index]));
   }
 }
 
 // FUNCTION: FACEMAKER 0x00402a84
-int FUN_00402a84(FaceControl *control)
+int DisableFaceControl(FaceControl *control)
 {
   int old_mode;
 
   old_mode = control->state;
-  DAT_0041e560 = 1;
+  g_ignore_mouse_hit_test = 1;
   control->state = 0;
-  FUN_004028d1(control, 3);
-  DAT_0041e560 = 0;
+  DrawFaceControl(control, 3);
+  g_ignore_mouse_hit_test = 0;
   control->state = 3;
   return old_mode;
 }
 
 // FUNCTION: FACEMAKER 0x00402ad9
-int FUN_00402ad9(FaceControl *control)
+int EnableFaceControl(FaceControl *control)
 {
   int old_mode;
 
   old_mode = control->state;
   control->state = 0;
-  DAT_0041e560 = 1;
-  FUN_004028d1(control, 0);
-  DAT_0041e560 = 0;
+  g_ignore_mouse_hit_test = 1;
+  DrawFaceControl(control, 0);
+  g_ignore_mouse_hit_test = 0;
   return old_mode;
 }
 
 // FUNCTION: FACEMAKER 0x004028d1
-int FUN_004028d1(FaceControl *control, int mode)
+int DrawFaceControl(FaceControl *control, int mode)
 {
   int in_bounds;
 
-  if (DAT_0041e560 == 0)
+  if (g_ignore_mouse_hit_test == 0)
   {
-    if (DAT_0042333c < (int)FUN_00402600(control->x) ||
-        (int)FUN_00402600(control->width + control->x) < DAT_0042333c)
+    if (g_mouse_x < (int)ScaleUiCoordinate(control->x) ||
+        (int)ScaleUiCoordinate(control->width + control->x) < g_mouse_x)
     {
       in_bounds = 0;
     }
-    else if (DAT_00423338 < (int)FUN_00402600(control->y) ||
-             (int)FUN_00402600(control->y + control->height) < DAT_00423338)
+    else if (g_mouse_y < (int)ScaleUiCoordinate(control->y) ||
+             (int)ScaleUiCoordinate(control->y + control->height) < g_mouse_y)
     {
       in_bounds = 0;
     }
@@ -1669,13 +1674,13 @@ int FUN_004028d1(FaceControl *control, int mode)
 
   if (control->page_by_mode[mode] != 0)
   {
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c034, control->x, control->y,
+    DrawEncodedImageAutoScale((int *)g_face_preview_bounds, control->x, control->y,
                               control->page_by_mode[mode]);
   }
 
   if (control->page_by_mode[mode] != 0)
   {
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, control->x, control->y,
+    DrawEncodedImageAutoScale((int *)g_face_work_bounds, control->x, control->y,
                               control->page_by_mode[mode]);
   }
 
@@ -1687,54 +1692,55 @@ int FUN_004028d1(FaceControl *control, int mode)
 }
 
 // FUNCTION: FACEMAKER 0x004032e4
-void FUN_004032e4(void)
+void RedrawFaceCompositePreview(void)
 {
   int face_index;
 
-  DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, 0xd, 0x24, g_face_slot_background_sprite);
-  DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, 0xd, 0x24, g_face_sprite_roots.first);
+  DrawEncodedImageAutoScale((int *)g_face_work_bounds, 0xd, 0x24, g_face_slot_background_sprite);
+  DrawEncodedImageAutoScale((int *)g_face_work_bounds, 0xd, 0x24, g_face_sprite_roots.first);
   for (face_index = 0; face_index < *(volatile int *)&g_face_group_count; face_index++)
   {
     if (g_face_variant_index[face_index] >= 0 &&
         g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]] != (EncodedImage *)0)
     {
-      DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, 0xd, 0x24,
+      DrawEncodedImageAutoScale((int *)g_face_work_bounds, 0xd, 0x24,
                                 g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]]);
     }
   }
 
-  FUN_00402621((int *)PTR_DAT_0040c05c, 0xd, 0x24, 0x89, 0xa9, (int *)PTR_DAT_0040c034, 0xd, 0x24);
+  BlitScaledRect((int *)g_face_work_bounds, 0xd, 0x24, 0x89, 0xa9, (int *)g_face_preview_bounds, 0xd, 0x24);
 }
 
 // FUNCTION: FACEMAKER 0x00403573
-void FUN_00403573(int index, int selected)
+void DrawFaceSlotEntry(int index, int selected)
 {
   int face_slot_x;
   int face_slot_y;
 
   face_slot_x = ((index + 2) % 4) * 0x9f + 0xd;
   face_slot_y = ((index + 2) / 4) * 0xdf + 0x24;
-  DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y,
+  DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
                             g_face_slot_background_sprite);
-  if (g_face_variant_index[index + DAT_0041e0c0] >= 0 &&
-      g_face_sprite_entries.groups[index + DAT_0041e0c0][g_face_variant_index[index + DAT_0041e0c0]] !=
+  if (g_face_variant_index[index + g_face_list_scroll_offset] >= 0 &&
+      g_face_sprite_entries.groups[index + g_face_list_scroll_offset]
+                                [g_face_variant_index[index + g_face_list_scroll_offset]] !=
           (EncodedImage *)0)
   {
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y,
-                              g_face_sprite_entries.groups[index + DAT_0041e0c0]
-                                                          [g_face_variant_index[index + DAT_0041e0c0]]);
+    DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
+                              g_face_sprite_entries.groups[index + g_face_list_scroll_offset]
+                                                          [g_face_variant_index[index + g_face_list_scroll_offset]]);
   }
 
-  FUN_00402621((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y, 0x89, 0xab, (int *)PTR_DAT_0040c034,
+  BlitScaledRect((int *)g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xab, (int *)g_face_preview_bounds,
                face_slot_x, face_slot_y);
   if (selected != 0)
   {
-    FUN_004032e4();
+    RedrawFaceCompositePreview();
   }
 }
 
 // FUNCTION: FACEMAKER 0x00403fd9
-DWORD WINAPI FUN_00403fd9(LPVOID unused)
+DWORD WINAPI FaceMakerWorkerThread(LPVOID unused)
 {
   char *last_backslash;
   int page_count;
@@ -1756,92 +1762,92 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
 
   (void)unused;
 
-  GetModuleFileNameA((HMODULE)0, DAT_0041ae40, 0x105);
-  SetCurrentDirectoryA(DAT_0041ae40);
-  last_backslash = strrchr(DAT_0041ae40, '\\');
+  GetModuleFileNameA((HMODULE)0, g_module_path_buffer, 0x105);
+  SetCurrentDirectoryA(g_module_path_buffer);
+  last_backslash = strrchr(g_module_path_buffer, '\\');
   *last_backslash = '\0';
-  sprintf(DAT_0041b030, "%s\\PlayFace\\*.pic", DAT_0041ae40);
-  FUN_004065e0(FUN_004065f0("mgraphic.exe", "fonts.cv"));
-  FUN_00406610();
+  sprintf(g_face_output_path, "%s\\PlayFace\\*.pic", g_module_path_buffer);
+  LegacyInitNoop(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
+  GetPrimaryPage();
 
   page_count = 3;
   for (page_number = 0; page_number < page_count; ++page_number)
   {
-    if (page_number == 1 && DAT_00426540[0]->width < 800)
+    if (page_number == 1 && g_graphics_pages[0]->width < 800)
     {
-      page = FUN_004069e0(page_number, 800, 600, 8);
+      page = CreateGraphicsPage(page_number, 800, 600, 8);
     }
     else
     {
-      page = FUN_00406620(page_number);
+      page = GetPageByNumber(page_number);
     }
-    FUN_00406bd0(page_number, page);
+    SetGraphicsPage(page_number, page);
   }
 
-  PTR_DAT_0040c0ac->max_x = global_screen_width;
-  PTR_DAT_0040c05c->max_x = PTR_DAT_0040c0ac->max_x;
-  PTR_DAT_0040c034->max_x = PTR_DAT_0040c05c->max_x;
-  PTR_DAT_0040c0ac->max_y = global_screen_height;
-  PTR_DAT_0040c05c->max_y = PTR_DAT_0040c0ac->max_y;
-  PTR_DAT_0040c034->max_y = PTR_DAT_0040c05c->max_y;
-  DAT_0040d088 = 0;
+  g_face_fullscreen_bounds->max_x = global_screen_width;
+  g_face_work_bounds->max_x = g_face_fullscreen_bounds->max_x;
+  g_face_preview_bounds->max_x = g_face_work_bounds->max_x;
+  g_face_fullscreen_bounds->max_y = global_screen_height;
+  g_face_work_bounds->max_y = g_face_fullscreen_bounds->max_y;
+  g_face_preview_bounds->max_y = g_face_work_bounds->max_y;
+  g_frontbuffer_direct_blit_enabled = 0;
 
   if (global_screen_width == 640)
   {
-    FUN_00407e20(1, 0xb, "tt0300m_.ttf", "MPZurich Cn BT", 400, 0);
-    FUN_00407e20(2, 9, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
-    FUN_00407e20(4, FUN_00402600(10), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(5, FUN_00402600(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
-    FUN_00407e20(6, FUN_00402600(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(7, FUN_00402600(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(1, 0xb, "tt0300m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(2, 9, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(4, ScaleUiCoordinate(10), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(5, ScaleUiCoordinate(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
+    LoadSystemFont(6, ScaleUiCoordinate(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
   }
   else if (global_screen_width == 800)
   {
-    FUN_00407e20(1, FUN_00402600(8), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(2, 9, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
-    FUN_00407e20(4, FUN_00402600(10), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(5, FUN_00402600(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
-    FUN_00407e20(6, FUN_00402600(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(7, FUN_00402600(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(1, ScaleUiCoordinate(8), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(2, 9, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(4, ScaleUiCoordinate(10), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(5, ScaleUiCoordinate(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
+    LoadSystemFont(6, ScaleUiCoordinate(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
   }
   else if (global_screen_width == 1024)
   {
-    FUN_00407e20(1, FUN_00402600(9), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(2, 10, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
-    FUN_00407e20(4, FUN_00402600(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(5, FUN_00402600(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
-    FUN_00407e20(6, FUN_00402600(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
-    FUN_00407e20(7, FUN_00402600(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(1, ScaleUiCoordinate(9), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(2, 10, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(4, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(5, ScaleUiCoordinate(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
+    LoadSystemFont(6, ScaleUiCoordinate(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
   }
 
-  *(int *)((char *)PTR_DAT_0040c034 + 0x20) = 1;
-  FUN_00406cc0(0);
-  DAT_0040c188 = FUN_004093d0();
-  FUN_0040a110(2, "FaceArt/facebk0New.pcx");
-  FUN_00407570(PTR_DAT_0040c0ac, 0, 0, 0x280, 0x1e0, PTR_DAT_0040c05c, 0, 0, global_screen_width,
+  *(int *)((char *)g_face_preview_bounds + 0x20) = 1;
+  PresentGraphicsPage(0);
+  g_legacy_video_state = InitializeLegacyVideoStub();
+  LoadPcxIntoPage(2, "FaceArt/facebk0New.pcx");
+  StretchBlitGraphicsRect(g_face_fullscreen_bounds, 0, 0, 0x280, 0x1e0, g_face_work_bounds, 0, 0, global_screen_width,
                global_screen_height);
-  FUN_0040369c();
+  InitializeFaceMakerAssets();
 
-  recent_face_file = fopen(s_FaceMostRecent_txt_0040c630, DAT_0040c62c);
+  recent_face_file = fopen(s_FaceMostRecent_txt_0040c630, g_text_write_mode);
   if (recent_face_file != (FILE *)0)
   {
-    fscanf(recent_face_file, s__d___s_0040c644, &DAT_0040c1e4, recent_face_name);
-    if (_stricmp(DAT_0041e570[DAT_0040c1e4], recent_face_name) != 0)
+    fscanf(recent_face_file, s__d___s_0040c644, &g_selected_face_set_index, recent_face_name);
+    if (_stricmp(g_face_set_names[g_selected_face_set_index], recent_face_name) != 0)
     {
-      DAT_0040c1e4 = 0;
+      g_selected_face_set_index = 0;
     }
     fclose(recent_face_file);
   }
 
   strcpy(face_art_path, s_FaceArt__0040c64c);
-  strcat(face_art_path, DAT_0041e570[DAT_0040c1e4]);
+  strcat(face_art_path, g_face_set_names[g_selected_face_set_index]);
   g_face_group_count =
       LoadFaceSpriteSet(face_art_path, g_face_group_frame_counts, g_face_sprite_entries.flat,
                         g_face_sprite_roots.flat);
-  FUN_00402a84(&DAT_0040c354);
+  DisableFaceControl(&g_face_control_list_scroll_up_overlay);
   if (g_face_group_count < 7)
   {
-    FUN_00402a84(&DAT_0040c388);
+    DisableFaceControl(&g_face_control_list_scroll_down_overlay);
   }
 
   for (face_index = 0; face_index < 6; face_index++)
@@ -1850,10 +1856,10 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
     face_slot_x = ((((face_index + 2U ^ sign_bits) - sign_bits & 3U) ^ sign_bits) - sign_bits) * 0x9f +
                   0xd;
     face_slot_y = ((int)(face_index + 2 + ((face_index + 2 >> 0x1f) & 3U)) >> 2) * 0xdf + 0x24;
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y,
+    DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
                               g_face_slot_background_sprite);
-    FUN_00402621((int *)PTR_DAT_0040c05c, face_slot_x, face_slot_y, 0x89, 0xa9,
-                 (int *)PTR_DAT_0040c034, face_slot_x, face_slot_y);
+    BlitScaledRect((int *)g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xa9,
+                 (int *)g_face_preview_bounds, face_slot_x, face_slot_y);
   }
 
   face_index = 0;
@@ -1868,25 +1874,25 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
     {
       break;
     }
-    FUN_00403573(face_index, 0);
+    DrawFaceSlotEntry(face_index, 0);
     face_index++;
   }
 
   for (face_index = 0; face_index < 6; face_index++)
   {
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, *(int *)((char *)&DAT_0040c190 + face_index * 8),
-                              *(int *)((char *)&DAT_0040c194 + face_index * 8),
+    DrawEncodedImageAutoScale((int *)g_face_work_bounds, *(int *)((char *)&g_face_slot_arrow_x_table_base + face_index * 8),
+                              *(int *)((char *)&g_face_slot_arrow_y_table_base + face_index * 8),
                               g_face_scroll_arrow_sprite);
   }
 
   for (face_index = 0; face_index < 4; face_index++)
   {
-    DrawEncodedImageAutoScale((int *)PTR_DAT_0040c05c, *(int *)((char *)&DAT_0040c1c0 + face_index * 8),
-                              ((int *)&DAT_0040c1c4)[face_index * 2], g_face_scroll_arrow_sprite);
+    DrawEncodedImageAutoScale((int *)g_face_work_bounds, *(int *)((char *)&g_face_variant_arrow_x_table_base + face_index * 8),
+                              ((int *)&g_face_variant_arrow_y_table_base)[face_index * 2], g_face_scroll_arrow_sprite);
   }
 
-  *(int *)PTR_DAT_0040c034 = 1;
-  DAT_0041e560 = 1;
+  *(int *)g_face_preview_bounds = 1;
+  g_ignore_mouse_hit_test = 1;
   button_index = 1;
   while (1)
   {
@@ -1899,43 +1905,43 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
     {
       break;
     }
-    FUN_004028d1(&DAT_0040c1e8[button_index], 0);
+    DrawFaceControl(&g_face_controls[button_index], 0);
     button_index++;
   }
 
   while (button_index < 0x15)
   {
-    FUN_004028d1(&DAT_0040c1e8[button_index], 3);
+    DrawFaceControl(&g_face_controls[button_index], 3);
     button_index++;
   }
 
-  FUN_00402a84(&DAT_0040c284);
-  FUN_00402a84(&DAT_0040c2b8);
-  DAT_0040c208 = 3;
-  DAT_0041e560 = 0;
-  *(int *)PTR_DAT_0040c034 = 0;
-  FUN_00406cc0(1);
-  FUN_004032e4();
-  DAT_0041c144 = 1;
+  DisableFaceControl(&g_face_control_top_panel_overlay);
+  DisableFaceControl(&g_face_control_bottom_panel_overlay);
+  g_face_controls_start_mode = 3;
+  g_ignore_mouse_hit_test = 0;
+  *(int *)g_face_preview_bounds = 0;
+  PresentGraphicsPage(1);
+  RedrawFaceCompositePreview();
+  g_ui_ready = 1;
 
   hover_button_index = -1;
   do
   {
     if (hover_button_index >= 0)
     {
-      face_slot_x = (int)FUN_00402600(DAT_0040c1e8[hover_button_index].x);
-      if (DAT_0042333c < face_slot_x ||
-          (int)FUN_00402600(DAT_0040c1e8[hover_button_index].x +
-                            DAT_0040c1e8[hover_button_index].width) < DAT_0042333c)
+      face_slot_x = (int)ScaleUiCoordinate(g_face_controls[hover_button_index].x);
+      if (g_mouse_x < face_slot_x ||
+          (int)ScaleUiCoordinate(g_face_controls[hover_button_index].x +
+                            g_face_controls[hover_button_index].width) < g_mouse_x)
       {
         in_bounds = 0;
       }
       else
       {
-        face_slot_y = (int)FUN_00402600(DAT_0040c1e8[hover_button_index].y);
-        if (DAT_00423338 < face_slot_y ||
-            (int)FUN_00402600(DAT_0040c1e8[hover_button_index].y +
-                              DAT_0040c1e8[hover_button_index].height) < DAT_00423338)
+        face_slot_y = (int)ScaleUiCoordinate(g_face_controls[hover_button_index].y);
+        if (g_mouse_y < face_slot_y ||
+            (int)ScaleUiCoordinate(g_face_controls[hover_button_index].y +
+                              g_face_controls[hover_button_index].height) < g_mouse_y)
         {
           in_bounds = 0;
         }
@@ -1947,10 +1953,10 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
 
       if (in_bounds == 0)
       {
-        DAT_0041e560 = 1;
-        FUN_004028d1(&DAT_0040c1e8[hover_button_index], 0);
+        g_ignore_mouse_hit_test = 1;
+        DrawFaceControl(&g_face_controls[hover_button_index], 0);
         hover_button_index = -1;
-        DAT_0041e560 = 0;
+        g_ignore_mouse_hit_test = 0;
       }
     }
 
@@ -1967,7 +1973,7 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
       {
         break;
       }
-      if (hover_button_index != button_index && FUN_004028d1(&DAT_0040c1e8[button_index], 0) != 0)
+      if (hover_button_index != button_index && DrawFaceControl(&g_face_controls[button_index], 0) != 0)
       {
         next_hover_button_index = button_index;
       }
@@ -1978,126 +1984,126 @@ DWORD WINAPI FUN_00403fd9(LPVOID unused)
     {
       if (hover_button_index >= 0)
       {
-        DAT_0041e560 = 1;
-        FUN_004028d1(&DAT_0040c1e8[hover_button_index], 0);
-        DAT_0041e560 = 0;
+        g_ignore_mouse_hit_test = 1;
+        DrawFaceControl(&g_face_controls[hover_button_index], 0);
+        g_ignore_mouse_hit_test = 0;
       }
-      FUN_004028d1(&DAT_0040c1e8[next_hover_button_index], 1);
+      DrawFaceControl(&g_face_controls[next_hover_button_index], 1);
     }
 
-    if (DAT_00423334 == 1)
+    if (g_mouse_button_down == 1)
     {
       if (next_hover_button_index >= 0)
       {
-        FUN_004028d1(&DAT_0040c1e8[next_hover_button_index], 2);
+        DrawFaceControl(&g_face_controls[next_hover_button_index], 2);
       }
-      FUN_00405f38();
-      while (DAT_00423334 != 0)
+      ConsumeUiTickCount();
+      while (g_mouse_button_down != 0)
       {
-        if (4 < FUN_00405f60())
+        if (4 < PeekUiTickCount())
         {
           if (next_hover_button_index >= 0)
           {
-            FUN_004028d1(&DAT_0040c1e8[next_hover_button_index], 2);
+            DrawFaceControl(&g_face_controls[next_hover_button_index], 2);
           }
-          FUN_00405f38();
+          ConsumeUiTickCount();
         }
       }
       if (next_hover_button_index >= 0)
       {
-        FUN_004028d1(&DAT_0040c1e8[next_hover_button_index], 1);
+        DrawFaceControl(&g_face_controls[next_hover_button_index], 1);
       }
     }
 
     hover_button_index = next_hover_button_index;
-    if (FUN_00406590() != 0)
+    if (HasQueuedKeyInput() != 0)
     {
-      key_char = FUN_004065a0();
+      key_char = PopQueuedKeyInput();
       if ((char)key_char == '\x1b')
       {
-        DAT_0041e564 = -1;
-        DAT_0041e4f0 = 1;
+        g_worker_exit_code = -1;
+        g_worker_should_exit = 1;
       }
     }
-  } while (DAT_0041e4f0 == 0);
+  } while (g_worker_should_exit == 0);
 
-  if (DAT_0040c188 != 0)
+  if (g_legacy_video_state != 0)
   {
-    FUN_004093e0();
+    CleanupLegacyVideoStub();
   }
-  _chdir(DAT_0041b024);
-  SendMessageA(DAT_0041b028, 0x12, DAT_0041e564, 0);
-  ExitThread(DAT_0041e564);
-  return DAT_0041e564;
+  _chdir(g_original_working_dir);
+  SendMessageA(g_main_hwnd, 0x12, g_worker_exit_code, 0);
+  ExitThread(g_worker_exit_code);
+  return g_worker_exit_code;
 }
 
 // FUNCTION: FACEMAKER 0x00405a49
-LRESULT CALLBACK FUN_00405a49(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   char face_art_path[528];
 
   switch (msg)
   {
   case WM_CREATE:
-    DAT_00412490 = SetTimer(hwnd, 1, DAT_0040c9e0, (TIMERPROC)0);
+    g_main_timer_id = SetTimer(hwnd, 1, g_ui_timer_interval_ms, (TIMERPROC)0);
     break;
 
   case 0x12:
-    FUN_0040a730(0, 0x30);
+    AnimatePaletteToColor(0, 0x30);
     DestroyWindow(hwnd);
     PostQuitMessage(0);
     break;
 
   case WM_DESTROY:
-    KillTimer(hwnd, DAT_00412490);
+    KillTimer(hwnd, g_main_timer_id);
     PostMessageA(hwnd, 0x12, 0, 0);
     break;
 
   case WM_TIMER:
-    DAT_0040c9e8 = DAT_0040c9e8 + 1;
+    g_ui_tick_count = g_ui_tick_count + 1;
     break;
 
   case WM_SIZE:
-    if (DAT_0041c144 != 0)
+    if (g_ui_ready != 0)
     {
-      FUN_00406cc0(1);
+      PresentGraphicsPage(1);
     }
     break;
 
   case WM_PAINT:
-    if (DAT_0041c144 != 0)
+    if (g_ui_ready != 0)
     {
-      FUN_00406cc0(1);
+      PresentGraphicsPage(1);
     }
     break;
 
   case WM_MOUSEMOVE:
-    DAT_0042333c = (unsigned int)lparam & 0xffff;
-    DAT_00423338 = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
+    g_mouse_x = (unsigned int)lparam & 0xffff;
+    g_mouse_y = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
     break;
 
   case WM_LBUTTONDOWN:
-    DAT_00423340 = DAT_00423340 | 1;
-    DAT_00423334 = 1;
-    DAT_0042333c = (unsigned int)lparam & 0xffff;
-    DAT_00423338 = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
+    g_mouse_button_mask = g_mouse_button_mask | 1;
+    g_mouse_button_down = 1;
+    g_mouse_x = (unsigned int)lparam & 0xffff;
+    g_mouse_y = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
     break;
 
   case WM_RBUTTONDOWN:
-    DAT_00423340 = DAT_00423340 | 2;
-    DAT_00423334 = 2;
-    DAT_0042333c = (unsigned int)lparam & 0xffff;
-    DAT_00423338 = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
+    g_mouse_button_mask = g_mouse_button_mask | 2;
+    g_mouse_button_down = 2;
+    g_mouse_x = (unsigned int)lparam & 0xffff;
+    g_mouse_y = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
     break;
 
   case WM_LBUTTONUP:
   case WM_RBUTTONUP:
-    DAT_00423334 = 0;
+    g_mouse_button_down = 0;
     break;
 
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
-    FUN_004063f0(wparam, lparam);
+    QueueKeyInputFromMessage(wparam, lparam);
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 
   case WM_COMMAND:
@@ -2107,35 +2113,35 @@ LRESULT CALLBACK FUN_00405a49(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       strcpy(face_art_path, s_FaceArt_evil_0040caa0);
       LoadFaceSpriteSet(face_art_path, g_face_group_frame_counts, g_face_sprite_entries.flat,
                         g_face_sprite_roots.flat);
-      FUN_00406cc0(1);
+      PresentGraphicsPage(1);
       break;
 
     case 0x9c47:
-      return FUN_00406369();
+      return ShowSaveFaceDialog();
 
     case 0xffff:
-      if (DAT_0041248c == 0)
+      if (g_palette_class_registered == 0)
       {
-        FUN_0040a330(DAT_0041c140);
-        DAT_0041248c = 1;
+        RegisterPaletteClass(g_app_instance);
+        g_palette_class_registered = 1;
       }
 
-      DAT_00412488 = FindWindowExA((HWND)0, (HWND)0, s_ShowPaletteClass_0040cac0,
+      g_palette_hwnd = FindWindowExA((HWND)0, (HWND)0, s_ShowPaletteClass_0040cac0,
                                    s_Current_Palette_0040cab0);
-      if (DAT_00412488 != (HWND)0)
+      if (g_palette_hwnd != (HWND)0)
       {
-        BringWindowToTop(DAT_00412488);
+        BringWindowToTop(g_palette_hwnd);
       }
       else
       {
-        DAT_00412488 = FUN_0040a3c0(DAT_0041c140, (HWND)0);
-        if (DAT_00412488 == (HWND)0)
+        g_palette_hwnd = CreatePalettePopupWindow(g_app_instance, (HWND)0);
+        if (g_palette_hwnd == (HWND)0)
         {
           return 0;
         }
-        ShowWindow(DAT_00412488, SW_SHOW);
+        ShowWindow(g_palette_hwnd, SW_SHOW);
       }
-      UpdateWindow(DAT_00412488);
+      UpdateWindow(g_palette_hwnd);
       break;
     }
     break;
@@ -2148,50 +2154,51 @@ LRESULT CALLBACK FUN_00405a49(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // FUNCTION: FACEMAKER 0x00405f25
-void __stdcall FUN_00405f25(int param_1, int param_2, int param_3, int param_4, int param_5)
+void __stdcall IncrementUiTickCallback(int callback_arg_1, int callback_arg_2, int callback_arg_3,
+                                       int callback_arg_4, int callback_arg_5)
 {
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
-  (void)param_4;
-  (void)param_5;
-  DAT_0040c9e8 = DAT_0040c9e8 + 1;
+  (void)callback_arg_1;
+  (void)callback_arg_2;
+  (void)callback_arg_3;
+  (void)callback_arg_4;
+  (void)callback_arg_5;
+  g_ui_tick_count = g_ui_tick_count + 1;
 }
 
 // FUNCTION: FACEMAKER 0x00405f38
-int FUN_00405f38(void)
+int ConsumeUiTickCount(void)
 {
-  int elapsed_ticks;
+  int queued_ticks;
 
-  elapsed_ticks = DAT_0040c9e8;
-  DAT_0040c9e8 = 0;
-  return elapsed_ticks;
+  queued_ticks = g_ui_tick_count;
+  g_ui_tick_count = 0;
+  return queued_ticks;
 }
 
 // FUNCTION: FACEMAKER 0x00405f60
-int FUN_00405f60(void)
+int PeekUiTickCount(void)
 {
-  return DAT_0040c9e8;
+  return g_ui_tick_count;
 }
 
 // FUNCTION: FACEMAKER 0x00405f75
-int FUN_00405f75(int wait_ticks)
+int WaitForUiTicks(int wait_ticks)
 {
-  int start_ticks;
+  int start_tick_count;
 
-  start_ticks = DAT_0040c9e8;
-  while (DAT_0040c9e8 - start_ticks < wait_ticks)
+  start_tick_count = g_ui_tick_count;
+  while (g_ui_tick_count - start_tick_count < wait_ticks)
   {
   }
   return 0;
 }
 
 // FUNCTION: FACEMAKER 0x00405fa8
-void FUN_00405fa8(void)
+void RestoreSystemPalette(void)
 {
   HDC hdc;
 
-  if (DAT_0040c9e4 == 0)
+  if (g_use_desktop_palette == 0)
   {
     SetSystemPaletteUse(global_main_hdc, 1);
   }
@@ -2206,7 +2213,7 @@ void FUN_00405fa8(void)
 }
 
 // FUNCTION: FACEMAKER 0x004061bd
-LONG FUN_004061bd(DWORD width, DWORD height)
+LONG ChangeDisplayResolution(DWORD width, DWORD height)
 {
   DEVMODEA dev_mode;
 
@@ -2228,9 +2235,9 @@ LONG FUN_004061bd(DWORD width, DWORD height)
 }
 
 // FUNCTION: FACEMAKER 0x0040623c
-void FUN_0040623c(void)
+void RestoreDisplayResolution(void)
 {
-  FUN_004061bd(0, 0);
+  ChangeDisplayResolution(0, 0);
 }
 
 // FUNCTION: FACEMAKER 0x00405510
@@ -2249,19 +2256,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   (void)prevInstance;
 
   custom_mode_selected = 0;
-  DAT_0041b028 = FindWindowA("FaceMakerMainClass", (LPCSTR)0);
-  if (DAT_0041b028 != (HWND)0)
+  g_main_hwnd = FindWindowA("FaceMakerMainClass", (LPCSTR)0);
+  if (g_main_hwnd != (HWND)0)
   {
-    ShowWindow(DAT_0041b028, nShowCmd);
-    BringWindowToTop(DAT_0041b028);
-    SetForegroundWindow(DAT_0041b028);
+    ShowWindow(g_main_hwnd, nShowCmd);
+    BringWindowToTop(g_main_hwnd);
+    SetForegroundWindow(g_main_hwnd);
     return 0;
   }
 
   srand(GetTickCount());
-  DAT_0041c140 = hInstance;
+  g_app_instance = hInstance;
   wndclass.style = 0x23;
-  wndclass.lpfnWndProc = FUN_00405a49;
+  wndclass.lpfnWndProc = MainWindowProc;
   wndclass.cbClsExtra = 0;
   wndclass.cbWndExtra = 0;
   wndclass.hInstance = hInstance;
@@ -2277,10 +2284,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
 #ifdef MODERN_FIXES
-  GetCurrentDirectoryA(0x100, DAT_0041b024);
+  GetCurrentDirectoryA(0x100, g_original_working_dir);
 #else
   // lmfao it's a miracle this doesn't crash (nBufferLength == 0 so the write to address 0x100 is elided)
-  GetCurrentDirectoryA(DAT_0041b024[0], 0x100);
+  GetCurrentDirectoryA(g_original_working_dir[0], 0x100);
 #endif
 
   strcpy(module_path, (*__p___argv())[0]);
@@ -2292,10 +2299,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
                    "Path Set FAILED");
   }
 
-  atexit(FUN_0040623c);
+  atexit(RestoreDisplayResolution);
   if (GetDeviceCaps(GetDC((HWND)0), HORZRES) > 1024)
   {
-    FUN_004061bd(1024, 768);
+    ChangeDisplayResolution(1024, 768);
   }
 
   while (*cmdLine != '\0' && cmdLine[1] != '\0')
@@ -2303,14 +2310,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     matched_mode = 0;
     if (cmdLine[1] == 'S')
     {
-      DAT_0040c9e4 = 0;
+      g_use_desktop_palette = 0;
     }
 
     if (cmdLine[1] == '6')
     {
       global_screen_width = 640;
       global_screen_height = 480;
-      FUN_004069e0(0, global_screen_width, global_screen_height, -1);
+      CreateGraphicsPage(0, global_screen_width, global_screen_height, -1);
       custom_mode_selected = 1;
     }
 
@@ -2319,7 +2326,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     {
       global_screen_width = 800;
       global_screen_height = 600;
-      FUN_004069e0(0, global_screen_width, global_screen_height, -1);
+      CreateGraphicsPage(0, global_screen_width, global_screen_height, -1);
       matched_mode = 1;
       custom_mode_selected = 1;
     }
@@ -2328,15 +2335,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     {
       global_screen_width = 1024;
       global_screen_height = 768;
-      FUN_004069e0(0, global_screen_width, global_screen_height, -1);
+      CreateGraphicsPage(0, global_screen_width, global_screen_height, -1);
       matched_mode = 1;
       custom_mode_selected = 1;
     }
 
     if (matched_mode != 0)
     {
-      PTR_DAT_0040c034->max_x = global_screen_width - 1;
-      PTR_DAT_0040c034->max_y = global_screen_height - 1;
+      g_face_preview_bounds->max_x = global_screen_width - 1;
+      g_face_preview_bounds->max_y = global_screen_height - 1;
       break;
     }
 
@@ -2362,30 +2369,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
       break;
     }
 
-    PTR_DAT_0040c034->max_x = global_screen_width - 1;
-    PTR_DAT_0040c034->max_y = global_screen_height - 1;
+    g_face_preview_bounds->max_x = global_screen_width - 1;
+    g_face_preview_bounds->max_y = global_screen_height - 1;
   }
 
-  DAT_0041b028 = CreateWindowExA(-(unsigned int)(DAT_0040c9e4 == 0) & 8, "FacemakerMainClass",
+  g_main_hwnd = CreateWindowExA(-(unsigned int)(g_use_desktop_palette == 0) & 8, "FacemakerMainClass",
                                  "Magic: Facemaker", 0x80000000, 0, 0, global_screen_width,
                                  global_screen_height, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
-  main_hwnd = DAT_0041b028;
-  ShowWindow(DAT_0041b028, nShowCmd);
+  main_hwnd = g_main_hwnd;
+  ShowWindow(g_main_hwnd, nShowCmd);
   global_main_hdc = GetDC(main_hwnd);
-  BringWindowToTop(DAT_0041b028);
-  SetForegroundWindow(DAT_0041b028);
-  SetFocus(DAT_0041b028);
+  BringWindowToTop(g_main_hwnd);
+  SetForegroundWindow(g_main_hwnd);
+  SetFocus(g_main_hwnd);
   if (custom_mode_selected != 0)
   {
-    DAT_00426540[0]->hTempDC = global_main_hdc;
-    SelectPalette(DAT_00426540[0]->hTempDC, DAT_00426540[0]->hPalette, FALSE);
-    RealizePalette(DAT_00426540[0]->hTempDC);
-    SetStretchBltMode(DAT_00426540[0]->hTempDC, 3);
+    g_graphics_pages[0]->hTempDC = global_main_hdc;
+    SelectPalette(g_graphics_pages[0]->hTempDC, g_graphics_pages[0]->hPalette, FALSE);
+    RealizePalette(g_graphics_pages[0]->hTempDC);
+    SetStretchBltMode(g_graphics_pages[0]->hTempDC, 3);
   }
 
   SetSystemPaletteUse(global_main_hdc, 2);
-  atexit(FUN_00405fa8);
-  CreateThread((LPSECURITY_ATTRIBUTES)0, 0, FUN_00403fd9, (LPVOID)0, 0, &thread_id);
+  atexit(RestoreSystemPalette);
+  CreateThread((LPSECURITY_ATTRIBUTES)0, 0, FaceMakerWorkerThread, (LPVOID)0, 0, &thread_id);
   while (GetMessageA(&msg, (HWND)0, 0, 0) != 0)
   {
     TranslateMessage(&msg);
@@ -2393,5 +2400,5 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
   GdiFlush();
-  return DAT_0041e564;
+  return g_worker_exit_code;
 }

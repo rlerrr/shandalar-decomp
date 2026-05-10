@@ -19,13 +19,13 @@ int RpBitsRefill(void);
 void RpBits_ApplyPalette(short *palette_data_words);
 
 #if defined(FACEMAKER) || defined(SHANDALAR)
-extern int DAT_00426570;
-extern HPALETTE DAT_00425e10;
-extern PALETTEENTRY DAT_00426140[256];
-extern RGBQUAD DAT_00426580[256];
-extern DIBSurface *DAT_00426540[10];
-extern int DAT_00426568;
-extern int DAT_0040d090;
+extern int g_graphics_bpp;
+extern HPALETTE g_palette_handle;
+extern PALETTEENTRY g_palette_entries[256];
+extern RGBQUAD g_palette_rgb[256];
+extern DIBSurface *g_graphics_pages[10];
+extern int g_graphics_height;
+extern int g_scanline_palette_needs_refresh;
 #endif
 
 typedef struct RpBitsPalettePacket
@@ -511,7 +511,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
   }
 
   first_index = (unsigned int)*(unsigned char *)(palette_data_words + 2);
-  mask_value = (-(unsigned int)(DAT_00426570 == 0x10) & 0xfffffff9) + 0xff;
+  mask_value = (-(unsigned int)(g_graphics_bpp == 0x10) & 0xfffffff9) + 0xff;
   last_index = (unsigned int)*(unsigned char *)((int)palette_data_words + 5);
   mask = (unsigned char)mask_value;
 
@@ -525,24 +525,24 @@ void RpBits_ApplyPalette(short *palette_data_words)
       do
       {
         component = (unsigned char)(((unsigned int)entry_data[0] * 0xff) / 0x3f) & mask;
-        *((unsigned char *)&DAT_00426140 + palette_offset + 0) = component;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 2) = component;
+        *((unsigned char *)&g_palette_entries + palette_offset + 0) = component;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 2) = component;
 
         component = (unsigned char)(((unsigned int)entry_data[1] * 0xff) / 0x3f) & mask;
-        *((unsigned char *)&DAT_00426140 + palette_offset + 1) = component;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 1) = component;
+        *((unsigned char *)&g_palette_entries + palette_offset + 1) = component;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 1) = component;
 
         component = (unsigned char)(((unsigned int)entry_data[2] * 0xff) / 0x3f) & mask;
-        *((unsigned char *)&DAT_00426140 + palette_offset + 2) = component;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 0) = component;
+        *((unsigned char *)&g_palette_entries + palette_offset + 2) = component;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 0) = component;
 
-        *((unsigned char *)&DAT_00426140 + palette_offset + 3) = 1;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 3) = 0;
-        if (*(unsigned int *)((int)&DAT_00426580 + palette_offset) == 0x00ffffff && palette_offset != 0x3fc)
+        *((unsigned char *)&g_palette_entries + palette_offset + 3) = 1;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 3) = 0;
+        if (*(unsigned int *)((int)&g_palette_rgb + palette_offset) == 0x00ffffff && palette_offset != 0x3fc)
         {
           rgb_value = (mask_value << 0x10) | (mask_value << 8) | mask_value;
-          *(unsigned int *)((int)&DAT_00426140 + palette_offset) = rgb_value & 0x01fefefe;
-          *(unsigned int *)((int)&DAT_00426580 + palette_offset) = rgb_value & 0x00fefefe;
+          *(unsigned int *)((int)&g_palette_entries + palette_offset) = rgb_value & 0x01fefefe;
+          *(unsigned int *)((int)&g_palette_rgb + palette_offset) = rgb_value & 0x00fefefe;
         }
 
         palette_offset = palette_offset + 4;
@@ -561,25 +561,25 @@ void RpBits_ApplyPalette(short *palette_data_words)
       do
       {
         component = entry_data[0];
-        *((unsigned char *)&DAT_00426140 + palette_offset + 0) = component & mask;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 2) = component & mask;
+        *((unsigned char *)&g_palette_entries + palette_offset + 0) = component & mask;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 2) = component & mask;
 
         component = entry_data[1];
-        *((unsigned char *)&DAT_00426140 + palette_offset + 1) = component & mask;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 1) = component & mask;
+        *((unsigned char *)&g_palette_entries + palette_offset + 1) = component & mask;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 1) = component & mask;
 
         component = entry_data[2];
-        *((unsigned char *)&DAT_00426140 + palette_offset + 2) = component & mask;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 0) = component & mask;
+        *((unsigned char *)&g_palette_entries + palette_offset + 2) = component & mask;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 0) = component & mask;
 
-        *((unsigned char *)&DAT_00426140 + palette_offset + 3) = 1;
-        *((unsigned char *)&DAT_00426580 + palette_offset + 3) = 0;
-        if (*(unsigned int *)((int)&DAT_00426580 + palette_offset) == 0x00ffffff && palette_offset != 0x3fc)
+        *((unsigned char *)&g_palette_entries + palette_offset + 3) = 1;
+        *((unsigned char *)&g_palette_rgb + palette_offset + 3) = 0;
+        if (*(unsigned int *)((int)&g_palette_rgb + palette_offset) == 0x00ffffff && palette_offset != 0x3fc)
         {
           rgb_value = ((mask_value << 0x10) | (mask_value << 8) | mask_value) & 0x00fefefe;
-          *(unsigned int *)((int)&DAT_00426580 + palette_offset) = rgb_value;
-          *(unsigned int *)((int)&DAT_00426140 + palette_offset) = rgb_value;
-          *((unsigned char *)&DAT_00426140 + palette_offset + 3) = 1;
+          *(unsigned int *)((int)&g_palette_rgb + palette_offset) = rgb_value;
+          *(unsigned int *)((int)&g_palette_entries + palette_offset) = rgb_value;
+          *((unsigned char *)&g_palette_entries + palette_offset + 3) = 1;
         }
 
         palette_offset = palette_offset + 4;
@@ -589,38 +589,38 @@ void RpBits_ApplyPalette(short *palette_data_words)
     }
   }
 
-  *((unsigned char *)&DAT_00426140 + 2) = 0;
-  *((unsigned char *)&DAT_00426140 + 1) = 0;
-  *((unsigned char *)&DAT_00426140 + 0) = 0;
-  *((unsigned char *)&DAT_00426140 + 3) = 0;
-  *((unsigned char *)&DAT_00426580 + 0) = 0;
-  *((unsigned char *)&DAT_00426580 + 1) = 0;
-  *((unsigned char *)&DAT_00426580 + 2) = 0;
-  *((unsigned char *)&DAT_00426580 + 3) = 0;
-  *((unsigned char *)&DAT_00426140 + 0x3f7) = 1;
-  *((unsigned char *)&DAT_00426140 + 0x3fb) = 1;
-  *((unsigned char *)&DAT_00426140 + 0x3ff) = 0;
-  *((unsigned char *)&DAT_00426580 + 0x3f7) = 0;
-  *((unsigned char *)&DAT_00426580 + 0x3fc) = 0xff;
-  *((unsigned char *)&DAT_00426580 + 0x3fd) = 0xff;
-  *((unsigned char *)&DAT_00426580 + 0x3fe) = 0xff;
-  *((unsigned char *)&DAT_00426580 + 0x3ff) = 0;
+  *((unsigned char *)&g_palette_entries + 2) = 0;
+  *((unsigned char *)&g_palette_entries + 1) = 0;
+  *((unsigned char *)&g_palette_entries + 0) = 0;
+  *((unsigned char *)&g_palette_entries + 3) = 0;
+  *((unsigned char *)&g_palette_rgb + 0) = 0;
+  *((unsigned char *)&g_palette_rgb + 1) = 0;
+  *((unsigned char *)&g_palette_rgb + 2) = 0;
+  *((unsigned char *)&g_palette_rgb + 3) = 0;
+  *((unsigned char *)&g_palette_entries + 0x3f7) = 1;
+  *((unsigned char *)&g_palette_entries + 0x3fb) = 1;
+  *((unsigned char *)&g_palette_entries + 0x3ff) = 0;
+  *((unsigned char *)&g_palette_rgb + 0x3f7) = 0;
+  *((unsigned char *)&g_palette_rgb + 0x3fc) = 0xff;
+  *((unsigned char *)&g_palette_rgb + 0x3fd) = 0xff;
+  *((unsigned char *)&g_palette_rgb + 0x3fe) = 0xff;
+  *((unsigned char *)&g_palette_rgb + 0x3ff) = 0;
 
-  AnimatePalette(DAT_00425e10, 0, 0x100, (PALETTEENTRY *)&DAT_00426140);
-  if (DAT_00426540[0] != (DIBSurface *)0)
+  AnimatePalette(g_palette_handle, 0, 0x100, (PALETTEENTRY *)&g_palette_entries);
+  if (g_graphics_pages[0] != (DIBSurface *)0)
   {
-    RealizePalette(DAT_00426540[0]->hTempDC);
+    RealizePalette(g_graphics_pages[0]->hTempDC);
   }
 
-  surface_ptr = (int *)&DAT_00426540[1];
+  surface_ptr = (int *)&g_graphics_pages[1];
   do
   {
     if (*surface_ptr != 0)
     {
-      SetDIBColorTable(*(HDC *)(*surface_ptr + 4), 0, 0x100, (RGBQUAD *)&DAT_00426580);
+      SetDIBColorTable(*(HDC *)(*surface_ptr + 4), 0, 0x100, (RGBQUAD *)&g_palette_rgb);
     }
     surface_ptr = surface_ptr + 1;
-  } while (surface_ptr < &DAT_00426568);
+  } while (surface_ptr < &g_graphics_height);
 
   palette_window = FindWindowExA((HWND)0, (HWND)0, "ShowPaletteClass", "Current Palette");
   if (palette_window != (HWND)0)
@@ -628,7 +628,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
     InvalidateRect(palette_window, (RECT *)0, FALSE);
     UpdateWindow(palette_window);
   }
-  DAT_0040d090 = 1;
+  g_scanline_palette_needs_refresh = 1;
 #else
   (void)palette_data_words;
 #endif

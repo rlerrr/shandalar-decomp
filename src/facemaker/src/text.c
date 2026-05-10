@@ -9,68 +9,68 @@
 
 #pragma intrinsic(memcpy)
 
-extern int __cdecl FUN_00407c20(int font_id, FILE *file);
-extern int __cdecl FUN_00407f30(int font_id, unsigned int style);
-extern int __cdecl FUN_004086c0(int *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y, int *arg9);
-extern void __cdecl FUN_00407190(int *param_1, int param_2, int param_3, unsigned int param_4);
-extern void __cdecl FUN_004075d0(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
+extern int __cdecl LoadBitmapFontFromFile(int font_id, FILE *file);
+extern int __cdecl SetFontStyleSize(int font_id, unsigned int style);
+extern int __cdecl DrawTextFormatted(int *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y, int *arg9);
+extern void __cdecl PutGraphicsPixel(int *param_1, int param_2, int param_3, unsigned int param_4);
+extern void __cdecl WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
 extern char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[];
-extern DIBSurface *DAT_00426540[10];
-extern PALETTEENTRY DAT_00426140[256];
-extern RGBQUAD DAT_00426580[256];
-extern int DAT_00426570;
+extern DIBSurface *g_graphics_pages[10];
+extern PALETTEENTRY g_palette_entries[256];
+extern RGBQUAD g_palette_rgb[256];
+extern int g_graphics_bpp;
 extern HDC global_main_hdc;
 
 // GLOBAL: FACEMAKER 0x004199c8
-int *DAT_004199c8;
+int *g_sprite_blob_base;
 
 // GLOBAL: FACEMAKER 0x004199cc
-int *DAT_004199cc;
+int *g_sprite_blob_cursor;
 
 // GLOBAL: FACEMAKER 0x004189b8
-int DAT_004189b8;
+int g_resample_step_x;
 
 // GLOBAL: FACEMAKER 0x004189bc
-int DAT_004189bc;
+int g_resample_step_y;
 
 // GLOBAL: FACEMAKER 0x004189c0
-int DAT_004189c0;
+int g_resample_clip_right;
 
 // GLOBAL: FACEMAKER 0x004189c8
-int DAT_004189c8[0x400];
+int g_resample_first_dst_x_by_src_x[0x400];
 
 // GLOBAL: FACEMAKER 0x004199d0
-int DAT_004199d0;
+int g_resample_source_height;
 
 // GLOBAL: FACEMAKER 0x004199d4
-int DAT_004199d4;
+int g_resample_accum_x;
 
 // GLOBAL: FACEMAKER 0x004199d8
-int DAT_004199d8;
+int g_resample_accum_y;
 
 // GLOBAL: FACEMAKER 0x004199dc
-int DAT_004199dc;
+int g_resample_cached_height;
 
 // GLOBAL: FACEMAKER 0x004199e0
-int DAT_004199e0;
+int g_resample_clip_left;
 
 // GLOBAL: FACEMAKER 0x004199e4
-int DAT_004199e4;
+int g_resample_cached_width;
 
 // GLOBAL: FACEMAKER 0x004199e8
-int DAT_004199e8[0x400];
+int g_resample_src_x_for_dst_x[0x400];
 
 // GLOBAL: FACEMAKER 0x0041a9e8
-int DAT_0041a9e8;
+int g_resample_source_width;
 
 // GLOBAL: FACEMAKER 0x00423344
-int DAT_00423344;
+int g_loaded_font_count;
 
 // GLOBAL: FACEMAKER 0x004233d0
-FontSlot DAT_004233d0[0x10];
+FontSlot g_font_slots[0x10];
 
 // GLOBAL: FACEMAKER 0x0040d224
-char DAT_0040d224[] = "rb";
+char g_file_read_mode[] = "rb";
 
 // GLOBAL: FACEMAKER 0x0040d228
 char s_D__NewMagic__sources__sidlib__text_c_0040d228[] = "D:\\NewMagic\\sources\\sidlib\\text.c";
@@ -86,7 +86,7 @@ char *PTR_s_File__s_could_not_be_opened__EXI_0040c0b0 = s_File__s_could_not_be_o
 
 // FUNCTION: FACEMAKER 0x00407b10
 #pragma optimize("gty", on)
-int __cdecl FUN_00407b10(char *path)
+int __cdecl LoadFontCollection(char *path)
 {
     FILE *font_file;
     long font_offsets[16];
@@ -94,12 +94,12 @@ int __cdecl FUN_00407b10(char *path)
     int font_index;
 
     font_count = 0;
-    font_file = fopen(path, DAT_0040d224);
+    font_file = fopen(path, g_file_read_mode);
     assert((unsigned int)(font_file != (FILE *)0), s_D__NewMagic__sources__sidlib__text_c_0040d228, 0x83,
            PTR_s_File__s_could_not_be_opened__EXI_0040c0b0, path);
     
     fread(&font_count, 2, 1, font_file);
-    DAT_00423344 = font_count;
+    g_loaded_font_count = font_count;
     assert((unsigned int)(font_count < 0x10), s_D__NewMagic__sources__sidlib__text_c_0040d228, 0x8a,
            s_Can_not_load_more_than__d_fonts_0040d200, 0x10);
     if (font_count > 0)
@@ -119,7 +119,7 @@ int __cdecl FUN_00407b10(char *path)
         do
         {
             fseek(font_file, font_offsets[font_index], 0);
-            FUN_00407c20(font_index, font_file);
+            LoadBitmapFontFromFile(font_index, font_file);
             font_index = font_index + 1;
         } while (font_index <= font_count);
     }
@@ -129,7 +129,7 @@ int __cdecl FUN_00407b10(char *path)
 }
 
 // FUNCTION: FACEMAKER 0x00407c20
-int __cdecl FUN_00407c20(int font_id, FILE *file)
+int __cdecl LoadBitmapFontFromFile(int font_id, FILE *file)
 {
     int row_bytes;
     int bitmap_size;
@@ -142,7 +142,7 @@ int __cdecl FUN_00407c20(int font_id, FILE *file)
     unsigned char *bitmap_data;
     HBITMAP bitmap;
 
-    font = &DAT_004233d0[font_id];
+    font = &g_font_slots[font_id];
     fseek(file, -8, 1);
     fread(font, 1, 8, file);
     glyph_count = ((unsigned int)font->last_char - (unsigned int)font->first_char) + 1;
@@ -211,7 +211,7 @@ int __cdecl FUN_00407c20(int font_id, FILE *file)
 }
 
 // FUNCTION: FACEMAKER 0x00407e20
-int __cdecl FUN_00407e20(int font_id, unsigned int point_size, char *font_file, char *font_name,
+int __cdecl LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name,
                          int weight, DWORD italic)
 {
     char c;
@@ -226,7 +226,7 @@ int __cdecl FUN_00407e20(int font_id, unsigned int point_size, char *font_file, 
     TEXTMETRICA text_metrics;
 
     AddFontResourceA(font_file);
-    font = &DAT_004233d0[font_id];
+    font = &g_font_slots[font_id];
     font_handle = CreateFontA(100, 0, 0, 0, weight, italic, 0, 0, 0, 0, 0, 0, 0, font_name);
     font->hfont = font_handle;
 
@@ -297,12 +297,12 @@ int __cdecl FUN_00407e20(int font_id, unsigned int point_size, char *font_file, 
     font->tm_max = text_metrics.tmAscent;
     font->tm_min = text_metrics.tmInternalLeading;
 
-    FUN_00407f30(font_id, point_size);
+    SetFontStyleSize(font_id, point_size);
     return 1;
 }
 
 // FUNCTION: FACEMAKER 0x00407f30
-int __cdecl FUN_00407f30(int font_id, unsigned int style)
+int __cdecl SetFontStyleSize(int font_id, unsigned int style)
 {
     FontSlot *font;
     FARPROC import_proc;
@@ -311,7 +311,7 @@ int __cdecl FUN_00407f30(int font_id, unsigned int style)
     TEXTMETRICA text_metrics;
     LOGFONTA log_font;
 
-    font = &DAT_004233d0[font_id];
+    font = &g_font_slots[font_id];
     if (font->font_loaded == 0)
     {
         return 0;
@@ -360,7 +360,7 @@ void __cdecl DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *enco
         return;
     }
 
-    row_index = (int)DAT_00426540[page_number];
+    row_index = (int)g_graphics_pages[page_number];
     y = y + (int)encoded_image->top_clip;
     sprite_row_count = (int)encoded_image->row_count;
     span_data_ptr = (int)encoded_image->spans;
@@ -405,7 +405,7 @@ void __cdecl DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *enco
                 else
                 {
                     span_data_bytes = (unsigned char *)span_data_ptr;
-                    FUN_004075d0((unsigned int *)span_data_bytes, draw_to_page, x + (int)span_offset,
+                    WriteGraphicsScanline((unsigned int *)span_data_bytes, draw_to_page, x + (int)span_offset,
                                  y + row_index, (unsigned int)span_length);
                     span_data_ptr = (int)(span_data_bytes + span_length);
                 }
@@ -437,7 +437,7 @@ void __cdecl DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *enco
                         source_pixel = *(unsigned char *)span_data_ptr;
                         if (source_pixel != '\0')
                         {
-                            FUN_00407190(dst, x + (int)span_offset + is_raw_span, y + row_index,
+                            PutGraphicsPixel(dst, x + (int)span_offset + is_raw_span, y + row_index,
                                          (unsigned int)source_pixel);
                         }
                         is_raw_span = is_raw_span + 1;
@@ -500,37 +500,37 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
         return;
     }
 
-    surface = DAT_00426540[page_number];
+    surface = g_graphics_pages[page_number];
     source_sprite_width = (int)encoded_image->width;
     source_sprite_height = (int)encoded_image->height;
-    if ((DAT_004199e4 != width) || (DAT_004199dc != height) ||
-        (DAT_0041a9e8 != source_sprite_width) || (DAT_004199d0 != source_sprite_height))
+    if ((g_resample_cached_width != width) || (g_resample_cached_height != height) ||
+        (g_resample_source_width != source_sprite_width) || (g_resample_source_height != source_sprite_height))
     {
-        DAT_004189b8 = (source_sprite_width << 0x10) / width;
-        DAT_004189bc = (source_sprite_height << 0x10) / height;
+        g_resample_step_x = (source_sprite_width << 0x10) / width;
+        g_resample_step_y = (source_sprite_height << 0x10) / height;
         for (i = 0; i < 0x400; i = i + 1)
         {
-            DAT_004189c8[i] = -1;
+            g_resample_first_dst_x_by_src_x[i] = -1;
         }
         i = 0;
-        DAT_004199d4 = 0;
+        g_resample_accum_x = 0;
         if (-1 < width + 2)
         {
             do
             {
-                j = DAT_004199d4 >> 0x10;
-                DAT_004199e8[i] = j;
-                if (DAT_004189c8[j] == -1)
+                j = g_resample_accum_x >> 0x10;
+                g_resample_src_x_for_dst_x[i] = j;
+                if (g_resample_first_dst_x_by_src_x[j] == -1)
                 {
-                    DAT_004189c8[j] = i;
+                    g_resample_first_dst_x_by_src_x[j] = i;
                 }
                 i = i + 1;
-                DAT_004199d4 = DAT_004199d4 + DAT_004189b8;
+                g_resample_accum_x = g_resample_accum_x + g_resample_step_x;
             } while (i <= width + 2);
         }
         if (width < source_sprite_width && -1 < source_sprite_width)
         {
-            lookup_ptr = DAT_004189c8;
+            lookup_ptr = g_resample_first_dst_x_by_src_x;
             i = source_sprite_width + 1;
             do
             {
@@ -542,38 +542,38 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
                 i = i - 1;
             } while (i != 0);
         }
-        DAT_004199e4 = width;
-        DAT_004199dc = height;
-        DAT_0041a9e8 = source_sprite_width;
-        DAT_004199d0 = source_sprite_height;
+        g_resample_cached_width = width;
+        g_resample_cached_height = height;
+        g_resample_source_width = source_sprite_width;
+        g_resample_source_height = source_sprite_height;
     }
 
     if (x < dst[1])
     {
-        DAT_004199e0 = dst[1] - x;
+        g_resample_clip_left = dst[1] - x;
     }
     else
     {
-        DAT_004199e0 = 0;
+        g_resample_clip_left = 0;
     }
     if (dst[3] < x + width)
     {
-        DAT_004189c0 = dst[3] - x;
+        g_resample_clip_right = dst[3] - x;
     }
     else
     {
-        DAT_004189c0 = width;
+        g_resample_clip_right = width;
     }
 
     top_clip = (int)encoded_image->top_clip;
-    DAT_004199d8 = 0;
+    g_resample_accum_y = 0;
     if (0 < top_clip)
     {
         do
         {
-            DAT_004199d8 = DAT_004199d8 + DAT_004189bc;
+            g_resample_accum_y = g_resample_accum_y + g_resample_step_y;
             y = y + 1;
-        } while (DAT_004199d8 >> 0x10 < top_clip);
+        } while (g_resample_accum_y >> 0x10 < top_clip);
     }
 
     row_data = (unsigned char *)encoded_image->spans;
@@ -581,13 +581,13 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
     row_stride = surface->width + surface->rowPadding;
     row_index = 0;
     row_base = (int)surface->pBits + y * row_stride + x;
-    if ((DAT_004199d8 >> 0x10) < row_count + top_clip)
+    if ((g_resample_accum_y >> 0x10) < row_count + top_clip)
     {
         do
         {
-            source_row = DAT_004199d8 >> 0x10;
+            source_row = g_resample_accum_y >> 0x10;
             next_row_data = row_data + 1;
-            next_source_row = (DAT_004189bc + DAT_004199d8) >> 0x10;
+            next_source_row = (g_resample_step_y + g_resample_accum_y) >> 0x10;
             run_x = (unsigned int)*row_data;
             if (run_x != 0xff)
             {
@@ -606,17 +606,17 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
                     {
                         return;
                     }
-                    run_start = DAT_004189c8[run_x];
-                    if (run_start <= DAT_004199e0)
+                    run_start = g_resample_first_dst_x_by_src_x[run_x];
+                    if (run_start <= g_resample_clip_left)
                     {
-                        run_start = DAT_004199e0;
+                        run_start = g_resample_clip_left;
                     }
-                    run_end = DAT_004189c8[segment_length + run_x];
-                    if (DAT_004189c0 <= DAT_004189c8[segment_length + run_x])
+                    run_end = g_resample_first_dst_x_by_src_x[segment_length + run_x];
+                    if (g_resample_clip_right <= g_resample_first_dst_x_by_src_x[segment_length + run_x])
                     {
-                        run_end = DAT_004189c0;
+                        run_end = g_resample_clip_right;
                     }
-                    if (DAT_004199e8[run_start] - (int)run_x < 0)
+                    if (g_resample_src_x_for_dst_x[run_start] - (int)run_x < 0)
                     {
                         run_start = run_start + 1;
                     }
@@ -627,20 +627,20 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
                         {
                             while (k < run_end)
                             {
-                                tmp_line[k] = next_row_data[DAT_004199e8[k] - run_x];
+                                tmp_line[k] = next_row_data[g_resample_src_x_for_dst_x[k] - run_x];
                                 k = k + 1;
                             }
-                            FUN_004075d0((unsigned int *)(tmp_line + run_start), 0, x + run_start, draw_y,
+                            WriteGraphicsScanline((unsigned int *)(tmp_line + run_start), 0, x + run_start, draw_y,
                                          run_end - run_start);
                         }
                         else
                         {
                             while (run_start < run_end)
                             {
-                                mapping_index = DAT_004199e8[run_start] - run_x;
+                                mapping_index = g_resample_src_x_for_dst_x[run_start] - run_x;
                                 if (next_row_data[mapping_index] != 0)
                                 {
-                                    FUN_00407190(dst, x + run_start, draw_y, (unsigned int)next_row_data[mapping_index]);
+                                    PutGraphicsPixel(dst, x + run_start, draw_y, (unsigned int)next_row_data[mapping_index]);
                                 }
                                 run_start = run_start + 1;
                             }
@@ -650,7 +650,7 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
                     {
                         while (run_start < run_end)
                         {
-                            mapping_index = DAT_004199e8[run_start] - run_x;
+                            mapping_index = g_resample_src_x_for_dst_x[run_start] - run_x;
                             if (next_row_data[mapping_index] != 0)
                             {
                                 *(unsigned char *)(row_base + run_start) = next_row_data[mapping_index];
@@ -693,14 +693,14 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
             }
 
             row_index = row_index + 1;
-            DAT_004199d8 = DAT_004199d8 + DAT_004189bc;
+            g_resample_accum_y = g_resample_accum_y + g_resample_step_y;
             row_base = row_base + row_stride;
-        } while ((DAT_004199d8 >> 0x10) < row_count + top_clip);
+        } while ((g_resample_accum_y >> 0x10) < row_count + top_clip);
     }
 }
 
 // FUNCTION: FACEMAKER 0x004080d0
-int __cdecl FUN_004080d0(int *param_1, char *param_2)
+int __cdecl MeasureMultilineTextWidth(int *param_1, char *param_2)
 {
     char *line_ptr;
     char c;
@@ -715,10 +715,10 @@ int __cdecl FUN_004080d0(int *param_1, char *param_2)
 
     line_width = 0;
     max_width = -1;
-    font = &DAT_004233d0[param_1[8]];
+    font = &g_font_slots[param_1[8]];
     if (font->font_loaded != 0)
     {
-        page_hdc = DAT_00426540[*param_1]->hTempDC;
+        page_hdc = g_graphics_pages[*param_1]->hTempDC;
         old_object = SelectObject(page_hdc, font->hfont);
         line_ptr = param_2;
         c = *param_2;
@@ -816,7 +816,7 @@ int __cdecl FUN_004080d0(int *param_1, char *param_2)
 }
 
 // FUNCTION: FACEMAKER 0x004082e0
-int __cdecl FUN_004082e0(int *param_1, int param_2, int param_3, char *param_4)
+int __cdecl DrawTextLine(int *param_1, int param_2, int param_3, char *param_4)
 {
   struct
   {
@@ -848,7 +848,7 @@ int __cdecl FUN_004082e0(int *param_1, int param_2, int param_3, char *param_4)
   {
     FontSlot *font;
 
-    font = &DAT_004233d0[param_1[8]];
+    font = &g_font_slots[param_1[8]];
     if (font->font_loaded == 0)
     {
       if ((int)((unsigned int)font->point_size + (unsigned int)font->unk_06 + param_3) > param_1[4])
@@ -863,7 +863,7 @@ int __cdecl FUN_004082e0(int *param_1, int param_2, int param_3, char *param_4)
 
     if (font->font_loaded != 0)
     {
-      local.page_hdc = DAT_00426540[*param_1]->hTempDC;
+      local.page_hdc = g_graphics_pages[*param_1]->hTempDC;
       local.old_page_object = SelectObject(local.page_hdc, font->hfont);
       local.text_color = (unsigned int)param_1[6];
       if (0xfd < (int)local.text_color)
@@ -878,7 +878,7 @@ int __cdecl FUN_004082e0(int *param_1, int param_2, int param_3, char *param_4)
       return 1;
     }
 
-    local.page_hdc = DAT_00426540[*param_1]->hTempDC;
+    local.page_hdc = g_graphics_pages[*param_1]->hTempDC;
     local.font_hdc = font->hdc;
     SelectObject(local.font_hdc, font->bitmap_inverted);
     SetTextColor(local.page_hdc, 0x1000000);
@@ -948,7 +948,7 @@ int __cdecl FUN_004082e0(int *param_1, int param_2, int param_3, char *param_4)
 }
 
 // FUNCTION: FACEMAKER 0x004086c0
-int __cdecl FUN_004086c0(int *param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
+int __cdecl DrawTextFormatted(int *param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
                          int param_7, int param_8, int *param_9)
 {
     char c;
@@ -982,12 +982,12 @@ int __cdecl FUN_004086c0(int *param_1, int param_2, int param_3, int param_4, in
     }
     if (param_4 != 0)
     {
-        param_7 = (DAT_00426540[0]->width * param_7) / 0x280;
-        param_8 = (DAT_00426540[0]->height * param_8) / 0x1e0;
+        param_7 = (g_graphics_pages[0]->width * param_7) / 0x280;
+        param_8 = (g_graphics_pages[0]->height * param_8) / 0x1e0;
     }
     if (param_6 != 0)
     {
-        param_8 = param_8 - ((int)DAT_004233d0[param_1[8]].point_size * line_count) / 2;
+        param_8 = param_8 - ((int)g_font_slots[param_1[8]].point_size * line_count) / 2;
     }
     if (-1 < param_2)
     {
@@ -1012,26 +1012,26 @@ int __cdecl FUN_004086c0(int *param_1, int param_2, int param_3, int param_4, in
         iVar4 = param_7;
         if (param_5 != 0)
         {
-            iVar4 = FUN_004080d0(param_1, line_ptr);
+            iVar4 = MeasureMultilineTextWidth(param_1, line_ptr);
             iVar4 = param_7 - iVar4 / 2;
         }
         if (param_3 != 0)
         {
             saved_color = param_1[6];
             param_1[6] = 0;
-            FUN_004082e0(param_1, iVar4 + 1, param_8 + 1, line_ptr);
+            DrawTextLine(param_1, iVar4 + 1, param_8 + 1, line_ptr);
             param_1[6] = saved_color;
         }
-        FUN_004082e0(param_1, iVar4, param_8, line_ptr);
+        DrawTextLine(param_1, iVar4, param_8, line_ptr);
         *pcVar3 = '\n';
         line_ptr = pcVar3 + 1;
-        if (DAT_004233d0[param_1[8]].font_loaded == 0)
+        if (g_font_slots[param_1[8]].font_loaded == 0)
         {
-            param_8 = param_8 + (int)DAT_004233d0[param_1[8]].point_size + (int)DAT_004233d0[param_1[8]].unk_06;
+            param_8 = param_8 + (int)g_font_slots[param_1[8]].point_size + (int)g_font_slots[param_1[8]].unk_06;
         }
         else
         {
-            param_8 = param_8 + (int)DAT_004233d0[param_1[8]].point_size + DAT_004233d0[param_1[8]].tm_leading;
+            param_8 = param_8 + (int)g_font_slots[param_1[8]].point_size + g_font_slots[param_1[8]].tm_leading;
         }
     }
     if (-1 < param_2)
@@ -1042,8 +1042,8 @@ int __cdecl FUN_004086c0(int *param_1, int param_2, int param_3, int param_4, in
 }
 
 // FUNCTION: FACEMAKER 0x004088d0
-void __cdecl FUN_004088d0(int *dst, int text_id, int x, int y, char *text)
+void __cdecl DrawTextAt(int *dst, int text_id, int x, int y, char *text)
 {
-    FUN_004086c0(dst, text_id, 0, 0, 1, 1, x, y, (int *)&text);
+    DrawTextFormatted(dst, text_id, 0, 0, 1, 1, x, y, (int *)&text);
 }
 #pragma optimize("", off)
