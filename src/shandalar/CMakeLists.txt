@@ -20,13 +20,16 @@ set(deckdll_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/shared_resources.c"
 )
-
+set(facemaker_c_sources
+  "${CMAKE_CURRENT_SOURCE_DIR}/../facemaker/src/lib.c"
+)
 set(shandalar_sources
   ${magic_c_sources}
   ${shandalar_c_sources}
   ${drawcardlib_c_sources}
   ${cardartlib_c_sources}
   ${deckdll_c_sources}
+  ${facemaker_c_sources}
   shandalar.rc
 )
 
@@ -57,7 +60,7 @@ endif()
 
 if (MSVC)
   target_link_options(shandalar PRIVATE "/SUBSYSTEM:WINDOWS")
-  target_compile_options(shandalar PRIVATE /Od /Zi)
+  target_compile_options(shandalar PRIVATE  /Od /Ob1 /Zi /DSHANDALAR)
 endif()
 
 if (MSVC_FOR_DECOMP)

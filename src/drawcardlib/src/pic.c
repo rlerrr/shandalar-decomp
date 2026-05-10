@@ -17,7 +17,7 @@ void ClosePcxFile(int param_1);
 void RpBits_Setup(int fileDescriptor);
 int RpBitsRefill(void);
 
-#if defined(DECKDLL) || defined(FACEMAKER)
+#ifndef defined(DRAWCARDLIB)
 // For some reason these are actually optimized in deckdll?
 #pragma optimize("gy", on)
 #endif
@@ -25,6 +25,7 @@ int RpBitsRefill(void);
 // FUNCTION: DRAWCARDLIB 0x1000965b
 // FUNCTION: DECKDLL 0x100010a0
 // FUNCTION: FACEMAKER 0x00407a90
+// FUNCTION: SHANDALAR 0x0057a440
 BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
 {
   short *color;
@@ -77,31 +78,16 @@ BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
 
 // FUNCTION: DRAWCARDLIB 0x1000977f
 // FUNCTION: DECKDLL 0x10001120
+// FUNCTION: SHANDALAR 0x0057a4c0
 BOOL FreeBitmapInfo(void *param_1)
 {
   free(param_1);
   return 1;
 }
 
-#ifdef DECKDLL
+#ifndef DRAWCARDLIB
 #pragma optimize("", on)
 #endif
-
-typedef struct DIBSurface
-{
-  HANDLE hMapping;         // 0x00
-  HDC hTempDC;             // 0x04 (used only during creation)
-  HBITMAP hBitmap;         // 0x08
-  int pad1;                // 0x0c
-  BITMAPINFO *pBitmapInfo; // 0x10
-  int pad2;                // 0x14
-  void *pBits;             // 0x18
-  DWORD imageSizeBytes;    // 0x1C
-  int width;               // 0x20
-  int height;              // 0x24
-  int bitsPerPixel;        // 0x28
-  int rowPadding;          // 0x2C
-} DIBSurface;
 
 // GLOBAL: DRAWCARDLIB 0x100f23b0
 // GLOBAL: DECKDLL 0x10105338
@@ -210,6 +196,7 @@ void RpBits_DecodeImage(void *dst, int count);
 
 // FUNCTION: DRAWCARDLIB 0x1000b1e0
 // FUNCTION: DECKDLL 0x1002cc80
+// FUNCTION: SHANDALAR 0x004c8600
 DIBSurface *CreateDIBSurface(int width, int height, int bitsPerPixel)
 {
   // Gotta be leftover debugging or something

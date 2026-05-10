@@ -977,16 +977,6 @@ typedef enum
 	SUB_ENCHANT_WORLD	= 16,
 } subtype_in_card_data_t;
 
-#ifdef SHANDALAR
-enum mana_flags_t: uint8_t
-{
-	MANA_0							= 0,
-	MANA_SPEND_ONLY_BLACK_MANA_ON_X	= 0x1,
-	MANA_SPEND_ONLY_BLACK_OR_RED_MANA_ON_X_STORE_BLACK_IN_HIWORD	= 0x2,	// For Soul Burn.
-};
-STATIC_ASSERT(sizeof(mana_flags_t) == 1, mana_flags_t_enum_wrong_size);
-#endif
-
 typedef enum
 {
   CP_COLOR_LESS		= 0,
@@ -1739,11 +1729,7 @@ typedef enum {
 
 	EF_EA_MASK					= (EA_MARTYR|EA_SELECT_ATTACK|EA_SELECT_BLOCK|EA_LICH|EA_PAID_ATTACK|EA_PAID_BLOCK
 								   |EA_BEFORE_COMBAT|EA_DECLARE_ATTACK|EA_FELLWAR_STONE|EA_CONTROLLED
-#ifdef SHANDALAR
-								   |EA_MODIFY_COST_GLOBAL|EA_CAN_PLAY_OTHER|EA_AFTER_CHANGE_TYPE
-#else
 								   |EA_FORCE_ATTACK
-#endif
 								   ),
 	/* After dispatching EVENT_CHANGE_TYPE for a card, all bits in its card_data_t::extra_ability also in EF_EA_MASK are set in event_flags.  They're mostly
 	 * (all?) required to be set in event_flags for a corresponding event to be sent (such as EVENT_MUST_ATTACK for EA_FORCE_ATTACK).  Bits may be turned on

@@ -222,6 +222,7 @@ void ShutdownCardArtGdiResources(void)
 // FUNCTION: DRAWCARDLIB 0x1000a67b
 // FUNCTION: DECKDLL 0x1002349a
 // FUNCTION: MAGIC 0x00493bfa
+// FUNCTION: SHANDALAR 0x0046469a
 void ApplyCardArtPaletteToDc(HDC hdc)
 {
   SelectPalette(hdc,global_cart_art_hpalette,0);
