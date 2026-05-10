@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cardartlib/src/palette.h"
 #include "game_support.h"
+#include "global_strings.h"
 
 int GetNextManaSymbol(char **param_1);
 

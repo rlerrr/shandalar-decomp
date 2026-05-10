@@ -6,6 +6,7 @@
 #include "cardartlib/src/palette.h"
 #include "drawcardlib/Drawcardlib.h"
 #include "game_support.h"
+#include "global_strings.h"
 
 typedef ptrdiff_t INT_PTR;
 typedef struct
@@ -45,8 +46,6 @@ int DAT_006f6e10[4];
 int DAT_006f6e20;
 // GLOBAL: MAGIC 0x006f6ef0
 int DAT_006f6ef0;
-// GLOBAL: MAGIC 0x00789130
-char DAT_00789130;
 // GLOBAL: MAGIC 0x00777c0c
 int DAT_00777c0c;
 // GLOBAL: MAGIC 0x008950b4
@@ -220,38 +219,15 @@ char s_Newline_0057f710[4] = "\n";
 char s_Newline_0057f714[4] = "\n";
 // GLOBAL: MAGIC 0x0057f718
 char s_Empty_0057f718[64] = "";
-// GLOBAL: MAGIC 0x00709390
-char DAT_00709390[100];
-// GLOBAL: MAGIC 0x00781bd0
-char DAT_00781bd0[25000];
-// GLOBAL: MAGIC 0x00789c80
-char DAT_00789c80[25000];
-// GLOBAL: MAGIC 0x008a9c10
-char DAT_008a9c10[25000];
-// GLOBAL: MAGIC 0x008b4de0
-char DAT_008b4de0[100];
+
 // GLOBAL: MAGIC 0x008b4e44
 char DAT_008b4e44[50];
 // GLOBAL: MAGIC 0x008b4e76
 char DAT_008b4e76[50];
 // GLOBAL: MAGIC 0x008b4ea8
 char DAT_008b4ea8[50];
-// GLOBAL: MAGIC 0x0091d260
-char DAT_0091d260[25000];
 // GLOBAL: MAGIC 0x00925e70
 char DAT_00925e70[300];
-
-#define HACK_WORD_SEARCH_FORMAT s_HackWordSearchFormat_0057248c
-#define HACK_WORD_REPLACEMENT_FORMAT s_HackWordReplacementFormat_00572494
-#define COLOR_WORD_SEARCH_FORMAT s_ColorWordSearchFormat_0057249c
-#define COLOR_WORD_REPLACEMENT_FORMAT s_ColorWordReplacementFormat_005724a4
-#define SINGLE_COLOR_NAME_TABLE DAT_00709390
-#define COLOR_WORD_SEARCH_TABLE DAT_00781bd0
-#define HACK_WORD_SEARCH_TABLE DAT_00789c80
-#define HACK_WORD_REPLACEMENT_TABLE DAT_0091d260
-#define COLOR_WORD_REPLACEMENT_TABLE DAT_008a9c10
-#define DAT_00789C34 (*(int *)0x00789c34)
-#define DAT_008CD924 (*(int *)0x008cd924)
 
 unsigned int FUN_00446e4b(void);
 unsigned int FUN_00449ac3(int player, int card);
@@ -334,11 +310,11 @@ char *FUN_0044a3bf(int player, int card)
     }
     else if (locals.csvid == unk_00789734)
     {
-      strcpy(unk_00637670, unk_00777e64[locals.choice].name_at_0);
+      strcpy(unk_00637670, unk_00777e60[locals.choice].damage_text);
     }
     else if (locals.csvid == unk_008a8de8)
     {
-      strcpy(unk_00637670, unk_00777e64[locals.choice].name_at_8);
+      strcpy(unk_00637670, unk_00777e60[locals.choice].effect_text);
     }
     else if (locals.csvid == unk_009266ac)
     {
@@ -358,7 +334,7 @@ char *FUN_0044a3bf(int player, int card)
     locals.transformed_csvid = FUN_004a58ba(locals.source_player, locals.source_card_data);
     if (locals.transformed_csvid == 0x361 || locals.transformed_csvid == 0x360)
     {
-      strcpy(unk_00637670, unk_00777e64[locals.transformed_csvid].name_at_0);
+      strcpy(unk_00637670, unk_00777e60[locals.transformed_csvid].damage_text);
     }
 
     if (unk_00637670[0] == '\0')
@@ -656,44 +632,44 @@ void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace)
 }
 
 // FUNCTION: MAGIC 0x0049511c
-void FUN_0049511c(char *text, int source_color, int target_color, int parenthesize)
+void FUN_0049511c(char *text, color_t source_color, color_t target_color, int parenthesize)
 {
   char replacement_text[100];
   int color_index;
   char search_text[100];
 
-  for (color_index = 0; color_index < DAT_008CD924; ++color_index)
+  for (color_index = 0; color_index < DAT_008cd924; ++color_index)
   {
-    sprintf(search_text, HACK_WORD_SEARCH_FORMAT, HACK_WORD_SEARCH_TABLE + color_index * 100 + source_color * 5000);
+    sprintf(search_text, s_HackWordSearchFormat_0057248c, DAT_00789c80[source_color][color_index]);
     if (parenthesize == 0)
     {
-      strcpy(replacement_text, HACK_WORD_REPLACEMENT_TABLE + color_index * 100 + target_color * 5000);
+      strcpy(replacement_text, DAT_0091d260[target_color][color_index]);
     }
     else
     {
-      sprintf(replacement_text, HACK_WORD_REPLACEMENT_FORMAT, HACK_WORD_REPLACEMENT_TABLE + color_index * 100 + target_color * 5000);
+      sprintf(replacement_text, s_HackWordReplacementFormat_00572494, DAT_0091d260[target_color][color_index]);
     }
     FUN_00494e91(text, search_text, 1, replacement_text);
   }
 }
 
 // FUNCTION: MAGIC 0x00495217
-void FUN_00495217(char *text, int source_color, int target_color, int parenthesize)
+void FUN_00495217(char *text, color_t source_color, int target_color, int parenthesize)
 {
   char replacement_text[100];
   int color_index;
   char search_text[100];
 
-  for (color_index = 0; color_index < DAT_00789C34; ++color_index)
+  for (color_index = 0; color_index < DAT_00789c34; ++color_index)
   {
-    sprintf(search_text, COLOR_WORD_SEARCH_FORMAT, COLOR_WORD_SEARCH_TABLE + color_index * 100 + source_color * 5000);
+    sprintf(search_text, s_ColorWordSearchFormat_0057249c, DAT_00781bd0[source_color][color_index]);
     if (parenthesize == 0)
     {
-      strcpy(replacement_text, COLOR_WORD_REPLACEMENT_TABLE + color_index * 100 + target_color * 5000);
+      strcpy(replacement_text, DAT_008a9c10[target_color][color_index]);
     }
     else
     {
-      sprintf(replacement_text, COLOR_WORD_REPLACEMENT_FORMAT, COLOR_WORD_REPLACEMENT_TABLE + color_index * 100 + target_color * 5000);
+      sprintf(replacement_text, s_ColorWordReplacementFormat_005724a4, DAT_008a9c10[target_color][color_index]);
     }
     FUN_00494e91(text, search_text, 1, replacement_text);
   }
@@ -895,7 +871,7 @@ unsigned int FUN_00446e4b(void)
   unsigned int needs_refresh;
   int *stack_entry_count;
 
-  stack_entry_count = (int *)&unk_008cf040[52];
+  //stack_entry_count = (int *)&unk_008cf040[52];
 
   EnterCriticalSection((void *)&unk_00789110);
   needs_refresh = memcmp(global_displayed_card_instances, global_card_instances, 0x161e8);
@@ -1260,7 +1236,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
           locals.single_color == 3 ||
           locals.single_color == 5)
       {
-        sprintf(DAT_00709100 + strlen(DAT_00709100), s_ParenthesizedColorFormat_0057f638, SINGLE_COLOR_NAME_TABLE + locals.single_color * 0x14);
+        sprintf(DAT_00709100 + strlen(DAT_00709100), s_ParenthesizedColorFormat_0057f638, DAT_00709390[locals.single_color]);
       }
     }
     else if (card_id == unk_00789b80)
@@ -1273,11 +1249,11 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     }
     else if (card_id == unk_00789734)
     {
-      strcpy(DAT_00709100, unk_00777e64[locals.card_data.id].name_at_0);
+      strcpy(DAT_00709100, unk_00777e60[locals.card_data.id].damage_text);
     }
     else if (card_id == unk_008a8de8)
     {
-      strcpy(DAT_00709100, unk_00777e64[locals.card_data.id].name_at_8);
+      strcpy(DAT_00709100, unk_00777e60[locals.card_data.id].effect_text);
     }
     else
     {
@@ -1293,7 +1269,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     locals.transformed_csvid = FUN_00448857(locals.displayed_player, locals.displayed_card);
     if (card_id == unk_00789734 && (locals.transformed_csvid == 0x361 || locals.transformed_csvid == 0x360))
     {
-      strcpy(DAT_00709100, unk_00777e64[locals.transformed_csvid].name_at_0);
+      strcpy(DAT_00709100, unk_00777e60[locals.transformed_csvid].damage_text);
     }
 
     locals.card_data.full_name = DAT_00709100;
@@ -1321,11 +1297,11 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
 
     if (card_id == unk_007a7d64)
     {
-      strcpy(DAT_00708da8, *(char **)(COLOR_WORD_SEARCH_TABLE + locals.card_data.id * 0x14));
+      strcpy(DAT_00708da8, *(char **)(DAT_00781bd0 + locals.card_data.id * 0x14));
     }
     else if (card_id == unk_00789b80)
     {
-      strcpy(DAT_00708da8, (char *)unk_00777e64[locals.card_data.id].unk_4);
+      strcpy(DAT_00708da8, unk_00777e60[locals.card_data.id].effect_title);
     }
     else if (card_id == unk_008cf1ac)
     {
@@ -1333,11 +1309,11 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     }
     else if (card_id == unk_00789734)
     {
-      strcpy(DAT_00708da8, (char *)unk_00777e64[locals.card_data.id].unk_4);
+      strcpy(DAT_00708da8, unk_00777e60[locals.card_data.id].effect_title);
     }
     else if (card_id == unk_008a8de8)
     {
-      strcpy(DAT_00708da8, (char *)unk_00777e64[locals.card_data.id].unk_c);
+      strcpy(DAT_00708da8, unk_00777e60[locals.card_data.id].legacy_title);
     }
     else
     {

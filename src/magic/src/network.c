@@ -6,6 +6,7 @@
 #define NETWORK_IMPL
 #include "game_support.h"
 #include "manalinkinterface/manalinkinterface.h"
+#include "global_strings.h"
 
 void AddCardToCLPacket(unsigned short card_in_packet);
 int GetCardFromCLPacket(int packet_index);

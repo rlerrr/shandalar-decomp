@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <windows.h>
 #include "cardartlib/src/assert.h"
 #include "cardartlib/src/palette.h"
@@ -10,6 +11,7 @@
 #include "game_support.h"
 #include "manalinkinterface/manalinkinterface.h"
 #include "deckdll/src/shared_resources.h"
+#include "global_strings.h"
 
 #define STARTUP_DIALOG_COUNT 5
 #define STARTUP_DIALOG_ROW_STRIDE 0x8b8
@@ -24,11 +26,38 @@
 #define STARTUP_DIALOG_CHOICE_PRESENT(group_, choice_) \
   (*(int *)(STARTUP_DIALOG_ROW(group_) + STARTUP_DIALOG_CHOICE_OFFSET + (choice_) * STARTUP_DIALOG_CHOICE_STRIDE))
 
-// GLOBAL: MAGIC 0x00789460
-char DAT_Magic_The_Gathering_00789460[300];
+typedef struct
+{
+  char playface_name[0x105];
+  char screen_name[0x0e];
+  char real_name[0x100];
+  char personal_quote[0x400];
+  char email[0x100];
+  char date_text[0x15];
+  unsigned short unk_728;
+  unsigned short unk_72a;
+  unsigned short unk_72c;
+  unsigned short dci_rank_display;
+  unsigned short dci_wins;
+  unsigned short dci_losses;
+  unsigned short dci_draws_or_unused;
+  unsigned short dci_rank_pending;
+  unsigned short mp_wins;
+  unsigned short mp_losses;
+  unsigned short mp_draws;
+  unsigned short concede_count;
+  unsigned short disconnect_count;
+  unsigned char has_profile_stats;
+  unsigned char unk_743;
+  unsigned int unk_744;
+} screen_name_file_t;
+STATIC_ASSERT(sizeof(screen_name_file_t) == 0x748, screen_name_file_t_wrong_size);
 
 // GLOBAL: MAGIC 0x0079141c
 HWND DAT_0079141c;
+
+// GLOBAL: MAGIC 0x00791558
+char *global_legacy_csv_raw;
 
 // GLOBAL: MAGIC 0x0079154c
 HANDLE global_mutex_UpdateLowerDialog;
@@ -42,6 +71,21 @@ int DAT_0074b62c;
 // GLOBAL: MAGIC 0x007775b4
 int DAT_007775b4;
 
+// GLOBAL: MAGIC 0x00776518
+HANDLE DAT_00776518;
+
+// GLOBAL: MAGIC 0x007a79b8
+int DAT_007a79b8;
+
+// GLOBAL: MAGIC 0x007a7d08
+char DAT_007a7d08;
+
+// GLOBAL: MAGIC 0x007a7d6c
+int DAT_007a7d6c;
+
+// GLOBAL: MAGIC 0x007a7d70
+char *DAT_007a7d70;
+
 // GLOBAL: MAGIC 0x008950b0
 HWND global_main_hwnd;
 
@@ -51,11 +95,20 @@ char global_duelsounds_path[300];
 // GLOBAL: MAGIC 0x00895204
 int DAT_00895204;
 
-// GLOBAL: MAGIC 0x008962f0
-char DAT_UIStrings_txt_008962f0[300];
-
 // GLOBAL: MAGIC 0x008b3bd8
 int DAT_008b3bd8;
+
+// GLOBAL: MAGIC 0x008b27f0
+char DAT_008b27f0;
+
+// GLOBAL: MAGIC 0x008b2938
+char DAT_008b2938;
+
+// GLOBAL: MAGIC 0x008b32bc
+int DAT_008b32bc;
+
+// GLOBAL: MAGIC 0x008b34a0
+char DAT_008b34a0;
 
 // GLOBAL: MAGIC 0x008b4dd4
 int DAT_008b4dd4;
@@ -66,26 +119,24 @@ HANDLE global_mutex_GameInit;
 // GLOBAL: MAGIC 0x008a98f0
 char global_savegame_path[300];
 
+// GLOBAL: MAGIC 0x008a91a0
+screen_name_file_t DAT_008a91a0;
+
 // GLOBAL: MAGIC 0x008b40d0
 extern int global_available_slots;
+extern card_ptr_t global_raw_cards_storage[2000];
 
 // GLOBAL: MAGIC 0x008b44e0
 char global_faces_path[300];
 
-// GLOBAL: MAGIC 0x008ce540
-char DAT_008ce540[10];
-
-// GLOBAL: MAGIC 0x008ce54a
-char DAT_008ce54a[10];
-
-// GLOBAL: MAGIC 0x008ce554
-char DAT_008ce554[10];
-
-// GLOBAL: MAGIC 0x008ce55e
-char DAT_008ce55e[10];
-
 // GLOBAL: MAGIC 0x008cff0c
 int DAT_008cff0c;
+
+// GLOBAL: MAGIC 0x008cf200
+char DAT_008cf200;
+
+// GLOBAL: MAGIC 0x008cf3a0
+char DAT_008cf3a0;
 
 // GLOBAL: MAGIC 0x008cff14
 HANDLE global_mutex_LowerDialog;
@@ -99,14 +150,35 @@ int DAT_0091bbd0;
 extern int DAT_00896714;
 extern int DAT_0091c0f0;
 
+// GLOBAL: MAGIC 0x0091ca90
+char DAT_0091ca90;
+
+// GLOBAL: MAGIC 0x0091ca94
+unsigned short DAT_0091ca94;
+
+// GLOBAL: MAGIC 0x0091ca96
+char DAT_0091ca96;
+
+// GLOBAL: MAGIC 0x0091ca98
+void *DAT_0091ca98;
+
 // GLOBAL: MAGIC 0x0091c4f8
 int DAT_0091c4f8;
 
 // GLOBAL: MAGIC 0x0091ce40
 char DAT_0091ce40[300];
 
+// GLOBAL: MAGIC 0x0091d07c
+int DAT_0091d07c;
+
 // GLOBAL: MAGIC 0x00926100
 char global_playdeck_path[300];
+
+// GLOBAL: MAGIC 0x00926080
+char DAT_00926080;
+
+// GLOBAL: MAGIC 0x0092674c
+int DAT_0092674c;
 
 // GLOBAL: MAGIC 0x00926808
 HBITMAP DAT_00926808;
@@ -123,6 +195,9 @@ HANDLE global_mutex_WritePacket;
 // GLOBAL: MAGIC 0x00939334
 int DAT_00939334;
 
+// GLOBAL: MAGIC 0x00939560
+int DAT_00939560;
+
 // GLOBAL: MAGIC 0x0093a980
 HGDIOBJ DAT_0093a980;
 
@@ -132,23 +207,44 @@ HDC DAT_00789310;
 // GLOBAL: MAGIC 0x008cf290
 char global_duelart_path[300];
 
-typedef DWORD(WINAPI *get_file_version_info_size_a_t)(LPCSTR filename, LPDWORD handle);
-typedef BOOL(WINAPI *get_file_version_info_a_t)(LPCSTR filename, DWORD handle, DWORD len, LPVOID data);
-typedef BOOL(WINAPI *ver_query_value_a_t)(const LPVOID block, LPCSTR sub_block, LPVOID *buffer, PUINT len);
+// GLOBAL: MAGIC 0x00638ca8
+int DAT_00638ca8;
+
+// GLOBAL: MAGIC 0x006381c0
+char DAT_006381c0[0x358];
+
+// GLOBAL: MAGIC 0x00638518
+char DAT_00638518[0xd0];
+
+// GLOBAL: MAGIC 0x006385e8
+char DAT_006385e8[0x60];
+
+// GLOBAL: MAGIC 0x007ab2c0
+int DAT_007ab2c0;
+
+// GLOBAL: MAGIC 0x00925d2c
+int DAT_00925d2c;
+
+// GLOBAL: MAGIC 0x0056ef74
+HWND DAT_0056ef74;
+
+// GLOBAL: MAGIC 0x00637a94
+int DAT_00637a94;
 
 int InitLicenseSecretsFromRegistry(void);
-static void load_version_string(char *out_string, const char *filename);
 static void append_startup_error(char *message_buffer, const char *path, int line_index);
 static void set_global_base_directory(char *path);
 static int setup_paths_and_load_text_etc(char *message_buffer);
-static void FUN_00491f1e(char *filename);
+char *CsvParseNextField(char **txt);
 static int FUN_004537d8(const char *filename);
 static int FUN_004c0c20(const char *filename);
 static int FUN_00509210(void);
+static void FUN_0048fa0a(void);
+static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time);
 static int FUN_004e027c(void);
 static void FUN_0048fcb5(void);
 static int FUN_00497c8d(void);
-static void FUN_00500c56(void);
+static int FUN_00500c56(void);
 static void FUN_00500d46(void);
 static void FUN_00422bea(void);
 static int FUN_004a7b3d(void);
@@ -157,59 +253,8 @@ static LRESULT CALLBACK FUN_005539c3(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 
 int read_db_guts(char *cards_dat_filename);
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
-
-static __inline void load_version_string(char *out_string, const char *filename)
-{
-  HMODULE version_dll;
-  get_file_version_info_size_a_t pGetFileVersionInfoSizeA;
-  get_file_version_info_a_t pGetFileVersionInfoA;
-  ver_query_value_a_t pVerQueryValueA;
-  DWORD handle;
-  DWORD version_size;
-  void *version_info;
-  char *version_string;
-  UINT version_length;
-
-  out_string[0] = '\0';
-
-  version_dll = LoadLibraryA("version.dll");
-  if (version_dll == NULL)
-  {
-    return;
-  }
-
-  pGetFileVersionInfoSizeA = (get_file_version_info_size_a_t)GetProcAddress(version_dll, "GetFileVersionInfoSizeA");
-  pGetFileVersionInfoA = (get_file_version_info_a_t)GetProcAddress(version_dll, "GetFileVersionInfoA");
-  pVerQueryValueA = (ver_query_value_a_t)GetProcAddress(version_dll, "VerQueryValueA");
-  if (pGetFileVersionInfoSizeA == NULL || pGetFileVersionInfoA == NULL || pVerQueryValueA == NULL)
-  {
-    FreeLibrary(version_dll);
-    return;
-  }
-
-  version_size = pGetFileVersionInfoSizeA(filename, &handle);
-  if (version_size == 0)
-  {
-    FreeLibrary(version_dll);
-    return;
-  }
-
-  version_info = malloc(version_size);
-  if (version_info == NULL)
-  {
-    FreeLibrary(version_dll);
-    return;
-  }
-
-  if (pGetFileVersionInfoA(filename, 0, version_size, version_info) &&
-      pVerQueryValueA(version_info, "\\StringFileInfo\\040904b0\\FileVersion", (LPVOID *)&version_string, &version_length))
-  {
-    strcpy(out_string, version_string);
-  }
-
-  free(version_info);
-  FreeLibrary(version_dll);
-}
+void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
+void DestroyCardArtPalette(void);
 
 static __inline void append_startup_error(char *message_buffer, const char *path, int line_index)
 {
@@ -236,10 +281,57 @@ static void set_global_base_directory(char *path)
 // FUNCTION: MAGIC 0x005532e9
 void FUN_005532e9(void)
 {
-  load_version_string(DAT_008ce540, "magic.exe");
-  load_version_string(DAT_008ce54a, "manalink.exe");
-  load_version_string(DAT_008ce554, "manalinkInterface.dll");
-  load_version_string(DAT_008ce55e, "deckdll.dll");
+  typedef struct
+  {
+    char magic[10];
+    char manalink[10];
+    char manalink_interface[10];
+    char deckdll[10];
+  } binary_versions_t;
+
+  // GLOBAL: MAGIC 0x008ce540
+  static binary_versions_t binary_versions;
+
+  struct
+  {
+    DWORD handle;
+    UINT version_length;
+    DWORD version_size;
+    void *version_info;
+    char *version_string;
+  } s;
+
+  s.version_size = GetFileVersionInfoSizeA("magic.exe", &s.handle);
+  s.version_info = malloc(s.version_size);
+  GetFileVersionInfoA("magic.exe", 0, s.version_size, s.version_info);
+  VerQueryValueA(s.version_info, "\\StringFileInfo\\040904b0\\FileVersion", (LPVOID *)&s.version_string,
+                 &s.version_length);
+  strcpy(binary_versions.magic, s.version_string);
+  free(s.version_info);
+
+  s.version_size = GetFileVersionInfoSizeA("manalink.exe", &s.handle);
+  s.version_info = malloc(s.version_size);
+  GetFileVersionInfoA("manalink.exe", 0, s.version_size, s.version_info);
+  VerQueryValueA(s.version_info, "\\StringFileInfo\\040904b0\\FileVersion", (LPVOID *)&s.version_string,
+                 &s.version_length);
+  strcpy(binary_versions.manalink, s.version_string);
+  free(s.version_info);
+
+  s.version_size = GetFileVersionInfoSizeA("manalinkInterface.dll", &s.handle);
+  s.version_info = malloc(s.version_size);
+  GetFileVersionInfoA("manalinkInterface.dll", 0, s.version_size, s.version_info);
+  VerQueryValueA(s.version_info, "\\StringFileInfo\\040904b0\\FileVersion", (LPVOID *)&s.version_string,
+                 &s.version_length);
+  strcpy(binary_versions.manalink_interface, s.version_string);
+  free(s.version_info);
+
+  s.version_size = GetFileVersionInfoSizeA("deckdll.dll", &s.handle);
+  s.version_info = malloc(s.version_size);
+  GetFileVersionInfoA("deckdll.dll", 0, s.version_size, s.version_info);
+  VerQueryValueA(s.version_info, "\\StringFileInfo\\040904b0\\FileVersion", (LPVOID *)&s.version_string,
+                 &s.version_length);
+  strcpy(binary_versions.deckdll, s.version_string);
+  free(s.version_info);
 }
 
 // FUNCTION: MAGIC 0x0055357b
@@ -371,7 +463,7 @@ int register_MagicShellClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x005539b8
-void FUN_005539b8(void* unused)
+void FUN_005539b8(void *unused)
 {
 }
 
@@ -495,19 +587,86 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   return s.ok;
 }
 
-// FUNCTION: MAGIC 0x00491f1e
-static void FUN_00491f1e(char *filename)
-{
-  if (load_text(filename, "GAMETITLE") > 0)
-  {
-    strcpy(DAT_Magic_The_Gathering_00789460, text_lines[0]);
-  }
-}
-
 // FUNCTION: MAGIC 0x004537d8
 static int FUN_004537d8(const char *filename)
 {
-  return GetFileAttributesA(filename) != 0xffffffff;
+  struct
+  {
+    char *next;
+    HANDLE file;
+    int result;
+    DWORD bytes_read;
+    DWORD size;
+    int card_index;
+    char *line;
+  } s;
+
+  s.result = 0;
+
+  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+  {
+    unk_00777e60[s.card_index].damage_text = "";
+    unk_00777e60[s.card_index].effect_title = "";
+    unk_00777e60[s.card_index].effect_text = "";
+    unk_00777e60[s.card_index].legacy_title = "";
+    unk_00777e60[s.card_index].legacy_text = "";
+  }
+
+  s.file = CreateFileA(filename,
+                       GENERIC_READ,
+                       FILE_SHARE_READ,
+                       NULL,
+                       OPEN_EXISTING,
+                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+                       NULL);
+  if (s.file != INVALID_HANDLE_VALUE)
+  {
+    s.size = GetFileSize(s.file, NULL);
+    global_legacy_csv_raw = malloc(s.size + 1);
+    if (global_legacy_csv_raw != NULL)
+    {
+      ReadFile(s.file, global_legacy_csv_raw, s.size, &s.bytes_read, NULL);
+      s.line = global_legacy_csv_raw;
+      s.line = strchr(s.line, '\n') + 1;
+
+      for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+      {
+        s.next = s.line;
+
+        s.next = CsvParseNextField(&s.line);
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].damage_text = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].effect_title = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].effect_text = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].legacy_title = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].legacy_text = s.line;
+        s.line = s.next;
+      }
+
+      s.result = 1;
+    }
+
+    CloseHandle(s.file);
+  }
+
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x004c0c20
@@ -519,7 +678,166 @@ static int FUN_004c0c20(const char *filename)
 // FUNCTION: MAGIC 0x00509210
 static int FUN_00509210(void)
 {
+  struct
+  {
+    int card_index;
+    int card_type;
+  } s;
+
+  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+  {
+    s.card_type = CardTypeFromID(s.card_index);
+    if (s.card_type == -1)
+      continue;
+
+    if (global_raw_cards_storage[s.card_index].rarity == 1)
+    {
+      global_cards_data[s.card_type].rarity = 1;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 2)
+    {
+      global_cards_data[s.card_type].rarity = 3;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 3)
+    {
+      global_cards_data[s.card_type].rarity = 4;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 4)
+    {
+      global_cards_data[s.card_type].rarity = 2;
+    }
+    else
+    {
+      global_cards_data[s.card_type].rarity = 1;
+    }
+
+    strncpy((char *)&global_cards_data[s.card_type].name[0], global_raw_cards_storage[s.card_index].full_name, 0x23);
+    ((char *)&global_cards_data[s.card_type].name[0])[0x22] = '\0';
+  }
+
   return 1;
+
+  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+  {
+    s.card_type = CardTypeFromID(s.card_index);
+
+    strcpy((char *)&global_cards_data[s.card_type].name[0], global_raw_cards_storage[s.card_index].full_name);
+
+    if (((char)global_cards_data[s.card_type].color & 2) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_black;
+    }
+    else if (((char)global_cards_data[s.card_type].color & 0x20) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_white;
+    }
+    else if (((char)global_cards_data[s.card_type].color & 8) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_green;
+    }
+    else if (((char)global_cards_data[s.card_type].color & 0x10) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_red;
+    }
+    else if (((char)global_cards_data[s.card_type].color & 4) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_blue;
+    }
+
+    if ((char)global_raw_cards_storage[s.card_index].req.req_colorless == 0x48)
+    {
+      global_cards_data[s.card_type].cc[1] = 0xff;
+    }
+    else
+    {
+      global_cards_data[s.card_type].cc[1] = global_raw_cards_storage[s.card_index].req.req_colorless;
+    }
+
+    global_cards_data[s.card_type].power = (short)global_raw_cards_storage[s.card_index].power;
+    global_cards_data[s.card_type].toughness = (short)global_raw_cards_storage[s.card_index].toughness;
+
+    if ((global_raw_cards_storage[s.card_index].expansion & 0x80))
+    {
+      global_cards_data[s.card_type].expansion = 1;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 8))
+    {
+      global_cards_data[s.card_type].expansion = 0x40;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x20))
+    {
+      global_cards_data[s.card_type].expansion = 8;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x800))
+    {
+      global_cards_data[s.card_type].expansion = 2;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 2))
+    {
+      global_cards_data[s.card_type].expansion = 0x20;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 4))
+    {
+      global_cards_data[s.card_type].expansion = 4;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x10))
+    {
+      global_cards_data[s.card_type].expansion = 8;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x100))
+    {
+      global_cards_data[s.card_type].expansion = 0x10;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x200))
+    {
+      global_cards_data[s.card_type].expansion = 0x80;
+    }
+    else
+    {
+      global_cards_data[s.card_type].expansion = 0;
+    }
+
+    if (global_raw_cards_storage[s.card_index].rarity == 1)
+    {
+      global_cards_data[s.card_type].rarity = 1;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 2)
+    {
+      global_cards_data[s.card_type].rarity = 3;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 3)
+    {
+      global_cards_data[s.card_type].rarity = 3;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 4)
+    {
+      global_cards_data[s.card_type].rarity = 2;
+    }
+    else
+    {
+      global_cards_data[s.card_type].rarity = 1;
+    }
+  }
+
+  return 1;
+}
+
+// FUNCTION: MAGIC 0x0048fa0a
+static void FUN_0048fa0a(void)
+{
+  FILE *screen_name_file;
+  char screen_name_filename[100];
+
+  FUN_0048fd9f(&DAT_008a91a0, 0);
+  sprintf(screen_name_filename, "ScreenNames\\%s.scn", DAT_008a91a0.screen_name);
+  SetFileAttributesA(screen_name_filename, FILE_ATTRIBUTE_NORMAL);
+  screen_name_file = fopen(screen_name_filename, "wb");
+  fwrite(&DAT_008a91a0, 0x748, 1, screen_name_file);
+  fclose(screen_name_file);
+  SetFileAttributesA("ScreenNames\\ActiveName.dat", FILE_ATTRIBUTE_NORMAL);
+  screen_name_file = fopen("ScreenNames\\ActiveName.dat", "wb");
+  fwrite(DAT_008a91a0.screen_name, 0xe, 1, screen_name_file);
+  fclose(screen_name_file);
 }
 
 // FUNCTION: MAGIC 0x004e027c
@@ -531,39 +849,281 @@ static int FUN_004e027c(void)
 // FUNCTION: MAGIC 0x0048fcb5
 static void FUN_0048fcb5(void)
 {
+  struct
+  {
+    FILE *screen_name_file;
+    char screen_name_filename[100];
+    char active_name[100];
+  } s;
+
+  s.screen_name_file = fopen("ScreenNames\\ActiveName.dat", "rb");
+  if (s.screen_name_file == NULL)
+  {
+    FUN_0048fa0a();
+  }
+  else
+  {
+    fread(s.active_name, 0xe, 1, s.screen_name_file);
+    fclose(s.screen_name_file);
+
+    sprintf(s.screen_name_filename, "ScreenNames\\%s.scn", s.active_name);
+    s.screen_name_file = fopen(s.screen_name_filename, "rb");
+    if (s.screen_name_file == NULL)
+    {
+      FUN_0048fd9f(&DAT_008a91a0, 0);
+    }
+    else
+    {
+      fread(&DAT_008a91a0, 0x748, 1, s.screen_name_file);
+      fclose(s.screen_name_file);
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x0048fd9f
+static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time)
+{
+  time_t current_time;
+  struct tm *current_tm;
+
+  if (strlen(DAT_006381c0) == 0)
+  {
+    load_text("MP_UIStrings.txt", "SHELLPAGE_SCREENNAME");
+    strcpy(DAT_006381c0, text_lines[2]);
+    strcpy(DAT_006385e8, text_lines[0x11]);
+  }
+
+  strcpy(screen_name_data->screen_name, DAT_006381c0);
+  strcpy(screen_name_data->playface_name, "0001");
+  strcpy(screen_name_data->real_name, "");
+  strcpy(screen_name_data->personal_quote, "");
+  strcpy(screen_name_data->email, "");
+  if (use_current_time != 0)
+  {
+    _tzset();
+    time(&current_time);
+    current_tm = localtime(&current_time);
+    strftime(screen_name_data->date_text, 0x80, DAT_00638518, current_tm);
+
+  }
+  else
+  {
+    strcpy(screen_name_data->date_text, DAT_006385e8);
+  }
+
+  screen_name_data->disconnect_count = 0;
+  screen_name_data->concede_count = screen_name_data->disconnect_count;
+  screen_name_data->mp_draws = screen_name_data->concede_count;
+  screen_name_data->mp_losses = screen_name_data->mp_draws;
+  screen_name_data->mp_wins = screen_name_data->mp_losses;
+  screen_name_data->dci_draws_or_unused = screen_name_data->mp_wins;
+  screen_name_data->dci_losses = screen_name_data->dci_draws_or_unused;
+  screen_name_data->dci_wins = screen_name_data->dci_losses;
+  screen_name_data->unk_72c = screen_name_data->dci_wins;
+  screen_name_data->unk_72a = screen_name_data->unk_72c;
+  screen_name_data->unk_728 = screen_name_data->unk_72a;
+  screen_name_data->dci_rank_pending = 1600;
+  screen_name_data->dci_rank_display = screen_name_data->dci_rank_pending;
+  screen_name_data->unk_744 = 0;
+  screen_name_data->has_profile_stats = (unsigned char)screen_name_data->unk_744;
 }
 
 // FUNCTION: MAGIC 0x00497c8d
 static int FUN_00497c8d(void)
 {
-  return 0;
+  struct
+  {
+    BYTE value_buffer[256];
+    HKEY key;
+    DWORD value_size;
+    int manalink_enabled;
+    DWORD value_type;
+  } s;
+  int result;
+
+  s.manalink_enabled = 0;
+  if (RegOpenKeyA(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering", &s.key) != ERROR_SUCCESS)
+  {
+    return 0;
+  }
+
+  s.value_type = REG_SZ;
+  s.value_size = sizeof(s.value_buffer);
+  RegQueryValueExA(s.key, "ManaLink", NULL, &s.value_type, s.value_buffer, &s.value_size);
+  RegCloseKey(s.key);
+
+  _strlwr((char *)s.value_buffer);
+  if (strcmp((char *)s.value_buffer, "on") == 0)
+  {
+    s.manalink_enabled = 1;
+  }
+
+  if (FindWindowA("fam_WindowClass", NULL) == NULL && s.manalink_enabled != 0)
+  {
+    result = 1;
+  }
+  else
+  {
+    result = 0;
+  }
+
+  return result;
 }
 
 // FUNCTION: MAGIC 0x00500c56
-static void FUN_00500c56(void)
+static int FUN_00500c56(void)
 {
+  DAT_007a7d6c = 0;
+  DAT_0091d07c = DAT_007a7d6c;
+  DAT_00939560 = 1;
+  DAT_00925d2c = 0;
+  DAT_007ab2c0 = DAT_00925d2c;
+  DAT_008b32bc = 1;
+  DAT_0092674c = 0;
+  DAT_008b27f0 = '\0';
+  DAT_008cf200 = '\0';
+  DAT_008b2938 = '\0';
+  DAT_007a7d08 = '\0';
+  DAT_008b34a0 = '\0';
+  DAT_008cf3a0 = '\0';
+  DAT_00926080 = '\0';
+  DAT_0091ca90 = '\0';
+
+  if (DAT_0091ca98 != NULL)
+  {
+    free(DAT_0091ca98);
+  }
+
+  DAT_0091ca98 = malloc(0x20);
+  if (DAT_0091ca98 == NULL)
+  {
+    MessageBoxA(NULL, "Memory allocation error in InitActionPackets!", "Packet Error", MB_ICONHAND);
+  }
+
+  DAT_0091ca94 = 0;
+  DAT_0091ca96 = 1;
+  return 1;
 }
 
 // FUNCTION: MAGIC 0x00500d46
 static void FUN_00500d46(void)
 {
+  free(DAT_0091ca98);
+  DAT_0091ca98 = NULL;
+  DAT_008b32bc = 0;
+}
+
+// FUNCTION: MAGIC 0x004537a7
+static void FUN_004537a7(void)
+{
+  if (DAT_007a7d70 != NULL)
+  {
+    free(DAT_007a7d70);
+  }
+  DAT_007a7d70 = NULL;
+}
+
+// FUNCTION: MAGIC 0x00453b3c
+static void FUN_00453b3c(void)
+{
+  if (DAT_00637a94 != 0)
+  {
+    free((void *)DAT_00637a94);
+  }
+}
+
+// FUNCTION: MAGIC 0x00453a15
+static void FUN_00453a15(void)
+{
+  if (global_legacy_csv_raw != NULL)
+  {
+    free(global_legacy_csv_raw);
+  }
+  global_legacy_csv_raw = NULL;
 }
 
 // FUNCTION: MAGIC 0x00422bea
 static void FUN_00422bea(void)
 {
+  FUN_004537a7();
+  FUN_00453b3c();
+  FUN_00453a15();
+  DestroyCardArtPalette();
+  checked_DeleteDC_DeleteObject(DAT_00789310, DAT_00926808);
+  DAT_00926808 = NULL;
+  DAT_00789310 = NULL;
+  ShutdownCardArtGdiResources();
+  destroy_create_fonts_resources();
 }
 
 // FUNCTION: MAGIC 0x004a7b3d
 static int FUN_004a7b3d(void)
 {
+  struct
+  {
+    int ioctl_result;
+    OSVERSIONINFOA version;
+  } s;
+
+  memset(&s.version, 0, sizeof(s.version));
+  s.version.dwOSVersionInfoSize = sizeof(s.version);
+  GetVersionExA(&s.version);
+  DAT_00638ca8 = s.version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
+
+  if (DAT_00776518 == NULL && DAT_00638ca8 != 0)
+  {
+    DAT_00776518 = CreateFileA("\\\\.\\MPStime.VXD", 0, 0, NULL, 0, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+    assert((unsigned int)(DAT_00776518 != INVALID_HANDLE_VALUE), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x360,
+           "Could Not Load Dave's Extra Cool Timer\n");
+    DeviceIoControl(DAT_00776518, 1, NULL, 0, &s.ioctl_result, 4, NULL, NULL);
+    assert((unsigned int)(s.ioctl_result == 0x100), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x367,
+           "Could Not Initialize Dave's Extra Cool Timer\n");
+  }
+
   return 1;
 }
 
 // FUNCTION: MAGIC 0x00459b6e
 static void FUN_00459b6e(void *window)
 {
+  DWORD wait_result;
+
   (void)window;
+
+  while (DAT_008b32bc != 0)
+  {
+    DAT_007ab2c0 = FamInterface_HasOpponent();
+    if (DAT_00925d2c != DAT_007ab2c0 || DAT_00939560 != 0)
+    {
+      wait_result = WaitForSingleObject(global_mutex_LowerDialog, 500);
+      if (wait_result == 0)
+      {
+        DAT_00925d2c = DAT_007ab2c0;
+        DAT_00939560 = 0;
+        if (DAT_007ab2c0 == 0)
+        {
+          OutputDebugStringA("Unregistering an opponent.\n");
+          SendMessageA(DAT_0056ef74, WM_COMMAND, 0x405, 0);
+        }
+        else
+        {
+          OutputDebugStringA("Registering an opponent.\n");
+          DAT_007a79b8 = FamInterface_IsHost();
+          SendMessageA(DAT_0056ef74, WM_COMMAND, 0x404, 0);
+        }
+      }
+      else
+      {
+        DAT_00925d2c = -1;
+      }
+
+      ReleaseMutex(global_mutex_LowerDialog);
+    }
+
+    Sleep(500);
+  }
+
+  _endthread();
 }
 
 // FUNCTION: MAGIC 0x005539c3
@@ -631,8 +1191,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
   srand(GetTickCount());
-  
-  for (s.random_spin_count = 0;s.random_spin_count < rand() % 50000; ++s.random_spin_count)
+
+  for (s.random_spin_count = 0; s.random_spin_count < rand() % 50000; ++s.random_spin_count)
   {
     rand();
   }
@@ -672,17 +1232,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   if (register_MagicShellClass("MAGICGAME_MagicShellClass"))
   {
     global_main_hwnd = CreateWindowExA(0,
-                                   "MAGICGAME_MagicShellClass",
-                                   DAT_Magic_The_Gathering_00789460,
-                                   0x90040000,
-                                   1,
-                                   0,
-                                   GetSystemMetrics(SM_CXSCREEN) - 1,
-                                   GetSystemMetrics(SM_CYSCREEN),
-                                   NULL,
-                                   NULL,
-                                   (HINSTANCE)global_hinstance,
-                                   NULL);
+                                       "MAGICGAME_MagicShellClass",
+                                       DAT_Magic_The_Gathering_00789460,
+                                       0x90040000,
+                                       1,
+                                       0,
+                                       GetSystemMetrics(SM_CXSCREEN) - 1,
+                                       GetSystemMetrics(SM_CYSCREEN),
+                                       NULL,
+                                       NULL,
+                                       (HINSTANCE)global_hinstance,
+                                       NULL);
     if (global_main_hwnd == NULL)
     {
       load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");

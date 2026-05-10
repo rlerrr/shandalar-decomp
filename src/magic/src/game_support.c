@@ -7,6 +7,7 @@
 #include "cardartlib/src/palette.h"
 #include "deckdll/src/magsnd.h"
 #include "game_support.h"
+#include "global_strings.h"
 
 typedef ptrdiff_t INT_PTR;
 
@@ -2577,64 +2578,6 @@ void FUN_004b117e(int player, int card)
   instance->counter_toughness = instance->damage_on_card;
   instance->counter_power = instance->counter_toughness;
   instance->blocking = 0xff;
-}
-
-// FUNCTION: MAGIC 0x004ec830
-int load_text(const char *file_name, const char *section_name)
-{
-  struct
-  {
-    FILE *f;
-    char line[300];
-    char path[128];
-    char section_line[300]; // ebp - 0x134
-    unsigned int num_text;
-    int i;
-  } s;
-
-  strcpy(s.section_line, "@");
-  strcat(s.section_line, section_name);
-  strcat(s.section_line, "\n");
-
-  strcpy(s.path, global_base_directory);
-  strcat(s.path, "\\");
-  strcat(s.path, file_name);
-  // if (!strchr(file_name, '.'))
-  //   strcat(s.path, ".txt");
-
-  s.f = fopen(s.path, "rt");
-  if (s.f == NULL)
-    return -1;
-
-  while (strcmp(s.section_line, s.line))
-  {
-    if (!fgets(s.line, 300, s.f))
-    {
-      fclose(s.f);
-      return -1;
-    }
-  }
-
-  fscanf(s.f, "%d", &s.num_text);
-  fgets(s.line, 300, s.f);
-  if (s.num_text > 225)
-  {
-    fclose(s.f);
-    return -1;
-  }
-
-  for (s.i = 0; s.i < (int)s.num_text; s.i++)
-  {
-    if (!fgets(text_lines[s.i], 300, s.f))
-    {
-      fclose(s.f);
-      return -1;
-    }
-    text_lines[s.i][strlen(text_lines[s.i]) - 1] = 0;
-  }
-
-  fclose(s.f);
-  return s.num_text;
 }
 
 // FUNCTION: MAGIC 0x0043e668
@@ -5504,7 +5447,7 @@ char *FUN_00495311(int value)
     return "";
   }
   else
-    return unk_00926930[value];
+    return DAT_00926930[value];
 }
 
 // FUNCTION: MAGIC 0x004a61fe
@@ -6956,12 +6899,12 @@ int copy_mana_pool_to_display(void)
 {
   if (unk_008a9000 != 1)
   {
-    EnterCriticalSection((void *)&unk_00789110);
+    EnterCriticalSection(unk_00789110);
     memcpy(unk_00896670, raw_mana_available[0], 0x1c);
     memcpy(unk_007ab290, raw_mana_available[1], 0x1c);
-    LeaveCriticalSection((void *)&unk_00789110);
-    SendMessageA((void *)unk_008ce534, 0x432, 0, 0);
-    SendMessageA((void *)unk_00939344, 0x432, 0, 0);
+    LeaveCriticalSection(unk_00789110);
+    SendMessageA(unk_008ce534, 0x432, 0, 0);
+    SendMessageA(unk_00939344, 0x432, 0, 0);
   }
 
   return 0;

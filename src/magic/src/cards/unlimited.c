@@ -1,5 +1,6 @@
 #include <string.h>
 #include "../game_support.h"
+#include "../global_strings.h"
 
 int gain_life_or_prevent_damage(int player, int card, event_t event, int amount);
 int FUN_004f6311(int player, int card, int internal_card_id);

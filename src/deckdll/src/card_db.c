@@ -80,7 +80,6 @@ int global_available_slots;
 card_ptr_t global_raw_cards_storage[2000];
 
 // GLOBAL: DECKDLL 0x1012d7d0
-// GLOBAL: MAGIC 0x791558
 static char *global_deckbuilder_csv_raw;
 
 // GLOBAL: DECKDLL 0x1012df3c
@@ -369,7 +368,7 @@ int read_db_guts(char *cards_dat_filename)
 
 // FUNCTION: DECKDLL 0x1001b510
 // FUNCTION: MAGIC 0x00453a46
-static char *CsvParseNextField(char **txt)
+char *CsvParseNextField(char **txt)
 {
   struct
   {

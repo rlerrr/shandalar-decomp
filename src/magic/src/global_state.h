@@ -46,12 +46,13 @@ typedef struct
 
 typedef struct
 {
-  char *name_at_0;
-  int unk_4;
-  char *name_at_8;
-  int unk_c;
-  int unk_10;
+  char *damage_text;
+  char *effect_title;
+  char *effect_text;
+  char *legacy_title;
+  char *legacy_text;
 } name_table_entry_t;
+STATIC_ASSERT(sizeof(name_table_entry_t) == 0x14, name_table_entry_t_wrong_size);
 
 // GLOBAL: MAGIC 0x0056fb20
 extern csvid_and_numcards initial_library[2][200];
@@ -141,8 +142,8 @@ extern int unk_00895030[32];
 // GLOBAL: MAGIC 0x007a7750
 extern int unk_007a7750[32];
 
-// GLOBAL: MAGIC 0x00777e64
-extern name_table_entry_t unk_00777e64[866];
+// GLOBAL: MAGIC 0x00777e60
+extern name_table_entry_t unk_00777e60[866];
 
 // GLOBAL: MAGIC 0x008b497c
 extern int current_turn;
@@ -322,8 +323,6 @@ extern int unk_008a8df0;
 // GLOBAL: MAGIC 0x008a8c38
 extern unsigned int card_types_in_play[2];
 
-// GLOBAL: MAGIC 0x008a8c20
-extern int unk_008a8c20;
 // GLOBAL: MAGIC 0x008a8c34
 extern int unk_008a8c34;
 
@@ -343,7 +342,7 @@ extern int unk_008ce518;
 extern int DAT_008ce52c;
 
 // GLOBAL: MAGIC 0x008ce534
-extern int unk_008ce534;
+extern HWND unk_008ce534;
 
 // GLOBAL: MAGIC 0x00896670
 extern int unk_00896670[7];
@@ -366,7 +365,7 @@ extern int DAT_00561268;
 extern int unk_0091bfb4;
 
 // GLOBAL: MAGIC 0x00939344
-extern int unk_00939344;
+extern HWND unk_00939344;
 
 // GLOBAL: MAGIC 0x00925d3c
 extern int unk_00925d3c;
@@ -404,9 +403,6 @@ extern int unk_009266ac;
 // GLOBAL: MAGIC 0x00926750
 extern char unk_00926750[300];
 
-// GLOBAL: MAGIC 0x00926930
-extern char unk_00926930[212][300];
-
 // GLOBAL: MAGIC 0x0093d848
 extern int unk_0093d848;
 
@@ -439,9 +435,6 @@ extern int unk_00925bb8;
 
 // GLOBAL: MAGIC 0x00925030
 extern HINSTANCE global_hinstance;
-
-// GLOBAL: MAGIC 0x008b40e0
-extern int unk_008b40e0;
 
 // GLOBAL: MAGIC 0x008b40f4
 extern int x_value;
@@ -480,19 +473,6 @@ extern int unk_00939530[2][8];
 
 // GLOBAL: MAGIC 0x0093950c
 extern int ai_modifier;
-
-// GLOBAL: MAGIC 0x00896720
-// GLOBAL: SHANDALAR 0x008aa920
-extern char text_lines[249][300];
-
-// GLOBAL: MAGIC 0x008b4330
-extern char unk_008b4330[300];
-
-// GLOBAL: MAGIC 0x008cfd30
-extern char unk_008cfd30[300];
-
-// GLOBAL: MAGIC 0x008cf040
-extern char unk_008cf040[300];
 
 // GLOBAL: MAGIC 0x008cfd20
 extern int unk_008cfd20;
@@ -599,12 +579,7 @@ extern int unk_007abc84;
 extern int DAT_007abc74;
 // GLOBAL: MAGIC 0x007abc90
 extern unsigned char DAT_007abc90[0x4c];
-// GLOBAL: MAGIC 0x007aaef0
-extern char DAT_007aaef0;
-// GLOBAL: MAGIC 0x008a8ed0
-extern char DAT_008a8ed0;
-// GLOBAL: MAGIC 0x0091c840
-extern char DAT_0091c840;
+
 // GLOBAL: MAGIC 0x00926664
 extern int unk_00926664;
 // GLOBAL: MAGIC 0x009266d0
@@ -626,9 +601,6 @@ extern int unk_0091c4fc;
 
 // GLOBAL: MAGIC 0x0091b280
 extern int DAT_0091b280;
-
-// GLOBAL: MAGIC 0x0091b150
-extern char DAT_0091b150[300];
 
 #undef extern
 #undef GLOBAL_STATE_INIT

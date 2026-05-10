@@ -283,7 +283,6 @@ int is_animated_and_sick(int player, int card);
 int is_in_play(int player, int card);
 int is_tapped(int player, int card);
 void kill_card(int player, int card, kill_t kill_mode);
-int load_text(const char *file_name, const char *section_name);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
 int produce_mana(int player, color_t color, int amount);
 int FUN_0043ece1(int player, int card);
