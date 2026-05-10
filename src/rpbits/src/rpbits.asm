@@ -11,7 +11,7 @@ EXTERN global_pcxw_image_height:DWORD
 EXTERN rpbits_stream_ptr:DWORD        ; DAT_100f3394
 EXTERN rpbits_stream_end:DWORD        ; PTR_DAT_1002252c
 EXTERN rpbits_stream_refill:DWORD     ; DAT_100f35a0
-EXTERN RpBits_DebugHook:PROC
+EXTERN RpBits_ApplyPalette:PROC
 
 ; ============================================================
 ; Decoder-private data (library local)
@@ -166,7 +166,7 @@ AfterWordLoop:
     jnz short ContinueLoop
 
     push eax
-    call RpBits_DebugHook
+    call RpBits_ApplyPalette
     add esp, 4
 
 ContinueLoop:

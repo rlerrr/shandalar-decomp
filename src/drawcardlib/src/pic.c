@@ -16,6 +16,26 @@ int OpenPcxFile(char *param_1, int param_2);
 void ClosePcxFile(int param_1);
 void RpBits_Setup(int fileDescriptor);
 int RpBitsRefill(void);
+void RpBits_ApplyPalette(short *palette_data_words);
+
+#if defined(FACEMAKER) || defined(SHANDALAR)
+extern int DAT_00426570;
+extern HPALETTE DAT_00425e10;
+extern PALETTEENTRY DAT_00426140[256];
+extern RGBQUAD DAT_00426580[256];
+extern DIBSurface *DAT_00426540[10];
+extern int DAT_00426568;
+extern int DAT_0040d090;
+#endif
+
+typedef struct RpBitsPalettePacket
+{
+  unsigned short signature;
+  unsigned short block_size;
+  unsigned char first_index;
+  unsigned char last_index;
+  unsigned char entry_data[1];
+} RpBitsPalettePacket;
 
 #ifndef defined(DRAWCARDLIB)
 // For some reason these are actually optimized in deckdll?
@@ -445,7 +465,173 @@ int RpBitsRefill(void)
 // FUNCTION: DECKDLL 0x1002d2a8
 // FUNCTION: SHANDALAR 0x0057a060
 // FUNCTION: FACEMAKER 0x00407720
-void RpBits_DebugHook(void)
+#if defined(FACEMAKER) || defined(SHANDALAR)
+#pragma optimize("gty", on)
+#endif
+#if !defined(FACEMAKER) && !defined(SHANDALAR)
+#pragma optimize("", off)
+#endif
+void RpBits_ApplyPalette(short *palette_data_words)
 {
-  // TODO: this actually does shit in shandalar/facemaker?
+#if defined(FACEMAKER) || defined(SHANDALAR)
+  short *word_src;
+  unsigned int *dword_dst;
+  unsigned int count;
+  unsigned int first_index;
+  unsigned int last_index;
+  int palette_offset;
+  int remaining_entries;
+  unsigned int mask_value;
+  unsigned int rgb_value;
+  unsigned char *entry_data;
+  unsigned char component;
+  unsigned char mask;
+  int *surface_ptr;
+  static unsigned int DAT_00425e20[0x320 / 4];
+  HWND palette_window;
+
+  word_src = palette_data_words;
+  dword_dst = DAT_00425e20;
+  for (count = (unsigned int)(int)(short)(palette_data_words[1] + 2) >> 2; count != 0; count = count - 1)
+  {
+    *dword_dst = *(unsigned int *)word_src;
+    word_src = word_src + 2;
+    dword_dst = dword_dst + 1;
+  }
+
+  for (count = (int)(short)(palette_data_words[1] + 2) & 3; count != 0; count = count - 1)
+  {
+    *(char *)dword_dst = (char)*word_src;
+    word_src = (short *)((int)word_src + 1);
+    dword_dst = (unsigned int *)((int)dword_dst + 1);
+  }
+
+  first_index = (unsigned int)*(unsigned char *)(palette_data_words + 2);
+  mask_value = (-(unsigned int)(DAT_00426570 == 0x10) & 0xfffffff9) + 0xff;
+  last_index = (unsigned int)*(unsigned char *)((int)palette_data_words + 5);
+  mask = (unsigned char)mask_value;
+
+  if (*(short *)"M1" == *palette_data_words)
+  {
+    if (first_index <= last_index)
+    {
+      palette_offset = first_index * 4;
+      entry_data = (unsigned char *)((int)palette_data_words + first_index * 3 + 6);
+      remaining_entries = (last_index - first_index) + 1;
+      do
+      {
+        component = (unsigned char)(((unsigned int)entry_data[0] * 0xff) / 0x3f) & mask;
+        *((unsigned char *)&DAT_00426140 + palette_offset + 0) = component;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 2) = component;
+
+        component = (unsigned char)(((unsigned int)entry_data[1] * 0xff) / 0x3f) & mask;
+        *((unsigned char *)&DAT_00426140 + palette_offset + 1) = component;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 1) = component;
+
+        component = (unsigned char)(((unsigned int)entry_data[2] * 0xff) / 0x3f) & mask;
+        *((unsigned char *)&DAT_00426140 + palette_offset + 2) = component;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 0) = component;
+
+        *((unsigned char *)&DAT_00426140 + palette_offset + 3) = 1;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 3) = 0;
+        if (*(unsigned int *)((int)&DAT_00426580 + palette_offset) == 0x00ffffff && palette_offset != 0x3fc)
+        {
+          rgb_value = (mask_value << 0x10) | (mask_value << 8) | mask_value;
+          *(unsigned int *)((int)&DAT_00426140 + palette_offset) = rgb_value & 0x01fefefe;
+          *(unsigned int *)((int)&DAT_00426580 + palette_offset) = rgb_value & 0x00fefefe;
+        }
+
+        palette_offset = palette_offset + 4;
+        entry_data = entry_data + 3;
+        remaining_entries = remaining_entries - 1;
+      } while (remaining_entries != 0);
+    }
+  }
+  else if (*(short *)"M0" == *palette_data_words)
+  {
+    if (first_index <= last_index)
+    {
+      palette_offset = first_index * 4;
+      entry_data = (unsigned char *)((int)palette_data_words + first_index * 3 + 6);
+      remaining_entries = (last_index - first_index) + 1;
+      do
+      {
+        component = entry_data[0];
+        *((unsigned char *)&DAT_00426140 + palette_offset + 0) = component & mask;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 2) = component & mask;
+
+        component = entry_data[1];
+        *((unsigned char *)&DAT_00426140 + palette_offset + 1) = component & mask;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 1) = component & mask;
+
+        component = entry_data[2];
+        *((unsigned char *)&DAT_00426140 + palette_offset + 2) = component & mask;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 0) = component & mask;
+
+        *((unsigned char *)&DAT_00426140 + palette_offset + 3) = 1;
+        *((unsigned char *)&DAT_00426580 + palette_offset + 3) = 0;
+        if (*(unsigned int *)((int)&DAT_00426580 + palette_offset) == 0x00ffffff && palette_offset != 0x3fc)
+        {
+          rgb_value = ((mask_value << 0x10) | (mask_value << 8) | mask_value) & 0x00fefefe;
+          *(unsigned int *)((int)&DAT_00426580 + palette_offset) = rgb_value;
+          *(unsigned int *)((int)&DAT_00426140 + palette_offset) = rgb_value;
+          *((unsigned char *)&DAT_00426140 + palette_offset + 3) = 1;
+        }
+
+        palette_offset = palette_offset + 4;
+        entry_data = entry_data + 3;
+        remaining_entries = remaining_entries - 1;
+      } while (remaining_entries != 0);
+    }
+  }
+
+  *((unsigned char *)&DAT_00426140 + 2) = 0;
+  *((unsigned char *)&DAT_00426140 + 1) = 0;
+  *((unsigned char *)&DAT_00426140 + 0) = 0;
+  *((unsigned char *)&DAT_00426140 + 3) = 0;
+  *((unsigned char *)&DAT_00426580 + 0) = 0;
+  *((unsigned char *)&DAT_00426580 + 1) = 0;
+  *((unsigned char *)&DAT_00426580 + 2) = 0;
+  *((unsigned char *)&DAT_00426580 + 3) = 0;
+  *((unsigned char *)&DAT_00426140 + 0x3f7) = 1;
+  *((unsigned char *)&DAT_00426140 + 0x3fb) = 1;
+  *((unsigned char *)&DAT_00426140 + 0x3ff) = 0;
+  *((unsigned char *)&DAT_00426580 + 0x3f7) = 0;
+  *((unsigned char *)&DAT_00426580 + 0x3fc) = 0xff;
+  *((unsigned char *)&DAT_00426580 + 0x3fd) = 0xff;
+  *((unsigned char *)&DAT_00426580 + 0x3fe) = 0xff;
+  *((unsigned char *)&DAT_00426580 + 0x3ff) = 0;
+
+  AnimatePalette(DAT_00425e10, 0, 0x100, (PALETTEENTRY *)&DAT_00426140);
+  if (DAT_00426540[0] != (DIBSurface *)0)
+  {
+    RealizePalette(DAT_00426540[0]->hTempDC);
+  }
+
+  surface_ptr = (int *)&DAT_00426540[1];
+  do
+  {
+    if (*surface_ptr != 0)
+    {
+      SetDIBColorTable(*(HDC *)(*surface_ptr + 4), 0, 0x100, (RGBQUAD *)&DAT_00426580);
+    }
+    surface_ptr = surface_ptr + 1;
+  } while (surface_ptr < &DAT_00426568);
+
+  palette_window = FindWindowExA((HWND)0, (HWND)0, "ShowPaletteClass", "Current Palette");
+  if (palette_window != (HWND)0)
+  {
+    InvalidateRect(palette_window, (RECT *)0, FALSE);
+    UpdateWindow(palette_window);
+  }
+  DAT_0040d090 = 1;
+#else
+  (void)palette_data_words;
+#endif
 }
+#if !defined(FACEMAKER) && !defined(SHANDALAR)
+#pragma optimize("", on)
+#endif
+#if defined(FACEMAKER) || defined(SHANDALAR)
+#pragma optimize("", off)
+#endif
