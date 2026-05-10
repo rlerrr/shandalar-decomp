@@ -33,7 +33,7 @@ endif()
 
 if (MSVC)
   target_link_options(facemaker PRIVATE "/SUBSYSTEM:WINDOWS")
-  target_compile_options(facemaker PRIVATE /Od /Zi)
+  target_compile_options(facemaker PRIVATE /Od /Ob1 /Zi /DFACEMAKER)
 endif()
 
 if (MSVC_FOR_DECOMP)
