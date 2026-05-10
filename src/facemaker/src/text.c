@@ -9,11 +9,11 @@
 
 #pragma intrinsic(memcpy)
 
-extern int __cdecl LoadBitmapFontFromFile(int font_id, FILE *file);
-extern int __cdecl SetFontStyleSize(int font_id, unsigned int style);
-extern int __cdecl DrawTextFormatted(int *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y, int *arg9);
-extern void __cdecl PutGraphicsPixel(int *param_1, int param_2, int param_3, unsigned int param_4);
-extern void __cdecl WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
+extern int LoadBitmapFontFromFile(int font_id, FILE *file);
+extern int SetFontStyleSize(int font_id, unsigned int style);
+extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y, int *arg9);
+extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
+extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
 extern char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[];
 extern DIBSurface *g_graphics_pages[10];
 extern PALETTEENTRY g_palette_entries[256];
@@ -86,7 +86,7 @@ char *PTR_s_File__s_could_not_be_opened__EXI_0040c0b0 = s_File__s_could_not_be_o
 
 // FUNCTION: FACEMAKER 0x00407b10
 #pragma optimize("gty", on)
-int __cdecl LoadFontCollection(char *path)
+int LoadFontCollection(char *path)
 {
     FILE *font_file;
     long font_offsets[16];
@@ -129,7 +129,7 @@ int __cdecl LoadFontCollection(char *path)
 }
 
 // FUNCTION: FACEMAKER 0x00407c20
-int __cdecl LoadBitmapFontFromFile(int font_id, FILE *file)
+int LoadBitmapFontFromFile(int font_id, FILE *file)
 {
     int row_bytes;
     int bitmap_size;
@@ -211,7 +211,7 @@ int __cdecl LoadBitmapFontFromFile(int font_id, FILE *file)
 }
 
 // FUNCTION: FACEMAKER 0x00407e20
-int __cdecl LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name,
+int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name,
                          int weight, DWORD italic)
 {
     char c;
@@ -302,7 +302,7 @@ int __cdecl LoadSystemFont(int font_id, unsigned int point_size, char *font_file
 }
 
 // FUNCTION: FACEMAKER 0x00407f30
-int __cdecl SetFontStyleSize(int font_id, unsigned int style)
+int SetFontStyleSize(int font_id, unsigned int style)
 {
     FontSlot *font;
     FARPROC import_proc;
@@ -338,14 +338,14 @@ int __cdecl SetFontStyleSize(int font_id, unsigned int style)
 }
 
 // FUNCTION: FACEMAKER 0x00408da0
-void __cdecl DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *encoded_image)
+void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image)
 {
     int row_index;
     int page_number;
+    DIBSurface *page;
     int row_stride;
     int sprite_row_count;
     int dst_row_ptr;
-    int width_with_padding;
     int is_raw_span;
     int span_length;
     int draw_to_page;
@@ -354,19 +354,18 @@ void __cdecl DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *enco
     unsigned char *span_data_bytes;
     int span_data_ptr;
 
-    page_number = *dst;
+    page_number = dst->page_number;
     if (encoded_image == (EncodedImage *)0)
     {
         return;
     }
 
-    row_index = (int)g_graphics_pages[page_number];
+    page = g_graphics_pages[page_number];
     y = y + (int)encoded_image->top_clip;
     sprite_row_count = (int)encoded_image->row_count;
     span_data_ptr = (int)encoded_image->spans;
-    width_with_padding = *(int *)(row_index + 0x20);
-    row_stride = *(int *)(row_index + 0x2c) + width_with_padding;
-    dst_row_ptr = x + row_stride * y + *(int *)(row_index + 0x18);
+    row_stride = page->rowPadding + page->width;
+    dst_row_ptr = (int)((char *)page->pBits + x + row_stride * y);
     draw_to_page = page_number;
     row_index = 0;
     if (sprite_row_count <= 0)
@@ -453,7 +452,7 @@ void __cdecl DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *enco
 }
 
 // FUNCTION: FACEMAKER 0x00408f20
-void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int height,
+void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height,
                                        EncodedImage *encoded_image)
 {
     short row_count;
@@ -485,17 +484,17 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
     int *lookup_ptr;
     int use_raw_copy;
 
-    page_number = *dst;
+    page_number = dst->page_number;
     use_raw_copy = 0;
     if (encoded_image == (EncodedImage *)0)
     {
         return;
     }
-    if (dst[3] < x)
+    if (dst->max_x < x)
     {
         return;
     }
-    if (dst[4] < y)
+    if (dst->max_y < y)
     {
         return;
     }
@@ -548,17 +547,17 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
         g_resample_source_height = source_sprite_height;
     }
 
-    if (x < dst[1])
+    if (x < dst->unk_04)
     {
-        g_resample_clip_left = dst[1] - x;
+        g_resample_clip_left = dst->unk_04 - x;
     }
     else
     {
         g_resample_clip_left = 0;
     }
-    if (dst[3] < x + width)
+    if (dst->max_x < x + width)
     {
-        g_resample_clip_right = dst[3] - x;
+        g_resample_clip_right = dst->max_x - x;
     }
     else
     {
@@ -600,9 +599,9 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
                     segment_length = (unsigned int)row_data[2];
                 }
                 draw_y = row_index + y;
-                if (dst[2] <= draw_y)
+                if (dst->unk_08 <= draw_y)
                 {
-                    if (dst[4] < draw_y)
+                    if (dst->max_y < draw_y)
                     {
                         return;
                     }
@@ -700,7 +699,7 @@ void __cdecl DrawEncodedImageResampled(int *dst, int x, int y, int width, int he
 }
 
 // FUNCTION: FACEMAKER 0x004080d0
-int __cdecl MeasureMultilineTextWidth(int *param_1, char *param_2)
+int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
 {
     char *line_ptr;
     char c;
@@ -715,10 +714,10 @@ int __cdecl MeasureMultilineTextWidth(int *param_1, char *param_2)
 
     line_width = 0;
     max_width = -1;
-    font = &g_font_slots[param_1[8]];
+    font = &g_font_slots[param_1->font_slot];
     if (font->font_loaded != 0)
     {
-        page_hdc = g_graphics_pages[*param_1]->hTempDC;
+        page_hdc = g_graphics_pages[param_1->page_number]->hTempDC;
         old_object = SelectObject(page_hdc, font->hfont);
         line_ptr = param_2;
         c = *param_2;
@@ -816,7 +815,7 @@ int __cdecl MeasureMultilineTextWidth(int *param_1, char *param_2)
 }
 
 // FUNCTION: FACEMAKER 0x004082e0
-int __cdecl DrawTextLine(int *param_1, int param_2, int param_3, char *param_4)
+int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char *param_4)
 {
   struct
   {
@@ -844,28 +843,28 @@ int __cdecl DrawTextLine(int *param_1, int param_2, int param_3, char *param_4)
   {
     return 0;
   }
-  if (param_1[2] <= param_3)
+  if (param_1->unk_08 <= param_3)
   {
     FontSlot *font;
 
-    font = &g_font_slots[param_1[8]];
+    font = &g_font_slots[param_1->font_slot];
     if (font->font_loaded == 0)
     {
-      if ((int)((unsigned int)font->point_size + (unsigned int)font->unk_06 + param_3) > param_1[4])
+      if ((int)((unsigned int)font->point_size + (unsigned int)font->unk_06 + param_3) > param_1->max_y)
       {
         return 0;
       }
     }
-    else if ((int)((unsigned int)font->point_size + font->tm_leading + param_3) > param_1[4])
+    else if ((int)((unsigned int)font->point_size + font->tm_leading + param_3) > param_1->max_y)
     {
       return 0;
     }
 
     if (font->font_loaded != 0)
     {
-      local.page_hdc = g_graphics_pages[*param_1]->hTempDC;
+      local.page_hdc = g_graphics_pages[param_1->page_number]->hTempDC;
       local.old_page_object = SelectObject(local.page_hdc, font->hfont);
-      local.text_color = (unsigned int)param_1[6];
+      local.text_color = (unsigned int)param_1->text_color;
       if (0xfd < (int)local.text_color)
       {
         local.text_color = 0xfe;
@@ -878,7 +877,7 @@ int __cdecl DrawTextLine(int *param_1, int param_2, int param_3, char *param_4)
       return 1;
     }
 
-    local.page_hdc = g_graphics_pages[*param_1]->hTempDC;
+    local.page_hdc = g_graphics_pages[param_1->page_number]->hTempDC;
     local.font_hdc = font->hdc;
     SelectObject(local.font_hdc, font->bitmap_inverted);
     SetTextColor(local.page_hdc, 0x1000000);
@@ -911,9 +910,9 @@ int __cdecl DrawTextLine(int *param_1, int param_2, int param_3, char *param_4)
 
     param_2 = line_left;
     local.text_color = 0xfe;
-    if (param_1[6] != 0xff)
+    if (param_1->text_color != 0xff)
     {
-      local.text_color = (unsigned int)param_1[6];
+      local.text_color = (unsigned int)param_1->text_color;
     }
     SelectObject(local.font_hdc, font->bitmap_normal);
     SetTextColor(local.page_hdc, 0x1000000);
@@ -948,7 +947,7 @@ int __cdecl DrawTextLine(int *param_1, int param_2, int param_3, char *param_4)
 }
 
 // FUNCTION: FACEMAKER 0x004086c0
-int __cdecl DrawTextFormatted(int *param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
+int DrawTextFormatted(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
                          int param_7, int param_8, int *param_9)
 {
     char c;
@@ -987,12 +986,12 @@ int __cdecl DrawTextFormatted(int *param_1, int param_2, int param_3, int param_
     }
     if (param_6 != 0)
     {
-        param_8 = param_8 - ((int)g_font_slots[param_1[8]].point_size * line_count) / 2;
+        param_8 = param_8 - ((int)g_font_slots[param_1->font_slot].point_size * line_count) / 2;
     }
     if (-1 < param_2)
     {
-        saved_color = param_1[6];
-        param_1[6] = param_2;
+        saved_color = param_1->text_color;
+        param_1->text_color = param_2;
     }
     line_ptr = local_400;
     while (line_count != 0)
@@ -1017,32 +1016,32 @@ int __cdecl DrawTextFormatted(int *param_1, int param_2, int param_3, int param_
         }
         if (param_3 != 0)
         {
-            saved_color = param_1[6];
-            param_1[6] = 0;
+            saved_color = param_1->text_color;
+            param_1->text_color = 0;
             DrawTextLine(param_1, iVar4 + 1, param_8 + 1, line_ptr);
-            param_1[6] = saved_color;
+            param_1->text_color = saved_color;
         }
         DrawTextLine(param_1, iVar4, param_8, line_ptr);
         *pcVar3 = '\n';
         line_ptr = pcVar3 + 1;
-        if (g_font_slots[param_1[8]].font_loaded == 0)
+        if (g_font_slots[param_1->font_slot].font_loaded == 0)
         {
-            param_8 = param_8 + (int)g_font_slots[param_1[8]].point_size + (int)g_font_slots[param_1[8]].unk_06;
+            param_8 = param_8 + (int)g_font_slots[param_1->font_slot].point_size + (int)g_font_slots[param_1->font_slot].unk_06;
         }
         else
         {
-            param_8 = param_8 + (int)g_font_slots[param_1[8]].point_size + g_font_slots[param_1[8]].tm_leading;
+            param_8 = param_8 + (int)g_font_slots[param_1->font_slot].point_size + g_font_slots[param_1->font_slot].tm_leading;
         }
     }
     if (-1 < param_2)
     {
-        param_1[6] = saved_color;
+        param_1->text_color = saved_color;
     }
     return iVar2;
 }
 
 // FUNCTION: FACEMAKER 0x004088d0
-void __cdecl DrawTextAt(int *dst, int text_id, int x, int y, char *text)
+void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text)
 {
     DrawTextFormatted(dst, text_id, 0, 0, 1, 1, x, y, (int *)&text);
 }

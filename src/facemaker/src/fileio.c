@@ -625,14 +625,12 @@ void RpBitsWriteBits(int param_1, unsigned int param_2)
 // FUNCTION: FACEMAKER 0x00409420
 int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7)
 {
-  int file_handle;
   int result;
+  int file_handle;
 
-  file_handle = _open(param_7, 0x8302, 0x80);
-  result = file_handle;
-  if (file_handle != -1)
+  if ((file_handle = _open(param_7, 0x8302, 0x80)) != -1)
   {
-    if (param_6 != 0)
+    if (param_6)
     {
       WriteRpBitsPalette(file_handle);
       g_export_write_palette = 1;
@@ -643,8 +641,8 @@ int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int p
     }
     result = EncodeRpBitsImage(file_handle, ReadGraphicsScanline, param_1, param_2, param_3, param_4, param_5);
     _close(file_handle);
+    return result;
   }
-  return result;
 }
 
 // FUNCTION: FACEMAKER 0x0040a110

@@ -1,3 +1,5 @@
+#include <windows.h>
+#include <wingdi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -1044,5 +1046,5 @@ COLORREF GetPaletteColor(int index)
   rgb.r = g_cardArtPalette[index].rgbRed;
   rgb.g = g_cardArtPalette[index].rgbGreen;
   rgb.b = g_cardArtPalette[index].rgbBlue;
-  return (COLORREF)(0x02000000 | (DWORD)MAKEWORD((BYTE)rgb.r, (BYTE)rgb.g) | ((DWORD)(BYTE)rgb.b << 16));
+  return PALETTERGB(rgb.r, rgb.g, rgb.b);
 }

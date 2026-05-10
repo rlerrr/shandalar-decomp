@@ -102,7 +102,7 @@ int LoadSpriteGroupsFromFile(char *sprite_path, int *group_frame_counts,
 }
 
 // FUNCTION: FACEMAKER 0x0040542d
-int ReplacePaletteIndexInRect(int *page, int x, int y, unsigned int width, int height,
+int ReplacePaletteIndexInRect(FacemakerWindowBounds *page, int x, int y, unsigned int width, int height,
                               unsigned int from_color, unsigned char to_color)
 {
   int row_index;
@@ -111,7 +111,7 @@ int ReplacePaletteIndexInRect(int *page, int x, int y, unsigned int width, int h
 
   for (row_index = 0; row_index < height; row_index = row_index + 1)
   {
-    ReadGraphicsScanline((unsigned int *)local_800, *page, x, row_index + y, width);
+    ReadGraphicsScanline((unsigned int *)local_800, page->page_number, x, row_index + y, width);
     for (pixel_index = 0; pixel_index < (int)width; pixel_index = pixel_index + 1)
     {
       if (local_800[pixel_index] == from_color)
@@ -119,7 +119,7 @@ int ReplacePaletteIndexInRect(int *page, int x, int y, unsigned int width, int h
         local_800[pixel_index] = to_color;
       }
     }
-    WriteGraphicsScanline((unsigned int *)local_800, *page, x, row_index + y, width);
+    WriteGraphicsScanline((unsigned int *)local_800, page->page_number, x, row_index + y, width);
   }
   return height;
 }
@@ -194,7 +194,7 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
     return LoadSpriteGroupsFromFile(base_path, group_frame_counts, group_entries, first_sprite_out);
   }
   LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
-  ReplacePaletteIndexInRect((int *)g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
+  ReplacePaletteIndexInRect(g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
   BeginSpriteEncodeSession();
   *first_sprite_out = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
   face_loader.current_sprite = *first_sprite_out;
@@ -252,7 +252,7 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
       }
       _findclose(face_loader.pcx_find_handle);
       LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
-      ReplacePaletteIndexInRect((int *)g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
+      ReplacePaletteIndexInRect(g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
     }
   }
   FinalizeSpriteEncodeSession();

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cardartlib/src/assert.h"
 #include "drawcardlib/src/pic.h"
+#include "facemaker_types.h"
 
 extern HDC global_main_hdc;
 DIBSurface *InitializeGraphicsSystemDefaultMode(void);
@@ -394,7 +395,7 @@ void SetGraphicsPage(int page_number, DIBSurface *page)
 }
 
 // FUNCTION: FACEMAKER 0x00407190
-void PutGraphicsPixel(int *param_1, int param_2, int param_3, unsigned int param_4)
+void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index)
 {
   DIBSurface *page;
   COLORREF color;
@@ -405,8 +406,8 @@ void PutGraphicsPixel(int *param_1, int param_2, int param_3, unsigned int param
   unsigned char low_byte;
   unsigned char high_byte;
 
-  page = g_graphics_pages[*param_1];
-  value = param_4;
+  page = g_graphics_pages[window_bounds->page_number];
+  value = color_index;
   if ((int)value < 0)
   {
     value = -value;
@@ -437,7 +438,7 @@ void PutGraphicsPixel(int *param_1, int param_2, int param_3, unsigned int param
       color = color | 0x1000000;
     }
   }
-  SetPixelV(page->hTempDC, param_2, param_3, color);
+  SetPixelV(page->hTempDC, x, y, color);
 }
 
 // FUNCTION: FACEMAKER 0x00406cc0
@@ -453,28 +454,26 @@ void PresentGraphicsPage(int enabled)
 // FUNCTION: FACEMAKER 0x00406d00
 int ClearGraphicsPageWithPaletteColor(int page_number, int color_index)
 {
-  int page_ptr;
+  DIBSurface *page;
   HBRUSH brush;
   RECT rect;
   LOGBRUSH brush_desc;
 
   brush_desc.lbStyle = 0;
-  page_ptr = (int)g_graphics_pages[page_number];
-  brush_desc.lbColor = (((unsigned int)g_palette_entries[color_index].peGreen | 0x20000) << 8) |
-                       ((unsigned int)g_palette_entries[color_index].peBlue << 0x10) |
-                       (unsigned int)g_palette_entries[color_index].peRed;
+  page = g_graphics_pages[page_number];
+  brush_desc.lbColor = PALETTERGB(g_palette_entries[color_index].peRed,g_palette_entries[color_index].peGreen,g_palette_entries[color_index].peBlue << 0x10);
   brush = CreateBrushIndirect(&brush_desc);
   rect.top = 0;
   rect.left = 0;
-  rect.right = *(LONG *)(page_ptr + 0x20);
-  rect.bottom = *(LONG *)(page_ptr + 0x24);
-  FillRect(*(HDC *)(page_ptr + 4), &rect, brush);
+  rect.right = page->width;
+  rect.bottom = page->height;
+  FillRect(page->hTempDC, &rect, brush);
   return DeleteObject(brush);
 }
 
 // FUNCTION: FACEMAKER 0x00407210
-void BlitGraphicsRect(int *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
-                      int *src, int src_x, int src_y)
+void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
+                      FacemakerWindowBounds *src, int src_x, int src_y)
 {
   int i;
   int src_bits_per_row;
@@ -495,8 +494,8 @@ void BlitGraphicsRect(int *dst, unsigned int dst_x, int dst_y, unsigned int widt
   double *bottom_row;
   int half_height;
 
-  src_page_number = *dst;
-  dst_page_number = *src;
+  src_page_number = dst->page_number;
+  dst_page_number = src->page_number;
   src_page = g_graphics_pages[src_page_number];
   dst_page = g_graphics_pages[dst_page_number];
 
@@ -604,18 +603,18 @@ void BlitGraphicsRect(int *dst, unsigned int dst_x, int dst_y, unsigned int widt
 }
 
 // FUNCTION: FACEMAKER 0x00407570
-void StretchBlitGraphicsRect(void *dst, int dst_x, int dst_y, int src_w, int src_h, void *src,
+void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h, FacemakerWindowBounds *src,
                              int src_x, int src_y, int copy_w, int copy_h)
 {
-  StretchBlt(g_graphics_pages[*(int *)src]->hTempDC, src_x, src_y, copy_w, copy_h,
-             g_graphics_pages[*(int *)dst]->hTempDC, dst_x, dst_y, src_w, src_h, 0xcc0020);
+  StretchBlt(g_graphics_pages[src->page_number]->hTempDC, src_x, src_y, copy_w, copy_h,
+             g_graphics_pages[dst->page_number]->hTempDC, dst_x, dst_y, src_w, src_h, 0xcc0020);
 }
 
 // FUNCTION: FACEMAKER 0x004075d0
 void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                            unsigned int param_5)
 {
-  int iVar1;
+  DIBSurface *page;
   int iVar2;
   unsigned int uVar3;
   RGBQUAD *pRVar4;
@@ -627,7 +626,7 @@ void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int 
     g_scanline_bitmap_info = (BITMAPINFO *)CreateBitmapInfo(1, 1, 8);
     g_scanline_bitmap_info_initialized = 1;
   }
-  iVar1 = (int)g_graphics_pages[param_2];
+  page = g_graphics_pages[param_2];
   g_scanline_bitmap_info->bmiHeader.biWidth = param_5;
   if (param_2 == 0)
   {
@@ -643,12 +642,11 @@ void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int 
       }
       g_scanline_palette_needs_refresh = 0;
     }
-    SetDIBitsToDevice(*(HDC *)(iVar1 + 4), param_3, param_4, param_5, 1, 0, 0, 0, 1, param_1, g_scanline_bitmap_info,
+    SetDIBitsToDevice(page->hTempDC, param_3, param_4, param_5, 1, 0, 0, 0, 1, param_1, g_scanline_bitmap_info,
                       (unsigned int)(g_graphics_bpp == 8));
     return;
   }
-  puVar6 = (unsigned int *)(param_3 + (*(int *)(iVar1 + 0x20) + *(int *)(iVar1 + 0x2c)) * param_4 +
-                            *(int *)(iVar1 + 0x18));
+  puVar6 = (unsigned int *)((char *)page->pBits + param_3 + (page->width + page->rowPadding) * param_4);
   for (uVar3 = param_5 >> 2; uVar3 != 0; uVar3 = uVar3 - 1)
   {
     *puVar6 = *param_1;
@@ -666,13 +664,13 @@ void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int 
 // FUNCTION: FACEMAKER 0x00406da0
 unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
 {
-  int iVar1;
+  DIBSurface *page;
   COLORREF CVar2;
   unsigned int uVar3;
   unsigned char *pbVar4;
   unsigned int uVar5;
 
-  iVar1 = (int)g_graphics_pages[param_1];
+  page = g_graphics_pages[param_1];
   if (param_1 == 0)
   {
     CVar2 = GetPixel(global_main_hdc, param_2, param_3);
@@ -692,8 +690,7 @@ unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
   }
   else
   {
-    uVar3 = (unsigned int)*(unsigned char *)((*(int *)(iVar1 + 0x2c) + *(int *)(iVar1 + 0x20)) * param_3 +
-                                             *(int *)(iVar1 + 0x18) + param_2);
+    uVar3 = (unsigned int)*((unsigned char *)page->pBits + (page->rowPadding + page->width) * param_3 + param_2);
   }
   return uVar3;
 }
@@ -702,15 +699,14 @@ unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
 void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                           unsigned int param_5)
 {
-  int iVar1;
+  DIBSurface *page;
   unsigned int uVar2;
   unsigned int *puVar3;
 
   assert((unsigned int)(param_2 != 0), s_D__NewMagic__sources__sidlib__lib_c_0040d0ec, 0x503,
          s_GetLine_not_implemented_for_page_0040d168);
-  iVar1 = (int)g_graphics_pages[param_2];
-  puVar3 = (unsigned int *)((*(int *)(iVar1 + 0x2c) + *(int *)(iVar1 + 0x20)) * param_4 + *(int *)(iVar1 + 0x18) +
-                            param_3);
+  page = g_graphics_pages[param_2];
+  puVar3 = (unsigned int *)((char *)page->pBits + (page->rowPadding + page->width) * param_4 + param_3);
   for (uVar2 = param_5 >> 2; uVar2 != 0; uVar2 = uVar2 - 1)
   {
     *param_1 = *puVar3;

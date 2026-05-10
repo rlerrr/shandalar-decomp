@@ -75,17 +75,17 @@ extern void SetGraphicsPage(int page_number, DIBSurface *page);
 extern char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[];
 extern int LoadFontCollection(char *path);
 extern int LoadBitmapFontFromFile(int font_id, FILE *file);
-extern void BlitGraphicsRect(int *dst, unsigned int dst_x, int dst_y, unsigned int width,
-                         DWORD height, int *src, int src_x, int src_y);
-extern void PutGraphicsPixel(int *dst, int x, int y, int char_code);
-extern void DrawEncodedImageUnscaled(int *dst, int x, int y, EncodedImage *encoded_image);
-extern void DrawEncodedImageResampled(int *dst, int x, int y, int width, int height,
+extern void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width,
+                         DWORD height, FacemakerWindowBounds *src, int src_x, int src_y);
+extern void PutGraphicsPixel(FacemakerWindowBounds *dst, int x, int y, int char_code);
+extern void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
+extern void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height,
                                       EncodedImage *encoded_image);
 extern void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 extern unsigned int ScaleUiCoordinate(int value);
-extern void BlitScaledRect(int *dst, int dst_x, int dst_y, int width, int height, int *src,
+extern void BlitScaledRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height, FacemakerWindowBounds *src,
                          int src_x, int src_y);
-extern void DrawEncodedImageAutoScale(int *dst, int x, int y, EncodedImage *encoded_image);
+extern void DrawEncodedImageAutoScale(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 extern int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name,
                         int weight, DWORD italic);
 extern void PresentGraphicsPage(int enabled);
@@ -93,13 +93,13 @@ extern int InitializeLegacyVideoStub(void);
 extern void LoadPcxIntoPage(int page_number, char *path);
 extern size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 extern int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
-extern int DrawTextFormatted(int *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y,
+extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y,
                         int *arg9);
-extern void StretchBlitGraphicsRect(void *dst, int dst_x, int dst_y, int src_w, int src_h, void *src,
+extern void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h, FacemakerWindowBounds *src,
                          int src_x, int src_y, int copy_w, int copy_h);
 extern int InitializeFaceMakerAssets(void);
-extern void DrawFaceLayerUnscaled(int *page, int x, int y, EncodedImage *encoded_image);
-extern void DrawTransparentOverlayMask(int *page, int x, int y, unsigned int width, int height);
+extern void DrawFaceLayerUnscaled(FacemakerWindowBounds *page, int x, int y, EncodedImage *encoded_image);
+extern void DrawTransparentOverlayMask(FacemakerWindowBounds *page, int x, int y, unsigned int width, int height);
 extern int LoadSelectedFaceSet(int selected_face_index);
 extern int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **group_entries,
                              EncodedImage **first_sprite_out);
@@ -118,7 +118,7 @@ extern void RedrawFaceCompositePreview(void);
 extern void BeginSpriteEncodeSession(void);
 extern void LoadPcxIntoPageNoPalette(int page_number, char *path);
 extern int SetFontStyleSize(int font_id, unsigned int style);
-extern void DrawTextAt(int *dst, int text_id, int x, int y, char *text);
+extern void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text);
 extern EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width,
                                           int height);
 extern int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
@@ -156,16 +156,16 @@ extern __declspec(dllimport) unsigned short **__p__pctype(void);
 extern __declspec(dllimport) int _isctype(int c, int type);
 
 // GLOBAL: FACEMAKER 0x0040c010
-FacemakerWindowBounds g_face_preview_page_bounds = {0, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &g_face_preview_page_bounds};
+FacemakerWindowBounds g_face_preview_page_bounds = {0, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0};
 
 // GLOBAL: FACEMAKER 0x0040c038
-FacemakerWindowBounds g_face_work_page_bounds = {1, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &g_face_work_page_bounds};
+FacemakerWindowBounds g_face_work_page_bounds = {1, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0};
 
 // GLOBAL: FACEMAKER 0x0040c060
-FacemakerWindowBounds g_face_aux_page_bounds = {2, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0, &g_face_aux_page_bounds};
+FacemakerWindowBounds g_face_aux_page_bounds = {2, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0};
 
 // GLOBAL: FACEMAKER 0x0040c088
-FacemakerWindowBounds g_face_fullscreen_page_bounds = {2, 0, 0, 0x320, 0x258, 1, 0x9f, 4, 0, &g_face_fullscreen_page_bounds};
+FacemakerWindowBounds g_face_fullscreen_page_bounds = {2, 0, 0, 0x320, 0x258, 1, 0x9f, 4, 0};
 
 // GLOBAL: FACEMAKER 0x0040c034
 FacemakerWindowBounds *g_face_preview_bounds = &g_face_preview_page_bounds;
@@ -1003,7 +1003,7 @@ int LegacyInitNoop()
 }
 
 // FUNCTION: FACEMAKER 0x00406610
-DIBSurface *GetPrimaryPage(void)
+DIBSurface *GetPrimaryPage(int unused)
 {
   return InitializeGraphicsSystemDefaultMode();
 }
@@ -1027,7 +1027,7 @@ unsigned int ScaleUiCoordinate(int value)
 }
 
 // FUNCTION: FACEMAKER 0x00402621
-void BlitScaledRect(int *dst, int dst_x, int dst_y, int width, int height, int *src, int src_x,
+void BlitScaledRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height, FacemakerWindowBounds *src, int src_x,
                   int src_y)
 {
   BlitGraphicsRect(dst, ScaleUiCoordinate(dst_x), ScaleUiCoordinate(dst_y), ScaleUiCoordinate(width),
@@ -1035,7 +1035,7 @@ void BlitScaledRect(int *dst, int dst_x, int dst_y, int width, int height, int *
 }
 
 // FUNCTION: FACEMAKER 0x0040268a
-void DrawEncodedImageAutoScale(int *dst, int x, int y, EncodedImage *encoded_image)
+void DrawEncodedImageAutoScale(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image)
 {
   EncodedImage *local_encoded_image;
 
@@ -1110,7 +1110,7 @@ int InitializeFaceMakerAssets(void)
 
   BeginSpriteEncodeSession();
   LoadPcxIntoPageNoPalette(2, s_FaceArt_facebut1_pcx_0040c6a0);
-  *(int *)((char *)g_face_fullscreen_bounds + 0x20) = local.button_text_ids[0];
+  g_face_fullscreen_bounds->font_slot = local.button_text_ids[0];
 
   for (local.loop_index = 0; local.loop_index < 4;
        local.loop_index = local.loop_index + 1, local.control_slot = local.control_slot + 1)
@@ -1118,7 +1118,7 @@ int InitializeFaceMakerAssets(void)
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
     SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
-    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+    DrawTextAt(g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
                  local.face_slot_x + 0x2b, local.style_values[5] + 0xe, g_face_button_text_buffer + 0x20);
     g_face_control1_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x56, 0x21);
@@ -1131,7 +1131,7 @@ int InitializeFaceMakerAssets(void)
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
     SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
-    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+    DrawTextAt(g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
                  local.face_slot_x + 0x2b, local.style_values[5] + 0xe, g_face_button_text_buffer);
     g_face_control2_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x56, 0x21);
@@ -1184,7 +1184,7 @@ int InitializeFaceMakerAssets(void)
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
     SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
-    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+    DrawTextAt(g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
                  local.face_slot_x + 0x20, local.style_values[5] + 0xe, g_face_button_text_buffer + 0x40);
     g_face_control3_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x40, 0x1d);
@@ -1197,7 +1197,7 @@ int InitializeFaceMakerAssets(void)
     local.face_slot_x = (local.control_slot % 5) * 0x70;
     local.style_values[5] = (local.control_slot / 5) * 0x60;
     SetFontStyleSize(local.button_text_ids[0], local.style_values[local.loop_index]);
-    DrawTextAt((int *)g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
+    DrawTextAt(g_face_fullscreen_bounds, local.button_text_ids[local.loop_index + 1],
                  local.face_slot_x + 0x20, local.style_values[5] + 0xe, g_face_button_text_buffer + 0x60);
     g_face_control4_sprites[local.loop_index] =
         EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 0x40, 0x1d);
@@ -1278,14 +1278,14 @@ int InitializeFaceMakerAssets(void)
 }
 
 // FUNCTION: FACEMAKER 0x00402717
-void DrawFaceLayerUnscaled(int *page, int x, int y, EncodedImage *encoded_image)
+void DrawFaceLayerUnscaled(FacemakerWindowBounds *page, int x, int y, EncodedImage *encoded_image)
 {
   EncodedImage *tmp = encoded_image;
   DrawEncodedImageUnscaled(page, x, y, encoded_image);
 }
 
 // FUNCTION: FACEMAKER 0x00402743
-void DrawTransparentOverlayMask(int *page, int x, int y, unsigned int width, int height)
+void DrawTransparentOverlayMask(FacemakerWindowBounds *page, int x, int y, unsigned int width, int height)
 {
   struct
   {
@@ -1296,7 +1296,7 @@ void DrawTransparentOverlayMask(int *page, int x, int y, unsigned int width, int
 
   for (local.row = 0; local.row < height; local.row = local.row + 1)
   {
-    ReadGraphicsScanline((unsigned int *)local.row_pixels, *page, x, local.row + y, width);
+    ReadGraphicsScanline((unsigned int *)local.row_pixels, page->page_number, x, local.row + y, width);
     for (local.pixel = 0; local.pixel < (int)width; local.pixel = local.pixel + 1)
     {
       if (local.row_pixels[local.pixel] == '\0')
@@ -1308,7 +1308,7 @@ void DrawTransparentOverlayMask(int *page, int x, int y, unsigned int width, int
         local.row_pixels[local.pixel] = '\0';
       }
     }
-    WriteGraphicsScanline((unsigned int *)local.row_pixels, *page, width + x, local.row + y, width);
+    WriteGraphicsScanline((unsigned int *)local.row_pixels, page->page_number, width + x, local.row + y, width);
   }
 }
 
@@ -1394,10 +1394,10 @@ int LoadSelectedFaceSet(int selected_face_index)
   {
     face_slot_x = ((control_index + 2) % 4) * 0x9f + 0xd;
     face_slot_y = ((control_index + 2) / 4) * 0xdf + 0x24;
-    DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
+    DrawEncodedImageAutoScale(g_face_work_bounds, face_slot_x, face_slot_y,
                               g_face_slot_background_sprite);
-    BlitScaledRect((int *)g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xac,
-                 (int *)g_face_preview_bounds, face_slot_x, face_slot_y);
+    BlitScaledRect(g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xac,
+                 g_face_preview_bounds, face_slot_x, face_slot_y);
   }
   RedrawFaceCompositePreview();
   return selected_face_index;
@@ -1578,18 +1578,18 @@ void ComposeSelectedFaceImage(FaceControl *control)
   (void)control;
 
   ClearGraphicsPageWithPaletteColor(2, 0);
-  DrawFaceLayerUnscaled((int *)g_face_fullscreen_bounds, 0, 0, g_face_sprite_roots.first);
+  DrawFaceLayerUnscaled(g_face_fullscreen_bounds, 0, 0, g_face_sprite_roots.first);
   for (face_index = 0; face_index < g_face_group_count; face_index = face_index + 1)
   {
     if (g_face_variant_index[face_index] >= 0 &&
         g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]] != (EncodedImage *)0)
     {
-      DrawFaceLayerUnscaled((int *)g_face_fullscreen_bounds, 0, 0,
+      DrawFaceLayerUnscaled(g_face_fullscreen_bounds, 0, 0,
                    g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]]);
     }
   }
 
-  DrawTransparentOverlayMask((int *)g_face_fullscreen_bounds, 0, 0, 0x8a, 0xaa);
+  DrawTransparentOverlayMask(g_face_fullscreen_bounds, 0, 0, 0x8a, 0xaa);
   g_face_composite_ready = 1;
   if (g_use_desktop_palette != 0)
   {
@@ -1602,11 +1602,11 @@ void ComposeSelectedFaceImage(FaceControl *control)
   {
     if (g_face_set_gender_tags[g_selected_face_set_index][0] == 'm')
     {
-      PutGraphicsPixel((int *)g_face_fullscreen_bounds, 0, 200, 0x6d);
+      PutGraphicsPixel(g_face_fullscreen_bounds, 0, 200, 0x6d);
     }
     else
     {
-      PutGraphicsPixel((int *)g_face_fullscreen_bounds, 0, 200, 0x66);
+      PutGraphicsPixel(g_face_fullscreen_bounds, 0, 200, 0x66);
     }
     WriteGraphicsScanline((unsigned int *)g_face_set_display_names[g_selected_face_set_index], 2, 1, 200,
                  (unsigned int)strlen(g_face_set_display_names[g_selected_face_set_index]));
@@ -1674,13 +1674,13 @@ int DrawFaceControl(FaceControl *control, int mode)
 
   if (control->page_by_mode[mode] != 0)
   {
-    DrawEncodedImageAutoScale((int *)g_face_preview_bounds, control->x, control->y,
+    DrawEncodedImageAutoScale(g_face_preview_bounds, control->x, control->y,
                               control->page_by_mode[mode]);
   }
 
   if (control->page_by_mode[mode] != 0)
   {
-    DrawEncodedImageAutoScale((int *)g_face_work_bounds, control->x, control->y,
+    DrawEncodedImageAutoScale(g_face_work_bounds, control->x, control->y,
                               control->page_by_mode[mode]);
   }
 
@@ -1696,19 +1696,19 @@ void RedrawFaceCompositePreview(void)
 {
   int face_index;
 
-  DrawEncodedImageAutoScale((int *)g_face_work_bounds, 0xd, 0x24, g_face_slot_background_sprite);
-  DrawEncodedImageAutoScale((int *)g_face_work_bounds, 0xd, 0x24, g_face_sprite_roots.first);
+  DrawEncodedImageAutoScale(g_face_work_bounds, 0xd, 0x24, g_face_slot_background_sprite);
+  DrawEncodedImageAutoScale(g_face_work_bounds, 0xd, 0x24, g_face_sprite_roots.first);
   for (face_index = 0; face_index < *(volatile int *)&g_face_group_count; face_index++)
   {
     if (g_face_variant_index[face_index] >= 0 &&
         g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]] != (EncodedImage *)0)
     {
-      DrawEncodedImageAutoScale((int *)g_face_work_bounds, 0xd, 0x24,
+      DrawEncodedImageAutoScale(g_face_work_bounds, 0xd, 0x24,
                                 g_face_sprite_entries.groups[face_index][g_face_variant_index[face_index]]);
     }
   }
 
-  BlitScaledRect((int *)g_face_work_bounds, 0xd, 0x24, 0x89, 0xa9, (int *)g_face_preview_bounds, 0xd, 0x24);
+  BlitScaledRect(g_face_work_bounds, 0xd, 0x24, 0x89, 0xa9, g_face_preview_bounds, 0xd, 0x24);
 }
 
 // FUNCTION: FACEMAKER 0x00403573
@@ -1719,19 +1719,19 @@ void DrawFaceSlotEntry(int index, int selected)
 
   face_slot_x = ((index + 2) % 4) * 0x9f + 0xd;
   face_slot_y = ((index + 2) / 4) * 0xdf + 0x24;
-  DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
+  DrawEncodedImageAutoScale(g_face_work_bounds, face_slot_x, face_slot_y,
                             g_face_slot_background_sprite);
   if (g_face_variant_index[index + g_face_list_scroll_offset] >= 0 &&
       g_face_sprite_entries.groups[index + g_face_list_scroll_offset]
                                 [g_face_variant_index[index + g_face_list_scroll_offset]] !=
           (EncodedImage *)0)
   {
-    DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
+    DrawEncodedImageAutoScale(g_face_work_bounds, face_slot_x, face_slot_y,
                               g_face_sprite_entries.groups[index + g_face_list_scroll_offset]
                                                           [g_face_variant_index[index + g_face_list_scroll_offset]]);
   }
 
-  BlitScaledRect((int *)g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xab, (int *)g_face_preview_bounds,
+  BlitScaledRect(g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xab, g_face_preview_bounds,
                face_slot_x, face_slot_y);
   if (selected != 0)
   {
@@ -1768,7 +1768,7 @@ DWORD WINAPI FaceMakerWorkerThread(LPVOID unused)
   *last_backslash = '\0';
   sprintf(g_face_output_path, "%s\\PlayFace\\*.pic", g_module_path_buffer);
   LegacyInitNoop(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
-  GetPrimaryPage();
+  GetPrimaryPage(0);
 
   page_count = 3;
   for (page_number = 0; page_number < page_count; ++page_number)
@@ -1820,7 +1820,7 @@ DWORD WINAPI FaceMakerWorkerThread(LPVOID unused)
     LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
   }
 
-  *(int *)((char *)g_face_preview_bounds + 0x20) = 1;
+  g_face_preview_bounds->font_slot = 1;
   PresentGraphicsPage(0);
   g_legacy_video_state = InitializeLegacyVideoStub();
   LoadPcxIntoPage(2, "FaceArt/facebk0New.pcx");
@@ -1856,10 +1856,10 @@ DWORD WINAPI FaceMakerWorkerThread(LPVOID unused)
     face_slot_x = ((((face_index + 2U ^ sign_bits) - sign_bits & 3U) ^ sign_bits) - sign_bits) * 0x9f +
                   0xd;
     face_slot_y = ((int)(face_index + 2 + ((face_index + 2 >> 0x1f) & 3U)) >> 2) * 0xdf + 0x24;
-    DrawEncodedImageAutoScale((int *)g_face_work_bounds, face_slot_x, face_slot_y,
+    DrawEncodedImageAutoScale(g_face_work_bounds, face_slot_x, face_slot_y,
                               g_face_slot_background_sprite);
-    BlitScaledRect((int *)g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xa9,
-                 (int *)g_face_preview_bounds, face_slot_x, face_slot_y);
+    BlitScaledRect(g_face_work_bounds, face_slot_x, face_slot_y, 0x89, 0xa9,
+                 g_face_preview_bounds, face_slot_x, face_slot_y);
   }
 
   face_index = 0;
@@ -1880,18 +1880,18 @@ DWORD WINAPI FaceMakerWorkerThread(LPVOID unused)
 
   for (face_index = 0; face_index < 6; face_index++)
   {
-    DrawEncodedImageAutoScale((int *)g_face_work_bounds, *(int *)((char *)&g_face_slot_arrow_x_table_base + face_index * 8),
+    DrawEncodedImageAutoScale(g_face_work_bounds, *(int *)((char *)&g_face_slot_arrow_x_table_base + face_index * 8),
                               *(int *)((char *)&g_face_slot_arrow_y_table_base + face_index * 8),
                               g_face_scroll_arrow_sprite);
   }
 
   for (face_index = 0; face_index < 4; face_index++)
   {
-    DrawEncodedImageAutoScale((int *)g_face_work_bounds, *(int *)((char *)&g_face_variant_arrow_x_table_base + face_index * 8),
+    DrawEncodedImageAutoScale(g_face_work_bounds, *(int *)((char *)&g_face_variant_arrow_x_table_base + face_index * 8),
                               ((int *)&g_face_variant_arrow_y_table_base)[face_index * 2], g_face_scroll_arrow_sprite);
   }
 
-  *(int *)g_face_preview_bounds = 1;
+  g_face_preview_bounds->page_number = 1;
   g_ignore_mouse_hit_test = 1;
   button_index = 1;
   while (1)
@@ -1919,7 +1919,7 @@ DWORD WINAPI FaceMakerWorkerThread(LPVOID unused)
   DisableFaceControl(&g_face_control_bottom_panel_overlay);
   g_face_controls_start_mode = 3;
   g_ignore_mouse_hit_test = 0;
-  *(int *)g_face_preview_bounds = 0;
+  g_face_preview_bounds->page_number = 0;
   PresentGraphicsPage(1);
   RedrawFaceCompositePreview();
   g_ui_ready = 1;
