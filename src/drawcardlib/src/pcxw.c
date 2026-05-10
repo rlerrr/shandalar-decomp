@@ -44,14 +44,14 @@ int gPcxBufferWidth = 0x00000000;
 // GLOBAL: DECKDLL 0x1003391c
 int gPcxBufferHeight = 0x00000000;
 
-// GLOBAL: DRAWCARDLIB 0x10021edc
-// GLOBAL: DECKDLL 0x10033920
-char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
-
+#if defined(FACEMAKER)
+// GLOBAL: FACEMAKER 0x00411790
+char *PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = "D:\\NewMagic\\sources\\sidlib\\Pcxw.c";
+#else
 // GLOBAL: DRAWCARDLIB 0x10021ed0
 // GLOBAL: DECKDLL 0x10033914
-// GLOBAL: FACEMAKER 0x00411790
-char *PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = s_D__Newmagic_sources_sidlib_Pcxw__10021edc;
+char *PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
+#endif
 
 // GLOBAL: DRAWCARDLIB 0x10026548
 // GLOBAL: DECKDLL 0x1003a344

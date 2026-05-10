@@ -131,7 +131,11 @@ extern byte rpbits_buffer[0x200];
 // GLOBAL: DECKDLL 0x1003a844
 // GLOBAL: SHANDALAR 0x005a1814
 // GLOBAL: FACEMAKER 0x0040d294
+#if defined(FACEMAKER) || defined(SHANDALAR)
+byte *rpbits_stream_end = (byte *)&rpbits_stream_refill;
+#else
 byte *rpbits_stream_end = rpbits_buffer + 0x200;
+#endif
 
 // GLOBAL: DRAWCARDLIB 0x10022530
 // GLOBAL: DECKDLL 0x1003a848
@@ -487,11 +491,11 @@ void RpBits_ApplyPalette(short *palette_data_words)
   unsigned char component;
   unsigned char mask;
   int *surface_ptr;
-  static unsigned int DAT_00425e20[0x320 / 4];
+  static unsigned int palette_packet_words[0x320 / 4];
   HWND palette_window;
 
   word_src = palette_data_words;
-  dword_dst = DAT_00425e20;
+  dword_dst = palette_packet_words;
   for (count = (unsigned int)(int)(short)(palette_data_words[1] + 2) >> 2; count != 0; count = count - 1)
   {
     *dword_dst = *(unsigned int *)word_src;

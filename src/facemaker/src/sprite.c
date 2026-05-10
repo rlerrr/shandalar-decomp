@@ -6,16 +6,13 @@
 #include "cardartlib/src/assert.h"
 #include "facemaker_types.h"
 
-typedef struct FacemakerWindowBounds
-{
-  char pad_0[12];
-  int max_x;
-  int max_y;
-} FacemakerWindowBounds;
+#ifdef _fileno
+#undef _fileno
+#endif
 
-int FUN_004089c0(int *param_1, char *param_2);
-size_t FUN_00408970(void *param_1, char *param_2);
-int FUN_00408a50(int page_number, int x, int y, unsigned int width, int height);
+int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
+size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
+EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height);
 
 extern int FUN_00406da0(int page_number, int x, int y);
 extern void FUN_004075d0(unsigned int *param_1, int param_2, int param_3, int param_4,
@@ -23,299 +20,283 @@ extern void FUN_004075d0(unsigned int *param_1, int param_2, int param_3, int pa
 extern void FUN_004076c0(unsigned int *param_1, int param_2, int param_3, int param_4,
                                  unsigned int param_5);
 extern void FUN_0040a130(int page_number, char *path);
-extern void FUN_00408900(void);
-extern void FUN_00408920(void);
+extern void BeginSpriteEncodeSession(void);
+extern void FinalizeSpriteEncodeSession(void);
 extern int *DAT_004199c8;
 extern int *DAT_004199cc;
 extern FacemakerWindowBounds *PTR_DAT_0040c0ac;
 extern char DAT_0040d224[];
 
-#pragma optimize("gy", on)
-
-// GLOBAL: FACEMAKER 0x0040c9c4
-char DAT_0040c9c4[] = "1";
-
-// GLOBAL: FACEMAKER 0x0040c9c8
-char s___pcx_0040c9c8[] = "*.pcx";
-
-// GLOBAL: FACEMAKER 0x0040c9d0
-char DAT_0040c9d0[] = ".pcx";
-
-// GLOBAL: FACEMAKER 0x0040c9d8
-char DAT_0040c9d8[] = ".pcx";
-
-// GLOBAL: FACEMAKER 0x0040d24c
-char DAT_0040d24c[] = "wb";
-
-// GLOBAL: FACEMAKER 0x0040d250
-char s_D__NewMagic__sources__sidlib__sprite_c_0040d250[] = "D:\\NewMagic\\sources\\sidlib\\sprite.c";
-
-// GLOBAL: FACEMAKER 0x0040d274
-char s_Could_not_open_Sprite_File__s_0040d274[] = "Could not open Sprite File %s\n";
-
-#pragma optimize("", off)
-
 // FUNCTION: FACEMAKER 0x00405261
-int FUN_00405261(int page_number, int x, int y, unsigned int width, int height)
+int IsSpriteTileEmpty(int page_number, int x, int y, unsigned int width, int height)
 {
-  int pixel_index;
-  unsigned char local_404[1024];
+  struct
+  {
+    int current_y;
+    int remaining_height;
+    int pixel_index;
+    unsigned char row[1024];
+  } tile_scan;
 
   (void)page_number;
-  while (1)
+  while (tile_scan.remaining_height = height--)
   {
-    if (height == 0)
-    {
-      return 1;
-    }
-    height = height - 1;
-    FUN_004076c0((unsigned int *)local_404, 2, x, y, width);
+    tile_scan.current_y = y;
     y = y + 1;
-    for (pixel_index = 0; pixel_index < (int)width; pixel_index = pixel_index + 1)
+    FUN_004076c0((unsigned int *)tile_scan.row, 2, x, tile_scan.current_y, width);
+    for (tile_scan.pixel_index = 0; tile_scan.pixel_index < (int)width;
+         tile_scan.pixel_index = tile_scan.pixel_index + 1)
     {
-      if (local_404[pixel_index] != '\0')
+      if (tile_scan.row[tile_scan.pixel_index] != '\0')
       {
         return 0;
       }
     }
   }
+  return 1;
 }
 
 // FUNCTION: FACEMAKER 0x0040530d
-int FUN_0040530d(char *param_1, int param_2, int param_3, int *param_4)
+int LoadSpriteGroupsFromFile(char *sprite_path, int *group_frame_counts,
+                             EncodedImage **group_entries, EncodedImage **first_sprite_out)
 {
-  int table_count;
-  int table_index;
-  int entry_count;
-  int current_sprite;
-  int current_entry;
-  int sprite_table[1000];
-
-  entry_count = 0;
-  table_count = 0;
-  table_index = FUN_004089c0(sprite_table, param_1);
-  *param_4 = sprite_table[0];
-
-  current_sprite = 1;
-  while (1)
+  struct
   {
-    if (table_index <= current_sprite)
-    {
-      return entry_count;
-    }
+    int group_count;
+    int sprite_index;
+    int frame_count;
+    int table_total;
+    EncodedImage *sprite_table[1000];
+    EncodedImage *sprite_entry;
+  } group_loader;
 
-    current_entry = sprite_table[current_sprite];
-    *(int *)(entry_count * 0x50 + table_count * 4 + param_3) = current_entry;
-    table_count = table_count + 1;
-    if (*(short *)(current_entry + 8) == 0 && *(short *)(current_entry + 10) == 0)
+  group_loader.group_count = 0;
+  group_loader.frame_count = 0;
+  group_loader.table_total = ReadSpriteEntryPointers((int *)group_loader.sprite_table, sprite_path);
+  *first_sprite_out = group_loader.sprite_table[0];
+  group_loader.sprite_index = 1;
+  for (;group_loader.sprite_index < group_loader.table_total;
+       group_loader.sprite_index = group_loader.sprite_index + 1)
+  {
+    group_loader.sprite_entry = group_loader.sprite_table[group_loader.sprite_index];
+    ((EncodedImage *(*)[20])group_entries)[group_loader.group_count][group_loader.frame_count] =
+        group_loader.sprite_entry;
+    group_loader.frame_count = group_loader.frame_count + 1;
+    if (group_loader.sprite_entry->left_clip == 0)
     {
-      *(int *)(param_2 + entry_count * 4) = table_count;
-      entry_count = entry_count + 1;
-      break;
+      if (group_loader.sprite_entry->top_clip == 0)
+      {
+        group_frame_counts[group_loader.group_count] = group_loader.frame_count;
+        group_loader.group_count = group_loader.group_count + 1;
+        break;
+      }
     }
-    if (*(short *)(current_entry + 8) == 0)
+    if (group_loader.sprite_entry->left_clip == 0)
     {
-      *(int *)(param_2 + entry_count * 4) = table_count;
-      entry_count = entry_count + 1;
-      table_count = 0;
+      group_frame_counts[group_loader.group_count] = group_loader.frame_count;
+      group_loader.group_count = group_loader.group_count + 1;
+      group_loader.frame_count = 0;
     }
-    current_sprite = current_sprite + 1;
   }
-  return entry_count;
+  return group_loader.group_count;
 }
 
 // FUNCTION: FACEMAKER 0x0040542d
-int FUN_0040542d(int *param_1, int param_2, int param_3, unsigned int param_4, int param_5,
-                         unsigned int param_6, unsigned char param_7)
+int ReplacePaletteIndexInRect(int *page, int x, int y, unsigned int width, int height,
+                              unsigned int from_color, unsigned char to_color)
 {
   int row_index;
   int pixel_index;
-  unsigned char local_804[2048];
+  unsigned char local_800[2048];
 
-  for (row_index = 0; row_index < param_5; row_index = row_index + 1)
+  for (row_index = 0; row_index < height; row_index = row_index + 1)
   {
-    FUN_004076c0((unsigned int *)local_804, *param_1, param_2, row_index + param_3, param_4);
-    for (pixel_index = 0; pixel_index < (int)param_4; pixel_index = pixel_index + 1)
+    FUN_004076c0((unsigned int *)local_800, *page, x, row_index + y, width);
+    for (pixel_index = 0; pixel_index < (int)width; pixel_index = pixel_index + 1)
     {
-      if (local_804[pixel_index] == param_6)
+      if (local_800[pixel_index] == from_color)
       {
-        local_804[pixel_index] = param_7;
+        local_800[pixel_index] = to_color;
       }
     }
-    FUN_004075d0((unsigned int *)local_804, *param_1, param_2, row_index + param_3, param_4);
+    FUN_004075d0((unsigned int *)local_800, *page, x, row_index + y, width);
   }
-  return param_5;
+  return height;
 }
 
 // FUNCTION: FACEMAKER 0x00404d70
-int FUN_00404d70(char *path, int counts_out, void *entries_out, int *first_entry_out)
+int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **group_entries,
+                      EncodedImage **first_sprite_out)
 {
-  int current_sprite;
-  int tile_x;
-  int tile_y;
-  int frames_in_group;
-  int group_count;
-  int saw_separator;
-  int use_pcx_tiles;
-  int first_tile;
-  unsigned int tile_index;
-  unsigned int sign_bits;
-  char *group_suffix;
-  char local_350[260];
-  struct _finddata_t find_data;
-  struct _finddata_t pcx_find_data;
-  long find_handle;
-  long pcx_find_handle;
-
-  group_count = 0;
-  frames_in_group = 0;
-  saw_separator = 0;
-  group_suffix = DAT_0040c9c4;
-  first_tile = 1;
-  use_pcx_tiles = 0;
-  memset(entries_out, 0, 4);
-  *group_suffix = 'a';
-
-  strcpy(local_350, path);
-  find_handle = _findfirst(local_350, &find_data);
-
-  strcpy(local_350, path);
-  strcat(local_350, s___pcx_0040c9c8);
-  pcx_find_handle = _findfirst(local_350, &pcx_find_data);
-  if (pcx_find_handle == -1 && find_handle == -1)
+  struct
   {
-    return 0;
+    int tile_y;
+    int tile_x;
+    int frames_in_group;
+    int tile_index;
+    int group_count;
+    long find_handle;
+    char local_34c[260];
+    int use_pcx_tiles;
+    int saw_separator;
+    long pcx_find_handle;
+    unsigned char find_data[0x118];
+    EncodedImage *current_sprite;
+    char *group_suffix;
+    int first_tile;
+    unsigned char pcx_find_data[0x118];
+  } face_loader;
+
+  face_loader.group_count = 0;
+  face_loader.saw_separator = 0;
+  face_loader.frames_in_group = 0;
+  face_loader.group_suffix = "1";
+  face_loader.first_tile = 1;
+  face_loader.use_pcx_tiles = 0;
+  memset(group_entries, 0, 4);
+  *face_loader.group_suffix = 'a';
+  strcpy(face_loader.local_34c, base_path);
+  face_loader.find_handle = _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.find_data);
+  strcpy(face_loader.local_34c, base_path);
+  strcat(face_loader.local_34c, "*.pcx");
+  face_loader.pcx_find_handle =
+      _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.pcx_find_data);
+  if ((face_loader.pcx_find_handle == -1) && (face_loader.find_handle == -1))
+  {
+    return face_loader.group_count;
   }
-
-  if (find_handle == -1)
+  else if (face_loader.find_handle == -1)
   {
-    use_pcx_tiles = 1;
+    face_loader.use_pcx_tiles = 1;
   }
-  else if (pcx_find_handle != -1)
+  else if (face_loader.pcx_find_handle != -1)
   {
-    while (_findnext(pcx_find_handle, &pcx_find_data) == 0)
+    do
     {
-      if (find_data.size < pcx_find_data.size)
+      if (*(int *)(face_loader.find_data + 0xc) < *(int *)(face_loader.pcx_find_data + 0xc))
       {
-        use_pcx_tiles = 1;
+        face_loader.use_pcx_tiles = 1;
       }
-    }
+    } while (_findnext(face_loader.pcx_find_handle, (struct _finddata_t *)face_loader.pcx_find_data) == 0);
   }
-
-  if (pcx_find_handle != -1)
+  if (face_loader.pcx_find_handle != -1)
   {
-    _findclose(pcx_find_handle);
+    _findclose(face_loader.pcx_find_handle);
   }
-  if (find_handle != -1)
+  if (face_loader.find_handle != -1)
   {
-    _findclose(find_handle);
+    _findclose(face_loader.find_handle);
   }
-
-  strcpy(local_350, path);
-  strcat(local_350, DAT_0040c9d0);
-  if (use_pcx_tiles == 0)
+  strcpy(face_loader.local_34c, base_path);
+  strcat(face_loader.local_34c, ".pcx");
+  if (face_loader.use_pcx_tiles == 0)
   {
-    return FUN_0040530d(path, counts_out, (int)entries_out, first_entry_out);
+    return LoadSpriteGroupsFromFile(base_path, group_frame_counts, group_entries, first_sprite_out);
   }
-
-  FUN_0040a130(2, local_350);
-  FUN_0040542d((int *)PTR_DAT_0040c0ac, 0, 0, 0x22c, 0x158, 0x6d, 0);
-  FUN_00408900();
-  *first_entry_out = FUN_00408a50(2, 0, 0, 0x89, 0xa9);
-  current_sprite = *first_entry_out;
-  tile_index = 1;
+  FUN_0040a130(2, face_loader.local_34c);
+  ReplacePaletteIndexInRect((int *)PTR_DAT_0040c0ac, 0, 0, 0x22c, 0x158, 0x6d, 0);
+  BeginSpriteEncodeSession();
+  *first_sprite_out = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
+  face_loader.current_sprite = *first_sprite_out;
+  face_loader.tile_index = 1;
   while (1)
   {
-    sign_bits = (unsigned int)((int)tile_index >> 0x1f);
-    tile_x = ((((tile_index ^ sign_bits) - sign_bits) & 3U) ^ sign_bits) - sign_bits;
-    tile_x = tile_x * 0x8a;
-    tile_y = ((int)(tile_index + (sign_bits & 3U)) >> 2) * 0xaa;
-    if (FUN_00405261(2, tile_x, tile_y, 0x8a, 0xaa) == 0)
+    face_loader.tile_x = (face_loader.tile_index % 4) * 0x8a;
+    face_loader.tile_y = (face_loader.tile_index / 4) * 0xaa;
+    if (IsSpriteTileEmpty(2, face_loader.tile_x, face_loader.tile_y, 0x8a, 0xaa) == 0)
     {
-      *(int *)(group_count * 0x50 + frames_in_group * 4 + (int)entries_out) = FUN_00408a50(2, tile_x, tile_y, 0x89, 0xa9);
-      current_sprite = *(int *)(group_count * 0x50 + frames_in_group * 4 + (int)entries_out);
-      frames_in_group = frames_in_group + 1;
-      *(short *)(current_sprite + 10) = -1;
-      *(short *)(current_sprite + 8) = *(short *)(current_sprite + 10);
-      saw_separator = 0;
+      ((EncodedImage *(*)[20])group_entries)[face_loader.group_count][face_loader.frames_in_group] =
+          EncodeSpriteFromPage(2, face_loader.tile_x, face_loader.tile_y, 0x89, 0xa9);
+      face_loader.current_sprite =
+          ((EncodedImage *(*)[20])group_entries)[face_loader.group_count][face_loader.frames_in_group];
+      face_loader.frames_in_group = face_loader.frames_in_group + 1;
+      face_loader.current_sprite->top_clip = -1;
+      face_loader.current_sprite->left_clip = face_loader.current_sprite->top_clip;
+      face_loader.saw_separator = 0;
     }
     else
     {
-      if (saw_separator != 0)
+      if (face_loader.saw_separator != 0)
       {
-        *(short *)(current_sprite + 10) = 0;
+        face_loader.current_sprite->top_clip = 0;
         break;
       }
-      if (first_tile == 0)
+      if (face_loader.first_tile != 0)
       {
-        *(short *)(current_sprite + 8) = 0;
-        *(int *)(counts_out + group_count * 4) = frames_in_group;
-        group_count = group_count + 1;
-        frames_in_group = 0;
-        saw_separator = 1;
+        face_loader.current_sprite->left_clip = 0;
       }
       else
       {
-        *(short *)(current_sprite + 8) = 0;
+        face_loader.current_sprite->left_clip = 0;
+        group_frame_counts[face_loader.group_count] = face_loader.frames_in_group;
+        face_loader.group_count = face_loader.group_count + 1;
+        face_loader.frames_in_group = 0;
+        face_loader.saw_separator = 1;
       }
     }
 
-    tile_index = tile_index + 1;
-    first_tile = 0;
-    if (7 < (int)tile_index)
+    face_loader.first_tile = 0;
+    face_loader.tile_index = face_loader.tile_index + 1;
+    if ((int)face_loader.tile_index >= 8)
     {
-      tile_index = 0;
-      strcpy(local_350, path);
-      strcat(local_350, group_suffix);
-      strcat(local_350, DAT_0040c9d8);
-      *group_suffix = *group_suffix + '\x01';
-      pcx_find_handle = _findfirst(local_350, &pcx_find_data);
-      if (pcx_find_handle == -1)
+      face_loader.tile_index = 0;
+      strcpy(face_loader.local_34c, base_path);
+      strcat(face_loader.local_34c, face_loader.group_suffix);
+      strcat(face_loader.local_34c, ".pcx");
+      ++*face_loader.group_suffix;
+      face_loader.pcx_find_handle =
+          _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.pcx_find_data);
+      if (face_loader.pcx_find_handle == -1)
       {
         break;
       }
-      _findclose(pcx_find_handle);
-      FUN_0040a130(2, local_350);
-      FUN_0040542d((int *)PTR_DAT_0040c0ac, 0, 0, 0x22c, 0x158, 0x6d, 0);
+      _findclose(face_loader.pcx_find_handle);
+      FUN_0040a130(2, face_loader.local_34c);
+      ReplacePaletteIndexInRect((int *)PTR_DAT_0040c0ac, 0, 0, 0x22c, 0x158, 0x6d, 0);
     }
   }
-
-  FUN_00408920();
-  FUN_00408970((void *)*first_entry_out, path);
-  return group_count;
+  FinalizeSpriteEncodeSession();
+  WriteSpriteBlob(*first_sprite_out, base_path);
+  return face_loader.group_count;
 }
 
 #pragma optimize("gy", on)
 
 // FUNCTION: FACEMAKER 0x00408900
-void FUN_00408900(void)
+void BeginSpriteEncodeSession(void)
 {
   DAT_004199c8 = malloc(0x200000);
   DAT_004199cc = DAT_004199c8;
 }
 
 // FUNCTION: FACEMAKER 0x00408920
-void FUN_00408920(void)
+void FinalizeSpriteEncodeSession(void)
 {
   *DAT_004199cc = -1;
   DAT_004199c8 = _expand((void *)DAT_004199c8, (int)DAT_004199cc + (0x10 - (int)DAT_004199c8));
 }
 
+// FUNCTION: FACEMAKER 0x00408950
+void FUN_00408950(void *memory)
+{
+  free(memory);
+}
+
 // FUNCTION: FACEMAKER 0x00408970
-size_t FUN_00408970(void *param_1, char *param_2)
+size_t WriteSpriteBlob(void *sprite_blob, char *output_path)
 {
   size_t byte_count;
   FILE *file;
 
-  byte_count = _msize(param_1);
-  file = fopen(param_2, DAT_0040d24c);
-  fwrite(param_1, 1, byte_count, file);
+  byte_count = _msize(sprite_blob);
+  file = fopen(output_path, "wb");
+  fwrite(sprite_blob, 1, byte_count, file);
   fclose(file);
   return byte_count;
 }
 
 // FUNCTION: FACEMAKER 0x004089c0
-int FUN_004089c0(int *param_1, char *param_2)
+int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
 {
   FILE *file;
   int file_handle;
@@ -324,9 +305,9 @@ int FUN_004089c0(int *param_1, char *param_2)
   int *sprite_data;
 
   entry_count = 0;
-  file = fopen(param_2, DAT_0040d224);
-  assert((int)file, s_D__NewMagic__sources__sidlib__sprite_c_0040d250, 0xa3,
-         s_Could_not_open_Sprite_File__s_0040d274, param_2);
+  file = fopen(sprite_path, DAT_0040d224);
+  assert((int)file, "D:\\NewMagic\\sources\\sidlib\\sprite.c", 0xa3,
+         "Could not open Sprite File %s\n", sprite_path);
   file_handle = _fileno(file);
   file_size = _filelength(file_handle);
   sprite_data = malloc(file_size);
@@ -335,8 +316,8 @@ int FUN_004089c0(int *param_1, char *param_2)
 
   while (*sprite_data != -1)
   {
-    *param_1 = (int)sprite_data;
-    param_1 = param_1 + 1;
+    *out_entry_ptrs = (int)sprite_data;
+    out_entry_ptrs = out_entry_ptrs + 1;
     entry_count = entry_count + 1;
     sprite_data = (int *)((int)sprite_data + *sprite_data);
   }
@@ -344,7 +325,7 @@ int FUN_004089c0(int *param_1, char *param_2)
 }
 
 // FUNCTION: FACEMAKER 0x00408a50
-int FUN_00408a50(int page_number, int x, int y, unsigned int width, int height)
+EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height)
 {
   char *scan;
   char *write_ptr;
@@ -540,5 +521,5 @@ int FUN_00408a50(int page_number, int x, int y, unsigned int width, int height)
   }
   *DAT_004199cc = -1;
   sprite->total_size = (int)DAT_004199cc - (int)sprite;
-  return (int)sprite;
+  return sprite;
 }

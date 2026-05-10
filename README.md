@@ -17,7 +17,7 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * deck.exe (release /Od) ![matching](https://img.shields.io/badge/matching-99.62%25-green) : A trivial wrapper for showing the deck builder UI
 * deckdll.dll (release /Od) ![matching](https://img.shields.io/badge/matching-97.65%25-green) : The deck builder UI implementation, imported by deck.exe, magic.exe and shandalar.exe
 * drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-98.32%25-green) : Library for rendering full card representations
-* facemaker.exe : 
+* facemaker.exe (release partially optimized) ![matching](https://img.shields.io/badge/matching-72.38%25-blue): UI for designing your character.  Invoked via shandalar.exe with shared memory space.  Shares most of its code with shandalar.exe
 * gcconn.dll (debug, C++) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
 * magic.exe : The duel UI.  Shares a tremendous amount of code with shandalar.exe
 * magsnd.dll (release /Od) ![matching](https://img.shields.io/badge/matching-99.15%25-green) : Small dll that wraps DirectSound

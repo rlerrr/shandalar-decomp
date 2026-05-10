@@ -3,6 +3,20 @@
 
 #include <windows.h>
 
+typedef struct FacemakerWindowBounds
+{
+  int unk_00;
+  int unk_04;
+  int unk_08;
+  int max_x;
+  int max_y;
+  int unk_14;
+  int unk_18;
+  int unk_1c;
+  int unk_20;
+  struct FacemakerWindowBounds *self_ptr;
+} FacemakerWindowBounds;
+
 typedef union FontSlotData
 {
   struct
@@ -38,14 +52,14 @@ typedef struct FontSlot
   int tm_min;
   int tm_max;
   LONG tm_leading;
-  char unk_22c[0x80];
+  char unk_22c[0x78];
 } FontSlot;
 
 typedef struct EncodedImage
 {
   int total_size;
-  unsigned short width;
-  unsigned short height;
+  short width;
+  short height;
   short left_clip;
   short top_clip;
   short first_row;
@@ -53,6 +67,6 @@ typedef struct EncodedImage
   unsigned char spans[1];
 } EncodedImage;
 
-typedef char FontSlot_size_must_be_0x2ac[(sizeof(FontSlot) == 0x2ac) ? 1 : -1];
+typedef char FontSlot_size_must_be_0x2a4[(sizeof(FontSlot) == 0x2a4) ? 1 : -1];
 
 #endif

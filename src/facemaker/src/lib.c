@@ -1,11 +1,13 @@
 #include <windows.h>
 #include <stdlib.h>
+#include <string.h>
 #include "cardartlib/src/assert.h"
 #include "drawcardlib/src/pic.h"
 
 extern HDC global_main_hdc;
 DIBSurface * FUN_00406650(void);
 DIBSurface * FUN_004069e0(int page_number, int width, int height, int bits_per_pixel);
+int FUN_00406d00(int page_number, int color_index);
 void FUN_0040aa20(double *dst, double *src, unsigned int size);
 
 // GLOBAL: FACEMAKER 0x0040d0ec
@@ -30,7 +32,7 @@ BITMAPINFO *DAT_00417188;
 int DAT_00417998;
 
 // GLOBAL: FACEMAKER 0x0040d088
-int DAT_0040d088;
+int DAT_0040d088 = 1;
 
 // GLOBAL: FACEMAKER 0x00417180
 BITMAPINFO *DAT_00417180;
@@ -39,7 +41,7 @@ BITMAPINFO *DAT_00417180;
 int DAT_0041799c;
 
 // GLOBAL: FACEMAKER 0x004181b0
-char DAT_004181b0[0x808];
+char DAT_004181b0[0x804];
 
 // GLOBAL: FACEMAKER 0x0040d094
 char *PTR_DAT_0040d094 = DAT_004181b0;
@@ -49,6 +51,9 @@ int DAT_004189b4;
 
 // GLOBAL: FACEMAKER 0x00425e10
 HPALETTE DAT_00425e10;
+
+// GLOBAL: FACEMAKER 0x00425e20
+unsigned int DAT_00425e20[0xc8];
 
 // GLOBAL: FACEMAKER 0x00426140
 PALETTEENTRY DAT_00426140[256];
@@ -71,8 +76,27 @@ RGBQUAD DAT_00426580[256];
 // GLOBAL: FACEMAKER 0x00426980
 LOGPALETTE *DAT_00426980;
 
+// GLOBAL: FACEMAKER 0x00420df0
+unsigned int DAT_00420df0[0xc8];
+
+// GLOBAL: FACEMAKER 0x00421110
+int DAT_00421110[0x400];
+
+// GLOBAL: FACEMAKER 0x0041f5f0
+int DAT_0041f5f0[0x301];
+
+// GLOBAL: FACEMAKER 0x004201f4
+int DAT_004201f4[0x2ff];
+
 // GLOBAL: FACEMAKER 0x0040d08c
-int DAT_0040d08c;
+int DAT_0040d08c = 0;
+
+// GLOBAL: FACEMAKER 0x0040d2e4
+#if defined(FACEMAKER)
+unsigned char *PTR_DAT_0040d2e4 = (unsigned char *)0x00425e26;
+#else
+unsigned char *PTR_DAT_0040d2e4 = (unsigned char *)DAT_00425e20 + 6;
+#endif
 
 // GLOBAL: FACEMAKER 0x0041afb8
 HPALETTE DAT_0041afb8;
@@ -372,27 +396,48 @@ void FUN_00406bd0(int page_number, DIBSurface *page)
 // FUNCTION: FACEMAKER 0x00407190
 void FUN_00407190(int *param_1, int param_2, int param_3, unsigned int param_4)
 {
+  DIBSurface *page;
   COLORREF color;
-  unsigned int uVar1;
+  unsigned int value;
+  unsigned int rebuilt_color;
+  unsigned int upper_byte;
+  unsigned int middle_byte;
+  unsigned char low_byte;
+  unsigned char high_byte;
 
-  if ((int)param_4 < 0)
+  page = DAT_00426540[*param_1];
+  value = param_4;
+  if ((int)value < 0)
   {
-    uVar1 = -param_4;
+    value = -value;
     color = 0xffffff;
-    if (param_4 != 0xff000001)
+    if (value != color)
     {
-      color = ((uVar1 & 0xffff) >> 8 | 0x20000) << 8 | (uVar1 >> 0x10 & 0xff) << 0x10 | uVar1 & 0xff;
+      low_byte = (unsigned char)value;
+      high_byte = (unsigned char)(value >> 8);
+      upper_byte = (value >> 0x10) & 0xff;
+      rebuilt_color = (unsigned int)high_byte;
+      rebuilt_color = rebuilt_color | 0x20000;
+      rebuilt_color = rebuilt_color << 8;
+      middle_byte = upper_byte << 0x10;
+      rebuilt_color = rebuilt_color | middle_byte;
+      rebuilt_color = rebuilt_color | (unsigned int)low_byte;
+      color = rebuilt_color;
     }
-  }
-  else if (param_4 == 0xff)
-  {
-    color = 0xffffff;
   }
   else
   {
-    color = param_4 & 0xffff | 0x1000000;
+    if (value == 0xff)
+    {
+      color = 0xffffff;
+    }
+    else
+    {
+      color = value & 0xffff;
+      color = color | 0x1000000;
+    }
   }
-  SetPixelV(*(HDC *)((int)DAT_00426540[*param_1] + 4), param_2, param_3, color);
+  SetPixelV(page->hTempDC, param_2, param_3, color);
 }
 
 // FUNCTION: FACEMAKER 0x00406cc0
@@ -403,6 +448,28 @@ void FUN_00406cc0(int enabled)
     BitBlt(DAT_00426540[0]->hTempDC, 0, 0, DAT_00426540[0]->width, DAT_00426540[0]->height,
            DAT_00426540[enabled]->hTempDC, 0, 0, 0xcc0020);
   }
+}
+
+// FUNCTION: FACEMAKER 0x00406d00
+int FUN_00406d00(int page_number, int color_index)
+{
+  int page_ptr;
+  HBRUSH brush;
+  RECT rect;
+  LOGBRUSH brush_desc;
+
+  brush_desc.lbStyle = 0;
+  page_ptr = (int)DAT_00426540[page_number];
+  brush_desc.lbColor = (((unsigned int)DAT_00426140[color_index].peGreen | 0x20000) << 8) |
+                       ((unsigned int)DAT_00426140[color_index].peBlue << 0x10) |
+                       (unsigned int)DAT_00426140[color_index].peRed;
+  brush = CreateBrushIndirect(&brush_desc);
+  rect.top = 0;
+  rect.left = 0;
+  rect.right = *(LONG *)(page_ptr + 0x20);
+  rect.bottom = *(LONG *)(page_ptr + 0x24);
+  FillRect(*(HDC *)(page_ptr + 4), &rect, brush);
+  return DeleteObject(brush);
 }
 
 // FUNCTION: FACEMAKER 0x00407210
@@ -658,25 +725,30 @@ void FUN_004076c0(unsigned int *param_1, int param_2, int param_3, int param_4, 
 }
 
 // FUNCTION: FACEMAKER 0x0040aa20
-void FUN_0040aa20(double *dst, double *src, unsigned int size)
+void FUN_0040aa20(double *dst, double *src, unsigned int num)
 {
-  unsigned int qword_count;
-
-  qword_count = size >> 3;
-  do
-  {
-    *dst = *src;
-    src++;
-    dst++;
-    qword_count--;
-  } while (qword_count != 0);
-
-  for (qword_count = size & 7; qword_count != 0; qword_count--)
-  {
-    *(unsigned char *)dst = *(unsigned char *)src;
-    src = (double *)((int)src + 1);
-    dst = (double *)((int)dst + 1);
+#ifdef MODERN_FIXES
+  memcpy(dst,src,num);
+#else
+  //TODO: this looks like real inline asm but who knows
+  __asm {
+    mov edi, dst
+    mov esi, src
+    mov ecx, num
+    push ecx
+    shr ecx, 3
+  copy_bytes_qword_loop:
+    fld qword ptr [esi]
+    fstp qword ptr [edi]
+    add esi, 8
+    add edi, 8
+    dec ecx
+    jne copy_bytes_qword_loop
+  copy_bytes_tail:
+    pop ecx
+    and ecx, 7
+    rep movsb
+  copy_bytes_done:
   }
+#endif
 }
-
-#pragma optimize("", on)
