@@ -87,7 +87,7 @@ int FUN_0049e8bb(int player,
                               0,
                               locals.available_cards,
                               count,
-                              &unk_008b40e0,
+                              &gs_done_008b40e0,
                               locals.show_bigcard,
                               locals.prompt);
     if (selection == -1)

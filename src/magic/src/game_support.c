@@ -2386,7 +2386,7 @@ int FUN_004b0c12(int player, int card)
   {
     if (kill_mode != 4 && (global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0 && (instance->state & 0x20) == 0)
     {
-      ++*(int *)(unk_008cfd30 + 0x7c);
+      ++*(int *)(gs_cardtitle_damage_008cfd30 + 0x7c);
     }
 
     if ((global_cards_data[internal_card_id].type & 0xc7) != 0)
@@ -2436,7 +2436,7 @@ int FUN_004b0c12(int player, int card)
         FUN_004b14f5(player, card);
         if (kill_mode == 3)
         {
-          dispatch_trigger_twice_once_with_each_player_as_reason(human_player, TRIGGER_GRAVEYARD_FROM_PLAY, &DAT_008a8ed0, 0);
+          dispatch_trigger_twice_once_with_each_player_as_reason(human_player, TRIGGER_GRAVEYARD_FROM_PLAY, &gs_cards_to_graveyard_008a8ed0, 0);
         }
       }
     }
@@ -2449,7 +2449,7 @@ int FUN_004b0c12(int player, int card)
   trigger_cause = card;
   if ((global_cards_data[internal_card_id].type & 0x47) != 0)
   {
-    dispatch_trigger_twice_once_with_each_player_as_reason(human_player, TRIGGER_LEAVE_PLAY, &DAT_007aaef0, 0);
+    dispatch_trigger_twice_once_with_each_player_as_reason(human_player, TRIGGER_LEAVE_PLAY, &gs_card_leaving_play_007aaef0, 0);
   }
   trigger_cause_controller = saved_trigger_cause_controller;
   trigger_cause = saved_trigger_cause;
@@ -2457,15 +2457,15 @@ int FUN_004b0c12(int player, int card)
 
   if ((global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0)
   {
-    --*(int *)(unk_008cfd30 + player * 4 + 0x50);
+    --*(int *)(gs_cardtitle_damage_008cfd30 + player * 4 + 0x50);
   }
   if ((global_cards_data[internal_card_id].type & TYPE_ENCHANTMENT) != 0)
   {
-    --*(int *)(unk_008cfd30 + player * 4 + 0x58);
+    --*(int *)(gs_cardtitle_damage_008cfd30 + player * 4 + 0x58);
   }
   if ((global_cards_data[internal_card_id].type & TYPE_ARTIFACT) != 0)
   {
-    --*(int *)(unk_008cfd30 + player * 4 + 0x60);
+    --*(int *)(gs_cardtitle_damage_008cfd30 + player * 4 + 0x60);
   }
 
   instance->internal_card_id = -1;
@@ -5447,7 +5447,7 @@ char *FUN_00495311(int value)
     return "";
   }
   else
-    return DAT_00926930[value];
+    return gs_hunting_subtype_name_00926930[value];
 }
 
 // FUNCTION: MAGIC 0x004a61fe

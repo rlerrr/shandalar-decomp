@@ -401,7 +401,7 @@ extern int unk_009266a4;
 extern int unk_009266ac;
 
 // GLOBAL: MAGIC 0x00926750
-extern char unk_00926750[300];
+extern char gs_cardtitle_hunting_00926750[300];
 
 // GLOBAL: MAGIC 0x0093d848
 extern int unk_0093d848;

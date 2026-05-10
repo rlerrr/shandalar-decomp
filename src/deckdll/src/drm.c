@@ -85,6 +85,7 @@ static void ReverseBits32(uint *param_1)
 
 // FUNCTION: DECKDLL 0x1000deb9
 // FUNCTION: MAGIC 0x0043d29b
+// FUNCTION: SHANDALAR 0x00441bf9
 int InitLicenseSecretsFromRegistry(void)
 {
 #ifndef MODERN_FIXES
@@ -188,6 +189,7 @@ int InitLicenseSecretsFromRegistry(void)
 // 2 = invalid serial
 // FUNCTION: DECKDLL 0x1000e20a
 // FUNCTION: MAGIC 0x0043d5ec
+// FUNCTION: SHANDALAR 0x00441f4a
 static int ValidateRegistrySerial(uint32_t *out_value)
 {
   struct
@@ -330,6 +332,7 @@ static int ValidateRegistrySerial(uint32_t *out_value)
 
 // FUNCTION: DECKDLL 0x100271e3
 // FUNCTION: MAGIC 0x00497a09
+// FUNCTION: SHANDALAR 0x00468498
 unsigned int HasExpansion(unsigned char param_1)
 {
 #ifndef MODERN_FIXES

@@ -494,12 +494,12 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   strcat(global_duelsounds_path, "\\DuelSounds");
   strcpy(global_duel_dat_path, global_duelart_path);
   strcat(global_duel_dat_path, "\\Duel.dat");
-  strcpy(DAT_UIStrings_txt_008962f0, "UIStrings.txt");
+  strcpy(global_ui_strings_filename, "UIStrings.txt");
   strcpy(global_savegame_path, global_base_directory);
   strcat(global_savegame_path, "\\SaveGame");
   _mkdir(global_savegame_path);
 
-  FUN_00491f1e(DAT_UIStrings_txt_008962f0);
+  FUN_00491f1e(global_ui_strings_filename);
 
   strcpy(s.path, global_base_directory);
   strcat(s.path, "\\CARDS.DAT");
@@ -507,7 +507,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (global_available_slots == 0)
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     append_startup_error(message_buffer, s.path, 1);
   }
 
@@ -516,7 +516,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (!FUN_004537d8(s.path))
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     append_startup_error(message_buffer, s.path, 2);
   }
 
@@ -525,7 +525,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (!FUN_004c0c20(s.path))
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     append_startup_error(message_buffer, s.path, 1);
   }
 
@@ -540,7 +540,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   else
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     strcat(message_buffer, text_lines[3]);
     strcat(message_buffer, "\n");
   }
@@ -548,7 +548,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (!SetupDuelPalette())
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     strcat(message_buffer, text_lines[4]);
     strcat(message_buffer, "\n");
   }
@@ -556,13 +556,13 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (!CreateOffscreen32bppDibSection(GetSystemMetrics(SM_CXSCREEN),
                                       GetSystemMetrics(SM_CYSCREEN),
                                       &DAT_00789310,
-                                      (BITMAPINFO *)&unk_008b4330[0x40],
+                                      (BITMAPINFO *)&gs_cardtitle_draw_a_card_008b4330[0x40],
                                       &DAT_00926808,
                                       &DAT_0093a980,
                                       &DAT_008cefb0))
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     strcat(message_buffer, text_lines[5]);
     strcat(message_buffer, "\n");
   }
@@ -570,7 +570,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (!create_fonts())
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     strcat(message_buffer, text_lines[6]);
     strcat(message_buffer, "\n");
   }
@@ -578,7 +578,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   if (!InitCardArtGdiResources())
   {
     s.ok = 0;
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     strcat(message_buffer, text_lines[7]);
     strcat(message_buffer, "\n");
   }
@@ -1233,7 +1233,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   {
     global_main_hwnd = CreateWindowExA(0,
                                        "MAGICGAME_MagicShellClass",
-                                       DAT_Magic_The_Gathering_00789460,
+                                       gs_magic_the_gathering_title_00789460,
                                        0x90040000,
                                        1,
                                        0,
@@ -1245,7 +1245,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
                                        NULL);
     if (global_main_hwnd == NULL)
     {
-      load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+      load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
       strcat(s.startup_message, text_lines[8]);
       strcat(s.startup_message, "\n");
       s.startup_ok = 0;
@@ -1253,7 +1253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
   else
   {
-    load_text(DAT_UIStrings_txt_008962f0, "PROMPT_STARTUPERROR");
+    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     strcat(s.startup_message, text_lines[8]);
     strcat(s.startup_message, "\n");
     s.startup_ok = 0;
@@ -1261,7 +1261,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   if (!s.startup_ok)
   {
-    MessageBoxA(NULL, s.startup_message, DAT_Magic_The_Gathering_00789460, 0x1030);
+    MessageBoxA(NULL, s.startup_message, gs_magic_the_gathering_title_00789460, 0x1030);
     return 0;
   }
 

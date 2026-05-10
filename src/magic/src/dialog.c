@@ -298,15 +298,15 @@ char *FUN_0044a3bf(int player, int card)
 
     if (locals.csvid == unk_007a7d64)
     {
-      strcpy(unk_00637670, unk_008cfd30);
+      strcpy(unk_00637670, gs_cardtitle_damage_008cfd30);
     }
     else if (locals.csvid == unk_00789b80)
     {
-      sprintf(unk_00637670, unk_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).info_slot));
+      sprintf(unk_00637670, gs_cardtitle_hunting_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).info_slot));
     }
     else if (locals.csvid == unk_008cf1ac)
     {
-      strcpy(unk_00637670, unk_008cf040);
+      strcpy(unk_00637670, gs_multiblock_creature_008cf040);
     }
     else if (locals.csvid == unk_00789734)
     {
@@ -318,7 +318,7 @@ char *FUN_0044a3bf(int player, int card)
     }
     else if (locals.csvid == unk_009266ac)
     {
-      strcpy(unk_00637670, unk_008b4330);
+      strcpy(unk_00637670, gs_cardtitle_draw_a_card_008b4330);
     }
     else
     {
@@ -638,16 +638,16 @@ void FUN_0049511c(char *text, color_t source_color, color_t target_color, int pa
   int color_index;
   char search_text[100];
 
-  for (color_index = 0; color_index < DAT_008cd924; ++color_index)
+  for (color_index = 0; color_index < gs_words_to_hack_count_008cd924; ++color_index)
   {
-    sprintf(search_text, s_HackWordSearchFormat_0057248c, DAT_00789c80[source_color][color_index]);
+    sprintf(search_text, s_HackWordSearchFormat_0057248c, gs_words_to_hack_00789c80[source_color][color_index]);
     if (parenthesize == 0)
     {
-      strcpy(replacement_text, DAT_0091d260[target_color][color_index]);
+      strcpy(replacement_text, gs_words_hacked_0091d260[target_color][color_index]);
     }
     else
     {
-      sprintf(replacement_text, s_HackWordReplacementFormat_00572494, DAT_0091d260[target_color][color_index]);
+      sprintf(replacement_text, s_HackWordReplacementFormat_00572494, gs_words_hacked_0091d260[target_color][color_index]);
     }
     FUN_00494e91(text, search_text, 1, replacement_text);
   }
@@ -660,16 +660,16 @@ void FUN_00495217(char *text, color_t source_color, int target_color, int parent
   int color_index;
   char search_text[100];
 
-  for (color_index = 0; color_index < DAT_00789c34; ++color_index)
+  for (color_index = 0; color_index < gs_words_to_sleight_count_00789c34; ++color_index)
   {
-    sprintf(search_text, s_ColorWordSearchFormat_0057249c, DAT_00781bd0[source_color][color_index]);
+    sprintf(search_text, s_ColorWordSearchFormat_0057249c, gs_words_to_sleight_00781bd0[source_color][color_index]);
     if (parenthesize == 0)
     {
-      strcpy(replacement_text, DAT_008a9c10[target_color][color_index]);
+      strcpy(replacement_text, gs_words_sleighted_008a9c10[target_color][color_index]);
     }
     else
     {
-      sprintf(replacement_text, s_ColorWordReplacementFormat_005724a4, DAT_008a9c10[target_color][color_index]);
+      sprintf(replacement_text, s_ColorWordReplacementFormat_005724a4, gs_words_sleighted_008a9c10[target_color][color_index]);
     }
     FUN_00494e91(text, search_text, 1, replacement_text);
   }
@@ -742,7 +742,7 @@ int do_dialog(int who_chooses,
   strcpy(unk_00748770, "");
   if (who_chooses == active_player)
   {
-    sprintf(unk_00748770, DAT_0091b150, DAT_007a7c60);
+    sprintf(unk_00748770, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
     strcat(unk_00748770, "\n\n");
     at_start_of_line = 1;
     remaining_choice = ai_choice;
@@ -871,7 +871,7 @@ unsigned int FUN_00446e4b(void)
   unsigned int needs_refresh;
   int *stack_entry_count;
 
-  //stack_entry_count = (int *)&unk_008cf040[52];
+  //stack_entry_count = (int *)&gs_multiblock_creature_008cf040[52];
 
   EnterCriticalSection((void *)&unk_00789110);
   needs_refresh = memcmp(global_displayed_card_instances, global_card_instances, 0x161e8);
@@ -1108,7 +1108,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
                       locals.card_version,
                       param_6,
                       param_7,
-                      &DAT_00789130);
+                      &gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559bc1
@@ -1194,7 +1194,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
     }
   }
 
-  DrawFullCard((HDC)dc, (RECT *)rect, &locals.card_data, locals.card_version, 2, DAT_0091c980, &DAT_00789130);
+  DrawFullCard((HDC)dc, (RECT *)rect, &locals.card_data, locals.card_version, 2, DAT_0091c980, &gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559e9c
@@ -1228,7 +1228,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
 
     if (card_id == unk_007a7d64)
     {
-      sprintf(DAT_00709100, s_CardValueFormat_0057f630, unk_008cfd30, FUN_00448490(player, card));
+      sprintf(DAT_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30, FUN_00448490(player, card));
       locals.single_color = single_color_test_bit_to_color_t(FUN_00449057(player, card));
       if (locals.single_color == 1 ||
           locals.single_color == 2 ||
@@ -1236,7 +1236,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
           locals.single_color == 3 ||
           locals.single_color == 5)
       {
-        sprintf(DAT_00709100 + strlen(DAT_00709100), s_ParenthesizedColorFormat_0057f638, DAT_00709390[locals.single_color]);
+        sprintf(DAT_00709100 + strlen(DAT_00709100), s_ParenthesizedColorFormat_0057f638, gs_color_word_capitalized_00709390[locals.single_color]);
       }
     }
     else if (card_id == unk_00789b80)
@@ -1245,7 +1245,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     }
     else if (card_id == unk_008cf1ac)
     {
-      strcpy(DAT_00709100, unk_008cf040);
+      strcpy(DAT_00709100, gs_multiblock_creature_008cf040);
     }
     else if (card_id == unk_00789734)
     {
@@ -1297,7 +1297,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
 
     if (card_id == unk_007a7d64)
     {
-      strcpy(DAT_00708da8, *(char **)(DAT_00781bd0 + locals.card_data.id * 0x14));
+      strcpy(DAT_00708da8, *(char **)(gs_words_to_sleight_00781bd0 + locals.card_data.id * 0x14));
     }
     else if (card_id == unk_00789b80)
     {
@@ -1305,7 +1305,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     }
     else if (card_id == unk_008cf1ac)
     {
-      strcpy(DAT_00708da8, DAT_00925e70);
+      strcpy(DAT_00708da8, gs_multiblock_shadow_blocker_00925e70);
     }
     else if (card_id == unk_00789734)
     {
@@ -1368,7 +1368,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
         {
           strcat(locals.value_text, s_CommaSpace_0057f6ec);
         }
-        strcat(locals.value_text, DAT_008b4de0);
+        strcat(locals.value_text, gs_ability_word_008b4de0);
         locals.appended_text = 1;
       }
       if ((locals.display_flags & 0x100) != 0)
@@ -1429,7 +1429,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     }
 
     locals.card_data.rules_text = DAT_00708da8;
-    DrawFullCard((HDC)dc, (RECT *)rect, &locals.card_data, locals.display_version, 2, DAT_0091c980, &DAT_00789130);
+    DrawFullCard((HDC)dc, (RECT *)rect, &locals.card_data, locals.display_version, 2, DAT_0091c980, &gs_illus_00789130);
   }
 }
 
@@ -1685,47 +1685,8 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             card_id != unk_008a8de8 &&
             card_id != unk_0092666c)
         {
-          DrawFullCard(paint_dc, (RECT *)DAT_006f6df8, global_raw_cards_storage + card_id, 0, 0x12, 0, &DAT_00789130);
-          if (DAT_00777c0c != 0)
-          {
-            sprintf(card_coordinates, "%d,%d", dialog_context->bigcard_player, dialog_context->bigcard_card);
-            SetBkMode(paint_dc, 1);
-            SetTextColor(paint_dc, 0);
-            coord_text_length = strlen(card_coordinates);
-            TextOutA(paint_dc,
-                     DAT_006f6df8[0] + 5,
-                     DAT_006f6df8[1] + ((DAT_006f6df8[3] - DAT_006f6df8[1]) * 0x14) / 100,
-                     card_coordinates,
-                     coord_text_length);
-            SetTextColor(paint_dc, 0xffffff);
-            coord_text_length = strlen(card_coordinates);
-            TextOutA(paint_dc,
-                     DAT_006f6df8[0] + 4,
-                     DAT_006f6df8[1] + ((DAT_006f6df8[3] - DAT_006f6df8[1]) * 0x14) / 100 - 1,
-                     card_coordinates,
-                     coord_text_length);
-          }
-        }
-      }
-      else
-      {
-        picture_number = FUN_004964dd(card_image_number, dialog_context->bigcard_player, dialog_context->bigcard_card);
-        if (card_image_number == unk_009266ac)
-        {
-          DrawCardBack(paint_dc, (RECT *)DAT_006f6df8);
-        }
-        else if (card_image_number == unk_007a7d64 ||
-                 card_image_number == unk_00789b80 ||
-                 card_image_number == unk_008cf1ac ||
-                 card_image_number == unk_00789734 ||
-                 card_image_number == unk_008a8de8)
-        {
-          FUN_00559e9c((int)paint_dc,
-                       (int)DAT_006f6df8,
-                       card_image_number,
-                       dialog_context->bigcard_player,
-                       dialog_context->bigcard_card);
-        }
+          DrawFullCard(paint_dc, (RECT *)DAT_006f6df8, global_raw_cards_storage + card_id, 0, 0x12, 0, &gs_illus_00789130);
+     }
         else if (card_image_number == unk_0092666c)
         {
           FUN_00559bc1((int)paint_dc, (int)DAT_006f6df8, dialog_context->bigcard_player, dialog_context->bigcard_card);
