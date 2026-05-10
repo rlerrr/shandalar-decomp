@@ -1057,6 +1057,7 @@ static void FUN_00422bea(void)
 }
 
 // FUNCTION: MAGIC 0x004a7b3d
+// FUNCTION: SHANDALAR 0x00559cc3
 static int FUN_004a7b3d(void)
 {
   struct

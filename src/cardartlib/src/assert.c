@@ -72,6 +72,7 @@ char global_base_directory[0x105];
 // FUNCTION: DECKDLL 0x1000eef0
 // FUNCTION: MAGIC 0x004da0e0
 // FUNCTION: SHANDALAR 0x0046a520
+// FUNCTION: FACEMAKER 0x00401440
 void assert(int condition,char *file,int line,char *fmt,...)
 {
   char local_114 [260];
@@ -105,6 +106,7 @@ void assert(int condition,char *file,int line,char *fmt,...)
 // FUNCTION: CARDARTLIB 0x10001116
 // FUNCTION: DRAWCARDLIB 0x1000c206
 // FUNCTION: DECKDLL 0x1000f044
+// FUNCTION: FACEMAKER 0x00401531
 void assert_noabort(int condition,char *file,int line,char *fmt,...)
 {
   char local_114 [260];

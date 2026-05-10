@@ -40,6 +40,10 @@ if (SHANDALAR_BUILD_DECK)
   add_subdirectory(deck)
 endif()
 
+if (SHANDALAR_BUILD_FACEMAKER)
+  add_subdirectory(facemaker)
+endif()
+
 if (SHANDALAR_BUILD_MANALINKINTERFACE)
   add_subdirectory(manalinkinterface)
 endif()

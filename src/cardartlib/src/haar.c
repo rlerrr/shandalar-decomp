@@ -176,10 +176,12 @@ unsigned char g_catalogReadScratch[0x3CC00 * 10];
 #else
 // GLOBAL: CARDARTLIB 0x10032c98
 // GLOBAL: DRAWCARDLIB 0x1003ab68
+// GLOBAL: SHANDALAR 0x0067ad80
 undefined1 g_haarDecodeScratch[0x7a800];
 
 // GLOBAL: CARDARTLIB 0x100ad498
 // GLOBAL: DRAWCARDLIB 0x100b5368
+// GLOBAL: SHANDALAR 0x006f5580
 unsigned char g_catalogReadScratch[0x3CC00];
 #endif
 
@@ -217,6 +219,7 @@ undefined4 global_color_depth;
 
 // FUNCTION: CARDARTLIB 0x1000570f
 // FUNCTION: DRAWCARDLIB 0x10001cbf
+// FUNCTION: SHANDALAR 0x0042ec23
 int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -414,6 +417,7 @@ void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 
 // FUNCTION: CARDARTLIB 0x10005cf5
 // FUNCTION: DRAWCARDLIB 0x100022a5
+// FUNCTION: SHANDALAR 0x0042f208
 int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_base)
 {
   struct {
@@ -452,6 +456,7 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id,int* delta_table_ptrs_bas
 
 // FUNCTION: CARDARTLIB 0x100062c7
 // FUNCTION: DRAWCARDLIB 0x10002877
+// FUNCTION: SHANDALAR 0x0042f7dc
 undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -710,6 +715,7 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 
 // FUNCTION: CARDARTLIB 0x10006be3
 // FUNCTION: DRAWCARDLIB 0x10008663
+// FUNCTION: MAGIC 0x0041f965
 byte * Wvl_DecodeHaar(WvlEntry *param_1,byte *param_2)
 {
   struct {
@@ -1188,6 +1194,7 @@ BOOL Wvl_UnpackPieces(byte *param_1,WvlEntry *param_2)
 
 // FUNCTION: CARDARTLIB 0x1000807f
 // FUNCTION: DRAWCARDLIB 0x10009aff
+// FUNCTION: SHANDALAR 0x005678fa
 uint * Wvl_DecodeToBgr24(byte *param_1,WvlEntry *wvl_entry,int width,int height)
 {
   struct WvlDecodeToBgr24Stack {

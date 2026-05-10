@@ -36,22 +36,13 @@ typedef struct {
 
 STATIC_ASSERT(sizeof(PcxHeader_t) == 0x80, PCXHEADER_wrong_size);
 
-// GLOBAL: DRAWCARDLIB 0x10021f18
-// GLOBAL: DECKDLL 0x1003395c
-char s_rb_10021f18[] = "rb";
-// GLOBAL: DRAWCARDLIB 0x10021f60
-// GLOBAL: DECKDLL 0x100339a4
-char s_rb_10021f60[] = "rb";
-// GLOBAL: DRAWCARDLIB 0x10021fd8
-// GLOBAL: DECKDLL 0x10033a1c
-char s_w_b_10021fd8[] = "w+b";
-
 // GLOBAL: DRAWCARDLIB 0x10021ed4
 // GLOBAL: DECKDLL 0x10033918
 int gPcxBufferWidth = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10021ed8
 // GLOBAL: DECKDLL 0x1003391c
 int gPcxBufferHeight = 0x00000000;
+
 // GLOBAL: DRAWCARDLIB 0x10021edc
 // GLOBAL: DECKDLL 0x10033920
 char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
@@ -59,28 +50,6 @@ char s_D__Newmagic_sources_sidlib_Pcxw__10021edc[] = "D:\\Newmagic\\sources\\sid
 // GLOBAL: DRAWCARDLIB 0x10021ed0
 // GLOBAL: DECKDLL 0x10033914
 char* PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = s_D__Newmagic_sources_sidlib_Pcxw__10021edc;
-
-// GLOBAL: DRAWCARDLIB 0x10021f00
-// GLOBAL: DECKDLL 0x10033944
-char s_Error_Opening_File__s_10021f00[] = "Error Opening File %s\r\n";
-// GLOBAL: DRAWCARDLIB 0x10021f1c
-// GLOBAL: DECKDLL 0x10033960
-char s__s_Not_a_256_color_palettized_pc_10021f1c[] = "%s Not a 256 color palettized pcx file\r\n";
-// GLOBAL: DRAWCARDLIB 0x10021f48
-// GLOBAL: DECKDLL 0x1003398c
-char s_Error_Opening_File__s_10021f48[] = "Error Opening File %s\r\n";
-// GLOBAL: DRAWCARDLIB 0x10021f64
-// GLOBAL: DECKDLL 0x100339a8
-char s__s_Not_a_pcx_file_10021f64[] = "%s Not a pcx file\r\n";
-// GLOBAL: DRAWCARDLIB 0x10021f78
-// GLOBAL: DECKDLL 0x100339bc
-char s__s_Not_a_version_5_pcx_file_10021f78[] = "%s Not a version 5 pcx file\r\n";
-// GLOBAL: DRAWCARDLIB 0x10021f98
-// GLOBAL: DECKDLL 0x100339dc
-char s__s_is_not_in_a_recognizable_form_10021f98[] = "%s is not in a recognizable format\r\n";
-// GLOBAL: DRAWCARDLIB 0x10021fc0
-// GLOBAL: DECKDLL 0x10033a04
-char s_Error_Opening_File__s_10021fc0[] = "Error Opening File %s\r\n";
 
 // GLOBAL: DRAWCARDLIB 0x10026548
 // GLOBAL: DECKDLL 0x1003a344
@@ -128,9 +97,9 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
     int row;
   } s;
   
-  gPcxInFile = fopen(path,s_rb_10021f18);
+  gPcxInFile = fopen(path,"rb");
   assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x69,
-               s_Error_Opening_File__s_10021f00,path);
+               "Error Opening File %s\r\n",path);
   gPcxPath = path;
   PcxReadHeaderAndPalette(paletteOut);
   if ((gPcxHeader.bitsPerPixel == 8) && (gPcxHeader.nPlanes == 1)) {
@@ -140,7 +109,7 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
     s.isPalettized256 = 0;
   }
   assert(s.isPalettized256,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x6f,
-               s__s_Not_a_256_color_palettized_pc_10021f1c,gPcxPath);
+               "%s Not a 256 color palettized pcx file\r\n",gPcxPath);
   s.padBytes = abs(4 - (global_pcxw_image_width & 3)) & 3;
   if ((global_pcxw_image_width == gPcxBufferWidth) && (global_pcxw_image_height == gPcxBufferHeight)) {
     memset(imagePixels,0,(gPcxBufferWidth + s.padBytes) * gPcxBufferHeight);
@@ -173,9 +142,9 @@ undefined1 * PcxLoad8bppImage(char *path,undefined1 *imagePixels,void *paletteOu
 // FUNCTION: DECKDLL 0x1001649a
 bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 {
-  gPcxInFile = fopen(path,s_rb_10021f60);
+  gPcxInFile = fopen(path,"rb");
   assert(gPcxInFile != (FILE *)0x0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x9c,
-               s_Error_Opening_File__s_10021f48,path);
+               "Error Opening File %s\r\n",path);
   gPcxPath = path;
 
   if (PcxReadHeaderAndPalette(paletteOut) == 0)
@@ -187,15 +156,16 @@ bool PcxReadHeaderAndPaletteFromPath(char *path,void *paletteOut)
 
 // FUNCTION: DRAWCARDLIB 0x100042ea
 // FUNCTION: DECKDLL 0x1001651f
+// FUNCTION: FACEMAKER 0x0040aa50
 undefined4 PcxReadHeaderAndPalette(void *paletteOut)
 {
   int local_8;
   
   fread(&gPcxHeader,0x80,1,gPcxInFile);
   assert(gPcxHeader.manufacturer == 0x0a,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xad,
-               s__s_Not_a_pcx_file_10021f64,gPcxPath);
+                "%s Not a pcx file\r\n",gPcxPath);
   assert(gPcxHeader.version == 5,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xae,
-               s__s_Not_a_version_5_pcx_file_10021f78,gPcxPath);
+               "%s Not a version 5 pcx file\r\n",gPcxPath);
   global_pcxw_image_width = ((uint)gPcxHeader.xmax - (uint)gPcxHeader.xmin) + 1;
   global_pcxw_image_height = ((uint)gPcxHeader.ymax - (uint)gPcxHeader.ymin) + 1;
   if (paletteOut == (void *)0x0) {
@@ -215,7 +185,7 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
   }
   else {
     assert(0,PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0xd4,
-                 s__s_is_not_in_a_recognizable_form_10021f98,gPcxPath);
+                 "%s is not in a recognizable format\r\n",gPcxPath);
   }
   return 1;
 }
@@ -277,10 +247,10 @@ PcxSave8bppImage(undefined *srcPixels,char *path,void* palette,undefined4 unused
   } s;
   
   s.paletteMarker = '\f';
-  gPcxOutFile = fopen(path,s_w_b_10021fd8);
+  gPcxOutFile = fopen(path,"w+b");
   assert(               (uint)(gPcxOutFile != (FILE *)0x0),
                PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0,0x146,
-               s_Error_Opening_File__s_10021fc0,path);
+               "Error Opening File %s\r\n",path);
   gPcxPath = path;
   PcxWriteHeader(width, height);
   for (s.row = 0; s.row < height; s.row = s.row + 1) {

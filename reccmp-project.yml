@@ -26,6 +26,13 @@ targets:
     source-root: src/deck
     hash:
       sha256: 4c33775a7f6c091616bdb8ddf7a0bebfb972c0a9bfc2faddd8f2c9c82ec804b0
+  FACEMAKER:
+    filename: FaceMaker.exe
+    source-root: src
+    hash:
+      sha256: b4f3d19614dcd825da846d097baa3cd9badc0c9852492bc27a8ba62c1741a493
+    data_sources:
+      - ghidra/facemaker.csv
   MAGIC:
     filename: magic.exe
     source-root: src
