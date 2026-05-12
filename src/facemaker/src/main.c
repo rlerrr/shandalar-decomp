@@ -151,9 +151,6 @@ extern int g_palette_transition_value_step[0x2ff];
 extern unsigned char *g_palette_rgb_bytes;
 extern FontSlot g_font_slots[0x10];
 extern char g_file_read_mode[];
-extern __declspec(dllimport) int *__p___mb_cur_max(void);
-extern __declspec(dllimport) unsigned short **__p__pctype(void);
-extern __declspec(dllimport) int _isctype(int c, int type);
 
 // GLOBAL: FACEMAKER 0x0040c010
 FacemakerWindowBounds g_face_preview_page_bounds = {0, 0, 0, 0x13f, 0xc7, 1, 0xf, 4, 0};
@@ -267,7 +264,7 @@ int g_palette_class_registered;
 int g_main_timer_id;
 
 // GLOBAL: FACEMAKER 0x004128a0
-unsigned int g_key_input_queue[0x32];
+unsigned int g_key_input_queue[50];
 
 // GLOBAL: FACEMAKER 0x00412968
 int g_keyboard_init_done;
@@ -411,12 +408,21 @@ char s___pic_0040cae0[] = "*.pic";
 // GLOBAL: FACEMAKER 0x0040cae8
 char s___pic_0040cae8[] = "*.pic";
 
+typedef struct
+{
+  uint8_t present; // nonzero => this mapping exists
+  uint8_t unk;     // maybe flags, maybe pad
+  uint16_t ch;     // resulting character / code
+} keymap_variant_t;
+
+typedef struct
+{
+  // [normal, shift, ctrl, alt]
+  keymap_variant_t states[4];
+} keymap_entry_t;
+
 // GLOBAL: FACEMAKER 0x0040caf0
-unsigned char g_virtual_key_char_map[0x1000] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 0, 27, 1, 2, 0, 27, 1, 2, 0, 27, 1, 0, 0, 0, 0,
-    2, 0, 49, 2, 2, 0, 33, 2, 0, 0, 0, 0, 2, 0, 0, 120,
-    2, 0, 50, 3, 2, 0, 64, 3, 0, 0, 0, 0, 2, 0, 0, 121};
+keymap_entry_t g_virtual_key_char_map[89];
 
 // GLOBAL: FACEMAKER 0x0040cab0
 char s_Current_Palette_0040cab0[] = "Current Palette";
@@ -485,93 +491,70 @@ void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
 {
   (void)wparam;
   {
-    int *mb_cur_max;
-    unsigned short **pctype_table;
     int virtual_key;
     int modifier_mode;
-    int repeat_count;
-    int ctype_mask;
-    int table_offset;
-    int tmp_state;
-    unsigned short translated_char;
 
     modifier_mode = 0;
-    tmp_state = g_keyboard_init_done;
-    if (tmp_state == 0)
+    if (g_keyboard_init_done == 0)
     {
-      while (GetAsyncKeyState(0x12) != 0)
+      while (GetAsyncKeyState(VK_MENU) != 0)
       {
       }
-      while (GetAsyncKeyState(0x11) != 0)
+      while (GetAsyncKeyState(VK_CONTROL) != 0)
       {
       }
       g_keyboard_init_done = 1;
     }
 
-    tmp_state = g_key_input_queue_count;
-    if (tmp_state == 0x31)
+    if (g_key_input_queue_count == 50)
     {
       MessageBeep(-1);
       return;
     }
 
     virtual_key = (int)(((unsigned int)lparam & 0xff0000) >> 0x10);
-    if (GetAsyncKeyState(0x12) != 0)
+    if (GetAsyncKeyState(VK_MENU))
     {
       modifier_mode = 3;
     }
-    else if (GetAsyncKeyState(0x11) != 0)
+    else if (GetAsyncKeyState(VK_CONTROL))
     {
       modifier_mode = 2;
     }
     else
     {
-      mb_cur_max = __p___mb_cur_max();
-      if (*mb_cur_max > 1)
+      if (isalpha(g_virtual_key_char_map[virtual_key].states[0].ch))
       {
-        ctype_mask = _isctype(*(unsigned short *)(g_virtual_key_char_map + virtual_key * 0x10 + 2) & 0xff, 0x103);
+        modifier_mode = (GetAsyncKeyState(VK_CAPITAL) != 0);
+        modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
       }
-      else
+      else if ((virtual_key < 'O') || ('S' < virtual_key))
       {
-        repeat_count = (int)(unsigned int)*(unsigned short *)(g_virtual_key_char_map + virtual_key * 0x10 + 2);
-        pctype_table = __p__pctype();
-        ctype_mask = (int)((*pctype_table)[repeat_count & 0xff] & 0x103);
-      }
-
-      if (ctype_mask != 0)
-      {
-        modifier_mode = (GetAsyncKeyState(0x14) == 1);
-        modifier_mode = modifier_mode ^ (GetAsyncKeyState(0x10) == 1);
-      }
-      else if ((virtual_key < 0x47) || (0x53 < virtual_key))
-      {
-        if (GetAsyncKeyState(0x10) != 0)
+        if (GetAsyncKeyState(VK_SHIFT))
         {
           modifier_mode = 1;
         }
       }
       else
       {
-        modifier_mode = (GetAsyncKeyState(0x90) == 1);
-        modifier_mode = modifier_mode ^ (GetAsyncKeyState(0x10) == 1);
+        modifier_mode = (GetAsyncKeyState(VK_NUMLOCK) != 0);
+        modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
       }
     }
 
-    table_offset = (int)(modifier_mode + virtual_key * 4) * 4;
-    if (g_virtual_key_char_map[table_offset] != '\0')
+    // table_offset = (int)(modifier_mode + virtual_key * 4) * 4;
+    if (g_virtual_key_char_map[virtual_key].states[modifier_mode].present)
     {
-      translated_char = *(unsigned short *)(g_virtual_key_char_map + table_offset + 2);
-      repeat_count = (int)((unsigned int)lparam & 0xffff);
-      if ((int)repeat_count >= (0x32 - g_key_input_queue_count))
+      unsigned short translated_char = g_virtual_key_char_map[virtual_key].states[modifier_mode].ch;
+      int repeat_count = lparam & 0xffff;
+      if (repeat_count >= (50 - g_key_input_queue_count))
       {
-        repeat_count = (0x32 - g_key_input_queue_count);
+        repeat_count = (50 - g_key_input_queue_count);
       }
 
       if (repeat_count != 0)
       {
-        unsigned int *dst_char;
-
-        dst_char = g_key_input_queue + g_key_input_queue_count;
+        unsigned int *dst_char = g_key_input_queue + g_key_input_queue_count;
         do
         {
           repeat_count = repeat_count - 1;
@@ -2242,8 +2225,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   char *slash;
   DWORD thread_id;
   MSG msg;
-  //int horzres;
-  // unsigned int matched_mode;
+  // int horzres;
+  //  unsigned int matched_mode;
   char module_path[256];
   int custom_mode_selected;
   WNDCLASSA wndclass;
@@ -2341,7 +2324,7 @@ LOOP:
     {
       *cmdLine = '\0';
 
-      //TODO: did they actually use goto here? can't figure out a normal loop that mimics this
+      // TODO: did they actually use goto here? can't figure out a normal loop that mimics this
       goto LOOP;
     }
 
@@ -2351,8 +2334,8 @@ LOOP:
   else
   {
 #ifdef MODERN_FIXES
-  global_screen_width = GetDeviceCaps(GetDC((HWND)0), HORZRES);
-  global_screen_height - GetDeviceCaps(GetDC((HWND)0), VERTRES);
+    global_screen_width = GetDeviceCaps(GetDC((HWND)0), HORZRES);
+    global_screen_height - GetDeviceCaps(GetDC((HWND)0), VERTRES);
 #else
     int horzres = GetDeviceCaps(GetDC((HWND)0), HORZRES);
     switch (horzres)
