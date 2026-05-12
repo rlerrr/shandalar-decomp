@@ -77,3 +77,20 @@ add_subdirectory(src)
 add_subdirectory(tools)
 
 reccmp_configure()
+
+install(TARGETS
+  cardartlib
+  cdtools
+  drawcardlib
+  deckdll
+  deck
+  facemaker
+  magic
+  shandalar
+  manalinkinterface
+  magsnd
+  # any other targets
+  RUNTIME DESTINATION .
+  LIBRARY DESTINATION .
+  ARCHIVE DESTINATION .
+)
