@@ -263,12 +263,6 @@ int g_palette_class_registered;
 // GLOBAL: FACEMAKER 0x00412490
 int g_main_timer_id;
 
-// GLOBAL: FACEMAKER 0x004128a0
-unsigned int g_key_input_queue[50];
-
-// GLOBAL: FACEMAKER 0x00412968
-int g_keyboard_init_done;
-
 // GLOBAL: FACEMAKER 0x0041c150
 char *g_face_set_gender_tags[1000];
 
@@ -408,31 +402,6 @@ char s___pic_0040cae0[] = "*.pic";
 // GLOBAL: FACEMAKER 0x0040cae8
 char s___pic_0040cae8[] = "*.pic";
 
-typedef struct
-{
-  uint8_t present; // nonzero => this mapping exists
-  uint8_t unk;     // maybe flags, maybe pad
-  uint16_t ch;     // resulting character / code
-} keymap_variant_t;
-
-typedef struct
-{
-  // [normal, shift, ctrl, alt]
-  keymap_variant_t states[4];
-} keymap_entry_t;
-
-// GLOBAL: FACEMAKER 0x0040caf0
-keymap_entry_t g_virtual_key_char_map[89];
-
-// GLOBAL: FACEMAKER 0x0040cab0
-char s_Current_Palette_0040cab0[] = "Current Palette";
-
-// GLOBAL: FACEMAKER 0x0040cac0
-char s_ShowPaletteClass_0040cac0[] = "ShowPaletteClass";
-
-// GLOBAL: FACEMAKER 0x0040d084
-int g_key_input_queue_count = 0;
-
 // GLOBAL: FACEMAKER 0x00412088
 char g_open_file_filter_buffer[0x400];
 
@@ -483,502 +452,6 @@ int ShowSaveFaceDialog(void)
   else
     return 0;
 }
-
-#pragma optimize("gy", on)
-
-// FUNCTION: SHANDALAR 0x0041cf20
-// FUNCTION: FACEMAKER 0x004063f0
-void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
-{
-  (void)wparam;
-  {
-    int virtual_key;
-    int modifier_mode;
-
-    modifier_mode = 0;
-    if (g_keyboard_init_done == 0)
-    {
-      while (GetAsyncKeyState(VK_MENU) != 0)
-      {
-      }
-      while (GetAsyncKeyState(VK_CONTROL) != 0)
-      {
-      }
-      g_keyboard_init_done = 1;
-    }
-
-    if (g_key_input_queue_count == 50)
-    {
-      MessageBeep(-1);
-      return;
-    }
-
-    virtual_key = (int)(((unsigned int)lparam & 0xff0000) >> 0x10);
-    if (GetAsyncKeyState(VK_MENU))
-    {
-      modifier_mode = 3;
-    }
-    else if (GetAsyncKeyState(VK_CONTROL))
-    {
-      modifier_mode = 2;
-    }
-    else
-    {
-      if (isalpha(g_virtual_key_char_map[virtual_key].states[0].ch))
-      {
-        modifier_mode = (GetAsyncKeyState(VK_CAPITAL) != 0);
-        modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
-      }
-      else if ((virtual_key < 'O') || ('S' < virtual_key))
-      {
-        if (GetAsyncKeyState(VK_SHIFT))
-        {
-          modifier_mode = 1;
-        }
-      }
-      else
-      {
-        modifier_mode = (GetAsyncKeyState(VK_NUMLOCK) != 0);
-        modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
-      }
-    }
-
-    // table_offset = (int)(modifier_mode + virtual_key * 4) * 4;
-    if (g_virtual_key_char_map[virtual_key].states[modifier_mode].present)
-    {
-      unsigned short translated_char = g_virtual_key_char_map[virtual_key].states[modifier_mode].ch;
-      int repeat_count = lparam & 0xffff;
-      if (repeat_count >= (50 - g_key_input_queue_count))
-      {
-        repeat_count = (50 - g_key_input_queue_count);
-      }
-
-      if (repeat_count != 0)
-      {
-        unsigned int *dst_char = g_key_input_queue + g_key_input_queue_count;
-        do
-        {
-          repeat_count = repeat_count - 1;
-          *dst_char = (unsigned int)translated_char;
-          dst_char = dst_char + 1;
-          g_key_input_queue_count = g_key_input_queue_count + 1;
-        } while (repeat_count != 0);
-      }
-    }
-  }
-}
-
-#pragma intrinsic(memcpy)
-
-// FUNCTION: FACEMAKER 0x00406590
-int HasQueuedKeyInput(void)
-{
-  return g_key_input_queue_count != 0;
-}
-
-// FUNCTION: SHANDALAR 0x0041d192
-// FUNCTION: FACEMAKER 0x004065a0
-int PopQueuedKeyInput(void)
-{
-  int queued_key;
-  int queued_key_count;
-
-  if (g_key_input_queue_count == 0)
-  {
-    return 0;
-  }
-
-  queued_key = g_key_input_queue[0];
-  g_key_input_queue_count = g_key_input_queue_count - 1;
-  if (g_key_input_queue_count != 0)
-  {
-    queued_key_count = g_key_input_queue_count;
-    memcpy(g_key_input_queue, g_key_input_queue + 1, queued_key_count * 4);
-  }
-  return queued_key;
-}
-
-// FUNCTION: SHANDALAR 0x0057dc20
-// FUNCTION: FACEMAKER 0x0040a330
-ATOM RegisterPaletteClass(HINSTANCE hInstance)
-{
-  WNDCLASSA wndclass;
-
-  wndclass.style = 0x20;
-  wndclass.lpfnWndProc = DefWindowProcA;
-  wndclass.cbClsExtra = 0;
-  wndclass.cbWndExtra = 0;
-  wndclass.hInstance = hInstance;
-  wndclass.hIcon = LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00);
-  wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
-  wndclass.hbrBackground = CreateSolidBrush(0);
-  wndclass.lpszMenuName = (LPCSTR)0;
-  wndclass.lpszClassName = s_ShowPaletteClass_0040cac0;
-  return RegisterClassA(&wndclass);
-}
-
-// FUNCTION: SHANDALAR 0x0057dcb0
-// FUNCTION: FACEMAKER 0x0040a3c0
-HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd)
-{
-  return CreateWindowExA(0, s_ShowPaletteClass_0040cac0, s_Current_Palette_0040cab0, 0x80c80000,
-                         100, 0x32, 0x100, 0x100, parent_hwnd, (HMENU)0, hInstance, (LPVOID)0);
-}
-
-// FUNCTION: SHANDALAR 0x0057c890
-// FUNCTION: FACEMAKER 0x0040a440
-int *ConvertRgbToHsv(int *dst, int *src)
-{
-  int green;
-  int blue;
-  int max_component;
-  int min_component;
-  int saturation;
-  int hue;
-
-  green = src[1];
-  blue = src[2];
-  max_component = green;
-  if (green <= blue)
-  {
-    max_component = blue;
-  }
-  if (max_component <= src[0])
-  {
-    max_component = src[0];
-  }
-
-  min_component = green;
-  if (blue <= green)
-  {
-    min_component = blue;
-  }
-  if (src[0] <= min_component)
-  {
-    min_component = src[0];
-  }
-
-  if (max_component != 0)
-  {
-    min_component = max_component - min_component;
-    saturation = (min_component * 0x1000) / max_component;
-    if (min_component == 0)
-    {
-      dst[0] = 0;
-      dst[1] = saturation;
-      dst[2] = max_component << 6;
-      return dst;
-    }
-
-    if (max_component == src[0])
-    {
-      hue = ((green - blue) * 0xf00) / min_component;
-    }
-    else if (max_component == green)
-    {
-      hue = ((blue - src[0]) * 0xf00) / min_component + 0x1e00;
-    }
-    else
-    {
-      hue = ((src[0] - green) * 0xf00) / min_component + 0x3c00;
-    }
-
-    if (hue < 0)
-    {
-      hue = hue + 0x5a00;
-    }
-    dst[0] = hue;
-    dst[1] = saturation;
-    dst[2] = max_component << 6;
-    return dst;
-  }
-
-  dst[0] = -1;
-  dst[1] = 0;
-  dst[2] = 0;
-  return dst;
-}
-
-// FUNCTION: SHANDALAR 0x0057c9f0
-// FUNCTION: FACEMAKER 0x0040a5a0
-unsigned int *ConvertHsvToRgb(unsigned int *dst, int *src)
-{
-  int saturation;
-  unsigned int value_8bit;
-  int low_saturation_value;
-  unsigned int base_component;
-  unsigned int rising_component;
-  unsigned int falling_component;
-  unsigned int rgb[4];
-  int section;
-
-  saturation = src[1];
-  if ((saturation == 0) && (src[0] == -1))
-  {
-    value_8bit = (unsigned int)((src[2] + ((src[2] >> 0x1f) & 0x3f)) >> 6);
-    rgb[0] = value_8bit;
-    rgb[1] = value_8bit;
-    rgb[2] = value_8bit;
-    dst[0] = rgb[0];
-    dst[1] = rgb[1];
-    dst[2] = rgb[2];
-    dst[3] = rgb[3];
-    return dst;
-  }
-
-  if (src[0] == 0x5a00)
-  {
-    src[0] = 0;
-  }
-
-  value_8bit = (unsigned int)((src[2] + ((src[2] >> 0x1f) & 0x3f)) >> 6);
-  low_saturation_value = (0x1000 - saturation) * (int)value_8bit;
-  base_component = (unsigned int)((low_saturation_value + ((low_saturation_value >> 0x1f) & 0xfff)) >> 0xc);
-  section = src[0] % 0xf00;
-  rising_component = (unsigned int)(((0xf00000 - saturation * section) * (int)value_8bit) / 0xf00000);
-  falling_component =
-      (unsigned int)((((section - 0xf00) * saturation + 0xf00000) * (int)value_8bit) / 0xf00000);
-
-  switch (src[0] / 0xf00)
-  {
-  case 0:
-    rgb[0] = value_8bit;
-    rgb[1] = falling_component;
-    rgb[2] = base_component;
-    break;
-
-  case 1:
-    rgb[0] = rising_component;
-    rgb[1] = value_8bit;
-    rgb[2] = base_component;
-    break;
-
-  case 2:
-    rgb[0] = base_component;
-    rgb[1] = value_8bit;
-    rgb[2] = falling_component;
-    break;
-
-  case 3:
-    rgb[0] = base_component;
-    rgb[1] = rising_component;
-    rgb[2] = value_8bit;
-    break;
-
-  case 4:
-    rgb[0] = falling_component;
-    rgb[1] = base_component;
-    rgb[2] = value_8bit;
-    break;
-
-  case 5:
-    rgb[0] = value_8bit;
-    rgb[1] = base_component;
-    rgb[2] = rising_component;
-    break;
-  }
-
-  dst[0] = rgb[0];
-  dst[1] = rgb[1];
-  dst[2] = rgb[2];
-  dst[3] = rgb[3];
-  return dst;
-}
-
-// FUNCTION: SHANDALAR 0x0057cb80
-// FUNCTION: FACEMAKER 0x0040a730
-int AnimatePaletteToColor(int param_1, int param_2)
-{
-  unsigned char *puVar1;
-  int iVar2;
-  int *piVar3;
-  unsigned char *pbVar4;
-  int iVar5;
-  int iVar7;
-  int iVar8;
-  short sVar9;
-  int *piVar10;
-  int iVar11;
-  short local_3e;
-  int local_38;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_1c;
-  int local_18;
-  int local_14;
-  unsigned int local_10[4];
-
-  iVar2 = 0x4000 / param_2;
-  if (g_graphics_bpp != 8)
-  {
-    return 0;
-  }
-
-  piVar3 = (int *)g_palette_data_words;
-  piVar10 = (int *)g_palette_transition_source_words;
-  for (iVar7 = 0xc0; iVar7 != 0; iVar7 = iVar7 - 1)
-  {
-    *piVar10 = *piVar3;
-    piVar3 = piVar3 + 1;
-    piVar10 = piVar10 + 1;
-  }
-
-  local_2c = param_1;
-  local_28 = param_1;
-  local_24 = param_1;
-  piVar3 = ConvertRgbToHsv((int *)local_10, &local_2c);
-  local_1c = *piVar3;
-  local_18 = piVar3[1];
-  local_14 = piVar3[2];
-  sVar9 = 0;
-  RpBits_ApplyPalette((short *)g_palette_data_words);
-  iVar7 = local_18;
-
-  do
-  {
-    iVar11 = (int)sVar9;
-    iVar8 = iVar11 * 4;
-    pbVar4 = g_palette_rgb_bytes + iVar11 * 3;
-    g_palette_transition_work_words[iVar8] = (unsigned int)*pbVar4;
-    g_palette_transition_work_words[iVar8 + 1] = (unsigned int)pbVar4[1];
-    g_palette_transition_work_words[iVar8 + 2] = (unsigned int)pbVar4[2];
-    piVar3 = ConvertRgbToHsv((int *)local_10, g_palette_transition_work_words + iVar8);
-    g_palette_transition_hsv[iVar11 * 3] = *piVar3;
-    g_palette_transition_hsv[iVar11 * 3 + 1] = piVar3[1];
-    g_palette_transition_hsv[iVar11 * 3 + 2] = piVar3[2];
-    iVar8 = (iVar7 - g_palette_transition_hsv[iVar11 * 3 + 1]) / param_2;
-    g_palette_transition_value_step[iVar11 * 3] = iVar8;
-    if (g_palette_transition_hsv[iVar11 * 3 + 1] < iVar7)
-    {
-      iVar5 = 0x1000;
-    }
-    else
-    {
-      iVar5 = -0x1000;
-    }
-    sVar9 = sVar9 + 1;
-    g_palette_transition_value_step[iVar11 * 3] = iVar5 / param_2 + iVar8;
-  } while (sVar9 < 0x100);
-
-  local_3e = 1;
-  if (0 < param_2)
-  {
-    do
-    {
-      sVar9 = 0;
-      do
-      {
-        iVar7 = (int)sVar9;
-        if (local_14 == 0)
-        {
-          local_38 = g_palette_transition_hsv[iVar7 * 3];
-          local_34 = g_palette_transition_hsv[iVar7 * 3 + 1];
-          local_30 = g_palette_transition_hsv[iVar7 * 3 + 2] - iVar2;
-          g_palette_transition_hsv[iVar7 * 3 + 2] = local_30;
-        }
-        else
-        {
-          local_38 = g_palette_transition_hsv[iVar7 * 3];
-          local_34 = g_palette_transition_value_step[iVar7 * 3] * (int)local_3e + g_palette_transition_hsv[iVar7 * 3 + 1];
-          if (0xfbf < local_34)
-          {
-            local_34 = 0xfc0;
-          }
-          if (local_34 < 1)
-          {
-            local_34 = 0;
-          }
-
-          iVar8 = iVar2;
-          if (local_14 < g_palette_transition_hsv[iVar7 * 3 + 2])
-          {
-            iVar8 = -iVar2;
-          }
-          g_palette_transition_hsv[iVar7 * 3 + 2] = g_palette_transition_hsv[iVar7 * 3 + 2] + iVar8;
-          local_30 = g_palette_transition_hsv[iVar7 * 3 + 2];
-          if (0x3fbf < local_30)
-          {
-            local_30 = 0x3fc0;
-          }
-        }
-
-        if (local_30 < 1)
-        {
-          local_30 = 0;
-        }
-
-        iVar11 = (int)sVar9;
-        sVar9 = sVar9 + 1;
-        iVar8 = iVar11 * 4;
-        piVar3 = (int *)ConvertHsvToRgb(local_10, &local_38);
-        g_palette_transition_work_words[iVar8] = *piVar3;
-        g_palette_transition_work_words[iVar8 + 1] = piVar3[1];
-        iVar7 = iVar11 * 3;
-        g_palette_transition_work_words[iVar8 + 2] = piVar3[2];
-        puVar1 = g_palette_rgb_bytes;
-        g_palette_transition_work_words[iVar8 + 3] = piVar3[3];
-        puVar1[iVar7] = (unsigned char)g_palette_transition_work_words[iVar8];
-        g_palette_rgb_bytes[iVar7 + 1] = (unsigned char)g_palette_transition_work_words[iVar8 + 1];
-        g_palette_rgb_bytes[iVar7 + 2] = (unsigned char)g_palette_transition_work_words[iVar8 + 2];
-      } while (sVar9 < 0x100);
-      RpBits_ApplyPalette((short *)g_palette_data_words);
-      local_3e = local_3e + 1;
-    } while (local_3e <= param_2);
-  }
-
-  sVar9 = 0;
-  do
-  {
-    iVar2 = (int)sVar9;
-    sVar9 = sVar9 + 1;
-    iVar2 = iVar2 * 3;
-    g_palette_rgb_bytes[iVar2] = (unsigned char)local_2c;
-    g_palette_rgb_bytes[iVar2 + 1] = (unsigned char)local_28;
-    g_palette_rgb_bytes[iVar2 + 2] = (unsigned char)local_24;
-  } while (sVar9 < 0x100);
-
-  RpBits_ApplyPalette((short *)g_palette_data_words);
-  return ClearGraphicsPageWithPaletteColor(0, 0);
-}
-
-// FUNCTION: SHANDALAR 0x00578c90
-// FUNCTION: FACEMAKER 0x004065f0
-int LoadFontConfigIfPresent(char *executable_name, char *config_name)
-{
-  (void)executable_name;
-  if (config_name != (char *)0)
-  {
-    return LoadFontCollection(config_name);
-  }
-  return 0;
-}
-
-// FUNCTION: FACEMAKER 0x004065e0
-int LegacyInitNoop()
-{
-  return 0;
-}
-
-// FUNCTION: FACEMAKER 0x00406610
-DIBSurface *GetPrimaryPage(int unused)
-{
-  return InitializeGraphicsSystemDefaultMode();
-}
-
-// FUNCTION: FACEMAKER 0x00406620
-DIBSurface *GetPageByNumber(int page_number)
-{
-  if (page_number == 0)
-  {
-    return InitializeGraphicsSystemDefaultMode();
-  }
-  return CreateGraphicsPage(page_number, g_graphics_width, g_graphics_height, 8);
-}
-
-#pragma optimize("", off)
 
 // FUNCTION: FACEMAKER 0x00402600
 unsigned int ScaleUiCoordinate(int value)
@@ -2021,6 +1494,239 @@ DWORD __cdecl FaceMakerWorkerThread(LPVOID unused)
   ExitThread(g_worker_exit_code);
 }
 
+// FUNCTION: FACEMAKER 0x00404d70
+int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **group_entries,
+                      EncodedImage **first_sprite_out)
+{
+  struct
+  {
+    int tile_y;
+    int tile_x;
+    int frames_in_group;
+    int tile_index;
+    int group_count;
+    long find_handle;
+    char local_34c[260];
+    int use_pcx_tiles;
+    int saw_separator;
+    long pcx_find_handle;
+    unsigned char find_data[0x118];
+    EncodedImage *current_sprite;
+    char *group_suffix;
+    int first_tile;
+    unsigned char pcx_find_data[0x118];
+  } face_loader;
+
+  face_loader.group_count = 0;
+  face_loader.saw_separator = 0;
+  face_loader.frames_in_group = 0;
+  face_loader.group_suffix = "1";
+  face_loader.first_tile = 1;
+  face_loader.use_pcx_tiles = 0;
+  memset(group_entries, 0, 4);
+  *face_loader.group_suffix = 'a';
+  strcpy(face_loader.local_34c, base_path);
+  face_loader.find_handle = _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.find_data);
+  strcpy(face_loader.local_34c, base_path);
+  strcat(face_loader.local_34c, "*.pcx");
+  face_loader.pcx_find_handle =
+      _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.pcx_find_data);
+  if ((face_loader.pcx_find_handle == -1) && (face_loader.find_handle == -1))
+  {
+    return face_loader.group_count;
+  }
+  else if (face_loader.find_handle == -1)
+  {
+    face_loader.use_pcx_tiles = 1;
+  }
+  else if (face_loader.pcx_find_handle != -1)
+  {
+    do
+    {
+      if (*(int *)(face_loader.find_data + 0xc) < *(int *)(face_loader.pcx_find_data + 0xc))
+      {
+        face_loader.use_pcx_tiles = 1;
+      }
+    } while (_findnext(face_loader.pcx_find_handle, (struct _finddata_t *)face_loader.pcx_find_data) == 0);
+  }
+  if (face_loader.pcx_find_handle != -1)
+  {
+    _findclose(face_loader.pcx_find_handle);
+  }
+  if (face_loader.find_handle != -1)
+  {
+    _findclose(face_loader.find_handle);
+  }
+  strcpy(face_loader.local_34c, base_path);
+  strcat(face_loader.local_34c, ".pcx");
+  if (face_loader.use_pcx_tiles == 0)
+  {
+    return LoadSpriteGroupsFromFile(base_path, group_frame_counts, group_entries, first_sprite_out);
+  }
+  LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
+  ReplacePaletteIndexInRect(g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
+  BeginSpriteEncodeSession();
+  *first_sprite_out = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
+  face_loader.current_sprite = *first_sprite_out;
+  face_loader.tile_index = 1;
+  while (1)
+  {
+    face_loader.tile_x = (face_loader.tile_index % 4) * 0x8a;
+    face_loader.tile_y = (face_loader.tile_index / 4) * 0xaa;
+    if (IsSpriteTileEmpty(2, face_loader.tile_x, face_loader.tile_y, 0x8a, 0xaa) == 0)
+    {
+      ((EncodedImage * (*)[20]) group_entries)[face_loader.group_count][face_loader.frames_in_group] =
+          EncodeSpriteFromPage(2, face_loader.tile_x, face_loader.tile_y, 0x89, 0xa9);
+      face_loader.current_sprite =
+          ((EncodedImage * (*)[20]) group_entries)[face_loader.group_count][face_loader.frames_in_group];
+      face_loader.frames_in_group = face_loader.frames_in_group + 1;
+      face_loader.current_sprite->top_clip = -1;
+      face_loader.current_sprite->left_clip = face_loader.current_sprite->top_clip;
+      face_loader.saw_separator = 0;
+    }
+    else
+    {
+      if (face_loader.saw_separator != 0)
+      {
+        face_loader.current_sprite->top_clip = 0;
+        break;
+      }
+      if (face_loader.first_tile != 0)
+      {
+        face_loader.current_sprite->left_clip = 0;
+      }
+      else
+      {
+        face_loader.current_sprite->left_clip = 0;
+        group_frame_counts[face_loader.group_count] = face_loader.frames_in_group;
+        face_loader.group_count = face_loader.group_count + 1;
+        face_loader.frames_in_group = 0;
+        face_loader.saw_separator = 1;
+      }
+    }
+
+    face_loader.first_tile = 0;
+    face_loader.tile_index = face_loader.tile_index + 1;
+    if ((int)face_loader.tile_index >= 8)
+    {
+      face_loader.tile_index = 0;
+      strcpy(face_loader.local_34c, base_path);
+      strcat(face_loader.local_34c, face_loader.group_suffix);
+      strcat(face_loader.local_34c, ".pcx");
+      ++*face_loader.group_suffix;
+      face_loader.pcx_find_handle =
+          _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.pcx_find_data);
+      if (face_loader.pcx_find_handle == -1)
+      {
+        break;
+      }
+      _findclose(face_loader.pcx_find_handle);
+      LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
+      ReplacePaletteIndexInRect(g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
+    }
+  }
+  FinalizeSpriteEncodeSession();
+  WriteSpriteBlob(*first_sprite_out, base_path);
+  return face_loader.group_count;
+}
+
+// FUNCTION: FACEMAKER 0x00405261
+int IsSpriteTileEmpty(int page_number, int x, int y, unsigned int width, int height)
+{
+  struct
+  {
+    int current_y;
+    int remaining_height;
+    int pixel_index;
+    unsigned char row[1024];
+  } tile_scan;
+
+  (void)page_number;
+  while (tile_scan.remaining_height = height--)
+  {
+    tile_scan.current_y = y;
+    y = y + 1;
+    ReadGraphicsScanline((unsigned int *)tile_scan.row, 2, x, tile_scan.current_y, width);
+    for (tile_scan.pixel_index = 0; tile_scan.pixel_index < (int)width;
+         tile_scan.pixel_index = tile_scan.pixel_index + 1)
+    {
+      if (tile_scan.row[tile_scan.pixel_index] != '\0')
+      {
+        return 0;
+      }
+    }
+  }
+  return 1;
+}
+
+// FUNCTION: FACEMAKER 0x0040530d
+int LoadSpriteGroupsFromFile(char *sprite_path, int *group_frame_counts,
+                             EncodedImage **group_entries, EncodedImage **first_sprite_out)
+{
+  struct
+  {
+    int group_count;
+    int sprite_index;
+    int frame_count;
+    int table_total;
+    EncodedImage *sprite_table[1000];
+    EncodedImage *sprite_entry;
+  } group_loader;
+
+  group_loader.group_count = 0;
+  group_loader.frame_count = 0;
+  group_loader.table_total = ReadSpriteEntryPointers((int *)group_loader.sprite_table, sprite_path);
+  *first_sprite_out = group_loader.sprite_table[0];
+  group_loader.sprite_index = 1;
+  for (; group_loader.sprite_index < group_loader.table_total;
+       group_loader.sprite_index = group_loader.sprite_index + 1)
+  {
+    group_loader.sprite_entry = group_loader.sprite_table[group_loader.sprite_index];
+    ((EncodedImage * (*)[20]) group_entries)[group_loader.group_count][group_loader.frame_count] =
+        group_loader.sprite_entry;
+    group_loader.frame_count = group_loader.frame_count + 1;
+    if (group_loader.sprite_entry->left_clip == 0)
+    {
+      if (group_loader.sprite_entry->top_clip == 0)
+      {
+        group_frame_counts[group_loader.group_count] = group_loader.frame_count;
+        group_loader.group_count = group_loader.group_count + 1;
+        break;
+      }
+    }
+    if (group_loader.sprite_entry->left_clip == 0)
+    {
+      group_frame_counts[group_loader.group_count] = group_loader.frame_count;
+      group_loader.group_count = group_loader.group_count + 1;
+      group_loader.frame_count = 0;
+    }
+  }
+  return group_loader.group_count;
+}
+
+// FUNCTION: FACEMAKER 0x0040542d
+int ReplacePaletteIndexInRect(FacemakerWindowBounds *page, int x, int y, unsigned int width, int height,
+                              unsigned int from_color, unsigned char to_color)
+{
+  int row_index;
+  int pixel_index;
+  unsigned char local_800[2048];
+
+  for (row_index = 0; row_index < height; row_index = row_index + 1)
+  {
+    ReadGraphicsScanline((unsigned int *)local_800, page->page_number, x, row_index + y, width);
+    for (pixel_index = 0; pixel_index < (int)width; pixel_index = pixel_index + 1)
+    {
+      if (local_800[pixel_index] == from_color)
+      {
+        local_800[pixel_index] = to_color;
+      }
+    }
+    WriteGraphicsScanline((unsigned int *)local_800, page->page_number, x, row_index + y, width);
+  }
+  return height;
+}
+
 // FUNCTION: FACEMAKER 0x00405a49
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -2110,8 +1816,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         g_palette_class_registered = 1;
       }
 
-      g_palette_hwnd = FindWindowExA((HWND)0, (HWND)0, s_ShowPaletteClass_0040cac0,
-                                     s_Current_Palette_0040cab0);
+      g_palette_hwnd = FindWindowExA((HWND)0, (HWND)0, "ShowPaletteClass", "Current Palette");
       if (g_palette_hwnd != (HWND)0)
       {
         BringWindowToTop(g_palette_hwnd);

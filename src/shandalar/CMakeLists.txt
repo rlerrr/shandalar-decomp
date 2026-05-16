@@ -1,5 +1,6 @@
 file(GLOB shandalar_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../magic/cards/*.c")
+
 set(drawcardlib_c_sources 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pcxw.c" 
@@ -20,9 +21,10 @@ set(deckdll_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/shared_resources.c"
 )
-set(facemaker_c_sources
-  "${CMAKE_CURRENT_SOURCE_DIR}/../facemaker/src/lib.c"
-)
+
+file(GLOB facemaker_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../facemaker/src/*.c")
+list(FILTER facemaker_c_sources EXCLUDE REGEX ".*main\\.c$")
+
 set(shandalar_sources
   ${magic_c_sources}
   ${shandalar_c_sources}
