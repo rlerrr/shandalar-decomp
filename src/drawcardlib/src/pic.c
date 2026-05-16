@@ -131,11 +131,7 @@ extern byte rpbits_buffer[0x200];
 // GLOBAL: DECKDLL 0x1003a844
 // GLOBAL: SHANDALAR 0x005a1814
 // GLOBAL: FACEMAKER 0x0040d294
-#if defined(FACEMAKER) || defined(SHANDALAR)
-byte *rpbits_stream_end = (byte *)&rpbits_stream_refill;
-#else
 byte *rpbits_stream_end = rpbits_buffer + 0x200;
-#endif
 
 // GLOBAL: DRAWCARDLIB 0x10022530
 // GLOBAL: DECKDLL 0x1003a848
@@ -483,13 +479,16 @@ void RpBits_ApplyPalette(short *palette_data_words)
   unsigned int palette_index;
   unsigned int entry_base;
   unsigned int mask_value;
+  unsigned int white_triplet;
   unsigned char *entry_data;
   unsigned char component;
   unsigned char mask;
-  unsigned char clamped_white;
   int surface_index;
   static unsigned int palette_packet_words[0x320 / 4];
-  HWND palette_window;
+
+  // GLOBAL: FACEMAKER 0x004179a0
+  // GLOBAL: SHANDALAR 0x00738800
+  static HWND palette_window;
 
   packet_size_bytes = (int)(short)(palette_data_words[1] + 2);
   memcpy((void *)palette_packet_words, (const void *)palette_data_words, packet_size_bytes);
@@ -499,7 +498,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
   mask_value = (-(unsigned int)(g_graphics_bpp == 0x10) & 0xfffffff9) + 0xff;
   last_index = (unsigned int)palette_packet->last_index;
   mask = (unsigned char)mask_value;
-  clamped_white = (unsigned char)(mask_value & 0xfe);
+  white_triplet = (mask_value << 0x10) | (mask_value << 8) | mask_value;
 
   if (*(short *)"M1" == palette_packet->signature)
   {
@@ -529,15 +528,10 @@ void RpBits_ApplyPalette(short *palette_data_words)
             g_palette_rgb[palette_index].rgbGreen == 0xff &&
             g_palette_rgb[palette_index].rgbBlue == 0xff)
         {
-          g_palette_entries[palette_index].peRed = clamped_white;
-          g_palette_entries[palette_index].peGreen = clamped_white;
-          g_palette_entries[palette_index].peBlue = clamped_white;
-          g_palette_entries[palette_index].peFlags = 1;
-
-          g_palette_rgb[palette_index].rgbRed = clamped_white;
-          g_palette_rgb[palette_index].rgbGreen = clamped_white;
-          g_palette_rgb[palette_index].rgbBlue = clamped_white;
-          g_palette_rgb[palette_index].rgbReserved = 0;
+          *(unsigned int *)&g_palette_entries[palette_index].peRed =
+              white_triplet & 0x1fefefe;
+          *(unsigned int *)&g_palette_rgb[palette_index].rgbBlue =
+              white_triplet & 0xfefefe;
         }
       }
     }
@@ -570,15 +564,11 @@ void RpBits_ApplyPalette(short *palette_data_words)
             g_palette_rgb[palette_index].rgbGreen == 0xff &&
             g_palette_rgb[palette_index].rgbBlue == 0xff)
         {
-          g_palette_entries[palette_index].peRed = clamped_white;
-          g_palette_entries[palette_index].peGreen = clamped_white;
-          g_palette_entries[palette_index].peBlue = clamped_white;
+          *(unsigned int *)&g_palette_rgb[palette_index].rgbBlue =
+              white_triplet & 0xfefefe;
+          *(unsigned int *)&g_palette_entries[palette_index].peRed =
+              white_triplet & 0xfefefe;
           g_palette_entries[palette_index].peFlags = 1;
-
-          g_palette_rgb[palette_index].rgbRed = clamped_white;
-          g_palette_rgb[palette_index].rgbGreen = clamped_white;
-          g_palette_rgb[palette_index].rgbBlue = clamped_white;
-          g_palette_rgb[palette_index].rgbReserved = 0;
         }
       }
     }

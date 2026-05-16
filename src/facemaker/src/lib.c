@@ -573,60 +573,56 @@ void SetGraphicsPage(int page_number, DIBSurface *page)
 
 // FUNCTION: SHANDALAR 0x00579760
 // FUNCTION: FACEMAKER 0x00407190
-void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index)
+void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, int color_index)
 {
   DIBSurface *page;
   COLORREF color;
-  unsigned int value;
-  unsigned int rebuilt_color;
-  unsigned int upper_byte;
-  unsigned int middle_byte;
-  unsigned char low_byte;
-  unsigned char high_byte;
+  int value;
 
   page = g_graphics_pages[window_bounds->page_number];
   value = color_index;
-  if ((int)value < 0)
+
+  if (value < 0)
   {
     value = -value;
-    color = 0xffffff;
-    if (value != color)
+
+    if (value == 0x00ffffff)
     {
-      low_byte = (unsigned char)value;
-      high_byte = (unsigned char)(value >> 8);
-      upper_byte = (value >> 0x10) & 0xff;
-      rebuilt_color = (unsigned int)high_byte;
-      rebuilt_color = rebuilt_color | 0x20000;
-      rebuilt_color = rebuilt_color << 8;
-      middle_byte = upper_byte << 0x10;
-      rebuilt_color = rebuilt_color | middle_byte;
-      rebuilt_color = rebuilt_color | (unsigned int)low_byte;
-      color = rebuilt_color;
+      color = RGB(0xff, 0xff, 0xff);
+    }
+    else
+    {
+      color = PALETTERGB((BYTE)(value >> 8),
+                         (BYTE)value,
+                         (BYTE)(value >> 16));
     }
   }
   else
   {
     if (value == 0xff)
     {
-      color = 0xffffff;
+      color = RGB(0xff, 0xff, 0xff);
     }
     else
     {
-      color = value & 0xffff;
-      color = color | 0x1000000;
+      color = PALETTEINDEX(value);
     }
   }
+
   SetPixelV(page->hTempDC, x, y, color);
 }
 
 // FUNCTION: SHANDALAR 0x00579400
 // FUNCTION: FACEMAKER 0x00406cc0
-void PresentGraphicsPage(int enabled)
+void PresentGraphicsPage(int num)
 {
-  if (g_graphics_pages[enabled]->hTempDC != (HDC)0 && g_graphics_pages[0]->hTempDC != (HDC)0)
+  DIBSurface *page0 = g_graphics_pages[0];
+  HDC src_dc = g_graphics_pages[num]->hTempDC;
+
+  if (src_dc != (HDC)0 && page0->hTempDC != (HDC)0)
   {
-    BitBlt(g_graphics_pages[0]->hTempDC, 0, 0, g_graphics_pages[0]->width, g_graphics_pages[0]->height,
-           g_graphics_pages[enabled]->hTempDC, 0, 0, 0xcc0020);
+    BitBlt(page0->hTempDC, 0, 0, page0->width, page0->height,
+           src_dc, 0, 0, SRCCOPY);
   }
 }
 
@@ -641,7 +637,7 @@ int ClearGraphicsPageWithPaletteColor(int page_number, int color_index)
 
   brush_desc.lbStyle = 0;
   page = g_graphics_pages[page_number];
-  brush_desc.lbColor = PALETTERGB(g_palette_entries[color_index].peRed,g_palette_entries[color_index].peGreen,g_palette_entries[color_index].peBlue << 0x10);
+  brush_desc.lbColor = PALETTERGB(g_palette_entries[color_index].peRed, g_palette_entries[color_index].peGreen, g_palette_entries[color_index].peBlue << 0x10);
   brush = CreateBrushIndirect(&brush_desc);
   rect.top = 0;
   rect.left = 0;
@@ -746,11 +742,11 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
         dst_x_bits = src_x * dst_page->bitsPerPixel;
         copy_bits = width * dst_page->bitsPerPixel;
         memmove((void *)((dst_page->rowPadding + ((dst_bits_per_row + ((dst_bits_per_row >> 0x1f) & 7U)) >> 3)) *
-                            (src_y + i) +
-                        ((dst_x_bits + ((dst_x_bits >> 0x1f) & 7U)) >> 3) + (int)dst_page->pBits),
+                             (src_y + i) +
+                         ((dst_x_bits + ((dst_x_bits >> 0x1f) & 7U)) >> 3) + (int)dst_page->pBits),
                 (void *)((src_page->rowPadding + ((src_bits_per_row + ((src_bits_per_row >> 0x1f) & 7U)) >> 3)) *
-                            (dst_y + i) +
-                        ((src_x_bits + ((src_x_bits >> 0x1f) & 7U)) >> 3) + (int)src_page->pBits),
+                             (dst_y + i) +
+                         ((src_x_bits + ((src_x_bits >> 0x1f) & 7U)) >> 3) + (int)src_page->pBits),
                 (int)(copy_bits + ((copy_bits >> 0x1f) & 7U)) >> 3);
       }
       return;
@@ -764,11 +760,11 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
       dst_x_bits = src_x * dst_page->bitsPerPixel;
       copy_bits = width * dst_page->bitsPerPixel;
       memmove((void *)((dst_page->rowPadding + ((dst_bits_per_row + ((dst_bits_per_row >> 0x1f) & 7U)) >> 3)) *
-                          (src_y + i) +
-                      ((dst_x_bits + ((dst_x_bits >> 0x1f) & 7U)) >> 3) + (int)dst_page->pBits),
+                           (src_y + i) +
+                       ((dst_x_bits + ((dst_x_bits >> 0x1f) & 7U)) >> 3) + (int)dst_page->pBits),
               (void *)((src_page->rowPadding + ((src_bits_per_row + ((src_bits_per_row >> 0x1f) & 7U)) >> 3)) *
-                          (dst_y + i) +
-                      ((src_x_bits + ((src_x_bits >> 0x1f) & 7U)) >> 3) + (int)src_page->pBits),
+                           (dst_y + i) +
+                       ((src_x_bits + ((src_x_bits >> 0x1f) & 7U)) >> 3) + (int)src_page->pBits),
               (int)(copy_bits + ((copy_bits >> 0x1f) & 7U)) >> 3);
     }
     return;
@@ -785,11 +781,18 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
 
 // FUNCTION: SHANDALAR 0x00579e40
 // FUNCTION: FACEMAKER 0x00407570
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h, FacemakerWindowBounds *src,
-                             int src_x, int src_y, int copy_w, int copy_h)
+void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y,
+                             int src_w, int src_h,
+                             FacemakerWindowBounds *src, int src_x, int src_y,
+                             int copy_w, int copy_h)
 {
-  StretchBlt(g_graphics_pages[src->page_number]->hTempDC, src_x, src_y, copy_w, copy_h,
-             g_graphics_pages[dst->page_number]->hTempDC, dst_x, dst_y, src_w, src_h, 0xcc0020);
+  DIBSurface *dst_page = g_graphics_pages[dst->page_number];
+  DIBSurface *src_page = g_graphics_pages[src->page_number];
+  HDC dst_dc = dst_page->hTempDC;
+  HDC src_dc = src_page->hTempDC;
+
+  StretchBlt(src_dc, src_x, src_y, copy_w, copy_h,
+             dst_dc, dst_x, dst_y, src_w, src_h, SRCCOPY);
 }
 
 // FUNCTION: SHANDALAR 0x00579f10
@@ -906,6 +909,71 @@ void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int p
   }
 }
 
+// FUNCTION: SHANDALAR 0x0057da90
+// FUNCTION: FACEMAKER 0x0040a1a0
+LRESULT CALLBACK PaletteClassWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  short column;
+  short row;
+  HWND palette_hwnd;
+  HDC desktop_hdc;
+  HDC palette_hdc;
+  HPEN pen_handle;
+  HGDIOBJ old_pen_handle;
+  int x;
+  int y;
+  int row_bottom;
+  HWND hWndChildAfter;
+  LPCSTR lpszClass;
+  LPCSTR lpszWindow;
+  LOGPEN pen;
+
+  if (msg != WM_PAINT)
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+
+  DefWindowProcA(hwnd, msg, wparam, lparam);
+  lpszWindow = (LPCSTR)0;
+  lpszClass = "ShowPaletteClass";
+  hWndChildAfter = (HWND)0;
+
+  palette_hwnd = FindWindowExA(GetParent(hwnd), hWndChildAfter, lpszClass, lpszWindow);
+  ShowWindow(palette_hwnd, SW_SHOW);
+  ShowWindow(palette_hwnd, SW_SHOW);
+  desktop_hdc = GetDC((HWND)0);
+  palette_hdc = GetDC(palette_hwnd);
+  SelectPalette(palette_hdc, g_palette_handle, FALSE);
+  row_bottom = 0x10;
+  RealizePalette(palette_hdc);
+  row = 0;
+  do
+  {
+    x = 0;
+    column = 0;
+    do
+    {
+      pen.lopnWidth.x = 0;
+      pen.lopnColor = (unsigned short)(row * 0x10 + column) | 0x1000000;
+      pen.lopnWidth.y = 0;
+      pen.lopnStyle = 0;
+      pen_handle = CreatePenIndirect(&pen);
+      old_pen_handle = SelectObject(palette_hdc, pen_handle);
+      DeleteObject(old_pen_handle);
+      for (y = row_bottom - 0x10; y < row_bottom; y = y + 1)
+      {
+        MoveToEx(palette_hdc, x, y, (LPPOINT)0);
+        LineTo(palette_hdc, x + 0x10, y);
+      }
+      x = x + 0x10;
+      column = column + 1;
+    } while (x < 0x100);
+    row_bottom = row_bottom + 0x10;
+    row = row + 1;
+  } while (row_bottom < 0x110);
+  ReleaseDC((HWND)0, desktop_hdc);
+  ReleaseDC(palette_hwnd, palette_hdc);
+  return 0;
+}
+
 // FUNCTION: SHANDALAR 0x0057dc20
 // FUNCTION: FACEMAKER 0x0040a330
 ATOM RegisterPaletteClass(HINSTANCE hInstance)
@@ -913,15 +981,16 @@ ATOM RegisterPaletteClass(HINSTANCE hInstance)
   WNDCLASSA wndclass;
 
   wndclass.style = 0x20;
-  wndclass.lpfnWndProc = DefWindowProcA;
+  wndclass.hInstance = hInstance;
+  wndclass.lpfnWndProc = PaletteClassWndProc;
   wndclass.cbClsExtra = 0;
   wndclass.cbWndExtra = 0;
-  wndclass.hInstance = hInstance;
-  wndclass.hIcon = LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00);
-  wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
+  wndclass.hIcon = LoadIconA((HINSTANCE)0, (LPCSTR)0x7F00);
+  wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7F00);
   wndclass.hbrBackground = CreateSolidBrush(0);
   wndclass.lpszMenuName = (LPCSTR)0;
   wndclass.lpszClassName = "ShowPaletteClass";
+
   return RegisterClassA(&wndclass);
 }
 
@@ -929,326 +998,374 @@ ATOM RegisterPaletteClass(HINSTANCE hInstance)
 // FUNCTION: FACEMAKER 0x0040a3c0
 HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd)
 {
-  return CreateWindowExA(0, "ShowPaletteClass", "Current Palette", 0x80c80000,
-                         100, 0x32, 0x100, 0x100, parent_hwnd, (HMENU)0, hInstance, (LPVOID)0);
+  RECT rect;
+  rect.left = 0;
+  rect.right = 0x100;
+  rect.top = 0;
+  rect.bottom = 0x100;
+
+  AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_THICKFRAME, FALSE);
+
+  return CreateWindowExA(0, "ShowPaletteClass", "Current Palette", WS_POPUP | WS_CAPTION | WS_SYSMENU,
+                         100, 50,
+                         rect.right - rect.left,
+                         rect.bottom - rect.top,
+                         parent_hwnd, (HMENU)0, hInstance, (LPVOID)0);
+}
+
+typedef struct
+{
+  int r;
+  int g;
+  int b;
+  int a_or_unused; // this 4th field is suspicious in your snippet
+} RGBLike;
+
+typedef struct
+{
+  int hue;        // 0..0x59ff, maybe -1 for "undefined"
+  int saturation; // 0..0x1000
+  int value;      // appears to be scaled by 64
+} HSVLike;
+
+static __inline int div64_round_toward_zero(int x)
+{
+  // matches: mov ecx,eax / sar ecx,31 / and ecx,0x3f / add ecx,eax / sar ecx,6
+  return (x + ((x >> 31) & 0x3f)) >> 6;
 }
 
 // FUNCTION: SHANDALAR 0x0057c890
 // FUNCTION: FACEMAKER 0x0040a440
-int *ConvertRgbToHsv(int *dst, int *src)
+void ConvertRgbToHsv(RGBLike *self, HSVLike *out)
 {
-  int green;
-  int blue;
-  int max_component;
-  int min_component;
-  int saturation;
+  int minv;
+  int maxv;
+  int delta;
+  int sat;
   int hue;
+  int r;
+  int g;
+  int b;
 
-  green = src[1];
-  blue = src[2];
-  max_component = green;
-  if (green <= blue)
-  {
-    max_component = blue;
-  }
-  if (max_component <= src[0])
-  {
-    max_component = src[0];
-  }
+  b = self->b;
+  g = self->g;
 
-  min_component = green;
-  if (blue <= green)
+  minv = g;
+  if (b < g)
   {
-    min_component = blue;
+    minv = b;
   }
-  if (src[0] <= min_component)
+  r = self->r;
+  if (r < minv)
   {
-    min_component = src[0];
+    minv = r;
   }
 
-  if (max_component != 0)
+  maxv = g;
+  if (b > g)
   {
-    min_component = max_component - min_component;
-    saturation = (min_component * 0x1000) / max_component;
-    if (min_component == 0)
-    {
-      dst[0] = 0;
-      dst[1] = saturation;
-      dst[2] = max_component << 6;
-      return dst;
-    }
-
-    if (max_component == src[0])
-    {
-      hue = ((green - blue) * 0xf00) / min_component;
-    }
-    else if (max_component == green)
-    {
-      hue = ((blue - src[0]) * 0xf00) / min_component + 0x1e00;
-    }
-    else
-    {
-      hue = ((src[0] - green) * 0xf00) / min_component + 0x3c00;
-    }
-
-    if (hue < 0)
-    {
-      hue = hue + 0x5a00;
-    }
-    dst[0] = hue;
-    dst[1] = saturation;
-    dst[2] = max_component << 6;
-    return dst;
+    maxv = b;
+  }
+  if (r > maxv)
+  {
+    maxv = r;
   }
 
-  dst[0] = -1;
-  dst[1] = 0;
-  dst[2] = 0;
-  return dst;
+  if (maxv == 0)
+  {
+    out->hue = -1;
+    out->saturation = 0;
+    out->value = 0;
+    return;
+  }
+
+  delta = maxv - minv;
+  sat = (delta << 12) / maxv;
+
+  if (delta == 0)
+  {
+    out->hue = 0;
+    out->saturation = sat;
+    out->value = maxv << 6;
+    return;
+  }
+
+  if (r == maxv)
+  {
+    hue = ((g - b) * 0x0f00) / delta;
+  }
+  else if (g == maxv)
+  {
+    hue = ((b - r) * 0x0f00) / delta + 0x1e00;
+  }
+  else
+  {
+    hue = ((r - g) * 0x0f00) / delta + 0x3c00;
+  }
+
+  if (hue < 0)
+  {
+    hue += 0x5a00;
+  }
+
+  out->hue = hue;
+  out->saturation = sat;
+  out->value = maxv << 6;
+  return;
 }
 
 // FUNCTION: SHANDALAR 0x0057c9f0
 // FUNCTION: FACEMAKER 0x0040a5a0
-unsigned int *ConvertHsvToRgb(unsigned int *dst, int *src)
+unsigned int *ConvertHsvToRgb(HSVLike *self, RGBLike *out)
 {
-  int saturation;
-  unsigned int value_8bit;
-  int low_saturation_value;
-  unsigned int base_component;
-  unsigned int rising_component;
-  unsigned int falling_component;
-  unsigned int rgb[4];
-  int section;
+  int h, s, v;
+  int p, q, t;
+  int v6;
 
-  saturation = src[1];
-  if ((saturation == 0) && (src[0] == -1))
+  s = self->saturation;
+
+  // no saturation, or "undefined hue" sentinel -> grayscale
+  if (s == 0)
   {
-    value_8bit = (unsigned int)((src[2] + ((src[2] >> 0x1f) & 0x3f)) >> 6);
-    rgb[0] = value_8bit;
-    rgb[1] = value_8bit;
-    rgb[2] = value_8bit;
-    dst[0] = rgb[0];
-    dst[1] = rgb[1];
-    dst[2] = rgb[2];
-    dst[3] = rgb[3];
-    return dst;
+    if (self->hue == -1)
+    {
+      v6 = div64_round_toward_zero(self->value);
+
+      out->r = v6;
+      out->g = v6;
+      out->b = v6;
+
+      // This 4th write is unclear from the snippet.
+      // The disassembly shows it writing a 4th dword from [esp+1c],
+      // which looks uninitialized in the fragment you posted.
+      out->a_or_unused = 0; // guessed
+      return;
+    }
   }
 
-  if (src[0] == 0x5a00)
+  h = self->hue;
+
+  // normalize one full turn sentinel?
+  if (h == 0x5a00)
   {
-    src[0] = 0;
+    self->hue = 0;
+    h = 0;
   }
 
-  value_8bit = (unsigned int)((src[2] + ((src[2] >> 0x1f) & 0x3f)) >> 6);
-  low_saturation_value = (0x1000 - saturation) * (int)value_8bit;
-  base_component = (unsigned int)((low_saturation_value + ((low_saturation_value >> 0x1f) & 0xfff)) >> 0xc);
-  section = src[0] % 0xf00;
-  rising_component = (unsigned int)(((0xf00000 - saturation * section) * (int)value_8bit) / 0xf00000);
-  falling_component =
-      (unsigned int)((((section - 0xf00) * saturation + 0xf00000) * (int)value_8bit) / 0xf00000);
+  v6 = div64_round_toward_zero(self->value);
 
-  switch (src[0] / 0xf00)
+  // p = v * (1 - s)
+  p = ((0x1000 - s) * v6 + ((((0x1000 - s) * v6) >> 31) & 0xfff)) >> 12;
+
+  // remainder inside current hue sector
   {
+    int h_rem = h % 0x0f00;
+
+    // q = v * (1 - s * f)
+    q = ((0x0f00000 - h_rem * s) * v6) / 0x0f00000;
+
+    // t = v * (1 - s * (1 - f))
+    t = ((((h_rem - 0x0f00) * s) + 0x0f00000) * v6) / 0x0f00000;
+  }
+
+  switch (h / 0x0f00)
+  {
+  default:
+    out->r = 0;
+    out->g = 0;
+    out->b = 0;
+    break;
+
   case 0:
-    rgb[0] = value_8bit;
-    rgb[1] = falling_component;
-    rgb[2] = base_component;
+    out->r = v6;
+    out->g = t;
+    out->b = p;
     break;
 
   case 1:
-    rgb[0] = rising_component;
-    rgb[1] = value_8bit;
-    rgb[2] = base_component;
+    out->r = q;
+    out->g = v6;
+    out->b = p;
     break;
 
   case 2:
-    rgb[0] = base_component;
-    rgb[1] = value_8bit;
-    rgb[2] = falling_component;
+    out->r = p;
+    out->g = v6;
+    out->b = t;
     break;
 
   case 3:
-    rgb[0] = base_component;
-    rgb[1] = rising_component;
-    rgb[2] = value_8bit;
+    out->r = p;
+    out->g = q;
+    out->b = v6;
     break;
 
   case 4:
-    rgb[0] = falling_component;
-    rgb[1] = base_component;
-    rgb[2] = value_8bit;
+    out->r = t;
+    out->g = p;
+    out->b = v6;
     break;
 
   case 5:
-    rgb[0] = value_8bit;
-    rgb[1] = base_component;
-    rgb[2] = rising_component;
+    out->r = v6;
+    out->g = p;
+    out->b = q;
     break;
   }
 
-  dst[0] = rgb[0];
-  dst[1] = rgb[1];
-  dst[2] = rgb[2];
-  dst[3] = rgb[3];
-  return dst;
+  // same caveat as above
+  out->a_or_unused = 0; // guessed
+  return out;
 }
 
 // FUNCTION: SHANDALAR 0x0057cb80
 // FUNCTION: FACEMAKER 0x0040a730
-int AnimatePaletteToColor(int param_1, int param_2)
+int AnimatePaletteToColor(int gray, int steps)
 {
-  unsigned char *puVar1;
-  int iVar2;
-  int *piVar3;
-  unsigned char *pbVar4;
-  int iVar5;
-  int iVar7;
-  int iVar8;
-  short sVar9;
-  int *piVar10;
-  int iVar11;
-  short local_3e;
-  int local_38;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_1c;
-  int local_18;
-  int local_14;
-  unsigned int local_10[4];
+  int value_step;
+  int i;
+  int frame;
+  HSVLike target_hsv;
+  RGBLike target_rgb;
+  RGBLike rgb;
+  HSVLike hsv;
 
-  iVar2 = 0x4000 / param_2;
+  value_step = 0x4000 / steps;
+
   if (g_graphics_bpp != 8)
   {
     return 0;
   }
 
-  piVar3 = (int *)g_palette_data_words;
-  piVar10 = (int *)g_palette_transition_source_words;
-  for (iVar7 = 0xc0; iVar7 != 0; iVar7 = iVar7 - 1)
-  {
-    *piVar10 = *piVar3;
-    piVar3 = piVar3 + 1;
-    piVar10 = piVar10 + 1;
-  }
+  memcpy(g_palette_transition_source_words,
+         g_palette_data_words,
+         0xC0 * sizeof(unsigned int));
 
-  local_2c = param_1;
-  local_28 = param_1;
-  local_24 = param_1;
-  piVar3 = ConvertRgbToHsv((int *)local_10, &local_2c);
-  local_1c = *piVar3;
-  local_18 = piVar3[1];
-  local_14 = piVar3[2];
-  sVar9 = 0;
-  RpBits_ApplyPalette((short *)g_palette_data_words);
-  iVar7 = local_18;
+  target_rgb.r = gray;
+  target_rgb.g = gray;
+  target_rgb.b = gray;
+  ConvertRgbToHsv(&target_rgb, &target_hsv);
 
-  do
+  RpBits_ApplyPalette(g_palette_data_words);
+
+  for (i = 0; i < 0x100; ++i)
   {
-    iVar11 = (int)sVar9;
-    iVar8 = iVar11 * 4;
-    pbVar4 = g_palette_rgb_bytes + iVar11 * 3;
-    g_palette_transition_work_words[iVar8] = (unsigned int)*pbVar4;
-    g_palette_transition_work_words[iVar8 + 1] = (unsigned int)pbVar4[1];
-    g_palette_transition_work_words[iVar8 + 2] = (unsigned int)pbVar4[2];
-    piVar3 = ConvertRgbToHsv((int *)local_10, g_palette_transition_work_words + iVar8);
-    g_palette_transition_hsv[iVar11 * 3] = *piVar3;
-    g_palette_transition_hsv[iVar11 * 3 + 1] = piVar3[1];
-    g_palette_transition_hsv[iVar11 * 3 + 2] = piVar3[2];
-    iVar8 = (iVar7 - g_palette_transition_hsv[iVar11 * 3 + 1]) / param_2;
-    g_palette_transition_value_step[iVar11 * 3] = iVar8;
-    if (g_palette_transition_hsv[iVar11 * 3 + 1] < iVar7)
+    int sat_step;
+
+    rgb.r = (unsigned char)g_palette_rgb_bytes[i * 3 + 0];
+    rgb.g = (unsigned char)g_palette_rgb_bytes[i * 3 + 1];
+    rgb.b = (unsigned char)g_palette_rgb_bytes[i * 3 + 2];
+
+    ConvertRgbToHsv(&rgb, &hsv);
+
+    g_palette_transition_hsv[i * 3 + 0] = hsv.hue;
+    g_palette_transition_hsv[i * 3 + 1] = hsv.saturation;
+    g_palette_transition_hsv[i * 3 + 2] = hsv.value;
+
+    sat_step = (target_hsv.saturation - hsv.saturation) / steps;
+    g_palette_transition_value_step[i] = sat_step;
+
+    if (target_hsv.saturation > hsv.saturation)
     {
-      iVar5 = 0x1000;
+      sat_step += 0x1000 / steps;
     }
     else
     {
-      iVar5 = -0x1000;
+      sat_step += -0x1000 / steps;
     }
-    sVar9 = sVar9 + 1;
-    g_palette_transition_value_step[iVar11 * 3] = iVar5 / param_2 + iVar8;
-  } while (sVar9 < 0x100);
 
-  local_3e = 1;
-  if (0 < param_2)
+    g_palette_transition_value_step[i] = sat_step;
+  }
+
+  if (steps > 0)
   {
-    do
+    for (frame = 1; frame <= steps; ++frame)
     {
-      sVar9 = 0;
-      do
+      int rgb_off;
+      int work_off;
+      int hsv_off;
+      int step_off;
+
+      rgb_off = 0;
+      work_off = 0;
+      hsv_off = 2; /* indexes the value field; -2 hue, -1 sat, 0 value */
+      step_off = 0;
+
+      while (1)
       {
-        iVar7 = (int)sVar9;
-        if (local_14 == 0)
+        hsv.hue = g_palette_transition_hsv[hsv_off - 2];
+
+        if (target_hsv.saturation == 0)
         {
-          local_38 = g_palette_transition_hsv[iVar7 * 3];
-          local_34 = g_palette_transition_hsv[iVar7 * 3 + 1];
-          local_30 = g_palette_transition_hsv[iVar7 * 3 + 2] - iVar2;
-          g_palette_transition_hsv[iVar7 * 3 + 2] = local_30;
+          hsv.saturation = g_palette_transition_hsv[hsv_off - 1];
+          hsv.value = g_palette_transition_hsv[hsv_off] - value_step;
+          g_palette_transition_hsv[hsv_off] = hsv.value;
         }
         else
         {
-          local_38 = g_palette_transition_hsv[iVar7 * 3];
-          local_34 = g_palette_transition_value_step[iVar7 * 3] * (int)local_3e + g_palette_transition_hsv[iVar7 * 3 + 1];
-          if (0xfbf < local_34)
+          hsv.saturation =
+              g_palette_transition_hsv[hsv_off - 1] +
+              g_palette_transition_value_step[step_off] * frame;
+
+          if (hsv.saturation > 0xFBF)
           {
-            local_34 = 0xfc0;
-          }
-          if (local_34 < 1)
-          {
-            local_34 = 0;
+            hsv.saturation = 0xFC0;
           }
 
-          iVar8 = iVar2;
-          if (local_14 < g_palette_transition_hsv[iVar7 * 3 + 2])
+          hsv.value = g_palette_transition_hsv[hsv_off];
+
+          if (hsv.value > target_hsv.value)
           {
-            iVar8 = -iVar2;
+            hsv.value -= value_step;
           }
-          g_palette_transition_hsv[iVar7 * 3 + 2] = g_palette_transition_hsv[iVar7 * 3 + 2] + iVar8;
-          local_30 = g_palette_transition_hsv[iVar7 * 3 + 2];
-          if (0x3fbf < local_30)
+          else
           {
-            local_30 = 0x3fc0;
+            hsv.value += value_step;
           }
+
+          if (hsv.value > 0x3FBF)
+          {
+            hsv.value = 0x3FC0;
+          }
+          if (hsv.value < 0)
+          {
+            hsv.value = 0;
+          }
+
+          g_palette_transition_hsv[hsv_off - 1] = hsv.saturation;
+          g_palette_transition_hsv[hsv_off] = hsv.value;
         }
 
-        if (local_30 < 1)
+        ConvertHsvToRgb(&hsv, &rgb);
+
+        g_palette_transition_work_words[work_off + 0] = rgb.r;
+        g_palette_transition_work_words[work_off + 1] = rgb.g;
+        g_palette_transition_work_words[work_off + 2] = rgb.b;
+        g_palette_transition_work_words[work_off + 3] = rgb.a_or_unused;
+
+        g_palette_rgb_bytes[rgb_off + 0] =
+            (unsigned char)g_palette_transition_work_words[work_off + 0];
+        g_palette_rgb_bytes[rgb_off + 1] =
+            (unsigned char)g_palette_transition_work_words[work_off + 1];
+        g_palette_rgb_bytes[rgb_off + 2] =
+            (unsigned char)g_palette_transition_work_words[work_off + 2];
+
+        step_off += 1;
+        hsv_off += 3;
+        work_off += 4;
+        rgb_off += 3;
+
+        if (work_off >= 0x400)
         {
-          local_30 = 0;
+          break;
         }
+      }
 
-        iVar11 = (int)sVar9;
-        sVar9 = sVar9 + 1;
-        iVar8 = iVar11 * 4;
-        piVar3 = (int *)ConvertHsvToRgb(local_10, &local_38);
-        g_palette_transition_work_words[iVar8] = *piVar3;
-        g_palette_transition_work_words[iVar8 + 1] = piVar3[1];
-        iVar7 = iVar11 * 3;
-        g_palette_transition_work_words[iVar8 + 2] = piVar3[2];
-        puVar1 = g_palette_rgb_bytes;
-        g_palette_transition_work_words[iVar8 + 3] = piVar3[3];
-        puVar1[iVar7] = (unsigned char)g_palette_transition_work_words[iVar8];
-        g_palette_rgb_bytes[iVar7 + 1] = (unsigned char)g_palette_transition_work_words[iVar8 + 1];
-        g_palette_rgb_bytes[iVar7 + 2] = (unsigned char)g_palette_transition_work_words[iVar8 + 2];
-      } while (sVar9 < 0x100);
-      RpBits_ApplyPalette((short *)g_palette_data_words);
-      local_3e = local_3e + 1;
-    } while (local_3e <= param_2);
+      RpBits_ApplyPalette(g_palette_data_words);
+    }
   }
 
-  sVar9 = 0;
-  do
-  {
-    iVar2 = (int)sVar9;
-    sVar9 = sVar9 + 1;
-    iVar2 = iVar2 * 3;
-    g_palette_rgb_bytes[iVar2] = (unsigned char)local_2c;
-    g_palette_rgb_bytes[iVar2 + 1] = (unsigned char)local_28;
-    g_palette_rgb_bytes[iVar2 + 2] = (unsigned char)local_24;
-  } while (sVar9 < 0x100);
-
-  RpBits_ApplyPalette((short *)g_palette_data_words);
+  RpBits_ApplyPalette(g_palette_data_words);
   return ClearGraphicsPageWithPaletteColor(0, 0);
 }
 
@@ -1257,9 +1374,9 @@ int AnimatePaletteToColor(int param_1, int param_2)
 void CopyBytesAsmCompat(double *dst, double *src, unsigned int num)
 {
 #ifdef MODERN_FIXES
-  memcpy(dst,src,num);
+  memcpy(dst, src, num);
 #else
-  //TODO: this looks like real inline asm but who knows
+  // TODO: this looks like real inline asm but who knows
   __asm {
     mov edi, dst
     mov esi, src

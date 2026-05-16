@@ -128,10 +128,11 @@ address,orig_size,type,size
 0040a110,25,function,25
 0040a130,25,function,25
 0040a150,25,function,25
+0040a1a0,396,function,
 0040a330,131,function,
 0040a3c0,121,function,
 0040a440,350,function,
-0040a5a0,364,function,
+0040a5a0,388,function,
 0040a730,746,function,
 0040aa20,41,function,41
 0040aa50,421,function,

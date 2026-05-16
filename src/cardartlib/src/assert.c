@@ -15,6 +15,7 @@ char g_assertMessageBuffer[2000];
 // GLOBAL: DRAWCARDLIB 0x100f35b0
 // GLOBAL: DECKDLL 0x10113d30
 // GLOBAL: MAGIC 0x777860
+// GLOBAL: FACEMAKER 0x0041ae40
 char global_base_directory[0x105];
 
 // MATCHING
