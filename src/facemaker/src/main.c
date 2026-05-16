@@ -2005,8 +2005,8 @@ LOOP:
   else
   {
 #ifdef MODERN_FIXES
-      global_screen_width = 1024;// GetDeviceCaps(GetDC((HWND)0), HORZRES);
-      global_screen_height = 768; // GetDeviceCaps(GetDC((HWND)0), VERTRES);
+    global_screen_width = 1024; // GetDeviceCaps(GetDC((HWND)0), HORZRES) - 1;
+    global_screen_height = 768; // GetDeviceCaps(GetDC((HWND)0), VERTRES) - 1;
 #else
     int horzres = GetDeviceCaps(GetDC((HWND)0), HORZRES);
     switch (horzres)
