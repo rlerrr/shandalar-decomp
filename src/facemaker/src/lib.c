@@ -104,6 +104,7 @@ HPALETTE g_realized_palette_handle;
 
 #pragma optimize("gy", on)
 
+// FUNCTION: SHANDALAR 0x00578cc0
 // FUNCTION: FACEMAKER 0x00406650
 DIBSurface *InitializeGraphicsSystemDefaultMode(void)
 {
@@ -365,6 +366,7 @@ DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_
   return page;
 }
 
+// FUNCTION: SHANDALAR 0x00579310
 // FUNCTION: FACEMAKER 0x00406bd0
 void SetGraphicsPage(int page_number, DIBSurface *page)
 {
@@ -394,6 +396,7 @@ void SetGraphicsPage(int page_number, DIBSurface *page)
   g_graphics_pages[page_number] = page;
 }
 
+// FUNCTION: SHANDALAR 0x00579760
 // FUNCTION: FACEMAKER 0x00407190
 void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index)
 {
@@ -441,6 +444,7 @@ void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsign
   SetPixelV(page->hTempDC, x, y, color);
 }
 
+// FUNCTION: SHANDALAR 0x00579400
 // FUNCTION: FACEMAKER 0x00406cc0
 void PresentGraphicsPage(int enabled)
 {
@@ -451,6 +455,7 @@ void PresentGraphicsPage(int enabled)
   }
 }
 
+// FUNCTION: SHANDALAR 0x00579480
 // FUNCTION: FACEMAKER 0x00406d00
 int ClearGraphicsPageWithPaletteColor(int page_number, int color_index)
 {
@@ -471,6 +476,7 @@ int ClearGraphicsPageWithPaletteColor(int page_number, int color_index)
   return DeleteObject(brush);
 }
 
+// FUNCTION: SHANDALAR 0x00579890
 // FUNCTION: FACEMAKER 0x00407210
 void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
                       FacemakerWindowBounds *src, int src_x, int src_y)
@@ -602,6 +608,7 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
   BitBlt(dst_page->hTempDC, src_x, src_y, width, height, src_page->hTempDC, dst_x, dst_y, SRCCOPY);
 }
 
+// FUNCTION: SHANDALAR 0x00579e40
 // FUNCTION: FACEMAKER 0x00407570
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h, FacemakerWindowBounds *src,
                              int src_x, int src_y, int copy_w, int copy_h)
@@ -610,6 +617,7 @@ void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, i
              g_graphics_pages[dst->page_number]->hTempDC, dst_x, dst_y, src_w, src_h, 0xcc0020);
 }
 
+// FUNCTION: SHANDALAR 0x00579f10
 // FUNCTION: FACEMAKER 0x004075d0
 void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                            unsigned int param_5)
@@ -661,6 +669,7 @@ void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int 
   }
 }
 
+// FUNCTION: SHANDALAR 0x00579520
 // FUNCTION: FACEMAKER 0x00406da0
 unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
 {
@@ -695,6 +704,7 @@ unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
   return uVar3;
 }
 
+// FUNCTION: SHANDALAR 0x0057a000
 // FUNCTION: FACEMAKER 0x004076c0
 void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                           unsigned int param_5)
@@ -721,6 +731,7 @@ void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int p
   }
 }
 
+// FUNCTION: SHANDALAR 0x00566cea
 // FUNCTION: FACEMAKER 0x0040aa20
 void CopyBytesAsmCompat(double *dst, double *src, unsigned int num)
 {

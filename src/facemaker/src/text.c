@@ -84,6 +84,7 @@ char s_File__s_could_not_be_opened__EXITING_0040c0b4[] = "File %s could not be o
 // GLOBAL: FACEMAKER 0x0040c0b0
 char *PTR_s_File__s_could_not_be_opened__EXI_0040c0b0 = s_File__s_could_not_be_opened__EXITING_0040c0b4;
 
+// FUNCTION: SHANDALAR 0x0057a4e0
 // FUNCTION: FACEMAKER 0x00407b10
 #pragma optimize("gty", on)
 int LoadFontCollection(char *path)
@@ -128,6 +129,7 @@ int LoadFontCollection(char *path)
     return font_count;
 }
 
+// FUNCTION: SHANDALAR 0x0057a5f0
 // FUNCTION: FACEMAKER 0x00407c20
 int LoadBitmapFontFromFile(int font_id, FILE *file)
 {
@@ -210,6 +212,7 @@ int LoadBitmapFontFromFile(int font_id, FILE *file)
     return 0;
 }
 
+// FUNCTION: SHANDALAR 0x0057a7f0
 // FUNCTION: FACEMAKER 0x00407e20
 int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name,
                          int weight, DWORD italic)
@@ -301,6 +304,7 @@ int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *
     return 1;
 }
 
+// FUNCTION: SHANDALAR 0x0057a900
 // FUNCTION: FACEMAKER 0x00407f30
 int SetFontStyleSize(int font_id, unsigned int style)
 {
@@ -337,6 +341,7 @@ int SetFontStyleSize(int font_id, unsigned int style)
     return (int)font->hfont;
 }
 
+// FUNCTION: SHANDALAR 0x0057bb90
 // FUNCTION: FACEMAKER 0x00408da0
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image)
 {
@@ -451,6 +456,7 @@ void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedI
     } while (row_index < sprite_row_count);
 }
 
+// FUNCTION: SHANDALAR 0x0057bfa0
 // FUNCTION: FACEMAKER 0x00408f20
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height,
                                        EncodedImage *encoded_image)
@@ -698,6 +704,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
     }
 }
 
+// FUNCTION: SHANDALAR 0x0057aae0
 // FUNCTION: FACEMAKER 0x004080d0
 int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
 {
@@ -814,6 +821,7 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
     return max_width;
 }
 
+// FUNCTION: SHANDALAR 0x0057ae50
 // FUNCTION: FACEMAKER 0x004082e0
 int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char *param_4)
 {
@@ -946,6 +954,7 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
   return 0;
 }
 
+// FUNCTION: SHANDALAR 0x0057b230
 // FUNCTION: FACEMAKER 0x004086c0
 int DrawTextFormatted(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
                          int param_7, int param_8, int *param_9)

@@ -262,6 +262,7 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
 
 #pragma optimize("gy", on)
 
+// FUNCTION: SHANDALAR 0x0057b650
 // FUNCTION: FACEMAKER 0x00408900
 void BeginSpriteEncodeSession(void)
 {
@@ -269,6 +270,7 @@ void BeginSpriteEncodeSession(void)
   g_sprite_blob_cursor = g_sprite_blob_base;
 }
 
+// FUNCTION: SHANDALAR 0x0057b670
 // FUNCTION: FACEMAKER 0x00408920
 void FinalizeSpriteEncodeSession(void)
 {
@@ -276,12 +278,14 @@ void FinalizeSpriteEncodeSession(void)
   g_sprite_blob_base = _expand((void *)g_sprite_blob_base, (int)g_sprite_blob_cursor + (0x10 - (int)g_sprite_blob_base));
 }
 
+// FUNCTION: SHANDALAR 0x0057b6a0
 // FUNCTION: FACEMAKER 0x00408950
 void FreeSpriteBlob(void *memory)
 {
   free(memory);
 }
 
+// FUNCTION: SHANDALAR 0x0057b6c0
 // FUNCTION: FACEMAKER 0x00408970
 size_t WriteSpriteBlob(void *sprite_blob, char *output_path)
 {
@@ -295,6 +299,7 @@ size_t WriteSpriteBlob(void *sprite_blob, char *output_path)
   return byte_count;
 }
 
+// FUNCTION: SHANDALAR 0x0057b710
 // FUNCTION: FACEMAKER 0x004089c0
 int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
 {
@@ -324,6 +329,7 @@ int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
   return entry_count;
 }
 
+// FUNCTION: SHANDALAR 0x0057b840
 // FUNCTION: FACEMAKER 0x00408a50
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height)
 {

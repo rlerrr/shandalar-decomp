@@ -100,6 +100,7 @@ void RpBitsResetDictionary(void);
 unsigned int RpBitsLookupSymbol(int param_1);
 void RpBitsWriteBits(int param_1, unsigned int param_2);
 
+// FUNCTION: SHANDALAR 0x0057a340
 // FUNCTION: FACEMAKER 0x00407a00
 void WriteRpBitsPalette(int file_handle)
 {
@@ -135,6 +136,7 @@ void WriteRpBitsPalette(int file_handle)
   _write(file_handle, &palette_file_data, 0x306);
 }
 
+// FUNCTION: SHANDALAR 0x0057de20
 // FUNCTION: FACEMAKER 0x004094b0
 int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param_3, int param_4, int param_5,
                  int param_6, int param_7)
@@ -386,6 +388,7 @@ int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param
   return 0;
 }
 
+// FUNCTION: SHANDALAR 0x0057e390
 // FUNCTION: FACEMAKER 0x00409a20
 void RpBitsEncodeSymbol(int param_1)
 {
@@ -505,6 +508,7 @@ MATCH_FOUND:
   }
 }
 
+// FUNCTION: SHANDALAR 0x0057e630
 // FUNCTION: FACEMAKER 0x00409cc0
 void RpBitsResetDictionary(void)
 {
@@ -534,6 +538,7 @@ void RpBitsResetDictionary(void)
   g_rpbits_next_code = 0x101;
 }
 
+// FUNCTION: SHANDALAR 0x0057e6a0
 // FUNCTION: FACEMAKER 0x00409d30
 unsigned int RpBitsLookupSymbol(int param_1)
 {
@@ -586,6 +591,7 @@ unsigned int RpBitsLookupSymbol(int param_1)
   return hash_slot;
 }
 
+// FUNCTION: SHANDALAR 0x0057e770
 // FUNCTION: FACEMAKER 0x00409e00
 void RpBitsWriteBits(int param_1, unsigned int param_2)
 {
@@ -622,6 +628,7 @@ void RpBitsWriteBits(int param_1, unsigned int param_2)
   }
 }
 
+// FUNCTION: SHANDALAR 0x0057dd90
 // FUNCTION: FACEMAKER 0x00409420
 int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7)
 {
@@ -657,12 +664,14 @@ void LoadPcxIntoPageNoPalette(int page_number, char *path)
   LoadPcxResource(page_number, 0, 0, path, (void *)0);
 }
 
+// FUNCTION: SHANDALAR 0x0057c840
 // FUNCTION: FACEMAKER 0x0040a150
 void LoadPcxPalette(char *path, unsigned short *palette)
 {
   LoadPcxResource(-1, 0, 0, path, palette);
 }
 
+// FUNCTION: SHANDALAR 0x0057c580
 // FUNCTION: FACEMAKER 0x00409eb0
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
 {

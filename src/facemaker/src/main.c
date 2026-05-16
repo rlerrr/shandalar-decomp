@@ -486,6 +486,7 @@ int ShowSaveFaceDialog(void)
 
 #pragma optimize("gy", on)
 
+// FUNCTION: SHANDALAR 0x0041cf20
 // FUNCTION: FACEMAKER 0x004063f0
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
 {
@@ -567,6 +568,37 @@ void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
   }
 }
 
+#pragma intrinsic(memcpy)
+
+// FUNCTION: FACEMAKER 0x00406590
+int HasQueuedKeyInput(void)
+{
+  return g_key_input_queue_count != 0;
+}
+
+// FUNCTION: SHANDALAR 0x0041d192
+// FUNCTION: FACEMAKER 0x004065a0
+int PopQueuedKeyInput(void)
+{
+  int queued_key;
+  int queued_key_count;
+
+  if (g_key_input_queue_count == 0)
+  {
+    return 0;
+  }
+
+  queued_key = g_key_input_queue[0];
+  g_key_input_queue_count = g_key_input_queue_count - 1;
+  if (g_key_input_queue_count != 0)
+  {
+    queued_key_count = g_key_input_queue_count;
+    memcpy(g_key_input_queue, g_key_input_queue + 1, queued_key_count * 4);
+  }
+  return queued_key;
+}
+
+// FUNCTION: SHANDALAR 0x0057dc20
 // FUNCTION: FACEMAKER 0x0040a330
 ATOM RegisterPaletteClass(HINSTANCE hInstance)
 {
@@ -585,6 +617,7 @@ ATOM RegisterPaletteClass(HINSTANCE hInstance)
   return RegisterClassA(&wndclass);
 }
 
+// FUNCTION: SHANDALAR 0x0057dcb0
 // FUNCTION: FACEMAKER 0x0040a3c0
 HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd)
 {
@@ -592,6 +625,7 @@ HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd)
                          100, 0x32, 0x100, 0x100, parent_hwnd, (HMENU)0, hInstance, (LPVOID)0);
 }
 
+// FUNCTION: SHANDALAR 0x0057c890
 // FUNCTION: FACEMAKER 0x0040a440
 int *ConvertRgbToHsv(int *dst, int *src)
 {
@@ -665,6 +699,7 @@ int *ConvertRgbToHsv(int *dst, int *src)
   return dst;
 }
 
+// FUNCTION: SHANDALAR 0x0057c9f0
 // FUNCTION: FACEMAKER 0x0040a5a0
 unsigned int *ConvertHsvToRgb(unsigned int *dst, int *src)
 {
@@ -750,6 +785,7 @@ unsigned int *ConvertHsvToRgb(unsigned int *dst, int *src)
   return dst;
 }
 
+// FUNCTION: SHANDALAR 0x0057cb80
 // FUNCTION: FACEMAKER 0x0040a730
 int AnimatePaletteToColor(int param_1, int param_2)
 {
@@ -908,6 +944,7 @@ int AnimatePaletteToColor(int param_1, int param_2)
   return ClearGraphicsPageWithPaletteColor(0, 0);
 }
 
+// FUNCTION: SHANDALAR 0x00578c90
 // FUNCTION: FACEMAKER 0x004065f0
 int LoadFontConfigIfPresent(char *executable_name, char *config_name)
 {
@@ -918,38 +955,6 @@ int LoadFontConfigIfPresent(char *executable_name, char *config_name)
   }
   return 0;
 }
-
-#pragma optimize("gty", on)
-#pragma intrinsic(memcpy)
-
-// FUNCTION: FACEMAKER 0x00406590
-int HasQueuedKeyInput(void)
-{
-  return g_key_input_queue_count != 0;
-}
-
-// FUNCTION: FACEMAKER 0x004065a0
-int PopQueuedKeyInput(void)
-{
-  int queued_key;
-  int queued_key_count;
-
-  if (g_key_input_queue_count == 0)
-  {
-    return 0;
-  }
-
-  queued_key = g_key_input_queue[0];
-  g_key_input_queue_count = g_key_input_queue_count - 1;
-  if (g_key_input_queue_count != 0)
-  {
-    queued_key_count = g_key_input_queue_count;
-    memcpy(g_key_input_queue, g_key_input_queue + 1, queued_key_count * 4);
-  }
-  return queued_key;
-}
-
-#pragma optimize("gy", on)
 
 // FUNCTION: FACEMAKER 0x004065e0
 int LegacyInitNoop()
@@ -2144,6 +2149,7 @@ void __stdcall IncrementUiTickCallback(int callback_arg_1, int callback_arg_2, i
   g_ui_tick_count = g_ui_tick_count + 1;
 }
 
+// FUNCTION: SHANDALAR 0x004ce955
 // FUNCTION: FACEMAKER 0x00405f38
 int ConsumeUiTickCount(void)
 {
@@ -2191,6 +2197,7 @@ void RestoreSystemPalette(void)
   }
 }
 
+// FUNCTION: SHANDALAR 0x004cea4c
 // FUNCTION: FACEMAKER 0x004061bd
 LONG ChangeDisplayResolution(DWORD width, DWORD height)
 {
@@ -2213,6 +2220,7 @@ LONG ChangeDisplayResolution(DWORD width, DWORD height)
   return ChangeDisplaySettingsA(&dev_mode, 0);
 }
 
+// FUNCTION: SHANDALAR 0x004ceacb
 // FUNCTION: FACEMAKER 0x0040623c
 void RestoreDisplayResolution(void)
 {

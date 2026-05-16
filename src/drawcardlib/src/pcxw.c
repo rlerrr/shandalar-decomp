@@ -178,6 +178,7 @@ bool PcxReadHeaderAndPaletteFromPath(char *path, void *paletteOut)
 
 // FUNCTION: DRAWCARDLIB 0x100042ea
 // FUNCTION: DECKDLL 0x1001651f
+// FUNCTION: SHANDALAR 0x0057d850
 // FUNCTION: FACEMAKER 0x0040aa50
 undefined4 PcxReadHeaderAndPalette(void *paletteOut)
 {
