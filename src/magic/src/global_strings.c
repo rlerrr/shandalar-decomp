@@ -63,7 +63,7 @@ int load_text(const char *file_name, const char *section_name)
 }
 
 // FUNCTION: MAGIC 0x004eca6d
-static int FUN_004eca6d(char *filename, char *section_name)
+int FUN_004eca6d(char *filename, char *section_name)
 {
   int loaded_count;
   int line_index;
@@ -281,9 +281,9 @@ void FUN_00491f1e(char *filename)
 
   load_text(filename, "ABOUTBOX");
   strcpy(gs_aboutbox_text_007aa930, text_lines[0]);
-  strcat(gs_aboutbox_text_007aa930, gs_double_newline_005721a4);
+  strcat(gs_aboutbox_text_007aa930, "\n\n");
   strcat(gs_aboutbox_text_007aa930, text_lines[1]);
-  strcat(gs_aboutbox_text_007aa930, gs_double_newline_005721a8);
+  strcat(gs_aboutbox_text_007aa930, "\n\n");
   strcat(gs_aboutbox_text_007aa930, text_lines[2]);
 
   load_text(filename, "PROMPT_MAIN");

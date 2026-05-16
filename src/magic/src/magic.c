@@ -16,7 +16,7 @@
 #define STARTUP_DIALOG_COUNT 5
 #define STARTUP_DIALOG_ROW_STRIDE 0x8b8
 #define STARTUP_DIALOG_CHOICE_OFFSET 0x10c
-#define STARTUP_DIALOG_CHOICE_STRIDE 0x48
+#define STARTUP_DIALOG_CHOICE_STRIDE 0xD8
 #define STARTUP_DIALOG_COUNT_OFFSET 0x8b4
 
 #define STARTUP_DIALOG_ROW(group_) \
@@ -77,14 +77,7 @@ HANDLE DAT_00776518;
 // GLOBAL: MAGIC 0x007a79b8
 int DAT_007a79b8;
 
-// GLOBAL: MAGIC 0x007a7d08
-char DAT_007a7d08;
-
-// GLOBAL: MAGIC 0x007a7d6c
-int DAT_007a7d6c;
-
-// GLOBAL: MAGIC 0x007a7d70
-char *DAT_007a7d70;
+extern char *global_base_txt;
 
 // GLOBAL: MAGIC 0x008950b0
 HWND global_main_hwnd;
@@ -98,17 +91,8 @@ int DAT_00895204;
 // GLOBAL: MAGIC 0x008b3bd8
 int DAT_008b3bd8;
 
-// GLOBAL: MAGIC 0x008b27f0
-char DAT_008b27f0;
-
-// GLOBAL: MAGIC 0x008b2938
-char DAT_008b2938;
-
 // GLOBAL: MAGIC 0x008b32bc
 int DAT_008b32bc;
-
-// GLOBAL: MAGIC 0x008b34a0
-char DAT_008b34a0;
 
 // GLOBAL: MAGIC 0x008b4dd4
 int DAT_008b4dd4;
@@ -122,7 +106,6 @@ char global_savegame_path[300];
 // GLOBAL: MAGIC 0x008a91a0
 screen_name_file_t DAT_008a91a0;
 
-// GLOBAL: MAGIC 0x008b40d0
 extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
 
@@ -131,12 +114,6 @@ char global_faces_path[300];
 
 // GLOBAL: MAGIC 0x008cff0c
 int DAT_008cff0c;
-
-// GLOBAL: MAGIC 0x008cf200
-char DAT_008cf200;
-
-// GLOBAL: MAGIC 0x008cf3a0
-char DAT_008cf3a0;
 
 // GLOBAL: MAGIC 0x008cff14
 HANDLE global_mutex_LowerDialog;
@@ -150,35 +127,14 @@ int DAT_0091bbd0;
 extern int DAT_00896714;
 extern int DAT_0091c0f0;
 
-// GLOBAL: MAGIC 0x0091ca90
-char DAT_0091ca90;
-
-// GLOBAL: MAGIC 0x0091ca94
-unsigned short DAT_0091ca94;
-
-// GLOBAL: MAGIC 0x0091ca96
-char DAT_0091ca96;
-
-// GLOBAL: MAGIC 0x0091ca98
-void *DAT_0091ca98;
-
 // GLOBAL: MAGIC 0x0091c4f8
 int DAT_0091c4f8;
 
 // GLOBAL: MAGIC 0x0091ce40
 char DAT_0091ce40[300];
 
-// GLOBAL: MAGIC 0x0091d07c
-int DAT_0091d07c;
-
 // GLOBAL: MAGIC 0x00926100
 char global_playdeck_path[300];
-
-// GLOBAL: MAGIC 0x00926080
-char DAT_00926080;
-
-// GLOBAL: MAGIC 0x0092674c
-int DAT_0092674c;
 
 // GLOBAL: MAGIC 0x00926808
 HBITMAP DAT_00926808;
@@ -465,6 +421,7 @@ int register_MagicShellClass(LPCSTR class_name)
 // FUNCTION: MAGIC 0x005539b8
 void FUN_005539b8(void *unused)
 {
+  (void)unused;
 }
 
 // FUNCTION: MAGIC 0x004226c0
@@ -973,54 +930,54 @@ static int FUN_00497c8d(void)
 // FUNCTION: MAGIC 0x00500c56
 static int FUN_00500c56(void)
 {
-  DAT_007a7d6c = 0;
-  DAT_0091d07c = DAT_007a7d6c;
+  unk_007a7d6c = 0;
+  unk_0091d07c = unk_007a7d6c;
   DAT_00939560 = 1;
   DAT_00925d2c = 0;
   DAT_007ab2c0 = DAT_00925d2c;
   DAT_008b32bc = 1;
-  DAT_0092674c = 0;
-  DAT_008b27f0 = '\0';
-  DAT_008cf200 = '\0';
-  DAT_008b2938 = '\0';
-  DAT_007a7d08 = '\0';
-  DAT_008b34a0 = '\0';
-  DAT_008cf3a0 = '\0';
-  DAT_00926080 = '\0';
-  DAT_0091ca90 = '\0';
+  unk_0092674c = 0;
+  unk_008b27f0 = '\0';
+  unk_008cf200 = '\0';
+  unk_008b2938 = '\0';
+  unk_007a7d08 = '\0';
+  unk_008b34a0 = '\0';
+  unk_008cf3a0 = '\0';
+  unk_00926080 = '\0';
+  unk_0091ca90 = '\0';
 
-  if (DAT_0091ca98 != NULL)
+  if (unk_0091ca98 != NULL)
   {
-    free(DAT_0091ca98);
+    free(unk_0091ca98);
   }
 
-  DAT_0091ca98 = malloc(0x20);
-  if (DAT_0091ca98 == NULL)
+  unk_0091ca98 = malloc(0x20);
+  if (unk_0091ca98 == NULL)
   {
     MessageBoxA(NULL, "Memory allocation error in InitActionPackets!", "Packet Error", MB_ICONHAND);
   }
 
-  DAT_0091ca94 = 0;
-  DAT_0091ca96 = 1;
+  unk_0091ca94 = 0;
+  unk_0091ca96 = 1;
   return 1;
 }
 
 // FUNCTION: MAGIC 0x00500d46
 static void FUN_00500d46(void)
 {
-  free(DAT_0091ca98);
-  DAT_0091ca98 = NULL;
+  free(unk_0091ca98);
+  unk_0091ca98 = NULL;
   DAT_008b32bc = 0;
 }
 
 // FUNCTION: MAGIC 0x004537a7
 static void FUN_004537a7(void)
 {
-  if (DAT_007a7d70 != NULL)
+  if (global_base_txt != NULL)
   {
-    free(DAT_007a7d70);
+    free(global_base_txt);
   }
-  DAT_007a7d70 = NULL;
+  global_base_txt = NULL;
 }
 
 // FUNCTION: MAGIC 0x00453b3c

@@ -25,12 +25,6 @@ typedef char text_300_t[300];
 // GLOBAL: SHANDALAR 0x008aa920
 GLOBAL_STRINGS_EXTERN char text_lines[249][300];
 
-// GLOBAL: MAGIC 0x005721a4
-GLOBAL_STRINGS_EXTERN char gs_double_newline_005721a4[4] GLOBAL_STRINGS_INIT("\n\n");
-
-// GLOBAL: MAGIC 0x005721a8
-GLOBAL_STRINGS_EXTERN char gs_double_newline_005721a8[4] GLOBAL_STRINGS_INIT("\n\n");
-
 // GLOBAL: MAGIC 0x00789460
 GLOBAL_STRINGS_EXTERN char gs_magic_the_gathering_title_00789460[300];
 

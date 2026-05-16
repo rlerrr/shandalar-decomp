@@ -226,8 +226,6 @@ char DAT_008b4e44[50];
 char DAT_008b4e76[50];
 // GLOBAL: MAGIC 0x008b4ea8
 char DAT_008b4ea8[50];
-// GLOBAL: MAGIC 0x00925e70
-char DAT_00925e70[300];
 
 unsigned int FUN_00446e4b(void);
 unsigned int FUN_00449ac3(int player, int card);
@@ -1732,7 +1730,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   if (msg > 0x30e && msg < 0x312)
   {
-    return FUN_004962cc((int)hwnd, msg, (int)wparam, (int)lparam);
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, (int)lparam);
   }
 
   return 0;

@@ -85,7 +85,7 @@ static char *global_deckbuilder_csv_raw;
 // GLOBAL: DECKDLL 0x1012df3c
 // GLOBAL: MAGIC 0x7a7d70
 // GLOBAL: SHANDALAR 0x007beafc
-static char *global_base_txt;
+char *global_base_txt;
 
 // FUNCTION: DECKDLL 0x1001a940
 // FUNCTION: MAGIC 0x452cf0

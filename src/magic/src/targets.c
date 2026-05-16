@@ -22,9 +22,6 @@ int DAT_007aa928;
 // GLOBAL: MAGIC 0x007aaeec
 int DAT_007aaeec;
 
-// GLOBAL: MAGIC 0x007abc84
-int unk_007abc84;
-
 // GLOBAL: MAGIC 0x008a8d78
 int DAT_008a8d78;
 

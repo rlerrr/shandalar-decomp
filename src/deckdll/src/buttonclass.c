@@ -20,7 +20,7 @@ static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
 
 // FUNCTION: DECKDLL 0x10025b5e
 // FUNCTION: MAGIC 0x004962cc
-static int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
+int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
 {
   struct
   {

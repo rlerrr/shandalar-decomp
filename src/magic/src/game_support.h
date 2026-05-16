@@ -7,10 +7,15 @@
 
 extern card_data_t global_cards_data[];
 
+/* Helpers that are inlined in the original executable (no function calls). */
+#define is_tapped(player_, card_) ((PLAYER_CARD_INSTANCE((player_), (card_)).state & STATE_TAPPED) != 0)
+#define is_animated_and_sick(player_, card_) \
+  (((PLAYER_CARD_INSTANCE((player_), (card_)).state & STATE_SUMMONSICK_BOTH) != 0) && \
+   ((global_cards_data[PLAYER_CARD_INSTANCE((player_), (card_)).internal_card_id].type & TYPE_CREATURE) != 0))
+
 int can_target(target_definition_t *td);
 void FUN_0040246a(int player, int amount);
 int add_card_to_hand(int player, int internal_card_id);
-int charge_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white);
 int create_a_card_type(int internal_card_id);
 void default_target_definition(int player, int card, target_definition_t *td, int type);
 int damage_creature(int target_player, int target_card, int amount, int source_player, int source_card);
@@ -23,7 +28,7 @@ int FUN_00404cff(int player, int internal_card_id, int who_to_check);
 void FUN_00449bef(char *name);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
-int FUN_004962cc(int window, unsigned int message, int other_window, int data);
+int FUN_10025b5e(int window, unsigned int message, int other_window, int data);
 int FUN_00437375(int player, int card, int internal_card_id);
 int FUN_0043c7ab(int who_is_being_divided, int player, int card);
 int FUN_0043b4f3(int player, int amount);
@@ -36,7 +41,7 @@ int CardIDFromType(unsigned int type);
 int CardTypeFromID(int csvid);
 int FUN_004087cc(int player, unsigned int type);
 int internal_rand(int maximum);
-int FUN_0044aa01(void);
+int FUN_0044aa01(int player);
 int FUN_0044541f(int param_1);
 int FUN_00445b56(int player, int card);
 void FUN_004460d3(void);
@@ -199,9 +204,9 @@ int do_dialog(int who_chooses,
               int ai_choice);
 void undeclare_mana_available_hex(int player, color_test_t color, int amount);
 void play_sound_effect(int sound_id);
-void FUN_004e4ff3(int a1);
+int FUN_004e4ff3(int a1);
 void FUN_004e4f11(void);
-void FUN_004e503e(int a1);
+int FUN_004e503e(int a1);
 void FUN_004e5089(void);
 void FUN_004e51bb(void);
 void FUN_004aff25(void);
@@ -278,10 +283,7 @@ unsigned int C_real_validate_target(int tgt_player,
 int get_hacked_color(int player, int card, int orig_color);
 int get_sleighted_color(int player, int card, int orig_color);
 int get_sleighted_color_test(int player, int card, int orig_color_test);
-int has_mana_for_activated_ability(int player, int card, int colorless, int black, int blue, int green, int red, int white);
-int is_animated_and_sick(int player, int card);
 int is_in_play(int player, int card);
-int is_tapped(int player, int card);
 void kill_card(int player, int card, kill_t kill_mode);
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color);
 int produce_mana(int player, color_t color, int amount);
@@ -295,11 +297,8 @@ int FUN_0054af10(int player, int card, event_t event, int amount);
 int FUN_0054276d(int player, int card, event_t event, unsigned int color, int amount);
 void FUN_005513d7(int player, int card, int amount);
 int select_target(int player, int card, target_definition_t *td, const char *prompt, target_t *ret_location);
-int tap_card(int player, int card);
 void declare_mana_available(int player, color_t color, int amount);
 void undeclare_mana_available_and_produce_it(int player, color_t color, int amount);
-int validate_target(int player, int card, target_definition_t *td, int target_number);
-void vigilance(int player, int card, event_t event);
 void FUN_0054e470(int player, int card, int color);
 void add_special_counter(int player, int card);
 int TENTATIVE_set_timestamps(int player, int card);

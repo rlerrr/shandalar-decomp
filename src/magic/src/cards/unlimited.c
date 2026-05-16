@@ -18924,7 +18924,7 @@ int card_power_sink(int player, int card, event_t event)
           while (raw_mana_available[target_player][color] > 0 && mana_paid < instance->info_slot)
           {
             --raw_mana_available[target_player][color];
-            --total_raw_mana_available[target_player];
+            --raw_mana_available[target_player][7];
             if (color != 6)
             {
               ++mana_paid;
@@ -18948,7 +18948,7 @@ int card_power_sink(int player, int card, event_t event)
                 while (raw_mana_available[target_player][color] > 0 && mana_paid < instance->info_slot)
                 {
                   --raw_mana_available[target_player][color];
-                  --total_raw_mana_available[target_player];
+                  --raw_mana_available[target_player][7];
                   if (color != 6)
                   {
                     ++mana_paid;
