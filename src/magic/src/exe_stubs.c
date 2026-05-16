@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <windows.h>
 
 #include "game_support.h"
 #include "global_strings.h"
@@ -852,29 +853,410 @@ int FUN_0044b7d4(int player, int card)
   return produced_mana_color;
 }
 
+// FUNCTION: MAGIC 0x00445f61
+int FUN_00445f61(int player, int card)
+{
+  int internal_card_id;
+
+  if (player == -1 || card == -1)
+  {
+    return 0;
+  }
+
+  internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+  if (unk_0091a80c == internal_card_id)
+  {
+    internal_card_id = PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
+  }
+
+  if (internal_card_id == -1)
+  {
+    return 0;
+  }
+
+  return (global_cards_data[internal_card_id].extra_ability & EA_ACT_USE_X) != 0;
+}
+
 // FUNCTION: MAGIC 0x0043ff32
 int activate(int who_activates, int player, int card)
 {
-  (void)who_activates;
-  (void)player;
-  (void)card;
-  return 0;
+  struct
+  {
+    int result;
+    int who_pays; /* also who chooses in do_dialog */
+
+    int was_tapped;
+    int has_upkeep_costs;
+    int upkeep_total;
+
+    int upkeep_dialog_ai_choice;
+    int upkeep_cost[7];
+
+    int upkeep_uses_mana_source;
+
+    char trace[500];
+    char prompt[300];
+    char upkeep_opt0[300];
+    char upkeep_opt1[300];
+    char upkeep_prompt[600];
+  } s;
+
+  int i;
+  card_instance_t *instance;
+
+  s.result = 1;
+
+  instance = &PLAYER_CARD_INSTANCE(player, card);
+  s.who_pays = player;
+
+  if ((unk_00926804 & 2) != 0)
+  {
+    int trace_counter;
+
+    trace_counter = DAT_00777aa0;
+    ++DAT_00777aa0;
+    sprintf(s.trace,
+            "%d: Player #%d is tapping %s(%d).\n",
+            trace_counter,
+            player,
+            global_cards_data[instance->internal_card_id].name,
+            card);
+    append_to_trace_txt(s.trace);
+  }
+
+  if (current_phase == EVENT_UPKEEP_PHASE)
+  {
+    s.who_pays = unk_00742f60;
+  }
+
+  if (s.who_pays == active_player && (unk_00926804 & 2) == 0 && unk_008a9000 != 1)
+  {
+    unk_00925bb8 = -1;
+    dispatch_event_to_single_card(player, card, EVENT_GET_SELECTED_CARD, 1 - player, -1);
+
+    FUN_004eca6d(global_ui_strings_filename, "PROMPT_TAP1");
+    sprintf(s.prompt, text_lines[0], DAT_007a7c60);
+
+    if (FUN_00445f61(player, card) != 0)
+    {
+      sprintf(s.prompt, text_lines[1], DAT_007a7c60, unk_00715fa8);
+    }
+    else if (((global_cards_data[instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
+             human_player == player && unk_00715fa8 != 0)
+    {
+      sprintf(s.prompt, text_lines[2], DAT_007a7c60, unk_00715fa8);
+    }
+
+    if (instance->number_of_targets == 0)
+    {
+      if (unk_00925bb8 == -1)
+      {
+        raw_do_dialog(player, card, -1, -1, s.prompt, 0);
+      }
+      else
+      {
+        /* Unreachable in practice, but present in the original binary. */
+        raw_do_dialog(player, card, (unk_00925bb8 >> 8), (unk_00925bb8 & 0xff), s.prompt, 0);
+      }
+    }
+    else if (instance->number_of_targets == 1)
+    {
+      raw_do_dialog(player, card, instance->targets[0].player, instance->targets[0].card, s.prompt, 0);
+    }
+    else
+    {
+      raw_do_dialog(player, card, -1, -1, s.prompt, 0);
+    }
+  }
+
+  FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, player, 0);
+  unk_007a7c1c = 0;
+
+  if ((instance->upkeep_flags & UPKEEP_UPKEEP_TRIGGER) != 0)
+  {
+    s.has_upkeep_costs = 1;
+    s.upkeep_total = 0;
+
+    s.upkeep_cost[0] = (int)(char)instance->upkeep_colorless;
+    s.upkeep_cost[1] = (int)(char)instance->upkeep_black;
+    s.upkeep_cost[2] = (int)(char)instance->upkeep_blue;
+    s.upkeep_cost[3] = (int)(char)instance->upkeep_green;
+    s.upkeep_cost[4] = (int)(char)instance->upkeep_red;
+    s.upkeep_cost[5] = (int)(char)instance->upkeep_white;
+    s.upkeep_cost[6] = (int)(char)instance->upkeep_artmana;
+
+    for (i = 0; i < 7; ++i)
+    {
+      unk_008ce510[i] = s.upkeep_cost[i];
+
+      if (i > 0)
+      {
+        if (has_mana(player, (color_t)i, unk_008ce510[i]) == 0)
+        {
+          s.has_upkeep_costs = 0;
+        }
+      }
+
+      s.upkeep_total += unk_008ce510[i];
+    }
+
+    if (has_mana(s.who_pays, COLOR_ANY, s.upkeep_total) == 0)
+    {
+      s.has_upkeep_costs = 0;
+    }
+
+    s.upkeep_dialog_ai_choice = (s.has_upkeep_costs == 0);
+
+    load_text(global_ui_strings_filename, "PROMPT_PAYUPKEEP");
+    strcpy(s.upkeep_opt0, text_lines[0]);
+    strcpy(s.upkeep_opt1, text_lines[1]);
+    sprintf(s.upkeep_prompt, " %s\n %s", s.upkeep_opt0, s.upkeep_opt1);
+
+    if ((instance->upkeep_flags & UPKEEP_UPKEEP_NODIALOG) != 0 ||
+        do_dialog(s.who_pays, player, card, -1, -1, s.upkeep_prompt, s.upkeep_dialog_ai_choice) == 0)
+    {
+      if (s.has_upkeep_costs == 0)
+      {
+        goto upkeep_cleanup;
+      }
+
+      charge_mana(s.who_pays, 0, 0);
+      if (spell_fizzled == 0)
+      {
+        dispatch_event_to_single_card(player, card, EVENT_UPKEEP_PHASE, 1 - player, -1);
+        if (DAT_008cf1b8 == 0)
+        {
+          instance->upkeep_flags |= UPKEEP_UPKEEP_UNPAID;
+        }
+      }
+    }
+
+    if (spell_fizzled != 0)
+    {
+      spell_fizzled = 0;
+      obliterate_top_card_of_stack();
+      return 0;
+    }
+
+  upkeep_cleanup:
+    for (i = 0; i < 7; ++i)
+    {
+      unk_008ce510[i] = 0;
+    }
+
+    instance->upkeep_flags &= ~UPKEEP_UPKEEP_TRIGGER;
+    instance->upkeep_flags |= UPKEEP_UPKEEP_CANTPAY;
+
+    FUN_004438cb(1);
+    return 1;
+  }
+
+  if ((instance->upkeep_flags & UPKEEP_UNTAP_TRIGGER) != 0 && FUN_00445b56(player, card) != 0)
+  {
+    for (i = 0; i < 7; ++i)
+    {
+      unk_008ce510[i] = (int)(char)instance->mana_to_untap[i];
+    }
+
+    charge_mana(player, 0, 0);
+    if (spell_fizzled == 0)
+    {
+      dispatch_event_to_single_card(player, card, EVENT_UNTAP_PHASE, 1 - player, -1);
+      if (DAT_008cf1b8 == 0)
+      {
+        instance->upkeep_flags |= UPKEEP_UNTAP_PAID;
+      }
+    }
+
+    if (spell_fizzled != 0)
+    {
+      spell_fizzled = 0;
+      obliterate_top_card_of_stack();
+      return 0;
+    }
+
+    instance->upkeep_flags &= ~UPKEEP_UNTAP_TRIGGER;
+    instance->upkeep_flags |= UPKEEP_UNTAP_DONE;
+    FUN_004438cb(1);
+    return 1;
+  }
+
+  if (dispatch_event(player, card, EVENT_UNKNOWN80) != 0)
+  {
+    obliterate_top_card_of_stack();
+    s.result = 0;
+  }
+  else
+  {
+    if ((global_cards_data[instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
+    {
+      produced_mana_color = -1;
+    }
+
+    FUN_00435c1f();
+
+    s.was_tapped = instance->state & 0x10;
+    dispatch_event_to_single_card(player, card, EVENT_ACTIVATE, 1 - player, -1);
+
+    if ((unk_00926804 & 2) != 0 && active_player == who_activates && DAT_007abc80 == 0 &&
+        instance->internal_card_id != unk_008b28f8)
+    {
+      FUN_004eca6d(global_ui_strings_filename, "PROMPT_TAP1");
+      sprintf(s.prompt, text_lines[0], DAT_007a7c60);
+
+      if (FUN_00445f61(player, card) != 0)
+      {
+        sprintf(s.prompt, text_lines[1], DAT_007a7c60, x_value);
+      }
+      else if (((global_cards_data[instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
+               human_player == player && x_value != 0)
+      {
+        sprintf(s.prompt, text_lines[2], DAT_007a7c60, x_value);
+      }
+
+      if (instance->number_of_targets == 1)
+      {
+        raw_do_dialog(player, card, instance->targets[0].player, instance->targets[0].card, s.prompt, 0);
+      }
+      else
+      {
+        raw_do_dialog(player, card, -1, -1, s.prompt, 0);
+      }
+    }
+
+    if (spell_fizzled == 1)
+    {
+      FUN_00435d11(player);
+      obliterate_top_card_of_stack();
+      s.result = 0;
+    }
+
+    FUN_00435cdd();
+
+    if (s.result != 0)
+    {
+      if (s.was_tapped == 0 && (instance->state & 0x10) != 0)
+      {
+        dispatch_event(player, card, EVENT_TAP_CARD);
+      }
+      else
+      {
+        dispatch_event(player, card, EVENT_PLAY_ABILITY);
+      }
+
+      i = instance->internal_card_id;
+      if (i == -1)
+      {
+        i = instance->original_internal_card_id;
+      }
+      s.upkeep_uses_mana_source = global_cards_data[i].extra_ability & EA_MANA_SOURCE;
+
+      if (s.upkeep_uses_mana_source == 0 || produced_mana_color == -1)
+      {
+        FUN_004438cb(1);
+      }
+      else
+      {
+        FUN_004438cb(0);
+      }
+
+      if (unk_008a9000 != 1)
+      {
+        if ((global_cards_data[instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0 &&
+            produced_mana_color != -1)
+        {
+          play_sound_effect(0x12);
+        }
+        else
+        {
+          play_sound_effect(0x26);
+        }
+      }
+
+      if (unk_008a9000 != 1)
+      {
+        set_stack_damage_targets();
+      }
+    }
+  }
+
+  if (s.result == 0)
+  {
+    unk_007a7c1c = 0;
+  }
+
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x0050aa68
 void FUN_0050aa68(void)
 {
+  //This space intentionally left blank (empty function)
 }
 
 // FUNCTION: MAGIC 0x00446cb8
 void FUN_00446cb8(char *text)
 {
-  (void)text;
+  RECT rect;
+  int x;
+  int y;
+
+  if (0)
+  {
+    if (text == NULL)
+    {
+      goto after_text_test;
+    }
+
+    if (text[0] != '\0')
+    {
+      goto has_text;
+    }
+
+  after_text_test:
+    goto done;
+
+  has_text:
+    play_sound_effect(0x25);
+
+    SetWindowTextA(global_opponent_chat_hwnd, text);
+    GetWindowRect(global_opponent_chat_hwnd, &rect);
+
+    SetWindowPos(global_opponent_chat_hwnd,
+                 (HWND)0,
+                 rect.left,
+                 -(rect.bottom - rect.top),
+                 0,
+                 0,
+                 5);
+    ShowWindow(global_opponent_chat_hwnd, 5);
+    BringWindowToTop(global_opponent_chat_hwnd);
+
+    x = rect.left;
+    y = -(rect.bottom - rect.top);
+
+    goto inc_y;
+
+  inc_y:
+    ++y;
+    if (rect.top <= y)
+    {
+      goto done;
+    }
+
+    SetWindowPos(global_opponent_chat_hwnd, (HWND)0, x, y, 0, 0, 5);
+    UpdateWindow(global_opponent_chat_hwnd);
+    Sleep(0x19);
+    goto inc_y;
+
+  done:;
+  }
 }
 
 // FUNCTION: MAGIC 0x0050aa5d
 void FUN_0050aa5d(void)
 {
+  //This space intentionally left blank (empty function)
 }
 
 // FUNCTION: MAGIC 0x004b5fc9

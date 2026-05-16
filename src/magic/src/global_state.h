@@ -158,6 +158,9 @@ extern name_table_entry_t unk_00777e60[866];
 // GLOBAL: MAGIC 0x008b497c
 extern int current_turn;
 
+// GLOBAL: MAGIC 0x008b4980
+extern HWND global_opponent_chat_hwnd;
+
 // GLOBAL: MAGIC 0x008b32b8
 extern int active_player;
 
