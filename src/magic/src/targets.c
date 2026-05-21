@@ -10,9 +10,6 @@ int GetNextManaSymbol(char **param_1);
 // GLOBAL: MAGIC 0x00637e58
 int DAT_00637e58;
 
-// GLOBAL: MAGIC 0x00777854
-int DAT_00777854;
-
 // GLOBAL: MAGIC 0x007a7d74
 int DAT_007a7d74;
 

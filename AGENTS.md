@@ -33,6 +33,8 @@ These instructions apply to the entire repository.
 - For lookup tables, write `idx * 3` to encourage `lea reg, [reg + reg*2]` patterns (instead of more complex arithmetic).
 - Watch for signed compares against `0xFF`: `cmp reg, 0FFh` is `-1` (imm8 sign-extended), so match it in C as `== -1` when appropriate.
 - Bitwise comparisons like `(var & 0x2000) != 0` will often compile to `test byte ptr [var+1],0x20` comparing a single byte as if the original was a byte array.
+- Don't type-pun to a `byte*` just to get byte-sized `test`/`or` for simple `&` / `|` masks; MSVC will often emit the byte form naturally when the mask only touches a single byte.
+- Prefer slightly-worse codegen over cursed raw-offset pointer math (e.g. `*(int *)((char *)p + 0x64)`); use real struct fields/macros unless matching absolutely requires otherwise.
 - The order of parameters in `cmp` and other commutative opcodes like `test`, `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.  Don't bother trying.
 - `register` on variables is ignored.  If a "variable" doesn't get written to the stack it's not actually a variable.
 - `imul` and `idiv` are aggressively avoided when multiplying and dividing by constants.  "Weird" math is probably multiplying or dividing by a non-power-of-2 constant.
@@ -44,6 +46,11 @@ These instructions apply to the entire repository.
   - if/else blocks are frequently swapped.  An inverted conditional jump instruction followed by a large difference is a dead giveaway of this.
   - Early returns are sometimes swapped for large if blocks.
 - Ghidra likes to convert `mov eax {literal}; jmp;` to `returnVal = {literal}; jmp;`, inventing a return variable that doesn't exist.
+
+## Git Workflow
+- Do not change the staging area unless explicitly asked (no surprise `git add`, `git restore --staged`, etc.).
+- If you notice unexpected modifications in files you did not touch, do not discard/revert them. Stop and ask how to proceed.
+- Never use destructive git commands (e.g. `git reset --hard`, `git checkout --`, `git clean -fd`) unless explicitly requested.
 
 ## Build
 - Build with: `make.bat`

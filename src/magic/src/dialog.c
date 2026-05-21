@@ -481,7 +481,7 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
 {
   if (FUN_004483be(player, card) != 0)
     return;
-    
+
   if (displayed_player_and_card == NULL)
     return;
 
@@ -539,16 +539,14 @@ int FUN_004491cd(int player, int card)
 {
   int displayed_value;
 
-  if (FUN_004483be(player, card) == 0)
+  if (FUN_004483be(player, card) != 0)
   {
-    EnterCriticalSection((void *)&unk_00789110);
-    displayed_value = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    LeaveCriticalSection((void *)&unk_00789110);
+    return 0;
   }
-  else
-  {
-    displayed_value = 0;
-  }
+
+  EnterCriticalSection((void *)&unk_00789110);
+  displayed_value = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+  LeaveCriticalSection((void *)&unk_00789110);
 
   return displayed_value;
 }
@@ -556,7 +554,13 @@ int FUN_004491cd(int player, int card)
 // FUNCTION: MAGIC 0x00449249
 void FUN_00449249(int player, int card, int *power, int *toughness)
 {
-  if (power != NULL && toughness != NULL && FUN_004483be(player, card) == 0)
+  if (power == NULL || toughness == NULL)
+  {
+  }
+  else if (FUN_004483be(player, card))
+  {
+  }
+  else
   {
     EnterCriticalSection((void *)&unk_00789110);
     *power = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_power;
@@ -570,16 +574,14 @@ unsigned int FUN_00449898(int player, int card)
 {
   unsigned int displayed_flags;
 
-  if (FUN_004483be(player, card) == 0)
+  if (FUN_004483be(player, card) != 0)
   {
-    EnterCriticalSection((void *)&unk_00789110);
-    displayed_flags = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).token_status;
-    LeaveCriticalSection((void *)&unk_00789110);
+    return 0;
   }
-  else
-  {
-    displayed_flags = 0;
-  }
+
+  EnterCriticalSection((void *)&unk_00789110);
+  displayed_flags = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).token_status;
+  LeaveCriticalSection((void *)&unk_00789110);
 
   return displayed_flags;
 }
@@ -596,7 +598,13 @@ void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace)
     char *cursor;
   } locals;
 
-  if (text != NULL && search != NULL && replace != NULL && strlen(text) != 0 && strlen(search) != 0)
+  if (text == NULL || search == NULL || replace == NULL)
+  {
+  }
+  else if (strlen(text) == 0 || strlen(search) == 0)
+  {
+  }
+  else
   {
     locals.search_length = strlen(search);
     locals.cursor = text;
@@ -611,18 +619,18 @@ void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace)
         locals.found_match = 1;
       }
 
-      if (locals.found_match == 0)
+      if (locals.found_match != 0)
       {
-        locals.rewritten_text[locals.write_pos] = *locals.cursor;
-        ++locals.cursor;
-        locals.rewritten_text[locals.write_pos + 1] = '\0';
-        ++locals.write_pos;
+        strcat(locals.rewritten_text, replace);
+        locals.write_pos += strlen(replace);
+        locals.cursor += locals.search_length;
       }
       else
       {
-        strcat(locals.rewritten_text, replace);
-        locals.cursor += locals.search_length;
-        locals.write_pos += strlen(replace);
+        locals.rewritten_text[locals.write_pos] = *locals.cursor;
+        ++locals.cursor;
+        ++locals.write_pos;
+        locals.rewritten_text[locals.write_pos] = '\0';
       }
     }
     strcpy(text, locals.rewritten_text);
@@ -688,20 +696,22 @@ int FUN_004a587c(int player, int card)
 // FUNCTION: MAGIC 0x004a58ba
 int FUN_004a58ba(int player, int card)
 {
-  int internal_card_id;
-
   if (player == -1 || card == -1)
   {
     return -1;
   }
-
-  internal_card_id = FUN_004a587c(player, card);
-  if (internal_card_id == -1)
+  else
   {
-    return -1;
+    int internal_card_id = FUN_004a587c(player, card);
+    if (internal_card_id == -1)
+    {
+      return -1;
+    }
+    else
+    {
+      return *(int *)&global_cards_data[internal_card_id].id;
+    }
   }
-
-  return *(int *)&global_cards_data[internal_card_id].id;
 }
 
 // FUNCTION: MAGIC 0x004a63b8
@@ -869,7 +879,7 @@ unsigned int FUN_00446e4b(void)
   unsigned int needs_refresh;
   int *stack_entry_count;
 
-  //stack_entry_count = (int *)&gs_multiblock_creature_008cf040[52];
+  // stack_entry_count = (int *)&gs_multiblock_creature_008cf040[52];
 
   EnterCriticalSection((void *)&unk_00789110);
   needs_refresh = memcmp(global_displayed_card_instances, global_card_instances, 0x161e8);
@@ -1684,7 +1694,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             card_id != unk_0092666c)
         {
           DrawFullCard(paint_dc, (RECT *)DAT_006f6df8, global_raw_cards_storage + card_id, 0, 0x12, 0, &gs_illus_00789130);
-     }
+        }
         else if (card_image_number == unk_0092666c)
         {
           FUN_00559bc1((int)paint_dc, (int)DAT_006f6df8, dialog_context->bigcard_player, dialog_context->bigcard_card);

@@ -91,6 +91,9 @@ extern int event_result;
 // GLOBAL: MAGIC 0x00777850
 extern int unk_00777850;
 
+// GLOBAL: MAGIC 0x00777854
+extern int DAT_00777854;
+
 // GLOBAL: MAGIC 0x00712938
 extern int unk_00712938;
 
@@ -106,6 +109,8 @@ extern int DAT_00789714;
 // GLOBAL: MAGIC 0x008b426c
 extern int spell_fizzled;
 
+// GLOBAL: MAGIC 0x00777a9c
+extern int DAT_00777a9c;
 // GLOBAL: MAGIC 0x00777aa0
 extern int DAT_00777aa0;
 // GLOBAL: MAGIC 0x00777aa8
@@ -121,7 +126,7 @@ extern trigger_t trigger_condition;
 extern int unk_00938e2c;
 
 // GLOBAL: MAGIC 0x00939338
-extern int current_phase;
+extern phase_t current_phase;
 
 // GLOBAL: MAGIC 0x0093933c
 extern int unk_0093933c;
@@ -140,6 +145,18 @@ extern int DAT_0093d850;
 
 // GLOBAL: MAGIC 0x00939180
 extern int unk_00939180[32];
+
+// GLOBAL: MAGIC 0x0093917c
+extern int DAT_0093917c[33];
+
+typedef struct
+{
+  int x;
+  int y;
+} int_pair_t;
+
+// GLOBAL: MAGIC 0x009251d8
+extern int_pair_t DAT_009251d8[32];
 
 // GLOBAL: MOK 0x005098b0
 // GLOBAL: MAGIC 0x0093b280
@@ -256,6 +273,8 @@ extern int DAT_00715fac;
 
 // GLOBAL: MAGIC 0x00791554
 extern int human_player;
+// GLOBAL: MAGIC 0x00791550
+extern int regenerate_or_graveyard_triggers_in_progress;
 // GLOBAL: MAGIC 0x00791410
 extern int DAT_00791410;
 // GLOBAL: MAGIC 0x0072c8e0
@@ -288,6 +307,9 @@ extern int (__cdecl *DAT_007ab2cc)(int, int);
 // GLOBAL: MAGIC 0x008cee74
 extern int trigger_cause;
 
+// GLOBAL: MAGIC 0x008cff10
+extern int life_gained;
+
 // GLOBAL: MAGIC 0x008cfd88
 extern int artifact_cards_in_play[2];
 
@@ -318,6 +340,9 @@ extern int unk_007a7d88[2];
 
 // GLOBAL: MAGIC 0x007a7d80
 extern int unk_007a7d80[2];
+
+// GLOBAL: MAGIC 0x007a7d18
+extern int unk_007a7d18[2];
 
 // GLOBAL: MAGIC 0x007a7874
 extern int DAT_007a7874;
@@ -376,6 +401,9 @@ extern int unk_00896534;
 
 // GLOBAL: MAGIC 0x008a8d74
 extern int DAT_008a8d74;
+
+// GLOBAL: MAGIC 0x008a8d7c
+extern int DAT_008a8d7c;
 
 // GLOBAL: MAGIC 0x008a8de4
 extern int DAT_008a8de4;
@@ -591,6 +619,11 @@ extern int affected_card_controller;
 // GLOBAL: MAGIC 0x0093a808
 extern int attacking_card_controller;
 
+// GLOBAL: MAGIC 0x008cdab0
+extern int DAT_008cdab0;
+// GLOBAL: MAGIC 0x008cdab4
+extern int DAT_008cdab4;
+
 // GLOBAL: MAGIC 0x0056e49c
 extern char unk_0056e49c[64];
 
@@ -612,6 +645,9 @@ extern int DAT_0057a754;
 
 // GLOBAL: MAGIC 0x0057aae8
 extern int unk_0057aae8;
+
+// GLOBAL: MAGIC 0x0057d9e4
+extern int DAT_0057d9e4;
 
 // GLOBAL: MAGIC 0x0057d9f0
 extern int unk_0057d9f0;
@@ -670,12 +706,18 @@ extern int attacking_card;
 extern int card_on_stack_controller;
 // GLOBAL: MAGIC 0x0091ce2c
 extern int card_on_stack;
+
+// GLOBAL: MAGIC 0x0091ce30
+extern HWND DAT_0091ce30;
 // GLOBAL: MAGIC 0x008a9000
 extern int unk_008a9000;
 // GLOBAL: MAGIC 0x008a9194
 extern int unk_008a9194;
 // GLOBAL: MAGIC 0x00926804
 extern int unk_00926804;
+
+// GLOBAL: MAGIC 0x0092680c
+extern HWND DAT_0092680c;
 // GLOBAL: MAGIC 0x00939330
 extern int unk_00939330;
 // GLOBAL: MAGIC 0x007a7c58
@@ -710,6 +752,9 @@ extern int unk_008d0340;
 
 // GLOBAL: MAGIC 0x0091c4fc
 extern int unk_0091c4fc;
+
+// GLOBAL: MAGIC 0x0091c500
+extern int DAT_0091c500;
 
 // GLOBAL: MAGIC 0x0091b280
 extern int DAT_0091b280;

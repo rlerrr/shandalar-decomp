@@ -75,15 +75,23 @@ void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int
 }
 
 // FUNCTION: MAGIC 0x0049fdf9
-void FUN_0049fdf9(int brush1, int pen1, int pen2, int pen3, int brush2)
+void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2)
 {
-  (void)brush1;
-  (void)pen1;
-  (void)pen2;
-  (void)pen3;
-  (void)brush2;
-}
+  if (brush1)
+    DeleteObject(brush1);
 
+  if (pen1)
+    DeleteObject(pen1);
+
+  if (pen2)
+    DeleteObject(pen2);
+
+  if (pen3)
+    DeleteObject(pen3);
+    
+  if (brush2)
+    DeleteObject(brush2);
+}
 
 // FUNCTION: MAGIC 0x0049ebde
 INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM lparam_data)
@@ -128,7 +136,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
   UINT flags;
   BOOL has_menu;
   char title_text[100];
-  int* dialog_data;
+  int *dialog_data;
 
   if (msg < 0x15)
   {
@@ -142,7 +150,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     }
     if (msg == 0x10)
     {
-destroy_window:
+    destroy_window:
       destroy_result = GetWindowLongA(hwnd, 8);
       if (destroy_result == 0)
       {
@@ -174,7 +182,7 @@ destroy_window:
       if (nc_calc_result == 8 || nc_calc_result == 2)
       {
         screen_dc = GetDC(0);
-        GetTextExtentPoint32A(screen_dc, (LPCSTR)((char*)DAT_00638ba4 + 0x1780), strlen((char*)DAT_00638ba4 + 0x1780), &text_extent);
+        GetTextExtentPoint32A(screen_dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), strlen((char *)DAT_00638ba4 + 0x1780), &text_extent);
         ReleaseDC(0, screen_dc);
         GetClientRect(hwnd, &rect);
         MapWindowPoints(hwnd, 0, (LPPOINT)&rect, 2);
@@ -271,7 +279,7 @@ destroy_window:
           DrawTextA(dc, title_text, -1, &title_rect, 0x24);
           if (has_selection == 0)
           {
-            DrawTextA(dc, (LPCSTR)((char*)DAT_00638ba4 + 0x1780), -1, &title_rect, 0x26);
+            DrawTextA(dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), -1, &title_rect, 0x26);
           }
           ReleaseDC(hwnd, dc);
         }
@@ -285,7 +293,7 @@ destroy_window:
   {
     if (msg == 0x110)
     {
-      dialog_data = (int*)lparam_data;
+      dialog_data = (int *)lparam_data;
       DAT_00638ba4 = dialog_data;
       SetWindowLongA(hwnd, 8, dialog_data[0x5df]);
       DAT_00638c08 = 0;
@@ -418,7 +426,7 @@ destroy_window:
     if (msg == 0x111)
     {
       command = (unsigned int)wparam_dc & 0xffff;
-      dialog_data = (int*)lparam_data;
+      dialog_data = (int *)lparam_data;
       has_selection = GetWindowLongA(hwnd, 8);
       if (command == 2 || command == 1)
       {
@@ -428,7 +436,7 @@ destroy_window:
           EndDialog(hwnd, -1);
         }
       }
-      else if (dialog_data != 0 && *((int*)DAT_00638ba4 + command + 0x3df) != 0)
+      else if (dialog_data != 0 && *((int *)DAT_00638ba4 + command + 0x3df) != 0)
       {
         button_index = command - 10;
         FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
@@ -506,15 +514,14 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
   return 0;
 }
 
-
 // FUNCTION: MAGIC 0x0049e6aa
 int show_cardlist(int *graveyard,
-                 int *alternate_csvids,
-                 int *available,
-                 int count,
-                 void *context,
-                 unsigned int big_card_mode,
-                 char *prompt)
+                  int *alternate_csvids,
+                  int *available,
+                  int count,
+                  void *context,
+                  unsigned int big_card_mode,
+                  char *prompt)
 {
   typedef struct
   {

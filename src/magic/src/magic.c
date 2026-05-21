@@ -841,7 +841,6 @@ static void FUN_0048fcb5(void)
 static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time)
 {
   time_t current_time;
-  struct tm *current_tm;
 
   if (strlen(DAT_006381c0) == 0)
   {
@@ -857,11 +856,12 @@ static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_t
   strcpy(screen_name_data->email, "");
   if (use_current_time != 0)
   {
+    struct tm *current_tm;
+
     _tzset();
     time(&current_time);
     current_tm = localtime(&current_time);
     strftime(screen_name_data->date_text, 0x80, DAT_00638518, current_tm);
-
   }
   else
   {
@@ -1017,24 +1017,18 @@ static void FUN_00422bea(void)
 // FUNCTION: SHANDALAR 0x00559cc3
 static int FUN_004a7b3d(void)
 {
-  struct
-  {
-    int ioctl_result;
-    OSVERSIONINFOA version;
-  } s;
-
-  memset(&s.version, 0, sizeof(s.version));
-  s.version.dwOSVersionInfoSize = sizeof(s.version);
-  GetVersionExA(&s.version);
-  DAT_00638ca8 = s.version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
+  OSVERSIONINFOA version = {sizeof(OSVERSIONINFOA)};
+  GetVersionExA(&version);
+  DAT_00638ca8 = version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
 
   if (DAT_00776518 == NULL && DAT_00638ca8 != 0)
   {
+    int ioctl_result;
     DAT_00776518 = CreateFileA("\\\\.\\MPStime.VXD", 0, 0, NULL, 0, FILE_FLAG_DELETE_ON_CLOSE, NULL);
     assert((unsigned int)(DAT_00776518 != INVALID_HANDLE_VALUE), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x360,
            "Could Not Load Dave's Extra Cool Timer\n");
-    DeviceIoControl(DAT_00776518, 1, NULL, 0, &s.ioctl_result, 4, NULL, NULL);
-    assert((unsigned int)(s.ioctl_result == 0x100), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x367,
+    DeviceIoControl(DAT_00776518, 1, NULL, 0, &ioctl_result, 4, NULL, NULL);
+    assert((unsigned int)(ioctl_result == 0x100), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x367,
            "Could Not Initialize Dave's Extra Cool Timer\n");
   }
 
@@ -1044,30 +1038,27 @@ static int FUN_004a7b3d(void)
 // FUNCTION: MAGIC 0x00459b6e
 static void FUN_00459b6e(void *window)
 {
-  DWORD wait_result;
-
-  (void)window;
+  void *tmp = window;
 
   while (DAT_008b32bc != 0)
   {
     DAT_007ab2c0 = FamInterface_HasOpponent();
     if (DAT_00925d2c != DAT_007ab2c0 || DAT_00939560 != 0)
     {
-      wait_result = WaitForSingleObject(global_mutex_LowerDialog, 500);
-      if (wait_result == 0)
+      if (WaitForSingleObject(global_mutex_LowerDialog, 500) == 0)
       {
         DAT_00925d2c = DAT_007ab2c0;
         DAT_00939560 = 0;
-        if (DAT_007ab2c0 == 0)
-        {
-          OutputDebugStringA("Unregistering an opponent.\n");
-          SendMessageA(DAT_0056ef74, WM_COMMAND, 0x405, 0);
-        }
-        else
+        if (DAT_007ab2c0 != 0)
         {
           OutputDebugStringA("Registering an opponent.\n");
           DAT_007a79b8 = FamInterface_IsHost();
           SendMessageA(DAT_0056ef74, WM_COMMAND, 0x404, 0);
+        }
+        else
+        {
+          OutputDebugStringA("Unregistering an opponent.\n");
+          SendMessageA(DAT_0056ef74, WM_COMMAND, 0x405, 0);
         }
       }
       else

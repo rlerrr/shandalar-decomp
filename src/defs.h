@@ -793,7 +793,7 @@ typedef struct card_instance_struct
   uint8_t	unknown0x37;		/*  0x37 */	// Used only on damage cards, apparently for temporary storage
   int32_t	info_slot;			/*  0x38 */
   card_id_t	original_internal_card_id;	/*  0x3C */ // Mok : CD_CardIDinCT_Parent
-  uint8_t	color_id[6];		/*  0x40 */ // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
+  int8_t	color_id[6];		/*  0x40 */ // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
   uint16_t	backup_internal_card_id;	/*  0x46 */ // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
   int32_t	damage_source_card;	/*  0x48 */ /* damage source card */
 
@@ -897,7 +897,7 @@ typedef struct
   uint8_t	reserved1[17];
   card_id_t	id;	/* 0x24 */
   uint8_t	type;	// ct_all.csv:Type:Effect..Type::Land
-  uint8_t	subtype;	// ct_all.csv:Family
+  int8_t	subtype;	// ct_all.csv:Family
   uint8_t	color;	// ct_all.csv:Color Unused..Color Colorless
   uint8_t	cc[3];	// 0:colored mana, 1:colorless mana, 2:flags
   int16_t	power;

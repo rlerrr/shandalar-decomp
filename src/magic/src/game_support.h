@@ -44,7 +44,13 @@ int internal_rand(int maximum);
 int FUN_0044aa01(int player);
 int FUN_0044541f(int param_1);
 int FUN_00445b56(int player, int card);
+void FUN_00441cf2(int param_1, int param_2);
 void FUN_004460d3(void);
+unsigned int FUN_00443898(void);
+char *FUN_00444c43(char *out, int msg, int player, int card);
+void __stdcall FUN_004e4e9a(void);
+void __stdcall FUN_004e50f5(void);
+int ai_opinion_of_gamestate(int player);
 int FUN_004466b5(int who_chooses,
                  int arg_2,
                  char *prompt,
@@ -60,7 +66,7 @@ int FUN_004466b5(int who_chooses,
 int FUN_0043fdb3(int player, int target_player, int target_card);
 unsigned int FUN_00447f80(void);
 int FUN_004b0047(int player, int card);
-void FUN_004e1cd1(void);
+void FUN_004e1cd1();
 int FUN_004832f4(int player, unsigned char type);
 int FUN_004c0a36(int a1, int a2, int a3);
 int FUN_00484581(int internal_card_id, int color);
@@ -192,7 +198,7 @@ int real_target_available(int *num_valid_targets,
                           target_state_t required_state,
                           target_state_t illegal_state);
 void FUN_004a61d6(char *text);
-void gain_life(int player, int amount, int casting_player, int card);
+int gain_life();
 void discard(int player, int flags, int player_who_controls_effect);
 void declare_mana_available_hex(int player, color_test_t colors, int amount);
 int do_dialog(int who_chooses,
@@ -289,7 +295,7 @@ int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t 
 int produce_mana(int player, color_t color, int amount);
 int FUN_0043ece1(int player, int card);
 int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag);
-void FUN_0051a41c(int player, int card);
+int FUN_0051a41c(int player, int card);
 int obliterate_top_card_of_stack(void);
 int choose_a_color(int player, const char *prompt, int unused1, int unused2, unsigned int available_colors);
 int FUN_0054ac4d(int player, int card, int damage_unused);
@@ -315,7 +321,7 @@ int FUN_00466e6d(int player, int card, int target_player);
 int FUN_004823a5(int player, int card);
 int FUN_0051c73d(int player, int card, int internal_card_id);
 int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type);
-int choose_a_number(int player, const char *prompt, int maxnum);
+int choose_a_number(int player, char *prompt, int maxnum);
 void real_put_on_top_of_deck(int player, int internal_card_id);
 int FUN_004b413c(int player,
                  int *internal_card_ids,

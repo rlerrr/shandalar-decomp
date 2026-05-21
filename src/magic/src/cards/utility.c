@@ -4,7 +4,7 @@
 // FUNCTION: SHANDALAR 0x004ceb50
 int card_x_cyclopean(int player, int card, event_t event)
 {
-
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0053aa62
