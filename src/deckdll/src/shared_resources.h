@@ -7,10 +7,8 @@
 // Single header library style
 #ifdef SHARED_RESOURCES_IMPL
 #define SHARED_RESOURCES_EXTERN
-#define GLOBAL_STATE_INIT(value) = value
 #else
 #define SHARED_RESOURCES_EXTERN extern
-#define GLOBAL_STATE_INIT(value)
 #endif
 
 // GLOBAL: DECKDLL 0x10104df8
@@ -18,10 +16,14 @@
 // GLOBAL: SHANDALAR 0x005a90c0
 SHARED_RESOURCES_EXTERN LOGFONT global_font_from_ini;
 
+#ifdef SHARED_RESOURCES_IMPL
 // GLOBAL: DECKDLL 0x10031948
 // GLOBAL: MAGIC 0x00573578
 // GLOBAL: SHANDALAR 0x00581eb8
-SHARED_RESOURCES_EXTERN int global_fonts_init_state GLOBAL_STATE_INIT(0);
+int global_fonts_init_state = 0;
+#else
+extern int global_fonts_init_state;
+#endif
 
 // GLOBAL: DECKDLL 0x101bbf50
 // GLOBAL: MAGIC 0x00939390
@@ -140,5 +142,4 @@ void destroy_create_fonts_resources();
 bool create_fonts();
 
 #undef SHARED_RESOURCES_EXTERN
-#undef GLOBAL_STATE_INIT
 #endif
