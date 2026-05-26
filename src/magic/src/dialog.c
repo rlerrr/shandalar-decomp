@@ -386,9 +386,9 @@ int FUN_004487d8(int player, int card)
     return -1;
   }
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   internal_card_id = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).internal_card_id;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
   return internal_card_id;
 }
 
@@ -418,14 +418,12 @@ int FUN_00449057(int player, int card)
 
   if (FUN_004483be(player, card) != 0)
   {
-    displayed_color = 0;
+    return 0;
   }
-  else
-  {
-    EnterCriticalSection((void *)&unk_00789110);
-    displayed_color = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color;
-    LeaveCriticalSection((void *)&unk_00789110);
-  }
+
+  EnterCriticalSection(&unk_00789110);
+  displayed_color = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color;
+  LeaveCriticalSection(&unk_00789110);
 
   return displayed_color;
 }
@@ -435,7 +433,7 @@ void FUN_00449645(int player, int card, char *text)
 {
   int color_index;
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   for (color_index = 1; color_index < 6; ++color_index)
   {
     if (DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index] != '\0')
@@ -443,7 +441,7 @@ void FUN_00449645(int player, int card, char *text)
       FUN_00495217(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index], 0);
     }
   }
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
 }
 
 // FUNCTION: MAGIC 0x00449706
@@ -451,7 +449,7 @@ void FUN_00449706(int player, int card, char *text)
 {
   int color_index;
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   for (color_index = 1; color_index < 6; ++color_index)
   {
     if (DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index] != '\0')
@@ -459,7 +457,7 @@ void FUN_00449706(int player, int card, char *text)
       FUN_0049511c(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index], 0);
     }
   }
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
 }
 
 // FUNCTION: MAGIC 0x00449990
@@ -470,9 +468,9 @@ unsigned int FUN_00449990(int player, int card)
   if (FUN_004483be(player, card) != 0)
     return -1;
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   result = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
   return result;
 }
 
@@ -485,10 +483,10 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
   if (displayed_player_and_card == NULL)
     return;
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   displayed_player_and_card[0] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).parent_controller;
   displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).parent_card;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
 }
 
 // FUNCTION: MAGIC 0x00448c93
@@ -498,14 +496,14 @@ unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card)
 
   if (FUN_004483be(player, card) == 0)
   {
-    EnterCriticalSection((void *)&unk_00789110);
+    EnterCriticalSection(&unk_00789110);
     if (displayed_player_and_card != NULL)
     {
       displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).damage_source_player;
       displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).damage_source_card;
     }
     display_info = DISPLAYED_PIC_INFO(player, card);
-    LeaveCriticalSection((void *)&unk_00789110);
+    LeaveCriticalSection(&unk_00789110);
   }
   else
   {
@@ -522,9 +520,9 @@ unsigned int FUN_00448490(int player, int card)
 
   if (FUN_004483be(player, card) == 0)
   {
-    EnterCriticalSection((void *)&unk_00789110);
+    EnterCriticalSection(&unk_00789110);
     info_slot = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).info_slot;
-    LeaveCriticalSection((void *)&unk_00789110);
+    LeaveCriticalSection(&unk_00789110);
   }
   else
   {
@@ -544,9 +542,9 @@ int FUN_004491cd(int player, int card)
     return 0;
   }
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   displayed_value = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
 
   return displayed_value;
 }
@@ -562,10 +560,10 @@ void FUN_00449249(int player, int card, int *power, int *toughness)
   }
   else
   {
-    EnterCriticalSection((void *)&unk_00789110);
+    EnterCriticalSection(&unk_00789110);
     *power = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_power;
     *toughness = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_toughness;
-    LeaveCriticalSection((void *)&unk_00789110);
+    LeaveCriticalSection(&unk_00789110);
   }
 }
 
@@ -579,9 +577,9 @@ unsigned int FUN_00449898(int player, int card)
     return 0;
   }
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   displayed_flags = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).token_status;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
 
   return displayed_flags;
 }
@@ -881,7 +879,7 @@ unsigned int FUN_00446e4b(void)
 
   // stack_entry_count = (int *)&gs_multiblock_creature_008cf040[52];
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   needs_refresh = memcmp(global_displayed_card_instances, global_card_instances, 0x161e8);
   memcpy(global_displayed_card_instances, global_card_instances, 0x161e8);
   if (DAT_008a99f8 != active_cards_count[0] || DAT_008a99fc != active_cards_count[1])
@@ -1021,7 +1019,7 @@ unsigned int FUN_00446e4b(void)
     needs_refresh = 1;
   }
   DAT_00777848 = _DAT_00742fbc;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
   return needs_refresh;
 }
 
@@ -1035,9 +1033,9 @@ unsigned int FUN_00449ac3(int player, int card)
     return -1;
   }
 
-  EnterCriticalSection((void *)&unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   displayed_card_type = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
-  LeaveCriticalSection((void *)&unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
   return displayed_card_type;
 }
 

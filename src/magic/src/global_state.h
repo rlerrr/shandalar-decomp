@@ -6,11 +6,8 @@
 
 // Single header library style
 #ifdef GLOBAL_STATE_IMPL
-
-#define GLOBAL_STATE_INIT(value) = value
 #else
 #define extern
-#define GLOBAL_STATE_INIT(value)
 #endif
 
 // See manalink.lds and ai.c for more some of these addresses and types
@@ -22,7 +19,7 @@
 extern card_instance_t global_card_instances[2][151];
 
 // GLOBAL: MAGIC 0x00789110
-extern char unk_00789110[24];
+extern CRITICAL_SECTION unk_00789110;
 
 // GLOBAL: MOK 0x543c10
 // GLOBAL: MAGIC 0x00791560
@@ -248,7 +245,7 @@ extern int basiclandtypes_controlled[2][8];
 // GLOBAL: MAGIC 0x00742f90
 extern int unk_00742f90[8];
 // GLOBAL: MAGIC 0x00742f70
-extern int unk_00742f70[8];
+extern int unk_00742f70[2][8];
 
 // GLOBAL: MAGIC 0x00743000
 extern int unk_00743000[2][8];
@@ -421,11 +418,19 @@ extern int unk_008a8c34;
 // GLOBAL: MAGIC 0x008ce4ec
 extern int DAT_008ce4ec;
 
+#ifdef GLOBAL_STATE_IMPL
 // GLOBAL: MAGIC 0x008ce4f4
-extern int unk_008ce4f4 GLOBAL_STATE_INIT(-1);
+int unk_008ce4f4 = -1;
 
 // GLOBAL: MAGIC 0x008ce508
-extern int unk_008ce508 GLOBAL_STATE_INIT(-1);
+int unk_008ce508 = -1;
+#else
+// GLOBAL: MAGIC 0x008ce4f4
+extern int unk_008ce4f4;
+
+// GLOBAL: MAGIC 0x008ce508
+extern int unk_008ce508;
+#endif
 
 // GLOBAL: MAGIC 0x008ce510
 extern int unk_008ce510[7];
@@ -585,7 +590,7 @@ extern int unk_008cf1ac;
 extern int unk_008cf6d4;
 
 // GLOBAL: MAGIC 0x008cf1b4
-extern int unk_008cf1b4;
+extern HWND unk_008cf1b4;
 // GLOBAL: MAGIC 0x008cf1b8
 extern int DAT_008cf1b8;
 
@@ -769,5 +774,4 @@ extern unsigned int(__cdecl *PTR_CalcDrawManaText_00950780)(HDC dc, RECT *rect, 
 extern int DAT_0055e17c;
 
 #undef extern
-#undef GLOBAL_STATE_INIT
 #endif

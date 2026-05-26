@@ -276,7 +276,7 @@ int FUN_004466b5(int who_chooses,
     strcat(status_text, prompt);
   }
 
-  EnterCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+  EnterCriticalSection(&unk_00789110);
   if (DAT_007abc74 != -1)
   {
     if ((unk_00926804 & 2) == 0)
@@ -294,7 +294,7 @@ int FUN_004466b5(int who_chooses,
       InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
     }
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+  LeaveCriticalSection(&unk_00789110);
 
   TENTATIVE_reassess_all_cards();
   GetCursorPos(&cursor_pos);
@@ -321,7 +321,7 @@ int FUN_004466b5(int who_chooses,
 
     if (DAT_007aaeec == 0 || current_phase != 10 || *(int *)&unk_009266d0[0x7c] != 0)
     {
-      result = SendMessageA((HWND)unk_008cf1b4, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
+      result = SendMessageA(unk_008cf1b4, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
       target_player = out_target_player[0];
       target_card = out_target_player[1];
     }
@@ -402,7 +402,7 @@ int FUN_004466b5(int who_chooses,
     GetCursorPos(&cursor_pos);
     cursor_window = WindowFromPoint(cursor_pos);
     SendMessageA(cursor_window, 0x20, (WPARAM)cursor_window, 0x2000001);
-    EnterCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+    EnterCriticalSection(&unk_00789110);
     if (_DAT_0074303c == -2)
     {
       if (unk_00716248 == -1)
@@ -444,11 +444,11 @@ int FUN_004466b5(int who_chooses,
     {
       InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
     }
-    LeaveCriticalSection((LPCRITICAL_SECTION)unk_00789110);
+    LeaveCriticalSection(&unk_00789110);
     return result;
   }
 
-  PostMessageA((HWND)unk_008cf1b4, 0x401, thread_exit_code, 0);
+  PostMessageA(unk_008cf1b4, 0x401, thread_exit_code, 0);
   ExitThread((DWORD)thread_exit_code);
   return 0;
 }

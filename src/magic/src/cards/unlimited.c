@@ -2489,22 +2489,23 @@ int card_wall_of_water(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0049aeb3
 int card_phantasmal_forces(int player, int card, event_t event)
 {
-  unsigned int *upkeep_flags_ptr;
-
   if (((event == EVENT_SETUP_UPKEEP_COSTS) && (affected_card == card)) && (affected_card_controller == player))
   {
     if ((human_player == player) && (player == unk_00742f60))
     {
-      upkeep_flags_ptr = &PLAYER_CARD_INSTANCE(player, card).upkeep_flags;
-      *upkeep_flags_ptr |= 1;
-      PLAYER_CARD_INSTANCE(player, card).upkeep_blue = PLAYER_CARD_INSTANCE(player, card).upkeep_blue + '\x01';
+      PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 1;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_blue += 1;
     }
+    return 0;
   }
-  else if (event == EVENT_UPKEEP_COSTS_UNPAID)
+
+  if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
     kill_card(card_on_stack_controller, card_on_stack, KILL_BURY);
+    return 0;
   }
-  else if ((event == EVENT_SHOULD_AI_PLAY) && (basiclandtypes_controlled[player][COLOR_BLUE] < 1))
+
+  if ((event == EVENT_SHOULD_AI_PLAY) && (basiclandtypes_controlled[player][COLOR_BLUE] < 1))
   {
     kill_card(player, card, KILL_BURY);
   }
@@ -4014,23 +4015,20 @@ int card_phantasmal_terrain(int player, int card, event_t event)
                                  0,
                                  0);
   }
-  else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+
+  if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "PHANTASMAL_TERRAIN");
+      load_text("prompts.txt", "PHANTASMAL_TERRAIN");
     }
-    if (FUN_00551b60(player, 1 - player, card) == 0)
-    {
-      spell_fizzled = 1;
-    }
-    else
+    if (!FUN_00551b60(player, 1 - player, card) == 0)
     {
       if ((player == unk_008b35ec) || ((unk_00926804 & 2) != 0))
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "PHANTASMAL_TERRAIN2");
+          load_text("prompts.txt", "PHANTASMAL_TERRAIN");
         }
         land_type = choose_a_color(player,
                                    text_lines[1],
@@ -4044,8 +4042,8 @@ int card_phantasmal_terrain(int player, int card, event_t event)
       }
       else if (unk_008a9000 == 1)
       {
-        land_type = internal_rand(5) + 1;
-        unk_00939340 = land_type;
+        unk_00939340 = internal_rand(5) + 1;
+        land_type = unk_00939340;
         FUN_004e4f11();
       }
       else
@@ -4054,68 +4052,68 @@ int card_phantasmal_terrain(int player, int card, event_t event)
         land_type = unk_00939340;
       }
 
-      if (spell_fizzled != 1)
+      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)
       {
-        if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)
-        {
-          ai_modifier += -0x30;
-        }
-        PLAYER_CARD_INSTANCE(player, card).info_slot = land_type;
+        ai_modifier += -0x30;
       }
+      PLAYER_CARD_INSTANCE(player, card).dummy3 = land_type;
+    }
+    else
+    {
+      spell_fizzled = 1;
     }
     return 0;
   }
-  else if (event == EVENT_RESOLVE_SPELL)
+
+  if (event == EVENT_RESOLVE_SPELL)
   {
-    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
-                               (char *)0,
-                               player,
-                               ANYBODY,
-                               ANYBODY,
-                               TARGET_ZONE_IN_PLAY,
-                               TYPE_LAND,
-                               TYPE_NONE,
-                               0,
-                               get_protections_from(player, card),
-                               COLOR_TEST_0,
-                               COLOR_TEST_0,
-                               -1,
-                               ~SUB_WALL,
-                               -1,
-                               -1,
-                               0,
-                               0,
-                               0) == 0)
-    {
-      kill_card(player, card, KILL_BURY);
-      spell_fizzled = 1;
-    }
-    else
+    if (!C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                                (char *)0,
+                                player,
+                                ANYBODY,
+                                ANYBODY,
+                                TARGET_ZONE_IN_PLAY,
+                                TYPE_LAND,
+                                TYPE_NONE,
+                                0,
+                                get_protections_from(player, card),
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                -1,
+                                ~SUB_WALL,
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                0) == 0)
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player =
           (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      --PLAYER_CARD_INSTANCE(player, card).info_slot;
+      --PLAYER_CARD_INSTANCE(player, card).dummy3;
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                            PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .internal_card_id = PLAYER_CARD_INSTANCE(player, card).info_slot;
+          .internal_card_id = PLAYER_CARD_INSTANCE(player, card).dummy3;
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                            PLAYER_CARD_INSTANCE(player, card).damage_target_card)
           .regen_status |= 0x1000000;
     }
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+      spell_fizzled = 1;
+    }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
-  else
+
+  if ((((event == EVENT_CHANGE_TYPE) && ((unk_008b4278 & 0x20000) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller) && (affected_card != -1)))) && is_in_play(player, card))
   {
-    if ((((event == EVENT_CHANGE_TYPE) && ((unk_008b4278 & 0x200) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller) && (affected_card != -1)))) && is_in_play(player, card))
-    {
-      event_result = PLAYER_CARD_INSTANCE(player, card).info_slot;
-    }
-    return 0;
+    event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0052f80a
@@ -18695,37 +18693,18 @@ int card_deathgrip(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (unk_008ce508 == -1)
+    if (unk_008ce508 != -1)
+    {
+      return ((unk_008b4278 & 0x20) != 0 &&
+              has_mana_w_global_cost_mod(player, card, COLOR_BLACK, 2) != 0 &&
+              C_real_validate_target(unk_008ce508, unk_008ce4f4, (char *)0, player, 2, 2, 0, TYPE_NONE, TYPE_NONE, 0, 0, 1 << get_sleighted_color(player, card, COLOR_GREEN), COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, TARGET_SPECIAL_SPELL_ON_STACK, 0, 0))
+                 ? 99
+                 : 0;
+    }
+    else
     {
       return 0;
     }
-    if ((unk_008b4278 & 0x20) != 0 && has_mana_w_global_cost_mod(player, card, COLOR_BLACK, 2) != 0)
-    {
-      if (C_real_validate_target(unk_008ce508,
-                                 unk_008ce4f4,
-                                 (char *)0,
-                                 player,
-                                 2,
-                                 2,
-                                 0,
-                                 TYPE_NONE,
-                                 TYPE_NONE,
-                                 0,
-                                 0,
-                                 1 << get_sleighted_color(player, card, COLOR_GREEN),
-                                 COLOR_TEST_0,
-                                 -1,
-                                 ~SUB_WALL,
-                                 -1,
-                                 -1,
-                                 TARGET_SPECIAL_SPELL_ON_STACK,
-                                 0,
-                                 0))
-      {
-        return 99;
-      }
-    }
-    return 0;
   }
 
   if (event == EVENT_ACTIVATE && has_mana_w_global_cost_mod(player, card, COLOR_BLACK, 2) != 0 && unk_008ce508 != -1)
@@ -18741,34 +18720,34 @@ int card_deathgrip(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (!C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                PLAYER_CARD_INSTANCE(player, card).targets[0].card,
-                                (char *)0,
-                                player,
-                                2,
-                                2,
-                                0,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                0,
-                                1 << get_sleighted_color(player, card, COLOR_GREEN),
-                                COLOR_TEST_0,
-                                -1,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                TARGET_SPECIAL_SPELL_ON_STACK,
-                                0,
-                                0))
-    {
-      spell_fizzled = 1;
-    }
-    else
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                               (char *)0,
+                               player,
+                               2,
+                               2,
+                               0,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               0,
+                               1 << get_sleighted_color(player, card, COLOR_GREEN),
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               TARGET_SPECIAL_SPELL_ON_STACK,
+                               0,
+                               0))
     {
       kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                 PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                 KILL_BURY);
+    }
+    else
+    {
+      spell_fizzled = 1;
     }
   }
 

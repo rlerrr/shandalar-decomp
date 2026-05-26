@@ -162,6 +162,7 @@ int dispatch_event_to_single_card(int player,
                                   event_t event,
                                   int new_attacking_card_controller,
                                   int new_attacking_card);
+int FUN_00442cf9(int player, int card);
 int get_hacked_color(int player, int card, int value);
 void FUN_005001c4(int internal_card_id);
 int FUN_0052adf2(int player, int card);
@@ -218,7 +219,7 @@ void FUN_004e51bb(void);
 void FUN_004aff25(void);
 unsigned int FUN_004e1b6f(void);
 void FUN_0055d802(char *out, char *in, int choice);
-void FUN_004eaceb(int player, unsigned int color_to_produce, int color_to_consume);
+void FUN_004eaceb(int player, int color_to_produce, int color_to_consume);
 int has_mana(int player, color_t color, int amount);
 int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount);
 void count_mana(void);
@@ -236,7 +237,7 @@ void FUN_00542a2a(int player, int card);
 int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int toughness_modifier);
 int FUN_005493a6(int player, int card, int internal_card_id);
 int FUN_00551638(int player, unsigned int preferred_controller, int card);
-int FUN_00551b60(int player, unsigned int preferred_controller, int card);
+int FUN_00551b60(int player, int preferred_controller, int card);
 int FUN_00551ed7(int player, unsigned int preferred_controller, int card);
 void FUN_0055117d(int(__cdecl *callback)(int, int, int), int who_to_check);
 void FUN_00551334(int player, int card);
@@ -304,7 +305,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
 void FUN_005513d7(int player, int card, int amount);
 int select_target(int player, int card, target_definition_t *td, const char *prompt, target_t *ret_location);
 void declare_mana_available(int player, color_t color, int amount);
-void undeclare_mana_available_and_produce_it(int player, color_t color, int amount);
+int undeclare_mana_available_and_produce_it(int player, color_t color, int amount);
 void FUN_0054e470(int player, int card, int color);
 void add_special_counter(int player, int card);
 int TENTATIVE_set_timestamps(int player, int card);

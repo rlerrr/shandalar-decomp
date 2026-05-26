@@ -786,7 +786,7 @@ typedef struct card_instance_struct
   int16_t	unused0x26;			/*  0x26 */	// Exe version of rampage() uses this as temporary storage. (!)  That's no longer called, and the data's otherwise entirely untouched.  Shandalar: untouched
   uint32_t	regen_status;		/*  0x28 */	// Keywords.
 
-  uint8_t	mana_to_untap[8];	/*  0x2C */	// No longer used in Manalink, but still read by the exe in one place and still written in one place.  To reclaim, make check_untap_payment() just return 0, and rewrite setup_upkeep_costs_and_set_untap_cost() to not touch it.
+  int8_t	mana_to_untap[8];	/*  0x2C */	// No longer used in Manalink, but still read by the exe in one place and still written in one place.  To reclaim, make check_untap_payment() just return 0, and rewrite setup_upkeep_costs_and_set_untap_cost() to not touch it.
 
   int16_t	power;				/*  0x34 */
   uint8_t	number_of_targets;	/*  0x36 */
@@ -833,13 +833,26 @@ typedef struct card_instance_struct
   uint8_t	counters;			/* 0x120 */	// originally +1/+1 counters from Dwarven Weaponsmith
   uint8_t	counters5;			/* 0x121 */	// originally +1/+1 counters from Ashnod's Transmogrant
   uint16_t	unknown0x122;		/* 0x122 */	// originally +0/+1 and +2/+2 counters
-  uint8_t	upkeep_colorless;	/* 0x124 */	// These seven bytes are strong candidates for reclamation.  Used in: 0x402B60, 0x437670, Energy Flux, Sunken City, Stasis, Conversion, Junun Efreet, Phantasmal Force, Force of Nature, Cosmic Horror
-  uint8_t	upkeep_black;		/* 0x125 */
-  uint8_t	upkeep_blue;		/* 0x126 */
-  uint8_t	upkeep_green;		/* 0x127 */
-  uint8_t	upkeep_red;			/* 0x128 */
-  uint8_t	upkeep_white;		/* 0x129 */
-  uint8_t	upkeep_artmana;		/* 0x12A */
+  /*
+   * The exe treats these as seven contiguous bytes in at least one place (see FUN_004460d3),
+   * so keep both named fields and an array view.
+   *
+   * Note: this relies on MSVC's anonymous struct/union extension (works with our toolchain).
+   */
+  union
+  {
+    struct
+    {
+      int8_t	upkeep_colorless;	/* 0x124 */	// These seven bytes are strong candidates for reclamation.  Used in: 0x402B60, 0x437670, Energy Flux, Sunken City, Stasis, Conversion, Junun Efreet, Phantasmal Force, Force of Nature, Cosmic Horror
+      int8_t	upkeep_black;		/* 0x125 */
+      int8_t	upkeep_blue;		/* 0x126 */
+      int8_t	upkeep_green;		/* 0x127 */
+      int8_t	upkeep_red;			/* 0x128 */
+      int8_t	upkeep_white;		/* 0x129 */
+      int8_t	upkeep_artmana;		/* 0x12A */
+    };
+    int8_t	upkeep_cost[7];
+  };
   uint8_t	counters_m1m1;		/* 0x12B */	// Shandalar: untouched
 } PACKED card_instance_t;
 STATIC_ASSERT(sizeof(card_instance_t) == 300, card_instance_t_wrong_size);
