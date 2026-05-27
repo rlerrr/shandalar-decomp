@@ -29,6 +29,11 @@ void FUN_00449bef(char *name);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
 int FUN_10025b5e(int window, unsigned int message, int other_window, int data);
+int helper_destroy_basiclandtype(int source_player,
+                                        int source_card,
+                                        int test_player,
+                                        int test_card,
+                                        int internal_card_id);
 int FUN_00437375(int player, int card, int internal_card_id);
 int FUN_0043c7ab(int who_is_being_divided, int player, int card);
 int FUN_0043b4f3(int player, int amount);
@@ -64,6 +69,7 @@ int FUN_004466b5(int who_chooses,
                  int allow_ai_player,
                  int allow_human_player);
 int FUN_0043fdb3(int player, int target_player, int target_card);
+int FUN_0051e631(int player, int card, int internal_card_id);
 unsigned int FUN_00447f80(void);
 int FUN_004b0047(int player, int card);
 void FUN_004e1cd1();
@@ -73,6 +79,7 @@ int FUN_00484581(int internal_card_id, int color);
 int FUN_0048463d(int player, int card, int amount);
 void FUN_004817fd(int player);
 void FUN_004b15f7(int player, int graveyard_index);
+void FUN_004b117e(int player, int card);
 void FUN_004b4110(int player);
 int show_deck(int player, int *cards, int count, void *context, int suppress_done_txt, char *prompt);
 int FUN_0043ec38(int player, int card);

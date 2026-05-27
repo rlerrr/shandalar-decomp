@@ -1,25 +1,6 @@
-#include "defs.h"
-
-// FUNCTION: MAGIC 0x00517370
-// FUNCTION: SHANDALAR 0x004ceb50
-int card_x_cyclopean(int player, int card, event_t event)
-{
-  return 0;
-}
-
-// FUNCTION: MAGIC 0x0053aa62
-// FUNCTION: SHANDALAR 0x00488cb2
-int card_data_card(int player, int card, event_t event)
-{
-  return 0;
-}
-
-// FUNCTION: MAGIC 0x004f0c29
-// FUNCTION: SHANDALAR 0x004aace7
-int card_damage(int player, int card, event_t event)
-{
-
-}
+#include <string.h>
+#include "../game_support.h"
+#include "../global_strings.h"
 
 // FUNCTION: MAGIC 0x004efd03
 // FUNCTION: SHANDALAR 0x004a9dc3
@@ -35,16 +16,16 @@ int card_unblockable(int player, int card, event_t event)
 
 }
 
-// FUNCTION: MAGIC 0x004f03ad
-// FUNCTION: SHANDALAR 0x004aa46d
-int card_add_ability(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f0246
+// FUNCTION: SHANDALAR 0x004aa306
+int card_no_attack(int player, int card, event_t event)
 {
 
 }
 
-// FUNCTION: MAGIC 0x004f208d
-// FUNCTION: SHANDALAR 0x004ac14c
-int card_stoning(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f03ad
+// FUNCTION: SHANDALAR 0x004aa46d
+int card_add_ability(int player, int card, event_t event)
 {
 
 }
@@ -56,23 +37,30 @@ int card_take_ability(int player, int card, event_t event)
 
 }
 
-// FUNCTION: MAGIC 0x004f0246
-// FUNCTION: SHANDALAR 0x004aa306
-int card_no_attack(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f0c29
+// FUNCTION: SHANDALAR 0x004aace7
+int card_damage(int player, int card, event_t event)
 {
 
 }
 
-// FUNCTION: MAGIC 0x004f5c93
-// FUNCTION: SHANDALAR 0x004afd4c
-int card_draw_card(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f1e72
+// FUNCTION: SHANDALAR 0x004abf34
+int card_asp_sting(int player, int card, event_t event)
 {
 
 }
 
-// FUNCTION: MAGIC 0x004a916a
-// FUNCTION: SHANDALAR 0x0041a76b
-int card_polka(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f208d
+// FUNCTION: SHANDALAR 0x004ac14c
+int card_stoning(int player, int card, event_t event)
+{
+
+}
+
+// FUNCTION: MAGIC 0x004f21b5
+// FUNCTION: SHANDALAR 0x004ac273
+int card_t_elemental_FX(int player, int card, event_t event)
 {
 
 }
@@ -105,44 +93,16 @@ int card_generic(int player, int card, event_t event)
 
 }
 
-// FUNCTION: MAGIC 0x004f1e72
-// FUNCTION: SHANDALAR 0x004abf34
-int card_asp_sting(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f3587
+// FUNCTION: SHANDALAR 0x004ad642
+int card_asterisk_FX(int player, int card, event_t event)
 {
 
 }
 
-// FUNCTION: MAGIC 0x0054e160
-// FUNCTION: SHANDALAR 0x0049c3a1
-int card_nether_link(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x004f5053
-// FUNCTION: SHANDALAR 0x004af111
-int card_graveyard(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x004f5b91
-// FUNCTION: SHANDALAR 0x004afc4a
-int card_activation(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x004f4cc8
-// FUNCTION: SHANDALAR 0x004aed84
-int card_poltergeist_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x004f4a09
-// FUNCTION: SHANDALAR 0x004aeac7
-int card_ebony_horse_FX(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f3e18
+// FUNCTION: SHANDALAR 0x004aded3
+int card_piggy_FX(int player, int card, event_t event)
 {
 
 }
@@ -168,6 +128,27 @@ int card_sirens_call_FX(int player, int card, event_t event)
 
 }
 
+// FUNCTION: MAGIC 0x004f4a09
+// FUNCTION: SHANDALAR 0x004aeac7
+int card_ebony_horse_FX(int player, int card, event_t event)
+{
+
+}
+
+// FUNCTION: MAGIC 0x004f4cc8
+// FUNCTION: SHANDALAR 0x004aed84
+int card_poltergeist_FX(int player, int card, event_t event)
+{
+
+}
+
+// FUNCTION: MAGIC 0x004f5053
+// FUNCTION: SHANDALAR 0x004af111
+int card_graveyard(int player, int card, event_t event)
+{
+
+}
+
 // FUNCTION: MAGIC 0x004f56f2
 // FUNCTION: SHANDALAR 0x004af7ac
 int card_damage_legacy(int player, int card, event_t event)
@@ -175,128 +156,17 @@ int card_damage_legacy(int player, int card, event_t event)
 
 }
 
-// FUNCTION: MAGIC 0x004f3587
-// FUNCTION: SHANDALAR 0x004ad642
-int card_asterisk_FX(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f5b91
+// FUNCTION: SHANDALAR 0x004afc4a
+int card_activation(int player, int card, event_t event)
 {
 
 }
 
-// FUNCTION: MAGIC 0x004f3e18
-// FUNCTION: SHANDALAR 0x004aded3
-int card_piggy_FX(int player, int card, event_t event)
+// FUNCTION: MAGIC 0x004f5c93
+// FUNCTION: SHANDALAR 0x004afd4c
+int card_draw_card(int player, int card, event_t event)
 {
 
 }
 
-// FUNCTION: MAGIC 0x004f21b5
-// FUNCTION: SHANDALAR 0x004ac273
-int card_t_elemental_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00481050
-// FUNCTION: SHANDALAR 0x00484b5d
-int card_rukh_egg_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0048065a
-// FUNCTION: SHANDALAR 0x0048416b
-int card_nettling_imp_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047fd07
-// FUNCTION: SHANDALAR 0x00483817
-int card_erhnam_djinn_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047fb81
-// FUNCTION: SHANDALAR 0x00483690
-int card_desert_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00480533
-// FUNCTION: SHANDALAR 0x00484044
-int card_p_gremlin_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00481589
-// FUNCTION: SHANDALAR 0x00485094
-int card_xmorgrant_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047f4c4
-// FUNCTION: SHANDALAR 0x00482fd0
-int card_c_tomb_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047ff00
-// FUNCTION: SHANDALAR 0x00483a11
-int card_guardian_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00481248
-// FUNCTION: SHANDALAR 0x00484d55
-int card_sewer_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047eece
-// FUNCTION: SHANDALAR 0x004829d8
-int card_control_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00480b07
-// FUNCTION: SHANDALAR 0x00484619
-int card_living_land_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047db7e
-// FUNCTION: SHANDALAR 0x00481688
-int card_blaze_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00480d5c
-// FUNCTION: SHANDALAR 0x0048486e
-int card_river_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x0047d4df
-// FUNCTION: SHANDALAR 0x00480feb
-int card_beast_FX(int player, int card, event_t event)
-{
-
-}
-
-// FUNCTION: MAGIC 0x00431aae
-// FUNCTION: SHANDALAR 0x004407b3
-int card_transmute_FX(int player, int card, event_t event)
-{
-
-}
