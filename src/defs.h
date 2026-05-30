@@ -298,20 +298,8 @@ typedef enum
   RESOLVE_TRIGGER_0			= 0,
   RESOLVE_TRIGGER_OPTIONAL	= 1,
   RESOLVE_TRIGGER_MANDATORY	= 2,
-#ifndef SHANDALAR
-  RESOLVE_TRIGGER_DUH		= 3,	/* Not recognized by the exe, which I hope is obvious.  Handled by a (very few) integrated trigger interfaces to mean
-									 * "change to RESOLVE_TRIGGER_MANDATORY if duh_mode is on, otherwise RESOLVE_TRIGGER_OPTIONAL." */
-#else
   RESOLVE_TRIGGER_OPPONENT	= 4,	// Triggers for 1-player, not player.
   RESOLVE_TRIGGER_ANYBODY	= 8,	// Triggers for both player and 1-player.
-#endif
-
-#ifndef SHANDALAR
-// Nominally optional, but forced if you have duh mode on.  And now badly misnamed.
-#define RESOLVE_TRIGGER_AI(p_)	(duh_mode(p_) ? RESOLVE_TRIGGER_MANDATORY : RESOLVE_TRIGGER_OPTIONAL)
-#define RESOLVE_TRIGGER_CHECK_LIFE_TOTAL(p_, v_)	((duh_mode(p_) && life[p_]-v_ > 5)? RESOLVE_TRIGGER_MANDATORY : RESOLVE_TRIGGER_OPTIONAL)
-#define RESOLVE_TRIGGER_CHECK_DECK_COUNT(p_, v_)	((duh_mode(p_) && count_deck(p_)-v_ > 10)? RESOLVE_TRIGGER_MANDATORY : RESOLVE_TRIGGER_OPTIONAL)
-#endif
 } resolve_trigger_t;
 
 /* Modes for kill_card() */
@@ -2123,11 +2111,7 @@ typedef enum
 	TARGET_STATE_BLOCKING			= (1 << 4),
 	TARGET_STATE_IN_COMBAT			= (1 << 5),
 	TARGET_STATE_ENCHANTED			= (1 << 6),
-#ifdef SHANDALAR
-	TARGET_STATE_BLOCK_THIS			= (1 << 7),	// Modifies TARGET_ISBLOCKED and TARGET_BLOCKING to mean "target [creature] blocked by this" and "target [creature] blocking this" respectively; if all three given, then "target [creature] blocking or blocked by this".
-#else
 	TARGET_STATE_JUST_CAST			= (1 << 7),	// Checked for but unused by exe
-#endif
 	TARGET_STATE_SPELL_RESOLVED		= (1 << 8),	// Checked for but unused by exe
 	TARGET_STATE_DAMAGED			= (1 << 9),
 	TARGET_STATE_COULD_UNTAP		= (1 << 10),	// Target won't necessarily untap during this untap step, but could
@@ -2153,16 +2137,12 @@ typedef enum
 	TARGET_SPECIAL_WALL					= (1 << 0),
 	TARGET_SPECIAL_SPELL_ON_STACK		= (1 << 1),
 	TARGET_SPECIAL_BASIC_LAND			= (1 << 2), // Optional land color - 1 in extra.  Checked for but unused by exe.
-#ifndef SHANDALAR
 	TARGET_SPECIAL_ARTIFACT_CREATURE	= (1 << 3),	// Checked for but unused by exe
-#endif
 	TARGET_SPECIAL_0x10					= (1 << 4),	// Used in calls from Aswan Jaguar but not checked
 	TARGET_SPECIAL_DAMAGE_PLAYER		= (1 << 5), // Referring to the 'player' who controls the card with the targeting function.
 	TARGET_SPECIAL_DJINN_OR_EFREET		= (1 << 6), // Used only by King Suleiman
 	TARGET_SPECIAL_NON_WALL				= (1 << 7),
-#ifndef SHANDALAR
 	TARGET_SPECIAL_NOT_LAND_SUBTYPE		= (1 << 8),	// Land color - 1 in extra - e.g. swamp is COLOR_BLACK-1==0, plains is COLOR_WHITE-1==4.	(Note that using extra from 0 to 4 and special==0 is the opposite of this.)
-#endif
 	TARGET_SPECIAL_USE_ORIGINAL_TYPE	= (1 << 9),	// Used by exe for Clone/Vesuvan Doppelganger/Copy Artifact; disabled in C version
 	TARGET_SPECIAL_ALLOW_MULTIBLOCKER	= (1 << 10),	// Lets a multiblocker shadow be chosen
 	TARGET_SPECIAL_CMC_LESSER_OR_EQUAL	= (1 << 11),	// Target's cmc must be <= extra (which must be >= 0).  Extension to exe.
@@ -2171,27 +2151,17 @@ typedef enum
 
 	// The rest are all extensions to exe.
 	TARGET_SPECIAL_NOT_ME				= (1 << 14),	// (td->player, td->card) is an illegal target.  Unimplemented if real_target_available()/real_select_target()/real_validate_target() are called directly without a target_definition_t.
-#ifndef SHANDALAR
 	TARGET_SPECIAL_EXTRA_FUNCTION		= (1 << 15),	// Calls extra, which is a pointer to function with signature const char* function(int who_chooses, int player, int card, int targeting_player, int targeting_card).  (It can take fewer arguments if it doesn't need them.)  It should return NULL if a legal target, or an error message if illegal.
-#endif
 	TARGET_SPECIAL_EXTRA_NOT_IID		= (1 << 16),	// Usually, if extra is >= 5 and none of TARGET_SPECIAL_EXTRA_FUNCTION, TARGET_SPECIAL_CMC_LESSER_OR_EQUAL, TARGET_SPECIAL_NOT_LAND_SUBTYPE, or TARGET_SPECIAL_BASIC_LAND is set, only targets with iids matching extra are legal.  This makes it so only targets not matching extra are.
 	TARGET_SPECIAL_EFFECT_CARD			= (1 << 17),	// The targeted card must be an effect card; other tests of required_type/illegal_type are against its source.
 	TARGET_SPECIAL_REQUIRES_COUNTER		= (1 << 18),	// BYTE0(extra) is the counter type; BYTE1(extra) is the number needed (defaults to 1 if unset).
-#ifndef SHANDALAR
 	// Wasteful.  Should either use one bit like TARGET_SPECIAL_EFFECT_CARD, or set it in zone.
 	TARGET_SPECIAL_DAMAGE_ANY_PLAYER	= (1 << 19),
 	TARGET_SPECIAL_DAMAGE_CREATURE		= (1 << 20),
 	TARGET_SPECIAL_DAMAGE_LEGENDARY_CREATURE		= (1 << 21),
 	TARGET_SPECIAL_DAMAGE_PERMANENT_WITH_SUBTYPE	= (1 << 22), //will look at the 'required_subtype' argument
 	TARGET_SPECIAL_REGENERATION			= (1 << 23), //checks both the "kill_code" for "KIL_DESTROY" and "token_status" for "STATUS_CANNOT_REGENERATE"
-#endif
 	TARGET_SPECIAL_CMC_GREATER_OR_EQUAL	= (1 << 24),
-
-#ifdef SHANDALAR
-	TARGET_SPECIAL_REQUIRE_ALL_TYPES	= (1 << 3),		// all types in required_types must match, instead of any - e.g., normally "required_type = TYPE_CREATURE|TYPE_ENCHANTMENT" means "creature or enchantment", but with this, it means "enchantment creature".
-	TARGET_SPECIAL_OR_ME				= (1 << 8),		// source of targetting can always be picked if it's in the right zone, ignoring all other requirements
-	TARGET_SPECIAL_EXTRA_OR_SUBTYPE		= (1 << 15),	// extra works as another subtype field; matching either subtype or extra is sufficient to pass.  If TARGET_SPECIAL_REQUIRE_ALL_TYPES is also set, then requires both subtypes be set, not either.
-#endif
 } target_special_t;
 
 typedef enum

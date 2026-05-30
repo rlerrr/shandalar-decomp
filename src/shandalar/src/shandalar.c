@@ -7,6 +7,7 @@ HDC global_main_hdc;
  * Stub executable target for shandalar.exe.
  * Decompilation/matching work will replace this with real code.
  */
+// FUNCTION: SHANDALAR 0x004cdd70
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int nShowCmd)
 {
   (void)hInstance;
