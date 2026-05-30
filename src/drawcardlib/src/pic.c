@@ -472,7 +472,6 @@ int RpBitsRefill(void)
 
 void RpBits_ApplyPalette(short *palette_data_words)
 {
-  return;
 #if defined(FACEMAKER) || defined(SHANDALAR)
   RpBitsPalettePacket *palette_packet;
   int packet_size_bytes = (int)(short)(palette_data_words[1] + 2);
