@@ -4,6 +4,4 @@
 // FUNCTION: SHANDALAR 0x004875d7
 int card_repentant_blacksmith(int player, int card, event_t event)
 {
-
 }
-

@@ -6,63 +6,54 @@
 // FUNCTION: SHANDALAR 0x00470b00
 int card_abu_ja_far(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046d478
 // FUNCTION: SHANDALAR 0x00470f7a
 int card_aladdin(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046e478
 // FUNCTION: SHANDALAR 0x00471f68
 int card_argivian_archaeologist(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046e8d0
 // FUNCTION: SHANDALAR 0x004723c1
 int card_argivian_blacksmith(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046f265
 // FUNCTION: SHANDALAR 0x00472d56
 int card_argothian_pixies(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046f305
 // FUNCTION: SHANDALAR 0x00472df4
 int card_argothian_treefolk(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046f47c
 // FUNCTION: SHANDALAR 0x00472f6b
 int card_atog(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046fb1e
 // FUNCTION: SHANDALAR 0x0047360e
 int card_camel(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046ffa0
 // FUNCTION: SHANDALAR 0x00473a91
 int card_citanul_druid(int player, int card, event_t event)
 {
-
 }
 
 static int clone_find_data_card_callback(int source_player,
@@ -70,7 +61,7 @@ static int clone_find_data_card_callback(int source_player,
                                          int player,
                                          int card,
                                          int internal_card_id);
-                                         
+
 // FUNCTION: MAGIC 0x00470140
 // FUNCTION: SHANDALAR 0x00473c2e
 int card_clone(int player, int card, event_t event)
@@ -107,7 +98,7 @@ int card_clone(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"promptsX1.txt", "CLONE");
+    load_text("promptsX1.txt", "CLONE");
     if (C_real_select_target(player,
                              2,
                              2,
@@ -248,7 +239,6 @@ int card_clone(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047444f
 int card_cuombajj_witches(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00470e7e
@@ -293,7 +283,7 @@ int card_demonic_hordes(int player, int card, event_t event)
   {
     if (event == EVENT_ACTIVATE)
     {
-      load_text((int)"promptsX1.txt", "DEMONIC_HORDES");
+      load_text("promptsX1.txt", "DEMONIC_HORDES");
       if (!FUN_00551b60(player, 2, card))
       {
         spell_fizzled = 1;
@@ -374,7 +364,7 @@ int card_demonic_hordes(int player, int card, event_t event)
                                 0,
                                 0) != 0)
       {
-        load_text((int)"promptsX1.txt", "DEMONIC_HORDES_2");
+        load_text("promptsX1.txt", "DEMONIC_HORDES_2");
         if (human_player == player || (unk_00926804 & 2) != 0)
         {
           C_real_select_target(player,
@@ -430,7 +420,6 @@ int card_demonic_hordes(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00474f5d
 int card_desert_nomads(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00471838
@@ -475,7 +464,7 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
   {
     if (event == EVENT_ACTIVATE)
     {
-      load_text((int)"promptsX1.txt", "DWARVEN_DTEAM");
+      load_text("promptsX1.txt", "DWARVEN_DTEAM");
       if (!C_real_select_target(player,
                                 2,
                                 2,
@@ -548,42 +537,36 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00475696
 int card_dwarven_weaponsmith(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004722ff
 // FUNCTION: SHANDALAR 0x00475df0
 int card_erhnam_djinn(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004729c8
 // FUNCTION: SHANDALAR 0x004764bc
 int card_gaea_s_avenger(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00472b0a
 // FUNCTION: SHANDALAR 0x004765fe
 int card_ghazban_ogre(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00472df0
 // FUNCTION: SHANDALAR 0x004768e5
 int card_giant_badger(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00472f31
 // FUNCTION: SHANDALAR 0x00476a27
 int card_goblin_artisans(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004732e4
@@ -731,21 +714,18 @@ int card_granite_gargoyle(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004775a8
 int card_guardian_beast(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00474179
 // FUNCTION: SHANDALAR 0x00477c68
 int card_hasran_ogress(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004743a9
 // FUNCTION: SHANDALAR 0x00477e97
 int card_ifh_biff_efreet(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00474f4d
@@ -772,42 +752,36 @@ int card_juggernaut(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00478b53
 int card_khabal_ghoul(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004751d9
 // FUNCTION: SHANDALAR 0x00478cc1
 int card_king_suleiman(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00475555
 // FUNCTION: SHANDALAR 0x0047903d
 int card_kird_ape(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004755ca
 // FUNCTION: SHANDALAR 0x004790b4
 int card_martyrs_of_korlis(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004757d7
 // FUNCTION: SHANDALAR 0x004792c1
 int card_merchant_ship(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00475953
 // FUNCTION: SHANDALAR 0x0047943c
 int card_mijae_djinn(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00475b66
@@ -834,7 +808,7 @@ int card_nettling_imp(int player, int card, event_t event)
   {
     if (event == EVENT_ACTIVATE)
     {
-      load_text((int)"promptsX1.txt", "NETTLING_IMP");
+      load_text("promptsX1.txt", "NETTLING_IMP");
       if (!C_real_select_target(player,
                                 1 - player,
                                 1 - player,
@@ -911,28 +885,24 @@ int card_nettling_imp(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00479a85
 int card_old_man_of_the_sea(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00477791
 // FUNCTION: SHANDALAR 0x0047b286
 int card_orcish_mechanics(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004779f6
 // FUNCTION: SHANDALAR 0x0047b4eb
 int card_phyrexian_gremlins(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00478606
 // FUNCTION: SHANDALAR 0x0047c106
 int card_priest_of_yawgmoth(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0047894c
@@ -1019,7 +989,7 @@ int card_rock_hydra(int player, int card, event_t event)
           local_8 = 0;
           do
           {
-            load_text((int)"promptsX1.txt", "ROCK_HYDRA");
+            load_text("promptsX1.txt", "ROCK_HYDRA");
             iVar4 = C_real_select_target(player,
                                          2,
                                          2,
@@ -1152,14 +1122,12 @@ int card_rock_hydra(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047cfdc
 int card_rukh_egg(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004795a4
 // FUNCTION: SHANDALAR 0x0047d0aa
 int card_sage_of_lat_nam(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004796cc
@@ -1201,21 +1169,18 @@ int card_sedge_troll(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047d2b6
 int card_serendib_djinn(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00479c7b
 // FUNCTION: SHANDALAR 0x0047d770
 int card_serendib_efreet(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00479e4c
 // FUNCTION: SHANDALAR 0x0047d940
 int card_singing_tree(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0047a22a
@@ -1384,7 +1349,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
-    load_text((int)"prompts.txt", "VESUVAN_DOPPELGANGER");
+    load_text("prompts.txt", "VESUVAN_DOPPELGANGER");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -1519,7 +1484,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE && card == affected_card && player == affected_card_controller && current_phase == EVENT_UPKEEP_PHASE && player == current_turn && player == unk_00742f60 && data_card != (card_instance_t *)0 && (data_card->eot_toughness & 2) == 0)
   {
-    load_text((int)"prompts.txt", "VESUVAN_DOPPELGANGER");
+    load_text("prompts.txt", "VESUVAN_DOPPELGANGER");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -1822,20 +1787,16 @@ static int veteran_bodyguard_or_martyrs_present(int unused1,
 // FUNCTION: SHANDALAR 0x004804a4
 int card_wyluli_wolf(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0047cde7
 // FUNCTION: SHANDALAR 0x004808e9
 int card_yawgmoth_demon(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0047d194
 // FUNCTION: SHANDALAR 0x00480c9e
 int card_ydwen_efreet(int player, int card, event_t event)
 {
-
 }
-

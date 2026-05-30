@@ -6,7 +6,6 @@
 // FUNCTION: SHANDALAR 0x00446d20
 int card_call_from_the_grave(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004013ed
@@ -208,7 +207,7 @@ int card_braingeyser(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "BRAINGEYSER");
+      load_text("prompts.txt", "BRAINGEYSER");
     }
     if (C_real_select_target(player,
                              2,
@@ -326,14 +325,12 @@ int card_wheel_of_fortune(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00447b9f
 int card_rebirth(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004020c4
 // FUNCTION: SHANDALAR 0x00447de6
 int card_winds_of_change(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00402229
@@ -427,7 +424,6 @@ int card_channel(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00448282
 int card_energy_tap(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040293f
@@ -450,7 +446,7 @@ int card_stream_of_life(int player, int card, event_t event)
     ai_modifier -= (life[player] * 0x18) / FUN_00404c4c(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id);
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "STREAMOFLIFE");
+      load_text("prompts.txt", "STREAMOFLIFE");
     }
     if (C_real_select_target(player,
                              2,
@@ -580,7 +576,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
     {
       if (unk_008a9000 != 1)
       {
-        load_text((int)"prompts.txt", "VOLCANIC_ERUPTION");
+        load_text("prompts.txt", "VOLCANIC_ERUPTION");
         sprintf(prompt, text_lines[0], current_target + 1, x_value);
       }
 
@@ -871,21 +867,18 @@ int card_tsunami(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004499aa
 int card_ashes_to_ashes(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040420e
 // FUNCTION: SHANDALAR 0x00449f2c
 int card_desert_twister(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040452a
 // FUNCTION: SHANDALAR 0x0044a249
 int card_winter_blast(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00404c4c
@@ -1132,7 +1125,7 @@ int card_fireball(int player, int card, event_t event)
               {
                 if (unk_008a9000 != 1)
                 {
-                  load_text((int)"prompts.txt", "FIREBALL");
+                  load_text("prompts.txt", "FIREBALL");
                   sprintf(text_lines[0], text_lines[0], s.target_index + 1, num_selected_targets);
                 }
 
@@ -1231,7 +1224,7 @@ int card_fireball(int player, int card, event_t event)
           {
             if (unk_008a9000 != 1)
             {
-              load_text((int)"prompts.txt", "FIREBALL");
+              load_text("prompts.txt", "FIREBALL");
               sprintf(text_lines[0], text_lines[0], s.target_index + 1, num_selected_targets);
             }
 
@@ -1390,21 +1383,18 @@ int card_fireball(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044bde2
 int card_detonate(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004064d6
 // FUNCTION: SHANDALAR 0x0044c1eb
 int card_mana_clash(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004066fb
 // FUNCTION: SHANDALAR 0x0044c410
 int card_word_of_binding(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00406d4f
@@ -1640,7 +1630,7 @@ int card_demonic_tutor(int player, int card, event_t event)
     }
     else
     {
-      load_text((int)"prompts.txt", "DEMONIC_TUTOR");
+      load_text("prompts.txt", "DEMONIC_TUTOR");
       found_card = show_deck(player, global_library[player], 500, text_lines, 1, &gs_cancel_008a8c20);
     }
 
@@ -1663,14 +1653,12 @@ int card_demonic_tutor(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044d711
 int card_untamed_wilds(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00407d8d
 // FUNCTION: SHANDALAR 0x0044daac
 int card_visions(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040808e
@@ -1695,7 +1683,7 @@ int card_mind_twist(int player, int card, event_t event)
 
   if (event == 0x6c && affected_card == card && affected_card_controller == player)
   {
-    load_text((int)"prompts.txt", "MINDTWIST");
+    load_text("prompts.txt", "MINDTWIST");
     if (!C_real_select_target(player,
                               2,
                               1 - player,
@@ -1762,7 +1750,6 @@ int card_mind_twist(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044e0b0
 int card_mind_bomb(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004087cc
@@ -1852,7 +1839,6 @@ int card_flashfires(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044e9de
 int card_pyrotechnics(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040948b
@@ -1881,7 +1867,7 @@ int card_disintegrate(int player, int card, event_t event)
     instance->info_slot = x_value;
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "DISINTEGRATE");
+      load_text("prompts.txt", "DISINTEGRATE");
     }
     FUN_0054ac4d(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
     ai_modifier -= 0x30 / FUN_00404c4c(player, instance->internal_card_id);
@@ -1945,7 +1931,7 @@ int card_drain_life(int player, int card, event_t event)
     }
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "DRAIN_LIFE");
+      load_text("prompts.txt", "DRAIN_LIFE");
     }
     FUN_0054ac4d(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
   }
@@ -2023,7 +2009,7 @@ int card_stone_rain(int player, int card, event_t event)
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "STONE_RAIN");
+          load_text("prompts.txt", "STONE_RAIN");
         }
         if (FUN_00551b60(player, 2, card) != 0)
         {
@@ -2100,7 +2086,7 @@ int card_drain_power(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "DRAIN_POWER");
+      load_text("prompts.txt", "DRAIN_POWER");
     }
     if (!C_real_select_target(player,
                               2,
@@ -2177,4 +2163,3 @@ int drain_power_draw_mana_from_land(int player, int card, int internal_card_id)
   unk_00938e2c = 0;
   return 0;
 }
-

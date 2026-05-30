@@ -6,7 +6,6 @@
 // FUNCTION: SHANDALAR 0x004a3190
 int card_army_of_allah(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004ab9c2
@@ -151,7 +150,7 @@ int card_guardian_angel(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"promptsX1.txt", "GUARDIAN_ANGLE");
+    load_text("promptsX1.txt", "GUARDIAN_ANGLE");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -368,7 +367,7 @@ int card_psionic_blast(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"promptsX1.txt", "PSIONIC_BLAST");
+    load_text("promptsX1.txt", "PSIONIC_BLAST");
     FUN_0054ac4d(player, card, 4);
     if (player == active_player)
     {
@@ -393,20 +392,17 @@ int card_psionic_blast(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a3f3b
 int card_reverse_polarity(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004acf05
 // FUNCTION: SHANDALAR 0x004a4784
 int card_sewers_of_estark(int player, int card, event_t event)
 {
-
 }
 // FUNCTION: MAGIC 0x004ad263
 // FUNCTION: SHANDALAR 0x004a4ae4
 int card_artifact_blast(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004ad5b4
@@ -428,7 +424,7 @@ int card_sacrifice(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
-    load_text((int)"promptsX1.txt", "SACRIFICE");
+    load_text("promptsX1.txt", "SACRIFICE");
     if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE,
                               TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL,
                               -1, -1, 0, 0, 0, text_lines[0], 0, &target))
@@ -458,4 +454,3 @@ int card_sacrifice(int player, int card, event_t event)
 
   return 0;
 }
-

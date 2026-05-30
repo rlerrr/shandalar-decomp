@@ -25,6 +25,7 @@ typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *param_1, int par
                                              unsigned int param_5);
 
 #pragma intrinsic(memset)
+#pragma intrinsic(memcpy)
 #pragma optimize("gy", on)
 
 // GLOBAL: FACEMAKER 0x0040d29c
@@ -104,28 +105,23 @@ void RpBitsWriteBits(int param_1, unsigned int param_2);
 // FUNCTION: FACEMAKER 0x00407a00
 void WriteRpBitsPalette(int file_handle)
 {
+  unsigned char palette_bytes[0x320];
   unsigned char *palette_byte_ptr;
   unsigned int *palette_entry_word_ptr;
   unsigned int *next_palette_entry_word_ptr;
-  struct
-  {
-    unsigned int palette_header_magic;
-    unsigned char palette_header_flags;
-    unsigned char palette_bytes[0x31b];
-  } palette_file_data;
 
-  palette_file_data.palette_header_magic = *(unsigned int *)g_rpbits_palette_magic;
-  palette_file_data.palette_header_flags = g_rpbits_palette_magic[4];
-  memset(palette_file_data.palette_bytes, 0, sizeof(palette_file_data.palette_bytes));
-  palette_file_data.palette_header_flags = 0;
-  palette_file_data.palette_bytes[0] = 0xff;
+  memcpy(palette_bytes, g_rpbits_palette_magic, 5);
+  memset(&palette_bytes[13], 0, 0x31b);
+  palette_bytes[12] = 0;
+  palette_bytes[13] = 0xff;
 
-  palette_byte_ptr = palette_file_data.palette_bytes + 1;
+  palette_byte_ptr = &palette_bytes[14];
   palette_entry_word_ptr = (unsigned int *)&g_palette_entries;
   do
   {
     *palette_byte_ptr = *(unsigned char *)palette_entry_word_ptr;
-    palette_byte_ptr = palette_byte_ptr + 2;
+    palette_byte_ptr++;
+    palette_byte_ptr++;
     next_palette_entry_word_ptr = palette_entry_word_ptr + 1;
     *(palette_byte_ptr - 1) = *(unsigned char *)((int)next_palette_entry_word_ptr - 3);
     *palette_byte_ptr = *(unsigned char *)((int)next_palette_entry_word_ptr - 2);
@@ -133,7 +129,7 @@ void WriteRpBitsPalette(int file_handle)
     palette_entry_word_ptr = next_palette_entry_word_ptr;
   } while (next_palette_entry_word_ptr < (unsigned int *)&g_graphics_pages);
 
-  _write(file_handle, &palette_file_data, 0x306);
+  _write(file_handle, &palette_bytes, 0x306);
 }
 
 // FUNCTION: SHANDALAR 0x0057de20

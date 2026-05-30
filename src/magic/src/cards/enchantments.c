@@ -6,14 +6,12 @@
 // FUNCTION: SHANDALAR 0x004f8890
 int card_artifact_possession(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0043641d
 // FUNCTION: SHANDALAR 0x004f8dbe
 int card_artifact_ward(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00436955
@@ -49,7 +47,7 @@ int card_consecrate_land(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
-    load_text((int)"promptsX1.txt", "CONSECRATE_LAND");
+    load_text("promptsX1.txt", "CONSECRATE_LAND");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -185,21 +183,18 @@ int FUN_00437375(int player, int card, int internal_card_id)
 // FUNCTION: SHANDALAR 0x004f9e49
 int card_cyclone(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00437aed
 // FUNCTION: SHANDALAR 0x004fa491
 int card_damping_field(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00437f75
 // FUNCTION: SHANDALAR 0x004fa91d
 int card_drop_of_honey(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004385c3
@@ -236,7 +231,7 @@ int card_earthbind(int player, int card, event_t event)
   {
     if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
     {
-      load_text((int)"promptsX1.txt", "EARTHBIND");
+      load_text("promptsX1.txt", "EARTHBIND");
       illegal_abilities = get_protections_from(player, card);
       if (C_real_select_target(player,
                                2,
@@ -487,21 +482,18 @@ int card_fastbond(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fbd52
 int card_fishliver_oil(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00439551
 // FUNCTION: SHANDALAR 0x004fbeef
 int card_gate_to_phyrexia(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00439e81
 // FUNCTION: SHANDALAR 0x004fc825
 int card_haunting_wind(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00439f56
@@ -536,7 +528,7 @@ int card_invisibility(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
-    load_text((int)"promptsX1.txt", "INVISIBILITY");
+    load_text("promptsX1.txt", "INVISIBILITY");
     spell_fizzled = !FUN_00551638(player, player, card);
   }
 
@@ -586,7 +578,6 @@ int card_invisibility(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fcc82
 int card_jihad(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0043a7ae
@@ -731,7 +722,7 @@ int card_lance(int player, int card, event_t event)
 {
   if ((event == EVENT_CAST_SPELL) && (card == affected_card) && (player == affected_card_controller))
   {
-    load_text((int)"promptsX1.txt", "LANCE");
+    load_text("promptsX1.txt", "LANCE");
   }
 
   return FUN_0052d7a5(player, card, event, 0x100);
@@ -885,7 +876,7 @@ int FUN_0043b4f3(int player, int amount)
     }
     else
     {
-      load_text((int)"promptsX1.txt", "LICH");
+      load_text("promptsX1.txt", "LICH");
       sprintf(prompt, text_lines[0], sacrifices_made + 1, sacrifices_to_make);
       C_real_select_target(player,
                            player,
@@ -924,14 +915,12 @@ int FUN_0043b4f3(int player, int amount)
 // FUNCTION: SHANDALAR 0x004fe0c6
 int card_oubliette(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0043c023
 // FUNCTION: SHANDALAR 0x004fe9cd
 int card_powerleech(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0043c1a5
@@ -970,7 +959,7 @@ int card_raging_river(int player, int card, event_t event)
       done = 0;
       while (done == 0)
       {
-        load_text((int)"promptsX1.txt", "RAGING_RIVER");
+        load_text("promptsX1.txt", "RAGING_RIVER");
         if (!C_real_select_target(defender,
                                   defender,
                                   defender,
@@ -1032,7 +1021,7 @@ int card_raging_river(int player, int card, event_t event)
     if (event == 0x7e)
     {
       legacy_card = create_legacy_effect(player, card, unk_008b3bd4, trigger_cause_controller, trigger_cause);
-      load_text((int)"promptsX1.txt", "RAGING_RIVER2");
+      load_text("promptsX1.txt", "RAGING_RIVER2");
       sprintf(message, " %s\n %s", "Attack from left bank", "Attack from right bank");
       if (do_dialog(player, player, card, -1, -1, message, 0) == 0)
       {

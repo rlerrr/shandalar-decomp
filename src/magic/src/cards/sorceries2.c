@@ -131,14 +131,12 @@ int card_demonic_attorney(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00401670
 int card_drafna_s_restoration(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040b8bc
 // FUNCTION: SHANDALAR 0x00401fee
 int card_reconstruction(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040bdc6
@@ -181,7 +179,7 @@ int card_resurrection(int player, int card, event_t event)
           locals.selectable[locals.hand_card] = 0;
         }
       }
-      load_text((int)"promptsX1.txt", "RESURRECTION");
+      load_text("promptsX1.txt", "RESURRECTION");
       locals.prompt = text_lines;
       locals.can_select = FUN_004a62d7(player,
                                        global_graveyard_slots[player],
@@ -243,13 +241,10 @@ int card_resurrection(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00402ad0
 int card_shatterstorm(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040c490
 // FUNCTION: SHANDALAR 0x00402bc7
 int card_transmute_artifact(int player, int card, event_t event)
 {
-
 }
-

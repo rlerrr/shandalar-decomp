@@ -6,14 +6,12 @@
 // FUNCTION: SHANDALAR 0x004547d0
 int card_ashnod_s_altar(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004652e8
 // FUNCTION: SHANDALAR 0x00454a08
 int card_ashnod_s_transmogrant(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00465b27
@@ -399,7 +397,7 @@ int card_icy_manipulator(int player, int card, event_t event)
       charge_mana(player, 0, 1);
       if (spell_fizzled != 1)
       {
-        load_text((int)"promptsX1.txt", "ICY_MANIPULATOR");
+        load_text("promptsX1.txt", "ICY_MANIPULATOR");
         illegal_abilities = get_protections_from(player, card);
         if (!C_real_select_target(player,
                                   2,
@@ -569,21 +567,18 @@ int card_jade_statue(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0045782f
 int card_jalum_tome(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00468339
 // FUNCTION: SHANDALAR 0x00457a60
 int card_jandor_s_ring(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046867c
 // FUNCTION: SHANDALAR 0x00457da1
 int card_jeweled_bird(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00468878
@@ -602,104 +597,88 @@ int card_living_wall(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00457feb
 int card_mana_crypt(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00468db5
 // FUNCTION: SHANDALAR 0x004584e4
 int card_mightstone(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00468eff
 // FUNCTION: SHANDALAR 0x0045862c
 int card_obelisk_of_undoing(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00469386
 // FUNCTION: SHANDALAR 0x00458ab3
 int card_pyramids(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00469d09
 // FUNCTION: SHANDALAR 0x00459437
 int card_rakalite(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046a138
 // FUNCTION: SHANDALAR 0x00459866
 int card_ring_of_ma_r_f(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046a4be
 // FUNCTION: SHANDALAR 0x00459be7
 int card_rocket_launcher(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046a845
 // FUNCTION: SHANDALAR 0x00459f70
 int card_sandals_of_abdallah(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046ad1a
 // FUNCTION: SHANDALAR 0x0045a443
 int card_staff_of_zegon(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046b1ab
 // FUNCTION: SHANDALAR 0x0045a8d4
 int card_su_chi(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046b262
 // FUNCTION: SHANDALAR 0x0045a98b
 int card_tablet_of_epityr(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046b7c7
 // FUNCTION: SHANDALAR 0x0045aef3
 int card_tawnos_s_coffin(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046c7dd
 // FUNCTION: SHANDALAR 0x0045bf15
 int card_urza_s_chalice(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046ca6f
 // FUNCTION: SHANDALAR 0x0045c1a8
 int card_urza_s_miter(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0046cef9
 // FUNCTION: SHANDALAR 0x0045c62c
 int card_weakstone(int player, int card, event_t event)
 {
-
 }
-

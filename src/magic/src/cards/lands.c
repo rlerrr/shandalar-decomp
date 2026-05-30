@@ -41,48 +41,41 @@ int card_plains(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00429f9e
 int card_gem_bazaar(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004b65b6
 // FUNCTION: SHANDALAR 0x0042a375
 int card_oasis(int player, int card, event_t event)
 {
-
 }
 // FUNCTION: MAGIC 0x004b6bd6
 // FUNCTION: SHANDALAR 0x0042a995
 int card_strip_mine(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004b7099
 // FUNCTION: SHANDALAR 0x0042ae58
 int card_library_of_alexandria(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004b74b2
 // FUNCTION: SHANDALAR 0x0042b270
 int card_mishra_s_factory(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004b85f5
 // FUNCTION: SHANDALAR 0x0042c3ae
 int card_assembly_worker(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004b978b
 // FUNCTION: SHANDALAR 0x0042d548
 int card_mishra_s_workshop(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004b99d0
@@ -120,4 +113,3 @@ int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t 
 
   return 0;
 }
-

@@ -6,63 +6,54 @@
 // FUNCTION: SHANDALAR 0x00552320
 int card_arena(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00503044
 // FUNCTION: SHANDALAR 0x005530c4
 int card_bazaar_of_baghdad(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00503331
 // FUNCTION: SHANDALAR 0x005533b2
 int card_city_of_brass(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00503987
 // FUNCTION: SHANDALAR 0x00553a0e
 int card_desert(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00503ef5
 // FUNCTION: SHANDALAR 0x00553f7d
 int card_diamond_valley(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00504340
 // FUNCTION: SHANDALAR 0x005543ce
 int card_elephant_graveyard(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00504ec7
 // FUNCTION: SHANDALAR 0x00554f53
 int card_island_of_wak_wak(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0050535f
 // FUNCTION: SHANDALAR 0x005553ee
 int card_urza_s_mine(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00505608
 // FUNCTION: SHANDALAR 0x00555699
 int card_urza_s_tower(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MOK 0x004a9310
@@ -196,7 +187,7 @@ int card_badlands(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "BADLANDS");
+    load_text("promptsX1.txt", "BADLANDS");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -208,7 +199,7 @@ int card_bayou(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "BAYOU");
+    load_text("promptsX1.txt", "BAYOU");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -220,7 +211,7 @@ int card_plateau(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "PLATEAU");
+    load_text("promptsX1.txt", "PLATEAU");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -232,7 +223,7 @@ int card_savannah(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "SAVANNAH");
+    load_text("promptsX1.txt", "SAVANNAH");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -244,7 +235,7 @@ int card_scrubland(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "SCRUBLAND");
+    load_text("promptsX1.txt", "SCRUBLAND");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -256,7 +247,7 @@ int card_taiga(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "TAIGA");
+    load_text("promptsX1.txt", "TAIGA");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -268,7 +259,7 @@ int card_tropical_island(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "TROPICAL_ISLAND");
+    load_text("promptsX1.txt", "TROPICAL_ISLAND");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -280,7 +271,7 @@ int card_tundra(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "TUNDRA");
+    load_text("promptsX1.txt", "TUNDRA");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -292,7 +283,7 @@ int card_underground_sea(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "UNDERGROUND_SEA");
+    load_text("promptsX1.txt", "UNDERGROUND_SEA");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
@@ -304,9 +295,8 @@ int card_volcanic_island(int player, int card, event_t event)
 {
   if (event == EVENT_ACTIVATE)
   {
-    load_text((int)"promptsX1.txt", "VOLCANIC_ISLAND");
+    load_text("promptsX1.txt", "VOLCANIC_ISLAND");
   }
 
   return helper_dual_land(player, card, event, PLAYER_CARD_INSTANCE(player, card).mana_color);
 }
-

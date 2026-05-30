@@ -131,10 +131,10 @@ int FUN_004f6311(int player, int card, int internal_card_id)
 {
   unk_00938e2c = 1;
   produced_mana_color = -1;
-  if ((PLAYER_CARD_INSTANCE(player, card).state & 0x10) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0 && (global_cards_data[internal_card_id].extra_ability & 0x1000) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & 0x10) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0)
+  if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0 && (global_cards_data[internal_card_id].extra_ability & 0x1000) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0)
   {
     dispatch_event_to_single_card(player, card, EVENT_ACTIVATE, 1 - player, -1);
-    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x10) != 0)
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0)
     {
       dispatch_event(player, card, EVENT_TAP_CARD);
     }
@@ -178,7 +178,7 @@ int card_ancestral_recall(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    load_text((int)"prompts.txt", "ANCESTRAL_RECALL");
+    load_text("prompts.txt", "ANCESTRAL_RECALL");
     if (!C_real_select_target(player,
                               2,
                               player,
@@ -255,7 +255,7 @@ int card_simulacrum(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
-    load_text((int)"prompts.txt", "SIMULACRUM");
+    load_text("prompts.txt", "SIMULACRUM");
     if (!FUN_00551638(player, player, card))
     {
       spell_fizzled = 1;
@@ -339,7 +339,7 @@ int card_shatter(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    load_text((int)"prompts.txt", "SHATTER");
+    load_text("prompts.txt", "SHATTER");
     if (!C_real_select_target(player,
                               2,
                               1 - player,
@@ -442,7 +442,7 @@ int card_disenchant(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
     ai_modifier -= 0x10;
-    load_text((int)"prompts.txt", "DISENCHANT");
+    load_text("prompts.txt", "DISENCHANT");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -546,7 +546,7 @@ int card_twiddle(int player, int card, event_t event)
   if (event == 0x6c && affected_card == card && affected_card_controller == player)
   {
     ai_modifier -= 0x30;
-    load_text((int)"prompts.txt", "TWIDDLE");
+    load_text("prompts.txt", "TWIDDLE");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -687,7 +687,7 @@ int card_tunnel(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "TUNNEL");
+    load_text("prompts.txt", "TUNNEL");
     if (!C_real_select_target(player,
                               2,
                               player,
@@ -757,7 +757,6 @@ int card_tunnel(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b1bcb
 int card_marsh_gas(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004f7c84
@@ -799,7 +798,7 @@ int card_howl_from_beyond(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "HOWL_FROM_BEYOND");
+    load_text("prompts.txt", "HOWL_FROM_BEYOND");
     if (!FUN_00551638(player, player, card))
     {
       spell_fizzled = 1;
@@ -895,7 +894,7 @@ int card_berserk(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "BERSERK");
+    load_text("prompts.txt", "BERSERK");
     if (!FUN_00551638(player, player, card))
     {
       spell_fizzled = 1;
@@ -982,7 +981,7 @@ int card_righteousness(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "RIGHTEOUSNESS");
+    load_text("prompts.txt", "RIGHTEOUSNESS");
     if (!C_real_select_target(player,
                               2,
                               player,
@@ -1059,7 +1058,6 @@ int card_righteousness(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b26fc
 int card_blood_lust(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004f8901
@@ -1116,7 +1114,7 @@ int card_swords_to_plowshares(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "SWORD_TO_PLOWSHARES");
+    load_text("prompts.txt", "SWORD_TO_PLOWSHARES");
     if (!FUN_00551638(player, 1 - player, card))
     {
       spell_fizzled = 1;
@@ -1200,7 +1198,7 @@ int card_death_ward(int player, int card, event_t event)
     do
     {
       instance->number_of_targets = 0;
-      load_text((int)"prompts.txt", "DEATH_WARD");
+      load_text("prompts.txt", "DEATH_WARD");
       if (!C_real_select_target(player,
                                 2,
                                 2,
@@ -1244,7 +1242,7 @@ int card_death_ward(int player, int card, event_t event)
       }
       else
       {
-        load_text((int)"prompts.txt", "DEATH_WARD2");
+        load_text("prompts.txt", "DEATH_WARD2");
         FUN_004a61d6(text_lines[1]);
         Sleep(0x9c4);
         FUN_004a61d6("");
@@ -1294,7 +1292,6 @@ int card_death_ward(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b315b
 int card_hurkyl_s_recall(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004f94f3
@@ -1334,7 +1331,7 @@ int card_jump(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "JUMP");
+    load_text("prompts.txt", "JUMP");
     if (!FUN_00551638(player, player, card))
     {
       spell_fizzled = 1;
@@ -1399,14 +1396,12 @@ int card_jump(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b3902
 int card_morale(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004f99c8
 // FUNCTION: SHANDALAR 0x004b3a96
 int card_piety(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004f9b91
@@ -1445,7 +1440,7 @@ int card_terror(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "TERROR");
+    load_text("prompts.txt", "TERROR");
     illegal_color = 1 << ((unsigned char)get_sleighted_color(player, card, 1) & 0x1f);
     if (!C_real_select_target(player,
                               2,
@@ -1525,7 +1520,7 @@ int card_lightning_bolt(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    load_text((int)"prompts.txt", "LIGHTNING_BOLT");
+    load_text("prompts.txt", "LIGHTNING_BOLT");
     FUN_0054ac4d(player, card, 3);
     if (spell_fizzled != 1)
     {
@@ -1546,7 +1541,6 @@ int card_lightning_bolt(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b4028
 int card_crumble(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004fa213
@@ -1589,7 +1583,7 @@ int card_giant_growth(int player, int card, event_t event)
     {
       ai_modifier -= 0xc;
     }
-    load_text((int)"prompts.txt", "GIANT_GROWTH");
+    load_text("prompts.txt", "GIANT_GROWTH");
     if (!FUN_00551638(player, player, card))
     {
       spell_fizzled = 1;
@@ -1681,7 +1675,7 @@ int card_unsummon(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
     ai_modifier -= 0x30;
-    load_text((int)"prompts.txt", "UNSUMMON");
+    load_text("prompts.txt", "UNSUMMON");
     if (!FUN_00551638(player, 1 - player, card))
     {
       spell_fizzled = 1;
@@ -1730,7 +1724,6 @@ int card_unsummon(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b47b1
 int card_sandstorm(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004fa7dc
@@ -1770,7 +1763,7 @@ int card_purelace(int player, int card, event_t event)
     ai_modifier -= 0x18;
     if (unk_008ce508 == -1)
     {
-      load_text((int)"prompts.txt", "ANY_LACE");
+      load_text("prompts.txt", "ANY_LACE");
       if (!C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY,
                                 TYPE_EFFECT | TYPE_ARTIFACT | TYPE_INTERRUPT | TYPE_INSTANT | TYPE_SORCERY |
                                     TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND,
@@ -1901,7 +1894,7 @@ int card_magical_hack(int player, int card, event_t event)
   {
     if (unk_008ce508 == -1)
     {
-      load_text((int)"prompts.txt", "MAGICAL_HACK");
+      load_text("prompts.txt", "MAGICAL_HACK");
       if (C_real_select_target(player,
                                2,
                                2,
@@ -1989,7 +1982,7 @@ int card_magical_hack(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).info_slot = s.new_color * 0x100 + s.old_color;
           if (unk_008a9000 != 1)
           {
-            load_text((int)"prompts.txt", "MAGICAL_HACK");
+            load_text("prompts.txt", "MAGICAL_HACK");
             strcpy(s.prompt, "\n");
             sprintf(s.prompt + strlen(s.prompt), text_lines[1], "", "");
             do_dialog(player,
@@ -2228,7 +2221,7 @@ int card_blue_elemental_blast(int player, int card, event_t event)
   {
     if (unk_008ce508 == -1)
     {
-      load_text((int)"prompts.txt", "BLUE_ELEMENTAL_BLAST");
+      load_text("prompts.txt", "BLUE_ELEMENTAL_BLAST");
       color = get_sleighted_color(player, card, 4);
       if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY,
                                 TARGET_TYPE_TOKEN | TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND,
@@ -2637,7 +2630,7 @@ int card_red_elemental_blast(int player, int card, event_t event)
   {
     if (unk_008ce508 == -1)
     {
-      load_text((int)"prompts.txt", "RED_ELEMENTAL_BLAST");
+      load_text("prompts.txt", "RED_ELEMENTAL_BLAST");
       color = get_sleighted_color(player, card, 2);
       if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY,
                                 TARGET_TYPE_TOKEN | TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND,
@@ -2738,7 +2731,6 @@ int card_dark_ritual(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b80b2
 int card_alabaster_potion(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004fdfb2
@@ -2780,7 +2772,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
     ai_modifier -= 0x60;
     if ((unk_008b4278 & 4) == 0)
     {
-      load_text((int)"prompts.txt", "HEALING_SALVE");
+      load_text("prompts.txt", "HEALING_SALVE");
       if (!C_real_select_target(player,
                                 2,
                                 player,
@@ -2821,7 +2813,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
       spell_fizzled = -1;
       while ((instance->number_of_targets < amount) && !cancelled && (spell_fizzled != 1) && !done)
       {
-        load_text((int)"prompts.txt", "HEALING_SALVE2");
+        load_text("prompts.txt", "HEALING_SALVE2");
         strcpy(prompt, text_lines[1]);
         if (!C_real_select_target(player,
                                   2,
@@ -2884,7 +2876,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
         }
         else
         {
-          load_text((int)"prompts.txt", "HEALING_SALVE3");
+          load_text("prompts.txt", "HEALING_SALVE3");
           FUN_004a61d6(text_lines[2]);
           Sleep(0x9c4);
           FUN_004a61d6("");
@@ -3001,7 +2993,7 @@ int card_reverse_damage(int player, int card, event_t event)
   {
     if ((((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller)) && ((unk_008b4278 & 4) != 0))
     {
-      load_text((int)"prompts.txt", "REVERSE_DAMAGE");
+      load_text("prompts.txt", "REVERSE_DAMAGE");
       result = C_real_select_target(player,
                                     2,
                                     2,
@@ -3079,7 +3071,7 @@ int card_reverse_damage(int player, int card, event_t event)
           }
           else
           {
-            load_text((int)"prompts.txt", "REVERSE_DAMAGE");
+            load_text("prompts.txt", "REVERSE_DAMAGE");
             s.selected = FUN_004b413c(player, s.internal_card_ids, s.damage_amounts, s.count, 0x89684c, 1, text_lines[1]);
           }
           gain_life(player,
@@ -3151,27 +3143,22 @@ int card_reverse_damage(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b9465
 int card_eye_for_an_eye(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004ff68a
 // FUNCTION: SHANDALAR 0x004b97b4
 int card_inferno(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004ff86e
 // FUNCTION: SHANDALAR 0x004b9998
 int card_fissure(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004ffb2e
 // FUNCTION: SHANDALAR 0x004b9c58
 int card_orcish_catapult(int player, int card, event_t event)
 {
-
 }
-

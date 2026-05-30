@@ -27,6 +27,14 @@ extern card_instance_t global_displayed_card_instances[2][151];
 
 #define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
 
+#define IS_SICK(player_, card_) (((PLAYER_CARD_INSTANCE(player_, card_).state & STATE_SUMMONSICK_BOTH) != 0) && \
+             ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) != 0))
+
+#define IS_NOT_SICK(player_, card_) (((PLAYER_CARD_INSTANCE(player_, card_).state & STATE_SUMMONSICK_BOTH) == 0) || \
+             ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) == 0))
+
+#define CAN_TAP(player_, card_) (IS_NOT_SICK(player_, card_) && ((PLAYER_CARD_INSTANCE(player_, card).state & STATE_TAPPED) == 0))
+
 // GLOBAL: MAGIC 0x939810
 // GLOBAL: SHANDALAR 0x94d930
 extern int global_graveyard_slots[2][500];

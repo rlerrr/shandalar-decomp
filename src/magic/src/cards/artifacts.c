@@ -42,87 +42,83 @@ int card_mox_sapphire(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0050f87e
 int card_black_lotus(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  char message[300];
-  color_t color;
-  color_t choice_hint;
-  unsigned int available_colors;
+  struct
+  {
+    color_t choice_hint;
+    color_t color;
+    unsigned int available_colors;
+  } s;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((((instance->token_status & 3) == 0) || ((global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0)) && ((instance->state & 0x10) == 0))
-    {
-      return 1;
-    }
-    return 0;
+    return CAN_TAP(player, card);
   }
 
   if (event == EVENT_ACTIVATE)
   {
     ai_modifier -= 0x24;
-    available_colors = (unsigned int)(unsigned char)instance->damage_source_card;
+    s.available_colors = PLAYER_CARD_INSTANCE(player, card).mana_color;
     if ((((active_player == player) && ((unk_00926804 & 2) == 0)) || (unk_008a9000 == 1)) || (unk_009252e0 != 0))
     {
-      choice_hint = ~COLOR_COLORLESS;
-      for (color = COLOR_BLACK; color < 6 && choice_hint == ~COLOR_COLORLESS; color += COLOR_BLACK)
+      s.choice_hint = ~COLOR_COLORLESS;
+      for (s.color = COLOR_BLACK; s.color <= COLOR_WHITE && s.choice_hint == ~COLOR_COLORLESS; s.color += COLOR_BLACK)
       {
-        if (((unk_00938e2c & (1 << ((unsigned char)color & 0x1f))) != 0) && ((available_colors & (1 << ((unsigned char)color & 0x1f))) != 0))
+        if (((unk_00938e2c & (1 << (unsigned char)s.color)) != 0) && ((s.available_colors & (1 << (unsigned char)s.color)) != 0))
         {
-          choice_hint = color;
+          s.choice_hint = s.color;
         }
       }
-      if (choice_hint == ~COLOR_COLORLESS && (unk_00938e2c & 1) != 0)
+      if (s.choice_hint == ~COLOR_COLORLESS && (unk_00938e2c & 1) != 0)
       {
-        choice_hint = COLOR_BLACK;
+        s.choice_hint = COLOR_BLACK;
       }
-      if (choice_hint == ~COLOR_COLORLESS && (unk_00938e2c & 0x40) != 0)
+      if (s.choice_hint == ~COLOR_COLORLESS && (unk_00938e2c & 0x40) != 0)
       {
-        choice_hint = COLOR_BLACK;
+        s.choice_hint = COLOR_BLACK;
       }
-      if (choice_hint == ~COLOR_COLORLESS)
+      if (s.choice_hint == ~COLOR_COLORLESS)
       {
         spell_fizzled = 1;
       }
     }
     else
     {
-      choice_hint = ~COLOR_COLORLESS;
+      s.choice_hint = ~COLOR_COLORLESS;
     }
 
     if (spell_fizzled != 1)
     {
       if (unk_008a9000 != 1)
       {
-        load_text((int)"prompts.txt", "BLACK_LOTUS");
+        load_text("prompts.txt", "BLACK_LOTUS");
       }
-      color = choose_a_color(player, text_lines[0], 1, choice_hint,
-                             (int)(unsigned char)instance->damage_source_card);
-      if (color == ~COLOR_COLORLESS)
+      s.choice_hint = choose_a_color(player, text_lines[0], 1, s.choice_hint, PLAYER_CARD_INSTANCE(player, card).mana_color);
+      if (s.choice_hint == ~COLOR_COLORLESS)
       {
         spell_fizzled = 1;
       }
       else
       {
-        produce_mana(player, color, 3);
-        produced_mana_color = color;
-        instance->state |= 0x10;
+        produce_mana(player, s.choice_hint, 3);
+        produced_mana_color = s.choice_hint;
+        PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
         if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
         {
-          load_text((int)"prompts.txt", "BLACK_LOTUS2");
-          if (color == COLOR_BLACK)
+          char message[300];
+          load_text("prompts.txt", "BLACK_LOTUS");
+          if (s.choice_hint == COLOR_BLACK)
           {
             strcpy(message, text_lines[1]);
           }
-          else if (color == COLOR_BLUE)
+          else if (s.choice_hint == COLOR_BLUE)
           {
             strcpy(message, text_lines[2]);
           }
-          else if (color == COLOR_GREEN)
+          else if (s.choice_hint == COLOR_GREEN)
           {
             strcpy(message, text_lines[3]);
           }
-          else if (color == COLOR_RED)
+          else if (s.choice_hint == COLOR_RED)
           {
             strcpy(message, text_lines[4]);
           }
@@ -142,9 +138,9 @@ int card_black_lotus(int player, int card, event_t event)
     }
   }
 
-  if ((event == EVENT_COUNT_MANA) && (card == affected_card) && (player == affected_card_controller) && ((instance->state & 0x10) == 0))
+  if ((event == EVENT_COUNT_MANA) && (card == affected_card) && (player == affected_card_controller) && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0))
   {
-    declare_mana_available_hex(player, (int)(unsigned char)instance->damage_source_card, 3);
+    declare_mana_available_hex(player, PLAYER_CARD_INSTANCE(player, card).mana_color, 3);
   }
 
   return 0;
@@ -321,105 +317,90 @@ int card_black_vise(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00510594
 int card_the_rack(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040dfe6
 // FUNCTION: SHANDALAR 0x00510802
 int card_ivory_tower(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040e1a7
 // FUNCTION: SHANDALAR 0x005109c7
 int card_cursed_rack(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040e2db
 // FUNCTION: SHANDALAR 0x00510afa
 int card_aladdin_s_lamp(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040eb7d
 // FUNCTION: SHANDALAR 0x00511395
 int card_feldon_s_cane(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040ed84
 // FUNCTION: SHANDALAR 0x0051159c
 int card_mishra_s_war_machine(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040efdc
 // FUNCTION: SHANDALAR 0x005117f9
 int card_primal_clay(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040f3a6
 // FUNCTION: SHANDALAR 0x00511bc3
 int card_shapeshifter(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0040fb86
 // FUNCTION: SHANDALAR 0x0051239f
 int card_tetravus(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00410756
 // FUNCTION: SHANDALAR 0x00512f6e
 int card_tetravite(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004107ff
 // FUNCTION: SHANDALAR 0x00513019
 int card_triskelion(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00410a22
 // FUNCTION: SHANDALAR 0x0051323c
 int card_urza_s_avenger(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00411509
 // FUNCTION: SHANDALAR 0x00513d22
 int card_millstone(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00411981
 // FUNCTION: SHANDALAR 0x0051419a
 int card_celestial_prism(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   char message[300];
   color_t color;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (has_mana(player, 7, 2) && ((((instance->token_status & 3) == 0) || ((global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0))) && ((instance->state & 0x10) == 0))
+    if (has_mana(player, 7, 2) && CAN_TAP(player, card))
     {
       return 1;
     }
@@ -463,10 +444,9 @@ int card_celestial_prism(int player, int card, event_t event)
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "CELESTIAL_PRISM");
+          load_text("prompts.txt", "CELESTIAL_PRISM");
         }
-        color = choose_a_color(player, text_lines[0], 1, color,
-                               (int)(unsigned char)instance->damage_source_card);
+        color = choose_a_color(player, text_lines[0], 1, color, PLAYER_CARD_INSTANCE(player, card).damage_source_card);
         if (color == ~COLOR_COLORLESS)
         {
           spell_fizzled = 1;
@@ -474,12 +454,12 @@ int card_celestial_prism(int player, int card, event_t event)
         else if (spell_fizzled != 1)
         {
           produce_mana(player, color, 1);
-          undeclare_mana_available_hex(player, (int)(unsigned char)instance->damage_source_card, 1);
-          instance->state |= 0x10;
+          undeclare_mana_available_hex(player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, 1);
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
           produced_mana_color = color;
           if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
           {
-            load_text((int)"prompts.txt", "CELESTIAL_PRISM2");
+            load_text("prompts.txt", "CELESTIAL_PRISM2");
             if (color == COLOR_BLACK)
             {
               strcpy(message, text_lines[1]);
@@ -514,49 +494,42 @@ int card_celestial_prism(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00514591
 int card_fellwar_stone(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041240b
 // FUNCTION: SHANDALAR 0x00514c20
 int card_ashnod_s_battle_gear(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00412e9c
 // FUNCTION: SHANDALAR 0x005156b0
 int card_tawnos_s_weaponry(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00413c87
 // FUNCTION: SHANDALAR 0x0051649a
 int card_battering_ram(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00413eb8
 // FUNCTION: SHANDALAR 0x005166cc
 int card_candelabra_of_tawnos(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041465a
 // FUNCTION: SHANDALAR 0x00516e6e
 int card_clay_statue(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004146a7
 // FUNCTION: SHANDALAR 0x00516ebb
 int card_diabolic_machine(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004146f4
@@ -590,7 +563,7 @@ int card_forcefield(int player, int card, event_t event)
       charge_mana(player, COLOR_COLORLESS, 1);
       if (unk_008a9000 != 1)
       {
-        load_text((int)"prompts.txt", "FORCEFIELD");
+        load_text("prompts.txt", "FORCEFIELD");
       }
       if (!C_real_select_target(player,
                                 player,
@@ -678,27 +651,25 @@ int card_forcefield(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00517500
 int card_disrupting_scepter(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (has_mana(player, 7, 3) && player == human_player && ((((instance->token_status & 3) == 0) || ((global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0))) && ((instance->state & 0x10) == 0))
+    if (has_mana(player, 7, 3) && player == human_player && CAN_TAP(player, card))
     {
       return 1;
     }
     return 0;
   }
 
-  if ((event == EVENT_ACTIVATE) && ((instance->state & 0x10) == 0) && has_mana(player, 7, 3) && player == human_player)
+  if ((event == EVENT_ACTIVATE) && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) && has_mana(player, 7, 3) && player == human_player)
   {
     charge_mana(player, 0, 3);
     if (spell_fizzled != 1)
     {
       if (unk_008a9000 != 1)
       {
-        load_text((int)"prompts.txt", "DISRUPTING_SCEPTER");
+        load_text("prompts.txt", "DISRUPTING_SCEPTER");
       }
       if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE,
                                 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
@@ -708,18 +679,18 @@ int card_disrupting_scepter(int player, int card, event_t event)
       }
       else
       {
-        instance->targets[0].player = target.player;
-        instance->targets[0].card = target.card;
-        instance->number_of_targets = 1;
-        instance->state |= 0x10;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
       }
     }
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    discard(instance->targets[0].player, 0, 0);
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    discard(PLAYER_CARD_INSTANCE(player, card).targets[0].player, 0, 0);
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;
@@ -729,6 +700,7 @@ int card_disrupting_scepter(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00517888
 int card_howling_mine(int player, int card, event_t event)
 {
+  // TODO: why does this check if it's a creature?
   if (event == EVENT_DRAW_PHASE && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
     ++event_result;
@@ -741,35 +713,30 @@ int card_howling_mine(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00517922
 int card_blue_mana_battery(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00415132
 // FUNCTION: SHANDALAR 0x00517948
 int card_red_mana_battery(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00415158
 // FUNCTION: SHANDALAR 0x0051796e
 int card_green_mana_battery(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041517e
 // FUNCTION: SHANDALAR 0x00517994
 int card_white_mana_battery(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x004151a4
 // FUNCTION: SHANDALAR 0x005179ba
 int card_black_mana_battery(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041598f
@@ -816,7 +783,7 @@ int card_conservator(int player, int card, event_t event)
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "CONSERVATOR");
+          load_text("prompts.txt", "CONSERVATOR");
         }
         if (!C_real_select_target(player,
                                   player,
@@ -1030,7 +997,6 @@ int card_ankh_of_mishra(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00518f64
 int card_armageddon_clock(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00416dd5
@@ -1151,7 +1117,6 @@ int card_soul_net(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051a01c
 int card_ebony_horse(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00417d1f
@@ -1214,20 +1179,16 @@ int card_mana_vault(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     can_activate = 1;
-    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) != 0) &&
-        ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0))
+    if (IS_SICK(player, card))
     {
       can_activate = 0;
     }
-    else if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 ||
-             ((has_mana(player, COLOR_ANY, 4) != 0 && current_phase == 4) && player == human_player))
+    else if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0 &&
+             ((has_mana(player, COLOR_ANY, 4) == 0 || current_phase != 4) || player != human_player))
     {
-      if (player == active_player && (unk_00926804 & 2) == 0 && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
-      {
-        can_activate = 0;
-      }
+      can_activate = 0;
     }
-    else
+    else if (player == active_player && (unk_00926804 & 2) == 0 && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       can_activate = 0;
     }
@@ -1239,8 +1200,7 @@ int card_mana_vault(int player, int card, event_t event)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0)
     {
-      can_activate = has_mana(player, COLOR_ANY, 4);
-      if (can_activate != 0)
+      if (has_mana(player, COLOR_ANY, 4))
       {
         charge_mana(player, COLOR_COLORLESS, 4);
         if (spell_fizzled != 1)
@@ -1398,7 +1358,6 @@ int card_meekstone(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051b58d
 int card_jandor_s_saddlebags(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00419295
@@ -1432,7 +1391,7 @@ int card_jade_monolith(int player, int card, event_t event)
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "JADE_MONOLITH");
+          load_text("prompts.txt", "JADE_MONOLITH");
         }
         if (!C_real_select_target(player,
                                   2,
@@ -1530,28 +1489,24 @@ void FUN_00419667(int target_player, int target_card, int damage_target_player)
 // FUNCTION: SHANDALAR 0x0051c0ad
 int card_onulet(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00419ae1
 // FUNCTION: SHANDALAR 0x0051c2f1
 int card_amulet_of_kroog(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00419fc3
 // FUNCTION: SHANDALAR 0x0051c7d3
 int card_grapeshot_catapult(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041a389
 // FUNCTION: SHANDALAR 0x0051cb99
 int card_bronze_tablet(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041ae2a
@@ -1582,7 +1537,7 @@ int card_nevinyrral_s_disk(int player, int card, event_t event)
            (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) != 0 &&
           (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type &
            TYPE_CREATURE) != 0) ||
-         (PLAYER_CARD_INSTANCE(player, card).state & 0x10) != 0))
+         (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0))
     {
       result = 0;
     }
@@ -1732,7 +1687,6 @@ int card_nevinyrral_s_disk(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051dd8d
 int card_aladdin_s_ring(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041b801
@@ -1764,7 +1718,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "ROD_OF_RUIN");
+          load_text("prompts.txt", "ROD_OF_RUIN");
         }
         FUN_0054ac4d(player, card, 1);
         if (spell_fizzled != 1)
@@ -1816,12 +1770,12 @@ int card_winter_orb(int player, int card, event_t event)
       {
         selected_target.player = human_player;
         selected_target.card = FUN_00534ddb(human_player, 1);
-        load_text((int)"prompts.txt", "WINTERORB");
+        load_text("prompts.txt", "WINTERORB");
         do_dialog(player, player, card, selected_target.player, selected_target.card, text_lines[1], 0);
       }
       else
       {
-        load_text((int)"prompts.txt", "WINTERORB");
+        load_text("prompts.txt", "WINTERORB");
         C_real_select_target(human_player,
                              human_player,
                              human_player,
@@ -1867,14 +1821,12 @@ int card_winter_orb(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051e814
 int card_brass_man(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041c1ef
 // FUNCTION: SHANDALAR 0x0051ea11
 int card_dragon_engine(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041c706
@@ -1888,7 +1840,6 @@ int card_clockwork_beast(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051ef4a
 int card_clockwork_avian(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041c752
@@ -1986,14 +1937,12 @@ int FUN_0041c752(int player, int card, int event, int amount)
 // FUNCTION: SHANDALAR 0x0051f4af
 int card_colossus_of_sardia(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041ce96
 // FUNCTION: SHANDALAR 0x0051f6af
 int card_flying_carpet(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041d4f9
@@ -2027,7 +1976,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
       {
         if (unk_008a9000 != 1)
         {
-          load_text((int)"prompts.txt", "HELM_OF_CHATZUK");
+          load_text("prompts.txt", "HELM_OF_CHATZUK");
         }
         if (!C_real_select_target(player,
                                   2,
@@ -2116,14 +2065,12 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005202ec
 int card_coral_helm(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041df71
 // FUNCTION: SHANDALAR 0x00520787
 int card_tawnos_s_wand(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041e45a
@@ -2186,7 +2133,6 @@ int card_the_hive(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00520f7d
 int card_bottle_of_suleiman(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041ea45
@@ -2316,7 +2262,6 @@ int card_library_of_leng(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00521791
 int card_pandora_s_box(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0041f3d3
@@ -2355,4 +2300,3 @@ int helper_mox(int player, int card, event_t event, int color)
 
   return 0;
 }
-

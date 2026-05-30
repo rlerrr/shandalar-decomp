@@ -40,6 +40,7 @@ typedef struct RpBitsPalettePacket
 #ifndef DRAWCARDLIB
 // For some reason these are actually optimized in deckdll?
 #pragma optimize("gy", on)
+#pragma intrinsic(memcpy)
 #endif
 
 // FUNCTION: DRAWCARDLIB 0x1000965b
@@ -471,9 +472,10 @@ int RpBitsRefill(void)
 
 void RpBits_ApplyPalette(short *palette_data_words)
 {
+  return;
 #if defined(FACEMAKER) || defined(SHANDALAR)
   RpBitsPalettePacket *palette_packet;
-  int packet_size_bytes;
+  int packet_size_bytes = (int)(short)(palette_data_words[1] + 2);
   unsigned int first_index;
   unsigned int last_index;
   unsigned int palette_index;
@@ -490,7 +492,6 @@ void RpBits_ApplyPalette(short *palette_data_words)
   // GLOBAL: SHANDALAR 0x00738800
   static HWND palette_window;
 
-  packet_size_bytes = (int)(short)(palette_data_words[1] + 2);
   memcpy((void *)palette_packet_words, (const void *)palette_data_words, packet_size_bytes);
   palette_packet = (RpBitsPalettePacket *)palette_packet_words;
 

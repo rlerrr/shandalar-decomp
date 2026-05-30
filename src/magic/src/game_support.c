@@ -2134,7 +2134,7 @@ int FUN_004b5274(int player, int card)
   toughness_masked = ((int)global_cards_data[internal_card_id].toughness & 0xffffbfffU);
   score = (int)((power2 + 2) * (toughness_masked + 1)) / 2;
 
-  if (((PLAYER_CARD_INSTANCE(player, card).state & 0x10) != 0) && (human_player == player))
+  if (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0) && (human_player == player))
   {
     score -= 1;
   }

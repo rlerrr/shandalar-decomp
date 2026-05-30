@@ -289,21 +289,18 @@ int FUN_0051819c(int parent_player, int parent_card, int player, int card, int i
 // FUNCTION: SHANDALAR 0x004cfa1d
 int card_sylvan_library(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00518959
 // FUNCTION: SHANDALAR 0x004d0138
 int card_land_tax(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00519218
 // FUNCTION: SHANDALAR 0x004d09fa
 int card_kismet(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005194e4
@@ -637,7 +634,7 @@ int card_animate_artifact(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "ANIMATE_ARTIFACT");
+      load_text("prompts.txt", "ANIMATE_ARTIFACT");
     }
     if (!C_real_select_target(player,
                               2,
@@ -753,7 +750,6 @@ int card_animate_artifact(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d264b
 int card_titania_s_song(int player, int card, event_t event)
 {
-
 }
 // FUNCTION: MAGIC 0x0051b55f
 // FUNCTION: SHANDALAR 0x004d2d45
@@ -1162,7 +1158,7 @@ int card_feedback(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "FEEDBACK");
+      load_text("prompts.txt", "FEEDBACK");
     }
     if (C_real_select_target(player,
                              2,
@@ -1279,7 +1275,6 @@ int card_feedback(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d5741
 int card_brainwash(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0051e631
@@ -1303,14 +1298,12 @@ int FUN_0051e631(int player, int card, int internal_card_id)
 // FUNCTION: SHANDALAR 0x004d5ee2
 int card_spirit_shackle(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0051ee47
 // FUNCTION: SHANDALAR 0x004d662b
 int card_relic_bind(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0051f540
@@ -1351,7 +1344,7 @@ int card_power_leak(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "POWERLEAK");
+      load_text("prompts.txt", "POWERLEAK");
     }
     if (!C_real_select_target(player,
                               2,
@@ -1460,7 +1453,7 @@ int card_power_leak(int player, int card, event_t event)
       }
     }
 
-    load_text((int)"prompts.txt", "POWERLEAK");
+    load_text("prompts.txt", "POWERLEAK");
     sprintf(message, " %s\n %s\n %s", text_lines[1], text_lines[2], text_lines[3]);
     dialog_result = do_dialog((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                               player,
@@ -1522,14 +1515,12 @@ int card_power_leak(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d7623
 int card_energy_flux(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00520013
 // FUNCTION: SHANDALAR 0x004d77f8
 int card_erosion(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00520ab6
@@ -1563,7 +1554,7 @@ int card_cursed_land(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "CURSED_LAND");
+      load_text("prompts.txt", "CURSED_LAND");
     }
     spell_fizzled = (unsigned int)(FUN_00551b60(player, 1 - player, card) == 0);
     if (spell_fizzled != 1)
@@ -1774,7 +1765,7 @@ int card_evil_presence(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "EVIL_PRESENCE");
+      load_text("prompts.txt", "EVIL_PRESENCE");
     }
     spell_fizzled = (unsigned int)(FUN_00551b60(player, 1 - player, card) == 0);
     if (spell_fizzled != 1)
@@ -2028,7 +2019,6 @@ int card_living_artifact(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d9bac
 int card_blight(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00522a4f
@@ -2064,7 +2054,7 @@ int card_psychic_venom(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "PSYCHIC_VENOM");
+      load_text("prompts.txt", "PSYCHIC_VENOM");
     }
     if (C_real_select_target(player,
                              2,
@@ -2296,14 +2286,12 @@ int card_lifetap(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004dac78
 int card_fortified_area(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005235d1
 // FUNCTION: SHANDALAR 0x004dadbe
 int card_sunken_city(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005237dc
@@ -2399,7 +2387,7 @@ int card_aspect_of_wolf(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "ASPECTOFWOLF");
+      load_text("prompts.txt", "ASPECTOFWOLF");
     }
     if (FUN_00551638(player, player, card) == 0)
     {
@@ -2615,7 +2603,6 @@ int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int 
 // FUNCTION: SHANDALAR 0x004dbe77
 int card_spirit_link(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00524db3
@@ -2651,7 +2638,7 @@ int card_creature_bond(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "CREATUREBOND");
+      load_text("prompts.txt", "CREATUREBOND");
     }
     spell_fizzled = (unsigned int)(FUN_00551638(player, 1 - player, card) == 0);
     if (spell_fizzled != 1)
@@ -2723,14 +2710,12 @@ int card_creature_bond(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004dcace
 int card_gaseous_form(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005258c6
 // FUNCTION: SHANDALAR 0x004dd0b4
 int card_backfire(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00526202
@@ -2775,7 +2760,7 @@ int card_holy_armor(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "HOLY_ARMOR");
+      load_text("prompts.txt", "HOLY_ARMOR");
     }
     if (FUN_00551638(player, player, card) == 0)
     {
@@ -2986,7 +2971,7 @@ int card_blessing(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "BLESSING");
+      load_text("prompts.txt", "BLESSING");
     }
     if (FUN_00551638(player, player, card) == 0)
     {
@@ -3205,7 +3190,7 @@ int card_firebreathing(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "FIREBREATHING");
+      load_text("prompts.txt", "FIREBREATHING");
     }
     if (FUN_00551638(player, player, card) == 0)
     {
@@ -3452,7 +3437,7 @@ int card_fear(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "FEAR");
+      load_text("prompts.txt", "FEAR");
     }
     spell_fizzled = !FUN_00551638(player, player, card);
   }
@@ -3498,7 +3483,6 @@ int card_fear(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e07ad
 int card_seeker(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005293ba
@@ -3534,7 +3518,7 @@ int card_web(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "WEB");
+      load_text("prompts.txt", "WEB");
     }
     if (FUN_00551638(player, player, card) == 0)
     {
@@ -3722,7 +3706,6 @@ int card_stasis(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e17ca
 int card_magnetic_mountain(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052a3fd
@@ -4037,7 +4020,7 @@ int card_burrowing(int player, int card, event_t event)
 
   if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
   {
-    load_text((int)"prompts.txt", "BURROWING");
+    load_text("prompts.txt", "BURROWING");
   }
 
   result = FUN_0052d7a5(player, card, event, 1 << (get_hacked_color(player, card, 4) - 1U));
@@ -4083,7 +4066,7 @@ int card_wanderlust(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "WANDERLUST");
+      load_text("prompts.txt", "WANDERLUST");
     }
     if (FUN_00551638(player, 1 - player, card) == 0)
     {
@@ -4366,14 +4349,12 @@ int card_instill_energy(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e45de
 int card_flood(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052d1c1
 // FUNCTION: SHANDALAR 0x004e49ba
 int card_greed(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052d2d4
@@ -4530,7 +4511,7 @@ int card_holy_strength(int player, int card, event_t event)
 {
   if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
   {
-    load_text((int)"prompts.txt", "HOLY_STRENGTH");
+    load_text("prompts.txt", "HOLY_STRENGTH");
   }
 
   return FUN_0052dd74(player, card, event, 1, 2);
@@ -4540,21 +4521,18 @@ int card_holy_strength(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e534a
 int card_giant_strength(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052dbbc
 // FUNCTION: SHANDALAR 0x004e53b9
 int card_immolation(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052dc2b
 // FUNCTION: SHANDALAR 0x004e5426
 int card_divine_transformation(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052dc98
@@ -4563,7 +4541,7 @@ int card_unholy_strength(int player, int card, event_t event)
 {
   if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
   {
-    load_text((int)"prompts.txt", "UNHOLY_STRENGTH");
+    load_text("prompts.txt", "UNHOLY_STRENGTH");
   }
   return FUN_0052dd74(player, card, event, 2, 1);
 }
@@ -4574,7 +4552,7 @@ int card_weakness(int player, int card, event_t event)
 {
   if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
   {
-    load_text((int)"prompts.txt", "WEAKNESS");
+    load_text("prompts.txt", "WEAKNESS");
   }
   return FUN_0052dd74(player, card, event, -2, -1);
 }
@@ -4782,7 +4760,7 @@ int helper_ward(int player, int card, event_t event, int color)
     {
       if (unk_008a9000 != 1)
       {
-        load_text((int)"prompts.txt", "ANY_WARD");
+        load_text("prompts.txt", "ANY_WARD");
       }
 
       if (!FUN_00551638(player, player, card))
@@ -4895,7 +4873,6 @@ int helper_ward(int player, int card, event_t event, int color)
 // FUNCTION: SHANDALAR 0x004e6541
 int card_unstable_mutation(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x0052f80a
@@ -5125,7 +5102,7 @@ int card_warp_artifact(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "WARP_ARTIFACT");
+      load_text("prompts.txt", "WARP_ARTIFACT");
     }
     if (C_real_select_target(player,
                              2,
@@ -5270,14 +5247,12 @@ int card_warp_artifact(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e80b1
 int card_power_struggle(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00530f1a
 // FUNCTION: SHANDALAR 0x004e8714
 int card_necropolis_of_azar(int player, int card, event_t event)
 {
-
 }
 // FUNCTION: MAGIC 0x0053152d
 // FUNCTION: SHANDALAR 0x004e8d27
@@ -5419,14 +5394,12 @@ int card_regeneration(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e9531
 int card_eternal_warrior(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005322d7
 // FUNCTION: SHANDALAR 0x004e9ad4
 int card_the_brute(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x00532ad7
@@ -5588,7 +5561,6 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
 // FUNCTION: SHANDALAR 0x004ea8c1
 int card_co_p_artifacts(int player, int card, event_t event)
 {
-
 }
 
 // FUNCTION: MAGIC 0x005335b5
@@ -5790,7 +5762,7 @@ int card_wild_growth(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "WILD_GROWTH");
+      load_text("prompts.txt", "WILD_GROWTH");
     }
     if (FUN_00551b60(player, player, card) == 0)
     {
@@ -5887,7 +5859,7 @@ int card_flight(int player, int card, event_t event)
   {
     if (unk_008a9000 != 1)
     {
-      load_text((int)"prompts.txt", "FLIGHT");
+      load_text("prompts.txt", "FLIGHT");
     }
     if (FUN_00551638(player, player, card))
     {
@@ -6344,4 +6316,3 @@ int FUN_00534ddb(int player, int mode)
 
   return s.best_card;
 }
-
