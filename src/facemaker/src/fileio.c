@@ -647,6 +647,8 @@ int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int p
   }
 }
 
+void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
+
 // FUNCTION: FACEMAKER 0x0040a110
 void LoadPcxIntoPage(int page_number, char *path)
 {

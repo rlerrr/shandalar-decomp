@@ -1,3 +1,4 @@
+#include "defs.h"
 #include <windows.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,14 +16,15 @@ DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_
 int ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void CopyBytesAsmCompat(double *dst, double *src, unsigned int size);
 
+// GLOBAL: SHANDALAR 0x00581804
 // GLOBAL: FACEMAKER 0x0040d084
 int g_key_input_queue_count = 0;
 
 typedef struct
 {
-  uint8_t present; // nonzero => this mapping exists
-  uint8_t unk;     // maybe flags, maybe pad
-  uint16_t ch;     // resulting character / code
+  int8_t present; // nonzero => this mapping exists
+  uint8_t unk;    // maybe flags, maybe pad
+  uint16_t ch;    // resulting character / code
 } keymap_variant_t;
 
 typedef struct
@@ -31,6 +33,7 @@ typedef struct
   keymap_variant_t states[4];
 } keymap_entry_t;
 
+// GLOBAL: SHANDALAR 0x00581270
 // GLOBAL: FACEMAKER 0x0040caf0
 keymap_entry_t g_virtual_key_char_map[89] = {
 #include "virtual_key_char_map_init.inc"
@@ -51,9 +54,11 @@ int g_scanline_palette_needs_refresh = 1;
 // GLOBAL: FACEMAKER 0x0040d168
 char s_GetLine_not_implemented_for_page_0040d168[] = "GetLine not implemented for page 0\n";
 
+// GLOBAL: SHANDALAR 0x005a7520
 // GLOBAL: FACEMAKER 0x004128a0
 unsigned int g_key_input_queue[50];
 
+// GLOBAL: SHANDALAR 0x005a75e8
 // GLOBAL: FACEMAKER 0x00412968
 int g_keyboard_init_done;
 
@@ -129,94 +134,81 @@ unsigned char *g_palette_rgb_bytes = g_palette_data_words.entry_data;
 // GLOBAL: FACEMAKER 0x0041afb8
 HPALETTE g_realized_palette_handle;
 
-#pragma optimize("gy", on)
-
-// Not intrinsic in shandalar interestingly
+// Not optimized in shandalar interestingly
 #ifdef FACEMAKER
 #pragma intrinsic(memcpy)
+#pragma optimize("gy", on)
 #endif
 
 // FUNCTION: SHANDALAR 0x0041cf20
 // FUNCTION: FACEMAKER 0x004063f0
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
 {
-  (void)wparam;
+  int virtual_key;
+  int modifier_mode = 0;
+  if (g_keyboard_init_done == 0)
   {
-    int virtual_key;
-    int modifier_mode;
-
-    modifier_mode = 0;
-    if (g_keyboard_init_done == 0)
+    while (GetAsyncKeyState(VK_MENU) != 0)
     {
-      while (GetAsyncKeyState(VK_MENU) != 0)
-      {
-      }
-      while (GetAsyncKeyState(VK_CONTROL) != 0)
-      {
-      }
-      g_keyboard_init_done = 1;
     }
-
-    if (g_key_input_queue_count == 50)
+    while (GetAsyncKeyState(VK_CONTROL) != 0)
     {
-      MessageBeep(-1);
-      return;
     }
+    g_keyboard_init_done = 1;
+  }
 
-    virtual_key = (int)(((unsigned int)lparam & 0xff0000) >> 0x10);
-    if (GetAsyncKeyState(VK_MENU))
-    {
-      modifier_mode = 3;
-    }
-    else if (GetAsyncKeyState(VK_CONTROL))
-    {
-      modifier_mode = 2;
-    }
-    else
-    {
-      if (isalpha(g_virtual_key_char_map[virtual_key].states[0].ch & 0xff))
-      {
-        modifier_mode = (GetAsyncKeyState(VK_CAPITAL) != 0);
-        modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
-      }
-      else if ((virtual_key < 'O') || ('S' < virtual_key))
-      {
-        if (GetAsyncKeyState(VK_SHIFT))
-        {
-          modifier_mode = 1;
-        }
-      }
-      else
-      {
-        modifier_mode = (GetAsyncKeyState(VK_NUMLOCK) != 0);
-        modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
-      }
-    }
+  if (g_key_input_queue_count == 49)
+  {
+    MessageBeep(-1);
+    return;
+  }
 
-    if (g_virtual_key_char_map[virtual_key].states[modifier_mode].present)
+  virtual_key = (int)(((unsigned int)lparam & 0xff0000) >> 0x10);
+  if (GetAsyncKeyState(VK_MENU))
+  {
+    modifier_mode = 3;
+  }
+  else if (GetAsyncKeyState(VK_CONTROL))
+  {
+    modifier_mode = 2;
+  }
+  else
+  {
+    if (isalpha(g_virtual_key_char_map[virtual_key].states[0].ch & 0xff))
     {
-      unsigned short translated_char = g_virtual_key_char_map[virtual_key].states[modifier_mode].ch;
-      int repeat_count = lparam & 0xffff;
-      if (repeat_count >= (50 - g_key_input_queue_count))
-      {
-        repeat_count = (50 - g_key_input_queue_count);
-      }
+      modifier_mode = (GetAsyncKeyState(VK_CAPITAL) != 0) ^ (GetAsyncKeyState(VK_SHIFT) != 0);
+    }
+    else if ((virtual_key >= 'G') && (virtual_key <= 'S'))
+    {
+      modifier_mode = (GetAsyncKeyState(VK_NUMLOCK) != 0) ^ (GetAsyncKeyState(VK_SHIFT) != 0);
+    }
+    else if (GetAsyncKeyState(VK_SHIFT))
+    {
+      modifier_mode = 1;
+    }
+  }
 
-      if (repeat_count != 0)
-      {
-        unsigned int *dst_char = g_key_input_queue + g_key_input_queue_count;
-        do
-        {
-          repeat_count = repeat_count - 1;
-          *dst_char = (unsigned int)translated_char;
-          dst_char = dst_char + 1;
-          g_key_input_queue_count = g_key_input_queue_count + 1;
-        } while (repeat_count != 0);
-      }
+  if (g_virtual_key_char_map[virtual_key].states[modifier_mode].present)
+  {
+    virtual_key = g_virtual_key_char_map[virtual_key].states[modifier_mode].ch;
+  }
+  else
+  {
+    return;
+  }
+
+  {
+    int repeat_count = lparam & 0xffff;
+    repeat_count = MIN(50 - g_key_input_queue_count, repeat_count);
+
+    while (repeat_count--)
+    {
+      g_key_input_queue[g_key_input_queue_count++] = virtual_key;
     }
   }
 }
 
+// FUNCTION: SHANDALAR 0x0041d169
 // FUNCTION: FACEMAKER 0x00406590
 int HasQueuedKeyInput(void)
 {
@@ -228,8 +220,6 @@ int HasQueuedKeyInput(void)
 int PopQueuedKeyInput(void)
 {
   int queued_key;
-  int queued_key_count;
-
   if (g_key_input_queue_count == 0)
   {
     return 0;
@@ -239,11 +229,12 @@ int PopQueuedKeyInput(void)
   g_key_input_queue_count = g_key_input_queue_count - 1;
   if (g_key_input_queue_count != 0)
   {
-    queued_key_count = g_key_input_queue_count;
-    memcpy(g_key_input_queue, g_key_input_queue + 1, queued_key_count * 4);
+    memcpy(g_key_input_queue, g_key_input_queue + 1, g_key_input_queue_count * 4);
   }
   return queued_key;
 }
+
+#pragma optimize("gy", on)
 
 // FUNCTION: SHANDALAR 0x00578c90
 // FUNCTION: FACEMAKER 0x004065f0

@@ -84,6 +84,7 @@ char *gPcxPath;
 // GLOBAL: DECKDLL 0x10112960
 byte gPcxScanlineBuffer[0x1000];
 
+// GLOBAL: SHANDALAR 0x0097F9A0
 // GLOBAL: DRAWCARDLIB 0x10127d40
 // GLOBAL: DECKDLL 0x10113970
 // GLOBAL: FACEMAKER 0x0041f570
@@ -171,7 +172,7 @@ bool PcxReadHeaderAndPaletteFromPath(char *path, void *paletteOut)
   return 1;
 }
 
-#ifdef FACEMAKER
+#if defined(FACEMAKER) || defined(SHANDALAR)
 // For some reason these are actually optimized in facemaker?
 #pragma optimize("gy", on)
 #endif
@@ -218,10 +219,8 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
   return 1;
 }
 
-#ifdef FACEMAKER
-#pragma optimize("", on)
-#endif
-
+// FUNCTION: FACEMAKER 0x0040ac00
+// FUNCTION: SHANDALAR 0x0057da00
 // FUNCTION: DRAWCARDLIB 0x100044d0
 // FUNCTION: DECKDLL 0x10016708
 undefined4 PcxReadScanlineRle(char *dstScanline)
@@ -271,6 +270,8 @@ undefined4 PcxReadScanlineRle(char *dstScanline)
   }
   return 1;
 }
+
+#pragma optimize("", on)
 
 // FUNCTION: DRAWCARDLIB 0x100045ac
 // FUNCTION: DECKDLL 0x100167e6
