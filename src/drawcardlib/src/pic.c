@@ -500,7 +500,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
   mask = (unsigned char)mask_value;
   white_triplet = (mask_value << 0x10) | (mask_value << 8) | mask_value;
 
-  if (*(short *)"M1" == palette_packet->signature)
+  if (*(short *)"M0" == palette_packet->signature)
   {
     if (first_index <= last_index)
     {
@@ -536,7 +536,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
       }
     }
   }
-  else if (*(short *)"M0" == palette_packet->signature)
+  else if (*(short *)"M1" == palette_packet->signature)
   {
     if (first_index <= last_index)
     {
