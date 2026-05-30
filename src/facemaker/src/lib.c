@@ -76,11 +76,14 @@ char *g_copy_scratch_buffer_ptr = g_copy_scratch_buffer;
 // GLOBAL: FACEMAKER 0x004189b4
 int g_graphics_initialized;
 
+// GLOBAL: FACEMAKER 0x00420df0
+RpBitsPalettePacket g_palette_transition_source_words;
+
 // GLOBAL: FACEMAKER 0x00425e10
 HPALETTE g_palette_handle;
 
 // GLOBAL: FACEMAKER 0x00425e20
-unsigned int g_palette_data_words[0xc8];
+RpBitsPalettePacket g_palette_data_words;
 
 // GLOBAL: FACEMAKER 0x00426140
 PALETTEENTRY g_palette_entries[256];
@@ -103,9 +106,6 @@ RGBQUAD g_palette_rgb[256];
 // GLOBAL: FACEMAKER 0x00426980
 LOGPALETTE *g_palette_layout;
 
-// GLOBAL: FACEMAKER 0x00420df0
-unsigned int g_palette_transition_source_words[0xc8];
-
 // GLOBAL: FACEMAKER 0x00421110
 int g_palette_transition_work_words[0x400];
 
@@ -119,11 +119,7 @@ int g_palette_transition_value_step[0x2ff];
 int g_graphics_internal_state = 0;
 
 // GLOBAL: FACEMAKER 0x0040d2e4
-#if defined(FACEMAKER)
-unsigned char *g_palette_rgb_bytes = (unsigned char *)0x00425e26;
-#else
-unsigned char *g_palette_rgb_bytes = (unsigned char *)g_palette_data_words + 6;
-#endif
+unsigned char *g_palette_rgb_bytes = g_palette_data_words.entry_data;
 
 // GLOBAL: FACEMAKER 0x0041afb8
 HPALETTE g_realized_palette_handle;
@@ -1237,8 +1233,8 @@ int AnimatePaletteToColor(int gray, int steps)
     return 0;
   }
 
-  memcpy(g_palette_transition_source_words,
-         g_palette_data_words,
+  memcpy(&g_palette_transition_source_words,
+         &g_palette_data_words,
          0xC0 * sizeof(unsigned int));
 
   target_rgb.r = gray;
@@ -1246,7 +1242,7 @@ int AnimatePaletteToColor(int gray, int steps)
   target_rgb.b = gray;
   ConvertRgbToHsv(&target_rgb, &target_hsv);
 
-  RpBits_ApplyPalette(g_palette_data_words);
+  RpBits_ApplyPalette(&g_palette_data_words);
 
   for (i = 0; i < 0x100; ++i)
   {
@@ -1361,11 +1357,11 @@ int AnimatePaletteToColor(int gray, int steps)
         }
       }
 
-      RpBits_ApplyPalette(g_palette_data_words);
+      RpBits_ApplyPalette(&g_palette_data_words);
     }
   }
 
-  RpBits_ApplyPalette(g_palette_data_words);
+  RpBits_ApplyPalette(&g_palette_data_words);
   return ClearGraphicsPageWithPaletteColor(0, 0);
 }
 

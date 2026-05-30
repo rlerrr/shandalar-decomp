@@ -19,7 +19,17 @@ typedef struct DIBSurface
   int rowPadding;          // 0x2C
 } DIBSurface;
 
+typedef struct RpBitsPalettePacket
+{
+  unsigned short signature;
+  unsigned short block_size;
+  unsigned char first_index;
+  unsigned char last_index;
+  unsigned char entry_data[0x320 - 6];
+} RpBitsPalettePacket;
+
 HBITMAP load_pic(char *filename);
 BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel);
+void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data);
 
 #endif

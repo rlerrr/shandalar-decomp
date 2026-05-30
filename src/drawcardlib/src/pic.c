@@ -16,26 +16,17 @@ int OpenPcxFile(char *param_1, int param_2);
 void ClosePcxFile(int param_1);
 void RpBits_Setup(int fileDescriptor);
 int RpBitsRefill(void);
-void RpBits_ApplyPalette(short *palette_data_words);
 
 #if defined(FACEMAKER) || defined(SHANDALAR)
 extern int g_graphics_bpp;
 extern HPALETTE g_palette_handle;
+extern RpBitsPalettePacket g_palette_data_words;
 extern PALETTEENTRY g_palette_entries[256];
 extern RGBQUAD g_palette_rgb[256];
 extern DIBSurface *g_graphics_pages[10];
 extern int g_graphics_height;
 extern int g_scanline_palette_needs_refresh;
 #endif
-
-typedef struct RpBitsPalettePacket
-{
-  unsigned short signature;
-  unsigned short block_size;
-  unsigned char first_index;
-  unsigned char last_index;
-  unsigned char entry_data[1];
-} RpBitsPalettePacket;
 
 #ifndef DRAWCARDLIB
 // For some reason these are actually optimized in deckdll?
@@ -470,11 +461,11 @@ int RpBitsRefill(void)
 #pragma optimize("gty", on)
 #endif
 
-void RpBits_ApplyPalette(short *palette_data_words)
+void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data)
 {
 #if defined(FACEMAKER) || defined(SHANDALAR)
   RpBitsPalettePacket *palette_packet;
-  int packet_size_bytes = (int)(short)(palette_data_words[1] + 2);
+  int packet_size_bytes = (int)(short)(palette_data->block_size + 2);
   unsigned int first_index;
   unsigned int last_index;
   unsigned int palette_index;
@@ -490,8 +481,10 @@ void RpBits_ApplyPalette(short *palette_data_words)
   // GLOBAL: FACEMAKER 0x004179a0
   // GLOBAL: SHANDALAR 0x00738800
   static HWND palette_window;
+  static unsigned short signature_m0 = (unsigned short)('M' | ('0' << 8));
+  static unsigned short signature_m1 = (unsigned short)('M' | ('1' << 8));
 
-  memcpy((void *)palette_packet_words, (const void *)palette_data_words, packet_size_bytes);
+  memcpy((void *)palette_packet_words, (const void *)palette_data, packet_size_bytes);
   palette_packet = (RpBitsPalettePacket *)palette_packet_words;
 
   first_index = (unsigned int)palette_packet->first_index;
@@ -500,7 +493,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
   mask = (unsigned char)mask_value;
   white_triplet = (mask_value << 0x10) | (mask_value << 8) | mask_value;
 
-  if (*(short *)"M0" == palette_packet->signature)
+  if (palette_packet->signature == signature_m0)
   {
     if (first_index <= last_index)
     {
@@ -536,7 +529,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
       }
     }
   }
-  else if (*(short *)"M1" == palette_packet->signature)
+  else if (palette_packet->signature == signature_m1)
   {
     if (first_index <= last_index)
     {
@@ -613,7 +606,7 @@ void RpBits_ApplyPalette(short *palette_data_words)
   }
   g_scanline_palette_needs_refresh = 1;
 #else
-  (void)palette_data_words;
+  (void)palette_data;
 #endif
 }
 #if defined(FACEMAKER) || defined(SHANDALAR)

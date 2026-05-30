@@ -138,12 +138,11 @@ extern ATOM RegisterPaletteClass(HINSTANCE hInstance);
 extern HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd);
 extern int AnimatePaletteToColor(int enabled, int mode);
 extern int ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
-extern void RpBits_ApplyPalette(short *palette_data_words);
 extern void CopyBytesAsmCompat(double *dst, double *src, unsigned int size);
 extern int g_frontbuffer_direct_blit_enabled;
 extern int g_graphics_bpp;
 extern RGBQUAD g_palette_rgb[256];
-extern unsigned int g_palette_data_words[0xc8];
+extern RpBitsPalettePacket g_palette_data_words;
 extern unsigned int g_palette_transition_source_words[0xc8];
 extern int g_palette_transition_work_words[0x400];
 extern int g_palette_transition_hsv[0x301];
@@ -1933,12 +1932,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     return 0;
   }
 
-#ifdef MODERN_FIXES
-  GetCurrentDirectoryA(0x100, g_original_working_dir);
-#else
   // lmfao it's a miracle this doesn't crash (nBufferLength == 0 so the write to address 0x100 is elided)
   GetCurrentDirectoryA(g_original_working_dir[0], 0x100);
-#endif
 
   strcpy(module_path, (*__p___argv())[0]);
   slash = strrchr(module_path, '\\');

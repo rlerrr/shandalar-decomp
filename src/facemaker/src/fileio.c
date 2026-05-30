@@ -14,7 +14,6 @@ extern unsigned char gPcxScanlineBuffer[0x1000];
 extern void RpBits_Setup(int fileDescriptor);
 extern void RpBits_ReadTables(unsigned short *param_3);
 extern void RpBits_DecodeImage(void *dst, int count);
-extern void RpBits_ApplyPalette(short *palette_data_words);
 extern char g_file_read_mode[];
 extern PALETTEENTRY g_palette_entries[256];
 extern DIBSurface *g_graphics_pages[10];
@@ -674,7 +673,7 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   char *ext;
   int file_handle;
   int line;
-  unsigned short *palette;
+  RpBitsPalettePacket *palette;
   unsigned short local_palette[0x200];
 
   ext = strchr(path, '.');
@@ -707,24 +706,23 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   assert((unsigned int)(gPcxInFile != (FILE *)0), s_D__NewMagic__sources__sidlib__Fileio_c_0040d29c, 0xf7,
          s_Error_Opening_File__s_0040d2c0, path);
   gPcxPath = path;
-  palette = (unsigned short *)opaque;
-  if (palette == (unsigned short *)1)
+  palette = (RpBitsPalettePacket *)opaque;
+  if (palette == (RpBitsPalettePacket *)1)
   {
-    palette = local_palette;
+    palette = (RpBitsPalettePacket *)local_palette;
   }
-  if (palette == (unsigned short *)0)
+  if (palette == (RpBitsPalettePacket *)0)
   {
     PcxReadHeaderAndPalette((void *)0);
   }
   else
   {
-    PcxReadHeaderAndPalette(palette + 3);
-    *(char *)palette = 'M';
-    *((char *)palette + 1) = '1';
-    *(unsigned short *)((char *)palette + 2) = 0x300;
-    *((char *)palette + 4) = '\0';
-    *((char *)palette + 5) = '\xff';
-    RpBits_ApplyPalette((short *)palette);
+    PcxReadHeaderAndPalette((unsigned short *)palette->entry_data);
+    palette->signature = (unsigned short)('M' | ('1' << 8));
+    palette->block_size = 0x300;
+    palette->first_index = '\0';
+    palette->last_index = 0xFF;
+    RpBits_ApplyPalette(palette);
   }
 
   if (page_number < 0)
