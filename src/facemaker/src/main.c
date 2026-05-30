@@ -185,16 +185,20 @@ int g_ui_tick_count = 0;
 int g_legacy_video_state = 0;
 
 // GLOBAL: FACEMAKER 0x0040c190
-int g_face_slot_arrow_x_table_base = 0x18b;
-
-// GLOBAL: FACEMAKER 0x0040c194
-int g_face_slot_arrow_y_table_base = 0xd9;
+int g_face_slot_arrow_xy[6][2] = {
+    {0x18b, 0xd9},
+    {0x22a, 0xd9},
+    {0x4d, 0x1b8},
+    {0xec, 0x1b8},
+    {0x18b, 0x1b8},
+    {0x22a, 0x1b8}};
 
 // GLOBAL: FACEMAKER 0x0040c1c0
-int g_face_variant_arrow_x_table_base = 0xdd;
-
-// GLOBAL: FACEMAKER 0x0040c1c4
-int g_face_variant_arrow_y_table_base = 0x8a;
+int g_face_variant_arrow_xy[4][2] = {
+    {221, 138},
+    {270, 138},
+    {213, 188},
+    {278, 188}};
 
 // GLOBAL: FACEMAKER 0x0040c1e0
 int g_face_set_total = 1000;
@@ -1294,10 +1298,8 @@ DWORD __cdecl FaceMakerWorkerThread(LPVOID unused)
   for (local.button_index = 0; local.button_index < 6; local.button_index++)
   {
     DrawEncodedImageAutoScale(g_face_work_bounds,
-                              *(int *)((char *)&g_face_slot_arrow_x_table_base +
-                                       local.button_index * 8),
-                              *(int *)((char *)&g_face_slot_arrow_y_table_base +
-                                       local.button_index * 8),
+                              g_face_slot_arrow_xy[local.button_index][0],
+                              g_face_slot_arrow_xy[local.button_index][1],
                               g_face_scroll_arrow_sprite);
   }
 
@@ -1305,9 +1307,8 @@ DWORD __cdecl FaceMakerWorkerThread(LPVOID unused)
   {
     DrawEncodedImageAutoScale(
         g_face_work_bounds,
-        *(int *)((char *)&g_face_variant_arrow_x_table_base +
-                 local.button_index * 8),
-        ((int *)&g_face_variant_arrow_y_table_base)[local.button_index * 2],
+        g_face_variant_arrow_xy[local.button_index][0],
+        g_face_variant_arrow_xy[local.button_index][1],
         g_face_scroll_arrow_sprite);
   }
 

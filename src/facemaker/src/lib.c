@@ -7,6 +7,9 @@
 #include "facemaker_types.h"
 
 extern HDC global_main_hdc;
+extern int global_screen_width;
+extern int global_screen_height;
+
 DIBSurface *InitializeGraphicsSystemDefaultMode(void);
 DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 int ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
@@ -29,7 +32,9 @@ typedef struct
 } keymap_entry_t;
 
 // GLOBAL: FACEMAKER 0x0040caf0
-keymap_entry_t g_virtual_key_char_map[89];
+keymap_entry_t g_virtual_key_char_map[89] = {
+#include "virtual_key_char_map_init.inc"
+};
 
 // GLOBAL: FACEMAKER 0x0040d0ec
 char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[] = "D:\\NewMagic\\sources\\sidlib\\lib.c";
@@ -169,7 +174,7 @@ void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
     }
     else
     {
-      if (isalpha(g_virtual_key_char_map[virtual_key].states[0].ch))
+      if (isalpha(g_virtual_key_char_map[virtual_key].states[0].ch & 0xff))
       {
         modifier_mode = (GetAsyncKeyState(VK_CAPITAL) != 0);
         modifier_mode ^= (GetAsyncKeyState(VK_SHIFT) != 0);
@@ -188,7 +193,6 @@ void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam)
       }
     }
 
-    // table_offset = (int)(modifier_mode + virtual_key * 4) * 4;
     if (g_virtual_key_char_map[virtual_key].states[modifier_mode].present)
     {
       unsigned short translated_char = g_virtual_key_char_map[virtual_key].states[modifier_mode].ch;
@@ -298,14 +302,22 @@ DIBSurface *InitializeGraphicsSystemDefaultMode(void)
   }
 
   surface = (DIBSurface *)malloc(0x30);
-  width = GetDeviceCaps(global_main_hdc, 8);
+#ifdef MODERN_FIXES
+  width = global_screen_width;
+#else
+  width = GetDeviceCaps(global_main_hdc, HORZRES);
+#endif
   g_graphics_width = width;
   surface->width = width;
-  height = GetDeviceCaps(global_main_hdc, 10);
+#ifdef MODERN_FIXES
+  height = global_screen_height;
+#else
+  height = GetDeviceCaps(global_main_hdc, VERTRES);
+#endif
   g_graphics_height = height;
   surface->height = height;
   bits_per_pixel_ptr = &bits_per_pixel_stack;
-  *bits_per_pixel_ptr = GetDeviceCaps(global_main_hdc, 12);
+  *bits_per_pixel_ptr = GetDeviceCaps(global_main_hdc, BITSPIXEL);
   g_graphics_bpp = *bits_per_pixel_ptr;
   surface->bitsPerPixel = *bits_per_pixel_ptr;
   g_graphics_internal_state = 0;

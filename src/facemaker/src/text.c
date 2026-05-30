@@ -366,7 +366,7 @@ void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedI
     }
 
     page = g_graphics_pages[page_number];
-    y = y + (int)encoded_image->top_clip;
+    y = y + (int)encoded_image->first_row;
     sprite_row_count = (int)encoded_image->row_count;
     span_data_ptr = (int)encoded_image->spans;
     row_stride = page->rowPadding + page->width;
@@ -570,7 +570,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
         g_resample_clip_right = width;
     }
 
-    top_clip = (int)encoded_image->top_clip;
+    top_clip = (int)encoded_image->first_row;
     g_resample_accum_y = 0;
     if (0 < top_clip)
     {
