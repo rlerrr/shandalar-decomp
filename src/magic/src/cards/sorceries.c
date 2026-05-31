@@ -12,8 +12,8 @@ int card_call_from_the_grave(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044710d
 int card_time_walk(int player, int card, event_t event)
 {
-  int current_player;
   int current_card;
+  int current_player;
   int effect_card;
   int effect_found;
 
@@ -32,11 +32,11 @@ int card_time_walk(int player, int card, event_t event)
     if (unk_0092664c[7] == -1)
     {
       effect_found = 0;
-      for (current_player = 0; current_player < 2 && !effect_found; ++current_player)
+      for (effect_card = 0; effect_card < 2 && !effect_found; ++effect_card)
       {
-        for (current_card = 0; current_card < active_cards_count[current_player]; ++current_card)
+        for (current_card = 0; current_card < active_cards_count[effect_card]; ++current_card)
         {
-          if (PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id == unk_008b49c4 && (PLAYER_CARD_INSTANCE(current_player, current_card).token_status & 0x100) != 0)
+          if (PLAYER_CARD_INSTANCE(effect_card, current_card).internal_card_id == unk_008b49c4 && (PLAYER_CARD_INSTANCE(effect_card, current_card).token_status & 0x100) != 0)
           {
             effect_found = 1;
           }
@@ -48,11 +48,8 @@ int card_time_walk(int player, int card, event_t event)
       }
     }
 
-    effect_card = create_legacy_effect(player, card, unk_008b49c4, -1, -1);
-    if (effect_card != -1)
-    {
-      PLAYER_CARD_INSTANCE(player, effect_card).token_status |= 0x120;
-    }
+    current_player = create_legacy_effect(player, card, unk_008b49c4, -1, -1);
+    PLAYER_CARD_INSTANCE(player, current_player).token_status |= 0x120;
     kill_card(player, card, KILL_BURY);
   }
 
