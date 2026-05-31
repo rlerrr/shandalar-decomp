@@ -10,6 +10,30 @@
 
 void AddCardToCLPacket(unsigned short card_in_packet);
 int GetCardFromCLPacket(int packet_index);
+void append_to_trace_txt(char *text);
+void FUN_00500b2c(int expected_packet_number, int actual_packet_number);
+
+// GLOBAL: MAGIC 0x0057cba8
+char packet_names_0057cba8[20][20] = {
+    "NULL",          "COINTOSS",        "ANTE",       "HAND",          "LIBRARY",
+    "PLAYORDRAW",    "MULLIGAN",        "DUELPARAMETERS", "GUESTRESPONSE", "STARTDUEL",
+    "DUELRESULTS",   "SAVEDGAME",       "PICKACARD",  "NEWFULLCARD",   "QUESTION",
+    "QUESTIONMANA",  "GRABMANA",        "XPOOL",      "CHEATCARD",     "PHASESTOPPER"};
+
+// GLOBAL: MAGIC 0x0057d440
+char gs_player_receiving_packet_0057d440[] = "Player %d is receiving a %s packet. This is packet number %d.\n\n";
+
+// GLOBAL: MAGIC 0x0057d480
+char gs_packet_error_0057d480[] = "Packet Error";
+
+// GLOBAL: MAGIC 0x0057d490
+char gs_memory_allocation_error_in_ReadCLPacket_0057d490[] = "Memory allocation error in ReadCLPacket!";
+
+// GLOBAL: MAGIC 0x0057d4bc
+char gs_packet_error_0057d4bc[] = "Packet Error";
+
+// GLOBAL: MAGIC 0x0057d4cc
+char gs_memory_allocation_error_in_AddCardToCLPacket_0057d4cc[] = "Memory allocation error in AddCardToCLPacket!";
 
 // FUNCTION: MAGIC 0x0049e8bb
 int FUN_0049e8bb(int player,
@@ -230,34 +254,56 @@ int FUN_00501143(int player, char packet_type)
 // FUNCTION: MAGIC 0x00501c19
 int FUN_00501c19(int player, int packet_type, unsigned char *packet)
 {
-  int index;
-  short *read_ptr;
-  short *write_ptr;
+  struct
+  {
+    char trace[0x64];
+    int index;
+    short *write_ptr;
+    unsigned char *read_ptr;
+  } locals;
 
-  (void)player;
-  (void)packet_type;
+  locals.read_ptr = packet;
 
   unk_0091ca90 = *packet;
-  unk_0091ca92 = *(short *)(packet + 2);
-  read_ptr = (short *)(packet + 4);
-  unk_0091ca94 = *read_ptr;
-  ++read_ptr;
-  if (unk_0091ca94 >= 0x1f5)
+
+  locals.read_ptr += 2;
+  unk_0091ca92 = *(short *)locals.read_ptr;
+  locals.read_ptr += 2;
+
+  if ((int)unk_0091ca92 != unk_007a7d6c)
+  {
+    FUN_00500b2c(unk_007a7d6c, unk_0091ca92);
+  }
+  else
+  {
+    sprintf(locals.trace, gs_player_receiving_packet_0057d440, player, packet_names_0057cba8[packet_type], unk_007a7d6c);
+    append_to_trace_txt(locals.trace);
+  }
+
+  ++unk_007a7d6c;
+
+  unk_0091ca94 = *(short *)locals.read_ptr;
+  locals.read_ptr += 2;
+  if ((int)unk_0091ca94 > 0x1f4)
   {
     return 0;
   }
 
-  if (0x10 < unk_0091ca94)
+  if ((int)unk_0091ca94 > 0x10)
   {
-    unk_0091ca98 = realloc(unk_0091ca98, unk_0091ca94 * 2);
+    unk_0091ca98 = (short *)realloc(unk_0091ca98, (int)unk_0091ca94 * 2);
+    if (unk_0091ca98 == NULL)
+    {
+      MessageBoxA((HWND)0, gs_memory_allocation_error_in_ReadCLPacket_0057d490, gs_packet_error_0057d480, 0x10);
+    }
   }
 
-  write_ptr = unk_0091ca98;
-  for (index = 0; index < unk_0091ca94; ++index)
+  locals.write_ptr = unk_0091ca98;
+  for (locals.index = 0; locals.index < (int)unk_0091ca94; ++locals.index)
   {
-    *write_ptr = *read_ptr;
-    ++read_ptr;
-    ++write_ptr;
+    *locals.write_ptr = *(short *)locals.read_ptr;
+    locals.read_ptr += 2;
+    ++locals.write_ptr;
   }
 
   return 1;

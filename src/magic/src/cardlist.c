@@ -48,30 +48,27 @@ extern HPALETTE global_cart_art_hpalette;
 // FUNCTION: MAGIC 0x0049fd0c
 void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
 {
-  if (brush1 != NULL)
-  {
-    *brush1 = 2;
-  }
-  if (pen1 != NULL)
-  {
-    *pen1 = 6;
-  }
-  if (pen2 != NULL)
-  {
-    *pen2 = 6;
-  }
-  if (pen3 != NULL)
-  {
-    *pen3 = 7;
-  }
-  if (brush2 != NULL)
-  {
-    *brush2 = 2;
-  }
-  if (text_color != NULL)
-  {
-    *text_color = 0x1000090;
-  }
+  *brush1 = (int)CreateSolidBrush(0x10000c7);
+  *pen1 = (int)CreatePen(0, 0, 0x1000086);
+  *pen2 = (int)CreatePen(0, 0, 0x100001d);
+  *pen3 = (int)CreatePen(0, 0, 0x10000c9);
+  *brush2 = (int)CreateSolidBrush(0x100000f);
+  *text_color = 0x1000090;
+
+  if (*brush1 == 0)
+    *brush1 = (int)GetStockObject(2);
+
+  if (*pen1 == 0)
+    *pen1 = (int)GetStockObject(6);
+
+  if (*pen2 == 0)
+    *pen2 = (int)GetStockObject(6);
+
+  if (*pen3 == 0)
+    *pen3 = (int)GetStockObject(7);
+
+  if (*brush2 == 0)
+    *brush2 = (int)GetStockObject(2);
 }
 
 // FUNCTION: MAGIC 0x0049fdf9
