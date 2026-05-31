@@ -633,10 +633,15 @@ int ClearGraphicsPageWithPaletteColor(int page_number, int color_index)
   HBRUSH brush;
   RECT rect;
   LOGBRUSH brush_desc;
+  COLORREF color;
 
   brush_desc.lbStyle = 0;
   page = g_graphics_pages[page_number];
-  brush_desc.lbColor = PALETTERGB(g_palette_entries[color_index].peRed, g_palette_entries[color_index].peGreen, g_palette_entries[color_index].peBlue << 0x10);
+  color = (COLORREF)((unsigned int)g_palette_entries[color_index].peRed |
+                     ((unsigned int)g_palette_entries[color_index].peGreen << 8) |
+                     ((unsigned int)g_palette_entries[color_index].peBlue << 16));
+  brush_desc.lbColor = color;
+  brush_desc.lbHatch = 0;
   brush = CreateBrushIndirect(&brush_desc);
   rect.top = 0;
   rect.left = 0;
