@@ -2,12 +2,19 @@
 #include <string.h>
 #include <windows.h>
 #include "cardartlib/src/palette.h"
+#include "drawcardlib/Drawcardlib.h"
 #include "game_support.h"
 
 typedef ptrdiff_t INT_PTR;
 
 // GLOBAL: MAGIC 0x00572920
 char s_ShowListCard_00572920[16] = "ShowListCard";
+// GLOBAL: MAGIC 0x0055e0c0
+int unk_0055e0c0;
+// GLOBAL: MAGIC 0x0055e0c4
+int unk_0055e0c4;
+// GLOBAL: MAGIC 0x0055e0c8
+int unk_0055e0c8;
 // GLOBAL: MAGIC 0x0055e0cc
 int unk_0055e0cc;
 // GLOBAL: MAGIC 0x00572930
@@ -44,6 +51,12 @@ int DAT_00638c6c;
 int DAT_00638c84;
 
 extern HPALETTE global_cart_art_hpalette;
+extern card_ptr_t global_raw_cards_storage[2000];
+extern CRITICAL_SECTION DAT_009266b0;
+extern HDC DAT_00789310;
+extern int DAT_00896714;
+extern int DAT_0091c998;
+void FUN_0055b9f0(int dc, int *rect, int value);
 
 // FUNCTION: MAGIC 0x0049fd0c
 void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
@@ -460,55 +473,118 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
 // FUNCTION: MAGIC 0x0049fe68
 LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wparam_window, LPARAM lparam_data)
 {
-  (void)card_window;
-  (void)wparam_window;
-  (void)lparam_data;
+  struct
+  {
+    HDC paint_dc;         // ebp-0x60
+    PAINTSTRUCT ps;       // ebp-0x5c
+    RECT client_rect;     // ebp-0x1c
+    LONG show_count_flag; // ebp-0x0c
+    LONG count;           // ebp-0x08
+    LONG csvid;           // ebp-0x04
+  } locals;
 
-  if (message < 0x10)
+  switch (message)
   {
-    if (message == 1)
+  case WM_PAINT:
+    locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+    locals.show_count_flag = GetWindowLongA(card_window, unk_0055e0c8);
+    locals.count = GetWindowLongA(card_window, unk_0055e0c4);
+
+    EnterCriticalSection(&DAT_009266b0);
+    GetClientRect(card_window, &locals.client_rect);
+    FillRect(DAT_00789310, &locals.client_rect, (HBRUSH)GetStockObject(4));
+    if (locals.csvid == unk_009266ac)
     {
-      return 0;
-    }
-  }
-  else if (message < 0x101)
-  {
-    if (message == 0x100)
-    {
-      return 0;
-    }
-    if (message == 0x87)
-    {
-      return 4;
-    }
-  }
-  else
-  {
-    if (message < 0x312)
-    {
-      if (message == 0x201)
-      {
-        return 0;
-      }
-      if (message > 0x30e)
-      {
-        return 0;
-      }
+      DrawCardBack(DAT_00789310, &locals.client_rect);
     }
     else
     {
-      if (message == 0x414)
+      DrawSmallCard(DAT_00789310, &locals.client_rect, global_raw_cards_storage + locals.csvid, 0, 0);
+    }
+
+    if (locals.show_count_flag != 0)
+    {
+      FUN_0055b9f0((int)DAT_00789310, (int *)&locals.client_rect, locals.count);
+    }
+
+    locals.paint_dc = BeginPaint(card_window, &locals.ps);
+    if (locals.paint_dc != 0)
+    {
+      ApplyCardArtPaletteToDc(locals.paint_dc);
+      BitBlt(locals.paint_dc,
+             0,
+             0,
+             locals.client_rect.right,
+             locals.client_rect.bottom,
+             DAT_00789310,
+             0,
+             0,
+             0xcc0020);
+      EndPaint(card_window, &locals.ps);
+    }
+    LeaveCriticalSection(&DAT_009266b0);
+    return 0;
+
+  case WM_CREATE:
+    locals.csvid = *(LONG *)lparam_data;
+    SetWindowLongA(card_window, unk_0055e0c0, locals.csvid);
+    locals.show_count_flag = 0;
+    locals.count = 0;
+    SetWindowLongA(card_window, unk_0055e0c8, locals.show_count_flag);
+    SetWindowLongA(card_window, unk_0055e0c4, locals.count);
+    return 0;
+
+  case WM_GETDLGCODE:
+    return 4;
+
+  case WM_KEYDOWN:
+    SendMessageA(GetParent(card_window), message, wparam_window, lparam_data);
+    return 0;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)card_window, message, (int)wparam_window, (int)lparam_data);
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDOWN:
+    if ((message == WM_MOUSEMOVE && DAT_0091c998 != 2) || (message == WM_RBUTTONDOWN && DAT_0091c998 == 2))
+    {
+      locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+      if ((int)DAT_00638c08 != (int)card_window)
       {
-        return 0;
-      }
-      if (message == 0x437)
-      {
-        return 0;
+        SendMessageA((HWND)DAT_00896714, 0x401, locals.csvid, 0);
+        DAT_00638c08 = (int)card_window;
       }
     }
-  }
+    return 0;
 
-  return 0;
+  case WM_LBUTTONDOWN:
+    SendMessageA(GetParent(card_window),
+                 WM_COMMAND,
+                 ((unsigned int)(unsigned short)GetDlgCtrlID(card_window)) | 0x10000,
+                 (LPARAM)card_window);
+    return 0;
+
+  case 0x414:
+    locals.show_count_flag = (LONG)wparam_window;
+    locals.count = (LONG)lparam_data;
+    SetWindowLongA(card_window, unk_0055e0c8, locals.show_count_flag);
+    SetWindowLongA(card_window, unk_0055e0c4, locals.count);
+    InvalidateRect(card_window, NULL, TRUE);
+    return 0;
+
+  case 0x437:
+    locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+    if (DAT_0091c998 != 2)
+    {
+      SendMessageA((HWND)DAT_00896714, 0x401, locals.csvid, 0);
+    }
+    return 0;
+
+  default:
+    return DefWindowProcA(card_window, message, wparam_window, lparam_data);
+  }
 }
 
 // FUNCTION: MAGIC 0x0049e6aa
