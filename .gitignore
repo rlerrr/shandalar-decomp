@@ -6,6 +6,7 @@
 *.lib
 *.ilk
 *.pyc
+*.txt
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
