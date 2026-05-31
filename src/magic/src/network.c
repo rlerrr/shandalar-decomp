@@ -8,7 +8,7 @@
 #include "manalinkinterface/manalinkinterface.h"
 #include "global_strings.h"
 
-void AddCardToCLPacket(unsigned short card_in_packet);
+void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);
 void append_to_trace_txt(char *text);
 void FUN_00500b2c(int expected_packet_number, int actual_packet_number);
@@ -160,15 +160,30 @@ int FUN_0049e8bb(int player,
 }
 
 // FUNCTION: MAGIC 0x00501e96
-void AddCardToCLPacket(unsigned short card_in_packet)
+void AddCardToCLPacket(int card_in_packet)
 {
-  if (unk_0091ca94 != 0 && unk_0091ca96 - 1 < ((int)unk_0091ca94 + (((int)unk_0091ca94 >> 0x1f) & 0xfU)) >> 4)
+  unsigned short *write_ptr;
+
+  if ((int)unk_0091ca94 != 0)
   {
-    ++unk_0091ca96;
-    unk_0091ca98 = realloc(unk_0091ca98, unk_0091ca96 * 0x20);
+    if ((int)(unk_0091ca96 - 1) < ((int)unk_0091ca94 / 0x10))
+    {
+      ++unk_0091ca96;
+
+      unk_0091ca98 = realloc(unk_0091ca98, ((int)unk_0091ca96 * 0x10) * 2);
+      if (unk_0091ca98 == NULL)
+      {
+        MessageBoxA((HWND)0,
+                    gs_memory_allocation_error_in_AddCardToCLPacket_0057d4cc,
+                    gs_packet_error_0057d4bc,
+                    0x10);
+      }
+    }
   }
 
-  *(unsigned short *)((char *)unk_0091ca98 + unk_0091ca94 * 2) = card_in_packet;
+  write_ptr = (unsigned short *)unk_0091ca98;
+  write_ptr = (unsigned short *)((char *)write_ptr + ((int)unk_0091ca94 * 2));
+  *write_ptr = (unsigned short)card_in_packet;
   ++unk_0091ca94;
 }
 
@@ -176,14 +191,21 @@ void AddCardToCLPacket(unsigned short card_in_packet)
 int GetCardFromCLPacket(int packet_index)
 {
   int packet_card;
+  short *read_ptr;
 
-  packet_card = (int)*(short *)((char *)unk_0091ca98 + packet_index * 2);
+  read_ptr = (short *)unk_0091ca98;
+  read_ptr = (short *)((char *)read_ptr + packet_index * 2);
+  packet_card = (int)*read_ptr;
   if (packet_card == -1)
   {
-    if (0x10 < unk_0091ca94)
+    if ((int)unk_0091ca94 > 0x10)
     {
       free(unk_0091ca98);
       unk_0091ca98 = malloc(0x20);
+      if (unk_0091ca98 == NULL)
+      {
+        MessageBoxA((HWND)0, "Memory allocation error in GetCardFromCLPacket!", "Packet Error", 0x10);
+      }
     }
     unk_0091ca96 = 1;
     unk_0091ca94 = 0;
