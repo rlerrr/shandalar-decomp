@@ -5,6 +5,7 @@
 #include <windows.h>
 #include "cardartlib/src/palette.h"
 #include "drawcardlib/Drawcardlib.h"
+#include "deckdll/src/card_db.h"
 #include "game_support.h"
 #include "global_strings.h"
 

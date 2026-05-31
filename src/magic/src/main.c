@@ -11,6 +11,7 @@
 #include "game_support.h"
 #include "manalinkinterface/manalinkinterface.h"
 #include "deckdll/src/shared_resources.h"
+#include "deckdll/src/card_db.h"
 #include "global_strings.h"
 
 #define STARTUP_DIALOG_COUNT 5
@@ -56,8 +57,6 @@ STATIC_ASSERT(sizeof(screen_name_file_t) == 0x748, screen_name_file_t_wrong_size
 // GLOBAL: MAGIC 0x0079141c
 HWND DAT_0079141c;
 
-// GLOBAL: MAGIC 0x00791558
-char *global_legacy_csv_raw;
 
 // GLOBAL: MAGIC 0x0079154c
 HANDLE global_mutex_UpdateLowerDialog;
@@ -192,7 +191,6 @@ static void append_startup_error(char *message_buffer, const char *path, int lin
 static void set_global_base_directory(char *path);
 static int setup_paths_and_load_text_etc(char *message_buffer);
 char *CsvParseNextField(char **txt);
-static int FUN_004537d8(const char *filename);
 static int FUN_004c0c20(const char *filename);
 static int FUN_00509210(void);
 static void FUN_0048fa0a(void);
@@ -424,6 +422,7 @@ void FUN_005539b8(void *unused)
   (void)unused;
 }
 
+// FUNCTION: SHANDALAR 0x00522880
 // FUNCTION: MAGIC 0x004226c0
 static int setup_paths_and_load_text_etc(char *message_buffer)
 {
@@ -470,7 +469,7 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
 
   strcpy(s.path, global_base_directory);
   strcat(s.path, "\\LEGACY.CSV");
-  if (!FUN_004537d8(s.path))
+  if (!ReadLegacyCsv(s.path))
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
@@ -544,94 +543,14 @@ static int setup_paths_and_load_text_etc(char *message_buffer)
   return s.ok;
 }
 
-// FUNCTION: MAGIC 0x004537d8
-static int FUN_004537d8(const char *filename)
-{
-  struct
-  {
-    char *next;
-    HANDLE file;
-    int result;
-    DWORD bytes_read;
-    DWORD size;
-    int card_index;
-    char *line;
-  } s;
-
-  s.result = 0;
-
-  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
-  {
-    unk_00777e60[s.card_index].damage_text = "";
-    unk_00777e60[s.card_index].effect_title = "";
-    unk_00777e60[s.card_index].effect_text = "";
-    unk_00777e60[s.card_index].legacy_title = "";
-    unk_00777e60[s.card_index].legacy_text = "";
-  }
-
-  s.file = CreateFileA(filename,
-                       GENERIC_READ,
-                       FILE_SHARE_READ,
-                       NULL,
-                       OPEN_EXISTING,
-                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
-                       NULL);
-  if (s.file != INVALID_HANDLE_VALUE)
-  {
-    s.size = GetFileSize(s.file, NULL);
-    global_legacy_csv_raw = malloc(s.size + 1);
-    if (global_legacy_csv_raw != NULL)
-    {
-      ReadFile(s.file, global_legacy_csv_raw, s.size, &s.bytes_read, NULL);
-      s.line = global_legacy_csv_raw;
-      s.line = strchr(s.line, '\n') + 1;
-
-      for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
-      {
-        s.next = s.line;
-
-        s.next = CsvParseNextField(&s.line);
-        s.line = s.next;
-
-        s.next = CsvParseNextField(&s.line);
-        s.line = s.next;
-
-        s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].damage_text = s.line;
-        s.line = s.next;
-
-        s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].effect_title = s.line;
-        s.line = s.next;
-
-        s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].effect_text = s.line;
-        s.line = s.next;
-
-        s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].legacy_title = s.line;
-        s.line = s.next;
-
-        s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].legacy_text = s.line;
-        s.line = s.next;
-      }
-
-      s.result = 1;
-    }
-
-    CloseHandle(s.file);
-  }
-
-  return s.result;
-}
-
+// FUNCTION: SHANDALAR 0x00442f9b
 // FUNCTION: MAGIC 0x004c0c20
 static int FUN_004c0c20(const char *filename)
 {
   return GetFileAttributesA(filename) != 0xffffffff;
 }
 
+// FUNCTION: SHANDALAR 0x00468a60
 // FUNCTION: MAGIC 0x00509210
 static int FUN_00509210(void)
 {
@@ -989,22 +908,12 @@ static void FUN_00453b3c(void)
   }
 }
 
-// FUNCTION: MAGIC 0x00453a15
-static void FUN_00453a15(void)
-{
-  if (global_legacy_csv_raw != NULL)
-  {
-    free(global_legacy_csv_raw);
-  }
-  global_legacy_csv_raw = NULL;
-}
-
 // FUNCTION: MAGIC 0x00422bea
 static void FUN_00422bea(void)
 {
   FUN_004537a7();
   FUN_00453b3c();
-  FUN_00453a15();
+  FreeRaritiesCsvRaw();
   DestroyCardArtPalette();
   checked_DeleteDC_DeleteObject(DAT_00789310, DAT_00926808);
   DAT_00926808 = NULL;

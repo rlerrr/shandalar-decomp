@@ -1100,7 +1100,7 @@ DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
     return 0;
   }
 
-  make_orig_rarities("DeckBuilder.csv", global_origrarities);
+  ReadDeckbuilderCsv("DeckBuilder.csv", global_origrarities);
 
   s.local_30 = GetSystemMetrics(0);
   s.local_2c = GetSystemMetrics(1);

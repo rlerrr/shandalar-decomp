@@ -49,16 +49,6 @@ typedef struct
   int numcards;
 } csvid_and_numcards;
 
-typedef struct
-{
-  char *damage_text;
-  char *effect_title;
-  char *effect_text;
-  char *legacy_title;
-  char *legacy_text;
-} name_table_entry_t;
-STATIC_ASSERT(sizeof(name_table_entry_t) == 0x14, name_table_entry_t_wrong_size);
-
 // GLOBAL: MAGIC 0x0056fb20
 extern csvid_and_numcards initial_library[2][200];
 
@@ -173,9 +163,6 @@ extern int unk_00895030[32];
 
 // GLOBAL: MAGIC 0x007a7750
 extern int unk_007a7750[32];
-
-// GLOBAL: MAGIC 0x00777e60
-extern name_table_entry_t unk_00777e60[866];
 
 // GLOBAL: MAGIC 0x008b497c
 extern int current_turn;

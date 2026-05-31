@@ -1,7 +1,10 @@
 #include "defs.h"
 #include "deckdll.h"
+#include "card_db.h"
 #include <WINDOWS.H>
 #include <STDIO.H>
+
+char *CsvParseNextField(char **txt);
 
 // GLOBAL: DECKDLL 0x100355d8
 // GLOBAL: MAGIC 0x0056eab4
@@ -79,13 +82,18 @@ int global_available_slots;
 // GLOBAL: SHANDALAR 0x008e44a0
 card_ptr_t global_raw_cards_storage[2000];
 
+// GLOBAL: SHANDALAR 0x007a82e4
+// GLOBAL: MAGIC 0x00791558
 // GLOBAL: DECKDLL 0x1012d7d0
-static char *global_deckbuilder_csv_raw;
+static char *global_rarities_csv_raw;
 
 // GLOBAL: DECKDLL 0x1012df3c
 // GLOBAL: MAGIC 0x7a7d70
 // GLOBAL: SHANDALAR 0x007beafc
 char *global_base_txt;
+
+// GLOBAL: MAGIC 0x00777e60
+name_table_entry_t unk_00777e60[866];
 
 // FUNCTION: DECKDLL 0x1001a940
 // FUNCTION: MAGIC 0x452cf0
@@ -366,6 +374,91 @@ int read_db_guts(char *cards_dat_filename)
   return global_available_slots;
 }
 
+// FUNCTION: DECKDLL 0x1001b2a2
+// FUNCTION: SHANDALAR 0x00442f9b
+// FUNCTION: MAGIC 0x004537d8
+int ReadLegacyCsv(const char *filename)
+{
+  struct
+  {
+    char *next;
+    HANDLE file;
+    int result;
+    DWORD bytes_read;
+    DWORD size;
+    int card_index;
+    char *line;
+  } s;
+
+  s.result = 0;
+
+  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+  {
+    unk_00777e60[s.card_index].damage_text = "";
+    unk_00777e60[s.card_index].effect_title = "";
+    unk_00777e60[s.card_index].effect_text = "";
+    unk_00777e60[s.card_index].legacy_title = "";
+    unk_00777e60[s.card_index].legacy_text = "";
+  }
+
+  s.file = CreateFileA(filename,
+                       GENERIC_READ,
+                       FILE_SHARE_READ,
+                       NULL,
+                       OPEN_EXISTING,
+                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+                       NULL);
+  if (s.file != INVALID_HANDLE_VALUE)
+  {
+    s.size = GetFileSize(s.file, NULL);
+    global_rarities_csv_raw = malloc(s.size + 1);
+    if (global_rarities_csv_raw != NULL)
+    {
+      ReadFile(s.file, global_rarities_csv_raw, s.size, &s.bytes_read, NULL);
+      s.line = global_rarities_csv_raw;
+      s.line = strchr(s.line, '\n') + 1;
+
+      for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+      {
+        s.next = s.line;
+
+        s.next = CsvParseNextField(&s.line);
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].damage_text = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].effect_title = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].effect_text = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].legacy_title = s.line;
+        s.line = s.next;
+
+        s.next = CsvParseNextField(&s.line);
+        unk_00777e60[s.card_index].legacy_text = s.line;
+        s.line = s.next;
+      }
+
+      s.result = 1;
+    }
+
+    CloseHandle(s.file);
+  }
+
+  return s.result;
+}
+
+// FUNCTION: SHANDALAR 0x00443209
 // FUNCTION: DECKDLL 0x1001b510
 // FUNCTION: MAGIC 0x00453a46
 char *CsvParseNextField(char **txt)
@@ -412,9 +505,20 @@ char *CsvParseNextField(char **txt)
   return s.next;
 }
 
+// FUNCTION: DECKDLL 0x1001b4df
+// FUNCTION: MAGIC 0x00453a15
+void FreeRaritiesCsvRaw(void)
+{
+  if (global_rarities_csv_raw != NULL)
+  {
+    free(global_rarities_csv_raw);
+  }
+  global_rarities_csv_raw = NULL;
+}
+
 // FUNCTION: DECKDLL 0x1001b832
 // FUNCTION: MAGIC 0x00453d68
-int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
+int ReadDeckbuilderCsv(const char *filename, OrigRarities *orig_rarities)
 {
   struct
   {
@@ -450,11 +554,11 @@ int make_orig_rarities(const char *filename, OrigRarities *orig_rarities)
   if (s.hfile != INVALID_HANDLE_VALUE)
   {
     s.size = GetFileSize(s.hfile, NULL);
-    global_deckbuilder_csv_raw = (char *)malloc(s.size + 1);
-    if (global_deckbuilder_csv_raw)
+    global_rarities_csv_raw = (char *)malloc(s.size + 1);
+    if (global_rarities_csv_raw)
     {
-      ReadFile(s.hfile, global_deckbuilder_csv_raw, s.size, &s.bytes_read, NULL);
-      s.line = global_deckbuilder_csv_raw;
+      ReadFile(s.hfile, global_rarities_csv_raw, s.size, &s.bytes_read, NULL);
+      s.line = global_rarities_csv_raw;
       s.line = strchr(s.line, '\n') + 1;
       s.line = strchr(s.line, '\n') + 1;
 

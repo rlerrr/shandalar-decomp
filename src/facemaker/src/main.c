@@ -453,6 +453,7 @@ int ShowSaveFaceDialog(void)
     return 0;
 }
 
+// FUNCTION: SHANDALAR 0x005501fe
 // FUNCTION: FACEMAKER 0x00402600
 unsigned int ScaleUiCoordinate(int value)
 {
