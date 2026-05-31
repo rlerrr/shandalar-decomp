@@ -4361,12 +4361,125 @@ int card_greed(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e4ace
 int card_pestilence(int player, int card, event_t event)
 {
+  struct
+  {
+    int min_toughness;
+    int creature_toughness_counts[16];
+    int opponent_life_div_swamps;
+    int toughness_index;
+    int best_score;
+    int loop_player;
+    int loop_card;
+    int max_active;
+    int running_score;
+    card_instance_t *instance;
+    int toughness;
+    int swamps;
+    int adjust;
+    int opponent;
+  } s;
+
+  if (event == EVENT_SHOULD_AI_PLAY)
+  {
+    if (is_in_play(player, card) != 0)
+    {
+      s.swamps = basiclandtypes_controlled[player][COLOR_BLACK];
+      if (life[player] < s.swamps)
+      {
+        s.min_toughness = life[player];
+      }
+      else
+      {
+        s.min_toughness = s.swamps;
+      }
+
+      for (s.toughness_index = 0; s.toughness_index < 16; ++s.toughness_index)
+      {
+        s.creature_toughness_counts[s.toughness_index] = 0;
+      }
+
+      if (active_cards_count[1] < active_cards_count[0])
+      {
+        s.max_active = active_cards_count[0];
+      }
+      else
+      {
+        s.max_active = active_cards_count[1];
+      }
+
+      for (s.loop_card = 0; s.loop_card < s.max_active; ++s.loop_card)
+      {
+        for (s.loop_player = 0; s.loop_player < 2; ++s.loop_player)
+        {
+          s.instance = &global_card_instances[s.loop_player][s.loop_card];
+          if (is_in_play(s.loop_player, s.loop_card) != 0)
+          {
+            s.toughness = s.instance->toughness;
+            if (s.toughness <= s.min_toughness && s.toughness < 16)
+            {
+              if (s.loop_player == player)
+              {
+                --s.creature_toughness_counts[s.toughness];
+              }
+              else
+              {
+                ++s.creature_toughness_counts[s.toughness];
+              }
+            }
+          }
+        }
+      }
+
+      s.running_score = 0;
+      s.best_score = 0;
+      for (s.toughness_index = 0; s.toughness_index < 16; ++s.toughness_index)
+      {
+        s.adjust = s.creature_toughness_counts[s.toughness_index] * (s.toughness_index + 1);
+        s.adjust = (s.adjust + s.adjust * 2) << 3;
+        s.running_score += s.adjust;
+        if (s.best_score < s.running_score)
+        {
+          s.best_score = s.running_score;
+        }
+      }
+
+      if (player == unk_008b35ec)
+      {
+        ai_modifier -= s.best_score;
+      }
+      else
+      {
+        ai_modifier += s.best_score;
+      }
+
+      s.opponent = 1 - player;
+      if (life[s.opponent] < life[player] && s.swamps != 0)
+      {
+        s.opponent_life_div_swamps = life[s.opponent] / s.swamps;
+        s.adjust = 0x18 - s.opponent_life_div_swamps;
+        if (s.adjust <= 1)
+        {
+          s.adjust = 1;
+        }
+        s.adjust = (s.adjust + s.adjust * 2) << 3;
+        if (player == unk_008b35ec)
+        {
+          ai_modifier -= s.adjust;
+        }
+        else
+        {
+          ai_modifier += s.adjust;
+        }
+      }
+    }
+  }
+
   if (event == EVENT_CAN_CAST)
   {
     return 1;
   }
 
-  if (event == 0x6c && affected_card == card && affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     if (FUN_00404cff(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, player) != 0)
     {
@@ -4385,8 +4498,8 @@ int card_pestilence(int player, int card, event_t event)
     if (has_mana_w_global_cost_mod(player, card, 1, 1) != 0)
     {
       charge_mana_w_global_cost_mod(player, card, 1, 1);
+      return 0;
     }
-    return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
@@ -4397,13 +4510,13 @@ int card_pestilence(int player, int card, event_t event)
     return 0;
   }
 
-  if (trigger_condition == 0xcd && affected_card == card && affected_card_controller == player && current_turn == player)
+  if (trigger_condition == TRIGGER_EOT && affected_card == card && affected_card_controller == player && current_turn == player)
   {
-    if (event == 0x7d)
+    if (event == EVENT_TRIGGER)
     {
       event_result |= 2;
     }
-    if (event == 0x7e && FUN_005510dc(player, TYPE_CREATURE) == 0 && FUN_005510dc(1 - player, TYPE_CREATURE) == 0)
+    if (event == EVENT_RESOLVE_TRIGGER && FUN_005510dc(player, TYPE_CREATURE) == 0 && FUN_005510dc(1 - player, TYPE_CREATURE) == 0)
     {
       kill_card(player, card, KILL_DESTROY);
     }
