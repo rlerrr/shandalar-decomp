@@ -2943,6 +2943,11 @@ int card_blessing(int player, int card, event_t event)
   int color;
   int effect_card;
 
+  if (event == EVENT_UNTAP_PHASE)
+  {
+    ++unk_00939530[player][1];
+  }
+
   if (event == EVENT_CAN_CAST)
   {
     return real_target_available((int *)0,
@@ -2965,8 +2970,9 @@ int card_blessing(int player, int card, event_t event)
                                  0,
                                  0);
   }
-  else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  else if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
+    ai_modifier += 0x18;
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
     if (unk_008a9000 != 1)
@@ -3159,7 +3165,7 @@ int card_firebreathing(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939520[player][COLOR_RED];
+    ++unk_00939530[player][0];
   }
 
   if (event == EVENT_CAN_CAST)
@@ -3184,7 +3190,7 @@ int card_firebreathing(int player, int card, event_t event)
                                  0,
                                  0);
   }
-  else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  else if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
