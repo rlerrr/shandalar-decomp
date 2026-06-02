@@ -38,13 +38,12 @@ int card_contract_from_below(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0040111d
 int card_darkpact(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  target_t target;
-  int target_player;
-  int index;
-  int new_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  struct
+  {
+    target_t target;
+    int target_player;
+    int index;
+  } locals;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -56,52 +55,51 @@ int card_darkpact(int player, int card, event_t event)
     load_text("promptsX1.txt", "DARKPACT");
     if (!C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
-                              text_lines[0], 1, &target))
+                              text_lines[0], 1, &locals.target))
     {
       spell_fizzled = 1;
     }
     else
     {
-      instance->targets[0].player = target.player;
-      instance->targets[0].card = target.card;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = locals.target.player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = locals.target.card;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target_player = instance->targets[0].player;
+    locals.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     if (global_library[player][0] != -1)
     {
-      instance->info_slot = global_library[player][0];
+      PLAYER_CARD_INSTANCE(player, card).info_slot = global_library[player][0];
       remove_card_from_deck(player, 0);
-      for (index = 0; index < 16 && global_ante_cards[target_player][index] != -1; ++index)
+      for (locals.index = 0; locals.index < 16 && global_ante_cards[locals.target_player][locals.index] != -1; ++locals.index)
       {
-        real_put_on_top_of_deck(player, global_ante_cards[target_player][index]);
-        global_ante_cards[target_player][index] = -1;
+        real_put_on_top_of_deck(player, global_ante_cards[locals.target_player][locals.index]);
+        global_ante_cards[locals.target_player][locals.index] = -1;
       }
-      global_ante_cards[target_player][0] = (char)instance->info_slot;
-      new_card = add_card_to_hand(player, instance->info_slot);
-      instance->info_slot = new_card;
-      if (instance->info_slot != -1)
+      global_ante_cards[locals.target_player][0] = (char)PLAYER_CARD_INSTANCE(player, card).info_slot;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = add_card_to_hand(player, PLAYER_CARD_INSTANCE(player, card).info_slot);
+      if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
       {
-        PLAYER_CARD_INSTANCE(player, instance->info_slot).token_status |= 0x10000;
+        PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).token_status |= 0x10000;
       }
       load_text("promptsX1.txt", "DARKPACT");
       if (player == human_player)
       {
-        do_dialog(player, player, card, player, instance->info_slot, text_lines[1], 0);
+        do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, text_lines[1], 0);
       }
       else
       {
-        do_dialog(player, player, card, player, instance->info_slot, text_lines[2], 0);
+        do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, text_lines[2], 0);
       }
-      if (instance->info_slot != -1)
+      if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
       {
-        PLAYER_CARD_INSTANCE(player, instance->info_slot).internal_card_id = -1;
+        PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).internal_card_id = -1;
       }
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 

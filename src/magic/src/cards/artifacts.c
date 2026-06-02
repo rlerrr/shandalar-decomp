@@ -247,65 +247,83 @@ int card_time_vault(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051032b
 int card_black_vise(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  int damaged_player;
-  int damage;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-  if (event == 199 && is_in_play(player, card))
+  struct
   {
-    if ((((unsigned char *)&instance->state)[1] & 0x10) == 0)
-    {
-      damaged_player = active_player;
-    }
-    else
-    {
-      damaged_player = unk_008b35ec;
-    }
+    int damaged_player;
+    int damage;
+    int internal_card_id;
+    int tmp;
+  } s;
 
-    damage = hand_count[damaged_player] - 4;
-    if (damage < 1)
+  if (event == EVENT_SHOULD_AI_PLAY)
+  {
+    if (is_in_play(player, card))
     {
-      damage = 0;
-    }
-    if (damage != 0)
-    {
-      damage = 0x18 - life[damaged_player] / damage;
-      if (damage < 2)
+      if ((((unsigned char *)&PLAYER_CARD_INSTANCE(player, card).state)[1] & 0x10) == 0)
       {
-        damage = 1;
-      }
-      if (damaged_player == 0)
-      {
-        ai_modifier += damage * 0x18;
+        s.damaged_player = active_player;
       }
       else
       {
-        ai_modifier -= damage * 0x18;
+        s.damaged_player = unk_008b35ec;
+      }
+
+      s.damage = hand_count[s.damaged_player] - 4;
+      if (s.damage < 1)
+      {
+        s.damage = 0;
+      }
+
+      if (s.damage != 0)
+      {
+        s.tmp = life[s.damaged_player] / s.damage;
+        s.damage = 0x18 - s.tmp;
+        if (s.damage < 2)
+        {
+          s.damage = 1;
+        }
+        if (s.damaged_player == 0)
+        {
+          ai_modifier += (s.damage * 3) << 3;
+        }
+        else
+        {
+          ai_modifier -= (s.damage * 3) << 3;
+        }
       }
     }
   }
 
-  if (trigger_condition == 0xcb && card == affected_card && player == affected_card_controller && player == current_turn && ((((unsigned char *)&instance->state)[1] & 0x10) == 0 || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) != 0))
+  if (trigger_condition == TRIGGER_END_UPKEEP && card == affected_card && player == affected_card_controller &&
+      player == current_turn)
   {
-    if ((((unsigned char *)&instance->state)[1] & 0x10) == 0)
+    if ((((unsigned char *)&PLAYER_CARD_INSTANCE(player, card).state)[1] & 0x10) != 0)
     {
-      damaged_player = active_player;
+      s.internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+      if ((global_cards_data[s.internal_card_id].type & TYPE_CREATURE) == 0)
+      {
+        return 0;
+      }
+    }
+
+    if ((((unsigned char *)&PLAYER_CARD_INSTANCE(player, card).state)[1] & 0x10) == 0)
+    {
+      s.damaged_player = active_player;
     }
     else
     {
-      damaged_player = unk_008b35ec;
+      s.damaged_player = unk_008b35ec;
     }
 
-    if (human_player == damaged_player && hand_count[damaged_player] > 4)
+    if (human_player == s.damaged_player && hand_count[s.damaged_player] > 4)
     {
-      if (event == 0x7d)
+      if (event == EVENT_TRIGGER)
       {
         event_result |= 2;
       }
-      if (event == 0x7e)
+      if (event == EVENT_RESOLVE_TRIGGER)
       {
-        damage_player(damaged_player, hand_count[damaged_player] - 4, player, card);
+        damage_player(s.damaged_player, hand_count[s.damaged_player] - 4, player, card);
       }
     }
   }

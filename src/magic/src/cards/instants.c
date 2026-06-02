@@ -1164,77 +1164,65 @@ int card_swords_to_plowshares(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b2c3e
 int card_death_ward(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  int current_player;
-  int current_card;
-  int internal_card_id;
-  int target_player;
-  int target_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-
-  if ((event == EVENT_CAN_CAST) && (unk_008b4278 & 2) != 0)
+  struct
   {
+    int found_dead_creature;
+    int current_player;
+    int current_card;
+    int internal_card_id;
+    int target_player;
+  } s;
+
+  if (event == EVENT_CAN_CAST && (unk_008b4278 & 0x200) != 0)
+  {
+    s.found_dead_creature = 0;
+
     FUN_004e4ff3(0);
-    for (current_player = 0; current_player < 2; ++current_player)
+    for (s.current_player = 0; s.current_player < 2; ++s.current_player)
     {
-      for (current_card = 0; current_card < active_cards_count[current_player]; ++current_card)
+      for (s.current_card = 0; s.current_card < active_cards_count[s.current_player]; ++s.current_card)
       {
-        internal_card_id = PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id;
-        if (is_in_play(current_player, current_card) && (global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(current_player, current_card).mana_color == 2)
+        if (s.found_dead_creature == 0)
         {
-          return 99;
+          s.internal_card_id = PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id;
+          if (is_in_play(s.current_player, s.current_card) &&
+              (global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0 &&
+              (int)(char)PLAYER_CARD_INSTANCE(s.current_player, s.current_card).kill_code == 2)
+          {
+            s.found_dead_creature = 1;
+          }
         }
       }
+    }
+
+    if (s.found_dead_creature != 0)
+    {
+      return 99;
     }
     return 0;
   }
 
-  if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && ((player == affected_card_controller) && (unk_008b4278 & 2) != 0))
+  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller && (unk_008b4278 & 0x200) != 0)
   {
-    int found_dead_creature;
-
-    found_dead_creature = 0;
+    s.found_dead_creature = 0;
     do
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       load_text("prompts.txt", "DEATH_WARD");
-      if (!C_real_select_target(player,
-                                2,
-                                2,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_CREATURE,
-                                TYPE_NONE,
-                                0,
-                                0,
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                -1,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                text_lines[0],
-                                1,
-                                &instance->targets[instance->number_of_targets]))
+      if (!FUN_00551638(player, -1, card))
       {
         spell_fizzled = 1;
       }
-      else
+
+      s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      s.current_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+      if ((int)(char)PLAYER_CARD_INSTANCE(s.target_player, s.current_card).kill_code == 2)
       {
-        ++instance->number_of_targets;
-      }
-      target_player = instance->targets[0].player;
-      target_card = instance->targets[0].card;
-      if (PLAYER_CARD_INSTANCE(target_player, target_card).mana_color == 2)
-      {
-        if (((PLAYER_CARD_INSTANCE(target_player, target_card).token_status & 2) != 0) || target_player == unk_008b35ec)
+        if (((PLAYER_CARD_INSTANCE(s.target_player, s.current_card).token_status & 2) != 0) || s.target_player == unk_008b35ec)
         {
           ai_modifier -= 0x30;
         }
-        found_dead_creature = 1;
+        s.found_dead_creature = 1;
       }
       else if (unk_008a9000 == 1)
       {
@@ -1247,15 +1235,15 @@ int card_death_ward(int player, int card, event_t event)
         Sleep(0x9c4);
         FUN_004a61d6("");
       }
-    } while ((spell_fizzled != 1) && !found_dead_creature);
+    } while ((spell_fizzled != 1) && s.found_dead_creature == 0);
   }
 
-  if ((event == EVENT_RESOLVE_SPELL) && (unk_008b4278 & 2) != 0)
+  if (event == EVENT_RESOLVE_SPELL && (unk_008b4278 & 0x200) != 0)
   {
-    target_player = instance->targets[0].player;
-    target_card = instance->targets[0].card;
-    if (!C_real_validate_target(target_player,
-                                target_card,
+    s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+    s.current_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    if (!C_real_validate_target(s.target_player,
+                                s.current_card,
                                 (char *)0,
                                 player,
                                 2,
@@ -1279,9 +1267,9 @@ int card_death_ward(int player, int card, event_t event)
     }
     else
     {
-      FUN_00542a2a(target_player, target_card);
+      FUN_00542a2a(s.target_player, s.current_card);
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -2355,16 +2343,14 @@ int card_counterspell(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b6d67
 int card_power_sink(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  int target_player;
-  int target_card;
-  int mana_paid;
-  int color;
-  int current_card;
-  card_instance_t *target_instance;
-  int internal_card_id;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  struct
+  {
+    int target_player;
+    int target_card;
+    int mana_paid;
+    int color;
+    int current_card;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2373,7 +2359,7 @@ int card_power_sink(int player, int card, event_t event)
     {
       return 0;
     }
-    if (player == active_player && (unk_00926804 & 2) == 0 && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (player == active_player && (unk_00926804 & 2) == 0 && has_mana(player, COLOR_ANY, 2) == 0)
     {
       return 0;
     }
@@ -2411,18 +2397,18 @@ int card_power_sink(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0].player = unk_008ce508;
-      instance->targets[0].card = unk_008ce4f4;
-      instance->number_of_targets = 1;
-      instance->info_slot = x_value;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = unk_008ce508;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = unk_008ce4f4;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = x_value;
     }
     return 0;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (!C_real_validate_target(instance->targets[0].player,
-                                instance->targets[0].card,
+    if (!C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                 (char *)0,
                                 player,
                                 2,
@@ -2446,60 +2432,69 @@ int card_power_sink(int player, int card, event_t event)
     }
     else
     {
-      target_player = instance->targets[0].player;
-      target_card = instance->targets[0].card;
+      s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      s.target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
 
-      if (target_player == human_player || (unk_00926804 & 2) != 0)
+      if (s.target_player == human_player || (unk_00926804 & 2) != 0)
       {
         FUN_00443ee2(player, card, 0x7e, 0, 0);
-        mana_paid = charge_mana(target_player, 0, instance->info_slot);
+        s.mana_paid = charge_mana(s.target_player, COLOR_COLORLESS, PLAYER_CARD_INSTANCE(player, card).info_slot);
         obliterate_top_card_of_stack();
         spell_fizzled = 0;
       }
-      else if (has_mana(target_player, COLOR_COLORLESS, 1) == 0)
+      else if (has_mana(s.target_player, COLOR_ANY, 1) == 0)
       {
-        mana_paid = 0;
+        s.mana_paid = 0;
       }
       else
       {
-        mana_paid = charge_mana(target_player, 0, instance->info_slot);
+        s.mana_paid = charge_mana(s.target_player, COLOR_COLORLESS, PLAYER_CARD_INSTANCE(player, card).info_slot);
       }
 
-      if (mana_paid < instance->info_slot)
+      if (s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot)
       {
-        for (color = 0; color < 7 && mana_paid < instance->info_slot; ++color)
+        for (s.color = 0; s.color < 7 && s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot; ++s.color)
         {
-          while (raw_mana_available[target_player][color] > 0 && mana_paid < instance->info_slot)
+          while (raw_mana_available[s.target_player][s.color] > 0 &&
+                 s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot)
           {
-            --raw_mana_available[target_player][color];
-            --raw_mana_available[target_player][7];
-            if (color != 6)
+            --raw_mana_available[s.target_player][s.color];
+            --raw_mana_available[s.target_player][7];
+            if (s.color != 6)
             {
-              ++mana_paid;
+              ++s.mana_paid;
             }
           }
         }
 
-        unk_008ce510[6] = instance->info_slot;
-        for (current_card = 0; current_card < active_cards_count[target_player] && mana_paid < instance->info_slot;
-             ++current_card)
+        unk_008ce510[6] = PLAYER_CARD_INSTANCE(player, card).info_slot;
+        for (s.current_card = 0;
+             s.current_card < active_cards_count[s.target_player] &&
+             s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot;
+             ++s.current_card)
         {
-          if (is_in_play(target_player, current_card))
+          if (is_in_play(s.target_player, s.current_card))
           {
-            target_instance = &PLAYER_CARD_INSTANCE(target_player, current_card);
-            internal_card_id = target_instance->internal_card_id;
-            if ((global_cards_data[internal_card_id].type & TYPE_LAND) != 0 && (global_cards_data[internal_card_id].extra_ability & 0x1000) != 0 && (target_instance->state & STATE_TAPPED) == 0 && (((target_instance->state & 3) == 0) || (global_cards_data[internal_card_id].type & TYPE_CREATURE) == 0))
+            if ((global_cards_data[PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id].type & TYPE_LAND) != 0 &&
+                (global_cards_data[PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id].extra_ability & 0x1000) != 0 &&
+                (PLAYER_CARD_INSTANCE(s.target_player, s.current_card).state & STATE_TAPPED) == 0 &&
+                (((PLAYER_CARD_INSTANCE(s.target_player, s.current_card).state & 3) == 0) ||
+                 (global_cards_data[PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id].type & TYPE_CREATURE) == 0))
             {
-              drain_power_draw_mana_from_land(target_player, current_card, internal_card_id);
-              for (color = 0; color < 7 && mana_paid < instance->info_slot; ++color)
+              drain_power_draw_mana_from_land(s.target_player,
+                                              s.current_card,
+                                              PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id);
+
+              for (s.color = 0; s.color < 7 && s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot; ++s.color)
               {
-                while (raw_mana_available[target_player][color] > 0 && mana_paid < instance->info_slot)
+                while (raw_mana_available[s.target_player][s.color] > 0 &&
+                       s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot)
                 {
-                  --raw_mana_available[target_player][color];
-                  --raw_mana_available[target_player][7];
-                  if (color != 6)
+                  --raw_mana_available[s.target_player][s.color];
+                  --raw_mana_available[s.target_player][7];
+                  if (s.color != 6)
                   {
-                    ++mana_paid;
+                    ++s.mana_paid;
                   }
                 }
               }
@@ -2509,13 +2504,13 @@ int card_power_sink(int player, int card, event_t event)
         unk_008ce510[6] = 0;
       }
 
-      if (mana_paid < instance->info_slot)
+      if (s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot)
       {
-        kill_card(target_player, target_card, KILL_BURY);
+        kill_card(s.target_player, s.target_card, KILL_BURY);
       }
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 

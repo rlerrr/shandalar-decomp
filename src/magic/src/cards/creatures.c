@@ -3048,65 +3048,86 @@ int card_cosmic_horror(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0049bb0a
 int card_lord_of_the_pit(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int creature_to_sacrifice;
-  int current_card;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
+  {
+    if (creature_cards_in_play[player] < 2)
+    {
+      ai_modifier -= 0xa8;
+    }
+    return 0;
+  }
 
-  if (event == 0x87)
+  if (event == EVENT_CHECK_UPK_PAYMENT)
   {
     if (FUN_0054dccd(player, card) == 0)
     {
       event_result |= 1;
     }
+    return 0;
   }
-  else if (event == 4 && affected_card == card && affected_card_controller == player)
+
+  if (event == EVENT_SETUP_UPKEEP_COSTS && affected_card == card && affected_card_controller == player)
   {
-    ++instance->info_slot;
+    return 0;
+  }
+
+  if (event == EVENT_SHOULD_AI_PLAY)
+  {
+    if (FUN_0054dccd(player, card) == 0)
+    {
+      ++ai_modifier;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_UPKEEP_PHASE && affected_card == card && affected_card_controller == player)
+  {
+    ++PLAYER_CARD_INSTANCE(player, card).info_slot;
     if (FUN_0054dccd(player, card) == 0)
     {
       event_result |= 1;
     }
     else
     {
-      creature_to_sacrifice = -1;
-      for (current_card = 0; current_card < active_cards_count[player]; ++current_card)
-      {
-        if (current_card != card && is_in_play(player, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].type & TYPE_CREATURE) != 0)
-        {
-          creature_to_sacrifice = current_card;
-          break;
-        }
-      }
+      PLAYER_CARD_INSTANCE(player, card).state |= 0x100000;
+      TENTATIVE_reassess_all_cards(0, 0x20);
+      load_text("prompts.txt", "LORD_OF_THE_PIT");
+
+      creature_to_sacrifice = FUN_00551921(player);
+
+      PLAYER_CARD_INSTANCE(player, card).state &= 0xffefffff;
       if (creature_to_sacrifice != -1)
       {
         kill_card(player, creature_to_sacrifice, KILL_SACRIFICE);
       }
+      else
+      {
+        event_result |= 1;
+      }
     }
+    return 0;
   }
-  else if (event == 0x86)
+
+  if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
-    damage_player(player, 7, player, card);
+    damage_player(player, 7, card_on_stack_controller, card_on_stack);
+    return 0;
   }
-  else
+
+  if (event == EVENT_CLEANUP && affected_card == card && affected_card_controller == player)
   {
-    if (event == 199 && FUN_0054dccd(player, card) == 0)
-    {
-      damage_player(player, 7, player, card);
-    }
-    if ((event == 0x22 || event == 199) && affected_card == card && affected_card_controller == player)
-    {
-      instance->info_slot = 0;
-    }
-    if (event == 0x8a && affected_card == card && affected_card_controller == player)
-    {
-      unk_00925d3c -= 0x30;
-    }
-    else if (event == 0x8b && affected_card == card && affected_card_controller == player)
-    {
-      unk_00925d3c += 0x30;
-    }
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
+  }
+
+  if (event == EVENT_ATTACK_RATING && affected_card == card && affected_card_controller == player)
+  {
+    unk_00925d3c -= 0x30;
+  }
+  else if (event == EVENT_BLOCK_RATING && affected_card == card && affected_card_controller == player)
+  {
+    unk_00925d3c += 0x30;
   }
 
   return 0;

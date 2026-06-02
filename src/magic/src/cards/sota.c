@@ -101,38 +101,38 @@ int card_basalt_monolith(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00455b59
 int card_copper_tablet(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-  if ((event == EVENT_CAST_SPELL) && (card == affected_card) && (player == affected_card_controller))
+  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
-    ai_modifier += (life[player] - life[1 - player]) * 0x18;
+    ai_modifier += ((life[player] - life[1 - player]) * 3) << 3;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((current_phase == 4) && ((((char)instance->regen_status & 1) == 0)) && (unk_00742f60 == human_player) && (((instance->state & 0x10) == 0) || ((global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) != 0)))
+    if ((current_phase == PHASE_UPKEEP) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0) &&
+        (unk_00742f60 == human_player) &&
+        (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
+         ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0)))
     {
-      instance->eot_toughness |= 0x101;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
       unk_008b3270 |= 3;
       return 1;
     }
     return 0;
   }
 
-  if ((event == 4) && (card == affected_card) && (player == affected_card_controller))
+  if (event == EVENT_UPKEEP_PHASE && card == affected_card && player == affected_card_controller)
   {
-    instance->regen_status |= 1;
+    PLAYER_CARD_INSTANCE(player, card).regen_status |= 1;
     unk_007a7c1c = 1;
     event_result |= 1;
   }
-  if (event == 0x86)
+  if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
     damage_player(human_player, 1, card_on_stack_controller, card_on_stack);
   }
-  if (event == 0x22)
+  if (event == EVENT_CLEANUP)
   {
-    instance->regen_status &= ~1;
+    PLAYER_CARD_INSTANCE(player, card).regen_status &= ~1;
   }
 
   return 0;
