@@ -655,12 +655,14 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0x20;
     return 0;
   }
-  else if (event == EVENT_UNTAP_PHASE)
+
+  if (event == EVENT_UNTAP_PHASE)
   {
     ++unk_00939530[player][0];
     return 0;
   }
-  else if (event == EVENT_CAN_ACTIVATE)
+
+  if (event == EVENT_CAN_ACTIVATE)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).info_slot == 0) || (has_mana(player, COLOR_RED, 1) == 0))
     {
@@ -668,7 +670,8 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
     }
     return 1;
   }
-  else if (event == EVENT_ACTIVATE)
+
+  if (event == EVENT_ACTIVATE)
   {
     if (has_mana(player, COLOR_RED, 1) != 0)
     {
@@ -686,7 +689,8 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
     }
     return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION)
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
