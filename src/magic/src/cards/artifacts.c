@@ -1069,33 +1069,33 @@ int card_dingus_egg(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00519a3d
 int card_soul_net(int player, int card, event_t event)
 {
-  card_instance_t *instance;
+  int dummy;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  dummy = 0;
   if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player)
   {
     ai_modifier += 0x90;
   }
 
-  if (event == EVENT_GRAVEYARD_FROM_PLAY && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).kill_code != 0 && (global_cards_data[PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id].type & TYPE_CREATURE) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).token_status & 0x10) == 0 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).kill_code != 4 && (instance->state & 0x20) == 0 && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).state & 0x20) == 0 && (((instance->state & STATE_TAPPED) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE)))
+  if (event == EVENT_GRAVEYARD_FROM_PLAY && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).kill_code != 0 && (global_cards_data[PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id].type & TYPE_CREATURE) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).token_status & 0x10) == 0 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).kill_code != 4 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0 && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).state & 0x20) == 0 && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
-    if ((instance->targets[0].player & 1) == 0)
+    if ((PLAYER_CARD_INSTANCE(player, card).targets[0].player & 1) == 0)
     {
-      ++instance->info_slot;
+      ++PLAYER_CARD_INSTANCE(player, card).info_slot;
     }
     else
     {
-      instance->info_slot = 1;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
     }
   }
 
-  if (trigger_condition == 0xd5 && affected_card == card && affected_card_controller == player && instance->info_slot != 0 && player == current_turn && ((((unsigned int)instance->info_slot |= 0x100), ((instance->state & STATE_TAPPED) == 0)) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE)))
+  if (trigger_condition == 0xd5 && affected_card == card && affected_card_controller == player && PLAYER_CARD_INSTANCE(player, card).info_slot != 0 && player == current_turn && ((((unsigned int)PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x100), ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
     if (event == EVENT_TRIGGER)
     {
       if (!has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1))
       {
-        instance->info_slot = 0;
+        PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
       }
       else if (active_player == player && (unk_00926804 & 2) == 0)
       {
@@ -1119,12 +1119,12 @@ int card_soul_net(int player, int card, event_t event)
       {
         dispatch_event(player, card, EVENT_PLAY_ABILITY);
         gain_life(player, 1, player, card);
-        --instance->info_slot;
+        --PLAYER_CARD_INSTANCE(player, card).info_slot;
       }
     }
-    if (instance->info_slot != 0)
+    if (PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
-      instance->state &= ~0x100;
+      PLAYER_CARD_INSTANCE(player, card).state &= ~0x100;
     }
   }
 

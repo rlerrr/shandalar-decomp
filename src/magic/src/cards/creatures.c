@@ -715,6 +715,10 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x20;
       }
+      else
+      {
+        spell_fizzled = 1;
+      }
     }
     return 0;
   }
@@ -1107,12 +1111,17 @@ int card_vampire_bats(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00491883
 int card_frozen_shade(int player, int card, event_t event)
 {
-  int legacy_effect_card;
+  union
+  {
+    int legacy_effect_card;
+    card_instance_t *instance;
+  } u;
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    u.instance = &PLAYER_CARD_INSTANCE(player, card);
+    u.instance->eot_toughness = 0;
+    u.instance->info_slot = u.instance->eot_toughness;
     return 0;
   }
 
@@ -1200,16 +1209,16 @@ int card_frozen_shade(int player, int card, event_t event)
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                                PLAYER_CARD_INSTANCE(player, card).parent_card)
              .info_slot &= 0xfff7ffff;
-        legacy_effect_card = create_legacy_effect(card_on_stack_controller,
-                                                  card_on_stack,
-                                                  LEGACY_EFFECT_PUMP,
-                                                  card_on_stack_controller,
-                                                  card_on_stack);
-        if (legacy_effect_card != -1)
+        u.legacy_effect_card = create_legacy_effect(card_on_stack_controller,
+                                                    card_on_stack,
+                                                    LEGACY_EFFECT_PUMP,
+                                                    card_on_stack_controller,
+                                                    card_on_stack);
+        if (u.legacy_effect_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, legacy_effect_card).counter_power = 1;
-          PLAYER_CARD_INSTANCE(player, legacy_effect_card).counter_toughness = 1;
-          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, legacy_effect_card).info_slot |= 0x80000;
+          PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).counter_power = 1;
+          PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).counter_toughness = 1;
+          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).info_slot |= 0x80000;
         }
       }
     }
@@ -1234,8 +1243,9 @@ int card_frozen_shade(int player, int card, event_t event)
 
   if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY))
   {
-    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    u.instance = &PLAYER_CARD_INSTANCE(player, card);
+    u.instance->eot_toughness = 0;
+    u.instance->info_slot = u.instance->eot_toughness;
   }
 
   return 0;
@@ -2734,63 +2744,66 @@ int card_scavenging_ghoul(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0049a36e
 int card_sengir_vampire(int player, int card, event_t event)
 {
-  int dead_internal_id;
-  int shift_index;
-  int count_triggered;
-  int tracked;
+  struct
+  {
+    int dead_internal_id;   /* [ebp-0x10] */
+    int count_triggered;   /* [ebp-0x0c] */
+    int shift_index;       /* [ebp-0x08] */
+    int tracked;           /* [ebp-0x04] */
+  } s;
 
   if (event == 0x6e && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)
   {
     if (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_card == card && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_player == player && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card != -1)
     {
-      shift_index = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player;
+      s.shift_index = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player;
       if (PLAYER_CARD_INSTANCE(
-              shift_index, PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card)
+              s.shift_index, PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card)
               .internal_card_id == -1)
       {
-        dead_internal_id =
+        s.dead_internal_id =
             PLAYER_CARD_INSTANCE(
-                shift_index, PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card)
+                s.shift_index, PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card)
                 .original_internal_card_id;
       }
       else
       {
-        dead_internal_id =
+        s.dead_internal_id =
             PLAYER_CARD_INSTANCE(
-                shift_index, PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card)
+                s.shift_index, PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card)
                 .internal_card_id;
       }
 
-      if ((global_cards_data[dead_internal_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(player, card).number_of_targets < 0x13)
+      if ((global_cards_data[s.dead_internal_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(player, card).number_of_targets < 0x13)
       {
         PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets].card =
             PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card;
         PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets].player =
-            shift_index;
+            s.shift_index;
         ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
       }
     }
   }
   else if (event == 0x77)
   {
-    count_triggered = 0;
-    for (tracked = 0; tracked < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++tracked)
+    s.count_triggered = 0;
+    for (s.tracked = 0; s.tracked < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++s.tracked)
     {
-      if (PLAYER_CARD_INSTANCE(player, card).targets[tracked].card == affected_card && PLAYER_CARD_INSTANCE(player, card).targets[tracked].player == affected_card_controller && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).kill_code != 4 && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).token_status & 0x4000000) == 0)
+      if (PLAYER_CARD_INSTANCE(player, card).targets[s.tracked].card == affected_card && PLAYER_CARD_INSTANCE(player, card).targets[s.tracked].player == affected_card_controller && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).kill_code != 4 && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).token_status & 0x4000000) == 0)
       {
-        shift_index = tracked;
-        if (!count_triggered)
+        s.shift_index = s.tracked;
+        if (!s.count_triggered)
         {
           ++PLAYER_CARD_INSTANCE(player, card).info_slot;
-          count_triggered = 1;
+          s.count_triggered = 1;
         }
 
-        while (++shift_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets)
+        while (++s.shift_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets)
         {
-          PLAYER_CARD_INSTANCE(player, card).targets[shift_index - 1].player =
-              PLAYER_CARD_INSTANCE(player, card).targets[shift_index].player;
-          PLAYER_CARD_INSTANCE(player, card).targets[shift_index - 1].card =
-              PLAYER_CARD_INSTANCE(player, card).targets[shift_index].card;
+          PLAYER_CARD_INSTANCE(player, card).targets[s.shift_index - 1].player =
+              PLAYER_CARD_INSTANCE(player, card).targets[s.shift_index].player;
+          PLAYER_CARD_INSTANCE(player, card).targets[s.shift_index - 1].card =
+              PLAYER_CARD_INSTANCE(player, card).targets[s.shift_index].card;
         }
         --PLAYER_CARD_INSTANCE(player, card).number_of_targets;
       }

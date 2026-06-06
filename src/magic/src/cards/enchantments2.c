@@ -2457,7 +2457,6 @@ int card_aspect_of_wolf(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004db6e2
 int card_lure(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int blocking_card;
 
   if (event == EVENT_CAN_CAST)
@@ -2478,12 +2477,11 @@ int card_lure(int player, int card, event_t event)
                                  -1,
                                  -1,
                                  -1,
-                                 0,
-                                 0,
-                                 0);
+                                  0,
+                                  0,
+                                  0);
   }
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     if (unk_008a9000 != 1)
@@ -2499,8 +2497,8 @@ int card_lure(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (C_real_validate_target(instance->targets[0].player,
-                               instance->targets[0].card,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0,
                                player,
                                2,
@@ -2525,28 +2523,44 @@ int card_lure(int player, int card, event_t event)
     }
     else
     {
-      instance->damage_target_player = (char)instance->targets[0].player;
-      instance->damage_target_card = instance->targets[0].card;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player =
+          (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card =
+          PLAYER_CARD_INSTANCE(player, card).targets[0].card;
     }
-    instance->number_of_targets = 0;
-    instance->info_slot = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     return 0;
   }
 
-  if (trigger_condition == 0xda && instance->info_slot == 0)
+  if (trigger_condition == 0xda && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
-    instance->info_slot = 1;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
     trigger_condition = -1;
-    if ((int)instance->damage_target_player == human_player && (PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).state & 4) != 0 && is_in_play(affected_card_controller, affected_card) && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).blocking == -1 && affected_card_controller != human_player && FUN_0052460c(affected_card_controller, affected_card, instance->damage_target_player, instance->damage_target_card) != 0)
+    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == human_player
+        && (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                 PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+                .state &
+            4) != 0
+        && is_in_play(affected_card_controller, affected_card)
+        && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).blocking == -1
+        && affected_card_controller != human_player
+        && FUN_0052460c(affected_card_controller,
+                        affected_card,
+                        (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                        PLAYER_CARD_INSTANCE(player, card).damage_target_card) != 0)
     {
-      if (PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).blocking == -1)
+      if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                               PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+              .blocking == -1)
       {
-        blocking_card = instance->damage_target_card;
+        blocking_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
       }
       else
       {
-        blocking_card =
-            PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).blocking;
+        blocking_card = PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+                            .blocking;
       }
 
       if (event == 0x7d)
@@ -2560,7 +2574,7 @@ int card_lure(int player, int card, event_t event)
       }
     }
     trigger_condition = 0xda;
-    instance->info_slot = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
   }
 
   return 0;
@@ -4030,7 +4044,6 @@ int card_smoke(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e2bc8
 int card_power_surge(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int current_card;
   int damage;
 
@@ -4039,15 +4052,14 @@ int card_power_surge(int player, int card, event_t event)
     return 1;
   }
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == 0x6a)
   {
-    instance->info_slot = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     for (current_card = 0; current_card < active_cards_count[human_player]; ++current_card)
     {
       if (is_in_play(human_player, current_card) && (PLAYER_CARD_INSTANCE(human_player, current_card).state & STATE_TAPPED) == 0 && (global_cards_data[PLAYER_CARD_INSTANCE(human_player, current_card).internal_card_id].type & TYPE_LAND) != 0)
       {
-        ++instance->info_slot;
+        ++PLAYER_CARD_INSTANCE(player, card).info_slot;
       }
     }
     return 0;
@@ -4055,9 +4067,9 @@ int card_power_surge(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (current_phase == 4 && (instance->info_slot & 1) == 0 && unk_00742f60 == human_player)
+    if (current_phase == 4 && (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 && unk_00742f60 == human_player)
     {
-      *(unsigned int *)((char *)instance + 0x5c) |= 0x101;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
       unk_008b3270 |= 3;
       return 1;
     }
@@ -4066,7 +4078,7 @@ int card_power_surge(int player, int card, event_t event)
 
   if (event == 4 && card == affected_card && player == affected_card_controller)
   {
-    instance->info_slot |= 1;
+    PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
     unk_007a7c1c = 1;
     event_result |= 1;
     return 0;
@@ -4074,14 +4086,14 @@ int card_power_surge(int player, int card, event_t event)
 
   if (event == 0x86)
   {
-    damage_player(human_player, instance->info_slot, card_on_stack_controller, card_on_stack);
-    instance->info_slot = 0;
+    damage_player(human_player, PLAYER_CARD_INSTANCE(player, card).info_slot, card_on_stack_controller, card_on_stack);
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     return 0;
   }
 
   if (event == 0x22)
   {
-    instance->info_slot &= ~1;
+    PLAYER_CARD_INSTANCE(player, card).info_slot &= ~1;
   }
 
   if (event == 199)
