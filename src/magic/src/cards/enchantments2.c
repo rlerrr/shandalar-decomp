@@ -4162,6 +4162,10 @@ int card_wanderlust(int player, int card, event_t event)
     }
     else
     {
+      spell_fizzled = 0;
+    }
+    if (spell_fizzled != 1)
+    {
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == unk_008b35ec)
       {
         ai_modifier += 0x30;
@@ -4266,11 +4270,7 @@ int card_wanderlust(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e384b
 int card_instill_energy(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  card_instance_t *target;
   int selected_color;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -4294,7 +4294,8 @@ int card_instill_energy(int player, int card, event_t event)
                                  0,
                                  0);
   }
-  else if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
+
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     if (unk_008a9000 != 1)
     {
@@ -4305,25 +4306,41 @@ int card_instill_energy(int player, int card, event_t event)
     {
       spell_fizzled = 1;
     }
+    else
+    {
+      spell_fizzled = 0;
+    }
 
     if (spell_fizzled != 1 && player == active_player)
     {
-      target = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
-      if (global_cards_data[target->internal_card_id].subtype == 0 && (target->token_status & STATUS_WALL_CAN_ATTACK) == 0)
+      if (global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                                .internal_card_id]
+              .subtype == 0 &&
+          (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+               .token_status &
+           STATUS_WALL_CAN_ATTACK) == 0)
       {
         ai_modifier -= 0x30;
       }
-      if ((global_cards_data[target->internal_card_id].extra_ability & 1) != 0 && instance->targets[0].player == player)
+      if ((global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                                  PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                                 .internal_card_id]
+               .extra_ability &
+           1) != 0 &&
+          PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)
       {
         ai_modifier += 0x30;
       }
     }
     return 0;
   }
-  else if (event == EVENT_RESOLVE_SPELL)
+
+  if (event == EVENT_RESOLVE_SPELL)
   {
-    if (C_real_validate_target(instance->targets[0].player,
-                               instance->targets[0].card,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0,
                                player,
                                2,
@@ -4348,33 +4365,40 @@ int card_instill_energy(int player, int card, event_t event)
     }
     else
     {
-      instance->damage_target_player = instance->targets[0].player;
-      instance->damage_target_card = instance->targets[0].card;
-      target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
-      if ((target->state & STATE_IN_PLAY) != 0)
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+               .state &
+           STATE_IN_PLAY) != 0)
       {
-        instance->eot_toughness = 1;
-        target->state &= 0xfffcffff;
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .state &= 0xfffcffff;
       }
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
-  else if (event == EVENT_CAN_ACTIVATE)
+
+  if (event == EVENT_CAN_ACTIVATE)
   {
-    selected_color = single_color_test_bit_to_color_t((unsigned char)instance->color);
+    selected_color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
     if (unk_0072c440[selected_color] == 0 || has_mana_w_global_cost_mod(player, card, 7, 0) != 0)
     {
-      if (instance->info_slot == 0 && affected_card_controller == human_player && (instance->state & STATE_INVISIBLE) == 0)
+      if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && affected_card_controller == human_player &&
+          (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0)
       {
         return 1;
       }
     }
     return 0;
   }
-  else if (event == EVENT_ACTIVATE && instance->info_slot == 0)
+
+  if (event == EVENT_ACTIVATE && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
-    selected_color = single_color_test_bit_to_color_t((unsigned char)instance->color);
+    selected_color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
     if (unk_0072c440[selected_color] != 0)
     {
       charge_mana_w_global_cost_mod(player, card, 0, 0);
@@ -4382,55 +4406,70 @@ int card_instill_energy(int player, int card, event_t event)
 
     if (spell_fizzled != 1)
     {
-      ++instance->info_slot;
+      ++PLAYER_CARD_INSTANCE(player, card).info_slot;
     }
     return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION)
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id == -1)
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+            .internal_card_id == -1)
     {
       spell_fizzled = 1;
     }
     else
     {
-      target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
-      target->state &= ~STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .state &= ~STATE_TAPPED;
     }
     return 0;
   }
-  else
+
+  if (trigger_condition == TRIGGER_LEAVE_PLAY && affected_card == card && affected_card_controller == player &&
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness != 0 &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player != -1 &&
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+              .internal_card_id != -1 &&
+      trigger_cause_controller == player && trigger_cause == card && current_turn == player)
   {
-    if (trigger_condition == TRIGGER_LEAVE_PLAY && affected_card == card && affected_card_controller == player && instance->eot_toughness != 0 && instance->damage_target_player != -1 && PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id != -1 && trigger_cause_controller == player && trigger_cause == card && current_turn == player)
+    if (event == EVENT_TRIGGER)
     {
-      if (event == EVENT_TRIGGER)
-      {
-        event_result |= 2;
-      }
-      if (event == EVENT_RESOLVE_TRIGGER)
-      {
-        PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).state |= 0x30000;
-      }
+      event_result |= 2;
     }
-
-    if (event == EVENT_CLEANUP && affected_card == card && affected_card_controller == player)
+    if (event == EVENT_RESOLVE_TRIGGER)
     {
-      instance->eot_toughness = 0;
-      instance->info_slot = 0;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .state |= 0x30000;
     }
-
-    if (event == EVENT_CARDCONTROLLED && instance->damage_target_card == affected_card && instance->damage_target_player == affected_card_controller && affected_card != -1)
-    {
-      target = &PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card);
-      if ((target->state & STATE_IN_PLAY) != 0)
-      {
-        instance->eot_toughness = 1;
-        target->state &= 0xfffcffff;
-      }
-    }
-
-    return 0;
   }
+
+  if (event == EVENT_CLEANUP && affected_card == card && affected_card_controller == player)
+  {
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
+  }
+
+  if (event == EVENT_CARDCONTROLLED && PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller && affected_card != -1)
+  {
+    if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+             .state &
+         STATE_IN_PLAY) != 0)
+    {
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .state &= 0xfffcffff;
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0052cde5

@@ -1107,34 +1107,35 @@ int card_vampire_bats(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00491883
 int card_frozen_shade(int player, int card, event_t event)
 {
-  int *info_slot_ptr;
-  int result;
-  unsigned int *state_ptr;
+  int legacy_effect_card;
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    result = 0;
+    return 0;
   }
-  else if (event == EVENT_UNTAP_PHASE)
+
+  if (event == EVENT_UNTAP_PHASE)
   {
     ++unk_00939520[player][COLOR_BLACK];
-    result = 0;
+    return 0;
   }
-  else if (event == EVENT_CAN_ACTIVATE)
+
+  if (event == EVENT_CAN_ACTIVATE)
   {
-    result = has_mana(player, COLOR_BLACK, 1);
+    return has_mana(player, COLOR_BLACK, 1);
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     FUN_004e503e(0);
-    result = 0;
+    return 0;
   }
-  else if (event == EVENT_ACTIVATE)
+
+  if (event == EVENT_ACTIVATE)
   {
-    result = has_mana(player, COLOR_BLACK, 1);
-    if (result != 0)
+    if (has_mana(player, COLOR_BLACK, 1) != 0)
     {
       if (player == human_player)
       {
@@ -1165,14 +1166,14 @@ int card_frozen_shade(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
         {
-          state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(player, card).info_slot;
-          *state_ptr |= 0x80000;
+          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
         }
       }
     }
-    result = 0;
+    return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION)
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -1182,16 +1183,12 @@ int card_frozen_shade(int player, int card, event_t event)
     }
     else
     {
-      info_slot_ptr =
-          &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-               .info_slot;
-      *info_slot_ptr += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
-      info_slot_ptr =
-          &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-               .info_slot;
-      *info_slot_ptr += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .info_slot += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .number_of_targets = 0;
@@ -1200,51 +1197,48 @@ int card_frozen_shade(int player, int card, event_t event)
                .info_slot &
            0x80000) != 0)
       {
-        state_ptr =
-            (unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                                  PLAYER_CARD_INSTANCE(player, card).parent_card)
-                .info_slot;
-        *state_ptr &= 0xfff7ffff;
-        result = create_legacy_effect(card_on_stack_controller,
-                                      card_on_stack,
-                                      LEGACY_EFFECT_PUMP,
-                                      card_on_stack_controller,
-                                      card_on_stack);
-        if (result != -1)
+        *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                               PLAYER_CARD_INSTANCE(player, card).parent_card)
+             .info_slot &= 0xfff7ffff;
+        legacy_effect_card = create_legacy_effect(card_on_stack_controller,
+                                                  card_on_stack,
+                                                  LEGACY_EFFECT_PUMP,
+                                                  card_on_stack_controller,
+                                                  card_on_stack);
+        if (legacy_effect_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, result).counter_power = 1;
-          PLAYER_CARD_INSTANCE(player, result).counter_toughness = 1;
-          state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(player, result).info_slot;
-          *state_ptr |= 0x80000;
+          PLAYER_CARD_INSTANCE(player, legacy_effect_card).counter_power = 1;
+          PLAYER_CARD_INSTANCE(player, legacy_effect_card).counter_toughness = 1;
+          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, legacy_effect_card).info_slot |= 0x80000;
         }
       }
     }
-    result = 0;
-  }
-  else if (event == EVENT_POW_BOOST)
-  {
-    result = has_mana(player, COLOR_BLACK, 1);
-  }
-  else if (event == EVENT_TOU_BOOST)
-  {
-    result = has_mana(player, COLOR_BLACK, 1);
-  }
-  else if ((event == EVENT_CAN_WASTE_MANA) && (raw_mana_available[player][COLOR_BLACK] != 0))
-  {
-    event_result |= 1;
-    result = 0;
-  }
-  else
-  {
-    if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY))
-    {
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    }
-    result = 0;
+    return 0;
   }
 
-  return result;
+  if (event == EVENT_POW_BOOST)
+  {
+    return has_mana(player, COLOR_BLACK, 1);
+  }
+
+  if (event == EVENT_TOU_BOOST)
+  {
+    return has_mana(player, COLOR_BLACK, 1);
+  }
+
+  if ((event == EVENT_CAN_WASTE_MANA) && (raw_mana_available[player][COLOR_BLACK] != 0))
+  {
+    event_result |= 1;
+    return 0;
+  }
+
+  if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY))
+  {
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00543f11
@@ -1264,11 +1258,17 @@ int card_wall_of_water(int player, int card, event_t event)
     ++unk_00939520[player][COLOR_BLUE];
     return 0;
   }
-  else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  else if (event == EVENT_CAST_SPELL)
   {
-    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    return 0;
+    if (affected_card == card)
+    {
+      if (affected_card_controller == player)
+      {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+        PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+        return 0;
+      }
+    }
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
@@ -1328,16 +1328,16 @@ int card_wall_of_water(int player, int card, event_t event)
     }
     else
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
+      *(int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                    PLAYER_CARD_INSTANCE(player, card).parent_card)
+           .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .number_of_targets = 0;
       if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-               .info_slot &
-           0x80000) != 0)
+                                 PLAYER_CARD_INSTANCE(player, card).parent_card)
+                .info_slot &
+            0x80000) != 0)
       {
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                                PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -1375,7 +1375,7 @@ int card_wall_of_water(int player, int card, event_t event)
       }
       else
       {
-        ai_modifier += basiclandtypes_controlled[player][COLOR_BLUE] * -0xc;
+        ai_modifier -= basiclandtypes_controlled[player][COLOR_BLUE] * 0xc;
       }
     }
 

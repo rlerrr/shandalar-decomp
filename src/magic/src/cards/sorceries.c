@@ -347,7 +347,7 @@ int card_timetwister(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
-    ai_modifier += hand_count[player] * -0x18 + 0x30;
+    ai_modifier += 0x30 - hand_count[player] * 0x18;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
