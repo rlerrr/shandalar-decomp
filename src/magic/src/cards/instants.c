@@ -2033,33 +2033,37 @@ void FUN_004fb8fd(int player, int card, int color_from, unsigned char color_to)
 int card_sleight_of_mind(int player, int card, event_t event)
 {
   extern card_ptr_t global_raw_cards_storage[2000];
-  card_instance_t *instance;
-  target_t target;
-  unsigned int available_colors;
-  int target_iid;
-  int old_color;
-  int new_color;
+  struct
+  {
+    card_instance_t *instance;
+    target_t target;
+    unsigned int available_colors;
+    int target_iid;
+    int old_color;
+    int new_color;
+    char pad[0xe4 - 0x1c];
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
     if ((unk_008b35ec == player) || ((unk_00926804 & 2) != 0))
     {
-      if (unk_008ce508 == -1)
+      if (unk_008ce508 != -1)
       {
-        FUN_004e4ff3(0);
-        return 1;
+        return 99;
       }
-      return 99;
-    }
-    if (unk_008ce508 == -1 || unk_008b35ec != human_player)
-    {
       FUN_004e4ff3(0);
       return 1;
     }
-    return 99;
+    if (unk_008ce508 != -1 && unk_008b35ec == human_player)
+    {
+      return 99;
+    }
+    FUN_004e4ff3(0);
+    return 1;
   }
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  s.instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     if (unk_008ce508 == -1)
@@ -2079,94 +2083,94 @@ int card_sleight_of_mind(int player, int card, event_t event)
                                ~SUB_WALL,
                                -1,
                                -1,
-                               0,
-                               0,
-                               0,
-                               text_lines[0],
-                               1,
-                               &target) == 0)
+                                0,
+                                0,
+                                0,
+                                text_lines[0],
+                                1,
+                                &s.target) == 0)
       {
         spell_fizzled = 1;
       }
       else
       {
-        instance->targets[0] = target;
-        instance->number_of_targets = 1;
+        s.instance->targets[0] = s.target;
+        s.instance->number_of_targets = 1;
       }
     }
     else
     {
-      instance->targets[0].player = unk_008ce508;
-      instance->targets[0].card = unk_008ce4f4;
-      instance->number_of_targets = 1;
+      s.instance->targets[0].player = unk_008ce508;
+      s.instance->targets[0].card = unk_008ce4f4;
+      s.instance->number_of_targets = 1;
     }
 
     if (spell_fizzled != 1)
     {
-      target_iid =
-          PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).internal_card_id;
-      available_colors = global_raw_cards_storage[global_cards_data[target_iid].id].sleight_color;
-      if (available_colors == 0)
+      s.target_iid =
+          PLAYER_CARD_INSTANCE(s.instance->targets[0].player, s.instance->targets[0].card).internal_card_id;
+      s.available_colors = global_raw_cards_storage[global_cards_data[s.target_iid].id].sleight_color;
+      if (s.available_colors == 0)
       {
         spell_fizzled = 1;
       }
       else
       {
-        if ((PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).token_status & STATUS_SLEIGHTED) != 0)
+        if ((PLAYER_CARD_INSTANCE(s.instance->targets[0].player, s.instance->targets[0].card).token_status & STATUS_SLEIGHTED) != 0)
         {
-          old_color = single_color_test_bit_to_color_t((unsigned char)available_colors);
-          old_color = get_sleighted_color(instance->targets[0].player, instance->targets[0].card, old_color);
-          available_colors = 1 << ((unsigned char)old_color & 0x1f);
+          s.old_color = single_color_test_bit_to_color_t((unsigned char)s.available_colors);
+          s.old_color = get_sleighted_color(s.instance->targets[0].player, s.instance->targets[0].card, s.old_color);
+          s.available_colors = 1 << ((unsigned char)s.old_color & 0x1f);
         }
 
         do
         {
-          old_color = internal_rand(5) + 1;
-        } while ((available_colors & (1 << ((unsigned char)old_color & 0x1f))) == 0);
+          s.old_color = internal_rand(5) + 1;
+        } while ((s.available_colors & (1 << ((unsigned char)s.old_color & 0x1f))) == 0);
 
         do
         {
-          new_color = internal_rand(5) + 1;
-        } while (new_color == old_color);
+          s.new_color = internal_rand(5) + 1;
+        } while (s.new_color == s.old_color);
 
         if (unk_008a9000 == 1)
         {
-          unk_00939340 = old_color;
+          unk_00939340 = s.old_color;
           FUN_004e4f11();
-          unk_00939340 = new_color;
+          unk_00939340 = s.new_color;
           FUN_004e4f11();
         }
         else
         {
           FUN_004e5089();
-          old_color = unk_00939340;
+          s.old_color = unk_00939340;
           FUN_004e5089();
-          new_color = unk_00939340;
+          s.new_color = unk_00939340;
         }
 
-        instance->info_slot = new_color * 0x100 + old_color;
+        s.instance->info_slot = s.new_color * 0x100 + s.old_color;
       }
     }
 
     if (spell_fizzled == 1)
     {
-      instance->number_of_targets = 0;
+      s.instance->number_of_targets = 0;
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target = instance->targets[0];
+    s.target = s.instance->targets[0];
     if (unk_008a9000 != 1)
     {
       play_sound_effect(WAV_CHANGET);
     }
-    PLAYER_CARD_INSTANCE(target.player, target.card).token_status |= STATUS_SLEIGHTED;
-    FUN_004fb8fd(target.player,
-                 target.card,
-                 (unsigned char)instance->info_slot,
-                 (unsigned char)((unsigned int)instance->info_slot >> 8));
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(s.target.player, s.target.card).token_status |= STATUS_SLEIGHTED;
+    FUN_004fb8fd(s.target.player,
+                 s.target.card,
+                 (unsigned char)s.instance->info_slot,
+                 (unsigned char)((unsigned int)s.instance->info_slot >> 8));
+    s.instance->number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
