@@ -262,6 +262,7 @@ int card_wheel_of_fortune(int player, int card, event_t event)
   int current_card;
   int player_zero_library;
   int player_one_library;
+  int dummy;
 
   if (event == EVENT_CAN_CAST)
   {
