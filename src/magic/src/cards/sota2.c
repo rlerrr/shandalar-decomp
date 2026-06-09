@@ -580,10 +580,16 @@ int card_granite_gargoyle(int player, int card, event_t event)
     ++unk_00939530[player][0];
   }
 
-  if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  if (event == EVENT_CAST_SPELL)
   {
-    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    if (affected_card == card)
+    {
+      if (affected_card_controller == player)
+      {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+        PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+      }
+    }
   }
 
   if (event == EVENT_CAN_ACTIVATE)
