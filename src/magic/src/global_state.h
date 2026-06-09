@@ -89,6 +89,9 @@ extern int unk_00777850;
 // GLOBAL: MAGIC 0x00777854
 extern int DAT_00777854;
 
+// GLOBAL: MAGIC 0x00775d3c
+extern unsigned char DAT_00775d3c;
+
 // GLOBAL: MAGIC 0x00712938
 extern int unk_00712938;
 

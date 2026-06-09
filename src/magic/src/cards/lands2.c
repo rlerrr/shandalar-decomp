@@ -12,6 +12,79 @@ int card_arena(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005530c4
 int card_bazaar_of_baghdad(int player, int card, event_t event)
 {
+  struct
+  {
+    int i;
+    int num_available;
+    int num_lands;
+    int internal_card_id;
+  } s;
+
+  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
+  {
+    if (active_player == player)
+    {
+      ai_modifier += 0x30;
+    }
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    if (active_player == player && (unk_00926804 & 2) == 0)
+    {
+      s.num_available = 0;
+      s.num_lands = 0;
+
+      for (s.i = 0; s.i < active_cards_count[player]; ++s.i)
+      {
+        s.internal_card_id = PLAYER_CARD_INSTANCE(player, s.i).internal_card_id;
+        if (s.internal_card_id != -1)
+        {
+          if ((PLAYER_CARD_INSTANCE(player, s.i).state & 0x22) == 0 &&
+              (global_cards_data[s.internal_card_id].type & TYPE_INTERRUPT) == 0)
+          {
+            ++s.num_available;
+          }
+          if ((global_cards_data[s.internal_card_id].type & TYPE_LAND) != 0)
+          {
+            ++s.num_lands;
+          }
+        }
+      }
+
+      ai_modifier += (7 - s.num_available) * -0x18;
+      if (s.num_lands < 3 || 8 < s.num_lands)
+      {
+        ai_modifier += 0x30;
+      }
+    }
+
+    PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    return 0;
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    FUN_0043e18b(player);
+    FUN_0043e18b(player);
+    discard(player, 0, 0);
+    discard(player, 0, 0);
+    discard(player, 0, 0);
+    return 0;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00503331
@@ -48,12 +121,82 @@ int card_island_of_wak_wak(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005553ee
 int card_urza_s_mine(int player, int card, event_t event)
 {
+  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  {
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+  }
+
+  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  {
+    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
+        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    {
+      declare_mana_available(player, COLOR_COLORLESS, 1);
+    }
+    return 0;
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 1);
+    PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    return 0;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00505608
 // FUNCTION: SHANDALAR 0x00555699
 int card_urza_s_tower(int player, int card, event_t event)
 {
+  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  {
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+  }
+
+  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  {
+    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
+        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    {
+      declare_mana_available(player, COLOR_COLORLESS, 1);
+    }
+    return 0;
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 1);
+    PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    return 0;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MOK 0x004a9310

@@ -3082,6 +3082,31 @@ int internal_rand(int maximum)
   return (maximum > 1) ? rand() % maximum : 0;
 }
 
+// FUNCTION: MAGIC 0x00464a84
+int FUN_00464a84(int player, int maximum)
+{
+  if (player == unk_008b35ec)
+  {
+    if (maximum > 1)
+    {
+      unk_007a7d0c = rand() % maximum;
+    }
+    else
+    {
+      unk_007a7d0c = 0;
+    }
+
+    unk_007a7d08 = 0x18;
+    TENTATIVE_send_network_result(player, 0x18);
+  }
+  else
+  {
+    TENTATIVE_wait_for_network_result(player, 0x18);
+  }
+
+  return unk_007a7d0c;
+}
+
 // FUNCTION: MAGIC 0x004e4f11
 void FUN_004e4f11(void)
 {

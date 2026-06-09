@@ -50,6 +50,7 @@ int FUN_0044aa01(int player);
 int FUN_0044541f(int param_1);
 int FUN_00445b56(int player, int card);
 int FUN_00440c61(int player, int card);
+int FUN_00464a84(int player, int maximum);
 void FUN_00441cf2(int param_1, int param_2);
 void FUN_004460d3(void);
 unsigned int FUN_00443898(void);
