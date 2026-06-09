@@ -485,17 +485,15 @@ int card_shivan_dragon(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048e853
 int card_dragon_whelp(int player, int card, event_t event)
 {
-  int *info_slot_ptr;
   int result;
-  unsigned int *state_ptr;
-  unsigned int saved_max_x_value;
+  int saved_max_x_value;
 
   if (event == EVENT_UNTAP_PHASE)
   {
     ++unk_00939530[player][0];
     result = 0;
   }
-  else if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
+  else if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (player == affected_card_controller))
   {
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
@@ -540,8 +538,7 @@ int card_dragon_whelp(int player, int card, event_t event)
         x_value = 1;
       }
 
-      state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-      *state_ptr &= 0xff0000;
+      *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).eot_toughness &= 0xff0000;
       if (spell_fizzled == 1)
       {
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
@@ -570,11 +567,9 @@ int card_dragon_whelp(int player, int card, event_t event)
     }
     else
     {
-      info_slot_ptr =
-          &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-               .info_slot;
-      *info_slot_ptr += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .number_of_targets = 0;
@@ -593,8 +588,7 @@ int card_dragon_whelp(int player, int card, event_t event)
                                       card_on_stack);
         if (result != -1)
         {
-          state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(player, result).info_slot;
-          *state_ptr |= 0x80000;
+          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, result).info_slot |= 0x80000;
         }
       }
     }

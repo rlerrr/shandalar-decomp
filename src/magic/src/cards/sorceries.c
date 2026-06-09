@@ -337,8 +337,6 @@ int card_timetwister(int player, int card, event_t event)
 {
   int current_player;
   int player_index;
-  int graveyard_index;
-  int cards_in_hand;
   int current_card;
 
   if (event == EVENT_CAN_CAST)
@@ -346,34 +344,60 @@ int card_timetwister(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     ai_modifier += 0x30 - hand_count[player] * 0x18;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
+    player_index = 0;
     current_player = human_player;
-    for (player_index = 0; player_index < 2; ++player_index)
+    while (player_index < 2)
     {
-      cards_in_hand = hand_count[current_player];
-      for (current_card = 0; current_card < cards_in_hand; ++current_card)
+      current_card = 0;
+      while (current_card < active_cards_count[current_player])
       {
-        discard(current_player, 1, 0);
+        if (FUN_00440c61(current_player, current_card) != 0)
+        {
+          FUN_004b5cf5(current_player, PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id);
+          PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id = -1;
+        }
+        ++current_card;
       }
 
-      for (graveyard_index = 0;
-           graveyard_index < 500 && global_graveyard_slots[current_player][graveyard_index] != -1;
-           ++graveyard_index)
+      current_card = 0;
+      while (current_card < 500)
       {
-        FUN_004b5cf5(current_player, global_graveyard_slots[current_player][graveyard_index]);
-        global_graveyard_slots[current_player][graveyard_index] = -1;
+        if (global_graveyard_slots[current_player][current_card] == -1)
+        {
+          break;
+        }
+
+        FUN_004b5cf5(current_player, global_graveyard_slots[current_player][current_card]);
+        ++current_card;
       }
 
-      TENTATIVE_reassess_all_cards();
+      current_card = 0;
+      while (current_card < 500)
+      {
+        global_graveyard_slots[current_player][current_card] = -1;
+        ++current_card;
+      }
+
+      TENTATIVE_reassess_all_cards(0, 0x30);
       FUN_004b59b2(player, current_player);
       FUN_0040246a(current_player, 7);
-      current_player = current_player == 0 ? 1 : 0;
+
+      ++player_index;
+      if (human_player != 0)
+      {
+        --current_player;
+      }
+      else
+      {
+        ++current_player;
+      }
     }
 
     kill_card(player, card, KILL_BURY);

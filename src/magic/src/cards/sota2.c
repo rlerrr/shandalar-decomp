@@ -577,7 +577,7 @@ int card_granite_gargoyle(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939520[player][COLOR_RED];
+    ++unk_00939530[player][0];
   }
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))

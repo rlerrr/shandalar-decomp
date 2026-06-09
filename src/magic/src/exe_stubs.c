@@ -641,6 +641,22 @@ int FUN_0044096f(int player, int card)
   return 1;
 }
 
+// FUNCTION: MAGIC 0x00440c61
+int FUN_00440c61(int player, int card)
+{
+  if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == -1)
+  {
+    return 0;
+  }
+
+  if ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_IN_PLAY | STATE_INVISIBLE)) != 0)
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
 // FUNCTION: MAGIC 0x00442cf9
 int FUN_00442cf9(int player, int card)
 {
