@@ -47,7 +47,7 @@ int card_gem_bazaar(int player, int card, event_t event)
                                          card,
                                          event,
                                          single_color_test_bit_to_color_t(
-                                             (color_test_t)PLAYER_CARD_INSTANCE(player, card).mana_color));
+                                             (color_test_t)(global_card_instances[player])[card].mana_color));
   }
 
   if (event == EVENT_CAN_ACTIVATE)
@@ -56,7 +56,7 @@ int card_gem_bazaar(int player, int card, event_t event)
                                          card,
                                          event,
                                          single_color_test_bit_to_color_t(
-                                             (color_test_t)PLAYER_CARD_INSTANCE(player, card).mana_color));
+                                             (color_test_t)(global_card_instances[player])[card].mana_color));
   }
 
   if (event == EVENT_ACTIVATE)
@@ -65,7 +65,7 @@ int card_gem_bazaar(int player, int card, event_t event)
                                          card,
                                          event,
                                          single_color_test_bit_to_color_t(
-                                             (color_test_t)PLAYER_CARD_INSTANCE(player, card).mana_color));
+                                             (color_test_t)(global_card_instances[player])[card].mana_color));
   }
 
   if (event == EVENT_RESOLVE_SPELL ||
@@ -79,18 +79,18 @@ int card_gem_bazaar(int player, int card, event_t event)
 
     if ((unk_00926804 & 2) != 0)
     {
-      PLAYER_CARD_INSTANCE(player, card).mana_color = (char)(1 << (unsigned char)(FUN_00464a84(player, 5) + 1));
+      (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(FUN_00464a84(player, 5) + 1));
     }
     else if (player == unk_008b35ec)
     {
-      PLAYER_CARD_INSTANCE(player, card).mana_color = (char)(1 << (unsigned char)(internal_rand(5) + 1));
+      (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(internal_rand(5) + 1));
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).mana_color = (char)DAT_00775d3c;
+      (global_card_instances[player])[card].mana_color = (char)DAT_00775d3c;
     }
 
-    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).mana_color;
+    (global_card_instances[player])[card].info_slot = (global_card_instances[player])[card].mana_color;
     return 0;
   }
 
@@ -106,46 +106,149 @@ int card_oasis(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0042a995
 int card_strip_mine(int player, int card, event_t event)
 {
+  struct
+  {
+    char unused_394[0x390];
+    int unused_4;
+  } s;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004b7099
 // FUNCTION: SHANDALAR 0x0042ae58
 int card_library_of_alexandria(int player, int card, event_t event)
 {
+  struct
+  {
+    char dialog[0x384];
+    int action;
+    int default_action;
+    int unused;
+  } s;
+
+  if (event == EVENT_COUNT_MANA || event == EVENT_CAN_ACTIVATE)
+  {
+    return FUN_0042d790(player, card, event, COLOR_COLORLESS);
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    if (unk_008a9000 != 1)
+    {
+      load_text("prompts.txt", "LIBRARY_OF_ALEXANDRIA");
+    }
+
+    if (hand_count[player] == 7)
+    {
+      if (unk_008a9000 != 1)
+      {
+        sprintf(s.dialog, " %s\n %s\n %s", text_lines[0], text_lines[1], text_lines[2]);
+      }
+      s.default_action = 1;
+    }
+    else
+    {
+      if (unk_008a9000 != 1)
+      {
+        sprintf(s.dialog, " %s\n %s\n %s", text_lines[0], text_lines[1], text_lines[2]);
+      }
+      s.default_action = 0;
+    }
+
+    if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
+    {
+      s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
+    }
+    else
+    {
+      s.action = s.default_action;
+    }
+
+    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
+    if (s.action == 0)
+    {
+      FUN_0042d790(player, card, event, COLOR_COLORLESS);
+    }
+    else if (s.action == 1)
+    {
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+      undeclare_mana_available(player, COLOR_COLORLESS, 1);
+      PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
+      produced_mana_color = -1;
+    }
+    else
+    {
+      spell_fizzled = 1;
+    }
+
+    return 0;
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    card_instance_t *instance = &PLAYER_CARD_INSTANCE(player, card);
+    if (PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot == 1)
+    {
+      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 0;
+      FUN_0043e18b(player);
+    }
+    return 0;
+  }
+
+  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  {
+    return FUN_0042d790(player, card, event, COLOR_COLORLESS);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004b74b2
 // FUNCTION: SHANDALAR 0x0042b270
 int card_mishra_s_factory(int player, int card, event_t event)
 {
+  struct
+  {
+    char unused_4e0[0x4dc];
+    int unused_4;
+  } s;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004b85f5
 // FUNCTION: SHANDALAR 0x0042c3ae
 int card_assembly_worker(int player, int card, event_t event)
 {
+  struct
+  {
+    char unused_4e0[0x4dc];
+    int unused_4;
+  } s;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004b978b
 // FUNCTION: SHANDALAR 0x0042d548
 int card_mishra_s_workshop(int player, int card, event_t event)
 {
-  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player)
   {
-    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
-         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
-        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    if (!is_animated_and_sick(player, card))
     {
-      declare_mana_available(player, COLOR_ARTIFACT, 3);
+      if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+      {
+        declare_mana_available(player, COLOR_ARTIFACT, 3);
+      }
     }
     return 0;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
-         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && !is_animated_and_sick(player, card))
     {
       return 1;
     }
@@ -156,6 +259,7 @@ int card_mishra_s_workshop(int player, int card, event_t event)
   {
     undeclare_mana_available_and_produce_it(player, COLOR_ARTIFACT, 3);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    produced_mana_color = COLOR_ARTIFACT;
     return 0;
   }
 
@@ -170,7 +274,7 @@ int card_mishra_s_workshop(int player, int card, event_t event)
 // FUNCTION: MAGIC 0x004b99d0
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color)
 {
-  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player)
   {
     if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {

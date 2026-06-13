@@ -28,6 +28,9 @@ int FUN_00404cff(int player, int internal_card_id, int who_to_check);
 void FUN_00449bef(char *name);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
+int FUN_0042d790(int player, int card, event_t event, int color);
+unsigned int FUN_00488cc4(int player, int card);
+int FUN_0049fda3(int player, unsigned int preferred_controller, int card);
 int FUN_10025b5e(int window, unsigned int message, int other_window, int data);
 int helper_destroy_basiclandtype(int source_player,
                                         int source_card,
@@ -234,6 +237,7 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount);
 void count_mana(void);
 void C_count_colors_of_lands_in_play(void);
 void C_dispatch_event_raw(event_t event);
+int undeclare_mana_available(int player, color_t color, int amount);
 int create_legacy_effect(int player, int card, int legacy_iid, int target_player, int target_card);
 int FUN_004f7783(int player, int card);
 int FUN_00482a97(int player, int card, unsigned int flags);

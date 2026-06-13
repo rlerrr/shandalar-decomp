@@ -20,7 +20,7 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
     int internal_card_id;
   } s;
 
-  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
     if (active_player == player)
     {
@@ -30,9 +30,7 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
-         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && !is_animated_and_sick(player, card))
     {
       return 1;
     }
@@ -91,12 +89,26 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005533b2
 int card_city_of_brass(int player, int card, event_t event)
 {
+  struct
+  {
+    char unused_138[0x134];
+    int unused_4;
+  } s;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00503987
 // FUNCTION: SHANDALAR 0x00553a0e
 int card_desert(int player, int card, event_t event)
 {
+  struct
+  {
+    char unused_394[0x390];
+    int unused_4;
+  } s;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00503ef5
@@ -109,6 +121,13 @@ int card_diamond_valley(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005543ce
 int card_elephant_graveyard(int player, int card, event_t event)
 {
+  struct
+  {
+    char unused_39c[0x398];
+    int unused_4;
+  } s;
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00504ec7

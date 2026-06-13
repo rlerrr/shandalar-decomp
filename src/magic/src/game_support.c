@@ -3009,6 +3009,96 @@ int undeclare_mana_available_and_produce_it(int player, color_t color, int amoun
   return raw_mana_available[player][color];
 }
 
+// FUNCTION: SHANDALAR 0x0042d790
+int FUN_0042d790(int player, int card, event_t event, int color)
+{
+  if (((event == EVENT_COUNT_MANA) && (affected_card == card)) && (affected_card_controller == player))
+  {
+    if ((((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0) ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
+        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    {
+      declare_mana_available(player, (color_t)color, 1);
+    }
+    return 0;
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    undeclare_mana_available_and_produce_it(player, (color_t)color, 1);
+    PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    produced_mana_color = color;
+    return 0;
+  }
+
+  if (event == EVENT_RESOLVE_SPELL && unk_008a9000 != 1)
+  {
+    play_sound_effect(color + WAV_GREY);
+  }
+
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x00488cc4
+unsigned int FUN_00488cc4(int player, int card)
+{
+  (void)player;
+  (void)card;
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x0049fda3
+int FUN_0049fda3(int player, unsigned int preferred_controller, int card)
+{
+  target_t target;
+
+  if (preferred_controller == 0xffffffff)
+  {
+    preferred_controller = 2;
+  }
+
+  if (!C_real_select_target(player,
+                            2,
+                            preferred_controller,
+                            TARGET_ZONE_IN_PLAY,
+                            TYPE_LAND,
+                            TYPE_NONE,
+                            0,
+                            FUN_00488cc4(player, card),
+                            COLOR_TEST_0,
+                            COLOR_TEST_0,
+                            -1,
+                            ~SUB_WALL,
+                            -1,
+                            -1,
+                            0,
+                            0,
+                            0,
+                            text_lines[0],
+                            1,
+                            &target))
+  {
+    return 0;
+  }
+
+  PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets].player =
+      target.player;
+  PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets].card = target.card;
+  ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+  return 1;
+}
+
 // FUNCTION: MAGIC 0x005513d7
 void FUN_005513d7(int player, int card, int amount)
 {
