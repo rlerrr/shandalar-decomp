@@ -92,6 +92,16 @@ int card_take_ability(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004aace7
 int card_damage(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+    int dummy4;
+    int dummy5;
+    int dummy6;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x004f1e72
@@ -129,6 +139,11 @@ int card_fog_effect(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004aca60
 int card_channel_1(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x004f2b93
@@ -175,6 +190,7 @@ int card_titanias_leg(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ae6a4
 int card_disintegrt_FX(int player, int card, event_t event)
 {
+  return ((card << 2) * 5) * 3;
 }
 
 // FUNCTION: MAGIC 0x004f47f7
@@ -190,7 +206,7 @@ int card_sirens_call_FX(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004aeac7
 int card_ebony_horse_FX(int player, int card, event_t event)
 {
-  if (event != EVENT_PREVENT_DAMAGE)
+  if (event == EVENT_PREVENT_DAMAGE)
   {
   }
 }
@@ -199,7 +215,7 @@ int card_ebony_horse_FX(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004aed84
 int card_poltergeist_FX(int player, int card, event_t event)
 {
-  if (event != EVENT_CHANGE_TYPE)
+  if (event == EVENT_CHANGE_TYPE)
   {
   }
 }
@@ -243,7 +259,7 @@ int card_activation(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004afd4c
 int card_draw_card(int player, int card, event_t event)
 {
-  if (event != EVENT_CAN_ACTIVATE)
+  if (event == EVENT_CAN_ACTIVATE)
   {
   }
 }
