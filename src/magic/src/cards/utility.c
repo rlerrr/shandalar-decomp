@@ -68,6 +68,12 @@ int card_unblockable(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004aa306
 int card_no_attack(int player, int card, event_t event)
 {
+  if (event != EVENT_CLEANUP)
+  {
+    if (event == EVENT_SHOULD_AI_PLAY)
+    {
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x004f03ad
@@ -135,12 +141,28 @@ int card_generic(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ad642
 int card_asterisk_FX(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+    int dummy4;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x004f3e18
 // FUNCTION: SHANDALAR 0x004aded3
 int card_piggy_FX(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+    int dummy4;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x004f41d5
@@ -168,34 +190,60 @@ int card_sirens_call_FX(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004aeac7
 int card_ebony_horse_FX(int player, int card, event_t event)
 {
+  if (event != EVENT_PREVENT_DAMAGE)
+  {
+  }
 }
 
 // FUNCTION: MAGIC 0x004f4cc8
 // FUNCTION: SHANDALAR 0x004aed84
 int card_poltergeist_FX(int player, int card, event_t event)
 {
+  if (event != EVENT_CHANGE_TYPE)
+  {
+  }
 }
 
 // FUNCTION: MAGIC 0x004f5053
 // FUNCTION: SHANDALAR 0x004af111
 int card_graveyard(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+    int dummy4;
+    int dummy5;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x004f56f2
 // FUNCTION: SHANDALAR 0x004af7ac
 int card_damage_legacy(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x004f5b91
 // FUNCTION: SHANDALAR 0x004afc4a
 int card_activation(int player, int card, event_t event)
 {
+  int dummy;
 }
 
 // FUNCTION: MAGIC 0x004f5c93
 // FUNCTION: SHANDALAR 0x004afd4c
 int card_draw_card(int player, int card, event_t event)
 {
+  if (event != EVENT_CAN_ACTIVATE)
+  {
+  }
 }
