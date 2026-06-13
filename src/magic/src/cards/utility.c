@@ -6,12 +6,62 @@
 // FUNCTION: SHANDALAR 0x004a9dc3
 int card_power_up(int player, int card, event_t event)
 {
+  if (PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card)
+  {
+    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller)
+    {
+      if (affected_card != -1)
+      {
+        if (event == EVENT_POWER)
+        {
+          event_result += PLAYER_CARD_INSTANCE(player, card).counter_power;
+        }
+
+        if (event == EVENT_TOUGHNESS)
+        {
+          event_result += PLAYER_CARD_INSTANCE(player, card).power;
+        }
+      }
+    }
+  }
+
+  if (event == EVENT_CLEANUP)
+  {
+    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player != -1 &&
+        PLAYER_CARD_INSTANCE(player, card).damage_target_card != -1)
+    {
+      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+          .regen_status |= 0x0f000000;
+    }
+    kill_card(player, card, KILL_REMOVE);
+  }
 }
 
 // FUNCTION: MAGIC 0x004f0186
 // FUNCTION: SHANDALAR 0x004aa246
 int card_unblockable(int player, int card, event_t event)
 {
+  if (event == EVENT_BLOCK_LEGALITY)
+  {
+    if (attacking_card == PLAYER_CARD_INSTANCE(player, card).damage_target_card &&
+        attacking_card_controller == PLAYER_CARD_INSTANCE(player, card).damage_target_player)
+    {
+      ++event_result;
+    }
+  }
+
+  if (event == EVENT_CLEANUP)
+  {
+    return 0;
+  }
+
+  if (event == EVENT_SHOULD_AI_PLAY)
+  {
+    kill_card(player, card, KILL_BURY);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004f0246
@@ -66,6 +116,7 @@ int card_marsh_gas_1(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ac7ed
 int card_fog_effect(int player, int card, event_t event)
 {
+  int dummy;
 }
 
 // FUNCTION: MAGIC 0x004f29a0
@@ -108,6 +159,9 @@ int card_disintegrt_FX(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004ae8b2
 int card_sirens_call_FX(int player, int card, event_t event)
 {
+  int dummy1;
+  int dummy2;
+  int dummy3;
 }
 
 // FUNCTION: MAGIC 0x004f4a09
