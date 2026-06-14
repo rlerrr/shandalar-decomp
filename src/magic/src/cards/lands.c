@@ -101,6 +101,13 @@ int card_gem_bazaar(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0042a375
 int card_oasis(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+  } s;
 }
 // FUNCTION: MAGIC 0x004b6bd6
 // FUNCTION: SHANDALAR 0x0042a995

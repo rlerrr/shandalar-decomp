@@ -6,6 +6,19 @@
 // FUNCTION: SHANDALAR 0x00552320
 int card_arena(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+    int dummy4;
+    int dummy5;
+    int dummy6;
+    int dummy7;
+    int dummy8;
+    int dummy9;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x00503044
@@ -115,6 +128,13 @@ int card_desert(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00553f7d
 int card_diamond_valley(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+    int dummy3;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x00504340
@@ -134,6 +154,12 @@ int card_elephant_graveyard(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00554f53
 int card_island_of_wak_wak(int player, int card, event_t event)
 {
+  struct
+  {
+    int dummy0;
+    int dummy1;
+    int dummy2;
+  } s;
 }
 
 // FUNCTION: MAGIC 0x0050535f
