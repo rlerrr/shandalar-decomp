@@ -11,6 +11,9 @@
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
 
+// GLOBAL: SHANDALAR 0x008aa920
+char text_lines[249][300];
+
 typedef void(__cdecl *fn_void_void)(void);
 typedef int(__cdecl *fn_int_void)(void);
 
@@ -44,6 +47,10 @@ typedef int(__cdecl *fn_int_void)(void);
 #define s_Current_Palette_0058a144 EXE_STR(0x0058a144)
 #define s_ShowPaletteClass_0058a154 EXE_STR(0x0058a154)
 #define s_sound_locmus1_wav_0058a168 EXE_STR(0x0058a168)
+#define s_PLAYERNAMES_00593938 EXE_STR(0x00593938)
+#define s_DIFFICULTYLEVELS_00593944 EXE_STR(0x00593944)
+#define s_DUNGEON_NAMES_00593958 EXE_STR(0x00593958)
+#define s_LAIR_NAMES_00593968 EXE_STR(0x00593968)
 
 /* These strings are patched at runtime; keep as writable pointers. */
 #define s_x_sound_kwalkl_wav_00591880 EXE_BYTE_PTR(0x00591880)
@@ -61,6 +68,7 @@ typedef int(__cdecl *fn_int_void)(void);
 #define s_x_sound_gbird1_wav_00591970 EXE_BYTE_PTR(0x00591970)
 #define s_x_sound_rbird1_wav_00591984 EXE_BYTE_PTR(0x00591984)
 #define s_x_sound_wbird1_wav_00591998 EXE_BYTE_PTR(0x00591998)
+#define s_empty_00593c50 EXE_STR(0x00593c50)
 
 // Globals (accessed by absolute address to avoid duplicate storage)
 #define DAT_0078df78 EXE_DWORD(0x0078df78)
@@ -108,6 +116,15 @@ typedef int(__cdecl *fn_int_void)(void);
 #define DAT_005919ac EXE_DWORD(0x005919ac)
 #define DAT_0074c930 EXE_TYP_PTR(char *, 0x0074c930)
 #define DAT_0077c9e0 EXE_TYP_PTR(char *, 0x0077c9e0)
+#define DAT_008bd200 EXE_DWORD(0x008bd200)
+#define DAT_0077e2c0 EXE_TYP_PTR(char, 0x0077e2c0)
+#define DAT_0077e57c EXE_TYP_PTR(char, 0x0077e57c)
+#define DAT_0074d790 EXE_TYP_PTR(char, 0x0074d790)
+#define DAT_0074d7f4 EXE_TYP_PTR(char, 0x0074d7f4)
+#define DAT_0074c970 EXE_TYP_PTR(char, 0x0074c970)
+#define DAT_0074ccc2 EXE_TYP_PTR(char, 0x0074ccc2)
+#define DAT_0074bd30 EXE_TYP_PTR(char, 0x0074bd30)
+#define DAT_0074c0e6 EXE_TYP_PTR(char, 0x0074c0e6)
 
 // GLOBAL: SHANDALAR 0x005a0d4c (pointer to "magsnd")
 #define PTR_s_magsnd_005a0d4c EXE_TYP(const char *, 0x005a0d4c)
@@ -115,8 +132,12 @@ typedef int(__cdecl *fn_int_void)(void);
 /* 0x00589de4: hardcoded timer interval in original binary. */
 
 int InitLicenseSecretsFromRegistry(void);
+int load_text(const char *file_name, const char *section_name);
 void FUN_00464663(char *out_dir);
 int FUN_00564ee7(const char *filename);
+int FUN_0056cc4d(const char *filename, const char *section);
+int FUN_00565c7e(const char *filename, const char *section, int out_table, int max_entries, char *string_buf,
+                 char *string_buf_end, char **out_next_buf);
 int FUN_00565dbc(const char *filename);
 int FUN_00565fdb(char *param_1, char *param_2, int *param_3, int *param_4);
 void FUN_00559999(void);
@@ -153,11 +174,168 @@ void FUN_00464663(char *out_dir)
   }
 }
 
+// FUNCTION: SHANDALAR 0x0056ca10
+int load_text(const char *file_name, const char *section_name)
+{
+  struct
+  {
+    FILE *f;
+    char line[300];
+    char path[128];
+    char section_line[300];
+    unsigned int num_text;
+    int i;
+  } s;
+
+  strcpy(s.section_line, "@");
+  strcat(s.section_line, section_name);
+  strcat(s.section_line, "\n");
+
+  strcpy(s.path, global_base_directory);
+  strcat(s.path, "\\");
+  strcat(s.path, file_name);
+
+  s.f = fopen(s.path, "rt");
+  if (s.f == (FILE *)0)
+  {
+    return -1;
+  }
+
+  while (strcmp(s.section_line, s.line))
+  {
+    if (!fgets(s.line, 300, s.f))
+    {
+      fclose(s.f);
+      return -1;
+    }
+  }
+
+  fscanf(s.f, "%d", &s.num_text);
+  fgets(s.line, 300, s.f);
+  if (s.num_text > 225)
+  {
+    fclose(s.f);
+    return -1;
+  }
+
+  for (s.i = 0; s.i < (int)s.num_text; s.i++)
+  {
+    if (!fgets(text_lines[s.i], 300, s.f))
+    {
+      fclose(s.f);
+      return -1;
+    }
+    text_lines[s.i][strlen(text_lines[s.i]) - 1] = 0;
+  }
+
+  fclose(s.f);
+  return s.num_text;
+}
+
 // FUNCTION: SHANDALAR 0x00564ee7
 int FUN_00564ee7(const char *filename)
 {
-  (void)filename;
-  return 1;
+  int ok1;
+  int ok2;
+  int ok3;
+  int ok4;
+
+  ok1 = FUN_00565c7e(filename, s_PLAYERNAMES_00593938, 0x0077c5a0, 0xe, DAT_0077e2c0, DAT_0077e57c, (char **)0);
+  ok2 = FUN_00565c7e(filename, s_DIFFICULTYLEVELS_00593944, 0x0077d130, 4, DAT_0074d790, DAT_0074d7f4, (char **)0);
+  ok3 = FUN_00565c7e(filename, s_DUNGEON_NAMES_00593958, 0x00780820, 0x11, DAT_0074c970, DAT_0074ccc2, (char **)0);
+  ok4 = FUN_00565c7e(filename, s_LAIR_NAMES_00593968, 0x0077c020, 0x13, DAT_0074bd30, DAT_0074c0e6, (char **)0);
+
+  return ok1 && ok2 && ok3 && ok4;
+}
+
+// FUNCTION: SHANDALAR 0x0056cc4d
+int FUN_0056cc4d(const char *filename, const char *section)
+{
+  int x;
+  int iVar1;
+  size_t len;
+  int out_pos;
+  int j;
+  int i;
+
+  if (DAT_008bd200 == 1)
+  {
+    x = 0;
+  }
+  else
+  {
+    x = load_text(filename, section);
+    for (i = 0; (iVar1 = abs(x)), i < iVar1; ++i)
+    {
+      len = strlen(text_lines[i]);
+      out_pos = 0;
+      for (j = 0; j < (int)len; ++j)
+      {
+        if (text_lines[i][j] == '\\' && text_lines[i][j + 1] == 'n')
+        {
+          text_lines[i][out_pos] = '\n';
+          ++j;
+        }
+        else
+        {
+          text_lines[i][out_pos] = text_lines[i][j];
+        }
+        ++out_pos;
+      }
+      text_lines[i][out_pos] = '\0';
+    }
+  }
+
+  return x;
+}
+
+// FUNCTION: SHANDALAR 0x00565c7e
+int FUN_00565c7e(const char *filename, const char *section, int out_table, int max_entries, char *string_buf,
+                 char *string_buf_end, char **out_next_buf)
+{
+  int overflow;
+  int count;
+  size_t line_len;
+  int i;
+  char *cursor;
+
+  overflow = 0;
+  count = FUN_0056cc4d(filename, section);
+  if (max_entries <= count)
+  {
+    count = max_entries;
+  }
+
+  cursor = string_buf;
+  i = 0;
+  while (i < count && !overflow)
+  {
+    line_len = strlen(text_lines[i]);
+    if (cursor + line_len < string_buf_end)
+    {
+      strcpy(cursor, text_lines[i]);
+      ((char **)out_table)[i] = cursor;
+      cursor = cursor + line_len + 1;
+    }
+    else
+    {
+      overflow = 1;
+    }
+    ++i;
+  }
+
+  while (i = count, i < max_entries)
+  {
+    ((char **)out_table)[i] = (char *)s_empty_00593c50;
+    count = i + 1;
+  }
+
+  if (out_next_buf != (char **)0)
+  {
+    *out_next_buf = cursor;
+  }
+
+  return !overflow;
 }
 
 // FUNCTION: SHANDALAR 0x00565fdb
