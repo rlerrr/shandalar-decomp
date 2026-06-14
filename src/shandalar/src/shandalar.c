@@ -11,8 +11,8 @@
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
 
-// GLOBAL: SHANDALAR 0x008aa920
-char text_lines[249][300];
+/* Text buffer lives in the original .exe at a fixed address. */
+#define text_lines ((char(*)[300])0x008aa920)
 
 typedef void(__cdecl *fn_void_void)(void);
 typedef int(__cdecl *fn_int_void)(void);
@@ -51,6 +51,15 @@ typedef int(__cdecl *fn_int_void)(void);
 #define s_DIFFICULTYLEVELS_00593944 EXE_STR(0x00593944)
 #define s_DUNGEON_NAMES_00593958 EXE_STR(0x00593958)
 #define s_LAIR_NAMES_00593968 EXE_STR(0x00593968)
+#define s_CITYNAMES_FORMAT_00593974 EXE_STR(0x00593974)
+#define s_CITYNAME_VILLAGE_00593988 EXE_STR(0x00593988)
+#define s_CITYNAME_CASTLE_0059399c EXE_STR(0x0059399c)
+#define s_CITYNAME_MANACASTLE_005939ac EXE_STR(0x005939ac)
+#define s_at_005a0d2c EXE_STR(0x005a0d2c)
+#define s_newline_005a0d30 EXE_STR(0x005a0d30)
+#define s_backslash_005a0d34 EXE_STR(0x005a0d34)
+#define s_rt_005a0d38 EXE_STR(0x005a0d38)
+#define s_fmt_d_005a0d3c EXE_STR(0x005a0d3c)
 
 /* These strings are patched at runtime; keep as writable pointers. */
 #define s_x_sound_kwalkl_wav_00591880 EXE_BYTE_PTR(0x00591880)
@@ -125,6 +134,10 @@ typedef int(__cdecl *fn_int_void)(void);
 #define DAT_0074ccc2 EXE_TYP_PTR(char, 0x0074ccc2)
 #define DAT_0074bd30 EXE_TYP_PTR(char, 0x0074bd30)
 #define DAT_0074c0e6 EXE_TYP_PTR(char, 0x0074c0e6)
+#define DAT_0074c950 EXE_TYP_PTR(char, 0x0074c950)
+#define DAT_0077f190 EXE_TYP_PTR(char, 0x0077f190)
+#define DAT_0077cfd0 EXE_TYP_PTR(char, 0x0077cfd0)
+#define DAT_00765dc0 EXE_TYP_PTR(char, 0x00765dc0)
 
 // GLOBAL: SHANDALAR 0x005a0d4c (pointer to "magsnd")
 #define PTR_s_magsnd_005a0d4c EXE_TYP(const char *, 0x005a0d4c)
@@ -177,75 +190,99 @@ void FUN_00464663(char *out_dir)
 // FUNCTION: SHANDALAR 0x0056ca10
 int load_text(const char *file_name, const char *section_name)
 {
+  FILE *file;
+  int cmp;
+  char *line_read;
+  char (*buf)[300];
+  size_t len;
+  int i;
   struct
   {
-    FILE *f;
     char line[300];
-    char path[128];
+    char path[264];
     char section_line[300];
-    unsigned int num_text;
-    int i;
   } s;
+  int local_c;
+  int local_8;
 
-  strcpy(s.section_line, "@");
+  strcpy(s.section_line, s_at_005a0d2c);
   strcat(s.section_line, section_name);
-  strcat(s.section_line, "\n");
+  strcat(s.section_line, s_newline_005a0d30);
 
-  strcpy(s.path, global_base_directory);
-  strcat(s.path, "\\");
-  strcat(s.path, file_name);
+  strcpy(s.path, DAT_0078e5f0);
+  strcat(s.path, s_backslash_005a0d34);
+  strcpy(s.path, file_name);
 
-  s.f = fopen(s.path, "rt");
-  if (s.f == (FILE *)0)
+  file = fopen(s.path, s_rt_005a0d38);
+  if (file == (FILE *)0)
   {
-    return -1;
+    return 0;
   }
 
-  while (strcmp(s.section_line, s.line))
+  do
   {
-    if (!fgets(s.line, 300, s.f))
+    cmp = strcmp(s.section_line, s.line);
+    if (cmp == 0)
     {
-      fclose(s.f);
-      return -1;
+      fscanf(file, s_fmt_d_005a0d3c, &local_8);
+      fgets(s.line, 0x50, file);
+      local_c = 0;
+
+      for (i = 0; i < local_8 && i < 0xfa; i = i + 1)
+      {
+        buf = text_lines + i;
+        line_read = fgets(*buf, 300, file);
+        if (line_read == (char *)0)
+        {
+          fclose(file);
+          return -local_c;
+        }
+
+        len = strlen(*buf);
+        (*buf)[len - 1] = '\0';
+        local_c = local_c + 1;
+      }
+
+      fclose(file);
+      if (local_c < local_8)
+      {
+        return -local_c;
+      }
+
+      return local_c;
     }
-  }
 
-  fscanf(s.f, "%d", &s.num_text);
-  fgets(s.line, 300, s.f);
-  if (s.num_text > 225)
-  {
-    fclose(s.f);
-    return -1;
-  }
+    line_read = fgets(s.line, 300, file);
+  } while (line_read != (char *)0);
 
-  for (s.i = 0; s.i < (int)s.num_text; s.i++)
-  {
-    if (!fgets(text_lines[s.i], 300, s.f))
-    {
-      fclose(s.f);
-      return -1;
-    }
-    text_lines[s.i][strlen(text_lines[s.i]) - 1] = 0;
-  }
-
-  fclose(s.f);
-  return s.num_text;
+  fclose(file);
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00564ee7
 int FUN_00564ee7(const char *filename)
 {
-  int ok1;
-  int ok2;
-  int ok3;
-  int ok4;
+  int ok;
 
-  ok1 = FUN_00565c7e(filename, s_PLAYERNAMES_00593938, 0x0077c5a0, 0xe, DAT_0077e2c0, DAT_0077e57c, (char **)0);
-  ok2 = FUN_00565c7e(filename, s_DIFFICULTYLEVELS_00593944, 0x0077d130, 4, DAT_0074d790, DAT_0074d7f4, (char **)0);
-  ok3 = FUN_00565c7e(filename, s_DUNGEON_NAMES_00593958, 0x00780820, 0x11, DAT_0074c970, DAT_0074ccc2, (char **)0);
-  ok4 = FUN_00565c7e(filename, s_LAIR_NAMES_00593968, 0x0077c020, 0x13, DAT_0074bd30, DAT_0074c0e6, (char **)0);
+  ok = 1;
+  ok &= FUN_00565c7e(filename, s_PLAYERNAMES_00593938, 0x0077c5a0, 0xe, DAT_0077e2c0, DAT_0077e57c, (char **)0);
+  ok &= FUN_00565c7e(filename, s_DIFFICULTYLEVELS_00593944, 0x0077d130, 4, DAT_0074d790, DAT_0074d7f4, (char **)0);
+  ok &= FUN_00565c7e(filename, s_DUNGEON_NAMES_00593958, 0x00780820, 0x11, DAT_0074c970, DAT_0074ccc2, (char **)0);
+  ok &= FUN_00565c7e(filename, s_LAIR_NAMES_00593968, 0x0077c020, 0x13, DAT_0074bd30, DAT_0074c0e6, (char **)0);
 
-  return ok1 && ok2 && ok3 && ok4;
+  FUN_0056cc4d(filename, s_CITYNAMES_FORMAT_00593974);
+  strcpy(DAT_0074c950, text_lines[0]);
+  strcpy(DAT_0077f190, text_lines[1]);
+
+  FUN_0056cc4d(filename, s_CITYNAME_VILLAGE_00593988);
+  strcpy(DAT_0077cfd0, text_lines[0]);
+
+  FUN_0056cc4d(filename, s_CITYNAME_CASTLE_0059399c);
+  strcpy(DAT_00765dc0, text_lines[0]);
+
+  FUN_0056cc4d(filename, s_CITYNAME_MANACASTLE_005939ac);
+
+  return ok;
 }
 
 // FUNCTION: SHANDALAR 0x0056cc4d
