@@ -1861,7 +1861,6 @@ void RestoreSystemPalette(void)
   }
 }
 
-// FUNCTION: SHANDALAR 0x004cea4c
 // FUNCTION: FACEMAKER 0x004061bd
 LONG ChangeDisplayResolution(DWORD width, DWORD height)
 {
@@ -1884,7 +1883,6 @@ LONG ChangeDisplayResolution(DWORD width, DWORD height)
   return ChangeDisplaySettingsA(&dev_mode, 0);
 }
 
-// FUNCTION: SHANDALAR 0x004ceacb
 // FUNCTION: FACEMAKER 0x0040623c
 void RestoreDisplayResolution(void)
 {

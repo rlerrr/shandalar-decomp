@@ -1,159 +1,127 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <direct.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "defs.h"
 #include "cardartlib/src/assert.h"
 
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
 
-// GLOBAL: SHANDALAR 0x00589e04
-char s_ShandalarMainClass_00589e04[] = "ShandalarMainClass";
-// GLOBAL: SHANDALAR 0x00589e18
-char s_Magic_Shell_00589e18[] = "Magic Shell";
-// GLOBAL: SHANDALAR 0x00589e24
-char s__MTGshell_00589e24[] = "/MTGshell";
-// GLOBAL: SHANDALAR 0x00589e30
-char s_Low_Memory_Swap_File_Space_Warni_00589e30[] = "Low Memory/Swap File Space Warning";
-// GLOBAL: SHANDALAR 0x00589e54
-char s_We_have_determined_that_you_may_n_00589e54[] =
-    "We have determined that you may not have enough free swap file space to play Magic: The Gathering reliably.\n"
-    "This is just a warning, and you will be able to continue from here, but you may want to free space on your windows drive before you play.";
+typedef void(__cdecl *fn_void_void)(void);
+typedef int(__cdecl *fn_int_void)(void);
 
-// GLOBAL: SHANDALAR 0x00589f4c
-char s_AdvStrings_txt_00589f4c[] = "AdvStrings.txt";
-// GLOBAL: SHANDALAR 0x00589f5c
-char s_Couldn_t_load_the_strings_from_t_00589f5c[] =
-    "Couldn't load the strings from the AdvStrings.TXT file";
-// GLOBAL: SHANDALAR 0x00589f94
-char s_AdvBlocks_txt_00589f94[] = "AdvBlocks.txt";
-// GLOBAL: SHANDALAR 0x00589fa4
-char s_Couldn_t_load_the_strings_from_t_00589fa4[] =
-    "Couldn't load the strings from the AdvBlocks.TXT file";
+// Strings
+#define s_ShandalarMainClass_00589e04 EXE_STR(0x00589e04)
+#define s_Magic_Shell_00589e18 EXE_STR(0x00589e18)
+#define s__MTGshell_00589e24 EXE_STR(0x00589e24)
+#define s_Low_Memory_Swap_File_Space_Warni_00589e30 EXE_STR(0x00589e30)
+#define s_We_have_determined_that_you_may_n_00589e54 EXE_STR(0x00589e54)
+#define s_AdvStrings_txt_00589f4c EXE_STR(0x00589f4c)
+#define s_Couldn_t_load_the_strings_from_t_00589f5c EXE_STR(0x00589f5c)
+#define s_AdvBlocks_txt_00589f94 EXE_STR(0x00589f94)
+#define s_Couldn_t_load_the_strings_from_t_00589fa4 EXE_STR(0x00589fa4)
+#define s_ShandalarMainClass_00589fdc EXE_STR(0x00589fdc)
+#define s_Couldn_t_register_the_classes_00589ff0 EXE_STR(0x00589ff0)
+#define s_advinter_pic_0058a010 EXE_STR(0x0058a010)
+#define s_advinter800_pic_0058a020 EXE_STR(0x0058a020)
+#define s_advinter1024_pic_0058a030 EXE_STR(0x0058a030)
+#define s_advinter_pic_0058a044 EXE_STR(0x0058a044)
+#define s_advinter800_pic_0058a054 EXE_STR(0x0058a054)
+#define s_advinter1024_pic_0058a064 EXE_STR(0x0058a064)
+#define s_Magic__Shandalar_0058a078 EXE_STR(0x0058a078)
+#define s_ShandalarMainClass_0058a08c EXE_STR(0x0058a08c)
+#define s_Timer_failed_to_initialize__0058a0a0 EXE_STR(0x0058a0a0)
+#define s_D__Newmagic_multiplayer_sid_Test_0058a0c0 EXE_STR(0x0058a0c0)
+#define s_Could_not_start_timer_0058a0e4 EXE_STR(0x0058a0e4)
+#define s_D__Newmagic_multiplayer_sid_Test_0058a0fc EXE_STR(0x0058a0fc)
+#define s__MTGshell_0058a120 EXE_STR(0x0058a120)
+#define s__Magic_exe_0058a12c EXE_STR(0x0058a12c)
+#define s__start3_1_0058a138 EXE_STR(0x0058a138)
+#define s_Current_Palette_0058a144 EXE_STR(0x0058a144)
+#define s_ShowPaletteClass_0058a154 EXE_STR(0x0058a154)
+#define s_sound_locmus1_wav_0058a168 EXE_STR(0x0058a168)
 
-// GLOBAL: SHANDALAR 0x00589fdc
-char s_ShandalarMainClass_00589fdc[] = "ShandalarMainClass";
-// GLOBAL: SHANDALAR 0x00589ff0
-char s_Couldn_t_register_the_classes_00589ff0[] = "Couldn't register the classes";
+/* These strings are patched at runtime; keep as writable pointers. */
+#define s_x_sound_kwalkl_wav_00591880 EXE_BYTE_PTR(0x00591880)
+#define s_x_sound_kwalkr_wav_00591894 EXE_BYTE_PTR(0x00591894)
+#define s_x_sound_bwalkl_wav_005918a8 EXE_BYTE_PTR(0x005918a8)
+#define s_x_sound_bwalkr_wav_005918bc EXE_BYTE_PTR(0x005918bc)
+#define s_x_sound_gwalkl_wav_005918d0 EXE_BYTE_PTR(0x005918d0)
+#define s_x_sound_gwalkr_wav_005918e4 EXE_BYTE_PTR(0x005918e4)
+#define s_x_sound_rwalkl_wav_005918f8 EXE_BYTE_PTR(0x005918f8)
+#define s_x_sound_rwalkr_wav_0059190c EXE_BYTE_PTR(0x0059190c)
+#define s_x_sound_wwalkl_wav_00591920 EXE_BYTE_PTR(0x00591920)
+#define s_x_sound_wwalkr_wav_00591934 EXE_BYTE_PTR(0x00591934)
+#define s_x_sound_kbird1_wav_00591948 EXE_BYTE_PTR(0x00591948)
+#define s_x_sound_bbird1_wav_0059195c EXE_BYTE_PTR(0x0059195c)
+#define s_x_sound_gbird1_wav_00591970 EXE_BYTE_PTR(0x00591970)
+#define s_x_sound_rbird1_wav_00591984 EXE_BYTE_PTR(0x00591984)
+#define s_x_sound_wbird1_wav_00591998 EXE_BYTE_PTR(0x00591998)
 
-// GLOBAL: SHANDALAR 0x0058a010
-char s_advinter_pic_0058a010[] = "advinter.pic";
-// GLOBAL: SHANDALAR 0x0058a020
-char s_advinter800_pic_0058a020[] = "advinter800.pic";
-// GLOBAL: SHANDALAR 0x0058a030
-char s_advinter1024_pic_0058a030[] = "advinter1024.pic";
-// GLOBAL: SHANDALAR 0x0058a044
-char s_advinter_pic_0058a044[] = "advinter.pic";
-// GLOBAL: SHANDALAR 0x0058a054
-char s_advinter800_pic_0058a054[] = "advinter800.pic";
-// GLOBAL: SHANDALAR 0x0058a064
-char s_advinter1024_pic_0058a064[] = "advinter1024.pic";
+// Globals (accessed by absolute address to avoid duplicate storage)
+#define DAT_0078df78 EXE_DWORD(0x0078df78)
+#define DAT_0078e5f0 EXE_TYP_PTR(char, 0x0078e5f0)
+#define DAT_005863b8 EXE_DWORD(0x005863b8)
+#define DAT_005863bc EXE_DWORD(0x005863bc)
+#define PTR_s_advinter800_pic_00589de8 EXE_TYP(char *, 0x00589de8)
+#define PTR_DAT_005832b4 ((unsigned char *)EXE_PTR_VOID(0x005832b4))
+#define DAT_00748420 EXE_TYP(HWND, 0x00748420)
+#define DAT_00939160 EXE_TYP(HINSTANCE, 0x00939160)
+#define DAT_005a1608 EXE_DWORD(0x005a1608)
+#define DAT_00986950 ((unsigned char *)EXE_PTR_VOID(0x00986950))
+#define DAT_00591210 EXE_DWORD(0x00591210)
+#define DAT_00748418 EXE_TYP(UINT, 0x00748418)
+#define DAT_007483fc EXE_TYP(UINT, 0x007483fc)
+#define DAT_00589de4 EXE_TYP(UINT, 0x00589de4)
+#define DAT_00589df0 EXE_DWORD(0x00589df0)
+#define DAT_00748400 EXE_DWORD(0x00748400)
+#define DAT_00748404 EXE_TYP(HANDLE, 0x00748404)
+#define DAT_00748424 EXE_TYP(HANDLE, 0x00748424)
+#define DAT_00748408 EXE_DWORD(0x00748408)
+#define _DAT_0074840c EXE_DWORD(0x0074840c)
+#define _DAT_00748410 EXE_TYP(HANDLE, 0x00748410)
+#define DAT_005b7d90 EXE_DWORD(0x005b7d90)
+#define DAT_005b7d94 EXE_DWORD(0x005b7d94)
+#define DAT_005b7d98 EXE_TYP(HWND, 0x005b7d98)
+#define DAT_00986d94 EXE_DWORD(0x00986d94)
+#define DAT_00986d98 EXE_DWORD(0x00986d98)
+#define DAT_00986d9c EXE_DWORD(0x00986d9c)
+#define DAT_00986da0 EXE_DWORD(0x00986da0)
+#define DAT_0093aa40 EXE_TYP(CRITICAL_SECTION, 0x0093aa40)
+#define DAT_005a0d40 EXE_DWORD(0x005a0d40)
+#define DAT_005a0d44 EXE_DWORD(0x005a0d44)
+#define DAT_005a0d48 EXE_DWORD(0x005a0d48)
+#define DAT_0073bf98 EXE_TYP(HMODULE, 0x0073bf98)
+#define DAT_0073bfa0 EXE_TYP_PTR(FARPROC, 0x0073bfa0)
+#define DAT_0073bfa4 EXE_TYP(fn_void_void, 0x0073bfa4)
+#define DAT_0073bfa8 EXE_TYP(FARPROC, 0x0073bfa8)
+#define DAT_0073bfe0 EXE_TYP(fn_int_void, 0x0073bfe0)
+#define DAT_00669704 EXE_DWORD(0x00669704)
+#define DAT_0066970c EXE_DWORD(0x0066970c)
+#define DAT_0073e890 EXE_TYP_PTR(char, 0x0073e890)
+#define DAT_0073e9d8 EXE_BYTE(0x0073e9d8)
+#define DAT_0067a3b8 EXE_DWORD(0x0067a3b8)
+#define DAT_005919ac EXE_DWORD(0x005919ac)
+#define DAT_0074c930 EXE_TYP_PTR(char *, 0x0074c930)
+#define DAT_0077c9e0 EXE_TYP_PTR(char *, 0x0077c9e0)
 
-// GLOBAL: SHANDALAR 0x0058a078
-char s_Magic__Shandalar_0058a078[] = "Magic: Shandalar";
-// GLOBAL: SHANDALAR 0x0058a08c
-char s_ShandalarMainClass_0058a08c[] = "ShandalarMainClass";
+// GLOBAL: SHANDALAR 0x005a0d4c (pointer to "magsnd")
+#define PTR_s_magsnd_005a0d4c EXE_TYP(const char *, 0x005a0d4c)
 
-// GLOBAL: SHANDALAR 0x0058a0a0
-char s_Timer_failed_to_initialize__0058a0a0[] = "Timer failed to initialize!\n";
-// GLOBAL: SHANDALAR 0x0058a0c0
-char s_D__Newmagic_multiplayer_sid_Test_0058a0c0[] = "D:\\Newmagic\\multiplayer\\sid\\Test.c";
-// GLOBAL: SHANDALAR 0x0058a0e4
-char s_Could_not_start_timer_0058a0e4[] = "Could not start timer";
-// GLOBAL: SHANDALAR 0x0058a0fc
-char s_D__Newmagic_multiplayer_sid_Test_0058a0fc[] = "D:\\Newmagic\\multiplayer\\sid\\Test.c";
-
-// GLOBAL: SHANDALAR 0x0058a120
-char s__MTGshell_0058a120[] = "/MTGshell";
-// GLOBAL: SHANDALAR 0x0058a12c
-char s__Magic_exe_0058a12c[] = "\\Magic.exe";
-// GLOBAL: SHANDALAR 0x0058a138
-char s__start3_1_0058a138[] = " /start3,1";
-
-// GLOBAL: SHANDALAR 0x0058a144
-char s_Current_Palette_0058a144[] = "Current Palette";
-// GLOBAL: SHANDALAR 0x0058a154
-char s_ShowPaletteClass_0058a154[] = "ShowPaletteClass";
-
-// GLOBAL: SHANDALAR 0x0058a168
-char s_sound_locmus1_wav_0058a168[] = "sound\\locmus1.wav";
-
-// GLOBAL: SHANDALAR 0x0078df78
-int DAT_0078df78;
-// GLOBAL: SHANDALAR 0x0078e5f0
-char DAT_0078e5f0[260];
-
-// GLOBAL: SHANDALAR 0x005863b8
-int DAT_005863b8;
-// GLOBAL: SHANDALAR 0x005863bc
-int DAT_005863bc;
-// GLOBAL: SHANDALAR 0x00589de8
-char *PTR_s_advinter800_pic_00589de8;
-// GLOBAL: SHANDALAR 0x005832b4
-unsigned char *PTR_DAT_005832b4;
-
-// GLOBAL: SHANDALAR 0x00748420
-HWND DAT_00748420;
-// GLOBAL: SHANDALAR 0x00939160
-HINSTANCE DAT_00939160;
-// GLOBAL: SHANDALAR 0x005a1608
-int DAT_005a1608;
-// GLOBAL: SHANDALAR 0x00986950
-unsigned char *DAT_00986950;
-// GLOBAL: SHANDALAR 0x00591210
-int DAT_00591210;
-// GLOBAL: SHANDALAR 0x00748418
-UINT DAT_00748418;
-// GLOBAL: SHANDALAR 0x007483fc
-UINT DAT_007483fc;
-// GLOBAL: SHANDALAR 0x00589de4
-UINT DAT_00589de4;
-// GLOBAL: SHANDALAR 0x00589df0
-int DAT_00589df0;
-// GLOBAL: SHANDALAR 0x00748400
-int DAT_00748400;
-// GLOBAL: SHANDALAR 0x00748404
-HANDLE DAT_00748404;
-// GLOBAL: SHANDALAR 0x00748424
-HANDLE DAT_00748424;
-// GLOBAL: SHANDALAR 0x00748408
-unsigned int DAT_00748408;
-// GLOBAL: SHANDALAR 0x0074840c
-unsigned int _DAT_0074840c;
-// GLOBAL: SHANDALAR 0x00748410
-HANDLE _DAT_00748410;
-
-// GLOBAL: SHANDALAR 0x005b7d90
-int DAT_005b7d90;
-// GLOBAL: SHANDALAR 0x005b7d94
-int DAT_005b7d94;
-// GLOBAL: SHANDALAR 0x005b7d98
-HWND DAT_005b7d98;
-
-// GLOBAL: SHANDALAR 0x00986d94
-int DAT_00986d94;
-// GLOBAL: SHANDALAR 0x00986d98
-int DAT_00986d98;
-// GLOBAL: SHANDALAR 0x00986d9c
-int DAT_00986d9c;
-// GLOBAL: SHANDALAR 0x00986da0
-int DAT_00986da0;
-
-// GLOBAL: SHANDALAR 0x0093aa40
-CRITICAL_SECTION DAT_0093aa40;
-
-// GLOBAL: SHANDALAR 0x00589de4
-// NOTE: hardcoded in binary; keep as a global for now.
+/* 0x00589de4: hardcoded timer interval in original binary. */
 
 int InitLicenseSecretsFromRegistry(void);
 void FUN_00464663(char *out_dir);
 int FUN_00564ee7(const char *filename);
 int FUN_00565dbc(const char *filename);
+int FUN_00565fdb(char *param_1, char *param_2, int *param_3, int *param_4);
 void FUN_00559999(void);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
-int FUN_0056cf20(int hwnd_as_int, int param_2, int param_3);
+int FUN_0056cf20(int param_1, int param_2, unsigned int param_3);
 void FUN_00562d03(void);
 void FUN_00565faa(void);
 char ***__cdecl __p___argv(void);
@@ -161,8 +129,15 @@ void FUN_0056d081(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
-void FUN_0056d476(void);
+int FUN_0056d476(void);
+void FUN_0056d74e(void);
 int FUN_00417dc6(const char *filename);
+unsigned int FUN_00562e0d(char *filename);
+char FUN_00562ed0(void);
+unsigned int __cdecl FUN_0056d0f7(void *param_1, int param_2, int param_3);
+unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3);
+LONG ChangeDisplayResolution(DWORD width, DWORD height);
+void RestoreDisplayResolution(void);
 DWORD WINAPI FUN_0046e6f0(LPVOID);
 
 // FUNCTION: SHANDALAR 0x00464663
@@ -185,11 +160,128 @@ int FUN_00564ee7(const char *filename)
   return 1;
 }
 
+// FUNCTION: SHANDALAR 0x00565fdb
+int FUN_00565fdb(char *param_1, char *param_2, int *param_3, int *param_4)
+{
+  int cmp;
+
+  if (param_1 == (char *)0 || param_2 == (char *)0 || param_2 <= param_1 || param_3 == (int *)0 || param_4 == (int *)0)
+  {
+    return 0;
+  }
+
+  while (*param_1 != '\0' && param_1 < param_2 && (cmp = strncmp(param_1, "STARTBLOCK", 10), cmp != 0))
+  {
+    ++param_1;
+  }
+
+  cmp = strncmp(param_1, "STARTBLOCK", 10);
+  if (cmp != 0)
+  {
+    return 0;
+  }
+
+  param_1 += 0xc;
+  if (param_3 != (int *)0)
+  {
+    *param_3 = (int)param_1;
+  }
+
+  while (*param_1 != '\0' && param_1 < param_2 && (cmp = strncmp(param_1, "ENDBLOCK", 8), cmp != 0))
+  {
+    ++param_1;
+  }
+
+  cmp = strncmp(param_1, "ENDBLOCK", 8);
+  if (cmp == 0)
+  {
+    *param_1 = '\0';
+    if (param_4 != (int *)0)
+    {
+      *param_4 = (int)(param_1 + 8);
+    }
+  }
+  else if (param_4 != (int *)0)
+  {
+    *param_4 = 0;
+  }
+
+  return 1;
+}
+
 // FUNCTION: SHANDALAR 0x00565dbc
 int FUN_00565dbc(const char *filename)
 {
-  (void)filename;
-  return 1;
+  HANDLE file;
+  int ok;
+  DWORD bytes_read;
+  DWORD file_size;
+  int block_start;
+  int i;
+  char *buffer_end;
+  char *cr;
+  char *cursor;
+  char *next;
+
+  ok = 1;
+  file = CreateFileA(filename, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0, 3, 0x8000080, (HANDLE)0);
+  if (file == (HANDLE)-1)
+  {
+    ok = 0;
+  }
+  else
+  {
+    file_size = GetFileSize(file, (LPDWORD)0);
+    DAT_0067a3b8 = (int)malloc(file_size + 1);
+    if ((char *)DAT_0067a3b8 == (char *)0)
+    {
+      ok = 0;
+    }
+    else
+    {
+      ReadFile(file, (void *)DAT_0067a3b8, file_size, &bytes_read, (LPOVERLAPPED)0);
+      cursor = (char *)DAT_0067a3b8;
+      buffer_end = (char *)DAT_0067a3b8 + bytes_read;
+
+      for (i = 0; i < 4; ++i)
+      {
+        if (FUN_00565fdb(cursor, buffer_end, &block_start, (int *)&next) == 0)
+        {
+          ok = 0;
+        }
+        else
+        {
+          DAT_0074c930[i] = (char *)block_start;
+          cursor = next;
+          while (cr = strchr(DAT_0074c930[i], 0xd), cr != (char *)0)
+          {
+            strcpy(cr, cr + 1);
+          }
+        }
+      }
+
+      for (i = 0; i < 0xc; ++i)
+      {
+        if (FUN_00565fdb(cursor, buffer_end, &block_start, (int *)&next) == 0)
+        {
+          ok = 0;
+        }
+        else
+        {
+          DAT_0077c9e0[i] = (char *)block_start;
+          cursor = next;
+          while (cr = strchr(DAT_0077c9e0[i], 0xd), cr != (char *)0)
+          {
+            strcpy(cr, cr + 1);
+          }
+        }
+      }
+    }
+
+    CloseHandle(file);
+  }
+
+  return ok;
 }
 
 // FUNCTION: SHANDALAR 0x00559999
@@ -198,38 +290,255 @@ void FUN_00559999(void)
 }
 
 // FUNCTION: SHANDALAR 0x0056cf20
-int FUN_0056cf20(int hwnd_as_int, int param_2, int param_3)
+int FUN_0056cf20(int param_1, int param_2, unsigned int param_3)
 {
-  (void)hwnd_as_int;
-  (void)param_2;
-  (void)param_3;
-  return 0;
+  int result;
+  FARPROC proc;
+  int i;
+
+  if (DAT_005a0d44 == 0)
+  {
+    DAT_0073bf98 = LoadLibraryA(PTR_s_magsnd_005a0d4c);
+    if (DAT_0073bf98 == (HMODULE)0)
+    {
+      result = 4;
+    }
+    else
+    {
+      for (i = 0; i < 0x1b; ++i)
+      {
+        proc = GetProcAddress(DAT_0073bf98, (LPCSTR)((i + 1U) & 0xffff));
+        DAT_0073bfa0[i] = proc;
+        if (DAT_0073bfa0[i] == (FARPROC)0)
+        {
+          FreeLibrary(DAT_0073bf98);
+          FUN_0056d74e();
+          return 4;
+        }
+      }
+
+      if (param_1 == 0 && (param_3 & 2) == 0)
+      {
+        FreeLibrary(DAT_0073bf98);
+        FUN_0056d74e();
+        result = 5;
+      }
+      else
+      {
+        result = ((int(__cdecl *)(int, int, unsigned int))DAT_0073bfa0[0])(param_1, param_2, param_3);
+        if (result == 0)
+        {
+          DAT_005a0d48 = 1;
+          if ((param_3 & 2) != 0)
+          {
+            DAT_005a0d40 = 1;
+          }
+          DAT_005a0d44 = 1;
+          result = 0;
+        }
+        else
+        {
+          FreeLibrary(DAT_0073bf98);
+          FUN_0056d74e();
+        }
+      }
+    }
+  }
+  else
+  {
+    result = 2;
+  }
+
+  return result;
 }
 
 // FUNCTION: SHANDALAR 0x00562d03
 void FUN_00562d03(void)
 {
+  FUN_00562f92(s_x_sound_kwalkl_wav_00591880, 0, 0);
+  FUN_00562f92(s_x_sound_kwalkr_wav_00591894, 1, 0);
+  FUN_00562f92(s_x_sound_bwalkl_wav_005918a8, 2, 0);
+  FUN_00562f92(s_x_sound_bwalkr_wav_005918bc, 3, 0);
+  FUN_00562f92(s_x_sound_gwalkl_wav_005918d0, 4, 0);
+  FUN_00562f92(s_x_sound_gwalkr_wav_005918e4, 5, 0);
+  FUN_00562f92(s_x_sound_rwalkl_wav_005918f8, 6, 0);
+  FUN_00562f92(s_x_sound_rwalkr_wav_0059190c, 7, 0);
+  FUN_00562f92(s_x_sound_wwalkl_wav_00591920, 8, 0);
+  FUN_00562f92(s_x_sound_wwalkr_wav_00591934, 9, 0);
+  FUN_00562f92(s_x_sound_kbird1_wav_00591948, 10, 0);
+  FUN_00562f92(s_x_sound_bbird1_wav_0059195c, 0xb, 0);
+  FUN_00562f92(s_x_sound_gbird1_wav_00591970, 0xc, 0);
+  FUN_00562f92(s_x_sound_rbird1_wav_00591984, 0xd, 0);
+  FUN_00562f92(s_x_sound_wbird1_wav_00591998, 0xe, 0);
 }
 
 // FUNCTION: SHANDALAR 0x00565faa
 void FUN_00565faa(void)
 {
+  if (DAT_0067a3b8 != 0)
+  {
+    free((void *)DAT_0067a3b8);
+    DAT_0067a3b8 = 0;
+  }
+}
+
+// FUNCTION: SHANDALAR 0x00562e0d
+unsigned int FUN_00562e0d(char *filename)
+{
+  UINT drive_type;
+  FILE *file;
+  int i;
+  DWORD *buf;
+  char drive_string[260];
+  DWORD scratch[63];
+
+  *(DWORD *)drive_string = (DWORD)DAT_005919ac;
+
+  buf = scratch;
+  for (i = 0x3f; i != 0; --i)
+  {
+    *buf++ = 0;
+  }
+
+  for (;;)
+  {
+    if ('z' < drive_string[0])
+    {
+      return (unsigned int)drive_string[0];
+    }
+
+    drive_type = GetDriveTypeA(drive_string);
+    if (drive_type == 5)
+    {
+      strcat(drive_string, filename);
+      file = fopen(drive_string, "rb");
+      if (file != (FILE *)0)
+      {
+        fclose(file);
+        return (unsigned int)drive_string[0];
+      }
+
+      drive_string[3] = 0;
+    }
+
+    ++drive_string[0];
+  }
+}
+
+// FUNCTION: SHANDALAR 0x00562ed0
+char FUN_00562ed0(void)
+{
+  unsigned int drive;
+  char cwd[256];
+
+  if (DAT_0066970c == 0)
+  {
+    drive = FUN_00562e0d("sound\\locmus1.wav");
+    DAT_0073e9d8 = (char)drive;
+    DAT_0066970c = 1;
+  }
+
+  if (DAT_00748408 == 0)
+  {
+    _getcwd(cwd, 0x100);
+    return cwd[0];
+  }
+
+  return DAT_0073e9d8;
+}
+
+// FUNCTION: SHANDALAR 0x0056d0f7
+unsigned int __cdecl FUN_0056d0f7(void *param_1, int param_2, int param_3)
+{
+  if (DAT_005a0d44 == 0)
+  {
+    return 4;
+  }
+
+  return (unsigned int)((int(__cdecl *)(void *, int, int))DAT_0073bfa8)(param_1, param_2, param_3);
+}
+
+// FUNCTION: SHANDALAR 0x00562f92
+unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3)
+{
+  char drive_letter;
+
+  if (DAT_00669704 == 0)
+  {
+    _getcwd(DAT_0073e890, 0x100);
+    DAT_00669704 = 1;
+  }
+
+  if (filename[0] == 'x')
+  {
+    filename[0] = DAT_0073e890[0];
+    if (FUN_00417dc6(filename) == 0)
+    {
+      drive_letter = FUN_00562ed0();
+      filename[0] = drive_letter;
+    }
+  }
+
+  while (DAT_00748400 != 0)
+  {
+  }
+
+  FUN_0056d0f7(filename, param_2, param_3);
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x0056d081
 void FUN_0056d081(void)
 {
+  if (DAT_005a0d44 != 0)
+  {
+    DAT_005a0d44 = 0;
+    if (DAT_005a0d48 != 0 && DAT_005a0d40 == 0)
+    {
+      DAT_0073bfa4();
+    }
+    FreeLibrary(DAT_0073bf98);
+    FUN_0056d74e();
+    DAT_0073bf98 = (HMODULE)0;
+    DAT_005a0d40 = 0;
+    DAT_005a0d48 = 0;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x0056d476
-void FUN_0056d476(void)
+int FUN_0056d476(void)
 {
+  if (DAT_005a0d44 == 0 || DAT_005a0d44 == 2)
+  {
+    return 4;
+  }
+
+  return DAT_0073bfe0();
+}
+
+// FUNCTION: SHANDALAR 0x0056d74e
+void FUN_0056d74e(void)
+{
+  int i;
+
+  for (i = 0; i < 0x1b; ++i)
+  {
+    DAT_0073bfa0[i] = 0;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x00417dc6
 int FUN_00417dc6(const char *filename)
 {
-  (void)filename;
+  FILE *file;
+
+  file = fopen(filename, "rt");
+  if (file == (FILE *)0)
+  {
+    return 0;
+  }
+
+  fclose(file);
   return 1;
 }
 
@@ -241,7 +550,6 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
 }
 
 // FUNCTION: SHANDALAR 0x004cea4c
-// (Also present in FACEMAKER at 0x004061bd as ChangeDisplayResolution.)
 LONG ChangeDisplayResolution(DWORD width, DWORD height)
 {
   DEVMODEA dev_mode;
@@ -264,7 +572,6 @@ LONG ChangeDisplayResolution(DWORD width, DWORD height)
 }
 
 // FUNCTION: SHANDALAR 0x004ceacb
-// (Also present in FACEMAKER at 0x0040623c as RestoreDisplayResolution.)
 void RestoreDisplayResolution(void)
 {
   ChangeDisplayResolution(0, 0);
