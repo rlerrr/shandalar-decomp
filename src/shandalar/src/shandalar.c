@@ -352,11 +352,10 @@ int FUN_00564ee7(const char *filename)
 int FUN_0056cc4d(const char *filename, const char *section)
 {
   int x;
-  int iVar1;
+  int i;
+  int j;
   size_t len;
   int out_pos;
-  int j;
-  int i;
 
   if (DAT_008bd200 == 1)
   {
@@ -365,24 +364,28 @@ int FUN_0056cc4d(const char *filename, const char *section)
   else
   {
     x = load_text(filename, section);
-    for (i = 0; (iVar1 = abs(x)), i < iVar1; ++i)
+    i = 0;
+    while (i < abs(x))
     {
       len = strlen(text_lines[i]);
       out_pos = 0;
-      for (j = 0; j < (int)len; ++j)
+      j = 0;
+      while (j <= (int)len)
       {
         if (text_lines[i][j] == '\\' && text_lines[i][j + 1] == 'n')
         {
           text_lines[i][out_pos] = '\n';
-          ++j;
+          j = j + 1;
         }
         else
         {
           text_lines[i][out_pos] = text_lines[i][j];
         }
-        ++out_pos;
+        out_pos = out_pos + 1;
+        j = j + 1;
       }
       text_lines[i][out_pos] = '\0';
+      i = i + 1;
     }
   }
 
@@ -905,92 +908,68 @@ void CALLBACK FUN_004ce8cd(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD d
 // FUNCTION: SHANDALAR 0x004ce61a
 LRESULT CALLBACK FUN_004ce61a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  if (msg < 0x10)
+  switch (msg)
   {
-    if (msg == 0x0f)
+  case 2:
+    FUN_0056d081();
+    PostQuitMessage(0);
+    return DefWindowProcA(hwnd, 2, wparam, lparam);
+  case 0x100:
+  case 0x104:
+    QueueKeyInputFromMessage(wparam, lparam);
+    if (wparam != 0x7a)
     {
       return DefWindowProcA(hwnd, msg, wparam, lparam);
     }
 
-    if (msg == 2)
+    if (DAT_005b7d90 == 0)
     {
-      FUN_0056d081();
-      PostQuitMessage(0);
-      return DefWindowProcA(hwnd, 2, wparam, lparam);
+      RegisterPaletteClass(DAT_00939160);
+      DAT_005b7d90 = 1;
     }
-  }
-  else if (msg < 0x105)
-  {
-    if (msg == 0x104 || msg == 0x100)
+
+    DAT_005b7d98 = FindWindowExA((HWND)0, (HWND)0, s_ShowPaletteClass_0058a154, s_Current_Palette_0058a144);
+    if (DAT_005b7d98 == (HWND)0)
     {
-      QueueKeyInputFromMessage(wparam, lparam);
-      if (wparam != 0x7a)
-      {
-        return DefWindowProcA(hwnd, msg, wparam, lparam);
-      }
-
-      if (DAT_005b7d90 == 0)
-      {
-        RegisterPaletteClass(DAT_00939160);
-        DAT_005b7d90 = 1;
-      }
-
-      DAT_005b7d98 = FindWindowExA((HWND)0, (HWND)0, s_ShowPaletteClass_0058a154, s_Current_Palette_0058a144);
+      DAT_005b7d98 = CreatePalettePopupWindow(DAT_00939160, (void *)0);
       if (DAT_005b7d98 == (HWND)0)
       {
-        DAT_005b7d98 = CreatePalettePopupWindow(DAT_00939160, (void *)0);
-        if (DAT_005b7d98 == (HWND)0)
-        {
-          return 0;
-        }
-        ShowWindow(DAT_005b7d98, 5);
+        return 0;
       }
-      else
-      {
-        BringWindowToTop(DAT_005b7d98);
-      }
-
-      UpdateWindow(DAT_005b7d98);
-      return DefWindowProcA(hwnd, msg, 0x7a, lparam);
+      ShowWindow(DAT_005b7d98, 5);
     }
-  }
-  else if (msg < 0x10101011)
-  {
-    if (msg == 0x10101010)
+    else
     {
-      FUN_0056d476();
-      return 0;
+      BringWindowToTop(DAT_005b7d98);
     }
 
-    switch (msg)
-    {
-    case 0x200:
-      DAT_00986d9c = (int)(lparam & 0xffff);
-      DAT_00986d98 = (int)((unsigned int)lparam >> 0x10);
-      break;
-    case 0x201:
-      DAT_00986d94 = 1;
-      DAT_00986d9c = (int)(lparam & 0xffff);
-      DAT_00986d98 = (int)((unsigned int)lparam >> 0x10);
-      break;
-    case 0x202:
-      DAT_00986da0 |= 2;
-      DAT_00986d94 = 0;
-      break;
-    case 0x204:
-      DAT_00986d94 = 2;
-      DAT_00986d9c = (int)(lparam & 0xffff);
-      DAT_00986d98 = (int)((unsigned int)lparam >> 0x10);
-      break;
-    case 0x205:
-      DAT_00986da0 |= 1;
-      DAT_00986d94 = 0;
-      break;
-    default:
-      return DefWindowProcA(hwnd, msg, wparam, lparam);
-    }
-
-    return DefWindowProcA(hwnd, msg, wparam, lparam);
+    UpdateWindow(DAT_005b7d98);
+    return DefWindowProcA(hwnd, msg, 0x7a, lparam);
+  case 0x200:
+    DAT_00986d9c = (int)((unsigned int)lparam & 0xffff);
+    DAT_00986d98 = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
+    break;
+  case 0x201:
+    DAT_00986d94 = 1;
+    DAT_00986d9c = (int)((unsigned int)lparam & 0xffff);
+    DAT_00986d98 = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
+    break;
+  case 0x202:
+    DAT_00986da0 |= 2;
+    DAT_00986d94 = 0;
+    break;
+  case 0x204:
+    DAT_00986d94 = 2;
+    DAT_00986d9c = (int)((unsigned int)lparam & 0xffff);
+    DAT_00986d98 = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
+    break;
+  case 0x205:
+    DAT_00986da0 |= 1;
+    DAT_00986d94 = 0;
+    break;
+  case 0x10101010:
+    FUN_0056d476();
+    return 0;
   }
 
   return DefWindowProcA(hwnd, msg, wparam, lparam);
