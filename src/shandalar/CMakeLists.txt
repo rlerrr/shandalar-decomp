@@ -42,7 +42,7 @@ target_include_directories(shandalar PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(shandalar PRIVATE gdi32 user32)
+target_link_libraries(shandalar PRIVATE gdi32 user32 winmm)
 
 if (TARGET cardartlib)
   target_link_libraries(shandalar PRIVATE cardartlib)
