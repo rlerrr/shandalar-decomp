@@ -573,63 +573,62 @@ void FUN_00559999(void)
 // FUNCTION: SHANDALAR 0x0056cf20
 int FUN_0056cf20(int param_1, int param_2, unsigned int param_3)
 {
-  int result;
-  FARPROC proc;
   int i;
+  int result;
 
-  if (DAT_005a0d44 == 0)
+  result = 0;
+  if (DAT_005a0d44 != 0)
   {
-    DAT_0073bf98 = LoadLibraryA(PTR_s_magsnd_005a0d4c);
-    if (DAT_0073bf98 == (HMODULE)0)
-    {
-      result = 4;
-    }
-    else
-    {
-      for (i = 0; i < 0x1b; ++i)
-      {
-        proc = GetProcAddress(DAT_0073bf98, (LPCSTR)((i + 1U) & 0xffff));
-        DAT_0073bfa0[i] = proc;
-        if (DAT_0073bfa0[i] == (FARPROC)0)
-        {
-          FreeLibrary(DAT_0073bf98);
-          FUN_0056d74e();
-          return 4;
-        }
-      }
+    result = 2;
+    goto done;
+  }
 
-      if (param_1 == 0 && (param_3 & 2) == 0)
-      {
-        FreeLibrary(DAT_0073bf98);
-        FUN_0056d74e();
-        result = 5;
-      }
-      else
-      {
-        result = ((int(__cdecl *)(int, int, unsigned int))DAT_0073bfa0[0])(param_1, param_2, param_3);
-        if (result == 0)
-        {
-          DAT_005a0d48 = 1;
-          if ((param_3 & 2) != 0)
-          {
-            DAT_005a0d40 = 1;
-          }
-          DAT_005a0d44 = 1;
-          result = 0;
-        }
-        else
-        {
-          FreeLibrary(DAT_0073bf98);
-          FUN_0056d74e();
-        }
-      }
+  DAT_0073bf98 = LoadLibraryA(PTR_s_magsnd_005a0d4c);
+  if (DAT_0073bf98 == (HMODULE)0)
+  {
+    result = 4;
+    goto done;
+  }
+
+  for (i = 0; i < 0x1b; i = i + 1)
+  {
+    DAT_0073bfa0[i] = GetProcAddress(DAT_0073bf98, (LPCSTR)((i + 1U) & 0xffff));
+    if (DAT_0073bfa0[i] == (FARPROC)0)
+    {
+      FreeLibrary(DAT_0073bf98);
+      FUN_0056d74e();
+      result = 4;
+      goto done;
     }
+  }
+
+  if (param_1 == 0 && (param_3 & 2) == 0)
+  {
+    FreeLibrary(DAT_0073bf98);
+    FUN_0056d74e();
+    result = 5;
+    goto done;
   }
   else
   {
-    result = 2;
+    result = ((int(__cdecl *)(int, int, unsigned int))DAT_0073bfa0[0])(param_1, param_2, param_3);
+    if (result != 0)
+    {
+      FreeLibrary(DAT_0073bf98);
+      FUN_0056d74e();
+      goto done;
+    }
+
+    DAT_005a0d48 = 1;
+    if ((param_3 & 2) != 0)
+    {
+      DAT_005a0d40 = 1;
+    }
+    DAT_005a0d44 = 1;
+    result = 0;
   }
 
+done:
   return result;
 }
 
