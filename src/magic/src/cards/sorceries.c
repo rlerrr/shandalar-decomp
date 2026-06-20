@@ -329,6 +329,45 @@ int card_rebirth(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00447de6
 int card_winds_of_change(int player, int card, event_t event)
 {
+  struct
+  {
+    int cards_moved;
+    int player_index;
+    int current_card;
+    int current_player;
+  } s;
+
+  if (event == EVENT_CAN_CAST)
+  {
+    return 1;
+  }
+
+  if (event == EVENT_RESOLVE_SPELL)
+  {
+    for (s.player_index = 0, s.current_player = human_player; s.player_index < 2;
+         ++s.player_index, (human_player != 0 ? --s.current_player : ++s.current_player))
+    {
+      s.cards_moved = 0;
+
+      for (s.current_card = 0; s.current_card < active_cards_count[s.current_player]; ++s.current_card)
+      {
+        if (FUN_00440c61(s.current_player, s.current_card) != 0)
+        {
+          FUN_004b5cf5(s.current_player, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id);
+          PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id = -1;
+          ++s.cards_moved;
+        }
+      }
+
+      TENTATIVE_reassess_all_cards(0, 0x30);
+      FUN_004b59b2(player, s.current_player);
+      FUN_0040246a(s.current_player, s.cards_moved);
+    }
+
+    kill_card(player, card, KILL_BURY);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00402229
@@ -1411,6 +1450,53 @@ int card_detonate(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044c1eb
 int card_mana_clash(int player, int card, event_t event)
 {
+  int p1_flip;
+  int p0_flip;
+  char prompt1[300] = " ";
+  char prompt2[300] = " ";
+
+  if (event == EVENT_CAN_CAST)
+  {
+    return 1;
+  }
+
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
+  {
+    ai_modifier += ((life[player] - life[1 - player]) * 3) << 3;
+  }
+
+  if (event == EVENT_RESOLVE_SPELL)
+  {
+    if (unk_008a9000 != 1)
+    {
+      load_text("prompts.txt", "MANACLASH");
+      strcpy(prompt1, text_lines[0]);
+      strcpy(prompt2, text_lines[0] + 0x12c);
+    }
+
+    do
+    {
+      p0_flip = FUN_004a09c6(player, player == unk_008b35ec ? prompt1 : prompt2, 1);
+      p1_flip = FUN_004a09c6(player, player == unk_008b35ec ? prompt2 : prompt1, 1);
+
+      if (p0_flip == 1)
+      {
+        damage_player(0, 1, player, card);
+      }
+      if (p1_flip == 1)
+      {
+        damage_player(1, 1, player, card);
+      }
+      if (p0_flip == 0 && p1_flip != 0)
+      {
+        do_dialog(player, player, card, -1, -1, text_lines[0] + 0x258, 0);
+      }
+    } while (p0_flip != 0 || p1_flip != 0);
+
+    kill_card(player, card, KILL_BURY);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004066fb
