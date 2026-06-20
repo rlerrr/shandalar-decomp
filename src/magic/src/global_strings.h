@@ -23,6 +23,7 @@ typedef char text_300_t[300];
 
 #ifdef SHANDALAR
 /* SHANDALAR's text buffer lives in the original .exe at a fixed address. */
+// GLOBAL: SHANDALAR 0x008aa920
 #define text_lines ((char(*)[300])0x008aa920)
 #else
 // GLOBAL: MAGIC 0x00896720
