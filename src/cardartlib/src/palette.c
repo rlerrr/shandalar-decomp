@@ -465,6 +465,7 @@ void DestroyCardArtPalette(void)
 // FUNCTION: DRAWCARDLIB 0x1000a520
 // FUNCTION: DECKDLL 0x10016200
 // FUNCTION: MAGIC 0x004ecd40
+// FUNCTION: SHANDALAR 0x004a3110
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
 {
   bmi->bmiHeader.biSize = sizeof(bmi->bmiHeader);
