@@ -1708,10 +1708,54 @@ int card_unsummon(int player, int card, event_t event)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004fa77b
+static int __cdecl sandstorm_damage_attacking_creature(int source_player,
+                                                       int source_card,
+                                                       int player,
+                                                       int card,
+                                                       int internal_card_id)
+{
+  (void)internal_card_id;
+
+  if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_ATTACKING) != 0)
+  {
+    damage_creature(player, card, 1, source_player, source_card);
+  }
+
+  return 0;
+}
+
 // FUNCTION: MAGIC 0x004fa6e3
 // FUNCTION: SHANDALAR 0x004b47b1
 int card_sandstorm(int player, int card, event_t event)
 {
+  if (event == EVENT_CAN_CAST)
+  {
+    if (*(&player) == unk_008b35ec)
+    {
+      return 1;
+    }
+
+    if ((unk_00926804 & 2) != 0)
+    {
+      return 1;
+    }
+
+    if (*(&player) == human_player)
+    {
+      return 0;
+    }
+
+    return 1;
+  }
+
+  if (event == EVENT_RESOLVE_SPELL)
+  {
+    dispatch_function_to_all_cards_in_play(player, card, sandstorm_damage_attacking_creature, -1);
+    kill_card(player, card, KILL_BURY);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004fa7dc
@@ -2730,6 +2774,7 @@ int card_dark_ritual(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b80b2
 int card_alabaster_potion(int player, int card, event_t event)
 {
+  return gain_life_or_prevent_damage(player, card, event, x_value);
 }
 
 // FUNCTION: MAGIC 0x004fdfb2

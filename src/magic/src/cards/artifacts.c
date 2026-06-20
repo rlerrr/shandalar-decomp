@@ -542,12 +542,24 @@ int card_candelabra_of_tawnos(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00516e6e
 int card_clay_statue(int player, int card, event_t event)
 {
+  if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
+  {
+    return FUN_0054276d(player, card, event, 0, 2);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004146a7
 // FUNCTION: SHANDALAR 0x00516ebb
 int card_diabolic_machine(int player, int card, event_t event)
 {
+  if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
+  {
+    return FUN_0054276d(player, card, event, 0, 3);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004146f4

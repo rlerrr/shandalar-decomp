@@ -119,6 +119,15 @@ int card_ironclaw_orcs(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048b610
 int card_amrou_kithkin(int player, int card, event_t event)
 {
+  if (event == EVENT_BLOCK_LEGALITY && card == attacking_card && player == attacking_card_controller)
+  {
+    if (C_get_abilities(affected_card_controller, affected_card, EVENT_POWER, -1) > 2)
+    {
+      event_result = 1;
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0053d41f
@@ -965,6 +974,12 @@ int card_keldon_warlord(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00490963
 int card_ghost_ship(int player, int card, event_t event)
 {
+  if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
+  {
+    return FUN_0054276d(player, card, event, 2, 3);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054276d
