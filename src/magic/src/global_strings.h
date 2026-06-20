@@ -21,8 +21,13 @@ typedef char text_100_t[100];
 typedef char text_150_t[0x96];
 typedef char text_300_t[300];
 
+#ifdef SHANDALAR
+/* SHANDALAR's text buffer lives in the original .exe at a fixed address. */
+#define text_lines ((char(*)[300])0x008aa920)
+#else
 // GLOBAL: MAGIC 0x00896720
 GLOBAL_STRINGS_EXTERN char text_lines[249][300];
+#endif
 
 // GLOBAL: MAGIC 0x00789460
 GLOBAL_STRINGS_EXTERN char gs_magic_the_gathering_title_00789460[300];
