@@ -63,7 +63,6 @@ int load_text(const char *file_name, const char *section_name)
   return s.num_text;
 }
 
-// FUNCTION: SHANDALAR 0x004629be
 // FUNCTION: MAGIC 0x004eca6d
 int FUN_004eca6d(char *filename, char *section_name)
 {
@@ -106,6 +105,7 @@ int FUN_004eca6d(char *filename, char *section_name)
   return loaded_count;
 }
 
+// FUNCTION: SHANDALAR 0x004629be
 // FUNCTION: MAGIC 0x00491f1e
 void FUN_00491f1e(char *filename)
 {
