@@ -1812,7 +1812,6 @@ void __stdcall IncrementUiTickCallback(int callback_arg_1, int callback_arg_2, i
   g_ui_tick_count = g_ui_tick_count + 1;
 }
 
-// FUNCTION: SHANDALAR 0x004ce955
 // FUNCTION: FACEMAKER 0x00405f38
 int ConsumeUiTickCount(void)
 {

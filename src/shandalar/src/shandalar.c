@@ -10,6 +10,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
 #include "shandalar_global_strings.h"
@@ -38,49 +39,10 @@ typedef struct
 
 typedef struct
 {
-  int unk_00;
-  int unk_04;
-  int unk_08;
-  int unk_0c;
-  int unk_10;
-  int unk_14;
-} ShandalarCardSlot;
-
-typedef struct
-{
-  int unk_00;
-  int unk_04;
-  int unk_08;
-  int unk_0c;
-  int unk_10;
-  int unk_14;
-  int unk_18;
-  unsigned char unk_1c;
-  unsigned char unk_1d;
-  unsigned char unk_1e;
-  unsigned char unk_1f;
-  int unk_20;
-  unsigned int unk_24;
-  int unk_28;
-  int unk_2c;
-} ShandalarEncounterSlot;
-
-typedef struct
-{
   int first;
   int second;
 } HintPair;
 
-typedef struct
-{
-  int kind;        // +0x00
-  int x;           // +0x04
-  int y;           // +0x08
-  int unk_0c;      // +0x0c
-  int flags_owner; // +0x10
-  int unk_14;      // +0x14
-  unsigned char unk_18_to_63[0x4c];
-} WorldNode;
 
 int FUN_004ff456(void *param_1, int param_2);
 int FUN_004ff652(void *param_1, int param_2);
@@ -139,8 +101,6 @@ UINT DAT_00748418;
 UINT DAT_007483fc;
 // GLOBAL: SHANDALAR 0x0078cefc
 int DAT_0078cefc;
-// GLOBAL: SHANDALAR 0x0078cee4
-int _DAT_0078cee4;
 // GLOBAL: SHANDALAR 0x00589de4
 UINT DAT_00589de4 = 0x21;
 // GLOBAL: SHANDALAR 0x00589df0
@@ -188,8 +148,6 @@ char DAT_0073e9d8;
 char *DAT_0067a3b8;
 // GLOBAL: SHANDALAR 0x005919ac
 int DAT_005919ac = 0x005c3a61;
-// GLOBAL: SHANDALAR 0x0078cb40
-ShandalarEncounterSlot DAT_0078cb40[0xf];
 // GLOBAL: SHANDALAR 0x0078cf08
 FILE *DAT_0078cf08;
 // GLOBAL: SHANDALAR 0x0078cf10
@@ -202,52 +160,20 @@ int DAT_0078df38;
 int DAT_00586494;
 // GLOBAL: SHANDALAR 0x009300f0
 int DAT_009300f0;
-// GLOBAL: SHANDALAR 0x008e3820
-int DAT_008e3820;
-// GLOBAL: SHANDALAR 0x007a0098
-int DAT_007a0098;
-// GLOBAL: SHANDALAR 0x007beaa0
-int DAT_007beaa0[4];
 // GLOBAL: SHANDALAR 0x007486d0
 int DAT_007486d0;
 // GLOBAL: SHANDALAR 0x007486e0
 EncodedImage *DAT_007486e0[5];
-// GLOBAL: SHANDALAR 0x0078cf04
-int DAT_0078cf04;
-// GLOBAL: SHANDALAR 0x00591204
-int DAT_00591204 = -1;
-// GLOBAL: SHANDALAR 0x00591208
-int DAT_00591208 = 1;
-// GLOBAL: SHANDALAR 0x0073ea88
-int DAT_0073ea88;
-// GLOBAL: SHANDALAR 0x00930adc
-int DAT_00930adc;
-// GLOBAL: SHANDALAR 0x00930ae0
-int DAT_00930ae0;
-// GLOBAL: SHANDALAR 0x0094d634
-int g_player_is_male;
 // GLOBAL: SHANDALAR 0x00781728
 EncodedImage *g_face_preview_sprite_selected;
 // GLOBAL: SHANDALAR 0x0078172c
 EncodedImage *g_face_preview_sprite_group[6];
-// GLOBAL: SHANDALAR 0x007817f0
-int DAT_007817f0[2000][4];
-// GLOBAL: SHANDALAR 0x0078df34
-int DAT_0078df34;
 // GLOBAL: SHANDALAR 0x0073e9dc
 int DAT_0073e9dc;
 // GLOBAL: SHANDALAR 0x00591214
 int DAT_00591214 = 1;
-// GLOBAL: SHANDALAR 0x005911f8
-int DAT_005911f8 = 1296;
-// GLOBAL: SHANDALAR 0x005911fc
-int DAT_005911fc = 816;
-// GLOBAL: SHANDALAR 0x00789940
-WorldNode g_world_nodes[128];
 // GLOBAL: SHANDALAR 0x0078990c
 int DAT_0078990c[10];
-// GLOBAL: SHANDALAR 0x00789930
-int DAT_00789930;
 #define DAT_00789910 (&DAT_0078990c[1])
 // GLOBAL: SHANDALAR 0x0073ea70
 int DAT_0073ea70[8];
@@ -259,14 +185,6 @@ int DAT_00669710;
 int DAT_00789938;
 // GLOBAL: SHANDALAR 0x0078df68
 int DAT_0078df68;
-// GLOBAL: SHANDALAR 0x0078e970
-int DAT_0078e970[2];
-// GLOBAL: SHANDALAR 0x0078ce20
-ShandalarCardSlot DAT_0078ce20[8];
-// GLOBAL: SHANDALAR 0x00789500
-unsigned char DAT_00789500;
-// GLOBAL: SHANDALAR 0x0077e58c
-int DAT_0077e58c;
 // GLOBAL: SHANDALAR 0x0097f1c1
 unsigned char DAT_0097f1c1[2000];
 // GLOBAL: SHANDALAR 0x0097db40
@@ -275,8 +193,6 @@ long DAT_0097db40[0x100];
 int DAT_0097df40[0x100];
 // GLOBAL: SHANDALAR 0x0097e450
 HintPair DAT_0097e450[0x100];
-// GLOBAL: SHANDALAR 0x0078cf00
-int DAT_0078cf00;
 // GLOBAL: SHANDALAR 0x007898f4
 int DAT_007898f4;
 // GLOBAL: SHANDALAR 0x007898f8
@@ -352,14 +268,8 @@ int DAT_0058b958 = -1;
 int DAT_005b80d8;
 // GLOBAL: SHANDALAR 0x005b80e0
 int DAT_005b80e0[50];
-// GLOBAL: SHANDALAR 0x005b8138
-int DAT_005b8138;
-// GLOBAL: SHANDALAR 0x005b8140
-int DAT_005b8140;
 // GLOBAL: SHANDALAR 0x008c84f0
 BITMAPINFO DAT_008c84f0;
-// GLOBAL: SHANDALAR 0x008c73f0
-int DAT_008c73f0[7];
 // GLOBAL: SHANDALAR 0x008c7408
 int DAT_008c7408[7];
 // GLOBAL: SHANDALAR 0x0073e990
@@ -452,8 +362,6 @@ int DAT_005aa414;
 // GLOBAL: SHANDALAR 0x005873d4
 int DAT_005873d4;
 
-// GLOBAL: SHANDALAR 0x0097f1c0
-int deck[500];
 // GLOBAL: SHANDALAR 0x0074cfe4
 int DAT_0074cfe4;
 
@@ -554,7 +462,7 @@ void FUN_004ffda4(void);
 void FUN_005631ca(void);
 void FUN_0056bff1(void);
 void FUN_0054cdbd(void);
-int FUN_004ce955(void);
+int ConsumeUiTickCount(void);
 void FUN_0054ac08(int param_1, int param_2, int param_3);
 int FUN_0055e1b2(void);
 int FUN_0055e651(void);
@@ -584,9 +492,8 @@ int HasQueuedKeyInput(void);
 int PopQueuedKeyInput(void);
 int FUN_00414127(void);
 void destroy_create_fonts_resources(void);
-int FUN_0057c580(int param_1, int param_2, int param_3, const char *param_4, int param_5);
 void FUN_005797e0(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, unsigned int param_6);
-unsigned int __stdcall FUN_005022fd(void);
+unsigned int __cdecl save_or_load_ver1(void);
 void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
 
 void FUN_004ce992(int param_1);
@@ -634,7 +541,6 @@ int FUN_0057adf0(int param_1);
 void FUN_005796c0(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6);
 int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char *param_4);
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
-extern int Scards[];
 extern char *global_base_txt;
 extern HPALETTE global_cart_art_hpalette;
 extern int Gold;
@@ -683,12 +589,12 @@ int FUN_0055db50(void)
   int proceed_to_main_loop;
 
   initialized_world = 0;
-  DAT_008e3820 = -1;
-  DAT_007a0098 = -1;
+  DAT_008cf6d0 = -1;
+  unk_00789308 = -1;
   FUN_00559999();
   for (i = 0; i < 4; i = i + 1)
   {
-    DAT_007beaa0[i] = 8;
+    DAT_007a7d10[i] = 8;
   }
 
   FUN_004184d2();
@@ -712,21 +618,21 @@ int FUN_0055db50(void)
     case 0:
       while (1)
       {
-        DAT_0078cf04 = RunDifficultyMenu();
+        DAT_00715f08 = RunDifficultyMenu();
         AnimatePaletteToColor(0, DAT_00589dec);
-        if (DAT_0078cf04 == -1)
+        if (DAT_00715f08 == -1)
         {
           break;
         }
 
         while (1)
         {
-          DAT_00591204 = RunColorMenu();
-          DAT_0073ea88 = DAT_00591204;
-          DAT_00930adc = DAT_00591204;
-          DAT_00930ae0 = FUN_00522508(3);
+          DAT_0057a754 = RunColorMenu();
+          DAT_0074a22c = DAT_0057a754;
+          DAT_0091c99c = DAT_0057a754;
+          DAT_0091c9a0 = FUN_00522508(3);
           AnimatePaletteToColor(0, DAT_00589dec);
-          if (DAT_0073ea88 == -1)
+          if (DAT_0074a22c == -1)
           {
             break;
           }
@@ -738,11 +644,11 @@ int FUN_0055db50(void)
             continue;
           }
 
-          DAT_00591208 = 1 << ((unsigned char)DAT_00591204 & 0x1f);
+          DAT_0057a758 = 1 << ((unsigned char)DAT_0057a754 & 0x1f);
           LoadPcxIntoPageNoPalette("advfac64.pic");
           LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
           BlitGraphicsRect((int *)PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, (int *)PTR_DAT_005832b4, 0, 0);
-          DAT_0078df34 = 0;
+          DAT_00715f10 = 0;
           setup_shared_startup();
           initialized_world = 1;
           PTR_DAT_005832b4->font_slot = 5;
@@ -752,25 +658,25 @@ int FUN_0055db50(void)
           FUN_004bdd0a();
           FUN_004f6d90();
           FUN_005081fa();
-          Gold = (5 - DAT_0078cf04) * 0x32;
+          Gold = (5 - DAT_00715f08) * 0x32;
           DAT_00591214 = 0;
           do
           {
             do
             {
               random_value = FUN_00522508(0x40);
-              DAT_005911f8 = random_value * 0x20 + 0x10;
+              DAT_007497a8 = random_value * 0x20 + 0x10;
               random_value = FUN_00522508(0x40);
-              DAT_005911fc = random_value * 0x20 + 0x10;
+              DAT_007497ac = random_value * 0x20 + 0x10;
               tile_mask =
-                  FUN_0043146b((DAT_005911f8 + ((int)DAT_005911f8 >> 0x1f & 0x1fU)) >> 5,
-                               (DAT_005911fc + ((int)DAT_005911fc >> 0x1f & 0x1fU)) >> 5);
+                  FUN_0043146b((DAT_007497a8 + ((int)DAT_007497a8 >> 0x1f & 0x1fU)) >> 5,
+                               (DAT_007497ac + ((int)DAT_007497ac >> 0x1f & 0x1fU)) >> 5);
               tile_mask = FUN_005611c8(tile_mask);
-            } while ((DAT_00591208 & tile_mask) == 0);
+            } while ((DAT_0057a758 & tile_mask) == 0);
 
             tile_mask =
-                FUN_004314ca((DAT_005911f8 + ((int)DAT_005911f8 >> 0x1f & 0x1fU)) >> 5,
-                             (DAT_005911fc + ((int)DAT_005911fc >> 0x1f & 0x1fU)) >> 5);
+                FUN_004314ca((DAT_007497a8 + ((int)DAT_007497a8 >> 0x1f & 0x1fU)) >> 5,
+                             (DAT_007497ac + ((int)DAT_007497ac >> 0x1f & 0x1fU)) >> 5);
           } while ((tile_mask & 0x10) != 0);
 
           FUN_005019ad(3);
@@ -786,14 +692,14 @@ int FUN_0055db50(void)
       break;
 
     case 1:
-      DAT_0078df34 = 0;
+      DAT_00715f10 = 0;
       random_value = FUN_005031a8();
       FUN_00501760(random_value);
       proceed_to_main_loop = 1;
       break;
 
     case 2:
-      DAT_0078df34 = 0;
+      DAT_00715f10 = 0;
       FUN_00501760(3);
       proceed_to_main_loop = 1;
       break;
@@ -857,8 +763,8 @@ int FUN_0055db50(void)
     _setjmp3(&DAT_0073e9e0, 0);
     while (DAT_009300f0 == 0)
     {
-      FUN_004ce955();
-      FUN_0054ac08(DAT_005911f8, DAT_005911fc, DAT_00669710);
+      ConsumeUiTickCount();
+      FUN_0054ac08(DAT_007497a8, DAT_007497ac, DAT_00669710);
       DAT_00669710 = 0;
       do
       {
@@ -876,7 +782,7 @@ int FUN_0055db50(void)
       FUN_00561647();
       FUN_0046eca4();
       FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
-      DAT_0078cf00 = DAT_0078cf00 + 1;
+      DAT_00715f04 = DAT_00715f04 + 1;
       FUN_004ecfa2();
       FUN_004ecfe3();
       _setjmp3(&DAT_0073e9e0, 0);
@@ -962,7 +868,7 @@ int FUN_00412c37(char *param_1, int param_2)
 
   if (DAT_00580d94 != -1)
   {
-    FUN_004ce955();
+    ConsumeUiTickCount();
     last_timer_seconds = -1;
   }
 
@@ -1365,6 +1271,16 @@ void FUN_0043104f(char *param_1, int param_2, int param_3, int param_4)
 int FUN_004ce97d(void)
 {
   return DAT_00589df0;
+}
+
+// FUNCTION: SHANDALAR 0x004ce955
+int ConsumeUiTickCount(void)
+{
+  int queued_ticks;
+
+  queued_ticks = DAT_00589df0;
+  DAT_00589df0 = 0;
+  return queued_ticks;
 }
 
 // FUNCTION: SHANDALAR 0x004ece9a
@@ -1887,23 +1803,23 @@ void FUN_004bdd0a(void)
     {
       for (locals.local_10 = 0; locals.local_10 < 7; locals.local_10 = locals.local_10 + 1)
       {
-        DAT_008c73f0[locals.local_10] = 0;
+        DAT_008b3240[locals.local_10] = 0;
         DAT_008c7408[locals.local_10] = -1;
       }
 
-      _DAT_0078cee4 = _DAT_0078cee4 | (1 << (DAT_00591204 * 2));
-      DAT_005863c8[DAT_00591204].unk_00 = 0;
+      DAT_00715f00 = DAT_00715f00 | (1 << (DAT_0057a754 * 2));
+      DAT_005863c8[DAT_0057a754].unk_00 = 0;
 
-      locals.uVar2 = 1 << (BYTE)DAT_00591204;
-      locals.local_8 = DAT_0078cf04 + 1;
+      locals.uVar2 = 1 << (BYTE)DAT_0057a754;
+      locals.local_8 = DAT_00715f08 + 1;
       locals.local_4 = locals.local_8;
-      if (DAT_0078cf04 == 3)
+      if (DAT_00715f08 == 3)
       {
         locals.local_8 = 1;
         locals.local_8 = 3;
       }
 
-      locals.local_1c = DAT_0078cf04;
+      locals.local_1c = DAT_00715f08;
       switch (locals.local_1c)
       {
       case 0:
@@ -1932,14 +1848,14 @@ void FUN_004bdd0a(void)
         break;
       }
 
-      DAT_00789930 = 0;
+      DAT_00712958 = 0;
       for (locals.local_10 = 0; locals.local_10 < 5; locals.local_10 = locals.local_10 + 1)
       {
         DAT_00789910[locals.local_10] = 0;
       }
 
-      DAT_0078990c[DAT_00591204] = DAT_0078990c[DAT_00591204] + 1;
-      for (locals.local_10 = 0; locals.local_10 < 3 - DAT_0078cf04; locals.local_10 = locals.local_10 + 1)
+      DAT_0078990c[DAT_0057a754] = DAT_0078990c[DAT_0057a754] + 1;
+      for (locals.local_10 = 0; locals.local_10 < 3 - DAT_00715f08; locals.local_10 = locals.local_10 + 1)
       {
         locals.local_18 = FUN_00522508(5);
         DAT_00789910[locals.local_18] = DAT_00789910[locals.local_18] + 1;
@@ -1952,24 +1868,24 @@ void FUN_004bdd0a(void)
 
       for (locals.local_10 = 0; locals.local_10 < 8; locals.local_10 = locals.local_10 + 1)
       {
-        DAT_0078ce20[locals.local_10].unk_00 = -1;
+        g_card_slots[locals.local_10].unk_00 = -1;
       }
 
       for (locals.local_10 = 0; locals.local_10 < 1000; locals.local_10 = locals.local_10 + 1)
       {
-        DAT_00789500 = 0;
+        DAT_00712550[0] = 0;
       }
 
       for (locals.local_10 = 0; locals.local_10 < 4; locals.local_10 = locals.local_10 + 1)
       {
-        DAT_007beaa0[locals.local_10] = 8;
+        DAT_007a7d10[locals.local_10] = 8;
       }
 
       for (locals.local_10 = 0; locals.local_10 < 0x96; locals.local_10 = locals.local_10 + 1)
       {
         deck[locals.local_10] = deck[locals.local_10] | 0x10000;
       }
-      DAT_00591204 = -1;
+      DAT_0057a754 = -1;
     }
   }
 }
@@ -2037,7 +1953,7 @@ int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, in
     }
 
     local_14 = FUN_0056bcf7((-(unsigned int)(local_18 == 0) & 0xffffffc4) + 0x40, local_1c);
-    if (((DAT_0078cf04 == 0) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
+    if (((DAT_00715f08 == 0) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
         ((global_cards_data[local_14].extra_ability & 0x900) != 0))
     {
       local_10 = local_10 - 1;
@@ -2075,7 +1991,7 @@ int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, in
   for (local_10 = 0; local_10 < param_4; local_10 = local_10 + 1)
   {
     local_14 = FUN_0056bcf7(2, param_1);
-    if (((DAT_0078cf04 < 4) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
+    if (((DAT_00715f08 < 4) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
         ((global_cards_data[local_14].extra_ability & 0x900) != 0))
     {
       local_10 = local_10 - 1;
@@ -2118,7 +2034,7 @@ int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, in
       } while (iVar2 == 0);
       iVar2 = FUN_0056c5ea(local_14);
     } while ((iVar2 < 3) || ((iVar2 = FUN_004bb1cf(local_14), iVar2 < 1)) ||
-             ((DAT_0078cf04 == 0 && ((global_cards_data[local_14].static_ability & 3) != 0))) ||
+             ((DAT_00715f08 == 0 && ((global_cards_data[local_14].static_ability & 3) != 0))) ||
              ((global_cards_data[local_14].extra_ability & 0x900) != 0) ||
              ((global_cards_data[local_14].expansion & 0xc1) == 0));
   }
@@ -2280,12 +2196,12 @@ int FUN_004bb1cf(unsigned int param_1)
       }
     }
 
-    DAT_00591208 = 0;
+    DAT_0057a758 = 0;
     for (local_28 = 1; local_28 < 7; local_28 = local_28 + 1)
     {
       if ((int)(local_24 * 2) / 3 <= aiStack_20[local_28])
       {
-        DAT_00591208 = DAT_00591208 | (1 << ((unsigned char)local_28 & 0x1f));
+        DAT_0057a758 = DAT_0057a758 | (1 << ((unsigned char)local_28 & 0x1f));
       }
     }
 
@@ -2298,7 +2214,7 @@ int FUN_004bb1cf(unsigned int param_1)
     {
       local_24 = 3;
     }
-    if ((_DAT_0078cee4 & 0x20) != 0)
+    if ((DAT_00715f00 & 0x20) != 0)
     {
       local_24 = local_24 + 1;
     }
@@ -2311,7 +2227,7 @@ int FUN_004bb1cf(unsigned int param_1)
     }
     else
     {
-      local_24 = (unsigned int)(DAT_0078cf04 <= (int)local_24);
+      local_24 = (unsigned int)(DAT_00715f08 <= (int)local_24);
     }
     local_30 = (int)local_24 - local_30;
   }
@@ -2340,13 +2256,13 @@ int FUN_004bb458(int param_1)
 // FUNCTION: SHANDALAR 0x004290e2
 void FUN_004290e2(int param_1, int param_2)
 {
-  if (DAT_00789930 < 2000)
+  if (DAT_00712958 < 2000)
   {
-    DAT_007817f0[DAT_00789930][0] = param_1;
-    DAT_007817f0[DAT_00789930][1] = param_2;
-    DAT_007817f0[DAT_00789930][2] = (DAT_005911f8 + ((DAT_005911f8 >> 0x1f) & 0x1fU)) >> 5;
-    DAT_007817f0[DAT_00789930][3] = (DAT_005911fc + ((DAT_005911fc >> 0x1f) & 0x1fU)) >> 5;
-    DAT_00789930 = DAT_00789930 + 1;
+    g_world_spawn_records[DAT_00712958][0] = param_1;
+    g_world_spawn_records[DAT_00712958][1] = param_2;
+    g_world_spawn_records[DAT_00712958][2] = (DAT_007497a8 + ((DAT_007497a8 >> 0x1f) & 0x1fU)) >> 5;
+    g_world_spawn_records[DAT_00712958][3] = (DAT_007497ac + ((DAT_007497ac >> 0x1f) & 0x1fU)) >> 5;
+    DAT_00712958 = DAT_00712958 + 1;
   }
 }
 
@@ -2604,7 +2520,7 @@ void FUN_004f6d90(void)
         FUN_004f78d3();
         for (local_14 = 0; local_14 < 7; local_14 = local_14 + 1)
         {
-          DAT_0078ce20[local_14].unk_14 = (4 - DAT_0078cf04) * local_14 * -100;
+          g_card_slots[local_14].unk_14 = (4 - DAT_00715f08) * local_14 * -100;
         }
         return;
       }
@@ -2815,7 +2731,7 @@ void FUN_004f7eb2(int param_1, int param_2, unsigned int param_3)
 // FUNCTION: SHANDALAR 0x004f7fb9
 int FUN_004f7fb9(int param_1, int param_2)
 {
-  return (param_1 * 3 + param_2 * 5 + DAT_0078cf00) & 0x3f;
+  return (param_1 * 3 + param_2 * 5 + DAT_00715f04) & 0x3f;
 }
 
 // FUNCTION: SHANDALAR 0x004f8101
@@ -2879,11 +2795,11 @@ void FUN_005081fa(void)
 
   for (local_8 = 0; local_8 < 0xf; local_8 = local_8 + 1)
   {
-    DAT_0078cb40[local_8].unk_08 = -1;
-    DAT_0078cb40[local_8].unk_04 = DAT_0078cb40[local_8].unk_08;
-    DAT_0078cb40[local_8].unk_00 = DAT_0078cb40[local_8].unk_04;
-    DAT_0078cb40[local_8].unk_28 = -1;
-    DAT_0078cb40[local_8].unk_2c = DAT_0078cb40[local_8].unk_28;
+    g_encounter_slots[local_8].unk_08 = -1;
+    g_encounter_slots[local_8].unk_04 = g_encounter_slots[local_8].unk_08;
+    g_encounter_slots[local_8].unk_00 = g_encounter_slots[local_8].unk_04;
+    g_encounter_slots[local_8].unk_28 = -1;
+    g_encounter_slots[local_8].unk_2c = g_encounter_slots[local_8].unk_28;
   }
 
   for (local_2c = 0; local_2c < DAT_0073c00c - 0x39; local_2c = local_2c + 1)
@@ -2894,19 +2810,19 @@ void FUN_005081fa(void)
       {
         iVar3 = FUN_00522508(10);
         iVar3 = iVar3 + 5;
-      } while (DAT_0078cb40[iVar3].unk_08 != -1);
+      } while (g_encounter_slots[iVar3].unk_08 != -1);
 
-      if (DAT_0078cb40[iVar3].unk_00 == -1)
+      if (g_encounter_slots[iVar3].unk_00 == -1)
       {
-        DAT_0078cb40[iVar3].unk_00 = local_2c;
+        g_encounter_slots[iVar3].unk_00 = local_2c;
       }
-      else if (DAT_0078cb40[iVar3].unk_04 == -1)
+      else if (g_encounter_slots[iVar3].unk_04 == -1)
       {
-        DAT_0078cb40[iVar3].unk_04 = local_2c;
+        g_encounter_slots[iVar3].unk_04 = local_2c;
       }
       else
       {
-        DAT_0078cb40[iVar3].unk_08 = local_2c;
+        g_encounter_slots[iVar3].unk_08 = local_2c;
       }
     }
   }
@@ -2957,7 +2873,7 @@ void FUN_005081fa(void)
 
       for (local_20 = 0; local_20 < local_8; local_20 = local_20 + 1)
       {
-        iVar5 = FUN_004ecf30(DAT_0078cb40[local_20].unk_10 - iVar3, DAT_0078cb40[local_20].unk_14 - param1);
+        iVar5 = FUN_004ecf30(g_encounter_slots[local_20].unk_10 - iVar3, g_encounter_slots[local_20].unk_14 - param1);
         if (iVar5 < local_28)
         {
           local_28 = iVar5;
@@ -2966,7 +2882,7 @@ void FUN_005081fa(void)
     } while (local_28 < 4);
 
     FUN_00431526(0x40, iVar3, param1);
-    slot = DAT_0078cb40 + local_8;
+    slot = g_encounter_slots + local_8;
     slot->unk_10 = iVar3;
     slot->unk_14 = param1;
     slot->unk_18 = local_24;
@@ -3059,7 +2975,7 @@ void FUN_005081fa(void)
     {
       slot->unk_24 = slot->unk_24 | 1;
       slot->unk_24 = slot->unk_24 | 2;
-      slot->unk_0c = DAT_0058c620[DAT_0078cf04 + local_8 * 4];
+      slot->unk_0c = DAT_0058c620[DAT_00715f08 + local_8 * 4];
     }
     local_8 = local_8 + 1;
   } while (1);
@@ -3203,7 +3119,7 @@ void FUN_005019ad(int param_1)
 {
   int tmp;
   DAT_00602fb4 = 0;
-  DAT_005b8138 = DAT_00602fb4;
+  DAT_006abe30 = DAT_00602fb4;
   FUN_0046ed33();
   tmp = FUN_00501b7d();
   if (tmp != -1)
@@ -3260,7 +3176,7 @@ int FUN_00501760(int param_1)
   unsigned int local_4;
   char save_filename[0xd];
 
-  DAT_005b8138 = 1;
+  DAT_006abe30 = 1;
   FUN_0046ed33();
   ret = FUN_00501b7d();
   if (ret != -1)
@@ -3372,8 +3288,8 @@ int FUN_00501e44(char *param_1)
   } s;
 
   strcpy(param_1 + 9, "SVE");
-  DAT_005b8140 = _open(param_1, 0x8000);
-  if (DAT_005b8140 == -1)
+  DAT_006abe38 = _open(param_1, 0x8000);
+  if (DAT_006abe38 == -1)
   {
     strcpy(DAT_0078cf10, "File Error: ");
     strcat(DAT_0078cf10, param_1);
@@ -3382,21 +3298,21 @@ int FUN_00501e44(char *param_1)
     return 0;
   }
 
-  DAT_005b8138 = 1;
-  FUN_005022fd();
-  _close(DAT_005b8140);
+  DAT_006abe30 = 1;
+  save_or_load_ver1();
+  _close(DAT_006abe38);
   for (s.player_index = 0; s.player_index < 2; s.player_index = s.player_index + 1)
   {
     for (s.slot_index = 0; s.slot_index < 0x96; s.slot_index = s.slot_index + 1)
     {
       if (*(int *)(s.player_index * 0xb0f4 + 0x008ca2dc + s.slot_index * 300) != -1)
       {
-        DAT_0078e970[s.player_index] = s.slot_index;
+        active_cards_count[s.player_index] = s.slot_index;
       }
     }
   }
 
-  if (DAT_0077e58c == 0)
+  if (unk_00742fc4 == 0)
   {
     FUN_0046ed33();
     strcpy(param_1 + 9, "map");
@@ -3445,8 +3361,8 @@ unsigned int FUN_005018e8(char *param_1, int param_2)
   strcpy(param_1 + 9, "SVE");
   if (param_2 != 0)
   {
-    DAT_005b8140 = open(param_1, 0x8000);
-    if (DAT_005b8140 != -1)
+    DAT_006abe38 = open(param_1, 0x8000);
+    if (DAT_006abe38 != -1)
     {
       strcat(DAT_0078cf10, "OK\n");
     }
@@ -3455,8 +3371,8 @@ unsigned int FUN_005018e8(char *param_1, int param_2)
       sprintf(DAT_0078cf10, "%s\n", gs_loadsave_0077d1b0[2]);
     }
 
-    close(DAT_005b8140);
-    return (DAT_005b8140 != -1) ? 1 : 0;
+    close(DAT_006abe38);
+    return (DAT_006abe38 != -1) ? 1 : 0;
   }
 
   return (unsigned int)FUN_00501e44(param_1);
@@ -3468,8 +3384,8 @@ unsigned int FUN_005018e8(char *param_1, int param_2)
 int FUN_005020fe(char *param_1)
 {
   strcpy(param_1 + 9, "SVE");
-  DAT_005b8140 = _open(param_1, 0x8301, 0x80);
-  if (DAT_005b8140 == -1)
+  DAT_006abe38 = _open(param_1, 0x8301, 0x80);
+  if (DAT_006abe38 == -1)
   {
     if (errno == ENOSPC)
     {
@@ -3482,14 +3398,8 @@ int FUN_005020fe(char *param_1)
     return 0;
   }
 
-  _close(DAT_005b8140);
+  _close(DAT_006abe38);
   DAT_00602fb4 = 0;
-  return 1;
-}
-
-// FUNCTION: SHANDALAR 0x005022fd
-unsigned int __stdcall FUN_005022fd(void)
-{
   return 1;
 }
 
@@ -3706,7 +3616,7 @@ int FUN_004ff888(void *param_1, int param_2)
   {
     return 0;
   }
-  if (((_DAT_0078cee4 & (1 << ((unsigned char)local_8 & 0x1f))) != 0) && (DAT_0078990c[local_8 / 2] != 0))
+  if (((DAT_00715f00 & (1 << ((unsigned char)local_8 & 0x1f))) != 0) && (DAT_0078990c[local_8 / 2] != 0))
   {
     local_c = FUN_004bb458(local_8);
     if (param_2 == 2)
@@ -3860,16 +3770,16 @@ void FUN_005631ca(void)
     auStack_14[iVar1] = (unsigned char)local_8;
     if (DAT_0073ea70[local_44] == 0)
     {
-      iVar2 = DAT_0078cf04 * local_8 + DAT_0078cf04 * 5 + 0x1e;
-      for (local_48 = 0; (local_48 < 1000) && (((unsigned char *)&DAT_00789500)[local_48] != '\0'); local_48 = local_48 + 1)
+      iVar2 = DAT_00715f08 * local_8 + DAT_00715f08 * 5 + 0x1e;
+      for (local_48 = 0; (local_48 < 1000) && (((unsigned char *)&DAT_00712550)[local_48] != '\0'); local_48 = local_48 + 1)
       {
-        if ((((int)(char)((unsigned char *)&DAT_00789500)[local_48]) >> 4) == local_44 + 1)
+        if ((((int)(char)((unsigned char *)&DAT_00712550)[local_48]) >> 4) == local_44 + 1)
         {
           local_4c = local_4c + 1;
         }
       }
       aiStack_28[iVar1] = local_4c;
-      iVar3 = DAT_0078cf04 * 5 + 0x14;
+      iVar3 = DAT_00715f08 * 5 + 0x14;
       local_4c = iVar2 - local_4c;
       if (iVar3 <= local_4c)
       {
@@ -3901,7 +3811,7 @@ void FUN_0056bff1(void)
     auStack_7d8[local_7dc] = deck[local_7dc];
     deck[local_7dc] = -1;
   }
-  local_8 = DAT_00789930;
+  local_8 = DAT_00712958;
   for (local_7dc = 0; local_7dc < 500; local_7dc = local_7dc + 1)
   {
     if (auStack_7d8[local_7dc] != 0xffffffff)
@@ -3910,7 +3820,7 @@ void FUN_0056bff1(void)
       deck[iVar1] = deck[iVar1] | (auStack_7d8[local_7dc] & 0xfffff000);
     }
   }
-  DAT_00789930 = local_8;
+  DAT_00712958 = local_8;
 }
 
 // FUNCTION: SHANDALAR 0x0054cdbd
@@ -3938,16 +3848,6 @@ void FUN_0054cdbd(void)
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), PTR_DAT_00583354, 0, 0);
     DAT_00650f28 = 1;
   }
-}
-
-// FUNCTION: SHANDALAR 0x004ce955
-int FUN_004ce955(void)
-{
-  int iVar1;
-
-  iVar1 = DAT_00589df0;
-  DAT_00589df0 = 0;
-  return iVar1;
 }
 
 // FUNCTION: SHANDALAR 0x0054ac08
@@ -4502,7 +4402,7 @@ unsigned int FUN_005597ca(void)
   {
     ret = 0;
   }
-  else if (DAT_0077e58c == 0)
+  else if (unk_00742fc4 == 0)
   {
     ret = FUN_004ed005();
   }
@@ -4595,17 +4495,6 @@ int FUN_00414127(void)
     queued_key = PopQueuedKeyInput();
   } while (queued_key == 0);
   return queued_key;
-}
-
-// FUNCTION: SHANDALAR 0x0057c580
-int FUN_0057c580(int param_1, int param_2, int param_3, const char *param_4, int param_5)
-{
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
-  (void)param_4;
-  (void)param_5;
-  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00564ee7

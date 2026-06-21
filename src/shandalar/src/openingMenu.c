@@ -5,6 +5,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "magic/src/global_state.h"
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
@@ -24,7 +25,6 @@ extern int DAT_00986d9c;
 extern int DAT_00747ee0;
 extern char *gs_loadsave_0077d1b0[3];
 extern HWND DAT_00748420;
-extern int g_player_is_male;
 extern int g_face_preview_sprite_group[6];
 extern EncodedImage *g_face_preview_sprite_selected;
 extern DIBSurface *g_graphics_pages[10];
@@ -145,8 +145,6 @@ int g_opening_menu_entry_height = 0x29;
 int g_opening_menu_icon_label_spacing = 0x8c;
 // GLOBAL: SHANDALAR 0x005873d8
 int g_opening_menu_entry_enabled[4] = {1, 1, 1, 1};
-// GLOBAL: SHANDALAR 0x00591228
-char g_name_entry_buffer[0x40];
 // GLOBAL: SHANDALAR 0x00781778
 int g_name_entry_cursor;
 // GLOBAL: SHANDALAR 0x00781774
@@ -155,9 +153,6 @@ int g_name_entry_insert_mode;
 DIBSurface *g_facemaker_page4_dib;
 // GLOBAL: SHANDALAR 0x00789928
 HBITMAP g_facemaker_page4_bitmap;
-// GLOBAL: SHANDALAR 0x007a0770
-char g_player_name[0x40];
-
 // GLOBAL: SHANDALAR 0x00587220
 AdvMenuControl g_opening_menu_controls[4] = {
     {0xb8, 0x121, 0x115, 0x28, 0xb8, 0x121, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 1, 0, "Ss", (char *)0, 0, 0, {0, 0, 0, 0}},

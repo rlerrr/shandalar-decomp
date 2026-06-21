@@ -184,6 +184,9 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_cuecard_summoning_sickness_008a8e00;
 // GLOBAL: MAGIC 0x008a8e40
 GLOBAL_STRINGS_EXTERN text_300_t gs_cuecard_not_controlled_by_owner_008a8e40;
 
+// GLOBAL: MAGIC 0x008a9000
+GLOBAL_STRINGS_EXTERN int unk_008a9000;
+
 // GLOBAL: MAGIC 0x008a9010
 GLOBAL_STRINGS_EXTERN text_300_t gs_mana_so_far_008a9010;
 
@@ -458,6 +461,9 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_fast_effects_00926520;
 
 // GLOBAL: MAGIC 0x00926670
 GLOBAL_STRINGS_EXTERN text_300_t gs_phasebar_your_main_postcombat_00926670;
+
+// GLOBAL: MAGIC 0x00926750
+GLOBAL_STRINGS_EXTERN text_300_t gs_cardtitle_hunting_00926750;
 
 // GLOBAL: MAGIC 0x009267a0
 GLOBAL_STRINGS_EXTERN text_300_t gs_window_title_opponent_attack_009267a0;
