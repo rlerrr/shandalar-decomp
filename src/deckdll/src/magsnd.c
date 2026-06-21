@@ -5,19 +5,24 @@
 #define SND_MAX 26
 
 // GLOBAL: DECKDLL 0x101054b8
+// GLOBAL: SHANDALAR 0x0073bf98
 static HMODULE global_hmodule_magsnd_dll;
+
+// GLOBAL: DECKDLL 0x1003a860
+// GLOBAL: SHANDALAR 0x005a0d40
+static bool global_sound_unk2 = false;
 
 // GLOBAL: DECKDLL 0x1003a864
 // GLOBAL: MAGIC 0x00570f50
+// GLOBAL: SHANDALAR 0x005a0d44
 static int global_sound_status = 0; // 0 = not loaded, 1 = loaded and ok, 2 = loaded and error I think
 
 // GLOBAL: DECKDLL 0x1003a868
+// GLOBAL: SHANDALAR 0x005a0d48
 static bool global_sound_unk1 = false;
 
-// GLOBAL: DECKDLL 0x1003a860
-static bool global_sound_unk2 = false;
-
 // GLOBAL: DECKDLL 0x1003a86c
+// GLOBAL: SHANDALAR 0x005a0d4c
 static char *PTR_s_magsnd_1003a86c = "magsnd";
 
 typedef DWORD (__cdecl *PFN_InitSnd)(HWND hwnd, DWORD unused, BYTE flags);
@@ -82,6 +87,7 @@ typedef struct SndApiVTable {
 // GLOBAL: MAGVID 0x10028a50
 // GLOBAL: STATWIN 0x10017da0
 // GLOBAL: MAGIC 0x007775d0
+// GLOBAL: SHANDALAR 0x0073bfa0
 static SndApiVTable global_sound_vtable;
 typedef int (WINAPI *Int_fn_etc)();
 #define global_sound_fns ((Int_fn_etc*)(void*)&global_sound_vtable)
@@ -142,6 +148,7 @@ int sound_stop(int a1)
 
 // FUNCTION: DECKDLL 0x1002daee
 // FUNCTION: MAGIC 0x0048600c
+// FUNCTION: SHANDALAR 0x0056d74e
 void clear_sound_imports_table(void)
 {
   int i;
@@ -237,4 +244,15 @@ int sound_get_lru(int *out_num, int start, int end)
   }
 
   return global_sound_vtable.GetLRUSnd(out_num, start, end);
+}
+
+// FUNCTION: SHANDALAR 0x0056d476
+int update_snd(void)
+{
+  if (global_sound_status == 0 || global_sound_status == 2)
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.UpdateSnd();
 }

@@ -2575,22 +2575,6 @@ typedef enum
 #define STRINGIZE_IMPL(x) #x
 #define STRINGIZE(x) STRINGIZE_IMPL(x)
 
-#define EXE_PTR_VOID(addr)	(*(void**)(addr))
-
-#define EXE_DWORD_PTR(addr)	((int*)(addr))
-#define EXE_DWORD(addr)		(*EXE_DWORD_PTR(addr))
-
-#define EXE_WORD_PTR(addr)	((short int*)(addr))
-#define EXE_WORD(addr)		(*EXE_WORD_PTR(addr))
-
-#define EXE_BYTE_PTR(addr)	((char*)(addr))
-#define EXE_BYTE(addr)		(*EXE_BYTE_PTR(addr))
-
-#define EXE_STR(addr)	((const char*)(addr))
-
-#define EXE_TYP_PTR(typ, addr)	((typ*)(addr))
-#define EXE_TYP(typ, addr)	(*EXE_TYP_PTR(typ, addr))
-
 #ifdef LOWORD
 #  undef LOWORD
 #endif

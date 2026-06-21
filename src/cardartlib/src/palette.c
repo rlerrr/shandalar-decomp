@@ -89,6 +89,7 @@ undefined1 * global_PTR_RedPathBitsTable = global_RedPathBitsTable;
 // GLOBAL: DRAWCARDLIB 0x100f1f70
 // GLOBAL: DECKDLL 0x10113ce8
 // GLOBAL: MAGIC 0x00777844
+// GLOBAL: SHANDALAR 0x0078e5d0
 HPALETTE global_cart_art_hpalette;
 
 // GLOBAL: CARDARTLIB 0x100209e4
@@ -499,6 +500,7 @@ void * OctreeNode_Create(void)
 // FUNCTION: DRAWCARDLIB 0x10001033
 // FUNCTION: DECKDLL 0x100099e4
 // FUNCTION: MAGIC 0x004b9c54
+// FUNCTION: SHANDALAR 0x0042df84
 PaletteLog * ReadPalette(char *palette_text_path,char *palette_binary_path)
 {
   struct {

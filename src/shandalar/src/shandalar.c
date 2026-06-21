@@ -14,10 +14,6 @@
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
 
-typedef void(__cdecl *fn_void_void)(void);
-typedef int(__cdecl *fn_int_void)(void);
-
-
 // GLOBAL: SHANDALAR 0x0078df78
 int DAT_0078df78;
 // GLOBAL: SHANDALAR 0x005863b8
@@ -76,20 +72,7 @@ int DAT_00986d9c;
 int DAT_00986da0;
 // GLOBAL: SHANDALAR 0x0093aa40
 CRITICAL_SECTION DAT_0093aa40;
-// GLOBAL: SHANDALAR 0x005a0d40
-int DAT_005a0d40;
-// GLOBAL: SHANDALAR 0x005a0d44
-int DAT_005a0d44;
-// GLOBAL: SHANDALAR 0x005a0d48
-int DAT_005a0d48;
-// GLOBAL: SHANDALAR 0x0073bf98
-HMODULE DAT_0073bf98;
-// GLOBAL: SHANDALAR 0x0073bfa0
-FARPROC *DAT_0073bfa0;
-// GLOBAL: SHANDALAR 0x0073bfa8
-FARPROC DAT_0073bfa8;
-// GLOBAL: SHANDALAR 0x0073bfe0
-fn_int_void DAT_0073bfe0;
+
 // GLOBAL: SHANDALAR 0x00669704
 int DAT_00669704;
 // GLOBAL: SHANDALAR 0x0066970c
@@ -102,8 +85,6 @@ char DAT_0073e9d8;
 char *DAT_0067a3b8;
 // GLOBAL: SHANDALAR 0x005919ac
 int DAT_005919ac = 0x005c3a61;
-// GLOBAL: SHANDALAR 0x005a0d4c
-const char *PTR_s_magsnd_005a0d4c = "magsnd";
 
 /* 0x00589de4: hardcoded timer interval in original binary. */
 
@@ -122,12 +103,10 @@ void FUN_00565faa(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
-int FUN_0056d476(void);
 int FUN_00417dc6(const char *filename);
 unsigned int FUN_00562e0d(char *filename);
 char FUN_00562ed0(void);
-unsigned int __cdecl FUN_0056d0f7(void *param_1, int param_2, int param_3);
-unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3);
+unsigned int FUN_00562f92(char *filename, int param_2, int param_3);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
 DWORD WINAPI FUN_0046e6f0(LPVOID);
@@ -141,12 +120,9 @@ void FUN_00464663(char *out_dir)
 #else
   char *slash;
 
-  GetModuleFileNameA((HMODULE)0, out_dir, 260);
+  GetModuleFileNameA((HMODULE)0, out_dir, 0x105);
   slash = strrchr(out_dir, '\\');
-  if (slash != 0)
-  {
-    *slash = 0;
-  }
+  *slash = 0;
 #endif
 }
 
@@ -472,50 +448,47 @@ int FUN_00565c7e(const char *filename, const char *section, char **out_table, in
 // FUNCTION: SHANDALAR 0x00565fdb
 int FUN_00565fdb(char *param_1, char *param_2, int *param_3, int *param_4)
 {
-  int cmp;
-
   if (param_1 == (char *)0 || param_2 == (char *)0 || param_2 <= param_1 || param_3 == (int *)0 || param_4 == (int *)0)
   {
     return 0;
   }
 
-  while (*param_1 != '\0' && param_1 < param_2 && (cmp = strncmp(param_1, "STARTBLOCK", 10), cmp != 0))
+  while (*param_1 != '\0' && param_1 < param_2 && strncmp(param_1, "STARTBLOCK", 10))
   {
     ++param_1;
   }
 
-  cmp = strncmp(param_1, "STARTBLOCK", 10);
-  if (cmp != 0)
+  if (strncmp(param_1, "STARTBLOCK", 10) == 0)
+  {
+    param_1 += 0xc;
+    if (param_3 != (int *)0)
+    {
+      *param_3 = (int)param_1;
+    }
+
+    while (*param_1 != '\0' && param_1 < param_2 && strncmp(param_1, "ENDBLOCK", 8))
+    {
+      ++param_1;
+    }
+
+    if (strncmp(param_1, "ENDBLOCK", 8) == 0)
+    {
+      *param_1 = '\0';
+      if (param_4 != (int *)0)
+      {
+        *param_4 = (int)(param_1 + 8);
+      }
+    }
+    else if (param_4 != (int *)0)
+    {
+      *param_4 = 0;
+    }
+    return 1;
+  }
+  else
   {
     return 0;
   }
-
-  param_1 += 0xc;
-  if (param_3 != (int *)0)
-  {
-    *param_3 = (int)param_1;
-  }
-
-  while (*param_1 != '\0' && param_1 < param_2 && (cmp = strncmp(param_1, "ENDBLOCK", 8), cmp != 0))
-  {
-    ++param_1;
-  }
-
-  cmp = strncmp(param_1, "ENDBLOCK", 8);
-  if (cmp == 0)
-  {
-    *param_1 = '\0';
-    if (param_4 != (int *)0)
-    {
-      *param_4 = (int)(param_1 + 8);
-    }
-  }
-  else if (param_4 != (int *)0)
-  {
-    *param_4 = 0;
-  }
-
-  return 1;
 }
 
 // FUNCTION: SHANDALAR 0x00565dbc
@@ -693,22 +666,9 @@ char FUN_00562ed0(void)
   return DAT_0073e9d8;
 }
 
-// FUNCTION: SHANDALAR 0x0056d0f7
-unsigned int __cdecl FUN_0056d0f7(void *param_1, int param_2, int param_3)
-{
-  if (DAT_005a0d44 == 0)
-  {
-    return 4;
-  }
-
-  return (unsigned int)((int(__cdecl *)(void *, int, int))DAT_0073bfa8)(param_1, param_2, param_3);
-}
-
 // FUNCTION: SHANDALAR 0x00562f92
-unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3)
+unsigned int FUN_00562f92(char *filename, int param_2, int param_3)
 {
-  char drive_letter;
-
   if (DAT_00669704 == 0)
   {
     _getcwd(DAT_0073e890, 0x100);
@@ -720,8 +680,7 @@ unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3)
     filename[0] = DAT_0073e890[0];
     if (FUN_00417dc6(filename) == 0)
     {
-      drive_letter = FUN_00562ed0();
-      filename[0] = drive_letter;
+      filename[0] = FUN_00562ed0();
     }
   }
 
@@ -729,19 +688,8 @@ unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3)
   {
   }
 
-  FUN_0056d0f7(filename, param_2, param_3);
+  sound_load(filename, param_2, param_3);
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0056d476
-int FUN_0056d476(void)
-{
-  if (DAT_005a0d44 == 0 || DAT_005a0d44 == 2)
-  {
-    return 4;
-  }
-
-  return DAT_0073bfe0();
 }
 
 // FUNCTION: SHANDALAR 0x00417dc6
@@ -833,10 +781,13 @@ void CALLBACK FUN_004ce8cd(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD d
 
   ++DAT_00589df0;
 
-  if (DAT_00748400 == 0)
+  if (DAT_00748400 != 0)
+  {
+  }
+  else
   {
     DAT_00748400 = 1;
-    FUN_0056d476();
+    update_snd();
     DAT_00748400 = 0;
   }
 }
@@ -846,6 +797,9 @@ LRESULT CALLBACK FUN_004ce61a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   switch (msg)
   {
+  case 0x10101010:
+    update_snd();
+    return 0;
   case 2:
     sound_close();
     PostQuitMessage(0);
@@ -903,9 +857,6 @@ LRESULT CALLBACK FUN_004ce61a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     DAT_00986da0 |= 1;
     DAT_00986d94 = 0;
     break;
-  case 0x10101010:
-    FUN_0056d476();
-    return 0;
   }
 
   return DefWindowProcA(hwnd, msg, wparam, lparam);
