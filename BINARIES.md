@@ -73,6 +73,8 @@ Has a lot of random binaries included.  Multiple large magic.exes and older mana
 * ManalinkEh.dll `md5: E0EFC674707CD110EB1A475EA0E17F11`
 * ManalinkEx.dll `md5: 18DFF1F8345682FBBDE831E1BEE4FF7C`
 * MTGLauncher.exe `md5: F72DA0D7DCFF4F18BBD4B066FF763250`
+    * Autoplay Media Studio executable
+    * autoplay/MTGLauncher.cdd password `3d5eEv3e5l0o7pA3e7r4A`
 * Shandalar.exe `md5: 5938EA9246DC4A1A40B4FF81A1C10EDD`
     * 1054 matching functions vs 1.3
     * Code looks identical to "Manalink 1.3.2"
