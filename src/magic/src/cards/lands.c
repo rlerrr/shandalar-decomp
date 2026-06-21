@@ -136,7 +136,7 @@ int card_library_of_alexandria(int player, int card, event_t event)
 
   if (event == EVENT_COUNT_MANA || event == EVENT_CAN_ACTIVATE)
   {
-    return FUN_0042d790(player, card, event, COLOR_COLORLESS);
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
   if (event == EVENT_ACTIVATE)
@@ -175,7 +175,7 @@ int card_library_of_alexandria(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     if (s.action == 0)
     {
-      FUN_0042d790(player, card, event, COLOR_COLORLESS);
+      mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
     }
     else if (s.action == 1)
     {
@@ -205,7 +205,7 @@ int card_library_of_alexandria(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
   {
-    return FUN_0042d790(player, card, event, COLOR_COLORLESS);
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
   return 0;

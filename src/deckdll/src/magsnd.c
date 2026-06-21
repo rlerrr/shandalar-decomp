@@ -153,6 +153,7 @@ void clear_sound_imports_table(void)
 // FUNCTION: MAGVID 0x10008010
 // FUNCTION: STATWIN 0x10002da0
 // FUNCTION: MAGIC 0x004857e0
+// FUNCTION: SHANDALAR 0x0056cf20
 int init_sound_dll(HWND hwnd, int a2, int a3)
 {
   int i;

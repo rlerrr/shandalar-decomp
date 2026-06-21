@@ -9,6 +9,7 @@
 #include "magic/src/global_strings.h"
 #include "shandalar_global_strings.h"
 #include "cardartlib/src/assert.h"
+#include "deckdll/src/magsnd.h"
 
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
@@ -16,172 +17,93 @@ HDC global_main_hdc;
 typedef void(__cdecl *fn_void_void)(void);
 typedef int(__cdecl *fn_int_void)(void);
 
-// Strings
-#define s_ShandalarMainClass_00589e04 EXE_STR(0x00589e04)
-#define s_Magic_Shell_00589e18 EXE_STR(0x00589e18)
-#define s__MTGshell_00589e24 EXE_STR(0x00589e24)
-#define s_Low_Memory_Swap_File_Space_Warni_00589e30 EXE_STR(0x00589e30)
-#define s_We_have_determined_that_you_may_n_00589e54 EXE_STR(0x00589e54)
-#define s_AdvStrings_txt_00589f4c EXE_STR(0x00589f4c)
-#define s_Couldn_t_load_the_strings_from_t_00589f5c EXE_STR(0x00589f5c)
-#define s_AdvBlocks_txt_00589f94 EXE_STR(0x00589f94)
-#define s_Couldn_t_load_the_strings_from_t_00589fa4 EXE_STR(0x00589fa4)
-#define s_ShandalarMainClass_00589fdc EXE_STR(0x00589fdc)
-#define s_Couldn_t_register_the_classes_00589ff0 EXE_STR(0x00589ff0)
-#define s_advinter_pic_0058a010 EXE_STR(0x0058a010)
-#define s_advinter800_pic_0058a020 EXE_STR(0x0058a020)
-#define s_advinter1024_pic_0058a030 EXE_STR(0x0058a030)
-#define s_advinter_pic_0058a044 EXE_STR(0x0058a044)
-#define s_advinter800_pic_0058a054 EXE_STR(0x0058a054)
-#define s_advinter1024_pic_0058a064 EXE_STR(0x0058a064)
-#define s_Magic__Shandalar_0058a078 EXE_STR(0x0058a078)
-#define s_ShandalarMainClass_0058a08c EXE_STR(0x0058a08c)
-#define s_Timer_failed_to_initialize__0058a0a0 EXE_STR(0x0058a0a0)
-#define s_D__Newmagic_multiplayer_sid_Test_0058a0c0 EXE_STR(0x0058a0c0)
-#define s_Could_not_start_timer_0058a0e4 EXE_STR(0x0058a0e4)
-#define s_D__Newmagic_multiplayer_sid_Test_0058a0fc EXE_STR(0x0058a0fc)
-#define s__MTGshell_0058a120 EXE_STR(0x0058a120)
-#define s__Magic_exe_0058a12c EXE_STR(0x0058a12c)
-#define s__start3_1_0058a138 EXE_STR(0x0058a138)
-#define s_Current_Palette_0058a144 EXE_STR(0x0058a144)
-#define s_ShowPaletteClass_0058a154 EXE_STR(0x0058a154)
-#define s_sound_locmus1_wav_0058a168 EXE_STR(0x0058a168)
-#define s_PLAYERNAMES_00593938 EXE_STR(0x00593938)
-#define s_DIFFICULTYLEVELS_00593944 EXE_STR(0x00593944)
-#define s_DUNGEON_NAMES_00593958 EXE_STR(0x00593958)
-#define s_LAIR_NAMES_00593968 EXE_STR(0x00593968)
-#define s_CITYNAMES_FORMAT_00593974 EXE_STR(0x00593974)
-#define s_CITYNAME_VILLAGE_00593988 EXE_STR(0x00593988)
-#define s_CITYNAME_CASTLE_0059399c EXE_STR(0x0059399c)
-#define s_CITYNAME_MANACASTLE_005939ac EXE_STR(0x005939ac)
-#define s_CITYNAMES_FIRSTHALF_005939c0 EXE_STR(0x005939c0)
-#define s_CITYNAMES_SECONDHALF_005939d4 EXE_STR(0x005939d4)
-#define s_WORLDMAGIC_005939ec EXE_STR(0x005939ec)
-#define s_WORLDMAGIC_NAMES_005939f8 EXE_STR(0x005939f8)
-#define s_WORLDMAGIC_EXPLAINS_00593a0c EXE_STR(0x00593a0c)
-#define s_LOGSTRINGS_00593a20 EXE_STR(0x00593a20)
-#define s_WIZARDNAMES_00593a2c EXE_STR(0x00593a2c)
-#define s_default_00593a38 EXE_STR(0x00593a38)
-#define s_CREATURENAMES_00593a3c EXE_STR(0x00593a3c)
-#define s_default_00593a4c EXE_STR(0x00593a4c)
-#define s_CREATURENAME_ARTICLES_00593a50 EXE_STR(0x00593a50)
-#define s_default_00593a68 EXE_STR(0x00593a68)
-#define s_CREATURENAMES_PLURAL_00593a6c EXE_STR(0x00593a6c)
-#define s_default_00593a84 EXE_STR(0x00593a84)
-#define s_DIRECTIONS_00593a88 EXE_STR(0x00593a88)
-#define s_CARDCLASSNAMES_00593a94 EXE_STR(0x00593a94)
-#define s_CARDCLASSNAMES_PLURAL_00593aa4 EXE_STR(0x00593aa4)
-#define s_SPELLNAMES_00593abc EXE_STR(0x00593abc)
-#define s_MANANAMES_00593ac8 EXE_STR(0x00593ac8)
-#define s_default_00593ad4 EXE_STR(0x00593ad4)
-#define s_LANDWALKS_00593ad8 EXE_STR(0x00593ad8)
-#define s_default_00593ae4 EXE_STR(0x00593ae4)
-#define s_AMULETNAMES_00593ae8 EXE_STR(0x00593ae8)
-#define s_AMULETNAMES_PLURAL_00593af4 EXE_STR(0x00593af4)
-#define s_COLORCARDS_00593b08 EXE_STR(0x00593b08)
-#define s_CAVE_SHOWCLUES_00593b14 EXE_STR(0x00593b14)
-#define s_ENCOUNTER_PREDUEL_00593b24 EXE_STR(0x00593b24)
-#define s_ENCOUNTER_POSTDUEL_00593b38 EXE_STR(0x00593b38)
-#define s_VISIT_00593b4c EXE_STR(0x00593b4c)
-#define s_VISIT_CITYBUY_00593b54 EXE_STR(0x00593b54)
-#define s_CASTLEWIN_00593b64 EXE_STR(0x00593b64)
-#define s_DUNGEON_00593b70 EXE_STR(0x00593b70)
-#define s_HINTTEXT_00593b78 EXE_STR(0x00593b78)
-#define s_QUESTFAILED_00593b84 EXE_STR(0x00593b84)
-#define s_MONSTERLAIR_00593b90 EXE_STR(0x00593b90)
-#define s_BUYANYCARD_00593b9c EXE_STR(0x00593b9c)
-#define s_QUESTSTATUS_00593ba8 EXE_STR(0x00593ba8)
-#define s_NEWSFLASH_00593bb4 EXE_STR(0x00593bb4)
-#define s_CITYCARDTEXT_00593bc0 EXE_STR(0x00593bc0)
-#define s_BROWSE_00593bd0 EXE_STR(0x00593bd0)
-#define s_SHOWDECK_00593bd8 EXE_STR(0x00593bd8)
-#define s_LOADSAVE_00593be4 EXE_STR(0x00593be4)
-#define s_STATS_00593bf0 EXE_STR(0x00593bf0)
-#define s_ANALYZE_00593bf8 EXE_STR(0x00593bf8)
-#define s_RIDDLE_00593c00 EXE_STR(0x00593c00)
-#define s_unknown_00593c08 EXE_STR(0x00593c08)
-#define s_WISEMAN_00593c10 EXE_STR(0x00593c10)
-#define s_CITYWISEMAN_00593c18 EXE_STR(0x00593c18)
-#define s_CITYSCREEN_BUTTONS_00593c24 EXE_STR(0x00593c24)
-#define s_SHOWLIST_00593c38 EXE_STR(0x00593c38)
-#define s_SHOWLIBRARY_00593c44 EXE_STR(0x00593c44)
-#define s_at_005a0d2c EXE_STR(0x005a0d2c)
-#define s_newline_005a0d30 EXE_STR(0x005a0d30)
-#define s_backslash_005a0d34 EXE_STR(0x005a0d34)
-#define s_rt_005a0d38 EXE_STR(0x005a0d38)
-#define s_fmt_d_005a0d3c EXE_STR(0x005a0d3c)
 
-/* These strings are patched at runtime; keep as writable pointers. */
-#define s_x_sound_kwalkl_wav_00591880 EXE_BYTE_PTR(0x00591880)
-#define s_x_sound_kwalkr_wav_00591894 EXE_BYTE_PTR(0x00591894)
-#define s_x_sound_bwalkl_wav_005918a8 EXE_BYTE_PTR(0x005918a8)
-#define s_x_sound_bwalkr_wav_005918bc EXE_BYTE_PTR(0x005918bc)
-#define s_x_sound_gwalkl_wav_005918d0 EXE_BYTE_PTR(0x005918d0)
-#define s_x_sound_gwalkr_wav_005918e4 EXE_BYTE_PTR(0x005918e4)
-#define s_x_sound_rwalkl_wav_005918f8 EXE_BYTE_PTR(0x005918f8)
-#define s_x_sound_rwalkr_wav_0059190c EXE_BYTE_PTR(0x0059190c)
-#define s_x_sound_wwalkl_wav_00591920 EXE_BYTE_PTR(0x00591920)
-#define s_x_sound_wwalkr_wav_00591934 EXE_BYTE_PTR(0x00591934)
-#define s_x_sound_kbird1_wav_00591948 EXE_BYTE_PTR(0x00591948)
-#define s_x_sound_bbird1_wav_0059195c EXE_BYTE_PTR(0x0059195c)
-#define s_x_sound_gbird1_wav_00591970 EXE_BYTE_PTR(0x00591970)
-#define s_x_sound_rbird1_wav_00591984 EXE_BYTE_PTR(0x00591984)
-#define s_x_sound_wbird1_wav_00591998 EXE_BYTE_PTR(0x00591998)
-#define s_empty_00593c50 EXE_STR(0x00593c50)
-
-// Globals (accessed by absolute address to avoid duplicate storage)
-#define DAT_0078df78 EXE_DWORD(0x0078df78)
-#define DAT_0078e5f0 EXE_TYP_PTR(char, 0x0078e5f0)
-#define DAT_005863b8 EXE_DWORD(0x005863b8)
-#define DAT_005863bc EXE_DWORD(0x005863bc)
-#define PTR_s_advinter800_pic_00589de8 EXE_TYP(char *, 0x00589de8)
-#define PTR_DAT_005832b4 ((unsigned char *)EXE_PTR_VOID(0x005832b4))
-#define DAT_00748420 EXE_TYP(HWND, 0x00748420)
+// GLOBAL: SHANDALAR 0x0078df78
+int DAT_0078df78;
+// GLOBAL: SHANDALAR 0x005863b8
+int global_screen_width = 0x280;
+// GLOBAL: SHANDALAR 0x005863bc
+int global_screen_height = 0x1e0;
+// GLOBAL: SHANDALAR 0x00589de8
+const char *PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
+// GLOBAL: SHANDALAR 0x00583290
+unsigned char DAT_00583290[0x20];
+// GLOBAL: SHANDALAR 0x005832b4
+unsigned char *PTR_DAT_005832b4 = DAT_00583290;
+// GLOBAL: SHANDALAR 0x00748420
+HWND DAT_00748420;
 // GLOBAL: SHANDALAR 0x00939160
-#define DAT_00939160 EXE_TYP(HINSTANCE, 0x00939160)
-#define DAT_005a1608 EXE_DWORD(0x005a1608)
-#define DAT_00986950 ((unsigned char *)EXE_PTR_VOID(0x00986950))
-#define DAT_00591210 EXE_DWORD(0x00591210)
-#define DAT_00748418 EXE_TYP(UINT, 0x00748418)
-#define DAT_007483fc EXE_TYP(UINT, 0x007483fc)
-#define DAT_00589de4 EXE_TYP(UINT, 0x00589de4)
-#define DAT_00589df0 EXE_DWORD(0x00589df0)
-#define DAT_00748400 EXE_DWORD(0x00748400)
-#define DAT_00748404 EXE_TYP(HANDLE, 0x00748404)
-#define DAT_00748424 EXE_TYP(HANDLE, 0x00748424)
-#define DAT_00748408 EXE_DWORD(0x00748408)
-#define _DAT_0074840c EXE_DWORD(0x0074840c)
-#define _DAT_00748410 EXE_TYP(HANDLE, 0x00748410)
+HINSTANCE DAT_00939160;
+// GLOBAL: SHANDALAR 0x005a1608
+int DAT_005a1608 = 1;
+// GLOBAL: SHANDALAR 0x00986950
+unsigned char *DAT_00986950;
+// GLOBAL: SHANDALAR 0x00591210
+int DAT_00591210;
+// GLOBAL: SHANDALAR 0x00748418
+UINT DAT_00748418;
+// GLOBAL: SHANDALAR 0x007483fc
+UINT DAT_007483fc;
+// GLOBAL: SHANDALAR 0x00589de4
+UINT DAT_00589de4 = 0x21;
+// GLOBAL: SHANDALAR 0x00589df0
+int DAT_00589df0;
+// GLOBAL: SHANDALAR 0x00748400
+int DAT_00748400;
+// GLOBAL: SHANDALAR 0x00748404
+HANDLE DAT_00748404;
+// GLOBAL: SHANDALAR 0x00748424
+HANDLE DAT_00748424;
+// GLOBAL: SHANDALAR 0x00748408
+int DAT_00748408;
+// GLOBAL: SHANDALAR 0x0074840c
+int _DAT_0074840c;
+// GLOBAL: SHANDALAR 0x00748410
+HANDLE _DAT_00748410;
 // GLOBAL: SHANDALAR 0x005b7d90
-#define DAT_005b7d90 EXE_DWORD(0x005b7d90)
-#define DAT_005b7d94 EXE_DWORD(0x005b7d94)
+int DAT_005b7d90;
+// GLOBAL: SHANDALAR 0x005b7d94
+int DAT_005b7d94;
 // GLOBAL: SHANDALAR 0x005b7d98
-#define DAT_005b7d98 EXE_TYP(HWND, 0x005b7d98)
+HWND DAT_005b7d98;
 // GLOBAL: SHANDALAR 0x00986d94
-#define DAT_00986d94 EXE_DWORD(0x00986d94)
+int DAT_00986d94;
 // GLOBAL: SHANDALAR 0x00986d98
-#define DAT_00986d98 EXE_DWORD(0x00986d98)
+int DAT_00986d98;
 // GLOBAL: SHANDALAR 0x00986d9c
-#define DAT_00986d9c EXE_DWORD(0x00986d9c)
+int DAT_00986d9c;
 // GLOBAL: SHANDALAR 0x00986da0
-#define DAT_00986da0 EXE_DWORD(0x00986da0)
-#define DAT_0093aa40 EXE_TYP(CRITICAL_SECTION, 0x0093aa40)
-#define DAT_005a0d40 EXE_DWORD(0x005a0d40)
-#define DAT_005a0d44 EXE_DWORD(0x005a0d44)
-#define DAT_005a0d48 EXE_DWORD(0x005a0d48)
-#define DAT_0073bf98 EXE_TYP(HMODULE, 0x0073bf98)
-#define DAT_0073bfa0 EXE_TYP_PTR(FARPROC, 0x0073bfa0)
-#define DAT_0073bfa4 EXE_TYP(fn_void_void, 0x0073bfa4)
-#define DAT_0073bfa8 EXE_TYP(FARPROC, 0x0073bfa8)
-#define DAT_0073bfe0 EXE_TYP(fn_int_void, 0x0073bfe0)
-#define DAT_00669704 EXE_DWORD(0x00669704)
-#define DAT_0066970c EXE_DWORD(0x0066970c)
-#define DAT_0073e890 EXE_TYP_PTR(char, 0x0073e890)
-#define DAT_0073e9d8 EXE_BYTE(0x0073e9d8)
-#define DAT_0067a3b8 EXE_DWORD(0x0067a3b8)
-#define DAT_005919ac EXE_DWORD(0x005919ac)
-// GLOBAL: SHANDALAR 0x005a0d4c (pointer to "magsnd")
-#define PTR_s_magsnd_005a0d4c EXE_TYP(const char *, 0x005a0d4c)
+int DAT_00986da0;
+// GLOBAL: SHANDALAR 0x0093aa40
+CRITICAL_SECTION DAT_0093aa40;
+// GLOBAL: SHANDALAR 0x005a0d40
+int DAT_005a0d40;
+// GLOBAL: SHANDALAR 0x005a0d44
+int DAT_005a0d44;
+// GLOBAL: SHANDALAR 0x005a0d48
+int DAT_005a0d48;
+// GLOBAL: SHANDALAR 0x0073bf98
+HMODULE DAT_0073bf98;
+// GLOBAL: SHANDALAR 0x0073bfa0
+FARPROC *DAT_0073bfa0;
+// GLOBAL: SHANDALAR 0x0073bfa8
+FARPROC DAT_0073bfa8;
+// GLOBAL: SHANDALAR 0x0073bfe0
+fn_int_void DAT_0073bfe0;
+// GLOBAL: SHANDALAR 0x00669704
+int DAT_00669704;
+// GLOBAL: SHANDALAR 0x0066970c
+int DAT_0066970c;
+// GLOBAL: SHANDALAR 0x0073e890
+char DAT_0073e890[0x100];
+// GLOBAL: SHANDALAR 0x0073e9d8
+char DAT_0073e9d8;
+// GLOBAL: SHANDALAR 0x0067a3b8
+char *DAT_0067a3b8;
+// GLOBAL: SHANDALAR 0x005919ac
+int DAT_005919ac = 0x005c3a61;
+// GLOBAL: SHANDALAR 0x005a0d4c
+const char *PTR_s_magsnd_005a0d4c = "magsnd";
 
 /* 0x00589de4: hardcoded timer interval in original binary. */
 
@@ -195,16 +117,12 @@ int FUN_00565dbc(const char *filename);
 int FUN_00565fdb(char *param_1, char *param_2, int *param_3, int *param_4);
 void FUN_00559999(void);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
-int FUN_0056cf20(int param_1, int param_2, unsigned int param_3);
 void FUN_00562d03(void);
 void FUN_00565faa(void);
-char ***__cdecl __p___argv(void);
-void FUN_0056d081(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
 int FUN_0056d476(void);
-void FUN_0056d74e(void);
 int FUN_00417dc6(const char *filename);
 unsigned int FUN_00562e0d(char *filename);
 char FUN_00562ed0(void);
@@ -217,6 +135,10 @@ DWORD WINAPI FUN_0046e6f0(LPVOID);
 // FUNCTION: SHANDALAR 0x00464663
 void FUN_00464663(char *out_dir)
 {
+#ifdef _DEBUG
+  // Allow debugging directly from output directory
+  getcwd(out_dir, 260);
+#else
   char *slash;
 
   GetModuleFileNameA((HMODULE)0, out_dir, 260);
@@ -225,6 +147,7 @@ void FUN_00464663(char *out_dir)
   {
     *slash = 0;
   }
+#endif
 }
 
 // FUNCTION: SHANDALAR 0x00564ee7
@@ -239,22 +162,22 @@ int FUN_00564ee7(const char *filename)
   } s;
 
   s.ok = 1;
-  s.ok &= FUN_00565c7e(filename, s_PLAYERNAMES_00593938, TBL_0077c5a0, 0xe, DAT_0077e2c0, DAT_0077e2c0 + 0x2bc, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_DIFFICULTYLEVELS_00593944, TBL_0077d130, 4, DAT_0074d790, DAT_0074d790 + 0x64, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_DUNGEON_NAMES_00593958, TBL_00780820, 0x11, DAT_0074c970, DAT_0074c970 + 0x352, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_LAIR_NAMES_00593968, TBL_0077c020, 0x13, DAT_0074bd30, DAT_0074bd30 + 0x3b6, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "PLAYERNAMES", gs_playernames_0077c5a0, 0xe, DAT_0077e2c0, DAT_0077e2c0 + 0x2bc, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "DIFFICULTYLEVELS", gs_difficultylevels_0077d130, 4, DAT_0074d790, DAT_0074d790 + 0x64, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "DUNGEON_NAMES", gs_dungeon_names_00780820, 0x11, DAT_0074c970, DAT_0074c970 + 0x352, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "LAIR_NAMES", gs_lair_names_0077c020, 0x13, DAT_0074bd30, DAT_0074bd30 + 0x3b6, (char **)0);
 
-  FUN_0056cc4d(filename, s_CITYNAMES_FORMAT_00593974);
-  strcpy(DAT_0074c950, (char *)text_lines);
-  strcpy(DAT_0077f190, (char *)text_lines + 0x12c);
+  FUN_0056cc4d(filename, "CITYNAMES_FORMAT");
+  strcpy(DAT_0074c950, text_lines[0]);
+  strcpy(DAT_0077f190, text_lines[1]);
 
-  FUN_0056cc4d(filename, s_CITYNAME_VILLAGE_00593988);
+  FUN_0056cc4d(filename, "CITYNAME_VILLAGE");
   strcpy(DAT_0077cfd0, text_lines[0]);
 
-  FUN_0056cc4d(filename, s_CITYNAME_CASTLE_0059399c);
+  FUN_0056cc4d(filename, "CITYNAME_CASTLE");
   strcpy(DAT_00765dc0, text_lines[0]);
 
-  FUN_0056cc4d(filename, s_CITYNAME_MANACASTLE_005939ac);
+  FUN_0056cc4d(filename, "CITYNAME_MANACASTLE");
 
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
@@ -266,25 +189,30 @@ int FUN_00564ee7(const char *filename)
   strcpy(DAT_0077de00, DAT_00765dc0);
 
   s.local_8 = DAT_0077d610;
-  s.ok &= FUN_00565c7e(filename, s_CITYNAMES_FIRSTHALF_005939c0, TBL_0077e060, 0x10, DAT_0077d610, DAT_0077dc50, &s.local_8);
-  s.ok &= FUN_00565c7e(filename, s_CITYNAMES_SECONDHALF_005939d4, TBL_007653e0, 0x10, s.local_8, DAT_0077dc50, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "CITYNAMES_FIRSTHALF", gs_citynames_firsthalf_0077e060, 0x10, DAT_0077d610,
+                       DAT_0077d610 + sizeof(gs_citynames_buf_0077d610), &s.local_8);
+  s.ok &= FUN_00565c7e(filename, "CITYNAMES_SECONDHALF", gs_citynames_secondhalf_007653e0, 0x10, s.local_8,
+                       DAT_0077d610 + sizeof(gs_citynames_buf_0077d610), (char **)0);
 
   s.local_8 = DAT_0074b160;
-  FUN_0056cc4d(filename, s_WORLDMAGIC_005939ec);
+  FUN_0056cc4d(filename, "WORLDMAGIC");
   strcpy(DAT_0077e1d0, text_lines[0]);
-  s.ok &= FUN_00565c7e(filename, s_WORLDMAGIC_NAMES_005939f8, TBL_00780660, 0xc, DAT_0074b160, DAT_0074b868, &s.local_8);
-  s.ok &= FUN_00565c7e(filename, s_WORLDMAGIC_EXPLAINS_00593a0c, TBL_0074b8f0, 0xc, s.local_8, DAT_0074b868, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "WORLDMAGIC_NAMES", gs_worldmagic_names_00780660, 0xc, DAT_0074b160,
+                       DAT_0074b160 + sizeof(gs_worldmagic_buf_0074b160), &s.local_8);
+  s.ok &= FUN_00565c7e(filename, "WORLDMAGIC_EXPLAINS", gs_worldmagic_explains_0074b8f0, 0xc, s.local_8,
+                       DAT_0074b160 + sizeof(gs_worldmagic_buf_0074b160), (char **)0);
 
-  s.ok &= FUN_00565c7e(filename, s_LOGSTRINGS_00593a20, TBL_0077c9a0, 0x10, DAT_0077c680, DAT_0077c9a0, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "LOGSTRINGS", gs_logstrings_0077c9a0, 0x10, DAT_0077c680,
+                       DAT_0077c680 + sizeof(gs_logstrings_buf_0077c680), (char **)0);
 
-  FUN_0056cc4d(filename, s_WIZARDNAMES_00593a2c);
+  FUN_0056cc4d(filename, "WIZARDNAMES");
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_0077ee70 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
   }
-  strcpy(DAT_0077ee70, s_default_00593a38);
+  strcpy(DAT_0077ee70, "");
 
-  s.iVar36 = FUN_0056cc4d(filename, s_CREATURENAMES_00593a3c);
+  s.iVar36 = FUN_0056cc4d(filename, "CREATURENAMES");
   if ((int)DAT_00593934 <= s.iVar36)
   {
     s.iVar36 = DAT_00593934;
@@ -295,11 +223,11 @@ int FUN_00564ee7(const char *filename)
   }
   while (s.local_c = s.iVar36, s.local_c < (int)DAT_00593934)
   {
-    strcpy(DAT_00591a12 + s.local_c * 0x8c, s_default_00593a4c);
+    strcpy(DAT_00591a12 + s.local_c * 0x8c, "");
     s.iVar36 = s.local_c + 1;
   }
 
-  s.iVar36 = FUN_0056cc4d(filename, s_CREATURENAME_ARTICLES_00593a50);
+  s.iVar36 = FUN_0056cc4d(filename, "CREATURENAME_ARTICLES");
   if ((int)DAT_00593934 <= s.iVar36)
   {
     s.iVar36 = DAT_00593934;
@@ -310,11 +238,11 @@ int FUN_00564ee7(const char *filename)
   }
   while (s.local_c = s.iVar36, s.local_c < (int)DAT_00593934)
   {
-    strcpy(DAT_00591a08 + s.local_c * 0x8c, s_default_00593a68);
+    strcpy(DAT_00591a08 + s.local_c * 0x8c, "");
     s.iVar36 = s.local_c + 1;
   }
 
-  s.iVar36 = FUN_0056cc4d(filename, s_CREATURENAMES_PLURAL_00593a6c);
+  s.iVar36 = FUN_0056cc4d(filename, "CREATURENAMES_PLURAL");
   if ((int)DAT_00593934 <= s.iVar36)
   {
     s.iVar36 = DAT_00593934;
@@ -325,21 +253,23 @@ int FUN_00564ee7(const char *filename)
   }
   while (s.local_c = s.iVar36, s.local_c < (int)DAT_00593934)
   {
-    strcpy(DAT_00591a44 + s.local_c * 0x8c, s_default_00593a84);
+    strcpy(DAT_00591a44 + s.local_c * 0x8c, "");
     s.iVar36 = s.local_c + 1;
   }
 
-  FUN_0056cc4d(filename, s_DIRECTIONS_00593a88);
+  FUN_0056cc4d(filename, "DIRECTIONS");
   for (s.local_c = 0; s.local_c < 4; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_00765d50 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
   s.local_8 = DAT_0074c5c0;
-  s.ok &= FUN_00565c7e(filename, s_CARDCLASSNAMES_00593a94, TBL_0077cf70, 9, DAT_0074c5c0, DAT_0074c782, &s.local_8);
-  s.ok &= FUN_00565c7e(filename, s_CARDCLASSNAMES_PLURAL_00593aa4, TBL_0077e1f0, 9, s.local_8, DAT_0074c782, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "CARDCLASSNAMES", gs_cardclassnames_0077cf70, 9, DAT_0074c5c0,
+                       DAT_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), &s.local_8);
+  s.ok &= FUN_00565c7e(filename, "CARDCLASSNAMES_PLURAL", gs_cardclassnames_plural_0077e1f0, 9, s.local_8,
+                       DAT_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), (char **)0);
 
-  FUN_0056cc4d(filename, s_SPELLNAMES_00593abc);
+  FUN_0056cc4d(filename, "SPELLNAMES");
   strcpy(DAT_0077e6e0, text_lines[0]);
   for (s.local_c = 1; s.local_c < 5; s.local_c = s.local_c + 1)
   {
@@ -347,75 +277,99 @@ int FUN_00564ee7(const char *filename)
   }
   strcpy(DAT_0077e220, text_lines[6]);
 
-  FUN_0056cc4d(filename, s_MANANAMES_00593ac8);
+  FUN_0056cc4d(filename, "MANANAMES");
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_0074d980 + (s.local_c * 5 + 5) * 5, text_lines[s.local_c]);
   }
-  strcpy(DAT_0074d980, s_default_00593ad4);
+  strcpy(DAT_0074d980, "");
 
-  FUN_0056cc4d(filename, s_LANDWALKS_00593ad8);
+  FUN_0056cc4d(filename, "LANDWALKS");
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_007806f0 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
   }
-  strcpy(DAT_007806f0, s_default_00593ae4);
+  strcpy(DAT_007806f0, "");
 
-  FUN_0056cc4d(filename, s_AMULETNAMES_00593ae8);
+  FUN_0056cc4d(filename, "AMULETNAMES");
   for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_0077d090 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
-  FUN_0056cc4d(filename, s_AMULETNAMES_PLURAL_00593af4);
+  FUN_0056cc4d(filename, "AMULETNAMES_PLURAL");
   for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_0077edd0 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
-  FUN_0056cc4d(filename, s_COLORCARDS_00593b08);
+  FUN_0056cc4d(filename, "COLORCARDS");
   for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
   {
     strcpy(DAT_0077c5e0 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
-  s.ok &= FUN_00565c7e(filename, s_CAVE_SHOWCLUES_00593b14, TBL_0077efa0, 0x17, DAT_007658d0, DAT_00765d4e, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "CAVE_SHOWCLUES", gs_cave_showclues_0077efa0, 0x17, DAT_007658d0,
+                       DAT_007658d0 + sizeof(gs_cave_showclues_buf_007658d0), (char **)0);
 
   s.local_8 = DAT_0074da70;
-  s.ok &= FUN_00565c7e(filename, s_ENCOUNTER_PREDUEL_00593b24, TBL_0077f0d0, 0x30, DAT_0074da70, DAT_0074f1e0, &s.local_8);
-  s.ok &= FUN_00565c7e(filename, s_ENCOUNTER_POSTDUEL_00593b38, TBL_0077f050, 0x20, s.local_8, DAT_0074f1e0, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "ENCOUNTER_PREDUEL", gs_encounter_preduel_0077f0d0, 0x30, DAT_0074da70,
+                       DAT_0074da70 + sizeof(gs_encounter_buf_0074da70), &s.local_8);
+  s.ok &= FUN_00565c7e(filename, "ENCOUNTER_POSTDUEL", gs_encounter_postduel_0077f050, 0x20, s.local_8,
+                       DAT_0074da70 + sizeof(gs_encounter_buf_0074da70), (char **)0);
 
   s.local_8 = DAT_0077f610;
-  s.ok &= FUN_00565c7e(filename, s_VISIT_00593b4c, TBL_0077c4f0, 0x23, DAT_0077f610, DAT_007800b5, &s.local_8);
-  s.ok &= FUN_00565c7e(filename, s_VISIT_CITYBUY_00593b54, TBL_0077f1d0, 4, s.local_8, DAT_007800b5, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "VISIT", gs_visit_0077c4f0, 0x23, DAT_0077f610, DAT_0077f610 + sizeof(gs_visit_buf_0077f610),
+                       &s.local_8);
+  s.ok &= FUN_00565c7e(filename, "VISIT_CITYBUY", gs_visit_citybuy_0077f1d0, 4, s.local_8,
+                       DAT_0077f610 + sizeof(gs_visit_buf_0077f610), (char **)0);
 
-  s.ok &= FUN_00565c7e(filename, s_CASTLEWIN_00593b64, TBL_0074b8c0, 0xb, DAT_0077e700, DAT_0077ed72, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_DUNGEON_00593b70, TBL_0077f000, 0x14, DAT_00780870, DAT_00780c58, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_HINTTEXT_00593b78, TBL_0077e580, 2, DAT_0077e5a0, DAT_0077e6cc, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_QUESTFAILED_00593b84, TBL_0077c580, 6, DAT_0074b930, DAT_0074bcb4, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_MONSTERLAIR_00593b90, TBL_0074cff0, 6, DAT_0074d010, DAT_0074d268, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_BUYANYCARD_00593b9c, TBL_0074ccd0, 6, DAT_0077f1e0, DAT_0077f438, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_QUESTSTATUS_00593ba8, TBL_0077e0a0, 0x1a, DAT_0074d270, DAT_0074d784, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_NEWSFLASH_00593bb4, TBL_0077d140, 0xb, DAT_0077d1c0, DAT_0077d60c, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_CITYCARDTEXT_00593bc0, TBL_0074ccf0, 0x31, DAT_0074c0f0, DAT_0074c5b9, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_BROWSE_00593bd0, TBL_0074da20, 0x11, DAT_0077dc50, DAT_0077ddf9, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_SHOWDECK_00593bd8, TBL_0074b920, 3, DAT_0074d890, DAT_0074d971, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_LOADSAVE_00593be4, TBL_0077d1b0, 3, DAT_0077d040, DAT_0077d08b, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_STATS_00593bf0, TBL_0077cfa0, 9, DAT_0074ce20, DAT_0074cfe2, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_ANALYZE_00593bf8, TBL_0074b870, 0x11, DAT_0074afb0, DAT_0074b159, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_RIDDLE_00593c00, TBL_0077cf20, 0x11, DAT_0077ca20, DAT_0077cf1b, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_unknown_00593c08, TBL_0077e180, 0x13, DAT_007800c0, DAT_00780651, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "CASTLEWIN", gs_castlewin_0074b8c0, 0xb, DAT_0077e700,
+                       DAT_0077e700 + sizeof(gs_castlewin_buf_0077e700), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "DUNGEON", gs_dungeon_0077f000, 0x14, DAT_00780870, DAT_00780870 + sizeof(gs_dungeon_buf_00780870),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "HINTTEXT", gs_hinttext_0077e580, 2, DAT_0077e5a0, DAT_0077e5a0 + sizeof(gs_hinttext_buf_0077e5a0),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "QUESTFAILED", gs_questfailed_0077c580, 6, DAT_0074b930,
+                       DAT_0074b930 + sizeof(gs_questfailed_buf_0074b930), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "MONSTERLAIR", gs_monsterlair_0074cff0, 6, DAT_0074d010,
+                       DAT_0074d010 + sizeof(gs_monsterlair_buf_0074d010), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "BUYANYCARD", gs_buyanycard_0074ccd0, 6, DAT_0077f1e0,
+                       DAT_0077f1e0 + sizeof(gs_buyanycard_buf_0077f1e0), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "QUESTSTATUS", gs_queststatus_0077e0a0, 0x1a, DAT_0074d270,
+                       DAT_0074d270 + sizeof(gs_queststatus_buf_0074d270), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "NEWSFLASH", gs_newsflash_0077d140, 0xb, DAT_0077d1c0,
+                       DAT_0077d1c0 + sizeof(gs_newsflash_buf_0077d1c0), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "CITYCARDTEXT", gs_citycardtext_0074ccf0, 0x31, DAT_0074c0f0,
+                       DAT_0074c0f0 + sizeof(gs_citycardtext_buf_0074c0f0), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "BROWSE", gs_browse_0074da20, 0x11, DAT_0077d610 + sizeof(gs_citynames_buf_0077d610),
+                       DAT_0077d610 + sizeof(gs_citynames_buf_0077d610) + sizeof(gs_browse_buf_0077dc50), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "SHOWDECK", gs_showdeck_0074b920, 3, DAT_0074d890,
+                       DAT_0074d890 + sizeof(gs_showdeck_buf_0074d890), (char **)0);
+  s.ok &= FUN_00565c7e(filename, "LOADSAVE", gs_loadsave_0077d1b0, 3, DAT_0077d040, DAT_0077d040 + sizeof(gs_loadsave_buf_0077d040),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "STATS", gs_stats_0077cfa0, 9, DAT_0074ce20, DAT_0074ce20 + sizeof(gs_stats_buf_0074ce20),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "ANALYZE", gs_analyze_0074b870, 0x11, DAT_0074afb0, DAT_0074afb0 + sizeof(gs_analyze_buf_0074afb0),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "RIDDLE", gs_riddle_0077cf20, 0x11, DAT_0077ca20, DAT_0077ca20 + sizeof(gs_riddle_buf_0077ca20),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "LAIR", gs_lair_0077e180, 0x13, DAT_007800c0, DAT_007800c0 + sizeof(gs_lair_buf_007800c0),
+                       (char **)0);
 
   s.local_8 = DAT_00780c60;
-  s.ok &= FUN_00565c7e(filename, s_WISEMAN_00593c10, TBL_0074d840, 0x13, DAT_00780c60, DAT_00781705, &s.local_8);
-  s.ok &= FUN_00565c7e(filename, s_CITYWISEMAN_00593c18, TBL_0074d800, 0xd, s.local_8, DAT_00781705, (char **)0);
-  s.ok &= FUN_00565c7e(filename, s_CITYSCREEN_BUTTONS_00593c24, TBL_0077f5e0, 8, DAT_0077f450, DAT_0077f5e0, (char **)0);
+  s.ok &= FUN_00565c7e(filename, "WISEMAN", gs_wiseman_0074d840, 0x13, DAT_00780c60, DAT_00780c60 + sizeof(gs_wiseman_buf_00780c60),
+                       &s.local_8);
+  s.ok &= FUN_00565c7e(filename, "CITYWISEMAN", gs_citywiseman_0074d800, 0xd, s.local_8, DAT_00780c60 + sizeof(gs_wiseman_buf_00780c60),
+                       (char **)0);
+  s.ok &= FUN_00565c7e(filename, "CITYSCREEN_BUTTONS", gs_cityscreen_buttons_0077f5e0, 8, DAT_0077f450,
+                       DAT_0077f450 + sizeof(gs_cityscreen_buttons_buf_0077f450), (char **)0);
 
-  FUN_0056cc4d(filename, s_SHOWLIST_00593c38);
+  FUN_0056cc4d(filename, "SHOWLIST");
   strcpy(DAT_0077e110, text_lines[0]);
   strcpy(DAT_0077e142, text_lines[1]);
 
-  FUN_0056cc4d(filename, s_SHOWLIBRARY_00593c44);
+  FUN_0056cc4d(filename, "SHOWLIBRARY");
   strcpy(DAT_0074bcc0, text_lines[0]);
   strcpy(DAT_0074bcf2, text_lines[1]);
 
@@ -503,7 +457,7 @@ int FUN_00565c7e(const char *filename, const char *section, char **out_table, in
 
   while (i = count, i < max_entries)
   {
-    out_table[i] = (char *)s_empty_00593c50;
+    out_table[i] = (char *)"";
     count = i + 1;
   }
 
@@ -587,16 +541,16 @@ int FUN_00565dbc(const char *filename)
   else
   {
     file_size = GetFileSize(file, (LPDWORD)0);
-    DAT_0067a3b8 = (int)malloc(file_size + 1);
-    if ((char *)DAT_0067a3b8 == (char *)0)
+    DAT_0067a3b8 = (char *)malloc(file_size + 1);
+    if (DAT_0067a3b8 == (char *)0)
     {
       ok = 0;
     }
     else
     {
       ReadFile(file, (void *)DAT_0067a3b8, file_size, &bytes_read, (LPOVERLAPPED)0);
-      cursor = (char *)DAT_0067a3b8;
-      buffer_end = (char *)DAT_0067a3b8 + bytes_read;
+      cursor = DAT_0067a3b8;
+      buffer_end = DAT_0067a3b8 + bytes_read;
 
       for (i = 0; i < 4; ++i)
       {
@@ -644,86 +598,24 @@ void FUN_00559999(void)
 {
 }
 
-// FUNCTION: SHANDALAR 0x0056cf20
-int FUN_0056cf20(int param_1, int param_2, unsigned int param_3)
-{
-  int i;
-  int result;
-
-  result = 0;
-  if (DAT_005a0d44 != 0)
-  {
-    result = 2;
-    goto done;
-  }
-
-  DAT_0073bf98 = LoadLibraryA(PTR_s_magsnd_005a0d4c);
-  if (DAT_0073bf98 == (HMODULE)0)
-  {
-    result = 4;
-    goto done;
-  }
-
-  for (i = 0; i < 0x1b; i = i + 1)
-  {
-    DAT_0073bfa0[i] = GetProcAddress(DAT_0073bf98, (LPCSTR)((i + 1U) & 0xffff));
-    if (DAT_0073bfa0[i] == (FARPROC)0)
-    {
-      FreeLibrary(DAT_0073bf98);
-      FUN_0056d74e();
-      result = 4;
-      goto done;
-    }
-  }
-
-  if (param_1 == 0 && (param_3 & 2) == 0)
-  {
-    FreeLibrary(DAT_0073bf98);
-    FUN_0056d74e();
-    result = 5;
-    goto done;
-  }
-  else
-  {
-    result = ((int(__cdecl *)(int, int, unsigned int))DAT_0073bfa0[0])(param_1, param_2, param_3);
-    if (result != 0)
-    {
-      FreeLibrary(DAT_0073bf98);
-      FUN_0056d74e();
-      goto done;
-    }
-
-    DAT_005a0d48 = 1;
-    if ((param_3 & 2) != 0)
-    {
-      DAT_005a0d40 = 1;
-    }
-    DAT_005a0d44 = 1;
-    result = 0;
-  }
-
-done:
-  return result;
-}
-
 // FUNCTION: SHANDALAR 0x00562d03
 void FUN_00562d03(void)
 {
-  FUN_00562f92(s_x_sound_kwalkl_wav_00591880, 0, 0);
-  FUN_00562f92(s_x_sound_kwalkr_wav_00591894, 1, 0);
-  FUN_00562f92(s_x_sound_bwalkl_wav_005918a8, 2, 0);
-  FUN_00562f92(s_x_sound_bwalkr_wav_005918bc, 3, 0);
-  FUN_00562f92(s_x_sound_gwalkl_wav_005918d0, 4, 0);
-  FUN_00562f92(s_x_sound_gwalkr_wav_005918e4, 5, 0);
-  FUN_00562f92(s_x_sound_rwalkl_wav_005918f8, 6, 0);
-  FUN_00562f92(s_x_sound_rwalkr_wav_0059190c, 7, 0);
-  FUN_00562f92(s_x_sound_wwalkl_wav_00591920, 8, 0);
-  FUN_00562f92(s_x_sound_wwalkr_wav_00591934, 9, 0);
-  FUN_00562f92(s_x_sound_kbird1_wav_00591948, 10, 0);
-  FUN_00562f92(s_x_sound_bbird1_wav_0059195c, 0xb, 0);
-  FUN_00562f92(s_x_sound_gbird1_wav_00591970, 0xc, 0);
-  FUN_00562f92(s_x_sound_rbird1_wav_00591984, 0xd, 0);
-  FUN_00562f92(s_x_sound_wbird1_wav_00591998, 0xe, 0);
+  FUN_00562f92("x:sound\\kwalkl.wav", 0, 0);
+  FUN_00562f92("x:sound\\kwalkr.wav", 1, 0);
+  FUN_00562f92("x:sound\\bwalkl.wav", 2, 0);
+  FUN_00562f92("x:sound\\bwalkr.wav", 3, 0);
+  FUN_00562f92("x:sound\\gwalkl.wav", 4, 0);
+  FUN_00562f92("x:sound\\gwalkr.wav", 5, 0);
+  FUN_00562f92("x:sound\\rwalkl.wav", 6, 0);
+  FUN_00562f92("x:sound\\rwalkr.wav", 7, 0);
+  FUN_00562f92("x:sound\\wwalkl.wav", 8, 0);
+  FUN_00562f92("x:sound\\wwalkr.wav", 9, 0);
+  FUN_00562f92("x:sound\\kbird1.wav", 10, 0);
+  FUN_00562f92("x:sound\\bbird1.wav", 0xb, 0);
+  FUN_00562f92("x:sound\\gbird1.wav", 0xc, 0);
+  FUN_00562f92("x:sound\\rbird1.wav", 0xd, 0);
+  FUN_00562f92("x:sound\\wbird1.wav", 0xe, 0);
 }
 
 // FUNCTION: SHANDALAR 0x00565faa
@@ -731,7 +623,7 @@ void FUN_00565faa(void)
 {
   if (DAT_0067a3b8 != 0)
   {
-    free((void *)DAT_0067a3b8);
+    free(DAT_0067a3b8);
     DAT_0067a3b8 = 0;
   }
 }
@@ -841,24 +733,6 @@ unsigned int __cdecl FUN_00562f92(char *filename, int param_2, int param_3)
   return 0;
 }
 
-// FUNCTION: SHANDALAR 0x0056d081
-void FUN_0056d081(void)
-{
-  if (DAT_005a0d44 != 0)
-  {
-    DAT_005a0d44 = 0;
-    if (DAT_005a0d48 != 0 && DAT_005a0d40 == 0)
-    {
-      DAT_0073bfa4();
-    }
-    FreeLibrary(DAT_0073bf98);
-    FUN_0056d74e();
-    DAT_0073bf98 = (HMODULE)0;
-    DAT_005a0d40 = 0;
-    DAT_005a0d48 = 0;
-  }
-}
-
 // FUNCTION: SHANDALAR 0x0056d476
 int FUN_0056d476(void)
 {
@@ -868,17 +742,6 @@ int FUN_0056d476(void)
   }
 
   return DAT_0073bfe0();
-}
-
-// FUNCTION: SHANDALAR 0x0056d74e
-void FUN_0056d74e(void)
-{
-  int i;
-
-  for (i = 0; i < 0x1b; ++i)
-  {
-    DAT_0073bfa0[i] = 0;
-  }
 }
 
 // FUNCTION: SHANDALAR 0x00417dc6
@@ -934,7 +797,7 @@ void RestoreDisplayResolution(void)
 // FUNCTION: SHANDALAR 0x004cea02
 unsigned int FUN_004cea02(void)
 {
-  DAT_00748408 = (unsigned int)(FUN_00417dc6(s_sound_locmus1_wav_0058a168) == 0);
+  DAT_00748408 = (unsigned int)(FUN_00417dc6("sound\\locmus1.wav") == 0);
   _DAT_0074840c = 0;
   return 0;
 }
@@ -984,7 +847,7 @@ LRESULT CALLBACK FUN_004ce61a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   switch (msg)
   {
   case 2:
-    FUN_0056d081();
+    sound_close();
     PostQuitMessage(0);
     return DefWindowProcA(hwnd, 2, wparam, lparam);
   case 0x100:
@@ -1001,7 +864,7 @@ LRESULT CALLBACK FUN_004ce61a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       DAT_005b7d90 = 1;
     }
 
-    DAT_005b7d98 = FindWindowExA((HWND)0, (HWND)0, s_ShowPaletteClass_0058a154, s_Current_Palette_0058a144);
+    DAT_005b7d98 = FindWindowExA((HWND)0, (HWND)0, "ShowPaletteClass", "Current Palette");
     if (DAT_005b7d98 == (HWND)0)
     {
       DAT_005b7d98 = CreatePalettePopupWindow(DAT_00939160, (void *)0);
@@ -1085,7 +948,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   strcpy(cmd_copy, cmdLine);
   DAT_0078df78 = 0;
 
-  existing_main = FindWindowA(s_ShandalarMainClass_00589e04, (LPCSTR)0);
+  existing_main = FindWindowA("ShandalarMainClass", (LPCSTR)0);
   if (existing_main != (HWND)0)
   {
     ShowWindow(existing_main, 9);
@@ -1093,8 +956,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     return 0;
   }
 
-  magic_shell_hwnd = FindWindowA(s_Magic_Shell_00589e18, (LPCSTR)0);
-  if (magic_shell_hwnd != (HWND)0 && _strnicmp(cmdLine, s__MTGshell_00589e24, 9) != 0)
+  magic_shell_hwnd = FindWindowA("Magic Shell", (LPCSTR)0);
+  if (magic_shell_hwnd != (HWND)0 && _strnicmp(cmdLine, "/MTGshell", 9) != 0)
   {
     PostMessageA(magic_shell_hwnd, 0x400, 2, 0);
     return 0;
@@ -1116,23 +979,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   if (((tick >> 10) + ((unsigned int)tick >> 0x1f & 0x3ffU)) >> 10 == 0)
   {
-    MessageBoxA((HWND)0, s_We_have_determined_that_you_may_n_00589e54, s_Low_Memory_Swap_File_Space_Warni_00589e30,
+    MessageBoxA((HWND)0, "We have determined that you may not have enough free swap file space to play Magic: The Gathering reliably.\nThis is just a warning, and you will be able to continue from here, but you may want to free space on your windows drive before you play.", "Low Memory/Swap File Space Warning",
                 0x30);
   }
 
   srand(GetTickCount());
-  FUN_00464663(DAT_0078e5f0);
-  _chdir(DAT_0078e5f0);
+  FUN_00464663(global_base_directory);
+  _chdir(global_base_directory);
 
-  if (FUN_00564ee7(s_AdvStrings_txt_00589f4c) == 0)
+  if (FUN_00564ee7("AdvStrings.txt") == 0)
   {
-    MessageBoxA((HWND)0, s_Couldn_t_load_the_strings_from_t_00589f5c, (LPCSTR)0, 0x1010);
+    MessageBoxA((HWND)0, "Couldn't load the strings from the AdvStrings.TXT file", (LPCSTR)0, 0x1010);
     return 0;
   }
 
-  if (FUN_00565dbc(s_AdvBlocks_txt_00589f94) == 0)
+  if (FUN_00565dbc("AdvBlocks.txt") == 0)
   {
-    MessageBoxA((HWND)0, s_Couldn_t_load_the_strings_from_t_00589fa4, (LPCSTR)0, 0x1010);
+    MessageBoxA((HWND)0, "Couldn't load the strings from the AdvBlocks.TXT file", (LPCSTR)0, 0x1010);
     return 0;
   }
 
@@ -1157,11 +1020,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   wndclass.hIcon = LoadIconA(hInstance, (LPCSTR)0x65);
   wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
   wndclass.hbrBackground = GetStockObject(4);
-  wndclass.lpszClassName = s_ShandalarMainClass_00589fdc;
+  wndclass.lpszClassName = "ShandalarMainClass";
 
   if (RegisterClassA(&wndclass) == 0)
   {
-    MessageBoxA((HWND)0, s_Couldn_t_register_the_classes_00589ff0, (LPCSTR)0, 0x1010);
+    MessageBoxA((HWND)0, "Couldn't register the classes", (LPCSTR)0, 0x1010);
     return 0;
   }
 
@@ -1181,27 +1044,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   {
     if (cmdLine[1] == '6')
     {
-      DAT_005863b8 = 0x280;
-      DAT_005863bc = 0x1e0;
-      PTR_s_advinter800_pic_00589de8 = s_advinter_pic_0058a010;
+      global_screen_width = 0x280;
+      global_screen_height = 0x1e0;
+      PTR_s_advinter800_pic_00589de8 = "advinter.pic";
       CreateGraphicsPage(0, 0x280, 0x1e0, -1);
       show_shell_on_exit = 1;
       resolution_option_matched = 1;
     }
     else if (cmdLine[1] == '8')
     {
-      DAT_005863b8 = 800;
-      DAT_005863bc = 600;
-      PTR_s_advinter800_pic_00589de8 = s_advinter800_pic_0058a020;
+      global_screen_width = 800;
+      global_screen_height = 600;
+      PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
       CreateGraphicsPage(0, 800, 600, -1);
       show_shell_on_exit = 1;
       resolution_option_matched = 1;
     }
     else if (cmdLine[1] == '1')
     {
-      DAT_005863b8 = 0x400;
-      DAT_005863bc = 0x300;
-      PTR_s_advinter800_pic_00589de8 = s_advinter1024_pic_0058a030;
+      global_screen_width = 0x400;
+      global_screen_height = 0x300;
+      PTR_s_advinter800_pic_00589de8 = "advinter1024.pic";
       CreateGraphicsPage(0, 0x400, 0x300, -1);
       show_shell_on_exit = 1;
       resolution_option_matched = 1;
@@ -1214,32 +1077,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     horzres = GetDeviceCaps(screen_hdc, 8);
     if (horzres == 0x280)
     {
-      DAT_005863b8 = 0x280;
-      DAT_005863bc = 0x1e0;
-      PTR_s_advinter800_pic_00589de8 = s_advinter_pic_0058a044;
+      global_screen_width = 0x280;
+      global_screen_height = 0x1e0;
+      PTR_s_advinter800_pic_00589de8 = "advinter.pic";
     }
     else if (horzres == 800)
     {
-      DAT_005863b8 = 800;
-      DAT_005863bc = 600;
-      PTR_s_advinter800_pic_00589de8 = s_advinter800_pic_0058a054;
+      global_screen_width = 800;
+      global_screen_height = 600;
+      PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
     }
     else
     {
-      DAT_005863b8 = 0x400;
-      DAT_005863bc = 0x300;
-      PTR_s_advinter800_pic_00589de8 = s_advinter1024_pic_0058a064;
+      global_screen_width = 0x400;
+      global_screen_height = 0x300;
+      PTR_s_advinter800_pic_00589de8 = "advinter1024.pic";
     }
   }
 
   if (PTR_DAT_005832b4)
   {
-    *(int *)(PTR_DAT_005832b4 + 0xc) = DAT_005863b8 - 1;
-    *(int *)(PTR_DAT_005832b4 + 0x10) = DAT_005863bc - 1;
+    *(int *)(PTR_DAT_005832b4 + 0xc) = global_screen_width - 1;
+    *(int *)(PTR_DAT_005832b4 + 0x10) = global_screen_height - 1;
   }
 
-  main_hwnd = CreateWindowExA(8, s_ShandalarMainClass_0058a08c, s_Magic__Shandalar_0058a078, 0x80000000, 0, 0,
-                              DAT_005863b8, DAT_005863bc, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
+  main_hwnd = CreateWindowExA(8, "ShandalarMainClass", "Magic: Shandalar", 0x80000000, 0, 0,
+                              global_screen_width, global_screen_height, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
   DAT_00748420 = main_hwnd;
   ShowWindow(main_hwnd, nShowCmd);
   global_main_hdc = GetDC(main_hwnd);
@@ -1253,7 +1116,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
   FUN_004cea02();
-  FUN_0056cf20((int)main_hwnd, 0, 1);
+  init_sound_dll(main_hwnd, 0, 1);
 
   if (DAT_00591210 == 0)
   {
@@ -1264,11 +1127,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   DAT_007483fc = timeSetEvent(DAT_00589de4, DAT_00748418, (LPTIMECALLBACK)FUN_004ce8cd, 0, 1);
   if (DAT_007483fc == 0)
   {
-    assert(0, s_D__Newmagic_multiplayer_sid_Test_0058a0c0, 0x15a, s_Timer_failed_to_initialize__0058a0a0);
+    assert(0, "D:\\Newmagic\\multiplayer\\sid\\Test.c", 0x15a, "Timer failed to initialize!\n");
   }
   atexit(FUN_004ce9c6);
-  assert((unsigned int)(DAT_007483fc != 0xffffffff), s_D__Newmagic_multiplayer_sid_Test_0058a0fc, 0x15c,
-         s_Could_not_start_timer_0058a0e4);
+  assert((unsigned int)(DAT_007483fc != 0xffffffff), "D:\\Newmagic\\multiplayer\\sid\\Test.c", 0x15c,
+         "Could not start timer\n");
 
   SetSystemPaletteUse(global_main_hdc, 2);
   atexit(FUN_004ce9e9);
@@ -1306,13 +1169,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   RealizePalette(screen_hdc);
   ReleaseDC((HWND)0, screen_hdc);
 
-  if (_strnicmp(cmd_copy, s__MTGshell_0058a120, 8) == 0)
+  if (_strnicmp(cmd_copy, "/MTGshell", 8) == 0)
   {
     char exe_cmd[264];
 
-    strcpy(exe_cmd, DAT_0078e5f0);
-    strcat(exe_cmd, s__Magic_exe_0058a12c);
-    strcat(exe_cmd, s__start3_1_0058a138);
+    strcpy(exe_cmd, global_base_directory);
+    strcat(exe_cmd, "\\Magic.exe");
+    strcat(exe_cmd, " /start3,1");
     WinExec(exe_cmd, 5);
   }
 

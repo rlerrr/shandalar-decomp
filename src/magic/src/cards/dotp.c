@@ -257,6 +257,20 @@ int card_spinal_villain(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00439b5c
 int card_drowned(int player, int card, event_t event)
 {
+  int hacked_color;
+
+  if (event == EVENT_UNTAP_PHASE)
+  {
+    hacked_color = get_hacked_color(player, card, 1);
+    ++unk_00939520[player][hacked_color];
+  }
+
+  if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
+  {
+    return FUN_0054276d(player, card, event, 1, 1);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0042aee8

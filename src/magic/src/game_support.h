@@ -29,8 +29,6 @@ void FUN_00449bef(char *name);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
 int FUN_0042d790(int player, int card, event_t event, int color);
-unsigned int FUN_00488cc4(int player, int card);
-int FUN_0049fda3(int player, unsigned int preferred_controller, int card);
 int FUN_10025b5e(int window, unsigned int message, int other_window, int data);
 int helper_destroy_basiclandtype(int source_player,
                                         int source_card,
