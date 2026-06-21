@@ -207,6 +207,7 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 
 // FUNCTION: DECKDLL 0x1002d497
 // FUNCTION: MAGIC 0x004859b5
+// FUNCTION: SHANDALAR 0x0056d0f7
 int sound_load(const char *path, int num, Sound *snd)
 {
   if (global_sound_status == 0)

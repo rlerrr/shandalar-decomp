@@ -4,18 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
+#include <time.h>
 
 #include "defs.h"
 #include "magic/src/global_strings.h"
+#include "magic/src/shared_startup.h"
 #include "shandalar_global_strings.h"
 #include "cardartlib/src/assert.h"
+#include "cardartlib/src/palette.h"
+#include "deckdll/src/card_db.h"
 #include "deckdll/src/magsnd.h"
+#include "deckdll/src/shared_resources.h"
+#include "facemaker/src/facemaker_types.h"
 
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
-
-// GLOBAL: SHANDALAR 0x0078df78
-int DAT_0078df78;
 // GLOBAL: SHANDALAR 0x005863b8
 int global_screen_width = 0x280;
 // GLOBAL: SHANDALAR 0x005863bc
@@ -23,9 +27,9 @@ int global_screen_height = 0x1e0;
 // GLOBAL: SHANDALAR 0x00589de8
 const char *PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
 // GLOBAL: SHANDALAR 0x00583290
-unsigned char DAT_00583290[0x20];
+FacemakerWindowBounds DAT_00583290;
 // GLOBAL: SHANDALAR 0x005832b4
-unsigned char *PTR_DAT_005832b4 = DAT_00583290;
+FacemakerWindowBounds *PTR_DAT_005832b4 = &DAT_00583290;
 // GLOBAL: SHANDALAR 0x00748420
 HWND DAT_00748420;
 // GLOBAL: SHANDALAR 0x00939160
@@ -40,10 +44,14 @@ int DAT_00591210;
 UINT DAT_00748418;
 // GLOBAL: SHANDALAR 0x007483fc
 UINT DAT_007483fc;
+// GLOBAL: SHANDALAR 0x0078cefc
+int DAT_0078cefc;
 // GLOBAL: SHANDALAR 0x00589de4
 UINT DAT_00589de4 = 0x21;
 // GLOBAL: SHANDALAR 0x00589df0
 int DAT_00589df0;
+// GLOBAL: SHANDALAR 0x00589dec
+int DAT_00589dec;
 // GLOBAL: SHANDALAR 0x00748400
 int DAT_00748400;
 // GLOBAL: SHANDALAR 0x00748404
@@ -70,8 +78,6 @@ int DAT_00986d98;
 int DAT_00986d9c;
 // GLOBAL: SHANDALAR 0x00986da0
 int DAT_00986da0;
-// GLOBAL: SHANDALAR 0x0093aa40
-CRITICAL_SECTION DAT_0093aa40;
 
 // GLOBAL: SHANDALAR 0x00669704
 int DAT_00669704;
@@ -85,11 +91,100 @@ char DAT_0073e9d8;
 char *DAT_0067a3b8;
 // GLOBAL: SHANDALAR 0x005919ac
 int DAT_005919ac = 0x005c3a61;
+// GLOBAL: SHANDALAR 0x0078cf08
+FILE *DAT_0078cf08;
+// GLOBAL: SHANDALAR 0x0078df10
+char DAT_0078df10[0x28];
+// GLOBAL: SHANDALAR 0x0078df38
+int DAT_0078df38;
+// GLOBAL: SHANDALAR 0x00586494
+int DAT_00586494;
+// GLOBAL: SHANDALAR 0x009300f0
+int DAT_009300f0;
+// GLOBAL: SHANDALAR 0x008e3820
+int DAT_008e3820;
+// GLOBAL: SHANDALAR 0x007a0098
+int DAT_007a0098;
+// GLOBAL: SHANDALAR 0x007beaa0
+int DAT_007beaa0[4];
+// GLOBAL: SHANDALAR 0x007486d0
+int DAT_007486d0;
+// GLOBAL: SHANDALAR 0x0078cf04
+int DAT_0078cf04;
+// GLOBAL: SHANDALAR 0x00591204
+int DAT_00591204;
+// GLOBAL: SHANDALAR 0x00591208
+int DAT_00591208;
+// GLOBAL: SHANDALAR 0x0073ea88
+int DAT_0073ea88;
+// GLOBAL: SHANDALAR 0x00930adc
+int DAT_00930adc;
+// GLOBAL: SHANDALAR 0x00930ae0
+int DAT_00930ae0;
+// GLOBAL: SHANDALAR 0x0094d634
+int DAT_0094d634;
+// GLOBAL: SHANDALAR 0x0078df34
+int DAT_0078df34;
+// GLOBAL: SHANDALAR 0x0073e9dc
+int DAT_0073e9dc;
+// GLOBAL: SHANDALAR 0x00591214
+int DAT_00591214;
+// GLOBAL: SHANDALAR 0x005911f8
+int DAT_005911f8;
+// GLOBAL: SHANDALAR 0x005911fc
+int DAT_005911fc;
+// GLOBAL: SHANDALAR 0x00789940
+unsigned char DAT_00789940[0x3200];
+// GLOBAL: SHANDALAR 0x0073ea70
+int DAT_0073ea70[8];
+// GLOBAL: SHANDALAR 0x00669700
+int DAT_00669700;
+// GLOBAL: SHANDALAR 0x00669710
+int DAT_00669710;
+// GLOBAL: SHANDALAR 0x00789938
+int DAT_00789938;
+// GLOBAL: SHANDALAR 0x0078df68
+int DAT_0078df68;
+// GLOBAL: SHANDALAR 0x0097f1c1
+unsigned char DAT_0097f1c1[2000];
+// GLOBAL: SHANDALAR 0x0078cf00
+int DAT_0078cf00;
+// GLOBAL: SHANDALAR 0x007898f4
+int DAT_007898f4;
+// GLOBAL: SHANDALAR 0x007898f8
+int DAT_007898f8;
+// GLOBAL: SHANDALAR 0x007898f0
+int DAT_007898f0;
+// GLOBAL: SHANDALAR 0x007490f0
+int DAT_007490f0;
+// GLOBAL: SHANDALAR 0x0058e050
+HANDLE DAT_0058e050;
+// GLOBAL: SHANDALAR 0x0058e054
+char s_statwin_dll_0058e054[] = "statwin.dll";
+// GLOBAL: SHANDALAR 0x00746e00
+int DAT_00746e00[3];
+// GLOBAL: SHANDALAR 0x008c84f0
+BITMAPINFO DAT_008c84f0;
+// GLOBAL: SHANDALAR 0x0073e990
+jmp_buf DAT_0073e990;
+// GLOBAL: SHANDALAR 0x0073e9e0
+jmp_buf DAT_0073e9e0;
+static FacemakerWindowBounds s_ui_rect_005832dc;
+static FacemakerWindowBounds s_ui_rect_00583304;
+static FacemakerWindowBounds s_ui_rect_0058332c;
+static FacemakerWindowBounds s_ui_rect_00583354;
+// GLOBAL: SHANDALAR 0x005832dc
+FacemakerWindowBounds *PTR_DAT_005832dc = &s_ui_rect_005832dc;
+// GLOBAL: SHANDALAR 0x00583304
+FacemakerWindowBounds *PTR_DAT_00583304 = &s_ui_rect_00583304;
+// GLOBAL: SHANDALAR 0x0058332c
+FacemakerWindowBounds *PTR_DAT_0058332c = &s_ui_rect_0058332c;
+// GLOBAL: SHANDALAR 0x00583354
+FacemakerWindowBounds *PTR_DAT_00583354 = &s_ui_rect_00583354;
 
 /* 0x00589de4: hardcoded timer interval in original binary. */
 
 int InitLicenseSecretsFromRegistry(void);
-void FUN_00464663(char *out_dir);
 int FUN_00564ee7(const char *filename);
 int FUN_0056cc4d(const char *filename, const char *section);
 int FUN_00565c7e(const char *filename, const char *section, char **out_table, int max_entries, char *string_buf,
@@ -103,6 +198,19 @@ void FUN_00565faa(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name);
+int FUN_00578c80(int param_1);
+int FUN_00578c20(void);
+int FUN_00578c30(void);
+void *InitializeGraphicsSystemDefaultMode(void);
+void SetGraphicsPage(int page_number, void *page);
+void PresentGraphicsPage(int page_number);
+int ReadPalette(char *palette_text_path, char *palette_binary_path);
+int ScaleUiCoordinate(int value);
+int LoadFontConfigIfPresent(char *executable_name, char *config_name);
+int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name, int weight, DWORD italic);
+int FUN_0055db50(void);
+BOOL FUN_0057a9f0(int param_1);
 int FUN_00417dc6(const char *filename);
 unsigned int FUN_00562e0d(char *filename);
 char FUN_00562ed0(void);
@@ -110,21 +218,553 @@ unsigned int FUN_00562f92(char *filename, int param_2, int param_3);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
 DWORD WINAPI FUN_0046e6f0(LPVOID);
+int FUN_00578c70(int param_1, int param_2, int param_3);
+void FUN_004184d2(void);
+void FUN_0041786e(void);
+void FUN_0046ed03(void);
+void FUN_0046ed33(void);
+void FUN_00578c40(void);
+void FUN_00578c50(void);
+void ReadSpriteEntryPointers(void *param_1, const char *param_2);
+void AnimatePaletteToColor(int color_index, int palette_id);
+int FUN_004a0834(void);
+int FUN_004a1194(void);
+int FUN_004a18f0(void);
+int FUN_00522508(int param_1);
+int FUN_004a21ad(void);
+void FUN_004bdd0a(void);
+void FUN_004f6d90(void);
+void FUN_005081fa(void);
+unsigned int FUN_0043146b(int param_1, int param_2);
+unsigned int FUN_005611c8(unsigned int param_1);
+unsigned int FUN_004314ca(int param_1, int param_2);
+void FUN_005019ad(int param_1);
+int FUN_005031a8(void);
+void FUN_00501760(int param_1);
+int FUN_0040dffd(unsigned char param_1);
+int FUN_005226e0(void);
+void FUN_004bbc50(void);
+void FUN_004ffda4(void);
+void FUN_005631ca(void);
+void FUN_0056bff1(void);
+void FUN_0054cdbd(void);
+void FUN_004ce955(void);
+void FUN_0054ac08(int param_1, int param_2, int param_3);
+void FUN_0055e1b2(void);
+void FUN_0055e651(void);
+void FUN_0055e808(void);
+void FUN_0055fd27(void);
+void FUN_00561647(void);
+void FUN_0046eca4(void);
+void FUN_005003b7(int param_1, int param_2, int param_3);
+void FUN_004ecfa2(void);
+void FUN_004ecfe3(void);
+void FUN_00522786(void);
+int HasQueuedKeyInput(void);
+void FUN_00414127(void);
+void destroy_create_fonts_resources(void);
+int FUN_0057c580(int param_1, int param_2, int param_3, const char *param_4, int param_5);
+extern char *global_base_txt;
+extern HPALETTE global_cart_art_hpalette;
+extern int deck[500];
+extern int Gold;
 
-// FUNCTION: SHANDALAR 0x00464663
-void FUN_00464663(char *out_dir)
+// FUNCTION: SHANDALAR 0x00578c80
+int FUN_00578c80(int param_1)
 {
-#ifdef _DEBUG
-  // Allow debugging directly from output directory
-  getcwd(out_dir, 260);
-#else
-  char *slash;
-
-  GetModuleFileNameA((HMODULE)0, out_dir, 0x105);
-  slash = strrchr(out_dir, '\\');
-  *slash = 0;
-#endif
+  return 0;
 }
+
+// FUNCTION: SHANDALAR 0x00578c20
+int FUN_00578c20(void)
+{
+  return -1;
+}
+
+// FUNCTION: SHANDALAR 0x00578c30
+int FUN_00578c30(void)
+{
+  return -1;
+}
+
+// FUNCTION: SHANDALAR 0x005501fe
+int ScaleUiCoordinate(int value)
+{
+  return (value * global_screen_width) / 0x280;
+}
+
+// FUNCTION: SHANDALAR 0x0055db50
+int FUN_0055db50(void)
+{
+  int initialized_world;
+  int game_setup_mode;
+  unsigned int tile_mask;
+  int random_value;
+  clock_t t;
+  int i;
+  int proceed_to_main_loop;
+
+  initialized_world = 0;
+  DAT_008e3820 = -1;
+  DAT_007a0098 = -1;
+  FUN_00559999();
+  for (i = 0; i < 4; i = i + 1)
+  {
+    DAT_007beaa0[i] = 8;
+  }
+
+  FUN_004184d2();
+  FUN_0041786e();
+  FUN_00578c70(1, 1, DAT_007486d0);
+  FUN_0046ed03();
+  FUN_0046ed33();
+  GdiGetBatchLimit();
+  GdiSetBatchLimit(100);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
+  ReadSpriteEntryPointers(&DAT_007490f0, "dbox.spr");
+
+  while (1)
+  {
+    game_setup_mode = FUN_004a0834();
+    AnimatePaletteToColor(0, DAT_00589dec);
+    proceed_to_main_loop = 0;
+
+    switch (game_setup_mode)
+    {
+    case 0:
+      while (1)
+      {
+        DAT_0078cf04 = FUN_004a1194();
+        AnimatePaletteToColor(0, DAT_00589dec);
+        if (DAT_0078cf04 == -1)
+        {
+          break;
+        }
+
+        while (1)
+        {
+          DAT_00591204 = FUN_004a18f0();
+          DAT_0073ea88 = DAT_00591204;
+          DAT_00930adc = DAT_00591204;
+          DAT_00930ae0 = FUN_00522508(3);
+          AnimatePaletteToColor(0, DAT_00589dec);
+          if (DAT_0073ea88 == -1)
+          {
+            break;
+          }
+
+          DAT_0094d634 = FUN_004a21ad();
+          AnimatePaletteToColor(0, DAT_00589dec);
+          if (DAT_0094d634 == -1)
+          {
+            continue;
+          }
+
+          DAT_00591208 = 1 << ((unsigned char)DAT_00591204 & 0x1f);
+          LoadPcxIntoPageNoPalette("advfac64.pic");
+          LoadPcxIntoPage(1, PTR_s_advinter800_pic_00589de8);
+          BlitGraphicsRect((int *)PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, (int *)PTR_DAT_005832b4, 0, 0);
+          DAT_0078df34 = 0;
+          setup_shared_startup();
+          initialized_world = 1;
+          PTR_DAT_005832b4->font_slot = 5;
+          FUN_0056cc4d("ADVstrings.txt", "STARTUP");
+          DrawTextAt((int *)PTR_DAT_005832b4, 0xff, 0x140, 0xbc);
+          DAT_0073e9dc = 1;
+          FUN_004bdd0a();
+          FUN_004f6d90();
+          FUN_005081fa();
+          Gold = (5 - DAT_0078cf04) * 0x32;
+          DAT_00591214 = 0;
+          do
+          {
+            do
+            {
+              random_value = FUN_00522508(0x40);
+              DAT_005911f8 = random_value * 0x20 + 0x10;
+              random_value = FUN_00522508(0x40);
+              DAT_005911fc = random_value * 0x20 + 0x10;
+              tile_mask =
+                  FUN_0043146b((DAT_005911f8 + ((int)DAT_005911f8 >> 0x1f & 0x1fU)) >> 5,
+                               (DAT_005911fc + ((int)DAT_005911fc >> 0x1f & 0x1fU)) >> 5);
+              tile_mask = FUN_005611c8(tile_mask);
+            } while ((DAT_00591208 & tile_mask) == 0);
+
+            tile_mask =
+                FUN_004314ca((DAT_005911f8 + ((int)DAT_005911f8 >> 0x1f & 0x1fU)) >> 5,
+                             (DAT_005911fc + ((int)DAT_005911fc >> 0x1f & 0x1fU)) >> 5);
+          } while ((tile_mask & 0x10) != 0);
+
+          FUN_005019ad(3);
+          proceed_to_main_loop = 1;
+          break;
+        }
+
+        if (proceed_to_main_loop != 0)
+        {
+          break;
+        }
+      }
+      break;
+
+    case 1:
+      DAT_0078df34 = 0;
+      random_value = FUN_005031a8();
+      FUN_00501760(random_value);
+      proceed_to_main_loop = 1;
+      break;
+
+    case 2:
+      DAT_0078df34 = 0;
+      FUN_00501760(3);
+      proceed_to_main_loop = 1;
+      break;
+
+    case 3:
+      proceed_to_main_loop = 1;
+      break;
+
+    case 4:
+      DAT_009300f0 = 1;
+      return 0;
+
+    default:
+      proceed_to_main_loop = 1;
+      break;
+    }
+
+    if (proceed_to_main_loop == 0)
+    {
+      continue;
+    }
+
+    for (i = 0; i < 0x80; i = i + 1)
+    {
+      if (*(int *)(DAT_00789940 + i * 100) == 5)
+      {
+        tile_mask = FUN_0043146b(*(int *)(DAT_00789940 + i * 100 + 4), *(int *)(DAT_00789940 + i * 100 + 8));
+        tile_mask = FUN_005611c8(tile_mask);
+        random_value = FUN_0040dffd((unsigned char)tile_mask);
+        DAT_0073ea70[random_value - 1] = 1;
+      }
+    }
+
+    FUN_005226e0();
+    if (!initialized_world)
+    {
+      setup_shared_startup();
+    }
+    FUN_004bbc50();
+    FUN_004ffda4();
+    FUN_005631ca();
+    if (game_setup_mode != 0)
+    {
+      FUN_0056bff1();
+    }
+
+    LoadPcxIntoPageNoPalette("advfac64.pic");
+    FUN_0054cdbd();
+    DAT_00669700 = 0;
+    DAT_00789938 = 0;
+    DAT_0078df68 = 0;
+    for (i = 0; i < 500; i = i + 1)
+    {
+      if ((deck[i] != -1) && ((DAT_00789938 = DAT_00789938 + 1), (DAT_0097f1c1[i * 4] & 0x40) == 0))
+      {
+        DAT_0078df68 = DAT_0078df68 + 1;
+      }
+    }
+
+    _setjmp3(&DAT_0073e990, 0);
+    _setjmp3(&DAT_0073e9e0, 0);
+    while (DAT_009300f0 == 0)
+    {
+      FUN_004ce955();
+      FUN_0054ac08(DAT_005911f8, DAT_005911fc, DAT_00669710);
+      DAT_00669710 = 0;
+      do
+      {
+        t = clock();
+      } while (t < 0x3c);
+      clock();
+
+      if ((DAT_00986d94 & 2U) != 0)
+      {
+        FUN_0055e1b2();
+      }
+      FUN_0055e651();
+      FUN_0055e808();
+      FUN_0055fd27();
+      FUN_00561647();
+      FUN_0046eca4();
+      FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
+      DAT_0078cf00 = DAT_0078cf00 + 1;
+      FUN_004ecfa2();
+      FUN_004ecfe3();
+      _setjmp3(&DAT_0073e9e0, 0);
+    }
+
+    AnimatePaletteToColor(0, DAT_00589dec);
+    FUN_00522786();
+    return FUN_00469099();
+  }
+}
+
+// FUNCTION: SHANDALAR 0x0057a9f0
+BOOL FUN_0057a9f0(int param_1)
+{
+  (void)param_1;
+  return FALSE;
+}
+
+// FUNCTION: SHANDALAR 0x00578c70
+int FUN_00578c70(int param_1, int param_2, int param_3)
+{
+  (void)param_1;
+  (void)param_2;
+  (void)param_3;
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x004184d2
+void FUN_004184d2(void) {}
+// FUNCTION: SHANDALAR 0x0041786e
+void FUN_0041786e(void) {}
+// FUNCTION: SHANDALAR 0x00578c40
+void FUN_00578c40(void)
+{
+  ShowCursor(1);
+}
+
+// FUNCTION: SHANDALAR 0x00578c50
+void FUN_00578c50(void)
+{
+  ShowCursor(0);
+}
+
+// FUNCTION: SHANDALAR 0x0046ed03
+void FUN_0046ed03(void)
+{
+  DAT_0078cefc = DAT_0078cefc + 1;
+  if ((DAT_00586494 != 0) && (DAT_0078cefc == 1))
+  {
+    FUN_00578c40();
+  }
+}
+
+// FUNCTION: SHANDALAR 0x0046ed33
+void FUN_0046ed33(void)
+{
+  if ((DAT_00586494 != 0) && (DAT_0078cefc == 1))
+  {
+    FUN_00578c50();
+  }
+  DAT_0078cefc = DAT_0078cefc - 1;
+}
+
+// FUNCTION: SHANDALAR 0x004a0834
+int FUN_004a0834(void) { return 0; }
+// FUNCTION: SHANDALAR 0x004a1194
+int FUN_004a1194(void) { return -1; }
+// FUNCTION: SHANDALAR 0x004a18f0
+int FUN_004a18f0(void) { return -1; }
+// FUNCTION: SHANDALAR 0x00522508
+int FUN_00522508(int param_1)
+{
+  return (param_1 > 1) ? rand() % param_1 : 0;
+}
+
+// FUNCTION: SHANDALAR 0x004a21ad
+int FUN_004a21ad(void) { return -1; }
+
+// FUNCTION: SHANDALAR 0x004bdd0a
+void FUN_004bdd0a(void) {}
+
+// FUNCTION: SHANDALAR 0x004f6d90
+void FUN_004f6d90(void) {}
+
+// FUNCTION: SHANDALAR 0x005081fa
+void FUN_005081fa(void) {}
+
+// FUNCTION: SHANDALAR 0x0043146b
+unsigned int FUN_0043146b(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x005611c8
+unsigned int FUN_005611c8(unsigned int param_1) { return param_1; }
+
+// FUNCTION: SHANDALAR 0x004314ca
+unsigned int FUN_004314ca(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x005019ad
+void FUN_005019ad(int param_1) { (void)param_1; }
+
+// FUNCTION: SHANDALAR 0x005031a8
+int FUN_005031a8(void) { return 0; }
+
+// FUNCTION: SHANDALAR 0x00501760
+void FUN_00501760(int param_1) { (void)param_1; }
+
+// FUNCTION: SHANDALAR 0x0040dffd
+int FUN_0040dffd(unsigned char param_1)
+{
+  (void)param_1;
+  return 1;
+}
+
+// FUNCTION: SHANDALAR 0x005226e0
+int FUN_005226e0(void)
+{
+  int i;
+
+  for (i = 0; i < 3; i = i + 1)
+  {
+    DAT_00746e00[i] = 0;
+  }
+
+  DAT_0058e050 = LoadLibraryA(s_statwin_dll_0058e054);
+  if (DAT_0058e050 == (HANDLE)0)
+  {
+    return 1;
+  }
+
+  for (i = 0; i < 3; i = i + 1)
+  {
+    DAT_00746e00[i] = (int)GetProcAddress((HMODULE)DAT_0058e050, (LPCSTR)((i + 1U) & 0xffff));
+  }
+
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x004bbc50
+void FUN_004bbc50(void) {}
+
+// FUNCTION: SHANDALAR 0x004ffda4
+void FUN_004ffda4(void) {}
+
+// FUNCTION: SHANDALAR 0x005631ca
+void FUN_005631ca(void) {}
+
+// FUNCTION: SHANDALAR 0x0056bff1
+void FUN_0056bff1(void) {}
+
+// FUNCTION: SHANDALAR 0x0054cdbd
+void FUN_0054cdbd(void) {}
+
+// FUNCTION: SHANDALAR 0x004ce955
+void FUN_004ce955(void) {}
+
+// FUNCTION: SHANDALAR 0x0054ac08
+void FUN_0054ac08(int param_1, int param_2, int param_3)
+{
+  (void)param_1;
+  (void)param_2;
+  (void)param_3;
+}
+
+// FUNCTION: SHANDALAR 0x0055e1b2
+void FUN_0055e1b2(void) {}
+
+// FUNCTION: SHANDALAR 0x0055e651
+void FUN_0055e651(void) {}
+
+// FUNCTION: SHANDALAR 0x0055e808
+void FUN_0055e808(void) {}
+
+// FUNCTION: SHANDALAR 0x0055fd27
+void FUN_0055fd27(void) {}
+
+// FUNCTION: SHANDALAR 0x00561647
+void FUN_00561647(void) {}
+
+// FUNCTION: SHANDALAR 0x0046eca4
+void FUN_0046eca4(void) {}
+
+// FUNCTION: SHANDALAR 0x005003b7
+void FUN_005003b7(int param_1, int param_2, int param_3)
+{
+  (void)param_1;
+  (void)param_2;
+  (void)param_3;
+}
+
+// FUNCTION: SHANDALAR 0x004ecfa2
+void FUN_004ecfa2(void)
+{
+  if (DAT_00586494 != 0)
+  {
+    do
+    {
+      FUN_0046eca4();
+    } while (DAT_007898f0 != 0);
+  }
+
+  while (HasQueuedKeyInput() != 0)
+  {
+    FUN_00414127();
+  }
+}
+
+// FUNCTION: SHANDALAR 0x004ecfe3
+void FUN_004ecfe3(void)
+{
+  while (HasQueuedKeyInput() != 0)
+  {
+    FUN_00414127();
+  }
+}
+
+// FUNCTION: SHANDALAR 0x00522786
+void FUN_00522786(void)
+{
+  int i;
+
+  if (DAT_0058e050 != (HANDLE)0)
+  {
+    FreeLibrary((HMODULE)DAT_0058e050);
+    DAT_0058e050 = (HANDLE)0;
+  }
+
+  for (i = 0; i < 3; i = i + 1)
+  {
+    DAT_00746e00[i] = 0;
+  }
+}
+
+// FUNCTION: SHANDALAR 0x00414127
+void FUN_00414127(void) {}
+
+// FUNCTION: SHANDALAR 0x0057c580
+int FUN_0057c580(int param_1, int param_2, int param_3, const char *param_4, int param_5)
+{
+  (void)param_1;
+  (void)param_2;
+  (void)param_3;
+  (void)param_4;
+  (void)param_5;
+  return 0;
+}
+
+card_data_t *shared_global_cards_data(void)
+{
+  return (card_data_t *)0x00594208;
+}
+
+int shared_CardTypeFromID(int csvid)
+{
+  return ((int(__cdecl *)(int))0x00557aa9)(csvid);
+}
+
+
 
 // FUNCTION: SHANDALAR 0x00564ee7
 int FUN_00564ee7(const char *filename)
@@ -710,8 +1350,98 @@ int FUN_00417dc6(const char *filename)
 // FUNCTION: SHANDALAR 0x0046e6f0
 DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
 {
+  int *font_cfg_entry;
+  int i;
+  void *page;
+
   (void)param_1;
-  return 0;
+
+  DAT_0078cf08 = fopen("advButtons.txt", "rt");
+  strcpy(DAT_0078df10, "misc.exe");
+  font_cfg_entry = LoadIniEscapedStringTable(DAT_0078cf08, "mgraphic.exe");
+  DAT_0078df38 = *font_cfg_entry;
+
+  FUN_00578c80(LoadFontConfigIfPresent("misc.exe", (char *)0));
+  FUN_00578c80(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
+  FUN_00578c80(LoadFontConfigIfPresent("nsound.cvl", (char *)0));
+
+  if (global_screen_width == 0x280)
+  {
+    LoadSystemFont(1, 0xb, "tt0300m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(2, 9, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(4, ScaleUiCoordinate(10), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(5, ScaleUiCoordinate(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
+    LoadSystemFont(6, ScaleUiCoordinate(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+  }
+  else if (global_screen_width == 800)
+  {
+    LoadSystemFont(1, ScaleUiCoordinate(8), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(2, 9, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(4, ScaleUiCoordinate(10), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(5, ScaleUiCoordinate(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
+    LoadSystemFont(6, ScaleUiCoordinate(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+  }
+  else if (global_screen_width == 0x400)
+  {
+    LoadSystemFont(1, ScaleUiCoordinate(9), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(2, 10, "tt0298m_.ttf", "MPZurich Cn BT", 400, 0);
+    LoadSystemFont(4, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(5, ScaleUiCoordinate(0x14), "tt0127m_.ttf", "Benguiat Bk BT", 700, 1);
+    LoadSystemFont(6, ScaleUiCoordinate(0x1c), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+    LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
+  }
+
+  InitializeGraphicsSystemDefaultMode();
+  ReadPalette("todpal.tr", (char *)0);
+
+  for (i = 0; i < 3; i = i + 1)
+  {
+    if ((i == 1) && (*(int *)(DAT_00986950 + 0x20) < 0x401))
+    {
+      page = CreateGraphicsPage(1, 0x400, 800, 8);
+    }
+    else
+    {
+      page = CreateGraphicsPage(i, global_screen_width, global_screen_height + 1, 8);
+    }
+    SetGraphicsPage(i, page);
+  }
+
+  page = CreateGraphicsPage(5, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), 8);
+  SetGraphicsPage(5, page);
+
+  page = CreateGraphicsPage(3, ScaleUiCoordinate(0x280),
+                            (ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148)) + 3, 8);
+  SetGraphicsPage(3, page);
+
+  PTR_DAT_0058332c->max_x = ScaleUiCoordinate(0x280);
+  PTR_DAT_00583304->max_x = PTR_DAT_0058332c->max_x;
+  PTR_DAT_005832dc->max_x = PTR_DAT_00583304->max_x;
+  PTR_DAT_005832b4->max_x = PTR_DAT_005832dc->max_x;
+  PTR_DAT_00583304->max_x = ScaleUiCoordinate(0x1e0);
+  PTR_DAT_005832dc->max_y = PTR_DAT_00583304->max_x;
+  PTR_DAT_005832b4->max_y = PTR_DAT_005832dc->max_y;
+  PTR_DAT_0058332c->max_y = ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148);
+  PTR_DAT_00583354->max_y = ScaleUiCoordinate(0x148);
+  PTR_DAT_00583354->max_x = ScaleUiCoordinate(0x40);
+  PTR_DAT_005832b4->font_slot = 1;
+
+  PresentGraphicsPage(0);
+  DAT_00586494 = FUN_00578c20();
+  do
+  {
+    FUN_0055db50();
+  } while (DAT_009300f0 == 0);
+
+  FUN_0057a9f0(5);
+  if (DAT_00586494 != 0)
+  {
+    FUN_00578c30();
+  }
+
+  return PostMessageA(DAT_00748420, 0x10, 0, 0);
 }
 
 // FUNCTION: SHANDALAR 0x004cea4c
@@ -897,7 +1627,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   custom_mode_selected = 0;
   strcpy(cmd_copy, cmdLine);
-  DAT_0078df78 = 0;
+  DAT_00715fa0 = 0;
 
   existing_main = FindWindowA("ShandalarMainClass", (LPCSTR)0);
   if (existing_main != (HWND)0)
@@ -935,7 +1665,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
   srand(GetTickCount());
-  FUN_00464663(global_base_directory);
+  set_global_base_directory(global_base_directory);
   _chdir(global_base_directory);
 
   if (FUN_00564ee7("AdvStrings.txt") == 0)
@@ -1048,8 +1778,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   if (PTR_DAT_005832b4)
   {
-    *(int *)(PTR_DAT_005832b4 + 0xc) = global_screen_width - 1;
-    *(int *)(PTR_DAT_005832b4 + 0x10) = global_screen_height - 1;
+    PTR_DAT_005832b4->max_x = global_screen_width - 1;
+    PTR_DAT_005832b4->max_y = global_screen_height - 1;
   }
 
   main_hwnd = CreateWindowExA(8, "ShandalarMainClass", "Magic: Shandalar", 0x80000000, 0, 0,
@@ -1090,10 +1820,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   DAT_00748404 = GetCurrentThread();
   DuplicateHandle(GetCurrentProcess(), DAT_00748404, GetCurrentProcess(), &DAT_00748404, 0x1f03ff, FALSE, 0);
 
-  if (DAT_0078df78 == 0)
+  if (DAT_00715fa0 == 0)
   {
-    InitializeCriticalSection(&DAT_0093aa40);
-    DAT_0078df78 = 1;
+    InitializeCriticalSection(&DAT_00926910);
+    DAT_00715fa0 = 1;
   }
 
   _DAT_00748410 = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, FUN_0046e6f0, (LPVOID)0, 0, &thread_id);
@@ -1104,10 +1834,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     DispatchMessageA(&msg);
   }
 
-  if (DAT_0078df78 != 0)
+  if (DAT_00715fa0 != 0)
   {
-    DeleteCriticalSection(&DAT_0093aa40);
-    DAT_0078df78 = 0;
+    DeleteCriticalSection(&DAT_00926910);
+    DAT_00715fa0 = 0;
   }
 
   FUN_00565faa();

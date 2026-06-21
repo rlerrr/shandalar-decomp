@@ -507,6 +507,7 @@ char *CsvParseNextField(char **txt)
 
 // FUNCTION: DECKDLL 0x1001b4df
 // FUNCTION: MAGIC 0x00453a15
+// FUNCTION: SHANDALAR 0x004431d8
 void FreeRaritiesCsvRaw(void)
 {
   if (global_rarities_csv_raw != NULL)

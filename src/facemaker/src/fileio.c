@@ -650,15 +650,29 @@ int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int p
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 
 // FUNCTION: FACEMAKER 0x0040a110
+// FUNCTION: SHANDALAR 0x0057c800
 void LoadPcxIntoPage(int page_number, char *path)
 {
+#ifdef SHANDALAR
+  LoadPcxResource(page_number, 0, 0, path, (void *)0);
+#else
   LoadPcxResource(page_number, 0, 0, path, (void *)1);
+#endif
 }
 
 // FUNCTION: FACEMAKER 0x0040a130
-void LoadPcxIntoPageNoPalette(int page_number, char *path)
+// FUNCTION: SHANDALAR 0x0057c820
+void LoadPcxIntoPageNoPalette(
+#ifndef SHANDALAR
+  int page_number,
+#endif
+  char *path)
 {
+#ifdef SHANDALAR
+  LoadPcxResource(-1, 0, 0, path, (void *)1);
+#else
   LoadPcxResource(page_number, 0, 0, path, (void *)0);
+#endif  
 }
 
 // FUNCTION: SHANDALAR 0x0057c840

@@ -53,6 +53,7 @@ extern undefined1 global_BluePathBitsTable[0x800];
 // GLOBAL: DRAWCARDLIB 0x10022500
 // GLOBAL: DECKDLL 0x10035b38
 // GLOBAL: MAGIC 0x00571d18
+// GLOBAL: SHANDALAR 0x00585920
 HDC global_screen_dc = (HDC)0x0;
 
 // GLOBAL: CARDARTLIB 0x1001d240
@@ -96,28 +97,33 @@ HPALETTE global_cart_art_hpalette;
 // GLOBAL: DRAWCARDLIB 0x100f1f74
 // GLOBAL: DECKDLL 0x10104df0
 // GLOBAL: MAGIC 0x00638640
+// GLOBAL: SHANDALAR 0x005a90b8
 HBITMAP g_offscreen_bitmap;
 
 // GLOBAL: CARDARTLIB 0x100209e8
 // GLOBAL: DRAWCARDLIB 0x100f1f78
 // GLOBAL: DECKDLL 0x10142f50
 // GLOBAL: MAGIC 0x008b49d0
+// GLOBAL: SHANDALAR 0x008c8b50
 RGBQUAD g_cardArtPalette[0x100];
 
 // GLOBAL: CARDARTLIB 0x10020de8
 // GLOBAL: DRAWCARDLIB 0x100f2378
 // GLOBAL: DECKDLL 0x10104e38
 // GLOBAL: MAGIC 0x00638688
+// GLOBAL: SHANDALAR 0x005a9100
 CRITICAL_SECTION global_critical_section_for_drawing;
 
 // GLOBAL: CARDARTLIB 0x10116cf0
 // GLOBAL: DRAWCARDLIB 0x10152020
 // GLOBAL: DECKDLL 0x101e6a60
+// GLOBAL: SHANDALAR 0x0097bdd0
 PaletteLog g_palette_log;
 
 // GLOBAL: CARDARTLIB 0x10031ea4
 // GLOBAL: DRAWCARDLIB 0x10028ef4
 // GLOBAL: DECKDLL 0x100f2c6c
+// GLOBAL: SHANDALAR 0x005a86f4
 OctNode* g_paletteOctreeRoot;
 
 // GLOBAL: CARDARTLIB 0x10031eb0
@@ -207,6 +213,7 @@ BOOL InitCardArtGdiResources(void)
 // FUNCTION: DRAWCARDLIB 0x1000a628
 // FUNCTION: DECKDLL 0x1002180d
 // FUNCTION: MAGIC 0x00491edd
+// FUNCTION: SHANDALAR 0x0046297d
 void ShutdownCardArtGdiResources(void)
 {
   if (global_screen_dc != (HDC)0x0) {
@@ -308,6 +315,7 @@ BOOL CreateOffscreen32bppDibSection(int width,int height,HDC *out_dc,BITMAPINFO 
 // FUNCTION: DRAWCARDLIB 0x1000a852
 // FUNCTION: DECKDLL 0x1002368b
 // FUNCTION: MAGIC 0x00493deb
+// FUNCTION: SHANDALAR 0x0046488b
 void checked_DeleteDC_DeleteObject(HDC dc,HGDIOBJ obj)
 {
   if (dc != (HDC)0x0) {
@@ -454,6 +462,7 @@ BOOL SetupDuelPalette(void)
 // FUNCTION: DRAWCARDLIB 0x1000afe6
 // FUNCTION: DECKDLL 0x10024564
 // FUNCTION: MAGIC 0x00494cca
+// FUNCTION: SHANDALAR 0x00465764
 void DestroyCardArtPalette(void)
 {
   DeleteObject(global_cart_art_hpalette);
@@ -487,6 +496,7 @@ void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi,int width,int height)
 // FUNCTION: DRAWCARDLIB 0x10001000
 // FUNCTION: DECKDLL 0x100099b0
 // FUNCTION: MAGIC 0x004b9c20
+// FUNCTION: SHANDALAR 0x0042df50
 void * OctreeNode_Create(void)
 {
   void *_Dst;
@@ -579,6 +589,7 @@ PaletteLog * ReadPalette(char *palette_text_path,char *palette_binary_path)
 // FUNCTION: DRAWCARDLIB 0x10001287
 // FUNCTION: DECKDLL 0x10009c42
 // FUNCTION: MAGIC 0x004b9eb2
+// FUNCTION: SHANDALAR 0x0042e1e2
 bool InitDiffSquaredLookupTable(void)
 {
   int diff;
@@ -661,6 +672,7 @@ int OctreeNode_FinalizeSubtree(OctNode *node)
 // FUNCTION: CARDARTLIB 0x10004f07
 // FUNCTION: DRAWCARDLIB 0x100014b7
 // FUNCTION: DECKDLL 0x10009e73
+// FUNCTION: SHANDALAR 0x0042e413
 undefined4 Octree_InsertPathString(OctNode *node,char *path_str,unsigned int palette_index)
 {
   int child_index;
@@ -688,6 +700,7 @@ undefined4 Octree_InsertPathString(OctNode *node,char *path_str,unsigned int pal
 // FUNCTION: DRAWCARDLIB 0x10001591
 // FUNCTION: DECKDLL 0x10009f53
 // FUNCTION: MAGIC 0x004ba1c3
+// FUNCTION: SHANDALAR 0x0042e4f3
 int Octree_Destroy(OctNode *node)
 {
   int i;
@@ -735,6 +748,7 @@ void Octree_BuildPathBytesFromRgb(uint rgb_color,undefined8 *out_path_words)
 // FUNCTION: CARDARTLIB 0x100050f1
 // FUNCTION: DRAWCARDLIB 0x100016a1
 // FUNCTION: DECKDLL 0x1000a066
+// FUNCTION: SHANDALAR 0x0042e606
 undefined4 InitOctreeBitTables(void)
 {
   struct {
@@ -1003,6 +1017,7 @@ undefined4 QuantizeBgr24ToPaletteIndicesInPlace(uint *bgr24,int height,int width
 // FUNCTION: DRAWCARDLIB 0x10002db9
 // FUNCTION: DECKDLL 0x1000b77c
 // FUNCTION: MAGIC 0x004bb9f2
+// FUNCTION: SHANDALAR 0x0042fd1d
 void DestroyPaletteOctree(void)
 {
   Octree_Destroy(g_paletteOctreeRoot);

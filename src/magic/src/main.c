@@ -13,6 +13,7 @@
 #include "deckdll/src/shared_resources.h"
 #include "deckdll/src/card_db.h"
 #include "global_strings.h"
+#include "shared_startup.h"
 
 #define STARTUP_DIALOG_COUNT 5
 #define STARTUP_DIALOG_ROW_STRIDE 0x8b8
@@ -70,9 +71,6 @@ int DAT_0074b62c;
 // GLOBAL: MAGIC 0x007775b4
 int DAT_007775b4;
 
-// GLOBAL: MAGIC 0x00776518
-HANDLE DAT_00776518;
-
 // GLOBAL: MAGIC 0x007a79b8
 int DAT_007a79b8;
 
@@ -80,9 +78,6 @@ extern char *global_base_txt;
 
 // GLOBAL: MAGIC 0x008950b0
 HWND global_main_hwnd;
-
-// GLOBAL: MAGIC 0x008950c0
-char global_duelsounds_path[300];
 
 // GLOBAL: MAGIC 0x00895204
 int DAT_00895204;
@@ -99,26 +94,17 @@ int DAT_008b4dd4;
 // GLOBAL: MAGIC 0x008cc704
 HANDLE global_mutex_GameInit;
 
-// GLOBAL: MAGIC 0x008a98f0
-char global_savegame_path[300];
-
 // GLOBAL: MAGIC 0x008a91a0
 screen_name_file_t DAT_008a91a0;
 
 extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
 
-// GLOBAL: MAGIC 0x008b44e0
-char global_faces_path[300];
-
 // GLOBAL: MAGIC 0x008cff0c
 int DAT_008cff0c;
 
 // GLOBAL: MAGIC 0x008cff14
 HANDLE global_mutex_LowerDialog;
-
-// GLOBAL: MAGIC 0x008cefb0
-void *DAT_008cefb0;
 
 // GLOBAL: MAGIC 0x0091bbd0
 int DAT_0091bbd0;
@@ -132,38 +118,11 @@ int DAT_0091c4f8;
 // GLOBAL: MAGIC 0x0091ce40
 char DAT_0091ce40[300];
 
-// GLOBAL: MAGIC 0x00926100
-char global_playdeck_path[300];
-
-// GLOBAL: MAGIC 0x00926808
-HBITMAP DAT_00926808;
-
-// GLOBAL: MAGIC 0x009266b0
-CRITICAL_SECTION DAT_009266b0;
-
-// GLOBAL: MAGIC 0x00926910
-CRITICAL_SECTION DAT_00926910;
-
 // GLOBAL: MAGIC 0x0093932c
 HANDLE global_mutex_WritePacket;
 
-// GLOBAL: MAGIC 0x00939334
-int DAT_00939334;
-
 // GLOBAL: MAGIC 0x00939560
 int DAT_00939560;
-
-// GLOBAL: MAGIC 0x0093a980
-HGDIOBJ DAT_0093a980;
-
-// GLOBAL: MAGIC 0x00789310
-HDC DAT_00789310;
-
-// GLOBAL: MAGIC 0x008cf290
-char global_duelart_path[300];
-
-// GLOBAL: MAGIC 0x00638ca8
-int DAT_00638ca8;
 
 // GLOBAL: MAGIC 0x006381c0
 char DAT_006381c0[0x358];
@@ -183,16 +142,10 @@ int DAT_00925d2c;
 // GLOBAL: MAGIC 0x0056ef74
 HWND DAT_0056ef74;
 
-// GLOBAL: MAGIC 0x00637a94
-int DAT_00637a94;
-
 int InitLicenseSecretsFromRegistry(void);
-static void append_startup_error(char *message_buffer, const char *path, int line_index);
-static void set_global_base_directory(char *path);
-static int setup_paths_and_load_text_etc(char *message_buffer);
+card_data_t *shared_global_cards_data(void);
+int shared_CardTypeFromID(int csvid);
 char *CsvParseNextField(char **txt);
-static int FUN_004c0c20(const char *filename);
-static int FUN_00509210(void);
 static void FUN_0048fa0a(void);
 static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time);
 static int FUN_004e027c(void);
@@ -200,8 +153,6 @@ static void FUN_0048fcb5(void);
 static int FUN_00497c8d(void);
 static int FUN_00500c56(void);
 static void FUN_00500d46(void);
-static void FUN_00422bea(void);
-static int FUN_004a7b3d(void);
 static void FUN_00459b6e(void *window);
 static LRESULT CALLBACK FUN_005539c3(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -210,26 +161,15 @@ void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
 void DestroyCardArtPalette(void);
 
-static __inline void append_startup_error(char *message_buffer, const char *path, int line_index)
+
+card_data_t *shared_global_cards_data(void)
 {
-  sprintf(message_buffer + strlen(message_buffer), text_lines[line_index], path);
-  strcat(message_buffer, "\n");
+  return global_cards_data;
 }
 
-// FUNCTION: MAGIC 0x00493bc3
-static void set_global_base_directory(char *path)
+int shared_CardTypeFromID(int csvid)
 {
-#ifdef _DEBUG
-  // Allow debugging directly from output directory
-  getcwd(path, 0x105);
-
-#else
-  char *last_slash;
-
-  GetModuleFileNameA(NULL, path, 0x105);
-  last_slash = strrchr(path, '\\');
-  *last_slash = '\0';
-#endif
+  return CardTypeFromID(csvid);
 }
 
 // FUNCTION: MAGIC 0x005532e9
@@ -422,282 +362,6 @@ void FUN_005539b8(void *unused)
   (void)unused;
 }
 
-// FUNCTION: SHANDALAR 0x00522880
-// FUNCTION: MAGIC 0x004226c0
-static int setup_paths_and_load_text_etc(char *message_buffer)
-{
-  struct
-  {
-    char path[264];
-    int ok;
-    HDC desktop_dc;
-  } s;
-
-  s.ok = 1;
-
-  set_global_base_directory(global_base_directory);
-  _chdir(global_base_directory);
-
-  strcpy(global_playdeck_path, global_base_directory);
-  strcat(global_playdeck_path, "\\PlayDeck");
-  strcpy(global_faces_path, global_base_directory);
-  strcat(global_faces_path, "\\Faces");
-  strcpy(global_cardart_path, global_base_directory);
-  strcat(global_cardart_path, "\\CardArt");
-  strcpy(global_duelart_path, global_base_directory);
-  strcat(global_duelart_path, "\\DuelArt");
-  strcpy(global_duelsounds_path, global_base_directory);
-  strcat(global_duelsounds_path, "\\DuelSounds");
-  strcpy(global_duel_dat_path, global_duelart_path);
-  strcat(global_duel_dat_path, "\\Duel.dat");
-  strcpy(global_ui_strings_filename, "UIStrings.txt");
-  strcpy(global_savegame_path, global_base_directory);
-  strcat(global_savegame_path, "\\SaveGame");
-  _mkdir(global_savegame_path);
-
-  FUN_00491f1e(global_ui_strings_filename);
-
-  strcpy(s.path, global_base_directory);
-  strcat(s.path, "\\CARDS.DAT");
-  global_available_slots = read_db_guts(s.path);
-  if (global_available_slots == 0)
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    append_startup_error(message_buffer, s.path, 1);
-  }
-
-  strcpy(s.path, global_base_directory);
-  strcat(s.path, "\\LEGACY.CSV");
-  if (!ReadLegacyCsv(s.path))
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    append_startup_error(message_buffer, s.path, 2);
-  }
-
-  strcpy(s.path, global_base_directory);
-  strcat(s.path, "\\RARITY.CSV");
-  if (!FUN_004c0c20(s.path))
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    append_startup_error(message_buffer, s.path, 1);
-  }
-
-  FUN_00509210();
-
-  s.desktop_dc = GetDC(NULL);
-  if (s.desktop_dc != NULL)
-  {
-    DAT_00939334 = GetDeviceCaps(s.desktop_dc, BITSPIXEL) * GetDeviceCaps(s.desktop_dc, PLANES);
-    ReleaseDC(NULL, s.desktop_dc);
-  }
-  else
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[3]);
-    strcat(message_buffer, "\n");
-  }
-
-  if (!SetupDuelPalette())
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[4]);
-    strcat(message_buffer, "\n");
-  }
-
-  if (!CreateOffscreen32bppDibSection(GetSystemMetrics(SM_CXSCREEN),
-                                      GetSystemMetrics(SM_CYSCREEN),
-                                      &DAT_00789310,
-                                      (BITMAPINFO *)&gs_cardtitle_draw_a_card_008b4330[0x40],
-                                      &DAT_00926808,
-                                      &DAT_0093a980,
-                                      &DAT_008cefb0))
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[5]);
-    strcat(message_buffer, "\n");
-  }
-
-  if (!create_fonts())
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[6]);
-    strcat(message_buffer, "\n");
-  }
-
-  if (!InitCardArtGdiResources())
-  {
-    s.ok = 0;
-    load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[7]);
-    strcat(message_buffer, "\n");
-  }
-
-  FUN_004a7b3d();
-  return s.ok;
-}
-
-// FUNCTION: SHANDALAR 0x00442f9b
-// FUNCTION: MAGIC 0x004c0c20
-static int FUN_004c0c20(const char *filename)
-{
-  return GetFileAttributesA(filename) != 0xffffffff;
-}
-
-// FUNCTION: SHANDALAR 0x00468a60
-// FUNCTION: MAGIC 0x00509210
-static int FUN_00509210(void)
-{
-  struct
-  {
-    int card_index;
-    int card_type;
-  } s;
-
-  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
-  {
-    s.card_type = CardTypeFromID(s.card_index);
-    if (s.card_type == -1)
-      continue;
-
-    if (global_raw_cards_storage[s.card_index].rarity == 1)
-    {
-      global_cards_data[s.card_type].rarity = 1;
-    }
-    else if (global_raw_cards_storage[s.card_index].rarity == 2)
-    {
-      global_cards_data[s.card_type].rarity = 3;
-    }
-    else if (global_raw_cards_storage[s.card_index].rarity == 3)
-    {
-      global_cards_data[s.card_type].rarity = 4;
-    }
-    else if (global_raw_cards_storage[s.card_index].rarity == 4)
-    {
-      global_cards_data[s.card_type].rarity = 2;
-    }
-    else
-    {
-      global_cards_data[s.card_type].rarity = 1;
-    }
-
-    strncpy((char *)&global_cards_data[s.card_type].name[0], global_raw_cards_storage[s.card_index].full_name, 0x23);
-    ((char *)&global_cards_data[s.card_type].name[0])[0x22] = '\0';
-  }
-
-  return 1;
-
-  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
-  {
-    s.card_type = CardTypeFromID(s.card_index);
-
-    strcpy((char *)&global_cards_data[s.card_type].name[0], global_raw_cards_storage[s.card_index].full_name);
-
-    if (((char)global_cards_data[s.card_type].color & 2) != 0)
-    {
-      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_black;
-    }
-    else if (((char)global_cards_data[s.card_type].color & 0x20) != 0)
-    {
-      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_white;
-    }
-    else if (((char)global_cards_data[s.card_type].color & 8) != 0)
-    {
-      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_green;
-    }
-    else if (((char)global_cards_data[s.card_type].color & 0x10) != 0)
-    {
-      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_red;
-    }
-    else if (((char)global_cards_data[s.card_type].color & 4) != 0)
-    {
-      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_blue;
-    }
-
-    if ((char)global_raw_cards_storage[s.card_index].req.req_colorless == 0x48)
-    {
-      global_cards_data[s.card_type].cc[1] = 0xff;
-    }
-    else
-    {
-      global_cards_data[s.card_type].cc[1] = global_raw_cards_storage[s.card_index].req.req_colorless;
-    }
-
-    global_cards_data[s.card_type].power = (short)global_raw_cards_storage[s.card_index].power;
-    global_cards_data[s.card_type].toughness = (short)global_raw_cards_storage[s.card_index].toughness;
-
-    if ((global_raw_cards_storage[s.card_index].expansion & 0x80))
-    {
-      global_cards_data[s.card_type].expansion = 1;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 8))
-    {
-      global_cards_data[s.card_type].expansion = 0x40;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 0x20))
-    {
-      global_cards_data[s.card_type].expansion = 8;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 0x800))
-    {
-      global_cards_data[s.card_type].expansion = 2;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 2))
-    {
-      global_cards_data[s.card_type].expansion = 0x20;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 4))
-    {
-      global_cards_data[s.card_type].expansion = 4;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 0x10))
-    {
-      global_cards_data[s.card_type].expansion = 8;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 0x100))
-    {
-      global_cards_data[s.card_type].expansion = 0x10;
-    }
-    else if ((global_raw_cards_storage[s.card_index].expansion & 0x200))
-    {
-      global_cards_data[s.card_type].expansion = 0x80;
-    }
-    else
-    {
-      global_cards_data[s.card_type].expansion = 0;
-    }
-
-    if (global_raw_cards_storage[s.card_index].rarity == 1)
-    {
-      global_cards_data[s.card_type].rarity = 1;
-    }
-    else if (global_raw_cards_storage[s.card_index].rarity == 2)
-    {
-      global_cards_data[s.card_type].rarity = 3;
-    }
-    else if (global_raw_cards_storage[s.card_index].rarity == 3)
-    {
-      global_cards_data[s.card_type].rarity = 3;
-    }
-    else if (global_raw_cards_storage[s.card_index].rarity == 4)
-    {
-      global_cards_data[s.card_type].rarity = 2;
-    }
-    else
-    {
-      global_cards_data[s.card_type].rarity = 1;
-    }
-  }
-
-  return 1;
-}
-
 // FUNCTION: MAGIC 0x0048fa0a
 static void FUN_0048fa0a(void)
 {
@@ -887,61 +551,6 @@ static void FUN_00500d46(void)
   free(unk_0091ca98);
   unk_0091ca98 = NULL;
   DAT_008b32bc = 0;
-}
-
-// FUNCTION: MAGIC 0x004537a7
-static void FUN_004537a7(void)
-{
-  if (global_base_txt != NULL)
-  {
-    free(global_base_txt);
-  }
-  global_base_txt = NULL;
-}
-
-// FUNCTION: MAGIC 0x00453b3c
-static void FUN_00453b3c(void)
-{
-  if (DAT_00637a94 != 0)
-  {
-    free((void *)DAT_00637a94);
-  }
-}
-
-// FUNCTION: MAGIC 0x00422bea
-static void FUN_00422bea(void)
-{
-  FUN_004537a7();
-  FUN_00453b3c();
-  FreeRaritiesCsvRaw();
-  DestroyCardArtPalette();
-  checked_DeleteDC_DeleteObject(DAT_00789310, DAT_00926808);
-  DAT_00926808 = NULL;
-  DAT_00789310 = NULL;
-  ShutdownCardArtGdiResources();
-  destroy_create_fonts_resources();
-}
-
-// FUNCTION: MAGIC 0x004a7b3d
-// FUNCTION: SHANDALAR 0x00559cc3
-static int FUN_004a7b3d(void)
-{
-  OSVERSIONINFOA version = {sizeof(OSVERSIONINFOA)};
-  GetVersionExA(&version);
-  DAT_00638ca8 = version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
-
-  if (DAT_00776518 == NULL && DAT_00638ca8 != 0)
-  {
-    int ioctl_result;
-    DAT_00776518 = CreateFileA("\\\\.\\MPStime.VXD", 0, 0, NULL, 0, FILE_FLAG_DELETE_ON_CLOSE, NULL);
-    assert((unsigned int)(DAT_00776518 != INVALID_HANDLE_VALUE), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x360,
-           "Could Not Load Dave's Extra Cool Timer\n");
-    DeviceIoControl(DAT_00776518, 1, NULL, 0, &ioctl_result, 4, NULL, NULL);
-    assert((unsigned int)(ioctl_result == 0x100), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x367,
-           "Could Not Initialize Dave's Extra Cool Timer\n");
-  }
-
-  return 1;
 }
 
 // FUNCTION: MAGIC 0x00459b6e

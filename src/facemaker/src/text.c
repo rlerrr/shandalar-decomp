@@ -1050,8 +1050,13 @@ int DrawTextFormatted(FacemakerWindowBounds *param_1, int param_2, int param_3, 
 }
 
 // FUNCTION: FACEMAKER 0x004088d0
+// FUNCTION: SHANDALAR 0x0057b620
 void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text)
 {
+#ifdef SHANDALAR
+    DrawTextFormatted(dst, text_id, 1, 1, 1, 1, x, y, (int *)&text);
+#else
     DrawTextFormatted(dst, text_id, 0, 0, 1, 1, x, y, (int *)&text);
+#endif
 }
 #pragma optimize("", off)
