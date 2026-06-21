@@ -105,7 +105,7 @@ void __cdecl AddToUpdateList(SndInstance *snd);
 void __cdecl RemoveFromUpdateList(SndInstance *snd);
 void __cdecl AddToActiveList(SndInstance *snd);
 void __cdecl RemoveFromActiveList(SndInstance *snd);
-undefined4 __cdecl AcquireFreeDsBuffer(int slot,int *outBuffer);
+undefined4 __cdecl AcquireFreeDsBuffer(SndInstance *snd, LPDIRECTSOUNDBUFFER *outBuffer);
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
 void __cdecl StopUpdateTimer(void);
 void CALLBACK UpdateTimerProc(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
@@ -474,7 +474,7 @@ int __cdecl FUN_10001701(SndInstance *snd, Sound *sound)
   }
   else {
     if ((sound == NULL) || ((sound->flags >> 1 & 1) == 0)) {
-      s.result = AcquireFreeDsBuffer((int)snd,(int *)&s.dsBuffer);
+      s.result = AcquireFreeDsBuffer(snd, &s.dsBuffer);
       if (s.result != 0) {
         return s.result;
       }
@@ -1723,20 +1723,20 @@ undefined4 __cdecl FUN_10003d60(undefined4 *param_1)
 }
 
 // FUNCTION: MAGSND 0x100040C9
-undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
+undefined4 __cdecl AcquireFreeDsBuffer(SndInstance *snd, LPDIRECTSOUNDBUFFER *outBuffer)
 {
   struct {
     uint status;
-    undefined4 dupOut;
+    LPDIRECTSOUNDBUFFER dupOut;
     int hr;
-    int *buffer;
+    LPDIRECTSOUNDBUFFER buffer;
     int index;
-    int *candidate;
+    LPDIRECTSOUNDBUFFER candidate;
   } s;
 
-  s.buffer = *(int **)(param_1 + 0xbc);
+  s.buffer = snd->dsBuffer;
   s.candidate = s.buffer;
-  s.hr = (**(code **)(*s.buffer + 0x24))(s.buffer,&s.status);
+  s.hr = s.buffer->lpVtbl->GetStatus(s.buffer, &s.status);
   if (s.hr != 0) {
     return 9;
   }
@@ -1745,9 +1745,9 @@ undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
   }
   if ((s.status & 1) != 0) {
     for (s.index = 0; s.index < 0x10; s.index = s.index + 1) {
-      s.buffer = *(int **)(param_1 + 0xc0 + s.index * 0xc);
+      s.buffer = snd->duplicateBuffers[s.index].buffer;
       if (s.buffer != NULL) {
-        s.hr = (**(code **)(*s.buffer + 0x24))(s.buffer,&s.status);
+        s.hr = s.buffer->lpVtbl->GetStatus(s.buffer, &s.status);
         if (s.hr != 0) {
           return 9;
         }
@@ -1755,7 +1755,7 @@ undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
           continue;
         }
         else {
-          *param_2 = (int)s.buffer;
+          *outBuffer = s.buffer;
           return 0;
         }
       } else {
@@ -1763,14 +1763,14 @@ undefined4 __cdecl AcquireFreeDsBuffer(int param_1,int *param_2)
         if (s.hr != 0) {
           return 9;
         } else {
-          *(undefined4 *)(param_1 + 0xc0 + s.index * 0xc) = s.dupOut;
-          *param_2 = *(int *)(param_1 + 0xc0 + s.index * 0xc);
+          snd->duplicateBuffers[s.index].buffer = s.dupOut;
+          *outBuffer = snd->duplicateBuffers[s.index].buffer;
           return 0;
         }
       }
     }
   } else {
-    *param_2 = (int)s.candidate;
+    *outBuffer = s.candidate;
     return 0;
   }
   return 9;

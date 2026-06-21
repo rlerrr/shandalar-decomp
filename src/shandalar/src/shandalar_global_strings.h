@@ -127,10 +127,15 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_format_right_0077f190[0x40];
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_village_0077cfd0[0x70];
 // GLOBAL: SHANDALAR 0x00765dc0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_castle_00765dc0[0x80];
-// GLOBAL: SHANDALAR 0x0077de00
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_manacastle_0077de00[0x260];
+typedef struct
+{
+  char citynames_buf_0077d610[0x640];
+  char browse_buf_0077dc50[0x1a9];
+  char pad_0077ddf9[7];
+  char cityname_manacastle_0077de00[0x260];
+} sh_city_text_cluster_t;
 // GLOBAL: SHANDALAR 0x0077d610
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_citynames_buf_0077d610[0x640];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_city_text_cluster_t gs_city_text_cluster_0077d610;
 // GLOBAL: SHANDALAR 0x0074b160
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_worldmagic_buf_0074b160[0x708];
 // GLOBAL: SHANDALAR 0x0077e1d0
@@ -181,8 +186,6 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_queststatus_buf_0074d270[0x514];
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_newsflash_buf_0077d1c0[0x44c];
 // GLOBAL: SHANDALAR 0x0074c0f0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_citycardtext_buf_0074c0f0[0x4c9];
-// GLOBAL: SHANDALAR 0x0077dc50
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_browse_buf_0077dc50[0x1a9];
 // GLOBAL: SHANDALAR 0x0074d890
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_showdeck_buf_0074d890[0x0e1];
 // GLOBAL: SHANDALAR 0x0077d040
@@ -230,8 +233,8 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char *gs_advblock_general_0077c9e0[0x0c];
 #define DAT_0077f190 gs_cityname_format_right_0077f190
 #define DAT_0077cfd0 gs_cityname_village_0077cfd0
 #define DAT_00765dc0 gs_cityname_castle_00765dc0
-#define DAT_0077de00 gs_cityname_manacastle_0077de00
-#define DAT_0077d610 gs_citynames_buf_0077d610
+#define DAT_0077de00 gs_city_text_cluster_0077d610.cityname_manacastle_0077de00
+#define DAT_0077d610 gs_city_text_cluster_0077d610.citynames_buf_0077d610
 #define DAT_0074b160 gs_worldmagic_buf_0074b160
 #define DAT_0077e1d0 gs_worldmagic_title_0077e1d0
 #define DAT_0077c680 gs_logstrings_buf_0077c680

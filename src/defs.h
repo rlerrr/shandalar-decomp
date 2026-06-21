@@ -899,7 +899,7 @@ typedef struct
   card_id_t	id;	/* 0x24 */
   uint8_t	type;	// ct_all.csv:Type:Effect..Type::Land
   int8_t	subtype;	// ct_all.csv:Family
-  uint8_t	color;	// ct_all.csv:Color Unused..Color Colorless
+  int8_t	color;	// ct_all.csv:Color Unused..Color Colorless
   uint8_t	cc[3];	// 0:colored mana, 1:colorless mana, 2:flags
   int16_t	power;
   int16_t	toughness;

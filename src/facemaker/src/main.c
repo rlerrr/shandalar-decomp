@@ -93,8 +93,8 @@ extern int InitializeLegacyVideoStub(void);
 extern void LoadPcxIntoPage(int page_number, char *path);
 extern size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 extern int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
-extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y,
-                             int *arg9);
+extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y,
+                             int x, int y, int *format_and_args);
 extern void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h, FacemakerWindowBounds *src,
                                     int src_x, int src_y, int copy_w, int copy_h);
 extern int InitializeFaceMakerAssets(void);
@@ -453,7 +453,6 @@ int ShowSaveFaceDialog(void)
     return 0;
 }
 
-// FUNCTION: SHANDALAR 0x005501fe
 // FUNCTION: FACEMAKER 0x00402600
 unsigned int ScaleUiCoordinate(int value)
 {
@@ -1999,10 +1998,6 @@ LOOP:
   }
   else
   {
-#ifdef MODERN_FIXES
-    global_screen_width = 1024; // GetDeviceCaps(GetDC((HWND)0), HORZRES) - 1;
-    global_screen_height = 768; // GetDeviceCaps(GetDC((HWND)0), VERTRES) - 1;
-#else
     int horzres = GetDeviceCaps(GetDC((HWND)0), HORZRES);
     switch (horzres)
     {
@@ -2018,8 +2013,13 @@ LOOP:
       global_screen_width = 1024;
       global_screen_height = 768;
       break;
-    }
+#ifdef MODERN_FIXES
+    default:
+      global_screen_width = 1024; // GetDeviceCaps(GetDC((HWND)0), HORZRES) - 1;
+      global_screen_height = 768; // GetDeviceCaps(GetDC((HWND)0), VERTRES) - 1;
+      break;
 #endif
+    }
     g_face_preview_bounds->max_x = global_screen_width - 1;
     g_face_preview_bounds->max_y = global_screen_height - 1;
   }

@@ -94,6 +94,7 @@ typedef int (WINAPI *Int_fn_etc)();
 
 // FUNCTION: DECKDLL 0x1002d4d3
 // FUNCTION: MAGIC 0x004859f1
+// FUNCTION: SHANDALAR 0x0056d133
 int sound_unload(int idx)
 {
   if (global_sound_status ==0)
@@ -126,6 +127,7 @@ void sound_close() {
 
 // FUNCTION: DECKDLL 0x1002d534
 // FUNCTION: MAGIC 0x00485a52
+// FUNCTION: SHANDALAR 0x0056d194
 int sound_play(int num, Sound *snd)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2)) {

@@ -40,6 +40,7 @@ keymap_entry_t g_virtual_key_char_map[89] = {
 };
 
 // GLOBAL: FACEMAKER 0x0040d0ec
+// GLOBAL: SHANDALAR 0x005a166c
 char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[] = "D:\\NewMagic\\sources\\sidlib\\lib.c";
 
 // GLOBAL: FACEMAKER 0x0040d110
@@ -84,6 +85,7 @@ char g_copy_scratch_buffer[0x804];
 char *g_copy_scratch_buffer_ptr = g_copy_scratch_buffer;
 
 // GLOBAL: FACEMAKER 0x004189b4
+// GLOBAL: SHANDALAR 0x00739814
 int g_graphics_initialized;
 
 // GLOBAL: FACEMAKER 0x00420df0
@@ -93,12 +95,14 @@ RpBitsPalettePacket g_palette_transition_source_words;
 HPALETTE g_palette_handle;
 
 // GLOBAL: FACEMAKER 0x00425e20
+// GLOBAL: SHANDALAR 0x00986230
 RpBitsPalettePacket g_palette_data_words;
 
 // GLOBAL: FACEMAKER 0x00426140
 PALETTEENTRY g_palette_entries[256];
 
 // GLOBAL: FACEMAKER 0x00426540
+// GLOBAL: SHANDALAR 0x00986950
 DIBSurface *g_graphics_pages[10];
 
 // GLOBAL: FACEMAKER 0x00426568
@@ -108,6 +112,7 @@ int g_graphics_height;
 int g_graphics_width;
 
 // GLOBAL: FACEMAKER 0x00426570
+// GLOBAL: SHANDALAR 0x00986980
 int g_graphics_bpp;
 
 // GLOBAL: FACEMAKER 0x00426580
@@ -235,6 +240,8 @@ int PopQueuedKeyInput(void)
 }
 
 #pragma optimize("gy", on)
+#pragma intrinsic(memset)
+#pragma intrinsic(memcpy)
 
 // FUNCTION: SHANDALAR 0x00578c90
 // FUNCTION: FACEMAKER 0x004065f0
@@ -520,23 +527,7 @@ DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_
   RealizePalette(page->hTempDC);
   SetStretchBltMode(page->hTempDC, 3);
 
-  dword_ptr = (DWORD *)page->pBits;
-  fill_count = image_size_bytes >> 2;
-  while (fill_count != 0)
-  {
-    *dword_ptr = 0;
-    ++dword_ptr;
-    --fill_count;
-  }
-
-  fill_count = image_size_bytes & 3;
-  while (fill_count != 0)
-  {
-    *(unsigned char *)dword_ptr = 0;
-    dword_ptr = (DWORD *)((char *)dword_ptr + 1);
-    --fill_count;
-  }
-
+  memset(page->pBits, 0, image_size_bytes);
   return page;
 }
 
@@ -669,8 +660,6 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
   int dst_page_number;
   DIBSurface *src_page;
   DIBSurface *dst_page;
-  RGBQUAD *src_palette;
-  RGBQUAD *dst_palette;
   double *top_row;
   double *bottom_row;
   int half_height;
@@ -700,17 +689,7 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
   {
     if (((dst_x & 7) == 0) && g_frontbuffer_direct_blit_enabled != 0)
     {
-      if (g_graphics_bpp != 8)
-      {
-        src_palette = g_palette_rgb;
-        dst_palette = g_blit_bitmap_info->bmiColors;
-        for (i = 0x100; i != 0; i--)
-        {
-          *dst_palette = *src_palette;
-          src_palette++;
-          dst_palette++;
-        }
-      }
+      memcpy(g_blit_bitmap_info->bmiColors, g_palette_rgb, 0x400);
 
       top_row = (double *)(dst_y * src_page->width + dst_x + (int)src_page->pBits);
       bottom_row = (double *)((dst_y + height - 1) * src_page->width + dst_x + (int)src_page->pBits);
@@ -801,54 +780,34 @@ void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y,
 
 // FUNCTION: SHANDALAR 0x00579f10
 // FUNCTION: FACEMAKER 0x004075d0
-void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                           unsigned int param_5)
+void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y,
+                           unsigned int byte_count)
 {
   DIBSurface *page;
-  int iVar2;
-  unsigned int uVar3;
-  RGBQUAD *pRVar4;
-  RGBQUAD *pRVar5;
-  unsigned int *puVar6;
+  int palette_index;
+  void *dst_ptr;
 
   if (g_scanline_bitmap_info_initialized == 0)
   {
     g_scanline_bitmap_info = (BITMAPINFO *)CreateBitmapInfo(1, 1, 8);
     g_scanline_bitmap_info_initialized = 1;
   }
-  page = g_graphics_pages[param_2];
-  g_scanline_bitmap_info->bmiHeader.biWidth = param_5;
-  if (param_2 == 0)
+  page = g_graphics_pages[page_number];
+  g_scanline_bitmap_info->bmiHeader.biWidth = byte_count;
+  if (page_number == 0)
   {
     if ((g_graphics_bpp != 8) && (g_scanline_palette_needs_refresh != 0))
     {
-      pRVar4 = (RGBQUAD *)&g_palette_rgb;
-      pRVar5 = g_scanline_bitmap_info->bmiColors;
-      for (iVar2 = 0x100; iVar2 != 0; iVar2 = iVar2 - 1)
-      {
-        *pRVar5 = *pRVar4;
-        pRVar4 = pRVar4 + 1;
-        pRVar5 = pRVar5 + 1;
-      }
+      memcpy(g_scanline_bitmap_info->bmiColors, g_palette_rgb, 0x400);
+ 
       g_scanline_palette_needs_refresh = 0;
     }
-    SetDIBitsToDevice(page->hTempDC, param_3, param_4, param_5, 1, 0, 0, 0, 1, param_1, g_scanline_bitmap_info,
+    SetDIBitsToDevice(page->hTempDC, dst_x, dst_y, byte_count, 1, 0, 0, 0, 1, scanline_data, g_scanline_bitmap_info,
                       (unsigned int)(g_graphics_bpp == 8));
     return;
   }
-  puVar6 = (unsigned int *)((char *)page->pBits + param_3 + (page->width + page->rowPadding) * param_4);
-  for (uVar3 = param_5 >> 2; uVar3 != 0; uVar3 = uVar3 - 1)
-  {
-    *puVar6 = *param_1;
-    param_1 = param_1 + 1;
-    puVar6 = puVar6 + 1;
-  }
-  for (uVar3 = param_5 & 3; uVar3 != 0; uVar3 = uVar3 - 1)
-  {
-    *(unsigned char *)puVar6 = *(unsigned char *)param_1;
-    param_1 = (unsigned int *)((int)param_1 + 1);
-    puVar6 = (unsigned int *)((int)puVar6 + 1);
-  }
+  dst_ptr = (char *)page->pBits + dst_x + (page->width + page->rowPadding) * dst_y;
+  memcpy(dst_ptr, scanline_data, byte_count);
 }
 
 // FUNCTION: SHANDALAR 0x00579520
@@ -888,29 +847,17 @@ unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
 
 // FUNCTION: SHANDALAR 0x0057a000
 // FUNCTION: FACEMAKER 0x004076c0
-void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                          unsigned int param_5)
+void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y,
+                          unsigned int byte_count)
 {
   DIBSurface *page;
-  unsigned int uVar2;
-  unsigned int *puVar3;
+  void *src_ptr;
 
-  assert((unsigned int)(param_2 != 0), s_D__NewMagic__sources__sidlib__lib_c_0040d0ec, 0x503,
+  assert((unsigned int)(page_number != 0), s_D__NewMagic__sources__sidlib__lib_c_0040d0ec, 0x503,
          s_GetLine_not_implemented_for_page_0040d168);
-  page = g_graphics_pages[param_2];
-  puVar3 = (unsigned int *)((char *)page->pBits + (page->rowPadding + page->width) * param_4 + param_3);
-  for (uVar2 = param_5 >> 2; uVar2 != 0; uVar2 = uVar2 - 1)
-  {
-    *param_1 = *puVar3;
-    puVar3 = puVar3 + 1;
-    param_1 = param_1 + 1;
-  }
-  for (uVar2 = param_5 & 3; uVar2 != 0; uVar2 = uVar2 - 1)
-  {
-    *(unsigned char *)param_1 = *(unsigned char *)puVar3;
-    puVar3 = (unsigned int *)((int)puVar3 + 1);
-    param_1 = (unsigned int *)((int)param_1 + 1);
-  }
+  page = g_graphics_pages[page_number];
+  src_ptr = (char *)page->pBits + (page->rowPadding + page->width) * src_y + src_x;
+  memcpy(out_scanline, src_ptr, byte_count);
 }
 
 // FUNCTION: SHANDALAR 0x0057da90
@@ -1371,6 +1318,161 @@ int AnimatePaletteToColor(int gray, int steps)
 
   RpBits_ApplyPalette(&g_palette_data_words);
   return ClearGraphicsPageWithPaletteColor(0, 0);
+}
+
+// FUNCTION: SHANDALAR 0x0057ce70
+int FUN_0057ce70(int gray, int steps)
+{
+  int value_step;
+  RGBLike target_rgb;
+  HSVLike target_hsv;
+  RGBLike rgb;
+  HSVLike hsv;
+  int color_index;
+  int entry_offset;
+  int work_offset;
+  int saturation_step;
+  short frames_left;
+
+  value_step = 0x3fc0 / steps;
+
+  if (g_graphics_bpp != 8)
+  {
+    return 0;
+  }
+
+  target_rgb.r = gray;
+  target_rgb.g = gray;
+  target_rgb.b = gray;
+
+  memcpy(g_palette_transition_source_words.entry_data, g_palette_rgb_bytes, 0x300);
+
+  for (color_index = 0; color_index < 0x100; color_index = color_index + 1)
+  {
+    entry_offset = color_index * 3;
+    g_palette_rgb_bytes[entry_offset + 0] = (unsigned char)gray;
+    g_palette_rgb_bytes[entry_offset + 1] = (unsigned char)gray;
+    g_palette_rgb_bytes[entry_offset + 2] = (unsigned char)gray;
+  }
+
+  RpBits_ApplyPalette(&g_palette_data_words);
+  ConvertRgbToHsv(&target_rgb, &target_hsv);
+
+  for (color_index = 0; color_index < 0x100; color_index = color_index + 1)
+  {
+    entry_offset = color_index * 3;
+
+    rgb.r = (unsigned char)g_palette_transition_source_words.entry_data[entry_offset + 0];
+    rgb.g = (unsigned char)g_palette_transition_source_words.entry_data[entry_offset + 1];
+    rgb.b = (unsigned char)g_palette_transition_source_words.entry_data[entry_offset + 2];
+    ConvertRgbToHsv(&rgb, &hsv);
+
+    g_palette_transition_hsv[entry_offset + 0] = hsv.hue;
+    g_palette_transition_hsv[entry_offset + 1] = hsv.saturation;
+    g_palette_transition_hsv[entry_offset + 2] = hsv.value;
+
+    saturation_step = (target_hsv.saturation - hsv.saturation) / steps;
+    g_palette_transition_value_step[color_index] = saturation_step;
+
+    if (hsv.saturation < target_hsv.saturation)
+    {
+      saturation_step = 0x1000 / steps;
+    }
+    else
+    {
+      saturation_step = -0x1000 / steps;
+    }
+
+    g_palette_transition_value_step[color_index] = saturation_step;
+  }
+
+  frames_left = (short)steps;
+  if (0 < frames_left)
+  {
+    do
+    {
+      for (color_index = 0; color_index < 0x100; color_index = color_index + 1)
+      {
+        entry_offset = color_index * 3;
+
+        hsv.hue = g_palette_transition_hsv[entry_offset + 0];
+        if (target_hsv.value == 0)
+        {
+          hsv.saturation = g_palette_transition_hsv[entry_offset + 1];
+          hsv.value = g_palette_transition_hsv[entry_offset + 2] - frames_left * value_step;
+          if (hsv.value < 1)
+          {
+            hsv.value = 0;
+          }
+        }
+        else
+        {
+          hsv.saturation =
+              g_palette_transition_value_step[color_index] * (int)frames_left +
+              g_palette_transition_hsv[entry_offset + 1];
+          if (hsv.saturation > 0xfff)
+          {
+            hsv.saturation = 0x1000;
+          }
+          if (hsv.saturation < 1)
+          {
+            hsv.saturation = 0;
+          }
+
+          hsv.value = value_step * (int)frames_left + g_palette_transition_hsv[entry_offset + 2];
+          if (hsv.value > 0x3fbf)
+          {
+            hsv.value = 0x3fc0;
+          }
+        }
+
+        ConvertHsvToRgb(&hsv, &rgb);
+
+        work_offset = color_index * 4;
+        g_palette_transition_work_words[work_offset + 0] = rgb.r;
+        g_palette_transition_work_words[work_offset + 1] = rgb.g;
+        g_palette_transition_work_words[work_offset + 2] = rgb.b;
+        g_palette_transition_work_words[work_offset + 3] = rgb.a_or_unused;
+
+        if (g_palette_transition_work_words[work_offset + 0] > 0xfe)
+        {
+          g_palette_rgb_bytes[entry_offset + 0] = 0xff;
+        }
+        else
+        {
+          g_palette_rgb_bytes[entry_offset + 0] =
+              (unsigned char)g_palette_transition_work_words[work_offset + 0];
+        }
+
+        if (g_palette_transition_work_words[work_offset + 1] > 0xfe)
+        {
+          g_palette_rgb_bytes[entry_offset + 1] = 0xff;
+        }
+        else
+        {
+          g_palette_rgb_bytes[entry_offset + 1] =
+              (unsigned char)g_palette_transition_work_words[work_offset + 1];
+        }
+
+        if (g_palette_transition_work_words[work_offset + 2] > 0xfe)
+        {
+          g_palette_rgb_bytes[entry_offset + 2] = 0xff;
+        }
+        else
+        {
+          g_palette_rgb_bytes[entry_offset + 2] =
+              (unsigned char)g_palette_transition_work_words[work_offset + 2];
+        }
+      }
+
+      RpBits_ApplyPalette(&g_palette_data_words);
+      frames_left = frames_left - 1;
+    } while (frames_left != 0);
+  }
+
+  memcpy(g_palette_rgb_bytes, g_palette_transition_source_words.entry_data, 0x300);
+  RpBits_ApplyPalette(&g_palette_data_words);
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00566cea

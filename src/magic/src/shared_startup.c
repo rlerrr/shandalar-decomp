@@ -15,11 +15,6 @@ extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[];
 extern card_data_t global_cards_data[];
 
-//TODO: REMOVE! when we compile in carddata/cards
-#ifdef SHANDALAR
-card_data_t global_cards_data[722];
-#endif
-
 // GLOBAL: SHANDALAR 0x0093a230
 // GLOBAL: MAGIC 0x00926100
 char global_playdeck_path[300];
@@ -368,6 +363,7 @@ void FUN_004a5d72(void) {}
 // FUNCTION: MAGIC 0x004c0c20
 int FUN_004c0c20(const char *filename)
 {
+  //TODO: This seems to initialize useless stuff for SHANDALAR, only used in MAGIC
   (void)filename;
   return 0;
 }

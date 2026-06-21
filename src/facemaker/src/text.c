@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+#include <stdarg.h>
 #include "cardartlib/src/assert.h"
 #include "drawcardlib/src/pic.h"
 #include "facemaker_types.h"
@@ -11,7 +12,8 @@
 
 extern int LoadBitmapFontFromFile(int font_id, FILE *file);
 extern int SetFontStyleSize(int font_id, unsigned int style);
-extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int a3, int a4, int a5, int a6, int x, int y, int *arg9);
+extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y,
+                             int x, int y, int *format_and_args);
 extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
 extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
 extern char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[];
@@ -67,6 +69,7 @@ int g_resample_source_width;
 int g_loaded_font_count;
 
 // GLOBAL: FACEMAKER 0x004233d0
+// GLOBAL: SHANDALAR 0x009837fc
 FontSlot g_font_slots[0x10];
 
 // GLOBAL: FACEMAKER 0x0040d224
@@ -954,55 +957,64 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
   return 0;
 }
 
+/* Matching note: callers pass `&format` from their own variadic frame, so this
+ * intentionally takes a stack-pack pointer instead of a C `...` signature. */
 // FUNCTION: SHANDALAR 0x0057b230
 // FUNCTION: FACEMAKER 0x004086c0
-int DrawTextFormatted(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
-                         int param_7, int param_8, int *param_9)
+int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen, int center_x, int center_y,
+                         int x, int y, int *format_and_args)
 {
-    char c;
-    int iVar2;
-    char *pcVar3;
-    int iVar4;
+    char current_char;
+    int formatted_length;
+    char *scan_ptr;
+    int line_x;
     int line_has_more;
-    char *line_ptr;
+    char *line_end;
+    char *line_start;
     int line_count;
     int saved_color;
     volatile int stack_layout_pad;
-    char local_400[1024];
+    char formatted_text[1024];
+    char *format_string;
+    va_list args;
 
-    iVar2 = _vsnprintf(local_400, 0x400, (char *)*param_9, (va_list)(param_9 + 1));
-    stack_layout_pad = iVar2;
-    pcVar3 = local_400;
+    format_string = (char *)*format_and_args;
+    args = (va_list)(format_and_args + 1);
+    formatted_length = _vsnprintf(formatted_text, sizeof(formatted_text) - 1, format_string, args);
+    formatted_text[sizeof(formatted_text) - 1] = '\0';
+    stack_layout_pad = formatted_length;
+
+    scan_ptr = formatted_text;
     line_count = 0;
-    c = *pcVar3;
-    while (c != '\0')
+    current_char = *scan_ptr;
+    while (current_char != '\0')
     {
-        if (c == '\n')
+        if (current_char == '\n')
         {
             line_count = line_count + 1;
         }
-        pcVar3 = pcVar3 + 1;
-        c = *pcVar3;
+        scan_ptr = scan_ptr + 1;
+        current_char = *scan_ptr;
     }
-    if (pcVar3[-1] != '\n')
+    if ((scan_ptr != formatted_text) && (scan_ptr[-1] != '\n'))
     {
         line_count = line_count + 1;
     }
-    if (param_4 != 0)
+    if (scale_to_screen != 0)
     {
-        param_7 = (g_graphics_pages[0]->width * param_7) / 0x280;
-        param_8 = (g_graphics_pages[0]->height * param_8) / 0x1e0;
+        x = (g_graphics_pages[0]->width * x) / 0x280;
+        y = (g_graphics_pages[0]->height * y) / 0x1e0;
     }
-    if (param_6 != 0)
+    if (center_y != 0)
     {
-        param_8 = param_8 - ((int)g_font_slots[param_1->font_slot].point_size * line_count) / 2;
+        y = y - ((int)g_font_slots[dst->font_slot].point_size * line_count) / 2;
     }
-    if (-1 < param_2)
+    if (-1 < text_color)
     {
-        saved_color = param_1->text_color;
-        param_1->text_color = param_2;
+        saved_color = dst->text_color;
+        dst->text_color = text_color;
     }
-    line_ptr = local_400;
+    line_start = formatted_text;
     while (line_count != 0)
     {
         line_has_more = line_count != 0;
@@ -1011,42 +1023,42 @@ int DrawTextFormatted(FacemakerWindowBounds *param_1, int param_2, int param_3, 
         {
             break;
         }
-        c = *line_ptr;
-        for (pcVar3 = line_ptr; c != '\0' && *pcVar3 != '\n'; pcVar3 = pcVar3 + 1)
+        current_char = *line_start;
+        for (line_end = line_start; current_char != '\0' && *line_end != '\n'; line_end = line_end + 1)
         {
-            c = pcVar3[1];
+            current_char = line_end[1];
         }
-        *pcVar3 = '\0';
-        iVar4 = param_7;
-        if (param_5 != 0)
+        *line_end = '\0';
+        line_x = x;
+        if (center_x != 0)
         {
-            iVar4 = MeasureMultilineTextWidth(param_1, line_ptr);
-            iVar4 = param_7 - iVar4 / 2;
+            line_x = MeasureMultilineTextWidth(dst, line_start);
+            line_x = x - line_x / 2;
         }
-        if (param_3 != 0)
+        if (draw_shadow != 0)
         {
-            saved_color = param_1->text_color;
-            param_1->text_color = 0;
-            DrawTextLine(param_1, iVar4 + 1, param_8 + 1, line_ptr);
-            param_1->text_color = saved_color;
+            saved_color = dst->text_color;
+            dst->text_color = 0;
+            DrawTextLine(dst, line_x + 1, y + 1, line_start);
+            dst->text_color = saved_color;
         }
-        DrawTextLine(param_1, iVar4, param_8, line_ptr);
-        *pcVar3 = '\n';
-        line_ptr = pcVar3 + 1;
-        if (g_font_slots[param_1->font_slot].font_loaded == 0)
+        DrawTextLine(dst, line_x, y, line_start);
+        *line_end = '\n';
+        line_start = line_end + 1;
+        if (g_font_slots[dst->font_slot].font_loaded == 0)
         {
-            param_8 = param_8 + (int)g_font_slots[param_1->font_slot].point_size + (int)g_font_slots[param_1->font_slot].unk_06;
+            y = y + (int)g_font_slots[dst->font_slot].point_size + (int)g_font_slots[dst->font_slot].unk_06;
         }
         else
         {
-            param_8 = param_8 + (int)g_font_slots[param_1->font_slot].point_size + g_font_slots[param_1->font_slot].tm_leading;
+            y = y + (int)g_font_slots[dst->font_slot].point_size + g_font_slots[dst->font_slot].tm_leading;
         }
     }
-    if (-1 < param_2)
+    if (-1 < text_color)
     {
-        param_1->text_color = saved_color;
+        dst->text_color = saved_color;
     }
-    return iVar2;
+    return formatted_length;
 }
 
 // FUNCTION: FACEMAKER 0x004088d0
