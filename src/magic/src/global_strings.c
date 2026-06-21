@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include "cardartlib/src/assert.h"
 
-// FUNCTION: MAGIC 0x004ec830
 // FUNCTION: SHANDALAR 0x0056ca10
+// FUNCTION: MAGIC 0x004ec830
 int load_text(const char *file_name, const char *section_name)
 {
   struct
@@ -25,6 +25,8 @@ int load_text(const char *file_name, const char *section_name)
   strcpy(s.path, global_base_directory);
   strcat(s.path, "\\");
   strcat(s.path, file_name);
+  // if (!strchr(file_name, '.'))
+  //   strcat(s.path, ".txt");
 
   s.f = fopen(s.path, "rt");
   if (s.f == NULL)
@@ -61,6 +63,7 @@ int load_text(const char *file_name, const char *section_name)
   return s.num_text;
 }
 
+// FUNCTION: SHANDALAR 0x004629be
 // FUNCTION: MAGIC 0x004eca6d
 int FUN_004eca6d(char *filename, char *section_name)
 {

@@ -21,8 +21,8 @@ typedef char text_100_t[100];
 typedef char text_150_t[0x96];
 typedef char text_300_t[300];
 
-// GLOBAL: SHANDALAR 0x008aa920
 // GLOBAL: MAGIC 0x00896720
+// GLOBAL: SHANDALAR 0x008aa920
 GLOBAL_STRINGS_EXTERN char text_lines[249][300];
 
 // GLOBAL: MAGIC 0x00789460

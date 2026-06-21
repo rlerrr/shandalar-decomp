@@ -417,8 +417,10 @@ extern int unk_008a8c34;
 extern int DAT_008ce4ec;
 
 #ifdef GLOBAL_STATE_IMPL
+// GLOBAL: MAGIC 0x008ce4f4
 int unk_008ce4f4 = -1;
 
+// GLOBAL: MAGIC 0x008ce508
 int unk_008ce508 = -1;
 #else
 extern int unk_008ce4f4;
