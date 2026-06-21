@@ -143,8 +143,6 @@ int DAT_00925d2c;
 HWND DAT_0056ef74;
 
 int InitLicenseSecretsFromRegistry(void);
-card_data_t *shared_global_cards_data(void);
-int shared_CardTypeFromID(int csvid);
 char *CsvParseNextField(char **txt);
 static void FUN_0048fa0a(void);
 static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time);
@@ -161,16 +159,6 @@ void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
 void DestroyCardArtPalette(void);
 
-
-card_data_t *shared_global_cards_data(void)
-{
-  return global_cards_data;
-}
-
-int shared_CardTypeFromID(int csvid)
-{
-  return CardTypeFromID(csvid);
-}
 
 // FUNCTION: MAGIC 0x005532e9
 void FUN_005532e9(void)

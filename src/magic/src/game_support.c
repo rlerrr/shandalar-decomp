@@ -6201,44 +6201,6 @@ int FUN_004a61fe(int *cards, int count, void *context, unsigned int big_card_mod
   return show_cardlist(cards, 0, 0, count, context, big_card_mode, prompt);
 }
 
-// FUNCTION: MAGIC 0x004a59ad
-int CardIDFromType(unsigned int type)
-{
-  if (type == -1)
-  {
-    return -1;
-  }
-  else
-  {
-    type &= 0xfff;
-    return global_cards_data[type].id;
-  }
-}
-
-// FUNCTION: MAGIC 0x004a5929
-int CardTypeFromID(int csvid)
-{
-  int result;
-  int internal_card_id;
-
-  if (csvid == -1)
-  {
-    return -1;
-  }
-  else
-  {
-    result = -1;
-    for (internal_card_id = 0; global_cards_data[internal_card_id].id != -1 && result == -1; ++internal_card_id)
-    {
-      if (global_cards_data[internal_card_id].id == csvid)
-      {
-        result = internal_card_id;
-      }
-    }
-    return result;
-  }
-}
-
 // FUNCTION: MAGIC 0x004ec616
 void FUN_004ec616(HWND param_1)
 {

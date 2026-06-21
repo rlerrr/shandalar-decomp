@@ -17,6 +17,7 @@
 #include "deckdll/src/magsnd.h"
 #include "deckdll/src/shared_resources.h"
 #include "facemaker/src/facemaker_types.h"
+#include <drawcardlib/src/pic.h>
 
 // GLOBAL: SHANDALAR 0x007483f8
 HDC global_main_hdc;
@@ -37,7 +38,7 @@ HINSTANCE DAT_00939160;
 // GLOBAL: SHANDALAR 0x005a1608
 int DAT_005a1608 = 1;
 // GLOBAL: SHANDALAR 0x00986950
-unsigned char *DAT_00986950;
+DIBSurface DAT_00986950;
 // GLOBAL: SHANDALAR 0x00591210
 int DAT_00591210;
 // GLOBAL: SHANDALAR 0x00748418
@@ -51,7 +52,7 @@ UINT DAT_00589de4 = 0x21;
 // GLOBAL: SHANDALAR 0x00589df0
 int DAT_00589df0;
 // GLOBAL: SHANDALAR 0x00589dec
-int DAT_00589dec;
+int DAT_00589dec = 0x30;
 // GLOBAL: SHANDALAR 0x00748400
 int DAT_00748400;
 // GLOBAL: SHANDALAR 0x00748404
@@ -198,7 +199,7 @@ void FUN_00565faa(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
 int FUN_00578c80(int param_1);
 int FUN_00578c20(void);
 int FUN_00578c30(void);
@@ -753,18 +754,6 @@ int FUN_0057c580(int param_1, int param_2, int param_3, const char *param_4, int
   (void)param_5;
   return 0;
 }
-
-card_data_t *shared_global_cards_data(void)
-{
-  return (card_data_t *)0x00594208;
-}
-
-int shared_CardTypeFromID(int csvid)
-{
-  return ((int(__cdecl *)(int))0x00557aa9)(csvid);
-}
-
-
 
 // FUNCTION: SHANDALAR 0x00564ee7
 int FUN_00564ee7(const char *filename)
@@ -1357,9 +1346,8 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
   (void)param_1;
 
   DAT_0078cf08 = fopen("advButtons.txt", "rt");
-  strcpy(DAT_0078df10, "misc.exe");
-  font_cfg_entry = LoadIniEscapedStringTable(DAT_0078cf08, "mgraphic.exe");
-  DAT_0078df38 = *font_cfg_entry;
+  strcpy(DAT_0078df10, "");
+  DAT_0078df38 = LoadIniEscapedStringTable(DAT_0078cf08, "done", DAT_0078df10, 0)[0];
 
   FUN_00578c80(LoadFontConfigIfPresent("misc.exe", (char *)0));
   FUN_00578c80(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
@@ -1398,7 +1386,7 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
 
   for (i = 0; i < 3; i = i + 1)
   {
-    if ((i == 1) && (*(int *)(DAT_00986950 + 0x20) < 0x401))
+    if ((i == 1) && (DAT_00986950.width < 0x401))
     {
       page = CreateGraphicsPage(1, 0x400, 800, 8);
     }
@@ -1441,7 +1429,7 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
     FUN_00578c30();
   }
 
-  return PostMessageA(DAT_00748420, 0x10, 0, 0);
+  PostMessageA(DAT_00748420, 0x10, 0, 0);
 }
 
 // FUNCTION: SHANDALAR 0x004cea4c
@@ -1683,6 +1671,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   FUN_00559999();
 
   /* Switch to executable directory */
+#ifndef _DEBUG
   strcpy(game_dir, (*__p___argv())[0]);
   slash = strrchr(game_dir, '\\');
   if (slash)
@@ -1690,6 +1679,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     *slash = 0;
   }
   _chdir(game_dir);
+#endif
 
   DAT_005a1608 = 0;
   DAT_00939160 = hInstance;
@@ -1790,10 +1780,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   if (show_shell_on_exit)
   {
-    *(HDC *)(DAT_00986950 + 4) = global_main_hdc;
-    SelectPalette(*(HDC *)(DAT_00986950 + 4), *(HPALETTE *)(DAT_00986950 + 0x14), FALSE);
-    RealizePalette(*(HDC *)(DAT_00986950 + 4));
-    SetStretchBltMode(*(HDC *)(DAT_00986950 + 4), 3);
+    DAT_00986950.hTempDC = global_main_hdc;
+    SelectPalette(DAT_00986950.hTempDC, DAT_00986950.hPalette, FALSE);
+    RealizePalette(DAT_00986950.hTempDC);
+    SetStretchBltMode(DAT_00986950.hTempDC, 3);
   }
 
   FUN_004cea02();

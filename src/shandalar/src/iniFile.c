@@ -197,7 +197,7 @@ char *FindIniHeaderEntry(FILE *file, char *headers_section_name, char *entry_nam
 }
 
 // FUNCTION: SHANDALAR 0x004c80d8
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name)
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2)
 {
   char *entry_line;
   int entry_count;

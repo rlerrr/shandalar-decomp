@@ -12,7 +12,13 @@
 #include "shared_startup.h"
 
 extern int global_available_slots;
-extern card_ptr_t global_raw_cards_storage[2000];
+extern card_ptr_t global_raw_cards_storage[];
+extern card_data_t global_cards_data[];
+
+//TODO: REMOVE! when we compile in carddata/cards
+#ifdef SHANDALAR
+card_data_t global_cards_data[722];
+#endif
 
 // GLOBAL: SHANDALAR 0x0093a230
 // GLOBAL: MAGIC 0x00926100
@@ -82,16 +88,50 @@ CRITICAL_SECTION DAT_009266b0;
 // GLOBAL: MAGIC 0x00637a94
 int DAT_00637a94;
 
-int read_db_guts(char *cards_dat_filename);
-card_data_t *shared_global_cards_data(void);
-int shared_CardTypeFromID(int csvid);
-void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
-void DestroyCardArtPalette(void);
-
 static __inline void append_startup_error(char *message_buffer, const char *path, int line_index)
 {
   sprintf(message_buffer + strlen(message_buffer), text_lines[line_index], path);
   strcat(message_buffer, "\n");
+}
+
+// FUNCTION: MAGIC 0x004a59ad
+// FUNCTION: SHANDALAR 0x00557b2d
+int CardIDFromType(unsigned int type)
+{
+  if (type == -1)
+  {
+    return -1;
+  }
+  else
+  {
+    type &= 0xfff;
+    return global_cards_data[type].id;
+  }
+}
+
+// FUNCTION: MAGIC 0x004a5929
+// FUNCTION: SHANDALAR 0x00557aa9
+int CardTypeFromID(int csvid)
+{
+  int result;
+  int internal_card_id;
+
+  if (csvid == -1)
+  {
+    return -1;
+  }
+  else
+  {
+    result = -1;
+    for (internal_card_id = 0; global_cards_data[internal_card_id].id != -1 && result == -1; ++internal_card_id)
+    {
+      if (global_cards_data[internal_card_id].id == csvid)
+      {
+        result = internal_card_id;
+      }
+    }
+    return result;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x00464663
@@ -239,13 +279,11 @@ int FUN_00509210(void)
   {
     int card_index;
     int card_type;
-    card_data_t *cards_data;
   } s;
 
-  s.cards_data = shared_global_cards_data();
   for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
   {
-    s.card_type = shared_CardTypeFromID(s.card_index);
+    s.card_type = CardTypeFromID(s.card_index);
     if (s.card_type == -1)
     {
       continue;
@@ -253,27 +291,27 @@ int FUN_00509210(void)
 
     if (global_raw_cards_storage[s.card_index].rarity == 1)
     {
-      s.cards_data[s.card_type].rarity = 1;
+      global_cards_data[s.card_type].rarity = 1;
     }
     else if (global_raw_cards_storage[s.card_index].rarity == 2)
     {
-      s.cards_data[s.card_type].rarity = 3;
+      global_cards_data[s.card_type].rarity = 3;
     }
     else if (global_raw_cards_storage[s.card_index].rarity == 3)
     {
-      s.cards_data[s.card_type].rarity = 4;
+      global_cards_data[s.card_type].rarity = 4;
     }
     else if (global_raw_cards_storage[s.card_index].rarity == 4)
     {
-      s.cards_data[s.card_type].rarity = 2;
+      global_cards_data[s.card_type].rarity = 2;
     }
     else
     {
-      s.cards_data[s.card_type].rarity = 1;
+      global_cards_data[s.card_type].rarity = 1;
     }
 
-    strncpy((char *)&s.cards_data[s.card_type].name[0], global_raw_cards_storage[s.card_index].full_name, 0x23);
-    ((char *)&s.cards_data[s.card_type].name[0])[0x22] = '\0';
+    strncpy(global_cards_data[s.card_type].name, global_raw_cards_storage[s.card_index].full_name, 0x23);
+    global_cards_data[s.card_type].name[0x22] = '\0';
   }
 
   return 1;
