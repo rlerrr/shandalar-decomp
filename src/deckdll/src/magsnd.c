@@ -99,6 +99,7 @@ int sound_unload(int idx)
 
 // FUNCTION: DECKDLL 0x1002d421
 // FUNCTION: MAGIC 0x0048593f
+// FUNCTION: SHANDALAR 0x0056d081
 void sound_close() {
   if (!global_sound_status)
     return;
