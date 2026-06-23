@@ -1,0 +1,369 @@
+From "Per" at https://slightlymagic.net/forum/viewtopic.php?f=76&t=3485&start=45
+
+
+00001420-00001BEF owned cards (4 bytes per entry)
+   byte 1-2 card
+   (note: high nibble of byte 2 is 4 if the card is not in the
+   current deck, I don't know if this has any significance
+   in Shandalar)
+   byte 3 in deck bitmap
+      1 in deck 1
+      2 in deck 2
+      4 in deck 3
+
+0001EA18 ?
+0001EA1C deck thingy
+   (note: always FF FF FF FF; if set to 1, you and your opponent
+   will split opponent's deck in the next duel; if set to anything
+   else, will give you no deck, a bugged deck, or a crash)
+0001EA20 deck colour bitmap
+   2 black
+   4 blue
+   8 green
+   10 red
+   20 white
+   (note: records the significant colours in your deck for
+   sideboarding purposes; updates only when you win a duel)
+0001EA24 difficulty level
+   0 apprentice
+   1 magician
+   2 sorceror
+   3 wizard
+   (note: if you set difficulty higher than 3, monsters will
+   have more life, the AI will think longer, and it can't be
+   ruled out that problems or crashes may occur)
+0001EA28 ?
+0001EA2C-0001EAEB lairs/wandering monsters (24 bytes per entry)
+   (note: the last slot beginning at 0001EAD4 is used for sieges,
+   if manually entered the creature will besiege the town
+   nearest to the given coordinates even if it's a village)
+   byte 1 type
+      0 lair
+      1-36 monster type
+   (note: FF FF FF FF for none; monsters cannot exist outside
+   of their own elements)
+   bytes 5-6 map coordinate
+   bytes 9-10 map coordinate
+   byte 13 colour
+   (note: determines lair type and which wizard gets the mana
+   tap after a siege)
+   bytes 17-18 facing/movement
+   bytes 21-24 respawn timer
+   (note: when a monster is encountered or a lair explored,
+   this is set to the current time to prevent it from respawning
+   too quickly as a creature, though it can still respawn as a
+   lair; setting all of these to a very high number will result
+   in a monster-free map as long as you don't explore any of the
+   lairs that pop up; may also be negative)
+0001EAEC current map coordinate (2 bytes)
+0001EAF0 current map coordinate (2 bytes)
+   (note: player and monster coordinates are different from
+   and more finely scaled than town or journal coordinates,
+   running roughly from 00 00 to 00 08; x/y axes are tilted
+   back by 45 degrees with respect to the game view)
+0001EAF4 monster timer (4 bytes)
+0001EAF8-00021CF7 towns (100 bytes per entry)
+   byte 1 town type
+      1 village
+      2 city (mana link possible)
+      (note: it is possible to give yourself more than the
+      ordinary life maximum by converting villages into
+      cities)
+      3 city with six cards for sale
+      (note: normal amount is four for villages, five for
+      cities)
+      4 castle
+      5 ruined castle
+      (note: setting a castle to ruined sets that
+      boss to defeated, but setting all five to defeated
+      means you can't fight Arzakon)
+   byte 5 map coordinate
+   byte 9 map coordinate
+   (note: these run roughly from 00 to 40; changing the
+   location of towns or dungeons is likely to just make them
+   disappear because of incompatibility with the map data)
+   byte 13 city card colour (trading, quest rewards)
+      0 any
+      1 colourless
+      2 black
+      4 blue
+      8 green
+      10 red
+      20 white
+   (note: amulet colour is determined by underlying terrain;
+   this entry does not function as a bitmap)
+   byte 14 city card type (trading, quest rewards)
+      0 any
+      1 land
+      2 creatures
+      3 enchantments
+      4 sorceries
+      5 fast effects (instants and interrupts)
+      6 interrupts
+      7 artifacts
+      (note: 6 and 7 are not used in the game; 6 will
+      actually say "Artifacts"; 7 in conjunction with a
+      colour will let you select "coloured artifacts" -
+      Mana Batteries and Celestial Prism - but in the
+      game card type and colour are never specified at
+      the same time)
+   byte 17 status bitmap
+      1 mana link
+      2 visited
+      (note: for cities it means they show up in the city
+      list)
+      4 failed quest
+      8 inventory flag
+      (note: if not set, cards currently in stock will be
+      randomized; since it's set along with the 2 bit when
+      you first enter a town and all cards are restocked
+      anyway at that point the purpose of this bit is
+      unclear)
+   byte 18 ruled by wizard
+   bytes 21-22 card 1
+   bytes 25-26 card 2
+   bytes 29-30 card 3
+   bytes 33-34 card 4
+   bytes 37-38 card 5
+   bytes 41-42 card 6
+   bytes 45-46 card 7
+   bytes 49-50 card 8
+   bytes 53-56 card 1 restock timer
+   bytes 57-60 card 2 restock timer
+   bytes 61-64 card 3 restock timer
+   bytes 65-68 card 4 restock timer
+   bytes 69-72 card 5 restock timer
+   bytes 73-76 card 6 restock timer
+   bytes 77-80 card 7 restock timer
+   bytes 81-84 card 8 restock timer
+   bytes 85-88 quest renewal timer
+   bytes 89-92 city trade timer
+   (note: these timers are all originally 18 FC FF FF; once you
+   purchase a card, accept a quest or enter the amulet trade
+   interface the corresponding entry will note the current time
+   according to the 000224B0 timer; after some time has passed
+   the card will be replaced or a new quest or trade offered
+   as appropriate)
+   bytes 93-96 times entered
+   (note: counts up from -1)
+   bytes 97-100 time of last visit
+   (note: uses the timer at 000224B0)
+00021CF8-00021D0B current quest (20 bytes)
+   bytes 1-4 quest type
+      0 letter for mana link
+      1 bring card for mana link and amulet
+      (note: you only get a mana link if destination
+      is a city)
+      2 letter for amulet
+      C9 FF FF FF-FF FF FF FF defeat creature
+      (note: count backwards to get creature type, e.g.
+      FF FF FF FF for Witch, C9 FF FF FF for Kiska-Ra)
+      66 FF FF FF-9B FF FF FF collect reward for creature
+      (note: count backwards as above; if you enter
+      65 FF FF FF the townspeople will reward you with
+      15 amulets for ridding them of the "pesky Arzakon")
+   byte 5 destination town
+   (note: reward type and/or amount is mostly defined by
+   quest type and destination town data; FF FF FF FF for no
+   ongoing quest)
+   byte 9 colour (for bring card and/or amulet reward)
+   bytes 13-16 ?
+   bytes 17-20 deadline
+   (note: uses the timer at 000224B0)
+00021D0C-00021D1F amulets (4 bytes per entry)
+00021D20 gold (4 bytes)
+00021D24 food (4 bytes)
+00021D28-0002210F duel victories (1 byte per entry)
+   (note: high nibble specifies colour, low nibble denotes a
+   monster type as listed below; on Apprentice level two
+   identical entries will make the corresponding monster(s)
+   offer you riddles, while three make them flee and/or offer
+   you tribute; on Magician level you need four and five
+   entries, respectively; on Sorceror or Wizard level five
+   entries make them offer you tribute but there are never
+   any riddles; the ten two-colour monsters set high nibble
+   and check for scaredness depending on in which terrain
+   you encounter or fight them and may "overlap" with other
+   monsters; fights in lairs, mana domes, dungeons or castles
+   do not create entries)
+   1 cleric, conjurer, druid, fungus master, sorcerer, warlock
+   2 elementalist, enchantress, priestess, seer, sorceress,
+   witch
+   3 crusader, elvish magi, lord of fate, undead knight
+   4 ape lord, beastmaster, goblin lord, mind stealer,
+   paladin, tusk guardian, vampire lord
+   5 aga galneer, alt-a-kesh, queltosh, saltrem tor
+   6 merfolk shaman, sedge beast, troll shaman
+   7 forest dragon, hydra, sea dragon
+   8 centaur shaman, centaur warchief, dracur, kiska-ra,
+   mandurang, prismat, whim
+   9 nether fiend, winged stallion
+   A arch angel, shapeshifter
+   B high priest, necromancer, summoner, thought invoker,
+   war mage
+00022110 world magics bitmap 1
+   1 sleight of hand
+   2 haggler's coin
+   4 conjurer's will
+   8 amulet of swampwalk
+   10 leap of fate
+   20 tome of enlightenment
+   40 quickening
+   80 fruit of sustenance
+00022111 world magics bitmap 2
+   1 staff of thunder
+   2 dwarven pick
+   4 sword of resistance
+   8 ring of the guardian
+00022114-000221D3 world magics data (16 bytes each)
+   bytes 1-2 ?
+   (note: like price, this is constant during games and
+   between games)
+   bytes 5-8 price
+   (note: actual price will be half this value; if you insert a
+   negative price you will get money)
+   byte 9 city
+   (note: you can stick all world magics in one city then buy
+   them one at a time by repeatedly leaving and entering;
+   Haggler's Coin, Tome of Enlightenment, Fruit of Sustenance
+   and Ring of the Guardian will not work unless the
+   corresponding city entry is zero; world magics cannot be
+   bought from villages)
+   bytes 13-16 duration
+   (note: only used for Quickening; if set to a negative
+   value, e.g. FF FF FF FF, the effect becomes permanent
+   unless reactivated, even if you don't have Quickening)
+000221D4 defeated wizards bitmap
+   2 black
+   4 blue
+   8 green
+   10 red
+   20 white
+   (note: this is used to determine whether wandering monsters
+   of a certain colour spawn; if set to 3E, you will never
+   see wandering monsters or lairs, though sieges still occur)
+000221D8-000224A7 castles/dungeons (48 bytes each)
+   bytes 1-2 card 1
+   bytes 5-6 card 2
+   bytes 9-10 card 3
+   (note: FF FF FF FF for gold/jewels; you can give cards to
+   castles, but the third will be replaced by the boss;
+   dungeons disappear when the card in the first slot is
+   taken, regardless of whether there are others left)
+   bytes 13-14 card in effect
+   (note: FF FF FF FF for none; does correspond to the card
+   identifiers in Info.csv, e.g. 00 00 is Air Elemental,
+   while the dungeon cards do not; cards that may help you
+   include 3D 00 (Demonic Hordes), 64 00 (Gloom), 72 00
+   (Howling Mine), 86 00 (Karma) or D6 02 (Moat))
+   byte 17 map coordinate
+   byte 21 map coordinate
+   byte 25 town ("North of...")
+   byte 29 colour
+   (note: changing the colour of a castle changes the colour
+   of the boss therein and what free cards you get to pick but
+   also messes up some statistics)
+   byte 30 monsters
+   (note: high nibble is 8 for "large" creatures, 0 for "small",
+   though the dungeon clues will always read large for castles
+   and small for dungeons; low nibble unknown, it's always 1
+   for castles, 2 for dungeons with large creatures, and 3 for
+   dungeons with small creatures)
+   byte 33 clues bitmap
+      1 location
+      2 creatures
+      4 rules
+   (note: having any one will reveal what cards the
+   location contains and put it on the world map in the case
+   of dungeons; entering and leaving a dungeon sets this to 6)
+   byte 37 rules bitmap
+      1 life carried over
+      2 remaining life added
+      10 no cards of dungeon's colour
+      20 one deck (?)
+      40 no artifacts
+      80 no instants or interrupts
+   bytes 41-44 times entered
+   (note: counts up from -1)
+   bytes 45-48 ?
+   (note: possibly unused, never seems to be anything other
+   than FF FF FF FF)
+000224A8 siege timer (4 bytes)
+   (note: sieges are initiated and - unless dealt with -
+   completed in accordance with this; goes faster on higher
+   difficulty levels; the higher this timer, the stronger
+   creatures you will fight in mana domes)
+000224AC number of lairs explored (4 bytes)
+   (note: as this counter goes up, you will find less lairs
+   and encounter stronger wandering monsters)
+000224B0 quest and restocking timer (4 bytes)
+   (note: goes about 1/45 as fast as the monster timer)
+000224B4 gender
+   0 female
+   1 male
+000224B8 starting colour
+   (note: I don't know if this affects anything other than the
+   coloured box on the character screen)
+000224BC extra life in next duel (4 bytes)
+   (note: count down from FF FF FF FF to get a life penalty, e.g.
+   FE FF FF FF is -2)
+000224C0 card in next duel (2 bytes)
+000224C4 current deck
+   0 deck 1
+   1 deck 2
+   2 deck 3
+000224C8-0002A1C7 journal (16 bytes per entry)
+   (note: journal forms the basis of win/loss record and other
+   statistics, but not life or wizard stats or whether you are
+   feared by creatures; also it doesn't even work very well in
+   the game, with entries turning up blank or incomplete)
+   byte 1 event
+      1 visited town
+      2 defeated/lost to
+      3 entered dungeon
+      4 entered castle
+      5 explored lair
+      (note: if you only find a card, it results in an
+      "acquired spell" entry instead)
+      6 bought world magic
+      7 freed city
+      8-A acquired spell (defines high byte of card
+      identifier)
+      D saved city
+      F received quest (not displayed)
+      10 completed quest
+      11 failed quest (not displayed)
+      12 used world magic
+         2 leap of fate
+         3 quickening
+         4 staff of thunder
+         5 sword of resistance
+      (note: Conjurer's Will is not logged)
+      13 got dungeon treasure (not displayed)
+   bytes 5-8 qualifiers (enemy, card, town, quest type etc.)
+   (note: for won/lost, high nibble 8 means victory; for
+   card, only the low byte; for using world magic see above)
+   byte 9 map coordinate
+   byte 13 map coordinate
+0002A1C8 current journal length (2 bytes)
+   (note: goes to D0 07 - 2000 entries - then stops logging;
+   in-game journal only reads to the first blank entry)
+0002A1CC ?
+   (note: possibly unused, never seems to be anything other
+   than FF FF FF FF)
+0002A1D0 ?
+   (note: always seems to be 1)
+0002A1D4 your primary colour in last duel
+0002A1D8 enemy primary colour in last duel
+0002A1DC ?
+   (note: 0 before your first duel, then seemingly always 2)
+0002A1E0-0002A21F name
+   (note: ends at the first binary zero; name can contain 63
+   letters even though the game will only let you enter 25
+   when you start a new game, however if you make it longer
+   than 55 letters it will crash the game at certain points)
+0002A220 siege indicator
+   (note: will always be 0 when there is no ongoing siege,
+   changes to 1 when a siege starts; changing it back to 0
+   does not have any apparent effect, so its purpose is
+   unclear)
