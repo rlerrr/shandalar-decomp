@@ -76,43 +76,46 @@ typedef struct
 
 typedef struct
 {
-  int unk_00;
-  int unk_04;
-  int unk_08;
-  int unk_0c;
-  int unk_10;
-  int unk_14;
+  int entry_type;        // +0x00 (0=lair, 1..=monster type)
+  int world_x;           // +0x04
+  int world_y;           // +0x08
+  int color;             // +0x0c
+  int movement_heading;  // +0x10
+  int respawn_timestamp; // +0x14
 } ShandalarCardSlot;
+STATIC_ASSERT(sizeof(ShandalarCardSlot) == 0x18, shandalar_card_slot_wrong_size);
 
 typedef struct
 {
-  int unk_00;
-  int unk_04;
-  int unk_08;
-  int unk_0c;
-  int unk_10;
-  int unk_14;
-  int unk_18;
-  unsigned char unk_1c;
-  unsigned char unk_1d;
-  unsigned char unk_1e;
-  unsigned char unk_1f;
-  int unk_20;
-  unsigned int unk_24;
-  int unk_28;
-  int unk_2c;
+  int card_slot_1;            // +0x00
+  int card_slot_2;            // +0x04
+  int card_slot_3;            // +0x08
+  int card_in_effect;         // +0x0c
+  int world_x;                // +0x10
+  int world_y;                // +0x14
+  int north_of_town_index;    // +0x18
+  unsigned char color;        // +0x1c
+  unsigned char monster_flags; // +0x1d
+  unsigned char pad_1e;       // +0x1e
+  unsigned char pad_1f;       // +0x1f
+  int clues_bitmap;           // +0x20
+  unsigned int rules_bitmap;  // +0x24
+  int times_entered;          // +0x28
+  int reserved_2c;            // +0x2c
 } ShandalarEncounterSlot;
+STATIC_ASSERT(sizeof(ShandalarEncounterSlot) == 0x30, shandalar_encounter_slot_wrong_size);
 
 typedef struct
 {
-  int kind;        // +0x00
-  int x;           // +0x04
-  int y;           // +0x08
-  int unk_0c;      // +0x0c
-  int flags_owner; // +0x10
-  int unk_14;      // +0x14
-  unsigned char unk_18_to_63[0x4c];
+  int location_type;           // +0x00
+  int world_x;                 // +0x04
+  int world_y;                 // +0x08
+  int trade_color_and_type;    // +0x0c
+  int status_and_ruling_wizard; // +0x10
+  int card_slot_1;             // +0x14
+  unsigned char data_18_to_63[0x4c];
 } WorldNode;
+STATIC_ASSERT(sizeof(WorldNode) == 100, world_node_wrong_size);
 
 // GLOBAL: MAGIC 0x0056fb20
 // GLOBAL: SHANDALAR 0x0058d3c8
@@ -520,7 +523,7 @@ GLOBAL_STATE_EXTERN int DAT_008cdab0;
 GLOBAL_STATE_EXTERN int DAT_0057a750;
 // GLOBAL: MAGIC 0x0057a754
 // GLOBAL: SHANDALAR 0x00591204
-GLOBAL_STATE_EXTERN int DAT_0057a754;
+GLOBAL_STATE_EXTERN int g_selected_wizard_color;
 
 // GLOBAL: MAGIC 0x008ce530
 // GLOBAL: SHANDALAR 0x008e26b0
@@ -612,7 +615,7 @@ GLOBAL_STATE_EXTERN int DAT_0091c9a8;
 
 // GLOBAL: MAGIC 0x0091d254
 // GLOBAL: SHANDALAR 0x00931384
-GLOBAL_STATE_EXTERN int DAT_0091d254;
+GLOBAL_STATE_EXTERN int g_last_duel_enemy_primary_color;
 
 // GLOBAL: MAGIC 0x0092636c
 GLOBAL_STATE_EXTERN int DAT_0092636c;
@@ -647,7 +650,7 @@ GLOBAL_STATE_EXTERN int DAT_008a8ffc;
 
 // GLOBAL: MAGIC 0x008b2874
 // GLOBAL: SHANDALAR 0x008c6a24
-GLOBAL_STATE_EXTERN int DAT_008b2874;
+GLOBAL_STATE_EXTERN int g_last_duel_player_primary_color;
 
 // GLOBAL: MAGIC 0x008b3240
 // GLOBAL: SHANDALAR 0x008c73f0
@@ -658,7 +661,7 @@ GLOBAL_STATE_EXTERN int DAT_008b323c;
 
 // GLOBAL: MAGIC 0x008b32c0
 // GLOBAL: SHANDALAR 0x008c746c
-GLOBAL_STATE_EXTERN int DAT_008b32c0;
+GLOBAL_STATE_EXTERN int g_last_duel_result_state;
 
 // GLOBAL: MAGIC 0x008b33fc
 // GLOBAL: SHANDALAR 0x008c759c
@@ -746,63 +749,63 @@ GLOBAL_STATE_EXTERN unsigned char DAT_00925450[0x640];
 
 // GLOBAL: MAGIC 0x0070a840
 // GLOBAL: SHANDALAR 0x007817f0
-GLOBAL_STATE_EXTERN unsigned char g_world_spawn_records[800][4];
+GLOBAL_STATE_EXTERN int g_journal_entries[2000][4];
 
 // GLOBAL: MAGIC 0x00712540
 // GLOBAL: SHANDALAR 0x007894f0
-GLOBAL_STATE_EXTERN int DAT_00712540;
+GLOBAL_STATE_EXTERN int g_current_quest_color;
 
 // GLOBAL: MAGIC 0x00712550
 // GLOBAL: SHANDALAR 0x00789500
-GLOBAL_STATE_EXTERN unsigned char DAT_00712550[1000];
+GLOBAL_STATE_EXTERN unsigned char g_duel_victory_log[1000];
 
 // GLOBAL: MAGIC 0x0071293c
 // GLOBAL: SHANDALAR 0x00789904
-GLOBAL_STATE_EXTERN int DAT_0071293c;
+GLOBAL_STATE_EXTERN int g_defeated_wizards_bitmap;
 
 // GLOBAL: MAGIC 0x00712940
 // GLOBAL: SHANDALAR 0x00789910
-GLOBAL_STATE_EXTERN unsigned char DAT_00712940[0x14];
+GLOBAL_STATE_EXTERN unsigned char g_amulet_inventory[0x14];
 
 // GLOBAL: MAGIC 0x00712954
 // GLOBAL: SHANDALAR 0x0078992c
-GLOBAL_STATE_EXTERN int DAT_00712954;
+GLOBAL_STATE_EXTERN int g_current_quest_deadline;
 
 // GLOBAL: MAGIC 0x00712958
 // GLOBAL: SHANDALAR 0x00789930
-GLOBAL_STATE_EXTERN int DAT_00712958;
+GLOBAL_STATE_EXTERN int g_journal_entry_count;
 
 // GLOBAL: MAGIC 0x00712960
 // GLOBAL: SHANDALAR 0x00789940
-GLOBAL_STATE_EXTERN WorldNode g_world_nodes[128];
+GLOBAL_STATE_EXTERN WorldNode g_town_slots[128];
 
 // GLOBAL: MAGIC 0x00715b60
 // GLOBAL: SHANDALAR 0x0078cb40
-GLOBAL_STATE_EXTERN ShandalarEncounterSlot g_encounter_slots[15];
+GLOBAL_STATE_EXTERN ShandalarEncounterSlot g_castle_dungeon_slots[15];
 
 // GLOBAL: MAGIC 0x00715e30
 // GLOBAL: SHANDALAR 0x0078ce10
-GLOBAL_STATE_EXTERN int DAT_00715e30;
+GLOBAL_STATE_EXTERN int g_current_quest_type;
 
 // GLOBAL: MAGIC 0x00715e40
 // GLOBAL: SHANDALAR 0x0078ce20
-GLOBAL_STATE_EXTERN ShandalarCardSlot g_card_slots[8];
+GLOBAL_STATE_EXTERN ShandalarCardSlot g_lair_or_monster_slots[8];
 
 // GLOBAL: MAGIC 0x00715f00
 // GLOBAL: SHANDALAR 0x0078cee4
-GLOBAL_STATE_EXTERN int DAT_00715f00;
+GLOBAL_STATE_EXTERN int g_world_magic_bitmap;
 
 // GLOBAL: MAGIC 0x00715f04
 // GLOBAL: SHANDALAR 0x0078cf00
-GLOBAL_STATE_EXTERN int DAT_00715f04;
+GLOBAL_STATE_EXTERN int g_monster_timer;
 
 // GLOBAL: MAGIC 0x00715f08
 // GLOBAL: SHANDALAR 0x0078cf04
-GLOBAL_STATE_EXTERN int DAT_00715f08;
+GLOBAL_STATE_EXTERN int g_shandalar_difficulty;
 
 // GLOBAL: MAGIC 0x00715f0c
 // GLOBAL: SHANDALAR 0x0078df30
-GLOBAL_STATE_EXTERN int DAT_00715f0c;
+GLOBAL_STATE_EXTERN int g_lairs_explored;
 
 // GLOBAL: MAGIC 0x00715f10
 // GLOBAL: SHANDALAR 0x0078df34
@@ -810,7 +813,7 @@ GLOBAL_STATE_EXTERN int DAT_00715f10;
 
 // GLOBAL: MAGIC 0x00715f18
 // GLOBAL: SHANDALAR 0x0078df6c
-GLOBAL_STATE_EXTERN int DAT_00715f18;
+GLOBAL_STATE_EXTERN int g_current_quest_data;
 
 // GLOBAL: MAGIC 0x00716024
 // GLOBAL: SHANDALAR 0x0074c0e8
@@ -826,7 +829,7 @@ GLOBAL_STATE_EXTERN int DAT_007161cc;
 
 // GLOBAL: MAGIC 0x0071623c
 // GLOBAL: SHANDALAR 0x0074cfe8
-GLOBAL_STATE_EXTERN int DAT_0071623c;
+GLOBAL_STATE_EXTERN int g_next_duel_life_delta;
 
 // GLOBAL: MAGIC 0x00716244
 // GLOBAL: SHANDALAR 0x0074d26c
@@ -850,23 +853,23 @@ GLOBAL_STATE_EXTERN int DAT_0074302c;
 
 // GLOBAL: MAGIC 0x00748768
 // GLOBAL: SHANDALAR 0x0073ea20
-GLOBAL_STATE_EXTERN int DAT_00748768;
+GLOBAL_STATE_EXTERN int g_quest_restock_timer;
 
 // GLOBAL: MAGIC 0x007497a8
 // GLOBAL: SHANDALAR 0x005911f8
-GLOBAL_STATE_EXTERN int DAT_007497a8;
+GLOBAL_STATE_EXTERN int g_world_player_x;
 
 // GLOBAL: MAGIC 0x007497ac
 // GLOBAL: SHANDALAR 0x005911fc
-GLOBAL_STATE_EXTERN int DAT_007497ac;
+GLOBAL_STATE_EXTERN int g_world_player_y;
 
 // GLOBAL: MAGIC 0x007497bc
 // GLOBAL: SHANDALAR 0x0073ea64
-GLOBAL_STATE_EXTERN int DAT_007497bc;
+GLOBAL_STATE_EXTERN int g_siege_indicator;
 
 // GLOBAL: MAGIC 0x007497c0
 // GLOBAL: SHANDALAR 0x0059120c
-GLOBAL_STATE_EXTERN int DAT_007497c0;
+GLOBAL_STATE_EXTERN int g_siege_timer;
 
 // GLOBAL: MAGIC 0x007497d0
 // GLOBAL: SHANDALAR 0x00591228
@@ -874,7 +877,7 @@ GLOBAL_STATE_EXTERN char g_name_entry_buffer[0x40];
 
 // GLOBAL: MAGIC 0x0074a22c
 // GLOBAL: SHANDALAR 0x0073ea88
-GLOBAL_STATE_EXTERN int DAT_0074a22c;
+GLOBAL_STATE_EXTERN int g_starting_color;
 
 // GLOBAL: MAGIC 0x0077784c
 // GLOBAL: SHANDALAR 0x0078e5d8
@@ -929,19 +932,19 @@ GLOBAL_STATE_EXTERN int DAT_0057b178;
 
 // GLOBAL: MAGIC 0x0057d9e0
 // GLOBAL: SHANDALAR 0x005863a8
-GLOBAL_STATE_EXTERN int DAT_0057d9e0;
+GLOBAL_STATE_EXTERN int g_food;
 
 // GLOBAL: MAGIC 0x0057d9e8
 // GLOBAL: SHANDALAR 0x005863b0
-GLOBAL_STATE_EXTERN int DAT_0057d9e8;
+GLOBAL_STATE_EXTERN int g_current_quest_destination;
 
 // GLOBAL: MAGIC 0x0057d9ec
 // GLOBAL: SHANDALAR 0x005863b4
-GLOBAL_STATE_EXTERN int DAT_0057d9ec;
+GLOBAL_STATE_EXTERN int g_next_duel_card_id;
 
 // GLOBAL: MAGIC 0x0057a758
 // GLOBAL: SHANDALAR 0x00591208
-GLOBAL_STATE_EXTERN int DAT_0057a758;
+GLOBAL_STATE_EXTERN int g_deck_color_bitmap;
 
 // GLOBAL: MAGIC 0x008cfd70
 // GLOBAL: SHANDALAR 0x008e3ec0

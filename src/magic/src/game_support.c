@@ -2288,7 +2288,7 @@ int FUN_0043e18b(int player)
 
   if (player == unk_008b35ec)
   {
-    if (DAT_0057a754 == -1)
+    if (g_selected_wizard_color == -1)
     {
       s.drawn_card = global_library[player][0];
       if (s.drawn_card != -1)
@@ -2299,7 +2299,7 @@ int FUN_0043e18b(int player)
     }
     else
     {
-      s.drawn_card = add_card_to_hand(player, FUN_0046489e(DAT_0057a754));
+      s.drawn_card = add_card_to_hand(player, FUN_0046489e(g_selected_wizard_color));
     }
 
     if (s.drawn_card != -1 && PLAYER_CARD_INSTANCE(player, s.drawn_card).internal_card_id != -1)

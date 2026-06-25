@@ -618,21 +618,21 @@ int FUN_0055db50(void)
     case 0:
       while (1)
       {
-        DAT_00715f08 = RunDifficultyMenu();
+        g_shandalar_difficulty = RunDifficultyMenu();
         AnimatePaletteToColor(0, DAT_00589dec);
-        if (DAT_00715f08 == -1)
+        if (g_shandalar_difficulty == -1)
         {
           break;
         }
 
         while (1)
         {
-          DAT_0057a754 = RunColorMenu();
-          DAT_0074a22c = DAT_0057a754;
-          DAT_0091c99c = DAT_0057a754;
+          g_selected_wizard_color = RunColorMenu();
+          g_starting_color = g_selected_wizard_color;
+          DAT_0091c99c = g_selected_wizard_color;
           DAT_0091c9a0 = FUN_00522508(3);
           AnimatePaletteToColor(0, DAT_00589dec);
-          if (DAT_0074a22c == -1)
+          if (g_starting_color == -1)
           {
             break;
           }
@@ -644,7 +644,7 @@ int FUN_0055db50(void)
             continue;
           }
 
-          DAT_0057a758 = 1 << ((unsigned char)DAT_0057a754 & 0x1f);
+          g_deck_color_bitmap = 1 << ((unsigned char)g_selected_wizard_color & 0x1f);
           LoadPcxIntoPageNoPalette("advfac64.pic");
           LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
           BlitGraphicsRect((int *)PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, (int *)PTR_DAT_005832b4, 0, 0);
@@ -658,25 +658,25 @@ int FUN_0055db50(void)
           FUN_004bdd0a();
           FUN_004f6d90();
           FUN_005081fa();
-          Gold = (5 - DAT_00715f08) * 0x32;
+          Gold = (5 - g_shandalar_difficulty) * 0x32;
           DAT_00591214 = 0;
           do
           {
             do
             {
               random_value = FUN_00522508(0x40);
-              DAT_007497a8 = random_value * 0x20 + 0x10;
+              g_world_player_x = random_value * 0x20 + 0x10;
               random_value = FUN_00522508(0x40);
-              DAT_007497ac = random_value * 0x20 + 0x10;
+              g_world_player_y = random_value * 0x20 + 0x10;
               tile_mask =
-                  FUN_0043146b((DAT_007497a8 + ((int)DAT_007497a8 >> 0x1f & 0x1fU)) >> 5,
-                               (DAT_007497ac + ((int)DAT_007497ac >> 0x1f & 0x1fU)) >> 5);
+                  FUN_0043146b((g_world_player_x + ((int)g_world_player_x >> 0x1f & 0x1fU)) >> 5,
+                               (g_world_player_y + ((int)g_world_player_y >> 0x1f & 0x1fU)) >> 5);
               tile_mask = FUN_005611c8(tile_mask);
-            } while ((DAT_0057a758 & tile_mask) == 0);
+            } while ((g_deck_color_bitmap & tile_mask) == 0);
 
             tile_mask =
-                FUN_004314ca((DAT_007497a8 + ((int)DAT_007497a8 >> 0x1f & 0x1fU)) >> 5,
-                             (DAT_007497ac + ((int)DAT_007497ac >> 0x1f & 0x1fU)) >> 5);
+                FUN_004314ca((g_world_player_x + ((int)g_world_player_x >> 0x1f & 0x1fU)) >> 5,
+                             (g_world_player_y + ((int)g_world_player_y >> 0x1f & 0x1fU)) >> 5);
           } while ((tile_mask & 0x10) != 0);
 
           FUN_005019ad(3);
@@ -724,9 +724,9 @@ int FUN_0055db50(void)
 
     for (i = 0; i < 0x80; i = i + 1)
     {
-      if (g_world_nodes[i].kind == 5)
+      if (g_town_slots[i].location_type == 5)
       {
-        tile_mask = FUN_0043146b(g_world_nodes[i].x, g_world_nodes[i].y);
+        tile_mask = FUN_0043146b(g_town_slots[i].world_x, g_town_slots[i].world_y);
         tile_mask = FUN_005611c8(tile_mask);
         random_value = FUN_0040dffd((unsigned char)tile_mask);
         DAT_0073ea70[random_value - 1] = 1;
@@ -764,7 +764,7 @@ int FUN_0055db50(void)
     while (DAT_009300f0 == 0)
     {
       ConsumeUiTickCount();
-      FUN_0054ac08(DAT_007497a8, DAT_007497ac, DAT_00669710);
+      FUN_0054ac08(g_world_player_x, g_world_player_y, DAT_00669710);
       DAT_00669710 = 0;
       do
       {
@@ -782,7 +782,7 @@ int FUN_0055db50(void)
       FUN_00561647();
       FUN_0046eca4();
       FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
-      DAT_00715f04 = DAT_00715f04 + 1;
+      g_monster_timer = g_monster_timer + 1;
       FUN_004ecfa2();
       FUN_004ecfe3();
       _setjmp3(&DAT_0073e9e0, 0);
@@ -1807,19 +1807,19 @@ void FUN_004bdd0a(void)
         DAT_008c7408[locals.local_10] = -1;
       }
 
-      DAT_00715f00 = DAT_00715f00 | (1 << (DAT_0057a754 * 2));
-      DAT_005863c8[DAT_0057a754].unk_00 = 0;
+      g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
+      DAT_005863c8[g_selected_wizard_color].unk_00 = 0;
 
-      locals.uVar2 = 1 << (BYTE)DAT_0057a754;
-      locals.local_8 = DAT_00715f08 + 1;
+      locals.uVar2 = 1 << (BYTE)g_selected_wizard_color;
+      locals.local_8 = g_shandalar_difficulty + 1;
       locals.local_4 = locals.local_8;
-      if (DAT_00715f08 == 3)
+      if (g_shandalar_difficulty == 3)
       {
         locals.local_8 = 1;
         locals.local_8 = 3;
       }
 
-      locals.local_1c = DAT_00715f08;
+      locals.local_1c = g_shandalar_difficulty;
       switch (locals.local_1c)
       {
       case 0:
@@ -1848,14 +1848,14 @@ void FUN_004bdd0a(void)
         break;
       }
 
-      DAT_00712958 = 0;
+      g_journal_entry_count = 0;
       for (locals.local_10 = 0; locals.local_10 < 5; locals.local_10 = locals.local_10 + 1)
       {
         DAT_00789910[locals.local_10] = 0;
       }
 
-      DAT_0078990c[DAT_0057a754] = DAT_0078990c[DAT_0057a754] + 1;
-      for (locals.local_10 = 0; locals.local_10 < 3 - DAT_00715f08; locals.local_10 = locals.local_10 + 1)
+      DAT_0078990c[g_selected_wizard_color] = DAT_0078990c[g_selected_wizard_color] + 1;
+      for (locals.local_10 = 0; locals.local_10 < 3 - g_shandalar_difficulty; locals.local_10 = locals.local_10 + 1)
       {
         locals.local_18 = FUN_00522508(5);
         DAT_00789910[locals.local_18] = DAT_00789910[locals.local_18] + 1;
@@ -1863,17 +1863,17 @@ void FUN_004bdd0a(void)
 
       for (locals.local_10 = 0; locals.local_10 < 0x80; locals.local_10 = locals.local_10 + 1)
       {
-        g_world_nodes[locals.local_10].kind = -1;
+        g_town_slots[locals.local_10].location_type = -1;
       }
 
       for (locals.local_10 = 0; locals.local_10 < 8; locals.local_10 = locals.local_10 + 1)
       {
-        g_card_slots[locals.local_10].unk_00 = -1;
+        g_lair_or_monster_slots[locals.local_10].entry_type = -1;
       }
 
       for (locals.local_10 = 0; locals.local_10 < 1000; locals.local_10 = locals.local_10 + 1)
       {
-        DAT_00712550[0] = 0;
+        g_duel_victory_log[0] = 0;
       }
 
       for (locals.local_10 = 0; locals.local_10 < 4; locals.local_10 = locals.local_10 + 1)
@@ -1885,7 +1885,7 @@ void FUN_004bdd0a(void)
       {
         deck[locals.local_10] = deck[locals.local_10] | 0x10000;
       }
-      DAT_0057a754 = -1;
+      g_selected_wizard_color = -1;
     }
   }
 }
@@ -1953,7 +1953,7 @@ int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, in
     }
 
     local_14 = FUN_0056bcf7((-(unsigned int)(local_18 == 0) & 0xffffffc4) + 0x40, local_1c);
-    if (((DAT_00715f08 == 0) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
+    if (((g_shandalar_difficulty == 0) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
         ((global_cards_data[local_14].extra_ability & 0x900) != 0))
     {
       local_10 = local_10 - 1;
@@ -1991,7 +1991,7 @@ int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, in
   for (local_10 = 0; local_10 < param_4; local_10 = local_10 + 1)
   {
     local_14 = FUN_0056bcf7(2, param_1);
-    if (((DAT_00715f08 < 4) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
+    if (((g_shandalar_difficulty < 4) && ((global_cards_data[local_14].static_ability & 3) != 0)) ||
         ((global_cards_data[local_14].extra_ability & 0x900) != 0))
     {
       local_10 = local_10 - 1;
@@ -2034,7 +2034,7 @@ int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, in
       } while (iVar2 == 0);
       iVar2 = FUN_0056c5ea(local_14);
     } while ((iVar2 < 3) || ((iVar2 = FUN_004bb1cf(local_14), iVar2 < 1)) ||
-             ((DAT_00715f08 == 0 && ((global_cards_data[local_14].static_ability & 3) != 0))) ||
+             ((g_shandalar_difficulty == 0 && ((global_cards_data[local_14].static_ability & 3) != 0))) ||
              ((global_cards_data[local_14].extra_ability & 0x900) != 0) ||
              ((global_cards_data[local_14].expansion & 0xc1) == 0));
   }
@@ -2196,12 +2196,12 @@ int FUN_004bb1cf(unsigned int param_1)
       }
     }
 
-    DAT_0057a758 = 0;
+    g_deck_color_bitmap = 0;
     for (local_28 = 1; local_28 < 7; local_28 = local_28 + 1)
     {
       if ((int)(local_24 * 2) / 3 <= aiStack_20[local_28])
       {
-        DAT_0057a758 = DAT_0057a758 | (1 << ((unsigned char)local_28 & 0x1f));
+        g_deck_color_bitmap = g_deck_color_bitmap | (1 << ((unsigned char)local_28 & 0x1f));
       }
     }
 
@@ -2214,7 +2214,7 @@ int FUN_004bb1cf(unsigned int param_1)
     {
       local_24 = 3;
     }
-    if ((DAT_00715f00 & 0x20) != 0)
+    if ((g_world_magic_bitmap & 0x20) != 0)
     {
       local_24 = local_24 + 1;
     }
@@ -2227,7 +2227,7 @@ int FUN_004bb1cf(unsigned int param_1)
     }
     else
     {
-      local_24 = (unsigned int)(DAT_00715f08 <= (int)local_24);
+      local_24 = (unsigned int)(g_shandalar_difficulty <= (int)local_24);
     }
     local_30 = (int)local_24 - local_30;
   }
@@ -2256,13 +2256,13 @@ int FUN_004bb458(int param_1)
 // FUNCTION: SHANDALAR 0x004290e2
 void FUN_004290e2(int param_1, int param_2)
 {
-  if (DAT_00712958 < 2000)
+  if (g_journal_entry_count < 2000)
   {
-    g_world_spawn_records[DAT_00712958][0] = param_1;
-    g_world_spawn_records[DAT_00712958][1] = param_2;
-    g_world_spawn_records[DAT_00712958][2] = (DAT_007497a8 + ((DAT_007497a8 >> 0x1f) & 0x1fU)) >> 5;
-    g_world_spawn_records[DAT_00712958][3] = (DAT_007497ac + ((DAT_007497ac >> 0x1f) & 0x1fU)) >> 5;
-    DAT_00712958 = DAT_00712958 + 1;
+    g_journal_entries[g_journal_entry_count][0] = param_1;
+    g_journal_entries[g_journal_entry_count][1] = param_2;
+    g_journal_entries[g_journal_entry_count][2] = (g_world_player_x + ((g_world_player_x >> 0x1f) & 0x1fU)) >> 5;
+    g_journal_entries[g_journal_entry_count][3] = (g_world_player_y + ((g_world_player_y >> 0x1f) & 0x1fU)) >> 5;
+    g_journal_entry_count = g_journal_entry_count + 1;
   }
 }
 
@@ -2520,7 +2520,7 @@ void FUN_004f6d90(void)
         FUN_004f78d3();
         for (local_14 = 0; local_14 < 7; local_14 = local_14 + 1)
         {
-          g_card_slots[local_14].unk_14 = (4 - DAT_00715f08) * local_14 * -100;
+          g_lair_or_monster_slots[local_14].respawn_timestamp = (4 - g_shandalar_difficulty) * local_14 * -100;
         }
         return;
       }
@@ -2551,8 +2551,8 @@ void FUN_004f78d3(void)
 
   for (local_1c = 0; local_1c < 0x80; local_1c = local_1c + 1)
   {
-    location_data = &g_world_nodes[local_1c];
-    for (local_28 = 0; local_28 < location_data->kind; local_28 = local_28 + 1)
+    location_data = &g_town_slots[local_1c];
+    for (local_28 = 0; local_28 < location_data->location_type; local_28 = local_28 + 1)
     {
       local_8 = 0;
       do
@@ -2561,8 +2561,8 @@ void FUN_004f78d3(void)
         for (local_18 = 0; local_18 < 0x2a; local_18 = local_18 + 1)
         {
           iVar1 = FUN_00522508(0x80);
-          candidate_data = &g_world_nodes[iVar1];
-          iVar2 = FUN_004ecf30(location_data->x - candidate_data->x, location_data->y - candidate_data->y);
+          candidate_data = &g_town_slots[iVar1];
+          iVar2 = FUN_004ecf30(location_data->world_x - candidate_data->world_x, location_data->world_y - candidate_data->world_y);
           if (iVar2 < local_24)
           {
             local_10 = local_c;
@@ -2570,8 +2570,8 @@ void FUN_004f78d3(void)
             local_c = iVar1;
           }
         }
-        candidate_data = &g_world_nodes[local_10];
-        iVar1 = FUN_004f7a3c(location_data->x, location_data->y, candidate_data->x, candidate_data->y);
+        candidate_data = &g_town_slots[local_10];
+        iVar1 = FUN_004f7a3c(location_data->world_x, location_data->world_y, candidate_data->world_x, candidate_data->world_y);
       } while ((iVar1 == 0) && (local_8 = local_8 + 1, local_8 < 3));
     }
   }
@@ -2731,7 +2731,7 @@ void FUN_004f7eb2(int param_1, int param_2, unsigned int param_3)
 // FUNCTION: SHANDALAR 0x004f7fb9
 int FUN_004f7fb9(int param_1, int param_2)
 {
-  return (param_1 * 3 + param_2 * 5 + DAT_00715f04) & 0x3f;
+  return (param_1 * 3 + param_2 * 5 + g_monster_timer) & 0x3f;
 }
 
 // FUNCTION: SHANDALAR 0x004f8101
@@ -2795,11 +2795,11 @@ void FUN_005081fa(void)
 
   for (local_8 = 0; local_8 < 0xf; local_8 = local_8 + 1)
   {
-    g_encounter_slots[local_8].unk_08 = -1;
-    g_encounter_slots[local_8].unk_04 = g_encounter_slots[local_8].unk_08;
-    g_encounter_slots[local_8].unk_00 = g_encounter_slots[local_8].unk_04;
-    g_encounter_slots[local_8].unk_28 = -1;
-    g_encounter_slots[local_8].unk_2c = g_encounter_slots[local_8].unk_28;
+    g_castle_dungeon_slots[local_8].card_slot_3 = -1;
+    g_castle_dungeon_slots[local_8].card_slot_2 = g_castle_dungeon_slots[local_8].card_slot_3;
+    g_castle_dungeon_slots[local_8].card_slot_1 = g_castle_dungeon_slots[local_8].card_slot_2;
+    g_castle_dungeon_slots[local_8].times_entered = -1;
+    g_castle_dungeon_slots[local_8].reserved_2c = g_castle_dungeon_slots[local_8].times_entered;
   }
 
   for (local_2c = 0; local_2c < DAT_0073c00c - 0x39; local_2c = local_2c + 1)
@@ -2810,19 +2810,19 @@ void FUN_005081fa(void)
       {
         iVar3 = FUN_00522508(10);
         iVar3 = iVar3 + 5;
-      } while (g_encounter_slots[iVar3].unk_08 != -1);
+      } while (g_castle_dungeon_slots[iVar3].card_slot_3 != -1);
 
-      if (g_encounter_slots[iVar3].unk_00 == -1)
+      if (g_castle_dungeon_slots[iVar3].card_slot_1 == -1)
       {
-        g_encounter_slots[iVar3].unk_00 = local_2c;
+        g_castle_dungeon_slots[iVar3].card_slot_1 = local_2c;
       }
-      else if (g_encounter_slots[iVar3].unk_04 == -1)
+      else if (g_castle_dungeon_slots[iVar3].card_slot_2 == -1)
       {
-        g_encounter_slots[iVar3].unk_04 = local_2c;
+        g_castle_dungeon_slots[iVar3].card_slot_2 = local_2c;
       }
       else
       {
-        g_encounter_slots[iVar3].unk_08 = local_2c;
+        g_castle_dungeon_slots[iVar3].card_slot_3 = local_2c;
       }
     }
   }
@@ -2851,9 +2851,9 @@ void FUN_005081fa(void)
       local_28 = 0xff;
       for (local_20 = 0; local_20 < 0x80; local_20 = local_20 + 1)
       {
-        if ((local_8 < 5) && (g_world_nodes[local_20].kind == 4))
+        if ((local_8 < 5) && (g_town_slots[local_20].location_type == 4))
         {
-          uVar4 = FUN_0043146b(g_world_nodes[local_20].x, g_world_nodes[local_20].y);
+          uVar4 = FUN_0043146b(g_town_slots[local_20].world_x, g_town_slots[local_20].world_y);
           uVar4 = FUN_005611c8(uVar4);
           if (uVar4 == 1 << (((char)local_8 + 1U) & 0x1f))
           {
@@ -2861,9 +2861,9 @@ void FUN_005081fa(void)
           }
         }
 
-        if (((1 < g_world_nodes[local_20].kind) && (g_world_nodes[local_20].kind != 4)) &&
-            ((iVar5 = FUN_004ecf30(g_world_nodes[local_20].x - iVar3,
-                                   g_world_nodes[local_20].y - param1),
+        if (((1 < g_town_slots[local_20].location_type) && (g_town_slots[local_20].location_type != 4)) &&
+            ((iVar5 = FUN_004ecf30(g_town_slots[local_20].world_x - iVar3,
+                                   g_town_slots[local_20].world_y - param1),
               iVar5 < local_28)))
         {
           local_24 = local_20;
@@ -2873,7 +2873,7 @@ void FUN_005081fa(void)
 
       for (local_20 = 0; local_20 < local_8; local_20 = local_20 + 1)
       {
-        iVar5 = FUN_004ecf30(g_encounter_slots[local_20].unk_10 - iVar3, g_encounter_slots[local_20].unk_14 - param1);
+        iVar5 = FUN_004ecf30(g_castle_dungeon_slots[local_20].world_x - iVar3, g_castle_dungeon_slots[local_20].world_y - param1);
         if (iVar5 < local_28)
         {
           local_28 = iVar5;
@@ -2882,35 +2882,35 @@ void FUN_005081fa(void)
     } while (local_28 < 4);
 
     FUN_00431526(0x40, iVar3, param1);
-    slot = g_encounter_slots + local_8;
-    slot->unk_10 = iVar3;
-    slot->unk_14 = param1;
-    slot->unk_18 = local_24;
+    slot = g_castle_dungeon_slots + local_8;
+    slot->world_x = iVar3;
+    slot->world_y = param1;
+    slot->north_of_town_index = local_24;
     iVar3 = FUN_00522508(5);
-    slot->unk_1c = (unsigned char)iVar3 + 1;
-    slot->unk_1d = 2;
+    slot->color = (unsigned char)iVar3 + 1;
+    slot->monster_flags = 2;
 
     if (local_8 < 5)
     {
-      slot->unk_1c = (unsigned char)local_8 + 1;
-      slot->unk_1d = 0x81;
-      slot->unk_10 = g_world_nodes[local_10].x;
-      slot->unk_14 = g_world_nodes[local_10].y;
+      slot->color = (unsigned char)local_8 + 1;
+      slot->monster_flags = 0x81;
+      slot->world_x = g_town_slots[local_10].world_x;
+      slot->world_y = g_town_slots[local_10].world_y;
     }
 
-    bVar1 = slot->unk_1d;
+    bVar1 = slot->monster_flags;
     iVar3 = FUN_00522508(2);
     if (iVar3 + 1 < (int)(unsigned int)bVar1)
     {
       local_c = 0;
-      for (local_20 = 0; local_20 < (int)(unsigned int)(unsigned char)slot->unk_1d; local_20 = local_20 + 1)
+      for (local_20 = 0; local_20 < (int)(unsigned int)(unsigned char)slot->monster_flags; local_20 = local_20 + 1)
       {
         local_c = local_c + local_20 * 2 + 4;
       }
     }
     else
     {
-      if ((unsigned char)slot->unk_1d < 2)
+      if ((unsigned char)slot->monster_flags < 2)
       {
         local_c = 0x10;
       }
@@ -2918,64 +2918,64 @@ void FUN_005081fa(void)
       {
         local_c = 0x1c;
       }
-      slot->unk_1d = slot->unk_1d | 0x80;
+      slot->monster_flags = slot->monster_flags | 0x80;
     }
 
-    if (slot->unk_04 == -1)
+    if (slot->card_slot_2 == -1)
     {
       local_c = (local_c * 3) / 2;
     }
-    if (slot->unk_08 != -1)
+    if (slot->card_slot_3 != -1)
     {
       local_c = (local_c * 2) / 3;
     }
 
-    bVar1 = slot->unk_1d;
-    bVar2 = slot->unk_1d;
+    bVar1 = slot->monster_flags;
+    bVar2 = slot->monster_flags;
     iVar3 = FUN_00522508(2);
-    slot->unk_0c = DAT_0058c5fc[((((bVar1 & 0xc0) == 0) - 1 & 4) + (bVar2 & 0x7f) + iVar3)];
-    slot->unk_24 = 1;
+    slot->card_in_effect = DAT_0058c5fc[((((bVar1 & 0xc0) == 0) - 1 & 4) + (bVar2 & 0x7f) + iVar3)];
+    slot->rules_bitmap = 1;
 
     switch ((int)(local_c + (local_c >> 0x1f & 3U)) >> 2)
     {
     case 0:
     case 1:
     case 2:
-      slot->unk_1d = slot->unk_1d + 1;
+      slot->monster_flags = slot->monster_flags + 1;
     case 3:
-      slot->unk_0c = DAT_0058c5ec[(char)slot->unk_1c];
+      slot->card_in_effect = DAT_0058c5ec[(char)slot->color];
       iVar3 = FUN_00522508(5);
-      slot->unk_24 = slot->unk_24 | 1 << (((char)iVar3 + 4U) & 0x1f);
+      slot->rules_bitmap = slot->rules_bitmap | 1 << (((char)iVar3 + 4U) & 0x1f);
       break;
     case 4:
-      slot->unk_0c = DAT_0058c5ec[(char)slot->unk_1c];
+      slot->card_in_effect = DAT_0058c5ec[(char)slot->color];
       break;
     case 5:
       iVar3 = FUN_00522508(5);
-      slot->unk_24 = slot->unk_24 | 1 << (((char)iVar3 + 4U) & 0x1f);
-      slot->unk_0c = -1;
+      slot->rules_bitmap = slot->rules_bitmap | 1 << (((char)iVar3 + 4U) & 0x1f);
+      slot->card_in_effect = -1;
       break;
     case 6:
-      slot->unk_0c = -1;
+      slot->card_in_effect = -1;
       break;
     }
 
-    if (((slot->unk_24 & 0x100) != 0) || (((slot->unk_1d & 0x3f) < 2) && ((slot->unk_24 & 0x20) != 0)))
+    if (((slot->rules_bitmap & 0x100) != 0) || (((slot->monster_flags & 0x3f) < 2) && ((slot->rules_bitmap & 0x20) != 0)))
     {
-      slot->unk_0c = DAT_0058c5ec[(char)slot->unk_1c];
-      slot->unk_24 = slot->unk_24 & 0xfffffedf;
+      slot->card_in_effect = DAT_0058c5ec[(char)slot->color];
+      slot->rules_bitmap = slot->rules_bitmap & 0xfffffedf;
     }
 
-    if ((slot->unk_1d & 0x7f) == 1)
+    if ((slot->monster_flags & 0x7f) == 1)
     {
-      slot->unk_24 = slot->unk_24 & 0xfffffffe;
+      slot->rules_bitmap = slot->rules_bitmap & 0xfffffffe;
     }
 
     if (local_8 < 5)
     {
-      slot->unk_24 = slot->unk_24 | 1;
-      slot->unk_24 = slot->unk_24 | 2;
-      slot->unk_0c = DAT_0058c620[DAT_00715f08 + local_8 * 4];
+      slot->rules_bitmap = slot->rules_bitmap | 1;
+      slot->rules_bitmap = slot->rules_bitmap | 2;
+      slot->card_in_effect = DAT_0058c620[g_shandalar_difficulty + local_8 * 4];
     }
     local_8 = local_8 + 1;
   } while (1);
@@ -3616,7 +3616,7 @@ int FUN_004ff888(void *param_1, int param_2)
   {
     return 0;
   }
-  if (((DAT_00715f00 & (1 << ((unsigned char)local_8 & 0x1f))) != 0) && (DAT_0078990c[local_8 / 2] != 0))
+  if (((g_world_magic_bitmap & (1 << ((unsigned char)local_8 & 0x1f))) != 0) && (DAT_0078990c[local_8 / 2] != 0))
   {
     local_c = FUN_004bb458(local_8);
     if (param_2 == 2)
@@ -3761,8 +3761,8 @@ void FUN_005631ca(void)
     iVar1 = FUN_0056302b(local_44 + 1);
     for (local_48 = 0; local_48 < 0x80; local_48 = local_48 + 1)
     {
-      if ((((unsigned int)g_world_nodes[local_48].flags_owner & 0xff00U) != 0) &&
-          (((g_world_nodes[local_48].flags_owner >> 8) - 1) == local_44))
+      if ((((unsigned int)g_town_slots[local_48].status_and_ruling_wizard & 0xff00U) != 0) &&
+          (((g_town_slots[local_48].status_and_ruling_wizard >> 8) - 1) == local_44))
       {
         local_8 = local_8 + 1;
       }
@@ -3770,16 +3770,16 @@ void FUN_005631ca(void)
     auStack_14[iVar1] = (unsigned char)local_8;
     if (DAT_0073ea70[local_44] == 0)
     {
-      iVar2 = DAT_00715f08 * local_8 + DAT_00715f08 * 5 + 0x1e;
-      for (local_48 = 0; (local_48 < 1000) && (((unsigned char *)&DAT_00712550)[local_48] != '\0'); local_48 = local_48 + 1)
+      iVar2 = g_shandalar_difficulty * local_8 + g_shandalar_difficulty * 5 + 0x1e;
+      for (local_48 = 0; (local_48 < 1000) && (((unsigned char *)&g_duel_victory_log)[local_48] != '\0'); local_48 = local_48 + 1)
       {
-        if ((((int)(char)((unsigned char *)&DAT_00712550)[local_48]) >> 4) == local_44 + 1)
+        if ((((int)(char)((unsigned char *)&g_duel_victory_log)[local_48]) >> 4) == local_44 + 1)
         {
           local_4c = local_4c + 1;
         }
       }
       aiStack_28[iVar1] = local_4c;
-      iVar3 = DAT_00715f08 * 5 + 0x14;
+      iVar3 = g_shandalar_difficulty * 5 + 0x14;
       local_4c = iVar2 - local_4c;
       if (iVar3 <= local_4c)
       {
@@ -3811,7 +3811,7 @@ void FUN_0056bff1(void)
     auStack_7d8[local_7dc] = deck[local_7dc];
     deck[local_7dc] = -1;
   }
-  local_8 = DAT_00712958;
+  local_8 = g_journal_entry_count;
   for (local_7dc = 0; local_7dc < 500; local_7dc = local_7dc + 1)
   {
     if (auStack_7d8[local_7dc] != 0xffffffff)
@@ -3820,7 +3820,7 @@ void FUN_0056bff1(void)
       deck[iVar1] = deck[iVar1] | (auStack_7d8[local_7dc] & 0xfffff000);
     }
   }
-  DAT_00712958 = local_8;
+  g_journal_entry_count = local_8;
 }
 
 // FUNCTION: SHANDALAR 0x0054cdbd
