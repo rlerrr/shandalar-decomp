@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "global_state.h"
+#include "global_other.h"
 #include "network.h"
 
 extern card_data_t global_cards_data[];

@@ -3119,7 +3119,7 @@ void FUN_005019ad(int param_1)
 {
   int tmp;
   DAT_00602fb4 = 0;
-  DAT_006abe30 = DAT_00602fb4;
+  global_saveload_loading = DAT_00602fb4;
   FUN_0046ed33();
   tmp = FUN_00501b7d();
   if (tmp != -1)
@@ -3176,7 +3176,7 @@ int FUN_00501760(int param_1)
   unsigned int local_4;
   char save_filename[0xd];
 
-  DAT_006abe30 = 1;
+  global_saveload_loading = 1;
   FUN_0046ed33();
   ret = FUN_00501b7d();
   if (ret != -1)
@@ -3298,7 +3298,7 @@ int FUN_00501e44(char *param_1)
     return 0;
   }
 
-  DAT_006abe30 = 1;
+  global_saveload_loading = 1;
   save_or_load_ver1();
   _close(DAT_006abe38);
   for (s.player_index = 0; s.player_index < 2; s.player_index = s.player_index + 1)

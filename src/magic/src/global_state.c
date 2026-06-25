@@ -71,7 +71,7 @@ int __cdecl save_or_load_data(void *buf, unsigned int count)
   int ok;
 
   ok = 1;
-  if (DAT_006abe30 != 0)
+  if (global_saveload_loading)
   {
     if ((unsigned int)_read(DAT_006abe38, buf, count) != count)
     {
@@ -481,7 +481,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&DAT_008cf6e0,0x640);
   result &= save_or_load_data(&DAT_00925450,0x640);
 
-  if (DAT_006abe30 == 1)
+  if (global_saveload_loading == 1)
   {
 #ifdef SHANDALAR
     for (locals.card_index = DAT_0073c00c; DAT_0073c00c + 0x10 > locals.card_index; ++locals.card_index)
@@ -508,7 +508,7 @@ void __cdecl save_gametype0(char *path)
   DAT_006abe38 = _open(path, 0x8301, 0x80);
   if (DAT_006abe38 != -1)
   {
-    DAT_006abe30 = 0;
+    global_saveload_loading = 0;
     save_or_load_data(&DAT_007a7d68, 4);
     save_or_load_ver1();
     save_or_load_data(&_PlayerFace, 4);
@@ -526,7 +526,7 @@ void __cdecl save_soloduel(char *path)
   DAT_006abe38 = _open(path, 0x8301, 0x80);
   if (DAT_006abe38 != -1)
   {
-    DAT_006abe30 = 0;
+    global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
     save_or_load_ver2();
     FUN_004ef073();
@@ -544,7 +544,7 @@ void __cdecl save_gauntlet(char *path)
   DAT_006abe38 = _open(path, 0x8301, 0x80);
   if (DAT_006abe38 != -1)
   {
-    DAT_006abe30 = 0;
+    global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
     save_or_load_ver2();
     FUN_004ef073();
@@ -568,7 +568,7 @@ void __cdecl save_sealeddeck(char *path)
   DAT_006abe38 = _open(path, 0x8301, 0x80);
   if (DAT_006abe38 != -1)
   {
-    DAT_006abe30 = 0;
+    global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
     save_or_load_ver2();
     FUN_004ef073();

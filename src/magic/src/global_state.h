@@ -543,7 +543,6 @@ GLOBAL_STATE_EXTERN char DAT_007a7c60[300];
 // GLOBAL: MAGIC 0x009266d0
 // GLOBAL: SHANDALAR 0x0093a800
 GLOBAL_STATE_EXTERN char unk_009266d0[260];
-// Note: overlaps unk_009266d0 (0x009266d0 + 0xc0).
 
 // GLOBAL: MAGIC 0x00926790
 // GLOBAL: SHANDALAR 0x0093a8c0
@@ -564,11 +563,9 @@ GLOBAL_STATE_EXTERN int DAT_0091c500;
 // GLOBAL: MAGIC 0x00950780
 GLOBAL_STATE_EXTERN unsigned int(__cdecl *PTR_CalcDrawManaText_00950780)(HDC dc, RECT *rect, char *text);
 
-
-// Globals used by save/load paths (0x004ed32e-0x004ef4ba)
 // GLOBAL: MAGIC 0x006abe30
 // GLOBAL: SHANDALAR 0x005b8138
-GLOBAL_STATE_EXTERN int DAT_006abe30;
+GLOBAL_STATE_EXTERN int global_saveload_loading;
 
 // GLOBAL: MAGIC 0x006abe38
 // GLOBAL: SHANDALAR 0x005b8140
@@ -976,7 +973,4 @@ GLOBAL_STATE_EXTERN unsigned char Scards[0xc0];
 
 #undef GLOBAL_STATE_EXTERN
 
-#include "globals_others.h"
-
 #endif
-
