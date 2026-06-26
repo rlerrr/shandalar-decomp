@@ -7,7 +7,7 @@
 
 extern card_data_t global_cards_data[];
 #ifdef SHANDALAR
-extern int DAT_0073c00c;
+extern int g_card_count;
 #endif
 
 int CardTypeFromID(int csvid);
@@ -73,14 +73,14 @@ int __cdecl save_or_load_data(void *buf, unsigned int count)
   ok = 1;
   if (global_saveload_loading)
   {
-    if ((unsigned int)_read(DAT_006abe38, buf, count) != count)
+    if ((unsigned int)_read(g_save_file_fd, buf, count) != count)
     {
       ok = 0;
     }
   }
   else
   {
-    ok = FUN_004ed13a(DAT_006abe38, buf, count);
+    ok = FUN_004ed13a(g_save_file_fd, buf, count);
   }
 
   if (ok == 0)
@@ -99,7 +99,7 @@ unsigned int __cdecl save_or_load_ver1(void)
 
   result = 1;
 #ifdef SHANDALAR
-  result &= save_or_load_data((char *)global_cards_data + DAT_0073c00c * 0x48,0x480);
+  result &= save_or_load_data((char *)global_cards_data + g_card_count * 0x48,0x480);
 #else
   result &= save_or_load_data((char *)global_cards_data + unk_0093f4b8 * 0x48,0x480);
 #endif
@@ -310,7 +310,7 @@ unsigned int __cdecl save_or_load_ver2(void)
 
   result = 1;
 #ifdef SHANDALAR
-  result &= save_or_load_data((char *)global_cards_data + DAT_0073c00c * 0x48,0x480);
+  result &= save_or_load_data((char *)global_cards_data + g_card_count * 0x48,0x480);
 #else
   result &= save_or_load_data((char *)global_cards_data + unk_0093f4b8 * 0x48,0x480);
 #endif
@@ -484,7 +484,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   if (global_saveload_loading == 1)
   {
 #ifdef SHANDALAR
-    for (locals.card_index = DAT_0073c00c; DAT_0073c00c + 0x10 > locals.card_index; ++locals.card_index)
+    for (locals.card_index = g_card_count; g_card_count + 0x10 > locals.card_index; ++locals.card_index)
 #else
     for (locals.card_index = unk_0093f4b8; locals.card_index < unk_0093f4b8 + 0x10; ++locals.card_index)
 #endif
@@ -505,8 +505,8 @@ unsigned int __cdecl save_or_load_ver2(void)
 // FUNCTION: SHANDALAR 0x005031c2
 void __cdecl save_gametype0(char *path)
 {
-  DAT_006abe38 = _open(path, 0x8301, 0x80);
-  if (DAT_006abe38 != -1)
+  g_save_file_fd = _open(path, 0x8301, 0x80);
+  if (g_save_file_fd != -1)
   {
     global_saveload_loading = 0;
     save_or_load_data(&DAT_007a7d68, 4);
@@ -515,7 +515,7 @@ void __cdecl save_gametype0(char *path)
     save_or_load_data(&_OpponFace, 4);
     save_or_load_data(unk_009266d0, 0x32);
     save_or_load_data(&g_player_name, 0x32);
-    _close(DAT_006abe38);
+    _close(g_save_file_fd);
   }
 }
 
@@ -523,8 +523,8 @@ void __cdecl save_gametype0(char *path)
 // FUNCTION: SHANDALAR 0x005040da
 void __cdecl save_soloduel(char *path)
 {
-  DAT_006abe38 = _open(path, 0x8301, 0x80);
-  if (DAT_006abe38 != -1)
+  g_save_file_fd = _open(path, 0x8301, 0x80);
+  if (g_save_file_fd != -1)
   {
     global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
@@ -533,7 +533,7 @@ void __cdecl save_soloduel(char *path)
     FUN_0048b144();
     save_or_load_data(&DAT_008cefc0.value_0008, 4);
     save_or_load_data(&DAT_008cefc0.value_000c, 4);
-    _close(DAT_006abe38);
+    _close(g_save_file_fd);
   }
 }
 
@@ -541,8 +541,8 @@ void __cdecl save_soloduel(char *path)
 // FUNCTION: SHANDALAR 0x0050425c
 void __cdecl save_gauntlet(char *path)
 {
-  DAT_006abe38 = _open(path, 0x8301, 0x80);
-  if (DAT_006abe38 != -1)
+  g_save_file_fd = _open(path, 0x8301, 0x80);
+  if (g_save_file_fd != -1)
   {
     global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
@@ -557,7 +557,7 @@ void __cdecl save_gauntlet(char *path)
     save_or_load_data(&DAT_00925bf8, 4);
     save_or_load_data(&DAT_00777c10, 4);
     save_or_load_data(&DAT_00777c08, 4);
-    _close(DAT_006abe38);
+    _close(g_save_file_fd);
   }
 }
 
@@ -565,8 +565,8 @@ void __cdecl save_gauntlet(char *path)
 // FUNCTION: SHANDALAR 0x005044ac
 void __cdecl save_sealeddeck(char *path)
 {
-  DAT_006abe38 = _open(path, 0x8301, 0x80);
-  if (DAT_006abe38 != -1)
+  g_save_file_fd = _open(path, 0x8301, 0x80);
+  if (g_save_file_fd != -1)
   {
     global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
@@ -575,6 +575,6 @@ void __cdecl save_sealeddeck(char *path)
     FUN_0048bace();
     save_or_load_data(&DAT_00926340.value_002c, 4);
     save_or_load_data((void *)DAT_0093d844, 0x4ae64);
-    _close(DAT_006abe38);
+    _close(g_save_file_fd);
   }
 }

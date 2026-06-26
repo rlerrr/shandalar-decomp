@@ -17,8 +17,8 @@ typedef char sh_text_0x32_t[0x32];
 typedef char sh_text_0x50_t[0x50];
 
 /*
- * Runtime text globals loaded by FUN_00564ee7() (mostly from AdvStrings.txt),
- * plus block pointers loaded by FUN_00565dbc() (from AdvBlocks.txt).
+ * Runtime text globals loaded by LoadAdvStringsFile() (mostly from AdvStrings.txt),
+ * plus block pointers loaded by LoadAdvBlocksFile() (from AdvBlocks.txt).
  */
 
 // GLOBAL: SHANDALAR 0x008bd200

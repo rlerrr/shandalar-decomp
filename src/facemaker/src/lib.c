@@ -70,19 +70,42 @@ BITMAPINFO *g_scanline_bitmap_info;
 int g_scanline_bitmap_info_initialized;
 
 // GLOBAL: FACEMAKER 0x0040d088
+// GLOBAL: SHANDALAR 0x005a1608
 int g_frontbuffer_direct_blit_enabled = 1;
 
 // GLOBAL: FACEMAKER 0x00417180
+// GLOBAL: SHANDALAR 0x00737fe0
 BITMAPINFO *g_blit_bitmap_info;
 
 // GLOBAL: FACEMAKER 0x0041799c
+// GLOBAL: SHANDALAR 0x007387fc
 int g_blit_bitmap_info_initialized;
 
 // GLOBAL: FACEMAKER 0x004181b0
+// GLOBAL: SHANDALAR 0x00739010
 char g_copy_scratch_buffer[0x804];
 
 // GLOBAL: FACEMAKER 0x0040d094
+// GLOBAL: SHANDALAR 0x005a1614
 char *g_copy_scratch_buffer_ptr = g_copy_scratch_buffer;
+
+// GLOBAL: SHANDALAR 0x00739008
+BITMAPINFO *g_copy_bitmap_info;
+
+// GLOBAL: SHANDALAR 0x007357d0
+int g_copy_bitmap_info_initialized;
+
+// GLOBAL: SHANDALAR 0x007357d8
+char g_copy_flip_scratch_buffer[0x804];
+
+// GLOBAL: SHANDALAR 0x005a1618
+char *g_copy_flip_scratch_buffer_ptr = g_copy_flip_scratch_buffer;
+
+// GLOBAL: SHANDALAR 0x00737ff8
+char g_copy_restore_scratch_buffer[0x804];
+
+// GLOBAL: SHANDALAR 0x005a161c
+char *g_copy_restore_scratch_buffer_ptr = g_copy_restore_scratch_buffer;
 
 // GLOBAL: FACEMAKER 0x004189b4
 // GLOBAL: SHANDALAR 0x00739814
@@ -116,6 +139,7 @@ int g_graphics_width;
 int g_graphics_bpp;
 
 // GLOBAL: FACEMAKER 0x00426580
+// GLOBAL: SHANDALAR 0x00986990
 RGBQUAD g_palette_rgb[256];
 
 // GLOBAL: FACEMAKER 0x00426980
@@ -231,8 +255,7 @@ int PopQueuedKeyInput(void)
   }
 
   queued_key = g_key_input_queue[0];
-  g_key_input_queue_count = g_key_input_queue_count - 1;
-  if (g_key_input_queue_count != 0)
+  if (--g_key_input_queue_count != 0)
   {
     memcpy(g_key_input_queue, g_key_input_queue + 1, g_key_input_queue_count * 4);
   }
@@ -689,7 +712,10 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
   {
     if (((dst_x & 7) == 0) && g_frontbuffer_direct_blit_enabled != 0)
     {
-      memcpy(g_blit_bitmap_info->bmiColors, g_palette_rgb, 0x400);
+      if (g_graphics_bpp != 8)
+      {
+        memcpy(g_blit_bitmap_info->bmiColors, g_palette_rgb, 0x400);
+      }
 
       top_row = (double *)(dst_y * src_page->width + dst_x + (int)src_page->pBits);
       bottom_row = (double *)((dst_y + height - 1) * src_page->width + dst_x + (int)src_page->pBits);
@@ -760,6 +786,74 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
   (void)dst_stride_bytes;
   (void)copy_bytes;
   BitBlt(dst_page->hTempDC, src_x, src_y, width, height, src_page->hTempDC, dst_x, dst_y, SRCCOPY);
+}
+
+// FUNCTION: SHANDALAR 0x00579bf0
+void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
+                      FacemakerWindowBounds *dst, int dst_x, int dst_y)
+{
+  DIBSurface *src_page;
+  DIBSurface *dst_page;
+  double *top_row;
+  double *bottom_row;
+  int half_height;
+  int i;
+
+  src_page = g_graphics_pages[src->page_number];
+  dst_page = g_graphics_pages[dst->page_number];
+
+  if (g_copy_bitmap_info_initialized == 0)
+  {
+    g_copy_bitmap_info = CreateBitmapInfo(1, 1, 8);
+    g_copy_bitmap_info_initialized = 1;
+  }
+
+  g_copy_bitmap_info->bmiHeader.biWidth = src_page->width;
+  if (src_y == 0)
+  {
+    g_copy_bitmap_info->bmiHeader.biHeight = src_page->height;
+  }
+  else
+  {
+    g_copy_bitmap_info->bmiHeader.biHeight = src_page->height;
+  }
+
+  if ((dst->page_number == 0) && ((src_x & 7) == 0) && (g_frontbuffer_direct_blit_enabled != 0))
+  {
+    if (g_graphics_bpp != 8)
+    {
+      memcpy(g_copy_bitmap_info->bmiColors, g_palette_rgb, 0x400);
+    }
+
+    top_row = (double *)((int)src_page->pBits + src_x + src_page->width * src_y);
+    bottom_row = (double *)((int)src_page->pBits + src_x + (src_y + height - 1) * src_page->width);
+    half_height = height / 2;
+    for (i = half_height; i > 0; i--)
+    {
+      CopyBytesAsmCompat((double *)g_copy_flip_scratch_buffer_ptr, top_row, width);
+      CopyBytesAsmCompat(top_row, bottom_row, width);
+      CopyBytesAsmCompat(bottom_row, (double *)g_copy_flip_scratch_buffer_ptr, width);
+      top_row = (double *)((int)top_row + src_page->width);
+      bottom_row = (double *)((int)bottom_row - src_page->width);
+    }
+
+    SetDIBitsToDevice(dst_page->hTempDC, dst_x, dst_y, width, height, src_x, src_y, 0, src_page->height,
+                      src_page->pBits, g_copy_bitmap_info, (unsigned int)(g_graphics_bpp == 8));
+
+    top_row = (double *)((int)src_page->pBits + src_x + src_page->width * src_y);
+    bottom_row = (double *)((int)src_page->pBits + src_x + (src_y + height - 1) * src_page->width);
+    for (i = half_height; i > 0; i--)
+    {
+      CopyBytesAsmCompat((double *)g_copy_restore_scratch_buffer_ptr, top_row, width);
+      CopyBytesAsmCompat(top_row, bottom_row, width);
+      CopyBytesAsmCompat(bottom_row, (double *)g_copy_restore_scratch_buffer_ptr, width);
+      top_row = (double *)((int)top_row + src_page->width);
+      bottom_row = (double *)((int)bottom_row - src_page->width);
+    }
+    return;
+  }
+
+  BitBlt(dst_page->hTempDC, dst_x, dst_y, width, height, src_page->hTempDC, src_x, src_y, SRCCOPY);
 }
 
 // FUNCTION: SHANDALAR 0x00579e40

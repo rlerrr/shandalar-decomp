@@ -93,6 +93,7 @@ static char *global_rarities_csv_raw;
 char *global_base_txt;
 
 // GLOBAL: MAGIC 0x00777e60
+// GLOBAL: SHANDALAR 0x0078ebf0
 name_table_entry_t unk_00777e60[866];
 
 // FUNCTION: DECKDLL 0x1001a940

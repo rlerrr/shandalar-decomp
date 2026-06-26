@@ -556,9 +556,9 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
         g_resample_source_height = source_sprite_height;
     }
 
-    if (x < dst->unk_04)
+    if (x < dst->clip_left)
     {
-        g_resample_clip_left = dst->unk_04 - x;
+        g_resample_clip_left = dst->clip_left - x;
     }
     else
     {
@@ -608,7 +608,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
                     segment_length = (unsigned int)row_data[2];
                 }
                 draw_y = row_index + y;
-                if (dst->unk_08 <= draw_y)
+    if (dst->clip_top <= draw_y)
                 {
                     if (dst->max_y < draw_y)
                     {
@@ -854,7 +854,7 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
   {
     return 0;
   }
-  if (param_1->unk_08 <= param_3)
+  if (param_1->clip_top <= param_3)
   {
     FontSlot *font;
 
@@ -885,6 +885,9 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
       ulen = strlen(param_4);
       TextOutA(local.page_hdc, param_2, param_3 - font->tm_leading, param_4, ulen);
       SelectObject(local.page_hdc, local.old_page_object);
+#ifdef MODERN_FIXES
+      GdiFlush();
+#endif
       return 1;
     }
 

@@ -6,11 +6,11 @@
 typedef struct FacemakerWindowBounds
 {
   int page_number;
-  int unk_04;
-  int unk_08;
+  int clip_left;
+  int clip_top;
   int max_x;
   int max_y;
-  int unk_14;
+  int draw_shadow_enabled;
   int text_color;
   int unk_1c;
   int font_slot;

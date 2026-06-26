@@ -11,6 +11,7 @@
 #endif
 
 int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
+int FUN_0057b7a0(int *param_1, char *param_2, int param_3);
 size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height);
 
@@ -94,6 +95,42 @@ int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
   }
   return entry_count;
 }
+
+// FUNCTION: SHANDALAR 0x0057b7a0
+int FUN_0057b7a0(int *param_1, char *param_2, int param_3)
+{
+  FILE *_File;
+  int iVar1;
+  int _Size;
+  int *_DstBuf;
+  int iVar2;
+
+  _File = fopen(param_2, "rb");
+  assert((int)_File, "D:\\NewMagic\\sources\\sidlib\\sprite.c", 0xc5,
+         "Could not open Sprite File %s\n", param_2);
+  iVar1 = _fileno(_File);
+  _Size = _filelength(iVar1);
+  _DstBuf = malloc(_Size);
+  fread(_DstBuf, 1, _Size, _File);
+  fclose(_File);
+
+  iVar1 = *_DstBuf;
+  iVar2 = 0;
+  while (iVar1 != -1)
+  {
+    if (iVar2 >= param_3)
+    {
+      break;
+    }
+    *param_1 = (int)_DstBuf;
+    param_1 = param_1 + 1;
+    _DstBuf = (int *)((int)_DstBuf + *_DstBuf);
+    iVar1 = *_DstBuf;
+    iVar2 = iVar2 + 1;
+  }
+  return iVar2;
+}
+#pragma optimize("", on)
 
 // FUNCTION: SHANDALAR 0x0057b840
 // FUNCTION: FACEMAKER 0x00408a50

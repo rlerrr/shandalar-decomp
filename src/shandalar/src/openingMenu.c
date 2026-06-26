@@ -14,17 +14,17 @@ extern int global_screen_height;
 extern int g_graphics_bpp;
 extern RpBitsPalettePacket g_palette_data_words;
 extern int DAT_00589dec;
-extern FILE *DAT_0078cf08;
-extern char DAT_0078cf10[0x1000];
-extern char DAT_0078df10[0x28];
-extern int DAT_007898f4;
-extern int DAT_007898f8;
-extern int DAT_00986d94;
-extern int DAT_00986d98;
-extern int DAT_00986d9c;
-extern int DAT_00747ee0;
+extern FILE *g_advbuttons_ini_file;
+extern char g_ui_message_buffer[0x1000];
+extern char g_ini_string_scratch[0x28];
+extern int g_mouse_x_snapshot;
+extern int g_mouse_y_snapshot;
+extern int g_mouse_button_down_mask;
+extern int g_mouse_y;
+extern int g_mouse_x;
+extern int g_menu_render_guard;
 extern char *gs_loadsave_0077d1b0[3];
-extern HWND DAT_00748420;
+extern HWND g_main_window_hwnd;
 extern int g_face_preview_sprite_group[6];
 extern EncodedImage *g_face_preview_sprite_selected;
 extern DIBSurface *g_graphics_pages[10];
@@ -39,55 +39,55 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *window, char *text);
 int SetFontStyleSize(int font_id, unsigned int style);
 int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y, int x,
                       int y, int *format_and_args);
-int FUN_0056cc4d(const char *filename, const char *section);
+int LoadTextSectionLines(const char *filename, const char *section);
 int PopQueuedKeyInput(void);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxIntoPageNoPalette(char *path);
 void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
-void FUN_00579bf0(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
+void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
                   FacemakerWindowBounds *dst, int dst_x, int dst_y);
-int *FUN_00579ea0(int *out_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
+int *PushGraphicsClipRect(int *out_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 void BeginSpriteEncodeSession(void);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
 void FinalizeSpriteEncodeSession(void);
-void FUN_005626b0(char *sound_path, int channel, int volume, int pan, int pitch);
+void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
                       FacemakerWindowBounds *src, int src_x, int src_y);
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
                              FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-int FUN_00417dc6(const char *filename);
+int FileExists(const char *filename);
 void ReadSpriteEntryPointers(void *out_sprite_entries, const char *sprite_table_name);
 void FreeSpriteBlob(void *memory);
 void AnimatePaletteToColor(int color_index, int palette_id);
 void set_global_base_directory(char *path);
-int FUN_00500321(void);
-int FUN_005000fb(int menu_context);
-int FUN_0050014e(AdvMenuControl *controls, int control_count, int menu_context);
-int FUN_0050035e(void);
+int BeginMenuContext(void);
+int ResetMenuContext(int context_index);
+int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
+int EndMenuContext(void);
 int FUN_0057ce70(int color_index, int palette_id);
 void FUN_0057b530(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
 void FUN_0057b560(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-int FUN_0057ae30(int font_slot);
 void DrawLocalizedText(FacemakerWindowBounds *window, int color_index, int x, int y, ...);
 void FUN_0057b4d0(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-void FUN_0057c7e0(int page_number, char *path);
-unsigned int FUN_005597ca(void);
-int FUN_005003b7(int mouse_x, int mouse_y, int mouse_state);
+void LoadPcxIntoPageOpaque(int page_number, char *path);
+unsigned int WaitForInputEventUnlessBlocked(void);
+int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 int ScaleUiCoordinate(int value);
+int Palette_FindNearestEntryIndex(int target_r, int target_g, int target_b, unsigned char *palette_bytes);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 void SetGraphicsPage(int page_number, void *page);
 void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
 void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
-void FUN_005797e0(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, unsigned int param_6);
-void FUN_005796c0(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6);
+void FillGraphicsRect(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, unsigned int param_6);
+void DrawGraphicsLine(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6);
 void FUN_004ce992(int param_1);
-int FUN_004ce97d(void);
-int FUN_0057aa30(int param_1, char param_2);
-int FUN_0057adf0(int param_1);
+int GetUiTickCount(void);
+int GetFontCharWidth(int param_1, char param_2);
+int GetFontLineHeight(int param_1);
 void DrawLoadSaveButtonText(FacemakerWindowBounds *window, int color, int x, int y, ...);
-int FUN_004ffcb4(AdvMenuControl *control);
+int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 int RenderAdvMenuControlNormally(AdvMenuControl *control);
 int FUN_004ece40(int param_1);
 int ShowHallBackgroundScreen(void);
@@ -153,6 +153,20 @@ int g_name_entry_insert_mode;
 DIBSurface *g_facemaker_page4_dib;
 // GLOBAL: SHANDALAR 0x00789928
 HBITMAP g_facemaker_page4_bitmap;
+// GLOBAL: SHANDALAR 0x0058d3b4
+char *g_portrait_palette_map_cached_palette_path = "";
+// GLOBAL: SHANDALAR 0x0058d3b8
+char *g_portrait_palette_map_cached_portrait_path = "";
+// GLOBAL: SHANDALAR 0x00603ef8
+RpBitsPalettePacket g_portrait_palette_source_palette;
+// GLOBAL: SHANDALAR 0x00603bd0
+RpBitsPalettePacket g_portrait_palette_target_palette;
+// GLOBAL: SHANDALAR 0x00604218
+unsigned char *g_portrait_palette_scan_cursor;
+// GLOBAL: SHANDALAR 0x00604220
+unsigned char g_portrait_palette_remap_table[0x100];
+// GLOBAL: SHANDALAR 0x00604320
+unsigned char g_portrait_tint_remap_table[0x100];
 // GLOBAL: SHANDALAR 0x00587220
 AdvMenuControl g_opening_menu_controls[4] = {
     {0xb8, 0x121, 0x115, 0x28, 0xb8, 0x121, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 1, 0, "Ss", (char *)0, 0, 0, {0, 0, 0, 0}},
@@ -365,7 +379,7 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
 
   PTR_DAT_005832b4->font_slot = 6;
   FUN_0057b4d0(PTR_DAT_005832b4, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
-               (s.icon_y + g_opening_menu_icon_size / 2) - (FUN_0057ae30(6) / 2),
+               (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontLineHeight(6) / 2),
                "%s",
                (char *)g_opening_menu_text_table[s.text_table_index]);
 
@@ -393,8 +407,8 @@ int RunOpeningMenu(void)
 
   if (g_opening_menu_strings_loaded == 0)
   {
-    g_opening_menu_text_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(DAT_0078cf08, "openingMenu",
-                                                                                       (int)DAT_0078df10);
+    g_opening_menu_text_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "openingMenu",
+                                                                                       (int)g_ini_string_scratch);
     g_opening_menu_strings_loaded = 1;
   }
 
@@ -417,7 +431,7 @@ loop:
   PTR_DAT_005832b4->font_slot = 5;
   PTR_DAT_005832b4->font_slot = 1;
 
-  g_opening_menu_entry_enabled[2] = FUN_00417dc6(s.map_name_buffer);
+  g_opening_menu_entry_enabled[2] = FileExists(s.map_name_buffer);
   for (s.loop_index = 4; s.loop_index < 0xe; s.loop_index = s.loop_index + 1)
   {
     if (s.loop_index >= 10)
@@ -429,7 +443,7 @@ loop:
       s.map_name_buffer[5] = (char)(s.loop_index + '0');
     }
 
-    if (FUN_00417dc6(s.map_name_buffer) != 0)
+    if (FileExists(s.map_name_buffer) != 0)
     {
       break;
     }
@@ -506,26 +520,26 @@ loop:
     g_opening_menu_icon_label_spacing = ScaleUiCoordinate(g_opening_menu_icon_label_spacing);
   }
 
-  s.menu_context = FUN_00500321();
-  FUN_005000fb(s.menu_context);
-  FUN_0050014e(g_opening_menu_controls, 4, s.menu_context);
+  s.menu_context = BeginMenuContext();
+  ResetMenuContext(s.menu_context);
+  AddMenuControlsToContext(g_opening_menu_controls, 4, s.menu_context);
 
   for (s.loop_index = 0; s.loop_index < 4; s.loop_index = s.loop_index + 1)
   {
     DrawOpeningMenuEntry(s.loop_index, ((g_opening_menu_entry_enabled[s.loop_index] == 0) ? 3 : 0));
     if (g_opening_menu_entry_enabled[s.loop_index] == 0)
     {
-      FUN_004ffcb4(&g_opening_menu_controls[s.loop_index]);
+      RenderAdvMenuControlDisabled(&g_opening_menu_controls[s.loop_index]);
     }
   }
 
   while (g_menu_selection_value == -1)
   {
-    FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
 
-  FUN_0050035e();
-  FUN_005000fb(s.menu_context);
+  EndMenuContext();
+  ResetMenuContext(s.menu_context);
   FreeSpriteBlob((void *)g_opening_menu_sprite_blob_handle);
   PTR_DAT_005832b4->font_slot = 1;
 
@@ -547,13 +561,13 @@ int HandleOpeningMenuControlEvent(AdvMenuControl *control, int event_type)
 {
   int is_inside_control_bounds;
 
-  if (DAT_00747ee0 == 0)
+  if (g_menu_render_guard == 0)
   {
-    if ((DAT_00986d9c < control->x) || (control->width + control->x < DAT_00986d9c))
+    if ((g_mouse_x < control->x) || (control->width + control->x < g_mouse_x))
     {
       is_inside_control_bounds = 0;
     }
-    else if ((DAT_00986d98 < control->y) || (control->y + control->height < DAT_00986d98))
+    else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
       is_inside_control_bounds = 0;
     }
@@ -584,7 +598,7 @@ int HandleOpeningMenuControlEvent(AdvMenuControl *control, int event_type)
 // FUNCTION: SHANDALAR 0x004a0fed
 int HandleOpeningMenuControlActivate(AdvMenuControl *control)
 {
-  FUN_005626b0("x:sound\\button2.wav", 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_menu_selection_value = control->selection_value;
   return 0;
 }
@@ -624,11 +638,11 @@ int DrawDifficultyMenuEntry(int difficulty_index, int visual_state)
     BlitGraphicsRect(PTR_DAT_005832dc, 200, s.preview_y - ScaleUiCoordinate(0x43), s.preview_width, s.preview_height, PTR_DAT_005832dc, 0, 0);
     StretchBlitGraphicsRect(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, PTR_DAT_005832dc, 4, 4, s.preview_width - 4,
                             s.preview_height - 4);
-    FUN_00579bf0(PTR_DAT_005832dc, 0, 0, s.preview_width, s.preview_height, PTR_DAT_005832b4, s.preview_x, s.preview_y);
+    CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, s.preview_width, s.preview_height, PTR_DAT_005832b4, s.preview_x, s.preview_y);
   }
   else
   {
-    FUN_00579bf0(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, PTR_DAT_005832b4, s.preview_x, s.preview_y);
+    CopyGraphicsRect(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, PTR_DAT_005832b4, s.preview_x, s.preview_y);
   }
   return 0;
 }
@@ -641,10 +655,10 @@ int RunDifficultyMenu(void)
 
   if (g_difficulty_menu_strings_loaded == 0)
   {
-    g_difficulty_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(DAT_0078cf08, "diffCaption",
-                                                                                       (int)DAT_0078df10);
-    g_difficulty_option_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(DAT_0078cf08, "diffs",
-                                                                                       (int)DAT_0078df10);
+    g_difficulty_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "diffCaption",
+                                                                                       (int)g_ini_string_scratch);
+    g_difficulty_option_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "diffs",
+                                                                                       (int)g_ini_string_scratch);
     g_difficulty_menu_strings_loaded = 1;
   }
 
@@ -699,9 +713,9 @@ int RunDifficultyMenu(void)
     }
   }
 
-  menu_context = FUN_00500321();
-  FUN_005000fb(menu_context);
-  FUN_0050014e(g_difficulty_menu_controls, 5, menu_context);
+  menu_context = BeginMenuContext();
+  ResetMenuContext(menu_context);
+  AddMenuControlsToContext(g_difficulty_menu_controls, 5, menu_context);
 
   for (difficulty_index = 0; difficulty_index < 4; difficulty_index = difficulty_index + 1)
   {
@@ -711,11 +725,11 @@ int RunDifficultyMenu(void)
   g_menu_selection_value = -1;
   while (g_menu_selection_value == -1)
   {
-    FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
 
-  FUN_0050035e();
-  FUN_005000fb(menu_context);
+  EndMenuContext();
+  ResetMenuContext(menu_context);
   return g_menu_selection_value - 1;
 }
 
@@ -724,13 +738,13 @@ int HandleDifficultyMenuControlEvent(AdvMenuControl *control, int event_type)
 {
   int is_inside_control_bounds;
 
-  if (DAT_00747ee0 == 0)
+  if (g_menu_render_guard == 0)
   {
-    if ((DAT_00986d9c < *(int *)((int)control + 0x10)) || (*(int *)((int)control + 0x18) + *(int *)((int)control + 0x10) < DAT_00986d9c))
+    if ((g_mouse_x < *(int *)((int)control + 0x10)) || (*(int *)((int)control + 0x18) + *(int *)((int)control + 0x10) < g_mouse_x))
     {
       is_inside_control_bounds = 0;
     }
-    else if ((DAT_00986d98 < control->y) || (control->y + control->height < DAT_00986d98))
+    else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
       is_inside_control_bounds = 0;
     }
@@ -761,7 +775,7 @@ int HandleDifficultyMenuControlEvent(AdvMenuControl *control, int event_type)
 // FUNCTION: SHANDALAR 0x004a177f
 int HandleDifficultyMenuControlActivate(AdvMenuControl *control)
 {
-  FUN_005626b0("x:sound\\button2.wav", 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_menu_selection_value = control->selection_value;
   return 0;
 }
@@ -826,9 +840,9 @@ int RunColorMenu(void)
 
   if (g_color_menu_strings_loaded == 0)
   {
-    g_color_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(DAT_0078cf08, "colorCaption", (int)DAT_0078df10);
-    g_color_menu_color_name_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(DAT_0078cf08, "colorMenuColors", (int)DAT_0078df10);
-    g_color_menu_flavor_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(DAT_0078cf08, "colorMenuFlavor", (int)DAT_0078df10);
+    g_color_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "colorCaption", (int)g_ini_string_scratch);
+    g_color_menu_color_name_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "colorMenuColors", (int)g_ini_string_scratch);
+    g_color_menu_flavor_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "colorMenuFlavor", (int)g_ini_string_scratch);
     g_color_menu_strings_loaded = 1;
   }
 
@@ -866,16 +880,16 @@ int RunColorMenu(void)
   LoadPcxResource(-1, 0, 0, "menu3.pic", &g_palette_data_words);
   FUN_0057ce70(0, DAT_00589dec);
 
-  *(AdvMenuRect *)&s.restore_rect_x = *(AdvMenuRect *)FUN_00579ea0(s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
+  *(AdvMenuRect *)&s.restore_rect_x = *(AdvMenuRect *)PushGraphicsClipRect(s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
 
   BeginSpriteEncodeSession();
-  FUN_0057c7e0(1, "menu3-but1.pic");
+  LoadPcxIntoPageOpaque(1, "menu3-but1.pic");
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
     g_color_menu_normal_swatch_sprites[s.color_index] = EncodeSpriteFromPage(1, 0, s.color_index * 0x4b, 0x46, 0x4b);
   }
 
-  FUN_0057c7e0(1, "menu3but.pic");
+  LoadPcxIntoPageOpaque(1, "menu3but.pic");
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
     g_color_menu_pressed_swatch_sprites[s.color_index] = EncodeSpriteFromPage(1, 0, s.color_index * 0x4b, 0x46, 0x4b);
@@ -897,9 +911,9 @@ int RunColorMenu(void)
     }
   }
 
-  s.menu_context = FUN_00500321();
-  FUN_005000fb(s.menu_context);
-  FUN_0050014e(g_color_menu_controls, 6, s.menu_context);
+  s.menu_context = BeginMenuContext();
+  ResetMenuContext(s.menu_context);
+  AddMenuControlsToContext(g_color_menu_controls, 6, s.menu_context);
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
     DrawColorMenuEntry(s.color_index, 0);
@@ -908,13 +922,13 @@ int RunColorMenu(void)
   g_menu_selection_value = -1;
   while (g_menu_selection_value == -1)
   {
-    FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
 
-  FUN_0050035e();
-  FUN_005000fb(s.menu_context);
+  EndMenuContext();
+  ResetMenuContext(s.menu_context);
   FreeSpriteBlob(g_color_menu_normal_swatch_sprites[0]);
-  FUN_00579ea0(s.restore_rect_buffer, PTR_DAT_00583304, s.restore_rect_x, s.restore_rect_y, s.restore_rect_width, s.restore_rect_height);
+  PushGraphicsClipRect(s.restore_rect_buffer, PTR_DAT_00583304, s.restore_rect_x, s.restore_rect_y, s.restore_rect_width, s.restore_rect_height);
 
   if (g_menu_selection_value == 0)
   {
@@ -931,13 +945,13 @@ int HandleColorMenuControlEvent(AdvMenuControl *control, int event_type)
 {
   int is_inside_control_bounds;
 
-  if (DAT_00747ee0 == 0)
+  if (g_menu_render_guard == 0)
   {
-    if ((DAT_00986d9c < control->x) || (control->x + control->width < DAT_00986d9c))
+    if ((g_mouse_x < control->x) || (control->x + control->width < g_mouse_x))
     {
       is_inside_control_bounds = 0;
     }
-    else if ((DAT_00986d98 < control->y) || (control->y + control->height < DAT_00986d98))
+    else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
       is_inside_control_bounds = 0;
     }
@@ -968,7 +982,7 @@ int HandleColorMenuControlEvent(AdvMenuControl *control, int event_type)
 // FUNCTION: SHANDALAR 0x004a201f
 int HandleColorMenuControlActivate(AdvMenuControl *control)
 {
-  FUN_005626b0("x:sound\\button2.wav", 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_menu_selection_value = control->selection_value;
   return 0;
 }
@@ -1002,27 +1016,27 @@ int RunFacemakerFlow(void)
 
   while (1)
   {
-    is_topmost_window = (unsigned int)((GetWindowLongA(DAT_00748420, -0x14) & 8) != 0);
+    is_topmost_window = (unsigned int)((GetWindowLongA(g_main_window_hwnd, -0x14) & 8) != 0);
     if (is_topmost_window != 0)
     {
-      SetWindowPos(DAT_00748420, (HWND)-2, 0, 0, 0, 0, 3);
+      SetWindowPos(g_main_window_hwnd, (HWND)-2, 0, 0, 0, 0, 3);
     }
 
     spawn_result = (int)_spawnl(0, facemaker_path, facemaker_path, "/S", 0);
-    BringWindowToTop(DAT_00748420);
-    SetForegroundWindow(DAT_00748420);
-    SetFocus(DAT_00748420);
+    BringWindowToTop(g_main_window_hwnd);
+    SetForegroundWindow(g_main_window_hwnd);
+    SetFocus(g_main_window_hwnd);
     if (spawn_result == -1)
     {
       return -1;
     }
 
     page4_bounds.page_number = 4;
-    page4_bounds.unk_04 = 0;
-    page4_bounds.unk_08 = 0;
+    page4_bounds.clip_left = 0;
+    page4_bounds.clip_top = 0;
     page4_bounds.max_x = 800;
     page4_bounds.max_y = 600;
-    page4_bounds.unk_14 = 1;
+    page4_bounds.draw_shadow_enabled = 1;
     page4_bounds.text_color = 0x0f;
     page4_bounds.unk_1c = 4;
     page4_bounds.font_slot = 0;
@@ -1039,9 +1053,9 @@ int RunFacemakerFlow(void)
     image_height = 0xa9;
     page4_dib = (DIBSurface *)CreateGraphicsPage(4, image_width * 2, image_height, 8);
     SetGraphicsPage(4, page4_dib);
-    FUN_00579ea0(old_page_rect, page4_bounds_ptr, 0, 0, image_width * 2, image_height);
+    PushGraphicsClipRect(old_page_rect, page4_bounds_ptr, 0, 0, image_width * 2, image_height);
     LoadPcxIntoPageNoPalette("menu4.pic");
-    FUN_005797e0(page4_bounds_ptr, 0, 0, image_width, image_height, 0);
+    FillGraphicsRect(page4_bounds_ptr, 0, 0, image_width, image_height, 0);
     BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x8a, 0xaa, page4_bounds_ptr, 0, 0);
 
     for (y = 0; y < image_height; y = y + 1)
@@ -1110,9 +1124,9 @@ int RunNameEntryDialog(char *name_buffer)
   int text_width;
 
   dialog_top = 0x12c;
-  FUN_0057c7e0(1, "namepick.pic");
+  LoadPcxIntoPageOpaque(1, "namepick.pic");
   PTR_DAT_005832dc->font_slot = PTR_DAT_005832b4->font_slot;
-  FUN_0056cc4d("ADVstrings.txt", "STARTUP");
+  LoadTextSectionLines("ADVstrings.txt", "STARTUP");
   DrawLocalizedText(PTR_DAT_005832dc, 0xed, 0x8b, 0x19, &text_lines[2][0]);
   DrawLocalizedText(PTR_DAT_005832dc, 0xb4, 0x8a, 0x18, &text_lines[2][0]);
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x114, 0x6a, PTR_DAT_005832dc, 0, 200);
@@ -1141,7 +1155,7 @@ int RunNameEntryDialog(char *name_buffer)
                           g_name_entry_cursor);
   } while (1);
 
-  FUN_005597ca();
+  WaitForInputEventUnlessBlocked();
   return 0;
 }
 
@@ -1164,26 +1178,89 @@ void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page)
 // FUNCTION: SHANDALAR 0x00521ffa
 int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, char *palette_source_path, char *portrait_path)
 {
-  (void)page;
-  (void)src_x;
-  (void)src_y;
-  (void)width;
-  (void)height;
-  (void)portrait_path;
-  LoadPcxIntoPageNoPalette(palette_source_path);
+  unsigned int scanline_buffer[256];
+  int y;
+  int x;
+  unsigned int red;
+  unsigned int green;
+  unsigned int blue;
+
+  if ((strcmp(g_portrait_palette_map_cached_palette_path, palette_source_path) != 0) || (strcmp(g_portrait_palette_map_cached_portrait_path, portrait_path) != 0))
+  {
+    LoadPcxResource(-1, 0, 0, palette_source_path, &g_portrait_palette_source_palette);
+    LoadPcxResource(-1, 0, 0, portrait_path, &g_portrait_palette_target_palette);
+    g_portrait_palette_scan_cursor = g_portrait_palette_source_palette.entry_data;
+    g_portrait_palette_map_cached_palette_path = palette_source_path;
+    g_portrait_palette_map_cached_portrait_path = portrait_path;
+    for (x = 0; x < 0x100; x = x + 1)
+    {
+      red = (unsigned int)*g_portrait_palette_scan_cursor;
+      g_portrait_palette_scan_cursor = g_portrait_palette_scan_cursor + 1;
+      green = (unsigned int)*g_portrait_palette_scan_cursor;
+      g_portrait_palette_scan_cursor = g_portrait_palette_scan_cursor + 1;
+      blue = (unsigned int)*g_portrait_palette_scan_cursor;
+      g_portrait_palette_scan_cursor = g_portrait_palette_scan_cursor + 1;
+      g_portrait_palette_remap_table[x] =
+          (unsigned char)Palette_FindNearestEntryIndex((int)red, (int)green, (int)blue, g_portrait_palette_target_palette.entry_data);
+    }
+  }
+
+  for (y = src_y; y < src_y + height; y = y + 1)
+  {
+    ReadGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
+    for (x = 0; x < (int)width; x = x + 1)
+    {
+      ((unsigned char *)scanline_buffer)[x] = g_portrait_palette_remap_table[((unsigned char *)scanline_buffer)[x]];
+    }
+    WriteGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
+  }
+
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00521e80
 int ApplyPortraitTintMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, unsigned int tint_mask, int tint_mode)
 {
-  (void)page;
-  (void)src_x;
-  (void)src_y;
-  (void)width;
-  (void)height;
-  (void)tint_mask;
-  (void)tint_mode;
+  unsigned int scanline_buffer[256];
+  unsigned int tint_red;
+  unsigned int tint_green;
+  unsigned int tint_blue;
+  int y;
+  int x;
+  unsigned char *palette_entry;
+  int mixed_red;
+  int mixed_green;
+  int mixed_blue;
+
+  palette_entry = g_palette_data_words.entry_data;
+  if (tint_mode != 0)
+  {
+    tint_red = tint_mask & 0xff;
+    tint_green = (tint_mask >> 8) & 0xff;
+    tint_blue = (tint_mask & 0xff0000) >> 0x10;
+    for (x = 0; x < 0x100; x = x + 1)
+    {
+      mixed_red = ((int)*palette_entry + (int)tint_red) / 2;
+      palette_entry = palette_entry + 1;
+      mixed_green = ((int)*palette_entry + (int)tint_green) / 2;
+      palette_entry = palette_entry + 1;
+      mixed_blue = ((int)*palette_entry + (int)tint_blue) / 2;
+      palette_entry = palette_entry + 1;
+      g_portrait_tint_remap_table[x] =
+          (unsigned char)Palette_FindNearestEntryIndex(mixed_red, mixed_green, mixed_blue, g_palette_data_words.entry_data);
+    }
+  }
+
+  for (y = src_y; y < src_y + height; y = y + 1)
+  {
+    ReadGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
+    for (x = 0; x < (int)width; x = x + 1)
+    {
+      ((unsigned char *)scanline_buffer)[x] = g_portrait_tint_remap_table[((unsigned char *)scanline_buffer)[x]];
+    }
+    WriteGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
+  }
+
   return 0;
 }
 
@@ -1369,7 +1446,7 @@ int HandleLoadSaveEscControlEvent(AdvMenuControl *control, int event_type)
   (void)control;
   if (event_type == 2)
   {
-    FUN_005626b0("x:sound\\button2.wav", 0xf, 100, 100, 0);
+    PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
     g_loadsave_menu_selection = 0xe;
   }
   return 0;
@@ -1394,7 +1471,7 @@ int DrawBlinkingNameCaret(FacemakerWindowBounds *window, int color_index, int ca
   int baseline_y;
 
   string_len = strlen(name_buffer);
-  frame_counter = FUN_004ce97d();
+  frame_counter = GetUiTickCount();
   if ((frame_counter & 7) == 0)
   {
     return 0;
@@ -1404,27 +1481,27 @@ int DrawBlinkingNameCaret(FacemakerWindowBounds *window, int color_index, int ca
   {
     if (i < (int)string_len)
     {
-      char_width = FUN_0057aa30(window->font_slot, name_buffer[i]);
+      char_width = GetFontCharWidth(window->font_slot, name_buffer[i]);
     }
     else
     {
-      char_width = FUN_0057aa30(window->font_slot, ' ');
+      char_width = GetFontCharWidth(window->font_slot, ' ');
     }
     caret_x = caret_x + char_width;
   }
 
   if (i < (int)string_len)
   {
-    caret_width = FUN_0057aa30(window->font_slot, name_buffer[cursor_pos]);
+    caret_width = GetFontCharWidth(window->font_slot, name_buffer[cursor_pos]);
   }
   else
   {
-    caret_width = FUN_0057aa30(window->font_slot, ' ');
+    caret_width = GetFontCharWidth(window->font_slot, ' ');
   }
 
-  baseline_y = caret_y + FUN_0057adf0(window->font_slot) / 2;
-  FUN_005796c0(window, caret_x, baseline_y - 1, caret_x + caret_width, baseline_y - 1, color_index);
-  FUN_005796c0(window, caret_x, baseline_y, caret_x + caret_width, baseline_y, color_index);
+  baseline_y = caret_y + GetFontLineHeight(window->font_slot) / 2;
+  DrawGraphicsLine(window, caret_x, baseline_y - 1, caret_x + caret_width, baseline_y - 1, color_index);
+  DrawGraphicsLine(window, caret_x, baseline_y, caret_x + caret_width, baseline_y, color_index);
   return 0;
 }
 
@@ -1466,7 +1543,7 @@ int DrawLoadSaveButton(FacemakerWindowBounds *window, EncodedImage **button_spri
   DrawEncodedImageResampled(window, x_cursor, 0, ScaleUiCoordinate(sprite->width), ScaleUiCoordinate(sprite->height), sprite);
 
   window->font_slot = font_slot;
-  FUN_0057adf0(font_slot);
+  GetFontLineHeight(font_slot);
   text_width = MeasureMultilineTextWidth(window, button_text);
   while (button_width < text_width)
   {
@@ -1674,11 +1751,11 @@ int RunLoadSaveMenu(int param_1)
 
   if (param_1 != 0)
   {
-    strcpy(DAT_0078cf10, gs_loadsave_0077d1b0[0]);
+    strcpy(g_ui_message_buffer, gs_loadsave_0077d1b0[0]);
   }
   else
   {
-    strcpy(DAT_0078cf10, gs_loadsave_0077d1b0[1]);
+    strcpy(g_ui_message_buffer, gs_loadsave_0077d1b0[1]);
   }
 
   locals.map_path[5] = '4';
@@ -1690,7 +1767,7 @@ int RunLoadSaveMenu(int param_1)
     (&g_loadsave_slot_descriptions[locals.slot_index][0])[-1 + locals.text_index] = '\0';
     locals.temp_int = FUN_004ece40(locals.slot_index + 4);
     locals.map_path[5] = (char)locals.temp_int;
-    locals.temp_int = FUN_00417dc6(locals.map_path);
+    locals.temp_int = FileExists(locals.map_path);
     g_loadsave_slot_has_data[locals.slot_index] = locals.temp_int;
     if (g_loadsave_slot_has_data[locals.slot_index] == 0)
     {
@@ -1718,8 +1795,8 @@ int RunLoadSaveMenu(int param_1)
   }
 
 restart_menu_loop:
-  locals.menu_context = FUN_00500321();
-  FUN_005000fb(locals.menu_context);
+  locals.menu_context = BeginMenuContext();
+  ResetMenuContext(locals.menu_context);
   if ((param_1 == 0) && (g_loadsave_skip_esc == 0))
   {
     locals.menu_control_count = 10;
@@ -1728,12 +1805,12 @@ restart_menu_loop:
   {
     locals.menu_control_count = 0xb;
   }
-  FUN_0050014e(g_loadsave_menu_controls, locals.menu_control_count, locals.menu_context);
+  AddMenuControlsToContext(g_loadsave_menu_controls, locals.menu_control_count, locals.menu_context);
   for (locals.slot_index = 0; locals.slot_index < 10; locals.slot_index = locals.slot_index + 1)
   {
     if (g_loadsave_slot_has_data[locals.slot_index] == 0)
     {
-      FUN_004ffcb4(&g_loadsave_menu_controls[locals.slot_index]);
+      RenderAdvMenuControlDisabled(&g_loadsave_menu_controls[locals.slot_index]);
       DrawLoadSaveSlotEntry(locals.slot_index, 3);
     }
     else
@@ -1746,10 +1823,10 @@ restart_menu_loop:
   g_loadsave_menu_selection = -1;
   while (g_loadsave_menu_selection == -1)
   {
-    FUN_005003b7(DAT_007898f4, DAT_007898f8, DAT_00986d94);
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
-  FUN_0050035e();
-  FUN_005000fb(locals.menu_context);
+  EndMenuContext();
+  ResetMenuContext(locals.menu_context);
   if (g_loadsave_menu_selection == 0xe)
   {
     AnimatePaletteToColor(0, DAT_00589dec);
@@ -1914,13 +1991,13 @@ int HandleLoadSaveSlotControlEvent(AdvMenuControl *control, int event_type)
 {
   int is_inside_control_bounds;
 
-  if (DAT_00747ee0 == 0)
+  if (g_menu_render_guard == 0)
   {
-    if ((DAT_00986d9c < control->x) || (control->x + control->width < DAT_00986d9c))
+    if ((g_mouse_x < control->x) || (control->x + control->width < g_mouse_x))
     {
       is_inside_control_bounds = 0;
     }
-    else if ((DAT_00986d98 < control->y) || (control->y + control->height < DAT_00986d98))
+    else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
       is_inside_control_bounds = 0;
     }
@@ -1951,7 +2028,7 @@ int HandleLoadSaveSlotControlEvent(AdvMenuControl *control, int event_type)
 // FUNCTION: SHANDALAR 0x004a98de
 int ActivateLoadSaveSlotControl(AdvMenuControl *control)
 {
-  FUN_005626b0("x:sound\\button2.wav", 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_loadsave_menu_selection = control->selection_value;
   return 0;
 }
@@ -1963,18 +2040,18 @@ int RenderAdvMenuControlNormally(AdvMenuControl *control)
 
   old_state = control->state;
   control->state = 0;
-  DAT_00747ee0 = 1;
+  g_menu_render_guard = 1;
   control->on_render(control, 0);
-  DAT_00747ee0 = 0;
+  g_menu_render_guard = 0;
   return old_state;
 }
 
 // FUNCTION: SHANDALAR 0x0056c9b0
 int ShowHallBackgroundScreen(void)
 {
-  FUN_0057c7e0(1, "hallback.pic");
+  LoadPcxIntoPageOpaque(1, "hallback.pic");
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                           global_screen_height);
-  FUN_005597ca();
+  WaitForInputEventUnlessBlocked();
   return 0;
 }
