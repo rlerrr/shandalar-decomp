@@ -145,6 +145,18 @@ int g_opening_menu_entry_height = 0x29;
 int g_opening_menu_icon_label_spacing = 0x8c;
 // GLOBAL: SHANDALAR 0x005873d8
 int g_opening_menu_entry_enabled[4] = {1, 1, 1, 1};
+// GLOBAL: SHANDALAR 0x00587d30
+char g_opening_menu_esc_hotkeys[] = "Ee\x1b";
+// GLOBAL: SHANDALAR 0x00587d34
+char g_opening_menu_esc_activate_hotkeys[4] = "\x1b";
+// GLOBAL: SHANDALAR 0x00587d38
+char g_difficulty_menu_esc_navigate_hotkeys[4] = "\x1b";
+// GLOBAL: SHANDALAR 0x00587d3c
+char g_difficulty_menu_esc_activate_hotkeys[4] = "\x1b";
+// GLOBAL: SHANDALAR 0x00587d40
+char g_color_menu_esc_navigate_hotkeys[4] = "\x1b";
+// GLOBAL: SHANDALAR 0x00587d44
+char g_color_menu_esc_activate_hotkeys[4] = "\x1b";
 // GLOBAL: SHANDALAR 0x00781778
 int g_name_entry_cursor;
 // GLOBAL: SHANDALAR 0x00781774
@@ -172,7 +184,7 @@ AdvMenuControl g_opening_menu_controls[4] = {
     {0xb8, 0x121, 0x115, 0x28, 0xb8, 0x121, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 1, 0, "Ss", (char *)0, 0, 0, {0, 0, 0, 0}},
     {0xb8, 0x14a, 0x115, 0x28, 0xb8, 0x14a, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 2, 0, "Ll", (char *)0, 0, 0, {0, 0, 0, 0}},
     {0xb8, 0x173, 0x115, 0x28, 0xb8, 0x173, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 3, 0, "rR", (char *)0, 0, 0, {0, 0, 0, 0}},
-    {0xb8, 0x19c, 0x115, 0x28, 0xb8, 0x19c, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 5, 1, "Ee\x1b", "\x1b", 0, 0, {0, 0, 0, 0}}};
+    {0xb8, 0x19c, 0x115, 0x28, 0xb8, 0x19c, 0x115, 0x28, 1, HandleOpeningMenuControlEvent, HandleOpeningMenuControlActivate, 5, 1, g_opening_menu_esc_hotkeys, g_opening_menu_esc_activate_hotkeys, 0, 0, {0, 0, 0, 0}}};
 
 // GLOBAL: SHANDALAR 0x005873f0
 AdvMenuControl g_difficulty_menu_controls[5] = {
@@ -180,7 +192,7 @@ AdvMenuControl g_difficulty_menu_controls[5] = {
     {0x118, 0xb4, 0x10e, 0x54, 0x118, 0xb4, 0x10e, 0x54, 1, HandleDifficultyMenuControlEvent, HandleDifficultyMenuControlActivate, 2, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
     {0x118, 0x118, 0x10e, 0x54, 0x118, 0x118, 0x10e, 0x54, 1, HandleDifficultyMenuControlEvent, HandleDifficultyMenuControlActivate, 3, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
     {0x118, 0x17c, 0x10e, 0x54, 0x118, 0x17c, 0x10e, 0x54, 1, HandleDifficultyMenuControlEvent, HandleDifficultyMenuControlActivate, 4, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
-    {-1, -1, -1, -1, -1, -1, -1, -1, 1, HandleEscControlEvent, SetSelectedMenuValue, 0, 0, "\x1b", "\x1b", 0, 0, {0, 0, 0, 0}}};
+    {-1, -1, -1, -1, -1, -1, -1, -1, 1, HandleEscControlEvent, SetSelectedMenuValue, 0, 0, g_difficulty_menu_esc_navigate_hotkeys, g_difficulty_menu_esc_activate_hotkeys, 0, 0, {0, 0, 0, 0}}};
 
 // GLOBAL: SHANDALAR 0x005875d8
 AdvMenuControl g_color_menu_controls[6] = {
@@ -189,7 +201,7 @@ AdvMenuControl g_color_menu_controls[6] = {
     {0x33, 0xd9, 0x10e, 0x4b, 0x33, 0xd9, 0x10e, 0x4b, 1, HandleColorMenuControlEvent, HandleColorMenuControlActivate, 3, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
     {0x33, 0x124, 0x10e, 0x4b, 0x33, 0x124, 0x10e, 0x4b, 1, HandleColorMenuControlEvent, HandleColorMenuControlActivate, 4, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
     {0x33, 0x16f, 0x10e, 0x4b, 0x33, 0x16f, 0x10e, 0x4b, 1, HandleColorMenuControlEvent, HandleColorMenuControlActivate, 5, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
-    {-1, -1, -1, -1, -1, -1, -1, -1, 1, HandleEscControlEvent, SetSelectedMenuValue, 0, 0, "\x1b", "\x1b", 0, 0, {0, 0, 0, 0}}};
+    {-1, -1, -1, -1, -1, -1, -1, -1, 1, HandleEscControlEvent, SetSelectedMenuValue, 0, 0, g_color_menu_esc_navigate_hotkeys, g_color_menu_esc_activate_hotkeys, 0, 0, {0, 0, 0, 0}}};
 
 // GLOBAL: SHANDALAR 0x00587598
 AdvMenuRect g_difficulty_menu_preview_rects[4] = {{0x1c7, 0x4b, 0x7a, 0x5c}, {0x1c7, 0xaf, 0x7a, 0x5c}, {0x1c7, 0x113, 0x7a, 0x5c}, {0x1c7, 0x177, 0x7a, 0x5c}};

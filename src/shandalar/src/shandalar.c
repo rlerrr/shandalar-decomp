@@ -75,7 +75,20 @@ int g_neighbor_dx[9] = {0, -1, 0, 1, -1, 1, 1, -1, 0};
 // GLOBAL: SHANDALAR 0x00586340
 int g_neighbor_dy[9] = {0, 0, -1, 0, 1, 1, -1, 1, 0};
 // GLOBAL: SHANDALAR 0x005863c8
-ColorSlotTimer g_color_slot_timers[0xc];
+ColorSlotTimer g_color_slot_timers[0xc] = {
+    {0, 0, 114, 1000},
+    {0, 0, 62, 700},
+    {0, 0, 24, 200},
+    {0, 0, 133, 800},
+    {0, 0, 25, 1500},
+    {0, 0, 121, 400},
+    {0, 0, 285, 500},
+    {0, 0, 145, 600},
+    {0, 0, 26, 300},
+    {0, 0, 205, 600},
+    {0, 0, 28, 1200},
+    {0, 0, 0x03020100, 0x07060004},
+};
 // GLOBAL: SHANDALAR 0x00589de8
 const char *PTR_s_advinter800_pic_00589de8;
 // GLOBAL: SHANDALAR 0x00583290
@@ -186,7 +199,6 @@ int DAT_0073e9dc;
 int DAT_00591214 = 1;
 // GLOBAL: SHANDALAR 0x0078990c
 int DAT_0078990c[10];
-#define DAT_00789910 (&DAT_0078990c[1])
 // GLOBAL: SHANDALAR 0x0073ea70
 int DAT_0073ea70[8];
 // GLOBAL: SHANDALAR 0x00669700
@@ -353,9 +365,40 @@ AdvMenuControl g_color_choice_controls[5] = {
 // GLOBAL: SHANDALAR 0x0058b580
 FacemakerWindowBounds *g_menu_control_draw_target_page = &DAT_00583290;
 // GLOBAL: SHANDALAR 0x0058b87c
-char *g_color_choice_sound_paths[0x40];
+int g_color_choice_icon_rect_table_padding = 0;
 // GLOBAL: SHANDALAR 0x0058b880
-AdvMenuRect g_color_choice_icon_rects[0x20];
+AdvMenuRect g_color_choice_icon_rects[0xc] = {
+    {22, 427, 48, 48},
+    {113, 427, 48, 48},
+    {28, 378, 49, 49},
+    {205, 427, 48, 48},
+    {112, 378, 49, 49},
+    {297, 427, 48, 48},
+    {195, 378, 49, 49},
+    {385, 427, 48, 48},
+    {274, 378, 49, 49},
+    {474, 427, 48, 48},
+    {354, 378, 49, 49},
+    {567, 427, 48, 48},
+};
+// GLOBAL: SHANDALAR 0x0058b95c
+char g_color_choice_black_wm_sound_path[] = "x:sound\\blackwm.wav";
+// GLOBAL: SHANDALAR 0x0058b970
+char g_color_choice_blue_wm_sound_path[] = "x:sound\\bluewm.wav";
+// GLOBAL: SHANDALAR 0x0058b984
+char g_color_choice_green_wm_sound_path[] = "x:sound\\greenwm.wav";
+// GLOBAL: SHANDALAR 0x0058b998
+char g_color_choice_red_wm_sound_path[] = "x:sound\\redwm.wav";
+// GLOBAL: SHANDALAR 0x0058b9ac
+char g_color_choice_white_wm_sound_path[] = "x:sound\\whitewm.wav";
+// GLOBAL: SHANDALAR 0x0058b940
+char *g_color_choice_sound_paths[5] = {
+    g_color_choice_black_wm_sound_path,
+    g_color_choice_blue_wm_sound_path,
+    g_color_choice_green_wm_sound_path,
+    g_color_choice_red_wm_sound_path,
+    g_color_choice_white_wm_sound_path,
+};
 // GLOBAL: SHANDALAR 0x0058b954
 int g_menu_current_control_index = -1;
 // GLOBAL: SHANDALAR 0x0058b958
@@ -1956,14 +1999,14 @@ void InitializeNewGameState(void)
       g_journal_entry_count = 0;
       for (locals.location_block_start_index = 0; locals.location_block_start_index < 5; locals.location_block_start_index = locals.location_block_start_index + 1)
       {
-        DAT_00789910[locals.location_block_start_index] = 0;
+        g_amulet_inventory[locals.location_block_start_index] = 0;
       }
 
-      DAT_0078990c[g_selected_wizard_color] = DAT_0078990c[g_selected_wizard_color] + 1;
+      DAT_0078990c[g_selected_wizard_color]++;
       for (locals.location_block_start_index = 0; locals.location_block_start_index < 3 - g_shandalar_difficulty; locals.location_block_start_index = locals.location_block_start_index + 1)
       {
         locals.icon_width_scaled = FUN_00522508(5);
-        DAT_00789910[locals.icon_width_scaled] = DAT_00789910[locals.icon_width_scaled] + 1;
+        g_amulet_inventory[locals.icon_width_scaled]++;
       }
 
       for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x80; locals.location_block_start_index = locals.location_block_start_index + 1)
@@ -4379,7 +4422,7 @@ int ActivateColorChoiceControl(AdvMenuControl *control)
     g_pending_ui_action_code = control->selection_value;
   }
   g_mouse_button_down_mask = 0;
-  PlaySoundEffectOnChannel(g_color_choice_sound_paths[control->selection_value], 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel(g_color_choice_sound_paths[control->selection_value - 0x31], 0xf, 100, 100, 0);
   return 0;
 }
 

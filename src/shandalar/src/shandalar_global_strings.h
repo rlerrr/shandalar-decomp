@@ -32,11 +32,19 @@ typedef struct
 {
   char article[0x0a];
   sh_text_0x32_t name;
-  sh_text_0x50_t plural;
+  sh_text_0x32_t plural;
+  unsigned char metadata[0x1e];
 } sh_creature_name_entry_t;
+typedef char sh_creature_name_entry_size_must_be_0x8c[(sizeof(sh_creature_name_entry_t) == 0x8c) ? 1 : -1];
 
+#ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_creature_name_entry_t gs_creature_names_00591a08[0x39] = {
+#include "creature_names_init.inc"
+};
+#else
 // GLOBAL: SHANDALAR 0x00591a08
 SHANDALAR_GLOBAL_STRINGS_EXTERN sh_creature_name_entry_t gs_creature_names_00591a08[0x39];
+#endif
 
 /* Pointer tables (arrays of char*) */
 // GLOBAL: SHANDALAR 0x0077c5a0

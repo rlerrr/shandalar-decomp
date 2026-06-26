@@ -117,9 +117,15 @@ typedef struct
 } WorldNode;
 STATIC_ASSERT(sizeof(WorldNode) == 100, world_node_wrong_size);
 
+#ifdef GLOBAL_STATE_IMPL
+GLOBAL_STATE_EXTERN csvid_and_numcards initial_library[2][200] = {
+#include "initial_library_init.inc"
+};
+#else
 // GLOBAL: MAGIC 0x0056fb20
 // GLOBAL: SHANDALAR 0x0058d3c8
 GLOBAL_STATE_EXTERN csvid_and_numcards initial_library[2][200];
+#endif
 
 // GLOBAL: MAGIC 0x008cc980
 // GLOBAL: SHANDALAR 0x008e0b00
@@ -765,7 +771,7 @@ GLOBAL_STATE_EXTERN int g_defeated_wizards_bitmap;
 
 // GLOBAL: MAGIC 0x00712940
 // GLOBAL: SHANDALAR 0x00789910
-GLOBAL_STATE_EXTERN unsigned char g_amulet_inventory[0x14];
+GLOBAL_STATE_EXTERN int g_amulet_inventory[5];
 
 // GLOBAL: MAGIC 0x00712954
 // GLOBAL: SHANDALAR 0x0078992c
@@ -871,9 +877,13 @@ GLOBAL_STATE_EXTERN int g_siege_indicator;
 // GLOBAL: SHANDALAR 0x0059120c
 GLOBAL_STATE_EXTERN int g_siege_timer;
 
+#ifdef GLOBAL_STATE_IMPL
+GLOBAL_STATE_EXTERN char g_name_entry_buffer[0x40] = "Ned Way the Ratiocinator";
+#else
 // GLOBAL: MAGIC 0x007497d0
 // GLOBAL: SHANDALAR 0x00591228
 GLOBAL_STATE_EXTERN char g_name_entry_buffer[0x40];
+#endif
 
 // GLOBAL: MAGIC 0x0074a22c
 // GLOBAL: SHANDALAR 0x0073ea88
@@ -930,14 +940,21 @@ GLOBAL_STATE_EXTERN int g_player_is_male;
 // GLOBAL: SHANDALAR 0x0058c140
 GLOBAL_STATE_EXTERN int DAT_0057b178;
 
+#ifdef GLOBAL_STATE_IMPL
+GLOBAL_STATE_EXTERN int g_food = 50;
+#else
 // GLOBAL: MAGIC 0x0057d9e0
 // GLOBAL: SHANDALAR 0x005863a8
 GLOBAL_STATE_EXTERN int g_food;
+#endif
 
+#ifdef GLOBAL_STATE_IMPL
+GLOBAL_STATE_EXTERN int g_current_quest_destination = -1;
+#else
 // GLOBAL: MAGIC 0x0057d9e8
 // GLOBAL: SHANDALAR 0x005863b0
 GLOBAL_STATE_EXTERN int g_current_quest_destination;
-
+#endif
 // GLOBAL: MAGIC 0x0057d9ec
 // GLOBAL: SHANDALAR 0x005863b4
 GLOBAL_STATE_EXTERN int g_next_duel_card_id;
