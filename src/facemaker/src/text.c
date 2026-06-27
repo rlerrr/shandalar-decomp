@@ -24,9 +24,11 @@ extern int g_graphics_bpp;
 extern HDC global_main_hdc;
 
 // GLOBAL: FACEMAKER 0x004199c8
+// GLOBAL: SHANDALAR 0x0073a828
 int *g_sprite_blob_base;
 
 // GLOBAL: FACEMAKER 0x004199cc
+// GLOBAL: SHANDALAR 0x0073a82c
 int *g_sprite_blob_cursor;
 
 // GLOBAL: FACEMAKER 0x004189b8

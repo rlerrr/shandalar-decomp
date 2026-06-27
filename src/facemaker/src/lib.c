@@ -115,6 +115,7 @@ int g_graphics_initialized;
 RpBitsPalettePacket g_palette_transition_source_words;
 
 // GLOBAL: FACEMAKER 0x00425e10
+// GLOBAL: SHANDALAR 0x00986220
 HPALETTE g_palette_handle;
 
 // GLOBAL: FACEMAKER 0x00425e20
@@ -122,6 +123,7 @@ HPALETTE g_palette_handle;
 RpBitsPalettePacket g_palette_data_words;
 
 // GLOBAL: FACEMAKER 0x00426140
+// GLOBAL: SHANDALAR 0x00986550
 PALETTEENTRY g_palette_entries[256];
 
 // GLOBAL: FACEMAKER 0x00426540
@@ -129,9 +131,11 @@ PALETTEENTRY g_palette_entries[256];
 DIBSurface *g_graphics_pages[10];
 
 // GLOBAL: FACEMAKER 0x00426568
+// GLOBAL: SHANDALAR 0x00986978
 int g_graphics_height;
 
 // GLOBAL: FACEMAKER 0x0042656c
+// GLOBAL: SHANDALAR 0x0098697c
 int g_graphics_width;
 
 // GLOBAL: FACEMAKER 0x00426570
@@ -143,6 +147,7 @@ int g_graphics_bpp;
 RGBQUAD g_palette_rgb[256];
 
 // GLOBAL: FACEMAKER 0x00426980
+// GLOBAL: SHANDALAR 0x00986d90
 LOGPALETTE *g_palette_layout;
 
 // GLOBAL: FACEMAKER 0x00421110
@@ -155,12 +160,14 @@ int g_palette_transition_hsv[0x301];
 int g_palette_transition_value_step[0x2ff];
 
 // GLOBAL: FACEMAKER 0x0040d08c
+// GLOBAL: SHANDALAR 0x005a160c
 int g_graphics_internal_state = 0;
 
 // GLOBAL: FACEMAKER 0x0040d2e4
 unsigned char *g_palette_rgb_bytes = g_palette_data_words.entry_data;
 
 // GLOBAL: FACEMAKER 0x0041afb8
+// GLOBAL: SHANDALAR 0x00748414
 HPALETTE g_realized_palette_handle;
 
 // Not optimized in shandalar interestingly

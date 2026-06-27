@@ -6,10 +6,8 @@
 /* Single header library style */
 #ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
 #define SHANDALAR_GLOBAL_STRINGS_EXTERN
-#define SHANDALAR_GLOBAL_STRINGS_INIT(value) = value
 #else
 #define SHANDALAR_GLOBAL_STRINGS_EXTERN extern
-#define SHANDALAR_GLOBAL_STRINGS_INIT(value)
 #endif
 
 typedef char sh_text_0x19_t[0x19];
@@ -21,11 +19,19 @@ typedef char sh_text_0x50_t[0x50];
  * plus block pointers loaded by LoadAdvBlocksFile() (from AdvBlocks.txt).
  */
 
+#ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
 // GLOBAL: SHANDALAR 0x008bd200
-SHANDALAR_GLOBAL_STRINGS_EXTERN int gs_skip_advstring_load_008bd200 SHANDALAR_GLOBAL_STRINGS_INIT(0);
+int DAT_008bd200 = 0;
+#else
+extern int DAT_008bd200;
+#endif
 
+#ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
 // GLOBAL: SHANDALAR 0x00593934
-SHANDALAR_GLOBAL_STRINGS_EXTERN unsigned int gs_creature_name_count_00593934 SHANDALAR_GLOBAL_STRINGS_INIT(0x39);
+unsigned int gs_creature_name_count_00593934 = 0x39;
+#else
+extern unsigned int gs_creature_name_count_00593934;
+#endif
 
 /* [CREATURENAMES] packed record at 0x00591a08, stride 0x8c */
 typedef struct
@@ -226,7 +232,6 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char *gs_advblock_city_0074c930[4];
 SHANDALAR_GLOBAL_STRINGS_EXTERN char *gs_advblock_general_0077c9e0[0x0c];
 
 /* Legacy aliases used by decomp code */
-#define DAT_008bd200 gs_skip_advstring_load_008bd200
 #define DAT_00593934 gs_creature_name_count_00593934
 
 #define DAT_00591a08 ((char *)gs_creature_names_00591a08 + 0x00)
@@ -285,6 +290,5 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char *gs_advblock_general_0077c9e0[0x0c];
 #define DAT_0077c9e0 gs_advblock_general_0077c9e0
 
 #undef SHANDALAR_GLOBAL_STRINGS_EXTERN
-#undef SHANDALAR_GLOBAL_STRINGS_INIT
 
 #endif /* SHANDALAR_GLOBAL_STRINGS_H */

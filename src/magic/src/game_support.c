@@ -377,7 +377,7 @@ int put_card_on_stack(int player, int card, int mode)
     {
       if (player == active_player && unk_008a9000 != 1 && DAT_007abc80 == 0 && (((unsigned char)s.card_data->type & 0x7e) != 0))
       {
-        FUN_004eca6d(global_ui_strings_filename, "PROMPT_CAST1");
+        LoadTextSectionLines(global_ui_strings_filename, "PROMPT_CAST1");
         sprintf(s.prompt_text, text_lines[0], DAT_007a7c60);
         if ((char)s.card_data->cc[1] == -1)
         {
@@ -8734,7 +8734,7 @@ void FUN_004b6002(const char *param_1)
 
   if (unk_008a9000 != 1)
   {
-    FUN_004eca6d(global_ui_strings_filename, "PROMPT_SYSERR");
+    LoadTextSectionLines(global_ui_strings_filename, "PROMPT_SYSERR");
     sprintf(buf, text_lines[1], param_1);
     MessageBoxA((HWND)unk_008cf1b4, buf, text_lines[0], 0);
   }

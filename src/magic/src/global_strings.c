@@ -64,7 +64,8 @@ int load_text(const char *file_name, const char *section_name)
 }
 
 // FUNCTION: MAGIC 0x004eca6d
-int FUN_004eca6d(char *filename, char *section_name)
+// FUNCTION: SHANDALAR 0x0056cc4d
+int LoadTextSectionLines(char *filename, char *section_name)
 {
   int loaded_count;
   int line_index;
@@ -172,8 +173,7 @@ void FUN_00491f1e(char *filename)
     strcpy(gs_hunting_subtype_name_00926930[color_index], text_lines[color_index]);
   }
 
-  loaded_count = load_text(filename, "WORDSTOHACK_BLACK");
-  gs_words_to_hack_count_008cd924 = loaded_count;
+  loaded_count = gs_words_to_hack_count_008cd924 = load_text(filename, "WORDSTOHACK_BLACK");
   for (color_index = 0; color_index < loaded_count; ++color_index)
   {
     strcpy(gs_words_to_hack_00789c80[COLOR_BLACK][color_index], text_lines[color_index]);
@@ -225,8 +225,7 @@ void FUN_00491f1e(char *filename)
     strcpy(gs_words_hacked_0091d260[COLOR_WHITE][color_index], text_lines[color_index]);
   }
 
-  loaded_count = load_text(filename, "WORDSTOSLEIGHT_BLACK");
-  gs_words_to_sleight_count_00789c34 = loaded_count;
+  loaded_count = gs_words_to_sleight_count_00789c34 =load_text(filename, "WORDSTOSLEIGHT_BLACK");
   for (color_index = 0; color_index < loaded_count; ++color_index)
   {
     strcpy(gs_words_to_sleight_00781bd0[COLOR_BLACK][color_index], text_lines[color_index]);
@@ -504,6 +503,6 @@ void FUN_00491f1e(char *filename)
   strcpy(gs_cuecard_summoning_sickness_008a8e00, text_lines[8]);
   strcpy(gs_cuecard_phased_007aae00, text_lines[9]);
 
-  FUN_004eca6d(global_ui_strings_filename, "PROMPT_RESOLUTIONERROR");
+  LoadTextSectionLines(global_ui_strings_filename, "PROMPT_RESOLUTIONERROR");
   strcpy(DAT_007898b0, text_lines[0]);
 }

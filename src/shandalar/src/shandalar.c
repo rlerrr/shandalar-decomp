@@ -89,7 +89,7 @@ WorldMagicSlotTimer g_world_magic_slot_timers[0xc] = {
     {0, 0, 0x03020100, 0x07060004},
 };
 // GLOBAL: SHANDALAR 0x00589de8
-const char *PTR_s_advinter800_pic_00589de8;
+char *PTR_s_advinter800_pic_00589de8;
 // GLOBAL: SHANDALAR 0x00583290
 FacemakerWindowBounds DAT_00583290 = {0, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x005832b4
@@ -165,7 +165,7 @@ int g_sound_drive_initialized;
 // GLOBAL: SHANDALAR 0x0073e890
 char g_cached_cwd[0x100];
 // GLOBAL: SHANDALAR 0x0073c00c
-int g_card_count;
+int g_card_count = 722;
 // GLOBAL: SHANDALAR 0x0073e9d8
 char g_sound_drive_letter;
 // GLOBAL: SHANDALAR 0x0067a3b8
@@ -414,8 +414,6 @@ jmp_buf DAT_0073e990;
 jmp_buf DAT_0073e9e0;
 // GLOBAL: SHANDALAR 0x006527b0
 int DAT_006527b0;
-// GLOBAL: SHANDALAR 0x00602fb4
-int g_save_errno;
 // GLOBAL: SHANDALAR 0x00590764
 int DAT_00590764;
 // GLOBAL: SHANDALAR 0x00590768
@@ -503,7 +501,6 @@ int g_selected_save_slot_index;
 
 int InitLicenseSecretsFromRegistry(void);
 int LoadAdvStringsFile(const char *filename);
-int LoadTextSectionLines(const char *filename, const char *section);
 int LoadTextSectionStringTable(const char *filename, const char *section, char **out_table, int max_entries, char *string_buf,
                                char *string_buf_end, char **out_next_buf);
 int LoadAdvBlocksFile(const char *filename);
@@ -883,8 +880,8 @@ opening_menu:
   s.proceed_to_main_loop = 1;
 
   // Jumpbufs for exiting the game
-  _setjmp3(&DAT_0073e990, 0);
-  _setjmp3(&DAT_0073e9e0, 0);
+  setjmp(&DAT_0073e990);
+  setjmp(&DAT_0073e9e0);
 
   if (DAT_009300f0 != 0)
   {
@@ -917,7 +914,7 @@ opening_menu:
       g_monster_timer = g_monster_timer + 1;
       ClearInputAndWaitForMouseRelease();
       ClearQueuedKeyInput();
-      _setjmp3(&DAT_0073e9e0, 0);
+      setjmp(&DAT_0073e9e0);
     } while (DAT_009300f0 == 0);
   }
 
@@ -1817,14 +1814,7 @@ int RenderMenuControlRange(int first_index, int count)
     int limit;
   } locals;
 
-  if (g_menu_control_count_by_context[g_menu_context_index] < first_index + count)
-  {
-    locals.limit = g_menu_control_count_by_context[g_menu_context_index];
-  }
-  else
-  {
-    locals.limit = first_index + count;
-  }
+  locals.limit = MIN(g_menu_control_count_by_context[g_menu_context_index], first_index + count);
 
   g_menu_render_guard = 1;
   for (locals.i = first_index; locals.i < locals.limit; locals.i = locals.i + 1)
@@ -1859,9 +1849,12 @@ int FUN_00522508(int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x004ce992
-void FUN_004ce992(int param_1)
+void FUN_004ce992(int delay)
 {
-  (void)param_1;
+  int start = g_ui_tick_count;
+  while ((g_ui_tick_count - start) < (delay / 2))
+  {
+  }
 }
 
 // FUNCTION: SHANDALAR 0x005797e0
@@ -2018,16 +2011,14 @@ void InitializeNewGameState(void)
 // FUNCTION: SHANDALAR 0x004bdccc
 unsigned int FUN_004bdccc(unsigned int param_1)
 {
-  int preview_panel_y_offset;
-  unsigned char entry_index;
+  int entry_index;
 
   do
   {
-    preview_panel_y_offset = FUN_00522508(5);
-    entry_index = (unsigned char)preview_panel_y_offset + 1;
-  } while ((param_1 & (1U << (entry_index & 0x1f))) != 0);
+    entry_index = FUN_00522508(5) + 1;
+  } while ((param_1 & (1U << (entry_index & 0xff))) != 0);
 
-  return 1U << (entry_index & 0x1f);
+  return 1U << (entry_index & 0xff);
 }
 
 // FUNCTION: SHANDALAR 0x004be0bf
@@ -2219,6 +2210,7 @@ int FUN_0056bcf7(unsigned int param_1, unsigned int param_2)
 // FUNCTION: SHANDALAR 0x0056c0e5
 int FUN_0056c0e5(int param_1, int param_2, int param_3)
 {
+  // GLOBAL: SHANDALAR 0x00593e20
   static const signed char DAT_00593e20[18] = {
       0, 0, 0,
       1, 4, 2,
@@ -2226,33 +2218,34 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
       3, 5, 4,
       4, 3, 1,
       5, 2, 5};
-  int avatar_sprite_index;
-  int clamped_required_wins;
 
   if ((param_1 == 1) || (param_2 == 1))
   {
     return 1;
   }
 
-  avatar_sprite_index = FUN_0040dffd((unsigned char)param_1);
-  clamped_required_wins = FUN_0040dffd((unsigned char)param_2);
-  if (DAT_00593e20[clamped_required_wins * 3] == avatar_sprite_index)
+  param_1 = FUN_0040dffd(param_1);
+  param_2 = FUN_0040dffd(param_2);
+  if (DAT_00593e20[param_2 * 3] == param_1)
   {
     return 1;
   }
-  if ((param_3 < 2) || (DAT_00593e20[clamped_required_wins * 3 + 1] != avatar_sprite_index))
+
+  if (param_3 > 1 && DAT_00593e20[param_2 * 3 + 1] == param_1)
   {
-    if ((param_3 < 3) || (DAT_00593e20[clamped_required_wins * 3 + 2] != avatar_sprite_index))
-    {
-      if (param_3 < 4)
-      {
-        return 0;
-      }
-      return 1;
-    }
     return 1;
   }
-  return 1;
+
+  if (param_3 > 2 && DAT_00593e20[param_2 * 3 + 2] == param_1)
+  {
+    return 1;
+  }
+
+  if (param_3 > 3)
+  {
+    return 1;
+  }
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x0056c5ea
@@ -2364,7 +2357,6 @@ int FUN_004bb1cf(unsigned int param_1)
 int FUN_004bb458(int param_1)
 {
   int entry_index;
-  int preview_panel_y_offset;
 
   for (entry_index = 0; entry_index < g_card_count + 0x10; entry_index = entry_index + 1)
   {
@@ -2373,9 +2365,6 @@ int FUN_004bb458(int param_1)
       return entry_index;
     }
   }
-
-  preview_panel_y_offset = g_card_count + 0x10;
-  return preview_panel_y_offset;
 }
 
 // FUNCTION: SHANDALAR 0x004290e2
@@ -2385,8 +2374,8 @@ void FUN_004290e2(int param_1, int param_2)
   {
     g_journal_entries[g_journal_entry_count][0] = param_1;
     g_journal_entries[g_journal_entry_count][1] = param_2;
-    g_journal_entries[g_journal_entry_count][2] = (g_world_player_x + ((g_world_player_x >> 0x1f) & 0x1fU)) >> 5;
-    g_journal_entries[g_journal_entry_count][3] = (g_world_player_y + ((g_world_player_y >> 0x1f) & 0x1fU)) >> 5;
+    g_journal_entries[g_journal_entry_count][2] = g_world_player_x / 32;
+    g_journal_entries[g_journal_entry_count][3] = g_world_player_y / 32;
     g_journal_entry_count = g_journal_entry_count + 1;
   }
 }
@@ -2454,49 +2443,34 @@ unsigned int FUN_005795f0(FacemakerWindowBounds *param_1, int param_2, int param
 // FUNCTION: SHANDALAR 0x0052280c
 int FUN_0052280c(void *param_1)
 {
-  int uVar1;
-
-  if (g_statwin_exports_by_ordinal[1] == 0)
+  if (g_statwin_exports_by_ordinal[1] != 0)
   {
-    uVar1 = 0;
-  }
-  else
-  {
-    uVar1 = ((int(__cdecl *)(void *))g_statwin_exports_by_ordinal[1])(param_1);
+    return ((int(__cdecl *)(void *))g_statwin_exports_by_ordinal[1])(param_1);
   }
 
-  return uVar1;
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x0056302b
 int FUN_0056302b(int param_1)
 {
-  int uVar1;
-
   switch (param_1)
   {
   case 1:
-    uVar1 = 4;
-    break;
+    return 4;
   case 2:
-    uVar1 = 2;
-    break;
+    return 2;
   case 3:
-    uVar1 = 3;
-    break;
+    return 3;
   case 4:
-    uVar1 = 1;
-    break;
+    return 1;
   case 5:
-    uVar1 = 0;
-    break;
+    return 0;
   case 6:
-    uVar1 = 5;
-    break;
+    return 5;
   default:
-    uVar1 = -1;
+    return -1;
   }
-  return uVar1;
 }
 
 // FUNCTION: SHANDALAR 0x00578c60
@@ -2512,146 +2486,156 @@ int ConsumeMouseButtonReleaseMask(void)
 // FUNCTION: SHANDALAR 0x004f6d90
 void FUN_004f6d90(void)
 {
-  int icon_y_scaled;
-  int icon_width_scaled;
-  int selected_state_sprite;
-  int location_block_start_index;
-  int inner_index;
-  unsigned int entry_index;
-  unsigned int uVar1;
-  int neighbor_is_open;
-  static const int local_neighbor_dx[9] = {0, -1, 0, 1, -1, 1, 1, -1, 0};
-  static const int local_neighbor_dy[9] = {0, 0, -1, 0, 1, 1, -1, 1, 0};
-
-  while (1)
+  struct
   {
-    InitializeAnimatedNoiseGrid();
-    FillGraphicsRect(PTR_DAT_00583304, 0, 0, 0x140, 200, 0);
-    icon_y_scaled = 0;
-    for (location_block_start_index = 0; location_block_start_index < 0x40; location_block_start_index = location_block_start_index + 1)
+    int icon_y_scaled;
+    int neighbor_is_open;           // ebp - 0x20
+    int uVar1;                      // ebp - 0x1c
+    int icon_width_scaled;          // ebp - 0x18
+    int i;                          // ebp - 0x14
+    int location_block_start_index; // ebp - 0x10
+    unsigned int entry_index;       // ebp - 0xc
+    int inner_index;                // ebp - 0x8
+    int selected_state_sprite;      // ebp - 0x4
+  } s;
+
+start:
+
+  InitializeAnimatedNoiseGrid();
+  FillGraphicsRect(PTR_DAT_00583304, 0, 0, 0x140, 200, 0);
+  s.icon_y_scaled = 0;
+  for (s.location_block_start_index = 0; s.location_block_start_index < 0x40; s.location_block_start_index++)
+  {
+    for (s.icon_width_scaled = 0; s.icon_width_scaled < 0x40; s.icon_width_scaled++)
     {
-      for (icon_width_scaled = 0; icon_width_scaled < 0x40; icon_width_scaled = icon_width_scaled + 1)
+      if (((s.location_block_start_index < 2) || (s.icon_width_scaled < 2)) || ((0x3e <= s.location_block_start_index) || (0x3e <= s.icon_width_scaled)))
       {
-        if (((location_block_start_index < 2) || (icon_width_scaled < 2)) || ((0x3d < location_block_start_index) || (0x3d < icon_width_scaled)))
+        PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, 0);
+        continue;
+      }
+
+      s.selected_state_sprite = (s.location_block_start_index + s.icon_width_scaled) * 3 - 0x20;
+      s.inner_index = (s.icon_width_scaled - s.location_block_start_index) * 3 + 100;
+      if ((s.selected_state_sprite < 4) || (s.inner_index < 4) || ((0x13c <= s.selected_state_sprite) || (0xc4 <= s.inner_index)))
+      {
+        PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, 0);
+        continue;
+      }
+
+      s.uVar1 = FUN_004f7fb9(s.location_block_start_index, s.icon_width_scaled);
+      switch (s.uVar1 / 8)
+      {
+      case 0:
+      case 1:
+        s.entry_index = 0;
+        break;
+      case 2:
+        s.entry_index = 1;
+        if (0x16 <= s.uVar1)
         {
-          PutGraphicsPixel(PTR_DAT_00583304, location_block_start_index, icon_width_scaled, 0);
+          s.entry_index = 8;
+        }
+        break;
+      case 3:
+        s.entry_index = 3;
+        break;
+      case 4:
+        s.entry_index = 6;
+        if (s.uVar1 < 0x22)
+        {
+          s.entry_index = 0xd;
+        }
+        break;
+      case 5:
+        if (0x2a >= s.uVar1)
+        {
+          s.entry_index = 10;
+          break;
+        }
+      case 6:
+        s.entry_index = 2;
+        break;
+      case 7:
+        if (s.uVar1 >= 0x3c)
+        {
+          s.entry_index = 4;
         }
         else
         {
-          selected_state_sprite = (location_block_start_index + icon_width_scaled) * 3 - 0x20;
-          inner_index = (icon_width_scaled - location_block_start_index) * 3 + 100;
-          if ((selected_state_sprite < 4) || (inner_index < 4) || ((0x13b < selected_state_sprite) || (0xc3 < inner_index)))
-          {
-            PutGraphicsPixel(PTR_DAT_00583304, location_block_start_index, icon_width_scaled, 0);
-          }
-          else
-          {
-            selected_state_sprite = FUN_004f7fb9(location_block_start_index, icon_width_scaled);
-            switch ((selected_state_sprite + ((unsigned int)selected_state_sprite >> 0x1f & 7)) >> 3)
-            {
-            case 0:
-            case 1:
-              entry_index = 0;
-              break;
-            case 2:
-              entry_index = 1;
-              if (0x15 < selected_state_sprite)
-              {
-                entry_index = 8;
-              }
-              break;
-            case 3:
-              entry_index = 3;
-              break;
-            case 4:
-              entry_index = 6;
-              if (selected_state_sprite < 0x22)
-              {
-                entry_index = 0xd;
-              }
-              break;
-            case 5:
-              if (0x2a < selected_state_sprite)
-              {
-                entry_index = 2;
-              }
-              else
-              {
-                entry_index = 10;
-              }
-              break;
-            case 6:
-              entry_index = 2;
-              break;
-            case 7:
-              if (selected_state_sprite < 0x3c)
-              {
-                entry_index = 0xf;
-              }
-              else
-              {
-                entry_index = 5;
-              }
-              break;
-            case 8:
-            case 9:
-            case 10:
-            case 0xb:
-              entry_index = 5;
-              break;
-            default:
-              entry_index = 0;
-              break;
-            }
-
-            PutGraphicsPixel(PTR_DAT_00583304, location_block_start_index, icon_width_scaled, (int)entry_index);
-            if (entry_index != 0)
-            {
-              icon_y_scaled = icon_y_scaled + 1;
-            }
-          }
+          s.entry_index = 0xc;
         }
+        if (s.icon_width_scaled < 0x10 || s.icon_width_scaled > 0x30)
+        {
+          s.entry_index = 0xf;
+        }
+
+        if (s.uVar1 >= 0x3c)
+        {
+          s.entry_index = 5;
+        }
+        else
+        {
+          s.entry_index = 0xf;
+        }
+
+        break;
+
+      case 8:
+      case 9:
+      case 10:
+      case 11:
+        s.entry_index = 5;
+        break;
+      }
+
+      PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, (int)s.entry_index);
+      if (s.entry_index != 0)
+      {
+        s.icon_y_scaled++;
       }
     }
+  }
 
-    if (0x6d5 < icon_y_scaled)
+  if (s.icon_y_scaled < 0x6d6)
+  {
+    // TODO : Why didn't they just write this as do/while?
+    goto start;
+  }
+
+  for (s.location_block_start_index = 1; s.location_block_start_index < 0x3f; s.location_block_start_index++)
+  {
+    for (s.icon_width_scaled = 1; s.icon_width_scaled < 0x3f; s.icon_width_scaled++)
     {
-      for (location_block_start_index = 1; location_block_start_index < 0x3f; location_block_start_index = location_block_start_index + 1)
+      s.entry_index = FUN_0043146b(s.location_block_start_index, s.icon_width_scaled);
+      if (s.entry_index == 0)
       {
-        for (icon_width_scaled = 1; icon_width_scaled < 0x3f; icon_width_scaled = icon_width_scaled + 1)
+        s.neighbor_is_open = 0;
+        for (s.i = 1; s.i <= 8; s.i += 2)
         {
-          entry_index = FUN_0043146b(location_block_start_index, icon_width_scaled);
-          if (entry_index == 0)
+          if (FUN_0043146b(s.location_block_start_index + g_neighbor_dx[s.i], s.icon_width_scaled + g_neighbor_dy[s.i]) == 0)
           {
-            neighbor_is_open = 0;
-            for (selected_state_sprite = 1; selected_state_sprite < 9; selected_state_sprite = selected_state_sprite + 2)
-            {
-              uVar1 = FUN_0043146b(location_block_start_index + local_neighbor_dx[selected_state_sprite], icon_width_scaled + local_neighbor_dy[selected_state_sprite]);
-              if (uVar1 == 0)
-              {
-                neighbor_is_open = 1;
-                break;
-              }
-            }
-            if (neighbor_is_open == 0)
-            {
-              PutGraphicsPixel(PTR_DAT_00583304, location_block_start_index, icon_width_scaled, 6);
-            }
+            s.neighbor_is_open = 1;
+            break;
           }
         }
-      }
-
-      PropagatePathConnectivity();
-      if (FUN_004f717a() != 0)
-      {
-        GenerateTownConnections();
-        for (selected_state_sprite = 0; selected_state_sprite < 7; selected_state_sprite = selected_state_sprite + 1)
+        if (s.neighbor_is_open == 0)
         {
-          g_lair_or_monster_slots[selected_state_sprite].respawn_timestamp = (4 - g_shandalar_difficulty) * selected_state_sprite * -100;
+          PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, 6);
         }
-        return;
       }
     }
+  }
+
+  PropagatePathConnectivity();
+  if (FUN_004f717a() == 0)
+  {
+    goto start;
+  }
+
+  GenerateTownConnections();
+  for (s.i = 0; s.i < 7; s.i++)
+  {
+    g_lair_or_monster_slots[s.i].respawn_timestamp = (4 - g_shandalar_difficulty) * s.i * -100;
   }
 }
 
@@ -3101,10 +3085,8 @@ int FUN_004f7fb9(int param_1, int param_2)
   entry_index = entry_index + 0x10 / (0x41 - param_2);
 
   entry_index = abs(param_1 - 0x20) + abs(param_2 - 0x20);
-  entry_index = entry_index * entry_index;
-  entry_index = (entry_index + (entry_index >> 0x1f & 0x1ff)) >> 9;
-  local_4 = abs(param_1 - param_2);
-  entry_index = entry_index + ((local_4 + (local_4 >> 0x1f & 0xf)) >> 4);
+  entry_index = (entry_index * entry_index) / 512;
+  entry_index += abs(param_1 - param_2) / 16;
 
   param_1 = param_1 << 5;
   param_2 = param_2 << 5;
@@ -3113,11 +3095,8 @@ int FUN_004f7fb9(int param_1, int param_2)
   local_4 = local_4 + FUN_004f82f2(param_1 << 3, param_2 << 3) * 2;
   local_4 = local_4 + FUN_004f82f2(param_1 << 4, param_2 << 4);
   local_4 = local_4 - ClampIntToRange(entry_index, 0, 0xc) * 0x200;
-  local_4 = local_4 * 7;
-  local_4 = local_4 + (local_4 >> 0x1f & 0x3fU);
-  local_4 = local_4 >> 6;
 
-  return ClampIntToRange((local_4 + (local_4 >> 0x1f & 3U)) >> 2, 0, 100);
+  return ClampIntToRange(((7 * local_4) / 64) / 4, 0, 100);
 }
 
 // FUNCTION: SHANDALAR 0x004f8101
@@ -3400,11 +3379,11 @@ void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, 
 // FUNCTION: SHANDALAR 0x0043146b
 unsigned int FUN_0043146b(int param_1, int param_2)
 {
-  if ((0x3f < param_1) || (param_1 < 0))
+  if ((0x40 <= param_1) || (param_1 < 0))
   {
     param_1 = 0;
   }
-  if ((0x3f < param_2) || (param_2 < 0))
+  if ((0x40 <= param_2) || (param_2 < 0))
   {
     param_2 = 0;
   }
@@ -3418,14 +3397,17 @@ unsigned int FUN_005611c8(unsigned int param_1)
 
   switch (param_1)
   {
+  case 3:
+    entry_index = 2;
+    break;
+  case 0xb:
+    entry_index = 10;
+    break;
   case 1:
     entry_index = 4;
     break;
   case 2:
     entry_index = 8;
-    break;
-  case 3:
-    entry_index = 2;
     break;
   case 4:
     entry_index = 0x30;
@@ -3436,20 +3418,14 @@ unsigned int FUN_005611c8(unsigned int param_1)
   case 6:
     entry_index = 0x20;
     break;
-  case 7:
-    entry_index = 0x24;
-    break;
-  case 8:
-    entry_index = 6;
-    break;
-  case 9:
-    entry_index = 0x14;
-    break;
   case 10:
     entry_index = 0x28;
     break;
-  case 0xb:
-    entry_index = 10;
+  case 0xf:
+    entry_index = 0x18;
+    break;
+  case 7:
+    entry_index = 0x24;
     break;
   case 0xc:
     entry_index = 0x12;
@@ -3460,59 +3436,54 @@ unsigned int FUN_005611c8(unsigned int param_1)
   case 0xe:
     entry_index = 0xc;
     break;
-  case 0xf:
-    entry_index = 0x18;
+  case 9:
+    entry_index = 0x14;
+    break;
+  case 8:
+    entry_index = 6;
     break;
   default:
     entry_index = 0;
+    break;
   }
 
   return entry_index;
 }
 
 // FUNCTION: SHANDALAR 0x004314ca
-unsigned int FUN_004314ca(int param_1, int param_2)
+unsigned int FUN_004314ca(int x, int y)
 {
-  unsigned int uVar1;
+  if (x >= 0x40 || x < 0)
+    return 0;
 
-  if ((param_1 < 0x40) && (-1 < param_1))
-  {
-    if ((param_2 < 0x40) && (-1 < param_2))
-    {
-      uVar1 = FUN_005795f0(PTR_DAT_00583304, param_1, param_2);
-    }
-    else
-    {
-      uVar1 = 0;
-    }
-  }
-  else
-  {
-    uVar1 = 0;
-  }
+  if (y >= 0x40 || y < 0)
+    return 0;
 
-  return uVar1;
+  return FUN_005795f0(PTR_DAT_00583304, x, y);
 }
 
 // FUNCTION: SHANDALAR 0x00431526
-void FUN_00431526(unsigned int param_1, int param_2, int param_3)
+void FUN_00431526(unsigned int param_1, int x, int y)
 {
-  if ((((param_2 < 0x40) && (-1 < param_2)) && (param_3 < 0x40)) && (-1 < param_3))
-  {
-    PutGraphicsPixel(PTR_DAT_00583304, param_2, param_3, FUN_005795f0(PTR_DAT_00583304, param_2, param_3) | param_1);
-  }
+  if (x >= 0x40 || x < 0)
+    return;
+
+  if (y >= 0x40 || y < 0)
+    return;
+
+  PutGraphicsPixel(PTR_DAT_00583304, x, y, FUN_005795f0(PTR_DAT_00583304, x, y) | param_1);
 }
 
 // FUNCTION: SHANDALAR 0x00431593
-void FUN_00431593(unsigned int param_1, int param_2, int param_3)
+void FUN_00431593(unsigned int param_1, int x, int y)
 {
-  unsigned int pixel_value;
+  if (x >= 0x40 || x < 0)
+    return;
 
-  if ((((param_2 < 0x40) && (-1 < param_2)) && (param_3 < 0x40)) && (-1 < param_3))
-  {
-    pixel_value = FUN_005795f0(PTR_DAT_00583304, param_2, param_3);
-    PutGraphicsPixel(PTR_DAT_00583304, param_2, param_3, pixel_value & ~param_1);
-  }
+  if (y >= 0x40 || y < 0)
+    return;
+
+  PutGraphicsPixel(PTR_DAT_00583304, x, y, FUN_005795f0(PTR_DAT_00583304, x, y) & ~param_1);
 }
 
 // FUNCTION: SHANDALAR 0x0043174d
@@ -4511,15 +4482,11 @@ void RebuildDeckEntriesByCardGroup(void)
 // FUNCTION: SHANDALAR 0x0054cdbd
 void RefreshAdventureInterfaceLayout(void)
 {
-  int viewport_height;
-  int viewport_top;
-
-  DAT_006527b0 = -1;
-  DAT_00590764 = -1;
+  DAT_00590764 = DAT_006527b0 = -1;
   DAT_00590768 = 1;
   if (DAT_008bd200 == 0)
   {
-    LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
+    LoadPcxIntoPage(1, PTR_s_advinter800_pic_00589de8);
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
     RenderMenuControlRange(0, 4);
   }
@@ -4527,9 +4494,7 @@ void RefreshAdventureInterfaceLayout(void)
   DAT_0073eaa0 = 0;
   if (DAT_00650f28 == 0)
   {
-    viewport_height = ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148);
-    viewport_top = ScaleUiCoordinate(0x148);
-    BlitGraphicsRect(PTR_DAT_005832dc, 0, viewport_top, ScaleUiCoordinate(0x280), viewport_height, PTR_DAT_0058332c, 0, 0);
+    BlitGraphicsRect(PTR_DAT_005832dc, 0, ScaleUiCoordinate(0x148), ScaleUiCoordinate(0x280), ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148), PTR_DAT_0058332c, 0, 0);
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), PTR_DAT_00583354, 0, 0);
     DAT_00650f28 = 1;
   }
@@ -4652,7 +4617,7 @@ int QueuePendingMenuActionInput(void)
 }
 
 // FUNCTION: SHANDALAR 0x0055e31f
-int FUN_0055e31f(int param_1, int param_2)
+int FUN_0055e31f(int x, int y)
 {
   struct
   {
@@ -4674,50 +4639,48 @@ int FUN_0055e31f(int param_1, int param_2)
   keycode_map[7] = 0x4700;
   keycode_map[8] = 0x4800;
 
-  if ((param_1 < ScaleUiCoordinate(0x40) || ScaleUiCoordinate(0x240) < param_1) || (param_2 < ScaleUiCoordinate(0x30) || ScaleUiCoordinate(0x148) < param_2))
+  if ((x < ScaleUiCoordinate(0x40) || ScaleUiCoordinate(0x240) < x) || (y < ScaleUiCoordinate(0x30) || ScaleUiCoordinate(0x148) < y))
   {
     return -1;
   }
 
-  if ((ScaleUiCoordinate(0x130) < param_1 && param_1 < ScaleUiCoordinate(0x158)) &&
-      (ScaleUiCoordinate(0xa8) < param_2 && param_2 < ScaleUiCoordinate(0xdd)))
+  if ((ScaleUiCoordinate(0x130) < x && x < ScaleUiCoordinate(0x158)) &&
+      (ScaleUiCoordinate(0xa8) < y && y < ScaleUiCoordinate(0xdd)))
   {
     return 0x20;
   }
 
   locals.local_14 = ScaleUiCoordinate(0x140);
   locals.local_18 = ScaleUiCoordinate(0xbc);
-  param_1 = param_1 - locals.local_14;
-  param_2 = locals.local_18 - param_2;
-  locals.local_c = abs(param_1);
-  locals.local_10 = abs(param_2);
+  x = x - locals.local_14;
+  y = locals.local_18 - y;
+  locals.local_c = abs(x);
+  locals.local_10 = abs(y);
 
-  if ((param_1 < 0) || (param_2 < 0))
-  {
-    if ((param_1 < 0) || (-1 < param_2))
-    {
-      if ((param_1 < 0) && (param_2 < 0))
-      {
-        locals.direction = 4;
-      }
-      else if ((param_1 < 0) && (-1 < param_2))
-      {
-        locals.direction = 6;
-      }
-    }
-    else
-    {
-      locals.direction = 2;
-    }
-  }
-  else
+  if (x >= 0 && y >= 0)
   {
     locals.direction = 0;
   }
-
-  if ((((locals.direction & 2) == 0) && (locals.local_10 < locals.local_c)) || (((locals.direction & 2) != 0) && (locals.local_c < locals.local_10)))
+  else if (x >= 0 && y < 0)
   {
-    locals.direction = locals.direction + 1;
+    locals.direction = 2;
+  }
+  else if (x < 0 && y < 0)
+  {
+    locals.direction = 4;
+  }
+  else if (x < 0 && y >= 0)
+  {
+    locals.direction = 6;
+  }
+
+  if ((locals.direction & 2) == 0 && locals.local_10 < locals.local_c)
+  {
+    locals.direction++;
+  }
+  else if ((locals.direction & 2) != 0 && locals.local_c < locals.local_10)
+  {
+    locals.direction++;
   }
 
   switch (locals.direction)
@@ -4727,7 +4690,7 @@ int FUN_0055e31f(int param_1, int param_2)
   case 4:
   case 7:
     keycode_map[9] = (locals.local_c * 0x9a85) >> 0xe;
-    if (param_2 < 0)
+    if (y < 0)
     {
       keycode_map[9] = -keycode_map[9];
     }
@@ -4737,7 +4700,7 @@ int FUN_0055e31f(int param_1, int param_2)
   case 5:
   case 6:
     keycode_map[9] = (locals.local_c * 0x1a82) >> 0xe;
-    if (param_2 < 0)
+    if (y < 0)
     {
       keycode_map[9] = -keycode_map[9];
     }
@@ -4750,7 +4713,7 @@ int FUN_0055e31f(int param_1, int param_2)
   case 1:
   case 2:
   case 3:
-    if (param_2 < keycode_map[9])
+    if (y < keycode_map[9])
     {
       locals.direction = locals.direction + 1;
     }
@@ -4759,7 +4722,7 @@ int FUN_0055e31f(int param_1, int param_2)
   case 5:
   case 6:
   case 7:
-    if (keycode_map[9] < param_2)
+    if (keycode_map[9] < y)
     {
       locals.direction = locals.direction + 1;
     }
@@ -4796,20 +4759,15 @@ void TickWorldMagicSlotTimers(void)
 // FUNCTION: SHANDALAR 0x0046eca4
 void UpdateMouseSnapshot(void)
 {
-  unsigned int released_mask;
-
-  if (DAT_00586494 == 0)
+  if (DAT_00586494 != 0)
   {
-    g_mouse_y_snapshot = 0;
-    g_mouse_x_snapshot = 0;
-    g_mouse_button_mask_snapshot = 0;
+    g_mouse_button_mask_snapshot = ConsumeMouseButtonReleaseMask() | g_mouse_button_down_mask;
+    g_mouse_x_snapshot = g_mouse_x;
+    g_mouse_y_snapshot = g_mouse_y;
   }
   else
   {
-    released_mask = ConsumeMouseButtonReleaseMask();
-    g_mouse_button_mask_snapshot = released_mask | g_mouse_button_down_mask;
-    g_mouse_x_snapshot = g_mouse_x;
-    g_mouse_y_snapshot = g_mouse_y;
+    g_mouse_button_mask_snapshot = g_mouse_x_snapshot = g_mouse_y_snapshot = 0;
   }
 }
 
@@ -5043,58 +5001,34 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
 unsigned int WaitForInputEvent(void)
 {
   int has_queued_key;
-  unsigned int input_event;
 
-  if (DAT_008bd200 == 0)
+  if (DAT_008bd200 != 0)
+    return 0;
+
+  do
   {
-    do
-    {
-      UpdateMouseSnapshot();
-      if (g_mouse_button_mask_snapshot != 0)
-      {
-        break;
-      }
-      has_queued_key = HasQueuedKeyInput();
-    } while (has_queued_key == 0);
+    UpdateMouseSnapshot();
+  } while (g_mouse_button_mask_snapshot == 0 && !HasQueuedKeyInput());
 
-    input_event = g_mouse_button_mask_snapshot;
-    if (g_mouse_button_mask_snapshot == 0)
-    {
-      do
-      {
-        input_event = PopQueuedKeyInput();
-      } while (input_event == 0);
-    }
-
-    ClearInputAndWaitForMouseRelease();
-  }
-  else
+  has_queued_key = g_mouse_button_mask_snapshot;
+  if (has_queued_key == 0)
   {
-    input_event = 0;
+    has_queued_key = PopNormalizedQueuedKeyInput();
   }
 
-  return input_event;
+  ClearInputAndWaitForMouseRelease();
+  return has_queued_key;
 }
 
 // FUNCTION: SHANDALAR 0x005597ca
 unsigned int WaitForInputEventUnlessBlocked(void)
 {
-  unsigned int ret;
-
   if (DAT_008bd200 == 1)
   {
-    ret = 0;
-  }
-  else if (unk_00742fc4 == 0)
-  {
-    ret = WaitForInputEvent();
-  }
-  else
-  {
-    ret = 0;
+    return 0;
   }
 
-  return ret;
+  return (unk_00742fc4 != 0) ? 0 : WaitForInputEvent();
 }
 
 // FUNCTION: SHANDALAR 0x004ecf30
@@ -5173,10 +5107,10 @@ int PopNormalizedQueuedKeyInput(void)
 {
   int queued_key;
 
-  do
-  {
-    queued_key = PopQueuedKeyInput();
-  } while (queued_key == 0);
+loop:
+  queued_key = PopQueuedKeyInput();
+  if (queued_key == 0)
+    goto loop;
 
   switch (queued_key)
   {
@@ -5474,50 +5408,6 @@ int LoadAdvStringsFile(const char *filename)
   return s.ok;
 }
 
-// FUNCTION: SHANDALAR 0x0056cc4d
-int LoadTextSectionLines(const char *filename, const char *section)
-{
-  int x;
-  int i;
-  int j;
-  size_t len;
-  int out_pos;
-
-  if (DAT_008bd200 == 1)
-  {
-    x = 0;
-  }
-  else
-  {
-    x = load_text(filename, section);
-    i = 0;
-    while (i < abs(x))
-    {
-      len = strlen(text_lines[i]);
-      out_pos = 0;
-      j = 0;
-      while (j <= (int)len)
-      {
-        if (text_lines[i][j] == '\\' && text_lines[i][j + 1] == 'n')
-        {
-          text_lines[i][out_pos] = '\n';
-          j = j + 1;
-        }
-        else
-        {
-          text_lines[i][out_pos] = text_lines[i][j];
-        }
-        out_pos = out_pos + 1;
-        j = j + 1;
-      }
-      text_lines[i][out_pos] = '\0';
-      i = i + 1;
-    }
-  }
-
-  return x;
-}
-
 // FUNCTION: SHANDALAR 0x00565c7e
 int LoadTextSectionStringTable(const char *filename, const char *section, char **out_table, int max_entries, char *string_buf,
                                char *string_buf_end, char **out_next_buf)
@@ -5786,23 +5676,23 @@ void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pit
 // FUNCTION: SHANDALAR 0x00562ed0
 char GetSoundAssetDriveLetter(void)
 {
-  unsigned int drive;
   char cwd[256];
 
   if (g_sound_drive_initialized == 0)
   {
-    drive = FindDriveWithAsset("sound\\locmus1.wav");
-    g_sound_drive_letter = (char)drive;
+    g_sound_drive_letter = FindDriveWithAsset("sound\\locmus1.wav");
     g_sound_drive_initialized = 1;
   }
 
   if (g_local_sound_missing == 0)
   {
-    _getcwd(cwd, 0x100);
+    getcwd(cwd, 0x100);
     return cwd[0];
   }
-
-  return g_sound_drive_letter;
+  else
+  {
+    return g_sound_drive_letter;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x00562f92

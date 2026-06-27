@@ -580,7 +580,7 @@ int FUN_00440ad2(int player, int card, int arg_3)
     set_stack_damage_targets();
     if (current_turn != unk_008b35ec)
     {
-      FUN_004eca6d(global_ui_strings_filename, "PROMPT_PROC1");
+      LoadTextSectionLines(global_ui_strings_filename, "PROMPT_PROC1");
       sprintf(locals.dialog_prompt, text_lines[0], DAT_007a7c60);
       raw_do_dialog(player, card, -1, -1, locals.dialog_prompt, 0);
     }
@@ -974,7 +974,7 @@ int activate(int who_activates, int player, int card)
     unk_00925bb8 = -1;
     dispatch_event_to_single_card(player, card, EVENT_GET_SELECTED_CARD, 1 - player, -1);
 
-    FUN_004eca6d(global_ui_strings_filename, "PROMPT_TAP1");
+    LoadTextSectionLines(global_ui_strings_filename, "PROMPT_TAP1");
     sprintf(s.prompt, text_lines[0], DAT_007a7c60);
 
     if (FUN_00445f61(player, card) != 0)
@@ -1141,7 +1141,7 @@ int activate(int who_activates, int player, int card)
     if ((unk_00926804 & 2) != 0 && active_player == who_activates && DAT_007abc80 == 0 &&
         instance->internal_card_id != unk_008b28f8)
     {
-      FUN_004eca6d(global_ui_strings_filename, "PROMPT_TAP1");
+      LoadTextSectionLines(global_ui_strings_filename, "PROMPT_TAP1");
       sprintf(s.prompt, text_lines[0], DAT_007a7c60);
 
       if (FUN_00445f61(player, card) != 0)

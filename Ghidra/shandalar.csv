@@ -107,7 +107,7 @@ address,orig_size,type,size
 413829,148,function,
 004138bd,803,function,
 00413be0,1351,function,
-414127,684,function,
+414127,697,function,
 004143e0,4622,function,
 004155ee,422,function,
 415794,506,function,
@@ -1092,7 +1092,7 @@ address,orig_size,type,size
 004bdccc,62,function,
 004bdd0a,949,function,
 004be0bf,1029,function,
-004be4c4,167,function,
+004be4c4,172,function,
 004be570,221,function,
 004be650,1077,function,
 004bea85,9039,function,
@@ -1402,7 +1402,7 @@ address,orig_size,type,size
 0050027e,163,function,
 500321,61,function,
 0050035e,89,function,
-005003b7,2676,function,
+005003b7,2681,function,
 00500e30,167,function,
 00500ee0,2165,function,
 501760,392,function,
@@ -2120,7 +2120,7 @@ address,orig_size,type,size
 00578c60,16,function,
 00578c70,1,function,
 00578c80,3,function,
-00578c90,21,function,
+00578c90,21,function,21
 00578cb0,5,function,
 00578cc0,441,function,
 00578e80,461,function,
@@ -2169,7 +2169,7 @@ address,orig_size,type,size
 0057b5c0,42,function,
 0057b5f0,42,function,
 0057b620,42,function,42
-0057b650,25,function,
+0057b650,25,function,25
 0057b670,46,function,
 0057b6a0,17,function,
 0057b6c0,70,function,70
@@ -2185,7 +2185,7 @@ address,orig_size,type,size
 0057c7e0,25,function,
 0057c800,25,function,25
 0057c820,22,function,22
-0057c840,70,function,70
+0057c840,25,function,25
 0057c890,350,function,
 0057c9f0,384,function,
 0057cb80,746,function,
