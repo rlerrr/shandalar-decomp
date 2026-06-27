@@ -92,7 +92,7 @@ extern void PresentGraphicsPage(int num);
 extern int InitializeLegacyVideoStub(void);
 extern void LoadPcxIntoPage(int page_number, char *path);
 extern size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
-extern int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
+extern int ReadSpriteEntryPointers(EncodedImage **out_entry_ptrs, char *sprite_path);
 extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y,
                              int x, int y, int *format_and_args);
 extern void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h, FacemakerWindowBounds *src,
@@ -1633,7 +1633,7 @@ int LoadSpriteGroupsFromFile(char *sprite_path, int *group_frame_counts,
 
   group_loader.group_count = 0;
   group_loader.frame_count = 0;
-  group_loader.table_total = ReadSpriteEntryPointers((int *)group_loader.sprite_table, sprite_path);
+  group_loader.table_total = ReadSpriteEntryPointers(group_loader.sprite_table, sprite_path);
   *first_sprite_out = group_loader.sprite_table[0];
   group_loader.sprite_index = 1;
   for (; group_loader.sprite_index < group_loader.table_total;

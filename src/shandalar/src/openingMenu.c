@@ -25,7 +25,7 @@ extern int g_mouse_x;
 extern int g_menu_render_guard;
 extern char *gs_loadsave_0077d1b0[3];
 extern HWND g_main_window_hwnd;
-extern int g_face_preview_sprite_group[6];
+extern EncodedImage *g_face_preview_sprite_group[6];
 extern EncodedImage *g_face_preview_sprite_selected;
 extern DIBSurface *g_graphics_pages[10];
 extern char text_lines[249][300];
@@ -58,7 +58,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
                              FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
 int FileExists(const char *filename);
-void ReadSpriteEntryPointers(void *out_sprite_entries, const char *sprite_table_name);
+int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_table_name);
 void FreeSpriteBlob(void *memory);
 void AnimatePaletteToColor(int color_index, int palette_id);
 void set_global_base_directory(char *path);
@@ -118,23 +118,23 @@ int HandleColorMenuControlEvent(AdvMenuControl *control, int event_type);
 int HandleColorMenuControlActivate(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x005aa0c8
-int g_opening_menu_unused_sprite_group_d[2];
+EncodedImage *g_opening_menu_unused_sprite_group_d[2];
 // GLOBAL: SHANDALAR 0x005aa3f8
-int g_opening_menu_unused_sprite_group_a[3];
+EncodedImage *g_opening_menu_unused_sprite_group_a[3];
 // GLOBAL: SHANDALAR 0x005aa408
-int g_opening_menu_unused_sprite_group_b[2];
+EncodedImage *g_opening_menu_unused_sprite_group_b[2];
 // GLOBAL: SHANDALAR 0x005aa410
-int g_opening_menu_sprite_blob_handle;
+EncodedImage *g_opening_menu_sprite_blob_handle;
 // GLOBAL: SHANDALAR 0x005aa424
 int g_opening_menu_strings_loaded;
 // GLOBAL: SHANDALAR 0x005aa430
-int g_opening_menu_icon_state_sprites[4];
+EncodedImage *g_opening_menu_icon_state_sprites[4];
 // GLOBAL: SHANDALAR 0x005aa440
-int g_opening_menu_unused_sprite_group_c[3];
+EncodedImage *g_opening_menu_unused_sprite_group_c[3];
 // GLOBAL: SHANDALAR 0x005a9d8c
 int *g_opening_menu_text_table;
 // GLOBAL: SHANDALAR 0x005a9d90
-int g_opening_menu_unused_sprite_group_e[2];
+EncodedImage *g_opening_menu_unused_sprite_group_e[2];
 // GLOBAL: SHANDALAR 0x00587378
 AdvMenuRect g_opening_menu_entry_rects[4] = {{0xb8, 0x121, 0x109, 0x29}, {0xb8, 0x14a, 0x109, 0x29}, {0xb8, 0x173, 0x109, 0x29}, {0xb8, 0x19c, 0x109, 0x29}};
 // GLOBAL: SHANDALAR 0x005873c8
@@ -331,16 +331,16 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
   switch (entry_index)
   {
   case 0:
-    s.unused_button_sprite_group = (EncodedImage **)&g_opening_menu_sprite_blob_handle;
+    s.unused_button_sprite_group = &g_opening_menu_sprite_blob_handle;
     break;
   case 1:
-    s.unused_button_sprite_group = (EncodedImage **)&g_opening_menu_unused_sprite_group_a;
+    s.unused_button_sprite_group = g_opening_menu_unused_sprite_group_a;
     break;
   case 2:
-    s.unused_button_sprite_group = (EncodedImage **)&g_opening_menu_unused_sprite_group_c;
+    s.unused_button_sprite_group = g_opening_menu_unused_sprite_group_c;
     break;
   case 3:
-    s.unused_button_sprite_group = (EncodedImage **)&g_opening_menu_unused_sprite_group_d;
+    s.unused_button_sprite_group = g_opening_menu_unused_sprite_group_d;
     break;
   }
 
@@ -381,12 +381,12 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
   {
     DrawEncodedImageResampled(PTR_DAT_005832b4, (int)(*(volatile int *)&s.pressed_offset_x) + s.icon_x,
                               s.icon_y + s.pressed_offset_y, g_opening_menu_icon_size, g_opening_menu_icon_size,
-                              (EncodedImage *)g_opening_menu_icon_state_sprites[s.icon_sprite_index]);
+                              g_opening_menu_icon_state_sprites[s.icon_sprite_index]);
   }
   else
   {
     DrawEncodedImageResampled(PTR_DAT_005832b4, s.icon_x, s.icon_y, g_opening_menu_icon_size, g_opening_menu_icon_size,
-                              (EncodedImage *)g_opening_menu_icon_state_sprites[s.icon_sprite_index]);
+                              g_opening_menu_icon_state_sprites[s.icon_sprite_index]);
   }
 
   PTR_DAT_005832b4->font_slot = 6;
@@ -411,7 +411,7 @@ int RunOpeningMenu(void)
     int sprite_entry_index;
     int sprite_group_index;
     int copied_entry_count;
-    int sprite_entry_pointers[100];
+    EncodedImage *sprite_entry_pointers[100];
     int menu_context;
     char map_name_buffer[10];
     int loop_index;
@@ -1003,7 +1003,7 @@ int HandleColorMenuControlActivate(AdvMenuControl *control)
 int RunFacemakerFlow(void)
 {
   unsigned int is_topmost_window;
-  int selected_menu_entry;
+  EncodedImage *selected_menu_entry;
   int x;
   int y;
   int spawn_result;
@@ -1181,7 +1181,7 @@ void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page)
   ApplyPortraitPaletteMap(page, 0, 0, 0x89, 0xa9, "pedstls.pic", "advfac64.pic");
   LoadPcxIntoPageNoPalette("advfac64.pic");
   BeginSpriteEncodeSession();
-  g_face_preview_sprite_group[0] = (int)EncodeSpriteFromPage(page->page_number, 0, 0, 0x89, 0xa9);
+  g_face_preview_sprite_group[0] = EncodeSpriteFromPage(page->page_number, 0, 0, 0x89, 0xa9);
   ApplyPortraitTintMap(page, 0, 0, 0x89, 0xa9, 0, 1);
   g_face_preview_sprite_selected = EncodeSpriteFromPage(page->page_number, 0, 0, 0x89, 0xa9);
   FinalizeSpriteEncodeSession();

@@ -10,8 +10,8 @@
 #undef _fileno
 #endif
 
-int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path);
-int FUN_0057b7a0(int *param_1, char *param_2, int param_3);
+int ReadSpriteEntryPointers(EncodedImage **out_entry_ptrs, char *sprite_path);
+int FUN_0057b7a0(EncodedImage **out_entry_ptrs, char *sprite_path, int max_entries);
 size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height);
 
@@ -68,7 +68,7 @@ size_t WriteSpriteBlob(void *sprite_blob, char *output_path)
 
 // FUNCTION: SHANDALAR 0x0057b710
 // FUNCTION: FACEMAKER 0x004089c0
-int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
+int ReadSpriteEntryPointers(EncodedImage **out_entry_ptrs, char *sprite_path)
 {
   FILE *file;
   int file_handle;
@@ -88,7 +88,7 @@ int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
 
   while (*sprite_data != -1)
   {
-    *out_entry_ptrs = (int)sprite_data;
+    *out_entry_ptrs = (EncodedImage *)sprite_data;
     out_entry_ptrs = out_entry_ptrs + 1;
     entry_count = entry_count + 1;
     sprite_data = (int *)((int)sprite_data + *sprite_data);
@@ -97,7 +97,7 @@ int ReadSpriteEntryPointers(int *out_entry_ptrs, char *sprite_path)
 }
 
 // FUNCTION: SHANDALAR 0x0057b7a0
-int FUN_0057b7a0(int *param_1, char *param_2, int param_3)
+int FUN_0057b7a0(EncodedImage **param_1, char *param_2, int param_3)
 {
   FILE *_File;
   int iVar1;
@@ -122,7 +122,7 @@ int FUN_0057b7a0(int *param_1, char *param_2, int param_3)
     {
       break;
     }
-    *param_1 = (int)_DstBuf;
+    *param_1 = (EncodedImage *)_DstBuf;
     param_1 = param_1 + 1;
     _DstBuf = (int *)((int)_DstBuf + *_DstBuf);
     iVar1 = *_DstBuf;
