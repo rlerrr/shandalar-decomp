@@ -70,9 +70,9 @@ int global_screen_width = 0x280;
 // GLOBAL: SHANDALAR 0x005863bc
 int global_screen_height = 0x1e0;
 // GLOBAL: SHANDALAR 0x005862d8
-int g_neighbor_dx[9] = {0, -1, 0, 1, -1, 1, 1, -1, 0};
+int g_neighbor_dx[9] = { 0, 0, 1, 1, 1, 0, -1, -1, -1 };
 // GLOBAL: SHANDALAR 0x00586340
-int g_neighbor_dy[9] = {0, 0, -1, 0, 1, 1, -1, 1, 0};
+int g_neighbor_dy[9] = { 0, -1, -1, 0, 1, 1, 1, 0, -1 };
 // GLOBAL: SHANDALAR 0x005863c8
 WorldMagicSlotTimer g_world_magic_slot_timers[0xc] = {
     {0, 0, 114, 1000},
@@ -193,7 +193,7 @@ EncodedImage *g_face_preview_sprite_selected;
 // GLOBAL: SHANDALAR 0x0078172c
 EncodedImage *g_face_preview_sprite_group[6];
 // GLOBAL: SHANDALAR 0x0073e9dc
-int DAT_0073e9dc;
+int g_world_scene_reveal_effect_pending;
 // GLOBAL: SHANDALAR 0x00591214
 int DAT_00591214 = 1;
 // GLOBAL: SHANDALAR 0x0078990c
@@ -412,11 +412,11 @@ int DAT_006527b0;
 // GLOBAL: SHANDALAR 0x00590764
 int DAT_00590764;
 // GLOBAL: SHANDALAR 0x00590768
-int DAT_00590768;
+int g_adventure_ui_layout_dirty;
 // GLOBAL: SHANDALAR 0x00650f28
 int DAT_00650f28;
 // GLOBAL: SHANDALAR 0x0073eaa0
-int DAT_0073eaa0;
+int g_world_scroll_cache_ready;
 // GLOBAL: SHANDALAR 0x0073e880
 int g_pending_ui_action_code;
 // GLOBAL: SHANDALAR 0x005a6074
@@ -514,7 +514,7 @@ void LoadPcxIntoPageNoPalette(char *path);
 void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
                       FacemakerWindowBounds *dst, int dst_x, int dst_y);
-int *PushGraphicsClipRect(int *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
+AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 void BeginSpriteEncodeSession(void);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
 void FinalizeSpriteEncodeSession(void);
@@ -793,7 +793,7 @@ opening_menu:
     PTR_DAT_005832b4->font_slot = 5;
     LoadTextSectionLines("ADVstrings.txt", "STARTUP");
     DrawTextAt((int *)PTR_DAT_005832b4, 0xff, 0x140, 0xbc, text_lines[0]);
-    DAT_0073e9dc = 1;
+    g_world_scene_reveal_effect_pending = 1;
     InitializeNewGameState();
     FUN_004f6d90();
     FUN_005081fa();
@@ -1755,17 +1755,20 @@ int ExportGraphicsPage(int page_number, char *path)
 }
 
 // FUNCTION: SHANDALAR 0x00579ea0
-int *PushGraphicsClipRect(int *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height)
+AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height)
 {
-  saved_clip_rect[0] = page->clip_left;
-  saved_clip_rect[1] = page->clip_top;
-  saved_clip_rect[2] = page->max_x;
-  saved_clip_rect[3] = page->max_y;
+  int *saved_clip_rect_words;
+
+  saved_clip_rect_words = (int *)saved_clip_rect;
+  saved_clip_rect_words[0] = page->clip_left;
+  saved_clip_rect_words[1] = page->clip_top;
+  saved_clip_rect_words[2] = page->max_x;
+  saved_clip_rect_words[3] = page->max_y;
   page->clip_left = x;
   page->clip_top = y;
   page->max_x = width;
   page->max_y = height;
-  return saved_clip_rect;
+  return (AdvMenuRect *)saved_clip_rect_words;
 }
 
 // FUNCTION: SHANDALAR 0x00500321
@@ -3732,7 +3735,7 @@ int LoadGameFromPath(char *save_file_path)
     g_graphics_pages[4] = g_facemaker_page4_dib;
   }
 
-  PushGraphicsClipRect(s.saved_clip_rect, s.page4_bounds_ptr, 0, 0, s.image_width * 2, s.image_height);
+  PushGraphicsClipRect((AdvMenuRect *)s.saved_clip_rect, s.page4_bounds_ptr, 0, 0, s.image_width * 2, s.image_height);
   FillGraphicsRect(s.page4_bounds_ptr, 0, 0, s.image_width * 2, s.image_height, 0);
   strcpy(save_file_path + 9, "fce");
   LoadPcxIntoPage(4, save_file_path);
@@ -4481,7 +4484,7 @@ void RebuildDeckEntriesByCardGroup(void)
 void RefreshAdventureInterfaceLayout(void)
 {
   DAT_00590764 = DAT_006527b0 = -1;
-  DAT_00590768 = 1;
+  g_adventure_ui_layout_dirty = 1;
   if (DAT_008bd200 == 0)
   {
     LoadPcxIntoPage(1, PTR_s_advinter800_pic_00589de8);
@@ -4489,7 +4492,7 @@ void RefreshAdventureInterfaceLayout(void)
     RenderMenuControlRange(0, 4);
   }
 
-  DAT_0073eaa0 = 0;
+  g_world_scroll_cache_ready = 0;
   if (DAT_00650f28 == 0)
   {
     BlitGraphicsRect(PTR_DAT_005832dc, 0, ScaleUiCoordinate(0x148), ScaleUiCoordinate(0x280), ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148), PTR_DAT_0058332c, 0, 0);

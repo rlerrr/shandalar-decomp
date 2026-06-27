@@ -32,6 +32,9 @@ if (MSVC)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0")
     set(MSVC_FOR_DECOMP TRUE)
   endif()
+
+  # Disable ASLR for MSVC in Debug mode
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DYNAMICBASE:NO")
 endif()
 message(STATUS "MSVC for decompilation: ${MSVC_FOR_DECOMP}")
 

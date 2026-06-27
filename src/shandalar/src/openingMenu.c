@@ -47,7 +47,7 @@ void LoadPcxIntoPageNoPalette(char *path);
 void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
                   FacemakerWindowBounds *dst, int dst_x, int dst_y);
-int *PushGraphicsClipRect(int *out_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
+AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *out_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 void BeginSpriteEncodeSession(void);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
 void FinalizeSpriteEncodeSession(void);
@@ -893,7 +893,7 @@ int RunColorMenu(void)
   LoadPcxResource(-1, 0, 0, "menu3.pic", &g_palette_data_words);
   FUN_0057ce70(0, DAT_00589dec);
 
-  *(AdvMenuRect *)&s.restore_rect_x = *(AdvMenuRect *)PushGraphicsClipRect(s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
+  *(AdvMenuRect *)&s.restore_rect_x = *PushGraphicsClipRect((AdvMenuRect *)s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
 
   BeginSpriteEncodeSession();
   LoadPcxIntoPageOpaque(1, "menu3-but1.pic");
@@ -941,7 +941,7 @@ int RunColorMenu(void)
   EndMenuContext();
   ResetMenuContext(s.menu_context);
   FreeSpriteBlob(g_color_menu_normal_swatch_sprites[0]);
-  PushGraphicsClipRect(s.restore_rect_buffer, PTR_DAT_00583304, s.restore_rect_x, s.restore_rect_y, s.restore_rect_width, s.restore_rect_height);
+  PushGraphicsClipRect((AdvMenuRect *)s.restore_rect_buffer, PTR_DAT_00583304, s.restore_rect_x, s.restore_rect_y, s.restore_rect_width, s.restore_rect_height);
 
   if (g_menu_selection_value == 0)
   {
@@ -1066,7 +1066,7 @@ int RunFacemakerFlow(void)
     image_height = 0xa9;
     page4_dib = (DIBSurface *)CreateGraphicsPage(4, image_width * 2, image_height, 8);
     SetGraphicsPage(4, page4_dib);
-    PushGraphicsClipRect(old_page_rect, page4_bounds_ptr, 0, 0, image_width * 2, image_height);
+    PushGraphicsClipRect((AdvMenuRect *)old_page_rect, page4_bounds_ptr, 0, 0, image_width * 2, image_height);
     LoadPcxIntoPageNoPalette("menu4.pic");
     FillGraphicsRect(page4_bounds_ptr, 0, 0, image_width, image_height, 0);
     BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x8a, 0xaa, page4_bounds_ptr, 0, 0);
