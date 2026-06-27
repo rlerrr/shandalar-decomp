@@ -257,9 +257,8 @@ EncodedImage *g_road_sprite_entries[0xc];
 // GLOBAL: SHANDALAR 0x00748470
 EncodedImage *g_location07_sprite_entries[0xc];
 // GLOBAL: SHANDALAR 0x007484a0
-EncodedImage *g_land_sprite_entries[0x37];
-// GLOBAL: SHANDALAR 0x0074857c
-EncodedImage *g_land2_sprite_entries[0x39];
+EncodedImage *g_land_sprite_entries[110];
+
 // GLOBAL: SHANDALAR 0x00748660
 EncodedImage *g_tsprite2_grid_sprite_entries[0xc];
 // GLOBAL: SHANDALAR 0x00748690
@@ -305,9 +304,7 @@ EncodedImage *DAT_00748f1c;
 // GLOBAL: SHANDALAR 0x00748f20
 EncodedImage *DAT_00748f20;
 // GLOBAL: SHANDALAR 0x00748f30
-EncodedImage *g_sland_sprite_entries[0x37];
-// GLOBAL: SHANDALAR 0x0074900c
-EncodedImage *g_sland2_sprite_entries[0x37];
+EncodedImage *g_sland_sprite_entries[110];
 // GLOBAL: SHANDALAR 0x00749280
 EncodedImage *g_daysnew_sprite_entries[0xc];
 // GLOBAL: SHANDALAR 0x007492b0
@@ -335,9 +332,7 @@ EncodedImage *g_tsprite2_overlay_sprite_entries[8];
 // GLOBAL: SHANDALAR 0x00749460
 EncodedImage *g_ttsprite_grid_sprite_entries[0x40];
 // GLOBAL: SHANDALAR 0x00749560
-EncodedImage *g_castles1_sprite_entries[0xc];
-// GLOBAL: SHANDALAR 0x00749590
-EncodedImage *g_castles2_sprite_entries[0x20];
+EncodedImage *g_castles_sprite_entries[20];
 // GLOBAL: SHANDALAR 0x007496a0
 char g_opening_menu_sprite_work_buffer[0x1680];
 // GLOBAL: SHANDALAR 0x0078df40
@@ -600,7 +595,7 @@ void UpdateWorldMagicUnlockProgress(void);
 void RebuildDeckEntriesByCardGroup(void);
 void RefreshAdventureInterfaceLayout(void);
 int ConsumeUiTickCount(void);
-void NoOpWorldPositionCallback(int world_x, int world_y, int world_state);
+void RenderAdventureWorldScene(int world_x, int world_y, int world_state);
 int RunStartupMenuAndQueueInput(void);
 int QueuePendingMenuActionInput(void);
 void FUN_0055e808(void);
@@ -890,10 +885,13 @@ opening_menu:
   {
     do
     {
+#ifndef MODERN_FIXES
       s.last_tick = 0;
+#endif
       ConsumeUiTickCount();
-      NoOpWorldPositionCallback(g_world_player_x, g_world_player_y, DAT_00669710);
+      RenderAdventureWorldScene(g_world_player_x, g_world_player_y, DAT_00669710);
       DAT_00669710 = 0;
+
       while (clock() - s.last_tick < 0x3c)
       {
       }
@@ -4000,10 +3998,10 @@ void LoadOpeningMenuSpriteResources(void)
 
   s.entry_index = FUN_0057b7a0(g_cstline1_sprite_entries, BuildResolutionSpritePath("cstline1.spr"), 0x54);
   s.entry_index = FUN_0057b7a0(g_land_tile_sprite_entries, BuildResolutionSpritePath("landtile.spr"), 0x10);
-  s.entry_index = FUN_0057b7a0(g_land_sprite_entries, BuildResolutionSpritePath("land.spr"), 0x37);
-  s.entry_index = FUN_0057b7a0(g_sland_sprite_entries, BuildResolutionSpritePath("sland.spr"), 0x37);
-  s.entry_index = FUN_0057b7a0(g_land2_sprite_entries, BuildResolutionSpritePath("land2.spr"), 0x37);
-  s.entry_index = FUN_0057b7a0(g_sland2_sprite_entries, BuildResolutionSpritePath("sland2.spr"), 0x37);
+  s.entry_index = FUN_0057b7a0(g_land_sprite_entries, BuildResolutionSpritePath("land.spr"), 55);
+  s.entry_index = FUN_0057b7a0(g_sland_sprite_entries, BuildResolutionSpritePath("sland.spr"), 55);
+  s.entry_index = FUN_0057b7a0(&g_land_sprite_entries[55], BuildResolutionSpritePath("land2.spr"), 55);
+  s.entry_index = FUN_0057b7a0(&g_sland_sprite_entries[55], BuildResolutionSpritePath("sland2.spr"), 55);
   s.entry_index = FUN_0057b7a0(g_road_sprite_entries, BuildResolutionSpritePath("roads.spr"), 0xc);
 
   s.entry_index = ReadSpriteEntryPointers(&g_location_marker_sprite_entries[0], BuildResolutionSpritePath("locatn01.spr"));
@@ -4061,8 +4059,8 @@ void LoadOpeningMenuSpriteResources(void)
     g_sego_sprite_draw_height = (g_sego_sprite_height * 2) / 3;
   }
 
-  s.entry_index = ReadSpriteEntryPointers(g_castles1_sprite_entries, BuildResolutionSpritePath("castles1.spr"));
-  s.entry_index = FUN_0057b7a0(g_castles2_sprite_entries, BuildResolutionSpritePath("castles2.spr"), 8);
+  s.entry_index = ReadSpriteEntryPointers(g_castles_sprite_entries, BuildResolutionSpritePath("castles1.spr"));
+  s.entry_index = FUN_0057b7a0(&g_castles_sprite_entries[12], BuildResolutionSpritePath("castles2.spr"), 8);
   s.entry_index = FUN_0057b7a0(g_location07_sprite_entries, BuildResolutionSpritePath("locatn07.spr"), 12);
 
   s.dbox_entry_index = 0;
@@ -4498,14 +4496,6 @@ void RefreshAdventureInterfaceLayout(void)
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), PTR_DAT_00583354, 0, 0);
     DAT_00650f28 = 1;
   }
-}
-
-// FUNCTION: SHANDALAR 0x0054ac08
-void NoOpWorldPositionCallback(int world_x, int world_y, int world_state)
-{
-  (void)world_x;
-  (void)world_y;
-  (void)world_state;
 }
 
 // FUNCTION: SHANDALAR 0x0055e1b2

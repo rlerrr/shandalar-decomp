@@ -4,6 +4,7 @@
 #include <io.h>
 #include <string.h>
 #include "cardartlib/src/assert.h"
+#include "drawcardlib/src/pic.h"
 #include "facemaker_types.h"
 
 #ifdef _fileno
@@ -20,11 +21,14 @@ extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_
                                  unsigned int param_5);
 extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
                                  unsigned int param_5);
+extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
+extern void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 extern void LoadPcxIntoPageNoPalette(int page_number, char *path);
 extern void BeginSpriteEncodeSession(void);
 extern void FinalizeSpriteEncodeSession(void);
 extern int *g_sprite_blob_base;
 extern int *g_sprite_blob_cursor;
+extern DIBSurface *g_graphics_pages[10];
 extern FacemakerWindowBounds *g_face_fullscreen_bounds;
 extern char g_file_read_mode[];
 #pragma optimize("gy", on)
@@ -130,7 +134,148 @@ int FUN_0057b7a0(EncodedImage **param_1, char *param_2, int param_3)
   }
   return iVar2;
 }
-#pragma optimize("", on)
+
+// FUNCTION: SHANDALAR 0x0057bd10
+void DrawEncodedImageUnscaledClipped(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image)
+{
+  int base_y;
+  int page_number;
+  DIBSurface *page;
+  int draw_y;
+  unsigned int span_offset;
+  unsigned int clipped_span_length;
+  int row_stride;
+  unsigned int span_length;
+  unsigned char *next_span;
+  unsigned char *span_ptr;
+  int row_count;
+  int draw_start_x;
+  int skip_bytes;
+  int row_index;
+  int dst_row_ptr;
+
+  page_number = dst->page_number;
+  if (((encoded_image != (EncodedImage *)0) && (x <= dst->max_x)) && (y <= dst->max_y))
+  {
+    page = g_graphics_pages[page_number];
+    if (((dst->clip_left <= x) && (x + (int)encoded_image->width <= dst->max_x)) &&
+        ((dst->clip_top <= y) && ((int)encoded_image->height + y <= dst->max_y)))
+    {
+      DrawEncodedImageUnscaled(dst, x, y, encoded_image);
+      return;
+    }
+    base_y = y + (int)encoded_image->first_row;
+    row_count = (int)encoded_image->row_count;
+    if (((x <= dst->max_x) && (dst->clip_left <= (int)encoded_image->width + x)) &&
+        ((dst->clip_top <= row_count + base_y) && (base_y <= dst->max_y)))
+    {
+      row_stride = page->rowPadding + page->width;
+      row_index = 0;
+      dst_row_ptr = (int)page->pBits + x + base_y * row_stride;
+      span_ptr = encoded_image->spans;
+      if (0 < row_count)
+      {
+        do
+        {
+          draw_y = row_index + base_y;
+          if (dst->max_y <= draw_y)
+          {
+            return;
+          }
+          if (draw_y < dst->clip_top)
+          {
+            if (*span_ptr == 0xff)
+            {
+              next_span = span_ptr + 1;
+            }
+            else if (span_ptr[1] == 0xfe)
+            {
+              skip_bytes = (int)span_ptr[2] + 3;
+next_span_ptr:
+              next_span = span_ptr + skip_bytes;
+            }
+            else
+            {
+              next_span = span_ptr + span_ptr[1] + 2;
+            }
+          }
+          else
+          {
+            span_offset = (unsigned int)*span_ptr;
+            next_span = span_ptr + 1;
+            if (span_offset != 0xff)
+            {
+              span_length = (unsigned int)*next_span;
+              next_span = span_ptr + 2;
+              if (span_length == 0xfe)
+              {
+                span_length = (unsigned int)span_ptr[2];
+                next_span = span_ptr + 3;
+              }
+              span_ptr = next_span;
+              draw_start_x = dst->max_x;
+              if ((int)(x + span_offset) <= draw_start_x)
+              {
+                if (draw_start_x < (int)(x + span_length + span_offset))
+                {
+                  clipped_span_length = (unsigned int)((draw_start_x - (int)span_offset) - x);
+                  skip_bytes = (int)(span_length - clipped_span_length);
+                  span_length = clipped_span_length;
+                }
+                else
+                {
+                  skip_bytes = 0;
+                }
+                draw_start_x = dst->clip_left;
+                if ((int)(x + span_offset) < draw_start_x)
+                {
+                  if ((int)(x + span_length + span_offset) < draw_start_x)
+                  {
+                    skip_bytes = skip_bytes + (int)span_length;
+                    goto next_span_ptr;
+                  }
+                  draw_start_x = (draw_start_x - (int)span_offset) - x;
+                  span_ptr = span_ptr + draw_start_x;
+                }
+                else
+                {
+                  draw_start_x = 0;
+                }
+                if (page_number == 0)
+                {
+                  for (; draw_start_x < (int)span_length; draw_start_x = draw_start_x + 1)
+                  {
+                    if (*span_ptr != 0)
+                    {
+                      PutGraphicsPixel(dst, x + draw_start_x + (int)span_offset, draw_y, (unsigned int)*span_ptr);
+                    }
+                    span_ptr = span_ptr + 1;
+                  }
+                }
+                else
+                {
+                  for (; draw_start_x < (int)span_length; draw_start_x = draw_start_x + 1)
+                  {
+                    if (*span_ptr != 0)
+                    {
+                      *(unsigned char *)(dst_row_ptr + draw_start_x + (int)span_offset) = *span_ptr;
+                    }
+                    span_ptr = span_ptr + 1;
+                  }
+                }
+                goto next_span_ptr;
+              }
+              next_span = span_ptr + span_length;
+            }
+          }
+          row_index = row_index + 1;
+          dst_row_ptr = dst_row_ptr + row_stride;
+          span_ptr = next_span;
+        } while (row_index < row_count);
+      }
+    }
+  }
+}
 
 // FUNCTION: SHANDALAR 0x0057b840
 // FUNCTION: FACEMAKER 0x00408a50
@@ -332,3 +477,5 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
   sprite->total_size = (int)g_sprite_blob_cursor - (int)sprite;
   return sprite;
 }
+
+#pragma optimize("", on)
