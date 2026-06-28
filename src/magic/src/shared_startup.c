@@ -129,6 +129,26 @@ int CardTypeFromID(int csvid)
   }
 }
 
+// FUNCTION: MAGIC 0x004a59ea
+// FUNCTION: SHANDALAR 0x00557b6a
+int CardInDeck(int param_1)
+{
+  if (param_1 == -1) {
+    return -1;
+  }
+  else {
+    return param_1 & 0x4000;
+  }
+}
+
+// FUNCTION: MAGIC 0x004e1de1
+// FUNCTION: SHANDALAR 0x004f1bcc
+int SellPrice(void)
+{
+  //TODO: this needs a real implementation in shandalar eventually
+  return 10;
+}
+
 // FUNCTION: SHANDALAR 0x00464663
 // FUNCTION: MAGIC 0x00493bc3
 void set_global_base_directory(char *path)

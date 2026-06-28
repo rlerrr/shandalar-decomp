@@ -1,0 +1,12 @@
+EXPORTS
+CardIDFromType @ 1
+CardInDeck @ 2
+CardTypeFromID @ 3
+Gold @ 4
+Scards @ 5
+SellPrice @ 6
+SetCardInDeck @ 7
+_OpponFace @ 8
+_PlayerFace @ 9
+_currentDeck @ 10
+deck @ 11

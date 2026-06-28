@@ -13,6 +13,19 @@ extern int g_card_count;
 int CardTypeFromID(int csvid);
 int save_or_load_data(void *buf, unsigned int count);
 
+// FUNCTION: MAGIC 0x004a5a1b
+// FUNCTION: SHANDALAR 0x00557b9b
+void SetCardInDeck(int param_1,int param_2)
+{
+  if (param_2 == 1) {
+    deck[param_1] = deck[param_1] | 0x4000;
+  }
+  else {
+    deck[param_1] = deck[param_1] & 0x8fff;
+  }
+  return;
+}
+
 // FUNCTION: MAGIC 0x004ed13a
 // FUNCTION: SHANDALAR 0x00501b31
 int FUN_004ed13a(int file_descriptor, void *buffer, unsigned int count)

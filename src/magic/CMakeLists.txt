@@ -54,6 +54,8 @@ if (TARGET rpbits)
 endif()
 
 if (MSVC)
+  set_property(TARGET magic PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/magic.def\"")
+  set_property(TARGET magic APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/magic.def")
   target_link_options(magic PRIVATE "/SUBSYSTEM:WINDOWS")
   target_compile_options(magic PRIVATE /Od /Ob1 /Zi)
 endif()
