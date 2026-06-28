@@ -70,9 +70,9 @@ int global_screen_width = 0x280;
 // GLOBAL: SHANDALAR 0x005863bc
 int global_screen_height = 0x1e0;
 // GLOBAL: SHANDALAR 0x005862d8
-int g_neighbor_dx[9] = { 0, 0, 1, 1, 1, 0, -1, -1, -1 };
+int g_neighbor_dx[9] = {0, 0, 1, 1, 1, 0, -1, -1, -1};
 // GLOBAL: SHANDALAR 0x00586340
-int g_neighbor_dy[9] = { 0, -1, -1, 0, 1, 1, 1, 0, -1 };
+int g_neighbor_dy[9] = {0, -1, -1, 0, 1, 1, 1, 0, -1};
 // GLOBAL: SHANDALAR 0x005863c8
 WorldMagicSlotTimer g_world_magic_slot_timers[0xc] = {
     {0, 0, 114, 1000},
@@ -119,6 +119,8 @@ long DAT_005a6198[0x4e2];
 
 // GLOBAL: SHANDALAR 0x00591210
 int g_skip_world_sfx_preload;
+// GLOBAL: SHANDALAR 0x00591224
+int g_loadsave_skip_esc;
 // GLOBAL: SHANDALAR 0x00748418
 UINT g_timer_resolution_ms;
 // GLOBAL: SHANDALAR 0x007483fc
@@ -196,10 +198,22 @@ EncodedImage *g_face_preview_sprite_group[6];
 int g_world_scene_reveal_effect_pending;
 // GLOBAL: SHANDALAR 0x00591214
 int DAT_00591214 = 1;
+// GLOBAL: SHANDALAR 0x00591218
+int DAT_00591218;
+// GLOBAL: SHANDALAR 0x0059121c
+int DAT_0059121c;
+// GLOBAL: SHANDALAR 0x00591220
+int DAT_00591220 = -1;
+// GLOBAL: SHANDALAR 0x0059126c
+int DAT_0059126c = -1;
 // GLOBAL: SHANDALAR 0x0078990c
 int DAT_0078990c[10];
 // GLOBAL: SHANDALAR 0x0073ea70
 int DAT_0073ea70[8];
+// GLOBAL: SHANDALAR 0x006696f4
+int DAT_006696f4;
+// GLOBAL: SHANDALAR 0x006696fc
+int DAT_006696fc;
 // GLOBAL: SHANDALAR 0x00669700
 int DAT_00669700;
 // GLOBAL: SHANDALAR 0x00669710
@@ -674,6 +688,40 @@ int GetFontLineHeight(int param_1);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 int DrawTextLine(FacemakerWindowBounds *window_bounds, int x, int y, char *text);
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
+WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
+int LoadTextSectionLines(char *filename, char *section);
+int FUN_00412bae(char *param_1, int param_2, int param_3);
+int FUN_0041d1ef(void);
+int FUN_00431859(int x, int y, char direction_index);
+void FUN_004bdaad(int param_1, int param_2);
+int FUN_004ecefd(void);
+void FUN_004ed135(void);
+void FUN_004eda50(unsigned int param_1);
+int FUN_0050318e(void);
+void *FUN_0055060c(int param_1);
+void FUN_00559807(void);
+void FUN_005616cb(int param_1);
+void FUN_005616f9(void);
+void FUN_00562169(void);
+void FUN_00562736(int param_1, int param_2, int param_3, int param_4);
+void FUN_0056279e(int param_1, int param_2, int param_3);
+void FUN_00562835(char *param_1, int param_2);
+void FUN_00562a29(int param_1);
+void FUN_0056d222(int param_1);
+void FUN_0056d362(int param_1, int param_2);
+void FUN_0056d4b0(int param_1, int param_2);
+void FUN_0056d4f5(int param_1, int param_2);
+void FUN_0050a5c1(int param_1);
+void ShowCityInfoScreen(int param_1);
+void ShowDungeonCluesScreen(void);
+void FUN_00549002(void);
+void ShowWorldMapScreen(int mode);
+void FUN_0056335f(int param_1, int param_2);
+void FUN_00533ccd(int param_1);
+int FUN_004bb040(int world_x, int world_y);
+int FUN_00508b89(int world_x, int world_y);
+extern int DAT_0073e9d0;
+extern int DAT_0073e9d4;
 extern char *global_base_txt;
 extern HPALETTE global_cart_art_hpalette;
 extern int Gold;
@@ -4726,10 +4774,819 @@ int FUN_0055e31f(int x, int y)
 }
 
 // FUNCTION: SHANDALAR 0x0055e808
-void FUN_0055e808(void) {}
+void FUN_0055e808(void)
+{
+  struct
+  {
+    int key_code;
+    int key_magic_index;
+    int handle_world_magic_hotkey;
+    int random_value;
+    int random_world_x;
+    int random_world_y;
+    int nearest_slot_index;
+    int nearest_slot_distance;
+    int slot_index;
+    int move_step_divisor;
+    int previous_world_x;
+    int previous_world_y;
+    int previous_world_x_adjusted;
+    int previous_world_y_adjusted;
+    int nearest_town_distance;
+    int nearest_town_index;
+    int town_index;
+    int castle_index;
+    int ambient_track_id;
+    int proximity_value;
+    int delta_x;
+    int delta_y;
+    int abs_delta_x;
+    int abs_delta_y;
+    int move_offset_x;
+    int move_offset_y;
+    int dungeon_index;
+    int deck_index;
+    unsigned int tile_type;
+    unsigned int tile_magic_mask;
+    int audio_pitch;
+    int audio_pan;
+  } s;
+  unsigned char *card_slot_ptr;
+
+  if (FUN_0041d1ef() == 0)
+  {
+    s.key_code = PopNormalizedQueuedKeyInput();
+    DAT_00669700 = 0;
+    s.handle_world_magic_hotkey = 0;
+
+    if ((s.key_code == 0x1b) || (s.key_code == 0x51) || (s.key_code == 0x71))
+    {
+      PTR_DAT_005832b4->font_slot = 4;
+      LoadTextSectionLines("ADVstrings.txt", "SHUTDOWN");
+      strcpy(g_ui_message_buffer, text_lines[0]);
+      if (FUN_00412bae(g_ui_message_buffer, 100, 0x50) == 1)
+      {
+        DAT_009300f0 = 1;
+      }
+      else
+      {
+        RefreshAdventureInterfaceLayout();
+      }
+      SaveGameToSlot(3);
+    }
+    else
+    {
+      if ((s.key_code == 0x4c) || (s.key_code == 0x6c))
+      {
+        g_loadsave_skip_esc = 1;
+        s.slot_index = FUN_005031a8();
+        if (s.slot_index != -1)
+        {
+          LoadGameFromSlot(s.slot_index);
+        }
+        LoadPcxIntoPageNoPalette("advfac64.pic");
+        DAT_00591218 = 0;
+        RefreshAdventureInterfaceLayout();
+        FUN_0055060c(1);
+        g_loadsave_skip_esc = 0;
+      }
+      else if ((0x30 < s.key_code) && (s.key_code < 0x36))
+      {
+        s.handle_world_magic_hotkey = 1;
+      }
+      else if ((s.key_code == 0x53) || (s.key_code == 0x73))
+      {
+        DAT_00591218 = 0;
+        s.slot_index = FUN_0050318e();
+        if (s.slot_index != -1)
+        {
+          SaveGameToSlot(s.slot_index);
+        }
+        LoadPcxIntoPageNoPalette("advfac64.pic");
+        RefreshAdventureInterfaceLayout();
+      }
+      else
+      {
+        switch (s.key_code)
+        {
+        case 0x20:
+          DAT_00591218 = 0;
+          break;
+        case 0x55:
+          g_frontbuffer_direct_blit_enabled = g_frontbuffer_direct_blit_enabled ^ 1;
+          s.handle_world_magic_hotkey = 1;
+          break;
+        case 0x3b00:
+          if ((g_world_magic_bitmap & 8U) != 0)
+          {
+            s.key_code = 0x31;
+            s.handle_world_magic_hotkey = 1;
+          }
+          else
+          {
+            AnimatePaletteToColor(0, DAT_00589dec);
+            DeckBuilderMain(g_main_window_hwnd, 1, 0);
+            FUN_004ed135();
+            RefreshAdventureInterfaceLayout();
+          }
+          break;
+        case 0x3c00:
+          ClearInputAndWaitForMouseRelease();
+          // map
+          ShowWorldMapScreen(0);
+          RefreshAdventureInterfaceLayout();
+          break;
+        case 0x3d00:
+          ClearInputAndWaitForMouseRelease();
+          ShowCityInfoScreen(1);
+          RefreshAdventureInterfaceLayout();
+          break;
+        case 0x3e00:
+          ClearInputAndWaitForMouseRelease();
+          // dungeon clues
+          ShowDungeonCluesScreen();
+          RefreshAdventureInterfaceLayout();
+          break;
+        case 0x3f00:
+          // stats
+          FUN_00549002();
+          RefreshAdventureInterfaceLayout();
+          break;
+        case 0x4000:
+          ClearInputAndWaitForMouseRelease();
+          FUN_0056335f(0, -1);
+          RefreshAdventureInterfaceLayout();
+          break;
+        case 0x4700:
+          DAT_00591218 = 1;
+          break;
+        case 0x4800:
+          DAT_00591218 = 2;
+          break;
+        case 0x4900:
+          DAT_00591218 = 3;
+          break;
+        case 0x4b00:
+          DAT_00591218 = 8;
+          break;
+        case 0x4d00:
+          DAT_00591218 = 4;
+          break;
+        case 0x4f00:
+          DAT_00591218 = 7;
+          break;
+        case 0x5000:
+          DAT_00591218 = 6;
+          break;
+        case 0x5100:
+          DAT_00591218 = 5;
+          break;
+        default:
+          break;
+        }
+      }
+
+      if (s.handle_world_magic_hotkey != 0)
+      {
+        s.key_magic_index = s.key_code - 0x30;
+        if ((DAT_0078990c[s.key_magic_index] != 0) && ((g_world_magic_bitmap & (1 << (((char)s.key_magic_index * 2) & 0x1f))) != 0))
+        {
+          if (FUN_00522508(4 - g_shandalar_difficulty) == 0)
+          {
+            DAT_0078990c[s.key_magic_index] = DAT_0078990c[s.key_magic_index] - 1;
+          }
+          RefreshAdventureInterfaceLayout();
+
+          switch (s.key_code)
+          {
+          case 0x31:
+            AnimatePaletteToColor(0, DAT_00589dec);
+            DeckBuilderMain(g_main_window_hwnd, 1, 1);
+            FUN_004ed135();
+            ClearGraphicsPageWithPaletteColor(0, 7);
+            RefreshAdventureInterfaceLayout();
+            break;
+          case 0x32:
+            do
+            {
+              s.random_world_x = FUN_00522508(0x40);
+              s.random_world_y = FUN_00522508(0x40);
+              s.tile_type = FUN_0043146b(s.random_world_x, s.random_world_y);
+            } while (s.tile_type == 0);
+            FUN_004290e2(0x12, 2);
+            g_world_player_x = s.random_world_x * 0x20 + 0x10;
+            g_world_player_y = s.random_world_y * 0x20 + 0x10;
+            RefreshAdventureInterfaceLayout();
+            g_world_scene_reveal_effect_pending = 1;
+            break;
+          case 0x33:
+            card_slot_ptr = Scards + s.key_magic_index * 0x20 + 0xc;
+            card_slot_ptr[0] = 0x96;
+            card_slot_ptr[1] = 0;
+            card_slot_ptr[2] = 0;
+            card_slot_ptr[3] = 0;
+            FUN_004290e2(0x12, 3);
+            break;
+          case 0x34:
+            s.nearest_slot_distance = 0x7fff;
+            s.nearest_slot_index = -1;
+            for (s.slot_index = 0; s.slot_index < 6; s.slot_index = s.slot_index + 1)
+            {
+              if (0 < g_lair_or_monster_slots[s.slot_index].entry_type)
+              {
+                s.random_value = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+                                              g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
+                if (s.random_value < s.nearest_slot_distance)
+                {
+                  s.nearest_slot_index = s.slot_index;
+                  s.nearest_slot_distance = s.random_value;
+                }
+              }
+            }
+            if (s.nearest_slot_index != -1)
+            {
+              FUN_004bdaad(s.nearest_slot_index, s.nearest_slot_index + 8);
+              FUN_004290e2(0x12, (g_lair_or_monster_slots[s.nearest_slot_index].entry_type << 8) | 4);
+              g_lair_or_monster_slots[s.nearest_slot_index].entry_type = -1;
+            }
+            break;
+          case 0x35:
+            if (g_lair_or_monster_slots[7].entry_type != -1)
+            {
+              g_world_player_x = (g_lair_or_monster_slots[7].world_x & 0xffe0U) + 0x10;
+              g_world_player_y = (g_lair_or_monster_slots[7].world_y & 0xffe0U) + 0x1f;
+              FUN_004290e2(0x12, 5);
+            }
+            g_world_scene_reveal_effect_pending = 1;
+            break;
+          }
+        }
+      }
+    }
+
+    FUN_005616cb(0);
+  }
+
+  if ((DAT_006696fc != 0) && (++DAT_00669700 > 500))
+  {
+    FUN_00559807();
+    DAT_00669700 = 300;
+  }
+
+  s.delta_x = g_neighbor_dx[DAT_00591218] + g_world_player_x;
+  s.delta_y = g_neighbor_dy[DAT_00591218] + g_world_player_y;
+  s.tile_type = FUN_0043146b((s.delta_x + ((s.delta_x >> 0x1f) & 0x1f)) >> 5, (s.delta_y + ((s.delta_y >> 0x1f) & 0x1f)) >> 5);
+  s.tile_magic_mask = FUN_005611c8(s.tile_type);
+  if (s.tile_magic_mask == 0)
+  {
+    s.key_magic_index = 0;
+  }
+  else
+  {
+    do
+    {
+      s.key_magic_index = FUN_00522508(5) + 1;
+    } while ((s.tile_magic_mask & (1 << ((unsigned char)s.key_magic_index & 0x1f))) == 0);
+  }
+
+  s.move_step_divisor = 1;
+  DAT_0073e9d0 = (g_world_player_x + ((g_world_player_x >> 0x1f) & 0x1f)) >> 5;
+  DAT_0073e9d4 = (g_world_player_y + ((g_world_player_y >> 0x1f) & 0x1f)) >> 5;
+  if ((s.tile_type == 2) || ((s.tile_type == 3 && ((g_world_magic_bitmap & 8U) == 0)) || (s.tile_type == 4 && ((g_world_magic_bitmap & 0x200U) == 0))))
+  {
+    s.move_step_divisor = 3;
+  }
+  if ((s.tile_type == 5) && ((g_world_magic_bitmap & 0x200U) == 0))
+  {
+    s.move_step_divisor = 3;
+  }
+  if (FUN_00431859(DAT_0073e9d0, DAT_0073e9d4, (char)DAT_00591218) != 0)
+  {
+    s.move_step_divisor = 1;
+  }
+  if (FUN_00431859(DAT_0073e9d0, DAT_0073e9d4, ((char)DAT_00591218 + 3U & 7) + 1) != 0)
+  {
+    s.move_step_divisor = 1;
+  }
+  if (g_food == 0)
+  {
+    s.move_step_divisor = ClampIntToRange(s.move_step_divisor + 2, 0, 4);
+  }
+
+  s.previous_world_y = g_world_player_y;
+  s.previous_world_x = g_world_player_x;
+  s.previous_world_x_adjusted = g_world_player_x + ((g_world_player_x >> 0x1f) & 0x1f);
+  s.previous_world_y_adjusted = g_world_player_y + ((g_world_player_y >> 0x1f) & 0x1f);
+  if (g_monster_timer % s.move_step_divisor == 0)
+  {
+    if (s.move_step_divisor == 3)
+    {
+      s.delta_x = g_neighbor_dx[DAT_00591218] * 2;
+    }
+    else
+    {
+      s.delta_x = g_neighbor_dx[DAT_00591218];
+    }
+    g_world_player_x = g_world_player_x + s.delta_x;
+
+    if (s.move_step_divisor == 3)
+    {
+      s.delta_y = g_neighbor_dy[DAT_00591218] * 2;
+    }
+    else
+    {
+      s.delta_y = g_neighbor_dy[DAT_00591218];
+    }
+    g_world_player_y = g_world_player_y + s.delta_y;
+
+    DAT_0073ea70[7] = DAT_0073ea70[7] + 1;
+    if (4 < DAT_0073ea70[7])
+    {
+      DAT_0073ea70[7] = 1;
+    }
+
+    if (DAT_00591218 != 0)
+    {
+      s.audio_pitch = FUN_00522508(0x28) + 0x50;
+      s.audio_pan = FUN_00522508(0x19) + 0x4b;
+      FUN_00562736(((DAT_0073ea70[7] & 1U) - 2) + s.key_magic_index * 2, s.audio_pan, s.audio_pitch, 0);
+    }
+
+    if (DAT_00591218 == 0)
+    {
+      DAT_0073ea70[7] = 0;
+    }
+    else
+    {
+      DAT_0073ea70[5] = DAT_00591218;
+    }
+
+    if ((*(int *)(Scards + 108) != 0) || (((g_monster_timer & 1U) != 0 && (FUN_00431859(DAT_0073e9d0, DAT_0073e9d4, ((char)DAT_00591218 + 3U & 7) + 1) != 0))))
+    {
+      g_world_player_x = g_world_player_x + g_neighbor_dx[DAT_00591218];
+      g_world_player_y = g_world_player_y + g_neighbor_dy[DAT_00591218];
+    }
+
+    s.tile_type = FUN_0043146b((g_world_player_x + ((g_world_player_x >> 0x1f) & 0x1f)) >> 5, (g_world_player_y + ((g_world_player_y >> 0x1f) & 0x1f)) >> 5);
+    if ((s.tile_type == 0) &&
+        ((abs(g_world_player_x - ((g_world_player_x & 0xffffffe0U) + 0x10)) < 0xc) || (abs(g_world_player_y - ((g_world_player_y & 0xffffffe0U) + 0x10)) < 0xc)))
+    {
+      DAT_00591218 = 0;
+      g_world_player_x = s.previous_world_x;
+      g_world_player_y = s.previous_world_y;
+    }
+
+    if ((FUN_00522508(0x28) == 0) && (g_skip_world_sfx_preload == 0))
+    {
+      FUN_00562a29(s.key_magic_index);
+    }
+
+    if (((g_monster_timer & 0x1fU) == 0) && (DAT_00591218 != 0))
+    {
+      if (g_food != 0)
+      {
+        g_food = g_food - 1;
+      }
+      if ((*(int *)(Scards + 120) == 0) && (s.tile_type == 2))
+      {
+        g_food = g_food + 2;
+      }
+      g_siege_timer = g_siege_timer + 1;
+      g_quest_restock_timer = g_quest_restock_timer + 1;
+
+      if ((g_siege_timer & 0x3fU) == 0)
+      {
+        FUN_005616f9();
+        g_siege_timer = g_siege_timer + ClampIntToRange(g_shandalar_difficulty + ((g_siege_timer + ((g_siege_timer >> 0x1f) & 0xffU)) >> 8), 0, 0x10);
+      }
+      if (((unsigned char)g_siege_timer & 0x3f) == 0x18)
+      {
+        FUN_00562169();
+        g_siege_timer = g_siege_timer + ClampIntToRange(g_shandalar_difficulty * 2 + ((g_siege_timer + ((g_siege_timer >> 0x1f) & 0x3fU)) >> 6), 0, 0x20);
+      }
+
+      DAT_00669710 = 1;
+      if (g_siege_timer > 7)
+      {
+        DAT_00591214 = 1;
+      }
+    }
+
+    DAT_0073e9d0 = (g_world_player_x + ((g_world_player_x >> 0x1f) & 0x1f)) >> 5;
+    DAT_0073e9d4 = (g_world_player_y + ((g_world_player_y >> 0x1f) & 0x1f)) >> 5;
+    if (((s.previous_world_x_adjusted >> 5) != DAT_0073e9d0) || ((s.previous_world_y_adjusted >> 5) != DAT_0073e9d4))
+    {
+      DAT_006696f4 = 0;
+    }
+
+    if ((g_monster_timer & 1U) == 0)
+    {
+      s.nearest_town_distance = 0x7fff;
+      s.nearest_town_index = 0;
+      for (s.town_index = 0; s.town_index < 0x80; s.town_index = s.town_index + 1)
+      {
+        if (g_town_slots[s.town_index].location_type != -1)
+        {
+          s.random_value = FUN_004ecf30(g_town_slots[s.town_index].world_x * 0x20 + 0x10 - g_world_player_x,
+                                        g_town_slots[s.town_index].world_y * 0x20 + 0x10 - g_world_player_y);
+          if (s.random_value < s.nearest_town_distance)
+          {
+            s.nearest_town_index = s.town_index;
+            s.nearest_town_distance = s.random_value;
+          }
+        }
+      }
+
+      s.proximity_value = ClampIntToRange(0x80 - s.nearest_town_distance, 0, 100);
+      if ((s.proximity_value < 0xb) || (g_town_slots[s.nearest_town_index].location_type < 1))
+      {
+        if (DAT_0059121c != 0)
+        {
+          FUN_0056d222(0x10);
+        }
+        DAT_0059121c = 0;
+        DAT_0059126c = -1;
+      }
+      else
+      {
+        if (DAT_0059126c == s.nearest_town_index)
+        {
+          FUN_0056d362(0x10, s.proximity_value << 2);
+        }
+        else
+        {
+          DAT_0059126c = s.nearest_town_index;
+          if (g_town_slots[s.nearest_town_index].location_type == 4)
+          {
+            for (s.castle_index = 0; (s.castle_index < 5) &&
+                                     ((g_town_slots[s.nearest_town_index].world_x != g_castle_dungeon_slots[s.castle_index].world_x) ||
+                                      (g_town_slots[s.nearest_town_index].world_y != g_castle_dungeon_slots[s.castle_index].world_y));
+                 s.castle_index = s.castle_index + 1)
+            {
+            }
+
+            s.ambient_track_id = DAT_00591220;
+            if (s.castle_index + 0x15 != DAT_00591220)
+            {
+              if ((DAT_00591220 != -1) && (s.castle_index + 0x15 != DAT_00591220))
+              {
+                sound_unload(0x10);
+              }
+
+              switch (s.castle_index)
+              {
+              case 0:
+                FUN_00562835("sound\\bcastle.wav", 0x10);
+                break;
+              case 1:
+                FUN_00562835("sound\\ucastle.wav", 0x10);
+                break;
+              case 2:
+                FUN_00562835("sound\\gcastle.wav", 0x10);
+                break;
+              case 3:
+                FUN_00562835("sound\\rcastle.wav", 0x10);
+                break;
+              case 4:
+                FUN_00562835("sound\\wcastle.wav", 0x10);
+                break;
+              default:
+                break;
+              }
+              s.ambient_track_id = s.castle_index + 0x15;
+            }
+          }
+          else if (g_town_slots[s.nearest_town_index].location_type == 1)
+          {
+            if ((DAT_00591220 != -1) && (DAT_00591220 != 0x32))
+            {
+              sound_unload(0x10);
+            }
+            if (DAT_00591220 != 0x32)
+            {
+              FUN_00562835("sound\\locmus0.wav", 0x10);
+            }
+            DAT_00591220 = 0x32;
+            s.ambient_track_id = DAT_00591220;
+          }
+          else
+          {
+            s.ambient_track_id = s.nearest_town_index % 0x14;
+            if (DAT_00591220 != s.ambient_track_id)
+            {
+              if (DAT_00591220 != -1)
+              {
+                sound_unload(0x10);
+              }
+              switch (s.ambient_track_id)
+              {
+              case 0:
+                FUN_00562835("sound\\locmus1.wav", 0x10);
+                break;
+              case 1:
+                FUN_00562835("sound\\locmus2.wav", 0x10);
+                break;
+              case 2:
+                FUN_00562835("sound\\locmus3.wav", 0x10);
+                break;
+              case 3:
+                FUN_00562835("sound\\locmus4.wav", 0x10);
+                break;
+              case 4:
+                FUN_00562835("sound\\locmus5.wav", 0x10);
+                break;
+              case 5:
+                FUN_00562835("sound\\locmus6.wav", 0x10);
+                break;
+              case 6:
+                FUN_00562835("sound\\locmus7.wav", 0x10);
+                break;
+              case 7:
+                FUN_00562835("sound\\locmus8.wav", 0x10);
+                break;
+              case 8:
+                FUN_00562835("sound\\locmus9.wav", 0x10);
+                break;
+              case 9:
+                FUN_00562835("sound\\locmus10.wav", 0x10);
+                break;
+              case 10:
+                FUN_00562835("sound\\locmus11.wav", 0x10);
+                break;
+              case 0xb:
+                FUN_00562835("sound\\locmus12.wav", 0x10);
+                break;
+              case 0xc:
+                FUN_00562835("sound\\locmus13.wav", 0x10);
+                break;
+              case 0xd:
+                FUN_00562835("sound\\locmus14.wav", 0x10);
+                break;
+              case 0xe:
+                FUN_00562835("sound\\locmus15.wav", 0x10);
+                break;
+              case 0xf:
+                FUN_00562835("sound\\locmus16.wav", 0x10);
+                break;
+              case 0x10:
+                FUN_00562835("sound\\locmus17.wav", 0x10);
+                break;
+              case 0x11:
+                FUN_00562835("sound\\locmus18.wav", 0x10);
+                break;
+              case 0x12:
+                FUN_00562835("sound\\locmus19.wav", 0x10);
+                break;
+              case 0x13:
+                FUN_00562835("sound\\tmplmus1.wav", 0x10);
+                break;
+              default:
+                FUN_00562835("sound\\locmus0.wav", 0x10);
+                break;
+              }
+            }
+          }
+          DAT_00591220 = s.ambient_track_id;
+          FUN_0056279e(0x10, s.proximity_value, 0);
+          FUN_0056d4b0(0x10, 1);
+        }
+        DAT_0059121c = 1;
+      }
+    }
+
+    if ((DAT_006696f4 == 0) && (abs((g_world_player_x & 0x1fU) - 0x10) < 0xc) &&
+        (abs((g_world_player_y & 0x1fU) - 0x10) < 0xc) && ((FUN_004314ca(DAT_0073e9d0, DAT_0073e9d4) & 0x10) != 0))
+    {
+      s.dungeon_index = FUN_004bb040(DAT_0073e9d0, DAT_0073e9d4);
+      if (s.dungeon_index == -1)
+      {
+        FUN_00431593(0x10, DAT_0073e9d0, DAT_0073e9d4);
+      }
+      else
+      {
+        FUN_0056d362(0x10, 400);
+        FUN_0056d4f5(0x10, 1);
+        FUN_004eda50((unsigned int)s.dungeon_index);
+        DAT_00591214 = 1;
+        DAT_006696f4 = 1;
+        DAT_00591218 = 0;
+        for (s.slot_index = 0; s.slot_index < 6; s.slot_index = s.slot_index + 1)
+        {
+          if (0 < g_lair_or_monster_slots[s.slot_index].entry_type)
+          {
+            if (FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+                             g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y) < 0x60)
+            {
+              s.delta_x = g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x;
+              s.delta_y = g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y;
+              s.abs_delta_y = abs(s.delta_y);
+              s.abs_delta_x = abs(s.delta_x);
+              if (s.abs_delta_y / 2 < s.abs_delta_x)
+              {
+                s.move_offset_x = FUN_004ecefd() * 0x30;
+              }
+              else
+              {
+                s.move_offset_x = 0;
+              }
+              g_lair_or_monster_slots[s.slot_index].world_x = g_world_player_x - s.move_offset_x;
+
+              s.abs_delta_x = abs(s.delta_x);
+              s.abs_delta_y = abs(s.delta_y);
+              if (s.abs_delta_x / 2 < s.abs_delta_y)
+              {
+                s.move_offset_y = FUN_004ecefd() * 0x30;
+              }
+              else
+              {
+                s.move_offset_y = 0;
+              }
+              g_lair_or_monster_slots[s.slot_index].world_y = g_world_player_y - s.move_offset_y;
+            }
+          }
+        }
+        FUN_00533ccd(0);
+        //SaveGameToSlot(3);
+        FUN_005616cb(0);
+        RefreshAdventureInterfaceLayout();
+        g_monster_timer = g_monster_timer | 0x1f;
+      }
+    }
+
+    if ((DAT_006696f4 == 0) && ((g_world_player_x - 8U & 0x10) == 0) && ((g_world_player_y - 8U & 0x10) == 0) &&
+        ((FUN_004314ca(DAT_0073e9d0, DAT_0073e9d4) & 0x40) != 0))
+    {
+      s.dungeon_index = FUN_00508b89(DAT_0073e9d0, DAT_0073e9d4);
+      DAT_006696f4 = 1;
+      if ((s.dungeon_index != -1) && (g_castle_dungeon_slots[s.dungeon_index].card_slot_1 != -1) && (g_castle_dungeon_slots[s.dungeon_index].clues_bitmap != 0))
+      {
+        FUN_0050a5c1(s.dungeon_index);
+      }
+    }
+
+    DAT_00789938 = 0;
+    DAT_0078df68 = 0;
+    for (s.deck_index = 0; s.deck_index < 500; s.deck_index = s.deck_index + 1)
+    {
+      if (deck[s.deck_index] != -1)
+      {
+        DAT_00789938 = DAT_00789938 + 1;
+        if ((((unsigned char *)&deck[s.deck_index])[1] & 0x40) == 0)
+        {
+          DAT_0078df68 = DAT_0078df68 + 1;
+        }
+      }
+    }
+
+    ClearQueuedKeyInput();
+  }
+}
 
 // FUNCTION: SHANDALAR 0x0055fd27
 void FUN_0055fd27(void) {}
+
+// FUNCTION: SHANDALAR 0x0041d1ef
+int FUN_0041d1ef(void)
+{
+  return (g_key_input_queue_count == 0) ? -1 : 0;
+}
+
+// FUNCTION: SHANDALAR 0x00412bae
+int FUN_00412bae(char *param_1, int param_2, int param_3)
+{
+  return RunTextMenuAt(param_1, param_2, param_3);
+}
+
+// FUNCTION: SHANDALAR 0x00431859
+int FUN_00431859(int x, int y, char direction_index)
+{
+  (void)x;
+  (void)y;
+  (void)direction_index;
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x004bdaad
+void FUN_004bdaad(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+}
+
+// FUNCTION: SHANDALAR 0x004ecefd
+int FUN_004ecefd(void)
+{
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x004ed135
+void FUN_004ed135(void) {}
+
+// FUNCTION: SHANDALAR 0x004eda50
+void FUN_004eda50(unsigned int param_1)
+{
+  (void)param_1;
+}
+
+// FUNCTION: SHANDALAR 0x0050318e
+int FUN_0050318e(void)
+{
+  return RunLoadSaveMenu(1);
+}
+
+// FUNCTION: SHANDALAR 0x00559807
+void FUN_00559807(void) {}
+
+// FUNCTION: SHANDALAR 0x005616cb
+void FUN_005616cb(int param_1)
+{
+  (void)param_1;
+}
+
+// FUNCTION: SHANDALAR 0x005616f9
+void FUN_005616f9(void) {}
+
+// FUNCTION: SHANDALAR 0x00562169
+void FUN_00562169(void) {}
+
+// FUNCTION: SHANDALAR 0x00562736
+void FUN_00562736(int param_1, int param_2, int param_3, int param_4)
+{
+  (void)param_1;
+  (void)param_2;
+  (void)param_3;
+  (void)param_4;
+}
+
+// FUNCTION: SHANDALAR 0x0056279e
+void FUN_0056279e(int param_1, int param_2, int param_3)
+{
+  (void)param_1;
+  (void)param_2;
+  (void)param_3;
+}
+
+// FUNCTION: SHANDALAR 0x00562835
+void FUN_00562835(char *param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+}
+
+// FUNCTION: SHANDALAR 0x00562a29
+void FUN_00562a29(int param_1)
+{
+  (void)param_1;
+}
+
+// FUNCTION: SHANDALAR 0x0056d222
+void FUN_0056d222(int param_1)
+{
+  (void)param_1;
+}
+
+// FUNCTION: SHANDALAR 0x0056d362
+void FUN_0056d362(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+}
+
+// FUNCTION: SHANDALAR 0x0056d4b0
+void FUN_0056d4b0(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+}
+
+// FUNCTION: SHANDALAR 0x0056d4f5
+void FUN_0056d4f5(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+}
+
+// FUNCTION: SHANDALAR 0x0050a5c1
+void FUN_0050a5c1(int param_1)
+{
+  (void)param_1;
+}
+
+// FUNCTION: SHANDALAR 0x00549002
+void FUN_00549002(void) {}
+
+// FUNCTION: SHANDALAR 0x0056335f
+void FUN_0056335f(int param_1, int param_2)
+{
+  (void)param_1;
+  (void)param_2;
+}
+
+// FUNCTION: SHANDALAR 0x00533ccd
+void FUN_00533ccd(int param_1)
+{
+  (void)param_1;
+}
 
 // FUNCTION: SHANDALAR 0x00561647
 void TickWorldMagicSlotTimers(void)

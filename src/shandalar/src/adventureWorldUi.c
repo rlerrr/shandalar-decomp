@@ -2116,39 +2116,42 @@ static __inline void DrawWorldStatusTipSprites(void)
 // FUNCTION: SHANDALAR 0x0054ac08
 void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
 {
-  int stack_padding[0x14];
-  int saved_clip_rect_world[4];
-  int saved_clip_rect_ui[4];
-  int saved_minimap_clip_rect[4];
-  int previous_page_number;
-  int player_screen_x;
-  int player_screen_y;
-  int tile_x;
-  int tile_y;
-  int player_tile_x;
-  int player_tile_y;
-  int slot_index;
-  int sprite_offset;
-  int monster_tile_screen_x;
-  int monster_tile_screen_y;
-  int monster_subcell_screen_x;
-  int monster_subcell_screen_y;
-  int monster_screen_x;
-  int monster_screen_y;
-  int lair_sprite_index;
-  int current_entry_type;
-  int heading_sprite_width;
-  int heading_sprite_height;
-  int panel_top_y;
-  int scaled_0x18;
-  int scaled_0x20;
-  int scaled_0x8c;
-  int scaled_0x100;
-  char *coord_text;
-  EncodedImage *sprite;
-  ShandalarCardSlot *slot;
+  struct
+  {
+    int stack_padding[9];
+    int saved_minimap_clip_rect[4];
+    int sprite_offset;
+    int lair_sprite_index;
+    int tile_x;
+    int heading_sprite_width;
+    int heading_sprite_height;
+    int panel_top_y;
+    int scaled_0x18;
+    int scaled_0x20;
+    int scaled_0x8c;
+    int status_layout_x[6];
+    int status_layout_y[3];
+    int resolution_index;
+    int status_layout_panel_y[3];
+    int status_frame_y[3];
+    int scaled_0x100;
+    int monster_tile_screen_x;
+    int monster_subcell_screen_y;
+    int monster_subcell_screen_x;
+    int monster_tile_screen_y;
+    int player_screen_y;
+    int player_screen_x;
+    int heading_sprite_index;
+    int slot_index;
+    int tile_y;
+    int current_entry_type;
+    EncodedImage *sprite;
+    int previous_page_number;
+    int saved_clip_rect_world[4];
+    int saved_clip_rect_ui[4];
+  } s;
 
-  previous_page_number = PTR_DAT_005832dc->page_number;
+  s.previous_page_number = PTR_DAT_005832dc->page_number;
   FUN_0046ed33();
 
   ConfigureAdventureWorldViewport();
@@ -2156,194 +2159,215 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
   g_world_player_world_x_cached = world_x;
   g_world_player_world_y_cached = world_y;
 
-  player_tile_x = world_x / 32;
-  player_tile_y = world_y / 32;
-  g_world_player_tile_x = player_tile_x;
-  g_world_player_tile_y = player_tile_y;
+  g_world_player_tile_x = world_x / 32;
+  g_world_player_tile_y = world_y / 32;
 
   PTR_DAT_005832b4->page_number = PTR_DAT_005832dc->page_number;
   ResetWorldDrawQueue();
   g_world_ui_top_offset = 0x50;
-  stack_padding[0] = 0;
-  PushGraphicsClipRect((AdvMenuRect *)saved_clip_rect_world, PTR_DAT_005832dc, 0, 0x80, PTR_DAT_005832b4->max_x, PTR_DAT_005832b4->max_y - 0x80);
-  PushGraphicsClipRect((AdvMenuRect *)saved_clip_rect_ui, PTR_DAT_005832b4, 0, 0x80, PTR_DAT_005832b4->max_x, PTR_DAT_005832b4->max_y - 0x80);
+  s.stack_padding[0] = 0;
+  *(AdvMenuRect *)s.saved_clip_rect_world =
+      *PushGraphicsClipRect((AdvMenuRect *)s.saved_minimap_clip_rect, PTR_DAT_005832dc, 0, 0x80, PTR_DAT_005832b4->max_x, PTR_DAT_005832b4->max_y - 0x80);
+  *(AdvMenuRect *)s.saved_clip_rect_ui =
+      *PushGraphicsClipRect((AdvMenuRect *)s.stack_padding, PTR_DAT_005832b4, 0, 0x80, PTR_DAT_005832b4->max_x, PTR_DAT_005832b4->max_y - 0x80);
   UpdateWorldViewportBuffer(world_x, world_y);
 
-  WorldPointToScreen(world_x, world_y, &player_screen_x, &player_screen_y);
-  PushGraphicsClipRect((AdvMenuRect *)saved_minimap_clip_rect, PTR_DAT_005832b4, 0x40,
+  WorldPointToScreen(world_x, world_y, &s.player_screen_x, &s.player_screen_y);
+  PushGraphicsClipRect((AdvMenuRect *)s.saved_minimap_clip_rect, PTR_DAT_005832b4, 0x40,
                        g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
                        FUN_005501dc(0x100), FUN_005501dc(0x8c));
 
-  sprite_offset = DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14;
-  sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + sprite_offset + 0xb40);
   QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-               (player_screen_x - g_ego_sprite_width / 2) + g_world_scroll_x,
-               (player_screen_y - g_ego_sprite_draw_height) + g_world_scroll_y,
-               player_screen_y + g_world_scroll_y,
-               sprite);
+               (s.player_screen_x - g_ego_sprite_width / 2) + g_world_scroll_x,
+               (s.player_screen_y - g_ego_sprite_draw_height) + g_world_scroll_y,
+               s.player_screen_y + g_world_scroll_y,
+               *(EncodedImage **)(g_opening_menu_sprite_work_buffer + DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14 + 0xb40));
 
-  sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + sprite_offset + 0xbf4);
   DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
-                                  player_screen_x - g_sego_sprite_width / 2,
-                                  player_screen_y - g_sego_sprite_draw_height,
-                                  sprite);
-  tile_x = player_tile_x;
-  tile_y = player_tile_y;
-  strcpy(g_ui_message_buffer, "");
-  coord_text = _itoa(tile_x, g_ini_string_scratch, 10);
-  strcat(g_ui_message_buffer, coord_text);
+                                  s.player_screen_x - g_sego_sprite_width / 2,
+                                  s.player_screen_y - g_sego_sprite_draw_height,
+                                  *(EncodedImage **)(g_opening_menu_sprite_work_buffer + DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14 + 0xbf4));
+  strcpy(g_ui_message_buffer, g_empty_string);
+  strcat(g_ui_message_buffer, _itoa(g_world_player_tile_x, g_ini_string_scratch, 10));
   strcat(g_ui_message_buffer, " ");
-  coord_text = _itoa(tile_y, g_ini_string_scratch, 10);
-  strcat(g_ui_message_buffer, coord_text);
+  strcat(g_ui_message_buffer, _itoa(g_world_player_tile_y, g_ini_string_scratch, 10));
 
-  for (slot_index = 0; slot_index < 8; slot_index = slot_index + 1)
+  for (s.slot_index = 0; s.slot_index < 8; s.slot_index = s.slot_index + 1)
   {
-    slot = &g_lair_or_monster_slots[slot_index];
-    WorldTileToScreenFromCameraAnchor(slot->world_x & 0xffffffe0, slot->world_y & 0xffffffe0, &monster_tile_screen_x, &monster_tile_screen_y);
-    WorldSubtileOffsetToScreen(slot->world_x & 0x1f, slot->world_y & 0x1f, &monster_subcell_screen_x, &monster_subcell_screen_y);
-    monster_screen_x = monster_tile_screen_x + monster_subcell_screen_x;
-    monster_screen_y = monster_tile_screen_y + monster_subcell_screen_y;
-    tile_x = (int)(slot->world_x + ((slot->world_x >> 0x1f) & 0x1fU)) >> 5;
-    tile_y = (int)(slot->world_y + ((slot->world_y >> 0x1f) & 0x1fU)) >> 5;
-    if ((slot->entry_type == -1) || (abs(tile_x - player_tile_x) >= 2) || (abs(tile_y - player_tile_y) >= 2))
+    WorldTileToScreenFromCameraAnchor(g_lair_or_monster_slots[s.slot_index].world_x & 0xffffffe0, g_lair_or_monster_slots[s.slot_index].world_y & 0xffffffe0,
+                                      &s.monster_tile_screen_x, &s.monster_tile_screen_y);
+    WorldSubtileOffsetToScreen(g_lair_or_monster_slots[s.slot_index].world_x & 0x1f, g_lair_or_monster_slots[s.slot_index].world_y & 0x1f,
+                               &s.monster_subcell_screen_x, &s.monster_subcell_screen_y);
+    s.player_screen_x = s.monster_tile_screen_x + s.monster_subcell_screen_x;
+    s.player_screen_y = s.monster_subcell_screen_y + s.monster_tile_screen_y;
+    s.monster_tile_screen_x = g_lair_or_monster_slots[s.slot_index].world_x / 32;
+    s.monster_tile_screen_y = g_lair_or_monster_slots[s.slot_index].world_y / 32;
+    if ((g_lair_or_monster_slots[s.slot_index].entry_type == -1) ||
+        (abs(s.monster_tile_screen_x - g_world_player_tile_x) > 1) ||
+        (abs(s.monster_tile_screen_y - g_world_player_tile_y) > 1))
     {
       continue;
     }
 
-    current_entry_type = slot->entry_type;
-    if ((gs_creature_names_00591a08[current_entry_type].metadata[0xa] & 2U) != 0)
+    s.current_entry_type = g_lair_or_monster_slots[s.slot_index].entry_type;
+    if ((gs_creature_names_00591a08[s.current_entry_type].metadata[0xa] & 2U) != 0)
     {
-      current_entry_type = current_entry_type - (((unsigned int)g_monster_timer >> 5) & 3);
+      s.current_entry_type = s.current_entry_type - (((unsigned int)g_monster_timer >> 5) & 3);
     }
-    if (((gs_creature_names_00591a08[current_entry_type].metadata[0xb] & 1U) == 0) ||
-        (FUN_004ecf30(monster_screen_x - 0x140, monster_screen_y - 0xf0) <= FUN_005501dc(0x80)))
+    if (((gs_creature_names_00591a08[s.current_entry_type].metadata[0xb] & 1U) != 0) &&
+        (FUN_004ecf30(s.player_screen_x - 0x140, s.player_screen_y - 0xf0) > FUN_005501dc(0x80)))
     {
-      if (slot->entry_type == 0)
-      {
-        lair_sprite_index = (int)g_lair_sprite_index_by_color[slot->color];
-        sprite = g_location07_sprite_entries[lair_sprite_index];
-        QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                     monster_screen_x - FUN_005501dc(0x20),
-                     monster_screen_y - FUN_005501dc(0x30),
-                     monster_screen_y,
-                     sprite);
+      continue;
+    }
 
-        sprite = g_location07_sprite_entries[lair_sprite_index + 6];
-        DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
-                                        (monster_screen_x - FUN_005501dc(0x20)) - g_world_scroll_x,
-                                        (monster_screen_y - FUN_005501dc(0x30)) - g_world_scroll_y,
-                                        sprite);
-      }
-      else
-      {
-      sprite_offset =
-          ((((char)slot->movement_heading + 2U) & 7) * 0x14) + ((((unsigned int)slot->movement_heading >> 8) & 0xff) * 4);
-      sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + slot_index * 0xb4 + sprite_offset);
-      heading_sprite_width = (int)g_icons_sprite_entries[slot_index + 0x18];
-      heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[slot_index + 8];
+    if (g_lair_or_monster_slots[s.slot_index].entry_type == 0)
+    {
+      s.lair_sprite_index = (int)g_lair_sprite_index_by_color[g_lair_or_monster_slots[s.slot_index].color];
+      s.sprite = g_location07_sprite_entries[s.lair_sprite_index];
       QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                   monster_screen_x - heading_sprite_width / 2,
-                   monster_screen_y - heading_sprite_height,
-                   monster_screen_y,
-                   sprite);
+                   s.player_screen_x - FUN_005501dc(0x20),
+                   s.player_screen_y - FUN_005501dc(0x30),
+                   s.player_screen_y,
+                   s.sprite);
 
-      sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + (slot_index + 8) * 0xb4 + sprite_offset);
-      heading_sprite_width = (int)g_icons_sprite_entries[slot_index + 0x20];
-      heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[slot_index + 0x10];
+      s.sprite = g_location07_sprite_entries[s.lair_sprite_index + 6];
       DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
-                                      (monster_screen_x - heading_sprite_width / 2) - g_world_scroll_x,
-                                      (monster_screen_y - heading_sprite_height) - g_world_scroll_y,
-                                        sprite);
-      }
-
-      if ((((g_monster_timer >> 3) ^ (slot_index & 3)) & 3) == 0)
+                                      (s.player_screen_x - FUN_005501dc(0x20)) - g_world_scroll_x,
+                                      (s.player_screen_y - FUN_005501dc(0x30)) - g_world_scroll_y,
+                                      s.sprite);
+    }
+    else
+    {
+      s.heading_sprite_index = (signed char)gs_creature_names_00591a08[s.current_entry_type].metadata[3];
+      if (g_skip_world_sfx_preload != 0)
       {
-        PTR_DAT_005832b4->font_slot = 3;
-        strcpy(g_ui_message_buffer, FUN_00561441(current_entry_type));
+        s.heading_sprite_index = 1;
       }
+      s.heading_sprite_index = s.slot_index;
+      s.sprite_offset =
+          ((((char)g_lair_or_monster_slots[s.slot_index].movement_heading + 2U) & 7) * 0x14) +
+          ((signed char)((unsigned int)g_lair_or_monster_slots[s.slot_index].movement_heading >> 8) * 4);
+      s.sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + s.heading_sprite_index * 0xb4 + s.sprite_offset);
+      s.heading_sprite_width = (int)g_icons_sprite_entries[s.heading_sprite_index + 0x18];
+      s.heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[s.heading_sprite_index + 8];
+      QueueWorldSpriteForDraw(PTR_DAT_005832b4,
+                   s.player_screen_x - s.heading_sprite_width / 2,
+                   s.player_screen_y - s.heading_sprite_height,
+                   s.player_screen_y,
+                   s.sprite);
+
+      s.sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + (s.heading_sprite_index + 8) * 0xb4 + s.sprite_offset);
+      s.heading_sprite_width = (int)g_icons_sprite_entries[s.heading_sprite_index + 0x20];
+      s.heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[s.heading_sprite_index + 0x10];
+      DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
+                                      (s.player_screen_x - s.heading_sprite_width / 2) - g_world_scroll_x,
+                                      (s.player_screen_y - s.heading_sprite_height) - g_world_scroll_y,
+                                      s.sprite);
+    }
+
+    if ((((g_monster_timer >> 3) & 3) == (s.slot_index & 3)))
+    {
+      PTR_DAT_005832b4->font_slot = 3;
+      strcpy(g_ui_message_buffer, FUN_00561441(s.current_entry_type));
     }
   }
 
   DrawQueuedWorldSprites();
   PTR_DAT_005832b4->page_number = 0;
-  if (g_questnew_sprite_entries[0] != (EncodedImage *)0)
+  s.scaled_0x100 = (int)g_questnew_sprite_entries[0];
+  s.status_layout_y[0] = 0x40;
+  s.status_layout_y[1] = 0x50;
+  s.status_layout_y[2] = 0x66;
+  s.status_frame_y[0] = 0x48;
+  s.status_frame_y[1] = 0x5a;
+  s.status_frame_y[2] = 0x72;
+  s.status_layout_x[0] = 0xcb;
+  s.status_layout_x[1] = 0xfd;
+  s.status_layout_x[2] = 0x143;
+  s.status_layout_x[3] = 0x1af;
+  s.status_layout_x[4] = 0x21a;
+  s.status_layout_x[5] = 0x2b0;
+  s.status_layout_panel_y[0] = 0x2f;
+  s.status_layout_panel_y[1] = 0x3c;
+  s.status_layout_panel_y[2] = 0x4d;
+  s.scaled_0x100 = (int)g_questnew_sprite_entries[0];
+  DrawEncodedImageResampled(PTR_DAT_005832dc,
+                            ScaleUiCoordinate(0x141) + 0x40,
+                            ScaleUiCoordinate(0x105) + g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
+                            ScaleUiCoordinate((int)((EncodedImage *)s.scaled_0x100)->width),
+                            ScaleUiCoordinate((int)((EncodedImage *)s.scaled_0x100)->height),
+                            (EncodedImage *)s.scaled_0x100);
+  switch (global_screen_width)
   {
-    sprite = g_questnew_sprite_entries[0];
-    DrawEncodedImageResampled(PTR_DAT_005832dc,
-                              ScaleUiCoordinate(0x141) + 0x40,
-                              ScaleUiCoordinate(0x105) + g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
-                              ScaleUiCoordinate((int)sprite->width),
-                              ScaleUiCoordinate((int)sprite->height),
-                              sprite);
-    if (global_screen_width == 0x280)
-    {
-      panel_top_y = 0x48 + g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset;
-      tile_x = 0xcb;
-      tile_y = 0x1af;
-    }
-    else if (global_screen_width == 800)
-    {
-      panel_top_y = 0x5a + g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset;
-      tile_x = 0xfd;
-      tile_y = 0x21a;
-    }
-    else
-    {
-      panel_top_y = 0x72 + g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset;
-      tile_x = 0x143;
-      tile_y = 0x2b0;
-    }
-    DrawEncodedImageUnscaled(PTR_DAT_005832dc, 0x40, panel_top_y + 0x10 - ScaleUiCoordinate(0x30), g_tips_frame_sprite);
-    panel_top_y = g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x50;
-    DrawEncodedImageUnscaled(PTR_DAT_005832dc, (tile_x + 0x40) - ScaleUiCoordinate(0x40), panel_top_y, g_tips_icon_sprite);
-    DrawEncodedImageUnscaled(PTR_DAT_005832dc, (tile_y + 0x40) - ScaleUiCoordinate(0x40), panel_top_y, g_tips_icon_sprite);
-    panel_top_y = g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10;
-    scaled_0x18 = FUN_005501dc(0x18);
-    scaled_0x20 = FUN_005501dc(0x20);
-    scaled_0x8c = FUN_005501dc(0x8c);
-    scaled_0x100 = FUN_005501dc(0x100);
+  case 0x280:
+    s.resolution_index = 0;
+    break;
 
-    if (g_world_scene_reveal_effect_pending == 0)
+  case 0x320:
+    s.resolution_index = 1;
+    break;
+
+  case 0x400:
+    s.resolution_index = 2;
+    break;
+  }
+  DrawEncodedImageUnscaled(PTR_DAT_005832dc, 0x40,
+                           (s.status_frame_y[s.resolution_index] + g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10) -
+                               ScaleUiCoordinate(0x30),
+                           g_tips_frame_sprite);
+  DrawEncodedImageUnscaled(PTR_DAT_005832dc,
+                           (s.status_layout_x[s.resolution_index] + 0x40) - ScaleUiCoordinate(0x40),
+                           g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
+                           g_tips_icon_sprite);
+  DrawEncodedImageUnscaled(PTR_DAT_005832dc,
+                           (s.status_layout_x[s.resolution_index + 3] + 0x40) - ScaleUiCoordinate(0x40),
+                           g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
+                           g_tips_icon_sprite);
+  if (g_world_scene_reveal_effect_pending == 0)
+  {
+    if (global_screen_width != 0x400)
     {
-      if (global_screen_width == 0x400)
-      {
-        BlitGraphicsRect(PTR_DAT_005832dc, 0x40, panel_top_y, scaled_0x100 - 2, scaled_0x8c, PTR_DAT_005832b4,
-                         (scaled_0x20 + 4) & 0xfffffffc, scaled_0x18);
-      }
-      else
-      {
-        BlitGraphicsRect(PTR_DAT_005832dc, 0x40, panel_top_y, scaled_0x100, scaled_0x8c, PTR_DAT_005832b4,
-                         scaled_0x20 & 0xfffffffc, scaled_0x18);
-      }
+      BlitGraphicsRect(PTR_DAT_005832dc, 0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
+                       FUN_005501dc(0x100), FUN_005501dc(0x8c), PTR_DAT_005832b4,
+                       FUN_005501dc(0x20) & 0xfffffffc, FUN_005501dc(0x18));
     }
     else
     {
-      if (global_screen_width == 0x400)
-      {
-        BlitRectByRandomTileOrder(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC,
-                     (scaled_0x20 + 4) & 0xfffffffc, scaled_0x18,
-                     scaled_0x100 - 2, scaled_0x8c, 8, 8,
-                     g_graphics_pages[PTR_DAT_005832dc->page_number]->hTempDC,
-                     0x40, panel_top_y);
-      }
-      else
-      {
-        BlitRectByRandomTileOrder(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC,
-                     scaled_0x20 & 0xfffffffc, scaled_0x18,
-                     scaled_0x100, scaled_0x8c, 6, 6,
-                     g_graphics_pages[PTR_DAT_005832dc->page_number]->hTempDC,
-                     0x40, panel_top_y);
-      }
-      FUN_004ce992(0x2d);
-      g_world_scene_reveal_effect_pending = 0;
+      BlitGraphicsRect(PTR_DAT_005832dc, 0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
+                       FUN_005501dc(0x100) - 2, FUN_005501dc(0x8c), PTR_DAT_005832b4,
+                       (FUN_005501dc(0x20) + 4U) & 0xfffffffc, FUN_005501dc(0x18));
     }
   }
+  else
+  {
+    s.scaled_0x8c = (int)g_graphics_pages[PTR_DAT_005832dc->page_number];
+    s.scaled_0x20 = (int)g_graphics_pages[PTR_DAT_005832b4->page_number];
+    if (global_screen_width != 0x400)
+    {
+      BlitRectByRandomTileOrder(((DIBSurface *)s.scaled_0x20)->hTempDC,
+                   FUN_005501dc(0x20) & 0xfffffffc, FUN_005501dc(0x18),
+                   FUN_005501dc(0x100), FUN_005501dc(0x8c), 6, 6,
+                   ((DIBSurface *)s.scaled_0x8c)->hTempDC,
+                   0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
+      FUN_004ce992(0x2d);
+    }
+    else
+    {
+      BlitRectByRandomTileOrder(((DIBSurface *)s.scaled_0x20)->hTempDC,
+                   (FUN_005501dc(0x20) + 4U) & 0xfffffffc, FUN_005501dc(0x18),
+                   FUN_005501dc(0x100) - 2, FUN_005501dc(0x8c), 8, 8,
+                   ((DIBSurface *)s.scaled_0x8c)->hTempDC,
+                   0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
+      FUN_004ce992(0x2d);
+    }
+    g_world_scene_reveal_effect_pending = 0;
+  }
 
-  PushGraphicsClipRect((AdvMenuRect *)saved_minimap_clip_rect, PTR_DAT_005832dc, saved_clip_rect_world[0], saved_clip_rect_world[1],
-                       saved_clip_rect_world[2], saved_clip_rect_world[3]);
-  PushGraphicsClipRect((AdvMenuRect *)saved_clip_rect_world, PTR_DAT_005832b4, saved_clip_rect_ui[0], saved_clip_rect_ui[1], saved_clip_rect_ui[2],
-                       saved_clip_rect_ui[3]);
-  PTR_DAT_005832dc->page_number = previous_page_number;
+  PushGraphicsClipRect((AdvMenuRect *)s.saved_minimap_clip_rect, PTR_DAT_005832dc, s.saved_clip_rect_world[0], s.saved_clip_rect_world[1],
+                       s.saved_clip_rect_world[2], s.saved_clip_rect_world[3]);
+  PushGraphicsClipRect((AdvMenuRect *)s.stack_padding, PTR_DAT_005832b4, s.saved_clip_rect_ui[0], s.saved_clip_rect_ui[1], s.saved_clip_rect_ui[2],
+                       s.saved_clip_rect_ui[3]);
+  PTR_DAT_005832dc->page_number = s.previous_page_number;
 
   if ((world_state == 0) && (g_adventure_ui_layout_dirty == 0))
   {
@@ -2359,3 +2383,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     FUN_0046ed03();
   }
 }
+
+
+
+

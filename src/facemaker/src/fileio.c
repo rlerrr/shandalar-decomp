@@ -40,6 +40,7 @@ char g_pcx_extension[] = ".pcx";
 unsigned char g_rpbits_palette_magic[5] = {'M', '1', 2, 3, 0};
 
 // GLOBAL: FACEMAKER 0x0041aa08
+// GLOBAL: SHANDALAR 0x0073b880
 int g_export_write_palette;
 
 typedef struct RpBitsOutputHeader
