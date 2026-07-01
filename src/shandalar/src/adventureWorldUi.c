@@ -223,7 +223,7 @@ int FUN_004bb040(int world_x, int world_y);
 char *BuildQuestLocationName(int town_index, int quest_destination, int mana_castle_index);
 void WorldPointToScreen(int world_x, int world_y, int *out_screen_x, int *out_screen_y);
 void RefreshAdventureInterfaceLayout(void);
-void RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
+int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
 int CountDuelPoolEligibleTowns(void);
 void FUN_004290e2(int param_1, int param_2);
 int GetRelativeWorldQuadrant(int world_x, int world_y);

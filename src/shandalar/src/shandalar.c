@@ -212,6 +212,8 @@ int DAT_0078990c[10];
 int DAT_0073ea70[8];
 // GLOBAL: SHANDALAR 0x006696f4
 int DAT_006696f4;
+// GLOBAL: SHANDALAR 0x006696f8
+int DAT_006696f8;
 // GLOBAL: SHANDALAR 0x006696fc
 int DAT_006696fc;
 // GLOBAL: SHANDALAR 0x00669700
@@ -240,6 +242,12 @@ DialogBoxSpriteBank g_dialog_box_sprite_bank;
 HANDLE g_statwin_dll_module;
 // GLOBAL: SHANDALAR 0x0058c038
 char g_save_file_path[] = "D:MAGIC0.SVE";
+// GLOBAL: SHANDALAR 0x0058a86c
+char s_advfac64_pic_0058a86c[] = "advfac64.pic";
+// GLOBAL: SHANDALAR 0x0058a87c
+char s_todpal_tr_0058a87c[] = "todpal.tr";
+// GLOBAL: SHANDALAR 0x00591684
+char s_advfac64_pic_00591684[] = "advfac64.pic";
 // GLOBAL: SHANDALAR 0x0058c13c
 int g_save_path_needs_init = -1;
 // GLOBAL: SHANDALAR 0x0058c5ec
@@ -659,7 +667,7 @@ int FUN_0056302b(int param_1);
 int ConsumeMouseButtonReleaseMask(void);
 int RunTextMenuAt(char *menu_text, int left_x, int top_y);
 int RunTextMenuCore(char *menu_text, int clear_input_before_show);
-void RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
+int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
 int DrawTextMenu(char *menu_text, int selected_option);
 void DrawDialogBoxFrameAutoStyle(int x, int y, int width, int height);
 void DrawRectangleBorder(int x, int y, int width, int height, int color_index);
@@ -690,12 +698,11 @@ int DrawTextLine(FacemakerWindowBounds *window_bounds, int x, int y, char *text)
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
 int LoadTextSectionLines(char *filename, char *section);
-int FUN_00412bae(char *param_1, int param_2, int param_3);
 int FUN_0041d1ef(void);
 int FUN_00431859(int x, int y, char direction_index);
 void FUN_004bdaad(int param_1, int param_2);
-int FUN_004ecefd(void);
-void FUN_004ed135(void);
+int FUN_004ecefd(int param_1);
+int FUN_004ed135(void);
 void FUN_004eda50(unsigned int param_1);
 int FUN_0050318e(void);
 void *FUN_0055060c(int param_1);
@@ -707,10 +714,6 @@ void FUN_00562736(int param_1, int param_2, int param_3, int param_4);
 void FUN_0056279e(int param_1, int param_2, int param_3);
 void FUN_00562835(char *param_1, int param_2);
 void FUN_00562a29(int param_1);
-void FUN_0056d222(int param_1);
-void FUN_0056d362(int param_1, int param_2);
-void FUN_0056d4b0(int param_1, int param_2);
-void FUN_0056d4f5(int param_1, int param_2);
 void FUN_0050a5c1(int param_1);
 void ShowCityInfoScreen(int param_1);
 void ShowDungeonCluesScreen(void);
@@ -979,11 +982,10 @@ int RunTextMenuAt(char *menu_text, int left_x, int top_y)
 }
 
 // FUNCTION: SHANDALAR 0x00412bae
-void RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale)
+int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale)
 {
-  RunTextMenuAt(menu_text, (global_screen_width * x_320_scale) / 0x140,
-                (int)((y_200_scale - (y_200_scale & 1)) * global_screen_height) / 200 + (y_200_scale & 1));
-  return;
+  return RunTextMenuAt(menu_text, (global_screen_width * x_320_scale) / 0x140,
+                       (int)((y_200_scale - (y_200_scale & 1)) * global_screen_height) / 200 + (y_200_scale & 1));
 }
 
 // FUNCTION: SHANDALAR 0x00412c37
@@ -4824,7 +4826,7 @@ void FUN_0055e808(void)
       PTR_DAT_005832b4->font_slot = 4;
       LoadTextSectionLines("ADVstrings.txt", "SHUTDOWN");
       strcpy(g_ui_message_buffer, text_lines[0]);
-      if (FUN_00412bae(g_ui_message_buffer, 100, 0x50) == 1)
+      if (RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50) == 1)
       {
         DAT_009300f0 = 1;
       }
@@ -5029,6 +5031,7 @@ void FUN_0055e808(void)
 
   if ((DAT_006696fc != 0) && (++DAT_00669700 > 500))
   {
+    // Some sort of demo? Looks unreachable since DAT_006696fc is never set
     FUN_00559807();
     DAT_00669700 = 300;
   }
@@ -5202,7 +5205,7 @@ void FUN_0055e808(void)
       {
         if (DAT_0059121c != 0)
         {
-          FUN_0056d222(0x10);
+          sound_stop(0x10);
         }
         DAT_0059121c = 0;
         DAT_0059126c = -1;
@@ -5211,7 +5214,7 @@ void FUN_0055e808(void)
       {
         if (DAT_0059126c == s.nearest_town_index)
         {
-          FUN_0056d362(0x10, s.proximity_value << 2);
+          sound_set_vol(0x10, s.proximity_value << 2);
         }
         else
         {
@@ -5348,7 +5351,7 @@ void FUN_0055e808(void)
           }
           DAT_00591220 = s.ambient_track_id;
           FUN_0056279e(0x10, s.proximity_value, 0);
-          FUN_0056d4b0(0x10, 1);
+          set_sound_loop(0x10, 1);
         }
         DAT_0059121c = 1;
       }
@@ -5364,8 +5367,8 @@ void FUN_0055e808(void)
       }
       else
       {
-        FUN_0056d362(0x10, 400);
-        FUN_0056d4f5(0x10, 1);
+        sound_set_vol(0x10, 400);
+        play_snd_marker(0x10, 1);
         FUN_004eda50((unsigned int)s.dungeon_index);
         DAT_00591214 = 1;
         DAT_006696f4 = 1;
@@ -5383,7 +5386,7 @@ void FUN_0055e808(void)
               s.abs_delta_x = abs(s.delta_x);
               if (s.abs_delta_y / 2 < s.abs_delta_x)
               {
-                s.move_offset_x = FUN_004ecefd() * 0x30;
+                s.move_offset_x = FUN_004ecefd(s.delta_x) * 0x30;
               }
               else
               {
@@ -5395,7 +5398,7 @@ void FUN_0055e808(void)
               s.abs_delta_y = abs(s.delta_y);
               if (s.abs_delta_x / 2 < s.abs_delta_y)
               {
-                s.move_offset_y = FUN_004ecefd() * 0x30;
+                s.move_offset_y = FUN_004ecefd(s.delta_y) * 0x30;
               }
               else
               {
@@ -5406,7 +5409,7 @@ void FUN_0055e808(void)
           }
         }
         FUN_00533ccd(0);
-        //SaveGameToSlot(3);
+        // SaveGameToSlot(3);
         FUN_005616cb(0);
         RefreshAdventureInterfaceLayout();
         g_monster_timer = g_monster_timer | 0x1f;
@@ -5443,7 +5446,11 @@ void FUN_0055e808(void)
 }
 
 // FUNCTION: SHANDALAR 0x0055fd27
-void FUN_0055fd27(void) {}
+void FUN_0055fd27(void)
+{
+  // TODO(decomp): Overworld lair/monster tick. Spawns/moves entries in g_lair_or_monster_slots, triggers encounters,
+  // and handles the special siege slot (index 7).
+}
 
 // FUNCTION: SHANDALAR 0x0041d1ef
 int FUN_0041d1ef(void)
@@ -5451,41 +5458,98 @@ int FUN_0041d1ef(void)
   return (g_key_input_queue_count == 0) ? -1 : 0;
 }
 
-// FUNCTION: SHANDALAR 0x00412bae
-int FUN_00412bae(char *param_1, int param_2, int param_3)
-{
-  return RunTextMenuAt(param_1, param_2, param_3);
-}
-
 // FUNCTION: SHANDALAR 0x00431859
 int FUN_00431859(int x, int y, char direction_index)
 {
-  (void)x;
-  (void)y;
-  (void)direction_index;
-  return 0;
+  unsigned int uVar1;
+
+  if ((x < 0x40) && (-1 < x))
+  {
+    if ((y < 0x40) && (-1 < y))
+    {
+      uVar1 = FUN_005795f0(PTR_DAT_00583304, x, y + 0x40);
+      uVar1 = uVar1 & (1U << ((unsigned char)(direction_index - 1U) & 0x1f));
+    }
+    else
+    {
+      uVar1 = 0;
+    }
+  }
+  else
+  {
+    uVar1 = 0;
+  }
+  return uVar1;
 }
 
 // FUNCTION: SHANDALAR 0x004bdaad
 void FUN_004bdaad(int param_1, int param_2)
 {
-  (void)param_1;
-  (void)param_2;
+  char *pcVar1;
+
+  if (*(int *)(g_opening_menu_sprite_work_buffer + param_1 * 0xb4) != 0)
+  {
+    FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + param_1 * 0xb4));
+    FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + param_2 * 0xb4));
+    pcVar1 = g_opening_menu_sprite_work_buffer + param_1 * 0xb4;
+    pcVar1[0] = '\0';
+    pcVar1[1] = '\0';
+    pcVar1[2] = '\0';
+    pcVar1[3] = '\0';
+  }
 }
 
 // FUNCTION: SHANDALAR 0x004ecefd
-int FUN_004ecefd(void)
+int FUN_004ecefd(int param_1)
 {
+  if (0 < param_1)
+  {
+    return 1;
+  }
+  if (param_1 < 0)
+  {
+    return -1;
+  }
+}
+
+// FUNCTION: SHANDALAR 0x004ed0bd
+int FUN_004ed0bd(void)
+{
+  int deck_index;
+
+  DAT_00789938 = 0;
+  DAT_0078df68 = 0;
+  for (deck_index = 0; deck_index < 500; deck_index = deck_index + 1)
+  {
+    if (deck[deck_index] != -1)
+    {
+      DAT_00789938 = DAT_00789938 + 1;
+      if ((((unsigned char *)&deck[deck_index])[1] & 0x40) == 0)
+      {
+        DAT_0078df68 = DAT_0078df68 + 1;
+      }
+    }
+  }
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x004ed135
-void FUN_004ed135(void) {}
+int FUN_004ed135(void)
+{
+  SetFocus(g_main_window_hwnd);
+  LoadPcxIntoPageNoPalette(s_advfac64_pic_0058a86c);
+  ReadPalette(s_todpal_tr_0058a87c, (char *)0);
+  SelectPalette(g_graphics_pages[0]->hTempDC, global_cart_art_hpalette, FALSE);
+  RealizePalette(g_graphics_pages[0]->hTempDC);
+  FUN_004ed0bd();
+  PopNormalizedQueuedKeyInput();
+  return 0;
+}
 
 // FUNCTION: SHANDALAR 0x004eda50
 void FUN_004eda50(unsigned int param_1)
 {
-  (void)param_1;
+  // TODO(decomp): "Visit location" handler (town/city/wizard/dungeon). Drives quest completion, duels, rewards, etc.
 }
 
 // FUNCTION: SHANDALAR 0x0050318e
@@ -5495,97 +5559,103 @@ int FUN_0050318e(void)
 }
 
 // FUNCTION: SHANDALAR 0x00559807
-void FUN_00559807(void) {}
+void FUN_00559807(void)
+{
+  // TODO(decomp): Periodic "demo/attract" style action: chooses some prebuilt decks, resets ante state, then kicks off
+  // a larger sequence (calls FUN_00568320) and refreshes the screen.
+}
 
 // FUNCTION: SHANDALAR 0x005616cb
 void FUN_005616cb(int param_1)
 {
-  (void)param_1;
+  if (param_1 != DAT_006696f8)
+  {
+    LoadPcxIntoPageNoPalette(s_advfac64_pic_00591684);
+    DAT_006696f8 = param_1;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x005616f9
+// TODO(decomp): Starts a siege event (chooses a target town, populates g_lair_or_monster_slots[7], shows newsflash).
 void FUN_005616f9(void) {}
 
 // FUNCTION: SHANDALAR 0x00562169
+// TODO(decomp): Resolves/cleans up an active siege and may trigger a "quest failed / game over" path.
 void FUN_00562169(void) {}
 
 // FUNCTION: SHANDALAR 0x00562736
 void FUN_00562736(int param_1, int param_2, int param_3, int param_4)
 {
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
-  (void)param_4;
+  Sound snd;
+
+  memset(&snd, 0, 0x20);
+  snd.volume = param_2 << 2;
+  snd.sampleRate = (param_3 * 0x5622) / 100;
+  snd.pan = param_4 << 2;
+  snd.flags = snd.flags & 0xffffffee;
+  sound_play(param_1, &snd);
 }
 
 // FUNCTION: SHANDALAR 0x0056279e
 void FUN_0056279e(int param_1, int param_2, int param_3)
 {
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
+  Sound snd;
+
+  memset(&snd, 0, 0x20);
+  snd.volume = param_2 << 2;
+  snd.sampleRate = 0x5622;
+  snd.pan = param_3 << 2;
+  snd.flags = snd.flags | 1;
+  sound_play(param_1, &snd);
 }
 
 // FUNCTION: SHANDALAR 0x00562835
 void FUN_00562835(char *param_1, int param_2)
 {
-  (void)param_1;
-  (void)param_2;
+  Sound snd;
+
+  memset(&snd, 0, 0x20);
+  snd.flags = snd.flags | 4;
+  snd.volume = 400;
+  snd.sampleRate = 0;
+  snd.pan = 0;
+  sound_load(param_1, param_2, &snd);
+  set_sound_loop(param_2, 1);
 }
 
 // FUNCTION: SHANDALAR 0x00562a29
 void FUN_00562a29(int param_1)
 {
   (void)param_1;
-}
-
-// FUNCTION: SHANDALAR 0x0056d222
-void FUN_0056d222(int param_1)
-{
-  (void)param_1;
-}
-
-// FUNCTION: SHANDALAR 0x0056d362
-void FUN_0056d362(int param_1, int param_2)
-{
-  (void)param_1;
-  (void)param_2;
-}
-
-// FUNCTION: SHANDALAR 0x0056d4b0
-void FUN_0056d4b0(int param_1, int param_2)
-{
-  (void)param_1;
-  (void)param_2;
-}
-
-// FUNCTION: SHANDALAR 0x0056d4f5
-void FUN_0056d4f5(int param_1, int param_2)
-{
-  (void)param_1;
-  (void)param_2;
+  // TODO(decomp): Plays random ambient overworld SFX for a given terrain/magic index (random pan/pitch).
 }
 
 // FUNCTION: SHANDALAR 0x0050a5c1
 void FUN_0050a5c1(int param_1)
 {
   (void)param_1;
+  // TODO(decomp): Enters a dungeon/castle by index (used when stepping onto a dungeon tile / dungeon clues flow).
 }
 
 // FUNCTION: SHANDALAR 0x00549002
-void FUN_00549002(void) {}
+void FUN_00549002(void)
+{
+  // TODO(decomp): Adventure "Stats" screen UI (renders stats, world magic list, handles button/menu loop).
+}
 
 // FUNCTION: SHANDALAR 0x0056335f
 void FUN_0056335f(int param_1, int param_2)
 {
   (void)param_1;
   (void)param_2;
+  // TODO(decomp): Prepares data and calls into the STATWIN DLL to show a stats/progress window; param selects mode/highlight.
 }
 
 // FUNCTION: SHANDALAR 0x00533ccd
 void FUN_00533ccd(int param_1)
 {
   (void)param_1;
+  // TODO(decomp): Deck analyzer. Computes deck composition stats and (when param_1!=0) draws the ANALYZE report UI.
 }
 
 // FUNCTION: SHANDALAR 0x00561647

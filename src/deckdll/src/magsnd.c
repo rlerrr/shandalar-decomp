@@ -139,6 +139,7 @@ int sound_play(int num, Sound *snd)
 }
 
 // FUNCTION: DECKDLL 0x1002d5c2
+// FUNCTION: SHANDALAR 0x0056d222
 int sound_stop(int a1)
 {
   if (!global_sound_status || global_sound_status == 2) 
@@ -146,6 +147,17 @@ int sound_stop(int a1)
 
   global_sound_vtable.StopSnd(a1);
   return;
+}
+
+// FUNCTION: SHANDALAR 0x0056d362
+int sound_set_vol(int param_1, unsigned int param_2)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.SetVol(param_1, param_2);
 }
 
 // FUNCTION: DECKDLL 0x1002daee
@@ -220,6 +232,7 @@ int sound_load(const char *path, int num, Sound *snd)
 }
 
 // FUNCTION: DECKDLL 0x1002d850
+// FUNCTION: SHANDALAR 0x0056d4b0
 int set_sound_loop(int num, int num2)
 {
   if (global_sound_status == 0 || global_sound_status == 2)
@@ -227,6 +240,17 @@ int set_sound_loop(int num, int num2)
 
   global_sound_vtable.SetSndMarker(num, num2);
   return;
+}
+
+// FUNCTION: SHANDALAR 0x0056d4f5
+int play_snd_marker(int param_1, unsigned int param_2)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.PlaySndMarker(param_1, param_2);
 }
 
 // FUNCTION: MAGIC 0x00485f81
