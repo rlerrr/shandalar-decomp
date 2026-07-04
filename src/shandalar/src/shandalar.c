@@ -918,6 +918,11 @@ opening_menu:
   }
   else
   {
+
+#ifdef _DEBUG
+    // This normally only runs on new world creation which is annoying for debugging.
+    g_world_scene_reveal_effect_pending = 1;
+#endif
     do
     {
 #ifndef MODERN_FIXES
@@ -2713,42 +2718,49 @@ int FUN_004f717a(void)
 // FUNCTION: SHANDALAR 0x004f78d3
 void GenerateTownConnections(void)
 {
-  int preview_panel_y_offset;
-  int avatar_sprite_index;
-  int local_28;
-  int icon_y_scaled;
-  int icon_height_scaled;
-  int icon_width_scaled;
-  int location_block_start_index;
-  int inner_index;
-  int entry_index;
-  WorldNode *location_data;
-  WorldNode *candidate_data;
-
-  for (icon_height_scaled = 0; icon_height_scaled < 0x80; icon_height_scaled = icon_height_scaled + 1)
+  struct
   {
-    location_data = &g_town_slots[icon_height_scaled];
-    for (local_28 = 0; local_28 < location_data->location_type; local_28 = local_28 + 1)
+    int connection_index; /* -0x24 */
+    int best_dist;        /* -0x20 */
+    int candidate_index;  /* -0x1c */
+    int town_index;       /* -0x18 */
+    int sample_index;     /* -0x14 */
+    int distance;         /* -0x10 */
+    int chosen_index;     /* -0x0c */
+    int best_index;       /* -0x08 */
+    int attempts;         /* -0x04 */
+  } s;
+
+  for (s.town_index = 0; s.town_index < 0x80; s.town_index = s.town_index + 1)
+  {
+    for (s.connection_index = 0; s.connection_index < g_town_slots[s.town_index].location_type; s.connection_index = s.connection_index + 1)
     {
-      entry_index = 0;
-      do
+      s.attempts = 0;
+    retry:
+      s.best_dist = 0x7fff;
+      s.sample_index = 0;
+      for (; s.sample_index < 0x2a; s.sample_index = s.sample_index + 1)
       {
-        icon_y_scaled = 0x7fff;
-        for (icon_width_scaled = 0; icon_width_scaled < 0x2a; icon_width_scaled = icon_width_scaled + 1)
+        s.candidate_index = FUN_00522508(0x80);
+        s.distance =
+            FUN_004ecf30(g_town_slots[s.town_index].world_x - g_town_slots[s.candidate_index].world_x,
+                         g_town_slots[s.town_index].world_y - g_town_slots[s.candidate_index].world_y);
+        if (s.distance < s.best_dist)
         {
-          preview_panel_y_offset = FUN_00522508(0x80);
-          candidate_data = &g_town_slots[preview_panel_y_offset];
-          avatar_sprite_index = FUN_004ecf30(location_data->world_x - candidate_data->world_x, location_data->world_y - candidate_data->world_y);
-          if (avatar_sprite_index < icon_y_scaled)
-          {
-            location_block_start_index = inner_index;
-            icon_y_scaled = avatar_sprite_index;
-            inner_index = preview_panel_y_offset;
-          }
+          s.best_dist = s.distance;
+          s.chosen_index = s.best_index;
+          s.best_index = s.candidate_index;
         }
-        candidate_data = &g_town_slots[location_block_start_index];
-        preview_panel_y_offset = CreateTownConnectionPath(location_data->world_x, location_data->world_y, candidate_data->world_x, candidate_data->world_y);
-      } while ((preview_panel_y_offset == 0) && (entry_index = entry_index + 1, entry_index < 3));
+      }
+
+      if (CreateTownConnectionPath(g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y,
+                                   g_town_slots[s.chosen_index].world_x, g_town_slots[s.chosen_index].world_y) == 0)
+      {
+        if (++s.attempts < 3)
+        {
+          goto retry;
+        }
+      }
     }
   }
 }
@@ -2756,125 +2768,154 @@ void GenerateTownConnections(void)
 // FUNCTION: SHANDALAR 0x004f7a3c
 int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_y)
 {
-  int preview_panel_y_offset;
-  int avatar_sprite_index;
-  int param1;
-  unsigned int uVar3;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int icon_y_scaled;
-  int icon_x_scaled;
-  int icon_height_scaled;
-  int entry_index;
+  struct
+  {
+    int step_count;      /* -0x30 */
+    int best_direction;  /* -0x2c */
+    int best_score;      /* -0x28 */
+    int flags_masked;    /* -0x24 */
+    int direction_index; /* -0x20 */
+    int cur_y;           /* -0x1c */
+    int cur_x;           /* -0x18 */
+    int target_dist;     /* -0x14 */
+    int next_y;          /* -0x10 */
+    int next_x;          /* -0x0c */
+    int tile_type;       /* -0x08 */
+    int score;           /* -0x04 */
+  } s;
 
-  icon_height_scaled = start_x;
-  icon_x_scaled = start_y;
-  local_34 = 0;
+  s.cur_x = start_x;
+  s.cur_y = start_y;
+  s.step_count = 0;
+
   BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x40, 0x80, PTR_DAT_00583304, 0x40, 0);
-  FUN_00431526(0x20, start_x, start_y);
+  FUN_00431526(0x20, s.cur_x, s.cur_y);
+
   do
   {
-    preview_panel_y_offset = FUN_004ecf30(target_x - icon_height_scaled, target_y - icon_x_scaled);
-    local_30 = -1;
-    local_2c = 0x7fff;
-    for (icon_y_scaled = 1; icon_y_scaled < 9; icon_y_scaled = icon_y_scaled + 1)
+    s.target_dist = FUN_004ecf30(target_x - s.cur_x, target_y - s.cur_y);
+    s.best_direction = -1;
+    s.best_score = 0x7fff;
+
+    for (s.direction_index = 1; s.direction_index <= 8; s.direction_index = s.direction_index + 1)
     {
-      avatar_sprite_index = g_neighbor_dx[icon_y_scaled] + icon_height_scaled;
-      param1 = g_neighbor_dy[icon_y_scaled] + icon_x_scaled;
-      uVar3 = FUN_0043146b(avatar_sprite_index, param1);
-      if ((uVar3 != 0) && ((entry_index = FUN_004ecf30(target_x - avatar_sprite_index, target_y - param1), entry_index < preview_panel_y_offset)))
+      s.next_x = g_neighbor_dx[s.direction_index] + s.cur_x;
+      s.next_y = g_neighbor_dy[s.direction_index] + s.cur_y;
+
+      s.tile_type = FUN_0043146b(s.next_x, s.next_y);
+      if (s.tile_type == 0)
       {
-        if ((uVar3 == 2) || (uVar3 == 0xb))
+        continue;
+      }
+
+      s.score = FUN_004ecf30(target_x - s.next_x, target_y - s.next_y);
+      if (s.target_dist <= s.score)
+      {
+        continue;
+      }
+
+      if ((s.tile_type == 2) || (s.tile_type == 0xb))
+      {
+        s.score = s.score + 1;
+      }
+      if ((s.tile_type == 4) || (s.tile_type == 5))
+      {
+        s.score = s.score + 4;
+      }
+
+      if ((FUN_004314ca(s.next_x, s.next_y) & 0x20) != 0)
+      {
+        if (s.step_count >= 1)
         {
-          entry_index = entry_index + 1;
-        }
-        if ((uVar3 == 4) || (uVar3 == 5))
-        {
-          entry_index = entry_index + 4;
-        }
-        uVar3 = FUN_004314ca(avatar_sprite_index, param1);
-        if (((uVar3 & 0x20) != 0) && (0 < local_34))
-        {
-          entry_index = entry_index - 4;
-        }
-        if (entry_index < local_2c)
-        {
-          local_2c = entry_index;
-          local_30 = icon_y_scaled;
+          s.score = s.score - 4;
         }
       }
+
+      if (s.best_score > s.score)
+      {
+        s.best_score = s.score;
+        s.best_direction = s.direction_index;
+      }
     }
-    if (local_30 == -1)
+
+    if (s.best_direction == -1)
     {
       BlitGraphicsRect(PTR_DAT_00583304, 0x40, 0, 0x40, 0x80, PTR_DAT_00583304, 0, 0);
       return 0;
     }
-    preview_panel_y_offset = g_neighbor_dx[local_30] + icon_height_scaled;
-    avatar_sprite_index = g_neighbor_dy[local_30] + icon_x_scaled;
-    uVar3 = FUN_004314ca(preview_panel_y_offset, avatar_sprite_index);
-    MarkPathConnection(icon_height_scaled, icon_x_scaled, local_30);
-    if (((uVar3 & 0x20) != 0) && (0 < local_34))
+
+    s.next_x = g_neighbor_dx[s.best_direction] + s.cur_x;
+    s.next_y = g_neighbor_dy[s.best_direction] + s.cur_y;
+    s.flags_masked = FUN_004314ca(s.next_x, s.next_y) & 0x20;
+
+    MarkPathConnection(s.cur_x, s.cur_y, s.best_direction);
+
+    if ((s.flags_masked != 0) && (s.step_count >= 1))
     {
       return 1;
     }
-    local_34 = local_34 + 1;
-    icon_x_scaled = avatar_sprite_index;
-    icon_height_scaled = preview_panel_y_offset;
-  } while ((preview_panel_y_offset != target_x) || (avatar_sprite_index != target_y));
+
+    s.cur_x = s.next_x;
+    s.cur_y = s.next_y;
+    s.step_count = s.step_count + 1;
+  } while ((s.cur_x != target_x) || (s.cur_y != target_y));
+
   return 1;
 }
 
 // FUNCTION: SHANDALAR 0x004f7c7d
 void PropagatePathConnectivity(void)
 {
-  int found_change;
-  unsigned int tile_value;
-  int scan_y;
-  int scan_x;
-  int x;
-  int y;
+  struct
+  {
+    int scan_x;       /* -0x14 */
+    int y;            /* -0x10 */
+    int x;            /* -0x0c */
+    int found_change; /* -0x08 */
+    int scan_y;       /* -0x04 */
+  } s;
 
   PutGraphicsPixel(PTR_DAT_00583304, 0xa8, 0x58, 0xff);
   do
   {
-    found_change = 0;
-    for (x = 4; x < 0x40; x = x + 4)
+    s.found_change = 0;
+    for (s.x = 4; s.x < 0x40; s.x = s.x + 4)
     {
-      for (y = 4; y < 0x40; y = y + 4)
+      for (s.y = 4; s.y < 0x40; s.y = s.y + 4)
       {
-        tile_value = ReadGraphicsPixel(PTR_DAT_00583304->page_number, x + 0x80, y + 0x40);
-        if (tile_value != 0)
+        if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.x + 0x80, s.y + 0x40) != 0)
         {
           FillGraphicsRect(PTR_DAT_00583304, 0x40, 0, 0x40, 0x40, 0);
-          FloodFillPathConnectivity(x, y, 8);
-          PutGraphicsPixel(PTR_DAT_00583304, x + 0x80, y + 0x40, 0);
-          for (scan_y = 0; scan_y < 0x40; scan_y = scan_y + 1)
+          FloodFillPathConnectivity(s.x, s.y, 8);
+          PutGraphicsPixel(PTR_DAT_00583304, s.x + 0x80, s.y + 0x40, 0);
+
+          for (s.scan_x = 0; s.scan_x < 0x40; s.scan_x = s.scan_x + 1)
           {
-            for (scan_x = 0; scan_x < 0x40; scan_x = scan_x + 1)
+            for (s.scan_y = 0; s.scan_y < 0x40; s.scan_y = s.scan_y + 1)
             {
-              tile_value = ReadGraphicsPixel(PTR_DAT_00583304->page_number, scan_y + 0x40, scan_x);
-              if ((tile_value != 0) && ((tile_value = ReadGraphicsPixel(PTR_DAT_00583304->page_number, scan_y + 0x80, scan_x), tile_value == 0)))
+              if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.scan_x + 0x40, s.scan_y) != 0)
               {
-                found_change = 1;
-                PutGraphicsPixel(PTR_DAT_00583304, scan_y + 0x80, scan_x, 0xff);
-                PutGraphicsPixel(PTR_DAT_00583304, scan_y + 0x80, scan_x + 0x40, 0xff);
+                if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.scan_x + 0x80, s.scan_y) == 0)
+                {
+                  s.found_change = 1;
+                  PutGraphicsPixel(PTR_DAT_00583304, s.scan_x + 0x80, s.scan_y, 0xff);
+                  PutGraphicsPixel(PTR_DAT_00583304, s.scan_x + 0x80, s.scan_y + 0x40, 0xff);
+                }
               }
             }
           }
         }
       }
     }
-  } while (found_change != 0);
+  } while (s.found_change != 0);
 
-  for (x = 0; x < 0x40; x = x + 1)
+  for (s.x = 0; s.x < 0x40; s.x = s.x + 1)
   {
-    for (y = 0; y < 0x40; y = y + 1)
+    for (s.y = 0; s.y < 0x40; s.y = s.y + 1)
     {
-      tile_value = ReadGraphicsPixel(PTR_DAT_00583304->page_number, x + 0x80, y);
-      if (tile_value == 0)
+      if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.x + 0x80, s.y) == 0)
       {
-        PutGraphicsPixel(PTR_DAT_00583304, x, y, 0);
+        PutGraphicsPixel(PTR_DAT_00583304, s.x, s.y, 0);
       }
     }
   }
@@ -2883,22 +2924,32 @@ void PropagatePathConnectivity(void)
 // FUNCTION: SHANDALAR 0x004f7eb2
 void FloodFillPathConnectivity(int x, int y, unsigned int depth)
 {
-  char next_x;
-  char next_y;
-  unsigned int tile_value;
-  char direction_index;
+  struct
+  {
+    char tile_value; /* -0x10 */
+    char pad_0d[3];
+    char direction_index; /* -0x0c */
+    char pad_09[3];
+    char next_y; /* -0x08 */
+    char pad_05[3];
+    char next_x; /* -0x04 */
+    char pad_01[3];
+  } s;
 
   PutGraphicsPixel(PTR_DAT_00583304, x + 0x40, y, depth);
-  if (1 < (int)depth)
+  if ((int)depth > 1)
   {
-    for (direction_index = 1; direction_index < 9; direction_index = direction_index + 2)
+    for (s.direction_index = 1; (int)s.direction_index <= 8; s.direction_index = s.direction_index + 2)
     {
-      next_x = (char)g_neighbor_dx[(char)direction_index] + (char)x;
-      next_y = (char)g_neighbor_dy[(char)direction_index] + (char)y;
-      tile_value = ReadGraphicsPixel(PTR_DAT_00583304->page_number, next_x + 0x40, next_y);
-      if (((int)(char)tile_value < (int)depth) && ((tile_value = ReadGraphicsPixel(PTR_DAT_00583304->page_number, next_x, next_y), tile_value != 0)))
+      s.next_x = (char)(g_neighbor_dx[(int)s.direction_index] + x);
+      s.next_y = (char)(g_neighbor_dy[(int)s.direction_index] + y);
+      s.tile_value = (char)ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.next_x + 0x40, s.next_y);
+      if ((int)s.tile_value < (int)depth)
       {
-        FloodFillPathConnectivity(next_x, next_y, depth - 1);
+        if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.next_x, s.next_y) != 0)
+        {
+          FloodFillPathConnectivity(s.next_x, s.next_y, depth - 1);
+        }
       }
     }
   }
@@ -3320,21 +3371,23 @@ void FUN_00431593(unsigned int param_1, int x, int y)
 // FUNCTION: SHANDALAR 0x0043174d
 void MarkPathConnection(int x, int y, int direction_index)
 {
-  int next_x;
-  int next_y;
-  unsigned int tile_value;
+  if (x >= 0x40 || x < 0)
+    return;
 
-  if ((((x < 0x40) && (-1 < x)) && (y < 0x40)) && (-1 < y))
-  {
-    tile_value = GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40);
-    PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40, tile_value | 1 << (((char)direction_index - 1U) & 0x1f));
-    FUN_00431526(0x20, x, y);
-    next_x = g_neighbor_dx[direction_index] + x;
-    next_y = g_neighbor_dy[direction_index] + y;
-    tile_value = GetGraphicsPixelColorRef(PTR_DAT_00583304, next_x, next_y + 0x40);
-    PutGraphicsPixel(PTR_DAT_00583304, next_x, next_y + 0x40, tile_value | 1 << (((char)direction_index + 3U) & 7));
-    FUN_00431526(0x20, next_x, next_y);
-  }
+  if (y >= 0x40 || y < 0)
+    return;
+
+  PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40,
+                   GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40) | (1 << (direction_index - 1)));
+  FUN_00431526(0x20, x, y);
+
+  x += g_neighbor_dx[direction_index];
+  y += g_neighbor_dy[direction_index];
+  direction_index = ((direction_index + 3) & 7) + 1;
+
+  PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40,
+                   GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40) | (1 << (direction_index - 1)));
+  FUN_00431526(0x20, x, y);
 }
 
 // FUNCTION: SHANDALAR 0x005019ad
@@ -5191,7 +5244,7 @@ void FUN_0055e808(void)
           }
         }
         AnalyzeDeckAndMaybeShowReport(0);
-        // SaveGameToSlot(3);
+        SaveGameToSlot(3);
         EnsureAdvfac64Loaded(0);
         RefreshAdventureInterfaceLayout();
         g_monster_timer = g_monster_timer | 0x1f;

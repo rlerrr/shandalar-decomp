@@ -79,10 +79,11 @@ char *FUN_004f2e17(int town_index);
 
 // From city-info helpers
 DWORD __cdecl FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
-char *__cdecl FUN_00550220(int town_index);
+char *BuildTownDisplayName(int town_index);
 int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int y);
 void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
 void __cdecl DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x00603a34
 int DAT_00603a34 = 0;
@@ -98,9 +99,6 @@ EncodedImage *DAT_00746e70[0x10];
 
 // GLOBAL: SHANDALAR 0x007894f4
 int DAT_007894f4 = 0;
-
-// GLOBAL: SHANDALAR 0x00652740
-char DAT_00652740[0x1000];
 
 // GLOBAL: SHANDALAR 0x00581918
 int DAT_00581918[0x10] = {
@@ -169,22 +167,8 @@ AdvMenuControl DAT_0058c8f8[5] = {
     {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)FUN_0050a85a, (AdvMenuActivateCallback)FUN_0050a970, 0, 0, DAT_0058cad4, DAT_0058cadc, 0, 0, {0, 0, 0, 0}},
 };
 
-// FUNCTION: SHANDALAR 0x004ffcb4
-int FUN_004ffcb4(AdvMenuControl *control)
-{
-  int old_state;
-
-  old_state = control->state;
-  g_menu_render_guard = 1;
-  control->state = 0;
-  control->on_render(control, 3);
-  g_menu_render_guard = 0;
-  control->state = 3;
-  return old_state;
-}
-
 // FUNCTION: SHANDALAR 0x004ffd0a
-int FUN_004ffd0a(AdvMenuControl *control)
+int RenderAdvMenuControlNormally(AdvMenuControl *control)
 {
   int old_state;
 
@@ -499,24 +483,24 @@ void ShowCityInfoScreen(int param_1)
     // Enable/disable scroll buttons
     if (s.scroll_top_index == 0)
     {
-      FUN_004ffcb4(&DAT_0058c8f8[0]);
-      FUN_004ffcb4(&DAT_0058c8f8[1]);
+      RenderAdvMenuControlDisabled(&DAT_0058c8f8[0]);
+      RenderAdvMenuControlDisabled(&DAT_0058c8f8[1]);
     }
     else
     {
-      FUN_004ffd0a(&DAT_0058c8f8[0]);
-      FUN_004ffd0a(&DAT_0058c8f8[1]);
+      RenderAdvMenuControlNormally(&DAT_0058c8f8[0]);
+      RenderAdvMenuControlNormally(&DAT_0058c8f8[1]);
     }
 
     if (s.town_count - 9 <= s.scroll_top_index)
     {
-      FUN_004ffcb4(&DAT_0058c8f8[2]);
-      FUN_004ffcb4(&DAT_0058c8f8[3]);
+      RenderAdvMenuControlDisabled(&DAT_0058c8f8[2]);
+      RenderAdvMenuControlDisabled(&DAT_0058c8f8[3]);
     }
     else
     {
-      FUN_004ffd0a(&DAT_0058c8f8[2]);
-      FUN_004ffd0a(&DAT_0058c8f8[3]);
+      RenderAdvMenuControlNormally(&DAT_0058c8f8[2]);
+      RenderAdvMenuControlNormally(&DAT_0058c8f8[3]);
     }
 
     FUN_005001e3();
@@ -592,46 +576,6 @@ void ShowCityInfoScreen(int param_1)
   }
 }
 
-// FUNCTION: SHANDALAR 0x00550220
-char *__cdecl FUN_00550220(int town_index)
-{
-  int first_half_index;
-  int second_half_index;
-
-  // town_index is non-negative in practice; this mirrors the original's clamping
-  first_half_index = town_index / 8;
-  if (first_half_index < 0)
-  {
-    first_half_index = 0;
-  }
-  else if (first_half_index > 0xf)
-  {
-    first_half_index = 0xf;
-  }
-
-  second_half_index = town_index & 0xf;
-  if (second_half_index < 0)
-  {
-    second_half_index = 0;
-  }
-  else if (second_half_index > 0xf)
-  {
-    second_half_index = 0xf;
-  }
-
-  if (g_town_slots[town_index].location_type == 1)
-  {
-    FUN_00564e70(DAT_00652740, 0x1000, gs_cityname_format_right_0077f190, gs_citynames_firsthalf_0077e060[first_half_index]);
-  }
-  else
-  {
-    FUN_00564e70(DAT_00652740, 0x1000, gs_cityname_format_left_0074c950, gs_citynames_firsthalf_0077e060[first_half_index],
-                 gs_citynames_secondhalf_007653e0[second_half_index]);
-  }
-
-  return DAT_00652740;
-}
-
 // FUNCTION: SHANDALAR 0x0050bb6d
 int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int y)
 {
@@ -666,7 +610,7 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
   }
   else
   {
-    strcpy(g_ui_message_buffer, FUN_00550220(town_index));
+    strcpy(g_ui_message_buffer, BuildTownDisplayName(town_index));
   }
 
   len = strlen(g_ui_message_buffer);

@@ -154,7 +154,6 @@ int HandleMainMenuButtonControlEvent(void *control_ptr, int event_type);
 int HandlePortraitMainMenuControlEvent(void *control_ptr, int event_type);
 
 void __cdecl FUN_004f2aa1(int param_1, int param_2, int param_3, int param_4, char *param_5);
-void FUN_005626b0(char *param_1, int param1, int param2, int param3, int param4);
 int BeginMenuContext(void);
 int ResetMenuContext(int context_index);
 int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
@@ -778,21 +777,6 @@ void FUN_0056bfa4(int deck_slot_index)
   deck[499] = -1;
 }
 
-// FUNCTION: SHANDALAR 0x005626b0
-void FUN_005626b0(char *param_1, int param1, int param2, int param3, int param4)
-{
-  Sound local_24;
-
-  sound_unload(param1);
-  (void)LoadSoundWithDriveFallback(param_1, param1, 0);
-  memset(&local_24, 0, 0x20);
-  local_24.volume = param2 << 2;
-  local_24.sampleRate = (param3 * 0x5622) / 100;
-  local_24.pan = param4 << 2;
-  local_24.flags = local_24.flags & 0xffffffeeU;
-  sound_play(param1, &local_24);
-}
-
 // FUNCTION: SHANDALAR 0x004f2aa1
 void __cdecl FUN_004f2aa1(int param_1, int param_2, int param_3, int param_4, char *param_5)
 {
@@ -850,7 +834,7 @@ int __cdecl FUN_004ef0a8(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x004ef07e
 void FUN_004ef07e(void)
 {
-  FUN_005626b0(s_x_sound_button2_wav_0058ad7c, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058ad7c, 0xf, 100, 100, 0);
   _DAT_007481d8 = -1;
 }
 
@@ -896,7 +880,7 @@ void FUN_004f1951(void)
   int town_index;
 
   town_index = _DAT_007483ec;
-  FUN_005626b0(s_x_sound_button2_wav_0058aef0, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058aef0, 0xf, 100, 100, 0);
   AnimatePaletteToColor(0, DAT_00589dec);
   DeckBuilderMain(g_main_window_hwnd, 1, 3);
   RestoreAdventureUiPaletteAndFocus();
@@ -912,7 +896,7 @@ void FUN_004f19e9(void)
   int town_index;
 
   town_index = _DAT_007483ec;
-  FUN_005626b0(s_x_sound_button2_wav_0058af1c, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058af1c, 0xf, 100, 100, 0);
   ShowWorldMapScreen(0);
   RefreshAdventureInterfaceLayout();
   FUN_0055060c(1);
@@ -926,7 +910,7 @@ void FUN_004f1a67(void)
   int town_index;
 
   town_index = _DAT_007483ec;
-  FUN_005626b0(s_x_sound_button2_wav_0058af48, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058af48, 0xf, 100, 100, 0);
   ShowDungeonCluesScreen();
   RefreshAdventureInterfaceLayout();
   FUN_0055060c(1);
@@ -940,7 +924,7 @@ void FUN_004f1b4e(void)
   int town_index;
 
   town_index = _DAT_007483ec;
-  FUN_005626b0(s_x_sound_button2_wav_0058af8c, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058af8c, 0xf, 100, 100, 0);
   PopNormalizedQueuedKeyInput();
   FUN_00549002();
   RefreshAdventureInterfaceLayout();

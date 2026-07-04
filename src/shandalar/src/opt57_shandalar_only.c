@@ -17,10 +17,10 @@
 
 typedef struct RGBLike
 {
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-  unsigned char a_or_unused;
+  int r;
+  int g;
+  int b;
+  int a_or_unused;
 } RGBLike;
 
 typedef struct HSVLike
@@ -33,8 +33,8 @@ typedef struct HSVLike
 extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
 extern void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 extern void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data);
-extern void ConvertRgbToHsv(RGBLike *rgb, HSVLike *hsv);
-extern void ConvertHsvToRgb(HSVLike *hsv, RGBLike *rgb);
+extern void ConvertRgbToHsv(HSVLike *hsv, RGBLike *rgb);
+extern RGBLike *ConvertHsvToRgb(HSVLike *hsv, RGBLike *rgb);
 extern void CopyBytesAsmCompat(double *dst, double *src, unsigned int size);
 
 extern DIBSurface *g_graphics_pages[10];
@@ -53,6 +53,9 @@ extern RpBitsPalettePacket g_palette_data_words;
 extern int g_palette_transition_work_words[0x400];
 extern int g_palette_transition_hsv[0x301];
 extern int g_palette_transition_value_step[0x2ff];
+
+// GLOBAL: SHANDALAR 0x005a1868
+unsigned char* g_palette_transition_source_bytes = g_palette_transition_source_words.entry_data;
 
 #pragma optimize("gy", on)
 #pragma intrinsic(memset)
@@ -316,6 +319,10 @@ int FadeInPaletteFromGray(int gray, int steps)
   int work_offset;
   int saturation_step;
   short frames_left;
+  unsigned char *dst;
+  unsigned char *src;
+  int copy_count;
+  unsigned short gray_word;
 
   value_step = 0x3fc0 / steps;
 
@@ -328,27 +335,35 @@ int FadeInPaletteFromGray(int gray, int steps)
   target_rgb.g = gray;
   target_rgb.b = gray;
 
-  memcpy(g_palette_transition_source_words.entry_data, g_palette_rgb_bytes, 0x300);
+  src = g_palette_rgb_bytes;
+  dst = g_palette_transition_source_bytes;
+  copy_count = 0x2ff;
+  do
+  {
+    *dst = *src;
+    src = src + 1;
+    dst = dst + 1;
+  } while (copy_count-- != 0);
 
+  gray_word = (unsigned short)((unsigned char)gray | ((unsigned short)(unsigned char)gray << 8));
   for (color_index = 0; color_index < 0x100; color_index = color_index + 1)
   {
     entry_offset = color_index * 3;
-    g_palette_rgb_bytes[entry_offset + 0] = (unsigned char)gray;
-    g_palette_rgb_bytes[entry_offset + 1] = (unsigned char)gray;
+    *(unsigned short *)(g_palette_rgb_bytes + entry_offset) = gray_word;
     g_palette_rgb_bytes[entry_offset + 2] = (unsigned char)gray;
   }
 
   RpBits_ApplyPalette(&g_palette_data_words);
-  ConvertRgbToHsv(&target_rgb, &target_hsv);
+  ConvertRgbToHsv(&target_hsv, &target_rgb);
 
   for (color_index = 0; color_index < 0x100; color_index = color_index + 1)
   {
     entry_offset = color_index * 3;
 
-    rgb.r = (unsigned char)g_palette_transition_source_words.entry_data[entry_offset + 0];
-    rgb.g = (unsigned char)g_palette_transition_source_words.entry_data[entry_offset + 1];
-    rgb.b = (unsigned char)g_palette_transition_source_words.entry_data[entry_offset + 2];
-    ConvertRgbToHsv(&rgb, &hsv);
+    rgb.r = (unsigned char)g_palette_transition_source_bytes[entry_offset + 0];
+    rgb.g = (unsigned char)g_palette_transition_source_bytes[entry_offset + 1];
+    rgb.b = (unsigned char)g_palette_transition_source_bytes[entry_offset + 2];
+    ConvertRgbToHsv(&hsv, &rgb);
 
     g_palette_transition_hsv[entry_offset + 0] = hsv.hue;
     g_palette_transition_hsv[entry_offset + 1] = hsv.saturation;
@@ -409,7 +424,7 @@ int FadeInPaletteFromGray(int gray, int steps)
           }
         }
 
-        ConvertHsvToRgb(&hsv, &rgb);
+        (void)ConvertHsvToRgb(&hsv, &rgb);
 
         work_offset = color_index * 4;
         g_palette_transition_work_words[work_offset + 0] = rgb.r;
@@ -453,7 +468,15 @@ int FadeInPaletteFromGray(int gray, int steps)
     } while (frames_left != 0);
   }
 
-  memcpy(g_palette_rgb_bytes, g_palette_transition_source_words.entry_data, 0x300);
+  src = g_palette_transition_source_bytes;
+  dst = g_palette_rgb_bytes;
+  copy_count = 0x2ff;
+  do
+  {
+    *dst = *src;
+    src = src + 1;
+    dst = dst + 1;
+  } while (copy_count-- != 0);
   RpBits_ApplyPalette(&g_palette_data_words);
   return 0;
 }

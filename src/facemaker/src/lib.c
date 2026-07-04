@@ -112,6 +112,7 @@ char *g_copy_restore_scratch_buffer_ptr = g_copy_restore_scratch_buffer;
 int g_graphics_initialized;
 
 // GLOBAL: FACEMAKER 0x00420df0
+// GLOBAL: SHANDALAR 0x00981220
 RpBitsPalettePacket g_palette_transition_source_words;
 
 // GLOBAL: FACEMAKER 0x00425e10
@@ -151,12 +152,15 @@ RGBQUAD g_palette_rgb[256];
 LOGPALETTE *g_palette_layout;
 
 // GLOBAL: FACEMAKER 0x00421110
+// GLOBAL: SHANDALAR 0x00981540
 int g_palette_transition_work_words[0x400];
 
 // GLOBAL: FACEMAKER 0x0041f5f0
+// GLOBAL: SHANDALAR 0x0097fa20
 int g_palette_transition_hsv[0x301];
 
 // GLOBAL: FACEMAKER 0x004201f4
+// GLOBAL: SHANDALAR 0x00980624
 int g_palette_transition_value_step[0x2ff];
 
 // GLOBAL: FACEMAKER 0x0040d08c
@@ -164,6 +168,7 @@ int g_palette_transition_value_step[0x2ff];
 int g_graphics_internal_state = 0;
 
 // GLOBAL: FACEMAKER 0x0040d2e4
+// GLOBAL: SHANDALAR 0x005a1864
 unsigned char *g_palette_rgb_bytes = g_palette_data_words.entry_data;
 
 // GLOBAL: FACEMAKER 0x0041afb8
@@ -1020,8 +1025,9 @@ static __inline int div64_round_toward_zero(int x)
 
 // FUNCTION: SHANDALAR 0x0057c890
 // FUNCTION: FACEMAKER 0x0040a440
-void ConvertRgbToHsv(RGBLike *self, HSVLike *out)
+void ConvertRgbToHsv(HSVLike *out, RGBLike *rgb)
 {
+  RGBLike self_copy;
   int minv;
   int maxv;
   int delta;
@@ -1031,15 +1037,17 @@ void ConvertRgbToHsv(RGBLike *self, HSVLike *out)
   int g;
   int b;
 
-  b = self->b;
-  g = self->g;
+  self_copy = *rgb;
+
+  b = self_copy.b;
+  g = self_copy.g;
 
   minv = g;
   if (b < g)
   {
     minv = b;
   }
-  r = self->r;
+  r = self_copy.r;
   if (r < minv)
   {
     minv = r;
@@ -1100,8 +1108,9 @@ void ConvertRgbToHsv(RGBLike *self, HSVLike *out)
 
 // FUNCTION: SHANDALAR 0x0057c9f0
 // FUNCTION: FACEMAKER 0x0040a5a0
-unsigned int *ConvertHsvToRgb(HSVLike *self, RGBLike *out)
+RGBLike *ConvertHsvToRgb(HSVLike *self, RGBLike *out)
 {
+  RGBLike tmp;
   int h, s, v;
   int p, q, t;
   int v6;
@@ -1115,15 +1124,11 @@ unsigned int *ConvertHsvToRgb(HSVLike *self, RGBLike *out)
     {
       v6 = div64_round_toward_zero(self->value);
 
-      out->r = v6;
-      out->g = v6;
-      out->b = v6;
-
-      // This 4th write is unclear from the snippet.
-      // The disassembly shows it writing a 4th dword from [esp+1c],
-      // which looks uninitialized in the fragment you posted.
-      out->a_or_unused = 0; // guessed
-      return;
+      tmp.r = v6;
+      tmp.g = v6;
+      tmp.b = v6;
+      *out = tmp;
+      return out;
     }
   }
 
@@ -1155,50 +1160,49 @@ unsigned int *ConvertHsvToRgb(HSVLike *self, RGBLike *out)
   switch (h / 0x0f00)
   {
   default:
-    out->r = 0;
-    out->g = 0;
-    out->b = 0;
+    tmp.r = 0;
+    tmp.g = 0;
+    tmp.b = 0;
     break;
 
   case 0:
-    out->r = v6;
-    out->g = t;
-    out->b = p;
+    tmp.r = v6;
+    tmp.g = t;
+    tmp.b = p;
     break;
 
   case 1:
-    out->r = q;
-    out->g = v6;
-    out->b = p;
+    tmp.r = q;
+    tmp.g = v6;
+    tmp.b = p;
     break;
 
   case 2:
-    out->r = p;
-    out->g = v6;
-    out->b = t;
+    tmp.r = p;
+    tmp.g = v6;
+    tmp.b = t;
     break;
 
   case 3:
-    out->r = p;
-    out->g = q;
-    out->b = v6;
+    tmp.r = p;
+    tmp.g = q;
+    tmp.b = v6;
     break;
 
   case 4:
-    out->r = t;
-    out->g = p;
-    out->b = v6;
+    tmp.r = t;
+    tmp.g = p;
+    tmp.b = v6;
     break;
 
   case 5:
-    out->r = v6;
-    out->g = p;
-    out->b = q;
+    tmp.r = v6;
+    tmp.g = p;
+    tmp.b = q;
     break;
   }
 
-  // same caveat as above
-  out->a_or_unused = 0; // guessed
+  *out = tmp;
   return out;
 }
 
@@ -1228,26 +1232,29 @@ int AnimatePaletteToColor(int gray, int steps)
   target_rgb.r = gray;
   target_rgb.g = gray;
   target_rgb.b = gray;
-  ConvertRgbToHsv(&target_rgb, &target_hsv);
+  ConvertRgbToHsv(&target_hsv, &target_rgb);
 
   RpBits_ApplyPalette(&g_palette_data_words);
 
   for (i = 0; i < 0x100; ++i)
   {
     int sat_step;
+    int entry_offset;
 
-    rgb.r = (unsigned char)g_palette_rgb_bytes[i * 3 + 0];
-    rgb.g = (unsigned char)g_palette_rgb_bytes[i * 3 + 1];
-    rgb.b = (unsigned char)g_palette_rgb_bytes[i * 3 + 2];
+    entry_offset = i * 3;
 
-    ConvertRgbToHsv(&rgb, &hsv);
+    rgb.r = (unsigned char)g_palette_rgb_bytes[entry_offset + 0];
+    rgb.g = (unsigned char)g_palette_rgb_bytes[entry_offset + 1];
+    rgb.b = (unsigned char)g_palette_rgb_bytes[entry_offset + 2];
 
-    g_palette_transition_hsv[i * 3 + 0] = hsv.hue;
-    g_palette_transition_hsv[i * 3 + 1] = hsv.saturation;
-    g_palette_transition_hsv[i * 3 + 2] = hsv.value;
+    ConvertRgbToHsv(&hsv, &rgb);
+
+    g_palette_transition_hsv[entry_offset + 0] = hsv.hue;
+    g_palette_transition_hsv[entry_offset + 1] = hsv.saturation;
+    g_palette_transition_hsv[entry_offset + 2] = hsv.value;
 
     sat_step = (target_hsv.saturation - hsv.saturation) / steps;
-    g_palette_transition_value_step[i] = sat_step;
+    g_palette_transition_value_step[entry_offset] = sat_step;
 
     if (target_hsv.saturation > hsv.saturation)
     {
@@ -1258,7 +1265,7 @@ int AnimatePaletteToColor(int gray, int steps)
       sat_step += -0x1000 / steps;
     }
 
-    g_palette_transition_value_step[i] = sat_step;
+    g_palette_transition_value_step[entry_offset] = sat_step;
   }
 
   if (steps > 0)
@@ -1320,7 +1327,7 @@ int AnimatePaletteToColor(int gray, int steps)
           g_palette_transition_hsv[hsv_off] = hsv.value;
         }
 
-        ConvertHsvToRgb(&hsv, &rgb);
+        (void)ConvertHsvToRgb(&hsv, &rgb);
 
         g_palette_transition_work_words[work_off + 0] = rgb.r;
         g_palette_transition_work_words[work_off + 1] = rgb.g;
@@ -1334,7 +1341,7 @@ int AnimatePaletteToColor(int gray, int steps)
         g_palette_rgb_bytes[rgb_off + 2] =
             (unsigned char)g_palette_transition_work_words[work_off + 2];
 
-        step_off += 1;
+        step_off += 3;
         hsv_off += 3;
         work_off += 4;
         rgb_off += 3;

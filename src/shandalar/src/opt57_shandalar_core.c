@@ -3,6 +3,7 @@
 // optimized TU.
 
 #include <windows.h>
+#include <io.h>
 
 #include "defs.h"
 #include "shandalar.h"
@@ -12,14 +13,21 @@
 extern HDC global_main_hdc;
 extern DIBSurface *g_graphics_pages[10];
 extern RpBitsPalettePacket g_palette_data_words;
+extern PALETTEENTRY g_palette_entries[256];
 extern FontSlot g_font_slots[0x10];
 
 extern int g_mouse_button_released_mask;
+extern int g_graphics_bpp;
 
 int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen,
                       int center_x, int center_y, int x, int y, int *format_and_args);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7);
+
+typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *scanline, int page_number, int x, int y, unsigned int width);
+int EncodeRpBitsImage(int fd, EncodeRpBitsImage_Callback scanline_cb, int page_number, int x, int y, int width, int height);
+void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y, unsigned int byte_count);
+extern int g_export_write_palette;
 
 #pragma optimize("gy", on)
 
@@ -72,10 +80,55 @@ int FUN_00578c80(int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x005795f0
-unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *param_1, int param_2, int param_3)
+unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y)
 {
-  (void)param_1;
-  return (unsigned int)GetPixel(global_main_hdc, param_2, param_3);
+  int page_number;
+  DIBSurface *page;
+
+  page_number = window->page_number;
+  page = g_graphics_pages[page_number];
+  if (page_number != 0)
+  {
+    int stride = page->rowPadding + page->width;
+    unsigned char *bits = (unsigned char *)page->pBits;
+    return (unsigned int)bits[stride * y + x];
+  }
+  else
+  {
+    COLORREF color;
+    int r;
+    int g;
+    int b;
+    unsigned int i;
+    unsigned int mask_value;
+    unsigned int mask;
+    unsigned char *pal;
+
+    color = GetPixel(global_main_hdc, x, y);
+    r = (int)(color & 0xff);
+    g = (int)((color >> 8) & 0xff);
+    b = (int)((color >> 0x10) & 0xff);
+
+    mask_value = (-(unsigned int)(g_graphics_bpp == 0x10) & 0xfffffff9) + 0xff;
+    mask = (unsigned int)(unsigned char)mask_value;
+
+    pal = (unsigned char *)&g_palette_entries[0].peRed;
+    for (i = 0; i < 0x100; i = i + 1)
+    {
+      if ((((unsigned int)pal[0]) & mask) == (unsigned int)r)
+      {
+        if ((((unsigned int)pal[1]) & mask) == (unsigned int)g)
+        {
+          if ((((unsigned int)pal[2]) & mask) == (unsigned int)b)
+          {
+            return i;
+          }
+        }
+      }
+      pal = pal + 4;
+    }
+    return 0xffffffff;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x005796c0
@@ -147,18 +200,20 @@ void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int wi
 // FUNCTION: SHANDALAR 0x00579ea0
 AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height)
 {
-  int *saved_clip_rect_words;
+  AdvMenuRect tmp;
 
-  saved_clip_rect_words = (int *)saved_clip_rect;
-  saved_clip_rect_words[0] = page->clip_left;
-  saved_clip_rect_words[1] = page->clip_top;
-  saved_clip_rect_words[2] = page->max_x;
-  saved_clip_rect_words[3] = page->max_y;
-  page->clip_left = x;
+  tmp.x = page->clip_left;
+  tmp.y = page->clip_top;
+  tmp.width = page->max_x - tmp.x;
+  tmp.height = page->max_y - tmp.y;
+
   page->clip_top = y;
-  page->max_x = width;
-  page->max_y = height;
-  return (AdvMenuRect *)saved_clip_rect_words;
+  page->clip_left = x;
+  page->max_x = x + width;
+  page->max_y = y + height;
+
+  *saved_clip_rect = tmp;
+  return saved_clip_rect;
 }
 
 // FUNCTION: SHANDALAR 0x0057a9f0
@@ -241,7 +296,19 @@ void LoadPcxIntoPageOpaque(int page_number, char *path)
 // FUNCTION: SHANDALAR 0x0057dd30
 int ExportGraphicsPage(int page_number, char *path)
 {
-  return ExportEncodedImage(page_number, 0, 0, g_graphics_pages[page_number]->width, g_graphics_pages[page_number]->height, 0, path);
+  int fd;
+  int result;
+
+  fd = _open(path, 0x8302, 0x80);
+  if (fd == -1)
+  {
+    return fd;
+  }
+
+  g_export_write_palette = 0;
+  result = EncodeRpBitsImage(fd, ReadGraphicsScanline, page_number, 0, 0, 0x140, 0xc8);
+  _close(fd);
+  return result;
 }
 
 #pragma optimize("", on)

@@ -2036,19 +2036,6 @@ int ActivateLoadSaveSlotControl(AdvMenuControl *control)
   return 0;
 }
 
-// FUNCTION: SHANDALAR 0x004ffd0a
-int RenderAdvMenuControlNormally(AdvMenuControl *control)
-{
-  int old_state;
-
-  old_state = control->state;
-  control->state = 0;
-  g_menu_render_guard = 1;
-  control->on_render(control, 0);
-  g_menu_render_guard = 0;
-  return old_state;
-}
-
 // FUNCTION: SHANDALAR 0x0056c9b0
 int ShowHallBackgroundScreen(void)
 {

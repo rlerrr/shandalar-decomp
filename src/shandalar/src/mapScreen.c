@@ -56,7 +56,7 @@ extern EncodedImage *g_ttsprite_aux_sprite_entries[0x18];
 extern EncodedImage *g_world_magic_avatar_sprites[5];
 
 extern FontSlot g_font_slots[0x10];
-extern char DAT_00652740[0x1000];
+extern char g_world_ui_text_scratch_buffer[0x1000];
 
 /* Engine / UI helpers */
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
@@ -108,7 +108,7 @@ unsigned int FUN_004314ca(int x, int y);
 unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
 void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
 void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y);
-void FUN_00431351(FacemakerWindowBounds *dst, int x, int y, EncodedImage *sprite, int w, int h);
+void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
 int FUN_0040dffd(int mask);
 unsigned int FUN_005611c8(unsigned int tile_mask);
 int FUN_004bb458(int world_magic_slot_index);
@@ -222,13 +222,6 @@ void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y)
 {
   *out_tile_x = ((x + 0x40) - (y - 200)) / 0xc;
   *out_tile_y = *out_tile_x + (y - 200) / 6;
-}
-
-// FUNCTION: SHANDALAR 0x00431351
-void FUN_00431351(FacemakerWindowBounds *dst, int x, int y, EncodedImage *sprite, int w, int h)
-{
-  DrawEncodedImageResampled(dst, (x * global_screen_width) / 0x280, (global_screen_height * y) / 0x1e0,
-                            (w * global_screen_width) / 0x280, (h * global_screen_height) / 0x1e0, sprite);
 }
 
 // FUNCTION: SHANDALAR 0x00428783
@@ -463,15 +456,15 @@ char * __cdecl FUN_00550314(int town_index, int mana_castle_index)
   location_type = g_town_slots[town_index].location_type;
   if ((location_type == 4) || (location_type == 5))
   {
-    sprintf(DAT_00652740, gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + mana_castle_index * 100);
+    sprintf(g_world_ui_text_scratch_buffer, gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + mana_castle_index * 100);
   }
   else
   {
-    FUN_00564e70(DAT_00652740, 0x1000, gs_cityname_format_left_0074c950, gs_citynames_firsthalf_0077e060[first_half_index],
+    FUN_00564e70(g_world_ui_text_scratch_buffer, 0x1000, gs_cityname_format_left_0074c950, gs_citynames_firsthalf_0077e060[first_half_index],
                  gs_citynames_secondhalf_007653e0[second_half_index]);
   }
 
-  return DAT_00652740;
+  return g_world_ui_text_scratch_buffer;
 }
 
 // FUNCTION: SHANDALAR 0x0054eb6a
@@ -652,7 +645,8 @@ void ShowWorldMapScreen(int mode)
           if ((6 < s.screen_x_unscaled) && (6 < (s.screen_y_unscaled + 0x40)))
           {
             s.variant = ((DAT_00590a30[(s.tile_y * s.tile_x) % 6] * DAT_00590a30[(s.tile_y + s.tile_x) % 6]) % 3) * 0x10 + (int)s.tile_class;
-            FUN_00431351(PTR_DAT_005832b4, s.screen_x_unscaled - 6, (s.screen_y_unscaled + 0x3a), g_ttsprite_grid_sprite_entries[s.variant], 0xe, 0xe);
+            DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x_unscaled - 6, (s.screen_y_unscaled + 0x3a),
+                                     g_ttsprite_grid_sprite_entries[s.variant], 0xe, 0xe);
           }
 
           s.screen_x = (s.screen_x_unscaled * global_screen_width) / 0x280;

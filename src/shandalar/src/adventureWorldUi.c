@@ -211,8 +211,8 @@ int FUN_004ecf30(int x, int y);
 int FUN_004bb458(int param_1);
 int FUN_0040dffd(int param_1);
 unsigned int FUN_0043146b(int x, int y);
+unsigned int FUN_004314ca(int x, int y);
 void FUN_00431526(unsigned int mask, int x, int y);
-void MarkPathConnection(int x, int y, int direction_index);
 unsigned int FUN_005611c8(unsigned int tile_mask);
 unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y);
 void QueueWorldSpriteForDraw(FacemakerWindowBounds *window, int draw_x, int draw_y, int depth_y, EncodedImage *sprite);
@@ -845,8 +845,8 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
         FUN_00431526(0x80, s.world_tile_x, s.world_tile_y);
       }
 
-      MarkPathConnection(s.world_tile_x, s.world_tile_y, 0);
-      s.tile_mask = FUN_0043146b(s.world_tile_x, s.world_tile_y);
+      /* Tile flags/type for rendering decisions. */
+      s.tile_mask = FUN_004314ca(s.world_tile_x, s.world_tile_y);
       s.tile_type = s.tile_mask & 0xf;
 
       if ((draw_mode != 0) &&

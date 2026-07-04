@@ -149,8 +149,8 @@ DWORD __cdecl FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
  * These two helpers are used as enable/disable visuals for arrow buttons.
  * They are implemented (with these names) in cityInfoScreen.c.
  */
-int FUN_004ffcb4(AdvMenuControl *control);
-int FUN_004ffd0a(AdvMenuControl *control);
+int RenderAdvMenuControlDisabled(AdvMenuControl *control);
+int RenderAdvMenuControlNormally(AdvMenuControl *control);
 
 /*
  * Local helpers (new in this module).
@@ -631,27 +631,27 @@ void ShowDungeonCluesScreen(void)
     /* Enable/disable arrows based on scroll position */
     if (s.entry_count < 0xd)
     {
-      FUN_004ffcb4(&DAT_0058c708[0]);
-      FUN_004ffcb4(&DAT_0058c708[1]);
+      RenderAdvMenuControlDisabled(&DAT_0058c708[0]);
+      RenderAdvMenuControlDisabled(&DAT_0058c708[1]);
     }
     else
     {
       if (s.scroll_top_index == 0)
       {
-        FUN_004ffcb4(&DAT_0058c708[0]);
+        RenderAdvMenuControlDisabled(&DAT_0058c708[0]);
       }
       else
       {
-        FUN_004ffd0a(&DAT_0058c708[0]);
+        RenderAdvMenuControlNormally(&DAT_0058c708[0]);
       }
 
       if (s.scroll_top_index + 0xc < s.entry_count)
       {
-        FUN_004ffd0a(&DAT_0058c708[1]);
+        RenderAdvMenuControlNormally(&DAT_0058c708[1]);
       }
       else
       {
-        FUN_004ffcb4(&DAT_0058c708[1]);
+        RenderAdvMenuControlDisabled(&DAT_0058c708[1]);
       }
     }
 
