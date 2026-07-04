@@ -106,9 +106,9 @@ int g_world_camera_last_anchor_x;
 // GLOBAL: SHANDALAR 0x0073ea9c
 int g_world_camera_last_anchor_y;
 // GLOBAL: SHANDALAR 0x0073e9d0
-int DAT_0073e9d0;
+int g_world_player_tile_x;
 // GLOBAL: SHANDALAR 0x0073e9d4
-int DAT_0073e9d4;
+int g_world_player_tile_y;
 // GLOBAL: SHANDALAR 0x00581af4
 char g_empty_string[] = "";
 // GLOBAL: SHANDALAR 0x0073eaf0
@@ -364,8 +364,8 @@ int GetRelativeWorldQuadrant(int world_x, int world_y)
   int delta_x;
   int quadrant_index;
 
-  delta_x = world_x - DAT_0073e9d0;
-  delta_y = world_y - DAT_0073e9d4;
+  delta_x = world_x - g_world_player_tile_x;
+  delta_y = world_y - g_world_player_tile_y;
   if (delta_y > 0)
   {
     quadrant_index = 2;

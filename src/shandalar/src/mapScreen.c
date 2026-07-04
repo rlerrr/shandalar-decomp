@@ -38,8 +38,8 @@ extern FacemakerWindowBounds *PTR_DAT_005832dc;
 extern RpBitsPalettePacket g_palette_data_words;
 
 /* World state */
-extern int DAT_0073e9d0;
-extern int DAT_0073e9d4;
+extern int g_world_player_tile_x;
+extern int g_world_player_tile_y;
 extern int g_world_scroll_cache_ready;
 
 extern int g_neighbor_dx[9];
@@ -99,12 +99,12 @@ int ConsumeUiTickCount(void);
 int GetUiTickCount(void);
 void PopNormalizedQueuedKeyInput(void);
 
-void FUN_005616cb(int param_1);
+void EnsureAdvfac64Loaded(int state);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 
 unsigned int FUN_0043146b(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
-unsigned int FUN_00431859(int x, int y, char direction_index);
+unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
 void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
 void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y);
 void FUN_00431351(FacemakerWindowBounds *dst, int x, int y, EncodedImage *sprite, int w, int h);
@@ -531,7 +531,7 @@ void ShowWorldMapScreen(int mode)
   s.any_tooltip_drawn = 0;
   s.original_mode = mode;
 
-  FUN_005616cb(0);
+  EnsureAdvfac64Loaded(0);
   LoadPcxIntoPageNoPalette(s_advfac64_pic_00590b8c);
 
   if (mode == 4)
@@ -664,7 +664,7 @@ void ShowWorldMapScreen(int mode)
 
           for (s.dir = 1; s.dir < 9; s.dir++)
           {
-            if (FUN_00431859(s.tile_x, s.tile_y, (char)(((unsigned char)s.dir & 7) + 1)) != 0)
+            if (WorldRoadTileHasDirection(s.tile_x, s.tile_y, (char)(((unsigned char)s.dir & 7) + 1)) != 0)
             {
               int dx = ScaleUiCoordinate(g_neighbor_dx[s.dir] * 7);
               int dy = ScaleUiCoordinate(g_neighbor_dy[s.dir] * 7);
@@ -882,7 +882,7 @@ void ShowWorldMapScreen(int mode)
 
     FUN_005001e3();
 
-    FUN_00550164(DAT_0073e9d0, DAT_0073e9d4, &s.screen_x_unscaled, &s.screen_y_unscaled);
+    FUN_00550164(g_world_player_tile_x, g_world_player_tile_y, &s.screen_x_unscaled, &s.screen_y_unscaled);
     s.screen_x = (s.screen_x_unscaled * global_screen_width) / 0x280;
     s.screen_y = ScaleUiCoordinate(0x40) + (s.screen_y_unscaled * global_screen_height) / 0x1e0;
 
@@ -921,11 +921,11 @@ void ShowWorldMapScreen(int mode)
 
           s.screen_x_unscaled = (g_mouse_x_snapshot * 0x280) / global_screen_width;
           s.screen_y_unscaled = ((g_mouse_y_snapshot - ScaleUiCoordinate(0x40)) * 0x1e0) / global_screen_height;
-          FUN_00550197(s.screen_x_unscaled, s.screen_y_unscaled, &DAT_0073e9d0, &DAT_0073e9d4);
-          g_world_player_x = DAT_0073e9d0 * 0x20 + 0x10;
-          g_world_player_y = DAT_0073e9d4 * 0x20 + 0x10;
+          FUN_00550197(s.screen_x_unscaled, s.screen_y_unscaled, &g_world_player_tile_x, &g_world_player_tile_y);
+          g_world_player_x = g_world_player_tile_x * 0x20 + 0x10;
+          g_world_player_y = g_world_player_tile_y * 0x20 + 0x10;
 
-          FUN_00550164(DAT_0073e9d0, DAT_0073e9d4, &s.screen_x_unscaled, &s.screen_y_unscaled);
+          FUN_00550164(g_world_player_tile_x, g_world_player_tile_y, &s.screen_x_unscaled, &s.screen_y_unscaled);
           s.screen_x = (s.screen_x_unscaled * global_screen_width) / 0x280;
           s.screen_y = ScaleUiCoordinate(0x40) + (s.screen_y_unscaled * global_screen_height) / 0x1e0;
 

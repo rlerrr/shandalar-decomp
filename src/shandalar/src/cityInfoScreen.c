@@ -69,7 +69,7 @@ int HasQueuedKeyInput(void);
 extern EncodedImage *g_world_magic_avatar_sprites[5];
 extern unsigned char Scards[0xc0];
 
-void FUN_005616cb(int param_1);
+void EnsureAdvfac64Loaded(int state);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 
 unsigned int FUN_0043146b(int x, int y);
@@ -444,7 +444,7 @@ void ShowCityInfoScreen(int param_1)
                                                                                        (char *)DAT_00603a48[5]);
   }
 
-  FUN_005616cb(1);
+  EnsureAdvfac64Loaded(1);
 
   // Reset font slots
   PTR_DAT_005832b4->font_slot = 1;
