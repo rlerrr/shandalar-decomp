@@ -27,7 +27,7 @@ extern DIBSurface *g_graphics_pages[10];
 
 typedef struct
 {
-  int unk_00;
+  int town_index;
   int timer;
   int unk_08;
   int unk_0c;
@@ -516,7 +516,7 @@ int LoadTextSectionStringTable(const char *filename, const char *section, char *
                                char *string_buf_end, char **out_next_buf);
 int LoadAdvBlocksFile(const char *filename);
 int FindNextTextBlock(char *scan_start, char *scan_end, int *out_block_start, int *out_next_scan);
-void FUN_00417946(char *out, int csvid, int field, char *csv_name);
+void ReadCsvFieldByCsvid(char *out, int csvid, int field, char *csv_name);
 void FUN_00559999(void);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 void FUN_00562d03(void);
@@ -1778,7 +1778,7 @@ void InitializeNewGameState(void)
   }
 
   g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
-  g_world_magic_slot_timers[g_selected_wizard_color * 2].unk_00 = 0;
+  g_world_magic_slot_timers[g_selected_wizard_color * 2].town_index = 0;
 
   locals.uVar2 = 1 << (BYTE)g_selected_wizard_color;
   locals.entry_index = g_shandalar_difficulty + 1;
@@ -2118,7 +2118,7 @@ int FUN_0056c5ea(int param_1)
     return s.rarity;
   }
 
-  FUN_00417946(s.rarity_str, global_cards_data[param_1].id, 9, "info.csv");
+  ReadCsvFieldByCsvid(s.rarity_str, global_cards_data[param_1].id, 9, "info.csv");
 
   s.rarity = 1;
 
@@ -2537,7 +2537,7 @@ int FUN_004f717a(void)
 
     for (local_2c = 0; local_2c < 0xc; local_2c = local_2c + 1)
     {
-      g_world_magic_slot_timers[local_2c].unk_00 = 0;
+      g_world_magic_slot_timers[local_2c].town_index = 0;
     }
 
     tile_type = (unsigned int)clock();
@@ -2640,9 +2640,9 @@ int FUN_004f717a(void)
               {
                 clamped_required_wins = FUN_00522508(10);
                 clamped_required_wins = clamped_required_wins + 2;
-                if ((g_world_magic_slot_timers[clamped_required_wins].unk_00 == 0) && ((world_magic_mask & 1 << (((char)(clamped_required_wins / 2)) & 0x1f)) != 0))
+                if ((g_world_magic_slot_timers[clamped_required_wins].town_index == 0) && ((world_magic_mask & 1 << (((char)(clamped_required_wins / 2)) & 0x1f)) != 0))
                 {
-                  g_world_magic_slot_timers[clamped_required_wins].unk_00 = inner_index;
+                  g_world_magic_slot_timers[clamped_required_wins].town_index = inner_index;
                   break;
                 }
               }
@@ -2650,7 +2650,7 @@ int FUN_004f717a(void)
               if (0x62 < local_34)
               {
                 clamped_required_wins = FUN_00522508(2);
-                g_world_magic_slot_timers[clamped_required_wins].unk_00 = inner_index;
+                g_world_magic_slot_timers[clamped_required_wins].town_index = inner_index;
               }
 
               if (seeded_world_magic_town_count < 10)
@@ -2711,13 +2711,13 @@ int FUN_004f717a(void)
 
     for (local_2c = 0; local_2c < 0xc; local_2c = local_2c + 1)
     {
-      if (g_world_magic_slot_timers[local_2c].unk_00 == 0)
+      if (g_world_magic_slot_timers[local_2c].town_index == 0)
       {
         generated_valid_world = 0;
       }
       if ((g_world_magic_bitmap & 1 << (((char)local_2c) & 0x1f)) != 0)
       {
-        g_world_magic_slot_timers[local_2c].unk_00 = 0;
+        g_world_magic_slot_timers[local_2c].town_index = 0;
       }
     }
 
@@ -2733,7 +2733,7 @@ int FUN_004f717a(void)
 
     for (local_2c = 0; local_2c < 0xc; local_2c = local_2c + 1)
     {
-      g_world_magic_slot_timers[local_2c].unk_00 = 0;
+      g_world_magic_slot_timers[local_2c].town_index = 0;
     }
   } while (1);
 }
