@@ -228,6 +228,8 @@ int DAT_0078df68;
 long DAT_0097db40[0x100];
 // GLOBAL: SHANDALAR 0x0097df40
 int DAT_0097df40[0x100];
+// GLOBAL: SHANDALAR 0x0097e340
+char DAT_0097e340[0x110];
 // GLOBAL: SHANDALAR 0x0097e450
 HintPair DAT_0097e450[0x100];
 // GLOBAL: SHANDALAR 0x007898f4
@@ -703,7 +705,7 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_in
 void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
 int SignNonZero(int value);
 int RestoreAdventureUiPaletteAndFocus(void);
-void FUN_004eda50(unsigned int param_1);
+int VisitTownSlot(int town_index);
 int RunSaveMenuAndSelectSlot(void);
 void *FUN_0055060c(int param_1);
 void FUN_00559807(void);
@@ -5371,7 +5373,7 @@ void FUN_0055e808(void)
       {
         sound_set_vol(0x10, 400);
         play_snd_marker(0x10, 1);
-        FUN_004eda50((unsigned int)s.dungeon_index);
+        VisitTownSlot(s.dungeon_index);
         DAT_00591214 = 1;
         DAT_006696f4 = 1;
         g_world_move_dir_index = 0;
@@ -5548,12 +5550,6 @@ int RestoreAdventureUiPaletteAndFocus(void)
   return 0;
 }
 
-// FUNCTION: SHANDALAR 0x004eda50
-void FUN_004eda50(unsigned int param_1)
-{
-  // TODO(decomp): "Visit location" handler (town/city/wizard/dungeon). Drives quest completion, duels, rewards, etc.
-}
-
 // FUNCTION: SHANDALAR 0x0050318e
 int RunSaveMenuAndSelectSlot(void)
 {
@@ -5596,6 +5592,18 @@ void FUN_00562736(int param_1, int param_2, int param_3, int param_4)
   snd.pan = param_4 << 2;
   snd.flags = snd.flags & 0xffffffee;
   sound_play(param_1, &snd);
+}
+
+// FUNCTION: SHANDALAR 0x005627ee
+void FUN_005627ee(int sound_id, int volume, int pan)
+{
+  Sound snd;
+
+  memset(&snd, 0, 0x20);
+  snd.volume = volume << 2;
+  snd.sampleRate = 0x5622;
+  snd.pan = pan << 2;
+  sound_play(sound_id, &snd);
 }
 
 // FUNCTION: SHANDALAR 0x0056279e
