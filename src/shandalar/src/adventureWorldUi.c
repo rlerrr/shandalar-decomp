@@ -203,7 +203,9 @@ void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, 
 int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int parse_format, int centered, int draw_shadow, int multiline, int x, int y, int *arg_ptr);
 void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+unsigned int BlitRectByRandomTileOrder(HDC dst_hdc, int dst_x, int dst_y, int width, int height, int block_w, int block_h,
+                                       HDC src_hdc, int src_x, int src_y);
+void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void FUN_004ce992(int param_1);
 int FUN_004ecf30(int x, int y);
 int FUN_004bb458(int param_1);
@@ -212,7 +214,7 @@ unsigned int FUN_0043146b(int x, int y);
 void FUN_00431526(unsigned int mask, int x, int y);
 void MarkPathConnection(int x, int y, int direction_index);
 unsigned int FUN_005611c8(unsigned int tile_mask);
-unsigned int FUN_005795f0(FacemakerWindowBounds *window, int x, int y);
+unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y);
 void QueueWorldSpriteForDraw(FacemakerWindowBounds *window, int draw_x, int draw_y, int depth_y, EncodedImage *sprite);
 void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_start, int tile_x_end, int tile_y_start, int tile_y_end,
                   int edge_mode, int draw_mode);
@@ -485,14 +487,6 @@ DWORD FUN_00564e70(char *dst, DWORD max_length, LPCVOID format, ...)
   return result;
 }
 
-// FUNCTION: SHANDALAR 0x0057b500
-#pragma optimize("gy", on)
-void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
-{
-  DrawTextFormatted(window, color_index, 1, 0, 1, 0, x, y, (int *)&format);
-}
-#pragma optimize("", off)
-
 // FUNCTION: SHANDALAR 0x00550416
 char *BuildQuestLocationName(int town_index, int quest_destination, int mana_castle_index)
 {
@@ -539,103 +533,6 @@ char *BuildQuestLocationName(int town_index, int quest_destination, int mana_cas
 
   return g_world_ui_text_scratch_buffer;
 }
-
-// FUNCTION: SHANDALAR 0x0057d330
-#pragma optimize("gsty", on)
-unsigned int BlitRectByRandomTileOrder(HDC dst_hdc, int dst_x, int dst_y, int width, int height, int block_w, int block_h,
-                                       HDC src_hdc, int src_x, int src_y)
-{
-  int tiles_x;
-  int tiles_y;
-  unsigned int bit;
-  int bit_count;
-  int tile_x;
-  int tile_y;
-  COLORREF pixel;
-  int draw_x;
-  int draw_y;
-  int copy_w;
-  int copy_h;
-  unsigned int tile_count;
-  unsigned int lfsr_mask;
-  unsigned int lfsr;
-  unsigned int lfsr_limit;
-  unsigned int result;
-
-  tiles_x = width / block_w + (width % block_w != 0);
-  tiles_y = height / block_h + (height % block_h != 0);
-  bit_count = 0;
-  lfsr_limit = 0;
-  tile_count = (unsigned int)((tiles_y + 1) * (tiles_x + 1));
-  bit = 0x40000000;
-  do
-  {
-    if ((tile_count & bit) != 0)
-    {
-      if (lfsr_limit == 0)
-      {
-        lfsr_limit = bit;
-      }
-      bit_count = bit_count + 1;
-    }
-    bit = (unsigned int)((int)bit >> 1);
-  } while (bit != 0);
-  if (bit_count != 1)
-  {
-    lfsr_limit = lfsr_limit * 2;
-  }
-
-  lfsr_mask = 0;
-  bit = 1;
-  while (bit < lfsr_limit)
-  {
-    lfsr_mask = lfsr_mask | bit;
-    bit = bit * 2;
-  }
-
-  bit_count = rand();
-  lfsr = bit_count % lfsr_limit;
-  result = bit_count / lfsr_limit;
-  while (tile_count != 0)
-  {
-    lfsr = (lfsr * 0x21 + 1) & lfsr_mask;
-    result = lfsr;
-    if ((int)lfsr <= tiles_y * tiles_x)
-    {
-      tile_y = (int)lfsr / tiles_x;
-      tile_x = (int)lfsr % tiles_x;
-      draw_x = dst_x + tile_x * block_w;
-      draw_y = dst_y + tile_y * block_h;
-
-      copy_w = block_w;
-      if (dst_x + width <= draw_x + block_w)
-      {
-        copy_w = dst_x + width - draw_x;
-      }
-
-      copy_h = block_h;
-      if (dst_y + height <= draw_y + block_h)
-      {
-        copy_h = dst_y + height - draw_y;
-      }
-
-      if ((block_w == 1) && (block_h == 1))
-      {
-        pixel = GetPixel(src_hdc, tile_x, tile_y);
-        result = SetPixelV(dst_hdc, tile_x, tile_y, pixel);
-      }
-      else
-      {
-        result = BitBlt(dst_hdc, draw_x, draw_y, copy_w, copy_h, src_hdc,
-                        src_x + tile_x * block_w, src_y + tile_y * block_h, SRCCOPY);
-      }
-      tile_count = tile_count - 1;
-    }
-  }
-
-  return result;
-}
-#pragma optimize("", off)
 
 // FUNCTION: SHANDALAR 0x0054cee2
 void UpdateWorldViewportBuffer(int world_x, int world_y)
@@ -1093,7 +990,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
 
         if (FUN_004318c7(s.world_tile_x, s.world_tile_y) != 0)
         {
-          s.road_mask = FUN_005795f0(PTR_DAT_00583304, s.world_tile_x, s.world_tile_y + 0x40);
+          s.road_mask = GetGraphicsPixelColorRef(PTR_DAT_00583304, s.world_tile_x, s.world_tile_y + 0x40);
         }
         else
         {
@@ -1738,11 +1635,11 @@ void *FUN_0055060c(int param_1)
                    PTR_DAT_005832dc, 0, 0);
 
   s.stats_color = g_world_ui_stats_color_index;
-  FUN_0057b560(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0x12), ScaleUiCoordinate(10), "%d", Gold);
-  FUN_0057b560(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0x60), ScaleUiCoordinate(10), "%d", g_food);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0x12), ScaleUiCoordinate(10), "%d", Gold);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0x60), ScaleUiCoordinate(10), "%d", g_food);
   s.duel_pool_amount = CountDuelPoolEligibleTowns();
-  FUN_0057b560(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0xab), ScaleUiCoordinate(10), "%d", s.duel_pool_amount);
-  FUN_0057b560(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0x10c), ScaleUiCoordinate(10), "%d/%d", DAT_0078df68, DAT_00789938);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0xab), ScaleUiCoordinate(10), "%d", s.duel_pool_amount);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.stats_color, ScaleUiCoordinate(0x10c), ScaleUiCoordinate(10), "%d/%d", DAT_0078df68, DAT_00789938);
 
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, (unsigned int)ScaleUiCoordinate(0x126), (DWORD)s.scaled_panel_height,
                    PTR_DAT_005832b4, ScaleUiCoordinate(0x58), ScaleUiCoordinate(0x15b));
@@ -1764,27 +1661,37 @@ void *FUN_0055060c(int param_1)
     DrawEncodedImageUiScaled(PTR_DAT_005832b4, 0x4e, s.avatar_draw_y, g_world_magic_avatar_sprites[2],
                              (int)g_world_magic_avatar_sprites[0]->width,
                              (int)g_world_magic_avatar_sprites[0]->height);
-    FUN_0057b560(PTR_DAT_005832b4, s.stats_color, 100, s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d", g_amulet_inventory[0]);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, s.stats_color, 100,
+                                      s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
+                                      g_amulet_inventory[0]);
 
     DrawEncodedImageUiScaled(PTR_DAT_005832b4, 0xa1, s.avatar_draw_y, g_world_magic_avatar_sprites[1],
                              (int)g_world_magic_avatar_sprites[0]->width,
                              (int)g_world_magic_avatar_sprites[0]->height);
-    FUN_0057b560(PTR_DAT_005832b4, s.stats_color, 0xb7, s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d", g_amulet_inventory[1]);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, s.stats_color, 0xb7,
+                                      s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
+                                      g_amulet_inventory[1]);
 
     DrawEncodedImageUiScaled(PTR_DAT_005832b4, 0xf0, s.avatar_draw_y, g_world_magic_avatar_sprites[4],
                              (int)g_world_magic_avatar_sprites[0]->width,
                              (int)g_world_magic_avatar_sprites[0]->height);
-    FUN_0057b560(PTR_DAT_005832b4, s.stats_color, 0x106, s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d", g_amulet_inventory[2]);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, s.stats_color, 0x106,
+                                      s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
+                                      g_amulet_inventory[2]);
 
     DrawEncodedImageUiScaled(PTR_DAT_005832b4, 0x140, s.avatar_draw_y, g_world_magic_avatar_sprites[3],
                              (int)g_world_magic_avatar_sprites[0]->width,
                              (int)g_world_magic_avatar_sprites[0]->height);
-    FUN_0057b560(PTR_DAT_005832b4, s.stats_color, 0x156, s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d", g_amulet_inventory[3]);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, s.stats_color, 0x156,
+                                      s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
+                                      g_amulet_inventory[3]);
 
     DrawEncodedImageUiScaled(PTR_DAT_005832b4, 0x193, s.avatar_draw_y, g_world_magic_avatar_sprites[0],
                              (int)g_world_magic_avatar_sprites[0]->width,
                              (int)g_world_magic_avatar_sprites[0]->height);
-    FUN_0057b560(PTR_DAT_005832b4, s.stats_color, 0x1a9, s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d", g_amulet_inventory[4]);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, s.stats_color, 0x1a9,
+                                      s.avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
+                                      g_amulet_inventory[4]);
   }
 
   for (s.world_magic_slot_index = 0; (int)s.world_magic_slot_index < 0xc; s.world_magic_slot_index++)

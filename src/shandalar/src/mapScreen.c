@@ -76,10 +76,11 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int widt
 
 int ScaleUiCoordinate(int value);
 int SetFontStyleSize(int font_slot, unsigned int point_size);
-void FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
 int GetFontLineHeight(int font_slot);
+unsigned char GetFontStyleSize(int font_slot);
 void ApplyPortraitTintMap(FacemakerWindowBounds *dst, int x, int y, int w, int h, unsigned int tint, int maybe_shadow);
 
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
@@ -208,12 +209,6 @@ AdvMenuControl g_map_menu_controls_00590888[5] = {
     {398, 5, 94, 28, 398, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 3, 0, DAT_00590b20, DAT_00590b24, 0, 0, {0, 0, 0, 0}},
     {499, 5, 94, 28, 499, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 4, 0, DAT_00590b28, DAT_00590b30, 0, 0, {0, 0, 0, 0}},
 };
-
-// FUNCTION: SHANDALAR 0x0057ae30
-unsigned char FUN_0057ae30(int font_slot)
-{
-  return *(((unsigned char *)g_font_slots) + font_slot * 0x2ac);
-}
 
 // FUNCTION: SHANDALAR 0x00550164
 void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y)
@@ -559,7 +554,8 @@ void ShowWorldMapScreen(int mode)
     for (s.j = 0; s.j < 3; s.j++)
     {
       SetFontStyleSize(7, 9 - (s.j == 2));
-      FUN_0057b560(PTR_DAT_005832dc, s.button_text_colors[s.j], s.j * 0x5e + 0x30, s.i * 0x1c + 0xe, DAT_006527a4[s.i]);
+      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.button_text_colors[s.j], s.j * 0x5e + 0x30, s.i * 0x1c + 0xe,
+                                        DAT_006527a4[s.i]);
       DAT_0073eab0[s.i * 3 + s.j] = EncodeSpriteFromPage(1, s.j * 0x5e + 1, s.i * 0x1c + 1, 0x5d, 0x1b);
     }
   }
@@ -811,16 +807,19 @@ void ShowWorldMapScreen(int mode)
                   s.text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
                   s.line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
 
-                  ApplyPortraitTintMap(PTR_DAT_005832b4, (s.screen_x - 2) - s.text_width / 2, s.screen_y + (int)FUN_0057ae30(PTR_DAT_005832b4->font_slot),
+                  ApplyPortraitTintMap(PTR_DAT_005832b4, (s.screen_x - 2) - s.text_width / 2,
+                                       s.screen_y + (int)GetFontStyleSize(PTR_DAT_005832b4->font_slot),
                                        s.text_width + 4, s.line_height + 2, 0x3f3f3f, (s.any_tooltip_drawn == 0));
-                  DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.screen_x, s.screen_y + (int)FUN_0057ae30(PTR_DAT_005832b4->font_slot), s.text_color);
+                  DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.screen_x,
+                                                 s.screen_y + (int)GetFontStyleSize(PTR_DAT_005832b4->font_slot),
+                                                 s.text_color);
                 }
               }
             }
 
             if ((mode == 0) || ((mode == 1) && (g_town_slots[s.town_index].location_type == 4)))
             {
-              s.tooltip_line_height = (int)FUN_0057ae30(PTR_DAT_005832b4->font_slot);
+              s.tooltip_line_height = (int)GetFontStyleSize(PTR_DAT_005832b4->font_slot);
 
               if ((g_town_slots[s.town_index].location_type == 4) || (g_town_slots[s.town_index].location_type == 5))
               {

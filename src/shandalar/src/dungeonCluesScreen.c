@@ -95,7 +95,7 @@ int FUN_005001e3(void);
 int ScaleUiCoordinate(int value);
 int FUN_005501dc(int value);
 int SetFontStyleSize(int font_slot, unsigned int point_size);
-unsigned char FUN_0057ae30(int font_slot);
+unsigned char GetFontStyleSize(int font_slot);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
 int MeasureTextLineWidth(char *text);
 int GetFontLineHeight(int font_slot);
@@ -123,7 +123,11 @@ void ClearInputAndWaitForMouseRelease(void);
 
 void AnimatePaletteToColor(int mode, int color_index);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
-void FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void __cdecl DrawFormattedTextNoShadow(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
+void __cdecl GetEncodedImageSpanXExtents(EncodedImage *image, unsigned int *out_min_x, int *out_max_x);
+int __cdecl DrawEncodedImageResampledFitBoxCentered(FacemakerWindowBounds *dst, int x, int y, int box_w, int box_h,
+                                                    EncodedImage *image);
 
 /* Card rendering (drawcardlib) */
 extern unsigned char global_raw_cards_storage[];
@@ -156,54 +160,6 @@ int FUN_004ffd0a(AdvMenuControl *control);
 int __cdecl FUN_00508bf3(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
 {
   return ((rect_x < x) && (x < rect_x + rect_w) && (rect_y < y) && (y < rect_y + rect_h));
-}
-
-// FUNCTION: SHANDALAR 0x0057c450
-void __cdecl FUN_0057c450(EncodedImage *image, unsigned int *out_min_x, int *out_max_x)
-{
-  int rows;
-  unsigned char *cursor;
-
-  *out_min_x = 0x7fffffff;
-  *out_max_x = 0;
-
-  if (image == (EncodedImage *)0)
-  {
-    return;
-  }
-
-  rows = (int)image->row_count;
-  cursor = (unsigned char *)image->spans;
-  while (rows > 0)
-  {
-    unsigned int span_x = (unsigned int)*cursor;
-    unsigned int span_len;
-
-    cursor++;
-    if (span_x != 0xff)
-    {
-      span_len = (unsigned int)*cursor;
-      cursor++;
-      if (span_len == 0xfe)
-      {
-        span_len = (unsigned int)*cursor;
-        cursor++;
-      }
-
-      if ((int)span_x < (int)*out_min_x)
-      {
-        *out_min_x = span_x;
-      }
-      if (*out_max_x < (int)(span_x + span_len))
-      {
-        *out_max_x = (int)(span_x + span_len);
-      }
-
-      cursor += span_len;
-    }
-
-    rows--;
-  }
 }
 
 // FUNCTION: SHANDALAR 0x00508c4a
@@ -245,8 +201,8 @@ EncodedImage *__cdecl FUN_00508c4a(FacemakerWindowBounds *unused_page, int unuse
   DrawEncodedImageUnscaled(PTR_DAT_00583304, 0, 0x80, sprite_a);
   DrawEncodedImageUnscaled(PTR_DAT_00583304, 0, 0x80, sprite_b);
 
-  FUN_0057c450(sprite_a, &min_x_a, &max_x_a);
-  FUN_0057c450(sprite_b, &min_x_b, &max_x_b);
+  GetEncodedImageSpanXExtents(sprite_a, &min_x_a, &max_x_a);
+  GetEncodedImageSpanXExtents(sprite_b, &min_x_b, &max_x_b);
 
   min_x = (min_x_a <= min_x_b) ? min_x_a : min_x_b;
   max_x = (max_x_b <= max_x_a) ? max_x_a : max_x_b;
@@ -267,34 +223,6 @@ EncodedImage *__cdecl FUN_00508c4a(FacemakerWindowBounds *unused_page, int unuse
   top_y = min_y + 0x80;
   result = EncodeSpriteFromPage(PTR_DAT_00583304->page_number, (int)min_x, top_y, (max_x - (int)min_x) + 1, (max_y - min_y) + 1);
   return result;
-}
-
-// FUNCTION: SHANDALAR 0x0057c4c0
-int __cdecl FUN_0057c4c0(FacemakerWindowBounds *dst, int x, int y, int box_w, int box_h, EncodedImage *image)
-{
-  int src_w;
-  int src_h;
-  int draw_w;
-  int draw_h;
-
-  if (image == (EncodedImage *)0)
-  {
-    return 0;
-  }
-
-  src_w = (int)image->width;
-  src_h = (int)image->height;
-
-  if (((box_h << 8) / src_h) < ((box_w << 8) / src_w))
-  {
-    draw_w = (src_w * box_h) / src_h;
-    DrawEncodedImageResampled(dst, x + (box_w - draw_w) / 2, y, draw_w, box_h, image);
-    return 0;
-  }
-
-  draw_h = (src_h * box_w) / src_w;
-  DrawEncodedImageResampled(dst, x, y + (box_h - draw_h) / 2, box_w, draw_h, image);
-  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x005081e0
@@ -403,12 +331,6 @@ int __cdecl FUN_00508b57(AdvMenuControl *control)
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cae4, 0xf, 100, 100, 0);
   DAT_00603a34 = control->selection_value;
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0057b440
-void __cdecl FUN_0057b440(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...)
-{
-  DrawTextFormatted(dst, text_color, 0, 0, 0, 0, x, y, (int *)&format);
 }
 
 // FUNCTION: SHANDALAR 0x004f2407
@@ -638,7 +560,8 @@ void ShowDungeonCluesScreen(void)
     SetFontStyleSize(7, (unsigned int)(10 - (i == 2)));
     if (DAT_00603a40 != (int *)0)
     {
-      FUN_0057b560(PTR_DAT_005832dc, s.title_color_by_state[i], i * 0x3c + 0x2e, 0xd, DAT_0058cb24, (char *)DAT_00603a40[1]);
+      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.title_color_by_state[i], i * 0x3c + 0x2e, 0xd, DAT_0058cb24,
+                                        (char *)DAT_00603a40[1]);
     }
     DAT_00746e40[i] = EncodeSpriteFromPage(1, i * 0x3c + 0x10, 1, 0x3b, 0x1a);
   }
@@ -674,12 +597,13 @@ void ShowDungeonCluesScreen(void)
   /* Title (advButtons [dunClues]) */
   PTR_DAT_005832dc->font_slot = 6;
   {
-    unsigned char old_font_byte = FUN_0057ae30(6);
+    unsigned char old_font_byte = GetFontStyleSize(6);
     SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
     if (DAT_00603a40 != (int *)0)
     {
       MeasureMultilineTextWidth(PTR_DAT_005832dc, (char *)DAT_00603a40[0]);
-      FUN_0057b560(PTR_DAT_005832dc, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), DAT_0058cb24, (char *)DAT_00603a40[0]);
+      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), DAT_0058cb24,
+                                        (char *)DAT_00603a40[0]);
     }
     SetFontStyleSize(6, (unsigned int)old_font_byte);
   }
@@ -754,7 +678,7 @@ void ShowDungeonCluesScreen(void)
 
       entry_x = ScaleUiCoordinate((-(unsigned int)((row_index & 1) == 0) & 0xfffffef9) + 0x19b);
       entry_y = ScaleUiCoordinate((row_index / 2) * 0x3e + 0x69);
-      FUN_0057b560(PTR_DAT_005832b4, 0xff, entry_x, entry_y, DAT_0058cb24, s.name_buffer[row_index]);
+      DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0xff, entry_x, entry_y, DAT_0058cb24, s.name_buffer[row_index]);
 
       /* Icon: combine the two marker sprites into a single blob like the original */
       if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (DAT_007894f4 != 0))
@@ -766,9 +690,10 @@ void ShowDungeonCluesScreen(void)
         s.icon_blobs[row_index] =
             FUN_00508c4a(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e), (EncodedImage **)&pair[0]);
 
-        FUN_0057c4c0(PTR_DAT_005832b4, ScaleUiCoordinate((-(unsigned int)((row_index & 1) == 0) & 0xfffffef9) + 0x15b),
-                     ScaleUiCoordinate((row_index / 2) * 0x3e + 0x49), ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e),
-                     s.icon_blobs[row_index]);
+        DrawEncodedImageResampledFitBoxCentered(
+            PTR_DAT_005832b4, ScaleUiCoordinate((-(unsigned int)((row_index & 1) == 0) & 0xfffffef9) + 0x15b),
+            ScaleUiCoordinate((row_index / 2) * 0x3e + 0x49), ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e),
+            s.icon_blobs[row_index]);
       }
 
       s.visible_count = s.visible_count + 1;
@@ -910,7 +835,8 @@ void __cdecl FUN_0050caa0(int dungeon_index)
     SetFontStyleSize(7, (unsigned int)((-(unsigned int)(s.i == 2) & 0xfffffffe) + 0xe));
     if (DAT_00603a44 != (int *)0)
     {
-      FUN_0057b560(PTR_DAT_005832dc, s.title_colors[s.i], s.i * 0x5a + 0x2e, 0xf, DAT_0058cb24, (char *)DAT_00603a44[0]);
+      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.title_colors[s.i], s.i * 0x5a + 0x2e, 0xf, DAT_0058cb24,
+                                        (char *)DAT_00603a44[0]);
     }
     DAT_00746e10[s.i] = EncodeSpriteFromPage(1, s.i * 0x5a + 1, 1, 0x59, 0x23);
     DAT_00746eb0[s.i] = EncodeSpriteFromPage(1, s.i * 0x15 + 1, 0x25, 0x14, 0x24);

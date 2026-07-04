@@ -66,11 +66,11 @@ int BeginMenuContext(void);
 int ResetMenuContext(int context_index);
 int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
 int EndMenuContext(void);
-int FUN_0057ce70(int color_index, int palette_id);
-void FUN_0057b530(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-void FUN_0057b560(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-void DrawLocalizedText(FacemakerWindowBounds *window, int color_index, int x, int y, ...);
-void FUN_0057b4d0(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
+int FadeInPaletteFromGray(int gray, int steps);
+void DrawFormattedTextShadowedCenterY(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
+void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
+void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
+void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
 void LoadPcxIntoPageOpaque(int page_number, char *path);
 unsigned int WaitForInputEventUnlessBlocked(void);
 int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
@@ -391,7 +391,7 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
   }
 
   PTR_DAT_005832b4->font_slot = 6;
-  FUN_0057b4d0(PTR_DAT_005832b4, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
+  DrawFormattedTextShadowed(PTR_DAT_005832b4, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
                (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontLineHeight(6) / 2),
                "%s",
                (char *)g_opening_menu_text_table[s.text_table_index]);
@@ -440,7 +440,7 @@ loop:
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_00583304, 0, 0, global_screen_width,
                           global_screen_height);
 
-  FUN_0057ce70(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, DAT_00589dec);
   PTR_DAT_005832b4->font_slot = 5;
   PTR_DAT_005832b4->font_slot = 1;
 
@@ -683,7 +683,7 @@ int RunDifficultyMenu(void)
 
   PTR_DAT_005832b4->font_slot = 7;
   SetFontStyleSize(7, ScaleUiCoordinate(0x1b));
-  FUN_0057b560(PTR_DAT_005832b4, 0x76, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x2d), "%s",
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0x76, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x2d), "%s",
                (char *)g_difficulty_caption_table[0]);
 
   SetFontStyleSize(7, ScaleUiCoordinate(0x16));
@@ -693,7 +693,8 @@ int RunDifficultyMenu(void)
     for (difficulty_index = 0; difficulty_index < 4; difficulty_index = difficulty_index + 1)
     {
       text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, (char *)g_difficulty_option_table[difficulty_index]);
-      FUN_0057b530(PTR_DAT_005832b4, 0x7b, ScaleUiCoordinate(0x1b0) - text_width, ScaleUiCoordinate(difficulty_index * 100 + 0x75),
+      DrawFormattedTextShadowedCenterY(PTR_DAT_005832b4, 0x7b, ScaleUiCoordinate(0x1b0) - text_width,
+                                       ScaleUiCoordinate(difficulty_index * 100 + 0x75),
                    "%s", (char *)g_difficulty_option_table[difficulty_index]);
     }
   }
@@ -701,7 +702,7 @@ int RunDifficultyMenu(void)
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0x1b1, 0x43, 0xa4, 0x19d, PTR_DAT_005832dc, 200, 0, ScaleUiCoordinate(0xa4),
                           ScaleUiCoordinate(0x19d));
 
-  FUN_0057ce70(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, DAT_00589dec);
 
   LoadPcxIntoPage(1, "menu2-norm.pic");
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0xa4, 0x19d, PTR_DAT_005832dc, ScaleUiCoordinate(0x1b1),
@@ -872,26 +873,27 @@ int RunColorMenu(void)
 
   PTR_DAT_005832dc->font_slot = 7;
   SetFontStyleSize(7, ScaleUiCoordinate(0x1b));
-  FUN_0057b560(PTR_DAT_005832dc, 0x9b, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x22), "%s", (char *)g_color_caption_table[0]);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x9b, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x22), "%s",
+                                    (char *)g_color_caption_table[0]);
 
   SetFontStyleSize(7, ScaleUiCoordinate(0x12));
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
-    FUN_0057b4d0(PTR_DAT_005832dc, 0xa3, ScaleUiCoordinate(0x7d), ScaleUiCoordinate(s.color_index * 0x4c + 0x4c), "%s",
+    DrawFormattedTextShadowed(PTR_DAT_005832dc, 0xa3, ScaleUiCoordinate(0x7d), ScaleUiCoordinate(s.color_index * 0x4c + 0x4c), "%s",
                  (char *)g_color_menu_color_name_table[s.color_index]);
   }
 
   SetFontStyleSize(7, ScaleUiCoordinate(10));
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
-    FUN_0057b4d0(PTR_DAT_005832dc, 0x71, ScaleUiCoordinate(0x85), ScaleUiCoordinate(s.color_index * 0x4c + 100), "%s",
+    DrawFormattedTextShadowed(PTR_DAT_005832dc, 0x71, ScaleUiCoordinate(0x85), ScaleUiCoordinate(s.color_index * 0x4c + 100), "%s",
                  (char *)g_color_menu_flavor_table[s.color_index]);
   }
 
   AnimatePaletteToColor(0, 4);
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
   LoadPcxResource(-1, 0, 0, "menu3.pic", &g_palette_data_words);
-  FUN_0057ce70(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, DAT_00589dec);
 
   *(AdvMenuRect *)&s.restore_rect_x = *PushGraphicsClipRect((AdvMenuRect *)s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
 
@@ -1140,10 +1142,10 @@ int RunNameEntryDialog(char *name_buffer)
   LoadPcxIntoPageOpaque(1, "namepick.pic");
   PTR_DAT_005832dc->font_slot = PTR_DAT_005832b4->font_slot;
   LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-  DrawLocalizedText(PTR_DAT_005832dc, 0xed, 0x8b, 0x19, &text_lines[2][0]);
-  DrawLocalizedText(PTR_DAT_005832dc, 0xb4, 0x8a, 0x18, &text_lines[2][0]);
+  DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xed, 0x8b, 0x19, &text_lines[2][0]);
+  DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xb4, 0x8a, 0x18, &text_lines[2][0]);
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x114, 0x6a, PTR_DAT_005832dc, 0, 200);
-  DrawLocalizedText(PTR_DAT_005832dc, 0xb4, 0x8a, 0x100, "%s", name_buffer);
+  DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xb4, 0x8a, 0x100, "%s", name_buffer);
   BlitTransparentRuns(PTR_DAT_005832dc, 0, 200, 0x114, 0x6a, PTR_DAT_005832b4, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));
   do
   {
@@ -1161,7 +1163,7 @@ int RunNameEntryDialog(char *name_buffer)
       }
       ApplyNameEntryKey(name_buffer, (unsigned int)key_code, 0x19);
       BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x114, 0x6a, PTR_DAT_005832dc, 0, 200);
-      DrawLocalizedText(PTR_DAT_005832dc, 0xb4, 0x8a, 0x100, "%s", name_buffer);
+      DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xb4, 0x8a, 0x100, "%s", name_buffer);
       BlitTransparentRuns(PTR_DAT_005832dc, 0, 200, 0x114, 0x6a, PTR_DAT_005832b4, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));
     }
     DrawBlinkingNameCaret(PTR_DAT_005832b4, 0xb4, ScaleUiCoordinate(0x140) - text_width / 2, ScaleUiCoordinate(dialog_top) + 0x30, name_buffer,
@@ -1275,12 +1277,6 @@ int ApplyPortraitTintMap(FacemakerWindowBounds *page, int src_x, int src_y, unsi
   }
 
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0057b4a0
-void DrawLocalizedText(FacemakerWindowBounds *window, int color_index, int x, int y, ...)
-{
-  DrawTextFormatted(window, color_index, 0, 0, 1, 1, x, y, (int *)(&y + 1));
 }
 
 // FUNCTION: SHANDALAR 0x004a2713
@@ -1518,12 +1514,6 @@ int DrawBlinkingNameCaret(FacemakerWindowBounds *window, int color_index, int ca
   return 0;
 }
 
-// FUNCTION: SHANDALAR 0x0057b470
-void DrawLoadSaveButtonText(FacemakerWindowBounds *window, int color, int x, int y, ...)
-{
-  DrawTextFormatted(window, color, 0, 0, 0, 1, x, y, (int *)(&y + 1));
-}
-
 // FUNCTION: SHANDALAR 0x004a85fc
 int DrawLoadSaveButton(FacemakerWindowBounds *window, EncodedImage **button_sprites, int button_width, int button_height, char *button_text, int font_slot,
                  int visual_state)
@@ -1734,7 +1724,7 @@ int RunLoadSaveMenu(int param_1)
   AnimatePaletteToColor(0, DAT_00589dec);
   LoadPcxResource(1, 0, 0, "menopt.pic", (g_graphics_bpp == 8) ? &g_palette_data_words : (void *)1);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
-  FUN_0057ce70(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, DAT_00589dec);
   LoadPcxIntoPage(1, "optbox.pic");
   BeginSpriteEncodeSession();
   g_loadsave_frame_sprites[0] = EncodeSpriteFromPage(1, 1, 1, 0x40, 0x19);

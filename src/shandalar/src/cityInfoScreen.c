@@ -81,8 +81,8 @@ char *FUN_004f2e17(int town_index);
 DWORD __cdecl FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
 char *__cdecl FUN_00550220(int town_index);
 int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int y);
-void __cdecl FUN_0057b4a0(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
-void __cdecl FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
+void __cdecl DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 
 // GLOBAL: SHANDALAR 0x00603a34
 int DAT_00603a34 = 0;
@@ -404,7 +404,7 @@ void ShowCityInfoScreen(int param_1)
     x_table[2] = 0x40;
 
     SetFontStyleSize(7, (unsigned int)(10 - i / 2));
-    FUN_0057b4a0(PTR_DAT_005832dc, x_table[i], i * 0x3c + 0x49, 0xe, (char *)g_done_text_table_entry);
+    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, x_table[i], i * 0x3c + 0x49, 0xe, (char *)g_done_text_table_entry);
   }
 
   for (i = 0; i < 3; i++)
@@ -719,10 +719,10 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
     text_color = DAT_00581918[(unsigned char)(g_town_slots[town_index].status_and_ruling_wizard >> 8)];
   }
 
-  FUN_0057b560(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
   if ((g_town_slots[town_index].status_and_ruling_wizard & 1) != 0)
   {
-    FUN_0057b560(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x20c), y, g_ui_message_buffer);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x20c), y, g_ui_message_buffer);
   }
 
   tile_mask = FUN_0043146b(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
@@ -753,7 +753,7 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
   }
 
   strcpy(g_ui_message_buffer, FUN_004f2e17(town_index));
-  FUN_0057b560(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
 
   strcpy(g_ui_message_buffer, DAT_0058cc1c);
   for (i = 0; i < 0xc; i++)
@@ -764,13 +764,7 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
       strcat(g_ui_message_buffer, gs_worldmagic_names_00780660[i]);
     }
   }
-  FUN_0057b560(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x19c), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x19c), y, g_ui_message_buffer);
 
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0057b4a0
-void __cdecl FUN_0057b4a0(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...)
-{
-  DrawTextFormatted(dst, text_color, 0, 0, 1, 1, x, y, (int *)&format);
 }

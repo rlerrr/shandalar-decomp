@@ -564,7 +564,7 @@ int ScaleUiCoordinate(int value);
 int LoadFontConfigIfPresent(char *executable_name, char *config_name);
 int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name, int weight, DWORD italic);
 int FUN_0055db50(void);
-BOOL FUN_0057a9f0(int param_1);
+BOOL UnloadFontSlot(int font_slot);
 int FileExists(const char *filename);
 unsigned int FindDriveWithAsset(char *filename);
 char GetSoundAssetDriveLetter(void);
@@ -572,15 +572,15 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
 DWORD WINAPI FUN_0046e6f0(LPVOID);
-int FUN_00578c70(int param_1, int param_2, int param_3);
+void FUN_00578c70(int param_1, int param_2, int param_3);
 char *BuildResolutionSpritePath(char *sprite_filename);
-int FUN_0057b7a0(EncodedImage **out_entries, char *path, int max_entries);
+int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entries, char *path, int max_entries);
 void FUN_004184d2(void);
 void FUN_0041786e(void);
 void FUN_0046ed03(void);
 void FUN_0046ed33(void);
-void FUN_00578c40(void);
-void FUN_00578c50(void);
+void ShowMouseCursor(void);
+void HideMouseCursor(void);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 void FreeSpriteBlob(void *memory);
 void AnimatePaletteToColor(int color_index, int palette_id);
@@ -630,10 +630,10 @@ int BeginMenuContext(void);
 int ResetMenuContext(int context_index);
 int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
 int EndMenuContext(void);
-int FUN_0057ce70(int param_1, int param_2);
-void FUN_0057b530(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void FUN_0057b4d0(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+int FadeInPaletteFromGray(int gray, int steps);
+void DrawFormattedTextShadowedCenterY(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void LoadPcxIntoPageOpaque(int page_number, char *path);
 int ExportGraphicsPage(int page_number, char *path);
 int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7);
@@ -662,7 +662,7 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3);
 int FUN_0056bd9d(unsigned int param_1);
 int FUN_0056c5ea(int param_1);
 int FUN_004bb1cf(unsigned int param_1);
-unsigned int FUN_005795f0(FacemakerWindowBounds *param_1, int param_2, int param_3);
+unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *param_1, int param_2, int param_3);
 int RunLoadSaveMenu(int param_1);
 int FUN_0052280c(void *param_1);
 int FUN_0056302b(int param_1);
@@ -741,24 +741,6 @@ extern card_data_t global_cards_data[];
 extern DIBSurface *g_facemaker_page4_dib;
 extern HBITMAP g_facemaker_page4_bitmap;
 extern int g_frontbuffer_direct_blit_enabled;
-
-// FUNCTION: SHANDALAR 0x00578c80
-int FUN_00578c80(int param_1)
-{
-  return 0;
-}
-
-// FUNCTION: SHANDALAR 0x00578c20
-int FUN_00578c20(void)
-{
-  return -1;
-}
-
-// FUNCTION: SHANDALAR 0x00578c30
-int FUN_00578c30(void)
-{
-  return -1;
-}
 
 // FUNCTION: SHANDALAR 0x005501fe
 int ScaleUiCoordinate(int value)
@@ -1215,44 +1197,6 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   return selected_menu_entry;
 }
 
-// FUNCTION: SHANDALAR 0x0057adf0
-int GetFontLineHeight(int font_slot)
-{
-  FontSlot *font;
-
-  font = &g_font_slots[font_slot];
-  if (font->font_loaded != 0)
-  {
-    return (unsigned int)font->point_size + font->tm_leading;
-  }
-  return (unsigned int)font->point_size + (unsigned int)font->unk_06;
-}
-
-// FUNCTION: SHANDALAR 0x0057aa30
-int GetFontCharWidth(int font_slot, char ch_value)
-{
-  FontSlot *font;
-  HDC hdc;
-  ABC abc;
-  unsigned int ch;
-
-  font = &g_font_slots[font_slot];
-  ch = (unsigned int)(unsigned char)ch_value;
-  if (font->font_loaded != 0)
-  {
-    hdc = GetDC((HWND)0);
-    SelectObject(hdc, font->hfont);
-    GetCharABCWidthsA(hdc, ch, ch, &abc);
-    ReleaseDC((HWND)0, hdc);
-    return abc.abcA + abc.abcB + abc.abcC;
-  }
-  if (font->has_packed_widths != 0)
-  {
-    return (unsigned int)font->has_packed_widths + (unsigned int)font->unk_05;
-  }
-  return (unsigned int)font->unk_05 + (unsigned int)font->data.bitmap.glyph_advance[ch];
-}
-
 // FUNCTION: SHANDALAR 0x004ecec6
 int ClampIntToRange(int value, int min_value, int max_value)
 {
@@ -1265,33 +1209,6 @@ int ClampIntToRange(int value, int min_value, int max_value)
     value = max_value;
   }
   return value;
-}
-
-// FUNCTION: SHANDALAR 0x005796c0
-void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index)
-{
-  DIBSurface *page;
-  HPEN pen;
-  HGDIOBJ old_pen;
-  COLORREF color;
-  unsigned char *palette_entry;
-
-  page = g_graphics_pages[window_bounds->page_number];
-  if (color_index < 0)
-  {
-    color = (COLORREF)(-color_index);
-  }
-  else
-  {
-    palette_entry = &g_palette_data_words.entry_data[color_index * 4];
-    color = ((unsigned int)palette_entry[2] << 0x10) | ((unsigned int)palette_entry[1] << 8) | (unsigned int)palette_entry[0];
-  }
-  pen = CreatePen(0, 1, color);
-  old_pen = SelectObject(page->hTempDC, pen);
-  MoveToEx(page->hTempDC, x1, y1, (LPPOINT)0);
-  LineTo(page->hTempDC, x2, y2);
-  SelectObject(page->hTempDC, old_pen);
-  DeleteObject(pen);
 }
 
 // FUNCTION: SHANDALAR 0x00430e00
@@ -1619,30 +1536,6 @@ int DrawTextMenu(char *menu_text, int selected_option)
   return selected_option;
 }
 
-// FUNCTION: SHANDALAR 0x0057a9f0
-BOOL FUN_0057a9f0(int param_1)
-{
-  FontSlot *font;
-
-  font = &g_font_slots[param_1];
-  if (font->font_loaded == 0)
-  {
-    return FALSE;
-  }
-
-  DeleteObject(font->hfont);
-  return RemoveFontResourceA(font->data.gdi.font_file);
-}
-
-// FUNCTION: SHANDALAR 0x00578c70
-int FUN_00578c70(int param_1, int param_2, int param_3)
-{
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
-  return 0;
-}
-
 // FUNCTION: SHANDALAR 0x004184d2
 void FUN_004184d2(void)
 {
@@ -1744,25 +1637,13 @@ void FUN_0041786e(void)
 
   fclose(locals.entry_index);
 }
-// FUNCTION: SHANDALAR 0x00578c40
-void FUN_00578c40(void)
-{
-  ShowCursor(1);
-}
-
-// FUNCTION: SHANDALAR 0x00578c50
-void FUN_00578c50(void)
-{
-  ShowCursor(0);
-}
-
 // FUNCTION: SHANDALAR 0x0046ed03
 void FUN_0046ed03(void)
 {
   g_cursor_visibility_depth = g_cursor_visibility_depth + 1;
   if ((DAT_00586494 != 0) && (g_cursor_visibility_depth == 1))
   {
-    FUN_00578c40();
+    ShowMouseCursor();
   }
 }
 
@@ -1771,56 +1652,9 @@ void FUN_0046ed33(void)
 {
   if ((DAT_00586494 != 0) && (g_cursor_visibility_depth == 1))
   {
-    FUN_00578c50();
+    HideMouseCursor();
   }
   g_cursor_visibility_depth = g_cursor_visibility_depth - 1;
-}
-
-// FUNCTION: SHANDALAR 0x0057b530
-void FUN_0057b530(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
-{
-  DrawTextFormatted(window, color_index, 1, 0, 0, 1, x, y, (int *)&format);
-}
-
-// FUNCTION: SHANDALAR 0x0057b560
-void FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
-{
-  DrawTextFormatted(window, color_index, 1, 0, 1, 1, x, y, (int *)&format);
-}
-
-// FUNCTION: SHANDALAR 0x0057b4d0
-void FUN_0057b4d0(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
-{
-  DrawTextFormatted(window, color_index, 1, 0, 0, 0, x, y, (int *)&format);
-}
-
-// FUNCTION: SHANDALAR 0x0057c7e0
-void LoadPcxIntoPageOpaque(int page_number, char *path)
-{
-  LoadPcxResource(page_number, 0, 0, path, (RpBitsPalettePacket *)1);
-}
-
-// FUNCTION: SHANDALAR 0x0057dd30
-int ExportGraphicsPage(int page_number, char *path)
-{
-  return ExportEncodedImage(page_number, 0, 0, g_graphics_pages[page_number]->width, g_graphics_pages[page_number]->height, 0, path);
-}
-
-// FUNCTION: SHANDALAR 0x00579ea0
-AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height)
-{
-  int *saved_clip_rect_words;
-
-  saved_clip_rect_words = (int *)saved_clip_rect;
-  saved_clip_rect_words[0] = page->clip_left;
-  saved_clip_rect_words[1] = page->clip_top;
-  saved_clip_rect_words[2] = page->max_x;
-  saved_clip_rect_words[3] = page->max_y;
-  page->clip_left = x;
-  page->clip_top = y;
-  page->max_x = width;
-  page->max_y = height;
-  return (AdvMenuRect *)saved_clip_rect_words;
 }
 
 // FUNCTION: SHANDALAR 0x00500321
@@ -1908,45 +1742,6 @@ void FUN_004ce992(int delay)
   while ((g_ui_tick_count - start) < (delay / 2))
   {
   }
-}
-
-// FUNCTION: SHANDALAR 0x005797e0
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index)
-{
-  COLORREF color;
-  unsigned int value;
-  HBRUSH brush;
-  RECT fill_rect;
-  DIBSurface *page;
-
-  fill_rect.left = x;
-  fill_rect.right = x + width;
-  fill_rect.top = y;
-  fill_rect.bottom = y + height;
-
-  page = g_graphics_pages[window_bounds->page_number];
-
-  if ((int)color_index < 0)
-  {
-    value = (unsigned int)(-(int)color_index);
-    color = RGB(0xff, 0xff, 0xff);
-    if (color_index != 0xff000001)
-    {
-      color = PALETTERGB((BYTE)(value >> 8), (BYTE)value, (BYTE)(value >> 16));
-    }
-  }
-  else if (color_index == 0xff)
-  {
-    color = RGB(0xff, 0xff, 0xff);
-  }
-  else
-  {
-    color = PALETTEINDEX((WORD)color_index);
-  }
-
-  brush = CreateSolidBrush(color);
-  FillRect(page->hTempDC, &fill_rect, brush);
-  DeleteObject(brush);
 }
 
 // FUNCTION: SHANDALAR 0x004bdd0a
@@ -2486,13 +2281,6 @@ int FUN_0056bd9d(unsigned int param_1)
   return 0;
 }
 
-// FUNCTION: SHANDALAR 0x005795f0
-unsigned int FUN_005795f0(FacemakerWindowBounds *param_1, int param_2, int param_3)
-{
-  (void)param_1;
-  return (unsigned int)GetPixel(global_main_hdc, param_2, param_3);
-}
-
 // FUNCTION: SHANDALAR 0x0052280c
 int FUN_0052280c(void *param_1)
 {
@@ -2524,16 +2312,6 @@ int FUN_0056302b(int param_1)
   default:
     return -1;
   }
-}
-
-// FUNCTION: SHANDALAR 0x00578c60
-int ConsumeMouseButtonReleaseMask(void)
-{
-  int released_mask;
-
-  released_mask = g_mouse_button_released_mask;
-  g_mouse_button_released_mask = 0;
-  return released_mask;
 }
 
 // FUNCTION: SHANDALAR 0x004f6d90
@@ -3440,7 +3218,7 @@ unsigned int FUN_0043146b(int param_1, int param_2)
   {
     param_2 = 0;
   }
-  return FUN_005795f0(PTR_DAT_00583304, param_1, param_2) & 0xf;
+  return GetGraphicsPixelColorRef(PTR_DAT_00583304, param_1, param_2) & 0xf;
 }
 
 // FUNCTION: SHANDALAR 0x005611c8
@@ -3512,7 +3290,7 @@ unsigned int FUN_004314ca(int x, int y)
   if (y >= 0x40 || y < 0)
     return 0;
 
-  return FUN_005795f0(PTR_DAT_00583304, x, y);
+  return GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y);
 }
 
 // FUNCTION: SHANDALAR 0x00431526
@@ -3524,7 +3302,7 @@ void FUN_00431526(unsigned int param_1, int x, int y)
   if (y >= 0x40 || y < 0)
     return;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x, y, FUN_005795f0(PTR_DAT_00583304, x, y) | param_1);
+  PutGraphicsPixel(PTR_DAT_00583304, x, y, GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y) | param_1);
 }
 
 // FUNCTION: SHANDALAR 0x00431593
@@ -3536,7 +3314,7 @@ void FUN_00431593(unsigned int param_1, int x, int y)
   if (y >= 0x40 || y < 0)
     return;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x, y, FUN_005795f0(PTR_DAT_00583304, x, y) & ~param_1);
+  PutGraphicsPixel(PTR_DAT_00583304, x, y, GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y) & ~param_1);
 }
 
 // FUNCTION: SHANDALAR 0x0043174d
@@ -3548,12 +3326,12 @@ void MarkPathConnection(int x, int y, int direction_index)
 
   if ((((x < 0x40) && (-1 < x)) && (y < 0x40)) && (-1 < y))
   {
-    tile_value = FUN_005795f0(PTR_DAT_00583304, x, y + 0x40);
+    tile_value = GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40);
     PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40, tile_value | 1 << (((char)direction_index - 1U) & 0x1f));
     FUN_00431526(0x20, x, y);
     next_x = g_neighbor_dx[direction_index] + x;
     next_y = g_neighbor_dy[direction_index] + y;
-    tile_value = FUN_005795f0(PTR_DAT_00583304, next_x, next_y + 0x40);
+    tile_value = GetGraphicsPixelColorRef(PTR_DAT_00583304, next_x, next_y + 0x40);
     PutGraphicsPixel(PTR_DAT_00583304, next_x, next_y + 0x40, tile_value | 1 << (((char)direction_index + 3U) & 7));
     FUN_00431526(0x20, next_x, next_y);
   }
@@ -4051,13 +3829,13 @@ void LoadOpeningMenuSpriteResources(void)
   s.ttsprite_entry_index = s.ttsprite_entry_index + 1;
   ReadSpriteEntryPointers(g_world_magic_avatar_sprites, "amsprite.spr");
 
-  s.entry_index = FUN_0057b7a0(g_cstline1_sprite_entries, BuildResolutionSpritePath("cstline1.spr"), 0x54);
-  s.entry_index = FUN_0057b7a0(g_land_tile_sprite_entries, BuildResolutionSpritePath("landtile.spr"), 0x10);
-  s.entry_index = FUN_0057b7a0(g_land_sprite_entries, BuildResolutionSpritePath("land.spr"), 55);
-  s.entry_index = FUN_0057b7a0(g_sland_sprite_entries, BuildResolutionSpritePath("sland.spr"), 55);
-  s.entry_index = FUN_0057b7a0(&g_land_sprite_entries[55], BuildResolutionSpritePath("land2.spr"), 55);
-  s.entry_index = FUN_0057b7a0(&g_sland_sprite_entries[55], BuildResolutionSpritePath("sland2.spr"), 55);
-  s.entry_index = FUN_0057b7a0(g_road_sprite_entries, BuildResolutionSpritePath("roads.spr"), 0xc);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(g_cstline1_sprite_entries, BuildResolutionSpritePath("cstline1.spr"), 0x54);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(g_land_tile_sprite_entries, BuildResolutionSpritePath("landtile.spr"), 0x10);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(g_land_sprite_entries, BuildResolutionSpritePath("land.spr"), 55);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(g_sland_sprite_entries, BuildResolutionSpritePath("sland.spr"), 55);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(&g_land_sprite_entries[55], BuildResolutionSpritePath("land2.spr"), 55);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(&g_sland_sprite_entries[55], BuildResolutionSpritePath("sland2.spr"), 55);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(g_road_sprite_entries, BuildResolutionSpritePath("roads.spr"), 0xc);
 
   s.entry_index = ReadSpriteEntryPointers(&g_location_marker_sprite_entries[0], BuildResolutionSpritePath("locatn01.spr"));
   s.entry_index += ReadSpriteEntryPointers(&g_location_marker_sprite_entries[s.entry_index], BuildResolutionSpritePath("locatn02.spr"));
@@ -4115,8 +3893,8 @@ void LoadOpeningMenuSpriteResources(void)
   }
 
   s.entry_index = ReadSpriteEntryPointers(g_castles_sprite_entries, BuildResolutionSpritePath("castles1.spr"));
-  s.entry_index = FUN_0057b7a0(&g_castles_sprite_entries[12], BuildResolutionSpritePath("castles2.spr"), 8);
-  s.entry_index = FUN_0057b7a0(g_location07_sprite_entries, BuildResolutionSpritePath("locatn07.spr"), 12);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(&g_castles_sprite_entries[12], BuildResolutionSpritePath("castles2.spr"), 8);
+  s.entry_index = ReadSpriteEntryPointersWithLimit(g_location07_sprite_entries, BuildResolutionSpritePath("locatn07.spr"), 12);
 
   s.dbox_entry_index = 0;
   ReadSpriteEntryPointers(s.dbox_entries, "dbox.spr");
@@ -5471,7 +5249,7 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_in
   {
     if ((tile_y < 0x40) && (-1 < tile_y))
     {
-      road_mask = FUN_005795f0(PTR_DAT_00583304, tile_x, tile_y + 0x40);
+      road_mask = GetGraphicsPixelColorRef(PTR_DAT_00583304, tile_x, tile_y + 0x40);
       road_mask = road_mask & (1U << ((unsigned char)(direction_index - 1U) & 0x1f));
     }
     else
@@ -6753,7 +6531,7 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
     FUN_0055db50();
   } while (DAT_009300f0 == 0);
 
-  FUN_0057a9f0(5);
+  UnloadFontSlot(5);
   if (DAT_00586494 != 0)
   {
     FUN_00578c30();

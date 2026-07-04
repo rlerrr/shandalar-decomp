@@ -114,9 +114,10 @@ void FinalizeSpriteEncodeSession(void);
 EncodedImage *EncodeSpriteFromPage(int page_number, int src_x, int src_y, int width, int height);
 void FreeSpriteBlob(void *sprite_blob);
 
-void __cdecl FUN_0057b4a0(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
-void __cdecl FUN_0057b560(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-unsigned int FUN_0057d180(HDC dst, int dst_x, int dst_y, int width, int height, int blur_x, int blur_y, HDC src);
+void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
+void __cdecl DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+unsigned int BlitRectByRandomTileOrderInPlace(HDC dst, int dst_x, int dst_y, int width, int height, int tile_w, int tile_h, HDC src);
+void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a, int unk_b, int unk_c, HDC src_hdc);
 
 void DestroyAllCardBackgrounds(void);
 void DestroyAllBigArts(void);
@@ -506,258 +507,6 @@ int FUN_0042fe00(FacemakerWindowBounds *page)
 
   PushGraphicsClipRect(&s.clip_restore, PTR_DAT_005832b4, s.saved_clip_rect.x, s.saved_clip_rect.y, s.saved_clip_rect.width, s.saved_clip_rect.height);
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0057d500
-void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a, int unk_b, int unk_c, HDC src_hdc)
-{
-  int dst_block_y;
-  int iVar1;
-  int block_count_x;
-  int total_block_count;
-  void *state_storage;
-  DWORD tick;
-  int iVar3;
-  int dst_block_x;
-  COLORREF color;
-  unsigned int bit_cursor;
-  int src_block_x;
-  int rand_value;
-  int copy_w;
-  int copy_h;
-  unsigned int masked_block_count;
-  unsigned int modulus;
-  int *state;
-  int state_index;
-  int rng_list_index;
-  int rng_step;
-  int x_offset;
-  int y_loop_counter;
-  int dst_x;
-  int iStack_1c;
-  int y_00;
-  int local_38;
-  int iStack_30;
-  int *piStack_2c;
-  int iStack_20;
-  int iStack_c;
-
-  local_38 = -unk_a + 1;
-  block_count_x = (unsigned int)(unk_20 % unk_b != 0) + unk_20 / unk_b;
-  bit_cursor = 0x40000000;
-  total_block_count = ((unsigned int)(h % unk_c != 0) + h / unk_c) * block_count_x;
-  iVar3 = (unsigned int)(w % unk_20 != 0) + w / unk_20;
-  modulus = 0;
-  iVar1 = 0;
-  do
-  {
-    if ((bit_cursor & (unsigned int)total_block_count) != 0)
-    {
-      if (modulus == 0)
-      {
-        modulus = bit_cursor;
-      }
-      iVar1 = iVar1 + 1;
-    }
-    bit_cursor = (int)bit_cursor >> 1;
-  } while (bit_cursor != 0);
-  if (iVar1 != 1)
-  {
-    modulus = modulus * 2;
-  }
-
-  state_storage = malloc(((unk_a + iVar3) * 4 + 0x14) * 5);
-  tick = GetTickCount();
-  rng_list_index = -unk_a + 2;
-  *(int *)((int)state_storage + local_38 * 0x14 + unk_a * 0x14) = (int)tick % (int)modulus;
-  piStack_2c = (int *)((int)state_storage + local_38 * 0x14 + unk_a * 0x14);
-  piStack_2c[1] = 5;
-  piStack_2c[2] = 1;
-  piStack_2c[3] = modulus;
-  piStack_2c[4] = modulus;
-
-  if (rng_list_index < iVar3)
-  {
-    state = (int *)((int)state_storage + rng_list_index * 0x14 + unk_a * 0x14);
-    do
-    {
-      *state = (state[-5] * 5 + 1) % (int)modulus;
-      rng_step = rng_list_index % 0x14;
-      rng_list_index = rng_list_index + 1;
-      state[1] = DAT_005a1870[rng_step] * 4 + 1;
-      state[2] = 1;
-      state[3] = modulus;
-      state[4] = modulus;
-      state = state + 5;
-    } while (rng_list_index < iVar3);
-  }
-
-  if (local_38 < iVar3)
-  {
-    x_offset = unk_20 * local_38;
-    do
-    {
-      iStack_1c = unk_a;
-      if (local_38 < unk_a + local_38)
-      {
-        iStack_c = unk_a;
-        do
-        {
-          iStack_30 = local_38;
-          iVar1 = local_38 + iStack_1c;
-          if (iVar3 <= local_38 + iStack_1c)
-          {
-            iVar1 = iVar3;
-          }
-          if (local_38 < iVar1)
-          {
-            iStack_20 = x_offset;
-            state = piStack_2c;
-            do
-            {
-              rand_value = (state[1] * state[0] + state[2]) % state[3];
-              state[0] = rand_value;
-              state[4] = state[4] + -1;
-              if (rand_value < total_block_count)
-              {
-                dst_block_y = rand_value / block_count_x;
-                src_block_x = rand_value % block_count_x;
-                dst_x = src_block_x * unk_b + x + iStack_20;
-                dst_block_x = dst_block_y * unk_c + y;
-                copy_w = unk_b;
-                if (w + x <= unk_b + dst_x)
-                {
-                  copy_w = (w - dst_x) + x;
-                }
-                copy_h = unk_c;
-                if (h + y <= unk_c + dst_block_x)
-                {
-                  copy_h = y + (h - dst_block_x);
-                }
-                if (-1 < iStack_30)
-                {
-                  if ((unk_b == 1) && (unk_c == 1))
-                  {
-                    color = GetPixel(src_hdc, src_block_x, dst_block_y);
-                    SetPixel(dst_hdc, src_block_x, dst_block_y, color);
-                  }
-                  else
-                  {
-                    BitBlt(dst_hdc, dst_x, dst_block_x, copy_w, copy_h, src_hdc, dst_x, dst_block_x, 0xcc0020);
-                  }
-                }
-              }
-              iStack_20 = iStack_20 + unk_20;
-              state = state + 5;
-              iStack_30 = iStack_30 + 1;
-            } while (iStack_30 < iVar1);
-          }
-          iStack_1c = iStack_1c + -1;
-          iStack_c = iStack_c + -1;
-        } while (iStack_c != 0);
-      }
-      if (piStack_2c[4] < 1)
-      {
-        piStack_2c = piStack_2c + 5;
-        x_offset = x_offset + unk_20;
-        local_38 = local_38 + 1;
-      }
-    } while (local_38 < iVar3);
-  }
-
-  free(state_storage);
-}
-
-// FUNCTION: SHANDALAR 0x0057d180
-unsigned int FUN_0057d180(HDC dst, int dst_x, int dst_y, int width, int height, int blur_x, int blur_y, HDC src)
-{
-  int blocks_x;
-  int blocks_y;
-  int bit_count;
-  int block_y;
-  COLORREF color;
-  unsigned int bit_cursor;
-  int dst_x_00;
-  int src_block_x;
-  int dst_y_00;
-  int copy_h;
-  unsigned int masked_block_count;
-  unsigned int result;
-  unsigned int modulus;
-  unsigned int lcg_mask;
-
-  blocks_x = (unsigned int)(width % blur_x != 0) + width / blur_x;
-  blocks_y = (unsigned int)(height % blur_y != 0) + height / blur_y;
-  bit_cursor = 0x40000000;
-  modulus = 0;
-  masked_block_count = (blocks_y + 1) * (blocks_x + 1);
-  bit_count = 0;
-  do
-  {
-    if ((bit_cursor & masked_block_count) != 0)
-    {
-      if (modulus == 0)
-      {
-        modulus = bit_cursor;
-      }
-      bit_count = bit_count + 1;
-    }
-    bit_cursor = (int)bit_cursor >> 1;
-  } while (bit_cursor != 0);
-  if (bit_count != 1)
-  {
-    modulus = modulus * 2;
-  }
-
-  lcg_mask = 0;
-  bit_cursor = 1;
-  if (1 < (int)modulus)
-  {
-    do
-    {
-      lcg_mask = lcg_mask | bit_cursor;
-      bit_cursor = bit_cursor * 2;
-    } while ((int)bit_cursor < (int)modulus);
-  }
-
-  bit_count = rand();
-  bit_cursor = bit_count % (int)modulus;
-  result = bit_count / (int)modulus;
-
-  while (masked_block_count != 0)
-  {
-    bit_cursor = (bit_cursor * 0x21 + 1) & lcg_mask;
-    result = bit_cursor;
-    if ((int)bit_cursor <= blocks_y * blocks_x)
-    {
-      block_y = (int)bit_cursor / blocks_x;
-      src_block_x = (int)bit_cursor % blocks_x;
-      dst_x_00 = src_block_x * blur_x + dst_x;
-      dst_y_00 = block_y * blur_y + dst_y;
-      bit_count = blur_x;
-      if (width + dst_x <= blur_x + dst_x_00)
-      {
-        bit_count = (dst_x - dst_x_00) + width;
-      }
-      copy_h = blur_y;
-      if (height + dst_y <= blur_y + dst_y_00)
-      {
-        copy_h = (dst_y - dst_y_00) + height;
-      }
-      if ((blur_x == 1) && (blur_y == 1))
-      {
-        color = GetPixel(src, src_block_x, block_y);
-        result = SetPixelV(dst, src_block_x, block_y, color);
-      }
-      else
-      {
-        result = BitBlt(dst, dst_x_00, dst_y_00, bit_count, copy_h, src, dst_x_00, dst_y_00, 0xcc0020);
-      }
-      masked_block_count = masked_block_count - 1;
-    }
-  }
-
-  return result;
 }
 
 // FUNCTION: SHANDALAR 0x004ed44b
@@ -1293,7 +1042,7 @@ int FUN_005636ab(void)
     strcat(g_ui_message_buffer, gs_questfailed_0077c580[5]);
 
     text_y = 0x1e0 - GetFontLineHeight(PTR_DAT_005832dc->font_slot) * 7;
-    FUN_0057b560(PTR_DAT_005832dc, 0xea, 0x140, text_y, g_ui_message_buffer);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0xea, 0x140, text_y, g_ui_message_buffer);
 
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
     PopNormalizedQueuedKeyInput();
@@ -1658,7 +1407,8 @@ void FUN_004f6886(int creature_type, int x_320, int y_200, int tinted, int mode)
   name_ptr = FUN_00561441(creature_type);
   strcpy(g_ui_message_buffer, name_ptr);
   text_y = y_200 + ScaleUiCoordinate((int)portrait_frame_sprite->height / 2);
-  FUN_0057b4a0(PTR_DAT_005832b4, (-(unsigned int)(tinted == 0) & 0x38) + 0xae, x_320, text_y, g_ui_message_buffer);
+  DrawFormattedTextNoShadowCentered(PTR_DAT_005832b4, (-(unsigned int)(tinted == 0) & 0x38) + 0xae, x_320, text_y,
+                                    g_ui_message_buffer);
 
   PTR_DAT_005832b4->font_slot = 1;
   if (mode == 1)
@@ -1702,12 +1452,15 @@ void FUN_004f6886(int creature_type, int x_320, int y_200, int tinted, int mode)
     scaled_y = y_200 + ScaleUiCoordinate(0x2d);
     scaled_x = x_320 - ScaleUiCoordinate(0x5a);
     BlitGraphicsRect(PTR_DAT_005832dc, dst_right, dst_bottom, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), PTR_DAT_005832dc, scaled_x, scaled_y);
-    FUN_0057d180(dst_page->hTempDC, x_320 - ScaleUiCoordinate(0x5a), scaled_y, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), 3, 3, src_page->hTempDC);
+    BlitRectByRandomTileOrderInPlace(dst_page->hTempDC, x_320 - ScaleUiCoordinate(0x5a), scaled_y, ScaleUiCoordinate(0xb4),
+                                     ScaleUiCoordinate(0xb4), 3, 3, src_page->hTempDC);
 
     if (mode == 1)
     {
-      FUN_0057d180(dst_page->hTempDC, x_320 - ScaleUiCoordinate((int)portrait_frame_sprite->width / 2 + -0xb), y_200,
-                   ScaleUiCoordinate(portrait_frame_sprite->width + -0x16), ScaleUiCoordinate((int)portrait_frame_sprite->height), 2, 2, src_page->hTempDC);
+      BlitRectByRandomTileOrderInPlace(dst_page->hTempDC,
+                                       x_320 - ScaleUiCoordinate((int)portrait_frame_sprite->width / 2 + -0xb), y_200,
+                                       ScaleUiCoordinate(portrait_frame_sprite->width + -0x16),
+                                       ScaleUiCoordinate((int)portrait_frame_sprite->height), 2, 2, src_page->hTempDC);
     }
   }
 
