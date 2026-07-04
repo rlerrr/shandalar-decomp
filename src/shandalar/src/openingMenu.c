@@ -392,7 +392,7 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
 
   PTR_DAT_005832b4->font_slot = 6;
   DrawFormattedTextShadowed(PTR_DAT_005832b4, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
-               (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontLineHeight(6) / 2),
+               (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontStyleSize(6) / 2),
                "%s",
                (char *)g_opening_menu_text_table[s.text_table_index]);
 

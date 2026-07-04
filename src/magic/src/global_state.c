@@ -23,7 +23,6 @@ void SetCardInDeck(int param_1,int param_2)
   else {
     deck[param_1] = deck[param_1] & 0x8fff;
   }
-  return;
 }
 
 // FUNCTION: MAGIC 0x004ed13a

@@ -227,32 +227,43 @@ void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y)
 // FUNCTION: SHANDALAR 0x00428783
 char *FUN_00428783(unsigned int color_bitmask)
 {
-  char **p;
+  char *result;
 
-  p = (char **)(gs_worldmagic_title_0077e1d0 + 0x20);
   switch (color_bitmask)
   {
   case 1:
-    return p[0];
+    result = gs_cardclassnames_plural_0077e1f0[0];
+    break;
   case 2:
-    return p[1];
+    result = gs_cardclassnames_plural_0077e1f0[1];
+    break;
   case 4:
-    return p[2];
+    result = gs_cardclassnames_plural_0077e1f0[2];
+    break;
   case 8:
-    return p[3];
+    result = gs_cardclassnames_plural_0077e1f0[3];
+    break;
   case 0x10:
-    return p[4];
+    result = gs_cardclassnames_plural_0077e1f0[4];
+    break;
   case 0x20:
-    return p[5];
+    result = gs_cardclassnames_plural_0077e1f0[5];
+    break;
   case 0x40:
-    return p[6];
+    result = gs_cardclassnames_plural_0077e1f0[6];
+    break;
   case 0x42:
-    return p[7];
+    result = gs_cardclassnames_plural_0077e1f0[7];
+    break;
   case 0x80:
-    return p[8];
+    result = gs_cardclassnames_plural_0077e1f0[8];
+    break;
   default:
-    return DAT_00581af8;
+    result = DAT_00581af8;
+    break;
   }
+
+  return result;
 }
 
 // FUNCTION: SHANDALAR 0x004310a4
@@ -421,7 +432,7 @@ void __cdecl FUN_0054e97e(char *src, char *dst_first, char *dst_second)
 }
 
 // FUNCTION: SHANDALAR 0x00550314
-char * __cdecl FUN_00550314(int town_index, int mana_castle_index)
+char *__cdecl FUN_00550314(int town_index, int mana_castle_index)
 {
   int first_half_index;
   int second_half_index;

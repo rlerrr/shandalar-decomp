@@ -159,12 +159,19 @@ int RenderAdvMenuControlNormally(AdvMenuControl *control);
 // FUNCTION: SHANDALAR 0x00508bf3
 int __cdecl FUN_00508bf3(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
 {
-  return ((rect_x < x) && (x < rect_x + rect_w) && (rect_y < y) && (y < rect_y + rect_h));
+  if ((rect_x < x) && (x < rect_x + rect_w) && (rect_y < y) && (y < rect_y + rect_h))
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x00508c4a
 EncodedImage *__cdecl FUN_00508c4a(FacemakerWindowBounds *unused_page, int unused_x, int unused_y, int unused_w, int unused_h,
-                                  EncodedImage **sprite_pair)
+                                   EncodedImage **sprite_pair)
 {
   EncodedImage *sprite_a;
   EncodedImage *sprite_b;
@@ -389,6 +396,54 @@ void __cdecl FUN_004f2407(int card_index, int x, int y, int full_card, char *ban
   }
 }
 
+// FUNCTION: SHANDALAR 0x004f263b
+void __cdecl FUN_004f263b(int card_index, int x, int y, int width, int height, int full_card, char *banner_label)
+{
+  int x_scaled;
+  int y_scaled;
+  int w_scaled;
+  int h_scaled;
+  RECT clip;
+  int saved_dc;
+  int text_w;
+
+  w_scaled = FUN_005501dc(width);
+  h_scaled = FUN_005501dc(height);
+  if ((full_card != 0) && (0xf0 < y + 0x70))
+  {
+    y = 0x7f;
+  }
+
+  x_scaled = FUN_005501dc(x);
+  y_scaled = FUN_005501dc(y);
+  SetRect(&clip, x_scaled, y_scaled, x_scaled + w_scaled, y_scaled + h_scaled);
+
+  saved_dc = SaveDC(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC);
+  IntersectClipRect(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC, clip.left, clip.top, clip.right, clip.bottom);
+
+  if (full_card == 0)
+  {
+    DrawSmallCard(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC, &clip,
+                  (card_ptr_t *)(global_raw_cards_storage + global_cards_data[card_index].id * 0x98), 0, 1);
+  }
+  else
+  {
+    DrawFullCard(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC, &clip,
+                 (card_ptr_t *)(global_raw_cards_storage + global_cards_data[card_index].id * 0x98), 0, 1, 1, gs_illus_00789130);
+  }
+
+  RestoreDC(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC, saved_dc);
+
+  if ((banner_label != (char *)0) && (*banner_label != '\0'))
+  {
+    PTR_DAT_005832b4->font_slot = 1;
+    text_w = MeasureTextLineWidth(banner_label);
+    DrawEncodedImageResampled(PTR_DAT_005832b4, (x_scaled + w_scaled / 2) - text_w / 2 - 10, y_scaled - 0x18, text_w + 0x14, 0x14,
+                              g_endtop_banner_sprite);
+    DrawCenteredTextLineClamped(banner_label, x_scaled + w_scaled / 2, y_scaled - 0x14, 0xff);
+  }
+}
+
 /*
  * Globals used by the dungeon clues list screen.
  */
@@ -408,14 +463,11 @@ EncodedImage *DAT_00746e50 = (EncodedImage *)0;
 // GLOBAL: SHANDALAR 0x0058c708
 AdvMenuControl DAT_0058c708[3] = {
     // Up
-    {24, 219, 31, 36, 24, 219, 31, 36, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, -1, 0, (char *)0, (char *)0,
-     0x4800, 0, {0, 0, 0, 0}},
+    {24, 219, 31, 36, 24, 219, 31, 36, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, -1, 0, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
     // Down
-    {24, 260, 31, 36, 24, 260, 31, 36, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, 1, 1, (char *)0, (char *)0,
-     0x5000, 0, {0, 0, 0, 0}},
+    {24, 260, 31, 36, 24, 260, 31, 36, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, 1, 1, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
     // Done
-    {516, 29, 58, 26, 516, 29, 58, 26, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, 0, 2, DAT_0058cac4, DAT_0058cacc, 0,
-     0, {0, 0, 0, 0}},
+    {516, 29, 58, 26, 516, 29, 58, 26, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, 0, 2, DAT_0058cac4, DAT_0058cacc, 0, 0, {0, 0, 0, 0}},
 };
 
 // GLOBAL: SHANDALAR 0x0058cac4
@@ -457,8 +509,7 @@ EncodedImage *DAT_00746eb0[3];
 // GLOBAL: SHANDALAR 0x0058c6b0
 AdvMenuControl DAT_0058c6b0[1] = {
     // Done
-    {22, 418, 89, 35, 22, 418, 89, 35, 1, (AdvMenuRenderCallback)FUN_005089cb, (AdvMenuActivateCallback)FUN_00508b57, 1, 0, DAT_0058cab4, DAT_0058cabc, 0, 0,
-     {0, 0, 0, 0}},
+    {22, 418, 89, 35, 22, 418, 89, 35, 1, (AdvMenuRenderCallback)FUN_005089cb, (AdvMenuActivateCallback)FUN_00508b57, 1, 0, DAT_0058cab4, DAT_0058cabc, 0, 0, {0, 0, 0, 0}},
 };
 
 // GLOBAL: SHANDALAR 0x0058cab4

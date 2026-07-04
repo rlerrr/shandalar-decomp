@@ -287,6 +287,12 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
   DrawTextFormatted(window, color_index, 1, 0, 1, 1, x, y, (int *)&format);
 }
 
+// FUNCTION: SHANDALAR 0x0057b590
+void FUN_0057b590(FacemakerWindowBounds *window, int color_index, int x, int y, char *text)
+{
+  DrawTextFormatted(window, color_index, 0, 1, 1, 1, x, y, (int *)&text);
+}
+
 // FUNCTION: SHANDALAR 0x0057c7e0
 void LoadPcxIntoPageOpaque(int page_number, char *path)
 {

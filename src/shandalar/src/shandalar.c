@@ -379,7 +379,7 @@ AdvMenuControl g_world_magic_choice_controls[5] = {
     {0x166, 0x17c, 0x48, 0x28, 0x166, 0x17c, 0x48, 0x28, 1, HandleWorldMagicChoiceControlEvent, ActivateWorldMagicChoiceControl, 0x35, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
 };
 // GLOBAL: SHANDALAR 0x0058b580
-FacemakerWindowBounds *g_menu_control_draw_target_page = &DAT_00583290;
+FacemakerWindowBounds *g_menu_control_draw_target_page = &g_menu_saved_window_bounds;
 // GLOBAL: SHANDALAR 0x0058b87c
 int g_world_magic_icon_rect_table_padding = 0;
 // GLOBAL: SHANDALAR 0x0058b880
@@ -1754,7 +1754,6 @@ void InitializeNewGameState(void)
 {
   struct
   {
-    int icon_height_scaled;
     int icon_width_scaled;
     unsigned int uVar3;
     unsigned int uVar2;
@@ -1763,102 +1762,105 @@ void InitializeNewGameState(void)
     int local_4;
   } locals;
 
-  if (DAT_008bd200 == 0)
+  if (DAT_008bd200 != 0)
   {
-    for (locals.location_block_start_index = 0; locals.location_block_start_index < 500; locals.location_block_start_index = locals.location_block_start_index + 1)
-    {
-      deck[locals.location_block_start_index] = -1;
-    }
-
-    if (*(int *)&g_ini_string_scratch[0x24] == 0)
-    {
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 7; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        DAT_008b3240[locals.location_block_start_index] = 0;
-        DAT_008c7408[locals.location_block_start_index] = -1;
-      }
-
-      g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
-      g_world_magic_slot_timers[g_selected_wizard_color].unk_00 = 0;
-
-      locals.uVar2 = 1 << (BYTE)g_selected_wizard_color;
-      locals.entry_index = g_shandalar_difficulty + 1;
-      locals.local_4 = locals.entry_index;
-      if (g_shandalar_difficulty == 3)
-      {
-        locals.entry_index = 1;
-        locals.entry_index = 3;
-      }
-
-      locals.icon_height_scaled = g_shandalar_difficulty;
-      switch (locals.icon_height_scaled)
-      {
-      case 0:
-        if ((((locals.uVar2 < 1) ? 1 : 0) & 0x20) != 0)
-        {
-          FUN_004be0bf(locals.uVar2, 0xd, 7, 0xf, 1, 1);
-        }
-        else
-        {
-          FUN_004be0bf(locals.uVar2, 0xd, 0xc, 10, 1, 1);
-        }
-        break;
-      case 1:
-        FUN_004be0bf(locals.uVar2, 0xb, 4, 0xc, 1, 1);
-        FUN_004be0bf(FUN_004bdccc(locals.uVar2), 4, 3, 4, 0, 1);
-        break;
-      case 2:
-        FUN_004be0bf(locals.uVar2, 9, 3, 9, 1, 1);
-        locals.uVar3 = FUN_004bdccc(locals.uVar2);
-        FUN_004be0bf(locals.uVar3, 5, 3, 4, 0, 1);
-        FUN_004be0bf(FUN_004bdccc(locals.uVar2 | locals.uVar3), 4, 3, 3, 0, 1);
-        break;
-      case 3:
-        FUN_004be0bf(locals.uVar2, 6, 3, 5, 1, 1);
-        FUN_004be0bf(1, 0xb, 5, 0xe, 0, 1);
-        break;
-      }
-
-      g_journal_entry_count = 0;
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 5; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        g_amulet_inventory[locals.location_block_start_index] = 0;
-      }
-
-      DAT_0078990c[g_selected_wizard_color]++;
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 3 - g_shandalar_difficulty; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        locals.icon_width_scaled = FUN_00522508(5);
-        g_amulet_inventory[locals.icon_width_scaled]++;
-      }
-
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x80; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        g_town_slots[locals.location_block_start_index].location_type = -1;
-      }
-
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 8; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        g_lair_or_monster_slots[locals.location_block_start_index].entry_type = -1;
-      }
-
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 1000; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        g_duel_victory_log[0] = 0;
-      }
-
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 4; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        DAT_007a7d10[locals.location_block_start_index] = 8;
-      }
-
-      for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x96; locals.location_block_start_index = locals.location_block_start_index + 1)
-      {
-        deck[locals.location_block_start_index] = deck[locals.location_block_start_index] | 0x10000;
-      }
-      g_selected_wizard_color = -1;
-    }
+    return;
   }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 500; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    deck[locals.location_block_start_index] = -1;
+  }
+
+  if (DAT_00715f10)
+  {
+    return;
+  }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 7; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    DAT_008b3240[locals.location_block_start_index] = 0;
+    DAT_008c7408[locals.location_block_start_index] = -1;
+  }
+
+  g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
+  g_world_magic_slot_timers[g_selected_wizard_color * 2].unk_00 = 0;
+
+  locals.uVar2 = 1 << (BYTE)g_selected_wizard_color;
+  locals.entry_index = g_shandalar_difficulty + 1;
+  locals.local_4 = locals.entry_index;
+  if (g_shandalar_difficulty == 3)
+  {
+    locals.entry_index = 1;
+    locals.entry_index = 3;
+  }
+
+  switch (g_shandalar_difficulty)
+  {
+  case 0:
+    if ((locals.uVar2 < 1) & 0x20)
+    {
+      FUN_004be0bf(locals.uVar2, 0xd, 7, 0xf, 1, 1);
+    }
+    else
+    {
+      FUN_004be0bf(locals.uVar2, 0xd, 0xc, 10, 1, 1);
+    }
+    break;
+  case 1:
+    FUN_004be0bf(locals.uVar2, 0xb, 4, 0xc, 1, 1);
+    FUN_004be0bf(FUN_004bdccc(locals.uVar2), 4, 3, 4, 0, 1);
+    break;
+  case 2:
+    FUN_004be0bf(locals.uVar2, 9, 3, 9, 1, 1);
+    locals.uVar3 = FUN_004bdccc(locals.uVar2);
+    FUN_004be0bf(locals.uVar3, 5, 3, 4, 0, 1);
+    FUN_004be0bf(FUN_004bdccc(locals.uVar2 | locals.uVar3), 4, 3, 3, 0, 1);
+    break;
+  case 3:
+    FUN_004be0bf(locals.uVar2, 6, 3, 5, 1, 1);
+    FUN_004be0bf(1, 0xb, 5, 0xe, 0, 1);
+    break;
+  }
+
+  g_journal_entry_count = 0;
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 5; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    g_amulet_inventory[locals.location_block_start_index] = 0;
+  }
+
+  DAT_0078990c[g_selected_wizard_color]++;
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 3 - g_shandalar_difficulty; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    locals.icon_width_scaled = FUN_00522508(5);
+    g_amulet_inventory[locals.icon_width_scaled]++;
+  }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x80; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    g_town_slots[locals.location_block_start_index].location_type = -1;
+  }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 8; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    g_lair_or_monster_slots[locals.location_block_start_index].entry_type = -1;
+  }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 1000; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    g_duel_victory_log[0] = 0;
+  }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 4; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    DAT_007a7d10[locals.location_block_start_index] = 8;
+  }
+
+  for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x96; locals.location_block_start_index = locals.location_block_start_index + 1)
+  {
+    deck[locals.location_block_start_index] = deck[locals.location_block_start_index] | 0x10000;
+  }
+  g_selected_wizard_color = -1;
 }
 
 // FUNCTION: SHANDALAR 0x004bdccc
@@ -5290,7 +5292,14 @@ void FUN_0055fd27(void)
 // FUNCTION: SHANDALAR 0x0041d1ef
 int IsKeyInputQueueEmpty(void)
 {
-  return (g_key_input_queue_count == 0) ? -1 : 0;
+  if (g_key_input_queue_count == 0)
+  {
+    return -1;
+  }
+  else
+  {
+    return 0;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x00431859
@@ -5320,17 +5329,11 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_in
 // FUNCTION: SHANDALAR 0x004bdaad
 void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b)
 {
-  char *work_entry_ptr;
-
   if (*(int *)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4) != 0)
   {
     FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4));
     FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_b * 0xb4));
-    work_entry_ptr = g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4;
-    work_entry_ptr[0] = '\0';
-    work_entry_ptr[1] = '\0';
-    work_entry_ptr[2] = '\0';
-    work_entry_ptr[3] = '\0';
+    *(int *)&g_opening_menu_sprite_work_buffer[work_entry_index_a * 0xb4] = 0;
   }
 }
 
@@ -5352,16 +5355,15 @@ int RecountDeckCardTotals(void)
 {
   int deck_index;
 
-  DAT_00789938 = 0;
-  DAT_0078df68 = 0;
+  DAT_0078df68 = DAT_00789938 = 0;
   for (deck_index = 0; deck_index < 500; deck_index = deck_index + 1)
   {
     if (deck[deck_index] != -1)
     {
       DAT_00789938 = DAT_00789938 + 1;
-      if ((((unsigned char *)&deck[deck_index])[1] & 0x40) == 0)
+      if ((deck[deck_index] & 0x4000) == 0)
       {
-        DAT_0078df68 = DAT_0078df68 + 1;
+        DAT_0078df68++;
       }
     }
   }
@@ -5421,7 +5423,8 @@ void FUN_00562736(int param_1, int param_2, int param_3, int param_4)
   snd.volume = param_2 << 2;
   snd.sampleRate = (param_3 * 0x5622) / 100;
   snd.pan = param_4 << 2;
-  snd.flags = snd.flags & 0xffffffee;
+  snd.flags &= 0xfffffffe;
+  snd.flags &= 0xffffffef;
   sound_play(param_1, &snd);
 }
 
@@ -5451,16 +5454,16 @@ void FUN_0056279e(int param_1, int param_2, int param_3)
 }
 
 // FUNCTION: SHANDALAR 0x00562835
-void FUN_00562835(char *param_1, int param_2)
+void FUN_00562835(char *filename, int param_2)
 {
   Sound snd;
 
   memset(&snd, 0, 0x20);
-  snd.flags = snd.flags | 4;
+  snd.flags = (int)snd.flags | 4;
   snd.volume = 400;
   snd.sampleRate = 0;
   snd.pan = 0;
-  sound_load(param_1, param_2, &snd);
+  LoadSoundWithDriveFallback(filename, param_2, &snd);
   set_sound_loop(param_2, 1);
 }
 
