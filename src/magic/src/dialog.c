@@ -33,8 +33,8 @@ STATIC_ASSERT(sizeof(dialog_stack_entry_t) == 0xac, dialog_stack_entry_t_wrong_s
 #define DISPLAYED_PIC_INFO(player_, card_) (*(unsigned int *)&DISPLAYED_PLAYER_CARD_INSTANCE((player_), (card_)).display_pic_csv_id)
 
 extern card_ptr_t global_raw_cards_storage[2000];
-extern int DAT_008a9190;
-extern int DAT_008cf1b0;
+extern int g_showlist_smallcard_width;
+extern int g_showlist_smallcard_height;
 extern int DAT_0091c998;
 
 // GLOBAL: MAGIC 0x006f6df8
@@ -819,7 +819,7 @@ int raw_do_dialog(int bigcard_player,
   int card_image_number;
   dialog_context_t s;
 
-  KillTimer((HWND)unk_008cf1b4, DAT_0091b280);
+  KillTimer((HWND)g_main_window_hwnd, DAT_0091b280);
   if (smallcard_card == 0xff)
   {
     smallcard_card = -1;
@@ -850,7 +850,7 @@ int raw_do_dialog(int bigcard_player,
   s.prompt = prompt;
   s.dialog_mode = dialog_mode;
 
-  dialog_result = DialogBoxParamA(global_hinstance, (LPCSTR)0xdf, (HWND)unk_008cf1b4, FUN_00506fa0, (LPARAM)&s);
+  dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_main_window_hwnd, FUN_00506fa0, (LPARAM)&s);
   if (dialog_result == 0)
   {
     return -1;
@@ -1548,11 +1548,11 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                          0x50000000,
                                          DAT_006f6e10[0],
                                          DAT_006f6e10[1],
-                                         DAT_008a9190,
-                                         DAT_008cf1b0,
+                                         g_showlist_smallcard_width,
+                                         g_showlist_smallcard_height,
                                          hwnd,
                                          (HMENU)1,
-                                         global_hinstance,
+                                         g_app_instance,
                                          &smallcard_player);
       (void)smallcard_window;
     }

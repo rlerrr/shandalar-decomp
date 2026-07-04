@@ -67,7 +67,6 @@ void UpdateMouseSnapshot(void);
 int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 int HasQueuedKeyInput(void);
 extern EncodedImage *g_world_magic_avatar_sprites[5];
-extern unsigned char Scards[0xc0];
 
 void EnsureAdvfac64Loaded(int state);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
@@ -702,7 +701,7 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
   strcpy(g_ui_message_buffer, DAT_0058cc1c);
   for (i = 0; i < 0xc; i++)
   {
-    if ((town_index != 0) && (*(int *)(Scards + i * 0x10 + 8) == town_index))
+    if ((town_index != 0) && (Scards[i].worldmagic_city == town_index))
     {
       FUN_004bb458(i);
       strcat(g_ui_message_buffer, gs_worldmagic_names_00780660[i]);

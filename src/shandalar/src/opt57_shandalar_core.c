@@ -317,4 +317,28 @@ int ExportGraphicsPage(int page_number, char *path)
   return result;
 }
 
+// FUNCTION: SHANDALAR 0x0057e826
+char *FUN_0057e826(char *dst, char *src)
+{
+  char *p;
+
+  p = dst;
+  while (*p != '\0')
+  {
+    p = p + 1;
+  }
+  while (1)
+  {
+    *p = *src;
+    if (*src == '\0')
+    {
+      break;
+    }
+    p = p + 1;
+    src = src + 1;
+  }
+
+  return dst;
+}
+
 #pragma optimize("", on)

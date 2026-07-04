@@ -56,14 +56,14 @@ typedef struct FontSlot
 
 typedef struct EncodedImage
 {
-  int total_size;
-  short width;
-  short height;
-  short left_clip;
-  short top_clip;
-  short first_row;
-  short row_count;
-  unsigned char spans[1];
+  int total_size;         // 0x0
+  short width;            // 0x4
+  short height;           // 0x6
+  short left_clip;        // 0x8
+  short top_clip;         // 0xa
+  short first_row;        // 0xc
+  short row_count;        // 0xe
+  unsigned char spans[1]; // 0x10
 } EncodedImage;
 
 typedef char FontSlot_size_must_be_0x2a4[(sizeof(FontSlot) == 0x2a4) ? 1 : -1];

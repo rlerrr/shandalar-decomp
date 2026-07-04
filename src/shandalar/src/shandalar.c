@@ -397,23 +397,13 @@ AdvMenuRect g_world_magic_icon_rects[0xc] = {
     {354, 378, 49, 49},
     {567, 427, 48, 48},
 };
-// GLOBAL: SHANDALAR 0x0058b95c
-char g_world_magic_black_sound_path[] = "x:sound\\blackwm.wav";
-// GLOBAL: SHANDALAR 0x0058b970
-char g_world_magic_blue_sound_path[] = "x:sound\\bluewm.wav";
-// GLOBAL: SHANDALAR 0x0058b984
-char g_world_magic_green_sound_path[] = "x:sound\\greenwm.wav";
-// GLOBAL: SHANDALAR 0x0058b998
-char g_world_magic_red_sound_path[] = "x:sound\\redwm.wav";
-// GLOBAL: SHANDALAR 0x0058b9ac
-char g_world_magic_white_sound_path[] = "x:sound\\whitewm.wav";
 // GLOBAL: SHANDALAR 0x0058b940
 char *g_world_magic_sound_paths[5] = {
-    g_world_magic_black_sound_path,
-    g_world_magic_blue_sound_path,
-    g_world_magic_green_sound_path,
-    g_world_magic_red_sound_path,
-    g_world_magic_white_sound_path,
+    "x:sound\\blackwm.wav",
+    "x:sound\\bluewm.wav",
+    "x:sound\\greenwm.wav",
+    "x:sound\\redwm.wav",
+    "x:sound\\whitewm.wav",
 };
 // GLOBAL: SHANDALAR 0x0058b954
 int g_menu_current_control_index = -1;
@@ -512,6 +502,8 @@ int g_text_menu_disabled_option_mask;
 
 // GLOBAL: SHANDALAR 0x005aa414
 int DAT_005aa414;
+// GLOBAL: SHANDALAR 0x005aa62c
+int DAT_005aa62c;
 // GLOBAL: SHANDALAR 0x005873d4
 int DAT_005873d4;
 
@@ -524,6 +516,7 @@ int LoadTextSectionStringTable(const char *filename, const char *section, char *
                                char *string_buf_end, char **out_next_buf);
 int LoadAdvBlocksFile(const char *filename);
 int FindNextTextBlock(char *scan_start, char *scan_end, int *out_block_start, int *out_next_scan);
+void FUN_00417946(char *out, int csvid, int field, char *csv_name);
 void FUN_00559999(void);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 void FUN_00562d03(void);
@@ -702,7 +695,7 @@ WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
 int LoadTextSectionLines(char *filename, char *section);
 int IsKeyInputQueueEmpty(void);
 unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
-void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
+int FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
 int SignNonZero(int value);
 int RestoreAdventureUiPaletteAndFocus(void);
 int VisitTownSlot(int town_index);
@@ -718,7 +711,7 @@ void FUN_00562835(char *param_1, int param_2);
 void FUN_00562a29(int param_1);
 void FUN_0050a5c1(int param_1);
 void ShowCityInfoScreen(int param_1);
-void ShowDungeonCluesScreen(void);
+void ShowDungeonCluesScreen(int unused);
 void FUN_00549002(void);
 void ShowWorldMapScreen(int mode);
 void ShowStatsWindow(int mode, int highlight);
@@ -729,6 +722,7 @@ extern int g_world_player_tile_x;
 extern int g_world_player_tile_y;
 extern char *global_base_txt;
 extern HPALETTE global_cart_art_hpalette;
+extern HPALETTE g_palette_handle;
 extern int Gold;
 extern int g_graphics_bpp;
 extern RpBitsPalettePacket g_palette_data_words;
@@ -2106,116 +2100,143 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
 // FUNCTION: SHANDALAR 0x0056c5ea
 int FUN_0056c5ea(int param_1)
 {
-  int entry_index;
+  struct
+  {
+    char rarity_str[32];
+    int rarity;
+  } s;
 
   if (((global_cards_data[param_1].extra_ability & 0x180U) != 0) || (global_cards_data[param_1].expansion == '@'))
   {
     global_cards_data[param_1].rarity = 4;
   }
-  if (global_cards_data[param_1].rarity == 0xff)
+
+  if ((signed char)global_cards_data[param_1].rarity != -1)
   {
-    entry_index = 1;
-    global_cards_data[param_1].rarity = (unsigned char)entry_index;
+    s.rarity = (int)(signed char)global_cards_data[param_1].rarity;
+
+    return s.rarity;
   }
-  else
+
+  FUN_00417946(s.rarity_str, global_cards_data[param_1].id, 9, "info.csv");
+
+  s.rarity = 1;
+
+  if (strcmp(s.rarity_str, "Special") == 0)
   {
-    entry_index = (int)(char)global_cards_data[param_1].rarity;
+    s.rarity = 3;
   }
-  return entry_index;
+
+  if (strcmp(s.rarity_str, "Rare") == 0)
+  {
+    s.rarity = 3;
+  }
+
+  if (strcmp(s.rarity_str, "Uncommon") == 0)
+  {
+    s.rarity = 2;
+  }
+
+  global_cards_data[param_1].rarity = (unsigned char)s.rarity;
+
+  return s.rarity;
 }
 
 // FUNCTION: SHANDALAR 0x004bb1cf
 int FUN_004bb1cf(unsigned int param_1)
 {
-  int preview_panel_y_offset;
-  int local_30;
-  int local_2c;
-  int local_28;
-  unsigned int icon_y_scaled;
+  int color_index;
+  int copies_in_deck;
+  int total_non_market_cards;
+  int i;
+  int max_color_count;
   int aiStack_20[7];
 
   if ((int)param_1 < 5)
   {
-    local_30 = 99;
+    copies_in_deck = 99;
   }
   else
   {
-    for (local_28 = 0; local_28 < 7; local_28 = local_28 + 1)
+    for (i = 0; i < 7; i = i + 1)
     {
-      aiStack_20[local_28] = 0;
+      aiStack_20[i] = 0;
     }
-    local_2c = 0;
-    local_30 = 0;
-    for (local_28 = 0; local_28 < 500; local_28 = local_28 + 1)
+
+    total_non_market_cards = 0;
+    copies_in_deck = 0;
+
+    for (i = 0; i < 500; i = i + 1)
     {
-      if ((deck[local_28] != -1) && ((deck[local_28] & 0x4000) == 0))
+      if ((deck[i] != -1) && ((deck[i] & 0x4000) == 0))
       {
-        local_2c = local_2c + 1;
-        preview_panel_y_offset = FUN_0040dffd(global_cards_data[(unsigned int)deck[local_28] & 0xfff].color);
-        aiStack_20[preview_panel_y_offset] = aiStack_20[preview_panel_y_offset] + 1;
+        total_non_market_cards = total_non_market_cards + 1;
+        color_index = FUN_0040dffd(global_cards_data[(unsigned int)deck[i] & 0xfff].color);
+        aiStack_20[color_index] = aiStack_20[color_index] + 1;
       }
-      if (((unsigned int)deck[local_28] & 0xffff7fff) == param_1)
+
+      if (((unsigned int)deck[i] & 0xffff7fffU) == param_1)
       {
-        local_30 = local_30 + 1;
+        copies_in_deck = copies_in_deck + 1;
+        DAT_005aa62c = i;
       }
     }
 
-    icon_y_scaled = (unsigned int)-1;
-    for (local_28 = 1; local_28 < 7; local_28 = local_28 + 1)
+    max_color_count = -1;
+    for (i = 1; i < 7; i = i + 1)
     {
-      if ((int)icon_y_scaled < aiStack_20[local_28])
+      if (max_color_count < aiStack_20[i])
       {
-        icon_y_scaled = aiStack_20[local_28];
+        max_color_count = aiStack_20[i];
       }
     }
 
     g_deck_color_bitmap = 0;
-    for (local_28 = 1; local_28 < 7; local_28 = local_28 + 1)
+    for (i = 1; i < 7; i = i + 1)
     {
-      if ((int)(icon_y_scaled * 2) / 3 <= aiStack_20[local_28])
+      if (((max_color_count * 2) / 3) <= aiStack_20[i])
       {
-        g_deck_color_bitmap = g_deck_color_bitmap | (1 << ((unsigned char)local_28 & 0x1f));
+        g_deck_color_bitmap = g_deck_color_bitmap | (1 << (unsigned char)i);
       }
     }
 
-    icon_y_scaled = 1;
-    if (0x27 < local_2c)
+    max_color_count = 1;
+    if (0x27 < total_non_market_cards)
     {
-      icon_y_scaled = 2;
+      max_color_count = 2;
     }
-    if (0x3b < local_2c)
+    if (0x3b < total_non_market_cards)
     {
-      icon_y_scaled = 3;
+      max_color_count = 3;
     }
     if ((g_world_magic_bitmap & 0x20) != 0)
     {
-      icon_y_scaled = icon_y_scaled + 1;
+      max_color_count = max_color_count + 1;
     }
-    if ((global_cards_data[param_1].extra_ability & 0x100) == 0)
+
+    if ((global_cards_data[param_1].extra_ability & 0x100) != 0)
     {
-      if ((global_cards_data[param_1].expansion & 0xc1) == 0)
-      {
-        icon_y_scaled = icon_y_scaled / 2;
-      }
+      max_color_count = (g_shandalar_difficulty <= max_color_count);
     }
-    else
+    else if ((global_cards_data[param_1].expansion & 0xc1) == 0)
     {
-      icon_y_scaled = (unsigned int)(g_shandalar_difficulty <= (int)icon_y_scaled);
+      max_color_count = max_color_count / 2;
     }
-    local_30 = (int)icon_y_scaled - local_30;
+
+    copies_in_deck = max_color_count - copies_in_deck;
   }
 
-  return local_30;
+  return copies_in_deck;
 }
 
 // FUNCTION: SHANDALAR 0x004bb458
-int FUN_004bb458(int param_1)
+int FUN_004bb458(shandalar_worldmagic_index_t inx)
 {
   int entry_index;
 
   for (entry_index = 0; entry_index < g_card_count + 0x10; entry_index = entry_index + 1)
   {
-    if (global_cards_data[entry_index].id == *(int *)((char *)Scards + param_1 * 0x10))
+    if (global_cards_data[entry_index].id == Scards[inx].worldmagic_csvid)
     {
       return entry_index;
     }
@@ -2939,7 +2960,10 @@ void FloodFillPathConnectivity(int x, int y, unsigned int depth)
   } s;
 
   PutGraphicsPixel(PTR_DAT_00583304, x + 0x40, y, depth);
-  if ((int)depth > 1)
+  if ((int)depth <= 1)
+  {
+  }
+  else
   {
     for (s.direction_index = 1; (int)s.direction_index <= 8; s.direction_index = s.direction_index + 2)
     {
@@ -4648,7 +4672,7 @@ void FUN_0055e808(void)
     int audio_pitch;
     int audio_pan;
   } s;
-  unsigned char *card_slot_ptr;
+  shandalar_worldmagic_t *worldmagic_slot_ptr;
 
   if (IsKeyInputQueueEmpty() == 0)
   {
@@ -4741,7 +4765,7 @@ void FUN_0055e808(void)
         case 0x3e00:
           ClearInputAndWaitForMouseRelease();
           // dungeon clues
-          ShowDungeonCluesScreen();
+          ShowDungeonCluesScreen(1);
           RefreshAdventureInterfaceLayout();
           break;
         case 0x3f00:
@@ -4817,11 +4841,8 @@ void FUN_0055e808(void)
             g_world_scene_reveal_effect_pending = 1;
             break;
           case 0x33:
-            card_slot_ptr = Scards + s.key_magic_index * 0x20 + 0xc;
-            card_slot_ptr[0] = 0x96;
-            card_slot_ptr[1] = 0;
-            card_slot_ptr[2] = 0;
-            card_slot_ptr[3] = 0;
+            worldmagic_slot_ptr = &Scards[s.key_magic_index];
+            worldmagic_slot_ptr->worldmagic_duration = 0x96;
             FUN_004290e2(0x12, 3);
             break;
           case 0x34:
@@ -4959,7 +4980,7 @@ void FUN_0055e808(void)
       DAT_0073ea70[5] = g_world_move_dir_index;
     }
 
-    if ((*(int *)(Scards + 108) != 0) ||
+    if ((Scards[WORLDMAGIC_QUICKENING].worldmagic_duration != 0) ||
         (((g_monster_timer & 1U) != 0 &&
           (WorldRoadTileHasDirection(g_world_player_tile_x, g_world_player_tile_y, ((char)g_world_move_dir_index + 3U & 7) + 1) != 0))))
     {
@@ -4987,7 +5008,7 @@ void FUN_0055e808(void)
       {
         g_food = g_food - 1;
       }
-      if ((*(int *)(Scards + 120) == 0) && (s.tile_type == 2))
+      if ((Scards[WORLDMAGIC_FRUIT_OF_SUSTENANCE].worldmagic_city == 0) && (s.tile_type == 2))
       {
         g_food = g_food + 2;
       }
@@ -5327,14 +5348,17 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_in
 }
 
 // FUNCTION: SHANDALAR 0x004bdaad
-void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b)
+int FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b)
 {
-  if (*(int *)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4) != 0)
+  if (*(int *)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4) == 0)
   {
-    FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4));
-    FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_b * 0xb4));
-    *(int *)&g_opening_menu_sprite_work_buffer[work_entry_index_a * 0xb4] = 0;
+    return 0;
   }
+
+  FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4));
+  FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_b * 0xb4));
+  *(int *)&g_opening_menu_sprite_work_buffer[work_entry_index_a * 0xb4] = 0;
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x004ecefd
@@ -5376,10 +5400,10 @@ int RestoreAdventureUiPaletteAndFocus(void)
   SetFocus(g_main_window_hwnd);
   LoadPcxIntoPageNoPalette(s_advfac64_pic_path_0058a86c);
   ReadPalette(s_todpal_tr_path_0058a87c, (char *)0);
-  SelectPalette(g_graphics_pages[0]->hTempDC, global_cart_art_hpalette, FALSE);
+  SelectPalette(g_graphics_pages[0]->hTempDC, g_palette_handle, FALSE);
   RealizePalette(g_graphics_pages[0]->hTempDC);
   RecountDeckCardTotals();
-  PopNormalizedQueuedKeyInput();
+  ClearInputAndWaitForMouseRelease();
   return 0;
 }
 
@@ -5449,7 +5473,7 @@ void FUN_0056279e(int param_1, int param_2, int param_3)
   snd.volume = param_2 << 2;
   snd.sampleRate = 0x5622;
   snd.pan = param_3 << 2;
-  snd.flags = snd.flags | 1;
+  snd.flags = (int)snd.flags | 1;
   sound_play(param_1, &snd);
 }
 

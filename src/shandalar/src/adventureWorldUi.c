@@ -10,22 +10,75 @@
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
-
 // GLOBAL: SHANDALAR 0x0059076c
 int g_world_ui_top_offset = 128;
 // GLOBAL: SHANDALAR 0x00590760
 int g_world_ui_stats_color_index = 0xca;
 // GLOBAL: SHANDALAR 0x00590770
 unsigned char g_location_marker_sprite_lookup_by_town[0x24] = {
-    0x01, 0x07, 0x05, 0x0b, 0x1c, 0x20, 0x19, 0x1d, 0x00, 0x06, 0x23, 0x24,
-    0x0d, 0x13, 0x21, 0x22, 0x02, 0x08, 0x0c, 0x12, 0x0e, 0x14, 0x1a, 0x1e,
-    0x1b, 0x1f, 0x26, 0x2c, 0x27, 0x2d, 0x34, 0x3a, 0x03, 0x09, 0x04, 0x0a,
+    0x01,
+    0x07,
+    0x05,
+    0x0b,
+    0x1c,
+    0x20,
+    0x19,
+    0x1d,
+    0x00,
+    0x06,
+    0x23,
+    0x24,
+    0x0d,
+    0x13,
+    0x21,
+    0x22,
+    0x02,
+    0x08,
+    0x0c,
+    0x12,
+    0x0e,
+    0x14,
+    0x1a,
+    0x1e,
+    0x1b,
+    0x1f,
+    0x26,
+    0x2c,
+    0x27,
+    0x2d,
+    0x34,
+    0x3a,
+    0x03,
+    0x09,
+    0x04,
+    0x0a,
 };
 // GLOBAL: SHANDALAR 0x005907a8
 int g_dungeon_marker_sprite_lookup[24] = {
-    0x2a, 0x30, 0x3f, 0x43, 0x36, 0x3c, 0x35, 0x3b,
-    0x32, 0x38, 0x33, 0x39, 0x4e, 0x54, 0x50, 0x56,
-    0x4f, 0x55, 0x37, 0x3d, 0x4d, 0x53, 0x4c, 0x52,
+    0x2a,
+    0x30,
+    0x3f,
+    0x43,
+    0x36,
+    0x3c,
+    0x35,
+    0x3b,
+    0x32,
+    0x38,
+    0x33,
+    0x39,
+    0x4e,
+    0x54,
+    0x50,
+    0x56,
+    0x4f,
+    0x55,
+    0x37,
+    0x3d,
+    0x4d,
+    0x53,
+    0x4c,
+    0x52,
 };
 // GLOBAL: SHANDALAR 0x005907a0
 int g_world_ui_cached_next_duel_life_delta = 0;
@@ -35,10 +88,70 @@ int g_world_ui_cached_next_duel_card_id = -1;
 int g_current_quest_giver_town_index = -1;
 // GLOBAL: SHANDALAR 0x00590808
 unsigned char g_castle_sprite_lookup_by_tile_class[0x40] = {
-    0x08, 0x09, 0x0a, 0x0b, 0x02, 0x06, 0x03, 0x07, 0x0c, 0x10, 0x0d, 0x11, 0x0e, 0x12, 0x0f, 0x13,
-    0x00, 0x04, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x08, 0x09, 0x0a, 0x0b, 0x02, 0x06, 0x03, 0x07,
-    0x0c, 0x10, 0x0d, 0x11, 0x0e, 0x12, 0x0f, 0x13, 0x00, 0x04, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00,
-    0xd2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf4, 0x00, 0x00, 0x00, 0xce, 0x00, 0x00, 0x00,
+    0x08,
+    0x09,
+    0x0a,
+    0x0b,
+    0x02,
+    0x06,
+    0x03,
+    0x07,
+    0x0c,
+    0x10,
+    0x0d,
+    0x11,
+    0x0e,
+    0x12,
+    0x0f,
+    0x13,
+    0x00,
+    0x04,
+    0x01,
+    0x05,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x08,
+    0x09,
+    0x0a,
+    0x0b,
+    0x02,
+    0x06,
+    0x03,
+    0x07,
+    0x0c,
+    0x10,
+    0x0d,
+    0x11,
+    0x0e,
+    0x12,
+    0x0f,
+    0x13,
+    0x00,
+    0x04,
+    0x01,
+    0x05,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0xd2,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0xf4,
+    0x00,
+    0x00,
+    0x00,
+    0xce,
+    0x00,
+    0x00,
+    0x00,
 };
 // GLOBAL: SHANDALAR 0x00652740
 char g_world_ui_text_scratch_buffer[0x1000];
@@ -217,7 +330,7 @@ unsigned int FUN_005611c8(unsigned int tile_mask);
 unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y);
 void QueueWorldSpriteForDraw(FacemakerWindowBounds *window, int draw_x, int draw_y, int depth_y, EncodedImage *sprite);
 void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_start, int tile_x_end, int tile_y_start, int tile_y_end,
-                  int edge_mode, int draw_mode);
+                        int edge_mode, int draw_mode);
 void ScreenToWorldPoint(int screen_x, int screen_y, int *out_world_x, int *out_world_y);
 int FUN_004318c7(int x, int y);
 int FUN_00508b89(int world_x, int world_y);
@@ -768,7 +881,7 @@ void UpdateWorldViewportBuffer(int world_x, int world_y)
 
 // FUNCTION: SHANDALAR 0x0054d619
 void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_start, int tile_x_end, int tile_y_start, int tile_y_end,
-                  int edge_mode, int draw_mode)
+                        int edge_mode, int draw_mode)
 {
   struct
   {
@@ -1075,10 +1188,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             if (draw_mode != 0)
             {
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x + s.terrain_offset_x,
-                           (s.tile_screen_y - s.terrain_height) - s.terrain_offset_y,
-                           s.tile_screen_y - s.terrain_offset_y,
-                           g_land_sprite_entries[s.second_terrain_index]);
+                                      s.tile_screen_x + s.terrain_offset_x,
+                                      (s.tile_screen_y - s.terrain_height) - s.terrain_offset_y,
+                                      s.tile_screen_y - s.terrain_offset_y,
+                                      g_land_sprite_entries[s.second_terrain_index]);
             }
             if (edge_mode != 0)
             {
@@ -1099,10 +1212,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             if (draw_mode != 0)
             {
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x - s.terrain_offset_x,
-                           (s.tile_screen_y - s.terrain_height) + s.terrain_offset_y,
-                           s.tile_screen_y + s.terrain_offset_y,
-                           g_land_sprite_entries[s.second_terrain_index]);
+                                      s.tile_screen_x - s.terrain_offset_x,
+                                      (s.tile_screen_y - s.terrain_height) + s.terrain_offset_y,
+                                      s.tile_screen_y + s.terrain_offset_y,
+                                      g_land_sprite_entries[s.second_terrain_index]);
             }
             if (edge_mode != 0)
             {
@@ -1127,10 +1240,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             if (draw_mode != 0)
             {
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x,
-                           (s.tile_screen_y - (int)s.marker_sprite->height) + g_world_camera_minimap_panel_y,
-                           s.tile_screen_y,
-                           g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.dungeon_marker_offset]]);
+                                      s.tile_screen_x,
+                                      (s.tile_screen_y - (int)s.marker_sprite->height) + g_world_camera_minimap_panel_y,
+                                      s.tile_screen_y,
+                                      g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.dungeon_marker_offset]]);
             }
             if (edge_mode != 0)
             {
@@ -1154,10 +1267,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             {
               s.marker_sprite = g_castles_sprite_entries[(unsigned char)g_castle_sprite_lookup_by_tile_class[s.mana_castle_index * 4]];
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x,
-                           s.tile_screen_y - ScaleUiCoordinate(0xa0),
-                           s.tile_screen_y,
-                           s.marker_sprite);
+                                      s.tile_screen_x,
+                                      s.tile_screen_y - ScaleUiCoordinate(0xa0),
+                                      s.tile_screen_y,
+                                      s.marker_sprite);
             }
             if (edge_mode != 0)
             {
@@ -1175,10 +1288,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             {
               s.marker_sprite = g_castles_sprite_entries[(unsigned char)g_castle_sprite_lookup_by_tile_class[s.mana_castle_index * 4 + 0x1a]];
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x,
-                           s.tile_screen_y - ScaleUiCoordinate(0xa0),
-                           s.tile_screen_y,
-                           s.marker_sprite);
+                                      s.tile_screen_x,
+                                      s.tile_screen_y - ScaleUiCoordinate(0xa0),
+                                      s.tile_screen_y,
+                                      s.marker_sprite);
             }
             if (edge_mode != 0)
             {
@@ -1205,10 +1318,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             if (draw_mode != 0)
             {
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x,
-                           ScaleUiCoordinate(0x18) + (s.tile_screen_y - s.marker_sprite_height),
-                           s.tile_screen_y,
-                           s.marker_sprite);
+                                      s.tile_screen_x,
+                                      ScaleUiCoordinate(0x18) + (s.tile_screen_y - s.marker_sprite_height),
+                                      s.tile_screen_y,
+                                      s.marker_sprite);
             }
             if (edge_mode != 0)
             {
@@ -1226,10 +1339,10 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
             {
               s.marker_sprite = ((EncodedImage **)&DAT_00748f10)[s.wizard_index];
               QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                           s.tile_screen_x,
-                           s.tile_screen_y - ScaleUiCoordinate(0xa6),
-                           s.tile_screen_y,
-                           s.marker_sprite);
+                                      s.tile_screen_x,
+                                      s.tile_screen_y - ScaleUiCoordinate(0xa6),
+                                      s.tile_screen_y,
+                                      s.marker_sprite);
             }
             if (edge_mode != 0)
             {
@@ -1289,9 +1402,9 @@ int FUN_0054baaa(int force_redraw)
   saved_page_number = PTR_DAT_005832dc->page_number;
   PTR_DAT_005832dc->page_number = 1;
   day_sprite_index = (((g_current_quest_deadline - g_quest_restock_timer) +
-                      (((g_current_quest_deadline - g_quest_restock_timer) >> 0x1f) & 0xfU)) >>
-                     4) +
-                    1;
+                       (((g_current_quest_deadline - g_quest_restock_timer) >> 0x1f) & 0xfU)) >>
+                      4) +
+                     1;
 
   if (force_redraw != 0)
   {
@@ -1313,52 +1426,52 @@ int FUN_0054baaa(int force_redraw)
                          (DWORD)PTR_DAT_0058332c->max_y,
                          PTR_DAT_005832dc, scaled_strip_x, scaled_strip_y);
 
-    DrawEncodedImageResampled(PTR_DAT_005832dc,
-                              ScaleUiCoordinate(0x181),
-                              0,
-                              ScaleUiCoordinate((int)questnew_sprite_entry->width),
-                              ScaleUiCoordinate((int)questnew_sprite_entry->height),
-                              questnew_sprite_entry);
+        DrawEncodedImageResampled(PTR_DAT_005832dc,
+                                  ScaleUiCoordinate(0x181),
+                                  0,
+                                  ScaleUiCoordinate((int)questnew_sprite_entry->width),
+                                  ScaleUiCoordinate((int)questnew_sprite_entry->height),
+                                  questnew_sprite_entry);
 
-    if (g_current_quest_destination != -1)
-    {
-      DrawEncodedImageResampled(PTR_DAT_005832dc,
-                                ScaleUiCoordinate(0x23a),
-                                ScaleUiCoordinate(0x15),
-                                ScaleUiCoordinate((int)clocknew_sprite_entry->width),
-                                ScaleUiCoordinate((int)clocknew_sprite_entry->height),
-                                g_clocknew_sprite_entries[g_monster_timer & 7]);
+        if (g_current_quest_destination != -1)
+        {
+          DrawEncodedImageResampled(PTR_DAT_005832dc,
+                                    ScaleUiCoordinate(0x23a),
+                                    ScaleUiCoordinate(0x15),
+                                    ScaleUiCoordinate((int)clocknew_sprite_entry->width),
+                                    ScaleUiCoordinate((int)clocknew_sprite_entry->height),
+                                    g_clocknew_sprite_entries[g_monster_timer & 7]);
 
-      DrawEncodedImageResampled(PTR_DAT_005832dc,
-                                ScaleUiCoordinate(0x23a),
-                                ScaleUiCoordinate(0x15),
-                                ScaleUiCoordinate((int)clocknew_sprite_entry->width),
-                                ScaleUiCoordinate((int)clocknew_sprite_entry->height),
-                                g_sunmoon_sprite_entries[(g_current_quest_deadline - g_quest_restock_timer) % 0xe]);
+          DrawEncodedImageResampled(PTR_DAT_005832dc,
+                                    ScaleUiCoordinate(0x23a),
+                                    ScaleUiCoordinate(0x15),
+                                    ScaleUiCoordinate((int)clocknew_sprite_entry->width),
+                                    ScaleUiCoordinate((int)clocknew_sprite_entry->height),
+                                    g_sunmoon_sprite_entries[(g_current_quest_deadline - g_quest_restock_timer) % 0xe]);
 
-      DrawEncodedImageResampled(PTR_DAT_005832dc,
-                                ScaleUiCoordinate(0x23a),
-                                ScaleUiCoordinate(0x15),
-                                ScaleUiCoordinate((int)clocknew_sprite_entry->width),
-                                ScaleUiCoordinate((int)clocknew_sprite_entry->height),
-                                g_daysnew_sprite_entries[day_sprite_index]);
-    }
-  }
+          DrawEncodedImageResampled(PTR_DAT_005832dc,
+                                    ScaleUiCoordinate(0x23a),
+                                    ScaleUiCoordinate(0x15),
+                                    ScaleUiCoordinate((int)clocknew_sprite_entry->width),
+                                    ScaleUiCoordinate((int)clocknew_sprite_entry->height),
+                                    g_daysnew_sprite_entries[day_sprite_index]);
+        }
+      }
 
       PTR_DAT_005832dc->font_slot = 4;
       if (g_world_magic_avatar_sprites[0] != (EncodedImage *)0)
       {
-    avatar_draw_y = 0x5b - (int)g_world_magic_avatar_sprites[0]->height / 2;
-    DrawEncodedImageUiScaled(PTR_DAT_005832dc,
-                             0x193,
-                             avatar_draw_y,
-                             g_world_magic_avatar_sprites[0],
-                             (int)g_world_magic_avatar_sprites[0]->width,
-                             (int)g_world_magic_avatar_sprites[0]->height);
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(
-        PTR_DAT_005832dc, g_world_ui_stats_color_index, 0x1a9, avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
-        g_amulet_inventory[4]);
-  }
+        avatar_draw_y = 0x5b - (int)g_world_magic_avatar_sprites[0]->height / 2;
+        DrawEncodedImageUiScaled(PTR_DAT_005832dc,
+                                 0x193,
+                                 avatar_draw_y,
+                                 g_world_magic_avatar_sprites[0],
+                                 (int)g_world_magic_avatar_sprites[0]->width,
+                                 (int)g_world_magic_avatar_sprites[0]->height);
+        ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(
+            PTR_DAT_005832dc, g_world_ui_stats_color_index, 0x1a9, avatar_draw_y + (int)g_world_magic_avatar_sprites[0]->height / 2, "%d",
+            g_amulet_inventory[4]);
+      }
 
       PTR_DAT_005832dc->font_slot = 2;
       strcpy(g_ui_message_buffer, "");
@@ -1368,154 +1481,154 @@ int FUN_0054baaa(int force_redraw)
       }
       else
       {
-    siege_town_index = FindNearestTownIndex((int)(g_lair_or_monster_slots[7].world_x + ((g_lair_or_monster_slots[7].world_x >> 0x1f) & 0x1fU)) >> 5,
-                                    (int)(g_lair_or_monster_slots[7].world_y + ((g_lair_or_monster_slots[7].world_y >> 0x1f) & 0x1fU)) >> 5);
-    BuildTownDisplayName(siege_town_index);
-    FUN_00561441(g_lair_or_monster_slots[7].entry_type);
-    FUN_00564e70(g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0]);
-  }
+        siege_town_index = FindNearestTownIndex((int)(g_lair_or_monster_slots[7].world_x + ((g_lair_or_monster_slots[7].world_x >> 0x1f) & 0x1fU)) >> 5,
+                                                (int)(g_lair_or_monster_slots[7].world_y + ((g_lair_or_monster_slots[7].world_y >> 0x1f) & 0x1fU)) >> 5);
+        BuildTownDisplayName(siege_town_index);
+        FUN_00561441(g_lair_or_monster_slots[7].entry_type);
+        FUN_00564e70(g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0]);
+      }
 
       if ((g_next_duel_life_delta != 0) || (g_next_duel_card_id != -1))
       {
-    strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[1]);
-    if (g_next_duel_life_delta != 0)
-    {
-      text_tail_length = strlen(g_ui_message_buffer);
-      if (g_next_duel_life_delta < 0)
-      {
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[3], abs(g_next_duel_life_delta));
-      }
-      else
-      {
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[2], g_next_duel_life_delta);
-      }
-      DrawEncodedImageResampled(PTR_DAT_005832b4,
-                                ScaleUiCoordinate(0x254),
-                                ScaleUiCoordinate(200),
-                                ScaleUiCoordinate(0x1c),
-                                ScaleUiCoordinate(0x25),
-                                g_worlds_extra_sprite_entries[3]);
-    }
+        strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[1]);
+        if (g_next_duel_life_delta != 0)
+        {
+          text_tail_length = strlen(g_ui_message_buffer);
+          if (g_next_duel_life_delta < 0)
+          {
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[3], abs(g_next_duel_life_delta));
+          }
+          else
+          {
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[2], g_next_duel_life_delta);
+          }
+          DrawEncodedImageResampled(PTR_DAT_005832b4,
+                                    ScaleUiCoordinate(0x254),
+                                    ScaleUiCoordinate(200),
+                                    ScaleUiCoordinate(0x1c),
+                                    ScaleUiCoordinate(0x25),
+                                    g_worlds_extra_sprite_entries[3]);
+        }
 
-    if (g_next_duel_card_id == 0)
-    {
-      strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[4]);
-      DrawEncodedImageResampled(PTR_DAT_005832b4,
-                                ScaleUiCoordinate(0x254),
-                                ScaleUiCoordinate(200),
-                                ScaleUiCoordinate(0x1c),
-                                ScaleUiCoordinate(0x25),
-                                g_worlds_extra_sprite_entries[1]);
-    }
-    else if (g_next_duel_card_id > 5)
-    {
-      strcat(g_ui_message_buffer, global_cards_data[g_next_duel_card_id].name);
-      strcat(g_ui_message_buffer, "%s");
-      DrawEncodedImageResampled(PTR_DAT_005832b4,
-                                ScaleUiCoordinate(0x254),
-                                ScaleUiCoordinate(0x90),
-                                ScaleUiCoordinate(0x1c),
-                                ScaleUiCoordinate(0x25),
-                                g_worlds_extra_sprite_entries[0]);
-    }
-    else if (g_next_duel_card_id > 0)
-    {
-      text_tail_length = strlen(g_ui_message_buffer);
-      sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[2], g_next_duel_card_id);
-      DrawEncodedImageResampled(PTR_DAT_005832b4,
-                                ScaleUiCoordinate(0x254),
-                                ScaleUiCoordinate(200),
-                                ScaleUiCoordinate(0x1c),
-                                ScaleUiCoordinate(0x25),
-                                g_worlds_extra_sprite_entries[2]);
-    }
-    strcat(g_ui_message_buffer, "%d");
-  }
+        if (g_next_duel_card_id == 0)
+        {
+          strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[4]);
+          DrawEncodedImageResampled(PTR_DAT_005832b4,
+                                    ScaleUiCoordinate(0x254),
+                                    ScaleUiCoordinate(200),
+                                    ScaleUiCoordinate(0x1c),
+                                    ScaleUiCoordinate(0x25),
+                                    g_worlds_extra_sprite_entries[1]);
+        }
+        else if (g_next_duel_card_id > 5)
+        {
+          strcat(g_ui_message_buffer, global_cards_data[g_next_duel_card_id].name);
+          strcat(g_ui_message_buffer, "%s");
+          DrawEncodedImageResampled(PTR_DAT_005832b4,
+                                    ScaleUiCoordinate(0x254),
+                                    ScaleUiCoordinate(0x90),
+                                    ScaleUiCoordinate(0x1c),
+                                    ScaleUiCoordinate(0x25),
+                                    g_worlds_extra_sprite_entries[0]);
+        }
+        else if (g_next_duel_card_id > 0)
+        {
+          text_tail_length = strlen(g_ui_message_buffer);
+          sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[2], g_next_duel_card_id);
+          DrawEncodedImageResampled(PTR_DAT_005832b4,
+                                    ScaleUiCoordinate(0x254),
+                                    ScaleUiCoordinate(200),
+                                    ScaleUiCoordinate(0x1c),
+                                    ScaleUiCoordinate(0x25),
+                                    g_worlds_extra_sprite_entries[2]);
+        }
+        strcat(g_ui_message_buffer, "%d");
+      }
 
       text_tail_length = 0;
       if (g_current_quest_destination != -1)
       {
-    if (g_current_quest_type == 0)
-    {
-      strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[10]);
-    }
-    else
-    {
-      if (g_town_slots[g_current_quest_destination].location_type == 1)
-      {
-        strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[g_current_quest_color + 4]);
-      }
-      else
-      {
-        strcat(g_ui_message_buffer, FUN_004f2e17(g_current_quest_destination));
-      }
-      strcat(g_ui_message_buffer, "%d/%d");
-    }
-
-    if ((((g_current_quest_type != 0) && (g_current_quest_type != 2)) &&
-         ((g_current_quest_type != 1) ||
-          (FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
-                        (unsigned char)(1 << ((unsigned char)g_current_quest_destination & 3))) == 0))) &&
-        (-0x65 < g_current_quest_type))
-    {
-      if (g_current_quest_type == 1)
-      {
-        GetQuestCardClassName(1 << ((unsigned char)g_current_quest_destination & 3));
-        FUN_00564e70(g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0x12]);
-      }
-      if (g_current_quest_type < 0)
-      {
-        text_tail_length = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0x18], BuildCreatureNameWithArticle(-g_current_quest_type));
-      }
-      text_tail_length = 1;
-    }
-
-    if (text_tail_length == 0)
-    {
-      text_tail_length = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
-                                      g_town_slots[g_current_quest_destination].world_y);
-      if (g_current_quest_data != text_tail_length)
-      {
-        g_current_quest_data = -1;
-      }
-
-      switch (g_current_quest_data)
-      {
-      case 0:
-        text_tail_length = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xe], BuildTownDisplayName(g_current_quest_destination));
-        break;
-      case 1:
-        text_tail_length = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xf], BuildTownDisplayName(g_current_quest_destination));
-        break;
-      case 2:
-        text_tail_length = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0x10], BuildTownDisplayName(g_current_quest_destination));
-        break;
-      case 3:
-        text_tail_length = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0x11], BuildTownDisplayName(g_current_quest_destination));
-        break;
-      default:
-        text_tail_length = strlen(g_ui_message_buffer);
-        if (g_current_quest_type < 0)
+        if (g_current_quest_type == 0)
         {
-          sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xb], BuildTownDisplayName(g_current_quest_destination));
-        }
-        else if ((g_current_quest_type == 0) || (g_current_quest_type == 2))
-        {
-          sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xc], BuildTownDisplayName(g_current_quest_destination));
+          strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[10]);
         }
         else
         {
-          sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xd], BuildTownDisplayName(g_current_quest_destination));
+          if (g_town_slots[g_current_quest_destination].location_type == 1)
+          {
+            strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[g_current_quest_color + 4]);
+          }
+          else
+          {
+            strcat(g_ui_message_buffer, FUN_004f2e17(g_current_quest_destination));
+          }
+          strcat(g_ui_message_buffer, "%d/%d");
         }
-        break;
+
+        if ((((g_current_quest_type != 0) && (g_current_quest_type != 2)) &&
+             ((g_current_quest_type != 1) ||
+              (FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
+                                                (unsigned char)(1 << ((unsigned char)g_current_quest_destination & 3))) == 0))) &&
+            (-0x65 < g_current_quest_type))
+        {
+          if (g_current_quest_type == 1)
+          {
+            GetQuestCardClassName(1 << ((unsigned char)g_current_quest_destination & 3));
+            FUN_00564e70(g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0x12]);
+          }
+          if (g_current_quest_type < 0)
+          {
+            text_tail_length = strlen(g_ui_message_buffer);
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0x18], BuildCreatureNameWithArticle(-g_current_quest_type));
+          }
+          text_tail_length = 1;
+        }
+
+        if (text_tail_length == 0)
+        {
+          text_tail_length = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
+                                                      g_town_slots[g_current_quest_destination].world_y);
+          if (g_current_quest_data != text_tail_length)
+          {
+            g_current_quest_data = -1;
+          }
+
+          switch (g_current_quest_data)
+          {
+          case 0:
+            text_tail_length = strlen(g_ui_message_buffer);
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xe], BuildTownDisplayName(g_current_quest_destination));
+            break;
+          case 1:
+            text_tail_length = strlen(g_ui_message_buffer);
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xf], BuildTownDisplayName(g_current_quest_destination));
+            break;
+          case 2:
+            text_tail_length = strlen(g_ui_message_buffer);
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0x10], BuildTownDisplayName(g_current_quest_destination));
+            break;
+          case 3:
+            text_tail_length = strlen(g_ui_message_buffer);
+            sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0x11], BuildTownDisplayName(g_current_quest_destination));
+            break;
+          default:
+            text_tail_length = strlen(g_ui_message_buffer);
+            if (g_current_quest_type < 0)
+            {
+              sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xb], BuildTownDisplayName(g_current_quest_destination));
+            }
+            else if ((g_current_quest_type == 0) || (g_current_quest_type == 2))
+            {
+              sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xc], BuildTownDisplayName(g_current_quest_destination));
+            }
+            else
+            {
+              sprintf(g_ui_message_buffer + text_tail_length, gs_queststatus_0077e0a0[0xd], BuildTownDisplayName(g_current_quest_destination));
+            }
+            break;
+          }
+        }
       }
-    }
-  }
       DrawTextAt(PTR_DAT_005832dc, 0xff, 0x200, 0x41, g_ui_message_buffer);
 
       scaled_strip_x = ScaleUiCoordinate(0x17c);
@@ -2085,10 +2198,10 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
                        FUN_005501dc(0x100), FUN_005501dc(0x8c));
 
   QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-               (s.player_screen_x - g_ego_sprite_width / 2) + g_world_scroll_x,
-               (s.player_screen_y - g_ego_sprite_draw_height) + g_world_scroll_y,
-               s.player_screen_y + g_world_scroll_y,
-               *(EncodedImage **)(g_opening_menu_sprite_work_buffer + DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14 + 0xb40));
+                          (s.player_screen_x - g_ego_sprite_width / 2) + g_world_scroll_x,
+                          (s.player_screen_y - g_ego_sprite_draw_height) + g_world_scroll_y,
+                          s.player_screen_y + g_world_scroll_y,
+                          *(EncodedImage **)(g_opening_menu_sprite_work_buffer + DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14 + 0xb40));
 
   DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
                                   s.player_screen_x - g_sego_sprite_width / 2,
@@ -2132,10 +2245,10 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       s.lair_sprite_index = (int)g_lair_sprite_index_by_color[g_lair_or_monster_slots[s.slot_index].color];
       s.sprite = g_location07_sprite_entries[s.lair_sprite_index];
       QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                   s.player_screen_x - FUN_005501dc(0x20),
-                   s.player_screen_y - FUN_005501dc(0x30),
-                   s.player_screen_y,
-                   s.sprite);
+                              s.player_screen_x - FUN_005501dc(0x20),
+                              s.player_screen_y - FUN_005501dc(0x30),
+                              s.player_screen_y,
+                              s.sprite);
 
       s.sprite = g_location07_sprite_entries[s.lair_sprite_index + 6];
       DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
@@ -2158,10 +2271,10 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       s.heading_sprite_width = (int)g_icons_sprite_entries[s.heading_sprite_index + 0x18];
       s.heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[s.heading_sprite_index + 8];
       QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                   s.player_screen_x - s.heading_sprite_width / 2,
-                   s.player_screen_y - s.heading_sprite_height,
-                   s.player_screen_y,
-                   s.sprite);
+                              s.player_screen_x - s.heading_sprite_width / 2,
+                              s.player_screen_y - s.heading_sprite_height,
+                              s.player_screen_y,
+                              s.sprite);
 
       s.sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + (s.heading_sprite_index + 8) * 0xb4 + s.sprite_offset);
       s.heading_sprite_width = (int)g_icons_sprite_entries[s.heading_sprite_index + 0x20];
@@ -2252,19 +2365,19 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     if (global_screen_width != 0x400)
     {
       BlitRectByRandomTileOrder(((DIBSurface *)s.scaled_0x20)->hTempDC,
-                   FUN_005501dc(0x20) & 0xfffffffc, FUN_005501dc(0x18),
-                   FUN_005501dc(0x100), FUN_005501dc(0x8c), 6, 6,
-                   ((DIBSurface *)s.scaled_0x8c)->hTempDC,
-                   0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
+                                FUN_005501dc(0x20) & 0xfffffffc, FUN_005501dc(0x18),
+                                FUN_005501dc(0x100), FUN_005501dc(0x8c), 6, 6,
+                                ((DIBSurface *)s.scaled_0x8c)->hTempDC,
+                                0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
       FUN_004ce992(0x2d);
     }
     else
     {
       BlitRectByRandomTileOrder(((DIBSurface *)s.scaled_0x20)->hTempDC,
-                   (FUN_005501dc(0x20) + 4U) & 0xfffffffc, FUN_005501dc(0x18),
-                   FUN_005501dc(0x100) - 2, FUN_005501dc(0x8c), 8, 8,
-                   ((DIBSurface *)s.scaled_0x8c)->hTempDC,
-                   0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
+                                (FUN_005501dc(0x20) + 4U) & 0xfffffffc, FUN_005501dc(0x18),
+                                FUN_005501dc(0x100) - 2, FUN_005501dc(0x8c), 8, 8,
+                                ((DIBSurface *)s.scaled_0x8c)->hTempDC,
+                                0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
       FUN_004ce992(0x2d);
     }
     g_world_scene_reveal_effect_pending = 0;
@@ -2282,6 +2395,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     FUN_0046ed03();
     FUN_0054baaa(0);
     FUN_0054b80d();
+    return;
   }
   else
   {
@@ -2290,7 +2404,3 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     FUN_0046ed03();
   }
 }
-
-
-
-

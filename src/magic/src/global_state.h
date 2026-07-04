@@ -1001,9 +1001,27 @@ GLOBAL_STATE_EXTERN int _currentDeck;
 // GLOBAL: SHANDALAR 0x005863a4
 GLOBAL_STATE_EXTERN int Gold;
 
+#ifdef GLOBAL_STATE_IMPL
+GLOBAL_STATE_EXTERN shandalar_worldmagic_t Scards[12] = {
+  { 0x01af, 800, 0, 0 },
+  { 0x0072, 1000, 0, 0 },
+  { 0x003e, 700, 0, 0 },
+  { 0x0018, 200, 0, 0 },
+  { 0x0085, 800, 0, 0 },
+  { 0x0019, 1500, 0, 0 },
+  { 0x0079, 400, 0, 0 },
+  { 0x011d, 500, 0, 0 },
+  { 0x0091, 600, 0, 0 },
+  { 0x001a, 300, 0, 0 },
+  { 0x00cd, 600, 0, 0 },
+  { 0x001c, 1200, 0, 0 },
+};
+#else
+
 // GLOBAL: MAGIC 0x0057d9f8
 // GLOBAL: SHANDALAR 0x005863c0
-GLOBAL_STATE_EXTERN unsigned char Scards[0xc0];
+GLOBAL_STATE_EXTERN shandalar_worldmagic_t Scards[12];
+#endif
 
 #undef GLOBAL_STATE_EXTERN
 

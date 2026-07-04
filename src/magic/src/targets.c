@@ -321,7 +321,7 @@ int FUN_004466b5(int who_chooses,
 
     if (DAT_007aaeec == 0 || current_phase != 10 || *(int *)&unk_009266d0[0x7c] != 0)
     {
-      result = SendMessageA(unk_008cf1b4, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
+      result = SendMessageA(g_main_window_hwnd, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
       target_player = out_target_player[0];
       target_card = out_target_player[1];
     }
@@ -448,7 +448,7 @@ int FUN_004466b5(int who_chooses,
     return result;
   }
 
-  PostMessageA(unk_008cf1b4, 0x401, thread_exit_code, 0);
+  PostMessageA(g_main_window_hwnd, 0x401, thread_exit_code, 0);
   ExitThread((DWORD)thread_exit_code);
   return 0;
 }

@@ -39,7 +39,7 @@ typedef struct
   char article[0x0a];
   sh_text_0x32_t name;
   sh_text_0x32_t plural;
-  unsigned char metadata[0x1e];
+  char metadata[0x1e];
 } sh_creature_name_entry_t;
 typedef char sh_creature_name_entry_size_must_be_0x8c[(sizeof(sh_creature_name_entry_t) == 0x8c) ? 1 : -1];
 

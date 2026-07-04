@@ -2202,7 +2202,7 @@ void FUN_00495fa1(void)
 
   s.count = 8;
   s.changed = 0;
-  s.wnd = (HWND)unk_008cf1b4;
+  s.wnd = (HWND)g_main_window_hwnd;
   s.best_index = -1;
 
   while (s.wnd != (HWND)0)

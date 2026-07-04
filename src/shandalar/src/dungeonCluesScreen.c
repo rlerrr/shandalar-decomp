@@ -73,7 +73,7 @@ extern char DAT_0058cabc[];
 extern char s_x_sound_button2_wav_0058cae4[];
 extern char s_x_sound_button2_wav_0058caf8[];
 
-void __cdecl FUN_0050caa0(int dungeon_index);
+void FUN_0050caa0(int dungeon_index);
 
 /* External functions */
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
@@ -124,9 +124,9 @@ void ClearInputAndWaitForMouseRelease(void);
 void AnimatePaletteToColor(int mode, int color_index);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void __cdecl DrawFormattedTextNoShadow(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
-void __cdecl GetEncodedImageSpanXExtents(EncodedImage *image, unsigned int *out_min_x, int *out_max_x);
-int __cdecl DrawEncodedImageResampledFitBoxCentered(FacemakerWindowBounds *dst, int x, int y, int box_w, int box_h,
+void DrawFormattedTextNoShadow(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
+void GetEncodedImageSpanXExtents(EncodedImage *image, unsigned int *out_min_x, int *out_max_x);
+int DrawEncodedImageResampledFitBoxCentered(FacemakerWindowBounds *dst, int x, int y, int box_w, int box_h,
                                                     EncodedImage *image);
 
 /* Card rendering (drawcardlib) */
@@ -143,7 +143,7 @@ void FUN_0054cee2(int world_x, int world_y);
 
 unsigned int MarkPathConnection(int world_x, int world_y, int unused);
 char *FUN_00550220(int town_index);
-DWORD __cdecl FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
+DWORD FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
 
 /*
  * These two helpers are used as enable/disable visuals for arrow buttons.
@@ -157,7 +157,7 @@ int RenderAdvMenuControlNormally(AdvMenuControl *control);
  */
 
 // FUNCTION: SHANDALAR 0x00508bf3
-int __cdecl FUN_00508bf3(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
+int FUN_00508bf3(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
 {
   if ((rect_x < x) && (x < rect_x + rect_w) && (rect_y < y) && (y < rect_y + rect_h))
   {
@@ -257,14 +257,25 @@ int FUN_0050a56d(void)
 }
 
 // FUNCTION: SHANDALAR 0x00508f45
-int __cdecl FUN_00508f45(AdvMenuControl *control, int mode)
+int FUN_00508f45(AdvMenuControl *control, int mode)
 {
   int hovered;
 
   if (g_menu_render_guard == 0)
   {
-    hovered = (control->x <= g_mouse_x) && (g_mouse_x <= control->x + control->width) && (control->y <= g_mouse_y) &&
-              (g_mouse_y <= control->y + control->height);
+    if ((control->x > g_mouse_x) || (g_mouse_x > control->x + control->width))
+    {
+      hovered = 0;
+    }
+    else if ((control->y > g_mouse_y) || (g_mouse_y > control->y + control->height))
+    {
+      hovered = 0;
+    }
+    else
+    {
+      hovered = 1;
+    }
+
     if (!hovered)
     {
       return 0;
@@ -288,7 +299,7 @@ int __cdecl FUN_00508f45(AdvMenuControl *control, int mode)
 }
 
 // FUNCTION: SHANDALAR 0x00509064
-int __cdecl FUN_00509064(AdvMenuControl *control)
+int FUN_00509064(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058caf8, 0xf, 100, 100, 0);
   DAT_00603a34 = control->selection_value;
@@ -296,7 +307,7 @@ int __cdecl FUN_00509064(AdvMenuControl *control)
 }
 
 // FUNCTION: SHANDALAR 0x005089cb
-int __cdecl FUN_005089cb(AdvMenuControl *control, int mode)
+int FUN_005089cb(AdvMenuControl *control, int mode)
 {
   int hovered;
 
@@ -333,7 +344,7 @@ int __cdecl FUN_005089cb(AdvMenuControl *control, int mode)
 }
 
 // FUNCTION: SHANDALAR 0x00508b57
-int __cdecl FUN_00508b57(AdvMenuControl *control)
+int FUN_00508b57(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cae4, 0xf, 100, 100, 0);
   DAT_00603a34 = control->selection_value;
@@ -341,7 +352,7 @@ int __cdecl FUN_00508b57(AdvMenuControl *control)
 }
 
 // FUNCTION: SHANDALAR 0x004f2407
-void __cdecl FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_label)
+void FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_label)
 {
   int x_scaled;
   int y_scaled;
@@ -397,7 +408,7 @@ void __cdecl FUN_004f2407(int card_index, int x, int y, int full_card, char *ban
 }
 
 // FUNCTION: SHANDALAR 0x004f263b
-void __cdecl FUN_004f263b(int card_index, int x, int y, int width, int height, int full_card, char *banner_label)
+void FUN_004f263b(int card_index, int x, int y, int width, int height, int full_card, char *banner_label)
 {
   int x_scaled;
   int y_scaled;
@@ -541,7 +552,7 @@ char DAT_0058ccfc[] = "";
  */
 
 // FUNCTION: SHANDALAR 0x0050c973
-int __cdecl FUN_0050c973(int y, int color_index)
+int FUN_0050c973(int y, int color_index)
 {
   int x;
   int line_height;
@@ -554,7 +565,7 @@ int __cdecl FUN_0050c973(int y, int color_index)
 }
 
 // FUNCTION: SHANDALAR 0x00509244
-void ShowDungeonCluesScreen(void)
+void ShowDungeonCluesScreen(int unused)
 {
   struct
   {
@@ -850,7 +861,7 @@ void ShowDungeonCluesScreen(void)
 }
 
 // FUNCTION: SHANDALAR 0x0050caa0
-void __cdecl FUN_0050caa0(int dungeon_index)
+void FUN_0050caa0(int dungeon_index)
 {
   struct
   {

@@ -331,8 +331,8 @@ int register_MagicShellClass(LPCSTR class_name)
   wndclass.lpfnWndProc = FUN_005539c3;
   wndclass.cbClsExtra = 0;
   wndclass.cbWndExtra = 0x1e;
-  wndclass.hInstance = (HINSTANCE)global_hinstance;
-  wndclass.hIcon = LoadIconA((HINSTANCE)global_hinstance, (LPCSTR)0x66);
+  wndclass.hInstance = (HINSTANCE)g_app_instance;
+  wndclass.hIcon = LoadIconA((HINSTANCE)g_app_instance, (LPCSTR)0x66);
   wndclass.hCursor = LoadCursorA(NULL, (LPCSTR)IDC_ARROW);
   wndclass.hbrBackground = NULL;
   wndclass.lpszMenuName = NULL;
@@ -610,7 +610,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   s.fam_window = NULL;
   s.startup_ok = 1;
 
-  unk_008cf1b4 = 0;
+  g_main_window_hwnd = 0;
   DAT_0091c4f8 = 0;
   DAT_00895204 = DAT_0091c4f8;
   DAT_0091c0f0 = 0;
@@ -652,7 +652,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     rand();
   }
 
-  global_hinstance = hInstance;
+  g_app_instance = hInstance;
   s.startup_message[0] = '\0';
 
   InitializeCriticalSection(&DAT_00926910);
@@ -696,7 +696,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
                                        GetSystemMetrics(SM_CYSCREEN),
                                        NULL,
                                        NULL,
-                                       (HINSTANCE)global_hinstance,
+                                       (HINSTANCE)g_app_instance,
                                        NULL);
     if (global_main_hwnd == NULL)
     {

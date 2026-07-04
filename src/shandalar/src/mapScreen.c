@@ -45,8 +45,6 @@ extern int g_world_scroll_cache_ready;
 extern int g_neighbor_dx[9];
 extern int g_neighbor_dy[9];
 
-extern unsigned char Scards[0xc0];
-
 /* Debug toggle used by multiple screens */
 extern int DAT_007894f4;
 
@@ -805,7 +803,7 @@ void ShowWorldMapScreen(int mode)
 
               for (s.dir = 0; s.dir < 0xc; s.dir++)
               {
-                if ((s.town_index != 0) && (*(int *)(Scards + s.dir * 0x10 + 8) == s.town_index))
+                if ((s.town_index != 0) && (Scards[s.dir].worldmagic_city == s.town_index))
                 {
                   (void)FUN_004bb458(s.dir);
                   strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[s.dir]);

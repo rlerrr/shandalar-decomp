@@ -1846,42 +1846,6 @@ int FUN_004964dd(int card_id, int player, int card)
   return (player + card) % global_raw_cards_storage[card_id].num_pics;
 }
 
-// FUNCTION: MAGIC 0x0055b9f0
-void FUN_0055b9f0(int dc, int *rect, int value)
-{
-  struct
-  {
-    char text[12];
-    int text_x;
-    int text_y;
-    int saved_dc;
-  } s;
-  size_t text_len;
-
-  if (dc != 0 && rect != NULL)
-  {
-    s.saved_dc = SaveDC((HDC)dc);
-    SetMapMode((HDC)dc, 8);
-    SetWindowExtEx((HDC)dc, 100, 0x8c, NULL);
-    SetViewportExtEx((HDC)dc, rect[2] - rect[0], rect[3] - rect[1], NULL);
-    SetWindowOrgEx((HDC)dc, 0, 0, NULL);
-    SetViewportOrgEx((HDC)dc, rect[0], rect[1], NULL);
-    sprintf(s.text, "%d", value);
-    SelectObject((HDC)dc, (HGDIOBJ)global_smallcard_pt_font);
-    SetTextAlign((HDC)dc, 10);
-    SetBkMode((HDC)dc, 1);
-    s.text_x = 100;
-    s.text_y = 0x8c;
-    SetTextColor((HDC)dc, global_palette_col_c9);
-    text_len = strlen(s.text);
-    TextOutA((HDC)dc, s.text_x - 1, s.text_y - 1, s.text, text_len);
-    SetTextColor((HDC)dc, global_palette_col_9e_b);
-    text_len = strlen(s.text);
-    TextOutA((HDC)dc, s.text_x - 3, s.text_y - 3, s.text, text_len);
-    RestoreDC((HDC)dc, s.saved_dc);
-  }
-}
-
 // FUNCTION: MAGIC 0x0050047c
 int damage_creature(int target_player, int target_card, int amount, int source_player, int source_card)
 {
@@ -5407,7 +5371,7 @@ int FUN_0043ec38(int player, int card)
 // FUNCTION: MAGIC 0x00446c95
 void FUN_00446c95(void)
 {
-  SendMessageA((HWND)unk_008cf1b4, 0x464, 0xff, 0);
+  SendMessageA((HWND)g_main_window_hwnd, 0x464, 0xff, 0);
 }
 
 // FUNCTION: MAGIC 0x004a61a1
@@ -8711,7 +8675,7 @@ int choose_a_number(int player, char *prompt, int maxnum)
 // FUNCTION: MAGIC 0x004b4110
 void FUN_004b4110(int player)
 {
-  PostMessageA((void *)unk_008cf1b4, 0x401, (unsigned int)player, 0);
+  PostMessageA((void *)g_main_window_hwnd, 0x401, (unsigned int)player, 0);
   ExitThread((unsigned int)player);
 }
 
@@ -8736,7 +8700,7 @@ void FUN_004b6002(const char *param_1)
   {
     LoadTextSectionLines(global_ui_strings_filename, "PROMPT_SYSERR");
     sprintf(buf, text_lines[1], param_1);
-    MessageBoxA((HWND)unk_008cf1b4, buf, text_lines[0], 0);
+    MessageBoxA((HWND)g_main_window_hwnd, buf, text_lines[0], 0);
   }
 }
 
@@ -8818,7 +8782,7 @@ void TENTATIVE_reassess_all_cards(void)
       }
       else
       {
-        SendMessageA((HWND)unk_008cf1b4, 0x464, 0xffff, 0);
+        SendMessageA((HWND)g_main_window_hwnd, 0x464, 0xffff, 0);
       }
     }
   }

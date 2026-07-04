@@ -2,12 +2,15 @@
 #include <string.h>
 #include <windows.h>
 #include "cardartlib/src/palette.h"
+#include "deckdll/src/shared_resources.h"
 #include "drawcardlib/Drawcardlib.h"
 #include "game_support.h"
+#include "global_strings.h"
 
 typedef ptrdiff_t INT_PTR;
 
 // GLOBAL: MAGIC 0x00572920
+// GLOBAL: SHANDALAR 0x0058f448
 char s_ShowListCard_00572920[16] = "ShowListCard";
 // GLOBAL: MAGIC 0x0055e0c0
 int unk_0055e0c0;
@@ -18,12 +21,16 @@ int unk_0055e0c8;
 // GLOBAL: MAGIC 0x0055e0cc
 int unk_0055e0cc;
 // GLOBAL: MAGIC 0x00572930
-char unk_00572930[16];
+// GLOBAL: SHANDALAR 0x0058f438
+char unk_00572930[16] = "\0\0\0\0List Card";
 
 // GLOBAL: MAGIC 0x008a9190
-int DAT_008a9190;
+// GLOBAL: SHANDALAR 0x008bd390
+int g_showlist_smallcard_width;
+
 // GLOBAL: MAGIC 0x008cf1b0
-int DAT_008cf1b0;
+// GLOBAL: SHANDALAR 0x008e3300
+int g_showlist_smallcard_height;
 
 // GLOBAL: MAGIC 0x00638b34
 int DAT_00638b34;
@@ -54,11 +61,26 @@ extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern CRITICAL_SECTION DAT_009266b0;
 extern HDC DAT_00789310;
-extern int DAT_00896714;
-extern int DAT_0091c998;
+extern HINSTANCE g_app_instance;
+extern HWND g_main_window_hwnd;
+
 void FUN_0055b9f0(int dc, int *rect, int value);
 
+// TODO: cleanup this bucket of shit
+#ifdef SHANDALAR
+#define SHOWLIST_CARD_BACK_CSVID (*(int *)&gs_phasebar_your_main_postcombat_00926670[0x60])
+#define SHOWLIST_MOUSE_MODE (*(int *)&DAT_0091c970.pad_0000[0x28])
+#define SHOWLIST_HINT_WINDOW (*(HWND *)&gs_phasebar_choose_attackers_008966e0[0x34])
+#else
+extern int DAT_00896714;
+extern int DAT_0091c998;
+#define SHOWLIST_CARD_BACK_CSVID unk_009266ac
+#define SHOWLIST_MOUSE_MODE DAT_0091c998
+#define SHOWLIST_HINT_WINDOW ((HWND)DAT_00896714)
+#endif
+
 // FUNCTION: MAGIC 0x0049fd0c
+// FUNCTION: SHANDALAR 0x0053b6af
 void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
 {
   *brush1 = (int)CreateSolidBrush(0x10000c7);
@@ -85,6 +107,7 @@ void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int
 }
 
 // FUNCTION: MAGIC 0x0049fdf9
+// FUNCTION: SHANDALAR 0x0053b79c
 void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2)
 {
   if (brush1)
@@ -104,6 +127,7 @@ void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDI
 }
 
 // FUNCTION: MAGIC 0x0049ebde
+// FUNCTION: SHANDALAR 0x0053a586
 INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM lparam_data)
 {
   UINT command;
@@ -310,8 +334,8 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       FUN_0049fd0c(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
       SetWindowTextA(hwnd, (LPCSTR)*DAT_00638ba4);
       columns = DAT_00638ba4[0x5dd];
-      DAT_00638b80 = (DAT_008a9190 * 2) / 3;
-      DAT_00638c84 = (DAT_008cf1b0 * 2) / 3;
+      DAT_00638b80 = (g_showlist_smallcard_width * 2) / 3;
+      DAT_00638c84 = (g_showlist_smallcard_height * 2) / 3;
       DAT_00638b48 = 8;
       DAT_00638b34 = 8;
       rows = 6;
@@ -352,7 +376,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       for (button_index = 0; button_index < DAT_00638ba4[0x5dd]; ++button_index)
       {
         card_window = CreateWindowExA(0, s_ShowListCard_00572920, unk_00572930 + 4, 0x50000000, button_x, button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(button_index + 10),
-                                      global_hinstance, (LPVOID)DAT_00638ba4[button_index + 1]);
+                                      g_app_instance, (LPVOID)DAT_00638ba4[button_index + 1]);
         if (DAT_00638ba4[0x5de] != 0)
         {
           SendMessageA(card_window, 0x414, 1, DAT_00638ba4[button_index + 0x1f5]);
@@ -471,6 +495,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
 }
 
 // FUNCTION: MAGIC 0x0049fe68
+// FUNCTION: SHANDALAR 0x0053b80b
 LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wparam_window, LPARAM lparam_data)
 {
   struct
@@ -493,7 +518,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     EnterCriticalSection(&DAT_009266b0);
     GetClientRect(card_window, &locals.client_rect);
     FillRect(DAT_00789310, &locals.client_rect, (HBRUSH)GetStockObject(4));
-    if (locals.csvid == unk_009266ac)
+    if (locals.csvid == SHOWLIST_CARD_BACK_CSVID)
     {
       DrawCardBack(DAT_00789310, &locals.client_rect);
     }
@@ -504,7 +529,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
     if (locals.show_count_flag != 0)
     {
-      FUN_0055b9f0((int)DAT_00789310, (int *)&locals.client_rect, locals.count);
+      FUN_0055b9f0(DAT_00789310, (int *)&locals.client_rect, locals.count);
     }
 
     locals.paint_dc = BeginPaint(card_window, &locals.ps);
@@ -548,12 +573,12 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
   case WM_MOUSEMOVE:
   case WM_RBUTTONDOWN:
-    if ((message == WM_MOUSEMOVE && DAT_0091c998 != 2) || (message == WM_RBUTTONDOWN && DAT_0091c998 == 2))
+    if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
     {
       locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
       if ((int)DAT_00638c08 != (int)card_window)
       {
-        SendMessageA((HWND)DAT_00896714, 0x401, locals.csvid, 0);
+        SendMessageA(SHOWLIST_HINT_WINDOW, 0x401, locals.csvid, 0);
         DAT_00638c08 = (int)card_window;
       }
     }
@@ -576,9 +601,9 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
   case 0x437:
     locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
-    if (DAT_0091c998 != 2)
+    if (SHOWLIST_MOUSE_MODE != 2)
     {
-      SendMessageA((HWND)DAT_00896714, 0x401, locals.csvid, 0);
+      SendMessageA(SHOWLIST_HINT_WINDOW, 0x401, locals.csvid, 0);
     }
     return 0;
 
@@ -588,6 +613,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 }
 
 // FUNCTION: MAGIC 0x0049e6aa
+// FUNCTION: SHANDALAR 0x0053a054
 int show_cardlist(int *graveyard,
                   int *alternate_csvids,
                   int *available,
@@ -620,7 +646,7 @@ int show_cardlist(int *graveyard,
   wndclass.lpfnWndProc = wndproc_ShowListCard;
   wndclass.cbClsExtra = 0;
   wndclass.cbWndExtra = unk_0055e0cc;
-  wndclass.hInstance = global_hinstance;
+  wndclass.hInstance = g_app_instance;
   wndclass.hIcon = LoadIconA(0, (const char *)0x7f00);
   wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
   wndclass.hbrBackground = 6;
@@ -666,5 +692,42 @@ int show_cardlist(int *graveyard,
     strcpy(locals.title, unk_00572930);
   }
 
-  return DialogBoxParam(global_hinstance, (const char *)0xe9, unk_008cf1b4, dlgfunc_show_deck, (long)&locals.context);
+  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_main_window_hwnd, dlgfunc_show_deck, (long)&locals.context);
+}
+
+// FUNCTION: MAGIC 0x0055b9f0
+// FUNCTION: SHANDALAR 0x00571d0e
+void FUN_0055b9f0(int dc, int *rect, int value)
+{
+  struct
+  {
+    char text[12];
+    int text_x;
+    int text_y;
+    int saved_dc;
+  } s;
+  size_t text_len;
+
+  if (dc != 0 && rect != NULL)
+  {
+    s.saved_dc = SaveDC((HDC)dc);
+    SetMapMode((HDC)dc, 8);
+    SetWindowExtEx((HDC)dc, 100, 0x8c, NULL);
+    SetViewportExtEx((HDC)dc, rect[2] - rect[0], rect[3] - rect[1], NULL);
+    SetWindowOrgEx((HDC)dc, 0, 0, NULL);
+    SetViewportOrgEx((HDC)dc, rect[0], rect[1], NULL);
+    sprintf(s.text, "%d", value);
+    SelectObject((HDC)dc, (HGDIOBJ)global_smallcard_pt_font);
+    SetTextAlign((HDC)dc, 10);
+    SetBkMode((HDC)dc, 1);
+    s.text_x = 100;
+    s.text_y = 0x8c;
+    SetTextColor((HDC)dc, global_palette_col_c9);
+    text_len = strlen(s.text);
+    TextOutA((HDC)dc, s.text_x - 1, s.text_y - 1, s.text, text_len);
+    SetTextColor((HDC)dc, global_palette_col_9e_b);
+    text_len = strlen(s.text);
+    TextOutA((HDC)dc, s.text_x - 3, s.text_y - 3, s.text, text_len);
+    RestoreDC((HDC)dc, s.saved_dc);
+  }
 }
