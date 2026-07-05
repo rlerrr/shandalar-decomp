@@ -7,11 +7,11 @@
 extern "C" {
 #endif
 
-extern char global_playdeck_path[300];
-extern char global_faces_path[300];
-extern char global_duelart_path[300];
-extern char global_duelsounds_path[300];
-extern char global_savegame_path[300];
+extern char global_playdeck_path[0x110];
+extern char global_faces_path[0x110];
+extern char global_duelart_path[0x110];
+extern char global_duelsounds_path[0x110];
+extern char global_savegame_path[0x110];
 extern HDC DAT_00789310;
 extern HBITMAP DAT_00926808;
 extern HGDIOBJ DAT_0093a980;

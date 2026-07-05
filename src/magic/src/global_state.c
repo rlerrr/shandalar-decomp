@@ -108,11 +108,7 @@ unsigned int __cdecl save_or_load_ver1(void)
   unsigned int result;
 
   result = 1;
-#ifdef SHANDALAR
   result &= save_or_load_data((char *)global_cards_data + g_card_count * 0x48, 0x480);
-#else
-  result &= save_or_load_data((char *)global_cards_data + unk_0093f4b8 * 0x48, 0x480);
-#endif
   result &= save_or_load_data(initial_library, 0xc80);
   result &= save_or_load_data(&unk_00742fcc, 4);
   result &= save_or_load_data(&DAT_00715fa4, 4);
@@ -319,11 +315,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   } locals;
 
   result = 1;
-#ifdef SHANDALAR
   result &= save_or_load_data((char *)global_cards_data + g_card_count * 0x48, 0x480);
-#else
-  result &= save_or_load_data((char *)global_cards_data + unk_0093f4b8 * 0x48, 0x480);
-#endif
   result &= save_or_load_data(initial_library, 0xc80);
   result &= save_or_load_data(&unk_00742fcc, 4);
   result &= save_or_load_data(&DAT_00715fa4, 4);
@@ -493,11 +485,7 @@ unsigned int __cdecl save_or_load_ver2(void)
 
   if (global_saveload_loading == 1)
   {
-#ifdef SHANDALAR
     for (locals.card_index = g_card_count; g_card_count + 0x10 > locals.card_index; ++locals.card_index)
-#else
-    for (locals.card_index = unk_0093f4b8; locals.card_index < unk_0093f4b8 + 0x10; ++locals.card_index)
-#endif
     {
       if (*(int *)((char *)global_cards_data + locals.card_index * 0x48 + 0x24) != -1)
       {

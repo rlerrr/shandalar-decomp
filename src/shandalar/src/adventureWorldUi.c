@@ -224,10 +224,18 @@ int g_world_player_tile_x;
 int g_world_player_tile_y;
 // GLOBAL: SHANDALAR 0x00581af4
 char g_empty_string[] = "";
-// GLOBAL: SHANDALAR 0x0073eaf0
+
+// TODO: why does g_world_tile_screen_x_cache need to be oversize? it isn't resolution dependant
+#ifdef MODERN_FIXES
 int g_world_tile_screen_x_cache[0x10000];
-// GLOBAL: SHANDALAR 0x00742af0
 int g_world_tile_screen_y_cache[0x10000];
+#else
+// GLOBAL: SHANDALAR 0x0073eaf0
+int g_world_tile_screen_x_cache[0x1000];
+// GLOBAL: SHANDALAR 0x00742af0
+int g_world_tile_screen_y_cache[0x1000];
+#endif
+
 // GLOBAL: SHANDALAR 0x00746af0
 int g_world_scroll_x;
 // GLOBAL: SHANDALAR 0x00746af4
@@ -275,16 +283,16 @@ extern EncodedImage *g_sland_sprite_entries[0x37];
 extern EncodedImage *g_land_tile_sprite_entries[0x10];
 extern EncodedImage *g_cstline1_sprite_entries[0x54];
 extern EncodedImage *g_location_marker_sprite_entries[0x9e];
-extern EncodedImage *g_ttsprite_aux_sprite_entries[0x18];
+extern int g_world_lair_monster_sprite_top_clips[0x10];
 extern EncodedImage *g_questnew_sprite_entries[4];
 extern EncodedImage *g_clocknew_sprite_entries[9];
 extern EncodedImage *g_sunmoon_sprite_entries[0x14];
 extern EncodedImage *g_daysnew_sprite_entries[0xc];
 extern EncodedImage *g_tips_frame_sprite;
 extern EncodedImage *g_tips_icon_sprite;
-extern EncodedImage *g_icons_sprite_entries[0x20];
+extern int g_world_lair_monster_sprite_widths[0x10];
 extern DIBSurface *g_graphics_pages[10];
-extern char g_opening_menu_sprite_work_buffer[0x1680];
+extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x14];
 extern EncodedImage *g_world_magic_avatar_sprites[5];
 extern EncodedImage *g_worlds_extra_sprite_entries[4];
 extern EncodedImage *g_castles_sprite_entries[20];
@@ -2060,7 +2068,7 @@ static __inline EncodedImage *GetWorldEntitySpriteFromWorkBuffer(int entity_slot
   int sprite_offset;
 
   sprite_offset = (((char)animation_state + 2U) & 7) * 0x14 + (((unsigned int)animation_state >> 8) & 0xff) * 4;
-  return *(EncodedImage **)(g_opening_menu_sprite_work_buffer + entity_slot * 0xb4 + sprite_offset);
+  return g_opening_menu_sprite_work_buffer[entity_slot].sprites[(unsigned int)sprite_offset >> 2];
 }
 
 static __inline void DrawWorldStatusTipSprites(void)
@@ -2201,12 +2209,12 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
                           (s.player_screen_x - g_ego_sprite_width / 2) + g_world_scroll_x,
                           (s.player_screen_y - g_ego_sprite_draw_height) + g_world_scroll_y,
                           s.player_screen_y + g_world_scroll_y,
-                          *(EncodedImage **)(g_opening_menu_sprite_work_buffer + DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14 + 0xb40));
+                          GetWorldEntitySpriteFromWorkBuffer(0x10, DAT_0073ea70[5] + (DAT_0073ea70[7] << 8)));
 
   DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
                                   s.player_screen_x - g_sego_sprite_width / 2,
                                   s.player_screen_y - g_sego_sprite_draw_height,
-                                  *(EncodedImage **)(g_opening_menu_sprite_work_buffer + DAT_0073ea70[7] * 4 + ((DAT_0073ea70[5] + 2U) & 7) * 0x14 + 0xbf4));
+                                  GetWorldEntitySpriteFromWorkBuffer(0x11, DAT_0073ea70[5] + (DAT_0073ea70[7] << 8)));
   strcpy(g_ui_message_buffer, g_empty_string);
   strcat(g_ui_message_buffer, _itoa(g_world_player_tile_x, g_ini_string_scratch, 10));
   strcat(g_ui_message_buffer, " ");
@@ -2267,18 +2275,18 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       s.sprite_offset =
           ((((char)g_lair_or_monster_slots[s.slot_index].movement_heading + 2U) & 7) * 0x14) +
           ((signed char)((unsigned int)g_lair_or_monster_slots[s.slot_index].movement_heading >> 8) * 4);
-      s.sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + s.heading_sprite_index * 0xb4 + s.sprite_offset);
-      s.heading_sprite_width = (int)g_icons_sprite_entries[s.heading_sprite_index + 0x18];
-      s.heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[s.heading_sprite_index + 8];
+      s.sprite = g_opening_menu_sprite_work_buffer[s.heading_sprite_index].sprites[(unsigned int)s.sprite_offset >> 2];
+      s.heading_sprite_width = g_world_lair_monster_sprite_widths[s.heading_sprite_index];
+      s.heading_sprite_height = g_world_lair_monster_sprite_top_clips[s.heading_sprite_index];
       QueueWorldSpriteForDraw(PTR_DAT_005832b4,
                               s.player_screen_x - s.heading_sprite_width / 2,
                               s.player_screen_y - s.heading_sprite_height,
                               s.player_screen_y,
                               s.sprite);
 
-      s.sprite = *(EncodedImage **)(g_opening_menu_sprite_work_buffer + (s.heading_sprite_index + 8) * 0xb4 + s.sprite_offset);
-      s.heading_sprite_width = (int)g_icons_sprite_entries[s.heading_sprite_index + 0x20];
-      s.heading_sprite_height = (int)g_ttsprite_aux_sprite_entries[s.heading_sprite_index + 0x10];
+      s.sprite = g_opening_menu_sprite_work_buffer[s.heading_sprite_index + 8].sprites[(unsigned int)s.sprite_offset >> 2];
+      s.heading_sprite_width = g_world_lair_monster_sprite_widths[s.heading_sprite_index + 8];
+      s.heading_sprite_height = g_world_lair_monster_sprite_top_clips[s.heading_sprite_index + 8];
       DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
                                       (s.player_screen_x - s.heading_sprite_width / 2) - g_world_scroll_x,
                                       (s.player_screen_y - s.heading_sprite_height) - g_world_scroll_y,

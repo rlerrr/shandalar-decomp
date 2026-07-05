@@ -85,7 +85,7 @@ typedef struct
 } DialogBoxSpriteBank;
 
 extern DialogBoxSpriteBank g_dialog_box_sprite_bank;
-extern EncodedImage *g_icons_sprite_entries[0x20];
+extern EncodedImage *g_icons_sprite_entries[0x18];
 
 typedef struct
 {
@@ -143,7 +143,7 @@ WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
 void ShowWorldMapScreen(int mode);
 void ShowDungeonCluesScreen(int unused);
 int RestoreAdventureUiPaletteAndFocus(void);
-void FUN_00549002(void);
+void RunAdventureStatsMenu(void);
 
 void FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_label);
 int FUN_00522508(int param_1);
@@ -1384,7 +1384,7 @@ void OpenTownAdventureStats(void)
   town_index = g_active_town_services_town_index;
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058af8c, 0xf, 100, 100, 0);
   ClearInputAndWaitForMouseRelease();
-  FUN_00549002();
+  RunAdventureStatsMenu();
   RefreshAdventureInterfaceLayout();
   FUN_0055060c(1);
   AnimateVisitBackdropZoomIn(GET_TOWN_PIC(town_index));
@@ -2320,7 +2320,7 @@ loop:
         RefreshAdventureInterfaceLayout();
         break;
       case 8:
-        FUN_00549002();
+        RunAdventureStatsMenu();
         RefreshAdventureInterfaceLayout();
         break;
       case 9:

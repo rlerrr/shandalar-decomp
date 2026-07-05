@@ -134,9 +134,9 @@ int card_kormus_bell(int player, int card, event_t event)
         effect_instance->info_slot = instance->info_slot;
         effect_instance->token_status |= 0x10000;
 
-        animated_internal_card_id = unk_0093f4b8;
+        animated_internal_card_id = g_card_count;
         found = 0;
-        while (animated_internal_card_id < unk_0093f4b8 + 16 && !found)
+        while (animated_internal_card_id < g_card_count + 16 && !found)
         {
           if (*(int *)&global_cards_data[animated_internal_card_id].id == *(int *)&global_cards_data[event_result].id)
           {
@@ -211,9 +211,9 @@ int card_living_lands(int player, int card, event_t event)
         effect_instance->info_slot = instance->info_slot;
         effect_instance->token_status |= 0x10000;
 
-        animated_internal_card_id = unk_0093f4b8;
+        animated_internal_card_id = g_card_count;
         found = 0;
-        while (animated_internal_card_id < unk_0093f4b8 + 16 && !found)
+        while (animated_internal_card_id < g_card_count + 16 && !found)
         {
           if (*(int *)&global_cards_data[animated_internal_card_id].id == *(int *)&global_cards_data[event_result].id)
           {

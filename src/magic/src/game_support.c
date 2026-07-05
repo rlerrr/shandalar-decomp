@@ -758,7 +758,7 @@ int FUN_0046489e(int card_id)
     }
   }
 
-  for (s.i = 0; s.i < unk_0093f4b8; ++s.i)
+  for (s.i = 0; s.i < g_card_count; ++s.i)
   {
     if ((int)global_cards_data[s.i].id == s.chosen_csvid)
     {
@@ -1115,7 +1115,7 @@ int FUN_004b5f03(int card_id)
 
   if (card_id != -1)
   {
-    for (internal_card_id = 0; internal_card_id < unk_0093f4b8 + 0x10; ++internal_card_id)
+    for (internal_card_id = 0; internal_card_id < g_card_count + 0x10; ++internal_card_id)
     {
       if (global_cards_data[internal_card_id].id == card_id)
       {
@@ -2133,7 +2133,7 @@ int create_a_card_type(int internal_card_id)
 {
   int new_internal_card_id;
 
-  for (new_internal_card_id = unk_0093f4b8; new_internal_card_id < unk_0093f4b8 + 0x10; ++new_internal_card_id)
+  for (new_internal_card_id = g_card_count; new_internal_card_id < g_card_count + 0x10; ++new_internal_card_id)
   {
     if (*(int *)&global_cards_data[new_internal_card_id].id == -1)
     {
@@ -2323,7 +2323,7 @@ int FUN_0043e18b(int player)
 
       do
       {
-        s.drawn_card = internal_rand(unk_0093f4b8);
+        s.drawn_card = internal_rand(g_card_count);
         s.candidate_ok = FUN_004b58e2((int)(char)global_cards_data[s.drawn_card].color,
                                       DAT_008ce538,
                                       DAT_008951c8);
@@ -8405,7 +8405,7 @@ void C_count_colors_of_lands_in_play(void)
         {
           ++basiclandtypes_controlled[player][internal_card_id];
         }
-        else if (internal_card_id < 0xf || unk_0093f4b8 <= internal_card_id)
+        else if (internal_card_id < 0xf || g_card_count <= internal_card_id)
         {
           csvid = global_cards_data[internal_card_id].id;
           if (csvid < 0xd)

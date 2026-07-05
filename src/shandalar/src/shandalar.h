@@ -32,5 +32,11 @@ typedef struct AdvMenuRect
   int height;
 } AdvMenuRect;
 
+typedef struct OpeningMenuSpriteWorkEntry
+{
+  struct EncodedImage *sprites[0x2d];
+} OpeningMenuSpriteWorkEntry;
+
 typedef char AdvMenuControl_size_must_be_0x54[(sizeof(AdvMenuControl) == 0x54) ? 1 : -1];
 typedef char AdvMenuRect_size_must_be_0x10[(sizeof(AdvMenuRect) == 0x10) ? 1 : -1];
+typedef char OpeningMenuSpriteWorkEntry_size_must_be_0xb4[(sizeof(OpeningMenuSpriteWorkEntry) == 0xb4) ? 1 : -1];

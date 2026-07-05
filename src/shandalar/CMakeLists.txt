@@ -6,6 +6,7 @@ set(magic_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/shared_startup.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/cardlist.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_state.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_duel_ui_ids.c"
 )
 set(drawcardlib_c_sources 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 

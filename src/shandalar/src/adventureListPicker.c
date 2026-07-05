@@ -18,7 +18,6 @@ extern int g_mouse_x_snapshot;
 extern int g_mouse_y_snapshot;
 extern int g_mouse_button_mask_snapshot;
 extern char g_ui_message_buffer[0x1000];
-extern int g_world_tile_screen_x_cache[0x10000];
 extern HDC global_main_hdc;
 extern HPALETTE g_palette_handle;
 extern RpBitsPalettePacket g_palette_data_words;
@@ -278,7 +277,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
                        FUN_005501dc(0xdc) / 2,
                        FUN_005501dc(0x34) / 2);
 
-      strcpy(g_ui_message_buffer, (char *)(g_world_tile_screen_x_cache + 0xfd88));
+      strcpy(g_ui_message_buffer, gs_showcard_name_0077e110);
       DrawEncodedImageResampled(PTR_DAT_005832b4,
                                 FUN_005501dc(0xdc) / 2,
                                 FUN_005501dc(0x34) / 2,
@@ -291,7 +290,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
       DrawTextAt(PTR_DAT_005832b4, 0x76, 0x20, 0x1b, g_ui_message_buffer);
 
       s.key_code = PopNormalizedQueuedKeyInput();
-      s.accept_keys = (char *)(g_world_tile_screen_x_cache + 0x3f652);
+      s.accept_keys = gs_showcard_type_0077e142;
       s.accept_key = 0;
       while (*s.accept_keys != '\0')
       {

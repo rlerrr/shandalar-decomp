@@ -17,23 +17,23 @@ extern card_data_t global_cards_data[];
 
 // GLOBAL: SHANDALAR 0x0093a230
 // GLOBAL: MAGIC 0x00926100
-char global_playdeck_path[300];
+char global_playdeck_path[0x110];
 
 // GLOBAL: SHANDALAR 0x008c8660
 // GLOBAL: MAGIC 0x008b44e0
-char global_faces_path[300];
+char global_faces_path[0x110];
 
 // GLOBAL: SHANDALAR 0x008e33e0
 // GLOBAL: MAGIC 0x008cf290
-char global_duelart_path[300];
+char global_duelart_path[0x110];
 
 // GLOBAL: SHANDALAR 0x008a92c0
 // GLOBAL: MAGIC 0x008950c0
-char global_duelsounds_path[300];
+char global_duelsounds_path[0x110];
 
 // GLOBAL: SHANDALAR 0x008bdaf0
 // GLOBAL: MAGIC 0x008a98f0
-char global_savegame_path[300];
+char global_savegame_path[0x110];
 
 // GLOBAL: SHANDALAR 0x007a00a0
 // GLOBAL: MAGIC 0x00789310

@@ -50,7 +50,7 @@ extern int DAT_007894f4;
 
 /* Sprites loaded by startup code (owned by shandalar.c) */
 extern EncodedImage *g_ttsprite_grid_sprite_entries[0x40];
-extern EncodedImage *g_ttsprite_aux_sprite_entries[0x18];
+extern EncodedImage *g_ttsprite_aux_sprite_entries[8];
 extern EncodedImage *g_world_magic_avatar_sprites[5];
 
 extern FontSlot g_font_slots[0x10];

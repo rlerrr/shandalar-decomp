@@ -10,8 +10,10 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "magic/src/global_duel_ui_ids.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
+#include "magic/src/global_other.h"
 #include "magic/src/shared_startup.h"
 #include "shandalar_global_strings.h"
 #include "cardartlib/src/assert.h"
@@ -166,8 +168,6 @@ int g_cached_cwd_initialized;
 int g_sound_drive_initialized;
 // GLOBAL: SHANDALAR 0x0073e890
 char g_cached_cwd[0x100];
-// GLOBAL: SHANDALAR 0x0073c00c
-int g_card_count = 722;
 // GLOBAL: SHANDALAR 0x0073e9d8
 char g_sound_drive_letter;
 // GLOBAL: SHANDALAR 0x0067a3b8
@@ -292,7 +292,9 @@ EncodedImage *g_ttsprite_alt_sprite_entries[8];
 // GLOBAL: SHANDALAR 0x00748720
 EncodedImage *g_cstline1_sprite_entries[0x54];
 // GLOBAL: SHANDALAR 0x00748870
-EncodedImage *g_ttsprite_aux_sprite_entries[0x18];
+EncodedImage *g_ttsprite_aux_sprite_entries[8];
+// GLOBAL: SHANDALAR 0x00748890
+int g_world_lair_monster_sprite_top_clips[0x10];
 // GLOBAL: SHANDALAR 0x007488d0
 int g_ego_sprite_draw_height;
 // GLOBAL: SHANDALAR 0x007488d4
@@ -332,11 +334,15 @@ EncodedImage *g_sland_sprite_entries[110];
 // GLOBAL: SHANDALAR 0x00749280
 EncodedImage *g_daysnew_sprite_entries[0xc];
 // GLOBAL: SHANDALAR 0x007492b0
-EncodedImage *g_icons_sprite_entries[0x20];
+EncodedImage *g_icons_sprite_entries[0x18];
+// GLOBAL: SHANDALAR 0x00749310
+int g_world_lair_monster_sprite_widths[0x10];
 // GLOBAL: SHANDALAR 0x00749350
 int g_ego_sprite_width;
 // GLOBAL: SHANDALAR 0x00749354
 int g_sego_sprite_width;
+// GLOBAL: SHANDALAR 0x00749390
+int g_world_lair_monster_sprite_heights[0x10];
 // GLOBAL: SHANDALAR 0x007493d0
 int g_ego_sprite_height;
 // GLOBAL: SHANDALAR 0x007493d4
@@ -358,7 +364,7 @@ EncodedImage *g_ttsprite_grid_sprite_entries[0x40];
 // GLOBAL: SHANDALAR 0x00749560
 EncodedImage *g_castles_sprite_entries[20];
 // GLOBAL: SHANDALAR 0x007496a0
-char g_opening_menu_sprite_work_buffer[0x1680];
+OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x14];
 // GLOBAL: SHANDALAR 0x0078df40
 EncodedImage *DAT_0078df40[10];
 // GLOBAL: SHANDALAR 0x0058b584
@@ -455,8 +461,6 @@ int g_text_menu_line_height = 8;
 int g_text_menu_color_normal = 0x71;
 // GLOBAL: SHANDALAR 0x00580da0
 int g_text_menu_color_selected = 0xe3;
-// GLOBAL: SHANDALAR 0x005863ac
-int DAT_005863ac = 5;
 // GLOBAL: SHANDALAR 0x005a5fe8
 int DAT_005a5fe8[0x20];
 // GLOBAL: SHANDALAR 0x005a6068
@@ -517,7 +521,6 @@ int LoadTextSectionStringTable(const char *filename, const char *section, char *
 int LoadAdvBlocksFile(const char *filename);
 int FindNextTextBlock(char *scan_start, char *scan_end, int *out_block_start, int *out_next_scan);
 void ReadCsvFieldByCsvid(char *out, int csvid, int field, char *csv_name);
-void FUN_00559999(void);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 void FUN_00562d03(void);
 void FUN_00565faa(void);
@@ -616,7 +619,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state);
 int RunStartupMenuAndQueueInput(void);
 int QueuePendingMenuActionInput(void);
 void FUN_0055e808(void);
-void FUN_0055fd27(void);
+void UpdateWorldLairAndMonsterSlots(void);
 void TickWorldMagicSlotTimers(void);
 void UpdateMouseSnapshot(void);
 int BeginMenuContext(void);
@@ -701,18 +704,18 @@ int RestoreAdventureUiPaletteAndFocus(void);
 int VisitTownSlot(int town_index);
 int RunSaveMenuAndSelectSlot(void);
 void *FUN_0055060c(int param_1);
-void FUN_00559807(void);
+void SetupRandomAiDuelDecks(void);
 void EnsureAdvfac64Loaded(int state);
 void FUN_005616f9(void);
 void FUN_00562169(void);
 void FUN_00562736(int param_1, int param_2, int param_3, int param_4);
 void FUN_0056279e(int param_1, int param_2, int param_3);
 void FUN_00562835(char *param_1, int param_2);
-void FUN_00562a29(int param_1);
+void UpdateAmbientWizardColorSound(int param_1);
 void FUN_0050a5c1(int param_1);
 void ShowCityInfoScreen(int param_1);
 void ShowDungeonCluesScreen(int unused);
-void FUN_00549002(void);
+void RunAdventureStatsMenu(void);
 void ShowWorldMapScreen(int mode);
 void ShowStatsWindow(int mode, int highlight);
 void AnalyzeDeckAndMaybeShowReport(int show_ui);
@@ -760,7 +763,7 @@ int FUN_0055db50(void)
   s.proceed_to_main_loop = 0;
   DAT_008cf6d0 = -1;
   unk_00789308 = DAT_008cf6d0;
-  FUN_00559999();
+  InitializeDuelUiGlobalIds();
   for (s.loop_index = 0; s.loop_index < 4; s.loop_index = s.loop_index + 1)
   {
     DAT_007a7d10[s.loop_index] = 8;
@@ -938,7 +941,7 @@ opening_menu:
       QueuePendingMenuActionInput();
 
       FUN_0055e808();
-      FUN_0055fd27();
+      UpdateWorldLairAndMonsterSlots();
 
       TickWorldMagicSlotTimers();
       UpdateMouseSnapshot();
@@ -1044,7 +1047,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
     current_menu_entry = g_text_menu_timeout_seconds;
     if (g_text_menu_timeout_seconds != -1)
     {
-      timer_seconds_left = current_menu_entry - GetUiTickCount() / (DAT_005863ac * 0x3c);
+      timer_seconds_left = current_menu_entry - GetUiTickCount() / (DAT_0057d9e4 * 0x3c);
       if (timer_seconds_left == 0)
       {
         selected_menu_entry = -1;
@@ -3948,11 +3951,11 @@ void LoadOpeningMenuSpriteResources(void)
 
   for (s.entry_index = 0; s.entry_index < 0x20; s.entry_index = s.entry_index + 1)
   {
-    *(int *)(g_opening_menu_sprite_work_buffer + s.entry_index * 0xb4) = 0;
+    g_opening_menu_sprite_work_buffer[s.entry_index].sprites[0] = (EncodedImage *)0;
   }
 
-  s.entry_index = ReadSpriteEntryPointers((EncodedImage **)((int)g_opening_menu_sprite_work_buffer + 0xb40), BuildResolutionSpritePath((g_player_is_male == 0) ? "ego_f.spr" : "ego_m.spr"));
-  s.ego_sprite_header_ptr = *(EncodedImage **)((int)g_opening_menu_sprite_work_buffer + 0xb40);
+  s.entry_index = ReadSpriteEntryPointers(&g_opening_menu_sprite_work_buffer[0x10].sprites[0], BuildResolutionSpritePath((g_player_is_male == 0) ? "ego_f.spr" : "ego_m.spr"));
+  s.ego_sprite_header_ptr = g_opening_menu_sprite_work_buffer[0x10].sprites[0];
   g_ego_sprite_width = s.ego_sprite_header_ptr->width;
   g_ego_sprite_height = s.ego_sprite_header_ptr->height;
   g_ego_sprite_draw_height = s.ego_sprite_header_ptr->top_clip;
@@ -3961,8 +3964,8 @@ void LoadOpeningMenuSpriteResources(void)
     g_ego_sprite_draw_height = (g_ego_sprite_height * 2) / 3;
   }
 
-  s.entry_index = ReadSpriteEntryPointers((EncodedImage **)((int)g_opening_menu_sprite_work_buffer + 0xbf4), BuildResolutionSpritePath("sego_f.spr"));
-  s.sego_sprite_header_ptr = *(EncodedImage **)((int)g_opening_menu_sprite_work_buffer + 0xbf4);
+  s.entry_index = ReadSpriteEntryPointers(&g_opening_menu_sprite_work_buffer[0x11].sprites[0], BuildResolutionSpritePath("sego_f.spr"));
+  s.sego_sprite_header_ptr = g_opening_menu_sprite_work_buffer[0x11].sprites[0];
   g_sego_sprite_width = s.sego_sprite_header_ptr->width;
   g_sego_sprite_height = s.sego_sprite_header_ptr->height;
   g_sego_sprite_draw_height = s.sego_sprite_header_ptr->top_clip;
@@ -4770,7 +4773,7 @@ void FUN_0055e808(void)
           break;
         case 0x3f00:
           // stats
-          FUN_00549002();
+          RunAdventureStatsMenu();
           RefreshAdventureInterfaceLayout();
           break;
         case 0x4000:
@@ -4888,7 +4891,7 @@ void FUN_0055e808(void)
   if ((DAT_006696fc != 0) && (++DAT_00669700 > 500))
   {
     // Some sort of demo? Looks unreachable since DAT_006696fc is never set
-    FUN_00559807();
+    SetupRandomAiDuelDecks();
     DAT_00669700 = 300;
   }
 
@@ -4999,7 +5002,7 @@ void FUN_0055e808(void)
 
     if ((FUN_00522508(0x28) == 0) && (g_skip_world_sfx_preload == 0))
     {
-      FUN_00562a29(s.key_magic_index);
+      UpdateAmbientWizardColorSound(s.key_magic_index);
     }
 
     if (((g_monster_timer & 0x1fU) == 0) && (g_world_move_dir_index != 0))
@@ -5303,13 +5306,6 @@ void FUN_0055e808(void)
   }
 }
 
-// FUNCTION: SHANDALAR 0x0055fd27
-void FUN_0055fd27(void)
-{
-  // TODO(decomp): Overworld lair/monster tick. Spawns/moves entries in g_lair_or_monster_slots, triggers encounters,
-  // and handles the special siege slot (index 7).
-}
-
 // FUNCTION: SHANDALAR 0x0041d1ef
 int IsKeyInputQueueEmpty(void)
 {
@@ -5350,14 +5346,14 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_in
 // FUNCTION: SHANDALAR 0x004bdaad
 int FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b)
 {
-  if (*(int *)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4) == 0)
+  if (g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0] == (EncodedImage *)0)
   {
     return 0;
   }
 
-  FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_a * 0xb4));
-  FreeSpriteBlob(*(void **)(g_opening_menu_sprite_work_buffer + work_entry_index_b * 0xb4));
-  *(int *)&g_opening_menu_sprite_work_buffer[work_entry_index_a * 0xb4] = 0;
+  FreeSpriteBlob(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0]);
+  FreeSpriteBlob(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites[0]);
+  g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0] = (EncodedImage *)0;
   return 0;
 }
 
@@ -5414,7 +5410,7 @@ int RunSaveMenuAndSelectSlot(void)
 }
 
 // FUNCTION: SHANDALAR 0x00559807
-void FUN_00559807(void)
+void SetupRandomAiDuelDecks(void)
 {
   // TODO(decomp): Periodic "demo/attract" style action: chooses some prebuilt decks, resets ante state, then kicks off
   // a larger sequence (calls FUN_00568320) and refreshes the screen.
@@ -5429,14 +5425,6 @@ void EnsureAdvfac64Loaded(int state)
     g_advfac64_load_state = state;
   }
 }
-
-// FUNCTION: SHANDALAR 0x005616f9
-// TODO(decomp): Starts a siege event (chooses a target town, populates g_lair_or_monster_slots[7], shows newsflash).
-void FUN_005616f9(void) {}
-
-// FUNCTION: SHANDALAR 0x00562169
-// TODO(decomp): Resolves/cleans up an active siege and may trigger a "quest failed / game over" path.
-void FUN_00562169(void) {}
 
 // FUNCTION: SHANDALAR 0x00562736
 void FUN_00562736(int param_1, int param_2, int param_3, int param_4)
@@ -5492,10 +5480,80 @@ void FUN_00562835(char *filename, int param_2)
 }
 
 // FUNCTION: SHANDALAR 0x00562a29
-void FUN_00562a29(int param_1)
+void UpdateAmbientWizardColorSound(int param_1)
 {
-  (void)param_1;
-  // TODO(decomp): Plays random ambient overworld SFX for a given terrain/magic index (random pan/pitch).
+  int channel = param_1 + 9;
+
+  FUN_00562736(channel, 100, FUN_00522508(0x32) + 0x46, FUN_00522508(200) - 100);
+
+  if (FUN_00522508(3) == 0)
+  {
+    sound_unload(channel);
+    switch (param_1)
+    {
+    case 1:
+      switch (FUN_00522508(3))
+      {
+      case 0:
+        LoadSoundWithDriveFallback("x:sound\\kbird1.wav", channel, 0);
+        break;
+      case 1:
+        LoadSoundWithDriveFallback("x:sound\\kland1.wav", channel, 0);
+        break;
+      case 2:
+        LoadSoundWithDriveFallback("x:sound\\kland2.wav", channel, 0);
+        break;
+      }
+      break;
+    case 2:
+      switch (FUN_00522508(3))
+      {
+      case 0:
+        LoadSoundWithDriveFallback("x:sound\\bbird1.wav", channel, 0);
+        break;
+      case 1:
+        LoadSoundWithDriveFallback("x:sound\\bland1.wav", channel, 0);
+        break;
+      case 2:
+        LoadSoundWithDriveFallback("x:sound\\bland2.wav", channel, 0);
+        break;
+      }
+      break;
+    case 3:
+      switch (FUN_00522508(2))
+      {
+      case 0:
+        LoadSoundWithDriveFallback("x:sound\\gbird1.wav", channel, 0);
+        break;
+      case 1:
+        LoadSoundWithDriveFallback("x:sound\\gland1.wav", channel, 0);
+        break;
+      }
+      break;
+    case 4:
+      switch (FUN_00522508(2))
+      {
+      case 0:
+        LoadSoundWithDriveFallback("x:sound\\rbird1.wav", channel, 0);
+        break;
+      case 1:
+        LoadSoundWithDriveFallback("x:sound\\rland1.wav", channel, 0);
+        break;
+      }
+      break;
+    case 5:
+      switch (FUN_00522508(2))
+      {
+      case 0:
+        LoadSoundWithDriveFallback("x:sound\\wbird1.wav", channel, 0);
+        break;
+      case 1:
+        LoadSoundWithDriveFallback("x:sound\\wland1.wav", channel, 0);
+        break;
+      }
+      break;
+    }
+  }
 }
 
 // FUNCTION: SHANDALAR 0x0050a5c1
@@ -5506,7 +5564,7 @@ void FUN_0050a5c1(int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x00549002
-void FUN_00549002(void)
+void RunAdventureStatsMenu(void)
 {
   // TODO(decomp): Adventure "Stats" screen UI (renders stats, world magic list, handles button/menu loop).
 }
@@ -6367,11 +6425,6 @@ int LoadAdvBlocksFile(const char *filename)
   return ok;
 }
 
-// FUNCTION: SHANDALAR 0x00559999
-void FUN_00559999(void)
-{
-}
-
 // FUNCTION: SHANDALAR 0x00562d03
 void FUN_00562d03(void)
 {
@@ -6856,7 +6909,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     return 0;
   }
 
-  FUN_00559999();
+  InitializeDuelUiGlobalIds();
 
   /* Switch to executable directory */
 #ifndef _DEBUG
