@@ -500,49 +500,40 @@ void resize_child_smallcard_windows(HWND hwnd_parent)
   }
 }
 
-/*
- * wndproc_DeckSurfaceClass has a large stack frame in the original binary.
- * Use a single locals struct to keep MSVC 4.20's stack layout stable.
- */
-typedef struct WndprocDeckSurfaceLocals_t
-{
-  int mosaic_inx;/* [ebp-0xa4] */
-  POINT popup_pt; /* [ebp-0xa0] */
-  RECT tile_rect; /* [ebp-0x98] */
-  BITMAP bmp;     /* [ebp-0x88] */
-  int pad;        /* [ebp-0x70] */
-  int mosaic_x;   /* [ebp-0x6c] */
-  int mosaic_y;   /* [ebp-0x68] */
-  RECT r2;        /* [ebp-0x64] */
-  RECT refresh_rect;
-  int pad2;     /* [ebp-0x44] */
-  char *pcVar1; /* [ebp-0x40] */
-  int x;        /* [ebp-0x3c] */
-  int y;        /* [ebp-0x38] */
-  int tile;     /* [ebp-0x34] */
-
-  HWND hwnd_card; /* [ebp-0x30] */
-  csvid_t csvid;  /* [ebp-0x2c] */
-
-  HDC hdc0; /* [ebp-0x28] */
-
-  int idx_i; /* [ebp-0x24] */
-  int idx_d; /* [ebp-0x20] */
-  int idx_c; /* [ebp-0x1c] */
-
-  int mosaics[5]; /* [ebp-0x18] */
-
-  LRESULT result; /* [ebp-0x4] */
-} WndprocDeckSurfaceLocals;
-
-// 2 stack slots are from switch() statements so substract 8 bytes
-STATIC_ASSERT(sizeof(WndprocDeckSurfaceLocals) == 0xa4, WndprocDeckSurfaceLocals_wrong_size);
-
 // FUNCTION: DECKDLL 0x100012b7
 LRESULT CALLBACK
 wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  WndprocDeckSurfaceLocals s;
+  struct
+  {
+    int mosaic_inx; /* [ebp-0xa4] */
+    POINT popup_pt; /* [ebp-0xa0] */
+    RECT tile_rect; /* [ebp-0x98] */
+    BITMAP bmp;     /* [ebp-0x88] */
+    int pad;        /* [ebp-0x70] */
+    int mosaic_x;   /* [ebp-0x6c] */
+    int mosaic_y;   /* [ebp-0x68] */
+    RECT r2;        /* [ebp-0x64] */
+    RECT refresh_rect;
+    int pad2;     /* [ebp-0x44] */
+    char *pcVar1; /* [ebp-0x40] */
+    int x;        /* [ebp-0x3c] */
+    int y;        /* [ebp-0x38] */
+    int tile;     /* [ebp-0x34] */
+
+    HWND hwnd_card; /* [ebp-0x30] */
+    csvid_t csvid;  /* [ebp-0x2c] */
+
+    HDC hdc0; /* [ebp-0x28] */
+
+    int idx_i; /* [ebp-0x24] */
+    int idx_d; /* [ebp-0x20] */
+    int idx_c; /* [ebp-0x1c] */
+
+    int mosaics[5]; /* [ebp-0x18] */
+
+    LRESULT result; /* [ebp-0x4] */
+  } s;
   // GLOBAL: DECKDLL 0x1003105c
   static int cleared_global_deck_num_entries = 0;
   // GLOBAL: DECKDLL 0x10031060
@@ -1081,7 +1072,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     global_smallcard_normal_height = ((lparam & 0xFFFF) * 19) / 100;
     global_smallcard_normal_width = global_smallcard_normal_height;
-    
+
     global_smallcard_smaller_height = (lparam & 0xFFFF) / 7;
     global_smallcard_smaller_width = global_smallcard_smaller_height;
 
@@ -1707,10 +1698,10 @@ LRESULT CALLBACK wndproc_TradeSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, L
     s.local_28.y = (int)((unsigned)lparam >> 16) & 0xFFFF;
     s.local_18 = (HMENU)pick_group_id_from_point(&trade_group_rects[0], 7, &s.local_28);
     s.local_1c = CreateWindowExA(0, s_MAGICDECK_CardClass_10031500, s_Empty_100314fc,
-                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
-                                  s.local_28.x, s.local_28.y, global_smallcard_width,
-                                  global_smallcard_height, hwnd, s.local_18, global_hinstance,
-                                  (LPVOID)s.local_14);
+                                 WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
+                                 s.local_28.x, s.local_28.y, global_smallcard_width,
+                                 global_smallcard_height, hwnd, s.local_18, global_hinstance,
+                                 (LPVOID)s.local_14);
     if (s.local_1c != NULL)
     {
       BringWindowToTop(s.local_1c);

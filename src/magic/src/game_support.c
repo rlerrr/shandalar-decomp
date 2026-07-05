@@ -8256,48 +8256,48 @@ void C_dispatch_event_raw(event_t event)
     int card;
     unsigned int saved_trigger_condition;
     int player;
-  } locals;
+  } s;
 
-  locals.saved_trigger_condition = unk_00712938;
+  s.saved_trigger_condition = unk_00712938;
   unk_008cc844 = event;
-  for (locals.timestamp_slot = 0; (int)locals.timestamp_slot < 500; ++locals.timestamp_slot)
+  for (s.timestamp_slot = 0; (int)s.timestamp_slot < 500; ++s.timestamp_slot)
   {
-    if (TENTATIVE_timestamp_player[locals.timestamp_slot] == -1)
+    if (TENTATIVE_timestamp_player[s.timestamp_slot] == -1)
     {
       break;
     }
 
-    locals.player = TENTATIVE_timestamp_player[locals.timestamp_slot];
-    locals.card = TENTATIVE_timestamp_card[locals.timestamp_slot];
-    locals.instance = &PLAYER_CARD_INSTANCE(locals.player, locals.card);
-    if (locals.instance->timestamp != (int)locals.timestamp_slot)
+    s.player = TENTATIVE_timestamp_player[s.timestamp_slot];
+    s.card = TENTATIVE_timestamp_card[s.timestamp_slot];
+    s.instance = &PLAYER_CARD_INSTANCE(s.player, s.card);
+    if (s.instance->timestamp != (int)s.timestamp_slot)
     {
       continue;
     }
-    if (locals.instance->internal_card_id == -1)
+    if (s.instance->internal_card_id == -1)
     {
       continue;
     }
-    if ((locals.instance->state & 0x800000) != 0)
+    if ((s.instance->state & 0x800000) != 0)
     {
       continue;
     }
-    if ((locals.instance->state & 2) != 0 || (locals.instance->state & 0x20) != 0)
+    if ((s.instance->state & 2) != 0 || (s.instance->state & 0x20) != 0)
     {
 
-      unk_00789a48 = locals.player * 0x80 + locals.card;
-      (*global_cards_data[locals.instance->internal_card_id].code_pointer)(locals.player, locals.card, event);
-      if (event == EVENT_DECLARE_ATTACKERS && locals.player == human_player && (locals.instance->state & 0x14) == 4 && !has_vigilance(locals.player, locals.card))
+      unk_00789a48 = s.player * 0x80 + s.card;
+      (*global_cards_data[s.instance->internal_card_id].code_pointer)(s.player, s.card, event);
+      if (event == EVENT_DECLARE_ATTACKERS && s.player == human_player && (s.instance->state & 0x14) == 4 && !has_vigilance(s.player, s.card))
       {
-        locals.instance->state |= 0x10;
+        s.instance->state |= 0x10;
         produced_mana_color = -1;
-        dispatch_event(locals.player, locals.card, EVENT_TAP_CARD);
+        dispatch_event(s.player, s.card, EVENT_TAP_CARD);
         FUN_004afa4b(human_player);
         regenerate_or_graveyard_triggers();
       }
     }
   }
-  if (event == EVENT_DECLARE_ATTACKERS && locals.player == human_player)
+  if (event == EVENT_DECLARE_ATTACKERS && s.player == human_player)
   {
     FUN_00441d78();
   }
@@ -8305,7 +8305,7 @@ void C_dispatch_event_raw(event_t event)
   {
     (*global_cards_data[unk_00789308].code_pointer)(0, 0x94, event);
   }
-  unk_00712938 = locals.saved_trigger_condition;
+  unk_00712938 = s.saved_trigger_condition;
 }
 
 // FUNCTION: MAGIC 0x004a6d0e
@@ -8316,60 +8316,60 @@ void count_mana(void)
     card_instance_t *instance;
     int current_card;
     int player;
-  } locals;
+  } s;
 
-  for (locals.current_card = 0; locals.current_card <= 7; ++locals.current_card)
+  for (s.current_card = 0; s.current_card <= 7; ++s.current_card)
   {
-    unk_0072c440[locals.current_card] = 0;
-    unk_00742f90[locals.current_card] = unk_0072c440[locals.current_card];
-    unk_00742f70[0][locals.current_card] = unk_00742f90[locals.current_card];
+    unk_0072c440[s.current_card] = 0;
+    unk_00742f90[s.current_card] = unk_0072c440[s.current_card];
+    unk_00742f70[0][s.current_card] = unk_00742f90[s.current_card];
   }
 
   unk_007160fc = -1;
   raw_mana_available_hex[0][0] = unk_007160fc;
   unk_0071620c = -1;
   unk_007161e0[0][0] = unk_0071620c;
-  for (locals.player = 0; locals.player < 2; ++locals.player)
+  for (s.player = 0; s.player < 2; ++s.player)
   {
-    locals.instance = global_card_instances[locals.player];
-    for (locals.current_card = 0; locals.current_card < active_cards_count[locals.player];
-         ++locals.current_card, ++locals.instance)
+    s.instance = global_card_instances[s.player];
+    for (s.current_card = 0; s.current_card < active_cards_count[s.player];
+         ++s.current_card, ++s.instance)
     {
-      if (locals.instance->internal_card_id == -1)
+      if (s.instance->internal_card_id == -1)
       {
         continue;
       }
 
-      if ((global_cards_data[locals.instance->internal_card_id].extra_ability & 0x1000) != 0 && (locals.instance->state & 0x800012) == 2)
+      if ((global_cards_data[s.instance->internal_card_id].extra_ability & 0x1000) != 0 && (s.instance->state & 0x800012) == 2)
       {
-        dispatch_event(locals.player, locals.current_card, EVENT_COUNT_MANA);
+        dispatch_event(s.player, s.current_card, EVENT_COUNT_MANA);
       }
-      if (global_cards_data[locals.instance->internal_card_id].id == 0xee && (locals.instance->state & 0x800012) == 2)
+      if (global_cards_data[s.instance->internal_card_id].id == 0xee && (s.instance->state & 0x800012) == 2)
       {
-        dispatch_event_to_single_card(locals.player, locals.current_card, EVENT_COUNT_MANA, -1, -1);
+        dispatch_event_to_single_card(s.player, s.current_card, EVENT_COUNT_MANA, -1, -1);
       }
-      if (global_cards_data[locals.instance->internal_card_id].id == 100 && (locals.instance->state & 0x800002) == 2)
+      if (global_cards_data[s.instance->internal_card_id].id == 100 && (s.instance->state & 0x800002) == 2)
       {
-        dispatch_event_to_single_card(locals.player, locals.current_card, EVENT_COUNT_MANA, -1, -1);
+        dispatch_event_to_single_card(s.player, s.current_card, EVENT_COUNT_MANA, -1, -1);
       }
     }
   }
   if ((unk_007abc78 & 0x08000000) != 0)
   {
-    for (locals.player = 0; locals.player < 2; ++locals.player)
+    for (s.player = 0; s.player < 2; ++s.player)
     {
-      locals.instance = global_card_instances[locals.player];
-      for (locals.current_card = 0; locals.current_card < active_cards_count[locals.player];
-           ++locals.current_card, ++locals.instance)
+      s.instance = global_card_instances[s.player];
+      for (s.current_card = 0; s.current_card < active_cards_count[s.player];
+           ++s.current_card, ++s.instance)
       {
-        if (locals.instance->internal_card_id == -1)
+        if (s.instance->internal_card_id == -1)
         {
           continue;
         }
 
-        if (global_cards_data[locals.instance->internal_card_id].code_pointer == card_fellwar_stone && (locals.instance->state & 0x800012) == 2)
+        if (global_cards_data[s.instance->internal_card_id].code_pointer == card_fellwar_stone && (s.instance->state & 0x800012) == 2)
         {
-          dispatch_event_to_single_card(locals.player, locals.current_card, EVENT_VARIABLE_MANA_SRC, -1, -1);
+          dispatch_event_to_single_card(s.player, s.current_card, EVENT_VARIABLE_MANA_SRC, -1, -1);
         }
       }
     }

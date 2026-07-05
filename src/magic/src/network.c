@@ -58,7 +58,7 @@ int FUN_0049e8bb(int player,
     unsigned int show_bigcard;
     int graveyard_copy[492];
     int unused_slot;
-  } locals;
+  } s;
   int selection;
 
   (void)unused;
@@ -72,58 +72,58 @@ int FUN_0049e8bb(int player,
     return 0;
   }
 
-  memcpy(locals.graveyard_copy, graveyard, count << 2);
+  memcpy(s.graveyard_copy, graveyard, count << 2);
   if (available == NULL)
   {
-    for (locals.index = 0; locals.index < count; ++locals.index)
+    for (s.index = 0; s.index < count; ++s.index)
     {
-      locals.available_cards[locals.index] = 1;
+      s.available_cards[s.index] = 1;
     }
   }
   else
   {
-    memcpy(locals.available_cards, available, count << 2);
+    memcpy(s.available_cards, available, count << 2);
   }
 
   if (active_player == player && (unk_00926804 & 2) != 0)
   {
-    locals.stop_selection = 1;
+    s.stop_selection = 1;
   }
   else
   {
-    locals.stop_selection = 0;
+    s.stop_selection = 0;
   }
 
-  locals.selected_count = 0;
-  while (locals.stop_selection == 0 && locals.selected_count < max_choices)
+  s.selected_count = 0;
+  while (s.stop_selection == 0 && s.selected_count < max_choices)
   {
-    if (locals.selected_count < num_prompt_lines)
+    if (s.selected_count < num_prompt_lines)
     {
-      strcpy(locals.prompt, ((char **)prompt_lines)[locals.selected_count]);
+      strcpy(s.prompt, ((char **)prompt_lines)[s.selected_count]);
     }
     else
     {
-      strcpy(locals.prompt, ((char **)prompt_lines)[num_prompt_lines - 1]);
+      strcpy(s.prompt, ((char **)prompt_lines)[num_prompt_lines - 1]);
     }
 
-    locals.show_bigcard = (unsigned int)(locals.selected_count < highlighted_choices);
-    selection = show_cardlist(locals.graveyard_copy,
+    s.show_bigcard = (unsigned int)(s.selected_count < highlighted_choices);
+    selection = show_cardlist(s.graveyard_copy,
                               0,
-                              locals.available_cards,
+                              s.available_cards,
                               count,
                               &gs_done_008b40e0,
-                              locals.show_bigcard,
-                              locals.prompt);
+                              s.show_bigcard,
+                              s.prompt);
     if (selection == -1)
     {
-      locals.stop_selection = 1;
+      s.stop_selection = 1;
     }
     else
     {
-      ((int *)selected_indices)[locals.selected_count] = selection;
-      ++locals.selected_count;
-      locals.graveyard_copy[selection] = unk_008b28f8;
-      locals.available_cards[selection] = 0;
+      ((int *)selected_indices)[s.selected_count] = selection;
+      ++s.selected_count;
+      s.graveyard_copy[selection] = unk_008b28f8;
+      s.available_cards[selection] = 0;
     }
   }
 
@@ -132,31 +132,31 @@ int FUN_0049e8bb(int player,
     if (active_player == player)
     {
       TENTATIVE_wait_for_network_result(player, 0x16);
-      locals.packet_card = 0;
-      locals.index = 0;
-      while (locals.packet_card != -1)
+      s.packet_card = 0;
+      s.index = 0;
+      while (s.packet_card != -1)
       {
-        locals.selected_count = locals.index;
-        locals.packet_card = GetCardFromCLPacket(locals.index);
-        if (locals.packet_card != -1)
+        s.selected_count = s.index;
+        s.packet_card = GetCardFromCLPacket(s.index);
+        if (s.packet_card != -1)
         {
-          ((int *)selected_indices)[locals.index] = locals.packet_card;
-          ++locals.index;
+          ((int *)selected_indices)[s.index] = s.packet_card;
+          ++s.index;
         }
       }
     }
     else
     {
-      for (locals.index = 0; locals.index < locals.selected_count; ++locals.index)
+      for (s.index = 0; s.index < s.selected_count; ++s.index)
       {
-        AddCardToCLPacket((short)((int *)selected_indices)[locals.index]);
+        AddCardToCLPacket((short)((int *)selected_indices)[s.index]);
       }
       AddCardToCLPacket(0xffff);
       TENTATIVE_send_network_result(player, 0x16);
     }
   }
 
-  return locals.selected_count;
+  return s.selected_count;
 }
 
 // FUNCTION: MAGIC 0x00501e96
@@ -228,35 +228,35 @@ int FUN_00501143(int player, char packet_type)
     short *source_ptr;
     int send_result;
     short *write_ptr;
-  } locals;
+  } s;
 
   (void)player;
 
-  locals.packet_size = unk_0091ca94 * 2 + 6;
+  s.packet_size = unk_0091ca94 * 2 + 6;
   unk_0091ca90 = packet_type;
   unk_0091ca92 = (short)unk_0091d07c;
   ++unk_0091d07c;
 
-  locals.packet_number = -1;
-  locals.packet_kind = 2;
-  locals.global_packet = malloc(locals.packet_size);
-  locals.write_ptr = locals.global_packet;
-  *locals.write_ptr = (short)unk_0091ca90;
-  locals.write_ptr[1] = unk_0091ca92;
-  locals.write_ptr[2] = unk_0091ca94;
-  locals.write_ptr += 3;
+  s.packet_number = -1;
+  s.packet_kind = 2;
+  s.global_packet = malloc(s.packet_size);
+  s.write_ptr = s.global_packet;
+  *s.write_ptr = (short)unk_0091ca90;
+  s.write_ptr[1] = unk_0091ca92;
+  s.write_ptr[2] = unk_0091ca94;
+  s.write_ptr += 3;
 
-  locals.source_ptr = unk_0091ca98;
-  for (locals.index = 0; locals.index < unk_0091ca94; ++locals.index)
+  s.source_ptr = unk_0091ca98;
+  for (s.index = 0; s.index < unk_0091ca94; ++s.index)
   {
-    *locals.write_ptr = *locals.source_ptr;
-    ++locals.source_ptr;
-    ++locals.write_ptr;
+    *s.write_ptr = *s.source_ptr;
+    ++s.source_ptr;
+    ++s.write_ptr;
   }
 
-  locals.send_result = FamInterface_SendPacket(locals.packet_header, 1);
-  free(locals.global_packet);
-  if (locals.send_result == 1)
+  s.send_result = FamInterface_SendPacket(s.packet_header, 1);
+  free(s.global_packet);
+  if (s.send_result == 1)
   {
     return 0;
   }
@@ -282,15 +282,15 @@ int FUN_00501c19(int player, int packet_type, unsigned char *packet)
     int index;
     short *write_ptr;
     unsigned char *read_ptr;
-  } locals;
+  } s;
 
-  locals.read_ptr = packet;
+  s.read_ptr = packet;
 
   unk_0091ca90 = *packet;
 
-  locals.read_ptr += 2;
-  unk_0091ca92 = *(short *)locals.read_ptr;
-  locals.read_ptr += 2;
+  s.read_ptr += 2;
+  unk_0091ca92 = *(short *)s.read_ptr;
+  s.read_ptr += 2;
 
   if ((int)unk_0091ca92 != unk_007a7d6c)
   {
@@ -298,14 +298,14 @@ int FUN_00501c19(int player, int packet_type, unsigned char *packet)
   }
   else
   {
-    sprintf(locals.trace, gs_player_receiving_packet_0057d440, player, packet_names_0057cba8[packet_type], unk_007a7d6c);
-    append_to_trace_txt(locals.trace);
+    sprintf(s.trace, gs_player_receiving_packet_0057d440, player, packet_names_0057cba8[packet_type], unk_007a7d6c);
+    append_to_trace_txt(s.trace);
   }
 
   ++unk_007a7d6c;
 
-  unk_0091ca94 = *(short *)locals.read_ptr;
-  locals.read_ptr += 2;
+  unk_0091ca94 = *(short *)s.read_ptr;
+  s.read_ptr += 2;
   if ((int)unk_0091ca94 > 0x1f4)
   {
     return 0;
@@ -320,12 +320,12 @@ int FUN_00501c19(int player, int packet_type, unsigned char *packet)
     }
   }
 
-  locals.write_ptr = unk_0091ca98;
-  for (locals.index = 0; locals.index < (int)unk_0091ca94; ++locals.index)
+  s.write_ptr = unk_0091ca98;
+  for (s.index = 0; s.index < (int)unk_0091ca94; ++s.index)
   {
-    *locals.write_ptr = *(short *)locals.read_ptr;
-    locals.read_ptr += 2;
-    ++locals.write_ptr;
+    *s.write_ptr = *(short *)s.read_ptr;
+    s.read_ptr += 2;
+    ++s.write_ptr;
   }
 
   return 1;

@@ -2190,30 +2190,30 @@ int card_mana_flare(int player, int card, event_t event)
     int land_color;
     int color_index;
     int color_count;
-  } locals;
+  } s;
 
   if ((event == EVENT_COUNT_MANA) && (global_cards_data[PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id].type & TYPE_LAND))
   {
     if ((PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).state & STATE_TAPPED) == 0)
     {
-      locals.land_color = *(char *)((char *)&PLAYER_CARD_INSTANCE(affected_card_controller, affected_card) + 0x58);
-      locals.color_index = 0;
-      locals.color_count = 0;
-      for (; locals.color_index < 7; ++locals.color_index)
+      s.land_color = *(char *)((char *)&PLAYER_CARD_INSTANCE(affected_card_controller, affected_card) + 0x58);
+      s.color_index = 0;
+      s.color_count = 0;
+      for (; s.color_index < 7; ++s.color_index)
       {
-        if ((locals.land_color & (1 << (unsigned char)locals.color_index)) != 0)
+        if ((s.land_color & (1 << (unsigned char)s.color_index)) != 0)
         {
-          ++locals.color_count;
+          ++s.color_count;
         }
       }
 
-      if (locals.color_count > 0)
+      if (s.color_count > 0)
       {
-        declare_mana_available_hex(affected_card_controller, locals.land_color, 1);
+        declare_mana_available_hex(affected_card_controller, s.land_color, 1);
       }
       else
       {
-        declare_mana_available(affected_card_controller, single_color_test_bit_to_color_t(locals.land_color), 1);
+        declare_mana_available(affected_card_controller, single_color_test_bit_to_color_t(s.land_color), 1);
       }
     }
     return 0;
@@ -2223,14 +2223,14 @@ int card_mana_flare(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id != -1)
     {
-      locals.current_internal_id = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id;
+      s.current_internal_id = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id;
     }
     else
     {
-      locals.current_internal_id = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).original_internal_card_id;
+      s.current_internal_id = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).original_internal_card_id;
     }
 
-    if ((global_cards_data[locals.current_internal_id].type & TYPE_LAND) != 0)
+    if ((global_cards_data[s.current_internal_id].type & TYPE_LAND) != 0)
     {
       if (produced_mana_color != -1)
         produce_mana(affected_card_controller, produced_mana_color, 1);

@@ -1547,60 +1547,60 @@ void FUN_004184d2(void)
     char location_block_start_indexb[255];
     FILE *inner_index;
     int entry_index;
-  } locals;
+  } s;
 
-  locals.inner_index = fopen("hints.txt", "rt");
-  locals.local_118 = 0;
+  s.inner_index = fopen("hints.txt", "rt");
+  s.local_118 = 0;
   do
   {
-    locals.entry_index = fscanf(locals.inner_index, "%[^\n]", &locals.location_block_start_indexc);
-    if (locals.location_block_start_indexc == '.')
+    s.entry_index = fscanf(s.inner_index, "%[^\n]", &s.location_block_start_indexc);
+    if (s.location_block_start_indexc == '.')
     {
-      sscanf(locals.location_block_start_indexb, "%d %d %s", &locals.local_124, &locals.local_114, locals.local_120);
-      DAT_0097e450[locals.local_118].first = locals.local_124;
-      DAT_0097e450[locals.local_118].second = locals.local_114;
-      DAT_0097df40[locals.local_118] = 0;
+      sscanf(s.location_block_start_indexb, "%d %d %s", &s.local_124, &s.local_114, s.local_120);
+      DAT_0097e450[s.local_118].first = s.local_124;
+      DAT_0097e450[s.local_118].second = s.local_114;
+      DAT_0097df40[s.local_118] = 0;
 
-      if (strchr(locals.local_120, 'A') != (char *)0)
+      if (strchr(s.local_120, 'A') != (char *)0)
       {
-        DAT_0097df40[locals.local_118] = DAT_0097df40[locals.local_118] | 1;
+        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 1;
       }
 
-      if (strchr(locals.local_120, 'B') != (char *)0)
+      if (strchr(s.local_120, 'B') != (char *)0)
       {
-        DAT_0097df40[locals.local_118] = DAT_0097df40[locals.local_118] | 2;
+        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 2;
       }
 
-      if (strchr(locals.local_120, 'C') != (char *)0)
+      if (strchr(s.local_120, 'C') != (char *)0)
       {
-        DAT_0097df40[locals.local_118] = DAT_0097df40[locals.local_118] | 4;
+        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 4;
       }
 
-      if (strchr(locals.local_120, 'D') != (char *)0)
+      if (strchr(s.local_120, 'D') != (char *)0)
       {
-        DAT_0097df40[locals.local_118] = DAT_0097df40[locals.local_118] | 8;
+        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 8;
       }
 
-      locals.local_110 = FUN_0056c705(locals.local_124);
-      locals.local_110 = FUN_0056c705(locals.local_114);
-      locals.entry_index = fscanf(locals.inner_index, "%[\n]", &locals.location_block_start_indexc);
-      DAT_0097db40[locals.local_118] = ftell(locals.inner_index);
-      locals.local_118 = locals.local_118 + 1;
+      s.local_110 = FUN_0056c705(s.local_124);
+      s.local_110 = FUN_0056c705(s.local_114);
+      s.entry_index = fscanf(s.inner_index, "%[\n]", &s.location_block_start_indexc);
+      DAT_0097db40[s.local_118] = ftell(s.inner_index);
+      s.local_118 = s.local_118 + 1;
     }
     else
     {
-      locals.entry_index = fscanf(locals.inner_index, "%[\n]", &locals.location_block_start_indexc);
+      s.entry_index = fscanf(s.inner_index, "%[\n]", &s.location_block_start_indexc);
     }
-  } while ((locals.local_118 < 0x100) && (locals.entry_index != -1));
+  } while ((s.local_118 < 0x100) && (s.entry_index != -1));
 
   do
   {
-    DAT_0097e450[locals.local_118].second = -1;
-    DAT_0097e450[locals.local_118].first = DAT_0097e450[locals.local_118].second;
-    locals.local_118 = locals.local_118 + 1;
-  } while (locals.local_118 < 0x100);
+    DAT_0097e450[s.local_118].second = -1;
+    DAT_0097e450[s.local_118].first = DAT_0097e450[s.local_118].second;
+    s.local_118 = s.local_118 + 1;
+  } while (s.local_118 < 0x100);
 
-  fclose(locals.inner_index);
+  fclose(s.inner_index);
 }
 // FUNCTION: SHANDALAR 0x0041786e
 void FUN_0041786e(void)
@@ -1614,25 +1614,25 @@ void FUN_0041786e(void)
     int inner_index;
     FILE *entry_index;
     int local_4;
-  } locals;
+  } s;
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x4e2; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 0x4e2; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    DAT_005a6198[locals.location_block_start_index] = -1;
+    DAT_005a6198[s.location_block_start_index] = -1;
   }
 
-  locals.entry_index = fopen("concise.csv", "rt");
-  locals.inner_index = 0;
+  s.entry_index = fopen("concise.csv", "rt");
+  s.inner_index = 0;
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < g_card_count; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < g_card_count; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    locals.inner_index = global_cards_data[locals.location_block_start_index].id;
-    locals.local_4 = fscanf(locals.entry_index, "%d %d %ld\n", &locals.icon_width_scaled, &locals.icon_height_scaled, &locals.selected_state_sprite);
-    global_cards_data[locals.location_block_start_index].rarity = (unsigned char)locals.icon_height_scaled;
-    DAT_005a6198[locals.inner_index] = locals.selected_state_sprite;
+    s.inner_index = global_cards_data[s.location_block_start_index].id;
+    s.local_4 = fscanf(s.entry_index, "%d %d %ld\n", &s.icon_width_scaled, &s.icon_height_scaled, &s.selected_state_sprite);
+    global_cards_data[s.location_block_start_index].rarity = (unsigned char)s.icon_height_scaled;
+    DAT_005a6198[s.inner_index] = s.selected_state_sprite;
   }
 
-  fclose(locals.entry_index);
+  fclose(s.entry_index);
 }
 // FUNCTION: SHANDALAR 0x0046ed03
 void FUN_0046ed03(void)
@@ -1696,14 +1696,14 @@ int RenderMenuControlRange(int first_index, int count)
   {
     int i;
     int limit;
-  } locals;
+  } s;
 
-  locals.limit = MIN(g_menu_control_count_by_context[g_menu_context_index], first_index + count);
+  s.limit = MIN(g_menu_control_count_by_context[g_menu_context_index], first_index + count);
 
   g_menu_render_guard = 1;
-  for (locals.i = first_index; locals.i < locals.limit; locals.i = locals.i + 1)
+  for (s.i = first_index; s.i < s.limit; s.i = s.i + 1)
   {
-    g_menu_controls_by_context[g_menu_context_index][locals.i]->on_render(g_menu_controls_by_context[g_menu_context_index][locals.i], 0);
+    g_menu_controls_by_context[g_menu_context_index][s.i]->on_render(g_menu_controls_by_context[g_menu_context_index][s.i], 0);
   }
   g_menu_render_guard = 0;
   return 1;
@@ -1752,16 +1752,16 @@ void InitializeNewGameState(void)
     int location_block_start_index;
     int entry_index;
     int local_4;
-  } locals;
+  } s;
 
   if (DAT_008bd200 != 0)
   {
     return;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 500; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 500; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    deck[locals.location_block_start_index] = -1;
+    deck[s.location_block_start_index] = -1;
   }
 
   if (DAT_00715f10)
@@ -1769,88 +1769,88 @@ void InitializeNewGameState(void)
     return;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 7; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 7; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    DAT_008b3240[locals.location_block_start_index] = 0;
-    DAT_008c7408[locals.location_block_start_index] = -1;
+    DAT_008b3240[s.location_block_start_index] = 0;
+    DAT_008c7408[s.location_block_start_index] = -1;
   }
 
   g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
   g_world_magic_slot_timers[g_selected_wizard_color * 2].town_index = 0;
 
-  locals.uVar2 = 1 << (BYTE)g_selected_wizard_color;
-  locals.entry_index = g_shandalar_difficulty + 1;
-  locals.local_4 = locals.entry_index;
+  s.uVar2 = 1 << (BYTE)g_selected_wizard_color;
+  s.entry_index = g_shandalar_difficulty + 1;
+  s.local_4 = s.entry_index;
   if (g_shandalar_difficulty == 3)
   {
-    locals.entry_index = 1;
-    locals.entry_index = 3;
+    s.entry_index = 1;
+    s.entry_index = 3;
   }
 
   switch (g_shandalar_difficulty)
   {
   case 0:
-    if ((locals.uVar2 < 1) & 0x20)
+    if ((s.uVar2 < 1) & 0x20)
     {
-      FUN_004be0bf(locals.uVar2, 0xd, 7, 0xf, 1, 1);
+      FUN_004be0bf(s.uVar2, 0xd, 7, 0xf, 1, 1);
     }
     else
     {
-      FUN_004be0bf(locals.uVar2, 0xd, 0xc, 10, 1, 1);
+      FUN_004be0bf(s.uVar2, 0xd, 0xc, 10, 1, 1);
     }
     break;
   case 1:
-    FUN_004be0bf(locals.uVar2, 0xb, 4, 0xc, 1, 1);
-    FUN_004be0bf(FUN_004bdccc(locals.uVar2), 4, 3, 4, 0, 1);
+    FUN_004be0bf(s.uVar2, 0xb, 4, 0xc, 1, 1);
+    FUN_004be0bf(FUN_004bdccc(s.uVar2), 4, 3, 4, 0, 1);
     break;
   case 2:
-    FUN_004be0bf(locals.uVar2, 9, 3, 9, 1, 1);
-    locals.uVar3 = FUN_004bdccc(locals.uVar2);
-    FUN_004be0bf(locals.uVar3, 5, 3, 4, 0, 1);
-    FUN_004be0bf(FUN_004bdccc(locals.uVar2 | locals.uVar3), 4, 3, 3, 0, 1);
+    FUN_004be0bf(s.uVar2, 9, 3, 9, 1, 1);
+    s.uVar3 = FUN_004bdccc(s.uVar2);
+    FUN_004be0bf(s.uVar3, 5, 3, 4, 0, 1);
+    FUN_004be0bf(FUN_004bdccc(s.uVar2 | s.uVar3), 4, 3, 3, 0, 1);
     break;
   case 3:
-    FUN_004be0bf(locals.uVar2, 6, 3, 5, 1, 1);
+    FUN_004be0bf(s.uVar2, 6, 3, 5, 1, 1);
     FUN_004be0bf(1, 0xb, 5, 0xe, 0, 1);
     break;
   }
 
   g_journal_entry_count = 0;
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 5; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 5; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    g_amulet_inventory[locals.location_block_start_index] = 0;
+    g_amulet_inventory[s.location_block_start_index] = 0;
   }
 
   DAT_0078990c[g_selected_wizard_color]++;
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 3 - g_shandalar_difficulty; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 3 - g_shandalar_difficulty; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    locals.icon_width_scaled = FUN_00522508(5);
-    g_amulet_inventory[locals.icon_width_scaled]++;
+    s.icon_width_scaled = FUN_00522508(5);
+    g_amulet_inventory[s.icon_width_scaled]++;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x80; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 0x80; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    g_town_slots[locals.location_block_start_index].location_type = -1;
+    g_town_slots[s.location_block_start_index].location_type = -1;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 8; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 8; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    g_lair_or_monster_slots[locals.location_block_start_index].entry_type = SHANDALAR_ENTRY_NONE;
+    g_lair_or_monster_slots[s.location_block_start_index].entry_type = SHANDALAR_ENTRY_NONE;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 1000; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 1000; s.location_block_start_index = s.location_block_start_index + 1)
   {
     g_duel_victory_log[0] = 0;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 4; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 4; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    DAT_007a7d10[locals.location_block_start_index] = 8;
+    DAT_007a7d10[s.location_block_start_index] = 8;
   }
 
-  for (locals.location_block_start_index = 0; locals.location_block_start_index < 0x96; locals.location_block_start_index = locals.location_block_start_index + 1)
+  for (s.location_block_start_index = 0; s.location_block_start_index < 0x96; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    deck[locals.location_block_start_index] = deck[locals.location_block_start_index] | 0x10000;
+    deck[s.location_block_start_index] = deck[s.location_block_start_index] | 0x10000;
   }
   g_selected_wizard_color = -1;
 }
@@ -4550,7 +4550,7 @@ int FUN_0055e31f(int x, int y)
     int local_10;
     int local_c;
     unsigned int direction;
-  } locals;
+  } s;
   int keycode_map[10];
 
   keycode_map[0] = 0x4800;
@@ -4574,46 +4574,46 @@ int FUN_0055e31f(int x, int y)
     return 0x20;
   }
 
-  locals.local_14 = ScaleUiCoordinate(0x140);
-  locals.local_18 = ScaleUiCoordinate(0xbc);
-  x = x - locals.local_14;
-  y = locals.local_18 - y;
-  locals.local_c = abs(x);
-  locals.local_10 = abs(y);
+  s.local_14 = ScaleUiCoordinate(0x140);
+  s.local_18 = ScaleUiCoordinate(0xbc);
+  x = x - s.local_14;
+  y = s.local_18 - y;
+  s.local_c = abs(x);
+  s.local_10 = abs(y);
 
   if (x >= 0 && y >= 0)
   {
-    locals.direction = 0;
+    s.direction = 0;
   }
   else if (x >= 0 && y < 0)
   {
-    locals.direction = 2;
+    s.direction = 2;
   }
   else if (x < 0 && y < 0)
   {
-    locals.direction = 4;
+    s.direction = 4;
   }
   else if (x < 0 && y >= 0)
   {
-    locals.direction = 6;
+    s.direction = 6;
   }
 
-  if ((locals.direction & 2) == 0 && locals.local_10 < locals.local_c)
+  if ((s.direction & 2) == 0 && s.local_10 < s.local_c)
   {
-    locals.direction++;
+    s.direction++;
   }
-  else if ((locals.direction & 2) != 0 && locals.local_c < locals.local_10)
+  else if ((s.direction & 2) != 0 && s.local_c < s.local_10)
   {
-    locals.direction++;
+    s.direction++;
   }
 
-  switch (locals.direction)
+  switch (s.direction)
   {
   case 0:
   case 3:
   case 4:
   case 7:
-    keycode_map[9] = (locals.local_c * 0x9a85) >> 0xe;
+    keycode_map[9] = (s.local_c * 0x9a85) >> 0xe;
     if (y < 0)
     {
       keycode_map[9] = -keycode_map[9];
@@ -4623,7 +4623,7 @@ int FUN_0055e31f(int x, int y)
   case 2:
   case 5:
   case 6:
-    keycode_map[9] = (locals.local_c * 0x1a82) >> 0xe;
+    keycode_map[9] = (s.local_c * 0x1a82) >> 0xe;
     if (y < 0)
     {
       keycode_map[9] = -keycode_map[9];
@@ -4631,7 +4631,7 @@ int FUN_0055e31f(int x, int y)
     break;
   }
 
-  switch (locals.direction)
+  switch (s.direction)
   {
   case 0:
   case 1:
@@ -4639,7 +4639,7 @@ int FUN_0055e31f(int x, int y)
   case 3:
     if (y < keycode_map[9])
     {
-      locals.direction = locals.direction + 1;
+      s.direction = s.direction + 1;
     }
     break;
   case 4:
@@ -4648,12 +4648,12 @@ int FUN_0055e31f(int x, int y)
   case 7:
     if (keycode_map[9] < y)
     {
-      locals.direction = locals.direction + 1;
+      s.direction = s.direction + 1;
     }
     break;
   }
 
-  return keycode_map[locals.direction];
+  return keycode_map[s.direction];
 }
 
 // FUNCTION: SHANDALAR 0x0055e808
@@ -5609,7 +5609,7 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
     int queued_key;
     int i;
     int full_key;
-  } locals;
+  } s;
 
   (void)mouse_x;
   (void)mouse_y;
@@ -5617,24 +5617,24 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
   g_menu_input_unhandled = 1;
   if (HasQueuedKeyInput() != 0)
   {
-    locals.queued_key = PeekQueuedKeyInput();
-    if ((locals.queued_key == 0xf09) || (locals.queued_key == 0xf0f) ||
-        ((g_menu_allow_arrow_nav_by_context[g_menu_context_index] != 0) && ((locals.queued_key == 0x4800) || (locals.queued_key == 0x5000))))
+    s.queued_key = PeekQueuedKeyInput();
+    if ((s.queued_key == 0xf09) || (s.queued_key == 0xf0f) ||
+        ((g_menu_allow_arrow_nav_by_context[g_menu_context_index] != 0) && ((s.queued_key == 0x4800) || (s.queued_key == 0x5000))))
     {
       PopQueuedKeyInput();
-      switch (locals.queued_key)
+      switch (s.queued_key)
       {
       case 0xf09:
-        locals.direction = 1;
+        s.direction = 1;
         break;
       case 0xf0f:
-        locals.direction = -1;
+        s.direction = -1;
         break;
       case 0x4800:
-        locals.direction = -1;
+        s.direction = -1;
         break;
       case 0x5000:
-        locals.direction = 1;
+        s.direction = 1;
         break;
       default:
         break;
@@ -5642,7 +5642,7 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
 
       if (g_menu_current_control_index == -1)
       {
-        if (locals.direction > 0)
+        if (s.direction > 0)
         {
           g_menu_current_control_index = 0;
         }
@@ -5653,12 +5653,12 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
       }
       else
       {
-        g_menu_current_control_index = (g_menu_control_count_by_context[g_menu_context_index] + g_menu_current_control_index + locals.direction) % g_menu_control_count_by_context[g_menu_context_index];
+        g_menu_current_control_index = (g_menu_control_count_by_context[g_menu_context_index] + g_menu_current_control_index + s.direction) % g_menu_control_count_by_context[g_menu_context_index];
       }
 
       while (g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index]->state == 3)
       {
-        g_menu_current_control_index = (g_menu_control_count_by_context[g_menu_context_index] + g_menu_current_control_index + locals.direction) % g_menu_control_count_by_context[g_menu_context_index];
+        g_menu_current_control_index = (g_menu_control_count_by_context[g_menu_context_index] + g_menu_current_control_index + s.direction) % g_menu_control_count_by_context[g_menu_context_index];
       }
 
       if (g_menu_prev_control_index != -1)
@@ -5674,35 +5674,35 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
       g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index]->on_render(g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index], 1);
     }
 
-    locals.full_key = (int)locals.queued_key;
-    locals.queued_key &= 0xff;
-    if ((locals.queued_key == 0) && (g_menu_allow_arrow_nav_by_context[g_menu_context_index] != 0))
+    s.full_key = (int)s.queued_key;
+    s.queued_key &= 0xff;
+    if ((s.queued_key == 0) && (g_menu_allow_arrow_nav_by_context[g_menu_context_index] != 0))
     {
     }
     else
     {
-      locals.i = 0;
+      s.i = 0;
       if (g_menu_current_control_index == -1)
       {
-        locals.next_search_index = 0;
+        s.next_search_index = 0;
       }
       else
       {
-        locals.next_search_index = g_menu_current_control_index + 1;
+        s.next_search_index = g_menu_current_control_index + 1;
       }
 
-      for (; locals.i < g_menu_control_count_by_context[g_menu_context_index]; locals.i = locals.i + 1)
+      for (; s.i < g_menu_control_count_by_context[g_menu_context_index]; s.i = s.i + 1)
       {
-        locals.control_index = (locals.next_search_index + locals.i) % g_menu_control_count_by_context[g_menu_context_index];
-        if (g_menu_controls_by_context[g_menu_context_index][locals.control_index]->state == 3)
+        s.control_index = (s.next_search_index + s.i) % g_menu_control_count_by_context[g_menu_context_index];
+        if (g_menu_controls_by_context[g_menu_context_index][s.control_index]->state == 3)
         {
           continue;
         }
-        if ((g_menu_controls_by_context[g_menu_context_index][locals.control_index]->direct_hotkey == locals.full_key) ||
-            ((locals.queued_key != 0) && (g_menu_controls_by_context[g_menu_context_index][locals.control_index]->navigate_hotkeys != (char *)0) &&
-             (strchr(g_menu_controls_by_context[g_menu_context_index][locals.control_index]->navigate_hotkeys, locals.queued_key) != (char *)0)))
+        if ((g_menu_controls_by_context[g_menu_context_index][s.control_index]->direct_hotkey == s.full_key) ||
+            ((s.queued_key != 0) && (g_menu_controls_by_context[g_menu_context_index][s.control_index]->navigate_hotkeys != (char *)0) &&
+             (strchr(g_menu_controls_by_context[g_menu_context_index][s.control_index]->navigate_hotkeys, s.queued_key) != (char *)0)))
         {
-          g_menu_current_control_index = locals.control_index;
+          g_menu_current_control_index = s.control_index;
           if (g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index]->x != -1)
           {
             SetCursorPos(
@@ -5716,9 +5716,9 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
           }
 
           g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index]->on_render(g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index], 1);
-          if ((g_menu_controls_by_context[g_menu_context_index][locals.control_index]->direct_hotkey == locals.full_key) ||
-              ((locals.queued_key != 0) && (g_menu_controls_by_context[g_menu_context_index][locals.control_index]->activate_hotkeys != (char *)0) &&
-               (strchr(g_menu_controls_by_context[g_menu_context_index][locals.control_index]->activate_hotkeys, locals.queued_key) != (char *)0)))
+          if ((g_menu_controls_by_context[g_menu_context_index][s.control_index]->direct_hotkey == s.full_key) ||
+              ((s.queued_key != 0) && (g_menu_controls_by_context[g_menu_context_index][s.control_index]->activate_hotkeys != (char *)0) &&
+               (strchr(g_menu_controls_by_context[g_menu_context_index][s.control_index]->activate_hotkeys, s.queued_key) != (char *)0)))
           {
             g_menu_render_guard = 1;
             g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index]->on_render(g_menu_controls_by_context[g_menu_context_index][g_menu_current_control_index], 2);
@@ -5733,7 +5733,7 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
         }
       }
 
-      if ((locals.queued_key == 0xd) && (g_menu_current_control_index != -1))
+      if ((s.queued_key == 0xd) && (g_menu_current_control_index != -1))
       {
         if (g_menu_prev_control_index != -1)
         {
@@ -5779,13 +5779,13 @@ int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_c
     }
   }
 
-  for (locals.i = 0; locals.i < g_menu_control_count_by_context[g_menu_context_index]; locals.i = locals.i + 1)
+  for (s.i = 0; s.i < g_menu_control_count_by_context[g_menu_context_index]; s.i = s.i + 1)
   {
-    if (locals.i != g_menu_prev_control_index)
+    if (s.i != g_menu_prev_control_index)
     {
-      if (g_menu_controls_by_context[g_menu_context_index][locals.i]->on_render(g_menu_controls_by_context[g_menu_context_index][locals.i], 0) != 0)
+      if (g_menu_controls_by_context[g_menu_context_index][s.i]->on_render(g_menu_controls_by_context[g_menu_context_index][s.i], 0) != 0)
       {
-        g_menu_current_control_index = locals.i;
+        g_menu_current_control_index = s.i;
       }
     }
   }

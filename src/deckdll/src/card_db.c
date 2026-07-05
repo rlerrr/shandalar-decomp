@@ -101,7 +101,7 @@ name_table_entry_t unk_00777e60[866];
 // FUNCTION: SHANDALAR 0x004424b0
 int read_db_guts(char *cards_dat_filename)
 {
-  struct read_db_guts_locals
+  struct
   {
     int init_idx;               /* local_808 */
     int flavor_out_idx;         /* local_804 */
@@ -118,117 +118,117 @@ int read_db_guts(char *cards_dat_filename)
     size_t record_size;
     int card_idx; /* local_c */
     FILE *cards_dat;
-  } locals;
+  } s;
 
-  locals.cards_dat = fopen(cards_dat_filename, "rb");
-  if (locals.cards_dat == NULL)
+  s.cards_dat = fopen(cards_dat_filename, "rb");
+  if (s.cards_dat == NULL)
     return 0;
 
-  fread(&global_available_slots, 4, 1, locals.cards_dat);
-  fread(&locals.record_size, 4, 1, locals.cards_dat);
+  fread(&global_available_slots, 4, 1, s.cards_dat);
+  fread(&s.record_size, 4, 1, s.cards_dat);
 
-  global_base_txt = (char *)malloc(locals.record_size);
+  global_base_txt = (char *)malloc(s.record_size);
   if (global_base_txt == NULL)
   {
-    fclose(locals.cards_dat);
+    fclose(s.cards_dat);
     return 0;
   }
 
-  fread(global_raw_cards_storage, 0x98, global_available_slots, locals.cards_dat);
-  fread(global_base_txt, 1, locals.record_size, locals.cards_dat);
-  fclose(locals.cards_dat);
+  fread(global_raw_cards_storage, 0x98, global_available_slots, s.cards_dat);
+  fread(global_base_txt, 1, s.record_size, s.cards_dat);
+  fclose(s.cards_dat);
 
-  for (locals.card_idx = 0; locals.card_idx < global_available_slots; locals.card_idx += 1)
+  for (s.card_idx = 0; s.card_idx < global_available_slots; s.card_idx += 1)
   {
-    *(int *)&global_raw_cards_storage[locals.card_idx].full_name += (int)global_base_txt;
-    *(int *)&global_raw_cards_storage[locals.card_idx].name += (int)global_base_txt;
-    *(int *)&global_raw_cards_storage[locals.card_idx].type_text += (int)global_base_txt;
-    *(int *)&global_raw_cards_storage[locals.card_idx].rules_text += (int)global_base_txt;
-    *(int *)&global_raw_cards_storage[locals.card_idx].flavor_text += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[s.card_idx].full_name += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[s.card_idx].name += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[s.card_idx].type_text += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[s.card_idx].rules_text += (int)global_base_txt;
+    *(int *)&global_raw_cards_storage[s.card_idx].flavor_text += (int)global_base_txt;
 
-    if (_strcmpi(global_raw_cards_storage[locals.card_idx].rules_text, "None") == 0)
-      global_raw_cards_storage[locals.card_idx].rules_text = read_db_empty_rules;
+    if (_strcmpi(global_raw_cards_storage[s.card_idx].rules_text, "None") == 0)
+      global_raw_cards_storage[s.card_idx].rules_text = read_db_empty_rules;
 
-    if ((_strcmpi(global_raw_cards_storage[locals.card_idx].flavor_text, "None") == 0) ||
-        (_strcmpi(global_raw_cards_storage[locals.card_idx].flavor_text, "Blank") == 0))
-      global_raw_cards_storage[locals.card_idx].flavor_text = read_db_empty_flavor;
+    if ((_strcmpi(global_raw_cards_storage[s.card_idx].flavor_text, "None") == 0) ||
+        (_strcmpi(global_raw_cards_storage[s.card_idx].flavor_text, "Blank") == 0))
+      global_raw_cards_storage[s.card_idx].flavor_text = read_db_empty_flavor;
 
-    global_raw_cards_storage[locals.card_idx].artist =
-        const_db_artist_names[(int)global_raw_cards_storage[locals.card_idx].artist];
+    global_raw_cards_storage[s.card_idx].artist =
+        const_db_artist_names[(int)global_raw_cards_storage[s.card_idx].artist];
 
-    if (global_raw_cards_storage[locals.card_idx].num_pics == 0)
-      global_raw_cards_storage[locals.card_idx].num_pics = 1;
+    if (global_raw_cards_storage[s.card_idx].num_pics == 0)
+      global_raw_cards_storage[s.card_idx].num_pics = 1;
   }
 
-  for (locals.exp_idx = 0; locals.exp_idx < global_available_slots; locals.exp_idx += 1)
-    if (global_raw_cards_storage[locals.exp_idx].expansion & 0x40)
-      global_raw_cards_storage[locals.exp_idx].expansion = 0x80;
+  for (s.exp_idx = 0; s.exp_idx < global_available_slots; s.exp_idx += 1)
+    if (global_raw_cards_storage[s.exp_idx].expansion & 0x40)
+      global_raw_cards_storage[s.exp_idx].expansion = 0x80;
 
-  for (locals.req_idx = 0; locals.req_idx < global_available_slots; locals.req_idx += 1)
-    if ((signed char)global_raw_cards_storage[locals.req_idx].req.req_colorless == 0x11)
-      global_raw_cards_storage[locals.req_idx].req.req_colorless = 10;
+  for (s.req_idx = 0; s.req_idx < global_available_slots; s.req_idx += 1)
+    if ((signed char)global_raw_cards_storage[s.req_idx].req.req_colorless == 0x11)
+      global_raw_cards_storage[s.req_idx].req.req_colorless = 10;
 
-  for (locals.rules_card_idx = 0; locals.rules_card_idx < global_available_slots;
-       locals.rules_card_idx += 1)
+  for (s.rules_card_idx = 0; s.rules_card_idx < global_available_slots;
+       s.rules_card_idx += 1)
   {
-    locals.rules_out_idx = 0;
-    for (locals.rules_in = global_raw_cards_storage[locals.rules_card_idx].rules_text;
-         *locals.rules_in;)
+    s.rules_out_idx = 0;
+    for (s.rules_in = global_raw_cards_storage[s.rules_card_idx].rules_text;
+         *s.rules_in;)
     {
-      if (((*locals.rules_in == '\\') && (locals.rules_in[1] == '\\')) ||
-          ((*locals.rules_in == '\\') && (locals.rules_in[1] == 'n')))
+      if (((*s.rules_in == '\\') && (s.rules_in[1] == '\\')) ||
+          ((*s.rules_in == '\\') && (s.rules_in[1] == 'n')))
       {
-        locals.rules_in += 1;
-        locals.rules_text_buf[locals.rules_out_idx] = '\n';
-        locals.rules_out_idx += 1;
+        s.rules_in += 1;
+        s.rules_text_buf[s.rules_out_idx] = '\n';
+        s.rules_out_idx += 1;
       }
       else
       {
-        locals.rules_text_buf[locals.rules_out_idx] = *locals.rules_in;
-        locals.rules_out_idx += 1;
+        s.rules_text_buf[s.rules_out_idx] = *s.rules_in;
+        s.rules_out_idx += 1;
       }
 
-      locals.rules_in += 1;
+      s.rules_in += 1;
     }
 
-    locals.rules_text_buf[locals.rules_out_idx] = '\0';
-    strcpy(global_raw_cards_storage[locals.rules_card_idx].rules_text, locals.rules_text_buf);
+    s.rules_text_buf[s.rules_out_idx] = '\0';
+    strcpy(global_raw_cards_storage[s.rules_card_idx].rules_text, s.rules_text_buf);
   }
 
-  for (locals.flavor_card_idx = 0; locals.flavor_card_idx < global_available_slots;
-       locals.flavor_card_idx += 1)
+  for (s.flavor_card_idx = 0; s.flavor_card_idx < global_available_slots;
+       s.flavor_card_idx += 1)
   {
-    locals.flavor_out_idx = 0;
-    for (locals.flavor_in = global_raw_cards_storage[locals.flavor_card_idx].flavor_text;
-         *locals.flavor_in;)
+    s.flavor_out_idx = 0;
+    for (s.flavor_in = global_raw_cards_storage[s.flavor_card_idx].flavor_text;
+         *s.flavor_in;)
     {
-      if (((*locals.flavor_in == '\\') && (locals.flavor_in[1] == '\\')) ||
-          ((*locals.flavor_in == '\\') && (locals.flavor_in[1] == 'n')))
+      if (((*s.flavor_in == '\\') && (s.flavor_in[1] == '\\')) ||
+          ((*s.flavor_in == '\\') && (s.flavor_in[1] == 'n')))
       {
-        locals.flavor_in += 1;
-        locals.flavor_text_buf[locals.flavor_out_idx] = '\n';
-        locals.flavor_out_idx += 1;
+        s.flavor_in += 1;
+        s.flavor_text_buf[s.flavor_out_idx] = '\n';
+        s.flavor_out_idx += 1;
       }
       else
       {
-        locals.flavor_text_buf[locals.flavor_out_idx] = *locals.flavor_in;
-        locals.flavor_out_idx += 1;
+        s.flavor_text_buf[s.flavor_out_idx] = *s.flavor_in;
+        s.flavor_out_idx += 1;
       }
 
-      locals.flavor_in += 1;
+      s.flavor_in += 1;
     }
 
-    locals.flavor_text_buf[locals.flavor_out_idx] = '\0';
-    strcpy(global_raw_cards_storage[locals.flavor_card_idx].flavor_text, locals.flavor_text_buf);
+    s.flavor_text_buf[s.flavor_out_idx] = '\0';
+    strcpy(global_raw_cards_storage[s.flavor_card_idx].flavor_text, s.flavor_text_buf);
   }
 
 #define SET_HACK(idx, col) \
   *(int *)&global_raw_cards_storage[(idx)].hack_colors = (col)
 
-  for (locals.init_idx = 0; locals.init_idx < global_available_slots; locals.init_idx += 1)
+  for (s.init_idx = 0; s.init_idx < global_available_slots; s.init_idx += 1)
   {
-    global_raw_cards_storage[locals.init_idx].sleight_color = 0;
-    SET_HACK(locals.init_idx, 0);
+    global_raw_cards_storage[s.init_idx].sleight_color = 0;
+    SET_HACK(s.init_idx, 0);
   }
 
   global_raw_cards_storage[0x227].sleight_color = 0x28;

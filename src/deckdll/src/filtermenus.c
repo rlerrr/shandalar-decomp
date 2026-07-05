@@ -891,7 +891,7 @@ destroy_filter_menus(void)
 LRESULT CALLBACK
 wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  struct WndprocCardListFilterClassLocals
+  struct
   {
     HDC hdc2;
     PAINTSTRUCT paint; // ebp - 0xa4

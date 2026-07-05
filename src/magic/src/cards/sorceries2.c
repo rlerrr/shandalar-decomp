@@ -43,7 +43,7 @@ int card_darkpact(int player, int card, event_t event)
     target_t target;
     int target_player;
     int index;
-  } locals;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -55,31 +55,31 @@ int card_darkpact(int player, int card, event_t event)
     load_text("promptsX1.txt", "DARKPACT");
     if (!C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
-                              text_lines[0], 1, &locals.target))
+                              text_lines[0], 1, &s.target))
     {
       spell_fizzled = 1;
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = locals.target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = locals.target.card;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = s.target.player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.target.card;
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    locals.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+    s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     if (global_library[player][0] != -1)
     {
       PLAYER_CARD_INSTANCE(player, card).info_slot = global_library[player][0];
       remove_card_from_deck(player, 0);
-      for (locals.index = 0; locals.index < 16 && global_ante_cards[locals.target_player][locals.index] != -1; ++locals.index)
+      for (s.index = 0; s.index < 16 && global_ante_cards[s.target_player][s.index] != -1; ++s.index)
       {
-        real_put_on_top_of_deck(player, global_ante_cards[locals.target_player][locals.index]);
-        global_ante_cards[locals.target_player][locals.index] = -1;
+        real_put_on_top_of_deck(player, global_ante_cards[s.target_player][s.index]);
+        global_ante_cards[s.target_player][s.index] = -1;
       }
-      global_ante_cards[locals.target_player][0] = (char)PLAYER_CARD_INSTANCE(player, card).info_slot;
+      global_ante_cards[s.target_player][0] = (char)PLAYER_CARD_INSTANCE(player, card).info_slot;
       PLAYER_CARD_INSTANCE(player, card).info_slot = add_card_to_hand(player, PLAYER_CARD_INSTANCE(player, card).info_slot);
       if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
       {
@@ -148,7 +148,7 @@ int card_resurrection(int player, int card, event_t event)
     int hand_card;
     int graveyard_index;
     char (*prompt)[300];
-  } locals;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -159,46 +159,46 @@ int card_resurrection(int player, int card, event_t event)
   {
     if (((player == active_player) && ((unk_00926804 & 2) == 0)) || (unk_008a9000 == 1))
     {
-      locals.can_select = 1;
-      locals.graveyard_index = FUN_004087cc(player, 2);
+      s.can_select = 1;
+      s.graveyard_index = FUN_004087cc(player, 2);
     }
     else
     {
-      for (locals.hand_card = 0;
-           (locals.hand_card < 500 && global_graveyard_slots[player][locals.hand_card] != -1);
-           ++locals.hand_card)
+      for (s.hand_card = 0;
+           (s.hand_card < 500 && global_graveyard_slots[player][s.hand_card] != -1);
+           ++s.hand_card)
       {
-        if ((global_cards_data[global_graveyard_slots[player][locals.hand_card]].type & TYPE_CREATURE) != 0)
+        if ((global_cards_data[global_graveyard_slots[player][s.hand_card]].type & TYPE_CREATURE) != 0)
         {
-          locals.selectable[locals.hand_card] = 1;
+          s.selectable[s.hand_card] = 1;
         }
         else
         {
-          locals.selectable[locals.hand_card] = 0;
+          s.selectable[s.hand_card] = 0;
         }
       }
       load_text("promptsX1.txt", "RESURRECTION");
-      locals.prompt = text_lines;
-      locals.can_select = FUN_004a62d7(player,
+      s.prompt = text_lines;
+      s.can_select = FUN_004a62d7(player,
                                        global_graveyard_slots[player],
-                                       locals.selectable,
+                                       s.selectable,
                                        500,
-                                       (int)&locals.prompt,
+                                       (int)&s.prompt,
                                        1,
-                                       (int)&locals.graveyard_index,
+                                       (int)&s.graveyard_index,
                                        0,
                                        1);
     }
 
-    if (locals.can_select != 0 && global_graveyard_slots[player][locals.graveyard_index] != -1)
+    if (s.can_select != 0 && global_graveyard_slots[player][s.graveyard_index] != -1)
     {
-      locals.hand_card = add_card_to_hand(player, global_graveyard_slots[player][locals.graveyard_index]);
-      if (locals.hand_card != -1)
+      s.hand_card = add_card_to_hand(player, global_graveyard_slots[player][s.graveyard_index]);
+      if (s.hand_card != -1)
       {
-        PLAYER_CARD_INSTANCE(player, locals.hand_card).state |= 0x20;
-        PLAYER_CARD_INSTANCE(player, card).info_slot = locals.graveyard_index;
+        PLAYER_CARD_INSTANCE(player, s.hand_card).state |= 0x20;
+        PLAYER_CARD_INSTANCE(player, card).info_slot = s.graveyard_index;
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
-        PLAYER_CARD_INSTANCE(player, card).targets[0].card = locals.hand_card;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.hand_card;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }

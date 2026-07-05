@@ -68,7 +68,7 @@ int card_balance(int player, int card, event_t event)
     int current_card;
     char land_prompt[300];
     char creature_prompt[300];
-  } locals;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -81,48 +81,48 @@ int card_balance(int player, int card, event_t event)
       if (unk_008a9000 != 1)
       {
         load_text("prompts.txt", "BALANCE");
-        strcpy(locals.land_prompt, text_lines[0]);
-        strcpy(locals.creature_prompt, text_lines[1]);
+        strcpy(s.land_prompt, text_lines[0]);
+        strcpy(s.creature_prompt, text_lines[1]);
       }
 
       do
       {
-        locals.player_1_count = 0;
-        locals.player_0_count = locals.player_1_count;
-        locals.current_card = 0;
+        s.player_1_count = 0;
+        s.player_0_count = s.player_1_count;
+        s.current_card = 0;
         while (1)
         {
-          if ((active_cards_count[1] <= active_cards_count[0] ? active_cards_count[0] : active_cards_count[1]) <= locals.current_card)
+          if ((active_cards_count[1] <= active_cards_count[0] ? active_cards_count[0] : active_cards_count[1]) <= s.current_card)
           {
             break;
           }
-          if (is_in_play(0, locals.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, locals.current_card).internal_card_id].type & TYPE_LAND) != 0)
+          if (is_in_play(0, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, s.current_card).internal_card_id].type & TYPE_LAND) != 0)
           {
-            ++locals.player_0_count;
+            ++s.player_0_count;
           }
-          if (is_in_play(1, locals.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, locals.current_card).internal_card_id].type & TYPE_LAND) != 0)
+          if (is_in_play(1, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, s.current_card).internal_card_id].type & TYPE_LAND) != 0)
           {
-            ++locals.player_1_count;
+            ++s.player_1_count;
           }
-          ++locals.current_card;
+          ++s.current_card;
         }
 
         if (unk_008a9000 != 1)
         {
-          strcpy(text_lines[0], locals.land_prompt);
+          strcpy(text_lines[0], s.land_prompt);
         }
 
-        if (locals.player_1_count < locals.player_0_count)
+        if (s.player_1_count < s.player_0_count)
         {
           sacrifice_a_land(0);
         }
-        else if (locals.player_0_count < locals.player_1_count)
+        else if (s.player_0_count < s.player_1_count)
         {
           sacrifice_a_land(1);
         }
 
         TENTATIVE_reassess_all_cards();
-      } while (locals.player_0_count != locals.player_1_count);
+      } while (s.player_0_count != s.player_1_count);
 
       do
       {
@@ -138,44 +138,44 @@ int card_balance(int player, int card, event_t event)
 
       do
       {
-        locals.player_1_count = 0;
-        locals.player_0_count = locals.player_1_count;
-        locals.current_card = 0;
+        s.player_1_count = 0;
+        s.player_0_count = s.player_1_count;
+        s.current_card = 0;
         while (1)
         {
-          if ((active_cards_count[1] <= active_cards_count[0] ? active_cards_count[0] : active_cards_count[1]) <= locals.current_card)
+          if ((active_cards_count[1] <= active_cards_count[0] ? active_cards_count[0] : active_cards_count[1]) <= s.current_card)
           {
             break;
           }
-          if (is_in_play(0, locals.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, locals.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, locals.current_card).kill_code != 3)
+          if (is_in_play(0, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, s.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, s.current_card).kill_code != 3)
           {
-            ++locals.player_0_count;
+            ++s.player_0_count;
           }
-          if (is_in_play(1, locals.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, locals.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, locals.current_card).kill_code != 3)
+          if (is_in_play(1, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, s.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, s.current_card).kill_code != 3)
           {
-            ++locals.player_1_count;
+            ++s.player_1_count;
           }
-          ++locals.current_card;
+          ++s.current_card;
         }
 
         if (unk_008a9000 != 1)
         {
-          strcpy(text_lines[0], locals.creature_prompt);
+          strcpy(text_lines[0], s.creature_prompt);
         }
 
-        if (locals.player_1_count < locals.player_0_count)
+        if (s.player_1_count < s.player_0_count)
         {
-          locals.current_card = FUN_00551921(0);
-          kill_card(0, locals.current_card, KILL_SACRIFICE);
+          s.current_card = FUN_00551921(0);
+          kill_card(0, s.current_card, KILL_SACRIFICE);
         }
-        if (locals.player_0_count < locals.player_1_count)
+        if (s.player_0_count < s.player_1_count)
         {
-          locals.current_card = FUN_00551921(1);
-          kill_card(1, locals.current_card, KILL_SACRIFICE);
+          s.current_card = FUN_00551921(1);
+          kill_card(1, s.current_card, KILL_SACRIFICE);
         }
 
         TENTATIVE_reassess_all_cards();
-      } while (locals.player_0_count != locals.player_1_count);
+      } while (s.player_0_count != s.player_1_count);
 
       kill_card(player, card, KILL_BURY);
     }
@@ -1514,18 +1514,18 @@ int card_raise_dead(int player, int card, event_t event)
     int hand_card;
     int graveyard_index;
     int result;
-  } locals;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
-    locals.result = 0;
-    for (locals.hand_card = 0;
-         locals.hand_card < 500 && locals.result == 0 && global_graveyard_slots[player][locals.hand_card] != -1;
-         ++locals.hand_card)
+    s.result = 0;
+    for (s.hand_card = 0;
+         s.hand_card < 500 && s.result == 0 && global_graveyard_slots[player][s.hand_card] != -1;
+         ++s.hand_card)
     {
-      if ((global_cards_data[global_graveyard_slots[player][locals.hand_card]].type & TYPE_CREATURE) != 0)
+      if ((global_cards_data[global_graveyard_slots[player][s.hand_card]].type & TYPE_CREATURE) != 0)
       {
-        locals.result = 1;
+        s.result = 1;
       }
     }
   }
@@ -1535,7 +1535,7 @@ int card_raise_dead(int player, int card, event_t event)
     {
       if (((player == active_player) && (unk_00926804 & 2) == 0) || unk_008a9000 == 1)
       {
-        locals.graveyard_index = FUN_004087cc(player, 2);
+        s.graveyard_index = FUN_004087cc(player, 2);
       }
       else
       {
@@ -1545,30 +1545,30 @@ int card_raise_dead(int player, int card, event_t event)
         }
         do
         {
-          locals.graveyard_index =
+          s.graveyard_index =
               show_deck(player, global_graveyard_slots[player], 500, text_lines, 0, gs_cancel_008a8c20);
-        } while (locals.graveyard_index != -1 && (global_cards_data[global_graveyard_slots[player][locals.graveyard_index]].type & TYPE_CREATURE) == 0);
+        } while (s.graveyard_index != -1 && (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_CREATURE) == 0);
       }
 
-      if (locals.graveyard_index == -1 || global_graveyard_slots[player][locals.graveyard_index] == -1 || (global_cards_data[global_graveyard_slots[player][locals.graveyard_index]].type & TYPE_CREATURE) == 0)
+      if (s.graveyard_index == -1 || global_graveyard_slots[player][s.graveyard_index] == -1 || (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_CREATURE) == 0)
       {
         spell_fizzled = 1;
       }
       else
       {
-        locals.hand_card = add_card_to_hand(player, global_graveyard_slots[player][locals.graveyard_index]);
-        PLAYER_CARD_INSTANCE(player, locals.hand_card).state |= 0x20;
+        s.hand_card = add_card_to_hand(player, global_graveyard_slots[player][s.graveyard_index]);
+        PLAYER_CARD_INSTANCE(player, s.hand_card).state |= 0x20;
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
-        PLAYER_CARD_INSTANCE(player, card).targets[0].card = locals.hand_card;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.hand_card;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108)) = locals.graveyard_index;
+        *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108)) = s.graveyard_index;
       }
     }
 
     if (event == EVENT_RESOLVE_SPELL)
     {
-      locals.graveyard_index = *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108));
-      if (locals.graveyard_index == -1 || global_graveyard_slots[player][locals.graveyard_index] == -1 || (global_cards_data[global_graveyard_slots[player][locals.graveyard_index]].type & TYPE_CREATURE) == 0)
+      s.graveyard_index = *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108));
+      if (s.graveyard_index == -1 || global_graveyard_slots[player][s.graveyard_index] == -1 || (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_CREATURE) == 0)
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
@@ -1577,7 +1577,7 @@ int card_raise_dead(int player, int card, event_t event)
       }
       else
       {
-        FUN_004b15f7(player, locals.graveyard_index);
+        FUN_004b15f7(player, s.graveyard_index);
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state &= 0xffffffdf;
@@ -1587,9 +1587,9 @@ int card_raise_dead(int player, int card, event_t event)
       kill_card(player, card, KILL_BURY);
     }
 
-    locals.result = 0;
+    s.result = 0;
   }
-  return locals.result;
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x0040727c
@@ -1601,16 +1601,16 @@ int card_regrowth(int player, int card, event_t event)
     int hand_card;
     int graveyard_index;
     int result;
-  } locals;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
-    locals.result = 0;
-    for (locals.hand_card = 0;
-         locals.hand_card < 500 && locals.result == 0 && global_graveyard_slots[player][locals.hand_card] != -1;
-         ++locals.hand_card)
+    s.result = 0;
+    for (s.hand_card = 0;
+         s.hand_card < 500 && s.result == 0 && global_graveyard_slots[player][s.hand_card] != -1;
+         ++s.hand_card)
     {
-      locals.result = 1;
+      s.result = 1;
     }
   }
   else
@@ -1619,7 +1619,7 @@ int card_regrowth(int player, int card, event_t event)
     {
       if (((player == active_player) && (unk_00926804 & 2) == 0) || unk_008a9000 == 1)
       {
-        locals.graveyard_index = FUN_004087cc(player, -1);
+        s.graveyard_index = FUN_004087cc(player, -1);
       }
       else
       {
@@ -1627,29 +1627,29 @@ int card_regrowth(int player, int card, event_t event)
         {
           load_text("prompts.txt", "REGROWTH");
         }
-        locals.graveyard_index =
+        s.graveyard_index =
             show_deck(player, global_graveyard_slots[player], 500, text_lines, 0, gs_cancel_008a8c20);
       }
 
-      if (locals.graveyard_index == -1 || global_graveyard_slots[player][locals.graveyard_index] == -1)
+      if (s.graveyard_index == -1 || global_graveyard_slots[player][s.graveyard_index] == -1)
       {
         spell_fizzled = 1;
       }
       else
       {
-        locals.hand_card = add_card_to_hand(player, global_graveyard_slots[player][locals.graveyard_index]);
-        PLAYER_CARD_INSTANCE(player, locals.hand_card).state |= 0x20;
+        s.hand_card = add_card_to_hand(player, global_graveyard_slots[player][s.graveyard_index]);
+        PLAYER_CARD_INSTANCE(player, s.hand_card).state |= 0x20;
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
-        PLAYER_CARD_INSTANCE(player, card).targets[0].card = locals.hand_card;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.hand_card;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108)) = locals.graveyard_index;
+        *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108)) = s.graveyard_index;
       }
     }
 
     if (event == EVENT_RESOLVE_SPELL)
     {
-      locals.graveyard_index = *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108));
-      if (locals.graveyard_index == -1 || global_graveyard_slots[player][locals.graveyard_index] == -1)
+      s.graveyard_index = *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108));
+      if (s.graveyard_index == -1 || global_graveyard_slots[player][s.graveyard_index] == -1)
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
@@ -1658,7 +1658,7 @@ int card_regrowth(int player, int card, event_t event)
       }
       else
       {
-        FUN_004b15f7(player, locals.graveyard_index);
+        FUN_004b15f7(player, s.graveyard_index);
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state &= 0xffffffdf;
@@ -1668,9 +1668,9 @@ int card_regrowth(int player, int card, event_t event)
       kill_card(player, card, KILL_BURY);
     }
 
-    locals.result = 0;
+    s.result = 0;
   }
-  return locals.result;
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x004076dc

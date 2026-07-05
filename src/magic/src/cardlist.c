@@ -507,57 +507,57 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     LONG show_count_flag; // ebp-0x0c
     LONG count;           // ebp-0x08
     LONG csvid;           // ebp-0x04
-  } locals;
+  } s;
 
   switch (message)
   {
   case WM_PAINT:
-    locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
-    locals.show_count_flag = GetWindowLongA(card_window, unk_0055e0c8);
-    locals.count = GetWindowLongA(card_window, unk_0055e0c4);
+    s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+    s.show_count_flag = GetWindowLongA(card_window, unk_0055e0c8);
+    s.count = GetWindowLongA(card_window, unk_0055e0c4);
 
     EnterCriticalSection(&DAT_009266b0);
-    GetClientRect(card_window, &locals.client_rect);
-    FillRect(DAT_00789310, &locals.client_rect, (HBRUSH)GetStockObject(4));
-    if (locals.csvid == SHOWLIST_CARD_BACK_CSVID)
+    GetClientRect(card_window, &s.client_rect);
+    FillRect(DAT_00789310, &s.client_rect, (HBRUSH)GetStockObject(4));
+    if (s.csvid == SHOWLIST_CARD_BACK_CSVID)
     {
-      DrawCardBack(DAT_00789310, &locals.client_rect);
+      DrawCardBack(DAT_00789310, &s.client_rect);
     }
     else
     {
-      DrawSmallCard(DAT_00789310, &locals.client_rect, global_raw_cards_storage + locals.csvid, 0, 0);
+      DrawSmallCard(DAT_00789310, &s.client_rect, global_raw_cards_storage + s.csvid, 0, 0);
     }
 
-    if (locals.show_count_flag != 0)
+    if (s.show_count_flag != 0)
     {
-      FUN_0055b9f0(DAT_00789310, (int *)&locals.client_rect, locals.count);
+      FUN_0055b9f0(DAT_00789310, (int *)&s.client_rect, s.count);
     }
 
-    locals.paint_dc = BeginPaint(card_window, &locals.ps);
-    if (locals.paint_dc != 0)
+    s.paint_dc = BeginPaint(card_window, &s.ps);
+    if (s.paint_dc != 0)
     {
-      ApplyCardArtPaletteToDc(locals.paint_dc);
-      BitBlt(locals.paint_dc,
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      BitBlt(s.paint_dc,
              0,
              0,
-             locals.client_rect.right,
-             locals.client_rect.bottom,
+             s.client_rect.right,
+             s.client_rect.bottom,
              DAT_00789310,
              0,
              0,
              0xcc0020);
-      EndPaint(card_window, &locals.ps);
+      EndPaint(card_window, &s.ps);
     }
     LeaveCriticalSection(&DAT_009266b0);
     return 0;
 
   case WM_CREATE:
-    locals.csvid = *(LONG *)lparam_data;
-    SetWindowLongA(card_window, unk_0055e0c0, locals.csvid);
-    locals.show_count_flag = 0;
-    locals.count = 0;
-    SetWindowLongA(card_window, unk_0055e0c8, locals.show_count_flag);
-    SetWindowLongA(card_window, unk_0055e0c4, locals.count);
+    s.csvid = *(LONG *)lparam_data;
+    SetWindowLongA(card_window, unk_0055e0c0, s.csvid);
+    s.show_count_flag = 0;
+    s.count = 0;
+    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
+    SetWindowLongA(card_window, unk_0055e0c4, s.count);
     return 0;
 
   case WM_GETDLGCODE:
@@ -576,10 +576,10 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
   case WM_RBUTTONDOWN:
     if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
     {
-      locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+      s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
       if ((int)DAT_00638c08 != (int)card_window)
       {
-        SendMessageA(DAT_00896714, 0x401, locals.csvid, 0);
+        SendMessageA(DAT_00896714, 0x401, s.csvid, 0);
         DAT_00638c08 = (int)card_window;
       }
     }
@@ -593,18 +593,18 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     return 0;
 
   case 0x414:
-    locals.show_count_flag = (LONG)wparam_window;
-    locals.count = (LONG)lparam_data;
-    SetWindowLongA(card_window, unk_0055e0c8, locals.show_count_flag);
-    SetWindowLongA(card_window, unk_0055e0c4, locals.count);
+    s.show_count_flag = (LONG)wparam_window;
+    s.count = (LONG)lparam_data;
+    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
+    SetWindowLongA(card_window, unk_0055e0c4, s.count);
     InvalidateRect(card_window, NULL, TRUE);
     return 0;
 
   case 0x437:
-    locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+    s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
     if (SHOWLIST_MOUSE_MODE != 2)
     {
-      SendMessageA(DAT_00896714, 0x401, locals.csvid, 0);
+      SendMessageA(DAT_00896714, 0x401, s.csvid, 0);
     }
     return 0;
 
@@ -623,7 +623,7 @@ int show_cardlist(int *graveyard,
                   unsigned int big_card_mode,
                   char *prompt)
 {
-  typedef struct
+  struct
   {
     void *context;
     int displayed_csvids[500];
@@ -633,9 +633,8 @@ int show_cardlist(int *graveyard,
     int show_bigcard;
     char title[12];
     int index;
-  } dialog_box_data_t;
+  } s;
 
-  dialog_box_data_t locals;
   WNDCLASS wndclass;
 
   if (count < 1 || graveyard == NULL || graveyard[0] == -1)
@@ -655,45 +654,45 @@ int show_cardlist(int *graveyard,
   wndclass.lpszClassName = s_ShowListCard_00572920;
   RegisterClassA(&wndclass);
 
-  locals.context = context;
-  for (locals.index = 0; locals.index < count && graveyard[locals.index] != -1; ++locals.index)
+  s.context = context;
+  for (s.index = 0; s.index < count && graveyard[s.index] != -1; ++s.index)
   {
-    locals.displayed_csvids[locals.index] = CardIDFromType(graveyard[locals.index] & 0xfff);
+    s.displayed_csvids[s.index] = CardIDFromType(graveyard[s.index] & 0xfff);
   }
 
-  locals.item_count = locals.index;
-  locals.copy_alternate_csvids = alternate_csvids != 0;
-  if (locals.copy_alternate_csvids != 0)
+  s.item_count = s.index;
+  s.copy_alternate_csvids = alternate_csvids != 0;
+  if (s.copy_alternate_csvids != 0)
   {
-    for (locals.index = 0; locals.index < locals.item_count; ++locals.index)
+    for (s.index = 0; s.index < s.item_count; ++s.index)
     {
-      locals.displayed_csvids[locals.index] = alternate_csvids[locals.index];
+      s.displayed_csvids[s.index] = alternate_csvids[s.index];
     }
   }
 
-  for (locals.index = 0; locals.index < locals.item_count; ++locals.index)
+  for (s.index = 0; s.index < s.item_count; ++s.index)
   {
     if (available == 0)
     {
-      locals.available_cards[locals.index] = 1;
+      s.available_cards[s.index] = 1;
     }
     else
     {
-      locals.available_cards[locals.index] = available[locals.index];
+      s.available_cards[s.index] = available[s.index];
     }
   }
 
-  locals.show_bigcard = big_card_mode;
+  s.show_bigcard = big_card_mode;
   if (big_card_mode == 0)
   {
-    strcpy(locals.title, prompt);
+    strcpy(s.title, prompt);
   }
   else
   {
-    strcpy(locals.title, unk_00572930);
+    strcpy(s.title, unk_00572930);
   }
 
-  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_main_window_hwnd, dlgfunc_show_deck, (long)&locals.context);
+  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_main_window_hwnd, dlgfunc_show_deck, (long)&s.context);
 }
 
 // FUNCTION: MAGIC 0x0055b9f0

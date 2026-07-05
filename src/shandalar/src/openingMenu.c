@@ -1707,10 +1707,10 @@ int RunLoadSaveMenu(int param_1)
     char *map_path;
     int slot_index;
     FILE *save_desc_file;
-  } locals;
+  } s;
   EncodedImage *sprite;
 
-  locals.map_path = g_loadsave_magic_map_path;
+  s.map_path = g_loadsave_magic_map_path;
   AnimatePaletteToColor(0, DAT_00589dec);
   LoadPcxResource(1, 0, 0, "menopt.pic", (g_graphics_bpp == 8) ? &g_palette_data_words : (void *)1);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
@@ -1726,21 +1726,21 @@ int RunLoadSaveMenu(int param_1)
   g_loadsave_frame_sprites[6] = EncodeSpriteFromPage(1, 1, 0x39, 0xb, 8);
   g_loadsave_frame_sprites[7] = EncodeSpriteFromPage(1, 0x42, 0x39, 8, 0xb);
   g_loadsave_frame_sprites[8] = EncodeSpriteFromPage(1, 0x83, 0x39, 0xb, 8);
-  for (locals.row = 0; locals.row < 2; locals.row = locals.row + 1)
+  for (s.row = 0; s.row < 2; s.row = s.row + 1)
   {
-    for (locals.slot_index = 0; locals.slot_index < 3; locals.slot_index = locals.slot_index + 1)
+    for (s.slot_index = 0; s.slot_index < 3; s.slot_index = s.slot_index + 1)
     {
-      *(EncodedImage **)((char *)g_loadsave_slot_button_state_sprites + locals.row * 0xc + locals.slot_index * 4) =
-          EncodeSpriteFromPage(1, locals.slot_index * 0x41 + 1, locals.row * 0x1c + 0x55, 0x1e, 0x1b);
+      *(EncodedImage **)((char *)g_loadsave_slot_button_state_sprites + s.row * 0xc + s.slot_index * 4) =
+          EncodeSpriteFromPage(1, s.slot_index * 0x41 + 1, s.row * 0x1c + 0x55, 0x1e, 0x1b);
     }
   }
   FinalizeSpriteEncodeSession();
 
-  locals.frame_x = 0x1c;
-  locals.frame_y = 0x45;
-  locals.frame_width = 0x1a4 - locals.frame_x;
-  locals.frame_height = 0x18e - locals.frame_y;
-  DrawLoadSaveFrame(PTR_DAT_005832b4, locals.frame_x, locals.frame_y, locals.frame_width, locals.frame_height);
+  s.frame_x = 0x1c;
+  s.frame_y = 0x45;
+  s.frame_width = 0x1a4 - s.frame_x;
+  s.frame_height = 0x18e - s.frame_y;
+  DrawLoadSaveFrame(PTR_DAT_005832b4, s.frame_x, s.frame_y, s.frame_width, s.frame_height);
 
   if (param_1 != 0)
   {
@@ -1751,65 +1751,65 @@ int RunLoadSaveMenu(int param_1)
     strcpy(g_ui_message_buffer, gs_loadsave_0077d1b0[1]);
   }
 
-  locals.map_path[5] = '4';
-  locals.save_desc_file = fopen(g_loadsave_description_file_path, g_loadsave_file_open_mode);
-  for (locals.slot_index = 0; locals.slot_index < 10; locals.slot_index = locals.slot_index + 1)
+  s.map_path[5] = '4';
+  s.save_desc_file = fopen(g_loadsave_description_file_path, g_loadsave_file_open_mode);
+  for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
   {
-    fgets(g_loadsave_slot_descriptions[locals.slot_index], 0x40, locals.save_desc_file);
-    locals.text_index = strlen(g_loadsave_slot_descriptions[locals.slot_index]);
-    (&g_loadsave_slot_descriptions[locals.slot_index][0])[-1 + locals.text_index] = '\0';
-    locals.temp_int = FUN_004ece40(locals.slot_index + 4);
-    locals.map_path[5] = (char)locals.temp_int;
-    locals.temp_int = FileExists(locals.map_path);
-    g_loadsave_slot_has_data[locals.slot_index] = locals.temp_int;
-    if (g_loadsave_slot_has_data[locals.slot_index] == 0)
+    fgets(g_loadsave_slot_descriptions[s.slot_index], 0x40, s.save_desc_file);
+    s.text_index = strlen(g_loadsave_slot_descriptions[s.slot_index]);
+    (&g_loadsave_slot_descriptions[s.slot_index][0])[-1 + s.text_index] = '\0';
+    s.temp_int = FUN_004ece40(s.slot_index + 4);
+    s.map_path[5] = (char)s.temp_int;
+    s.temp_int = FileExists(s.map_path);
+    g_loadsave_slot_has_data[s.slot_index] = s.temp_int;
+    if (g_loadsave_slot_has_data[s.slot_index] == 0)
     {
-      strcpy(g_loadsave_slot_descriptions[locals.slot_index], gs_loadsave_0077d1b0[2]);
+      strcpy(g_loadsave_slot_descriptions[s.slot_index], gs_loadsave_0077d1b0[2]);
     }
     if (param_1 != 0)
     {
-      g_loadsave_slot_has_data[locals.slot_index] = 1;
+      g_loadsave_slot_has_data[s.slot_index] = 1;
     }
   }
 
   if (g_loadsave_menu_controls[0].base_x == g_loadsave_menu_controls[0].x)
   {
-    for (locals.slot_index = 0; locals.slot_index < 10; locals.slot_index = locals.slot_index + 1)
+    for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
     {
-      locals.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[locals.slot_index].x);
-      g_loadsave_menu_controls[locals.slot_index].x = locals.temp_int;
-      locals.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[locals.slot_index].y);
-      g_loadsave_menu_controls[locals.slot_index].y = locals.temp_int;
-      locals.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[locals.slot_index].width);
-      g_loadsave_menu_controls[locals.slot_index].width = locals.temp_int;
-      locals.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[locals.slot_index].height);
-      g_loadsave_menu_controls[locals.slot_index].height = locals.temp_int;
+      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].x);
+      g_loadsave_menu_controls[s.slot_index].x = s.temp_int;
+      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].y);
+      g_loadsave_menu_controls[s.slot_index].y = s.temp_int;
+      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].width);
+      g_loadsave_menu_controls[s.slot_index].width = s.temp_int;
+      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].height);
+      g_loadsave_menu_controls[s.slot_index].height = s.temp_int;
     }
   }
 
 restart_menu_loop:
-  locals.menu_context = BeginMenuContext();
-  ResetMenuContext(locals.menu_context);
+  s.menu_context = BeginMenuContext();
+  ResetMenuContext(s.menu_context);
   if ((param_1 == 0) && (g_loadsave_skip_esc == 0))
   {
-    locals.menu_control_count = 10;
+    s.menu_control_count = 10;
   }
   else
   {
-    locals.menu_control_count = 0xb;
+    s.menu_control_count = 0xb;
   }
-  AddMenuControlsToContext(g_loadsave_menu_controls, locals.menu_control_count, locals.menu_context);
-  for (locals.slot_index = 0; locals.slot_index < 10; locals.slot_index = locals.slot_index + 1)
+  AddMenuControlsToContext(g_loadsave_menu_controls, s.menu_control_count, s.menu_context);
+  for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
   {
-    if (g_loadsave_slot_has_data[locals.slot_index] == 0)
+    if (g_loadsave_slot_has_data[s.slot_index] == 0)
     {
-      RenderAdvMenuControlDisabled(&g_loadsave_menu_controls[locals.slot_index]);
-      DrawLoadSaveSlotEntry(locals.slot_index, 3);
+      RenderAdvMenuControlDisabled(&g_loadsave_menu_controls[s.slot_index]);
+      DrawLoadSaveSlotEntry(s.slot_index, 3);
     }
     else
     {
-      RenderAdvMenuControlNormally(&g_loadsave_menu_controls[locals.slot_index]);
-      DrawLoadSaveSlotEntry(locals.slot_index, 0);
+      RenderAdvMenuControlNormally(&g_loadsave_menu_controls[s.slot_index]);
+      DrawLoadSaveSlotEntry(s.slot_index, 0);
     }
   }
 
@@ -1819,7 +1819,7 @@ restart_menu_loop:
     UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
   EndMenuContext();
-  ResetMenuContext(locals.menu_context);
+  ResetMenuContext(s.menu_context);
   if (g_loadsave_menu_selection == 0xe)
   {
     AnimatePaletteToColor(0, DAT_00589dec);
@@ -1828,60 +1828,60 @@ restart_menu_loop:
   if (param_1 == 0)
   {
   save_and_return:
-    fclose(locals.save_desc_file);
+    fclose(s.save_desc_file);
     FreeSpriteBlob(g_loadsave_frame_sprites[0]);
     AnimatePaletteToColor(0, DAT_00589dec);
     return g_loadsave_menu_selection;
   }
 
-  locals.selected_slot = g_loadsave_menu_selection - 4;
-  strcpy(locals.saved_slot_name, g_loadsave_slot_descriptions[locals.selected_slot]);
+  s.selected_slot = g_loadsave_menu_selection - 4;
+  strcpy(s.saved_slot_name, g_loadsave_slot_descriptions[s.selected_slot]);
   g_loadsave_edit_active = 1;
-  memset(locals.edit_buffer + 1, 0, 0x100);
-  strcpy(locals.edit_buffer + 1, g_loadsave_slot_descriptions[locals.selected_slot]);
-  locals.temp_int = strcmp(locals.edit_buffer + 1, gs_loadsave_0077d1b0[2]);
-  if (locals.temp_int == 0)
+  memset(s.edit_buffer + 1, 0, 0x100);
+  strcpy(s.edit_buffer + 1, g_loadsave_slot_descriptions[s.selected_slot]);
+  s.temp_int = strcmp(s.edit_buffer + 1, gs_loadsave_0077d1b0[2]);
+  if (s.temp_int == 0)
   {
-    locals.edit_buffer[1] = '\0';
+    s.edit_buffer[1] = '\0';
   }
-  g_loadsave_cursor_index = strlen(locals.edit_buffer + 1);
-  DrawLoadSaveSlotEntry(locals.selected_slot, 2);
+  g_loadsave_cursor_index = strlen(s.edit_buffer + 1);
+  DrawLoadSaveSlotEntry(s.selected_slot, 2);
   do
   {
-    locals.key_code = PopQueuedKeyInput();
-    locals.text_index = g_loadsave_cursor_index;
-    if (locals.key_code == 0x1c0d)
+    s.key_code = PopQueuedKeyInput();
+    s.text_index = g_loadsave_cursor_index;
+    if (s.key_code == 0x1c0d)
     {
       g_loadsave_edit_active = 0;
-      fseek(locals.save_desc_file, 0, 0);
-      for (locals.slot_index = 0; locals.slot_index < 10; locals.slot_index = locals.slot_index + 1)
+      fseek(s.save_desc_file, 0, 0);
+      for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
       {
-        fprintf(locals.save_desc_file, g_loadsave_description_line_format, g_loadsave_slot_descriptions[locals.slot_index]);
+        fprintf(s.save_desc_file, g_loadsave_description_line_format, g_loadsave_slot_descriptions[s.slot_index]);
       }
       goto save_and_return;
     }
-    if ((int)locals.key_code < 0xe09)
+    if ((int)s.key_code < 0xe09)
     {
-      if (locals.key_code == 0xe08)
+      if (s.key_code == 0xe08)
       {
         if (g_loadsave_cursor_index != 0)
         {
           g_loadsave_cursor_index = g_loadsave_cursor_index - 1;
-          strcpy(locals.edit_buffer + locals.text_index, locals.edit_buffer + locals.text_index + 1);
+          strcpy(s.edit_buffer + s.text_index, s.edit_buffer + s.text_index + 1);
         }
       }
       else
       {
-        if (locals.key_code == 0x11b)
+        if (s.key_code == 0x11b)
         {
           break;
         }
         goto handle_name_char;
       }
     }
-    else if ((int)locals.key_code < 0xf10)
+    else if ((int)s.key_code < 0xf10)
     {
-      if (locals.key_code == 0xf0f)
+      if (s.key_code == 0xf0f)
       {
         g_loadsave_cursor_index = g_loadsave_cursor_index - 8;
         if ((int)g_loadsave_cursor_index < 1)
@@ -1891,38 +1891,38 @@ restart_menu_loop:
       }
       else
       {
-        if (locals.key_code != 0xf09)
+        if (s.key_code != 0xf09)
         {
           goto handle_name_char;
         }
         g_loadsave_cursor_index = g_loadsave_cursor_index + 8;
       }
     }
-    else if ((int)locals.key_code < 0x4701)
+    else if ((int)s.key_code < 0x4701)
     {
-      if (locals.key_code == 0x4700)
+      if (s.key_code == 0x4700)
       {
         g_loadsave_cursor_index = 0;
       }
-      else if (locals.key_code != 0x1c0d)
+      else if (s.key_code != 0x1c0d)
       {
         goto handle_name_char;
       }
     }
-    else if ((int)locals.key_code < 0x4d01)
+    else if ((int)s.key_code < 0x4d01)
     {
-      if (locals.key_code == 0x4d00)
+      if (s.key_code == 0x4d00)
       {
-        locals.text_index = strlen(locals.edit_buffer + 1);
-        if (locals.text_index == g_loadsave_cursor_index)
+        s.text_index = strlen(s.edit_buffer + 1);
+        if (s.text_index == g_loadsave_cursor_index)
         {
-          strcat(locals.edit_buffer + 1, g_loadsave_space_string);
+          strcat(s.edit_buffer + 1, g_loadsave_space_string);
         }
         g_loadsave_cursor_index = g_loadsave_cursor_index + 1;
       }
       else
       {
-        if (locals.key_code != 0x4b00)
+        if (s.key_code != 0x4b00)
         {
           goto handle_name_char;
         }
@@ -1932,50 +1932,50 @@ restart_menu_loop:
         }
       }
     }
-    else if (locals.key_code == 0x4f00)
+    else if (s.key_code == 0x4f00)
     {
-      g_loadsave_cursor_index = strlen(locals.edit_buffer + 1);
+      g_loadsave_cursor_index = strlen(s.edit_buffer + 1);
     }
-    else if (locals.key_code == 0x5200)
+    else if (s.key_code == 0x5200)
     {
       g_loadsave_insert_mode = g_loadsave_insert_mode ^ 1;
     }
     else
     {
-      if (locals.key_code != 0x5300)
+      if (s.key_code != 0x5300)
       {
         goto handle_name_char;
       }
-      locals.text_index = strlen(locals.edit_buffer + 1);
-      if ((int)g_loadsave_cursor_index < (int)locals.text_index)
+      s.text_index = strlen(s.edit_buffer + 1);
+      if ((int)g_loadsave_cursor_index < (int)s.text_index)
       {
-        strcpy(locals.edit_buffer + g_loadsave_cursor_index + 1, locals.edit_buffer + g_loadsave_cursor_index + 2);
+        strcpy(s.edit_buffer + g_loadsave_cursor_index + 1, s.edit_buffer + g_loadsave_cursor_index + 2);
       }
     }
     goto redraw_edited_slot;
 
   handle_name_char:
-    locals.key_code = locals.key_code & 0xff;
-    if ((((0x40 < locals.key_code) && (locals.key_code < 0x5b)) || ((0x60 < locals.key_code) && (locals.key_code < 0x7b))) ||
-        (((0x2f < locals.key_code) && (locals.key_code < 0x3a)) || (locals.key_code == 0x20)))
+    s.key_code = s.key_code & 0xff;
+    if ((((0x40 < s.key_code) && (s.key_code < 0x5b)) || ((0x60 < s.key_code) && (s.key_code < 0x7b))) ||
+        (((0x2f < s.key_code) && (s.key_code < 0x3a)) || (s.key_code == 0x20)))
     {
       if (g_loadsave_insert_mode != 0)
       {
-        memmove(locals.edit_buffer + g_loadsave_cursor_index + 2, locals.edit_buffer + g_loadsave_cursor_index + 1,
+        memmove(s.edit_buffer + g_loadsave_cursor_index + 2, s.edit_buffer + g_loadsave_cursor_index + 1,
                 0xff - g_loadsave_cursor_index);
       }
-      locals.temp_int = (char)locals.key_code;
-      locals.edit_buffer[g_loadsave_cursor_index + 1] = (char)locals.temp_int;
+      s.temp_int = (char)s.key_code;
+      s.edit_buffer[g_loadsave_cursor_index + 1] = (char)s.temp_int;
       g_loadsave_cursor_index = g_loadsave_cursor_index + 1;
     }
 
   redraw_edited_slot:
-    strcpy(g_loadsave_slot_descriptions[locals.selected_slot], locals.edit_buffer + 1);
-    DrawLoadSaveSlotEntry(locals.selected_slot, 2);
+    strcpy(g_loadsave_slot_descriptions[s.selected_slot], s.edit_buffer + 1);
+    DrawLoadSaveSlotEntry(s.selected_slot, 2);
   } while (1);
 
   g_loadsave_edit_active = 0;
-  strcpy(g_loadsave_slot_descriptions[locals.selected_slot], locals.saved_slot_name);
+  strcpy(g_loadsave_slot_descriptions[s.selected_slot], s.saved_slot_name);
   goto restart_menu_loop;
 }
 

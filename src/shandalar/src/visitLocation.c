@@ -2542,59 +2542,59 @@ void ReadCsvFieldByCsvid(char *out, int csvid, int field, char *csv_name)
     char pad_215_to_217[3];
     FILE *fp;
     int fscanf_ret;
-  } locals;
+  } s;
 
-  locals.fp = fopen(csv_name, DAT_00580e64);
-  locals.in_quotes = 0;
-  locals.field_idx = locals.in_quotes;
+  s.fp = fopen(csv_name, DAT_00580e64);
+  s.in_quotes = 0;
+  s.field_idx = s.in_quotes;
   *out = '\0';
 
   if ((DAT_005a6198[csvid] != -1) && (strcmp(csv_name, s_master_csv_00580e68) == 0))
   {
-    fseek(locals.fp, DAT_005a6198[csvid], 0);
+    fseek(s.fp, DAT_005a6198[csvid], 0);
   }
 
   do
   {
-    locals.fscanf_ret = fscanf(locals.fp, s______________00580e74, locals.token, locals.delim);
-    if (locals.fscanf_ret == 0)
+    s.fscanf_ret = fscanf(s.fp, s______________00580e74, s.token, s.delim);
+    if (s.fscanf_ret == 0)
     {
       break;
     }
 
-    if (locals.token[0] == '0')
+    if (s.token[0] == '0')
     {
-      locals.current_id = atoi(locals.token);
+      s.current_id = atoi(s.token);
     }
 
-    if (locals.current_id == csvid)
+    if (s.current_id == csvid)
     {
-      ++locals.field_idx;
-      if ((locals.field_idx == field) && locals.in_quotes)
+      ++s.field_idx;
+      if ((s.field_idx == field) && s.in_quotes)
       {
         strcat(out, DAT_00580e84);
       }
-      if (locals.token[0] == '\"')
+      if (s.token[0] == '\"')
       {
-        locals.in_quotes = 1;
+        s.in_quotes = 1;
       }
-      if (locals.field_idx == field)
+      if (s.field_idx == field)
       {
-        strcat(out, locals.token);
+        strcat(out, s.token);
       }
-      if (locals.token[strlen(locals.token) - 1] == '\"')
+      if (s.token[strlen(s.token) - 1] == '\"')
       {
-        locals.in_quotes = 0;
+        s.in_quotes = 0;
       }
-      if (locals.in_quotes)
+      if (s.in_quotes)
       {
-        --locals.field_idx;
+        --s.field_idx;
       }
     }
 
-  } while ((locals.fscanf_ret != -1) && ((locals.field_idx == '\0') || (locals.current_id == csvid)));
+  } while ((s.fscanf_ret != -1) && ((s.field_idx == '\0') || (s.current_id == csvid)));
 
-  fclose(locals.fp);
+  fclose(s.fp);
 }
 
 // FUNCTION: SHANDALAR 0x00417e11

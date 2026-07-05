@@ -552,17 +552,17 @@ int FUN_00440ad2(int player, int card, int arg_3)
     int trace_counter;       /* iVar2 / local_324 */
     char dialog_prompt[300]; /* local_320 */
     char trace_text[500];    /* local_1f4 */
-  } locals;
+  } s;
 
   if ((unk_00926804 & 2) != 0)
   {
-    locals.trace_counter = DAT_00777aa0;
+    s.trace_counter = DAT_00777aa0;
     ++DAT_00777aa0;
-    sprintf(locals.trace_text, "%d: Player #%d is processing %s(%d).\n",
-            locals.trace_counter, player,
+    sprintf(s.trace_text, "%d: Player #%d is processing %s(%d).\n",
+            s.trace_counter, player,
             global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].name,
             card);
-    append_to_trace_txt(locals.trace_text);
+    append_to_trace_txt(s.trace_text);
   }
 
   unk_00777850 = 1;
@@ -581,8 +581,8 @@ int FUN_00440ad2(int player, int card, int arg_3)
     if (current_turn != unk_008b35ec)
     {
       LoadTextSectionLines(global_ui_strings_filename, "PROMPT_PROC1");
-      sprintf(locals.dialog_prompt, text_lines[0], DAT_007a7c60);
-      raw_do_dialog(player, card, -1, -1, locals.dialog_prompt, 0);
+      sprintf(s.dialog_prompt, text_lines[0], DAT_007a7c60);
+      raw_do_dialog(player, card, -1, -1, s.dialog_prompt, 0);
     }
   }
 

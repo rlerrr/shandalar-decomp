@@ -1003,7 +1003,7 @@ bool process_cue_cards(MSG *msg)
 WPARAM WINAPI
 DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2)
 {
-  struct locals
+  struct
   {
     int local_30;
     int local_2c;
@@ -1353,7 +1353,7 @@ FUN_1001b5e7(const char *newdata_csv_path, int available_slots)
 static int
 init_deckbuilder(HINSTANCE dll, int unused)
 {
-  struct init_deckbuilder_locals
+  struct
   {
     char *pcVar3;         /* [ebp-0x110] */
     HDC hdc;              /* [ebp-0x10c] */
@@ -5489,121 +5489,29 @@ static void FUN_1000942e(HWND hwnd, int csvid)
   (void)csvid;
 }
 
-struct WndprocMainClassLocals
-{
-  int border_adjust;     /* ebp - 0xb40 */
-  int margin8;           /* ebp - 0xb3c */
-  int fullcard_height;   /* ebp - 0xb38 */
-  int horzlist_hgt6;     /* ebp - 0xb34 */
-  int decksurface_x;     /* ebp - 0xb30 */
-  LONG horzlist_style;   /* ebp - 0xb2c */
-  int title_height;      /* ebp - 0xb28 */
-  RECT rect_load_button; /* ebp - 0xb24 */
-  int decksurface_top;   /* ebp - 0xb14 */
-
-  int main_h; /* ebp - 0xb10 */
-  int ten;    /* ebp - 0xb0c */
-
-  RECT rect_cardlistfilter; /* ebp - 0xb08 */
-  HDC pad_b0c;              /* ebp - 0xb04 */
-  int main_w;               /* ebp - 0xaf4 */
-  int cardlistfilter_hgt;   /* ebp - 0xaf0 */
-
-  RECT rect_title;    /* ebp - 0xaec */
-  RECT rect_pad_adc;  /* ebp - 0xadc */
-  RECT rect_fullcard; /* ebp - 0xacc */
-  int third_w;        /* ebp - 0xabc */
-
-  SIZE sz;               /* ebp - 0xab8 */
-  RECT rect_horzlist;    /* ebp - 0xab0 */
-  RECT rect_decksurface; /* ebp - 0xaa0 */
-  POINT pad_a90;         /* ebp - 0xa90 */
-
-  HWND hwnd_a8c; /* ebp - 0xa8c */
-  MEASUREITEMSTRUCT *pad_a8c;
-  HWND pad_a88;
-
-  RECT rect_stats; /* ebp - 0xa84 */
-  BITMAP bmp_a6c;  /* ebp - 0xa6c */
-  int fill_y;      /* ebp - 0xa54 */
-  int pics_inline; /* ebp - 0xa50 */
-
-  RECT r;     /* ebp - 0xa4c */
-  int fill_x; /* ebp - 0xa3c */
-
-  COLORREF item_col; /* ebp - 0xa38 */
-  HWND tgt;          /* ebp - 0xa38 */
-  int cursel;        /* ebp - 0xa34 */
-  HDC pad_a30;
-
-  HWND hwnd2; /* ebp - 0xa28 */
-  HWND hwnd1; /* ebp - 0xa24 */
-
-  HDC pad_a20;
-  HGDIOBJ pad_a1c;
-  HWND pad_a18;
-  HDC pad_a14;
-  WPARAM pad_a10;
-
-  int csvidraw;     /* ebp - 0xa0c */
-  int csvid;        /* ebp - 0xa08 */
-  int unique_count; /* ebp - 0xa04 */
-
-  int local_a00[100];   /* ebp - 0xa00 */
-  int pad_870;          /* ebp - 0x870 */
-  char local_86c[2000]; /* ebp - 0x86c */
-
-  HWND cmd_hwnd;        /* ebp - 0x9c */
-  HWND cmd_tgt;         /* ebp - 0x98 */
-  int cmd_cursel;       /* ebp - 0x94 */
-  LRESULT cmd_itemdata; /* ebp - 0x90 */
-
-  HDC hdc_local;    /* ebp - 0x8c */
-  HDC hdc;          /* ebp - 0x88 */
-  WPARAM wparam_84; /* ebp - 0x84 */
-
-  LPARAM lparam_copy; /* ebp - 0x80 */
-  WPARAM wparam_copy; /* ebp - 0x7c */
-
-  WORD wPicsInline; /* ebp - 0x78 */
-  WORD wPicsInlinePad;
-  FILE *f;               /* ebp - 0x74 */
-  int *horz_list_addr;   /* ebp - 0x70 */
-  int i;                 /* ebp - 0x6c */
-  unsigned int artist_i; /* ebp - 0x68 */
-
-  HDC fill_chdc; /* ebp - 0x64 */
-  char buf[76];  /* ebp - 0x60 */
-
-  unsigned int pad_14;
-
-  WORD wLeft;       /* ebp - 0x10 */
-  WORD wLeftPad;    /* ebp - 0xe */
-  int excess;       /* ebp - 0xc */
-  int check_excess; /* ebp - 8 */
-  WORD wLast;       /* ebp - 4 */
-  WORD wLastPad;    /* ebp - 2 */
-};
-
 // FUNCTION: DECKDLL 0x10019ed5
 static void
 FUN_10019ed5(int csvid, int *list, int *count)
 {
-  struct {
+  struct
+  {
     int countVal;
     int i;
     bool found;
-  }s;
+  } s;
 
   s.countVal = *count;
   s.found = false;
-  
-  for (s.i = 0; s.i < s.countVal; s.i++) {
-    if (list[s.i] == csvid) {
+
+  for (s.i = 0; s.i < s.countVal; s.i++)
+  {
+    if (list[s.i] == csvid)
+    {
       s.found = true;
     }
   }
-  if (!s.found) {
+  if (!s.found)
+  {
     list[s.countVal] = csvid;
     s.countVal++;
   }
@@ -5614,7 +5522,101 @@ FUN_10019ed5(int csvid, int *list, int *count)
 LRESULT CALLBACK
 wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  struct WndprocMainClassLocals s;
+  struct
+  {
+    int border_adjust;     /* ebp - 0xb40 */
+    int margin8;           /* ebp - 0xb3c */
+    int fullcard_height;   /* ebp - 0xb38 */
+    int horzlist_hgt6;     /* ebp - 0xb34 */
+    int decksurface_x;     /* ebp - 0xb30 */
+    LONG horzlist_style;   /* ebp - 0xb2c */
+    int title_height;      /* ebp - 0xb28 */
+    RECT rect_load_button; /* ebp - 0xb24 */
+    int decksurface_top;   /* ebp - 0xb14 */
+
+    int main_h; /* ebp - 0xb10 */
+    int ten;    /* ebp - 0xb0c */
+
+    RECT rect_cardlistfilter; /* ebp - 0xb08 */
+    HDC pad_b0c;              /* ebp - 0xb04 */
+    int main_w;               /* ebp - 0xaf4 */
+    int cardlistfilter_hgt;   /* ebp - 0xaf0 */
+
+    RECT rect_title;    /* ebp - 0xaec */
+    RECT rect_pad_adc;  /* ebp - 0xadc */
+    RECT rect_fullcard; /* ebp - 0xacc */
+    int third_w;        /* ebp - 0xabc */
+
+    SIZE sz;               /* ebp - 0xab8 */
+    RECT rect_horzlist;    /* ebp - 0xab0 */
+    RECT rect_decksurface; /* ebp - 0xaa0 */
+    POINT pad_a90;         /* ebp - 0xa90 */
+
+    HWND hwnd_a8c; /* ebp - 0xa8c */
+    MEASUREITEMSTRUCT *pad_a8c;
+    HWND pad_a88;
+
+    RECT rect_stats; /* ebp - 0xa84 */
+    BITMAP bmp_a6c;  /* ebp - 0xa6c */
+    int fill_y;      /* ebp - 0xa54 */
+    int pics_inline; /* ebp - 0xa50 */
+
+    RECT r;     /* ebp - 0xa4c */
+    int fill_x; /* ebp - 0xa3c */
+
+    COLORREF item_col; /* ebp - 0xa38 */
+    HWND tgt;          /* ebp - 0xa38 */
+    int cursel;        /* ebp - 0xa34 */
+    HDC pad_a30;
+
+    HWND hwnd2; /* ebp - 0xa28 */
+    HWND hwnd1; /* ebp - 0xa24 */
+
+    HDC pad_a20;
+    HGDIOBJ pad_a1c;
+    HWND pad_a18;
+    HDC pad_a14;
+    WPARAM pad_a10;
+
+    int csvidraw;     /* ebp - 0xa0c */
+    int csvid;        /* ebp - 0xa08 */
+    int unique_count; /* ebp - 0xa04 */
+
+    int local_a00[100];   /* ebp - 0xa00 */
+    int pad_870;          /* ebp - 0x870 */
+    char local_86c[2000]; /* ebp - 0x86c */
+
+    HWND cmd_hwnd;        /* ebp - 0x9c */
+    HWND cmd_tgt;         /* ebp - 0x98 */
+    int cmd_cursel;       /* ebp - 0x94 */
+    LRESULT cmd_itemdata; /* ebp - 0x90 */
+
+    HDC hdc_local;    /* ebp - 0x8c */
+    HDC hdc;          /* ebp - 0x88 */
+    WPARAM wparam_84; /* ebp - 0x84 */
+
+    LPARAM lparam_copy; /* ebp - 0x80 */
+    WPARAM wparam_copy; /* ebp - 0x7c */
+
+    WORD wPicsInline; /* ebp - 0x78 */
+    WORD wPicsInlinePad;
+    FILE *f;               /* ebp - 0x74 */
+    int *horz_list_addr;   /* ebp - 0x70 */
+    int i;                 /* ebp - 0x6c */
+    unsigned int artist_i; /* ebp - 0x68 */
+
+    HDC fill_chdc; /* ebp - 0x64 */
+    char buf[76];  /* ebp - 0x60 */
+
+    unsigned int pad_14;
+
+    WORD wLeft;       /* ebp - 0x10 */
+    WORD wLeftPad;    /* ebp - 0xe */
+    int excess;       /* ebp - 0xc */
+    int check_excess; /* ebp - 8 */
+    WORD wLast;       /* ebp - 4 */
+    WORD wLastPad;    /* ebp - 2 */
+  } s;
   // GLOBAL: DECKDLL 0x10104c98
   static HPEN pen_ltgrey;
   // GLOBAL: DECKDLL 0x10104c9c

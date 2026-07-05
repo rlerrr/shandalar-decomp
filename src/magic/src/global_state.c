@@ -312,7 +312,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   {
     int card_index;
     int card_type;
-  } locals;
+  } s;
 
   result = 1;
   result &= save_or_load_data((char *)global_cards_data + g_card_count * 0x48, 0x480);
@@ -485,13 +485,13 @@ unsigned int __cdecl save_or_load_ver2(void)
 
   if (global_saveload_loading == 1)
   {
-    for (locals.card_index = g_card_count; g_card_count + 0x10 > locals.card_index; ++locals.card_index)
+    for (s.card_index = g_card_count; g_card_count + 0x10 > s.card_index; ++s.card_index)
     {
-      if (*(int *)((char *)global_cards_data + locals.card_index * 0x48 + 0x24) != -1)
+      if (*(int *)((char *)global_cards_data + s.card_index * 0x48 + 0x24) != -1)
       {
-        locals.card_type = CardTypeFromID(*(int *)((char *)global_cards_data + locals.card_index * 0x48 + 0x24));
-        *(int *)((char *)global_cards_data + locals.card_index * 0x48 + 0x34) =
-            *(int *)((char *)global_cards_data + locals.card_type * 0x48 + 0x34);
+        s.card_type = CardTypeFromID(*(int *)((char *)global_cards_data + s.card_index * 0x48 + 0x24));
+        *(int *)((char *)global_cards_data + s.card_index * 0x48 + 0x34) =
+            *(int *)((char *)global_cards_data + s.card_type * 0x48 + 0x34);
       }
     }
   }
