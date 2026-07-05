@@ -46,7 +46,7 @@ void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxIntoPageNoPalette(char *path);
 void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
-                  FacemakerWindowBounds *dst, int dst_x, int dst_y);
+                      FacemakerWindowBounds *dst, int dst_x, int dst_y);
 AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *out_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 void BeginSpriteEncodeSession(void);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
@@ -94,14 +94,14 @@ int ShowHallBackgroundScreen(void);
 int RunNameEntryDialog(char *name_buffer);
 void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
 int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height, FacemakerWindowBounds *dst, int dst_x, int dst_y);
-int ApplyNameEntryKey(char *name_buffer, unsigned int key_code, size_t max_len);
+int ApplyNameEntryKey(char *name_buffer, int key_code, int max_len);
 int DrawBlinkingNameCaret(FacemakerWindowBounds *window, int color_index, int caret_x, int caret_y, char *name_buffer, int cursor_pos);
 int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, char *palette_source_path, char *portrait_path);
 int ApplyPortraitTintMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, unsigned int tint_mask, int tint_mode);
 int HandleLoadSaveEscControlEvent(AdvMenuControl *control, int event_type);
 int ActivateLoadSaveEscControl(AdvMenuControl *control);
 int DrawLoadSaveButton(FacemakerWindowBounds *window, EncodedImage **button_sprites, int button_width, int button_height, char *button_text,
-                 int font_slot, int visual_state);
+                       int font_slot, int visual_state);
 int HandleLoadSaveSlotControlEvent(AdvMenuControl *control, int event_type);
 int ActivateLoadSaveSlotControl(AdvMenuControl *control);
 
@@ -282,7 +282,7 @@ AdvMenuControl g_loadsave_menu_controls[11] = {
 // FUNCTION: SHANDALAR 0x004a04a0
 int SetSelectedMenuValue(AdvMenuControl *control, int event_type)
 {
-  //This param is real but unused
+  // This param is real but unused
   (void)event_type;
 
   g_menu_selection_value = control->selection_value;
@@ -392,9 +392,9 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
 
   PTR_DAT_005832b4->font_slot = 6;
   DrawFormattedTextShadowed(PTR_DAT_005832b4, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
-               (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontStyleSize(6) / 2),
-               "%s",
-               (char *)g_opening_menu_text_table[s.text_table_index]);
+                            (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontStyleSize(6) / 2),
+                            "%s",
+                            (char *)g_opening_menu_text_table[s.text_table_index]);
 
   PTR_DAT_005832b4->page_number = 0;
   BlitGraphicsRect(PTR_DAT_005832dc, g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y,
@@ -421,7 +421,7 @@ int RunOpeningMenu(void)
   if (g_opening_menu_strings_loaded == 0)
   {
     g_opening_menu_text_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "openingMenu",
-                                                                                       (int)g_ini_string_scratch);
+                                                                                                   (int)g_ini_string_scratch);
     g_opening_menu_strings_loaded = 1;
   }
 
@@ -669,9 +669,9 @@ int RunDifficultyMenu(void)
   if (g_difficulty_menu_strings_loaded == 0)
   {
     g_difficulty_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "diffCaption",
-                                                                                       (int)g_ini_string_scratch);
+                                                                                                    (int)g_ini_string_scratch);
     g_difficulty_option_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "diffs",
-                                                                                       (int)g_ini_string_scratch);
+                                                                                                   (int)g_ini_string_scratch);
     g_difficulty_menu_strings_loaded = 1;
   }
 
@@ -684,7 +684,7 @@ int RunDifficultyMenu(void)
   PTR_DAT_005832b4->font_slot = 7;
   SetFontStyleSize(7, ScaleUiCoordinate(0x1b));
   DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0x76, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x2d), "%s",
-               (char *)g_difficulty_caption_table[0]);
+                                    (char *)g_difficulty_caption_table[0]);
 
   SetFontStyleSize(7, ScaleUiCoordinate(0x16));
   {
@@ -695,7 +695,7 @@ int RunDifficultyMenu(void)
       text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, (char *)g_difficulty_option_table[difficulty_index]);
       DrawFormattedTextShadowedCenterY(PTR_DAT_005832b4, 0x7b, ScaleUiCoordinate(0x1b0) - text_width,
                                        ScaleUiCoordinate(difficulty_index * 100 + 0x75),
-                   "%s", (char *)g_difficulty_option_table[difficulty_index]);
+                                       "%s", (char *)g_difficulty_option_table[difficulty_index]);
     }
   }
 
@@ -880,14 +880,14 @@ int RunColorMenu(void)
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
     DrawFormattedTextShadowed(PTR_DAT_005832dc, 0xa3, ScaleUiCoordinate(0x7d), ScaleUiCoordinate(s.color_index * 0x4c + 0x4c), "%s",
-                 (char *)g_color_menu_color_name_table[s.color_index]);
+                              (char *)g_color_menu_color_name_table[s.color_index]);
   }
 
   SetFontStyleSize(7, ScaleUiCoordinate(10));
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
     DrawFormattedTextShadowed(PTR_DAT_005832dc, 0x71, ScaleUiCoordinate(0x85), ScaleUiCoordinate(s.color_index * 0x4c + 100), "%s",
-                 (char *)g_color_menu_flavor_table[s.color_index]);
+                              (char *)g_color_menu_flavor_table[s.color_index]);
   }
 
   AnimatePaletteToColor(0, 4);
@@ -1066,7 +1066,7 @@ int RunFacemakerFlow(void)
 
     image_width = 0x89;
     image_height = 0xa9;
-    page4_dib = (DIBSurface *)CreateGraphicsPage(4, image_width * 2, image_height, 8);
+    page4_dib = (DIBSurface *)CreateGraphicsPage(4, 0x112, 0xa9, 8);
     SetGraphicsPage(4, page4_dib);
     PushGraphicsClipRect((AdvMenuRect *)old_page_rect, page4_bounds_ptr, 0, 0, image_width * 2, image_height);
     LoadPcxIntoPageNoPalette("menu4.pic");
@@ -1075,7 +1075,7 @@ int RunFacemakerFlow(void)
 
     for (y = 0; y < image_height; y = y + 1)
     {
-      pixel = (char *)page4_dib->pBits + (page4_dib->width + page4_dib->rowPadding) * y;
+      pixel = (char *)g_graphics_pages[4]->pBits + (g_graphics_pages[4]->width + g_graphics_pages[4]->rowPadding) * y;
       for (x = 0; x < image_width; x = x + 1)
       {
         if (*pixel == '\0')
@@ -1086,9 +1086,9 @@ int RunFacemakerFlow(void)
       }
     }
 
-    g_facemaker_page4_bitmap = page4_dib->hBitmap;
-    g_facemaker_page4_dib = page4_dib;
-    SelectObject(page4_dib->hTempDC, page4_dib->hPreviousBitmap);
+    g_facemaker_page4_bitmap = g_graphics_pages[4]->hBitmap;
+    g_facemaker_page4_dib = g_graphics_pages[4];
+    SelectObject(g_graphics_pages[4]->hTempDC, g_graphics_pages[4]->hPreviousBitmap);
     BuildFacemakerPortraitSprites(PTR_DAT_00583304);
     g_graphics_pages[4] = (DIBSurface *)0;
 
@@ -1193,12 +1193,15 @@ void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page)
 // FUNCTION: SHANDALAR 0x00521ffa
 int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, char *palette_source_path, char *portrait_path)
 {
-  unsigned int scanline_buffer[256];
-  int y;
-  int x;
-  unsigned int red;
-  unsigned int green;
-  unsigned int blue;
+  struct
+  {
+    unsigned int scanline_buffer[256];
+    int y;
+    int x;
+    unsigned int green;
+    unsigned int red;
+    unsigned int blue;
+  } s;
 
   if ((strcmp(g_portrait_palette_map_cached_palette_path, palette_source_path) != 0) || (strcmp(g_portrait_palette_map_cached_portrait_path, portrait_path) != 0))
   {
@@ -1207,27 +1210,27 @@ int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, u
     g_portrait_palette_scan_cursor = g_portrait_palette_source_palette.entry_data;
     g_portrait_palette_map_cached_palette_path = palette_source_path;
     g_portrait_palette_map_cached_portrait_path = portrait_path;
-    for (x = 0; x < 0x100; x = x + 1)
+    for (s.x = 0; s.x < 0x100; s.x = s.x + 1)
     {
-      red = (unsigned int)*g_portrait_palette_scan_cursor;
+      s.red = (unsigned int)*g_portrait_palette_scan_cursor;
       g_portrait_palette_scan_cursor = g_portrait_palette_scan_cursor + 1;
-      green = (unsigned int)*g_portrait_palette_scan_cursor;
+      s.green = (unsigned int)*g_portrait_palette_scan_cursor;
       g_portrait_palette_scan_cursor = g_portrait_palette_scan_cursor + 1;
-      blue = (unsigned int)*g_portrait_palette_scan_cursor;
+      s.blue = (unsigned int)*g_portrait_palette_scan_cursor;
       g_portrait_palette_scan_cursor = g_portrait_palette_scan_cursor + 1;
-      g_portrait_palette_remap_table[x] =
-          (unsigned char)Palette_FindNearestEntryIndex((int)red, (int)green, (int)blue, g_portrait_palette_target_palette.entry_data);
+      g_portrait_palette_remap_table[s.x] =
+          (unsigned char)Palette_FindNearestEntryIndex((int)s.red, (int)s.green, (int)s.blue, g_portrait_palette_target_palette.entry_data);
     }
   }
 
-  for (y = src_y; y < src_y + height; y = y + 1)
+  for (s.y = src_y; s.y < src_y + height; s.y = s.y + 1)
   {
-    ReadGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
-    for (x = 0; x < (int)width; x = x + 1)
+    ReadGraphicsScanline(s.scanline_buffer, page->page_number, src_x, s.y, width);
+    for (s.x = 0; s.x < (int)width; s.x = s.x + 1)
     {
-      ((unsigned char *)scanline_buffer)[x] = g_portrait_palette_remap_table[((unsigned char *)scanline_buffer)[x]];
+      ((unsigned char *)s.scanline_buffer)[s.x] = g_portrait_palette_remap_table[((unsigned char *)s.scanline_buffer)[s.x]];
     }
-    WriteGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
+    WriteGraphicsScanline(s.scanline_buffer, page->page_number, src_x, s.y, width);
   }
 
   return 0;
@@ -1236,44 +1239,47 @@ int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, u
 // FUNCTION: SHANDALAR 0x00521e80
 int ApplyPortraitTintMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, unsigned int tint_mask, int tint_mode)
 {
-  unsigned int scanline_buffer[256];
-  unsigned int tint_red;
-  unsigned int tint_green;
-  unsigned int tint_blue;
-  int y;
-  int x;
-  unsigned char *palette_entry;
-  int mixed_red;
-  int mixed_green;
-  int mixed_blue;
+  struct
+  {
+    unsigned int scanline_buffer[256];
+    unsigned int tint_green;
+    unsigned int tint_red;
+    unsigned int tint_blue;
+    int y;
+    int x;
+    int mixed_green;
+    unsigned char *palette_entry;
+    int mixed_red;
+    int mixed_blue;
+  } s;
 
-  palette_entry = g_palette_data_words.entry_data;
+  s.palette_entry = g_palette_data_words.entry_data;
   if (tint_mode != 0)
   {
-    tint_red = tint_mask & 0xff;
-    tint_green = (tint_mask >> 8) & 0xff;
-    tint_blue = (tint_mask & 0xff0000) >> 0x10;
-    for (x = 0; x < 0x100; x = x + 1)
+    s.tint_red = tint_mask & 0xff;
+    s.tint_green = *((unsigned char *)&tint_mask + 1);
+    s.tint_blue = (tint_mask & 0xff0000) >> 0x10;
+    for (s.x = 0; s.x < 0x100; s.x = s.x + 1)
     {
-      mixed_red = ((int)*palette_entry + (int)tint_red) / 2;
-      palette_entry = palette_entry + 1;
-      mixed_green = ((int)*palette_entry + (int)tint_green) / 2;
-      palette_entry = palette_entry + 1;
-      mixed_blue = ((int)*palette_entry + (int)tint_blue) / 2;
-      palette_entry = palette_entry + 1;
-      g_portrait_tint_remap_table[x] =
-          (unsigned char)Palette_FindNearestEntryIndex(mixed_red, mixed_green, mixed_blue, g_palette_data_words.entry_data);
+      s.mixed_red = ((int)*s.palette_entry + (int)s.tint_red) / 2;
+      s.palette_entry = s.palette_entry + 1;
+      s.mixed_green = ((int)*s.palette_entry + (int)s.tint_green) / 2;
+      s.palette_entry = s.palette_entry + 1;
+      s.mixed_blue = ((int)*s.palette_entry + (int)s.tint_blue) / 2;
+      s.palette_entry = s.palette_entry + 1;
+      g_portrait_tint_remap_table[s.x] =
+          (unsigned char)Palette_FindNearestEntryIndex(s.mixed_red, s.mixed_green, s.mixed_blue, g_palette_data_words.entry_data);
     }
   }
 
-  for (y = src_y; y < src_y + height; y = y + 1)
+  for (s.y = src_y; s.y < src_y + height; s.y = s.y + 1)
   {
-    ReadGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
-    for (x = 0; x < (int)width; x = x + 1)
+    ReadGraphicsScanline(s.scanline_buffer, page->page_number, src_x, s.y, width);
+    for (s.x = 0; s.x < (int)width; s.x = s.x + 1)
     {
-      ((unsigned char *)scanline_buffer)[x] = g_portrait_tint_remap_table[((unsigned char *)scanline_buffer)[x]];
+      ((unsigned char *)s.scanline_buffer)[s.x] = g_portrait_tint_remap_table[((unsigned char *)s.scanline_buffer)[s.x]];
     }
-    WriteGraphicsScanline(scanline_buffer, page->page_number, src_x, y, width);
+    WriteGraphicsScanline(s.scanline_buffer, page->page_number, src_x, s.y, width);
   }
 
   return 0;
@@ -1282,49 +1288,52 @@ int ApplyPortraitTintMap(FacemakerWindowBounds *page, int src_x, int src_y, unsi
 // FUNCTION: SHANDALAR 0x004a2713
 int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height, FacemakerWindowBounds *dst, int dst_x, int dst_y)
 {
-  int row;
-  int x;
-  unsigned int local_3f4[250];
-  unsigned int *run_start;
-  unsigned int run_length;
-
-  for (row = 0; row < height; row = row + 1)
+  struct
   {
-    ReadGraphicsScanline(local_3f4, src->page_number, src_x, src_y + row, width);
-    if ((char)local_3f4[0] == '\0')
+    int row;
+    int x;
+    unsigned int local_3f4[250];
+    unsigned int *run_start;
+    unsigned int run_length;
+  } s;
+
+  for (s.row = 0; s.row < height; s.row = s.row + 1)
+  {
+    ReadGraphicsScanline(s.local_3f4, src->page_number, src_x, src_y + s.row, width);
+    if ((unsigned char)s.local_3f4[0] != '\0')
     {
-      run_start = (unsigned int *)0;
+      s.run_start = s.local_3f4;
     }
     else
     {
-      run_start = local_3f4;
+      s.run_start = (unsigned int *)0;
     }
 
-    run_length = 0;
-    for (x = 0; x < (int)width; x = x + 1)
+    s.run_length = 0;
+    for (s.x = 0; s.x < (int)width; s.x = s.x + 1)
     {
-      if (*((char *)local_3f4 + x) == '\0')
+      if (*((unsigned char *)s.local_3f4 + s.x) != '\0')
       {
-        if (run_length == 0)
-        {
-          run_start = (unsigned int *)((char *)local_3f4 + x);
-        }
-        else
-        {
-          WriteGraphicsScanline(run_start, dst->page_number, (int)run_start + (dst_x - (int)local_3f4), dst_y + row, run_length);
-          run_length = 0;
-          run_start = (unsigned int *)((char *)local_3f4 + x);
-        }
+        s.run_length = s.run_length + 1;
       }
       else
       {
-        run_length = run_length + 1;
+        if (s.run_length == 0)
+        {
+          s.run_start = (unsigned int *)((char *)s.local_3f4 + s.x);
+        }
+        else
+        {
+          WriteGraphicsScanline(s.run_start, dst->page_number, (int)s.run_start + (dst_x - (int)s.local_3f4), dst_y + s.row, s.run_length);
+          s.run_length = 0;
+          s.run_start = (unsigned int *)((char *)s.local_3f4 + s.x);
+        }
       }
     }
 
-    if (run_length != 0)
+    if (s.run_length != 0)
     {
-      WriteGraphicsScanline(run_start, dst->page_number, (int)run_start + (dst_x - (int)local_3f4), dst_y + row, run_length);
+      WriteGraphicsScanline(s.run_start, dst->page_number, (int)s.run_start + (dst_x - (int)s.local_3f4), dst_y + s.row, s.run_length);
     }
   }
 
@@ -1332,120 +1341,91 @@ int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsign
 }
 
 // FUNCTION: SHANDALAR 0x004a2e33
-int ApplyNameEntryKey(char *name_buffer, unsigned int key_code, size_t max_len)
+int ApplyNameEntryKey(char *name_buffer, int key_code, int max_len)
 {
-  unsigned int ch;
-  size_t string_len;
-  size_t cursor_pos;
+  switch (key_code)
+  {
 
-  cursor_pos = (size_t)g_name_entry_cursor;
-  if ((int)key_code < 0xf0a)
-  {
-    if (key_code == 0xf09)
+  case 0x4b00:
+    if (g_name_entry_cursor >= 0)
     {
-      g_name_entry_cursor = g_name_entry_cursor + 8;
-      if ((int)g_name_entry_cursor >= (int)max_len)
-      {
-        g_name_entry_cursor = (int)max_len;
-      }
-      return 0;
+      g_name_entry_cursor--;
     }
-    if (key_code == 0xe08)
+    break;
+
+  case 0x4d00:
+    if (max_len > g_name_entry_cursor)
     {
-      if (g_name_entry_cursor == 0)
-      {
-        return 0;
-      }
-      g_name_entry_cursor = g_name_entry_cursor - 1;
-      strcpy(name_buffer + g_name_entry_cursor, name_buffer + cursor_pos);
-      return 0;
-    }
-  }
-  else if ((int)key_code < 0x1c0e)
-  {
-    if (key_code == 0x1c0d)
-    {
-      return 1;
-    }
-    if (key_code == 0xf0f)
-    {
-      g_name_entry_cursor = g_name_entry_cursor - 8;
-      if (g_name_entry_cursor < 0)
-      {
-        g_name_entry_cursor = 0;
-      }
-      return 0;
-    }
-  }
-  else if ((int)key_code < 0x4b01)
-  {
-    if (key_code == 0x4b00)
-    {
-      if (g_name_entry_cursor > 0)
-      {
-        g_name_entry_cursor = g_name_entry_cursor - 1;
-      }
-      return 0;
-    }
-    if (key_code == 0x4700)
-    {
-      g_name_entry_cursor = 0;
-      return 0;
-    }
-  }
-  else if ((int)key_code < 0x4f01)
-  {
-    if (key_code == 0x4f00)
-    {
-      g_name_entry_cursor = (int)strlen(name_buffer);
-      return 0;
-    }
-    if (key_code == 0x4d00)
-    {
-      if ((int)max_len <= g_name_entry_cursor)
-      {
-        return 0;
-      }
-      string_len = strlen(name_buffer);
-      if ((int)string_len == g_name_entry_cursor)
+      if (strlen(name_buffer) == (size_t)g_name_entry_cursor)
       {
         strcat(name_buffer, " ");
       }
-      g_name_entry_cursor = g_name_entry_cursor + 1;
-      return 0;
+      g_name_entry_cursor++;
     }
-  }
-  else
-  {
-    if (key_code == 0x5200)
+    break;
+
+  case 0x1c0d:
+    return 1;
+    break;
+
+  case 0xf09:
+    g_name_entry_cursor += 8;
+    g_name_entry_cursor = MIN(g_name_entry_cursor, max_len);
+    break;
+
+  case 0xf0f:
+    g_name_entry_cursor -= 8;
+    g_name_entry_cursor = MAX(g_name_entry_cursor, 0);
+    break;
+
+  case 0xe08:
+    if (g_name_entry_cursor == 0)
     {
-      g_name_entry_insert_mode = g_name_entry_insert_mode ^ 1;
-      return 0;
+      break;
     }
-    if (key_code == 0x5300)
+
+    g_name_entry_cursor--;
+    strcpy(name_buffer + g_name_entry_cursor, name_buffer + g_name_entry_cursor + 1);
+    break;
+
+  case 0x5300:
+    if (g_name_entry_cursor < (int)strlen(name_buffer))
     {
-      string_len = strlen(name_buffer);
-      if ((int)string_len <= g_name_entry_cursor)
-      {
-        return 0;
-      }
       strcpy(name_buffer + g_name_entry_cursor, name_buffer + g_name_entry_cursor + 1);
-      return 0;
+    }
+    break;
+
+  case 0x5200:
+    g_name_entry_insert_mode = g_name_entry_insert_mode ^ 1;
+    break;
+
+  case 0x4700:
+    g_name_entry_cursor = 0;
+    break;
+
+  case 0x4f00:
+    g_name_entry_cursor = (int)strlen(name_buffer);
+    break;
+
+  default:
+
+    if ((int)strlen(name_buffer) < max_len)
+    {
+      key_code = key_code & 0xff;
+      if (((key_code >= 'A' && key_code <= 'Z') ||
+           (key_code >= 'a' && key_code <= 'z') ||
+           (key_code >= '0' && key_code <= '9') ||
+           (key_code == ' ')))
+      {
+        if (g_name_entry_insert_mode != 0)
+        {
+          memmove(name_buffer + g_name_entry_cursor + 1, name_buffer + g_name_entry_cursor, (max_len - g_name_entry_cursor) - 1);
+        }
+        name_buffer[g_name_entry_cursor++] = (char)key_code;
+      }
     }
   }
 
-  string_len = strlen(name_buffer);
-  ch = key_code & 0xff;
-  if (((int)string_len < (int)max_len) &&
-      (((0x40 < ch && ch < 0x5b) || (0x60 < ch && ch < 0x7b)) || ((0x2f < ch && ch < 0x3a) || ch == 0x20)))
-  {
-    if (g_name_entry_insert_mode != 0)
-    {
-      memmove(name_buffer + g_name_entry_cursor + 1, name_buffer + g_name_entry_cursor, (max_len - g_name_entry_cursor) - 1);
-    }
-    name_buffer[g_name_entry_cursor] = (char)key_code;
-    g_name_entry_cursor = g_name_entry_cursor + 1;
-  }
   return 0;
 }
 
@@ -1472,111 +1452,112 @@ int ActivateLoadSaveEscControl(AdvMenuControl *control)
 // FUNCTION: SHANDALAR 0x004a84c7
 int DrawBlinkingNameCaret(FacemakerWindowBounds *window, int color_index, int caret_x, int caret_y, char *name_buffer, int cursor_pos)
 {
-  size_t string_len;
-  unsigned int frame_counter;
-  int char_width;
-  int i;
-  int caret_width;
-  int baseline_y;
+  struct
+  {
+    size_t string_len;
+    int i;
+    int caret_width;
+  } s;
 
-  string_len = strlen(name_buffer);
-  frame_counter = GetUiTickCount();
-  if ((frame_counter & 7) == 0)
+  s.string_len = strlen(name_buffer);
+  if ((GetUiTickCount() & 7) == 0)
   {
     return 0;
   }
 
-  for (i = 0; i < cursor_pos; i = i + 1)
+  for (s.i = 0; s.i < cursor_pos; s.i = s.i + 1)
   {
-    if (i < (int)string_len)
+    if (s.i < (int)s.string_len)
     {
-      char_width = GetFontCharWidth(window->font_slot, name_buffer[i]);
+      caret_x = caret_x + GetFontCharWidth(window->font_slot, name_buffer[s.i]);
     }
     else
     {
-      char_width = GetFontCharWidth(window->font_slot, ' ');
+      caret_x = caret_x + GetFontCharWidth(window->font_slot, ' ');
     }
-    caret_x = caret_x + char_width;
   }
 
-  if (i < (int)string_len)
+  if (s.i < (int)s.string_len)
   {
-    caret_width = GetFontCharWidth(window->font_slot, name_buffer[cursor_pos]);
+    s.caret_width = GetFontCharWidth(window->font_slot, name_buffer[cursor_pos]);
   }
   else
   {
-    caret_width = GetFontCharWidth(window->font_slot, ' ');
+    s.caret_width = GetFontCharWidth(window->font_slot, ' ');
   }
 
-  baseline_y = caret_y + GetFontLineHeight(window->font_slot) / 2;
-  DrawGraphicsLine(window, caret_x, baseline_y - 1, caret_x + caret_width, baseline_y - 1, color_index);
-  DrawGraphicsLine(window, caret_x, baseline_y, caret_x + caret_width, baseline_y, color_index);
-  return 0;
+  caret_y = caret_y + GetFontLineHeight(window->font_slot) / 2;
+  caret_y = caret_y - 1;
+  DrawGraphicsLine(window, caret_x, caret_y, caret_x + s.caret_width, caret_y, color_index);
+  DrawGraphicsLine(window, caret_x, caret_y + 1, caret_x + s.caret_width, caret_y + 1, color_index);
 }
 
 // FUNCTION: SHANDALAR 0x004a85fc
 int DrawLoadSaveButton(FacemakerWindowBounds *window, EncodedImage **button_sprites, int button_width, int button_height, char *button_text, int font_slot,
-                 int visual_state)
+                       int visual_state)
 {
-  EncodedImage *sprite;
-  int x_cursor;
-  int text_width;
-  size_t text_len;
-  int text_x;
-  int text_y;
-  int text_color;
+  struct
+  {
+    size_t text_len;
+    int text_width;
+    int text_y;
+    int x_cursor;
+    int line_height;
+    int text_color;
+    EncodedImage *sprite;
+  } s;
 
+  s.x_cursor = 0;
   button_width = ScaleUiCoordinate(button_width);
   button_height = ScaleUiCoordinate(button_height);
 
-  sprite = button_sprites[0];
-  DrawEncodedImageResampled(window, 0, 0, ScaleUiCoordinate(sprite->width), ScaleUiCoordinate(sprite->height), sprite);
-  x_cursor = ScaleUiCoordinate(sprite->width);
+  s.sprite = button_sprites[0];
+  DrawEncodedImageResampled(window, s.x_cursor, 0, ScaleUiCoordinate(s.sprite->width), ScaleUiCoordinate(s.sprite->height), s.sprite);
+  s.x_cursor += ScaleUiCoordinate(s.sprite->width);
 
-  sprite = button_sprites[1];
-  while (x_cursor < button_width)
+  s.sprite = button_sprites[1];
+  while (s.x_cursor < button_width)
   {
-    DrawEncodedImageResampled(window, x_cursor, 0, ScaleUiCoordinate(sprite->width), ScaleUiCoordinate(sprite->height), sprite);
-    x_cursor = x_cursor + ScaleUiCoordinate(sprite->width);
+    DrawEncodedImageResampled(window, s.x_cursor, 0, ScaleUiCoordinate(s.sprite->width), ScaleUiCoordinate(s.sprite->height), s.sprite);
+    s.x_cursor += ScaleUiCoordinate(s.sprite->width);
   }
 
-  sprite = button_sprites[2];
-  x_cursor = button_width;
-  x_cursor = x_cursor - ScaleUiCoordinate(sprite->width);
-  DrawEncodedImageResampled(window, x_cursor, 0, ScaleUiCoordinate(sprite->width), ScaleUiCoordinate(sprite->height), sprite);
+  s.sprite = button_sprites[2];
+  s.x_cursor = button_width - ScaleUiCoordinate(s.sprite->width);
+  DrawEncodedImageResampled(window, s.x_cursor, 0, ScaleUiCoordinate(s.sprite->width), ScaleUiCoordinate(s.sprite->height), s.sprite);
 
   window->font_slot = font_slot;
-  GetFontLineHeight(font_slot);
-  text_width = MeasureMultilineTextWidth(window, button_text);
-  while (button_width < text_width)
+  s.line_height = GetFontLineHeight(font_slot);
+  s.text_width = MeasureMultilineTextWidth(window, button_text);
+  while (s.text_width > button_width)
   {
-    text_len = strlen(button_text);
-    button_text[text_len - 1] = '\0';
-    text_width = MeasureMultilineTextWidth(window, button_text);
+    s.text_len = strlen(button_text);
+    button_text[s.text_len - 1] = '\0';
+    s.text_width = MeasureMultilineTextWidth(window, button_text);
   }
 
-  text_x = 10;
-  text_y = button_height / 2;
-  text_color = 0x25;
+  s.x_cursor = 10;
+  s.text_y = button_height / 2;
+  s.text_color = 0x25;
   if (visual_state == 1)
   {
-    text_color = 0x67;
+    s.text_color = 0x67;
   }
   if (visual_state == 2)
   {
-    text_color = 0x67;
-    text_y = text_y + 2;
-    text_x = 8;
+    s.text_color = 0x67;
+    s.text_y += 2;
+    s.x_cursor -= 2;
   }
   if (visual_state == 3)
   {
-    text_color = 0xf0;
+    s.text_color = 0xf0;
   }
 
-  DrawLoadSaveButtonText(window, text_color, text_x, text_y, button_text);
+  DrawLoadSaveButtonText(window, s.text_color, s.x_cursor, s.text_y, button_text);
   if (g_loadsave_edit_active != 0)
   {
-    DrawBlinkingNameCaret(window, text_color, text_x, text_y, button_text, g_loadsave_cursor_index);
+    DrawBlinkingNameCaret(window, s.text_color, s.x_cursor, s.text_y, button_text, g_loadsave_cursor_index);
   }
   return 0;
 }
@@ -1584,38 +1565,39 @@ int DrawLoadSaveButton(FacemakerWindowBounds *window, EncodedImage **button_spri
 // FUNCTION: SHANDALAR 0x004a884f
 int DrawLoadSaveSlotEntry(int slot_index, int visual_state)
 {
-  EncodedImage **slot_state_sprites;
-  int slot_y;
-  int slot_w;
-  int slot_h;
+  struct
+  {
+    int slot_y;
+    int slot_x;
+    int slot_h;
+    int slot_w;
+    EncodedImage **slot_state_sprites;
+  } s;
 
   switch (visual_state)
   {
   case 0:
-    slot_state_sprites = g_loadsave_slot_button_state_sprites;
+    s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
     break;
   case 1:
-    slot_state_sprites = g_loadsave_slot_button_state_sprites;
+    s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
     break;
   case 2:
-    slot_state_sprites = g_loadsave_slot_button_state_sprites + 3;
+    s.slot_state_sprites = g_loadsave_slot_button_state_sprites + 3;
     break;
   case 3:
-    slot_state_sprites = g_loadsave_slot_button_state_sprites;
-    break;
-  default:
-    slot_state_sprites = g_loadsave_slot_button_state_sprites;
+    s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
     break;
   }
 
-  slot_y = g_loadsave_menu_controls[slot_index].y;
-  slot_w = g_loadsave_menu_controls[slot_index].width;
-  slot_h = g_loadsave_menu_controls[slot_index].height;
+  s.slot_x = g_loadsave_menu_controls[slot_index].x;
+  s.slot_y = g_loadsave_menu_controls[slot_index].y;
+  s.slot_w = g_loadsave_menu_controls[slot_index].width;
+  s.slot_h = g_loadsave_menu_controls[slot_index].height;
 
-  DrawLoadSaveButton(PTR_DAT_005832dc, slot_state_sprites, 0x168, 0x1b, g_loadsave_slot_descriptions[slot_index], 4, visual_state);
+  DrawLoadSaveButton(PTR_DAT_005832dc, s.slot_state_sprites, 0x168, 0x1b, g_loadsave_slot_descriptions[slot_index], 4, visual_state);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x168), ScaleUiCoordinate(0x1a), PTR_DAT_005832b4,
-                          g_loadsave_menu_controls[slot_index].x, slot_y, slot_w,
-                          slot_h);
+                          s.slot_x, s.slot_y, s.slot_w, s.slot_h);
   return 0;
 }
 
@@ -1632,20 +1614,22 @@ int DrawLoadSaveFrame(FacemakerWindowBounds *window, int x, int y, int width, in
     short first_row;
     short row_count;
   } EncodedImageHeader;
-  EncodedImageHeader sprite_headers[9];
-  EncodedImage **sprite_table;
-  int i;
-  int right_span_x;
-  int cursor_x;
-  int cursor_y;
-  int right_edge_strip_width;
-
-  sprite_table = g_loadsave_frame_sprites;
-  for (i = 0; i < 9; i = i + 1)
+  struct
   {
-    sprite_headers[i] = *(EncodedImageHeader *)sprite_table[i];
-    sprite_headers[i].width = (short)ScaleUiCoordinate((int)sprite_headers[i].width);
-    sprite_headers[i].height = (short)ScaleUiCoordinate((int)sprite_headers[i].height);
+    int cursor_y;
+    int i;
+    int right_span_x;
+    EncodedImageHeader sprite_headers[9];
+    int cursor_x;
+    EncodedImage **sprite_table;
+  } s;
+
+  s.sprite_table = g_loadsave_frame_sprites;
+  for (s.i = 0; s.i < 9; s.i = s.i + 1)
+  {
+    s.sprite_headers[s.i] = *(EncodedImageHeader *)s.sprite_table[s.i];
+    s.sprite_headers[s.i].width = (short)ScaleUiCoordinate((int)s.sprite_headers[s.i].width);
+    s.sprite_headers[s.i].height = (short)ScaleUiCoordinate((int)s.sprite_headers[s.i].height);
   }
 
   x = ScaleUiCoordinate(x);
@@ -1653,44 +1637,44 @@ int DrawLoadSaveFrame(FacemakerWindowBounds *window, int x, int y, int width, in
   width = ScaleUiCoordinate(width);
   height = ScaleUiCoordinate(height);
 
-  DrawEncodedImageResampled(window, (x + width / 2) - (int)sprite_headers[0].width / 2,
-                            y - ((int)sprite_headers[0].height - (int)sprite_headers[5].height),
-                            (int)sprite_headers[0].width, (int)sprite_headers[0].height, sprite_table[0]);
+  DrawEncodedImageResampled(window, (x + width / 2) - (int)s.sprite_headers[0].width / 2,
+                            y - ((int)s.sprite_headers[0].height - (int)s.sprite_headers[5].height),
+                            (int)s.sprite_headers[0].width, (int)s.sprite_headers[0].height, s.sprite_table[0]);
 
-  right_span_x = ((int)sprite_headers[0].width / 2) + (width / 2) + x;
-  for (cursor_x = ((x + width / 2) - (int)sprite_headers[0].width / 2) - (int)sprite_headers[5].width; x < cursor_x;
-       cursor_x = cursor_x - (int)sprite_headers[5].width)
+  s.right_span_x = ((int)s.sprite_headers[0].width / 2) + (width / 2) + x;
+  for (s.cursor_x = ((x + width / 2) - (int)s.sprite_headers[0].width / 2) - (int)s.sprite_headers[5].width; x < s.cursor_x;
+       s.cursor_x = s.cursor_x - (int)s.sprite_headers[5].width)
   {
-    DrawEncodedImageResampled(window, cursor_x, y, (int)sprite_headers[5].width, (int)sprite_headers[5].height, sprite_table[5]);
-    DrawEncodedImageResampled(window, right_span_x, y, (int)sprite_headers[5].width, (int)sprite_headers[5].height, sprite_table[5]);
-    right_span_x = right_span_x + (int)sprite_headers[5].width;
+    DrawEncodedImageResampled(window, s.cursor_x, y, (int)s.sprite_headers[5].width, (int)s.sprite_headers[5].height, s.sprite_table[5]);
+    DrawEncodedImageResampled(window, s.right_span_x, y, (int)s.sprite_headers[5].width, (int)s.sprite_headers[5].height, s.sprite_table[5]);
+    s.right_span_x = s.right_span_x + (int)s.sprite_headers[5].width;
   }
 
-  DrawEncodedImageResampled(window, x, y, (int)sprite_headers[1].width, (int)sprite_headers[1].height, sprite_table[1]);
-  DrawEncodedImageResampled(window, (width + x) - (int)sprite_headers[2].width, y, (int)sprite_headers[2].width,
-                            (int)sprite_headers[2].height, sprite_table[2]);
+  DrawEncodedImageResampled(window, x, y, (int)s.sprite_headers[1].width, (int)s.sprite_headers[1].height, s.sprite_table[1]);
+  DrawEncodedImageResampled(window, (width + x) - (int)s.sprite_headers[2].width, y, (int)s.sprite_headers[2].width,
+                            (int)s.sprite_headers[2].height, s.sprite_table[2]);
 
-  right_edge_strip_width = (int)sprite_headers[8].width;
-  for (cursor_y = (int)sprite_headers[1].height + y; cursor_y < (height + y) - (int)sprite_headers[3].height;
-       cursor_y = cursor_y + (int)sprite_headers[8].height)
+  s.cursor_x = (int)s.sprite_headers[8].width;
+  for (s.cursor_y = (int)s.sprite_headers[1].height + y; s.cursor_y < (height + y) - (int)s.sprite_headers[3].height;
+       s.cursor_y = s.cursor_y + (int)s.sprite_headers[8].height)
   {
-    DrawEncodedImageResampled(window, x, cursor_y, (int)sprite_headers[8].width, (int)sprite_headers[8].height, sprite_table[8]);
-    DrawEncodedImageResampled(window, (width + x) - right_edge_strip_width, cursor_y,
-                              (int)sprite_headers[6].width, (int)sprite_headers[6].height, sprite_table[6]);
+    DrawEncodedImageResampled(window, x, s.cursor_y, (int)s.sprite_headers[8].width, (int)s.sprite_headers[8].height, s.sprite_table[8]);
+    DrawEncodedImageResampled(window, (width + x) - s.cursor_x, s.cursor_y,
+                              (int)s.sprite_headers[6].width, (int)s.sprite_headers[6].height, s.sprite_table[6]);
   }
 
-  DrawEncodedImageResampled(window, x, (height + y) - (int)sprite_headers[3].height, (int)sprite_headers[3].width,
-                            (int)sprite_headers[3].height, sprite_table[3]);
-  DrawEncodedImageResampled(window, (width + x) - (int)sprite_headers[4].width, (height + y) - (int)sprite_headers[4].height,
-                            (int)sprite_headers[4].width, (int)sprite_headers[4].height, sprite_table[4]);
+  DrawEncodedImageResampled(window, x, (height + y) - (int)s.sprite_headers[3].height, (int)s.sprite_headers[3].width,
+                            (int)s.sprite_headers[3].height, s.sprite_table[3]);
+  DrawEncodedImageResampled(window, (width + x) - (int)s.sprite_headers[4].width, (height + y) - (int)s.sprite_headers[4].height,
+                            (int)s.sprite_headers[4].width, (int)s.sprite_headers[4].height, s.sprite_table[4]);
 
-  right_span_x = ((width + x) - (int)sprite_headers[4].width) - (int)sprite_headers[7].width;
-  y = y + (height - (int)sprite_headers[7].height);
-  for (cursor_x = (int)sprite_headers[3].width + x; cursor_x < x + width / 2; cursor_x = cursor_x + (int)sprite_headers[7].width)
+  s.right_span_x = ((width + x) - (int)s.sprite_headers[4].width) - (int)s.sprite_headers[7].width;
+  y = y + (height - (int)s.sprite_headers[7].height);
+  for (s.cursor_x = (int)s.sprite_headers[3].width + x; s.cursor_x < x + width / 2; s.cursor_x = s.cursor_x + (int)s.sprite_headers[7].width)
   {
-    DrawEncodedImageResampled(window, cursor_x, y, (int)sprite_headers[7].width, (int)sprite_headers[7].height, sprite_table[7]);
-    DrawEncodedImageResampled(window, right_span_x, y, (int)sprite_headers[7].width, (int)sprite_headers[7].height, sprite_table[7]);
-    right_span_x = right_span_x - (int)sprite_headers[7].width;
+    DrawEncodedImageResampled(window, s.cursor_x, y, (int)s.sprite_headers[7].width, (int)s.sprite_headers[7].height, s.sprite_table[7]);
+    DrawEncodedImageResampled(window, s.right_span_x, y, (int)s.sprite_headers[7].width, (int)s.sprite_headers[7].height, s.sprite_table[7]);
+    s.right_span_x = s.right_span_x - (int)s.sprite_headers[7].width;
   }
 
   return 0;
@@ -1837,7 +1821,7 @@ restart_menu_loop:
   }
   if (param_1 == 0)
   {
-save_and_return:
+  save_and_return:
     fclose(locals.save_desc_file);
     FreeSpriteBlob(g_loadsave_frame_sprites[0]);
     AnimatePaletteToColor(0, DAT_00589dec);
@@ -1964,7 +1948,7 @@ save_and_return:
     }
     goto redraw_edited_slot;
 
-handle_name_char:
+  handle_name_char:
     locals.key_code = locals.key_code & 0xff;
     if ((((0x40 < locals.key_code) && (locals.key_code < 0x5b)) || ((0x60 < locals.key_code) && (locals.key_code < 0x7b))) ||
         (((0x2f < locals.key_code) && (locals.key_code < 0x3a)) || (locals.key_code == 0x20)))
@@ -1979,7 +1963,7 @@ handle_name_char:
       g_loadsave_cursor_index = g_loadsave_cursor_index + 1;
     }
 
-redraw_edited_slot:
+  redraw_edited_slot:
     strcpy(g_loadsave_slot_descriptions[locals.selected_slot], locals.edit_buffer + 1);
     DrawLoadSaveSlotEntry(locals.selected_slot, 2);
   } while (1);

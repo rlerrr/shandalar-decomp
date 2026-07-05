@@ -546,22 +546,40 @@ char s__s____s__0058ccec[] = "%s\n      (%s)";
 // GLOBAL: SHANDALAR 0x0058ccfc
 char DAT_0058ccfc[] = "";
 
-/*
- * Dungeon clue text draw helper.
- * This is a simplified version of SHANDALAR 0x0050c973: draw g_ui_message_buffer and advance Y.
- */
+char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width);
+void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+int GetFontCharWidth(int font_slot, int ch);
 
 // FUNCTION: SHANDALAR 0x0050c973
-int FUN_0050c973(int y, int color_index)
+int DrawDungeonClueTextLine(int y, int color_index)
 {
-  int x;
-  int line_height;
+  struct
+  {
+    char first_char_text[4];
+    char wrapped_text[1000];
+    int first_char_width;
+  } s;
 
-  x = FUN_005501dc(0x10);
-  DrawTextLineClamped(g_ui_message_buffer, x, y, color_index);
+  if (ScaleUiCoordinate(0xbe) < MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer))
+  {
+    s.first_char_width = GetFontCharWidth(4, g_ui_message_buffer[0]);
+    s.first_char_text[0] = g_ui_message_buffer[0];
+    s.first_char_text[1] = '\0';
+    DrawTextLineClamped(s.first_char_text, FUN_005501dc(0x10), y, color_index);
 
-  line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-  return y + line_height;
+    WrapTextToWidthForDropCap(g_ui_message_buffer + 1, s.wrapped_text, ScaleUiCoordinate(0xbe) - s.first_char_width);
+
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, color_index, s.first_char_width + FUN_005501dc(0x10), y, s.wrapped_text);
+
+    y += GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 2;
+  }
+  else
+  {
+    DrawTextLineClamped(g_ui_message_buffer, FUN_005501dc(0x10), y, color_index);
+    y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  }
+
+  return y;
 }
 
 // FUNCTION: SHANDALAR 0x00509244
@@ -958,13 +976,13 @@ void FUN_0050caa0(int dungeon_index)
   if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 2) != 0) || (DAT_007894f4 != 0))
   {
     strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0]);
-    s.text_y = FUN_0050c973(s.text_y, s.text_color);
+    s.text_y = DrawDungeonClueTextLine(s.text_y, s.text_color);
   }
 
   if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (DAT_007894f4 != 0))
   {
     strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x15]);
-    s.text_y = FUN_0050c973(s.text_y, s.text_color);
+    s.text_y = DrawDungeonClueTextLine(s.text_y, s.text_color);
   }
 
   /* Wait for Done */

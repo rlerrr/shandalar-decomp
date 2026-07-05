@@ -49,6 +49,7 @@ extern char text_lines[249][300];
 extern int g_loadsave_skip_esc;
 extern jmp_buf DAT_0073e990;
 extern jmp_buf DAT_0073e9e0;
+extern DAT_0093a870[0x20];
 
 extern int card_dummy(int player, int card, event_t event);
 
@@ -137,7 +138,7 @@ void *FUN_0055060c(int param_1);
 void FUN_004290e2(int param_1, int param_2);
 void FUN_004ce992(int delay);
 
-void FUN_0050a5c1(int param_1);
+void EnterCastleDungeon(int param_1);
 void EnsureAdvfac64Loaded(int state);
 WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
 void ShowWorldMapScreen(int mode);
@@ -149,7 +150,7 @@ void FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_labe
 int FUN_00522508(int param_1);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 void FUN_004f263b(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7);
-void FUN_0041905e(int param_1);
+void ShowTownHintTextPopup(int param_1);
 void FUN_0057b590(FacemakerWindowBounds *window, int color_index, int x, int y, char *text);
 int RecountDeckCardTotals(void);
 
@@ -200,7 +201,7 @@ int CalculateCardShopPrice(int card_index);
 int FUN_004bb458(int param_1);
 char *FUN_004f2e17(int town_index);
 char *BuildTownDisplayName(int town_index);
-extern int DAT_0058c620[];
+extern int g_dungeon_monster_duel_music_csvids[];
 void FormatQuestSpellName(char *dst, DWORD dst_size);
 unsigned int RunWisemanAdviceSequence(int preferred_color, int new_town_visit, int town_index);
 int BuyAnyCardFromTown(int payment_color, int town_index);
@@ -208,7 +209,7 @@ char *FUN_0057e826(char *dst, char *src);
 
 int RunDuelEngine(unsigned int card_id, int creature_type);
 int ExitIfNoUsableDeckCards(void);
-int PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
+ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 void LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int color_filter, int speed_filter);
 void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, unsigned int color_filter, int speed_filter);
 int DrawRandomCardFromInitialLibrary(int library_index);
@@ -278,9 +279,9 @@ int sound_unload(int sound_id);
 void FUN_00562835(char *filename, int sound_id);
 void FUN_005627ee(int sound_id, int volume, int pan);
 
-extern int DAT_00591220;
-extern int DAT_0059126c;
-extern int DAT_0059121c;
+extern int g_world_location_music_track_id;
+extern int g_world_location_music_town_index;
+extern int g_world_location_music_active;
 
 // GLOBAL: SHANDALAR 0x00591284
 char s_x_sound_dueltune_wav_00591284[] = "x:sound\\dueltune.wav";
@@ -299,7 +300,7 @@ char *PTR_s_x_sound_dueltune_wav_00591278[3] = {
 int g_current_town_slot_index;
 
 // GLOBAL: SHANDALAR 0x00580da4
-int(__cdecl *g_town_dialog_callback)(void);
+int(__cdecl *g_town_dialog_callback)(void) = DrawTiledDialogBoxFrame;
 
 // GLOBAL: SHANDALAR 0x008e2e50
 int g_duel_ante_card_ids[16];
@@ -463,10 +464,13 @@ char s_x_sound_button2_wav_0058ad7c[] = "x:sound\\button2.wav";
 char s_x_sound_button_wav_0058ad90[] = "x:sound\\button.wav";
 
 // GLOBAL: SHANDALAR 0x0058f124
-char s_x_sound_button2_wav_0058f124[] = "x:sound\\button2.wav\0tradscrn.pic\0\0\0\0tradbut1.pic\0\0\0\0";
+char s_x_sound_button2_wav_0058f124[] = "x:sound\\button2.wav";
 
-#define s_tradscrn_pic_0058f138 (s_x_sound_button2_wav_0058f124 + 0x14)
-#define s_tradbut1_pic_0058f148 (s_x_sound_button2_wav_0058f124 + 0x24)
+// GLOBAL: SHANDALAR 0x0058f138
+char s_tradscrn_pic_0058f138[] = "tradscrn.pic";
+
+// GLOBAL: SHANDALAR 0x0058f148
+char s_tradbut1_pic_0058f148[] = "tradbut1.pic";
 
 // GLOBAL: SHANDALAR 0x0058f164
 char s_card_browser_owned_separator[4] = "-";
@@ -874,9 +878,9 @@ void TriggerWizardSiegeNewsflash(int wizard_color)
       }
     }
 
-    if (*(char *)((char *)&g_town_slots[s.scan_index].status_and_ruling_wizard + 1) != 0)
+    if (g_town_slots[s.scan_index].status_and_ruling_wizard & 0xff00)
     {
-      *(int *)((char *)s.ruled_by_color_count + (((int)(g_town_slots[s.scan_index].status_and_ruling_wizard & 0xffffff3f)) >> 6)) += 1;
+      s.ruled_by_color_count[g_town_slots[s.scan_index].status_and_ruling_wizard >> 8] += 1;
     }
   }
 
@@ -885,98 +889,104 @@ void TriggerWizardSiegeNewsflash(int wizard_color)
 
   for (s.town_index = 0; s.town_index < 0x80; s.town_index++)
   {
-    if ((((*(char *)((char *)&g_town_slots[s.town_index].status_and_ruling_wizard + 1) == 0) && (g_town_slots[s.town_index].location_type != 4)) &&
-         (g_town_slots[s.town_index].location_type != 1)) &&
-        (g_town_slots[s.town_index].location_type != 5))
+    if ((((g_town_slots[s.town_index].status_and_ruling_wizard & 0xff00) || (g_town_slots[s.town_index].location_type == 4)) ||
+         (g_town_slots[s.town_index].location_type == 1)) ||
+        (g_town_slots[s.town_index].location_type == 5))
     {
-      s.nearest_distance = 0x7fff;
+      continue;
+    }
 
-      for (s.scan_index = 1; s.scan_index < 6; s.scan_index++)
+    s.nearest_distance = 0x7fff;
+
+    for (s.scan_index = 1; s.scan_index < 6; s.scan_index++)
+    {
+      if (s.lair_world_x_by_color[s.scan_index] == -1)
       {
-        if (s.lair_world_x_by_color[s.scan_index] != -1)
-        {
-          s.dist = FUN_004ecf30(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
-                                g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
-          if (s.dist < s.nearest_distance)
-          {
-            s.nearest_distance = s.dist;
-            s.color = s.scan_index;
-          }
-        }
+        continue;
       }
 
-      s.score = FUN_00522508(0x80) + (s.ruled_by_color_count[s.color] << 5);
-      if (s.score < s.best_score)
+      s.dist = FUN_004ecf30(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
+                            g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
+      if (s.dist < s.nearest_distance)
       {
-        s.best_score = s.score;
-        s.best_town_index = s.town_index;
-        s.best_color = s.color;
+        s.nearest_distance = s.dist;
+        s.color = s.scan_index;
       }
+    }
+
+    s.score = (s.ruled_by_color_count[s.color] << 5) + FUN_00522508(0x80);
+    if (s.score < s.best_score)
+    {
+      s.best_score = s.score;
+      s.best_town_index = s.town_index;
+      s.best_color = s.color;
     }
   }
 
   s.color = s.best_color;
   s.town_index = s.best_town_index;
-  if (s.color != -1)
+  if (s.color == -1)
   {
-    s.scan_index = 7;
-    switch ((int)(g_siege_timer + ((g_siege_timer >> 0x1f) & 0x7f)) >> 7)
+    return;
+  }
+
+  s.scan_index = 7;
+  switch (g_siege_timer / 128)
+  {
+  case 0:
+    s.creature_tier = 4;
+    break;
+  case 1:
+    s.creature_tier = 6;
+    break;
+  case 2:
+    s.creature_tier = 8;
+    break;
+  case 3:
+    s.creature_tier = 0xc;
+    break;
+  default:
+    if (g_town_slots[s.town_index].world_y & 1)
     {
-    case 0:
-      s.creature_tier = 4;
-      break;
-    case 1:
-      s.creature_tier = 6;
-      break;
-    case 2:
-      s.creature_tier = 8;
-      break;
-    case 3:
       s.creature_tier = 0xc;
-      break;
-    default:
-      if ((g_town_slots[s.town_index].world_y & 1) == 0)
-      {
-        s.creature_tier = 0x10;
-      }
-      else
-      {
-        s.creature_tier = 0xc;
-      }
-      break;
-    }
-
-    FreeOpeningMenuSpriteWorkEntries(s.scan_index, s.scan_index + 8);
-    g_lair_or_monster_slots[s.scan_index].entry_type = PickRandomCreatureTypeForWizardTier(s.color, s.creature_tier);
-    g_lair_or_monster_slots[s.scan_index].world_x = g_town_slots[s.town_index].world_x * 0x20 + 0x10;
-    g_lair_or_monster_slots[s.scan_index].world_y = g_town_slots[s.town_index].world_y * 0x20 + 0x10;
-    g_lair_or_monster_slots[s.scan_index].color = s.color;
-    g_wizard_siege_count = g_wizard_siege_count + 1;
-    FUN_00431526(0x80, g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y);
-
-    PlaySoundEffectOnChannel(s_x_sound_newsflash_wav_005916bc, 0x97, 100, 100, 0);
-    AnimateVisitBackdropZoomIn(s_newsback_pic_005916d4);
-
-    strcpy(g_ui_message_buffer, gs_newsflash_0077d140[0]);
-    if (IsWizardColorFeminine(s.color) != 0)
-    {
-      FUN_00564e70(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_newsflash_0077d140[2], gs_wizardnames_0077ee70 + s.color * 0x32,
-                   BuildCreatureNameWithArticle(g_lair_or_monster_slots[s.scan_index].entry_type), BuildTownDisplayName(s.town_index));
     }
     else
     {
-      FUN_00564e70(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_newsflash_0077d140[3], gs_wizardnames_0077ee70 + s.color * 0x32,
-                   BuildCreatureNameWithArticle(g_lair_or_monster_slots[s.scan_index].entry_type), BuildTownDisplayName(s.town_index));
+      s.creature_tier = 0x10;
     }
-
-    PTR_DAT_005832b4->font_slot = 5;
-    DrawTextAt(PTR_DAT_005832b4, 0xbe, 0x140, 0xf7, g_ui_message_buffer);
-    PTR_DAT_005832b4->font_slot = 1;
-    ClearInputAndWaitForMouseRelease();
-    (void)WaitForInputEventUnlessBlocked();
-    RefreshAdventureInterfaceLayout();
-    g_siege_indicator = 1;
+    break;
   }
+
+  FreeOpeningMenuSpriteWorkEntries(s.scan_index, s.scan_index + 8);
+  g_lair_or_monster_slots[s.scan_index].entry_type = PickRandomCreatureTypeForWizardTier(s.color, s.creature_tier);
+  g_lair_or_monster_slots[s.scan_index].world_x = g_town_slots[s.town_index].world_x * 0x20 + 0x10;
+  g_lair_or_monster_slots[s.scan_index].world_y = g_town_slots[s.town_index].world_y * 0x20 + 0x10;
+  g_lair_or_monster_slots[s.scan_index].color = s.color;
+  g_wizard_siege_count = g_wizard_siege_count + 1;
+  FUN_00431526(0x80, g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y);
+
+  PlaySoundEffectOnChannel(s_x_sound_newsflash_wav_005916bc, 0x97, 100, 100, 0);
+  AnimateVisitBackdropZoomIn(s_newsback_pic_005916d4);
+
+  strcpy(g_ui_message_buffer, gs_newsflash_0077d140[0]);
+  if (IsWizardColorFeminine(s.color) != 0)
+  {
+    FUN_00564e70(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_newsflash_0077d140[2], gs_wizardnames_0077ee70 + s.color * 0x32,
+                 BuildCreatureNameWithArticle(g_lair_or_monster_slots[s.scan_index].entry_type), BuildTownDisplayName(s.town_index));
+  }
+  else
+  {
+    FUN_00564e70(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_newsflash_0077d140[3], gs_wizardnames_0077ee70 + s.color * 0x32,
+                 BuildCreatureNameWithArticle(g_lair_or_monster_slots[s.scan_index].entry_type), BuildTownDisplayName(s.town_index));
+  }
+
+  PTR_DAT_005832b4->font_slot = 5;
+  DrawTextAt(PTR_DAT_005832b4, 0xbe, 0x140, 0xf7, g_ui_message_buffer);
+  PTR_DAT_005832b4->font_slot = 1;
+  ClearInputAndWaitForMouseRelease();
+  (void)WaitForInputEventUnlessBlocked();
+  RefreshAdventureInterfaceLayout();
+  g_siege_indicator = 1;
 }
 
 // FUNCTION: SHANDALAR 0x00430fb5
@@ -1206,7 +1216,7 @@ void VisitTownWiseman(void)
 
   if (((g_current_quest_destination == -1) && (g_pending_quest_destination != -1)) &&
       (((g_shandalar_difficulty + 3) * 0x10) <
-       (g_quest_restock_timer - *(int *)(g_town_slots[town_index].data_18_to_63 + 0x3c))))
+       (g_quest_restock_timer - g_town_slots[town_index].quest_restock_timer)))
   {
     AnimateVisitBackdropZoomIn(s_wiseman3_pic_0058ae3c);
     g_current_quest_destination = g_pending_quest_destination;
@@ -1286,7 +1296,7 @@ void VisitTownWiseman(void)
       LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058ae4c);
       g_current_quest_giver_town_index = town_index;
       g_current_quest_deadline = quest_time_units * 2 + g_quest_restock_timer - 1;
-      *(int *)(g_town_slots[town_index].data_18_to_63 + 0x3c) = g_quest_restock_timer;
+      g_town_slots[town_index].quest_restock_timer = g_quest_restock_timer;
 
       sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[0xc], ((int)(quest_time_units + ((quest_time_units >> 0x1f) & 7U)) >> 3));
       (void)RunTextMenuAtScaled(g_ui_message_buffer, 0x48, 0x48);
@@ -1322,7 +1332,7 @@ void BuyTownSpecialCardOffer(void)
   preferred_color = g_town_preferred_magic_color;
   BuyAnyCardFromTown(preferred_color, town_index);
 
-  *(int *)(g_town_slots[town_index].data_18_to_63 + 0x40) = g_quest_restock_timer;
+  g_town_slots[town_index].special_card_restock_timer = g_quest_restock_timer;
   RefreshAdventureInterfaceLayout();
   RecountDeckCardTotals();
   FUN_0055060c(1);
@@ -1481,7 +1491,7 @@ void RunTownBuyCardsScreen(void)
 
   if (g_town_hint_pair_index != -1)
   {
-    FUN_0041905e(g_town_hint_pair_index);
+    ShowTownHintTextPopup(g_town_hint_pair_index);
   }
 
   s.menu_context = BeginMenuContext();
@@ -1615,7 +1625,7 @@ void RunTownBuyCardsScreen(void)
         g_town_hint_pair_index = -1;
       }
 
-      *(int *)(g_town_slots[s.town_index].data_18_to_63 + 0x28 + s.selected_idx * 4) =
+      g_town_slots[s.town_index].card_restock_timers[s.selected_idx + 3] =
           FUN_00522508(5) * (g_shandalar_difficulty + 2) + g_quest_restock_timer;
       RecountDeckCardTotals();
       (void)FUN_0055060c(1);
@@ -2004,7 +2014,7 @@ int RunTownServicesMenu(int town_index)
     {
     choose_lair_or_monster:
       s.scan_color = (unsigned int)FUN_00522508(6);
-      if (g_lair_or_monster_slots[s.scan_color].entry_type > 0)
+      if (g_lair_or_monster_slots[s.scan_color].entry_type > SHANDALAR_ENTRY_LAIR)
       {
         g_pending_quest_destination = town_index;
         g_pending_quest_type = -g_lair_or_monster_slots[s.scan_color].entry_type;
@@ -2019,7 +2029,7 @@ int RunTownServicesMenu(int town_index)
         g_pending_quest_destination = town_index;
         g_pending_quest_type = -PickRandomCreatureTypeForWizardTier(s.card_id, (FUN_00522508(8) + 2) * 2);
         FreeOpeningMenuSpriteWorkEntries(0, 8);
-        g_lair_or_monster_slots[0].entry_type = -1;
+        g_lair_or_monster_slots[0].entry_type = SHANDALAR_ENTRY_NONE;
       }
     }
 
@@ -2041,10 +2051,10 @@ int RunTownServicesMenu(int town_index)
     {
       for (s.slot_i = 0; s.slot_i < s.slot_count; s.slot_i = s.slot_i + 1)
       {
-        if (g_quest_restock_timer - *(int *)(g_town_slots[town_index].data_18_to_63 + 0x1c + s.slot_i * 4) >=
+        if (g_quest_restock_timer - g_town_slots[town_index].card_restock_timers[s.slot_i] >=
             (g_shandalar_difficulty + 3) * 5)
         {
-          g_town_shop_card_ids[s.slot_i] = ((int *)&g_town_slots[town_index].card_slot_1)[s.slot_i];
+          g_town_shop_card_ids[s.slot_i] = g_town_slots[town_index].card_slots[s.slot_i];
         }
         else
         {
@@ -2065,7 +2075,7 @@ int RunTownServicesMenu(int town_index)
     {
       if (g_town_shop_card_ids[s.slot_i] != -1 ||
           (g_shandalar_difficulty + 3) * 5 >
-              g_quest_restock_timer - *(int *)(g_town_slots[town_index].data_18_to_63 + 0x1c + s.slot_i * 4))
+              g_quest_restock_timer - g_town_slots[town_index].card_restock_timers[s.slot_i])
       {
         continue;
       }
@@ -2240,7 +2250,7 @@ loop:
   if (g_town_slots[town_index].location_type != 1)
   {
     if (((s.card_id != -1) && (DAT_0078990c[s.card_id] != 0)) && (g_town_slots[town_index].trade_color_and_type != 0) &&
-        ((g_quest_restock_timer - *(int *)(g_town_slots[town_index].data_18_to_63 + 0x40)) > ((g_shandalar_difficulty + 3) * 2 * 9)))
+        ((g_quest_restock_timer - g_town_slots[town_index].special_card_restock_timer) > ((g_shandalar_difficulty + 3) * 2 * 9)))
     {
       strcpy(g_ui_message_buffer, s_empty_string_0058ada4);
       FUN_00564e70(g_town_button_labels[4], 0x64, gs_cityscreen_buttons_0077f5e0[5], gs_amuletnames_0077d090 + (s.card_id * 5) * 5,
@@ -2249,7 +2259,7 @@ loop:
     }
     else if (((g_current_quest_destination == -1) && (g_pending_quest_destination != -1)) &&
              (((g_shandalar_difficulty + 3) * 0x10) <
-              (g_quest_restock_timer - *(int *)(g_town_slots[town_index].data_18_to_63 + 0x3c))))
+              (g_quest_restock_timer - g_town_slots[town_index].quest_restock_timer)))
     {
       strcpy(g_town_button_labels[4], gs_cityscreen_buttons_0077f5e0[6]);
       s.tmp_k = 1;
@@ -2263,7 +2273,7 @@ loop:
   {
     if (((g_current_quest_destination == -1) && (g_pending_quest_destination != -1)) &&
         (((g_shandalar_difficulty + 3) * 0x10) <
-         (g_quest_restock_timer - *(int *)(g_town_slots[town_index].data_18_to_63 + 0x3c))))
+         (g_quest_restock_timer - g_town_slots[town_index].quest_restock_timer)))
     {
       strcpy(g_town_button_labels[4], gs_cityscreen_buttons_0077f5e0[6]);
     }
@@ -2389,7 +2399,7 @@ loop:
   /* Persist cached offers back into the town slot. */
   for (s.slot_i = 0; s.slot_i < 8; s.slot_i = s.slot_i + 1)
   {
-    ((int *)&g_town_slots[town_index].card_slot_1)[s.slot_i] = g_town_shop_card_ids[s.slot_i];
+    g_town_slots[town_index].card_slots[s.slot_i] = g_town_shop_card_ids[s.slot_i];
   }
   g_last_town_services_town_index = town_index;
   (void)sound_stop(0xf);
@@ -2404,7 +2414,7 @@ int RunDuelEngine(unsigned int param_1, int param_2)
   (void)param_2;
   // TODO(decomp): Enters the duel engine. Spawns a worker thread, runs the duel, then restores UI/palette/state.
   // This is a huge call tree; keep it stubbed until we explicitly decide to tackle duel code.
-  return 0;
+  return 1;
 }
 
 // FUNCTION: SHANDALAR 0x005636ab
@@ -2459,7 +2469,7 @@ int ExitIfNoUsableDeckCards(void)
 }
 
 // FUNCTION: SHANDALAR 0x0056139e
-int PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier)
+ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier)
 {
   int creature_type;
   int tries;
@@ -2469,10 +2479,10 @@ int PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier)
   {
     creature_type = FUN_00522508((int)DAT_00593934 - 1) + 1;
     tries++;
-  } while (tries < 999 && (gs_creature_names_00591a08[creature_type].metadata[1] != creature_tier ||
-                           (wizard_color != 0 && ((1 << (unsigned char)wizard_color) & (int)(signed char)gs_creature_names_00591a08[creature_type].metadata[4]) == 0)));
+  } while (tries < 999 && (gs_creature_names_00591a08[creature_type].tier != creature_tier ||
+                           (wizard_color != 0 && ((1 << (unsigned char)wizard_color) & (int)(signed char)gs_creature_names_00591a08[creature_type].color_mask) == 0)));
 
-  return (tries == 999) ? 0 : creature_type;
+  return (tries == 999) ? SHANDALAR_ENTRY_LAIR : (ShandalarEntryType)creature_type;
 }
 
 // FUNCTION: SHANDALAR 0x0050a5f1
@@ -2481,17 +2491,17 @@ void LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int 
   (void)name_id;
 
   strcpy(g_ui_message_buffer, s_decks_0_0058cb70);
-  if (*(int *)&gs_creature_names_00591a08[creature_type].metadata[6] < 100)
+  if (gs_creature_names_00591a08[creature_type].deck_number < 100)
   {
     strcat(g_ui_message_buffer, DAT_0058cb78);
-    if (*(int *)&gs_creature_names_00591a08[creature_type].metadata[6] < 10)
+    if (gs_creature_names_00591a08[creature_type].deck_number < 10)
     {
       strcat(g_ui_message_buffer, DAT_0058cb7c);
     }
   }
 
   strcat(g_ui_message_buffer,
-         _itoa(*(int *)&gs_creature_names_00591a08[creature_type].metadata[6], &unk_009266d0[0x70], 10));
+         _itoa(gs_creature_names_00591a08[creature_type].deck_number, DAT_0093a870, 10));
   strcat(g_ui_message_buffer, DAT_0058cb80);
 
   if (FileExists(g_ui_message_buffer) != 0)
@@ -2915,15 +2925,15 @@ void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, i
 // FUNCTION: SHANDALAR 0x005629c3
 void PlayDuelMusic(int tune_index)
 {
-  if (DAT_00591220 != -1)
+  if (g_world_location_music_track_id != -1)
   {
     sound_unload(0x10);
   }
-  DAT_00591220 = 0x15;
-  DAT_0059126c = -1;
+  g_world_location_music_track_id = 0x15;
+  g_world_location_music_town_index = -1;
   FUN_00562835(PTR_s_x_sound_dueltune_wav_00591278[tune_index], 0x10);
   FUN_005627ee(0x10, 0x80, 0);
-  DAT_0059121c = 1;
+  g_world_location_music_active = 1;
 }
 
 // FUNCTION: SHANDALAR 0x004f6d32
@@ -3085,7 +3095,7 @@ int ComputeWisemanCityBlockValue(int color_index)
 
   s.creature_group = color_index * 7;
   s.color_bit = 1 << (unsigned char)color_index;
-  s.score = (int)(signed char)gs_creature_names_00591a08[s.creature_group].metadata[1];
+  s.score = (int)(signed char)gs_creature_names_00591a08[s.creature_group].tier;
 
   if (s.creature_group <= 0x24)
   {
@@ -3118,7 +3128,7 @@ int ComputeWisemanCityBlockValue(int color_index)
 
 after_difficulty_adjust:
 
-  if ((int)(signed char)gs_creature_names_00591a08[s.creature_group].metadata[3] == 0xb)
+  if ((int)(signed char)gs_creature_names_00591a08[s.creature_group].encounter_type == 0xb)
   {
     for (s.duel_log_index = 0; s.duel_log_index < 10; s.duel_log_index = s.duel_log_index + 1)
     {
@@ -3129,7 +3139,7 @@ after_difficulty_adjust:
     }
   }
 
-  if ((int)(signed char)gs_creature_names_00591a08[s.creature_group].metadata[3] == 0xc)
+  if ((int)(signed char)gs_creature_names_00591a08[s.creature_group].encounter_type == 0xc)
   {
     s.score = s.score + 10;
     s.duel_win_count = 0;
@@ -3397,309 +3407,303 @@ unsigned int RunWisemanAdviceSequence(int param_1, int param_2, int param_3)
   }
 
 LAB_0053197c:
-  while (1)
+  if (((FUN_00522508(5) == 0) || (s.force_current_advice_stage != 0)) || (param_2 == 0))
   {
-    if (((FUN_00522508(5) == 0) || (s.force_current_advice_stage != 0)) || (param_2 == 0))
+    if ((g_wiseman_general_block_index == -1) || (param_2 != 0))
     {
-      if ((g_wiseman_general_block_index == -1) || (param_2 != 0))
-      {
-        g_wiseman_general_block_index = rand() % 0xc;
-      }
-
-      s.general_text_page = gs_advblock_general_0077c9e0[g_wiseman_general_block_index];
-      s.general_page_count = SplitTextOnFourNewlines(s.general_text_page, s.general_page_ptrs) - 1;
-
-      for (s.general_page_index = 0; s.general_page_index < s.general_page_count; s.general_page_index = s.general_page_index + 1)
-      {
-        s.general_text_page = s.general_page_ptrs[s.general_page_index];
-        s.general_page_ptrs[s.general_page_index + 1][-3] = '\0';
-
-        s.general_line_count = CountTextNewlines(s.general_text_page);
-        PTR_DAT_005832b4->font_slot = 1;
-
-        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.general_line_count, s.general_text_page);
-
-        ClearInputAndWaitForMouseRelease();
-        WaitForInputEventUnlessBlocked();
-        s.general_page_ptrs[s.general_page_index + 1][-3] = '\n';
-        LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058f078);
-      }
-
-      g_wiseman_advice_stage = 0;
-      return 1;
+      g_wiseman_general_block_index = rand() % 0xc;
     }
 
-  LAB_00531afb:
-    if ((FUN_00522508(5) == 0) || (s.force_current_advice_stage != 0))
+    s.general_text_page = gs_advblock_general_0077c9e0[g_wiseman_general_block_index];
+    s.general_page_count = SplitTextOnFourNewlines(s.general_text_page, s.general_page_ptrs) - 1;
+
+    for (s.general_page_index = 0; s.general_page_index < s.general_page_count; s.general_page_index = s.general_page_index + 1)
     {
-      s.previous_city_block_index = g_wiseman_city_block_index;
-      if ((g_wiseman_city_block_index == -1) || (param_2 != 0))
-      {
-        g_wiseman_city_block_index = rand() % 3;
-        g_wiseman_city_block_color_index = PickUndefeatedWizardColor();
-        g_wiseman_city_block_world_magic_slot_index = PickOpenWorldMagicSlot();
-        FillWisemanCityBlockTownNameSubstitutions(g_wiseman_city_block_subst_a, g_wiseman_city_block_subst_b, 1);
-      }
+      s.general_text_page = s.general_page_ptrs[s.general_page_index];
+      s.general_page_ptrs[s.general_page_index + 1][-3] = '\0';
 
-      s.text_page = gs_advblock_city_0074c930[g_wiseman_city_block_index];
-      if (g_wiseman_city_block_index == 0)
-      {
-        if (IsWizardColorFeminine(g_wiseman_city_block_color_index))
-        {
-          s.text_page = gs_advblock_city_0074c930[3];
-        }
-      }
-
-      s.city_page_count = SplitTextOnFourNewlines(s.text_page, s.city_page_ptrs) - 1;
+      s.general_line_count = CountTextNewlines(s.general_text_page);
       PTR_DAT_005832b4->font_slot = 1;
 
-      for (s.city_page_index = 0; s.city_page_index < s.city_page_count; s.city_page_index = s.city_page_index + 1)
-      {
-        s.text_page = s.city_page_ptrs[s.city_page_index];
-        s.city_page_ptrs[s.city_page_index + 1][-3] = '\0';
+      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.general_line_count, s.general_text_page);
 
-        s.city_line_count = CountTextNewlines(s.text_page);
-
-        if (s.city_page_index != (s.city_page_count - 1))
-        {
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, s.text_page);
-        }
-        else if (g_wiseman_city_block_index == 0)
-        {
-          FUN_00564e70(g_ui_message_buffer, 0x1000, s.text_page,
-                       gs_wizardnames_0077ee70 + g_wiseman_city_block_color_index * 0x32,
-                       ComputeWisemanCityBlockValue(g_wiseman_city_block_color_index),
-                       CountTownsRuledByWizardColor(g_wiseman_city_block_color_index));
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, g_ui_message_buffer);
-        }
-        else if (g_wiseman_city_block_index == 1)
-        {
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, s.text_page, g_wiseman_city_block_subst_a,
-                                    g_wiseman_city_block_subst_b);
-        }
-        else if (g_wiseman_city_block_index == 2)
-        {
-          if (g_wiseman_city_block_world_magic_slot_index == -1)
-          {
-            strcpy(g_wiseman_city_block_subst_a, s_empty_string_0058f088);
-          }
-          else
-          {
-            strcpy(g_wiseman_city_block_subst_a, gs_worldmagic_names_00780660[g_wiseman_city_block_world_magic_slot_index]);
-          }
-          strcpy(g_wiseman_city_block_subst_b,
-                 BuildTownDisplayName(g_world_magic_slot_timers[g_wiseman_city_block_world_magic_slot_index].town_index));
-          FUN_00564e70(g_ui_message_buffer, 0x1000, s.text_page, g_wiseman_city_block_subst_a, g_wiseman_city_block_subst_b);
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, g_ui_message_buffer);
-        }
-
-        ClearInputAndWaitForMouseRelease();
-        WaitForInputEventUnlessBlocked();
-
-        s.city_page_ptrs[s.city_page_index + 1][-3] = '\n';
-        LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058f08c);
-      }
-
-      g_wiseman_advice_stage = 1;
-      return 1;
+      ClearInputAndWaitForMouseRelease();
+      WaitForInputEventUnlessBlocked();
+      s.general_page_ptrs[s.general_page_index + 1][-3] = '\n';
+      LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058f078);
     }
 
-    g_wiseman_advice_stage = 2;
+    g_wiseman_advice_stage = 0;
+    return 1;
+  }
 
-    /* Quest/status block + special actions. */
-  LAB_00531ee7:
-    if ((FUN_00522508(5) < 2) || (s.force_current_advice_stage != 0))
+LAB_00531afb:
+  if ((FUN_00522508(5) == 0) || (s.force_current_advice_stage != 0))
+  {
+    s.previous_city_block_index = g_wiseman_city_block_index;
+    if ((g_wiseman_city_block_index == -1) || (param_2 != 0))
     {
-      if (g_current_quest_destination != -1)
+      g_wiseman_city_block_index = rand() % 3;
+      g_wiseman_city_block_color_index = PickUndefeatedWizardColor();
+      g_wiseman_city_block_world_magic_slot_index = PickOpenWorldMagicSlot();
+      FillWisemanCityBlockTownNameSubstitutions(g_wiseman_city_block_subst_a, g_wiseman_city_block_subst_b, 1);
+    }
+
+    s.text_page = gs_advblock_city_0074c930[g_wiseman_city_block_index];
+    if (g_wiseman_city_block_index == 0)
+    {
+      if (IsWizardColorFeminine(g_wiseman_city_block_color_index))
       {
-        if ((g_current_quest_type == 0) || (g_current_quest_type == 2) ||
-            ((g_current_quest_type == 1) &&
-             (FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
-                                               (unsigned char)(1 << (g_current_quest_destination & 3))) != 0)))
+        s.text_page = gs_advblock_city_0074c930[3];
+      }
+    }
+
+    s.city_page_count = SplitTextOnFourNewlines(s.text_page, s.city_page_ptrs) - 1;
+    PTR_DAT_005832b4->font_slot = 1;
+
+    for (s.city_page_index = 0; s.city_page_index < s.city_page_count; s.city_page_index = s.city_page_index + 1)
+    {
+      s.text_page = s.city_page_ptrs[s.city_page_index];
+      s.city_page_ptrs[s.city_page_index + 1][-3] = '\0';
+
+      s.city_line_count = CountTextNewlines(s.text_page);
+
+      if (s.city_page_index != (s.city_page_count - 1))
+      {
+        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, s.text_page);
+      }
+      else if (g_wiseman_city_block_index == 0)
+      {
+        FUN_00564e70(g_ui_message_buffer, 0x1000, s.text_page,
+                     gs_wizardnames_0077ee70 + g_wiseman_city_block_color_index * 0x32,
+                     ComputeWisemanCityBlockValue(g_wiseman_city_block_color_index),
+                     CountTownsRuledByWizardColor(g_wiseman_city_block_color_index));
+        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, g_ui_message_buffer);
+      }
+      else if (g_wiseman_city_block_index == 1)
+      {
+        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, s.text_page, g_wiseman_city_block_subst_a,
+                                  g_wiseman_city_block_subst_b);
+      }
+      else if (g_wiseman_city_block_index == 2)
+      {
+        if (g_wiseman_city_block_world_magic_slot_index == -1)
+        {
+          strcpy(g_wiseman_city_block_subst_a, s_empty_string_0058f088);
+        }
+        else
+        {
+          strcpy(g_wiseman_city_block_subst_a, gs_worldmagic_names_00780660[g_wiseman_city_block_world_magic_slot_index]);
+        }
+        strcpy(g_wiseman_city_block_subst_b,
+               BuildTownDisplayName(g_world_magic_slot_timers[g_wiseman_city_block_world_magic_slot_index].town_index));
+        FUN_00564e70(g_ui_message_buffer, 0x1000, s.text_page, g_wiseman_city_block_subst_a, g_wiseman_city_block_subst_b);
+        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * s.city_line_count, g_ui_message_buffer);
+      }
+
+      ClearInputAndWaitForMouseRelease();
+      WaitForInputEventUnlessBlocked();
+
+      s.city_page_ptrs[s.city_page_index + 1][-3] = '\n';
+      LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058f08c);
+    }
+
+    g_wiseman_advice_stage = 1;
+    return 1;
+  }
+
+  g_wiseman_advice_stage = 2;
+
+  /* Quest/status block + special actions. */
+LAB_00531ee7:
+  if ((FUN_00522508(5) < 2) || (s.force_current_advice_stage != 0))
+  {
+    if (g_current_quest_destination != -1)
+    {
+      if ((g_current_quest_type == 0) || (g_current_quest_type == 2) ||
+          ((g_current_quest_type == 1) &&
+           (FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
+                                             (unsigned char)(1 << (g_current_quest_destination & 3))) != 0)))
+      {
+        g_current_quest_data =
+            GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
+                                     g_town_slots[g_current_quest_destination].world_y);
+
+        if (g_current_quest_type != 0)
+        {
+          FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[0],
+                       gs_amuletnames_0077d090 + g_current_quest_color * 0x19,
+                       gs_directions_00765d50 + g_current_quest_data * 0x19,
+                       BuildTownDisplayName(g_current_quest_destination));
+        }
+        else
+        {
+          FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[1],
+                       gs_directions_00765d50 + g_current_quest_data * 0x19,
+                       BuildTownDisplayName(g_current_quest_destination));
+        }
+
+        PTR_DAT_005832b4->font_slot = 1;
+        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 2, g_ui_message_buffer);
+        ClearInputAndWaitForMouseRelease();
+        WaitForInputEventUnlessBlocked();
+        return 0;
+      }
+
+      if (g_current_quest_type == 1)
+      {
+        FormatQuestSpellName(s.quest_spell_name, 100);
+        FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[2],
+                     BuildTownDisplayName(g_current_quest_destination), s.quest_spell_name);
+
+        PTR_DAT_005832b4->font_slot = 1;
+        DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 3, g_ui_message_buffer);
+        ClearInputAndWaitForMouseRelease();
+        WaitForInputEventUnlessBlocked();
+        return 0;
+      }
+
+      if (g_current_quest_type < 0)
+      {
+        if (g_current_quest_type <= -100)
         {
           g_current_quest_data =
               GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
                                        g_town_slots[g_current_quest_destination].world_y);
-
-          if (g_current_quest_type != 0)
-          {
-            FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[0],
-                         gs_amuletnames_0077d090 + g_current_quest_color * 0x19,
-                         gs_directions_00765d50 + g_current_quest_data * 0x19,
-                         BuildTownDisplayName(g_current_quest_destination));
-          }
-          else
-          {
-            FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[1],
-                         gs_directions_00765d50 + g_current_quest_data * 0x19,
-                         BuildTownDisplayName(g_current_quest_destination));
-          }
-
-          PTR_DAT_005832b4->font_slot = 1;
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 2, g_ui_message_buffer);
-          ClearInputAndWaitForMouseRelease();
-          WaitForInputEventUnlessBlocked();
-          return 0;
+          FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[3],
+                       gs_directions_00765d50 + g_current_quest_data * 0x19,
+                       BuildTownDisplayName(g_current_quest_destination));
         }
-
-        if (g_current_quest_type == 1)
+        else
         {
-          FormatQuestSpellName(s.quest_spell_name, 100);
-          FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[2],
-                       BuildTownDisplayName(g_current_quest_destination), s.quest_spell_name);
-
-          PTR_DAT_005832b4->font_slot = 1;
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 3, g_ui_message_buffer);
-          ClearInputAndWaitForMouseRelease();
-          WaitForInputEventUnlessBlocked();
-          return 0;
+          FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[4],
+                       BuildTownDisplayName(g_current_quest_destination),
+                       BuildCreatureNameWithArticle(-g_current_quest_type));
         }
 
-        if (g_current_quest_type < 0)
-        {
-          if (g_current_quest_type <= -100)
-          {
-            g_current_quest_data =
-                GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
-                                         g_town_slots[g_current_quest_destination].world_y);
-            FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[3],
-                         gs_directions_00765d50 + g_current_quest_data * 0x19,
-                         BuildTownDisplayName(g_current_quest_destination));
-          }
-          else
-          {
-            s.text_page = BuildCreatureNameWithArticle(-g_current_quest_type);
-            FUN_00564e70(g_ui_message_buffer, 0x1000, gs_wiseman_0074d840[4],
-                         s.text_page,
-                         BuildTownDisplayName(g_current_quest_destination));
-          }
-
-          PTR_DAT_005832b4->font_slot = 1;
-          DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                    ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 3, g_ui_message_buffer);
-          ClearInputAndWaitForMouseRelease();
-          WaitForInputEventUnlessBlocked();
-          return 0;
-        }
-      }
-      param_2 = 0;
-    }
-
-    g_wiseman_advice_stage = 0;
-    strcpy(g_ui_message_buffer, gs_wiseman_0074d840[5]);
-
-    switch ((g_town_slots[param_3].world_x % 2) + (g_town_slots[param_3].world_y % 3))
-    {
-    case 0:
-      strcat(g_ui_message_buffer, gs_wiseman_0074d840[6]);
-      PTR_DAT_005832b4->font_slot = 1;
-      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
-      ClearInputAndWaitForMouseRelease();
-      WaitForInputEventUnlessBlocked();
-      s.force_current_advice_stage = 1;
-      LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058f09c);
-      continue;
-      break;
-
-    case 1:
-      s.dungeon_index = PickWisemanCastleDungeonSlotForHint();
-      if (s.dungeon_index != -1)
-      {
-        strcat(g_ui_message_buffer, gs_wiseman_0074d840[7]);
         PTR_DAT_005832b4->font_slot = 1;
         DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+                                  ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 3, g_ui_message_buffer);
         ClearInputAndWaitForMouseRelease();
         WaitForInputEventUnlessBlocked();
-        RevealRandomCastleDungeonClue(s.dungeon_index);
-        RefreshAdventureInterfaceLayout();
-        goto LAB_005328e3;
+        return 0;
       }
-    case 2:
-      if (g_next_duel_card_id == -1)
-      {
-        strcat(g_ui_message_buffer, gs_wiseman_0074d840[8]);
-        g_next_duel_card_id = 2;
-      }
-      else
-      {
-        strcat(g_ui_message_buffer, gs_wiseman_0074d840[9]);
-        g_food = g_food + 0x19;
-      }
-      PTR_DAT_005832b4->font_slot = 1;
-      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
-      ClearInputAndWaitForMouseRelease();
-      WaitForInputEventUnlessBlocked();
-      goto LAB_005328e3;
-
-    LAB_005324c3:
-    case 3:
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[10], gs_wiseman_0074d840[param_1 + 10]);
-      PTR_DAT_005832b4->font_slot = 1;
-      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
-      ClearInputAndWaitForMouseRelease();
-      WaitForInputEventUnlessBlocked();
-      WisemanChooseLairCreatureAndSetupDuel((unsigned char)param_1);
-      RefreshAdventureInterfaceLayout();
-      goto LAB_005328e3;
-
-    case 4:
-      if (g_next_duel_card_id == -1)
-      {
-        g_next_duel_card_id = FUN_0056c705(g_wiseman_duel_reward_card_csvids[(FUN_00522508(2) - 2) + param_1 * 2]);
-        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x10], global_cards_data[g_next_duel_card_id].name);
-      }
-      else
-      {
-        goto LAB_005324c3;
-      }
-      PTR_DAT_005832b4->font_slot = 1;
-      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
-      ClearInputAndWaitForMouseRelease();
-      WaitForInputEventUnlessBlocked();
-      goto LAB_005328e3;
-    default:
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x11], gs_amuletnames_plural_0077edd0 + param_1 * 0x19);
-      PTR_DAT_005832b4->font_slot = 1;
-      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
-                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
-
-      ClearInputAndWaitForMouseRelease();
-      WaitForInputEventUnlessBlocked();
-
-      DAT_0078990c[param_1] = DAT_0078990c[param_1] - 3;
-      for (s.deck_scan_index = 0; s.deck_scan_index < 500; s.deck_scan_index = s.deck_scan_index + 1)
-      {
-        s.deck_card_ids[s.deck_scan_index] = deck[s.deck_scan_index];
-        if (s.deck_card_ids[s.deck_scan_index] != 0xffffffff)
-        {
-          s.deck_card_ids[s.deck_scan_index] = s.deck_card_ids[s.deck_scan_index] & 0xfff;
-        }
-      }
-
-      s.selected_deck_index = FUN_0056a515(unk_008b35ec, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
-      if ((s.selected_deck_index != -1) &&
-          ((s.selected_deck_slot = FUN_0056bd9d(s.deck_card_ids[s.selected_deck_index])) != -1))
-      {
-        deck[s.selected_deck_slot] = deck[s.selected_deck_slot] | 0x4000;
-      }
-      RefreshAdventureInterfaceLayout();
-      goto LAB_005328e3;
     }
+    param_2 = 0;
   }
 
-LAB_005328e3:;
+  g_wiseman_advice_stage = 0;
+  strcpy(g_ui_message_buffer, gs_wiseman_0074d840[5]);
+
+  switch ((g_town_slots[param_3].world_x % 2) + (g_town_slots[param_3].world_y % 3))
+  {
+  case 0:
+    strcat(g_ui_message_buffer, gs_wiseman_0074d840[6]);
+    PTR_DAT_005832b4->font_slot = 1;
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                              ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+    ClearInputAndWaitForMouseRelease();
+    WaitForInputEventUnlessBlocked();
+    s.force_current_advice_stage = 1;
+    LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058f09c);
+    goto LAB_0053197c;
+    break;
+
+  case 1:
+    s.dungeon_index = PickWisemanCastleDungeonSlotForHint();
+    if (s.dungeon_index != -1)
+    {
+      strcat(g_ui_message_buffer, gs_wiseman_0074d840[7]);
+      PTR_DAT_005832b4->font_slot = 1;
+      DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                                ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+      ClearInputAndWaitForMouseRelease();
+      WaitForInputEventUnlessBlocked();
+      RevealRandomCastleDungeonClue(s.dungeon_index);
+      RefreshAdventureInterfaceLayout();
+      return;
+    }
+  case 2:
+    if (g_next_duel_card_id == -1)
+    {
+      strcat(g_ui_message_buffer, gs_wiseman_0074d840[8]);
+      g_next_duel_card_id = 2;
+    }
+    else
+    {
+      strcat(g_ui_message_buffer, gs_wiseman_0074d840[9]);
+      g_food = g_food + 0x19;
+    }
+    PTR_DAT_005832b4->font_slot = 1;
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                              ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+    ClearInputAndWaitForMouseRelease();
+    WaitForInputEventUnlessBlocked();
+    return;
+
+  LAB_005324c3:
+  case 3:
+    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[10], gs_wiseman_0074d840[param_1 + 10]);
+    PTR_DAT_005832b4->font_slot = 1;
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                              ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+    ClearInputAndWaitForMouseRelease();
+    WaitForInputEventUnlessBlocked();
+    WisemanChooseLairCreatureAndSetupDuel((unsigned char)param_1);
+    RefreshAdventureInterfaceLayout();
+    return;
+
+  case 4:
+    if (g_next_duel_card_id == -1)
+    {
+      g_next_duel_card_id = FUN_0056c705(g_wiseman_duel_reward_card_csvids[(FUN_00522508(2) - 2) + param_1 * 2]);
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x10], global_cards_data[g_next_duel_card_id].name);
+    }
+    else
+    {
+      goto LAB_005324c3;
+    }
+    PTR_DAT_005832b4->font_slot = 1;
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                              ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+    ClearInputAndWaitForMouseRelease();
+    WaitForInputEventUnlessBlocked();
+    return;
+  default:
+    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x11], gs_amuletnames_plural_0077edd0 + param_1 * 0x19);
+    PTR_DAT_005832b4->font_slot = 1;
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, 0xc1, ScaleUiCoordinate(0x50),
+                              ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 7, g_ui_message_buffer);
+
+    ClearInputAndWaitForMouseRelease();
+    WaitForInputEventUnlessBlocked();
+
+    DAT_0078990c[param_1] = DAT_0078990c[param_1] - 3;
+    for (s.deck_scan_index = 0; s.deck_scan_index < 500; s.deck_scan_index = s.deck_scan_index + 1)
+    {
+      s.deck_card_ids[s.deck_scan_index] = deck[s.deck_scan_index];
+      if (s.deck_card_ids[s.deck_scan_index] != 0xffffffff)
+      {
+        s.deck_card_ids[s.deck_scan_index] = s.deck_card_ids[s.deck_scan_index] & 0xfff;
+      }
+    }
+
+    s.selected_deck_index = FUN_0056a515(unk_008b35ec, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
+    if ((s.selected_deck_index != -1) &&
+        ((s.selected_deck_slot = FUN_0056bd9d(s.deck_card_ids[s.selected_deck_index])) != -1))
+    {
+      deck[s.selected_deck_slot] = deck[s.selected_deck_slot] | 0x4000;
+    }
+    RefreshAdventureInterfaceLayout();
+    return;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x005328e4
@@ -3765,49 +3769,46 @@ int CompareCardNamesForQsort(const int *a, const int *b)
 }
 
 // FUNCTION: SHANDALAR 0x00532aeb
-unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int type_mask, int param_4, int param_5)
+unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int type_mask, int reset_filters, int show_done_button)
 {
   struct
   {
-    int tmp_620;                         /* [ebp-0x620] */
-    int tmp_61c;                         /* [ebp-0x61c] */
-    int tmp_618;                         /* [ebp-0x618] */
-    int tmp_614;                         /* [ebp-0x614] */
-    int tmp_610;                         /* [ebp-0x610] */
-    int tmp_60c;                         /* [ebp-0x60c] */
-    unsigned int filtered_count;         /* [ebp-0x608] */
-    int sorted_i;                        /* [ebp-0x604] */
-    unsigned int filtered_card_ids[300]; /* [ebp-0x600] */
+    int card_list_text_color;
+    int rarity_text_color;
+    int type_text_color;
+    int filtered_type_text_color;
+    int color_text_color;
+    int all_colors_text_color;
+    unsigned int filtered_count;
+    int sorted_index;
+    unsigned int filtered_card_ids[300];
 
     /* [0..2] button colors, [3] menu context */
-    int button_colors[4]; /* [ebp-0x154] */
-
-    int owned_copies;        /* [ebp-0x144] */
-    int special_clamp;       /* [ebp-0x140] */
-    int type_filter_index;   /* [ebp-0x13c] */
-    int tmp_i;               /* [ebp-0x138] */
-    int loop_i;              /* [ebp-0x134] */
-    int y;                   /* [ebp-0x130] */
-    unsigned int card_index; /* [ebp-0x12c] */
-    int x;                   /* [ebp-0x128] */
-
-    unsigned int draw_index_to_card[64]; /* [ebp-0x124] */
-
-    int draw_count;               /* [ebp-0x24] */
-    int max_lines_per_col;        /* [ebp-0x20] */
-    int filter_top_y;             /* [ebp-0x1c] */
-    int filter_line_h;            /* [ebp-0x18] */
-    unsigned int card_color_mask; /* [ebp-0x14] */
-    int needs_redraw;             /* [ebp-0xc] */
-    int list_top_y;               /* [ebp-0x8] */
-    int list_line_h;              /* [ebp-0x4] */
+    int button_colors[4];                /* [ebp-0x150] */
+    int owned_copies;                    /* [ebp-0x140] */
+    int rarity_filter;                   /* [ebp-0x13c] */
+    int type_filter_index;               /* [ebp-0x138] */
+    int mouse_button_or_index;           /* [ebp-0x134] */
+    int deck_slot;                       /* [ebp-0x130] */
+    int y;                               /* [ebp-0x12c] */
+    int card_index;                      /* [ebp-0x128] */
+    int x;                               /* [ebp-0x124] */
+    unsigned int draw_index_to_card[64]; /* [ebp-0x120] */
+    int draw_count;                      /* [ebp-0x20] */
+    int max_lines_per_col;               /* [ebp-0x1c] */
+    int filter_top_y;                    /* [ebp-0x18] */
+    int filter_line_h;                   /* [ebp-0x14] */
+    unsigned int card_color_mask;        /* [ebp-0x10] */
+    int needs_redraw;                    /* [ebp-0xc] */
+    int list_top_y;                      /* [ebp-0x8] */
+    int list_line_h;                     /* [ebp-0x4] */
   } s;
 
   s.needs_redraw = 1;
 
   ClearInputAndWaitForMouseRelease();
 
-  if (param_4 != 0)
+  if (reset_filters != 0)
   {
     LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_tradscrn_pic_0058f138, (void *)0);
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
@@ -3815,7 +3816,7 @@ unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int t
     CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
   }
 
-  if (param_5 != 0)
+  if (show_done_button != 0)
   {
     s.button_colors[0] = 0x1a;
     s.button_colors[1] = 0x19;
@@ -3825,17 +3826,17 @@ unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int t
     BeginSpriteEncodeSession();
     PTR_DAT_005832dc->font_slot = 7;
 
-    for (s.loop_i = 0; s.loop_i < 3; s.loop_i = s.loop_i + 1)
+    for (s.card_index = 0; s.card_index < 3; s.card_index = s.card_index + 1)
     {
-      SetFontStyleSize(7, (unsigned int)(((-(unsigned int)(s.loop_i == 2)) & 0xfffffffeU) + 0xb));
-      DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.button_colors[s.loop_i], s.loop_i * 0x62 + 0x32, 0xd, "%s",
+      SetFontStyleSize(7, (s.card_index == 2) ? 9 : 11);
+      DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.button_colors[s.card_index], s.card_index * 0x62 + 0x32, 0xd, "%s",
                                         (char *)g_done_text_table_entry);
-      g_card_browser_done_button_sprites[s.loop_i] = EncodeSpriteFromPage(1, s.loop_i * 0x62 + 1, 1, 0x61, 0x1b);
+      g_card_browser_done_button_sprites[s.card_index] = EncodeSpriteFromPage(1, s.card_index * 0x62 + 1, 1, 0x61, 0x1b);
     }
 
     FinalizeSpriteEncodeSession();
 
-    if (g_card_browser_done_button.x == g_card_browser_done_button.base_x)
+    if (g_card_browser_done_button.base_x == g_card_browser_done_button.x)
     {
       g_card_browser_done_button.x = ScaleUiCoordinate(g_card_browser_done_button.x);
       g_card_browser_done_button.y = ScaleUiCoordinate(g_card_browser_done_button.y);
@@ -3849,372 +3850,376 @@ unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int t
     (void)FUN_005001e3();
   }
 
-  if (type_mask == 0xffffffff)
-  {
-    if (param_4 != 0)
-    {
-      type_mask = 0;
-      g_card_browser_type_filter = 1;
-    }
-  }
-  else
+  if (type_mask != 0xffffffff)
   {
     g_card_browser_type_filter = (int)type_mask;
     type_mask = 1U << (unsigned char)type_mask;
     if (type_mask == 0x10)
     {
-      type_mask = 0x30;
+      type_mask |= 0x20;
     }
   }
+  else if (reset_filters != 0)
+  {
+    type_mask = 0;
+    g_card_browser_type_filter = 1;
+  }
 
-  if ((color_mask != 0) && (param_4 != 0))
+  if ((color_mask != 0) && (reset_filters != 0))
   {
     g_card_browser_color_filter = FUN_0040dffd((int)color_mask);
   }
 
-  if (param_4 != 0)
+  if (reset_filters != 0)
   {
     g_card_browser_hover_card = 0xffffffff;
   }
 
+loop:
+  if (s.needs_redraw != 0)
+  {
+    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x8c), ScaleUiCoordinate(0xb3), ScaleUiCoordinate(0x132),
+                     PTR_DAT_005832b4, ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x8c));
+    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x8c), ScaleUiCoordinate(0xb3), ScaleUiCoordinate(0x132),
+                     PTR_DAT_005832b4, ScaleUiCoordinate(0x1c0), ScaleUiCoordinate(0x8c));
+    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0x1bf), ScaleUiCoordinate(0x118), ScaleUiCoordinate(0x1d),
+                     PTR_DAT_005832b4, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0x1bf));
+    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xe9), ScaleUiCoordinate(0x158), ScaleUiCoordinate(0xd4), ScaleUiCoordinate(0x68),
+                     PTR_DAT_005832b4, ScaleUiCoordinate(0xe9), ScaleUiCoordinate(0x158));
+    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0x1db), ScaleUiCoordinate(0x10), ScaleUiCoordinate(0x7c), ScaleUiCoordinate(0x5e),
+                     PTR_DAT_005832b4, ScaleUiCoordinate(0x1db), ScaleUiCoordinate(0x10));
+    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xe4), ScaleUiCoordinate(0x27), ScaleUiCoordinate(0xb8), ScaleUiCoordinate(0x19),
+                     PTR_DAT_005832b4, ScaleUiCoordinate(0xe4), ScaleUiCoordinate(0x27));
+  }
+  s.needs_redraw = 0;
+  CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xe8), ScaleUiCoordinate(0x157), ScaleUiCoordinate(0xd2), ScaleUiCoordinate(0x66),
+                   PTR_DAT_005832b4, ScaleUiCoordinate(0xe8), ScaleUiCoordinate(0x157));
+  PTR_DAT_005832b4->font_slot = 4;
+  DrawTextAt(PTR_DAT_005832b4, 0x16, 0x140, 0x34, title);
+  PTR_DAT_005832b4->font_slot = 4;
+
+  /* Draw color filter list (left). */
+  s.x = FUN_005501dc(0x6b) / 2;
+  s.y = FUN_005501dc(0x45) / 2;
+  s.y = s.y - ((GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 6) / 2);
+
+  for (s.card_index = 0; s.card_index < 6; s.card_index = s.card_index + 1)
+  {
+    if (s.card_index == 0)
+    {
+      if (s.card_index == g_card_browser_color_filter)
+      {
+        s.all_colors_text_color = 0x1b;
+      }
+      else if (color_mask != 0)
+      {
+        s.all_colors_text_color = 0;
+      }
+      else
+      {
+        s.all_colors_text_color = 0x62;
+      }
+
+      DrawCenteredTextLineWithShadow(gs_browse_0074da20[0], s.x, s.y, s.all_colors_text_color);
+    }
+    else
+    {
+      if (s.card_index == g_card_browser_color_filter)
+      {
+        s.color_text_color = 0x1b;
+      }
+      else if (color_mask != 0)
+      {
+        s.color_text_color = 0;
+      }
+      else
+      {
+        s.color_text_color = 0x62;
+      }
+
+      DrawCenteredTextLineWithShadow(gs_browse_0074da20[s.card_index], s.x, s.y, s.color_text_color);
+    }
+    s.y = s.y + GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  }
+
+  /* Draw type/rarity filter list (right). */
+  s.x = FUN_005501dc(0x215) / 2;
+  s.y = FUN_005501dc(0x45) / 2;
+  s.y = s.y - ((GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 6) / 2);
+  s.filter_top_y = s.y;
+  s.filter_line_h = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+
+  for (s.card_index = 0; s.card_index < 6; s.card_index = s.card_index + 1)
+  {
+    if (g_card_browser_color_filter != 0)
+    {
+      if (s.card_index == g_card_browser_type_filter)
+      {
+        s.filtered_type_text_color = 0x1b;
+      }
+      else if (type_mask != 0)
+      {
+        s.filtered_type_text_color = 0x62;
+      }
+      else
+      {
+        s.filtered_type_text_color = 0x62;
+      }
+
+      DrawCenteredTextLineWithShadow(gs_browse_0074da20[6 + s.card_index], s.x, s.y, s.filtered_type_text_color);
+    }
+    else if (s.card_index < 2)
+    {
+      if (s.card_index == g_card_browser_type_filter)
+      {
+        s.type_text_color = 0x1b;
+      }
+      else if (type_mask != 0)
+      {
+        s.type_text_color = 0x62;
+      }
+      else
+      {
+        s.type_text_color = 0x62;
+      }
+
+      DrawCenteredTextLineWithShadow(gs_browse_0074da20[6 + s.card_index], s.x, s.y, s.type_text_color);
+    }
+    else
+    {
+      if (s.card_index == g_card_browser_type_filter)
+      {
+        s.rarity_text_color = 0x1b;
+      }
+      else if (type_mask != 0)
+      {
+        s.rarity_text_color = 0x62;
+      }
+      else
+      {
+        s.rarity_text_color = 0x62;
+      }
+
+      DrawCenteredTextLineWithShadow(gs_browse_0074da20[11 + s.card_index], s.x, s.y, s.rarity_text_color);
+    }
+
+    s.y = s.y + GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  }
+
+  /* Type filter index used for type-bit selection. */
+  s.type_filter_index = g_card_browser_type_filter;
+  if ((g_card_browser_color_filter == 0) && (g_card_browser_type_filter >= 2))
+  {
+    s.rarity_filter = g_card_browser_type_filter - 1;
+    s.type_filter_index = 6;
+  }
+
+  PTR_DAT_005832b4->font_slot = 1;
+  ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832b4, 0xff, 0xfe, 0x1ce, "%d", Gold);
+  for (s.card_index = 0; s.card_index < 5; s.card_index = s.card_index + 1)
+  {
+    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(
+        PTR_DAT_005832b4, 0xff, s.card_index * 35 + 305, 0x1ce, "%d", g_amulet_inventory[s.card_index]);
+  }
+
+  /* Filter list hit-test geometry is stored in s.filter_top_y / s.filter_line_h. */
+
+  /* Card list geometry. */
+  s.max_lines_per_col = (FUN_005501dc(0x11e) / 2) / GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  s.draw_count = 0;
+  s.x = FUN_005501dc(0x66) / 2;
+  s.y = FUN_005501dc(0x99) / 2;
+  s.list_top_y = s.y;
+  s.list_line_h = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+
+  /* Build filtered list. */
+  s.filtered_count = 0;
+  for (s.card_index = 0; s.card_index < g_card_count - 57; s.card_index = s.card_index + 1)
+  {
+    if ((g_card_browser_color_filter == 0) && (s.type_filter_index == 6))
+    {
+      if (ClampIntToRange((int)(signed char)global_cards_data[s.card_index].rarity, 1, 3) != s.rarity_filter)
+      {
+        continue;
+      }
+    }
+
+    s.card_color_mask = (unsigned int)(signed char)global_cards_data[s.card_index].color;
+    if (s.card_color_mask == 0)
+    {
+      s.card_color_mask = 1;
+    }
+
+    if (((s.card_color_mask & (1U << (unsigned char)g_card_browser_color_filter)) == 0) ||
+        (((unsigned int)global_cards_data[s.card_index].type & (1U << (unsigned char)s.type_filter_index)) == 0))
+    {
+      continue;
+    }
+
+    if (((global_cards_data[s.card_index].extra_ability & 0x900) != 0) && (DAT_007894f4 == 0))
+    {
+      continue;
+    }
+
+    if (GetCardAvailabilityMask(s.card_index) == 0)
+    {
+      continue;
+    }
+
+    if ((color_mask != 0) && ((s.card_color_mask & color_mask) == 0))
+    {
+      continue;
+    }
+
+    if ((type_mask != 0) && (((unsigned int)global_cards_data[s.card_index].type & type_mask) == 0))
+    {
+      continue;
+    }
+
+    if (((unsigned int)global_cards_data[s.card_index].type == 'B') && (s.type_filter_index == 6))
+    {
+      continue;
+    }
+
+    s.filtered_card_ids[s.filtered_count] = (unsigned int)s.card_index;
+    s.filtered_count = s.filtered_count + 1;
+  }
+
+  qsort(s.filtered_card_ids, s.filtered_count, 4, CompareCardNamesForQsort);
+
+  for (s.sorted_index = 0; (int)s.filtered_count > s.sorted_index; s.sorted_index = s.sorted_index + 1)
+  {
+    s.card_index = s.filtered_card_ids[s.sorted_index];
+
+    /* Count copies owned in the 500-slot deck array. */
+    s.owned_copies = 0;
+    for (s.deck_slot = 0; s.deck_slot < 500; s.deck_slot = s.deck_slot + 1)
+    {
+      if (((unsigned int)deck[s.deck_slot] & 0xfffU) == (unsigned int)s.card_index)
+      {
+        s.owned_copies = s.owned_copies + 1;
+      }
+    }
+
+    strcpy(g_ui_message_buffer, global_cards_data[s.card_index].name);
+    if (s.owned_copies != 0)
+    {
+      strcat(g_ui_message_buffer, s_card_browser_owned_separator);
+      strcat(g_ui_message_buffer, _itoa(s.owned_copies, DAT_0093a870, 10));
+    }
+
+    if (g_card_browser_hover_card == 0xffffffff)
+    {
+      g_card_browser_hover_card = (unsigned int)s.card_index;
+    }
+
+    if ((unsigned int)s.card_index == g_card_browser_hover_card)
+    {
+      s.card_list_text_color = 0x1b;
+    }
+    else
+    {
+      if (FUN_004bb1cf((unsigned int)s.card_index) > 0)
+      {
+        s.card_list_text_color = 0x54;
+      }
+      else
+      {
+        s.card_list_text_color = 3;
+      }
+    }
+
+    DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.x, s.y, s.card_list_text_color);
+    s.draw_index_to_card[s.draw_count] = (unsigned int)s.card_index;
+    s.draw_count = s.draw_count + 1;
+    s.y = s.y + GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+
+    if (s.draw_count == s.max_lines_per_col)
+    {
+      s.x = FUN_005501dc(0x219) / 2;
+      s.y = FUN_005501dc(0x99) / 2;
+    }
+  }
+
+  if (g_card_browser_hover_card != 0xffffffff)
+  {
+    g_card_browser_selected_card = g_card_browser_hover_card;
+    FUN_004f263b((int)g_card_browser_selected_card, 0x7b, 0x33, 0x4b, 0x70, 1, s_empty_card_banner_0058f168);
+  }
+
+  FUN_0046ed03();
+  g_card_browser_done_button_value = -1;
+
   while (1)
   {
-    if (s.needs_redraw != 0)
+    UpdateMouseSnapshot();
+    if (show_done_button != 0 && g_mouse_button_down_mask != 0)
     {
-      CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x8c), ScaleUiCoordinate(0xb3), ScaleUiCoordinate(0x132),
-                       PTR_DAT_005832b4, ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x8c));
-      CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x8c), ScaleUiCoordinate(0xb3), ScaleUiCoordinate(0x132),
-                       PTR_DAT_005832b4, ScaleUiCoordinate(0x1c0), ScaleUiCoordinate(0x8c));
-      CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0x1bf), ScaleUiCoordinate(0x118), ScaleUiCoordinate(0x1d),
-                       PTR_DAT_005832b4, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0x1bf));
-      CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xe9), ScaleUiCoordinate(0x158), ScaleUiCoordinate(0xd4), ScaleUiCoordinate(0x68),
-                       PTR_DAT_005832b4, ScaleUiCoordinate(0xe9), ScaleUiCoordinate(0x158));
-      CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0x1db), ScaleUiCoordinate(0x10), ScaleUiCoordinate(0x7c), ScaleUiCoordinate(0x5e),
-                       PTR_DAT_005832b4, ScaleUiCoordinate(0x1db), ScaleUiCoordinate(0x10));
-      CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xe4), ScaleUiCoordinate(0x27), ScaleUiCoordinate(0xb8), ScaleUiCoordinate(0x19),
-                       PTR_DAT_005832b4, ScaleUiCoordinate(0xe4), ScaleUiCoordinate(0x27));
-    }
-    s.needs_redraw = 0;
-    CopyGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xe8), ScaleUiCoordinate(0x157), ScaleUiCoordinate(0xd2), ScaleUiCoordinate(0x66),
-                     PTR_DAT_005832b4, ScaleUiCoordinate(0xe8), ScaleUiCoordinate(0x157));
-    PTR_DAT_005832b4->font_slot = 4;
-    DrawTextAt(PTR_DAT_005832b4, 0x16, 0x140, 0x34, title);
-    PTR_DAT_005832b4->font_slot = 4;
-
-    /* Draw color filter list (left). */
-    s.x = FUN_005501dc(0x6b) / 2;
-    s.y = FUN_005501dc(0x45) / 2;
-    s.y = s.y - ((GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 6) / 2);
-
-    for (s.card_index = 0; (int)s.card_index < 6; s.card_index = s.card_index + 1)
-    {
-      if (s.card_index == 0)
+      (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+      if (0 < g_card_browser_done_button_value)
       {
-        if (g_card_browser_color_filter == (int)s.card_index)
-        {
-          s.tmp_60c = 0x1b;
-        }
-        else if (color_mask != 0)
-        {
-          s.tmp_60c = 0;
-        }
-        else
-        {
-          s.tmp_60c = 0x62;
-        }
-
-        DrawCenteredTextLineWithShadow(gs_browse_0074da20[0], s.x, s.y, s.tmp_60c);
+        (void)EndMenuContext();
+        FreeSpriteBlob(g_card_browser_done_button_sprites[0]);
+        ClearInputAndWaitForMouseRelease();
+        DestroyCachedCardArt();
+        return 0xffffffff;
       }
       else
       {
-        if (g_card_browser_color_filter == (int)s.card_index)
-        {
-          s.tmp_610 = 0x1b;
-        }
-        else if (color_mask != 0)
-        {
-          s.tmp_610 = 0;
-        }
-        else
-        {
-          s.tmp_610 = 0x62;
-        }
-
-        DrawCenteredTextLineWithShadow(gs_browse_0074da20[(int)s.card_index], s.x, s.y, s.tmp_610);
-      }
-      s.y = s.y + GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-    }
-
-    /* Draw type/rarity filter list (right). */
-    s.x = FUN_005501dc(0x215) / 2;
-    s.y = FUN_005501dc(0x45) / 2;
-    s.y = s.y - ((GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 6) / 2);
-    s.filter_top_y = s.y;
-    s.filter_line_h = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-
-    for (s.card_index = 0; (int)s.card_index < 6; s.card_index = s.card_index + 1)
-    {
-      if ((g_card_browser_color_filter == 0) && ((int)s.card_index >= 2))
-      {
-        if (g_card_browser_type_filter == (int)s.card_index)
-        {
-          s.tmp_61c = 0x1b;
-        }
-        else
-        {
-          s.tmp_61c = 0x62;
-        }
-
-        DrawCenteredTextLineWithShadow(gs_browse_0074da20[11 + (int)s.card_index], s.x, s.y, s.tmp_61c);
-      }
-      else
-      {
-        if (g_card_browser_type_filter == (int)s.card_index)
-        {
-          s.tmp_618 = 0x1b;
-        }
-        else
-        {
-          s.tmp_618 = 0x62;
-        }
-
-        DrawCenteredTextLineWithShadow(gs_browse_0074da20[6 + (int)s.card_index], s.x, s.y, s.tmp_618);
-      }
-
-      s.y = s.y + GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-    }
-
-    /* Type filter index used for type-bit selection. */
-    s.type_filter_index = g_card_browser_type_filter;
-    if ((g_card_browser_color_filter == 0) && (g_card_browser_type_filter >= 2))
-    {
-      s.special_clamp = g_card_browser_type_filter - 1;
-      s.type_filter_index = 6;
-    }
-
-    PTR_DAT_005832b4->font_slot = 1;
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832b4, 0xff, 0xfe, 0x1ce, "%d", Gold);
-    for (s.x = 0; s.x < 5; s.x = s.x + 1)
-    {
-      ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(
-          PTR_DAT_005832b4, 0xff, ((((s.x << 3) - s.x) * 5) + 0x131), 0x1ce, "%d", g_amulet_inventory[s.x]);
-    }
-
-    /* Filter list hit-test geometry is stored in s.filter_top_y / s.filter_line_h. */
-
-    /* Card list geometry. */
-    s.max_lines_per_col = (FUN_005501dc(0x11e) / 2) / GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-    s.draw_count = 0;
-    s.x = FUN_005501dc(0x66) / 2;
-    s.y = FUN_005501dc(0x99) / 2;
-    s.list_top_y = s.y;
-    s.list_line_h = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-
-    /* Build filtered list. */
-    s.filtered_count = 0;
-    for (s.card_index = 0; s.card_index < (unsigned int)(g_card_count - 0x39); s.card_index = s.card_index + 1)
-    {
-      if ((g_card_browser_color_filter == 0) && (s.type_filter_index == 6))
-      {
-        if (ClampIntToRange((int)(signed char)global_cards_data[s.card_index].rarity, 1, 3) != s.special_clamp)
-        {
-          continue;
-        }
-      }
-
-      s.card_color_mask = (unsigned int)(signed char)global_cards_data[s.card_index].color;
-      if (s.card_color_mask == 0)
-      {
-        s.card_color_mask = 1;
-      }
-
-      if ((s.card_color_mask & (1U << (unsigned char)g_card_browser_color_filter)) == 0)
-      {
-        continue;
-      }
-
-      if (((unsigned int)global_cards_data[s.card_index].type & (1U << (unsigned char)s.type_filter_index)) == 0)
-      {
-        continue;
-      }
-
-      if (((global_cards_data[s.card_index].extra_ability & 0x900) != 0) && (DAT_007894f4 == 0))
-      {
-        continue;
-      }
-
-      if (GetCardAvailabilityMask(s.card_index) == 0)
-      {
-        continue;
-      }
-
-      if ((color_mask != 0) && ((s.card_color_mask & color_mask) == 0))
-      {
-        continue;
-      }
-
-      if ((type_mask != 0) && (((unsigned int)global_cards_data[s.card_index].type & type_mask) == 0))
-      {
-        continue;
-      }
-
-      if (((unsigned int)global_cards_data[s.card_index].type == 'B') && (s.type_filter_index == 6))
-      {
-        continue;
-      }
-
-      s.filtered_card_ids[s.filtered_count] = (unsigned int)s.card_index;
-      s.filtered_count = s.filtered_count + 1;
-    }
-
-    qsort(s.filtered_card_ids, s.filtered_count, 4, CompareCardNamesForQsort);
-
-    for (s.sorted_i = 0; s.sorted_i < (int)s.filtered_count; s.sorted_i = s.sorted_i + 1)
-    {
-      s.card_index = s.filtered_card_ids[s.sorted_i];
-
-      /* Count copies owned in the 500-slot deck array. */
-      s.owned_copies = 0;
-      for (s.loop_i = 0; s.loop_i < 500; s.loop_i = s.loop_i + 1)
-      {
-        if (((unsigned int)deck[s.loop_i] & 0xfffU) == (unsigned int)s.card_index)
-        {
-          s.owned_copies = s.owned_copies + 1;
-        }
-      }
-
-      strcpy(g_ui_message_buffer, global_cards_data[s.card_index].name);
-      if (s.owned_copies != 0)
-      {
-        strcat(g_ui_message_buffer, s_card_browser_owned_separator);
-        strcat(g_ui_message_buffer, _itoa(s.owned_copies, unk_009266d0 + 0x70, 10));
-      }
-
-      if (g_card_browser_hover_card == 0xffffffff)
-      {
-        g_card_browser_hover_card = (unsigned int)s.card_index;
-      }
-
-      if (g_card_browser_hover_card == (unsigned int)s.card_index)
-      {
-        s.tmp_620 = 0x1b;
-      }
-      else
-      {
-        if (FUN_004bb1cf((unsigned int)s.card_index) > 0)
-        {
-          s.tmp_620 = 0x54;
-        }
-        else
-        {
-          s.tmp_620 = 3;
-        }
-      }
-
-      DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.x, s.y, s.tmp_620);
-      s.draw_index_to_card[s.draw_count] = (unsigned int)s.card_index;
-      s.draw_count = s.draw_count + 1;
-      s.y = s.y + GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-
-      if (s.draw_count == s.max_lines_per_col)
-      {
-        s.x = FUN_005501dc(0x219) / 2;
-        s.y = FUN_005501dc(0x99) / 2;
-      }
-    }
-
-    if (g_card_browser_hover_card != 0xffffffff)
-    {
-      g_card_browser_selected_card = g_card_browser_hover_card;
-      FUN_004f263b((int)g_card_browser_selected_card, 0x7b, 0x33, 0x4b, 0x70, 1, s_empty_card_banner_0058f168);
-    }
-
-    FUN_0046ed03();
-    g_card_browser_done_button_value = -1;
-
-    while (1)
-    {
-      UpdateMouseSnapshot();
-      if (g_mouse_button_down_mask != 0)
-      {
+        s.mouse_button_or_index = g_mouse_button_down_mask;
         break;
       }
-      if (param_5 != 0)
-      {
-        (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, 0);
-      }
     }
+    else if (g_mouse_button_down_mask != 0)
+    {
+      s.mouse_button_or_index = g_mouse_button_down_mask;
+      break;
+    }
+    else if (show_done_button != 0)
+    {
+      (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+    }
+  }
 
-    (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-    if (0 < g_card_browser_done_button_value)
+  s.x = g_mouse_x_snapshot;
+  s.y = g_mouse_y_snapshot;
+  ClearInputAndWaitForMouseRelease();
+  FUN_0046ed33();
+
+  /* OK click region returns the current selected card. */
+  if (((FUN_005501dc(0x66) / 2 < s.y) && (s.y < FUN_005501dc(0x146) / 2)) &&
+      ((FUN_005501dc(0xf6) / 2 < s.x) && (s.x < FUN_005501dc(0x18c) / 2)))
+  {
+    if (show_done_button != 0)
     {
       (void)EndMenuContext();
-      FreeSpriteBlob(g_card_browser_done_button_sprites);
-      ClearInputAndWaitForMouseRelease();
-      DestroyCachedCardArt();
-      return 0xffffffff;
+      FreeSpriteBlob(g_card_browser_done_button_sprites[0]);
     }
+    DestroyCachedCardArt();
+    return g_card_browser_selected_card;
+  }
 
-    if (g_mouse_button_down_mask == 0)
-    {
-      if (param_5 != 0)
-      {
-        (void)EndMenuContext();
-      }
-      FreeSpriteBlob(g_card_browser_done_button_sprites);
-      DestroyCachedCardArt();
-      return 0xffffffff;
-    }
-
-    s.x = g_mouse_x_snapshot;
-    s.y = g_mouse_y_snapshot;
-    s.tmp_i = g_mouse_button_down_mask;
-    ClearInputAndWaitForMouseRelease();
-    FUN_0046ed33();
-
-    /* OK click region returns the current selected card. */
-    if (((FUN_005501dc(0x66) / 2 < s.y) && (s.y < FUN_005501dc(0x146) / 2)) &&
-        ((FUN_005501dc(0xf6) / 2 < s.x) && (s.x < FUN_005501dc(0x18c) / 2)))
-    {
-      if (param_5 != 0)
-      {
-        (void)EndMenuContext();
-        FreeSpriteBlob(g_card_browser_done_button_sprites);
-      }
-      DestroyCachedCardArt();
-      return g_card_browser_selected_card;
-    }
-
-    if (s.tmp_i == 0)
-    {
-      if (param_5 != 0)
-      {
-        (void)EndMenuContext();
-      }
-      FreeSpriteBlob(g_card_browser_done_button_sprites);
-      DestroyCachedCardArt();
-      return 0xffffffff;
-    }
-
+  if (s.mouse_button_or_index)
+  {
     if (s.y < FUN_005501dc(0x6d) / 2)
     {
       /* Filter list selection: index = (mouse_y - filter_top_y) / line_h. */
-      s.tmp_i = (s.y - s.filter_top_y) / s.filter_line_h;
+      s.mouse_button_or_index = (s.y - s.filter_top_y) / s.filter_line_h;
 
       if (s.x < ScaleUiCoordinate(0xac))
       {
-        if ((s.tmp_i >= 0) && (s.tmp_i < 6) && ((color_mask == 0) || ((1U << (unsigned char)s.tmp_i) == color_mask)))
+        if ((s.mouse_button_or_index >= 0) && (s.mouse_button_or_index < 6) && ((color_mask == 0) || ((1U << (unsigned char)s.mouse_button_or_index) == color_mask)))
         {
-          g_card_browser_color_filter = s.tmp_i;
+          g_card_browser_color_filter = s.mouse_button_or_index;
           g_card_browser_hover_card = 0xffffffff;
           s.needs_redraw = 1;
         }
       }
       else
       {
-        if ((ScaleUiCoordinate(0x1d6) < s.x) && (s.tmp_i >= 0) && (s.tmp_i < 6))
+        if ((ScaleUiCoordinate(0x1d6) < s.x) && (s.mouse_button_or_index >= 0) && (s.mouse_button_or_index < 6))
         {
-          g_card_browser_type_filter = s.tmp_i;
+          g_card_browser_type_filter = s.mouse_button_or_index;
           g_card_browser_hover_card = 0xffffffff;
           s.needs_redraw = 1;
         }
@@ -4225,15 +4230,24 @@ unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int t
       if ((FUN_005501dc(0x96) / 2) < s.y)
       {
         /* Card list selection. */
-        s.tmp_i = (s.y - s.list_top_y) / s.list_line_h;
-        s.tmp_i = s.tmp_i + ((s.x / (global_screen_width / 2)) * s.max_lines_per_col);
-        if (s.tmp_i < s.draw_count)
+        s.mouse_button_or_index = (s.y - s.list_top_y) / s.list_line_h;
+        s.mouse_button_or_index = s.mouse_button_or_index + ((s.x / (global_screen_width / 2)) * s.max_lines_per_col);
+        if (s.mouse_button_or_index < s.draw_count)
         {
-          g_card_browser_hover_card = s.draw_index_to_card[s.tmp_i];
+          g_card_browser_hover_card = s.draw_index_to_card[s.mouse_button_or_index];
         }
       }
     }
+    goto loop;
   }
+
+  if (show_done_button != 0)
+  {
+    (void)EndMenuContext();
+  }
+  FreeSpriteBlob(g_card_browser_done_button_sprites[0]);
+  DestroyCachedCardArt();
+  return 0xffffffff;
 }
 
 // FUNCTION: SHANDALAR 0x00530b7e
@@ -4244,7 +4258,7 @@ int QuestCardChooserCallback(void)
 }
 
 // FUNCTION: SHANDALAR 0x00530b90
-int BuyAnyCardFromTown(int param_1, int param_2)
+int BuyAnyCardFromTown(int payment_color, int town_index)
 {
   struct
   {
@@ -4268,10 +4282,10 @@ int BuyAnyCardFromTown(int param_1, int param_2)
 
   while (1)
   {
-    if (param_2 != -1)
+    if (town_index != -1)
     {
-      s.card_id = RunCardBrowser(gs_buyanycard_0074ccd0[5], g_town_slots[param_2].trade_color_and_type & 0xff,
-                                 (g_town_slots[param_2].trade_color_and_type >> 8) - 1, s.first_time, 1);
+      s.card_id = RunCardBrowser(gs_buyanycard_0074ccd0[5], g_town_slots[town_index].trade_color_and_type & 0xff,
+                                 (g_town_slots[town_index].trade_color_and_type >> 8) - 1, s.first_time, 1);
     }
     else
     {
@@ -4279,7 +4293,7 @@ int BuyAnyCardFromTown(int param_1, int param_2)
     }
     s.first_time = 0;
 
-    if (param_1 == 0)
+    if (payment_color == 0)
     {
       s.total_mana = 0;
       for (s.i = 0; s.i < 5; s.i = s.i + 1)
@@ -4293,7 +4307,7 @@ int BuyAnyCardFromTown(int param_1, int param_2)
       goto cleanup;
     }
 
-    if (param_1 == -2)
+    if (payment_color == -2)
     {
       s.can_afford = 1;
       if ((int)s.card_id > 4)
@@ -4375,17 +4389,17 @@ int BuyAnyCardFromTown(int param_1, int param_2)
         s.price = s.tile_magic_index;
       }
 
-      if (param_1 >= 0)
+      if (payment_color >= 0)
       {
         if (s.required == 1)
         {
           FUN_00564e70(g_ui_message_buffer, 0x1000, gs_buyanycard_0074ccd0[0], s.copies, global_cards_data[s.card_id].name,
-                       gs_amuletnames_0077d090 + param_1 * 0x19);
+                       gs_amuletnames_0077d090 + payment_color * 0x19);
         }
         else
         {
           FUN_00564e70(g_ui_message_buffer, 0x1000, gs_buyanycard_0074ccd0[1], s.copies, global_cards_data[s.card_id].name, s.required,
-                       gs_amuletnames_plural_0077edd0 + param_1 * 0x19);
+                       gs_amuletnames_plural_0077edd0 + payment_color * 0x19);
         }
       }
       else
@@ -4394,15 +4408,15 @@ int BuyAnyCardFromTown(int param_1, int param_2)
       }
 
       s.can_afford = 1;
-      if ((0 < param_1) && (DAT_0078990c[param_1] < s.required))
+      if ((0 < payment_color) && (DAT_0078990c[payment_color] < s.required))
       {
         s.can_afford = 0;
       }
-      if ((param_1 == 0) && (s.total_mana < s.required))
+      if ((payment_color == 0) && (s.total_mana < s.required))
       {
         s.can_afford = 0;
       }
-      if (param_1 == -1)
+      if (payment_color == -1)
       {
         if (Gold >= s.price)
         {
@@ -4429,12 +4443,12 @@ int BuyAnyCardFromTown(int param_1, int param_2)
       }
 
       s.can_afford = 0;
-      if ((0 < param_1) && (s.required <= DAT_0078990c[param_1]))
+      if ((0 < payment_color) && (s.required <= DAT_0078990c[payment_color]))
       {
         s.can_afford = 1;
-        DAT_0078990c[param_1] = DAT_0078990c[param_1] - s.required;
+        DAT_0078990c[payment_color] = DAT_0078990c[payment_color] - s.required;
       }
-      if ((param_1 == 0) && (s.required <= s.total_mana))
+      if ((payment_color == 0) && (s.required <= s.total_mana))
       {
         s.can_afford = 1;
         do
@@ -4447,7 +4461,7 @@ int BuyAnyCardFromTown(int param_1, int param_2)
           g_amulet_inventory[s.random_color] = g_amulet_inventory[s.random_color] - 1;
         } while (s.required != 0);
       }
-      if (param_1 == -1)
+      if (payment_color == -1)
       {
         if (Gold >= s.price)
         {
@@ -4627,11 +4641,11 @@ int VisitTownSlot(int town_index)
     if (RunTextMenuAtScaled(g_ui_message_buffer, 0x78, 0x38) == 1)
     {
       unk_00789308 = FUN_0056c705(
-          *(int *)((char *)&DAT_0058c620[20 + FUN_00522508(3)] + (((s.duel_wizard_color - 1) * 3) << 2)));
+          *(&g_dungeon_monster_duel_music_csvids[(s.duel_wizard_color - 1) * 3] + FUN_00522508(3)));
       g_lair_or_monster_slots[6].color = s.duel_wizard_color;
-      g_lair_or_monster_slots[6].entry_type = s.duel_creature_tier_or_type;
+      g_lair_or_monster_slots[6].entry_type = (ShandalarEntryType)s.duel_creature_tier_or_type;
 
-      s.selected_card_id = FUN_0056c705(*(int *)&gs_creature_names_00591a08[s.duel_creature_tier_or_type].metadata[6]);
+      s.selected_card_id = FUN_0056c705(gs_creature_names_00591a08[s.duel_creature_tier_or_type].deck_number);
       LoadCreatureDuelDeck(s.duel_creature_tier_or_type, (unsigned int)s.selected_card_id, 0, -1);
 
       DAT_008ce538 = s.duel_wizard_color;
@@ -4707,7 +4721,7 @@ int VisitTownSlot(int town_index)
     if (RunTextMenuAtScaled(g_ui_message_buffer, 0x2a, 0x1a) == 1)
     {
       sound_stop(0x10);
-      FUN_0050a5c1(DAT_008ce538 - 1);
+      EnterCastleDungeon(DAT_008ce538 - 1);
       if (((g_defeated_wizards_bitmap & (1 << ((unsigned char)DAT_008ce538))) == 0) && (g_shandalar_difficulty == 3))
       {
         TriggerWizardSiegeNewsflash(DAT_008ce538);
@@ -4913,14 +4927,14 @@ int VisitTownSlot(int town_index)
   }
 
   g_town_slots[town_index].status_and_ruling_wizard = g_town_slots[town_index].status_and_ruling_wizard | 2;
-  *(int *)(g_town_slots[town_index].data_18_to_63 + 0x44) = *(int *)(g_town_slots[town_index].data_18_to_63 + 0x44) + 1;
+  g_town_slots[town_index].visit_count = g_town_slots[town_index].visit_count + 1;
 
   AnimateVisitBackdropZoomIn(GET_TOWN_PIC(town_index));
   // TODO(decomp): Town services UI (shops/healer/clues/map/stats/etc.).
   // This is currently not decompiled in-tree; keep the call to preserve control flow.
   RunTownServicesMenu(town_index);
 
-  *(int *)(g_town_slots[town_index].data_18_to_63 + 0x48) = g_quest_restock_timer;
+  g_town_slots[town_index].last_visit_timer = g_quest_restock_timer;
 
   if ((g_town_slots[town_index].location_type == 3) || (g_town_slots[town_index].location_type == 2))
   {

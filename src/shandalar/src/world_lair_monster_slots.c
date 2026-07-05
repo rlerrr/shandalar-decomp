@@ -14,7 +14,8 @@ extern int global_screen_width;
 extern int global_screen_height;
 extern int g_neighbor_dx[9];
 extern int g_neighbor_dy[9];
-extern int DAT_0073ea70[8];
+extern int g_world_player_animation_direction;
+extern int g_world_player_animation_frame;
 extern int DAT_00589dec;
 extern int DAT_009300f0;
 
@@ -37,7 +38,7 @@ extern char g_ini_string_scratch[0x28];
 void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
 char *BuildResolutionSpritePath(char *sprite_filename);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
-int PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
+ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 int FindNearestTownIndex(int world_x, int world_y);
 int ClampIntToRange(int value, int min_value, int max_value);
 int FUN_004ecf30(int x, int y);
@@ -76,7 +77,7 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 int sound_unload(int sound_id);
 void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_percent);
 void FUN_00562169(void);
-int FUN_004f2ec0(int slot_index, int monster_color);
+int RunWorldLairMonsterEncounter(int slot_index, int monster_color);
 
 // GLOBAL: SHANDALAR 0x00591270
 int DAT_00591270;
@@ -343,7 +344,7 @@ void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_perc
   }
   DAT_00591270 = 0;
 
-  switch (gs_creature_names_00591a08[creature_type].metadata[3])
+  switch (gs_creature_names_00591a08[creature_type].encounter_type)
   {
   case 1:
     LoadSoundWithDriveFallback("x:sound\\malewiz.wav", 0xf, 0);
@@ -385,51 +386,52 @@ void UpdateWorldLairAndMonsterSlots(void)
 {
   struct
   {
-    int nearest_distance;
-    int nearest_slot;
-    int slot_index;
-    int distance_to_player;
-    int tile_dist_x;
-    int tile_dist_y;
-    int tile_x;
-    int tile_y;
-    int tile_mask;
-    int color;
-    int creature_tier;
-    int victory_count;
-    int spawn_x;
-    int spawn_y;
-    int can_run_movement;
-    int speed;
-    int range;
-    int move_dir;
-    int target_dx;
-    int target_dy;
-    int prev_x;
-    int prev_y;
-    int new_distance;
-    int tmp;
-    int i;
-    unsigned int slot_u;
-    unsigned int terrain_mask;
-    unsigned char selected_color;
+    int slot_u;             // ebp - 0x6c
+    int terrain_mask;       // ebp - 0x68
+    int target_dy;          // ebp - 0x64
+    int tile_dist_y;        // ebp - 0x60
+    int tile_dist_x;        // ebp - 0x5c
+    int can_run_movement;   // ebp - 0x58
+    int color;              // ebp - 0x54
+    int nearest_distance;   // ebp - 0x50
+    int tile_mask;          // ebp - 0x4c
+    int tile_x;             // ebp - 0x48
+    int i;                  // ebp - 0x44
+    int victory_count;      // ebp - 0x40
+    int slot_index;         // ebp - 0x3c
+    int spawn_y;            // ebp - 0x38
+    int prev_y;             // ebp - 0x34
+    int range;              // ebp - 0x30
+    int move_dir;           // ebp - 0x2c
+    int new_distance;       // ebp - 0x28
+    int spawn_x;            // ebp - 0x24
+    int creature_tier;      // ebp - 0x20
+    int movement_step;      // ebp - 0x1c
+    int tile_y;             // ebp - 0x18
+    int distance_to_player; // ebp - 0x14
+    int tmp;                // ebp - 0x10
+    int nearest_slot;       // ebp - 0xc
+    int speed;              // ebp - 0x8
+    int prev_x;             // ebp - 0x4
   } s;
 
   s.nearest_distance = 0x7fff;
-  s.nearest_slot = 0;
+#ifdef MODERN_FIXES
+  s.nearest_slot = -1;
+#endif
 
   for (s.slot_index = 0; s.slot_index < 6; s.slot_index = s.slot_index + 1)
   {
     s.distance_to_player = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                                         g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
-    if ((s.distance_to_player < s.nearest_distance) && (g_lair_or_monster_slots[s.slot_index].entry_type != 0))
+    if ((s.distance_to_player < s.nearest_distance) && (g_lair_or_monster_slots[s.slot_index].entry_type != SHANDALAR_ENTRY_LAIR))
     {
-      s.nearest_slot = s.slot_index;
       s.nearest_distance = s.distance_to_player;
+      s.nearest_slot = s.slot_index;
     }
   }
 
-  if (g_lair_or_monster_slots[7].entry_type == -1)
+  if (g_lair_or_monster_slots[7].entry_type == SHANDALAR_ENTRY_NONE)
   {
     g_siege_indicator = 0;
   }
@@ -439,46 +441,36 @@ void UpdateWorldLairAndMonsterSlots(void)
     s.distance_to_player = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                                         g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
 
-    s.tile_dist_x = abs(g_world_player_tile_x - (int)((g_lair_or_monster_slots[s.slot_index].world_x +
-                                                       ((g_lair_or_monster_slots[s.slot_index].world_x >> 0x1f) & 0x1fU)) >>
-                                                      5));
-    s.tile_dist_y = abs(g_world_player_tile_y - (int)((g_lair_or_monster_slots[s.slot_index].world_y +
-                                                       ((g_lair_or_monster_slots[s.slot_index].world_y >> 0x1f) & 0x1fU)) >>
-                                                      5));
-
-    s.can_run_movement = 0;
+    s.tile_dist_x = abs(g_world_player_tile_x - g_lair_or_monster_slots[s.slot_index].world_x / 0x20);
+    s.tile_dist_y = abs(g_world_player_tile_y - g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
 
     if ((s.slot_index < 6) &&
-        ((g_lair_or_monster_slots[s.slot_index].entry_type == -1) || (s.tile_dist_x > 4) || (s.tile_dist_y > 4)))
+        ((g_lair_or_monster_slots[s.slot_index].entry_type == SHANDALAR_ENTRY_NONE) || (s.tile_dist_x > 4) || (s.tile_dist_y > 4)))
     {
       do
       {
-        s.color = FUN_00522508(2);
-        if (s.color == 0)
+        if (FUN_00522508(2) != 0)
         {
-          s.color = FUN_00522508(2);
-          s.spawn_y = ((-(unsigned int)(s.color == 0) & 0xfffffff8) + 4) + g_world_player_tile_y;
-          s.color = FUN_00522508(9);
-          s.spawn_x = g_world_player_tile_x + s.color - 4;
+          s.spawn_x = (FUN_00522508(2) ? 4 : -4) + g_world_player_tile_x;
+          s.spawn_y = g_world_player_tile_y + FUN_00522508(9) - 4;
         }
         else
         {
-          s.color = FUN_00522508(2);
-          s.spawn_x = ((-(unsigned int)(s.color == 0) & 0xfffffff8) + 4) + g_world_player_tile_x;
-          s.color = FUN_00522508(9);
-          s.spawn_y = g_world_player_tile_y + s.color - 4;
+          s.spawn_y = (FUN_00522508(2) ? 4 : -4) + g_world_player_tile_y;
+          s.spawn_x = g_world_player_tile_x + FUN_00522508(9) - 4;
         }
 
-        s.terrain_mask = FUN_005611c8(FUN_0043146b(s.spawn_x, s.spawn_y));
-      } while (s.terrain_mask == 0);
+        s.tile_y = FUN_0043146b(s.spawn_x, s.spawn_y);
+        s.color = FUN_005611c8(s.tile_y);
+      } while (s.color == 0);
 
       do
       {
-        s.color = FUN_00522508(6);
-        s.selected_color = (unsigned char)s.color;
-      } while ((s.terrain_mask & (1U << (s.selected_color & 0x1f))) == 0);
+        s.victory_count = FUN_00522508(6);
+      } while ((s.color & (1U << (byte)s.victory_count)) == 0);
+      s.color = s.victory_count;
 
-      s.victory_count = (*(int *)&g_ini_string_scratch[0x20] + ((*(int *)&g_ini_string_scratch[0x20] >> 0x1f) & 7U)) >> 3;
+      s.victory_count = g_lairs_explored / 8;
       for (s.i = 0; s.i < 1000; s.i = s.i + 1)
       {
         if (((int)(char)g_duel_victory_log[s.i] >> 4) == s.color)
@@ -487,37 +479,60 @@ void UpdateWorldLairAndMonsterSlots(void)
         }
       }
 
-      s.tmp = ClampIntToRange(0x80 / (s.victory_count + 4), 6, 0x14);
-      s.tmp = FUN_00522508(s.tmp);
+      s.move_dir = ClampIntToRange(0x80 / (s.victory_count + 4), 6, 0x14);
 
-      switch (s.tmp + 5 / (s.victory_count + 1))
+      switch (FUN_00522508(s.move_dir) + 5 / (s.victory_count + 1))
       {
       case 0:
+        s.creature_tier = 10;
+        break;
       case 1:
+        s.creature_tier = 10;
+        break;
       case 2:
-      case 4:
         s.creature_tier = 10;
         break;
       case 3:
-      case 9:
-      case 0xc:
-      case 0xe:
-      default:
         s.creature_tier = 0;
+        break;
+      case 4:
+        s.creature_tier = 10;
         break;
       case 5:
         s.creature_tier = 8;
         break;
       case 6:
-      case 8:
-      case 0xb:
         s.creature_tier = 6;
         break;
       case 7:
+        s.creature_tier = 4;
+        break;
+      case 8:
+        s.creature_tier = 6;
+        break;
+      case 9:
+        s.creature_tier = 0;
+        break;
       case 0xa:
+        s.creature_tier = 4;
+        break;
+      case 0xb:
+        s.creature_tier = 6;
+        break;
+      case 0xc:
+        s.creature_tier = 0;
+        break;
       case 0xd:
+        s.creature_tier = 4;
+        break;
+      case 0xe:
+        s.creature_tier = 0;
+        break;
       case 0xf:
         s.creature_tier = 4;
+        break;
+      default:
+        s.creature_tier = 0;
         break;
       }
 
@@ -556,409 +571,452 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       if ((s.slot_index == 0) && (g_current_quest_type < 0) && (-100 < g_current_quest_type))
       {
-        s.creature_tier = (int)gs_creature_names_00591a08[-g_current_quest_type].metadata[1];
+        s.creature_tier = (int)gs_creature_names_00591a08[-g_current_quest_type].tier;
       }
 
-      if ((s.creature_tier == 0) ||
-          (((g_shandalar_difficulty != 0) || ((s.slot_index != 5) && (s.slot_index != 6))) &&
-           ((g_shandalar_difficulty != 1) || (s.slot_index != 6)) &&
-           (((4 - g_shandalar_difficulty) * 0x163f5000) /
-                ((g_monster_timer / 0xf) * (g_monster_timer / 0xf) + 0x515a19) <=
-            g_monster_timer - g_lair_or_monster_slots[s.slot_index].respawn_timestamp)))
+      if (s.creature_tier != 0)
       {
-        if (s.creature_tier == 0)
+        if (((g_shandalar_difficulty == 0) && ((s.slot_index == 5) || (s.slot_index == 6))) ||
+            ((g_shandalar_difficulty == 1) && (s.slot_index == 6)))
         {
-          g_lair_or_monster_slots[s.slot_index].entry_type = 0;
+          continue;
         }
-        else
+
+#define WORLD_MONSTER_RESPAWN_TIMER_SCALE (4320 * 86400)
+#define WORLD_MONSTER_RESPAWN_TIMER_BIAS 2309
+
+        if (((4 - g_shandalar_difficulty) * WORLD_MONSTER_RESPAWN_TIMER_SCALE) /
+                ((g_monster_timer / 0xf) * (g_monster_timer / 0xf) +
+                 WORLD_MONSTER_RESPAWN_TIMER_BIAS * WORLD_MONSTER_RESPAWN_TIMER_BIAS) >
+            g_monster_timer - g_lair_or_monster_slots[s.slot_index].respawn_timestamp)
+        {
+          continue;
+        }
+#undef WORLD_MONSTER_RESPAWN_TIMER_SCALE
+#undef WORLD_MONSTER_RESPAWN_TIMER_BIAS
+      }
+
+      {
+        if (s.creature_tier != 0)
         {
           s.creature_tier = PickRandomCreatureTypeForWizardTier(s.color, s.creature_tier);
-          g_lair_or_monster_slots[s.slot_index].entry_type = s.creature_tier;
+          g_lair_or_monster_slots[s.slot_index].entry_type = (ShandalarEntryType)s.creature_tier;
 
-          s.victory_count = 0;
-          for (s.i = 0; (s.i < 1000) && (g_duel_victory_log[s.i] != '\0'); s.i = s.i + 1)
+          s.new_distance = 0;
+          for (s.i = 0; (s.i < 1000) && ((char)g_duel_victory_log[s.i] != '\0'); s.i = s.i + 1)
           {
-            if ((gs_creature_names_00591a08[s.creature_tier].metadata[3] == (g_duel_victory_log[s.i] & 0xf)) &&
+            if ((gs_creature_names_00591a08[s.creature_tier].encounter_type == ((char)g_duel_victory_log[s.i] & 0xf)) &&
                 (((int)(char)g_duel_victory_log[s.i] >> 4) == s.color))
             {
-              s.victory_count = s.victory_count + 1;
+              s.new_distance = s.new_distance + 1;
             }
           }
 
-          if (s.victory_count > 8)
+          if (s.new_distance > 8)
           {
-            s.creature_tier = -1;
-            g_lair_or_monster_slots[s.slot_index].entry_type = -1;
+            g_lair_or_monster_slots[s.slot_index].entry_type = s.creature_tier = SHANDALAR_ENTRY_NONE;
           }
+        }
+        else
+        {
+          g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_LAIR;
         }
 
         g_lair_or_monster_slots[s.slot_index].world_x = s.spawn_x * 0x20 + 0x10;
         g_lair_or_monster_slots[s.slot_index].world_y = s.spawn_y * 0x20 + 0x10;
         g_lair_or_monster_slots[s.slot_index].color = s.color;
-        ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] = 0;
-        ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 0;
+        g_lair_or_monster_slots[s.slot_index].movement_heading = 0;
+        g_lair_or_monster_slots[s.slot_index].movement_anim_frame = 0;
 
-        if (((1U << (s.selected_color & 0x1f)) & (unsigned int)gs_creature_names_00591a08[s.creature_tier].metadata[4]) &&
-            ((g_defeated_wizards_bitmap & (1U << (s.selected_color & 0x1f))) != 0))
+        if (((1U << (byte)s.color) & (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask) &&
+            ((g_defeated_wizards_bitmap & (1U << (byte)s.color)) != 0))
         {
-          s.terrain_mask = (unsigned int)gs_creature_names_00591a08[s.creature_tier].metadata[4] & ~(1U << (s.selected_color & 0x1f));
-          if ((s.terrain_mask == 0) || ((s.terrain_mask & g_defeated_wizards_bitmap) != 0))
+          s.target_dy = (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask & ~(1U << (byte)s.color);
+          if ((s.target_dy == 0) || ((g_defeated_wizards_bitmap & s.target_dy) != 0))
           {
             FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
-            g_lair_or_monster_slots[s.slot_index].entry_type = -1;
+            g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
           }
-          else
+          else if (s.target_dy != 0)
           {
-            s.color = FUN_0040dffd((int)s.terrain_mask);
-            g_lair_or_monster_slots[s.slot_index].color = s.color;
+            g_lair_or_monster_slots[s.slot_index].color = FUN_0040dffd((int)s.target_dy);
           }
         }
 
         if ((FUN_004314ca(s.spawn_x, s.spawn_y) & 0x10) != 0)
         {
           FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
-          g_lair_or_monster_slots[s.slot_index].entry_type = -1;
+          g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
         }
 
-        if ((s.slot_index == 0) && (g_current_quest_type < 0) && (g_lair_or_monster_slots[0].entry_type != -g_current_quest_type))
+        if ((s.slot_index == 0) && (g_current_quest_type < 0) &&
+            (g_lair_or_monster_slots[s.slot_index].entry_type != -g_current_quest_type))
         {
-          FreeOpeningMenuSpriteWorkEntries(0, 8);
-          g_lair_or_monster_slots[0].entry_type = -1;
+          FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
+          g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
         }
 
-        if (g_lair_or_monster_slots[s.slot_index].entry_type < 1)
-        {
-          if (g_lair_or_monster_slots[s.slot_index].entry_type != -1)
-          {
-            for (s.slot_u = 0; s.slot_u < 8; s.slot_u = s.slot_u + 1)
-            {
-              if ((s.slot_u != (unsigned int)s.slot_index) &&
-                  (g_lair_or_monster_slots[s.slot_u].entry_type != -1) &&
-                  (g_lair_or_monster_slots[s.slot_u].world_x == g_lair_or_monster_slots[s.slot_index].world_x) &&
-                  (g_lair_or_monster_slots[s.slot_u].world_y == g_lair_or_monster_slots[s.slot_index].world_y))
-              {
-                g_lair_or_monster_slots[s.slot_index].entry_type = -1;
-              }
-            }
-          }
-        }
-        else
+        if (g_lair_or_monster_slots[s.slot_index].entry_type > SHANDALAR_ENTRY_LAIR)
         {
           FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
         }
+        else if (g_lair_or_monster_slots[s.slot_index].entry_type != SHANDALAR_ENTRY_NONE)
+        {
+          for (s.terrain_mask = 0; s.terrain_mask < 8; s.terrain_mask = s.terrain_mask + 1)
+          {
+            if ((g_lair_or_monster_slots[s.terrain_mask].entry_type == SHANDALAR_ENTRY_NONE) ||
+                (s.slot_index == s.terrain_mask))
+            {
+              continue;
+            }
+            if ((g_lair_or_monster_slots[s.slot_index].world_x == g_lair_or_monster_slots[s.terrain_mask].world_x) &&
+                (g_lair_or_monster_slots[s.slot_index].world_y == g_lair_or_monster_slots[s.terrain_mask].world_y))
+            {
+              g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
+            }
+          }
+        }
+      }
+    }
 
+    s.creature_tier = g_lair_or_monster_slots[s.slot_index].entry_type;
+    if (s.creature_tier == SHANDALAR_ENTRY_NONE)
+    {
+      continue;
+    }
+
+    if (s.creature_tier > SHANDALAR_ENTRY_LAIR)
+    {
+      FUN_004bc6d3(s.creature_tier, s.slot_index, s.slot_index + 8);
+    }
+
+    s.movement_step = 1;
+    switch (gs_creature_names_00591a08[s.creature_tier].encounter_type)
+    {
+    case 0:
+      s.range = -1;
+      s.movement_step = 0;
+      break;
+    case 2:
+      s.speed = 1;
+      s.range = 0x20;
+      s.movement_step = 1;
+      break;
+    case 3:
+      s.speed = 1;
+      s.range = 0x30;
+      s.movement_step = 1;
+      break;
+    case 1:
+      s.speed = 1;
+      s.range = 0x20;
+      s.movement_step = 1;
+      break;
+    case 4:
+      s.speed = 1;
+      s.range = 0x30;
+      s.movement_step = 1;
+      break;
+    case 5:
+      s.speed = 1;
+      s.range = 0x40;
+      s.movement_step = 1;
+      break;
+    case 6:
+      s.speed = 1;
+      s.range = 0x60;
+      s.movement_step = 1;
+      break;
+    case 7:
+      s.speed = 1;
+      s.range = 0x60;
+      s.movement_step = 1;
+      break;
+    case 8:
+      s.speed = 1;
+      s.range = 0x40;
+      s.movement_step = 1;
+      break;
+    case 9:
+      s.speed = 1;
+      s.range = 0x20;
+      s.movement_step = 2;
+      break;
+    case 0xa:
+      s.speed = 1;
+      s.range = 0x30;
+      s.movement_step = 1;
+      break;
+    }
+
+    s.range = (s.range * 3) / 2;
+    if (gs_creature_names_00591a08[s.creature_tier].flags_0a & 0x200)
+    {
+      s.range = s.range << 1;
+    }
+
+    if (s.slot_index != s.nearest_slot)
+    {
+      s.range = s.range / 2;
+    }
+    s.tmp = s.distance_to_player;
+    while (abs(s.range) < s.tmp)
+    {
+      s.speed = s.speed << 1;
+      s.tmp = s.tmp / 2;
+    }
+
+    s.prev_x = g_lair_or_monster_slots[s.slot_index].world_x;
+    s.prev_y = g_lair_or_monster_slots[s.slot_index].world_y;
+
+    if (g_world_player_animation_frame != 0)
+    {
+      s.tile_dist_x = (ClampIntToRange(s.distance_to_player / 3, 0, g_shandalar_difficulty << 4) *
+                           g_neighbor_dx[g_world_player_animation_direction] +
+                       g_world_player_x) -
+                      s.prev_x;
+      s.tile_dist_y = (ClampIntToRange(s.distance_to_player / 3, 0, g_shandalar_difficulty << 4) *
+                           g_neighbor_dy[g_world_player_animation_direction] +
+                       g_world_player_y) -
+                      s.prev_y;
+    }
+    else
+    {
+      s.tile_dist_x = g_world_player_x - s.prev_x;
+      s.tile_dist_y = g_world_player_y - s.prev_y;
+    }
+
+    if (gs_creature_names_00591a08[s.creature_tier].flags_0a & 1)
+    {
+      s.movement_step = 2;
+    }
+
+    if ((s.distance_to_player < 0x40) && (s.slot_index < 7))
+    {
+      s.new_distance = 0;
+      for (s.i = 0; (s.i < 1000) && ((char)g_duel_victory_log[s.i] != '\0'); s.i = s.i + 1)
+      {
+        if ((gs_creature_names_00591a08[s.creature_tier].encounter_type == ((char)g_duel_victory_log[s.i] & 0xf)) &&
+            (((int)(char)g_duel_victory_log[s.i] >> 4) == g_lair_or_monster_slots[s.slot_index].color))
+        {
+          s.new_distance = s.new_distance + 1;
+        }
+      }
+
+      if (g_shandalar_difficulty + 3 <= s.new_distance)
+      {
+        s.tile_dist_x = -s.tile_dist_x;
+        s.tile_dist_y = -s.tile_dist_y;
+      }
+    }
+
+    if ((s.slot_index == 7) && (s.distance_to_player > 0x18))
+    {
+      s.tile_mask = FindNearestTownIndex(g_lair_or_monster_slots[s.slot_index].world_x / 0x20,
+                                         g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
+      s.tile_dist_x = g_town_slots[s.tile_mask].world_x * 0x20 + 0x10 - s.prev_x;
+      s.tile_dist_y = g_town_slots[s.tile_mask].world_y * 0x20 + 0x10 - s.prev_y;
+      s.tile_dist_x += (g_monster_timer & 0x1f) - 0x10;
+      s.tile_dist_y += ((g_monster_timer & 0x3e) >> 1) - 0x10;
+    }
+
+    s.tile_y = FUN_0043146b(
+        g_lair_or_monster_slots[s.slot_index].world_x / 0x20,
+        g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
+    s.color = FUN_005611c8(s.tile_y);
+
+    if ((gs_creature_names_00591a08[s.creature_tier].flags_0a & 0xf8) &&
+        ((gs_creature_names_00591a08[s.creature_tier].flags_0a & (s.color << 3)) != 0) &&
+        (s.speed > 1))
+    {
+      s.speed = s.speed / 2;
+    }
+
+    s.can_run_movement = 0;
+    s.tile_dist_x = s.tile_dist_x + g_neighbor_dx[g_lair_or_monster_slots[s.slot_index].movement_heading] * 8;
+    s.tile_dist_y = s.tile_dist_y + g_neighbor_dy[g_lair_or_monster_slots[s.slot_index].movement_heading] * 8;
+
+    if (abs(s.tile_dist_y) * 2 < abs(s.tile_dist_x))
+    {
+      if (s.tile_dist_x > 0)
+      {
+        s.can_run_movement = 3;
+      }
+      else
+      {
+        s.can_run_movement = 7;
+      }
+    }
+
+    if (abs(s.tile_dist_x) * 2 < abs(s.tile_dist_y))
+    {
+      if (s.tile_dist_y > 0)
+      {
+        s.can_run_movement = 5;
+      }
+      else
+      {
         s.can_run_movement = 1;
+      }
+    }
+
+    if (s.can_run_movement == 0)
+    {
+      if (s.tile_dist_x > 0)
+      {
+        if (s.tile_dist_y > 0)
+        {
+          s.can_run_movement = 4;
+        }
+        else
+        {
+          s.can_run_movement = 2;
+        }
+      }
+      else
+      {
+        if (s.tile_dist_y > 0)
+        {
+          s.can_run_movement = 6;
+        }
+        else
+        {
+          s.can_run_movement = 8;
+        }
+      }
+    }
+
+    if (((g_monster_timer + s.slot_index) & 3) == 0)
+    {
+      g_lair_or_monster_slots[s.slot_index].movement_heading = (signed char)s.can_run_movement;
+    }
+    else
+    {
+      s.can_run_movement = g_lair_or_monster_slots[s.slot_index].movement_heading;
+    }
+
+    g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + g_neighbor_dx[s.can_run_movement] * 4;
+    g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y + g_neighbor_dy[s.can_run_movement] * 4;
+
+    s.tile_x = 1;
+    for (s.i = 0; s.i < 6; s.i = s.i + 1)
+    {
+      if ((g_lair_or_monster_slots[s.i].entry_type == SHANDALAR_ENTRY_LAIR) ||
+          (s.i == s.slot_index) ||
+          (s.distance_to_player < 0x20))
+      {
+        continue;
+      }
+
+      s.victory_count = FUN_004ecf30(g_lair_or_monster_slots[s.slot_index].world_x - g_lair_or_monster_slots[s.i].world_x,
+                                     g_lair_or_monster_slots[s.slot_index].world_y - g_lair_or_monster_slots[s.i].world_y);
+      if (s.victory_count < 0x20)
+      {
+        if (s.victory_count < FUN_004ecf30(s.prev_x - g_lair_or_monster_slots[s.i].world_x,
+                                           s.prev_y - g_lair_or_monster_slots[s.i].world_y))
+        {
+          s.tile_x = 0;
+        }
+      }
+    }
+
+    if (s.tile_x == 0)
+    {
+      g_lair_or_monster_slots[s.slot_index].world_x = s.prev_x;
+      g_lair_or_monster_slots[s.slot_index].world_y = s.prev_y;
+      g_lair_or_monster_slots[s.slot_index].movement_anim_frame = 0;
+      continue;
+    }
+
+    if ((gs_creature_names_00591a08[s.creature_tier].flags_0a & 4) && ((g_monster_timer & 0x3fU) == 0))
+    {
+      if (FUN_00522508(2) != 0)
+      {
+        if (FUN_00522508(2) != 0)
+        {
+          g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + 0x20;
+        }
+        else
+        {
+          g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x - 0x20;
+        }
+      }
+      else
+      {
+        if (FUN_00522508(2) != 0)
+        {
+          g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y + 0x20;
+        }
+        else
+        {
+          g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y - 0x20;
+        }
+      }
+    }
+
+    s.tile_y = FUN_0043146b(
+        g_lair_or_monster_slots[s.slot_index].world_x / 0x20,
+        g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
+    s.color = FUN_005611c8(s.tile_y);
+
+    if (((s.color & (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask) == 0) &&
+        (s.range >= 0) && (s.slot_index != 7))
+    {
+      g_lair_or_monster_slots[s.slot_index].world_x = s.prev_x;
+      g_lair_or_monster_slots[s.slot_index].world_y = s.prev_y;
+      s.tile_y = FUN_0043146b(s.prev_x / 0x20, s.prev_y / 0x20);
+      s.color = FUN_005611c8(s.tile_y);
+      g_lair_or_monster_slots[s.slot_index].movement_anim_frame = 0;
+
+      if ((s.color & (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask) == 0)
+      {
+        FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
+        g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
       }
     }
     else
     {
-      s.can_run_movement = 1;
+      g_lair_or_monster_slots[s.slot_index].world_x = g_neighbor_dx[s.can_run_movement] * s.movement_step + s.prev_x;
+      g_lair_or_monster_slots[s.slot_index].world_y = g_neighbor_dy[s.can_run_movement] * s.movement_step + s.prev_y;
+      g_lair_or_monster_slots[s.slot_index].movement_heading = (signed char)s.can_run_movement;
+      g_lair_or_monster_slots[s.slot_index].movement_anim_frame++;
+      if (g_lair_or_monster_slots[s.slot_index].movement_anim_frame > 4)
+      {
+        g_lair_or_monster_slots[s.slot_index].movement_anim_frame = 1;
+      }
     }
 
-    if (s.can_run_movement)
+    if (FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+                     g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y) <
+        ((g_lair_or_monster_slots[s.slot_index].entry_type == SHANDALAR_ENTRY_LAIR) ? 0x1a : 0x10))
     {
-      s.creature_tier = g_lair_or_monster_slots[s.slot_index].entry_type;
-      if (s.creature_tier != -1)
+      SaveGameToSlot(3);
+      s.slot_u = RunWorldLairMonsterEncounter(s.slot_index, g_lair_or_monster_slots[s.slot_index].color);
+      g_lair_or_monster_slots[s.slot_index].respawn_timestamp = g_monster_timer;
+      RefreshAdventureInterfaceLayout();
+      if ((s.slot_index == 7) && (s.slot_u <= 0))
       {
-        if (s.creature_tier > 0)
-        {
-          FUN_004bc6d3(s.creature_tier, s.slot_index, s.slot_index + 8);
-        }
-
-        s.speed = 1;
-        switch (gs_creature_names_00591a08[s.creature_tier].metadata[3])
-        {
-        case 0:
-          s.range = -1;
-          s.speed = 0;
-          break;
-        case 1:
-        case 2:
-          s.range = 0x20;
-          break;
-        case 3:
-        case 4:
-        case 0xc:
-          s.range = 0x30;
-          break;
-        case 5:
-        case 0xb:
-          s.range = 0x40;
-          break;
-        case 6:
-        case 0xa:
-          s.range = 0x60;
-          break;
-        case 9:
-          s.range = 0x20;
-          s.speed = 2;
-          break;
-        default:
-          s.range = 0;
-          break;
-        }
-
-        s.range = (s.range * 3) / 2;
-        if ((gs_creature_names_00591a08[s.creature_tier].metadata[0xb] & 2U) != 0)
-        {
-          s.range = s.range << 1;
-        }
-
-        s.tmp = s.distance_to_player;
-        if (s.slot_index != s.nearest_slot)
-        {
-          s.range = s.range / 2;
-        }
-        while (abs(s.range) < s.tmp)
-        {
-          s.speed = s.speed << 1;
-          s.tmp = s.tmp / 2;
-        }
-
-        s.prev_x = g_lair_or_monster_slots[s.slot_index].world_x;
-        s.prev_y = g_lair_or_monster_slots[s.slot_index].world_y;
-
-        if (DAT_0073ea70[7] == 0)
-        {
-          s.target_dx = g_world_player_x - s.prev_x;
-          s.target_dy = g_world_player_y - s.prev_y;
-        }
-        else
-        {
-          s.tmp = ClampIntToRange(s.distance_to_player / 3, 0, g_shandalar_difficulty << 4);
-          s.target_dx = (s.tmp * g_neighbor_dx[DAT_0073ea70[5]] + g_world_player_x) - s.prev_x;
-          s.tmp = ClampIntToRange(s.distance_to_player / 3, 0, g_shandalar_difficulty << 4);
-          s.target_dy = (s.tmp * g_neighbor_dy[DAT_0073ea70[5]] + g_world_player_y) - s.prev_y;
-        }
-
-        if ((gs_creature_names_00591a08[s.creature_tier].metadata[10] & 1U) != 0)
-        {
-          s.speed = 2;
-        }
-
-        if ((s.distance_to_player < 0x40) && (s.slot_index < 7))
-        {
-          s.victory_count = 0;
-          for (s.i = 0; (s.i < 1000) && (g_duel_victory_log[s.i] != '\0'); s.i = s.i + 1)
-          {
-            if ((gs_creature_names_00591a08[s.creature_tier].metadata[3] == (g_duel_victory_log[s.i] & 0xf)) &&
-                (((int)(char)g_duel_victory_log[s.i] >> 4) == g_lair_or_monster_slots[s.slot_index].color))
-            {
-              s.victory_count = s.victory_count + 1;
-            }
-          }
-
-          if (g_shandalar_difficulty + 3 <= s.victory_count)
-          {
-            s.target_dx = -s.target_dx;
-            s.target_dy = -s.target_dy;
-          }
-        }
-
-        if ((s.slot_index == 7) && (s.distance_to_player > 0x18))
-        {
-          s.tmp = FindNearestTownIndex((int)((g_lair_or_monster_slots[7].world_x + ((g_lair_or_monster_slots[7].world_x >> 0x1f) & 0x1fU)) >> 5),
-                                       (int)((g_lair_or_monster_slots[7].world_y + ((g_lair_or_monster_slots[7].world_y >> 0x1f) & 0x1fU)) >> 5));
-          s.target_dx = (g_town_slots[s.tmp].world_x * 0x20 - s.prev_x) + (g_monster_timer & 0x1fU);
-          s.target_dy = (g_town_slots[s.tmp].world_y * 0x20 - s.prev_y) + ((g_monster_timer & 0x3eU) >> 1);
-        }
-
-        s.terrain_mask = FUN_005611c8(FUN_0043146b(
-            (int)((g_lair_or_monster_slots[s.slot_index].world_x + ((g_lair_or_monster_slots[s.slot_index].world_x >> 0x1f) & 0x1fU)) >> 5),
-            (int)((g_lair_or_monster_slots[s.slot_index].world_y + ((g_lair_or_monster_slots[s.slot_index].world_y >> 0x1f) & 0x1fU)) >> 5)));
-
-        if (((gs_creature_names_00591a08[s.creature_tier].metadata[10] & 0xf8U) != 0) &&
-            ((*(unsigned int *)(gs_creature_names_00591a08[s.creature_tier].metadata + 10) & (s.terrain_mask << 3)) != 0) &&
-            (s.speed > 1))
-        {
-          s.speed = s.speed / 2;
-        }
-
-        s.move_dir = 0;
-        s.target_dx = s.target_dx + g_neighbor_dx[(signed char)g_lair_or_monster_slots[s.slot_index].movement_heading] * 8;
-        s.target_dy = s.target_dy + g_neighbor_dy[(signed char)g_lair_or_monster_slots[s.slot_index].movement_heading] * 8;
-
-        if (abs(s.target_dy) * 2 < abs(s.target_dx))
-        {
-          if (s.target_dx < 1)
-          {
-            s.move_dir = 7;
-          }
-          else
-          {
-            s.move_dir = 3;
-          }
-        }
-
-        if (abs(s.target_dx) * 2 < abs(s.target_dy))
-        {
-          if (s.target_dy < 1)
-          {
-            s.move_dir = 1;
-          }
-          else
-          {
-            s.move_dir = 5;
-          }
-        }
-
-        if (s.move_dir == 0)
-        {
-          if (s.target_dx < 1)
-          {
-            if (s.target_dy < 1)
-            {
-              s.move_dir = 8;
-            }
-            else
-            {
-              s.move_dir = 6;
-            }
-          }
-          else if (s.target_dy < 1)
-          {
-            s.move_dir = 2;
-          }
-          else
-          {
-            s.move_dir = 4;
-          }
-        }
-
-        if (((g_monster_timer + s.slot_index) & 3) == 0)
-        {
-          ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] = (unsigned char)s.move_dir;
-        }
-        else
-        {
-          s.move_dir = (signed char)((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0];
-        }
-
-        g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + g_neighbor_dx[s.move_dir] * 4;
-        g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y + g_neighbor_dy[s.move_dir] * 4;
-
-        s.tmp = 1;
-        for (s.i = 0; s.i < 6; s.i = s.i + 1)
-        {
-          if ((s.i != s.slot_index) && (g_lair_or_monster_slots[s.i].entry_type != 0) && (s.distance_to_player > 0x1f))
-          {
-            s.new_distance = FUN_004ecf30(g_lair_or_monster_slots[s.slot_index].world_x - g_lair_or_monster_slots[s.i].world_x,
-                                          g_lair_or_monster_slots[s.slot_index].world_y - g_lair_or_monster_slots[s.i].world_y);
-            if (s.new_distance < 0x20)
-            {
-              s.color = FUN_004ecf30(s.prev_x - g_lair_or_monster_slots[s.i].world_x,
-                                     s.prev_y - g_lair_or_monster_slots[s.i].world_y);
-              if (s.new_distance < s.color)
-              {
-                s.tmp = 0;
-              }
-            }
-          }
-        }
-
-        if (s.tmp != 0)
-        {
-          if (((gs_creature_names_00591a08[s.creature_tier].metadata[10] & 4U) != 0) && ((g_monster_timer & 0x3fU) == 0))
-          {
-            s.color = FUN_00522508(2);
-            if (s.color == 0)
-            {
-              s.color = FUN_00522508(2);
-              if (s.color == 0)
-              {
-                g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y - 0x20;
-              }
-              else
-              {
-                g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y + 0x20;
-              }
-            }
-            else
-            {
-              s.color = FUN_00522508(2);
-              if (s.color == 0)
-              {
-                g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x - 0x20;
-              }
-              else
-              {
-                g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + 0x20;
-              }
-            }
-          }
-
-          s.terrain_mask = FUN_005611c8(FUN_0043146b(
-              (int)((g_lair_or_monster_slots[s.slot_index].world_x + ((g_lair_or_monster_slots[s.slot_index].world_x >> 0x1f) & 0x1fU)) >> 5),
-              (int)((g_lair_or_monster_slots[s.slot_index].world_y + ((g_lair_or_monster_slots[s.slot_index].world_y >> 0x1f) & 0x1fU)) >> 5)));
-
-          if (((s.terrain_mask & (unsigned int)gs_creature_names_00591a08[s.creature_tier].metadata[4]) == 0) &&
-              (s.range >= 0) && (s.slot_index != 7))
-          {
-            g_lair_or_monster_slots[s.slot_index].world_x = s.prev_x;
-            g_lair_or_monster_slots[s.slot_index].world_y = s.prev_y;
-            s.terrain_mask = FUN_005611c8(FUN_0043146b((int)((s.prev_x + ((s.prev_x >> 0x1f) & 0x1fU)) >> 5),
-                                                       (int)((s.prev_y + ((s.prev_y >> 0x1f) & 0x1fU)) >> 5)));
-            ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 0;
-
-            if ((s.terrain_mask & (unsigned int)gs_creature_names_00591a08[s.creature_tier].metadata[4]) == 0)
-            {
-              FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
-              g_lair_or_monster_slots[s.slot_index].entry_type = -1;
-            }
-          }
-          else
-          {
-            g_lair_or_monster_slots[s.slot_index].world_x = g_neighbor_dx[s.move_dir] * s.speed + s.prev_x;
-            g_lair_or_monster_slots[s.slot_index].world_y = g_neighbor_dy[s.move_dir] * s.speed + s.prev_y;
-            ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] = (unsigned char)s.move_dir;
-            ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] =
-                ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] + 1;
-            if (((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] > 4)
-            {
-              ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 1;
-            }
-          }
-
-          s.new_distance = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
-                                        g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
-          if (s.new_distance < ((g_lair_or_monster_slots[s.slot_index].entry_type == 0) ? 0x1a : 0x10))
-          {
-            SaveGameToSlot(3);
-            s.tmp = FUN_004f2ec0(s.slot_index, g_lair_or_monster_slots[s.slot_index].color);
-            g_lair_or_monster_slots[s.slot_index].respawn_timestamp = g_monster_timer;
-            RefreshAdventureInterfaceLayout();
-            if ((s.slot_index == 7) && (s.tmp <= 0))
-            {
-              FUN_00562169();
-            }
-            else if (s.slot_index == 7)
-            {
-              FUN_004290e2(0xd, g_lair_or_monster_slots[s.slot_index].color);
-              g_siege_indicator = 0;
-            }
-            FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
-            g_lair_or_monster_slots[s.slot_index].entry_type = -1;
-            EnsureAdvfac64Loaded(0);
-            g_monster_timer = g_monster_timer | 0x1f;
-            SaveGameToSlot(3);
-          }
-          else if ((s.creature_tier != 0) &&
-                   (((signed char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] != 0) &&
-                   (s.distance_to_player < 0x50) && (FUN_00522508(s.distance_to_player) < 4))
-          {
-            FUN_005614c3(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
-                         g_neighbor_dx[((signed char)((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] + 2U) &
-                                       7] *
-                             100);
-          }
-        }
-        else
-        {
-          g_lair_or_monster_slots[s.slot_index].world_x = s.prev_x;
-          g_lair_or_monster_slots[s.slot_index].world_y = s.prev_y;
-          ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 0;
-        }
+        FUN_00562169();
       }
+      else if (s.slot_index == 7)
+      {
+        FUN_004290e2(0xd, g_lair_or_monster_slots[s.slot_index].color);
+        g_siege_indicator = 0;
+      }
+      FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
+      g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
+      s.can_run_movement = 0;
+      EnsureAdvfac64Loaded(0);
+      g_monster_timer = g_monster_timer | 0x1f;
+      SaveGameToSlot(3);
+    }
+    else if ((s.creature_tier != 0) &&
+             (g_lair_or_monster_slots[s.slot_index].movement_anim_frame != 0) &&
+             (s.distance_to_player < 0x50) && (FUN_00522508(s.distance_to_player) < 4))
+    {
+      FUN_005614c3(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
+                   g_neighbor_dx[(g_lair_or_monster_slots[s.slot_index].movement_heading + 2U) & 7] *
+                       100);
     }
   }
 }
@@ -1120,7 +1178,7 @@ void FUN_00562169(void)
 
   g_siege_indicator = 0;
 
-  if (g_lair_or_monster_slots[7].entry_type == -1)
+  if (g_lair_or_monster_slots[7].entry_type == SHANDALAR_ENTRY_NONE)
   {
     return;
   }
@@ -1196,7 +1254,7 @@ void FUN_00562169(void)
   WaitForInputEventUnlessBlocked();
 
   FreeOpeningMenuSpriteWorkEntries(7, 0xf);
-  g_lair_or_monster_slots[7].entry_type = -1;
+  g_lair_or_monster_slots[7].entry_type = SHANDALAR_ENTRY_NONE;
   ShowStatsWindow(3, wizard_color);
   RefreshAdventureInterfaceLayout();
   g_siege_indicator = 0;

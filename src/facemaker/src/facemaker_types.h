@@ -5,15 +5,15 @@
 
 typedef struct FacemakerWindowBounds
 {
-  int page_number;
-  int clip_left;
-  int clip_top;
-  int max_x;
-  int max_y;
-  int draw_shadow_enabled;
-  int text_color;
-  int unk_1c;
-  int font_slot;
+  int page_number;         // 0x0
+  int clip_left;           // 0x4
+  int clip_top;            // 0x8
+  int max_x;               // 0xc
+  int max_y;               // 0x10
+  int draw_shadow_enabled; // 0x14
+  int text_color;          // 0x18
+  int unk_1c;              // 0x1c
+  int font_slot;           // 0x20
 } FacemakerWindowBounds;
 
 typedef union FontSlotData

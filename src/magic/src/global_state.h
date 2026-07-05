@@ -22,10 +22,10 @@ GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
 #define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
 
 #define IS_SICK(player_, card_) (((PLAYER_CARD_INSTANCE(player_, card_).state & STATE_SUMMONSICK_BOTH) != 0) && \
-             ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) != 0))
+                                 ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) != 0))
 
 #define IS_NOT_SICK(player_, card_) (((PLAYER_CARD_INSTANCE(player_, card_).state & STATE_SUMMONSICK_BOTH) == 0) || \
-             ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) == 0))
+                                     ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) == 0))
 
 #define CAN_TAP(player_, card_) (IS_NOT_SICK(player_, card_) && ((PLAYER_CARD_INSTANCE(player_, card).state & STATE_TAPPED) == 0))
 
@@ -73,47 +73,114 @@ typedef struct
   int value_002c;
 } save_value_002c_t;
 
+typedef enum
+{
+  SHANDALAR_ENTRY_NONE = -1,
+  SHANDALAR_ENTRY_LAIR = 0x0,
+  SHANDALAR_ENTRY_WITCH = 0x1,
+  SHANDALAR_ENTRY_UNDEAD_KNIGHT = 0x2,
+  SHANDALAR_ENTRY_WARLOCK = 0x3,
+  SHANDALAR_ENTRY_VAMPIRELORD = 0x4,
+  SHANDALAR_ENTRY_NETHER_FIEND = 0x5,
+  SHANDALAR_ENTRY_NECROMANCER = 0x6,
+  SHANDALAR_ENTRY_GREATER_LICH = 0x7,
+  SHANDALAR_ENTRY_CLERIC = 0x8,
+  SHANDALAR_ENTRY_PRIESTESS = 0x9,
+  SHANDALAR_ENTRY_CRUSADER = 0xa,
+  SHANDALAR_ENTRY_PALADIN = 0xb,
+  SHANDALAR_ENTRY_ARCH_ANGEL = 0xc,
+  SHANDALAR_ENTRY_HIGH_PRIEST = 0xd,
+  SHANDALAR_ENTRY_SAINTED_ONE = 0xe,
+  SHANDALAR_ENTRY_SEER = 0xf,
+  SHANDALAR_ENTRY_MERFOLK_SHAMAN = 0x10,
+  SHANDALAR_ENTRY_CONJURER = 0x11,
+  SHANDALAR_ENTRY_SEA_DRAGON = 0x12,
+  SHANDALAR_ENTRY_SHAPESHIFTER = 0x13,
+  SHANDALAR_ENTRY_THOUGHT_INVOKER = 0x14,
+  SHANDALAR_ENTRY_ASTRAL_VISIONARY = 0x15,
+  SHANDALAR_ENTRY_DRUID = 0x16,
+  SHANDALAR_ENTRY_ELVISH_MAGI = 0x17,
+  SHANDALAR_ENTRY_ENCHANTRESS = 0x18,
+  SHANDALAR_ENTRY_FOREST_DRAGON = 0x19,
+  SHANDALAR_ENTRY_BEASTMASTER = 0x1a,
+  SHANDALAR_ENTRY_SUMMONER = 0x1b,
+  SHANDALAR_ENTRY_GREAT_DRUID = 0x1c,
+  SHANDALAR_ENTRY_SORCERESS = 0x1d,
+  SHANDALAR_ENTRY_SORCERER = 0x1e,
+  SHANDALAR_ENTRY_TROLL_SHAMAN = 0x1f,
+  SHANDALAR_ENTRY_GOBLIN_LORD = 0x20,
+  SHANDALAR_ENTRY_HYDRA = 0x21,
+  SHANDALAR_ENTRY_WAR_MAGE = 0x22,
+  SHANDALAR_ENTRY_DRAGON_LORD = 0x23,
+  SHANDALAR_ENTRY_TUSK_GUARDIAN = 0x24,
+  SHANDALAR_ENTRY_SEDGE_BEAST = 0x25,
+  SHANDALAR_ENTRY_APE_LORD = 0x26,
+  SHANDALAR_ENTRY_CENTAUR_SHAMAN = 0x27,
+  SHANDALAR_ENTRY_WINGED_STALLION = 0x28,
+  SHANDALAR_ENTRY_FUNGUS_MASTER = 0x29,
+  SHANDALAR_ENTRY_CENTAUR_WARCHIEF = 0x2a,
+  SHANDALAR_ENTRY_MIND_STEALER = 0x2b,
+  SHANDALAR_ENTRY_LORD_OF_FATE = 0x2c,
+  SHANDALAR_ENTRY_ELEMENTALIST = 0x2d,
+  SHANDALAR_ENTRY_AGA_GALNEER = 0x2e,
+  SHANDALAR_ENTRY_ALT_A_KESH = 0x2f,
+  SHANDALAR_ENTRY_QUELTOSH = 0x30,
+  SHANDALAR_ENTRY_SALTREM_TOR = 0x31,
+  SHANDALAR_ENTRY_MANDURANG = 0x32,
+  SHANDALAR_ENTRY_WHIM = 0x33,
+  SHANDALAR_ENTRY_PRISMAT = 0x34,
+  SHANDALAR_ENTRY_DRACUR = 0x35,
+  SHANDALAR_ENTRY_KISKA_RA = 0x36,
+  SHANDALAR_ENTRY_ARZAKON = 0x37,
+  SHANDALAR_ENTRY_ARZAKON_COPY = 0x38
+} ShandalarEntryType;
 
 typedef struct
 {
-  int entry_type;        // +0x00 (0=lair, 1..=monster type)
-  int world_x;           // +0x04
-  int world_y;           // +0x08
-  int color;             // +0x0c
-  int movement_heading;  // +0x10
-  int respawn_timestamp; // +0x14
-} ShandalarCardSlot;
-STATIC_ASSERT(sizeof(ShandalarCardSlot) == 0x18, shandalar_card_slot_wrong_size);
+  ShandalarEntryType entry_type;   // +0x00
+  int world_x;                     // +0x04
+  int world_y;                     // +0x08
+  int color;                       // +0x0c
+  signed char movement_heading;    // +0x10
+  signed char movement_anim_frame; // +0x11
+  unsigned char pad_0012[2];       // +0x12
+  int respawn_timestamp;           // +0x14
+} ShandalarMonsterSlot;
+STATIC_ASSERT(sizeof(ShandalarMonsterSlot) == 0x18, shandalar_card_slot_wrong_size);
 
 typedef struct
 {
-  int card_slot_1;            // +0x00
-  int card_slot_2;            // +0x04
-  int card_slot_3;            // +0x08
-  int card_in_effect;         // +0x0c
-  int world_x;                // +0x10
-  int world_y;                // +0x14
-  int north_of_town_index;    // +0x18
-  unsigned char color;        // +0x1c
+  int card_slot_1;             // +0x00
+  int card_slot_2;             // +0x04
+  int card_slot_3;             // +0x08
+  int card_in_effect;          // +0x0c
+  int world_x;                 // +0x10
+  int world_y;                 // +0x14
+  int north_of_town_index;     // +0x18
+  unsigned char color;         // +0x1c
   unsigned char monster_flags; // +0x1d
-  unsigned char pad_1e;       // +0x1e
-  unsigned char pad_1f;       // +0x1f
-  int clues_bitmap;           // +0x20
-  unsigned int rules_bitmap;  // +0x24
-  int times_entered;          // +0x28
-  int reserved_2c;            // +0x2c
+  unsigned char pad_1e;        // +0x1e
+  unsigned char pad_1f;        // +0x1f
+  int clues_bitmap;            // +0x20
+  unsigned int rules_bitmap;   // +0x24
+  int times_entered;           // +0x28
+  int reserved_2c;             // +0x2c
 } ShandalarEncounterSlot;
 STATIC_ASSERT(sizeof(ShandalarEncounterSlot) == 0x30, shandalar_encounter_slot_wrong_size);
 
 typedef struct
 {
-  int location_type;           // +0x00
-  int world_x;                 // +0x04
-  int world_y;                 // +0x08
-  int trade_color_and_type;    // +0x0c
-  int status_and_ruling_wizard; // +0x10
-  int card_slot_1;             // +0x14
-  unsigned char data_18_to_63[0x4c];
+  int location_type;              // +0x00
+  int world_x;                    // +0x04
+  int world_y;                    // +0x08
+  int trade_color_and_type;       // +0x0c
+  int status_and_ruling_wizard;   // +0x10
+  int card_slots[8];              // +0x14
+  int card_restock_timers[8];     // +0x34
+  int quest_restock_timer;        // +0x54
+  int special_card_restock_timer; // +0x58
+  int visit_count;                // +0x5c
+  int last_visit_timer;           // +0x60
 } WorldNode;
 STATIC_ASSERT(sizeof(WorldNode) == 100, world_node_wrong_size);
 
@@ -346,7 +413,7 @@ GLOBAL_STATE_EXTERN int trigger_cause_controller;
 // GLOBAL: SHANDALAR 0x007bf4bc
 GLOBAL_STATE_EXTERN int DAT_007ab2bc;
 // GLOBAL: MAGIC 0x007ab2cc
-GLOBAL_STATE_EXTERN int (__cdecl *DAT_007ab2cc)(int, int);
+GLOBAL_STATE_EXTERN int(__cdecl *DAT_007ab2cc)(int, int);
 
 // GLOBAL: MAGIC 0x008cee74
 // GLOBAL: SHANDALAR 0x008e2fc4
@@ -462,7 +529,7 @@ GLOBAL_STATE_EXTERN int unk_008cc844;
 
 // GLOBAL: MAGIC 0x0093f4b8
 // GLOBAL: SHANDALAR 0x0073c00c
-GLOBAL_STATE_EXTERN unsigned int g_card_count;
+GLOBAL_STATE_EXTERN int g_card_count;
 
 // GLOBAL: MAGIC 0x008b2880
 // GLOBAL: SHANDALAR 0x008c6a30
@@ -634,7 +701,7 @@ GLOBAL_STATE_EXTERN int DAT_00925bf8;
 
 // GLOBAL: MAGIC 0x0093d844
 // GLOBAL: SHANDALAR 0x00951964
-GLOBAL_STATE_EXTERN void* DAT_0093d844;
+GLOBAL_STATE_EXTERN void *DAT_0093d844;
 
 // GLOBAL: MAGIC 0x0089652c
 // GLOBAL: SHANDALAR 0x008aa72c
@@ -797,7 +864,7 @@ GLOBAL_STATE_EXTERN int g_current_quest_type;
 
 // GLOBAL: MAGIC 0x00715e40
 // GLOBAL: SHANDALAR 0x0078ce20
-GLOBAL_STATE_EXTERN ShandalarCardSlot g_lair_or_monster_slots[8];
+GLOBAL_STATE_EXTERN ShandalarMonsterSlot g_lair_or_monster_slots[8];
 
 // GLOBAL: MAGIC 0x00715f00
 // GLOBAL: SHANDALAR 0x0078cee4
@@ -1000,18 +1067,18 @@ GLOBAL_STATE_EXTERN int Gold;
 
 #ifdef GLOBAL_STATE_IMPL
 GLOBAL_STATE_EXTERN shandalar_worldmagic_t Scards[12] = {
-  { 0x01af, 800, 0, 0 },
-  { 0x0072, 1000, 0, 0 },
-  { 0x003e, 700, 0, 0 },
-  { 0x0018, 200, 0, 0 },
-  { 0x0085, 800, 0, 0 },
-  { 0x0019, 1500, 0, 0 },
-  { 0x0079, 400, 0, 0 },
-  { 0x011d, 500, 0, 0 },
-  { 0x0091, 600, 0, 0 },
-  { 0x001a, 300, 0, 0 },
-  { 0x00cd, 600, 0, 0 },
-  { 0x001c, 1200, 0, 0 },
+    {0x01af, 800, 0, 0},
+    {0x0072, 1000, 0, 0},
+    {0x003e, 700, 0, 0},
+    {0x0018, 200, 0, 0},
+    {0x0085, 800, 0, 0},
+    {0x0019, 1500, 0, 0},
+    {0x0079, 400, 0, 0},
+    {0x011d, 500, 0, 0},
+    {0x0091, 600, 0, 0},
+    {0x001a, 300, 0, 0},
+    {0x00cd, 600, 0, 0},
+    {0x001c, 1200, 0, 0},
 };
 #else
 

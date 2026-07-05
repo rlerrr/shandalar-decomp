@@ -3,14 +3,6 @@
 #include "global_other.h"
 #include "global_state.h"
 
-#ifdef SHANDALAR
-// GLOBAL: SHANDALAR 0x005863ac
-int DAT_0057d9e4 = 5;
-#else
-// GLOBAL: MAGIC 0x0057d9e4
-int DAT_0057d9e4;
-#endif
-
 // FUNCTION: MAGIC 0x004a7813
 // FUNCTION: SHANDALAR 0x00559999
 void InitializeDuelUiGlobalIds(void)

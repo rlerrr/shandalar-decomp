@@ -256,6 +256,63 @@ int GetFontCharWidth(int font_slot, char ch_value)
   return (unsigned int)font->unk_05 + (unsigned int)font->data.bitmap.glyph_advance[ch];
 }
 
+// FUNCTION: SHANDALAR 0x0057acb0
+int MeasureTextSpanWidth(FacemakerWindowBounds *window, char *text, int length)
+{
+  char ch;
+  unsigned char glyph_width;
+  unsigned char glyph_spacing;
+  FontSlot *font;
+  HGDIOBJ old_font;
+  HDC hdc;
+  int char_width;
+  int text_width;
+  ABC abc;
+
+  text_width = 0;
+  font = &g_font_slots[window->font_slot];
+  if (font->font_loaded == 0)
+  {
+    ch = *text;
+    while ((ch != '\0') && (length-- != 0))
+    {
+      ch = *text;
+      text++;
+      if (font->font_loaded == 0)
+      {
+        glyph_width = font->glyph_width;
+        if (glyph_width == 0)
+        {
+          glyph_width = font->data.bitmap.glyph_advance[(unsigned char)ch];
+          glyph_spacing = font->unk_05;
+        }
+        else
+        {
+          glyph_spacing = font->unk_05;
+        }
+        char_width = (unsigned int)glyph_spacing + (unsigned int)glyph_width;
+      }
+      else
+      {
+        hdc = GetDC((HWND)0);
+        SelectObject(hdc, font->hfont);
+        GetCharABCWidthsA(hdc, ch, ch, &abc);
+        ReleaseDC((HWND)0, hdc);
+        char_width = abc.abcB + abc.abcC + abc.abcA;
+      }
+      text_width += char_width;
+      ch = *text;
+    }
+    return text_width;
+  }
+
+  hdc = g_graphics_pages[window->page_number]->hTempDC;
+  old_font = SelectObject(hdc, font->hfont);
+  GetTextExtentPoint32A(hdc, text, length, (LPSIZE)&abc);
+  SelectObject(hdc, old_font);
+  return abc.abcA;
+}
+
 // FUNCTION: SHANDALAR 0x0057adf0
 int GetFontLineHeight(int font_slot)
 {

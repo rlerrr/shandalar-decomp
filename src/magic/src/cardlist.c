@@ -57,6 +57,10 @@ int DAT_00638c6c;
 // GLOBAL: MAGIC 0x00638c84
 int DAT_00638c84;
 
+// GLOBAL: MAGIC 0x00896714
+// GLOBAL: SHANDALAR 0x008aa914
+HWND DAT_00896714;
+
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern CRITICAL_SECTION DAT_009266b0;
@@ -70,13 +74,10 @@ void FUN_0055b9f0(int dc, int *rect, int value);
 #ifdef SHANDALAR
 #define SHOWLIST_CARD_BACK_CSVID (*(int *)&gs_phasebar_your_main_postcombat_00926670[0x60])
 #define SHOWLIST_MOUSE_MODE (*(int *)&DAT_0091c970.pad_0000[0x28])
-#define SHOWLIST_HINT_WINDOW (*(HWND *)&gs_phasebar_choose_attackers_008966e0[0x34])
 #else
-extern int DAT_00896714;
 extern int DAT_0091c998;
 #define SHOWLIST_CARD_BACK_CSVID unk_009266ac
 #define SHOWLIST_MOUSE_MODE DAT_0091c998
-#define SHOWLIST_HINT_WINDOW ((HWND)DAT_00896714)
 #endif
 
 // FUNCTION: MAGIC 0x0049fd0c
@@ -121,7 +122,7 @@ void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDI
 
   if (pen3)
     DeleteObject(pen3);
-    
+
   if (brush2)
     DeleteObject(brush2);
 }
@@ -578,7 +579,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
       locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
       if ((int)DAT_00638c08 != (int)card_window)
       {
-        SendMessageA(SHOWLIST_HINT_WINDOW, 0x401, locals.csvid, 0);
+        SendMessageA(DAT_00896714, 0x401, locals.csvid, 0);
         DAT_00638c08 = (int)card_window;
       }
     }
@@ -603,7 +604,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     locals.csvid = GetWindowLongA(card_window, unk_0055e0c0);
     if (SHOWLIST_MOUSE_MODE != 2)
     {
-      SendMessageA(SHOWLIST_HINT_WINDOW, 0x401, locals.csvid, 0);
+      SendMessageA(DAT_00896714, 0x401, locals.csvid, 0);
     }
     return 0;
 
@@ -702,32 +703,29 @@ void FUN_0055b9f0(int dc, int *rect, int value)
   struct
   {
     char text[12];
-    int text_x;
     int text_y;
+    int text_x;
     int saved_dc;
   } s;
-  size_t text_len;
 
-  if (dc != 0 && rect != NULL)
-  {
-    s.saved_dc = SaveDC((HDC)dc);
-    SetMapMode((HDC)dc, 8);
-    SetWindowExtEx((HDC)dc, 100, 0x8c, NULL);
-    SetViewportExtEx((HDC)dc, rect[2] - rect[0], rect[3] - rect[1], NULL);
-    SetWindowOrgEx((HDC)dc, 0, 0, NULL);
-    SetViewportOrgEx((HDC)dc, rect[0], rect[1], NULL);
-    sprintf(s.text, "%d", value);
-    SelectObject((HDC)dc, (HGDIOBJ)global_smallcard_pt_font);
-    SetTextAlign((HDC)dc, 10);
-    SetBkMode((HDC)dc, 1);
-    s.text_x = 100;
-    s.text_y = 0x8c;
-    SetTextColor((HDC)dc, global_palette_col_c9);
-    text_len = strlen(s.text);
-    TextOutA((HDC)dc, s.text_x - 1, s.text_y - 1, s.text, text_len);
-    SetTextColor((HDC)dc, global_palette_col_9e_b);
-    text_len = strlen(s.text);
-    TextOutA((HDC)dc, s.text_x - 3, s.text_y - 3, s.text, text_len);
-    RestoreDC((HDC)dc, s.saved_dc);
-  }
+  if (dc == 0 || rect == NULL)
+    return;
+
+  s.saved_dc = SaveDC((HDC)dc);
+  SetMapMode((HDC)dc, 8);
+  SetWindowExtEx((HDC)dc, 100, 0x8c, NULL);
+  SetViewportExtEx((HDC)dc, rect[2] - rect[0], rect[3] - rect[1], NULL);
+  SetWindowOrgEx((HDC)dc, 0, 0, NULL);
+  SetViewportOrgEx((HDC)dc, rect[0], rect[1], NULL);
+  sprintf(s.text, "%d", value);
+  SelectObject((HDC)dc, (HGDIOBJ)global_smallcard_pt_font);
+  SetTextAlign((HDC)dc, 10);
+  SetBkMode((HDC)dc, 1);
+  s.text_x = 100;
+  s.text_y = 0x8c;
+  SetTextColor((HDC)dc, global_palette_col_c9);
+  TextOutA((HDC)dc, s.text_x - 1, s.text_y - 1, s.text, strlen(s.text));
+  SetTextColor((HDC)dc, global_palette_col_9e_b);
+  TextOutA((HDC)dc, s.text_x - 3, s.text_y - 3, s.text, strlen(s.text));
+  RestoreDC((HDC)dc, s.saved_dc);
 }

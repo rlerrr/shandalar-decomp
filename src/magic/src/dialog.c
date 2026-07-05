@@ -36,6 +36,7 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
 extern int DAT_0091c998;
+extern HWND DAT_00896714;
 
 // GLOBAL: MAGIC 0x006f6df8
 int DAT_006f6df8[4];
@@ -51,8 +52,7 @@ int DAT_006f6ef0;
 int DAT_00777c0c;
 // GLOBAL: MAGIC 0x008950b4
 int DAT_008950b4;
-// GLOBAL: MAGIC 0x00896714
-int DAT_00896714;
+
 // GLOBAL: MAGIC 0x00777848
 int DAT_00777848;
 // GLOBAL: MAGIC 0x007ab14c
@@ -1652,7 +1652,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       {
         hovered_player = dialog_context->bigcard_player;
         hovered_card = dialog_context->bigcard_card;
-        SendMessageA((HWND)DAT_00896714, 0x401, bigcard_image, (LPARAM)&hovered_player);
+        SendMessageA(DAT_00896714, 0x401, bigcard_image, (LPARAM)&hovered_player);
       }
       else if (smallcard_image != 0xffffffff)
       {
@@ -1663,7 +1663,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
           hovered_player = dialog_context->smallcard_player;
           hovered_card = dialog_context->smallcard_card;
-          SendMessageA((HWND)DAT_00896714, 0x401, smallcard_image, (LPARAM)&hovered_player);
+          SendMessageA(DAT_00896714, 0x401, smallcard_image, (LPARAM)&hovered_player);
         }
       }
     }

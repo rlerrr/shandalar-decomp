@@ -1028,6 +1028,7 @@ void DestroyPaletteOctree(void)
 // FUNCTION: CARDARTLIB 0x1000682c
 // FUNCTION: DRAWCARDLIB 0x10002ddc
 // FUNCTION: DECKDLL 0x1000b79f
+// FUNCTION: SHANDALAR 0x0042fd40
 int Palette_FindNearestEntryIndex(int target_r,int target_g,int target_b,byte *palette_bytes)
 {
   struct {

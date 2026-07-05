@@ -541,7 +541,7 @@ DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_
   image_size_bytes = (image_size_bytes + ((image_size_bytes >> 31) & 7)) >> 3;
   page->imageSizeBytes = image_size_bytes;
 
-  _itoa(page_number, mapping_name, 10);
+  _itoa(page_number, mapping_name + 6, 10);
   page->hTempDC = CreateCompatibleDC((HDC)0);
   page->pBitmapInfo = CreateBitmapInfo(width, height, bits_per_pixel);
   page->hMapping =
@@ -564,6 +564,34 @@ DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_
 
   memset(page->pBits, 0, image_size_bytes);
   return page;
+}
+
+// FUNCTION: SHANDALAR 0x00579240
+int FreeGraphicsPage(int page_number)
+{
+  DIBSurface *page;
+  HGDIOBJ stock_bitmap;
+
+  assert((unsigned int)(page_number != 0), s_D__NewMagic__sources__sidlib__lib_c_0040d0ec, 0x156,
+         s_Cannot_explicitly_Deallocate_page_0_0040d140);
+  assert((unsigned int)(page_number < 10), s_D__NewMagic__sources__sidlib__lib_c_0040d0ec, 0x157,
+         s_Graphic_Page_number_out_of_range_0040d110, page_number);
+  page = g_graphics_pages[page_number];
+  if (page == (DIBSurface *)0)
+  {
+    return 0;
+  }
+  SelectObject(page->hTempDC, page->hPreviousBitmap);
+  DeleteObject(page->hBitmap);
+  free(page->pBitmapInfo);
+  CloseHandle(page->hMapping);
+  stock_bitmap = GetStockObject(0xf);
+  SelectObject(page->hTempDC, stock_bitmap);
+  RealizePalette(page->hTempDC);
+  DeleteDC(page->hTempDC);
+  free(page);
+  g_graphics_pages[page_number] = (DIBSurface *)0;
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00579310

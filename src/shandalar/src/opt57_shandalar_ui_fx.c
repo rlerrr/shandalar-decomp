@@ -19,7 +19,7 @@ extern int DAT_005a1870[0x14];
 #pragma optimize("gy", on)
 unsigned char GetFontStyleSize(int font_slot)
 {
-  return *(((unsigned char *)g_font_slots) + font_slot * 0x2ac);
+  return g_font_slots[font_slot].point_size;
 }
 
 // FUNCTION: SHANDALAR 0x0057b440
@@ -46,6 +46,12 @@ void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, in
   DrawTextFormatted(window, color_index, 1, 0, 1, 0, x, y, (int *)&format);
 }
 
+
+// FUNCTION: SHANDALAR 0x0057b5c0
+void __cdecl DrawUiScaledCenteredTextWithShadow(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...)
+{
+  DrawTextFormatted(window, color, 1, 1, 1, 0, x, y, (int *)&format);
+}
 // FUNCTION: SHANDALAR 0x0057c450
 void __cdecl GetEncodedImageSpanXExtents(EncodedImage *image, unsigned int *out_min_x, int *out_max_x)
 {
