@@ -207,13 +207,11 @@ int g_world_location_music_track_id = -1;
 // GLOBAL: SHANDALAR 0x0059126c
 int g_world_location_music_town_index = -1;
 // GLOBAL: SHANDALAR 0x0078990c
-int DAT_0078990c[10];
+int DAT_0078990c[6];
 // GLOBAL: SHANDALAR 0x0073ea70
 int g_world_magic_town_flags[5];
 // GLOBAL: SHANDALAR 0x0073ea84
 int g_world_player_animation_direction;
-// GLOBAL: SHANDALAR 0x0073ea88
-int DAT_0073ea88;
 // GLOBAL: SHANDALAR 0x0073ea8c
 int g_world_player_animation_frame;
 // GLOBAL: SHANDALAR 0x006696f4
@@ -5543,27 +5541,6 @@ void UpdateAmbientWizardColorSound(int param_1)
       break;
     }
   }
-}
-
-// FUNCTION: SHANDALAR 0x00549002
-void RunAdventureStatsMenu(void)
-{
-  // TODO(decomp): Adventure "Stats" screen UI (renders stats, world magic list, handles button/menu loop).
-}
-
-// FUNCTION: SHANDALAR 0x0056335f
-void ShowStatsWindow(int mode, int highlight)
-{
-  (void)mode;
-  (void)highlight;
-  // TODO(decomp): Prepares data and calls into the STATWIN DLL to show a stats/progress window; param selects mode/highlight.
-}
-
-// FUNCTION: SHANDALAR 0x00533ccd
-void AnalyzeDeckAndMaybeShowReport(int show_ui)
-{
-  (void)show_ui;
-  // TODO(decomp): Deck analyzer. Computes deck composition stats and (when show_ui!=0) draws the ANALYZE report UI.
 }
 
 // FUNCTION: SHANDALAR 0x00561647

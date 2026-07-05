@@ -306,7 +306,7 @@ extern int g_next_duel_life_delta;
 extern int g_next_duel_card_id;
 extern int Gold;
 extern int g_food;
-extern int DAT_0078990c[10];
+extern int DAT_0078990c[6];
 extern int DAT_00789938;
 extern int DAT_0078df68;
 extern int DAT_00586498;

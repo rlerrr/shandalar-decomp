@@ -45,7 +45,7 @@ extern int DAT_00589dec;
 extern int DAT_009300f0;
 extern int g_world_magic_town_flags[5];
 extern int g_world_location_music_active;
-extern int DAT_0078990c[10];
+extern int DAT_0078990c[6];
 extern int DAT_00789938;
 extern int DAT_0078df68;
 extern int DAT_007894f4;
@@ -497,11 +497,11 @@ void FUN_004bb400(char param_1, char param_2)
 }
 
 // FUNCTION: SHANDALAR 0x00430f69
-void FUN_00430f69(char *param_1, int param_2, int param_3, int param_4)
+void DrawScaledCenteredTextNoShadow(char *text, int center_x, int y, int color_index)
 {
-  param_2 = (param_2 * global_screen_width) / 0x140;
-  param_3 = (global_screen_height * param_3) / 0xf0;
-  DrawCenteredTextLineClamped(param_1, param_2, param_3, param_4);
+  center_x = (center_x * global_screen_width) / 0x140;
+  y = (global_screen_height * y) / 0xf0;
+  DrawCenteredTextLineClamped(text, center_x, y, color_index);
 }
 
 // FUNCTION: SHANDALAR 0x005616aa
@@ -2563,7 +2563,7 @@ LAB_4F4BB2:
           strcat(g_ui_message_buffer,
                  global_cards_data[(&g_castle_dungeon_slots[s.hint_dungeon_index].card_slot_1)[s.loop_index]].name);
         }
-        FUN_00430f69(g_ui_message_buffer, 100, s.text_y, 0xca);
+        DrawScaledCenteredTextNoShadow(g_ui_message_buffer, 100, s.text_y, 0xca);
         s.text_y = s.text_y + 7;
         s.deck_or_card_index = 0;
         for (s.loop_index = 0; s.loop_index < 4; s.loop_index = s.loop_index + 1)
@@ -2589,7 +2589,7 @@ LAB_4F4BB2:
         {
           strcpy(g_ui_message_buffer, DAT_0058b150);
         }
-        FUN_00430f69(g_ui_message_buffer, 100, s.text_y, 200);
+        DrawScaledCenteredTextNoShadow(g_ui_message_buffer, 100, s.text_y, 200);
         if (IsCreatureTypeFeminine(s.creature_type) != 0)
         {
           sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[3], FUN_00561441(s.creature_type));

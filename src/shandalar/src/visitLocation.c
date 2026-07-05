@@ -31,7 +31,7 @@ extern FacemakerWindowBounds *PTR_DAT_005832dc;
 extern DIBSurface *g_graphics_pages[10];
 
 extern char g_ui_message_buffer[0x1000];
-extern int DAT_0078990c[10];
+extern int DAT_0078990c[6];
 extern int g_amulet_inventory[5];
 extern int g_text_menu_abort_requested;
 extern card_data_t global_cards_data[];

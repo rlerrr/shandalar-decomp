@@ -64,7 +64,7 @@ extern int global_screen_width;
 extern int global_screen_height;
 extern int DAT_00589dec;
 extern int DAT_009300f0;
-extern int DAT_0078990c[10];
+extern int DAT_0078990c[6];
 extern int g_shandalar_difficulty;
 extern int g_mouse_button_mask_snapshot;
 extern int g_mouse_x_snapshot;
