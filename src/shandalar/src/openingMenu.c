@@ -420,10 +420,11 @@ int RunOpeningMenu(void)
     int copied_entry_count;
     EncodedImage *sprite_entry_pointers[100];
     int menu_context;
-    char map_name_buffer[10];
+    char *map_name;
     int loop_index;
   } s;
 
+  s.map_name = "magic3.map";
   if (g_opening_menu_strings_loaded == 0)
   {
     g_opening_menu_text_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "openingMenu",
@@ -434,7 +435,7 @@ int RunOpeningMenu(void)
   SetFontStyleSize(6, ScaleUiCoordinate(0x14));
 
 loop:
-  strcpy(s.map_name_buffer, "magic3.map");
+  strcpy(s.map_name, "magic3.map");
   g_menu_selection_value = -1;
 
   AnimatePaletteToColor(0, DAT_00589dec);
@@ -450,19 +451,19 @@ loop:
   PTR_DAT_005832b4->font_slot = 5;
   PTR_DAT_005832b4->font_slot = 1;
 
-  g_opening_menu_entry_enabled[2] = FileExists(s.map_name_buffer);
+  g_opening_menu_entry_enabled[2] = FileExists(s.map_name);
   for (s.loop_index = 4; s.loop_index < 0xe; s.loop_index = s.loop_index + 1)
   {
     if (s.loop_index >= 10)
     {
-      s.map_name_buffer[5] = (char)(s.loop_index + 'W');
+      s.map_name[5] = (char)(s.loop_index + 'W');
     }
     else
     {
-      s.map_name_buffer[5] = (char)(s.loop_index + '0');
+      s.map_name[5] = (char)(s.loop_index + '0');
     }
 
-    if (FileExists(s.map_name_buffer) != 0)
+    if (FileExists(s.map_name) != 0)
     {
       break;
     }
