@@ -2611,8 +2611,8 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
     int header_line_index;               /* ebp-0x214 */
     char *space;                         /* ebp-0x210 */
     int total_cards;                     /* ebp-0x20c */
-    int speed_filter;                    /* ebp-0x208 */
-    unsigned int color_filter;           /* ebp-0x204 */
+    int current_speed_filter;            /* ebp-0x208 */
+    unsigned int current_color_filter;   /* ebp-0x204 */
     char line[500];                      /* ebp-0x200 */
     int deck_type;                       /* ebp-0xc */
     FILE *f;                             /* ebp-0x8 */
@@ -2633,8 +2633,8 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
   s.scan_ret = fscanf(s.f, "%[^\n]", s.line);
   s.scan_ret = fscanf(s.f, "%[\n]", s.line);
 
-  s.color_filter = 0;
-  s.speed_filter = -1;
+  s.current_color_filter = 0;
+  s.current_speed_filter = -1;
   s.last_basic_entry_index = 0xffffffff;
   s.unused_224 = 0;
   s.total_cards = 0;
@@ -2651,7 +2651,7 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
         sscanf(s.line + 1, s__d__d_00580ea8, &s.csvid, &s.numcards);
         s.total_cards = s.total_cards + s.numcards;
 
-        if (((s.color_filter == 0) || ((color_filter & s.color_filter) != 0)) && ((s.speed_filter == -1) || (s.speed_filter == speed_filter)))
+        if (((s.current_color_filter == 0) || ((color_filter & s.current_color_filter) != 0)) && ((s.current_speed_filter == -1) || (s.current_speed_filter == speed_filter)))
         {
           *(int *)(library_ptr + s.entry_index * 8) = s.csvid;
           *(int *)(library_ptr + 4 + s.entry_index * 8) = s.numcards;
@@ -2696,44 +2696,44 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
 
         if (_strcmpi(s.line, s__vNONE_00580eb0) == 0)
         {
-          s.color_filter = 1;
+          s.current_color_filter = 1;
         }
         if (_strcmpi(s.line, s__vBLACK_00580eb8) == 0)
         {
-          s.color_filter = 2;
+          s.current_color_filter = 2;
         }
         if (_strcmpi(s.line, s__vBLUE_00580ec0) == 0)
         {
-          s.color_filter = 4;
+          s.current_color_filter = 4;
         }
         if (_strcmpi(s.line, s__vRED_00580ec8) == 0)
         {
-          s.color_filter = 0x10;
+          s.current_color_filter = 0x10;
         }
         if (_strcmpi(s.line, s__vGREEN_00580ed0) == 0)
         {
-          s.color_filter = 8;
+          s.current_color_filter = 8;
         }
         if (_strcmpi(s.line, s__vWHITE_00580ed8) == 0)
         {
-          s.color_filter = 0x20;
+          s.current_color_filter = 0x20;
         }
 
         if (_strcmpi(s.line, s__vFAST_00580ee0) == 0)
         {
-          s.speed_filter = 0;
+          s.current_speed_filter = 0;
         }
         if (_strcmpi(s.line, s__vLARGE_00580ee8) == 0)
         {
-          s.speed_filter = 1;
+          s.current_speed_filter = 1;
         }
         if (_strcmpi(s.line, s__vDIRECT_00580ef0) == 0)
         {
-          s.speed_filter = 2;
+          s.current_speed_filter = 2;
         }
         if (_strcmpi(s.line, s__vARTIFACT_00580efc) == 0)
         {
-          s.speed_filter = 6;
+          s.current_speed_filter = 6;
         }
       }
       s.entry_index = s.entry_index + 1;

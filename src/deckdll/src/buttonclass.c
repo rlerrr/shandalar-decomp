@@ -40,7 +40,7 @@ int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
     HDC hdc;          // ebp - 0x14
     DWORD tid_src;    // ebp - 0x10
     DWORD procid_dst; // ebp - 0xc
-    HWND hwnd;        // ebp - 0x8
+    HWND changed_hwnd; // ebp - 0x8
     int procid_src;   // ebp - 0x4
   } s;
 
@@ -48,10 +48,10 @@ int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
   {
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    s.hwnd = wparam_hwnd;
-    if (s.hwnd != hwnd)
+    s.changed_hwnd = wparam_hwnd;
+    if (s.changed_hwnd != hwnd)
     {
-      s.tid_src = GetWindowThreadProcessId(s.hwnd, &s.procid_src);
+      s.tid_src = GetWindowThreadProcessId(s.changed_hwnd, &s.procid_src);
       s.tid_dst = GetWindowThreadProcessId(hwnd, &s.procid_dst);
 
       if (s.procid_src != s.procid_dst)

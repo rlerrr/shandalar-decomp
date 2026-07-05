@@ -394,17 +394,17 @@ int CountRepeats(unsigned char value, unsigned char *buffer, int maxCount)
 {
   struct
   {
-    unsigned char *idk;
-    int maxCount;
+    unsigned char *current;
+    int remaining;
     int count;
   } s;
 
   s.count = 0;
-  while ((s.maxCount = maxCount--) != 0)
+  while ((s.remaining = maxCount--) != 0)
   {
-    s.idk = buffer;
+    s.current = buffer;
     buffer++;
-    if (*s.idk == value)
+    if (*s.current == value)
     {
       s.count++;
     }

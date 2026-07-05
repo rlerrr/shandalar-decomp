@@ -625,7 +625,7 @@ int show_cardlist(int *graveyard,
 {
   struct
   {
-    void *context;
+    void *dialog_context;
     int displayed_csvids[500];
     int available_cards[500];
     int item_count;
@@ -654,7 +654,7 @@ int show_cardlist(int *graveyard,
   wndclass.lpszClassName = s_ShowListCard_00572920;
   RegisterClassA(&wndclass);
 
-  s.context = context;
+  s.dialog_context = context;
   for (s.index = 0; s.index < count && graveyard[s.index] != -1; ++s.index)
   {
     s.displayed_csvids[s.index] = CardIDFromType(graveyard[s.index] & 0xfff);
@@ -692,7 +692,7 @@ int show_cardlist(int *graveyard,
     strcpy(s.title, unk_00572930);
   }
 
-  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_main_window_hwnd, dlgfunc_show_deck, (long)&s.context);
+  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_main_window_hwnd, dlgfunc_show_deck, (long)&s.dialog_context);
 }
 
 // FUNCTION: MAGIC 0x0055b9f0

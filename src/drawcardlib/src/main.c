@@ -278,8 +278,9 @@ char s_CARDBK_ArabianNightsLand_10022380[] = "CARDBK_ArabianNightsLand";
 // GLOBAL: DRAWCARDLIB 0x1002239c
 char s_CARDBK_Special_1002239c[] = "CARDBK_Special";
 
+// NOTE: this is escaped to avoid the string "s." which gets picked up as a stack local
 // GLOBAL: DRAWCARDLIB 0x100223b0
-char s__s__s_pic_100223b0[] = "%s\\%s.pic";
+char s__s__s_pic_100223b0[] = "%s\\%s\x2Epic";
 
 // GLOBAL: DRAWCARDLIB 0x10022504
 undefined4 global_dwPlatformId = 0xFFFFFFFF;
@@ -727,47 +728,42 @@ void DrawCardBack(HDC dc,RECT *rect)
 undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version, uint param_5, bool expanded_text, LPCSTR param_7)
 {
   struct {
-    int local_580;
-    int local_57c;
-    undefined1 local_578 [4];
-    int local_574;
-    int local_570;    
-    int local_56c;
-    int local_568;
-    int local_564;
-    int local_560;
-    int local_55c;
-    int local_558;
-    TEXTMETRICA local_554;
-    RECT local_51c;
-    int local_50c;
-    uint local_508;
-    RECT local_504;
-    LPCSTR local_4f4;
-    int local_4f0;
+    int backgroundCropLeftPermille;
+    int backgroundCropTopPermille;
+    BITMAP backgroundBitmapInfo;
+    int rulesBackgroundTopInset;
+    int backgroundCropHeightPermille;
+    int backgroundCropWidthPermille;
+    TEXTMETRICA textMetrics;
+    RECT flavorRect;
+    int textBlockHeight;
+    uint manaTextHeight;
+    RECT artDeviceRect;
+    LPCSTR typeText;
+    int defaultPowerToughness;
     HBITMAP *backgroundPointer;
-    RECT local_4e8;
-    HBRUSH local_4d8;
-    RECT local_4d4;
-    RECT local_4c4;
-    int local_4b4;
-    COLORREF local_4b0;
+    RECT cardBackgroundRect;
+    HBRUSH frameBrush;
+    RECT artRect;
+    RECT powerToughnessRect;
+    int shadowOffset;
+    COLORREF textColor;
     char rules_text [1000];
-    int local_c4;
-    RECT local_c0;
-    char local_b0 [52];
-    RECT local_7c;
-    undefined4 local_6c;
-    HANDLE local_68;
-    RECT local_64;
-    RECT local_54;
-    int local_44;
-    RECT local_40;
+    int cardWidth;
+    RECT artistRect;
+    char tempText [52];
+    RECT rulesBackgroundRect;
+    undefined4 result;
+    HANDLE backgroundBitmap;
+    RECT typeLineRect;
+    RECT rulesTextRect;
+    int cornerWidth;
+    RECT nameRect;
     int nSavedDC;
-    int local_2c;
-    int local_28;
-    RECT local_24;
-    RECT local_14;
+    int cardHeight;
+    int cornerHeight;
+    RECT castingCostRect;
+    RECT setIconRect;
   } s;
 
   if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (card == (card_ptr_t *)0x0)) {
@@ -775,159 +771,159 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   }
 
   s.nSavedDC = SaveDC(dc);
-  s.local_c4 = 200;
-  s.local_2c = 300;
+  s.cardWidth = 200;
+  s.cardHeight = 300;
   SetMapMode(dc,7);
-  SetWindowExtEx(dc,s.local_c4,s.local_2c,(LPSIZE)0x0);
+  SetWindowExtEx(dc,s.cardWidth,s.cardHeight,(LPSIZE)0x0);
   SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, (LPSIZE)0x0);
-  SetWindowOrgEx(dc,s.local_c4 / 2,s.local_2c / 2,(LPPOINT)0x0);
+  SetWindowOrgEx(dc,s.cardWidth / 2,s.cardHeight / 2,(LPPOINT)0x0);
   SetViewportOrgEx(dc,rect->left + (rect->right - rect->left) / 2,
                    rect->top + (rect->bottom - rect->top) / 2,(LPPOINT)0x0);
-  s.local_44 = 6;
-  s.local_28 = 6;
-  SetRect(&s.local_40,10,5,0xbc,0x15);
-  SetRect(&s.local_24,0xc,8,0xbe,0x14);
-  SetRect(&s.local_4d4,0x15,0x19,0xb5,0xa4);
-  SetRect(&s.local_64,0xc,0xa8,0xba,0xb3);
-  SetRect(&s.local_14,0xc,0xa9,0xba,0xb4);
-  SetRect(&s.local_54,0x1c,0xb9,0xae,0x10c);
-  SetRect(&s.local_7c,0x14,0xb4,0xb6,0x10f);
-  SetRect(&s.local_c0,0xc,0x114,0xbc,0x124);
-  SetRect(&s.local_4c4,0xc,0x114,0xbc,0x124);
+  s.cornerWidth = 6;
+  s.cornerHeight = 6;
+  SetRect(&s.nameRect,10,5,0xbc,0x15);
+  SetRect(&s.castingCostRect,0xc,8,0xbe,0x14);
+  SetRect(&s.artRect,0x15,0x19,0xb5,0xa4);
+  SetRect(&s.typeLineRect,0xc,0xa8,0xba,0xb3);
+  SetRect(&s.setIconRect,0xc,0xa9,0xba,0xb4);
+  SetRect(&s.rulesTextRect,0x1c,0xb9,0xae,0x10c);
+  SetRect(&s.rulesBackgroundRect,0x14,0xb4,0xb6,0x10f);
+  SetRect(&s.artistRect,0xc,0x114,0xbc,0x124);
+  SetRect(&s.powerToughnessRect,0xc,0x114,0xbc,0x124);
   if (card->expansion == -1 || (card->expansion & 0x10) != 0 || (card->expansion & 0x80) != 0) {
-    s.local_4d8 = CreateSolidBrush(DAT_10039ffc);
-    SelectObject(dc,s.local_4d8);
+    s.frameBrush = CreateSolidBrush(DAT_10039ffc);
+    SelectObject(dc,s.frameBrush);
   }
   else {
-    s.local_4d8 = CreateSolidBrush(DAT_1003a02c);
-    SelectObject(dc,s.local_4d8);
+    s.frameBrush = CreateSolidBrush(DAT_1003a02c);
+    SelectObject(dc,s.frameBrush);
   }
   SelectObject(dc,GetStockObject(8));
-  RoundRect(dc,0,0,s.local_c4,s.local_2c,s.local_44 / 2,s.local_28 / 2);
+  RoundRect(dc,0,0,s.cardWidth,s.cardHeight,s.cornerWidth / 2,s.cornerHeight / 2);
   SelectObject(dc,GetStockObject(4));
-  if (s.local_4d8 != (HBRUSH)0x0) {
-    DeleteObject(s.local_4d8);
+  if (s.frameBrush != (HBRUSH)0x0) {
+    DeleteObject(s.frameBrush);
   }
   s.backgroundPointer = GetCardBackgroundPointer(card);
   LoadCardBackground(s.backgroundPointer);
-  SetRect(&s.local_4e8,s.local_44,s.local_28,
+  SetRect(&s.cardBackgroundRect,s.cornerWidth,s.cornerHeight,
     //Well these are weird
-    s.local_44 + s.local_c4 - (s.local_44 << 1),
-    s.local_28 + s.local_2c - (s.local_28 << 1)
+    s.cornerWidth + s.cardWidth - (s.cornerWidth << 1),
+    s.cornerHeight + s.cardHeight - (s.cornerHeight << 1)
   );
   if (*s.backgroundPointer != 0) {
-    DrawBitmapToRect(dc,&s.local_4e8,*s.backgroundPointer);
+    DrawBitmapToRect(dc,&s.cardBackgroundRect,*s.backgroundPointer);
   }
   else {
-    FillRect(dc,&s.local_4e8,GetStockObject(0));
+    FillRect(dc,&s.cardBackgroundRect,GetStockObject(0));
   }
-  s.local_68 = *s.backgroundPointer;
-  s.local_4b4 = 1;
-  s.local_4b0 = GetPaletteColor(0xbf);
+  s.backgroundBitmap = *s.backgroundPointer;
+  s.shadowOffset = 1;
+  s.textColor = GetPaletteColor(0xbf);
   SelectObject(dc,DAT_1003a008);
   SetBkMode(dc,1);
   SetTextColor(dc,DAT_10039fec);
-  OffsetRect(&s.local_40,s.local_4b4,s.local_4b4);
-  DrawTextA(dc,card->full_name,-1,&s.local_40,0x824);
-  OffsetRect(&s.local_40,-s.local_4b4,-s.local_4b4);
-  SetTextColor(dc,s.local_4b0);
-  DrawTextA(dc,card->full_name,-1,&s.local_40,0x824);
-  s.local_4f0 = 0x64;
+  OffsetRect(&s.nameRect,s.shadowOffset,s.shadowOffset);
+  DrawTextA(dc,card->full_name,-1,&s.nameRect,0x824);
+  OffsetRect(&s.nameRect,-s.shadowOffset,-s.shadowOffset);
+  SetTextColor(dc,s.textColor);
+  DrawTextA(dc,card->full_name,-1,&s.nameRect,0x824);
+  s.defaultPowerToughness = 0x64;
   SelectObject(dc,DAT_10039ff8);
   if ((card->power != 0) || (card->toughness != 0)) {
-    s.local_b0[0] = '\0';
-    if (card->power == s.local_4f0) {
-      strcat(s.local_b0,DAT_100221ec);
+    s.tempText[0] = '\0';
+    if (card->power == s.defaultPowerToughness) {
+      strcat(s.tempText,DAT_100221ec);
     }
-    else if (s.local_4f0 < card->power) {
-      wsprintfA((char *)((ptrdiff_t)&s.local_b0 + strlen(s.local_b0)),DAT_100221f0,card->power - s.local_4f0);
-    }
-    else {
-      wsprintfA((char *)((ptrdiff_t)&s.local_b0 + strlen(s.local_b0)),DAT_100221f8,card->power);
-    }
-    strcat(s.local_b0,DAT_100221fc);
-    if (card->toughness == s.local_4f0) {
-      strcat(s.local_b0,DAT_10022200);
-    }
-    else if (s.local_4f0 < card->toughness) {
-      wsprintfA((char *)((ptrdiff_t)&s.local_b0 + strlen(s.local_b0)),DAT_10022204,card->toughness - s.local_4f0);
+    else if (s.defaultPowerToughness < card->power) {
+      wsprintfA((char *)((ptrdiff_t)&s.tempText + strlen(s.tempText)),DAT_100221f0,card->power - s.defaultPowerToughness);
     }
     else {
-      wsprintfA((char *)((ptrdiff_t)&s.local_b0 + strlen(s.local_b0)),DAT_1002220c,card->toughness);
+      wsprintfA((char *)((ptrdiff_t)&s.tempText + strlen(s.tempText)),DAT_100221f8,card->power);
+    }
+    strcat(s.tempText,DAT_100221fc);
+    if (card->toughness == s.defaultPowerToughness) {
+      strcat(s.tempText,DAT_10022200);
+    }
+    else if (s.defaultPowerToughness < card->toughness) {
+      wsprintfA((char *)((ptrdiff_t)&s.tempText + strlen(s.tempText)),DAT_10022204,card->toughness - s.defaultPowerToughness);
+    }
+    else {
+      wsprintfA((char *)((ptrdiff_t)&s.tempText + strlen(s.tempText)),DAT_1002220c,card->toughness);
     }
     SetTextColor(dc,DAT_10039fec);
-    OffsetRect(&s.local_4c4,s.local_4b4,s.local_4b4);
-    DrawTextA(dc,s.local_b0,-1,&s.local_4c4,0x26);
-    OffsetRect(&s.local_4c4,-s.local_4b4,-s.local_4b4);
-    SetTextColor(dc,s.local_4b0);
-    DrawTextA(dc,s.local_b0,-1,&s.local_4c4,0x26);
+    OffsetRect(&s.powerToughnessRect,s.shadowOffset,s.shadowOffset);
+    DrawTextA(dc,s.tempText,-1,&s.powerToughnessRect,0x26);
+    OffsetRect(&s.powerToughnessRect,-s.shadowOffset,-s.shadowOffset);
+    SetTextColor(dc,s.textColor);
+    DrawTextA(dc,s.tempText,-1,&s.powerToughnessRect,0x26);
   }
   SelectObject(dc,DAT_10039fdc);
   SetBkMode(dc,1);
   if ((card->card_type != -1) && (card->card_type != 0)) {
-    s.local_4f4 = card->type_text;
+    s.typeText = card->type_text;
     SetTextColor(dc,DAT_10039fec);
-    OffsetRect(&s.local_64,s.local_4b4,s.local_4b4);
-    DrawTextA(dc,s.local_4f4,-1,&s.local_64,0x24);
-    OffsetRect(&s.local_64,-s.local_4b4,-s.local_4b4);
-    SetTextColor(dc,s.local_4b0);
-    DrawTextA(dc,s.local_4f4,-1,&s.local_64,0x24);
+    OffsetRect(&s.typeLineRect,s.shadowOffset,s.shadowOffset);
+    DrawTextA(dc,s.typeText,-1,&s.typeLineRect,0x24);
+    OffsetRect(&s.typeLineRect,-s.shadowOffset,-s.shadowOffset);
+    SetTextColor(dc,s.textColor);
+    DrawTextA(dc,s.typeText,-1,&s.typeLineRect,0x24);
   }
   if (card->artist != 0) {
-    wsprintfA(s.local_b0,param_7,card->artist);
+    wsprintfA(s.tempText,param_7,card->artist);
     SetTextColor(dc,DAT_10039fec);
-    OffsetRect(&s.local_c0,s.local_4b4,s.local_4b4);
-    DrawTextA(dc,s.local_b0,-1,&s.local_c0,0x824);
-    OffsetRect(&s.local_c0,-s.local_4b4,-s.local_4b4);
-    SetTextColor(dc,s.local_4b0);
-    DrawTextA(dc,s.local_b0,-1,&s.local_c0,0x824);
+    OffsetRect(&s.artistRect,s.shadowOffset,s.shadowOffset);
+    DrawTextA(dc,s.tempText,-1,&s.artistRect,0x824);
+    OffsetRect(&s.artistRect,-s.shadowOffset,-s.shadowOffset);
+    SetTextColor(dc,s.textColor);
+    DrawTextA(dc,s.tempText,-1,&s.artistRect,0x824);
   }
   if (((card->card_type != 5) && (card->card_type != 8)) && (card->card_type != 0)) {
-    DrawCastingCost(dc,&s.local_24,&card->req);
+    DrawCastingCost(dc,&s.castingCostRect,&card->req);
   }
   if (card->expansion != -1) {
-    DrawCardSet(dc,&s.local_14,card->expansion);
+    DrawCardSet(dc,&s.setIconRect,card->expansion);
   }
-  CopyRect(&s.local_504,&s.local_4d4);
-  LPtoDP(dc,(LPPOINT)&s.local_504,2);
+  CopyRect(&s.artDeviceRect,&s.artRect);
+  LPtoDP(dc,(LPPOINT)&s.artDeviceRect,2);
 
   //HMMM
   switch (param_5 & 0xf) {
     case 0:
       if (IsBigArtIn(card->id,version) != 0) {
-        DrawBigArt(dc,&s.local_4d4,card->id,version);
+        DrawBigArt(dc,&s.artRect,card->id,version);
       }
       else {
-        DrawSmallArt(dc,&s.local_4d4,card->id,version);
+        DrawSmallArt(dc,&s.artRect,card->id,version);
       }
       break;  
 
     case 1:
       if (IsBigArtIn(card->id,version) == 0) {
         if (((param_5 & 0x10) != 0) && (IsSmallArtIn(card->id,version) != 0)) {
-          DrawSmallArt(dc,&s.local_4d4,card->id,version);
+          DrawSmallArt(dc,&s.artRect,card->id,version);
         }
-        LoadBigArt(card->id,version,s.local_504.right - s.local_504.left,
-                  s.local_504.bottom - s.local_504.top);
+        LoadBigArt(card->id,version,s.artDeviceRect.right - s.artDeviceRect.left,
+                  s.artDeviceRect.bottom - s.artDeviceRect.top);
       }
-      DrawBigArt(dc,&s.local_4d4,card->id,version);
+      DrawBigArt(dc,&s.artRect,card->id,version);
       break;
     default:
       if (((IsBigArtIn(card->id,version) == 0) && ((param_5 & 0x10) != 0)) &&
         (IsSmallArtIn(card->id,version) != 0)) {
-        DrawSmallArt(dc,&s.local_4d4,card->id,version);
+        DrawSmallArt(dc,&s.artRect,card->id,version);
       }
-      if (LoadBigArt(card->id,version,s.local_504.right - s.local_504.left,
-                        s.local_504.bottom - s.local_504.top) != 0) {
-        DrawBigArt(dc,&s.local_4d4,card->id,version);
+      if (LoadBigArt(card->id,version,s.artDeviceRect.right - s.artDeviceRect.left,
+                        s.artDeviceRect.bottom - s.artDeviceRect.top) != 0) {
+        DrawBigArt(dc,&s.artRect,card->id,version);
       }
       else {
-        DrawSmallArt(dc,&s.local_4d4,card->id,version);
+        DrawSmallArt(dc,&s.artRect,card->id,version);
       }
     break;
   }
-  s.local_6c = IsBigArtRightSize(card->id,version,s.local_504.right - s.local_504.left,
-                               s.local_504.bottom - s.local_504.top);
+  s.result = IsBigArtRightSize(card->id,version,s.artDeviceRect.right - s.artDeviceRect.left,
+                               s.artDeviceRect.bottom - s.artDeviceRect.top);
   strcpy(s.rules_text,card->rules_text);
   ReplaceSubstring(s.rules_text,s__H1_10022214,1,s_empty_10022210);
   ReplaceSubstring(s.rules_text,s__H2_1002221c,1,s_empty_10022218);
@@ -943,43 +939,45 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   SetBkMode(dc,1);
   if (expanded_text != 0) {
     SelectObject(dc,DAT_1003a000);
-    s.local_508 = (unsigned short)((CalcDrawManaText(dc,&s.local_54,s.rules_text) >> 0x10) & 0xffff);
-    GetTextMetricsA(dc,&s.local_554);
-    CopyRect(&s.local_51c,&s.local_54);
-    s.local_51c.top += s.local_508;
-    s.local_51c.top += s.local_554.tmHeight / 2;
+    s.manaTextHeight = (unsigned short)((CalcDrawManaText(dc,&s.rulesTextRect,s.rules_text) >> 0x10) & 0xffff);
+    GetTextMetricsA(dc,&s.textMetrics);
+    CopyRect(&s.flavorRect,&s.rulesTextRect);
+    s.flavorRect.top += s.manaTextHeight;
+    s.flavorRect.top += s.textMetrics.tmHeight / 2;
     SelectObject(dc,DAT_1003a040);
-    DrawTextA(dc,card->flavor_text,-1,&s.local_51c,0x410);
-    s.local_50c = s.local_51c.bottom - s.local_54.top;
-    if (s.local_54.bottom - s.local_54.top < s.local_50c) {
-      s.local_560 = s.local_54.top - s.local_7c.top;
-      s.local_54.top = s.local_54.bottom - s.local_50c;
-      s.local_7c.top = s.local_54.top - s.local_560;
-      if (s.local_68 != 0) {
-        GetObjectA(s.local_68,0x18,s.local_578);
-        s.local_580 = 0x49;
-        s.local_57c = 0x25d;
-        s.local_558 = 0x359;
-        s.local_55c = 0x140;
-        DrawBitmapSubrectToRect(dc,&s.local_7c,s.local_68,(s.local_574 * s.local_580) / 1000,
-                     (s.local_570 * s.local_57c) / 1000,(s.local_574 * s.local_558) / 1000,
-                     (s.local_570 * s.local_55c) / 1000);
+    DrawTextA(dc,card->flavor_text,-1,&s.flavorRect,0x410);
+    s.textBlockHeight = s.flavorRect.bottom - s.rulesTextRect.top;
+    if (s.rulesTextRect.bottom - s.rulesTextRect.top < s.textBlockHeight) {
+      s.rulesBackgroundTopInset = s.rulesTextRect.top - s.rulesBackgroundRect.top;
+      s.rulesTextRect.top = s.rulesTextRect.bottom - s.textBlockHeight;
+      s.rulesBackgroundRect.top = s.rulesTextRect.top - s.rulesBackgroundTopInset;
+      if (s.backgroundBitmap != 0) {
+        GetObjectA(s.backgroundBitmap,0x18,&s.backgroundBitmapInfo);
+        s.backgroundCropLeftPermille = 0x49;
+        s.backgroundCropTopPermille = 0x25d;
+        s.backgroundCropWidthPermille = 0x359;
+        s.backgroundCropHeightPermille = 0x140;
+        DrawBitmapSubrectToRect(dc,&s.rulesBackgroundRect,s.backgroundBitmap,
+                     (s.backgroundBitmapInfo.bmWidth * s.backgroundCropLeftPermille) / 1000,
+                     (s.backgroundBitmapInfo.bmHeight * s.backgroundCropTopPermille) / 1000,
+                     (s.backgroundBitmapInfo.bmWidth * s.backgroundCropWidthPermille) / 1000,
+                     (s.backgroundBitmapInfo.bmHeight * s.backgroundCropHeightPermille) / 1000);
       }
       else {
-        FillRect(dc,&s.local_7c,GetStockObject(0));
+        FillRect(dc,&s.rulesBackgroundRect,GetStockObject(0));
       }
     }
   }
   SelectObject(dc,DAT_1003a000);
-  s.local_508 = (unsigned short)((DrawManaText(dc,&s.local_54,s.rules_text,1) >> 0x10) & 0xffff);
-  GetTextMetricsA(dc,&s.local_554);
-  CopyRect(&s.local_51c,&s.local_54);
-  s.local_51c.top += s.local_508;
-  s.local_51c.top += s.local_554.tmHeight / 3;
+  s.manaTextHeight = (unsigned short)((DrawManaText(dc,&s.rulesTextRect,s.rules_text,1) >> 0x10) & 0xffff);
+  GetTextMetricsA(dc,&s.textMetrics);
+  CopyRect(&s.flavorRect,&s.rulesTextRect);
+  s.flavorRect.top += s.manaTextHeight;
+  s.flavorRect.top += s.textMetrics.tmHeight / 3;
   SelectObject(dc,DAT_1003a040);
-  DrawTextA(dc,card->flavor_text,-1,&s.local_51c,0x10);
+  DrawTextA(dc,card->flavor_text,-1,&s.flavorRect,0x10);
   RestoreDC(dc,s.nSavedDC);
-  return s.local_6c;
+  return s.result;
 }
 
 // FUNCTION: DRAWCARDLIB 0x100067c7
@@ -1834,8 +1832,7 @@ int read_cfg(undefined4 param_1)
     size_t record_size;
     int slotIndex;
     FILE *cards_dat;
-    int record_table_pad0;
-    int record_table[75993];
+    int record_table[75994];
     char pad_18[0x18];
     int result;
   } s;
@@ -1867,14 +1864,14 @@ int read_cfg(undefined4 param_1)
   if (s.cards_dat != (FILE *)0x0) {
     fread(&s.global_available_slots,4,1,s.cards_dat);
     fread(&s.record_size,4,1,s.cards_dat);
-    fread(&s.record_table_pad0,0x98,s.global_available_slots,s.cards_dat);
+    fread(s.record_table,0x98,s.global_available_slots,s.cards_dat);
     s.recordBuf = malloc(s.record_size);
     if (s.recordBuf != (void *)0x0) {
       fread(s.recordBuf,1,s.record_size,s.cards_dat);
       for (s.slotIndex = 0; (int)s.global_available_slots > s.slotIndex;
           s.slotIndex = s.slotIndex + 1) {
-        s.record_table[s.slotIndex * 0x26] = s.record_table[s.slotIndex * 0x26] + (int)s.recordBuf;
-        strncpy(DAT_100f37d0 + s.slotIndex * 100,(char *)s.record_table[s.slotIndex * 0x26],100);
+        s.record_table[s.slotIndex * 0x26 + 1] = s.record_table[s.slotIndex * 0x26 + 1] + (int)s.recordBuf;
+        strncpy(DAT_100f37d0 + s.slotIndex * 100,(char *)s.record_table[s.slotIndex * 0x26 + 1],100);
         DAT_100f3833[s.slotIndex * 100] = 0;
       }
       free(s.recordBuf);

@@ -932,10 +932,15 @@ opening_menu:
     // This normally only runs on new world creation which is annoying for debugging.
     g_world_scene_reveal_effect_pending = 1;
 #endif
+
+#ifdef MODERN_FIXES
+    s.last_tick = 0;
     do
     {
-#ifndef MODERN_FIXES
-      s.last_tick = 0;
+#else
+    do
+    {
+	  s.last_tick = 0;
 #endif
       ConsumeUiTickCount();
       RenderAdventureWorldScene(g_world_player_x, g_world_player_y, DAT_00669710);
@@ -1543,8 +1548,7 @@ void FUN_004184d2(void)
     int local_118;
     int local_114;
     int local_110;
-    char location_block_start_indexc;
-    char location_block_start_indexb[255];
+    char location_block_start_index[256];
     FILE *inner_index;
     int entry_index;
   } s;
@@ -1553,10 +1557,10 @@ void FUN_004184d2(void)
   s.local_118 = 0;
   do
   {
-    s.entry_index = fscanf(s.inner_index, "%[^\n]", &s.location_block_start_indexc);
-    if (s.location_block_start_indexc == '.')
+    s.entry_index = fscanf(s.inner_index, "%[^\n]", s.location_block_start_index);
+    if (s.location_block_start_index[0] == '.')
     {
-      sscanf(s.location_block_start_indexb, "%d %d %s", &s.local_124, &s.local_114, s.local_120);
+      sscanf(s.location_block_start_index + 1, "%d %d %s", &s.local_124, &s.local_114, s.local_120);
       DAT_0097e450[s.local_118].first = s.local_124;
       DAT_0097e450[s.local_118].second = s.local_114;
       DAT_0097df40[s.local_118] = 0;
@@ -1583,13 +1587,13 @@ void FUN_004184d2(void)
 
       s.local_110 = FUN_0056c705(s.local_124);
       s.local_110 = FUN_0056c705(s.local_114);
-      s.entry_index = fscanf(s.inner_index, "%[\n]", &s.location_block_start_indexc);
+      s.entry_index = fscanf(s.inner_index, "%[\n]", s.location_block_start_index);
       DAT_0097db40[s.local_118] = ftell(s.inner_index);
       s.local_118 = s.local_118 + 1;
     }
     else
     {
-      s.entry_index = fscanf(s.inner_index, "%[\n]", &s.location_block_start_indexc);
+      s.entry_index = fscanf(s.inner_index, "%[\n]", s.location_block_start_index);
     }
   } while ((s.local_118 < 0x100) && (s.entry_index != -1));
 

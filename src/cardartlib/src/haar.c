@@ -1197,7 +1197,7 @@ BOOL Wvl_UnpackPieces(byte *param_1,WvlEntry *param_2)
 // FUNCTION: SHANDALAR 0x005678fa
 uint * Wvl_DecodeToBgr24(byte *param_1,WvlEntry *wvl_entry,int width,int height)
 {
-  struct WvlDecodeToBgr24Stack {
+  struct {
     int unk_5060;
     int row_padding;
     int y_step;

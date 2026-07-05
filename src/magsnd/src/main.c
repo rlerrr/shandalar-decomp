@@ -1091,11 +1091,11 @@ undefined4 __cdecl SetPan(int slot,int pan)
 
 {
   struct {
-    LPLPDIRECTSOUNDBUFFER slot;
+    LPLPDIRECTSOUNDBUFFER duplicateBuffer;
     int index;
   } s;
 
-  s.slot = 0;
+  s.duplicateBuffer = 0;
   if ((0x10f < slot) || (slot < 0)) {
     return 5;
   }
@@ -1109,9 +1109,9 @@ undefined4 __cdecl SetPan(int slot,int pan)
   //pan = pan + pan;
   g_sndSlots[slot]->dsBuffer->lpVtbl->SetPan(g_sndSlots[slot]->dsBuffer,pan);
   for (s.index = 0; s.index < 0x10; s.index++) {
-    s.slot = &g_sndSlots[slot]->duplicateBuffers[s.index].buffer;
-    if (*s.slot != NULL) {
-      (*s.slot)->lpVtbl->SetPan(*s.slot, pan);
+    s.duplicateBuffer = &g_sndSlots[slot]->duplicateBuffers[s.index].buffer;
+    if (*s.duplicateBuffer != NULL) {
+      (*s.duplicateBuffer)->lpVtbl->SetPan(*s.duplicateBuffer, pan);
     }
     else
       break;
@@ -1343,95 +1343,95 @@ undefined4 __cdecl GetLRUSnd(int *param_1,int param_2,int param_3)
 void * __cdecl GetAVISndBuff(int slot,uint param_2)
 {
   struct {
-    void *ptr1;
-    SndInstance *slot;
-    undefined4 zero1;
+    void *lockPtr1;
+    SndInstance *snd;
+    undefined4 unusedZero;
     uint blockIndex;
     int hr;
-    void *ptr2;
-    uint bytes2;
-    uint bytes1;
+    void *lockPtr2;
+    uint lockBytes2;
+    uint lockBytes1;
     int offset;
   } s;
 
-  s.ptr1 = 0;
-  s.ptr2 = 0;
-  s.bytes1 = 0;
-  s.bytes2 = 0;
-  s.zero1 = 0;
+  s.lockPtr1 = 0;
+  s.lockPtr2 = 0;
+  s.lockBytes1 = 0;
+  s.lockBytes2 = 0;
+  s.unusedZero = 0;
 
   if (slot > 0x10f || slot < 0x100) {
     return 0;
   }
   EnterCriticalSection(&g_sndCs);
-  s.slot = g_sndSlots[slot];
-  if (s.slot == 0) {
+  s.snd = g_sndSlots[slot];
+  if (s.snd == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
-  if (((s.slot->flags >> 7) & 1) != 0) {
+  if (((s.snd->flags >> 7) & 1) != 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
 
-  s.blockIndex = param_2 % s.slot->blockCount;
-  s.offset = s.slot->blockBytes * s.blockIndex;
-  s.hr = s.slot->dsBuffer->lpVtbl->Lock(
-               s.slot->dsBuffer,s.offset,s.slot->blockBytes,
-                &s.ptr1,&s.bytes1,&s.ptr2,&s.bytes2,0);
+  s.blockIndex = param_2 % s.snd->blockCount;
+  s.offset = s.snd->blockBytes * s.blockIndex;
+  s.hr = s.snd->dsBuffer->lpVtbl->Lock(
+               s.snd->dsBuffer,s.offset,s.snd->blockBytes,
+                &s.lockPtr1,&s.lockBytes1,&s.lockPtr2,&s.lockBytes2,0);
   if (s.hr != 0) {
     return 0;
   }
-  if (s.ptr2 != 0) {
-    s.slot->dsBuffer->lpVtbl->Unlock(s.slot->dsBuffer,s.ptr1,s.bytes1,s.ptr2,s.bytes2);
+  if (s.lockPtr2 != 0) {
+    s.snd->dsBuffer->lpVtbl->Unlock(s.snd->dsBuffer,s.lockPtr1,s.lockBytes1,s.lockPtr2,s.lockBytes2);
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
-  s.slot->dsLockedPtr = s.ptr1;
-  s.slot->flags = (int)s.slot->flags | 0x80;
+  s.snd->dsLockedPtr = s.lockPtr1;
+  s.snd->flags = (int)s.snd->flags | 0x80;
   LeaveCriticalSection(&g_sndCs);
-  return s.ptr1;
+  return s.lockPtr1;
 }
 
 // FUNCTION: MAGSND 0x1000352C
 undefined4 __cdecl ReleaseAVISndBuff(int slot)
 {
   struct {
-    int local_18;
-    SndInstance * slot;
-    int local_10;
-    int local_c;
-    int local_8;
-    int local_4;
+    int unused_18;
+    SndInstance *snd;
+    int unused_10;
+    int unused_c;
+    int unused_8;
+    int unused_4;
   } s;
 
-  s.local_18 = 0;
-  s.local_c = 0;
-  s.local_4 = 0;
-  s.local_8 = 0;
-  s.local_10 = 0;
+  s.unused_18 = 0;
+  s.unused_c = 0;
+  s.unused_4 = 0;
+  s.unused_8 = 0;
+  s.unused_10 = 0;
 
   if ((slot > 0x10f) || (slot < 0x100)) {
     return 0;
   }
 
   EnterCriticalSection(&g_sndCs);
-  s.slot = g_sndSlots[slot];
-  if (s.slot == 0) {
+  s.snd = g_sndSlots[slot];
+  if (s.snd == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0;
   }
-  if (((s.slot->flags >> 7) & 1) == 0) {
+  if (((s.snd->flags >> 7) & 1) == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0xe;
   }
-  if (s.slot->dsLockedPtr == 0) {
+  if (s.snd->dsLockedPtr == 0) {
     LeaveCriticalSection(&g_sndCs);
     return 0xf;
   }
-  s.slot->dsBuffer->lpVtbl->Unlock(s.slot->dsBuffer, s.slot->dsLockedPtr,s.slot->blockBytes,0,0);
-  s.slot->flags &= 0xffffff7f;
-  s.slot->dsLockedPtr = 0;
+  s.snd->dsBuffer->lpVtbl->Unlock(s.snd->dsBuffer, s.snd->dsLockedPtr,s.snd->blockBytes,0,0);
+  s.snd->flags &= 0xffffff7f;
+  s.snd->dsLockedPtr = 0;
   LeaveCriticalSection(&g_sndCs);
   return 0;
 }
