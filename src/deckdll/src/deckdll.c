@@ -5552,39 +5552,39 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     RECT rect_decksurface; /* ebp - 0xaa0 */
     POINT pad_a90;         /* ebp - 0xa90 */
 
-    HWND hwnd_a8c; /* ebp - 0xa8c */
-    MEASUREITEMSTRUCT *pad_a8c;
-    HWND pad_a88;
+    HWND measure_hwnd; /* ebp - 0xa8c */
+    MEASUREITEMSTRUCT *measure_item;
+    RECT measure_client_rect;
+    HDC erase_dc;   /* ebp - 0xa74 */
 
-    RECT rect_stats; /* ebp - 0xa84 */
-    BITMAP bmp_a6c;  /* ebp - 0xa6c */
-    int fill_y;      /* ebp - 0xa54 */
-    int pics_inline; /* ebp - 0xa50 */
+    BITMAP tile_bitmap; /* ebp - 0xa6c */
+    int tile_y;         /* ebp - 0xa54 */
+    int tile_x;         /* ebp - 0xa50 */
 
     RECT r;     /* ebp - 0xa4c */
-    int fill_x; /* ebp - 0xa3c */
+    COLORREF drawitem_fill_color; /* ebp - 0xa3c */
 
-    COLORREF item_col; /* ebp - 0xa38 */
-    HWND tgt;          /* ebp - 0xa38 */
-    int cursel;        /* ebp - 0xa34 */
-    HDC pad_a30;
+    DRAWITEMSTRUCT *draw_item; /* ebp - 0xa38 */
+    HWND color_target;         /* ebp - 0xa38 */
+    int color_ctrl_id;         /* ebp - 0xa34 */
+    HDC color_dc;
 
-    HWND hwnd2; /* ebp - 0xa28 */
-    HWND hwnd1; /* ebp - 0xa24 */
+    HBRUSH ctlcolor_brush; /* ebp - 0xa28 */
+    HWND invalidate_hwnd;  /* ebp - 0xa24 */
 
-    HDC pad_a20;
-    HGDIOBJ pad_a1c;
-    HWND pad_a18;
-    HDC pad_a14;
-    WPARAM pad_a10;
+    HWND clicked_button;
+    HDC display_dc;
+    HGDIOBJ title_font_obj;
+    HWND listbox_hwnd_param;
+    HDC listbox_dc;
 
     int csvidraw;     /* ebp - 0xa0c */
     int csvid;        /* ebp - 0xa08 */
     int unique_count; /* ebp - 0xa04 */
 
-    int local_a00[100];   /* ebp - 0xa00 */
-    int pad_870;          /* ebp - 0x870 */
-    char local_86c[2000]; /* ebp - 0x86c */
+    int legal_scan_index;      /* ebp - 0xa00 */
+    int legal_unique_ids[100]; /* ebp - 0x9fc */
+    char legal_message[2000];  /* ebp - 0x86c */
 
     HWND cmd_hwnd;        /* ebp - 0x9c */
     HWND cmd_tgt;         /* ebp - 0x98 */
@@ -5605,10 +5605,8 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     int i;                 /* ebp - 0x6c */
     unsigned int artist_i; /* ebp - 0x68 */
 
-    HDC fill_chdc; /* ebp - 0x64 */
-    char buf[76];  /* ebp - 0x60 */
-
-    unsigned int pad_14;
+    HDC tile_dc;       /* ebp - 0x64 */
+    char message[80];  /* ebp - 0x60 */
 
     WORD wLeft;       /* ebp - 0x10 */
     WORD wLeftPad;    /* ebp - 0xe */
@@ -5776,57 +5774,57 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
       s.unique_count = 0;
 
-      for (s.local_a00[0] = 0; global_edited_deck_num_entries > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck_num_entries > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[0].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[0].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
-      for (s.local_a00[0] = 0; global_edited_deck.sideboard[0].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.sideboard[0].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[0].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[0].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.sideboard[0].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.sideboard[0].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[1].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[1].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
-      for (s.local_a00[0] = 0; global_edited_deck.sideboard[1].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.sideboard[1].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[1].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[1].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.sideboard[1].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.sideboard[1].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[2].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[2].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
-      for (s.local_a00[0] = 0; global_edited_deck.sideboard[2].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.sideboard[2].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[2].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[2].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.sideboard[2].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.sideboard[2].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[3].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[3].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
-      for (s.local_a00[0] = 0; global_edited_deck.sideboard[3].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.sideboard[3].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[3].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[3].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.sideboard[3].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.sideboard[3].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[4].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[4].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
-      for (s.local_a00[0] = 0; global_edited_deck.sideboard[5].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.sideboard[5].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[4].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[4].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.sideboard[5].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.sideboard[5].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[5].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[5].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
-      for (s.local_a00[0] = 0; global_edited_deck.sideboard[4].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.sideboard[4].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[5].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[5].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.sideboard[4].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.sideboard[4].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
-      for (s.local_a00[0] = 0; global_edited_deck.trade[6].total > s.local_a00[0]; ++s.local_a00[0])
-        FUN_10019ed5(global_edited_deck.trade[6].entries[s.local_a00[0]].DeckEntry_csvid, &s.local_a00[1], &s.unique_count);
+      for (s.legal_scan_index = 0; global_edited_deck.trade[6].total > s.legal_scan_index; ++s.legal_scan_index)
+        FUN_10019ed5(global_edited_deck.trade[6].entries[s.legal_scan_index].DeckEntry_csvid, s.legal_unique_ids, &s.unique_count);
 
       s.csvid = 0;
-      strcpy(s.local_86c, "The following cards are not in 4th edition:\n");
+      strcpy(s.legal_message, "The following cards are not in 4th edition:\n");
 
-      for (s.local_a00[0] = 0; s.local_a00[0] < s.unique_count; ++s.local_a00[0])
+      for (s.legal_scan_index = 0; s.legal_scan_index < s.unique_count; ++s.legal_scan_index)
       {
-        if (!check_filters(s.local_a00[s.local_a00[0] + 1]))
+        if (!check_filters(s.legal_unique_ids[s.legal_scan_index]))
         {
-          strcat(s.local_86c, global_raw_cards_storage[s.local_a00[s.local_a00[0] + 1]].full_name);
-          strcat(s.local_86c, "\n");
+          strcat(s.legal_message, global_raw_cards_storage[s.legal_unique_ids[s.legal_scan_index]].full_name);
+          strcat(s.legal_message, "\n");
           ++s.csvid;
         }
       }
 
       if (s.csvid)
-        MessageBoxA(hwnd, s.local_86c, "Checking deck for legal cards", 0);
+        MessageBoxA(hwnd, s.legal_message, "Checking deck for legal cards", 0);
       else
         MessageBoxA(hwnd, "All cards are in 4th edition", "Checking deck for legal cards", 0);
       break;
@@ -5847,10 +5845,10 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         else
         {
           load_text("menus", "DECKLOADERROR");
-          sprintf(s.buf, text_lines[0], global_deck_filename);
+          sprintf(s.message, text_lines[0], global_deck_filename);
 
           load_text("menus", "DECKBUILDER");
-          MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONHAND);
+          MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONHAND);
 
           load_text("menus", "NEWDECK");
           sprintf(global_deckinfo.deckname, text_lines[0]);
@@ -5866,9 +5864,9 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       if (!strcmp(global_deckinfo.deckname, text_lines[0]) || !global_deckinfo.deckname[0])
       {
         load_text("menus", "NAMEYOURDECK");
-        strcpy(s.buf, text_lines[0]);
+        strcpy(s.message, text_lines[0]);
         load_text("menus", "DECKBUILDER");
-        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+        MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONINFORMATION);
         show_dialog_deckinfo();
         return 2;
       }
@@ -5876,18 +5874,18 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       if (global_deck_num_cards < 40)
       {
         load_text("menus", "TOOFEWCARDS");
-        strcpy(s.buf, text_lines[0]);
+        strcpy(s.message, text_lines[0]);
         load_text("menus", "DECKBUILDER");
-        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+        MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONINFORMATION);
         return 2;
       }
 
       if (global_deck_num_cards > 500 || global_edited_deck_num_entries > 200)
       {
         load_text("menus", "TOOMANYCARDS");
-        strcpy(s.buf, text_lines[0]);
+        strcpy(s.message, text_lines[0]);
         load_text("menus", "DECKBUILDER");
-        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+        MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONINFORMATION);
       }
 
       strcpy(global_deck_filename, global_playdeck_path);
@@ -5903,9 +5901,9 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
           fclose(s.f);
 
           load_text("menus", "DECKEXISTS");
-          sprintf(s.buf, text_lines[0], global_deckinfo.deckname);
+          sprintf(s.message, text_lines[0], global_deckinfo.deckname);
           load_text("menus", "DECKBUILDER");
-          s.artist_i = MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONQUESTION | MB_YESNOCANCEL);
+          s.artist_i = MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONQUESTION | MB_YESNOCANCEL);
           if (s.artist_i == IDCANCEL || s.artist_i == IDNO)
             return 2;
         }
@@ -5917,16 +5915,16 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       if (save_deck(global_deck_filename))
       {
         load_text("menus", "SAVED");
-        sprintf(s.buf, text_lines[0], global_deckinfo.deckname);
+        sprintf(s.message, text_lines[0], global_deckinfo.deckname);
         load_text("menus", "DECKBUILDER");
-        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+        MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONINFORMATION);
       }
       else
       {
         load_text("menus", "DECKSAVEERROR");
-        sprintf(s.buf, text_lines[0], global_deckinfo.deckname);
+        sprintf(s.message, text_lines[0], global_deckinfo.deckname);
         load_text("menus", "DECKBUILDER");
-        MessageBoxA(hwnd, s.buf, text_lines[0], MB_ICONINFORMATION);
+        MessageBoxA(hwnd, s.message, text_lines[0], MB_ICONINFORMATION);
       }
 
       if (global_db_flags_1 & (DBFLAGS_EDITDECK | DBFLAGS_GAUNTLET | DBFLAGS_NOCARDCOUNTCHECK))
@@ -6058,8 +6056,8 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (global_db_flags_1 & DBFLAGS_SHANDALAR)
     {
       load_text("menus", "GOLDTITLE");
-      sprintf(s.buf, text_lines[0], *Gold);
-      strncpy(global_deckinfo.deckname, s.buf, 12);
+      sprintf(s.message, text_lines[0], *Gold);
+      strncpy(global_deckinfo.deckname, s.message, 12);
     }
     else if (global_db_flags_1 & DBFLAGS_EDITDECK)
     {
@@ -6263,14 +6261,14 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_CTLCOLORLISTBOX:
   {
-    s.pad_a10 = wparam;
-    ApplyCardArtPaletteToDc((HDC)s.pad_a10);
-    s.pad_a14 = (HDC)lparam;
-    SetTextColor((HDC)s.pad_a10, RGB(0, 0, 0));
-    if (global_listbox_hwnd == (HWND)s.pad_a14)
-      return global_create_brush_3;
+    s.listbox_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.listbox_dc);
+    s.listbox_hwnd_param = (HWND)lparam;
+    SetTextColor(s.listbox_dc, RGB(0, 0, 0));
+    if (global_listbox_hwnd == s.listbox_hwnd_param)
+      return (LRESULT)global_create_brush_3;
     else
-      return global_create_brush_4;
+      return (LRESULT)global_create_brush_4;
   }
 
   case WM_DESTROY:
@@ -6281,10 +6279,10 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (pen_medgrey)
       DeleteObject(pen_medgrey);
 
-    s.pad_a18 = SendMessageA(global_title_hwnd, 0x31, 0, 0);
+    s.title_font_obj = (HGDIOBJ)SendMessageA(global_title_hwnd, 0x31, 0, 0);
     SendMessageA(global_title_hwnd, 0x30, 0, 0);
-    if (s.pad_a18)
-      DeleteObject(s.pad_a18);
+    if (s.title_font_obj)
+      DeleteObject(s.title_font_obj);
 
     if (DAT_10125e0c)
     {
@@ -6313,12 +6311,12 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     SelectObject(global_hdc, global_old_bmp_obj);
     DeleteObject(global_hbmp);
 
-    s.pad_a1c = GetDC(hwnd);
-    ApplyCardArtPaletteToDc(s.pad_a1c);
+    s.display_dc = GetDC(hwnd);
+    ApplyCardArtPaletteToDc(s.display_dc);
 
-    global_hbmp = CreateCompatibleBitmap(s.pad_a1c, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+    global_hbmp = CreateCompatibleBitmap(s.display_dc, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 
-    ReleaseDC(hwnd, s.pad_a1c);
+    ReleaseDC(hwnd, s.display_dc);
 
     SelectObject(global_hdc, global_hbmp);
 
@@ -6340,18 +6338,18 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case 0x4c8:
   {
-    s.pad_a20 = (HDC)wparam;
-    s.hwnd1 = (HWND)lparam;
-    if (GetDlgItem(hwnd, RES_MAINMENU_BUTTON_STATS) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECKINFO) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_EXIT) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_1) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_2) == (HWND)s.pad_a20 || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_3) == (HWND)s.pad_a20)
-      SendMessage(hwnd, 0x401, GetDlgCtrlID((HWND)s.pad_a20), 0);
+    s.clicked_button = (HWND)wparam;
+    s.invalidate_hwnd = (HWND)lparam;
+    if (GetDlgItem(hwnd, RES_MAINMENU_BUTTON_STATS) == s.clicked_button || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECKINFO) == s.clicked_button || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_EXIT) == s.clicked_button || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_1) == s.clicked_button || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_2) == s.clicked_button || GetDlgItem(hwnd, RES_MAINMENU_BUTTON_DECK_3) == s.clicked_button)
+      SendMessage(hwnd, 0x401, GetDlgCtrlID(s.clicked_button), 0);
     else
       SendMessage(hwnd, 0x401, 1, 0);
 
-    if (s.pad_a20)
-      InvalidateRect((HWND)s.pad_a20, NULL, TRUE);
+    if (s.clicked_button)
+      InvalidateRect(s.clicked_button, NULL, TRUE);
 
-    if (s.hwnd1)
-      InvalidateRect(s.hwnd1, NULL, TRUE);
+    if (s.invalidate_hwnd)
+      InvalidateRect(s.invalidate_hwnd, NULL, TRUE);
 
     return 0;
   }
@@ -6359,52 +6357,52 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
   {
-    s.pad_a30 = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.pad_a30);
-    s.tgt = (HWND)lparam;
-    s.cursel = GetDlgCtrlID(s.tgt);
-    if (GetFocus() == s.tgt)
-      SetTextColor(s.pad_a30, global_colorref_white);
+    s.color_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.color_dc);
+    s.color_target = (HWND)lparam;
+    s.color_ctrl_id = GetDlgCtrlID(s.color_target);
+    if (GetFocus() == s.color_target)
+      SetTextColor(s.color_dc, global_colorref_white);
     else
-      SetTextColor(s.pad_a30, global_colorref_darkgrey);
-    SetBkMode(s.pad_a30, TRANSPARENT);
-    s.hwnd2 = (HWND)GetStockObject(HOLLOW_BRUSH);
-    return (HBRUSH)s.hwnd2;
+      SetTextColor(s.color_dc, global_colorref_darkgrey);
+    SetBkMode(s.color_dc, TRANSPARENT);
+    s.ctlcolor_brush = (HBRUSH)GetStockObject(HOLLOW_BRUSH);
+    return (LRESULT)s.ctlcolor_brush;
   }
 
   case WM_DRAWITEM:
   {
-    s.item_col = (COLORREF)lparam;
+    s.draw_item = (DRAWITEMSTRUCT *)lparam;
 
-    if (GetFocus() == ((DRAWITEMSTRUCT *)s.item_col)->hwndItem)
-      s.fill_x = global_colorref_white;
+    if (GetFocus() == s.draw_item->hwndItem)
+      s.drawitem_fill_color = global_colorref_white;
     else
     {
-      if (((DRAWITEMSTRUCT *)s.item_col)->itemState & 2)
-        s.fill_x = 0x10000c6;
+      if (s.draw_item->itemState & 2)
+        s.drawitem_fill_color = 0x10000c6;
       else
-        s.fill_x = global_colorref_flesh;
+        s.drawitem_fill_color = global_colorref_flesh;
     }
 
-    FUN_10024e48((DRAWITEMSTRUCT *)s.item_col, global_brush_mediumgrey, pen_ltgrey, pen_medgrey, s.fill_x, 0);
+    FUN_10024e48(s.draw_item, global_brush_mediumgrey, pen_ltgrey, pen_medgrey, s.drawitem_fill_color, 0);
     return 1;
   }
 
   case WM_ERASEBKGND:
-    s.rect_stats.bottom = (LONG)wparam;
-    ApplyCardArtPaletteToDc((HDC)s.rect_stats.bottom);
-    s.fill_chdc = CreateCompatibleDC((HDC)s.rect_stats.bottom);
-    ApplyCardArtPaletteToDc(s.fill_chdc);
-    SelectObject(s.fill_chdc, global_pic_dektile4);
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    s.tile_dc = CreateCompatibleDC(s.erase_dc);
+    ApplyCardArtPaletteToDc(s.tile_dc);
+    SelectObject(s.tile_dc, global_pic_dektile4);
 
     GetClientRect(hwnd, &s.r);
-    GetObjectA(global_pic_dektile4, sizeof(BITMAP), &s.bmp_a6c);
+    GetObjectA(global_pic_dektile4, sizeof(BITMAP), &s.tile_bitmap);
 
-    for (s.pics_inline = 0; s.r.right > s.pics_inline; s.pics_inline += 0x20)
-      for (s.fill_y = s.r.bottom; s.fill_y > -0x1d; s.fill_y -= 0x1d)
-        BitBlt((HDC)s.rect_stats.bottom, s.pics_inline, s.fill_y, s.bmp_a6c.bmWidth, s.bmp_a6c.bmHeight, s.fill_chdc, 0, 0, SRCCOPY);
+    for (s.tile_x = 0; s.r.right > s.tile_x; s.tile_x += 0x20)
+      for (s.tile_y = s.r.bottom; s.tile_y > -0x1d; s.tile_y -= 0x1d)
+        BitBlt(s.erase_dc, s.tile_x, s.tile_y, s.tile_bitmap.bmWidth, s.tile_bitmap.bmHeight, s.tile_dc, 0, 0, SRCCOPY);
 
-    DeleteDC(s.fill_chdc);
+    DeleteDC(s.tile_dc);
     return 1;
 
   case WM_INITMENU:
@@ -6416,14 +6414,14 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_MEASUREITEM:
   {
-    s.pad_a8c = (MEASUREITEMSTRUCT *)lparam;
-    s.hwnd_a8c = GetDlgItem(hwnd, wparam);
-    GetClientRect(s.hwnd_a8c, (RECT *)&s.pad_a88);
+    s.measure_item = (MEASUREITEMSTRUCT *)lparam;
+    s.measure_hwnd = GetDlgItem(hwnd, wparam);
+    GetClientRect(s.measure_hwnd, &s.measure_client_rect);
 
-    if (s.pad_a8c->CtlID == 4)
+    if (s.measure_item->CtlID == 4)
     {
-      s.pad_a8c->itemWidth = s.rect_stats.top;
-      s.pad_a8c->itemHeight = s.rect_stats.right / 8;
+      s.measure_item->itemWidth = s.measure_client_rect.right;
+      s.measure_item->itemHeight = s.measure_client_rect.bottom / 8;
     }
     return 0;
   }
@@ -6459,7 +6457,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     s.title_height = 10 * (s.main_h - s.ten * 4) / 100;
     s.cardlistfilter_hgt = 6 * (s.main_h - s.ten * 4) / 100;
 
-    s.pad_b0c = (LONG)GetDC(hwnd);
+    s.pad_b0c = GetDC(hwnd);
     ApplyCardArtPaletteToDc(s.pad_b0c);
     GetTextExtentPointA(s.pad_b0c, "Load new deck", 0xd, &s.sz);
     s.sz.cx += 0xa;
