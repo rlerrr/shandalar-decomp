@@ -76,15 +76,7 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 int sound_unload(int sound_id);
 void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_percent);
 void FUN_00562169(void);
-
-// FUNCTION: SHANDALAR 0x004f2ec0
-int FUN_004f2ec0(int slot_index, int monster_color)
-{
-  (void)slot_index;
-  (void)monster_color;
-  // TODO(decomp): Handles lair/monster encounter intro + duel flow and returns encounter outcome.
-  return 0;
-}
+int FUN_004f2ec0(int slot_index, int monster_color);
 
 // GLOBAL: SHANDALAR 0x00591270
 int DAT_00591270;
@@ -421,7 +413,6 @@ void UpdateWorldLairAndMonsterSlots(void)
     unsigned int slot_u;
     unsigned int terrain_mask;
     unsigned char selected_color;
-    unsigned char *heading_bytes;
   } s;
 
   s.nearest_distance = 0x7fff;
@@ -604,7 +595,8 @@ void UpdateWorldLairAndMonsterSlots(void)
         g_lair_or_monster_slots[s.slot_index].world_x = s.spawn_x * 0x20 + 0x10;
         g_lair_or_monster_slots[s.slot_index].world_y = s.spawn_y * 0x20 + 0x10;
         g_lair_or_monster_slots[s.slot_index].color = s.color;
-        g_lair_or_monster_slots[s.slot_index].movement_heading = 0;
+        ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] = 0;
+        ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 0;
 
         if (((1U << (s.selected_color & 0x1f)) & (unsigned int)gs_creature_names_00591a08[s.creature_tier].metadata[4]) &&
             ((g_defeated_wizards_bitmap & (1U << (s.selected_color & 0x1f))) != 0))
@@ -833,14 +825,13 @@ void UpdateWorldLairAndMonsterSlots(void)
           }
         }
 
-        s.heading_bytes = (unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading;
         if (((g_monster_timer + s.slot_index) & 3) == 0)
         {
-          s.heading_bytes[0] = (unsigned char)s.move_dir;
+          ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] = (unsigned char)s.move_dir;
         }
         else
         {
-          s.move_dir = (signed char)s.heading_bytes[0];
+          s.move_dir = (signed char)((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0];
         }
 
         g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + g_neighbor_dx[s.move_dir] * 4;
@@ -907,7 +898,7 @@ void UpdateWorldLairAndMonsterSlots(void)
             g_lair_or_monster_slots[s.slot_index].world_y = s.prev_y;
             s.terrain_mask = FUN_005611c8(FUN_0043146b((int)((s.prev_x + ((s.prev_x >> 0x1f) & 0x1fU)) >> 5),
                                                        (int)((s.prev_y + ((s.prev_y >> 0x1f) & 0x1fU)) >> 5)));
-            s.heading_bytes[1] = 0;
+            ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 0;
 
             if ((s.terrain_mask & (unsigned int)gs_creature_names_00591a08[s.creature_tier].metadata[4]) == 0)
             {
@@ -919,11 +910,12 @@ void UpdateWorldLairAndMonsterSlots(void)
           {
             g_lair_or_monster_slots[s.slot_index].world_x = g_neighbor_dx[s.move_dir] * s.speed + s.prev_x;
             g_lair_or_monster_slots[s.slot_index].world_y = g_neighbor_dy[s.move_dir] * s.speed + s.prev_y;
-            s.heading_bytes[0] = (unsigned char)s.move_dir;
-            s.heading_bytes[1] = s.heading_bytes[1] + 1;
-            if (s.heading_bytes[1] > 4)
+            ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] = (unsigned char)s.move_dir;
+            ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] =
+                ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] + 1;
+            if (((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] > 4)
             {
-              s.heading_bytes[1] = 1;
+              ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 1;
             }
           }
 
@@ -932,16 +924,16 @@ void UpdateWorldLairAndMonsterSlots(void)
           if (s.new_distance < ((g_lair_or_monster_slots[s.slot_index].entry_type == 0) ? 0x1a : 0x10))
           {
             SaveGameToSlot(3);
-            s.distance_to_player = FUN_004f2ec0(s.slot_index, g_lair_or_monster_slots[s.slot_index].color);
+            s.tmp = FUN_004f2ec0(s.slot_index, g_lair_or_monster_slots[s.slot_index].color);
             g_lair_or_monster_slots[s.slot_index].respawn_timestamp = g_monster_timer;
             RefreshAdventureInterfaceLayout();
-            if ((s.slot_index == 7) && (s.distance_to_player < 1))
+            if ((s.slot_index == 7) && (s.tmp <= 0))
             {
               FUN_00562169();
             }
             else if (s.slot_index == 7)
             {
-              FUN_004290e2(0xd, g_lair_or_monster_slots[7].color);
+              FUN_004290e2(0xd, g_lair_or_monster_slots[s.slot_index].color);
               g_siege_indicator = 0;
             }
             FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
@@ -950,17 +942,21 @@ void UpdateWorldLairAndMonsterSlots(void)
             g_monster_timer = g_monster_timer | 0x1f;
             SaveGameToSlot(3);
           }
-          else if ((s.creature_tier != 0) && (s.heading_bytes[1] != 0) && (s.distance_to_player < 0x50) && (FUN_00522508(s.distance_to_player) < 4))
+          else if ((s.creature_tier != 0) &&
+                   (((signed char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] != 0) &&
+                   (s.distance_to_player < 0x50) && (FUN_00522508(s.distance_to_player) < 4))
           {
             FUN_005614c3(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
-                         g_neighbor_dx[((signed char)s.heading_bytes[0] + 2U) & 7] * 100);
+                         g_neighbor_dx[((signed char)((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[0] + 2U) &
+                                       7] *
+                             100);
           }
         }
         else
         {
           g_lair_or_monster_slots[s.slot_index].world_x = s.prev_x;
           g_lair_or_monster_slots[s.slot_index].world_y = s.prev_y;
-          s.heading_bytes[1] = 0;
+          ((unsigned char *)&g_lair_or_monster_slots[s.slot_index].movement_heading)[1] = 0;
         }
       }
     }

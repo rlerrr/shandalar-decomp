@@ -253,6 +253,17 @@ int play_snd_marker(int param_1, unsigned int param_2)
   return global_sound_vtable.PlaySndMarker(param_1, param_2);
 }
 
+// FUNCTION: SHANDALAR 0x0056d5c0
+int FUN_0056d5c0(int param_1, int *param_2)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.GetSndState(param_1, (DWORD *)param_2);
+}
+
 // FUNCTION: MAGIC 0x00485f81
 int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
 {
