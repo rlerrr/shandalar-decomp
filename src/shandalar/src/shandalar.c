@@ -91,7 +91,7 @@ WorldMagicSlotTimer g_world_magic_slot_timers[0xc] = {
     {0, 0, 0x03020100, 0x07060004},
 };
 // GLOBAL: SHANDALAR 0x00589de8
-char *PTR_s_advinter800_pic_00589de8;
+char *PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
 // GLOBAL: SHANDALAR 0x00583290
 FacemakerWindowBounds DAT_00583290 = {0, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x005832b4
@@ -120,9 +120,9 @@ HINSTANCE g_app_instance;
 long DAT_005a6198[0x4e2];
 
 // GLOBAL: SHANDALAR 0x00591210
-int g_skip_world_sfx_preload;
+int g_skip_world_sfx_preload = 0;
 // GLOBAL: SHANDALAR 0x00591224
-int g_loadsave_skip_esc;
+int g_loadsave_skip_esc = 0;
 // GLOBAL: SHANDALAR 0x00748418
 UINT g_timer_resolution_ms;
 // GLOBAL: SHANDALAR 0x007483fc
@@ -132,7 +132,7 @@ int g_cursor_visibility_depth;
 // GLOBAL: SHANDALAR 0x00589de4
 UINT g_timer_period_ms = 0x21;
 // GLOBAL: SHANDALAR 0x00589df0
-int g_ui_tick_count;
+int g_ui_tick_count = 0;
 // GLOBAL: SHANDALAR 0x00589dec
 int DAT_00589dec = 0x30;
 // GLOBAL: SHANDALAR 0x00748400
@@ -181,9 +181,9 @@ char g_ini_string_scratch[0x28];
 // GLOBAL: SHANDALAR 0x0078df38
 int g_done_text_table_entry;
 // GLOBAL: SHANDALAR 0x00586494
-int DAT_00586494;
+int DAT_00586494 = 0;
 // GLOBAL: SHANDALAR 0x00586498
-int DAT_00586498;
+int DAT_00586498 = 0;
 // GLOBAL: SHANDALAR 0x009300f0
 int DAT_009300f0;
 // GLOBAL: SHANDALAR 0x007486d0
@@ -194,14 +194,16 @@ EncodedImage *g_world_magic_avatar_sprites[5];
 EncodedImage *g_face_preview_sprite_selected;
 // GLOBAL: SHANDALAR 0x0078172c
 EncodedImage *g_face_preview_sprite_group[6];
+// GLOBAL: SHANDALAR 0x0077f1c8
+unsigned int g_load_menu_valid_slot_mask_0077f1c8;
 // GLOBAL: SHANDALAR 0x0073e9dc
 int g_world_scene_reveal_effect_pending;
 // GLOBAL: SHANDALAR 0x00591214
 int DAT_00591214 = 1;
 // GLOBAL: SHANDALAR 0x00591218
-int g_world_move_dir_index;
+int g_world_move_dir_index = 0;
 // GLOBAL: SHANDALAR 0x0059121c
-int g_world_location_music_active;
+int g_world_location_music_active = 0;
 // GLOBAL: SHANDALAR 0x00591220
 int g_world_location_music_track_id = -1;
 // GLOBAL: SHANDALAR 0x0059126c
@@ -245,7 +247,7 @@ int g_mouse_button_mask_snapshot;
 // GLOBAL: SHANDALAR 0x007490f0
 DialogBoxSpriteBank g_dialog_box_sprite_bank;
 // GLOBAL: SHANDALAR 0x0058e050
-HANDLE g_statwin_dll_module;
+HANDLE g_statwin_dll_module = 0;
 // GLOBAL: SHANDALAR 0x0058c038
 char g_save_file_path[] = "D:MAGIC0.SVE";
 // GLOBAL: SHANDALAR 0x0058a86c
@@ -257,11 +259,16 @@ char s_advfac64_pic_path_00591684[] = "advfac64.pic";
 // GLOBAL: SHANDALAR 0x0058c13c
 int g_save_path_needs_init = -1;
 // GLOBAL: SHANDALAR 0x0058c5ec
-int DAT_0058c5ec[0x20];
+int g_dungeon_card_effect_by_color[4] = {0, 8, 867, 939};
 // GLOBAL: SHANDALAR 0x0058c5fc
-int DAT_0058c5fc[0x100];
+int g_dungeon_card_effect_by_monster_flags[9] = {178, 51, 159, 287, 63, 114, 229, 5, -1};
 // GLOBAL: SHANDALAR 0x0058c620
-int DAT_0058c620[0x20];
+int g_mana_castle_card_effect_by_difficulty[5][4] = {
+    {246, 100, 208, 661},
+    {52, 494, 935, 340},
+    {288, 15, 262, 803},
+    {123, 439, 192, 155},
+    {128, 134, 28, 620}};
 // GLOBAL: SHANDALAR 0x00746e00
 int g_statwin_exports_by_ordinal[3];
 // GLOBAL: SHANDALAR 0x00747ee0
@@ -372,7 +379,7 @@ OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x14];
 // GLOBAL: SHANDALAR 0x0078df40
 EncodedImage *DAT_0078df40[10];
 // GLOBAL: SHANDALAR 0x0058b584
-int g_menu_context_index;
+int g_menu_context_index = 0;
 // GLOBAL: SHANDALAR 0x0058b588
 AdvMenuControl g_main_menu_controls[4] = {
     {3, 0x47, 0x39, 0x36, 3, 0x47, 0x39, 0x36, 1, HandleMainMenuButtonControlEvent, ActivateMainMenuControl, 1, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
@@ -434,9 +441,9 @@ jmp_buf DAT_0073e9e0;
 // GLOBAL: SHANDALAR 0x006527b0
 int DAT_006527b0;
 // GLOBAL: SHANDALAR 0x00590764
-int DAT_00590764;
+int DAT_00590764 = -1;
 // GLOBAL: SHANDALAR 0x00590768
-int g_adventure_ui_layout_dirty;
+int g_adventure_ui_layout_dirty = 1;
 // GLOBAL: SHANDALAR 0x00650f28
 int DAT_00650f28;
 // GLOBAL: SHANDALAR 0x0073eaa0
@@ -448,17 +455,17 @@ int g_text_menu_left;
 // GLOBAL: SHANDALAR 0x005a6078
 int g_text_menu_top;
 // GLOBAL: SHANDALAR 0x00580d80
-int g_text_menu_initial_selection;
+int g_text_menu_initial_selection = -1;
 // GLOBAL: SHANDALAR 0x00580d84
-int g_text_menu_mouse_released;
+int g_text_menu_mouse_released = 0;
 // GLOBAL: SHANDALAR 0x00580d88
-int g_text_menu_last_selection;
+int g_text_menu_last_selection = -1;
 // GLOBAL: SHANDALAR 0x00580d8c
-int g_text_menu_show_ok_button;
+int g_text_menu_show_ok_button = 0;
 // GLOBAL: SHANDALAR 0x00580d90
-int g_text_menu_mouse_active;
+int g_text_menu_mouse_active = 0;
 // GLOBAL: SHANDALAR 0x00580d94
-int g_text_menu_timeout_seconds;
+int g_text_menu_timeout_seconds = -1;
 // GLOBAL: SHANDALAR 0x00580d98
 int g_text_menu_line_height = 8;
 // GLOBAL: SHANDALAR 0x00580d9c
@@ -513,7 +520,7 @@ int DAT_005aa414;
 // GLOBAL: SHANDALAR 0x005aa62c
 int DAT_005aa62c;
 // GLOBAL: SHANDALAR 0x005873d4
-int DAT_005873d4;
+int DAT_005873d4 = 0;
 
 // GLOBAL: SHANDALAR 0x0074cfe4
 int g_selected_save_slot_index;
@@ -598,7 +605,7 @@ int FUN_004f717a(void);
 void GenerateTownConnections(void);
 int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_y);
 void FloodFillPathConnectivity(int x, int y, unsigned int depth);
-void FUN_005081fa(void);
+void InitializeCastleDungeonSlots(void);
 unsigned int FUN_0043146b(int param_1, int param_2);
 unsigned int FUN_005611c8(unsigned int param_1);
 unsigned int FUN_004314ca(int param_1, int param_2);
@@ -610,7 +617,7 @@ void SaveGameToSlot(int save_slot_index);
 int FUN_005031a8(void);
 int LoadGameFromSlot(int save_slot_index);
 int FUN_0040dffd(int param_1);
-void FUN_004290e2(int param_1, int param_2);
+void AddJournalEntry(int entry_type, int entry_arg);
 int LoadStatWinDllExports(void);
 void LoadOpeningMenuSpriteResources(void);
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
@@ -701,7 +708,7 @@ void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedI
 WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
 int LoadTextSectionLines(char *filename, char *section);
 int IsKeyInputQueueEmpty(void);
-unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
+unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, int direction_index);
 int FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
 int SignNonZero(int value);
 int RestoreAdventureUiPaletteAndFocus(void);
@@ -833,7 +840,7 @@ opening_menu:
     g_world_scene_reveal_effect_pending = 1;
     InitializeNewGameState();
     FUN_004f6d90();
-    FUN_005081fa();
+    InitializeCastleDungeonSlots();
     Gold = (5 - g_shandalar_difficulty) * 0x32;
     DAT_00591214 = 0;
     do
@@ -1347,8 +1354,9 @@ int MeasureTextLineWidth(char *text)
 // FUNCTION: SHANDALAR 0x0043104f
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index)
 {
+  center_x -= MeasureTextLineWidth(text) / 2;
   PTR_DAT_005832b4->draw_shadow_enabled = 0;
-  DrawTextLineClamped(text, center_x - MeasureTextLineWidth(text) / 2, y, color_index);
+  DrawTextLineClamped(text, center_x, y, color_index);
   PTR_DAT_005832b4->draw_shadow_enabled = 1;
 }
 
@@ -2237,14 +2245,14 @@ int FUN_004bb458(shandalar_worldmagic_index_t inx)
 }
 
 // FUNCTION: SHANDALAR 0x004290e2
-void FUN_004290e2(int param_1, int param_2)
+void AddJournalEntry(int entry_type, int entry_arg)
 {
   if (g_journal_entry_count < 2000)
   {
-    g_journal_entries[g_journal_entry_count][0] = param_1;
-    g_journal_entries[g_journal_entry_count][1] = param_2;
-    g_journal_entries[g_journal_entry_count][2] = g_world_player_x / 32;
-    g_journal_entries[g_journal_entry_count][3] = g_world_player_y / 32;
+    g_journal_entries[g_journal_entry_count].type = entry_type;
+    g_journal_entries[g_journal_entry_count].arg = entry_arg;
+    g_journal_entries[g_journal_entry_count].tile_x = g_world_player_x / 32;
+    g_journal_entries[g_journal_entry_count].tile_y = g_world_player_y / 32;
     g_journal_entry_count = g_journal_entry_count + 1;
   }
 }
@@ -2264,7 +2272,7 @@ int FUN_0056bd9d(unsigned int param_1)
 
   if (FUN_0056c5ea(param_1) >= 3)
   {
-    FUN_004290e2((int)param_1 / 0x100 + 8, param_1 & 0xff);
+    AddJournalEntry((int)param_1 / 0x100 + JOURNAL_ENTRY_CARD_FOUND_SET0, param_1 & 0xff);
   }
   s.entry_index = FUN_0040dffd(global_cards_data[param_1].color) * 0x20 + (unsigned int)global_cards_data[param_1].type * 0x100 +
                   (int)global_cards_data[param_1].name[0];
@@ -3066,216 +3074,208 @@ int FUN_004f82f2(int param_1, int param_2)
 }
 
 // FUNCTION: SHANDALAR 0x005081fa
-void FUN_005081fa(void)
+void InitializeCastleDungeonSlots(void)
 {
-  unsigned char bVar1;
-  unsigned char bVar2;
-  int clamped_required_wins;
-  int param1;
-  unsigned int uVar4;
-  int iVar5;
-  int local_2c;
-  int local_28;
-  int icon_y_scaled;
-  int icon_x_scaled;
-  int location_block_start_index;
-  int inner_index;
-  int entry_index;
-  ShandalarEncounterSlot *slot;
-
-  for (entry_index = 0; entry_index < 0xf; entry_index = entry_index + 1)
+  struct
   {
-    g_castle_dungeon_slots[entry_index].card_slot_3 = -1;
-    g_castle_dungeon_slots[entry_index].card_slot_2 = g_castle_dungeon_slots[entry_index].card_slot_3;
-    g_castle_dungeon_slots[entry_index].card_slot_1 = g_castle_dungeon_slots[entry_index].card_slot_2;
-    g_castle_dungeon_slots[entry_index].times_entered = -1;
-    g_castle_dungeon_slots[entry_index].reserved_2c = g_castle_dungeon_slots[entry_index].times_entered;
+    int card_index;
+    int nearest_distance;
+    int nearest_town_index;
+    int scan_index;
+    int candidate_y;
+    int candidate_x;
+    int distance;
+    int mana_castle_town_index;
+    int inner_index;
+    int entry_index;
+  } s;
+
+  for (s.entry_index = 0; s.entry_index < 0xf; s.entry_index = s.entry_index + 1)
+  {
+    g_castle_dungeon_slots[s.entry_index].card_slot_3 = -1;
+    g_castle_dungeon_slots[s.entry_index].card_slot_2 = g_castle_dungeon_slots[s.entry_index].card_slot_3;
+    g_castle_dungeon_slots[s.entry_index].card_slot_1 = g_castle_dungeon_slots[s.entry_index].card_slot_2;
+    g_castle_dungeon_slots[s.entry_index].times_entered = -1;
+    g_castle_dungeon_slots[s.entry_index].reserved_2c = g_castle_dungeon_slots[s.entry_index].times_entered;
   }
 
-  for (local_2c = 0; local_2c < g_card_count - 0x39; local_2c = local_2c + 1)
+  s.entry_index = 0;
+  for (s.card_index = 0; s.card_index < g_card_count - 0x39; s.card_index = s.card_index + 1)
   {
-    if ((global_cards_data[local_2c].extra_ability & 0x100) != 0)
+    if ((global_cards_data[s.card_index].extra_ability & 0x100) == 0)
     {
-      do
-      {
-        clamped_required_wins = FUN_00522508(10);
-        clamped_required_wins = clamped_required_wins + 5;
-      } while (g_castle_dungeon_slots[clamped_required_wins].card_slot_3 != -1);
+      continue;
+    }
 
-      if (g_castle_dungeon_slots[clamped_required_wins].card_slot_1 == -1)
-      {
-        g_castle_dungeon_slots[clamped_required_wins].card_slot_1 = local_2c;
-      }
-      else if (g_castle_dungeon_slots[clamped_required_wins].card_slot_2 == -1)
-      {
-        g_castle_dungeon_slots[clamped_required_wins].card_slot_2 = local_2c;
-      }
-      else
-      {
-        g_castle_dungeon_slots[clamped_required_wins].card_slot_3 = local_2c;
-      }
+    do
+    {
+      s.entry_index = FUN_00522508(10) + 5;
+    } while (g_castle_dungeon_slots[s.entry_index].card_slot_3 != -1);
+
+    if (g_castle_dungeon_slots[s.entry_index].card_slot_1 == -1)
+    {
+      g_castle_dungeon_slots[s.entry_index].card_slot_1 = s.card_index;
+    }
+    else if (g_castle_dungeon_slots[s.entry_index].card_slot_2 == -1)
+    {
+      g_castle_dungeon_slots[s.entry_index].card_slot_2 = s.card_index;
+    }
+    else
+    {
+      g_castle_dungeon_slots[s.entry_index].card_slot_3 = s.card_index;
     }
   }
 
-  entry_index = 0;
-  do
+  for (s.entry_index = 0; s.entry_index < 0xf; s.entry_index = s.entry_index + 1)
   {
-    if (0xe < entry_index)
-    {
-      return;
-    }
-
     do
     {
       do
       {
         do
         {
-          clamped_required_wins = FUN_00522508(0x40);
-          param1 = FUN_00522508(0x40);
-          uVar4 = FUN_0043146b(clamped_required_wins, param1);
-        } while (uVar4 == 0);
-        uVar4 = FUN_004314ca(clamped_required_wins, param1);
-      } while ((uVar4 & 0x30) != 0);
+          s.candidate_x = FUN_00522508(0x40);
+          s.candidate_y = FUN_00522508(0x40);
+        } while (FUN_0043146b(s.candidate_x, s.candidate_y) == 0);
+      } while ((FUN_004314ca(s.candidate_x, s.candidate_y) & 0x30) != 0);
 
-      local_28 = 0xff;
-      for (icon_x_scaled = 0; icon_x_scaled < 0x80; icon_x_scaled = icon_x_scaled + 1)
+      s.nearest_distance = 0xff;
+      for (s.scan_index = 0; s.scan_index < 0x80; s.scan_index = s.scan_index + 1)
       {
-        if ((entry_index < 5) && (g_town_slots[icon_x_scaled].location_type == 4))
+        if ((s.entry_index < 5) && (g_town_slots[s.scan_index].location_type == 4))
         {
-          uVar4 = FUN_0043146b(g_town_slots[icon_x_scaled].world_x, g_town_slots[icon_x_scaled].world_y);
-          uVar4 = FUN_005611c8(uVar4);
-          if (uVar4 == 1 << (((char)entry_index + 1U) & 0x1f))
+          if (FUN_005611c8(FUN_0043146b(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)) == 1 << (s.entry_index + 1))
           {
-            location_block_start_index = icon_x_scaled;
+            s.mana_castle_town_index = s.scan_index;
           }
         }
 
-        if (((1 < g_town_slots[icon_x_scaled].location_type) && (g_town_slots[icon_x_scaled].location_type != 4)) &&
-            ((iVar5 = FUN_004ecf30(g_town_slots[icon_x_scaled].world_x - clamped_required_wins,
-                                   g_town_slots[icon_x_scaled].world_y - param1),
-              iVar5 < local_28)))
+        if ((g_town_slots[s.scan_index].location_type <= 1) || (g_town_slots[s.scan_index].location_type == 4))
         {
-          icon_y_scaled = icon_x_scaled;
-          local_28 = iVar5;
+          continue;
+        }
+
+        s.distance = FUN_004ecf30(g_town_slots[s.scan_index].world_x - s.candidate_x,
+                                  g_town_slots[s.scan_index].world_y - s.candidate_y);
+        if (s.nearest_distance > s.distance)
+        {
+          s.nearest_distance = s.distance;
+          s.nearest_town_index = s.scan_index;
         }
       }
 
-      for (icon_x_scaled = 0; icon_x_scaled < entry_index; icon_x_scaled = icon_x_scaled + 1)
+      for (s.scan_index = 0; s.scan_index < s.entry_index; s.scan_index = s.scan_index + 1)
       {
-        iVar5 = FUN_004ecf30(g_castle_dungeon_slots[icon_x_scaled].world_x - clamped_required_wins, g_castle_dungeon_slots[icon_x_scaled].world_y - param1);
-        if (iVar5 < local_28)
+        s.distance = FUN_004ecf30(g_castle_dungeon_slots[s.scan_index].world_x - s.candidate_x, g_castle_dungeon_slots[s.scan_index].world_y - s.candidate_y);
+        if (s.nearest_distance > s.distance)
         {
-          local_28 = iVar5;
+          s.nearest_distance = s.distance;
         }
       }
-    } while (local_28 < 4);
+    } while (s.nearest_distance < 4);
 
-    FUN_00431526(0x40, clamped_required_wins, param1);
-    slot = g_castle_dungeon_slots + entry_index;
-    slot->world_x = clamped_required_wins;
-    slot->world_y = param1;
-    slot->north_of_town_index = icon_y_scaled;
-    clamped_required_wins = FUN_00522508(5);
-    slot->color = (unsigned char)clamped_required_wins + 1;
-    slot->monster_flags = 2;
+    FUN_00431526(0x40, s.candidate_x, s.candidate_y);
+    g_castle_dungeon_slots[s.entry_index].world_x = s.candidate_x;
+    g_castle_dungeon_slots[s.entry_index].world_y = s.candidate_y;
+    g_castle_dungeon_slots[s.entry_index].north_of_town_index = s.nearest_town_index;
+    g_castle_dungeon_slots[s.entry_index].color = (unsigned char)(FUN_00522508(5) + 1);
+    g_castle_dungeon_slots[s.entry_index].monster_flags = 2;
 
-    if (entry_index < 5)
+    if (s.entry_index < 5)
     {
-      slot->color = (unsigned char)entry_index + 1;
-      slot->monster_flags = 0x81;
-      slot->world_x = g_town_slots[location_block_start_index].world_x;
-      slot->world_y = g_town_slots[location_block_start_index].world_y;
+      g_castle_dungeon_slots[s.entry_index].color = s.entry_index + 1;
+      g_castle_dungeon_slots[s.entry_index].monster_flags = 0x81;
+      g_castle_dungeon_slots[s.entry_index].world_x = g_town_slots[s.mana_castle_town_index].world_x;
+      g_castle_dungeon_slots[s.entry_index].world_y = g_town_slots[s.mana_castle_town_index].world_y;
     }
 
-    bVar1 = slot->monster_flags;
-    clamped_required_wins = FUN_00522508(2);
-    if (clamped_required_wins + 1 < (int)(unsigned int)bVar1)
+    s.inner_index = 0;
+    if ((int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags <= FUN_00522508(2) + 1)
     {
-      inner_index = 0;
-      for (icon_x_scaled = 0; icon_x_scaled < (int)(unsigned int)(unsigned char)slot->monster_flags; icon_x_scaled = icon_x_scaled + 1)
+      if (1 < (int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags)
       {
-        inner_index = inner_index + icon_x_scaled * 2 + 4;
-      }
-    }
-    else
-    {
-      if ((unsigned char)slot->monster_flags < 2)
-      {
-        inner_index = 0x10;
+        s.inner_index = 0x1c;
       }
       else
       {
-        inner_index = 0x1c;
+        s.inner_index = 0x10;
       }
-      slot->monster_flags = slot->monster_flags | 0x80;
+      g_castle_dungeon_slots[s.entry_index].monster_flags = g_castle_dungeon_slots[s.entry_index].monster_flags | 0x80;
     }
-
-    if (slot->card_slot_2 == -1)
+    else
     {
-      inner_index = (inner_index * 3) / 2;
+      s.inner_index = 0;
+      for (s.scan_index = 0; s.scan_index < (int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags; s.scan_index = s.scan_index + 1)
+      {
+        s.inner_index = s.inner_index + s.scan_index * 2 + 4;
+      }
     }
-    if (slot->card_slot_3 != -1)
+
+    if (g_castle_dungeon_slots[s.entry_index].card_slot_2 == -1)
     {
-      inner_index = (inner_index * 2) / 3;
+      s.inner_index = (s.inner_index * 3) / 2;
+    }
+    if (g_castle_dungeon_slots[s.entry_index].card_slot_3 != -1)
+    {
+      s.inner_index = (s.inner_index * 2) / 3;
     }
 
-    bVar1 = slot->monster_flags;
-    bVar2 = slot->monster_flags;
-    clamped_required_wins = FUN_00522508(2);
-    slot->card_in_effect = DAT_0058c5fc[((((bVar1 & 0xc0) == 0) - 1 & 4) + (bVar2 & 0x7f) + clamped_required_wins)];
-    slot->rules_bitmap = 1;
+    g_castle_dungeon_slots[s.entry_index].card_in_effect =
+        g_dungeon_card_effect_by_monster_flags[((g_castle_dungeon_slots[s.entry_index].monster_flags & 0xc0) != 0 ? 4 : 0) +
+                                               (g_castle_dungeon_slots[s.entry_index].monster_flags & 0x7f) + FUN_00522508(2)];
+    g_castle_dungeon_slots[s.entry_index].rules_bitmap = 1;
 
-    switch ((int)(inner_index + (inner_index >> 0x1f & 3U)) >> 2)
+    switch (s.inner_index / 4)
     {
     case 0:
     case 1:
     case 2:
-      slot->monster_flags = slot->monster_flags + 1;
+      g_castle_dungeon_slots[s.entry_index].monster_flags++;
     case 3:
-      slot->card_in_effect = DAT_0058c5ec[(char)slot->color];
-      clamped_required_wins = FUN_00522508(5);
-      slot->rules_bitmap = slot->rules_bitmap | 1 << (((char)clamped_required_wins + 4U) & 0x1f);
+      g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(FUN_00522508(5) + 4);
       break;
     case 4:
-      slot->card_in_effect = DAT_0058c5ec[(char)slot->color];
+      g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
       break;
     case 5:
-      clamped_required_wins = FUN_00522508(5);
-      slot->rules_bitmap = slot->rules_bitmap | 1 << (((char)clamped_required_wins + 4U) & 0x1f);
-      slot->card_in_effect = -1;
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(FUN_00522508(5) + 4);
+      g_castle_dungeon_slots[s.entry_index].card_in_effect = -1;
       break;
     case 6:
-      slot->card_in_effect = -1;
+      g_castle_dungeon_slots[s.entry_index].card_in_effect = -1;
       break;
     }
 
-    if (((slot->rules_bitmap & 0x100) != 0) || (((slot->monster_flags & 0x3f) < 2) && ((slot->rules_bitmap & 0x20) != 0)))
+    if (((g_castle_dungeon_slots[s.entry_index].rules_bitmap & 0x100) != 0) ||
+        (((g_castle_dungeon_slots[s.entry_index].monster_flags & 0x3f) < 2) && ((g_castle_dungeon_slots[s.entry_index].rules_bitmap & 0x20) != 0)))
     {
-      slot->card_in_effect = DAT_0058c5ec[(char)slot->color];
-      slot->rules_bitmap = slot->rules_bitmap & 0xfffffedf;
+      g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap & 0xfffffedf;
     }
 
-    if ((slot->monster_flags & 0x7f) == 1)
+    if ((g_castle_dungeon_slots[s.entry_index].monster_flags & 0x7f) == 1)
     {
-      slot->rules_bitmap = slot->rules_bitmap & 0xfffffffe;
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap & 0xfffffffe;
     }
 
-    if (entry_index < 5)
+    if (s.entry_index < 5)
     {
-      slot->rules_bitmap = slot->rules_bitmap | 1;
-      slot->rules_bitmap = slot->rules_bitmap | 2;
-      slot->card_in_effect = DAT_0058c620[g_shandalar_difficulty + entry_index * 4];
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1;
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 2;
+      g_castle_dungeon_slots[s.entry_index].card_in_effect = g_mana_castle_card_effect_by_difficulty[s.entry_index][g_shandalar_difficulty];
     }
-    entry_index = entry_index + 1;
-  } while (1);
+  }
 }
 
 // FUNCTION: SHANDALAR 0x00431351
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200)
 {
-  DrawEncodedImageResampled(dst, (x_320 * global_screen_width) / 0x280, (global_screen_height * y_200) / 0x1e0,
-                            (width_320 * global_screen_width) / 0x280, (height_200 * global_screen_height) / 0x1e0, sprite);
+  x_320 = (x_320 * global_screen_width) / 0x280;
+  y_200 = (y_200 * global_screen_height) / 0x1e0;
+  width_320 = (width_320 * global_screen_width) / 0x280;
+  height_200 = (height_200 * global_screen_height) / 0x1e0;
+  DrawEncodedImageResampled(dst, x_320, y_200, width_320, height_200, sprite);
 }
 
 // FUNCTION: SHANDALAR 0x0043146b
@@ -3483,21 +3483,21 @@ int LoadGameFromSlot(int save_slot_index)
     if (save_slot_index == -1)
     {
       strcpy(g_ui_message_buffer, "\x8cSelect Load File...\n");
-      *(int *)(DAT_0077f190 + 0x38) = 0;
+      g_load_menu_valid_slot_mask_0077f1c8 = 0;
 
       for (slot_index = 0; slot_index < 10; slot_index = slot_index + 1)
       {
         g_save_file_path[7] = (char)FUN_004ece40(slot_index);
         if (ValidateOrLoadSaveGame(g_save_file_path, 1) != 0)
         {
-          *(unsigned int *)(DAT_0077f190 + 0x38) = *(unsigned int *)(DAT_0077f190 + 0x38) | (1 << (unsigned char)slot_index);
+          g_load_menu_valid_slot_mask_0077f1c8 |= (1 << (unsigned char)slot_index);
         }
       }
 
       FUN_0046ed03();
       g_selected_save_slot_index = RunTextMenuAt(g_ui_message_buffer, 0x30, 0x40);
       FUN_0046ed33();
-      if ((*(unsigned int *)(DAT_0077f190 + 0x38) & (1 << (unsigned char)g_selected_save_slot_index)) == 0)
+      if ((g_load_menu_valid_slot_mask_0077f1c8 & (1 << (unsigned char)g_selected_save_slot_index)) == 0)
       {
         g_selected_save_slot_index = -1;
       }
@@ -4083,34 +4083,43 @@ int HandleMainMenuButtonControlEvent(AdvMenuControl *control, int event_type)
 }
 
 // FUNCTION: SHANDALAR 0x004ff652
-int HandlePortraitMainMenuControlEvent(AdvMenuControl *control_ptr, int event_type)
+int HandlePortraitMainMenuControlEvent(AdvMenuControl *control, int event_type)
 {
-  AdvMenuControl *control;
-  EncodedImage *sprite;
-  int preview_panel_y_offset;
-  int avatar_sprite_index;
-  int clamped_required_wins;
-  unsigned int local_width;
-  DWORD local_height;
-  unsigned int local_x;
-  int local_y;
+  struct
+  {
+    int mouse_inside_control;
+    int clamped_required_wins;
+    int avatar_sprite_index;
+    int local_y;
+    DWORD local_height;
+    int local_x;
+    unsigned int local_width;
+    EncodedImage *sprite;
+  } s;
 
-  control = (AdvMenuControl *)control_ptr;
   if (event_type == 0)
   {
-    sprite = g_face_preview_sprite_selected;
+    s.sprite = g_face_preview_sprite_selected;
   }
   else
   {
-    sprite = g_face_preview_sprite_group[0];
+    s.sprite = g_face_preview_sprite_group[0];
   }
   if (g_menu_render_guard == 0)
   {
     if ((g_mouse_x < control->x) || (control->x + control->width < g_mouse_x))
     {
-      return 0;
+      s.mouse_inside_control = 0;
     }
-    if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
+    else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
+    {
+      s.mouse_inside_control = 0;
+    }
+    else
+    {
+      s.mouse_inside_control = 1;
+    }
+    if (s.mouse_inside_control == 0)
     {
       return 0;
     }
@@ -4119,27 +4128,25 @@ int HandlePortraitMainMenuControlEvent(AdvMenuControl *control_ptr, int event_ty
   {
     return 0;
   }
-  local_height = (DWORD)ScaleUiCoordinate(0x30);
-  local_width = (unsigned int)ScaleUiCoordinate((sprite->width * 0x30) / (int)sprite->height);
-  preview_panel_y_offset = ScaleUiCoordinate(0x20);
-  local_x = (unsigned int)(preview_panel_y_offset - (int)local_width / 2);
-  preview_panel_y_offset = ScaleUiCoordinate(0x106);
-  local_y = preview_panel_y_offset - (int)local_height / 2;
-  if (event_type == 2)
+  s.local_height = (DWORD)ScaleUiCoordinate(0x30);
+  s.local_width = (unsigned int)ScaleUiCoordinate((s.sprite->width * 0x30) / (int)s.sprite->height);
+  s.local_x = ScaleUiCoordinate(0x20) - (int)s.local_width / 2;
+  s.local_y = ScaleUiCoordinate(0x106) - (int)s.local_height / 2;
+  if (event_type != 2)
   {
-    avatar_sprite_index = ScaleUiCoordinate(4);
-    clamped_required_wins = ScaleUiCoordinate(8);
-    BlitGraphicsRect(PTR_DAT_00583354, local_x, local_y, local_width, local_height, PTR_DAT_005832dc, local_x, local_y);
-    DrawEncodedImageResampled(PTR_DAT_005832dc, avatar_sprite_index + local_x, avatar_sprite_index + local_y, local_width - clamped_required_wins, (int)local_height - clamped_required_wins, sprite);
-    BlitGraphicsRect(PTR_DAT_005832dc, local_x, local_y, local_width, local_height, PTR_DAT_005832b4, local_x, local_y);
-    if (control->on_activate != (AdvMenuActivateCallback)0)
-    {
-      control->on_activate(control);
-    }
+    DrawEncodedImageResampled(g_menu_control_draw_target_page, s.local_x, s.local_y, s.local_width, (int)s.local_height, s.sprite);
   }
   else
   {
-    DrawEncodedImageResampled(g_menu_control_draw_target_page, local_x, local_y, local_width, (int)local_height, sprite);
+    s.avatar_sprite_index = ScaleUiCoordinate(4);
+    s.clamped_required_wins = ScaleUiCoordinate(8);
+    BlitGraphicsRect(PTR_DAT_00583354, s.local_x, s.local_y, s.local_width, s.local_height, PTR_DAT_005832dc, s.local_x, s.local_y);
+    DrawEncodedImageResampled(PTR_DAT_005832dc, s.avatar_sprite_index + s.local_x, s.avatar_sprite_index + s.local_y, s.local_width - s.clamped_required_wins, (int)s.local_height - s.clamped_required_wins, s.sprite);
+    BlitGraphicsRect(PTR_DAT_005832dc, s.local_x, s.local_y, s.local_width, s.local_height, PTR_DAT_005832b4, s.local_x, s.local_y);
+  }
+  if (event_type == 2 && control->on_activate != (AdvMenuActivateCallback)0)
+  {
+    control->on_activate(control);
   }
   return 1;
 }
@@ -4831,7 +4838,7 @@ void UpdateAdventureWorldInputAndMovement(void)
             s.random_world_y = FUN_00522508(0x40);
             s.abs_delta_x = FUN_00522508(0x40);
           } while (FUN_0043146b(s.random_world_y, s.abs_delta_x) == 0);
-          FUN_004290e2(0x12, 2);
+          AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_TELEPORT_RANDOM);
           g_world_player_x = s.random_world_y * 0x20 + 0x10;
           g_world_player_y = s.abs_delta_x * 0x20 + 0x10;
           RefreshAdventureInterfaceLayout();
@@ -4839,7 +4846,7 @@ void UpdateAdventureWorldInputAndMovement(void)
           break;
         case 3:
           g_world_magic_slot_timers[s.key_magic_index * 2].timer = 0x96;
-          FUN_004290e2(0x12, 3);
+          AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_DELAY_MONSTERS);
           break;
         case 4:
           s.tile_magic_mask = 0x7fff;
@@ -4860,7 +4867,9 @@ void UpdateAdventureWorldInputAndMovement(void)
           if (s.nearest_slot_index != -1)
           {
             FreeOpeningMenuSpriteWorkEntries(s.nearest_slot_index, s.nearest_slot_index + 8);
-            FUN_004290e2(0x12, (g_lair_or_monster_slots[s.nearest_slot_index].entry_type << 0x10) | 4);
+            AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT,
+                            (g_lair_or_monster_slots[s.nearest_slot_index].entry_type << 0x10) |
+                                JOURNAL_WORLD_MAGIC_EVENT_BANISH_MONSTER);
             g_lair_or_monster_slots[s.nearest_slot_index].entry_type = SHANDALAR_ENTRY_NONE;
           }
           break;
@@ -4869,7 +4878,7 @@ void UpdateAdventureWorldInputAndMovement(void)
           {
             g_world_player_x = (g_lair_or_monster_slots[7].world_x & 0xffe0U) + 0x10;
             g_world_player_y = (g_lair_or_monster_slots[7].world_y & 0xffe0U) + 0x1f;
-            FUN_004290e2(0x12, 5);
+            AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_TELEPORT_TO_CASTLE);
           }
           g_world_scene_reveal_effect_pending = 1;
           break;
@@ -5307,27 +5316,19 @@ int IsKeyInputQueueEmpty(void)
 }
 
 // FUNCTION: SHANDALAR 0x00431859
-unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index)
+unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, int direction_index)
 {
-  unsigned int road_mask;
+  if ((tile_x >= 0x40) || (tile_x < 0))
+  {
+    return 0;
+  }
 
-  if ((tile_x < 0x40) && (-1 < tile_x))
+  if ((tile_y >= 0x40) || (tile_y < 0))
   {
-    if ((tile_y < 0x40) && (-1 < tile_y))
-    {
-      road_mask = GetGraphicsPixelColorRef(PTR_DAT_00583304, tile_x, tile_y + 0x40);
-      road_mask = road_mask & (1U << ((unsigned char)(direction_index - 1U) & 0x1f));
-    }
-    else
-    {
-      road_mask = 0;
-    }
+    return 0;
   }
-  else
-  {
-    road_mask = 0;
-  }
-  return road_mask;
+
+  return GetGraphicsPixelColorRef(PTR_DAT_00583304, tile_x, tile_y + 0x40) & (1U << ((unsigned char)(direction_index - 1U)));
 }
 
 // FUNCTION: SHANDALAR 0x004bdaad
@@ -6006,20 +6007,20 @@ int LoadAdvStringsFile(const char *filename)
   } s;
 
   s.ok = 1;
-  s.ok &= LoadTextSectionStringTable(filename, "PLAYERNAMES", gs_playernames_0077c5a0, 0xe, DAT_0077e2c0, DAT_0077e2c0 + 0x2bc, (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "DIFFICULTYLEVELS", gs_difficultylevels_0077d130, 4, DAT_0074d790, DAT_0074d790 + 0x64, (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "DUNGEON_NAMES", gs_dungeon_names_00780820, 0x11, DAT_0074c970, DAT_0074c970 + 0x352, (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "LAIR_NAMES", gs_lair_names_0077c020, 0x13, DAT_0074bd30, DAT_0074bd30 + 0x3b6, (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "PLAYERNAMES", gs_playernames_0077c5a0, 0xe, gs_playernames_buf_0077e2c0, gs_playernames_buf_0077e2c0 + 0x2bc, (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "DIFFICULTYLEVELS", gs_difficultylevels_0077d130, 4, gs_difficultylevels_buf_0074d790, gs_difficultylevels_buf_0074d790 + 0x64, (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "DUNGEON_NAMES", gs_dungeon_names_00780820, 0x11, gs_dungeon_names_buf_0074c970, gs_dungeon_names_buf_0074c970 + 0x352, (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "LAIR_NAMES", gs_lair_names_0077c020, 0x13, gs_lair_names_buf_0074bd30, gs_lair_names_buf_0074bd30 + 0x3b6, (char **)0);
 
   LoadTextSectionLines(filename, "CITYNAMES_FORMAT");
-  strcpy(DAT_0074c950, text_lines[0]);
-  strcpy(DAT_0077f190, text_lines[1]);
+  strcpy(gs_cityname_format_left_0074c950, text_lines[0]);
+  strcpy(gs_cityname_format_right_0077f190, text_lines[1]);
 
   LoadTextSectionLines(filename, "CITYNAME_VILLAGE");
-  strcpy(DAT_0077cfd0, text_lines[0]);
+  strcpy(gs_cityname_village_0077cfd0, text_lines[0]);
 
   LoadTextSectionLines(filename, "CITYNAME_CASTLE");
-  strcpy(DAT_00765dc0, text_lines[0]);
+  strcpy(gs_cityname_castle_00765dc0, text_lines[0]);
 
   LoadTextSectionLines(filename, "CITYNAME_MANACASTLE");
 
@@ -6028,196 +6029,196 @@ int LoadAdvStringsFile(const char *filename)
     s.iVar36 = s.local_c * 4 + 4;
     s.iVar36 = s.iVar36 + s.iVar36 * 4;
     s.iVar36 = s.iVar36 + s.iVar36 * 4;
-    strcpy(DAT_0077de00 + s.iVar36, text_lines[s.local_c]);
+    strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + s.iVar36, text_lines[s.local_c]);
   }
-  strcpy(DAT_0077de00, DAT_00765dc0);
+  strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00, gs_cityname_castle_00765dc0);
 
-  s.local_8 = DAT_0077d610;
-  s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_FIRSTHALF", gs_citynames_firsthalf_0077e060, 0x10, DAT_0077d610,
-                                     DAT_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), &s.local_8);
+  s.local_8 = gs_city_text_cluster_0077d610.citynames_buf_0077d610;
+  s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_FIRSTHALF", gs_citynames_firsthalf_0077e060, 0x10, gs_city_text_cluster_0077d610.citynames_buf_0077d610,
+                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), &s.local_8);
   s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_SECONDHALF", gs_citynames_secondhalf_007653e0, 0x10, s.local_8,
-                                     DAT_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), (char **)0);
+                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), (char **)0);
 
-  s.local_8 = DAT_0074b160;
+  s.local_8 = gs_worldmagic_buf_0074b160;
   LoadTextSectionLines(filename, "WORLDMAGIC");
-  strcpy(DAT_0077e1d0, text_lines[0]);
-  s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_NAMES", gs_worldmagic_names_00780660, 0xc, DAT_0074b160,
-                                     DAT_0074b160 + sizeof(gs_worldmagic_buf_0074b160), &s.local_8);
+  strcpy(gs_worldmagic_title_0077e1d0, text_lines[0]);
+  s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_NAMES", gs_worldmagic_names_00780660, 0xc, gs_worldmagic_buf_0074b160,
+                                     gs_worldmagic_buf_0074b160 + sizeof(gs_worldmagic_buf_0074b160), &s.local_8);
   s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_EXPLAINS", gs_worldmagic_explains_0074b8f0, 0xc, s.local_8,
-                                     DAT_0074b160 + sizeof(gs_worldmagic_buf_0074b160), (char **)0);
+                                     gs_worldmagic_buf_0074b160 + sizeof(gs_worldmagic_buf_0074b160), (char **)0);
 
-  s.ok &= LoadTextSectionStringTable(filename, "LOGSTRINGS", gs_logstrings_0077c9a0, 0x10, DAT_0077c680,
-                                     DAT_0077c680 + sizeof(gs_logstrings_buf_0077c680), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "LOGSTRINGS", gs_logstrings_0077c9a0, 0x10, gs_logstrings_buf_0077c680,
+                                     gs_logstrings_buf_0077c680 + sizeof(gs_logstrings_buf_0077c680), (char **)0);
 
   LoadTextSectionLines(filename, "WIZARDNAMES");
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_0077ee70 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
+    strcpy(gs_wizardnames_0077ee70 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
   }
-  strcpy(DAT_0077ee70, "");
+  strcpy(gs_wizardnames_0077ee70, "");
 
   s.iVar36 = LoadTextSectionLines(filename, "CREATURENAMES");
-  if ((int)DAT_00593934 <= s.iVar36)
+  if ((int)gs_creature_name_count_00593934 <= s.iVar36)
   {
-    s.iVar36 = DAT_00593934;
+    s.iVar36 = gs_creature_name_count_00593934;
   }
   for (s.local_c = 0; s.local_c < s.iVar36; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_00591a12 + s.local_c * 0x8c, text_lines[s.local_c]);
+    strcpy(gs_creature_names_00591a08[s.local_c].name + 0x0a, text_lines[s.local_c]);
   }
-  while (s.local_c = s.iVar36, s.local_c < (int)DAT_00593934)
+  while (s.local_c = s.iVar36, s.local_c < (int)gs_creature_name_count_00593934)
   {
-    strcpy(DAT_00591a12 + s.local_c * 0x8c, "");
+    strcpy(gs_creature_names_00591a08[s.local_c].name + 0x0a, "");
     s.iVar36 = s.local_c + 1;
   }
 
   s.iVar36 = LoadTextSectionLines(filename, "CREATURENAME_ARTICLES");
-  if ((int)DAT_00593934 <= s.iVar36)
+  if ((int)gs_creature_name_count_00593934 <= s.iVar36)
   {
-    s.iVar36 = DAT_00593934;
+    s.iVar36 = gs_creature_name_count_00593934;
   }
   for (s.local_c = 0; s.local_c < s.iVar36; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_00591a08 + s.local_c * 0x8c, text_lines[s.local_c]);
+    strcpy(gs_creature_names_00591a08[s.local_c].name, text_lines[s.local_c]);
   }
-  while (s.local_c = s.iVar36, s.local_c < (int)DAT_00593934)
+  while (s.local_c = s.iVar36, s.local_c < (int)gs_creature_name_count_00593934)
   {
-    strcpy(DAT_00591a08 + s.local_c * 0x8c, "");
+    strcpy(gs_creature_names_00591a08[s.local_c].name, "");
     s.iVar36 = s.local_c + 1;
   }
 
   s.iVar36 = LoadTextSectionLines(filename, "CREATURENAMES_PLURAL");
-  if ((int)DAT_00593934 <= s.iVar36)
+  if ((int)gs_creature_name_count_00593934 <= s.iVar36)
   {
-    s.iVar36 = DAT_00593934;
+    s.iVar36 = gs_creature_name_count_00593934;
   }
   for (s.local_c = 0; s.local_c < s.iVar36; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_00591a44 + s.local_c * 0x8c, text_lines[s.local_c]);
+    strcpy(gs_creature_names_00591a08[s.local_c].plural + 0x0a, text_lines[s.local_c]);
   }
-  while (s.local_c = s.iVar36, s.local_c < (int)DAT_00593934)
+  while (s.local_c = s.iVar36, s.local_c < (int)gs_creature_name_count_00593934)
   {
-    strcpy(DAT_00591a44 + s.local_c * 0x8c, "");
+    strcpy(gs_creature_names_00591a08[s.local_c].plural + 0x0a, "");
     s.iVar36 = s.local_c + 1;
   }
 
   LoadTextSectionLines(filename, "DIRECTIONS");
   for (s.local_c = 0; s.local_c < 4; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_00765d50 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_directions_00765d50 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
-  s.local_8 = DAT_0074c5c0;
-  s.ok &= LoadTextSectionStringTable(filename, "CARDCLASSNAMES", gs_cardclassnames_0077cf70, 9, DAT_0074c5c0,
-                                     DAT_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), &s.local_8);
+  s.local_8 = gs_cardclassnames_buf_0074c5c0;
+  s.ok &= LoadTextSectionStringTable(filename, "CARDCLASSNAMES", gs_cardclassnames_0077cf70, 9, gs_cardclassnames_buf_0074c5c0,
+                                     gs_cardclassnames_buf_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), &s.local_8);
   s.ok &= LoadTextSectionStringTable(filename, "CARDCLASSNAMES_PLURAL", gs_cardclassnames_plural_0077e1f0, 9, s.local_8,
-                                     DAT_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), (char **)0);
+                                     gs_cardclassnames_buf_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), (char **)0);
 
   LoadTextSectionLines(filename, "SPELLNAMES");
-  strcpy(DAT_0077e6e0, text_lines[0]);
+  strcpy(gs_spellname_primary_0077e6e0, text_lines[0]);
   for (s.local_c = 1; s.local_c < 5; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_0077e220 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_spellnames_0077e220 + s.local_c * 0x19, text_lines[s.local_c]);
   }
-  strcpy(DAT_0077e220, text_lines[6]);
+  strcpy(gs_spellnames_0077e220, text_lines[6]);
 
   LoadTextSectionLines(filename, "MANANAMES");
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_0074d980 + (s.local_c * 5 + 5) * 5, text_lines[s.local_c]);
+    strcpy(gs_mananames_0074d980 + (s.local_c * 5 + 5) * 5, text_lines[s.local_c]);
   }
-  strcpy(DAT_0074d980, "");
+  strcpy(gs_mananames_0074d980, "");
 
   LoadTextSectionLines(filename, "LANDWALKS");
   for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_007806f0 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
+    strcpy(gs_landwalks_007806f0 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
   }
-  strcpy(DAT_007806f0, "");
+  strcpy(gs_landwalks_007806f0, "");
 
   LoadTextSectionLines(filename, "AMULETNAMES");
   for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_0077d090 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_amuletnames_0077d090 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
   LoadTextSectionLines(filename, "AMULETNAMES_PLURAL");
   for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_0077edd0 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_amuletnames_plural_0077edd0 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
   LoadTextSectionLines(filename, "COLORCARDS");
   for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
   {
-    strcpy(DAT_0077c5e0 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_colorcards_0077c5e0 + s.local_c * 0x19, text_lines[s.local_c]);
   }
 
-  s.ok &= LoadTextSectionStringTable(filename, "CAVE_SHOWCLUES", gs_cave_showclues_0077efa0, 0x17, DAT_007658d0,
-                                     DAT_007658d0 + sizeof(gs_cave_showclues_buf_007658d0), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "CAVE_SHOWCLUES", gs_cave_showclues_0077efa0, 0x17, gs_cave_showclues_buf_007658d0,
+                                     gs_cave_showclues_buf_007658d0 + sizeof(gs_cave_showclues_buf_007658d0), (char **)0);
 
-  s.local_8 = DAT_0074da70;
-  s.ok &= LoadTextSectionStringTable(filename, "ENCOUNTER_PREDUEL", gs_encounter_preduel_0077f0d0, 0x30, DAT_0074da70,
-                                     DAT_0074da70 + sizeof(gs_encounter_buf_0074da70), &s.local_8);
+  s.local_8 = gs_encounter_buf_0074da70;
+  s.ok &= LoadTextSectionStringTable(filename, "ENCOUNTER_PREDUEL", gs_encounter_preduel_0077f0d0, 0x30, gs_encounter_buf_0074da70,
+                                     gs_encounter_buf_0074da70 + sizeof(gs_encounter_buf_0074da70), &s.local_8);
   s.ok &= LoadTextSectionStringTable(filename, "ENCOUNTER_POSTDUEL", gs_encounter_postduel_0077f050, 0x20, s.local_8,
-                                     DAT_0074da70 + sizeof(gs_encounter_buf_0074da70), (char **)0);
+                                     gs_encounter_buf_0074da70 + sizeof(gs_encounter_buf_0074da70), (char **)0);
 
-  s.local_8 = DAT_0077f610;
-  s.ok &= LoadTextSectionStringTable(filename, "VISIT", gs_visit_0077c4f0, 0x23, DAT_0077f610, DAT_0077f610 + sizeof(gs_visit_buf_0077f610),
+  s.local_8 = gs_visit_buf_0077f610;
+  s.ok &= LoadTextSectionStringTable(filename, "VISIT", gs_visit_0077c4f0, 0x23, gs_visit_buf_0077f610, gs_visit_buf_0077f610 + sizeof(gs_visit_buf_0077f610),
                                      &s.local_8);
   s.ok &= LoadTextSectionStringTable(filename, "VISIT_CITYBUY", gs_visit_citybuy_0077f1d0, 4, s.local_8,
-                                     DAT_0077f610 + sizeof(gs_visit_buf_0077f610), (char **)0);
+                                     gs_visit_buf_0077f610 + sizeof(gs_visit_buf_0077f610), (char **)0);
 
-  s.ok &= LoadTextSectionStringTable(filename, "CASTLEWIN", gs_castlewin_0074b8c0, 0xb, DAT_0077e700,
-                                     DAT_0077e700 + sizeof(gs_castlewin_buf_0077e700), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "DUNGEON", gs_dungeon_0077f000, 0x14, DAT_00780870, DAT_00780870 + sizeof(gs_dungeon_buf_00780870),
+  s.ok &= LoadTextSectionStringTable(filename, "CASTLEWIN", gs_castlewin_0074b8c0, 0xb, gs_castlewin_buf_0077e700,
+                                     gs_castlewin_buf_0077e700 + sizeof(gs_castlewin_buf_0077e700), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "DUNGEON", gs_dungeon_0077f000, 0x14, gs_dungeon_buf_00780870, gs_dungeon_buf_00780870 + sizeof(gs_dungeon_buf_00780870),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "HINTTEXT", gs_hinttext_0077e580, 2, DAT_0077e5a0, DAT_0077e5a0 + sizeof(gs_hinttext_buf_0077e5a0),
+  s.ok &= LoadTextSectionStringTable(filename, "HINTTEXT", gs_hinttext_0077e580, 2, gs_hinttext_buf_0077e5a0, gs_hinttext_buf_0077e5a0 + sizeof(gs_hinttext_buf_0077e5a0),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "QUESTFAILED", gs_questfailed_0077c580, 6, DAT_0074b930,
-                                     DAT_0074b930 + sizeof(gs_questfailed_buf_0074b930), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "MONSTERLAIR", gs_monsterlair_0074cff0, 6, DAT_0074d010,
-                                     DAT_0074d010 + sizeof(gs_monsterlair_buf_0074d010), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "BUYANYCARD", gs_buyanycard_0074ccd0, 6, DAT_0077f1e0,
-                                     DAT_0077f1e0 + sizeof(gs_buyanycard_buf_0077f1e0), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "QUESTSTATUS", gs_queststatus_0077e0a0, 0x1a, DAT_0074d270,
-                                     DAT_0074d270 + sizeof(gs_queststatus_buf_0074d270), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "NEWSFLASH", gs_newsflash_0077d140, 0xb, DAT_0077d1c0,
-                                     DAT_0077d1c0 + sizeof(gs_newsflash_buf_0077d1c0), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "CITYCARDTEXT", gs_citycardtext_0074ccf0, 0x31, DAT_0074c0f0,
-                                     DAT_0074c0f0 + sizeof(gs_citycardtext_buf_0074c0f0), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "QUESTFAILED", gs_questfailed_0077c580, 6, gs_questfailed_buf_0074b930,
+                                     gs_questfailed_buf_0074b930 + sizeof(gs_questfailed_buf_0074b930), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "MONSTERLAIR", gs_monsterlair_0074cff0, 6, gs_monsterlair_buf_0074d010,
+                                     gs_monsterlair_buf_0074d010 + sizeof(gs_monsterlair_buf_0074d010), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "BUYANYCARD", gs_buyanycard_0074ccd0, 6, gs_buyanycard_buf_0077f1e0,
+                                     gs_buyanycard_buf_0077f1e0 + sizeof(gs_buyanycard_buf_0077f1e0), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "QUESTSTATUS", gs_queststatus_0077e0a0, 0x1a, gs_queststatus_buf_0074d270,
+                                     gs_queststatus_buf_0074d270 + sizeof(gs_queststatus_buf_0074d270), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "NEWSFLASH", gs_newsflash_0077d140, 0xb, gs_newsflash_buf_0077d1c0,
+                                     gs_newsflash_buf_0077d1c0 + sizeof(gs_newsflash_buf_0077d1c0), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "CITYCARDTEXT", gs_citycardtext_0074ccf0, 0x31, gs_citycardtext_buf_0074c0f0,
+                                     gs_citycardtext_buf_0074c0f0 + sizeof(gs_citycardtext_buf_0074c0f0), (char **)0);
   s.ok &= LoadTextSectionStringTable(filename, "BROWSE", gs_browse_0074da20, 0x11,
-                                     DAT_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610),
-                                     DAT_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610) + sizeof(gs_city_text_cluster_0077d610.browse_buf_0077dc50),
+                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610),
+                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610) + sizeof(gs_city_text_cluster_0077d610.browse_buf_0077dc50),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "SHOWDECK", gs_showdeck_0074b920, 3, DAT_0074d890,
-                                     DAT_0074d890 + sizeof(gs_showdeck_buf_0074d890), (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "LOADSAVE", gs_loadsave_0077d1b0, 3, DAT_0077d040, DAT_0077d040 + sizeof(gs_loadsave_buf_0077d040),
+  s.ok &= LoadTextSectionStringTable(filename, "SHOWDECK", gs_showdeck_0074b920, 3, gs_showdeck_buf_0074d890,
+                                     gs_showdeck_buf_0074d890 + sizeof(gs_showdeck_buf_0074d890), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "LOADSAVE", gs_loadsave_0077d1b0, 3, gs_loadsave_buf_0077d040, gs_loadsave_buf_0077d040 + sizeof(gs_loadsave_buf_0077d040),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "STATS", gs_stats_0077cfa0, 9, DAT_0074ce20, DAT_0074ce20 + sizeof(gs_stats_buf_0074ce20),
+  s.ok &= LoadTextSectionStringTable(filename, "STATS", gs_stats_0077cfa0, 9, gs_stats_buf_0074ce20, gs_stats_buf_0074ce20 + sizeof(gs_stats_buf_0074ce20),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "ANALYZE", gs_analyze_0074b870, 0x11, DAT_0074afb0, DAT_0074afb0 + sizeof(gs_analyze_buf_0074afb0),
+  s.ok &= LoadTextSectionStringTable(filename, "ANALYZE", gs_analyze_0074b870, 0x11, gs_analyze_buf_0074afb0, gs_analyze_buf_0074afb0 + sizeof(gs_analyze_buf_0074afb0),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "RIDDLE", gs_riddle_0077cf20, 0x11, DAT_0077ca20, DAT_0077ca20 + sizeof(gs_riddle_buf_0077ca20),
+  s.ok &= LoadTextSectionStringTable(filename, "RIDDLE", gs_riddle_0077cf20, 0x11, gs_riddle_buf_0077ca20, gs_riddle_buf_0077ca20 + sizeof(gs_riddle_buf_0077ca20),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "LAIR", gs_lair_0077e180, 0x13, DAT_007800c0, DAT_007800c0 + sizeof(gs_lair_buf_007800c0),
+  s.ok &= LoadTextSectionStringTable(filename, "LAIR", gs_lair_0077e180, 0x13, gs_lair_buf_007800c0, gs_lair_buf_007800c0 + sizeof(gs_lair_buf_007800c0),
                                      (char **)0);
 
-  s.local_8 = DAT_00780c60;
-  s.ok &= LoadTextSectionStringTable(filename, "WISEMAN", gs_wiseman_0074d840, 0x13, DAT_00780c60, DAT_00780c60 + sizeof(gs_wiseman_buf_00780c60),
+  s.local_8 = gs_wiseman_buf_00780c60;
+  s.ok &= LoadTextSectionStringTable(filename, "WISEMAN", gs_wiseman_0074d840, 0x13, gs_wiseman_buf_00780c60, gs_wiseman_buf_00780c60 + sizeof(gs_wiseman_buf_00780c60),
                                      &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "CITYWISEMAN", gs_citywiseman_0074d800, 0xd, s.local_8, DAT_00780c60 + sizeof(gs_wiseman_buf_00780c60),
+  s.ok &= LoadTextSectionStringTable(filename, "CITYWISEMAN", gs_citywiseman_0074d800, 0xd, s.local_8, gs_wiseman_buf_00780c60 + sizeof(gs_wiseman_buf_00780c60),
                                      (char **)0);
-  s.ok &= LoadTextSectionStringTable(filename, "CITYSCREEN_BUTTONS", gs_cityscreen_buttons_0077f5e0, 8, DAT_0077f450,
-                                     DAT_0077f450 + sizeof(gs_cityscreen_buttons_buf_0077f450), (char **)0);
+  s.ok &= LoadTextSectionStringTable(filename, "CITYSCREEN_BUTTONS", gs_cityscreen_buttons_0077f5e0, 8, gs_cityscreen_buttons_buf_0077f450,
+                                     gs_cityscreen_buttons_buf_0077f450 + sizeof(gs_cityscreen_buttons_buf_0077f450), (char **)0);
 
   LoadTextSectionLines(filename, "SHOWLIST");
-  strcpy(DAT_0077e110, text_lines[0]);
-  strcpy(DAT_0077e142, text_lines[1]);
+  strcpy(gs_showcard_name_0077e110, text_lines[0]);
+  strcpy(gs_showcard_type_0077e142, text_lines[1]);
 
   LoadTextSectionLines(filename, "SHOWLIBRARY");
-  strcpy(DAT_0074bcc0, text_lines[0]);
-  strcpy(DAT_0074bcf2, text_lines[1]);
+  strcpy(gs_showlibrary_title_0074bcc0, text_lines[0]);
+  strcpy(gs_showlibrary_empty_0074bcf2, text_lines[1]);
 
   return s.ok;
 }
@@ -6358,9 +6359,9 @@ int LoadAdvBlocksFile(const char *filename)
       {
         if (FindNextTextBlock(s.cursor, s.buffer_end, &s.block_text_start, (int *)&s.next_block_scan) != 0)
         {
-          DAT_0074c930[s.i] = (char *)s.block_text_start;
+          gs_advblock_city_0074c930[s.i] = (char *)s.block_text_start;
           s.cursor = s.next_block_scan;
-          while (s.carriage_return = strchr(DAT_0074c930[s.i], 0xd))
+          while (s.carriage_return = strchr(gs_advblock_city_0074c930[s.i], 0xd))
           {
             strcpy(s.carriage_return, s.carriage_return + 1);
           }
@@ -6375,9 +6376,9 @@ int LoadAdvBlocksFile(const char *filename)
       {
         if (FindNextTextBlock(s.cursor, s.buffer_end, &s.block_text_start, (int *)&s.next_block_scan) != 0)
         {
-          DAT_0077c9e0[s.i] = (char *)s.block_text_start;
+          gs_advblock_general_0077c9e0[s.i] = (char *)s.block_text_start;
           s.cursor = s.next_block_scan;
-          while (s.carriage_return = strchr(DAT_0077c9e0[s.i], 0xd))
+          while (s.carriage_return = strchr(gs_advblock_general_0077c9e0[s.i], 0xd))
           {
             strcpy(s.carriage_return, s.carriage_return + 1);
           }

@@ -23,10 +23,7 @@ static LOGFONT global_font_template_ini = {
     CLIP_DEFAULT_PRECIS,         // lfClipPrecision
     DEFAULT_QUALITY,             // lfQuality
     DEFAULT_PITCH | FF_DONTCARE, // lfPitchAndFamily
-    {
-        'M', 'S', ' ', 'S', 'a', 'n', 's', ' ', 'S', 'e', 'r', 'i', 'f', '\0',
-        '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-        '\0', '\0', '\0', '\0', '\0', '\0'} // lfFaceName[LF_FACESIZE]
+    {0}                          // lfFaceName[LF_FACESIZE]
 };
 
 // FUNCTION: DECKDLL 0x10025727

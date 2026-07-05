@@ -171,9 +171,9 @@ char DAT_00590b20[] = "Cc";
 // GLOBAL: SHANDALAR 0x00590b24
 char DAT_00590b24[] = "Cc";
 // GLOBAL: SHANDALAR 0x00590b28
-char DAT_00590b28[] = " \rDd\x1b";
+char DAT_00590b28[] = " \rDd";
 // GLOBAL: SHANDALAR 0x00590b30
-char DAT_00590b30[] = " \rDd\x1b";
+char DAT_00590b30[] = " \rDd";
 
 // GLOBAL: SHANDALAR 0x00590b6c
 char s_x_sound_button2_wav_00590b6c[] = "x:sound\\button2.wav";

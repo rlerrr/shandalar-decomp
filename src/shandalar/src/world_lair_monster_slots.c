@@ -48,7 +48,7 @@ unsigned int FUN_0043146b(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
 void FUN_00431526(unsigned int mask, int x, int y);
 unsigned int FUN_005611c8(unsigned int tile_mask);
-void FUN_004290e2(int param_1, int param_2);
+void AddJournalEntry(int entry_type, int entry_arg);
 void SaveGameToSlot(int save_slot_index);
 void EnsureAdvfac64Loaded(int state);
 void RefreshAdventureInterfaceLayout(void);
@@ -80,7 +80,7 @@ void FUN_00562169(void);
 int RunWorldLairMonsterEncounter(int slot_index, int monster_color);
 
 // GLOBAL: SHANDALAR 0x00591270
-int DAT_00591270;
+int DAT_00591270 = 1;
 
 // FUNCTION: SHANDALAR 0x004bc6d3
 void FUN_004bc6d3(int creature_type, int work_entry_index_a, int work_entry_index_b)
@@ -1000,7 +1000,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       }
       else if (s.slot_index == 7)
       {
-        FUN_004290e2(0xd, g_lair_or_monster_slots[s.slot_index].color);
+        AddJournalEntry(JOURNAL_ENTRY_LAIR_EXPLORED, g_lair_or_monster_slots[s.slot_index].color);
         g_siege_indicator = 0;
       }
       FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "defs.h"
@@ -286,9 +287,9 @@ static AdvMenuControl g_stats_menu_controls[0x16] = {
 
 // GLOBAL: SHANDALAR 0x00581b00
 static AdvMenuControl g_stats_journal_menu_controls[3] = {
-    {0x1f3, 5, 0x5e, 0x1c, 0x1f3, 5, 0x5e, 0x1c, 1, (AdvMenuRenderCallback)RenderJournalExitButtonControl, (AdvMenuActivateCallback)ActivateJournalExitButtonControl, 4, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
-    {1, 0x6e, 0x13, 0x117, 1, 0x6e, 0x13, 0x117, 1, (AdvMenuRenderCallback)RenderJournalStepButtonControl, (AdvMenuActivateCallback)ActivateJournalStepButtonControl, 1, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
-    {2, 0x6f, 0xf, 0x46, 2, 0x6f, 0xf, 0x46, 1, (AdvMenuRenderCallback)RenderJournalStepButtonControl, (AdvMenuActivateCallback)ActivateJournalStepButtonControl, 2, 0, (char *)0, (char *)0, 0, 0, {0, 0, 0, 0}},
+    {0x1f3, 5, 0x5e, 0x1c, 0x1f3, 5, 0x5e, 0x1c, 1, (AdvMenuRenderCallback)RenderJournalExitButtonControl, (AdvMenuActivateCallback)ActivateJournalExitButtonControl, 4, 0, " \rDd", " \rDd", 0, 0, {0, 0, 0, 0}},
+    {1, 0x6e, 0x13, 0x117, 1, 0x6e, 0x13, 0x117, 1, (AdvMenuRenderCallback)RenderJournalStepButtonControl, (AdvMenuActivateCallback)ActivateJournalStepButtonControl, 1, 0, " \rDd", " \rDd", 0, 0, {0, 0, 0, 0}},
+    {2, 0x6f, 0xf, 0x46, 2, 0x6f, 0xf, 0x46, 1, (AdvMenuRenderCallback)RenderJournalStepButtonControl, (AdvMenuActivateCallback)ActivateJournalStepButtonControl, 2, 0, " \rDd", " \rDd", 0, 0, {0, 0, 0, 0}},
 };
 
 // GLOBAL: SHANDALAR 0x005a82d0
@@ -362,6 +363,13 @@ int ConsumeUiTickCount(void);
 int GetUiTickCount(void);
 int IsKeyInputQueueEmpty(void);
 int PopQueuedKeyInput(void);
+void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
+void FUN_004ce992(int ticks);
+int SignNonZero(int value);
+int ClampIntToRange(int value, int min_value, int max_value);
+int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
+int GetFontLineHeight(int font_slot);
+void ApplyPortraitTintMap(FacemakerWindowBounds *dst, int x, int y, int w, int h, unsigned int tint, int maybe_shadow);
 
 int RenderStatsCreatureGridPage(int page_index);
 
@@ -436,28 +444,32 @@ void DrawStatsRectFrame(FacemakerWindowBounds *window, int x, int y, int width, 
 // FUNCTION: SHANDALAR 0x005487c0
 int RenderStatsTabButtonControl(AdvMenuControl *control, int mode)
 {
-  EncodedImage *encoded_image;
-  int x;
-  int y;
-  int width;
-  int height;
-  int mouse_inside;
+  struct
+  {
+    int mouse_inside;
+    int y;
+    int x;
+    int height;
+    int width;
+    EncodedImage *highlight_image;
+    EncodedImage *encoded_image;
+  } s;
 
   if (g_menu_render_guard == 0)
   {
     if ((g_mouse_x < control->x) || (control->width + control->x < g_mouse_x))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else
     {
-      mouse_inside = 1;
+      s.mouse_inside = 1;
     }
-    if (!mouse_inside)
+    if (!s.mouse_inside)
     {
       return 0;
     }
@@ -466,25 +478,29 @@ int RenderStatsTabButtonControl(AdvMenuControl *control, int mode)
   {
     return 0;
   }
-  encoded_image = ((EncodedImage **)&g_stats_menu_button_sprites)[mode * 4 + control->selection_value - 1];
-  x = control->x;
-  y = control->y;
-  width = control->width;
-  height = control->height;
+  s.encoded_image = *(EncodedImage **)((char *)&g_stats_menu_button_sprites + ((control->selection_value - 1) << 4) + mode * 4);
+  s.highlight_image = *(EncodedImage **)((char *)&g_stats_menu_button_sprites + ((control->selection_value - 1) << 4) + 4);
+  s.x = control->x;
+  s.y = control->y;
+  s.width = control->width;
+  s.height = control->height;
   if (mode == 2)
   {
-    DrawEncodedImageResampled(PTR_DAT_00583304, 0, y + 0x80, width, height,
-                              g_stats_menu_button_sprites.highlight[control->selection_value - 1]);
-    DrawEncodedImageResampled(PTR_DAT_00583304, 2, y + 0x82, width - 4, height - 4, encoded_image);
-    BlitGraphicsRect(PTR_DAT_00583304, 0, y + 0x80, width, height, PTR_DAT_005832b4, x, y);
-    if (control->on_activate != 0)
+    DrawEncodedImageResampled(PTR_DAT_00583304, 0, s.y + 0x80, s.width, s.height, s.highlight_image);
+    DrawEncodedImageResampled(PTR_DAT_00583304, 2, s.y + 0x82, s.width - 4, s.height - 4, s.encoded_image);
+    BlitGraphicsRect(PTR_DAT_00583304, 0, s.y + 0x80, s.width, s.height, PTR_DAT_005832b4, s.x, s.y);
+
+    if (mode == 2)
     {
-      control->on_activate(control);
+      if (control->on_activate != 0)
+      {
+        control->on_activate(control);
+      }
     }
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, x, y, width, height, encoded_image);
+    DrawEncodedImageResampled(PTR_DAT_005832b4, s.x, s.y, s.width, s.height, s.encoded_image);
   }
   return 1;
 }
@@ -758,32 +774,30 @@ int RenderStatsCreatureScrollbar(AdvMenuControl *control)
 // FUNCTION: SHANDALAR 0x00548cba
 static int DragStatsCreatureScrollbar(AdvMenuControl *control)
 {
+  int page_count;
+  AdvMenuControl *thumb_control;
   EncodedImage *encoded_image;
-  int top;
-  int track_height;
-  int thumb_height;
   int y;
-  int clamped_y;
+  int page_index;
 
+  page_count = 0x11;
+  thumb_control = control + 1;
   encoded_image = g_stats_menu_scroll_thumb_sprite;
   UpdateMouseSnapshot();
-  y = control->y + control->mode_data[3] / 2;
-  if (y <= g_mouse_y_snapshot)
+  y = g_mouse_y_snapshot;
+  if (control->y + thumb_control->height / 2 > y)
   {
-    y = g_mouse_y_snapshot;
+    y = control->y + thumb_control->height / 2;
   }
-  clamped_y = (control->height + control->y) - control->mode_data[3] / 2;
-  if (y <= clamped_y)
+  if (control->y + control->height - thumb_control->height / 2 < y)
   {
-    clamped_y = y;
+    y = control->y + control->height - thumb_control->height / 2;
   }
-  top = control->y;
-  thumb_height = control->mode_data[3];
-  track_height = control->height;
+  page_index = ((y - control->y - thumb_control->height / 2) * page_count) / (control->height - thumb_control->height);
   FillGraphicsRect(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, 0);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, clamped_y - control->mode_data[3] / 2, control->width,
+  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, y - thumb_control->height / 2, control->width,
                             ((int)encoded_image->height * control->width) / control->base_width, encoded_image);
-  RenderStatsCreatureGridPage((((clamped_y - top) - thumb_height / 2) * 0x11) / (track_height - thumb_height));
+  RenderStatsCreatureGridPage(page_index);
   g_stats_menu_selection = control->selection_value;
   return control->selection_value;
 }
@@ -813,9 +827,9 @@ int RebuildStatsJournalCounts(void)
     {
       return 0;
     }
-    entry_type = g_journal_entries[journal_index][0];
-    entry_arg = g_journal_entries[journal_index][1];
-    if (entry_type == 0)
+    entry_type = g_journal_entries[journal_index].type;
+    entry_arg = g_journal_entries[journal_index].arg;
+    if (entry_type == JOURNAL_ENTRY_NONE)
     {
       break;
     }
@@ -862,109 +876,91 @@ int RebuildStatsJournalCounts(void)
 // FUNCTION: SHANDALAR 0x0054a099
 int RenderStatsCreatureGridPage(int page_index)
 {
-  int row_count;
-  unsigned int creature_type;
-  int text_colors[6];
-  int row;
-  int column;
-  int wins;
-  int losses;
-  int total;
-  int win_percent;
-  int color_index;
-  int src_x;
-  int src_y;
-  int src_width;
-  int src_height;
-  int dst_x;
-  int dst_y;
-  int signed_adjust;
+  struct
+  {
+    int row_count;              // ebp - 0x34
+    unsigned int creature_type; // ebp - 0x30
+    int win_percent;            // ebp - 0x2c
+    int text_colors[5];         // ebp - 0x28
+    int losses;                 // ebp - 0x14
+    int row;                    // ebp - 0x10
+    int column;                 // ebp - 0xc
+    int wins;                   // ebp - 0x8
+    int color_index;            // ebp - 0x4
+  } s;
 
   if (page_index == 0x12)
   {
-    row_count = 1;
+    s.row_count = 1;
   }
   else
   {
-    row_count = 2;
+    s.row_count = 2;
   }
-  text_colors[0] = 0xbf;
-  text_colors[1] = 0xbc;
-  text_colors[2] = 0xb7;
-  text_colors[3] = 0xf4;
-  text_colors[4] = 0xf6;
-  creature_type = page_index * 3;
+  s.text_colors[0] = 0xbf;
+  s.text_colors[1] = 0xbc;
+  s.text_colors[2] = 0xb7;
+  s.text_colors[3] = 0xf4;
+  s.text_colors[4] = 0xf6;
+  s.creature_type = page_index * 3;
   BlitGraphicsRect(PTR_DAT_00583304, 0, 0x154, ScaleUiCoordinate(0x173), ScaleUiCoordinate(0x7f), PTR_DAT_00583304, 0, 0x80);
-  for (row = 0; row < row_count; row = row + 1)
+  for (s.row = 0; s.row < s.row_count; s.row++)
   {
-    column = 0;
-    for (; (column < 3 && (int)creature_type < 0x37); creature_type = creature_type + 1)
+    s.column = 0;
+    for (; (s.column < 3 && (int)s.creature_type < 0x37); s.column++, s.creature_type++)
     {
-      if ((g_stats_creature_journal_counts[creature_type].wins != 0) ||
-          ((g_stats_creature_journal_counts[creature_type].losses != 0 || (DAT_007894f4 != 0))))
+      if ((g_stats_creature_journal_counts[s.creature_type + 1].wins != 0) ||
+          ((g_stats_creature_journal_counts[s.creature_type + 1].losses != 0 || (DAT_007894f4 != 0))))
       {
-        wins = g_stats_creature_journal_counts[creature_type].wins;
-        losses = g_stats_creature_journal_counts[creature_type].losses;
-        total = wins + losses;
-        if (total < 2)
+        s.wins = g_stats_creature_journal_counts[s.creature_type + 1].wins;
+        s.losses = g_stats_creature_journal_counts[s.creature_type + 1].losses;
+
+        s.win_percent = s.wins * 100 / MAX(s.wins + s.losses, 1);
+
+        if (s.wins < s.losses)
         {
-          total = 1;
-        }
-        win_percent = (wins * 100) / total;
-        if (wins < losses)
-        {
-          if ((losses - wins < 6) || (0x19 < win_percent))
+          if ((s.losses - s.wins > 5) && (s.win_percent <= 25))
           {
-            if ((wins + losses < 5) || (0x28 < win_percent))
-            {
-              color_index = 2;
-            }
-            else
-            {
-              color_index = 1;
-            }
+            s.color_index = 0;
+          }
+          else if ((s.wins + s.losses < 5) || (s.win_percent > 40))
+          {
+            s.color_index = 2;
           }
           else
           {
-            color_index = 0;
+            s.color_index = 1;
           }
         }
-        else if ((wins - losses < 6) || (win_percent < 0x4b))
+        else if ((s.wins - s.losses > 5) && (s.win_percent >= 75))
         {
-          if ((wins + losses < 5) || (win_percent < 0x3d))
-          {
-            color_index = 2;
-          }
-          else
-          {
-            color_index = 3;
-          }
+          s.color_index = 4;
+        }
+        else if ((s.wins + s.losses < 5) || (s.win_percent <= 60))
+        {
+          s.color_index = 2;
         }
         else
         {
-          color_index = 4;
+          s.color_index = 3;
         }
-        dst_y = ScaleUiCoordinate(row << 6) + 0x80;
-        dst_x = ScaleUiCoordinate(0x7c) * column;
-        src_height = g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][1];
-        src_width = g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][0] - 2;
-        src_height = (src_height - 2) - ScaleUiCoordinate(3);
-        signed_adjust = (int)creature_type >> 0x1f;
-        src_y = g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][1] * ((int)(creature_type + (signed_adjust & 7)) >> 3) +
-                ScaleUiCoordinate(3) + 1;
-        src_x = g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][0] *
-                    (((creature_type ^ signed_adjust) - signed_adjust & 7 ^ signed_adjust) - signed_adjust) +
-                1;
-        BlitGraphicsRect(PTR_DAT_005832dc, src_x, src_y, src_width, src_height, PTR_DAT_00583304, dst_x, dst_y);
+        BlitGraphicsRect(PTR_DAT_005832dc,
+                         g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][0] * ((int)s.creature_type % 8) + 1,
+                         g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][1] * ((int)s.creature_type / 8) +
+                             ScaleUiCoordinate(3) + 1,
+                         g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][0] - 2,
+                         (g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][1] - 2) - ScaleUiCoordinate(3),
+                         PTR_DAT_00583304, ScaleUiCoordinate(0x7c) * s.column, ScaleUiCoordinate(s.row << 6) + 0x80);
         PTR_DAT_00583304->font_slot = 4;
-        DrawFormattedTextShadowedCentered(PTR_DAT_00583304, text_colors[color_index],
-                                          ScaleUiCoordinate(0x7c) * column + ScaleUiCoordinate(0x5e),
-                                          ScaleUiCoordinate(row * 0x40 + -3) + ScaleUiCoordinate(0x20) + 0x80, "");
+        DrawFormattedTextShadowedCentered(PTR_DAT_00583304, s.text_colors[s.color_index],
+                                          ScaleUiCoordinate(0x7c) * s.column + ScaleUiCoordinate(0x5e),
+                                          ScaleUiCoordinate(s.row * 0x40 + -3) + ScaleUiCoordinate(0x20) + 0x80, "%d/%d",
+                                          g_stats_creature_journal_counts[s.creature_type + 1].wins, g_stats_creature_journal_counts[s.creature_type + 1].losses);
         PTR_DAT_00583304->font_slot = 1;
-        DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xb7, ScaleUiCoordinate(0x7c) * column + ScaleUiCoordinate(0x3e),
-                                          ScaleUiCoordinate(row << 6) + ScaleUiCoordinate(0x36) + 0x80, "");
+        DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xb7, ScaleUiCoordinate(0x7c) * s.column + ScaleUiCoordinate(0x3e),
+                                          ScaleUiCoordinate(s.row << 6) + ScaleUiCoordinate(0x36) + 0x80, "%s",
+                                          gs_creature_names_00591a08[s.creature_type + 1].name);
       }
-      column = column + 1;
     }
   }
   BlitGraphicsRect(PTR_DAT_00583304, 0, 0x80, ScaleUiCoordinate(0x7c) * 3 - 2, ScaleUiCoordinate(0x40) * 2 - 2, PTR_DAT_005832b4,
@@ -976,36 +972,46 @@ int RenderStatsCreatureGridPage(int page_index)
 // FUNCTION: SHANDALAR 0x0054a668
 int ShowWorldMagicStatsDetail(int world_magic_slot_index)
 {
-  int image_height;
-  int width;
-  int y;
-  int x;
-  int text_x;
-  int icon_y;
-  int icon_x;
-  EncodedImage *encoded_image;
+  struct
+  {
+    int icon_top;
+    int icon_bottom;
+    int detail_result;
+    int y;
+    int icon_right;
+    int x;
+    int icon_left;
+    EncodedImage *encoded_image;
+  } s;
 
+  s.icon_left = 0x14f;
+  s.icon_right = 0x19e;
+  s.icon_top = 0x4c;
+  s.icon_bottom = 0x9a;
   LoadPcxIntoPage(1, s_worlbak1_pic_0059074c);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
-  FUN_004bb458(world_magic_slot_index);
-  encoded_image = g_world_magic_choice_button_sprite_bank.named.normal[world_magic_slot_index];
-  icon_y = (0x4e - encoded_image->height) / 2 + 0x4c;
-  icon_x = (0x4f - encoded_image->width) / 2 + 0x14f;
-  image_height = ScaleUiCoordinate((int)encoded_image->height);
-  width = ScaleUiCoordinate((int)encoded_image->width);
-  y = ScaleUiCoordinate(icon_y);
-  x = ScaleUiCoordinate(icon_x);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, x, y, width, image_height, encoded_image);
-  image_height = (icon_y + encoded_image->height + 0x10) / 2;
-  text_x = (icon_x + (int)encoded_image->width / 2) / 2;
+  s.detail_result = FUN_004bb458(world_magic_slot_index);
+  s.y = 0x28;
+  s.y += 0x10;
+  s.encoded_image = g_world_magic_choice_button_sprite_bank.named.normal[world_magic_slot_index];
+  s.y = ((s.icon_bottom - s.icon_top) - s.encoded_image->height) / 2 + s.icon_top;
+  s.x = ((s.icon_right - s.icon_left) - s.encoded_image->width) / 2 + s.icon_left;
+  DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(s.x), ScaleUiCoordinate(s.y),
+                            ScaleUiCoordinate((int)s.encoded_image->width), ScaleUiCoordinate((int)s.encoded_image->height),
+                            g_world_magic_choice_button_sprite_bank.named.normal[world_magic_slot_index]);
+  s.y += (int)s.encoded_image->height + 0x10;
+  s.y /= 2;
+  s.x += (int)s.encoded_image->width / 2;
+  s.x /= 2;
   PTR_DAT_005832b4->font_slot = 4;
   DrawTextAt(PTR_DAT_005832b4, 0x7b, 0x176, 0x4b, gs_worldmagic_title_0077e1d0);
   strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[world_magic_slot_index]);
-  DrawUiScaledCenteredText(g_ui_message_buffer, text_x, image_height - 5, 0x40);
+  s.y -= 5;
+  DrawUiScaledCenteredText(g_ui_message_buffer, s.x, s.y, 0x40);
+  s.y += 8;
   strcpy(g_ui_message_buffer, gs_worldmagic_explains_0074b8f0[world_magic_slot_index]);
-  image_height = FUN_005501dc(image_height + 3);
-  text_x = FUN_005501dc(text_x);
-  DrawWorldUiFormattedText(PTR_DAT_005832b4, 0x7b, text_x, image_height, "");
+  DrawWorldUiFormattedText(PTR_DAT_005832b4, 0x7b, FUN_005501dc(s.x), FUN_005501dc(s.y), g_ui_message_buffer);
+  s.y += 0x10;
   ClearInputAndWaitForMouseRelease();
   WaitForInputEventUnlessBlocked();
   return 0;
@@ -1220,38 +1226,31 @@ static int RenderJournalStepButtonControl(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x00428e63
 static int ActivateJournalStepButtonControl(AdvMenuControl *control)
 {
-  EncodedImage *encoded_image;
-  int top;
-  int thumb_height;
-  int track_height;
-  int y;
-  int clamped_y;
-  int entry_count;
+  struct
+  {
+    int entry_count;
+    int y;
+    EncodedImage *encoded_image;
+    int journal_index;
+    AdvMenuControl *thumb_control;
+  } s;
 
-  encoded_image = DAT_00746b04;
-  entry_count = control->unk_30;
+  s.entry_count = control->unk_30;
+  s.thumb_control = control + 1;
+  s.encoded_image = DAT_00746b04;
   UpdateMouseSnapshot();
-  y = control->y + g_stats_journal_menu_controls[2].height / 2;
-  if (y <= g_mouse_y_snapshot)
-  {
-    y = g_mouse_y_snapshot;
-  }
-  clamped_y = (control->y + control->height) - g_stats_journal_menu_controls[2].height / 2;
-  if (y <= clamped_y)
-  {
-    clamped_y = y;
-  }
-  top = control->y;
-  thumb_height = g_stats_journal_menu_controls[2].height;
-  track_height = control->height;
+  s.y = g_mouse_y_snapshot;
+  s.y = MAX(control->y + s.thumb_control->height / 2, s.y);
+  s.y = MIN(control->y + control->height - s.thumb_control->height / 2, s.y);
+  s.journal_index = ((s.y - control->y - s.thumb_control->height / 2) * s.entry_count) / (control->height - s.thumb_control->height);
   DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, DAT_0073ea94);
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, clamped_y - g_stats_journal_menu_controls[2].height / 2, control->width,
-                            ((int)encoded_image->height * control->width) / control->base_width, encoded_image);
+  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, s.y - s.thumb_control->height / 2, control->width,
+                            ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   BlitGraphicsRect(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, PTR_DAT_005832b4, control->x,
                    control->y);
-  SelectStatsJournalEntry((((clamped_y - top) - thumb_height / 2) * entry_count) / (track_height - thumb_height));
+  SelectStatsJournalEntry(s.journal_index);
   g_stats_journal_menu_selection = control->selection_value;
-  return control->selection_value;
+  return g_stats_journal_menu_selection;
 }
 
 // FUNCTION: SHANDALAR 0x00428fe8
@@ -1302,11 +1301,11 @@ static int SelectStatsJournalEntry(int journal_index)
   strcpy(g_ui_message_buffer, s_empty_00581c40);
   while (g_ui_message_buffer[0] == 0)
   {
-    s.entry_type = g_journal_entries[journal_index][0];
-    s.entry_arg = g_journal_entries[journal_index][1];
-    s.tile_x = g_journal_entries[journal_index][2];
-    s.tile_y = g_journal_entries[journal_index][3];
-    if (g_journal_entries[journal_index][0] == 0)
+    s.entry_type = g_journal_entries[journal_index].type;
+    s.entry_arg = g_journal_entries[journal_index].arg;
+    s.tile_x = g_journal_entries[journal_index].tile_x;
+    s.tile_y = g_journal_entries[journal_index].tile_y;
+    if (g_journal_entries[journal_index].type == JOURNAL_ENTRY_NONE)
     {
       return 0;
     }
@@ -1438,33 +1437,128 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
 // FUNCTION: SHANDALAR 0x00429a62
 static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int tile_y)
 {
-  (void)tile_x;
-  (void)tile_y;
+  int previous_x;
+  int target_x;
+  int previous_y;
+  int target_y;
+  int delta_x;
+  int delta_y;
+  int text_width;
+  int line_height;
+
+  if (g_stats_journal_previous_marker_y == -1)
+  {
+    g_stats_journal_previous_marker_y = tile_x;
+    g_stats_journal_previous_marker_x = tile_y;
+    FUN_00550164(tile_x, tile_y, &target_x, &target_y);
+    target_x = (global_screen_width * target_x) / 0x280;
+    target_y = (global_screen_height * target_y) / 0x1e0;
+    target_y += ScaleUiCoordinate(0x40);
+  }
+  else
+  {
+    FUN_00550164(g_stats_journal_previous_marker_y, g_stats_journal_previous_marker_x, &previous_x, &previous_y);
+    previous_x = (previous_x * global_screen_width) / 0x280;
+    previous_y = (global_screen_height * previous_y) / 0x1e0;
+    previous_y += ScaleUiCoordinate(0x40);
+    FUN_00550164(tile_x, tile_y, &target_x, &target_y);
+    target_x = (global_screen_width * target_x) / 0x280;
+    target_y = (global_screen_height * target_y) / 0x1e0;
+    target_y += ScaleUiCoordinate(0x40);
+    g_stats_journal_previous_marker_y = tile_x;
+    g_stats_journal_previous_marker_x = tile_y;
+    delta_x = target_x - previous_x;
+    delta_y = target_y - previous_y;
+    tile_x = previous_x;
+    tile_y = previous_y;
+
+    if (abs(delta_y) < abs(delta_x))
+    {
+      while (tile_x != target_x)
+      {
+        FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
+        FUN_004ce992(5);
+        if ((tile_x & 1) != 0)
+        {
+          FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0);
+        }
+        else
+        {
+          BlitGraphicsRect(PTR_DAT_005832dc, tile_x, tile_y, 2, 2, PTR_DAT_005832b4, tile_x, tile_y);
+        }
+        tile_x += SignNonZero(delta_x);
+        tile_y = previous_y + (abs(tile_x - previous_x) * delta_y) / abs(delta_x);
+      }
+    }
+    else
+    {
+      while (tile_y != target_y)
+      {
+        FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
+        FUN_004ce992(5);
+        if ((tile_y & 1) != 0)
+        {
+          FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0);
+        }
+        else
+        {
+          BlitGraphicsRect(PTR_DAT_005832dc, tile_x, tile_y, 2, 2, PTR_DAT_005832b4, tile_x, tile_y);
+        }
+        tile_y += SignNonZero(delta_y);
+        tile_x = previous_x + (abs(tile_y - previous_y) * delta_x) / abs(delta_y);
+      }
+    }
+  }
+
+  g_stats_journal_marker_x = target_x;
+  g_stats_journal_marker_y = target_y;
+  if (g_ui_message_buffer[0] == '\0')
+  {
+    return;
+  }
+
+  tile_x = ClampIntToRange(target_x - 0x50, 0, 0xa0);
+  tile_y = ClampIntToRange(target_y - 10, 0, 0xbf);
+  text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
+  line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  PTR_DAT_00583304->font_slot = PTR_DAT_005832b4->font_slot;
+  BlitGraphicsRect(PTR_DAT_005832dc, (target_x - 2) - text_width / 2, target_y - 2, text_width + 2, line_height + 2,
+                   PTR_DAT_00583304, 0, 0xa0);
+  ApplyPortraitTintMap(PTR_DAT_00583304, 0, 0xa0, text_width + 2, line_height + 2, 0x3f3f3f, 1);
+  DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xff, text_width / 2 + 1, line_height / 2 + 0xa1, g_ui_message_buffer);
+  BlitGraphicsRect(PTR_DAT_00583304, 0, 0xa0, text_width + 2, line_height + 2, PTR_DAT_005832b4,
+                   (target_x - 2) - text_width / 2, target_y - 2);
 }
 
 // FUNCTION: SHANDALAR 0x00429161
 void RunStatsWorldMapJournalMenu(void)
 {
-  int journal_index;
-  int menu_context;
-  int key_code;
-  int unused_local;
+  struct
+  {
+    int key_code;
+    int menu_context;
+    int journal_index;
+  } s;
 
   ShowWorldMapScreen(4);
   BlitGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832dc, 0, 0);
   g_stats_journal_previous_marker_x = -1;
   g_stats_journal_previous_marker_y = g_stats_journal_previous_marker_x;
-  for (journal_index = 0; (journal_index < 10000 && (g_journal_entries[journal_index][0] != 0)); journal_index = journal_index + 1)
+  for (s.journal_index = 0; s.journal_index < 10000; s.journal_index = s.journal_index + 1)
   {
+    if (g_journal_entries[s.journal_index].type == JOURNAL_ENTRY_NONE)
+    {
+      break;
+    }
   }
-  g_stats_journal_entry_count = journal_index;
-  *(int *)((char *)g_stats_journal_menu_controls + 0x84) = journal_index;
+  g_stats_journal_entry_count = s.journal_index;
+  g_stats_journal_menu_controls[1].unk_30 = g_stats_journal_entry_count;
   g_stats_journal_current_entry = -1;
   ScaleMenuControlsForScreen(g_stats_journal_menu_controls, 3);
-  menu_context = BeginMenuContext();
-  ResetMenuContext(menu_context);
-  *(int *)((char *)g_stats_journal_menu_controls + 0xe8) = 3;
-  AddMenuControlsToContext(g_stats_journal_menu_controls, 3, menu_context);
+  s.menu_context = BeginMenuContext();
+  ResetMenuContext(s.menu_context);
+  g_stats_journal_menu_controls[2].state = 3;
+  AddMenuControlsToContext(g_stats_journal_menu_controls, 3, s.menu_context);
   g_menu_render_guard = 1;
   PTR_DAT_005832b4->page_number = 1;
   RenderJournalExitButtonControl(&g_stats_journal_menu_controls[0], 0);
@@ -1472,46 +1566,51 @@ void RunStatsWorldMapJournalMenu(void)
   g_menu_render_guard = 0;
   PTR_DAT_005832b4->page_number = 0;
   SelectStatsJournalEntry(0);
-  do
+  
+retry:
+  ConsumeUiTickCount();
+  g_stats_journal_menu_selection = -1;
+  while (g_stats_journal_menu_selection == -1)
   {
-    ConsumeUiTickCount();
-    g_stats_journal_menu_selection = -1;
-    while (g_stats_journal_menu_selection == -1)
+    if ((((GetUiTickCount() % 0x14) == 0) & ((GetUiTickCount() % 10) == 0)) != 0)
     {
-      if (((GetUiTickCount() % 10) == 0) && ((GetUiTickCount() % 0x14) == 0))
-      {
-        FillGraphicsRect(PTR_DAT_005832b4, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, 0xff);
-      }
-      if (((GetUiTickCount() % 0x14) & (GetUiTickCount() % 10 == 0)) != 0)
-      {
-        BlitGraphicsRect(PTR_DAT_005832dc, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, PTR_DAT_005832b4,
-                         g_stats_journal_marker_x, g_stats_journal_marker_y);
-      }
-      UpdateMouseSnapshot();
-      UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-      if ((g_stats_journal_menu_selection == -1) && ((g_mouse_button_down_mask != 0) || (IsKeyInputQueueEmpty() == 0)))
-      {
-        key_code = PopQueuedKeyInput();
-        if (((g_mouse_button_down_mask & 1) != 0) || (key_code == 0x5000))
-        {
-          SelectStatsJournalEntry(g_stats_journal_current_entry + 1);
-        }
-        else
-        {
-          if (((g_mouse_button_down_mask & 2) != 0) || (key_code == 0x4800))
-          {
-            SelectStatsJournalEntry(g_stats_journal_current_entry - 1);
-          }
-        }
-        ClearInputAndWaitForMouseRelease();
-      }
+      FillGraphicsRect(PTR_DAT_005832b4, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, 0xff);
     }
-  } while (g_stats_journal_menu_selection == 1);
-  if (g_stats_journal_menu_selection == 4)
+    if ((((GetUiTickCount() % 10) == 0) & (GetUiTickCount() % 0x14)) != 0)
+    {
+      BlitGraphicsRect(PTR_DAT_005832dc, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, PTR_DAT_005832b4,
+                       g_stats_journal_marker_x, g_stats_journal_marker_y);
+    }
+    UpdateMouseSnapshot();
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+    if ((g_stats_journal_menu_selection == -1) && ((g_mouse_button_down_mask != 0) || (IsKeyInputQueueEmpty() == 0)))
+    {
+      s.key_code = PopQueuedKeyInput();
+      if (((g_mouse_button_down_mask & 1) != 0) || (s.key_code == 0x5000))
+      {
+        SelectStatsJournalEntry(g_stats_journal_current_entry + 1);
+      }
+      else
+      {
+        if (((g_mouse_button_down_mask & 2) != 0) || (s.key_code == 0x4800))
+        {
+          SelectStatsJournalEntry(g_stats_journal_current_entry - 1);
+        }
+      }
+      ClearInputAndWaitForMouseRelease();
+    }
+  }
+
+  switch (g_stats_journal_menu_selection)
   {
+  case 4:
     ClearInputAndWaitForMouseRelease();
     EndMenuContext();
-    FreeSpriteBlob(g_stats_menu_color_sprites[0]);
+    FreeSpriteBlob(DAT_0073eab0[0][0]);
+    break;
+  case 1:
+    goto retry;
+    break;
   }
 }
 
@@ -1826,8 +1925,6 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
   {
     int land_color_count[8];
     int card_type_count_by_color[7][8];
-    int rarity_count[3];
-    int card_id;
     int color_index;
     int column_index;
     int deck_index;
@@ -1835,19 +1932,29 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     int x;
     unsigned int card_id_masked;
     int max_creature_count;
+    int rarity_count[3];
   } s;
-  char color_mask;
 
-  memset(&s, 0, sizeof(s));
   DAT_00650264 = 0;
+  for (s.color_index = 0; s.color_index <= 7; s.color_index = s.color_index + 1)
+  {
+    s.land_color_count[s.color_index] = 0;
+    for (s.column_index = 0; s.column_index < 7; s.column_index = s.column_index + 1)
+    {
+      s.card_type_count_by_color[s.column_index][s.color_index] = 0;
+    }
+  }
+  for (s.color_index = 0; s.color_index < 3; s.color_index = s.color_index + 1)
+  {
+    s.rarity_count[s.color_index] = 0;
+  }
   for (s.deck_index = 0; s.deck_index < 500; s.deck_index = s.deck_index + 1)
   {
-    if ((*(byte *)((int)deck + s.deck_index * 4 + 1) & 0x40) == 0)
+    if ((deck[s.deck_index] & 0x4000) == 0)
     {
       DAT_00650264 = DAT_00650264 + 1;
       s.card_id_masked = deck[s.deck_index] & 0xfff;
-      color_mask = global_cards_data[s.card_id_masked].color;
-      s.card_id = (int)color_mask;
+      s.color_index = (int)global_cards_data[s.card_id_masked].color;
       if (global_cards_data[s.card_id_masked].rarity == '\x03')
       {
         s.rarity_count[2] = s.rarity_count[2] + 1;
@@ -1871,41 +1978,41 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
           }
         }
       }
-      s.card_id = FUN_0040dffd((int)color_mask);
+      s.color_index = FUN_0040dffd(s.color_index);
       switch (global_cards_data[s.card_id_masked].type)
       {
       case '\x01':
-        s.card_type_count_by_color[0][s.card_id] = s.card_type_count_by_color[0][s.card_id] + 1;
+        s.card_type_count_by_color[0][s.color_index] = s.card_type_count_by_color[0][s.color_index] + 1;
         s.card_type_count_by_color[0][0] = s.card_type_count_by_color[0][0] + 1;
         break;
       case '\x02':
-        if ((int)global_cards_data[s.card_id_masked].power + (int)global_cards_data[s.card_id_masked].toughness < 5)
+        if (4 < (int)global_cards_data[s.card_id_masked].power + (int)global_cards_data[s.card_id_masked].toughness)
         {
-          s.card_type_count_by_color[1][s.card_id] = s.card_type_count_by_color[1][s.card_id] + 1;
-          s.card_type_count_by_color[1][0] = s.card_type_count_by_color[1][0] + 1;
+          s.card_type_count_by_color[2][s.color_index] = s.card_type_count_by_color[2][s.color_index] + 1;
+          s.card_type_count_by_color[2][0] = s.card_type_count_by_color[2][0] + 1;
         }
         else
         {
-          s.card_type_count_by_color[2][s.card_id] = s.card_type_count_by_color[2][s.card_id] + 1;
-          s.card_type_count_by_color[2][0] = s.card_type_count_by_color[2][0] + 1;
+          s.card_type_count_by_color[1][s.color_index] = s.card_type_count_by_color[1][s.color_index] + 1;
+          s.card_type_count_by_color[1][0] = s.card_type_count_by_color[1][0] + 1;
         }
         break;
       case '\x04':
-        s.card_type_count_by_color[3][s.card_id] = s.card_type_count_by_color[3][s.card_id] + 1;
+        s.card_type_count_by_color[3][s.color_index] = s.card_type_count_by_color[3][s.color_index] + 1;
         s.card_type_count_by_color[3][0] = s.card_type_count_by_color[3][0] + 1;
         break;
       case '\x08':
-        s.card_type_count_by_color[4][s.card_id] = s.card_type_count_by_color[4][s.card_id] + 1;
+        s.card_type_count_by_color[4][s.color_index] = s.card_type_count_by_color[4][s.color_index] + 1;
         s.card_type_count_by_color[4][0] = s.card_type_count_by_color[4][0] + 1;
         break;
       case '\x10':
       case ' ':
-        s.card_type_count_by_color[5][s.card_id] = s.card_type_count_by_color[5][s.card_id] + 1;
+        s.card_type_count_by_color[5][s.color_index] = s.card_type_count_by_color[5][s.color_index] + 1;
         s.card_type_count_by_color[5][0] = s.card_type_count_by_color[5][0] + 1;
         break;
       case '@':
       case 'B':
-        s.card_type_count_by_color[6][s.card_id] = s.card_type_count_by_color[6][s.card_id] + 1;
+        s.card_type_count_by_color[6][s.color_index] = s.card_type_count_by_color[6][s.color_index] + 1;
       }
     }
   }
@@ -1926,47 +2033,67 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     DrawGraphicsLine(PTR_DAT_005832b4, 0, s.y * 2 + 0x18, global_screen_width - 1, s.y * 2 + 0x18, 0xf4);
     DrawGraphicsLine(PTR_DAT_005832b4, 0x130, 0, 0x130, global_screen_height - 1, 0xf4);
     s.y = 0x20;
-    DrawScaledTextNoShadow(gs_analyze_0074b870[7], s.x, 0x20, 0xff);
+    DrawScaledTextNoShadow(gs_analyze_0074b870[7], s.x, s.y, 0xff);
     DrawDeckAnalysisPercentCentered(s.card_type_count_by_color[0][0], 0x80, s.y, 0xff);
-    for (s.deck_index = 1; s.deck_index < 6; s.deck_index = s.deck_index + 1)
+    for (s.deck_index = 1; s.deck_index <= 5; s.deck_index = s.deck_index + 1)
     {
       DrawDeckAnalysisPercentCentered(s.land_color_count[s.deck_index], s.deck_index * 0x20 + 0x90, s.y, 0xff);
     }
-    for (s.column_index = 1; s.y = s.y + 0xc, s.column_index < 6; s.column_index = s.column_index + 1)
+    s.y = s.y + 0xc;
+    for (s.column_index = 1; s.column_index < 6; s.column_index = s.column_index + 1)
     {
-      strcpy(g_ui_message_buffer, gs_analyze_0074b870[s.column_index + 7]);
+      switch (s.column_index)
+      {
+      case 1:
+        strcpy(g_ui_message_buffer, gs_analyze_0074b870[8]);
+        break;
+      case 2:
+        strcpy(g_ui_message_buffer, gs_analyze_0074b870[9]);
+        break;
+      case 3:
+        strcpy(g_ui_message_buffer, gs_analyze_0074b870[10]);
+        break;
+      case 4:
+        strcpy(g_ui_message_buffer, gs_analyze_0074b870[11]);
+        break;
+      case 5:
+        strcpy(g_ui_message_buffer, gs_analyze_0074b870[12]);
+        break;
+      }
       DrawScaledTextNoShadow(g_ui_message_buffer, s.x, s.y, 0xff);
       DrawDeckAnalysisPercentCentered(s.card_type_count_by_color[s.column_index][0], 0x80, s.y, 0xff);
-      for (s.deck_index = 1; s.deck_index < 6; s.deck_index = s.deck_index + 1)
+      for (s.deck_index = 1; s.deck_index <= 5; s.deck_index = s.deck_index + 1)
       {
         DrawDeckAnalysisPercentCentered(s.card_type_count_by_color[s.column_index][s.deck_index], s.deck_index * 0x20 + 0x90, s.y, 0xff);
       }
+      s.y = s.y + 0xc;
     }
     DrawScaledTextNoShadow(gs_analyze_0074b870[0xd], s.x, s.y, 0xff);
     DrawDeckAnalysisPercentCentered(s.card_type_count_by_color[6][0], 0x80, s.y, 0xff);
     s.y = s.y + 0x18;
     s.x = 0x80;
     DrawScaledTextNoShadow(gs_analyze_0074b870[0xe], 0x80, s.y, 0xf6);
-    strcat(g_ui_message_buffer, "     ");
+    strcat(g_ui_message_buffer, " ");
     DrawDeckAnalysisPercentCentered(s.rarity_count[0], s.x + 0x30, s.y, 0xf6);
     s.y = s.y + 8;
     DrawScaledTextNoShadow(gs_analyze_0074b870[0xf], s.x, s.y, 0xf6);
-    strcat(g_ui_message_buffer, "    ");
+    strcat(g_ui_message_buffer, " ");
     DrawDeckAnalysisPercentCentered(s.rarity_count[1], s.x + 0x30, s.y, 0xf6);
     s.y = s.y + 8;
     DrawScaledTextNoShadow(gs_analyze_0074b870[0x10], s.x, s.y, 0xf6);
-    strcat(g_ui_message_buffer, "   ");
+    strcat(g_ui_message_buffer, " ");
     DrawDeckAnalysisPercentCentered(s.rarity_count[2], s.x + 0x30, s.y, 0xf6);
     s.y = s.y + 8;
     WaitForInputEventUnlessBlocked();
   }
-  s.max_creature_count = s.card_type_count_by_color[1][0];
-  if (s.card_type_count_by_color[1][0] < s.card_type_count_by_color[2][0])
+  _DAT_007483e4 = 0;
+  s.max_creature_count = s.card_type_count_by_color[2][0];
+  if (s.max_creature_count < s.card_type_count_by_color[3][0])
   {
-    s.max_creature_count = s.card_type_count_by_color[2][0];
+    _DAT_007483e4 = 1;
+    s.max_creature_count = s.card_type_count_by_color[3][0];
   }
-  _DAT_007483e4 = (unsigned int)(s.card_type_count_by_color[1][0] < s.card_type_count_by_color[2][0]);
-  if (s.max_creature_count < s.card_type_count_by_color[4][0] + s.card_type_count_by_color[5][0])
+  if (s.max_creature_count < s.card_type_count_by_color[5][0] + s.card_type_count_by_color[6][0])
   {
     _DAT_007483e4 = 2;
   }

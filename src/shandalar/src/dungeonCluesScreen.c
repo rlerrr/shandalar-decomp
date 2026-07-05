@@ -950,7 +950,7 @@ void FUN_0050caa0(int dungeon_index)
   if (dungeon_index < 5)
   {
     FUN_00564e70(g_ui_message_buffer, 0x1000, s__s____s__0058ccec, FUN_005081e0(dungeon_index),
-                 (char *)(DAT_0077de00 + (dungeon_index * 4 + 4) * 0x19));
+                 (char *)(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + (dungeon_index * 4 + 4) * 0x19));
     DrawTextLineClamped(g_ui_message_buffer, 0x12, 0x1c, s.title_colors[4]);
     s.text_y = FUN_005501dc(0x24);
   }

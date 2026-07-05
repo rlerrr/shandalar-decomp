@@ -135,7 +135,7 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 
 void RefreshAdventureInterfaceLayout(void);
 void *FUN_0055060c(int param_1);
-void FUN_004290e2(int param_1, int param_2);
+void AddJournalEntry(int entry_type, int entry_arg);
 void FUN_004ce992(int delay);
 
 void EnterCastleDungeon(int param_1);
@@ -324,12 +324,12 @@ char s_wiseman3_pic_0058f08c[0x10] = "wiseman3.pic";
 char s_wiseman3_pic_0058f09c[0x10] = "wiseman3.pic";
 
 // GLOBAL: SHANDALAR 0x0058f0ac
-int g_wiseman_card_choice_result;
+int g_wiseman_card_choice_result = 0;
 
 // GLOBAL: SHANDALAR 0x0058e048
-int g_showlibrary_menu_selection;
+int g_showlibrary_menu_selection = 0;
 // GLOBAL: SHANDALAR 0x0058edd0
-int g_wiseman_city_block_active_town_count;
+int g_wiseman_city_block_active_town_count = 0;
 
 // GLOBAL: SHANDALAR 0x0058f0b0
 int g_card_browser_color_filter = 1;
@@ -338,7 +338,7 @@ int g_card_browser_type_filter = 1;
 // GLOBAL: SHANDALAR 0x0058f0b8
 unsigned int g_card_browser_hover_card = 0xffffffff;
 // GLOBAL: SHANDALAR 0x0058f0bc
-unsigned int g_card_browser_selected_card;
+unsigned int g_card_browser_selected_card = 0;
 
 int RenderCardBrowserDoneButton(AdvMenuControl *control, int mode);
 int HandleCardBrowserDoneButton(AdvMenuControl *control);
@@ -428,7 +428,7 @@ void VisitTownWiseman(void);
 // GLOBAL: SHANDALAR 0x0058ab58
 void(__cdecl *g_town_special_button_callback)(void) = VisitTownWiseman;
 // GLOBAL: SHANDALAR 0x0058ab70
-int _DAT_0058ab70;
+int _DAT_0058ab70 = 0;
 
 int RenderBuyCardsDoneButton(AdvMenuControl *control, int mode);
 extern char g_town_leave_button_mode_colors[];
@@ -492,9 +492,9 @@ char s_buycards_pic_0058ae98[] = "buycards.pic";
 // GLOBAL: SHANDALAR 0x0058aea8
 char s_buycards_pic_0058aea8[] = "buycards.pic";
 // GLOBAL: SHANDALAR 0x0058aeb8
-int s_empty_buy_card_banner_0058aeb8;
+int s_empty_buy_card_banner_0058aeb8 = 0;
 // GLOBAL: SHANDALAR 0x0058aebc
-int s_empty_buy_card_banner_0058aebc;
+int s_empty_buy_card_banner_0058aebc = 0;
 // GLOBAL: SHANDALAR 0x0058aef0
 char s_x_sound_button2_wav_0058aef0[] = "x:sound\\button2.wav";
 // GLOBAL: SHANDALAR 0x0058af1c
@@ -592,10 +592,6 @@ char DAT_00580e84[] = ",";
 
 // GLOBAL: SHANDALAR 0x00580e8c
 char DAT_00580e8c[] = "rt\0";
-// GLOBAL: SHANDALAR 0x00580e90
-char s_______00580e90[] = "%[^\n]\0\0";
-// GLOBAL: SHANDALAR 0x00580e98
-char DAT_00580e98[] = "%[\n]\0\0\0";
 // GLOBAL: SHANDALAR 0x00580ea0
 char s_______00580ea0[] = "%[^\n]\0\0";
 // GLOBAL: SHANDALAR 0x00580ea8
@@ -1007,7 +1003,7 @@ void DrawUiScaledSprite(FacemakerWindowBounds *dst, int x_320, int y_200, int w_
 // FUNCTION: SHANDALAR 0x005661d9
 int IsCreatureTypeFeminine(int creature_type)
 {
-  if ((creature_type < 0) || ((int)DAT_00593934 - 1 < creature_type))
+  if ((creature_type < 0) || ((int)gs_creature_name_count_00593934 - 1 < creature_type))
   {
     return 0;
   }
@@ -1301,7 +1297,7 @@ void VisitTownWiseman(void)
       sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[0xc], ((int)(quest_time_units + ((quest_time_units >> 0x1f) & 7U)) >> 3));
       (void)RunTextMenuAtScaled(g_ui_message_buffer, 0x48, 0x48);
       FUN_00431526(0x80, g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
-      FUN_004290e2(0xf, g_current_quest_type);
+      AddJournalEntry(JOURNAL_ENTRY_QUEST_ACCEPTED, g_current_quest_type);
       g_town_dialog_callback = saved_callback;
     }
     else
@@ -2477,7 +2473,7 @@ ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int cre
   tries = 0;
   do
   {
-    creature_type = FUN_00522508((int)DAT_00593934 - 1) + 1;
+    creature_type = FUN_00522508((int)gs_creature_name_count_00593934 - 1) + 1;
     tries++;
   } while (tries < 999 && (gs_creature_names_00591a08[creature_type].tier != creature_tier ||
                            (wizard_color != 0 && ((1 << (unsigned char)wizard_color) & (int)(signed char)gs_creature_names_00591a08[creature_type].color_mask) == 0)));
@@ -2634,8 +2630,8 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
   s.header_line_index = s.deck_type;
   s.entry_index = (unsigned int)s.header_line_index;
 
-  s.scan_ret = fscanf(s.f, s_______00580e90, s.line);
-  s.scan_ret = fscanf(s.f, DAT_00580e98, s.line);
+  s.scan_ret = fscanf(s.f, "%[^\n]", s.line);
+  s.scan_ret = fscanf(s.f, "%[\n]", s.line);
 
   s.color_filter = 0;
   s.speed_filter = -1;
@@ -2975,7 +2971,7 @@ void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
   strcpy(g_ui_message_buffer, gs_lair_0077e180[0x11]);
   s.count = 0;
 
-  for (s.i = 1; s.i < (int)DAT_00593934; s.i = s.i + 1)
+  for (s.i = 1; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
     if ((*(int *)&amulet_color & (int)(signed char)gs_creature_names_00591a08[s.i].plural[0x36]) != 0)
     {
@@ -4664,7 +4660,7 @@ int VisitTownSlot(int town_index)
         sprintf(g_ui_message_buffer, gs_visit_0077c4f0[8], BuildTownDisplayName(town_index));
         FUN_0056bd9d((unsigned int)g_duel_ante_card_ids[0]);
         RunTextMenuAtScaled(g_ui_message_buffer, 0x14, 0x14);
-        FUN_004290e2(7, town_index);
+        AddJournalEntry(JOURNAL_ENTRY_CITY_SAVED, town_index);
       }
       else
       {
@@ -4762,7 +4758,7 @@ int VisitTownSlot(int town_index)
   {
     AnimateVisitBackdropZoomIn(GET_TOWN_PIC(town_index));
     s.quest_handled = 0;
-    FUN_004290e2(0x10, g_current_quest_type);
+    AddJournalEntry(JOURNAL_ENTRY_SPELL_FOUND, g_current_quest_type);
 
     if ((g_current_quest_type == 0) || (g_current_quest_type == 2))
     {
@@ -4919,11 +4915,11 @@ int VisitTownSlot(int town_index)
     {
       s.journal_param = (unsigned int)town_index;
     }
-    FUN_004290e2(1, (int)s.journal_param);
+    AddJournalEntry(JOURNAL_ENTRY_TOWN, (int)s.journal_param);
   }
   else
   {
-    FUN_004290e2(1, town_index);
+    AddJournalEntry(JOURNAL_ENTRY_TOWN, town_index);
   }
 
   g_town_slots[town_index].status_and_ruling_wizard = g_town_slots[town_index].status_and_ruling_wizard | 2;
@@ -5041,7 +5037,7 @@ int VisitTownSlot(int town_index)
           Gold = Gold - Scards[s.distance].worldmagic_price / 2;
           g_world_magic_bitmap = g_world_magic_bitmap | (1 << (unsigned char)g_world_magic_offer_slot_index);
           g_world_magic_slot_timers[g_world_magic_offer_slot_index].town_index = 0;
-          FUN_004290e2(6, s.distance);
+          AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_LEARNED, s.distance);
         }
         g_world_magic_offer_slot_index = -1;
       }

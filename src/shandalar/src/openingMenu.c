@@ -165,10 +165,16 @@ int g_name_entry_insert_mode;
 DIBSurface *g_facemaker_page4_dib;
 // GLOBAL: SHANDALAR 0x00789928
 HBITMAP g_facemaker_page4_bitmap;
+extern char s_portrait_palette_map_empty_palette_path_0058d3bc[];
+extern char s_portrait_palette_map_empty_portrait_path_0058d3c0[];
 // GLOBAL: SHANDALAR 0x0058d3b4
-char *g_portrait_palette_map_cached_palette_path = "";
+char *g_portrait_palette_map_cached_palette_path = s_portrait_palette_map_empty_palette_path_0058d3bc;
 // GLOBAL: SHANDALAR 0x0058d3b8
-char *g_portrait_palette_map_cached_portrait_path = "";
+char *g_portrait_palette_map_cached_portrait_path = s_portrait_palette_map_empty_portrait_path_0058d3c0;
+// GLOBAL: SHANDALAR 0x0058d3bc
+char s_portrait_palette_map_empty_palette_path_0058d3bc[4] = "";
+// GLOBAL: SHANDALAR 0x0058d3c0
+char s_portrait_palette_map_empty_portrait_path_0058d3c0[4] = "";
 // GLOBAL: SHANDALAR 0x00603ef8
 RpBitsPalettePacket g_portrait_palette_source_palette;
 // GLOBAL: SHANDALAR 0x00603bd0
@@ -233,7 +239,7 @@ AdvMenuRect g_color_menu_swatch_rects[5] = {{0x33, 0x43, 0x46, 0x4b}, {0x33, 0x8
 int g_color_menu_selection_to_deck_color[5] = {4, 5, 1, 3, 2};
 
 // GLOBAL: SHANDALAR 0x00588a18
-int g_loadsave_insert_mode;
+int g_loadsave_insert_mode = 1;
 // GLOBAL: SHANDALAR 0x005aa470
 int g_loadsave_menu_selection;
 // GLOBAL: SHANDALAR 0x005aa478

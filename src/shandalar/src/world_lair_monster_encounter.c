@@ -159,7 +159,7 @@ void FinalizeSpriteEncodeSession(void);
 void FreeSpriteBlob(EncodedImage *sprite_blob);
 int FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
 void FUN_00431526(unsigned int mask, int x, int y);
-void FUN_004290e2(int param_1, int param_2);
+void AddJournalEntry(int entry_type, int entry_arg);
 void FUN_0046ed03(void);
 void FUN_0046ed33(void);
 void FUN_00426e30(char *text, int x, int y);
@@ -349,7 +349,7 @@ static char DAT_0058f1a4[] = ".\n";
 // GLOBAL: SHANDALAR 0x00581a64
 static char s_dungbutt_spr_00581a64[] = "dungbutt.spr";
 // GLOBAL: SHANDALAR 0x00581a74
-static char DAT_00581a74[] = "OK";
+static char DAT_00581a74[4] = "";
 // GLOBAL: SHANDALAR 0x00590b54
 static char DAT_00590b54[] = "";
 // GLOBAL: SHANDALAR 0x00590b58
@@ -1259,7 +1259,7 @@ retry:
   else
   {
     s.event_type = FUN_00522508(0xe) + 5;
-    FUN_004290e2(5, s.event_type);
+    AddJournalEntry(JOURNAL_ENTRY_RANDOM_EVENT, s.event_type);
   }
 
   s.event_random_flag = FUN_00522508(2);
@@ -2495,7 +2495,7 @@ LAB_4F4BB2:
     s.reward_text_x = 0x8c;
     s.reward_text_y = 0x118;
     FUN_004bb400(gs_creature_names_00591a08[s.creature_type].encounter_type, (byte)monster_color);
-    FUN_004290e2(2, s.creature_type | 0x80);
+    AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, s.creature_type | 0x80);
     ShowStatsWindow(2, DAT_008ce538 << 0x10 | s.creature_type);
     if (-g_current_quest_type == s.creature_type)
     {
@@ -2884,7 +2884,7 @@ LAB_4F4BB2:
     LoadPcxIntoPage(1, s_losedul2_pic_0058b194);
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                             global_screen_height);
-    FUN_004290e2(2, s.creature_type);
+    AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, s.creature_type);
     for (s.ante_card_slot = 0; s.ante_card_slot < 3; s.ante_card_slot = s.ante_card_slot + 1)
     {
       s.ante_card_id = *(uint *)(global_ante_cards[0] + s.ante_card_slot * 4);

@@ -152,7 +152,7 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_lair_names_buf_0074bd30[0x3b6];
 // GLOBAL: SHANDALAR 0x0074c950
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_format_left_0074c950[0x20];
 // GLOBAL: SHANDALAR 0x0077f190
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_format_right_0077f190[0x40];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_format_right_0077f190[0x38];
 // GLOBAL: SHANDALAR 0x0077cfd0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityname_village_0077cfd0[0x70];
 // GLOBAL: SHANDALAR 0x00765dc0
@@ -246,64 +246,6 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_showlibrary_empty_0074bcf2[0x32];
 SHANDALAR_GLOBAL_STRINGS_EXTERN char *gs_advblock_city_0074c930[4];
 // GLOBAL: SHANDALAR 0x0077c9e0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char *gs_advblock_general_0077c9e0[0x0c];
-
-/* Legacy aliases used by decomp code */
-#define DAT_00593934 gs_creature_name_count_00593934
-
-#define DAT_00591a08 ((char *)gs_creature_names_00591a08 + 0x00)
-#define DAT_00591a12 ((char *)gs_creature_names_00591a08 + 0x0a)
-#define DAT_00591a44 ((char *)gs_creature_names_00591a08 + 0x3c)
-
-#define DAT_0077e2c0 gs_playernames_buf_0077e2c0
-#define DAT_0074d790 gs_difficultylevels_buf_0074d790
-#define DAT_0074c970 gs_dungeon_names_buf_0074c970
-#define DAT_0074bd30 gs_lair_names_buf_0074bd30
-#define DAT_0074c950 gs_cityname_format_left_0074c950
-#define DAT_0077f190 gs_cityname_format_right_0077f190
-#define DAT_0077cfd0 gs_cityname_village_0077cfd0
-#define DAT_00765dc0 gs_cityname_castle_00765dc0
-#define DAT_0077de00 gs_city_text_cluster_0077d610.cityname_manacastle_0077de00
-#define DAT_0077d610 gs_city_text_cluster_0077d610.citynames_buf_0077d610
-#define DAT_0074b160 gs_worldmagic_buf_0074b160
-#define DAT_0077e1d0 gs_worldmagic_title_0077e1d0
-#define DAT_0077c680 gs_logstrings_buf_0077c680
-#define DAT_0077ee70 gs_wizardnames_0077ee70
-#define DAT_00765d50 gs_directions_00765d50
-#define DAT_0074c5c0 gs_cardclassnames_buf_0074c5c0
-#define DAT_0077e6e0 gs_spellname_primary_0077e6e0
-#define DAT_0077e220 gs_spellnames_0077e220
-#define DAT_0074d980 gs_mananames_0074d980
-#define DAT_007806f0 gs_landwalks_007806f0
-#define DAT_0077d090 gs_amuletnames_0077d090
-#define DAT_0077edd0 gs_amuletnames_plural_0077edd0
-#define DAT_0077c5e0 gs_colorcards_0077c5e0
-#define DAT_007658d0 gs_cave_showclues_buf_007658d0
-#define DAT_0074da70 gs_encounter_buf_0074da70
-#define DAT_0077f610 gs_visit_buf_0077f610
-#define DAT_0077e700 gs_castlewin_buf_0077e700
-#define DAT_00780870 gs_dungeon_buf_00780870
-#define DAT_0077e5a0 gs_hinttext_buf_0077e5a0
-#define DAT_0074b930 gs_questfailed_buf_0074b930
-#define DAT_0074d010 gs_monsterlair_buf_0074d010
-#define DAT_0077f1e0 gs_buyanycard_buf_0077f1e0
-#define DAT_0074d270 gs_queststatus_buf_0074d270
-#define DAT_0077d1c0 gs_newsflash_buf_0077d1c0
-#define DAT_0074c0f0 gs_citycardtext_buf_0074c0f0
-#define DAT_0074d890 gs_showdeck_buf_0074d890
-#define DAT_0077d040 gs_loadsave_buf_0077d040
-#define DAT_0074ce20 gs_stats_buf_0074ce20
-#define DAT_0074afb0 gs_analyze_buf_0074afb0
-#define DAT_0077ca20 gs_riddle_buf_0077ca20
-#define DAT_007800c0 gs_lair_buf_007800c0
-#define DAT_00780c60 gs_wiseman_buf_00780c60
-#define DAT_0077f450 gs_cityscreen_buttons_buf_0077f450
-#define DAT_0077e110 gs_showcard_name_0077e110
-#define DAT_0077e142 gs_showcard_type_0077e142
-#define DAT_0074bcc0 gs_showlibrary_title_0074bcc0
-#define DAT_0074bcf2 gs_showlibrary_empty_0074bcf2
-
-#define DAT_0074c930 gs_advblock_city_0074c930
-#define DAT_0077c9e0 gs_advblock_general_0077c9e0
 
 #undef SHANDALAR_GLOBAL_STRINGS_EXTERN
 

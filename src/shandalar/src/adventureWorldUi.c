@@ -350,7 +350,7 @@ void WorldPointToScreen(int world_x, int world_y, int *out_screen_x, int *out_sc
 void RefreshAdventureInterfaceLayout(void);
 int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
 int CountDuelPoolEligibleTowns(void);
-void FUN_004290e2(int param_1, int param_2);
+void AddJournalEntry(int entry_type, int entry_arg);
 int GetRelativeWorldQuadrant(int world_x, int world_y);
 int FindDeckSlotForQuestColorAndType(unsigned char quest_color, unsigned char quest_bitmap_mask);
 char *FUN_004f2e17(int town_index);
@@ -1726,7 +1726,7 @@ int FUN_0054baaa(int force_redraw)
 
       if ((g_current_quest_destination != -1) && (g_current_quest_deadline <= g_quest_restock_timer))
       {
-        FUN_004290e2(0x11, g_current_quest_type);
+        AddJournalEntry(JOURNAL_ENTRY_QUEST_FAILED, g_current_quest_type);
         sprintf(g_ui_message_buffer, gs_queststatus_0077e0a0[0x19], BuildTownDisplayName(g_current_quest_giver_town_index));
         PTR_DAT_005832b4->font_slot = 4;
         RunTextMenuAtScaled(g_ui_message_buffer, 0x5a, 0x50);

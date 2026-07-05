@@ -175,7 +175,7 @@ void DrawTiledDialogBoxFrame(int x, int y, int width, int height, int frame_styl
 void FadeInPaletteFromGray(int color_index, int palette_id);
 void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
 void FreeSpriteBlob(EncodedImage *sprite_blob);
-void FUN_004290e2(int param_1, int param_2);
+void AddJournalEntry(int entry_type, int entry_arg);
 void FUN_00431526(unsigned int mask, int x, int y);
 void FUN_00431593(unsigned int mask, int x, int y);
 void RevealDungeonCellAndNeighbors(int x, int y);
@@ -229,7 +229,7 @@ void UnloadStatWinDllExports(void);
 void UpdateMouseSnapshot(void);
 
 // GLOBAL: SHANDALAR 0x00583a28
-int g_dungeon_move_direction;
+int g_dungeon_move_direction = 4;
 // GLOBAL: SHANDALAR 0x00583a50
 FacemakerWindowBounds g_dungeon_scratch_page9_bounds = {9, 0, 0, 1, 0xf, 4, 0, 0, 0};
 // GLOBAL: SHANDALAR 0x00583a74
@@ -331,11 +331,11 @@ int RunCastleDungeonBoard(int dungeon_index)
   s.lost_required_duel = 0;
   if (dungeon_index >= 5)
   {
-    FUN_004290e2(3, dungeon_index);
+    AddJournalEntry(JOURNAL_ENTRY_DUNGEON_ENTERED, dungeon_index);
   }
   else
   {
-    FUN_004290e2(4, dungeon_index);
+    AddJournalEntry(JOURNAL_ENTRY_CASTLE_DUNGEON_ENTERED, dungeon_index);
   }
   g_dungeon_force_final_encounter = 0;
   FUN_004ece9a();
@@ -663,12 +663,13 @@ int RunCastleDungeonBoard(int dungeon_index)
                   s.lost_required_duel = 1;
                   RefreshAdventureInterfaceLayout();
                 }
-                FUN_004290e2(2, g_dungeon_runtime_state.encounter.monster_sound_ids[s.event_code]);
+                AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, g_dungeon_runtime_state.encounter.monster_sound_ids[s.event_code]);
               }
               else
               {
                 DUNGEON_GRID_CELL(s.target_x, s.target_y) = 0x101;
-                FUN_004290e2(2, (uint)g_dungeon_runtime_state.encounter.monster_sound_ids[s.event_code] | 0x80);
+                AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL,
+                                (uint)g_dungeon_runtime_state.encounter.monster_sound_ids[s.event_code] | 0x80);
               }
               DrawCastleDungeonBoard(0, 0, dungeon_index);
               break;
@@ -683,7 +684,8 @@ int RunCastleDungeonBoard(int dungeon_index)
               {
                 PlaySoundEffectOnChannel("x:sound\\findcard.wav", 0xf, 100, 100, 0);
                 TransitionPcxToScreenRandomTiles8("staceybk.pic");
-                FUN_004290e2(0x13, (&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code] | 0x10000);
+                AddJournalEntry(JOURNAL_ENTRY_DUNGEON_TREASURE,
+                                (&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code] | 0x10000);
                 FUN_004f263b((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code], 0x22, 0x53, 0x4b, 0x70, 1, "");
                 DrawTextAt(PTR_DAT_005832b4, 0x1b, 0x90, 0x93, gs_dungeon_0077f000[3]);
                 ClearInputAndWaitForMouseRelease();
@@ -719,7 +721,7 @@ int RunCastleDungeonBoard(int dungeon_index)
                 {
                   sprintf(g_ui_message_buffer, gs_dungeon_0077f000[4], s.gold_reward);
                 }
-                FUN_004290e2(0x13, 100);
+                AddJournalEntry(JOURNAL_ENTRY_DUNGEON_TREASURE, 100);
                 RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50);
               }
               DUNGEON_GRID_CELL(s.target_x, s.target_y) = 0x101;
@@ -1041,7 +1043,7 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
   } s;
 
   s.wizard_color = (int)(char)g_castle_dungeon_slots[param_1].color;
-  FUN_004290e2(2, (g_castle_defeat_music_ids[param_1] + 1) * 7 | 0x80);
+  AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, (g_castle_defeat_music_ids[param_1] + 1) * 7 | 0x80);
   ShowStatsWindow(1, (int)(char)g_castle_dungeon_slots[param_1].color);
   LoadPcxIntoPageNoPalette("advfac64.pic");
   LoadPcxIntoPage(1, "tradscrn.pic");
@@ -1169,7 +1171,7 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
     DAT_008cf6d0 = FUN_0056c705(0x11);
     unk_00789308 = FUN_0056c705(0x1d);
     RunDuelEngine(0, s.final_creature);
-    FUN_004290e2(2, 0xb7);
+    AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, 0xb7);
     AnimatePaletteToColor(0, DAT_00589dec);
     ClearGraphicsPageWithPaletteColor(0, 0);
     LoadPcxIntoPageNoPalette("advfac64.pic");
