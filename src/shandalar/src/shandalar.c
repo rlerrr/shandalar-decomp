@@ -134,7 +134,7 @@ UINT g_timer_period_ms = 0x21;
 // GLOBAL: SHANDALAR 0x00589df0
 int g_ui_tick_count = 0;
 // GLOBAL: SHANDALAR 0x00589dec
-int DAT_00589dec = 0x30;
+int g_default_palette_fade_steps = 0x30;
 // GLOBAL: SHANDALAR 0x00748400
 int g_sound_loader_busy;
 // GLOBAL: SHANDALAR 0x00748404
@@ -185,7 +185,7 @@ int DAT_00586494 = 0;
 // GLOBAL: SHANDALAR 0x00586498
 int DAT_00586498 = 0;
 // GLOBAL: SHANDALAR 0x009300f0
-int DAT_009300f0;
+int g_adventure_world_exit_requested;
 // GLOBAL: SHANDALAR 0x007486d0
 EncodedImage *g_ttsprite_special_sprite_a;
 // GLOBAL: SHANDALAR 0x007486e0
@@ -592,7 +592,7 @@ void AnimatePaletteToColor(int color_index, int palette_id);
 int RunOpeningMenu(void);
 int RunDifficultyMenu(void);
 int RunColorMenu(void);
-int FUN_00522508(int param_1);
+int RandomIntLessThan(int param_1);
 int RunFacemakerFlow(void);
 void InitializeNewGameState(void);
 void FUN_004f6d90(void);
@@ -607,8 +607,8 @@ void InitializeCastleDungeonSlots(void);
 unsigned int GetWorldTileType(int param_1, int param_2);
 unsigned int GetWorldTileMagicMask(unsigned int param_1);
 unsigned int FUN_004314ca(int param_1, int param_2);
-void FUN_00431526(unsigned int param_1, int param_2, int param_3);
-void FUN_00431593(unsigned int param_1, int param_2, int param_3);
+void SetWorldMapPixelFlags(unsigned int param_1, int param_2, int param_3);
+void ClearWorldMapPixelFlags(unsigned int param_1, int param_2, int param_3);
 void MarkPathConnection(int x, int y, int direction_index);
 int FUN_004f82f2(int param_1, int param_2);
 void SaveGameToSlot(int save_slot_index);
@@ -646,7 +646,7 @@ unsigned int WaitForInputEventUnlessBlocked(void);
 int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 unsigned int PeekQueuedKeyInput(void);
 unsigned int WaitForInputEvent(void);
-int FUN_004ecf30(int param_1, int param_2);
+int ApproximateDistance(int param_1, int param_2);
 void ClearInputAndWaitForMouseRelease(void);
 void ClearQueuedKeyInput(void);
 void UnloadStatWinDllExports(void);
@@ -658,7 +658,7 @@ void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int wi
 unsigned int __cdecl save_or_load_ver1(void);
 void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
 
-void FUN_004ce992(int param_1);
+void DelayUiTicks(int param_1);
 int FUN_0056c705(int param_1);
 unsigned int FUN_004bdccc(unsigned int param_1);
 int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells);
@@ -791,14 +791,14 @@ int FUN_0055db50(void)
 
 opening_menu:
   s.game_setup_mode = RunOpeningMenu();
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
 
   switch (s.game_setup_mode)
   {
   case 0:
   difficult_menu:
     g_shandalar_difficulty = RunDifficultyMenu();
-    AnimatePaletteToColor(0, DAT_00589dec);
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
     if (g_shandalar_difficulty == -1)
     {
       goto opening_menu;
@@ -808,15 +808,15 @@ opening_menu:
     g_selected_wizard_color = RunColorMenu();
     g_starting_color = g_selected_wizard_color;
     DAT_0091c99c = g_selected_wizard_color;
-    DAT_0091c9a0 = FUN_00522508(3);
-    AnimatePaletteToColor(0, DAT_00589dec);
+    DAT_0091c9a0 = RandomIntLessThan(3);
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
     if (g_starting_color == -1)
     {
       goto difficult_menu;
     }
 
     g_player_is_male = RunFacemakerFlow();
-    AnimatePaletteToColor(0, DAT_00589dec);
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
     if (g_player_is_male == -1)
     {
       goto color_menu;
@@ -845,8 +845,8 @@ opening_menu:
     {
       do
       {
-        g_world_player_x = FUN_00522508(0x40) * 0x20 + 0x10;
-        g_world_player_y = FUN_00522508(0x40) * 0x20 + 0x10;
+        g_world_player_x = RandomIntLessThan(0x40) * 0x20 + 0x10;
+        g_world_player_y = RandomIntLessThan(0x40) * 0x20 + 0x10;
         s.tile_mask = GetWorldTileMagicMask(GetWorldTileType(g_world_player_x / 0x20, g_world_player_y / 0x20));
       } while ((g_deck_color_bitmap & s.tile_mask) == 0);
     } while ((FUN_004314ca(g_world_player_x / 0x20, g_world_player_y / 0x20) & 0x10) != 0);
@@ -867,7 +867,7 @@ opening_menu:
     break;
 
   case 4:
-    DAT_009300f0 = 1;
+    g_adventure_world_exit_requested = 1;
     return 0;
   }
 
@@ -920,7 +920,7 @@ opening_menu:
   setjmp(&DAT_0073e990);
   setjmp(&DAT_0073e9e0);
 
-  if (DAT_009300f0 != 0)
+  if (g_adventure_world_exit_requested != 0)
   {
   }
   else
@@ -965,12 +965,12 @@ opening_menu:
       ClearInputAndWaitForMouseRelease();
       ClearQueuedKeyInput();
       setjmp(&DAT_0073e9e0);
-    } while (DAT_009300f0 == 0);
+    } while (g_adventure_world_exit_requested == 0);
   }
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   UnloadStatWinDllExports();
-  FUN_00469099();
+  ShutdownSharedStartup();
 }
 
 // FUNCTION: SHANDALAR 0x00412bff
@@ -1185,7 +1185,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   {
     FUN_0046ed33();
     DrawTextMenu(menu_text, s.selected_menu_entry);
-    FUN_004ce992(0x14);
+    DelayUiTicks(0x14);
     FUN_0046ed03();
   }
   else
@@ -1718,13 +1718,13 @@ int EndMenuContext(void)
 }
 
 // FUNCTION: SHANDALAR 0x00522508
-int FUN_00522508(int param_1)
+int RandomIntLessThan(int param_1)
 {
   return (param_1 > 1) ? rand() % param_1 : 0;
 }
 
 // FUNCTION: SHANDALAR 0x004ce992
-void FUN_004ce992(int delay)
+void DelayUiTicks(int delay)
 {
   int start = g_ui_tick_count;
   while ((g_ui_tick_count - start) < (delay / 2))
@@ -1815,7 +1815,7 @@ void InitializeNewGameState(void)
   g_amulet_inventory[g_selected_wizard_color - 1]++;
   for (s.location_block_start_index = 0; s.location_block_start_index < 3 - g_shandalar_difficulty; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    s.icon_width_scaled = FUN_00522508(5);
+    s.icon_width_scaled = RandomIntLessThan(5);
     g_amulet_inventory[s.icon_width_scaled]++;
   }
 
@@ -1853,7 +1853,7 @@ unsigned int FUN_004bdccc(unsigned int param_1)
 
   do
   {
-    entry_index = FUN_00522508(5) + 1;
+    entry_index = RandomIntLessThan(5) + 1;
   } while ((param_1 & (1U << (entry_index & 0xff))) != 0);
 
   return 1U << (entry_index & 0xff);
@@ -2034,7 +2034,7 @@ int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int colo
   do
   {
     s.found = 0;
-    s.card_index = FUN_00522508(g_card_count - 0x39);
+    s.card_index = RandomIntLessThan(g_card_count - 0x39);
     if ((type_mask != 0) && ((type_mask & global_cards_data[s.card_index].type) == 0))
     {
     }
@@ -2548,8 +2548,8 @@ int GenerateWorldTownSlots(void)
       do
       {
         generated_valid_world = 0;
-        preview_panel_y_offset = FUN_00522508(0x40);
-        avatar_sprite_index = FUN_00522508(0x40);
+        preview_panel_y_offset = RandomIntLessThan(0x40);
+        avatar_sprite_index = RandomIntLessThan(0x40);
         tile_type = GetWorldTileType(preview_panel_y_offset, avatar_sprite_index);
         if (tile_type != 0)
         {
@@ -2559,7 +2559,7 @@ int GenerateWorldTownSlots(void)
           {
             if (g_town_slots[local_34].world_x != -1)
             {
-              clamped_required_wins = FUN_004ecf30(preview_panel_y_offset - g_town_slots[local_34].world_x, avatar_sprite_index - g_town_slots[local_34].world_y);
+              clamped_required_wins = ApproximateDistance(preview_panel_y_offset - g_town_slots[local_34].world_x, avatar_sprite_index - g_town_slots[local_34].world_y);
               if (clamped_required_wins < avatar_draw_y)
               {
                 avatar_draw_y = clamped_required_wins;
@@ -2634,7 +2634,7 @@ int GenerateWorldTownSlots(void)
             {
               for (local_34 = 0; local_34 < 99; local_34 = local_34 + 1)
               {
-                clamped_required_wins = FUN_00522508(10);
+                clamped_required_wins = RandomIntLessThan(10);
                 clamped_required_wins = clamped_required_wins + 2;
                 if ((g_world_magic_slot_timers[clamped_required_wins].town_index == 0) && ((world_magic_mask & 1 << (((char)(clamped_required_wins / 2)) & 0x1f)) != 0))
                 {
@@ -2645,7 +2645,7 @@ int GenerateWorldTownSlots(void)
 
               if (0x62 < local_34)
               {
-                clamped_required_wins = FUN_00522508(2);
+                clamped_required_wins = RandomIntLessThan(2);
                 g_world_magic_slot_timers[clamped_required_wins].town_index = inner_index;
               }
 
@@ -2656,7 +2656,7 @@ int GenerateWorldTownSlots(void)
               }
             }
 
-            FUN_00431526(0x10, preview_panel_y_offset, avatar_sprite_index);
+            SetWorldMapPixelFlags(0x10, preview_panel_y_offset, avatar_sprite_index);
             tile_type = inner_index * 5 + 1;
             uVar7 = (int)tile_type >> 0x1f;
             inner_index = ((tile_type ^ uVar7) - uVar7 & 0x7f ^ uVar7) - uVar7;
@@ -2682,13 +2682,13 @@ int GenerateWorldTownSlots(void)
       {
         do
         {
-          preview_panel_y_offset = FUN_00522508(0x80);
+          preview_panel_y_offset = RandomIntLessThan(0x80);
         } while (g_town_slots[preview_panel_y_offset].location_type < 2);
       } while ((g_town_slots[preview_panel_y_offset].location_type == 4) || (g_town_slots[preview_panel_y_offset].trade_color_and_type != 0));
       g_town_slots[preview_panel_y_offset].trade_color_and_type = 1 << (((char)local_30) & 0x1f);
     }
 
-    local_34 = FUN_00522508(0xc);
+    local_34 = RandomIntLessThan(0xc);
     for (local_2c = 0; local_2c < 0x80; local_2c = local_2c + 1)
     {
       if ((1 < g_town_slots[local_2c].location_type) && (g_town_slots[local_2c].location_type < 4))
@@ -2724,7 +2724,7 @@ int GenerateWorldTownSlots(void)
 
     for (local_2c = 0; local_2c < 0x80; local_2c = local_2c + 1)
     {
-      FUN_00431593(0x10, g_town_slots[local_2c].world_x, g_town_slots[local_2c].world_y);
+      ClearWorldMapPixelFlags(0x10, g_town_slots[local_2c].world_x, g_town_slots[local_2c].world_y);
     }
 
     for (local_2c = 0; local_2c < 0xc; local_2c = local_2c + 1)
@@ -2760,9 +2760,9 @@ void GenerateTownConnections(void)
       s.sample_index = 0;
       for (; s.sample_index < 0x2a; s.sample_index = s.sample_index + 1)
       {
-        s.candidate_index = FUN_00522508(0x80);
+        s.candidate_index = RandomIntLessThan(0x80);
         s.distance =
-            FUN_004ecf30(g_town_slots[s.town_index].world_x - g_town_slots[s.candidate_index].world_x,
+            ApproximateDistance(g_town_slots[s.town_index].world_x - g_town_slots[s.candidate_index].world_x,
                          g_town_slots[s.town_index].world_y - g_town_slots[s.candidate_index].world_y);
         if (s.distance < s.best_dist)
         {
@@ -2808,11 +2808,11 @@ int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_
   s.step_count = 0;
 
   BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x40, 0x80, PTR_DAT_00583304, 0x40, 0);
-  FUN_00431526(0x20, s.cur_x, s.cur_y);
+  SetWorldMapPixelFlags(0x20, s.cur_x, s.cur_y);
 
   do
   {
-    s.target_dist = FUN_004ecf30(target_x - s.cur_x, target_y - s.cur_y);
+    s.target_dist = ApproximateDistance(target_x - s.cur_x, target_y - s.cur_y);
     s.best_direction = -1;
     s.best_score = 0x7fff;
 
@@ -2827,7 +2827,7 @@ int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_
         continue;
       }
 
-      s.score = FUN_004ecf30(target_x - s.next_x, target_y - s.next_y);
+      s.score = ApproximateDistance(target_x - s.next_x, target_y - s.next_y);
       if (s.target_dist <= s.score)
       {
         continue;
@@ -3018,7 +3018,7 @@ void InitializeAnimatedNoiseGrid(void)
   {
     for (s.x = 0; s.x < 0x12; s.x = s.x + 1)
     {
-      g_animated_noise_grid[s.x + s.y * 0x13] = (char)FUN_00522508(0x10);
+      g_animated_noise_grid[s.x + s.y * 0x13] = (char)RandomIntLessThan(0x10);
     }
     g_animated_noise_grid[s.y * 0x13 + 0x12] = g_animated_noise_grid[s.y * 0x13];
   }
@@ -3108,7 +3108,7 @@ void InitializeCastleDungeonSlots(void)
 
     do
     {
-      s.entry_index = FUN_00522508(10) + 5;
+      s.entry_index = RandomIntLessThan(10) + 5;
     } while (g_castle_dungeon_slots[s.entry_index].card_slot_3 != -1);
 
     if (g_castle_dungeon_slots[s.entry_index].card_slot_1 == -1)
@@ -3133,8 +3133,8 @@ void InitializeCastleDungeonSlots(void)
       {
         do
         {
-          s.candidate_x = FUN_00522508(0x40);
-          s.candidate_y = FUN_00522508(0x40);
+          s.candidate_x = RandomIntLessThan(0x40);
+          s.candidate_y = RandomIntLessThan(0x40);
         } while (GetWorldTileType(s.candidate_x, s.candidate_y) == 0);
       } while ((FUN_004314ca(s.candidate_x, s.candidate_y) & 0x30) != 0);
 
@@ -3154,7 +3154,7 @@ void InitializeCastleDungeonSlots(void)
           continue;
         }
 
-        s.distance = FUN_004ecf30(g_town_slots[s.scan_index].world_x - s.candidate_x,
+        s.distance = ApproximateDistance(g_town_slots[s.scan_index].world_x - s.candidate_x,
                                   g_town_slots[s.scan_index].world_y - s.candidate_y);
         if (s.nearest_distance > s.distance)
         {
@@ -3165,7 +3165,7 @@ void InitializeCastleDungeonSlots(void)
 
       for (s.scan_index = 0; s.scan_index < s.entry_index; s.scan_index = s.scan_index + 1)
       {
-        s.distance = FUN_004ecf30(g_castle_dungeon_slots[s.scan_index].world_x - s.candidate_x, g_castle_dungeon_slots[s.scan_index].world_y - s.candidate_y);
+        s.distance = ApproximateDistance(g_castle_dungeon_slots[s.scan_index].world_x - s.candidate_x, g_castle_dungeon_slots[s.scan_index].world_y - s.candidate_y);
         if (s.nearest_distance > s.distance)
         {
           s.nearest_distance = s.distance;
@@ -3173,11 +3173,11 @@ void InitializeCastleDungeonSlots(void)
       }
     } while (s.nearest_distance < 4);
 
-    FUN_00431526(0x40, s.candidate_x, s.candidate_y);
+    SetWorldMapPixelFlags(0x40, s.candidate_x, s.candidate_y);
     g_castle_dungeon_slots[s.entry_index].world_x = s.candidate_x;
     g_castle_dungeon_slots[s.entry_index].world_y = s.candidate_y;
     g_castle_dungeon_slots[s.entry_index].north_of_town_index = s.nearest_town_index;
-    g_castle_dungeon_slots[s.entry_index].color = (unsigned char)(FUN_00522508(5) + 1);
+    g_castle_dungeon_slots[s.entry_index].color = (unsigned char)(RandomIntLessThan(5) + 1);
     g_castle_dungeon_slots[s.entry_index].monster_flags = 2;
 
     if (s.entry_index < 5)
@@ -3189,7 +3189,7 @@ void InitializeCastleDungeonSlots(void)
     }
 
     s.inner_index = 0;
-    if ((int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags <= FUN_00522508(2) + 1)
+    if ((int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags <= RandomIntLessThan(2) + 1)
     {
       if (1 < (int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags)
       {
@@ -3221,7 +3221,7 @@ void InitializeCastleDungeonSlots(void)
 
     g_castle_dungeon_slots[s.entry_index].card_in_effect =
         g_dungeon_card_effect_by_monster_flags[((g_castle_dungeon_slots[s.entry_index].monster_flags & 0xc0) != 0 ? 4 : 0) +
-                                               (g_castle_dungeon_slots[s.entry_index].monster_flags & 0x7f) + FUN_00522508(2)];
+                                               (g_castle_dungeon_slots[s.entry_index].monster_flags & 0x7f) + RandomIntLessThan(2)];
     g_castle_dungeon_slots[s.entry_index].rules_bitmap = 1;
 
     switch (s.inner_index / 4)
@@ -3232,13 +3232,13 @@ void InitializeCastleDungeonSlots(void)
       g_castle_dungeon_slots[s.entry_index].monster_flags++;
     case 3:
       g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
-      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(FUN_00522508(5) + 4);
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(RandomIntLessThan(5) + 4);
       break;
     case 4:
       g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
       break;
     case 5:
-      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(FUN_00522508(5) + 4);
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(RandomIntLessThan(5) + 4);
       g_castle_dungeon_slots[s.entry_index].card_in_effect = -1;
       break;
     case 6:
@@ -3364,7 +3364,7 @@ unsigned int FUN_004314ca(int x, int y)
 }
 
 // FUNCTION: SHANDALAR 0x00431526
-void FUN_00431526(unsigned int param_1, int x, int y)
+void SetWorldMapPixelFlags(unsigned int param_1, int x, int y)
 {
   if (x >= 0x40 || x < 0)
     return;
@@ -3376,7 +3376,7 @@ void FUN_00431526(unsigned int param_1, int x, int y)
 }
 
 // FUNCTION: SHANDALAR 0x00431593
-void FUN_00431593(unsigned int param_1, int x, int y)
+void ClearWorldMapPixelFlags(unsigned int param_1, int x, int y)
 {
   if (x >= 0x40 || x < 0)
     return;
@@ -3398,7 +3398,7 @@ void MarkPathConnection(int x, int y, int direction_index)
 
   PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40,
                    GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40) | (1 << (direction_index - 1)));
-  FUN_00431526(0x20, x, y);
+  SetWorldMapPixelFlags(0x20, x, y);
 
   x += g_neighbor_dx[direction_index];
   y += g_neighbor_dy[direction_index];
@@ -3406,7 +3406,7 @@ void MarkPathConnection(int x, int y, int direction_index)
 
   PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40,
                    GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40) | (1 << (direction_index - 1)));
-  FUN_00431526(0x20, x, y);
+  SetWorldMapPixelFlags(0x20, x, y);
 }
 
 // FUNCTION: SHANDALAR 0x005019ad
@@ -4709,7 +4709,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       strcpy(g_ui_message_buffer, text_lines[0]);
       if (RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50) == 1)
       {
-        DAT_009300f0 = 1;
+        g_adventure_world_exit_requested = 1;
       }
       else
       {
@@ -4753,7 +4753,7 @@ void UpdateAdventureWorldInputAndMovement(void)
         goto handle_world_magic_hotkey;
       }
 
-      AnimatePaletteToColor(0, DAT_00589dec);
+      AnimatePaletteToColor(0, g_default_palette_fade_steps);
       DeckBuilderMain(g_main_window_hwnd, 1, 0);
       RestoreAdventureUiPaletteAndFocus();
       RefreshAdventureInterfaceLayout();
@@ -4820,7 +4820,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       s.key_magic_index = s.key_code - 0x30;
       if ((g_amulet_inventory[s.key_magic_index - 1] != 0) && ((g_world_magic_bitmap & (1 << (s.key_magic_index * 2))) != 0))
       {
-        if (FUN_00522508(4 - g_shandalar_difficulty) == 0)
+        if (RandomIntLessThan(4 - g_shandalar_difficulty) == 0)
         {
           g_amulet_inventory[s.key_magic_index - 1] = g_amulet_inventory[s.key_magic_index - 1] - 1;
         }
@@ -4829,7 +4829,7 @@ void UpdateAdventureWorldInputAndMovement(void)
         switch (s.key_magic_index)
         {
         case 1:
-          AnimatePaletteToColor(0, DAT_00589dec);
+          AnimatePaletteToColor(0, g_default_palette_fade_steps);
           DeckBuilderMain(g_main_window_hwnd, 1, 1);
           RestoreAdventureUiPaletteAndFocus();
           ClearGraphicsPageWithPaletteColor(0, 7);
@@ -4838,8 +4838,8 @@ void UpdateAdventureWorldInputAndMovement(void)
         case 2:
           do
           {
-            s.random_world_y = FUN_00522508(0x40);
-            s.abs_delta_x = FUN_00522508(0x40);
+            s.random_world_y = RandomIntLessThan(0x40);
+            s.abs_delta_x = RandomIntLessThan(0x40);
           } while (GetWorldTileType(s.random_world_y, s.abs_delta_x) == 0);
           AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_TELEPORT_RANDOM);
           g_world_player_x = s.random_world_y * 0x20 + 0x10;
@@ -4858,7 +4858,7 @@ void UpdateAdventureWorldInputAndMovement(void)
           {
             if (SHANDALAR_ENTRY_LAIR < g_lair_or_monster_slots[s.slot_index].entry_type)
             {
-              s.nearest_slot_distance = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+              s.nearest_slot_distance = ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                                                      g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
               if ((int)s.nearest_slot_distance < (int)s.tile_magic_mask)
               {
@@ -4910,7 +4910,7 @@ void UpdateAdventureWorldInputAndMovement(void)
   {
     do
     {
-      s.abs_delta_y = FUN_00522508(5) + 1;
+      s.abs_delta_y = RandomIntLessThan(5) + 1;
     } while ((s.key_magic_index & (1 << (unsigned char)s.abs_delta_y)) == 0);
   }
   else
@@ -4974,7 +4974,7 @@ void UpdateAdventureWorldInputAndMovement(void)
 
     if (g_world_move_dir_index != 0)
     {
-      FUN_00562736(((g_world_player_animation_frame & 1U) - 2) + s.abs_delta_y * 2, FUN_00522508(0x19) + 0x4b, FUN_00522508(0x28) + 0x50, 0);
+      FUN_00562736(((g_world_player_animation_frame & 1U) - 2) + s.abs_delta_y * 2, RandomIntLessThan(0x19) + 0x4b, RandomIntLessThan(0x28) + 0x50, 0);
     }
 
     if (g_world_move_dir_index == 0)
@@ -5003,7 +5003,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       g_world_player_y = s.previous_world_y;
     }
 
-    if ((FUN_00522508(0x28) == 0) && (g_skip_world_sfx_preload == 0))
+    if ((RandomIntLessThan(0x28) == 0) && (g_skip_world_sfx_preload == 0))
     {
       UpdateAmbientWizardColorSound(s.abs_delta_y);
     }
@@ -5053,7 +5053,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       {
         if (g_town_slots[s.nearest_town_index].location_type != -1)
         {
-          s.castle_index = FUN_004ecf30(g_town_slots[s.nearest_town_index].world_x * 0x20 + 0x10 - g_world_player_x,
+          s.castle_index = ApproximateDistance(g_town_slots[s.nearest_town_index].world_x * 0x20 + 0x10 - g_world_player_x,
                                         g_town_slots[s.nearest_town_index].world_y * 0x20 + 0x10 - g_world_player_y);
           if (s.castle_index < s.nearest_town_distance)
           {
@@ -5237,7 +5237,7 @@ void UpdateAdventureWorldInputAndMovement(void)
         {
           if (SHANDALAR_ENTRY_LAIR < g_lair_or_monster_slots[s.slot_index].entry_type)
           {
-            if (FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+            if (ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                              g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y) < 0x60)
             {
               s.delta_x = g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x;
@@ -5272,7 +5272,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       }
       else
       {
-        FUN_00431593(0x10, g_world_player_tile_x, g_world_player_tile_y);
+        ClearWorldMapPixelFlags(0x10, g_world_player_tile_x, g_world_player_tile_y);
       }
     }
 
@@ -5475,15 +5475,15 @@ void UpdateAmbientWizardColorSound(int param_1)
 {
   int channel = param_1 + 9;
 
-  FUN_00562736(channel, 100, FUN_00522508(0x32) + 0x46, FUN_00522508(200) - 100);
+  FUN_00562736(channel, 100, RandomIntLessThan(0x32) + 0x46, RandomIntLessThan(200) - 100);
 
-  if (FUN_00522508(3) == 0)
+  if (RandomIntLessThan(3) == 0)
   {
     sound_unload(channel);
     switch (param_1)
     {
     case 1:
-      switch (FUN_00522508(3))
+      switch (RandomIntLessThan(3))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\kbird1.wav", channel, 0);
@@ -5497,7 +5497,7 @@ void UpdateAmbientWizardColorSound(int param_1)
       }
       break;
     case 2:
-      switch (FUN_00522508(3))
+      switch (RandomIntLessThan(3))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\bbird1.wav", channel, 0);
@@ -5511,7 +5511,7 @@ void UpdateAmbientWizardColorSound(int param_1)
       }
       break;
     case 3:
-      switch (FUN_00522508(2))
+      switch (RandomIntLessThan(2))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\gbird1.wav", channel, 0);
@@ -5522,7 +5522,7 @@ void UpdateAmbientWizardColorSound(int param_1)
       }
       break;
     case 4:
-      switch (FUN_00522508(2))
+      switch (RandomIntLessThan(2))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\rbird1.wav", channel, 0);
@@ -5533,7 +5533,7 @@ void UpdateAmbientWizardColorSound(int param_1)
       }
       break;
     case 5:
-      switch (FUN_00522508(2))
+      switch (RandomIntLessThan(2))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\wbird1.wav", channel, 0);
@@ -5850,7 +5850,7 @@ unsigned int WaitForInputEventUnlessBlocked(void)
 }
 
 // FUNCTION: SHANDALAR 0x004ecf30
-int FUN_004ecf30(int param_1, int param_2)
+int ApproximateDistance(int param_1, int param_2)
 {
   int local_8;
 
@@ -6615,7 +6615,7 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
   do
   {
     FUN_0055db50();
-  } while (DAT_009300f0 == 0);
+  } while (g_adventure_world_exit_requested == 0);
 
   UnloadFontSlot(5);
   if (DAT_00586494 != 0)
@@ -6814,7 +6814,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   s.show_shell_on_exit = 0;
   strcpy(s.cmd_copy, cmdLine);
-  DAT_00715fa0 = 0;
+  g_shared_startup_lock_initialized = 0;
 
   s.existing_main = FindWindowA("ShandalarMainClass", (LPCSTR)0);
   if (s.existing_main != (HWND)0)
@@ -7013,10 +7013,10 @@ cmd_parse:
   g_main_thread_handle = GetCurrentThread();
   DuplicateHandle(GetCurrentProcess(), g_main_thread_handle, GetCurrentProcess(), &g_main_thread_handle, 0x1f03ff, FALSE, 0);
 
-  if (DAT_00715fa0 == 0)
+  if (g_shared_startup_lock_initialized == 0)
   {
-    InitializeCriticalSection(&DAT_00926910);
-    DAT_00715fa0 = 1;
+    InitializeCriticalSection(&g_shared_startup_lock);
+    g_shared_startup_lock_initialized = 1;
   }
 
   g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, FUN_0046e6f0, (LPVOID)0, 0, &s.thread_id);
@@ -7027,10 +7027,10 @@ cmd_parse:
     DispatchMessageA(&s.msg);
   }
 
-  if (DAT_00715fa0 != 0)
+  if (g_shared_startup_lock_initialized != 0)
   {
-    DeleteCriticalSection(&DAT_00926910);
-    DAT_00715fa0 = 0;
+    DeleteCriticalSection(&g_shared_startup_lock);
+    g_shared_startup_lock_initialized = 0;
   }
 
   FUN_00565faa();

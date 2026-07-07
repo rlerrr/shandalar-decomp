@@ -16,8 +16,8 @@ extern int g_neighbor_dx[9];
 extern int g_neighbor_dy[9];
 extern int g_world_player_animation_direction;
 extern int g_world_player_animation_frame;
-extern int DAT_00589dec;
-extern int DAT_009300f0;
+extern int g_default_palette_fade_steps;
+extern int g_adventure_world_exit_requested;
 
 extern int g_world_player_tile_x;
 extern int g_world_player_tile_y;
@@ -41,12 +41,12 @@ int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path
 ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 int FindNearestTownIndex(int world_x, int world_y);
 int ClampIntToRange(int value, int min_value, int max_value);
-int FUN_004ecf30(int x, int y);
-int FUN_00522508(int param_1);
+int ApproximateDistance(int x, int y);
+int RandomIntLessThan(int param_1);
 int GetFirstManaColorIndex(int mask);
 unsigned int GetWorldTileType(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
-void FUN_00431526(unsigned int mask, int x, int y);
+void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
 void AddJournalEntry(int entry_type, int entry_arg);
 void SaveGameToSlot(int save_slot_index);
@@ -72,7 +72,7 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
                              FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
 void UnloadStatWinDllExports(void);
-int FUN_00469099(void);
+int ShutdownSharedStartup(void);
 unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 int sound_unload(int sound_id);
 void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_percent);
@@ -422,7 +422,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
   for (s.slot_index = 0; s.slot_index < 6; s.slot_index = s.slot_index + 1)
   {
-    s.distance_to_player = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+    s.distance_to_player = ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                                         g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
     if ((s.distance_to_player < s.nearest_distance) && (g_lair_or_monster_slots[s.slot_index].entry_type != SHANDALAR_ENTRY_LAIR))
     {
@@ -438,7 +438,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
   for (s.slot_index = 0; s.slot_index < 8; s.slot_index = s.slot_index + 1)
   {
-    s.distance_to_player = FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+    s.distance_to_player = ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                                         g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
 
     s.tile_dist_x = abs(g_world_player_tile_x - g_lair_or_monster_slots[s.slot_index].world_x / 0x20);
@@ -449,15 +449,15 @@ void UpdateWorldLairAndMonsterSlots(void)
     {
       do
       {
-        if (FUN_00522508(2) != 0)
+        if (RandomIntLessThan(2) != 0)
         {
-          s.spawn_x = (FUN_00522508(2) ? 4 : -4) + g_world_player_tile_x;
-          s.spawn_y = g_world_player_tile_y + FUN_00522508(9) - 4;
+          s.spawn_x = (RandomIntLessThan(2) ? 4 : -4) + g_world_player_tile_x;
+          s.spawn_y = g_world_player_tile_y + RandomIntLessThan(9) - 4;
         }
         else
         {
-          s.spawn_y = (FUN_00522508(2) ? 4 : -4) + g_world_player_tile_y;
-          s.spawn_x = g_world_player_tile_x + FUN_00522508(9) - 4;
+          s.spawn_y = (RandomIntLessThan(2) ? 4 : -4) + g_world_player_tile_y;
+          s.spawn_x = g_world_player_tile_x + RandomIntLessThan(9) - 4;
         }
 
         s.tile_y = GetWorldTileType(s.spawn_x, s.spawn_y);
@@ -466,7 +466,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       do
       {
-        s.victory_count = FUN_00522508(6);
+        s.victory_count = RandomIntLessThan(6);
       } while ((s.color & (1U << (byte)s.victory_count)) == 0);
       s.color = s.victory_count;
 
@@ -481,7 +481,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       s.move_dir = ClampIntToRange(0x80 / (s.victory_count + 4), 6, 0x14);
 
-      switch (FUN_00522508(s.move_dir) + 5 / (s.victory_count + 1))
+      switch (RandomIntLessThan(s.move_dir) + 5 / (s.victory_count + 1))
       {
       case 0:
         s.creature_tier = 10;
@@ -538,7 +538,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       if (s.creature_tier == 10)
       {
-        s.creature_tier = FUN_00522508(200);
+        s.creature_tier = RandomIntLessThan(200);
         if (s.creature_tier < 0x32)
         {
           s.creature_tier = 10;
@@ -911,11 +911,11 @@ void UpdateWorldLairAndMonsterSlots(void)
         continue;
       }
 
-      s.victory_count = FUN_004ecf30(g_lair_or_monster_slots[s.slot_index].world_x - g_lair_or_monster_slots[s.i].world_x,
+      s.victory_count = ApproximateDistance(g_lair_or_monster_slots[s.slot_index].world_x - g_lair_or_monster_slots[s.i].world_x,
                                      g_lair_or_monster_slots[s.slot_index].world_y - g_lair_or_monster_slots[s.i].world_y);
       if (s.victory_count < 0x20)
       {
-        if (s.victory_count < FUN_004ecf30(s.prev_x - g_lair_or_monster_slots[s.i].world_x,
+        if (s.victory_count < ApproximateDistance(s.prev_x - g_lair_or_monster_slots[s.i].world_x,
                                            s.prev_y - g_lair_or_monster_slots[s.i].world_y))
         {
           s.tile_x = 0;
@@ -933,9 +933,9 @@ void UpdateWorldLairAndMonsterSlots(void)
 
     if ((gs_creature_names_00591a08[s.creature_tier].flags_0a & 4) && ((g_monster_timer & 0x3fU) == 0))
     {
-      if (FUN_00522508(2) != 0)
+      if (RandomIntLessThan(2) != 0)
       {
-        if (FUN_00522508(2) != 0)
+        if (RandomIntLessThan(2) != 0)
         {
           g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + 0x20;
         }
@@ -946,7 +946,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       }
       else
       {
-        if (FUN_00522508(2) != 0)
+        if (RandomIntLessThan(2) != 0)
         {
           g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y + 0x20;
         }
@@ -989,7 +989,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       }
     }
 
-    if (FUN_004ecf30(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
+    if (ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
                      g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y) <
         ((g_lair_or_monster_slots[s.slot_index].entry_type == SHANDALAR_ENTRY_LAIR) ? 0x1a : 0x10))
     {
@@ -1015,7 +1015,7 @@ void UpdateWorldLairAndMonsterSlots(void)
     }
     else if ((s.creature_tier != 0) &&
              (g_lair_or_monster_slots[s.slot_index].movement_anim_frame != 0) &&
-             (s.distance_to_player < 0x50) && (FUN_00522508(s.distance_to_player) < 4))
+             (s.distance_to_player < 0x50) && (RandomIntLessThan(s.distance_to_player) < 4))
     {
       FUN_005614c3(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
                    g_neighbor_dx[(g_lair_or_monster_slots[s.slot_index].movement_heading + 2U) & 7] *
@@ -1087,7 +1087,7 @@ void StartWizardTownSiege(void)
       {
         if (s.lair_world_x_by_color[s.scan_index] != -1)
         {
-          s.dist = FUN_004ecf30(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
+          s.dist = ApproximateDistance(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
                                 g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
           if (s.dist < s.nearest_distance)
           {
@@ -1097,7 +1097,7 @@ void StartWizardTownSiege(void)
         }
       }
 
-      s.score = FUN_00522508(0x80) + s.ruled_by_color_count[s.color] * 0x20;
+      s.score = RandomIntLessThan(0x80) + s.ruled_by_color_count[s.color] * 0x20;
       if (s.score < s.best_score)
       {
         s.best_score = s.score;
@@ -1147,7 +1147,7 @@ void StartWizardTownSiege(void)
     g_lair_or_monster_slots[s.scan_index].color = s.color;
 
     g_wizard_siege_count = g_wizard_siege_count + 1;
-    FUN_00431526(0x80, g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y);
+    SetWorldMapPixelFlags(0x80, g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y);
 
     PlaySoundEffectOnChannel("x:sound\\newsflash.wav", 0x97, 100, 100, 0);
     AnimateVisitBackdropZoomIn("newsback.pic");
@@ -1264,7 +1264,7 @@ void ResolveWizardTownSiege(void)
 
   if (required_count <= ruled_count)
   {
-    AnimatePaletteToColor(0, DAT_00589dec);
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
     LoadPcxIntoPageOpaque(1, "uth-arz.pic");
     font_size = ((global_screen_width == 0x280) || (global_screen_width == 800)) ? 0x10 : 0xc;
     PTR_DAT_005832dc->font_slot = 5;
@@ -1285,10 +1285,10 @@ void ResolveWizardTownSiege(void)
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
     ClearInputAndWaitForMouseRelease();
     WaitForInputEventUnlessBlocked();
-    AnimatePaletteToColor(0, DAT_00589dec);
-    DAT_009300f0 = 1;
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
+    g_adventure_world_exit_requested = 1;
     UnloadStatWinDllExports();
-    FUN_00469099();
+    ShutdownSharedStartup();
     exit(0);
   }
 }

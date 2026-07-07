@@ -331,7 +331,7 @@ extern char DAT_0093a870[0x20];
 
 void FUN_0046ed03(void);
 void FUN_0046ed33(void);
-int ScaleUiCoordinate(int value);
+int ScaleUiCoordinateFrom320(int value);
 AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
                       FacemakerWindowBounds *src, int src_x, int src_y);
@@ -345,13 +345,13 @@ void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, in
 unsigned int BlitRectByRandomTileOrder(HDC dst_hdc, int dst_x, int dst_y, int width, int height, int block_w, int block_h,
                                        HDC src_hdc, int src_x, int src_y);
 void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void FUN_004ce992(int param_1);
-int FUN_004ecf30(int x, int y);
+void DelayUiTicks(int param_1);
+int ApproximateDistance(int x, int y);
 int FUN_004bb458(int param_1);
 int GetFirstManaColorIndex(int param_1);
 unsigned int GetWorldTileType(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
-void FUN_00431526(unsigned int mask, int x, int y);
+void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
 unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y);
 void QueueWorldSpriteForDraw(FacemakerWindowBounds *window, int draw_x, int draw_y, int depth_y, EncodedImage *sprite);
@@ -377,7 +377,7 @@ char *BuildTownDisplayName(int town_index);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 
 // FUNCTION: SHANDALAR 0x005501dc
-int FUN_005501dc(int value)
+int ScaleUiCoordinateFrom320(int value)
 {
   return (value * global_screen_width) / 0x140;
 }
@@ -426,7 +426,7 @@ int FindNearestTownIndex(int world_x, int world_y)
     {
       continue;
     }
-    s.town_distance = FUN_004ecf30(g_town_slots[s.town_index].world_x - world_x, g_town_slots[s.town_index].world_y - world_y);
+    s.town_distance = ApproximateDistance(g_town_slots[s.town_index].world_x - world_x, g_town_slots[s.town_index].world_y - world_y);
     if (s.town_distance < s.nearest_town_distance)
     {
       s.nearest_town_distance = s.town_distance;
@@ -889,8 +889,8 @@ void UpdateWorldViewportBuffer(int world_x, int world_y)
     g_world_camera_last_anchor_y = world_y;
     g_world_camera_viewport_left = 0x40;
     g_world_camera_viewport_top = g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10;
-    g_world_camera_viewport_width_scaled = FUN_005501dc(0x100);
-    g_world_camera_viewport_height_scaled = FUN_005501dc(0x8c);
+    g_world_camera_viewport_width_scaled = ScaleUiCoordinateFrom320(0x100);
+    g_world_camera_viewport_height_scaled = ScaleUiCoordinateFrom320(0x8c);
     g_world_camera_scroll_limit_left = -0x40;
     g_world_camera_scroll_limit_right = 0x40;
     g_world_camera_scroll_limit_top = 0x80 - g_world_camera_viewport_top;
@@ -988,7 +988,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
 
       if ((abs(s.tile_y) <= 7) && (abs(s.tile_x) <= 3))
       {
-        FUN_00431526(0x80, s.world_tile_x, s.world_tile_y);
+        SetWorldMapPixelFlags(0x80, s.world_tile_x, s.world_tile_y);
       }
 
       /* Tile flags/type for rendering decisions. */
@@ -2280,7 +2280,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
   WorldPointToScreen(world_x, world_y, &s.player_screen_x, &s.player_screen_y);
   PushGraphicsClipRect(&s.minimap_clip_rect_scratch, PTR_DAT_005832b4, 0x40,
                        g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
-                       FUN_005501dc(0x100), FUN_005501dc(0x8c));
+                       ScaleUiCoordinateFrom320(0x100), ScaleUiCoordinateFrom320(0x8c));
 
   QueueWorldSpriteForDraw(PTR_DAT_005832b4,
                           (s.player_screen_x - g_ego_sprite_width / 2) + g_world_scroll_x,
@@ -2323,7 +2323,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
         s.current_entry_type -= (ShandalarEntryType)(((unsigned int)g_monster_timer >> 5) & 3);
       }
       if (((gs_creature_names_00591a08[s.current_entry_type].flags_0a & 0x100U) != 0) &&
-          (FUN_004ecf30(s.player_screen_x - 0x140, s.player_screen_y - 0xf0) > FUN_005501dc(0x80)))
+          (ApproximateDistance(s.player_screen_x - 0x140, s.player_screen_y - 0xf0) > ScaleUiCoordinateFrom320(0x80)))
       {
         continue;
       }
@@ -2331,14 +2331,14 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       if (g_lair_or_monster_slots[s.slot_index].entry_type == SHANDALAR_ENTRY_LAIR)
       {
         QueueWorldSpriteForDraw(PTR_DAT_005832b4,
-                                s.player_screen_x - FUN_005501dc(0x20),
-                                s.player_screen_y - FUN_005501dc(0x30),
+                                s.player_screen_x - ScaleUiCoordinateFrom320(0x20),
+                                s.player_screen_y - ScaleUiCoordinateFrom320(0x30),
                                 s.player_screen_y,
                                 g_location07_sprite_entries[g_lair_sprite_index_by_color[g_lair_or_monster_slots[s.slot_index].color]]);
 
         DrawEncodedImageUnscaledClipped(PTR_DAT_005832b4,
-                                        (s.player_screen_x - FUN_005501dc(0x20)) - g_world_scroll_x,
-                                        (s.player_screen_y - FUN_005501dc(0x30)) - g_world_scroll_y,
+                                        (s.player_screen_x - ScaleUiCoordinateFrom320(0x20)) - g_world_scroll_x,
+                                        (s.player_screen_y - ScaleUiCoordinateFrom320(0x30)) - g_world_scroll_y,
                                         g_location07_sprite_entries[g_lair_sprite_index_by_color[g_lair_or_monster_slots[s.slot_index].color] + 6]);
       }
       else
@@ -2429,14 +2429,14 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     if (global_screen_width != 0x400)
     {
       BlitGraphicsRect(PTR_DAT_005832dc, 0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
-                       FUN_005501dc(0x100), FUN_005501dc(0x8c), PTR_DAT_005832b4,
-                       FUN_005501dc(0x20) & 0xfffffffc, FUN_005501dc(0x18));
+                       ScaleUiCoordinateFrom320(0x100), ScaleUiCoordinateFrom320(0x8c), PTR_DAT_005832b4,
+                       ScaleUiCoordinateFrom320(0x20) & 0xfffffffc, ScaleUiCoordinateFrom320(0x18));
     }
     else
     {
       BlitGraphicsRect(PTR_DAT_005832dc, 0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10,
-                       FUN_005501dc(0x100) - 2, FUN_005501dc(0x8c), PTR_DAT_005832b4,
-                       (FUN_005501dc(0x20) + 4U) & 0xfffffffc, FUN_005501dc(0x18));
+                       ScaleUiCoordinateFrom320(0x100) - 2, ScaleUiCoordinateFrom320(0x8c), PTR_DAT_005832b4,
+                       (ScaleUiCoordinateFrom320(0x20) + 4U) & 0xfffffffc, ScaleUiCoordinateFrom320(0x18));
     }
   }
   else
@@ -2446,20 +2446,20 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     if (global_screen_width != 0x400)
     {
       BlitRectByRandomTileOrder(((DIBSurface *)s.scaled_0x20)->hTempDC,
-                                FUN_005501dc(0x20) & 0xfffffffc, FUN_005501dc(0x18),
-                                FUN_005501dc(0x100), FUN_005501dc(0x8c), 6, 6,
+                                ScaleUiCoordinateFrom320(0x20) & 0xfffffffc, ScaleUiCoordinateFrom320(0x18),
+                                ScaleUiCoordinateFrom320(0x100), ScaleUiCoordinateFrom320(0x8c), 6, 6,
                                 ((DIBSurface *)s.scaled_0x8c)->hTempDC,
                                 0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
-      FUN_004ce992(0x2d);
+      DelayUiTicks(0x2d);
     }
     else
     {
       BlitRectByRandomTileOrder(((DIBSurface *)s.scaled_0x20)->hTempDC,
-                                (FUN_005501dc(0x20) + 4U) & 0xfffffffc, FUN_005501dc(0x18),
-                                FUN_005501dc(0x100) - 2, FUN_005501dc(0x8c), 8, 8,
+                                (ScaleUiCoordinateFrom320(0x20) + 4U) & 0xfffffffc, ScaleUiCoordinateFrom320(0x18),
+                                ScaleUiCoordinateFrom320(0x100) - 2, ScaleUiCoordinateFrom320(0x8c), 8, 8,
                                 ((DIBSurface *)s.scaled_0x8c)->hTempDC,
                                 0x40, g_world_camera_minimap_panel_y * 2 + g_world_ui_top_offset + 0x10);
-      FUN_004ce992(0x2d);
+      DelayUiTicks(0x2d);
     }
     g_world_scene_reveal_effect_pending = 0;
   }

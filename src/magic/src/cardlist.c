@@ -63,8 +63,8 @@ HWND DAT_00896714;
 
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
-extern CRITICAL_SECTION DAT_009266b0;
-extern HDC DAT_00789310;
+extern CRITICAL_SECTION g_card_render_lock;
+extern HDC g_shared_offscreen_dc;
 extern HINSTANCE g_app_instance;
 extern HWND g_main_window_hwnd;
 
@@ -516,21 +516,21 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     s.show_count_flag = GetWindowLongA(card_window, unk_0055e0c8);
     s.count = GetWindowLongA(card_window, unk_0055e0c4);
 
-    EnterCriticalSection(&DAT_009266b0);
+    EnterCriticalSection(&g_card_render_lock);
     GetClientRect(card_window, &s.client_rect);
-    FillRect(DAT_00789310, &s.client_rect, (HBRUSH)GetStockObject(4));
+    FillRect(g_shared_offscreen_dc, &s.client_rect, (HBRUSH)GetStockObject(4));
     if (s.csvid == SHOWLIST_CARD_BACK_CSVID)
     {
-      DrawCardBack(DAT_00789310, &s.client_rect);
+      DrawCardBack(g_shared_offscreen_dc, &s.client_rect);
     }
     else
     {
-      DrawSmallCard(DAT_00789310, &s.client_rect, global_raw_cards_storage + s.csvid, 0, 0);
+      DrawSmallCard(g_shared_offscreen_dc, &s.client_rect, global_raw_cards_storage + s.csvid, 0, 0);
     }
 
     if (s.show_count_flag != 0)
     {
-      FUN_0055b9f0(DAT_00789310, (int *)&s.client_rect, s.count);
+      FUN_0055b9f0(g_shared_offscreen_dc, (int *)&s.client_rect, s.count);
     }
 
     s.paint_dc = BeginPaint(card_window, &s.ps);
@@ -542,13 +542,13 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
              0,
              s.client_rect.right,
              s.client_rect.bottom,
-             DAT_00789310,
+             g_shared_offscreen_dc,
              0,
              0,
              0xcc0020);
       EndPaint(card_window, &s.ps);
     }
-    LeaveCriticalSection(&DAT_009266b0);
+    LeaveCriticalSection(&g_card_render_lock);
     return 0;
 
   case WM_CREATE:

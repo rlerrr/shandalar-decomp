@@ -655,7 +655,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   g_app_instance = hInstance;
   s.startup_message[0] = '\0';
 
-  InitializeCriticalSection(&DAT_00926910);
+  InitializeCriticalSection(&g_shared_startup_lock);
   s.startup_ok &= setup_paths_and_load_text_etc(s.startup_message);
 
   strcpy(DAT_0091ce40, global_base_directory);
@@ -682,7 +682,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   FamInterface_SetDuelVersion(1, 3);
   FUN_00500c56();
-  InitializeCriticalSection(&DAT_009266b0);
+  InitializeCriticalSection(&g_card_render_lock);
 
   if (register_MagicShellClass("MAGICGAME_MagicShellClass"))
   {
@@ -787,9 +787,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     SendMessageA(s.fam_window, WM_CLOSE, 0, 0);
   }
 
-  FUN_00422bea();
-  DeleteCriticalSection(&DAT_00926910);
-  DeleteCriticalSection(&DAT_009266b0);
+  ShutdownSharedStartupResources();
+  DeleteCriticalSection(&g_shared_startup_lock);
+  DeleteCriticalSection(&g_card_render_lock);
   FUN_005539b8("MAGICGAME_MagicShellClass");
   FUN_00500d46();
   CloseHandle(global_mutex_GameInit);

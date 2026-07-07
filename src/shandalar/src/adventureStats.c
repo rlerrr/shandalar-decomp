@@ -73,7 +73,7 @@ int FindNearestTownIndex(int world_x, int world_y);
 
 extern int global_screen_width;
 extern int global_screen_height;
-extern int DAT_00589dec;
+extern int g_default_palette_fade_steps;
 extern int g_statwin_exports_by_ordinal[3];
 extern int g_world_magic_town_flags[5];
 extern char g_ui_message_buffer[0x1000];
@@ -320,7 +320,7 @@ int GetFirstManaColorIndex(int mask);
 void DrawTextLineNoShadow(char *text, int x, int y, int color_index);
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 void DrawScaledCenteredTextNoShadow(char *text, int center_x, int y, int color_index);
-int ScaleUiCoordinate(int value);
+int ScaleUiCoordinateFrom320(int value);
 void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
                       FacemakerWindowBounds *src, int src_x, int src_y);
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
@@ -331,7 +331,7 @@ void DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_colo
 void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 unsigned int FUN_004bb458(int world_magic_slot_index);
-int FUN_005501dc(int value);
+int ScaleUiCoordinate(int value);
 void DrawTextAt(FacemakerWindowBounds *dst, int text_color, int x, int y, char *text, ...);
 void DrawUiScaledCenteredText(char *text, int center_x, int y, int color_index);
 void ClearInputAndWaitForMouseRelease(void);
@@ -364,7 +364,7 @@ int GetUiTickCount(void);
 int IsKeyInputQueueEmpty(void);
 int PopQueuedKeyInput(void);
 void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
-void FUN_004ce992(int ticks);
+void DelayUiTicks(int ticks);
 int SignNonZero(int value);
 int ClampIntToRange(int value, int min_value, int max_value);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
@@ -1030,7 +1030,7 @@ int ShowWorldMagicStatsDetail(int world_magic_slot_index)
   DrawUiScaledCenteredText(g_ui_message_buffer, s.x, s.y, 0x40);
   s.y += 8;
   strcpy(g_ui_message_buffer, gs_worldmagic_explains_0074b8f0[world_magic_slot_index]);
-  DrawWorldUiFormattedText(PTR_DAT_005832b4, 0x7b, FUN_005501dc(s.x), FUN_005501dc(s.y), g_ui_message_buffer);
+  DrawWorldUiFormattedText(PTR_DAT_005832b4, 0x7b, ScaleUiCoordinateFrom320(s.x), ScaleUiCoordinateFrom320(s.y), g_ui_message_buffer);
   s.y += 0x10;
   ClearInputAndWaitForMouseRelease();
   WaitForInputEventUnlessBlocked();
@@ -1131,7 +1131,7 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
     LoadPcxIntoPageNoPalette(s_advfac64_pic_005906e4);
   }
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
-  FadeInPaletteFromGray(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, g_default_palette_fade_steps);
 }
 
 // FUNCTION: SHANDALAR 0x00428b90
@@ -1497,7 +1497,7 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
       while (tile_x != target_x)
       {
         FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
-        FUN_004ce992(5);
+        DelayUiTicks(5);
         if ((tile_x & 1) != 0)
         {
           FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0);
@@ -1515,7 +1515,7 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
       while (tile_y != target_y)
       {
         FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
-        FUN_004ce992(5);
+        DelayUiTicks(5);
         if ((tile_y & 1) != 0)
         {
           FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0);
@@ -1697,7 +1697,7 @@ void RunAdventureStatsMenu(void)
     g_stats_text_loaded = 1;
   }
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   FillGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, 0);
   LoadPcxIntoPageNoPalette(s_advfac64_pic_00590624);
   LoadPcxIntoPage(1, s_statbut1_pic_00590634);
@@ -1789,7 +1789,7 @@ void RunAdventureStatsMenu(void)
         break;
       case 3:
         FreeSpriteBlob(g_stats_menu_color_sprites[0]);
-        AnimatePaletteToColor(0, DAT_00589dec);
+        AnimatePaletteToColor(0, g_default_palette_fade_steps);
         LoadPcxIntoPageNoPalette(s_advfac64_pic_00590730);
         return;
       case 4:
@@ -1802,7 +1802,7 @@ void RunAdventureStatsMenu(void)
       case 14:
         if (g_world_magic_town_flags[g_stats_menu_selection - 10] != 0)
         {
-          AnimatePaletteToColor(0, DAT_00589dec);
+          AnimatePaletteToColor(0, g_default_palette_fade_steps);
           ShowStatsWindow(0x101, g_stats_menu_selection - 9);
         }
         ClearInputAndWaitForMouseRelease();
@@ -1849,7 +1849,7 @@ int ShowStatsWindow(int mode, int highlight)
     int old_main_thread_priority;  // ebp - 0x4
   } s;
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   ClearGraphicsPageWithPaletteColor(0, 0);
   LoadPcxIntoPageNoPalette(s_advfac64_pic_005919c8);
   s.old_timer_thread_priority = GetThreadPriority(g_timer_thread_handle);

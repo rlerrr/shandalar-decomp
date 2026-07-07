@@ -55,7 +55,7 @@ extern int g_adv_menu_selected_value;
 extern int g_reveal_all_world_info;
 
 /* Palette helper data (defined in shandalar.c) */
-extern int DAT_00589dec;
+extern int g_default_palette_fade_steps;
 
 /* Sprites loaded by startup code (owned by shandalar.c) */
 extern EncodedImage *g_location_marker_sprite_entries[0x9e];
@@ -99,8 +99,8 @@ int EndMenuContext(void);
 int FUN_00500129(int allow_arrow_nav);
 int RenderCurrentMenuContextControls(void);
 
+int ScaleUiCoordinateFrom320(int value);
 int ScaleUiCoordinate(int value);
-int FUN_005501dc(int value);
 int SetFontStyleSize(int font_slot, unsigned int point_size);
 int GetFontStyleSize(int font_slot);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
@@ -392,21 +392,21 @@ void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner
 
   if (full_card == 0)
   {
-    w_scaled = FUN_005501dc(0x30);
-    h_scaled = FUN_005501dc(0x30);
+    w_scaled = ScaleUiCoordinateFrom320(0x30);
+    h_scaled = ScaleUiCoordinateFrom320(0x30);
   }
   else
   {
-    w_scaled = FUN_005501dc(0x50);
-    h_scaled = FUN_005501dc(0x70);
+    w_scaled = ScaleUiCoordinateFrom320(0x50);
+    h_scaled = ScaleUiCoordinateFrom320(0x70);
     if (0xf0 < y + 0x70)
     {
       y = 0x7f;
     }
   }
 
-  x_scaled = FUN_005501dc(x);
-  y_scaled = FUN_005501dc(y);
+  x_scaled = ScaleUiCoordinateFrom320(x);
+  y_scaled = ScaleUiCoordinateFrom320(y);
   SetRect(&clip, x_scaled, y_scaled, x_scaled + w_scaled, y_scaled + h_scaled);
 
   saved_dc = SaveDC(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC);
@@ -446,15 +446,15 @@ void DrawAdventureCardSized(int card_index, int x, int y, int width, int height,
   int saved_dc;
   int text_w;
 
-  w_scaled = FUN_005501dc(width);
-  h_scaled = FUN_005501dc(height);
+  w_scaled = ScaleUiCoordinateFrom320(width);
+  h_scaled = ScaleUiCoordinateFrom320(height);
   if ((full_card != 0) && (0xf0 < y + 0x70))
   {
     y = 0x7f;
   }
 
-  x_scaled = FUN_005501dc(x);
-  y_scaled = FUN_005501dc(y);
+  x_scaled = ScaleUiCoordinateFrom320(x);
+  y_scaled = ScaleUiCoordinateFrom320(y);
   SetRect(&clip, x_scaled, y_scaled, x_scaled + w_scaled, y_scaled + h_scaled);
 
   saved_dc = SaveDC(g_graphics_pages[PTR_DAT_005832b4->page_number]->hTempDC);
@@ -600,17 +600,17 @@ int DrawDungeonClueTextLine(int y, int color_index)
     s.first_char_width = GetFontCharWidth(4, g_ui_message_buffer[0]);
     s.first_char_text[0] = g_ui_message_buffer[0];
     s.first_char_text[1] = '\0';
-    DrawTextLineClamped(s.first_char_text, FUN_005501dc(0x10), y, color_index);
+    DrawTextLineClamped(s.first_char_text, ScaleUiCoordinateFrom320(0x10), y, color_index);
 
     WrapTextToWidthForDropCap(g_ui_message_buffer + 1, s.wrapped_text, ScaleUiCoordinate(0xbe) - s.first_char_width);
 
-    DrawFormattedTextShadowed(PTR_DAT_005832b4, color_index, s.first_char_width + FUN_005501dc(0x10), y, s.wrapped_text);
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, color_index, s.first_char_width + ScaleUiCoordinateFrom320(0x10), y, s.wrapped_text);
 
     y += GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 2;
   }
   else
   {
-    DrawTextLineClamped(g_ui_message_buffer, FUN_005501dc(0x10), y, color_index);
+    DrawTextLineClamped(g_ui_message_buffer, ScaleUiCoordinateFrom320(0x10), y, color_index);
     y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
   }
 
@@ -1067,7 +1067,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
     g_dungeon_clue_detail_strings_loaded = 1;
   }
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxIntoPageNoPalette(s_advfac64_pic_0058ccb8);
   LoadPcxIntoPage(1, s_cluebutn_pic_0058ccc8);
 
@@ -1112,13 +1112,13 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
     sprintf(g_ui_message_buffer, s__s____s__0058ccec, GetDungeonName(dungeon_index),
             (char *)gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[dungeon_index + 1]);
     DrawFormattedTextShadowed(PTR_DAT_005832b4, s.title_colors[4], 0x12, 0x1c, g_ui_message_buffer);
-    s.text_y = FUN_005501dc(0x24);
+    s.text_y = ScaleUiCoordinateFrom320(0x24);
   }
   else
   {
     strcpy(g_ui_message_buffer, GetDungeonName(dungeon_index));
     s.text_y = DrawDungeonClueTextLine(0x10, s.title_colors[4]);
-    s.text_y = FUN_005501dc(0x1c);
+    s.text_y = ScaleUiCoordinateFrom320(0x1c);
   }
 
   for (s.i = 0; s.i < 3; s.i++)
@@ -1134,7 +1134,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
 
   if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 2) != 0) || (g_reveal_all_world_info != 0))
   {
-    DrawTextLineClamped(gs_cave_showclues_0077efa0[0], FUN_005501dc(0xc), s.text_y, s.line_color);
+    DrawTextLineClamped(gs_cave_showclues_0077efa0[0], ScaleUiCoordinateFrom320(0xc), s.text_y, s.line_color);
     s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
     s.dungeon_color = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
     if (dungeon_index < 5)
@@ -1152,7 +1152,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
   s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
   if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 4) != 0) || (g_reveal_all_world_info != 0))
   {
-    DrawTextLineClamped(gs_cave_showclues_0077efa0[0xc], FUN_005501dc(0xc), s.text_y, s.line_color);
+    DrawTextLineClamped(gs_cave_showclues_0077efa0[0xc], ScaleUiCoordinateFrom320(0xc), s.text_y, s.line_color);
     s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
     if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x10) != 0)
     {
@@ -1200,7 +1200,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
 
   if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (g_reveal_all_world_info != 0))
   {
-    DrawTextLineClamped(gs_cave_showclues_0077efa0[0x15], FUN_005501dc(0xc), s.text_y, s.line_color);
+    DrawTextLineClamped(gs_cave_showclues_0077efa0[0x15], ScaleUiCoordinateFrom320(0xc), s.text_y, s.line_color);
     s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
     s.town_delta_x = g_castle_dungeon_slots[dungeon_index].world_x -
                      g_town_slots[g_castle_dungeon_slots[dungeon_index].north_of_town_index].world_x;

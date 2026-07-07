@@ -13,7 +13,7 @@ extern int global_screen_width;
 extern int global_screen_height;
 extern int g_graphics_bpp;
 extern RpBitsPalettePacket g_palette_data_words;
-extern int DAT_00589dec;
+extern int g_default_palette_fade_steps;
 extern FILE *g_advbuttons_ini_file;
 extern char g_ui_message_buffer[0x1000];
 extern char g_ini_string_scratch[0x28];
@@ -82,7 +82,7 @@ void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int p
 void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
 void FillGraphicsRect(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, unsigned int param_6);
 void DrawGraphicsLine(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6);
-void FUN_004ce992(int param_1);
+void DelayUiTicks(int param_1);
 int GetUiTickCount(void);
 int GetFontCharWidth(int param_1, char param_2);
 int GetFontLineHeight(int param_1);
@@ -438,7 +438,7 @@ loop:
   strcpy(s.map_name, "magic3.map");
   g_menu_selection_value = -1;
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, "menubak.pic",
                   (g_graphics_bpp == 8) ? &g_palette_data_words : (RpBitsPalettePacket *)1);
 
@@ -447,7 +447,7 @@ loop:
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_00583304, 0, 0, global_screen_width,
                           global_screen_height);
 
-  FadeInPaletteFromGray(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, g_default_palette_fade_steps);
   PTR_DAT_005832b4->font_slot = 5;
   PTR_DAT_005832b4->font_slot = 1;
 
@@ -682,7 +682,7 @@ int RunDifficultyMenu(void)
     g_difficulty_menu_strings_loaded = 1;
   }
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, "menu2.pic",
                   (g_graphics_bpp == 8) ? &g_palette_data_words : (RpBitsPalettePacket *)1);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
@@ -709,7 +709,7 @@ int RunDifficultyMenu(void)
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0x1b1, 0x43, 0xa4, 0x19d, PTR_DAT_005832dc, 200, 0, ScaleUiCoordinate(0xa4),
                           ScaleUiCoordinate(0x19d));
 
-  FadeInPaletteFromGray(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, g_default_palette_fade_steps);
 
   LoadPcxIntoPage(1, "menu2-norm.pic");
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0xa4, 0x19d, PTR_DAT_005832dc, ScaleUiCoordinate(0x1b1),
@@ -867,7 +867,7 @@ int RunColorMenu(void)
     g_color_menu_strings_loaded = 1;
   }
 
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   if (g_graphics_bpp == 8)
   {
     ClearGraphicsPageWithPaletteColor(0, 0);
@@ -900,7 +900,7 @@ int RunColorMenu(void)
   AnimatePaletteToColor(0, 4);
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
   LoadPcxResource(-1, 0, 0, "menu3.pic", &g_palette_data_words);
-  FadeInPaletteFromGray(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, g_default_palette_fade_steps);
 
   *(AdvMenuRect *)&s.restore_rect_x = *PushGraphicsClipRect((AdvMenuRect *)s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
 
@@ -1032,7 +1032,7 @@ int RunFacemakerFlow(void)
   EncodedImage *page2_sprite;
   void *load_palette_data;
 
-  FUN_004ce992(0x14);
+  DelayUiTicks(0x14);
   set_global_base_directory(facemaker_path);
   strcat(facemaker_path, "\\Facemaker.exe");
 
@@ -1712,10 +1712,10 @@ int RunLoadSaveMenu(int param_1)
   EncodedImage *sprite;
 
   s.map_path = g_loadsave_magic_map_path;
-  AnimatePaletteToColor(0, DAT_00589dec);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, "menopt.pic", (g_graphics_bpp == 8) ? &g_palette_data_words : (void *)1);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
-  FadeInPaletteFromGray(0, DAT_00589dec);
+  FadeInPaletteFromGray(0, g_default_palette_fade_steps);
   LoadPcxIntoPage(1, "optbox.pic");
   BeginSpriteEncodeSession();
   g_loadsave_frame_sprites[0] = EncodeSpriteFromPage(1, 1, 1, 0x40, 0x19);
@@ -1823,7 +1823,7 @@ restart_menu_loop:
   ResetMenuContext(s.menu_context);
   if (g_loadsave_menu_selection == 0xe)
   {
-    AnimatePaletteToColor(0, DAT_00589dec);
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
     return -1;
   }
   if (param_1 == 0)
@@ -1831,7 +1831,7 @@ restart_menu_loop:
   save_and_return:
     fclose(s.save_desc_file);
     FreeSpriteBlob(g_loadsave_frame_sprites[0]);
-    AnimatePaletteToColor(0, DAT_00589dec);
+    AnimatePaletteToColor(0, g_default_palette_fade_steps);
     return g_loadsave_menu_selection;
   }
 

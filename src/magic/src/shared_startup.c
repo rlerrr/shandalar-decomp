@@ -38,47 +38,47 @@ char global_savegame_path[0x110];
 
 // GLOBAL: SHANDALAR 0x007a00a0
 // GLOBAL: MAGIC 0x00789310
-HDC DAT_00789310;
+HDC g_shared_offscreen_dc;
 
 // GLOBAL: SHANDALAR 0x0093a938
 // GLOBAL: MAGIC 0x00926808
-HBITMAP DAT_00926808;
+HBITMAP g_shared_offscreen_bitmap;
 
 // GLOBAL: SHANDALAR 0x0094eaa0
 // GLOBAL: MAGIC 0x0093a980
-HGDIOBJ DAT_0093a980;
+HGDIOBJ g_shared_offscreen_prev_object;
 
 // GLOBAL: SHANDALAR 0x008e30fc
 // GLOBAL: MAGIC 0x008cefb0
-void *DAT_008cefb0;
+void *g_shared_offscreen_bits;
 
 // GLOBAL: SHANDALAR 0x0094d460
 // GLOBAL: MAGIC 0x00939334
-int DAT_00939334;
+int g_display_color_depth;
 
 // GLOBAL: SHANDALAR 0x006531a0
 // GLOBAL: MAGIC 0x00638ca8
-int DAT_00638ca8;
+int g_is_win9x;
 
 // GLOBAL: SHANDALAR 0x0073ea90
 // GLOBAL: MAGIC 0x00776518
-HANDLE DAT_00776518;
+HANDLE g_mpstime_vxd_handle;
 
 // GLOBAL: SHANDALAR 0x0078df78
 // GLOBAL: MAGIC 0x00715fa0
-int DAT_00715fa0;
+int g_shared_startup_lock_initialized;
 
 // GLOBAL: SHANDALAR 0x0093aa40
 // GLOBAL: MAGIC 0x00926910
-CRITICAL_SECTION DAT_00926910;
+CRITICAL_SECTION g_shared_startup_lock;
 
 // GLOBAL: SHANDALAR 0x007beb08
 // GLOBAL: MAGIC 0x007a7d7c
-int DAT_007a7d7c;
+int g_shared_startup_completed;
 
 // GLOBAL: SHANDALAR 0x0093a7e0
 // GLOBAL: MAGIC 0x009266b0
-CRITICAL_SECTION DAT_009266b0;
+CRITICAL_SECTION g_card_render_lock;
 
 // GLOBAL: SHANDALAR 0x005a8b30
 // GLOBAL: MAGIC 0x00637a94
@@ -223,19 +223,19 @@ int setup_paths_and_load_text_etc(char *message_buffer)
 
   strcpy(s.path, global_base_directory);
   strcat(s.path, "\\RARITY.CSV");
-  if (!FUN_004c0c20(s.path))
+  if (!LoadRarityCsv(s.path))
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
     append_startup_error(message_buffer, s.path, 1);
   }
 
-  FUN_00509210();
+  CopyRawCardNamesAndRarities();
 
   s.desktop_dc = GetDC(NULL);
   if (s.desktop_dc != NULL)
   {
-    DAT_00939334 = GetDeviceCaps(s.desktop_dc, BITSPIXEL) * GetDeviceCaps(s.desktop_dc, PLANES);
+    g_display_color_depth = GetDeviceCaps(s.desktop_dc, BITSPIXEL) * GetDeviceCaps(s.desktop_dc, PLANES);
     ReleaseDC(NULL, s.desktop_dc);
   }
   else
@@ -256,11 +256,11 @@ int setup_paths_and_load_text_etc(char *message_buffer)
 
   if (!CreateOffscreen32bppDibSection(GetSystemMetrics(SM_CXSCREEN),
                                       GetSystemMetrics(SM_CYSCREEN),
-                                      &DAT_00789310,
+                                      &g_shared_offscreen_dc,
                                       (BITMAPINFO *)&gs_cardtitle_draw_a_card_008b4330[0x40],
-                                      &DAT_00926808,
-                                      &DAT_0093a980,
-                                      &DAT_008cefb0))
+                                      &g_shared_offscreen_bitmap,
+                                      &g_shared_offscreen_prev_object,
+                                      &g_shared_offscreen_bits))
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
@@ -284,13 +284,13 @@ int setup_paths_and_load_text_etc(char *message_buffer)
     strcat(message_buffer, "\n");
   }
 
-  FUN_004a7b3d();
+  InitMpstimeVxdTimer();
   return s.ok;
 }
 
 // FUNCTION: SHANDALAR 0x00468a60
 // FUNCTION: MAGIC 0x00509210
-int FUN_00509210(void)
+int CopyRawCardNamesAndRarities(void)
 {
   struct
   {
@@ -336,19 +336,19 @@ int FUN_00509210(void)
 
 // FUNCTION: MAGIC 0x004a7b3d
 // FUNCTION: SHANDALAR 0x00559cc3
-int FUN_004a7b3d(void)
+int InitMpstimeVxdTimer(void)
 {
   OSVERSIONINFOA version = {sizeof(OSVERSIONINFOA)};
   GetVersionExA(&version);
-  DAT_00638ca8 = version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
+  g_is_win9x = version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
 
-  if (DAT_00776518 == NULL && DAT_00638ca8 != 0)
+  if (g_mpstime_vxd_handle == NULL && g_is_win9x != 0)
   {
     int ioctl_result;
-    DAT_00776518 = CreateFileA("\\\\.\\MPStime.VXD", 0, 0, NULL, 0, FILE_FLAG_DELETE_ON_CLOSE, NULL);
-    assert((unsigned int)(DAT_00776518 != INVALID_HANDLE_VALUE), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x360,
+    g_mpstime_vxd_handle = CreateFileA("\\\\.\\MPStime.VXD", 0, 0, NULL, 0, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+    assert((unsigned int)(g_mpstime_vxd_handle != INVALID_HANDLE_VALUE), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x360,
            "Could Not Load Dave's Extra Cool Timer\n");
-    DeviceIoControl(DAT_00776518, 1, NULL, 0, &ioctl_result, 4, NULL, NULL);
+    DeviceIoControl(g_mpstime_vxd_handle, 1, NULL, 0, &ioctl_result, 4, NULL, NULL);
     assert((unsigned int)(ioctl_result == 0x100), "D:\\Newmagic\\multiplayer\\sid\\glue.c", 0x367,
            "Could Not Initialize Dave's Extra Cool Timer\n");
   }
@@ -358,7 +358,7 @@ int FUN_004a7b3d(void)
 
 // FUNCTION: SHANDALAR 0x00442f6a
 // FUNCTION: MAGIC 0x004537a7
-void FUN_00442f6a(void)
+void FreeBaseTextBuffer(void)
 {
   if (global_base_txt != (char *)0)
   {
@@ -592,7 +592,7 @@ void LoadDuelInterfaceRegistryOptions(void)
 
 // FUNCTION: SHANDALAR 0x00522e00
 // FUNCTION: MAGIC 0x004c0c20
-int FUN_004c0c20(const char *filename)
+int LoadRarityCsv(const char *filename)
 {
   //TODO: This seems to initialize useless stuff for SHANDALAR, only used in MAGIC
   (void)filename;
@@ -610,43 +610,43 @@ unsigned int setup_shared_startup(void)
   } s;
 
   s.local_7d8 = 1;
-  if (DAT_00715fa0 == 0)
+  if (g_shared_startup_lock_initialized == 0)
   {
-    InitializeCriticalSection(&DAT_00926910);
-    DAT_00715fa0 = 1;
+    InitializeCriticalSection(&g_shared_startup_lock);
+    g_shared_startup_lock_initialized = 1;
   }
   s.local_7d4[0] = '\0';
   s.local_7d8 |= setup_paths_and_load_text_etc(s.local_7d4);
   LoadDuelInterfaceRegistryOptions();
-  DAT_007a7d7c = 1;
-  InitializeCriticalSection(&DAT_009266b0);
+  g_shared_startup_completed = 1;
+  InitializeCriticalSection(&g_card_render_lock);
   return s.local_7d8;
 }
 
 // FUNCTION: MAGIC 0x00422bea
 // FUNCTION: SHANDALAR 0x00522daa
-void FUN_00422bea(void)
+void ShutdownSharedStartupResources(void)
 {
-  FUN_00442f6a();
+  FreeBaseTextBuffer();
   FUN_004432ff();
   FreeRaritiesCsvRaw();
   DestroyCardArtPalette();
-  checked_DeleteDC_DeleteObject(DAT_00789310, DAT_00926808);
-  DAT_00926808 = (HBITMAP)0;
-  DAT_00789310 = (HDC)0;
+  checked_DeleteDC_DeleteObject(g_shared_offscreen_dc, g_shared_offscreen_bitmap);
+  g_shared_offscreen_bitmap = (HBITMAP)0;
+  g_shared_offscreen_dc = (HDC)0;
   ShutdownCardArtGdiResources();
   destroy_create_fonts_resources();
 }
 
 // FUNCTION: MAGIC 0x00509849
 // FUNCTION: SHANDALAR 0x00469099
-int FUN_00469099(void)
+int ShutdownSharedStartup(void)
 {
-  FUN_00422bea();
-  if (DAT_00715fa0 != 0)
+  ShutdownSharedStartupResources();
+  if (g_shared_startup_lock_initialized != 0)
   {
-    DeleteCriticalSection(&DAT_00926910);
-    DAT_00715fa0 = 0;
+    DeleteCriticalSection(&g_shared_startup_lock);
+    g_shared_startup_lock_initialized = 0;
   }
-  DeleteCriticalSection(&DAT_009266b0);
+  DeleteCriticalSection(&g_card_render_lock);
 }

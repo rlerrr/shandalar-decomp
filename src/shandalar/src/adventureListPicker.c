@@ -25,8 +25,8 @@ extern RpBitsPalettePacket g_palette_data_words;
 extern FacemakerWindowBounds *PTR_DAT_005832b4;
 extern FacemakerWindowBounds *PTR_DAT_005832dc;
 
-int FUN_00522508(int param_1);
-int FUN_005501dc(int value);
+int RandomIntLessThan(int param_1);
+int ScaleUiCoordinateFrom320(int value);
 
 int ReadPalette(char *palette_text_path, char *palette_binary_path);
 void ClearGraphicsPageWithPaletteColor(int page_number, int palette_color);
@@ -139,7 +139,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
       }
     }
 
-    unk_00939340 = FUN_00522508(s.visible_count);
+    unk_00939340 = RandomIntLessThan(s.visible_count);
     if (param_1 != unk_008b35ec)
     {
       if (DAT_008bd200 == 1)
@@ -269,20 +269,20 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
       }
 
       BlitGraphicsRect(PTR_DAT_005832b4,
-                       FUN_005501dc(0xdc) / 2,
-                       FUN_005501dc(0x34) / 2,
-                       FUN_005501dc(0xc5) / 2,
-                       FUN_005501dc(0x111) / 2,
+                       ScaleUiCoordinateFrom320(0xdc) / 2,
+                       ScaleUiCoordinateFrom320(0x34) / 2,
+                       ScaleUiCoordinateFrom320(0xc5) / 2,
+                       ScaleUiCoordinateFrom320(0x111) / 2,
                        PTR_DAT_005832dc,
-                       FUN_005501dc(0xdc) / 2,
-                       FUN_005501dc(0x34) / 2);
+                       ScaleUiCoordinateFrom320(0xdc) / 2,
+                       ScaleUiCoordinateFrom320(0x34) / 2);
 
       strcpy(g_ui_message_buffer, gs_showcard_text_0077e110.title);
       DrawEncodedImageResampled(PTR_DAT_005832b4,
-                                FUN_005501dc(0xdc) / 2,
-                                FUN_005501dc(0x34) / 2,
-                                FUN_005501dc(0xc5) / 2,
-                                FUN_005501dc(0x10f) / 2,
+                                ScaleUiCoordinateFrom320(0xdc) / 2,
+                                ScaleUiCoordinateFrom320(0x34) / 2,
+                                ScaleUiCoordinateFrom320(0xc5) / 2,
+                                ScaleUiCoordinateFrom320(0x10f) / 2,
                                 s.buy_button_sprites[0]);
       DrawAdventureCardSized(param_2[result] & 0xfff, 0x7a, 0x29, 0x4b, 0x70, 1, "");
 
@@ -307,13 +307,13 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
       }
 
       BlitGraphicsRect(PTR_DAT_005832dc,
-                       FUN_005501dc(0xdc) / 2,
-                       FUN_005501dc(0x34) / 2,
-                       FUN_005501dc(0xc5) / 2,
-                       FUN_005501dc(0x111) / 2,
+                       ScaleUiCoordinateFrom320(0xdc) / 2,
+                       ScaleUiCoordinateFrom320(0x34) / 2,
+                       ScaleUiCoordinateFrom320(0xc5) / 2,
+                       ScaleUiCoordinateFrom320(0x111) / 2,
                        PTR_DAT_005832b4,
-                       FUN_005501dc(0xdc) / 2,
-                       FUN_005501dc(0x34) / 2);
+                       ScaleUiCoordinateFrom320(0xdc) / 2,
+                       ScaleUiCoordinateFrom320(0x34) / 2);
       ClearInputAndWaitForMouseRelease();
     }
 
