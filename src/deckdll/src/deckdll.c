@@ -106,9 +106,6 @@ int *deck = NULL;
 
 // GLOBAL: DECKDLL 0x1012ed80
 GlobalDeckEntry global_deck[1000];
-// GLOBAL: DECKDLL 0x101a0ce0
-int global_deck_num_cards = 0;
-
 // GLOBAL: DECKDLL 0x101a9694
 int global_deck_num_entries = 0;
 // GLOBAL: DECKDLL 0x1012e88c
@@ -119,8 +116,9 @@ static int global_deck_num_entries_copy;
 // GLOBAL: DECKDLL 0x1019fed0
 FullDeck global_edited_deck;
 
-// GLOBAL: DECKDLL 0x101a0ce4
-int global_edited_deck_num_entries = 0;
+#define global_deck_num_cards (global_edited_deck.cards)
+#define global_edited_deck_num_entries (global_edited_deck.total)
+
 // GLOBAL: DECKDLL 0x10144710
 static DeckEntry global_excessive_cards[84];
 

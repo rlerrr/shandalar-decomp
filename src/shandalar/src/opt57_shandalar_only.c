@@ -15,6 +15,8 @@
 #include "drawcardlib/src/pic.h"
 #include "facemaker/src/facemaker_types.h"
 
+#undef _fileno
+
 typedef struct RGBLike
 {
   int r;
@@ -138,6 +140,7 @@ int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entry_ptrs, char *sprite
   int *_DstBuf;
   int iVar2;
 
+  iVar2 = 0;
   _File = fopen(sprite_path, "rb");
   assert((int)_File, "D:\\NewMagic\\sources\\sidlib\\sprite.c", 0xc5,
          "Could not open Sprite File %s\n", sprite_path);
@@ -148,18 +151,20 @@ int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entry_ptrs, char *sprite
   fclose(_File);
 
   iVar1 = *_DstBuf;
-  iVar2 = 0;
-  while (iVar1 != -1)
+  if (iVar1 != -1)
   {
-    if (iVar2 >= max_entries)
+    do
     {
-      break;
-    }
-    *out_entry_ptrs = (EncodedImage *)_DstBuf;
-    out_entry_ptrs = out_entry_ptrs + 1;
-    _DstBuf = (int *)((int)_DstBuf + *_DstBuf);
-    iVar1 = *_DstBuf;
-    iVar2 = iVar2 + 1;
+      if (max_entries <= iVar2)
+      {
+        break;
+      }
+      *out_entry_ptrs = (EncodedImage *)_DstBuf;
+      out_entry_ptrs = out_entry_ptrs + 1;
+      iVar2 = iVar2 + 1;
+      _DstBuf = (int *)((int)_DstBuf + *_DstBuf);
+      iVar1 = *_DstBuf;
+    } while (iVar1 != -1);
   }
   return iVar2;
 }

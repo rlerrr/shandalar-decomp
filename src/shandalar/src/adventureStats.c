@@ -66,8 +66,8 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
 static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int tile_y);
 char *BuildTownDisplayName(int town_index);
 char *BuildCreatureNameWithArticle(int creature_type);
-char *__cdecl FUN_005081e0(int dungeon_index);
-DWORD FUN_00564e70(char *dst, DWORD max_length, LPCVOID format, ...);
+char *__cdecl GetDungeonName(int dungeon_index);
+DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 char *__cdecl FUN_005307c3(int param_1);
 int FindNearestTownIndex(int world_x, int world_y);
 
@@ -91,7 +91,7 @@ extern char DAT_0093a870[0x20];
 extern int g_menu_render_guard;
 extern int g_mouse_x;
 extern int g_mouse_y;
-extern int DAT_007894f4;
+extern int g_reveal_all_world_info;
 extern WorldMagicChoiceButtonSpriteBank g_world_magic_choice_button_sprite_bank;
 extern int g_graphics_bpp;
 extern RpBitsPalettePacket g_palette_data_words;
@@ -316,7 +316,7 @@ int FUN_0056302b(int param_1);
 void ReadPalette(char *palette_text_path, char *palette_binary_path);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 unsigned int WaitForInputEventUnlessBlocked(void);
-int FUN_0040dffd(int mask);
+int GetFirstManaColorIndex(int mask);
 void DrawTextLineNoShadow(char *text, int x, int y, int color_index);
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 void DrawScaledCenteredTextNoShadow(char *text, int center_x, int y, int color_index);
@@ -524,23 +524,32 @@ static int ActivateStatsMenuControl(AdvMenuControl *control)
 // FUNCTION: SHANDALAR 0x0054899f
 int RenderStatsWorldMagicControl(AdvMenuControl *control, int mode)
 {
-  int mouse_inside;
+  struct
+  {
+    int mouse_inside;
+    int y;
+    int x;
+    int height;
+    int width;
+    EncodedImage *highlight_sprite;
+    EncodedImage *sprite;
+  } s;
 
   if (g_menu_render_guard == 0)
   {
     if ((g_mouse_x < control->x) || (control->width + control->x < g_mouse_x))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else
     {
-      mouse_inside = 1;
+      s.mouse_inside = 1;
     }
-    if (!mouse_inside)
+    if (s.mouse_inside == 0)
     {
       return 0;
     }
@@ -549,19 +558,30 @@ int RenderStatsWorldMagicControl(AdvMenuControl *control, int mode)
   {
     return 0;
   }
+
+  s.sprite = (EncodedImage *)control->mode_data[mode];
+  s.highlight_sprite = (EncodedImage *)control->mode_data[1];
+  s.x = control->x;
+  s.y = control->y;
+  s.width = control->width;
+  s.height = control->height;
+
   if (mode == 2)
   {
     DrawEncodedImageResampled(PTR_DAT_005832b4, control->x + 2, control->y + 2, control->width - 4, control->height - 4,
-                              (EncodedImage *)control->mode_data[1]);
-    if (control->on_activate != 0)
+                              s.highlight_sprite);
+
+    if (mode == 2)
     {
-      control->on_activate(control);
+      if (control->on_activate != 0)
+      {
+        control->on_activate(control);
+      }
     }
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
-                              (EncodedImage *)control->mode_data[mode]);
+    DrawEncodedImageResampled(PTR_DAT_005832b4, s.x, s.y, s.width, s.height, s.sprite);
   }
   return 1;
 }
@@ -910,7 +930,7 @@ int RenderStatsCreatureGridPage(int page_index)
     for (; (s.column < 3 && (int)s.creature_type < 0x37); s.column++, s.creature_type++)
     {
       if ((g_stats_creature_journal_counts[s.creature_type + 1].wins != 0) ||
-          ((g_stats_creature_journal_counts[s.creature_type + 1].losses != 0 || (DAT_007894f4 != 0))))
+          ((g_stats_creature_journal_counts[s.creature_type + 1].losses != 0 || (g_reveal_all_world_info != 0))))
       {
         s.wins = g_stats_creature_journal_counts[s.creature_type + 1].wins;
         s.losses = g_stats_creature_journal_counts[s.creature_type + 1].losses;
@@ -1005,8 +1025,8 @@ int ShowWorldMagicStatsDetail(int world_magic_slot_index)
   s.x /= 2;
   PTR_DAT_005832b4->font_slot = 4;
   DrawTextAt(PTR_DAT_005832b4, 0x7b, 0x176, 0x4b, gs_worldmagic_title_0077e1d0);
-  strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[world_magic_slot_index]);
   s.y -= 5;
+  strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[world_magic_slot_index]);
   DrawUiScaledCenteredText(g_ui_message_buffer, s.x, s.y, 0x40);
   s.y += 8;
   strcpy(g_ui_message_buffer, gs_worldmagic_explains_0074b8f0[world_magic_slot_index]);
@@ -1371,18 +1391,18 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
     }
     break;
   case 3:
-    sprintf(s.formatted_message, gs_logstrings_0077c9a0[6], FUN_005081e0(entry_arg & 0x7f));
+    sprintf(s.formatted_message, gs_logstrings_0077c9a0[6], GetDungeonName(entry_arg & 0x7f));
     break;
   case 4:
     if ((entry_arg & 0x80) != 0)
     {
-      FUN_00564e70(s.formatted_message, 0x1000, gs_logstrings_0077c9a0[7], FUN_005081e0(entry_arg & 0x7f),
-                   gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((entry_arg & 0x7f) + 1) * 100);
+      FormatMessageFromStringStripCarriageReturns(s.formatted_message, 0x1000, gs_logstrings_0077c9a0[7], GetDungeonName(entry_arg & 0x7f),
+                                                  gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((entry_arg & 0x7f) + 1) * 100);
     }
     else
     {
-      FUN_00564e70(s.formatted_message, 0x1000, gs_logstrings_0077c9a0[8], FUN_005081e0(entry_arg & 0x7f),
-                   gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((entry_arg & 0x7f) + 1) * 100);
+      FormatMessageFromStringStripCarriageReturns(s.formatted_message, 0x1000, gs_logstrings_0077c9a0[8], GetDungeonName(entry_arg & 0x7f),
+                                                  gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((entry_arg & 0x7f) + 1) * 100);
     }
     break;
   case 5:
@@ -1566,7 +1586,7 @@ void RunStatsWorldMapJournalMenu(void)
   g_menu_render_guard = 0;
   PTR_DAT_005832b4->page_number = 0;
   SelectStatsJournalEntry(0);
-  
+
 retry:
   ConsumeUiTickCount();
   g_stats_journal_menu_selection = -1;
@@ -1978,7 +1998,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
           }
         }
       }
-      s.color_index = FUN_0040dffd(s.color_index);
+      s.color_index = GetFirstManaColorIndex(s.color_index);
       switch (global_cards_data[s.card_id_masked].type)
       {
       case '\x01':

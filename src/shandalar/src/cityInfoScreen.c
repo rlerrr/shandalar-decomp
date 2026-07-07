@@ -39,7 +39,7 @@ extern FacemakerWindowBounds *PTR_DAT_00583304;
 extern int g_world_scroll_cache_ready;
 
 // External functions
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 void BeginSpriteEncodeSession(void);
@@ -48,7 +48,7 @@ void FinalizeSpriteEncodeSession(void);
 
 int ScaleUiCoordinate(int value);
 int SetFontStyleSize(int font_slot, unsigned int point_size);
-void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text);
+void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text, ...);
 int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen, int center_x, int center_y, int x,
                       int y, int *format_and_args);
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
@@ -71,44 +71,58 @@ extern EncodedImage *g_world_magic_avatar_sprites[5];
 void EnsureAdvfac64Loaded(int state);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 
-unsigned int FUN_0043146b(int x, int y);
-unsigned int FUN_005611c8(unsigned int tile_mask);
+unsigned int GetWorldTileType(int x, int y);
+unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
 int FUN_004bb458(int world_magic_slot_index);
 char *FUN_004f2e17(int town_index);
 
 // From city-info helpers
-DWORD __cdecl FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
+DWORD __cdecl FormatMessageFromStringStripCarriageReturns(char *dst, DWORD dst_len, LPCVOID format, ...);
 char *BuildTownDisplayName(int town_index);
-int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int y);
+int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int x, int y);
 void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
 void __cdecl DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x00603a34
-int DAT_00603a34 = 0;
+int g_adv_menu_selected_value = 0;
 // GLOBAL: SHANDALAR 0x00603a38
-int DAT_00603a38 = 0;
+int g_city_info_strings_loaded = 0;
 // GLOBAL: SHANDALAR 0x00603a48
-int *DAT_00603a48 = (int *)0;
+int *g_city_info_heading_strings = (int *)0;
 
 // GLOBAL: SHANDALAR 0x00746e60
-EncodedImage *DAT_00746e60[3];
+EncodedImage *g_city_info_done_button_sprites[3];
 // GLOBAL: SHANDALAR 0x00746e70
-EncodedImage *DAT_00746e70[0x10];
+EncodedImage *g_city_info_scroll_button_sprites[0x10];
 
 // GLOBAL: SHANDALAR 0x007894f4
-int DAT_007894f4 = 0;
+int g_reveal_all_world_info = 0;
 
 // GLOBAL: SHANDALAR 0x00581918
-int DAT_00581918[0x10] = {
-    0x000000d2, 0x00000000, 0x000000f4, 0x000000ce, 0x000000bc, 0x00000003, 0x00000000, 0x0000001b,
-    0x00000002, 0x0000000d, 0x00000003, 0x00000018, 0x00000004, 0x00000001, 0x00000005, 0x0000001d,
+int g_wizard_text_colors[0x10] = {
+    0x000000d2,
+    0x00000000,
+    0x000000f4,
+    0x000000ce,
+    0x000000bc,
+    0x00000003,
+    0x00000000,
+    0x0000001b,
+    0x00000002,
+    0x0000000d,
+    0x00000003,
+    0x00000018,
+    0x00000004,
+    0x00000001,
+    0x00000005,
+    0x0000001d,
 };
 
 // GLOBAL: SHANDALAR 0x0058cad4
-char DAT_0058cad4[] = " \rDd\x1b";
+char s_city_info_done_nav_hotkeys[] = " \rDd\x1b";
 // GLOBAL: SHANDALAR 0x0058cadc
-char DAT_0058cadc[] = " \rDd\x1b";
+char s_city_info_done_activate_hotkeys[] = " \rDd\x1b";
 
 // GLOBAL: SHANDALAR 0x0058cb98
 char s_x_sound_button2_wav_0058cb98[] = "x:sound\\button2.wav";
@@ -125,45 +139,45 @@ char s_cityinfo_pic_0058cbd8[] = "cityinfo.pic";
 char s_cinfopce_pic_0058cc00[] = "cinfopce.pic";
 
 // GLOBAL: SHANDALAR 0x0058cbe8
-char DAT_0058cbe8[] = "%s";
+char s_city_info_heading_format_0[] = "%s";
 // GLOBAL: SHANDALAR 0x0058cbec
-char DAT_0058cbec[] = "%s";
+char s_city_info_heading_format_1[] = "%s";
 // GLOBAL: SHANDALAR 0x0058cbf0
-char DAT_0058cbf0[] = "%s";
+char s_city_info_heading_format_2[] = "%s";
 // GLOBAL: SHANDALAR 0x0058cbf4
-char DAT_0058cbf4[] = "%s";
+char s_city_info_heading_format_3[] = "%s";
 // GLOBAL: SHANDALAR 0x0058cbf8
-char DAT_0058cbf8[] = "%s";
+char s_city_info_heading_format_4[] = "%s";
 // GLOBAL: SHANDALAR 0x0058cbfc
-char DAT_0058cbfc[] = "%s";
+char s_city_info_heading_format_5[] = "%s";
 
 // GLOBAL: SHANDALAR 0x0058cc10
-char DAT_0058cc10[] = "%d";
+char s_city_info_amulet_count_format[] = "%d";
 // GLOBAL: SHANDALAR 0x0058cc14
-char DAT_0058cc14[] = "\n";
+char s_city_info_newline[] = "\n";
 // GLOBAL: SHANDALAR 0x0058cc18
-char DAT_0058cc18[] = "X";
+char s_city_info_x_string[] = "X";
 // GLOBAL: SHANDALAR 0x0058cc1c
-char DAT_0058cc1c[] = "";
+char s_city_info_empty_string[] = "";
 
 // Forward decls
-int __cdecl FUN_0050a709(AdvMenuControl *control, int mode);
+int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode);
 int __cdecl FUN_0050a828(AdvMenuControl *control);
-int __cdecl FUN_0050a85a(AdvMenuControl *control, int mode);
+int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode);
 int __cdecl FUN_0050a970(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x0058c8f8
-AdvMenuControl DAT_0058c8f8[5] = {
+AdvMenuControl g_city_info_menu_controls[5] = {
     // PageUp
-    {27, 171, 17, 58, 27, 171, 17, 58, 1, (AdvMenuRenderCallback)FUN_0050a709, (AdvMenuActivateCallback)FUN_0050a828, -2, 0, (char *)0, (char *)0, 0x4900, 0, {0, 0, 0, 0}},
+    {27, 171, 17, 58, 27, 171, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, -2, 0, (char *)0, (char *)0, 0x4900, 0, {0, 0, 0, 0}},
     // Up
-    {27, 230, 17, 58, 27, 230, 17, 58, 1, (AdvMenuRenderCallback)FUN_0050a709, (AdvMenuActivateCallback)FUN_0050a828, -1, 1, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
+    {27, 230, 17, 58, 27, 230, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, -1, 1, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
     // Down
-    {27, 289, 17, 58, 27, 289, 17, 58, 1, (AdvMenuRenderCallback)FUN_0050a709, (AdvMenuActivateCallback)FUN_0050a828, 1, 2, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
+    {27, 289, 17, 58, 27, 289, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, 1, 2, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
     // PageDown
-    {27, 348, 17, 58, 27, 348, 17, 58, 1, (AdvMenuRenderCallback)FUN_0050a709, (AdvMenuActivateCallback)FUN_0050a828, 2, 3, (char *)0, (char *)0, 0x5100, 0, {0, 0, 0, 0}},
+    {27, 348, 17, 58, 27, 348, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, 2, 3, (char *)0, (char *)0, 0x5100, 0, {0, 0, 0, 0}},
     // Done
-    {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)FUN_0050a85a, (AdvMenuActivateCallback)FUN_0050a970, 0, 0, DAT_0058cad4, DAT_0058cadc, 0, 0, {0, 0, 0, 0}},
+    {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)RenderCityInfoDoneButton, (AdvMenuActivateCallback)FUN_0050a970, 0, 0, s_city_info_done_nav_hotkeys, s_city_info_done_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
 };
 
 // FUNCTION: SHANDALAR 0x004ffd0a
@@ -187,7 +201,7 @@ int __cdecl FUN_00500129(int allow_arrow_nav)
 }
 
 // FUNCTION: SHANDALAR 0x005001e3
-int FUN_005001e3(void)
+int RenderCurrentMenuContextControls(void)
 {
   int i;
 
@@ -202,7 +216,7 @@ int FUN_005001e3(void)
 }
 
 // FUNCTION: SHANDALAR 0x0050a709
-int __cdecl FUN_0050a709(AdvMenuControl *control, int mode)
+int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode)
 {
   int in_bounds;
 
@@ -233,7 +247,7 @@ int __cdecl FUN_0050a709(AdvMenuControl *control, int mode)
   }
 
   DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
-                            DAT_00746e70[control->unk_30 * 4 + mode]);
+                            g_city_info_scroll_button_sprites[control->unk_30 * 4 + mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -247,12 +261,12 @@ int __cdecl FUN_0050a709(AdvMenuControl *control, int mode)
 int __cdecl FUN_0050a828(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cb98, 0xf, 100, 100, 0);
-  DAT_00603a34 = control->selection_value;
+  g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x0050a85a
-int __cdecl FUN_0050a85a(AdvMenuControl *control, int mode)
+int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode)
 {
   int in_bounds;
 
@@ -282,7 +296,7 @@ int __cdecl FUN_0050a85a(AdvMenuControl *control, int mode)
     return 0;
   }
 
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, DAT_00746e60[mode]);
+  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, g_city_info_done_button_sprites[mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -296,7 +310,7 @@ int __cdecl FUN_0050a85a(AdvMenuControl *control, int mode)
 int __cdecl FUN_0050a970(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cbac, 0xf, 100, 100, 0);
-  DAT_00603a34 = control->selection_value;
+  g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
 
@@ -311,7 +325,7 @@ static void CityInfo_DrawVisibleRows(int *town_indices_1based, int town_count, i
     int list_index = first_index + i;
     if (list_index < town_count)
     {
-      FUN_0050bb6d(PTR_DAT_005832dc, town_indices_1based[list_index + 1], 0x30, y0 + i * row_height_scaled);
+      DrawCityInfoTownRow(PTR_DAT_005832dc, town_indices_1based[list_index + 1], 0x30, y0 + i * row_height_scaled);
     }
   }
 }
@@ -321,28 +335,33 @@ void ShowCityInfoScreen(int param_1)
 {
   struct
   {
-    int scroll_top_index;
-    int town_count;
-    int town_indices_1based[0x81];
-    int menu_context;
-
-    int list_panel_x;
-    int list_top_y;
-    int list_width_scaled;
-    int row_height_scaled;
+    int list_buffer_y;       // ebp - 0x444
+    int x_table[3];          // ebp - 0x440
+    int list_panel_x;        // ebp - 0x434
+    int row_height_scaled;   // ebp - 0x430
+    int menu_context;        // ebp - 0x42c
+    int list_width_scaled;   // ebp - 0x428
+    int scroll_top_index;    // ebp - 0x424
+    int j;                   // ebp - 0x420
+    int scroll_input;        // ebp - 0x41c
+    int row_y;               // ebp - 0x418
+    int i;                   // ebp - 0x414
+    int visible_town_index;  // ebp - 0x410
+    int town_indices[0x100]; // ebp - 0x40c
+    int town_count;          // ebp - 0xc
+    int town_scan_index;     // ebp - 0x8
+    int list_top_y;          // ebp - 0x4
   } s;
-
-  int i;
 
   (void)param_1;
 
-  s.scroll_top_index = 0;
   s.town_count = 0;
+  s.scroll_top_index = 0;
 
-  if (DAT_00603a38 == 0)
+  if (g_city_info_strings_loaded == 0)
   {
-    DAT_00603a48 = LoadIniEscapedStringTable(g_advbuttons_ini_file, s_cityInfo_0058cbc0, (int)g_ini_string_scratch, 0);
-    DAT_00603a38 = 1;
+    g_city_info_heading_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, s_cityInfo_0058cbc0, (int)g_ini_string_scratch);
+    g_city_info_strings_loaded = 1;
   }
 
   LoadPcxIntoPage(1, s_infobar_pic_0058cbcc);
@@ -350,56 +369,54 @@ void ShowCityInfoScreen(int param_1)
   BeginSpriteEncodeSession();
 
   // Scale/encode the 4 scroll buttons
-  for (i = 0; i < 4; i++)
+  for (s.j = 0; s.j < 4; s.j++)
   {
-    int j;
-    if (DAT_0058c8f8[i].x == DAT_0058c8f8[i].base_x)
+    if (g_city_info_menu_controls[s.j].x == g_city_info_menu_controls[s.j].base_x)
     {
-      DAT_0058c8f8[i].x = ScaleUiCoordinate(DAT_0058c8f8[i].x);
-      DAT_0058c8f8[i].y = ScaleUiCoordinate(DAT_0058c8f8[i].y);
-      DAT_0058c8f8[i].width = ScaleUiCoordinate(DAT_0058c8f8[i].width);
-      DAT_0058c8f8[i].height = ScaleUiCoordinate(DAT_0058c8f8[i].height);
+      g_city_info_menu_controls[s.j].x = ScaleUiCoordinate(g_city_info_menu_controls[s.j].x);
+      g_city_info_menu_controls[s.j].y = ScaleUiCoordinate(g_city_info_menu_controls[s.j].y);
+      g_city_info_menu_controls[s.j].width = ScaleUiCoordinate(g_city_info_menu_controls[s.j].width);
+      g_city_info_menu_controls[s.j].height = ScaleUiCoordinate(g_city_info_menu_controls[s.j].height);
     }
 
-    for (j = 0; j < 4; j++)
+    for (s.i = 0; s.i < 4; s.i++)
     {
-      DAT_00746e70[i * 4 + j] = EncodeSpriteFromPage(1, j * 0x12 + 0x2b, i * 0x31 + 0x1c, 0x11, 0x2f);
+      *(EncodedImage **)((char *)g_city_info_scroll_button_sprites + s.j * 0x10 + s.i * 4) = EncodeSpriteFromPage(1, s.i * 0x12 + 0x2b, s.j * 0x31 + 0x1c, 0x11, 0x2f);
     }
   }
 
   // Scale the Done button
-  if (DAT_0058c8f8[4].x == DAT_0058c8f8[4].base_x)
+  if (g_city_info_menu_controls[4].x == g_city_info_menu_controls[4].base_x)
   {
-    DAT_0058c8f8[4].x = ScaleUiCoordinate(DAT_0058c8f8[4].x);
-    DAT_0058c8f8[4].y = ScaleUiCoordinate(DAT_0058c8f8[4].y);
-    DAT_0058c8f8[4].width = ScaleUiCoordinate(DAT_0058c8f8[4].width);
-    DAT_0058c8f8[4].height = ScaleUiCoordinate(DAT_0058c8f8[4].height);
+    g_city_info_menu_controls[4].x = ScaleUiCoordinate(g_city_info_menu_controls[4].x);
+    g_city_info_menu_controls[4].y = ScaleUiCoordinate(g_city_info_menu_controls[4].y);
+    g_city_info_menu_controls[4].width = ScaleUiCoordinate(g_city_info_menu_controls[4].width);
+    g_city_info_menu_controls[4].height = ScaleUiCoordinate(g_city_info_menu_controls[4].height);
   }
 
-  // Build 3-state Done button sprites into DAT_00746e60
+  // Build 3-state Done button sprites into g_city_info_done_button_sprites
   PTR_DAT_005832dc->font_slot = 7;
   SetFontStyleSize(7, (unsigned int)ScaleUiCoordinate(10));
-  for (i = 0; i < 3; i++)
+  for (s.i = 0; s.i < 3; s.i++)
   {
-    int x_table[3];
-    x_table[0] = 0x48;
-    x_table[1] = 0x3f;
-    x_table[2] = 0x40;
+    s.x_table[0] = 0x48;
+    s.x_table[1] = 0x3f;
+    s.x_table[2] = 0x40;
 
-    SetFontStyleSize(7, (unsigned int)(10 - i / 2));
-    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, x_table[i], i * 0x3c + 0x49, 0xe, (char *)g_done_text_table_entry);
+    SetFontStyleSize(7, (unsigned int)(10 - s.i / 2));
+    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.x_table[s.i], s.i * 0x3c + 0x49, 0xe, (char *)g_done_text_table_entry);
   }
 
-  for (i = 0; i < 3; i++)
+  for (s.i = 0; s.i < 3; s.i++)
   {
-    DAT_00746e60[i] = EncodeSpriteFromPage(1, i * 0x3c + 0x2b, 1, 0x3a, 0x18);
+    g_city_info_done_button_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x3c + 0x2b, 1, 0x3a, 0x18);
   }
 
   FinalizeSpriteEncodeSession();
 
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
-  AddMenuControlsToContext(DAT_0058c8f8, 5, s.menu_context);
+  AddMenuControlsToContext(g_city_info_menu_controls, 5, s.menu_context);
   FUN_00500129(0);
 
   // Prepare background
@@ -411,21 +428,12 @@ void ShowCityInfoScreen(int param_1)
   // Headings, loaded from advButtons [cityInfo] (format strings in .rdata are \"%s\")
   PTR_DAT_005832dc->font_slot = 7;
   SetFontStyleSize(7, (unsigned int)ScaleUiCoordinate(10));
-  if (DAT_00603a48 != (int *)0)
-  {
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832dc, 200, 0x69, 0x28, DAT_0058cbe8,
-                                                                                       (char *)DAT_00603a48[0]);
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832dc, 200, 0x54, 0x45, DAT_0058cbec,
-                                                                                       (char *)DAT_00603a48[1]);
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832dc, 200, 0xb3, 0x45, DAT_0058cbf0,
-                                                                                       (char *)DAT_00603a48[2]);
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832dc, 200, 0x130, 0x45, DAT_0058cbf4,
-                                                                                       (char *)DAT_00603a48[3]);
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832dc, 200, 0x1cc, 0x45, DAT_0058cbf8,
-                                                                                       (char *)DAT_00603a48[4]);
-    ((void(__cdecl *)(FacemakerWindowBounds *, int, int, int, char *, ...))DrawTextAt)(PTR_DAT_005832dc, 200, 0x23f, 0x45, DAT_0058cbfc,
-                                                                                       (char *)DAT_00603a48[5]);
-  }
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x69, 0x28, s_city_info_heading_format_0, (char *)g_city_info_heading_strings[0]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x54, 0x45, s_city_info_heading_format_1, (char *)g_city_info_heading_strings[1]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0xb3, 0x45, s_city_info_heading_format_2, (char *)g_city_info_heading_strings[2]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x130, 0x45, s_city_info_heading_format_3, (char *)g_city_info_heading_strings[3]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x1cc, 0x45, s_city_info_heading_format_4, (char *)g_city_info_heading_strings[4]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x23f, 0x45, s_city_info_heading_format_5, (char *)g_city_info_heading_strings[5]);
 
   EnsureAdvfac64Loaded(1);
 
@@ -437,7 +445,7 @@ void ShowCityInfoScreen(int param_1)
   LoadPcxResource(2, 0, PTR_DAT_00583304->max_y - 0x46, s_cinfopce_pic_0058cc00, (void *)0);
 
   // List panel geometry
-  s.list_panel_x = (global_screen_width / 2 + global_screen_width * 0x30) / 0x280;
+  s.list_panel_x = (global_screen_width * 0x30 + global_screen_width / 2) / 0x280;
   s.list_top_y = ScaleUiCoordinate(0x52);
   s.list_width_scaled = ScaleUiCoordinate(0x231);
   s.row_height_scaled = ScaleUiCoordinate(0x2a);
@@ -445,138 +453,275 @@ void ShowCityInfoScreen(int param_1)
   // Build repeating row background on the offscreen page
   StretchBlitGraphicsRect(PTR_DAT_00583304, 0, PTR_DAT_00583304->max_y - 0x2c, 0x231, 0x2a, PTR_DAT_00583304, 0, 0x80, s.list_width_scaled,
                           s.row_height_scaled);
-  for (i = 0; i < 9; i++)
+  for (s.i = 0; s.i < 9; s.i++)
   {
     CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
-                     i * s.row_height_scaled + s.list_top_y);
+                     s.i * s.row_height_scaled + s.list_top_y);
   }
 
   CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
 
   // Build town list (1-based indexing like the original)
-  for (i = 0; i < 0x80; i++)
+  s.row_y = 2;
+  for (s.town_scan_index = 0; s.town_scan_index < 0x80; s.town_scan_index++)
   {
-    if ((((g_town_slots[i].status_and_ruling_wizard & 2) != 0) || (DAT_007894f4 != 0)) && (g_town_slots[i].location_type != 1))
+    if ((((g_town_slots[s.town_scan_index].status_and_ruling_wizard & 2) == 0) && (g_reveal_all_world_info == 0)) ||
+        (g_town_slots[s.town_scan_index].location_type == 1))
     {
-      s.town_indices_1based[s.town_count + 1] = i;
-      s.town_count = s.town_count + 1;
+      continue;
     }
+
+    s.town_indices[s.town_count++] = s.town_scan_index;
   }
 
-  // Main loop
-  for (;;)
+  for (s.i = 0; s.i < 5; s.i++)
   {
-    // Rebuild row backgrounds
-    for (i = 0; i < 9; i++)
-    {
-      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
-                       i * s.row_height_scaled + s.list_top_y);
-    }
+    DrawTextAt(PTR_DAT_005832b4, 0xfe, s.i * 0x2a + 0xcc, 0x2a, s_city_info_amulet_count_format, g_amulet_inventory[s.i]);
+  }
 
-    CityInfo_DrawVisibleRows(s.town_indices_1based, s.town_count, s.scroll_top_index, s.list_top_y, s.row_height_scaled);
+main_loop:
+  // Rebuild row backgrounds
+  for (s.i = 0; s.i < 9; s.i++)
+  {
+    CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+                     s.i * s.row_height_scaled + s.list_top_y);
+  }
 
-    // Copy list area to the visible page
-    CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, PTR_DAT_005832b4, s.list_panel_x,
-                     s.list_top_y);
+  s.visible_town_index = s.scroll_top_index;
+  for (s.j = 0; ((s.town_count - s.scroll_top_index < 9) ? s.town_count - s.scroll_top_index : 9) > s.j; s.j++, s.visible_town_index++)
+  {
+    s.town_scan_index = s.town_indices[s.visible_town_index];
+    s.row_y = ScaleUiCoordinate(0x68) + s.j * s.row_height_scaled;
+    DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_scan_index, 0x30, s.row_y);
+  }
 
-    // Enable/disable scroll buttons
+  // Copy list area to the visible page
+  CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, PTR_DAT_005832b4, s.list_panel_x,
+                   s.list_top_y);
+
+  if (s.town_count > 9)
+  {
     if (s.scroll_top_index == 0)
     {
-      RenderAdvMenuControlDisabled(&DAT_0058c8f8[0]);
-      RenderAdvMenuControlDisabled(&DAT_0058c8f8[1]);
+      s.list_buffer_y = 0;
     }
     else
     {
-      RenderAdvMenuControlNormally(&DAT_0058c8f8[0]);
-      RenderAdvMenuControlNormally(&DAT_0058c8f8[1]);
+      s.list_buffer_y = s.row_height_scaled;
     }
 
-    if (s.town_count - 9 <= s.scroll_top_index)
+    CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, PTR_DAT_005832dc, s.list_panel_x,
+                     s.list_buffer_y);
+
+    if (s.scroll_top_index == 0)
     {
-      RenderAdvMenuControlDisabled(&DAT_0058c8f8[2]);
-      RenderAdvMenuControlDisabled(&DAT_0058c8f8[3]);
+      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+                       s.row_height_scaled * 9);
+      DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 9], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 9);
+
+      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+                       s.row_height_scaled * 10);
+
+      if (s.scroll_top_index + 10 < s.town_count)
+      {
+        DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 10], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
+      }
     }
     else
     {
-      RenderAdvMenuControlNormally(&DAT_0058c8f8[2]);
-      RenderAdvMenuControlNormally(&DAT_0058c8f8[3]);
-    }
+      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x, 0);
+      DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index - 1], 0x30, ScaleUiCoordinate(0x15));
 
-    FUN_005001e3();
+      if (s.scroll_top_index + 10 < s.town_count)
+      {
+        CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+                         s.row_height_scaled * 10);
+      }
 
-    DAT_00603a34 = -5;
-    for (;;)
-    {
-      UpdateMouseSnapshot();
-      UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-      if (DAT_00603a34 != -5)
+      if (s.scroll_top_index + 10 < s.town_count)
       {
-        break;
+        DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 9], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
       }
-      if (HasQueuedKeyInput() != 0)
-      {
-        break;
-      }
-    }
-
-    if (DAT_00603a34 == 0)
-    {
-      EndMenuContext();
-      if (DAT_00746e70[0] != (EncodedImage *)0)
-      {
-        FreeSpriteBlob(DAT_00746e70[0]);
-      }
-      return;
-    }
-
-    if (s.town_count < 10)
-    {
-      EndMenuContext();
-      if (DAT_00746e70[0] != (EncodedImage *)0)
-      {
-        FreeSpriteBlob(DAT_00746e70[0]);
-      }
-      return;
-    }
-
-    switch (DAT_00603a34)
-    {
-    case -2: // PageUp
-      s.scroll_top_index = s.scroll_top_index - 8;
-      if (s.scroll_top_index < 0)
-      {
-        s.scroll_top_index = 0;
-      }
-      break;
-    case -1: // Up
-      s.scroll_top_index = s.scroll_top_index - 1;
-      if (s.scroll_top_index < 0)
-      {
-        s.scroll_top_index = 0;
-      }
-      break;
-    case 1: // Down
-      s.scroll_top_index = s.scroll_top_index + 1;
-      if ((s.town_count - 9) < s.scroll_top_index)
-      {
-        s.scroll_top_index = s.town_count - 9;
-      }
-      break;
-    case 2: // PageDown
-      s.scroll_top_index = s.scroll_top_index + 8;
-      if ((s.town_count - 9) < s.scroll_top_index)
-      {
-        s.scroll_top_index = s.town_count - 9;
-      }
-      break;
-    default:
-      break;
     }
   }
+  if (s.scroll_top_index == 0)
+  {
+    s.row_y = 0;
+  }
+  else
+  {
+    s.row_y = s.row_height_scaled;
+  }
+
+page_loop:
+  // Enable/disable scroll buttons
+  if (s.town_count > 9)
+  {
+    if (s.scroll_top_index == 0)
+    {
+      RenderAdvMenuControlDisabled(&g_city_info_menu_controls[0]);
+      RenderAdvMenuControlDisabled(&g_city_info_menu_controls[1]);
+    }
+    else
+    {
+      RenderAdvMenuControlNormally(&g_city_info_menu_controls[0]);
+      RenderAdvMenuControlNormally(&g_city_info_menu_controls[1]);
+    }
+
+    if (s.town_count - 9 == s.scroll_top_index)
+    {
+      RenderAdvMenuControlDisabled(&g_city_info_menu_controls[2]);
+      RenderAdvMenuControlDisabled(&g_city_info_menu_controls[3]);
+    }
+    else
+    {
+      RenderAdvMenuControlNormally(&g_city_info_menu_controls[2]);
+      RenderAdvMenuControlNormally(&g_city_info_menu_controls[3]);
+    }
+  }
+  else
+  {
+    RenderAdvMenuControlDisabled(&g_city_info_menu_controls[0]);
+    RenderAdvMenuControlDisabled(&g_city_info_menu_controls[1]);
+    RenderAdvMenuControlDisabled(&g_city_info_menu_controls[2]);
+    RenderAdvMenuControlDisabled(&g_city_info_menu_controls[3]);
+  }
+
+  RenderCurrentMenuContextControls();
+
+  g_adv_menu_selected_value = -5;
+  do
+  {
+    UpdateMouseSnapshot();
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+  } while ((g_adv_menu_selected_value == -5) && (HasQueuedKeyInput() == 0));
+
+  if (g_adv_menu_selected_value == 0)
+  {
+    EndMenuContext();
+    FreeSpriteBlob(g_city_info_scroll_button_sprites[0]);
+    return;
+  }
+
+  switch (g_adv_menu_selected_value)
+  {
+  case -2: // PageUp
+    s.scroll_input = 0x4900;
+    break;
+  case -1: // Up
+    s.scroll_input = 0x4800;
+    break;
+  case 1: // Down
+    s.scroll_input = 0x5000;
+    break;
+  case 2: // PageDown
+    s.scroll_input = 0x5100;
+    break;
+  default:
+    goto page_loop;
+  }
+
+  if (s.town_count > 9)
+  {
+    if (s.scroll_input == 0x4800)
+    {
+      s.scroll_top_index--;
+      if (s.scroll_top_index < 0)
+      {
+        s.scroll_top_index = 0;
+      }
+      else
+      {
+
+        for (s.i = 0; ScaleUiCoordinate(0x2b) > s.i; s.i += 3)
+        {
+          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_y - s.i + ScaleUiCoordinate(3), s.list_width_scaled,
+                           s.row_height_scaled * 9 - ScaleUiCoordinate(5), PTR_DAT_005832b4, s.list_panel_x, s.list_top_y + ScaleUiCoordinate(3));
+        }
+
+        CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, 0, s.list_width_scaled, s.row_height_scaled * 9 - ScaleUiCoordinate(5), PTR_DAT_005832b4,
+                         s.list_panel_x, s.list_top_y);
+
+        if (s.scroll_top_index >= 1)
+        {
+          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, 0, s.list_width_scaled, s.row_height_scaled * 10, PTR_DAT_005832dc, s.list_panel_x,
+                           s.row_height_scaled);
+          s.row_y = s.row_height_scaled;
+          CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x, 0);
+          DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index - 1], 0x30, ScaleUiCoordinate(0x15));
+        }
+        else
+        {
+          s.row_y = 0;
+        }
+      }
+      goto page_loop;
+    }
+    else if (s.scroll_input == 0x5000)
+    {
+      if (s.scroll_top_index != s.town_count - 9)
+      {
+        for (s.i = 0; ScaleUiCoordinate(0x2b) > s.i; s.i += 3)
+        {
+          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_y + s.i + ScaleUiCoordinate(3), s.list_width_scaled,
+                           s.row_height_scaled * 9 - ScaleUiCoordinate(5), PTR_DAT_005832b4, s.list_panel_x, s.list_top_y + ScaleUiCoordinate(3));
+        }
+
+        CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_y + s.row_height_scaled, s.list_width_scaled, s.row_height_scaled * 9 - ScaleUiCoordinate(5),
+                         PTR_DAT_005832b4, s.list_panel_x, s.list_top_y);
+
+        s.row_y = s.row_height_scaled;
+        if ((s.scroll_top_index >= 1) && (s.scroll_top_index < s.town_count - 9))
+        {
+          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_height_scaled, s.list_width_scaled, s.row_height_scaled * 10, PTR_DAT_005832dc,
+                           s.list_panel_x, 0);
+          if (s.scroll_top_index + 10 < s.town_count)
+          {
+            CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+                             s.row_height_scaled * 10);
+          }
+
+          if (s.scroll_top_index + 10 < s.town_count)
+          {
+            DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 10], 0x30,
+                         ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
+          }
+        }
+      }
+
+      s.scroll_top_index++;
+
+      if (s.town_count - 9 < s.scroll_top_index)
+      {
+        s.scroll_top_index = s.town_count - 9;
+      }
+
+      goto page_loop;
+    }
+    else if (s.scroll_input == 0x4900)
+    {
+      s.scroll_top_index -= 8;
+      s.scroll_top_index = MAX(s.scroll_top_index, 0);
+      goto main_loop;
+    }
+    else if (s.scroll_input == 0x5100)
+    {
+      s.scroll_top_index += 8;
+      s.scroll_top_index = MIN(s.scroll_top_index, s.town_count - 9);
+      goto main_loop;
+    }
+    else
+    {
+      goto page_loop;
+    }
+  }
+
+  EndMenuContext();
+  FreeSpriteBlob(g_city_info_scroll_button_sprites[0]);
 }
 
 // FUNCTION: SHANDALAR 0x0050bb6d
-int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int y)
+int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int x, int y)
 {
   size_t len;
   char *mid;
@@ -643,10 +788,10 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
     *space_fwd = '\n';
   }
 
-  strcat(g_ui_message_buffer, DAT_0058cc14);
+  strcat(g_ui_message_buffer, s_city_info_newline);
 
-  tile_mask = FUN_0043146b(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
-  FUN_005611c8(tile_mask);
+  tile_mask = GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
+  GetWorldTileMagicMask(tile_mask);
 
   if ((g_town_slots[town_index].status_and_ruling_wizard & 1) == 0)
   {
@@ -659,7 +804,7 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
 
   if (((g_town_slots[town_index].status_and_ruling_wizard & 0xffffff00U) >> 8) != 0)
   {
-    text_color = DAT_00581918[(unsigned char)(g_town_slots[town_index].status_and_ruling_wizard >> 8)];
+    text_color = g_wizard_text_colors[(unsigned char)(g_town_slots[town_index].status_and_ruling_wizard >> 8)];
   }
 
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
@@ -668,8 +813,8 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
     DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x20c), y, g_ui_message_buffer);
   }
 
-  tile_mask = FUN_0043146b(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
-  tile_class = FUN_005611c8(tile_mask);
+  tile_mask = GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
+  tile_class = GetWorldTileMagicMask(tile_mask);
 
   wizard_count = 0;
   for (i = 1; i < 6; i++)
@@ -698,7 +843,7 @@ int __cdecl FUN_0050bb6d(FacemakerWindowBounds *dst, int town_index, int x, int 
   strcpy(g_ui_message_buffer, FUN_004f2e17(town_index));
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
 
-  strcpy(g_ui_message_buffer, DAT_0058cc1c);
+  strcpy(g_ui_message_buffer, s_city_info_empty_string);
   for (i = 0; i < 0xc; i++)
   {
     if ((town_index != 0) && (Scards[i].worldmagic_city == town_index))

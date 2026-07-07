@@ -297,6 +297,7 @@ int LegacyInitNoop()
 }
 
 // FUNCTION: FACEMAKER 0x00406610
+// FUNCTION: SHANDALAR 0x00578cb0
 DIBSurface *GetPrimaryPage(int unused)
 {
   return InitializeGraphicsSystemDefaultMode();

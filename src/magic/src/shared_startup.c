@@ -9,6 +9,7 @@
 #include "deckdll/src/card_db.h"
 #include "deckdll/src/shared_resources.h"
 #include "magic/src/global_strings.h"
+#include "magic/src/global_state.h"
 #include "shared_startup.h"
 
 extern int global_available_slots;
@@ -141,13 +142,14 @@ int CardInDeck(int param_1)
   }
 }
 
+#ifndef SHANDALAR
 // FUNCTION: MAGIC 0x004e1de1
-// FUNCTION: SHANDALAR 0x004f1bcc
-int SellPrice(void)
+int SellPrice(int card_index)
 {
-  //TODO: this needs a real implementation in shandalar eventually
+  (void)card_index;
   return 10;
 }
+#endif
 
 // FUNCTION: SHANDALAR 0x00464663
 // FUNCTION: MAGIC 0x00493bc3
@@ -377,7 +379,216 @@ void FUN_004432ff(void)
 
 // FUNCTION: SHANDALAR 0x004a5d72
 // FUNCTION: MAGIC 0x0048a0e2
-void FUN_004a5d72(void) {}
+void LoadDuelInterfaceRegistryOptions(void)
+{
+  struct
+  {
+    unsigned int has_expansion;
+    int unused_008c;
+    int unused_0088;
+    BYTE *phase_value;
+    BYTE value_buffer[100];
+    int step;
+    int phase;
+    HKEY options_key;
+    BYTE integer_buffer[12];
+    DWORD value_size;
+  } s;
+#define has_expansion s.has_expansion
+#define phase s.phase
+#define step s.step
+#define phase_value s.phase_value
+#define value_buffer s.value_buffer
+#define options_key s.options_key
+#define integer_buffer s.integer_buffer
+#define value_size s.value_size
+
+  if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions", 0, KEY_QUERY_VALUE, &options_key) == ERROR_SUCCESS)
+  {
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "Layout", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.layout);
+    else
+      g_duel_interface_options.layout = 1;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "DirectiveTracksMouse", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.directive_tracks_mouse);
+    else
+      g_duel_interface_options.directive_tracks_mouse = 0;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ShowCoinFlips", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_coin_flips);
+    else
+      g_duel_interface_options.show_coin_flips = 1;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ShowCueCards", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_cue_cards);
+    else
+      g_duel_interface_options.show_cue_cards = 1;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ShowPowerToughnessOnCards", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_power_toughness_on_cards);
+    else
+      g_duel_interface_options.show_power_toughness_on_cards = 1;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ShowIDTagsOnCards", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_id_tags_on_cards);
+    else
+      g_duel_interface_options.show_id_tags_on_cards = 0;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ShowInvisibleEffectCards", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_invisible_effect_cards);
+    else
+      g_duel_interface_options.show_invisible_effect_cards = 0;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ShowAllCardsSummonSickness", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_all_cards_summon_sickness);
+    else
+      g_duel_interface_options.show_all_cards_summon_sickness = 0;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    RegQueryValueExA(options_key, "ShowAbilitiesOnCards", NULL, NULL, integer_buffer, &value_size);
+    if (integer_buffer[0] == '\0')
+      g_duel_interface_options.show_abilities_on_cards = 1;
+    else
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.show_abilities_on_cards);
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "ExpandTextBoxOnBigCard", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.expand_text_box_on_big_card);
+    else
+      g_duel_interface_options.expand_text_box_on_big_card = 0;
+
+    value_size = 10;
+    integer_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "SeeNextDrawsAtEndOfDuel", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+      sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.see_next_draws_at_end_of_duel);
+    else
+      g_duel_interface_options.see_next_draws_at_end_of_duel = 0;
+
+    value_size = 100;
+    value_buffer[0] = '\0';
+    if (RegQueryValueExA(options_key, "PhaseStoppers", NULL, NULL, value_buffer, &value_size) == ERROR_SUCCESS)
+    {
+      phase_value = value_buffer;
+      phase = 0;
+      while (phase < 2 && *phase_value != '\0')
+      {
+        step = 0;
+        while (step < 0x25 && *phase_value != '\0')
+        {
+          if (unk_00742fc4 == 0)
+          {
+            if (*phase_value == 'S')
+              g_phase_stoppers[phase][step] = 1;
+            else
+              g_phase_stoppers[phase][step] = 0;
+          }
+          else if (*phase_value == 'S')
+          {
+            g_phase_stoppers[phase][step] |= 1;
+          }
+          else
+          {
+            g_phase_stoppers[phase][step] &= 0xfe;
+          }
+          phase_value++;
+          step++;
+        }
+        phase++;
+      }
+      g_phase_stoppers[0][0x14] |= 1;
+    }
+    else
+    {
+      for (phase = 0; phase < 2; phase++)
+      {
+        for (step = 0; step < 0x25; step++)
+          g_phase_stoppers[phase][step] = 0;
+      }
+      g_phase_stoppers[0][0x14] = 1;
+      g_phase_stoppers[0][0x1e] = 1;
+      g_phase_stoppers[1][0x1f] = 1;
+    }
+
+    if ((g_duel_mode_flags & 1) == 0)
+    {
+      value_size = 10;
+      integer_buffer[0] = '\0';
+      if (RegQueryValueExA(options_key, "PlayerTerritoryColor", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+        sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.player_territory_color);
+      else
+        g_duel_interface_options.player_territory_color = -1;
+    }
+
+    if ((g_duel_mode_flags & 1) == 0)
+    {
+      value_size = 10;
+      integer_buffer[0] = '\0';
+      if (RegQueryValueExA(options_key, "PlayerTerritoryType", NULL, NULL, integer_buffer, &value_size) == ERROR_SUCCESS)
+        sscanf((char *)integer_buffer, "%d", &g_duel_interface_options.player_territory_type);
+      else
+        g_duel_interface_options.player_territory_type = 2;
+    }
+
+    g_has_expansion_10 = 0;
+    value_size = 10;
+    has_expansion = HasExpansion(0x10);
+    g_has_expansion_10 = (has_expansion != 0);
+  }
+  else
+  {
+    g_duel_interface_options.layout = 1;
+    g_duel_interface_options.directive_tracks_mouse = 0;
+    g_duel_interface_options.show_coin_flips = 1;
+    g_duel_interface_options.show_cue_cards = 1;
+    g_duel_interface_options.show_power_toughness_on_cards = 1;
+    g_duel_interface_options.show_id_tags_on_cards = 0;
+    g_duel_interface_options.show_invisible_effect_cards = 0;
+    g_duel_interface_options.show_all_cards_summon_sickness = 0;
+    g_duel_interface_options.show_abilities_on_cards = 1;
+    g_duel_interface_options.expand_text_box_on_big_card = 0;
+    g_duel_interface_options.see_next_draws_at_end_of_duel = 0;
+    for (phase = 0; phase < 2; phase++)
+    {
+      for (step = 0; step < 0x25; step++)
+        g_phase_stoppers[phase][step] = 0;
+    }
+    g_phase_stoppers[0][0x14] = 1;
+    g_phase_stoppers[0][0x1e] = 1;
+    g_phase_stoppers[1][0x1f] = 1;
+    if ((g_duel_mode_flags & 1) == 0)
+    {
+      g_duel_interface_options.player_territory_color = -1;
+      g_duel_interface_options.player_territory_type = 2;
+    }
+  }
+#undef value_size
+#undef integer_buffer
+#undef options_key
+#undef value_buffer
+#undef phase_value
+#undef step
+#undef phase
+#undef has_expansion
+}
 
 // FUNCTION: SHANDALAR 0x00522e00
 // FUNCTION: MAGIC 0x004c0c20
@@ -406,7 +617,7 @@ unsigned int setup_shared_startup(void)
   }
   s.local_7d4[0] = '\0';
   s.local_7d8 |= setup_paths_and_load_text_etc(s.local_7d4);
-  FUN_004a5d72();
+  LoadDuelInterfaceRegistryOptions();
   DAT_007a7d7c = 1;
   InitializeCriticalSection(&DAT_009266b0);
   return s.local_7d8;

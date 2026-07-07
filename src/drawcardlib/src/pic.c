@@ -466,63 +466,56 @@ int RpBitsRefill(void)
 void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data)
 {
 #if defined(FACEMAKER) || defined(SHANDALAR)
-  RpBitsPalettePacket *palette_packet;
   int packet_size_bytes = (int)(short)(palette_data->block_size + 2);
   unsigned int first_index;
   unsigned int last_index;
   unsigned int palette_index;
   unsigned int entry_base;
   unsigned int mask_value;
-  unsigned int white_triplet;
   unsigned char *entry_data;
   unsigned char component;
   unsigned char mask;
   int surface_index;
-  static unsigned int palette_packet_words[0x320 / 4];
+  unsigned int white_triplet;
 
   // GLOBAL: FACEMAKER 0x004179a0
   // GLOBAL: SHANDALAR 0x00738800
   static HWND palette_window;
-  static unsigned short signature_m0 = (unsigned short)('M' | ('0' << 8));
-  static unsigned short signature_m1 = (unsigned short)('M' | ('1' << 8));
 
-  memcpy((void *)palette_packet_words, (const void *)palette_data, packet_size_bytes);
-  palette_packet = (RpBitsPalettePacket *)palette_packet_words;
+  memcpy((void *)&g_palette_data_words, (const void *)palette_data, packet_size_bytes);
 
-  first_index = (unsigned int)palette_packet->first_index;
-  mask_value = (-(unsigned int)(g_graphics_bpp == 0x10) & 0xfffffff9) + 0xff;
-  last_index = (unsigned int)palette_packet->last_index;
+  first_index = (unsigned int)palette_data->first_index;
+  mask_value = (((unsigned int)(g_graphics_bpp - 0x10) < 1 ? 0xffffffff : 0) & 0xfffffff9) + 0xff;
+  last_index = (unsigned int)palette_data->last_index;
   mask = (unsigned char)mask_value;
-  white_triplet = (mask_value << 0x10) | (mask_value << 8) | mask_value;
 
-  if (palette_packet->signature == signature_m0)
+  if (palette_data->signature == *(unsigned short *)"M0")
   {
     if (first_index <= last_index)
     {
       for (palette_index = first_index; palette_index <= last_index; palette_index = palette_index + 1)
       {
         entry_base = palette_index * 3;
-        entry_data = palette_packet->entry_data + entry_base;
+        entry_data = palette_data->entry_data + entry_base;
 
-        component = (unsigned char)(((unsigned int)entry_data[0] * 0xff) / 0x3f) & mask;
+        component = (unsigned char)(((int)entry_data[0] * 0xff) / 0x3f) & mask;
         g_palette_entries[palette_index].peRed = component;
         g_palette_rgb[palette_index].rgbRed = component;
 
-        component = (unsigned char)(((unsigned int)entry_data[1] * 0xff) / 0x3f) & mask;
+        component = (unsigned char)(((int)entry_data[1] * 0xff) / 0x3f) & mask;
         g_palette_entries[palette_index].peGreen = component;
         g_palette_rgb[palette_index].rgbGreen = component;
 
-        component = (unsigned char)(((unsigned int)entry_data[2] * 0xff) / 0x3f) & mask;
+        component = (unsigned char)(((int)entry_data[2] * 0xff) / 0x3f) & mask;
         g_palette_entries[palette_index].peBlue = component;
         g_palette_rgb[palette_index].rgbBlue = component;
 
         g_palette_entries[palette_index].peFlags = 1;
         g_palette_rgb[palette_index].rgbReserved = 0;
-        if (palette_index != 0xff &&
-            g_palette_rgb[palette_index].rgbRed == 0xff &&
-            g_palette_rgb[palette_index].rgbGreen == 0xff &&
-            g_palette_rgb[palette_index].rgbBlue == 0xff)
+        if (*(unsigned int *)&g_palette_rgb[palette_index].rgbBlue == 0xffffff &&
+            palette_index != 0xff)
         {
+          white_triplet = (mask_value << 0x10) | (mask_value << 8) | mask_value;
           *(unsigned int *)&g_palette_entries[palette_index].peRed =
               white_triplet & 0x1fefefe;
           *(unsigned int *)&g_palette_rgb[palette_index].rgbBlue =
@@ -531,14 +524,14 @@ void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data)
       }
     }
   }
-  else if (palette_packet->signature == signature_m1)
+  else if (palette_data->signature == *(unsigned short *)"M1")
   {
     if (first_index <= last_index)
     {
       for (palette_index = first_index; palette_index <= last_index; palette_index = palette_index + 1)
       {
         entry_base = palette_index * 3;
-        entry_data = palette_packet->entry_data + entry_base;
+        entry_data = palette_data->entry_data + entry_base;
 
         component = entry_data[0];
         g_palette_entries[palette_index].peRed = component & mask;
@@ -554,11 +547,10 @@ void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data)
 
         g_palette_entries[palette_index].peFlags = 1;
         g_palette_rgb[palette_index].rgbReserved = 0;
-        if (palette_index != 0xff &&
-            g_palette_rgb[palette_index].rgbRed == 0xff &&
-            g_palette_rgb[palette_index].rgbGreen == 0xff &&
-            g_palette_rgb[palette_index].rgbBlue == 0xff)
+        if (*(unsigned int *)&g_palette_rgb[palette_index].rgbBlue == 0xffffff &&
+            palette_index != 0xff)
         {
+          white_triplet = (mask_value << 0x10) | (mask_value << 8) | mask_value;
           *(unsigned int *)&g_palette_rgb[palette_index].rgbBlue =
               white_triplet & 0xfefefe;
           *(unsigned int *)&g_palette_entries[palette_index].peRed =

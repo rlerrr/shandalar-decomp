@@ -31,7 +31,7 @@ int FUN_00509210(void);
 int FUN_004a7b3d(void);
 void FUN_00442f6a(void);
 void FUN_004432ff(void);
-void FUN_004a5d72(void);
+void LoadDuelInterfaceRegistryOptions(void);
 int FUN_004c0c20(const char *filename);
 unsigned int setup_shared_startup(void);
 void FUN_00422bea(void);

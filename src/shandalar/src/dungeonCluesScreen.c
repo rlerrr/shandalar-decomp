@@ -11,6 +11,8 @@
 #include <drawcardlib/src/pic.h>
 #include "drawcardlib/Drawcardlib.h"
 
+#pragma intrinsic(memset)
+
 // Dungeon clues screens:
 // - List screen (SHANDALAR 0x00509244)
 // - Detail screen (SHANDALAR 0x0050caa0)
@@ -36,6 +38,9 @@ extern int g_mouse_y_snapshot;
 extern FILE *g_advbuttons_ini_file;
 extern char g_ini_string_scratch[0x28];
 extern char g_ui_message_buffer[0x1000];
+extern int g_world_scroll_cache_ready;
+extern int g_world_ui_top_offset;
+extern int(__cdecl *g_town_dialog_callback)();
 
 extern FacemakerWindowBounds *PTR_DAT_005832b4;
 extern FacemakerWindowBounds *PTR_DAT_005832dc;
@@ -44,36 +49,38 @@ extern FacemakerWindowBounds *PTR_DAT_00583304;
 extern DIBSurface *g_graphics_pages[10];
 
 /* Shared selection/activation scratch used by multiple screens (defined in cityInfoScreen.c) */
-extern int DAT_00603a34;
+extern int g_adv_menu_selected_value;
 
 /* Debug toggle used by multiple screens (defined in cityInfoScreen.c) */
-extern int DAT_007894f4;
+extern int g_reveal_all_world_info;
 
 /* Palette helper data (defined in shandalar.c) */
 extern int DAT_00589dec;
 
 /* Sprites loaded by startup code (owned by shandalar.c) */
 extern EncodedImage *g_location_marker_sprite_entries[0x9e];
+extern EncodedImage *g_castles_sprite_entries[20];
 
 /* Marker lookup table (defined in adventureWorldUi.c) */
 extern int g_dungeon_marker_sprite_lookup[24];
+extern unsigned char g_castle_sprite_lookup_by_tile_class[0x40];
 
 /* Forward decls for locals defined later in this module */
-extern EncodedImage *DAT_00746e20[8];
-extern EncodedImage *DAT_00746e40[3];
-extern EncodedImage *DAT_00746e50;
+extern EncodedImage *g_dungeon_clues_list_button_sprites[8];
+extern EncodedImage *g_dungeon_clues_list_done_label_sprites[3];
+extern EncodedImage *g_dungeon_clues_scrollbar_sprite;
 
-extern EncodedImage *DAT_00746e10[3];
-extern EncodedImage *DAT_00746eb0[3];
+extern EncodedImage *g_dungeon_clue_detail_done_button_sprites[3];
+extern EncodedImage *g_dungeon_clue_detail_button_icon_sprites[3];
 
-extern char DAT_0058cac4[];
-extern char DAT_0058cacc[];
-extern char DAT_0058cab4[];
-extern char DAT_0058cabc[];
+extern char g_dungeon_clues_list_done_keys[];
+extern char g_dungeon_clues_list_done_alt_keys[];
+extern char g_dungeon_clue_detail_done_keys[];
+extern char g_dungeon_clue_detail_done_alt_keys[];
 extern char s_x_sound_button2_wav_0058cae4[];
 extern char s_x_sound_button2_wav_0058caf8[];
 
-void FUN_0050caa0(int dungeon_index);
+void ShowDungeonClueDetailScreen(int dungeon_index);
 
 /* External functions */
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
@@ -90,12 +97,12 @@ int ResetMenuContext(int context_index);
 int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
 int EndMenuContext(void);
 int FUN_00500129(int allow_arrow_nav);
-int FUN_005001e3(void);
+int RenderCurrentMenuContextControls(void);
 
 int ScaleUiCoordinate(int value);
 int FUN_005501dc(int value);
 int SetFontStyleSize(int font_slot, unsigned int point_size);
-unsigned char GetFontStyleSize(int font_slot);
+int GetFontStyleSize(int font_slot);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
 int MeasureTextLineWidth(char *text);
 int GetFontLineHeight(int font_slot);
@@ -115,6 +122,7 @@ void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, int widt
 void BlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
                       FacemakerWindowBounds *src, int src_x, int src_y);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
+AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 
 void UpdateMouseSnapshot(void);
 void PopNormalizedQueuedKeyInput(void);
@@ -127,7 +135,13 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 void DrawFormattedTextNoShadow(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
 void GetEncodedImageSpanXExtents(EncodedImage *image, unsigned int *out_min_x, int *out_max_x);
 int DrawEncodedImageResampledFitBoxCentered(FacemakerWindowBounds *dst, int x, int y, int box_w, int box_h,
-                                                    EncodedImage *image);
+                                            EncodedImage *image);
+char *BuildTownDisplayName(int town_index);
+void ResetWorldDrawQueue(void);
+void UpdateWorldViewportBuffer(int world_x, int world_y);
+void DrawQueuedWorldSprites(void);
+void DestroyCachedCardArt(void);
+unsigned int FUN_0056c705(int csvid);
 
 /* Card rendering (drawcardlib) */
 extern unsigned char global_raw_cards_storage[];
@@ -135,15 +149,17 @@ extern card_data_t global_cards_data[];
 extern EncodedImage *g_endtop_banner_sprite;
 
 /* Other helpers referenced by clue detail screen */
-void FUN_004311d2(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
-                  FacemakerWindowBounds *src, int src_x, int src_y);
+void BlitGraphicsRectScaledFrom320x240(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
+                                       FacemakerWindowBounds *src, int src_x, int src_y);
 void FUN_0054a880(void);
 void FUN_0054a997(void);
 void FUN_0054cee2(int world_x, int world_y);
 
 unsigned int MarkPathConnection(int world_x, int world_y, int unused);
 char *FUN_00550220(int town_index);
-DWORD FUN_00564e70(char *dst, DWORD dst_len, LPCVOID format, ...);
+int LoadTextSectionLines(char *filename, char *section);
+DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD dst_len, LPCVOID format, ...);
+unsigned int FUN_004314ca(int x, int y);
 
 /*
  * These two helpers are used as enable/disable visuals for arrow buttons.
@@ -157,7 +173,7 @@ int RenderAdvMenuControlNormally(AdvMenuControl *control);
  */
 
 // FUNCTION: SHANDALAR 0x00508bf3
-int FUN_00508bf3(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
+int IsPointInRectExclusive(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
 {
   if ((rect_x < x) && (x < rect_x + rect_w) && (rect_y < y) && (y < rect_y + rect_h))
   {
@@ -170,8 +186,8 @@ int FUN_00508bf3(int x, int y, int rect_x, int rect_y, int rect_w, int rect_h)
 }
 
 // FUNCTION: SHANDALAR 0x00508c4a
-EncodedImage *__cdecl FUN_00508c4a(FacemakerWindowBounds *unused_page, int unused_x, int unused_y, int unused_w, int unused_h,
-                                   EncodedImage **sprite_pair)
+EncodedImage *__cdecl EncodeMergedDungeonIconSprite(FacemakerWindowBounds *unused_page, int unused_x, int unused_y, int unused_w, int unused_h,
+                                                    EncodedImage **sprite_pair)
 {
   EncodedImage *sprite_a;
   EncodedImage *sprite_b;
@@ -233,13 +249,13 @@ EncodedImage *__cdecl FUN_00508c4a(FacemakerWindowBounds *unused_page, int unuse
 }
 
 // FUNCTION: SHANDALAR 0x005081e0
-char *__cdecl FUN_005081e0(int dungeon_index)
+char *__cdecl GetDungeonName(int dungeon_index)
 {
   return gs_dungeon_names_00780820[dungeon_index];
 }
 
 // FUNCTION: SHANDALAR 0x0050a56d
-int FUN_0050a56d(void)
+int GetDefeatedWizardCountPlusOne(void)
 {
   int wins;
   int i;
@@ -257,7 +273,7 @@ int FUN_0050a56d(void)
 }
 
 // FUNCTION: SHANDALAR 0x00508f45
-int FUN_00508f45(AdvMenuControl *control, int mode)
+int RenderDungeonCluesListButton(AdvMenuControl *control, int mode)
 {
   int hovered;
 
@@ -288,7 +304,7 @@ int FUN_00508f45(AdvMenuControl *control, int mode)
   }
 
   DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
-                            *(&DAT_00746e20[0] + mode + control->unk_30 * 4));
+                            *(&g_dungeon_clues_list_button_sprites[0] + mode + control->unk_30 * 4));
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -299,22 +315,33 @@ int FUN_00508f45(AdvMenuControl *control, int mode)
 }
 
 // FUNCTION: SHANDALAR 0x00509064
-int FUN_00509064(AdvMenuControl *control)
+int ActivateDungeonCluesListButton(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058caf8, 0xf, 100, 100, 0);
-  DAT_00603a34 = control->selection_value;
+  g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x005089cb
-int FUN_005089cb(AdvMenuControl *control, int mode)
+int RenderDungeonClueDetailDoneButton(AdvMenuControl *control, int mode)
 {
   int hovered;
 
   if (g_menu_render_guard == 0)
   {
-    hovered = (control->x <= g_mouse_x) && (g_mouse_x <= control->x + control->width) && (control->y <= g_mouse_y) &&
-              (g_mouse_y <= control->y + control->height);
+    if ((control->x > g_mouse_x) || (g_mouse_x > control->x + control->width))
+    {
+      hovered = 0;
+    }
+    else if ((control->y > g_mouse_y) || (g_mouse_y > control->y + control->height))
+    {
+      hovered = 0;
+    }
+    else
+    {
+      hovered = 1;
+    }
+
     if (!hovered)
     {
       return 0;
@@ -328,31 +355,32 @@ int FUN_005089cb(AdvMenuControl *control, int mode)
 
   if (mode == 2)
   {
-    DrawEncodedImageResampled(PTR_DAT_005832dc, 1, 1, control->width - 2, control->height - 2, DAT_00746e10[2]);
+    DrawEncodedImageResampled(PTR_DAT_005832dc, 1, 1, control->width - 2, control->height - 2, g_dungeon_clue_detail_done_button_sprites[mode]);
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, control->width + 1, control->height + 1, PTR_DAT_005832b4, control->x, control->y);
-    if (control->on_activate != (AdvMenuActivateCallback)0)
-    {
-      control->on_activate(control);
-    }
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, DAT_00746e10[mode]);
+    DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, g_dungeon_clue_detail_done_button_sprites[mode]);
+  }
+
+  if (mode == 2 && control->on_activate != (AdvMenuActivateCallback)0)
+  {
+    control->on_activate(control);
   }
 
   return 1;
 }
 
 // FUNCTION: SHANDALAR 0x00508b57
-int FUN_00508b57(AdvMenuControl *control)
+int ActivateDungeonClueDetailDoneButton(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cae4, 0xf, 100, 100, 0);
-  DAT_00603a34 = control->selection_value;
+  g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x004f2407
-void FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_label)
+void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner_label)
 {
   int x_scaled;
   int y_scaled;
@@ -408,7 +436,7 @@ void FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_labe
 }
 
 // FUNCTION: SHANDALAR 0x004f263b
-void FUN_004f263b(int card_index, int x, int y, int width, int height, int full_card, char *banner_label)
+void DrawAdventureCardSized(int card_index, int x, int y, int width, int height, int full_card, char *banner_label)
 {
   int x_scaled;
   int y_scaled;
@@ -460,38 +488,36 @@ void FUN_004f263b(int card_index, int x, int y, int width, int height, int full_
  */
 
 // GLOBAL: SHANDALAR 0x00603a3c
-int DAT_00603a3c = 0;
+int g_dungeon_clues_list_strings_loaded = 0;
 // GLOBAL: SHANDALAR 0x00603a40
-int *DAT_00603a40 = (int *)0;
+int *g_dungeon_clues_list_strings = (int *)0;
 
 // GLOBAL: SHANDALAR 0x00746e20
-EncodedImage *DAT_00746e20[8];
+EncodedImage *g_dungeon_clues_list_button_sprites[8];
 // GLOBAL: SHANDALAR 0x00746e40
-EncodedImage *DAT_00746e40[3];
+EncodedImage *g_dungeon_clues_list_done_label_sprites[3];
 // GLOBAL: SHANDALAR 0x00746e50
-EncodedImage *DAT_00746e50 = (EncodedImage *)0;
+EncodedImage *g_dungeon_clues_scrollbar_sprite = (EncodedImage *)0;
 
 // GLOBAL: SHANDALAR 0x0058c708
-AdvMenuControl DAT_0058c708[3] = {
+AdvMenuControl g_dungeon_clues_list_controls[3] = {
     // Up
-    {24, 219, 31, 36, 24, 219, 31, 36, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, -1, 0, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
+    {24, 219, 31, 36, 24, 219, 31, 36, 1, (AdvMenuRenderCallback)RenderDungeonCluesListButton, (AdvMenuActivateCallback)ActivateDungeonCluesListButton, -1, 0, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
     // Down
-    {24, 260, 31, 36, 24, 260, 31, 36, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, 1, 1, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
+    {24, 260, 31, 36, 24, 260, 31, 36, 1, (AdvMenuRenderCallback)RenderDungeonCluesListButton, (AdvMenuActivateCallback)ActivateDungeonCluesListButton, 1, 1, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
     // Done
-    {516, 29, 58, 26, 516, 29, 58, 26, 1, (AdvMenuRenderCallback)FUN_00508f45, (AdvMenuActivateCallback)FUN_00509064, 0, 2, DAT_0058cac4, DAT_0058cacc, 0, 0, {0, 0, 0, 0}},
+    {516, 29, 58, 26, 516, 29, 58, 26, 1, (AdvMenuRenderCallback)RenderDungeonCluesListButton, (AdvMenuActivateCallback)ActivateDungeonCluesListButton, 0, 2, g_dungeon_clues_list_done_keys, g_dungeon_clues_list_done_alt_keys, 0, 0, {0, 0, 0, 0}},
 };
 
 // GLOBAL: SHANDALAR 0x0058cac4
-char DAT_0058cac4[] = " Dd\r\x1b";
+char g_dungeon_clues_list_done_keys[] = " Dd\r\x1b";
 // GLOBAL: SHANDALAR 0x0058cacc
-char DAT_0058cacc[] = " Dd\r\x1b";
+char g_dungeon_clues_list_done_alt_keys[] = " Dd\r\x1b";
 
 // GLOBAL: SHANDALAR 0x0058cb0c
 char s_dunClues_0058cb0c[] = "dunClues";
 // GLOBAL: SHANDALAR 0x0058cb18
 char s_dun_bar_pic_0058cb18[] = "dun_bar.pic";
-// GLOBAL: SHANDALAR 0x0058cb24
-char DAT_0058cb24[] = "%s";
 // GLOBAL: SHANDALAR 0x0058cb28
 char s_dung_bd_pic_0058cb28[] = "dung_bd.pic";
 // GLOBAL: SHANDALAR 0x0058cb38
@@ -508,25 +534,25 @@ char s_ADVstrings_txt_0058cb60[] = "ADVstrings.txt";
  */
 
 // GLOBAL: SHANDALAR 0x00603a44
-int *DAT_00603a44 = (int *)0;
+int *g_dungeon_clue_detail_strings = (int *)0;
 // GLOBAL: SHANDALAR 0x00603a4c
-int DAT_00603a4c = 0;
+int g_dungeon_clue_detail_strings_loaded = 0;
 
 // GLOBAL: SHANDALAR 0x00746e10
-EncodedImage *DAT_00746e10[3];
+EncodedImage *g_dungeon_clue_detail_done_button_sprites[3];
 // GLOBAL: SHANDALAR 0x00746eb0
-EncodedImage *DAT_00746eb0[3];
+EncodedImage *g_dungeon_clue_detail_button_icon_sprites[3];
 
 // GLOBAL: SHANDALAR 0x0058c6b0
-AdvMenuControl DAT_0058c6b0[1] = {
+AdvMenuControl g_dungeon_clue_detail_controls[1] = {
     // Done
-    {22, 418, 89, 35, 22, 418, 89, 35, 1, (AdvMenuRenderCallback)FUN_005089cb, (AdvMenuActivateCallback)FUN_00508b57, 1, 0, DAT_0058cab4, DAT_0058cabc, 0, 0, {0, 0, 0, 0}},
+    {22, 418, 89, 35, 22, 418, 89, 35, 1, (AdvMenuRenderCallback)RenderDungeonClueDetailDoneButton, (AdvMenuActivateCallback)ActivateDungeonClueDetailDoneButton, 1, 0, g_dungeon_clue_detail_done_keys, g_dungeon_clue_detail_done_alt_keys, 0, 0, {0, 0, 0, 0}},
 };
 
 // GLOBAL: SHANDALAR 0x0058cab4
-char DAT_0058cab4[] = " \rDd\x1b";
+char g_dungeon_clue_detail_done_keys[] = " \rDd\x1b";
 // GLOBAL: SHANDALAR 0x0058cabc
-char DAT_0058cabc[] = " \rDd\x1b";
+char g_dungeon_clue_detail_done_alt_keys[] = " \rDd\x1b";
 
 // GLOBAL: SHANDALAR 0x0058cae4
 char s_x_sound_button2_wav_0058cae4[] = "x:sound\\button2.wav";
@@ -544,11 +570,20 @@ char s_clueback_pic_0058ccdc[] = "clueback.pic";
 // GLOBAL: SHANDALAR 0x0058ccec
 char s__s____s__0058ccec[] = "%s\n      (%s)";
 // GLOBAL: SHANDALAR 0x0058ccfc
-char DAT_0058ccfc[] = "";
+char s_empty_card_banner_0058ccfc[] = "";
 
 char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width);
 void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 int GetFontCharWidth(int font_slot, int ch);
+
+// FUNCTION: SHANDALAR 0x004311d2
+void BlitGraphicsRectScaledFrom320x240(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
+                                       FacemakerWindowBounds *src, int src_x, int src_y)
+{
+  BlitGraphicsRect(dst, (dst_x * global_screen_width) / 0x140, (dst_y * global_screen_height) / 0xf0,
+                   (width * global_screen_width) / 0x140, (height * global_screen_height) / 0xf0, src,
+                   (src_x * global_screen_width) / 0x140, (src_y * global_screen_height) / 0xf0);
+}
 
 // FUNCTION: SHANDALAR 0x0050c973
 int DrawDungeonClueTextLine(int y, int color_index)
@@ -582,326 +617,454 @@ int DrawDungeonClueTextLine(int y, int color_index)
   return y;
 }
 
+#define DUNGEON_CLUE_COLUMN_OFFSET(index) ((((index) & 1) == 0) ? -263 : 0)
+
 // FUNCTION: SHANDALAR 0x00509244
 void ShowDungeonCluesScreen(int unused)
 {
   struct
   {
-    int title_color_by_state[4];
-    EncodedImage *icon_blobs[50];
+    int scroll_delta;
+    int previous_scroll_top_index;
+    int hover_text_y;
+    int hover_text_x;
+    int hover_mouse_y;
+    int hover_mouse_x;
+    int click_text_y;
+    int click_text_x;
+    int click_mouse_y;
+    int click_mouse_x;
+    int castle_icon_y;
+    int castle_icon_x;
+    int temp_150c;                // ebp - 0x1508
+    int dungeon_icon_y;           // ebp - 0x1504
+    int dungeon_icon_x;           // ebp - 0x1500
+    int row_text_y;               // ebp - 0x14fc
+    int row_text_x;               // ebp - 0x14f8
+    int temp_14f8;                // ebp - 0x14f4
+    int temp_14f4;                // ebp - 0x14f0
+    int temp_14f0;                // ebp - 0x14ec
+    EncodedImage *sprite_pair[2]; // ebp - 0x14e8
+    int title_text_width;         // ebp - 0x14e0
+    unsigned int old_font_size;   // ebp - 0x14dc
+    int title_color_by_state[4];  // ebp - 0x14d8
+    int menu_context;             // ebp - 0x14c8
+    int town_delta_x;             // ebp - 0x14c4
+    int scroll_top_index;         // ebp - 0x14c0
+    int hover_index_copy;         // ebp - 0x14bc
+    int action_key;               // ebp - 0x14b8
+    int draw_index;               // ebp - 0x14b4
+    int spacing_accumulator;      // ebp - 0x14b0
+    int unused_zero;              // ebp - 0x14ac
+    int i;                        // ebp - 0x14a8
+    EncodedImage *icon_blobs[50]; // ebp - 0x14a4
+    unsigned int visible_dungeon_indices[15];
     unsigned int dungeon_index_by_row[50];
-    char name_buffer[50][0x30];
-
-    int entry_count;
-    int visible_count;
-    int scroll_top_index;
-    int menu_context;
-    int hover_index;
-    int prev_hover_index;
-    int action_key;
+    int town_revealed;          // ebp - 0x12d8
+    int visible_count;          // ebp - 0x12d4
+    int hover_index;            // ebp - 0x12d0
+    int redraw_background;      // ebp - 0x12cc
+    unsigned int dungeon_index; // ebp - 0x12c8
+    int entry_count;            // ebp - 0x12c4
+    char name_buffer[50][0x30]; // ebp - 0x12c0
+    char stack_padding[0x960];
   } s;
 
-  int i;
-  int j;
+  (void)unused;
 
   s.visible_count = 0;
   s.entry_count = 0;
   s.scroll_top_index = 0;
-  s.hover_index = -1;
-  s.prev_hover_index = -1;
-  s.action_key = -1;
-
-  for (i = 0; i < 50; i++)
-  {
-    s.icon_blobs[i] = (EncodedImage *)0;
-    s.dungeon_index_by_row[i] = 0xffffffffU;
-    s.name_buffer[i][0] = '\0';
-  }
+  s.icon_blobs[0] = (EncodedImage *)0;
+  memset(&s.icon_blobs[1], 0, sizeof(s.icon_blobs) - sizeof(s.icon_blobs[0]));
 
   s.title_color_by_state[0] = 0x48;
   s.title_color_by_state[1] = 0x3f;
   s.title_color_by_state[2] = 0x40;
 
-  if (DAT_00603a3c == 0)
+  if (g_dungeon_clues_list_strings_loaded == 0)
   {
-    DAT_00603a40 = LoadIniEscapedStringTable(g_advbuttons_ini_file, s_dunClues_0058cb0c, (int)g_ini_string_scratch, 0);
-    DAT_00603a3c = 1;
+    g_dungeon_clues_list_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, s_dunClues_0058cb0c,
+                                                                                                      (int)g_ini_string_scratch);
+    g_dungeon_clues_list_strings_loaded = 1;
   }
 
   LoadPcxIntoPage(1, s_dun_bar_pic_0058cb18);
 
   BeginSpriteEncodeSession();
-  DAT_00746e50 = EncodeSpriteFromPage(1, 2, 1, 0xd, 0x70);
+  g_dungeon_clues_scrollbar_sprite = EncodeSpriteFromPage(1, 2, 1, 0xd, 0x70);
 
-  /* Build 3-state Done button sprites into DAT_00746e40 */
   PTR_DAT_005832dc->font_slot = 7;
-  for (i = 0; i < 3; i++)
+  for (s.i = 0; s.i < 3; s.i++)
   {
-    SetFontStyleSize(7, (unsigned int)(10 - (i == 2)));
-    if (DAT_00603a40 != (int *)0)
-    {
-      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.title_color_by_state[i], i * 0x3c + 0x2e, 0xd, DAT_0058cb24,
-                                        (char *)DAT_00603a40[1]);
-    }
-    DAT_00746e40[i] = EncodeSpriteFromPage(1, i * 0x3c + 0x10, 1, 0x3b, 0x1a);
+    SetFontStyleSize(7, (unsigned int)(10 + (((unsigned int)(s.i - 2) < 1) ? -1 : 0)));
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.title_color_by_state[s.i], s.i * 0x3c + 0x2e, 0xd, "%s",
+                                      (char *)g_dungeon_clues_list_strings[1]);
+    g_dungeon_clues_list_done_label_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x3c + 0x10, 1, 0x3b, 0x1a);
   }
 
-  /* Build 2x4 sprites into DAT_00746e20: up/down button states */
-  for (i = 0; i < 2; i++)
+  for (s.draw_index = 0; s.draw_index < 2; s.draw_index++)
   {
-    for (j = 0; j < 4; j++)
+    for (s.i = 0; s.i < 4; s.i++)
     {
-      DAT_00746e20[j + i * 4] = EncodeSpriteFromPage(1, j * 0x20 + i * 0x80 + 0x10, 0x1c, 0x1f, 0x24);
+      g_dungeon_clues_list_button_sprites[s.i + s.draw_index * 4] = EncodeSpriteFromPage(1, s.i * 0x20 + s.draw_index * 0x80 + 0x10, 0x1c, 0x1f, 0x24);
     }
   }
 
   FinalizeSpriteEncodeSession();
 
-  /* Scale controls once (x matches base_x before scaling) */
-  if (DAT_0058c708[0].x == DAT_0058c708[0].base_x)
+  if (g_dungeon_clues_list_controls[0].x == g_dungeon_clues_list_controls[0].base_x)
   {
-    for (i = 0; i < 3; i++)
+    for (s.i = 0; s.i < 3; s.i++)
     {
-      DAT_0058c708[i].x = ScaleUiCoordinate(DAT_0058c708[i].x);
-      DAT_0058c708[i].y = ScaleUiCoordinate(DAT_0058c708[i].y);
-      DAT_0058c708[i].width = ScaleUiCoordinate(DAT_0058c708[i].width);
-      DAT_0058c708[i].height = ScaleUiCoordinate(DAT_0058c708[i].height);
+      g_dungeon_clues_list_controls[s.i].x = ScaleUiCoordinate(g_dungeon_clues_list_controls[s.i].x);
+      g_dungeon_clues_list_controls[s.i].y = ScaleUiCoordinate(g_dungeon_clues_list_controls[s.i].y);
+      g_dungeon_clues_list_controls[s.i].width = ScaleUiCoordinate(g_dungeon_clues_list_controls[s.i].width);
+      g_dungeon_clues_list_controls[s.i].height = ScaleUiCoordinate(g_dungeon_clues_list_controls[s.i].height);
     }
   }
 
-  /* Background */
   LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb28, (void *)0);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
                           global_screen_height);
 
-  /* Title (advButtons [dunClues]) */
+  s.old_font_size = GetFontStyleSize(6);
   PTR_DAT_005832dc->font_slot = 6;
-  {
-    unsigned char old_font_byte = GetFontStyleSize(6);
-    SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
-    if (DAT_00603a40 != (int *)0)
-    {
-      MeasureMultilineTextWidth(PTR_DAT_005832dc, (char *)DAT_00603a40[0]);
-      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), DAT_0058cb24,
-                                        (char *)DAT_00603a40[0]);
-    }
-    SetFontStyleSize(6, (unsigned int)old_font_byte);
-  }
+  SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
+  s.title_text_width = MeasureMultilineTextWidth(PTR_DAT_005832dc, (char *)g_dungeon_clues_list_strings[0]);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), "%s",
+                                    (char *)g_dungeon_clues_list_strings[0]);
+  SetFontStyleSize(6, s.old_font_size);
 
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
 
-  /* Build list of dungeon indices we can show */
-  for (i = 0; i < 0xf; i++)
+  BeginSpriteEncodeSession();
+  for (s.dungeon_index = 0; (int)s.dungeon_index < 0xf; s.dungeon_index++)
   {
-    if (((g_castle_dungeon_slots[i].clues_bitmap != 0) || (DAT_007894f4 != 0)) &&
-        ((i < 5) || (g_castle_dungeon_slots[i].card_slot_1 != -1) || (DAT_007894f4 != 0)))
+    s.town_revealed = 0;
+    if ((g_castle_dungeon_slots[s.dungeon_index].clues_bitmap == 0) && (g_reveal_all_world_info == 0))
     {
-      s.dungeon_index_by_row[s.entry_count] = (unsigned int)i;
-      s.entry_count = s.entry_count + 1;
+      continue;
     }
-  }
+    if (((int)s.dungeon_index >= 5) && (g_castle_dungeon_slots[s.dungeon_index].card_slot_1 == -1) && (g_reveal_all_world_info == 0))
+    {
+      continue;
+    }
 
+    s.dungeon_index_by_row[s.entry_count] = s.dungeon_index;
+    if (((g_castle_dungeon_slots[s.dungeon_index].clues_bitmap & 1) != 0) || (g_reveal_all_world_info != 0))
+    {
+      if ((int)s.dungeon_index < 5)
+      {
+        s.sprite_pair[0] = g_castles_sprite_entries[(char)g_castle_sprite_lookup_by_tile_class[s.dungeon_index * 4]];
+        s.sprite_pair[1] = g_castles_sprite_entries[(char)g_castle_sprite_lookup_by_tile_class[s.dungeon_index * 4 + 1]];
+        s.icon_blobs[s.entry_count] =
+            EncodeMergedDungeonIconSprite(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e), s.sprite_pair);
+      }
+      else
+      {
+        s.i = s.dungeon_index * 2 - 10;
+        s.sprite_pair[0] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.i]];
+        s.sprite_pair[1] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.i + 1]];
+        s.icon_blobs[s.entry_count] =
+            EncodeMergedDungeonIconSprite(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e), s.sprite_pair);
+      }
+    }
+    s.entry_count = s.entry_count + 1;
+  }
+  FinalizeSpriteEncodeSession();
+
+  s.redraw_background = 1;
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
-  AddMenuControlsToContext(DAT_0058c708, 3, s.menu_context);
+  AddMenuControlsToContext(g_dungeon_clues_list_controls, 3, s.menu_context);
   FUN_00500129(0);
 
-  for (;;)
+redraw_background:
+  if (s.redraw_background == 0)
   {
-    /* Enable/disable arrows based on scroll position */
-    if (s.entry_count < 0xd)
+    LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb38, (void *)0);
+    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0,
+                            global_screen_width, global_screen_height);
+
+    s.old_font_size = GetFontStyleSize(6);
+    PTR_DAT_005832dc->font_slot = 6;
+    SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
+    s.title_text_width = MeasureMultilineTextWidth(PTR_DAT_005832dc, (char *)g_dungeon_clues_list_strings[0]);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), "%s",
+                                      (char *)g_dungeon_clues_list_strings[0]);
+    SetFontStyleSize(6, s.old_font_size);
+
+    BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+  }
+
+  s.redraw_background = 0;
+
+redraw_list:
+  if (s.entry_count > 0xc)
+  {
+    if (s.scroll_top_index == 0)
     {
-      RenderAdvMenuControlDisabled(&DAT_0058c708[0]);
-      RenderAdvMenuControlDisabled(&DAT_0058c708[1]);
+      RenderAdvMenuControlDisabled(&g_dungeon_clues_list_controls[0]);
     }
     else
     {
-      if (s.scroll_top_index == 0)
+      RenderAdvMenuControlNormally(&g_dungeon_clues_list_controls[0]);
+    }
+
+    if (s.scroll_top_index + 0xc >= s.entry_count)
+    {
+      RenderAdvMenuControlDisabled(&g_dungeon_clues_list_controls[1]);
+    }
+    else
+    {
+      RenderAdvMenuControlNormally(&g_dungeon_clues_list_controls[1]);
+    }
+  }
+  else
+  {
+    RenderAdvMenuControlDisabled(&g_dungeon_clues_list_controls[0]);
+    RenderAdvMenuControlDisabled(&g_dungeon_clues_list_controls[1]);
+  }
+
+  RenderCurrentMenuContextControls();
+
+  LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb48, (void *)0);
+  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
+                          global_screen_height);
+
+  PTR_DAT_005832b4->page_number = 1;
+  s.visible_count = 0;
+  PTR_DAT_005832b4->font_slot = 1;
+  s.spacing_accumulator = 2;
+  s.unused_zero = 0;
+  for (s.draw_index = s.scroll_top_index;
+       s.draw_index < ((s.entry_count <= s.scroll_top_index + 0xc) ? s.entry_count : s.scroll_top_index + 0xc); s.draw_index++)
+  {
+    s.dungeon_index = s.dungeon_index_by_row[s.draw_index];
+    s.town_revealed = 0;
+
+    if ((g_castle_dungeon_slots[s.dungeon_index].clues_bitmap == 0) && (g_reveal_all_world_info == 0))
+    {
+      continue;
+    }
+    if (((int)s.dungeon_index >= 5) && (g_castle_dungeon_slots[s.dungeon_index].card_slot_1 == -1) && (g_reveal_all_world_info == 0))
+    {
+      continue;
+    }
+
+    s.visible_dungeon_indices[s.visible_count] = s.dungeon_index;
+    if ((int)s.dungeon_index < 5)
+    {
+      LoadTextSectionLines(s_ADVstrings_txt_0058cb60, s_CAVELIST_0058cb54);
+      FormatMessageFromStringStripCarriageReturns(
+          g_ui_message_buffer, 0x1000, text_lines[0], GetDungeonName(s.dungeon_index),
+          (char *)gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((s.dungeon_index * 4 + 4) * 5) * 5);
+    }
+    else
+    {
+      strcpy(g_ui_message_buffer, GetDungeonName(s.dungeon_index));
+    }
+
+    s.row_text_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.visible_count) + 0x19b);
+    s.row_text_y = ScaleUiCoordinate((s.visible_count / 2) * 0x3e + 0x69) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) / 2;
+    DrawFormattedTextNoShadow(PTR_DAT_005832b4, 0xff, s.row_text_x, s.row_text_y, g_ui_message_buffer);
+    strcpy(s.name_buffer[s.visible_count], g_ui_message_buffer);
+
+    s.spacing_accumulator = s.spacing_accumulator + 7;
+    if (((g_castle_dungeon_slots[s.dungeon_index].clues_bitmap & 1) != 0) || (g_reveal_all_world_info != 0))
+    {
+      s.town_delta_x = g_castle_dungeon_slots[s.dungeon_index].world_x -
+                       g_town_slots[g_castle_dungeon_slots[s.dungeon_index].north_of_town_index].world_x;
+      s.title_color_by_state[3] = g_castle_dungeon_slots[s.dungeon_index].world_y -
+                                  g_town_slots[g_castle_dungeon_slots[s.dungeon_index].north_of_town_index].world_y;
+      if ((FUN_004314ca(g_town_slots[g_castle_dungeon_slots[s.dungeon_index].north_of_town_index].world_x,
+                        g_town_slots[g_castle_dungeon_slots[s.dungeon_index].north_of_town_index].world_y) &
+           0x80) != 0)
       {
-        RenderAdvMenuControlDisabled(&DAT_0058c708[0]);
+        s.town_revealed = 1;
+      }
+
+      if ((int)s.dungeon_index >= 5)
+      {
+        s.temp_150c = (s.dungeon_index + 5) * 2;
+        s.dungeon_icon_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.visible_count) + 0x15b);
+        s.dungeon_icon_y = ScaleUiCoordinate((s.visible_count / 2) * 0x3e + 0x49);
+        DrawEncodedImageResampledFitBoxCentered(PTR_DAT_005832b4, s.dungeon_icon_x, s.dungeon_icon_y, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e),
+                                                s.icon_blobs[s.draw_index]);
       }
       else
       {
-        RenderAdvMenuControlNormally(&DAT_0058c708[0]);
+        s.castle_icon_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.visible_count) + 0x15b);
+        s.castle_icon_y = ScaleUiCoordinate((s.visible_count / 2) * 0x3e + 0x49);
+        DrawEncodedImageResampledFitBoxCentered(PTR_DAT_005832b4, s.castle_icon_x, s.castle_icon_y, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e),
+                                                s.icon_blobs[s.draw_index]);
+      }
+    }
+    s.visible_count = s.visible_count + 1;
+  }
+
+  PTR_DAT_005832b4->page_number = 0;
+  BlitGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x46), ScaleUiCoordinate(0x208), ScaleUiCoordinate(0x17a), PTR_DAT_005832b4,
+                   ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x46));
+
+  g_adv_menu_selected_value = -5;
+  s.hover_index = -1;
+  s.hover_index_copy = s.hover_index;
+  for (;;)
+  {
+    if (g_adv_menu_selected_value != -5)
+    {
+      goto exit_screen;
+    }
+
+    s.dungeon_index = 0xffffffffU;
+    UpdateMouseSnapshot();
+
+    if (g_mouse_button_down_mask != 0)
+    {
+      s.click_mouse_y = (g_mouse_y_snapshot * 0x1e0) / global_screen_height;
+      s.click_mouse_x = (g_mouse_x_snapshot * 0x280) / global_screen_width;
+      if (IsPointInRectExclusive(s.click_mouse_x, s.click_mouse_y, 0x54, 0x49, 0xfb, 0x174) != 0)
+      {
+        s.dungeon_index = ((s.click_mouse_y - 0x49) / 0x3e) * 2;
+      }
+      else if (IsPointInRectExclusive(s.click_mouse_x, s.click_mouse_y, 0x15b, 0x49, 0xfd, 0x174) != 0)
+      {
+        s.dungeon_index = ((s.click_mouse_y - 0x49) / 0x3e) * 2 + 1;
       }
 
-      if (s.scroll_top_index + 0xc < s.entry_count)
+      if (((int)s.dungeon_index >= 0) && ((int)s.dungeon_index < s.visible_count))
       {
-        RenderAdvMenuControlNormally(&DAT_0058c708[1]);
+        s.click_text_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.dungeon_index) + 0x19b);
+        s.click_text_y = ScaleUiCoordinate(((int)s.dungeon_index / 2) * 0x3e + 0x69) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) / 2;
+        DrawFormattedTextNoShadow(PTR_DAT_005832b4, 0xbe, s.click_text_x, s.click_text_y, s.name_buffer[s.dungeon_index]);
+        ClearInputAndWaitForMouseRelease();
+        ShowDungeonClueDetailScreen(s.visible_dungeon_indices[s.dungeon_index]);
+        goto redraw_background;
       }
-      else
+    }
+    else
+    {
+      s.hover_mouse_y = (g_mouse_y_snapshot * 0x1e0) / global_screen_height;
+      s.hover_mouse_x = (g_mouse_x_snapshot * 0x280) / global_screen_width;
+      if (IsPointInRectExclusive(s.hover_mouse_x, s.hover_mouse_y, 0x54, 0x49, 0xfb, 0x174) != 0)
       {
-        RenderAdvMenuControlDisabled(&DAT_0058c708[1]);
+        s.dungeon_index = ((s.hover_mouse_y - 0x49) / 0x3e) * 2;
+      }
+      else if (IsPointInRectExclusive(s.hover_mouse_x, s.hover_mouse_y, 0x15b, 0x49, 0xfd, 0x174) != 0)
+      {
+        s.dungeon_index = ((s.hover_mouse_y - 0x49) / 0x3e) * 2 + 1;
+      }
+
+      if (((int)s.dungeon_index >= 0) && ((int)s.dungeon_index < s.visible_count) && (s.dungeon_index != (unsigned int)s.hover_index))
+      {
+        if (s.hover_index != -1)
+        {
+          s.hover_text_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.hover_index) + 0x19b);
+          s.hover_text_y = ScaleUiCoordinate((s.hover_index / 2) * 0x3e + 0x69) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) / 2;
+          DrawFormattedTextNoShadow(PTR_DAT_005832b4, 0xff, s.hover_text_x, s.hover_text_y, s.name_buffer[s.hover_index]);
+        }
+
+        s.hover_text_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.dungeon_index) + 0x19b);
+        s.hover_text_y = ScaleUiCoordinate(((int)s.dungeon_index / 2) * 0x3e + 0x69) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) / 2;
+        DrawFormattedTextNoShadow(PTR_DAT_005832b4, 0xe3, s.hover_text_x, s.hover_text_y, s.name_buffer[s.dungeon_index]);
+        s.hover_index = (int)s.dungeon_index;
       }
     }
 
-    FUN_005001e3();
-
-    LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb48, (void *)0);
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
-                            global_screen_height);
-
-    PTR_DAT_005832b4->page_number = 1;
-    PTR_DAT_005832b4->font_slot = 1;
-
-    /* Draw visible entries (up to 12) */
-    s.visible_count = 0;
-    for (i = s.scroll_top_index; (i < s.entry_count) && (i < s.scroll_top_index + 0xc); i++)
+    s.action_key = -1;
+    UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+    if (g_adv_menu_selected_value != -5)
     {
-      int dungeon_index = (int)s.dungeon_index_by_row[i];
-      int row_index = s.visible_count;
-      int entry_x;
-      int entry_y;
-
-      /* Name */
-      strcpy(s.name_buffer[row_index], FUN_005081e0(dungeon_index));
-
-      entry_x = ScaleUiCoordinate((-(unsigned int)((row_index & 1) == 0) & 0xfffffef9) + 0x19b);
-      entry_y = ScaleUiCoordinate((row_index / 2) * 0x3e + 0x69);
-      DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0xff, entry_x, entry_y, DAT_0058cb24, s.name_buffer[row_index]);
-
-      /* Icon: combine the two marker sprites into a single blob like the original */
-      if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (DAT_007894f4 != 0))
+      switch (g_adv_menu_selected_value)
       {
-        EncodedImage *pair[2];
-        int marker_offset = dungeon_index * 2 - 10;
-        pair[0] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[marker_offset]];
-        pair[1] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[marker_offset + 1]];
-        s.icon_blobs[row_index] =
-            FUN_00508c4a(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e), (EncodedImage **)&pair[0]);
-
-        DrawEncodedImageResampledFitBoxCentered(
-            PTR_DAT_005832b4, ScaleUiCoordinate((-(unsigned int)((row_index & 1) == 0) & 0xfffffef9) + 0x15b),
-            ScaleUiCoordinate((row_index / 2) * 0x3e + 0x49), ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e),
-            s.icon_blobs[row_index]);
-      }
-
-      s.visible_count = s.visible_count + 1;
-    }
-
-    /* Blit the list panel to the visible page */
-    BlitGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x46), ScaleUiCoordinate(0x208), ScaleUiCoordinate(0x17a), PTR_DAT_005832b4,
-                     ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x46));
-
-    /* Input loop */
-    DAT_00603a34 = -5;
-    for (;;)
-    {
-      UpdateMouseSnapshot();
-      UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-
-      /* Scroll via arrow controls */
-      s.action_key = -1;
-      if (DAT_00603a34 != -5)
-      {
-        if (DAT_00603a34 == -1)
-        {
-          s.action_key = 0x4800;
-        }
-        else if (DAT_00603a34 == 1)
-        {
-          s.action_key = 0x5000;
-        }
-
-        if (DAT_00603a34 != 0)
-        {
-          DAT_00603a34 = -5;
-        }
-      }
-
-      if (s.action_key == 0x4800)
-      {
-        s.scroll_top_index = s.scroll_top_index - 2;
-        if (s.scroll_top_index < 0)
-        {
-          s.scroll_top_index = 0;
-        }
-        PopNormalizedQueuedKeyInput();
+      case -1:
+        s.action_key = 0x4800;
         break;
-      }
-      if (s.action_key == 0x5000)
-      {
-        int max_top = ((s.entry_count + 2) & ~1) - 0xc;
-        s.scroll_top_index = s.scroll_top_index + 2;
-        if (s.scroll_top_index < 0)
-        {
-          s.scroll_top_index = 0;
-        }
-        if (max_top < s.scroll_top_index)
-        {
-          s.scroll_top_index = max_top;
-        }
-        PopNormalizedQueuedKeyInput();
+      case 1:
+        s.action_key = 0x5000;
         break;
       }
 
-      /* Done */
-      if (DAT_00603a34 != -5)
+      if (g_adv_menu_selected_value != 0)
       {
-        PopNormalizedQueuedKeyInput();
-        EndMenuContext();
-        FreeSpriteBlob(DAT_00746e50);
-        for (i = 0; i < 50; i++)
-        {
-          if (s.icon_blobs[i] != (EncodedImage *)0)
-          {
-            FreeSpriteBlob(s.icon_blobs[i]);
-          }
-        }
-        return;
+        g_adv_menu_selected_value = -5;
       }
+    }
 
-      /* Click on list entries (maps to detail screen) */
-      if (g_mouse_button_down_mask != 0)
+    if (s.entry_count > 0xc)
+    {
+      s.previous_scroll_top_index = s.scroll_top_index;
+      if ((s.action_key == 0x4800) || (s.action_key == 0x5000))
       {
-        int mouse_y_280 = (g_mouse_y_snapshot * 0x1e0) / global_screen_height;
-        int mouse_x_280 = (g_mouse_x_snapshot * 0x280) / global_screen_width;
-        int index = -1;
-
-        if (FUN_00508bf3(mouse_x_280, mouse_y_280, 0x54, 0x49, 0xfb, 0x174) != 0)
+        if (s.action_key == 0x4800)
         {
-          index = ((mouse_y_280 - 0x49) / 0x3e) * 2;
+          s.scroll_delta = -1;
         }
-        else if (FUN_00508bf3(mouse_x_280, mouse_y_280, 0x15b, 0x49, 0xfd, 0x174) != 0)
+        else
         {
-          index = ((mouse_y_280 - 0x49) / 0x3e) * 2 + 1;
+          s.scroll_delta = 1;
         }
 
-        if ((0 <= index) && (index < s.visible_count))
+        s.scroll_top_index += s.scroll_delta * 2;
+        s.scroll_top_index = MAX(s.scroll_top_index, 0);
+        s.scroll_top_index = MIN(s.scroll_top_index, ((s.entry_count + 2) & -2) - 0xc);
+        if (s.previous_scroll_top_index != s.scroll_top_index)
         {
-          PopNormalizedQueuedKeyInput();
-          FUN_0050caa0((int)s.dungeon_index_by_row[s.scroll_top_index + index]);
-          break;
+          goto redraw_list;
         }
       }
     }
+    ClearInputAndWaitForMouseRelease();
+  }
+
+exit_screen:
+  ClearInputAndWaitForMouseRelease();
+  EndMenuContext();
+  FreeSpriteBlob(g_dungeon_clues_scrollbar_sprite);
+  if ((s.entry_count != 0) && (s.icon_blobs[0] != (EncodedImage *)0))
+  {
+    FreeSpriteBlob(s.icon_blobs[0]);
   }
 }
 
 // FUNCTION: SHANDALAR 0x0050caa0
-void FUN_0050caa0(int dungeon_index)
+void ShowDungeonClueDetailScreen(int dungeon_index)
 {
   struct
   {
-    int title_colors[6];
-    int menu_context;
-    int text_y;
-    int text_color;
-    int i;
+    AdvMenuRect clip_restore_page4; // ebp - 0x98
+    AdvMenuRect clip_restore_page0; // ebp - 0x88
+    AdvMenuRect clip_save_page4;    // ebp - 0x78
+    AdvMenuRect clip_save_page0;    // ebp - 0x68
+    int saved_page0;                // ebp - 0x58
+    AdvMenuRect saved_clip_page0;   // ebp - 0x54
+
+    AdvMenuRect saved_clip_page4; // ebp - 0x44
+    int town_delta_y;             // ebp - 0x34
+    int town_delta_x;             // ebp - 0x30
+    int relative_direction;       // ebp - 0x2c
+    int dungeon_color;            // ebp - 0x28
+    int menu_context;             // ebp - 0x24
+    int title_colors[5];          // ebp - 0x20
+    int text_y;                   // ebp - 0xc
+    int i;                        // ebp - 0x8
+    int line_color;               // ebp - 0x4
   } s;
 
-  (void)dungeon_index;
-
+  s.line_color = 0x98;
+  s.title_colors[3] = 0xab;
+  s.title_colors[4] = 0x3a;
   s.title_colors[0] = 0x3a;
   s.title_colors[1] = 0x3c;
   s.title_colors[2] = 0x3c;
-  s.title_colors[3] = 0xab;
-  s.title_colors[4] = 0x3a;
 
-  if (DAT_00603a4c == 0)
+  if (g_dungeon_clue_detail_strings_loaded == 0)
   {
-    DAT_00603a44 = LoadIniEscapedStringTable(g_advbuttons_ini_file, s_dunClues_0058ccac, (int)g_ini_string_scratch, 0);
-    DAT_00603a4c = 1;
+    g_dungeon_clue_detail_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, s_dunClues_0058ccac,
+                                                                                                       (int)g_ini_string_scratch);
+    g_dungeon_clue_detail_strings_loaded = 1;
   }
 
   AnimatePaletteToColor(0, DAT_00589dec);
@@ -912,27 +1075,23 @@ void FUN_0050caa0(int dungeon_index)
   PTR_DAT_005832dc->font_slot = 7;
   for (s.i = 0; s.i < 3; s.i++)
   {
-    SetFontStyleSize(7, (unsigned int)((-(unsigned int)(s.i == 2) & 0xfffffffe) + 0xe));
-    if (DAT_00603a44 != (int *)0)
-    {
-      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.title_colors[s.i], s.i * 0x5a + 0x2e, 0xf, DAT_0058cb24,
-                                        (char *)DAT_00603a44[0]);
-    }
-    DAT_00746e10[s.i] = EncodeSpriteFromPage(1, s.i * 0x5a + 1, 1, 0x59, 0x23);
-    DAT_00746eb0[s.i] = EncodeSpriteFromPage(1, s.i * 0x15 + 1, 0x25, 0x14, 0x24);
+    SetFontStyleSize(7, (s.i == 2) ? 12 : 14);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.title_colors[s.i], s.i * 0x5a + 0x2e, 0xf, "%s", (char *)g_dungeon_clue_detail_strings[1]);
+    g_dungeon_clue_detail_done_button_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x5a + 1, 1, 0x59, 0x23);
+    g_dungeon_clue_detail_button_icon_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x15 + 1, 0x25, 0x14, 0x24);
   }
 
-  if (DAT_0058c6b0[0].x == DAT_0058c6b0[0].base_x)
+  if (g_dungeon_clue_detail_controls[0].x == g_dungeon_clue_detail_controls[0].base_x)
   {
-    DAT_0058c6b0[0].x = ScaleUiCoordinate(DAT_0058c6b0[0].x);
-    DAT_0058c6b0[0].y = ScaleUiCoordinate(DAT_0058c6b0[0].y);
-    DAT_0058c6b0[0].width = ScaleUiCoordinate(DAT_0058c6b0[0].width);
-    DAT_0058c6b0[0].height = ScaleUiCoordinate(DAT_0058c6b0[0].height);
+    g_dungeon_clue_detail_controls[0].x = ScaleUiCoordinate(g_dungeon_clue_detail_controls[0].x);
+    g_dungeon_clue_detail_controls[0].y = ScaleUiCoordinate(g_dungeon_clue_detail_controls[0].y);
+    g_dungeon_clue_detail_controls[0].width = ScaleUiCoordinate(g_dungeon_clue_detail_controls[0].width);
+    g_dungeon_clue_detail_controls[0].height = ScaleUiCoordinate(g_dungeon_clue_detail_controls[0].height);
   }
 
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
-  AddMenuControlsToContext(DAT_0058c6b0, 1, s.menu_context);
+  AddMenuControlsToContext(g_dungeon_clue_detail_controls, 1, s.menu_context);
   FinalizeSpriteEncodeSession();
 
   LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_clueback_pic_0058ccdc, (void *)0);
@@ -941,59 +1100,179 @@ void FUN_0050caa0(int dungeon_index)
   CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
 
   /* Render top caption box from page 0 (matches original layout) */
-  BlitGraphicsRect(PTR_DAT_005832dc, FUN_005501dc(0x16), FUN_005501dc(0x1a2), ScaleUiCoordinate(0x5a), ScaleUiCoordinate(0x24), PTR_DAT_005832dc, 0, 0);
-  FUN_005001e3();
+  BlitGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0x16), ScaleUiCoordinate(0x1a2), ScaleUiCoordinate(0x5a), ScaleUiCoordinate(0x24),
+                   PTR_DAT_005832dc, 0, 0);
+  RenderCurrentMenuContextControls();
 
   PTR_DAT_005832b4->font_slot = 4;
 
   /* Title */
   if (dungeon_index < 5)
   {
-    FUN_00564e70(g_ui_message_buffer, 0x1000, s__s____s__0058ccec, FUN_005081e0(dungeon_index),
-                 (char *)(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + (dungeon_index * 4 + 4) * 0x19));
-    DrawTextLineClamped(g_ui_message_buffer, 0x12, 0x1c, s.title_colors[4]);
+    sprintf(g_ui_message_buffer, s__s____s__0058ccec, GetDungeonName(dungeon_index),
+            (char *)gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[dungeon_index + 1]);
+    DrawFormattedTextShadowed(PTR_DAT_005832b4, s.title_colors[4], 0x12, 0x1c, g_ui_message_buffer);
     s.text_y = FUN_005501dc(0x24);
   }
   else
   {
-    strcpy(g_ui_message_buffer, FUN_005081e0(dungeon_index));
-    DrawTextLineClamped(g_ui_message_buffer, 0x12, 0x1c, s.title_colors[4]);
+    strcpy(g_ui_message_buffer, GetDungeonName(dungeon_index));
+    s.text_y = DrawDungeonClueTextLine(0x10, s.title_colors[4]);
     s.text_y = FUN_005501dc(0x1c);
   }
 
-  /* Show up to 3 card prizes */
   for (s.i = 0; s.i < 3; s.i++)
   {
-    int card_slot = (&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.i];
-    if (card_slot != -1)
+    if ((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.i] == -1)
     {
-      FUN_004f2407(card_slot, s.i * 0x29 + 0xa0, (-(unsigned int)(s.i == 0) & 8) + s.i * 4 + 0x76, 1, DAT_0058ccfc);
+      continue;
     }
+
+    DrawAdventureCard((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.i], s.i * 0x29 + 0xa0,
+                      ((s.i == 0) ? 8 : 0) + s.i * 4 + 0x76, 1, s_empty_card_banner_0058ccfc);
   }
 
-  /* Draw the cave/rules text */
-  s.text_color = s.title_colors[3];
-  if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 2) != 0) || (DAT_007894f4 != 0))
+  if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 2) != 0) || (g_reveal_all_world_info != 0))
   {
-    strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0]);
-    s.text_y = DrawDungeonClueTextLine(s.text_y, s.text_color);
+    DrawTextLineClamped(gs_cave_showclues_0077efa0[0], FUN_005501dc(0xc), s.text_y, s.line_color);
+    s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+    s.dungeon_color = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
+    if (dungeon_index < 5)
+    {
+      g_castle_dungeon_slots[dungeon_index].monster_flags = GetDefeatedWizardCountPlusOne() | 0x80;
+      sprintf(g_ui_message_buffer, gs_cave_showclues_0077efa0[1], gs_cave_showclues_0077efa0[s.dungeon_color + 1]);
+    }
+    else
+    {
+      sprintf(g_ui_message_buffer, gs_cave_showclues_0077efa0[1], gs_cave_showclues_0077efa0[s.dungeon_color + 6]);
+    }
+    s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
   }
 
-  if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (DAT_007894f4 != 0))
+  s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 4) != 0) || (g_reveal_all_world_info != 0))
   {
-    strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x15]);
-    s.text_y = DrawDungeonClueTextLine(s.text_y, s.text_color);
+    DrawTextLineClamped(gs_cave_showclues_0077efa0[0xc], FUN_005501dc(0xc), s.text_y, s.line_color);
+    s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x10) != 0)
+    {
+      sprintf(g_ui_message_buffer, gs_cave_showclues_0077efa0[0xd], gs_colorcards_0077c5e0[(char)g_castle_dungeon_slots[dungeon_index].color]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x20) != 0)
+    {
+      strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0xe]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x40) != 0)
+    {
+      strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0xf]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x80) != 0)
+    {
+      strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x10]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 1) != 0)
+    {
+      strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x11]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 2) != 0)
+    {
+      strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x12]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
+    {
+      sprintf(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x13],
+              global_cards_data[FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    else if (g_castle_dungeon_slots[dungeon_index].rules_bitmap == 0)
+    {
+      strcpy(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x14]);
+      s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+    }
+    s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
   }
 
-  /* Wait for Done */
-  DAT_00603a34 = -1;
-  while (DAT_00603a34 == -1)
+  if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (g_reveal_all_world_info != 0))
+  {
+    DrawTextLineClamped(gs_cave_showclues_0077efa0[0x15], FUN_005501dc(0xc), s.text_y, s.line_color);
+    s.text_y += GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+    s.town_delta_x = g_castle_dungeon_slots[dungeon_index].world_x -
+                     g_town_slots[g_castle_dungeon_slots[dungeon_index].north_of_town_index].world_x;
+    s.town_delta_y = g_castle_dungeon_slots[dungeon_index].world_y -
+                     g_town_slots[g_castle_dungeon_slots[dungeon_index].north_of_town_index].world_y;
+    if (s.town_delta_y > 0)
+    {
+      if (s.town_delta_x > 0)
+      {
+        s.relative_direction = 1;
+      }
+      else
+      {
+        s.relative_direction = 2;
+      }
+    }
+    else
+    {
+      if (s.town_delta_x > 0)
+      {
+        s.relative_direction = 0;
+      }
+      else
+      {
+        s.relative_direction = 3;
+      }
+    }
+
+    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000,
+                                                gs_cave_showclues_0077efa0[0x16],
+                                                gs_directions_00765d50[s.relative_direction],
+                                                BuildTownDisplayName(g_castle_dungeon_slots[dungeon_index].north_of_town_index));
+    s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
+  }
+
+  if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 1) != 0) || (g_reveal_all_world_info != 0))
+  {
+    BlitGraphicsRectScaledFrom320x240(PTR_DAT_00583304, 0, 0, 0x50, 0x32, PTR_DAT_00583304, 0x50, 0);
+    g_town_dialog_callback(ScaleUiCoordinate(0xf4) + 10, ScaleUiCoordinate(0xc) + 10, ScaleUiCoordinate(0x17e) - 0x18,
+                           ScaleUiCoordinate(0xe1) - 0x18, 0);
+    PTR_DAT_005832b4->page_number = PTR_DAT_005832dc->page_number;
+    ResetWorldDrawQueue();
+    s.saved_page0 = PTR_DAT_005832dc->page_number;
+    g_world_scroll_cache_ready = 0;
+    s.saved_clip_page0 = *PushGraphicsClipRect(&s.clip_save_page0, PTR_DAT_005832dc, 0, 0x80, PTR_DAT_005832b4->max_x,
+                                               PTR_DAT_005832b4->max_y - 0x80);
+
+    s.saved_clip_page4 = *PushGraphicsClipRect(&s.clip_save_page4, PTR_DAT_005832b4, 0, 0x80, PTR_DAT_005832b4->max_x,
+                                               PTR_DAT_005832b4->max_y - 0x80);
+
+    UpdateWorldViewportBuffer(g_castle_dungeon_slots[dungeon_index].world_x * 0x20 + 0x10,
+                              g_castle_dungeon_slots[dungeon_index].world_y * 0x20 + 0x10);
+    DrawQueuedWorldSprites();
+    g_world_scroll_cache_ready = 0;
+    PushGraphicsClipRect(&s.clip_restore_page0, PTR_DAT_005832dc, s.saved_clip_page0.x, s.saved_clip_page0.y, s.saved_clip_page0.width,
+                         s.saved_clip_page0.height);
+    PushGraphicsClipRect(&s.clip_restore_page4, PTR_DAT_005832b4, s.saved_clip_page4.x, s.saved_clip_page4.y, s.saved_clip_page4.width,
+                         s.saved_clip_page4.height);
+    PTR_DAT_005832dc->page_number = s.saved_page0;
+    PTR_DAT_005832b4->page_number = 0;
+    BlitGraphicsRectScaledFrom320x240(PTR_DAT_005832dc, 0x40, g_world_ui_top_offset, 0xb3, 100, PTR_DAT_005832b4, 0x7f, 0xb);
+    BlitGraphicsRectScaledFrom320x240(PTR_DAT_00583304, 0x50, 0, 0x50, 0x32, PTR_DAT_00583304, 0, 0);
+  }
+
+  g_adv_menu_selected_value = -1;
+  while (g_adv_menu_selected_value == -1)
   {
     UpdateMouseSnapshot();
     UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
 
-  ClearInputAndWaitForMouseRelease();
+  DestroyCachedCardArt();
   EndMenuContext();
-  FreeSpriteBlob(DAT_00746e10[0]);
+  FreeSpriteBlob(g_dungeon_clue_detail_done_button_sprites[0]);
 }

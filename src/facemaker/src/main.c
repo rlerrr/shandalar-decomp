@@ -118,7 +118,7 @@ extern void RedrawFaceCompositePreview(void);
 extern void BeginSpriteEncodeSession(void);
 extern void LoadPcxIntoPageNoPalette(int page_number, char *path);
 extern int SetFontStyleSize(int font_id, unsigned int style);
-extern void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text);
+extern void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text, ...);
 extern EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width,
                                           int height);
 extern int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,

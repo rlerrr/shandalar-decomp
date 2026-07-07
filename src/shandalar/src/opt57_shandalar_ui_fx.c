@@ -17,7 +17,7 @@ extern int DAT_005a1870[0x14];
 
 // FUNCTION: SHANDALAR 0x0057ae30
 #pragma optimize("gy", on)
-unsigned char GetFontStyleSize(int font_slot)
+int GetFontStyleSize(int font_slot)
 {
   return g_font_slots[font_slot].point_size;
 }

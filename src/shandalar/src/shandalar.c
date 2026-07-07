@@ -208,8 +208,6 @@ int g_world_location_music_active = 0;
 int g_world_location_music_track_id = -1;
 // GLOBAL: SHANDALAR 0x0059126c
 int g_world_location_music_town_index = -1;
-// GLOBAL: SHANDALAR 0x0078990c
-int DAT_0078990c[6];
 // GLOBAL: SHANDALAR 0x0073ea70
 int g_world_magic_town_flags[5];
 // GLOBAL: SHANDALAR 0x0073ea84
@@ -601,13 +599,13 @@ void FUN_004f6d90(void);
 void InitializeAnimatedNoiseGrid(void);
 int FUN_004f7fb9(int param_1, int param_2);
 void PropagatePathConnectivity(void);
-int FUN_004f717a(void);
+int GenerateWorldTownSlots(void);
 void GenerateTownConnections(void);
 int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_y);
 void FloodFillPathConnectivity(int x, int y, unsigned int depth);
 void InitializeCastleDungeonSlots(void);
-unsigned int FUN_0043146b(int param_1, int param_2);
-unsigned int FUN_005611c8(unsigned int param_1);
+unsigned int GetWorldTileType(int param_1, int param_2);
+unsigned int GetWorldTileMagicMask(unsigned int param_1);
 unsigned int FUN_004314ca(int param_1, int param_2);
 void FUN_00431526(unsigned int param_1, int param_2, int param_3);
 void FUN_00431593(unsigned int param_1, int param_2, int param_3);
@@ -616,12 +614,12 @@ int FUN_004f82f2(int param_1, int param_2);
 void SaveGameToSlot(int save_slot_index);
 int FUN_005031a8(void);
 int LoadGameFromSlot(int save_slot_index);
-int FUN_0040dffd(int param_1);
+int GetFirstManaColorIndex(int param_1);
 void AddJournalEntry(int entry_type, int entry_arg);
 int LoadStatWinDllExports(void);
 void LoadOpeningMenuSpriteResources(void);
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
-void InitializeMainMenuAndWorldMagicChoiceControls(void);
+int InitializeMainMenuAndWorldMagicChoiceControls(void);
 void UpdateWorldMagicUnlockProgress(void);
 void RebuildDeckEntriesByCardGroup(void);
 void RefreshAdventureInterfaceLayout(void);
@@ -663,8 +661,8 @@ void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
 void FUN_004ce992(int param_1);
 int FUN_0056c705(int param_1);
 unsigned int FUN_004bdccc(unsigned int param_1);
-int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, int param_5, int param_6);
-int FUN_0056bcf7(unsigned int param_1, unsigned int param_2);
+int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells);
+int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
 int FUN_0056c0e5(int param_1, int param_2, int param_3);
 int FUN_0056bd9d(unsigned int param_1);
 int FUN_0056c5ea(int param_1);
@@ -714,11 +712,11 @@ int SignNonZero(int value);
 int RestoreAdventureUiPaletteAndFocus(void);
 int VisitTownSlot(int town_index);
 int RunSaveMenuAndSelectSlot(void);
-void *FUN_0055060c(int param_1);
+void *DrawAdventureInterfaceLayout(int force_redraw);
 void SetupRandomAiDuelDecks(void);
 void EnsureAdvfac64Loaded(int state);
-void FUN_005616f9(void);
-void FUN_00562169(void);
+void StartWizardTownSiege(void);
+void ResolveWizardTownSiege(void);
 void FUN_00562736(int param_1, int param_2, int param_3, int param_4);
 void FUN_0056279e(int param_1, int param_2, int param_3);
 void FUN_00562835(char *param_1, int param_2);
@@ -849,7 +847,7 @@ opening_menu:
       {
         g_world_player_x = FUN_00522508(0x40) * 0x20 + 0x10;
         g_world_player_y = FUN_00522508(0x40) * 0x20 + 0x10;
-        s.tile_mask = FUN_005611c8(FUN_0043146b(g_world_player_x / 0x20, g_world_player_y / 0x20));
+        s.tile_mask = GetWorldTileMagicMask(GetWorldTileType(g_world_player_x / 0x20, g_world_player_y / 0x20));
       } while ((g_deck_color_bitmap & s.tile_mask) == 0);
     } while ((FUN_004314ca(g_world_player_x / 0x20, g_world_player_y / 0x20) & 0x10) != 0);
 
@@ -877,7 +875,7 @@ opening_menu:
   {
     if (g_town_slots[s.loop_index].location_type == 5)
     {
-      s.tile_mask = FUN_0040dffd(FUN_005611c8(FUN_0043146b(g_town_slots[s.loop_index].world_x, g_town_slots[s.loop_index].world_y))) - 1;
+      s.tile_mask = GetFirstManaColorIndex(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.loop_index].world_x, g_town_slots[s.loop_index].world_y))) - 1;
       g_world_magic_town_flags[s.tile_mask] = 1;
     }
   }
@@ -940,7 +938,7 @@ opening_menu:
 #else
     do
     {
-	  s.last_tick = 0;
+      s.last_tick = 0;
 #endif
       ConsumeUiTickCount();
       RenderAdventureWorldScene(g_world_player_x, g_world_player_y, DAT_00669710);
@@ -994,48 +992,66 @@ int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_sca
 // FUNCTION: SHANDALAR 0x00412c37
 int RunTextMenuCore(char *menu_text, int clear_input_before_show)
 {
-  int done;
-  int selected_menu_entry;
-  int next_menu_entry;
-  int current_menu_entry;
-  int timer_seconds_left;
-  int mouse_active;
-  int previous_menu_entry;
-  int line_height;
-  int last_timer_seconds;
-  int key_code;
-  char icon_width_scaled[4];
-  char *seconds_text;
+  struct
+  {
+    int selected_menu_entry;
+    int key_code;
+    int current_menu_entry;
+    int next_menu_entry;
+    int done;
+    int line_height_copy;
+    int previous_menu_entry;
+    char timer_text[4];
+    int line_height;
+    int timer_seconds_left;
+    int mouse_active;
+    int last_timer_seconds;
+  } s;
 
   if ((clear_input_before_show != 0) && (g_text_menu_abort_requested == 0))
   {
     ClearInputAndWaitForMouseRelease();
   }
 
-  previous_menu_entry = -1;
+  s.previous_menu_entry = -1;
+  s.selected_menu_entry = s.previous_menu_entry;
   g_text_menu_mouse_active = 0;
-  g_text_menu_mouse_released = 0;
+  g_text_menu_mouse_released = g_text_menu_mouse_active;
+  if (DAT_00586494 == 0)
+  {
+    if (s.selected_menu_entry == -1)
+    {
+      if (g_text_menu_ok_mode == 0)
+      {
+        if (g_text_menu_force_cancel == 0)
+        {
+          s.selected_menu_entry = 0;
+        }
+      }
+    }
+  }
   g_text_menu_finish_flash = 0;
-  selected_menu_entry = 0;
+  s.selected_menu_entry = g_text_menu_finish_flash;
   if (g_text_menu_initial_selection != -1)
   {
-    selected_menu_entry = g_text_menu_initial_selection;
+    s.selected_menu_entry = g_text_menu_initial_selection;
   }
 
   g_text_menu_first_option_line = -1;
   g_text_menu_needs_layout = 1;
   g_text_menu_hovered_selection = -1;
   g_text_menu_line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-  line_height = 0x16;
+  s.current_menu_entry = 3;
+  s.line_height = 0x16;
   g_text_menu_color_base = 0xff;
   if (DAT_00789934 == 0)
   {
-    line_height = -1;
+    s.line_height = -1;
   }
-  (void)line_height;
+  s.line_height_copy = g_text_menu_line_height;
 
-  mouse_active = 0;
-  done = 0;
+  s.mouse_active = 0;
+  s.done = s.mouse_active;
   FUN_0046ed33();
   DrawTextMenu(menu_text, g_text_menu_initial_selection);
   FUN_0046ed03();
@@ -1049,10 +1065,10 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   if (g_text_menu_timeout_seconds != -1)
   {
     ConsumeUiTickCount();
-    last_timer_seconds = -1;
+    s.last_timer_seconds = -1;
   }
 
-  while (!done)
+  do
   {
     g_text_menu_needs_layout = 0;
     g_mouse_button_mask_snapshot = 0;
@@ -1061,159 +1077,129 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
       FUN_004ece9a();
     }
 
-    current_menu_entry = g_text_menu_timeout_seconds;
     if (g_text_menu_timeout_seconds != -1)
     {
-      timer_seconds_left = current_menu_entry - GetUiTickCount() / (DAT_0057d9e4 * 0x3c);
-      if (timer_seconds_left == 0)
+      s.timer_seconds_left = g_text_menu_timeout_seconds - GetUiTickCount() / (DAT_0057d9e4 * 0x3c);
+      if (s.timer_seconds_left == 0)
       {
-        selected_menu_entry = -1;
-        done = 1;
+        s.selected_menu_entry = -1;
+        s.done = 1;
       }
-      if (last_timer_seconds != timer_seconds_left)
+      if (s.timer_seconds_left != s.last_timer_seconds)
       {
-        seconds_text = _itoa(timer_seconds_left, DAT_0078cef0, 10);
-        strcpy(icon_width_scaled, seconds_text);
+        strcpy(s.timer_text, _itoa(s.timer_seconds_left, DAT_0078cef0, 10));
         FillGraphicsRect(PTR_DAT_005832b4, g_text_menu_right - 0xe, g_text_menu_top + 4, 0xc, 7, 0xbc);
-        DrawCenteredTextLineClamped(icon_width_scaled, g_text_menu_right - 8, g_text_menu_top + 5, 0xff);
-        last_timer_seconds = timer_seconds_left;
+        DrawCenteredTextLineClamped(s.timer_text, g_text_menu_right - 8, g_text_menu_top + 5, 0xff);
+        s.last_timer_seconds = s.timer_seconds_left;
       }
     }
 
     UpdateMouseSnapshot();
-    if ((g_mouse_button_mask_snapshot == 0) && (mouse_active == 0))
-    {
-      if (HasQueuedKeyInput() != 0)
-      {
-        key_code = PopNormalizedQueuedKeyInput();
-        current_menu_entry = selected_menu_entry;
-        if (key_code < 0x1c)
-        {
-          if (key_code == 0x1b)
-          {
-            selected_menu_entry = -1;
-            done = 1;
-          }
-          else if (key_code == 0xd)
-          {
-            if ((g_text_menu_disabled_option_mask & (1 << ((unsigned char)selected_menu_entry & 0x1f))) == 0)
-            {
-              done = 1;
-            }
-          }
-          else
-          {
-            next_menu_entry = current_menu_entry + 1;
-            while (next_menu_entry <= 0x1f)
-            {
-              if ((g_text_menu_hotkey_by_option[next_menu_entry] != -1) &&
-                  ((((int)(char)g_text_menu_hotkey_by_option[next_menu_entry] ^ key_code) & 0x1f) == 0))
-              {
-                selected_menu_entry = next_menu_entry;
-                break;
-              }
-              next_menu_entry = next_menu_entry + 1;
-            }
-          }
-        }
-        else if (key_code == 0x20)
-        {
-          if ((g_text_menu_disabled_option_mask & (1 << ((unsigned char)selected_menu_entry & 0x1f))) == 0)
-          {
-            done = 1;
-          }
-        }
-        else if (key_code == 0x4800)
-        {
-          if (0 < selected_menu_entry)
-          {
-            selected_menu_entry = selected_menu_entry - 1;
-          }
-        }
-        else if (key_code == 0x5000)
-        {
-          if (selected_menu_entry < g_text_menu_option_count - 1)
-          {
-            selected_menu_entry = selected_menu_entry + 1;
-          }
-        }
-        else
-        {
-          next_menu_entry = current_menu_entry + 1;
-          while (next_menu_entry <= 0x1f)
-          {
-            if ((g_text_menu_hotkey_by_option[next_menu_entry] != -1) &&
-                ((((int)(char)g_text_menu_hotkey_by_option[next_menu_entry] ^ key_code) & 0x1f) == 0))
-            {
-              selected_menu_entry = next_menu_entry;
-              break;
-            }
-            next_menu_entry = next_menu_entry + 1;
-          }
-        }
-      }
-    }
-    else
+    if ((g_mouse_button_mask_snapshot != 0) || (s.mouse_active != 0))
     {
       g_text_menu_mouse_active = 1;
-      mouse_active = 1;
+      s.mouse_active = g_text_menu_mouse_active;
       if (g_mouse_button_mask_snapshot == 2)
       {
         g_text_menu_mouse_released = 1;
       }
 
-      selected_menu_entry = ((g_mouse_y_snapshot - g_text_menu_top) - 4) / g_text_menu_line_height - g_text_menu_first_option_line;
+      s.selected_menu_entry = ((g_mouse_y_snapshot - g_text_menu_top) - 4) / g_text_menu_line_height - g_text_menu_first_option_line;
       if ((g_mouse_x_snapshot < g_text_menu_left) || (g_text_menu_right < g_mouse_x_snapshot))
       {
-        selected_menu_entry = -1;
+        s.selected_menu_entry = -1;
       }
 
-      if ((g_text_menu_disabled_option_mask & (1 << ((unsigned char)selected_menu_entry & 0x1f))) == 0)
+      if ((g_text_menu_disabled_option_mask & (1 << (unsigned char)s.selected_menu_entry)) != 0)
       {
-        if (g_mouse_button_mask_snapshot == 0)
-        {
-          done = 1;
-        }
+        s.selected_menu_entry = s.previous_menu_entry;
       }
       else
       {
-        selected_menu_entry = previous_menu_entry;
+        if (g_mouse_button_mask_snapshot == 0)
+        {
+          s.done = 1;
+        }
+      }
+    }
+    else
+    {
+      if (HasQueuedKeyInput() != 0)
+      {
+        s.key_code = PopNormalizedQueuedKeyInput();
+        switch (s.key_code)
+        {
+        case 0x5000:
+          if (g_text_menu_option_count - 1 > s.selected_menu_entry)
+          {
+            s.selected_menu_entry = s.selected_menu_entry + 1;
+          }
+          break;
+        case 0x4800:
+          if (0 < s.selected_menu_entry)
+          {
+            s.selected_menu_entry = s.selected_menu_entry - 1;
+          }
+          break;
+        case 0xd:
+        case 0x20:
+          if ((g_text_menu_disabled_option_mask & (1 << (unsigned char)s.selected_menu_entry)) == 0)
+          {
+            s.done = 1;
+          }
+          break;
+        case 0x1b:
+          s.selected_menu_entry = -1;
+          s.done = 1;
+          break;
+        default:
+          for (s.next_menu_entry = s.selected_menu_entry + 1; s.next_menu_entry < 0x20; s.next_menu_entry = s.next_menu_entry + 1)
+          {
+            if ((g_text_menu_hotkey_by_option[s.next_menu_entry] != -1) &&
+                ((((int)(char)g_text_menu_hotkey_by_option[s.next_menu_entry] ^ (s.key_code & 0x1f)) & 0x1f) == 0))
+            {
+              s.selected_menu_entry = s.next_menu_entry;
+              break;
+            }
+          }
+          break;
+        }
       }
     }
 
-    if ((selected_menu_entry < 0) || (g_text_menu_option_count <= selected_menu_entry) || (g_text_menu_ok_mode != 0) || (g_text_menu_force_cancel != 0))
+    if ((s.selected_menu_entry < 0) || (g_text_menu_option_count <= s.selected_menu_entry) || (g_text_menu_ok_mode != 0) || (g_text_menu_force_cancel != 0))
     {
-      selected_menu_entry = -1;
+      s.selected_menu_entry = -1;
     }
 
-    if (selected_menu_entry != previous_menu_entry)
+    if (s.previous_menu_entry != s.selected_menu_entry)
     {
-      DrawTextMenu(menu_text, selected_menu_entry);
-      previous_menu_entry = selected_menu_entry;
-      g_text_menu_hovered_selection = selected_menu_entry;
+      DrawTextMenu(menu_text, s.selected_menu_entry);
+      s.previous_menu_entry = s.selected_menu_entry;
+      g_text_menu_hovered_selection = s.previous_menu_entry;
     }
-  }
+  } while (!s.done);
 
   g_text_menu_finish_flash = 1;
-  if (selected_menu_entry == -1)
-  {
-    g_text_menu_mouse_released = 0;
-  }
-  else
+  if (s.selected_menu_entry != -1)
   {
     FUN_0046ed33();
-    DrawTextMenu(menu_text, selected_menu_entry);
+    DrawTextMenu(menu_text, s.selected_menu_entry);
     FUN_004ce992(0x14);
     FUN_0046ed03();
   }
+  else
+  {
+    g_text_menu_mouse_released = 0;
+  }
   g_text_menu_timeout_seconds = -1;
-  g_text_menu_last_selection = -1;
-  g_text_menu_initial_selection = -1;
+  g_text_menu_last_selection = g_text_menu_timeout_seconds;
+  g_text_menu_initial_selection = g_text_menu_last_selection;
   g_text_menu_show_ok_button = 0;
-  g_text_menu_force_cancel = 0;
-  g_text_menu_disabled_option_mask = 0;
-  g_text_menu_caret_prefix_mask = 0;
-  return selected_menu_entry;
+  g_text_menu_force_cancel = g_text_menu_show_ok_button;
+  g_text_menu_disabled_option_mask = g_text_menu_force_cancel;
+  g_text_menu_caret_prefix_mask = g_text_menu_disabled_option_mask;
+  return s.selected_menu_entry;
 }
 
 // FUNCTION: SHANDALAR 0x004ecec6
@@ -1241,49 +1227,50 @@ void DrawTiledDialogBoxFrame(int x, int y, int width, int height, int frame_styl
 {
   int tile_columns;
   int tile_rows;
-  int tile_origin_x;
-  int tile_origin_y;
   int row;
   int col;
-  EncodedImage **box_sprites;
 
-  tile_columns = (width + 0x17 + ((width + 0x17 >> 0x1f) & 0xf)) >> 4;
-  tile_rows = (height + 0x17 + ((height + 0x17 >> 0x1f) & 0xf)) >> 4;
-  tile_origin_x = (x - 4) - ((tile_columns * 0x10) - (width + 8)) / 2;
-  tile_origin_y = (y - 4) - ((tile_rows * 0x10) - (height + 8)) / 2;
-  box_sprites = (EncodedImage **)&g_dialog_box_sprite_bank.frame[frame_style][0];
+  x -= 4;
+  y -= 4;
+  width += 8;
+  height += 8;
+
+  tile_columns = (width + 0xf) / 0x10;
+  tile_rows = (height + 0xf) / 0x10;
+  x -= ((tile_columns << 4) - width) / 2;
+  y -= ((tile_rows << 4) - height) / 2;
 
   PTR_DAT_005832b4->page_number = 1;
-  FillGraphicsRect(PTR_DAT_005832b4, tile_origin_x, tile_origin_y, tile_columns << 4, tile_rows << 4, 0xe3);
+  FillGraphicsRect(PTR_DAT_005832b4, x, y, tile_columns << 4, tile_rows << 4, 0xe3);
 
-  for (row = 0; row < tile_rows; row = row + 1)
+  for (row = 0; tile_rows > row; row = row + 1)
   {
-    for (col = 0; col < tile_columns; col = col + 1)
+    for (col = 0; tile_columns > col; col = col + 1)
     {
-      DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + tile_origin_x, row * 0x10 + tile_origin_y, box_sprites[0]);
+      DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + x, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][0]);
     }
   }
 
-  for (col = 0; col < tile_columns; col = col + 1)
+  for (col = 0; tile_columns > col; col = col + 1)
   {
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + tile_origin_x, tile_origin_y - 10, box_sprites[5]);
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + tile_origin_x, tile_rows * 0x10 + tile_origin_y - 6, box_sprites[7]);
+    DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + x, y - 10, g_dialog_box_sprite_bank.frame[frame_style][5]);
+    DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + x, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][7]);
   }
 
-  for (row = 0; row < tile_rows; row = row + 1)
+  for (row = 0; tile_rows > row; row = row + 1)
   {
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_origin_x - 10, row * 0x10 + tile_origin_y, box_sprites[8]);
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + tile_origin_x - 6, row * 0x10 + tile_origin_y, box_sprites[6]);
+    DrawEncodedImageUnscaled(PTR_DAT_005832b4, x - 10, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][8]);
+    DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + x - 6, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][6]);
   }
 
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_origin_x - 10, tile_origin_y - 10, box_sprites[1]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + tile_origin_x - 6, tile_origin_y - 10, box_sprites[2]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_origin_x - 10, tile_rows * 0x10 + tile_origin_y - 6, box_sprites[3]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + tile_origin_x - 6, tile_rows * 0x10 + tile_origin_y - 6, box_sprites[4]);
+  DrawEncodedImageUnscaled(PTR_DAT_005832b4, x - 10, y - 10, g_dialog_box_sprite_bank.frame[frame_style][1]);
+  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + x - 6, y - 10, g_dialog_box_sprite_bank.frame[frame_style][2]);
+  DrawEncodedImageUnscaled(PTR_DAT_005832b4, x - 10, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][3]);
+  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + x - 6, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][4]);
 
   PTR_DAT_005832b4->page_number = 0;
-  BlitGraphicsRect(PTR_DAT_005832dc, tile_origin_x - 10, tile_origin_y - 10, tile_columns * 0x10 + 0x14, tile_rows * 0x10 + 0x14,
-                   PTR_DAT_005832b4, tile_origin_x - 10, tile_origin_y - 10);
+  BlitGraphicsRect(PTR_DAT_005832dc, x - 10, y - 10, tile_columns * 0x10 + 0x14, tile_rows * 0x10 + 0x14,
+                   PTR_DAT_005832b4, x - 10, y - 10);
 }
 
 // FUNCTION: SHANDALAR 0x004136ab
@@ -1796,26 +1783,26 @@ void InitializeNewGameState(void)
   case 0:
     if ((s.uVar2 < 1) & 0x20)
     {
-      FUN_004be0bf(s.uVar2, 0xd, 7, 0xf, 1, 1);
+      AddRandomStarterDeckCards(s.uVar2, 0xd, 7, 0xf, 1, 1);
     }
     else
     {
-      FUN_004be0bf(s.uVar2, 0xd, 0xc, 10, 1, 1);
+      AddRandomStarterDeckCards(s.uVar2, 0xd, 0xc, 10, 1, 1);
     }
     break;
   case 1:
-    FUN_004be0bf(s.uVar2, 0xb, 4, 0xc, 1, 1);
-    FUN_004be0bf(FUN_004bdccc(s.uVar2), 4, 3, 4, 0, 1);
+    AddRandomStarterDeckCards(s.uVar2, 0xb, 4, 0xc, 1, 1);
+    AddRandomStarterDeckCards(FUN_004bdccc(s.uVar2), 4, 3, 4, 0, 1);
     break;
   case 2:
-    FUN_004be0bf(s.uVar2, 9, 3, 9, 1, 1);
+    AddRandomStarterDeckCards(s.uVar2, 9, 3, 9, 1, 1);
     s.uVar3 = FUN_004bdccc(s.uVar2);
-    FUN_004be0bf(s.uVar3, 5, 3, 4, 0, 1);
-    FUN_004be0bf(FUN_004bdccc(s.uVar2 | s.uVar3), 4, 3, 3, 0, 1);
+    AddRandomStarterDeckCards(s.uVar3, 5, 3, 4, 0, 1);
+    AddRandomStarterDeckCards(FUN_004bdccc(s.uVar2 | s.uVar3), 4, 3, 3, 0, 1);
     break;
   case 3:
-    FUN_004be0bf(s.uVar2, 6, 3, 5, 1, 1);
-    FUN_004be0bf(1, 0xb, 5, 0xe, 0, 1);
+    AddRandomStarterDeckCards(s.uVar2, 6, 3, 5, 1, 1);
+    AddRandomStarterDeckCards(1, 0xb, 5, 0xe, 0, 1);
     break;
   }
 
@@ -1825,7 +1812,7 @@ void InitializeNewGameState(void)
     g_amulet_inventory[s.location_block_start_index] = 0;
   }
 
-  DAT_0078990c[g_selected_wizard_color]++;
+  g_amulet_inventory[g_selected_wizard_color - 1]++;
   for (s.location_block_start_index = 0; s.location_block_start_index < 3 - g_shandalar_difficulty; s.location_block_start_index = s.location_block_start_index + 1)
   {
     s.icon_width_scaled = FUN_00522508(5);
@@ -1873,140 +1860,141 @@ unsigned int FUN_004bdccc(unsigned int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x004be0bf
-int FUN_004be0bf(unsigned int param_1, int param_2, int param_3, int param_4, int param_5, int param_6)
+int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells)
 {
-  int bVar1;
-  int avatar_sprite_index;
-  unsigned int icon_x_scaled;
-  unsigned int icon_height_scaled;
-  unsigned int icon_width_scaled;
-  int selected_state_sprite;
-  int location_block_start_index;
-  int inner_index;
-
-  for (location_block_start_index = 0; location_block_start_index < param_2; location_block_start_index = location_block_start_index + 1)
+  struct
   {
-    selected_state_sprite = FUN_0056bcf7(1, param_1);
-    avatar_sprite_index = FUN_0056c0e5((int)(char)global_cards_data[selected_state_sprite].color, param_1, 0);
-    if ((avatar_sprite_index == 0) || (4 < selected_state_sprite) || ((global_cards_data[selected_state_sprite].expansion & 0xc1) == 0))
+    unsigned int color_filter;
+    unsigned int candidate_color_filter;
+    unsigned int pick_artifact;
+    unsigned int selected_card;
+    unsigned int count;
+    int duplicate_attempt_count;
+    int card_ok;
+  } s;
+
+  for (s.count = 0; land_count > (int)s.count; s.count = s.count + 1)
+  {
+    s.selected_card = PickRandomCardMatchingTypeAndColor(1, color_mask);
+    if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, color_mask, 0) == 0) ||
+        (4 < (int)s.selected_card) ||
+        ((global_cards_data[s.selected_card].expansion & 0xc1) == 0))
     {
-      location_block_start_index = location_block_start_index - 1;
+      s.count = s.count - 1;
     }
     else
     {
-      FUN_0056bd9d(selected_state_sprite);
+      FUN_0056bd9d(s.selected_card);
     }
   }
 
-  for (location_block_start_index = 0; location_block_start_index < param_3; location_block_start_index = location_block_start_index + 1)
+  for (s.count = 0; spell_count > (int)s.count; s.count = s.count + 1)
   {
-    if (param_6 == 0)
+    if (allow_artifact_spells == 0)
     {
-      icon_width_scaled = 0;
+      s.pick_artifact = 0;
     }
     else
     {
-      icon_width_scaled = rand();
-      icon_width_scaled = icon_width_scaled & 1;
+      s.pick_artifact = rand();
+      s.pick_artifact = s.pick_artifact & 1;
     }
 
-    if (icon_width_scaled == 0)
+    if (s.pick_artifact == 0)
     {
-      icon_height_scaled = param_1;
+      s.candidate_color_filter = color_mask;
     }
     else
     {
-      icon_height_scaled = 1;
+      s.candidate_color_filter = 1;
     }
 
-    selected_state_sprite = FUN_0056bcf7((-(unsigned int)(icon_width_scaled == 0) & 0xffffffc4) + 0x40, icon_height_scaled);
-    if (((g_shandalar_difficulty == 0) && ((global_cards_data[selected_state_sprite].static_ability & 3) != 0)) ||
-        ((global_cards_data[selected_state_sprite].extra_ability & 0x900) != 0))
+    s.selected_card = PickRandomCardMatchingTypeAndColor((-(unsigned int)(s.pick_artifact == 0) & 0xffffffc4) + 0x40, s.candidate_color_filter);
+    if (((g_shandalar_difficulty == 0) && ((global_cards_data[s.selected_card].static_ability & 3) != 0)) ||
+        ((global_cards_data[s.selected_card].extra_ability & 0x900) != 0))
     {
-      location_block_start_index = location_block_start_index - 1;
+      s.count = s.count - 1;
     }
     else
     {
-      if ((global_cards_data[selected_state_sprite].type & 4) != 0)
+      if ((global_cards_data[s.selected_card].type & 4) != 0)
       {
-        icon_width_scaled = 0;
+        s.pick_artifact = 0;
       }
 
-      if (icon_width_scaled == 0)
+      if (s.pick_artifact == 0)
       {
-        icon_x_scaled = param_1;
+        s.color_filter = color_mask;
       }
       else
       {
-        icon_x_scaled = 1;
+        s.color_filter = 1;
       }
 
-      avatar_sprite_index = FUN_0056c0e5((int)(char)global_cards_data[selected_state_sprite].color, icon_x_scaled, 0);
-      if ((avatar_sprite_index == 0) || ((avatar_sprite_index = FUN_0056c5ea(selected_state_sprite), (int)((~location_block_start_index & 1) + 1) < avatar_sprite_index)) ||
-          ((global_cards_data[selected_state_sprite].expansion & 0xc1) == 0))
+      if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, s.color_filter, 0) == 0) ||
+          ((int)((~s.count & 1) + 1) < FUN_0056c5ea(s.selected_card)) ||
+          ((global_cards_data[s.selected_card].expansion & 0xc1) == 0))
       {
-        location_block_start_index = location_block_start_index - 1;
+        s.count = s.count - 1;
       }
       else
       {
-        FUN_0056bd9d(selected_state_sprite);
+        FUN_0056bd9d(s.selected_card);
       }
     }
   }
 
-  inner_index = 0;
-  for (location_block_start_index = 0; location_block_start_index < param_4; location_block_start_index = location_block_start_index + 1)
+  s.duplicate_attempt_count = 0;
+  for (s.count = 0; creature_count > (int)s.count; s.count = s.count + 1)
   {
-    selected_state_sprite = FUN_0056bcf7(2, param_1);
-    if (((g_shandalar_difficulty < 4) && ((global_cards_data[selected_state_sprite].static_ability & 3) != 0)) ||
-        ((global_cards_data[selected_state_sprite].extra_ability & 0x900) != 0))
+    s.selected_card = PickRandomCardMatchingTypeAndColor(2, color_mask);
+    if (((g_shandalar_difficulty < 4) && ((global_cards_data[s.selected_card].static_ability & 3) != 0)) ||
+        ((global_cards_data[s.selected_card].extra_ability & 0x900) != 0))
     {
-      location_block_start_index = location_block_start_index - 1;
-      inner_index = inner_index - 1;
+      s.count = s.count - 1;
+      s.duplicate_attempt_count = s.duplicate_attempt_count - 1;
     }
     else
     {
-      if (inner_index < 1000)
+      if (s.duplicate_attempt_count < 1000)
       {
-        avatar_sprite_index = FUN_004bb1cf(selected_state_sprite);
-        bVar1 = 0 < avatar_sprite_index;
+        s.card_ok = 0 < FUN_004bb1cf(s.selected_card);
       }
       else
       {
-        bVar1 = 1;
+        s.card_ok = 1;
       }
 
-      avatar_sprite_index = FUN_0056c0e5((int)(char)global_cards_data[selected_state_sprite].color, param_1, 0);
-      if ((avatar_sprite_index == 0) || ((avatar_sprite_index = FUN_0056c5ea(selected_state_sprite), (int)((~location_block_start_index & 1) + 1) < avatar_sprite_index)) ||
-          ((!bVar1 || ((global_cards_data[selected_state_sprite].expansion & 0xc1) == 0))))
+      if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, color_mask, 0) == 0) ||
+          ((int)((~s.count & 1) + 1) < FUN_0056c5ea(s.selected_card)) ||
+          ((!s.card_ok || ((global_cards_data[s.selected_card].expansion & 0xc1) == 0))))
       {
-        location_block_start_index = location_block_start_index - 1;
+        s.count = s.count - 1;
       }
       else
       {
-        FUN_0056bd9d(selected_state_sprite);
+        FUN_0056bd9d(s.selected_card);
       }
     }
-    inner_index = inner_index + 1;
+    s.duplicate_attempt_count = s.duplicate_attempt_count + 1;
   }
 
-  if (param_5 != 0)
+  if (add_rare != 0)
   {
     do
     {
       do
       {
-        selected_state_sprite = FUN_0056bcf7(0xe, 1);
-        avatar_sprite_index = FUN_0056c0e5((int)(char)global_cards_data[selected_state_sprite].color, param_1, 1);
-      } while (avatar_sprite_index == 0);
-      avatar_sprite_index = FUN_0056c5ea(selected_state_sprite);
-    } while ((avatar_sprite_index < 3) || ((avatar_sprite_index = FUN_004bb1cf(selected_state_sprite), avatar_sprite_index < 1)) ||
-             ((g_shandalar_difficulty == 0 && ((global_cards_data[selected_state_sprite].static_ability & 3) != 0))) ||
-             ((global_cards_data[selected_state_sprite].extra_ability & 0x900) != 0) ||
-             ((global_cards_data[selected_state_sprite].expansion & 0xc1) == 0));
+        s.selected_card = PickRandomCardMatchingTypeAndColor(0xe, 1);
+      } while (FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, color_mask, 1) == 0);
+    } while ((FUN_0056c5ea(s.selected_card) < 3) ||
+             (FUN_004bb1cf(s.selected_card) < 1) ||
+             ((g_shandalar_difficulty == 0 && ((global_cards_data[s.selected_card].static_ability & 3) != 0))) ||
+             ((global_cards_data[s.selected_card].extra_ability & 0x900) != 0) ||
+             ((global_cards_data[s.selected_card].expansion & 0xc1) == 0));
   }
 
-  FUN_0056bd9d(selected_state_sprite);
+  FUN_0056bd9d(s.selected_card);
   return 0;
 }
 
@@ -2033,29 +2021,33 @@ int FUN_0056c705(int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x0056bcf7
-int FUN_0056bcf7(unsigned int param_1, unsigned int param_2)
+int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask)
 {
-  int bVar1;
-  int avatar_sprite_index;
-  int location_block_start_index;
+  struct
+  {
+    int attempt_count;
+    int card_index;
+    int found;
+  } s;
 
-  location_block_start_index = 0;
+  s.attempt_count = 0;
   do
   {
-    bVar1 = 0;
-    avatar_sprite_index = FUN_00522508(g_card_count - 0x39);
-    if (((param_1 == 0) || ((param_1 & global_cards_data[avatar_sprite_index].type) != 0)) &&
-        ((param_2 == 1) || ((param_2 & (int)(char)global_cards_data[avatar_sprite_index].color) != 0)))
+    s.found = 0;
+    s.card_index = FUN_00522508(g_card_count - 0x39);
+    if ((type_mask != 0) && ((type_mask & global_cards_data[s.card_index].type) == 0))
     {
-      bVar1 = 1;
     }
-    if (bVar1 == 0)
+    else if ((color_mask != 1) && ((color_mask & (int)(char)global_cards_data[s.card_index].color) == 0))
     {
-      location_block_start_index = location_block_start_index + 1;
     }
-  } while ((bVar1 == 0) && (location_block_start_index < 999));
+    else
+    {
+      s.found = 1;
+    }
+  } while (s.found == 0 && ++s.attempt_count < 999);
 
-  return avatar_sprite_index;
+  return s.card_index;
 }
 
 // FUNCTION: SHANDALAR 0x0056c0e5
@@ -2075,8 +2067,8 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
     return 1;
   }
 
-  param_1 = FUN_0040dffd(param_1);
-  param_2 = FUN_0040dffd(param_2);
+  param_1 = GetFirstManaColorIndex(param_1);
+  param_2 = GetFirstManaColorIndex(param_2);
   if (DAT_00593e20[param_2 * 3] == param_1)
   {
     return 1;
@@ -2175,7 +2167,7 @@ int FUN_004bb1cf(unsigned int param_1)
     if ((deck[s.i] != -1) && ((deck[s.i] & 0x4000) == 0))
     {
       s.total_non_market_cards = s.total_non_market_cards + 1;
-      s.color_index = FUN_0040dffd(global_cards_data[deck[s.i] & 0xfff].color);
+      s.color_index = GetFirstManaColorIndex(global_cards_data[deck[s.i] & 0xfff].color);
       s.color_counts[s.color_index] = s.color_counts[s.color_index] + 1;
     }
 
@@ -2278,7 +2270,7 @@ int FUN_0056bd9d(unsigned int param_1)
   {
     AddJournalEntry((int)param_1 / 0x100 + JOURNAL_ENTRY_CARD_FOUND_SET0, param_1 & 0xff);
   }
-  s.entry_index = FUN_0040dffd(global_cards_data[param_1].color) * 0x20 + (unsigned int)global_cards_data[param_1].type * 0x100 +
+  s.entry_index = GetFirstManaColorIndex(global_cards_data[param_1].color) * 0x20 + (unsigned int)global_cards_data[param_1].type * 0x100 +
                   (int)global_cards_data[param_1].name[0];
   s.selected_state_sprite = 0;
   for (s.location_block_start_index = 0; s.location_block_start_index < 500; s.location_block_start_index = s.location_block_start_index + 1)
@@ -2300,7 +2292,7 @@ int FUN_0056bd9d(unsigned int param_1)
     }
 
     s.inner_index = (unsigned int)deck[s.location_block_start_index] & 0xfff;
-    s.local_4 = FUN_0040dffd(global_cards_data[s.inner_index].color) * 0x20 + (int)global_cards_data[s.inner_index].name[0] +
+    s.local_4 = GetFirstManaColorIndex(global_cards_data[s.inner_index].color) * 0x20 + (int)global_cards_data[s.inner_index].name[0] +
                 (unsigned int)global_cards_data[s.inner_index].type * 0x100;
     if (s.local_4 >= s.entry_index)
     {
@@ -2470,13 +2462,13 @@ start:
   {
     for (s.icon_width_scaled = 1; s.icon_width_scaled < 0x3f; s.icon_width_scaled++)
     {
-      s.entry_index = FUN_0043146b(s.location_block_start_index, s.icon_width_scaled);
+      s.entry_index = GetWorldTileType(s.location_block_start_index, s.icon_width_scaled);
       if (s.entry_index == 0)
       {
         s.neighbor_is_open = 0;
         for (s.i = 1; s.i <= 8; s.i += 2)
         {
-          if (FUN_0043146b(s.location_block_start_index + g_neighbor_dx[s.i], s.icon_width_scaled + g_neighbor_dy[s.i]) == 0)
+          if (GetWorldTileType(s.location_block_start_index + g_neighbor_dx[s.i], s.icon_width_scaled + g_neighbor_dy[s.i]) == 0)
           {
             s.neighbor_is_open = 1;
             break;
@@ -2491,7 +2483,7 @@ start:
   }
 
   PropagatePathConnectivity();
-  if (FUN_004f717a() == 0)
+  if (GenerateWorldTownSlots() == 0)
   {
     goto start;
   }
@@ -2504,12 +2496,11 @@ start:
 }
 
 // FUNCTION: SHANDALAR 0x004f717a
-int FUN_004f717a(void)
+int GenerateWorldTownSlots(void)
 {
   int preview_panel_y_offset;
   int avatar_sprite_index;
   int clamped_required_wins;
-  int iVar4;
   int seeded_world_magic_town_count;
   int scan_index;
   int placement_attempt_count;
@@ -2559,7 +2550,7 @@ int FUN_004f717a(void)
         generated_valid_world = 0;
         preview_panel_y_offset = FUN_00522508(0x40);
         avatar_sprite_index = FUN_00522508(0x40);
-        tile_type = FUN_0043146b(preview_panel_y_offset, avatar_sprite_index);
+        tile_type = GetWorldTileType(preview_panel_y_offset, avatar_sprite_index);
         if (tile_type != 0)
         {
           avatar_draw_y = 0x7fff;
@@ -2607,11 +2598,10 @@ int FUN_004f717a(void)
             g_town_slots[inner_index].trade_color_and_type = 0;
             g_town_slots[inner_index].status_and_ruling_wizard = g_town_slots[inner_index].trade_color_and_type;
 
-            for (local_34 = 1; local_34 < 8; local_34 = local_34 + 1)
+            for (local_34 = 0; local_34 < 8; local_34 = local_34 + 1)
             {
-              g_town_slots[inner_index].card_slots[local_34] = 0xfffffc18;
+              g_town_slots[inner_index].card_restock_timers[local_34] = 0xfffffc18;
             }
-            g_town_slots[inner_index].card_restock_timers[0] = 0xfffffc18;
             g_town_slots[inner_index].quest_restock_timer = 0xfffffc18;
             g_town_slots[inner_index].special_card_restock_timer = 0xfffffc18;
 
@@ -2639,7 +2629,7 @@ int FUN_004f717a(void)
               location_block_start_index = location_block_start_index | 1 << special_location_world_magic_index;
             }
 
-            world_magic_mask = FUN_005611c8(tile_type);
+            world_magic_mask = GetWorldTileMagicMask(tile_type);
             if ((inner_index != 0) && ((g_town_slots[inner_index].location_type == 3) || (g_town_slots[inner_index].location_type == 2)))
             {
               for (local_34 = 0; local_34 < 99; local_34 = local_34 + 1)
@@ -2831,7 +2821,7 @@ int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_
       s.next_x = g_neighbor_dx[s.direction_index] + s.cur_x;
       s.next_y = g_neighbor_dy[s.direction_index] + s.cur_y;
 
-      s.tile_type = FUN_0043146b(s.next_x, s.next_y);
+      s.tile_type = GetWorldTileType(s.next_x, s.next_y);
       if (s.tile_type == 0)
       {
         continue;
@@ -3016,41 +3006,46 @@ int FUN_004f7fb9(int param_1, int param_2)
 // FUNCTION: SHANDALAR 0x004f8101
 void InitializeAnimatedNoiseGrid(void)
 {
-  int random_nibble;
-  int location_block_start_index;
-  int inner_index;
-  int entry_index;
+  struct
+  {
+    int weighted_neighbor_sum;
+    int x;
+    int direction_index;
+    int y;
+  } s;
 
-  for (entry_index = 0; entry_index < 0x12; entry_index = entry_index + 1)
+  for (s.y = 0; s.y < 0x12; s.y = s.y + 1)
   {
-    for (location_block_start_index = 0; location_block_start_index < 0x12; location_block_start_index = location_block_start_index + 1)
+    for (s.x = 0; s.x < 0x12; s.x = s.x + 1)
     {
-      random_nibble = FUN_00522508(0x10);
-      g_animated_noise_grid[location_block_start_index + entry_index * 0x13] = (char)random_nibble;
+      g_animated_noise_grid[s.x + s.y * 0x13] = (char)FUN_00522508(0x10);
     }
-    g_animated_noise_grid[entry_index * 0x13 + 0x12] = g_animated_noise_grid[entry_index * 0x13];
+    g_animated_noise_grid[s.y * 0x13 + 0x12] = g_animated_noise_grid[s.y * 0x13];
   }
-  for (location_block_start_index = 0; location_block_start_index < 0x12; location_block_start_index = location_block_start_index + 1)
+  for (s.x = 0; s.x < 0x12; s.x = s.x + 1)
   {
-    g_animated_noise_grid[location_block_start_index + 0x156] = g_animated_noise_grid[location_block_start_index];
+    g_animated_noise_grid[s.x + 0x156] = g_animated_noise_grid[s.x];
   }
-  for (entry_index = 0; entry_index < 0x11; entry_index = entry_index + 1)
+  for (s.y = 0; s.y <= 0x10; s.y = s.y + 1)
   {
-    for (location_block_start_index = 0; location_block_start_index < 0x11; location_block_start_index = location_block_start_index + 1)
+    for (s.x = 0; s.x <= 0x10; s.x = s.x + 1)
     {
-      for (inner_index = 1; inner_index < 9; inner_index = inner_index + 1)
+      s.weighted_neighbor_sum = (int)g_animated_noise_grid[s.x + s.y * 0x13] << 2;
+      for (s.direction_index = 1; s.direction_index <= 8; s.direction_index = s.direction_index + 1)
       {
+        s.weighted_neighbor_sum +=
+            (int)g_animated_noise_grid[s.x + g_neighbor_dy[s.direction_index] + (s.y + g_neighbor_dx[s.direction_index] + 1) * 0x13 + 1];
       }
-      g_animated_noise_grid[location_block_start_index + entry_index * 0x13 + 0x170] = g_animated_noise_grid[location_block_start_index + entry_index * 0x13];
+      g_animated_noise_grid[s.x + s.y * 0x13 + 0x170] = g_animated_noise_grid[s.x + s.y * 0x13];
     }
   }
-  for (entry_index = 0; entry_index < 0x11; entry_index = entry_index + 1)
+  for (s.y = 0; s.y <= 0x10; s.y = s.y + 1)
   {
-    g_animated_noise_grid[entry_index * 0x13 + 0x180] = g_animated_noise_grid[entry_index * 0x13 + 0x170];
+    g_animated_noise_grid[s.y * 0x13 + 0x180] = g_animated_noise_grid[s.y * 0x13 + 0x170];
   }
-  for (location_block_start_index = 0; location_block_start_index < 0x11; location_block_start_index = location_block_start_index + 1)
+  for (s.x = 0; s.x <= 0x10; s.x = s.x + 1)
   {
-    g_animated_noise_grid[location_block_start_index + 0x2a0] = g_animated_noise_grid[location_block_start_index + 0x170];
+    g_animated_noise_grid[s.x + 0x2a0] = g_animated_noise_grid[s.x + 0x170];
   }
 }
 
@@ -3140,7 +3135,7 @@ void InitializeCastleDungeonSlots(void)
         {
           s.candidate_x = FUN_00522508(0x40);
           s.candidate_y = FUN_00522508(0x40);
-        } while (FUN_0043146b(s.candidate_x, s.candidate_y) == 0);
+        } while (GetWorldTileType(s.candidate_x, s.candidate_y) == 0);
       } while ((FUN_004314ca(s.candidate_x, s.candidate_y) & 0x30) != 0);
 
       s.nearest_distance = 0xff;
@@ -3148,7 +3143,7 @@ void InitializeCastleDungeonSlots(void)
       {
         if ((s.entry_index < 5) && (g_town_slots[s.scan_index].location_type == 4))
         {
-          if (FUN_005611c8(FUN_0043146b(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)) == 1 << (s.entry_index + 1))
+          if (GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)) == 1 << (s.entry_index + 1))
           {
             s.mana_castle_town_index = s.scan_index;
           }
@@ -3283,25 +3278,25 @@ void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, 
 }
 
 // FUNCTION: SHANDALAR 0x0043146b
-unsigned int FUN_0043146b(int param_1, int param_2)
+unsigned int GetWorldTileType(int x, int y)
 {
-  if ((0x40 <= param_1) || (param_1 < 0))
+  if ((0x40 <= x) || (x < 0))
   {
-    param_1 = 0;
+    x = 0;
   }
-  if ((0x40 <= param_2) || (param_2 < 0))
+  if ((0x40 <= y) || (y < 0))
   {
-    param_2 = 0;
+    y = 0;
   }
-  return GetGraphicsPixelColorRef(PTR_DAT_00583304, param_1, param_2) & 0xf;
+  return GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y) & 0xf;
 }
 
 // FUNCTION: SHANDALAR 0x005611c8
-unsigned int FUN_005611c8(unsigned int param_1)
+unsigned int GetWorldTileMagicMask(unsigned int tile_type)
 {
   unsigned int entry_index;
 
-  switch (param_1)
+  switch (tile_type)
   {
   case 3:
     entry_index = 2;
@@ -3477,7 +3472,6 @@ int LoadGameFromSlot(int save_slot_index)
 {
   int save_drive_index;
   unsigned int slot_index;
-  char save_filename[0xd];
 
   global_saveload_loading = 1;
   FUN_0046ed33();
@@ -3752,21 +3746,21 @@ int SaveGameWithMessage(char *save_file_path)
 }
 
 // FUNCTION: SHANDALAR 0x0040dffd
-int FUN_0040dffd(int param_1)
+int GetFirstManaColorIndex(int color_mask)
 {
-  if (param_1 & 2)
+  if (color_mask & 2)
     return 1;
 
-  if (param_1 & 4)
+  if (color_mask & 4)
     return 2;
 
-  if (param_1 & 8)
+  if (color_mask & 8)
     return 3;
 
-  if (param_1 & 0x10)
+  if (color_mask & 0x10)
     return 4;
 
-  if (param_1 & 0x20)
+  if (color_mask & 0x20)
     return 5;
 
   return 0;
@@ -4156,7 +4150,7 @@ int HandlePortraitMainMenuControlEvent(AdvMenuControl *control, int event_type)
 }
 
 // FUNCTION: SHANDALAR 0x004ff888
-int HandleWorldMagicChoiceControlEvent(void *control_ptr, int event_type)
+int HandleWorldMagicChoiceControlEvent(AdvMenuControl *control_ptr, int event_type)
 {
   struct
   {
@@ -4175,15 +4169,14 @@ int HandleWorldMagicChoiceControlEvent(void *control_ptr, int event_type)
     int world_magic_slot_index;
   } s;
 
-#define control ((AdvMenuControl *)control_ptr)
-  s.world_magic_slot_index = control->selection_value * 2 + -0x60;
+  s.world_magic_slot_index = (control_ptr->selection_value - 0x31) * 2 + 2;
   if (g_menu_render_guard == 0)
   {
-    if ((g_mouse_x < control->x) || (control->x + control->width < g_mouse_x))
+    if ((g_mouse_x < control_ptr->x) || (control_ptr->width + control_ptr->x < g_mouse_x))
     {
       s.mouse_inside_control = 0;
     }
-    else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
+    else if ((g_mouse_y < control_ptr->y) || (control_ptr->y + control_ptr->height < g_mouse_y))
     {
       s.mouse_inside_control = 0;
     }
@@ -4196,57 +4189,65 @@ int HandleWorldMagicChoiceControlEvent(void *control_ptr, int event_type)
       return 0;
     }
   }
-  if (control->state == 3)
+  if (control_ptr->state == 3)
   {
     return 0;
   }
-  if (((g_world_magic_bitmap & (1 << ((unsigned char)s.world_magic_slot_index & 0x1f))) != 0) && (DAT_0078990c[s.world_magic_slot_index / 2] != 0))
+  if ((g_world_magic_bitmap & (1 << (unsigned char)s.world_magic_slot_index)) != 0)
   {
     s.world_magic_unlock_score = FUN_004bb458(s.world_magic_slot_index);
-    if (event_type != 2)
+    if (g_amulet_inventory[s.world_magic_slot_index / 2 - 1] != 0)
     {
-      DrawEncodedImageUiScaled(PTR_DAT_005832b4, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y, (EncodedImage *)control->mode_data[event_type],
-                               g_world_magic_icon_rects[s.world_magic_slot_index].width, g_world_magic_icon_rects[s.world_magic_slot_index].height);
-    }
-    else
-    {
-      s.selected_state_sprite = (EncodedImage *)g_world_magic_choice_controls[control->selection_value - 0x31].mode_data[event_type];
-      s.icon_x_scaled = (unsigned int)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].x);
-      s.icon_y_scaled = ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].y);
-      s.icon_width_scaled = (unsigned int)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].width);
-      s.icon_height_scaled = (DWORD)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].height);
-      s.icon_border_padding = ScaleUiCoordinate(4);
-      BlitGraphicsRect(PTR_DAT_0058332c, s.icon_x_scaled, s.icon_y_scaled - ScaleUiCoordinate(0x148), s.icon_width_scaled, s.icon_height_scaled, PTR_DAT_005832dc, s.icon_x_scaled, s.icon_y_scaled);
-      DrawEncodedImageUiScaled(PTR_DAT_005832dc, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y, (EncodedImage *)g_world_magic_choice_button_sprite_bank.named.icon[s.world_magic_slot_index],
-                               g_world_magic_icon_rects[s.world_magic_slot_index].width, g_world_magic_icon_rects[s.world_magic_slot_index].height);
-      DrawEncodedImageResampled(PTR_DAT_005832dc, s.icon_border_padding + s.icon_x_scaled, s.icon_border_padding + s.icon_y_scaled, s.icon_width_scaled + s.icon_border_padding * -2, (int)s.icon_height_scaled + s.icon_border_padding * -2, s.selected_state_sprite);
-
-      s.avatar_sprite = g_world_magic_avatar_sprites[0];
-      s.avatar_x_positions[0] = 0x6c;
-      s.avatar_x_positions[1] = 0xbf;
-      s.avatar_x_positions[2] = 0x10e;
-      s.avatar_x_positions[3] = 0x15e;
-      s.avatar_x_positions[4] = 0x1b1;
-      s.avatar_sprite_draw_order[0] = 2;
-      s.avatar_sprite_draw_order[1] = 1;
-      s.avatar_sprite_draw_order[2] = 4;
-      s.avatar_sprite_draw_order[3] = 3;
-      s.avatar_sprite_draw_order[4] = 0;
-      s.avatar_sprite_draw_order[5] = s.world_magic_slot_index / 2 - 1;
-      PTR_DAT_005832b4->font_slot = 4;
-      s.avatar_draw_y = 400;
-      s.avatar_draw_y -= (int)s.avatar_sprite->height / 2;
-      DrawEncodedImageUiScaled(PTR_DAT_005832dc, s.avatar_x_positions[s.avatar_sprite_draw_order[5]] - 0x1e, s.avatar_draw_y, g_world_magic_avatar_sprites[s.avatar_sprite_draw_order[s.avatar_sprite_draw_order[5]]], (int)s.avatar_sprite->width,
-                               (int)s.avatar_sprite->height);
-      BlitGraphicsRect(PTR_DAT_005832dc, s.icon_x_scaled, s.icon_y_scaled, s.icon_width_scaled, s.icon_height_scaled, PTR_DAT_005832b4, s.icon_x_scaled, s.icon_y_scaled);
-      if (control->on_activate != (AdvMenuActivateCallback)0)
+      if (event_type != 2)
       {
-        control->on_activate(control);
+        DrawEncodedImageUiScaled(PTR_DAT_005832b4, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y,
+                                 (EncodedImage *)g_world_magic_choice_controls[control_ptr->selection_value - 0x31].mode_data[event_type],
+                                 g_world_magic_icon_rects[s.world_magic_slot_index].width, g_world_magic_icon_rects[s.world_magic_slot_index].height);
+      }
+      else
+      {
+        s.selected_state_sprite = (EncodedImage *)g_world_magic_choice_controls[control_ptr->selection_value - 0x31].mode_data[event_type];
+        s.icon_x_scaled = (unsigned int)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].x);
+        s.icon_y_scaled = ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].y);
+        s.icon_width_scaled = (unsigned int)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].width);
+        s.icon_height_scaled = (DWORD)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].height);
+        s.icon_border_padding = ScaleUiCoordinate(4);
+        BlitGraphicsRect(PTR_DAT_0058332c, s.icon_x_scaled, s.icon_y_scaled - ScaleUiCoordinate(0x148), s.icon_width_scaled, s.icon_height_scaled, PTR_DAT_005832dc, s.icon_x_scaled, s.icon_y_scaled);
+        DrawEncodedImageUiScaled(PTR_DAT_005832dc, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y, (EncodedImage *)g_world_magic_choice_button_sprite_bank.named.icon[s.world_magic_slot_index],
+                                 g_world_magic_icon_rects[s.world_magic_slot_index].width, g_world_magic_icon_rects[s.world_magic_slot_index].height);
+        DrawEncodedImageResampled(PTR_DAT_005832dc,
+                                  s.icon_border_padding + (int)s.icon_x_scaled,
+                                  s.icon_border_padding + s.icon_y_scaled,
+                                  s.icon_width_scaled - s.icon_border_padding * 2,
+                                  (int)s.icon_height_scaled - s.icon_border_padding * 2,
+                                  s.selected_state_sprite);
+
+        s.avatar_draw_y = 400;
+        s.avatar_sprite = g_world_magic_avatar_sprites[0];
+        s.avatar_x_positions[0] = 0x6c;
+        s.avatar_x_positions[1] = 0xbf;
+        s.avatar_x_positions[2] = 0x10e;
+        s.avatar_x_positions[3] = 0x15e;
+        s.avatar_x_positions[4] = 0x1b1;
+        s.avatar_sprite_draw_order[0] = 2;
+        s.avatar_sprite_draw_order[1] = 1;
+        s.avatar_sprite_draw_order[2] = 4;
+        s.avatar_sprite_draw_order[3] = 3;
+        s.avatar_sprite_draw_order[4] = 0;
+        s.avatar_sprite_draw_order[5] = s.world_magic_slot_index / 2 - 1;
+        PTR_DAT_005832b4->font_slot = 4;
+        s.avatar_draw_y -= (int)s.avatar_sprite->height / 2;
+        DrawEncodedImageUiScaled(PTR_DAT_005832dc, s.avatar_x_positions[s.avatar_sprite_draw_order[5]] - 0x1e, s.avatar_draw_y, g_world_magic_avatar_sprites[s.avatar_sprite_draw_order[s.avatar_sprite_draw_order[5]]], (int)s.avatar_sprite->width,
+                                 (int)s.avatar_sprite->height);
+        BlitGraphicsRect(PTR_DAT_005832dc, s.icon_x_scaled, s.icon_y_scaled, s.icon_width_scaled, s.icon_height_scaled, PTR_DAT_005832b4, s.icon_x_scaled, s.icon_y_scaled);
+      }
+      if ((event_type == 2) && (control_ptr->on_activate != (AdvMenuActivateCallback)0))
+      {
+        control_ptr->on_activate(control_ptr);
       }
     }
   }
   return 1;
-#undef control
 }
 
 // FUNCTION: SHANDALAR 0x004ffc5d
@@ -4276,10 +4277,11 @@ int ActivateMainMenuControl(AdvMenuControl *control)
 }
 
 // FUNCTION: SHANDALAR 0x004ffda4
-void InitializeMainMenuAndWorldMagicChoiceControls(void)
+int InitializeMainMenuAndWorldMagicChoiceControls(void)
 {
   int i;
   int sprite_index;
+  int scale_control_index;
 
   g_menu_saved_window_bounds = *PTR_DAT_005832b4;
 
@@ -4302,32 +4304,33 @@ void InitializeMainMenuAndWorldMagicChoiceControls(void)
 
   if (global_screen_width != 0x280)
   {
-    for (i = 0; i < 4; i = i + 1)
+    for (scale_control_index = 0; scale_control_index < 4; scale_control_index = scale_control_index + 1)
     {
-      g_main_menu_controls[i].x = (g_main_menu_controls[i].x * global_screen_width) / 0x280;
-      g_main_menu_controls[i].y = (g_main_menu_controls[i].y * global_screen_width) / 0x280;
-      g_main_menu_controls[i].width = (g_main_menu_controls[i].width * global_screen_width) / 0x280;
-      g_main_menu_controls[i].height = (g_main_menu_controls[i].height * global_screen_width) / 0x280;
+      g_main_menu_controls[scale_control_index].x = (g_main_menu_controls[scale_control_index].x * global_screen_width) / 0x280;
+      g_main_menu_controls[scale_control_index].y = (g_main_menu_controls[scale_control_index].y * global_screen_width) / 0x280;
+      g_main_menu_controls[scale_control_index].width = (g_main_menu_controls[scale_control_index].width * global_screen_width) / 0x280;
+      g_main_menu_controls[scale_control_index].height = (g_main_menu_controls[scale_control_index].height * global_screen_width) / 0x280;
     }
-    for (i = 0; i < 5; i = i + 1)
+    for (scale_control_index = 0; scale_control_index < 5; scale_control_index = scale_control_index + 1)
     {
-      g_world_magic_choice_controls[i].x = (g_world_magic_choice_controls[i].x * global_screen_width) / 0x280;
-      g_world_magic_choice_controls[i].y = (g_world_magic_choice_controls[i].y * global_screen_width) / 0x280;
-      g_world_magic_choice_controls[i].width = (g_world_magic_choice_controls[i].width * global_screen_width) / 0x280;
-      g_world_magic_choice_controls[i].height = (g_world_magic_choice_controls[i].height * global_screen_width) / 0x280;
+      g_world_magic_choice_controls[scale_control_index].x = (g_world_magic_choice_controls[scale_control_index].x * global_screen_width) / 0x280;
+      g_world_magic_choice_controls[scale_control_index].y = (g_world_magic_choice_controls[scale_control_index].y * global_screen_width) / 0x280;
+      g_world_magic_choice_controls[scale_control_index].width = (g_world_magic_choice_controls[scale_control_index].width * global_screen_width) / 0x280;
+      g_world_magic_choice_controls[scale_control_index].height = (g_world_magic_choice_controls[scale_control_index].height * global_screen_width) / 0x280;
     }
   }
 
   AddMenuControlsToContext(g_main_menu_controls, 4, 0);
   AddMenuControlsToContext(g_world_magic_choice_controls, 5, 0);
+  return 1;
 }
 
 // FUNCTION: SHANDALAR 0x005631ca
 void UpdateWorldMagicUnlockProgress(void)
 {
-  int required_duel_wins;
   struct
   {
+    int required_duel_wins;
     int mapped_world_magic_index;
     int world_magic_duel_win_count;
     int scan_index;
@@ -4339,6 +4342,7 @@ void UpdateWorldMagicUnlockProgress(void)
     unsigned char unused_flag_a;
     unsigned char unused_flag_b;
     unsigned char unused_flag_c;
+    int unused_padding;
     int town_count_for_wizard_color;
   } s;
 
@@ -4349,18 +4353,22 @@ void UpdateWorldMagicUnlockProgress(void)
     s.mapped_world_magic_index = FUN_0056302b(s.wizard_color_index + 1);
     for (s.scan_index = 0; s.scan_index < 0x80; s.scan_index = s.scan_index + 1)
     {
-      if ((*((char *)&g_town_slots[s.scan_index].status_and_ruling_wizard + 1) != '\0') &&
+      if ((g_town_slots[s.scan_index].status_and_ruling_wizard & 0xff00) &&
           (((int)g_town_slots[s.scan_index].status_and_ruling_wizard >> 8) - 1 == s.wizard_color_index))
       {
         s.town_count_for_wizard_color = s.town_count_for_wizard_color + 1;
       }
     }
     s.world_magic_town_counts[s.mapped_world_magic_index] = (unsigned char)s.town_count_for_wizard_color;
-    if (g_world_magic_town_flags[s.wizard_color_index] == 0)
+    if (g_world_magic_town_flags[s.wizard_color_index] != 0)
     {
-      required_duel_wins = g_shandalar_difficulty * s.town_count_for_wizard_color + g_shandalar_difficulty * 5 + 0x1e;
-      s.original_required_duel_wins = required_duel_wins;
-      for (s.scan_index = 0; (s.scan_index < 1000) && (g_duel_victory_log[s.scan_index] != '\0'); s.scan_index = s.scan_index + 1)
+      s.world_magic_progress_values[s.mapped_world_magic_index] = 0;
+    }
+    else
+    {
+      s.required_duel_wins = s.town_count_for_wizard_color * g_shandalar_difficulty + g_shandalar_difficulty * 5 + 0x1e;
+      s.original_required_duel_wins = s.required_duel_wins;
+      for (s.scan_index = 0; (s.scan_index < 1000) && ((char)g_duel_victory_log[s.scan_index] != '\0'); s.scan_index = s.scan_index + 1)
       {
         if (((int)(char)g_duel_victory_log[s.scan_index] >> 4) == s.wizard_color_index + 1)
         {
@@ -4368,17 +4376,8 @@ void UpdateWorldMagicUnlockProgress(void)
         }
       }
       s.world_magic_victory_counts[s.mapped_world_magic_index] = s.world_magic_duel_win_count;
-      required_duel_wins = g_shandalar_difficulty * 5 + 0x14;
-      s.world_magic_duel_win_count = s.original_required_duel_wins - s.world_magic_duel_win_count;
-      if (required_duel_wins <= s.world_magic_duel_win_count)
-      {
-        required_duel_wins = s.world_magic_duel_win_count;
-      }
-      s.world_magic_progress_values[s.mapped_world_magic_index] = 0x1e - (s.original_required_duel_wins - required_duel_wins);
-    }
-    else
-    {
-      s.world_magic_progress_values[s.mapped_world_magic_index] = 0;
+      s.required_duel_wins = MAX(g_shandalar_difficulty * 5 + 20, s.required_duel_wins - s.original_required_duel_wins);
+      s.world_magic_progress_values[s.mapped_world_magic_index] = 0x1e - (s.original_required_duel_wins - s.required_duel_wins);
     }
   }
   s.unused_flag_a = 0;
@@ -4795,7 +4794,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       LoadPcxIntoPageNoPalette("advfac64.pic");
       g_world_move_dir_index = 0;
       RefreshAdventureInterfaceLayout();
-      FUN_0055060c(1);
+      DrawAdventureInterfaceLayout(1);
       g_loadsave_skip_esc = 0;
       break;
     case 0x53:
@@ -4819,11 +4818,11 @@ void UpdateAdventureWorldInputAndMovement(void)
 
     handle_world_magic_hotkey:
       s.key_magic_index = s.key_code - 0x30;
-      if ((DAT_0078990c[s.key_magic_index] != 0) && ((g_world_magic_bitmap & (1 << (s.key_magic_index * 2))) != 0))
+      if ((g_amulet_inventory[s.key_magic_index - 1] != 0) && ((g_world_magic_bitmap & (1 << (s.key_magic_index * 2))) != 0))
       {
         if (FUN_00522508(4 - g_shandalar_difficulty) == 0)
         {
-          DAT_0078990c[s.key_magic_index] = DAT_0078990c[s.key_magic_index] - 1;
+          g_amulet_inventory[s.key_magic_index - 1] = g_amulet_inventory[s.key_magic_index - 1] - 1;
         }
         RefreshAdventureInterfaceLayout();
 
@@ -4841,7 +4840,7 @@ void UpdateAdventureWorldInputAndMovement(void)
           {
             s.random_world_y = FUN_00522508(0x40);
             s.abs_delta_x = FUN_00522508(0x40);
-          } while (FUN_0043146b(s.random_world_y, s.abs_delta_x) == 0);
+          } while (GetWorldTileType(s.random_world_y, s.abs_delta_x) == 0);
           AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_TELEPORT_RANDOM);
           g_world_player_x = s.random_world_y * 0x20 + 0x10;
           g_world_player_y = s.abs_delta_x * 0x20 + 0x10;
@@ -4905,8 +4904,8 @@ void UpdateAdventureWorldInputAndMovement(void)
 
   s.random_value = g_neighbor_dx[g_world_move_dir_index] + g_world_player_x;
   s.random_world_x = g_neighbor_dy[g_world_move_dir_index] + g_world_player_y;
-  s.tile_type = FUN_0043146b(s.random_value / 32, s.random_world_x / 32);
-  s.key_magic_index = FUN_005611c8(s.tile_type);
+  s.tile_type = GetWorldTileType(s.random_value / 32, s.random_world_x / 32);
+  s.key_magic_index = GetWorldTileMagicMask(s.tile_type);
   if (s.key_magic_index != 0)
   {
     do
@@ -4930,7 +4929,7 @@ void UpdateAdventureWorldInputAndMovement(void)
   {
     s.deck_index = 3;
   }
-  if (WorldRoadTileHasDirection(g_world_player_tile_x, g_world_player_tile_y, (char)g_world_move_dir_index) != 0)
+  if (WorldRoadTileHasDirection(g_world_player_tile_x, g_world_player_tile_y, g_world_move_dir_index) != 0)
   {
     s.deck_index = 1;
   }
@@ -4995,7 +4994,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       g_world_player_y = g_world_player_y + g_neighbor_dy[g_world_move_dir_index];
     }
 
-    s.tile_type = FUN_0043146b(g_world_player_x / 32, g_world_player_y / 32);
+    s.tile_type = GetWorldTileType(g_world_player_x / 32, g_world_player_y / 32);
     if ((s.tile_type == 0) &&
         ((abs(g_world_player_x - ((g_world_player_x & 0xffffffe0U) + 0x10)) < 0xc) || (abs(g_world_player_y - ((g_world_player_y & 0xffffffe0U) + 0x10)) < 0xc)))
     {
@@ -5024,12 +5023,12 @@ void UpdateAdventureWorldInputAndMovement(void)
 
       if ((g_siege_timer & 0x3fU) == 0)
       {
-        FUN_005616f9();
+        StartWizardTownSiege();
         g_siege_timer = g_siege_timer + ClampIntToRange(g_shandalar_difficulty + g_siege_timer / 0x100, 0, 0x10);
       }
       if ((g_siege_timer & 0x3f) == 0x18)
       {
-        FUN_00562169();
+        ResolveWizardTownSiege();
         g_siege_timer = g_siege_timer + ClampIntToRange(g_shandalar_difficulty + g_siege_timer / 0x40 + g_shandalar_difficulty, 0, 0x20);
       }
 
@@ -6005,9 +6004,9 @@ int LoadAdvStringsFile(const char *filename)
   struct
   {
     int ok;
-    int local_c;
-    char *local_8;
-    int iVar36;
+    int line_count;
+    int i;
+    char *next_buf;
   } s;
 
   s.ok = 1;
@@ -6028,149 +6027,134 @@ int LoadAdvStringsFile(const char *filename)
 
   LoadTextSectionLines(filename, "CITYNAME_MANACASTLE");
 
-  for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    s.iVar36 = s.local_c * 4 + 4;
-    s.iVar36 = s.iVar36 + s.iVar36 * 4;
-    s.iVar36 = s.iVar36 + s.iVar36 * 4;
-    strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + s.iVar36, text_lines[s.local_c]);
+    strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[s.i + 1], text_lines[s.i]);
   }
-  strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00, gs_cityname_castle_00765dc0);
+  strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[0], gs_cityname_castle_00765dc0);
 
-  s.local_8 = gs_city_text_cluster_0077d610.citynames_buf_0077d610;
+  s.next_buf = gs_city_text_cluster_0077d610.citynames_buf_0077d610;
   s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_FIRSTHALF", gs_citynames_firsthalf_0077e060, 0x10, gs_city_text_cluster_0077d610.citynames_buf_0077d610,
-                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_SECONDHALF", gs_citynames_secondhalf_007653e0, 0x10, s.local_8,
+                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), &s.next_buf);
+  s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_SECONDHALF", gs_citynames_secondhalf_007653e0, 0x10, s.next_buf,
                                      gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), (char **)0);
 
-  s.local_8 = gs_worldmagic_buf_0074b160;
+  s.next_buf = gs_worldmagic_buf_0074b160;
   LoadTextSectionLines(filename, "WORLDMAGIC");
   strcpy(gs_worldmagic_title_0077e1d0, text_lines[0]);
   s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_NAMES", gs_worldmagic_names_00780660, 0xc, gs_worldmagic_buf_0074b160,
-                                     gs_worldmagic_buf_0074b160 + sizeof(gs_worldmagic_buf_0074b160), &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_EXPLAINS", gs_worldmagic_explains_0074b8f0, 0xc, s.local_8,
+                                     gs_worldmagic_buf_0074b160 + sizeof(gs_worldmagic_buf_0074b160), &s.next_buf);
+  s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_EXPLAINS", gs_worldmagic_explains_0074b8f0, 0xc, s.next_buf,
                                      gs_worldmagic_buf_0074b160 + sizeof(gs_worldmagic_buf_0074b160), (char **)0);
 
   s.ok &= LoadTextSectionStringTable(filename, "LOGSTRINGS", gs_logstrings_0077c9a0, 0x10, gs_logstrings_buf_0077c680,
                                      gs_logstrings_buf_0077c680 + sizeof(gs_logstrings_buf_0077c680), (char **)0);
 
   LoadTextSectionLines(filename, "WIZARDNAMES");
-  for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_wizardnames_0077ee70 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
+    strcpy(gs_wizardnames_0077ee70[s.i + 1], text_lines[s.i]);
   }
-  strcpy(gs_wizardnames_0077ee70, "");
+  strcpy(gs_wizardnames_0077ee70[0], "");
 
-  s.iVar36 = LoadTextSectionLines(filename, "CREATURENAMES");
-  if ((int)gs_creature_name_count_00593934 <= s.iVar36)
+  s.line_count = LoadTextSectionLines(filename, "CREATURENAMES");
+  s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
+  for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    s.iVar36 = gs_creature_name_count_00593934;
+    strcpy(gs_creature_names_00591a08[s.i].name, text_lines[s.i]);
   }
-  for (s.local_c = 0; s.local_c < s.iVar36; s.local_c = s.local_c + 1)
+  for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.local_c].name + 0x0a, text_lines[s.local_c]);
-  }
-  while (s.local_c = s.iVar36, s.local_c < (int)gs_creature_name_count_00593934)
-  {
-    strcpy(gs_creature_names_00591a08[s.local_c].name + 0x0a, "");
-    s.iVar36 = s.local_c + 1;
+    strcpy(gs_creature_names_00591a08[s.i].name, "");
   }
 
-  s.iVar36 = LoadTextSectionLines(filename, "CREATURENAME_ARTICLES");
-  if ((int)gs_creature_name_count_00593934 <= s.iVar36)
+  s.line_count = LoadTextSectionLines(filename, "CREATURENAME_ARTICLES");
+  s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
+  for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    s.iVar36 = gs_creature_name_count_00593934;
+    strcpy(gs_creature_names_00591a08[s.i].article, text_lines[s.i]);
   }
-  for (s.local_c = 0; s.local_c < s.iVar36; s.local_c = s.local_c + 1)
+  for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.local_c].name, text_lines[s.local_c]);
-  }
-  while (s.local_c = s.iVar36, s.local_c < (int)gs_creature_name_count_00593934)
-  {
-    strcpy(gs_creature_names_00591a08[s.local_c].name, "");
-    s.iVar36 = s.local_c + 1;
+    strcpy(gs_creature_names_00591a08[s.i].name, "");
   }
 
-  s.iVar36 = LoadTextSectionLines(filename, "CREATURENAMES_PLURAL");
-  if ((int)gs_creature_name_count_00593934 <= s.iVar36)
+  s.line_count = LoadTextSectionLines(filename, "CREATURENAMES_PLURAL");
+  s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
+  for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    s.iVar36 = gs_creature_name_count_00593934;
+    strcpy(gs_creature_names_00591a08[s.i].plural, text_lines[s.i]);
   }
-  for (s.local_c = 0; s.local_c < s.iVar36; s.local_c = s.local_c + 1)
+  for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.local_c].plural + 0x0a, text_lines[s.local_c]);
-  }
-  while (s.local_c = s.iVar36, s.local_c < (int)gs_creature_name_count_00593934)
-  {
-    strcpy(gs_creature_names_00591a08[s.local_c].plural + 0x0a, "");
-    s.iVar36 = s.local_c + 1;
+    strcpy(gs_creature_names_00591a08[s.i].plural, "");
   }
 
   LoadTextSectionLines(filename, "DIRECTIONS");
-  for (s.local_c = 0; s.local_c < 4; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 4; s.i = s.i + 1)
   {
-    strcpy(gs_directions_00765d50 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_directions_00765d50[s.i], text_lines[s.i]);
   }
 
-  s.local_8 = gs_cardclassnames_buf_0074c5c0;
+  s.next_buf = gs_cardclassnames_buf_0074c5c0;
   s.ok &= LoadTextSectionStringTable(filename, "CARDCLASSNAMES", gs_cardclassnames_0077cf70, 9, gs_cardclassnames_buf_0074c5c0,
-                                     gs_cardclassnames_buf_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "CARDCLASSNAMES_PLURAL", gs_cardclassnames_plural_0077e1f0, 9, s.local_8,
+                                     gs_cardclassnames_buf_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), &s.next_buf);
+  s.ok &= LoadTextSectionStringTable(filename, "CARDCLASSNAMES_PLURAL", gs_cardclassnames_plural_0077e1f0, 9, s.next_buf,
                                      gs_cardclassnames_buf_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), (char **)0);
 
   LoadTextSectionLines(filename, "SPELLNAMES");
   strcpy(gs_spellname_primary_0077e6e0, text_lines[0]);
-  for (s.local_c = 1; s.local_c < 5; s.local_c = s.local_c + 1)
+  for (s.i = 1; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_spellnames_0077e220 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_spellnames_0077e220[s.i], text_lines[s.i]);
   }
-  strcpy(gs_spellnames_0077e220, text_lines[6]);
+  strcpy(gs_spellnames_0077e220[0], text_lines[6]);
 
   LoadTextSectionLines(filename, "MANANAMES");
-  for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_mananames_0074d980 + (s.local_c * 5 + 5) * 5, text_lines[s.local_c]);
+    strcpy(gs_mananames_0074d980[s.i + 1], text_lines[s.i]);
   }
-  strcpy(gs_mananames_0074d980, "");
+  strcpy(gs_mananames_0074d980[0], "");
 
   LoadTextSectionLines(filename, "LANDWALKS");
-  for (s.local_c = 0; s.local_c < 5; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_landwalks_007806f0 + (s.local_c * 5 + 5) * 10, text_lines[s.local_c]);
+    strcpy(gs_landwalks_007806f0[s.i + 1], text_lines[s.i]);
   }
-  strcpy(gs_landwalks_007806f0, "");
+  strcpy(gs_landwalks_007806f0[0], "");
 
   LoadTextSectionLines(filename, "AMULETNAMES");
-  for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 6; s.i = s.i + 1)
   {
-    strcpy(gs_amuletnames_0077d090 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_amuletnames_0077d090[s.i], text_lines[s.i]);
   }
 
   LoadTextSectionLines(filename, "AMULETNAMES_PLURAL");
-  for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 6; s.i = s.i + 1)
   {
-    strcpy(gs_amuletnames_plural_0077edd0 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_amuletnames_plural_0077edd0[s.i], text_lines[s.i]);
   }
 
   LoadTextSectionLines(filename, "COLORCARDS");
-  for (s.local_c = 0; s.local_c < 6; s.local_c = s.local_c + 1)
+  for (s.i = 0; s.i < 6; s.i = s.i + 1)
   {
-    strcpy(gs_colorcards_0077c5e0 + s.local_c * 0x19, text_lines[s.local_c]);
+    strcpy(gs_colorcards_0077c5e0[s.i], text_lines[s.i]);
   }
 
   s.ok &= LoadTextSectionStringTable(filename, "CAVE_SHOWCLUES", gs_cave_showclues_0077efa0, 0x17, gs_cave_showclues_buf_007658d0,
                                      gs_cave_showclues_buf_007658d0 + sizeof(gs_cave_showclues_buf_007658d0), (char **)0);
 
-  s.local_8 = gs_encounter_buf_0074da70;
+  s.next_buf = gs_encounter_buf_0074da70;
   s.ok &= LoadTextSectionStringTable(filename, "ENCOUNTER_PREDUEL", gs_encounter_preduel_0077f0d0, 0x30, gs_encounter_buf_0074da70,
-                                     gs_encounter_buf_0074da70 + sizeof(gs_encounter_buf_0074da70), &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "ENCOUNTER_POSTDUEL", gs_encounter_postduel_0077f050, 0x20, s.local_8,
+                                     gs_encounter_buf_0074da70 + sizeof(gs_encounter_buf_0074da70), &s.next_buf);
+  s.ok &= LoadTextSectionStringTable(filename, "ENCOUNTER_POSTDUEL", gs_encounter_postduel_0077f050, 0x20, s.next_buf,
                                      gs_encounter_buf_0074da70 + sizeof(gs_encounter_buf_0074da70), (char **)0);
 
-  s.local_8 = gs_visit_buf_0077f610;
+  s.next_buf = gs_visit_buf_0077f610;
   s.ok &= LoadTextSectionStringTable(filename, "VISIT", gs_visit_0077c4f0, 0x23, gs_visit_buf_0077f610, gs_visit_buf_0077f610 + sizeof(gs_visit_buf_0077f610),
-                                     &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "VISIT_CITYBUY", gs_visit_citybuy_0077f1d0, 4, s.local_8,
+                                     &s.next_buf);
+  s.ok &= LoadTextSectionStringTable(filename, "VISIT_CITYBUY", gs_visit_citybuy_0077f1d0, 4, s.next_buf,
                                      gs_visit_buf_0077f610 + sizeof(gs_visit_buf_0077f610), (char **)0);
 
   s.ok &= LoadTextSectionStringTable(filename, "CASTLEWIN", gs_castlewin_0074b8c0, 0xb, gs_castlewin_buf_0077e700,
@@ -6192,8 +6176,8 @@ int LoadAdvStringsFile(const char *filename)
   s.ok &= LoadTextSectionStringTable(filename, "CITYCARDTEXT", gs_citycardtext_0074ccf0, 0x31, gs_citycardtext_buf_0074c0f0,
                                      gs_citycardtext_buf_0074c0f0 + sizeof(gs_citycardtext_buf_0074c0f0), (char **)0);
   s.ok &= LoadTextSectionStringTable(filename, "BROWSE", gs_browse_0074da20, 0x11,
-                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610),
-                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610) + sizeof(gs_city_text_cluster_0077d610.browse_buf_0077dc50),
+                                     gs_city_text_cluster_0077d610.browse_buf_0077dc50,
+                                     gs_city_text_cluster_0077d610.browse_buf_0077dc50 + sizeof(gs_city_text_cluster_0077d610.browse_buf_0077dc50),
                                      (char **)0);
   s.ok &= LoadTextSectionStringTable(filename, "SHOWDECK", gs_showdeck_0074b920, 3, gs_showdeck_buf_0074d890,
                                      gs_showdeck_buf_0074d890 + sizeof(gs_showdeck_buf_0074d890), (char **)0);
@@ -6208,21 +6192,21 @@ int LoadAdvStringsFile(const char *filename)
   s.ok &= LoadTextSectionStringTable(filename, "LAIR", gs_lair_0077e180, 0x13, gs_lair_buf_007800c0, gs_lair_buf_007800c0 + sizeof(gs_lair_buf_007800c0),
                                      (char **)0);
 
-  s.local_8 = gs_wiseman_buf_00780c60;
+  s.next_buf = gs_wiseman_buf_00780c60;
   s.ok &= LoadTextSectionStringTable(filename, "WISEMAN", gs_wiseman_0074d840, 0x13, gs_wiseman_buf_00780c60, gs_wiseman_buf_00780c60 + sizeof(gs_wiseman_buf_00780c60),
-                                     &s.local_8);
-  s.ok &= LoadTextSectionStringTable(filename, "CITYWISEMAN", gs_citywiseman_0074d800, 0xd, s.local_8, gs_wiseman_buf_00780c60 + sizeof(gs_wiseman_buf_00780c60),
+                                     &s.next_buf);
+  s.ok &= LoadTextSectionStringTable(filename, "CITYWISEMAN", gs_citywiseman_0074d800, 0xd, s.next_buf, gs_wiseman_buf_00780c60 + sizeof(gs_wiseman_buf_00780c60),
                                      (char **)0);
   s.ok &= LoadTextSectionStringTable(filename, "CITYSCREEN_BUTTONS", gs_cityscreen_buttons_0077f5e0, 8, gs_cityscreen_buttons_buf_0077f450,
                                      gs_cityscreen_buttons_buf_0077f450 + sizeof(gs_cityscreen_buttons_buf_0077f450), (char **)0);
 
   LoadTextSectionLines(filename, "SHOWLIST");
-  strcpy(gs_showcard_name_0077e110, text_lines[0]);
-  strcpy(gs_showcard_type_0077e142, text_lines[1]);
+  strcpy(gs_showcard_text_0077e110.title, text_lines[0]);
+  strcpy(gs_showcard_text_0077e110.subtitle, text_lines[1]);
 
   LoadTextSectionLines(filename, "SHOWLIBRARY");
-  strcpy(gs_showlibrary_title_0074bcc0, text_lines[0]);
-  strcpy(gs_showlibrary_empty_0074bcf2, text_lines[1]);
+  strcpy(gs_showlibrary_text_0074bcc0.title, text_lines[0]);
+  strcpy(gs_showlibrary_text_0074bcc0.subtitle, text_lines[1]);
 
   return s.ok;
 }
@@ -6545,9 +6529,12 @@ int FileExists(const char *filename)
 // FUNCTION: SHANDALAR 0x0046e6f0
 DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
 {
-  int *font_cfg_entry;
-  int i;
-  void *page;
+  struct
+  {
+    void *page;
+    int i;
+    int max_pages;
+  } s;
 
   (void)param_1;
 
@@ -6587,28 +6574,29 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
     LoadSystemFont(7, ScaleUiCoordinate(0xb), "tt0530m_.ttf", "Benguiat BkCn BT", 100, 0);
   }
 
-  InitializeGraphicsSystemDefaultMode();
+  GetPrimaryPage(0);
   ReadPalette("todpal.tr", (char *)0);
 
-  for (i = 0; i < 3; i = i + 1)
+  s.max_pages = 3;
+  for (s.i = 0; s.i < s.max_pages; s.i++)
   {
-    if ((i == 1) && (g_graphics_pages[0]->width < 0x401))
+    if ((s.i == 1) && (g_graphics_pages[0]->width <= 0x400))
     {
-      page = CreateGraphicsPage(1, 0x400, 800, 8);
+      s.page = CreateGraphicsPage(s.i, 0x400, 800, 8);
     }
     else
     {
-      page = CreateGraphicsPage(i, global_screen_width, global_screen_height + 1, 8);
+      s.page = CreateGraphicsPage(s.i, global_screen_width, global_screen_height + 1, 8);
     }
-    SetGraphicsPage(i, page);
+    SetGraphicsPage(s.i, s.page);
   }
 
-  page = CreateGraphicsPage(5, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), 8);
-  SetGraphicsPage(5, page);
+  s.page = CreateGraphicsPage(5, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), 8);
+  SetGraphicsPage(5, s.page);
 
-  page = CreateGraphicsPage(3, ScaleUiCoordinate(0x280),
-                            (ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148)) + 3, 8);
-  SetGraphicsPage(3, page);
+  s.page = CreateGraphicsPage(3, ScaleUiCoordinate(0x280),
+                              (ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148)) + 3, 8);
+  SetGraphicsPage(3, s.page);
 
   PTR_DAT_0058332c->max_x = ScaleUiCoordinate(0x280);
   PTR_DAT_00583304->max_x = PTR_DAT_0058332c->max_x;
@@ -6724,10 +6712,30 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
   case 0x10101010:
     update_snd();
     return 0;
-  case 2:
-    sound_close();
-    PostQuitMessage(0);
-    return DefWindowProcA(hwnd, 2, wparam, lparam);
+  case 0xf:
+    break;
+  case 0x200:
+    g_mouse_x = (int)((unsigned int)lparam & 0xffff);
+    g_mouse_y = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
+    break;
+  case 0x201:
+    g_mouse_button_down_mask = 1;
+    g_mouse_x = (int)((unsigned int)lparam & 0xffff);
+    g_mouse_y = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
+    break;
+  case 0x204:
+    g_mouse_button_down_mask = 2;
+    g_mouse_x = (int)((unsigned int)lparam & 0xffff);
+    g_mouse_y = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
+    break;
+  case 0x205:
+    g_mouse_button_released_mask |= 1;
+    g_mouse_button_down_mask = 0;
+    break;
+  case 0x202:
+    g_mouse_button_released_mask |= 2;
+    g_mouse_button_down_mask = 0;
+    break;
   case 0x100:
   case 0x104:
     QueueKeyInputFromMessage(wparam, lparam);
@@ -6743,7 +6751,11 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     }
 
     g_palette_window_hwnd = FindWindowExA((HWND)0, (HWND)0, "ShowPaletteClass", "Current Palette");
-    if (g_palette_window_hwnd == (HWND)0)
+    if (g_palette_window_hwnd != (HWND)0)
+    {
+      BringWindowToTop(g_palette_window_hwnd);
+    }
+    else
     {
       g_palette_window_hwnd = CreatePalettePopupWindow(g_app_instance, (void *)0);
       if (g_palette_window_hwnd == (HWND)0)
@@ -6752,35 +6764,15 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       }
       ShowWindow(g_palette_window_hwnd, 5);
     }
-    else
-    {
-      BringWindowToTop(g_palette_window_hwnd);
-    }
 
     UpdateWindow(g_palette_window_hwnd);
-    return DefWindowProcA(hwnd, msg, 0x7a, lparam);
-  case 0x200:
-    g_mouse_x = (int)((unsigned int)lparam & 0xffff);
-    g_mouse_y = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
-    break;
-  case 0x201:
-    g_mouse_button_down_mask = 1;
-    g_mouse_x = (int)((unsigned int)lparam & 0xffff);
-    g_mouse_y = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
-    break;
-  case 0x202:
-    g_mouse_button_released_mask |= 2;
-    g_mouse_button_down_mask = 0;
-    break;
-  case 0x204:
-    g_mouse_button_down_mask = 2;
-    g_mouse_x = (int)((unsigned int)lparam & 0xffff);
-    g_mouse_y = (int)(((unsigned int)lparam >> 0x10) & 0xffff);
-    break;
-  case 0x205:
-    g_mouse_button_released_mask |= 1;
-    g_mouse_button_down_mask = 0;
-    break;
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  case 2:
+    sound_close();
+    PostQuitMessage(0);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
 
   return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -6793,48 +6785,49 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 // FUNCTION: SHANDALAR 0x004cdd70
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int nShowCmd)
 {
-  int custom_mode_selected;
-  HWND existing_main;
-  HWND magic_shell_hwnd;
-  int horzres;
-  char module_path[100];
-  char game_dir[256];
-  char cmd_copy[100];
-  char *slash;
-  WNDCLASSA wndclass;
-  HWND main_hwnd;
-  MSG msg;
-  DWORD thread_id;
-  DWORD sectors_per_cluster;
-  DWORD bytes_per_sector;
-  DWORD number_of_free_clusters;
-  DWORD total_number_of_clusters;
-  int disk_free_bytes;
-  int tick;
-  int show_shell_on_exit;
-  int resolution_option_matched;
-  HDC screen_hdc;
-  int event_timer_ok;
-  HPALETTE stock_palette;
+  struct
+  {
+    char *slash;
+    char exe_cmd[264];
+    HDC screen_hdc;
+    DWORD thread_id;
+    int horzres;
+    int resolution_option_matched;
+    char game_dir[256];
+    DWORD bytes_per_sector;
+    DWORD total_number_of_clusters;
+    DWORD sectors_per_cluster;
+    int disk_free_bytes;
+    DWORD number_of_free_clusters;
+    char module_path[256];
+    HWND existing_main;
+    MSG msg;
+    int show_shell_on_exit;
+    char cmd_copy[100];
+    WNDCLASSA wndclass;
+    HWND main_hwnd;
+    int pad;
+    HWND magic_shell_hwnd;
+  } s;
 
   (void)prevInstance;
 
-  custom_mode_selected = 0;
-  strcpy(cmd_copy, cmdLine);
+  s.show_shell_on_exit = 0;
+  strcpy(s.cmd_copy, cmdLine);
   DAT_00715fa0 = 0;
 
-  existing_main = FindWindowA("ShandalarMainClass", (LPCSTR)0);
-  if (existing_main != (HWND)0)
+  s.existing_main = FindWindowA("ShandalarMainClass", (LPCSTR)0);
+  if (s.existing_main != (HWND)0)
   {
-    ShowWindow(existing_main, 9);
-    SetForegroundWindow(existing_main);
+    ShowWindow(s.existing_main, 9);
+    SetForegroundWindow(s.existing_main);
     return 0;
   }
 
-  magic_shell_hwnd = FindWindowA("Magic Shell", (LPCSTR)0);
-  if (magic_shell_hwnd != (HWND)0 && _strnicmp(cmdLine, "/MTGshell", 9) != 0)
+  s.magic_shell_hwnd = FindWindowA("Magic Shell", (LPCSTR)0);
+  if (s.magic_shell_hwnd != (HWND)0 && _strnicmp(cmdLine, "/MTGshell", 9) != 0)
   {
-    PostMessageA(magic_shell_hwnd, 0x400, 2, 0);
+    PostMessageA(s.magic_shell_hwnd, 0x400, 2, 0);
     return 0;
   }
 
@@ -6843,16 +6836,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     return 0;
   }
 
-  GetWindowsDirectoryA(module_path, 0x100);
-  module_path[3] = 0;
-  GetDiskFreeSpaceA(module_path, &sectors_per_cluster, &bytes_per_sector, &number_of_free_clusters,
-                    &total_number_of_clusters);
+  GetWindowsDirectoryA(s.module_path, 0x100);
+  s.module_path[3] = 0;
+  GetDiskFreeSpaceA(s.module_path, &s.sectors_per_cluster, &s.bytes_per_sector, &s.number_of_free_clusters,
+                    &s.total_number_of_clusters);
 
-  disk_free_bytes = total_number_of_clusters * sectors_per_cluster * number_of_free_clusters;
-  tick = disk_free_bytes + ((unsigned int)disk_free_bytes >> 0x1f & 0x1fU);
-  tick = (tick >> 5) + ((unsigned int)tick >> 0x1f & 0x3ffU);
-
-  if (((tick >> 10) + ((unsigned int)tick >> 0x1f & 0x3ffU)) >> 10 == 0)
+  s.disk_free_bytes = s.number_of_free_clusters * s.sectors_per_cluster * s.bytes_per_sector;
+  if (s.disk_free_bytes / 0x20 / 0x400 / 0x400 == 0)
   {
     MessageBoxA((HWND)0, "We have determined that you may not have enough free swap file space to play Magic: The Gathering reliably.\nThis is just a warning, and you will be able to continue from here, but you may want to free space on your windows drive before you play.", "Low Memory/Swap File Space Warning",
                 0x30);
@@ -6878,28 +6868,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   /* Switch to executable directory */
 #ifndef _DEBUG
-  strcpy(game_dir, (*__p___argv())[0]);
-  slash = strrchr(game_dir, '\\');
-  if (slash)
-  {
-    *slash = 0;
-  }
-  _chdir(game_dir);
+  strcpy(s.game_dir, (*__p___argv())[0]);
+  s.slash = strrchr(s.game_dir, '\\');
+  *s.slash = '\0';
+  _chdir(s.game_dir);
 #endif
 
   g_frontbuffer_direct_blit_enabled = 0;
   g_app_instance = hInstance;
 
-  memset(&wndclass, 0, sizeof(wndclass));
-  wndclass.style = 0x23;
-  wndclass.lpfnWndProc = MainWindowProc;
-  wndclass.hInstance = hInstance;
-  wndclass.hIcon = LoadIconA(hInstance, (LPCSTR)0x65);
-  wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
-  wndclass.hbrBackground = GetStockObject(4);
-  wndclass.lpszClassName = "ShandalarMainClass";
+  s.wndclass.style = 0x23;
+  s.wndclass.lpfnWndProc = MainWindowProc;
+  s.wndclass.cbClsExtra = 0;
+  s.wndclass.cbWndExtra = 0;
+  s.wndclass.hInstance = hInstance;
+  s.wndclass.hIcon = LoadIconA(g_app_instance, (LPCSTR)0x65);
+  s.wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
+  s.wndclass.hbrBackground = GetStockObject(4);
+  s.wndclass.lpszMenuName = (LPCSTR)0;
+  s.wndclass.lpszClassName = "ShandalarMainClass";
 
-  if (RegisterClassA(&wndclass) == 0)
+  if ((RegisterClassA(&s.wndclass) & 0xffff) == 0)
   {
     MessageBoxA((HWND)0, "Couldn't register the classes", (LPCSTR)0, 0x1010);
     return 0;
@@ -6907,90 +6896,92 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   atexit(RestoreDisplayResolution);
 
-  screen_hdc = GetDC((HWND)0);
-  horzres = GetDeviceCaps(screen_hdc, 8);
-  if (0x400 < horzres)
+  if (0x400 < GetDeviceCaps(GetDC((HWND)0), 8))
   {
     ChangeDisplayResolution(0x400, 0x300);
   }
 
-  /* Command line resolution override parsing (still being refined for matching) */
-  resolution_option_matched = 0;
-  show_shell_on_exit = 0;
-  if (cmdLine && cmdLine[0] && cmdLine[1])
+cmd_parse:
+  if (cmdLine[0] != 0 && cmdLine[1] != 0)
   {
+    s.resolution_option_matched = 0;
     if (cmdLine[1] == '6')
     {
       global_screen_width = 0x280;
       global_screen_height = 0x1e0;
       PTR_s_advinter800_pic_00589de8 = "advinter.pic";
-      CreateGraphicsPage(0, 0x280, 0x1e0, -1);
-      show_shell_on_exit = 1;
-      resolution_option_matched = 1;
+      CreateGraphicsPage(0, global_screen_width, global_screen_height, -1);
+      s.resolution_option_matched = 1;
+      s.show_shell_on_exit = 1;
     }
-    else if (cmdLine[1] == '8')
+    if (cmdLine[1] == '8')
     {
       global_screen_width = 800;
       global_screen_height = 600;
       PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
-      CreateGraphicsPage(0, 800, 600, -1);
-      show_shell_on_exit = 1;
-      resolution_option_matched = 1;
+      CreateGraphicsPage(0, global_screen_width, global_screen_height, -1);
+      s.resolution_option_matched = 1;
+      s.show_shell_on_exit = 1;
     }
-    else if (cmdLine[1] == '1')
+    if (cmdLine[1] == '1')
     {
       global_screen_width = 0x400;
       global_screen_height = 0x300;
       PTR_s_advinter800_pic_00589de8 = "advinter1024.pic";
-      CreateGraphicsPage(0, 0x400, 0x300, -1);
-      show_shell_on_exit = 1;
-      resolution_option_matched = 1;
+      CreateGraphicsPage(0, global_screen_width, global_screen_height, -1);
+      s.resolution_option_matched = 1;
+      s.show_shell_on_exit = 1;
     }
-  }
 
-  if (!resolution_option_matched)
-  {
-    screen_hdc = GetDC((HWND)0);
-    horzres = GetDeviceCaps(screen_hdc, 8);
-    if (horzres == 0x280)
+    if (s.resolution_option_matched == 0)
     {
-      global_screen_width = 0x280;
-      global_screen_height = 0x1e0;
-      PTR_s_advinter800_pic_00589de8 = "advinter.pic";
+      cmdLine[0] = 0;
+      goto cmd_parse;
     }
-    else if (horzres == 800)
-    {
-      global_screen_width = 800;
-      global_screen_height = 600;
-      PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
-    }
-    else
-    {
-      global_screen_width = 0x400;
-      global_screen_height = 0x300;
-      PTR_s_advinter800_pic_00589de8 = "advinter1024.pic";
-    }
-  }
-
-  if (PTR_DAT_005832b4)
-  {
     PTR_DAT_005832b4->max_x = global_screen_width - 1;
     PTR_DAT_005832b4->max_y = global_screen_height - 1;
   }
-
+  else
+  {
+    s.horzres = GetDeviceCaps(GetDC((HWND)0), 8);
+    switch (s.horzres)
+    {
+    case 0x280:
+      global_screen_width = 0x280;
+      global_screen_height = 0x1e0;
+      PTR_s_advinter800_pic_00589de8 = "advinter.pic";
+      break;
+    case 0x320:
+      global_screen_width = 0x320;
+      global_screen_height = 0x258;
+      PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
+      break;
+#ifdef MODERN_FIXES
+    default:
+#else
+    case 0x400:
+#endif
+      global_screen_width = 0x400;
+      global_screen_height = 0x300;
+      PTR_s_advinter800_pic_00589de8 = "advinter1024.pic";
+      break;
+    }
+    PTR_DAT_005832b4->max_x = global_screen_width - 1;
+    PTR_DAT_005832b4->max_y = global_screen_height - 1;
+  }
 #ifdef _DEBUG
   // Annoying trying to debug with window always on top
-  main_hwnd = CreateWindowExA(0, "ShandalarMainClass", "Magic: Shandalar", 0x80000000, 0, 0,
-                              global_screen_width, global_screen_height, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
+  s.main_hwnd = CreateWindowExA(0, "ShandalarMainClass", "Magic: Shandalar", 0x80000000, 0, 0,
+                                global_screen_width, global_screen_height, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
 #else
-  main_hwnd = CreateWindowExA(8, "ShandalarMainClass", "Magic: Shandalar", 0x80000000, 0, 0,
-                              global_screen_width, global_screen_height, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
+  s.main_hwnd = CreateWindowExA(8, "ShandalarMainClass", "Magic: Shandalar", 0x80000000, 0, 0,
+                                global_screen_width, global_screen_height, (HWND)0, (HMENU)0, hInstance, (LPVOID)0);
 #endif
-  g_main_window_hwnd = main_hwnd;
-  ShowWindow(main_hwnd, nShowCmd);
-  global_main_hdc = GetDC(main_hwnd);
+  g_main_window_hwnd = s.main_hwnd;
+  ShowWindow(s.main_hwnd, nShowCmd);
+  global_main_hdc = GetDC(s.main_hwnd);
 
-  if (show_shell_on_exit)
+  if (s.show_shell_on_exit)
   {
     g_graphics_pages[0]->hTempDC = global_main_hdc;
     SelectPalette(g_graphics_pages[0]->hTempDC, g_graphics_pages[0]->hPalette, FALSE);
@@ -6999,7 +6990,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
   InitializeSoundPresenceState();
-  init_sound_dll(main_hwnd, 0, 1);
+  init_sound_dll(s.main_hwnd, 0, 1);
 
   if (g_skip_world_sfx_preload == 0)
   {
@@ -7013,7 +7004,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     assert(0, "D:\\Newmagic\\multiplayer\\sid\\Test.c", 0x15a, "Timer failed to initialize!\n");
   }
   atexit(ShutdownUiTimer);
-  assert((unsigned int)(g_timer_event_handle != 0xffffffff), "D:\\Newmagic\\multiplayer\\sid\\Test.c", 0x15c,
+  assert(g_timer_event_handle != -1, "D:\\Newmagic\\multiplayer\\sid\\Test.c", 0x15c,
          "Could not start timer\n");
 
   SetSystemPaletteUse(global_main_hdc, 2);
@@ -7028,12 +7019,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     DAT_00715fa0 = 1;
   }
 
-  g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, FUN_0046e6f0, (LPVOID)0, 0, &thread_id);
+  g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, FUN_0046e6f0, (LPVOID)0, 0, &s.thread_id);
 
-  while (GetMessageA(&msg, (HWND)0, 0, 0))
+  while (GetMessageA(&s.msg, (HWND)0, 0, 0))
   {
-    TranslateMessage(&msg);
-    DispatchMessageA(&msg);
+    TranslateMessage(&s.msg);
+    DispatchMessageA(&s.msg);
   }
 
   if (DAT_00715fa0 != 0)
@@ -7045,22 +7036,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   FUN_00565faa();
   ChangeDisplayResolution(0, 0);
 
-  screen_hdc = GetDC((HWND)0);
-  stock_palette = GetStockObject(0xf);
-  SelectPalette(screen_hdc, stock_palette, FALSE);
-  SetSystemPaletteUse(screen_hdc, 1);
-  RealizePalette(screen_hdc);
-  ReleaseDC((HWND)0, screen_hdc);
+  s.screen_hdc = GetDC((HWND)0);
+  SelectPalette(s.screen_hdc, GetStockObject(0xf), FALSE);
+  SetSystemPaletteUse(s.screen_hdc, 1);
+  RealizePalette(s.screen_hdc);
+  ReleaseDC((HWND)0, s.screen_hdc);
 
-  if (_strnicmp(cmd_copy, "/MTGshell", 8) == 0)
+  if (_strnicmp(s.cmd_copy, "/MTGshell", 8) == 0)
   {
-    char exe_cmd[264];
-
-    strcpy(exe_cmd, global_base_directory);
-    strcat(exe_cmd, "\\Magic.exe");
-    strcat(exe_cmd, " /start3,1");
-    WinExec(exe_cmd, 5);
+    strcpy(s.exe_cmd, global_base_directory);
+    strcat(s.exe_cmd, "\\Magic.exe");
+    strcat(s.exe_cmd, " /start3,1");
+    WinExec(s.exe_cmd, 5);
   }
 
-  return (int)msg.wParam;
+  return (int)s.msg.wParam;
 }

@@ -22,13 +22,13 @@ extern HintPair DAT_0097e450[0x100];
 
 int DeckContainsCsvid(int csvid);
 int FUN_0056c705(int card_id);
-DWORD FUN_00564e70(char *dst, DWORD max_length, LPCVOID format, ...);
+DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 char *FUN_0057e826(char *dst, char *src);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 int ScaleUiCoordinate(int value);
 int MeasureTextSpanWidth(FacemakerWindowBounds *window, char *text, int length);
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text);
+void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 unsigned int WaitForInputEventUnlessBlocked(void);
 void FreeSpriteBlob(void *sprite_blob);
 
@@ -261,7 +261,7 @@ void ShowTownHintTextPopup(int hint_index)
     player_has_first_card = (card_name_index != 0);
     card_name_index = FUN_0056c705((&DAT_0097e450[hint_index].first)[player_has_first_card ^ 1]);
     popup_width = FUN_0056c705((&DAT_0097e450[hint_index].first)[player_has_first_card]);
-    FUN_00564e70(g_ui_message_buffer, 0x1000, gs_hinttext_0077e580[0], global_cards_data[popup_width].name,
+    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_hinttext_0077e580[0], global_cards_data[popup_width].name,
                  global_cards_data[card_name_index].name);
   }
   else

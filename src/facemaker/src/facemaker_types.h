@@ -51,7 +51,11 @@ typedef struct FontSlot
   int tm_min;
   int tm_max;
   LONG tm_leading;
+#ifdef SHANDALAR
+  char unk_22c[0x80];
+#else
   char unk_22c[0x78];
+#endif
 } FontSlot;
 
 typedef struct EncodedImage
@@ -66,6 +70,10 @@ typedef struct EncodedImage
   unsigned char spans[1]; // 0x10
 } EncodedImage;
 
+#ifdef SHANDALAR
+typedef char FontSlot_size_must_be_0x2ac[(sizeof(FontSlot) == 0x2ac) ? 1 : -1];
+#else
 typedef char FontSlot_size_must_be_0x2a4[(sizeof(FontSlot) == 0x2a4) ? 1 : -1];
+#endif
 
 #endif

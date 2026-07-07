@@ -12,8 +12,9 @@ typedef ptrdiff_t INT_PTR;
 
 extern char text_lines[500][128];
 
-extern int global_edited_deck_num_entries;
 extern FullDeck global_edited_deck;
+#define global_edited_deck_num_entries (global_edited_deck.total)
+
 extern GlobalDeckInfoBlob global_deckinfo;
 ;
 extern const card_ptr_t *cards_ptr;

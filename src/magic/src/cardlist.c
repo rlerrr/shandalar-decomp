@@ -73,7 +73,7 @@ void FUN_0055b9f0(int dc, int *rect, int value);
 // TODO: cleanup this bucket of shit
 #ifdef SHANDALAR
 #define SHOWLIST_CARD_BACK_CSVID (*(int *)&gs_phasebar_your_main_postcombat_00926670[0x60])
-#define SHOWLIST_MOUSE_MODE (*(int *)&DAT_0091c970.pad_0000[0x28])
+#define SHOWLIST_MOUSE_MODE g_duel_interface_options.layout
 #else
 extern int DAT_0091c998;
 #define SHOWLIST_CARD_BACK_CSVID unk_009266ac

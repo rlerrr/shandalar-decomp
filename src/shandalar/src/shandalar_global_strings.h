@@ -13,6 +13,15 @@
 typedef char sh_text_0x19_t[0x19];
 typedef char sh_text_0x32_t[0x32];
 typedef char sh_text_0x50_t[0x50];
+typedef char sh_text_0x64_t[0x64];
+
+typedef struct
+{
+  sh_text_0x32_t title;
+  sh_text_0x32_t subtitle;
+} sh_two_text_0x32_t;
+
+typedef char sh_two_text_0x32_size_must_be_0x64[(sizeof(sh_two_text_0x32_t) == 0x64) ? 1 : -1];
 
 /*
  * Runtime text globals loaded by LoadAdvStringsFile() (mostly from AdvStrings.txt),
@@ -162,8 +171,10 @@ typedef struct
   char citynames_buf_0077d610[0x640];
   char browse_buf_0077dc50[0x1a9];
   char pad_0077ddf9[7];
-  char cityname_manacastle_0077de00[0x260];
+  sh_text_0x64_t cityname_manacastle_0077de00[6];
+  char pad_0077e058[8];
 } sh_city_text_cluster_t;
+typedef char sh_city_text_cluster_size_must_be_0xa50[(sizeof(sh_city_text_cluster_t) == 0xa50) ? 1 : -1];
 // GLOBAL: SHANDALAR 0x0077d610
 SHANDALAR_GLOBAL_STRINGS_EXTERN sh_city_text_cluster_t gs_city_text_cluster_0077d610;
 // GLOBAL: SHANDALAR 0x0074b160
@@ -173,25 +184,32 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_worldmagic_title_0077e1d0[0x50];
 // GLOBAL: SHANDALAR 0x0077c680
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_logstrings_buf_0077c680[0x320];
 // GLOBAL: SHANDALAR 0x0077ee70
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_wizardnames_0077ee70[0x130];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x32_t gs_wizardnames_0077ee70[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_wizardnames_pad_0077ef9c[4];
 // GLOBAL: SHANDALAR 0x00765d50
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_directions_00765d50[0x64];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x19_t gs_directions_00765d50[4];
 // GLOBAL: SHANDALAR 0x0074c5c0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cardclassnames_buf_0074c5c0[0x1c2];
 // GLOBAL: SHANDALAR 0x0077e6e0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_spellname_primary_0077e6e0[0x20];
 // GLOBAL: SHANDALAR 0x0077e220
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_spellnames_0077e220[0x0a0];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x19_t gs_spellnames_0077e220[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_spellnames_pad_0077e2b6[0x0a];
 // GLOBAL: SHANDALAR 0x0074d980
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_mananames_0074d980[0x0a0];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x19_t gs_mananames_0074d980[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_mananames_pad_0074da16[0x0a];
 // GLOBAL: SHANDALAR 0x007806f0
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_landwalks_007806f0[0x130];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x32_t gs_landwalks_007806f0[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_landwalks_pad_0078081c[4];
 // GLOBAL: SHANDALAR 0x0077d090
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_amuletnames_0077d090[0x0a0];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x19_t gs_amuletnames_0077d090[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_amuletnames_pad_0077d126[0x0a];
 // GLOBAL: SHANDALAR 0x0077edd0
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_amuletnames_plural_0077edd0[0x0a0];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x19_t gs_amuletnames_plural_0077edd0[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_amuletnames_plural_pad_0077ee66[0x0a];
 // GLOBAL: SHANDALAR 0x0077c5e0
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_colorcards_0077c5e0[0x0a0];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_text_0x19_t gs_colorcards_0077c5e0[6];
+SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_colorcards_pad_0077c676[0x0a];
 // GLOBAL: SHANDALAR 0x007658d0
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cave_showclues_buf_007658d0[0x47e];
 // GLOBAL: SHANDALAR 0x0074da70
@@ -233,13 +251,9 @@ SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_wiseman_buf_00780c60[0x0aa5];
 // GLOBAL: SHANDALAR 0x0077f450
 SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_cityscreen_buttons_buf_0077f450[0x190];
 // GLOBAL: SHANDALAR 0x0077e110
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_showcard_name_0077e110[0x32];
-// GLOBAL: SHANDALAR 0x0077e142
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_showcard_type_0077e142[0x32];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_two_text_0x32_t gs_showcard_text_0077e110;
 // GLOBAL: SHANDALAR 0x0074bcc0
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_showlibrary_title_0074bcc0[0x32];
-// GLOBAL: SHANDALAR 0x0074bcf2
-SHANDALAR_GLOBAL_STRINGS_EXTERN char gs_showlibrary_empty_0074bcf2[0x32];
+SHANDALAR_GLOBAL_STRINGS_EXTERN sh_two_text_0x32_t gs_showlibrary_text_0074bcc0;
 
 /* AdvBlocks pointers */
 // GLOBAL: SHANDALAR 0x0074c930

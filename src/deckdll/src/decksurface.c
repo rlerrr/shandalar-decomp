@@ -15,8 +15,6 @@ extern HWND global_horzlist_hwnd;
 extern HWND global_listbox_hwnd;
 extern HWND global_unknown_10125a3c;
 extern HWND global_unknown_10144b04;
-extern int global_deck_num_cards;
-extern int global_edited_deck_num_entries;
 extern bool global_deck_was_edited;
 extern GlobalDeckInfoBlob global_deckinfo;
 extern int global_dlg_parameter;
@@ -40,6 +38,9 @@ extern HANDLE global_pic_bldr03c;
 extern HANDLE global_pic_bldr04c;
 extern HANDLE global_pic_bldr05c;
 extern FullDeck global_edited_deck;
+#define global_deck_num_cards (global_edited_deck.cards)
+#define global_edited_deck_num_entries (global_edited_deck.total)
+
 extern Packs global_packs[PACK1_MAX + 1][PACK2_MAX + 1];
 extern Packs global_packs_copy[PACK1_MAX + 1][PACK2_MAX + 1];
 extern char text_lines[225][128];

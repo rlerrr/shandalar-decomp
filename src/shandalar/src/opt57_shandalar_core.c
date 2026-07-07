@@ -159,10 +159,9 @@ void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int 
 }
 
 // FUNCTION: SHANDALAR 0x005797e0
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index)
+void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, int color_index)
 {
   COLORREF color;
-  unsigned int value;
   HBRUSH brush;
   RECT fill_rect;
   DIBSurface *page;
@@ -174,22 +173,25 @@ void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int wi
 
   page = g_graphics_pages[window_bounds->page_number];
 
-  if ((int)color_index < 0)
+  if (color_index >= 0)
   {
-    value = (unsigned int)(-(int)color_index);
-    color = RGB(0xff, 0xff, 0xff);
-    if (color_index != 0xff000001)
+    if (color_index == 0xff)
     {
-      color = PALETTERGB((BYTE)(value >> 8), (BYTE)value, (BYTE)(value >> 16));
+      color = RGB(0xff, 0xff, 0xff);
     }
-  }
-  else if (color_index == 0xff)
-  {
-    color = RGB(0xff, 0xff, 0xff);
+    else
+    {
+      color = PALETTEINDEX((WORD)color_index);
+    }
   }
   else
   {
-    color = PALETTEINDEX((WORD)color_index);
+    color_index = -color_index;
+    color = RGB(0xff, 0xff, 0xff);
+    if (color_index != 0x00ffffff)
+    {
+      color = PALETTERGB((BYTE)(color_index >> 8), (BYTE)color_index, (BYTE)(color_index >> 16));
+    }
   }
 
   brush = CreateSolidBrush(color);

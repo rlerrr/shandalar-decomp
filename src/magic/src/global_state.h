@@ -46,32 +46,59 @@ typedef struct
 
 typedef struct
 {
-  unsigned char pad_0000[0x2c];
-  int value_002c;
-  int value_0030;
-} save_pair_002c_0030_t;
+  int show_cue_cards;                  // +0x00
+  int directive_tracks_mouse;          // +0x04
+  int show_power_toughness_on_cards;   // +0x08
+  int show_abilities_on_cards;         // +0x0c
+  int expand_text_box_on_big_card;     // +0x10
+  int see_next_draws_at_end_of_duel;   // +0x14
+  int show_id_tags_on_cards;           // +0x18
+  int show_invisible_effect_cards;     // +0x1c
+  int show_all_cards_summon_sickness;  // +0x20
+  int show_coin_flips;                 // +0x24
+  int layout;                          // +0x28
+  int player_territory_color;          // +0x2c
+  int player_territory_type;           // +0x30
+} DuelInterfaceOptions;
+STATIC_ASSERT(sizeof(DuelInterfaceOptions) == 0x34, duel_interface_options_wrong_size);
 
 typedef struct
 {
-  unsigned char pad_0000[8];
-  int value_0008;
-  int value_000c;
-} save_pair_0008_000c_t;
+  int difficulty;              // +0x00
+  int ante;                    // +0x04
+  int best_of;                 // +0x08
+  int allow_sideboarding;      // +0x0c
+  char player_deck[0x34];      // +0x10
+  int player_random;           // +0x44
+  char opponent_deck[0x34];    // +0x48
+  int opponent_random;         // +0x7c
+} SoloDuelOptions;
+STATIC_ASSERT(sizeof(SoloDuelOptions) == 0x80, solo_duel_options_wrong_size);
 
 typedef struct
 {
-  unsigned char pad_0000[4];
-  int value_0004;
-  int value_0008;
-  unsigned char pad_000c[0x38];
-  int value_0044;
-} save_triplet_0004_0008_0044_t;
+  int ante;                    // +0x00
+  int best_of;                 // +0x04
+  int allow_sideboarding;      // +0x08
+  char player_deck[0x34];      // +0x0c
+  int player_random;           // +0x40
+  int gauntlet_length;         // +0x44
+} GauntletOptions;
+STATIC_ASSERT(sizeof(GauntletOptions) == 0x48, gauntlet_options_wrong_size);
 
 typedef struct
 {
-  unsigned char pad_0000[0x2c];
-  int value_002c;
-} save_value_002c_t;
+  int rounds;                  // +0x00
+  int starter_packs[2];        // +0x04
+  int starter_count;           // +0x0c
+  int booster_packs[4];        // +0x10
+  int booster_count;           // +0x20
+  int free_lands;              // +0x24
+  int ante;                    // +0x28
+  int best_of;                 // +0x2c
+  int minimum_deck_size;       // +0x30
+} SealedDeckOptions;
+STATIC_ASSERT(sizeof(SealedDeckOptions) == 0x34, sealed_deck_options_wrong_size);
 
 typedef enum
 {
@@ -482,6 +509,9 @@ GLOBAL_STATE_EXTERN int DAT_007aadec;
 // GLOBAL: SHANDALAR 0x007bfe00
 GLOBAL_STATE_EXTERN unsigned int DAT_007abc00[16];
 
+// GLOBAL: SHANDALAR 0x007bfe90
+GLOBAL_STATE_EXTERN unsigned char g_phase_stoppers[2][0x26];
+
 // GLOBAL: MAGIC 0x008b3270
 // GLOBAL: SHANDALAR 0x008c7420
 GLOBAL_STATE_EXTERN int unk_008b3270;
@@ -681,6 +711,9 @@ GLOBAL_STATE_EXTERN int unk_0091c4fc;
 // GLOBAL: SHANDALAR 0x00930640
 GLOBAL_STATE_EXTERN int DAT_0091c500;
 
+// GLOBAL: SHANDALAR 0x00930644
+GLOBAL_STATE_EXTERN int g_duel_mode_flags;
+
 // GLOBAL: MAGIC 0x00950780
 GLOBAL_STATE_EXTERN unsigned int(__cdecl *PTR_CalcDrawManaText_00950780)(HDC dc, RECT *rect, char *text);
 
@@ -722,7 +755,7 @@ GLOBAL_STATE_EXTERN int DAT_0091c99c;
 
 // GLOBAL: MAGIC 0x0091c970
 // GLOBAL: SHANDALAR 0x00930ab0
-GLOBAL_STATE_EXTERN save_pair_002c_0030_t DAT_0091c970;
+GLOBAL_STATE_EXTERN DuelInterfaceOptions g_duel_interface_options;
 
 // GLOBAL: MAGIC 0x0091c9a0
 // GLOBAL: SHANDALAR 0x00930ae0
@@ -741,7 +774,7 @@ GLOBAL_STATE_EXTERN int DAT_0092636c;
 
 // GLOBAL: MAGIC 0x00926340
 // GLOBAL: SHANDALAR 0x0093a470
-GLOBAL_STATE_EXTERN save_value_002c_t DAT_00926340;
+GLOBAL_STATE_EXTERN SealedDeckOptions g_sealed_deck_options;
 
 // GLOBAL: MAGIC 0x00925bf8
 // GLOBAL: SHANDALAR 0x00939d28
@@ -803,18 +836,9 @@ GLOBAL_STATE_EXTERN int DAT_008b42e4;
 // GLOBAL: SHANDALAR 0x008c89cc
 GLOBAL_STATE_EXTERN int DAT_008b484c;
 
-// GLOBAL: MAGIC 0x008cd934
-GLOBAL_STATE_EXTERN int DAT_008cd934;
-
 // GLOBAL: MAGIC 0x008cd930
 // GLOBAL: SHANDALAR 0x008e1ab0
-GLOBAL_STATE_EXTERN save_triplet_0004_0008_0044_t DAT_008cd930;
-
-// GLOBAL: MAGIC 0x008cd938
-GLOBAL_STATE_EXTERN int DAT_008cd938;
-
-// GLOBAL: MAGIC 0x008cd974
-GLOBAL_STATE_EXTERN int DAT_008cd974;
+GLOBAL_STATE_EXTERN GauntletOptions g_gauntlet_options;
 
 // GLOBAL: MAGIC 0x008ce4f0
 // GLOBAL: SHANDALAR 0x008e2670
@@ -827,6 +851,9 @@ GLOBAL_STATE_EXTERN int unk_008ce4f4;
 // GLOBAL: MAGIC 0x008ce4fc
 // GLOBAL: SHANDALAR 0x008e267c
 GLOBAL_STATE_EXTERN int DAT_008ce4fc;
+
+// GLOBAL: SHANDALAR 0x008e2684
+GLOBAL_STATE_EXTERN int g_has_expansion_10;
 
 // GLOBAL: MAGIC 0x008ce508
 // GLOBAL: SHANDALAR 0x008e2688
@@ -844,15 +871,9 @@ GLOBAL_STATE_EXTERN int DAT_008cec7c;
 // GLOBAL: SHANDALAR 0x008e2fbc
 GLOBAL_STATE_EXTERN int DAT_008cee6c;
 
-// GLOBAL: MAGIC 0x008cefc8
-GLOBAL_STATE_EXTERN int DAT_008cefc8;
-
 // GLOBAL: MAGIC 0x008cefc0
 // GLOBAL: SHANDALAR 0x008e3110
-GLOBAL_STATE_EXTERN save_pair_0008_000c_t DAT_008cefc0;
-
-// GLOBAL: MAGIC 0x008cefcc
-GLOBAL_STATE_EXTERN int DAT_008cefcc;
+GLOBAL_STATE_EXTERN SoloDuelOptions g_solo_duel_options;
 
 // GLOBAL: MAGIC 0x008cf690
 // GLOBAL: SHANDALAR 0x008e37e0

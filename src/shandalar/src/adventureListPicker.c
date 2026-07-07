@@ -41,12 +41,12 @@ int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
 void FreeSpriteBlob(void *sprite_blob);
 
-void FUN_004f2407(int card_index, int x, int y, int full_card, char *banner_label);
-void FUN_004f263b(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7);
+void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner_label);
+void DrawAdventureCardSized(int card_index, int x, int y, int width, int height, int full_card, char *banner_label);
 void DestroyCachedCardArt(void);
 
 void DrawCenteredTextLineWithShadow(char *text, int center_x, int y, int color_index);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text);
+void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 
 void UpdateMouseSnapshot(void);
 int HasQueuedKeyInput(void);
@@ -209,7 +209,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
     ReadSpriteEntryPointers(&s.buy_button_sprites[0], "BuyButtons.spr");
     for (s.i = 0; s.i < s.visible_count; s.i = s.i + 1)
     {
-      FUN_004f2407(param_2[s.card_indices[s.i]] & 0xfff, s.card_draw_x[s.i], s.card_draw_y[s.i], 0, "");
+      DrawAdventureCard(param_2[s.card_indices[s.i]] & 0xfff, s.card_draw_x[s.i], s.card_draw_y[s.i], 0, "");
     }
 
     while (1)
@@ -235,7 +235,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
         if ((result != -1) &&
             (param_2[result] != param_2[s.hover_index]))
         {
-          FUN_004f2407(param_2[result] & 0xfff, 8, 0x40, 1, "");
+          DrawAdventureCard(param_2[result] & 0xfff, 8, 0x40, 1, "");
           s.hover_index = result;
         }
 
@@ -277,20 +277,20 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
                        FUN_005501dc(0xdc) / 2,
                        FUN_005501dc(0x34) / 2);
 
-      strcpy(g_ui_message_buffer, gs_showcard_name_0077e110);
+      strcpy(g_ui_message_buffer, gs_showcard_text_0077e110.title);
       DrawEncodedImageResampled(PTR_DAT_005832b4,
                                 FUN_005501dc(0xdc) / 2,
                                 FUN_005501dc(0x34) / 2,
                                 FUN_005501dc(0xc5) / 2,
                                 FUN_005501dc(0x10f) / 2,
                                 s.buy_button_sprites[0]);
-      FUN_004f263b(param_2[result] & 0xfff, 0x7a, 0x29, 0x4b, 0x70, 1, "");
+      DrawAdventureCardSized(param_2[result] & 0xfff, 0x7a, 0x29, 0x4b, 0x70, 1, "");
 
       PTR_DAT_005832b4->font_slot = 1;
       DrawTextAt(PTR_DAT_005832b4, 0x76, 0x20, 0x1b, g_ui_message_buffer);
 
       s.key_code = PopNormalizedQueuedKeyInput();
-      s.accept_keys = gs_showcard_type_0077e142;
+      s.accept_keys = gs_showcard_text_0077e110.subtitle;
       s.accept_key = 0;
       while (*s.accept_keys != '\0')
       {

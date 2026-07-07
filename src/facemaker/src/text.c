@@ -1068,7 +1068,7 @@ int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shado
 
 // FUNCTION: FACEMAKER 0x004088d0
 // FUNCTION: SHANDALAR 0x0057b620
-void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text)
+void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text, ...)
 {
 #ifdef SHANDALAR
     DrawTextFormatted(dst, text_id, 1, 1, 1, 1, x, y, (int *)&text);
