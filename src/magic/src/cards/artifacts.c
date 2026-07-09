@@ -58,7 +58,7 @@ int card_black_lotus(int player, int card, event_t event)
   {
     ai_modifier -= 0x24;
     s.available_colors = PLAYER_CARD_INSTANCE(player, card).mana_color;
-    if ((((active_player == player) && ((unk_00926804 & 2) == 0)) || (unk_008a9000 == 1)) || (unk_009252e0 != 0))
+    if ((((active_player == player) && ((unk_00926804 & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
       s.choice_hint = ~COLOR_COLORLESS;
       for (s.color = COLOR_BLACK; s.color <= COLOR_WHITE && s.choice_hint == ~COLOR_COLORLESS; s.color += COLOR_BLACK)
@@ -88,7 +88,7 @@ int card_black_lotus(int player, int card, event_t event)
 
     if (spell_fizzled != 1)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "BLACK_LOTUS");
       }
@@ -102,7 +102,7 @@ int card_black_lotus(int player, int card, event_t event)
         produce_mana(player, s.choice_hint, 3);
         produced_mana_color = s.choice_hint;
         PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
-        if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
+        if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
         {
           char message[300];
           load_text("prompts.txt", "BLACK_LOTUS");
@@ -128,7 +128,7 @@ int card_black_lotus(int player, int card, event_t event)
           }
           do_dialog(player, player, card, -1, -1, message, 0);
         }
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           play_sound_effect(WAV_SACRFICE);
         }
@@ -210,7 +210,7 @@ int card_time_vault(int player, int card, event_t event)
       ai_modifier += 0x30;
     }
 
-    if (unk_0092664c[7] == -1)
+    if (g_duel_special_land_card_ids[7] == -1)
     {
       effect_found = 0;
       for (current_player = 0; current_player < 2 && !effect_found; ++current_player)
@@ -225,7 +225,7 @@ int card_time_vault(int player, int card, event_t event)
       }
       if (!effect_found)
       {
-        unk_0092664c[7] = player;
+        g_duel_special_land_card_ids[7] = player;
       }
     }
 
@@ -433,7 +433,7 @@ int card_celestial_prism(int player, int card, event_t event)
     {
       if ((active_player == player) && ((unk_00926804 & 2) == 0))
       {
-        if (unk_008a9000 == 1)
+        if (g_duel_ai_mode_state == 1)
         {
           unk_00939340 = unk_008cc840 % 5 + 1;
           color = unk_00939340;
@@ -460,7 +460,7 @@ int card_celestial_prism(int player, int card, event_t event)
 
       if (spell_fizzled != 1)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "CELESTIAL_PRISM");
         }
@@ -475,7 +475,7 @@ int card_celestial_prism(int player, int card, event_t event)
           undeclare_mana_available_hex(player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, 1);
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
           produced_mana_color = color;
-          if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
+          if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
           {
             load_text("prompts.txt", "CELESTIAL_PRISM2");
             if (color == COLOR_BLACK)
@@ -591,7 +591,7 @@ int card_forcefield(int player, int card, event_t event)
     if (has_mana(player, COLOR_COLORLESS, 1) != 0 && (unk_008b4278 & 4) != 0 && (current_phase == 0x19 || current_phase == 0x1a))
     {
       charge_mana(player, COLOR_COLORLESS, 1);
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "FORCEFIELD");
       }
@@ -697,7 +697,7 @@ int card_disrupting_scepter(int player, int card, event_t event)
     charge_mana(player, 0, 3);
     if (spell_fizzled != 1)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "DISRUPTING_SCEPTER");
       }
@@ -811,7 +811,7 @@ int card_conservator(int player, int card, event_t event)
       stop_selecting = 0;
       while (target_index < 2 && stop_selecting == 0 && spell_fizzled != 1)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "CONSERVATOR");
         }
@@ -1419,7 +1419,7 @@ int card_jade_monolith(int player, int card, event_t event)
       charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1);
       if (spell_fizzled != 1)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "JADE_MONOLITH");
         }
@@ -1746,7 +1746,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
       charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3);
       if (spell_fizzled != 1)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "ROD_OF_RUIN");
         }
@@ -2004,7 +2004,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
       charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 1);
       if (spell_fizzled != 1)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "HELM_OF_CHATZUK");
         }
@@ -2189,7 +2189,7 @@ int card_glasses_of_urza(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "GLASSES_OF_URZA");
     }
@@ -2226,7 +2226,7 @@ int card_glasses_of_urza(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && (player == human_player || (unk_00926804 & 2) != 0) && unk_008a9000 != 1 && unk_009252e0 == 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && (player == human_player || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1 && g_duel_network_state == 0)
   {
     target_player = instance->targets[0].player;
     count = 0;
@@ -2242,7 +2242,7 @@ int card_glasses_of_urza(int player, int card, event_t event)
           ++count;
         }
       }
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "GLASSES_OF_URZA_2");
       }

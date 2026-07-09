@@ -104,6 +104,19 @@ int sound_unload(int idx)
   return;
 }
 
+// FUNCTION: DECKDLL 0x1002d507
+// FUNCTION: MAGIC 0x00485a25
+// FUNCTION: SHANDALAR 0x0056d167
+int sound_unload_all(void)
+{
+  if (global_sound_status == 0)
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.UnloadAllSnds();
+}
+
 // FUNCTION: DECKDLL 0x1002d421
 // FUNCTION: MAGIC 0x0048593f
 // FUNCTION: SHANDALAR 0x0056d081

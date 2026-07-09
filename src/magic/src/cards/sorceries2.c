@@ -157,7 +157,7 @@ int card_resurrection(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) || (unk_008a9000 == 1))
+    if (((player == active_player) && ((unk_00926804 & 2) == 0)) || (g_duel_ai_mode_state == 1))
     {
       s.can_select = 1;
       s.graveyard_index = FUN_004087cc(player, 2);

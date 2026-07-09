@@ -1745,7 +1745,7 @@ void InitializeNewGameState(void)
     int local_4;
   } s;
 
-  if (DAT_008bd200 != 0)
+  if (g_duel_ai_mode_state != 0)
   {
     return;
   }
@@ -4419,7 +4419,7 @@ void RefreshAdventureInterfaceLayout(void)
 {
   DAT_00590764 = DAT_006527b0 = -1;
   g_adventure_ui_layout_dirty = 1;
-  if (DAT_008bd200 == 0)
+  if (g_duel_ai_mode_state == 0)
   {
     LoadPcxIntoPage(1, PTR_s_advinter800_pic_00589de8);
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
@@ -5820,7 +5820,7 @@ unsigned int WaitForInputEvent(void)
 {
   int has_queued_key;
 
-  if (DAT_008bd200 != 0)
+  if (g_duel_ai_mode_state != 0)
     return 0;
 
   do
@@ -5841,7 +5841,7 @@ unsigned int WaitForInputEvent(void)
 // FUNCTION: SHANDALAR 0x005597ca
 unsigned int WaitForInputEventUnlessBlocked(void)
 {
-  if (DAT_008bd200 == 1)
+  if (g_duel_ai_mode_state == 1)
   {
     return 0;
   }

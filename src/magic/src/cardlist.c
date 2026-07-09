@@ -57,16 +57,11 @@ int DAT_00638c6c;
 // GLOBAL: MAGIC 0x00638c84
 int DAT_00638c84;
 
-// GLOBAL: MAGIC 0x00896714
-// GLOBAL: SHANDALAR 0x008aa914
-HWND DAT_00896714;
-
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern CRITICAL_SECTION g_card_render_lock;
 extern HDC g_shared_offscreen_dc;
 extern HINSTANCE g_app_instance;
-extern HWND g_main_window_hwnd;
 
 void FUN_0055b9f0(int dc, int *rect, int value);
 
@@ -579,7 +574,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
       s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
       if ((int)DAT_00638c08 != (int)card_window)
       {
-        SendMessageA(DAT_00896714, 0x401, s.csvid, 0);
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
         DAT_00638c08 = (int)card_window;
       }
     }
@@ -604,7 +599,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
     if (SHOWLIST_MOUSE_MODE != 2)
     {
-      SendMessageA(DAT_00896714, 0x401, s.csvid, 0);
+      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
     }
     return 0;
 
@@ -692,7 +687,7 @@ int show_cardlist(int *graveyard,
     strcpy(s.title, unk_00572930);
   }
 
-  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_main_window_hwnd, dlgfunc_show_deck, (long)&s.dialog_context);
+  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_duel_window_hwnd, dlgfunc_show_deck, (long)&s.dialog_context);
 }
 
 // FUNCTION: MAGIC 0x0055b9f0

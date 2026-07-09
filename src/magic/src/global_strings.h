@@ -1,6 +1,8 @@
 #ifndef __GLOBAL_STRINGS_H__
 #define __GLOBAL_STRINGS_H__
 
+#include "duel_engine.h"
+
 // Single header library style
 #ifdef GLOBAL_STRINGS_IMPL
 #define GLOBAL_STRINGS_EXTERN
@@ -228,9 +230,6 @@ GLOBAL_STRINGS_EXTERN char gs_cuecard_summoning_sickness_008a8e00[0x40];
 
 // GLOBAL: MAGIC 0x008a8e40
 GLOBAL_STRINGS_EXTERN char gs_cuecard_not_controlled_by_owner_008a8e40[0x90];
-
-// GLOBAL: MAGIC 0x008a9000
-GLOBAL_STRINGS_EXTERN int unk_008a9000;
 
 // GLOBAL: MAGIC 0x008a9010
 // GLOBAL: SHANDALAR 0x008bd210

@@ -25,9 +25,6 @@ int DAT_008a8d78;
 // GLOBAL: MAGIC 0x008a8dec
 int DAT_008a8dec;
 
-// GLOBAL: MAGIC 0x0091c0f0
-int DAT_0091c0f0;
-
 // GLOBAL: MAGIC 0x0091c974
 int DAT_0091c974;
 
@@ -276,7 +273,7 @@ int FUN_004466b5(int who_chooses,
     strcat(status_text, prompt);
   }
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   if (DAT_007abc74 != -1)
   {
     if ((unk_00926804 & 2) == 0)
@@ -294,7 +291,7 @@ int FUN_004466b5(int who_chooses,
       InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
     }
   }
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 
   TENTATIVE_reassess_all_cards();
   GetCursorPos(&cursor_pos);
@@ -321,7 +318,7 @@ int FUN_004466b5(int who_chooses,
 
     if (DAT_007aaeec == 0 || current_phase != 10 || *(int *)&unk_009266d0[0x7c] != 0)
     {
-      result = SendMessageA(g_main_window_hwnd, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
+      result = SendMessageA(g_duel_window_hwnd, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
       target_player = out_target_player[0];
       target_card = out_target_player[1];
     }
@@ -402,7 +399,7 @@ int FUN_004466b5(int who_chooses,
     GetCursorPos(&cursor_pos);
     cursor_window = WindowFromPoint(cursor_pos);
     SendMessageA(cursor_window, 0x20, (WPARAM)cursor_window, 0x2000001);
-    EnterCriticalSection(&unk_00789110);
+    EnterCriticalSection(&g_duel_render_lock);
     if (_DAT_0074303c == -2)
     {
       if (unk_00716248 == -1)
@@ -444,11 +441,11 @@ int FUN_004466b5(int who_chooses,
     {
       InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
     }
-    LeaveCriticalSection(&unk_00789110);
+    LeaveCriticalSection(&g_duel_render_lock);
     return result;
   }
 
-  PostMessageA(g_main_window_hwnd, 0x401, thread_exit_code, 0);
+  PostMessageA(g_duel_window_hwnd, 0x401, thread_exit_code, 0);
   ExitThread((DWORD)thread_exit_code);
   return 0;
 }
@@ -498,7 +495,7 @@ int C_real_select_target(int who_chooses,
   char *selection_prompt;
   int selected_internal_card_id;
 
-  if (((who_chooses == 1 && (unk_00926804 & 2) == 0) || unk_008a9000 == 1) || unk_009252e0 != 0)
+  if (((who_chooses == 1 && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1) || g_duel_network_state != 0)
   {
     if ((DAT_00777854 & 1) != 0 && (allowed_controller & 2) != 0)
     {
@@ -594,7 +591,7 @@ int C_real_select_target(int who_chooses,
       }
       else
       {
-        if (unk_008a9000 == 1)
+        if (g_duel_ai_mode_state == 1)
         {
           unk_00939340 = internal_rand(s.valid_count);
           unk_00925bb8 = (((s.valid_players[unk_00939340] == 0) ? 0 : 0x100)
@@ -731,7 +728,7 @@ int C_real_select_target(int who_chooses,
               sprintf(s.validation_message, "%s", s.target_error);
             }
 
-            if (unk_008a9000 != 1)
+            if (g_duel_ai_mode_state != 1)
             {
               FUN_004a61d6(s.validation_message);
               Sleep(2000);
@@ -750,7 +747,7 @@ int C_real_select_target(int who_chooses,
         {
           s.show_validation_message = 1;
           sprintf(s.validation_message, "%s", "");
-          if (unk_008a9000 != 1)
+          if (g_duel_ai_mode_state != 1)
           {
             FUN_004a61d6(s.validation_message);
             Sleep(2000);
@@ -781,9 +778,9 @@ int FUN_0048930a(void)
   int visible;
 
   visible = IsWindowVisible((HWND)DAT_00637e58);
-  if (!visible && IsWindowVisible((HWND)DAT_0091c0f0))
+  if (!visible && IsWindowVisible((HWND)g_duel_phase_display_window_hwnd))
   {
-    SendMessageA((HWND)DAT_0091c0f0, 0x111, 0x65, 0);
+    SendMessageA((HWND)g_duel_phase_display_window_hwnd, 0x111, 0x65, 0);
   }
 
   return visible;
@@ -795,9 +792,9 @@ int FUN_00489362(void)
   int hidden;
 
   hidden = !IsWindowVisible((HWND)DAT_00637e58);
-  if (!hidden && !IsWindowVisible((HWND)DAT_0091c0f0))
+  if (!hidden && !IsWindowVisible((HWND)g_duel_phase_display_window_hwnd))
   {
-    SendMessageA((HWND)DAT_0091c0f0, 0x111, 0x66, 0);
+    SendMessageA((HWND)g_duel_phase_display_window_hwnd, 0x111, 0x66, 0);
   }
 
   return hidden;

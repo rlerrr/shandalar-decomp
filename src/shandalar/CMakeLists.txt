@@ -7,6 +7,7 @@ set(magic_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/cardlist.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_state.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_duel_ui_ids.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/duel_engine.c"
 )
 set(drawcardlib_c_sources 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 
@@ -49,7 +50,7 @@ target_include_directories(shandalar PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(shandalar PRIVATE gdi32 user32 winmm)
+target_link_libraries(shandalar PRIVATE comctl32 gdi32 user32 winmm)
 
 if (TARGET cardartlib)
   target_link_libraries(shandalar PRIVATE cardartlib)

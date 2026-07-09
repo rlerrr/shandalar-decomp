@@ -253,7 +253,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
   int num_available_colors;
   color_test_t colors_to_choose_from;
 
-  if (event == EVENT_TAP_CARD && unk_008a9000 != 1)
+  if (event == EVENT_TAP_CARD && g_duel_ai_mode_state != 1)
   {
     play_sound_effect(PLAYER_CARD_INSTANCE(player, card).internal_card_id + 0x16);
   }
@@ -330,7 +330,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
       produce_mana(player, color, 1);
       undeclare_mana_available_hex(player, color, 1);
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-      unk_0092664c[6] = color;
+      g_duel_special_land_card_ids[6] = color;
 
       if (player == active_player && (unk_00926804 & 2) == 0)
       {

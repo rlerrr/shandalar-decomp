@@ -73,7 +73,7 @@ int LoadTextSectionLines(char *filename, char *section_name)
   int out_index;
   int char_index;
 
-  if (unk_008a9000 == 1)
+  if (g_duel_ai_mode_state == 1)
   {
     loaded_count = 0;
   }

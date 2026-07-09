@@ -29,7 +29,7 @@ int card_time_walk(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (unk_0092664c[7] == -1)
+    if (g_duel_special_land_card_ids[7] == -1)
     {
       effect_found = 0;
       for (effect_card = 0; effect_card < 2 && !effect_found; ++effect_card)
@@ -44,7 +44,7 @@ int card_time_walk(int player, int card, event_t event)
       }
       if (!effect_found)
       {
-        unk_0092664c[7] = player;
+        g_duel_special_land_card_ids[7] = player;
       }
     }
 
@@ -78,7 +78,7 @@ int card_balance(int player, int card, event_t event)
   {
     if (event == EVENT_RESOLVE_SPELL)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "BALANCE");
         strcpy(s.land_prompt, text_lines[0]);
@@ -107,7 +107,7 @@ int card_balance(int player, int card, event_t event)
           ++s.current_card;
         }
 
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           strcpy(text_lines[0], s.land_prompt);
         }
@@ -158,7 +158,7 @@ int card_balance(int player, int card, event_t event)
           ++s.current_card;
         }
 
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           strcpy(text_lines[0], s.creature_prompt);
         }
@@ -202,7 +202,7 @@ int card_braingeyser(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "BRAINGEYSER");
     }
@@ -505,7 +505,7 @@ int card_stream_of_life(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
     ai_modifier -= (life[player] * 0x18) / FUN_00404c4c(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id);
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "STREAMOFLIFE");
     }
@@ -635,7 +635,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
 
     while (current_target < x_value && selecting_done == 0 && spell_fizzled != 1)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "VOLCANIC_ERUPTION");
         sprintf(prompt, text_lines[0], current_target + 1, x_value);
@@ -1025,11 +1025,11 @@ int card_fireball(int player, int card, event_t event)
       result = FUN_00404c4c(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id);
       ai_modifier -= 0x48 / result;
 
-      if (((player == active_player) && ((unk_00926804 & 2) == 0)) || unk_008a9000 == 1)
+      if (((player == active_player) && ((unk_00926804 & 2) == 0)) || g_duel_ai_mode_state == 1)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot = x_value;
 
-        if (unk_008a9000 == 1)
+        if (g_duel_ai_mode_state == 1)
         {
           if ((unk_008b4278 & 0x400) == 0)
           {
@@ -1184,7 +1184,7 @@ int card_fireball(int player, int card, event_t event)
             {
               do
               {
-                if (unk_008a9000 != 1)
+                if (g_duel_ai_mode_state != 1)
                 {
                   load_text("prompts.txt", "FIREBALL");
                   sprintf(text_lines[0], text_lines[0], s.target_index + 1, num_selected_targets);
@@ -1211,7 +1211,7 @@ int card_fireball(int player, int card, event_t event)
                                                    1,
                                                    &s.chosen_target);
 
-                if (unk_008a9000 != 1 && s.chosen_target.card == -1 &&
+                if (g_duel_ai_mode_state != 1 && s.chosen_target.card == -1 &&
                     s.player_target_selected[s.chosen_target.player] != 0)
                 {
                   FUN_004a61d6(text_lines[1]);
@@ -1283,7 +1283,7 @@ int card_fireball(int player, int card, event_t event)
         {
           do
           {
-            if (unk_008a9000 != 1)
+            if (g_duel_ai_mode_state != 1)
             {
               load_text("prompts.txt", "FIREBALL");
               sprintf(text_lines[0], text_lines[0], s.target_index + 1, num_selected_targets);
@@ -1310,7 +1310,7 @@ int card_fireball(int player, int card, event_t event)
                                                1,
                                                &s.chosen_target);
 
-            if (unk_008a9000 != 1 && s.chosen_target.card == -1 &&
+            if (g_duel_ai_mode_state != 1 && s.chosen_target.card == -1 &&
                 s.player_target_selected[s.chosen_target.player] != 0)
             {
               FUN_004a61d6(text_lines[1]);
@@ -1467,7 +1467,7 @@ int card_mana_clash(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "MANACLASH");
       strcpy(prompt1, text_lines[0]);
@@ -1533,13 +1533,13 @@ int card_raise_dead(int player, int card, event_t event)
   {
     if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
     {
-      if (((player == active_player) && (unk_00926804 & 2) == 0) || unk_008a9000 == 1)
+      if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1)
       {
         s.graveyard_index = FUN_004087cc(player, 2);
       }
       else
       {
-        if ((player == unk_008b35ec) && (unk_008a9000 != 1))
+        if ((player == unk_008b35ec) && (g_duel_ai_mode_state != 1))
         {
           load_text("prompts.txt", "RAISEDEAD");
         }
@@ -1617,7 +1617,7 @@ int card_regrowth(int player, int card, event_t event)
   {
     if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
     {
-      if (((player == active_player) && (unk_00926804 & 2) == 0) || unk_008a9000 == 1)
+      if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1)
       {
         s.graveyard_index = FUN_004087cc(player, -1);
       }
@@ -1694,11 +1694,11 @@ int card_demonic_tutor(int player, int card, event_t event)
   {
     found_card = -1;
 
-    if (((player == active_player) && (unk_00926804 & 2) == 0) || unk_008a9000 == 1 || unk_009252e0 != 0)
+    if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
     {
       if (player == active_player)
       {
-        if (unk_008a9000 == 1)
+        if (g_duel_ai_mode_state == 1)
         {
           unk_00939340 = internal_rand(4);
           FUN_004e4f11();
@@ -1973,7 +1973,7 @@ int card_disintegrate(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
     instance->info_slot = x_value;
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "DISINTEGRATE");
     }
@@ -2037,7 +2037,7 @@ int card_drain_life(int player, int card, event_t event)
     {
       instance->info_slot = PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).info_slot;
     }
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "DRAIN_LIFE");
     }
@@ -2115,7 +2115,7 @@ int card_stone_rain(int player, int card, event_t event)
     {
       if (player == affected_card_controller)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "STONE_RAIN");
         }
@@ -2192,7 +2192,7 @@ int card_drain_power(int player, int card, event_t event)
 
   if (event == 0x6c && affected_card == card && affected_card_controller == player)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "DRAIN_POWER");
     }

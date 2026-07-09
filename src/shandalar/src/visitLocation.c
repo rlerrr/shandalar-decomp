@@ -9,6 +9,7 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
+#include "magic/src/duel_engine.h"
 #include "shandalar_global_strings.h"
 #include "deckdll/src/magsnd.h"
 #include "facemaker/src/facemaker_types.h"
@@ -2456,17 +2457,6 @@ loop:
   return 0;
 }
 
-// FUNCTION: MAGIC 0x00421830
-// FUNCTION: SHANDALAR 0x0042ffd0
-DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type)
-{
-  (void)creature_type;
-
-  // Win every duel
-  DAT_0074d268 = 1;
-  return 1;
-}
-
 // FUNCTION: SHANDALAR 0x00568320
 int RunDuelEngine(unsigned int card_id, int creature_type)
 {
@@ -2536,7 +2526,7 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
     g_next_duel_card_id = -1;
     DAT_008cf6d0 = g_next_duel_card_id;
     unk_00789308 = DAT_008cf6d0;
-    DAT_008bd200 = 0;
+    g_duel_ai_mode_state = 0;
     for (s.deck_slot = 0; s.deck_slot < 4; s.deck_slot = s.deck_slot + 1)
     {
       DAT_007a7d10[s.deck_slot] = 8;
@@ -2979,7 +2969,7 @@ int DrawRandomCardFromInitialLibrary(int library_index)
     if (s.running_pick < 0)
     {
       s.chosen_csvid = initial_library[library_index][s.i].csvid;
-      if (DAT_008bd200 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         initial_library[library_index][s.i].numcards = initial_library[library_index][s.i].numcards + -1;
       }

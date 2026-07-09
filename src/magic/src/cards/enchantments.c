@@ -800,7 +800,7 @@ int card_lich(int player, int card, event_t event)
     {
       if (is_in_play(player, card))
       {
-        if (unk_008a9000 == 1)
+        if (g_duel_ai_mode_state == 1)
         {
           life[player] = -99;
         }
@@ -854,7 +854,7 @@ int FUN_0043b4f3(int player, int amount)
   sacrifices_made = 0;
   while (sacrifices_made < sacrifices_to_make && life[player] != -99)
   {
-    if (unk_008a9000 == 1)
+    if (g_duel_ai_mode_state == 1)
     {
       target.player = player;
       do
@@ -898,7 +898,7 @@ int FUN_0043b4f3(int player, int amount)
                            prompt,
                            0,
                            &target);
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         play_sound_effect(WAV_SACRFICE);
       }

@@ -336,7 +336,7 @@ void append_to_trace_txt(char *text)
 {
   FILE *trace_file;
 
-  if (unk_008a9000 == 1)
+  if (g_duel_ai_mode_state == 1)
     return;
 
   trace_file = fopen("Trace.txt", "at");
@@ -354,7 +354,7 @@ void FUN_00500a40(char *packet_data, int packet_size)
   FILE *trace_file;
   int packet_index;
 
-  if (unk_008a9000 != 1)
+  if (g_duel_ai_mode_state != 1)
   {
     trace_file = fopen("Trace.txt", "at");
     if (trace_file != NULL)

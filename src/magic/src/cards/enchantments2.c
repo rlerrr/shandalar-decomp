@@ -348,7 +348,7 @@ int card_animate_dead(int player, int card, event_t event)
       return (unk_007a7c58[0] | unk_007a7c58[1]) & TYPE_CREATURE;
     }
 
-    if (unk_008a9000 == 1)
+    if (g_duel_ai_mode_state == 1)
     {
       unk_00939340 = internal_rand(2);
       FUN_004e4f11();
@@ -362,7 +362,7 @@ int card_animate_dead(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (((player == active_player) && (unk_00926804 & 2) == 0) || unk_008a9000 == 1)
+    if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1)
     {
       chosen_graveyard = PLAYER_CARD_INSTANCE(player, card).info_slot;
       graveyard_data[3] = FUN_004087cc(chosen_graveyard, TYPE_CREATURE);
@@ -632,7 +632,7 @@ int card_animate_artifact(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "ANIMATE_ARTIFACT");
     }
@@ -787,7 +787,7 @@ int card_animate_wall(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "ANIMATE_WALL");
     }
@@ -875,7 +875,7 @@ int card_animate_wall(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d32db
 int card_control_magic(int player, int card, event_t event)
 {
-  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && unk_008a9000 != 1)
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && g_duel_ai_mode_state != 1)
   {
     load_text("prompts.txt", "CONTROL_MAGIC");
   }
@@ -896,7 +896,7 @@ int card_steal_artifact(int player, int card, event_t event)
     kill_card(player, card, KILL_DESTROY);
   }
 
-  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && unk_008a9000 != 1)
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && g_duel_ai_mode_state != 1)
   {
     load_text("prompts.txt", "STEAL_ARTIFACT");
   }
@@ -953,7 +953,7 @@ int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type
         PLAYER_CARD_INSTANCE(player, card).token_status |= 0x1000000;
         if (PLAYER_CARD_INSTANCE(player, card).targets[0].player != player)
         {
-          if (unk_008a9000 != 1)
+          if (g_duel_ai_mode_state != 1)
           {
             play_sound_effect(WAV_CONTROL);
           }
@@ -1156,7 +1156,7 @@ int card_feedback(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "FEEDBACK");
     }
@@ -1342,7 +1342,7 @@ int card_power_leak(int player, int card, event_t event)
 
   if (event == 0x6c && affected_card == card && affected_card_controller == player)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "POWERLEAK");
     }
@@ -1552,7 +1552,7 @@ int card_cursed_land(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "CURSED_LAND");
     }
@@ -1763,7 +1763,7 @@ int card_evil_presence(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "EVIL_PRESENCE");
     }
@@ -1899,7 +1899,7 @@ int card_living_artifact(int player, int card, event_t event)
     }
     else if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "LIVING_ARTIFACT");
       }
@@ -2052,7 +2052,7 @@ int card_psychic_venom(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "PSYCHIC_VENOM");
     }
@@ -2385,7 +2385,7 @@ int card_aspect_of_wolf(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "ASPECTOFWOLF");
     }
@@ -2484,7 +2484,7 @@ int card_lure(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text(0, "LURE");
     }
@@ -2650,7 +2650,7 @@ int card_creature_bond(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "CREATUREBOND");
     }
@@ -2770,7 +2770,7 @@ int card_holy_armor(int player, int card, event_t event)
     ai_modifier += 0x18;
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "HOLY_ARMOR");
     }
@@ -3001,7 +3001,7 @@ int card_blessing(int player, int card, event_t event)
     ai_modifier += 0x18;
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "BLESSING");
     }
@@ -3236,7 +3236,7 @@ int card_firebreathing(int player, int card, event_t event)
   {
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "FIREBREATHING");
     }
@@ -3483,7 +3483,7 @@ int card_fear(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "FEAR");
     }
@@ -3564,7 +3564,7 @@ int card_web(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "WEB");
     }
@@ -3801,7 +3801,7 @@ int card_paralyze(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "PARALYZE");
     }
@@ -4118,7 +4118,7 @@ int card_burrowing(int player, int card, event_t event)
 {
   int result;
 
-  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
+  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (g_duel_ai_mode_state != 1))
   {
     load_text("prompts.txt", "BURROWING");
   }
@@ -4164,7 +4164,7 @@ int card_wanderlust(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "WANDERLUST");
     }
@@ -4309,7 +4309,7 @@ int card_instill_energy(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "INSTILL_ENERGY");
     }
@@ -4761,7 +4761,7 @@ int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag)
 // FUNCTION: SHANDALAR 0x004e52db
 int card_holy_strength(int player, int card, event_t event)
 {
-  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
+  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (g_duel_ai_mode_state != 1))
   {
     load_text("prompts.txt", "HOLY_STRENGTH");
   }
@@ -4791,7 +4791,7 @@ int card_divine_transformation(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e5495
 int card_unholy_strength(int player, int card, event_t event)
 {
-  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
+  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (g_duel_ai_mode_state != 1))
   {
     load_text("prompts.txt", "UNHOLY_STRENGTH");
   }
@@ -4802,7 +4802,7 @@ int card_unholy_strength(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004e5502
 int card_weakness(int player, int card, event_t event)
 {
-  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (unk_008a9000 != 1))
+  if ((((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player)) && (g_duel_ai_mode_state != 1))
   {
     load_text("prompts.txt", "WEAKNESS");
   }
@@ -5010,7 +5010,7 @@ int helper_ward(int player, int card, event_t event, int color)
   {
     if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "ANY_WARD");
       }
@@ -5160,7 +5160,7 @@ int card_copy_artifact(int player, int card, event_t event)
   }
   else if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "COPY_ARTIFACT");
     }
@@ -5352,7 +5352,7 @@ int card_warp_artifact(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "WARP_ARTIFACT");
     }
@@ -5547,7 +5547,7 @@ int card_regeneration(int player, int card, event_t event)
   }
   else if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "REGENERATION");
     }
@@ -5729,7 +5729,7 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
         charge_mana_w_global_cost_mod(player, card, 0, 1);
         if (spell_fizzled != 1)
         {
-          if (unk_008a9000 != 1)
+          if (g_duel_ai_mode_state != 1)
           {
             load_text("prompts.txt", "CIRCLE_OF_PROTECTION");
           }
@@ -5846,7 +5846,7 @@ int card_phantasmal_terrain(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "PHANTASMAL_TERRAIN");
     }
@@ -5854,7 +5854,7 @@ int card_phantasmal_terrain(int player, int card, event_t event)
     {
       if ((player == unk_008b35ec) || ((unk_00926804 & 2) != 0))
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "PHANTASMAL_TERRAIN");
         }
@@ -5868,7 +5868,7 @@ int card_phantasmal_terrain(int player, int card, event_t event)
           spell_fizzled = 1;
         }
       }
-      else if (unk_008a9000 == 1)
+      else if (g_duel_ai_mode_state == 1)
       {
         unk_00939340 = internal_rand(5) + 1;
         land_type = unk_00939340;
@@ -6012,7 +6012,7 @@ int card_wild_growth(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "WILD_GROWTH");
     }
@@ -6109,7 +6109,7 @@ int card_flight(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "FLIGHT");
     }

@@ -1224,7 +1224,7 @@ int card_death_ward(int player, int card, event_t event)
         }
         s.found_dead_creature = 1;
       }
-      else if (unk_008a9000 == 1)
+      else if (g_duel_ai_mode_state == 1)
       {
         FUN_004e51bb();
       }
@@ -1856,7 +1856,7 @@ int card_purelace(int player, int card, event_t event)
       target_instance = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
       target_instance->color = (char)(1 << ((unsigned char)color & 0x1f));
       target_instance->state |= 0x2000;
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         play_sound_effect(WAV_CHANGEC);
       }
@@ -1996,7 +1996,7 @@ int card_magical_hack(int player, int card, event_t event)
             s.new_color = internal_rand(5) + 1;
           } while (s.new_color == s.old_color);
 
-          if (unk_008a9000 == 1)
+          if (g_duel_ai_mode_state == 1)
           {
             unk_00939340 = s.old_color;
             FUN_004e4f11();
@@ -2012,7 +2012,7 @@ int card_magical_hack(int player, int card, event_t event)
           }
 
           PLAYER_CARD_INSTANCE(player, card).info_slot = s.new_color * 0x100 + s.old_color;
-          if (unk_008a9000 != 1)
+          if (g_duel_ai_mode_state != 1)
           {
             load_text("prompts.txt", "MAGICAL_HACK");
             strcpy(s.prompt, "\n");
@@ -2039,7 +2039,7 @@ int card_magical_hack(int player, int card, event_t event)
   {
     s.target.player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     s.target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       play_sound_effect(WAV_CHANGET);
     }
@@ -2177,7 +2177,7 @@ int card_sleight_of_mind(int player, int card, event_t event)
           s.new_color = internal_rand(5) + 1;
         } while (s.new_color == s.old_color);
 
-        if (unk_008a9000 == 1)
+        if (g_duel_ai_mode_state == 1)
         {
           unk_00939340 = s.old_color;
           FUN_004e4f11();
@@ -2205,7 +2205,7 @@ int card_sleight_of_mind(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     s.target = s.instance->targets[0];
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       play_sound_effect(WAV_CHANGET);
     }
@@ -2914,7 +2914,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
             }
           }
         }
-        else if (unk_008a9000 == 1)
+        else if (g_duel_ai_mode_state == 1)
         {
           FUN_004e51bb();
         }
@@ -3101,7 +3101,7 @@ int card_reverse_damage(int player, int card, event_t event)
         }
         if (0 < s.count)
         {
-          if (((player == active_player) && ((unk_00926804 & 2) == 0)) || (unk_008a9000 == 1))
+          if (((player == active_player) && ((unk_00926804 & 2) == 0)) || (g_duel_ai_mode_state == 1))
           {
             s.best_damage = 0;
             for (s.current_card = 0; s.current_card < s.count; s.current_card = s.current_card + 1)

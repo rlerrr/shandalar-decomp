@@ -29,7 +29,7 @@ static LOGFONT global_font_template_ini = {
 // FUNCTION: DECKDLL 0x10025727
 // FUNCTION: MAGIC 0x00495e95
 // FUNCTION: SHANDALAR 0x00466928
-static LOGFONT *LoadFontFromIni(char *name, int italic)
+LOGFONT *LoadFontFromIni(char *name, int italic)
 {
   struct
   {

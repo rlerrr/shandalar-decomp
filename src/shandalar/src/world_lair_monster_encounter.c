@@ -64,7 +64,6 @@ extern int(__cdecl *g_town_dialog_callback)(void);
 extern int g_duel_ante_card_ids[16];
 extern int unk_008b35ec;
 extern int unk_00742fc4;
-extern int DAT_008bd200;
 extern int DAT_008c7408[7];
 extern char g_ui_message_buffer[0x1000];
 extern char g_creature_name_with_article_buffer[0x80];
@@ -79,7 +78,6 @@ extern DialogBoxSpriteBank g_dialog_box_sprite_bank;
 extern EncodedImage *g_world_magic_avatar_sprites[5];
 extern EncodedImage *g_worlds_extra_sprite_entries[4];
 extern int g_advfac64_load_state;
-extern HWND DAT_00896714;
 
 char *BuildCreatureNameWithArticle(int creature_type);
 char *BuildTownDisplayName(int town_index);
@@ -705,7 +703,7 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
     EncodedImage *button_sprites[100];
   } s;
 
-  if (DAT_008bd200 == 1)
+  if (g_duel_ai_mode_state == 1)
   {
   }
   else
@@ -802,15 +800,15 @@ void FUN_00450925(uint param_1, int param_2, int param_3, uint param_4, undefine
   local_c = param_2;
   local_8 = param_3;
 
-  if (IsWindowVisible(DAT_00896714))
+  if (IsWindowVisible(g_duel_card_preview_window_hwnd))
   {
     if ((param_2 != -1) && (param_3 != -1))
     {
-      SendMessageA(DAT_00896714, 0x401, CardIDFromType(param_1), &local_c);
+      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, CardIDFromType(param_1), &local_c);
     }
     else
     {
-      SendMessageA(DAT_00896714, 0x401, CardIDFromType(param_1), 0);
+      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, CardIDFromType(param_1), 0);
     }
   }
 }
@@ -818,7 +816,7 @@ void FUN_00450925(uint param_1, int param_2, int param_3, uint param_4, undefine
 // FUNCTION: SHANDALAR 0x005584d5
 void FUN_005584d5(uint param_1, undefined4 param_2, char *param_3, int param_4)
 {
-  if (DAT_008bd200 == 1)
+  if (g_duel_ai_mode_state == 1)
   {
     return;
   }
@@ -2055,7 +2053,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   PTR_DAT_005832b4->font_slot = 1;
   FreeSpriteBlob(s.creature_name_plaque_sprite);
   sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[2], FUN_00561441(s.creature_type));
-  if ((DAT_008bd200 == 0) && (gs_creature_names_00591a08[s.creature_type].encounter_type != '\v'))
+  if ((g_duel_ai_mode_state == 0) && (gs_creature_names_00591a08[s.creature_type].encounter_type != '\v'))
   {
     DrawAdventureCard(g_duel_ante_card_ids[0], 0xe8, 0x18, 1, DAT_0058b068);
   }
@@ -2083,7 +2081,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   LAB_004f3a77:
     for (s.loop_index = 0; s.ante_card_count > s.loop_index; s.loop_index = s.loop_index + 1)
     {
-      if (DAT_008bd200 == 0)
+      if (g_duel_ai_mode_state == 0)
       {
         DrawAdventureCard(*(int *)(global_ante_cards[0] + s.loop_index * 4), s.loop_index * 0x18 + 10,
                           s.loop_index * 0xc + 0x18, 1, DAT_0058b06c);
@@ -2201,7 +2199,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         s.world_magic_option_index = 0xffffffff;
       }
     }
-    if (DAT_008bd200 >= 0)
+    if (g_duel_ai_mode_state >= 0)
     {
       do
       {
@@ -2436,7 +2434,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   {
     for (s.loop_index = 0; s.ante_card_count > s.loop_index; s.loop_index = s.loop_index + 1)
     {
-      if (DAT_008bd200 == 0)
+      if (g_duel_ai_mode_state == 0)
       {
         DrawAdventureCard(*(int *)(global_ante_cards[0] + s.loop_index * 4), s.loop_index * 0x18 + 10,
                           s.loop_index * 0xc + 0x18, 1, DAT_0058b0e0);

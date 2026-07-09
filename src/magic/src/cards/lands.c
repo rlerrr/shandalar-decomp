@@ -72,7 +72,7 @@ int card_gem_bazaar(int player, int card, event_t event)
       ((event == EVENT_TAP_CARD || event == EVENT_PLAY_ABILITY) && affected_card == card &&
        affected_card_controller == player))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       play_sound_effect(0x31);
     }
@@ -141,14 +141,14 @@ int card_library_of_alexandria(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "LIBRARY_OF_ALEXANDRIA");
     }
 
     if (hand_count[player] == 7)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         sprintf(s.dialog, " %s\n %s\n %s", text_lines[0], text_lines[1], text_lines[2]);
       }
@@ -156,14 +156,14 @@ int card_library_of_alexandria(int player, int card, event_t event)
     }
     else
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         sprintf(s.dialog, " %s\n %s\n %s", text_lines[0], text_lines[1], text_lines[2]);
       }
       s.default_action = 0;
     }
 
-    if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
+    if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
     {
       s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
     }
@@ -270,7 +270,7 @@ int card_mishra_s_workshop(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_SPELL && unk_008a9000 != 1)
+  if (event == EVENT_RESOLVE_SPELL && g_duel_ai_mode_state != 1)
   {
     play_sound_effect(WAV_GREY);
   }
@@ -306,7 +306,7 @@ int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t 
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_SPELL && unk_008a9000 != 1)
+  if (event == EVENT_RESOLVE_SPELL && g_duel_ai_mode_state != 1)
   {
     play_sound_effect(color + WAV_GREY);
   }

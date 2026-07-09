@@ -84,7 +84,7 @@ void FUN_004c42f8(void)
 // FUNCTION: SHANDALAR 0x0055837e
 INT_PTR __cdecl FUN_0055837e(int *param_1, int param_2, void *param_3, int param_4, char *param_5)
 {
-  if (DAT_008bd200 == 1)
+  if (g_duel_ai_mode_state == 1)
   {
     return 1;
   }
@@ -127,7 +127,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
   }
   else if (((param_1 == active_player) &&
             ((gs_window_title_opponent_attack_009267a0[100] & 2) == 0)) ||
-           (DAT_008bd200 == 1))
+           (g_duel_ai_mode_state == 1))
   {
     s.visible_count = 0;
     for (s.i = 0; s.i < param_3; s.i = s.i + 1)
@@ -142,7 +142,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
     unk_00939340 = RandomIntLessThan(s.visible_count);
     if (param_1 != unk_008b35ec)
     {
-      if (DAT_008bd200 == 1)
+      if (g_duel_ai_mode_state == 1)
       {
         FUN_004c4181();
       }

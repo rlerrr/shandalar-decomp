@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include "defs.h"
+#include "duel_engine.h"
 
 // Single header library style
 #ifdef GLOBAL_STATE_IMPL
@@ -710,9 +711,6 @@ GLOBAL_STATE_EXTERN int unk_0091c4fc;
 // GLOBAL: MAGIC 0x0091c500
 // GLOBAL: SHANDALAR 0x00930640
 GLOBAL_STATE_EXTERN int DAT_0091c500;
-
-// GLOBAL: SHANDALAR 0x00930644
-GLOBAL_STATE_EXTERN int g_duel_mode_flags;
 
 // GLOBAL: MAGIC 0x00950780
 GLOBAL_STATE_EXTERN unsigned int(__cdecl *PTR_CalcDrawManaText_00950780)(HDC dc, RECT *rect, char *text);

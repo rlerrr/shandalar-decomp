@@ -140,6 +140,7 @@ SHARED_RESOURCES_EXTERN int global_DIB_debug;
 void delete_and_close_object(HANDLE obj);
 void destroy_create_fonts_resources();
 bool create_fonts();
+LOGFONT *LoadFontFromIni(char *name, int italic);
 
 #undef SHARED_RESOURCES_EXTERN
 #endif

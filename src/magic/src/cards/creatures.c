@@ -235,7 +235,7 @@ int card_personal_incarnation(int player, int card, event_t event)
     damage_source_player = (instance->state & 0x1000) != 0;
     do
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "PERSONAL_INCARNATION");
       }
@@ -251,7 +251,7 @@ int card_personal_incarnation(int player, int card, event_t event)
         selected = &PLAYER_CARD_INSTANCE(target.player, target.card);
         if (selected->damage_target_player == player && selected->damage_target_card == card)
         {
-          if (unk_008a9000 != 1)
+          if (g_duel_ai_mode_state != 1)
           {
             load_text("prompts.txt", "PERSONAL_INCARNATION");
           }
@@ -837,7 +837,7 @@ int card_gaea_s_liege(int player, int card, event_t event)
   }
   else if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "GAEAS_LIEGE");
     }
@@ -1078,7 +1078,7 @@ void FUN_00542a2a(int player, int card)
     PLAYER_CARD_INSTANCE(player, card).unknown0x14 = 0;
     PLAYER_CARD_INSTANCE(player, card).damage_on_card = 0;
     FUN_004f7783(player, card);
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       play_sound_effect(WAV_REGEN);
     }
@@ -1478,7 +1478,7 @@ int card_northern_paladin(int player, int card, event_t event)
       charge_mana(player, COLOR_WHITE, 2);
       if (spell_fizzled != 1)
       {
-        if (unk_008a9000 != 1)
+        if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "NORTHERN_PALADIN");
         }
@@ -1598,7 +1598,7 @@ int card_royal_assassin(int player, int card, event_t event)
   }
   else if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "ROYAL_ASSASSIN");
     }
@@ -1754,7 +1754,7 @@ int card_stone_giant(int player, int card, event_t event)
   }
   else if ((event == EVENT_ACTIVATE) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "STONE_GIANT");
     }
@@ -1886,7 +1886,7 @@ int card_dwarven_warriors(int player, int card, event_t event)
   }
   else if ((event == EVENT_ACTIVATE) && ((instance->state & 0x20010) == 0))
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "DWARVEN_WARRIORS");
     }
@@ -2026,7 +2026,7 @@ int card_samite_healer(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "SAMITE_HEALER");
     }
@@ -2308,7 +2308,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
   }
   else if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "PRODIGAL_SORCERER");
     }
@@ -2373,7 +2373,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
   s.unused = 0;
   if (unk_008b35ec == player || (unk_00926804 & 2) != 0)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       if (!C_real_select_target(player,
                                 2,
@@ -2414,7 +2414,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
   }
   else
   {
-    if (unk_008a9000 == 1)
+    if (g_duel_ai_mode_state == 1)
     {
       if (internal_rand(3) != 0)
         unk_00939340 = 0;
@@ -2430,7 +2430,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
 
     if (unk_00939340 == 0)
     {
-      if (unk_008a9000 == 1)
+      if (g_duel_ai_mode_state == 1)
         s.prompt = "";
       else
         s.prompt = text_lines;
@@ -2462,7 +2462,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
     {
       s.target_card = -1;
       unk_00742fcc = 1 - player;
-      if (unk_008a9000 == 1)
+      if (g_duel_ai_mode_state == 1)
       {
         unk_00939340 = 0;
         unk_00925bb8 = ((unk_00742fcc == 0) ? 0 : 0x100) | 0xff;
@@ -2567,7 +2567,7 @@ int card_pirate_ship(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "PIRATE_SHIP");
     }
@@ -2672,7 +2672,7 @@ int card_orcish_artillery(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "ORCISH_ARTILLERY");
     }
@@ -2971,7 +2971,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
   else if ((event == EVENT_ACTIVATE) && ((instance->state & STATE_TAPPED) == 0))
   {
     available_colors = (unsigned int)(unsigned char)instance->damage_source_card;
-    if ((((player == active_player) && ((unk_00926804 & 2) == 0)) || (unk_008a9000 == 1)) || (unk_009252e0 != 0))
+    if ((((player == active_player) && ((unk_00926804 & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
       choice_hint = -1;
       current_color = 1;
@@ -3002,7 +3002,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
     }
     if (spell_fizzled != 1)
     {
-      if (unk_008a9000 != 1)
+      if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "BIRDS_OF_PARADISE");
       }
@@ -3017,7 +3017,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
         undeclare_mana_available_hex(player, (unsigned char)instance->damage_source_card, 1);
         instance->state |= STATE_TAPPED;
         produced_mana_color = color;
-        if (((player == active_player) && ((unk_00926804 & 2) == 0)) && (unk_008a9000 != 1))
+        if (((player == active_player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
         {
           load_text("prompts.txt", "BIRDS_OF_PARADISE2");
           if (color == COLOR_BLACK)
@@ -3346,7 +3346,7 @@ int card_ley_druid(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_008a9000 != 1)
+    if (g_duel_ai_mode_state != 1)
     {
       load_text(0, "LEY DRUID");
     }

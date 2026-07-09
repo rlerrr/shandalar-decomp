@@ -8,6 +8,7 @@
 #include "deckdll/src/card_db.h"
 #include "game_support.h"
 #include "global_strings.h"
+#include "duel_engine.h"
 
 typedef ptrdiff_t INT_PTR;
 typedef struct
@@ -36,7 +37,6 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
 extern int DAT_0091c998;
-extern HWND DAT_00896714;
 
 // GLOBAL: MAGIC 0x006f6df8
 int DAT_006f6df8[4];
@@ -46,10 +46,6 @@ int *DAT_006f6e08;
 int DAT_006f6e10[4];
 // GLOBAL: MAGIC 0x006f6e20
 int DAT_006f6e20;
-// GLOBAL: MAGIC 0x006f6ef0
-int DAT_006f6ef0;
-// GLOBAL: MAGIC 0x00777c0c
-int DAT_00777c0c;
 // GLOBAL: MAGIC 0x008950b4
 int DAT_008950b4;
 
@@ -387,9 +383,9 @@ int FUN_004487d8(int player, int card)
     return -1;
   }
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   internal_card_id = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).internal_card_id;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
   return internal_card_id;
 }
 
@@ -422,9 +418,9 @@ int FUN_00449057(int player, int card)
     return 0;
   }
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   displayed_color = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 
   return displayed_color;
 }
@@ -434,7 +430,7 @@ void FUN_00449645(int player, int card, char *text)
 {
   int color_index;
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   for (color_index = 1; color_index < 6; ++color_index)
   {
     if (DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index] != '\0')
@@ -442,7 +438,7 @@ void FUN_00449645(int player, int card, char *text)
       FUN_00495217(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index], 0);
     }
   }
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x00449706
@@ -450,7 +446,7 @@ void FUN_00449706(int player, int card, char *text)
 {
   int color_index;
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   for (color_index = 1; color_index < 6; ++color_index)
   {
     if (DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index] != '\0')
@@ -458,7 +454,7 @@ void FUN_00449706(int player, int card, char *text)
       FUN_0049511c(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index], 0);
     }
   }
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x00449990
@@ -469,9 +465,9 @@ unsigned int FUN_00449990(int player, int card)
   if (FUN_004483be(player, card) != 0)
     return -1;
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   result = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
   return result;
 }
 
@@ -484,10 +480,10 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
   if (displayed_player_and_card == NULL)
     return;
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   displayed_player_and_card[0] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).parent_controller;
   displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).parent_card;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x00448c93
@@ -497,14 +493,14 @@ unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card)
 
   if (FUN_004483be(player, card) == 0)
   {
-    EnterCriticalSection(&unk_00789110);
+    EnterCriticalSection(&g_duel_render_lock);
     if (displayed_player_and_card != NULL)
     {
       displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).damage_source_player;
       displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).damage_source_card;
     }
     display_info = DISPLAYED_PIC_INFO(player, card);
-    LeaveCriticalSection(&unk_00789110);
+    LeaveCriticalSection(&g_duel_render_lock);
   }
   else
   {
@@ -521,9 +517,9 @@ unsigned int FUN_00448490(int player, int card)
 
   if (FUN_004483be(player, card) == 0)
   {
-    EnterCriticalSection(&unk_00789110);
+    EnterCriticalSection(&g_duel_render_lock);
     info_slot = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).info_slot;
-    LeaveCriticalSection(&unk_00789110);
+    LeaveCriticalSection(&g_duel_render_lock);
   }
   else
   {
@@ -543,9 +539,9 @@ int FUN_004491cd(int player, int card)
     return 0;
   }
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   displayed_value = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 
   return displayed_value;
 }
@@ -561,10 +557,10 @@ void FUN_00449249(int player, int card, int *power, int *toughness)
   }
   else
   {
-    EnterCriticalSection(&unk_00789110);
+    EnterCriticalSection(&g_duel_render_lock);
     *power = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_power;
     *toughness = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_toughness;
-    LeaveCriticalSection(&unk_00789110);
+    LeaveCriticalSection(&g_duel_render_lock);
   }
 }
 
@@ -578,9 +574,9 @@ unsigned int FUN_00449898(int player, int card)
     return 0;
   }
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   displayed_flags = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).token_status;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
 
   return displayed_flags;
 }
@@ -735,7 +731,7 @@ int do_dialog(int who_chooses,
     ai_choice = DAT_008b293c;
   }
 
-  if (unk_008a9000 == 1)
+  if (g_duel_ai_mode_state == 1)
   {
     return ai_choice;
   }
@@ -780,7 +776,7 @@ int do_dialog(int who_chooses,
     TENTATIVE_reassess_all_cards();
   }
 
-  if (who_chooses == unk_008b35ec && unk_009252e0 == 0)
+  if (who_chooses == unk_008b35ec && g_duel_network_state == 0)
   {
     dialog_mode = 1;
   }
@@ -799,7 +795,7 @@ int do_dialog(int who_chooses,
     TENTATIVE_send_network_result(who_chooses, 0xd);
   }
 
-  if (who_chooses == unk_008b35ec && unk_009252e0 == 0)
+  if (who_chooses == unk_008b35ec && g_duel_network_state == 0)
   {
     ai_choice = dialog_result;
   }
@@ -819,7 +815,7 @@ int raw_do_dialog(int bigcard_player,
   int card_image_number;
   dialog_context_t s;
 
-  KillTimer((HWND)g_main_window_hwnd, DAT_0091b280);
+  KillTimer((HWND)g_duel_window_hwnd, DAT_0091b280);
   if (smallcard_card == 0xff)
   {
     smallcard_card = -1;
@@ -850,7 +846,7 @@ int raw_do_dialog(int bigcard_player,
   s.prompt = prompt;
   s.dialog_mode = dialog_mode;
 
-  dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_main_window_hwnd, FUN_00506fa0, (LPARAM)&s);
+  dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_duel_window_hwnd, FUN_00506fa0, (LPARAM)&s);
   if (dialog_result == 0)
   {
     return -1;
@@ -880,7 +876,7 @@ unsigned int FUN_00446e4b(void)
 
   // stack_entry_count = (int *)&gs_multiblock_creature_008cf040[52];
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   needs_refresh = memcmp(global_displayed_card_instances, global_card_instances, 0x161e8);
   memcpy(global_displayed_card_instances, global_card_instances, 0x161e8);
   if (DAT_008a99f8 != active_cards_count[0] || DAT_008a99fc != active_cards_count[1])
@@ -1020,7 +1016,7 @@ unsigned int FUN_00446e4b(void)
     needs_refresh = 1;
   }
   DAT_00777848 = _DAT_00742fbc;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
   return needs_refresh;
 }
 
@@ -1034,9 +1030,9 @@ unsigned int FUN_00449ac3(int player, int card)
     return -1;
   }
 
-  EnterCriticalSection(&unk_00789110);
+  EnterCriticalSection(&g_duel_render_lock);
   displayed_card_type = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
-  LeaveCriticalSection(&unk_00789110);
+  LeaveCriticalSection(&g_duel_render_lock);
   return displayed_card_type;
 }
 
@@ -1493,14 +1489,14 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     erase_dc = (HDC)wparam;
     ApplyCardArtPaletteToDc(erase_dc);
     GetClientRect(hwnd, &erase_rect);
-    if (DAT_006f6ef0 == 0)
+    if (g_magicgame_big_card_choice_pic == 0)
     {
       background_brush = GetStockObject(BLACK_BRUSH);
       FillRect(erase_dc, &erase_rect, background_brush);
     }
     else
     {
-      DrawBitmapToRect(erase_dc, &erase_rect, (HBITMAP)DAT_006f6ef0);
+      DrawBitmapToRect(erase_dc, &erase_rect, (HBITMAP)g_magicgame_big_card_choice_pic);
     }
     return 1;
   }
@@ -1508,7 +1504,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   if (msg == WM_INITDIALOG)
   {
     DAT_006f6e20 = 0;
-    if (unk_009252e0 != 0)
+    if (g_duel_network_state != 0)
     {
       SetTimer(hwnd, 1, 2000, (TIMERPROC)0);
     }
@@ -1652,7 +1648,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       {
         hovered_player = dialog_context->bigcard_player;
         hovered_card = dialog_context->bigcard_card;
-        SendMessageA(DAT_00896714, 0x401, bigcard_image, (LPARAM)&hovered_player);
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, bigcard_image, (LPARAM)&hovered_player);
       }
       else if (smallcard_image != 0xffffffff)
       {
@@ -1663,7 +1659,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
           hovered_player = dialog_context->smallcard_player;
           hovered_card = dialog_context->smallcard_card;
-          SendMessageA(DAT_00896714, 0x401, smallcard_image, (LPARAM)&hovered_player);
+          SendMessageA(g_duel_card_preview_window_hwnd, 0x401, smallcard_image, (LPARAM)&hovered_player);
         }
       }
     }
@@ -1709,7 +1705,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                        0);
         }
 
-        if (DAT_00777c0c != 0)
+        if (g_duel_dialog_refresh_state != 0)
         {
           sprintf(card_coordinates, "%d,%d", dialog_context->bigcard_player, dialog_context->bigcard_card);
           SetBkMode(paint_dc, 1);

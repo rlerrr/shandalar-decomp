@@ -2,6 +2,7 @@
 #define SHANDALAR_GLOBAL_STRINGS_H
 
 #include "defs.h"
+#include "magic/src/duel_engine.h"
 
 /* Single header library style */
 #ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
@@ -27,13 +28,6 @@ typedef char sh_two_text_0x32_size_must_be_0x64[(sizeof(sh_two_text_0x32_t) == 0
  * Runtime text globals loaded by LoadAdvStringsFile() (mostly from AdvStrings.txt),
  * plus block pointers loaded by LoadAdvBlocksFile() (from AdvBlocks.txt).
  */
-
-#ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
-// GLOBAL: SHANDALAR 0x008bd200
-int DAT_008bd200 = 0;
-#else
-extern int DAT_008bd200;
-#endif
 
 #ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
 // GLOBAL: SHANDALAR 0x00593934

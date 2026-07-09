@@ -68,9 +68,6 @@ unsigned char DAT_007a7d90[STARTUP_DIALOG_COUNT * STARTUP_DIALOG_ROW_STRIDE];
 // GLOBAL: MAGIC 0x0074b62c
 int DAT_0074b62c;
 
-// GLOBAL: MAGIC 0x007775b4
-int DAT_007775b4;
-
 // GLOBAL: MAGIC 0x007a79b8
 int DAT_007a79b8;
 
@@ -78,9 +75,6 @@ extern char *global_base_txt;
 
 // GLOBAL: MAGIC 0x008950b0
 HWND global_main_hwnd;
-
-// GLOBAL: MAGIC 0x00895204
-int DAT_00895204;
 
 // GLOBAL: MAGIC 0x008b3bd8
 int DAT_008b3bd8;
@@ -100,20 +94,11 @@ screen_name_file_t DAT_008a91a0;
 extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
 
-// GLOBAL: MAGIC 0x008cff0c
-int DAT_008cff0c;
-
 // GLOBAL: MAGIC 0x008cff14
 HANDLE global_mutex_LowerDialog;
 
 // GLOBAL: MAGIC 0x0091bbd0
 int DAT_0091bbd0;
-
-extern int DAT_00896714;
-extern int DAT_0091c0f0;
-
-// GLOBAL: MAGIC 0x0091c4f8
-int DAT_0091c4f8;
 
 // GLOBAL: MAGIC 0x0091ce40
 char DAT_0091ce40[300];
@@ -610,15 +595,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   s.fam_window = NULL;
   s.startup_ok = 1;
 
-  g_main_window_hwnd = 0;
-  DAT_0091c4f8 = 0;
-  DAT_00895204 = DAT_0091c4f8;
-  DAT_0091c0f0 = 0;
-  DAT_008cff0c = DAT_0091c0f0;
-  DAT_00896714 = 0;
+  g_duel_window_hwnd = 0;
+  g_duel_life_window_hwnd = 0;
+  g_duel_full_card_window_hwnd = g_duel_life_window_hwnd;
+  g_duel_phase_display_window_hwnd = 0;
+  g_duel_attack_phase_window_hwnd = g_duel_phase_display_window_hwnd;
+  g_duel_card_preview_window_hwnd = 0;
   DAT_008b4dd4 = 0;
-  DAT_007775b4 = DAT_008b4dd4;
-  unk_00742fc4 = DAT_007775b4;
+  g_duel_message_loop_active = DAT_008b4dd4;
+  unk_00742fc4 = g_duel_message_loop_active;
   DAT_0074b62c = 0;
 
   FUN_005532e9();

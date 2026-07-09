@@ -16,6 +16,7 @@ typedef struct Sound_t
 } Sound;
 
 int sound_unload(int idx);
+int sound_unload_all(void);
 void sound_close();
 int sound_play(int num, Sound *snd);
 int sound_stop(int a1);

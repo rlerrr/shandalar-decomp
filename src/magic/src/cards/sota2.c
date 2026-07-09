@@ -401,7 +401,7 @@ int card_demonic_hordes(int player, int card, event_t event)
 
         if (selected_target.player != -1)
         {
-          if (unk_008a9000 != 1)
+          if (g_duel_ai_mode_state != 1)
           {
             play_sound_effect(WAV_SACRFICE);
           }
@@ -1027,7 +1027,7 @@ int card_rock_hydra(int player, int card, event_t event)
               PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
               local_8 = 1;
             }
-            else if (unk_008a9000 == 1)
+            else if (g_duel_ai_mode_state == 1)
             {
               FUN_004e51bb();
             }
