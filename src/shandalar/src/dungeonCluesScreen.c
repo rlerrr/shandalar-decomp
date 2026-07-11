@@ -859,7 +859,7 @@ redraw_list:
       LoadTextSectionLines(s_ADVstrings_txt_0058cb60, s_CAVELIST_0058cb54);
       FormatMessageFromStringStripCarriageReturns(
           g_ui_message_buffer, 0x1000, text_lines[0], GetDungeonName(s.dungeon_index),
-          (char *)gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((s.dungeon_index * 4 + 4) * 5) * 5);
+          gs_cityname_manacastle_0077de00[s.dungeon_index + 1]);
     }
     else
     {
@@ -1110,7 +1110,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
   if (dungeon_index < 5)
   {
     sprintf(g_ui_message_buffer, s__s____s__0058ccec, GetDungeonName(dungeon_index),
-            (char *)gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[dungeon_index + 1]);
+            (char *)gs_cityname_manacastle_0077de00[dungeon_index + 1]);
     DrawFormattedTextShadowed(PTR_DAT_005832b4, s.title_colors[4], 0x12, 0x1c, g_ui_message_buffer);
     s.text_y = ScaleUiCoordinateFrom320(0x24);
   }

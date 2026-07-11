@@ -448,11 +448,6 @@ char g_town_button_labels[5][0x64];
 
 void VisitTownWiseman(void);
 
-// GLOBAL: SHANDALAR 0x0058ab58
-void(__cdecl *g_town_special_button_callback)(void) = VisitTownWiseman;
-// GLOBAL: SHANDALAR 0x0058ab70
-int _DAT_0058ab70 = 0;
-
 int RenderBuyCardsDoneButton(AdvMenuControl *control, int mode);
 extern char g_town_leave_button_mode_colors[];
 
@@ -660,7 +655,7 @@ char DAT_0058cb80[] = ".dck";
 char s_decks_0179_dck_0058cb88[] = "decks\\0179.dck";
 
 // GLOBAL: SHANDALAR 0x005916bc
-char s_x_sound_newsflash_wav_005916bc[] = "x:sound\\newsflash.wav\0\0\0newsback.pic";
+char s_x_sound_newsflash_wav_005916bc[0x18] = "x:sound\\newsflash.wav";
 // GLOBAL: SHANDALAR 0x005916d4
 char s_newsback_pic_005916d4[] = "newsback.pic";
 
@@ -2295,7 +2290,7 @@ loop:
   }
   g_town_button_labels[4][0] = '\0';
   s.tmp_k = 0;
-  g_town_special_button_callback = VisitTownWiseman;
+  g_town_icon_menu_controls[4].on_activate = VisitTownWiseman;
 
   if (g_town_slots[town_index].location_type != 1)
   {
@@ -2305,7 +2300,7 @@ loop:
       strcpy(g_ui_message_buffer, s_empty_string_0058ada4);
       FormatMessageFromStringStripCarriageReturns(g_town_button_labels[4], 0x64, gs_cityscreen_buttons_0077f5e0[5], gs_amuletnames_0077d090[s.card_id],
                                                   FUN_004f2e17(town_index));
-      g_town_special_button_callback = BuyTownSpecialCardOffer;
+      g_town_icon_menu_controls[4].on_activate = BuyTownSpecialCardOffer;
     }
     else if (((g_current_quest_destination == -1) && (g_pending_quest_destination != -1)) &&
              (((g_shandalar_difficulty + 3) * 0x10) <
@@ -2335,11 +2330,11 @@ loop:
 
   if (g_town_button_labels[4][0])
   {
-    _DAT_0058ab70 = 1;
+    g_town_icon_menu_controls[4].direct_hotkey = 1;
   }
   else
   {
-    _DAT_0058ab70 = 3;
+    g_town_icon_menu_controls[4].direct_hotkey = 3;
   }
 
   g_town_menu_show_tooltips = 1;

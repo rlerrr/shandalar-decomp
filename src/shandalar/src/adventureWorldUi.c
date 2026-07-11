@@ -653,7 +653,7 @@ char *BuildQuestLocationName(int town_index, int quest_destination, int mana_cas
   {
     if (location_type == 4)
     {
-      sprintf(g_world_ui_text_scratch_buffer, gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + mana_castle_index * 100);
+      sprintf(g_world_ui_text_scratch_buffer, (char *)gs_cityname_manacastle_0077de00 + mana_castle_index * 100);
     }
     else if (location_type > 1)
     {

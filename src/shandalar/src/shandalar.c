@@ -6029,15 +6029,15 @@ int LoadAdvStringsFile(const char *filename)
 
   for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[s.i + 1], text_lines[s.i]);
+    strcpy(gs_cityname_manacastle_0077de00[s.i + 1], text_lines[s.i]);
   }
-  strcpy(gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[0], gs_cityname_castle_00765dc0);
+  strcpy(gs_cityname_manacastle_0077de00[0], gs_cityname_castle_00765dc0);
 
-  s.next_buf = gs_city_text_cluster_0077d610.citynames_buf_0077d610;
-  s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_FIRSTHALF", gs_citynames_firsthalf_0077e060, 0x10, gs_city_text_cluster_0077d610.citynames_buf_0077d610,
-                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), &s.next_buf);
+  s.next_buf = gs_citynames_buf_0077d610;
+  s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_FIRSTHALF", gs_citynames_firsthalf_0077e060, 0x10, gs_citynames_buf_0077d610,
+                                     gs_citynames_buf_0077d610 + sizeof(gs_citynames_buf_0077d610), &s.next_buf);
   s.ok &= LoadTextSectionStringTable(filename, "CITYNAMES_SECONDHALF", gs_citynames_secondhalf_007653e0, 0x10, s.next_buf,
-                                     gs_city_text_cluster_0077d610.citynames_buf_0077d610 + sizeof(gs_city_text_cluster_0077d610.citynames_buf_0077d610), (char **)0);
+                                     gs_citynames_buf_0077d610 + sizeof(gs_citynames_buf_0077d610), (char **)0);
 
   s.next_buf = gs_worldmagic_buf_0074b160;
   LoadTextSectionLines(filename, "WORLDMAGIC");
@@ -6176,8 +6176,8 @@ int LoadAdvStringsFile(const char *filename)
   s.ok &= LoadTextSectionStringTable(filename, "CITYCARDTEXT", gs_citycardtext_0074ccf0, 0x31, gs_citycardtext_buf_0074c0f0,
                                      gs_citycardtext_buf_0074c0f0 + sizeof(gs_citycardtext_buf_0074c0f0), (char **)0);
   s.ok &= LoadTextSectionStringTable(filename, "BROWSE", gs_browse_0074da20, 0x11,
-                                     gs_city_text_cluster_0077d610.browse_buf_0077dc50,
-                                     gs_city_text_cluster_0077d610.browse_buf_0077dc50 + sizeof(gs_city_text_cluster_0077d610.browse_buf_0077dc50),
+                                     gs_city_browse_buf_0077dc50,
+                                     gs_city_browse_buf_0077dc50 + sizeof(gs_city_browse_buf_0077dc50),
                                      (char **)0);
   s.ok &= LoadTextSectionStringTable(filename, "SHOWDECK", gs_showdeck_0074b920, 3, gs_showdeck_buf_0074d890,
                                      gs_showdeck_buf_0074d890 + sizeof(gs_showdeck_buf_0074d890), (char **)0);

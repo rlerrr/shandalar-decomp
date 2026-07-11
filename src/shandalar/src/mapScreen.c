@@ -478,7 +478,7 @@ char *__cdecl FormatWorldLocationName(int town_index, int mana_castle_index)
   s.location_type = g_town_slots[town_index].location_type;
   if ((s.location_type == 4) || (s.location_type == 5))
   {
-    sprintf(g_world_ui_text_scratch_buffer, gs_city_text_cluster_0077d610.cityname_manacastle_0077de00[mana_castle_index]);
+    sprintf(g_world_ui_text_scratch_buffer, gs_cityname_manacastle_0077de00[mana_castle_index]);
   }
   else
   {

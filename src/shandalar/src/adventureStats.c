@@ -1397,12 +1397,12 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
     if ((entry_arg & 0x80) != 0)
     {
       FormatMessageFromStringStripCarriageReturns(s.formatted_message, 0x1000, gs_logstrings_0077c9a0[7], GetDungeonName(entry_arg & 0x7f),
-                                                  gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((entry_arg & 0x7f) + 1) * 100);
+                                                  gs_cityname_manacastle_0077de00[(entry_arg & 0x7f) + 1]);
     }
     else
     {
       FormatMessageFromStringStripCarriageReturns(s.formatted_message, 0x1000, gs_logstrings_0077c9a0[8], GetDungeonName(entry_arg & 0x7f),
-                                                  gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + ((entry_arg & 0x7f) + 1) * 100);
+                                                  gs_cityname_manacastle_0077de00[(entry_arg & 0x7f) + 1]);
     }
     break;
   case 5:

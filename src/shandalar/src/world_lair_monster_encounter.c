@@ -2243,7 +2243,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         break;
       case 2:
         sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0x14],
-                gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + monster_color * 100);
+                gs_cityname_manacastle_0077de00[monster_color]);
         break;
       }
       switch (s.bargain_payment_type)
@@ -2338,7 +2338,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         if (g_world_magic_town_flags[monster_color - 1] != 0)
         {
           sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x27],
-                  gs_city_text_cluster_0077d610.cityname_manacastle_0077de00 + monster_color * 100);
+                  gs_cityname_manacastle_0077de00[monster_color]);
           RunTextMenuAtScaled(g_ui_message_buffer, 0x54, 0x74);
         }
         else
@@ -2582,7 +2582,7 @@ LAB_4F4BB2:
     if ((slot_index != s.loop_index) && (g_lair_or_monster_slots[s.loop_index].entry_type != SHANDALAR_ENTRY_LAIR))
     {
       if ((ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.loop_index].world_x,
-                        g_world_player_y - g_lair_or_monster_slots[s.loop_index].world_y) < 0x40) &&
+                               g_world_player_y - g_lair_or_monster_slots[s.loop_index].world_y) < 0x40) &&
           (g_lair_or_monster_slots[s.loop_index].entry_type != SHANDALAR_ENTRY_NONE))
       {
         FreeOpeningMenuSpriteWorkEntries(s.loop_index, s.loop_index + 8);
