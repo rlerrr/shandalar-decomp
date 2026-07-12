@@ -96,7 +96,6 @@ extern int unk_00789308;
 extern int Gold;
 extern int life[2];
 extern int deck[500];
-extern char global_ante_cards[2][16];
 extern char g_ui_message_buffer[0x1000];
 extern HPALETTE g_palette_handle;
 extern HWND g_main_window_hwnd;
@@ -937,7 +936,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
   for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1)
   {
     g_duel_ante_card_ids[local_18] = -1;
-    *(int *)(global_ante_cards[0] + local_18 * 4) = g_duel_ante_card_ids[local_18];
+    global_ante_cards[0][local_18] = g_duel_ante_card_ids[local_18];
   }
   ExitIfNoUsableDeckCards();
   do
@@ -948,7 +947,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
     } while (deck[local_18] == -1);
   } while (((*(byte *)((int)deck + local_18 * 4 + 1) & 0x40) != 0) ||
            ((deck[local_18] & 0xfffU) < 5));
-  (*(int *)global_ante_cards[0]) = deck[local_18] & 0xfff;
+  global_ante_cards[0][0] = deck[local_18] & 0xfff;
   if ((0 < g_next_duel_card_id) && (g_next_duel_card_id <= 5))
   {
     g_next_duel_card_id = -1;
@@ -984,7 +983,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
   {
     for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1)
     {
-      if (*(int *)(global_ante_cards[0] + local_14 * 4) != -1)
+      if (global_ante_cards[0][local_14] != -1)
       {
         strcpy(g_ui_message_buffer, gs_dungeon_0077f000[0x13]);
         LoadPcxIntoPage(1, "losedul2.pic");
@@ -995,11 +994,11 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
         iVar2 = iVar2 + 0x50;
         iVar5 = ScaleUiCoordinate(10);
         iVar5 = RandomIntLessThan(iVar5);
-        DrawAdventureCard((*(int *)global_ante_cards[0]), iVar5 + local_14 * 0x62 + 0x21, iVar2, 1,
+        DrawAdventureCard(global_ante_cards[0][0], iVar5 + local_14 * 0x62 + 0x21, iVar2, 1,
                           g_ui_message_buffer);
         ClearInputAndWaitForMouseRelease();
         WaitForInputEventUnlessBlocked();
-        RemoveCardFromDeckById(*(uint *)(global_ante_cards[0] + local_14 * 4));
+        RemoveCardFromDeckById(global_ante_cards[0][local_14]);
       }
     }
   }
@@ -1331,7 +1330,8 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
             for (s.direction = 1; s.direction <= 8; s.direction += 2)
             {
               if ((DUNGEON_GRID_CELL(s.cell_x + g_neighbor_dx[s.direction],
-                                     s.cell_y + g_neighbor_dy[s.direction]) & 0x100) != 0)
+                                     s.cell_y + g_neighbor_dy[s.direction]) &
+                   0x100) != 0)
               {
                 s.work++;
               }

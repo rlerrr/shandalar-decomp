@@ -31,7 +31,6 @@ typedef __int64 longlong;
 #endif
 #define CONCAT31(a, b) ((int)(b))
 #define CONCAT44(a, b) (((__int64)(a) << 32) | (unsigned int)(b))
-#define ANTE_CARD(row, slot) (*(int *)(global_ante_cards[(row)] + (slot) * 4))
 
 typedef struct
 {
@@ -893,7 +892,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
     DAT_008ce538 = GetFirstManaColorIndex((int)gs_creature_names_00591a08[local_8].color_mask);
     DAT_00742fd0 = 0;
     DAT_007a7874 = 3;
-    ANTE_CARD(0, 0) = -1;
+    global_ante_cards[0][0] = -1;
     for (local_c = 0; local_c < ante_card_count; local_c = local_c + 1)
     {
       g_duel_ante_card_ids[local_c] = auStack_20[local_c];
@@ -1914,7 +1913,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       } while (deck[s.deck_or_card_index] == -1);
     } while (((deck[s.deck_or_card_index] & 0x4000) != 0) ||
              (((int)deck[s.deck_or_card_index] & 0xfff) <= 4));
-    *(uint *)(global_ante_cards[0] + s.loop_index * 4) = deck[s.deck_or_card_index] & 0xfff;
+    global_ante_cards[0][s.loop_index] = deck[s.deck_or_card_index] & 0xfff;
   }
   s.font_slot = 2;
   s.preduel_background_paths[0] = s_prdblk_pic_0058afd0;
@@ -2042,7 +2041,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     {
       if (g_duel_ai_mode_state == 0)
       {
-        DrawAdventureCard(*(int *)(global_ante_cards[0] + s.loop_index * 4), s.loop_index * 0x18 + 10,
+        DrawAdventureCard(global_ante_cards[0][s.loop_index], s.loop_index * 0x18 + 10,
                           s.loop_index * 0xc + 0x18, 1, DAT_0058b06c);
       }
     }
@@ -2347,7 +2346,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         } while (deck[s.deck_or_card_index] == -1);
       } while (((deck[s.deck_or_card_index] & 0x4000) != 0) ||
                (((int)deck[s.deck_or_card_index] & 0xfff) <= 4));
-      ANTE_CARD(0, 0) = deck[s.deck_or_card_index] & 0xfff;
+      global_ante_cards[0][0] = deck[s.deck_or_card_index] & 0xfff;
       s.world_magic_ante_used = 1;
       s.victory_count = 0;
       goto LAB_004f3a77;
@@ -2362,10 +2361,10 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         LoadPcxIntoPage(1, s_losedul2_pic_0058b08c);
         StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                                 global_screen_height);
-        DrawAdventureCard(ANTE_CARD(0, 0), 0x17, 0x50, 1, g_ui_message_buffer);
+        DrawAdventureCard(global_ante_cards[0][0], 0x17, 0x50, 1, g_ui_message_buffer);
         ClearInputAndWaitForMouseRelease();
         WaitForInputEventUnlessBlocked();
-        RemoveCardFromDeckById(ANTE_CARD(0, 0));
+        RemoveCardFromDeckById(global_ante_cards[0][0]);
       }
       else
       {
@@ -2395,7 +2394,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     {
       if (g_duel_ai_mode_state == 0)
       {
-        DrawAdventureCard(*(int *)(global_ante_cards[0] + s.loop_index * 4), s.loop_index * 0x18 + 10,
+        DrawAdventureCard(global_ante_cards[0][s.loop_index], s.loop_index * 0x18 + 10,
                           s.loop_index * 0xc + 0x18, 1, DAT_0058b0e0);
       }
     }
@@ -2961,7 +2960,7 @@ LAB_4F4BB2:
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, s.creature_type);
     for (s.ante_card_slot = 0; s.ante_card_slot < 3; s.ante_card_slot = s.ante_card_slot + 1)
     {
-      s.ante_card_id = *(uint *)(global_ante_cards[0] + s.ante_card_slot * 4);
+      s.ante_card_id = global_ante_cards[0][s.ante_card_slot];
       if (s.ante_card_id == 0xffffffff)
       {
         continue;

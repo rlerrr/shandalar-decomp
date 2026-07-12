@@ -3156,14 +3156,14 @@ void FUN_004817fd(int player)
   int ante_slot;
   int card_in_hand;
 
-  for (ante_slot = 0; ante_slot < 0x10 && *(int *)&global_ante_cards[player][ante_slot * 4] != -1; ++ante_slot)
+  for (ante_slot = 0; ante_slot < 0x10 && global_ante_cards[player][ante_slot] != -1; ++ante_slot)
   {
   }
 
   if (ante_slot < 0x10)
   {
     card_in_hand = FUN_0043e18b(player);
-    *(int *)&global_ante_cards[player][ante_slot * 4] = PLAYER_CARD_INSTANCE(player, card_in_hand).internal_card_id;
+    global_ante_cards[player][ante_slot] = PLAYER_CARD_INSTANCE(player, card_in_hand).internal_card_id;
     --hand_count[player];
     load_text("promptsX1.txt", "ANTE_A_CARD");
     if (unk_008b35ec == player)

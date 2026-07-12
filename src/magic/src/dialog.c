@@ -991,7 +991,7 @@ unsigned int FUN_00446e4b(void)
   }
   memcpy(DAT_00924ff0, DAT_008ced00, 0x40);
   DAT_0093d84c = 0;
-  for (zone_index = 0; zone_index < 0x10 && ((int *)global_ante_cards[0])[zone_index] != -1; ++zone_index)
+  for (zone_index = 0; zone_index < 0x10 && global_ante_cards[zone_index] != -1; ++zone_index)
   {
     ++DAT_0093d84c;
   }

@@ -4698,7 +4698,7 @@ int VisitTownSlot(int town_index)
     for (s.duel_ante_slot = 0; s.duel_ante_slot < 0x10; s.duel_ante_slot = s.duel_ante_slot + 1)
     {
       g_duel_ante_card_ids[s.duel_ante_slot] = 0xffffffff;
-      *(unsigned int *)(global_ante_cards[0] + s.duel_ante_slot * 4) = g_duel_ante_card_ids[s.duel_ante_slot];
+      global_ante_cards[0][s.duel_ante_slot] = g_duel_ante_card_ids[s.duel_ante_slot];
     }
 
     (void)ExitIfNoUsableDeckCards();
@@ -4714,7 +4714,7 @@ int VisitTownSlot(int town_index)
         } while (deck[s.found_deck_slot] == -1);
       } while ((deck[s.found_deck_slot] & 0x4000) != 0 || ((deck[s.found_deck_slot] & 0xfff) <= 4));
 
-      *(unsigned int *)(global_ante_cards[0] + s.duel_ante_slot * 4) = deck[s.found_deck_slot] & 0xfff;
+      global_ante_cards[0][s.duel_ante_slot] = deck[s.found_deck_slot] & 0xfff;
       DrawAdventureCard(deck[s.found_deck_slot] & 0xfff, s.duel_ante_slot * 0x28 + 0x60, s.duel_ante_slot * 3 + 0x80, 1,
                         gs_visit_0077c4f0[0]);
     }
@@ -4816,7 +4816,7 @@ int VisitTownSlot(int town_index)
         PlayDuelMusic(2);
         for (s.duel_ante_slot = 0; s.duel_ante_slot < 3; s.duel_ante_slot = s.duel_ante_slot + 1)
         {
-          s.ante_card_id = *(unsigned int *)(global_ante_cards[0] + s.duel_ante_slot * 4);
+          s.ante_card_id = global_ante_cards[0][s.duel_ante_slot];
           if (s.ante_card_id == -1)
           {
             continue;

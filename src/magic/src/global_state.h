@@ -34,10 +34,9 @@ GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
 // GLOBAL: SHANDALAR 0x94d930
 GLOBAL_STATE_EXTERN int global_graveyard_slots[2][500];
 
-// TODO: is this actually int???
 // GLOBAL: MAGIC 0x8cecc0
 // GLOBAL: SHANDALAR 0x008e2e10
-GLOBAL_STATE_EXTERN char global_ante_cards[2][16];
+GLOBAL_STATE_EXTERN int global_ante_cards[2][16];
 
 typedef struct
 {
