@@ -21,13 +21,6 @@ extern int g_menu_current_control_index;
 extern int g_menu_allow_arrow_nav_by_context[50];
 extern int g_menu_control_count_by_context[50];
 extern AdvMenuControl *g_menu_controls_by_context[50][50];
-typedef struct
-{
-  int town_index;
-  int timer;
-  int unk_08;
-  int unk_0c;
-} WorldMagicSlotTimer;
 
 extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 extern int g_mouse_x;

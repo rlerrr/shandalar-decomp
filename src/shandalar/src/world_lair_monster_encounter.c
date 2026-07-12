@@ -45,6 +45,7 @@ extern int g_default_palette_fade_steps;
 extern int g_adventure_world_exit_requested;
 extern int g_world_magic_town_flags[5];
 extern int g_world_location_music_active;
+extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 
 extern int DAT_00789938;
 extern int DAT_0078df68;
@@ -1630,171 +1631,129 @@ end:
 // FUNCTION: SHANDALAR 0x0054c6ba
 undefined4 BuildQuestStatusMessage(void)
 {
-  int iVar1;
-  size_t sVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  char *pcVar6;
-  char *pcVar7;
-  EncodedImage *pEVar8;
+  int unused;
+  int value;
 
   strcpy(g_ui_message_buffer, DAT_00590b54);
   if (g_lair_or_monster_slots[7].entry_type != SHANDALAR_ENTRY_NONE)
   {
-    iVar1 = FindNearestTownIndex((int)(g_lair_or_monster_slots[7].world_x +
-                                       (g_lair_or_monster_slots[7].world_x >> 0x1f & 0x1fU)) >>
-                                     5,
-                                 (int)(g_lair_or_monster_slots[7].world_y +
-                                       (g_lair_or_monster_slots[7].world_y >> 0x1f & 0x1fU)) >>
-                                     5);
-    BuildTownDisplayName(iVar1);
-    FUN_00561441(g_lair_or_monster_slots[7].entry_type);
-    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0]);
+    value = 7;
+    FormatMessageFromStringStripCarriageReturns(
+        g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0],
+        FUN_00561441(g_lair_or_monster_slots[value].entry_type),
+        BuildTownDisplayName(FindNearestTownIndex(g_lair_or_monster_slots[value].world_x / 32,
+                                                  g_lair_or_monster_slots[value].world_y / 32)));
   }
   if ((g_next_duel_life_delta != 0) || (g_next_duel_card_id != -1))
   {
     strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[1]);
     if (g_next_duel_life_delta != 0)
     {
-      if (g_next_duel_life_delta < 0)
+      if (g_next_duel_life_delta >= 0)
       {
-        iVar1 = abs(g_next_duel_life_delta);
-        pcVar6 = gs_queststatus_0077e0a0[3];
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, iVar1);
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[2],
+                g_next_duel_life_delta);
       }
       else
       {
-        pcVar6 = gs_queststatus_0077e0a0[2];
-        iVar1 = g_next_duel_life_delta;
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, iVar1);
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[3],
+                abs(g_next_duel_life_delta));
       }
-      pEVar8 = g_worlds_extra_sprite_entries[3];
-      iVar1 = ScaleUiCoordinate(0x25);
-      iVar3 = ScaleUiCoordinate(0x1c);
-      iVar4 = ScaleUiCoordinate(200);
-      iVar5 = ScaleUiCoordinate(0x254);
-      DrawEncodedImageResampled(PTR_DAT_005832b4, iVar5, iVar4, iVar3, iVar1, pEVar8);
+      DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x254), ScaleUiCoordinate(200),
+                                ScaleUiCoordinate(0x1c), ScaleUiCoordinate(0x25),
+                                g_worlds_extra_sprite_entries[3]);
     }
     if (g_next_duel_card_id == 0)
     {
       strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[4]);
-      pEVar8 = g_worlds_extra_sprite_entries[1];
-      iVar1 = ScaleUiCoordinate(0x25);
-      iVar3 = ScaleUiCoordinate(0x1c);
-      iVar4 = ScaleUiCoordinate(200);
-      iVar5 = ScaleUiCoordinate(0x254);
-      DrawEncodedImageResampled(PTR_DAT_005832b4, iVar5, iVar4, iVar3, iVar1, pEVar8);
+      DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x254), ScaleUiCoordinate(200),
+                                ScaleUiCoordinate(0x1c), ScaleUiCoordinate(0x25),
+                                g_worlds_extra_sprite_entries[1]);
     }
-    else if ((g_next_duel_card_id < 1) || (5 < g_next_duel_card_id))
+    else if ((g_next_duel_card_id > 0) && (g_next_duel_card_id <= 5))
     {
-      if (5 < g_next_duel_card_id)
-      {
-        strcat(g_ui_message_buffer, global_cards_data[g_next_duel_card_id].name);
-        strcat(g_ui_message_buffer, DAT_00590b58);
-        pEVar8 = g_worlds_extra_sprite_entries[0];
-        iVar1 = ScaleUiCoordinate(0x25);
-        iVar3 = ScaleUiCoordinate(0x1c);
-        iVar4 = ScaleUiCoordinate(0x90);
-        iVar5 = ScaleUiCoordinate(0x254);
-        DrawEncodedImageResampled(PTR_DAT_005832b4, iVar5, iVar4, iVar3, iVar1, pEVar8);
-      }
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[2],
+              g_next_duel_card_id);
+      DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x254), ScaleUiCoordinate(200),
+                                ScaleUiCoordinate(0x1c), ScaleUiCoordinate(0x25),
+                                g_worlds_extra_sprite_entries[2]);
     }
-    else
+    else if (g_next_duel_card_id > 5)
     {
-      pcVar6 = gs_queststatus_0077e0a0[2];
-      iVar1 = g_next_duel_card_id;
-      sVar2 = strlen(g_ui_message_buffer);
-      sprintf(g_ui_message_buffer + sVar2, pcVar6, iVar1);
-      pEVar8 = g_worlds_extra_sprite_entries[2];
-      iVar1 = ScaleUiCoordinate(0x25);
-      iVar3 = ScaleUiCoordinate(0x1c);
-      iVar4 = ScaleUiCoordinate(200);
-      iVar5 = ScaleUiCoordinate(0x254);
-      DrawEncodedImageResampled(PTR_DAT_005832b4, iVar5, iVar4, iVar3, iVar1, pEVar8);
+      strcat(g_ui_message_buffer, global_cards_data[g_next_duel_card_id].name);
+      strcat(g_ui_message_buffer, DAT_00590b58);
+      DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x254), ScaleUiCoordinate(0x90),
+                                ScaleUiCoordinate(0x1c), ScaleUiCoordinate(0x25),
+                                g_worlds_extra_sprite_entries[0]);
     }
     strcat(g_ui_message_buffer, DAT_00590b5c);
   }
   if ((g_reveal_all_world_info == 0) && (g_current_quest_destination != -1))
   {
-    if (g_current_quest_type == 0)
+    if (g_current_quest_type != 0)
     {
-      strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[10]);
-    }
-    else if (g_town_slots[g_current_quest_destination].location_type == 1)
-    {
-      strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[g_current_quest_color + 4]);
-      strcat(g_ui_message_buffer, DAT_00590b60);
+      if (g_town_slots[g_current_quest_destination].location_type == 1)
+      {
+        strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[g_current_quest_color + 4]);
+        strcat(g_ui_message_buffer, DAT_00590b60);
+      }
+      else
+      {
+        strcat(g_ui_message_buffer, FUN_004f2e17(g_current_quest_destination));
+        strcat(g_ui_message_buffer, DAT_00590b64);
+      }
     }
     else
     {
-      pcVar6 = FUN_004f2e17(g_current_quest_destination);
-      strcat(g_ui_message_buffer, pcVar6);
-      strcat(g_ui_message_buffer, DAT_00590b64);
+      strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[10]);
     }
     if ((((g_current_quest_type == 0) || (g_current_quest_type == 2)) ||
          ((g_current_quest_type == 1 &&
-           (iVar1 = FindDeckSlotForQuestColorAndType((uchar)g_current_quest_color,
-                                                     (uchar)(1 << ((byte)g_current_quest_destination & 3))),
-            iVar1 != 0)))) ||
+           (FindDeckSlotForQuestColorAndType((uchar)g_current_quest_color,
+                                             (uchar)(1 << (g_current_quest_destination & 3))) != 0)))) ||
         (g_current_quest_type < -100))
     {
-      iVar1 = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
+      value = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
                                        g_town_slots[g_current_quest_destination].world_y);
-      if (iVar1 != g_current_quest_data)
+      if (value != g_current_quest_data)
       {
         g_current_quest_data = -1;
       }
       switch (g_current_quest_data)
       {
-      case 0:
-        pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-        pcVar6 = gs_queststatus_0077e0a0[0xe];
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
-        break;
-      case 1:
-        pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-        pcVar6 = gs_queststatus_0077e0a0[0xf];
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
-        break;
-      case 2:
-        pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-        pcVar6 = gs_queststatus_0077e0a0[0x10];
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
-        break;
-      case 3:
-        pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-        pcVar6 = gs_queststatus_0077e0a0[0x11];
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
-        break;
       case -1:
         if (g_current_quest_type < 0)
         {
-          pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-          pcVar6 = gs_queststatus_0077e0a0[0xb];
-          sVar2 = strlen(g_ui_message_buffer);
-          sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
+          sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0xb],
+                  BuildTownDisplayName(g_current_quest_destination));
         }
         else if ((g_current_quest_type == 0) || (g_current_quest_type == 2))
         {
-          pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-          pcVar6 = gs_queststatus_0077e0a0[0xc];
-          sVar2 = strlen(g_ui_message_buffer);
-          sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
+          sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0xc],
+                  BuildTownDisplayName(g_current_quest_destination));
         }
         else
         {
-          pcVar7 = BuildTownDisplayName(g_current_quest_destination);
-          pcVar6 = gs_queststatus_0077e0a0[0xd];
-          sVar2 = strlen(g_ui_message_buffer);
-          sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
+          sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0xd],
+                  BuildTownDisplayName(g_current_quest_destination));
         }
+        break;
+      case 0:
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0xe],
+                BuildTownDisplayName(g_current_quest_destination));
+        break;
+      case 1:
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0xf],
+                BuildTownDisplayName(g_current_quest_destination));
+        break;
+      case 2:
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0x10],
+                BuildTownDisplayName(g_current_quest_destination));
+        break;
+      case 3:
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0x11],
+                BuildTownDisplayName(g_current_quest_destination));
+        break;
       }
       strcat(g_ui_message_buffer, DAT_00590b68);
     }
@@ -1802,15 +1761,15 @@ undefined4 BuildQuestStatusMessage(void)
     {
       if (g_current_quest_type == 1)
       {
-        GetQuestCardClassName(1 << ((byte)g_current_quest_destination & 3));
-        FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0x12]);
+        FormatMessageFromStringStripCarriageReturns(
+            g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0x12],
+            gs_queststatus_0077e0a0[g_current_quest_color + 0x12],
+            GetQuestCardClassName(1 << (g_current_quest_destination & 3)));
       }
       if (g_current_quest_type < 0)
       {
-        pcVar7 = BuildCreatureNameWithArticle(-g_current_quest_type);
-        pcVar6 = gs_queststatus_0077e0a0[0x18];
-        sVar2 = strlen(g_ui_message_buffer);
-        sprintf(g_ui_message_buffer + sVar2, pcVar6, pcVar7);
+        sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_queststatus_0077e0a0[0x18],
+                BuildCreatureNameWithArticle(-g_current_quest_type));
       }
     }
   }
@@ -2317,7 +2276,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
           s.menu_choice = RunTextMenuAt(g_ui_message_buffer, 0xa0, 200);
           if (s.menu_choice != 0xffffffff)
           {
-            s.loop_index = Scards[s.temp_deck[s.menu_choice]].worldmagic_city;
+            s.loop_index = g_world_magic_slot_timers[s.temp_deck[s.menu_choice]].town_index;
             g_town_slots[s.loop_index].status_and_ruling_wizard =
                 g_town_slots[s.loop_index].status_and_ruling_wizard | 2;
             SetWorldMapPixelFlags(0x80, g_town_slots[s.loop_index].world_x, g_town_slots[s.loop_index].world_y);
@@ -2533,7 +2492,7 @@ LAB_4F4BB2:
                                                   FUN_00561441(s.creature_type), BuildCreatureNameWithArticle(s.deck_or_card_index));
       RunTextMenuAt(g_ui_message_buffer, 0xa0, 0x78);
       s.creature_type = s.deck_or_card_index;
-      s.creature_strength = DAT_007a7874 + (int)gs_creature_names_00591a08[s.deck_or_card_index].tier / 2;
+      s.creature_strength = DAT_007a7874 + (int)gs_creature_names_00591a08[s.creature_type].tier / 2;
     }
     if ((gs_creature_names_00591a08[s.creature_type].preduel_flags & 0xc1) != 0)
     {
@@ -2609,7 +2568,7 @@ LAB_4F4BB2:
     s.reward_text_color = 0xca;
     s.reward_text_x = 0x8c;
     s.reward_text_y = 0x118;
-    AppendDuelVictoryLogEntry(gs_creature_names_00591a08[s.creature_type].encounter_type, (byte)monster_color);
+    AppendDuelVictoryLogEntry(gs_creature_names_00591a08[s.creature_type].encounter_type, monster_color);
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, s.creature_type | 0x80);
     ShowStatsWindow(2, DAT_008ce538 << 0x10 | s.creature_type);
     if (-g_current_quest_type == s.creature_type)
@@ -2630,7 +2589,7 @@ LAB_4F4BB2:
             s.selected_card_id = PickRandomCardMatchingTypeAndColor(1 << (byte)RandomIntLessThan(6), 1);
           } while (FUN_0056c0e5(1 << (byte)monster_color,
                                 (int)global_cards_data[s.selected_card_id].color,
-                                ((s.menu_option_count & 1) ? 1 : 3) == 0) == 0);
+                                ((s.menu_option_count & 1) ? 1 : 3)) == 0);
         } while (((FUN_004bb1cf(s.selected_card_id) <= 0) || ((global_cards_data[s.selected_card_id].extra_ability & 0x900) != 0)) ||
                  (GetCardAvailabilityMask(s.selected_card_id) == 0));
         if (((int)s.menu_option_count < 3) && (g_duel_ante_card_ids[s.menu_option_count] != -1))

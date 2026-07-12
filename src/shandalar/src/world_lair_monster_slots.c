@@ -692,7 +692,8 @@ void UpdateWorldLairAndMonsterSlots(void)
 
     s.movement_step = 1;
 #ifdef MODERN_FIXES
-	  s.speed = 0;
+	s.speed = 0;
+	s.range = 0;
 #endif
     switch (gs_creature_names_00591a08[s.creature_tier].encounter_type)
     {

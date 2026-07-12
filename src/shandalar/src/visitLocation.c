@@ -46,6 +46,7 @@ extern int g_current_quest_giver_town_index;
 extern int g_done_text_table_entry;
 extern int g_world_player_tile_x;
 extern int g_world_player_tile_y;
+extern int g_duel_selection_pending;
 extern long DAT_005a6198[0x4e2];
 extern char text_lines[249][300];
 extern int g_loadsave_skip_esc;
@@ -89,14 +90,6 @@ typedef struct
 
 extern DialogBoxSpriteBank g_dialog_box_sprite_bank;
 extern EncodedImage *g_icons_sprite_entries[0x18];
-
-typedef struct
-{
-  int town_index;
-  int timer;
-  int unk_08;
-  int unk_0c;
-} WorldMagicSlotTimer;
 
 extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 
@@ -335,10 +328,6 @@ int g_wiseman_card_choice_result = 0;
 int DAT_0073c010[500];
 // GLOBAL: SHANDALAR 0x0073c7e0
 int DAT_0073c7e0;
-// GLOBAL: SHANDALAR 0x0074d268
-int DAT_0074d268;
-// GLOBAL: SHANDALAR 0x008c6afc
-int DAT_008c6afc;
 // GLOBAL: SHANDALAR 0x00926668
 int DAT_00926668;
 
@@ -920,7 +909,7 @@ void TriggerWizardSiegeNewsflash(int wizard_color)
       }
 
       s.dist = ApproximateDistance(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
-                            g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
+                                   g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
       if (s.dist < s.nearest_distance)
       {
         s.nearest_distance = s.dist;
@@ -2018,7 +2007,7 @@ int RunTownServicesMenu(int town_index)
       {
         g_pending_quest_destination = RandomIntLessThan(0x80);
         s.tmp_i = ApproximateDistance(g_town_slots[town_index].world_x - g_town_slots[g_pending_quest_destination].world_x,
-                               g_town_slots[town_index].world_y - g_town_slots[g_pending_quest_destination].world_y);
+                                      g_town_slots[town_index].world_y - g_town_slots[g_pending_quest_destination].world_y);
         s.quest_button_enabled = s.quest_button_enabled + 1;
       } while ((s.quest_button_enabled < 1000) && (((g_town_slots[g_pending_quest_destination].location_type <= 1) || (g_town_slots[g_pending_quest_destination].location_type == 4)) ||
                                                    (g_town_slots[g_pending_quest_destination].location_type == 5) ||
@@ -2470,7 +2459,13 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
 
   DAT_00742fc0 = 1;
   DestroyCachedCardArt();
+
+#ifdef _DEBUG
+  // Instantly win every duel
+  s.thread_exit_code = 1;
+#else
   s.thread_exit_code = 2;
+#endif
 
   if (s.thread_exit_code == 2)
   {
@@ -2535,7 +2530,7 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
     unk_00742fc4 = 0;
     DAT_00742fc0 = 1;
     unk_008b60e0 = 0;
-    DAT_008c6afc = unk_008b60e0;
+    g_duel_selection_pending = unk_008b60e0;
     DAT_00926668 = -1;
     current_phase = 0;
 
@@ -2556,7 +2551,7 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
     FUN_00562d03();
     g_next_duel_card_id = -1;
     g_next_duel_life_delta = 0;
-    return DAT_0074d268;
+    return g_duel_exit_code;
   }
   else
   {
@@ -3479,7 +3474,7 @@ int PickWisemanCastleDungeonSlotForHint(void)
     }
 
     s.score = ApproximateDistance(g_world_player_tile_x - g_castle_dungeon_slots[s.dungeon_index].world_x,
-                           g_world_player_tile_y - g_castle_dungeon_slots[s.dungeon_index].world_y);
+                                  g_world_player_tile_y - g_castle_dungeon_slots[s.dungeon_index].world_y);
 
     s.score = RandomIntLessThan(s.score) + s.score / 2;
 
@@ -5098,7 +5093,7 @@ int VisitTownSlot(int town_index)
       }
 
       s.world_magic_distance = ApproximateDistance(g_town_slots[town_index].world_x - g_town_slots[g_world_magic_slot_timers[s.world_magic_slot_index].town_index].world_x,
-                                            g_town_slots[town_index].world_y - g_town_slots[g_world_magic_slot_timers[s.world_magic_slot_index].town_index].world_y);
+                                                   g_town_slots[town_index].world_y - g_town_slots[g_world_magic_slot_timers[s.world_magic_slot_index].town_index].world_y);
       if (s.world_magic_distance < (int)s.sprite)
       {
         s.sprite = (EncodedImage *)s.world_magic_distance;

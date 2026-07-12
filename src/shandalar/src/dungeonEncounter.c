@@ -205,6 +205,9 @@ void CopyUiScaledGraphicsRect(FacemakerWindowBounds *src_page, int src_x_320, in
                               int height_240, FacemakerWindowBounds *dst_page, int dst_x_320, int dst_y_240);
 void CopyGraphicsRect(FacemakerWindowBounds *src_page, int src_x, int src_y, int width, int height,
                       FacemakerWindowBounds *dst_page, int dst_x, int dst_y);
+void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, int color_index);
+void FillUiScaledGraphicsRect(FacemakerWindowBounds *window_bounds, int x_320, int y_240, int width_320,
+                              int height_240, int color_index);
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
@@ -818,7 +821,7 @@ int RunCastleDungeonBoard(int dungeon_index)
   if (dungeon_index >= 5)
   {
     ClearWorldMapPixelFlags(0x40, g_castle_dungeon_slots[dungeon_index].world_x,
-                 g_castle_dungeon_slots[dungeon_index].world_y);
+                            g_castle_dungeon_slots[dungeon_index].world_y);
     g_castle_dungeon_slots[dungeon_index].clues_bitmap &= -2;
     g_castle_dungeon_slots[dungeon_index].clues_bitmap |= 6;
     do
@@ -928,11 +931,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
   }
   if (unk_00789308 != -1)
   {
-    iVar2 = FUN_0056c705(g_castle_dungeon_slots[param_1].card_in_effect);
-    iVar2 = iVar2 * 0x48 + 0x594209;
-    pcVar3 = gs_dungeon_0077f000[0x12];
-    sVar4 = strlen(g_ui_message_buffer);
-    sprintf(g_ui_message_buffer + sVar4, pcVar3, iVar2);
+    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_dungeon_0077f000[0x12], global_cards_data[FUN_0056c705(g_castle_dungeon_slots[param_1].card_in_effect)].name);
   }
   RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50);
   for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1)
@@ -1245,30 +1244,39 @@ void CopyUiScaledGraphicsRect(FacemakerWindowBounds *src_page, int src_x_320, in
                    (dst_y_240 * global_screen_height) / 0xf0);
 }
 
+// FUNCTION: SHANDALAR 0x004312ea
+void FillUiScaledGraphicsRect(FacemakerWindowBounds *window_bounds, int x_320, int y_240, int width_320,
+                              int height_240, int color_index)
+{
+  FillGraphicsRect(window_bounds, (x_320 * global_screen_width) / 0x140,
+                   (y_240 * global_screen_height) / 0xf0,
+                   (width_320 * global_screen_width) / 0x140,
+                   (height_240 * global_screen_height) / 0xf0, color_index);
+}
+
 // FUNCTION: SHANDALAR 0x0044553d
 void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_index)
 {
-  int cell_x;
-  int cell_y;
-  int screen_x;
-  int screen_y;
-  int player_screen_x;
-  int player_screen_y;
-  int neighbor_count;
-  int direction;
-  int monster_slot;
-  int sprite_direction;
-  int title_width;
-  int title_left;
-  int title_piece_width;
-  int title_middle_width;
-  int title_piece_count;
-  int title_tmp;
-  int connection_mask;
-  int event_code;
-  int full_card_id;
-  int draw_direction;
-  int neighbor_depth;
+  struct
+  {
+    int title_left;
+    int title_piece_count;
+    int title_middle_width;
+    int title_width;
+    int title_piece_width;
+    int title_end_width;
+    int title_tmp;
+    int draw_direction;
+    int screen_y;
+    int screen_x;
+    int work;
+    int cell_y;
+    int monster_direction;
+    int cell_x;
+    int player_screen_y;
+    int player_screen_x;
+    int direction;
+  } s;
 
   if (initial_draw == 0)
   {
@@ -1278,27 +1286,26 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
                           ScaleUiCoordinateFrom320(0x140), ScaleUiCoordinateFrom320(0xf0));
   PTR_DAT_005832b4->font_slot = 4;
   strcpy(g_ui_message_buffer, GetDungeonName(dungeon_index));
-  title_width = MeasureTextLineWidth(g_ui_message_buffer);
-  title_piece_count = 0;
-  title_piece_width = g_dungeon_runtime_state.button_sprite_aux0->width;
-  title_middle_width = g_dungeon_runtime_state.button_sprite_aux1->width;
-  title_tmp = g_dungeon_runtime_state.button_sprite_aux2->width + title_piece_width + -0x32;
-  while (title_tmp < title_width)
+  s.title_width = MeasureTextLineWidth(g_ui_message_buffer);
+  s.title_piece_count = 0;
+  s.title_piece_width = g_dungeon_runtime_state.button_sprite_aux0->width;
+  s.title_middle_width = g_dungeon_runtime_state.button_sprite_aux1->width;
+  s.title_end_width = g_dungeon_runtime_state.button_sprite_aux2->width;
+  s.title_tmp = s.title_end_width + s.title_piece_width + -0x32;
+  while (s.title_tmp < s.title_width)
   {
-    title_piece_count++;
-    title_tmp += title_middle_width;
+    s.title_piece_count++;
+    s.title_tmp += s.title_middle_width;
   }
-  title_left = ScaleUiCoordinate(0x140) - (title_middle_width * title_piece_count) / 2 - title_piece_width;
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, title_left, 1, g_dungeon_runtime_state.button_sprite_aux0);
-  title_left += title_piece_width;
-  title_tmp = title_piece_count;
-  while (title_tmp != 0)
+  s.title_left = ScaleUiCoordinate(0x140) - (s.title_middle_width * s.title_piece_count) / 2 - s.title_piece_width;
+  DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux0);
+  s.title_left += s.title_piece_width;
+  while (s.title_piece_count-- != 0)
   {
-    title_tmp--;
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, title_left, 1, g_dungeon_runtime_state.button_sprite_aux1);
-    title_left += title_middle_width;
+    DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux1);
+    s.title_left += s.title_middle_width;
   }
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, title_left, 1, g_dungeon_runtime_state.button_sprite_aux2);
+  DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux2);
   DrawCenteredTextLineWithShadow(g_ui_message_buffer, ScaleUiCoordinate(0x140), 0x12, 0xff);
 
   PTR_DAT_005832b4->font_slot = 1;
@@ -1309,149 +1316,163 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
     DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0xd0, ScaleUiCoordinate(0x140), 0x30, g_ui_message_buffer);
   }
 
-  for (cell_x = DUNGEON_GRID_WIDTH - 1; cell_x >= 0; cell_x--)
+  for (s.cell_x = DUNGEON_GRID_WIDTH - 1; s.cell_x >= 0; s.cell_x--)
   {
-    for (cell_y = 0; cell_y < DUNGEON_GRID_HEIGHT; cell_y++)
+    for (s.cell_y = 0; s.cell_y < DUNGEON_GRID_HEIGHT; s.cell_y++)
     {
-      ConvertDungeonCellToScreen(cell_x, cell_y, &screen_x, &screen_y);
-      if ((animation_step == 0) && ((DUNGEON_GRID_CELL(cell_x, cell_y) & 0x100) == 0))
+      ConvertDungeonCellToScreen(s.cell_x, s.cell_y, &s.screen_x, &s.screen_y);
+      if ((animation_step == 0) && ((DUNGEON_GRID_CELL(s.cell_x, s.cell_y) & 0x100) == 0))
       {
-        if ((screen_x >= 0) && (screen_y >= 0) && (screen_x <= 0x240) && (screen_y <= 0x190))
+        if ((s.screen_x >= 0) && (s.screen_y >= 0) && (s.screen_x <= 0x240) && (s.screen_y <= 0x190))
         {
-          if (DUNGEON_GRID_CELL(cell_x, cell_y) == 0)
+          if (DUNGEON_GRID_CELL(s.cell_x, s.cell_y) == 0)
           {
-            neighbor_count = 0;
-            for (direction = 1; direction <= 8; direction += 2)
+            s.work = 0;
+            for (s.direction = 1; s.direction <= 8; s.direction += 2)
             {
-              if ((DUNGEON_GRID_CELL(cell_x + g_neighbor_dx[direction], cell_y + g_neighbor_dy[direction]) & 0x100) != 0)
+              if ((DUNGEON_GRID_CELL(s.cell_x + g_neighbor_dx[s.direction],
+                                     s.cell_y + g_neighbor_dy[s.direction]) & 0x100) != 0)
               {
-                neighbor_count++;
+                s.work++;
               }
             }
-            if (neighbor_count > 1)
+            if (s.work > 1)
             {
-              DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30, g_dungeon_sprite_entries[0x14], 0x40, 0x40);
+              DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                       g_dungeon_sprite_entries[0x14], 0x40, 0x40);
             }
           }
+        }
+        continue;
+      }
+      if (DUNGEON_GRID_CELL(s.cell_x, s.cell_y) != 0)
+      {
+        s.work = 0;
+        if (DUNGEON_GRID_CELL(s.cell_x + 1, s.cell_y) == 0)
+        {
+          s.work |= 1;
+        }
+        if (DUNGEON_GRID_CELL(s.cell_x, s.cell_y - 1) == 0)
+        {
+          s.work |= 2;
+        }
+        switch (((int (*)[DUNGEON_GRID_HEIGHT])g_dungeon_runtime_state.cell_tile_variants)[s.cell_x][s.cell_y])
+        {
+        case 0:
+          break;
+        case 1:
+          s.work += 4;
+          break;
+        case 2:
+          s.work += 0x18;
+          break;
+        case 3:
+          s.work += 0x1c;
+          break;
+        }
+        DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                 g_dungeon_sprite_entries[s.work], 0x40, 0x40);
+
+        s.work = 0;
+        if (DUNGEON_GRID_CELL(s.cell_x, s.cell_y + 1) == 0)
+        {
+          s.work |= 1;
+        }
+        if (DUNGEON_GRID_CELL(s.cell_x - 1, s.cell_y) == 0)
+        {
+          s.work |= 2;
+        }
+        if (s.cell_y == 0xc)
+        {
+          s.work |= 1;
+        }
+        if ((s.cell_y & 1) != 0)
+        {
+          s.work += 4;
+        }
+        DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                 g_dungeon_sprite_entries[s.work + 0xc], 0x40, 0x40);
+      }
+
+      strcpy(g_ui_message_buffer, "");
+      if (((DUNGEON_GRID_CELL(s.cell_x, s.cell_y) & 0xf0) != 0) || (s.cell_y == 0xc))
+      {
+        s.work = (DUNGEON_GRID_CELL(s.cell_x, s.cell_y) / 16) & 0xf;
+        switch (s.work)
+        {
+        case 1:
+          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                   g_dungeon_sprite_entries[10], 0x40, 0x40);
+          break;
+        case 2:
+          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                   g_dungeon_sprite_entries[9], 0x40, 0x40);
+          break;
+        case 3:
+          break;
+          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xd8);
+          break;
+        case 4:
+          break;
+          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xdc);
+          break;
+        case 5:
+          break;
+          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xbc);
+          break;
+        case 6:
+          break;
+          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xbe);
+          break;
+        case 7:
+          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                   g_dungeon_sprite_entries[8], 0x40, 0x40);
+          break;
+        case 0xf:
+          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+                                   g_dungeon_sprite_entries[0x31], 0x40, 0x40);
+          break;
+        }
+
+        if ((s.work >= 3) && (s.work < 7))
+        {
+          s.work -= 3;
+          strcpy(g_ui_message_buffer, FUN_00561441(g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.work]));
+          s.draw_direction = 5;
+          for (s.monster_direction = 1; s.monster_direction <= 8; s.monster_direction += 2)
+          {
+            s.direction = DUNGEON_CELL_DISTANCE(s.cell_x + g_neighbor_dx[s.monster_direction],
+                                                s.cell_y + g_neighbor_dy[s.monster_direction]);
+            if ((s.direction != 0) && (s.direction < DUNGEON_CELL_DISTANCE(s.cell_x, s.cell_y)))
+            {
+              s.draw_direction = s.monster_direction;
+            }
+          }
+          DrawEncodedImageUnscaled(PTR_DAT_005832b4,
+                                   ScaleUiCoordinate(s.screen_x + 4) - g_world_lair_monster_sprite_widths[s.work] / 2,
+                                   ScaleUiCoordinate(s.screen_y + 4) - g_world_lair_monster_sprite_top_clips[s.work],
+                                   g_opening_menu_sprite_work_buffer[s.work + 8].sprites[((s.draw_direction + 2) & 7) * 5]);
+          DrawEncodedImageUnscaled(PTR_DAT_005832b4,
+                                   ScaleUiCoordinate(s.screen_x + 4) - g_world_lair_monster_sprite_widths[s.work] / 2,
+                                   ScaleUiCoordinate(s.screen_y + 4) - g_world_lair_monster_sprite_top_clips[s.work],
+                                   g_opening_menu_sprite_work_buffer[s.work].sprites[((s.draw_direction + 2) & 7) * 5]);
+        }
+        else
+        {
+          if (s.cell_y == 0xc)
+          {
+            strcpy(g_ui_message_buffer, gs_dungeon_0077f000[0xd]);
+          }
+          DrawUiScaledCenteredText(g_ui_message_buffer, s.screen_x / 2, s.screen_y / 2 - 2, 0xff);
         }
       }
-      else
+
+      if (g_dungeon_runtime_state.player_x == s.cell_x)
       {
-        if (DUNGEON_GRID_CELL(cell_x, cell_y) != 0)
+        if (s.cell_y == g_dungeon_runtime_state.player_y)
         {
-          connection_mask = 0;
-          if (DUNGEON_GRID_CELL(cell_x + 1, cell_y) == 0)
-          {
-            connection_mask |= 1;
-          }
-          if (DUNGEON_GRID_CELL(cell_x, cell_y - 1) == 0)
-          {
-            connection_mask |= 2;
-          }
-          event_code = g_dungeon_runtime_state.cell_tile_variants[cell_x * DUNGEON_GRID_HEIGHT + cell_y];
-          switch (event_code)
-          {
-          case 0:
-            break;
-          case 1:
-            connection_mask += 4;
-            break;
-          case 2:
-            connection_mask += 0x18;
-            break;
-          case 3:
-            connection_mask += 0x1c;
-            break;
-          }
-          DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30,
-                                   g_dungeon_sprite_entries[connection_mask], 0x40, 0x40);
-
-          connection_mask = 0;
-          if (DUNGEON_GRID_CELL(cell_x, cell_y + 1) == 0)
-          {
-            connection_mask |= 1;
-          }
-          if (DUNGEON_GRID_CELL(cell_x - 1, cell_y) == 0)
-          {
-            connection_mask |= 2;
-          }
-          if (cell_y == 0xc)
-          {
-            connection_mask |= 1;
-          }
-          if ((cell_y & 1) != 0)
-          {
-            connection_mask += 4;
-          }
-          DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30,
-                                   g_dungeon_sprite_entries[connection_mask + 0xc], 0x40, 0x40);
-        }
-
-        strcpy(g_ui_message_buffer, "");
-        if (((DUNGEON_GRID_CELL(cell_x, cell_y) & 0xf0) != 0) || (cell_y == 0xc))
-        {
-          event_code = (DUNGEON_GRID_CELL(cell_x, cell_y) / 16) & 0xf;
-          switch (event_code)
-          {
-          case 1:
-            DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30, g_dungeon_sprite_entries[10], 0x40, 0x40);
-            break;
-          case 2:
-            DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30, g_dungeon_sprite_entries[9], 0x40, 0x40);
-            break;
-          case 3:
-            break;
-          case 4:
-            break;
-          case 5:
-            break;
-          case 6:
-            break;
-          case 7:
-            DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30, g_dungeon_sprite_entries[8], 0x40, 0x40);
-            break;
-          case 0xf:
-            DrawEncodedImageUiScaled(PTR_DAT_005832b4, screen_x - 0x20, screen_y - 0x30, g_dungeon_sprite_entries[0x31], 0x40, 0x40);
-            break;
-          }
-
-          if ((event_code < 3) || (event_code > 6))
-          {
-            if (cell_y == 0xc)
-            {
-              strcpy(g_ui_message_buffer, gs_dungeon_0077f000[0xd]);
-            }
-            DrawUiScaledCenteredText(g_ui_message_buffer, screen_x / 2, screen_y / 2 - 2, 0xff);
-          }
-          else
-          {
-            monster_slot = event_code - 3;
-            strcpy(g_ui_message_buffer, FUN_00561441(g_dungeon_runtime_state.encounter.selected.monster_creature_types[monster_slot]));
-            draw_direction = 5;
-            for (direction = 1; direction <= 8; direction += 2)
-            {
-              neighbor_depth = DUNGEON_CELL_DISTANCE(cell_x + g_neighbor_dx[direction], cell_y + g_neighbor_dy[direction]);
-              if ((neighbor_depth != 0) && (neighbor_depth < DUNGEON_CELL_DISTANCE(cell_x, cell_y)))
-              {
-                draw_direction = direction;
-              }
-            }
-            sprite_direction = (draw_direction + 2) & 7;
-            DrawEncodedImageUnscaled(PTR_DAT_005832b4,
-                                     ScaleUiCoordinate(screen_x + 4) - g_world_lair_monster_sprite_widths[monster_slot] / 2,
-                                     ScaleUiCoordinate(screen_y + 4) - g_world_lair_monster_sprite_top_clips[monster_slot],
-                                     g_opening_menu_sprite_work_buffer[monster_slot + 8].sprites[sprite_direction * 5]);
-            DrawEncodedImageUnscaled(PTR_DAT_005832b4,
-                                     ScaleUiCoordinate(screen_x + 4) - g_world_lair_monster_sprite_widths[monster_slot] / 2,
-                                     ScaleUiCoordinate(screen_y + 4) - g_world_lair_monster_sprite_top_clips[monster_slot],
-                                     g_opening_menu_sprite_work_buffer[monster_slot].sprites[sprite_direction * 5]);
-          }
-        }
-
-        if ((cell_x == g_dungeon_runtime_state.player_x) && (cell_y == g_dungeon_runtime_state.player_y))
-        {
-          player_screen_x = screen_x;
-          player_screen_y = screen_y;
+          s.player_screen_x = s.screen_x;
+          s.player_screen_y = s.screen_y;
         }
       }
     }
@@ -1459,13 +1480,13 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
 
   if ((initial_draw != 0) && (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1))
   {
-    full_card_id = FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect);
-    sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0xe], global_cards_data[full_card_id].name);
+    s.work = FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect);
+    sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0xe], global_cards_data[s.work].name);
     DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2,
                               ScaleUiCoordinateFrom320(0xc5) / 2, ScaleUiCoordinateFrom320(0x10f) / 2,
                               g_dungeon_runtime_state.button_sprite_blob);
-    DrawAdventureCardSized(full_card_id, 0x7a, 0x29, 0x4b, 0x70, 1, "");
-    DrawUiScaledCenteredText(g_ui_message_buffer, 0x76, 0x20, 0x1b);
+    DrawAdventureCardSized(s.work, 0x7a, 0x29, 0x4b, 0x70, 1, "");
+    DrawScaledTextNoShadow(g_ui_message_buffer, 0x76, 0x20, 0x1b);
   }
 
   PTR_DAT_005832b4->page_number = 0;
@@ -1478,12 +1499,12 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
     CopyGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832dc, 0, 0);
   }
   DrawEncodedImageUnscaled(PTR_DAT_005832b4,
-                           ScaleUiCoordinate(player_screen_x) - g_sego_sprite_width / 2,
-                           ScaleUiCoordinate(player_screen_y) - g_sego_sprite_draw_height,
+                           ScaleUiCoordinate(s.player_screen_x) - g_sego_sprite_width / 2,
+                           ScaleUiCoordinate(s.player_screen_y) - g_sego_sprite_draw_height,
                            g_opening_menu_sprite_work_buffer[0x11].sprites[g_dungeon_move_direction * 5]);
   DrawEncodedImageUnscaled(PTR_DAT_005832b4,
-                           ScaleUiCoordinate(player_screen_x) - g_ego_sprite_width / 2,
-                           ScaleUiCoordinate(player_screen_y) - g_ego_sprite_draw_height,
+                           ScaleUiCoordinate(s.player_screen_x) - g_ego_sprite_width / 2,
+                           ScaleUiCoordinate(s.player_screen_y) - g_ego_sprite_draw_height,
                            g_opening_menu_sprite_work_buffer[0x10].sprites[g_dungeon_move_direction * 5]);
 }
 

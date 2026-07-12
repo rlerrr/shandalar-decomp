@@ -29,14 +29,6 @@ extern DIBSurface *g_graphics_pages[10];
 
 typedef struct
 {
-  int town_index;
-  int timer;
-  int unk_08;
-  int unk_0c;
-} WorldMagicSlotTimer;
-
-typedef struct
-{
   int first;
   int second;
 } HintPair;
@@ -428,8 +420,6 @@ int g_menu_prev_control_index = -1;
 int g_menu_input_unhandled;
 // GLOBAL: SHANDALAR 0x005b80e0
 int g_menu_allow_arrow_nav_by_context[50];
-// GLOBAL: SHANDALAR 0x008c84f0
-BITMAPINFO DAT_008c84f0;
 // GLOBAL: SHANDALAR 0x008c7408
 int DAT_008c7408[7];
 // GLOBAL: SHANDALAR 0x0073e990

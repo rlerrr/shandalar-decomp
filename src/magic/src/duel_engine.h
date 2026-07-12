@@ -129,6 +129,10 @@ DUEL_ENGINE_EXTERN HANDLE g_magicgame_big_card_choice_pic;
 // GLOBAL: SHANDALAR 0x006695dc
 DUEL_ENGINE_EXTERN HANDLE g_magicgame_attack_phase_display_pic;
 
+// GLOBAL: MAGIC 0x00716240
+// GLOBAL: SHANDALAR 0x0074d268
+DUEL_ENGINE_EXTERN int g_duel_exit_code;
+
 DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type);
 
 #undef DUEL_ENGINE_EXTERN

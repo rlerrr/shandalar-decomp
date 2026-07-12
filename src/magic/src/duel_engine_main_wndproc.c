@@ -22,15 +22,6 @@ extern int life[2];
 extern HINSTANCE g_app_instance;
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
 
-#ifdef SHANDALAR
-int g_duel_timer_id;
-extern int DAT_0074d268;
-#define g_duel_exit_code DAT_0074d268
-#else
-// GLOBAL: MAGIC 0x00716240
-int g_duel_exit_code;
-#endif
-
 // GLOBAL: MAGIC 0x00579f28
 // GLOBAL: SHANDALAR 0x0058f658
 char s_Congratulations_00579f28[0x14] = "Congratulations!";

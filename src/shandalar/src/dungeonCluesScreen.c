@@ -66,7 +66,7 @@ extern int g_dungeon_marker_sprite_lookup[24];
 extern unsigned char g_castle_sprite_lookup_by_tile_class[0x40];
 
 /* Forward decls for locals defined later in this module */
-extern EncodedImage *g_dungeon_clues_list_button_sprites[8];
+extern EncodedImage *g_dungeon_clues_list_button_sprites[2][4];
 extern EncodedImage *g_dungeon_clues_list_done_label_sprites[3];
 extern EncodedImage *g_dungeon_clues_scrollbar_sprite;
 
@@ -304,7 +304,7 @@ int RenderDungeonCluesListButton(AdvMenuControl *control, int mode)
   }
 
   DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
-                            *(&g_dungeon_clues_list_button_sprites[0] + mode + control->unk_30 * 4));
+                            g_dungeon_clues_list_button_sprites[control->unk_30][mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -493,7 +493,7 @@ int g_dungeon_clues_list_strings_loaded = 0;
 int *g_dungeon_clues_list_strings = (int *)0;
 
 // GLOBAL: SHANDALAR 0x00746e20
-EncodedImage *g_dungeon_clues_list_button_sprites[8];
+EncodedImage *g_dungeon_clues_list_button_sprites[2][4];
 // GLOBAL: SHANDALAR 0x00746e40
 EncodedImage *g_dungeon_clues_list_done_label_sprites[3];
 // GLOBAL: SHANDALAR 0x00746e50
@@ -624,40 +624,40 @@ void ShowDungeonCluesScreen(int unused)
 {
   struct
   {
-    int scroll_delta;
-    int previous_scroll_top_index;
-    int hover_text_y;
-    int hover_text_x;
-    int hover_mouse_y;
-    int hover_mouse_x;
-    int click_text_y;
-    int click_text_x;
-    int click_mouse_y;
-    int click_mouse_x;
-    int castle_icon_y;
-    int castle_icon_x;
-    int temp_150c;                // ebp - 0x1508
-    int dungeon_icon_y;           // ebp - 0x1504
-    int dungeon_icon_x;           // ebp - 0x1500
-    int row_text_y;               // ebp - 0x14fc
-    int row_text_x;               // ebp - 0x14f8
-    int temp_14f8;                // ebp - 0x14f4
-    int temp_14f4;                // ebp - 0x14f0
-    int temp_14f0;                // ebp - 0x14ec
-    EncodedImage *sprite_pair[2]; // ebp - 0x14e8
-    int title_text_width;         // ebp - 0x14e0
-    unsigned int old_font_size;   // ebp - 0x14dc
-    int title_color_by_state[4];  // ebp - 0x14d8
-    int menu_context;             // ebp - 0x14c8
-    int town_delta_x;             // ebp - 0x14c4
-    int scroll_top_index;         // ebp - 0x14c0
-    int hover_index_copy;         // ebp - 0x14bc
-    int action_key;               // ebp - 0x14b8
-    int draw_index;               // ebp - 0x14b4
-    int spacing_accumulator;      // ebp - 0x14b0
-    int unused_zero;              // ebp - 0x14ac
-    int i;                        // ebp - 0x14a8
-    EncodedImage *icon_blobs[50]; // ebp - 0x14a4
+    int scroll_delta;              // ebp - 0x1538
+    int previous_scroll_top_index; // ebp - 0x1534
+    int hover_text_y;              // ebp - 0x1530
+    int hover_text_x;              // ebp - 0x152c
+    int hover_mouse_y;             // ebp - 0x1528
+    int hover_mouse_x;             // ebp - 0x1524
+    int click_text_y;              // ebp - 0x1520
+    int click_text_x;              // ebp - 0x151c
+    int click_mouse_y;             // ebp - 0x1518
+    int click_mouse_x;             // ebp - 0x1514
+    int castle_icon_y;             // ebp - 0x1510
+    int castle_icon_x;             // ebp - 0x150c
+    int temp_150c;                 // ebp - 0x1508
+    int dungeon_icon_y;            // ebp - 0x1504
+    int dungeon_icon_x;            // ebp - 0x1500
+    int row_text_y;                // ebp - 0x14fc
+    int row_text_x;                // ebp - 0x14f8
+    int temp_14f8;                 // ebp - 0x14f4
+    int temp_14f4;                 // ebp - 0x14f0
+    int temp_14f0;                 // ebp - 0x14ec
+    EncodedImage *sprite_pair[2];  // ebp - 0x14e8
+    int title_text_width;          // ebp - 0x14e0
+    unsigned int old_font_size;    // ebp - 0x14dc
+    int title_color_by_state[4];   // ebp - 0x14d8
+    int menu_context;              // ebp - 0x14c8
+    int town_delta_x;              // ebp - 0x14c4
+    int scroll_top_index;          // ebp - 0x14c0
+    int hover_index_copy;          // ebp - 0x14bc
+    int action_key;                // ebp - 0x14b8
+    int draw_index;                // ebp - 0x14b4
+    int spacing_accumulator;       // ebp - 0x14b0
+    int unused_zero;               // ebp - 0x14ac
+    int i;                         // ebp - 0x14a8
+    EncodedImage *icon_blobs[50];  // ebp - 0x14a4
     unsigned int visible_dungeon_indices[15];
     unsigned int dungeon_index_by_row[50];
     int town_revealed;          // ebp - 0x12d8
@@ -707,7 +707,7 @@ void ShowDungeonCluesScreen(int unused)
   {
     for (s.i = 0; s.i < 4; s.i++)
     {
-      g_dungeon_clues_list_button_sprites[s.i + s.draw_index * 4] = EncodeSpriteFromPage(1, s.i * 0x20 + s.draw_index * 0x80 + 0x10, 0x1c, 0x1f, 0x24);
+      g_dungeon_clues_list_button_sprites[s.draw_index][s.i] = EncodeSpriteFromPage(1, s.i * 0x20 + s.draw_index * 0x80 + 0x10, 0x1c, 0x1f, 0x24);
     }
   }
 
@@ -763,9 +763,9 @@ void ShowDungeonCluesScreen(int unused)
       }
       else
       {
-        s.i = s.dungeon_index * 2 - 10;
-        s.sprite_pair[0] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.i]];
-        s.sprite_pair[1] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.i + 1]];
+        s.temp_14f0 = (s.dungeon_index - 5) * 2;
+        s.sprite_pair[0] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.temp_14f0]];
+        s.sprite_pair[1] = g_location_marker_sprite_entries[g_dungeon_marker_sprite_lookup[s.temp_14f0 + 1]];
         s.icon_blobs[s.entry_count] =
             EncodeMergedDungeonIconSprite(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e), s.sprite_pair);
       }
@@ -787,13 +787,13 @@ redraw_background:
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0,
                             global_screen_width, global_screen_height);
 
-    s.old_font_size = GetFontStyleSize(6);
+    s.temp_14f4 = GetFontStyleSize(6);
     PTR_DAT_005832dc->font_slot = 6;
     SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
-    s.title_text_width = MeasureMultilineTextWidth(PTR_DAT_005832dc, (char *)g_dungeon_clues_list_strings[0]);
+    s.temp_14f8 = MeasureMultilineTextWidth(PTR_DAT_005832dc, (char *)g_dungeon_clues_list_strings[0]);
     DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), "%s",
                                       (char *)g_dungeon_clues_list_strings[0]);
-    SetFontStyleSize(6, s.old_font_size);
+    SetFontStyleSize(6, s.temp_14f4);
 
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
   }
@@ -887,7 +887,7 @@ redraw_list:
 
       if ((int)s.dungeon_index >= 5)
       {
-        s.temp_150c = (s.dungeon_index + 5) * 2;
+        s.temp_150c = (s.dungeon_index - 5) * 2;
         s.dungeon_icon_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.visible_count) + 0x15b);
         s.dungeon_icon_y = ScaleUiCoordinate((s.visible_count / 2) * 0x3e + 0x49);
         DrawEncodedImageResampledFitBoxCentered(PTR_DAT_005832b4, s.dungeon_icon_x, s.dungeon_icon_y, ScaleUiCoordinate(0x3e), ScaleUiCoordinate(0x3e),
@@ -911,13 +911,8 @@ redraw_list:
   g_adv_menu_selected_value = -5;
   s.hover_index = -1;
   s.hover_index_copy = s.hover_index;
-  for (;;)
+  while (g_adv_menu_selected_value == -5)
   {
-    if (g_adv_menu_selected_value != -5)
-    {
-      goto exit_screen;
-    }
-
     s.dungeon_index = 0xffffffffU;
     UpdateMouseSnapshot();
 
@@ -938,7 +933,7 @@ redraw_list:
       {
         s.click_text_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.dungeon_index) + 0x19b);
         s.click_text_y = ScaleUiCoordinate(((int)s.dungeon_index / 2) * 0x3e + 0x69) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) / 2;
-        DrawFormattedTextNoShadow(PTR_DAT_005832b4, 0xbe, s.click_text_x, s.click_text_y, s.name_buffer[s.dungeon_index]);
+        DrawFormattedTextNoShadow(PTR_DAT_005832b4, 0xbe, s.click_text_x, s.click_text_y, s.name_buffer[s.hover_index]);
         ClearInputAndWaitForMouseRelease();
         ShowDungeonClueDetailScreen(s.visible_dungeon_indices[s.dungeon_index]);
         goto redraw_background;
@@ -1019,7 +1014,6 @@ redraw_list:
     ClearInputAndWaitForMouseRelease();
   }
 
-exit_screen:
   ClearInputAndWaitForMouseRelease();
   EndMenuContext();
   FreeSpriteBlob(g_dungeon_clues_scrollbar_sprite);
