@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <commdlg.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "cardartlib/src/assert.h"
@@ -54,16 +55,6 @@ void FUN_0046476f(int player, int internal_card_id);
 int DrawRandomCardFromInitialLibrary(int library_index);
 void FUN_004b3dee(int player, int wizard_color);
 void FUN_004b3cc2(int *redraw_result, int *ante_result, int *ante_info);
-void FUN_004996d0(unsigned int *starting_player,
-                  unsigned int *mulligan_accepted,
-                  unsigned int starting_player_value,
-                  int random_starting_player,
-                  int opponent_ante_card,
-                  int player_ante_card,
-                  int redraw_result,
-                  int ante_result,
-                  int ante_info,
-                  int *out_flag);
 void TENTATIVE_reassess_all_cards();
 void append_to_trace_txt(char *text);
 void AddCardToCLPacket(int card_in_packet);
@@ -119,10 +110,6 @@ int g_duel_main_window_minimized;
 // GLOBAL: SHANDALAR 0x008c7d4c
 HWND g_duel_palette_window_hwnd;
 
-// GLOBAL: MAGIC 0x008b3274
-// GLOBAL: SHANDALAR 0x008c7424
-HWND g_duel_player_battlefield_window_hwnd;
-
 // GLOBAL: MAGIC 0x008cc700
 // GLOBAL: SHANDALAR 0x008e0880
 int g_duel_modal_action_active;
@@ -148,12 +135,6 @@ extern int g_duel_cached_state_007abce4;
 extern int g_duel_cached_state_007abce0;
 extern int g_duel_cached_unk_008b44d0_player_1;
 extern int g_duel_cached_unk_008b44d0_player_0;
-
-// GLOBAL: MAGIC 0x008cd920
-HWND g_duel_life_status_window_1_hwnd;
-
-// GLOBAL: MAGIC 0x00938e28
-HWND g_duel_life_status_window_2_hwnd;
 
 // GLOBAL: MAGIC 0x0094ca2c
 HWND g_duel_toggleable_status_window_hwnd;
@@ -205,13 +186,6 @@ ShandalarMonsterDefinition g_shandalar_monster_definitions[56];
 // FUNCTION: SHANDALAR 0x004511a5
 void notify_duel_action(int player, unsigned int value)
 {
-}
-
-// FUNCTION: MAGIC 0x004dbea9
-// FUNCTION: SHANDALAR 0x00542b64
-int create_duel_child_windows(HWND parent_window)
-{
-  return 1;
 }
 
 // FUNCTION: MAGIC 0x004dc512
@@ -421,30 +395,6 @@ void FUN_004b3cc2(int *redraw_result, int *ante_result, int *ante_info)
   (void)redraw_result;
   (void)ante_result;
   (void)ante_info;
-}
-
-// FUNCTION: MAGIC 0x004996d0
-void FUN_004996d0(unsigned int *starting_player,
-                  unsigned int *mulligan_accepted,
-                  unsigned int starting_player_value,
-                  int random_starting_player,
-                  int opponent_ante_card,
-                  int player_ante_card,
-                  int redraw_result,
-                  int ante_result,
-                  int ante_info,
-                  int *out_flag)
-{
-  (void)starting_player;
-  (void)mulligan_accepted;
-  (void)starting_player_value;
-  (void)random_starting_player;
-  (void)opponent_ante_card;
-  (void)player_ante_card;
-  (void)redraw_result;
-  (void)ante_result;
-  (void)ante_info;
-  (void)out_flag;
 }
 
 // FUNCTION: MAGIC 0x004b23a9
@@ -715,16 +665,16 @@ int play_duel(int player, int creature_type)
         }
       }
       FUN_004b3cc2(&s.ante_info, &s.ante_result, &s.redraw_result);
-      FUN_004996d0(&s.starting_player,
-                   &s.mulligan_accepted,
-                   s.starting_player,
-                   s.random_starting_player,
-                   DAT_008ced00[0],
-                   global_ante_cards[0][0],
-                   s.ante_info,
-                   s.ante_result,
-                   s.redraw_result,
-                   &s.shandalar_deck_minimums[5]);
+      run_duel_coin_flip_dialogs(&s.starting_player,
+                                 &s.mulligan_accepted,
+                                 s.starting_player,
+                                 s.random_starting_player,
+                                 DAT_008ced00[0],
+                                 global_ante_cards[0][0],
+                                 s.ante_info,
+                                 s.ante_result,
+                                 s.redraw_result,
+                                 &s.shandalar_deck_minimums[5]);
       if (s.mulligan_accepted != 0)
       {
         for (s.card_index = 0; s.card_index < 0x96; s.card_index = s.card_index + 1)
@@ -998,16 +948,16 @@ int play_duel(int player, int creature_type)
           global_library[s.loop_player][s.loop_5c] = -1;
         }
       }
-      FUN_004996d0(&s.starting_player,
-                   &s.mulligan_accepted,
-                   s.starting_player,
-                   s.random_starting_player,
-                   DAT_008ced00[0],
-                   global_ante_cards[0][0],
-                   s.ante_info,
-                   s.ante_result,
-                   s.redraw_result,
-                   &s.shandalar_deck_minimums[5]);
+      run_duel_coin_flip_dialogs(&s.starting_player,
+                                 &s.mulligan_accepted,
+                                 s.starting_player,
+                                 s.random_starting_player,
+                                 DAT_008ced00[0],
+                                 global_ante_cards[0][0],
+                                 s.ante_info,
+                                 s.ante_result,
+                                 s.redraw_result,
+                                 &s.shandalar_deck_minimums[5]);
       if (s.mulligan_accepted != 0)
       {
         FUN_004b3dee(0, g_selected_wizard_color);
@@ -1995,7 +1945,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e(hwnd, msg, wparam, lparam);
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_TIMER:
     if ((int)wparam == g_duel_timer_id)

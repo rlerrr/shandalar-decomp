@@ -97,6 +97,22 @@ DUEL_ENGINE_EXTERN HWND g_duel_attack_phase_window_hwnd;
 // GLOBAL: SHANDALAR 0x008aa914
 DUEL_ENGINE_EXTERN HWND g_duel_card_preview_window_hwnd;
 
+// GLOBAL: MAGIC 0x008b3274
+// GLOBAL: SHANDALAR 0x008c7424
+DUEL_ENGINE_EXTERN HWND g_duel_player_battlefield_window_hwnd;
+
+// GLOBAL: MAGIC 0x008cc2d8
+DUEL_ENGINE_EXTERN HWND g_duel_cue_card_window_hwnd;
+
+// GLOBAL: MAGIC 0x008cc6fc
+DUEL_ENGINE_EXTERN HWND g_duel_player_chat_window_hwnd;
+
+// GLOBAL: MAGIC 0x008cd920
+DUEL_ENGINE_EXTERN HWND g_duel_life_status_window_1_hwnd;
+
+// GLOBAL: MAGIC 0x00938e28
+DUEL_ENGINE_EXTERN HWND g_duel_life_status_window_2_hwnd;
+
 // GLOBAL: MAGIC 0x007912dc
 // GLOBAL: SHANDALAR 0x007a806c
 DUEL_ENGINE_EXTERN int g_tell_user_button_state;
@@ -138,6 +154,17 @@ DUEL_ENGINE_EXTERN HANDLE g_magicgame_attack_phase_display_pic;
 DUEL_ENGINE_EXTERN int g_duel_exit_code;
 
 DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type);
+int create_duel_child_windows(HWND parent_window);
+int run_duel_coin_flip_dialogs(unsigned int *starting_player,
+                               unsigned int *mulligan_accepted,
+                               unsigned int starting_player_value,
+                               int random_starting_player,
+                               int opponent_ante_card,
+                               int player_ante_card,
+                               int redraw_result,
+                               int ante_result,
+                               int ante_info,
+                               int *out_flag);
 
 #undef DUEL_ENGINE_EXTERN
 #endif
