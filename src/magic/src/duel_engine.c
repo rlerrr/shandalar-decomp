@@ -59,6 +59,11 @@ int register_MAGICGAME_FullCardClass(LPCSTR class_name);
 void destroy_MAGICGAME_FullCardClass(void);
 int register_MAGICGAME_HandClass(LPCSTR class_name);
 void destroy_MAGICGAME_HandClass(void);
+int register_MAGICGAME_CardClass(LPCSTR class_name);
+void destroy_MAGICGAME_CardClass(void);
+int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name);
+int register_MAGICGAME_LibraryClass(LPCSTR class_name);
+int register_MAGICGAME_GraveyardClass(LPCSTR class_name);
 int register_MAGICGAME_FaceClass(LPCSTR class_name);
 void destroy_MAGICGAME_FaceClass(void);
 int register_MAGICGAME_TerritoryClass(LPCSTR class_name);
@@ -409,19 +414,6 @@ int register_MAGICGAME_ChatClass(LPCSTR class_name)
   return s.registered;
 }
 
-// FUNCTION: MAGIC 0x004cd940
-// FUNCTION: SHANDALAR 0x00573f30
-int register_MAGICGAME_CardClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_CardClass, 0x14,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
 // FUNCTION: MAGIC 0x0053582a
 // FUNCTION: SHANDALAR 0x0055a06a
 int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
@@ -615,13 +607,6 @@ void destroy_MAGICGAME_ChatClass(void)
   g_magicgame_chat_font = (HFONT)0;
 }
 
-// FUNCTION: MAGIC 0x004cdf7b
-// FUNCTION: SHANDALAR 0x0057456b
-void destroy_MAGICGAME_CardClass(void)
-{
-  UnregisterClassA(CLASS_MAGICGAME_CARD, g_app_instance);
-}
-
 // FUNCTION: MAGIC 0x005357b4
 // FUNCTION: SHANDALAR 0x00559ff4
 void destroy_MAGICGAME_PhaseDisplayClass(void)
@@ -749,13 +734,6 @@ int destroy_windowclasses(void)
 // FUNCTION: MAGIC 0x0040a4d5
 // FUNCTION: SHANDALAR 0x004bac45
 LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x004cdfcc
-// FUNCTION: SHANDALAR 0x005745bc
-LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   return DefWindowProcA(hwnd, msg, wparam, lparam);
 }

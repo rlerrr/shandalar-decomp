@@ -520,7 +520,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     if (s.existing_hwnd == (HWND)0)
     {
       s.existing_hwnd = CreateWindowExA(0, s_MAGICGAME_CardClass_00574420, s_Hand_Card_00574414,
-                                        WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)1,
+                                        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 0, 0, 0, 0, hwnd, (HMENU)1,
                                         g_app_instance, s.add_player_card);
       if (s.existing_hwnd != (HWND)0)
       {
