@@ -55,22 +55,6 @@ void ClearInputAndWaitForMouseRelease(void);
 
 typedef ptrdiff_t INT_PTR;
 
-// FUNCTION: SHANDALAR 0x0056c91f
-int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
-{
-  (void)player;
-  (void)packet_type;
-  return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0056c931
-int TENTATIVE_send_network_result(int player, signed int packet_type)
-{
-  (void)player;
-  (void)packet_type;
-  return 0;
-}
-
 // FUNCTION: SHANDALAR 0x004c4181
 void FUN_004c4181(void)
 {

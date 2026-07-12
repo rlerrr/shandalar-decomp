@@ -214,6 +214,7 @@ int GetCardFromCLPacket(int packet_index)
   return packet_card;
 }
 
+#ifdef MAGIC
 // FUNCTION: MAGIC 0x00501143
 int FUN_00501143(int player, char packet_type)
 {
@@ -272,6 +273,7 @@ int FUN_00501143(int player, char packet_type)
   unk_0091ca96 = 1;
   return 1;
 }
+#endif
 
 // FUNCTION: MAGIC 0x00501c19
 int FUN_00501c19(int player, int packet_type, unsigned char *packet)
@@ -389,6 +391,7 @@ void FUN_00500b2c(int expected_packet_number, int actual_packet_number)
 }
 
 // FUNCTION: MAGIC 0x00500bb0
+// FUNCTION: SHANDALAR 0x0056c91f
 void FUN_00500bb0(int expected_packet_type, int actual_packet_type)
 {
   static const char *packet_names[] = {
@@ -430,6 +433,7 @@ int FUN_00501bb2(void)
 // FUNCTION: MAGIC 0x005012d7
 int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 {
+#ifdef MAGIC
   struct
   {
     unsigned char receive_packet_storage[32];
@@ -764,16 +768,21 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
     GlobalUnlock((HGLOBAL)s.packet_handle);
     GlobalFree((HGLOBAL)s.packet_handle);
   }
+#else
+  return 0;
+#endif
 }
 
 // FUNCTION: MAGIC 0x00500d74
+// FUNCTION: SHANDALAR 0x0056c931
 int TENTATIVE_send_network_result(int player, signed int packet_type)
 {
+#ifdef MAGIC
   if (packet_type == 3 || packet_type == 4 || packet_type == 0x16)
   {
     return FUN_00501143(player, (char)packet_type);
   }
-
+#endif
   return 0;
 }
 

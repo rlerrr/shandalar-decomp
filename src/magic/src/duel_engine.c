@@ -292,7 +292,7 @@ DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type)
   g_duel_network_state = 0;
   g_duel_special_land_card_ids[7] = -1;
   g_duel_ai_mode_state = 0;
-  *(int *)(gs_illus_00789130 + 200) = 0;
+  g_duel_use_previous_backdrop_colors = 0;
   InitializeDuelUiGlobalIds();
   g_duel_run_mode = 4;
   g_duel_creature_type = (int)creature_type;
@@ -876,13 +876,6 @@ int destroy_windowclasses(void)
   destroy_MAGIC_CueCardClass();
   destroy_MAGIC_TellUserClass();
   return 1;
-}
-
-// FUNCTION: MAGIC 0x004da411
-// FUNCTION: SHANDALAR 0x005410d1
-LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 // FUNCTION: MAGIC 0x004e2029

@@ -1,14 +1,5 @@
 file(GLOB shandalar_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 
-set(magic_c_sources 
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_strings.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/carddata.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/shared_startup.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/cardlist.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_state.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/global_duel_ui_ids.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/duel_engine.c"
-)
 set(drawcardlib_c_sources 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pic.c" 
   "${CMAKE_CURRENT_SOURCE_DIR}/../drawcardlib/src/pcxw.c" 
@@ -29,6 +20,9 @@ set(deckdll_c_sources
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/magsnd.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deckdll/src/shared_resources.c"
 )
+
+file(GLOB_RECURSE magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/*.c")
+list(FILTER magic_c_sources EXCLUDE REGEX ".*main\\.c$")
 
 file(GLOB facemaker_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../facemaker/src/*.c")
 list(FILTER facemaker_c_sources EXCLUDE REGEX ".*main\\.c$")

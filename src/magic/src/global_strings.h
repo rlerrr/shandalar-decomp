@@ -21,6 +21,7 @@ typedef char text_50_t[0x32];
 typedef char text_75_t[0x4b];
 typedef char text_100_t[100];
 typedef char text_150_t[0x96];
+typedef char text_200_t[200];
 typedef char text_300_t[300];
 
 // GLOBAL: MAGIC 0x00896720
@@ -80,7 +81,10 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_power_00781aa0;
 
 // GLOBAL: MAGIC 0x00789130
 // GLOBAL: SHANDALAR 0x0079fec0
-GLOBAL_STRINGS_EXTERN text_300_t gs_illus_00789130;
+GLOBAL_STRINGS_EXTERN text_200_t gs_illus_00789130;
+// GLOBAL: MAGIC 0x007891f8
+// GLOBAL: SHANDALAR 0x0079ff88
+GLOBAL_STRINGS_EXTERN int g_duel_use_previous_backdrop_colors;
 
 // GLOBAL: MAGIC 0x00789320
 // GLOBAL: SHANDALAR 0x007a00b0
@@ -272,7 +276,10 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_player_008b3110;
 
 // GLOBAL: MAGIC 0x008b3280
 // GLOBAL: SHANDALAR 0x008c7430
-GLOBAL_STRINGS_EXTERN char gs_phasebar_your_untap_008b3280[0x38];
+GLOBAL_STRINGS_EXTERN char gs_phasebar_your_untap_008b3280[0x34];
+// GLOBAL: MAGIC 0x008b32b4
+// GLOBAL: SHANDALAR 0x008c7464
+GLOBAL_STRINGS_EXTERN HWND g_phasebar_your_untap_window_hwnd;
 
 // GLOBAL: MAGIC 0x008b32d0
 // GLOBAL: SHANDALAR 0x008c7470
@@ -561,7 +568,10 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_main_postcombat_00925fa0[0x70];
 
 // GLOBAL: MAGIC 0x00926010
 // GLOBAL: SHANDALAR 0x0093a140
-GLOBAL_STRINGS_EXTERN char gs_window_title_your_attack_00926010[0x6c];
+GLOBAL_STRINGS_EXTERN char gs_window_title_your_attack_00926010[0x68];
+// GLOBAL: MAGIC 0x00926078
+// GLOBAL: SHANDALAR 0x0093a1a8
+GLOBAL_STRINGS_EXTERN HWND g_your_attack_window_hwnd;
 
 // GLOBAL: MAGIC 0x00926090
 GLOBAL_STRINGS_EXTERN char gs_cuecard_minimized_spell_chain_00926090[0x70];
@@ -669,7 +679,10 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_end_of_combat_008b43a0;
 
 // GLOBAL: MAGIC 0x008cf040
 // GLOBAL: SHANDALAR 0x008e3190
-GLOBAL_STRINGS_EXTERN char gs_multiblock_creature_008cf040[0x38];
+GLOBAL_STRINGS_EXTERN char gs_multiblock_creature_008cf040[0x34];
+// GLOBAL: MAGIC 0x008cf074
+// GLOBAL: SHANDALAR 0x008e31c4
+GLOBAL_STRINGS_EXTERN int g_multiblock_creature_count;
 
 // GLOBAL: MAGIC 0x008cf080
 GLOBAL_STRINGS_EXTERN text_300_t gs_begin_upkeep_008cf080;

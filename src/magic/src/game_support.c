@@ -6231,7 +6231,8 @@ void FUN_004ec6c3(HWND param_1, HDC param_2, int *param_3)
 }
 
 // FUNCTION: MAGIC 0x004ec223
-void FUN_004ec223(HWND param_1, char *param_2, unsigned int param_3)
+// FUNCTION: SHANDALAR 0x00469f23
+void set_duel_prompt_context(HWND param_1, char *param_2, unsigned int param_3)
 {
   struct
   {
@@ -6383,7 +6384,7 @@ void FUN_004480a6(char *text)
     msg = DAT_0056e494;
   }
 
-  FUN_004ec223(DAT_0093a7b0, msg, 0);
+  set_duel_prompt_context(DAT_0093a7b0, msg, 0);
 }
 
 // FUNCTION: MAGIC 0x004a61d6

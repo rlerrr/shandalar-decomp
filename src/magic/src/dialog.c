@@ -815,7 +815,7 @@ int raw_do_dialog(int bigcard_player,
   int card_image_number;
   dialog_context_t s;
 
-  KillTimer((HWND)g_duel_window_hwnd, DAT_0091b280);
+  KillTimer((HWND)g_duel_window_hwnd, g_duel_timer_id);
   if (smallcard_card == 0xff)
   {
     smallcard_card = -1;
