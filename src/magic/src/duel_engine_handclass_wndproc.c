@@ -164,49 +164,42 @@ void draw_hand_window_frame(HDC dc, int *outer_rect, int *inner_rect,
     int y_step;
   } s;
 
-  if (dc != (HDC)0)
+  if (dc == (HDC)0 || outer_rect == NULL || inner_rect == NULL || bitmap == (HBITMAP)0)
   {
-    if (outer_rect != NULL)
-    {
-      if (inner_rect != NULL)
-      {
-        if (bitmap != (HBITMAP)0)
-        {
-          GetObjectA(bitmap, sizeof(BITMAP), &s.bitmap_info);
-          s.y_step = ((inner_rect[1] - outer_rect[1]) * s.bitmap_info.bmHeight) / art_width;
-          for (s.y = inner_rect[1]; s.y < inner_rect[3]; s.y += s.y_step)
-          {
-            SetRect(&s.rect, inner_rect[0], s.y, inner_rect[0] + edge_width, s.y + s.y_step);
-            DrawBitmapSubrectToRect(dc, &s.rect, bitmap, s.bitmap_info.bmWidth - bottom_art_height, 0,
-                                    bottom_art_height, s.bitmap_info.bmHeight);
-            SetRect(&s.rect, inner_rect[2] - edge_width, s.y, inner_rect[2], s.y + s.y_step);
-            DrawBitmapSubrectToRect(dc, &s.rect, bitmap, s.bitmap_info.bmWidth - bottom_art_height, 0,
-                                    bottom_art_height, s.bitmap_info.bmHeight);
-          }
+    return;
+  }
 
-          SetRect(&s.rect, inner_rect[0], outer_rect[1], inner_rect[2], inner_rect[1]);
-          DrawBitmapSubrectToRect(dc, &s.rect, bitmap, 0, 0,
-                                  (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
-                                  art_width);
-          SetRect(&s.rect, inner_rect[0], inner_rect[3], inner_rect[2], outer_rect[3]);
-          DrawBitmapSubrectToRect(dc, &s.rect, bitmap, 0, s.bitmap_info.bmHeight - title_art_height,
-                                  (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
-                                  title_art_height);
+  GetObjectA(bitmap, sizeof(BITMAP), &s.bitmap_info);
+  s.y_step = ((inner_rect[1] - outer_rect[1]) * s.bitmap_info.bmHeight) / art_width;
+  for (s.y = inner_rect[1]; s.y < inner_rect[3]; s.y += s.y_step)
+  {
+    SetRect(&s.rect, inner_rect[0], s.y, inner_rect[0] + edge_width, s.y + s.y_step);
+    DrawBitmapSubrectToRect(dc, &s.rect, bitmap, s.bitmap_info.bmWidth - bottom_art_height, 0,
+                            bottom_art_height, s.bitmap_info.bmHeight);
+    SetRect(&s.rect, inner_rect[2] - edge_width, s.y, inner_rect[2], s.y + s.y_step);
+    DrawBitmapSubrectToRect(dc, &s.rect, bitmap, s.bitmap_info.bmWidth - bottom_art_height, 0,
+                            bottom_art_height, s.bitmap_info.bmHeight);
+  }
 
-          for (s.y = outer_rect[1]; s.y < outer_rect[3]; s.y += s.y_step)
-          {
-            SetRect(&s.rect, outer_rect[0], s.y, inner_rect[0], s.y + s.y_step);
-            DrawBitmapSubrectToRect(dc, &s.rect, bitmap,
-                                    (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
-                                    0, side_art_width, s.bitmap_info.bmHeight);
-            SetRect(&s.rect, inner_rect[2], s.y, outer_rect[2], s.y + s.y_step);
-            DrawBitmapSubrectToRect(dc, &s.rect, bitmap,
-                                    (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
-                                    0, side_art_width, s.bitmap_info.bmHeight);
-          }
-        }
-      }
-    }
+  SetRect(&s.rect, inner_rect[0], outer_rect[1], inner_rect[2], inner_rect[1]);
+  DrawBitmapSubrectToRect(dc, &s.rect, bitmap, 0, 0,
+                          (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
+                          art_width);
+  SetRect(&s.rect, inner_rect[0], inner_rect[3], inner_rect[2], outer_rect[3]);
+  DrawBitmapSubrectToRect(dc, &s.rect, bitmap, 0, s.bitmap_info.bmHeight - title_art_height,
+                          (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
+                          title_art_height);
+
+  for (s.y = outer_rect[1]; s.y < outer_rect[3]; s.y += s.y_step)
+  {
+    SetRect(&s.rect, outer_rect[0], s.y, inner_rect[0], s.y + s.y_step);
+    DrawBitmapSubrectToRect(dc, &s.rect, bitmap,
+                            (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
+                            0, side_art_width, s.bitmap_info.bmHeight);
+    SetRect(&s.rect, inner_rect[2], s.y, outer_rect[2], s.y + s.y_step);
+    DrawBitmapSubrectToRect(dc, &s.rect, bitmap,
+                            (s.bitmap_info.bmWidth - side_art_width) - bottom_art_height,
+                            0, side_art_width, s.bitmap_info.bmHeight);
   }
 }
 
@@ -214,8 +207,7 @@ void draw_hand_window_frame(HDC dc, int *outer_rect, int *inner_rect,
 void update_hand_window_title(char *title, HWND hwnd, int card_count)
 {
   sprintf(title, s__s___d__00574440,
-          hwnd == g_duel_full_card_window_hwnd ? gs_window_title_your_hand_00777bf0 :
-                                                 gs_window_title_opponent_0091c820,
+          hwnd == g_duel_full_card_window_hwnd ? gs_window_title_your_hand_00777bf0 : gs_window_title_opponent_0091c820,
           card_count);
   SetWindowTextA(hwnd, title);
   InvalidateRect(hwnd, NULL, TRUE);
@@ -754,7 +746,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     SendMessageA(hwnd, WM_SYSCOMMAND, SC_MOVE, 0);
     GetWindowRect(hwnd, &s.after_move_rect);
     if (abs(s.after_move_rect.top - s.before_move_rect.top) +
-        abs(s.after_move_rect.left - s.before_move_rect.left) < 5)
+            abs(s.after_move_rect.left - s.before_move_rect.left) <
+        5)
     {
       s.click_x = (unsigned int)lparam & 0xffff;
       s.click_y = (unsigned int)lparam >> 16;
