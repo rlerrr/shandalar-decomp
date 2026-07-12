@@ -505,6 +505,58 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
   switch (message)
   {
+  case 0x437:
+    s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+    if (SHOWLIST_MOUSE_MODE != 2)
+    {
+      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
+    }
+    return 0;
+
+  case 0x414:
+    s.show_count_flag = (LONG)wparam_window;
+    s.count = (LONG)lparam_data;
+    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
+    SetWindowLongA(card_window, unk_0055e0c4, s.count);
+    InvalidateRect(card_window, NULL, TRUE);
+    return 0;
+
+  case WM_CREATE:
+    s.csvid = *(LONG *)lparam_data;
+    SetWindowLongA(card_window, unk_0055e0c0, s.csvid);
+    s.show_count_flag = 0;
+    s.count = 0;
+    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
+    SetWindowLongA(card_window, unk_0055e0c4, s.count);
+    return 0;
+
+  case WM_GETDLGCODE:
+    return 4;
+
+  case WM_KEYDOWN:
+    SendMessageA(GetParent(card_window), message, wparam_window, lparam_data);
+    return 0;
+
+  case WM_LBUTTONDOWN:
+    SendMessageA(GetParent(card_window),
+                 WM_COMMAND,
+                 ((unsigned int)(unsigned short)GetDlgCtrlID(card_window)) | 0x10000,
+                 (LPARAM)card_window);
+    return 0;
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDOWN:
+    if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
+    {
+      s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+      if ((int)DAT_00638c08 != (int)card_window)
+      {
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
+        DAT_00638c08 = (int)card_window;
+      }
+    }
+    return 0;
+
   case WM_PAINT:
     s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
     s.show_count_flag = GetWindowLongA(card_window, unk_0055e0c8);
@@ -545,66 +597,16 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     LeaveCriticalSection(&g_card_render_lock);
     return 0;
 
-  case WM_CREATE:
-    s.csvid = *(LONG *)lparam_data;
-    SetWindowLongA(card_window, unk_0055e0c0, s.csvid);
-    s.show_count_flag = 0;
-    s.count = 0;
-    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
-    SetWindowLongA(card_window, unk_0055e0c4, s.count);
-    return 0;
-
-  case WM_GETDLGCODE:
-    return 4;
-
-  case WM_KEYDOWN:
-    SendMessageA(GetParent(card_window), message, wparam_window, lparam_data);
-    return 0;
-
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
     return FUN_10025b5e((int)card_window, message, (int)wparam_window, (int)lparam_data);
 
-  case WM_MOUSEMOVE:
-  case WM_RBUTTONDOWN:
-    if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
-    {
-      s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
-      if ((int)DAT_00638c08 != (int)card_window)
-      {
-        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
-        DAT_00638c08 = (int)card_window;
-      }
-    }
-    return 0;
-
-  case WM_LBUTTONDOWN:
-    SendMessageA(GetParent(card_window),
-                 WM_COMMAND,
-                 ((unsigned int)(unsigned short)GetDlgCtrlID(card_window)) | 0x10000,
-                 (LPARAM)card_window);
-    return 0;
-
-  case 0x414:
-    s.show_count_flag = (LONG)wparam_window;
-    s.count = (LONG)lparam_data;
-    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
-    SetWindowLongA(card_window, unk_0055e0c4, s.count);
-    InvalidateRect(card_window, NULL, TRUE);
-    return 0;
-
-  case 0x437:
-    s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
-    if (SHOWLIST_MOUSE_MODE != 2)
-    {
-      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
-    }
-    return 0;
-
   default:
     return DefWindowProcA(card_window, message, wparam_window, lparam_data);
   }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0049e6aa

@@ -19,6 +19,16 @@ int raw_do_dialog(int bigcard_player,
                   char *prompt,
                   int dialog_mode);
 
+// FUNCTION: MAGIC 0x0048958a
+BOOL CALLBACK FUN_0048958a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  (void)hwnd;
+  (void)msg;
+  (void)wparam;
+  (void)lparam;
+  return 0;
+}
+
 // NOTE: Even though this file is named "exe_stubs.c", functions removed from
 // here as they get fully decompiled elsewhere. A few UI helpers live here
 // temporarily until their proper home is decided.

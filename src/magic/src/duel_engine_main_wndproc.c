@@ -51,6 +51,7 @@ void resize_battlefield_child_card_windows(HWND hwnd);
 void layout_attack_phase_window(HWND hwnd);
 void layout_phase_display_window(HWND hwnd, LPRECT rect);
 void resize_duel_hand_window(HWND hwnd);
+void set_player_directive_value(int player, int value);
 void get_current_duel_selection(int *selected_player, int *selected_card);
 unsigned int load_gametype0(char *path);
 int play_duel(int player, int creature_type);
@@ -1021,12 +1022,6 @@ void refresh_duel_window(HWND hwnd)
   SendMessageA(hwnd, 0x412, 0, 0);
 }
 
-// FUNCTION: MAGIC 0x004bd131
-void resize_duel_hand_window(HWND hwnd)
-{
-  (void)hwnd;
-}
-
 // FUNCTION: MAGIC 0x004ddbf4
 // FUNCTION: SHANDALAR 0x005448a5
 void run_duel_timer_tick(void)
@@ -1039,16 +1034,20 @@ void show_post_duel_draws(int duel_result)
 {
 }
 
-// FUNCTION: MAGIC 0x0046452a
-// FUNCTION: SHANDALAR 0x00426c59
-void set_player_directive_value(int player, int value)
-{
-}
-
 // FUNCTION: MAGIC 0x0044a1ca
 // FUNCTION: SHANDALAR 0x00453d4d
 void get_current_duel_selection(int *selected_player, int *selected_card)
 {
+  EnterCriticalSection(&g_duel_render_lock);
+  if (selected_player != NULL)
+  {
+    *selected_player = g_duel_selected_player_card;
+  }
+  if (selected_card != NULL)
+  {
+    *selected_card = g_duel_selected_opponent_card;
+  }
+  LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x0044a2bd

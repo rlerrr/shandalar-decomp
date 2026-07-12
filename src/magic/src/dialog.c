@@ -381,6 +381,22 @@ int FUN_004483be(int player, int card)
   return 0;
 }
 
+// FUNCTION: MAGIC 0x004486de
+int FUN_004486de(int player, int card)
+{
+  int blocking;
+
+  if (FUN_004483be(player, card) != 0)
+  {
+    return 0;
+  }
+
+  EnterCriticalSection(&g_duel_render_lock);
+  blocking = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).blocking;
+  LeaveCriticalSection(&g_duel_render_lock);
+  return blocking;
+}
+
 // FUNCTION: MAGIC 0x004487d8
 int get_displayed_card_internal_id(int player, int card)
 {

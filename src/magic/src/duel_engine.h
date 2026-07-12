@@ -3,6 +3,78 @@
 
 #include <windows.h>
 
+#define CLASS_MAGICGAME_MAINCLASS "MAGICGAME_MainClass"
+#define CLASS_MAGICGAME_LIFE "MAGICGAME_LifeClass"
+#define CLASS_MAGICGAME_FULL_CARD "MAGICGAME_FullCardClass"
+#define CLASS_MAGICGAME_MANA_SUMMARY "MAGICGAME_ManaSummaryClass"
+#define CLASS_MAGICGAME_HAND "MAGICGAME_HandClass"
+#define CLASS_MAGICGAME_CHAT "MAGICGAME_ChatClass"
+#define CLASS_MAGICGAME_CARD "MAGICGAME_CardClass"
+#define CLASS_MAGICGAME_PHASE_DISPLAY "MAGICGAME_PhaseDisplayClass"
+#define CLASS_MAGICGAME_ATTACK_PHASE_DISPLAY "MAGICGAME_AttackPhaseDisplayClass"
+#define CLASS_MAGICGAME_TERRITORY "MAGICGAME_TerritoryClass"
+#define CLASS_MAGICGAME_LIBRARY "MAGICGAME_LibraryClass"
+#define CLASS_MAGICGAME_GRAVEYARD "MAGICGAME_GraveyardClass"
+#define CLASS_MAGICGAME_ATTACK "MAGICGAME_AttackClass"
+#define CLASS_MAGICGAME_SPELL_CHAIN "MAGICGAME_SpellChainClass"
+#define CLASS_MAGICGAME_FACE "MAGICGAME_FaceClass"
+#define CLASS_MAGICGAME_SCROLLBAR "MAGICGAME_ScrollbarClass"
+#define CLASS_MAGICTHEME_ICON_BUTTON "MAGICTHEME_IconButtonClass"
+#define CLASS_MAGICGAME_BIG_CARD_CHOICE "MAGICGAME_BigCardChoiceClass"
+#define CLASS_MAGICGAME_BIG_CARD_CARD "MAGICGAME_BigCardCardClass"
+#define CLASS_MAGIC_PALETTE "MAGIC_PaletteClass"
+#define CLASS_MAGIC_CUE_CARD "MAGIC_CueCardClass"
+#define CLASS_MAGIC_PLAYER_DIRECTIVE "MAGIC_PlayerDirectiveClass"
+#define CLASS_MAGIC_TELL_USER "MAGIC_TellUserClass"
+#define CLASS_SHUFFLE_CARD "ShuffleCard"
+#define CLASS_EXPANDED_GRAVEYARD "ExpandedGraveyard"
+#define CLASS_GRAVEYARD_CARDS "GraveyardCards"
+#define CLASS_ATTACK_SWORD_SHIELD "AttackSwordShield"
+#define CLASS_ATTACK_MINIMIZED "AttackMinimized"
+#define CLASS_SPELL_MINIMIZED "SpellMinimized"
+
+#define SET_DUEL_WNDCLASS(wndclass_, style_, wndproc_, extra_, icon_, background_, class_name_) \
+  (wndclass_).style = (style_);                                                                 \
+  (wndclass_).lpfnWndProc = (wndproc_);                                                         \
+  (wndclass_).cbClsExtra = 0;                                                                   \
+  (wndclass_).cbWndExtra = (extra_);                                                            \
+  (wndclass_).hInstance = g_app_instance;                                                       \
+  (wndclass_).hIcon = (icon_);                                                                  \
+  (wndclass_).hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);                              \
+  (wndclass_).hbrBackground = (background_);                                                    \
+  (wndclass_).lpszMenuName = (LPCSTR)0;                                                         \
+  (wndclass_).lpszClassName = (class_name_)
+
+LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_ShuffleCard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_AttackMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGICGAME_BigCardCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGIC_PaletteClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGIC_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGIC_PlayerDirectiveClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 /* Single header library style */
 #ifdef DUEL_ENGINE_IMPL
 #define DUEL_ENGINE_EXTERN

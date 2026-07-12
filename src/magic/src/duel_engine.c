@@ -5,8 +5,11 @@
 #include <string.h>
 
 #include "cardartlib/src/assert.h"
+#include "cardartlib/src/palette.h"
 #include "deckdll/src/magsnd.h"
 #include "deckdll/src/shared_resources.h"
+#include "drawcardlib/Drawcardlib.h"
+#include "magic/src/game_support.h"
 #include "magic/src/global_duel_ui_ids.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
@@ -28,81 +31,40 @@ extern int g_duel_modal_action_active;
 extern int DAT_007a7d74;
 extern int DAT_008a8dec;
 extern int DAT_008a8d78;
-
-#define CLASS_MAGICGAME_MAINCLASS "MAGICGAME_MainClass"
-#define CLASS_MAGICGAME_LIFE "MAGICGAME_LifeClass"
-#define CLASS_MAGICGAME_FULL_CARD "MAGICGAME_FullCardClass"
-#define CLASS_MAGICGAME_MANA_SUMMARY "MAGICGAME_ManaSummaryClass"
-#define CLASS_MAGICGAME_HAND "MAGICGAME_HandClass"
-#define CLASS_MAGICGAME_CHAT "MAGICGAME_ChatClass"
-#define CLASS_MAGICGAME_CARD "MAGICGAME_CardClass"
-#define CLASS_MAGICGAME_PHASE_DISPLAY "MAGICGAME_PhaseDisplayClass"
-#define CLASS_MAGICGAME_ATTACK_PHASE_DISPLAY "MAGICGAME_AttackPhaseDisplayClass"
-#define CLASS_MAGICGAME_TERRITORY "MAGICGAME_TerritoryClass"
-#define CLASS_MAGICGAME_LIBRARY "MAGICGAME_LibraryClass"
-#define CLASS_MAGICGAME_GRAVEYARD "MAGICGAME_GraveyardClass"
-#define CLASS_MAGICGAME_ATTACK "MAGICGAME_AttackClass"
-#define CLASS_MAGICGAME_SPELL_CHAIN "MAGICGAME_SpellChainClass"
-#define CLASS_MAGICGAME_FACE "MAGICGAME_FaceClass"
-#define CLASS_MAGICGAME_SCROLLBAR "MAGICGAME_ScrollbarClass"
-#define CLASS_MAGICTHEME_ICON_BUTTON "MAGICTHEME_IconButtonClass"
-#define CLASS_MAGICGAME_BIG_CARD_CHOICE "MAGICGAME_BigCardChoiceClass"
-#define CLASS_MAGICGAME_BIG_CARD_CARD "MAGICGAME_BigCardCardClass"
-#define CLASS_MAGIC_PALETTE "MAGIC_PaletteClass"
-#define CLASS_MAGIC_CUE_CARD "MAGIC_CueCardClass"
-#define CLASS_MAGIC_PLAYER_DIRECTIVE "MAGIC_PlayerDirectiveClass"
-#define CLASS_MAGIC_TELL_USER "MAGIC_TellUserClass"
-#define CLASS_SHUFFLE_CARD "ShuffleCard"
-#define CLASS_EXPANDED_GRAVEYARD "ExpandedGraveyard"
-#define CLASS_GRAVEYARD_CARDS "GraveyardCards"
-#define CLASS_ATTACK_SWORD_SHIELD "AttackSwordShield"
-#define CLASS_ATTACK_MINIMIZED "AttackMinimized"
-#define CLASS_SPELL_MINIMIZED "SpellMinimized"
-
-#define SET_DUEL_WNDCLASS(wndclass_, style_, wndproc_, extra_, icon_, background_, class_name_) \
-  (wndclass_).style = (style_);                                                                 \
-  (wndclass_).lpfnWndProc = (wndproc_);                                                         \
-  (wndclass_).cbClsExtra = 0;                                                                   \
-  (wndclass_).cbWndExtra = (extra_);                                                            \
-  (wndclass_).hInstance = g_app_instance;                                                       \
-  (wndclass_).hIcon = (icon_);                                                                  \
-  (wndclass_).hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);                              \
-  (wndclass_).hbrBackground = (background_);                                                    \
-  (wndclass_).lpszMenuName = (LPCSTR)0;                                                         \
-  (wndclass_).lpszClassName = (class_name_)
+extern HMENU g_library_popup_menu;
+extern HMENU g_library_submenu;
+extern char g_library_menu_count_text[];
+extern char g_library_menu_help_text[];
+extern HMENU g_graveyard_popup_menu;
+extern char g_graveyard_menu_view_text[];
+extern char g_graveyard_menu_view_exile_text[];
+extern char g_graveyard_menu_view_antes_text[];
+extern char g_graveyard_menu_help_text[];
+extern char g_graveyard_view_antes_opponent_text[];
+extern char g_graveyard_view_antes_player_text[];
+extern char s_MENU_GRAVEYARD_0056e9e0[];
+extern char s_DIALOG_VIEWANTES_0056e9f0[];
+extern int g_graveyard_window_extra_bytes;
+extern int g_expanded_graveyard_window_extra_bytes;
+extern int g_graveyard_cards_window_extra_bytes;
+int load_text_with_tab_escapes(char *filename, char *section_name);
 
 int register_window_classes(void);
 int destroy_windowclasses(void);
-
-LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_ShuffleCard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_AttackMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGICGAME_BigCardCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGIC_PaletteClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGIC_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGIC_PlayerDirectiveClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+int register_MAGICGAME_LifeClass(LPCSTR class_name);
+void destroy_MAGICGAME_LifeClass(void);
+int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name);
+void destroy_MAGICGAME_ManaSummaryClass(void);
+int register_MAGICGAME_FullCardClass(LPCSTR class_name);
+void destroy_MAGICGAME_FullCardClass(void);
+int register_MAGICGAME_HandClass(LPCSTR class_name);
+void destroy_MAGICGAME_HandClass(void);
+int register_MAGICGAME_FaceClass(LPCSTR class_name);
+void destroy_MAGICGAME_FaceClass(void);
+int register_MAGICGAME_TerritoryClass(LPCSTR class_name);
+void destroy_MAGICGAME_TerritoryClass(void);
+int register_MAGIC_TellUserClass(LPCSTR class_name);
+void destroy_MAGIC_TellUserClass(void);
 
 // FUNCTION: MAGIC 0x0044385c
 // FUNCTION: SHANDALAR 0x0040f0f6
@@ -413,65 +375,15 @@ DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type)
 // FUNCTION: SHANDALAR 0x00541040
 int register_MAGICGAME_MainClass(LPCSTR class_name)
 {
-  ATOM atom;
   WNDCLASSA wndclass;
 
   SET_DUEL_WNDCLASS(wndclass, 0x20, wndproc_MAGICGAME_MainClass, 0,
                     LoadIconA(g_app_instance, (LPCSTR)0x66), (HBRUSH)GetStockObject(4), class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
 
-// FUNCTION: MAGIC 0x004e1e00
-// FUNCTION: SHANDALAR 0x004ccc10
-int register_MAGICGAME_LifeClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
+  if (RegisterClassA(&wndclass) == 0)
+    return 0;
 
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_LifeClass, 0x10,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
-// FUNCTION: MAGIC 0x00557850
-// FUNCTION: SHANDALAR 0x0056dbb0
-int register_MAGICGAME_FullCardClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0x803, wndproc_MAGICGAME_FullCardClass, 0x14,
-                    (HICON)0, (HBRUSH)GetStockObject(4), class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
-// FUNCTION: MAGIC 0x00539320
-// FUNCTION: SHANDALAR 0x00550c00
-int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_ManaSummaryClass, 4,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
-// FUNCTION: MAGIC 0x004bbae0
-// FUNCTION: SHANDALAR 0x0046ee20
-int register_MAGICGAME_HandClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 3, wndproc_MAGICGAME_HandClass, 0x20,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
+  return 1;
 }
 
 // FUNCTION: MAGIC 0x0040a3f0
@@ -510,19 +422,6 @@ int register_MAGICGAME_CardClass(LPCSTR class_name)
   return atom != 0;
 }
 
-// FUNCTION: MAGIC 0x00535650
-// FUNCTION: SHANDALAR 0x00559e90
-int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_PhaseDisplayClass, 8,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
 // FUNCTION: MAGIC 0x0053582a
 // FUNCTION: SHANDALAR 0x0055a06a
 int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
@@ -534,57 +433,6 @@ int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
                     LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0x6, class_name);
   atom = RegisterClassA(&wndclass);
   return atom != 0;
-}
-
-// FUNCTION: MAGIC 0x004e6a30
-// FUNCTION: SHANDALAR 0x00504850
-int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_TerritoryClass, 0x10,
-                    (HICON)0, (HBRUSH)0, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
-// FUNCTION: MAGIC 0x00497fd0
-// FUNCTION: SHANDALAR 0x004c1830
-int register_MAGICGAME_LibraryClass(LPCSTR class_name)
-{
-  ATOM atom1;
-  ATOM atom2;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 3, wndproc_MAGICGAME_LibraryClass, 4,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)GetStockObject(4), class_name);
-  atom1 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 0, wndproc_ShuffleCard, 0,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0, CLASS_SHUFFLE_CARD);
-  atom2 = RegisterClassA(&wndclass);
-  return atom1 != 0 && atom2 != 0;
-}
-
-// FUNCTION: MAGIC 0x00450a70
-// FUNCTION: SHANDALAR 0x0050d5d0
-int register_MAGICGAME_GraveyardClass(LPCSTR class_name)
-{
-  ATOM atom1;
-  ATOM atom2;
-  ATOM atom3;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_GraveyardClass, 0xc,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)GetStockObject(4), class_name);
-  atom1 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 8, wndproc_ExpandedGraveyard, 0,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)GetStockObject(4), CLASS_EXPANDED_GRAVEYARD);
-  atom2 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_GraveyardCards, 4,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0x6, CLASS_GRAVEYARD_CARDS);
-  atom3 = RegisterClassA(&wndclass);
-  return atom1 != 0 && atom2 != 0 && atom3 != 0;
 }
 
 // FUNCTION: MAGIC 0x004d2ac0
@@ -623,19 +471,6 @@ int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
                     (HICON)0, (HBRUSH)0x6, CLASS_SPELL_MINIMIZED);
   atom2 = RegisterClassA(&wndclass);
   return atom1 != 0 && atom2 != 0;
-}
-
-// FUNCTION: MAGIC 0x004637d0
-// FUNCTION: SHANDALAR 0x00425f10
-int register_MAGICGAME_FaceClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_FaceClass, 8,
-                    (HICON)0, (HBRUSH)GetStockObject(4), class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
 }
 
 // FUNCTION: MAGIC 0x00490900
@@ -729,21 +564,6 @@ int register_MAGIC_PlayerDirectiveClass(LPCSTR class_name)
   return atom != 0;
 }
 
-// FUNCTION: MAGIC 0x004eb3e0
-// FUNCTION: SHANDALAR 0x004690e0
-int register_MAGIC_TellUserClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  g_tell_user_default_button_state = 2;
-  g_tell_user_button_state = 1;
-  SET_DUEL_WNDCLASS(wndclass, 1, wndproc_MAGIC_TellUserClass, 4,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)GetStockObject(2), class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
 // FUNCTION: MAGIC 0x004220ac
 // FUNCTION: SHANDALAR 0x004307f2
 int register_window_classes(void)
@@ -781,39 +601,6 @@ int register_window_classes(void)
   }
 
   return 1;
-}
-
-// FUNCTION: MAGIC 0x004e1f8e
-// FUNCTION: SHANDALAR 0x004ccd9e
-void destroy_MAGICGAME_LifeClass(void)
-{
-  UnregisterClassA(CLASS_MAGICGAME_LIFE, g_app_instance);
-}
-
-// FUNCTION: MAGIC 0x0055793c
-// FUNCTION: SHANDALAR 0x0056dc9c
-void destroy_MAGICGAME_FullCardClass(void)
-{
-  if (g_magicgame_full_card_menu != (HMENU)0)
-  {
-    DestroyMenu(g_magicgame_full_card_menu);
-  }
-
-  g_magicgame_full_card_menu = (HMENU)0;
-}
-
-// FUNCTION: MAGIC 0x005394da
-// FUNCTION: SHANDALAR 0x00550dba
-void destroy_MAGICGAME_ManaSummaryClass(void)
-{
-  UnregisterClassA(CLASS_MAGICGAME_MANA_SUMMARY, g_app_instance);
-}
-
-// FUNCTION: MAGIC 0x004bbbc7
-// FUNCTION: SHANDALAR 0x0046ef07
-void destroy_MAGICGAME_HandClass(void)
-{
-  UnregisterClassA(CLASS_MAGICGAME_HAND, g_app_instance);
 }
 
 // FUNCTION: MAGIC 0x0040a4a7
@@ -854,25 +641,31 @@ void destroy_MAGICGAME_AttackPhaseDisplayClass(void)
   g_magicgame_attack_phase_display_pic = (HANDLE)0;
 }
 
-// FUNCTION: MAGIC 0x004e6dc8
-// FUNCTION: SHANDALAR 0x00504be8
-void destroy_MAGICGAME_TerritoryClass(void)
-{
-  UnregisterClassA(CLASS_MAGICGAME_TERRITORY, g_app_instance);
-}
-
 // FUNCTION: MAGIC 0x00498142
 // FUNCTION: SHANDALAR 0x004c19a2
 void destroy_MAGICGAME_LibraryClass(void)
 {
-  UnregisterClassA(CLASS_MAGICGAME_LIBRARY, g_app_instance);
-  UnregisterClassA(CLASS_SHUFFLE_CARD, g_app_instance);
+  if (g_library_popup_menu != (HMENU)0)
+  {
+    DestroyMenu(g_library_popup_menu);
+  }
+  if (g_library_submenu != (HMENU)0)
+  {
+    DestroyMenu(g_library_submenu);
+  }
+  g_library_popup_menu = (HMENU)0;
+  g_library_submenu = (HMENU)0;;
 }
 
 // FUNCTION: MAGIC 0x00450ca9
 // FUNCTION: SHANDALAR 0x0050d809
 void destroy_MAGICGAME_GraveyardClass(void)
 {
+  if (g_graveyard_popup_menu != (HMENU)0)
+  {
+    DestroyMenu(g_graveyard_popup_menu);
+  }
+  g_graveyard_popup_menu = (HMENU)0;
   UnregisterClassA(CLASS_MAGICGAME_GRAVEYARD, g_app_instance);
   UnregisterClassA(CLASS_EXPANDED_GRAVEYARD, g_app_instance);
   UnregisterClassA(CLASS_GRAVEYARD_CARDS, g_app_instance);
@@ -893,13 +686,6 @@ void destroy_MAGICGAME_SpellChainClass(void)
 {
   UnregisterClassA(CLASS_MAGICGAME_SPELL_CHAIN, g_app_instance);
   UnregisterClassA(CLASS_SPELL_MINIMIZED, g_app_instance);
-}
-
-// FUNCTION: MAGIC 0x00463a6e
-// FUNCTION: SHANDALAR 0x004261ae
-void destroy_MAGICGAME_FaceClass(void)
-{
-  UnregisterClassA(CLASS_MAGICGAME_FACE, g_app_instance);
 }
 
 // FUNCTION: MAGIC 0x004909b5
@@ -934,13 +720,6 @@ void destroy_MAGIC_CueCardClass(void)
   UnregisterClassA(CLASS_MAGIC_CUE_CARD, g_app_instance);
 }
 
-// FUNCTION: MAGIC 0x004eb63c
-// FUNCTION: SHANDALAR 0x0046933c
-void destroy_MAGIC_TellUserClass(void)
-{
-  UnregisterClassA(CLASS_MAGIC_TELL_USER, g_app_instance);
-}
-
 // FUNCTION: MAGIC 0x0042224e
 // FUNCTION: SHANDALAR 0x00430994
 int destroy_windowclasses(void)
@@ -967,34 +746,6 @@ int destroy_windowclasses(void)
   return 1;
 }
 
-// FUNCTION: MAGIC 0x004e2029
-// FUNCTION: SHANDALAR 0x004cce39
-LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x0055796a
-// FUNCTION: SHANDALAR 0x0056dcca
-LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x00539550
-// FUNCTION: SHANDALAR 0x00550e30
-LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x004bbc18
-// FUNCTION: SHANDALAR 0x0046ef58
-LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
 // FUNCTION: MAGIC 0x0040a4d5
 // FUNCTION: SHANDALAR 0x004bac45
 LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -1009,30 +760,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
   return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
-// FUNCTION: MAGIC 0x0053592b
-// FUNCTION: SHANDALAR 0x0055a16b
-LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
 // FUNCTION: MAGIC 0x00537760
 // FUNCTION: SHANDALAR 0x0055bf91
 LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x004e6e19
-// FUNCTION: SHANDALAR 0x00504c39
-LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x00498193
-// FUNCTION: SHANDALAR 0x004c19f3
-LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
@@ -1041,28 +771,76 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
 // FUNCTION: SHANDALAR 0x004c252a
 LRESULT CALLBACK wndproc_ShuffleCard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
+  struct
+  {
+    HDC dc;
+    RECT client_rect;
+  } s;
 
-// FUNCTION: MAGIC 0x00450cd7
-// FUNCTION: SHANDALAR 0x0050d837
-LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  switch (msg)
+  {
+  case WM_ERASEBKGND:
+    s.dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.dc);
+    GetClientRect(hwnd, &s.client_rect);
+    DrawCardBack(s.dc, &s.client_rect);
+    return 0;
+
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004517ac
 // FUNCTION: SHANDALAR 0x0050e2fc
 LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
+  struct
+  {
+    POINT mouse_point;
+    HWND target_hwnd;
+  } s;
 
-// FUNCTION: MAGIC 0x00451926
-// FUNCTION: SHANDALAR 0x0050e476
-LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  switch (msg)
+  {
+  case 0x437:
+    return 0;
+  case WM_CREATE:
+    return 0;
+
+  case WM_LBUTTONDOWN:
+    SendMessageA(g_duel_player_graveyard_window_hwnd, 0x400, 0, 0);
+    SendMessageA(g_phasebar_your_untap_window_hwnd, 0x400, 0, 0);
+    return 0;
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDBLCLK:
+    GetCursorPos(&s.mouse_point);
+    s.target_hwnd = WindowFromPoint(s.mouse_point);
+    MapWindowPoints((HWND)0, s.target_hwnd, &s.mouse_point, 1);
+    if (hwnd != s.target_hwnd)
+    {
+      SendMessageA(s.target_hwnd, msg, wparam, MAKELONG(s.mouse_point.x, s.mouse_point.y));
+    }
+    return 0;
+
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004d3158
@@ -1100,13 +878,6 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
   return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
-// FUNCTION: MAGIC 0x00463b12
-// FUNCTION: SHANDALAR 0x00426252
-LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
 // FUNCTION: MAGIC 0x004909e8
 // FUNCTION: SHANDALAR 0x005563b8
 LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -1132,7 +903,33 @@ LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARA
 // FUNCTION: SHANDALAR 0x004c69fe
 LRESULT CALLBACK wndproc_MAGICGAME_BigCardCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    POINT mouse_point;
+  } s;
+
+  switch (msg)
+  {
+  case WM_CREATE:
+  case WM_DESTROY:
+  case WM_PAINT:
+  case WM_ERASEBKGND:
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return CallWindowProcA(wndproc_MAGICGAME_CardClass, hwnd, msg, wparam, lparam);
+
+  case WM_LBUTTONDOWN:
+  case WM_LBUTTONUP:
+    s.mouse_point.x = lparam & 0xffff;
+    s.mouse_point.y = (unsigned short)(((unsigned int)lparam >> 16) & 0xffff);
+    MapWindowPoints(hwnd, GetParent(hwnd), &s.mouse_point, 1);
+    SendMessageA(GetParent(hwnd), msg, wparam, MAKELONG(s.mouse_point.x, s.mouse_point.y));
+    return 0;
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
 }
 
 // FUNCTION: MAGIC 0x00464cb4
@@ -1153,7 +950,58 @@ LRESULT CALLBACK wndproc_MAGIC_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, 
 // FUNCTION: SHANDALAR 0x00409462
 LRESULT CALLBACK wndproc_MAGIC_PlayerDirectiveClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    HDC paint_dc;
+    PAINTSTRUCT paint_struct;
+    char window_text[200];
+    RECT text_rect;
+    HDC erase_dc;
+    RECT erase_rect;
+    HBRUSH erase_brush;
+  } s;
+
+  switch (msg)
+  {
+  case WM_CREATE:
+
+    return 0;
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.erase_rect);
+    s.erase_brush = CreateSolidBrush(0xffff);
+    FillRect(s.erase_dc, &s.erase_rect, s.erase_brush);
+    DeleteObject(s.erase_brush);
+    return 1;
+  case WM_PAINT:
+    s.paint_dc = BeginPaint(hwnd, &s.paint_struct);
+    if (s.paint_dc != NULL)
+    {
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      GetWindowTextA(hwnd, s.window_text, 200);
+      SetTextAlign(s.paint_dc, 6);
+      SetBkMode(s.paint_dc, 1);
+      SetTextColor(s.paint_dc, 0);
+      GetClientRect(hwnd, &s.text_rect);
+      DrawManaText(s.paint_dc, &s.text_rect, s.window_text, 1);
+      EndPaint(hwnd, &s.paint_struct);
+    }
+    return 0;
+
+  case WM_SETTEXT:
+    InvalidateRect(hwnd, NULL, TRUE);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004dbea9
@@ -1240,11 +1088,4 @@ int create_duel_child_windows(HWND parent_window)
   {
     return 1;
   }
-}
-
-// FUNCTION: MAGIC 0x004eb77a
-// FUNCTION: SHANDALAR 0x0046947a
-LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
