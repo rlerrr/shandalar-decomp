@@ -365,7 +365,7 @@ int card_demonic_hordes(int player, int card, event_t event)
                                 0) != 0)
       {
         load_text("promptsX1.txt", "DEMONIC_HORDES_2");
-        if (human_player == player || (unk_00926804 & 2) != 0)
+        if (human_player == player || (g_duel_network_flags & 2) != 0)
         {
           C_real_select_target(player,
                                2,
@@ -952,7 +952,7 @@ int card_rock_hydra(int player, int card, event_t event)
     {
       if (((current_phase == 4) && (player == human_player) && (player == unk_00742f60)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
       {
-        if (((player == active_player) && ((unk_00926804 & 2) == 0)) && (hand_count[player] - *(int *)((char *)basiclandtypes_controlled + player * 0x20 + 0x10) == 3))
+        if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (hand_count[player] - *(int *)((char *)basiclandtypes_controlled + player * 0x20 + 0x10) == 3))
         {
           unk_008b3270 |= 3;
         }

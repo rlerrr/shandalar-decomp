@@ -1192,20 +1192,6 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   return s.selected_menu_entry;
 }
 
-// FUNCTION: SHANDALAR 0x004ecec6
-int ClampIntToRange(int value, int min_value, int max_value)
-{
-  if (value < min_value)
-  {
-    value = min_value;
-  }
-  if (max_value < value)
-  {
-    value = max_value;
-  }
-  return value;
-}
-
 // FUNCTION: SHANDALAR 0x00430e00
 void DrawUiLine(int x1, int y1, int x2, int y2, int color_index)
 {
@@ -6192,11 +6178,11 @@ int LoadAdvStringsFile(const char *filename)
 
   LoadTextSectionLines(filename, "SHOWLIST");
   strcpy(gs_showcard_text_0077e110.title, text_lines[0]);
-  strcpy(gs_showcard_text_0077e110.subtitle, text_lines[1]);
+  strcpy(gs_showcard_text_0077e110.accept_keys, text_lines[1]);
 
   LoadTextSectionLines(filename, "SHOWLIBRARY");
   strcpy(gs_showlibrary_text_0074bcc0.title, text_lines[0]);
-  strcpy(gs_showlibrary_text_0074bcc0.subtitle, text_lines[1]);
+  strcpy(gs_showlibrary_text_0074bcc0.accept_keys, text_lines[1]);
 
   return s.ok;
 }

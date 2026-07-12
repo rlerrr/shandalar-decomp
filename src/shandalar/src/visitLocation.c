@@ -212,7 +212,7 @@ ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int cre
 void LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int color_filter, int speed_filter);
 void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, unsigned int color_filter, int speed_filter);
 int DrawRandomCardFromInitialLibrary(int library_index);
-int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int param_5, int *param_6);
+int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, int mode);
 void PlayDuelMusic(int tune_index);
 void RemoveCardFromDeckById(unsigned int card_id);
@@ -2460,7 +2460,7 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
   DAT_00742fc0 = 1;
   DestroyCachedCardArt();
 
-#ifdef _DEBUG
+#ifdef XXX_DEBUG
   // Instantly win every duel
   s.thread_exit_code = 1;
 #else
@@ -2922,60 +2922,6 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
   return s.deck_type;
 }
 
-// FUNCTION: SHANDALAR 0x0052234e
-int DrawRandomCardFromInitialLibrary(int library_index)
-{
-  struct
-  {
-    int rand_pick;
-    int chosen_csvid;
-    int total_cards;
-    int running_pick;
-    int i;
-  } s;
-
-  if (library_index == -1)
-  {
-    return -1;
-  }
-
-  s.total_cards = 0;
-  for (s.i = 0; s.i < 200; s.i = s.i + 1)
-  {
-    s.total_cards = s.total_cards + initial_library[library_index][s.i].numcards;
-  }
-
-  if (s.total_cards == 0)
-  {
-    return -1;
-  }
-
-  s.rand_pick = RandomIntLessThan(s.total_cards);
-  s.running_pick = s.rand_pick;
-
-  for (s.i = 0; s.i < 200; s.i = s.i + 1)
-  {
-    s.running_pick = s.running_pick - initial_library[library_index][s.i].numcards;
-    if (s.running_pick < 0)
-    {
-      s.chosen_csvid = initial_library[library_index][s.i].csvid;
-      if (g_duel_ai_mode_state != 1)
-      {
-        initial_library[library_index][s.i].numcards = initial_library[library_index][s.i].numcards + -1;
-      }
-      break;
-    }
-  }
-
-  for (s.i = 0; s.i < g_card_count; s.i = s.i + 1)
-  {
-    if (((int)global_cards_data[s.i].id == s.chosen_csvid))
-    {
-      return s.i;
-    }
-  }
-}
-
 // FUNCTION: SHANDALAR 0x004f6886
 void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, int mode)
 {
@@ -3101,7 +3047,7 @@ void RemoveCardFromDeckById(unsigned int card_id)
 void ShowPlayer1LibraryMenu(int unused)
 {
   (void)unused;
-  FUN_0056a515(unk_008b35ec, global_library[1], 500, gs_showlibrary_text_0074bcc0.subtitle, 0, &g_showlibrary_menu_selection);
+  SelectAdventureListCardIndex(unk_008b35ec, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
 }
 
 // FUNCTION: SHANDALAR 0x0053114a
@@ -3841,7 +3787,7 @@ LAB_00531ee7:
       }
     }
 
-    s.selected_deck_index = FUN_0056a515(unk_008b35ec, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
+    s.selected_deck_index = SelectAdventureListCardIndex(unk_008b35ec, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
     if ((s.selected_deck_index != -1) &&
         ((s.selected_deck_slot = FUN_0056bd9d(s.deck_card_ids[s.selected_deck_index])) != -1))
     {

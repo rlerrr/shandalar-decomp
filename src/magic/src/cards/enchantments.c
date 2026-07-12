@@ -75,7 +75,7 @@ int card_consecrate_land(int player, int card, event_t event)
     {
       instance->targets[0] = target;
       instance->number_of_targets = 1;
-      if (player == active_player && (unk_00926804 & 2) == 0)
+      if (player == active_player && (g_duel_network_flags & 2) == 0)
       {
         if (target.player == unk_008b35ec)
         {
@@ -406,7 +406,7 @@ int card_farmstead(int player, int card, event_t event)
     {
       if (current_phase == 4 && instance->damage_target_player == human_player && instance->info_slot == 0 && has_mana_w_global_cost_mod(player, card, 5, 2) != 0)
       {
-        if (player == active_player && (unk_00926804 & 2) == 0 && (internal_rand(100) < ((basiclandtypes_controlled[player][COLOR_WHITE] + 1) / 2) * 0x14 || life[active_player] < 5))
+        if (player == active_player && (g_duel_network_flags & 2) == 0 && (internal_rand(100) < ((basiclandtypes_controlled[player][COLOR_WHITE] + 1) / 2) * 0x14 || life[active_player] < 5))
         {
           unk_008b3270 |= 3;
         }
@@ -672,7 +672,7 @@ int card_kudzu(int player, int card, event_t event)
     new_target.player = -1;
     new_target.card = -1;
 
-    if (instance->damage_target_player == human_player || (unk_00926804 & 2) != 0)
+    if (instance->damage_target_player == human_player || (g_duel_network_flags & 2) != 0)
     {
       if (!C_real_select_target(instance->damage_target_player,
                                 2,
@@ -868,7 +868,7 @@ int FUN_0043b4f3(int player, int amount)
       } while ((global_cards_data[instance->internal_card_id].type & 0x7f) == 0 || (instance->token_status & 0x10) != 0);
       FUN_004e4f11();
     }
-    else if (player == active_player && (unk_00926804 & 2) == 0)
+    else if (player == active_player && (g_duel_network_flags & 2) == 0)
     {
       FUN_004e5089();
       target.player = player;
@@ -939,7 +939,7 @@ int card_raging_river(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_CAST)
   {
-    return player == unk_008b35ec || (unk_00926804 & 2) != 0;
+    return player == unk_008b35ec || (g_duel_network_flags & 2) != 0;
   }
 
   if ((event == EVENT_RESOLVE_SPELL) && dispatch_function_to_all_cards_in_play(player, card, FUN_00483190, player) == -1)
@@ -949,7 +949,7 @@ int card_raging_river(int player, int card, event_t event)
   if ((event == 0x92) && (player == human_player) && ((*(unsigned char *)((char *)instance + 0x17) & 1) != 0))
   {
     defender = 1 - human_player;
-    if ((unk_008b35ec == defender) || ((unk_00926804 & 2) != 0))
+    if ((unk_008b35ec == defender) || ((g_duel_network_flags & 2) != 0))
     {
       for (current_card = 0; current_card < active_cards_count[defender]; ++current_card)
       {

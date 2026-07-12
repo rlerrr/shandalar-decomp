@@ -395,6 +395,7 @@ LoadPicFile(int param_1, undefined4 param_2, undefined4 param_3, char *pcxFilena
 // FUNCTION: DRAWCARDLIB 0x1000b700
 // FUNCTION: DECKDLL 0x1002d1a1
 // FUNCTION: MAGIC 0x004856b5
+// FUNCTION: SHANDALAR 0x004c8b20
 HBITMAP load_pic(char *filename)
 {
   HBITMAP iVar1;

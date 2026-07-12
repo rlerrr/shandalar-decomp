@@ -103,7 +103,7 @@ int ApproximateDistance(int x, int y);
 void ShowDungeonClueDetailScreen(int dungeon_index);
 int RandomIntLessThan(int param_1);
 int ScaleUiCoordinateFrom320(int value);
-int FUN_0056a515(int player, int *cards, int count, char *title, int allow_cancel, int *out_selection);
+int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 int FUN_0056bd9d(unsigned int card_id);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
 int FUN_0056c0e5(int card_color, int color_mask, int param_3);
@@ -2239,8 +2239,8 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
         FUN_004be570(s_dbox_spr_0058b074, 0x71, 0xe3);
-        s.selected_card_id = FUN_0056a515(unk_008b35ec, global_library[1], 500,
-                                          gs_encounter_preduel_0077f0d0[0x23], 1, &DAT_0058b080);
+        s.selected_card_id = SelectAdventureListCardIndex(unk_008b35ec, global_library[1], 500,
+                                                          gs_encounter_preduel_0077f0d0[0x23], 1, &DAT_0058b080);
         if (global_library[1][s.selected_card_id] != -1)
         {
           s.deck_or_card_index = FUN_0056bd9d(global_library[1][s.selected_card_id]);
@@ -2921,8 +2921,8 @@ LAB_4F4BB2:
             s.temp_deck[slot_index] = s.temp_deck[slot_index] & 0xfff;
           }
         }
-        s.selected_card_id = FUN_0056a515(unk_008b35ec, (int *)s.temp_deck, 500,
-                                          gs_encounter_postduel_0077f050[0x19], 1, &DAT_0058b190);
+        s.selected_card_id = SelectAdventureListCardIndex(unk_008b35ec, (int *)s.temp_deck, 500,
+                                                          gs_encounter_postduel_0077f050[0x19], 1, &DAT_0058b190);
         if (s.selected_card_id != 0xffffffff)
         {
           s.iVar7 = FUN_0056bd9d(s.temp_deck[s.selected_card_id]);

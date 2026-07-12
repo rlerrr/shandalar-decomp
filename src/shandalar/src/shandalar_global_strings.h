@@ -19,7 +19,7 @@ typedef char sh_text_0x64_t[0x64];
 typedef struct
 {
   sh_text_0x32_t title;
-  sh_text_0x32_t subtitle;
+  sh_text_0x32_t accept_keys;
 } sh_two_text_0x32_t;
 
 typedef char sh_two_text_0x32_size_must_be_0x64[(sizeof(sh_two_text_0x32_t) == 0x64) ? 1 : -1];

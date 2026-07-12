@@ -496,7 +496,7 @@ static int FUN_00500c56(void)
   unk_008b27f0 = '\0';
   unk_008cf200 = '\0';
   unk_008b2938 = '\0';
-  unk_007a7d08 = '\0';
+  g_network_result_packet_type = '\0';
   unk_008b34a0 = '\0';
   unk_008cf3a0 = '\0';
   unk_00926080 = '\0';
@@ -752,7 +752,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
   while (GetMessageA(&s.msg, NULL, 0, 0) != 0)
   {
-    if ((unk_00926804 & 2) != 0 &&
+    if ((g_duel_network_flags & 2) != 0 &&
         ((s.msg.message == WM_KEYDOWN && (s.msg.wParam == 'u' || s.msg.wParam == VK_INSERT)) ||
          (s.msg.message == WM_CHAR && s.msg.wParam == '\'')))
     {

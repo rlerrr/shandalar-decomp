@@ -36,7 +36,7 @@ int card_island_sanctuary(int player, int card, event_t event)
   {
     if (event == 0x7d)
     {
-      if (player == active_player && (unk_00926804 & 2) == 0)
+      if (player == active_player && (g_duel_network_flags & 2) == 0)
       {
         if ((PLAYER_CARD_INSTANCE(player, card).info_slot & 2) == 0)
         {
@@ -343,7 +343,7 @@ int card_animate_dead(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (player == unk_008b35ec || (unk_00926804 & 2) != 0)
+    if (player == unk_008b35ec || (g_duel_network_flags & 2) != 0)
     {
       return (unk_007a7c58[0] | unk_007a7c58[1]) & TYPE_CREATURE;
     }
@@ -362,7 +362,7 @@ int card_animate_dead(int player, int card, event_t event)
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1)
+    if (((player == active_player) && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1)
     {
       chosen_graveyard = PLAYER_CARD_INSTANCE(player, card).info_slot;
       graveyard_data[3] = FUN_004087cc(chosen_graveyard, TYPE_CREATURE);
@@ -403,7 +403,7 @@ int card_animate_dead(int player, int card, event_t event)
       else
       {
         load_text("prompts.txt", "ANIMATE_DEAD");
-        if ((unk_00926804 & 2) == 0 || player != active_player)
+        if ((g_duel_network_flags & 2) == 0 || player != active_player)
         {
           sprintf(prompt, "%s\n%s\n%s", text_lines[0], text_lines[1], text_lines[2]);
         }
@@ -416,7 +416,7 @@ int card_animate_dead(int player, int card, event_t event)
         {
           spell_fizzled = 1;
         }
-        else if ((unk_00926804 & 2) != 0 && player == active_player)
+        else if ((g_duel_network_flags & 2) != 0 && player == active_player)
         {
           chosen_graveyard = 1 - chosen_graveyard;
         }
@@ -1975,7 +1975,7 @@ int card_living_artifact(int player, int card, event_t event)
         color_index = single_color_test_bit_to_color_t((unsigned char)instance->color);
         if (unk_0072c440[color_index] == 0 || has_mana_w_global_cost_mod(player, card, 7, 0) != 0)
         {
-          if (player == active_player && (unk_00926804 & 2) == 0)
+          if (player == active_player && (g_duel_network_flags & 2) == 0)
           {
             unk_008b3270 |= 3;
           }
@@ -2131,7 +2131,7 @@ int card_psychic_venom(int player, int card, event_t event)
           (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      if ((PLAYER_CARD_INSTANCE(player, card).targets[0].player == active_player) && ((unk_00926804 & 2) == 0))
+      if ((PLAYER_CARD_INSTANCE(player, card).targets[0].player == active_player) && ((g_duel_network_flags & 2) == 0))
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
@@ -2778,7 +2778,7 @@ int card_holy_armor(int player, int card, event_t event)
     {
       spell_fizzled = 1;
     }
-    else if ((player == active_player) && ((unk_00926804 & 2) == 0))
+    else if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
     {
       ai_modifier += -0x30;
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)
@@ -3009,7 +3009,7 @@ int card_blessing(int player, int card, event_t event)
     {
       spell_fizzled = 1;
     }
-    else if ((player == active_player) && ((unk_00926804 & 2) == 0))
+    else if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
     {
       ai_modifier += -0x60;
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)
@@ -3244,7 +3244,7 @@ int card_firebreathing(int player, int card, event_t event)
     {
       spell_fizzled = 1;
     }
-    else if ((player == active_player) && ((unk_00926804 & 2) == 0))
+    else if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
     {
       if (FUN_0052adf2(player, card) != 0)
       {
@@ -3574,7 +3574,7 @@ int card_web(int player, int card, event_t event)
     }
     else
     {
-      if ((spell_fizzled != 1) && (active_player == player) && ((unk_00926804 & 2) == 0))
+      if ((spell_fizzled != 1) && (active_player == player) && ((g_duel_network_flags & 2) == 0))
       {
         greatest_power = -1;
         for (test_card = 0; test_card < active_cards_count[1 - player]; ++test_card)
@@ -3812,7 +3812,7 @@ int card_paralyze(int player, int card, event_t event)
       s.target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
       PLAYER_CARD_INSTANCE(s.target_player, s.target_card).mana_to_untap[0] += 4;
 
-      if (active_player == player && (unk_00926804 & 2) == 0)
+      if (active_player == player && (g_duel_network_flags & 2) == 0)
       {
         if (s.target_player == player)
         {
@@ -3983,7 +3983,7 @@ int card_smoke(int player, int card, event_t event)
 
     if (event == 0x7e)
     {
-      if (active_player == human_player && (unk_00926804 & 2) == 0)
+      if (active_player == human_player && (g_duel_network_flags & 2) == 0)
       {
         selected_target.player = human_player;
         selected_target.card = FUN_00534ddb(human_player, 2);
@@ -5021,7 +5021,7 @@ int helper_ward(int player, int card, event_t event, int color)
       }
       else
       {
-        if (player == active_player && (unk_00926804 & 2) == 0 && FUN_0052adf2(player, card) != 0)
+        if (player == active_player && (g_duel_network_flags & 2) == 0 && FUN_0052adf2(player, card) != 0)
         {
           ai_modifier -= 0x60;
         }
@@ -5433,7 +5433,7 @@ int card_warp_artifact(int player, int card, event_t event)
           (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      if ((PLAYER_CARD_INSTANCE(player, card).targets[0].player == active_player) && ((unk_00926804 & 2) == 0))
+      if ((PLAYER_CARD_INSTANCE(player, card).targets[0].player == active_player) && ((g_duel_network_flags & 2) == 0))
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
@@ -5557,7 +5557,7 @@ int card_regeneration(int player, int card, event_t event)
       spell_fizzled = 1;
     }
 
-    if (spell_fizzled != 1 && player == active_player && (unk_00926804 & 2) == 0)
+    if (spell_fizzled != 1 && player == active_player && (g_duel_network_flags & 2) == 0)
     {
       target = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
       if ((target->regen_status & 0x200) != 0 || instance->targets[0].player == unk_008b35ec)
@@ -5852,7 +5852,7 @@ int card_phantasmal_terrain(int player, int card, event_t event)
     }
     if (!FUN_00551b60(player, 1 - player, card) == 0)
     {
-      if ((player == unk_008b35ec) || ((unk_00926804 & 2) != 0))
+      if ((player == unk_008b35ec) || ((g_duel_network_flags & 2) != 0))
       {
         if (g_duel_ai_mode_state != 1)
         {

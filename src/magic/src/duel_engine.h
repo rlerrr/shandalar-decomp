@@ -55,7 +55,7 @@ DUEL_ENGINE_EXTERN int g_duel_network_state;
 
 // GLOBAL: MAGIC 0x0092664c
 // GLOBAL: SHANDALAR 0x0093a77c
-DUEL_ENGINE_EXTERN int g_duel_special_land_card_ids[8];
+DUEL_ENGINE_EXTERN int g_duel_special_land_card_ids[7];
 
 // GLOBAL: MAGIC 0x008a9000
 // GLOBAL: SHANDALAR 0x008bd200
@@ -100,6 +100,10 @@ DUEL_ENGINE_EXTERN HWND g_duel_card_preview_window_hwnd;
 // GLOBAL: MAGIC 0x007912dc
 // GLOBAL: SHANDALAR 0x007a806c
 DUEL_ENGINE_EXTERN int g_tell_user_button_state;
+
+// GLOBAL: MAGIC 0x007aaea4
+// GLOBAL: SHANDALAR 0x007bf0a4
+DUEL_ENGINE_EXTERN int g_tell_user_default_button_state;
 
 #ifdef DUEL_ENGINE_IMPL
 // GLOBAL: MAGIC 0x0055e008

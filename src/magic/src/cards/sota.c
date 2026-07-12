@@ -36,7 +36,7 @@ int card_basalt_monolith(int player, int card, event_t event)
     {
       result = 0;
     }
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
+    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       result = 0;
     }
@@ -166,7 +166,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
                                            -1, -1, -1, 0x100, 0, 0);
       if (can_activate != 0)
       {
-        if (player == unk_008b35ec || (unk_00926804 & 2) != 0)
+        if (player == unk_008b35ec || (g_duel_network_flags & 2) != 0)
         {
           return 1;
         }
@@ -182,7 +182,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE && affected_card == card && affected_card_controller == player && !spell_fizzled)
   {
-    if (player == 1 - human_player && (unk_00926804 & 2) == 0)
+    if (player == 1 - human_player && (g_duel_network_flags & 2) == 0)
     {
       if (FUN_00466e6d(player, card, 1 - player))
       {

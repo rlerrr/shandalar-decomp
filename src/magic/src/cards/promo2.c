@@ -307,7 +307,7 @@ int card_natural_selection(int player, int card, event_t event)
       }
     }
 
-    if ((player == human_player || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1)
+    if ((player == human_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
     {
       if (count > 0)
       {

@@ -44,7 +44,7 @@ typedef struct
   int numcards;
 } csvid_and_numcards;
 
-typedef struct
+typedef struct DuelInterfaceOptions_t
 {
   int show_cue_cards;                  // +0x00
   int directive_tracks_mouse;          // +0x04
@@ -584,7 +584,7 @@ GLOBAL_STATE_EXTERN int unk_008b60e0;
 
 // GLOBAL: MAGIC 0x00926668
 // GLOBAL: SHANDALAR 0x0093a798
-GLOBAL_STATE_EXTERN int DAT_00926668;
+GLOBAL_STATE_EXTERN int g_duel_extra_turn_player;
 
 // GLOBAL: MAGIC 0x00926664
 // GLOBAL: SHANDALAR 0x0093a794
@@ -750,9 +750,13 @@ GLOBAL_STATE_EXTERN int DAT_00925ac4;
 // GLOBAL: SHANDALAR 0x00930adc
 GLOBAL_STATE_EXTERN int DAT_0091c99c;
 
+#ifdef GLOBAL_STATE_IMPL
 // GLOBAL: MAGIC 0x0091c970
 // GLOBAL: SHANDALAR 0x00930ab0
-GLOBAL_STATE_EXTERN DuelInterfaceOptions g_duel_interface_options;
+struct DuelInterfaceOptions_t g_duel_interface_options;
+#else
+extern struct DuelInterfaceOptions_t g_duel_interface_options;
+#endif
 
 // GLOBAL: MAGIC 0x0091c9a0
 // GLOBAL: SHANDALAR 0x00930ae0
@@ -898,7 +902,7 @@ GLOBAL_STATE_EXTERN int g_current_quest_color;
 
 // GLOBAL: MAGIC 0x00712550
 // GLOBAL: SHANDALAR 0x00789500
-GLOBAL_STATE_EXTERN unsigned char g_duel_victory_log[1000];
+GLOBAL_STATE_EXTERN char g_duel_victory_log[1000];
 
 // GLOBAL: MAGIC 0x0071293c
 // GLOBAL: SHANDALAR 0x00789904
@@ -1075,6 +1079,10 @@ GLOBAL_STATE_EXTERN int DAT_007aadf0;
 // GLOBAL: MAGIC 0x007abce0
 // GLOBAL: SHANDALAR 0x007bfee0
 GLOBAL_STATE_EXTERN int DAT_007abce0;
+
+// GLOBAL: MAGIC 0x007abce4
+// GLOBAL: SHANDALAR 0x007bfee4
+GLOBAL_STATE_EXTERN int DAT_007abce4;
 
 // GLOBAL: MAGIC 0x00938e38
 // GLOBAL: SHANDALAR 0x0094cf68

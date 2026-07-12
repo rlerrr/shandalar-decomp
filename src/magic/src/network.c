@@ -85,7 +85,7 @@ int FUN_0049e8bb(int player,
     memcpy(s.available_cards, available, count << 2);
   }
 
-  if (active_player == player && (unk_00926804 & 2) != 0)
+  if (active_player == player && (g_duel_network_flags & 2) != 0)
   {
     s.stop_selection = 1;
   }
@@ -127,7 +127,7 @@ int FUN_0049e8bb(int player,
     }
   }
 
-  if ((unk_00926804 & 2) != 0)
+  if ((g_duel_network_flags & 2) != 0)
   {
     if (active_player == player)
     {
@@ -392,27 +392,26 @@ void FUN_00500b2c(int expected_packet_number, int actual_packet_number)
 
 // FUNCTION: MAGIC 0x00500bb0
 // FUNCTION: SHANDALAR 0x0056c91f
-void FUN_00500bb0(int expected_packet_type, int actual_packet_type)
+int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packet_type)
 {
-  static const char *packet_names[] = {
-      "NULL", "COINTOSS", "ANTE", "HAND", "LIBRARY",
-      "PLAYORDRAW", "MULLIGAN", "DUELPARAMETERS", "GUESTRESPONSE", "STARTDUEL",
-      "DUELRESULTS", "SAVEDGAME", "PICKACARD", "NEWFULLCARD", "QUESTION",
-      "QUESTIONMANA", "GRABMANA", "XPOOL", "CHEATCARD", "PHASESTOPPER"};
+#ifdef MAGIC
   char message[100];
   char trace[500];
 
-  sprintf(trace, "Was expecting a %s packet but got a %s packet!\n", packet_names[expected_packet_type], packet_names[actual_packet_type]);
+  sprintf(trace, "Was expecting a %s packet but got a %s packet!\n", packet_names_0057cba8[expected_packet_type], packet_names_0057cba8[actual_packet_type]);
   append_to_trace_txt(trace);
   play_sound_effect(WAV_ENDPHASE);
-  sprintf(message, "Was expecting a %s packet but got a %s packet!", packet_names[expected_packet_type], packet_names[actual_packet_type]);
+  sprintf(message, "Was expecting a %s packet but got a %s packet!", packet_names_0057cba8[expected_packet_type], packet_names_0057cba8[actual_packet_type]);
   MessageBoxA((HWND)0, message, "Multiplayer duel error", 0x10);
+#else
+  return 0;
+#endif
 }
 
 // FUNCTION: MAGIC 0x00501b6e
 int FUN_00501b6e(void)
 {
-  add_card_to_hand(active_player, unk_007a7d0c);
+  add_card_to_hand(active_player, g_network_result_value);
   ++hand_count[active_player];
   return 1;
 }
@@ -508,7 +507,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
     s.packet_data = (unsigned char *)GlobalLock((HGLOBAL)s.packet_handle);
     if (s.packet_data[0] != packet_type && s.packet_data[0] != 0x12 && s.packet_data[0] != 0x11)
     {
-      FUN_00500bb0(packet_type, s.packet_data[0]);
+      ReportUnexpectedNetworkPacketType(packet_type, s.packet_data[0]);
       FUN_00500a40((char *)s.packet_data, s.packet_size);
       s.packet_data_as_short = (short *)(s.packet_data + 2);
       FUN_00500b2c(unk_007a7d6c, *s.packet_data_as_short);
@@ -609,15 +608,15 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
     case 0x18:
     case 0x19:
     case 0x1a:
-      memcpy(&unk_007a7d08, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_007a7d08 + 2) == unk_007a7d6c)
+      memcpy(&g_network_result_packet_type, s.packet_data, s.packet_size);
+      if (*(short *)((char *)&g_network_result_packet_type + 2) == unk_007a7d6c)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, unk_007a7d6c);
         append_to_trace_txt(s.message);
       }
       else
       {
-        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&unk_007a7d08 + 2));
+        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&g_network_result_packet_type + 2));
       }
       ++unk_007a7d6c;
       s.got_requested_packet = 1;
@@ -694,15 +693,15 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 0x12:
-      memcpy(&unk_007a7d08, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_007a7d08 + 2) == unk_007a7d6c)
+      memcpy(&g_network_result_packet_type, s.packet_data, s.packet_size);
+      if (*(short *)((char *)&g_network_result_packet_type + 2) == unk_007a7d6c)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, unk_007a7d6c);
         append_to_trace_txt(s.message);
       }
       else
       {
-        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&unk_007a7d08 + 2));
+        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&g_network_result_packet_type + 2));
       }
       ++unk_007a7d6c;
       FUN_00501b6e();

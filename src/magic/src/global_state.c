@@ -428,7 +428,7 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(global_library, 4000);
   result &= save_or_load_data(global_ante_cards, 0x80);
   result &= save_or_load_data(&DAT_0093a848, 4);
-  result &= save_or_load_data(&DAT_00926668, 4);
+  result &= save_or_load_data(&g_duel_extra_turn_player, 4);
   result &= save_or_load_data(&unk_00939340, 4);
   result &= save_or_load_data(&unk_00925bb8, 4);
   result &= save_or_load_data(DAT_008cfd70, 0x60);
@@ -635,7 +635,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(global_library, 4000);
   result &= save_or_load_data(global_ante_cards, 0x80);
   result &= save_or_load_data(&DAT_0093a848, 4);
-  result &= save_or_load_data(&DAT_00926668, 4);
+  result &= save_or_load_data(&g_duel_extra_turn_player, 4);
   result &= save_or_load_data(&unk_00939340, 4);
   result &= save_or_load_data(&unk_00925bb8, 4);
   result &= save_or_load_data(DAT_008cfd70, 0x60);

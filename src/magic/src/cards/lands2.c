@@ -52,7 +52,7 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (active_player == player && (unk_00926804 & 2) == 0)
+    if (active_player == player && (g_duel_network_flags & 2) == 0)
     {
       s.num_available = 0;
       s.num_lands = 0;
@@ -307,7 +307,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
         }
       }
 
-      if (player == active_player && (unk_00926804 & 2) == 0)
+      if (player == active_player && (g_duel_network_flags & 2) == 0)
       {
         color = first_available_color;
       }
@@ -332,7 +332,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       g_duel_special_land_card_ids[6] = color;
 
-      if (player == active_player && (unk_00926804 & 2) == 0)
+      if (player == active_player && (g_duel_network_flags & 2) == 0)
       {
         load_text("promptsX1.txt", "MULTI_LANDS");
         switch (color)

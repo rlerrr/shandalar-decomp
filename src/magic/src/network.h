@@ -17,10 +17,12 @@ NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 NETWORK_EXTERN int unk_007a7d6c;
 
 // GLOBAL: MAGIC 0x007a7d08
-NETWORK_EXTERN char unk_007a7d08;
+// GLOBAL: SHANDALAR 0x007bea98
+NETWORK_EXTERN char g_network_result_packet_type;
 
 // GLOBAL: MAGIC 0x007a7d0c
-NETWORK_EXTERN int unk_007a7d0c;
+// GLOBAL: SHANDALAR 0x007bea9c
+NETWORK_EXTERN int g_network_result_value;
 
 // GLOBAL: MAGIC 0x0092607c
 NETWORK_EXTERN int unk_0092607c;
@@ -85,6 +87,7 @@ int FUN_0049e8bb(int player,
 
 void FUN_00501d78(int player);
 void FUN_00501deb(int player);
+int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packet_type);
 int TENTATIVE_wait_for_network_result(int player, signed int packet_type);
 int TENTATIVE_send_network_result(int player, signed int packet_type);
 

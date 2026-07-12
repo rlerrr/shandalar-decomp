@@ -276,7 +276,7 @@ int FUN_004466b5(int who_chooses,
   EnterCriticalSection(&g_duel_render_lock);
   if (DAT_007abc74 != -1)
   {
-    if ((unk_00926804 & 2) == 0)
+    if ((g_duel_network_flags & 2) == 0)
     {
       DAT_007abc74 = -1;
     }
@@ -308,7 +308,7 @@ int FUN_004466b5(int who_chooses,
   request.allow_ai_player = allow_ai_player;
   request.allow_human_player = allow_human_player;
 
-  if (who_chooses == unk_008b35ec || (unk_00926804 & 2) == 0)
+  if (who_chooses == unk_008b35ec || (g_duel_network_flags & 2) == 0)
   {
     if (DAT_0093d840 != 0)
     {
@@ -336,7 +336,7 @@ int FUN_004466b5(int who_chooses,
       DAT_00715fa4 = 0;
     }
 
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
       packet = (target_selection_network_packet_t *)&unk_008cf200;
       packet->packet_type = 0xc;
@@ -404,7 +404,7 @@ int FUN_004466b5(int who_chooses,
     {
       if (unk_00716248 == -1)
       {
-        if ((unk_00926804 & 2) == 0)
+        if ((g_duel_network_flags & 2) == 0)
         {
           DAT_007abc74 = -1;
           DAT_007aa928 = -1;
@@ -421,7 +421,7 @@ int FUN_004466b5(int who_chooses,
         DAT_007abc74 = unk_00716248;
       }
     }
-    else if ((unk_00926804 & 2) == 0)
+    else if ((g_duel_network_flags & 2) == 0)
     {
       DAT_007abc74 = -1;
       DAT_007aa928 = -1;
@@ -495,7 +495,7 @@ int C_real_select_target(int who_chooses,
   char *selection_prompt;
   int selected_internal_card_id;
 
-  if (((who_chooses == 1 && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1) || g_duel_network_state != 0)
+  if (((who_chooses == 1 && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1) || g_duel_network_state != 0)
   {
     if ((DAT_00777854 & 1) != 0 && (allowed_controller & 2) != 0)
     {

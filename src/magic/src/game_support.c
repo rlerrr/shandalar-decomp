@@ -118,7 +118,7 @@ int put_card_on_stack(int player, int card, int mode)
 
   if (mode == 0)
   {
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
       s.trace_counter = DAT_00777aa0;
       ++DAT_00777aa0;
@@ -158,7 +158,7 @@ int put_card_on_stack(int player, int card, int mode)
 
     if (unk_0091bfb4 == 0)
     {
-      if ((player == unk_008b35ec || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1)
+      if ((player == unk_008b35ec || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
       {
         if ((s.card_data->type & 0x40) != 0)
         {
@@ -281,7 +281,7 @@ int put_card_on_stack(int player, int card, int mode)
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_INVISIBLE;
       unk_008b4278 |= 0x20;
 
-      if (player == unk_008b35ec || (unk_00926804 & 2) != 0 || g_duel_ai_mode_state != 1)
+      if (player == unk_008b35ec || (g_duel_network_flags & 2) != 0 || g_duel_ai_mode_state != 1)
       {
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK_BOTH;
       }
@@ -312,7 +312,7 @@ int put_card_on_stack(int player, int card, int mode)
 
         if (spell_fizzled != 1)
         {
-          if (player == active_player && (unk_00926804 & 2) == 0 && g_duel_ai_mode_state == 1 && *(char *)((char *)s.card_data + 0x2c) == -1)
+          if (player == active_player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state == 1 && *(char *)((char *)s.card_data + 0x2c) == -1)
           {
             ai_modifier -= FUN_004427d9(player) * 12;
           }
@@ -440,7 +440,7 @@ int put_card_on_stack(int player, int card, int mode)
     *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state &= 0xffffff5d;
     *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state &= 0xfffcffff;
 
-    if (player == active_player && (unk_00926804 & 2) == 0)
+    if (player == active_player && (g_duel_network_flags & 2) == 0)
     {
       DAT_0093d850 = 1;
     }
@@ -593,7 +593,7 @@ int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATI
 
   do
   {
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
       DAT_00789714 = 1;
     }
@@ -711,7 +711,8 @@ void FUN_00446da7(unsigned int internal_card_id, int player, int card, int unk1,
 }
 
 // FUNCTION: MAGIC 0x0046489e
-int FUN_0046489e(int card_id)
+// FUNCTION: SHANDALAR 0x0052234e
+int DrawRandomCardFromInitialLibrary(int library_index)
 {
   struct
   {
@@ -722,7 +723,7 @@ int FUN_0046489e(int card_id)
     int i;            // ebp-0x4
   } s;
 
-  if (card_id == -1)
+  if (library_index == -1)
   {
     return -1;
   }
@@ -730,7 +731,7 @@ int FUN_0046489e(int card_id)
   s.total_cards = 0;
   for (s.i = 0; s.i < 200; ++s.i)
   {
-    s.total_cards += initial_library[card_id][s.i].numcards;
+    s.total_cards += initial_library[library_index][s.i].numcards;
   }
 
   if (s.total_cards == 0)
@@ -743,13 +744,13 @@ int FUN_0046489e(int card_id)
 
   for (s.i = 0; s.i < 200; ++s.i)
   {
-    s.running_pick -= initial_library[card_id][s.i].numcards;
+    s.running_pick -= initial_library[library_index][s.i].numcards;
     if (s.running_pick < 0)
     {
-      s.chosen_csvid = initial_library[card_id][s.i].csvid;
+      s.chosen_csvid = initial_library[library_index][s.i].csvid;
       if (g_duel_ai_mode_state != 1)
       {
-        --initial_library[card_id][s.i].numcards;
+        --initial_library[library_index][s.i].numcards;
       }
       break;
     }
@@ -1137,10 +1138,10 @@ int FUN_004b41f2(int player,
 
   result = -1;
 
-  if (active_player == player && (unk_00926804 & 2) != 0)
+  if (active_player == player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    result = unk_007a7d0c;
+    result = g_network_result_value;
   }
 
   if (unk_008b35ec == player && g_duel_ai_mode_state != 1)
@@ -1151,10 +1152,10 @@ int FUN_004b41f2(int player,
                                (void *)prompt,
                                (unsigned int)allow_cancel,
                                (char *)title);
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
-      unk_007a7d08 = 0x19;
-      unk_007a7d0c = result;
+      g_network_result_packet_type = 0x19;
+      g_network_result_value = result;
       TENTATIVE_send_network_result(player, 0x19);
     }
   }
@@ -1565,7 +1566,7 @@ void FUN_004b59b2(int player, int deck_owner)
     FUN_0044837e(deck_owner);
   }
 
-  if ((unk_00926804 & 2) == 0 || unk_008b35ec == player)
+  if ((g_duel_network_flags & 2) == 0 || unk_008b35ec == player)
   {
     s.deck_size = 500;
     for (s.current_slot = 0; s.current_slot < 500; ++s.current_slot)
@@ -1593,7 +1594,7 @@ void FUN_004b59b2(int player, int deck_owner)
       global_library[deck_owner][s.current_slot] = -1;
     }
 
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
       FUN_004b5b7a(deck_owner);
     }
@@ -1687,12 +1688,12 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
     int local_8;
   } s;
 
-  if (((active_player == player) && ((unk_00926804 & 2) != 0)) && unk_00742fc4 != 0)
+  if (((active_player == player) && ((g_duel_network_flags & 2) != 0)) && unk_00742fc4 != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    s.result = unk_007a7d0c;
+    s.result = g_network_result_value;
   }
-  else if (((active_player == player) && ((unk_00926804 & 2) == 0)) || g_duel_ai_mode_state == 1)
+  else if (((active_player == player) && ((g_duel_network_flags & 2) == 0)) || g_duel_ai_mode_state == 1)
   {
     s.valid_count = 0;
     for (s.local_8 = 0; s.local_8 < count; ++s.local_8)
@@ -1775,10 +1776,10 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
   else
   {
     s.result = FUN_004a61fe(cards, count, context, suppress_done_txt, prompt);
-    if ((unk_008b35ec == player) && ((unk_00926804 & 2) != 0))
+    if ((unk_008b35ec == player) && ((g_duel_network_flags & 2) != 0))
     {
-      unk_007a7d08 = 0x19;
-      unk_007a7d0c = s.result;
+      g_network_result_packet_type = 0x19;
+      g_network_result_value = s.result;
       TENTATIVE_send_network_result(player, 0x19);
     }
   }
@@ -1929,6 +1930,7 @@ int damage_creature(int target_player, int target_card, int amount, int source_p
 }
 
 // FUNCTION: MAGIC 0x004b4654
+// FUNCTION: SHANDALAR 0x0056ae5d
 int add_card_to_hand(int player, int internal_card_id)
 {
   int card;
@@ -2260,7 +2262,7 @@ int FUN_0043e18b(int player)
     }
     else
     {
-      s.drawn_card = add_card_to_hand(player, FUN_0046489e(g_selected_wizard_color));
+      s.drawn_card = add_card_to_hand(player, DrawRandomCardFromInitialLibrary(g_selected_wizard_color));
     }
 
     if (s.drawn_card != -1 && PLAYER_CARD_INSTANCE(player, s.drawn_card).internal_card_id != -1)
@@ -2429,7 +2431,7 @@ int FUN_004b0047(int player, int card)
     }
     else
     {
-      s.trigger_result = FUN_004c0a36(FUN_004b082f(player, card, EVENT_TRIGGER, player), 0, 2);
+      s.trigger_result = ClampIntToRange(FUN_004b082f(player, card, EVENT_TRIGGER, player), 0, 2);
     }
 
     if (s.trigger_result != 0)
@@ -2996,14 +2998,14 @@ int choose_a_color(int player, const char *prompt, int use_color_names_instead_o
     return ai_choice;
   }
 
-  if (active_player == player && (unk_00926804 & 2) != 0)
+  if (active_player == player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0xf);
     return DAT_008b293c;
   }
 
   chosen_color = choose_a_color_dialog(player, prompt, use_color_names_instead_of_land, ai_choice, available_colors);
-  if (player == unk_008b35ec && (unk_00926804 & 2) != 0)
+  if (player == unk_008b35ec && (g_duel_network_flags & 2) != 0)
   {
     unk_008b2938 = '\x0f';
     DAT_008b293c = chosen_color;
@@ -3050,14 +3052,14 @@ int FUN_00464a84(int player, int maximum)
   {
     if (maximum > 1)
     {
-      unk_007a7d0c = rand() % maximum;
+      g_network_result_value = rand() % maximum;
     }
     else
     {
-      unk_007a7d0c = 0;
+      g_network_result_value = 0;
     }
 
-    unk_007a7d08 = 0x18;
+    g_network_result_packet_type = 0x18;
     TENTATIVE_send_network_result(player, 0x18);
   }
   else
@@ -3065,7 +3067,7 @@ int FUN_00464a84(int player, int maximum)
     TENTATIVE_wait_for_network_result(player, 0x18);
   }
 
-  return unk_007a7d0c;
+  return g_network_result_value;
 }
 
 // FUNCTION: MAGIC 0x004e4f11
@@ -3580,10 +3582,10 @@ void discard(int player, int flags, int player_who_controls_effect)
   if (hand_count[player] <= 0)
     return;
 
-  if ((active_player == player && (unk_00926804 & 2) == 0 && (hand_count[player] + unk_007161d8) <= 0))
+  if ((active_player == player && (g_duel_network_flags & 2) == 0 && (hand_count[player] + unk_007161d8) <= 0))
     return;
 
-  if (((unk_008b35ec == player || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1) && flags == 0)
+  if (((unk_008b35ec == player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1) && flags == 0)
   {
     load_text(global_ui_strings_filename, "PROMPT_DISCARDACARD");
     C_real_select_target(player,
@@ -3611,10 +3613,10 @@ void discard(int player, int flags, int player_who_controls_effect)
   else
   {
     s.found = 0;
-    if ((unk_00926804 & 2) != 0 && active_player == player)
+    if ((g_duel_network_flags & 2) != 0 && active_player == player)
     {
       TENTATIVE_wait_for_network_result(player, 0x14);
-      s.selected_card = unk_007a7d0c;
+      s.selected_card = g_network_result_value;
       if (s.selected_card == -1)
         s.found = 0;
       else
@@ -3644,14 +3646,14 @@ void discard(int player, int flags, int player_who_controls_effect)
         }
       }
 
-      if ((unk_00926804 & 2) != 0 && unk_008b35ec == player)
+      if ((g_duel_network_flags & 2) != 0 && unk_008b35ec == player)
       {
         if (s.found == 0)
         {
           s.selected_card = -1;
         }
-        unk_007a7d0c = s.selected_card;
-        unk_007a7d08 = 0x14;
+        g_network_result_value = s.selected_card;
+        g_network_result_packet_type = 0x14;
         TENTATIVE_send_network_result(player, 0x14);
       }
     }
@@ -3659,7 +3661,7 @@ void discard(int player, int flags, int player_who_controls_effect)
 
   if ((unk_007a79b0[player] & 2) == 0 || player_who_controls_effect != 0)
   {
-    if (active_player == player && (unk_00926804 & 2) == 0 && g_duel_ai_mode_state != 1)
+    if (active_player == player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state != 1)
     {
       if (flags)
       {
@@ -3722,15 +3724,16 @@ int select_target(int player, int card, target_definition_t *td, const char *pro
 }
 
 // FUNCTION: MAGIC 0x004c0a36
-int FUN_004c0a36(int a1, int a2, int a3)
+// FUNCTION: SHANDALAR 0x004ecec6
+int ClampIntToRange(int a1, int a2, int a3)
 {
   if (a1 < a2)
   {
-    return a2;
+    a1 = a2;
   }
-  if (a1 > a3)
+  if (a3 < a1)
   {
-    return a3;
+    a1 = a3;
   }
   return a1;
 }
@@ -3820,7 +3823,7 @@ int charge_mana(int player, color_t color, int amount)
     s.max_colorless -= has_mana(player, COLOR_ANY, 1);
 
     s.include_auto_payment = 1;
-    if (unk_00715fb0 == 0 && ((player != active_player || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1 && g_duel_network_state == 0))
+    if (unk_00715fb0 == 0 && ((player != active_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1 && g_duel_network_state == 0))
     {
       s.allow_interrupt_speed_mana_sources = 0;
       s.allow_mana_sources = 0;
@@ -3832,7 +3835,7 @@ int charge_mana(int player, color_t color, int amount)
       s.allow_special_x_payment = 1;
       s.allow_generic_payment = 1;
       s.allow_mana_sources = 1;
-      if ((player == active_player && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
+      if ((player == active_player && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
       {
         s.allow_interrupt_speed_mana_sources = 1;
       }
@@ -3844,7 +3847,7 @@ int charge_mana(int player, color_t color, int amount)
 
     s.temp = 1;
 
-    if (player == active_player && (unk_00926804 & 2) == 0)
+    if (player == active_player && (g_duel_network_flags & 2) == 0)
     {
       s.max_variable_mana = max_x_value;
       for (s.i = COLOR_COLORLESS; s.i < 7; ++s.i)
@@ -4760,14 +4763,14 @@ int FUN_00434af9(int player,
     }
   }
 
-  if (player == active_player && (unk_00926804 & 2) != 0)
+  if (player == active_player && (g_duel_network_flags & 2) != 0)
   {
     result = 0;
     while (result != -1)
     {
       TENTATIVE_wait_for_network_result(player, 0x10);
-      result = unk_007a7d0c;
-      if (unk_007a7d0c != -1 && FUN_00435881(player, unk_007a7d0c) != 0)
+      result = g_network_result_value;
+      if (g_network_result_value != -1 && FUN_00435881(player, g_network_result_value) != 0)
       {
         s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
         s.current_card = has_mana(player, COLOR_ANY, 1);
@@ -4820,10 +4823,10 @@ int FUN_00434af9(int player,
           }
           if (s.can_activate)
           {
-            if ((unk_00926804 & 2) != 0)
+            if ((g_duel_network_flags & 2) != 0)
             {
-              unk_007a7d08 = 0x10;
-              unk_007a7d0c = s.current_card;
+              g_network_result_packet_type = 0x10;
+              g_network_result_value = s.current_card;
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
@@ -4878,10 +4881,10 @@ int FUN_00434af9(int player,
           }
           if (s.can_activate)
           {
-            if ((unk_00926804 & 2) != 0)
+            if ((g_duel_network_flags & 2) != 0)
             {
-              unk_007a7d08 = 0x10;
-              unk_007a7d0c = s.current_card;
+              g_network_result_packet_type = 0x10;
+              g_network_result_value = s.current_card;
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
@@ -4942,10 +4945,10 @@ int FUN_00434af9(int player,
           }
           if (s.any_variable_costs)
           {
-            if ((unk_00926804 & 2) != 0)
+            if ((g_duel_network_flags & 2) != 0)
             {
-              unk_007a7d08 = 0x10;
-              unk_007a7d0c = s.current_card;
+              g_network_result_packet_type = 0x10;
+              g_network_result_value = s.current_card;
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
@@ -4963,10 +4966,10 @@ int FUN_00434af9(int player,
       }
     }
 
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
-      unk_007a7d08 = 0x10;
-      unk_007a7d0c = -1;
+      g_network_result_packet_type = 0x10;
+      g_network_result_value = -1;
       TENTATIVE_send_network_result(player, 0x10);
     }
     copy_mana_pool_to_display();
@@ -5012,7 +5015,7 @@ int FUN_004e9c50(int player,
     player_to_check = arg_2;
   }
 
-  if ((active_player == player && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
+  if ((active_player == player && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
   {
     s.num_candidates = 0;
 
@@ -5975,7 +5978,7 @@ int FUN_0044125c(int player, int card)
       affected_card_controller = saved_affected_card_controller;
       affected_card = saved_affected_card;
 
-      if ((player == active_player) && ((unk_00926804 & 2) == 0))
+      if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
       {
         push_affected_card_stack();
         event_result = 0;
@@ -6062,19 +6065,19 @@ int FUN_004b413c(int player,
 
   selected = -1;
 
-  if (player == active_player && (unk_00926804 & 2) != 0)
+  if (player == active_player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    selected = unk_007a7d0c;
+    selected = g_network_result_value;
   }
 
   if (player == unk_008b35ec && g_duel_ai_mode_state != 1)
   {
     selected = (int)FUN_004a6245(internal_card_ids, damage_amounts, count, title, allow_cancel, prompt);
-    if ((unk_00926804 & 2) != 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
-      unk_007a7d0c = selected;
-      unk_007a7d08 = 0x19;
+      g_network_result_value = selected;
+      g_network_result_packet_type = 0x19;
       TENTATIVE_send_network_result(player, 0x19);
     }
   }
@@ -6384,7 +6387,7 @@ void FUN_004480a6(char *text)
     msg = DAT_0056e494;
   }
 
-  set_duel_prompt_context(DAT_0093a7b0, msg, 0);
+  set_duel_prompt_context(g_duel_prompt_context_hwnd, msg, 0);
 }
 
 // FUNCTION: MAGIC 0x004a61d6
@@ -6578,7 +6581,7 @@ int real_target_available(int *num_valid_targets,
     }
   }
 
-  if (unk_008b35ec == who_chooses || (unk_00926804 & 2) != 0)
+  if (unk_008b35ec == who_chooses || (g_duel_network_flags & 2) != 0)
   {
     if ((allowed_controller & 2) == 0)
     {
@@ -6762,12 +6765,12 @@ unsigned int C_real_validate_target(int tgt_player,
   {
     if (zone == 0 || (zone & TARGET_ZONE_PLAYERS) != 0)
     {
-      if ((((unk_008b35ec == who_chooses) || ((unk_00926804 & 2) != 0)) && ((allowed_controller & ANYBODY) != 0)) || (who_chooses == AI && ((preferred_controller & ANYBODY) != 0)))
+      if ((((unk_008b35ec == who_chooses) || ((g_duel_network_flags & 2) != 0)) && ((allowed_controller & ANYBODY) != 0)) || (who_chooses == AI && ((preferred_controller & ANYBODY) != 0)))
       {
         s.tmp_d8 = AI;
         s.tmp_dc = 1;
       }
-      else if ((((unk_008b35ec == who_chooses) || ((unk_00926804 & 2) != 0)) && ((allowed_controller & HUMAN) != 0)) || (who_chooses == AI && ((preferred_controller & HUMAN) != 0)))
+      else if ((((unk_008b35ec == who_chooses) || ((g_duel_network_flags & 2) != 0)) && ((allowed_controller & HUMAN) != 0)) || (who_chooses == AI && ((preferred_controller & HUMAN) != 0)))
       {
         s.tmp_d8 = HUMAN;
         s.tmp_dc = 1;
@@ -6787,7 +6790,7 @@ unsigned int C_real_validate_target(int tgt_player,
   }
   else
   {
-    if ((unk_008b35ec == who_chooses) || ((unk_00926804 & 2) != 0))
+    if ((unk_008b35ec == who_chooses) || ((g_duel_network_flags & 2) != 0))
     {
       if ((allowed_controller & TARGET_PLAYER_OWNER) == 0)
       {
@@ -7773,8 +7776,8 @@ int copy_mana_pool_to_display(void)
   if (g_duel_ai_mode_state != 1)
   {
     EnterCriticalSection(&g_duel_render_lock);
-    memcpy(unk_00896670, raw_mana_available[0], 0x1c);
-    memcpy(unk_007ab290, raw_mana_available[1], 0x1c);
+    memcpy(g_duel_cached_raw_mana_player_0, raw_mana_available[0], 0x1c);
+    memcpy(g_duel_cached_raw_mana_player_1, raw_mana_available[1], 0x1c);
     LeaveCriticalSection(&g_duel_render_lock);
     SendMessageA(unk_008ce534, 0x432, 0, 0);
     SendMessageA(unk_00939344, 0x432, 0, 0);
@@ -7858,7 +7861,7 @@ void FUN_004afa4b(int player)
   s.did_setup = 0;
   while (1)
   {
-    if (((unk_00926804 & 2) == 0) && g_duel_ai_mode_state != 1 && DAT_0072c8e4 == 0)
+    if (((g_duel_network_flags & 2) == 0) && g_duel_ai_mode_state != 1 && DAT_0072c8e4 == 0)
     {
       FUN_00441cf2(9, 0xf);
       s.best_score = -99999;
@@ -7996,7 +7999,7 @@ void FUN_004aff25(void)
 // FUNCTION: MAGIC 0x0044aa01
 int FUN_0044aa01(int player)
 {
-  if ((unk_00926804 & 2) != 0)
+  if ((g_duel_network_flags & 2) != 0)
   {
     if (unk_00716248 == -1)
     {
@@ -8524,7 +8527,7 @@ int FUN_00551921(int player)
     int card_value;
   } s;
 
-  if ((player == unk_008b35ec || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1)
+  if ((player == unk_008b35ec || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
   {
     if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
@@ -8652,7 +8655,7 @@ int choose_a_number(int player, char *prompt, int maxnum)
     return maxnum;
   }
 
-  if (player == active_player && (unk_00926804 & 2) != 0)
+  if (player == active_player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0xe);
     maxnum = DAT_008b293c;
@@ -8660,7 +8663,7 @@ int choose_a_number(int player, char *prompt, int maxnum)
 
   chosen = FUN_004a09c6(player, prompt, maxnum);
 
-  if (player == unk_008b35ec && (unk_00926804 & 2) != 0)
+  if (player == unk_008b35ec && (g_duel_network_flags & 2) != 0)
   {
     unk_008b2938 = 0xe;
     DAT_008b293c = chosen;
@@ -8703,6 +8706,7 @@ void FUN_004b6002(const char *param_1)
 }
 
 // FUNCTION: MAGIC 0x004a6968
+// FUNCTION: SHANDALAR 0x00558aea
 void TENTATIVE_reassess_all_cards(void)
 {
   struct

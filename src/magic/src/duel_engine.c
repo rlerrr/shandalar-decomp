@@ -10,11 +10,12 @@
 #include "magic/src/global_duel_ui_ids.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
+#include "magic/src/global_other.h"
 #include "magic/src/shared_startup.h"
 #include "duel_engine.h"
 
 #ifndef SHANDALAR
-#include "magic/src/global_other.h"
+#include "manalinkinterface/manalinkinterface.h"
 extern HWND global_main_hwnd;
 #else
 #include "shandalar/src/shandalar_global_strings.h"
@@ -22,6 +23,8 @@ extern HINSTANCE g_app_instance;
 extern int global_screen_width;
 extern int global_screen_height;
 #endif
+
+extern int g_duel_modal_action_active;
 
 #define CLASS_MAGICGAME_MAIN "MAGICGAME_MainClass"
 #define CLASS_MAGICGAME_LIFE "MAGICGAME_LifeClass"
@@ -54,15 +57,15 @@ extern int global_screen_height;
 #define CLASS_SPELL_MINIMIZED "SpellMinimized"
 
 #define SET_DUEL_WNDCLASS(wndclass_, style_, wndproc_, extra_, icon_, background_, class_name_) \
-  (wndclass_).style = (style_);                                                               \
-  (wndclass_).lpfnWndProc = (wndproc_);                                                       \
-  (wndclass_).cbClsExtra = 0;                                                                 \
-  (wndclass_).cbWndExtra = (extra_);                                                          \
-  (wndclass_).hInstance = g_app_instance;                                                     \
-  (wndclass_).hIcon = (icon_);                                                                \
-  (wndclass_).hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);                            \
-  (wndclass_).hbrBackground = (background_);                                                  \
-  (wndclass_).lpszMenuName = (LPCSTR)0;                                                       \
+  (wndclass_).style = (style_);                                                                 \
+  (wndclass_).lpfnWndProc = (wndproc_);                                                         \
+  (wndclass_).cbClsExtra = 0;                                                                   \
+  (wndclass_).cbWndExtra = (extra_);                                                            \
+  (wndclass_).hInstance = g_app_instance;                                                       \
+  (wndclass_).hIcon = (icon_);                                                                  \
+  (wndclass_).hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);                              \
+  (wndclass_).hbrBackground = (background_);                                                    \
+  (wndclass_).lpszMenuName = (LPCSTR)0;                                                         \
   (wndclass_).lpszClassName = (class_name_)
 
 int register_window_classes(void);
@@ -111,20 +114,111 @@ void finish_duel_video_mode_transition(void)
 {
 }
 
+// FUNCTION: MAGIC 0x00421f0a
+// FUNCTION: SHANDALAR 0x00430650
+int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
+{
+  (void)message;
+  (void)timer_elapsed;
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x00422350
+// FUNCTION: SHANDALAR 0x00430a96
+int dispatch_duel_window_message(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  (void)hwnd;
+  (void)wparam;
+  (void)lparam;
+  switch (msg)
+  {
+  default:
+    return 0;
+  }
+}
+
+// FUNCTION: MAGIC 0x004b1e33
+// FUNCTION: SHANDALAR 0x004cc6c0
+int handle_duel_tooltip_message(MSG *message)
+{
+  (void)message;
+  return 0;
+}
+
 // FUNCTION: MAGIC 0x00421ca2
 // FUNCTION: SHANDALAR 0x00430442
-int dispatch_duel_engine_message(MSG *message)
+void dispatch_duel_engine_message(MSG *message)
 {
-  int translated;
+  WPARAM prompt_result;
+  int prompt_flags;
 
-  translated = TranslateAcceleratorA(g_duel_window_hwnd, g_duel_accelerators, message);
-  if (translated == 0)
+#ifndef SHANDALAR
+  if ((g_duel_network_flags & 2) != 0 &&
+      ((message->message == WM_KEYDOWN && (message->wParam == 'u' || message->wParam == VK_INSERT)) ||
+       (message->message == WM_CHAR && message->wParam == '\'')))
   {
-    TranslateMessage(message);
-    DispatchMessageA(message);
+    FamInterface_Taunt();
   }
+#endif
 
-  return translated;
+  if (TranslateAcceleratorA(g_duel_window_hwnd, g_duel_accelerators, message) == 0)
+  {
+    if (handle_duel_hover_help_message(message, 0x4b) != 0)
+    {
+    }
+    else
+    {
+      if (g_duel_modal_action_active != 0 &&
+          IsWindowVisible(g_duel_prompt_context_hwnd) != 0 &&
+          SendMessageA(g_duel_prompt_context_hwnd, 0x402, 0, 0) != 0 &&
+          message->message == WM_CHAR &&
+          (message->wParam == VK_SPACE || message->wParam == VK_RETURN || message->wParam == VK_ESCAPE))
+      {
+        prompt_flags = SendMessageA(g_duel_prompt_context_hwnd, 0x402, 0, 0);
+        prompt_result = (WPARAM)-1000;
+        if ((prompt_flags & 2) != 0 && (prompt_flags & 1) != 0)
+        {
+          if (message->wParam == VK_RETURN)
+          {
+            prompt_result = g_tell_user_default_button_state;
+          }
+          else if (message->wParam == VK_ESCAPE)
+          {
+            prompt_result = g_tell_user_button_state;
+          }
+        }
+        else
+        {
+          if (message->wParam == VK_RETURN || message->wParam == VK_SPACE)
+          {
+            prompt_result = 0;
+          }
+          else if (message->wParam == VK_ESCAPE && (prompt_flags & 1) != 0)
+          {
+            prompt_result = g_tell_user_button_state;
+          }
+        }
+
+        if (prompt_result != (WPARAM)-1000)
+        {
+          SendMessageA(g_duel_prompt_context_hwnd, 0x401, prompt_result, 0);
+        }
+      }
+      else if (handle_duel_tooltip_message(message) == 0)
+      {
+        dispatch_duel_window_message(message->hwnd, message->message, message->wParam, message->lParam);
+        if ((message->message == WM_LBUTTONDOWN || message->message == WM_RBUTTONDOWN) &&
+            g_duel_modal_action_active == 0)
+        {
+        }
+        else
+        {
+          TranslateMessage(message);
+          DispatchMessageA(message);
+        }
+      }
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x0050d20f
@@ -290,7 +384,7 @@ DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type)
 
   g_duel_mode_flags = 1;
   g_duel_network_state = 0;
-  g_duel_special_land_card_ids[7] = -1;
+  g_duel_extra_turn_player = -1;
   g_duel_ai_mode_state = 0;
   g_duel_use_previous_backdrop_colors = 0;
   InitializeDuelUiGlobalIds();
@@ -644,10 +738,7 @@ int register_MAGIC_TellUserClass(LPCSTR class_name)
   ATOM atom;
   WNDCLASSA wndclass;
 
-  gs_phasebar_opponent_cleanup_007aae40[100] = '\x02';
-  gs_phasebar_opponent_cleanup_007aae40[101] = '\0';
-  gs_phasebar_opponent_cleanup_007aae40[102] = '\0';
-  gs_phasebar_opponent_cleanup_007aae40[103] = '\0';
+  g_tell_user_default_button_state = 2;
   g_tell_user_button_state = 1;
   SET_DUEL_WNDCLASS(wndclass, 1, wndproc_MAGIC_TellUserClass, 4,
                     LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)GetStockObject(2), class_name);

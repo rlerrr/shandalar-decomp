@@ -526,7 +526,7 @@ int card_dragon_whelp(int player, int card, event_t event)
       x_value = 0;
       if (player == human_player)
       {
-        if ((((player == active_player) && ((unk_00926804 & 2) == 0)) || ((PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff0000) == 0x30000)) || unk_00715fb0 != 1)
+        if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) || ((PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff0000) == 0x30000)) || unk_00715fb0 != 1)
         {
           max_x_value = -1;
         }
@@ -606,7 +606,7 @@ int card_dragon_whelp(int player, int card, event_t event)
   else if (event == EVENT_POW_BOOST)
   {
     result = has_mana(player, COLOR_RED, 1);
-    result = FUN_004c0a36(result, 0, 3);
+    result = ClampIntToRange(result, 0, 3);
     result -= PLAYER_CARD_INSTANCE(player, card).info_slot;
   }
   else
@@ -684,7 +684,7 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        if ((active_player == player) && ((unk_00926804 & 2) == 0))
+        if ((active_player == player) && ((g_duel_network_flags & 2) == 0))
         {
           PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
         }
@@ -2123,7 +2123,7 @@ int card_verduran_enchantress(int player, int card, event_t event)
   {
     if (event == EVENT_TRIGGER)
     {
-      if ((unk_008b35ec == player) || ((unk_00926804 & 2) != 0))
+      if ((unk_008b35ec == player) || ((g_duel_network_flags & 2) != 0))
       {
         event_result |= RESOLVE_TRIGGER_OPTIONAL;
       }
@@ -2371,7 +2371,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
   } s;
 
   s.unused = 0;
-  if (unk_008b35ec == player || (unk_00926804 & 2) != 0)
+  if (unk_008b35ec == player || (g_duel_network_flags & 2) != 0)
   {
     if (g_duel_ai_mode_state != 1)
     {
@@ -2971,7 +2971,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
   else if ((event == EVENT_ACTIVATE) && ((instance->state & STATE_TAPPED) == 0))
   {
     available_colors = (unsigned int)(unsigned char)instance->damage_source_card;
-    if ((((player == active_player) && ((unk_00926804 & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
+    if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
       choice_hint = -1;
       current_color = 1;
@@ -3017,7 +3017,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
         undeclare_mana_available_hex(player, (unsigned char)instance->damage_source_card, 1);
         instance->state |= STATE_TAPPED;
         produced_mana_color = color;
-        if (((player == active_player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
+        if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
         {
           load_text("prompts.txt", "BIRDS_OF_PARADISE2");
           if (color == COLOR_BLACK)

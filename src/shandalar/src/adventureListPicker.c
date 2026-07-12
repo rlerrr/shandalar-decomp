@@ -8,6 +8,7 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/game_support.h"
+#include "magic/src/network.h"
 #include "shandalar_global_strings.h"
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
@@ -19,7 +20,7 @@ extern int g_mouse_y_snapshot;
 extern int g_mouse_button_mask_snapshot;
 extern char g_ui_message_buffer[0x1000];
 extern HDC global_main_hdc;
-extern HPALETTE g_palette_handle;
+extern HPALETTE g_realized_palette_handle;
 extern RpBitsPalettePacket g_palette_data_words;
 
 extern FacemakerWindowBounds *PTR_DAT_005832b4;
@@ -47,6 +48,7 @@ void DestroyCachedCardArt(void);
 
 void DrawCenteredTextLineWithShadow(char *text, int center_x, int y, int color_index);
 void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
+void DrawScaledTextNoShadow(char *text, int x, int y, int color_index);
 
 void UpdateMouseSnapshot(void);
 int HasQueuedKeyInput(void);
@@ -77,46 +79,53 @@ INT_PTR __cdecl FUN_0055837e(int *param_1, int param_2, void *param_3, int param
 }
 
 // FUNCTION: SHANDALAR 0x0056a515
-int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int param_5, int *param_6)
+int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection)
 {
   struct
   {
-    int card_indices[500];
-    int card_draw_x[500];
-    int card_draw_y[500];
-    EncodedImage *buy_button_sprites[13];
-
-    int visible_count;
-    int row_count;
-    int y_step;
-    int x;
-    int y;
-    int selected_index;
-    int hover_index;
-    int has_input;
-    int key_code;
+    char *saved_accept_keys;
     int accept_key;
+    int key_code;
     char *accept_keys;
+    int sprite_copy_index;
+    EncodedImage *sprite_load_buffer[13];
+    EncodedImage *unused_sprite_row_3[3];
+    EncodedImage *unused_sprite_row_2[3];
+    EncodedImage *unused_sprite_2;
+    EncodedImage *unused_sprite_row_1[3];
+    EncodedImage *buy_button_sprite;
+    int hover_index;
+    EncodedImage *unused_sprite_1;
+    int has_input;
+    int y_step;
+    int selected_index;
+    int row_count;
+    int card_draw_y[500];
+    int card_draw_x[500];
+    int y;
+    int x;
+    int visible_count;
+    int card_indices[500];
     int i;
-    int j;
   } s;
   int result;
 
-  if ((param_1 == active_player) &&
-      ((gs_window_title_opponent_attack_009267a0[100] & 2) != 0) &&
+  if ((player == active_player) &&
+      ((g_duel_network_flags & 2) != 0) &&
       (unk_00742fc4 != 0))
   {
-    TENTATIVE_wait_for_network_result(param_1, 0x19);
-    return *(int *)&gs_phasebar_your_upkeep_007a7c20[0xec];
+    ReportUnexpectedNetworkPacketType(player, 0x19);
+    return g_network_result_value;
   }
-  else if (((param_1 == active_player) &&
-            ((gs_window_title_opponent_attack_009267a0[100] & 2) == 0)) ||
-           (g_duel_ai_mode_state == 1))
+
+  if (((player == active_player) &&
+       ((g_duel_network_flags & 2) == 0)) ||
+      (g_duel_ai_mode_state == 1))
   {
     s.visible_count = 0;
-    for (s.i = 0; s.i < param_3; s.i = s.i + 1)
+    for (s.i = 0; card_count > s.i; s.i = s.i + 1)
     {
-      if (param_2[s.i] != -1)
+      if (card_ids[s.i] != -1)
       {
         s.card_indices[s.visible_count] = s.i;
         s.visible_count = s.visible_count + 1;
@@ -124,7 +133,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
     }
 
     unk_00939340 = RandomIntLessThan(s.visible_count);
-    if (param_1 != unk_008b35ec)
+    if (player != unk_008b35ec)
     {
       if (g_duel_ai_mode_state == 1)
       {
@@ -138,21 +147,23 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
 
     return s.card_indices[unk_00939340];
   }
-  else if (unk_00742fc4 == 0)
+
+  if (unk_00742fc4 == 0)
   {
     ReadPalette("todpal.tr", (char *)0);
     ClearGraphicsPageWithPaletteColor(0, 0);
-    SelectPalette(global_main_hdc, g_palette_handle, FALSE);
+    SelectPalette(global_main_hdc, g_realized_palette_handle, FALSE);
 
     LoadPcxIntoPageNoPalette("advfac64.pic");
     LoadPcxResource(1, 0, 0, "seedeck.pic", &g_palette_data_words);
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
 
+    s.x = 0;
     s.row_count = 0;
-    for (s.i = 0; s.i < param_3; s.i = s.i + 1)
+    for (s.i = 0; card_count > s.i; s.i = s.i + 1)
     {
-      if ((param_2[s.i] != -1) &&
-          ((s.i == 0) || (param_2[s.i - 1] != param_2[s.i])))
+      if ((card_ids[s.i] != -1) &&
+          ((s.i == 0) || (card_ids[s.i - 1] != card_ids[s.i])))
       {
         s.row_count = s.row_count + 1;
       }
@@ -166,12 +177,12 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
     s.y_step = 0x54 / s.visible_count;
 
     s.x = 0x60;
-    s.y = 0x10;
     s.visible_count = 0;
-    for (s.i = 0; s.i < param_3; s.i = s.i + 1)
+    s.y = 0x10;
+    for (s.i = 0; card_count > s.i; s.i = s.i + 1)
     {
-      if ((param_2[s.i] != -1) &&
-          ((s.i == 0) || (param_2[s.i - 1] != param_2[s.i])))
+      if ((card_ids[s.i] != -1) &&
+          ((s.i == 0) || (card_ids[s.i - 1] != card_ids[s.i])))
       {
         s.card_draw_x[s.visible_count] = s.x + 4;
         s.card_draw_y[s.visible_count] = s.y;
@@ -179,7 +190,7 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
         s.visible_count = s.visible_count + 1;
 
         s.x = s.x + 0x38;
-        if (0x13f < s.x)
+        if (s.x >= 0x140)
         {
           s.x = 0x60;
           s.y = s.y + s.y_step;
@@ -187,70 +198,87 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
       }
     }
 
-    DrawCenteredTextLineWithShadow(param_4, 0xa0, 2, 0xff);
+    DrawCenteredTextLineWithShadow(title, 0xa0, 2, 0xff);
     s.hover_index = -1;
+    s.has_input = 0;
 
-    ReadSpriteEntryPointers(&s.buy_button_sprites[0], "BuyButtons.spr");
-    for (s.i = 0; s.i < s.visible_count; s.i = s.i + 1)
+    ReadSpriteEntryPointers(&s.sprite_load_buffer[0], "BuyButtons.spr");
+    s.buy_button_sprite = s.sprite_load_buffer[0];
+    s.unused_sprite_1 = s.sprite_load_buffer[1];
+    s.unused_sprite_2 = s.sprite_load_buffer[2];
+    for (s.sprite_copy_index = 0; s.sprite_copy_index < 3; s.sprite_copy_index = s.sprite_copy_index + 1)
     {
-      DrawAdventureCard(param_2[s.card_indices[s.i]] & 0xfff, s.card_draw_x[s.i], s.card_draw_y[s.i], 0, "");
+      s.unused_sprite_row_1[s.sprite_copy_index] = s.sprite_load_buffer[s.sprite_copy_index + 3];
+    }
+    for (s.sprite_copy_index = 0; s.sprite_copy_index < 3; s.sprite_copy_index = s.sprite_copy_index + 1)
+    {
+      s.unused_sprite_row_2[s.sprite_copy_index] = s.sprite_load_buffer[s.sprite_copy_index + 6];
+    }
+    for (s.sprite_copy_index = 0; s.sprite_copy_index < 3; s.sprite_copy_index = s.sprite_copy_index + 1)
+    {
+      s.unused_sprite_row_3[s.sprite_copy_index] = s.sprite_load_buffer[s.sprite_copy_index + 9];
+    }
+    for (s.i = 0; s.visible_count > s.i; s.i = s.i + 1)
+    {
+      DrawAdventureCard(card_ids[s.card_indices[s.i]] & 0xfff, s.card_draw_x[s.i], s.card_draw_y[s.i], 0, "");
     }
 
-    while (1)
+  get_input:
+    do
     {
-      do
+      UpdateMouseSnapshot();
+      s.selected_index = -1;
+      g_mouse_x_snapshot = (g_mouse_x_snapshot * 0x140) / global_screen_width;
+      g_mouse_y_snapshot = (g_mouse_y_snapshot * 0xf0) / global_screen_height;
+
+      for (s.i = 0; s.visible_count > s.i; s.i = s.i + 1)
       {
-        UpdateMouseSnapshot();
-        result = -1;
-        g_mouse_x_snapshot = (g_mouse_x_snapshot * 0x140) / global_screen_width;
-        g_mouse_y_snapshot = (g_mouse_y_snapshot * 0xf0) / global_screen_height;
-
-        for (s.i = 0; s.i < s.visible_count; s.i = s.i + 1)
+        if (s.card_draw_x[s.i] > g_mouse_x_snapshot || g_mouse_x_snapshot >= s.card_draw_x[s.i] + 0x30)
         {
-          if ((s.card_draw_x[s.i] <= g_mouse_x_snapshot) &&
-              (g_mouse_x_snapshot < s.card_draw_x[s.i] + 0x30) &&
-              (s.card_draw_y[s.i] <= g_mouse_y_snapshot) &&
-              (g_mouse_y_snapshot < s.card_draw_y[s.i] + 0x30))
-          {
-            result = s.card_indices[s.i];
-          }
+          continue;
         }
 
-        if ((result != -1) &&
-            (param_2[result] != param_2[s.hover_index]))
+        if (s.card_draw_y[s.i] > g_mouse_y_snapshot || g_mouse_y_snapshot >= s.card_draw_y[s.i] + 0x30)
         {
-          DrawAdventureCard(param_2[result] & 0xfff, 8, 0x40, 1, "");
-          s.hover_index = result;
+          continue;
         }
 
-        if (param_5 == 0)
-        {
-          if ((g_mouse_button_mask_snapshot == 0) &&
-              (HasQueuedKeyInput() == 0))
-          {
-            s.has_input = 0;
-          }
-          else
-          {
-            s.has_input = 1;
-          }
-        }
-        else if (((g_mouse_button_mask_snapshot == 0) &&
-                  (HasQueuedKeyInput() == 0)) ||
-                 (result == -1))
-        {
-          s.has_input = 0;
-        }
-        else
+        s.selected_index = s.card_indices[s.i];
+      }
+
+      if ((s.selected_index != -1) &&
+          (card_ids[s.selected_index] != card_ids[s.hover_index]))
+      {
+        DrawAdventureCard(card_ids[s.selected_index] & 0xfff, 8, 0x40, 1, "");
+        s.hover_index = s.selected_index;
+      }
+
+      if (require_card_click != 0)
+      {
+        if (((g_mouse_button_mask_snapshot != 0) ||
+             (HasQueuedKeyInput() != 0)) &&
+            (s.selected_index != -1))
         {
           s.has_input = 1;
         }
-      } while (s.has_input == 0);
-
-      if (param_5 == 0)
-      {
-        break;
+        else
+        {
+          s.has_input = 0;
+        }
       }
+      else if ((g_mouse_button_mask_snapshot != 0) ||
+               (HasQueuedKeyInput() != 0))
+      {
+        s.has_input = 1;
+      }
+      else
+      {
+        s.has_input = 0;
+      }
+    } while (s.has_input == 0);
+
+    if (require_card_click != 0)
+    {
 
       BlitGraphicsRect(PTR_DAT_005832b4,
                        ScaleUiCoordinateFrom320(0xdc) / 2,
@@ -267,53 +295,55 @@ int FUN_0056a515(int param_1, int *param_2, int param_3, char *param_4, int para
                                 ScaleUiCoordinateFrom320(0x34) / 2,
                                 ScaleUiCoordinateFrom320(0xc5) / 2,
                                 ScaleUiCoordinateFrom320(0x10f) / 2,
-                                s.buy_button_sprites[0]);
-      DrawAdventureCardSized(param_2[result] & 0xfff, 0x7a, 0x29, 0x4b, 0x70, 1, "");
+                                s.buy_button_sprite);
+      DrawAdventureCardSized(card_ids[s.selected_index] & 0xfff, 0x7a, 0x29, 0x4b, 0x70, 1, "");
 
       PTR_DAT_005832b4->font_slot = 1;
-      DrawTextAt(PTR_DAT_005832b4, 0x76, 0x20, 0x1b, g_ui_message_buffer);
+      DrawScaledTextNoShadow(g_ui_message_buffer, 0x76, 0x20, 0x1b);
 
       s.key_code = PopNormalizedQueuedKeyInput();
-      s.accept_keys = gs_showcard_text_0077e110.subtitle;
+      s.accept_keys = gs_showcard_text_0077e110.accept_keys;
       s.accept_key = 0;
       while (*s.accept_keys != '\0')
       {
-        if (*s.accept_keys == s.key_code)
+        s.saved_accept_keys = s.accept_keys;
+        s.accept_keys = s.accept_keys + 1;
+        if (*s.saved_accept_keys == s.key_code)
         {
           s.accept_key = 1;
         }
-        s.accept_keys = s.accept_keys + 1;
       }
 
-      if (s.accept_key != 0)
+      if (s.accept_key == 0)
       {
-        break;
+        BlitGraphicsRect(PTR_DAT_005832dc,
+                         ScaleUiCoordinateFrom320(0xdc) / 2,
+                         ScaleUiCoordinateFrom320(0x34) / 2,
+                         ScaleUiCoordinateFrom320(0xc5) / 2,
+                         ScaleUiCoordinateFrom320(0x111) / 2,
+                         PTR_DAT_005832b4,
+                         ScaleUiCoordinateFrom320(0xdc) / 2,
+                         ScaleUiCoordinateFrom320(0x34) / 2);
+        ClearInputAndWaitForMouseRelease();
+        goto get_input;
       }
-
-      BlitGraphicsRect(PTR_DAT_005832dc,
-                       ScaleUiCoordinateFrom320(0xdc) / 2,
-                       ScaleUiCoordinateFrom320(0x34) / 2,
-                       ScaleUiCoordinateFrom320(0xc5) / 2,
-                       ScaleUiCoordinateFrom320(0x111) / 2,
-                       PTR_DAT_005832b4,
-                       ScaleUiCoordinateFrom320(0xdc) / 2,
-                       ScaleUiCoordinateFrom320(0x34) / 2);
-      ClearInputAndWaitForMouseRelease();
     }
 
-    FreeSpriteBlob(s.buy_button_sprites[0]);
+    FreeSpriteBlob(s.buy_button_sprite);
     DestroyCachedCardArt();
+    return s.selected_index;
   }
   else
   {
-    result = (int)FUN_0055837e(param_2, param_3, param_4, param_5, (char *)param_6);
-    if ((param_1 == unk_008b35ec) &&
-        ((gs_window_title_opponent_attack_009267a0[100] & 2) != 0))
-    {
-      gs_phasebar_your_upkeep_007a7c20[0xe8] = '\x19';
-      *(int *)&gs_phasebar_your_upkeep_007a7c20[0xec] = result;
-      TENTATIVE_send_network_result(param_1, 0x19);
-    }
+    result = (int)FUN_0055837e(card_ids, card_count, title, require_card_click, (char *)out_selection);
+  }
+
+  if ((player == unk_008b35ec) &&
+      ((g_duel_network_flags & 2) != 0))
+  {
+    g_network_result_value = result;
+    g_network_result_packet_type = 0x19;
+    TENTATIVE_send_network_result(player, 0x19);
   }
 
   return result;

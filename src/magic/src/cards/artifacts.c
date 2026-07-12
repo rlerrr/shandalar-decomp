@@ -58,7 +58,7 @@ int card_black_lotus(int player, int card, event_t event)
   {
     ai_modifier -= 0x24;
     s.available_colors = PLAYER_CARD_INSTANCE(player, card).mana_color;
-    if ((((active_player == player) && ((unk_00926804 & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
+    if ((((active_player == player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
       s.choice_hint = ~COLOR_COLORLESS;
       for (s.color = COLOR_BLACK; s.color <= COLOR_WHITE && s.choice_hint == ~COLOR_COLORLESS; s.color += COLOR_BLACK)
@@ -102,7 +102,7 @@ int card_black_lotus(int player, int card, event_t event)
         produce_mana(player, s.choice_hint, 3);
         produced_mana_color = s.choice_hint;
         PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
-        if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
+        if (((active_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
         {
           char message[300];
           load_text("prompts.txt", "BLACK_LOTUS");
@@ -210,7 +210,7 @@ int card_time_vault(int player, int card, event_t event)
       ai_modifier += 0x30;
     }
 
-    if (g_duel_special_land_card_ids[7] == -1)
+    if (g_duel_extra_turn_player == -1)
     {
       effect_found = 0;
       for (current_player = 0; current_player < 2 && !effect_found; ++current_player)
@@ -225,7 +225,7 @@ int card_time_vault(int player, int card, event_t event)
       }
       if (!effect_found)
       {
-        g_duel_special_land_card_ids[7] = player;
+        g_duel_extra_turn_player = player;
       }
     }
 
@@ -431,7 +431,7 @@ int card_celestial_prism(int player, int card, event_t event)
     charge_mana(player, 0, 2);
     if (spell_fizzled != 1)
     {
-      if ((active_player == player) && ((unk_00926804 & 2) == 0))
+      if ((active_player == player) && ((g_duel_network_flags & 2) == 0))
       {
         if (g_duel_ai_mode_state == 1)
         {
@@ -475,7 +475,7 @@ int card_celestial_prism(int player, int card, event_t event)
           undeclare_mana_available_hex(player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, 1);
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
           produced_mana_color = color;
-          if (((active_player == player) && ((unk_00926804 & 2) == 0)) && (g_duel_ai_mode_state != 1))
+          if (((active_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
           {
             load_text("prompts.txt", "CELESTIAL_PRISM2");
             if (color == COLOR_BLACK)
@@ -969,7 +969,7 @@ int helper_lucky_charm(int player, int card, int event, int color)
     {
       if (event == EVENT_TRIGGER)
       {
-        if (active_player == player && (unk_00926804 & 2) == 0)
+        if (active_player == player && (g_duel_network_flags & 2) == 0)
         {
           event_result |= 2;
         }
@@ -1109,7 +1109,7 @@ int card_soul_net(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
       }
-      else if (active_player == player && (unk_00926804 & 2) == 0)
+      else if (active_player == player && (g_duel_network_flags & 2) == 0)
       {
         event_result |= 2;
       }
@@ -1153,7 +1153,7 @@ int card_ebony_horse(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051a531
 int card_jayemdae_tome(int player, int card, event_t event)
 {
-  if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player && active_player == player && (unk_00926804 & 2) == 0)
+  if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player && active_player == player && (g_duel_network_flags & 2) == 0)
   {
     int artifact_count;
 
@@ -1218,7 +1218,7 @@ int card_mana_vault(int player, int card, event_t event)
     {
       can_activate = 0;
     }
-    else if (player == active_player && (unk_00926804 & 2) == 0 && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
+    else if (player == active_player && (g_duel_network_flags & 2) == 0 && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       can_activate = 0;
     }
@@ -1796,7 +1796,7 @@ int card_winter_orb(int player, int card, event_t event)
 
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      if (active_player == human_player && (unk_00926804 & 2) == 0)
+      if (active_player == human_player && (g_duel_network_flags & 2) == 0)
       {
         selected_target.player = human_player;
         selected_target.card = FUN_00534ddb(human_player, 1);
@@ -1909,7 +1909,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
     special_counters = C_get_special_counters(player, card);
     if ((int)special_counters < amount && (mana_result = has_mana(player, COLOR_ANY, 1)) != 0)
     {
-      if (active_player == player && (unk_00926804 & 2) == 0 && PLAYER_CARD_INSTANCE(player, card).toughness < life[player])
+      if (active_player == player && (g_duel_network_flags & 2) == 0 && PLAYER_CARD_INSTANCE(player, card).toughness < life[player])
       {
         unk_008b3270 |= 3;
       }
@@ -1921,7 +1921,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
     mana_result = has_mana(player, COLOR_ANY, 1);
     local_zero = 0;
     special_counters = C_get_special_counters(player, card);
-    unk_00715fa8 = FUN_004c0a36(amount - special_counters, local_zero, mana_result);
+    unk_00715fa8 = ClampIntToRange(amount - special_counters, local_zero, mana_result);
   }
   else
   {
@@ -1929,7 +1929,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
     {
       special_counters = C_get_special_counters(player, card);
       max_x_value = amount - special_counters;
-      if (unk_008b35ec == player || (unk_00926804 & 2) != 0)
+      if (unk_008b35ec == player || (g_duel_network_flags & 2) != 0)
       {
         mana_result = charge_mana(player, 0, -1);
       }
@@ -1955,7 +1955,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
       local_zero = 0;
       mana_result = PLAYER_CARD_INSTANCE(player, card).info_slot;
       special_counters = C_get_special_counters(card_on_stack_controller, card_on_stack);
-      mana_result = FUN_004c0a36(mana_result + special_counters, local_zero, amount);
+      mana_result = ClampIntToRange(mana_result + special_counters, local_zero, amount);
       FUN_00551572(card_on_stack_controller, card_on_stack, mana_result);
     }
   }
@@ -2113,7 +2113,7 @@ int card_the_hive(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && has_mana(player, 7, 5) != 0 && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) || ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {
-      if (active_player == player && (unk_00926804 & 2) == 0 && unk_00939330 > 0)
+      if (active_player == player && (g_duel_network_flags & 2) == 0 && unk_00939330 > 0)
       {
         unk_008b3270 |= 3;
       }
@@ -2226,7 +2226,7 @@ int card_glasses_of_urza(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && (player == human_player || (unk_00926804 & 2) != 0) && g_duel_ai_mode_state != 1 && g_duel_network_state == 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && (player == human_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1 && g_duel_network_state == 0)
   {
     target_player = instance->targets[0].player;
     count = 0;

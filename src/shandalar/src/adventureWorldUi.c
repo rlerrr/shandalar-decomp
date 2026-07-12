@@ -388,25 +388,6 @@ char *FUN_00561441(int creature_type)
   return gs_creature_names_00591a08[creature_type].name;
 }
 
-// FUNCTION: SHANDALAR 0x0056c892
-int CountDuelPoolEligibleTowns(void)
-{
-  int duel_pool_count;
-  int town_index;
-
-  duel_pool_count = 0;
-  for (town_index = 0; town_index < 0x80; town_index = town_index + 1)
-  {
-    if ((((g_town_slots[town_index].status_and_ruling_wizard & 0xff01U) == 1) &&
-         (1 < g_town_slots[town_index].location_type)) &&
-        (g_town_slots[town_index].location_type < 4))
-    {
-      duel_pool_count = duel_pool_count + 1;
-    }
-  }
-  return duel_pool_count;
-}
-
 // FUNCTION: SHANDALAR 0x004bb0ca
 int FindNearestTownIndex(int world_x, int world_y)
 {

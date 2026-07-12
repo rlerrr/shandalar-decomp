@@ -70,7 +70,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
     DAT_00561390 = 0;
   }
 
-  if ((unk_00926804 & 2) == 0)
+  if ((g_duel_network_flags & 2) == 0)
   {
     if (FUN_0044aa01(human_player) == 0 &&
         ((((int)(char)DAT_007abc90[human_player * 0x26 + param_2] & 1) != 0) ||
@@ -103,7 +103,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
     {
       DAT_00777aa8 = FUN_0044541f(1);
 
-      if ((unk_00926804 & 2) == 0)
+      if ((g_duel_network_flags & 2) == 0)
       {
         if (human_player == 0)
         {
@@ -141,7 +141,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
       }
 
       if (((unk_008b35ec == human_player) ||
-           (active_player == human_player && (unk_00926804 & 2) != 0)) &&
+           (active_player == human_player && (g_duel_network_flags & 2) != 0)) &&
           s.dispatch_result != 0 && g_duel_ai_mode_state != 1)
       {
         s.result = 1;
@@ -165,7 +165,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
       s.saved_DAT_00777aa8_in_loop = DAT_00777aa8;
       s.saved_DAT_00742fc8 = DAT_00742fc8;
 
-      if ((unk_00926804 & 2) == 0)
+      if ((g_duel_network_flags & 2) == 0)
       {
         if (human_player == 0)
         {
@@ -228,7 +228,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
         break;
       }
 
-      if (unk_008b35ec != human_player && (unk_00926804 & 2) == 0 &&
+      if (unk_008b35ec != human_player && (g_duel_network_flags & 2) == 0 &&
           ((unk_008b3270 & 1) == 0 || DAT_00939510 != 1))
       {
         goto cleanup;
@@ -348,7 +348,7 @@ int FUN_0044ac96(int param_1, int param_2)
     s.mapped_phase = param_2;
   }
 
-  if ((unk_00926804 & 2) != 0)
+  if ((g_duel_network_flags & 2) != 0)
   {
     if (human_player == param_1)
     {
@@ -554,7 +554,7 @@ int FUN_00440ad2(int player, int card, int arg_3)
     char trace_text[500];    /* local_1f4 */
   } s;
 
-  if ((unk_00926804 & 2) != 0)
+  if ((g_duel_network_flags & 2) != 0)
   {
     s.trace_counter = DAT_00777aa0;
     ++DAT_00777aa0;
@@ -614,7 +614,7 @@ int FUN_0044096f(int player, int card)
   {
     sprintf(unk_00748770, gs_activate_0091b2d0, FUN_0044a3bf(player, card));
 
-    if (DAT_00742fc8 != 0 && (unk_008b35ec == player || (unk_00926804 & 2) != 0))
+    if (DAT_00742fc8 != 0 && (unk_008b35ec == player || (g_duel_network_flags & 2) != 0))
     {
       response_player = -1;
     }
@@ -691,7 +691,7 @@ int FUN_004af0ec(int player, int card)
     int internal_card_id;    /* ebp-0x04 */
   } s;
 
-  if ((unk_00926804 & 2) != 0)
+  if ((g_duel_network_flags & 2) != 0)
   {
     s.response_controller = player;
   }
@@ -797,7 +797,7 @@ int FUN_004af0ec(int player, int card)
     {
       DAT_007ab2bc |= 2;
 
-      if (active_player == player && (unk_00926804 & 2) == 0)
+      if (active_player == player && (g_duel_network_flags & 2) == 0)
       {
         return 2;
       }
@@ -949,7 +949,7 @@ int activate(int who_activates, int player, int card)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   s.who_pays = player;
 
-  if ((unk_00926804 & 2) != 0)
+  if ((g_duel_network_flags & 2) != 0)
   {
     int trace_counter;
 
@@ -969,7 +969,7 @@ int activate(int who_activates, int player, int card)
     s.who_pays = unk_00742f60;
   }
 
-  if (s.who_pays == active_player && (unk_00926804 & 2) == 0 && g_duel_ai_mode_state != 1)
+  if (s.who_pays == active_player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state != 1)
   {
     unk_00925bb8 = -1;
     dispatch_event_to_single_card(player, card, EVENT_GET_SELECTED_CARD, 1 - player, -1);
@@ -1138,7 +1138,7 @@ int activate(int who_activates, int player, int card)
     s.was_tapped = instance->state & 0x10;
     dispatch_event_to_single_card(player, card, EVENT_ACTIVATE, 1 - player, -1);
 
-    if ((unk_00926804 & 2) != 0 && active_player == who_activates && DAT_007abc80 == 0 &&
+    if ((g_duel_network_flags & 2) != 0 && active_player == who_activates && DAT_007abc80 == 0 &&
         instance->internal_card_id != unk_008b28f8)
     {
       LoadTextSectionLines(global_ui_strings_filename, "PROMPT_TAP1");
@@ -1392,7 +1392,7 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
     DAT_00742f64 = 0;
   }
 
-  if ((unk_00926804 & 2) == 0)
+  if ((g_duel_network_flags & 2) == 0)
   {
     _DAT_0064f0a4 = 2;
     _DAT_0064f0a8 = 0x20;
@@ -1429,7 +1429,7 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
     _DAT_0064f0a8 = (int)0xfffffff0;
   }
 
-  if ((unk_00926804 & 2) == 0)
+  if ((g_duel_network_flags & 2) == 0)
   {
     if (g_duel_ai_mode_state == 1 || DAT_0072c8e4 != 0 ||
         (trigger_condition != -1 && current_turn == active_player) || DAT_007aadec == 4 ||
@@ -1511,9 +1511,9 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
 
   if (g_duel_ai_mode_state != 1 ||
       (trigger_condition != -1 &&
-       (current_turn == unk_008b35ec || (current_turn == active_player && (unk_00926804 & 2) != 0))))
+       (current_turn == unk_008b35ec || (current_turn == active_player && (g_duel_network_flags & 2) != 0))))
   {
-    if (((current_turn == unk_008b35ec) || (current_turn == active_player && (unk_00926804 & 2) != 0)) &&
+    if (((current_turn == unk_008b35ec) || (current_turn == active_player && (g_duel_network_flags & 2) != 0)) &&
         trigger_condition != -1)
     {
       for (s.player = 0; s.player < 2; ++s.player)
@@ -1578,7 +1578,7 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
       {
         if (s.maybe_card != 0xffffffffU || s.response_mask != 0 || ((DAT_00789714 & 1) != 0 && _DAT_00743020 != 0))
         {
-          if ((unk_00926804 & 2) == 0)
+          if ((g_duel_network_flags & 2) == 0)
           {
             s.player = unk_008b35ec;
           }
@@ -1656,7 +1656,7 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
                     s.response_mask |= 2;
                   }
 
-                  if ((unk_00926804 & 2) == 0)
+                  if ((g_duel_network_flags & 2) == 0)
                   {
                     break;
                   }
@@ -1734,7 +1734,7 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
           }
           else
           {
-            if ((unk_00926804 & 2) == 0)
+            if ((g_duel_network_flags & 2) == 0)
             {
               s.player = unk_008b35ec;
             }
@@ -1815,7 +1815,7 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
     /* original uses an empty string at 0x00573048 */
     unk_00748770[0] = '\0';
 
-    if ((unk_00926804 & 2) == 0)
+    if ((g_duel_network_flags & 2) == 0)
     {
       s.player = unk_008b35ec;
     }
@@ -2187,7 +2187,7 @@ void FUN_00495fa1(void)
   extern int DAT_007a7d74;
 
   s.windows[7] = (HWND)DAT_007a7d74;
-  s.windows[6] = DAT_0093a7b0;
+  s.windows[6] = g_duel_prompt_context_hwnd;
   s.windows[5] = (HWND)g_duel_phase_display_window_hwnd;
   s.windows[4] = (HWND)g_duel_attack_phase_window_hwnd;
   s.windows[3] = DAT_0094ca30;

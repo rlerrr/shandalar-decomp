@@ -183,7 +183,7 @@ GLOBAL_STRINGS_EXTERN char gs_cuecard_phased_007aae00[0x40];
 
 // GLOBAL: MAGIC 0x007aae40
 // GLOBAL: SHANDALAR 0x007bf040
-GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_cleanup_007aae40[0x70];
+GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_cleanup_007aae40[0x64];
 
 // GLOBAL: MAGIC 0x007aaeb0
 // GLOBAL: SHANDALAR 0x007bf0b0
@@ -569,6 +569,7 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_main_postcombat_00925fa0[0x70];
 // GLOBAL: MAGIC 0x00926010
 // GLOBAL: SHANDALAR 0x0093a140
 GLOBAL_STRINGS_EXTERN char gs_window_title_your_attack_00926010[0x68];
+
 // GLOBAL: MAGIC 0x00926078
 // GLOBAL: SHANDALAR 0x0093a1a8
 GLOBAL_STRINGS_EXTERN HWND g_your_attack_window_hwnd;

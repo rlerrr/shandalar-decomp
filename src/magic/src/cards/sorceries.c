@@ -29,7 +29,7 @@ int card_time_walk(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (g_duel_special_land_card_ids[7] == -1)
+    if (g_duel_extra_turn_player == -1)
     {
       effect_found = 0;
       for (effect_card = 0; effect_card < 2 && !effect_found; ++effect_card)
@@ -44,7 +44,7 @@ int card_time_walk(int player, int card, event_t event)
       }
       if (!effect_found)
       {
-        g_duel_special_land_card_ids[7] = player;
+        g_duel_extra_turn_player = player;
       }
     }
 
@@ -193,7 +193,7 @@ int card_braingeyser(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) && has_mana(player, 7, 3) == 0)
+    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, 7, 3) == 0)
     {
       return 0;
     }
@@ -495,7 +495,7 @@ int card_stream_of_life(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((active_player == player) && ((unk_00926804 & 2) == 0)) && has_mana(player, 7, 2) == 0)
+    if (((active_player == player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, 7, 2) == 0)
     {
       return 0;
     }
@@ -618,7 +618,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
                           0,
                           0,
                           0);
-    if (player == human_player && (unk_00926804 & 2) == 0 && (max_x_value == 0 || has_mana(player, 7, 4) == 0))
+    if (player == human_player && (g_duel_network_flags & 2) == 0 && (max_x_value == 0 || has_mana(player, 7, 4) == 0))
     {
       return 0;
     }
@@ -767,7 +767,7 @@ int card_earthquake(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
     {
       return 0;
     }
@@ -819,7 +819,7 @@ int card_hurricane(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
     {
       return 0;
     }
@@ -1007,7 +1007,7 @@ int card_fireball(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (player == unk_008b35ec || (unk_00926804 & 2) != 0)
+    if (player == unk_008b35ec || (g_duel_network_flags & 2) != 0)
     {
       unk_0091bfb4 = 1;
     }
@@ -1025,7 +1025,7 @@ int card_fireball(int player, int card, event_t event)
       result = FUN_00404c4c(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id);
       ai_modifier -= 0x48 / result;
 
-      if (((player == active_player) && ((unk_00926804 & 2) == 0)) || g_duel_ai_mode_state == 1)
+      if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) || g_duel_ai_mode_state == 1)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot = x_value;
 
@@ -1059,7 +1059,7 @@ int card_fireball(int player, int card, event_t event)
               s.possible_targets = 5;
             }
             unk_00939340 =
-                FUN_004c0a36(internal_rand((x_value + 1) / 2) + 1, 1, s.possible_targets);
+                ClampIntToRange(internal_rand((x_value + 1) / 2) + 1, 1, s.possible_targets);
           }
           else
           {
@@ -1371,7 +1371,7 @@ int card_fireball(int player, int card, event_t event)
     if (event == EVENT_RESOLVE_SPELL)
     {
       invalid_targets = 0;
-      if (player == active_player && (unk_00926804 & 2) == 0)
+      if (player == active_player && (g_duel_network_flags & 2) == 0)
       {
         result = PLAYER_CARD_INSTANCE(player, card).info_slot;
         for (s.target_index = 0;
@@ -1533,7 +1533,7 @@ int card_raise_dead(int player, int card, event_t event)
   {
     if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
     {
-      if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1)
+      if (((player == active_player) && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1)
       {
         s.graveyard_index = FUN_004087cc(player, 2);
       }
@@ -1617,7 +1617,7 @@ int card_regrowth(int player, int card, event_t event)
   {
     if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
     {
-      if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1)
+      if (((player == active_player) && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1)
       {
         s.graveyard_index = FUN_004087cc(player, -1);
       }
@@ -1685,7 +1685,7 @@ int card_demonic_tutor(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == 0x6c && affected_card == card && affected_card_controller == player && player == active_player && (unk_00926804 & 2) == 0 && global_library[player][0] == -1)
+  if (event == 0x6c && affected_card == card && affected_card_controller == player && player == active_player && (g_duel_network_flags & 2) == 0 && global_library[player][0] == -1)
   {
     spell_fizzled = 1;
   }
@@ -1694,7 +1694,7 @@ int card_demonic_tutor(int player, int card, event_t event)
   {
     found_card = -1;
 
-    if (((player == active_player) && (unk_00926804 & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
+    if (((player == active_player) && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
     {
       if (player == active_player)
       {
@@ -1782,7 +1782,7 @@ int card_mind_twist(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (player == active_player && (unk_00926804 & 2) == 0 && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (player == active_player && (g_duel_network_flags & 2) == 0 && has_mana(player, COLOR_COLORLESS, 2) == 0)
     {
       return 0;
     }
@@ -1963,7 +1963,7 @@ int card_disintegrate(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
     {
       return 0;
     }
@@ -2014,7 +2014,7 @@ int card_drain_life(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == active_player) && ((unk_00926804 & 2) == 0)) && has_mana(player, COLOR_BLACK, 3) == 0)
+    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_BLACK, 3) == 0)
     {
       return 0;
     }
