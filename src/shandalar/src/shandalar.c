@@ -108,9 +108,6 @@ FacemakerWindowBounds *PTR_DAT_00583354 = &DAT_00583330;
 HWND g_main_window_hwnd;
 // GLOBAL: SHANDALAR 0x00939160
 HINSTANCE g_app_instance;
-// GLOBAL: SHANDALAR 0x005a6198
-long DAT_005a6198[0x4e2];
-
 // GLOBAL: SHANDALAR 0x00591210
 int g_skip_world_sfx_preload = 0;
 // GLOBAL: SHANDALAR 0x00591224
@@ -519,7 +516,7 @@ int LoadTextSectionStringTable(const char *filename, const char *section, char *
                                char *string_buf_end, char **out_next_buf);
 int LoadAdvBlocksFile(const char *filename);
 int FindNextTextBlock(char *scan_start, char *scan_end, int *out_block_start, int *out_next_scan);
-void ReadCsvFieldByCsvid(char *out, int csvid, int field, char *csv_name);
+void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 void FUN_00562d03(void);
 void FUN_00565faa(void);
@@ -604,7 +601,7 @@ int FUN_004f82f2(int param_1, int param_2);
 void SaveGameToSlot(int save_slot_index);
 int FUN_005031a8(void);
 int LoadGameFromSlot(int save_slot_index);
-int GetFirstManaColorIndex(int param_1);
+int single_color_test_bit_to_color_t(int param_1);
 void AddJournalEntry(int entry_type, int entry_arg);
 int LoadStatWinDllExports(void);
 void LoadOpeningMenuSpriteResources(void);
@@ -654,8 +651,8 @@ unsigned int FUN_004bdccc(unsigned int param_1);
 int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
 int FUN_0056c0e5(int param_1, int param_2, int param_3);
-int FUN_0056bd9d(unsigned int param_1);
-int FUN_0056c5ea(int param_1);
+int AddCardToDeckSorted(int param_1);
+int GetCardRarity(int param_1);
 int FUN_004bb1cf(unsigned int param_1);
 unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *param_1, int param_2, int param_3);
 int RunLoadSaveMenu(int param_1);
@@ -680,7 +677,7 @@ void PushQueuedKeyInput(int param_1);
 int FUN_0055e31f(int param_1, int param_2);
 int RenderMenuControlRange(int first_index, int count);
 int GetUiTickCount(void);
-int FUN_004ece9a(void);
+int SeedRandomFromTickCount(void);
 int ClampIntToRange(int value, int min_value, int max_value);
 int FUN_004ece40(int param_1);
 unsigned int ValidateOrLoadSaveGame(char *save_file_path, int validate_only);
@@ -865,7 +862,7 @@ opening_menu:
   {
     if (g_town_slots[s.loop_index].location_type == 5)
     {
-      s.tile_mask = GetFirstManaColorIndex(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.loop_index].world_x, g_town_slots[s.loop_index].world_y))) - 1;
+      s.tile_mask = single_color_test_bit_to_color_t(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.loop_index].world_x, g_town_slots[s.loop_index].world_y))) - 1;
       g_world_magic_town_flags[s.tile_mask] = 1;
     }
   }
@@ -1064,7 +1061,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
     g_mouse_button_mask_snapshot = 0;
     if (DAT_007483f0 == 0)
     {
-      FUN_004ece9a();
+      SeedRandomFromTickCount();
     }
 
     if (g_text_menu_timeout_seconds != -1)
@@ -1344,14 +1341,6 @@ int ConsumeUiTickCount(void)
   return queued_ticks;
 }
 
-// FUNCTION: SHANDALAR 0x004ece9a
-int FUN_004ece9a(void)
-{
-  _DAT_007483f4 = GetTickCount() & 0x7fff;
-  DAT_007483f0 = 1;
-  return 0;
-}
-
 // FUNCTION: SHANDALAR 0x0041318b
 int DrawTextMenu(char *menu_text, int selected_option)
 {
@@ -1585,7 +1574,7 @@ void FUN_0041786e(void)
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 0x4e2; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    DAT_005a6198[s.location_block_start_index] = -1;
+    master_csv_offsets[s.location_block_start_index] = -1;
   }
 
   s.entry_index = fopen("concise.csv", "rt");
@@ -1596,7 +1585,7 @@ void FUN_0041786e(void)
     s.inner_index = global_cards_data[s.location_block_start_index].id;
     s.local_4 = fscanf(s.entry_index, "%d %d %ld\n", &s.icon_width_scaled, &s.icon_height_scaled, &s.selected_state_sprite);
     global_cards_data[s.location_block_start_index].rarity = (unsigned char)s.icon_height_scaled;
-    DAT_005a6198[s.inner_index] = s.selected_state_sprite;
+    master_csv_offsets[s.inner_index] = s.selected_state_sprite;
   }
 
   fclose(s.entry_index);
@@ -1860,7 +1849,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
     }
     else
     {
-      FUN_0056bd9d(s.selected_card);
+      AddCardToDeckSorted(s.selected_card);
     }
   }
 
@@ -1908,14 +1897,14 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
       }
 
       if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, s.color_filter, 0) == 0) ||
-          ((int)((~s.count & 1) + 1) < FUN_0056c5ea(s.selected_card)) ||
+          ((int)((~s.count & 1) + 1) < GetCardRarity(s.selected_card)) ||
           ((global_cards_data[s.selected_card].expansion & 0xc1) == 0))
       {
         s.count = s.count - 1;
       }
       else
       {
-        FUN_0056bd9d(s.selected_card);
+        AddCardToDeckSorted(s.selected_card);
       }
     }
   }
@@ -1942,14 +1931,14 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
       }
 
       if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, color_mask, 0) == 0) ||
-          ((int)((~s.count & 1) + 1) < FUN_0056c5ea(s.selected_card)) ||
+          ((int)((~s.count & 1) + 1) < GetCardRarity(s.selected_card)) ||
           ((!s.card_ok || ((global_cards_data[s.selected_card].expansion & 0xc1) == 0))))
       {
         s.count = s.count - 1;
       }
       else
       {
-        FUN_0056bd9d(s.selected_card);
+        AddCardToDeckSorted(s.selected_card);
       }
     }
     s.duplicate_attempt_count = s.duplicate_attempt_count + 1;
@@ -1963,14 +1952,14 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
       {
         s.selected_card = PickRandomCardMatchingTypeAndColor(0xe, 1);
       } while (FUN_0056c0e5((int)(char)global_cards_data[s.selected_card].color, color_mask, 1) == 0);
-    } while ((FUN_0056c5ea(s.selected_card) < 3) ||
+    } while ((GetCardRarity(s.selected_card) < 3) ||
              (FUN_004bb1cf(s.selected_card) < 1) ||
              ((g_shandalar_difficulty == 0 && ((global_cards_data[s.selected_card].static_ability & 3) != 0))) ||
              ((global_cards_data[s.selected_card].extra_ability & 0x900) != 0) ||
              ((global_cards_data[s.selected_card].expansion & 0xc1) == 0));
   }
 
-  FUN_0056bd9d(s.selected_card);
+  AddCardToDeckSorted(s.selected_card);
   return 0;
 }
 
@@ -2043,8 +2032,8 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
     return 1;
   }
 
-  param_1 = GetFirstManaColorIndex(param_1);
-  param_2 = GetFirstManaColorIndex(param_2);
+  param_1 = single_color_test_bit_to_color_t(param_1);
+  param_2 = single_color_test_bit_to_color_t(param_2);
   if (DAT_00593e20[param_2 * 3] == param_1)
   {
     return 1;
@@ -2065,51 +2054,6 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
     return 1;
   }
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0056c5ea
-int FUN_0056c5ea(int param_1)
-{
-  struct
-  {
-    char rarity_str[32];
-    int rarity;
-  } s;
-
-  if (((global_cards_data[param_1].extra_ability & 0x180U) != 0) || (global_cards_data[param_1].expansion == '@'))
-  {
-    global_cards_data[param_1].rarity = 4;
-  }
-
-  if ((signed char)global_cards_data[param_1].rarity != -1)
-  {
-    s.rarity = (int)(signed char)global_cards_data[param_1].rarity;
-
-    return s.rarity;
-  }
-
-  ReadCsvFieldByCsvid(s.rarity_str, global_cards_data[param_1].id, 9, "info.csv");
-
-  s.rarity = 1;
-
-  if (strcmp(s.rarity_str, "Special") == 0)
-  {
-    s.rarity = 3;
-  }
-
-  if (strcmp(s.rarity_str, "Rare") == 0)
-  {
-    s.rarity = 3;
-  }
-
-  if (strcmp(s.rarity_str, "Uncommon") == 0)
-  {
-    s.rarity = 2;
-  }
-
-  global_cards_data[param_1].rarity = (unsigned char)s.rarity;
-
-  return s.rarity;
 }
 
 // FUNCTION: SHANDALAR 0x004bb1cf
@@ -2143,7 +2087,7 @@ int FUN_004bb1cf(unsigned int param_1)
     if ((deck[s.i] != -1) && ((deck[s.i] & 0x4000) == 0))
     {
       s.total_non_market_cards = s.total_non_market_cards + 1;
-      s.color_index = GetFirstManaColorIndex(global_cards_data[deck[s.i] & 0xfff].color);
+      s.color_index = single_color_test_bit_to_color_t(global_cards_data[deck[s.i] & 0xfff].color);
       s.color_counts[s.color_index] = s.color_counts[s.color_index] + 1;
     }
 
@@ -2227,59 +2171,6 @@ void AddJournalEntry(int entry_type, int entry_arg)
     g_journal_entries[g_journal_entry_count].tile_y = g_world_player_y / 32;
     g_journal_entry_count = g_journal_entry_count + 1;
   }
-}
-
-// FUNCTION: SHANDALAR 0x0056bd9d
-int FUN_0056bd9d(unsigned int param_1)
-{
-
-  struct
-  {
-    int selected_state_sprite;
-    int location_block_start_index;
-    unsigned int inner_index;
-    int entry_index;
-    int local_4;
-  } s;
-
-  if (FUN_0056c5ea(param_1) >= 3)
-  {
-    AddJournalEntry((int)param_1 / 0x100 + JOURNAL_ENTRY_CARD_FOUND_SET0, param_1 & 0xff);
-  }
-  s.entry_index = GetFirstManaColorIndex(global_cards_data[param_1].color) * 0x20 + (unsigned int)global_cards_data[param_1].type * 0x100 +
-                  (int)global_cards_data[param_1].name[0];
-  s.selected_state_sprite = 0;
-  for (s.location_block_start_index = 0; s.location_block_start_index < 500; s.location_block_start_index = s.location_block_start_index + 1)
-  {
-    if (deck[s.location_block_start_index] == -1)
-    {
-      s.selected_state_sprite = 1;
-    }
-  }
-  if (s.selected_state_sprite == 0)
-  {
-    return -1;
-  }
-  for (s.location_block_start_index = 0x1f2; s.location_block_start_index >= 0; s.location_block_start_index = s.location_block_start_index - 1)
-  {
-    if (deck[s.location_block_start_index] == -1)
-    {
-      continue;
-    }
-
-    s.inner_index = (unsigned int)deck[s.location_block_start_index] & 0xfff;
-    s.local_4 = GetFirstManaColorIndex(global_cards_data[s.inner_index].color) * 0x20 + (int)global_cards_data[s.inner_index].name[0] +
-                (unsigned int)global_cards_data[s.inner_index].type * 0x100;
-    if (s.local_4 >= s.entry_index)
-    {
-      deck[s.location_block_start_index + 1] = param_1;
-      param_1 = (unsigned int)-1;
-      return s.location_block_start_index + 1;
-    }
-    deck[s.location_block_start_index + 1] = (unsigned int)deck[s.location_block_start_index];
-  }
-  deck[0] = param_1;
-  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x0052280c
@@ -3721,27 +3612,6 @@ int SaveGameWithMessage(char *save_file_path)
   return 1;
 }
 
-// FUNCTION: SHANDALAR 0x0040dffd
-int GetFirstManaColorIndex(int color_mask)
-{
-  if (color_mask & 2)
-    return 1;
-
-  if (color_mask & 4)
-    return 2;
-
-  if (color_mask & 8)
-    return 3;
-
-  if (color_mask & 0x10)
-    return 4;
-
-  if (color_mask & 0x20)
-    return 5;
-
-  return 0;
-}
-
 // FUNCTION: SHANDALAR 0x005226e0
 int LoadStatWinDllExports(void)
 {
@@ -4383,7 +4253,7 @@ void RebuildDeckEntriesByCardGroup(void)
   {
     if (s.saved_deck_entries[s.card_index] != 0xffffffff)
     {
-      s.deck_slot_index = FUN_0056bd9d(s.saved_deck_entries[s.card_index] & 0xfff);
+      s.deck_slot_index = AddCardToDeckSorted(s.saved_deck_entries[s.card_index] & 0xfff);
       deck[s.deck_slot_index] |= ((int)s.saved_deck_entries[s.card_index] & -4096);
     }
   }

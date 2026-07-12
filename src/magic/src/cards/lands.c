@@ -198,7 +198,7 @@ int card_library_of_alexandria(int player, int card, event_t event)
     if (PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot == 1)
     {
       PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 0;
-      FUN_0043e18b(player);
+      draw_card_for_player(player);
     }
     return 0;
   }

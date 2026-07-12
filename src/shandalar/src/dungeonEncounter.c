@@ -108,14 +108,14 @@ extern int(__cdecl *g_town_dialog_callback)(void);
 
 char *BuildCreatureNameWithArticle(int creature_type);
 char *BuildTownDisplayName(int town_index);
-char *FUN_00561441(int creature_type);
+char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 int BeginMenuContext(void);
 int ClampIntToRange(int value, int min_value, int max_value);
 int CountDuelPoolEligibleTowns(void);
 int EndMenuContext(void);
 int ExitIfNoUsableDeckCards(void);
-int GetFirstManaColorIndex(int mask);
+int single_color_test_bit_to_color_t(int mask);
 int PopNormalizedQueuedKeyInput(void);
 int PopulateDungeonCellEvents(void);
 void SetDungeonPassageHighlight(int direction, int enable);
@@ -126,14 +126,14 @@ int QueueDungeonMouseNavigationInput(int mouse_x, int mouse_y);
 int ShutdownSharedStartup(void);
 int FUN_004bb040(int world_x, int world_y);
 int FUN_004bc6d3(int creature_type, int work_entry_index_a, int work_entry_index_b);
-int FUN_004ece9a(void);
+int SeedRandomFromTickCount(void);
 char *GetDungeonName(int dungeon_index);
 int CalculateDungeonEndgameScore(void);
 int RandomIntLessThan(int max_value);
 int RunCardRiddleChallenge(void);
 int ScaleUiCoordinateFrom320(int value);
 int FUN_005501fe(int value);
-int FUN_0056bd9d(unsigned int card_id);
+int AddCardToDeckSorted(int card_id);
 int FUN_0056c705(int csvid);
 int FUN_0056d5c0(int sound_id, int *out_state);
 int GetUiTickCount(void);
@@ -194,7 +194,7 @@ undefined4 PlayStatWinMovie(char *path, int x, int y, int flags);
 void FUN_00562736(int sound_id, int volume, int pitch_percent, int pan_percent);
 void FUN_0056279e(int sound_id, int volume, int pan_percent);
 void FUN_00562835(char *sound_path, int channel);
-void FUN_00562893(void);
+void StopWorldLocationMusic(void);
 void PlayCastleMusic(int param_1);
 int FreeGraphicsPage(int page_number);
 void DrawUiScaledCenteredTextWithShadow(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
@@ -340,7 +340,7 @@ int RunCastleDungeonBoard(int dungeon_index)
     AddJournalEntry(JOURNAL_ENTRY_CASTLE_DUNGEON_ENTERED, dungeon_index);
   }
   g_dungeon_force_final_encounter = 0;
-  FUN_004ece9a();
+  SeedRandomFromTickCount();
   InitDungeonScratchPage();
   g_castle_dungeon_slots[dungeon_index].times_entered = g_castle_dungeon_slots[dungeon_index].times_entered + 1;
   g_dungeon_runtime_state.current_dungeon_index = dungeon_index;
@@ -693,7 +693,7 @@ int RunCastleDungeonBoard(int dungeon_index)
                 ClearInputAndWaitForMouseRelease();
                 WaitForInputEventUnlessBlocked();
                 DrawCastleDungeonBoard(0, 0, dungeon_index);
-                s.result = FUN_0056bd9d((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code]);
+                s.result = AddCardToDeckSorted((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code]);
                 deck[s.result] = deck[s.result] | 0x4000;
                 (&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code] = -1;
               }
@@ -926,7 +926,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
   if (DAT_008cf6d0 != -1)
   {
     local_18 = g_dungeon_monster_duel_music_csvids[(g_castle_dungeon_slots[param_1].color - 1) * 3 + ClampIntToRange(local_18, 0, 2)];
-    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_dungeon_0077f000[17], FUN_00561441(local_c), global_cards_data[FUN_0056c705(local_18)].name);
+    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_dungeon_0077f000[17], GetCreatureName(local_c), global_cards_data[FUN_0056c705(local_18)].name);
   }
   if (unk_00789308 != -1)
   {
@@ -1103,7 +1103,7 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
       } while (s.menu_choice < 0);
       if (s.menu_choice == 0)
       {
-        s.town_index = FUN_0056bd9d(s.chosen_card);
+        s.town_index = AddCardToDeckSorted(s.chosen_card);
         if (s.town_index != -1)
         {
           deck[s.town_index] = deck[s.town_index] | 0x4000;
@@ -1437,7 +1437,7 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
         if ((s.work >= 3) && (s.work < 7))
         {
           s.work -= 3;
-          strcpy(g_ui_message_buffer, FUN_00561441(g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.work]));
+          strcpy(g_ui_message_buffer, GetCreatureName(g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.work]));
           s.draw_direction = 5;
           for (s.monster_direction = 1; s.monster_direction <= 8; s.monster_direction += 2)
           {
@@ -1931,7 +1931,7 @@ undefined4 TransitionPcxToScreenRandomTiles(char *path, int x_scale, int y_scale
 // FUNCTION: SHANDALAR 0x005628bf
 void PlayCastleMusic(int param_1)
 {
-  FUN_00562893();
+  StopWorldLocationMusic();
   if (g_world_location_music_track_id != -1)
   {
     sound_unload(0x10);

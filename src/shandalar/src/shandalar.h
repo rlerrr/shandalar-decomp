@@ -48,3 +48,12 @@ typedef struct
   int unk_08;
   int unk_0c;
 } WorldMagicSlotTimer;
+
+#ifdef SHANDALAR
+void StopWorldLocationMusic(void);
+char *GetCreatureName(int creature_type);
+int SeedRandomFromTickCount(void);
+int AddCardToDeckSorted(int card_id);
+void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
+int GetCardRarity(int card_id);
+#endif

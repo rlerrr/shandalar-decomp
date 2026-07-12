@@ -52,7 +52,7 @@ int card_fork(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, new_card).token_status |= 8;
       x_value = PLAYER_CARD_INSTANCE(player, card).info_slot;
       unk_008b4278 |= 0x400;
-      FUN_0051a41c(player, new_card);
+      process_card_enters_play(player, new_card);
       unk_008b4278 &= ~0x400;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
@@ -212,9 +212,9 @@ int card_ancestral_recall(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     target_player = instance->targets[0].player;
-    FUN_0043e18b(target_player);
-    FUN_0043e18b(target_player);
-    FUN_0043e18b(target_player);
+    draw_card_for_player(target_player);
+    draw_card_for_player(target_player);
+    draw_card_for_player(target_player);
     instance->number_of_targets = 0;
     kill_card(player, card, KILL_DESTROY);
   }

@@ -29,7 +29,7 @@ extern int DAT_007a7d74;
 extern int DAT_008a8dec;
 extern int DAT_008a8d78;
 
-#define CLASS_MAGICGAME_MAIN "MAGICGAME_MainClass"
+#define CLASS_MAGICGAME_MAINCLASS "MAGICGAME_MainClass"
 #define CLASS_MAGICGAME_LIFE "MAGICGAME_LifeClass"
 #define CLASS_MAGICGAME_FULL_CARD "MAGICGAME_FullCardClass"
 #define CLASS_MAGICGAME_MANA_SUMMARY "MAGICGAME_ManaSummaryClass"
@@ -258,13 +258,8 @@ int initialize_duel_engine_window(void)
 
   if ((g_duel_mode_flags & 1) != 0)
   {
-#ifdef SHANDALAR
     s.width = global_screen_width;
     s.height = global_screen_height;
-#else
-    s.width = unk_0057d9f0;
-    s.height = unk_0057d9f4;
-#endif
   }
   else
   {
@@ -272,7 +267,7 @@ int initialize_duel_engine_window(void)
     s.height = GetSystemMetrics(1);
   }
 
-  g_duel_window_hwnd = CreateWindowExA(0, CLASS_MAGICGAME_MAIN, gs_magic_the_gathering_title_00789460,
+  g_duel_window_hwnd = CreateWindowExA(0, CLASS_MAGICGAME_MAINCLASS, gs_magic_the_gathering_title_00789460,
                                        s.style, 1, 0, s.width, s.height, g_duel_parent_window_hwnd,
                                        (HMENU)0, g_app_instance, (LPVOID)0);
   if (g_duel_window_hwnd == (HWND)0)
@@ -757,7 +752,7 @@ int register_window_classes(void)
 
   InitCommonControls();
   registration_failed = 0;
-  registration_failed &= register_MAGICGAME_MainClass(CLASS_MAGICGAME_MAIN);
+  registration_failed &= register_MAGICGAME_MainClass(CLASS_MAGICGAME_MAINCLASS);
   registration_failed &= register_MAGICGAME_LifeClass(CLASS_MAGICGAME_LIFE);
   registration_failed &= register_MAGICGAME_FullCardClass(CLASS_MAGICGAME_FULL_CARD);
   registration_failed &= register_MAGICGAME_ManaSummaryClass(CLASS_MAGICGAME_MANA_SUMMARY);

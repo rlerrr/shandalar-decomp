@@ -85,8 +85,8 @@ int FUN_0049e8bb(int player,
                  int highlighted_choices,
                  int max_choices);
 
-void FUN_00501d78(int player);
-void FUN_00501deb(int player);
+void send_battlefield_status_packet(int player);
+void receive_battlefield_status_packet(int player);
 int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packet_type);
 int TENTATIVE_wait_for_network_result(int player, signed int packet_type);
 int TENTATIVE_send_network_result(int player, signed int packet_type);

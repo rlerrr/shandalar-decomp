@@ -223,7 +223,7 @@ int card_clone(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).internal_card_id = PLAYER_CARD_INSTANCE(player, card).dummy3;
       PLAYER_CARD_INSTANCE(player, card).color =
           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).color;
-      FUN_0051a41c(player, card);
+      process_card_enters_play(player, card);
     }
   }
 

@@ -31,9 +31,10 @@ int FUN_004438cb(int param_1);
 int set_stack_damage_targets(void);
 
 int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt);
-void FUN_004d91c9(char *out, int csvid, int field, const char *csv_name);
+void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 void FUN_004e1c8c(unsigned int internal_card_id, int unk1, char *prompt, int unk2);
 void FUN_004480a6(char *text);
+int GetCardRarity(int internal_card_id);
 int FUN_004b0c12(int player, int card);
 char *FUN_0044a3bf(int player, int card);
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
@@ -817,47 +818,6 @@ int FUN_004b58e2(int color, int unk1, int unk2)
   return 0;
 }
 
-// FUNCTION: MAGIC 0x004b5de8
-int FUN_004b5de8(int internal_card_id)
-{
-  struct
-  {
-    char rarity_str[32]; // ebp-0x24
-    int rarity;          // ebp-0x4
-  } s;
-
-  if ((global_cards_data[internal_card_id].extra_ability & 0x180) != 0 || global_cards_data[internal_card_id].expansion == '@')
-  {
-    global_cards_data[internal_card_id].rarity = 4;
-  }
-
-  if ((char)global_cards_data[internal_card_id].rarity != -1)
-  {
-    s.rarity = (int)(char)global_cards_data[internal_card_id].rarity;
-    return s.rarity;
-  }
-
-  FUN_004d91c9(s.rarity_str, (int)global_cards_data[internal_card_id].id, 9, "info.csv");
-
-  s.rarity = 1;
-  if (strcmp(s.rarity_str, "Special") == 0)
-  {
-    s.rarity = 3;
-  }
-  if (strcmp(s.rarity_str, "Rare") == 0)
-  {
-    s.rarity = 3;
-  }
-  if (strcmp(s.rarity_str, "Uncommon") == 0)
-  {
-    s.rarity = 2;
-  }
-
-  global_cards_data[internal_card_id].rarity = (unsigned char)s.rarity;
-
-  return s.rarity;
-}
-
 // FUNCTION: MAGIC 0x00551ed7
 int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
 {
@@ -901,7 +861,7 @@ int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
 }
 
 // FUNCTION: MAGIC 0x00449bef
-void FUN_00449bef(char *name)
+void copy_opponent_name_prefix(char *name)
 {
   char *source;
 
@@ -969,6 +929,7 @@ int get_sleighted_color(int player, int card, int orig_color)
 
 // FUNCTION: MOK 0x004358f0
 // FUNCTION: MAGIC 0x00442763
+// FUNCTION: SHANDALAR 0x0040dffd
 color_t single_color_test_bit_to_color_t(color_test_t color_test)
 {
   if ((color_test & COLOR_TEST_BLACK) != 0)
@@ -1549,7 +1510,7 @@ void FUN_004b5c19(int deck_owner)
 }
 
 // FUNCTION: MAGIC 0x004b59b2
-void FUN_004b59b2(int player, int deck_owner)
+void shuffle_duel_library(int player, int deck_owner)
 {
   struct
   {
@@ -1727,7 +1688,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
     SelectPalette(unk_0074309c, unk_007463dc, 0);
     FUN_004e1da6(unk_00573370);
     FUN_004e1d91(1, 0, 0, unk_00573380, &unk_007462a0);
-    FUN_004e1d6d(unk_0057a75c, 0, 0, 0x280, 0x1e0, unk_007497b0, 0, 0, unk_0057d9f0, unk_0057d9f4);
+    FUN_004e1d6d(unk_0057a75c, 0, 0, 0x280, 0x1e0, unk_007497b0, 0, 0, global_screen_width, global_screen_height);
 
     s.display_count = 0;
     for (s.local_8 = 0; s.local_8 < count; ++s.local_8)
@@ -2233,7 +2194,7 @@ int dispatch_event(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0043e18b
-int FUN_0043e18b(int player)
+int draw_card_for_player(int player)
 {
   struct
   {
@@ -2326,7 +2287,7 @@ int FUN_0043e18b(int player)
         s.candidate_ok = FUN_004b58e2((int)(char)global_cards_data[s.drawn_card].color,
                                       DAT_008ce538,
                                       DAT_008951c8);
-        if (s.candidate_ok != 0 && FUN_004b5de8(s.drawn_card) > DAT_007a7874)
+        if (s.candidate_ok != 0 && GetCardRarity(s.drawn_card) > DAT_007a7874)
         {
           s.candidate_ok = 0;
         }
@@ -3164,7 +3125,7 @@ void FUN_004817fd(int player)
 
   if (ante_slot < 0x10)
   {
-    card_in_hand = FUN_0043e18b(player);
+    card_in_hand = draw_card_for_player(player);
     global_ante_cards[player][ante_slot] = PLAYER_CARD_INSTANCE(player, card_in_hand).internal_card_id;
     --hand_count[player];
     load_text("promptsX1.txt", "ANTE_A_CARD");
@@ -3310,7 +3271,7 @@ int gain_life(int player, int amount)
   {
     for (num_cards_drawn = 0; num_cards_drawn < amount; ++num_cards_drawn)
     {
-      FUN_0043e18b(player);
+      draw_card_for_player(player);
     }
   }
 
@@ -6287,7 +6248,7 @@ void set_duel_prompt_context(HWND param_1, char *param_2, unsigned int param_3)
   s.icon_width = s.text_size.cx + s.client_h / 2;
 
   s.rect2.right = 2000;
-  s.text_width = (unsigned short)(*PTR_CalcDrawManaText_00950780)(s.dc, &s.rect2, param_2);
+  s.text_width = CalcDrawManaText(s.dc, &s.rect2, param_2);
   ReleaseDC(param_1, s.dc);
 
   if ((param_3 & 2) != 0 || (param_3 & 1) != 0)
@@ -6308,7 +6269,7 @@ void set_duel_prompt_context(HWND param_1, char *param_2, unsigned int param_3)
     GetClientRect(param_1, &s.rect1);
     FUN_004ec6c3(param_1, s.dc2, (int *)&s.rect1.left);
     s.rect1.right = 2000;
-    s.text_width = (unsigned short)(*PTR_CalcDrawManaText_00950780)(s.dc2, &s.rect1, param_2);
+    s.text_width = CalcDrawManaText(s.dc2, &s.rect1, param_2);
     ReleaseDC(param_1, s.dc2);
     SetWindowTextA(param_1, param_2);
   }
@@ -8661,7 +8622,7 @@ int choose_a_number(int player, char *prompt, int maxnum)
     maxnum = DAT_008b293c;
   }
 
-  chosen = FUN_004a09c6(player, prompt, maxnum);
+  chosen = prompt_for_life_total(player, prompt, maxnum);
 
   if (player == unk_008b35ec && (g_duel_network_flags & 2) != 0)
   {

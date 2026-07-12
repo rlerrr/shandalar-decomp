@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cardartlib/src/palette.h"
 #include "game_support.h"
+#include "global_state.h"
 #include "global_strings.h"
 
 int GetNextManaSymbol(char **param_1);
@@ -24,12 +25,6 @@ int DAT_008a8d78;
 
 // GLOBAL: MAGIC 0x008a8dec
 int DAT_008a8dec;
-
-// GLOBAL: MAGIC 0x0091c974
-int DAT_0091c974;
-
-// GLOBAL: MAGIC 0x0091c998
-int DAT_0091c998;
 
 // GLOBAL: MAGIC 0x0093d840
 int DAT_0093d840;
@@ -155,7 +150,7 @@ int FUN_0049535a(HWND window, char *text)
 }
 
 // FUNCTION: MAGIC 0x004480e4
-void FUN_004480e4(char *text)
+void set_duel_tooltip_text(char *text)
 {
   int screen_width;
   int screen_height;
@@ -176,7 +171,7 @@ void FUN_004480e4(char *text)
     tooltip_text = text;
   }
 
-  if (DAT_0091c998 != 0)
+  if (g_duel_interface_options.layout != 0)
   {
     if (*tooltip_text == '\0')
     {
@@ -187,7 +182,7 @@ void FUN_004480e4(char *text)
     {
       screen_width = GetSystemMetrics(0);
       screen_height = GetSystemMetrics(1);
-      if (DAT_0091c974 == 0)
+      if (g_duel_interface_options.directive_tracks_mouse == 0)
       {
         tooltip_height = (GetSystemMetrics(1) * 3) / 100;
         if (tooltip_height < 0x13)
@@ -366,7 +361,7 @@ int FUN_004466b5(int who_chooses,
       packet->thread_exit_code = 1 - (char)thread_exit_code;
       TENTATIVE_send_network_result(who_chooses, 0xc);
       Sleep(0xfa);
-      FUN_00501d78(who_chooses);
+      send_battlefield_status_packet(who_chooses);
     }
   }
   else
@@ -385,14 +380,14 @@ int FUN_004466b5(int who_chooses,
     DAT_0072c8e0 = packet->aux_phase;
     DAT_00715fa4 = packet->aux_controller;
     thread_exit_code = (WPARAM)packet->thread_exit_code;
-    FUN_00501deb(who_chooses);
+    receive_battlefield_status_packet(who_chooses);
     FUN_004a61d6("");
   }
 
   *out_selection_code = selection_code;
   *out_target_player = target_player;
   out_target_player[1] = target_card;
-  FUN_004480e4(NULL);
+  set_duel_tooltip_text(NULL);
 
   if (selection_code != -5)
   {

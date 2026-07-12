@@ -316,7 +316,7 @@ int FUN_0056302b(int param_1);
 void ReadPalette(char *palette_text_path, char *palette_binary_path);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 unsigned int WaitForInputEventUnlessBlocked(void);
-int GetFirstManaColorIndex(int mask);
+int single_color_test_bit_to_color_t(int mask);
 void DrawTextLineNoShadow(char *text, int x, int y, int color_index);
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 void DrawScaledCenteredTextNoShadow(char *text, int center_x, int y, int color_index);
@@ -1998,7 +1998,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
           }
         }
       }
-      s.color_index = GetFirstManaColorIndex(s.color_index);
+      s.color_index = single_color_test_bit_to_color_t(s.color_index);
       switch (global_cards_data[s.card_id_masked].type)
       {
       case '\x01':

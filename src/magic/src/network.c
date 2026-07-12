@@ -786,7 +786,7 @@ int TENTATIVE_send_network_result(int player, signed int packet_type)
 }
 
 // FUNCTION: MAGIC 0x00501d78
-void FUN_00501d78(int player)
+void send_battlefield_status_packet(int player)
 {
   int phase;
 
@@ -801,7 +801,7 @@ void FUN_00501d78(int player)
 }
 
 // FUNCTION: MAGIC 0x00501deb
-void FUN_00501deb(int player)
+void receive_battlefield_status_packet(int player)
 {
   int phase;
   int target_player;

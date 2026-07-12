@@ -9,11 +9,16 @@
 #include "defs.h"
 #include "magic/src/duel_engine.h"
 #include "magic/src/game_support.h"
+#include "magic/src/global_duel_ui_ids.h"
 #include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
 #include "drawcardlib/src/pic.h"
+#ifdef SHANDALAR
+#include "deckdll/src/magsnd.h"
+#include "shandalar/src/shandalar_global_strings.h"
+#endif
 
 #ifndef SHANDALAR
 extern HWND global_main_hwnd;
@@ -29,36 +34,65 @@ extern int life[2];
 extern HINSTANCE g_app_instance;
 extern HWND DAT_008a8dec;
 extern HWND DAT_008a8d78;
-extern int DAT_0091c998;
+extern int DAT_007a7d74;
+extern int g_showlist_smallcard_width;
+extern int g_showlist_smallcard_height;
+extern card_ptr_t global_raw_cards_storage[2000];
 extern CRITICAL_SECTION g_card_render_lock;
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
 void set_duel_prompt_context(HWND hwnd, char *prompt, unsigned int mode);
-int FUN_004a09c6(int player, char *prompt, int maxnum);
+int prompt_for_life_total(int player, char *prompt, int maxnum);
+int get_battlefield_card_stagger_offset(HWND hwnd);
+LONG get_card_window_hidden_flag(HWND hwnd);
+void reset_battlefield_layout_positions(HWND hwnd);
+void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag);
+void set_duel_tooltip_text(char *text);
+void resize_battlefield_child_card_windows(HWND hwnd);
+void layout_attack_phase_window(HWND hwnd);
+void layout_phase_display_window(HWND hwnd, LPRECT rect);
+void resize_duel_hand_window(HWND hwnd);
+void get_current_duel_selection(int *selected_player, int *selected_card);
 unsigned int load_gametype0(char *path);
 int play_duel(int player, int creature_type);
-void FUN_00464b6f(void);
-void FUN_0043de00(void);
-void FUN_004458d4(void);
-void FUN_004ecdc0(int player);
-void FUN_004ef17b(char *path);
-void FUN_004ef35a(char *path);
-void FUN_004ef54b(char *path);
-int FUN_0044b56a(void);
-void FUN_0044a7e0(unsigned int player);
+void StopWorldLocationMusic(void);
+void reset_duel_globals(void);
+void reset_timestamp_players(void);
+void load_selected_duel_save_slot(int player);
+void load_duel_run_mode_1_save(char *path);
+void load_duel_run_mode_2_save(char *path);
+void load_duel_run_mode_3_save(char *path);
+int check_duel_finished(void);
+void run_duel_turn(unsigned int player);
 int CountDuelPoolEligibleTowns(void);
-char *FUN_004e1c4f(int creature_type);
-void FUN_004c0a0a(void);
-void FUN_004b559a(int color);
-int FUN_004b5416(void);
-void FUN_00464700(int wizard_color);
-void FUN_0046476f(int player, int internal_card_id);
+char *GetCreatureName(int creature_type);
+#ifdef SHANDALAR
+int SeedRandomFromTickCount(void);
+#else
+void SeedRandomFromTickCount(void);
+#endif
+
+int AddCardToDeckSorted(int card_id);
+int draw_random_unmarked_deck_card(void);
+void copy_initial_library_to_player_zero(int wizard_color);
+void remove_iid_from_initial_library(int player, int internal_card_id);
 int DrawRandomCardFromInitialLibrary(int library_index);
-void FUN_004b3dee(int player, int wizard_color);
-void FUN_004b3cc2(int *redraw_result, int *ante_result, int *ante_info);
+void perform_player_mulligan(int player, int wizard_color);
+void evaluate_opening_hand_land_counts(int *redraw_result, int *ante_result, int *ante_info);
 void TENTATIVE_reassess_all_cards();
 void append_to_trace_txt(char *text);
 void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);
+unsigned int refresh_duel_display_cache(void);
+unsigned int get_displayed_card_special_counters(int player, int card);
+int get_displayed_card_internal_id(int player, int card);
+int get_displayed_card_id(int player, int card);
+int get_displayed_card_zone(int player, int card);
+unsigned int get_displayed_card_ui_flags(int player, int card);
+void get_displayed_card_attachment(int *player_and_card, int player, int card);
+unsigned int get_displayed_card_display_flags(int player, int card);
+int is_attack_phase_window_enabled(void);
+int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2);
+int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd);
 extern int DAT_008ced00[16];
 #ifdef SHANDALAR
 int DAT_007a79b8;
@@ -68,6 +102,14 @@ extern int DAT_007a79b8;
 #ifndef SHANDALAR
 extern HANDLE global_mutex_GameInit;
 #endif
+#ifdef SHANDALAR
+extern int g_world_location_music_active;
+extern int DAT_007483f0;
+extern int _DAT_007483f4;
+int single_color_test_bit_to_color_t(int color_mask);
+void AddJournalEntry(int entry_type, int entry_arg);
+#endif
+int GetCardRarity(int card_id);
 
 // GLOBAL: MAGIC 0x008a9140
 OPENFILENAMEA g_duel_save_game_openfilename;
@@ -167,6 +209,18 @@ int g_duel_main_window_closing;
 // GLOBAL: SHANDALAR 0x0058f650
 int g_duel_main_window_deferred_resize;
 
+// GLOBAL: MAGIC 0x0055e168
+int g_duel_window_userdata_player_offset;
+
+// GLOBAL: MAGIC 0x0055e16c
+int g_duel_window_userdata_card_offset = 4;
+
+// GLOBAL: MAGIC 0x00939508
+int DAT_00939508;
+
+// GLOBAL: MAGIC 0x00789710
+int DAT_00789710;
+
 typedef struct
 {
   unsigned char pad_00[0x1f]; // +0x00
@@ -186,18 +240,785 @@ ShandalarMonsterDefinition g_shandalar_monster_definitions[56];
 // FUNCTION: SHANDALAR 0x004511a5
 void notify_duel_action(int player, unsigned int value)
 {
+  struct
+  {
+    HWND other_life_window;
+    HWND life_window;
+    int selected_card;
+    HWND primary_battlefield_window;
+    HWND child_window;
+    HWND secondary_battlefield_window;
+    int attached_player_and_card[2];
+    int action_player;
+    int action_card;
+    int card_id;
+    int card_index;
+    int zone;
+    int internal_card_id;
+    unsigned int display_flags;
+    int player_index;
+    unsigned int need_redraw;
+    unsigned int card_flags;
+    WPARAM attack_phase_refresh_flag;
+  } s;
+
+  KillTimer(g_duel_window_hwnd, g_duel_timer_id);
+  EnterCriticalSection(&g_duel_render_lock);
+  if (g_duel_extra_turn_player != DAT_00789710)
+  {
+    DAT_00789710 = g_duel_extra_turn_player;
+    InvalidateRect(DAT_008a8dec, (RECT *)0, 0);
+  }
+  LeaveCriticalSection(&g_duel_render_lock);
+
+  s.need_redraw = refresh_duel_display_cache();
+
+  EnterCriticalSection(&g_duel_render_lock);
+  for (s.player_index = 0; s.player_index < 2; s.player_index++)
+  {
+    for (s.card_index = 0; s.card_index < 0x96; s.card_index++)
+    {
+      if (get_displayed_card_id(s.player_index, s.card_index) == unk_009266ac)
+      {
+        global_displayed_card_instances[s.player_index][s.card_index].state &= ~STATE_IN_PLAY;
+      }
+    }
+  }
+  LeaveCriticalSection(&g_duel_render_lock);
+
+  if ((value == 0) || ((value & 0x30) != 0))
+  {
+    if (s.need_redraw != 0)
+    {
+      for (s.player_index = 0; s.player_index < 2; s.player_index++)
+      {
+        for (s.card_index = 0; s.card_index < 0x96; s.card_index++)
+        {
+          s.action_player = s.player_index;
+          s.action_card = s.card_index;
+          s.zone = get_displayed_card_zone(s.player_index, s.card_index);
+          s.internal_card_id = get_displayed_card_internal_id(s.player_index, s.card_index);
+          s.card_id = get_displayed_card_id(s.player_index, s.card_index);
+          s.display_flags = get_displayed_card_display_flags(s.player_index, s.card_index);
+          s.card_flags = get_displayed_card_ui_flags(s.player_index, s.card_index);
+
+          if (((s.internal_card_id == -1) ||
+               (((s.display_flags & 0x10000) != 0) && (g_duel_interface_options.show_invisible_effect_cards == 0))) ||
+              ((unk_009266a4 == s.internal_card_id) && (get_displayed_card_special_counters(s.player_index, s.card_index) == 0)))
+          {
+            SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_card_preview_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            if ((IsWindowVisible(g_duel_attack_phase_window_hwnd) != 0) || (is_attack_phase_window_enabled() != 0))
+            {
+              SendMessageA(g_duel_attack_phase_window_hwnd, 0x403, (WPARAM)&s.action_player, 0);
+              SendMessageA(g_duel_attack_phase_window_hwnd, 0x402, (WPARAM)&s.action_player, 0);
+            }
+          }
+          else if (s.zone == 2)
+          {
+            SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+          }
+          else if (unk_0091a80c == s.internal_card_id)
+          {
+          }
+          else
+          {
+            if (s.zone == 1)
+            {
+              SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+              SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+              if (((s.card_flags & 0x10) != 0) &&
+                  ((unk_007a7d64 <= s.card_id ||
+                    ((global_raw_cards_storage[s.card_id].db_card_type_2 == 2 &&
+                      (*(int *)&global_raw_cards_storage[s.card_id].rarity != 0xd3))))))
+              {
+                get_displayed_card_attachment(s.attached_player_and_card, s.player_index, s.card_index);
+                while (((get_displayed_card_ui_flags(s.attached_player_and_card[0], s.attached_player_and_card[1]) & 0x10) != 0 &&
+                        ((s.card_id = get_displayed_card_id(s.attached_player_and_card[0], s.attached_player_and_card[1])) != -1)) &&
+                       (unk_007a7d64 <= s.card_id ||
+                        ((global_raw_cards_storage[s.card_id].db_card_type_2 == 2 &&
+                          (*(int *)&global_raw_cards_storage[s.card_id].rarity != 0xd3)))))
+                {
+                  get_displayed_card_attachment(s.attached_player_and_card, s.attached_player_and_card[0], s.attached_player_and_card[1]);
+                }
+                if (s.attached_player_and_card[0] == 0)
+                {
+                  s.secondary_battlefield_window = g_duel_player_battlefield_window_hwnd;
+                }
+                else
+                {
+                  s.secondary_battlefield_window = g_duel_help_owner_hwnd;
+                }
+                if (s.attached_player_and_card[0] == 0)
+                {
+                  s.primary_battlefield_window = g_duel_help_owner_hwnd;
+                }
+                else
+                {
+                  s.primary_battlefield_window = g_duel_player_battlefield_window_hwnd;
+                }
+                SendMessageA(s.primary_battlefield_window, 0x40b, (WPARAM)&s.action_player, 0);
+                SendMessageA(s.secondary_battlefield_window, 0x40a, (WPARAM)&s.action_player, 0);
+                if (find_attack_phase_card_window(g_duel_attack_phase_window_hwnd, s.attached_player_and_card, (int *)0, &s.child_window, (int *)0) != 0)
+                {
+                  SendMessageA(g_duel_attack_phase_window_hwnd, 0x406, (WPARAM)&s.action_player, (LPARAM)s.child_window);
+                  SendMessageA(g_duel_attack_phase_window_hwnd, 0x410, (WPARAM)s.child_window, 0);
+                  s.attack_phase_refresh_flag = 1;
+                  if (((find_battlefield_card_window(s.secondary_battlefield_window, s.attached_player_and_card, (int *)0, &s.child_window) != 0) &&
+                       (IsWindowVisible(s.child_window) == 0)) &&
+                      (find_battlefield_card_window(s.secondary_battlefield_window, &s.action_player, (int *)0, &s.child_window) != 0))
+                  {
+                    ShowWindow(s.child_window, SW_HIDE);
+                  }
+                }
+              }
+              else
+              {
+                if (s.player_index == 0)
+                {
+                  s.secondary_battlefield_window = g_duel_player_battlefield_window_hwnd;
+                }
+                else
+                {
+                  s.secondary_battlefield_window = g_duel_help_owner_hwnd;
+                }
+                if (s.player_index == 0)
+                {
+                  s.primary_battlefield_window = g_duel_help_owner_hwnd;
+                }
+                else
+                {
+                  s.primary_battlefield_window = g_duel_player_battlefield_window_hwnd;
+                }
+                SendMessageA(s.primary_battlefield_window, 0x40b, (WPARAM)&s.action_player, 0);
+                SendMessageA(s.secondary_battlefield_window, 0x40a, (WPARAM)&s.action_player, 0);
+              }
+            }
+            else if (s.zone == 0)
+            {
+              SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+              SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+              if (s.player_index == 0)
+              {
+                s.life_window = g_duel_life_window_hwnd;
+              }
+              else
+              {
+                s.life_window = g_duel_full_card_window_hwnd;
+              }
+              SendMessageA(s.life_window, 0x40b, (WPARAM)&s.action_player, 0);
+              if (s.player_index == 0)
+              {
+                s.other_life_window = g_duel_full_card_window_hwnd;
+              }
+              else
+              {
+                s.other_life_window = g_duel_life_window_hwnd;
+              }
+              SendMessageA(s.other_life_window, 0x40a, (WPARAM)&s.action_player, 0);
+            }
+          }
+        }
+      }
+    }
+
+    SendMessageA(g_duel_player_battlefield_window_hwnd, 0x400, 0, 0);
+    SendMessageA(g_duel_help_owner_hwnd, 0x400, 0, 0);
+    get_current_duel_selection((int *)0, &s.selected_card);
+    if ((0x14 < s.selected_card) && (s.selected_card < 0x1e))
+    {
+      SendMessageA(g_duel_attack_phase_window_hwnd, 0x412, s.attack_phase_refresh_flag, 0);
+    }
+    else
+    {
+      SendMessageA(g_duel_attack_phase_window_hwnd, 0x40c, 0, 0);
+    }
+    SendMessageA(g_duel_phase_display_window_hwnd, 0x412, 0, 0);
+  }
+
+  SendMessageA(g_duel_player_battlefield_window_hwnd, 0x412, 0, 0);
+  SendMessageA(g_duel_help_owner_hwnd, 0x412, 0, 0);
+  if ((value == 0) || ((value & 0x20) != 0))
+  {
+    SendMessageA(g_duel_full_card_window_hwnd, 0x432, 0, 0);
+    SendMessageA(g_duel_life_window_hwnd, 0x432, 0, 0);
+    SendMessageA(g_duel_player_battlefield_window_hwnd, 0x432, 0, 0);
+    SendMessageA(g_duel_help_owner_hwnd, 0x432, 0, 0);
+    if (IsWindowVisible(g_duel_attack_phase_window_hwnd) != 0)
+    {
+      SendMessageA(g_duel_attack_phase_window_hwnd, 0x432, 0, 0);
+      UpdateWindow(g_duel_attack_phase_window_hwnd);
+    }
+    if (IsWindowVisible(g_duel_phase_display_window_hwnd) != 0)
+    {
+      SendMessageA(g_duel_phase_display_window_hwnd, 0x432, 0, 0);
+      UpdateWindow(g_duel_phase_display_window_hwnd);
+    }
+    SendMessageA(g_duel_card_preview_window_hwnd, 0x432, 0, 0);
+  }
+  SendMessageA(g_duel_life_status_window_1_hwnd, 0x432, 0, 0);
+  SendMessageA(g_duel_life_status_window_2_hwnd, 0x432, 0, 0);
+  SendMessageA(unk_008ce534, 0x432, 0, 0);
+  SendMessageA(unk_00939344, 0x432, 0, 0);
+  SendMessageA(DAT_0091ce30, 0x432, 0, 0);
+  SendMessageA(DAT_0092680c, 0x432, 0, 0);
+  SendMessageA(g_duel_player_graveyard_window_hwnd, 0x432, 0, 0);
+  SendMessageA(g_phasebar_your_untap_window_hwnd, 0x432, 0, 0);
+  UpdateWindow(g_duel_window_hwnd);
+}
+
+// FUNCTION: MAGIC 0x004488c5
+int get_displayed_card_zone(int player, int card)
+{
+  card_instance_t *instance;
+  int result;
+
+  if (((player == 0) || (player == 1)) && (card >= 0) && (card <= 0x96))
+  {
+    EnterCriticalSection(&g_duel_render_lock);
+    instance = &global_displayed_card_instances[player][card];
+    if ((instance->state & STATE_IN_PLAY) == 0)
+    {
+      if ((instance->state & STATE_INVISIBLE) == 0)
+      {
+        result = 0;
+      }
+      else
+      {
+        result = 2;
+      }
+    }
+    else
+    {
+      result = 1;
+    }
+    LeaveCriticalSection(&g_duel_render_lock);
+  }
+  else
+  {
+    result = 0;
+  }
+  return result;
+}
+
+// FUNCTION: MAGIC 0x00448999
+unsigned int get_displayed_card_ui_flags(int player, int card)
+{
+  card_instance_t *instance;
+  unsigned char result;
+
+  if (((player == 0) || (player == 1)) && (card >= 0) && (card <= 0x96))
+  {
+    EnterCriticalSection(&g_duel_render_lock);
+    instance = &global_displayed_card_instances[player][card];
+    result = (unsigned char)((instance->regen_status & 3) != 0);
+    if (((instance->state & STATE_TAPPED) != 0) &&
+        ((global_cards_data[instance->internal_card_id].type & 0x47) != TYPE_ENCHANTMENT))
+    {
+      result |= 2;
+    }
+    if ((instance->state & STATE_ATTACKING) != 0)
+    {
+      result |= 4;
+    }
+    if (instance->damage_target_player != -1)
+    {
+      result |= 8;
+    }
+    if ((instance->parent_controller != -1) && (instance->damage_target_card != -1))
+    {
+      result |= 0x10;
+    }
+    if ((instance->regen_status & 0x800000) != 0)
+    {
+      result |= 0x20;
+    }
+    LeaveCriticalSection(&g_duel_render_lock);
+  }
+  else
+  {
+    result = 0;
+  }
+  return result;
+}
+
+// FUNCTION: MAGIC 0x00448bc6
+void get_displayed_card_attachment(int *player_and_card, int player, int card)
+{
+  card_instance_t *instance;
+
+  if (player_and_card != (int *)0)
+  {
+    if (((player == 0) || (player == 1)) && (card >= 0) && (card <= 0x96))
+    {
+      EnterCriticalSection(&g_duel_render_lock);
+      instance = &global_displayed_card_instances[player][card];
+      player_and_card[0] = instance->damage_target_player;
+      player_and_card[1] = instance->damage_target_card;
+      LeaveCriticalSection(&g_duel_render_lock);
+    }
+    else
+    {
+      player_and_card[0] = -1;
+      player_and_card[1] = -1;
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x0044a342
+int is_attack_phase_window_enabled(void)
+{
+  int result;
+
+  EnterCriticalSection(&g_duel_render_lock);
+  result = g_duel_selection_pending;
+  LeaveCriticalSection(&g_duel_render_lock);
+  return result;
+}
+
+// FUNCTION: MAGIC 0x004d8879
+int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2)
+{
+  (void)hwnd;
+  (void)player_and_card;
+  (void)unused1;
+  (void)child_hwnd;
+  (void)unused2;
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x004e994f
+int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd)
+{
+  (void)hwnd;
+  (void)player_and_card;
+  (void)unused;
+  (void)child_hwnd;
+  return 0;
+}
+
+// FUNCTION: MAGIC 0x004d25fe
+LONG get_card_window_hidden_flag(HWND hwnd)
+{
+  return GetWindowLongA(hwnd, 8);
+}
+
+// FUNCTION: MAGIC 0x004d153b
+int get_battlefield_card_stagger_offset(HWND hwnd)
+{
+  int card;
+  int card_id;
+  int player;
+  unsigned int sign;
+
+  player = GetWindowLongA(hwnd, 0);
+  card = GetWindowLongA(hwnd, 4);
+  card_id = get_displayed_card_id(player, card);
+  sign = (int)card_id >> 0x1f;
+  return (((card_id ^ sign) - sign & 3 ^ sign) - sign) * 2 + (card % 3) * 3;
+}
+
+// FUNCTION: MAGIC 0x004e915a
+void reset_battlefield_layout_positions(HWND hwnd)
+{
+  (void)hwnd;
+}
+
+// FUNCTION: MAGIC 0x004e9256
+void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag)
+{
+  (void)parent;
+  (void)rect;
+  (void)value;
+  (void)x;
+  (void)y;
+  (void)flag;
+}
+
+// FUNCTION: MAGIC 0x004e8e42
+void resize_battlefield_child_card_windows(HWND hwnd)
+{
+  (void)hwnd;
+}
+
+// FUNCTION: MAGIC 0x004d6c6d
+void layout_attack_phase_window(HWND hwnd)
+{
+  (void)hwnd;
+}
+
+// FUNCTION: MAGIC 0x0048894d
+void layout_phase_display_window(HWND hwnd, LPRECT rect)
+{
+  (void)hwnd;
+  (void)rect;
 }
 
 // FUNCTION: MAGIC 0x004dc512
 // FUNCTION: SHANDALAR 0x005431cd
 void layout_duel_child_windows(HWND hwnd, int layout)
 {
+  struct
+  {
+    char chat_text2[200];
+    unsigned int chat_text2_length;
+    CHAR tooltip_text2[100];
+    char chat_text1[200];
+    unsigned int chat_text1_length;
+    CHAR tooltip_text1[100];
+    int local_f0;
+    int preview_height;
+    int opponent_chat_y;
+    int lower_life_y;
+    int phasebar_width;
+    int opponent_chat_x;
+    int center_column_width;
+    int preview_x;
+    int preview_y;
+    int half_phasebar_height;
+    int chat_y;
+    int left_phasebar_width;
+    int bottom_half_y;
+    int client_height;       // ebp - 0xb8
+    POINT point;             // ebp - 0xb4
+    int lower_middle_height; // ebp - 0xac
+    int local_ac;            // ebp - 0xa8
+    int divider_width;       // ebp - 0xa4
+    int chat_height;         // ebp - 0xa0
+    int client_width;        // ebp - 0x9c
+    int top_middle_height;   // ebp - 0x98
+    int face_y;              // ebp - 0x94
+    int face_height;         // ebp - 0x90
+    int player_life_x;       // ebp - 0x8c
+    int preview_left;        // ebp - 0x88
+    int preview_top;         // ebp - 0x84
+    int right_column_y;      // ebp - 0x80
+    int local_80;            // ebp - 0x7c
+    int lower_phasebar_y;
+    int right_chat_x;
+    int player_chat_y;
+    int opponent_life_y;
+    int local_70;
+    int lower_phasebar_height;
+    int small_chat_height;
+    int battlefield_width;
+    int player_face_x;
+    int lower_middle_y;
+    int face_x;
+    int opponent_phasebar_x;
+    int face_top;
+    int right_column_x;
+    int preview_width;
+    int prompt_x;
+    int top_battlefield_height;
+    int bottom_battlefield_height;
+    int top_face_height;
+    int right_column_width;
+    RECT rect;
+    int player_life_height;
+    int phasebar_height;
+    int right_phasebar_x;
+    int player_battlefield_width;
+    int opponent_life_x;
+    int right_battlefield_x;
+  } s;
+
+#ifdef MODERN_FIXES
+  memset(&s, 0, sizeof(s));
+#endif
+
+  GetClientRect(hwnd, &s.rect);
+  g_showlist_smallcard_width = s.rect.right / 8;
+  g_showlist_smallcard_height = g_showlist_smallcard_width;
+  DAT_00939508 = (g_showlist_smallcard_height * 0x21) / 0x118;
+
+  if (layout == 1)
+  {
+    GetWindowTextA((HWND)DAT_007a7d74, s.tooltip_text1, 100);
+    set_duel_tooltip_text(s.tooltip_text1);
+    GetClientRect(hwnd, &s.rect);
+    s.client_width = s.rect.right;
+    s.client_height = s.rect.bottom;
+    s.preview_width = s.client_width / 4;
+    s.preview_height = s.client_height / 2;
+    s.preview_left = s.rect.left;
+    s.preview_top = s.rect.top + (s.client_height - s.preview_height) / 2;
+    s.point.x = s.preview_left;
+    s.point.y = s.preview_top;
+    ClientToScreen(hwnd, &s.point);
+    MoveWindow(g_duel_card_preview_window_hwnd, s.point.x, s.point.y, s.preview_width, s.preview_height, 1);
+    GetWindowRect(g_duel_card_preview_window_hwnd, &s.rect);
+    s.preview_width = s.rect.right - s.rect.left;
+    s.preview_height = s.rect.bottom - s.rect.top;
+    GetClientRect(hwnd, &s.rect);
+    s.client_width = s.rect.right;
+    s.client_height = s.rect.bottom;
+    s.left_phasebar_width = s.preview_width / 2;
+    s.preview_y = s.rect.top;
+    s.player_face_x = s.preview_height + s.preview_top;
+    s.battlefield_width = (s.preview_width + s.preview_left) - s.left_phasebar_width;
+    s.preview_x = s.battlefield_width;
+    s.top_face_height = s.preview_top - s.preview_y;
+    s.lower_middle_height = s.rect.bottom - s.player_face_x;
+    s.phasebar_width = s.preview_width / 4;
+    s.lower_phasebar_y = (s.preview_width - s.left_phasebar_width) - s.phasebar_width;
+    s.half_phasebar_height = s.top_face_height / 2;
+    s.phasebar_height = s.half_phasebar_height;
+    s.face_x = s.preview_x - s.phasebar_width;
+    s.right_phasebar_x = s.face_x;
+    s.local_f0 = s.right_phasebar_x - s.lower_phasebar_y;
+    s.local_ac = s.local_f0;
+    s.opponent_phasebar_x = s.preview_top - s.half_phasebar_height;
+    s.lower_middle_y = s.opponent_phasebar_x;
+    s.local_70 = s.preview_height + s.preview_top;
+    s.local_80 = s.local_70;
+    s.small_chat_height = s.preview_width - s.left_phasebar_width;
+    s.player_life_x = s.rect.left;
+    s.opponent_life_x = s.player_life_x;
+    s.opponent_life_y = s.rect.top;
+    s.lower_life_y = s.half_phasebar_height + s.local_70;
+    s.top_middle_height = s.opponent_phasebar_x - s.opponent_life_y;
+    s.player_life_height = s.rect.bottom - s.lower_life_y;
+    s.face_top = s.preview_width + s.preview_left;
+    s.face_y = s.rect.top;
+    s.divider_width = s.small_chat_height / 3;
+    s.face_height = s.client_height;
+    s.player_battlefield_width = (s.client_width - s.preview_width) - s.divider_width;
+    s.top_battlefield_height = s.client_height / 2;
+    s.bottom_battlefield_height = s.client_height - s.top_battlefield_height;
+    s.right_battlefield_x = s.divider_width + s.face_top;
+    s.prompt_x = s.right_battlefield_x;
+    s.bottom_half_y = s.rect.bottom - s.bottom_battlefield_height;
+    s.right_column_y = s.rect.top;
+    s.right_column_width = s.player_battlefield_width;
+    s.chat_height = (s.bottom_battlefield_height * 9) / 100;
+    s.right_column_x = s.prompt_x;
+    s.chat_y = s.bottom_half_y - s.chat_height / 2;
+    s.center_column_width = s.player_battlefield_width;
+    s.lower_phasebar_height = s.client_height / 0x28;
+    s.opponent_chat_x = s.right_battlefield_x;
+    s.opponent_chat_y = s.right_column_y;
+    s.right_chat_x = s.prompt_x;
+    s.player_chat_y = s.bottom_half_y - s.lower_phasebar_height;
+
+    ShowWindow(g_duel_card_preview_window_hwnd, SW_SHOW);
+    MoveWindow(g_duel_life_status_window_2_hwnd, s.opponent_life_x, s.opponent_life_y, s.small_chat_height, s.top_middle_height, 1);
+    MoveWindow(g_duel_life_status_window_1_hwnd, s.player_life_x, s.lower_life_y, s.small_chat_height, s.player_life_height, 1);
+    MoveWindow(unk_00939344, s.preview_x, s.preview_y, s.left_phasebar_width, s.top_face_height, 1);
+    MoveWindow(unk_008ce534, s.battlefield_width, s.player_face_x, s.left_phasebar_width, s.lower_middle_height, 1);
+    MoveWindow(DAT_0092680c, s.local_ac, s.lower_middle_y, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(DAT_0091ce30, s.local_f0, s.local_80, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(g_phasebar_your_untap_window_hwnd, s.right_phasebar_x, s.opponent_phasebar_x, s.phasebar_width, s.half_phasebar_height, 1);
+    MoveWindow(g_duel_player_graveyard_window_hwnd, s.face_x, s.local_70, s.phasebar_width, s.half_phasebar_height, 1);
+    s.point.x = s.preview_left;
+    s.point.y = s.preview_top;
+    ClientToScreen(hwnd, &s.point);
+    MoveWindow(g_duel_card_preview_window_hwnd, s.point.x, s.point.y, s.preview_width, s.preview_height, 1);
+    MoveWindow(g_duel_help_owner_hwnd, s.right_battlefield_x, s.right_column_y, s.player_battlefield_width, s.top_battlefield_height, 1);
+    SendMessageA(g_duel_help_owner_hwnd, 0x412, 0, 0);
+    MoveWindow(g_duel_player_battlefield_window_hwnd, s.prompt_x, s.bottom_half_y, s.player_battlefield_width, s.bottom_battlefield_height, 1);
+    SendMessageA(g_duel_player_battlefield_window_hwnd, 0x412, 0, 0);
+    s.point.x = s.right_column_x;
+    s.point.y = s.chat_y;
+    ClientToScreen(hwnd, &s.point);
+    s.right_column_x = s.point.x;
+    s.chat_y = s.point.y;
+    MoveWindow(g_duel_prompt_context_hwnd, s.right_column_x, s.chat_y, s.right_column_width, s.chat_height, 1);
+    s.chat_text1_length = SendMessageA(g_duel_prompt_context_hwnd, 0x402, (WPARAM)s.chat_text1, 0);
+    set_duel_prompt_context(g_duel_prompt_context_hwnd, s.chat_text1, s.chat_text1_length);
+    MoveWindow(DAT_008a8dec, s.face_top, s.face_y, s.divider_width, s.face_height, 1);
+    MoveWindow(DAT_008a8d78, s.face_top, s.face_y, s.divider_width, s.face_height, 1);
+    MoveWindow(g_duel_opponent_face_window_hwnd, s.opponent_life_x, s.opponent_life_y, s.left_phasebar_width + s.small_chat_height, s.top_face_height, 1);
+    MoveWindow(g_duel_player_face_window_hwnd, s.player_life_x, s.local_80, s.left_phasebar_width + s.small_chat_height, s.lower_middle_height, 1);
+    s.point.x = s.opponent_chat_x;
+    s.point.y = s.opponent_chat_y;
+    ClientToScreen(hwnd, &s.point);
+    s.opponent_chat_x = s.point.x;
+    s.opponent_chat_y = s.point.y;
+    ShowWindow(global_opponent_chat_hwnd, SW_HIDE);
+    MoveWindow(global_opponent_chat_hwnd, s.opponent_chat_x, s.opponent_chat_y, s.center_column_width, s.lower_phasebar_height, 1);
+    s.point.x = s.right_chat_x;
+    s.point.y = s.player_chat_y;
+    ClientToScreen(hwnd, &s.point);
+    s.right_chat_x = s.point.x;
+    s.player_chat_y = s.point.y;
+    ShowWindow(g_duel_player_chat_window_hwnd, SW_HIDE);
+    MoveWindow(g_duel_player_chat_window_hwnd, s.right_chat_x, s.player_chat_y, s.center_column_width, s.lower_phasebar_height, 1);
+  }
+  else if (layout == 2)
+  {
+    GetWindowTextA((HWND)DAT_007a7d74, s.tooltip_text2, 100);
+    set_duel_tooltip_text(s.tooltip_text2);
+    GetClientRect(hwnd, &s.rect);
+    s.client_width = s.rect.right;
+    s.client_height = s.rect.bottom;
+    s.preview_width = (s.client_width * 0x23) / 100;
+    s.preview_height = (s.client_height * 0x3c) / 100;
+    s.preview_left = s.rect.left;
+    s.preview_top = s.rect.top;
+    MoveWindow(g_duel_card_preview_window_hwnd, s.rect.left, s.rect.top, s.preview_width, s.preview_height, 0);
+    GetWindowRect(g_duel_card_preview_window_hwnd, &s.rect);
+    s.preview_width = s.rect.right - s.rect.left;
+    s.preview_height = s.rect.bottom - s.rect.top;
+    GetClientRect(hwnd, &s.rect);
+    s.client_width = s.rect.right;
+    s.client_height = s.rect.bottom;
+    s.small_chat_height = s.client_width / 8;
+    s.player_life_height = s.client_height / 8;
+    s.top_middle_height = s.player_life_height;
+    s.player_life_x = s.rect.left;
+    s.opponent_life_x = s.player_life_x;
+    s.opponent_life_y = s.client_height / 2 - s.top_middle_height;
+    s.lower_life_y = s.client_height / 2;
+    s.lower_phasebar_y = s.small_chat_height / 2;
+    s.phasebar_width = s.small_chat_height - s.lower_phasebar_y;
+    s.half_phasebar_height = s.client_height / 8;
+    s.phasebar_height = s.half_phasebar_height;
+    s.face_x = (s.small_chat_height + s.opponent_life_x) - s.phasebar_width;
+    s.right_phasebar_x = s.face_x;
+    s.local_f0 = s.opponent_life_x;
+    s.local_ac = s.local_f0;
+    s.opponent_phasebar_x = s.opponent_life_y - s.phasebar_height;
+    s.lower_middle_y = s.opponent_phasebar_x;
+    s.local_70 = s.player_life_height + s.lower_life_y;
+    s.local_80 = s.local_70;
+    s.left_phasebar_width = s.small_chat_height;
+    s.battlefield_width = s.opponent_life_x;
+    s.preview_x = s.battlefield_width;
+    s.preview_y = s.rect.top;
+    s.player_face_x = s.local_80 + s.phasebar_height;
+    s.top_face_height = s.lower_middle_y - s.rect.top;
+    s.lower_middle_height = s.rect.bottom - s.player_face_x;
+    s.face_top = s.left_phasebar_width + s.preview_x;
+    s.face_y = s.rect.top;
+    s.divider_width = s.left_phasebar_width / 3;
+    s.face_height = s.client_height;
+    s.bottom_half_y = s.lower_life_y;
+    s.right_column_y = s.rect.top;
+    s.top_battlefield_height = (s.top_middle_height + s.opponent_life_y) - s.rect.top;
+    s.bottom_battlefield_height = s.rect.bottom - s.bottom_half_y;
+    s.right_battlefield_x = s.divider_width + s.face_top;
+    s.prompt_x = s.right_battlefield_x;
+    s.player_battlefield_width = (s.client_width - s.left_phasebar_width) - s.divider_width;
+    s.right_column_width = s.player_battlefield_width;
+    s.chat_height = (s.bottom_battlefield_height * 9) / 100;
+    s.right_column_x = s.prompt_x;
+    s.chat_y = s.bottom_half_y - s.chat_height / 2;
+    s.center_column_width = s.player_battlefield_width;
+    s.lower_phasebar_height = s.client_height / 0x28;
+    s.opponent_chat_x = s.right_battlefield_x;
+    s.opponent_chat_y = s.right_column_y;
+    s.right_chat_x = s.prompt_x;
+    s.player_chat_y = s.bottom_half_y - s.lower_phasebar_height;
+
+    ShowWindow(g_duel_card_preview_window_hwnd, SW_HIDE);
+    MoveWindow(g_duel_life_status_window_2_hwnd, s.opponent_life_x, s.opponent_life_y, s.small_chat_height, s.top_middle_height, 1);
+    MoveWindow(g_duel_life_status_window_1_hwnd, s.player_life_x, s.lower_life_y, s.small_chat_height, s.player_life_height, 1);
+    MoveWindow(unk_00939344, s.preview_x, s.preview_y, s.left_phasebar_width, s.top_face_height, 1);
+    MoveWindow(unk_008ce534, s.battlefield_width, s.player_face_x, s.left_phasebar_width, s.lower_middle_height, 1);
+    MoveWindow(DAT_0092680c, s.local_ac, s.lower_middle_y, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(DAT_0091ce30, s.local_f0, s.local_80, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(g_phasebar_your_untap_window_hwnd, s.right_phasebar_x, s.opponent_phasebar_x, s.phasebar_width, s.half_phasebar_height, 1);
+    MoveWindow(g_duel_player_graveyard_window_hwnd, s.face_x, s.local_70, s.phasebar_width, s.half_phasebar_height, 1);
+    MoveWindow(g_duel_card_preview_window_hwnd, s.preview_left, s.preview_top, s.preview_width, s.preview_height, 1);
+    MoveWindow(g_duel_help_owner_hwnd, s.right_battlefield_x, s.right_column_y, s.player_battlefield_width, s.top_battlefield_height, 1);
+    SendMessageA(g_duel_help_owner_hwnd, 0x412, 0, 0);
+    MoveWindow(g_duel_player_battlefield_window_hwnd, s.prompt_x, s.bottom_half_y, s.player_battlefield_width, s.bottom_battlefield_height, 1);
+    SendMessageA(g_duel_player_battlefield_window_hwnd, 0x412, 0, 0);
+    s.point.x = s.right_column_x;
+    s.point.y = s.chat_y;
+    ClientToScreen(hwnd, &s.point);
+    s.right_column_x = s.point.x;
+    s.chat_y = s.point.y;
+    MoveWindow(g_duel_prompt_context_hwnd, s.right_column_x, s.chat_y, s.right_column_width, s.chat_height, 1);
+    s.chat_text2_length = SendMessageA(g_duel_prompt_context_hwnd, 0x402, (WPARAM)s.chat_text2, 0);
+    set_duel_prompt_context(g_duel_prompt_context_hwnd, s.chat_text2, s.chat_text2_length);
+    MoveWindow(DAT_008a8dec, s.face_top, s.face_y, s.divider_width, s.face_height, 1);
+    MoveWindow(DAT_008a8d78, s.face_top, s.face_y, s.divider_width, s.face_height, 1);
+    MoveWindow(g_duel_opponent_face_window_hwnd, s.opponent_life_x, s.opponent_life_y, s.small_chat_height, s.top_middle_height, 1);
+    MoveWindow(g_duel_player_face_window_hwnd, s.player_life_x, s.lower_life_y, s.small_chat_height, s.player_life_height, 1);
+    s.point.x = s.opponent_chat_x;
+    s.point.y = s.opponent_chat_y;
+    ClientToScreen(hwnd, &s.point);
+    s.opponent_chat_x = s.point.x;
+    s.opponent_chat_y = s.point.y;
+    ShowWindow(global_opponent_chat_hwnd, SW_HIDE);
+    MoveWindow(global_opponent_chat_hwnd, s.opponent_chat_x, s.opponent_chat_y, s.center_column_width, s.lower_phasebar_height, 1);
+    s.point.x = s.right_chat_x;
+    s.point.y = s.player_chat_y;
+    ClientToScreen(hwnd, &s.point);
+    s.right_chat_x = s.point.x;
+    s.player_chat_y = s.point.y;
+    ShowWindow(g_duel_player_chat_window_hwnd, SW_HIDE);
+    MoveWindow(g_duel_player_chat_window_hwnd, s.right_chat_x, s.player_chat_y, s.center_column_width, s.lower_phasebar_height, 1);
+  }
+
+  resize_duel_hand_window(g_duel_full_card_window_hwnd);
+  resize_duel_hand_window(g_duel_life_window_hwnd);
+  resize_battlefield_child_card_windows(g_duel_player_battlefield_window_hwnd);
+  resize_battlefield_child_card_windows(g_duel_help_owner_hwnd);
+  layout_attack_phase_window(g_duel_attack_phase_window_hwnd);
+  layout_phase_display_window(g_duel_phase_display_window_hwnd, (LPRECT)0);
+  UpdateWindow(g_duel_card_preview_window_hwnd);
+  UpdateWindow(hwnd);
 }
 
 // FUNCTION: MAGIC 0x004e8f49
 // FUNCTION: SHANDALAR 0x00506d61
 void refresh_duel_window(HWND hwnd)
 {
+  struct
+  {
+    int child_rect[2];
+    LONG user_data_4;
+    int child_count;
+    int child_index;
+    int y;
+    int x;
+    LONG user_data_0;
+    HWND child_window;
+    HWND child_windows[200];
+    RECT client_rect;
+  } s;
+
+  s.user_data_4 = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
+  s.user_data_0 = GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
+  GetClientRect(hwnd, &s.client_rect);
+  reset_battlefield_layout_positions(hwnd);
+  s.child_window = GetWindow(GetWindow(hwnd, 5), 1);
+  s.child_count = 0;
+  while (s.child_window != (HWND)0)
+  {
+    if (get_card_window_hidden_flag(s.child_window) == 0)
+    {
+      s.child_windows[s.child_count] = s.child_window;
+      s.child_count++;
+    }
+    s.child_window = GetWindow(s.child_window, 3);
+  }
+  for (s.child_index = 0; s.child_index < s.child_count; s.child_index++)
+  {
+    s.child_window = s.child_windows[s.child_index];
+    if (get_card_window_hidden_flag(s.child_window) == 0)
+    {
+      SendMessageA(s.child_window, 0x401, (WPARAM)s.child_rect, 0);
+      get_next_battlefield_card_position(hwnd, s.child_rect, get_battlefield_card_stagger_offset(s.child_window), &s.x, &s.y, 1);
+      SetWindowPos(s.child_window, (HWND)0, s.x, s.y, 0, 0, 5);
+      BringWindowToTop(s.child_window);
+    }
+  }
+  for (s.child_index = 0; s.child_index < s.child_count; s.child_index++)
+  {
+    s.child_window = s.child_windows[s.child_index];
+    SendMessageA(hwnd, 0x410, (WPARAM)s.child_window, 0);
+  }
+  SendMessageA(hwnd, 0x412, 0, 0);
 }
 
 // FUNCTION: MAGIC 0x004bd131
@@ -271,53 +1092,60 @@ void copy_autosave_to_save_file(LPCSTR save_path)
 
 // FUNCTION: MAGIC 0x00464b6f
 // FUNCTION: SHANDALAR 0x00562893
-void FUN_00464b6f(void)
+void StopWorldLocationMusic(void)
 {
+#ifdef SHANDALAR
+  if (g_world_location_music_active != 0)
+  {
+    sound_stop(0x10);
+  }
+  g_world_location_music_active = 0;
+#endif
 }
 
 // FUNCTION: MAGIC 0x0043de00
-void FUN_0043de00(void)
+void reset_duel_globals(void)
 {
 }
 
 // FUNCTION: MAGIC 0x004458d4
-void FUN_004458d4(void)
+void reset_timestamp_players(void)
 {
 }
 
 // FUNCTION: MAGIC 0x004ecdc0
-void FUN_004ecdc0(int player)
+void load_selected_duel_save_slot(int player)
 {
   (void)player;
 }
 
 // FUNCTION: MAGIC 0x004ef17b
-void FUN_004ef17b(char *path)
+void load_duel_run_mode_1_save(char *path)
 {
   (void)path;
 }
 
 // FUNCTION: MAGIC 0x004ef35a
-void FUN_004ef35a(char *path)
+void load_duel_run_mode_2_save(char *path)
 {
   (void)path;
 }
 
 // FUNCTION: MAGIC 0x004ef54b
-void FUN_004ef54b(char *path)
+void load_duel_run_mode_3_save(char *path)
 {
   (void)path;
 }
 
 // FUNCTION: MAGIC 0x0044b56a
-int FUN_0044b56a(void)
+int check_duel_finished(void)
 {
   return 0;
 }
 
 // FUNCTION: MAGIC 0x0044a7e0
 // FUNCTION: SHANDALAR 0x00403160
-void FUN_0044a7e0(unsigned int player)
+void run_duel_turn(unsigned int player)
 {
   (void)player;
 }
@@ -344,57 +1172,320 @@ int CountDuelPoolEligibleTowns(void)
 
 // FUNCTION: MAGIC 0x004e1c4f
 // FUNCTION: SHANDALAR 0x00561441
-char *FUN_004e1c4f(int creature_type)
+char *GetCreatureName(int creature_type)
 {
+#ifdef SHANDALAR
+  return gs_creature_names_00591a08[creature_type].name;
+#else
   (void)creature_type;
   return DAT_007a7c60;
+#endif
 }
 
 // FUNCTION: MAGIC 0x004c0a0a
 // FUNCTION: SHANDALAR 0x004ece9a
-void FUN_004c0a0a(void)
+#ifdef SHANDALAR
+int SeedRandomFromTickCount(void)
 {
+  _DAT_007483f4 = GetTickCount() & 0x7fff;
+  DAT_007483f0 = 1;
+  return 0;
+}
+#else
+void SeedRandomFromTickCount(void)
+{
+}
+
+// FUNCTION: MAGIC 0x004e1b99
+void AddJournalEntry(int entry_type, int entry_arg)
+{
+}
+#endif
+
+// FUNCTION: MAGIC 0x004d91c9
+// FUNCTION: SHANDALAR 0x00417946
+void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name)
+{
+  struct
+  {
+    char in_quotes;
+    char pad_01_to_03[3];
+    int current_id;
+    char delim[11];
+    char pad_13;
+    char token[512];
+    char field_idx;
+    char pad_215_to_217[3];
+    FILE *fp;
+    int fscanf_ret;
+  } s;
+
+  s.fp = fopen(csv_name, "rb");
+  s.in_quotes = 0;
+  s.field_idx = s.in_quotes;
+  *out = '\0';
+
+  if ((master_csv_offsets[csvid] != -1) && (strcmp(csv_name, "master.csv") == 0))
+  {
+    fseek(s.fp, (long)master_csv_offsets[csvid], 0);
+  }
+
+  do
+  {
+    s.fscanf_ret = fscanf(s.fp, "%[^,\n] %[,\n]", s.token, s.delim);
+    if (s.fscanf_ret == 0)
+    {
+      break;
+    }
+
+    if (s.token[0] == '0')
+    {
+      s.current_id = atoi(s.token);
+    }
+
+    if (s.current_id == csvid)
+    {
+      ++s.field_idx;
+      if ((s.field_idx == field) && s.in_quotes)
+      {
+        strcat(out, ",");
+      }
+      if (s.token[0] == '\"')
+      {
+        s.in_quotes = 1;
+      }
+      if (s.field_idx == field)
+      {
+        strcat(out, s.token);
+      }
+      if (s.token[strlen(s.token) - 1] == '\"')
+      {
+        s.in_quotes = 0;
+      }
+      if (s.in_quotes)
+      {
+        --s.field_idx;
+      }
+    }
+
+  } while ((s.fscanf_ret != -1) && ((s.field_idx == '\0') || (s.current_id == csvid)));
+
+  fclose(s.fp);
+}
+
+// FUNCTION: MAGIC 0x004b5de8
+// FUNCTION: SHANDALAR 0x0056c5ea
+int GetCardRarity(int param_1)
+{
+  struct
+  {
+    char rarity_str[32];
+    int rarity;
+  } s;
+
+  if (((global_cards_data[param_1].extra_ability & 0x180U) != 0) || (global_cards_data[param_1].expansion == '@'))
+  {
+    global_cards_data[param_1].rarity = 4;
+  }
+
+  if ((signed char)global_cards_data[param_1].rarity != -1)
+  {
+    s.rarity = (int)(signed char)global_cards_data[param_1].rarity;
+
+    return s.rarity;
+  }
+
+  ReadCsvFieldByCsvid(s.rarity_str, global_cards_data[param_1].id, 9, "info.csv");
+
+  s.rarity = 1;
+
+  if (strcmp(s.rarity_str, "Special") == 0)
+  {
+    s.rarity = 3;
+  }
+
+  if (strcmp(s.rarity_str, "Rare") == 0)
+  {
+    s.rarity = 3;
+  }
+
+  if (strcmp(s.rarity_str, "Uncommon") == 0)
+  {
+    s.rarity = 2;
+  }
+
+  global_cards_data[param_1].rarity = (unsigned char)s.rarity;
+
+  return s.rarity;
 }
 
 // FUNCTION: MAGIC 0x004b559a
 // FUNCTION: SHANDALAR 0x0056bd9d
-void FUN_004b559a(int color)
+int AddCardToDeckSorted(int card_id)
 {
-  (void)color;
-}
 
-// FUNCTION: MAGIC 0x004b5416
-int FUN_004b5416(void)
-{
+  struct
+  {
+    int selected_state_sprite;
+    int location_block_start_index;
+    unsigned int inner_index;
+    int entry_index;
+    int local_4;
+  } s;
+
+  if (GetCardRarity(card_id) >= 3)
+  {
+    AddJournalEntry((int)card_id / 0x100 + JOURNAL_ENTRY_CARD_FOUND_SET0, card_id & 0xff);
+  }
+  s.entry_index = single_color_test_bit_to_color_t(global_cards_data[card_id].color) * 0x20 + (unsigned int)global_cards_data[card_id].type * 0x100 +
+                  (int)global_cards_data[card_id].name[0];
+  s.selected_state_sprite = 0;
+  for (s.location_block_start_index = 0; s.location_block_start_index < 500; s.location_block_start_index = s.location_block_start_index + 1)
+  {
+    if (deck[s.location_block_start_index] == -1)
+    {
+      s.selected_state_sprite = 1;
+    }
+  }
+  if (s.selected_state_sprite == 0)
+  {
+    return -1;
+  }
+  for (s.location_block_start_index = 0x1f2; s.location_block_start_index >= 0; s.location_block_start_index = s.location_block_start_index - 1)
+  {
+    if (deck[s.location_block_start_index] == -1)
+    {
+      continue;
+    }
+
+    s.inner_index = (unsigned int)deck[s.location_block_start_index] & 0xfff;
+    s.local_4 = single_color_test_bit_to_color_t(global_cards_data[s.inner_index].color) * 0x20 + (int)global_cards_data[s.inner_index].name[0] +
+                (unsigned int)global_cards_data[s.inner_index].type * 0x100;
+    if (s.local_4 >= s.entry_index)
+    {
+      deck[s.location_block_start_index + 1] = card_id;
+      card_id = (unsigned int)-1;
+      return s.location_block_start_index + 1;
+    }
+    deck[s.location_block_start_index + 1] = (unsigned int)deck[s.location_block_start_index];
+  }
+  deck[0] = card_id;
   return 0;
 }
 
-// FUNCTION: MAGIC 0x00464700
-void FUN_00464700(int wizard_color)
+// FUNCTION: MAGIC 0x004b5416
+int draw_random_unmarked_deck_card(void)
 {
-  (void)wizard_color;
+  int candidate_count;
+  int candidate_indexes[500];
+  int deck_index;
+  int random_index;
+
+  candidate_count = 0;
+  for (deck_index = 0; deck_index < 500; deck_index++)
+  {
+    if ((deck[deck_index] != -1) && ((deck[deck_index] & 0xc000) == 0))
+    {
+      candidate_indexes[candidate_count] = deck_index;
+      candidate_count++;
+    }
+  }
+  if (candidate_count == 0)
+  {
+    return -1;
+  }
+  random_index = internal_rand(candidate_count);
+  deck[candidate_indexes[random_index]] |= 0x8000;
+  return deck[candidate_indexes[random_index]] & 0xfff;
+}
+
+// FUNCTION: MAGIC 0x00464700
+void copy_initial_library_to_player_zero(int wizard_color)
+{
+  int card_index;
+
+  for (card_index = 0; card_index < 200; card_index++)
+  {
+    initial_library[0][card_index].csvid = initial_library[wizard_color][card_index].csvid;
+    initial_library[0][card_index].numcards = initial_library[wizard_color][card_index].numcards;
+  }
 }
 
 // FUNCTION: MAGIC 0x0046476f
-void FUN_0046476f(int player, int internal_card_id)
+void remove_iid_from_initial_library(int player, int internal_card_id)
 {
-  (void)player;
-  (void)internal_card_id;
+  int card_index;
+
+  for (card_index = 0; card_index < 200; card_index++)
+  {
+    if ((initial_library[player][card_index].numcards > 0) &&
+        (CardTypeFromID(initial_library[player][card_index].csvid) == internal_card_id))
+    {
+      initial_library[player][card_index].numcards--;
+      return;
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x004b3dee
-void FUN_004b3dee(int player, int wizard_color)
+void perform_player_mulligan(int player, int wizard_color)
 {
   (void)player;
   (void)wizard_color;
 }
 
 // FUNCTION: MAGIC 0x004b3cc2
-void FUN_004b3cc2(int *redraw_result, int *ante_result, int *ante_info)
+void evaluate_opening_hand_land_counts(int *redraw_result, int *ante_result, int *ante_info)
 {
-  (void)redraw_result;
-  (void)ante_result;
-  (void)ante_info;
+  int card_index;
+  int opponent_land_count;
+  int player_land_count;
+
+  player_land_count = 0;
+  opponent_land_count = 0;
+  for (card_index = 0; card_index < 7; card_index++)
+  {
+    if ((global_cards_data[global_card_instances[1][card_index].internal_card_id].type & TYPE_LAND) != 0)
+    {
+      opponent_land_count++;
+    }
+    if ((global_cards_data[global_card_instances[0][card_index].internal_card_id].type & TYPE_LAND) != 0)
+    {
+      player_land_count++;
+    }
+  }
+  if (player_land_count == 0)
+  {
+    *redraw_result = 1;
+  }
+  else if (player_land_count == 7)
+  {
+    *redraw_result = 2;
+  }
+  else
+  {
+    *redraw_result = 0;
+  }
+  if (opponent_land_count == 0)
+  {
+    *ante_result = 1;
+  }
+  else if (opponent_land_count == 7)
+  {
+    *ante_result = 2;
+  }
+  else
+  {
+    *ante_result = 0;
+  }
+  if ((opponent_land_count < 2) || (opponent_land_count > 5))
+  {
+    *ante_info = 1;
+  }
+  else
+  {
+    *ante_info = 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x004b23a9
@@ -432,7 +1523,7 @@ int play_duel(int player, int creature_type)
     creature_type = -1;
   }
 
-  FUN_00464b6f();
+  StopWorldLocationMusic();
   unk_00742fc4 = 1;
   for (s.player_index = 0; s.player_index < 2; s.player_index = s.player_index + 1)
   {
@@ -459,8 +1550,8 @@ int play_duel(int player, int creature_type)
   unk_007abc78 = 0;
   unk_008b44d0[0] = 0;
   unk_008b44d0[1] = 0;
-  FUN_0043de00();
-  FUN_004458d4();
+  reset_duel_globals();
+  reset_timestamp_players();
 
   if (creature_type != -1)
   {
@@ -552,7 +1643,7 @@ int play_duel(int player, int creature_type)
     {
       life[1] = g_shandalar_difficulty * 100 + 100;
     }
-    strcpy(DAT_007a7c60, FUN_004e1c4f(creature_type));
+    strcpy(DAT_007a7c60, GetCreatureName(creature_type));
     s.opening_hand_count = ClampIntToRange(DAT_007a7874 + g_shandalar_difficulty + 4, 0, 99);
     if (g_shandalar_difficulty == 3)
     {
@@ -565,7 +1656,7 @@ int play_duel(int player, int creature_type)
       s.opening_hand_count = 3;
     }
     unk_007161d8 = 7 - s.opening_hand_count;
-    FUN_004c0a0a();
+    SeedRandomFromTickCount();
     if (g_shandalar_difficulty != 0 && internal_rand(2) != 0 && g_duel_ai_mode_state == 0)
     {
       s.starting_player = 1;
@@ -612,7 +1703,7 @@ int play_duel(int player, int creature_type)
              s.card_index < s.shandalar_deck_minimums[g_shandalar_difficulty] - s.shandalar_deck_minimums[4];
              s.card_index = s.card_index + 1)
         {
-          FUN_004b559a(internal_rand(5));
+          AddCardToDeckSorted(internal_rand(5));
         }
       }
       for (s.card_index = 0; s.card_index < 0x3c; s.card_index = s.card_index + 1)
@@ -642,7 +1733,7 @@ int play_duel(int player, int creature_type)
       {
         if (g_selected_wizard_color == -1)
         {
-          add_card_to_hand(0, FUN_004b5416());
+          add_card_to_hand(0, draw_random_unmarked_deck_card());
         }
         else
         {
@@ -653,10 +1744,10 @@ int play_duel(int player, int creature_type)
       {
         if (g_selected_wizard_color == -1)
         {
-          FUN_00464700(DAT_0057a750);
+          copy_initial_library_to_player_zero(DAT_0057a750);
           if (DAT_008ced00[0] != -1)
           {
-            FUN_0046476f(0, DAT_008ced00[0]);
+            remove_iid_from_initial_library(0, DAT_008ced00[0]);
           }
         }
         for (s.card_index = 0; s.opening_hand_count > s.card_index; s.card_index = s.card_index + 1)
@@ -664,7 +1755,7 @@ int play_duel(int player, int creature_type)
           add_card_to_hand(1, DrawRandomCardFromInitialLibrary(g_selected_wizard_color != -1));
         }
       }
-      FUN_004b3cc2(&s.ante_info, &s.ante_result, &s.redraw_result);
+      evaluate_opening_hand_land_counts(&s.ante_info, &s.ante_result, &s.redraw_result);
       run_duel_coin_flip_dialogs(&s.starting_player,
                                  &s.mulligan_accepted,
                                  s.starting_player,
@@ -701,7 +1792,7 @@ int play_duel(int player, int creature_type)
         {
           if (g_selected_wizard_color == -1)
           {
-            add_card_to_hand(0, FUN_004b5416());
+            add_card_to_hand(0, draw_random_unmarked_deck_card());
           }
           else
           {
@@ -719,10 +1810,10 @@ int play_duel(int player, int creature_type)
         }
         if (g_selected_wizard_color == -1)
         {
-          FUN_00464700(DAT_0057a750);
+          copy_initial_library_to_player_zero(DAT_0057a750);
           if (DAT_008ced00[0] != -1)
           {
-            FUN_0046476f(0, DAT_008ced00[0]);
+            remove_iid_from_initial_library(0, DAT_008ced00[0]);
           }
         }
         for (s.card_index = 0; s.opening_hand_count > s.card_index; s.card_index = s.card_index + 1)
@@ -739,7 +1830,7 @@ int play_duel(int player, int creature_type)
       {
         if (g_selected_wizard_color == -1)
         {
-          global_library[0][s.card_index] = FUN_004b5416();
+          global_library[0][s.card_index] = draw_random_unmarked_deck_card();
         }
         else
         {
@@ -753,7 +1844,7 @@ int play_duel(int player, int creature_type)
         memcpy(global_library[1], global_library[0], 1000);
         s.card_index = g_duel_ai_mode_state;
         g_duel_ai_mode_state = 1;
-        FUN_004b59b2(0, 1);
+        shuffle_duel_library(0, 1);
         g_duel_ai_mode_state = s.card_index;
         memcpy(global_card_instances[1], global_card_instances[0], 0xb0f4);
         for (s.card_index = 0; s.card_index < 0x96; s.card_index = s.card_index + 1)
@@ -766,11 +1857,11 @@ int play_duel(int player, int creature_type)
         unk_007161d8 = 0;
       }
       g_duel_ai_mode_state = 0;
-      FUN_0043de00();
+      reset_duel_globals();
       if (DAT_008cf6d0 != -1)
       {
         s.card_index = add_card_to_hand(1, DAT_008cf6d0);
-        FUN_0051a41c(1, s.card_index);
+        process_card_enters_play(1, s.card_index);
         DAT_008cf6d0 = -1;
         if (g_next_duel_card_id == -1)
         {
@@ -780,7 +1871,7 @@ int play_duel(int player, int creature_type)
       if (unk_00789308 != -1)
       {
         s.card_index = add_card_to_hand(1, unk_00789308);
-        FUN_0051a41c(1, s.card_index);
+        process_card_enters_play(1, s.card_index);
         unk_00789308 = -1;
         if (g_next_duel_card_id == -1)
         {
@@ -790,7 +1881,7 @@ int play_duel(int player, int creature_type)
       if (g_next_duel_card_id > 5)
       {
         s.card_index = add_card_to_hand(0, g_next_duel_card_id);
-        FUN_0051a41c(0, s.card_index);
+        process_card_enters_play(0, s.card_index);
       }
     }
   }
@@ -802,16 +1893,16 @@ int play_duel(int player, int creature_type)
     }
     life[1] = 0x14;
     life[0] = life[1];
-    FUN_00449bef(DAT_007a7c60);
+    copy_opponent_name_prefix(DAT_007a7c60);
     s.opening_hand_count = 7;
     unk_007161d8 = 0;
     DAT_008951c8 = 1;
     DAT_008ce538 = -1;
-    FUN_004c0a0a();
+    SeedRandomFromTickCount();
     if ((g_duel_network_flags & 2) != 0)
     {
-      FUN_00501d78(0);
-      FUN_00501deb(1);
+      send_battlefield_status_packet(0);
+      receive_battlefield_status_packet(1);
     }
     if (DAT_00896718 == -1)
     {
@@ -919,7 +2010,7 @@ int play_duel(int player, int creature_type)
           add_card_to_hand(1, DrawRandomCardFromInitialLibrary(DAT_0057a750));
         }
       }
-      FUN_004b3cc2(&s.ante_info, &s.ante_result, &s.redraw_result);
+      evaluate_opening_hand_land_counts(&s.ante_info, &s.ante_result, &s.redraw_result);
       for (s.loop_player = 0; s.loop_player <= 1; s.loop_player++)
       {
         if (s.loop_player == 0)
@@ -960,13 +2051,13 @@ int play_duel(int player, int creature_type)
                                  &s.shandalar_deck_minimums[5]);
       if (s.mulligan_accepted != 0)
       {
-        FUN_004b3dee(0, g_selected_wizard_color);
+        perform_player_mulligan(0, g_selected_wizard_color);
         TENTATIVE_reassess_all_cards(0, 0x30);
       }
       if (((g_duel_network_flags & 2) == 0 && (s.ante_result != 0 || (s.mulligan_accepted != 0 && s.redraw_result != 0))) ||
           ((g_duel_network_flags & 2) != 0 && s.shandalar_deck_minimums[5] != 0))
       {
-        FUN_004b3dee(1, DAT_0057a750);
+        perform_player_mulligan(1, DAT_0057a750);
         TENTATIVE_reassess_all_cards(0, 0x30);
       }
       for (s.loop_player = 0; s.loop_player <= 1; s.loop_player++)
@@ -1012,35 +2103,35 @@ int play_duel(int player, int creature_type)
       g_selected_wizard_color = -1;
       s.loop_5c = g_duel_ai_mode_state;
       g_duel_ai_mode_state = 1;
-      FUN_004b59b2(0, 0);
-      FUN_004b59b2(1, 1);
+      shuffle_duel_library(0, 0);
+      shuffle_duel_library(1, 1);
       g_duel_ai_mode_state = s.loop_5c;
     }
   }
 
-  FUN_0043de00();
+  reset_duel_globals();
 
   if (g_duel_ai_mode_state == -1)
   {
-    FUN_004ecdc0(0);
+    load_selected_duel_save_slot(0);
   }
   if (g_duel_ai_mode_state == -2)
   {
-    FUN_004ecdc0(1);
+    load_selected_duel_save_slot(1);
   }
   if (g_duel_ai_mode_state == -10 && 0 < g_duel_run_mode)
   {
     if (g_duel_run_mode == 1)
     {
-      FUN_004ef17b(DAT_008a915c);
+      load_duel_run_mode_1_save(DAT_008a915c);
     }
     else if (g_duel_run_mode == 2)
     {
-      FUN_004ef35a(DAT_008a915c);
+      load_duel_run_mode_2_save(DAT_008a915c);
     }
     else if (g_duel_run_mode == 3)
     {
-      FUN_004ef54b(DAT_008a915c);
+      load_duel_run_mode_3_save(DAT_008a915c);
     }
     TENTATIVE_reassess_all_cards(0, 0xff);
     s.next_player = human_player;
@@ -1074,7 +2165,7 @@ int play_duel(int player, int creature_type)
   {
   } while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0);
 #endif
-  while (DAT_0091bfb0 == 0 && FUN_0044b56a() == 0)
+  while (DAT_0091bfb0 == 0 && check_duel_finished() == 0)
   {
     if (DAT_0093a848 != 0)
     {
@@ -1085,7 +2176,7 @@ int play_duel(int player, int creature_type)
         {
           g_duel_extra_turn_player = -1;
         }
-        FUN_0044a7e0(0);
+        run_duel_turn(0);
         g_duel_extra_turn_player = -1;
       }
       else
@@ -1095,13 +2186,13 @@ int play_duel(int player, int creature_type)
         {
           g_duel_extra_turn_player = -1;
         }
-        FUN_0044a7e0(1);
+        run_duel_turn(1);
       }
       g_duel_extra_turn_player = -1;
     }
     else
     {
-      FUN_0044a7e0(s.next_player);
+      run_duel_turn(s.next_player);
       s.next_player = 1 - s.next_player;
     }
   }
@@ -1156,9 +2247,175 @@ int get_primary_color_from_duel_deck(int player)
 // FUNCTION: MAGIC 0x004dd719
 void apply_duel_backdrop_art(int player, int color, int variant)
 {
-  (void)player;
-  (void)color;
-  (void)variant;
+  struct
+  {
+    HWND hand_window;
+    HWND graveyard_window;
+    HWND life_window;
+    HWND battlefield_window;
+    char path[264];
+    HBITMAP bitmap;
+    char asset_name[52];
+    BITMAP bitmap_info;
+    RECT hand_rect;
+  } s;
+
+  if (color == 1)
+  {
+    strcpy(s.asset_name, "TERR_BLACK");
+  }
+  else if (color == 5)
+  {
+    strcpy(s.asset_name, "TERR_WHITE");
+  }
+  else if (color == 3)
+  {
+    strcpy(s.asset_name, "TERR_GREEN");
+  }
+  else if (color == 2)
+  {
+    strcpy(s.asset_name, "TERR_BLUE");
+  }
+  else
+  {
+    strcpy(s.asset_name, "TERR_RED");
+  }
+  if (variant == 0)
+  {
+    strcat(s.asset_name, "pict");
+  }
+  else if (variant == 1)
+  {
+    strcat(s.asset_name, "patt");
+  }
+  else
+  {
+    strcat(s.asset_name, "mana");
+  }
+  sprintf(s.path, "%s\\%s.pic", global_duelart_path, s.asset_name);
+  s.bitmap = load_pic(s.path);
+  if (player == 0)
+  {
+    s.battlefield_window = g_duel_player_battlefield_window_hwnd;
+  }
+  else
+  {
+    s.battlefield_window = g_duel_help_owner_hwnd;
+  }
+  SendMessageA(s.battlefield_window, 0x439, (WPARAM)s.bitmap, 0);
+
+  if (color == 1)
+  {
+    strcpy(s.asset_name, "LIFE_BLACK");
+  }
+  else if (color == 5)
+  {
+    strcpy(s.asset_name, "LIFE_WHITE");
+  }
+  else if (color == 3)
+  {
+    strcpy(s.asset_name, "LIFE_GREEN");
+  }
+  else if (color == 2)
+  {
+    strcpy(s.asset_name, "LIFE_BLUE");
+  }
+  else
+  {
+    strcpy(s.asset_name, "LIFE_RED");
+  }
+  if (variant == 0)
+  {
+    strcat(s.asset_name, "pict");
+  }
+  else if (variant == 1)
+  {
+    strcat(s.asset_name, "patt");
+  }
+  else
+  {
+    strcat(s.asset_name, "mana");
+  }
+  sprintf(s.path, "%s\\%s.pic", global_duelart_path, s.asset_name);
+  s.bitmap = load_pic(s.path);
+  if (player == 0)
+  {
+    s.life_window = g_duel_life_status_window_1_hwnd;
+  }
+  else
+  {
+    s.life_window = g_duel_life_status_window_2_hwnd;
+  }
+  SendMessageA(s.life_window, 0x439, (WPARAM)s.bitmap, 0);
+
+  if (color == 1)
+  {
+    strcpy(s.asset_name, "GRAVE_BLACK");
+  }
+  else if (color == 5)
+  {
+    strcpy(s.asset_name, "GRAVE_WHITE");
+  }
+  else if (color == 3)
+  {
+    strcpy(s.asset_name, "GRAVE_GREEN");
+  }
+  else if (color == 2)
+  {
+    strcpy(s.asset_name, "GRAVE_BLUE");
+  }
+  else
+  {
+    strcpy(s.asset_name, "GRAVE_RED");
+  }
+  sprintf(s.path, "%s\\%s.pic", global_duelart_path, s.asset_name);
+  s.bitmap = load_pic(s.path);
+  if (player == 0)
+  {
+    s.graveyard_window = g_duel_player_graveyard_window_hwnd;
+  }
+  else
+  {
+    s.graveyard_window = g_phasebar_your_untap_window_hwnd;
+  }
+  SendMessageA(s.graveyard_window, 0x439, (WPARAM)s.bitmap, 0);
+
+  if (color == 1)
+  {
+    strcpy(s.asset_name, "HAND_BLACK");
+  }
+  else if (color == 5)
+  {
+    strcpy(s.asset_name, "HAND_WHITE");
+  }
+  else if (color == 3)
+  {
+    strcpy(s.asset_name, "HAND_GREEN");
+  }
+  else if (color == 2)
+  {
+    strcpy(s.asset_name, "HAND_BLUE");
+  }
+  else
+  {
+    strcpy(s.asset_name, "HAND_RED");
+  }
+  sprintf(s.path, "%s\\%s.pic", global_duelart_path, s.asset_name);
+  s.bitmap = load_pic(s.path);
+  GetObjectA(s.bitmap, sizeof(BITMAP), &s.bitmap_info);
+  s.hand_rect.top = 0xb;
+  s.hand_rect.left = s.bitmap_info.bmHeight - s.hand_rect.top;
+  s.hand_rect.right = 7;
+  s.hand_rect.bottom = 4;
+  if (player == 0)
+  {
+    s.hand_window = g_duel_full_card_window_hwnd;
+  }
+  else
+  {
+    s.hand_window = g_duel_life_window_hwnd;
+  }
+  SendMessageA(s.hand_window, 0x439, (WPARAM)s.bitmap, (LPARAM)&s.hand_rect);
 }
 
 // FUNCTION: MAGIC 0x004ee26e
@@ -1206,17 +2463,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     int enemy_backdrop_color;
     int player_backdrop_result;
 
-    union
-    {
-      char help_path[264];
-      struct
-      {
-        int player_color;
-        int enemy_color;
-        int player_variant;
-        char path[252];
-      } backdrop;
-    } help_area;
+    int backdrop_player_color;
+    int backdrop_enemy_color;
+    int backdrop_player_variant;
+    char backdrop_path[252];
 
     int slot_index;
     BOOL visible;
@@ -1387,7 +2637,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
 
   case 0x400:
     g_duel_main_window_closing = 0;
-    if (DAT_0091c998 == 2)
+    if (g_duel_interface_options.layout == 2)
     {
       ShowWindow(g_duel_card_preview_window_hwnd, SW_HIDE);
     }
@@ -1469,8 +2719,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
       if (g_duel_creature_type != -1)
       {
-        sprintf(s.help_area.backdrop.path, "%s\\%03d.pic", global_faces_path, g_duel_creature_type);
-        s.screen_height = (int)load_pic(s.help_area.backdrop.path);
+        sprintf(s.backdrop_path, "%s\\%03d.pic", global_faces_path, g_duel_creature_type);
+        s.screen_height = (int)load_pic(s.backdrop_path);
       }
       else
       {
@@ -1489,47 +2739,47 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     }
     if ((g_duel_mode_flags & 0x10) != 0)
     {
-      s.help_area.backdrop.player_color = 1;
-      s.help_area.backdrop.enemy_color = s.help_area.backdrop.player_color;
-      s.help_area.backdrop.player_variant = 2;
-      s.player_backdrop_result = s.help_area.backdrop.player_variant;
+      s.backdrop_player_color = 1;
+      s.backdrop_enemy_color = s.backdrop_player_color;
+      s.backdrop_player_variant = 2;
+      s.player_backdrop_result = s.backdrop_player_variant;
     }
     else if (g_duel_use_previous_backdrop_colors != 0)
     {
-      s.help_area.backdrop.enemy_color = g_last_duel_enemy_primary_color;
+      s.backdrop_enemy_color = g_last_duel_enemy_primary_color;
       s.player_backdrop_result = g_last_duel_result_state;
       if (DAT_0091c99c == -1)
       {
-        s.help_area.backdrop.player_color = g_last_duel_player_primary_color;
+        s.backdrop_player_color = g_last_duel_player_primary_color;
       }
       else
       {
-        s.help_area.backdrop.player_color = DAT_0091c99c;
+        s.backdrop_player_color = DAT_0091c99c;
       }
-      s.help_area.backdrop.player_variant = DAT_0091c9a0;
+      s.backdrop_player_variant = DAT_0091c9a0;
     }
     else
     {
-      s.help_area.backdrop.enemy_color = g_last_duel_enemy_primary_color;
+      s.backdrop_enemy_color = g_last_duel_enemy_primary_color;
       s.player_backdrop_result = rand() % 3;
       if (DAT_0091c99c == -1)
       {
-        s.help_area.backdrop.player_color = g_last_duel_player_primary_color;
+        s.backdrop_player_color = g_last_duel_player_primary_color;
       }
       else
       {
-        s.help_area.backdrop.player_color = DAT_0091c99c;
+        s.backdrop_player_color = DAT_0091c99c;
       }
-      s.help_area.backdrop.player_variant = DAT_0091c9a0;
-      if ((s.help_area.backdrop.player_color == s.help_area.backdrop.enemy_color) &&
-          (s.help_area.backdrop.player_variant == s.player_backdrop_result))
+      s.backdrop_player_variant = DAT_0091c9a0;
+      if ((s.backdrop_player_color == s.backdrop_enemy_color) &&
+          (s.backdrop_player_variant == s.player_backdrop_result))
       {
         s.player_backdrop_result = (s.player_backdrop_result + 1) % 3;
       }
       g_last_duel_result_state = s.player_backdrop_result;
     }
-    apply_duel_backdrop_art(1, s.help_area.backdrop.enemy_color, s.player_backdrop_result);
-    apply_duel_backdrop_art(0, s.help_area.backdrop.player_color, s.help_area.backdrop.player_variant);
+    apply_duel_backdrop_art(1, s.backdrop_enemy_color, s.player_backdrop_result);
+    apply_duel_backdrop_art(0, s.backdrop_player_color, s.backdrop_player_variant);
     if (IsWindowVisible(hwnd) == 0)
     {
       ShowWindow(hwnd, SW_SHOW);
@@ -1659,7 +2909,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
         if (s.command_saved_phase_flags != -1)
         {
-          FUN_0051a41c(s.player_backdrop_color, s.command_saved_phase_flags);
+          process_card_enters_play(s.player_backdrop_color, s.command_saved_phase_flags);
         }
         DAT_007abc90[human_player * 0x26 + current_phase] = (unsigned char)s.command_selected_card;
         notify_duel_action(0, 0xff);
@@ -1703,7 +2953,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           s.player_backdrop_color = 1;
         }
-        FUN_0043e18b(s.player_backdrop_color);
+        draw_card_for_player(s.player_backdrop_color);
         notify_duel_action(0, 0xff);
       }
       break;
@@ -1720,7 +2970,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           s.player_backdrop_color = 1;
         }
-        life[s.player_backdrop_color] = FUN_004a09c6(0,
+        life[s.player_backdrop_color] = prompt_for_life_total(0,
                                                      s.player_backdrop_color == 0 ? "Set player lives to:" : "Set opponent lives tp:",
                                                      life[s.player_backdrop_color]);
         notify_duel_action(0, 0xff);
@@ -1921,7 +3171,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     if ((wparam == SIZE_RESTORED) && (g_duel_main_window_minimized == 0))
     {
       LockWindowUpdate(hwnd);
-      layout_duel_child_windows(hwnd, DAT_0091c998);
+      layout_duel_child_windows(hwnd, g_duel_interface_options.layout);
       refresh_duel_window(g_duel_player_battlefield_window_hwnd);
       refresh_duel_window(g_duel_help_owner_hwnd);
       LockWindowUpdate((HWND)0);

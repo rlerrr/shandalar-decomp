@@ -335,7 +335,7 @@ int card_natural_selection(int player, int card, event_t event)
 
     if (choice_count < count)
     {
-      FUN_004b59b2(player, instance->targets[0].player);
+      shuffle_duel_library(player, instance->targets[0].player);
     }
     else
     {

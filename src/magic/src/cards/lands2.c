@@ -87,8 +87,8 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    FUN_0043e18b(player);
-    FUN_0043e18b(player);
+    draw_card_for_player(player);
+    draw_card_for_player(player);
     discard(player, 0, 0);
     discard(player, 0, 0);
     discard(player, 0, 0);

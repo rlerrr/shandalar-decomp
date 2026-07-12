@@ -432,7 +432,7 @@ int card_animate_dead(int player, int card, event_t event)
         else
         {
           load_text("prompts.txt", "ANIMATE_DEAD");
-          FUN_00449bef(graveyard_name);
+          copy_opponent_name_prefix(graveyard_name);
           sprintf(prompt, text_lines[3], graveyard_name);
         }
 
@@ -504,7 +504,7 @@ int card_animate_dead(int player, int card, event_t event)
     {
       FUN_004b15f7(chosen_graveyard, graveyard_data[3]);
       PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      FUN_0051a41c((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+      process_card_enters_play((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                    PLAYER_CARD_INSTANCE(player, card).damage_target_card);
       *((short *)((char *)&PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                                                 PLAYER_CARD_INSTANCE(player, card).damage_target_card) +
@@ -544,7 +544,7 @@ int card_animate_dead(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0051a41c
-int FUN_0051a41c(int player, int card)
+int process_card_enters_play(int player, int card)
 {
   int internal_card_id;
   int card_type;
@@ -5300,7 +5300,7 @@ int card_copy_artifact(int player, int card, event_t event)
       }
       else
       {
-        FUN_0051a41c(player, card);
+        process_card_enters_play(player, card);
       }
     }
 

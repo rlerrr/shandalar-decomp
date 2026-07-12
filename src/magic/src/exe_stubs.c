@@ -1910,76 +1910,6 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
   return (int)s.result_flags;
 }
 
-// FUNCTION: MAGIC 0x004d91c9
-void FUN_004d91c9(char *out, int csvid, int field, const char *csv_name)
-{
-  struct
-  {
-    int current_id;
-    char in_quotes;
-    char field_idx;
-    char delim[11];
-    char token[513];
-    FILE *fp;
-    int fscanf_ret;
-  } s;
-
-  s.fp = fopen(csv_name, "rb");
-  s.in_quotes = 0;
-  s.field_idx = '\0';
-  out[0] = '\0';
-
-  if (master_csv_offsets[csvid] != -1 && strcmp(csv_name, "master.csv") == 0)
-  {
-    fseek(s.fp, (long)master_csv_offsets[csvid], 0);
-  }
-
-  while ((s.fscanf_ret = fscanf(s.fp, "%[^,\n] %[,\n]", s.token, s.delim)) != 0)
-  {
-    if (s.token[0] == '0')
-    {
-      s.current_id = atoi(s.token);
-    }
-
-    if (csvid == s.current_id)
-    {
-      ++s.field_idx;
-
-      if (s.field_idx == field && s.in_quotes)
-      {
-        strcat(out, ",");
-      }
-
-      if (s.token[0] == '"')
-      {
-        s.in_quotes = 1;
-      }
-
-      if (s.field_idx == field)
-      {
-        strcat(out, s.token);
-      }
-
-      if (s.token[strlen(s.token) - 1] == '"')
-      {
-        s.in_quotes = 0;
-      }
-
-      if (s.in_quotes)
-      {
-        --s.field_idx;
-      }
-    }
-
-    if (s.fscanf_ret == -1 || (s.field_idx != '\0' && csvid != s.current_id))
-    {
-      break;
-    }
-  }
-
-  fclose(s.fp);
-}
-
 // FUNCTION: MAGIC 0x004e1c8c
 void FUN_004e1c8c(unsigned int internal_card_id, int unk1, char *prompt, int unk2)
 {
@@ -2342,7 +2272,7 @@ int ai_opinion_of_gamestate(int player)
 }
 
 // FUNCTION: MAGIC 0x004a09c6
-int FUN_004a09c6(int player, char *prompt, int maxnum)
+int prompt_for_life_total(int player, char *prompt, int maxnum)
 {
   (void)player;
   (void)prompt;

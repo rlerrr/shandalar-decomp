@@ -215,7 +215,7 @@ int card_resurrection(int player, int card, event_t event)
                 .internal_card_id == global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] &&
         (global_cards_data[global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot]].type & TYPE_CREATURE) != 0)
     {
-      FUN_0051a41c(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+      process_card_enters_play(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                    PLAYER_CARD_INSTANCE(player, card).targets[0].card);
       FUN_004b15f7(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                    PLAYER_CARD_INSTANCE(player, card).info_slot);

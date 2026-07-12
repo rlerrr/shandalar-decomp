@@ -348,7 +348,7 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 void DelayUiTicks(int param_1);
 int ApproximateDistance(int x, int y);
 int FUN_004bb458(int param_1);
-int GetFirstManaColorIndex(int param_1);
+int single_color_test_bit_to_color_t(int param_1);
 unsigned int GetWorldTileType(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
 void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
@@ -380,12 +380,6 @@ DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, L
 int ScaleUiCoordinateFrom320(int value)
 {
   return (value * global_screen_width) / 0x140;
-}
-
-// FUNCTION: SHANDALAR 0x00561441
-char *FUN_00561441(int creature_type)
-{
-  return gs_creature_names_00591a08[creature_type].name;
 }
 
 // FUNCTION: SHANDALAR 0x004bb0ca
@@ -462,7 +456,7 @@ char *FUN_004f2e17(int town_index)
   int city_card_class;
   char *city_card_text;
 
-  card_color_index = GetFirstManaColorIndex(g_town_slots[town_index].trade_color_and_type & 0xff);
+  card_color_index = single_color_test_bit_to_color_t(g_town_slots[town_index].trade_color_and_type & 0xff);
   city_card_class = g_town_slots[town_index].trade_color_and_type >> 8;
   if (city_card_class == 7)
   {
@@ -1347,7 +1341,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
         s.town_index = FUN_004bb040(s.world_tile_x, s.world_tile_y);
         if (g_town_slots[s.town_index].location_type == 4)
         {
-          s.tile_class = GetFirstManaColorIndex((int)s.tile_class) - 1;
+          s.tile_class = single_color_test_bit_to_color_t((int)s.tile_class) - 1;
           if (draw_mode != 0)
           {
             QueueWorldSpriteForDraw(PTR_DAT_005832b4,
@@ -1366,7 +1360,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
         }
         else if (g_town_slots[s.town_index].location_type == 5)
         {
-          s.tile_class = GetFirstManaColorIndex((int)s.tile_class) - 1;
+          s.tile_class = single_color_test_bit_to_color_t((int)s.tile_class) - 1;
           if (draw_mode != 0)
           {
             QueueWorldSpriteForDraw(PTR_DAT_005832b4,
@@ -1439,7 +1433,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
           {
             if (g_town_slots[s.town_index].location_type == 4)
             {
-              s.scratch_index = GetFirstManaColorIndex((int)s.tile_class);
+              s.scratch_index = single_color_test_bit_to_color_t((int)s.tile_class);
               strcpy(g_ui_message_buffer, BuildQuestLocationName(s.town_index, g_current_quest_destination, s.scratch_index));
               g_castle_dungeon_slots[s.scratch_index - 1].clues_bitmap |= 1;
             }
@@ -1568,7 +1562,7 @@ int DrawAdventureQuestStatusPanel(int force_redraw)
           g_ui_message_buffer,
           0x1000,
           gs_queststatus_0077e0a0[0],
-          FUN_00561441(g_lair_or_monster_slots[s.siege_slot_index].entry_type),
+          GetCreatureName(g_lair_or_monster_slots[s.siege_slot_index].entry_type),
           BuildTownDisplayName(FindNearestTownIndex(
               g_lair_or_monster_slots[s.siege_slot_index].world_x / 0x20,
               g_lair_or_monster_slots[s.siege_slot_index].world_y / 0x20)));
@@ -2347,7 +2341,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       if ((((g_monster_timer >> 3) & 3) == (s.slot_index & 3)))
       {
         PTR_DAT_005832b4->font_slot = 3;
-        strcpy(g_ui_message_buffer, FUN_00561441(s.current_entry_type));
+        strcpy(g_ui_message_buffer, GetCreatureName(s.current_entry_type));
       }
     }
   }

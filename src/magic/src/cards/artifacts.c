@@ -1184,7 +1184,7 @@ int card_jayemdae_tome(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    FUN_0043e18b(player);
+    draw_card_for_player(player);
   }
 
   return 0;
@@ -2148,7 +2148,7 @@ int card_the_hive(int player, int card, event_t event)
     bee_card = add_card_to_hand(player, tmp);
     if (bee_card != -1)
     {
-      FUN_0051a41c(player, bee_card);
+      process_card_enters_play(player, bee_card);
       PLAYER_CARD_INSTANCE(player, bee_card).token_status |= STATUS_TOKEN;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,

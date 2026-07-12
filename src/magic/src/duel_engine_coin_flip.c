@@ -26,7 +26,6 @@
 extern HINSTANCE g_app_instance;
 extern int DAT_007a79b8;
 extern int DAT_00638c08;
-extern int DAT_0091c998;
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
 #ifndef SHANDALAR
@@ -486,7 +485,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
                                    &g_redraw_ante_dialog_button_disabled_bitmap,
                                    &g_redraw_ante_dialog_button_normal_color,
                                    &g_redraw_ante_dialog_button_focus_color);
-    FUN_00449bef(s.player_name);
+    copy_opponent_name_prefix(s.player_name);
     load_text(global_ui_strings_filename, "DIALOG_MULLIGAN");
     if (s.context->starting_player == 1)
     {
@@ -730,7 +729,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
       {
         g_redraw_ante_waiting_for_both_network_choices = 0;
         load_text(global_ui_strings_filename, "DIALOG_MULLIGAN");
-        FUN_00449bef(s.player_name);
+        copy_opponent_name_prefix(s.player_name);
         if (s.context->opponent_mulligan_accepted != 0)
         {
           if (s.ante_info == 1)
@@ -767,7 +766,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
       if (s.context->opponent_mulligan_accepted != 0)
       {
         load_text(global_ui_strings_filename, "DIALOG_MULLIGAN");
-        FUN_00449bef(s.player_name);
+        copy_opponent_name_prefix(s.player_name);
         if (s.context->opponent_mulligan_accepted != 0)
         {
           sprintf(s.text, text_lines[8], s.player_name);
@@ -863,8 +862,8 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     s.mouse_point.x = (unsigned int)lparam & 0xffff;
     s.mouse_point.y = (unsigned short)(((unsigned int)lparam >> 0x10) & 0xffff);
     s.context = (DuelRedrawAnteDialogContext *)GetWindowLongA(hwnd, DWL_USER);
-    if ((msg == WM_MOUSEMOVE && DAT_0091c998 != 2) ||
-        (msg == WM_RBUTTONDOWN && DAT_0091c998 == 2))
+    if ((msg == WM_MOUSEMOVE && g_duel_interface_options.layout != 2) ||
+        (msg == WM_RBUTTONDOWN && g_duel_interface_options.layout == 2))
     {
       GetWindowRect(GetDlgItem(hwnd, 0x448), &s.opponent_card_rect);
       MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.opponent_card_rect, 2);
@@ -1199,7 +1198,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
                                  &g_coin_flip_dialog_button_depressed_bitmap,
                                  &g_coin_flip_dialog_button_normal_color,
                                  &g_coin_flip_dialog_button_focus_color);
-    FUN_00449bef(s.player_name);
+    copy_opponent_name_prefix(s.player_name);
     if ((g_duel_network_flags & 2) != 0)
     {
       s.context->play_draw_choice = -1;
@@ -1529,8 +1528,8 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
     s.coin_flip_context.play_draw_choice = 1;
   }
 
-  FUN_004b59b2(0, 0);
-  FUN_004b59b2(1, 1);
+  shuffle_duel_library(0, 0);
+  shuffle_duel_library(1, 1);
   TENTATIVE_reassess_all_cards(0, 0x30);
   if ((s.coin_flip_context.coin_winner == 1 && s.coin_flip_context.play_draw_choice != 0) ||
       (s.coin_flip_context.coin_winner == 0 && s.coin_flip_context.play_draw_choice == 0))

@@ -47,7 +47,6 @@ extern int g_done_text_table_entry;
 extern int g_world_player_tile_x;
 extern int g_world_player_tile_y;
 extern int g_duel_selection_pending;
-extern long DAT_005a6198[0x4e2];
 extern char text_lines[249][300];
 extern int g_loadsave_skip_esc;
 extern jmp_buf DAT_0073e990;
@@ -117,7 +116,7 @@ int ScaleUiCoordinate(int value);
 
 unsigned int GetWorldTileType(int x, int y);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-int GetFirstManaColorIndex(int mask);
+int single_color_test_bit_to_color_t(int mask);
 int ClampIntToRange(int value, int min_value, int max_value);
 int MeasureTextLineWidth(char *text);
 
@@ -184,13 +183,13 @@ void FUN_00562d03(void);
 
 int ApproximateDistance(int x, int y);
 int GetRelativeWorldQuadrant(int world_x, int world_y);
-int FUN_0056bd9d(unsigned int card_id);
+int AddCardToDeckSorted(int card_id);
 int FUN_004bb1cf(int param_1);
 int FUN_0056c0e5(int param_1, int param_2, int param_3);
-int FUN_0056c5ea(int param_1);
+int GetCardRarity(int param_1);
 int FUN_0056c705(int param_1);
 int FindDeckSlotForQuestColorAndType(unsigned char quest_color, unsigned char quest_bitmap_mask);
-char *FUN_00561441(int creature_type);
+char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID world_magic_button_sprite, ...);
 char *GetQuestCardClassName(int quest_bitmap_mask);
 int RunTownServicesMenu(int town_index);
@@ -873,7 +872,7 @@ void TriggerWizardSiegeNewsflash(int wizard_color)
   {
     if (g_town_slots[s.scan_index].location_type == 4)
     {
-      s.color = GetFirstManaColorIndex((int)GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)));
+      s.color = single_color_test_bit_to_color_t((int)GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)));
       if (s.color == wizard_color)
       {
         s.lair_world_x_by_color[s.color] = g_town_slots[s.scan_index].world_x;
@@ -1264,11 +1263,11 @@ void VisitTownWiseman(void)
       {
         if (gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] == '\x12')
         {
-          sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[6], FUN_00561441(-g_current_quest_type));
+          sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[6], GetCreatureName(-g_current_quest_type));
         }
         else
         {
-          sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[7], FUN_00561441(-g_current_quest_type));
+          sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[7], GetCreatureName(-g_current_quest_type));
         }
 
         if (g_town_slots[town_index].location_type == 1)
@@ -1450,7 +1449,7 @@ void RunTownBuyCardsScreen(void)
 
   if (s.item_count == 0)
   {
-    g_town_shop_card_ids[s.item_count] = GetFirstManaColorIndex(s.mana_mask) - 1;
+    g_town_shop_card_ids[s.item_count] = single_color_test_bit_to_color_t(s.mana_mask) - 1;
     g_town_shop_card_prices[s.item_count] = 0x28;
     s.item_count = s.item_count + 1;
   }
@@ -1618,7 +1617,7 @@ void RunTownBuyCardsScreen(void)
     if ((s.accepted != 0) && (g_town_shop_card_prices[s.selected_idx] <= Gold))
     {
       Gold = Gold - g_town_shop_card_prices[s.selected_idx];
-      s.deck_slot = FUN_0056bd9d((unsigned int)g_town_shop_card_ids[s.selected_idx]);
+      s.deck_slot = AddCardToDeckSorted((unsigned int)g_town_shop_card_ids[s.selected_idx]);
       deck[s.deck_slot] = deck[s.deck_slot] | 0x4000;
       g_town_shop_card_ids[s.selected_idx] = -1;
       g_town_shop_card_prices[s.selected_idx] = 0;
@@ -1905,7 +1904,7 @@ int CalculateCardShopPrice(int card_index)
     break;
   }
 
-  switch (FUN_0056c5ea(card_index))
+  switch (GetCardRarity(card_index))
   {
   case 2:
     price = ClampIntToRange(price * 2, 100, 9999);
@@ -2154,7 +2153,7 @@ int RunTownServicesMenu(int town_index)
         {
           s.ok = 0;
         }
-        if (FUN_0056c5ea(s.distance) > ((s.slot_i % 3) + 1))
+        if (GetCardRarity(s.distance) > ((s.slot_i % 3) + 1))
         {
           s.ok = 0;
         }
@@ -2221,7 +2220,7 @@ int RunTownServicesMenu(int town_index)
 loop:
   if (s.slot_count == 0)
   {
-    g_town_shop_card_ids[s.slot_count] = GetFirstManaColorIndex((int)s.tile_magic_mask) - 1;
+    g_town_shop_card_ids[s.slot_count] = single_color_test_bit_to_color_t((int)s.tile_magic_mask) - 1;
     g_town_shop_card_prices[s.slot_count] = 0x28;
     s.slot_count = s.slot_count + 1;
   }
@@ -2677,76 +2676,6 @@ void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, 
   return;
 }
 
-// FUNCTION: SHANDALAR 0x00417946
-void ReadCsvFieldByCsvid(char *out, int csvid, int field, char *csv_name)
-{
-  struct
-  {
-    char in_quotes;
-    char pad_01_to_03[3];
-    int current_id;
-    char delim[11];
-    char pad_13;
-    char token[512];
-    char field_idx;
-    char pad_215_to_217[3];
-    FILE *fp;
-    int fscanf_ret;
-  } s;
-
-  s.fp = fopen(csv_name, DAT_00580e64);
-  s.in_quotes = 0;
-  s.field_idx = s.in_quotes;
-  *out = '\0';
-
-  if ((DAT_005a6198[csvid] != -1) && (strcmp(csv_name, s_master_csv_00580e68) == 0))
-  {
-    fseek(s.fp, DAT_005a6198[csvid], 0);
-  }
-
-  do
-  {
-    s.fscanf_ret = fscanf(s.fp, s______________00580e74, s.token, s.delim);
-    if (s.fscanf_ret == 0)
-    {
-      break;
-    }
-
-    if (s.token[0] == '0')
-    {
-      s.current_id = atoi(s.token);
-    }
-
-    if (s.current_id == csvid)
-    {
-      ++s.field_idx;
-      if ((s.field_idx == field) && s.in_quotes)
-      {
-        strcat(out, DAT_00580e84);
-      }
-      if (s.token[0] == '\"')
-      {
-        s.in_quotes = 1;
-      }
-      if (s.field_idx == field)
-      {
-        strcat(out, s.token);
-      }
-      if (s.token[strlen(s.token) - 1] == '\"')
-      {
-        s.in_quotes = 0;
-      }
-      if (s.in_quotes)
-      {
-        --s.field_idx;
-      }
-    }
-
-  } while ((s.fscanf_ret != -1) && ((s.field_idx == '\0') || (s.current_id == csvid)));
-
-  fclose(s.fp);
-}
-
 // FUNCTION: SHANDALAR 0x00417e11
 int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned int color_filter, int speed_filter)
 {
@@ -2958,7 +2887,7 @@ void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, i
                             ScaleUiCoordinate((int)portrait_frame_sprite->width),
                             ScaleUiCoordinate((int)portrait_frame_sprite->height), portrait_frame_sprite);
 
-  strcpy(g_ui_message_buffer, FUN_00561441(creature_type));
+  strcpy(g_ui_message_buffer, GetCreatureName(creature_type));
   DrawFormattedTextNoShadowCentered(PTR_DAT_005832b4, (-(unsigned int)(tinted == 0) & 0x38) + 0xae, x_320,
                                     y_200 + ScaleUiCoordinate((int)portrait_frame_sprite->height / 2), g_ui_message_buffer);
 
@@ -3074,7 +3003,7 @@ void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
       s.aiStack_50[s.count] = s.i;
       s.count = s.count + 1;
       strcat(g_ui_message_buffer, " ");
-      strcat(g_ui_message_buffer, FUN_00561441(s.i));
+      strcat(g_ui_message_buffer, GetCreatureName(s.i));
       strcat(g_ui_message_buffer, ".\n");
     }
   }
@@ -3789,7 +3718,7 @@ LAB_00531ee7:
 
     s.selected_deck_index = SelectAdventureListCardIndex(unk_008b35ec, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
     if ((s.selected_deck_index != -1) &&
-        ((s.selected_deck_slot = FUN_0056bd9d(s.deck_card_ids[s.selected_deck_index])) != -1))
+        ((s.selected_deck_slot = AddCardToDeckSorted(s.deck_card_ids[s.selected_deck_index])) != -1))
     {
       deck[s.selected_deck_slot] = deck[s.selected_deck_slot] | 0x4000;
     }
@@ -3959,7 +3888,7 @@ unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int t
 
   if ((color_mask != 0) && (reset_filters != 0))
   {
-    g_card_browser_color_filter = GetFirstManaColorIndex((int)color_mask);
+    g_card_browser_color_filter = single_color_test_bit_to_color_t((int)color_mask);
   }
 
   if (reset_filters != 0)
@@ -4412,7 +4341,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
     }
     else
     {
-      s.required = FUN_0056c5ea(s.card_id);
+      s.required = GetCardRarity(s.card_id);
 
       switch (s.required)
       {
@@ -4440,7 +4369,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
       s.price = CalculateCardShopPrice(s.card_id);
       s.price = s.price << 2;
 
-      s.tile_magic_index = GetFirstManaColorIndex((int)GetWorldTileMagicMask(GetWorldTileType(g_world_player_x / 32, g_world_player_y / 32)));
+      s.tile_magic_index = single_color_test_bit_to_color_t((int)GetWorldTileMagicMask(GetWorldTileType(g_world_player_x / 32, g_world_player_y / 32)));
 
       if (((s.tile_magic_index & (int)(signed char)global_cards_data[s.card_id].color) == 0) &&
           ((signed char)global_cards_data[s.card_id].color != 0))
@@ -4574,7 +4503,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
       {
         break;
       }
-      s.random_color = FUN_0056bd9d(s.card_id);
+      s.random_color = AddCardToDeckSorted(s.card_id);
       if (s.random_color != -1)
       {
         deck[s.random_color] = deck[s.random_color] | 0x4000;
@@ -4720,12 +4649,12 @@ int VisitTownSlot(int town_index)
 
     if (IsCreatureTypeFeminine(s.duel_creature_tier_or_type) != 0)
     {
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_visit_0077c4f0[4], FUN_00561441(s.duel_creature_tier_or_type));
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_visit_0077c4f0[4], GetCreatureName(s.duel_creature_tier_or_type));
       strcat(g_ui_message_buffer, gs_visit_0077c4f0[6]);
     }
     else
     {
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_visit_0077c4f0[5], FUN_00561441(s.duel_creature_tier_or_type));
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_visit_0077c4f0[5], GetCreatureName(s.duel_creature_tier_or_type));
       strcat(g_ui_message_buffer, gs_visit_0077c4f0[7]);
     }
 
@@ -4753,7 +4682,7 @@ int VisitTownSlot(int town_index)
         StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
 
         sprintf(g_ui_message_buffer, gs_visit_0077c4f0[8], BuildTownDisplayName(town_index));
-        FUN_0056bd9d((unsigned int)g_duel_ante_card_ids[0]);
+        AddCardToDeckSorted((unsigned int)g_duel_ante_card_ids[0]);
         RunTextMenuAtScaled(g_ui_message_buffer, 0x14, 0x14);
         AddJournalEntry(JOURNAL_ENTRY_CITY_SAVED, town_index);
       }
@@ -4793,7 +4722,7 @@ int VisitTownSlot(int town_index)
     s.pics[3] = s_0737_pic_0058ac74;
     s.pics[4] = s_0028_pic_0058ac8c;
 
-    DAT_008ce538 = (int)GetFirstManaColorIndex(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y)));
+    DAT_008ce538 = (int)single_color_test_bit_to_color_t(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y)));
 
     ShowWizardVisitBackdrop(s.pics[DAT_008ce538 - 1]);
     PTR_DAT_005832b4->font_slot = 1;
@@ -4830,7 +4759,7 @@ int VisitTownSlot(int town_index)
     s.pics2[3] = s_0737_pic_0058acec;
     s.pics2[4] = s_0028_pic_0058ad04;
 
-    DAT_008ce538 = GetFirstManaColorIndex(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y)));
+    DAT_008ce538 = single_color_test_bit_to_color_t(GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y)));
 
     ShowWizardVisitBackdrop(s.pics2[DAT_008ce538 - 1]);
     if (IsWizardColorFeminine(DAT_008ce538))
@@ -4919,11 +4848,11 @@ int VisitTownSlot(int town_index)
         s.deck_card_index = (int)gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] / 7 + 1;
         if (IsCreatureTypeFeminine(-g_current_quest_type))
         {
-          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[0x15], FUN_00561441(-g_current_quest_type));
+          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[0x15], GetCreatureName(-g_current_quest_type));
         }
         else
         {
-          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[0x16], FUN_00561441(-g_current_quest_type));
+          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[0x16], GetCreatureName(-g_current_quest_type));
         }
 
         sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_visit_0077c4f0[0x17], FUN_004f2e17(g_current_quest_destination));
@@ -4949,7 +4878,7 @@ int VisitTownSlot(int town_index)
 
             if (s.confirm_choice == 0)
             {
-              s.found_deck_slot = FUN_0056bd9d(s.selected_card_id);
+              s.found_deck_slot = AddCardToDeckSorted(s.selected_card_id);
               if (s.found_deck_slot != -1)
               {
                 deck[s.found_deck_slot] |= 0x4000;
@@ -4970,11 +4899,11 @@ int VisitTownSlot(int town_index)
         s.deck_card_index = (int)gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] / 7 + 1;
         if (IsCreatureTypeFeminine(-g_current_quest_type))
         {
-          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[26], FUN_00561441(-g_current_quest_type));
+          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[26], GetCreatureName(-g_current_quest_type));
         }
         else
         {
-          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[27], FUN_00561441(-g_current_quest_type));
+          sprintf(g_ui_message_buffer, gs_visit_0077c4f0[27], GetCreatureName(-g_current_quest_type));
         }
 
         if (s.deck_card_index == 1)

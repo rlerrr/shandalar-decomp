@@ -109,7 +109,7 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_in
 void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
 void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y);
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
-int GetFirstManaColorIndex(int mask);
+int single_color_test_bit_to_color_t(int mask);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
 int FUN_004bb458(int world_magic_slot_index);
 int FindNearestTownIndex(int world_x, int world_y);
@@ -815,7 +815,7 @@ retry:
 
             if (g_town_slots[s.town_index].trade_color_and_type & 0xff)
             {
-              s.mana_mask = GetFirstManaColorIndex(g_town_slots[s.town_index].trade_color_and_type & 0xff);
+              s.mana_mask = single_color_test_bit_to_color_t(g_town_slots[s.town_index].trade_color_and_type & 0xff);
               strcpy(g_ui_message_buffer, gs_colorcards_0077c5e0[s.mana_mask]);
             }
             else
@@ -854,7 +854,7 @@ retry:
 
             if ((g_town_slots[s.town_index].location_type == 4) || (g_town_slots[s.town_index].location_type == 5))
             {
-              strcpy(g_ui_message_buffer, FormatWorldLocationName(s.town_index, GetFirstManaColorIndex((int)GetWorldTileMagicMask(GetWorldTileType(s.tile_x, s.tile_y)))));
+              strcpy(g_ui_message_buffer, FormatWorldLocationName(s.town_index, single_color_test_bit_to_color_t((int)GetWorldTileMagicMask(GetWorldTileType(s.tile_x, s.tile_y)))));
             }
             else
             {

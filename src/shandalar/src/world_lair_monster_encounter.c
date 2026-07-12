@@ -84,7 +84,7 @@ char *BuildTownDisplayName(int town_index);
 char *FUN_00428783(unsigned int mana_mask);
 char *FUN_004f2e17(int town_index);
 char *GetDungeonName(int dungeon_index);
-char *FUN_00561441(int creature_type);
+char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
 int BuyAnyCardFromTown(int color, int type);
@@ -94,7 +94,7 @@ int DrawRandomCardFromInitialLibrary(int param_1);
 int ExitIfNoUsableDeckCards(void);
 int FindDeckSlotForQuestColorAndType(unsigned char color, unsigned char type);
 int FindNearestTownIndex(int world_x, int world_y);
-int GetFirstManaColorIndex(int mask);
+int single_color_test_bit_to_color_t(int mask);
 int FUN_004bb1cf(unsigned int card_id);
 unsigned int FUN_004bb458(int world_magic_slot_index);
 unsigned int GetWorldTileType(int x, int y);
@@ -104,10 +104,10 @@ void ShowDungeonClueDetailScreen(int dungeon_index);
 int RandomIntLessThan(int param_1);
 int ScaleUiCoordinateFrom320(int value);
 int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
-int FUN_0056bd9d(unsigned int card_id);
+int AddCardToDeckSorted(int card_id);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
 int FUN_0056c0e5(int card_color, int color_mask, int param_3);
-int FUN_0056c5ea(unsigned int card_id);
+int GetCardRarity(int card_id);
 unsigned int FUN_0056c705(int csvid);
 int FUN_0056d5c0(int param_1, int *param_2);
 int GetCardAvailabilityMask(unsigned int card_id);
@@ -123,7 +123,7 @@ int GetFontCharWidth(int font_slot, char character);
 ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 int PickWisemanCastleDungeonSlotForHint(void);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
-void ReadCsvFieldByCsvid(char *out, int csvid, int field, char *csv_name);
+void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 int RecountDeckCardTotals(void);
 int RemoveCardFromDeckById(unsigned int card_id);
 int RunCardBrowser(char *title, int param_2, unsigned int param_3, int param_4, int param_5);
@@ -366,16 +366,6 @@ static char DAT_00590b64[] = "\n";
 // GLOBAL: SHANDALAR 0x00590b68
 static char DAT_00590b68[] = "\n";
 
-// FUNCTION: SHANDALAR 0x00562893
-void FUN_00562893(void)
-{
-  if (g_world_location_music_active != 0)
-  {
-    sound_stop(0x10);
-  }
-  g_world_location_music_active = 0;
-}
-
 // FUNCTION: SHANDALAR 0x004be570
 void *__cdecl FUN_004be570(char *param_1, int param_2, int param_3)
 {
@@ -438,7 +428,7 @@ int FUN_00530770(void)
     do
     {
       card_index = RandomIntLessThan(g_card_count - 0x39);
-    } while (FUN_0056c5ea(card_index) < 3);
+    } while (GetCardRarity(card_index) < 3);
   } while (GetCardAvailabilityMask(card_index) == 0);
   return card_index;
 }
@@ -732,7 +722,7 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
       }
 
       PTR_DAT_005832b4->font_slot = 3;
-      switch (FUN_0056c5ea(card_index))
+      switch (GetCardRarity(card_index))
       {
       case 1:
         strcpy(g_ui_message_buffer, "Common");
@@ -851,7 +841,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
       do
       {
         uVar1 = RandomIntLessThan(g_card_count - 0x39);
-        iVar2 = FUN_0056c5ea(uVar1);
+        iVar2 = GetCardRarity(uVar1);
       } while (iVar2 < 3);
       uVar3 = GetCardAvailabilityMask(uVar1);
     } while (uVar3 == 0);
@@ -889,7 +879,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
   {
     uVar1 = FUN_0056c705(gs_creature_names_00591a08[local_8].deck_number);
     LoadCreatureDuelDeck(local_8, uVar1, 0, -1);
-    DAT_008ce538 = GetFirstManaColorIndex((int)gs_creature_names_00591a08[local_8].color_mask);
+    DAT_008ce538 = single_color_test_bit_to_color_t((int)gs_creature_names_00591a08[local_8].color_mask);
     DAT_00742fd0 = 0;
     DAT_007a7874 = 3;
     global_ante_cards[0][0] = -1;
@@ -907,14 +897,14 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
       for (local_c = 0; local_c < ante_card_count; local_c = local_c + 1)
       {
         iVar2 = (int)(300 / (longlong)(ante_card_count + 1));
-        iVar5 = FUN_0056c5ea(auStack_20[local_c]);
+        iVar5 = GetCardRarity(auStack_20[local_c]);
         strcpy(g_ui_message_buffer, gs_browse_0074da20[iVar5 + 0xc]);
         pcVar4 = g_ui_message_buffer;
         full_card = 1;
         iVar5 = RandomIntLessThan(10);
         DrawAdventureCard(auStack_20[local_c], (iVar2 * local_c + 0x6f) - ((ante_card_count + -1) * iVar2) / 2,
                           iVar5 + 0x10, full_card, pcVar4);
-        local_8 = FUN_0056bd9d(auStack_20[local_c]);
+        local_8 = AddCardToDeckSorted(auStack_20[local_c]);
         if (local_8 != -1)
         {
           deck[local_8] = deck[local_8] | 0x4000;
@@ -1229,7 +1219,7 @@ find_riddle_candidate:
   case 2:
     FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_riddle_0077cf20[9],
                                                 (int)(char)global_cards_data[s.selected_card].cc[0],
-                                                gs_mananames_0074d980[GetFirstManaColorIndex((int)global_cards_data[s.selected_card].color)],
+                                                gs_mananames_0074d980[single_color_test_bit_to_color_t((int)global_cards_data[s.selected_card].color)],
                                                 (int)(char)global_cards_data[s.selected_card].cc[1]);
     break;
   case 3:
@@ -1325,7 +1315,7 @@ void RunLairExplorationEvent(int color)
       {
         s.card_or_deck_index = PickRandomCardMatchingTypeAndColor(0x40, 1);
       }
-    } while ((FUN_0056c5ea(s.card_or_deck_index) != s.reward_card) ||
+    } while ((GetCardRarity(s.card_or_deck_index) != s.reward_card) ||
              (FUN_004bb1cf(s.card_or_deck_index) < 0) ||
              ((global_cards_data[s.card_or_deck_index].extra_ability & 0x900) != 0) ||
              (GetCardAvailabilityMask(s.card_or_deck_index) == 0));
@@ -1343,7 +1333,7 @@ void RunLairExplorationEvent(int color)
     {
       s.card_or_deck_index = RandomIntLessThan(500);
     } while (deck[s.card_or_deck_index] == -1);
-  } while ((FUN_0056c5ea(deck[s.card_or_deck_index] & 0xfff) <= 1) ||
+  } while ((GetCardRarity(deck[s.card_or_deck_index] & 0xfff) <= 1) ||
            (GetCardAvailabilityMask(s.card_or_deck_index) == 0));
 
   s.reward_card = s.reward_cards[3];
@@ -1618,7 +1608,7 @@ end:
 
     ClearInputAndWaitForMouseRelease();
     FUN_005584d5(s.reward_card, 0xd0, gs_lair_0077e180[0x12], 1);
-    s.card_or_deck_index = FUN_0056bd9d(s.reward_card);
+    s.card_or_deck_index = AddCardToDeckSorted(s.reward_card);
     if (s.card_or_deck_index != -1)
     {
       deck[s.card_or_deck_index] = deck[s.card_or_deck_index] | 0x4000;
@@ -1639,7 +1629,7 @@ undefined4 BuildQuestStatusMessage(void)
     value = 7;
     FormatMessageFromStringStripCarriageReturns(
         g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0],
-        FUN_00561441(g_lair_or_monster_slots[value].entry_type),
+        GetCreatureName(g_lair_or_monster_slots[value].entry_type),
         BuildTownDisplayName(FindNearestTownIndex(g_lair_or_monster_slots[value].world_x / 32,
                                                   g_lair_or_monster_slots[value].world_y / 32)));
   }
@@ -1848,7 +1838,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
 #endif
 
   s.saved_town_dialog_callback = g_town_dialog_callback;
-  FUN_00562893();
+  StopWorldLocationMusic();
   if (g_lair_or_monster_slots[slot_index].entry_type == SHANDALAR_ENTRY_LAIR)
   {
     RunLairExplorationEvent(g_lair_or_monster_slots[slot_index].color);
@@ -2010,7 +2000,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
                                     gs_encounter_preduel_0077f0d0[1]);
   PTR_DAT_005832b4->font_slot = 1;
   FreeSpriteBlob(s.creature_name_plaque_sprite);
-  sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[2], FUN_00561441(s.creature_type));
+  sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[2], GetCreatureName(s.creature_type));
   if ((g_duel_ai_mode_state == 0) && (gs_creature_names_00591a08[s.creature_type].encounter_type != '\v'))
   {
     DrawAdventureCard(g_duel_ante_card_ids[0], 0xe8, 0x18, 1, DAT_0058b068);
@@ -2068,7 +2058,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[4],
                 gs_wizardnames_0077ee70[monster_color]);
       }
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], FUN_00561441(s.creature_type));
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], GetCreatureName(s.creature_type));
     }
     else if (s.encounter_relation_type == 2)
     {
@@ -2085,7 +2075,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_encounter_preduel_0077f0d0[6],
                                                     gs_wizardnames_0077ee70[monster_color], s.nearest_town_name);
       }
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], FUN_00561441(s.creature_type));
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], GetCreatureName(s.creature_type));
     }
     else if (s.victory_count < 5)
     {
@@ -2099,7 +2089,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[8],
                 gs_wizardnames_0077ee70[monster_color]);
       }
-      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], FUN_00561441(s.creature_type));
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], GetCreatureName(s.creature_type));
     }
     else
     {
@@ -2243,7 +2233,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
                                                           gs_encounter_preduel_0077f0d0[0x23], 1, &DAT_0058b080);
         if (global_library[1][s.selected_card_id] != -1)
         {
-          s.deck_or_card_index = FUN_0056bd9d(global_library[1][s.selected_card_id]);
+          s.deck_or_card_index = AddCardToDeckSorted(global_library[1][s.selected_card_id]);
           if (s.deck_or_card_index != 0xffffffff)
           {
             deck[s.deck_or_card_index] = deck[s.deck_or_card_index] | 0x4000;
@@ -2408,13 +2398,13 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x2a],
               gs_wizardnames_0077ee70[monster_color]);
     }
-    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], FUN_00561441(s.creature_type));
+    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_encounter_preduel_0077f0d0[0xb], GetCreatureName(s.creature_type));
     ClearInputAndWaitForMouseRelease();
     RunTextMenuAt(g_ui_message_buffer,
                   (global_screen_width / 2 - MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer) / 2) +
                       -2,
                   ScaleUiCoordinate(0x100));
-    FUN_00562893();
+    StopWorldLocationMusic();
   }
 LAB_4F4BB2:
   s.prompt_counter = 0;
@@ -2488,7 +2478,7 @@ LAB_4F4BB2:
       } while (((int)s.deck_or_card_index < 0x24) && ((int)s.deck_or_card_index % 7 == 0));
       DrawCreaturePortrait(s.deck_or_card_index, ScaleUiCoordinate(0x140), ScaleUiCoordinate(10), 0, 1);
       FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_encounter_preduel_0077f0d0[0x2c],
-                                                  FUN_00561441(s.creature_type), BuildCreatureNameWithArticle(s.deck_or_card_index));
+                                                  GetCreatureName(s.creature_type), BuildCreatureNameWithArticle(s.deck_or_card_index));
       RunTextMenuAt(g_ui_message_buffer, 0xa0, 0x78);
       s.creature_type = s.deck_or_card_index;
       s.creature_strength = DAT_007a7874 + (int)gs_creature_names_00591a08[s.creature_type].tier / 2;
@@ -2508,13 +2498,13 @@ LAB_4F4BB2:
         }
         else
         {
-          sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x2d], FUN_00561441(s.creature_type));
+          sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x2d], GetCreatureName(s.creature_type));
         }
       }
       if ((gs_creature_names_00591a08[s.creature_type].preduel_flags & 8) != 0)
       {
         DAT_0073c7e4 = 1;
-        sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x2e], FUN_00561441(s.creature_type));
+        sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x2e], GetCreatureName(s.creature_type));
       }
       if ((gs_creature_names_00591a08[s.creature_type].preduel_flags & 0xc1) != 0)
       {
@@ -2526,7 +2516,7 @@ LAB_4F4BB2:
         else
         {
           FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_encounter_preduel_0077f0d0[0x2f],
-                                                      FUN_00561441(s.creature_type), global_cards_data[DAT_008cf6d0].name);
+                                                      GetCreatureName(s.creature_type), global_cards_data[DAT_008cf6d0].name);
         }
       }
       if (s.duel_setup_allowed != 0)
@@ -2597,7 +2587,7 @@ LAB_4F4BB2:
         }
         s.reward_card_ids[s.menu_option_count] = s.selected_card_id;
         s.menu_option_count = s.menu_option_count + 1;
-        s.loop_index = s.loop_index - (((global_cards_data[s.selected_card_id].extra_ability & 0x400) >> 10) + FUN_0056c5ea(s.selected_card_id));
+        s.loop_index = s.loop_index - (((global_cards_data[s.selected_card_id].extra_ability & 0x400) >> 10) + GetCardRarity(s.selected_card_id));
       } while (0 < s.loop_index);
       PlayDuelMusic(1);
       LoadPcxIntoPageOpaque(1, s_winbak01_pic_0058b12c);
@@ -2606,7 +2596,7 @@ LAB_4F4BB2:
       s.reward_card_spacing = 300 / (int)(s.menu_option_count + 1);
       for (slot_index = 0; slot_index < (int)s.menu_option_count; slot_index = slot_index + 1)
       {
-        s.scratch_values[6] = FUN_0056c5ea(s.reward_card_ids[slot_index]) + -1;
+        s.scratch_values[6] = GetCardRarity(s.reward_card_ids[slot_index]) + -1;
         strcpy(g_ui_message_buffer, gs_browse_0074da20[s.scratch_values[6] + 13]);
         DrawAdventureCard(s.reward_card_ids[slot_index],
                           (s.reward_card_spacing * slot_index + 0x6f) - (int)((s.menu_option_count - 1) * s.reward_card_spacing) / 2,
@@ -2665,11 +2655,11 @@ LAB_4F4BB2:
         DrawScaledCenteredTextNoShadow(g_ui_message_buffer, 100, s.text_y, 200);
         if (IsCreatureTypeFeminine(s.creature_type) != 0)
         {
-          sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[3], FUN_00561441(s.creature_type));
+          sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[3], GetCreatureName(s.creature_type));
         }
         else
         {
-          sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[4], FUN_00561441(s.creature_type));
+          sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[4], GetCreatureName(s.creature_type));
         }
         strcat(g_ui_message_buffer, gs_encounter_postduel_0077f050[5]);
         FUN_004f2165();
@@ -2687,7 +2677,7 @@ LAB_4F4BB2:
           }
           for (slot_index = 0; (int)s.menu_option_count > slot_index; slot_index = slot_index + 1)
           {
-            s.deck_or_card_index = FUN_0056bd9d(s.reward_card_ids[slot_index]);
+            s.deck_or_card_index = AddCardToDeckSorted(s.reward_card_ids[slot_index]);
             if (s.deck_or_card_index != 0xffffffff)
             {
               deck[s.deck_or_card_index] = deck[s.deck_or_card_index] | 0x4000;
@@ -2702,7 +2692,7 @@ LAB_4F4BB2:
         WaitForInputEventUnlessBlocked();
         for (slot_index = 0; (int)s.menu_option_count > slot_index; slot_index = slot_index + 1)
         {
-          s.deck_or_card_index = FUN_0056bd9d(s.reward_card_ids[slot_index]);
+          s.deck_or_card_index = AddCardToDeckSorted(s.reward_card_ids[slot_index]);
           if (s.deck_or_card_index != 0xffffffff)
           {
             deck[s.deck_or_card_index] = deck[s.deck_or_card_index] | 0x4000;
@@ -2770,44 +2760,44 @@ LAB_4F4BB2:
         {
           if (FUN_00566238())
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[8], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[8], GetCreatureName(s.creature_type));
           }
           else
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[9], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[9], GetCreatureName(s.creature_type));
           }
         }
         else if (g_shandalar_difficulty == 1)
         {
           if (FUN_00566238())
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[10], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[10], GetCreatureName(s.creature_type));
           }
           else
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[11], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[11], GetCreatureName(s.creature_type));
           }
         }
         else if (g_shandalar_difficulty == 2)
         {
           if (FUN_00566238())
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[12], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[12], GetCreatureName(s.creature_type));
           }
           else
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[13], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[13], GetCreatureName(s.creature_type));
           }
         }
         else if (g_shandalar_difficulty == 3)
         {
           if (FUN_00566238())
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[14], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[14], GetCreatureName(s.creature_type));
           }
           else
           {
-            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[15], FUN_00561441(s.creature_type));
+            sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[15], GetCreatureName(s.creature_type));
           }
         }
         else
@@ -2846,7 +2836,7 @@ LAB_4F4BB2:
       {
         g_next_duel_card_id =
             FUN_0056c705(gs_creature_names_00591a08[s.creature_type].reward_card_id);
-        s.deck_or_card_index = FUN_0056bd9d(g_next_duel_card_id);
+        s.deck_or_card_index = AddCardToDeckSorted(g_next_duel_card_id);
         if (s.deck_or_card_index != 0xffffffff)
         {
           deck[s.deck_or_card_index] = deck[s.deck_or_card_index] | 0x4000;
@@ -2902,7 +2892,7 @@ LAB_4F4BB2:
         }
         if (s.selected_card_id != 0xffffffff)
         {
-          s.iVar8 = FUN_0056bd9d(s.selected_card_id);
+          s.iVar8 = AddCardToDeckSorted(s.selected_card_id);
           deck[s.iVar8] = deck[s.iVar8] | 0x4000;
         }
         s.reward_flags = 0;
@@ -2925,7 +2915,7 @@ LAB_4F4BB2:
                                                           gs_encounter_postduel_0077f050[0x19], 1, &DAT_0058b190);
         if (s.selected_card_id != 0xffffffff)
         {
-          s.iVar7 = FUN_0056bd9d(s.temp_deck[s.selected_card_id]);
+          s.iVar7 = AddCardToDeckSorted(s.temp_deck[s.selected_card_id]);
           deck[s.iVar7] = deck[s.iVar7] | 0x4000;
         }
         s.reward_flags = 0;
@@ -2981,11 +2971,11 @@ LAB_4F4BB2:
     PTR_DAT_005832b4->font_slot = 4;
     if (IsCreatureTypeFeminine(s.creature_type) != 0)
     {
-      sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x1c], FUN_00561441(s.creature_type));
+      sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x1c], GetCreatureName(s.creature_type));
     }
     else
     {
-      sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x1d], FUN_00561441(s.creature_type));
+      sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x1d], GetCreatureName(s.creature_type));
     }
     DrawWorldUiFormattedText(PTR_DAT_005832b4, 0xca, global_screen_width / 4, ScaleUiCoordinate(300),
                              g_ui_message_buffer);

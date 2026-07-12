@@ -43,7 +43,7 @@ int FindNearestTownIndex(int world_x, int world_y);
 int ClampIntToRange(int value, int min_value, int max_value);
 int ApproximateDistance(int x, int y);
 int RandomIntLessThan(int param_1);
-int GetFirstManaColorIndex(int mask);
+int single_color_test_bit_to_color_t(int mask);
 unsigned int GetWorldTileType(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
 void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
@@ -639,7 +639,7 @@ void UpdateWorldLairAndMonsterSlots(void)
           }
           else if (s.target_dy != 0)
           {
-            g_lair_or_monster_slots[s.slot_index].color = GetFirstManaColorIndex((int)s.target_dy);
+            g_lair_or_monster_slots[s.slot_index].color = single_color_test_bit_to_color_t((int)s.target_dy);
           }
         }
 
@@ -1062,7 +1062,7 @@ void StartWizardTownSiege(void)
   {
     if (g_town_slots[s.scan_index].location_type == 4)
     {
-      s.color = GetFirstManaColorIndex((int)GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)));
+      s.color = single_color_test_bit_to_color_t((int)GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.scan_index].world_x, g_town_slots[s.scan_index].world_y)));
       s.lair_world_x_by_color[s.color] = g_town_slots[s.scan_index].world_x;
       s.lair_world_y_by_color[s.color] = g_town_slots[s.scan_index].world_y;
     }

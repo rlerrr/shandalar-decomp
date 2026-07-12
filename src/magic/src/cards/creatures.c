@@ -2149,7 +2149,7 @@ int card_verduran_enchantress(int player, int card, event_t event)
     if (event == EVENT_RESOLVE_TRIGGER)
     {
       dispatch_event(player, card, EVENT_PLAY_ABILITY);
-      FUN_0043e18b(player);
+      draw_card_for_player(player);
     }
   }
 

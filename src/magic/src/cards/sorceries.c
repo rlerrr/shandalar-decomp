@@ -243,7 +243,7 @@ int card_braingeyser(int player, int card, event_t event)
     target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     for (cards_to_draw = 0; cards_to_draw < PLAYER_CARD_INSTANCE(player, card).info_slot; ++cards_to_draw)
     {
-      FUN_0043e18b(target_player);
+      draw_card_for_player(target_player);
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -360,7 +360,7 @@ int card_winds_of_change(int player, int card, event_t event)
       }
 
       TENTATIVE_reassess_all_cards(0, 0x30);
-      FUN_004b59b2(player, s.current_player);
+      shuffle_duel_library(player, s.current_player);
       FUN_0040246a(s.current_player, s.cards_moved);
     }
 
@@ -425,7 +425,7 @@ int card_timetwister(int player, int card, event_t event)
       }
 
       TENTATIVE_reassess_all_cards(0, 0x30);
-      FUN_004b59b2(player, current_player);
+      shuffle_duel_library(player, current_player);
       FUN_0040246a(current_player, 7);
 
       ++player_index;
@@ -452,7 +452,7 @@ void FUN_0040246a(int player, int amount)
 
   for (cards_drawn = 0; cards_drawn < amount; ++cards_drawn)
   {
-    FUN_0043e18b(player);
+    draw_card_for_player(player);
     if (player != 0)
     {
       unk_007161d8 = 0;
@@ -1476,8 +1476,8 @@ int card_mana_clash(int player, int card, event_t event)
 
     do
     {
-      p0_flip = FUN_004a09c6(player, player == unk_008b35ec ? prompt1 : prompt2, 1);
-      p1_flip = FUN_004a09c6(player, player == unk_008b35ec ? prompt2 : prompt1, 1);
+      p0_flip = prompt_for_life_total(player, player == unk_008b35ec ? prompt1 : prompt2, 1);
+      p1_flip = prompt_for_life_total(player, player == unk_008b35ec ? prompt2 : prompt1, 1);
 
       if (p0_flip == 1)
       {
@@ -1748,7 +1748,7 @@ int card_demonic_tutor(int player, int card, event_t event)
       remove_card_from_deck(player, found_card);
       ++hand_count[player];
       TENTATIVE_reassess_all_cards();
-      FUN_004b59b2(player, player);
+      shuffle_duel_library(player, player);
     }
 
     kill_card(player, card, KILL_BURY);
