@@ -745,9 +745,9 @@ int card_juggernaut(int player, int card, event_t event)
   if ((event == EVENT_MUST_ATTACK) && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_UNKNOWN8000) == 0))
   {
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_UNKNOWN8000;
-    if (FUN_0044125c(player, card))
+    if (can_attack(player, card))
     {
-      unk_008b60e0 = 1;
+      attacking_creature_count = 1;
     }
   }
 
@@ -1305,7 +1305,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   if (is_in_play(parent == instance ? player : instance->parent_controller,
                  parent == instance ? card : instance->parent_card))
   {
-    if (parent->internal_card_id == unk_0091a80c)
+    if (parent->internal_card_id == stack_proxy_internal_card_id)
     {
       lookup_player = card_on_stack_controller;
       lookup_card = card_on_stack;

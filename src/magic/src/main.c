@@ -494,7 +494,7 @@ static int FUN_00500c56(void)
   DAT_008b32bc = 1;
   unk_0092674c = 0;
   unk_008b27f0 = '\0';
-  unk_008cf200 = '\0';
+  g_target_selection_network_packet.packet_type = '\0';
   unk_008b2938 = '\0';
   g_network_result_packet_type = '\0';
   unk_008b34a0 = '\0';

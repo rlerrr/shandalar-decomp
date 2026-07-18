@@ -8,6 +8,27 @@
 
 extern card_data_t global_cards_data[];
 
+typedef struct
+{
+  int arg_2;
+  int arg_5;
+  int arg_6;
+  int arg_7;
+  int arg_8;
+  int allow_cancel;
+  char prompt[200];
+  int allow_ai_player;
+  int allow_human_player;
+} target_selection_request_t;
+
+typedef struct
+{
+  int selection_code;
+  int target_player;
+  int target_card;
+  int unused;
+} target_selection_result_t;
+
 /* Helpers that are inlined in the original executable (no function calls). */
 #define is_tapped(player_, card_) ((PLAYER_CARD_INSTANCE((player_), (card_)).state & STATE_TAPPED) != 0)
 #define is_animated_and_sick(player_, card_) \
@@ -39,8 +60,8 @@ int helper_destroy_basiclandtype(int source_player,
 int FUN_00437375(int player, int card, int internal_card_id);
 int FUN_0043c7ab(int who_is_being_divided, int player, int card);
 int FUN_0043b4f3(int player, int amount);
-int FUN_0044125c(int player, int card);
-int FUN_00443ee2(int player, int card, int event, int extra, int prompt);
+int can_attack(int player, int card);
+int push_card_onto_stack(int player, int card, int event, int extra, int prompt);
 void FUN_00419667(int target_player, int target_card, int damage_target_player);
 int has_vigilance(int player, int card);
 char *FUN_00495311(int value);
@@ -48,30 +69,30 @@ int CardIDFromType(unsigned int type);
 int CardTypeFromID(int csvid);
 int FUN_004087cc(int player, unsigned int type);
 int internal_rand(int maximum);
-int FUN_0044aa01(int player);
+int should_skip_phase(int player);
 int FUN_0044541f(int param_1);
 int FUN_00445b56(int player, int card);
 int FUN_00440c61(int player, int card);
 int FUN_00464a84(int player, int maximum);
-void FUN_00441cf2(int param_1, int param_2);
+void start_ai_decision_search(int decision_code, int time_scale);
 void FUN_004460d3(void);
 unsigned int FUN_00443898(void);
 char *FUN_00444c43(char *out, int msg, int player, int card);
 void __stdcall FUN_004e4e9a(void);
 void __stdcall FUN_004e50f5(void);
 int ai_opinion_of_gamestate(int player);
-int FUN_004466b5(int who_chooses,
-                 int arg_2,
-                 char *prompt,
-                 int allow_cancel,
-                 int arg_5,
-                 int arg_6,
-                 int arg_7,
-                 int arg_8,
-                 int *out_selection_code,
-                 int *out_target_player,
-                 int allow_ai_player,
-                 int allow_human_player);
+int run_target_selection_modal(int who_chooses,
+                               int arg_2,
+                               char *prompt,
+                               int allow_cancel,
+                               int arg_5,
+                               int arg_6,
+                               int arg_7,
+                               int arg_8,
+                               int *out_selection_code,
+                               int *out_target_player,
+                               int allow_ai_player,
+                               int allow_human_player);
 int FUN_0043fdb3(int player, int target_player, int target_card);
 int FUN_0051e631(int player, int card, int internal_card_id);
 unsigned int FUN_00447f80(void);
@@ -128,8 +149,8 @@ int FUN_00435b88(int *mana_cost,
                  int x_paid);
 int copy_mana_pool_to_display(void);
 int resolve_top_card_on_stack(void);
-void FUN_00441d78(void);
-void FUN_004afa4b();
+void reassess_all_cards_and_mana(void);
+void process_damage_prevention(int player);
 int FUN_004b082f(int player, int card, int event, int extra);
 void push_affected_card_stack(void);
 void pop_affected_card_stack(void);
@@ -324,7 +345,7 @@ void add_special_counter(int player, int card);
 int TENTATIVE_set_timestamps(int player, int card);
 int sacrifice_a_land(int player);
 int FUN_00551921(int player);
-int FUN_004e9c50(int player,
+int select_card_for_action(int player,
                  int arg_2,
                  int player_to_check,
                  unsigned int required_type,

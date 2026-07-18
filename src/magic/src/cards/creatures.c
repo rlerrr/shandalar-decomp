@@ -28,7 +28,7 @@ unsigned int get_protections_from(int player, int card)
   s.illegal_abilities = 0;
 
   if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == -1 ||
-      PLAYER_CARD_INSTANCE(player, card).internal_card_id == unk_0091a80c)
+      PLAYER_CARD_INSTANCE(player, card).internal_card_id == stack_proxy_internal_card_id)
   {
     s.type = global_cards_data[PLAYER_CARD_INSTANCE(player, card).original_internal_card_id].type;
   }

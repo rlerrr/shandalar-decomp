@@ -645,15 +645,15 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 0xc:
-      memcpy(&unk_008cf200, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_008cf200 + 2) == unk_007a7d6c)
+      memcpy(&g_target_selection_network_packet, s.packet_data, s.packet_size);
+      if (*(short *)((char *)&g_target_selection_network_packet + 2) == unk_007a7d6c)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, unk_007a7d6c);
         append_to_trace_txt(s.message);
       }
       else
       {
-        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&unk_008cf200 + 2));
+        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&g_target_selection_network_packet + 2));
       }
       ++unk_007a7d6c;
       s.got_requested_packet = 1;

@@ -8,12 +8,12 @@ char *FUN_0044a3bf(int player, int card);
 // FUNCTION: MAGIC 0x00443898
 unsigned int FUN_00443898(void)
 {
-  if (unk_008b2934 == 0)
+  if (stack_size == 0)
   {
     return 0xffffffffU;
   }
 
-  return (unsigned int)DAT_0093917c[unk_008b2934];
+  return (unsigned int)DAT_0093917c[stack_size];
 }
 
 // FUNCTION: MAGIC 0x00444c43

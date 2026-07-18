@@ -28,9 +28,9 @@ void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);
 void TENTATIVE_savegame(int autosave_slot);
 void FUN_004e4e75(void);
-void FUN_004432ed(int player, phase_t phase);
-int FUN_0044ac96(int player, phase_t phase);
-void FUN_00444d1f(void);
+void update_phase_display(int player, phase_t phase);
+int player_can_stop_at_phase(int player, phase_t phase);
+void reset_trigger_dispatch_state(void);
 int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card);
 int FUN_0044b6af(int player, int card);
 int FUN_0044b7d4(int player, int card);
@@ -42,7 +42,7 @@ void FUN_00446036(void);
 int allow_response(int param_1, int param_2, char *param_3, int param_4);
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response);
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
-void FUN_00441cf2(int param_1, int param_2);
+void start_ai_decision_search(int decision_code, int time_scale);
 void __stdcall FUN_004e4e9a(void);
 int reset_empty_card_original_ids(void);
 void compact_timestamp_slots(void);
@@ -244,13 +244,13 @@ void reset_duel_globals(void)
   _DAT_0091c0ec = 0;
   phase_stop_suppressed = 0;
   phase_was_skipped = 0;
-  unk_008b60e0 = 0;
+  attacking_creature_count = 0;
   g_duel_extra_turn_player = -1;
   DAT_0093a848 = 0;
   DAT_007161d0 = 1;
   trigger_dispatch_depth = 0;
   max_trigger_dispatch_depth = 0;
-  unk_0091a6d0 = 0;
+  nested_trigger_depth = 0;
   for (card = 0; card <= 7; ++card)
   {
     unk_008ce510[card] = 0;
@@ -314,7 +314,7 @@ void run_duel_turn(unsigned int player)
 
   s.phase_mode = 0;
   s.next_state = 0;
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     append_to_trace_txt(unk_0056e49c);
     if (player != 0)
@@ -461,7 +461,7 @@ int init_turn(int player)
     int loop_player;
   } s;
 
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -499,7 +499,7 @@ int init_turn(int player)
     g_duel_phase_stop_settings[1].phase_flags[s.card] &= (PHASE_STOP_ENABLED | PHASE_STOP_OPPONENT);
   }
   StopWorldLocationMusic();
-  FUN_00441d78();
+  reassess_all_cards_and_mana();
   reset_stack_tracking_state();
   rebuild_battlefield_summary();
   for (s.loop_player = 0; s.loop_player < 2; s.loop_player = s.loop_player + 1)
@@ -525,7 +525,7 @@ int TENTATIVE_start_turn(int player)
     int card;
   } s;
 
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -544,7 +544,7 @@ int TENTATIVE_start_turn(int player)
   }
   FUN_004e4e75();
   current_phase = PHASE_START;
-  FUN_004432ed(player, current_phase);
+  update_phase_display(player, current_phase);
   C_dispatch_event_raw(0x6a);
   if ((land_can_be_played & 0x8000) != 0)
   {
@@ -553,7 +553,7 @@ int TENTATIVE_start_turn(int player)
     return 1;
   }
   DAT_00896690 = 0;
-  unk_008b60e0 = 0;
+  attacking_creature_count = 0;
   land_can_be_played &= -512;
   for (s.card = 0; s.card < active_cards_count[player]; s.card = s.card + 1)
   {
@@ -613,8 +613,8 @@ void compact_timestamp_slots(void)
 // FUNCTION: MAGIC 0x0044386c
 int reset_stack_tracking_state(void)
 {
-  unk_008b2934 = 0;
-  global_stack_cards[unk_008b2934].player = -1;
+  stack_size = 0;
+  global_stack_cards[stack_size].player = -1;
   return 0;
 }
 
@@ -716,7 +716,7 @@ void FUN_004e4e75(void)
 }
 
 // FUNCTION: MAGIC 0x004432ed
-void FUN_004432ed(int player, phase_t phase)
+void update_phase_display(int player, phase_t phase)
 {
   (void)player;
   (void)phase;
@@ -760,7 +760,7 @@ int untap_phase_exe(unsigned int player)
     int done;
   } s;
 
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -773,7 +773,7 @@ int untap_phase_exe(unsigned int player)
       (real_target_available(NULL, 0, player, 2, 2, 0x200, 0, 0, 0, 0, 0, 0, s.winter_orb_card_type, -1, -1, -1, 0, 0, 0) == 0))
   {
     current_phase = PHASE_UNTAP;
-    FUN_004432ed(player, current_phase);
+    update_phase_display(player, current_phase);
     phase_was_skipped = 0;
     phase_stop_suppressed = 0;
     phase_response_window_open = 1;
@@ -828,28 +828,28 @@ int untap_phase_exe(unsigned int player)
         if ((active_player == player) &&
             ((g_duel_network_flags & 2) == 0) &&
             (g_duel_ai_mode_state != 1) &&
-            (FUN_0044ac96(player, PHASE_UNTAP) != 0))
+            (player_can_stop_at_phase(player, PHASE_UNTAP) != 0))
         {
           s.done = 0;
         }
       }
       else if (((s.must_untap_count == 0) || (s.must_untap_count == 1)) &&
                (s.optional_untap_count == 0) &&
-               (FUN_0044ac96(player, PHASE_UNTAP) == 0))
+               (player_can_stop_at_phase(player, PHASE_UNTAP) == 0))
       {
         s.done = 1;
       }
 
       if (s.done == 0)
       {
-        FUN_00444d1f();
+        reset_trigger_dispatch_state();
         if (((nonactive_player == player) || ((g_duel_network_flags & 2) != 0)) &&
             (g_duel_ai_mode_state != 1) &&
             (g_duel_network_state == 0) &&
             ((s.must_untap_count > 0) || (s.optional_untap_count > 0)))
         {
           load_text(global_ui_strings_filename, s_PROMPT_UNTAP_0056e5b4);
-          s.selected_card = FUN_004e9c50(player, -1, player, 0xff, 0, text_lines[0], 2);
+          s.selected_card = select_card_for_action(player, -1, player, 0xff, 0, text_lines[0], 2);
         }
         else
         {
@@ -864,17 +864,17 @@ int untap_phase_exe(unsigned int player)
             previous_stop_phase = -1;
           }
           load_text(global_ui_strings_filename, s_PROMPT_UNTAP_0056e5c4);
-          s.selected_card = FUN_004e9c50(player, player, player, 0xff, 0, text_lines[1], 2);
+          s.selected_card = select_card_for_action(player, player, player, 0xff, 0, text_lines[1], 2);
           phase_was_skipped = 1;
         }
 
-        if (_DAT_0074303c != -3)
+        if (g_target_selection_status_code != -3)
         {
-          if (_DAT_0074303c == -2)
+          if (g_target_selection_status_code == -2)
           {
             s.done = 1;
           }
-          else if ((_DAT_0074303c == 0) && (s.selected_card != -1))
+          else if ((g_target_selection_status_code == 0) && (s.selected_card != -1))
           {
             if ((FUN_0044b646(s.must_untap_cards, s.must_untap_count, unk_00742fcc, s.selected_card) == 0) &&
                 (FUN_0044b646(s.optional_untap_cards, s.optional_untap_count, unk_00742fcc, s.selected_card) == 0))
@@ -958,7 +958,7 @@ int untap_phase_exe(unsigned int player)
       }
     }
 
-    FUN_00441d78();
+    reassess_all_cards_and_mana();
     TENTATIVE_reassess_all_cards(0, 0xff);
     s.did_skip_untap = phase_was_skipped;
     if (s.did_skip_untap == 0)
@@ -983,7 +983,7 @@ int upkeep_phase(unsigned int player)
     char trace[100];
   } s;
 
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -1026,7 +1026,7 @@ int upkeep_phase(unsigned int player)
     }
   }
   current_phase = PHASE_BEGIN_UPKEEP;
-  FUN_004432ed(player, current_phase);
+  update_phase_display(player, current_phase);
   dispatch_trigger(player, 0xc9, gs_begin_upkeep_008cf080, 0);
   phase_response_window_open = 1;
   current_phase = PHASE_UPKEEP;
@@ -1036,7 +1036,7 @@ int upkeep_phase(unsigned int player)
   dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xcb, gs_end_upkeep_00925c00, 0);
   phase_stop_suppressed = 0;
   DAT_00789714 = 1;
-  FUN_004afa4b(player);
+  process_damage_prevention(player);
   DAT_00789714 = 0;
   unk_00939330 = 0;
   FUN_0044b3d4();
@@ -1059,7 +1059,7 @@ int draw_phase(unsigned int player)
     int draw_count;
   } s;
 
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -1078,7 +1078,7 @@ int draw_phase(unsigned int player)
 
   {
     current_phase = PHASE_DRAW;
-    FUN_004432ed(player, current_phase);
+    update_phase_display(player, current_phase);
     phase_was_skipped = 0;
     phase_response_window_open = 0;
     if ((g_duel_network_flags & 2) != 0)
@@ -1172,7 +1172,7 @@ int discard_phase(unsigned int player, int phase_mode)
 
   s.trace_counter = duel_trace_counter;
   s.did_discard = 0;
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     duel_trace_counter++;
     sprintf(s.trace, s__d__Entering_Discard_Phase__0056e908, s.trace_counter);
@@ -1234,18 +1234,18 @@ int discard_phase(unsigned int player, int phase_mode)
         ((g_duel_network_flags & 2) == 0))
     {
       TENTATIVE_reassess_all_cards(0, 0xff);
-      FUN_00441cf2(3, 0x1e);
+      start_ai_decision_search(3, 0x1e);
     }
     if (ai_decision_code == 3)
     {
       FUN_004e4e9a();
-    DAT_008cdab4 = 0;
-    DAT_008cdab0 = DAT_008cdab4;
-    DAT_008a8de4 = DAT_008cdab0;
-    ai_modifier = DAT_008a8de4;
+      DAT_008cdab4 = 0;
+      DAT_008cdab0 = DAT_008cdab4;
+      DAT_008a8de4 = DAT_008cdab0;
+      ai_modifier = DAT_008a8de4;
     }
     current_phase = PHASE_DISCARD;
-    FUN_004432ed(player, current_phase);
+    update_phase_display(player, current_phase);
     phase_response_window_open = 1;
     s.allow_response_result = allow_response(-1, current_phase, gs_discard_phase_0091d080, PHASE_DISCARD);
     phase_response_window_open = 0;
@@ -1330,7 +1330,7 @@ void cleanup_phase(unsigned int player)
   } s;
 
   s.other_player = 1 - player;
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -1341,7 +1341,7 @@ void cleanup_phase(unsigned int player)
   if (g_duel_ai_mode_state != 1)
   {
     current_phase = PHASE_CLEANUP;
-    FUN_004432ed(player, current_phase);
+    update_phase_display(player, current_phase);
     phase_was_skipped = 0;
     phase_response_window_open = 0;
     if ((g_duel_network_flags & 2) != 0)
@@ -1414,7 +1414,7 @@ void end_turn_phase(unsigned int player)
 
   s.trace_counter = duel_trace_counter;
   s.other_player = 1 - player;
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     duel_trace_counter++;
     sprintf(s.trace, s__d__Entering_End_Turn_Phase__0056e948, s.trace_counter);
@@ -1427,7 +1427,7 @@ void end_turn_phase(unsigned int player)
   {
     phase_stop_suppressed = 0;
   }
-  FUN_004afa4b(player);
+  process_damage_prevention(player);
   TENTATIVE_reassess_all_cards();
 
   s.dynamic_card_count = 0;
@@ -1517,7 +1517,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
   } s;
   int trace_counter;
 
-  if ((g_duel_network_flags & 2) != 0)
+  if (TRACE_ENABLED)
   {
     trace_counter = duel_trace_counter;
     duel_trace_counter++;
@@ -1544,7 +1544,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
       }
     }
 
-    FUN_004afa4b(player);
+    process_damage_prevention(player);
     regenerate_or_graveyard_triggers();
     for (s.loop_player = 0; s.loop_player < 2; s.loop_player = s.loop_player + 1)
     {
@@ -1554,7 +1554,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
       }
     }
 
-    FUN_00441d78();
+    reassess_all_cards_and_mana();
     s.ai_score = ai_modifier + ai_opinion_of_gamestate(active_player);
     if (life[1] > 0)
     {
@@ -1687,7 +1687,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
       stop_phase_player = -1;
       stop_phase = stop_phase_player;
     }
-    FUN_0044aa01(player);
+    should_skip_phase(player);
     play_sound_effect(5);
   }
   return 0;
@@ -2306,7 +2306,7 @@ int play_duel(int player, int creature_type)
   }
   else
   {
-    if ((g_duel_network_flags & 2) != 0)
+    if (TRACE_ENABLED)
     {
       append_to_trace_txt(s_Starting_the_duel_005732b4);
     }
@@ -2528,7 +2528,7 @@ int play_duel(int player, int creature_type)
     }
   }
 
-  idk:
+idk:
   reset_duel_globals();
 
   if (g_duel_ai_mode_state == -1)

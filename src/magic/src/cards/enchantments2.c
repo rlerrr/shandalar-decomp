@@ -1470,7 +1470,7 @@ int card_power_leak(int player, int card, event_t event)
     }
     else if (dialog_result == 1)
     {
-      FUN_00443ee2(player, card, 0x7e, 0, 0);
+      push_card_onto_stack(player, card, 0x7e, 0, 0);
       charge_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, 0, 1);
       obliterate_top_card_of_stack();
       if (spell_fizzled == 1)
@@ -1484,7 +1484,7 @@ int card_power_leak(int player, int card, event_t event)
     }
     else
     {
-      FUN_00443ee2(player, card, 0x7e, 0, 0);
+      push_card_onto_stack(player, card, 0x7e, 0, 0);
       charge_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, 0, 2);
       obliterate_top_card_of_stack();
       if (spell_fizzled == 1)
@@ -2593,7 +2593,7 @@ int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int 
   } s;
 
   s.attacker_abilities = C_get_abilities(attacker_player, attacker_card, 0x34, -1);
-  FUN_004e698f(&s.tmp1, &s.tmp2);
+  get_landwalk_evasion_masks(&s.tmp1, &s.tmp2);
 
   if (blocker_player == 1)
   {
@@ -2604,7 +2604,7 @@ int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int 
     s.selected = s.tmp2;
   }
 
-  s.result = FUN_004418c6(blocker_player,
+  s.result = can_block_attacker_with_abilities(blocker_player,
                           blocker_card,
                           attacker_player,
                           attacker_card,

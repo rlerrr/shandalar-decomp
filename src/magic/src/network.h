@@ -10,6 +10,22 @@
 #define NETWORK_EXTERN extern
 #endif
 
+typedef struct
+{
+  char packet_type;
+  char pad_1[3];
+  int result;
+  int selection_code;
+  int previous_player;
+  int previous_phase;
+  int target_card;
+  int target_player;
+  int aux_player;
+  int aux_phase;
+  int aux_controller;
+  char thread_exit_code;
+} target_selection_network_packet_t;
+
 // GLOBAL: MAGIC 0x00789a44
 NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 
@@ -69,7 +85,7 @@ NETWORK_EXTERN int unk_0091d07c;
 NETWORK_EXTERN char unk_009251b0;
 
 // GLOBAL: MAGIC 0x008cf200
-NETWORK_EXTERN char unk_008cf200;
+NETWORK_EXTERN target_selection_network_packet_t g_target_selection_network_packet;
 
 // GLOBAL: MAGIC 0x008cf3a0
 NETWORK_EXTERN char unk_008cf3a0;

@@ -973,7 +973,7 @@ unsigned int refresh_duel_display_cache(void)
   g_multiblock_creature_count = 0;
   for (s.zone_index = 0; global_stack_cards[s.zone_index].player != -1 && s.zone_index < 0x20; ++s.zone_index)
   {
-    if (unk_007a7750[s.zone_index] != 0)
+    if (stack_prompt_flags[s.zone_index] != 0)
     {
       s.stack_player = global_stack_cards[s.zone_index].player;
       s.stack_card = global_stack_cards[s.zone_index].card;

@@ -32,35 +32,6 @@ int DAT_0093d840;
 int FUN_0048930a(void);
 int FUN_00489362(void);
 
-typedef struct
-{
-  int arg_2;
-  int arg_5;
-  int arg_6;
-  int arg_7;
-  int arg_8;
-  int allow_cancel;
-  char prompt[200];
-  int allow_ai_player;
-  int allow_human_player;
-} target_selection_request_t;
-
-typedef struct
-{
-  char packet_type;
-  char pad_1[3];
-  int result;
-  int selection_code;
-  int previous_player;
-  int previous_phase;
-  int target_card;
-  int target_player;
-  int aux_player;
-  int aux_phase;
-  int aux_controller;
-  char thread_exit_code;
-} target_selection_network_packet_t;
-
 // FUNCTION: MAGIC 0x0055d91b
 int FUN_0055d91b(HDC dc, char *text)
 {
@@ -229,43 +200,44 @@ void set_duel_tooltip_text(char *text)
 }
 
 // FUNCTION: MAGIC 0x004466b5
-int FUN_004466b5(int who_chooses,
-                 int arg_2,
-                 char *prompt,
-                 int allow_cancel,
-                 int arg_5,
-                 int arg_6,
-                 int arg_7,
-                 int arg_8,
-                 int *out_selection_code,
-                 int *out_target_player,
-                 int allow_ai_player,
-                 int allow_human_player)
+int run_target_selection_modal(int who_chooses,
+                               int arg_2,
+                               char *prompt,
+                               int allow_cancel,
+                               int arg_5,
+                               int arg_6,
+                               int arg_7,
+                               int arg_8,
+                               int *out_selection_code,
+                               int *out_target_player,
+                               int allow_ai_player,
+                               int allow_human_player)
 {
-  BOOL bigcard_visible;
-  POINT cursor_pos;
-  HWND cursor_window;
-  char prompt_buffer[200];
-  char status_text[500];
-  int selection_code;
-  int target_player;
-  int target_card;
-  int result;
-  WPARAM thread_exit_code;
-  target_selection_request_t request;
-  target_selection_network_packet_t *packet;
-
-  thread_exit_code = 0;
-  if (prompt == NULL)
+  struct
   {
-    strcpy(prompt_buffer, "");
-    strcpy(status_text, "");
+    POINT cleanup_cursor_pos;              /* ebp - 0x3d4 */
+    HWND cleanup_cursor_window;            /* ebp - 0x3cc */
+    POINT cursor_pos;                      /* ebp - 0x3c8 */
+    HWND cursor_window;                    /* ebp - 0x3c0 */
+    char prompt_buffer[200];               /* ebp - 0x3bc */
+    char status_text[500];                 /* ebp - 0x2f4 */
+    target_selection_result_t action_result; /* ebp - 0x100 */
+    int result;                            /* ebp - 0xf0 */
+    WPARAM thread_exit_code;               /* ebp - 0xec */
+    target_selection_request_t request;    /* ebp - 0xe8 */
+  } s;
+
+  s.thread_exit_code = 0;
+  if (prompt != NULL)
+  {
+    strcpy(s.prompt_buffer, prompt);
+    strcpy(s.status_text, gs_waiting_for_opponent_007a7d30);
+    strcat(s.status_text, prompt);
   }
   else
   {
-    strcpy(prompt_buffer, prompt);
-    strcpy(status_text, "");
-    strcat(status_text, prompt);
+    strcpy(s.prompt_buffer, "");
+    strcpy(s.status_text, gs_waiting_for_opponent_007a7d30);
   }
 
   EnterCriticalSection(&g_duel_render_lock);
@@ -276,34 +248,33 @@ int FUN_004466b5(int who_chooses,
       DAT_007abc74 = -1;
     }
 
-    bigcard_visible = IsWindowVisible((HWND)DAT_008a8dec);
-    if (!bigcard_visible)
+    if (IsWindowVisible((HWND)DAT_008a8dec))
     {
-      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
+      InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
     }
     else
     {
-      InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
+      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
     }
   }
   LeaveCriticalSection(&g_duel_render_lock);
 
-  TENTATIVE_reassess_all_cards();
-  GetCursorPos(&cursor_pos);
-  cursor_window = WindowFromPoint(cursor_pos);
-  SendMessageA(cursor_window, 0x20, (WPARAM)cursor_window, 0x2000001);
+  TENTATIVE_reassess_all_cards(0, 0xff);
+  GetCursorPos(&s.cursor_pos);
+  s.cursor_window = WindowFromPoint(s.cursor_pos);
+  SendMessageA(s.cursor_window, 0x20, (WPARAM)s.cursor_window, 0x2000001);
 
-  request.arg_2 = arg_2;
-  request.arg_5 = arg_5;
-  request.arg_6 = arg_6;
-  request.arg_7 = arg_7;
-  request.arg_8 = arg_8;
-  request.allow_cancel = allow_cancel;
-  strcpy(request.prompt, prompt_buffer);
-  request.allow_ai_player = allow_ai_player;
-  request.allow_human_player = allow_human_player;
+  s.request.arg_2 = arg_2;
+  s.request.arg_5 = arg_5;
+  s.request.arg_6 = arg_6;
+  s.request.arg_7 = arg_7;
+  s.request.arg_8 = arg_8;
+  s.request.allow_ai_player = allow_ai_player;
+  s.request.allow_human_player = allow_human_player;
+  strcpy(s.request.prompt, s.prompt_buffer);
+  s.request.allow_cancel = allow_cancel;
 
-  if (who_chooses == nonactive_player || (g_duel_network_flags & 2) == 0)
+  if (nonactive_player == who_chooses || (g_duel_network_flags & 2) == 0)
   {
     if (DAT_0093d840 != 0)
     {
@@ -311,54 +282,51 @@ int FUN_004466b5(int who_chooses,
       DAT_0093d840 = 0;
     }
 
-    if (DAT_007aaeec == 0 || current_phase != 10 || *(int *)&unk_009266d0[0x7c] != 0)
+    if (DAT_007aaeec != 0 && current_phase == 10 && unk_00926790 == 0)
     {
-      result = SendMessageA(g_duel_window_hwnd, 0x403, (WPARAM)&request, (LPARAM)&selection_code);
-      target_player = out_target_player[0];
-      target_card = out_target_player[1];
-    }
-    else
-    {
-      result = 0;
-      selection_code = -2;
-      target_card = -2;
-      target_player = -1;
-      thread_exit_code = 0;
+      s.result = 0;
+      s.action_result.selection_code = -2;
+      s.action_result.target_card = -2;
+      s.action_result.target_player = -1;
+      s.thread_exit_code = 0;
       stop_phase_player = -1;
       stop_phase = -1;
       unk_00715fb0 = 0;
       DAT_0072c8e0 = 0;
       DAT_00715fa4 = 0;
     }
+    else
+    {
+      s.result = SendMessageA(g_duel_window_hwnd, 0x403, (WPARAM)&s.request, (LPARAM)&s.action_result);
+    }
 
     if ((g_duel_network_flags & 2) != 0)
     {
-      packet = (target_selection_network_packet_t *)&unk_008cf200;
-      packet->packet_type = 0xc;
-      packet->result = result;
-      packet->selection_code = selection_code;
+      g_target_selection_network_packet.packet_type = 0xc;
+      g_target_selection_network_packet.result = s.result;
+      g_target_selection_network_packet.selection_code = s.action_result.selection_code;
+      g_target_selection_network_packet.thread_exit_code = 1 - s.thread_exit_code;
       if (stop_phase_player == -1)
       {
-        packet->previous_player = stop_phase_player;
+        g_target_selection_network_packet.previous_player = stop_phase_player;
       }
       else
       {
-        packet->previous_player = 1 - stop_phase_player;
+        g_target_selection_network_packet.previous_player = 1 - stop_phase_player;
       }
-      packet->previous_phase = stop_phase;
-      packet->target_card = target_card;
-      if (result == 0)
+      g_target_selection_network_packet.previous_phase = stop_phase;
+      g_target_selection_network_packet.target_card = s.action_result.target_card;
+      if (s.result != 0)
       {
-        packet->target_player = target_player;
+        g_target_selection_network_packet.target_player = 1 - s.action_result.target_player;
       }
       else
       {
-        packet->target_player = 1 - target_player;
+        g_target_selection_network_packet.target_player = s.action_result.target_player;
       }
-      packet->aux_player = unk_00715fb0;
-      packet->aux_phase = DAT_0072c8e0;
-      packet->aux_controller = 1 - DAT_00715fa4;
-      packet->thread_exit_code = 1 - (char)thread_exit_code;
+      g_target_selection_network_packet.aux_player = unk_00715fb0;
+      g_target_selection_network_packet.aux_phase = DAT_0072c8e0;
+      g_target_selection_network_packet.aux_controller = 1 - DAT_00715fa4;
       TENTATIVE_send_network_result(who_chooses, 0xc);
       Sleep(0xfa);
       send_battlefield_status_packet(who_chooses);
@@ -366,48 +334,51 @@ int FUN_004466b5(int who_chooses,
   }
   else
   {
-    FUN_004a61d6("");
+    FUN_004a61d6(gs_waiting_for_opponent_007a7d30);
     DAT_0093d840 = 1;
     TENTATIVE_wait_for_network_result(who_chooses, 0xc);
-    packet = (target_selection_network_packet_t *)&unk_008cf200;
-    result = packet->result;
-    selection_code = packet->selection_code;
-    previous_stop_phase_player = packet->previous_player;
-    previous_stop_phase = packet->previous_phase;
-    target_card = packet->target_card;
-    target_player = packet->target_player;
-    unk_00715fb0 = packet->aux_player;
-    DAT_0072c8e0 = packet->aux_phase;
-    DAT_00715fa4 = packet->aux_controller;
-    thread_exit_code = (WPARAM)packet->thread_exit_code;
+    s.result = g_target_selection_network_packet.result;
+    s.action_result.selection_code = g_target_selection_network_packet.selection_code;
+    previous_stop_phase_player = g_target_selection_network_packet.previous_player;
+    previous_stop_phase = g_target_selection_network_packet.previous_phase;
+    s.action_result.target_card = g_target_selection_network_packet.target_card;
+    s.action_result.target_player = g_target_selection_network_packet.target_player;
+    unk_00715fb0 = g_target_selection_network_packet.aux_player;
+    DAT_0072c8e0 = g_target_selection_network_packet.aux_phase;
+    DAT_00715fa4 = g_target_selection_network_packet.aux_controller;
+    s.thread_exit_code = (WPARAM)g_target_selection_network_packet.thread_exit_code;
     receive_battlefield_status_packet(who_chooses);
     FUN_004a61d6("");
   }
 
-  *out_selection_code = selection_code;
-  *out_target_player = target_player;
-  out_target_player[1] = target_card;
+  *out_selection_code = s.action_result.selection_code;
+  *out_target_player = s.action_result.target_player;
+  out_target_player[1] = s.action_result.target_card;
   set_duel_tooltip_text(NULL);
 
-  if (selection_code != -5)
+  if (s.action_result.selection_code == -5)
   {
-    GetCursorPos(&cursor_pos);
-    cursor_window = WindowFromPoint(cursor_pos);
-    SendMessageA(cursor_window, 0x20, (WPARAM)cursor_window, 0x2000001);
+    PostMessageA(g_duel_window_hwnd, 0x401, s.thread_exit_code, 0);
+    ExitThread((DWORD)s.thread_exit_code);
+  }
+
+  {
+    GetCursorPos(&s.cleanup_cursor_pos);
+    s.cleanup_cursor_window = WindowFromPoint(s.cleanup_cursor_pos);
+    SendMessageA(s.cleanup_cursor_window, 0x20, (WPARAM)s.cleanup_cursor_window, 0x2000001);
     EnterCriticalSection(&g_duel_render_lock);
-    if (_DAT_0074303c == -2)
+    if (g_target_selection_status_code == -2)
     {
       if (stop_phase == -1)
       {
-        if ((g_duel_network_flags & 2) == 0)
-        {
-          DAT_007abc74 = -1;
-          DAT_007aa928 = -1;
-        }
-        else
+        if ((g_duel_network_flags & 2) != 0)
         {
           DAT_007aa928 = stop_phase_player;
           DAT_007abc74 = stop_phase;
+        }
+        else
+        {
+          DAT_007aa928 = DAT_007abc74 = -1;
         }
       }
       else
@@ -416,33 +387,27 @@ int FUN_004466b5(int who_chooses,
         DAT_007abc74 = stop_phase;
       }
     }
-    else if ((g_duel_network_flags & 2) == 0)
-    {
-      DAT_007abc74 = -1;
-      DAT_007aa928 = -1;
-    }
-    else
+    else if ((g_duel_network_flags & 2) != 0)
     {
       DAT_007aa928 = stop_phase_player;
       DAT_007abc74 = stop_phase;
     }
-
-    bigcard_visible = IsWindowVisible((HWND)DAT_008a8dec);
-    if (!bigcard_visible)
-    {
-      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
-    }
     else
+    {
+      DAT_007aa928 = DAT_007abc74 = -1;
+    }
+
+    if (IsWindowVisible((HWND)DAT_008a8dec))
     {
       InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
     }
+    else
+    {
+      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
+    }
     LeaveCriticalSection(&g_duel_render_lock);
-    return result;
+    return s.result;
   }
-
-  PostMessageA(g_duel_window_hwnd, 0x401, thread_exit_code, 0);
-  ExitThread((DWORD)thread_exit_code);
-  return 0;
 }
 
 // FUNCTION: MAGIC 0x004c0080
@@ -654,18 +619,18 @@ int C_real_select_target(int who_chooses,
         selection_prompt = prompt;
       }
 
-      s.result = FUN_004466b5(who_chooses,
-                              -1,
-                              selection_prompt,
-                              allow_cancel,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              &s.selection_code,
-                              &s.selected_player,
-                              s.allow_ai_player,
-                              s.allow_human_player);
+      s.result = run_target_selection_modal(who_chooses,
+                                            -1,
+                                            selection_prompt,
+                                            allow_cancel,
+                                            -1,
+                                            -1,
+                                            -1,
+                                            -1,
+                                            &s.selection_code,
+                                            &s.selected_player,
+                                            s.allow_ai_player,
+                                            s.allow_human_player);
       if (s.result == 0)
       {
         if (s.selection_code != -3 && s.selection_code == -2)

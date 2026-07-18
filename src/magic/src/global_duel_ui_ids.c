@@ -29,7 +29,7 @@ void InitializeDuelUiGlobalIds(void)
   DAT_008a918c = unk_009266a4 + 0x10;
   unk_008a9194 = unk_009266a4 + 0x11;
   unk_00939348 = unk_009266a4 + 0x12;
-  unk_0091a80c = unk_009266a4 + 0x13;
+  stack_proxy_internal_card_id = unk_009266a4 + 0x13;
   _DAT_00777d28 = unk_009266a4 + 0x14;
   DAT_007ab2c8 = unk_009266a4 + 0x15;
   DAT_007ab150 = unk_009266a4 + 0x16;

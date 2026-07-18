@@ -39,7 +39,7 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
 int FUN_004486de(int player, int card);
 void get_current_duel_selection(int *selected_player, int *selected_card);
 void FUN_00538e3d(int *player, int *phase, char *unused);
-void FUN_004893e0(HWND hwnd);
+void show_territory_options_dialog(HWND hwnd);
 void refresh_duel_window(HWND hwnd);
 void set_player_directive_value(int player, int value);
 void layout_duel_child_windows(HWND hwnd, int layout);
@@ -359,7 +359,7 @@ void FUN_00538e3d(int *player, int *phase, char *text)
 }
 
 // FUNCTION: MAGIC 0x004893e0
-void FUN_004893e0(HWND hwnd)
+void show_territory_options_dialog(HWND hwnd)
 {
   if (DialogBoxParamA(g_app_instance, (LPCSTR)0xe1, hwnd, FUN_0048958a, 0) != 0)
   {
@@ -371,18 +371,18 @@ void FUN_004893e0(HWND hwnd)
     {
       apply_duel_backdrop_art(0, g_duel_interface_options.player_territory_color, g_duel_interface_options.player_territory_type);
     }
-    LockWindowUpdate(DUEL_MAIN_WINDOW_HWND);
+    LockWindowUpdate(g_duel_window_hwnd);
     set_player_directive_value(0, 0);
     set_player_directive_value(1, 0);
-    layout_duel_child_windows(DUEL_MAIN_WINDOW_HWND, g_duel_interface_options.layout);
-    FUN_004ec616(g_duel_phase_display_window_hwnd);
+    layout_duel_child_windows(g_duel_window_hwnd, g_duel_interface_options.layout);
+    FUN_004ec616(g_duel_prompt_context_hwnd);
     refresh_duel_window(g_duel_player_battlefield_window_hwnd);
     refresh_duel_window(g_duel_help_owner_hwnd);
-    resize_duel_hand_window(g_duel_life_window_hwnd);
     resize_duel_hand_window(g_duel_full_card_window_hwnd);
+    resize_duel_hand_window(g_duel_life_window_hwnd);
     LockWindowUpdate((HWND)0);
-    SendMessageA(g_duel_life_window_hwnd, 0x435, 0, 0);
     SendMessageA(g_duel_full_card_window_hwnd, 0x435, 0, 0);
+    SendMessageA(g_duel_life_window_hwnd, 0x435, 0, 0);
     SendMessageA(g_duel_player_battlefield_window_hwnd, 0x435, 0, 0);
     SendMessageA(g_duel_help_owner_hwnd, 0x435, 0, 0);
     SendMessageA(g_duel_attack_phase_window_hwnd, 0x435, 0, 0);
@@ -628,7 +628,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
     s.child_window = (HWND)wparam;
-    for (s.card_id_index = 0; s.card_id_index < s.card_count; s.card_id_index++)
+    for (s.card_id_index = 0; s.card_count > s.card_id_index; s.card_id_index++)
     {
       if (card_window_matches_card_id(((HWND *)s.card_windows)[s.card_id_index], (int)s.child_window) != 0)
       {
@@ -640,7 +640,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x432:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    for (s.hidden_flag = 0; s.hidden_flag < s.card_count; s.hidden_flag++)
+    for (s.hidden_flag = 0; s.card_count > s.hidden_flag; s.hidden_flag++)
     {
       if (IsWindowVisible(((HWND *)s.card_windows)[s.hidden_flag]) != 0)
       {
@@ -652,7 +652,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x435:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    for (s.remove_index = 0; s.remove_index < s.card_count; s.remove_index++)
+    for (s.remove_index = 0; s.card_count > s.remove_index; s.remove_index++)
     {
       InvalidateRect(((HWND *)s.card_windows)[s.remove_index], NULL, FALSE);
     }
@@ -665,11 +665,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.attached_window = (HWND)lparam;
     s.remove_found = 0;
     for (s.loop_index = 0;
-         s.loop_index < s.card_count && s.remove_found == 0;
+         s.card_count > s.loop_index && s.remove_found == 0;
          s.loop_index++)
     {
       if (card_window_matches_player_and_card(((HWND *)s.card_windows)[s.loop_index],
-                                             (int *)s.other_battlefield_window) != 0)
+                                              (int *)s.other_battlefield_window) != 0)
       {
         s.remove_found = 1;
         if (s.attached_window != (HWND)0)
@@ -696,7 +696,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     return 0;
 
   case 0x438:
-    return GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
+    return (LRESULT)s.background_bitmap;
 
   case 0x40a:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
@@ -740,7 +741,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.remove_player_and_card = (int *)wparam;
     s.remove_found_40b = 0;
     for (s.remove_loop_index = 0;
-         s.remove_loop_index < s.card_count && s.remove_found_40b == 0;
+         s.card_count > s.remove_loop_index && s.remove_found_40b == 0;
          s.remove_loop_index++)
     {
       if (card_window_matches_player_and_card(((HWND *)s.card_windows)[s.remove_loop_index],
@@ -750,14 +751,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
         DestroyWindow(((HWND *)s.card_windows)[s.remove_loop_index]);
         s.card_count--;
         for (s.remove_compact_index = s.remove_loop_index;
-             s.remove_compact_index < s.card_count;
+             s.card_count > s.remove_compact_index;
              s.remove_compact_index++)
         {
           ((HWND *)s.card_windows)[s.remove_compact_index] =
               ((HWND *)s.card_windows)[s.remove_compact_index + 1];
         }
         SetWindowLongA(hwnd, g_duel_window_userdata_card_offset, s.card_count);
-        for (s.remove_compact_index = 0; s.remove_compact_index < s.card_count; s.remove_compact_index++)
+        for (s.remove_compact_index = 0; s.card_count > s.remove_compact_index; s.remove_compact_index++)
         {
           if ((HWND)get_card_window_hidden_flag(((HWND *)s.card_windows)[s.remove_compact_index]) ==
               ((HWND *)s.card_windows)[s.remove_loop_index])
@@ -772,7 +773,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x40c:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    for (s.destroy_index = 0; s.destroy_index < s.card_count; s.destroy_index++)
+    for (s.destroy_index = 0; s.card_count > s.destroy_index; s.destroy_index++)
     {
       DestroyWindow(((HWND *)s.card_windows)[s.destroy_index]);
     }
@@ -787,10 +788,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
     s.query_player_and_card = (int *)wparam;
     s.query_found = 0;
-    for (s.query_index = 0; s.query_index < s.card_count && s.query_found == 0; s.query_index++)
+    for (s.query_index = 0; s.card_count > s.query_index && s.query_found == 0; s.query_index++)
     {
       if (card_window_matches_player_and_card(((HWND *)s.card_windows)[s.query_index],
-                                             s.query_player_and_card) != 0)
+                                              s.query_player_and_card) != 0)
       {
         s.query_found = 1;
         if (msg == 0x40e)
@@ -818,10 +819,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
     s.raise_player_and_card = (int *)wparam;
     s.raise_found = 0;
-    for (s.raise_index = 0; s.raise_index < s.card_count && s.raise_found == 0; s.raise_index++)
+    for (s.raise_index = 0; s.card_count > s.raise_index && s.raise_found == 0; s.raise_index++)
     {
       if (card_window_matches_player_and_card(((HWND *)s.card_windows)[s.raise_index],
-                                             s.raise_player_and_card) != 0)
+                                              s.raise_player_and_card) != 0)
       {
         s.raise_found = 1;
         BringWindowToTop(((HWND *)s.card_windows)[s.raise_index]);
@@ -834,7 +835,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
     s.player_card_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
-    for (s.loop_index_400 = 0; s.loop_index_400 < s.card_count; s.loop_index_400++)
+    for (s.loop_index_400 = 0; s.card_count > s.loop_index_400; s.loop_index_400++)
     {
       SendMessageA(((HWND *)s.card_windows)[s.loop_index_400], 0x401, (WPARAM)&s.displayed_player, 0);
       s.displayed_card_id = get_displayed_card_id(s.displayed_player, s.displayed_card);
@@ -880,7 +881,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     }
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    for (s.loop_index_400 = 0; s.loop_index_400 < s.card_count; s.loop_index_400++)
+    for (s.loop_index_400 = 0; s.card_count > s.loop_index_400; s.loop_index_400++)
     {
       SendMessageA(hwnd, 0x410, (WPARAM)((HWND *)s.card_windows)[s.loop_index_400], 0);
     }
@@ -899,10 +900,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.attachment_y_step = DAT_00939508;
     GetWindowRect(s.attachment_parent, &s.attachment_rect);
     MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.attachment_rect, 2);
-    s.attachment_x = s.attachment_x_step + s.attachment_rect.left;
+    s.attachment_x = s.attachment_rect.left + s.attachment_x_step;
     s.attachment_y = s.attachment_rect.top - s.attachment_y_step;
     s.previous_attachment_window = s.attachment_parent;
-    for (s.attachment_index = 0; s.attachment_index < s.card_count; s.attachment_index++)
+    for (s.attachment_index = 0; s.card_count > s.attachment_index; s.attachment_index++)
     {
       if ((HWND)get_card_window_hidden_flag(((HWND *)s.card_windows)[s.attachment_index]) ==
           s.attachment_parent)
@@ -914,7 +915,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
             count_hidden_battlefield_descendants(hwnd, ((HWND *)s.card_windows)[s.attachment_index]);
         if (0 < s.attachment_descendant_count)
         {
-          s.attachment_y -= s.attachment_y_step * s.attachment_descendant_count;
+          s.attachment_y -= s.attachment_descendant_count * s.attachment_y_step;
         }
         s.previous_attachment_window = ((HWND *)s.card_windows)[s.attachment_index];
       }
@@ -930,8 +931,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     {
       return 0;
     }
-    ShowWindow(s.hidden_parent, (s.hidden_lparam == 0) - 1 & SW_SHOW);
-    for (s.hidden_index = 0; s.hidden_index < s.card_count; s.hidden_index++)
+    ShowWindow(s.hidden_parent, (s.hidden_lparam < 1) ? 0 : SW_SHOW);
+    for (s.hidden_index = 0; s.card_count > s.hidden_index; s.hidden_index++)
     {
       if ((HWND)get_card_window_hidden_flag(((HWND *)s.card_windows)[s.hidden_index]) == s.hidden_parent)
       {
@@ -943,7 +944,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x401:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    for (s.show_index = 0; s.show_index < s.card_count; s.show_index++)
+    for (s.show_index = 0; s.card_count > s.show_index; s.show_index++)
     {
       if (IsWindowVisible(((HWND *)s.card_windows)[s.show_index]) == 0)
       {
@@ -955,12 +956,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x411:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    for (s.unique_outer_index = 0; s.unique_outer_index < s.card_count; s.unique_outer_index++)
+    for (s.unique_outer_index = 0; s.card_count > s.unique_outer_index; s.unique_outer_index++)
     {
       s.card_windows_copy[s.unique_outer_index] = ((int *)s.card_windows)[s.unique_outer_index];
     }
     s.unique_flagged_count = 0;
-    for (s.unique_outer_index = 0; s.unique_outer_index < s.card_count; s.unique_outer_index++)
+    for (s.unique_outer_index = 0; s.card_count > s.unique_outer_index; s.unique_outer_index++)
     {
       if (((int *)s.card_windows)[s.unique_outer_index] != 0)
       {
@@ -972,7 +973,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
           if (s.unique_flag_id != -1)
           {
             for (s.unique_inner_index = s.unique_outer_index + 1;
-                 s.unique_inner_index < s.card_count;
+                 s.card_count > s.unique_inner_index;
                  s.unique_inner_index++)
             {
               SendMessageA(((HWND *)s.card_windows)[s.unique_inner_index], 0x401, (WPARAM)&s.scan_player, 0);
@@ -985,7 +986,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
         }
       }
     }
-    for (s.unique_outer_index = 0; s.unique_outer_index < s.card_count; s.unique_outer_index++)
+    for (s.unique_outer_index = 0; s.card_count > s.unique_outer_index; s.unique_outer_index++)
     {
       ((int *)s.card_windows)[s.unique_outer_index] = s.card_windows_copy[s.unique_outer_index];
     }
@@ -1011,7 +1012,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     return 0;
 
   case WM_COMMAND:
-    switch ((UINT)wparam & 0xffff)
+    switch ((int)wparam & 0xffff)
     {
     case 0x66:
       stop_phase = -1;
@@ -1040,7 +1041,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
       break;
     case 0x68:
-      FUN_004893e0(g_duel_window_hwnd);
+      show_territory_options_dialog(g_duel_window_hwnd);
       break;
     case 0x67:
       refresh_duel_window(hwnd);
@@ -1078,6 +1079,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     case 0x6b:
       SendMessageA(g_duel_window_hwnd, msg, 0x27c, 0);
       break;
+    case 0x258:
     case 0x25c:
     case 0x25e:
     case 0x261:
@@ -1094,11 +1096,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
 
   case WM_CREATE:
     s.card_count = 0;
-    SetWindowLongA(hwnd, g_duel_window_userdata_card_offset, 0);
+    SetWindowLongA(hwnd, g_duel_window_userdata_card_offset, s.card_count);
     s.card_windows = malloc(800);
     SetWindowLongA(hwnd, g_duel_window_userdata_player_offset, (LONG)s.card_windows);
     s.background_bitmap = (HWND)0;
-    SetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset, 0);
+    SetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset, (LONG)s.background_bitmap);
     if (GetDlgCtrlID(hwnd) == 0x79)
     {
       s.create_data[0] = 0;

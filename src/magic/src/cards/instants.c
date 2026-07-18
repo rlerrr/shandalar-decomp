@@ -2485,7 +2485,7 @@ int card_power_sink(int player, int card, event_t event)
 
       if (s.target_player == human_player || (g_duel_network_flags & 2) != 0)
       {
-        FUN_00443ee2(player, card, 0x7e, 0, 0);
+        push_card_onto_stack(player, card, 0x7e, 0, 0);
         s.mana_paid = charge_mana(s.target_player, COLOR_COLORLESS, PLAYER_CARD_INSTANCE(player, card).info_slot);
         obliterate_top_card_of_stack();
         spell_fizzled = 0;

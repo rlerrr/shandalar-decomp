@@ -49,6 +49,58 @@ extern int g_expanded_graveyard_window_extra_bytes;
 extern int g_graveyard_cards_window_extra_bytes;
 int load_text_with_tab_escapes(char *filename, char *section_name);
 HBITMAP load_pic(char *filename);
+LOGFONTA *LoadFontFromIni(char *section, int must_load);
+
+// GLOBAL: MAGIC 0x0055fcb4
+int g_duel_directive_hover_timer_id;
+
+// GLOBAL: MAGIC 0x00573068
+HWND g_duel_last_cue_card_hwnd;
+
+// GLOBAL: MAGIC 0x0057306c
+int DAT_0057306c;
+
+// GLOBAL: MAGIC 0x00573070
+int g_duel_last_cue_card_x;
+
+// GLOBAL: MAGIC 0x00573074
+int g_duel_last_cue_card_y;
+
+// GLOBAL: MAGIC 0x00573078
+char s_CueCard_00573078[8] = "CueCard";
+
+// GLOBAL: MAGIC 0x0055e0d0
+int g_duel_cue_card_font_window_long_offset = 0;
+
+// GLOBAL: MAGIC 0x0055e0d4
+int g_duel_cue_card_window_extra_bytes = 4;
+
+// GLOBAL: MAGIC 0x0064f0ac
+HFONT g_duel_cue_card_font;
+
+// GLOBAL: MAGIC 0x0064f0b0
+COLORREF g_duel_cue_card_text_color;
+
+// GLOBAL: MAGIC 0x0064f0b4
+HBRUSH g_duel_cue_card_shadow_brush;
+
+// GLOBAL: MAGIC 0x0064f0b8
+HBRUSH g_duel_cue_card_background_brush;
+
+// GLOBAL: MAGIC 0x007ab2c4
+int g_duel_cue_card_mouse_threshold;
+
+// GLOBAL: MAGIC 0x008a8df4
+int g_duel_cue_card_timer_elapsed;
+
+// GLOBAL: MAGIC 0x008b44d8
+int g_duel_cue_card_y_offset;
+
+// GLOBAL: MAGIC 0x008ce7d4
+int g_duel_cue_card_timer_id;
+
+// GLOBAL: MAGIC 0x0093a7f8
+int g_duel_cue_card_x_offset;
 
 // GLOBAL: MAGIC 0x0055e15c
 int g_icon_button_icon_long_offset = 0;
@@ -125,8 +177,56 @@ void finish_duel_video_mode_transition(void)
 // FUNCTION: SHANDALAR 0x00430650
 int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
 {
-  (void)message;
-  (void)timer_elapsed;
+  struct
+  {
+    UINT message;
+    int overrun;
+    POINT point;
+    RECT rect;
+  } s;
+
+  switch (s.message = message->message)
+  {
+  case WM_NCMOUSEMOVE:
+  case WM_MOUSEMOVE:
+    if (g_duel_directive_hover_timer_id != 0)
+    {
+      KillTimer((HWND)0, g_duel_directive_hover_timer_id);
+      g_duel_directive_hover_timer_id = 0;
+    }
+    if (g_duel_interface_options.directive_tracks_mouse != 0 &&
+        IsWindowVisible((HWND)DAT_007a7d74) != 0)
+    {
+      g_duel_directive_hover_timer_id = SetTimer((HWND)0, 0, timer_elapsed, (TIMERPROC)0);
+    }
+    return 0;
+
+  case WM_TIMER:
+    if (message->hwnd == (HWND)0 && message->wParam == (WPARAM)g_duel_directive_hover_timer_id)
+    {
+      KillTimer((HWND)0, g_duel_directive_hover_timer_id);
+      g_duel_directive_hover_timer_id = 0;
+      GetCursorPos(&s.point);
+      s.point.x += GetSystemMetrics(0xd);
+      s.point.y += GetSystemMetrics(0xe);
+      GetWindowRect((HWND)DAT_007a7d74, &s.rect);
+      s.overrun = (s.rect.right - s.rect.left) + s.point.x - GetSystemMetrics(SM_CXSCREEN);
+      if (s.overrun > 0)
+      {
+        s.point.x -= s.overrun;
+      }
+      s.overrun = (s.rect.bottom - s.rect.top) + s.point.y - GetSystemMetrics(SM_CYSCREEN);
+      if (s.overrun > 0)
+      {
+        s.point.y -= s.overrun;
+      }
+      SetWindowPos((HWND)DAT_007a7d74, (HWND)0, s.point.x, s.point.y, 0, 0,
+                   SWP_NOSIZE | SWP_NOZORDER);
+      return 1;
+    }
+    return 0;
+  }
+
   return 0;
 }
 
@@ -148,7 +248,133 @@ int dispatch_duel_window_message(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
 // FUNCTION: SHANDALAR 0x004cc6c0
 int handle_duel_tooltip_message(MSG *message)
 {
-  (void)message;
+  struct
+  {
+    int timer_cue_card_visible;
+    POINT timer_client_point;
+    POINT timer_screen_point;
+    HWND target_hwnd;
+    int cue_card_visible;
+    char current_text[100];
+    POINT screen_point;
+    int refresh_cue_card;
+    char cue_text[100];
+  } s;
+
+  switch (message->message)
+  {
+  case WM_MOUSEMOVE:
+    if (IsWindowVisible(g_duel_cue_card_window_hwnd) == 0)
+    {
+      if (g_duel_cue_card_timer_id != 0)
+      {
+        KillTimer((HWND)0, g_duel_cue_card_timer_id);
+        g_duel_cue_card_timer_id = 0;
+      }
+      g_duel_cue_card_timer_id = SetTimer((HWND)0, 0, g_duel_cue_card_timer_elapsed, (TIMERPROC)0);
+    }
+    else
+    {
+      if (message->hwnd == g_duel_last_cue_card_hwnd)
+      {
+        s.refresh_cue_card = 1;
+        s.cue_card_visible = 1;
+        if (message->hwnd == g_duel_last_cue_card_hwnd)
+        {
+          if (abs((unsigned short)((message->lParam >> 16) & 0xffff) - g_duel_last_cue_card_y) +
+                  abs((unsigned short)message->lParam - g_duel_last_cue_card_x) >
+              g_duel_cue_card_mouse_threshold)
+          {
+            s.cue_card_visible = SendMessageA(message->hwnd, 0x437, (WPARAM)s.cue_text, message->lParam);
+          }
+          else
+          {
+            s.refresh_cue_card = 0;
+          }
+        }
+        else
+        {
+          s.cue_card_visible = SendMessageA(message->hwnd, 0x437, (WPARAM)s.cue_text, message->lParam);
+        }
+
+        if (s.cue_card_visible == 0)
+        {
+          ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
+        }
+        else if (s.refresh_cue_card != 0)
+        {
+          g_duel_last_cue_card_hwnd = message->hwnd;
+          g_duel_last_cue_card_x = (unsigned short)message->lParam;
+          g_duel_last_cue_card_y = (unsigned short)((message->lParam >> 16) & 0xffff);
+          GetCursorPos(&s.screen_point);
+          if (g_duel_interface_options.show_cue_cards != 0)
+          {
+            SendMessageA(g_duel_cue_card_window_hwnd, 0x401, 0, (LPARAM)s.current_text);
+            if (strcmp(s.current_text, s.cue_text) != 0)
+            {
+              SendMessageA(g_duel_cue_card_window_hwnd, 0x400,
+                           MAKELONG(s.screen_point.x + g_duel_cue_card_x_offset,
+                                    s.screen_point.y + g_duel_cue_card_y_offset),
+                           (LPARAM)s.cue_text);
+            }
+          }
+          else
+          {
+            ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
+          }
+        }
+      }
+      else
+      {
+        if (g_duel_cue_card_timer_id != 0)
+        {
+          KillTimer((HWND)0, g_duel_cue_card_timer_id);
+          g_duel_cue_card_timer_id = 0;
+        }
+        g_duel_cue_card_timer_id = SetTimer((HWND)0, 0, g_duel_cue_card_timer_elapsed, (TIMERPROC)0);
+        g_duel_last_cue_card_hwnd = message->hwnd;
+        ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
+      }
+    }
+    return 0;
+
+  case WM_LBUTTONDOWN:
+  case WM_RBUTTONDOWN:
+  case WM_MBUTTONDOWN:
+    ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
+    if (g_duel_cue_card_timer_id != 0)
+    {
+      KillTimer((HWND)0, g_duel_cue_card_timer_id);
+      g_duel_cue_card_timer_id = 0;
+    }
+    return 0;
+
+  case WM_TIMER:
+    if (message->hwnd == (HWND)0 && message->wParam == (WPARAM)g_duel_cue_card_timer_id)
+    {
+      KillTimer((HWND)0, g_duel_cue_card_timer_id);
+      g_duel_cue_card_timer_id = 0;
+      GetCursorPos(&s.timer_screen_point);
+      s.target_hwnd = WindowFromPoint(s.timer_screen_point);
+      s.timer_client_point.x = s.timer_screen_point.x;
+      s.timer_client_point.y = s.timer_screen_point.y;
+      ScreenToClient(s.target_hwnd, &s.timer_client_point);
+      s.timer_cue_card_visible = SendMessageA(s.target_hwnd, 0x437, (WPARAM)s.cue_text,
+                                              MAKELONG(s.timer_client_point.x, s.timer_client_point.y));
+      if (s.timer_cue_card_visible != 0 &&
+          g_duel_interface_options.show_cue_cards != 0)
+      {
+        SendMessageA(g_duel_cue_card_window_hwnd, 0x400,
+                     MAKELONG(s.timer_screen_point.x + g_duel_cue_card_x_offset,
+                              s.timer_screen_point.y + g_duel_cue_card_y_offset),
+                     (LPARAM)s.cue_text);
+        return 1;
+      }
+      return 0;
+    }
+    return 0;
+  }
+
   return 0;
 }
 
@@ -571,13 +797,42 @@ int register_MAGIC_PaletteClass(LPCSTR class_name)
 // FUNCTION: SHANDALAR 0x004cbfa0
 int register_MAGIC_CueCardClass(LPCSTR class_name)
 {
-  ATOM atom;
-  WNDCLASSA wndclass;
+  struct
+  {
+    int result;
+    WNDCLASSA wndclass;
+  } s;
 
-  SET_DUEL_WNDCLASS(wndclass, 0x800, wndproc_MAGIC_CueCardClass, 4,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
+  s.result = 1;
+  s.wndclass.style = 0x800;
+  s.wndclass.lpfnWndProc = wndproc_MAGIC_CueCardClass;
+  s.wndclass.cbClsExtra = 0;
+  s.wndclass.cbWndExtra = g_duel_cue_card_window_extra_bytes;
+  s.wndclass.hInstance = g_app_instance;
+  s.wndclass.hIcon = (HICON)0;
+  s.wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
+  s.wndclass.hbrBackground = (HBRUSH)0x6;
+  s.wndclass.lpszMenuName = (LPCSTR)0;
+  s.wndclass.lpszClassName = class_name;
+  if (RegisterClassA(&s.wndclass) == 0)
+  {
+    s.result = 0;
+  }
+  g_duel_cue_card_timer_id = 0;
+  g_duel_cue_card_timer_elapsed = 500;
+  g_duel_cue_card_x_offset = 10;
+  g_duel_cue_card_y_offset = 0x12;
+  g_duel_cue_card_mouse_threshold = 0x14;
+  g_duel_cue_card_font = CreateFontIndirectA(LoadFontFromIni(s_CueCard_00573078, 0));
+  g_duel_cue_card_background_brush = CreateSolidBrush(0x296bed2);
+  g_duel_cue_card_shadow_brush = CreateSolidBrush(0x27f7f7f);
+  g_duel_cue_card_text_color = 0x2505050;
+  if (g_duel_cue_card_background_brush == (HBRUSH)0 ||
+      g_duel_cue_card_shadow_brush == (HBRUSH)0)
+  {
+    s.result = 0;
+  }
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x0043db50
@@ -739,7 +994,26 @@ void destroy_MAGICGAME_BigCardCardClass(LPCSTR class_name)
 // FUNCTION: SHANDALAR 0x004cc0c1
 void destroy_MAGIC_CueCardClass(LPCSTR class_name)
 {
-  UnregisterClassA(CLASS_MAGIC_CUE_CARD, g_app_instance);
+  if (g_duel_cue_card_timer_id != 0)
+  {
+    KillTimer((HWND)0, g_duel_cue_card_timer_id);
+    g_duel_cue_card_timer_id = 0;
+  }
+  if (g_duel_cue_card_font != (HFONT)0)
+  {
+    DeleteObject(g_duel_cue_card_font);
+  }
+  if (g_duel_cue_card_background_brush != (HBRUSH)0)
+  {
+    DeleteObject(g_duel_cue_card_background_brush);
+  }
+  if (g_duel_cue_card_shadow_brush != (HBRUSH)0)
+  {
+    DeleteObject(g_duel_cue_card_shadow_brush);
+  }
+  g_duel_cue_card_font = (HFONT)0;
+  g_duel_cue_card_background_brush = (HBRUSH)0;
+  g_duel_cue_card_shadow_brush = (HBRUSH)0;
 }
 
 // FUNCTION: MAGIC 0x0042224e
@@ -1218,7 +1492,132 @@ LRESULT CALLBACK wndproc_MAGIC_PaletteClass(HWND hwnd, UINT msg, WPARAM wparam, 
 // FUNCTION: SHANDALAR 0x004cc15a
 LRESULT CALLBACK wndproc_MAGIC_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    unsigned int font_param;
+    char paint_text[100];
+    HDC paint_dc;
+    PAINTSTRUCT paint_struct;
+    RECT inner_rect;
+    RECT client_rect;
+    unsigned int get_text_wparam;
+    LPARAM get_text_lparam;
+    int height;
+    HDC dc;
+    int width;
+    unsigned int y;
+    unsigned int x;
+    int screen_width;
+    LPCSTR text;
+    SIZE text_size;
+    int screen_height;
+    HGDIOBJ font;
+  } s;
+
+  switch (msg)
+  {
+  case 0x400:
+    s.font = (HGDIOBJ)GetWindowLongA(hwnd, g_duel_cue_card_font_window_long_offset);
+    s.x = wparam & 0xffff;
+    s.y = (unsigned short)((wparam >> 16) & 0xffff);
+    s.text = (LPCSTR)lparam;
+    s.dc = GetDC(hwnd);
+    if (s.dc != (HDC)0)
+    {
+      ApplyCardArtPaletteToDc(s.dc);
+      SelectObject(s.dc, s.font);
+      GetTextExtentPoint32A(s.dc, s.text, lstrlenA(s.text), &s.text_size);
+      s.width = s.text_size.cx + 10;
+      s.height = s.text_size.cy + 6;
+      ReleaseDC(hwnd, s.dc);
+      s.screen_width = GetSystemMetrics(SM_CXSCREEN);
+      s.screen_height = GetSystemMetrics(SM_CYSCREEN);
+      if ((int)s.x < 1)
+      {
+        s.x = 1;
+      }
+      if ((int)(s.width + s.x) > s.screen_width - 1)
+      {
+        s.x = (s.screen_width - 1) - s.width;
+      }
+      if ((int)s.y < 1)
+      {
+        s.y = 1;
+      }
+      if ((int)(s.height + s.y) > s.screen_height - 1)
+      {
+        s.y = (s.screen_height - 1) - s.height;
+      }
+      MoveWindow(hwnd, s.x, s.y, s.width, s.height, 1);
+      SetWindowTextA(hwnd, s.text);
+      ShowWindow(hwnd, SW_SHOW);
+      InvalidateRect(hwnd, (RECT *)0, 1);
+    }
+    return 0;
+
+  case 0x401:
+    s.get_text_lparam = lparam;
+    s.get_text_wparam = wparam;
+    GetWindowTextA(hwnd, (LPSTR)s.get_text_lparam, s.get_text_wparam);
+    return 0;
+
+  case WM_CREATE:
+    s.font = (HGDIOBJ)g_duel_cue_card_font;
+    SetWindowLongA(hwnd, g_duel_cue_card_font_window_long_offset, (LONG)s.font);
+    return 0;
+
+  case WM_ERASEBKGND:
+    return 1;
+
+  case WM_GETFONT:
+    s.font = (HGDIOBJ)GetWindowLongA(hwnd, g_duel_cue_card_font_window_long_offset);
+    return (LRESULT)s.font;
+
+  case WM_KEYDOWN:
+    SetFocus(g_duel_window_hwnd);
+    PostMessageA(GetFocus(), msg, wparam, lparam);
+    return 0;
+
+  case WM_PAINT:
+    s.font = (HGDIOBJ)GetWindowLongA(hwnd, g_duel_cue_card_font_window_long_offset);
+    s.paint_dc = BeginPaint(hwnd, &s.paint_struct);
+    if (s.paint_dc != (HDC)0)
+    {
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      GetClientRect(hwnd, &s.client_rect);
+      SetRect(&s.inner_rect, s.client_rect.left, s.client_rect.top,
+              s.client_rect.right - 2, s.client_rect.bottom - 2);
+      FillRect(s.paint_dc, &s.client_rect, g_duel_cue_card_shadow_brush);
+      FillRect(s.paint_dc, &s.inner_rect, g_duel_cue_card_background_brush);
+      SetTextColor(s.paint_dc, g_duel_cue_card_text_color);
+      SetBkMode(s.paint_dc, TRANSPARENT);
+      GetWindowTextA(hwnd, s.paint_text, 100);
+      SelectObject(s.paint_dc, s.font);
+      DrawTextA(s.paint_dc, s.paint_text, -1, &s.inner_rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+      EndPaint(hwnd, &s.paint_struct);
+    }
+    return 0;
+
+  case WM_SETFONT:
+    s.font_param = wparam;
+    if (s.font_param == 0)
+    {
+      s.font_param = (unsigned int)g_duel_cue_card_font;
+    }
+    SetWindowLongA(hwnd, g_duel_cue_card_font_window_long_offset, s.font_param);
+    InvalidateRect(hwnd, (RECT *)0, 1);
+    return 0;
+
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0043dbe2

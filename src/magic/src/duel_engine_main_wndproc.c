@@ -308,7 +308,7 @@ void notify_duel_action(int player, unsigned int value)
             SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
             SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
           }
-          else if (unk_0091a80c == s.internal_card_id)
+          else if (stack_proxy_internal_card_id == s.internal_card_id)
           {
           }
           else
@@ -1410,16 +1410,16 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     char replay_prompt[100];
     int should_quit;
     HWND duel_result;
-    int *posted_action_result;
+    target_selection_result_t *posted_action_result;
     int selected_card;
     int selected_player;
     POINT cursor_pos;
     unsigned int hit_test;
     HWND cursor_window;
-    int *action_request;
+    target_selection_request_t *action_request;
     MSG modal_msg;
     DWORD thread_exit_code;
-    int *action_result;
+    target_selection_result_t *action_result;
     BOOL have_message;
     unsigned int action_result_ok;
     int done;
@@ -1443,18 +1443,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       SendMessageA(g_your_attack_window_hwnd, WM_CLOSE, 0, 0);
     }
     KillTimer(hwnd, g_duel_timer_id);
-    s.action_request = (int *)wparam;
-    s.action_result = (int *)lparam;
+    s.action_request = (target_selection_request_t *)wparam;
+    s.action_result = (target_selection_result_t *)lparam;
     g_duel_modal_action_active = 1;
-    memcpy(g_duel_action_request_copy, s.action_request, 0xe8);
+    memcpy(g_duel_action_request_copy, s.action_request, sizeof(*s.action_request));
     GetCursorPos(&s.cursor_pos);
     s.cursor_window = WindowFromPoint(s.cursor_pos);
-    s.hit_test = SendMessageA(s.cursor_window, WM_NCHITTEST, 0,
-                              ((s.cursor_pos.y << 0x10) & 0xffffU) | (s.cursor_pos.x & 0xffffU));
+    s.hit_test = SendMessageA(s.cursor_window, WM_NCHITTEST, 0, MAKELONG(s.cursor_pos.x, s.cursor_pos.y));
     SendMessageA(s.cursor_window, WM_SETCURSOR, (WPARAM)s.cursor_window, (s.hit_test & 0xffff) | 0x2000000);
-    set_player_directive_value(1, s.action_request[0x38]);
-    set_player_directive_value(0, s.action_request[0x39]);
-    set_duel_prompt_context(g_duel_prompt_context_hwnd, (char *)(s.action_request + 6), s.action_request[5]);
+    set_player_directive_value(1, s.action_request->allow_ai_player);
+    set_player_directive_value(0, s.action_request->allow_human_player);
+    set_duel_prompt_context(g_duel_prompt_context_hwnd, s.action_request->prompt, s.action_request->allow_cancel);
     get_current_duel_selection(&s.selected_player, &s.selected_card);
     if (((s.selected_card == 0x15) && (s.selected_player == 1)) && (can_use_current_duel_selection() != 0))
     {
@@ -1476,10 +1475,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.have_message = 0;
         }
         s.done = 1;
-        s.action_result[0] = -5;
-        s.action_result[1] = -1;
-        s.action_result[2] = -1;
-        if (s.action_result[0] == 0)
+        s.action_result->selection_code = -5;
+        s.action_result->target_player = -1;
+        s.action_result->target_card = -1;
+        if (s.action_result->selection_code == 0)
         {
           s.action_result_ok = 1;
         }
@@ -1492,17 +1491,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       {
         if (s.modal_msg.message == 0x464)
         {
-          s.posted_action_result = (int *)s.modal_msg.lParam;
+          s.posted_action_result = (target_selection_result_t *)s.modal_msg.lParam;
           s.done = 1;
-          s.action_result_ok = (unsigned int)(s.posted_action_result[0] == 0);
-          memcpy(s.action_result, s.posted_action_result, 0x10);
+          s.action_result_ok = (unsigned int)(s.posted_action_result->selection_code == 0);
+          memcpy(s.action_result, s.posted_action_result, sizeof(*s.action_result));
         }
         else if (s.modal_msg.message == WM_QUIT)
         {
           PostQuitMessage(s.modal_msg.wParam);
           s.done = 1;
           s.action_result_ok = 0;
-          s.action_result[0] = -2;
+          s.action_result->selection_code = -2;
         }
         else
         {
@@ -1682,29 +1681,29 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
       s.backdrop_enemy_color = g_last_duel_enemy_primary_color;
       s.player_backdrop_result = g_last_duel_result_state;
-      if (DAT_0091c99c == -1)
+      if (g_duel_interface_options.player_territory_color == -1)
       {
         s.backdrop_player_color = g_last_duel_player_primary_color;
       }
       else
       {
-        s.backdrop_player_color = DAT_0091c99c;
+        s.backdrop_player_color = g_duel_interface_options.player_territory_color;
       }
-      s.backdrop_player_variant = DAT_0091c9a0;
+      s.backdrop_player_variant = g_duel_interface_options.player_territory_type;
     }
     else
     {
       s.backdrop_enemy_color = g_last_duel_enemy_primary_color;
       s.player_backdrop_result = rand() % 3;
-      if (DAT_0091c99c == -1)
+      if (g_duel_interface_options.player_territory_color == -1)
       {
         s.backdrop_player_color = g_last_duel_player_primary_color;
       }
       else
       {
-        s.backdrop_player_color = DAT_0091c99c;
+        s.backdrop_player_color = g_duel_interface_options.player_territory_color;
       }
-      s.backdrop_player_variant = DAT_0091c9a0;
+      s.backdrop_player_variant = g_duel_interface_options.player_territory_type;
       if ((s.backdrop_player_color == s.backdrop_enemy_color) &&
           (s.backdrop_player_variant == s.player_backdrop_result))
       {
@@ -1905,8 +1904,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.player_backdrop_color = 1;
         }
         life[s.player_backdrop_color] = prompt_for_life_total(0,
-                                                     s.player_backdrop_color == 0 ? "Set player lives to:" : "Set opponent lives tp:",
-                                                     life[s.player_backdrop_color]);
+                                                              s.player_backdrop_color == 0 ? "Set player lives to:" : "Set opponent lives tp:",
+                                                              life[s.player_backdrop_color]);
         notify_duel_action(0, 0xff);
       }
       break;

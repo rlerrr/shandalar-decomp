@@ -2528,8 +2528,8 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
 
     unk_00742fc4 = 0;
     DAT_00742fc0 = 1;
-    unk_008b60e0 = 0;
-    g_duel_selection_pending = unk_008b60e0;
+    attacking_creature_count = 0;
+    g_duel_selection_pending = attacking_creature_count;
     DAT_00926668 = -1;
     current_phase = 0;
 

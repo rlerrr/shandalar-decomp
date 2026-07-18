@@ -791,8 +791,8 @@ opening_menu:
   color_menu:
     g_selected_wizard_color = RunColorMenu();
     g_starting_color = g_selected_wizard_color;
-    DAT_0091c99c = g_selected_wizard_color;
-    DAT_0091c9a0 = RandomIntLessThan(3);
+    g_duel_interface_options.player_territory_color = g_selected_wizard_color;
+    g_duel_interface_options.player_territory_type = RandomIntLessThan(3);
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
     if (g_starting_color == -1)
     {

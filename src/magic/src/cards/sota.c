@@ -506,7 +506,7 @@ int card_jade_statue(int player, int card, event_t event)
   {
     if (!has_mana(player, 7, 2))
     {
-      unk_0078944c = 1;
+      combat_assignment_cancelled = 1;
     }
     else
     {
@@ -516,12 +516,12 @@ int card_jade_statue(int player, int card, event_t event)
       }
       if (event == 0x7e)
       {
-        FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
+        push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
         charge_mana(player, 0, 2);
         obliterate_top_card_of_stack();
         if (spell_fizzled == 1)
         {
-          unk_0078944c = 1;
+          combat_assignment_cancelled = 1;
           spell_fizzled = 0;
         }
         else

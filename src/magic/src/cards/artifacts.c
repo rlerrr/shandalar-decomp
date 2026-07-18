@@ -980,7 +980,7 @@ int helper_lucky_charm(int player, int card, int event, int color)
       }
       if (event == EVENT_RESOLVE_TRIGGER)
       {
-        FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
+        push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
         charge_mana(player, COLOR_COLORLESS, 1);
         obliterate_top_card_of_stack();
         if (spell_fizzled != 1)
@@ -1120,7 +1120,7 @@ int card_soul_net(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      FUN_00443ee2(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
+      push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
       charge_mana(player, COLOR_COLORLESS, 1);
       obliterate_top_card_of_stack();
       if (spell_fizzled == 1)
