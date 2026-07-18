@@ -1511,7 +1511,7 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
     s.coin_flip_context.was_random_starting_player = 0;
   }
 
-  if (DAT_008a8ffc != 0)
+  if (starting_player_was_random != 0)
   {
     s.coin_flip_context.coin_flip_result =
         DialogBoxParamA(g_app_instance, (LPCSTR)0xf4, g_duel_window_hwnd, dlgproc_duel_coin_flip, (LPARAM)&s.coin_flip_context);

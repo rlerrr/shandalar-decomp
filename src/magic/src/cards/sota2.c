@@ -227,7 +227,7 @@ int card_clone(int player, int card, event_t event)
     }
   }
 
-  if (((event == EVENT_CHANGE_TYPE) && ((unk_008b4278 & 0x20000) == 0)) && ((card == affected_card) && (player == affected_card_controller)))
+  if (((event == EVENT_CHANGE_TYPE) && ((land_can_be_played & 0x20000) == 0)) && ((card == affected_card) && (player == affected_card_controller)))
   {
     event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
@@ -948,7 +948,7 @@ int card_rock_hydra(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((((unk_008b4278 & 4) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = FUN_00482a97(player, card, 0xffffffff)) == 0)))
+    if ((((land_can_be_played & 4) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = FUN_00482a97(player, card, 0xffffffff)) == 0)))
     {
       if (((current_phase == 4) && (player == human_player) && (player == unk_00742f60)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
       {
@@ -977,7 +977,7 @@ int card_rock_hydra(int player, int card, event_t event)
   {
     if (event == EVENT_ACTIVATE)
     {
-      if ((unk_008b4278 & 4) == 0)
+      if ((land_can_be_played & 4) == 0)
       {
         charge_mana(player, 4, 3);
         if (spell_fizzled != 1)
@@ -1048,7 +1048,7 @@ int card_rock_hydra(int player, int card, event_t event)
                                PLAYER_CARD_INSTANCE(player, card).parent_card)
               .internal_card_id != -1)
       {
-        if ((unk_008b4278 & 4) == 0)
+        if ((land_can_be_played & 4) == 0)
         {
           add_special_counter(card_on_stack_controller, card_on_stack);
           piVar1 = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_source_player,
@@ -1475,7 +1475,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
     }
   }
 
-  if (event == EVENT_CHANGE_TYPE && (unk_008b4278 & 0x20000) == 0 && card == affected_card && player == affected_card_controller && is_in_play(player, card))
+  if (event == EVENT_CHANGE_TYPE && (land_can_be_played & 0x20000) == 0 && card == affected_card && player == affected_card_controller && is_in_play(player, card))
   {
     event_result = instance->dummy3;
   }

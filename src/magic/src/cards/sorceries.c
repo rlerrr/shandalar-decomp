@@ -1007,7 +1007,7 @@ int card_fireball(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (player == unk_008b35ec || (g_duel_network_flags & 2) != 0)
+    if (player == nonactive_player || (g_duel_network_flags & 2) != 0)
     {
       unk_0091bfb4 = 1;
     }
@@ -1031,7 +1031,7 @@ int card_fireball(int player, int card, event_t event)
 
         if (g_duel_ai_mode_state == 1)
         {
-          if ((unk_008b4278 & 0x400) == 0)
+          if ((land_can_be_played & 0x400) == 0)
           {
             illegal_abilities = get_protections_from(player, card);
             real_target_available(&s.possible_targets,
@@ -1122,7 +1122,7 @@ int card_fireball(int player, int card, event_t event)
           }
         }
       }
-      else if ((unk_008b4278 & 0x400) == 0)
+      else if ((land_can_be_played & 0x400) == 0)
       {
         mana_available_minus_one = has_mana(player, COLOR_ANY, 1) - 1;
         illegal_abilities = get_protections_from(player, card);
@@ -1476,8 +1476,8 @@ int card_mana_clash(int player, int card, event_t event)
 
     do
     {
-      p0_flip = prompt_for_life_total(player, player == unk_008b35ec ? prompt1 : prompt2, 1);
-      p1_flip = prompt_for_life_total(player, player == unk_008b35ec ? prompt2 : prompt1, 1);
+      p0_flip = prompt_for_life_total(player, player == nonactive_player ? prompt1 : prompt2, 1);
+      p1_flip = prompt_for_life_total(player, player == nonactive_player ? prompt2 : prompt1, 1);
 
       if (p0_flip == 1)
       {
@@ -1539,7 +1539,7 @@ int card_raise_dead(int player, int card, event_t event)
       }
       else
       {
-        if ((player == unk_008b35ec) && (g_duel_ai_mode_state != 1))
+        if ((player == nonactive_player) && (g_duel_ai_mode_state != 1))
         {
           load_text("prompts.txt", "RAISEDEAD");
         }
@@ -1623,7 +1623,7 @@ int card_regrowth(int player, int card, event_t event)
       }
       else
       {
-        if (player == unk_008b35ec)
+        if (player == nonactive_player)
         {
           load_text("prompts.txt", "REGROWTH");
         }
@@ -2023,7 +2023,7 @@ int card_drain_life(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if ((unk_008b4278 & 0x400) == 0)
+    if ((land_can_be_played & 0x400) == 0)
     {
       x_value = 0;
       charge_mana(player, COLOR_COLORLESS, -1);

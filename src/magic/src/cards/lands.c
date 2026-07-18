@@ -81,7 +81,7 @@ int card_gem_bazaar(int player, int card, event_t event)
     {
       (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(FUN_00464a84(player, 5) + 1));
     }
-    else if (player == unk_008b35ec)
+    else if (player == nonactive_player)
     {
       (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(internal_rand(5) + 1));
     }

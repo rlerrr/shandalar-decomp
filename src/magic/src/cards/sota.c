@@ -67,7 +67,7 @@ int card_basalt_monolith(int player, int card, event_t event)
 
   if ((event == EVENT_RESOLVE_ACTIVATION) && (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).state & STATE_TAPPED) && PLAYER_CARD_INSTANCE(player, card).eot_toughness != 0)
   {
-    unk_007abc78 |= 2;
+    battlefield_extra_ability_flags |= 2;
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .info_slot = 1;
@@ -166,7 +166,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
                                            -1, -1, -1, 0x100, 0, 0);
       if (can_activate != 0)
       {
-        if (player == unk_008b35ec || (g_duel_network_flags & 2) != 0)
+        if (player == nonactive_player || (g_duel_network_flags & 2) != 0)
         {
           return 1;
         }
@@ -541,7 +541,7 @@ int card_jade_statue(int player, int card, event_t event)
       }
     }
   }
-  if ((event == 0x3c) && (unk_008b4278 & 0x20000) == 0 && card == card_on_stack && player == card_on_stack_controller && is_in_play(player, card))
+  if ((event == 0x3c) && (land_can_be_played & 0x20000) == 0 && card == card_on_stack && player == card_on_stack_controller && is_in_play(player, card))
   {
     event_result = *(int *)((char *)instance + 0x1c);
   }

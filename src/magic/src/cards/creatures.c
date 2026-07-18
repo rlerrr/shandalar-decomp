@@ -217,7 +217,7 @@ int card_personal_incarnation(int player, int card, event_t event)
 
   if (event == 0x73)
   {
-    if ((instance->info_slot & 1) != 0 && (unk_008b4278 & 4) != 0)
+    if ((instance->info_slot & 1) != 0 && (land_can_be_played & 4) != 0)
     {
       return 99;
     }
@@ -230,7 +230,7 @@ int card_personal_incarnation(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_ACTIVATE && (instance->info_slot & 1) != 0 && (unk_008b4278 & 4) != 0)
+  if (event == EVENT_ACTIVATE && (instance->info_slot & 1) != 0 && (land_can_be_played & 4) != 0)
   {
     damage_source_player = (instance->state & 0x1000) != 0;
     do
@@ -315,7 +315,7 @@ int card_fungusaur(int player, int card, event_t event)
 {
   if (event == EVENT_UNKNOWN80)
   {
-    if (((((unk_008b4278 & 0x200) != 0) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player == player)) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == card)) && (0 < PLAYER_CARD_INSTANCE(player, card).damage_on_card))
+    if (((((land_can_be_played & 0x200) != 0) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player == player)) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == card)) && (0 < PLAYER_CARD_INSTANCE(player, card).damage_on_card))
     {
       PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
     }
@@ -987,7 +987,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
 {
   int can_activate;
 
-  if (event == EVENT_CAN_ACTIVATE && (unk_008b4278 & 0x200) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
+  if (event == EVENT_CAN_ACTIVATE && (land_can_be_played & 0x200) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     can_activate = 1;
     if (PLAYER_CARD_INSTANCE(player, card).kill_code != 2)
@@ -1017,7 +1017,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
     FUN_004e4ff3(0);
     return 0;
   }
-  else if (event == EVENT_ACTIVATE && (unk_008b4278 & 0x200) != 0)
+  else if (event == EVENT_ACTIVATE && (land_can_be_played & 0x200) != 0)
   {
     charge_mana(player, color, amount);
     if (spell_fizzled != 1)
@@ -1028,7 +1028,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
 
     return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION && (unk_008b4278 & 0x200) != 0)
+  else if (event == EVENT_RESOLVE_ACTIVATION && (land_can_be_played & 0x200) != 0)
   {
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot = 0;
     FUN_00542a2a(card_on_stack_controller, card_on_stack);
@@ -1978,7 +1978,7 @@ int card_samite_healer(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     int result = 1;
-    if ((unk_008b4278 & 4) == 0)
+    if ((land_can_be_played & 4) == 0)
     {
       result = 0;
     }
@@ -2123,7 +2123,7 @@ int card_verduran_enchantress(int player, int card, event_t event)
   {
     if (event == EVENT_TRIGGER)
     {
-      if ((unk_008b35ec == player) || ((g_duel_network_flags & 2) != 0))
+      if ((nonactive_player == player) || ((g_duel_network_flags & 2) != 0))
       {
         event_result |= RESOLVE_TRIGGER_OPTIONAL;
       }
@@ -2371,7 +2371,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
   } s;
 
   s.unused = 0;
-  if (unk_008b35ec == player || (g_duel_network_flags & 2) != 0)
+  if (nonactive_player == player || (g_duel_network_flags & 2) != 0)
   {
     if (g_duel_ai_mode_state != 1)
     {
@@ -2712,7 +2712,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
 {
   int result;
 
-  if (event == EVENT_CAN_ACTIVATE && (unk_008b4278 & 0x200) != 0)
+  if (event == EVENT_CAN_ACTIVATE && (land_can_be_played & 0x200) != 0)
   {
     result = FUN_0054276d(player, card, EVENT_CAN_ACTIVATE, 0, 0);
     if (C_get_special_counters(player, card) == 0)
@@ -2722,14 +2722,14 @@ int card_scavenging_ghoul(int player, int card, event_t event)
     return result;
   }
 
-  if (event == EVENT_ACTIVATE && (unk_008b4278 & 0x200) != 0)
+  if (event == EVENT_ACTIVATE && (land_can_be_played & 0x200) != 0)
   {
     result = FUN_0054276d(player, card, EVENT_ACTIVATE, 0, 0);
     FUN_005514cd(player, card, 1);
     return result;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && (unk_008b4278 & 0x200) != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && (land_can_be_played & 0x200) != 0)
   {
     return FUN_0054276d(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
   }
@@ -3215,7 +3215,7 @@ int card_nether_shadow(int player, int card, event_t event)
     }
     else
     {
-      hand_player = unk_008b35ec;
+      hand_player = nonactive_player;
     }
 
     hand_card = add_card_to_hand(hand_player, unk_008a9194);

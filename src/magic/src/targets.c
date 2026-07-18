@@ -303,7 +303,7 @@ int FUN_004466b5(int who_chooses,
   request.allow_ai_player = allow_ai_player;
   request.allow_human_player = allow_human_player;
 
-  if (who_chooses == unk_008b35ec || (g_duel_network_flags & 2) == 0)
+  if (who_chooses == nonactive_player || (g_duel_network_flags & 2) == 0)
   {
     if (DAT_0093d840 != 0)
     {
@@ -324,8 +324,8 @@ int FUN_004466b5(int who_chooses,
       target_card = -2;
       target_player = -1;
       thread_exit_code = 0;
-      unk_00716244 = -1;
-      unk_00716248 = -1;
+      stop_phase_player = -1;
+      stop_phase = -1;
       unk_00715fb0 = 0;
       DAT_0072c8e0 = 0;
       DAT_00715fa4 = 0;
@@ -337,15 +337,15 @@ int FUN_004466b5(int who_chooses,
       packet->packet_type = 0xc;
       packet->result = result;
       packet->selection_code = selection_code;
-      if (unk_00716244 == -1)
+      if (stop_phase_player == -1)
       {
-        packet->previous_player = unk_00716244;
+        packet->previous_player = stop_phase_player;
       }
       else
       {
-        packet->previous_player = 1 - unk_00716244;
+        packet->previous_player = 1 - stop_phase_player;
       }
-      packet->previous_phase = unk_00716248;
+      packet->previous_phase = stop_phase;
       packet->target_card = target_card;
       if (result == 0)
       {
@@ -372,8 +372,8 @@ int FUN_004466b5(int who_chooses,
     packet = (target_selection_network_packet_t *)&unk_008cf200;
     result = packet->result;
     selection_code = packet->selection_code;
-    _DAT_00743034 = packet->previous_player;
-    unk_007161d4 = packet->previous_phase;
+    previous_stop_phase_player = packet->previous_player;
+    previous_stop_phase = packet->previous_phase;
     target_card = packet->target_card;
     target_player = packet->target_player;
     unk_00715fb0 = packet->aux_player;
@@ -397,7 +397,7 @@ int FUN_004466b5(int who_chooses,
     EnterCriticalSection(&g_duel_render_lock);
     if (_DAT_0074303c == -2)
     {
-      if (unk_00716248 == -1)
+      if (stop_phase == -1)
       {
         if ((g_duel_network_flags & 2) == 0)
         {
@@ -406,14 +406,14 @@ int FUN_004466b5(int who_chooses,
         }
         else
         {
-          DAT_007aa928 = unk_00716244;
-          DAT_007abc74 = unk_00716248;
+          DAT_007aa928 = stop_phase_player;
+          DAT_007abc74 = stop_phase;
         }
       }
       else
       {
-        DAT_007aa928 = unk_00716244;
-        DAT_007abc74 = unk_00716248;
+        DAT_007aa928 = stop_phase_player;
+        DAT_007abc74 = stop_phase;
       }
     }
     else if ((g_duel_network_flags & 2) == 0)
@@ -423,8 +423,8 @@ int FUN_004466b5(int who_chooses,
     }
     else
     {
-      DAT_007aa928 = unk_00716244;
-      DAT_007abc74 = unk_00716248;
+      DAT_007aa928 = stop_phase_player;
+      DAT_007abc74 = stop_phase;
     }
 
     bigcard_visible = IsWindowVisible((HWND)DAT_008a8dec);
@@ -492,7 +492,7 @@ int C_real_select_target(int who_chooses,
 
   if (((who_chooses == 1 && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1) || g_duel_network_state != 0)
   {
-    if ((DAT_00777854 & 1) != 0 && (allowed_controller & 2) != 0)
+    if ((ai_search_flags & 1) != 0 && (allowed_controller & 2) != 0)
     {
       preferred_controller = allowed_controller;
     }
@@ -670,7 +670,7 @@ int C_real_select_target(int who_chooses,
       {
         if (s.selection_code != -3 && s.selection_code == -2)
         {
-          if (unk_00716244 == -1 && unk_00716248 == -1)
+          if (stop_phase_player == -1 && stop_phase == -1)
           {
             ret_tgt->player = s.selected_player;
             ret_tgt->card = s.selected_card;

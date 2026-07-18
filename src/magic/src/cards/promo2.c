@@ -123,7 +123,7 @@ int card_guardian_angel(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if ((unk_008b4278 & 4) == 0 || !real_target_available((int *)0,
+    if ((land_can_be_played & 4) == 0 || !real_target_available((int *)0,
                                                           TARGET_SCAN_DIRECT,
                                                           player,
                                                           2,

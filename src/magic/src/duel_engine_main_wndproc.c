@@ -1865,11 +1865,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into hand", -1, -1);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
         hand_count[s.player_backdrop_color] += 1;
-        if (((g_duel_network_flags & 2) != 0) && (unk_008b35ec == s.player_backdrop_color))
+        if (((g_duel_network_flags & 2) != 0) && (nonactive_player == s.player_backdrop_color))
         {
           g_network_result_packet_type = 0x12;
           g_network_result_value = s.enemy_backdrop_result;
-          TENTATIVE_send_network_result(unk_008b35ec, 0x12);
+          TENTATIVE_send_network_result(nonactive_player, 0x12);
         }
         notify_duel_action(0, 0xff);
       }

@@ -1021,8 +1021,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     switch ((UINT)wparam & 0xffff)
     {
     case 0x66:
-      unk_00716248 = -1;
-      unk_00716244 = -1;
+      stop_phase = -1;
+      stop_phase_player = -1;
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
@@ -1030,8 +1030,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
       break;
     case 0x65:
-      unk_00716248 = -1;
-      unk_00716244 = -1;
+      stop_phase = -1;
+      stop_phase_player = -1;
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
@@ -1039,7 +1039,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
       break;
     case 0x64:
-      FUN_00538e3d(&unk_00716244, &unk_00716248, NULL);
+      FUN_00538e3d(&stop_phase_player, &stop_phase, NULL);
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;

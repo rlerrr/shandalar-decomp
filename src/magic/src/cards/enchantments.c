@@ -77,7 +77,7 @@ int card_consecrate_land(int player, int card, event_t event)
       instance->number_of_targets = 1;
       if (player == active_player && (g_duel_network_flags & 2) == 0)
       {
-        if (target.player == unk_008b35ec)
+        if (target.player == nonactive_player)
         {
           ai_modifier -= 0x30;
         }
@@ -357,7 +357,7 @@ int card_farmstead(int player, int card, event_t event)
       }
       if (spell_fizzled != 1)
       {
-        if (instance->targets[0].player == unk_008b35ec)
+        if (instance->targets[0].player == nonactive_player)
         {
           ai_modifier -= 0x60;
         }
@@ -458,9 +458,9 @@ int card_fastbond(int player, int card, event_t event)
     return 1;
   }
 
-  if (player == human_player && (unk_008b4278 & 1) != 0 && current_phase > 0x13 && current_phase < 0x1f)
+  if (player == human_player && (land_can_be_played & 1) != 0 && current_phase > 0x13 && current_phase < 0x1f)
   {
-    unk_008b4278 &= ~1;
+    land_can_be_played &= ~1;
   }
 
   if ((trigger_condition == 0xdb || trigger_condition == 0xd3) && affected_card == card && affected_card_controller == player && unk_008cfdb0 > 0 && current_turn == player && trigger_cause_controller == player && PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id != -1 && (global_cards_data[PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id].type & TYPE_LAND) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0)
@@ -939,7 +939,7 @@ int card_raging_river(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_CAST)
   {
-    return player == unk_008b35ec || (g_duel_network_flags & 2) != 0;
+    return player == nonactive_player || (g_duel_network_flags & 2) != 0;
   }
 
   if ((event == EVENT_RESOLVE_SPELL) && dispatch_function_to_all_cards_in_play(player, card, FUN_00483190, player) == -1)
@@ -949,7 +949,7 @@ int card_raging_river(int player, int card, event_t event)
   if ((event == 0x92) && (player == human_player) && ((*(unsigned char *)((char *)instance + 0x17) & 1) != 0))
   {
     defender = 1 - human_player;
-    if ((unk_008b35ec == defender) || ((g_duel_network_flags & 2) != 0))
+    if ((nonactive_player == defender) || ((g_duel_network_flags & 2) != 0))
     {
       for (current_card = 0; current_card < active_cards_count[defender]; ++current_card)
       {

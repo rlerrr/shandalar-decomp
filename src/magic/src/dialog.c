@@ -800,7 +800,7 @@ int do_dialog(int who_chooses,
     TENTATIVE_reassess_all_cards();
   }
 
-  if (who_chooses == unk_008b35ec && g_duel_network_state == 0)
+  if (who_chooses == nonactive_player && g_duel_network_state == 0)
   {
     dialog_mode = 1;
   }
@@ -812,14 +812,14 @@ int do_dialog(int who_chooses,
   dialog_result =
       raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, unk_00748770, dialog_mode);
 
-  if (who_chooses == unk_008b35ec && (g_duel_network_flags & 2) != 0)
+  if (who_chooses == nonactive_player && (g_duel_network_flags & 2) != 0)
   {
     unk_008b2938 = '\r';
     DAT_008b293c = dialog_result;
     TENTATIVE_send_network_result(who_chooses, 0xd);
   }
 
-  if (who_chooses == unk_008b35ec && g_duel_network_state == 0)
+  if (who_chooses == nonactive_player && g_duel_network_state == 0)
   {
     ai_choice = dialog_result;
   }

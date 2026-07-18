@@ -2976,7 +2976,7 @@ void RemoveCardFromDeckById(unsigned int card_id)
 void ShowPlayer1LibraryMenu(int unused)
 {
   (void)unused;
-  SelectAdventureListCardIndex(unk_008b35ec, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
+  SelectAdventureListCardIndex(nonactive_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
 }
 
 // FUNCTION: SHANDALAR 0x0053114a
@@ -3716,7 +3716,7 @@ LAB_00531ee7:
       }
     }
 
-    s.selected_deck_index = SelectAdventureListCardIndex(unk_008b35ec, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
+    s.selected_deck_index = SelectAdventureListCardIndex(nonactive_player, (int *)s.deck_card_ids, 500, gs_wiseman_0074d840[0x12], 1, &g_wiseman_card_choice_result);
     if ((s.selected_deck_index != -1) &&
         ((s.selected_deck_slot = AddCardToDeckSorted(s.deck_card_ids[s.selected_deck_index])) != -1))
     {

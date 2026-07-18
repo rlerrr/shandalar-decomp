@@ -270,8 +270,8 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       {
         s.action_value = -1;
       }
-      unk_00716244 = -1;
-      unk_00716248 = -1;
+      stop_phase_player = -1;
+      stop_phase = -1;
       unk_00715fb0 = 0;
       g_tell_user_command_packet[0] = -2;
       g_tell_user_command_packet[1] = -1;

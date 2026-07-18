@@ -2495,15 +2495,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                      (int)(char)global_cards_data[s.shared.wm_command.unused_3a0].cc[0]);
         produce_mana(s.player, 0,
                      abs((int)(char)global_cards_data[s.shared.wm_command.unused_3a0].cc[1]));
-        if ((g_duel_network_flags & 2) != 0 && s.player == unk_008b35ec)
+        if ((g_duel_network_flags & 2) != 0 && s.player == nonactive_player)
         {
           for (s.scratch = 0; s.scratch < 8; s.scratch++)
           {
             ((int *)((char *)&unk_009251b0 + 4))[s.scratch] =
-                raw_mana_available[unk_008b35ec][s.scratch];
+                raw_mana_available[nonactive_player][s.scratch];
           }
           unk_009251b0 = 0x11;
-          TENTATIVE_send_network_result(unk_008b35ec, 0x11);
+          TENTATIVE_send_network_result(nonactive_player, 0x11);
         }
         copy_mana_pool_to_display();
         notify_duel_action(0, 0xff);
