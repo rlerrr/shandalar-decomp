@@ -144,9 +144,13 @@ int DAT_009251d4;
 // GLOBAL: MAGIC 0x00896690
 char DAT_00896690;
 
+// GLOBAL: MAGIC 0x00712544
 int DAT_00712544;
+
+// GLOBAL: MAGIC 0x00743098
 int DAT_00743098;
-int unk_008a9000;
+
+// GLOBAL: MAGIC 0x0091c0ec
 int _DAT_0091c0ec;
 
 // FUNCTION: MAGIC 0x004d2a09
@@ -730,7 +734,7 @@ void FUN_00446036(void)
     {
       if (is_in_play(player, card) != 0)
       {
-        global_card_instances[player][card].timestamp = 0;
+        global_card_instances[player][card].upkeep_flags = 0;
       }
     }
   }
@@ -1150,15 +1154,6 @@ int draw_phase(unsigned int player)
       return 1;
     }
   }
-  return 0;
-}
-
-// FUNCTION: MAGIC 0x0044cda7
-int main_phase(unsigned int player, int phase_mode, int *phase_value)
-{
-  (void)player;
-  (void)phase_mode;
-  (void)phase_value;
   return 0;
 }
 
