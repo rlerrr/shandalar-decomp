@@ -35,7 +35,6 @@ These instructions apply to the entire repository.
 - Bitwise comparisons like `(var & 0x2000) != 0` will often compile to `test byte ptr [var+1],0x20` comparing a single byte as if the original was a byte array.
 - Don't type-pun to a `byte*` just to get byte-sized `test`/`or` for simple `&` / `|` masks; MSVC will often emit the byte form naturally when the mask only touches a single byte.
 - Prefer slightly-worse codegen over cursed raw-offset pointer math (e.g. `*(int *)((char *)p + 0x64)`); use real struct fields/macros unless matching absolutely requires otherwise.
-- The order of parameters in `cmp` and other commutative opcodes like `test`, `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.  Don't bother trying.
 - `register` on variables is ignored.  If a "variable" doesn't get written to the stack it's not actually a variable.
 - `imul` and `idiv` are aggressively avoided when multiplying and dividing by constants.  "Weird" math is probably multiplying or dividing by a non-power-of-2 constant.
 - `switch()` statements can compile using several different strategies, including various jump tables.  Don't try to convert them to other control flow structures (`if`, `goto`, etc..).  Once the rest of the function is close they'll fall into place.
@@ -47,9 +46,14 @@ These instructions apply to the entire repository.
   - Early returns are sometimes swapped for large if blocks.
 - Ghidra likes to convert `mov eax {literal}; jmp;` to `returnVal = {literal}; jmp;`, inventing a return variable that doesn't exist.
 
+## Expected non-matching sections
+- The order of parameters in `cmp` and `test` instructions is regularly swapped by the compiler and seemingly impossible to influence. Don't bother trying.
+- Likewise, other commutative opcodes like `add`, `imul`, `or`, `and`, and `xor` are "randomly" swapped and cannot be reliably controlled.
+- Bit shift operators like `shl` and `shr` will sometimes use a different encoding, causing `jmp` instruction offsets "over" them to drift by 1 each time. This seems to be unavoidable and are frequently used in place of multiplication/division by powers of two.
+
 ## Git Workflow
 - Do not change the staging area unless explicitly asked (no surprise `git add`, `git restore --staged`, etc.).
-- If you notice unexpected modifications in files you did not touch, do not discard/revert them. Stop and ask how to proceed.
+- If you notice unexpected modifications in files you did not touch, do not discard/revert them.
 - Never use destructive git commands (e.g. `git reset --hard`, `git checkout --`, `git clean -fd`) unless explicitly requested.
 
 ## Build
