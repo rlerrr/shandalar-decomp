@@ -46,7 +46,7 @@ GLOBAL_OTHERS_EXTERN int unk_00742f80[2][8];
 GLOBAL_OTHERS_EXTERN int _DAT_00743030;
 
 // GLOBAL: MAGIC 0x007161d4
-GLOBAL_OTHERS_EXTERN int previous_stop_phase;
+GLOBAL_OTHERS_EXTERN phase_t previous_stop_phase;
 
 // GLOBAL: MAGIC 0x007160fc
 GLOBAL_OTHERS_EXTERN int unk_007160fc;
@@ -330,8 +330,21 @@ GLOBAL_OTHERS_EXTERN HWND DAT_0092680c;
 // GLOBAL: MAGIC 0x007abc74
 GLOBAL_OTHERS_EXTERN int DAT_007abc74;
 
+enum
+{
+  DUEL_PHASE_STOP_COUNT = 0x26,
+  PHASE_STOP_ENABLED = 0x01,
+  PHASE_STOP_SUPPRESSED = 0x02,
+  PHASE_STOP_OPPONENT = 0x04
+};
+
+typedef struct duel_phase_stop_settings_struct
+{
+  unsigned char phase_flags[DUEL_PHASE_STOP_COUNT];
+} duel_phase_stop_settings_t;
+
 // GLOBAL: MAGIC 0x007abc90
-GLOBAL_OTHERS_EXTERN unsigned char DAT_007abc90[0x4c];
+GLOBAL_OTHERS_EXTERN duel_phase_stop_settings_t g_duel_phase_stop_settings[2];
 
 // GLOBAL: MAGIC 0x0069c6f0
 // GLOBAL: SHANDALAR 0x005a6198

@@ -28,8 +28,8 @@ void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);
 void TENTATIVE_savegame(int autosave_slot);
 void FUN_004e4e75(void);
-void FUN_004432ed(int player, int phase);
-int FUN_0044ac96(int player, int phase);
+void FUN_004432ed(int player, phase_t phase);
+int FUN_0044ac96(int player, phase_t phase);
 void FUN_00444d1f(void);
 int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card);
 int FUN_0044b6af(int player, int card);
@@ -408,39 +408,39 @@ int restore_duel_turn_resume_state(void)
       TENTATIVE_reassess_all_cards(0, 0xff);
       stop_phase_player = human_player;
       stop_phase = current_phase;
-      if (current_phase == 0)
+      if (current_phase == PHASE_START)
       {
         stop_phase = -1;
       }
-      if (current_phase == 0x22)
+      if (current_phase == PHASE_CLEANUP)
       {
-        stop_phase = 0x20;
+        stop_phase = PHASE_CLEANUP2;
       }
-      if (current_phase == 0)
+      if (current_phase == PHASE_START)
       {
         next_state = 2;
       }
-      else if (current_phase == 1)
+      else if (current_phase == PHASE_UNTAP)
       {
         next_state = 3;
       }
-      else if (current_phase == 4)
+      else if (current_phase == PHASE_UPKEEP)
       {
         next_state = 4;
       }
-      else if (current_phase == 10)
+      else if (current_phase == PHASE_DRAW)
       {
         next_state = 5;
       }
-      else if (current_phase == 0x14)
+      else if (current_phase == PHASE_MAIN1)
       {
         next_state = 6;
       }
-      else if (current_phase == 0x1f)
+      else if (current_phase == PHASE_DISCARD)
       {
         next_state = 7;
       }
-      else if (current_phase == 0x22)
+      else if (current_phase == PHASE_CLEANUP)
       {
         next_state = 8;
       }
@@ -495,8 +495,8 @@ int init_turn(int player)
   compact_timestamp_slots();
   for (s.card = 0; s.card < 0x26; s.card = s.card + 1)
   {
-    DAT_007abc90[s.card] &= 5;
-    DAT_007abc90[s.card + 0x26] &= 5;
+    g_duel_phase_stop_settings[0].phase_flags[s.card] &= (PHASE_STOP_ENABLED | PHASE_STOP_OPPONENT);
+    g_duel_phase_stop_settings[1].phase_flags[s.card] &= (PHASE_STOP_ENABLED | PHASE_STOP_OPPONENT);
   }
   StopWorldLocationMusic();
   FUN_00441d78();
@@ -543,7 +543,7 @@ int TENTATIVE_start_turn(int player)
     return 1;
   }
   FUN_004e4e75();
-  current_phase = 0;
+  current_phase = PHASE_START;
   FUN_004432ed(player, current_phase);
   C_dispatch_event_raw(0x6a);
   if ((land_can_be_played & 0x8000) != 0)
@@ -716,7 +716,7 @@ void FUN_004e4e75(void)
 }
 
 // FUNCTION: MAGIC 0x004432ed
-void FUN_004432ed(int player, int phase)
+void FUN_004432ed(int player, phase_t phase)
 {
   (void)player;
   (void)phase;
@@ -772,7 +772,7 @@ int untap_phase_exe(unsigned int player)
   if ((s.winter_orb_card_type == -1) ||
       (real_target_available(NULL, 0, player, 2, 2, 0x200, 0, 0, 0, 0, 0, 0, s.winter_orb_card_type, -1, -1, -1, 0, 0, 0) == 0))
   {
-    current_phase = 1;
+    current_phase = PHASE_UNTAP;
     FUN_004432ed(player, current_phase);
     phase_was_skipped = 0;
     phase_stop_suppressed = 0;
@@ -828,14 +828,14 @@ int untap_phase_exe(unsigned int player)
         if ((active_player == player) &&
             ((g_duel_network_flags & 2) == 0) &&
             (g_duel_ai_mode_state != 1) &&
-            (FUN_0044ac96(player, 1) != 0))
+            (FUN_0044ac96(player, PHASE_UNTAP) != 0))
         {
           s.done = 0;
         }
       }
       else if (((s.must_untap_count == 0) || (s.must_untap_count == 1)) &&
                (s.optional_untap_count == 0) &&
-               (FUN_0044ac96(player, 1) == 0))
+               (FUN_0044ac96(player, PHASE_UNTAP) == 0))
       {
         s.done = 1;
       }
@@ -1000,8 +1000,8 @@ int upkeep_phase(unsigned int player)
     {
       phase_stop_suppressed = 0;
     }
-    else if (((stop_phase == 4) && (player == stop_phase_player)) ||
-             ((previous_stop_phase == 4) && (player == previous_stop_phase_player)))
+    else if (((stop_phase == PHASE_UPKEEP) && (player == stop_phase_player)) ||
+             ((previous_stop_phase == PHASE_UPKEEP) && (player == previous_stop_phase_player)))
     {
       phase_stop_suppressed = 0;
     }
@@ -1015,7 +1015,7 @@ int upkeep_phase(unsigned int player)
     if (g_duel_ai_mode_state != 1)
     {
       if ((stop_phase == -1) ||
-          ((stop_phase == 4) && (player == stop_phase_player)))
+          ((stop_phase == PHASE_UPKEEP) && (player == stop_phase_player)))
       {
         phase_stop_suppressed = 0;
       }
@@ -1025,13 +1025,13 @@ int upkeep_phase(unsigned int player)
       }
     }
   }
-  current_phase = 2;
+  current_phase = PHASE_BEGIN_UPKEEP;
   FUN_004432ed(player, current_phase);
   dispatch_trigger(player, 0xc9, gs_begin_upkeep_008cf080, 0);
   phase_response_window_open = 1;
-  current_phase = 4;
+  current_phase = PHASE_UPKEEP;
   FUN_00446036();
-  allow_response(-1, current_phase, gs_upkeep_phase_00777d30, 4);
+  allow_response(-1, current_phase, gs_upkeep_phase_00777d30, PHASE_UPKEEP);
   phase_response_window_open = 0;
   dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xcb, gs_end_upkeep_00925c00, 0);
   phase_stop_suppressed = 0;
@@ -1077,7 +1077,7 @@ int draw_phase(unsigned int player)
   }
 
   {
-    current_phase = 10;
+    current_phase = PHASE_DRAW;
     FUN_004432ed(player, current_phase);
     phase_was_skipped = 0;
     phase_response_window_open = 0;
@@ -1087,8 +1087,8 @@ int draw_phase(unsigned int player)
       {
         phase_stop_suppressed = 0;
       }
-      else if (((stop_phase == 10) && (player == stop_phase_player)) ||
-               ((previous_stop_phase == 10) && (player == previous_stop_phase_player)))
+      else if (((stop_phase == PHASE_DRAW) && (player == stop_phase_player)) ||
+               ((previous_stop_phase == PHASE_DRAW) && (player == previous_stop_phase_player)))
       {
         phase_stop_suppressed = 0;
       }
@@ -1102,7 +1102,7 @@ int draw_phase(unsigned int player)
       if (g_duel_ai_mode_state != 1)
       {
         if ((stop_phase == -1) ||
-            ((stop_phase == 10) && (player == stop_phase_player)))
+            ((stop_phase == PHASE_DRAW) && (player == stop_phase_player)))
         {
           phase_stop_suppressed = 0;
         }
@@ -1199,8 +1199,8 @@ int discard_phase(unsigned int player, int phase_mode)
       {
         phase_stop_suppressed = 0;
       }
-      else if (((stop_phase == 0x1f) && (player == stop_phase_player)) ||
-               ((previous_stop_phase == 0x1f) && (player == previous_stop_phase_player)))
+      else if (((stop_phase == PHASE_DISCARD) && (player == stop_phase_player)) ||
+               ((previous_stop_phase == PHASE_DISCARD) && (player == previous_stop_phase_player)))
       {
         phase_stop_suppressed = 0;
       }
@@ -1214,7 +1214,7 @@ int discard_phase(unsigned int player, int phase_mode)
       if (g_duel_ai_mode_state != 1)
       {
         if ((stop_phase == -1) ||
-            ((stop_phase == 0x1f) && (player == stop_phase_player)))
+            ((stop_phase == PHASE_DISCARD) && (player == stop_phase_player)))
         {
           phase_stop_suppressed = 0;
         }
@@ -1244,10 +1244,10 @@ int discard_phase(unsigned int player, int phase_mode)
     DAT_008a8de4 = DAT_008cdab0;
     ai_modifier = DAT_008a8de4;
     }
-    current_phase = 0x1f;
+    current_phase = PHASE_DISCARD;
     FUN_004432ed(player, current_phase);
     phase_response_window_open = 1;
-    s.allow_response_result = allow_response(-1, current_phase, gs_discard_phase_0091d080, 0x1f);
+    s.allow_response_result = allow_response(-1, current_phase, gs_discard_phase_0091d080, PHASE_DISCARD);
     phase_response_window_open = 0;
   } while (s.allow_response_result != 0);
 
@@ -1340,7 +1340,7 @@ void cleanup_phase(unsigned int player)
 
   if (g_duel_ai_mode_state != 1)
   {
-    current_phase = 0x22;
+    current_phase = PHASE_CLEANUP;
     FUN_004432ed(player, current_phase);
     phase_was_skipped = 0;
     phase_response_window_open = 0;
@@ -1350,8 +1350,8 @@ void cleanup_phase(unsigned int player)
       {
         phase_stop_suppressed = 0;
       }
-      else if (((stop_phase == 0x20) && (player == stop_phase_player)) ||
-               ((previous_stop_phase == 0x20) && (player == previous_stop_phase_player)))
+      else if (((stop_phase == PHASE_CLEANUP2) && (player == stop_phase_player)) ||
+               ((previous_stop_phase == PHASE_CLEANUP2) && (player == previous_stop_phase_player)))
       {
         phase_stop_suppressed = 0;
       }
@@ -1365,7 +1365,7 @@ void cleanup_phase(unsigned int player)
       if (g_duel_ai_mode_state != 1)
       {
         if ((stop_phase == -1) ||
-            ((stop_phase == 0x20) && (player == stop_phase_player)))
+            ((stop_phase == PHASE_CLEANUP2) && (player == stop_phase_player)))
         {
           phase_stop_suppressed = 0;
         }
@@ -1601,18 +1601,18 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       if ((land_can_be_played & 0x100) != 0)
       {
-        current_phase = 0x1e;
+        current_phase = PHASE_MAIN2;
       }
       else
       {
-        current_phase = 0x14;
+        current_phase = PHASE_MAIN1;
       }
       *phase_mode = 1;
       *next_state = 6;
     }
     if (ai_decision_code == 2)
     {
-      current_phase = 0x1a;
+      current_phase = PHASE_NORMAL_COMBAT_DAMAGE;
       *phase_mode = 2;
       *next_state = 6;
     }
@@ -1625,11 +1625,11 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       if ((land_can_be_played & 8) != 0)
       {
-        current_phase = 0x1e;
+        current_phase = PHASE_MAIN2;
       }
       else
       {
-        current_phase = 0x14;
+        current_phase = PHASE_MAIN1;
       }
       *phase_value = 0;
       *phase_mode = 4;
@@ -1637,13 +1637,13 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     }
     if (ai_decision_code == 5)
     {
-      current_phase = 0x1a;
+      current_phase = PHASE_NORMAL_COMBAT_DAMAGE;
       *phase_mode = 5;
       *next_state = 6;
     }
     if (ai_decision_code == 6)
     {
-      current_phase = 0x1a;
+      current_phase = PHASE_NORMAL_COMBAT_DAMAGE;
       *phase_mode = 6;
       *next_state = 6;
     }
@@ -1651,11 +1651,11 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       if ((land_can_be_played & 8) != 0)
       {
-        current_phase = 0x1e;
+        current_phase = PHASE_MAIN2;
       }
       else
       {
-        current_phase = 0x14;
+        current_phase = PHASE_MAIN1;
       }
       *phase_value = 0;
       *phase_mode = 7;
@@ -1663,7 +1663,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     }
     if (ai_decision_code == 8)
     {
-      current_phase = 0x1a;
+      current_phase = PHASE_NORMAL_COMBAT_DAMAGE;
       *phase_mode = 8;
       *next_state = 6;
     }
@@ -1671,7 +1671,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
 
   if (*next_state == -1)
   {
-    current_phase = 0x20;
+    current_phase = PHASE_CLEANUP2;
     s.local_50 = 0;
     if (s.local_50 == 0)
     {
@@ -1682,7 +1682,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       return 1;
     }
-    if ((human_player == stop_phase_player) && (stop_phase == 0x20))
+    if ((human_player == stop_phase_player) && (stop_phase == PHASE_CLEANUP2))
     {
       stop_phase_player = -1;
       stop_phase = stop_phase_player;

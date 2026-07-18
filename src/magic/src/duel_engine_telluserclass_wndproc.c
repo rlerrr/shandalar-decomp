@@ -174,7 +174,7 @@ int register_MAGIC_TellUserClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x004eb63c
 // FUNCTION: SHANDALAR 0x0046933c
-void destroy_MAGIC_TellUserClass(void)
+void destroy_MAGIC_TellUserClass(LPCSTR class_name)
 {
   if (g_tell_user_background_bitmap != (HBITMAP)0)
   {

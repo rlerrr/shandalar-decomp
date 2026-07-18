@@ -101,7 +101,7 @@ int register_MAGICGAME_FullCardClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x0055793c
 // FUNCTION: SHANDALAR 0x0056dc9c
-void destroy_MAGICGAME_FullCardClass(void)
+void destroy_MAGICGAME_FullCardClass(LPCSTR class_name)
 {
   if (g_magicgame_full_card_menu != (HMENU)0)
   {

@@ -168,7 +168,7 @@ int register_MAGICGAME_FaceClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x00463a6e
 // FUNCTION: SHANDALAR 0x004261ae
-void destroy_MAGICGAME_FaceClass(void)
+void destroy_MAGICGAME_FaceClass(LPCSTR class_name)
 {
   int i;
 

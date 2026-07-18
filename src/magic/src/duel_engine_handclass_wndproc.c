@@ -112,7 +112,7 @@ int register_MAGICGAME_HandClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x004bbbc7
 // FUNCTION: SHANDALAR 0x0046ef07
-void destroy_MAGICGAME_HandClass(void)
+void destroy_MAGICGAME_HandClass(LPCSTR class_name)
 {
   if (g_hand_popup_menu != (HMENU)0)
   {
@@ -356,12 +356,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     int title_bottom;
     int inner_right;
     int inner_bottom;
-    int hit_title_height;
-    int hit_bottom_margin;
-    unsigned int click_x;
-    unsigned int click_y;
-    int hit_side_margin;
-    int hit_edge_width;
+    int hit_side_margin;   // ebp - 0x278
+    int hit_edge_width;    // ebp - 0x274
+    unsigned int click_x;  // ebp - 0x270
+    unsigned int click_y;  // ebp - 0x26c
+    int hit_title_height;  // ebp - 0x268
+    int hit_bottom_margin; // ebp - 0x264
     int target_index;
     RECT before_move_rect;
     RECT after_move_rect;
@@ -387,26 +387,26 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     int add_shift_index;
     HWND existing_hwnd;
     int *add_player_card;
-    int add_index;
-    HWND selected_hwnd;
-    HBITMAP new_bitmap;
+    int add_index;      // ebp - 0x50
+    HWND selected_hwnd; // ebp - 0x4c
+    HBITMAP new_bitmap; // ebp - 0x48
     RECT *bitmap_rect;
     RECT *invalidate_rect;
-    int *invalidate_player_card;
-    int invalidate_index;
-    int invalidate_found;
-    int invalidate_all_index;
-    int refresh_index;
-    int card_id;
-    int card_id_index;
-    LONG art_bottom_height;
-    int card_count;
-    LONG art_width;
-    LONG art_title_height;
-    LONG art_side_width;
-    HWND *card_windows;
-    int selected_index;
-    HWND background_bitmap;
+    int *invalidate_player_card; // ebp - 0x3c
+    int invalidate_index;        // ebp - 0x38
+    int invalidate_found;        // ebp - 0x34
+    int invalidate_all_index;    // ebp - 0x30
+    int refresh_index;           // ebp - 0x2c
+    int card_id;                 // ebp - 0x28
+    int card_id_index;           // ebp - 0x24
+    LONG art_bottom_height;      // ebp - 0x20
+    int card_count;              // ebp - 0x1c
+    LONG art_width;              // ebp - 0x18
+    LONG art_title_height;       // ebp - 0x14
+    LONG art_side_width;         // ebp - 0x10
+    HWND *card_windows;          // ebp - 0xc
+    int selected_index;          // ebp - 0x8
+    HWND background_bitmap;      // ebp - 0x4
   } s;
 
   switch (msg)
@@ -448,18 +448,19 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.card_count = GetWindowLongA(hwnd, g_hand_card_count_long_offset);
     s.invalidate_player_card = (int *)wparam;
     s.invalidate_rect = (RECT *)lparam;
-    if (wparam == 0)
+    if (s.invalidate_player_card == 0)
     {
       return 0;
     }
     s.invalidate_found = 0;
     s.invalidate_index = 0;
-    while (s.invalidate_index < s.card_count && s.invalidate_found == 0)
+    for (; s.invalidate_index < s.card_count && s.invalidate_found == 0;
+         s.invalidate_index++)
     {
       if (card_window_matches_player_and_card(s.card_windows[s.invalidate_index], s.invalidate_player_card) != 0)
       {
         s.invalidate_found = 1;
-        if (s.invalidate_rect == NULL)
+        if (s.invalidate_rect != NULL)
         {
           SendMessageA(s.card_windows[s.invalidate_index], 0x432, 0, 0);
         }
@@ -468,7 +469,6 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
           InvalidateRect(s.card_windows[s.invalidate_index], NULL, FALSE);
         }
       }
-      s.invalidate_index++;
     }
     return 0;
 
@@ -495,13 +495,13 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     return 0;
 
   case 0x438:
-    return GetWindowLongA(hwnd, g_hand_background_bitmap_long_offset);
+    return s.background_bitmap = GetWindowLongA(hwnd, g_hand_background_bitmap_long_offset);
 
   case 0x400:
     s.card_windows = (HWND *)GetWindowLongA(hwnd, g_hand_card_windows_long_offset);
     s.card_count = GetWindowLongA(hwnd, g_hand_card_count_long_offset);
     s.selected_hwnd = (HWND)wparam;
-    if (wparam == 0)
+    if (s.selected_hwnd == 0)
     {
       return 0;
     }
@@ -509,7 +509,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
       if (s.card_windows[s.add_index] == s.selected_hwnd)
       {
-        SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.add_index);
+        s.selected_index = s.add_index;
+        SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
         resize_duel_hand_window(hwnd);
       }
     }
@@ -519,53 +520,48 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.card_windows = (HWND *)GetWindowLongA(hwnd, g_hand_card_windows_long_offset);
     s.card_count = GetWindowLongA(hwnd, g_hand_card_count_long_offset);
     s.selected_index = GetWindowLongA(hwnd, g_hand_selected_index_long_offset);
-    if (s.card_count > 0x31)
+    if (s.card_count >= 0x32)
     {
       return 0;
     }
     s.add_player_card = (int *)wparam;
-    s.existing_hwnd = (HWND)SendMessageA(hwnd, 0x40f, wparam, 0);
+    s.existing_hwnd = (HWND)SendMessageA(hwnd, 0x40f, s.add_player_card, 0);
     if (s.existing_hwnd == (HWND)0)
     {
-        s.existing_hwnd = CreateWindowExA(0, s_MAGICGAME_CardClass_00574420, s_Hand_Card_00574414,
-                                        WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)1,
+      s.existing_hwnd = CreateWindowExA(0, s_MAGICGAME_CardClass_00574420, s_Hand_Card_00574414,
+                                        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 0, 0, 0, 0, hwnd, (HMENU)1,
                                         g_app_instance, s.add_player_card);
-      if (s.existing_hwnd != (HWND)0)
+      if (s.existing_hwnd == (HWND)0)
       {
-        s.card_windows[s.card_count] = s.existing_hwnd;
-        s.card_count++;
-        SetWindowLongA(hwnd, g_hand_card_count_long_offset, s.card_count);
-        s.remove_index = s.card_count;
-        if (s.card_count - 1 == s.selected_index + 1)
-        {
-          s.selected_index = s.card_count - 1;
-          SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
-        }
-        else
-        {
-          while (s.add_shift_index = s.remove_index - 1, s.selected_index + 1 < s.add_shift_index)
-          {
-            s.card_windows[s.add_shift_index] = s.card_windows[s.add_shift_index - 1];
-            s.remove_index = s.add_shift_index;
-          }
-          s.card_windows[s.selected_index + 1] = s.existing_hwnd;
-          s.selected_index++;
-          SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
-        }
-        resize_duel_hand_window(hwnd);
-        update_hand_window_title(s.add_title, hwnd, s.card_count);
-        return s.card_count;
+        return 0;
       }
-      return 0;
+      s.card_windows[s.card_count] = s.existing_hwnd;
+      s.card_count++;
+      SetWindowLongA(hwnd, g_hand_card_count_long_offset, s.card_count);
+      if (s.card_count - 1 == s.selected_index + 1)
+      {
+        s.selected_index = s.card_count - 1;
+        SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
+      }
+      else
+      {
+        for (s.add_shift_index = s.card_count - 1; s.selected_index + 1 < s.add_shift_index; s.add_shift_index--)
+        {
+          s.card_windows[s.add_shift_index] = s.card_windows[s.add_shift_index - 1];
+        }
+        s.card_windows[s.selected_index + 1] = s.existing_hwnd;
+        s.selected_index++;
+        SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
+      }
+      resize_duel_hand_window(hwnd);
+      update_hand_window_title(s.add_title, hwnd, s.card_count);
     }
-
-    if (card_window_matches_card_id(s.existing_hwnd,
-                                    get_displayed_card_id(s.add_player_card[0], s.add_player_card[1])) != 0)
+    else if (card_window_matches_card_id(s.existing_hwnd,
+                                         get_displayed_card_id(s.add_player_card[0], s.add_player_card[1])) == 0)
     {
-      return s.card_count;
+      SendMessageA(hwnd, 0x40b, s.add_player_card, 0);
+      SendMessageA(hwnd, 0x40a, s.add_player_card, 0);
     }
-    SendMessageA(hwnd, 0x40b, wparam, 0);
-    SendMessageA(hwnd, 0x40a, wparam, 0);
     return s.card_count;
 
   case 0x40b:
@@ -575,7 +571,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.remove_player_card = (int *)wparam;
     s.remove_found = 0;
     s.remove_index = 0;
-    while (s.remove_index < s.card_count && s.remove_found == 0)
+    for (; s.remove_index < s.card_count && s.remove_found == 0;
+         s.remove_index++)
     {
       if (card_window_matches_player_and_card(s.card_windows[s.remove_index], s.remove_player_card) != 0)
       {
@@ -591,30 +588,34 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           if (s.selected_index == 0)
           {
-            s.selected_index = s.card_count;
+            s.selected_index = s.card_count - 1;
           }
-          s.selected_index--;
+          else
+          {
+            s.selected_index--;
+          }
           SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
         }
         else
         {
           if (s.selected_index == 0)
           {
-            s.selected_index = s.card_count;
+            s.selected_index = s.card_count - 1;
           }
-          s.selected_index--;
+          else
+          {
+            s.selected_index--;
+          }
           SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
         }
         update_hand_window_title(s.remove_title, hwnd, s.card_count);
         UpdateWindow(hwnd);
       }
-      s.remove_index++;
     }
-    if (s.remove_found == 0)
+    if (s.remove_found != 0)
     {
-      return 0;
+      resize_duel_hand_window(hwnd);
     }
-    resize_duel_hand_window(hwnd);
     return s.remove_found;
 
   case 0x40c:
@@ -625,9 +626,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
       DestroyWindow(s.card_windows[s.clear_index]);
     }
     s.card_count = 0;
-    SetWindowLongA(hwnd, g_hand_card_count_long_offset, 0);
+    SetWindowLongA(hwnd, g_hand_card_count_long_offset, s.card_count);
     s.selected_index = -1;
-    SetWindowLongA(hwnd, g_hand_selected_index_long_offset, -1);
+    SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
     resize_duel_hand_window(hwnd);
     update_hand_window_title(s.clear_title, hwnd, s.card_count);
     return 0;
@@ -638,16 +639,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.bring_player_card = (int *)wparam;
     s.bring_found = 0;
     s.bring_index = 0;
-    while (1)
+    for (; s.card_count > s.bring_index && s.bring_found == 0; s.bring_index++)
     {
-      if (s.card_count <= s.bring_index)
-      {
-        return s.bring_found;
-      }
-      if (s.bring_found != 0)
-      {
-        break;
-      }
       if (card_window_matches_player_and_card(s.card_windows[s.bring_index], s.bring_player_card) != 0)
       {
         s.bring_found = 1;
@@ -659,7 +652,6 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
         }
         s.card_windows[s.card_count - 1] = s.bring_hwnd;
       }
-      s.bring_index++;
     }
     return s.bring_found;
 
@@ -670,7 +662,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.find_player_card = (int *)wparam;
     s.find_found = 0;
     s.find_index = 0;
-    while (s.find_index < s.card_count && s.find_found == 0)
+    for (; s.find_index < s.card_count && s.find_found == 0;
+         s.find_index++)
     {
       if (card_window_matches_player_and_card(s.card_windows[s.find_index], s.find_player_card) != 0)
       {
@@ -684,17 +677,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.find_result = (LRESULT)s.card_windows[s.find_index];
         }
       }
-      s.find_index++;
     }
     if (s.find_found != 0)
     {
       return s.find_result;
     }
-    if (msg == 0x40e)
+    else
     {
-      return -1;
+      return (msg == 0x40e) ? -1 : 0;
     }
-    return 0;
 
   case WM_CLOSE:
     ShowWindow(hwnd, SW_HIDE);
@@ -709,26 +700,28 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
       strcat(s.help_path, s__duel_hlp_00574434);
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
+    default:
+      break;
     }
     return 0;
 
   case WM_CREATE:
     s.card_count = 0;
-    SetWindowLongA(hwnd, g_hand_card_count_long_offset, 0);
+    SetWindowLongA(hwnd, g_hand_card_count_long_offset, s.card_count);
     s.card_windows = malloc(200);
     SetWindowLongA(hwnd, g_hand_card_windows_long_offset, (LONG)s.card_windows);
     s.art_width = 0;
     s.art_title_height = 0;
     s.art_side_width = 0;
     s.art_bottom_height = 0;
-    SetWindowLongA(hwnd, g_hand_art_width_long_offset, 0);
+    SetWindowLongA(hwnd, g_hand_art_width_long_offset, s.art_width);
     SetWindowLongA(hwnd, g_hand_art_title_height_long_offset, s.art_title_height);
     SetWindowLongA(hwnd, g_hand_art_side_width_long_offset, s.art_side_width);
     SetWindowLongA(hwnd, g_hand_art_bottom_height_long_offset, s.art_bottom_height);
     s.background_bitmap = (HWND)0;
-    SetWindowLongA(hwnd, g_hand_background_bitmap_long_offset, 0);
+    SetWindowLongA(hwnd, g_hand_background_bitmap_long_offset, s.background_bitmap);
     s.selected_index = -1;
-    SetWindowLongA(hwnd, g_hand_selected_index_long_offset, -1);
+    SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
     if (s.card_windows == NULL)
     {
       return -1;
@@ -751,14 +744,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
 
   case WM_LBUTTONDOWN:
     GetWindowRect(hwnd, &s.before_move_rect);
-    SendMessageA(hwnd, WM_SYSCOMMAND, SC_MOVE, 0);
+    SendMessageA(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
     GetWindowRect(hwnd, &s.after_move_rect);
     if (abs(s.after_move_rect.top - s.before_move_rect.top) +
             abs(s.after_move_rect.left - s.before_move_rect.left) <
         5)
     {
       s.click_x = (unsigned int)lparam & 0xffff;
-      s.click_y = (unsigned int)lparam >> 16;
+      s.click_y = HIWORD(lparam);
       s.card_windows = (HWND *)GetWindowLongA(hwnd, g_hand_card_windows_long_offset);
       s.card_count = GetWindowLongA(hwnd, g_hand_card_count_long_offset);
       s.selected_index = GetWindowLongA(hwnd, g_hand_selected_index_long_offset);
@@ -777,23 +770,25 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
           GetClientRect(hwnd, &s.after_move_rect);
           if ((int)s.click_x < (s.after_move_rect.right * 0x14) / 100)
           {
-            s.target_index = s.card_count;
             if (s.selected_index > 0)
             {
-              s.target_index = s.selected_index;
+              s.target_index = s.selected_index - 1;
             }
-            s.target_index--;
+            else
+            {
+              s.target_index = s.card_count - 1;
+            }
             SendMessageA(hwnd, 0x400, (WPARAM)s.card_windows[s.target_index], 0);
           }
           else if ((s.after_move_rect.right * 0x50) / 100 < (int)s.click_x)
           {
-            if (s.selected_index < s.card_count - 1)
+            if (s.selected_index >= s.card_count - 1)
             {
-              s.target_index = s.selected_index + 1;
+              s.target_index = 0;
             }
             else
             {
-              s.target_index = 0;
+              s.target_index = s.selected_index + 1;
             }
             SendMessageA(hwnd, 0x400, (WPARAM)s.card_windows[s.target_index], 0);
           }
@@ -856,7 +851,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
 
   case WM_RBUTTONDOWN:
     s.menu_point.x = (unsigned int)lparam & 0xffff;
-    s.menu_point.y = (unsigned int)lparam >> 16;
+    s.menu_point.y = HIWORD(lparam);
     ClientToScreen(hwnd, &s.menu_point);
     SetRect(&s.menu_rect, s.menu_point.x, s.menu_point.y, s.menu_point.x + 1, s.menu_point.y + 1);
     TrackPopupMenu(g_hand_popup_menu, TPM_RIGHTBUTTON, s.menu_point.x, s.menu_point.y, 0, hwnd, &s.menu_rect);
@@ -870,10 +865,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     if (HIWORD(wparam) == 0xffff && lparam == 0)
     {
       s.menu_item_count = GetMenuItemCount(g_hand_popup_menu);
-      while (s.menu_item_count != 0)
+      while (s.menu_item_count-- != 0)
       {
         DeleteMenu(g_hand_popup_menu, 0, MF_BYPOSITION);
-        s.menu_item_count--;
       }
     }
     return 0;

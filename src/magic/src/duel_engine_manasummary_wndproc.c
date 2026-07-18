@@ -155,7 +155,7 @@ int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x005394da
 // FUNCTION: SHANDALAR 0x00550dba
-void destroy_MAGICGAME_ManaSummaryClass(void)
+void destroy_MAGICGAME_ManaSummaryClass(LPCSTR class_name)
 {
   if (g_mana_summary_popup_menu != (HMENU)0)
   {
@@ -635,7 +635,7 @@ void get_mana_pool_text_rect(LPRECT rect, HWND hwnd, int mana_color)
     int top;
   } s;
 
-  get_displayed_mana_pool(&s.mana_pool, (unsigned int)(unk_008ce534 != hwnd));
+  get_displayed_mana_pool(&s.mana_pool, (unsigned int)(hwnd != unk_008ce534));
   GetClientRect(hwnd, &s.client_rect);
   s.top_margin = (s.client_rect.bottom * 5) / 100;
   s.row_height = (s.client_rect.bottom * 0x91) / 1000;

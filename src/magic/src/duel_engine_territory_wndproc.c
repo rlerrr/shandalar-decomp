@@ -57,17 +57,10 @@ extern HWND g_main_window_hwnd;
 #define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
 #endif
 
-// GLOBAL: MAGIC 0x0055e0fc
-int g_card_window_player_long_offset = 0;
-
-// GLOBAL: MAGIC 0x0055e100
-int g_card_window_card_long_offset = 4;
-
-// GLOBAL: MAGIC 0x0055e104
-int g_territory_bitmap_window_long_offset = 8;
-
-// GLOBAL: MAGIC 0x0055e108
-int g_territory_player_card_window_long_offset = 0xc;
+extern int g_cardclass_player_window_long_offset;
+extern int g_cardclass_card_window_long_offset;
+extern int g_cardclass_hidden_parent_window_long_offset;
+extern int g_cardclass_snapshot_window_long_offset;
 
 // GLOBAL: MAGIC 0x0057ab70
 char s_MENU_TERRITORY_0057ab70[0x10] = "MENU_TERRITORY";
@@ -410,8 +403,8 @@ int card_window_matches_player_and_card(HWND hwnd, int *player_and_card)
     return 0;
   }
 
-  player = GetWindowLongA(hwnd, g_card_window_player_long_offset);
-  card = GetWindowLongA(hwnd, g_card_window_card_long_offset);
+  player = GetWindowLongA(hwnd, g_cardclass_player_window_long_offset);
+  card = GetWindowLongA(hwnd, g_cardclass_card_window_long_offset);
   if (player_and_card[0] == player && player_and_card[1] == card)
   {
     return 1;
@@ -433,8 +426,8 @@ int card_window_matches_card_id(HWND hwnd, int card_id)
     return 0;
   }
 
-  player = GetWindowLongA(hwnd, g_card_window_player_long_offset);
-  card = GetWindowLongA(hwnd, g_card_window_card_long_offset);
+  player = GetWindowLongA(hwnd, g_cardclass_player_window_long_offset);
+  card = GetWindowLongA(hwnd, g_cardclass_card_window_long_offset);
   displayed_card_id = get_displayed_card_id(player, card);
   if (displayed_card_id == card_id)
   {
@@ -457,8 +450,8 @@ int get_card_window_displayed_card_id(HWND hwnd)
     return -1;
   }
 
-  player = GetWindowLongA(hwnd, g_card_window_player_long_offset);
-  card = GetWindowLongA(hwnd, g_card_window_card_long_offset);
+  player = GetWindowLongA(hwnd, g_cardclass_player_window_long_offset);
+  card = GetWindowLongA(hwnd, g_cardclass_card_window_long_offset);
   card_id = get_displayed_card_id(player, card);
   return card_id;
 }
@@ -536,7 +529,7 @@ int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x004e6dc8
 // FUNCTION: SHANDALAR 0x00504be8
-void destroy_MAGICGAME_TerritoryClass(void)
+void destroy_MAGICGAME_TerritoryClass(LPCSTR class_name)
 {
   if (g_territory_popup_menu != (HMENU)0)
   {
@@ -692,18 +685,18 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     return 0;
 
   case 0x439:
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_territory_bitmap_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
     if (s.background_bitmap != (HWND)0)
     {
       DeleteObject(s.background_bitmap);
     }
     s.background_bitmap = (HWND)wparam;
-    SetWindowLongA(hwnd, g_territory_bitmap_window_long_offset, (LONG)s.background_bitmap);
+    SetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset, (LONG)s.background_bitmap);
     InvalidateRect(hwnd, NULL, TRUE);
     return 0;
 
   case 0x438:
-    return GetWindowLongA(hwnd, g_territory_bitmap_window_long_offset);
+    return GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
 
   case 0x40a:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
@@ -840,7 +833,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x400:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_territory_player_card_window_long_offset);
+    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
     for (s.loop_index_400 = 0; s.loop_index_400 < s.card_count; s.loop_index_400++)
     {
       SendMessageA(((HWND *)s.card_windows)[s.loop_index_400], 0x401, (WPARAM)&s.displayed_player, 0);
@@ -1001,7 +994,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x412:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_territory_player_card_window_long_offset);
+    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
     GetClientRect(hwnd, &s.resize_rect);
     s.descendant_count = count_hidden_battlefield_descendants(hwnd, s.player_card_window);
     if (s.descendant_count > 0)
@@ -1105,7 +1098,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.card_windows = malloc(800);
     SetWindowLongA(hwnd, g_duel_window_userdata_player_offset, (LONG)s.card_windows);
     s.background_bitmap = (HWND)0;
-    SetWindowLongA(hwnd, g_territory_bitmap_window_long_offset, 0);
+    SetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset, 0);
     if (GetDlgCtrlID(hwnd) == 0x79)
     {
       s.create_data[0] = 0;
@@ -1118,7 +1111,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.player_card_window =
         CreateWindowExA(0, s_MAGICGAME_CardClass_0057ac04, s_Player_Card_0057abf8, 0x44000000, 0, 0, 0, 0,
                         hwnd, (HMENU)0, g_app_instance, s.create_data);
-    SetWindowLongA(hwnd, g_territory_player_card_window_long_offset, (LONG)s.player_card_window);
+    SetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset, (LONG)s.player_card_window);
     if (s.card_windows == NULL || s.player_card_window == (HWND)0)
     {
       return -1;
@@ -1128,7 +1121,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case WM_DESTROY:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     free(s.card_windows);
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_territory_bitmap_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
     if (s.background_bitmap != (HWND)0)
     {
       delete_and_close_object(s.background_bitmap);
@@ -1136,7 +1129,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     return 0;
 
   case WM_ERASEBKGND:
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_territory_bitmap_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
     s.erase_dc = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.erase_dc);
     GetClientRect(hwnd, &s.erase_rect);

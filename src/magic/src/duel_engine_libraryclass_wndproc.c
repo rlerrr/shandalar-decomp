@@ -32,6 +32,9 @@ extern LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, L
 // GLOBAL: MAGIC 0x0055e0b8
 int g_library_window_long_offset = 0;
 
+// GLOBAL: MAGIC 0x0055e0bc
+int g_library_window_extra_bytes = 4;
+
 // GLOBAL: MAGIC 0x00638ac8
 char g_library_menu_help_text[0x1c];
 
@@ -86,23 +89,46 @@ int get_cached_library_count(int player)
 // FUNCTION: SHANDALAR 0x004c1830
 int register_MAGICGAME_LibraryClass(LPCSTR class_name)
 {
-  ATOM atom1;
-  ATOM atom2;
-  WNDCLASSA wndclass;
+  struct
+  {
+    int result;
+    WNDCLASSA wndclass;
+  } s;
 
-  SET_DUEL_WNDCLASS(wndclass, 3, wndproc_MAGICGAME_LibraryClass, 4,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)GetStockObject(4), class_name);
-  atom1 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 0, wndproc_ShuffleCard, 0,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0, CLASS_SHUFFLE_CARD);
-  atom2 = RegisterClassA(&wndclass);
+  s.result = 1;
+  s.wndclass.style = 3;
+  s.wndclass.lpfnWndProc = wndproc_MAGICGAME_LibraryClass;
+  s.wndclass.cbClsExtra = 0;
+  s.wndclass.cbWndExtra = g_library_window_extra_bytes;
+  s.wndclass.hInstance = g_app_instance;
+  s.wndclass.hIcon = LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00);
+  s.wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
+  s.wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
+  s.wndclass.lpszMenuName = (LPCSTR)0;
+  s.wndclass.lpszClassName = class_name;
+  if (RegisterClassA(&s.wndclass) == 0)
+    s.result = 0;
+
+  s.wndclass.style = 0;
+  s.wndclass.lpfnWndProc = wndproc_ShuffleCard;
+  s.wndclass.cbClsExtra = 0;
+  s.wndclass.cbWndExtra = 0;
+  s.wndclass.hInstance = g_app_instance;
+  s.wndclass.hIcon = LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00);
+  s.wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
+  s.wndclass.hbrBackground = (HBRUSH)0;
+  s.wndclass.lpszMenuName = (LPCSTR)0;
+  s.wndclass.lpszClassName = CLASS_SHUFFLE_CARD;
+  if (RegisterClassA(&s.wndclass) == 0)
+    s.result = 0;
+
   g_library_popup_menu = CreatePopupMenu();
   g_library_submenu = CreatePopupMenu();
   AppendMenuA(g_library_submenu, 0, 0x65, "");
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_LIBRARY");
   strcpy(g_library_menu_count_text, text_lines[0]);
   strcpy(g_library_menu_help_text, text_lines[1]);
-  return atom1 != 0 && atom2 != 0;
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x00498193
@@ -118,10 +144,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
     RECT menu_rect;
     char count_overlay_text[12];
     RECT stack_card_rect;
-    int card_y_step;
-    int card_x_step;
-    int card_width_delta;
-    int stack_card_bottom;
+    int card_y_step;       // ebp - 0x41c
+    int card_x_step;       // ebp - 0x418
+    int card_width_delta;  // ebp - 0x414
+    int stack_card_bottom; // ebp - 0x410
     RECT top_card_rect;
     int stack_card_right;
     int card_height_delta;
@@ -150,7 +176,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
   switch (msg)
   {
   case 0x437:
-    if (hwnd == DAT_0091ce30)
+    if (DAT_0091ce30 == hwnd)
     {
       strcpy(s.cuecard_text, gs_cuecard_your_library_0091ca20);
     }
@@ -164,23 +190,20 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
 
   case 0x432:
     s.previous_count = GetWindowLongA(hwnd, g_library_window_long_offset);
-    s.cached_count = get_cached_library_count(hwnd != DAT_0091ce30);
-    if (s.cached_count != s.previous_count)
+    s.cached_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)DAT_0091ce30));
+    if (s.previous_count != s.cached_count)
     {
       InvalidateRect(hwnd, NULL, TRUE);
     }
     return 0;
 
   case 0x400:
-    s.shuffle_count = get_cached_library_count(hwnd != DAT_0091ce30);
+    s.shuffle_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)DAT_0091ce30));
     GetClientRect(hwnd, &s.shuffle_rect);
-    s.menu_item_count = s.shuffle_count;
-    if (s.menu_item_count > 0x4a)
-    {
-      s.menu_item_count = 0x4b;
-    }
-    s.shuffle_card_width_delta = (((s.shuffle_rect.right * 0x28) / 100) * s.menu_item_count) / 0x4b;
-    s.shuffle_card_height_delta = (s.shuffle_rect.bottom * s.shuffle_card_width_delta) / s.shuffle_rect.right;
+    s.shuffle_card_width_delta = (((s.shuffle_rect.right * 0x28) / 100) *
+                                  (s.shuffle_count < 0x4b ? s.shuffle_count : 0x4b)) /
+                                 0x4b;
+    s.shuffle_card_height_delta = (s.shuffle_card_width_delta * s.shuffle_rect.bottom) / s.shuffle_rect.right;
     s.shuffle_card_width = s.shuffle_rect.right - s.shuffle_card_width_delta;
     s.shuffle_card_height = s.shuffle_rect.bottom - s.shuffle_card_height_delta;
     GetWindowRect(hwnd, &s.shuffle_rect);
@@ -190,26 +213,19 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
     {
       s.shuffle_count = 100;
     }
-    if (GetSystemMetrics(0x49) != 0)
+    if (GetSystemMetrics(SM_SLOWMACHINE) != 0)
     {
       if (s.shuffle_count > 4)
       {
-        s.shuffle_count /= 5;
-        if (s.shuffle_count <= 4)
-        {
-          s.shuffle_count = 4;
-        }
+        s.shuffle_count = MAX(s.shuffle_count / 5, 4);
       }
     }
     else if (s.shuffle_count > 5)
     {
-      s.shuffle_count /= 3;
-      if (s.shuffle_count <= 5)
-      {
-        s.shuffle_count = 5;
-      }
+      s.shuffle_count = MAX(s.shuffle_count / 3, 5);
     }
-    for (s.shuffle_index = 0; s.shuffle_index < s.shuffle_count; s.shuffle_index++)
+
+    for (s.shuffle_index = 0; s.shuffle_count > s.shuffle_index; s.shuffle_index++)
     {
       s.shuffle_windows[s.shuffle_index] =
           CreateWindowExA(0, CLASS_SHUFFLE_CARD, "", 0x90000000, s.shuffle_x, s.shuffle_y,
@@ -251,14 +267,20 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
     SetWindowLongA(hwnd, g_library_window_long_offset, s.previous_count);
     return 0;
 
+  case WM_ERASEBKGND:
+    return 1;
+
+  case WM_LBUTTONDOWN:
+    return 0;
+
   case WM_PAINT:
     s.previous_count = GetWindowLongA(hwnd, g_library_window_long_offset);
-    s.library_count = get_cached_library_count(hwnd != DAT_0091ce30);
-    if (s.library_count != s.previous_count)
+    s.library_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)DAT_0091ce30));
+    if (s.previous_count != s.library_count)
     {
       InvalidateRect(hwnd, NULL, FALSE);
     }
-    EnterCriticalSection(&g_duel_render_lock);
+    EnterCriticalSection(&g_card_render_lock);
     s.paint_dc = BeginPaint(hwnd, &s.paint_struct);
     if (s.paint_dc != (HDC)0)
     {
@@ -266,12 +288,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
       GetClientRect(hwnd, &s.client_rect);
       if (g_duel_palette_refresh_pending != 0)
       {
-        FillRect(s.paint_dc, &s.client_rect, GetStockObject(BLACK_BRUSH));
+        FillRect(s.paint_dc, &s.client_rect, GetStockObject(WHITE_BRUSH));
         Sleep(200);
       }
       if (s.library_count == 0)
       {
-        FillRect(s.paint_dc, &s.client_rect, GetStockObject(LTGRAY_BRUSH));
+        FillRect(s.paint_dc, &s.client_rect, GetStockObject(BLACK_BRUSH));
       }
       else if (s.library_count == 1)
       {
@@ -279,52 +301,34 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
       }
       else
       {
-        FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(LTGRAY_BRUSH));
-        s.menu_item_count = s.library_count;
-        if (s.menu_item_count > 0x4a)
-        {
-          s.menu_item_count = 0x4b;
-        }
-        s.card_width_delta = (((s.client_rect.right * 0x28) / 100) * s.menu_item_count) / 0x4b;
-        s.card_height_delta = (s.client_rect.bottom * s.card_width_delta) / s.client_rect.right;
+        FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(BLACK_BRUSH));
+        s.card_width_delta = (((s.client_rect.right * 0x28) / 100) *
+                              (s.library_count < 0x4b ? s.library_count : 0x4b)) /
+                             0x4b;
+        s.card_height_delta = (s.card_width_delta * s.client_rect.bottom) / s.client_rect.right;
         SetRect(&s.top_card_rect, s.client_rect.left, s.client_rect.top,
                 s.client_rect.right - s.card_width_delta, s.client_rect.bottom - s.card_height_delta);
+        SelectObject(s.paint_dc, GetStockObject(GRAY_BRUSH));
         SelectObject(s.paint_dc, GetStockObject(BLACK_PEN));
-        SelectObject(s.paint_dc, GetStockObject(NULL_BRUSH));
-        s.card_x_step = s.library_count / 5;
-        if (s.card_x_step < 2)
-        {
-          s.card_x_step = 1;
-        }
-        s.card_x_step = s.card_width_delta / s.card_x_step;
-        if (s.card_x_step < 3)
-        {
-          s.card_x_step = 2;
-        }
-        s.card_y_step = s.library_count / 5;
-        if (s.card_y_step < 2)
-        {
-          s.card_y_step = 1;
-        }
-        s.card_y_step = s.card_height_delta / s.card_y_step;
-        if (s.card_y_step < 4)
-        {
-          s.card_y_step = 3;
-        }
+
+        s.card_x_step = MAX(s.card_width_delta / MAX(s.library_count / 5, 1), 2);
+
+        s.card_y_step = MAX(s.card_height_delta / MAX(s.library_count / 5, 1), 3);
+
+        s.stack_card_right = s.client_rect.right;
         s.stack_card_bottom = s.client_rect.bottom;
-        for (s.stack_card_right = s.client_rect.right; s.stack_card_right > s.top_card_rect.right;
-             s.stack_card_right -= s.card_x_step)
+        for (; s.stack_card_right > s.top_card_rect.right;
+             s.stack_card_right -= s.card_x_step, s.stack_card_bottom -= s.card_y_step)
         {
           SetRect(&s.stack_card_rect, s.stack_card_right - (s.top_card_rect.right - s.top_card_rect.left),
                   s.stack_card_bottom - (s.top_card_rect.bottom - s.top_card_rect.top),
                   s.stack_card_right, s.stack_card_bottom);
           DrawCardBack(g_shared_offscreen_dc, &s.stack_card_rect);
-          s.stack_card_bottom -= s.card_y_step;
         }
         DrawCardBack(g_shared_offscreen_dc, &s.top_card_rect);
         BitBlt(s.paint_dc, 0, 0, s.client_rect.right, s.client_rect.bottom,
                g_shared_offscreen_dc, 0, 0, SRCCOPY);
-        if (g_duel_message_loop_active != 0)
+        if (g_duel_dialog_refresh_state != 0)
         {
           sprintf(s.count_overlay_text, "%d", s.library_count);
           SetBkMode(s.paint_dc, TRANSPARENT);
@@ -334,14 +338,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
       }
       EndPaint(hwnd, &s.paint_struct);
       s.previous_count = s.library_count;
-      SetWindowLongA(hwnd, g_library_window_long_offset, s.library_count);
+      SetWindowLongA(hwnd, g_library_window_long_offset, s.previous_count);
     }
-    LeaveCriticalSection(&g_duel_render_lock);
+    LeaveCriticalSection(&g_card_render_lock);
     return 0;
 
   case WM_RBUTTONDOWN:
     s.menu_point.x = lparam & 0xffff;
-    s.menu_point.y = lparam >> 16;
+    s.menu_point.y = HIWORD(lparam);
     ClientToScreen(hwnd, &s.menu_point);
     SetRect(&s.menu_rect, s.menu_point.x, s.menu_point.y, s.menu_point.x + 1, s.menu_point.y + 1);
     TrackPopupMenu(g_library_popup_menu, TPM_RIGHTBUTTON, s.menu_point.x, s.menu_point.y, 0, hwnd, &s.menu_rect);
@@ -355,31 +359,24 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
     AppendMenuA(g_library_popup_menu, MF_STRING, 100, g_library_menu_help_text);
     return 0;
 
-  case WM_INITMENUPOPUP:
-    if ((wparam >> 16) == 0xffff && lparam == 0)
+  case WM_MENUSELECT:
+    if (HIWORD(wparam) == 0xffff && lparam == 0)
     {
       s.menu_item_count = GetMenuItemCount(g_library_popup_menu);
-      while (s.menu_item_count != 0)
+      while (s.unused = s.menu_item_count--)
       {
         RemoveMenu(g_library_popup_menu, 0, MF_BYPOSITION);
-        s.menu_item_count--;
       }
     }
     return 0;
 
   case WM_SETCURSOR:
-    return handle_duel_inactive_cursor(hwnd, WM_SETCURSOR, wparam, lparam);
+    return handle_duel_inactive_cursor(hwnd, msg, wparam, lparam);
 
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
     return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
-
-  case WM_ERASEBKGND:
-    return 1;
-
-  case WM_LBUTTONDOWN:
-    return 0;
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

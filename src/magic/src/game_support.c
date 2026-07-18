@@ -2000,8 +2000,6 @@ void FUN_004b4720(int player, int internal_card_id, int card)
   PLAYER_CARD_INSTANCE(player, card).parent_card = -1;
 
   PLAYER_CARD_INSTANCE(player, card).counters = 0;
-  PLAYER_CARD_INSTANCE(player, card).counters5 = 0;
-  PLAYER_CARD_INSTANCE(player, card).unknown0x122 = 0;
 
   if ((global_cards_data[internal_card_id].cc[2] & 0x10) != 0)
   {
@@ -7990,7 +7988,7 @@ int FUN_0044aa01(int player)
 
     if (previous_stop_phase == -1 && player == active_player)
     {
-      if (((char)DAT_007abc90[human_player * 0x26 + current_phase] & 4) != 0)
+      if (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)
       {
         return 0;
       }
@@ -7998,7 +7996,7 @@ int FUN_0044aa01(int player)
 
     if (stop_phase == -1 && player == nonactive_player)
     {
-      if (((char)DAT_007abc90[human_player * 0x26 + current_phase] & 1) != 0)
+      if (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0)
       {
         return 0;
       }
@@ -8080,13 +8078,13 @@ int FUN_0044541f(int param_1)
   if (param_1 != 0)
   {
     if (human_player == nonactive_player &&
-        (((int)(char)DAT_007abc90[human_player * 0x26 + current_phase]) & 1) != 0)
+        (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase]) & PHASE_STOP_ENABLED) != 0)
     {
       can_respond = 1;
     }
 
     if (human_player == active_player &&
-        (((int)(char)DAT_007abc90[human_player * 0x26 + current_phase]) & 4) != 0)
+        (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase]) & PHASE_STOP_OPPONENT) != 0)
     {
       can_respond = 1;
     }
@@ -8111,13 +8109,13 @@ int FUN_0044541f(int param_1)
 
   /* param_1 == 0 */
   if (human_player == nonactive_player &&
-      (((int)(char)DAT_007abc90[human_player * 0x26 + current_phase]) & 4) != 0)
+      (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase]) & PHASE_STOP_OPPONENT) != 0)
   {
     can_respond = 1;
   }
 
   if (human_player == active_player &&
-      (((int)(char)DAT_007abc90[human_player * 0x26 + current_phase]) & 1) != 0)
+      (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase]) & PHASE_STOP_ENABLED) != 0)
   {
     can_respond = 1;
   }

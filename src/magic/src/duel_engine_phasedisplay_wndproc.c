@@ -218,6 +218,9 @@ static void get_phase_display_phase_rect(RECT *rect, int player, int phase, int 
   else if (phase == 0x20 || phase == 0x21 || phase == 0x22 || phase == 0x25)
     s.left = (height * 289) / PHASE_DISPLAY_BITMAP_WIDTH;
   else
+    s.left = -1;
+
+  if (s.left == -1)
   {
     SetRect(rect, 0, 0, 0, 0);
     return;
@@ -232,14 +235,16 @@ static void get_phase_display_phase_rect(RECT *rect, int player, int phase, int 
 // FUNCTION: MAGIC 0x0044a213
 void copy_phase_stop_flags(int *phase_flags, int player)
 {
-  if (phase_flags == (int *)0 || is_invalid_duel_player(player) != 0)
+  if (phase_flags == (int *)0)
+    return;
+
+  if (is_invalid_duel_player(player) != 0)
     return;
 
   EnterCriticalSection(&g_duel_render_lock);
-  if (player == 0)
-    memcpy(phase_flags, DAT_00925360, 0x98);
-  else
-    memcpy(phase_flags, DAT_008b3400, 0x98);
+
+  memcpy(phase_flags, player == 0 ? DAT_00925360 : DAT_008b3400, 0x98);
+
   LeaveCriticalSection(&g_duel_render_lock);
 }
 
@@ -268,15 +273,15 @@ void draw_phase_display_status_markers(HDC dc, RECT *client_rect)
 {
   struct
   {
-    int player;
-    int phase;
-    HBRUSH brush;
-    HGDIOBJ old_brush;
     int phase_index;
-    int player_index;
-    RECT phase_rect;
-    RECT ellipse_rect;
     int phase_flags[0x26];
+    HGDIOBJ old_brush;
+    RECT phase_rect;
+    int phase;
+    RECT ellipse_rect;
+    int player_index;
+    HBRUSH brush;
+    int player;
   } s;
 
   get_phase_display_action_selection(&s.player, &s.phase);
@@ -287,7 +292,7 @@ void draw_phase_display_status_markers(HDC dc, RECT *client_rect)
     for (s.player_index = 0; s.player_index < 2; ++s.player_index)
     {
       copy_phase_stop_flags(s.phase_flags, s.player_index);
-      for (s.phase_index = 0; s.phase_index < 0x26; ++s.phase_index)
+      for (s.phase_index = 0; s.phase_index <= 0x25; ++s.phase_index)
       {
         if (s.phase_flags[s.phase_index] != 0)
         {
@@ -318,23 +323,26 @@ void draw_phase_display_status_markers(HDC dc, RECT *client_rect)
     s.old_brush = SelectObject(dc, s.brush);
     for (s.player_index = 0; s.player_index < 2; ++s.player_index)
     {
-      for (s.phase_index = 0; s.phase_index < 0x26; ++s.phase_index)
+      for (s.phase_index = 0; s.phase_index <= 0x25; ++s.phase_index)
       {
-        if (s.player_index == s.player && s.phase_index == s.phase)
+        if (s.player_index == s.player)
         {
-          get_phase_display_phase_rect(&s.phase_rect, s.player_index, s.phase_index,
-                                       client_rect->right, client_rect->bottom);
-          if (IsRectEmpty(&s.phase_rect) == 0)
+          if (s.phase_index == s.phase)
           {
-            CopyRect(&s.ellipse_rect, &s.phase_rect);
-            s.ellipse_rect.right = s.ellipse_rect.left +
-                                   (s.phase_rect.right - s.phase_rect.left) / 3;
-            s.ellipse_rect.top = s.ellipse_rect.bottom -
-                                 ((s.ellipse_rect.right - s.ellipse_rect.left) *
-                                  (s.phase_rect.bottom - s.phase_rect.top)) /
-                                     (s.phase_rect.right - s.phase_rect.left);
-            Ellipse(dc, s.ellipse_rect.left, s.ellipse_rect.top,
-                    s.ellipse_rect.right, s.ellipse_rect.bottom);
+            get_phase_display_phase_rect(&s.phase_rect, s.player_index, s.phase_index,
+                                         client_rect->right, client_rect->bottom);
+            if (IsRectEmpty(&s.phase_rect) == 0)
+            {
+              CopyRect(&s.ellipse_rect, &s.phase_rect);
+              s.ellipse_rect.right = s.ellipse_rect.left +
+                                     (s.phase_rect.right - s.phase_rect.left) / 3;
+              s.ellipse_rect.top = s.ellipse_rect.bottom -
+                                   ((s.ellipse_rect.right - s.ellipse_rect.left) *
+                                    (s.phase_rect.bottom - s.phase_rect.top)) /
+                                       (s.phase_rect.right - s.phase_rect.left);
+              Ellipse(dc, s.ellipse_rect.left, s.ellipse_rect.top,
+                      s.ellipse_rect.right, s.ellipse_rect.bottom);
+            }
           }
         }
       }
@@ -635,12 +643,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
           s.toggle_phase_code = 0x1f;
         else if (s.command_phase_index == 7)
           s.toggle_phase_code = 0x22;
-        if (((int)(char)DAT_007abc90[s.toggle_player * 0x26 + s.toggle_phase_code] & 1) != 0)
-          DAT_007abc90[s.toggle_player * 0x26 + s.toggle_phase_code] =
-              (unsigned char)(((int)(char)DAT_007abc90[s.toggle_player * 0x26 + s.toggle_phase_code]) & 0xfe);
+        if (((int)(char)g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase_code] & PHASE_STOP_ENABLED) != 0)
+          g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase_code] =
+              (unsigned char)(((int)(char)g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase_code]) & ~PHASE_STOP_ENABLED);
         else
-          DAT_007abc90[s.toggle_player * 0x26 + s.toggle_phase_code] =
-              (unsigned char)(((int)(char)DAT_007abc90[s.toggle_player * 0x26 + s.toggle_phase_code]) | 1);
+          g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase_code] =
+              (unsigned char)(((int)(char)g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase_code]) | PHASE_STOP_ENABLED);
         save_duel_interface_options_to_registry();
         refresh_duel_display_cache();
         GetClientRect(hwnd, &s.toggle_client_rect);
@@ -862,13 +870,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
     if (HIWORD(wparam) == 0xffff && lparam == 0)
     {
       s.menu_count = GetMenuItemCount(g_phase_display_menu);
-      s.menu_remaining = s.menu_count;
-      --s.menu_count;
-      while (s.menu_remaining != 0)
+      while (s.menu_remaining = s.menu_count--)
       {
         DeleteMenu(g_phase_display_menu, 0, MF_BYPOSITION);
-        s.menu_remaining = s.menu_count;
-        --s.menu_count;
       }
     }
     return 0;
@@ -882,8 +886,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
     return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
 
   default:
-    break;
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
 
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  return 0;
 }

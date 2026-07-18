@@ -89,24 +89,24 @@ char g_attack_minimized_menu_restore_text[0x20];
 int register_window_classes(void);
 int destroy_windowclasses(void);
 int register_MAGICGAME_LifeClass(LPCSTR class_name);
-void destroy_MAGICGAME_LifeClass(void);
+void destroy_MAGICGAME_LifeClass(LPCSTR class_name);
 int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name);
-void destroy_MAGICGAME_ManaSummaryClass(void);
+void destroy_MAGICGAME_ManaSummaryClass(LPCSTR class_name);
 int register_MAGICGAME_FullCardClass(LPCSTR class_name);
-void destroy_MAGICGAME_FullCardClass(void);
+void destroy_MAGICGAME_FullCardClass(LPCSTR class_name);
 int register_MAGICGAME_HandClass(LPCSTR class_name);
-void destroy_MAGICGAME_HandClass(void);
+void destroy_MAGICGAME_HandClass(LPCSTR class_name);
 int register_MAGICGAME_CardClass(LPCSTR class_name);
-void destroy_MAGICGAME_CardClass(void);
+void destroy_MAGICGAME_CardClass(LPCSTR class_name);
 int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name);
 int register_MAGICGAME_LibraryClass(LPCSTR class_name);
 int register_MAGICGAME_GraveyardClass(LPCSTR class_name);
 int register_MAGICGAME_FaceClass(LPCSTR class_name);
-void destroy_MAGICGAME_FaceClass(void);
+void destroy_MAGICGAME_FaceClass(LPCSTR class_name);
 int register_MAGICGAME_TerritoryClass(LPCSTR class_name);
-void destroy_MAGICGAME_TerritoryClass(void);
+void destroy_MAGICGAME_TerritoryClass(LPCSTR class_name);
 int register_MAGIC_TellUserClass(LPCSTR class_name);
-void destroy_MAGIC_TellUserClass(void);
+void destroy_MAGIC_TellUserClass(LPCSTR class_name);
 
 // FUNCTION: MAGIC 0x0044385c
 // FUNCTION: SHANDALAR 0x0040f0f6
@@ -634,7 +634,7 @@ int register_window_classes(void)
 
 // FUNCTION: MAGIC 0x0040a4a7
 // FUNCTION: SHANDALAR 0x004bac17
-void destroy_MAGICGAME_ChatClass(void)
+void destroy_MAGICGAME_ChatClass(LPCSTR class_name)
 {
   if (g_magicgame_chat_font != (HFONT)0)
   {
@@ -646,14 +646,14 @@ void destroy_MAGICGAME_ChatClass(void)
 
 // FUNCTION: MAGIC 0x005357b4
 // FUNCTION: SHANDALAR 0x00559ff4
-void destroy_MAGICGAME_PhaseDisplayClass(void)
+void destroy_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
 {
   UnregisterClassA(CLASS_MAGICGAME_PHASE_DISPLAY, g_app_instance);
 }
 
 // FUNCTION: MAGIC 0x005358fb
 // FUNCTION: SHANDALAR 0x0055a13b
-void destroy_MAGICGAME_AttackPhaseDisplayClass(void)
+void destroy_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
 {
   if (g_magicgame_attack_phase_display_pic != (HANDLE)0)
   {
@@ -665,7 +665,7 @@ void destroy_MAGICGAME_AttackPhaseDisplayClass(void)
 
 // FUNCTION: MAGIC 0x00498142
 // FUNCTION: SHANDALAR 0x004c19a2
-void destroy_MAGICGAME_LibraryClass(void)
+void destroy_MAGICGAME_LibraryClass(LPCSTR class_name)
 {
   if (g_library_popup_menu != (HMENU)0)
   {
@@ -681,7 +681,7 @@ void destroy_MAGICGAME_LibraryClass(void)
 
 // FUNCTION: MAGIC 0x00450ca9
 // FUNCTION: SHANDALAR 0x0050d809
-void destroy_MAGICGAME_GraveyardClass(void)
+void destroy_MAGICGAME_GraveyardClass(LPCSTR class_name)
 {
   if (g_graveyard_popup_menu != (HMENU)0)
   {
@@ -695,7 +695,7 @@ void destroy_MAGICGAME_GraveyardClass(void)
 
 // FUNCTION: MAGIC 0x004d2f34
 // FUNCTION: SHANDALAR 0x0045cba4
-void destroy_MAGICGAME_AttackClass(void)
+void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
 {
   UnregisterClassA(CLASS_MAGICGAME_ATTACK, g_app_instance);
   UnregisterClassA(CLASS_ATTACK_SWORD_SHIELD, g_app_instance);
@@ -704,7 +704,7 @@ void destroy_MAGICGAME_AttackClass(void)
 
 // FUNCTION: MAGIC 0x00486369
 // FUNCTION: SHANDALAR 0x004c8f49
-void destroy_MAGICGAME_SpellChainClass(void)
+void destroy_MAGICGAME_SpellChainClass(LPCSTR class_name)
 {
   UnregisterClassA(CLASS_MAGICGAME_SPELL_CHAIN, g_app_instance);
   UnregisterClassA(CLASS_SPELL_MINIMIZED, g_app_instance);
@@ -712,14 +712,14 @@ void destroy_MAGICGAME_SpellChainClass(void)
 
 // FUNCTION: MAGIC 0x004909b5
 // FUNCTION: SHANDALAR 0x00556385
-void destroy_MAGICGAME_ScrollbarClass(void)
+void destroy_MAGICGAME_ScrollbarClass(LPCSTR class_name)
 {
   UnregisterClassA(CLASS_MAGICGAME_SCROLLBAR, g_app_instance);
 }
 
 // FUNCTION: MAGIC 0x00507f12
 // FUNCTION: SHANDALAR 0x004c6c10
-void destroy_MAGICGAME_BigCardChoiceClass(void)
+void destroy_MAGICGAME_BigCardChoiceClass(LPCSTR class_name)
 {
   if (g_magicgame_big_card_choice_pic != (HANDLE)0)
   {
@@ -731,13 +731,13 @@ void destroy_MAGICGAME_BigCardChoiceClass(void)
 
 // FUNCTION: MAGIC 0x00507cf2
 // FUNCTION: SHANDALAR 0x004c69f3
-void destroy_MAGICGAME_BigCardCardClass(void)
+void destroy_MAGICGAME_BigCardCardClass(LPCSTR class_name)
 {
 }
 
 // FUNCTION: MAGIC 0x004b1831
 // FUNCTION: SHANDALAR 0x004cc0c1
-void destroy_MAGIC_CueCardClass(void)
+void destroy_MAGIC_CueCardClass(LPCSTR class_name)
 {
   UnregisterClassA(CLASS_MAGIC_CUE_CARD, g_app_instance);
 }
@@ -746,26 +746,25 @@ void destroy_MAGIC_CueCardClass(void)
 // FUNCTION: SHANDALAR 0x00430994
 int destroy_windowclasses(void)
 {
-  destroy_MAGICGAME_LifeClass();
-  destroy_MAGICGAME_FullCardClass();
-  destroy_MAGICGAME_ManaSummaryClass();
-  destroy_MAGICGAME_HandClass();
-  destroy_MAGICGAME_ChatClass();
-  destroy_MAGICGAME_CardClass();
-  destroy_MAGICGAME_PhaseDisplayClass();
-  destroy_MAGICGAME_AttackPhaseDisplayClass();
-  destroy_MAGICGAME_TerritoryClass();
-  destroy_MAGICGAME_LibraryClass();
-  destroy_MAGICGAME_GraveyardClass();
-  destroy_MAGICGAME_AttackClass();
-  destroy_MAGICGAME_SpellChainClass();
-  destroy_MAGICGAME_FaceClass();
-  destroy_MAGICGAME_ScrollbarClass();
-  destroy_MAGICGAME_BigCardChoiceClass();
-  destroy_MAGICGAME_BigCardCardClass();
-  destroy_MAGIC_CueCardClass();
-  destroy_MAGIC_TellUserClass();
-  return 1;
+  destroy_MAGICGAME_LifeClass(CLASS_MAGICGAME_LIFE);
+  destroy_MAGICGAME_FullCardClass(CLASS_MAGICGAME_FULL_CARD);
+  destroy_MAGICGAME_ManaSummaryClass(CLASS_MAGICGAME_MANA_SUMMARY);
+  destroy_MAGICGAME_HandClass(CLASS_MAGICGAME_HAND);
+  destroy_MAGICGAME_ChatClass(CLASS_MAGICGAME_CHAT);
+  destroy_MAGICGAME_CardClass(CLASS_MAGICGAME_CARD);
+  destroy_MAGICGAME_PhaseDisplayClass(CLASS_MAGICGAME_PHASE_DISPLAY);
+  destroy_MAGICGAME_AttackPhaseDisplayClass(CLASS_MAGICGAME_ATTACK_PHASE_DISPLAY);
+  destroy_MAGICGAME_TerritoryClass(CLASS_MAGICGAME_TERRITORY);
+  destroy_MAGICGAME_LibraryClass(CLASS_MAGICGAME_LIBRARY);
+  destroy_MAGICGAME_GraveyardClass(CLASS_MAGICGAME_GRAVEYARD);
+  destroy_MAGICGAME_AttackClass(CLASS_MAGICGAME_ATTACK);
+  destroy_MAGICGAME_SpellChainClass(CLASS_MAGICGAME_SPELL_CHAIN);
+  destroy_MAGICGAME_FaceClass(CLASS_MAGICGAME_FACE);
+  destroy_MAGICGAME_ScrollbarClass(CLASS_MAGICGAME_SCROLLBAR);
+  destroy_MAGICGAME_BigCardChoiceClass(CLASS_MAGICGAME_BIG_CARD_CHOICE);
+  destroy_MAGICGAME_BigCardCardClass(CLASS_MAGICGAME_BIG_CARD_CARD);
+  destroy_MAGIC_CueCardClass(CLASS_MAGIC_CUE_CARD);
+  destroy_MAGIC_TellUserClass(CLASS_MAGIC_TELL_USER);
 }
 
 // FUNCTION: MAGIC 0x0040a4d5

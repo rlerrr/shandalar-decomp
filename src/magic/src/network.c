@@ -793,8 +793,8 @@ void send_battlefield_status_packet(int player)
   unk_008b27f0 = 0x13;
   for (phase = 0; phase < 0x26; ++phase)
   {
-    DAT_008b27f4[phase] = (DAT_007abc90[0x26 + phase] & 1) << 2;
-    DAT_008b27f4[0x26 + phase] = (DAT_007abc90[phase] & 1) << 2;
+    DAT_008b27f4[phase] = (g_duel_phase_stop_settings[1].phase_flags[phase] & PHASE_STOP_ENABLED) << 2;
+    DAT_008b27f4[0x26 + phase] = (g_duel_phase_stop_settings[0].phase_flags[phase] & PHASE_STOP_ENABLED) << 2;
   }
 
   TENTATIVE_send_network_result(player, 0x13);
@@ -812,8 +812,8 @@ void receive_battlefield_status_packet(int player)
     {
       for (phase = 0; phase < 0x26; ++phase)
       {
-        DAT_007abc90[target_player * 0x26 + phase] =
-            DAT_008b27f4[target_player * 0x26 + phase] | (DAT_007abc90[target_player * 0x26 + phase] & 3);
+        g_duel_phase_stop_settings[target_player].phase_flags[phase] =
+            DAT_008b27f4[target_player * 0x26 + phase] | (g_duel_phase_stop_settings[target_player].phase_flags[phase] & (PHASE_STOP_ENABLED | PHASE_STOP_SUPPRESSED));
       }
     }
   }

@@ -832,9 +832,9 @@ typedef struct card_instance_struct
 	int8_t hack_mode[6]; /* 0x114 */   // colorless -> black -> blue -> green->red -> white
 	uint16_t unknown0x11a; /* 0x11A */ // originally -2/-1 counters and +1/+2 counters	Shandalar: untouched
 	uint32_t untap_status; /* 0x11C */ // Only bits 1 and 2 are used by the exe; but the whole dword is cleared in untap_phase().
-	uint8_t counters; /* 0x120 */	   // originally +1/+1 counters from Dwarven Weaponsmith
-	uint8_t counters5; /* 0x121 */	   // originally +1/+1 counters from Ashnod's Transmogrant
-	uint16_t unknown0x122; /* 0x122 */ // originally +0/+1 and +2/+2 counters
+	uint32_t counters; /* 0x120 */	   // originally +1/+1 counters from Dwarven Weaponsmith
+	// uint8_t counters5; /* 0x121 */	   // originally +1/+1 counters from Ashnod's Transmogrant
+	//  uint16_t unknown0x122; /* 0x122 */ // originally +0/+1 and +2/+2 counters
 	/*
 	 * The exe treats these as seven contiguous bytes in at least one place (see FUN_004460d3),
 	 * so keep both named fields and an array view.

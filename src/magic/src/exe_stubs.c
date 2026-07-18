@@ -124,7 +124,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
   if ((g_duel_network_flags & 2) == 0)
   {
     if (FUN_0044aa01(human_player) == 0 &&
-        ((((int)(char)DAT_007abc90[human_player * 0x26 + param_2] & 1) != 0) ||
+        ((((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[param_2] & PHASE_STOP_ENABLED) != 0) ||
          (stop_phase_player == human_player && param_2 == stop_phase)))
     {
       DAT_00777aa8 = 1;
@@ -142,7 +142,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
 
   strcpy(s.prompt_copy, param_3);
 
-  if (current_phase == 4 && trigger_dispatch_depth == 1)
+  if (current_phase == PHASE_UPKEEP && trigger_dispatch_depth == 1)
   {
     unk_00742f60 = human_player;
     FUN_004460d3();
@@ -205,7 +205,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
 
     } while (s.dispatch_result != 0 || ((unk_008b3270 & 1) != 0 && trigger_dispatch_depth == 1));
 
-    if (current_phase == 4 && trigger_dispatch_depth == 1)
+    if (current_phase == PHASE_UPKEEP && trigger_dispatch_depth == 1)
     {
       unk_00742f60 = 1 - human_player;
       FUN_004460d3();
@@ -356,12 +356,12 @@ int FUN_004af6f4(void)
 }
 
 // FUNCTION: MAGIC 0x0044ac96
-int FUN_0044ac96(int param_1, int param_2)
+int FUN_0044ac96(int param_1, phase_t param_2)
 {
   struct
   {
-    int mapped_phase; /* ebp-0x8 */
-    int result;       /* ebp-0x4 */
+    phase_t mapped_phase; /* ebp-0x8 */
+    int result;           /* ebp-0x4 */
   } s;
 
   s.result = 0;
@@ -386,13 +386,13 @@ int FUN_0044ac96(int param_1, int param_2)
     return 0;
   }
 
-  if (param_2 >= 2 && param_2 <= 5)
+  if (param_2 >= PHASE_BEGIN_UPKEEP && param_2 <= PHASE_UNKOWN5)
   {
-    s.mapped_phase = 4;
+    s.mapped_phase = PHASE_UPKEEP;
   }
-  else if (param_2 >= 0x20 && param_2 <= 0x25)
+  else if (param_2 >= PHASE_CLEANUP2 && param_2 <= PHASE_DAMAGE_PREVENTION)
   {
-    s.mapped_phase = 0x20;
+    s.mapped_phase = PHASE_CLEANUP2;
   }
   else
   {
@@ -404,9 +404,9 @@ int FUN_0044ac96(int param_1, int param_2)
     if (human_player == param_1)
     {
       if ((nonactive_player == param_1 &&
-           (((int)(char)DAT_007abc90[nonactive_player * 0x26 + current_phase]) & 1) != 0) ||
+           (((int)(char)g_duel_phase_stop_settings[nonactive_player].phase_flags[current_phase]) & PHASE_STOP_ENABLED) != 0) ||
           (active_player == param_1 &&
-           (((int)(char)DAT_007abc90[active_player * 0x26 + current_phase]) & 4) != 0))
+           (((int)(char)g_duel_phase_stop_settings[active_player].phase_flags[current_phase]) & PHASE_STOP_OPPONENT) != 0))
       {
         s.result = 1;
       }
@@ -414,9 +414,9 @@ int FUN_0044ac96(int param_1, int param_2)
     else
     {
       if ((active_player == param_1 &&
-           (((int)(char)DAT_007abc90[nonactive_player * 0x26 + current_phase]) & 4) != 0) ||
+           (((int)(char)g_duel_phase_stop_settings[nonactive_player].phase_flags[current_phase]) & PHASE_STOP_OPPONENT) != 0) ||
           (nonactive_player == param_1 &&
-           (((int)(char)DAT_007abc90[active_player * 0x26 + current_phase]) & 1) != 0))
+           (((int)(char)g_duel_phase_stop_settings[active_player].phase_flags[current_phase]) & PHASE_STOP_ENABLED) != 0))
       {
         s.result = 1;
       }
@@ -430,7 +430,7 @@ int FUN_0044ac96(int param_1, int param_2)
     }
 
     if (stop_phase == -1 && nonactive_player == param_1 &&
-        (((int)(char)DAT_007abc90[human_player * 0x26 + s.mapped_phase]) & 1) != 0)
+        (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[s.mapped_phase]) & PHASE_STOP_ENABLED) != 0)
     {
       s.result = 1;
     }
@@ -1372,7 +1372,7 @@ int allow_response(int param_1, int param_2, char *param_3, int param_4)
         phase_stop_suppressed = 0;
       }
       {
-        DAT_007abc90[human_player * 0x26 + current_phase] = (int)(char)DAT_007abc90[human_player * 0x26 + current_phase] & 0xfffffffd;
+        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] = (int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & ~PHASE_STOP_SUPPRESSED;
       }
     }
     else if (g_duel_ai_mode_state != 1)
@@ -1413,8 +1413,8 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
 
   if (life[nonactive_player] <= 0)
   {
-    DAT_007abc90[human_player * 0x26 + current_phase] =
-        (unsigned char)(((int)(char)DAT_007abc90[human_player * 0x26 + current_phase]) | 2);
+    g_duel_phase_stop_settings[human_player].phase_flags[current_phase] =
+        (unsigned char)(((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase]) | PHASE_STOP_SUPPRESSED);
   }
 
   s.interrupts_available = 0;
@@ -1448,22 +1448,22 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
     _DAT_0064f0a4 = 2;
     _DAT_0064f0a8 = 0x20;
 
-    if (current_phase >= 0x17)
+    if (current_phase >= PHASE_DECLARE_BLOCKERS)
     {
       _DAT_0064f0a4 = 4;
       _DAT_0064f0a8 = 0x40;
     }
-    if (current_phase <= 0x14)
+    if (current_phase <= PHASE_MAIN1)
     {
       _DAT_0064f0a4 = 1;
       _DAT_0064f0a8 = 0x10;
     }
-    if (current_phase >= 0x1e)
+    if (current_phase >= PHASE_MAIN2)
     {
       _DAT_0064f0a4 = 8;
       _DAT_0064f0a8 = (int)0xffffff80;
     }
-    if (current_phase == 0x1f)
+    if (current_phase == PHASE_DISCARD)
     {
       _DAT_0064f0a4 = 0xf;
       _DAT_0064f0a8 = (int)0xfffffff0;
@@ -1615,11 +1615,11 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
       }
       else
       {
-        if (trigger_condition == 0xca && DAT_007abc90[human_player * 0x26 + 4] == 0)
+        if (trigger_condition == 0xca && g_duel_phase_stop_settings[human_player].phase_flags[PHASE_UPKEEP] == 0)
         {
           DAT_00789714 = 0;
         }
-        if (trigger_condition == 0xce && DAT_007abc90[human_player * 0x26 + 0xa] == 0)
+        if (trigger_condition == 0xce && g_duel_phase_stop_settings[human_player].phase_flags[PHASE_DRAW] == 0)
         {
           DAT_00789714 = 0;
         }
@@ -1809,8 +1809,8 @@ int FUN_004ad7e0(int reason_for_trigger_controller, const char *prompt)
             s.selected_player = unk_00742fcc;
             if ((int)s.selected_card >= 0)
             {
-              DAT_007abc90[human_player * 0x26 + current_phase] =
-                  (unsigned char)(((int)(char)DAT_007abc90[human_player * 0x26 + current_phase]) | 2);
+              g_duel_phase_stop_settings[human_player].phase_flags[current_phase] =
+                  (unsigned char)(((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase]) | PHASE_STOP_SUPPRESSED);
             }
           }
 

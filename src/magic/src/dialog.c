@@ -1011,16 +1011,16 @@ unsigned int refresh_duel_display_cache(void)
 
   for (s.zone_index = 0; s.zone_index <= 0x25; ++s.zone_index)
   {
-    if ((int)(char)DAT_007abc90[s.zone_index] != DAT_00925360[s.zone_index])
+    if ((int)(char)g_duel_phase_stop_settings[0].phase_flags[s.zone_index] != DAT_00925360[s.zone_index])
     {
       s.needs_refresh |= 1;
     }
-    if ((int)(char)DAT_007abc90[s.zone_index + 0x26] != DAT_008b3400[s.zone_index])
+    if ((int)(char)g_duel_phase_stop_settings[1].phase_flags[s.zone_index] != DAT_008b3400[s.zone_index])
     {
       s.needs_refresh |= 1;
     }
-    DAT_00925360[s.zone_index] = (int)(char)DAT_007abc90[s.zone_index] & 1;
-    DAT_008b3400[s.zone_index] = (int)(char)DAT_007abc90[s.zone_index + 0x26] & 1;
+    DAT_00925360[s.zone_index] = (int)(char)g_duel_phase_stop_settings[0].phase_flags[s.zone_index] & PHASE_STOP_ENABLED;
+    DAT_008b3400[s.zone_index] = (int)(char)g_duel_phase_stop_settings[1].phase_flags[s.zone_index] & PHASE_STOP_ENABLED;
   }
 
   if (DAT_00777848 != _DAT_00742fbc)

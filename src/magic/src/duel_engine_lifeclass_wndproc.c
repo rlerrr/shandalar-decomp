@@ -12,14 +12,6 @@
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
 
-#ifndef SHANDALAR
-extern HWND global_main_hwnd;
-#define DUEL_MAIN_WINDOW_HWND global_main_hwnd
-#else
-extern HWND g_main_window_hwnd;
-#define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
-#endif
-
 extern int g_duel_cached_life_player_0;
 extern int g_duel_cached_life_player_1;
 extern int g_duel_cached_state_007abce0;
@@ -246,7 +238,7 @@ int register_MAGICGAME_LifeClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x004e1f8e
 // FUNCTION: SHANDALAR 0x004ccd9e
-void destroy_MAGICGAME_LifeClass(void)
+void destroy_MAGICGAME_LifeClass(LPCSTR class_name)
 {
   if (g_life_popup_menu != (HMENU)0)
   {
@@ -676,5 +668,5 @@ void post_life_directive_action(int player)
   g_life_directive_packet[0] = 0;
   g_life_directive_packet[1] = player;
   g_life_directive_packet[2] = -1;
-  PostMessageA(DUEL_MAIN_WINDOW_HWND, 0x464, 0, (LPARAM)g_life_directive_packet);
+  PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_life_directive_packet);
 }

@@ -1837,15 +1837,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.player_backdrop_color = 1;
         }
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into play", -1, -1);
-        s.command_selected_card = (int)(char)DAT_007abc90[human_player * 0x26 + current_phase];
-        DAT_007abc90[human_player * 0x26 + current_phase] =
-            (unsigned char)((int)(char)DAT_007abc90[human_player * 0x26 + current_phase] & 0xfe);
+        s.command_selected_card = (int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase];
+        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] =
+            (unsigned char)((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
         if (s.command_saved_phase_flags != -1)
         {
           process_card_enters_play(s.player_backdrop_color, s.command_saved_phase_flags);
         }
-        DAT_007abc90[human_player * 0x26 + current_phase] = (unsigned char)s.command_selected_card;
+        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] = (unsigned char)s.command_selected_card;
         notify_duel_action(0, 0xff);
       }
       break;
