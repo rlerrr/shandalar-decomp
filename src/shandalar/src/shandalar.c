@@ -467,10 +467,7 @@ int g_text_menu_finish_flash;
 int g_text_menu_line_count;
 // GLOBAL: SHANDALAR 0x005a607c
 int g_text_menu_hovered_selection;
-// GLOBAL: SHANDALAR 0x007483f0
-int DAT_007483f0;
-// GLOBAL: SHANDALAR 0x007483f4
-int _DAT_007483f4;
+
 // GLOBAL: SHANDALAR 0x0078cef0
 char DAT_0078cef0[0xc];
 // GLOBAL: SHANDALAR 0x00789934

@@ -48,6 +48,43 @@ extern int g_graveyard_window_extra_bytes;
 extern int g_expanded_graveyard_window_extra_bytes;
 extern int g_graveyard_cards_window_extra_bytes;
 int load_text_with_tab_escapes(char *filename, char *section_name);
+HBITMAP load_pic(char *filename);
+
+// GLOBAL: MAGIC 0x0055e15c
+int g_icon_button_icon_long_offset = 0;
+
+// GLOBAL: MAGIC 0x0055e160
+int g_icon_button_pressed_long_offset = 4;
+
+// GLOBAL: MAGIC 0x005710cc
+char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
+
+// GLOBAL: MAGIC 0x00579c84
+char s__WINBK_AttackMin_pic_00579c84[0x15] = "\\WINBK_AttackMin.pic";
+
+// GLOBAL: MAGIC 0x00637ea8
+char g_spell_minimized_menu_help_text[0x28];
+
+// GLOBAL: MAGIC 0x00637ec4
+HMENU g_spell_minimized_popup_menu;
+
+// GLOBAL: MAGIC 0x00637ee8
+HBITMAP g_spell_minimized_background_bitmap;
+
+// GLOBAL: MAGIC 0x00637ef0
+char g_spell_minimized_menu_restore_text[0x1c];
+
+// GLOBAL: MAGIC 0x0069c678
+char g_attack_minimized_menu_help_text[0x20];
+
+// GLOBAL: MAGIC 0x0069c698
+HMENU g_attack_minimized_popup_menu;
+
+// GLOBAL: MAGIC 0x0069c6b8
+HBITMAP g_attack_minimized_background_bitmap;
+
+// GLOBAL: MAGIC 0x0069c6c8
+char g_attack_minimized_menu_restore_text[0x20];
 
 int register_window_classes(void);
 int destroy_windowclasses(void);
@@ -839,7 +876,90 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
 // FUNCTION: SHANDALAR 0x0046213c
 LRESULT CALLBACK wndproc_AttackMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    int padding_140;
+    int menu_item_count;
+    POINT popup_point;
+    RECT popup_rect;
+    char background_path[264];
+    HDC erase_dc;
+    RECT client_rect;
+  } s;
+
+  switch (msg)
+  {
+  case 0x437:
+    strcpy((char *)wparam, gs_cuecard_minimized_attack_window_008b4280);
+    return 1;
+
+  case WM_CLOSE:
+    ShowWindow(hwnd, SW_HIDE);
+    ShowWindow(g_duel_attack_phase_window_hwnd, SW_HIDE);
+    return 0;
+
+  case WM_COMMAND:
+    return SendMessageA(g_duel_attack_phase_window_hwnd, msg, wparam, lparam);
+
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.client_rect);
+    IntersectClipRect(s.erase_dc, 0, 0, s.client_rect.right, s.client_rect.bottom);
+    if (g_attack_minimized_background_bitmap == (HBITMAP)0)
+    {
+      strcpy(s.background_path, global_duelart_path);
+      strcat(s.background_path, s__WINBK_AttackMin_pic_00579c84);
+      g_attack_minimized_background_bitmap = load_pic(s.background_path);
+    }
+    if (g_attack_minimized_background_bitmap != (HBITMAP)0)
+    {
+      DrawBitmapToRect(s.erase_dc, &s.client_rect, g_attack_minimized_background_bitmap);
+    }
+    else
+    {
+      FillRect(s.erase_dc, &s.client_rect, GetStockObject(LTGRAY_BRUSH));
+    }
+    return 1;
+
+  case WM_LBUTTONDOWN:
+    SendMessageA(g_duel_attack_phase_window_hwnd, WM_COMMAND, 0x66, 0);
+    return 0;
+
+  case WM_RBUTTONDOWN:
+    s.popup_point.x = (unsigned int)lparam & 0xffff;
+    s.popup_point.y = (unsigned int)lparam >> 16;
+    ClientToScreen(hwnd, &s.popup_point);
+    SetRect(&s.popup_rect, s.popup_point.x, s.popup_point.y,
+            s.popup_point.x + 1, s.popup_point.y + 1);
+    TrackPopupMenu(g_attack_minimized_popup_menu, TPM_RIGHTBUTTON, s.popup_point.x,
+                   s.popup_point.y, 0, hwnd, &s.popup_rect);
+    return 0;
+
+  case WM_INITMENU:
+    AppendMenuA(g_attack_minimized_popup_menu, 0, 0x66, g_attack_minimized_menu_restore_text);
+    AppendMenuA(g_attack_minimized_popup_menu, 0, 100, g_attack_minimized_menu_help_text);
+    return 0;
+
+  case WM_MENUSELECT:
+    if (HIWORD(wparam) == 0xffff && lparam == 0)
+    {
+      s.menu_item_count = GetMenuItemCount(g_attack_minimized_popup_menu);
+      while (s.menu_item_count-- != 0)
+      {
+        DeleteMenu(g_attack_minimized_popup_menu, 0, MF_BYPOSITION);
+      }
+    }
+    return 0;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
 }
 
 // FUNCTION: MAGIC 0x004864b7
@@ -853,7 +973,90 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
 // FUNCTION: SHANDALAR 0x004cbb3f
 LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    int padding_140;
+    int menu_item_count;
+    POINT popup_point;
+    RECT popup_rect;
+    char background_path[264];
+    HDC erase_dc;
+    RECT client_rect;
+  } s;
+
+  switch (msg)
+  {
+  case 0x437:
+    strcpy((char *)wparam, gs_cuecard_minimized_spell_chain_00926090);
+    return 1;
+
+  case WM_CLOSE:
+    ShowWindow(hwnd, SW_HIDE);
+    ShowWindow(g_duel_phase_display_window_hwnd, SW_HIDE);
+    return 0;
+
+  case WM_COMMAND:
+    return SendMessageA(g_duel_phase_display_window_hwnd, msg, wparam, lparam);
+
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.client_rect);
+    IntersectClipRect(s.erase_dc, 0, 0, s.client_rect.right, s.client_rect.bottom);
+    if (g_spell_minimized_background_bitmap == (HBITMAP)0)
+    {
+      strcpy(s.background_path, global_duelart_path);
+      strcat(s.background_path, s__WINBK_SpellMin_pic_005710cc);
+      g_spell_minimized_background_bitmap = load_pic(s.background_path);
+    }
+    if (g_spell_minimized_background_bitmap != (HBITMAP)0)
+    {
+      DrawBitmapToRect(s.erase_dc, &s.client_rect, g_spell_minimized_background_bitmap);
+    }
+    else
+    {
+      FillRect(s.erase_dc, &s.client_rect, GetStockObject(WHITE_BRUSH));
+    }
+    return 1;
+
+  case WM_LBUTTONDOWN:
+    SendMessageA(g_duel_phase_display_window_hwnd, WM_COMMAND, 0x66, 0);
+    return 0;
+
+  case WM_RBUTTONDOWN:
+    s.popup_point.x = (unsigned int)lparam & 0xffff;
+    s.popup_point.y = (unsigned int)lparam >> 16;
+    ClientToScreen(hwnd, &s.popup_point);
+    SetRect(&s.popup_rect, s.popup_point.x, s.popup_point.y,
+            s.popup_point.x + 1, s.popup_point.y + 1);
+    TrackPopupMenu(g_spell_minimized_popup_menu, TPM_RIGHTBUTTON, s.popup_point.x,
+                   s.popup_point.y, 0, hwnd, &s.popup_rect);
+    return 0;
+
+  case WM_INITMENU:
+    AppendMenuA(g_spell_minimized_popup_menu, 0, 0x66, g_spell_minimized_menu_restore_text);
+    AppendMenuA(g_spell_minimized_popup_menu, 0, 100, g_spell_minimized_menu_help_text);
+    return 0;
+
+  case WM_MENUSELECT:
+    if (HIWORD(wparam) == 0xffff && lparam == 0)
+    {
+      s.menu_item_count = GetMenuItemCount(g_spell_minimized_popup_menu);
+      while (s.menu_item_count-- != 0)
+      {
+        DeleteMenu(g_spell_minimized_popup_menu, 0, MF_BYPOSITION);
+      }
+    }
+    return 0;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
 }
 
 // FUNCTION: MAGIC 0x004909e8
@@ -867,7 +1070,102 @@ LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wp
 // FUNCTION: SHANDALAR 0x00563934
 LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    int padding_3c;
+    int padding_38;
+    RECT mouse_up_rect;
+    unsigned int mouse_x;
+    unsigned int mouse_y;
+    RECT mouse_move_rect;
+    int pressed;
+    HICON icon;
+  } s;
+
+  switch (msg)
+  {
+  case 0x400:
+    s.pressed = (int)wparam;
+    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
+    InvalidateRect(hwnd, NULL, TRUE);
+    return 0;
+
+  case 0x401:
+    return GetWindowLongA(hwnd, g_icon_button_pressed_long_offset);
+
+  case WM_CREATE:
+    s.icon = LoadIconA(g_app_instance, ((CREATESTRUCTA *)lparam)->lpszName);
+    SetWindowLongA(hwnd, g_icon_button_icon_long_offset, (LONG)s.icon);
+    s.pressed = 0;
+    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, 0);
+    return 0;
+
+  case WM_DESTROY:
+    s.icon = (HICON)GetWindowLongA(hwnd, g_icon_button_icon_long_offset);
+    if (s.icon != (HICON)0)
+    {
+      DestroyIcon(s.icon);
+    }
+    return 0;
+
+  case WM_ERASEBKGND:
+    return 1;
+
+  case WM_GETDLGCODE:
+    return DLGC_BUTTON;
+
+  case WM_LBUTTONDOWN:
+    SetCapture(hwnd);
+    s.pressed = 1;
+    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, 1);
+    InvalidateRect(hwnd, NULL, TRUE);
+    return 0;
+
+  case WM_MOUSEMOVE:
+    if (GetCapture() == hwnd)
+    {
+      s.mouse_x = (unsigned int)lparam & 0xffff;
+      s.mouse_y = (unsigned int)lparam >> 16;
+      GetClientRect(hwnd, &s.mouse_move_rect);
+      s.pressed = PtInRect(&s.mouse_move_rect, *(POINT *)&s.mouse_x);
+      SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
+      InvalidateRect(hwnd, NULL, TRUE);
+    }
+    return 0;
+
+  case WM_LBUTTONUP:
+    if (GetCapture() == hwnd)
+    {
+      s.mouse_x = (unsigned int)lparam & 0xffff;
+      s.mouse_y = (unsigned int)lparam >> 16;
+      GetClientRect(hwnd, &s.mouse_up_rect);
+      s.pressed = PtInRect(&s.mouse_up_rect, *(POINT *)&s.mouse_x);
+      SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
+      InvalidateRect(hwnd, NULL, TRUE);
+      ReleaseCapture();
+      if (s.pressed != 0)
+      {
+        SetFocus(hwnd);
+      }
+    }
+    return 0;
+
+  case WM_LBUTTONDBLCLK:
+    SendMessageA(GetParent(hwnd), WM_COMMAND, 1, (LPARAM)GetDlgItem(GetParent(hwnd), 1));
+    return 0;
+
+  case WM_SETFOCUS:
+    SendMessageA(GetParent(hwnd), WM_COMMAND, LOWORD(GetDlgCtrlID(hwnd)), (LPARAM)hwnd);
+    return 0;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
 }
 
 // FUNCTION: MAGIC 0x00507f42
