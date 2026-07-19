@@ -194,10 +194,20 @@ DUEL_ENGINE_EXTERN int g_tell_user_button_state;
 DUEL_ENGINE_EXTERN int g_tell_user_default_button_state;
 
 #ifdef DUEL_ENGINE_IMPL
+// GLOBAL: MAGIC 0x0055e000
+// GLOBAL: SHANDALAR 0x0057f08c
+int g_magicgame_chat_font_window_long_offset = 0;
+
+// GLOBAL: MAGIC 0x0055e004
+// GLOBAL: SHANDALAR 0x0057f090
+int g_magicgame_chat_width_window_long_offset = 4;
+
 // GLOBAL: MAGIC 0x0055e008
 // GLOBAL: SHANDALAR 0x0057f094
 int g_magicgame_chat_window_extra_bytes = 8;
 #else
+extern int g_magicgame_chat_font_window_long_offset;
+extern int g_magicgame_chat_width_window_long_offset;
 extern int g_magicgame_chat_window_extra_bytes;
 #endif
 

@@ -55,6 +55,9 @@ int load_text_with_tab_escapes(char *filename, char *section_name);
 HBITMAP load_pic(char *filename);
 LOGFONTA *LoadFontFromIni(char *section, int must_load);
 
+#define CHAT_WIDTH_WINDOW_LONG_OFFSET g_magicgame_chat_width_window_long_offset
+#define CHAT_FONT_WINDOW_LONG_OFFSET g_magicgame_chat_font_window_long_offset
+
 // GLOBAL: MAGIC 0x0055fcb4
 int g_duel_directive_hover_timer_id;
 
@@ -137,6 +140,8 @@ void destroy_MAGICGAME_TerritoryClass(LPCSTR class_name);
 int register_MAGICGAME_AttackClass(LPCSTR class_name);
 void destroy_MAGICGAME_AttackClass(LPCSTR class_name);
 int register_MAGICGAME_SpellChainClass(LPCSTR class_name);
+int register_MAGICGAME_ScrollbarClass(LPCSTR class_name);
+void destroy_MAGICGAME_ScrollbarClass(LPCSTR class_name);
 int register_MAGIC_TellUserClass(LPCSTR class_name);
 void destroy_MAGIC_TellUserClass(LPCSTR class_name);
 
@@ -670,19 +675,6 @@ int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
   return atom != 0;
 }
 
-// FUNCTION: MAGIC 0x00490900
-// FUNCTION: SHANDALAR 0x005562d0
-int register_MAGICGAME_ScrollbarClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 1, wndproc_MAGICGAME_ScrollbarClass, 0x28,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
 // FUNCTION: MAGIC 0x004e2f70
 // FUNCTION: SHANDALAR 0x005638b0
 int register_MAGICTHEME_IconButtonClass(LPCSTR class_name)
@@ -898,13 +890,6 @@ void destroy_MAGICGAME_SpellChainClass(LPCSTR class_name)
   UnregisterClassA(CLASS_SPELL_MINIMIZED, g_app_instance);
 }
 
-// FUNCTION: MAGIC 0x004909b5
-// FUNCTION: SHANDALAR 0x00556385
-void destroy_MAGICGAME_ScrollbarClass(LPCSTR class_name)
-{
-  UnregisterClassA(CLASS_MAGICGAME_SCROLLBAR, g_app_instance);
-}
-
 // FUNCTION: MAGIC 0x00507f12
 // FUNCTION: SHANDALAR 0x004c6c10
 void destroy_MAGICGAME_BigCardChoiceClass(LPCSTR class_name)
@@ -978,7 +963,109 @@ int destroy_windowclasses(void)
 // FUNCTION: SHANDALAR 0x004bac45
 LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    char large_text[500];
+    char text[100];
+    HDC dc;
+    PAINTSTRUCT paint;
+    RECT client_rect;
+    RECT create_rect;
+    RECT window_rect;
+    HFONT font;
+    int width;
+  } s;
+
+  switch (msg)
+  {
+  case 0x400:
+    s.width = GetWindowLongA(hwnd, CHAT_WIDTH_WINDOW_LONG_OFFSET);
+    return s.width;
+
+  case 0x401:
+    s.width = wparam;
+    SetWindowLongA(hwnd, CHAT_WIDTH_WINDOW_LONG_OFFSET, s.width);
+    GetWindowRect(hwnd, &s.window_rect);
+    if (s.window_rect.right - s.window_rect.left < s.width)
+    {
+      SetWindowPos(hwnd, (HWND)0, 0, 0, s.width, s.window_rect.bottom - s.window_rect.top, SWP_NOMOVE | SWP_NOZORDER);
+    }
+    return 0;
+
+  case WM_CLOSE:
+    ShowWindow(hwnd, SW_HIDE);
+    return 0;
+
+  case WM_CREATE:
+    s.font = g_magicgame_chat_font;
+    SetWindowLongA(hwnd, CHAT_FONT_WINDOW_LONG_OFFSET, (LONG)s.font);
+    GetWindowRect(hwnd, &s.create_rect);
+    s.width = s.create_rect.right - s.create_rect.left;
+    SetWindowLongA(hwnd, CHAT_WIDTH_WINDOW_LONG_OFFSET, s.width);
+    return 0;
+
+  case WM_GETFONT:
+    s.font = (HFONT)GetWindowLongA(hwnd, CHAT_FONT_WINDOW_LONG_OFFSET);
+    return (LRESULT)s.font;
+
+  case WM_LBUTTONDOWN:
+    SendMessageA(hwnd, WM_TIMER, 1, 0);
+    return 0;
+
+  case WM_PAINT:
+    s.font = (HFONT)GetWindowLongA(hwnd, CHAT_FONT_WINDOW_LONG_OFFSET);
+    s.dc = BeginPaint(hwnd, &s.paint);
+    if (s.dc != (HDC)0)
+    {
+      ApplyCardArtPaletteToDc(s.dc);
+      SetTextColor(s.dc, g_magicgame_chat_text_color);
+      SetBkMode(s.dc, TRANSPARENT);
+      SelectObject(s.dc, s.font);
+      GetWindowTextA(hwnd, s.text, 100);
+      GetClientRect(hwnd, &s.client_rect);
+      s.client_rect.left += 10;
+      SetMapMode(s.dc, MM_ANISOTROPIC);
+      SetWindowExtEx(s.dc, s.client_rect.right - s.client_rect.left, 20, (LPSIZE)0);
+      SetViewportExtEx(s.dc, s.client_rect.right - s.client_rect.left, s.client_rect.bottom - s.client_rect.top, (LPSIZE)0);
+      DrawTextA(s.dc, s.text, -1, &s.client_rect, DT_BOTTOM);
+      EndPaint(hwnd, &s.paint);
+    }
+    return 0;
+
+  case WM_SETFONT:
+    s.font = (HFONT)wparam;
+    if (s.font == (HFONT)0)
+    {
+      s.font = g_magicgame_chat_font;
+    }
+    SetWindowLongA(hwnd, CHAT_FONT_WINDOW_LONG_OFFSET, (LONG)s.font);
+    InvalidateRect(hwnd, (RECT *)0, 1);
+    GetWindowTextA(hwnd, s.large_text, 500);
+    SetWindowTextA(hwnd, s.large_text);
+    return 0;
+
+  case WM_SHOWWINDOW:
+    if (wparam != 0)
+    {
+      SetTimer(hwnd, 1, 10000, (TIMERPROC)0);
+    }
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+
+  case WM_TIMER:
+    KillTimer(hwnd, 1);
+    ShowWindow(hwnd, SW_HIDE);
+    return 0;
+
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00537760
@@ -1152,13 +1239,6 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
-}
-
-// FUNCTION: MAGIC 0x004909e8
-// FUNCTION: SHANDALAR 0x005563b8
-LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 // FUNCTION: MAGIC 0x004e2ff4
