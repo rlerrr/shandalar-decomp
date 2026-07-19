@@ -97,10 +97,11 @@ undefined4 __cdecl ResetSnd(void);
 undefined4 __cdecl GetSndState(int slot, undefined4 *outState);
 void * __cdecl GetAVISndBuff(int slot, uint bytesRequested);
 undefined4 __cdecl ReleaseAVISndBuff(int slot);
-undefined4 __cdecl IsSndLoaded(int slot, undefined4 *outLoaded);
+int __cdecl IsSndLoaded(int loadId, int *outSlot);
 undefined4 __cdecl GetLRUSnd(int *outSlot, int loadId, int skipSlot);
 
-void __cdecl FUN_10003748(int value);
+void __cdecl UpdateMmioSnd(SndInstance *snd);
+int __cdecl UpdateAviSnd(SndInstance *snd);
 void __cdecl AddToUpdateList(SndInstance *snd);
 void __cdecl RemoveFromUpdateList(SndInstance *snd);
 void __cdecl AddToActiveList(SndInstance *snd);
@@ -1154,11 +1155,11 @@ undefined4 UpdateSnd(void)
   
       if (((s.node->flags2 >> 5) & 1) != 0) {
         if (((s.node->flags2 >> 6) & 1) == 0) {
-          FUN_10003d60((undefined4 *)s.node);
+          UpdateAviSnd(s.node);
         }
       }
       else {
-        FUN_10003748(s.node);
+        UpdateMmioSnd(s.node);
       }
     }
   
@@ -1278,24 +1279,24 @@ undefined4 ResetSnd(void)
 }
 
 // FUNCTION: MAGSND 0x1000321F
-undefined4 __cdecl IsSndLoaded(int param_1,undefined4 *param_2)
+int __cdecl IsSndLoaded(int loadId, int *outSlot)
 
 {
-  int activeNode;
+  SndInstance *activeNode;
   
                      /* 0x321f  26  IsSndLoaded */
-  if (param_1 <= 0) {
+  if (loadId <= 0) {
     return 0;
   }
   EnterCriticalSection(&g_sndCs);
-  activeNode = (int)g_activeSndListHead;
-  while (activeNode != 0) {
-    if (*(int *)(activeNode + 0x14) == param_1) {
-      *param_2 = *(undefined4 *)(activeNode + 0x10);
+  activeNode = g_activeSndListHead;
+  while (activeNode != NULL) {
+    if (activeNode->loadId == loadId) {
+      *outSlot = activeNode->slotIndex;
       LeaveCriticalSection(&g_sndCs);
       return 1;
     }
-    activeNode = *(int *)(activeNode + 0x200);
+    activeNode = activeNode->activeNext;
   }
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -1471,39 +1472,39 @@ int __cdecl FUN_10003656(SndInstance *snd)
 }
 
 // FUNCTION: MAGSND 0x10003748
-void __cdecl FUN_10003748(SndInstance * snd)
+void __cdecl UpdateMmioSnd(SndInstance *snd)
 {
   struct {
-    int local_34;
-    uint local_30;
-    void *local_2c;
-    uint local_28;
-    uint local_24;
-    uint local_20;
-    uint local_1c;
-    uint local_18;
-    uint local_14;
-    int local_10;
-    void *local_c;
-    size_t local_8;
-    size_t local_4;
+    int silenceByte;
+    uint playCursorBytes;
+    void *lockPtr1;
+    uint bufferedSourceBytes;
+    uint silenceBytes;
+    uint bytesUntilDataEnd;
+    uint writeCursorBytes;
+    uint pendingSourceBytes;
+    uint sourceBytes;
+    int hr;
+    void *lockPtr2;
+    size_t lockBytes2;
+    size_t lockBytes1;
   } s;
 
-  s.local_1c = 0;
-  s.local_30 = 0;
-  s.local_14 = 0;
-  s.local_28 = 0;
-  s.local_20 = 0;
-  s.local_18 = 0;
-  s.local_2c = (void *)0x0;
-  s.local_c = (void *)0x0;
-  s.local_4 = 0;
-  s.local_8 = 0;
-  s.local_24 = 0;
+  s.writeCursorBytes = 0;
+  s.playCursorBytes = 0;
+  s.sourceBytes = 0;
+  s.bufferedSourceBytes = 0;
+  s.bytesUntilDataEnd = 0;
+  s.pendingSourceBytes = 0;
+  s.lockPtr1 = (void *)0x0;
+  s.lockPtr2 = (void *)0x0;
+  s.lockBytes1 = 0;
+  s.lockBytes2 = 0;
+  s.silenceBytes = 0;
 
   EnterCriticalSection(&g_sndCs);
-  snd->dsBuffer->lpVtbl->GetCurrentPosition(snd->dsBuffer,&s.local_30,&s.local_1c);
-  snd->timeBytes += (s.local_30 - snd->timeBytes & 0xffff);
+  snd->dsBuffer->lpVtbl->GetCurrentPosition(snd->dsBuffer, &s.playCursorBytes, &s.writeCursorBytes);
+  snd->timeBytes += (s.playCursorBytes - snd->timeBytes & 0xffff);
   if (snd->dataBytes < snd->timeBytes) {
     snd->timeBytes -= snd->dataBytes;
   }
@@ -1524,84 +1525,85 @@ void __cdecl FUN_10003748(SndInstance * snd)
     LeaveCriticalSection(&g_sndCs);
   }
   else {
-    s.local_14 = (int)(s.local_30 - snd->ringCursorBytes & 0xffff);
-    s.local_20 = snd->dataBytes - snd->writeCursorBytes;
+    s.sourceBytes = (int)(s.playCursorBytes - snd->ringCursorBytes & 0xffff);
+    s.bytesUntilDataEnd = snd->dataBytes - snd->writeCursorBytes;
     if (((snd->flags >> 4) & 1) == 0) {
-      s.local_28 = snd->writeCursorBytes - snd->readCursorBytes;
-      if (0x10000 < s.local_28) {
+      s.bufferedSourceBytes = snd->writeCursorBytes - snd->readCursorBytes;
+      if (0x10000 < s.bufferedSourceBytes) {
         _DAT_1000707c = _DAT_1000707c + 1;
       }
     }
     else {
-      s.local_28 = 0;
+      s.bufferedSourceBytes = 0;
     }
-    s.local_18 = s.local_20 + s.local_28;
-    if (s.local_18 == 0) {
-      s.local_24 = s.local_14;
-      s.local_14 = 0U;
+    s.pendingSourceBytes = s.bytesUntilDataEnd + s.bufferedSourceBytes;
+    if (s.pendingSourceBytes == 0) {
+      s.silenceBytes = s.sourceBytes;
+      s.sourceBytes = 0U;
     }
-    if ((s.local_14 == 0) && (s.local_24 == 0)) {
+    if ((s.sourceBytes == 0) && (s.silenceBytes == 0)) {
       LeaveCriticalSection(&g_sndCs);
     }
     else {
-      if (s.local_28 < s.local_14) {
-        s.local_14 = s.local_28;
+      if (s.bufferedSourceBytes < s.sourceBytes) {
+        s.sourceBytes = s.bufferedSourceBytes;
       }
-      if (s.local_24 + s.local_14 != 0) {
-        s.local_10 = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer,snd->ringCursorBytes,
-                          s.local_24 + s.local_14,&s.local_2c,&s.local_4,&s.local_c,&s.local_8,0);
-        if (s.local_10 != 0) {
+      if (s.silenceBytes + s.sourceBytes != 0) {
+        s.hr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, snd->ringCursorBytes,
+                                           s.silenceBytes + s.sourceBytes, &s.lockPtr1, &s.lockBytes1,
+                                           &s.lockPtr2, &s.lockBytes2, 0);
+        if (s.hr != 0) {
           LeaveCriticalSection(&g_sndCs);
           return;
         }
         snd->flags = (int)snd->flags | 0x80;
-        if (s.local_24 == 0) {
-          mmioGetInfo(snd->hMmio,&snd->mmioInfo,0);
-          memmove(s.local_2c,snd->mmioInfo.pchNext,s.local_4);
-          snd->mmioInfo.pchNext += s.local_4;
-          if (s.local_c != (void *)0x0) {
-            memmove(s.local_c,snd->mmioInfo.pchNext,s.local_8);
-            snd->mmioInfo.pchNext += s.local_8;
+        if (s.silenceBytes == 0) {
+          mmioGetInfo(snd->hMmio, &snd->mmioInfo, 0);
+          memmove(s.lockPtr1, snd->mmioInfo.pchNext, s.lockBytes1);
+          snd->mmioInfo.pchNext += s.lockBytes1;
+          if (s.lockPtr2 != (void *)0x0) {
+            memmove(s.lockPtr2, snd->mmioInfo.pchNext, s.lockBytes2);
+            snd->mmioInfo.pchNext += s.lockBytes2;
           }
-          mmioSetInfo(snd->hMmio,&snd->mmioInfo,0);
-          s.local_28 -= s.local_14;
-          s.local_18 -= s.local_14;
-          snd->readCursorBytes += s.local_14;
+          mmioSetInfo(snd->hMmio, &snd->mmioInfo, 0);
+          s.bufferedSourceBytes -= s.sourceBytes;
+          s.pendingSourceBytes -= s.sourceBytes;
+          snd->readCursorBytes += s.sourceBytes;
         }
         else {
           if (snd->waveFmt.wBitsPerSample == 8) {
-            s.local_34 = 0x80;
+            s.silenceByte = 0x80;
           }
           else {
-            s.local_34 = 0;
+            s.silenceByte = 0;
           }
-          memset(s.local_2c,s.local_34,s.local_4);
-          if (s.local_c != (void *)0x0) {
-            memset(s.local_c,s.local_34,s.local_8);
+          memset(s.lockPtr1, s.silenceByte, s.lockBytes1);
+          if (s.lockPtr2 != (void *)0x0) {
+            memset(s.lockPtr2, s.silenceByte, s.lockBytes2);
           }
-          snd->readCursorBytes += s.local_24;
+          snd->readCursorBytes += s.silenceBytes;
         }
-        snd->ringCursorBytes = (snd->ringCursorBytes + s.local_24 + s.local_14) & 0xffff;
-        snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer,s.local_2c,s.local_4,s.local_c,s.local_8);
+        snd->ringCursorBytes = (snd->ringCursorBytes + s.silenceBytes + s.sourceBytes) & 0xffff;
+        snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer, s.lockPtr1, s.lockBytes1, s.lockPtr2, s.lockBytes2);
         snd->flags &= 0xffffff7f;
       }
-      if (((s.local_18 != 0) && (s.local_20 > 0)) &&
-         ((s.local_28 == 0 || (s.local_28 < s.local_14 * 2)))) {
-        mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
-        if (s.local_20 < snd->mmioInfo.cchBuffer - s.local_28) {
-          snd->writeCursorBytes += s.local_20;
+      if (((s.pendingSourceBytes != 0) && (s.bytesUntilDataEnd > 0)) &&
+         ((s.bufferedSourceBytes == 0 || (s.bufferedSourceBytes < s.sourceBytes * 2)))) {
+        mmioAdvance(snd->hMmio, &snd->mmioInfo, 0);
+        if (s.bytesUntilDataEnd < snd->mmioInfo.cchBuffer - s.bufferedSourceBytes) {
+          snd->writeCursorBytes += s.bytesUntilDataEnd;
         }
         else {
-          snd->writeCursorBytes += snd->mmioInfo.cchBuffer - s.local_28;
+          snd->writeCursorBytes += snd->mmioInfo.cchBuffer - s.bufferedSourceBytes;
         }
       }
-      if (s.local_18 == 0) {
+      if (s.pendingSourceBytes == 0) {
         if ((snd->flags2 & 1) != 0) {
           snd->mmioInfo.pchNext = snd->mmioInfo.pchEndRead;
-          mmioSetInfo(snd->hMmio,&snd->mmioInfo,0);
-          mmioSeek(snd->hMmio,snd->mmioBaseOffset,0);
-          mmioGetInfo(snd->hMmio,&snd->mmioInfo,0);
-          mmioAdvance(snd->hMmio,&snd->mmioInfo,0);
+          mmioSetInfo(snd->hMmio, &snd->mmioInfo, 0);
+          mmioSeek(snd->hMmio, snd->mmioBaseOffset, 0);
+          mmioGetInfo(snd->hMmio, &snd->mmioInfo, 0);
+          mmioAdvance(snd->hMmio, &snd->mmioInfo, 0);
           snd->writeCursorBytes = (uint)(snd->mmioInfo.pchNext - snd->mmioInfo.pchBuffer);
           if (snd->dataBytes < snd->writeCursorBytes) {
             snd->writeCursorBytes = snd->dataBytes;
@@ -1622,101 +1624,100 @@ void __cdecl FUN_10003748(SndInstance * snd)
 }
 
 // FUNCTION: MAGSND 0x10003D60
-undefined4 __cdecl FUN_10003d60(undefined4 *param_1)
+int __cdecl UpdateAviSnd(SndInstance *snd)
 {
   struct {
-    uint local_48;
-    uint local_44;
-    void *local_40;
-    uint local_3c;
-    uint local_38;
-    uint local_34;
-    uint local_30;
-    uint local_2c;
-    long local_28;
-    uint local_24;
-    uint local_20;
-    uint local_1c;
-    long local_18;
-    uint local_14;
-    int local_10;
-    void *local_c;
-    uint local_8;
-    uint local_4;
+    uint aviStartSample;
+    uint playCursorBytes;
+    void *lockPtr1;
+    uint unused_3c;
+    uint unused_38;
+    uint unused_34;
+    uint playBlockIndex;
+    uint ringBlockIndex;
+    long aviBytesRead;
+    uint writeCursorBytes;
+    uint unused_20;
+    uint previousRingBlockIndex;
+    long aviSamplesRead;
+    uint blockBytes;
+    int hr;
+    void *lockPtr2;
+    uint lockBytes2;
+    uint lockBytes1;
   } s;
 
-  s.local_24 = 0;
-  s.local_44 = 0;
-  s.local_3c = 0;
-  s.local_34 = 0;
-  s.local_20 = 0;
-  s.local_40 = (void *)0x0;
-  s.local_c = (void *)0x0;
-  s.local_4 = 0;
-  s.local_8 = 0;
-  s.local_38 = 0;
+  s.writeCursorBytes = 0;
+  s.playCursorBytes = 0;
+  s.unused_3c = 0;
+  s.unused_34 = 0;
+  s.unused_20 = 0;
+  s.lockPtr1 = (void *)0x0;
+  s.lockPtr2 = (void *)0x0;
+  s.lockBytes1 = 0;
+  s.lockBytes2 = 0;
+  s.unused_38 = 0;
 
-  (**(code **)(*(int *)param_1[0x2f] + 0x10))(param_1[0x2f],&s.local_44,&s.local_24);
+  snd->dsBuffer->lpVtbl->GetCurrentPosition(snd->dsBuffer, &s.playCursorBytes, &s.writeCursorBytes);
 
-  s.local_30 = (uint)param_1[0x77] % (uint)param_1[0x2c];
-  if (s.local_44 > s.local_30) {
-    param_1[0x77] = param_1[0x77] + (s.local_44 - s.local_30);
+  s.playBlockIndex = snd->timeBytes % snd->dsDesc.dwBufferBytes;
+  if (s.playCursorBytes > s.playBlockIndex) {
+    snd->timeBytes = snd->timeBytes + (s.playCursorBytes - s.playBlockIndex);
   }
   else {
-    param_1[0x77] = param_1[0x77] + ((uint)param_1[0x2c] - s.local_30);
-    param_1[0x77] = param_1[0x77] + s.local_44;
+    snd->timeBytes = snd->timeBytes + (snd->dsDesc.dwBufferBytes - s.playBlockIndex);
+    snd->timeBytes = snd->timeBytes + s.playCursorBytes;
   }
 
-  s.local_2c = s.local_44 / (uint)param_1[0x23];
-  s.local_1c = (uint)param_1[0x76] / (uint)param_1[0x23];
-  if (s.local_2c == s.local_1c) {
+  s.ringBlockIndex = s.playCursorBytes / snd->blockBytes;
+  s.previousRingBlockIndex = snd->ringCursorBytes / snd->blockBytes;
+  if (s.previousRingBlockIndex == s.ringBlockIndex) {
     return 0;
   }
 
-  if (((((uint)param_1[1] >> 4 & 1) != 0) && ((uint)param_1[0x2c] <= (uint)param_1[0x75])) ||
-     ((((uint)param_1[1] >> 1 & 1) != 0) && (param_1[0x7c] == 0))) {
-    (**(code **)(*(int *)param_1[0x2f] + 0x48))(param_1[0x2f]);
+  if (((((uint)snd->flags >> 4 & 1) != 0) && (snd->dsDesc.dwBufferBytes <= snd->readCursorBytes)) ||
+     ((((uint)snd->flags >> 1 & 1) != 0) && (snd->volume == 0))) {
+    snd->dsBuffer->lpVtbl->Stop(snd->dsBuffer);
     if (g_updateTimerUsers > 0 && --g_updateTimerUsers == 0) {
       StopUpdateTimer();
     }
-    param_1[1] = param_1[1] & 0xfffffffe;
-    param_1[1] = param_1[1] & 0xfffffffd;
-    param_1[1] = (int)param_1[1] | 4;
-    param_1[1] = param_1[1] & 0xffffffdf;
-    param_1[0x77] = 0;
+    snd->flags = snd->flags & 0xfffffffe;
+    snd->flags = snd->flags & 0xfffffffd;
+    snd->flags = (int)snd->flags | 4;
+    snd->flags = snd->flags & 0xffffffdf;
+    snd->timeBytes = 0;
     return 0;
   }
 
-  s.local_14 = (uint)param_1[0x23];
-  if (((uint)param_1[1] >> 4 & 1) == 0) {
-    s.local_48 = (uint)param_1[0x74] / (uint)param_1[0x24];
-    s.local_10 = (**(code **)(*(int *)param_1[0x2f] + 0x2c))
-                         (param_1[0x2f],param_1[0x76],s.local_14,&s.local_40,&s.local_4,&s.local_c,
-                          &s.local_8,0);
-    if (s.local_10 != 0) {
+  s.blockBytes = snd->blockBytes;
+  if (((uint)snd->flags >> 4 & 1) == 0) {
+    s.aviStartSample = snd->writeCursorBytes / snd->blockScale;
+    s.hr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, snd->ringCursorBytes, s.blockBytes, &s.lockPtr1,
+                                       &s.lockBytes1, &s.lockPtr2, &s.lockBytes2, 0);
+    if (s.hr != 0) {
       return 10;
     }
-    AVIStreamRead((PAVISTREAM)*param_1,(LONG)s.local_48,(LONG)(s.local_4 / (uint)param_1[0x24]),
-                  s.local_40,(LONG)s.local_4,&s.local_28,&s.local_18);
-    if (s.local_c != (void *)0x0) {
-      AVIStreamRead((PAVISTREAM)*param_1,(LONG)(s.local_18 + s.local_48),
-                    (LONG)(s.local_8 / (uint)param_1[0x24]),s.local_c,(LONG)s.local_8,&s.local_28,
-                    &s.local_18);
+    AVIStreamRead((PAVISTREAM)snd->streamOrMmio, (LONG)s.aviStartSample,
+                  (LONG)(s.lockBytes1 / snd->blockScale), s.lockPtr1, (LONG)s.lockBytes1,
+                  &s.aviBytesRead, &s.aviSamplesRead);
+    if (s.lockPtr2 != (void *)0x0) {
+      AVIStreamRead((PAVISTREAM)snd->streamOrMmio, (LONG)(s.aviSamplesRead + s.aviStartSample),
+                    (LONG)(s.lockBytes2 / snd->blockScale), s.lockPtr2, (LONG)s.lockBytes2,
+                    &s.aviBytesRead, &s.aviSamplesRead);
     }
-    param_1[0x76] = param_1[0x76] + s.local_14;
-    param_1[0x76] = (uint)param_1[0x76] % (uint)param_1[0x2c];
-    param_1[0x74] = param_1[0x74] + s.local_14;
-    param_1[0x75] = param_1[0x75] + s.local_14;
-    if ((uint)param_1[0x73] <= (uint)param_1[0x74]) {
-      param_1[1] = (int)param_1[1] | 0x10;
-      param_1[0x75] = 0;
+    snd->ringCursorBytes = snd->ringCursorBytes + s.blockBytes;
+    snd->ringCursorBytes = snd->ringCursorBytes % snd->dsDesc.dwBufferBytes;
+    snd->writeCursorBytes = snd->writeCursorBytes + s.blockBytes;
+    snd->readCursorBytes = snd->readCursorBytes + s.blockBytes;
+    if ((uint)snd->dataBytes <= snd->writeCursorBytes) {
+      snd->flags = (int)snd->flags | 0x10;
+      snd->readCursorBytes = 0;
     }
-    (**(code **)(*(int *)param_1[0x2f] + 0x4c))
-              (param_1[0x2f],s.local_40,s.local_4,s.local_c,s.local_8);
-    param_1[1] = param_1[1] & 0xffffff7f;
+    snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer, s.lockPtr1, s.lockBytes1, s.lockPtr2, s.lockBytes2);
+    snd->flags = snd->flags & 0xffffff7f;
   }
   else {
-    param_1[0x75] = param_1[0x75] + s.local_14;
+    snd->readCursorBytes = snd->readCursorBytes + s.blockBytes;
   }
 
   return 0;

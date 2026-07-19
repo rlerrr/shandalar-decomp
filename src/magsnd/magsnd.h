@@ -41,7 +41,7 @@ undefined4 __cdecl GetSndState(int num, undefined4 *out_state);
 void * __cdecl GetAVISndBuff(int param_1, uint param_2);
 undefined4 __cdecl ReleaseAVISndBuff(int param_1);
 HWND __cdecl GetSndHWND(void);
-undefined4 __cdecl IsSndLoaded(int num, undefined4 *out_loaded);
+int __cdecl IsSndLoaded(int loadId, int *out_slot);
 undefined4 __cdecl GetLRUSnd(int *out_num, int start, int end);
 
 #endif

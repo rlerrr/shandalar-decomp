@@ -50,7 +50,7 @@ typedef DWORD (__cdecl *PFN_GetSndState)(int num, DWORD *out_state);
 typedef void *(__cdecl *PFN_GetAVISndBuff)(int param_1, unsigned int param_2);
 typedef DWORD (__cdecl *PFN_ReleaseAVISndBuff)(int param_1);
 typedef HWND  (__cdecl *PFN_GetSndHWND)(void);
-typedef DWORD (__cdecl *PFN_IsSndLoaded)(int num, DWORD *out_loaded);
+typedef int   (__cdecl *PFN_IsSndLoaded)(int loadId, int *out_slot);
 typedef DWORD (__cdecl *PFN_GetLRUSnd)(int *out_num, int start, int end);
 
 typedef struct SndApiVTable {
@@ -284,7 +284,7 @@ int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
     return 0;
   }
 
-  return global_sound_vtable.IsSndLoaded(sound_id, (DWORD *)out_loaded_sound_num);
+  return global_sound_vtable.IsSndLoaded(sound_id, out_loaded_sound_num);
 }
 
 // FUNCTION: MAGIC 0x00485fc3
