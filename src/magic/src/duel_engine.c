@@ -164,13 +164,12 @@ int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
 {
   struct
   {
-    UINT message;
     int overrun;
     POINT point;
     RECT rect;
   } s;
 
-  switch (s.message = message->message)
+  switch (message->message)
   {
   case WM_NCMOUSEMOVE:
   case WM_MOUSEMOVE:
@@ -209,10 +208,14 @@ int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
                    SWP_NOSIZE | SWP_NOZORDER);
       return 1;
     }
+    else
+    {
+      return 0;
+    }
+
+  default:
     return 0;
   }
-
-  return 0;
 }
 
 // FUNCTION: MAGIC 0x00422350
@@ -260,26 +263,34 @@ int handle_duel_tooltip_message(MSG *message)
     }
     else
     {
-      if (message->hwnd == g_duel_last_cue_card_hwnd)
+      if (message->hwnd != g_duel_last_cue_card_hwnd)
+      {
+        if (g_duel_cue_card_timer_id != 0)
+        {
+          KillTimer((HWND)0, g_duel_cue_card_timer_id);
+          g_duel_cue_card_timer_id = 0;
+        }
+        g_duel_cue_card_timer_id = SetTimer((HWND)0, 0, g_duel_cue_card_timer_elapsed, (TIMERPROC)0);
+        g_duel_last_cue_card_hwnd = message->hwnd;
+        ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
+      }
+      else
       {
         s.refresh_cue_card = 1;
         s.cue_card_visible = 1;
-        if (message->hwnd == g_duel_last_cue_card_hwnd)
+        if (message->hwnd != g_duel_last_cue_card_hwnd)
         {
-          if (abs((unsigned short)((message->lParam >> 16) & 0xffff) - g_duel_last_cue_card_y) +
-                  abs((unsigned short)message->lParam - g_duel_last_cue_card_x) >
-              g_duel_cue_card_mouse_threshold)
-          {
-            s.cue_card_visible = SendMessageA(message->hwnd, 0x437, (WPARAM)s.cue_text, message->lParam);
-          }
-          else
-          {
-            s.refresh_cue_card = 0;
-          }
+          s.cue_card_visible = SendMessageA(message->hwnd, 0x437, (WPARAM)s.cue_text, message->lParam);
+        }
+        else if (abs((unsigned short)((message->lParam >> 16) & 0xffff) - g_duel_last_cue_card_y) +
+                     abs((unsigned short)message->lParam - g_duel_last_cue_card_x) >
+                 g_duel_cue_card_mouse_threshold)
+        {
+          s.cue_card_visible = SendMessageA(message->hwnd, 0x437, (WPARAM)s.cue_text, message->lParam);
         }
         else
         {
-          s.cue_card_visible = SendMessageA(message->hwnd, 0x437, (WPARAM)s.cue_text, message->lParam);
+          s.refresh_cue_card = 0;
         }
 
         if (s.cue_card_visible == 0)
@@ -308,17 +319,6 @@ int handle_duel_tooltip_message(MSG *message)
             ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
           }
         }
-      }
-      else
-      {
-        if (g_duel_cue_card_timer_id != 0)
-        {
-          KillTimer((HWND)0, g_duel_cue_card_timer_id);
-          g_duel_cue_card_timer_id = 0;
-        }
-        g_duel_cue_card_timer_id = SetTimer((HWND)0, 0, g_duel_cue_card_timer_elapsed, (TIMERPROC)0);
-        g_duel_last_cue_card_hwnd = message->hwnd;
-        ShowWindow(g_duel_cue_card_window_hwnd, SW_HIDE);
       }
     }
     return 0;
@@ -353,14 +353,17 @@ int handle_duel_tooltip_message(MSG *message)
                      MAKELONG(s.timer_screen_point.x + g_duel_cue_card_x_offset,
                               s.timer_screen_point.y + g_duel_cue_card_y_offset),
                      (LPARAM)s.cue_text);
-        return 1;
       }
+
+      return 1;
+    }
+    else
+    {
       return 0;
     }
+  default:
     return 0;
   }
-
-  return 0;
 }
 
 // FUNCTION: MAGIC 0x00421ca2
@@ -865,7 +868,7 @@ void destroy_MAGICGAME_LibraryClass(LPCSTR class_name)
     DestroyMenu(g_library_submenu);
   }
   g_library_popup_menu = (HMENU)0;
-  g_library_submenu = (HMENU)0;;
+  g_library_submenu = (HMENU)0;
 }
 
 // FUNCTION: MAGIC 0x00450ca9

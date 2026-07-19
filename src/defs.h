@@ -791,7 +791,7 @@ typedef struct card_instance_struct
 	int8_t mana_to_untap[8]; /*  0x2C */ // No longer used in Manalink, but still read by the exe in one place and still written in one place.  To reclaim, make check_untap_payment() just return 0, and rewrite setup_upkeep_costs_and_set_untap_cost() to not touch it.
 
 	int16_t power;								   /*  0x34 */
-	uint8_t number_of_targets;					   /*  0x36 */
+	int8_t number_of_targets;					   /*  0x36 */
 	uint8_t unknown0x37; /*  0x37 */			   // Used only on damage cards, apparently for temporary storage
 	int32_t info_slot;							   /*  0x38 */
 	int32_t original_internal_card_id; /*  0x3C */ // Mok : CD_CardIDinCT_Parent
@@ -907,26 +907,26 @@ typedef int(__cdecl *card_function_pointer)(int player, int card, event_t event)
 /* Data struct */
 typedef struct
 {
-	uint8_t secret;
-	char name[18]; /* 0x01 */
-	uint8_t reserved1[17];
-	card_id_t id;	/* 0x24 */
-	uint8_t type;	// ct_all.csv:Type:Effect..Type::Land
-	int8_t subtype; // ct_all.csv:Family
-	int8_t color;	// ct_all.csv:Color Unused..Color Colorless
-	int8_t cc[3];	// 0:colored mana, 1:colorless mana, 2:flags
-	int16_t power;
-	int16_t toughness;
-	uint8_t new_field; // ct_all.csv:Extra Flags (Unused)..Modifies Casting Cost
-	uint8_t reserved3; // ct_all.csv:Unused (next to Code Address)
-	card_function_pointer code_pointer;
-	keyword_t static_ability;		 // ct_all.csv:Ability:Unknown..Ability:Swampwalk
-	extra_abilities_t extra_ability; // ct_all.csv:Flags:Play Cost..Flags:Activate
-	uint8_t rarity;					 // unused in current Manalink
-	uint8_t act_phases;				 // ct_all.csv:Activate after Combat..Play before Combat
-	uint8_t expansion;				 // unused in current Manalink
-	uint8_t creature_rating;		 // only -2 through 3 are accepted by ct2exe
-	uint8_t reserved4[4];
+	uint8_t secret;						/* 0x00 */
+	char name[18];						/* 0x01 */
+	uint8_t reserved1[17];				/* 0x13 */
+	card_id_t id;						/* 0x24 */
+	uint8_t type; /* 0x28 */			// ct_all.csv:Type:Effect..Type::Land
+	int8_t subtype; /* 0x29 */			// ct_all.csv:Family
+	int8_t color; /* 0x2a */			// ct_all.csv:Color Unused..Color Colorless
+	int8_t cc[3]; /* 0x2b */			// 0:colored mana, 1:colorless mana, 2:flags
+	int16_t power;						/* 0x2e */
+	int16_t toughness;					/* 0x30 */
+	uint8_t new_field; /* 0x32 */		// ct_all.csv:Extra Flags (Unused)..Modifies Casting Cost
+	uint8_t reserved3; /* 0x33 */		// ct_all.csv:Unused (next to Code Address)
+	card_function_pointer code_pointer; /* 0x34 */
+	keyword_t static_ability;			/* 0x38 */ // ct_all.csv:Ability:Unknown..Ability:Swampwalk
+	extra_abilities_t extra_ability;	/* 0x3c */ // ct_all.csv:Flags:Play Cost..Flags:Activate
+	uint8_t rarity;						/* 0x40 */ // unused in current Manalink
+	uint8_t act_phases;					/* 0x41 */ // ct_all.csv:Activate after Combat..Play before Combat
+	uint8_t expansion;					/* 0x42 */ // unused in current Manalink
+	uint8_t creature_rating;			/* 0x43 */ // only -2 through 3 are accepted by ct2exe
+	uint8_t reserved4[4];				/* 0x44 */
 } PACKED card_data_t;
 STATIC_ASSERT(sizeof(card_data_t) == 72, card_data_t_wrong_size);
 

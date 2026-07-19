@@ -259,7 +259,23 @@ int card_activation(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004afd4c
 int card_draw_card(int player, int card, event_t event)
 {
-  if (event == EVENT_CAN_ACTIVATE)
+  if (event == EVENT_CAN_ACTIVATE && current_phase == PHASE_DRAW && unk_00742f60 == player &&
+      PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && trigger_condition == -1)
   {
+    unk_008b3270 |= 3;
+    return 1;
   }
+
+  if (event == EVENT_ACTIVATE)
+  {
+    PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    kill_card(card_on_stack_controller, card_on_stack, KILL_REMOVE);
+    draw_card_for_player(player);
+  }
+
+  return 0;
 }

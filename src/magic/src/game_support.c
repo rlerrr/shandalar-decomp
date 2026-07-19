@@ -33,6 +33,7 @@ int set_stack_damage_targets(void);
 int process_response_actions(int reason_for_trigger_controller, const char *prompt);
 void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 void FUN_004e1c8c(unsigned int internal_card_id, int unk1, char *prompt, int unk2);
+int update_duel_selection_display(int player, int phase);
 void FUN_004480a6(char *text);
 int GetCardRarity(int internal_card_id);
 int FUN_004b0c12(int player, int card);
@@ -98,7 +99,6 @@ int put_card_on_stack(int player, int card, int mode)
 {
   struct
   {
-    int rand_choice;                            // ebp-0x34c
     int trace_counter;                          // ebp-0x348
     char prompt_text[300];                      // ebp-0x344
     int tmp_mana;                               // ebp-0x218
@@ -117,213 +117,214 @@ int put_card_on_stack(int player, int card, int mode)
   s.color_index = (int)single_color_test_bit_to_color_t((int)(char)global_cards_data[s.internal_card_id].color);
   s.card_data = &global_cards_data[s.internal_card_id];
 
-  if (mode == 0)
+  if (mode != 0)
   {
-    if ((g_duel_network_flags & 2) != 0)
+    goto respond_to_card_on_stack;
+  }
+
+  if (TRACE_ENABLED)
+  {
+    s.trace_counter = duel_trace_counter;
+    ++duel_trace_counter;
+    sprintf(s.trace_text, "%d: Player #%d is casting %s(%d).\n", s.trace_counter, player, global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].name, card);
+    append_to_trace_txt(s.trace_text);
+  }
+
+  if (!FUN_0043fdb3(player, player, card))
+  {
+    return 0;
+  }
+
+  unk_00925bb8 = -1;
+  unk_0091bfb4 = 0;
+  max_x_value = -1;
+
+  if ((((unsigned char)s.card_data->type & 0x3c) != 0 ||
+       (int)s.card_data->id == 0x107 ||
+       (int)s.card_data->id == 0x27) &&
+      dispatch_event_to_single_card(player, card, 0x74, 1 - player, -1) == 0)
+  {
+    return 0;
+  }
+
+  spell_fizzled = -1;
+
+  s.saved_current_casting_internal_card_id = current_casting_internal_card_id;
+  s.saved_unk_008ce508 = unk_008ce508;
+  s.saved_unk_008ce4f4 = unk_008ce4f4;
+
+  current_casting_internal_card_id = s.internal_card_id;
+  unk_008ce508 = player;
+  unk_008ce4f4 = card;
+
+  push_card_onto_stack(player, card, 0x71, player, 0);
+  FUN_00435c1f();
+
+  if (unk_0091bfb4 != 0)
+  {
+  }
+  else
+  {
+    if ((player == nonactive_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
     {
-      s.trace_counter = duel_trace_counter;
-      ++duel_trace_counter;
-      sprintf(s.trace_text, "%d: Player #%d is casting %s(%d).\n", s.trace_counter, player, s.card_data->name, card);
-      append_to_trace_txt(s.trace_text);
-    }
-
-    if (!FUN_0043fdb3(player, player, card))
-    {
-      return 0;
-    }
-
-    unk_00925bb8 = -1;
-    unk_0091bfb4 = 0;
-    max_x_value = -1;
-
-    if ((((unsigned char)s.card_data->type & 0x3c) != 0 ||
-         (int)s.card_data->id == 0x107 ||
-         (int)s.card_data->id == 0x27) &&
-        dispatch_event_to_single_card(player, card, 0x74, 1 - player, -1) == 0)
-    {
-      return 0;
-    }
-
-    spell_fizzled = -1;
-
-    s.saved_current_casting_internal_card_id = current_casting_internal_card_id;
-    s.saved_unk_008ce508 = unk_008ce508;
-    s.saved_unk_008ce4f4 = unk_008ce4f4;
-
-    current_casting_internal_card_id = s.internal_card_id;
-    unk_008ce508 = player;
-    unk_008ce4f4 = card;
-
-    push_card_onto_stack(player, card, 0x71, player, 0);
-    FUN_00435c1f();
-
-    if (unk_0091bfb4 == 0)
-    {
-      if ((player == nonactive_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
+      if ((s.card_data->type & 0x40) != 0)
       {
-        if ((s.card_data->type & 0x40) != 0)
-        {
-          mana_charge[6] = (int)(char)s.card_data->cc[0] + (int)(char)s.card_data->cc[1];
-        }
-        else
-        {
-          mana_charge[s.color_index] = (int)(char)s.card_data->cc[0];
-          mana_charge[0] += (int)(char)s.card_data->cc[1];
-        }
-
-        charge_mana_w_global_cost_mod(player, card, 0, 0);
-      }
-      else if ((s.card_data->type & 0x40) != 0)
-      {
-        charge_mana_w_global_cost_mod(player, card, 6, (int)(char)s.card_data->cc[1] + (int)(char)s.card_data->cc[0]);
+        mana_charge[6] = (int)(char)s.card_data->cc[0];
+        mana_charge[6] += (int)(char)s.card_data->cc[1];
       }
       else
       {
-        if ((char)s.card_data->cc[0] != 0)
-        {
-          mana_charge[s.color_index] = (int)(char)s.card_data->cc[0];
-        }
-        if (0 < (char)s.card_data->cc[1])
-        {
-          mana_charge[0] = (int)(char)s.card_data->cc[1];
-        }
+        mana_charge[s.color_index] = (int)(char)s.card_data->cc[0];
+        mana_charge[0] += (int)(char)s.card_data->cc[1];
+      }
 
-        charge_mana_w_global_cost_mod(player, card, 0, 0);
+      charge_mana_w_global_cost_mod(player, card, 0, 0);
+    }
+    else if ((s.card_data->type & 0x40) != 0)
+    {
+      charge_mana_w_global_cost_mod(player, card, 6, (int)(char)s.card_data->cc[1] + (int)(char)s.card_data->cc[0]);
+    }
+    else
+    {
+      if ((char)s.card_data->cc[0] != 0)
+      {
+        mana_charge[s.color_index] = (int)(char)s.card_data->cc[0];
+      }
+      if (0 < (char)s.card_data->cc[1])
+      {
+        mana_charge[0] = (int)(char)s.card_data->cc[1];
+      }
 
-        if ((char)s.card_data->cc[1] == -1)
+      charge_mana_w_global_cost_mod(player, card, 0, 0);
+
+      if ((char)s.card_data->cc[1] == -1)
+      {
+        if (player != nonactive_player)
         {
-          if (player == nonactive_player)
+          if (g_duel_ai_mode_state == 1)
           {
-            s.saved_max_x_value = max_x_value;
-            max_x_value = has_mana(player, COLOR_ANY, 1);
-            charge_mana(player, 0, -1);
-            max_x_value = s.saved_max_x_value;
+            switch (internal_rand(2))
+            {
+            case 0:
+              s.tmp_mana = has_mana(player, COLOR_ANY, 1);
+              if (s.tmp_mana != 0)
+              {
+                unk_00939340 = s.local_18 = internal_rand(s.tmp_mana) + 1;
+              }
+              else
+              {
+                unk_00939340 = s.local_18 = internal_rand(has_mana(player, COLOR_ANY, 1) + 1);
+              }
+              break;
+
+            case 1:
+              unk_00939340 = s.local_18 = has_mana(player, COLOR_ANY, 1);
+              if (life[0] < unk_00939340 && internal_rand(3) == 0)
+              {
+                unk_00939340 = s.local_18 = life[0];
+              }
+              if (max_x_value != -1 && max_x_value < unk_00939340)
+              {
+                unk_00939340 = s.local_18 = max_x_value;
+              }
+              break;
+            }
+
+            FUN_004e4f11();
           }
           else
           {
-            if (g_duel_ai_mode_state == 1)
-            {
-              s.rand_choice = internal_rand(2);
-              if (s.rand_choice == 0)
-              {
-                s.tmp_mana = has_mana(player, COLOR_ANY, 1);
-                if (s.tmp_mana == 0)
-                {
-                  s.tmp_mana = has_mana(player, COLOR_ANY, 1);
-                  unk_00939340 = internal_rand(s.tmp_mana + 1);
-                  s.local_18 = unk_00939340;
-                }
-                else
-                {
-                  unk_00939340 = internal_rand(s.tmp_mana) + 1;
-                  s.local_18 = unk_00939340;
-                }
-              }
-              else if (s.rand_choice == 1)
-              {
-                unk_00939340 = has_mana(player, COLOR_ANY, 1);
-                s.local_18 = unk_00939340;
-                if (life[0] < unk_00939340 && internal_rand(3) == 0)
-                {
-                  s.local_18 = life[0];
-                  unk_00939340 = life[0];
-                }
-                if (max_x_value != -1 && max_x_value < unk_00939340)
-                {
-                  s.local_18 = max_x_value;
-                  unk_00939340 = max_x_value;
-                }
-              }
-
-              FUN_004e4f11();
-            }
-            else
-            {
-              FUN_004e5089();
-              s.local_18 = unk_00939340;
-            }
-
-            s.saved_max_x_value = max_x_value;
-            max_x_value = s.local_18;
-            charge_mana(player, 0, -1);
-            max_x_value = s.saved_max_x_value;
+            FUN_004e5089();
+            s.local_18 = unk_00939340;
           }
+
+          s.saved_max_x_value = max_x_value;
+          max_x_value = s.local_18;
+          charge_mana(player, 0, -1);
+          max_x_value = s.saved_max_x_value;
         }
-      }
-    }
-
-    if (x_value == 0)
-    {
-      ai_modifier -= 100;
-    }
-
-    max_x_value = -1;
-
-    if (s.internal_card_id != -1)
-    {
-      current_casting_player = player;
-      unk_008b2880 = 1;
-      --hand_count[player];
-
-      if ((*(unsigned char *)((char *)s.card_data + 0x28) & 2) != 0)
-      {
-        ++creature_cards_in_play[player];
-      }
-      if ((*(unsigned char *)((char *)s.card_data + 0x28) & 0x40) != 0)
-      {
-        ++artifact_cards_in_play[player];
-      }
-      if ((*(unsigned char *)((char *)s.card_data + 0x28) & 4) != 0)
-      {
-        ++enchantments_in_play[player];
-      }
-
-      card_types_in_play[player] |= *(unsigned char *)((char *)s.card_data + 0x28);
-      PLAYER_CARD_INSTANCE(player, card).state |= STATE_INVISIBLE;
-      land_can_be_played |= 0x20;
-
-      if (player == nonactive_player || (g_duel_network_flags & 2) != 0 || g_duel_ai_mode_state != 1)
-      {
-        PLAYER_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK_BOTH;
-      }
-      else
-      {
-        PLAYER_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK_NOATTACK;
-      }
-
-      current_casting_internal_card_id = s.saved_current_casting_internal_card_id;
-      unk_008ce508 = s.saved_unk_008ce508;
-      unk_008ce4f4 = s.saved_unk_008ce4f4;
-
-      if (spell_fizzled == 1)
-      {
-        FUN_00435cdd();
-      }
-      else
-      {
-        if (dispatch_event(player, card, 0x6c) != 0)
+        else
         {
-          spell_fizzled = 1;
+          s.saved_max_x_value = max_x_value;
+          max_x_value = has_mana(player, COLOR_ANY, 1);
+          charge_mana(player, 0, -1);
+          max_x_value = s.saved_max_x_value;
         }
-        if (spell_fizzled == 1)
-        {
-          FUN_00435d11(player);
-        }
-        FUN_00435cdd();
 
-        if (spell_fizzled != 1)
+        if (x_value == 0)
         {
-          if (player == active_player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state == 1 && *(char *)((char *)s.card_data + 0x2c) == -1)
-          {
-            ai_modifier -= FUN_004427d9(player) * 12;
-          }
-          return 1;
+          ai_modifier -= 100;
         }
       }
     }
   }
-  else
+
+  max_x_value = -1;
+
+  if (s.internal_card_id != -1)
   {
+    current_casting_player = player;
+    unk_008b2880 = 1;
+    --hand_count[player];
+
+    if ((s.card_data->type & 2) != 0)
+    {
+      ++creature_cards_in_play[player];
+    }
+    if ((s.card_data->type & 0x40) != 0)
+    {
+      ++artifact_cards_in_play[player];
+    }
+    if ((s.card_data->type & 4) != 0)
+    {
+      ++enchantments_in_play[player];
+    }
+
+    card_types_in_play[player] |= s.card_data->type;
+    PLAYER_CARD_INSTANCE(player, card).state |= STATE_INVISIBLE;
+    land_can_be_played |= 0x20;
+
+    if (player == nonactive_player || (g_duel_network_flags & 2) != 0 || g_duel_ai_mode_state != 1)
+    {
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK_BOTH;
+    }
+    else
+    {
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK_NOATTACK;
+    }
+
+    current_casting_internal_card_id = s.saved_current_casting_internal_card_id;
+    unk_008ce508 = s.saved_unk_008ce508;
+    unk_008ce4f4 = s.saved_unk_008ce4f4;
+
+    if (spell_fizzled == 1)
+    {
+      FUN_00435cdd();
+      goto finish_put_card_on_stack;
+    }
+
+    if (dispatch_event(player, card, 0x6c) != 0)
+    {
+      spell_fizzled = 1;
+    }
+    if (spell_fizzled == 1)
+    {
+      FUN_00435d11(player);
+    }
+    FUN_00435cdd();
+
+    if (spell_fizzled == 1)
+    {
+      goto finish_put_card_on_stack;
+    }
+
+    if (player == active_player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state == 1 && s.card_data->cc[1] == -1)
+    {
+      ai_modifier -= FUN_004427d9(player) * 12;
+    }
+    return 1;
+
+  respond_to_card_on_stack:
     s.saved_current_casting_internal_card_id = current_casting_internal_card_id;
     s.saved_unk_008ce508 = unk_008ce508;
     s.saved_unk_008ce4f4 = unk_008ce4f4;
@@ -332,13 +333,13 @@ int put_card_on_stack(int player, int card, int mode)
     unk_008ce508 = player;
     unk_008ce4f4 = card;
 
-    if ((*(unsigned char *)((char *)s.card_data + 0x28) & 1) == 0)
+    if ((s.card_data->type & 1) == 0)
     {
       refresh_stack_proxy_card(1);
     }
 
-    if ((*(unsigned char *)((char *)s.card_data + 0x28) != 1) &&
-        ((*(unsigned char *)((char *)s.card_data + 0x28) != 0x20) || ((*(unsigned char *)((char *)s.card_data + 0x3d) & 0x10) == 0)))
+    if ((s.card_data->type != 1) &&
+        ((s.card_data->type != 0x20) || ((s.card_data->extra_ability & EA_MANA_SOURCE) == 0)))
     {
       if (DAT_007a7d78 != 0)
       {
@@ -364,76 +365,73 @@ int put_card_on_stack(int player, int card, int mode)
     }
 
     land_can_be_played &= ~0x20;
-    PLAYER_CARD_INSTANCE(player, card).state |= (player == 0) ? 0x400080 : 0x80;
+    *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state |= (((unsigned int)player < 1 ? 0 : 0x400000) | 0x80);
 
     if (g_duel_ai_mode_state != 1)
     {
       set_stack_damage_targets();
     }
 
-    if (spell_fizzled != 1)
+    if (spell_fizzled == 1)
     {
-      if (player == active_player && g_duel_ai_mode_state != 1 && DAT_007abc80 == 0 && (((unsigned char)s.card_data->type & 0x7e) != 0))
+      goto finish_put_card_on_stack;
+    }
+
+    if (player == active_player && g_duel_ai_mode_state != 1 && DAT_007abc80 == 0 && (((unsigned char)s.card_data->type & 0x7e) != 0))
+    {
+      LoadTextSectionLines(global_ui_strings_filename, "PROMPT_CAST1");
+      sprintf(s.prompt_text, text_lines[0], DAT_007a7c60);
+      if ((char)s.card_data->cc[1] == -1)
       {
-        LoadTextSectionLines(global_ui_strings_filename, "PROMPT_CAST1");
-        sprintf(s.prompt_text, text_lines[0], DAT_007a7c60);
-        if ((char)s.card_data->cc[1] == -1)
-        {
-          sprintf(s.prompt_text, text_lines[1], DAT_007a7c60, x_value);
-        }
+        sprintf(s.prompt_text, text_lines[1], DAT_007a7c60, x_value);
+      }
 
-        if (PLAYER_CARD_INSTANCE(player, card).mana_to_untap[2] == 0)
-        {
-          goto cast_dialog_default_jump;
-        }
-
-        if (PLAYER_CARD_INSTANCE(player, card).mana_to_untap[2] == 1)
+      if (PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
+      {
+        if (PLAYER_CARD_INSTANCE(player, card).number_of_targets == 1)
         {
           raw_do_dialog(player,
                         card,
-                        PLAYER_CARD_INSTANCE(player, card).internal_card_id,
-                        PLAYER_CARD_INSTANCE(player, card).unknown0x70,
+                        PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                        PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                         s.prompt_text,
                         0);
-          goto cast_dialog_done;
         }
-
-        raw_do_dialog(player, card, -1, -1, s.prompt_text, 0);
-        goto cast_dialog_done;
-
-      cast_dialog_default_jump:
-        goto cast_dialog_default;
-
+        else
+        {
+          raw_do_dialog(player, card, -1, -1, s.prompt_text, 0);
+        }
+      }
+      else if (0)
+      {
         // Unreachable in practice, but present in the original binary.
         raw_do_dialog(player, card, (unk_00925bb8 >> 8), (unk_00925bb8 & 0xff), s.prompt_text, 0);
-        goto cast_dialog_done;
-
-      cast_dialog_default:
-        raw_do_dialog(player, card, -1, -1, s.prompt_text, 0);
-
-      cast_dialog_done:;
       }
-
-      if (g_duel_ai_mode_state != 1)
+      else
       {
-        FUN_004a61a1(player, card, 2, 1);
+        raw_do_dialog(player, card, -1, -1, s.prompt_text, 0);
       }
     }
-  }
 
+    if (g_duel_ai_mode_state != 1)
+    {
+      FUN_004a61a1(player, card, 2, 1);
+    }
+  }
+finish_put_card_on_stack:
   if (spell_fizzled == 1)
   {
     ++hand_count[player];
 
-    if ((*(unsigned char *)((char *)s.card_data + 0x28) & 2) != 0)
+    if ((s.card_data->type & 2) != 0)
     {
       --creature_cards_in_play[player];
     }
-    if ((*(unsigned char *)((char *)s.card_data + 0x28) & 0x40) != 0)
+    if ((s.card_data->type & 0x40) != 0)
     {
       --artifact_cards_in_play[player];
     }
-    if ((*(unsigned char *)((char *)s.card_data + 0x28) & 4) != 0)
+    if ((s.card_data->type & 4) != 0)
     {
       --enchantments_in_play[player];
     }
@@ -762,6 +760,19 @@ int DrawRandomCardFromInitialLibrary(int library_index)
     {
       return s.i;
     }
+  }
+}
+
+// FUNCTION: MAGIC 0x004a616d
+int FUN_004a616d(int player, int phase)
+{
+  if (g_duel_ai_mode_state == 1)
+  {
+    return 0;
+  }
+  else
+  {
+    return update_duel_selection_display(player, phase);
   }
 }
 
@@ -3774,22 +3785,12 @@ int charge_mana(int player, color_t color, int amount)
       {
         if (amount != -1)
         {
-          s.result = amount - mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2;
-          if (s.result <= 1)
-          {
-            s.result = 1;
-          }
-          amount = s.result;
+          amount = MAX(amount - mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2, 1);
         }
       }
       else if (mana_charge[COLOR_COLORLESS] > 0)
       {
-        s.result = mana_charge[COLOR_COLORLESS] - mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2;
-        if (s.result <= 1)
-        {
-          s.result = 1;
-        }
-        mana_charge[COLOR_COLORLESS] = s.result;
+        mana_charge[COLOR_COLORLESS] = MAX(mana_charge[COLOR_COLORLESS] - mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2, 1);
       }
     }
 
@@ -3800,8 +3801,7 @@ int charge_mana(int player, color_t color, int amount)
       s.mana_paid_by_color[s.i] = 0;
     }
 
-    s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
-    s.max_colorless -= has_mana(player, COLOR_ANY, 1);
+    s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1) - has_mana(player, COLOR_ANY, 1);
 
     s.include_auto_payment = 1;
     if (unk_00715fb0 == 0 && ((player != active_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1 && g_duel_network_state == 0))

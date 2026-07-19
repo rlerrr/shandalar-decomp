@@ -248,7 +248,10 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_upkeep_008a9b30[0x70];
 
 // GLOBAL: MAGIC 0x008a9ba0
 // GLOBAL: SHANDALAR 0x008bdda0
-GLOBAL_STRINGS_EXTERN char gs_cuecard_your_life_points_and_poison_008a9ba0[0x70];
+GLOBAL_STRINGS_EXTERN char gs_cuecard_your_life_points_and_poison_008a9ba0[0x68];
+// GLOBAL: MAGIC 0x008a9c08
+// GLOBAL: SHANDALAR 0x008bde08
+GLOBAL_STRINGS_EXTERN int g_battlefield_noncreature_x[2];
 
 // GLOBAL: MAGIC 0x008b26c0
 // GLOBAL: SHANDALAR 0x008c68c0
@@ -400,7 +403,11 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_artifact_creature_008ced4
 GLOBAL_STRINGS_EXTERN text_300_t gs_main_phase_008cee80;
 
 // GLOBAL: MAGIC 0x008cf230
-GLOBAL_STRINGS_EXTERN char gs_cuecard_is_a_target_cant_target_again_008cf230[0x60];
+GLOBAL_STRINGS_EXTERN char gs_cuecard_is_a_target_cant_target_again_008cf230[0x50];
+// GLOBAL: MAGIC 0x008cf280
+GLOBAL_STRINGS_EXTERN int g_battlefield_land_y[2];
+// GLOBAL: MAGIC 0x008cf288
+GLOBAL_STRINGS_EXTERN int DAT_008cf288[2];
 
 // GLOBAL: MAGIC 0x008cf3c0
 // GLOBAL: SHANDALAR 0x008e3510
@@ -568,7 +575,10 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_main_postcombat_00925fa0[0x70];
 
 // GLOBAL: MAGIC 0x00926010
 // GLOBAL: SHANDALAR 0x0093a140
-GLOBAL_STRINGS_EXTERN char gs_window_title_your_attack_00926010[0x68];
+GLOBAL_STRINGS_EXTERN char gs_window_title_your_attack_00926010[0x64];
+// GLOBAL: MAGIC 0x00926074
+// GLOBAL: SHANDALAR 0x0093a1a4
+GLOBAL_STRINGS_EXTERN int g_battlefield_creature_x_step;
 
 // GLOBAL: MAGIC 0x00926078
 // GLOBAL: SHANDALAR 0x0093a1a8
@@ -597,7 +607,9 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_fast_effects_00926520;
 GLOBAL_STRINGS_EXTERN char gs_phasebar_your_main_postcombat_00926670[0x34];
 
 // GLOBAL: MAGIC 0x00926750
-GLOBAL_STRINGS_EXTERN char gs_cardtitle_hunting_00926750[0x40];
+GLOBAL_STRINGS_EXTERN char gs_cardtitle_hunting_00926750[0x38];
+// GLOBAL: MAGIC 0x00926788
+GLOBAL_STRINGS_EXTERN int g_battlefield_creature_x[2];
 
 // GLOBAL: MAGIC 0x009267a0
 // GLOBAL: SHANDALAR 0x0093a8d0

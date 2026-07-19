@@ -89,12 +89,17 @@ unsigned int get_displayed_card_special_counters(int player, int card);
 int get_displayed_card_internal_id(int player, int card);
 int get_displayed_card_id(int player, int card);
 int get_displayed_card_zone(int player, int card);
+int FUN_00448df6(int player, int card);
 unsigned int get_displayed_card_ui_flags(int player, int card);
 void get_displayed_card_attachment(int *player_and_card, int player, int card);
 unsigned int get_displayed_card_display_flags(int player, int card);
 int is_attack_phase_window_enabled(void);
 int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2);
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd);
+int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
+int get_card_window_displayed_card_id(HWND hwnd);
+int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
+extern int g_cardclass_snapshot_window_long_offset;
 extern int DAT_008ced00[16];
 #ifdef SHANDALAR
 int DAT_007a79b8;
@@ -219,6 +224,30 @@ int DAT_00939508;
 
 // GLOBAL: MAGIC 0x00789710
 int DAT_00789710;
+
+// GLOBAL: MAGIC 0x0057ab6c
+int DAT_0057ab6c;
+
+// GLOBAL: MAGIC 0x008b2878
+int g_battlefield_land_x[2];
+
+// GLOBAL: MAGIC 0x007ab2b0
+int g_battlefield_creature_y[2];
+
+// GLOBAL: MAGIC 0x008cff18
+int g_battlefield_creature_x_spacing;
+
+// GLOBAL: MAGIC 0x007aaee8
+int g_battlefield_creature_y_margin;
+
+// GLOBAL: MAGIC 0x008b3498
+int g_battlefield_noncreature_y[2];
+
+// GLOBAL: MAGIC 0x008cfd28
+int g_battlefield_draw_placeholder_x[2];
+
+// GLOBAL: MAGIC 0x0093a800
+int g_battlefield_draw_placeholder_y[2];
 
 // FUNCTION: MAGIC 0x00447627
 // FUNCTION: SHANDALAR 0x004511a5
@@ -580,11 +609,50 @@ int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1,
 // FUNCTION: MAGIC 0x004e994f
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd)
 {
-  (void)hwnd;
-  (void)player_and_card;
-  (void)unused;
-  (void)child_hwnd;
-  return 0;
+  HWND *card_windows;
+  int card_count;
+  int found;
+  int index;
+  int found_card_id;
+  HWND found_hwnd;
+
+  if (hwnd == (HWND)0 || player_and_card == (int *)0)
+  {
+    found = 0;
+  }
+  else
+  {
+    card_windows = (HWND *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
+    card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
+    found = 0;
+    index = 0;
+    while (index < card_count && found == 0)
+    {
+      if (card_window_matches_player_and_card(card_windows[index], player_and_card) != 0)
+      {
+        found = 1;
+        found_card_id = get_card_window_displayed_card_id(card_windows[index]);
+        found_hwnd = card_windows[index];
+      }
+      index++;
+    }
+  }
+
+  if (unused != (int *)0)
+  {
+    if (found == 0)
+      *unused = -1;
+    else
+      *unused = found_card_id;
+  }
+  if (child_hwnd != (HWND *)0)
+  {
+    if (found == 0)
+      *child_hwnd = (HWND)0;
+    else
+      *child_hwnd = found_hwnd;
+  }
+  return found;
 }
 
 // FUNCTION: MAGIC 0x004d25fe
@@ -611,24 +679,167 @@ int get_battlefield_card_stagger_offset(HWND hwnd)
 // FUNCTION: MAGIC 0x004e915a
 void reset_battlefield_layout_positions(HWND hwnd)
 {
-  (void)hwnd;
+  RECT rect;
+  int player;
+
+  if (hwnd == g_duel_player_battlefield_window_hwnd)
+    player = 0;
+  else
+    player = 1;
+
+  GetClientRect(hwnd, &rect);
+  g_battlefield_land_x[player] = (rect.right - 10) - g_showlist_smallcard_width;
+  g_battlefield_land_y[player] = 10;
+  g_battlefield_creature_x[player] = 10;
+  g_battlefield_creature_y[player] = (rect.bottom - 10) - g_showlist_smallcard_height;
+  g_battlefield_creature_x_step = 5;
+  g_battlefield_creature_x_spacing = 10;
+  g_battlefield_creature_y_margin = 5;
+  g_battlefield_noncreature_x[player] =
+      (g_battlefield_land_x[player] - 10) - g_showlist_smallcard_width;
+  g_battlefield_noncreature_y[player] = 10;
+  g_battlefield_draw_placeholder_x[player] = 5;
+  g_battlefield_draw_placeholder_y[player] = g_showlist_smallcard_height / 2;
 }
 
 // FUNCTION: MAGIC 0x004e9256
 void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag)
 {
-  (void)parent;
-  (void)rect;
-  (void)value;
-  (void)x;
-  (void)y;
-  (void)flag;
+  int player;
+  int type_flags;
+  int card_id;
+  int hidden_descendants;
+  RECT client_rect;
+
+  if (parent == (HWND)0 || rect == (int *)0 ||
+      get_displayed_card_id(rect[0], rect[1]) == -1 ||
+      x == (int *)0 || y == (int *)0)
+  {
+    return;
+  }
+
+  if (parent == g_duel_player_battlefield_window_hwnd)
+    player = 0;
+  else
+    player = 1;
+
+  GetClientRect(parent, &client_rect);
+  type_flags = FUN_00448df6(rect[0], rect[1]);
+  if ((type_flags & TYPE_CREATURE) != 0 && (type_flags & TYPE_LAND) == 0)
+  {
+    *x = g_battlefield_creature_x[player];
+    *y = g_battlefield_creature_y[player] - value / 2;
+    if (flag != 0)
+    {
+      g_battlefield_creature_x[player] += g_battlefield_creature_x_step + g_showlist_smallcard_width;
+      if (client_rect.right - g_showlist_smallcard_width * 2 < g_battlefield_creature_x[player])
+      {
+        DAT_0057ab6c = (DAT_0057ab6c + 1) % 3;
+        if (DAT_0057ab6c == 0)
+          g_battlefield_creature_x[player] = 5;
+        else if (DAT_0057ab6c == 1)
+          g_battlefield_creature_x[player] = g_showlist_smallcard_width / 3;
+        else if (DAT_0057ab6c == 2)
+          g_battlefield_creature_x[player] = g_showlist_smallcard_width / 6;
+        else
+          g_battlefield_creature_x[player] = g_showlist_smallcard_width / 2;
+        g_battlefield_creature_y[player] -= g_battlefield_creature_x_spacing + g_showlist_smallcard_height;
+      }
+      if (g_battlefield_creature_y[player] < 0)
+      {
+        g_battlefield_creature_y_margin += (g_showlist_smallcard_height * 40) / 100;
+        if ((client_rect.bottom - 10) - g_showlist_smallcard_height < g_battlefield_creature_y_margin)
+          g_battlefield_creature_y_margin = 10;
+        g_battlefield_creature_y[player] =
+            (client_rect.bottom - g_battlefield_creature_y_margin) - g_showlist_smallcard_height;
+        if (DAT_0057ab6c == 0)
+          g_battlefield_creature_x[player] = 5;
+        else if (DAT_0057ab6c == 1)
+          g_battlefield_creature_x[player] = g_showlist_smallcard_width / 3;
+        else
+          g_battlefield_creature_x[player] = g_showlist_smallcard_width / 6;
+        g_battlefield_creature_x_step += 10;
+      }
+    }
+  }
+  else if ((type_flags & TYPE_LAND) != 0)
+  {
+    *x = g_battlefield_land_x[player] + value;
+    *y = g_battlefield_land_y[player];
+    hidden_descendants = count_hidden_battlefield_descendants(parent, (HWND)SendMessageA(parent, 0x40f, (WPARAM)rect, 0));
+    if (0 < hidden_descendants)
+      *y += hidden_descendants * DAT_00939508 + 5;
+    if (flag != 0)
+    {
+      if (hidden_descendants != 0)
+        g_battlefield_land_y[player] += hidden_descendants * DAT_00939508 + 5;
+      g_battlefield_land_y[player] += DAT_00939508;
+      if ((client_rect.bottom - 5) - g_showlist_smallcard_height < g_battlefield_land_y[player])
+      {
+        g_battlefield_land_y[player] = g_showlist_smallcard_height / 2;
+        g_battlefield_land_x[player] -= g_showlist_smallcard_width / 2;
+      }
+    }
+  }
+  else
+  {
+    card_id = get_displayed_card_id(rect[0], rect[1]);
+    if (card_id == unk_007a7d64)
+    {
+      *x = g_battlefield_draw_placeholder_x[player];
+      *y = g_battlefield_draw_placeholder_y[player];
+      if (flag != 0)
+        g_battlefield_draw_placeholder_y[player] += DAT_00939508;
+    }
+    else
+    {
+      *x = g_battlefield_noncreature_x[player] + value;
+      *y = g_battlefield_noncreature_y[player];
+      hidden_descendants = count_hidden_battlefield_descendants(parent, (HWND)SendMessageA(parent, 0x40f, (WPARAM)rect, 0));
+      if (0 < hidden_descendants)
+        *y += hidden_descendants * DAT_00939508;
+      if (flag != 0)
+      {
+        if (hidden_descendants != 0)
+          g_battlefield_noncreature_y[player] += hidden_descendants * DAT_00939508;
+        g_battlefield_noncreature_y[player] += DAT_00939508;
+        g_battlefield_noncreature_y[player] += DAT_00939508 / 2;
+        if ((client_rect.bottom - 10) - g_showlist_smallcard_height < g_battlefield_noncreature_y[player])
+        {
+          g_battlefield_noncreature_y[player] = g_showlist_smallcard_height / 2;
+          g_battlefield_noncreature_x[player] -= g_showlist_smallcard_width / 2;
+        }
+      }
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x004e8e42
 void resize_battlefield_child_card_windows(HWND hwnd)
 {
-  (void)hwnd;
+  HWND *card_windows;
+  HWND snapshot_window;
+  int card_count;
+  int index;
+
+  card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
+  card_windows = (HWND *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
+  snapshot_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
+
+  for (index = 0; index < card_count; index++)
+  {
+    SetWindowPos(card_windows[index], (HWND)0, 0, 0,
+                 g_showlist_smallcard_width, g_showlist_smallcard_height,
+                 SWP_NOMOVE | SWP_NOZORDER);
+  }
+  for (index = 0; index < card_count; index++)
+  {
+    SendMessageA(hwnd, 0x410, (WPARAM)card_windows[index], 0);
+  }
+  SetWindowPos(snapshot_window, (HWND)0, 0, 0,
+               g_showlist_smallcard_width, g_showlist_smallcard_height,
+               SWP_NOMOVE | SWP_NOZORDER);
+  SendMessageA(hwnd, 0x410, (WPARAM)snapshot_window, 0);
 }
 
 // FUNCTION: MAGIC 0x004d6c6d

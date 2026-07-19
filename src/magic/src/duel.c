@@ -29,6 +29,8 @@ int GetCardFromCLPacket(int packet_index);
 void TENTATIVE_savegame(int autosave_slot);
 void FUN_004e4e75(void);
 void update_phase_display(int player, phase_t phase);
+void layout_attack_phase_window(HWND hwnd);
+int FUN_004a616d(int player, int phase);
 int player_can_stop_at_phase(int player, phase_t phase);
 void reset_trigger_dispatch_state(void);
 int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card);
@@ -51,6 +53,12 @@ void rebuild_battlefield_summary(void);
 extern int DAT_008ced00[16];
 extern int DAT_007aa928;
 extern int DAT_007aaeec;
+extern HWND DAT_008a8dec;
+extern HWND DAT_008a8d78;
+extern int g_duel_selected_player_card;
+extern int g_duel_selected_opponent_card;
+extern int g_duel_selection_pending;
+extern int g_duel_current_selection_forced;
 #ifdef SHANDALAR
 int DAT_007a79b8;
 #else
@@ -718,8 +726,11 @@ void FUN_004e4e75(void)
 // FUNCTION: MAGIC 0x004432ed
 void update_phase_display(int player, phase_t phase)
 {
-  (void)player;
-  (void)phase;
+  if (g_duel_ai_mode_state != 1)
+  {
+    FUN_004a616d(player, phase);
+  }
+  spell_fizzled = 0;
 }
 
 // FUNCTION: MAGIC 0x00446036
@@ -738,6 +749,45 @@ void FUN_00446036(void)
       }
     }
   }
+}
+
+// FUNCTION: MAGIC 0x00446590
+int update_duel_selection_display(int player, int phase)
+{
+  int changed;
+
+  changed = 0;
+  KillTimer(g_duel_window_hwnd, g_duel_timer_id);
+  EnterCriticalSection(&g_duel_render_lock);
+  if (g_duel_selected_player_card != player ||
+      g_duel_selected_opponent_card != phase)
+  {
+    changed |= 1;
+  }
+  g_duel_selected_player_card = player;
+  g_duel_selected_opponent_card = phase;
+  g_duel_selection_pending = attacking_creature_count;
+  LeaveCriticalSection(&g_duel_render_lock);
+  if (changed != 0)
+  {
+    SendMessageA(DAT_008a8dec, 0x432, 0, 0);
+    UpdateWindow(DAT_008a8dec);
+    SendMessageA(DAT_008a8d78, 0x432, 0, 0);
+    UpdateWindow(DAT_008a8d78);
+  }
+  if (phase == PHASE_DECLARE_ATTACKERS && player == 1)
+  {
+    g_duel_current_selection_forced = 0;
+  }
+  if (phase == PHASE_DECLARE_ATTACKERS && attacking_creature_count != 0)
+  {
+    layout_attack_phase_window(g_duel_attack_phase_window_hwnd);
+  }
+  if (phase == PHASE_MAIN2)
+  {
+    layout_attack_phase_window(g_duel_attack_phase_window_hwnd);
+  }
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0044bfe9
