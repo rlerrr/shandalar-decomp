@@ -44,6 +44,10 @@ extern char g_graveyard_view_antes_opponent_text[];
 extern char g_graveyard_view_antes_player_text[];
 extern char s_MENU_GRAVEYARD_0056e9e0[];
 extern char s_DIALOG_VIEWANTES_0056e9f0[];
+extern HBITMAP g_spell_minimized_background_bitmap;
+extern HMENU g_spell_minimized_popup_menu;
+extern char g_spell_minimized_menu_help_text[];
+extern char g_spell_minimized_menu_restore_text[];
 extern int g_graveyard_window_extra_bytes;
 extern int g_expanded_graveyard_window_extra_bytes;
 extern int g_graveyard_cards_window_extra_bytes;
@@ -111,18 +115,6 @@ int g_icon_button_pressed_long_offset = 4;
 // GLOBAL: MAGIC 0x005710cc
 char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
 
-// GLOBAL: MAGIC 0x00637ea8
-char g_spell_minimized_menu_help_text[0x28];
-
-// GLOBAL: MAGIC 0x00637ec4
-HMENU g_spell_minimized_popup_menu;
-
-// GLOBAL: MAGIC 0x00637ee8
-HBITMAP g_spell_minimized_background_bitmap;
-
-// GLOBAL: MAGIC 0x00637ef0
-char g_spell_minimized_menu_restore_text[0x1c];
-
 int register_window_classes(void);
 int destroy_windowclasses(void);
 int register_MAGICGAME_LifeClass(LPCSTR class_name);
@@ -144,6 +136,7 @@ int register_MAGICGAME_TerritoryClass(LPCSTR class_name);
 void destroy_MAGICGAME_TerritoryClass(LPCSTR class_name);
 int register_MAGICGAME_AttackClass(LPCSTR class_name);
 void destroy_MAGICGAME_AttackClass(LPCSTR class_name);
+int register_MAGICGAME_SpellChainClass(LPCSTR class_name);
 int register_MAGIC_TellUserClass(LPCSTR class_name);
 void destroy_MAGIC_TellUserClass(LPCSTR class_name);
 
@@ -677,23 +670,6 @@ int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
   return atom != 0;
 }
 
-// FUNCTION: MAGIC 0x00486050
-// FUNCTION: SHANDALAR 0x004c8c30
-int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
-{
-  ATOM atom1;
-  ATOM atom2;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0x800, wndproc_MAGICGAME_SpellChainClass, 8,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom1 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 3, wndproc_SpellMinimized, 0,
-                    (HICON)0, (HBRUSH)0x6, CLASS_SPELL_MINIMIZED);
-  atom2 = RegisterClassA(&wndclass);
-  return atom1 != 0 && atom2 != 0;
-}
-
 // FUNCTION: MAGIC 0x00490900
 // FUNCTION: SHANDALAR 0x005562d0
 int register_MAGICGAME_ScrollbarClass(LPCSTR class_name)
@@ -1086,13 +1062,6 @@ LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, L
   }
 
   return 0;
-}
-
-// FUNCTION: MAGIC 0x004864b7
-// FUNCTION: SHANDALAR 0x004c9097
-LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 // FUNCTION: MAGIC 0x00488f71

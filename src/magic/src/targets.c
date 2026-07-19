@@ -8,8 +8,7 @@
 
 int GetNextManaSymbol(char **param_1);
 
-// GLOBAL: MAGIC 0x00637e58
-int DAT_00637e58;
+extern int g_spell_minimized_hwnd;
 
 // GLOBAL: MAGIC 0x007a7d74
 int DAT_007a7d74;
@@ -766,7 +765,7 @@ int FUN_0048930a(void)
 {
   int visible;
 
-  visible = IsWindowVisible((HWND)DAT_00637e58);
+  visible = IsWindowVisible((HWND)g_spell_minimized_hwnd);
   if (!visible && IsWindowVisible((HWND)g_duel_phase_display_window_hwnd))
   {
     SendMessageA((HWND)g_duel_phase_display_window_hwnd, 0x111, 0x65, 0);
@@ -780,7 +779,7 @@ int FUN_00489362(void)
 {
   int hidden;
 
-  hidden = !IsWindowVisible((HWND)DAT_00637e58);
+  hidden = !IsWindowVisible((HWND)g_spell_minimized_hwnd);
   if (!hidden && !IsWindowVisible((HWND)g_duel_phase_display_window_hwnd))
   {
     SendMessageA((HWND)g_duel_phase_display_window_hwnd, 0x111, 0x66, 0);
