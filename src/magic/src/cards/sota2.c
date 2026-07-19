@@ -925,7 +925,7 @@ int card_rock_hydra(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
-    FUN_00551572(player, card, x_value);
+    set_special_counters(player, card, x_value);
     if (active_player == player)
     {
       ai_modifier += (x_value + x_value * 2 - 9) << 3;
@@ -948,7 +948,7 @@ int card_rock_hydra(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((((land_can_be_played & 4) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = FUN_00482a97(player, card, 0xffffffff)) == 0)))
+    if ((((land_can_be_played & 4) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = has_effect_source_type(player, card, 0xffffffff)) == 0)))
     {
       if (((current_phase == 4) && (player == human_player) && (player == unk_00742f60)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
       {

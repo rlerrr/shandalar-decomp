@@ -256,7 +256,7 @@ int card_simulacrum(int player, int card, event_t event)
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
     load_text("prompts.txt", "SIMULACRUM");
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -799,7 +799,7 @@ int card_howl_from_beyond(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text("prompts.txt", "HOWL_FROM_BEYOND");
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -895,7 +895,7 @@ int card_berserk(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text("prompts.txt", "BERSERK");
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -1115,7 +1115,7 @@ int card_swords_to_plowshares(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text("prompts.txt", "SWORD_TO_PLOWSHARES");
-    if (!FUN_00551638(player, 1 - player, card))
+    if (!select_target_creature_and_store(player, 1 - player, card))
     {
       spell_fizzled = 1;
     }
@@ -1209,7 +1209,7 @@ int card_death_ward(int player, int card, event_t event)
     {
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       load_text("prompts.txt", "DEATH_WARD");
-      if (!FUN_00551638(player, -1, card))
+      if (!select_target_creature_and_store(player, -1, card))
       {
         spell_fizzled = 1;
       }
@@ -1320,7 +1320,7 @@ int card_jump(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text("prompts.txt", "JUMP");
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -1572,7 +1572,7 @@ int card_giant_growth(int player, int card, event_t event)
       ai_modifier -= 0xc;
     }
     load_text("prompts.txt", "GIANT_GROWTH");
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -1664,7 +1664,7 @@ int card_unsummon(int player, int card, event_t event)
   {
     ai_modifier -= 0x30;
     load_text("prompts.txt", "UNSUMMON");
-    if (!FUN_00551638(player, 1 - player, card))
+    if (!select_target_creature_and_store(player, 1 - player, card))
     {
       spell_fizzled = 1;
     }
@@ -2515,7 +2515,7 @@ int card_power_sink(int player, int card, event_t event)
           }
         }
 
-        unk_008ce510[6] = PLAYER_CARD_INSTANCE(player, card).info_slot;
+        mana_charge[6] = PLAYER_CARD_INSTANCE(player, card).info_slot;
         for (s.current_card = 0;
              s.current_card < active_cards_count[s.target_player] &&
              s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot;
@@ -2549,7 +2549,7 @@ int card_power_sink(int player, int card, event_t event)
             }
           }
         }
-        unk_008ce510[6] = 0;
+        mana_charge[6] = 0;
       }
 
       if (s.mana_paid < PLAYER_CARD_INSTANCE(player, card).info_slot)
@@ -2605,7 +2605,7 @@ int card_spell_blast(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller) && (unk_008ce508 != -1))
   {
-    unk_008ce518 = 1;
+    mana_charge[COLOR_BLUE] = 1;
     charge_mana_w_global_cost_mod(player, card, 0, instance->info_slot);
     if (spell_fizzled != 1)
     {
@@ -2894,7 +2894,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
           source_player = PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_source_player;
           source_card = PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_source_card;
           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= 0x200000;
-          TENTATIVE_reassess_all_cards();
+          TENTATIVE_reassess_all_cards(0, 0xff);
           instance->targets[instance->number_of_targets] = selected_target;
           ++instance->number_of_targets;
           if (instance->number_of_targets == 19)

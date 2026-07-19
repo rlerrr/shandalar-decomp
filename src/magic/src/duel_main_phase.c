@@ -18,7 +18,7 @@ char DAT_0091ce40[300];
 #else
 extern char DAT_0091ce40[300];
 #endif
-void TENTATIVE_reassess_all_cards();
+void TENTATIVE_reassess_all_cards(int view_player, int present_after_draw);
 void append_to_trace_txt(char *text);
 void update_phase_display(int player, phase_t phase);
 void reset_trigger_dispatch_state(void);
@@ -28,7 +28,7 @@ int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATI
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
 void start_ai_decision_search(int decision_code, int time_scale);
 void __stdcall FUN_004e4e9a(void);
-void FUN_0044b3d4(void);
+void resolve_mana_burn(void);
 int check_duel_finished(void);
 void FUN_004b5fc9(char *text);
 int player_has_legal_attacker(int player);
@@ -311,7 +311,7 @@ void choose_blockers_human(int player)
 
   if (g_duel_ai_mode_state != 1)
   {
-    TENTATIVE_reassess_all_cards();
+    TENTATIVE_reassess_all_cards(0, 0xff);
     attacking_player_copy = player;
     defending_player = 1 - player;
     best_attacker_abilities = 0;
@@ -386,7 +386,7 @@ void choose_blockers_human(int player)
             {
               play_sound_effect(0x15);
             }
-            TENTATIVE_reassess_all_cards();
+            TENTATIVE_reassess_all_cards(0, 0xff);
             if ((battlefield_extra_ability_flags & 0x100000) != 0)
             {
               trigger_cause_controller = selected_blocker.player;
@@ -1394,7 +1394,7 @@ restart_main_phase_action_loop:
           {
             C_dispatch_event_raw(0x89);
           }
-          FUN_0044b3d4();
+          resolve_mana_burn();
           if (check_duel_finished() != 0)
           {
             return 1;
@@ -1617,7 +1617,7 @@ restart_main_phase_action_loop:
           current_phase = PHASE_MAIN2;
         }
         update_phase_display(player, current_phase);
-        FUN_0044b3d4();
+        resolve_mana_burn();
         if (check_duel_finished() != 0)
         {
           return 1;
@@ -1795,7 +1795,7 @@ restart_main_phase_action_loop:
           global_card_instances[player][main_phase_selected_card].blocking = 0xff;
           if (attacking_creature_count++ == 0)
           {
-            FUN_0044b3d4();
+            resolve_mana_burn();
             if (check_duel_finished() != 0)
             {
               return 1;
@@ -1919,7 +1919,7 @@ restart_main_phase_action_loop:
           }
         }
       }
-      FUN_0044b3d4();
+      resolve_mana_burn();
       if (check_duel_finished() != 0)
       {
         return 1;
@@ -1975,7 +1975,7 @@ restart_main_phase_action_loop:
     if (attacking_creature_count == 0)
     {
       attacking_creature_count++;
-      FUN_0044b3d4();
+      resolve_mana_burn();
       if (check_duel_finished() != 0)
       {
         return 1;
@@ -2086,7 +2086,7 @@ resolve_combat_if_needed:
     cleanup_combat_state(player);
     reassess_all_cards_and_mana();
     TENTATIVE_reassess_all_cards(0, 0xff);
-    FUN_0044b3d4();
+    resolve_mana_burn();
     if (check_duel_finished() != 0)
     {
       return 1;
@@ -2135,7 +2135,7 @@ finish_main_phase:
   {
     dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xe3, gs_end_main_008b26c0, 1);
   }
-  FUN_0044b3d4();
+  resolve_mana_burn();
   if (check_duel_finished() != 0)
     return 1;
   return 0;

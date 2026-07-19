@@ -529,7 +529,7 @@ int card_invisibility(int player, int card, event_t event)
   if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
   {
     load_text("promptsX1.txt", "INVISIBILITY");
-    spell_fizzled = !FUN_00551638(player, player, card);
+    spell_fizzled = !select_target_creature_and_store(player, player, card);
   }
 
   if (event == EVENT_RESOLVE_SPELL)

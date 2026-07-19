@@ -301,52 +301,52 @@ char *FUN_0044a3bf(int player, int card)
 
     if (s.csvid == unk_007a7d64)
     {
-      strcpy(unk_00637670, gs_cardtitle_damage_008cfd30);
+      strcpy(g_dialog_card_title_buffer, gs_cardtitle_damage_008cfd30);
     }
     else if (s.csvid == unk_00789b80)
     {
-      sprintf(unk_00637670, gs_cardtitle_hunting_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).info_slot));
+      sprintf(g_dialog_card_title_buffer, gs_cardtitle_hunting_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).info_slot));
     }
     else if (s.csvid == unk_008cf1ac)
     {
-      strcpy(unk_00637670, gs_multiblock_creature_008cf040);
+      strcpy(g_dialog_card_title_buffer, gs_multiblock_creature_008cf040);
     }
     else if (s.csvid == unk_00789734)
     {
-      strcpy(unk_00637670, unk_00777e60[s.choice].damage_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].damage_text);
     }
     else if (s.csvid == unk_008a8de8)
     {
-      strcpy(unk_00637670, unk_00777e60[s.choice].effect_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].effect_text);
     }
     else if (s.csvid == unk_009266ac)
     {
-      strcpy(unk_00637670, gs_cardtitle_draw_a_card_008b4330);
+      strcpy(g_dialog_card_title_buffer, gs_cardtitle_draw_a_card_008b4330);
     }
     else
     {
-      unk_00637670[0] = '\0';
+      g_dialog_card_title_buffer[0] = '\0';
     }
 
     if (s.csvid == unk_00789734 && 0 < (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness)
     {
-      strcpy(s.temporary_name, unk_00637670);
-      FUN_0055d802(unk_00637670, s.temporary_name, PLAYER_CARD_INSTANCE(player, card).eot_toughness);
+      strcpy(s.temporary_name, g_dialog_card_title_buffer);
+      FUN_0055d802(g_dialog_card_title_buffer, s.temporary_name, PLAYER_CARD_INSTANCE(player, card).eot_toughness);
     }
 
     s.transformed_csvid = FUN_004a58ba(s.source_player, s.source_card_data);
     if (s.transformed_csvid == 0x361 || s.transformed_csvid == 0x360)
     {
-      strcpy(unk_00637670, unk_00777e60[s.transformed_csvid].damage_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.transformed_csvid].damage_text);
     }
 
-    if (unk_00637670[0] == '\0')
+    if (g_dialog_card_title_buffer[0] == '\0')
     {
       s.card_name = global_raw_cards_storage[s.csvid].full_name;
     }
     else
     {
-      s.card_name = unk_00637670;
+      s.card_name = g_dialog_card_title_buffer;
     }
   }
 
@@ -797,7 +797,7 @@ int do_dialog(int who_chooses,
   if (PLAYER_CARD_INSTANCE(bigcard_player, bigcard_card).internal_card_id == -1 ||
       PLAYER_CARD_INSTANCE(smallcard_player, smallcard_card).internal_card_id == -1)
   {
-    TENTATIVE_reassess_all_cards();
+    TENTATIVE_reassess_all_cards(0, 0xff);
   }
 
   if (who_chooses == nonactive_player && g_duel_network_state == 0)

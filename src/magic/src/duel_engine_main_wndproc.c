@@ -80,7 +80,7 @@ void remove_iid_from_initial_library(int player, int internal_card_id);
 int DrawRandomCardFromInitialLibrary(int library_index);
 void perform_player_mulligan(int player, int wizard_color);
 void evaluate_opening_hand_land_counts(int *redraw_result, int *ante_result, int *ante_info);
-void TENTATIVE_reassess_all_cards();
+void TENTATIVE_reassess_all_cards(int view_player, int present_after_draw);
 void append_to_trace_txt(char *text);
 void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);

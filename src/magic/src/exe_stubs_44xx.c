@@ -17,10 +17,13 @@ unsigned int FUN_00443898(void)
 }
 
 // FUNCTION: MAGIC 0x00444c43
-char *FUN_00444c43(char *out, int msg, int player, int card)
+char *format_stack_action_text(char *out, int msg, int player, int card)
 {
-  char tmp[300];
-  char *prefix;
+  struct
+  {
+    char tmp[300];
+    char *prefix;
+  } s;
 
   if (out == (char *)0)
   {
@@ -29,31 +32,30 @@ char *FUN_00444c43(char *out, int msg, int player, int card)
 
   if (msg == 0x71)
   {
-    prefix = gs_casting_008b4850;
+    s.prefix = gs_casting_008b4850;
   }
   else if (msg == 0x72)
   {
-    prefix = gs_activating_007912e0;
+    s.prefix = gs_activating_007912e0;
   }
   else if (msg == 0x7e)
   {
-    prefix = gs_processing_008ce290;
+    s.prefix = gs_processing_008ce290;
   }
   else
   {
-    prefix = "";
+    s.prefix = "";
   }
 
-  if (player < 0 || card < 0)
+  if (player >= 0 && card >= 0)
   {
-    strcpy(tmp, prefix);
+    sprintf(s.tmp, "%s: %s", s.prefix, FUN_0044a3bf(player, card));
   }
   else
   {
-    sprintf(tmp, "%s: %s", prefix, FUN_0044a3bf(player, card));
+    strcpy(s.tmp, s.prefix);
   }
 
-  strcpy(out, tmp);
+  strcpy(out, s.tmp);
   return out;
 }
-

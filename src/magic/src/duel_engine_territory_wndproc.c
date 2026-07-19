@@ -47,7 +47,7 @@ void FUN_004ec616(HWND hwnd);
 void resize_duel_hand_window(HWND hwnd);
 void save_duel_interface_options_to_registry(void);
 void apply_duel_backdrop_art(int player, int color, int variant);
-BOOL CALLBACK FUN_0048958a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 #ifndef SHANDALAR
 extern HWND global_main_hwnd;
@@ -361,7 +361,7 @@ void FUN_00538e3d(int *player, int *phase, char *text)
 // FUNCTION: MAGIC 0x004893e0
 void show_territory_options_dialog(HWND hwnd)
 {
-  if (DialogBoxParamA(g_app_instance, (LPCSTR)0xe1, hwnd, FUN_0048958a, 0) != 0)
+  if (DialogBoxParamA(g_app_instance, (LPCSTR)0xe1, hwnd, dlgproc_duel_interface_options, 0) != 0)
   {
     if (g_duel_interface_options.player_territory_color == -1)
     {

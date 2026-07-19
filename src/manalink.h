@@ -271,7 +271,7 @@ int damage_target0(int player, int card, int dmg);	// Convenient frontend to dam
 int damage_creature_or_player(int source_player, int source_card, event_t event, int amount);	// Mostly a wrapper around damage_creature().  Also validates.  Damage is always dealt by activating_player/activating_card; the player/card given are used only in validation.  This usually isn't what you want - damage_target0 is better.  Avoid.
 int damage_player(int target_player, int amount, int source_player, int source_card);	// Identical to damage_creature(target_player, -1, amount, source_player, source_card)
 void deathtouch(int player, int card, event_t event);
-void declare_mana_available(int player, color_t color, int amount);
+int declare_mana_available(int player, color_t color, int amount);
 void declare_mana_available_hex(int player, color_test_t colors, int amount);
 void discard_exe(int player, int random, int there_isnt_actually_a_third_argument);	// Third argument used to be "this discard can be replaced by Library of Leng", which only replaces effects, not costs or end-of-turn discard (and used to be "if a card forces you to discard", so it gets the wrong value for Mind Bomb and Cursed Rack).  It gets ignored now instead of being forwarded to discard_card_exe().
 void discard(int player, int flags, int player_who_controls_effect);	// flags is a discard_flags_t

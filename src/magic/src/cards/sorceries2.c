@@ -152,7 +152,7 @@ int card_resurrection(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    return FUN_004832f4(player, 2);
+    return graveyard_has_type(player, 2);
   }
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))

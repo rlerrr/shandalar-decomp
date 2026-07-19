@@ -229,7 +229,7 @@ int card_time_vault(int player, int card, event_t event)
       }
     }
 
-    FUN_00551334(card_on_stack_controller, card_on_stack);
+    remove_special_counter(card_on_stack_controller, card_on_stack);
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .info_slot = 1;
@@ -848,7 +848,7 @@ int card_conservator(int player, int card, event_t event)
         else
         {
           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= 0x200000;
-          TENTATIVE_reassess_all_cards();
+          TENTATIVE_reassess_all_cards(0, 0xff);
           instance->targets[instance->number_of_targets] = selected_target;
           ++instance->number_of_targets;
         }
@@ -1882,7 +1882,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    FUN_00551572(player, card, amount);
+    set_special_counters(player, card, amount);
   }
 
   if (trigger_condition == 0xcc && (special_counters = C_get_special_counters(player, card)) != 0 && affected_card == card && affected_card_controller == player && player == current_turn && ((PLAYER_CARD_INSTANCE(player, card).state & 4) != 0 || (PLAYER_CARD_INSTANCE(player, card).untap_status != -1 && human_player != player)))
@@ -1893,7 +1893,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      FUN_00551334(player, card);
+      remove_special_counter(player, card);
     }
   }
 
@@ -1956,7 +1956,7 @@ int FUN_0041c752(int player, int card, int event, int amount)
       mana_result = PLAYER_CARD_INSTANCE(player, card).info_slot;
       special_counters = C_get_special_counters(card_on_stack_controller, card_on_stack);
       mana_result = ClampIntToRange(mana_result + special_counters, local_zero, amount);
-      FUN_00551572(card_on_stack_controller, card_on_stack, mana_result);
+      set_special_counters(card_on_stack_controller, card_on_stack, mana_result);
     }
   }
 

@@ -339,7 +339,7 @@ int card_fungusaur(int player, int card, event_t event)
 
       PLAYER_CARD_INSTANCE(player, card).counter_toughness++;
 
-      FUN_005513d7(player, card, 1);
+      add_special_counters(player, card, 1);
       PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     }
   }
@@ -2212,7 +2212,7 @@ int card_zombie_master(int player, int card, event_t event)
   if (((event == EVENT_GRAVEYARD_FROM_PLAY) && (affected_card == card)) && (player == affected_card_controller))
   {
     FUN_0055117d(FUN_005493a6, -1);
-    TENTATIVE_reassess_all_cards();
+    TENTATIVE_reassess_all_cards(0, 0xff);
   }
 
   return 0;
@@ -2742,7 +2742,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
     }
     if (event == 0x7e || event == 199)
     {
-      FUN_005513d7(player, card, unk_008cfdac);
+      add_special_counters(player, card, unk_008cfdac);
     }
   }
 
@@ -2826,7 +2826,7 @@ int card_sengir_vampire(int player, int card, event_t event)
     }
     if (event == 0x7e)
     {
-      FUN_005513d7(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
+      add_special_counters(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
       PLAYER_CARD_INSTANCE(player, card).counter_power += (short)PLAYER_CARD_INSTANCE(player, card).info_slot;
       PLAYER_CARD_INSTANCE(player, card).counter_toughness +=
           (short)PLAYER_CARD_INSTANCE(player, card).info_slot;

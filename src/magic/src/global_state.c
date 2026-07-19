@@ -433,7 +433,7 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&unk_00925bb8, 4);
   result &= save_or_load_data(DAT_008cfd70, 0x60);
   result &= save_or_load_data(&DAT_00789498, 8);
-  result &= save_or_load_data(unk_008ce510, 0x20);
+  result &= save_or_load_data(mana_charge, 0x20);
   result &= save_or_load_data(&DAT_0091b2c4, 4);
   result &= save_or_load_data(&DAT_007a7d10, 0x10);
   result &= save_or_load_data(&spell_fizzled, 4);
@@ -640,7 +640,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&unk_00925bb8, 4);
   result &= save_or_load_data(DAT_008cfd70, 0x60);
   result &= save_or_load_data(&DAT_00789498, 8);
-  result &= save_or_load_data(unk_008ce510, 0x20);
+  result &= save_or_load_data(mana_charge, 0x20);
   result &= save_or_load_data(&DAT_0091b2c4, 4);
   result &= save_or_load_data(&DAT_007a7d10, 0x10);
   result &= save_or_load_data(&spell_fizzled, 4);

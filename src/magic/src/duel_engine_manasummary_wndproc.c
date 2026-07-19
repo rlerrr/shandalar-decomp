@@ -502,7 +502,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
     s.has_cuecard = 0;
     for (s.menu_index = 0; s.menu_index < 7; s.menu_index++)
     {
-      if (unk_008ce510[s.menu_index] != 0)
+      if (mana_charge[s.menu_index] != 0)
       {
         s.has_cuecard = 1;
       }

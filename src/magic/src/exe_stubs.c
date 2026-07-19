@@ -6,6 +6,7 @@
 
 #include "game_support.h"
 #include "global_strings.h"
+#include "shared_startup.h"
 
 // This file holds temporary stub implementations for exe functions that are
 // referenced by decompiled code but not yet matched/decompiled elsewhere.
@@ -18,21 +19,154 @@ int raw_do_dialog(int bigcard_player,
                   int smallcard_card,
                   char *prompt,
                   int dialog_mode);
-void FUN_004e430e(void);
-void FUN_004e4632(void);
+void save_ai_search_state(void);
+void restore_ai_search_state(void);
 int FUN_00447f59(void);
 int FUN_004e1b84(void);
-int FUN_004a7c4a(void);
-void FUN_004a7cba(void);
+int get_duel_thread_time_ms(void);
+void update_duel_thread_time_marker(void);
 void StopWorldLocationMusic(void);
+int activate(int who_activates, int player, int card);
+int can_activate_mana_source_for_stop_prompt(int player, int card);
+int FUN_0044b7d4(int player, int card);
+int resolve_activated_ability(int player, int card);
+void prompt_player_for_stop_action(int player, char *prompt);
+void show_mana_burn_dialog(int player, int amount);
+BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+int get_ai_search_elapsed_time(void);
+void delete_and_close_object(HANDLE obj);
+HBITMAP load_pic(char *filename);
+void ApplyCardArtPaletteToDc(HDC hdc);
+BOOL DrawBitmapToRect(HDC dst_dc, const RECT *dst_rect, HBITMAP bitmap);
 extern int DAT_00743098;
+extern int DAT_00712544;
+void __cdecl _assert(void *expr, void *filename, unsigned line);
+void change_buttonclass_wndproc(HWND hwnd);
+void save_duel_interface_options_to_registry(void);
+int ai_opinion_of_gamestate_continued(int player, int score);
+void FUN_0044a796(int player, int card);
+int card_ball_lightning(int player, int card, event_t event);
+void FUN_004955ae(DRAWITEMSTRUCT *draw_item_struct,
+                  HBRUSH brush,
+                  HPEN pen1,
+                  HPEN pen2,
+                  COLORREF color,
+                  int draw_focus);
+
+// GLOBAL: MAGIC 0x00637f2c
+static HBRUSH g_duel_options_dialog_button_brush;
+// GLOBAL: MAGIC 0x00637f18
+static HPEN g_duel_options_dialog_pen1;
+// GLOBAL: MAGIC 0x00637f28
+static HPEN g_duel_options_dialog_pen2;
+// GLOBAL: MAGIC 0x00637f24
+static COLORREF g_duel_options_dialog_focus_text_color;
+// GLOBAL: MAGIC 0x00637f34
+static COLORREF g_duel_options_dialog_unfocus_text_color;
+// GLOBAL: MAGIC 0x00637f30
+static COLORREF g_duel_options_dialog_text_color;
+// GLOBAL: MAGIC 0x00637f1c
+static COLORREF g_duel_options_dialog_title_color;
+// GLOBAL: MAGIC 0x00637f20
+static HBITMAP g_duel_options_dialog_background;
+
+// GLOBAL: MAGIC 0x00638c8c
+static HBITMAP g_life_total_dialog_background;
+// GLOBAL: MAGIC 0x00638c14
+static COLORREF g_life_total_dialog_text_color;
+// GLOBAL: MAGIC 0x00638b50
+static HBRUSH g_life_total_dialog_button_brush;
+// GLOBAL: MAGIC 0x00638bec
+static HPEN g_life_total_dialog_pen1;
+// GLOBAL: MAGIC 0x00638bd8
+static HPEN g_life_total_dialog_pen2;
+// GLOBAL: MAGIC 0x00638b58
+static COLORREF g_life_total_dialog_unfocus_text_color;
+// GLOBAL: MAGIC 0x00638c2c
+static COLORREF g_life_total_dialog_focus_text_color;
+// GLOBAL: MAGIC 0x0077651c
+static WNDPROC g_life_total_edit_wndproc;
+
+static void setup_life_total_dialog_resources(HBITMAP *background,
+                                              COLORREF *text_color,
+                                              HBRUSH *button_brush,
+                                              HPEN *pen1,
+                                              HPEN *pen2,
+                                              COLORREF *unfocus_text_color,
+                                              COLORREF *focus_text_color);
+static void cleanup_life_total_dialog_resources(HBITMAP background,
+                                                HBRUSH button_brush,
+                                                HPEN pen1,
+                                                HPEN pen2);
+static LRESULT CALLBACK life_total_edit_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+// FUNCTION: MAGIC 0x00489f9f
+static void setup_duel_options_dialog_resources(HBITMAP *background,
+                                                COLORREF *title_color,
+                                                COLORREF *text_color,
+                                                HBRUSH *button_brush,
+                                                HPEN *pen1,
+                                                HPEN *pen2,
+                                                COLORREF *unfocus_text_color,
+                                                COLORREF *focus_text_color)
+{
+  char path[264];
+
+  sprintf(path, "%s\\WINBK_Options.pic", global_duelart_path);
+  *background = load_pic(path);
+  *title_color = 0x1000007;
+  *text_color = 0x1000001;
+  *button_brush = CreateSolidBrush(0x1000036);
+  *pen1 = CreatePen(PS_SOLID, 0, 0x10000ba);
+  *pen2 = CreatePen(PS_SOLID, 0, 0x1000016);
+  *unfocus_text_color = 0x1000001;
+  *focus_text_color = 0x10000bf;
+  if (*button_brush == (HBRUSH)0)
+  {
+    *button_brush = GetStockObject(2);
+  }
+  if (*pen1 == (HPEN)0)
+  {
+    *pen1 = GetStockObject(6);
+  }
+  if (*pen2 == (HPEN)0)
+  {
+    *pen2 = GetStockObject(7);
+  }
+}
+
+// FUNCTION: MAGIC 0x0048a085
+static void cleanup_duel_options_dialog_resources(HBITMAP background,
+                                                  HBRUSH button_brush,
+                                                  HPEN pen1,
+                                                  HPEN pen2)
+{
+  if (background != (HBITMAP)0)
+  {
+    delete_and_close_object(background);
+  }
+  if (button_brush != (HBRUSH)0)
+  {
+    DeleteObject(button_brush);
+  }
+  if (pen1 != (HPEN)0)
+  {
+    DeleteObject(pen1);
+  }
+  if (pen2 != (HPEN)0)
+  {
+    DeleteObject(pen2);
+  }
+}
 
 typedef struct
 {
   card_instance_t card_instances[2][151];
+  card_data_t extra_card_data[16];
+  int library[2][500];
   int graveyard[2][500];
   int exile[2][500];
-  int library[2][500];
   int special_mana[2][8];
   int raw_mana[2][8];
   int basic_lands[2][8];
@@ -59,7 +193,7 @@ typedef struct
   int DAT_0093a848_value;
   int damage_matrix[2][151][2][4];
   int cost_mod[8];
-  int mana_charge[7];
+  int mana_charge[8];
   int x_value_copy;
   int max_x_value_copy;
   int extra_turn_player;
@@ -73,13 +207,315 @@ typedef struct
 static AiSearchBackup g_ai_search_backup;
 
 // FUNCTION: MAGIC 0x0048958a
-BOOL CALLBACK FUN_0048958a(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  (void)hwnd;
-  (void)msg;
-  (void)wparam;
-  (void)lparam;
-  return 0;
+  struct
+  {
+    HDC erase_hdc;
+    RECT rect;
+    COLORREF text_color;
+    DRAWITEMSTRUCT *draw_item;
+    HWND ctl_hwnd;
+    int ctl_id;
+    HDC ctl_hdc;
+    HBRUSH brush;
+    int previous_control;
+    int current_control;
+    int selected_control;
+  } s;
+
+  switch (msg)
+  {
+    case WM_INITDIALOG:
+      setup_duel_options_dialog_resources(&g_duel_options_dialog_background,
+                                          &g_duel_options_dialog_title_color,
+                                          &g_duel_options_dialog_text_color,
+                                          &g_duel_options_dialog_button_brush,
+                                          &g_duel_options_dialog_pen1,
+                                          &g_duel_options_dialog_pen2,
+                                          &g_duel_options_dialog_unfocus_text_color,
+                                          &g_duel_options_dialog_focus_text_color);
+
+      SetDlgItemTextA(hwnd, 0x424, gs_duel_option_008b35f0[0]);
+      SetDlgItemTextA(hwnd, 0x425, gs_duel_option_008b35f0[1]);
+      SetDlgItemTextA(hwnd, 0x426, gs_duel_option_008b35f0[2]);
+      SetDlgItemTextA(hwnd, 0x427, gs_duel_option_008b35f0[3]);
+      SetDlgItemTextA(hwnd, 0x438, gs_duel_option_008b35f0[4]);
+      SetDlgItemTextA(hwnd, 0x429, gs_duel_option_008b35f0[5]);
+      SetDlgItemTextA(hwnd, 0x42b, gs_duel_option_008b35f0[6]);
+      SetDlgItemTextA(hwnd, 0x42a, gs_duel_option_008b35f0[7]);
+      SetDlgItemTextA(hwnd, 0x437, gs_duel_option_008b35f0[8]);
+      SetDlgItemTextA(hwnd, 0x433, gs_duel_option_008b35f0[9]);
+      SetDlgItemTextA(hwnd, 0x42d, gs_duel_option_008b35f0[10]);
+      SetDlgItemTextA(hwnd, 0x42e, gs_duel_option_008b35f0[11]);
+      SetDlgItemTextA(hwnd, 0x42f, gs_duel_option_008b35f0[12]);
+      SetDlgItemTextA(hwnd, 0x430, gs_duel_option_008b35f0[13]);
+      SetDlgItemTextA(hwnd, 0x431, gs_duel_option_008b35f0[14]);
+      SetDlgItemTextA(hwnd, 0x432, gs_duel_option_008b35f0[15]);
+      SetDlgItemTextA(hwnd, 0x434, gs_duel_option_008b35f0[16]);
+      SetDlgItemTextA(hwnd, 0x435, gs_duel_option_008b35f0[17]);
+      SetDlgItemTextA(hwnd, 0x436, gs_duel_option_008b35f0[18]);
+      SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
+      SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
+
+      LoadDuelInterfaceRegistryOptions();
+
+      if (g_duel_interface_options.layout == 1)
+      {
+        s.selected_control = 0x426;
+      }
+      else
+      {
+        s.selected_control = 0x427;
+      }
+      CheckDlgButton(hwnd, s.selected_control, 1);
+      CheckRadioButton(hwnd, 0x426, 0x427, s.selected_control);
+
+      if (g_duel_interface_options.directive_tracks_mouse != 0)
+      {
+        CheckDlgButton(hwnd, 0x438, 1);
+      }
+      if (g_duel_interface_options.show_cue_cards != 0)
+      {
+        CheckDlgButton(hwnd, 0x429, 1);
+      }
+      if (g_duel_interface_options.show_power_toughness_on_cards != 0)
+      {
+        CheckDlgButton(hwnd, 0x42a, 1);
+      }
+      if (g_duel_interface_options.show_abilities_on_cards != 0)
+      {
+        CheckDlgButton(hwnd, 0x42b, 1);
+      }
+      if (g_duel_interface_options.show_coin_flips != 0)
+      {
+        CheckDlgButton(hwnd, 0x437, 1);
+      }
+      if ((g_duel_mode_flags & 1) == 0)
+      {
+        EnableWindow(GetDlgItem(hwnd, 0x437), 0);
+        CheckDlgButton(hwnd, 0x437, 1);
+      }
+
+      if (g_duel_interface_options.player_territory_color == 1)
+      {
+        s.selected_control = 0x42f;
+      }
+      else if (g_duel_interface_options.player_territory_color == 2)
+      {
+        s.selected_control = 0x42e;
+      }
+      else if (g_duel_interface_options.player_territory_color == 3)
+      {
+        s.selected_control = 0x431;
+      }
+      else if (g_duel_interface_options.player_territory_color == 5)
+      {
+        s.selected_control = 0x42d;
+      }
+      else if (g_duel_interface_options.player_territory_color == 4)
+      {
+        s.selected_control = 0x430;
+      }
+      else
+      {
+        s.selected_control = 0x432;
+      }
+      CheckDlgButton(hwnd, s.selected_control, 1);
+      CheckRadioButton(hwnd, 0x42d, 0x432, s.selected_control);
+
+      if (g_duel_interface_options.player_territory_type == 0)
+      {
+        s.selected_control = 0x434;
+      }
+      else if (g_duel_interface_options.player_territory_type == 1)
+      {
+        s.selected_control = 0x435;
+      }
+      else
+      {
+        s.selected_control = 0x436;
+      }
+      CheckDlgButton(hwnd, s.selected_control, 1);
+      CheckRadioButton(hwnd, 0x434, 0x436, s.selected_control);
+
+      SetFocus(GetDlgItem(hwnd, IDOK));
+      SendMessageA(hwnd, 0x401, 1, 0);
+      change_buttonclass_wndproc(hwnd);
+      return 0;
+
+    case WM_COMMAND:
+      if ((wparam & 0xffff) == IDCANCEL)
+      {
+        cleanup_duel_options_dialog_resources(g_duel_options_dialog_background,
+                                              g_duel_options_dialog_button_brush,
+                                              g_duel_options_dialog_pen1,
+                                              g_duel_options_dialog_pen2);
+        EndDialog(hwnd, 0);
+        return 1;
+      }
+      if ((wparam & 0xffff) == IDOK)
+      {
+        if (IsDlgButtonChecked(hwnd, 0x426) != 0)
+        {
+          g_duel_interface_options.layout = 1;
+        }
+        else
+        {
+          g_duel_interface_options.layout = 2;
+        }
+        g_duel_interface_options.directive_tracks_mouse = IsDlgButtonChecked(hwnd, 0x438);
+        g_duel_interface_options.show_cue_cards = IsDlgButtonChecked(hwnd, 0x429);
+        g_duel_interface_options.show_power_toughness_on_cards = IsDlgButtonChecked(hwnd, 0x42a);
+        g_duel_interface_options.show_abilities_on_cards = IsDlgButtonChecked(hwnd, 0x42b);
+        g_duel_interface_options.show_coin_flips = IsDlgButtonChecked(hwnd, 0x437);
+
+        if (IsDlgButtonChecked(hwnd, 0x42f) != 0)
+        {
+          g_duel_interface_options.player_territory_color = 1;
+        }
+        else if (IsDlgButtonChecked(hwnd, 0x42e) != 0)
+        {
+          g_duel_interface_options.player_territory_color = 2;
+        }
+        else if (IsDlgButtonChecked(hwnd, 0x42d) != 0)
+        {
+          g_duel_interface_options.player_territory_color = 5;
+        }
+        else if (IsDlgButtonChecked(hwnd, 0x431) != 0)
+        {
+          g_duel_interface_options.player_territory_color = 3;
+        }
+        else if (IsDlgButtonChecked(hwnd, 0x430) != 0)
+        {
+          g_duel_interface_options.player_territory_color = 4;
+        }
+        else
+        {
+          g_duel_interface_options.player_territory_color = -1;
+        }
+
+        if (IsDlgButtonChecked(hwnd, 0x434) != 0)
+        {
+          g_duel_interface_options.player_territory_type = 0;
+        }
+        else if (IsDlgButtonChecked(hwnd, 0x435) != 0)
+        {
+          g_duel_interface_options.player_territory_type = 1;
+        }
+        else
+        {
+          g_duel_interface_options.player_territory_type = 2;
+        }
+
+        save_duel_interface_options_to_registry();
+        cleanup_duel_options_dialog_resources(g_duel_options_dialog_background,
+                                              g_duel_options_dialog_button_brush,
+                                              g_duel_options_dialog_pen1,
+                                              g_duel_options_dialog_pen2);
+        EndDialog(hwnd, 1);
+        return 1;
+      }
+      return 0;
+
+    case 0x4c8:
+      s.current_control = (int)wparam;
+      s.previous_control = (int)lparam;
+      if (GetDlgItem(hwnd, IDCANCEL) == (HWND)s.current_control)
+      {
+        SendMessageA(hwnd, 0x401, IDCANCEL, 0);
+      }
+      else
+      {
+        SendMessageA(hwnd, 0x401, IDOK, 0);
+      }
+      if (s.current_control != 0)
+      {
+        InvalidateRect((HWND)s.current_control, NULL, 1);
+      }
+      if (s.previous_control != 0)
+      {
+        InvalidateRect((HWND)s.previous_control, NULL, 1);
+      }
+      return 0;
+
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORSTATIC:
+      s.ctl_hdc = (HDC)wparam;
+      ApplyCardArtPaletteToDc(s.ctl_hdc);
+      s.ctl_hwnd = (HWND)lparam;
+      s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
+      if (s.ctl_id == 0x425 || s.ctl_id == 0x433)
+      {
+        SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
+        SetBkMode(s.ctl_hdc, TRANSPARENT);
+        s.brush = g_duel_options_dialog_pen2;
+      }
+      else if (s.ctl_id == 0x424)
+      {
+        SetTextColor(s.ctl_hdc, g_duel_options_dialog_title_color);
+        SetBkMode(s.ctl_hdc, TRANSPARENT);
+        s.brush = GetStockObject(NULL_BRUSH);
+      }
+      else
+      {
+        if (GetFocus() == s.ctl_hwnd)
+        {
+          SetTextColor(s.ctl_hdc, g_duel_options_dialog_focus_text_color);
+        }
+        else
+        {
+          SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
+        }
+        SetBkMode(s.ctl_hdc, TRANSPARENT);
+        s.brush = GetStockObject(NULL_BRUSH);
+      }
+      return (BOOL)s.brush;
+
+    case WM_DRAWITEM:
+      s.draw_item = (DRAWITEMSTRUCT *)lparam;
+      if (GetFocus() == s.draw_item->hwndItem)
+      {
+        s.text_color = g_duel_options_dialog_focus_text_color;
+      }
+      else
+      {
+        s.text_color = g_duel_options_dialog_unfocus_text_color;
+      }
+      FUN_004955ae(s.draw_item,
+                   g_duel_options_dialog_button_brush,
+                   g_duel_options_dialog_pen1,
+                   g_duel_options_dialog_pen2,
+                   s.text_color,
+                   0);
+      return 1;
+
+    case WM_QUERYNEWPALETTE:
+    case WM_PALETTEISCHANGING:
+    case WM_PALETTECHANGED:
+      return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+    case WM_ERASEBKGND:
+      s.erase_hdc = (HDC)wparam;
+      ApplyCardArtPaletteToDc(s.erase_hdc);
+      GetClientRect(hwnd, &s.rect);
+      if (g_duel_options_dialog_background != (HBITMAP)0)
+      {
+        DrawBitmapToRect(s.erase_hdc, &s.rect, g_duel_options_dialog_background);
+      }
+      else
+      {
+        FillRect(s.erase_hdc, &s.rect, GetStockObject(2));
+      }
+      return 1;
+
+    case WM_LBUTTONDOWN:
+      SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
+      return 0;
+
+    default:
+      return 0;
+  }
 }
 
 // NOTE: Even though this file is named "exe_stubs.c", functions removed from
@@ -95,15 +531,184 @@ void reset_trigger_dispatch_state(void)
 }
 
 // FUNCTION: MAGIC 0x0044af2d
-int FUN_0044af2d(int param_1)
+int prompt_stop_phase_anyway(phase_t phase)
 {
-  (void)param_1;
+  if (g_duel_ai_mode_state != 1 &&
+      (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[phase] & (PHASE_STOP_ENABLED | PHASE_STOP_OPPONENT)) != 0 ||
+       (phase == stop_phase && human_player == stop_phase_player) ||
+       (phase == previous_stop_phase && human_player == previous_stop_phase_player)))
+  {
+    load_text(global_ui_strings_filename, "PROMPT_STOPANYWAY");
+
+    if (phase == 4)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[1]);
+    }
+    else if (phase == 1)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[2]);
+    }
+    else if (phase == 10)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[3]);
+    }
+    else if (phase == 0x14)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[4]);
+    }
+    else if (phase == 0x1f)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[5]);
+    }
+    else if (phase == 0x22)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[6]);
+    }
+    else if (phase == 0x19)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[7]);
+    }
+    else if (phase == 0x1a)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[8]);
+    }
+    else if (phase == 0x1b)
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[8]);
+    }
+    else
+    {
+      strcpy(g_prompt_stop_phase_anyway_text, text_lines[0]);
+    }
+
+    if ((g_duel_network_flags & 2) != 0)
+    {
+      if (nonactive_player == human_player)
+      {
+        if (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[phase] & PHASE_STOP_ENABLED) != 0 ||
+            (phase == stop_phase && human_player == stop_phase_player))
+        {
+          prompt_player_for_stop_action(nonactive_player, g_prompt_stop_phase_anyway_text);
+        }
+        if (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[phase] & PHASE_STOP_OPPONENT) != 0 ||
+            (phase == previous_stop_phase && human_player == previous_stop_phase_player))
+        {
+          prompt_player_for_stop_action(active_player, g_prompt_stop_phase_anyway_text);
+        }
+      }
+      else
+      {
+        if (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[phase] & PHASE_STOP_OPPONENT) != 0 ||
+            (phase == previous_stop_phase && human_player == previous_stop_phase_player))
+        {
+          prompt_player_for_stop_action(active_player, g_prompt_stop_phase_anyway_text);
+        }
+        if (((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[phase] & PHASE_STOP_ENABLED) != 0 ||
+            (phase == stop_phase && human_player == stop_phase_player))
+        {
+          prompt_player_for_stop_action(nonactive_player, g_prompt_stop_phase_anyway_text);
+        }
+      }
+    }
+    else
+    {
+      prompt_player_for_stop_action(nonactive_player, g_prompt_stop_phase_anyway_text);
+    }
+  }
+
   return -1;
 }
 
-// FUNCTION: MAGIC 0x0044b3d4
-void FUN_0044b3d4(void)
+// FUNCTION: MAGIC 0x0044b2b3
+void prompt_player_for_stop_action(int player, char *prompt)
 {
+  int selected_card;
+  int done;
+  char prompt_copy[100];
+
+  strcpy(prompt_copy, prompt);
+  done = 0;
+
+  while (done == 0)
+  {
+    if (nonactive_player == human_player)
+    {
+      stop_phase_player = -1;
+      stop_phase = -1;
+    }
+    else
+    {
+      previous_stop_phase_player = -1;
+      previous_stop_phase = -1;
+    }
+
+    selected_card = select_card_for_action(player, player, player, 0xff, 0, prompt_copy, 2);
+    if (g_target_selection_status_code != -3)
+    {
+      if (g_target_selection_status_code == -2)
+      {
+        done = 1;
+      }
+      else if (g_target_selection_status_code == 0 && selected_card != -1 &&
+               can_activate_mana_source_for_stop_prompt(unk_00742fcc, selected_card) != 0)
+      {
+        FUN_0044b7d4(unk_00742fcc, selected_card);
+      }
+    }
+  }
+}
+
+// FUNCTION: MAGIC 0x0044b3d4
+void resolve_mana_burn(void)
+{
+  int current_card;
+  int player;
+
+  if ((g_duel_network_flags & 2) == 0)
+  {
+    while (raw_mana_available[active_player][7] != 0 && current_phase > 0x1a)
+    {
+      current_card = 0;
+      while (current_card < active_cards_count[active_player])
+      {
+        if (is_in_play(active_player, current_card) != 0)
+        {
+          dispatch_event_to_single_card(active_player, current_card, 0x8f, 1 - active_player, -1);
+          if (DAT_008cf1b8 != 0)
+          {
+            break;
+          }
+        }
+        current_card = current_card + 1;
+      }
+      if (active_cards_count[active_player] <= current_card)
+      {
+        goto burn_remaining_mana;
+      }
+      if (activate(active_player, active_player, current_card) != 0)
+      {
+        resolve_activated_ability(active_player, current_card);
+      }
+    }
+  }
+
+burn_remaining_mana:
+  for (player = 0; player < 2; player = player + 1)
+  {
+    if (raw_mana_available[player][7] > 0)
+    {
+      if (g_duel_ai_mode_state != 1)
+      {
+        play_sound_effect(0x2a);
+        show_mana_burn_dialog(player, raw_mana_available[player][7]);
+      }
+      life[player] = life[player] - raw_mana_available[player][7];
+      for (current_card = 0; current_card <= 7; current_card = current_card + 1)
+      {
+        raw_mana_available[player][current_card] = 0;
+      }
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x0044b646
@@ -762,7 +1367,7 @@ int FUN_00440c61(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00442cf9
-int FUN_00442cf9(int player, int card)
+int is_nonactivated_mana_source(int player, int card)
 {
   int result;
 
@@ -947,13 +1552,13 @@ int FUN_004af0ec(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044b6af
-int FUN_0044b6af(int player, int card)
+int can_activate_mana_source_for_stop_prompt(int player, int card)
 {
-  if (is_in_play(player, card) &&
-      (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].extra_ability & EA_MANA_SOURCE) != 0 &&
-      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-      ((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0 ||
-       (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+  if (is_in_play(player, card) != 0 &&
+      (global_cards_data[(global_card_instances[player])[card].internal_card_id].extra_ability & EA_MANA_SOURCE) != 0 &&
+      ((global_card_instances[player])[card].state & STATE_TAPPED) == 0 &&
+      (((global_card_instances[player])[card].state & STATE_SUMMONSICK_BOTH) == 0 ||
+       (global_cards_data[(global_card_instances[player])[card].internal_card_id].type & TYPE_CREATURE) == 0))
   {
     return 1;
   }
@@ -1131,17 +1736,17 @@ int activate(int who_activates, int player, int card)
 
     for (i = 0; i < 7; ++i)
     {
-      unk_008ce510[i] = s.upkeep_cost[i];
+      mana_charge[i] = s.upkeep_cost[i];
 
       if (i > 0)
       {
-        if (has_mana(player, (color_t)i, unk_008ce510[i]) == 0)
+        if (has_mana(player, (color_t)i, mana_charge[i]) == 0)
         {
           s.has_upkeep_costs = 0;
         }
       }
 
-      s.upkeep_total += unk_008ce510[i];
+      s.upkeep_total += mana_charge[i];
     }
 
     if (has_mana(s.who_pays, COLOR_ANY, s.upkeep_total) == 0)
@@ -1185,7 +1790,7 @@ int activate(int who_activates, int player, int card)
   upkeep_cleanup:
     for (i = 0; i < 7; ++i)
     {
-      unk_008ce510[i] = 0;
+      mana_charge[i] = 0;
     }
 
     instance->upkeep_flags &= ~UPKEEP_UPKEEP_TRIGGER;
@@ -1199,7 +1804,7 @@ int activate(int who_activates, int player, int card)
   {
     for (i = 0; i < 7; ++i)
     {
-      unk_008ce510[i] = (int)(char)instance->mana_to_untap[i];
+      mana_charge[i] = (int)(char)instance->mana_to_untap[i];
     }
 
     charge_mana(player, 0, 0);
@@ -1693,7 +2298,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
           if (PLAYER_CARD_INSTANCE(s.player, (int)s.card).internal_card_id != -1 &&
               ((PLAYER_CARD_INSTANCE(s.player, (int)s.card).upkeep_flags & 1) != 0 ||
                (PLAYER_CARD_INSTANCE(s.player, (int)s.card).upkeep_flags & 0x10) != 0 ||
-               (!FUN_00442cf9(s.player, (int)s.card) && s.player == unk_00742f60)))
+               (!is_nonactivated_mana_source(s.player, (int)s.card) && s.player == unk_00742f60)))
           {
             s.response_code = FUN_004af0ec(s.player, (int)s.card);
 
@@ -1733,7 +2338,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
             if (PLAYER_CARD_INSTANCE(1 - s.player, (int)s.card).internal_card_id != -1 &&
                 ((PLAYER_CARD_INSTANCE(1 - s.player, (int)s.card).upkeep_flags & 1) != 0 ||
                  (PLAYER_CARD_INSTANCE(1 - s.player, (int)s.card).upkeep_flags & 0x10) != 0 ||
-                 !FUN_00442cf9(1 - s.player, (int)s.card)))
+                 !is_nonactivated_mana_source(1 - s.player, (int)s.card)))
             {
               s.response_code = FUN_004af0ec(1 - s.player, (int)s.card);
               if ((unk_008b3270 & 2) != 0)
@@ -1981,7 +2586,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
       }
       else
       {
-        if (FUN_0044b6af(s.selected_player, (int)s.selected_card) != 0 && s.selected_player == reason_for_trigger_controller)
+        if (can_activate_mana_source_for_stop_prompt(s.selected_player, (int)s.selected_card) != 0 && s.selected_player == reason_for_trigger_controller)
         {
           FUN_0044b7d4(s.selected_player, (int)s.selected_card);
         }
@@ -2354,9 +2959,9 @@ void start_ai_decision_search(int decision_code, int time_scale)
 
   DAT_00775d3c = 1 << (unsigned char)(internal_rand(5) + 1);
 
-  FUN_004e430e();
+  save_ai_search_state();
   FUN_004e1b84();
-  FUN_004a7cba();
+  update_duel_thread_time_marker();
 
   unk_008cc840 = 0;
   DAT_008a8d74 = 1;
@@ -2364,10 +2969,11 @@ void start_ai_decision_search(int decision_code, int time_scale)
 }
 
 // FUNCTION: MAGIC 0x004e430e
-void FUN_004e430e(void)
+void save_ai_search_state(void)
 {
-  memset(&g_ai_search_backup, 0, sizeof(g_ai_search_backup));
+  saved_recorded_action_count = 0;
   memcpy(g_ai_search_backup.card_instances, global_card_instances, sizeof(g_ai_search_backup.card_instances));
+  memcpy(g_ai_search_backup.extra_card_data, global_cards_data + g_card_count, sizeof(g_ai_search_backup.extra_card_data));
   memcpy(g_ai_search_backup.library, global_library, sizeof(g_ai_search_backup.library));
   memcpy(g_ai_search_backup.graveyard, global_graveyard_slots, sizeof(g_ai_search_backup.graveyard));
   memcpy(g_ai_search_backup.exile, global_exile, sizeof(g_ai_search_backup.exile));
@@ -2393,15 +2999,20 @@ void FUN_004e430e(void)
   memcpy(g_ai_search_backup.stack_cards, global_stack_cards, sizeof(g_ai_search_backup.stack_cards));
   memcpy(g_ai_search_backup.stack_damage_targets, global_stack_damage_targets, sizeof(g_ai_search_backup.stack_damage_targets));
   memcpy(g_ai_search_backup.active_counts, active_cards_count, sizeof(g_ai_search_backup.active_counts));
+  if (stack_size < 0)
+  {
+    _assert("ScWilly>=0", "D:\\Newmagic\\multiplayer\\sid\\Ai.c", 0x1cb);
+  }
   g_ai_search_backup.stack_count = stack_size;
   g_ai_search_backup.DAT_007ab2cc_value = DAT_007ab2cc;
   g_ai_search_backup.DAT_0093a848_value = DAT_0093a848;
   memcpy(g_ai_search_backup.damage_matrix, unk_0093b280, sizeof(g_ai_search_backup.damage_matrix));
   memcpy(g_ai_search_backup.cost_mod, unk_0072c440, sizeof(g_ai_search_backup.cost_mod));
-  memcpy(g_ai_search_backup.mana_charge, unk_008ce510, sizeof(g_ai_search_backup.mana_charge));
+  memcpy(g_ai_search_backup.mana_charge, mana_charge, sizeof(g_ai_search_backup.mana_charge));
   g_ai_search_backup.x_value_copy = x_value;
   g_ai_search_backup.max_x_value_copy = max_x_value;
   g_ai_search_backup.extra_turn_player = g_duel_extra_turn_player;
+  g_ai_search_backup.DAT_0093a848_value = DAT_0093a848;
   g_ai_search_backup.stop_phase_copy = stop_phase;
   g_ai_search_backup.stop_phase_player_copy = stop_phase_player;
   g_ai_search_backup.battlefield_flags = battlefield_extra_ability_flags;
@@ -2411,9 +3022,10 @@ void FUN_004e430e(void)
 }
 
 // FUNCTION: MAGIC 0x004e4632
-void FUN_004e4632(void)
+void restore_ai_search_state(void)
 {
   memcpy(global_card_instances, g_ai_search_backup.card_instances, sizeof(g_ai_search_backup.card_instances));
+  memcpy(global_cards_data + g_card_count, g_ai_search_backup.extra_card_data, sizeof(g_ai_search_backup.extra_card_data));
   memcpy(global_library, g_ai_search_backup.library, sizeof(g_ai_search_backup.library));
   memcpy(global_graveyard_slots, g_ai_search_backup.graveyard, sizeof(g_ai_search_backup.graveyard));
   memcpy(global_exile, g_ai_search_backup.exile, sizeof(g_ai_search_backup.exile));
@@ -2443,10 +3055,11 @@ void FUN_004e4632(void)
   DAT_0093a848 = g_ai_search_backup.DAT_0093a848_value;
   memcpy(unk_0093b280, g_ai_search_backup.damage_matrix, sizeof(g_ai_search_backup.damage_matrix));
   memcpy(unk_0072c440, g_ai_search_backup.cost_mod, sizeof(g_ai_search_backup.cost_mod));
-  memcpy(unk_008ce510, g_ai_search_backup.mana_charge, sizeof(g_ai_search_backup.mana_charge));
+  memcpy(mana_charge, g_ai_search_backup.mana_charge, sizeof(g_ai_search_backup.mana_charge));
   x_value = g_ai_search_backup.x_value_copy;
   max_x_value = g_ai_search_backup.max_x_value_copy;
   g_duel_extra_turn_player = g_ai_search_backup.extra_turn_player;
+  DAT_0093a848 = g_ai_search_backup.DAT_0093a848_value;
   stop_phase = g_ai_search_backup.stop_phase_copy;
   stop_phase_player = g_ai_search_backup.stop_phase_player_copy;
   battlefield_extra_ability_flags = g_ai_search_backup.battlefield_flags;
@@ -2469,15 +3082,147 @@ int FUN_004e1b84(void)
 }
 
 // FUNCTION: MAGIC 0x004a7c4a
-int FUN_004a7c4a(void)
+int get_duel_thread_time_ms(void)
 {
-  return 0;
+  struct
+  {
+    unsigned int elapsed_time;
+    FILETIME scratch_time;
+    FILETIME user_time;
+  } s;
+
+  if (g_is_win9x != 0)
+  {
+    DeviceIoControl(g_mpstime_vxd_handle, 2, NULL, 0, &s.elapsed_time, 4, NULL, NULL);
+  }
+  else
+  {
+    GetThreadTimes(GetCurrentThread(), &s.scratch_time, &s.scratch_time, &s.scratch_time, &s.user_time);
+    s.elapsed_time = s.user_time.dwLowDateTime / 10000;
+  }
+
+  return s.elapsed_time;
 }
 
 // FUNCTION: MAGIC 0x004a7cba
-void FUN_004a7cba(void)
+void update_duel_thread_time_marker(void)
 {
-  DAT_0064ee98 = FUN_004a7c4a();
+  DAT_0064ee98 = get_duel_thread_time_ms();
+}
+
+// FUNCTION: MAGIC 0x004a3662
+void show_mana_burn_dialog(int player, int amount)
+{
+  struct
+  {
+    int player;
+    int amount;
+  } s;
+
+  if (g_duel_ai_mode_state != 1)
+  {
+    s.player = player;
+    s.amount = amount;
+    DialogBoxParamA(g_app_instance, (LPCSTR)0xf3, g_duel_window_hwnd, dlgproc_mana_burn, (LPARAM)&s.player);
+  }
+}
+
+// FUNCTION: MAGIC 0x004a36ac
+BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  struct
+  {
+    char title_text[200];
+    HDC dc;
+    HGDIOBJ font;
+    RECT rect;
+    char message_text[200];
+    char path[264];
+  } s;
+
+  switch (msg)
+  {
+    case WM_INITDIALOG:
+      g_mana_burn_dialog_data = (int *)lparam;
+      sprintf(s.path, "%s\\WINBK_ManaBurn.pic", global_duelart_path);
+      g_mana_burn_dialog_background = load_pic(s.path);
+      g_mana_burn_dialog_text_color = 0x100009a;
+      g_mana_burn_dialog_shadow_color = 0x10000c9;
+      load_text(global_ui_strings_filename, "DIALOG_MANABURN");
+      SetDlgItemTextA(hwnd, 0x4bb, text_lines[0]);
+      ShowWindow(GetDlgItem(hwnd, 0x4bb), 0);
+      ShowWindow(GetDlgItem(hwnd, 0x4ba), 0);
+      SetTimer(hwnd, 1, 3000, NULL);
+      return 1;
+
+    case 0x30f:
+    case 0x310:
+    case 0x311:
+      return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+    case WM_ERASEBKGND:
+      s.dc = (HDC)wparam;
+      ApplyCardArtPaletteToDc(s.dc);
+      GetClientRect(hwnd, &s.rect);
+      if (g_mana_burn_dialog_background != NULL)
+      {
+        DrawBitmapToRect(s.dc, &s.rect, g_mana_burn_dialog_background);
+      }
+      else
+      {
+        FillRect(s.dc, &s.rect, GetStockObject(2));
+      }
+      s.font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x4bb, WM_GETFONT, 0, 0);
+      SelectObject(s.dc, s.font);
+      SetBkMode(s.dc, TRANSPARENT);
+      SetTextColor(s.dc, g_mana_burn_dialog_text_color);
+      GetDlgItemTextA(hwnd, 0x4bb, s.title_text, 200);
+      GetWindowRect(GetDlgItem(hwnd, 0x4bb), &s.rect);
+      MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
+      SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
+      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+      OffsetRect(&s.rect, -2, -2);
+      SetTextColor(s.dc, g_mana_burn_dialog_text_color);
+      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+      GetWindowRect(GetDlgItem(hwnd, 0x4ba), &s.rect);
+      MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
+      load_text(global_ui_strings_filename, "DIALOG_MANABURN");
+      if (g_mana_burn_dialog_data[0] == 1)
+      {
+        copy_opponent_name_prefix(s.message_text);
+        sprintf(s.title_text, text_lines[1], s.message_text, g_mana_burn_dialog_data[1]);
+      }
+      else
+      {
+        sprintf(s.title_text, text_lines[2], g_mana_burn_dialog_data[1]);
+      }
+      SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
+      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+      OffsetRect(&s.rect, -2, -2);
+      SetTextColor(s.dc, g_mana_burn_dialog_text_color);
+      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+      return 1;
+
+    case WM_KEYDOWN:
+    case WM_COMMAND:
+      delete_and_close_object(g_mana_burn_dialog_background);
+      EndDialog(hwnd, 0);
+      return 1;
+
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+      delete_and_close_object(g_mana_burn_dialog_background);
+      EndDialog(hwnd, 0);
+      return 1;
+
+    case WM_TIMER:
+      delete_and_close_object(g_mana_burn_dialog_background);
+      EndDialog(hwnd, 0);
+      return 1;
+
+    default:
+      return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x004e4e9a
@@ -2492,7 +3237,7 @@ void __stdcall FUN_004e4e9a(void)
   {
     unk_006a6ee8[i] = 0x63;
   }
-  FUN_004e4632();
+  restore_ai_search_state();
   if (g_duel_ai_mode_state != 1)
   {
     ai_decision_code = -1;
@@ -2500,36 +3245,849 @@ void __stdcall FUN_004e4e9a(void)
 }
 
 // FUNCTION: MAGIC 0x004e50f5
-void __stdcall FUN_004e50f5(void)
+void __stdcall save_recorded_ai_actions(void)
 {
+  int action_index;
+
+  for (action_index = 0; action_index < recorded_action_count; action_index = action_index + 1)
+  {
+    recorded_action_codes[action_index] = unk_006a6ee8[action_index];
+    unk_006a1db8[action_index] = unk_006a21b8[action_index];
+    saved_recorded_action_internal_card_ids[action_index] = unk_006a8258[action_index];
+    unk_006a5f18[action_index] = unk_006a8660[action_index];
+  }
+
+  recorded_action_codes[recorded_action_count] = 99;
+  if (recorded_action_codes[0] == 99)
+  {
+    saved_recorded_action_count = recorded_action_count;
+  }
+  DAT_0072c8e4 = 1;
 }
 
 // FUNCTION: MAGIC 0x004e51e8
 int ai_opinion_of_gamestate(int player)
 {
-  (void)player;
-  return 0;
+  struct
+  {
+    int block_result;
+    int power_score;
+    int toughness;
+    unsigned int abilities;
+    unsigned int landwalk_masks[2];
+    char attached_to_card[300];
+    int card_value;
+    int opponent;
+    int loop2;
+    int life_score;
+    int card;
+    int damage_power;
+    int internal_card_id;
+    int side_score;
+    int score;
+    int current_player;
+  } s;
+
+  unk_00712938 = 1;
+  s.score = 0;
+  s.opponent = 1 - player;
+  get_landwalk_evasion_masks(&s.landwalk_masks[0], &s.landwalk_masks[1]);
+  memset(s.attached_to_card, 0, 0x12c);
+
+  s.life_score = 0;
+  s.score = s.life_score;
+  for (s.card = 1; s.card <= life[player]; s.card = s.card + 1)
+  {
+    s.life_score += 0x18 / s.card + 0xc;
+  }
+  s.score += (DAT_007a7d10[player] * s.life_score) / 8;
+
+  s.life_score = 0;
+  for (s.card = 1; s.card <= life[s.opponent]; s.card = s.card + 1)
+  {
+    s.life_score += 0x18 / s.card + 0xc;
+  }
+  s.score -= (DAT_007a7d10[s.opponent] * s.life_score) / 8;
+
+  if (life[player] <= 0)
+  {
+    s.score += (life[player] * 4 - 8) * 0x4b;
+  }
+  if (life[s.opponent] <= 0)
+  {
+    s.score -= (life[s.opponent] - 2) * 0x100;
+  }
+
+  if (DAT_00712544 != 0)
+  {
+    strcpy(unk_00748770, "");
+  }
+
+  for (s.current_player = 0; s.current_player < 2; s.current_player = s.current_player + 1)
+  {
+    s.opponent = 1 - s.current_player;
+    s.side_score = -(((active_player == s.current_player ? 0x30 : 0) + 0x18) *
+                     raw_mana_available[s.current_player][7]);
+
+    for (s.card = 1; s.card < 6; s.card = s.card + 1)
+    {
+      for (s.loop2 = 1; s.loop2 <= basiclandtypes_controlled[s.current_player][s.card]; s.loop2 = s.loop2 + 1)
+      {
+        s.side_score += 0x30 / s.loop2;
+      }
+    }
+
+    for (s.card = 0; s.card < active_cards_count[s.current_player]; s.card = s.card + 1)
+    {
+      if (global_card_instances[s.current_player][s.card].internal_card_id == -1)
+      {
+        continue;
+      }
+      if ((global_card_instances[s.current_player][s.card].state & STATE_OUBLIETTED) != 0)
+      {
+        continue;
+      }
+
+      s.internal_card_id = global_card_instances[s.current_player][s.card].internal_card_id;
+      if ((global_cards_data[s.internal_card_id].type & TYPE_EFFECT) != 0)
+      {
+        continue;
+      }
+
+      s.card_value = 1;
+      if ((global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0)
+      {
+        s.abilities = C_get_abilities(s.current_player, s.card, EVENT_ABILITIES, -1);
+        s.power_score = C_get_abilities(s.current_player, s.card, EVENT_POWER, -1) & ~0x4000;
+        s.power_score *= 2;
+        s.damage_power = s.power_score;
+        if (global_cards_data[s.internal_card_id].subtype == 0)
+        {
+          s.damage_power = 0;
+          s.power_score = s.damage_power;
+        }
+        s.toughness = C_get_abilities(s.current_player, s.card, EVENT_TOUGHNESS, -1) & ~0x4000;
+        s.card_value = ((s.power_score + 3) * (s.toughness + 4)) / 2;
+
+        if ((global_card_instances[s.current_player][s.card].state & STATE_TAPPED) != 0 &&
+            human_player == s.current_player)
+        {
+          s.card_value--;
+        }
+        if ((s.abilities & 0x80) != 0)
+        {
+          s.card_value = (s.card_value * 3) / 2;
+        }
+        if ((s.abilities & 0x100) != 0)
+        {
+          s.card_value = (s.card_value * 3) / 2;
+        }
+        if ((global_cards_data[s.internal_card_id].extra_ability & 3) != 0)
+        {
+          s.card_value = (s.card_value * 3) / 2;
+        }
+        if ((s.abilities & 0x40) != 0)
+        {
+          s.card_value = ((s.toughness + 1) * s.card_value) / 2;
+        }
+        if ((s.abilities & 0x200) != 0)
+        {
+          s.card_value = (s.card_value * 3) / 2;
+        }
+
+        if (DAT_0093f4b0 == 0 &&
+            player != s.current_player &&
+            player == human_player &&
+            (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0)
+        {
+          s.block_result = 0;
+          s.abilities = C_get_abilities(s.current_player, s.card, EVENT_ABILITIES, -1);
+          for (s.loop2 = 0; s.loop2 < active_cards_count[s.opponent]; s.loop2 = s.loop2 + 1)
+          {
+            if (can_block_attacker_with_abilities(s.opponent,
+                                                  s.loop2,
+                                                  s.current_player,
+                                                  s.card,
+                                                  s.abilities,
+                                                  s.landwalk_masks[s.current_player]) != 0)
+            {
+              s.block_result |= 1;
+              if (C_get_abilities(s.opponent, s.loop2, EVENT_TOUGHNESS, s.card) > s.power_score ||
+                  C_get_abilities(s.opponent, s.loop2, EVENT_POWER, s.card) >= s.toughness)
+              {
+                s.block_result |= 2;
+                break;
+              }
+            }
+          }
+          if ((s.block_result & 2) == 0)
+          {
+            s.side_score += (DAT_007a7d10[s.opponent] * s.damage_power * 0x18) / 0x10;
+            if (s.block_result == 0 && life[s.opponent] <= s.power_score)
+            {
+              s.side_score += 0x100;
+            }
+          }
+        }
+
+        if ((global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0)
+        {
+          s.card_value *= 3;
+        }
+        else if (global_cards_data[s.internal_card_id].code_pointer == card_ball_lightning)
+        {
+          s.card_value = 1;
+        }
+
+        s.card_value = (unk_007a7d18[s.current_player] * s.card_value) / 8;
+      }
+
+      if ((global_cards_data[s.internal_card_id].type & TYPE_LAND) != 0)
+      {
+        if ((global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) == 0)
+        {
+          s.card_value = 2;
+        }
+        else if ((global_card_instances[s.current_player][s.card].state & STATE_TAPPED) == 0)
+        {
+          s.card_value = 1;
+        }
+        else
+        {
+          s.card_value = 0;
+        }
+      }
+
+      if (global_cards_data[s.internal_card_id].type == TYPE_ARTIFACT &&
+          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0)
+      {
+        s.card_value = ((global_cards_data[s.internal_card_id].cc[1] * 3 + 3) * 4) / 2;
+      }
+
+      if (global_cards_data[s.internal_card_id].type == TYPE_ENCHANTMENT &&
+          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0 &&
+          (char)global_card_instances[s.current_player][s.card].damage_target_player != -1 &&
+          global_card_instances[s.current_player][s.card].damage_target_card != -1)
+      {
+        s.attached_to_card[(int)(char)global_card_instances[s.current_player][s.card].damage_target_player * 150 +
+                           global_card_instances[s.current_player][s.card].damage_target_card] |=
+            (char)(1 << (unsigned char)s.current_player);
+      }
+
+      if ((global_cards_data[s.internal_card_id].type & TYPE_SPELL) != 0 &&
+          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) == 0)
+      {
+        s.card_value = GetCardRarity(s.internal_card_id) * 0xc;
+      }
+
+      if ((global_cards_data[s.internal_card_id].type & TYPE_ENCHANTMENT) != 0 &&
+          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) == 0)
+      {
+        s.card_value = 3;
+      }
+
+      s.side_score += s.card_value;
+      if ((DAT_00712544 & 2) != 0 && s.current_player + 2 == DAT_00712544)
+      {
+        FUN_0044a796(s.current_player, s.card);
+        strcat(unk_00748770, " ");
+        strcat(unk_00748770, _itoa(s.card_value, ai_action_dialog_number_buffer, 10));
+        strcat(unk_00748770, "\n");
+      }
+    }
+
+    if (s.current_player == 0)
+    {
+      DAT_008cdab0 = s.side_score;
+    }
+    else
+    {
+      DAT_008cdab4 = s.side_score;
+    }
+
+    if (player == s.current_player)
+    {
+      s.score += s.side_score;
+    }
+    else
+    {
+      s.score -= s.side_score;
+    }
+  }
+
+  for (s.current_player = 0; s.current_player < 2; s.current_player = s.current_player + 1)
+  {
+    for (s.card = 0; s.card < active_cards_count[s.current_player]; s.card = s.card + 1)
+    {
+      if (((int)(char)s.attached_to_card[s.card + s.current_player * 150] & (1 << (unsigned char)player)) != 0)
+      {
+        s.score += 2;
+      }
+      if (((int)(char)s.attached_to_card[s.card + s.current_player * 150] & (1 << (unsigned char)(1 - player))) != 0)
+      {
+        s.score -= 2;
+      }
+    }
+  }
+
+  if (DAT_0093f4b0 == 0 && player == human_player)
+  {
+    s.score = ai_opinion_of_gamestate_continued(player, s.score);
+  }
+  unk_00712938 = 0;
+  return s.score;
+}
+
+// FUNCTION: MAGIC 0x004e5db4
+int ai_opinion_of_gamestate_continued(int player, int score)
+{
+  struct
+  {
+    int attacker_power;
+    int attacker_toughness;
+    unsigned int block_result;
+    int best_blocker;
+    int opponent_player;
+    int test_card;
+    unsigned int landwalk_mask;
+    int expected_damage;
+    int card;
+    int internal_card_id;
+    unsigned int attacker_abilities;
+    int blocker_toughness[16];
+    int ranked_attackers[24];
+    int creature_index;
+    int blocker_power[16];
+    int test_toughness;
+    char creature_index_by_card[152];
+    int smallest_blocker_score;
+    int blocker_scores[16];
+    int test_power;
+    int ranked_index;
+    int creature_count;
+    char saved_special_mana[8];
+  } s;
+
+  s.opponent_player = 1 - player;
+  get_landwalk_evasion_masks(&s.landwalk_mask, NULL);
+
+  for (s.card = 0; s.card < 8; s.card = s.card + 1)
+  {
+    s.saved_special_mana[s.card] = (char)unk_00742f70[s.opponent_player][s.card];
+    unk_00742f70[s.opponent_player][s.card] = basiclandtypes_controlled[s.opponent_player][s.card];
+  }
+
+  for (s.ranked_index = 0; s.ranked_index < 8; s.ranked_index = s.ranked_index + 1)
+  {
+    s.ranked_attackers[s.ranked_index * 3 + 1] = -1;
+  }
+
+  s.creature_count = 0;
+  for (s.test_card = 0; s.test_card < active_cards_count[player]; s.test_card = s.test_card + 1)
+  {
+    if (global_card_instances[player][s.test_card].internal_card_id != -1 &&
+        (global_card_instances[player][s.test_card].state & (STATE_IN_PLAY | STATE_PLAYED_FROM_HAND)) != 0 &&
+        (global_card_instances[player][s.test_card].state & STATE_OUBLIETTED) == 0 &&
+        (global_cards_data[global_card_instances[player][s.test_card].internal_card_id].type & TYPE_CREATURE) != 0)
+    {
+      s.creature_index_by_card[s.test_card] = (char)s.creature_count;
+      s.blocker_power[s.creature_count] = C_get_abilities(player, s.test_card, EVENT_POWER, -1);
+      s.blocker_toughness[s.creature_count] = C_get_abilities(player, s.test_card, EVENT_TOUGHNESS, -1);
+      s.blocker_scores[s.creature_count] = (int)global_card_instances[player][s.test_card].mana_color;
+      s.creature_count++;
+    }
+  }
+
+  for (s.card = 0; s.card < active_cards_count[s.opponent_player]; s.card = s.card + 1)
+  {
+    s.internal_card_id = global_card_instances[s.opponent_player][s.card].internal_card_id;
+    if (is_in_play(s.opponent_player, s.card) != 0 &&
+        (global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0 &&
+        (global_cards_data[s.internal_card_id].subtype != 0 ||
+         (global_card_instances[s.opponent_player][s.card].token_status & 0x800) != 0))
+    {
+      s.attacker_power = C_get_abilities(s.opponent_player, s.card, EVENT_POWER, -1);
+      s.attacker_toughness = C_get_abilities(s.opponent_player, s.card, EVENT_TOUGHNESS, -1);
+      if (nonactive_player == s.opponent_player)
+      {
+        if ((global_cards_data[s.internal_card_id].extra_ability & EA_INF_POWER) != 0)
+        {
+          s.attacker_power += (*global_cards_data[s.internal_card_id].code_pointer)(s.opponent_player, s.card, 0x39);
+        }
+        if ((global_cards_data[s.internal_card_id].extra_ability & EA_INF_TOUGHNESS) != 0)
+        {
+          s.attacker_toughness += (*global_cards_data[s.internal_card_id].code_pointer)(s.opponent_player, s.card, 0x3a);
+        }
+      }
+
+      s.test_card = 0;
+      while (s.test_card < 8)
+      {
+        if (s.attacker_power > s.ranked_attackers[s.test_card * 3 + 1])
+        {
+          for (s.ranked_index = 7; s.test_card < s.ranked_index; s.ranked_index = s.ranked_index - 1)
+          {
+            s.ranked_attackers[s.ranked_index * 3] = s.ranked_attackers[s.ranked_index * 3 - 3];
+            s.ranked_attackers[s.ranked_index * 3 + 1] = s.ranked_attackers[s.ranked_index * 3 - 2];
+            s.ranked_attackers[s.ranked_index * 3 + 2] = s.ranked_attackers[s.ranked_index * 3 - 1];
+          }
+          s.ranked_attackers[s.test_card * 3] = s.card;
+          s.ranked_attackers[s.test_card * 3 + 1] = s.attacker_power;
+          s.ranked_attackers[s.test_card * 3 + 2] = s.attacker_toughness;
+          break;
+        }
+        s.test_card++;
+      }
+    }
+  }
+
+  s.expected_damage = 0;
+  s.ranked_index = 0;
+  while (s.ranked_index < 8 && s.ranked_attackers[s.ranked_index * 3 + 1] != -1)
+  {
+    s.card = s.ranked_attackers[s.ranked_index * 3];
+    s.attacker_abilities = C_get_abilities(s.opponent_player, s.card, EVENT_ABILITIES, -1);
+    s.attacker_power = s.ranked_attackers[s.ranked_index * 3 + 1];
+    s.attacker_toughness = s.ranked_attackers[s.ranked_index * 3 + 2];
+    s.best_blocker = 0;
+    s.block_result = 0;
+    s.creature_index = 0;
+    s.smallest_blocker_score = 0x7fff;
+
+    for (s.test_card = 0; s.test_card < active_cards_count[player]; s.test_card = s.test_card + 1)
+    {
+      if (is_in_play(player, s.test_card) != 0 &&
+          (global_cards_data[global_card_instances[player][s.test_card].internal_card_id].type & TYPE_CREATURE) != 0)
+      {
+        s.creature_index = (int)s.creature_index_by_card[s.test_card];
+        s.test_power = s.blocker_power[s.creature_index];
+        s.test_toughness = s.blocker_toughness[s.creature_index];
+        if ((global_card_instances[player][s.test_card].state &
+             ((has_vigilance(player, s.test_card) == 0 ? STATE_ATTACKING : 0) + STATE_BLOCKING)) == 0 &&
+            can_block_attacker_with_abilities(player,
+                                              s.test_card,
+                                              s.opponent_player,
+                                              s.card,
+                                              s.attacker_abilities,
+                                              s.landwalk_mask) != 0)
+        {
+          s.block_result = 1;
+          if (s.attacker_power < s.test_toughness || s.attacker_toughness <= s.test_power)
+          {
+            s.block_result = 3;
+            global_card_instances[player][s.test_card].state |= STATE_BLOCKING;
+            break;
+          }
+          if (s.blocker_scores[s.creature_index] < s.smallest_blocker_score)
+          {
+            s.smallest_blocker_score = s.blocker_scores[s.creature_index];
+            s.best_blocker = s.test_card;
+          }
+        }
+      }
+    }
+
+    if ((s.block_result & 2) == 0)
+    {
+      s.test_toughness = (DAT_007a7d10[player] * s.attacker_power * 0x18) / ClampIntToRange(life[player] + 1, 1, 99);
+      s.test_power = (DAT_007a7d10[player + 2] * s.smallest_blocker_score) / 0x10;
+      if (s.block_result == 0 || (s.test_toughness < s.test_power && s.expected_damage + s.attacker_power < life[player]))
+      {
+        s.expected_damage += s.attacker_power;
+        score -= s.test_toughness;
+      }
+      else
+      {
+        score -= s.test_power;
+        global_card_instances[player][s.best_blocker].state |= STATE_BLOCKING;
+      }
+    }
+    s.ranked_index++;
+  }
+
+  if (life[player] <= s.expected_damage && life[s.opponent_player] > 0)
+  {
+    score -= 0x100;
+  }
+
+  for (s.card = 0; s.card < 8; s.card = s.card + 1)
+  {
+    unk_00742f70[s.opponent_player][s.card] = (int)s.saved_special_mana[s.card];
+  }
+
+  return score;
 }
 
 // FUNCTION: MAGIC 0x004e6754
-int FUN_004e6754(int param_1, int param_2)
+int show_ai_action_log_dialog(int use_saved_actions, int score)
 {
-  (void)param_1;
-  (void)param_2;
+  struct
+  {
+    int internal_card_id;
+    int action_count;
+    unsigned int action_flags;
+    int action_index;
+  } s;
+
+  strcpy(unk_00748770, "AI:");
+  strcat(unk_00748770, _itoa(score, ai_action_dialog_number_buffer, 10));
+  strcat(unk_00748770, " L:");
+  strcat(unk_00748770, _itoa(life[0], ai_action_dialog_number_buffer, 10));
+  strcat(unk_00748770, "/");
+  strcat(unk_00748770, _itoa(life[1], ai_action_dialog_number_buffer, 10));
+  strcat(unk_00748770, " ...\n");
+
+  s.action_index = 0;
+  while (1)
+  {
+    if (use_saved_actions != 0)
+    {
+      s.action_count = saved_recorded_action_count;
+    }
+    else
+    {
+      s.action_count = recorded_action_count;
+    }
+
+    if (s.action_count <= s.action_index)
+    {
+      break;
+    }
+
+    if (use_saved_actions != 0)
+    {
+      s.action_flags = unk_006a1db8[s.action_index];
+    }
+    else
+    {
+      s.action_flags = unk_006a21b8[s.action_index];
+    }
+
+    if (s.action_flags != (unsigned int)-1)
+    {
+      if ((s.action_flags & 0x1000) != 0)
+      {
+        strcat(unk_00748770, "Cast ");
+      }
+      if ((s.action_flags & 0x2000) != 0)
+      {
+        strcat(unk_00748770, "Tap ");
+      }
+      if ((s.action_flags & 0x4000) != 0)
+      {
+        strcat(unk_00748770, "...target ");
+      }
+      if ((s.action_flags & 0x100) == 0)
+      {
+        strcat(unk_00748770, "e");
+      }
+      if ((unsigned char)s.action_flags == 0xff)
+      {
+        strcat(unk_00748770, "Player");
+      }
+      else
+      {
+        if (use_saved_actions != 0)
+        {
+          s.internal_card_id = saved_recorded_action_internal_card_ids[s.action_index];
+        }
+        else
+        {
+          s.internal_card_id = unk_006a8258[s.action_index];
+        }
+        strcat(unk_00748770, global_cards_data[s.internal_card_id].name);
+      }
+      strcat(unk_00748770, "\n");
+    }
+    s.action_index = s.action_index + 1;
+  }
+
+  do_dialog(0, 0, 0, -1, -1, unk_00748770, 0);
   return 0;
 }
 
 // FUNCTION: MAGIC 0x004a7ccf
-int FUN_004a7ccf(void)
+int get_ai_search_elapsed_time(void)
 {
-  return 0;
+  unsigned int current_time;
+
+  current_time = get_duel_thread_time_ms();
+  return (int)((current_time - DAT_0064ee98) * 100) / 0x151d;
 }
 
 // FUNCTION: MAGIC 0x004a09c6
 int prompt_for_life_total(int player, char *prompt, int maxnum)
 {
-  (void)player;
-  (void)prompt;
-  (void)maxnum;
-  return 0;
+  struct
+  {
+    char *prompt;
+    int maxnum;
+    int show_reset_button;
+  } s;
+  int result;
+
+  if (player != 0)
+  {
+    return maxnum;
+  }
+  else
+  {
+    s.prompt = prompt;
+    s.maxnum = maxnum;
+    s.show_reset_button = 0;
+    result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdc, g_duel_window_hwnd, dlgproc_prompt_for_life_total, (LPARAM)&s.prompt);
+    return result;
+  }
+}
+
+// FUNCTION: MAGIC 0x004a0a29
+BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  struct
+  {
+    HDC erase_hdc;
+    int saved_dc;
+    RECT rect;
+    COLORREF text_color;
+    DRAWITEMSTRUCT *draw_item;
+    HWND ctl_hwnd;
+    int ctl_id;
+    HDC ctl_hdc;
+    HWND previous_control;
+    HWND current_control;
+    UINT reset_life;
+    UINT selected_life;
+    BOOL was_translated;
+    UINT command_id;
+    HWND context;
+  } s;
+
+  switch (msg)
+  {
+    case WM_INITDIALOG:
+      s.context = (HWND)lparam;
+      SetWindowLongA(hwnd, 8, ((int *)s.context)[1]);
+      setup_life_total_dialog_resources(&g_life_total_dialog_background,
+                                        &g_life_total_dialog_text_color,
+                                        &g_life_total_dialog_button_brush,
+                                        &g_life_total_dialog_pen1,
+                                        &g_life_total_dialog_pen2,
+                                        &g_life_total_dialog_unfocus_text_color,
+                                        &g_life_total_dialog_focus_text_color);
+      SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
+      SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
+      SetDlgItemTextA(hwnd, 0x44d, (LPCSTR)((int *)s.context)[0]);
+      if (((int *)s.context)[2] == 0)
+      {
+        ShowWindow(GetDlgItem(hwnd, 0x44e), 0);
+      }
+      SendMessageA(hwnd, 0x401, IDOK, 0);
+      SetDlgItemInt(hwnd, 0x44c, ((int *)s.context)[1], 0);
+      g_life_total_edit_wndproc = (WNDPROC)SetWindowLongA(GetDlgItem(hwnd, 0x44c), GWL_WNDPROC, (LONG)life_total_edit_wndproc);
+      SetFocus(GetDlgItem(hwnd, 0x44c));
+      SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
+      change_buttonclass_wndproc(hwnd);
+      return 0;
+
+    case WM_COMMAND:
+      s.command_id = (UINT)(wparam & 0xffff);
+      switch (s.command_id)
+      {
+        case IDOK:
+          s.selected_life = GetDlgItemInt(hwnd, 0x44c, &s.was_translated, 0);
+          if (s.was_translated != 0)
+          {
+            cleanup_life_total_dialog_resources(g_life_total_dialog_background,
+                                                g_life_total_dialog_button_brush,
+                                                g_life_total_dialog_pen1,
+                                                g_life_total_dialog_pen2);
+            EndDialog(hwnd, s.selected_life);
+          }
+          else
+          {
+            SetFocus(GetDlgItem(hwnd, 0x44c));
+            SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
+          }
+          break;
+
+        case IDCANCEL:
+          cleanup_life_total_dialog_resources(g_life_total_dialog_background,
+                                              g_life_total_dialog_button_brush,
+                                              g_life_total_dialog_pen1,
+                                              g_life_total_dialog_pen2);
+          EndDialog(hwnd, -1);
+          break;
+
+        case 0x44e:
+          s.reset_life = GetWindowLongA(hwnd, 8);
+          SetDlgItemInt(hwnd, 0x44c, s.reset_life, 0);
+          SetFocus(GetDlgItem(hwnd, 0x44c));
+          break;
+      }
+      return 1;
+
+    case 0x4c8:
+      s.current_control = (HWND)wparam;
+      s.previous_control = (HWND)lparam;
+      if (GetDlgItem(hwnd, IDCANCEL) == s.current_control)
+      {
+        SendMessageA(hwnd, 0x401, IDCANCEL, 0);
+      }
+      else
+      {
+        SendMessageA(hwnd, 0x401, IDOK, 0);
+      }
+      if (s.current_control != NULL)
+      {
+        InvalidateRect(s.current_control, NULL, 1);
+      }
+      if (s.previous_control != NULL)
+      {
+        InvalidateRect(s.previous_control, NULL, 1);
+      }
+      return 0;
+
+    case WM_CTLCOLORSTATIC:
+      s.ctl_hdc = (HDC)wparam;
+      ApplyCardArtPaletteToDc(s.ctl_hdc);
+      s.ctl_hwnd = (HWND)lparam;
+      s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
+      SetBkMode(s.ctl_hdc, TRANSPARENT);
+      SetTextColor(s.ctl_hdc, g_life_total_dialog_text_color);
+      return (BOOL)GetStockObject(NULL_BRUSH);
+
+    case WM_DRAWITEM:
+      s.draw_item = (DRAWITEMSTRUCT *)lparam;
+      if (GetFocus() == s.draw_item->hwndItem)
+      {
+        s.text_color = g_life_total_dialog_focus_text_color;
+      }
+      else
+      {
+        s.text_color = g_life_total_dialog_unfocus_text_color;
+      }
+      FUN_004955ae(s.draw_item,
+                   g_life_total_dialog_button_brush,
+                   g_life_total_dialog_pen1,
+                   g_life_total_dialog_pen2,
+                   s.text_color,
+                   0);
+      return 1;
+
+    case WM_QUERYNEWPALETTE:
+    case WM_PALETTEISCHANGING:
+    case WM_PALETTECHANGED:
+      return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+    case WM_ERASEBKGND:
+      s.erase_hdc = (HDC)wparam;
+      ApplyCardArtPaletteToDc(s.erase_hdc);
+      GetClientRect(hwnd, &s.rect);
+      EnterCriticalSection(&g_card_render_lock);
+      s.saved_dc = SaveDC(g_shared_offscreen_dc);
+      s.erase_hdc = g_shared_offscreen_dc;
+      if (g_life_total_dialog_background != (HBITMAP)0)
+      {
+        DrawBitmapToRect(s.erase_hdc, &s.rect, g_life_total_dialog_background);
+      }
+      else
+      {
+        FillRect(s.erase_hdc, &s.rect, GetStockObject(2));
+      }
+      RestoreDC(g_shared_offscreen_dc, s.saved_dc);
+      s.erase_hdc = (HDC)wparam;
+      GetClientRect(hwnd, &s.rect);
+      BitBlt(s.erase_hdc,
+             0,
+             0,
+             s.rect.right,
+             s.rect.bottom,
+             g_shared_offscreen_dc,
+             0,
+             0,
+             SRCCOPY);
+      LeaveCriticalSection(&g_card_render_lock);
+      return 1;
+
+    case WM_LBUTTONDOWN:
+      SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
+      return 0;
+
+    default:
+      return 0;
+  }
+}
+
+// FUNCTION: MAGIC 0x004a0f95
+static LRESULT CALLBACK life_total_edit_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  switch (msg)
+  {
+    case WM_CHAR:
+      if ((wparam >= '0' && wparam <= '9') || wparam == VK_BACK)
+      {
+        return CallWindowProcA(g_life_total_edit_wndproc, hwnd, msg, wparam, lparam);
+      }
+      return 0;
+
+    default:
+      return CallWindowProcA(g_life_total_edit_wndproc, hwnd, msg, wparam, lparam);
+  }
+}
+
+// FUNCTION: MAGIC 0x004a1033
+static void setup_life_total_dialog_resources(HBITMAP *background,
+                                              COLORREF *text_color,
+                                              HBRUSH *button_brush,
+                                              HPEN *pen1,
+                                              HPEN *pen2,
+                                              COLORREF *unfocus_text_color,
+                                              COLORREF *focus_text_color)
+{
+  char path[268];
+
+  sprintf(path, "%s\\WINBK_QuestN.pic", global_duelart_path);
+  *background = load_pic(path);
+  *text_color = 0x100009a;
+  *button_brush = CreateSolidBrush(0x100001c);
+  *pen1 = CreatePen(PS_SOLID, 0, 0x1000072);
+  *pen2 = CreatePen(PS_SOLID, 0, 0x10000ca);
+  *unfocus_text_color = 0x100009a;
+  *focus_text_color = 0x10000bf;
+  if (*button_brush == (HBRUSH)0)
+  {
+    *button_brush = GetStockObject(2);
+  }
+  if (*pen1 == (HPEN)0)
+  {
+    *pen1 = GetStockObject(6);
+  }
+  if (*pen2 == (HPEN)0)
+  {
+    *pen2 = GetStockObject(7);
+  }
+}
+
+// FUNCTION: MAGIC 0x004a1110
+static void cleanup_life_total_dialog_resources(HBITMAP background,
+                                                HBRUSH button_brush,
+                                                HPEN pen1,
+                                                HPEN pen2)
+{
+  if (background != (HBITMAP)0)
+  {
+    delete_and_close_object(background);
+  }
+  if (button_brush != (HBRUSH)0)
+  {
+    DeleteObject(button_brush);
+  }
+  if (pen1 != (HPEN)0)
+  {
+    DeleteObject(pen1);
+  }
+  if (pen2 != (HPEN)0)
+  {
+    DeleteObject(pen2);
+  }
 }

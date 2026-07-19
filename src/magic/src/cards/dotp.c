@@ -501,7 +501,7 @@ int helper_destroy_basiclandtype(int source_player,
 {
   if (global_cards_data[internal_card_id].type & 1)
   {
-    if (FUN_0048463d(test_player, test_card, PLAYER_CARD_INSTANCE(source_player, source_card).info_slot) != 0)
+    if (card_has_basic_land_type(test_player, test_card, PLAYER_CARD_INSTANCE(source_player, source_card).info_slot) != 0)
     {
       kill_card(test_player, test_card, KILL_DESTROY);
     }

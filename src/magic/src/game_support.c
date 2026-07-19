@@ -163,12 +163,12 @@ int put_card_on_stack(int player, int card, int mode)
       {
         if ((s.card_data->type & 0x40) != 0)
         {
-          unk_008ce510[6] = (int)(char)s.card_data->cc[0] + (int)(char)s.card_data->cc[1];
+          mana_charge[6] = (int)(char)s.card_data->cc[0] + (int)(char)s.card_data->cc[1];
         }
         else
         {
-          unk_008ce510[s.color_index] = (int)(char)s.card_data->cc[0];
-          unk_008ce510[0] += (int)(char)s.card_data->cc[1];
+          mana_charge[s.color_index] = (int)(char)s.card_data->cc[0];
+          mana_charge[0] += (int)(char)s.card_data->cc[1];
         }
 
         charge_mana_w_global_cost_mod(player, card, 0, 0);
@@ -181,11 +181,11 @@ int put_card_on_stack(int player, int card, int mode)
       {
         if ((char)s.card_data->cc[0] != 0)
         {
-          unk_008ce510[s.color_index] = (int)(char)s.card_data->cc[0];
+          mana_charge[s.color_index] = (int)(char)s.card_data->cc[0];
         }
         if (0 < (char)s.card_data->cc[1])
         {
-          unk_008ce510[0] = (int)(char)s.card_data->cc[1];
+          mana_charge[0] = (int)(char)s.card_data->cc[1];
         }
 
         charge_mana_w_global_cost_mod(player, card, 0, 0);
@@ -818,7 +818,7 @@ int FUN_004b58e2(int color, int unk1, int unk2)
 }
 
 // FUNCTION: MAGIC 0x00551ed7
-int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
+int select_target_artifact_and_store(int player, unsigned int preferred_controller, int card)
 {
   target_t selected_target;
 
@@ -848,7 +848,6 @@ int FUN_00551ed7(int player, unsigned int preferred_controller, int card)
                            1,
                            &selected_target))
   {
-
     global_card_instances[player][card].targets[global_card_instances[player][card].number_of_targets].player = selected_target.player;
     global_card_instances[player][card].targets[global_card_instances[player][card].number_of_targets].card = selected_target.card;
     ++global_card_instances[player][card].number_of_targets;
@@ -956,49 +955,55 @@ color_t single_color_test_bit_to_color_t(color_test_t color_test)
 }
 
 // FUNCTION: MAGIC 0x004832f4
-int FUN_004832f4(int player, unsigned char type)
+int graveyard_has_type(int player, int type)
 {
-  int graveyard_index;
-  int result;
+  struct
+  {
+    int result;
+    int graveyard_index;
+    int done;
+  } s;
 
-  result = 0;
+  s.result = 0;
   if (player == -1 || player == nonactive_player)
   {
-    graveyard_index = 0;
-    while (graveyard_index < 500)
+    for (s.graveyard_index = 0, s.done = 0; s.graveyard_index < 500 && s.done == 0; ++s.graveyard_index)
     {
-      if (global_graveyard_slots[nonactive_player][graveyard_index] == -1)
+      if (global_graveyard_slots[nonactive_player][s.graveyard_index] != -1)
       {
-        break;
+        if ((type & global_cards_data[global_graveyard_slots[nonactive_player][s.graveyard_index]].type) != 0)
+        {
+          s.result = 1;
+          s.done = s.result;
+        }
       }
-      else if ((type & global_cards_data[global_graveyard_slots[nonactive_player][graveyard_index]].type) != 0)
+      else
       {
-        result = 1;
-        break;
+        s.done = 1;
       }
-      ++graveyard_index;
     }
   }
 
-  if ((player == -1 || player == active_player) && result == 0)
+  if ((player == -1 || player == active_player) && s.result == 0)
   {
-    graveyard_index = 0;
-    while (graveyard_index < 500)
+    for (s.graveyard_index = 0, s.done = 0; s.graveyard_index < 500 && s.done == 0; ++s.graveyard_index)
     {
-      if (global_graveyard_slots[active_player][graveyard_index] == -1)
+      if (global_graveyard_slots[active_player][s.graveyard_index] != -1)
       {
-        break;
+        if ((type & global_cards_data[global_graveyard_slots[active_player][s.graveyard_index]].type) != 0)
+        {
+          s.result = 1;
+          s.done = s.result;
+        }
       }
-      else if ((type & global_cards_data[global_graveyard_slots[active_player][graveyard_index]].type) != 0)
+      else
       {
-        result = 1;
-        break;
+        s.done = 1;
       }
-      ++graveyard_index;
     }
   }
 
-  return result;
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x00484581
@@ -1069,20 +1074,24 @@ INT_PTR FUN_004a628e(int *graveyard, int *available, int count, void *context, u
 // FUNCTION: MAGIC 0x004b5f03
 int FUN_004b5f03(int card_id)
 {
-  int internal_card_id;
+  int i;
+  int result;
 
-  if (card_id != -1)
+  if (card_id == -1)
   {
-    for (internal_card_id = 0; internal_card_id < g_card_count + 0x10; ++internal_card_id)
+    return -1;
+  }
+
+  result = -1;
+  for (i = 0; i < g_card_count + 0x10; ++i)
+  {
+    if (global_cards_data[i].id == card_id)
     {
-      if (global_cards_data[internal_card_id].id == card_id)
-      {
-        return internal_card_id;
-      }
+      return i;
     }
   }
 
-  return -1;
+  return result;
 }
 
 // FUNCTION: MAGIC 0x004b41f2
@@ -1124,7 +1133,7 @@ int FUN_004b41f2(int player,
 }
 
 // FUNCTION: MAGIC 0x00483e3e
-int FUN_00483e3e(int player, unsigned int type_mask)
+int choose_best_card_from_library(int player, unsigned int type_mask)
 {
   int best_score;
   int best_slot;
@@ -1225,7 +1234,7 @@ int FUN_00481e25(int player, int card, int event)
     }
   }
 
-  dispatch_function_to_all_cards_in_play(player, card, FUN_004821f5, -1);
+  dispatch_function_to_all_cards_in_play(player, card, reattach_if_attached_to_source, -1);
 
   if (trigger_condition == 0xdf && card == affected_card && player == affected_card_controller && current_turn == player && player != human_player && player == trigger_cause_controller && card == trigger_cause)
   {
@@ -1293,46 +1302,46 @@ int FUN_0048194e(int preferred_player, int only_player, int *target_data)
 
   for (s.player = 0; s.player < 2; ++s.player)
   {
-    if (only_player == -1 || s.player == only_player)
-    {
-      for (s.card = 0; s.card < active_cards_count[s.player]; ++s.card)
-      {
-        s.instance = &PLAYER_CARD_INSTANCE(s.player, s.card);
-        if (s.instance->internal_card_id != -1)
-        {
-          if ((s.instance->state & 0x800022) == 2)
-          {
-            if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
-            {
-              for (s.color = 1; s.color <= 5; ++s.color)
-              {
-                if ((((int)(char)s.instance->mana_color) & (1 << (unsigned char)s.color)) != 0)
-                {
-                  ++s.mana_colors[s.color];
-                }
-              }
-            }
+    if (only_player != -1 && s.player != only_player)
+      continue;
 
-            if (((int)s.instance->color & 0x3e) != 0)
+    for (s.card = 0; s.card < active_cards_count[s.player]; ++s.card)
+    {
+      s.instance = &PLAYER_CARD_INSTANCE(s.player, s.card);
+      if (s.instance->internal_card_id != -1)
+      {
+        if ((s.instance->state & 0x800022) == 2)
+        {
+          if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
+          {
+            for (s.color = 1; s.color <= 5; ++s.color)
             {
-              for (s.color = 1; s.color <= 5; ++s.color)
+              if ((((int)(char)s.instance->mana_color) & (1 << (unsigned char)s.color)) != 0)
               {
-                if (((int)s.instance->color & (1 << (unsigned char)s.color)) != 0)
-                {
-                  ++s.land_scores[s.color];
-                }
+                ++s.mana_colors[s.color];
               }
             }
           }
-          else if (preferred_player == only_player || only_player == -1)
+
+          if (((int)s.instance->color & 0x3e) != 0)
           {
-            s.colors = (unsigned int)(char)global_cards_data[s.instance->internal_card_id].color;
             for (s.color = 1; s.color <= 5; ++s.color)
             {
-              if ((s.colors & (1 << (unsigned char)s.color)) != 0)
+              if (((int)s.instance->color & (1 << (unsigned char)s.color)) != 0)
               {
-                ++s.card_colors[s.color];
+                ++s.land_scores[s.color];
               }
+            }
+          }
+        }
+        else if (preferred_player == only_player || only_player == -1)
+        {
+          s.colors = (unsigned int)(char)global_cards_data[s.instance->internal_card_id].color;
+          for (s.color = 1; s.color <= 5; ++s.color)
+          {
+            if ((s.colors & (1 << (unsigned char)s.color)) != 0)
+            {
+              ++s.card_colors[s.color];
             }
           }
         }
@@ -1359,74 +1368,76 @@ int FUN_0048194e(int preferred_player, int only_player, int *target_data)
 
   for (s.player = 0; s.player < 2; ++s.player)
   {
-    if (only_player == -1 || s.player == only_player)
-    {
-      for (s.card = 0; s.card < active_cards_count[s.player]; ++s.card)
-      {
-        s.instance = &PLAYER_CARD_INSTANCE(s.player, s.card);
-        if (is_in_play(s.player, s.card) != 0)
-        {
-          if ((global_cards_data[s.instance->internal_card_id].type & TYPE_LAND) != 0)
-          {
-            s.current_score = 0;
+    if (only_player != -1 && s.player != only_player)
+      continue;
 
-            if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_ACT_ABILITY) != 0)
+    for (s.card = 0; s.card < active_cards_count[s.player]; ++s.card)
+    {
+      s.instance = &PLAYER_CARD_INSTANCE(s.player, s.card);
+      if (is_in_play(s.player, s.card) != 0)
+      {
+        if ((global_cards_data[s.instance->internal_card_id].type & TYPE_LAND) != 0)
+        {
+          s.current_score = 0;
+
+          if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_ACT_ABILITY) != 0)
+          {
+            s.current_score += 2;
+            if ((s.instance->state & STATE_TAPPED) != 0)
             {
-              s.current_score += 2;
-              if ((s.instance->state & STATE_TAPPED) != 0)
+              s.current_score += 3;
+            }
+          }
+
+          if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
+          {
+            ++s.current_score;
+
+            s.colors = (unsigned int)(char)s.instance->mana_color;
+            for (s.color = 1; s.color <= 5; ++s.color)
+            {
+              if ((s.colors & (1 << (unsigned char)s.color)) != 0)
               {
-                s.current_score += 3;
+                s.current_score += ((4 - s.mana_colors[s.color]) > 0) ? (4 - s.mana_colors[s.color]) : 0;
               }
             }
 
-            if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
+            if (s.best_land_color != 0 && (s.colors & (1 << (unsigned char)s.best_land_color)) != 0)
             {
               ++s.current_score;
-
-              s.colors = (unsigned int)(char)s.instance->mana_color;
-              for (s.color = 1; s.color <= 5; ++s.color)
-              {
-                if ((s.colors & (1 << (unsigned char)s.color)) != 0)
-                {
-                  s.current_score += ((4 - s.mana_colors[s.color]) > 0) ? (4 - s.mana_colors[s.color]) : 0;
-                }
-              }
-
-              if (s.best_land_color != 0 && (s.colors & (1 << (unsigned char)s.best_land_color)) != 0)
+            }
+            if (preferred_player == only_player || only_player == -1)
+            {
+              if (s.best_card_color != 0 && (s.colors & (1 << (unsigned char)s.best_card_color)) != 0)
               {
                 ++s.current_score;
               }
-              if (preferred_player == only_player || only_player == -1)
-              {
-                if (s.best_card_color != 0 && (s.colors & (1 << (unsigned char)s.best_card_color)) != 0)
-                {
-                  ++s.current_score;
-                }
-              }
             }
+          }
 
-            if ((global_cards_data[s.instance->internal_card_id].type & TYPE_CREATURE) != 0)
-            {
-              ++s.current_score;
-            }
+          if ((global_cards_data[s.instance->internal_card_id].type & TYPE_CREATURE) != 0)
+          {
+            ++s.current_score;
+          }
 
-            if (s.current_score > s.best_score)
-            {
-              s.best_score = s.current_score;
-              *target_data = s.player;
-              target_data[1] = s.card;
-            }
+          if (s.current_score > s.best_score)
+          {
+            s.best_score = s.current_score;
+            *target_data = s.player;
+            target_data[1] = s.card;
           }
         }
       }
     }
   }
-
-  return *target_data != -1;
+  if (*target_data == -1)
+    return 0;
+  else
+    return 1;
 }
 
 // FUNCTION: MAGIC 0x004821f5
-int FUN_004821f5(int source_player, int source_card, int test_player, int test_card, int internal_card_id)
+int reattach_if_attached_to_source(int source_player, int source_card, int test_player, int test_card, int internal_card_id)
 {
   (void)internal_card_id;
 
@@ -1917,7 +1928,7 @@ int add_card_to_hand(int player, int internal_card_id)
   return -1;
 }
 
-int FUN_004b5274(int player, int card);
+int calculate_attack_rating(int player, int card);
 
 // FUNCTION: MAGIC 0x004b4720
 void FUN_004b4720(int player, int internal_card_id, int card)
@@ -1962,7 +1973,7 @@ void FUN_004b4720(int player, int internal_card_id, int card)
   PLAYER_CARD_INSTANCE(player, card).token_status = 0;
   PLAYER_CARD_INSTANCE(player, card).regen_status = 0x08000000;
 
-  PLAYER_CARD_INSTANCE(player, card).attack_rating = FUN_004b5274(player, card);
+  PLAYER_CARD_INSTANCE(player, card).attack_rating = calculate_attack_rating(player, card);
 
   PLAYER_CARD_INSTANCE(player, card).special_counters = 0;
   PLAYER_CARD_INSTANCE(player, card).unknown0x14 = 0;
@@ -2034,55 +2045,58 @@ void FUN_004b4720(int player, int internal_card_id, int card)
 }
 
 // FUNCTION: MAGIC 0x004b5274
-int FUN_004b5274(int player, int card)
+int calculate_attack_rating(int player, int card)
 {
-  int internal_card_id;
-  keyword_t static_ability;
-  int power2;
-  int toughness_masked;
-  int score;
-  int scaled;
-
-  internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
-  static_ability = global_cards_data[internal_card_id].static_ability;
-
-  power2 = (((int)global_cards_data[internal_card_id].power & 0xffffbfffU) * 2);
-  if (global_cards_data[internal_card_id].subtype == 0)
+  struct
   {
-    power2 = 0;
+    int power2;
+    int toughness_masked;
+    keyword_t static_ability;
+    int score;
+    int internal_card_id;
+  } s;
+
+  s.internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
+  s.static_ability = global_cards_data[s.internal_card_id].static_ability;
+
+  s.power2 = (((int)global_cards_data[s.internal_card_id].power & 0xffffbfffU) * 2);
+  if (global_cards_data[s.internal_card_id].subtype == 0)
+  {
+    s.power2 = 0;
   }
 
-  toughness_masked = ((int)global_cards_data[internal_card_id].toughness & 0xffffbfffU);
-  score = (int)((power2 + 2) * (toughness_masked + 1)) / 2;
+  s.toughness_masked = ((int)global_cards_data[s.internal_card_id].toughness & 0xffffbfffU);
+  s.score = (int)((s.power2 + 2) * (s.toughness_masked + 1)) / 2;
 
   if (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0) && (human_player == player))
   {
-    score -= 1;
+    s.score -= 1;
   }
 
-  if ((static_ability & 0x80) != 0)
+  if ((s.static_ability & 0x80) != 0)
   {
-    score = (score * 3) / 2;
+    s.score = (s.score * 3) / 2;
   }
-  if ((static_ability & 0x100) != 0)
+  if ((s.static_ability & 0x100) != 0)
   {
-    score = (score * 3) / 2;
+    s.score = (s.score * 3) / 2;
   }
-  if ((global_cards_data[internal_card_id].extra_ability & 3) != 0)
+  if ((global_cards_data[s.internal_card_id].extra_ability & 3) != 0)
   {
-    score = (score * 3) / 2;
+    s.score = (s.score * 3) / 2;
   }
-  if ((static_ability & 0x40) != 0)
+  if ((s.static_ability & 0x40) != 0)
   {
-    score = (int)((toughness_masked + 1) * score) / 2;
+    s.score = (int)((s.toughness_masked + 1) * s.score) / 2;
   }
-  if ((static_ability & 0x200) != 0)
+  if ((s.static_ability & 0x200) != 0)
   {
-    score = (score * 3) / 2;
+    s.score = (s.score * 3) / 2;
   }
 
-  scaled = unk_007a7d18[player] * score;
-  return (scaled + ((scaled >> 0x1f) & 7U)) >> 3;
+  s.score = unk_007a7d18[player] * s.score;
+  s.score = (s.score + ((s.score >> 0x1f) & 7)) >> 3;
+  return s.score;
 }
 
 // FUNCTION: MAGIC 0x00500135
@@ -2120,11 +2134,8 @@ int dispatch_event_to_single_card(int player,
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_OUBLIETTED) != 0)
-    {
-      return 0;
-    }
-    if ((PLAYER_CARD_INSTANCE(player, card).upkeep_flags & UPKEEP_UPKEEP_CANTPAY) != 0)
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_OUBLIETTED) != 0 ||
+        (PLAYER_CARD_INSTANCE(player, card).upkeep_flags & UPKEEP_UPKEEP_CANTPAY) != 0)
     {
       return 0;
     }
@@ -2144,7 +2155,7 @@ int dispatch_event_to_single_card(int player,
 
   if (result != 0x63 && (land_can_be_played & 0x224) != 0 && (event == EVENT_CAN_CAST || event == EVENT_CAN_ACTIVATE))
   {
-    if (FUN_00442cf9(player, card) == 0)
+    if (is_nonactivated_mana_source(player, card) == 0)
     {
       unk_008b3270 = saved_unk_008b3270;
       pop_affected_card_stack();
@@ -2537,8 +2548,15 @@ int FUN_004b0047(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004e1cd1
-void FUN_004e1cd1(void)
+void redraw_shandalar_duel_screen(int view_player, int present_after_draw)
 {
+  /*
+   * MAGIC keeps Shandalar's two-argument screen redraw hook, but compiles it
+   * as a no-op.  In SHANDALAR, view_player selects the bottom/hero side and
+   * present_after_draw controls whether the freshly drawn page is presented.
+   */
+  (void)view_player;
+  (void)present_after_draw;
 }
 
 // FUNCTION: MOK 0x0049d510
@@ -2808,10 +2826,8 @@ void FUN_0055117d(int(__cdecl *callback)(int, int, int), int who_to_check)
 }
 
 // FUNCTION: MAGIC 0x00551638
-int FUN_00551638(int player, unsigned int preferred_controller, int card)
+int select_target_creature_and_store(int player, unsigned int preferred_controller, int card)
 {
-  int result;
-  unsigned char target_number;
   target_t selected_target;
 
   if (preferred_controller == -1)
@@ -2819,34 +2835,36 @@ int FUN_00551638(int player, unsigned int preferred_controller, int card)
     preferred_controller = 2;
   }
 
-  result = C_real_select_target(player,
-                                2,
-                                preferred_controller,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_CREATURE,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                0,
-                                0,
-                                -1,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                text_lines[0],
-                                1,
-                                &selected_target);
-  if (result != 0)
+  if (C_real_select_target(player,
+                           2,
+                           preferred_controller,
+                           TARGET_ZONE_IN_PLAY,
+                           TYPE_CREATURE,
+                           TYPE_NONE,
+                           0,
+                           get_protections_from(player, card),
+                           0,
+                           0,
+                           -1,
+                           ~SUB_WALL,
+                           -1,
+                           -1,
+                           0,
+                           0,
+                           0,
+                           text_lines[0],
+                           1,
+                           &selected_target) != 0)
   {
-    target_number = global_card_instances[player][card].number_of_targets;
-    global_card_instances[player][card].targets[target_number] = selected_target;
+    global_card_instances[player][card].targets[(char)global_card_instances[player][card].number_of_targets].card = selected_target.card;
+    global_card_instances[player][card].targets[(char)global_card_instances[player][card].number_of_targets].player = selected_target.player;
     ++global_card_instances[player][card].number_of_targets;
+    return 1;
   }
-
-  return result != 0;
+  else
+  {
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x004eab5c
@@ -2909,9 +2927,11 @@ void undeclare_mana_available_hex(int player, color_test_t color, int amount)
 }
 
 // FUNCTION: MAGIC 0x004eada9
-void declare_mana_available(int player, color_t color, int amount)
+int declare_mana_available(int player, color_t color, int amount)
 {
-  raw_mana_available[player][color] += amount;
+  unk_00742f70[player][color] += amount;
+  unk_00742f80[player][3] += amount;
+  return unk_00742f70[player][color];
 }
 
 // FUNCTION: MAGIC 0x004eadeb
@@ -2931,7 +2951,7 @@ int undeclare_mana_available_and_produce_it(int player, color_t color, int amoun
 }
 
 // FUNCTION: MAGIC 0x005513d7
-void FUN_005513d7(int player, int card, int amount)
+void add_special_counters(int player, int card, int amount)
 {
   if ((PLAYER_CARD_INSTANCE(player, card).special_counters & 0xffu) == 0xffu)
     return;
@@ -3070,54 +3090,51 @@ void FUN_004e5089(void)
 }
 
 // FUNCTION: MAGIC 0x0048463d
-int FUN_0048463d(int player, int card, int amount)
+int card_has_basic_land_type(int player, int card, int land_color)
 {
   struct
   {
     int result;
     int internal_card_id;
   } s;
-  card_instance_t *player_instances;
 
   s.result = 0;
-  player_instances = global_card_instances[player];
 
-  if (player_instances[card].internal_card_id == -1)
+  if (global_card_instances[player][card].internal_card_id != -1)
   {
-    s.internal_card_id = player_instances[card].original_internal_card_id;
+    s.internal_card_id = global_card_instances[player][card].internal_card_id;
   }
   else
   {
-    s.internal_card_id = player_instances[card].internal_card_id;
+    s.internal_card_id = global_card_instances[player][card].original_internal_card_id;
   }
 
   if (player == -1 || card == -1)
   {
-    s.result = 0;
+    return 0;
   }
-  else
+
+  if ((char)global_cards_data[s.internal_card_id].subtype == 13 && global_cards_data[s.internal_card_id].id == g_duel_special_land_card_ids[land_color])
   {
-    if ((char)global_cards_data[s.internal_card_id].subtype == 13 && global_cards_data[s.internal_card_id].id == g_duel_special_land_card_ids[amount])
-    {
-      s.result = 1;
-    }
-    if ((char)global_cards_data[s.internal_card_id].subtype == 12 && ((1 << (unsigned char)amount) & (int)(char)player_instances[card].mana_color) != 0)
-    {
-      s.result = 1;
-    }
+    s.result = 1;
+  }
+  if ((char)global_cards_data[s.internal_card_id].subtype == 12 && ((1 << (unsigned char)land_color) & (int)(char)global_card_instances[player][card].mana_color) != 0)
+  {
+    s.result = 1;
   }
 
   return s.result;
 }
 
 // FUNCTION: MAGIC 0x004817fd
-void FUN_004817fd(int player)
+int FUN_004817fd(int player)
 {
-  int ante_slot;
+  int ante_slot = 0;
   int card_in_hand;
 
-  for (ante_slot = 0; ante_slot < 0x10 && global_ante_cards[player][ante_slot] != -1; ++ante_slot)
+  while (global_ante_cards[player][ante_slot] != -1 && ante_slot < 0x10)
   {
+    ++ante_slot;
   }
 
   if (ante_slot < 0x10)
@@ -3136,6 +3153,12 @@ void FUN_004817fd(int player)
     }
 
     PLAYER_CARD_INSTANCE(player, card_in_hand).internal_card_id = -1;
+
+    return 1;
+  }
+  else
+  {
+    return 0;
   }
 }
 
@@ -3745,13 +3768,13 @@ int charge_mana(int player, color_t color, int amount)
   }
 
   {
-    if (DAT_008ce52c > 0)
+    if (mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] > 0)
     {
       if (color == COLOR_COLORLESS)
       {
         if (amount != -1)
         {
-          s.result = amount - DAT_008ce52c * 2;
+          s.result = amount - mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2;
           if (s.result <= 1)
           {
             s.result = 1;
@@ -3759,18 +3782,18 @@ int charge_mana(int player, color_t color, int amount)
           amount = s.result;
         }
       }
-      else if (unk_008ce510[COLOR_COLORLESS] > 0)
+      else if (mana_charge[COLOR_COLORLESS] > 0)
       {
-        s.result = unk_008ce510[COLOR_COLORLESS] - DAT_008ce52c * 2;
+        s.result = mana_charge[COLOR_COLORLESS] - mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2;
         if (s.result <= 1)
         {
           s.result = 1;
         }
-        unk_008ce510[COLOR_COLORLESS] = s.result;
+        mana_charge[COLOR_COLORLESS] = s.result;
       }
     }
 
-    unk_008ce510[color] += amount;
+    mana_charge[color] += amount;
     s.mana_paid_total = 0;
     for (s.i = 0; s.i < 7; ++s.i)
     {
@@ -3810,7 +3833,7 @@ int charge_mana(int player, color_t color, int amount)
       s.max_variable_mana = max_x_value;
       for (s.i = COLOR_COLORLESS; s.i < 7; ++s.i)
       {
-        if (unk_008ce510[s.i] == -1)
+        if (mana_charge[s.i] == -1)
         {
           s.available_mana = has_mana(player, s.i, 1);
           if (g_duel_ai_mode_state == 1)
@@ -3850,22 +3873,22 @@ int charge_mana(int player, color_t color, int amount)
       max_x_value = s.max_variable_mana;
     }
 
-    if (DAT_008ce52c < 1)
+    if (mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] < 1)
     {
       x_value = 0;
     }
     else
     {
-      x_value = DAT_008ce52c * 2;
+      x_value = mana_charge[MANA_CHARGE_POWER_ARTIFACT_REDUCTION] * 2;
     }
 
     if (max_x_value == 0)
     {
       for (s.i = 0; s.i < 7; ++s.i)
       {
-        if (unk_008ce510[s.i] == -1)
+        if (mana_charge[s.i] == -1)
         {
-          unk_008ce510[s.i] = 0;
+          mana_charge[s.i] = 0;
         }
       }
     }
@@ -3873,65 +3896,65 @@ int charge_mana(int player, color_t color, int amount)
     s.payable_colors = 0;
     for (s.i = 0; s.i < 7; ++s.i)
     {
-      if (unk_008ce510[s.i] == -1)
+      if (mana_charge[s.i] == -1)
       {
         s.payable_colors = 1;
       }
     }
 
-    if (s.include_auto_payment != 0 && FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+    if (s.include_auto_payment != 0 && FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
     {
       FUN_0043410a(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless);
       copy_mana_pool_to_display();
     }
 
-    if (s.allow_special_x_payment != 0 && FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0 && s.payable_colors != 0)
+    if (s.allow_special_x_payment != 0 && FUN_004346ab(mana_charge, x_value, max_x_value) == 0 && s.payable_colors != 0)
     {
       FUN_004342b3(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless, &x_value, max_x_value);
       copy_mana_pool_to_display();
     }
 
-    if (s.allow_generic_payment != 0 && FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+    if (s.allow_generic_payment != 0 && FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
     {
-      FUN_004344b0(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless, &x_value, max_x_value);
+      auto_pay_generic_mana(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless, &x_value, max_x_value);
       copy_mana_pool_to_display();
     }
 
-    if (s.allow_mana_sources != 0 && FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+    if (s.allow_mana_sources != 0 && FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
     {
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x1e, s.temp);
       }
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x1c, s.temp);
       }
     }
 
-    if (s.allow_interrupt_speed_mana_sources != 0 && FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+    if (s.allow_interrupt_speed_mana_sources != 0 && FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
     {
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x14, s.temp);
       }
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x04, s.temp);
       }
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x1a, s.temp);
       }
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x18, s.temp);
       }
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x10, s.temp);
       }
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         FUN_00434af9(player, s.mana_paid_by_color, &s.mana_paid_total, 0x00, s.temp);
       }
@@ -3939,26 +3962,26 @@ int charge_mana(int player, color_t color, int amount)
 
     if (s.allow_interrupt_speed_mana_sources != 0)
     {
-      if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0 && s.payable_colors == 0)
+      if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0 && s.payable_colors == 0)
       {
         spell_fizzled = 1;
       }
     }
-    else if (FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+    else if (FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
     {
       s.done = 0;
-      while (s.done == 0 && FUN_004346ab(unk_008ce510, x_value, max_x_value) == 0)
+      while (s.done == 0 && FUN_004346ab(mana_charge, x_value, max_x_value) == 0)
       {
         s.only_variable_costs = 1;
         for (s.i = 0; s.i < 7; ++s.i)
         {
-          if (unk_008ce510[s.i] > 0)
+          if (mana_charge[s.i] > 0)
           {
             s.only_variable_costs = 0;
           }
         }
 
-        FUN_0043479e(unk_00748770, unk_008ce510, x_value, max_x_value);
+        FUN_0043479e(unk_00748770, mana_charge, x_value, max_x_value);
         s.selected_card =
             select_card_for_action(player, player, player, 0, 0, unk_00748770, s.only_variable_costs != 0 ? 3 : 1);
 
@@ -3981,11 +4004,11 @@ int charge_mana(int player, color_t color, int amount)
           }
           else if (g_target_selection_status_code == -3 && player == DAT_00715fa4 && DAT_0072c8e0 != -1)
           {
-            if (raw_mana_available[player][DAT_0072c8e0] > 0 && (unk_008ce510[DAT_0072c8e0] != 0 || unk_008ce510[COLOR_COLORLESS] != 0 || unk_008ce510[COLOR_ARTIFACT] != 0) && (DAT_0072c8e0 != COLOR_ARTIFACT || unk_008ce510[COLOR_ARTIFACT] != 0))
+            if (raw_mana_available[player][DAT_0072c8e0] > 0 && (mana_charge[DAT_0072c8e0] != 0 || mana_charge[COLOR_COLORLESS] != 0 || mana_charge[COLOR_ARTIFACT] != 0) && (DAT_0072c8e0 != COLOR_ARTIFACT || mana_charge[COLOR_ARTIFACT] != 0))
             {
-              if (unk_008ce510[DAT_0072c8e0] == 0)
+              if (mana_charge[DAT_0072c8e0] == 0)
               {
-                if (unk_008ce510[COLOR_ARTIFACT] == 0)
+                if (mana_charge[COLOR_ARTIFACT] == 0)
                 {
                   s.cost_color = COLOR_COLORLESS;
                 }
@@ -4000,9 +4023,9 @@ int charge_mana(int player, color_t color, int amount)
               }
 
               s.amount_to_take =
-                  FUN_00435b88(unk_008ce510, s.cost_color, raw_mana_available[player], DAT_0072c8e0, unk_00715fb0, max_x_value, x_value);
+                  get_mana_payment_amount(mana_charge, s.cost_color, raw_mana_available[player], DAT_0072c8e0, unk_00715fb0, max_x_value, x_value);
               FUN_00435b18(
-                  unk_008ce510, s.cost_color, s.amount_to_take, &x_value, max_x_value, player, DAT_0072c8e0, s.mana_paid_by_color, &s.mana_paid_total);
+                  mana_charge, s.cost_color, s.amount_to_take, &x_value, max_x_value, player, DAT_0072c8e0, s.mana_paid_by_color, &s.mana_paid_total);
               copy_mana_pool_to_display();
             }
 
@@ -4020,7 +4043,7 @@ int charge_mana(int player, color_t color, int amount)
               s.selected_card = 0;
               for (s.i = 0; s.i < 7; ++s.i)
               {
-                if (unk_008ce510[s.i] != 0)
+                if (mana_charge[s.i] != 0)
                 {
                   s.selected_card |= 1 << ((unsigned char)s.i & 0x1f);
                 }
@@ -4049,9 +4072,9 @@ int charge_mana(int player, color_t color, int amount)
                 }
 
                 s.amount_to_take =
-                    FUN_00435b88(unk_008ce510, s.chosen_color, raw_mana_available[player], DAT_0072c8e0, unk_00715fb0, max_x_value, x_value);
+                    get_mana_payment_amount(mana_charge, s.chosen_color, raw_mana_available[player], DAT_0072c8e0, unk_00715fb0, max_x_value, x_value);
                 FUN_00435b18(
-                    unk_008ce510, s.chosen_color, s.amount_to_take, &x_value, max_x_value, player, DAT_0072c8e0, s.mana_paid_by_color, &s.mana_paid_total);
+                    mana_charge, s.chosen_color, s.amount_to_take, &x_value, max_x_value, player, DAT_0072c8e0, s.mana_paid_by_color, &s.mana_paid_total);
                 copy_mana_pool_to_display();
               }
             }
@@ -4079,8 +4102,8 @@ int charge_mana(int player, color_t color, int amount)
             max_x_value = -1;
             for (s.idx8 = 0; s.idx8 < 7; ++s.idx8)
             {
-              s.saved_mana_cost[s.idx8] = unk_008ce510[s.idx8];
-              unk_008ce510[s.idx8] = 0;
+              s.saved_mana_cost[s.idx8] = mana_charge[s.idx8];
+              mana_charge[s.idx8] = 0;
             }
 
             if ((s.instance->state & 0x800002) == STATE_IN_PLAY)
@@ -4109,21 +4132,21 @@ int charge_mana(int player, color_t color, int amount)
                     play_sound_effect(WAV_TAP);
                   }
                   resolve_top_card_on_stack();
-                  TENTATIVE_reassess_all_cards();
+                  TENTATIVE_reassess_all_cards(0, 0xff);
                 }
               }
             }
             else
             {
               FUN_0043ece1(player, s.selected_card);
-              TENTATIVE_reassess_all_cards();
+              TENTATIVE_reassess_all_cards(0, 0xff);
             }
 
             x_value = s.saved_x_value;
             max_x_value = s.saved_max_x_value;
             for (s.idx8 = 0; s.idx8 < 7; ++s.idx8)
             {
-              unk_008ce510[s.idx8] = s.saved_mana_cost[s.idx8];
+              mana_charge[s.idx8] = s.saved_mana_cost[s.idx8];
             }
 
             for (s.idx8 = 0; s.idx8 <= 7; ++s.idx8)
@@ -4134,7 +4157,7 @@ int charge_mana(int player, color_t color, int amount)
             s.max_colorless = 0;
             FUN_0043410a(player, s.mana_paid_by_color, &s.mana_paid_total, 0);
             FUN_004342b3(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless, &x_value, max_x_value);
-            FUN_004344b0(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless, &x_value, max_x_value);
+            auto_pay_generic_mana(player, s.mana_paid_by_color, &s.mana_paid_total, s.max_colorless, &x_value, max_x_value);
 
             for (s.idx8 = 0; s.idx8 <= 7; ++s.idx8)
             {
@@ -4163,7 +4186,7 @@ skipped_for_copied_card:
 
   for (s.i = 0; s.i < 8; ++s.i)
   {
-    unk_008ce510[s.i] = 0;
+    mana_charge[s.i] = 0;
   }
   max_x_value = -1;
 
@@ -4242,7 +4265,7 @@ int FUN_0043479e(char *prompt, int *mana_cost, int x_paid, int max_x)
     s.msg = (s.action >> 16) & 0xff;
     s.stack_player = DAT_009251d8[stack_size].x;
     s.stack_card = DAT_009251d8[stack_size].y;
-    FUN_00444c43(s.tmp, s.msg, s.stack_player, s.stack_card);
+    format_stack_action_text(s.tmp, s.msg, s.stack_player, s.stack_card);
   }
 
   s.mana_text[0] = '\0';
@@ -4381,15 +4404,15 @@ void FUN_0043410a(int player, int *mana_paid_by_color, int *total_mana_paid, int
 
   for (color = 0; color < 7; ++color)
   {
-    while (unk_008ce510[color] > 0 && raw_mana_available[player][color] > 0)
+    while (mana_charge[color] > 0 && raw_mana_available[player][color] > 0)
     {
-      FUN_00435b18(unk_008ce510, color, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
+      FUN_00435b18(mana_charge, color, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
     }
   }
 
-  while (unk_008ce510[6] > 0 && raw_mana_available[player][0] > 0 && max_colorless < unk_008ce510[6])
+  while (mana_charge[6] > 0 && raw_mana_available[player][0] > 0 && max_colorless < mana_charge[6])
   {
-    FUN_00435b18(unk_008ce510, 6, 1, (int *)0, 0, player, 0, mana_paid_by_color, total_mana_paid);
+    FUN_00435b18(mana_charge, 6, 1, (int *)0, 0, player, 0, mana_paid_by_color, total_mana_paid);
   }
 
   slot = 0;
@@ -4397,10 +4420,10 @@ void FUN_0043410a(int player, int *mana_paid_by_color, int *total_mana_paid, int
   {
     produced_color = (unsigned short)unk_007161e0[player][slot];
     special_mana = (unsigned int)unk_007161e0[player][slot];
-    while (raw_mana_available[player][produced_color] > 0 && unk_008ce510[special_mana >> 16] > 0)
+    while (raw_mana_available[player][produced_color] > 0 && mana_charge[special_mana >> 16] > 0)
     {
       FUN_00435b18(
-          unk_008ce510, special_mana >> 16, 1, (int *)0, 0, player, produced_color, mana_paid_by_color, total_mana_paid);
+          mana_charge, special_mana >> 16, 1, (int *)0, 0, player, produced_color, mana_paid_by_color, total_mana_paid);
     }
     slot = slot + 1;
   }
@@ -4421,23 +4444,23 @@ void FUN_004342b3(int player,
 
   for (color = 0; color < 7; ++color)
   {
-    if (unk_008ce510[color] == -1)
+    if (mana_charge[color] == -1)
     {
       while (raw_mana_available[player][color] > 0 && (x_value < max_x || max_x == -1))
       {
         FUN_00435b18(
-            unk_008ce510, color, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
+            mana_charge, color, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
       }
     }
   }
 
-  if (unk_008ce510[6] == -1)
+  if (mana_charge[6] == -1)
   {
-    while (raw_mana_available[player][0] > 0 && max_colorless < unk_008ce510[6] &&
+    while (raw_mana_available[player][0] > 0 && max_colorless < mana_charge[6] &&
            (x_value < max_x || max_x == -1))
     {
       FUN_00435b18(
-          unk_008ce510, 6, 1, special_mana_override, max_x, player, 0, mana_paid_by_color, total_mana_paid);
+          mana_charge, 6, 1, special_mana_override, max_x, player, 0, mana_paid_by_color, total_mana_paid);
     }
   }
 
@@ -4446,11 +4469,11 @@ void FUN_004342b3(int player,
   {
     produced_color = (unsigned short)unk_007161e0[player][slot];
     special_mana = (unsigned int)unk_007161e0[player][slot];
-    if (unk_008ce510[special_mana >> 16] == -1)
+    if (mana_charge[special_mana >> 16] == -1)
     {
       while (raw_mana_available[player][produced_color] > 0 && (x_value < max_x || max_x == -1))
       {
-        FUN_00435b18(unk_008ce510,
+        FUN_00435b18(mana_charge,
                      special_mana >> 16,
                      1,
                      special_mana_override,
@@ -4466,57 +4489,79 @@ void FUN_004342b3(int player,
 }
 
 // FUNCTION: MAGIC 0x004344b0
-void FUN_004344b0(int player,
-                  int *mana_paid_by_color,
-                  int *total_mana_paid,
-                  int max_colorless,
-                  int *special_mana_override,
-                  int max_x)
+void auto_pay_generic_mana(int player,
+                           int *mana_paid_by_color,
+                           int *total_mana_paid,
+                           int max_colorless,
+                           int *special_mana_override,
+                           int max_x)
 {
   int color;
 
-  if (unk_008ce510[6] != 0)
+  if (mana_charge[COLOR_ARTIFACT] != 0)
   {
     for (color = 0; color < 7; ++color)
     {
-      if (unk_008ce510[6] < 1)
+      if (mana_charge[COLOR_ARTIFACT] > 0)
       {
-        while (raw_mana_available[player][color] > 0 && unk_008ce510[6] == -1 &&
-               (max_x == -1 || max_colorless < max_x - x_value))
+        while (raw_mana_available[player][color] > 0 && max_colorless < mana_charge[COLOR_ARTIFACT])
         {
-          FUN_00435b18(
-              unk_008ce510, 6, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
+          FUN_00435b18(mana_charge, COLOR_ARTIFACT, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
         }
       }
       else
       {
-        while (raw_mana_available[player][color] > 0 && max_colorless < unk_008ce510[6])
+        while (raw_mana_available[player][color] > 0 && mana_charge[COLOR_ARTIFACT] == -1 &&
+               (max_x == -1 || max_colorless < max_x - x_value))
         {
-          FUN_00435b18(unk_008ce510, 6, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
+          FUN_00435b18(mana_charge,
+                       COLOR_ARTIFACT,
+                       1,
+                       special_mana_override,
+                       max_x,
+                       player,
+                       color,
+                       mana_paid_by_color,
+                       total_mana_paid);
         }
       }
     }
   }
 
-  if (unk_008ce510[0] != 0)
+  if (mana_charge[COLOR_COLORLESS] != 0)
   {
     for (color = 0; color < 7; ++color)
     {
-      if (color != 6)
+      if (color != COLOR_ARTIFACT)
       {
-        if (unk_008ce510[0] == -1)
+        if (mana_charge[COLOR_COLORLESS] == -1)
         {
           while (raw_mana_available[player][color] > 0 && (x_value < max_x || max_x == -1))
           {
-            FUN_00435b18(
-                unk_008ce510, 0, 1, special_mana_override, max_x, player, color, mana_paid_by_color, total_mana_paid);
+            FUN_00435b18(mana_charge,
+                         COLOR_COLORLESS,
+                         1,
+                         special_mana_override,
+                         max_x,
+                         player,
+                         color,
+                         mana_paid_by_color,
+                         total_mana_paid);
           }
         }
         else
         {
-          while (unk_008ce510[0] > 0 && raw_mana_available[player][color] > 0)
+          while (mana_charge[COLOR_COLORLESS] > 0 && raw_mana_available[player][color] > 0)
           {
-            FUN_00435b18(unk_008ce510, 0, 1, (int *)0, 0, player, color, mana_paid_by_color, total_mana_paid);
+            FUN_00435b18(mana_charge,
+                         COLOR_COLORLESS,
+                         1,
+                         (int *)0,
+                         0,
+                         player,
+                         color,
+                         mana_paid_by_color,
+                         total_mana_paid);
           }
         }
       }
@@ -4525,42 +4570,37 @@ void FUN_004344b0(int player,
 }
 
 // FUNCTION: MAGIC 0x00435b88
-int FUN_00435b88(int *mana_cost,
-                 int cost_color,
-                 int *mana_available,
-                 int mana_color,
-                 int allow_multi_pay,
-                 int max_x,
-                 int x_paid)
+int get_mana_payment_amount(int *mana_cost,
+                            int cost_color,
+                            int *mana_available,
+                            int mana_color,
+                            int allow_multi_pay,
+                            int max_x,
+                            int x_paid)
 {
   int amount;
 
-  if (allow_multi_pay == 0)
+  if (allow_multi_pay != 0)
   {
-    amount = 1;
-  }
-  else if (mana_cost[cost_color] == -1)
-  {
-    if (max_x == -1)
+    if (mana_cost[cost_color] == -1)
     {
-      amount = mana_available[mana_color];
+      if (max_x == -1)
+      {
+        amount = mana_available[mana_color];
+      }
+      else
+      {
+        amount = mana_available[mana_color] < max_x - x_paid ? mana_available[mana_color] : max_x - x_paid;
+      }
     }
     else
     {
-      amount = mana_available[mana_color];
-      if (max_x - x_paid <= amount)
-      {
-        amount = max_x - x_paid;
-      }
+      amount = mana_cost[cost_color] >= mana_available[mana_color] ? mana_available[mana_color] : mana_cost[cost_color];
     }
   }
   else
   {
-    amount = mana_cost[cost_color];
-    if (mana_available[mana_color] <= amount)
-    {
-      amount = mana_available[mana_color];
-    }
+    amount = 1;
   }
 
   return amount;
@@ -4587,7 +4627,7 @@ int FUN_00435db0(int *mana_paid_by_color)
 }
 
 // FUNCTION: MAGIC 0x00435643
-int FUN_00435643(int player, int card, unsigned char activation_flags)
+int can_activate_mana_source(int player, int card, int activation_flags)
 {
   struct
   {
@@ -4632,7 +4672,7 @@ int FUN_00435643(int player, int card, unsigned char activation_flags)
 }
 
 // FUNCTION: MAGIC 0x00435881
-int FUN_00435881(int player, int card)
+int activate_mana_source_for_payment(int player, int card)
 {
   struct
   {
@@ -4649,13 +4689,14 @@ int FUN_00435881(int player, int card)
     return 0;
   }
 
+  s.old_x_value = x_value;
   x_value = 0;
   s.old_max_x_value = max_x_value;
   max_x_value = -1;
   for (s.color = 0; s.color < 7; ++s.color)
   {
-    s.saved_mana_cost[s.color] = unk_008ce510[s.color];
-    unk_008ce510[s.color] = 0;
+    s.saved_mana_cost[s.color] = mana_charge[s.color];
+    mana_charge[s.color] = 0;
   }
   push_card_onto_stack(player, card, 0x72, player, 0);
   unk_00938e2c = FUN_00434746(s.saved_mana_cost);
@@ -4686,7 +4727,7 @@ int FUN_00435881(int player, int card)
   x_value = s.old_x_value;
   for (s.color = 0; s.color < 7; ++s.color)
   {
-    unk_008ce510[s.color] = s.saved_mana_cost[s.color];
+    mana_charge[s.color] = s.saved_mana_cost[s.color];
   }
 
   return s.result;
@@ -4715,7 +4756,7 @@ int FUN_00434af9(int player,
   s.any_variable_costs = 0;
   for (s.color = 0; s.color < 7; ++s.color)
   {
-    if (unk_008ce510[s.color] == -1)
+    if (mana_charge[s.color] == -1)
     {
       s.any_variable_costs = 1;
     }
@@ -4728,36 +4769,36 @@ int FUN_00434af9(int player,
     {
       TENTATIVE_wait_for_network_result(player, 0x10);
       result = g_network_result_value;
-      if (g_network_result_value != -1 && FUN_00435881(player, g_network_result_value) != 0)
+      if (g_network_result_value != -1 && activate_mana_source_for_payment(player, g_network_result_value) != 0)
       {
         s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
         s.current_card = has_mana(player, COLOR_ANY, 1);
         s.max_colorless -= s.current_card;
         FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
         FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
-        FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+        auto_pay_generic_mana(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
       }
     }
     copy_mana_pool_to_display();
   }
   else
   {
-    result = FUN_004346ab(unk_008ce510, x_value, max_x_value);
+    result = FUN_004346ab(mana_charge, x_value, max_x_value);
     if (result == 0)
     {
       for (s.current_card = 0; s.current_card < active_cards_count[player]; ++s.current_card)
       {
-        result = FUN_00435643(player, s.current_card, activation_flags);
+        result = can_activate_mana_source(player, s.current_card, activation_flags);
         if (result != 0 && dispatch_event_to_single_card(player, s.current_card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0)
         {
           s.can_activate = 0;
           for (s.color = 0; s.color < 7; ++s.color)
           {
-            if (unk_008ce510[s.color] > 0 && (((unsigned int)(1 << (unsigned char)s.color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
+            if (mana_charge[s.color] > 0 && (((unsigned int)(1 << (unsigned char)s.color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
             {
               s.can_activate = 1;
             }
-            else if (unk_008ce510[s.color] == -1 && x_value < max_x_value && max_x_value != -1 && (((unsigned int)(1 << (unsigned char)s.color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
+            else if (mana_charge[s.color] == -1 && x_value < max_x_value && max_x_value != -1 && (((unsigned int)(1 << (unsigned char)s.color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
             {
               s.can_activate = 1;
             }
@@ -4768,11 +4809,11 @@ int FUN_00434af9(int player,
             while (s.dual_mana_slot < 10 && unk_007161e0[player][s.dual_mana_slot] != -1)
             {
               s.produced_color = (unsigned char)unk_007161e0[player][s.dual_mana_slot];
-              if (unk_008ce510[unk_007161e0[player][s.dual_mana_slot] >> 16] > 0 && (((unsigned int)(1 << s.produced_color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
+              if (mana_charge[unk_007161e0[player][s.dual_mana_slot] >> 16] > 0 && (((unsigned int)(1 << s.produced_color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
               {
                 s.can_activate = 1;
               }
-              else if (unk_008ce510[unk_007161e0[player][s.dual_mana_slot] >> 16] == -1 && x_value < max_x_value && max_x_value != -1 && (((unsigned int)(1 << s.produced_color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
+              else if (mana_charge[unk_007161e0[player][s.dual_mana_slot] >> 16] == -1 && x_value < max_x_value && max_x_value != -1 && (((unsigned int)(1 << s.produced_color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
               {
                 s.can_activate = 1;
               }
@@ -4788,38 +4829,38 @@ int FUN_00434af9(int player,
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
-            if (FUN_00435881(player, s.current_card) != 0)
+            if (activate_mana_source_for_payment(player, s.current_card) != 0)
             {
               s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
               result = has_mana(player, COLOR_ANY, 1);
               s.max_colorless -= result;
               FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
               FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
-              FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+              auto_pay_generic_mana(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
             }
           }
         }
       }
     }
 
-    result = FUN_004346ab(unk_008ce510, x_value, max_x_value);
-    if (result == 0 && (unk_008ce510[0] != 0 || unk_008ce510[6] != 0))
+    result = FUN_004346ab(mana_charge, x_value, max_x_value);
+    if (result == 0 && (mana_charge[0] != 0 || mana_charge[6] != 0))
     {
       for (s.current_card = 0; s.current_card < active_cards_count[player]; ++s.current_card)
       {
-        result = FUN_00435643(player, s.current_card, activation_flags);
+        result = can_activate_mana_source(player, s.current_card, activation_flags);
         if (result != 0 && dispatch_event_to_single_card(player, s.current_card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0)
         {
           s.can_activate = 0;
-          if (unk_008ce510[0] < 1)
+          if (mana_charge[0] < 1)
           {
-            if (unk_008ce510[0] == -1 && x_value < max_x_value && max_x_value != -1)
+            if (mana_charge[0] == -1 && x_value < max_x_value && max_x_value != -1)
             {
               s.can_activate = 1;
             }
-            else if (unk_008ce510[6] < 1)
+            else if (mana_charge[6] < 1)
             {
-              if (unk_008ce510[6] == -1 && x_value < max_x_value && max_x_value != -1)
+              if (mana_charge[6] == -1 && x_value < max_x_value && max_x_value != -1)
               {
                 s.can_activate = 1;
               }
@@ -4833,7 +4874,7 @@ int FUN_00434af9(int player,
           {
             s.can_activate = 1;
           }
-          if (PLAYER_CARD_INSTANCE(player, s.current_card).mana_color == '@' && unk_008ce510[6] == 0)
+          if (PLAYER_CARD_INSTANCE(player, s.current_card).mana_color == '@' && mana_charge[6] == 0)
           {
             s.can_activate = 0;
           }
@@ -4846,45 +4887,45 @@ int FUN_00434af9(int player,
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
-            if (FUN_00435881(player, s.current_card) != 0)
+            if (activate_mana_source_for_payment(player, s.current_card) != 0)
             {
               s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
               result = has_mana(player, COLOR_ANY, 1);
               s.max_colorless -= result;
               FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
               FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
-              FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+              auto_pay_generic_mana(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
             }
           }
         }
       }
     }
 
-    result = FUN_004346ab(unk_008ce510, x_value, max_x_value);
+    result = FUN_004346ab(mana_charge, x_value, max_x_value);
     if (result == 0 && s.any_variable_costs && max_x_value == -1)
     {
       for (s.current_card = 0; s.current_card < active_cards_count[player]; ++s.current_card)
       {
-        result = FUN_00435643(player, s.current_card, activation_flags);
+        result = can_activate_mana_source(player, s.current_card, activation_flags);
         if (result != 0 && dispatch_event_to_single_card(player, s.current_card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0)
         {
           s.any_variable_costs = 0;
           for (s.color = 1; s.color < 7; ++s.color)
           {
-            if (max_x_value == -1 && unk_008ce510[s.color] == -1 && (((unsigned int)(1 << (unsigned char)s.color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
+            if (max_x_value == -1 && mana_charge[s.color] == -1 && (((unsigned int)(1 << (unsigned char)s.color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
             {
               s.any_variable_costs = 1;
             }
-            else if (max_x_value == -1 && unk_008ce510[0] == -1)
+            else if (max_x_value == -1 && mana_charge[0] == -1)
             {
               s.any_variable_costs = 1;
             }
-            else if (max_x_value == -1 && unk_008ce510[6] == -1)
+            else if (max_x_value == -1 && mana_charge[6] == -1)
             {
               s.any_variable_costs = 1;
             }
           }
-          if (PLAYER_CARD_INSTANCE(player, s.current_card).mana_color == '@' && unk_008ce510[6] != -1)
+          if (PLAYER_CARD_INSTANCE(player, s.current_card).mana_color == '@' && mana_charge[6] != -1)
           {
             s.any_variable_costs = 0;
           }
@@ -4894,7 +4935,7 @@ int FUN_00434af9(int player,
             while (s.dual_mana_slot < 10 && unk_007161e0[player][s.dual_mana_slot] != -1)
             {
               s.special_color = (unsigned char)unk_007161e0[player][s.dual_mana_slot];
-              if (max_x_value == -1 && unk_008ce510[unk_007161e0[player][s.dual_mana_slot] >> 16] == -1 && (((unsigned int)(1 << s.special_color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
+              if (max_x_value == -1 && mana_charge[unk_007161e0[player][s.dual_mana_slot] >> 16] == -1 && (((unsigned int)(1 << s.special_color) & (unsigned int)(unsigned char)PLAYER_CARD_INSTANCE(player, s.current_card).mana_color) != 0))
               {
                 s.any_variable_costs = 1;
               }
@@ -4910,14 +4951,14 @@ int FUN_00434af9(int player,
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
-            if (FUN_00435881(player, s.current_card) != 0)
+            if (activate_mana_source_for_payment(player, s.current_card) != 0)
             {
               s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1);
               result = has_mana(player, COLOR_ANY, 1);
               s.max_colorless -= result;
               FUN_0043410a(player, mana_paid_by_color, total_mana_paid, s.max_colorless);
               FUN_004342b3(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
-              FUN_004344b0(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
+              auto_pay_generic_mana(player, mana_paid_by_color, total_mana_paid, s.max_colorless, &x_value, max_x_value);
             }
           }
         }
@@ -4982,7 +5023,7 @@ int select_card_for_action(int player,
       {
         continue;
       }
-      
+
       for (s.current_card = 0; s.current_card < active_cards_count[s.current_player]; s.current_card++)
       {
         if (required_type == (unsigned int)-2 || PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id == -1)
@@ -5110,10 +5151,10 @@ int select_card_for_action(int player,
       s.action_msg = ((unsigned int)s.action >> 0x10) & 0xff;
       s.stack_player = DAT_009251d8[stack_size].x;
       s.stack_card = DAT_009251d8[stack_size].y;
-      FUN_00444c43(unk_00748770,
-                   s.action_msg,
-                   s.stack_player,
-                   s.stack_card);
+      format_stack_action_text(unk_00748770,
+                               s.action_msg,
+                               s.stack_player,
+                               s.stack_card);
     }
   }
 
@@ -5282,11 +5323,20 @@ int FUN_0043ece1(int player, int card)
     force_special_mode = 1;
   }
 
-  if (put_card_on_stack(player, card, 0))
+  if (!put_card_on_stack(player, card, 0))
   {
-    if (put_card_on_stack(player, card, 1))
+  }
+  else
+  {
+    if (!put_card_on_stack(player, card, 1))
     {
-      if (resolve_card_on_stack(player, card))
+    }
+    else
+    {
+      if (!resolve_card_on_stack(player, card))
+      {
+      }
+      else
       {
         if (force_special_mode != 0)
         {
@@ -5699,15 +5749,13 @@ int damage_player(int target_player, int amount, int source_player, int source_c
 // FUNCTION: MAGIC 0x00435e27
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
 {
-  int color_index;
   int result;
 
-  color_index = single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color);
-  unk_008ce510[color_index] += unk_0072c440[color_index];
-  result = charge_mana(player, color, amount) - unk_0072c440[color_index];
+  mana_charge[0] += unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)];
+  result = charge_mana(player, color, amount) - unk_0072c440[single_color_test_bit_to_color_t(PLAYER_CARD_INSTANCE(player, card).color)];
   if (spell_fizzled == 1)
   {
-    result = 0;
+    return 0;
   }
   return result;
 }
@@ -6349,7 +6397,7 @@ void FUN_004a61d6(char *text)
 }
 
 // FUNCTION: MAGIC 0x00482a97
-int FUN_00482a97(int player, int card, unsigned int flags)
+int has_effect_source_type(int player, int card, unsigned int flags)
 {
   struct
   {
@@ -6391,13 +6439,13 @@ int FUN_00482a97(int player, int card, unsigned int flags)
                   .info_slot;
         }
 
-        if (PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id == -1)
+        if (PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id != -1)
         {
-          s.source_internal_card_id = PLAYER_CARD_INSTANCE(s.source_player, s.source_card).original_internal_card_id;
+          s.source_internal_card_id = PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id;
         }
         else
         {
-          s.source_internal_card_id = PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id;
+          s.source_internal_card_id = PLAYER_CARD_INSTANCE(s.source_player, s.source_card).original_internal_card_id;
         }
 
         if ((flags & (unsigned char)global_cards_data[s.source_internal_card_id].type) != 0)
@@ -7013,7 +7061,7 @@ unsigned int C_real_validate_target(int tgt_player,
       {
         if (extra < 5)
         {
-          if (FUN_0048463d(tgt_player, tgt_card, extra + 1) == 0)
+          if (card_has_basic_land_type(tgt_player, tgt_card, extra + 1) == 0)
           {
             s.is_illegal = 1;
             strcat(s.errbuf, gs_illegal_target_why_card_type_008cfde0);
@@ -7373,13 +7421,13 @@ unsigned int C_real_validate_target(int tgt_player,
 // FUNCTION: MAGIC 0x004e51bb
 void FUN_004e51bb(void)
 {
-  if (recorded_action_count < 1)
+  if (recorded_action_count > 0)
   {
-    recorded_action_count = 0;
+    --recorded_action_count;
   }
   else
   {
-    --recorded_action_count;
+    recorded_action_count = 0;
   }
 }
 
@@ -7410,14 +7458,15 @@ void FUN_005514cd(int player, int card, int amount)
 }
 
 // FUNCTION: MAGIC 0x00551572
-void FUN_00551572(int player, int card, int amount)
+void set_special_counters(int player, int card, int amount)
 {
   if (amount > 0xff)
   {
     amount = 0xff;
   }
 
-  global_card_instances[player][card].special_counters = (unsigned char)amount;
+  global_card_instances[player][card].special_counters =
+      (global_card_instances[player][card].special_counters & 0xffffff00) | (unsigned char)amount;
 }
 
 // FUNCTION: MAGIC 0x005515f5
@@ -7603,12 +7652,12 @@ void FUN_004eaceb(int player, int color_to_produce, int color_to_consume)
 }
 
 // FUNCTION: MAGIC 0x00551334
-void FUN_00551334(int player, int card)
+void remove_special_counter(int player, int card)
 {
   /* The exe only decrements the low byte of special_counters and preserves the upper 3 bytes. */
-  PLAYER_CARD_INSTANCE(player, card).special_counters =
-      (PLAYER_CARD_INSTANCE(player, card).special_counters & 0xffffff00) |
-      ((PLAYER_CARD_INSTANCE(player, card).special_counters - 1) & 0xff);
+  global_card_instances[player][card].special_counters =
+      (global_card_instances[player][card].special_counters & 0xffffff00) |
+      ((global_card_instances[player][card].special_counters - 1) & 0xff);
 }
 
 // FUNCTION: MAGIC 0x00444b74
@@ -7893,7 +7942,7 @@ void process_damage_prevention(int player)
       }
     }
 
-    FUN_004aff25();
+    kill_creatures_with_lethal_damage();
     land_can_be_played &= ~4;
 
     if (g_duel_ai_mode_state != 1 || s.did_setup == 0 || ai_decision_code != 9)
@@ -7915,7 +7964,7 @@ void process_damage_prevention(int player)
     s.temp = ai_modifier + s.temp;
     if (s.best_score < s.temp)
     {
-      FUN_004e50f5();
+      save_recorded_ai_actions();
       s.saved_777854 = ai_search_flags;
       s.best_score = s.temp;
     }
@@ -7936,22 +7985,19 @@ void process_damage_prevention(int player)
 }
 
 // FUNCTION: MAGIC 0x004aff25
-void FUN_004aff25(void)
+void kill_creatures_with_lethal_damage(void)
 {
   int player;
   int card;
-  int toughness;
-  card_instance_t *instance;
 
   for (player = 0; player < 2; ++player)
   {
     for (card = 0; card < active_cards_count[player]; ++card)
     {
-      instance = &PLAYER_CARD_INSTANCE(player, card);
-      if (is_in_play(player, card) && (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE))
+      if (is_in_play(player, card) &&
+          (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE))
       {
-        toughness = (short)instance->damage_on_card;
-        if (C_get_abilities(player, card, EVENT_TOUGHNESS, -1) <= toughness)
+        if (C_get_abilities(player, card, EVENT_TOUGHNESS, -1) <= (short)PLAYER_CARD_INSTANCE(player, card).damage_on_card)
         {
           if (g_duel_ai_mode_state != 1)
           {
@@ -8675,7 +8721,7 @@ void FUN_004b6002(const char *param_1)
 
 // FUNCTION: MAGIC 0x004a6968
 // FUNCTION: SHANDALAR 0x00558aea
-void TENTATIVE_reassess_all_cards(void)
+void TENTATIVE_reassess_all_cards(int view_player, int present_after_draw)
 {
   struct
   {
@@ -8731,29 +8777,29 @@ void TENTATIVE_reassess_all_cards(void)
         }
       }
     }
+  }
 
-    if (g_duel_ai_mode_state != 1)
+  if (g_duel_ai_mode_state == 1)
+    return;
+
+  unk_008b3270 = 0;
+  for (s.player = 0; s.player < 2; ++s.player)
+  {
+    for (s.card = 0; s.card < active_cards_count[s.player]; ++s.card)
     {
-      unk_008b3270 = 0;
-      for (s.player = 0; s.player < 2; ++s.player)
+      if (PLAYER_CARD_INSTANCE(s.player, s.card).internal_card_id != -1)
       {
-        for (s.card = 0; s.card < active_cards_count[s.player]; ++s.card)
-        {
-          if (PLAYER_CARD_INSTANCE(s.player, s.card).internal_card_id != -1)
-          {
-            PLAYER_CARD_INSTANCE(s.player, s.card).unknown0x70 = FUN_004b0047(s.player, s.card);
-          }
-        }
-      }
-
-      if (unk_00742fc4 == 0)
-      {
-        FUN_004e1cd1();
-      }
-      else
-      {
-        SendMessageA((HWND)g_duel_window_hwnd, 0x464, 0xffff, 0);
+        PLAYER_CARD_INSTANCE(s.player, s.card).unknown0x70 = FUN_004b0047(s.player, s.card);
       }
     }
+  }
+
+  if (unk_00742fc4 != 0)
+  {
+    SendMessageA((HWND)g_duel_window_hwnd, 0x464, s.flags, 0);
+  }
+  else
+  {
+    redraw_shandalar_duel_screen(view_player, present_after_draw);
   }
 }

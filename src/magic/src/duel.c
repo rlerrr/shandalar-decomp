@@ -22,7 +22,7 @@ int DrawRandomCardFromInitialLibrary(int library_index);
 int AddCardToDeckSorted(int card_id);
 int GetCardRarity(int card_id);
 void AddJournalEntry(int entry_type, int entry_arg);
-void TENTATIVE_reassess_all_cards();
+void TENTATIVE_reassess_all_cards(int view_player, int present_after_draw);
 void append_to_trace_txt(char *text);
 void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);
@@ -32,12 +32,12 @@ void update_phase_display(int player, phase_t phase);
 int player_can_stop_at_phase(int player, phase_t phase);
 void reset_trigger_dispatch_state(void);
 int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card);
-int FUN_0044b6af(int player, int card);
+int can_activate_mana_source_for_stop_prompt(int player, int card);
 int FUN_0044b7d4(int player, int card);
-void FUN_0044af2d(int param_1);
-void FUN_0044b3d4(void);
-int FUN_004e6754(int param_1, int param_2);
-int FUN_004a7ccf(void);
+int prompt_stop_phase_anyway(phase_t phase);
+void resolve_mana_burn(void);
+int show_ai_action_log_dialog(int use_saved_actions, int score);
+int get_ai_search_elapsed_time(void);
 void FUN_00446036(void);
 int allow_response(int param_1, int param_2, char *param_3, int param_4);
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response);
@@ -253,7 +253,7 @@ void reset_duel_globals(void)
   nested_trigger_depth = 0;
   for (card = 0; card <= 7; ++card)
   {
-    unk_008ce510[card] = 0;
+    mana_charge[card] = 0;
   }
 
   max_x_value = -1;
@@ -879,7 +879,7 @@ int untap_phase_exe(unsigned int player)
             if ((FUN_0044b646(s.must_untap_cards, s.must_untap_count, unk_00742fcc, s.selected_card) == 0) &&
                 (FUN_0044b646(s.optional_untap_cards, s.optional_untap_count, unk_00742fcc, s.selected_card) == 0))
             {
-              if ((FUN_0044b6af(unk_00742fcc, s.selected_card) != 0) &&
+              if ((can_activate_mana_source_for_stop_prompt(unk_00742fcc, s.selected_card) != 0) &&
                   (unk_00742fcc == player))
               {
                 FUN_0044b7d4(unk_00742fcc, s.selected_card);
@@ -963,9 +963,9 @@ int untap_phase_exe(unsigned int player)
     s.did_skip_untap = phase_was_skipped;
     if (s.did_skip_untap == 0)
     {
-      FUN_0044af2d(1);
+      prompt_stop_phase_anyway(1);
     }
-    FUN_0044b3d4();
+    resolve_mana_burn();
     if (check_duel_finished() != 0)
     {
       return 1;
@@ -1039,7 +1039,7 @@ int upkeep_phase(unsigned int player)
   process_damage_prevention(player);
   DAT_00789714 = 0;
   unk_00939330 = 0;
-  FUN_0044b3d4();
+  resolve_mana_burn();
   if (check_duel_finished() != 0)
   {
     return 1;
@@ -1148,7 +1148,7 @@ int draw_phase(unsigned int player)
       dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xe2, gs_end_draw_0091c510, 1);
     }
     phase_stop_suppressed = 0;
-    FUN_0044b3d4();
+    resolve_mana_burn();
     if (check_duel_finished() != 0)
     {
       return 1;
@@ -1310,7 +1310,7 @@ int discard_phase(unsigned int player, int phase_mode)
   {
     dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xe4, gs_end_discard_007ab020, 1);
   }
-  FUN_0044b3d4();
+  resolve_mana_burn();
   if (check_duel_finished() != 0)
   {
     return 1;
@@ -1428,7 +1428,7 @@ void end_turn_phase(unsigned int player)
     phase_stop_suppressed = 0;
   }
   process_damage_prevention(player);
-  TENTATIVE_reassess_all_cards();
+  TENTATIVE_reassess_all_cards(0, 0xff);
 
   s.dynamic_card_count = 0;
   for (s.card = 0; s.card < 0x96; s.card = s.card + 1)
@@ -1562,12 +1562,12 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     }
     if (DAT_00712544 != 0)
     {
-      FUN_004e6754(0, s.ai_score);
+      show_ai_action_log_dialog(0, s.ai_score);
     }
     if ((DAT_0089652c < s.ai_score) && (DAT_0093d850 == 0))
     {
       DAT_0089652c = s.ai_score;
-      FUN_004e50f5();
+      save_recorded_ai_actions();
       s.saved_ai_flags = ai_search_flags;
       s.saved_ai_try_count = unk_008cc840;
     }
@@ -1578,16 +1578,16 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     DAT_008a8d74 = 0;
     *phase_value = DAT_008a8d74;
     DAT_0093d850 = *phase_value;
-    if ((DAT_0091c500 / 2 < FUN_004a7ccf()) &&
+    if ((DAT_0091c500 / 2 < get_ai_search_elapsed_time()) &&
         (((g_shandalar_difficulty * 5 + 5) * 5 <= unk_008cc840) ||
-         (((ai_search_flags & 4) == 0 ? 0xc8 : 0x32) < FUN_004a7ccf())) &&
+         (((ai_search_flags & 4) == 0 ? 0xc8 : 0x32) < get_ai_search_elapsed_time())) &&
         ((DAT_00712544 == 0) || (unk_008cc840 > 0x32)))
     {
       sprintf(s.debug_text, s_phase___3d_num_tries___4d_mtime___0056e98c, DAT_00743098, unk_008cc840, DAT_0091c500 / 2, unk_0093f9c0);
       OutputDebugStringA(s.debug_text);
       if (DAT_00712544 != 0)
       {
-        FUN_004e6754(1, DAT_0089652c);
+        show_ai_action_log_dialog(1, DAT_0089652c);
       }
       unk_00712938 = -1;
       g_duel_ai_mode_state = 0;
@@ -1675,9 +1675,9 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     s.local_50 = 0;
     if (s.local_50 == 0)
     {
-      FUN_0044af2d(0x20);
+      prompt_stop_phase_anyway(0x20);
     }
-    FUN_0044b3d4();
+    resolve_mana_burn();
     if (check_duel_finished() != 0)
     {
       return 1;

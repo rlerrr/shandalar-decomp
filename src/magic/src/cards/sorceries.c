@@ -121,7 +121,7 @@ int card_balance(int player, int card, event_t event)
           sacrifice_a_land(1);
         }
 
-        TENTATIVE_reassess_all_cards();
+        TENTATIVE_reassess_all_cards(0, 0xff);
       } while (s.player_0_count != s.player_1_count);
 
       do
@@ -174,7 +174,7 @@ int card_balance(int player, int card, event_t event)
           kill_card(1, s.current_card, KILL_SACRIFICE);
         }
 
-        TENTATIVE_reassess_all_cards();
+        TENTATIVE_reassess_all_cards(0, 0xff);
       } while (s.player_0_count != s.player_1_count);
 
       kill_card(player, card, KILL_BURY);
@@ -287,7 +287,7 @@ int card_wheel_of_fortune(int player, int card, event_t event)
       current_player = current_player == 0 ? 1 : 0;
     }
 
-    TENTATIVE_reassess_all_cards();
+    TENTATIVE_reassess_all_cards(0, 0xff);
     player_zero_library = 0;
     player_one_library = 0;
     for (current_card = 0; current_card < 500; ++current_card)
@@ -675,7 +675,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
       {
         state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state;
         *state_ptr |= 0x300000;
-        TENTATIVE_reassess_all_cards();
+        TENTATIVE_reassess_all_cards(0, 0xff);
         instance->targets[instance->number_of_targets].player = selected_target.player;
         instance->targets[instance->number_of_targets].card = selected_target.card;
         ++instance->number_of_targets;
@@ -911,7 +911,7 @@ int card_tsunami(int player, int card, event_t event)
       {
         if (is_in_play(current_player, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type & TYPE_LAND) != 0)
         {
-          if (FUN_0048463d(current_player, current_card, get_hacked_color(player, card, 2)) != 0)
+          if (card_has_basic_land_type(current_player, current_card, get_hacked_color(player, card, 2)) != 0)
           {
             kill_card(current_player, current_card, KILL_DESTROY);
           }
@@ -1171,7 +1171,7 @@ int card_fireball(int player, int card, event_t event)
 
           PLAYER_CARD_INSTANCE(player, card).info_slot = s.damage_per_target;
           x_value = 0;
-          unk_008ce510[4] = 1;
+          mana_charge[4] = 1;
           charge_mana(player, COLOR_COLORLESS, mana_to_pay);
           if (spell_fizzled != 1)
           {
@@ -1235,7 +1235,7 @@ int card_fireball(int player, int card, event_t event)
                 {
                   PLAYER_CARD_INSTANCE(s.chosen_target.player, s.chosen_target.card).state |=
                       STATE_CANNOT_TARGET | STATE_TARGETTED;
-                  TENTATIVE_reassess_all_cards();
+                  TENTATIVE_reassess_all_cards(0, 0xff);
                 }
 
                 PLAYER_CARD_INSTANCE(player, card)
@@ -1334,7 +1334,7 @@ int card_fireball(int player, int card, event_t event)
             {
               PLAYER_CARD_INSTANCE(s.chosen_target.player, s.chosen_target.card).state |=
                   STATE_CANNOT_TARGET | STATE_TARGETTED;
-              TENTATIVE_reassess_all_cards();
+              TENTATIVE_reassess_all_cards(0, 0xff);
             }
 
             PLAYER_CARD_INSTANCE(player, card)
@@ -1730,10 +1730,10 @@ int card_demonic_tutor(int player, int card, event_t event)
         type_mask = TYPE_CREATURE | TYPE_ENCHANTMENT;
       }
 
-      found_card = FUN_00483e3e(player, type_mask);
+      found_card = choose_best_card_from_library(player, type_mask);
       if (found_card == -1)
       {
-        found_card = FUN_00483e3e(player, 0xffffffff);
+        found_card = choose_best_card_from_library(player, 0xffffffff);
       }
     }
     else
@@ -1747,7 +1747,7 @@ int card_demonic_tutor(int player, int card, event_t event)
       add_card_to_hand(player, global_library[player][found_card]);
       remove_card_from_deck(player, found_card);
       ++hand_count[player];
-      TENTATIVE_reassess_all_cards();
+      TENTATIVE_reassess_all_cards(0, 0xff);
       shuffle_duel_library(player, player);
     }
 

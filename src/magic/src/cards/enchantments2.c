@@ -1870,7 +1870,7 @@ int card_living_artifact(int player, int card, event_t event)
       }
       if (event == EVENT_RESOLVE_TRIGGER)
       {
-        FUN_005513d7(player, card, instance->eot_toughness);
+        add_special_counters(player, card, instance->eot_toughness);
         instance->eot_toughness = 0;
       }
     }
@@ -1904,7 +1904,7 @@ int card_living_artifact(int player, int card, event_t event)
         load_text("prompts.txt", "LIVING_ARTIFACT");
       }
 
-      if (!FUN_00551ed7(player, 2, card))
+      if (!select_target_artifact_and_store(player, 2, card))
       {
         spell_fizzled = 1;
       }
@@ -1994,7 +1994,7 @@ int card_living_artifact(int player, int card, event_t event)
       if (spell_fizzled != 1)
       {
         ++instance->info_slot;
-        FUN_00551334(player, card);
+        remove_special_counter(player, card);
       }
       return 0;
     }
@@ -2269,7 +2269,7 @@ int card_lifetap(int player, int card, event_t event)
 
   if ((event == EVENT_TAP_CARD) && (affected_card_controller != player))
   {
-    if (FUN_0048463d(affected_card_controller, affected_card, get_hacked_color(player, card, COLOR_GREEN)) != 0)
+    if (card_has_basic_land_type(affected_card_controller, affected_card, get_hacked_color(player, card, COLOR_GREEN)) != 0)
     {
       gain_life(player, 1, player, card);
       return 0;
@@ -2389,7 +2389,7 @@ int card_aspect_of_wolf(int player, int card, event_t event)
     {
       load_text("prompts.txt", "ASPECTOFWOLF");
     }
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -2488,7 +2488,7 @@ int card_lure(int player, int card, event_t event)
     {
       load_text(0, "LURE");
     }
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -2654,7 +2654,7 @@ int card_creature_bond(int player, int card, event_t event)
     {
       load_text("prompts.txt", "CREATUREBOND");
     }
-    spell_fizzled = (unsigned int)(FUN_00551638(player, 1 - player, card) == 0);
+    spell_fizzled = (unsigned int)(select_target_creature_and_store(player, 1 - player, card) == 0);
     if (spell_fizzled != 1)
     {
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == nonactive_player)
@@ -2774,7 +2774,7 @@ int card_holy_armor(int player, int card, event_t event)
     {
       load_text("prompts.txt", "HOLY_ARMOR");
     }
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -3005,7 +3005,7 @@ int card_blessing(int player, int card, event_t event)
     {
       load_text("prompts.txt", "BLESSING");
     }
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -3240,7 +3240,7 @@ int card_firebreathing(int player, int card, event_t event)
     {
       load_text("prompts.txt", "FIREBREATHING");
     }
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -3487,7 +3487,7 @@ int card_fear(int player, int card, event_t event)
     {
       load_text("prompts.txt", "FEAR");
     }
-    spell_fizzled = !FUN_00551638(player, player, card);
+    spell_fizzled = !select_target_creature_and_store(player, player, card);
   }
 
   if (event == EVENT_RESOLVE_SPELL)
@@ -3568,7 +3568,7 @@ int card_web(int player, int card, event_t event)
     {
       load_text("prompts.txt", "WEB");
     }
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -3806,7 +3806,7 @@ int card_paralyze(int player, int card, event_t event)
       load_text("prompts.txt", "PARALYZE");
     }
 
-    if (FUN_00551638(player, 2, card) != 0)
+    if (select_target_creature_and_store(player, 2, card) != 0)
     {
       s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       s.target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
@@ -4168,7 +4168,7 @@ int card_wanderlust(int player, int card, event_t event)
     {
       load_text("prompts.txt", "WANDERLUST");
     }
-    if (FUN_00551638(player, 1 - player, card) == 0)
+    if (select_target_creature_and_store(player, 1 - player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -4314,7 +4314,7 @@ int card_instill_energy(int player, int card, event_t event)
       load_text("prompts.txt", "INSTILL_ENERGY");
     }
 
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -4703,7 +4703,7 @@ int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag)
 
   if ((event == EVENT_CAST_SPELL) && (card == affected_card) && (player == affected_card_controller))
   {
-    if (FUN_00551638(player, player, card) == 0)
+    if (select_target_creature_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -4848,7 +4848,7 @@ int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int to
       preferred_controller = player;
     }
 
-    if (FUN_00551638(player, preferred_controller, card) == 0)
+    if (select_target_creature_and_store(player, preferred_controller, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -5015,7 +5015,7 @@ int helper_ward(int player, int card, event_t event, int color)
         load_text("prompts.txt", "ANY_WARD");
       }
 
-      if (!FUN_00551638(player, player, card))
+      if (!select_target_creature_and_store(player, player, card))
       {
         spell_fizzled = 1;
       }
@@ -5552,7 +5552,7 @@ int card_regeneration(int player, int card, event_t event)
       load_text("prompts.txt", "REGENERATION");
     }
 
-    if (!FUN_00551638(player, player, card))
+    if (!select_target_creature_and_store(player, player, card))
     {
       spell_fizzled = 1;
     }
@@ -6113,7 +6113,7 @@ int card_flight(int player, int card, event_t event)
     {
       load_text("prompts.txt", "FLIGHT");
     }
-    if (FUN_00551638(player, player, card))
+    if (select_target_creature_and_store(player, player, card))
     {
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == nonactive_player)
       {
