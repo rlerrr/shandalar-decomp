@@ -492,7 +492,7 @@ static int FUN_00500c56(void)
   DAT_00925d2c = 0;
   DAT_007ab2c0 = DAT_00925d2c;
   DAT_008b32bc = 1;
-  unk_0092674c = 0;
+  g_waiting_for_network_packet = 0;
   unk_008b27f0 = '\0';
   g_target_selection_network_packet.packet_type = '\0';
   unk_008b2938 = '\0';

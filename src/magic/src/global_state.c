@@ -533,7 +533,7 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&trigger_dispatch_depth, 4);
   result &= save_or_load_data(&max_trigger_dispatch_depth, 4);
   result &= save_or_load_data(&nested_trigger_depth, 4);
-  result &= save_or_load_data(&unk_00926790, 4);
+  result &= save_or_load_data(&response_action_taken, 4);
   result &= save_or_load_data(&DAT_0057a750, 4);
   result &= save_or_load_data(&g_selected_wizard_color, 4);
   result &= save_or_load_data(&g_deck_color_bitmap, 4);
@@ -741,7 +741,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&trigger_dispatch_depth, 4);
   result &= save_or_load_data(&max_trigger_dispatch_depth, 4);
   result &= save_or_load_data(&nested_trigger_depth, 4);
-  result &= save_or_load_data(&unk_00926790, 4);
+  result &= save_or_load_data(&response_action_taken, 4);
   result &= save_or_load_data(&DAT_0057a750, 4);
   result &= save_or_load_data(&g_selected_wizard_color, 4);
   result &= save_or_load_data(&g_deck_color_bitmap, 4);

@@ -451,7 +451,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 
   s.got_requested_packet = 0;
   s.receive_result = 0;
-  *(int *)&unk_009266d0[0x7c] = 1;
+  g_waiting_for_network_packet = 1;
 
   do
   {
@@ -463,7 +463,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
     if (s.got_requested_packet != 0)
     {
       ReleaseMutex((HANDLE)global_mutex_ReadPacket);
-      *(int *)&unk_009266d0[0x7c] = 0;
+      g_waiting_for_network_packet = 0;
       return 1;
     }
 
@@ -487,13 +487,13 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
             FUN_004b4110(3);
             FamInterface_Flush();
             ReleaseMutex((HANDLE)global_mutex_ReadPacket);
-            *(int *)&unk_009266d0[0x7c] = 0;
+            g_waiting_for_network_packet = 0;
             return 0;
           }
 
           append_to_trace_txt("The duel has ended because your opponent has dropped.\n");
           ReleaseMutex((HANDLE)global_mutex_ReadPacket);
-          *(int *)&unk_009266d0[0x7c] = 0;
+          g_waiting_for_network_packet = 0;
           return 0;
         }
       }
@@ -520,7 +520,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       FamInterface_EndSession();
       FamInterface_Flush();
       ReleaseMutex((HANDLE)global_mutex_ReadPacket);
-      *(int *)&unk_009266d0[0x7c] = 0;
+      g_waiting_for_network_packet = 0;
       return 0;
     }
 
@@ -760,7 +760,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       sprintf(s.message, "There was an error reading a packet of type %d", packet_type);
       MessageBoxA((HWND)0, s.message, "Packet Error", 0);
       ReleaseMutex((HANDLE)global_mutex_ReadPacket);
-      *(int *)&unk_009266d0[0x7c] = 0;
+    g_waiting_for_network_packet = 0;
       return 0;
     }
 

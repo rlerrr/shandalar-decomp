@@ -288,7 +288,7 @@ int run_target_selection_modal(int who_chooses,
       DAT_0093d840 = 0;
     }
 
-    if (DAT_007aaeec != 0 && current_phase == 10 && unk_00926790 == 0)
+    if (DAT_007aaeec != 0 && current_phase == 10 && response_action_taken == 0)
     {
       s.result = 0;
       s.action_result.selection_code = -2;

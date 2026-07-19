@@ -1256,7 +1256,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     }
     else if (card_id == unk_00789b80)
     {
-      sprintf(DAT_00709100, unk_009266d0 + 0x80, FUN_00495311(get_displayed_card_special_counters(player, card)));
+      sprintf(DAT_00709100, gs_cardtitle_hunting_00926750, FUN_00495311(get_displayed_card_special_counters(player, card)));
     }
     else if (card_id == unk_008cf1ac)
     {

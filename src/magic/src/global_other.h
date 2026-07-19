@@ -214,7 +214,7 @@ GLOBAL_OTHERS_EXTERN int DAT_00791418;
 GLOBAL_OTHERS_EXTERN char ai_action_dialog_number_buffer[12];
 
 // GLOBAL: MAGIC 0x0092674c
-GLOBAL_OTHERS_EXTERN int unk_0092674c;
+GLOBAL_OTHERS_EXTERN int g_waiting_for_network_packet;
 
 
 // GLOBAL: MAGIC 0x0093f9c0

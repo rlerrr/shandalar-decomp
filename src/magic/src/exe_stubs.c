@@ -226,295 +226,295 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
 
   switch (msg)
   {
-    case WM_INITDIALOG:
-      setup_duel_options_dialog_resources(&g_duel_options_dialog_background,
-                                          &g_duel_options_dialog_title_color,
-                                          &g_duel_options_dialog_text_color,
-                                          &g_duel_options_dialog_button_brush,
-                                          &g_duel_options_dialog_pen1,
-                                          &g_duel_options_dialog_pen2,
-                                          &g_duel_options_dialog_unfocus_text_color,
-                                          &g_duel_options_dialog_focus_text_color);
+  case WM_INITDIALOG:
+    setup_duel_options_dialog_resources(&g_duel_options_dialog_background,
+                                        &g_duel_options_dialog_title_color,
+                                        &g_duel_options_dialog_text_color,
+                                        &g_duel_options_dialog_button_brush,
+                                        &g_duel_options_dialog_pen1,
+                                        &g_duel_options_dialog_pen2,
+                                        &g_duel_options_dialog_unfocus_text_color,
+                                        &g_duel_options_dialog_focus_text_color);
 
-      SetDlgItemTextA(hwnd, 0x424, gs_duel_option_008b35f0[0]);
-      SetDlgItemTextA(hwnd, 0x425, gs_duel_option_008b35f0[1]);
-      SetDlgItemTextA(hwnd, 0x426, gs_duel_option_008b35f0[2]);
-      SetDlgItemTextA(hwnd, 0x427, gs_duel_option_008b35f0[3]);
-      SetDlgItemTextA(hwnd, 0x438, gs_duel_option_008b35f0[4]);
-      SetDlgItemTextA(hwnd, 0x429, gs_duel_option_008b35f0[5]);
-      SetDlgItemTextA(hwnd, 0x42b, gs_duel_option_008b35f0[6]);
-      SetDlgItemTextA(hwnd, 0x42a, gs_duel_option_008b35f0[7]);
-      SetDlgItemTextA(hwnd, 0x437, gs_duel_option_008b35f0[8]);
-      SetDlgItemTextA(hwnd, 0x433, gs_duel_option_008b35f0[9]);
-      SetDlgItemTextA(hwnd, 0x42d, gs_duel_option_008b35f0[10]);
-      SetDlgItemTextA(hwnd, 0x42e, gs_duel_option_008b35f0[11]);
-      SetDlgItemTextA(hwnd, 0x42f, gs_duel_option_008b35f0[12]);
-      SetDlgItemTextA(hwnd, 0x430, gs_duel_option_008b35f0[13]);
-      SetDlgItemTextA(hwnd, 0x431, gs_duel_option_008b35f0[14]);
-      SetDlgItemTextA(hwnd, 0x432, gs_duel_option_008b35f0[15]);
-      SetDlgItemTextA(hwnd, 0x434, gs_duel_option_008b35f0[16]);
-      SetDlgItemTextA(hwnd, 0x435, gs_duel_option_008b35f0[17]);
-      SetDlgItemTextA(hwnd, 0x436, gs_duel_option_008b35f0[18]);
-      SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
-      SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
+    SetDlgItemTextA(hwnd, 0x424, gs_duel_option_008b35f0[0]);
+    SetDlgItemTextA(hwnd, 0x425, gs_duel_option_008b35f0[1]);
+    SetDlgItemTextA(hwnd, 0x426, gs_duel_option_008b35f0[2]);
+    SetDlgItemTextA(hwnd, 0x427, gs_duel_option_008b35f0[3]);
+    SetDlgItemTextA(hwnd, 0x438, gs_duel_option_008b35f0[4]);
+    SetDlgItemTextA(hwnd, 0x429, gs_duel_option_008b35f0[5]);
+    SetDlgItemTextA(hwnd, 0x42b, gs_duel_option_008b35f0[6]);
+    SetDlgItemTextA(hwnd, 0x42a, gs_duel_option_008b35f0[7]);
+    SetDlgItemTextA(hwnd, 0x437, gs_duel_option_008b35f0[8]);
+    SetDlgItemTextA(hwnd, 0x433, gs_duel_option_008b35f0[9]);
+    SetDlgItemTextA(hwnd, 0x42d, gs_duel_option_008b35f0[10]);
+    SetDlgItemTextA(hwnd, 0x42e, gs_duel_option_008b35f0[11]);
+    SetDlgItemTextA(hwnd, 0x42f, gs_duel_option_008b35f0[12]);
+    SetDlgItemTextA(hwnd, 0x430, gs_duel_option_008b35f0[13]);
+    SetDlgItemTextA(hwnd, 0x431, gs_duel_option_008b35f0[14]);
+    SetDlgItemTextA(hwnd, 0x432, gs_duel_option_008b35f0[15]);
+    SetDlgItemTextA(hwnd, 0x434, gs_duel_option_008b35f0[16]);
+    SetDlgItemTextA(hwnd, 0x435, gs_duel_option_008b35f0[17]);
+    SetDlgItemTextA(hwnd, 0x436, gs_duel_option_008b35f0[18]);
+    SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
+    SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
 
-      LoadDuelInterfaceRegistryOptions();
+    LoadDuelInterfaceRegistryOptions();
 
-      if (g_duel_interface_options.layout == 1)
+    if (g_duel_interface_options.layout == 1)
+    {
+      s.selected_control = 0x426;
+    }
+    else
+    {
+      s.selected_control = 0x427;
+    }
+    CheckDlgButton(hwnd, s.selected_control, 1);
+    CheckRadioButton(hwnd, 0x426, 0x427, s.selected_control);
+
+    if (g_duel_interface_options.directive_tracks_mouse != 0)
+    {
+      CheckDlgButton(hwnd, 0x438, 1);
+    }
+    if (g_duel_interface_options.show_cue_cards != 0)
+    {
+      CheckDlgButton(hwnd, 0x429, 1);
+    }
+    if (g_duel_interface_options.show_power_toughness_on_cards != 0)
+    {
+      CheckDlgButton(hwnd, 0x42a, 1);
+    }
+    if (g_duel_interface_options.show_abilities_on_cards != 0)
+    {
+      CheckDlgButton(hwnd, 0x42b, 1);
+    }
+    if (g_duel_interface_options.show_coin_flips != 0)
+    {
+      CheckDlgButton(hwnd, 0x437, 1);
+    }
+    if ((g_duel_mode_flags & 1) == 0)
+    {
+      EnableWindow(GetDlgItem(hwnd, 0x437), 0);
+      CheckDlgButton(hwnd, 0x437, 1);
+    }
+
+    if (g_duel_interface_options.player_territory_color == 1)
+    {
+      s.selected_control = 0x42f;
+    }
+    else if (g_duel_interface_options.player_territory_color == 2)
+    {
+      s.selected_control = 0x42e;
+    }
+    else if (g_duel_interface_options.player_territory_color == 3)
+    {
+      s.selected_control = 0x431;
+    }
+    else if (g_duel_interface_options.player_territory_color == 5)
+    {
+      s.selected_control = 0x42d;
+    }
+    else if (g_duel_interface_options.player_territory_color == 4)
+    {
+      s.selected_control = 0x430;
+    }
+    else
+    {
+      s.selected_control = 0x432;
+    }
+    CheckDlgButton(hwnd, s.selected_control, 1);
+    CheckRadioButton(hwnd, 0x42d, 0x432, s.selected_control);
+
+    if (g_duel_interface_options.player_territory_type == 0)
+    {
+      s.selected_control = 0x434;
+    }
+    else if (g_duel_interface_options.player_territory_type == 1)
+    {
+      s.selected_control = 0x435;
+    }
+    else
+    {
+      s.selected_control = 0x436;
+    }
+    CheckDlgButton(hwnd, s.selected_control, 1);
+    CheckRadioButton(hwnd, 0x434, 0x436, s.selected_control);
+
+    SetFocus(GetDlgItem(hwnd, IDOK));
+    SendMessageA(hwnd, 0x401, 1, 0);
+    change_buttonclass_wndproc(hwnd);
+    return 0;
+
+  case WM_COMMAND:
+    if ((wparam & 0xffff) == IDCANCEL)
+    {
+      cleanup_duel_options_dialog_resources(g_duel_options_dialog_background,
+                                            g_duel_options_dialog_button_brush,
+                                            g_duel_options_dialog_pen1,
+                                            g_duel_options_dialog_pen2);
+      EndDialog(hwnd, 0);
+      return 1;
+    }
+    if ((wparam & 0xffff) == IDOK)
+    {
+      if (IsDlgButtonChecked(hwnd, 0x426) != 0)
       {
-        s.selected_control = 0x426;
+        g_duel_interface_options.layout = 1;
       }
       else
       {
-        s.selected_control = 0x427;
+        g_duel_interface_options.layout = 2;
       }
-      CheckDlgButton(hwnd, s.selected_control, 1);
-      CheckRadioButton(hwnd, 0x426, 0x427, s.selected_control);
+      g_duel_interface_options.directive_tracks_mouse = IsDlgButtonChecked(hwnd, 0x438);
+      g_duel_interface_options.show_cue_cards = IsDlgButtonChecked(hwnd, 0x429);
+      g_duel_interface_options.show_power_toughness_on_cards = IsDlgButtonChecked(hwnd, 0x42a);
+      g_duel_interface_options.show_abilities_on_cards = IsDlgButtonChecked(hwnd, 0x42b);
+      g_duel_interface_options.show_coin_flips = IsDlgButtonChecked(hwnd, 0x437);
 
-      if (g_duel_interface_options.directive_tracks_mouse != 0)
+      if (IsDlgButtonChecked(hwnd, 0x42f) != 0)
       {
-        CheckDlgButton(hwnd, 0x438, 1);
+        g_duel_interface_options.player_territory_color = 1;
       }
-      if (g_duel_interface_options.show_cue_cards != 0)
+      else if (IsDlgButtonChecked(hwnd, 0x42e) != 0)
       {
-        CheckDlgButton(hwnd, 0x429, 1);
+        g_duel_interface_options.player_territory_color = 2;
       }
-      if (g_duel_interface_options.show_power_toughness_on_cards != 0)
+      else if (IsDlgButtonChecked(hwnd, 0x42d) != 0)
       {
-        CheckDlgButton(hwnd, 0x42a, 1);
+        g_duel_interface_options.player_territory_color = 5;
       }
-      if (g_duel_interface_options.show_abilities_on_cards != 0)
+      else if (IsDlgButtonChecked(hwnd, 0x431) != 0)
       {
-        CheckDlgButton(hwnd, 0x42b, 1);
+        g_duel_interface_options.player_territory_color = 3;
       }
-      if (g_duel_interface_options.show_coin_flips != 0)
+      else if (IsDlgButtonChecked(hwnd, 0x430) != 0)
       {
-        CheckDlgButton(hwnd, 0x437, 1);
-      }
-      if ((g_duel_mode_flags & 1) == 0)
-      {
-        EnableWindow(GetDlgItem(hwnd, 0x437), 0);
-        CheckDlgButton(hwnd, 0x437, 1);
-      }
-
-      if (g_duel_interface_options.player_territory_color == 1)
-      {
-        s.selected_control = 0x42f;
-      }
-      else if (g_duel_interface_options.player_territory_color == 2)
-      {
-        s.selected_control = 0x42e;
-      }
-      else if (g_duel_interface_options.player_territory_color == 3)
-      {
-        s.selected_control = 0x431;
-      }
-      else if (g_duel_interface_options.player_territory_color == 5)
-      {
-        s.selected_control = 0x42d;
-      }
-      else if (g_duel_interface_options.player_territory_color == 4)
-      {
-        s.selected_control = 0x430;
+        g_duel_interface_options.player_territory_color = 4;
       }
       else
       {
-        s.selected_control = 0x432;
+        g_duel_interface_options.player_territory_color = -1;
       }
-      CheckDlgButton(hwnd, s.selected_control, 1);
-      CheckRadioButton(hwnd, 0x42d, 0x432, s.selected_control);
 
-      if (g_duel_interface_options.player_territory_type == 0)
+      if (IsDlgButtonChecked(hwnd, 0x434) != 0)
       {
-        s.selected_control = 0x434;
+        g_duel_interface_options.player_territory_type = 0;
       }
-      else if (g_duel_interface_options.player_territory_type == 1)
+      else if (IsDlgButtonChecked(hwnd, 0x435) != 0)
       {
-        s.selected_control = 0x435;
+        g_duel_interface_options.player_territory_type = 1;
       }
       else
       {
-        s.selected_control = 0x436;
+        g_duel_interface_options.player_territory_type = 2;
       }
-      CheckDlgButton(hwnd, s.selected_control, 1);
-      CheckRadioButton(hwnd, 0x434, 0x436, s.selected_control);
 
-      SetFocus(GetDlgItem(hwnd, IDOK));
-      SendMessageA(hwnd, 0x401, 1, 0);
-      change_buttonclass_wndproc(hwnd);
-      return 0;
+      save_duel_interface_options_to_registry();
+      cleanup_duel_options_dialog_resources(g_duel_options_dialog_background,
+                                            g_duel_options_dialog_button_brush,
+                                            g_duel_options_dialog_pen1,
+                                            g_duel_options_dialog_pen2);
+      EndDialog(hwnd, 1);
+      return 1;
+    }
+    return 0;
 
-    case WM_COMMAND:
-      if ((wparam & 0xffff) == IDCANCEL)
+  case 0x4c8:
+    s.current_control = (int)wparam;
+    s.previous_control = (int)lparam;
+    if (GetDlgItem(hwnd, IDCANCEL) == (HWND)s.current_control)
+    {
+      SendMessageA(hwnd, 0x401, IDCANCEL, 0);
+    }
+    else
+    {
+      SendMessageA(hwnd, 0x401, IDOK, 0);
+    }
+    if (s.current_control != 0)
+    {
+      InvalidateRect((HWND)s.current_control, NULL, 1);
+    }
+    if (s.previous_control != 0)
+    {
+      InvalidateRect((HWND)s.previous_control, NULL, 1);
+    }
+    return 0;
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.ctl_hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.ctl_hdc);
+    s.ctl_hwnd = (HWND)lparam;
+    s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
+    if (s.ctl_id == 0x425 || s.ctl_id == 0x433)
+    {
+      SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
+      SetBkMode(s.ctl_hdc, TRANSPARENT);
+      s.brush = g_duel_options_dialog_pen2;
+    }
+    else if (s.ctl_id == 0x424)
+    {
+      SetTextColor(s.ctl_hdc, g_duel_options_dialog_title_color);
+      SetBkMode(s.ctl_hdc, TRANSPARENT);
+      s.brush = GetStockObject(NULL_BRUSH);
+    }
+    else
+    {
+      if (GetFocus() == s.ctl_hwnd)
       {
-        cleanup_duel_options_dialog_resources(g_duel_options_dialog_background,
-                                              g_duel_options_dialog_button_brush,
-                                              g_duel_options_dialog_pen1,
-                                              g_duel_options_dialog_pen2);
-        EndDialog(hwnd, 0);
-        return 1;
-      }
-      if ((wparam & 0xffff) == IDOK)
-      {
-        if (IsDlgButtonChecked(hwnd, 0x426) != 0)
-        {
-          g_duel_interface_options.layout = 1;
-        }
-        else
-        {
-          g_duel_interface_options.layout = 2;
-        }
-        g_duel_interface_options.directive_tracks_mouse = IsDlgButtonChecked(hwnd, 0x438);
-        g_duel_interface_options.show_cue_cards = IsDlgButtonChecked(hwnd, 0x429);
-        g_duel_interface_options.show_power_toughness_on_cards = IsDlgButtonChecked(hwnd, 0x42a);
-        g_duel_interface_options.show_abilities_on_cards = IsDlgButtonChecked(hwnd, 0x42b);
-        g_duel_interface_options.show_coin_flips = IsDlgButtonChecked(hwnd, 0x437);
-
-        if (IsDlgButtonChecked(hwnd, 0x42f) != 0)
-        {
-          g_duel_interface_options.player_territory_color = 1;
-        }
-        else if (IsDlgButtonChecked(hwnd, 0x42e) != 0)
-        {
-          g_duel_interface_options.player_territory_color = 2;
-        }
-        else if (IsDlgButtonChecked(hwnd, 0x42d) != 0)
-        {
-          g_duel_interface_options.player_territory_color = 5;
-        }
-        else if (IsDlgButtonChecked(hwnd, 0x431) != 0)
-        {
-          g_duel_interface_options.player_territory_color = 3;
-        }
-        else if (IsDlgButtonChecked(hwnd, 0x430) != 0)
-        {
-          g_duel_interface_options.player_territory_color = 4;
-        }
-        else
-        {
-          g_duel_interface_options.player_territory_color = -1;
-        }
-
-        if (IsDlgButtonChecked(hwnd, 0x434) != 0)
-        {
-          g_duel_interface_options.player_territory_type = 0;
-        }
-        else if (IsDlgButtonChecked(hwnd, 0x435) != 0)
-        {
-          g_duel_interface_options.player_territory_type = 1;
-        }
-        else
-        {
-          g_duel_interface_options.player_territory_type = 2;
-        }
-
-        save_duel_interface_options_to_registry();
-        cleanup_duel_options_dialog_resources(g_duel_options_dialog_background,
-                                              g_duel_options_dialog_button_brush,
-                                              g_duel_options_dialog_pen1,
-                                              g_duel_options_dialog_pen2);
-        EndDialog(hwnd, 1);
-        return 1;
-      }
-      return 0;
-
-    case 0x4c8:
-      s.current_control = (int)wparam;
-      s.previous_control = (int)lparam;
-      if (GetDlgItem(hwnd, IDCANCEL) == (HWND)s.current_control)
-      {
-        SendMessageA(hwnd, 0x401, IDCANCEL, 0);
+        SetTextColor(s.ctl_hdc, g_duel_options_dialog_focus_text_color);
       }
       else
-      {
-        SendMessageA(hwnd, 0x401, IDOK, 0);
-      }
-      if (s.current_control != 0)
-      {
-        InvalidateRect((HWND)s.current_control, NULL, 1);
-      }
-      if (s.previous_control != 0)
-      {
-        InvalidateRect((HWND)s.previous_control, NULL, 1);
-      }
-      return 0;
-
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLORSTATIC:
-      s.ctl_hdc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.ctl_hdc);
-      s.ctl_hwnd = (HWND)lparam;
-      s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
-      if (s.ctl_id == 0x425 || s.ctl_id == 0x433)
       {
         SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
-        SetBkMode(s.ctl_hdc, TRANSPARENT);
-        s.brush = g_duel_options_dialog_pen2;
       }
-      else if (s.ctl_id == 0x424)
-      {
-        SetTextColor(s.ctl_hdc, g_duel_options_dialog_title_color);
-        SetBkMode(s.ctl_hdc, TRANSPARENT);
-        s.brush = GetStockObject(NULL_BRUSH);
-      }
-      else
-      {
-        if (GetFocus() == s.ctl_hwnd)
-        {
-          SetTextColor(s.ctl_hdc, g_duel_options_dialog_focus_text_color);
-        }
-        else
-        {
-          SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
-        }
-        SetBkMode(s.ctl_hdc, TRANSPARENT);
-        s.brush = GetStockObject(NULL_BRUSH);
-      }
-      return (BOOL)s.brush;
+      SetBkMode(s.ctl_hdc, TRANSPARENT);
+      s.brush = GetStockObject(NULL_BRUSH);
+    }
+    return (BOOL)s.brush;
 
-    case WM_DRAWITEM:
-      s.draw_item = (DRAWITEMSTRUCT *)lparam;
-      if (GetFocus() == s.draw_item->hwndItem)
-      {
-        s.text_color = g_duel_options_dialog_focus_text_color;
-      }
-      else
-      {
-        s.text_color = g_duel_options_dialog_unfocus_text_color;
-      }
-      FUN_004955ae(s.draw_item,
-                   g_duel_options_dialog_button_brush,
-                   g_duel_options_dialog_pen1,
-                   g_duel_options_dialog_pen2,
-                   s.text_color,
-                   0);
-      return 1;
+  case WM_DRAWITEM:
+    s.draw_item = (DRAWITEMSTRUCT *)lparam;
+    if (GetFocus() == s.draw_item->hwndItem)
+    {
+      s.text_color = g_duel_options_dialog_focus_text_color;
+    }
+    else
+    {
+      s.text_color = g_duel_options_dialog_unfocus_text_color;
+    }
+    FUN_004955ae(s.draw_item,
+                 g_duel_options_dialog_button_brush,
+                 g_duel_options_dialog_pen1,
+                 g_duel_options_dialog_pen2,
+                 s.text_color,
+                 0);
+    return 1;
 
-    case WM_QUERYNEWPALETTE:
-    case WM_PALETTEISCHANGING:
-    case WM_PALETTECHANGED:
-      return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
 
-    case WM_ERASEBKGND:
-      s.erase_hdc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.erase_hdc);
-      GetClientRect(hwnd, &s.rect);
-      if (g_duel_options_dialog_background != (HBITMAP)0)
-      {
-        DrawBitmapToRect(s.erase_hdc, &s.rect, g_duel_options_dialog_background);
-      }
-      else
-      {
-        FillRect(s.erase_hdc, &s.rect, GetStockObject(2));
-      }
-      return 1;
+  case WM_ERASEBKGND:
+    s.erase_hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_hdc);
+    GetClientRect(hwnd, &s.rect);
+    if (g_duel_options_dialog_background != (HBITMAP)0)
+    {
+      DrawBitmapToRect(s.erase_hdc, &s.rect, g_duel_options_dialog_background);
+    }
+    else
+    {
+      FillRect(s.erase_hdc, &s.rect, GetStockObject(2));
+    }
+    return 1;
 
-    case WM_LBUTTONDOWN:
-      SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
-      return 0;
+  case WM_LBUTTONDOWN:
+    SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
+    return 0;
 
-    default:
-      return 0;
+  default:
+    return 0;
   }
 }
 
@@ -733,21 +733,21 @@ int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00444e5f
-int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
+int allow_response_once(int param_1, int param_2, char *param_3, int param_4)
 {
   /* Stack layout is sensitive here; keep locals in one struct to match /Od codegen. */
   struct
   {
-    int saved_DAT_007aadec;         /* ebp-0xa4 */
-    int saved_unk_008b3270;         /* ebp-0xa0 */
-    int saved_phase_stop_suppressed;         /* ebp-0x9c */
-    int result;                     /* ebp-0x98 */
-    int saved_DAT_00777aa8_in_loop; /* ebp-0x94 */
-    int saved_DAT_00777aa8;         /* ebp-0x90 */
-    unsigned int dispatch_result;   /* ebp-0x8c */
-    char prompt_copy[128];          /* ebp-0x88 */
-    int saved_trigger_condition;    /* ebp-0x8 */
-    int saved_DAT_00561390;         /* ebp-0x4 */
+    int saved_DAT_007aadec;          /* ebp-0xa4 */
+    int saved_unk_008b3270;          /* ebp-0xa0 */
+    unsigned int dispatch_result;    /* ebp-0x9c */
+    int result;                      /* ebp-0x98 */
+    int saved_DAT_00777aa8_in_loop;  /* ebp-0x94 */
+    int saved_DAT_00777aa8;          /* ebp-0x90 */
+    int saved_phase_stop_suppressed; /* ebp-0x8c */
+    char prompt_copy[128];           /* ebp-0x88 */
+    int saved_trigger_condition;     /* ebp-0x8 */
+    int saved_DAT_00561390;          /* ebp-0x4 */
   } s;
 
   s.saved_trigger_condition = trigger_condition;
@@ -783,7 +783,7 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
   {
     if (should_skip_phase(human_player) == 0 &&
         ((((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[param_2] & PHASE_STOP_ENABLED) != 0) ||
-         (stop_phase_player == human_player && param_2 == stop_phase)))
+         (human_player == stop_phase_player && stop_phase == param_2)))
     {
       DAT_00777aa8 = 1;
     }
@@ -793,9 +793,12 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
     }
   }
 
-  if (param_1 > -1 && DAT_00777aa8 == 0)
+  if (param_1 > -1)
   {
-    goto cleanup;
+    if (DAT_00777aa8 == 0)
+    {
+      goto cleanup;
+    }
   }
 
   strcpy(s.prompt_copy, param_3);
@@ -808,45 +811,46 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
 
   while (1)
   {
+  restart_response_window:
     do
     {
       DAT_00777aa8 = FUN_0044541f(1);
 
-      if ((g_duel_network_flags & 2) == 0)
-      {
-        if (human_player == 0)
-        {
-          DAT_00789714 = 1;
-        }
-        else if (param_1 < 0)
-        {
-          DAT_00789714 = 2;
-        }
-        else
-        {
-          DAT_00789714 = 0;
-        }
-      }
-      else
+      if ((g_duel_network_flags & 2) != 0)
       {
         DAT_00789714 = 1;
       }
+      else
+      {
+        if (human_player != 0)
+        {
+          if (param_1 > -1)
+          {
+            DAT_00789714 = 0;
+          }
+          else
+          {
+            DAT_00789714 = 2;
+          }
+        }
+        else
+        {
+          DAT_00789714 = 1;
+        }
+      }
 
-      if (trigger_dispatch_depth < 2)
+      if (trigger_dispatch_depth <= 1)
       {
         _DAT_00743020 = 0xffffffff;
       }
 
       spell_fizzled = 0;
-      unk_008b3270 = 0;
+      unk_008b3270 = spell_fizzled;
 
       s.dispatch_result = (unsigned int)process_response_actions(human_player, s.prompt_copy);
       if (s.dispatch_result != 0)
       {
-        unk_009266d0[0xc0] = 1;
-        unk_009266d0[0xc1] = 0;
-        unk_009266d0[0xc2] = 0;
-        unk_009266d0[0xc3] = 0;
+        response_action_taken = 1;
       }
 
       if (((nonactive_player == human_player) ||
@@ -874,44 +878,44 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
       s.saved_DAT_00777aa8_in_loop = DAT_00777aa8;
       s.saved_phase_stop_suppressed = phase_stop_suppressed;
 
-      if ((g_duel_network_flags & 2) == 0)
-      {
-        if (human_player == 0)
-        {
-          if (param_1 < 0)
-          {
-            DAT_00789714 = 2;
-          }
-          else
-          {
-            DAT_00789714 = 0;
-          }
-        }
-        else
-        {
-          DAT_00789714 = 1;
-        }
-      }
-      else
+      if ((g_duel_network_flags & 2) != 0)
       {
         DAT_00789714 = 1;
         phase_stop_suppressed = 0;
 
-        if (stack_size == 0 && should_skip_phase(human_player) != 0 && param_1 != -2)
+        if (stack_size == 0 && should_skip_phase(1 - human_player) != 0 && param_1 != -2)
         {
           phase_stop_suppressed = 1;
         }
 
         DAT_00777aa8 = FUN_0044541f(0);
       }
+      else
+      {
+        if (human_player != 0)
+        {
+          DAT_00789714 = 1;
+        }
+        else
+        {
+          if (param_1 > -1)
+          {
+            DAT_00789714 = 0;
+          }
+          else
+          {
+            DAT_00789714 = 2;
+          }
+        }
+      }
 
-      if (trigger_dispatch_depth < 2)
+      if (trigger_dispatch_depth <= 1)
       {
         _DAT_00743020 = 0xffffffff;
       }
 
       spell_fizzled = 0;
-      unk_008b3270 = 0;
+      unk_008b3270 = spell_fizzled;
 
       if ((trigger_dispatch_depth < max_trigger_dispatch_depth && stack_size >= 0))
       {
@@ -919,26 +923,35 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
       }
 
       s.dispatch_result = (unsigned int)process_response_actions(1 - human_player, s.prompt_copy);
+      DAT_00777aa8 = s.saved_DAT_00777aa8_in_loop;
       phase_stop_suppressed = s.saved_phase_stop_suppressed;
-      if (s.dispatch_result == 0)
+      if (s.dispatch_result != 0)
       {
+        response_action_taken = 1;
+
+        if (g_duel_ai_mode_state != 1)
+        {
+          goto restart_response_window;
+        }
+
+        if (nonactive_player == human_player)
+        {
+          goto restart_response_window;
+        }
+        if ((g_duel_network_flags & 2) != 0)
+        {
+          goto restart_response_window;
+        }
+        if ((unk_008b3270 & 1) != 0)
+        {
+          if (trigger_dispatch_depth == 1)
+          {
+            goto restart_response_window;
+          }
+        }
         goto cleanup;
       }
-
-      unk_009266d0[0xc0] = 1;
-      unk_009266d0[0xc1] = 0;
-      unk_009266d0[0xc2] = 0;
-      unk_009266d0[0xc3] = 0;
-
-      DAT_00777aa8 = s.saved_DAT_00777aa8_in_loop;
-
-      if (g_duel_ai_mode_state != 1)
-      {
-        break;
-      }
-
-      if (nonactive_player != human_player && (g_duel_network_flags & 2) == 0 &&
-          ((unk_008b3270 & 1) == 0 || trigger_dispatch_depth != 1))
+      else
       {
         goto cleanup;
       }
@@ -947,9 +960,14 @@ int FUN_00444e5f(int param_1, int param_2, char *param_3, int param_4)
 
 cleanup:
   --trigger_dispatch_depth;
-  if (trigger_dispatch_depth == 0)
+  if (trigger_dispatch_depth != 0)
+  {
+    _DAT_00743020 = 0xffffffff;
+  }
+  else
   {
     DAT_00742f68 = 0xffffffff;
+    _DAT_00743020 = DAT_00742f68;
     if (nested_trigger_depth == 0)
     {
       DAT_00742f64 = 0;
@@ -959,8 +977,6 @@ cleanup:
       }
     }
   }
-
-  _DAT_00743020 = 0xffffffff;
 
   DAT_00777aa8 = s.saved_DAT_00777aa8;
   DAT_00561390 = s.saved_DAT_00561390;
@@ -2019,9 +2035,9 @@ int allow_response(int param_1, int param_2, char *param_3, int param_4)
 
     do
     {
-      unk_00926790 = 0;
-      result = FUN_00444e5f(param_1, param_2, param_3, param_4);
-    } while (unk_00926790 != 0 && stack_size <= 0);
+      response_action_taken = 0;
+      result = allow_response_once(param_1, param_2, param_3, param_4);
+    } while (response_action_taken != 0 && stack_size <= 0);
 
     if (stack_size == 0)
     {
@@ -2047,26 +2063,26 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
 {
   struct
   {
-    int tmp;                    // scratch/padding (kept at the start so other offsets stay stable)
-    int pad;                    // unused/padding
-    char prompt_format[300];    // local_29c
-    unsigned int selected_card; // local_170
-    int saved_unk_00742f60;     // local_16c
-    unsigned int maybe_card;    // local_168
-    int some_flag;              // local_164
-    unsigned int response_code; // local_160
-    unsigned int card;          // local_15c
-    int saved_land_can_be_played;     // local_158
-    unsigned int response_mask; // local_154
-    int player;                 // local_150
-    unsigned int result_flags;  // local_14c
-    char prompt_copy[300];      // local_148
-    int internal_card_id;       // local_1c
-    int interrupts_available;   // local_18
-    int selected_player;        // local_14
-    int can_respond;            // local_10
-    int maybe_player;           // local_c
-    int num_candidates;         // local_8
+    int tmp;                      // scratch/padding (kept at the start so other offsets stay stable)
+    int pad;                      // unused/padding
+    char prompt_format[300];      // local_29c
+    unsigned int selected_card;   // local_170
+    int saved_unk_00742f60;       // local_16c
+    unsigned int maybe_card;      // local_168
+    int some_flag;                // local_164
+    unsigned int response_code;   // local_160
+    unsigned int card;            // local_15c
+    int saved_land_can_be_played; // local_158
+    unsigned int response_mask;   // local_154
+    int player;                   // local_150
+    unsigned int result_flags;    // local_14c
+    char prompt_copy[300];        // local_148
+    int internal_card_id;         // local_1c
+    int interrupts_available;     // local_18
+    int selected_player;          // local_14
+    int can_respond;              // local_10
+    int maybe_player;             // local_c
+    int num_candidates;           // local_8
   } s;
 
   if (life[nonactive_player] <= 0)
@@ -3142,86 +3158,86 @@ BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
   switch (msg)
   {
-    case WM_INITDIALOG:
-      g_mana_burn_dialog_data = (int *)lparam;
-      sprintf(s.path, "%s\\WINBK_ManaBurn.pic", global_duelart_path);
-      g_mana_burn_dialog_background = load_pic(s.path);
-      g_mana_burn_dialog_text_color = 0x100009a;
-      g_mana_burn_dialog_shadow_color = 0x10000c9;
-      load_text(global_ui_strings_filename, "DIALOG_MANABURN");
-      SetDlgItemTextA(hwnd, 0x4bb, text_lines[0]);
-      ShowWindow(GetDlgItem(hwnd, 0x4bb), 0);
-      ShowWindow(GetDlgItem(hwnd, 0x4ba), 0);
-      SetTimer(hwnd, 1, 3000, NULL);
-      return 1;
+  case WM_INITDIALOG:
+    g_mana_burn_dialog_data = (int *)lparam;
+    sprintf(s.path, "%s\\WINBK_ManaBurn.pic", global_duelart_path);
+    g_mana_burn_dialog_background = load_pic(s.path);
+    g_mana_burn_dialog_text_color = 0x100009a;
+    g_mana_burn_dialog_shadow_color = 0x10000c9;
+    load_text(global_ui_strings_filename, "DIALOG_MANABURN");
+    SetDlgItemTextA(hwnd, 0x4bb, text_lines[0]);
+    ShowWindow(GetDlgItem(hwnd, 0x4bb), 0);
+    ShowWindow(GetDlgItem(hwnd, 0x4ba), 0);
+    SetTimer(hwnd, 1, 3000, NULL);
+    return 1;
 
-    case 0x30f:
-    case 0x310:
-    case 0x311:
-      return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
 
-    case WM_ERASEBKGND:
-      s.dc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.dc);
-      GetClientRect(hwnd, &s.rect);
-      if (g_mana_burn_dialog_background != NULL)
-      {
-        DrawBitmapToRect(s.dc, &s.rect, g_mana_burn_dialog_background);
-      }
-      else
-      {
-        FillRect(s.dc, &s.rect, GetStockObject(2));
-      }
-      s.font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x4bb, WM_GETFONT, 0, 0);
-      SelectObject(s.dc, s.font);
-      SetBkMode(s.dc, TRANSPARENT);
-      SetTextColor(s.dc, g_mana_burn_dialog_text_color);
-      GetDlgItemTextA(hwnd, 0x4bb, s.title_text, 200);
-      GetWindowRect(GetDlgItem(hwnd, 0x4bb), &s.rect);
-      MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
-      SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
-      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
-      OffsetRect(&s.rect, -2, -2);
-      SetTextColor(s.dc, g_mana_burn_dialog_text_color);
-      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
-      GetWindowRect(GetDlgItem(hwnd, 0x4ba), &s.rect);
-      MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
-      load_text(global_ui_strings_filename, "DIALOG_MANABURN");
-      if (g_mana_burn_dialog_data[0] == 1)
-      {
-        copy_opponent_name_prefix(s.message_text);
-        sprintf(s.title_text, text_lines[1], s.message_text, g_mana_burn_dialog_data[1]);
-      }
-      else
-      {
-        sprintf(s.title_text, text_lines[2], g_mana_burn_dialog_data[1]);
-      }
-      SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
-      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
-      OffsetRect(&s.rect, -2, -2);
-      SetTextColor(s.dc, g_mana_burn_dialog_text_color);
-      DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
-      return 1;
+  case WM_ERASEBKGND:
+    s.dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.dc);
+    GetClientRect(hwnd, &s.rect);
+    if (g_mana_burn_dialog_background != NULL)
+    {
+      DrawBitmapToRect(s.dc, &s.rect, g_mana_burn_dialog_background);
+    }
+    else
+    {
+      FillRect(s.dc, &s.rect, GetStockObject(2));
+    }
+    s.font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x4bb, WM_GETFONT, 0, 0);
+    SelectObject(s.dc, s.font);
+    SetBkMode(s.dc, TRANSPARENT);
+    SetTextColor(s.dc, g_mana_burn_dialog_text_color);
+    GetDlgItemTextA(hwnd, 0x4bb, s.title_text, 200);
+    GetWindowRect(GetDlgItem(hwnd, 0x4bb), &s.rect);
+    MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
+    SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
+    DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+    OffsetRect(&s.rect, -2, -2);
+    SetTextColor(s.dc, g_mana_burn_dialog_text_color);
+    DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+    GetWindowRect(GetDlgItem(hwnd, 0x4ba), &s.rect);
+    MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
+    load_text(global_ui_strings_filename, "DIALOG_MANABURN");
+    if (g_mana_burn_dialog_data[0] == 1)
+    {
+      copy_opponent_name_prefix(s.message_text);
+      sprintf(s.title_text, text_lines[1], s.message_text, g_mana_burn_dialog_data[1]);
+    }
+    else
+    {
+      sprintf(s.title_text, text_lines[2], g_mana_burn_dialog_data[1]);
+    }
+    SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
+    DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+    OffsetRect(&s.rect, -2, -2);
+    SetTextColor(s.dc, g_mana_burn_dialog_text_color);
+    DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
+    return 1;
 
-    case WM_KEYDOWN:
-    case WM_COMMAND:
-      delete_and_close_object(g_mana_burn_dialog_background);
-      EndDialog(hwnd, 0);
-      return 1;
+  case WM_KEYDOWN:
+  case WM_COMMAND:
+    delete_and_close_object(g_mana_burn_dialog_background);
+    EndDialog(hwnd, 0);
+    return 1;
 
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-      delete_and_close_object(g_mana_burn_dialog_background);
-      EndDialog(hwnd, 0);
-      return 1;
+  case WM_LBUTTONDOWN:
+  case WM_RBUTTONDOWN:
+    delete_and_close_object(g_mana_burn_dialog_background);
+    EndDialog(hwnd, 0);
+    return 1;
 
-    case WM_TIMER:
-      delete_and_close_object(g_mana_burn_dialog_background);
-      EndDialog(hwnd, 0);
-      return 1;
+  case WM_TIMER:
+    delete_and_close_object(g_mana_burn_dialog_background);
+    EndDialog(hwnd, 0);
+    return 1;
 
-    default:
-      return 0;
+  default:
+    return 0;
   }
 }
 
@@ -3864,157 +3880,157 @@ BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, 
 
   switch (msg)
   {
-    case WM_INITDIALOG:
-      s.context = (HWND)lparam;
-      SetWindowLongA(hwnd, 8, ((int *)s.context)[1]);
-      setup_life_total_dialog_resources(&g_life_total_dialog_background,
-                                        &g_life_total_dialog_text_color,
-                                        &g_life_total_dialog_button_brush,
-                                        &g_life_total_dialog_pen1,
-                                        &g_life_total_dialog_pen2,
-                                        &g_life_total_dialog_unfocus_text_color,
-                                        &g_life_total_dialog_focus_text_color);
-      SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
-      SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
-      SetDlgItemTextA(hwnd, 0x44d, (LPCSTR)((int *)s.context)[0]);
-      if (((int *)s.context)[2] == 0)
+  case WM_INITDIALOG:
+    s.context = (HWND)lparam;
+    SetWindowLongA(hwnd, 8, ((int *)s.context)[1]);
+    setup_life_total_dialog_resources(&g_life_total_dialog_background,
+                                      &g_life_total_dialog_text_color,
+                                      &g_life_total_dialog_button_brush,
+                                      &g_life_total_dialog_pen1,
+                                      &g_life_total_dialog_pen2,
+                                      &g_life_total_dialog_unfocus_text_color,
+                                      &g_life_total_dialog_focus_text_color);
+    SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
+    SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
+    SetDlgItemTextA(hwnd, 0x44d, (LPCSTR)((int *)s.context)[0]);
+    if (((int *)s.context)[2] == 0)
+    {
+      ShowWindow(GetDlgItem(hwnd, 0x44e), 0);
+    }
+    SendMessageA(hwnd, 0x401, IDOK, 0);
+    SetDlgItemInt(hwnd, 0x44c, ((int *)s.context)[1], 0);
+    g_life_total_edit_wndproc = (WNDPROC)SetWindowLongA(GetDlgItem(hwnd, 0x44c), GWL_WNDPROC, (LONG)life_total_edit_wndproc);
+    SetFocus(GetDlgItem(hwnd, 0x44c));
+    SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
+    change_buttonclass_wndproc(hwnd);
+    return 0;
+
+  case WM_COMMAND:
+    s.command_id = (UINT)(wparam & 0xffff);
+    switch (s.command_id)
+    {
+    case IDOK:
+      s.selected_life = GetDlgItemInt(hwnd, 0x44c, &s.was_translated, 0);
+      if (s.was_translated != 0)
       {
-        ShowWindow(GetDlgItem(hwnd, 0x44e), 0);
+        cleanup_life_total_dialog_resources(g_life_total_dialog_background,
+                                            g_life_total_dialog_button_brush,
+                                            g_life_total_dialog_pen1,
+                                            g_life_total_dialog_pen2);
+        EndDialog(hwnd, s.selected_life);
       }
-      SendMessageA(hwnd, 0x401, IDOK, 0);
-      SetDlgItemInt(hwnd, 0x44c, ((int *)s.context)[1], 0);
-      g_life_total_edit_wndproc = (WNDPROC)SetWindowLongA(GetDlgItem(hwnd, 0x44c), GWL_WNDPROC, (LONG)life_total_edit_wndproc);
+      else
+      {
+        SetFocus(GetDlgItem(hwnd, 0x44c));
+        SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
+      }
+      break;
+
+    case IDCANCEL:
+      cleanup_life_total_dialog_resources(g_life_total_dialog_background,
+                                          g_life_total_dialog_button_brush,
+                                          g_life_total_dialog_pen1,
+                                          g_life_total_dialog_pen2);
+      EndDialog(hwnd, -1);
+      break;
+
+    case 0x44e:
+      s.reset_life = GetWindowLongA(hwnd, 8);
+      SetDlgItemInt(hwnd, 0x44c, s.reset_life, 0);
       SetFocus(GetDlgItem(hwnd, 0x44c));
-      SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
-      change_buttonclass_wndproc(hwnd);
-      return 0;
+      break;
+    }
+    return 1;
 
-    case WM_COMMAND:
-      s.command_id = (UINT)(wparam & 0xffff);
-      switch (s.command_id)
-      {
-        case IDOK:
-          s.selected_life = GetDlgItemInt(hwnd, 0x44c, &s.was_translated, 0);
-          if (s.was_translated != 0)
-          {
-            cleanup_life_total_dialog_resources(g_life_total_dialog_background,
-                                                g_life_total_dialog_button_brush,
-                                                g_life_total_dialog_pen1,
-                                                g_life_total_dialog_pen2);
-            EndDialog(hwnd, s.selected_life);
-          }
-          else
-          {
-            SetFocus(GetDlgItem(hwnd, 0x44c));
-            SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
-          }
-          break;
+  case 0x4c8:
+    s.current_control = (HWND)wparam;
+    s.previous_control = (HWND)lparam;
+    if (GetDlgItem(hwnd, IDCANCEL) == s.current_control)
+    {
+      SendMessageA(hwnd, 0x401, IDCANCEL, 0);
+    }
+    else
+    {
+      SendMessageA(hwnd, 0x401, IDOK, 0);
+    }
+    if (s.current_control != NULL)
+    {
+      InvalidateRect(s.current_control, NULL, 1);
+    }
+    if (s.previous_control != NULL)
+    {
+      InvalidateRect(s.previous_control, NULL, 1);
+    }
+    return 0;
 
-        case IDCANCEL:
-          cleanup_life_total_dialog_resources(g_life_total_dialog_background,
-                                              g_life_total_dialog_button_brush,
-                                              g_life_total_dialog_pen1,
-                                              g_life_total_dialog_pen2);
-          EndDialog(hwnd, -1);
-          break;
+  case WM_CTLCOLORSTATIC:
+    s.ctl_hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.ctl_hdc);
+    s.ctl_hwnd = (HWND)lparam;
+    s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
+    SetBkMode(s.ctl_hdc, TRANSPARENT);
+    SetTextColor(s.ctl_hdc, g_life_total_dialog_text_color);
+    return (BOOL)GetStockObject(NULL_BRUSH);
 
-        case 0x44e:
-          s.reset_life = GetWindowLongA(hwnd, 8);
-          SetDlgItemInt(hwnd, 0x44c, s.reset_life, 0);
-          SetFocus(GetDlgItem(hwnd, 0x44c));
-          break;
-      }
-      return 1;
+  case WM_DRAWITEM:
+    s.draw_item = (DRAWITEMSTRUCT *)lparam;
+    if (GetFocus() == s.draw_item->hwndItem)
+    {
+      s.text_color = g_life_total_dialog_focus_text_color;
+    }
+    else
+    {
+      s.text_color = g_life_total_dialog_unfocus_text_color;
+    }
+    FUN_004955ae(s.draw_item,
+                 g_life_total_dialog_button_brush,
+                 g_life_total_dialog_pen1,
+                 g_life_total_dialog_pen2,
+                 s.text_color,
+                 0);
+    return 1;
 
-    case 0x4c8:
-      s.current_control = (HWND)wparam;
-      s.previous_control = (HWND)lparam;
-      if (GetDlgItem(hwnd, IDCANCEL) == s.current_control)
-      {
-        SendMessageA(hwnd, 0x401, IDCANCEL, 0);
-      }
-      else
-      {
-        SendMessageA(hwnd, 0x401, IDOK, 0);
-      }
-      if (s.current_control != NULL)
-      {
-        InvalidateRect(s.current_control, NULL, 1);
-      }
-      if (s.previous_control != NULL)
-      {
-        InvalidateRect(s.previous_control, NULL, 1);
-      }
-      return 0;
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
 
-    case WM_CTLCOLORSTATIC:
-      s.ctl_hdc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.ctl_hdc);
-      s.ctl_hwnd = (HWND)lparam;
-      s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
-      SetBkMode(s.ctl_hdc, TRANSPARENT);
-      SetTextColor(s.ctl_hdc, g_life_total_dialog_text_color);
-      return (BOOL)GetStockObject(NULL_BRUSH);
+  case WM_ERASEBKGND:
+    s.erase_hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_hdc);
+    GetClientRect(hwnd, &s.rect);
+    EnterCriticalSection(&g_card_render_lock);
+    s.saved_dc = SaveDC(g_shared_offscreen_dc);
+    s.erase_hdc = g_shared_offscreen_dc;
+    if (g_life_total_dialog_background != (HBITMAP)0)
+    {
+      DrawBitmapToRect(s.erase_hdc, &s.rect, g_life_total_dialog_background);
+    }
+    else
+    {
+      FillRect(s.erase_hdc, &s.rect, GetStockObject(2));
+    }
+    RestoreDC(g_shared_offscreen_dc, s.saved_dc);
+    s.erase_hdc = (HDC)wparam;
+    GetClientRect(hwnd, &s.rect);
+    BitBlt(s.erase_hdc,
+           0,
+           0,
+           s.rect.right,
+           s.rect.bottom,
+           g_shared_offscreen_dc,
+           0,
+           0,
+           SRCCOPY);
+    LeaveCriticalSection(&g_card_render_lock);
+    return 1;
 
-    case WM_DRAWITEM:
-      s.draw_item = (DRAWITEMSTRUCT *)lparam;
-      if (GetFocus() == s.draw_item->hwndItem)
-      {
-        s.text_color = g_life_total_dialog_focus_text_color;
-      }
-      else
-      {
-        s.text_color = g_life_total_dialog_unfocus_text_color;
-      }
-      FUN_004955ae(s.draw_item,
-                   g_life_total_dialog_button_brush,
-                   g_life_total_dialog_pen1,
-                   g_life_total_dialog_pen2,
-                   s.text_color,
-                   0);
-      return 1;
+  case WM_LBUTTONDOWN:
+    SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
+    return 0;
 
-    case WM_QUERYNEWPALETTE:
-    case WM_PALETTEISCHANGING:
-    case WM_PALETTECHANGED:
-      return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
-
-    case WM_ERASEBKGND:
-      s.erase_hdc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.erase_hdc);
-      GetClientRect(hwnd, &s.rect);
-      EnterCriticalSection(&g_card_render_lock);
-      s.saved_dc = SaveDC(g_shared_offscreen_dc);
-      s.erase_hdc = g_shared_offscreen_dc;
-      if (g_life_total_dialog_background != (HBITMAP)0)
-      {
-        DrawBitmapToRect(s.erase_hdc, &s.rect, g_life_total_dialog_background);
-      }
-      else
-      {
-        FillRect(s.erase_hdc, &s.rect, GetStockObject(2));
-      }
-      RestoreDC(g_shared_offscreen_dc, s.saved_dc);
-      s.erase_hdc = (HDC)wparam;
-      GetClientRect(hwnd, &s.rect);
-      BitBlt(s.erase_hdc,
-             0,
-             0,
-             s.rect.right,
-             s.rect.bottom,
-             g_shared_offscreen_dc,
-             0,
-             0,
-             SRCCOPY);
-      LeaveCriticalSection(&g_card_render_lock);
-      return 1;
-
-    case WM_LBUTTONDOWN:
-      SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
-      return 0;
-
-    default:
-      return 0;
+  default:
+    return 0;
   }
 }
 
@@ -4023,15 +4039,18 @@ static LRESULT CALLBACK life_total_edit_wndproc(HWND hwnd, UINT msg, WPARAM wpar
 {
   switch (msg)
   {
-    case WM_CHAR:
-      if ((wparam >= '0' && wparam <= '9') || wparam == VK_BACK)
-      {
-        return CallWindowProcA(g_life_total_edit_wndproc, hwnd, msg, wparam, lparam);
-      }
-      return 0;
-
-    default:
+  case WM_CHAR:
+    if ((wparam >= '0' && wparam <= '9') || wparam == VK_BACK)
+    {
       return CallWindowProcA(g_life_total_edit_wndproc, hwnd, msg, wparam, lparam);
+    }
+    else
+    {
+      return 0;
+    }
+
+  default:
+    return CallWindowProcA(g_life_total_edit_wndproc, hwnd, msg, wparam, lparam);
   }
 }
 
