@@ -111,9 +111,6 @@ int g_icon_button_pressed_long_offset = 4;
 // GLOBAL: MAGIC 0x005710cc
 char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
 
-// GLOBAL: MAGIC 0x00579c84
-char s__WINBK_AttackMin_pic_00579c84[0x15] = "\\WINBK_AttackMin.pic";
-
 // GLOBAL: MAGIC 0x00637ea8
 char g_spell_minimized_menu_help_text[0x28];
 
@@ -125,18 +122,6 @@ HBITMAP g_spell_minimized_background_bitmap;
 
 // GLOBAL: MAGIC 0x00637ef0
 char g_spell_minimized_menu_restore_text[0x1c];
-
-// GLOBAL: MAGIC 0x0069c678
-char g_attack_minimized_menu_help_text[0x20];
-
-// GLOBAL: MAGIC 0x0069c698
-HMENU g_attack_minimized_popup_menu;
-
-// GLOBAL: MAGIC 0x0069c6b8
-HBITMAP g_attack_minimized_background_bitmap;
-
-// GLOBAL: MAGIC 0x0069c6c8
-char g_attack_minimized_menu_restore_text[0x20];
 
 int register_window_classes(void);
 int destroy_windowclasses(void);
@@ -157,6 +142,8 @@ int register_MAGICGAME_FaceClass(LPCSTR class_name);
 void destroy_MAGICGAME_FaceClass(LPCSTR class_name);
 int register_MAGICGAME_TerritoryClass(LPCSTR class_name);
 void destroy_MAGICGAME_TerritoryClass(LPCSTR class_name);
+int register_MAGICGAME_AttackClass(LPCSTR class_name);
+void destroy_MAGICGAME_AttackClass(LPCSTR class_name);
 int register_MAGIC_TellUserClass(LPCSTR class_name);
 void destroy_MAGIC_TellUserClass(LPCSTR class_name);
 
@@ -690,27 +677,6 @@ int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
   return atom != 0;
 }
 
-// FUNCTION: MAGIC 0x004d2ac0
-// FUNCTION: SHANDALAR 0x0045c730
-int register_MAGICGAME_AttackClass(LPCSTR class_name)
-{
-  ATOM atom1;
-  ATOM atom2;
-  ATOM atom3;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0x800, wndproc_MAGICGAME_AttackClass, 8,
-                    (HICON)0, (HBRUSH)0x6, class_name);
-  atom1 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 0x801, wndproc_AttackSwordShield, 0,
-                    (HICON)0, (HBRUSH)0x6, CLASS_ATTACK_SWORD_SHIELD);
-  atom2 = RegisterClassA(&wndclass);
-  SET_DUEL_WNDCLASS(wndclass, 3, wndproc_AttackMinimized, 0,
-                    (HICON)0, (HBRUSH)0x6, CLASS_ATTACK_MINIMIZED);
-  atom3 = RegisterClassA(&wndclass);
-  return atom1 != 0 && atom2 != 0 && atom3 != 0;
-}
-
 // FUNCTION: MAGIC 0x00486050
 // FUNCTION: SHANDALAR 0x004c8c30
 int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
@@ -948,15 +914,6 @@ void destroy_MAGICGAME_GraveyardClass(LPCSTR class_name)
   UnregisterClassA(CLASS_GRAVEYARD_CARDS, g_app_instance);
 }
 
-// FUNCTION: MAGIC 0x004d2f34
-// FUNCTION: SHANDALAR 0x0045cba4
-void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
-{
-  UnregisterClassA(CLASS_MAGICGAME_ATTACK, g_app_instance);
-  UnregisterClassA(CLASS_ATTACK_SWORD_SHIELD, g_app_instance);
-  UnregisterClassA(CLASS_ATTACK_MINIMIZED, g_app_instance);
-}
-
 // FUNCTION: MAGIC 0x00486369
 // FUNCTION: SHANDALAR 0x004c8f49
 void destroy_MAGICGAME_SpellChainClass(LPCSTR class_name)
@@ -1129,110 +1086,6 @@ LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, L
   }
 
   return 0;
-}
-
-// FUNCTION: MAGIC 0x004d3158
-// FUNCTION: SHANDALAR 0x0045cdc8
-LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x004d79ae
-// FUNCTION: SHANDALAR 0x0046160c
-LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
-}
-
-// FUNCTION: MAGIC 0x004d84e0
-// FUNCTION: SHANDALAR 0x0046213c
-LRESULT CALLBACK wndproc_AttackMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  struct
-  {
-    int padding_140;
-    int menu_item_count;
-    POINT popup_point;
-    RECT popup_rect;
-    char background_path[264];
-    HDC erase_dc;
-    RECT client_rect;
-  } s;
-
-  switch (msg)
-  {
-  case 0x437:
-    strcpy((char *)wparam, gs_cuecard_minimized_attack_window_008b4280);
-    return 1;
-
-  case WM_CLOSE:
-    ShowWindow(hwnd, SW_HIDE);
-    ShowWindow(g_duel_attack_phase_window_hwnd, SW_HIDE);
-    return 0;
-
-  case WM_COMMAND:
-    return SendMessageA(g_duel_attack_phase_window_hwnd, msg, wparam, lparam);
-
-  case WM_ERASEBKGND:
-    s.erase_dc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(s.erase_dc);
-    GetClientRect(hwnd, &s.client_rect);
-    IntersectClipRect(s.erase_dc, 0, 0, s.client_rect.right, s.client_rect.bottom);
-    if (g_attack_minimized_background_bitmap == (HBITMAP)0)
-    {
-      strcpy(s.background_path, global_duelart_path);
-      strcat(s.background_path, s__WINBK_AttackMin_pic_00579c84);
-      g_attack_minimized_background_bitmap = load_pic(s.background_path);
-    }
-    if (g_attack_minimized_background_bitmap != (HBITMAP)0)
-    {
-      DrawBitmapToRect(s.erase_dc, &s.client_rect, g_attack_minimized_background_bitmap);
-    }
-    else
-    {
-      FillRect(s.erase_dc, &s.client_rect, GetStockObject(LTGRAY_BRUSH));
-    }
-    return 1;
-
-  case WM_LBUTTONDOWN:
-    SendMessageA(g_duel_attack_phase_window_hwnd, WM_COMMAND, 0x66, 0);
-    return 0;
-
-  case WM_RBUTTONDOWN:
-    s.popup_point.x = (unsigned int)lparam & 0xffff;
-    s.popup_point.y = (unsigned int)lparam >> 16;
-    ClientToScreen(hwnd, &s.popup_point);
-    SetRect(&s.popup_rect, s.popup_point.x, s.popup_point.y,
-            s.popup_point.x + 1, s.popup_point.y + 1);
-    TrackPopupMenu(g_attack_minimized_popup_menu, TPM_RIGHTBUTTON, s.popup_point.x,
-                   s.popup_point.y, 0, hwnd, &s.popup_rect);
-    return 0;
-
-  case WM_INITMENU:
-    AppendMenuA(g_attack_minimized_popup_menu, 0, 0x66, g_attack_minimized_menu_restore_text);
-    AppendMenuA(g_attack_minimized_popup_menu, 0, 100, g_attack_minimized_menu_help_text);
-    return 0;
-
-  case WM_MENUSELECT:
-    if (HIWORD(wparam) == 0xffff && lparam == 0)
-    {
-      s.menu_item_count = GetMenuItemCount(g_attack_minimized_popup_menu);
-      while (s.menu_item_count-- != 0)
-      {
-        DeleteMenu(g_attack_minimized_popup_menu, 0, MF_BYPOSITION);
-      }
-    }
-    return 0;
-
-  case WM_QUERYNEWPALETTE:
-  case WM_PALETTEISCHANGING:
-  case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
-
-  default:
-    return DefWindowProcA(hwnd, msg, wparam, lparam);
-  }
 }
 
 // FUNCTION: MAGIC 0x004864b7

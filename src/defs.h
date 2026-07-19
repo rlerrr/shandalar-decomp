@@ -790,14 +790,14 @@ typedef struct card_instance_struct
 
 	int8_t mana_to_untap[8]; /*  0x2C */ // No longer used in Manalink, but still read by the exe in one place and still written in one place.  To reclaim, make check_untap_payment() just return 0, and rewrite setup_upkeep_costs_and_set_untap_cost() to not touch it.
 
-	int16_t power;									 /*  0x34 */
-	uint8_t number_of_targets;						 /*  0x36 */
-	uint8_t unknown0x37; /*  0x37 */				 // Used only on damage cards, apparently for temporary storage
-	int32_t info_slot;								 /*  0x38 */
-	card_id_t original_internal_card_id; /*  0x3C */ // Mok : CD_CardIDinCT_Parent
-	int8_t color_id[6]; /*  0x40 */					 // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
-	uint16_t backup_internal_card_id; /*  0x46 */	 // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
-	int32_t damage_source_card; /*  0x48 */			 /* damage source card */
+	int16_t power;								   /*  0x34 */
+	uint8_t number_of_targets;					   /*  0x36 */
+	uint8_t unknown0x37; /*  0x37 */			   // Used only on damage cards, apparently for temporary storage
+	int32_t info_slot;							   /*  0x38 */
+	int32_t original_internal_card_id; /*  0x3C */ // Mok : CD_CardIDinCT_Parent
+	int8_t color_id[6]; /*  0x40 */				   // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
+	uint16_t backup_internal_card_id; /*  0x46 */  // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
+	int32_t damage_source_card; /*  0x48 */		   /* damage source card */
 
 	uint32_t eot_toughness; /*  0x4C */ // Bytes 0 and 1 manipulate text-modifiers on csvid=903 effect cards; otherwise reserved for individual card use.
 
@@ -824,7 +824,7 @@ typedef struct card_instance_struct
 	uint8_t unk6A; /*  0x6A */ // Entirely untouched by exe.
 	uint8_t unk6B; /*  0x6B */ // Entirely untouched by exe.
 
-	card_id_t internal_card_id;		   /*  0x6C */
+	int32_t internal_card_id;		   /*  0x6C */
 	uint32_t unknown0x70; /*  0x70 */  /* activateability */
 	target_t targets[19];			   /*  0x74 */
 	int32_t parent_controller;		   /* 0x10C */
