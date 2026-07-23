@@ -3317,11 +3317,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       s.command_protect_on = s.command_protect_on == 0;
       if (s.command_protect_on != 0)
       {
-        CARDCLASS_STATE(s.player, s.card) |= 0x40000;
+        CARDCLASS_STATE(s.player, s.card) |= STATE_NO_AUTO_TAPPING;
       }
       else
       {
-        CARDCLASS_STATE(s.player, s.card) &= 0xfffbffff;
+        CARDCLASS_STATE(s.player, s.card) &= ~STATE_NO_AUTO_TAPPING;
       }
       EnterCriticalSection(&g_duel_render_lock);
       CARDCLASS_DISPLAYED_STATE(s.player, s.card) =

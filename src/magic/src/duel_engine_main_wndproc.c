@@ -600,17 +600,6 @@ int is_attack_phase_window_enabled(void)
   return result;
 }
 
-// FUNCTION: MAGIC 0x004d8879
-int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2)
-{
-  (void)hwnd;
-  (void)player_and_card;
-  (void)unused1;
-  (void)child_hwnd;
-  (void)unused2;
-  return 0;
-}
-
 // FUNCTION: MAGIC 0x004e994f
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd)
 {
@@ -850,12 +839,6 @@ void resize_battlefield_child_card_windows(HWND hwnd)
                g_showlist_smallcard_width, g_showlist_smallcard_height,
                SWP_NOMOVE | SWP_NOZORDER);
   SendMessageA(hwnd, 0x410, (WPARAM)s.snapshot_window, 0);
-}
-
-// FUNCTION: MAGIC 0x004d6c6d
-void layout_attack_phase_window(HWND hwnd)
-{
-  (void)hwnd;
 }
 
 // FUNCTION: MAGIC 0x0048894d

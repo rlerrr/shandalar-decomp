@@ -181,6 +181,7 @@ void StopWorldLocationMusic(void)
 }
 
 // FUNCTION: MAGIC 0x0043de00
+// FUNCTION: SHANDALAR 0x00409680
 void reset_duel_globals(void)
 {
   int card;
@@ -274,8 +275,16 @@ void reset_duel_globals(void)
 }
 
 // FUNCTION: MAGIC 0x004458d4
-void reset_timestamp_players(void)
+// FUNCTION: SHANDALAR 0x0041116d
+int reset_timestamp_players(void)
 {
+  int i;
+  for (i = 0; i < 500; i++)
+  {
+    TENTATIVE_timestamp_player[i] = -1;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004ecdc0
@@ -565,7 +574,7 @@ int TENTATIVE_start_turn(int player)
   land_can_be_played &= -512;
   for (s.card = 0; s.card < active_cards_count[player]; s.card = s.card + 1)
   {
-    global_card_instances[player][s.card].state &= -230413;
+    global_card_instances[player][s.card].state &= ~(STATE_ATTACKING | STATE_BLOCKING | STATE_PLAYED_FROM_HAND | STATE_UNKNOWN8000 | STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP);
   }
   TENTATIVE_reassess_all_cards(0, 0xff);
   return 0;
@@ -662,15 +671,8 @@ void rebuild_battlefield_summary(void)
     hand_count[player] = 0;
     for (card = 0; card < active_cards_count[player]; card = card + 1)
     {
-      if (is_in_play(player, card) == 0)
-      {
-        if (((global_card_instances[player][card].state & 0x800000) == 0) &&
-            (global_card_instances[player][card].internal_card_id != -1))
-        {
-          hand_count[player]++;
-        }
-      }
-      else
+      if (is_in_play(player, card))
+
       {
         internal_card_id = global_card_instances[player][card].internal_card_id;
         if ((global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0)
@@ -698,6 +700,11 @@ void rebuild_battlefield_summary(void)
         {
           ((int *)DAT_008cfd70)[player + 8]++;
         }
+      }
+      else if (((global_card_instances[player][card].state & STATE_OUBLIETTED) == 0) &&
+               (global_card_instances[player][card].internal_card_id != -1))
+      {
+        hand_count[player]++;
       }
     }
     for (card = 0; card < 500; card = card + 1)
@@ -1485,14 +1492,14 @@ void end_turn_phase(unsigned int player)
   {
     if (global_card_instances[player][s.card].internal_card_id != -1)
     {
-      global_card_instances[player][s.card].state &= 0xffff7db2;
-      global_card_instances[player][s.card].mana_color = -1;
+      global_card_instances[player][s.card].state &= ~(STATE_JUST_DRAWED | STATE_ATTACKING | STATE_BLOCKING | STATE_ATTACKED | STATE_ISBLOCKED | STATE_UNKNOWN8000);
+      global_card_instances[player][s.card].blocking = -1;
       global_card_instances[player][s.card].damage_on_card = 0;
     }
     if (global_card_instances[s.other_player][s.card].internal_card_id != -1)
     {
-      global_card_instances[s.other_player][s.card].state &= 0xffff7db2;
-      global_card_instances[s.other_player][s.card].mana_color = -1;
+      global_card_instances[s.other_player][s.card].state &= ~(STATE_JUST_DRAWED | STATE_ATTACKING | STATE_BLOCKING | STATE_ATTACKED | STATE_ISBLOCKED | STATE_UNKNOWN8000);
+      global_card_instances[s.other_player][s.card].blocking = -1;
       global_card_instances[s.other_player][s.card].damage_on_card = 0;
     }
     if (global_card_instances[player][s.card].internal_card_id >= g_card_count)

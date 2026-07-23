@@ -224,23 +224,24 @@ int update_attacker_count_and_check_combat_done(int player)
   {
     if (is_in_play(player, card) != 0)
     {
-      if ((global_card_instances[player][card].state & STATE_ATTACKING) == 0)
-      {
-        if (((unsigned char *)&global_card_instances[player][card].state)[1] & 0x80)
-        {
-          if (can_attack(player, card) != 0)
-          {
-            legal_attacker_count++;
-          }
-        }
-      }
-      else
+      if ((global_card_instances[player][card].state & STATE_ATTACKING))
       {
         attacking_creature_count = 1;
       }
+      else if (global_card_instances[player][card].state & STATE_UNKNOWN8000)
+      {
+        if (can_attack(player, card) != 0)
+        {
+          legal_attacker_count++;
+        }
+      }
     }
   }
-  return (attacking_creature_count == 0 && legal_attacker_count == 0);
+
+  if (attacking_creature_count != 0 || legal_attacker_count != 0)
+    return 0;
+
+  return 1;
 }
 
 // FUNCTION: MAGIC 0x00441688

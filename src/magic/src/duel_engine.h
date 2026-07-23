@@ -75,6 +75,9 @@ LRESULT CALLBACK wndproc_MAGIC_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, 
 LRESULT CALLBACK wndproc_MAGIC_PlayerDirectiveClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name);
+void destroy_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name);
+
 /* Single header library style */
 #ifdef DUEL_ENGINE_IMPL
 #define DUEL_ENGINE_EXTERN

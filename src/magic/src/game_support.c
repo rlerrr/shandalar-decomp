@@ -2417,9 +2417,9 @@ int FUN_004b0047(int player, int card)
 
     if (s.trigger_result != 0)
     {
-      DAT_007ab2bc |= 1 << ((unsigned char)s.trigger_result & 0x1f);
+      DAT_007ab2bc |= 1 << ((unsigned char)s.trigger_result);
       DAT_00791410 += 1;
-      s.result = s.trigger_result;
+      return s.trigger_result;
     }
     else
     {
@@ -2477,39 +2477,7 @@ int FUN_004b0047(int player, int card)
     }
     else
     {
-      if (s.in_play == 0)
-      {
-        if ((s.state & 0xa0) != 0)
-        {
-          s.instance->state &= ~0x800;
-          unk_00743038 = 0;
-          return 0;
-        }
-
-        single_color_test_bit_to_color_t((int)(char)global_cards_data[s.internal_card_id].color);
-        if (_DAT_00742fbc == 0 || (s.type & DAT_00742f68) != 0)
-        {
-          if ((s.type & TYPE_LAND) != 0)
-          {
-            if (player == human_player && (land_can_be_played & 1) == 0 && (current_phase == 0x14 || current_phase == 0x1e))
-            {
-              unk_00743038 = 0;
-              return 4;
-            }
-
-            s.instance->state &= ~0x800;
-            unk_00743038 = 0;
-            return 0;
-          }
-
-          if ((((nonactive_player == human_player && (((_DAT_00742fbc != 0 && (s.type & 0x30) != 0) || current_phase == 0x14) || current_phase == 0x1e)) || (nonactive_player != human_player && _DAT_00742fbc != 0 && ((s.type & 0x10) != 0 || (s.type & 0x20) != 0))) && FUN_0043fdb3(player, player, card) != 0 && (((land_can_be_played & 4) == 0 || (s.extra_ability & 0x3004) != 0) && ((s.type & 0x42) != 0 || dispatch_event_to_single_card(player, card, EVENT_CAN_CAST, 1 - player, -1) != 0))))
-          {
-            unk_00743038 = 0;
-            return 4;
-          }
-        }
-      }
-      else
+      if (s.in_play)
       {
         if (DAT_007aadec == 4 && (s.upkeep_flags & 1) != 0)
         {
@@ -2546,6 +2514,38 @@ int FUN_004b0047(int player, int card)
             DAT_007ab2bc |= 2;
             unk_00743038 = 0;
             return 8;
+          }
+        }
+      }
+      else
+      {
+        if ((s.state & 0xa0) != 0)
+        {
+          s.instance->state &= ~0x800;
+          unk_00743038 = 0;
+          return 0;
+        }
+
+        single_color_test_bit_to_color_t((int)(char)global_cards_data[s.internal_card_id].color);
+        if (_DAT_00742fbc == 0 || (s.type & DAT_00742f68) != 0)
+        {
+          if ((s.type & TYPE_LAND) != 0)
+          {
+            if (player == human_player && (land_can_be_played & 1) == 0 && (current_phase == 0x14 || current_phase == 0x1e))
+            {
+              unk_00743038 = 0;
+              return 4;
+            }
+
+            s.instance->state &= ~0x800;
+            unk_00743038 = 0;
+            return 0;
+          }
+
+          if ((((nonactive_player == human_player && (((_DAT_00742fbc != 0 && (s.type & 0x30) != 0) || current_phase == 0x14) || current_phase == 0x1e)) || (nonactive_player != human_player && _DAT_00742fbc != 0 && ((s.type & 0x10) != 0 || (s.type & 0x20) != 0))) && FUN_0043fdb3(player, player, card) != 0 && (((land_can_be_played & 4) == 0 || (s.extra_ability & 0x3004) != 0) && ((s.type & 0x42) != 0 || dispatch_event_to_single_card(player, card, EVENT_CAN_CAST, 1 - player, -1) != 0))))
+          {
+            unk_00743038 = 0;
+            return 4;
           }
         }
       }

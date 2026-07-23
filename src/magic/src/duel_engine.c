@@ -665,19 +665,6 @@ int register_MAGICGAME_ChatClass(LPCSTR class_name)
   return s.registered;
 }
 
-// FUNCTION: MAGIC 0x0053582a
-// FUNCTION: SHANDALAR 0x0055a06a
-int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_AttackPhaseDisplayClass, 8,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0x6, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
 // FUNCTION: MAGIC 0x004e2f70
 // FUNCTION: SHANDALAR 0x005638b0
 int register_MAGICTHEME_IconButtonClass(LPCSTR class_name)
@@ -841,18 +828,6 @@ void destroy_MAGICGAME_ChatClass(LPCSTR class_name)
 void destroy_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
 {
   UnregisterClassA(CLASS_MAGICGAME_PHASE_DISPLAY, g_app_instance);
-}
-
-// FUNCTION: MAGIC 0x005358fb
-// FUNCTION: SHANDALAR 0x0055a13b
-void destroy_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
-{
-  if (g_magicgame_attack_phase_display_pic != (HANDLE)0)
-  {
-    delete_and_close_object(g_magicgame_attack_phase_display_pic);
-  }
-
-  g_magicgame_attack_phase_display_pic = (HANDLE)0;
 }
 
 // FUNCTION: MAGIC 0x00498142
@@ -1069,13 +1044,6 @@ LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam,
   }
 
   return 0;
-}
-
-// FUNCTION: MAGIC 0x00537760
-// FUNCTION: SHANDALAR 0x0055bf91
-LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 // FUNCTION: MAGIC 0x00498cd2
