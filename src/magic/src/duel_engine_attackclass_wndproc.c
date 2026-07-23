@@ -43,18 +43,18 @@ int load_text_with_tab_escapes(char *filename, char *section_name);
 void delete_and_close_object(HANDLE obj);
 LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void get_current_duel_selection(int *selected_player, int *selected_card);
-int FUN_004486de(int player, int card);
+int get_displayed_card_blocking(int player, int card);
 int get_displayed_card_internal_id(int player, int card);
 int get_displayed_card_zone(int player, int card);
 unsigned int get_displayed_card_display_flags(int player, int card);
 unsigned int get_displayed_card_ui_flags(int player, int card);
-unsigned int FUN_00449151(int player, int card);
+unsigned int get_displayed_card_state(int player, int card);
 void get_displayed_card_attachment(int *player_and_card, int player, int card);
 int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2);
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd);
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
-int card_window_matches_card_id(HWND hwnd, int card_id);
-int get_card_window_displayed_card_id(HWND hwnd);
+int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
+card_id_t get_card_window_displayed_card_id(HWND hwnd);
 LONG get_card_window_hidden_flag(HWND hwnd);
 void layout_attack_phase_window(HWND hwnd);
 int FUN_10025b5e(int hwnd, int msg, void *wparam, int lparam);
@@ -789,7 +789,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       }
       if (msg == 0x400)
       {
-        s.case400_group_card = FUN_004486de(((int *)s.case400_wparam)[0],
+        s.case400_group_card = get_displayed_card_blocking(((int *)s.case400_wparam)[0],
                                             ((int *)s.case400_wparam)[1]);
         if (s.case400_group_card == -1)
         {
@@ -798,7 +798,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       }
       else
       {
-        s.case400_group_card = FUN_004486de(((int *)s.case400_wparam)[0],
+        s.case400_group_card = get_displayed_card_blocking(((int *)s.case400_wparam)[0],
                                             ((int *)s.case400_wparam)[1]);
       }
       s.case400_group_index = 0;
@@ -1270,7 +1270,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
             else
             {
               s.case412_ui_flags = get_displayed_card_ui_flags(s.case412_player_index, s.case412_card_index);
-              s.case412_state_flags = FUN_00449151(s.case412_player_index, s.case412_card_index);
+              s.case412_state_flags = get_displayed_card_state(s.case412_player_index, s.case412_card_index);
               if ((s.case412_ui_flags & 0x10) == 0)
               {
                 if ((((s.case412_ui_flags & 8) != 0) && ((s.case412_state_flags & 4) == 0) &&

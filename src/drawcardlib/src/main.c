@@ -1674,7 +1674,7 @@ void DrawCardBackground(HDC dc,RECT *rect,card_ptr_t *card)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100081b2
-void DrawSmallCardTitle(HDC param_1,int *param_2,char* name,int param_4,int param_5)
+void DrawSmallCardTitle(HDC dc, RECT *rect, char* name, int param_4, int param_5)
 {
   struct {
     COLORREF titleColor;
@@ -1683,16 +1683,16 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,char* name,int param_4,int para
   } s;
   
                      /* 0x81b2  7  DrawSmallCardTitle */
-  if (((param_1 == (HDC)0x0) || (param_2 == (int *)0x0)) || (name == 0)) {
+  if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (name == 0)) {
     return;
   }
   strcpy(s.titleText,name);
-  s.nSavedDC = SaveDC(param_1);
-  SetMapMode(param_1,8);
-  SetWindowExtEx(param_1,200,0x118,(LPSIZE)0x0);
-  SetViewportExtEx(param_1,param_2[2] - *param_2,param_2[3] - param_2[1],(LPSIZE)0x0);
-  SetWindowOrgEx(param_1,0,0,(LPPOINT)0x0);
-  SetViewportOrgEx(param_1,*param_2,param_2[1],(LPPOINT)0x0);
+  s.nSavedDC = SaveDC(dc);
+  SetMapMode(dc,8);
+  SetWindowExtEx(dc,200,0x118,(LPSIZE)0x0);
+  SetViewportExtEx(dc,rect->right - rect->left,rect->bottom - rect->top,(LPSIZE)0x0);
+  SetWindowOrgEx(dc,0,0,(LPPOINT)0x0);
+  SetViewportOrgEx(dc,rect->left,rect->top,(LPPOINT)0x0);
   if (param_4 == 0) {
     s.titleColor = DAT_10039fe0;
   }
@@ -1702,21 +1702,21 @@ void DrawSmallCardTitle(HDC param_1,int *param_2,char* name,int param_4,int para
   else {
     s.titleColor = DAT_1003a19c;
   }
-  SelectObject(param_1,DAT_1003a018);
-  SetTextAlign(param_1,0);
+  SelectObject(dc,DAT_1003a018);
+  SetTextAlign(dc,0);
   if (param_5 == 0) {
-    SetBkMode(param_1,2);
-    SetBkColor(param_1,DAT_1012655c);
+    SetBkMode(dc,2);
+    SetBkColor(dc,DAT_1012655c);
   }
   else {
-    SetBkMode(param_1,1);
+    SetBkMode(dc,1);
   }
-  SetTextColor(param_1,DAT_10039fec);
-  TextOutA(param_1,5,1,s.titleText,strlen(s.titleText));
-  SetTextColor(param_1,s.titleColor);
-  SetBkMode(param_1,1);
-  TextOutA(param_1,2,-2,s.titleText,strlen(s.titleText));
-  RestoreDC(param_1,s.nSavedDC);
+  SetTextColor(dc,DAT_10039fec);
+  TextOutA(dc,5,1,s.titleText,strlen(s.titleText));
+  SetTextColor(dc,s.titleColor);
+  SetBkMode(dc,1);
+  TextOutA(dc,2,-2,s.titleText,strlen(s.titleText));
+  RestoreDC(dc,s.nSavedDC);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000ac34

@@ -39,15 +39,15 @@ extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
 
 // GLOBAL: MAGIC 0x006f6df8
-int DAT_006f6df8[4];
+RECT g_big_card_choice_full_card_rect;
 // GLOBAL: MAGIC 0x006f6e08
-int *DAT_006f6e08;
+dialog_context_t *g_big_card_choice_dialog_context;
 // GLOBAL: MAGIC 0x006f6e10
-int DAT_006f6e10[4];
+RECT g_big_card_choice_small_card_rect;
 // GLOBAL: MAGIC 0x006f6e20
-int DAT_006f6e20;
+int g_big_card_choice_state_006f6e20;
 // GLOBAL: MAGIC 0x008950b4
-int DAT_008950b4;
+int g_big_card_choice_timeout_ms;
 
 // GLOBAL: MAGIC 0x00777848
 int DAT_00777848;
@@ -60,9 +60,9 @@ int DAT_007ab430[500];
 // GLOBAL: SHANDALAR 0x008bce18
 int g_duel_cached_unk_008b44d0_player_1;
 // GLOBAL: MAGIC 0x008a99f8
-int DAT_008a99f8;
+int g_duel_cached_active_cards_count_player_0;
 // GLOBAL: MAGIC 0x008a99fc
-int DAT_008a99fc;
+int g_duel_cached_active_cards_count_player_1;
 // GLOBAL: MAGIC 0x008b1140
 dialog_stack_entry_t DAT_008b1140[32];
 // GLOBAL: MAGIC 0x008b2940
@@ -122,9 +122,13 @@ int DAT_0093d84c;
 // GLOBAL: MAGIC 0x0091c980
 int DAT_0091c980;
 // GLOBAL: MAGIC 0x00708da8
-char DAT_00708da8[0x358];
+char g_card_rules_text_buffer_00708da8[0x190];
+// GLOBAL: MAGIC 0x00708f48
+char g_activation_rules_text_buffer_00708f48[0x190];
 // GLOBAL: MAGIC 0x00709100
-char DAT_00709100[0x290];
+char g_card_title_buffer_00709100[0x34];
+// GLOBAL: MAGIC 0x00709150
+char g_activation_card_title_buffer_00709150[0x34];
 
 // GLOBAL: MAGIC 0x0057248c
 char s_HackWordSearchFormat_0057248c[8] = "|H%s";
@@ -223,7 +227,31 @@ char s_Newline_0057f710[4] = "\n";
 // GLOBAL: MAGIC 0x0057f714
 char s_Newline_0057f714[4] = "\n";
 // GLOBAL: MAGIC 0x0057f718
-char s_Empty_0057f718[64] = "";
+char s_Empty_0057f718[4] = "";
+// GLOBAL: MAGIC 0x0057f71c
+char s_CardValueFormat_0057f71c[8] = "%s: %d";
+// GLOBAL: MAGIC 0x0057f724
+char s_ParenthesizedColorFormat_0057f724[8] = " (%s)";
+// GLOBAL: MAGIC 0x0057f72c
+char s_Empty_0057f72c[4] = "";
+// GLOBAL: MAGIC 0x0057f730
+char s_Empty_0057f730[4] = "";
+// GLOBAL: MAGIC 0x0057f734
+char s_InfinityPowerText_0057f734[4] = "*";
+// GLOBAL: MAGIC 0x0057f738
+char s_PowerFormat_0057f738[4] = "%d";
+// GLOBAL: MAGIC 0x0057f73c
+char s_PowerToughnessSeparator_0057f73c[4] = "/";
+// GLOBAL: MAGIC 0x0057f740
+char s_InfinityToughnessText_0057f740[4] = "*";
+// GLOBAL: MAGIC 0x0057f744
+char s_ToughnessFormat_0057f744[4] = "%d";
+// GLOBAL: MAGIC 0x0057f748
+char s_NumberFormat_0057f748[4] = "%d";
+// GLOBAL: MAGIC 0x0057f74c
+char s_DamageFormat_0057f74c[4] = "%d";
+// GLOBAL: MAGIC 0x0057f750
+char s_SpacedNumberFormat_0057f750[8] = " %d ";
 
 // GLOBAL: MAGIC 0x008b4e44
 char DAT_008b4e44[50];
@@ -247,14 +275,14 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card);
 void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace);
 void FUN_0049511c(char *text, int source_color, int target_color, int parenthesize);
 void FUN_00495217(char *text, int source_color, int target_color, int parenthesize);
-int FUN_004964dd(int card_id, int player, int card);
+int get_card_display_pic_num(card_id_t card_id, int player, int card);
 unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, int param_6, int param_7);
 void FUN_00559bc1(int dc, int rect, int player, int card);
-void FUN_00559e9c(int dc, int rect, int card_id, int player, int card);
+void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int player, int card);
 int FUN_004a583e(int player, int card);
-int FUN_004a587c(int player, int card);
-int FUN_004a58ba(int player, int card);
-INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+int get_card_internal_id(int player, int card);
+card_id_t get_card_id(int player, int card);
+INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 int raw_do_dialog(int bigcard_player,
                   int bigcard_card,
                   int smallcard_player,
@@ -267,7 +295,7 @@ char *FUN_0044a3bf(int player, int card)
 {
   struct
   {
-    int transformed_csvid;
+  card_id_t transformed_card_id;
     char temporary_name[52];
     int source_card_data;
     int source_player;
@@ -334,10 +362,11 @@ char *FUN_0044a3bf(int player, int card)
       FUN_0055d802(g_dialog_card_title_buffer, s.temporary_name, PLAYER_CARD_INSTANCE(player, card).eot_toughness);
     }
 
-    s.transformed_csvid = FUN_004a58ba(s.source_player, s.source_card_data);
-    if (s.transformed_csvid == 0x361 || s.transformed_csvid == 0x360)
+    s.transformed_card_id = get_card_id(s.source_player, s.source_card_data);
+    if (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
+        s.transformed_card_id == CARD_ID_WHIMSY)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.transformed_csvid].damage_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.transformed_card_id].damage_text);
     }
 
     if (g_dialog_card_title_buffer[0] == '\0')
@@ -382,7 +411,7 @@ int FUN_004483be(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004486de
-int FUN_004486de(int player, int card)
+int get_displayed_card_blocking(int player, int card)
 {
   int blocking;
 
@@ -414,7 +443,7 @@ int get_displayed_card_internal_id(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448857
-int get_displayed_card_id(int player, int card)
+card_id_t get_displayed_card_id(int player, int card)
 {
   int internal_card_id;
 
@@ -429,7 +458,7 @@ int get_displayed_card_id(int player, int card)
     return -1;
   }
   else
-    return *(int *)&global_cards_data[internal_card_id].id;
+    return global_cards_data[internal_card_id].id;
 }
 
 // FUNCTION: MAGIC 0x00449057
@@ -707,13 +736,13 @@ int FUN_004a583e(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004a587c
-int FUN_004a587c(int player, int card)
+int get_card_internal_id(int player, int card)
 {
   return PLAYER_CARD_INSTANCE(player, card).internal_card_id;
 }
 
 // FUNCTION: MAGIC 0x004a58ba
-int FUN_004a58ba(int player, int card)
+card_id_t get_card_id(int player, int card)
 {
   if (player == -1 || card == -1)
   {
@@ -721,14 +750,14 @@ int FUN_004a58ba(int player, int card)
   }
   else
   {
-    int internal_card_id = FUN_004a587c(player, card);
+    int internal_card_id = get_card_internal_id(player, card);
     if (internal_card_id == -1)
     {
       return -1;
     }
     else
     {
-      return *(int *)&global_cards_data[internal_card_id].id;
+      return global_cards_data[internal_card_id].id;
     }
   }
 }
@@ -836,7 +865,7 @@ int raw_do_dialog(int bigcard_player,
                   int dialog_mode)
 {
   INT_PTR dialog_result;
-  int card_image_number;
+  card_id_t card_image_number;
   dialog_context_t s;
 
   KillTimer((HWND)g_duel_window_hwnd, g_duel_timer_id);
@@ -870,7 +899,7 @@ int raw_do_dialog(int bigcard_player,
   s.prompt = prompt;
   s.dialog_mode = dialog_mode;
 
-  dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_duel_window_hwnd, FUN_00506fa0, (LPARAM)&s);
+  dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_duel_window_hwnd, big_card_choice_dialog_proc, (LPARAM)&s);
   if (dialog_result == 0)
   {
     return -1;
@@ -894,12 +923,13 @@ unsigned int refresh_duel_display_cache(void)
   EnterCriticalSection(&g_duel_render_lock);
   s.needs_refresh = memcmp(global_displayed_card_instances, global_card_instances, 0x161e8);
   memcpy(global_displayed_card_instances, global_card_instances, 0x161e8);
-  if (active_cards_count[0] != DAT_008a99f8 || active_cards_count[1] != DAT_008a99fc)
+  if (active_cards_count[0] != g_duel_cached_active_cards_count_player_0 ||
+      active_cards_count[1] != g_duel_cached_active_cards_count_player_1)
   {
     s.needs_refresh = 1;
   }
-  DAT_008a99f8 = active_cards_count[0];
-  DAT_008a99fc = active_cards_count[1];
+  g_duel_cached_active_cards_count_player_0 = active_cards_count[0];
+  g_duel_cached_active_cards_count_player_1 = active_cards_count[1];
   if (life[0] != g_duel_cached_life_player_0 || life[1] != g_duel_cached_life_player_1)
   {
     s.needs_refresh = 1;
@@ -1059,7 +1089,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
     int color_index;
     card_ptr_t card_data;
     int card_version;
-    int card_id;
+    card_id_t card_id;
   } s;
 
   if (dc == 0 || rect == 0 || raw_card == 0)
@@ -1116,7 +1146,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
   FUN_00449645(player, card, s.rules_text);
   FUN_00449706(player, card, s.rules_text);
   s.card_data.rules_text = s.rules_text;
-  s.card_version = FUN_004964dd(s.card_id, player, card);
+  s.card_version = get_card_display_pic_num(s.card_id, player, card);
   return DrawFullCard((HDC)dc,
                       (RECT *)rect,
                       &s.card_data,
@@ -1138,7 +1168,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
     int color_index;
     card_ptr_t card_data;
     int card_version;
-    int card_id;
+    card_id_t card_id;
     int displayed_type;
   } s;
 
@@ -1156,7 +1186,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
   }
 
   FUN_00449a0f(&s.displayed_player, player, card);
-  s.card_version = FUN_004964dd(s.card_id, s.displayed_player, s.displayed_card);
+  s.card_version = get_card_display_pic_num(s.card_id, s.displayed_player, s.displayed_card);
   if (s.card_id == unk_007a7d64 ||
       s.card_id == unk_00789b80 ||
       s.card_id == unk_008cf1ac ||
@@ -1165,7 +1195,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
   {
     if (get_displayed_card_id(s.displayed_player, s.displayed_card) != -1)
     {
-      FUN_00559e9c(dc, rect, s.card_id, s.displayed_player, s.displayed_card);
+      draw_special_effect_full_card(dc, rect, s.card_id, s.displayed_player, s.displayed_card);
     }
     return;
   }
@@ -1213,7 +1243,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00559e9c
-void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
+void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int player, int card)
 {
   struct
   {
@@ -1222,7 +1252,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
     int displayed_power;
     char value_text[100];
     int displayed_toughness;
-    int transformed_csvid;
+    card_id_t transformed_card_id;
     char temporary_name[52];
     int single_color;
     unsigned int display_info;
@@ -1243,7 +1273,7 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
 
     if (card_id == unk_007a7d64)
     {
-      sprintf(DAT_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30, get_displayed_card_special_counters(player, card));
+      sprintf(g_card_title_buffer_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30, get_displayed_card_special_counters(player, card));
       s.single_color = single_color_test_bit_to_color_t(FUN_00449057(player, card));
       if (s.single_color == 1 ||
           s.single_color == 2 ||
@@ -1251,44 +1281,46 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
           s.single_color == 3 ||
           s.single_color == 5)
       {
-        sprintf(DAT_00709100 + strlen(DAT_00709100), s_ParenthesizedColorFormat_0057f638, gs_color_word_capitalized_00709390[s.single_color]);
+        sprintf(g_card_title_buffer_00709100 + strlen(g_card_title_buffer_00709100), s_ParenthesizedColorFormat_0057f638, gs_color_word_capitalized_00709390[s.single_color]);
       }
     }
     else if (card_id == unk_00789b80)
     {
-      sprintf(DAT_00709100, gs_cardtitle_hunting_00926750, FUN_00495311(get_displayed_card_special_counters(player, card)));
+      sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, FUN_00495311(get_displayed_card_special_counters(player, card)));
     }
     else if (card_id == unk_008cf1ac)
     {
-      strcpy(DAT_00709100, gs_multiblock_creature_008cf040);
+      strcpy(g_card_title_buffer_00709100, gs_multiblock_creature_008cf040);
     }
     else if (card_id == unk_00789734)
     {
-      strcpy(DAT_00709100, unk_00777e60[s.card_data.id].damage_text);
+      strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].damage_text);
     }
     else if (card_id == unk_008a8de8)
     {
-      strcpy(DAT_00709100, unk_00777e60[s.card_data.id].effect_text);
+      strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].effect_text);
     }
     else
     {
-      DAT_00709100[0] = '\0';
+      g_card_title_buffer_00709100[0] = '\0';
     }
 
     if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
     {
-      strcpy(s.temporary_name, DAT_00709100);
-      FUN_0055d802(DAT_00709100, s.temporary_name, FUN_004491cd(player, card));
+      strcpy(s.temporary_name, g_card_title_buffer_00709100);
+      FUN_0055d802(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
     }
 
-    s.transformed_csvid = get_displayed_card_id(s.displayed_player, s.displayed_card);
-    if (card_id == unk_00789734 && (s.transformed_csvid == 0x361 || s.transformed_csvid == 0x360))
+    s.transformed_card_id = get_displayed_card_id(s.displayed_player, s.displayed_card);
+    if (card_id == unk_00789734 &&
+        (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
+         s.transformed_card_id == CARD_ID_WHIMSY))
     {
-      strcpy(DAT_00709100, unk_00777e60[s.transformed_csvid].damage_text);
+      strcpy(g_card_title_buffer_00709100, unk_00777e60[s.transformed_card_id].damage_text);
     }
 
-    s.card_data.full_name = DAT_00709100;
-    s.card_data.name = DAT_00709100;
+    s.card_data.full_name = g_card_title_buffer_00709100;
+    s.card_data.name = g_card_title_buffer_00709100;
     s.card_data.expansion = 0xffffffff;
     s.card_data.color = 0xffffffff;
     s.card_data.card_type = 0;
@@ -1312,65 +1344,65 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
 
     if (card_id == unk_007a7d64)
     {
-      strcpy(DAT_00708da8, *(char **)(gs_words_to_sleight_00781bd0 + s.card_data.id * 0x14));
+      strcpy(g_card_rules_text_buffer_00708da8, *(char **)(gs_words_to_sleight_00781bd0 + s.card_data.id * 0x14));
     }
     else if (card_id == unk_00789b80)
     {
-      strcpy(DAT_00708da8, unk_00777e60[s.card_data.id].effect_title);
+      strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_title);
     }
     else if (card_id == unk_008cf1ac)
     {
-      strcpy(DAT_00708da8, gs_multiblock_shadow_blocker_00925e70);
+      strcpy(g_card_rules_text_buffer_00708da8, gs_multiblock_shadow_blocker_00925e70);
     }
     else if (card_id == unk_00789734)
     {
-      strcpy(DAT_00708da8, unk_00777e60[s.card_data.id].effect_title);
+      strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_title);
     }
     else if (card_id == unk_008a8de8)
     {
-      strcpy(DAT_00708da8, unk_00777e60[s.card_data.id].legacy_title);
+      strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].legacy_title);
     }
     else
     {
-      DAT_00708da8[0] = '\0';
+      g_card_rules_text_buffer_00708da8[0] = '\0';
     }
 
     s.display_flags = get_displayed_card_display_flags(player, card);
     if ((s.display_flags & 0x2000000) == 0)
     {
-      FUN_00449645(player, card, DAT_00708da8);
-      FUN_00449706(player, card, DAT_00708da8);
+      FUN_00449645(player, card, g_card_rules_text_buffer_00708da8);
+      FUN_00449706(player, card, g_card_rules_text_buffer_00708da8);
     }
     else
     {
-      FUN_00449645(s.displayed_player, s.displayed_card, DAT_00708da8);
-      FUN_00449706(s.displayed_player, s.displayed_card, DAT_00708da8);
+      FUN_00449645(s.displayed_player, s.displayed_card, g_card_rules_text_buffer_00708da8);
+      FUN_00449706(s.displayed_player, s.displayed_card, g_card_rules_text_buffer_00708da8);
     }
 
-    FUN_00494e91(DAT_00708da8, s_HackWord1_0057f644, 1, s_Empty_0057f640);
-    FUN_00494e91(DAT_00708da8, s_HackWord2_0057f64c, 1, s_Empty_0057f648);
-    FUN_00494e91(DAT_00708da8, s_HackWord3_0057f654, 1, s_Empty_0057f650);
-    FUN_00494e91(DAT_00708da8, s_HackWord4_0057f65c, 1, s_Empty_0057f658);
-    FUN_00494e91(DAT_00708da8, s_HackWordAny_0057f664, 1, s_Empty_0057f660);
-    FUN_00494e91(DAT_00708da8, s_ColorWord1_0057f66c, 1, s_Empty_0057f668);
-    FUN_00494e91(DAT_00708da8, s_ColorWord2_0057f674, 1, s_Empty_0057f670);
-    FUN_00494e91(DAT_00708da8, s_ColorWord3_0057f67c, 1, s_Empty_0057f678);
-    FUN_00494e91(DAT_00708da8, s_ColorWord4_0057f684, 1, s_Empty_0057f680);
-    FUN_00494e91(DAT_00708da8, s_ColorWordAny_0057f68c, 1, s_Empty_0057f688);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord1_0057f644, 1, s_Empty_0057f640);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord2_0057f64c, 1, s_Empty_0057f648);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord3_0057f654, 1, s_Empty_0057f650);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord4_0057f65c, 1, s_Empty_0057f658);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWordAny_0057f664, 1, s_Empty_0057f660);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord1_0057f66c, 1, s_Empty_0057f668);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord2_0057f674, 1, s_Empty_0057f670);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord3_0057f67c, 1, s_Empty_0057f678);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord4_0057f684, 1, s_Empty_0057f680);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWordAny_0057f68c, 1, s_Empty_0057f688);
 
     FUN_00449249(player, card, &s.displayed_power, &s.displayed_toughness);
     sprintf(s.value_text, s_PlusPowerToughnessFormat_0057f690, s.displayed_power, s.displayed_toughness);
-    FUN_00494e91(DAT_00708da8, s_PlusPowerToughnessToken_0057f698, 0, s.value_text);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusPowerToughnessToken_0057f698, 0, s.value_text);
     sprintf(s.value_text, s_PlusZeroToughnessFormat_0057f6a0, s.displayed_toughness);
-    FUN_00494e91(DAT_00708da8, s_PlusZeroToughnessToken_0057f6a8, 0, s.value_text);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusZeroToughnessToken_0057f6a8, 0, s.value_text);
     sprintf(s.value_text, s_PlusPowerZeroFormat_0057f6b0, s.displayed_power);
-    FUN_00494e91(DAT_00708da8, s_PlusPowerZeroToken_0057f6b8, 0, s.value_text);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusPowerZeroToken_0057f6b8, 0, s.value_text);
     sprintf(s.value_text, s_MinusZeroToughnessFormat_0057f6c0, s.displayed_power);
-    FUN_00494e91(DAT_00708da8, s_MinusZeroToughnessToken_0057f6c8, 0, s.value_text);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_MinusZeroToughnessToken_0057f6c8, 0, s.value_text);
     sprintf(s.value_text, s_PlusPowerMinusToughnessFormat_0057f6d0, s.displayed_power, s.displayed_toughness);
-    FUN_00494e91(DAT_00708da8, s_PlusPowerMinusToughnessToken_0057f6d8, 0, s.value_text);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusPowerMinusToughnessToken_0057f6d8, 0, s.value_text);
     sprintf(s.value_text, s_NumberFormat_0057f6e0, s.displayed_toughness);
-    FUN_00494e91(DAT_00708da8, s_NumberToken_0057f6e4, 0, s.value_text);
+    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_NumberToken_0057f6e4, 0, s.value_text);
 
     if (s.card_data.id == 0x21b)
     {
@@ -1413,43 +1445,43 @@ void FUN_00559e9c(int dc, int rect, int card_id, int player, int card)
         strcat(s.value_text, DAT_008b4e76);
         s.appended_text = 1;
       }
-      FUN_00494e91(DAT_00708da8, s_AbilityListMarker_0057f6fc, 0, s.value_text);
+      FUN_00494e91(g_card_rules_text_buffer_00708da8, s_AbilityListMarker_0057f6fc, 0, s.value_text);
       FUN_00449249(player, card, &s.displayed_power, &s.displayed_toughness);
       sprintf(s.value_text, s_MinusPowerToughnessFormat_0057f700, s.displayed_power, s.displayed_toughness);
-      FUN_00494e91(DAT_00708da8, s_MinusPowerToughnessToken_0057f708, 0, s.value_text);
+      FUN_00494e91(g_card_rules_text_buffer_00708da8, s_MinusPowerToughnessToken_0057f708, 0, s.value_text);
     }
 
     if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
     {
-      strcpy(s.transformed_rules_text, DAT_00708da8);
-      FUN_0055d802(DAT_00708da8, s.transformed_rules_text, FUN_004491cd(player, card));
+      strcpy(s.transformed_rules_text, g_card_rules_text_buffer_00708da8);
+      FUN_0055d802(g_card_rules_text_buffer_00708da8, s.transformed_rules_text, FUN_004491cd(player, card));
     }
 
     if (card_id == unk_007a7d64)
     {
       s.display_flags = get_displayed_card_display_flags(player, card);
-      if (DAT_00708da8[0] != '\0' && DAT_00708da8[0] != '\n')
+      if (g_card_rules_text_buffer_00708da8[0] != '\0' && g_card_rules_text_buffer_00708da8[0] != '\n')
       {
-        strcat(DAT_00708da8, s_Newline_0057f710);
+        strcat(g_card_rules_text_buffer_00708da8, s_Newline_0057f710);
       }
       if ((s.display_flags & 0x100000) != 0)
       {
-        strcat(DAT_00708da8, DAT_008b4ea8);
-        strcat(DAT_00708da8, s_Newline_0057f714);
+        strcat(g_card_rules_text_buffer_00708da8, DAT_008b4ea8);
+        strcat(g_card_rules_text_buffer_00708da8, s_Newline_0057f714);
       }
       if ((s.display_flags & 0x80000) != 0)
       {
-        strcat(DAT_00708da8, DAT_008b4e76);
+        strcat(g_card_rules_text_buffer_00708da8, DAT_008b4e76);
       }
     }
 
-    s.card_data.rules_text = DAT_00708da8;
+    s.card_data.rules_text = g_card_rules_text_buffer_00708da8;
     DrawFullCard((HDC)dc, (RECT *)rect, &s.card_data, s.display_version, 2, DAT_0091c980, &gs_illus_00789130);
   }
 }
 
 // FUNCTION: MAGIC 0x00506fa0
-INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   POINT cursor_point;
   POINT secondary_point;
@@ -1466,15 +1498,15 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   char card_coordinates[12];
   HDC paint_dc;
   PAINTSTRUCT paint_struct;
-  int card_image_number;
-  int card_id;
+  card_id_t card_image_number;
+  card_id_t card_id;
   int picture_number;
   int hovered_player;
   int hovered_card;
   unsigned int mouse_x;
   unsigned int mouse_y;
-  WPARAM bigcard_image;
-  WPARAM smallcard_image;
+  card_id_t bigcard_image;
+  card_id_t smallcard_image;
   RECT before_drag_rect;
   unsigned int was_dragged;
   RECT after_drag_rect;
@@ -1494,7 +1526,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   RECT client_rect;
   dialog_context_t *dialog_context;
 
-  dialog_context = (dialog_context_t *)DAT_006f6e08;
+  dialog_context = g_big_card_choice_dialog_context;
 
   if (msg == WM_ERASEBKGND)
   {
@@ -1515,7 +1547,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   if (msg == WM_INITDIALOG)
   {
-    DAT_006f6e20 = 0;
+    g_big_card_choice_state_006f6e20 = 0;
     if (g_duel_network_state != 0)
     {
       SetTimer(hwnd, 1, 2000, (TIMERPROC)0);
@@ -1528,22 +1560,25 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     listbox_top = listbox_rect.top;
     listbox_right_margin = client_rect.right - listbox_rect.right;
     InflateRect(&client_rect, -listbox_rect.top, -listbox_right_margin);
-    CopyRect((RECT *)DAT_006f6df8, &client_rect);
-    DAT_006f6df8[2] = listbox_rect.left - listbox_top;
-    CopyRect((RECT *)DAT_006f6e10, &client_rect);
-    DAT_006f6e10[0] = listbox_rect.left;
-    DAT_006f6e10[1] = listbox_rect.bottom;
-    if (DAT_006f6e10[3] - listbox_rect.bottom < DAT_006f6e10[2] - listbox_rect.left)
+    CopyRect(&g_big_card_choice_full_card_rect, &client_rect);
+    g_big_card_choice_full_card_rect.right = listbox_rect.left - listbox_top;
+    CopyRect(&g_big_card_choice_small_card_rect, &client_rect);
+    g_big_card_choice_small_card_rect.left = listbox_rect.left;
+    g_big_card_choice_small_card_rect.top = listbox_rect.bottom;
+    if (g_big_card_choice_small_card_rect.bottom - listbox_rect.bottom <
+        g_big_card_choice_small_card_rect.right - listbox_rect.left)
     {
-      DAT_006f6e10[2] = DAT_006f6e10[3] - listbox_rect.bottom + listbox_rect.left;
+      g_big_card_choice_small_card_rect.right =
+        g_big_card_choice_small_card_rect.bottom - listbox_rect.bottom + listbox_rect.left;
     }
     else
     {
-      DAT_006f6e10[3] = DAT_006f6e10[2] - listbox_rect.left + listbox_rect.bottom;
+      g_big_card_choice_small_card_rect.bottom =
+        g_big_card_choice_small_card_rect.right - listbox_rect.left + listbox_rect.bottom;
     }
 
-    DAT_006f6e08 = (int *)lparam;
-    dialog_context = (dialog_context_t *)DAT_006f6e08;
+    g_big_card_choice_dialog_context = (dialog_context_t *)lparam;
+    dialog_context = g_big_card_choice_dialog_context;
     SetDlgItemTextA(hwnd, 0x3fd, dialog_context->prompt);
     SendDlgItemMessageA(hwnd, 0x3fd, 0x401, dialog_context->dialog_mode, 0);
     if (dialog_context->smallcard_player != -1)
@@ -1554,8 +1589,8 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                          "MAGICGAME_BigCardCardClass",
                                          "BigCard small card",
                                          0x50000000,
-                                         DAT_006f6e10[0],
-                                         DAT_006f6e10[1],
+                                         g_big_card_choice_small_card_rect.left,
+                                         g_big_card_choice_small_card_rect.top,
                                          g_showlist_smallcard_width,
                                          g_showlist_smallcard_height,
                                          hwnd,
@@ -1575,7 +1610,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     listbox_selection = SendDlgItemMessageA(hwnd, 0x3fd, 0x400, 0, 0);
     if (listbox_selection == 0 || dialog_context->dialog_mode == 0)
     {
-      SetTimer(hwnd, 1, DAT_008950b4, (TIMERPROC)0);
+      SetTimer(hwnd, 1, g_big_card_choice_timeout_ms, (TIMERPROC)0);
     }
     return 0;
   }
@@ -1646,7 +1681,7 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       bigcard_image = get_displayed_card_id(dialog_context->bigcard_player, dialog_context->bigcard_card);
       if (dialog_context->smallcard_player == -1 || dialog_context->smallcard_card == -1)
       {
-        smallcard_image = 0xffffffff;
+        smallcard_image = -1;
       }
       else
       {
@@ -1655,23 +1690,23 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
       cursor_point.x = mouse_x;
       cursor_point.y = mouse_y;
-      point_in_rect = PtInRect((RECT *)DAT_006f6df8, cursor_point);
-      if (bigcard_image != 0xffffffff && point_in_rect != 0)
+      point_in_rect = PtInRect(&g_big_card_choice_full_card_rect, cursor_point);
+      if (bigcard_image != -1 && point_in_rect != 0)
       {
         hovered_player = dialog_context->bigcard_player;
         hovered_card = dialog_context->bigcard_card;
-        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, bigcard_image, (LPARAM)&hovered_player);
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, (WPARAM)bigcard_image, (LPARAM)&hovered_player);
       }
-      else if (smallcard_image != 0xffffffff)
+      else if (smallcard_image != -1)
       {
         secondary_point.x = mouse_x;
         secondary_point.y = mouse_y;
-        point_in_rect = PtInRect((RECT *)DAT_006f6e10, secondary_point);
+        point_in_rect = PtInRect(&g_big_card_choice_small_card_rect, secondary_point);
         if (point_in_rect != 0)
         {
           hovered_player = dialog_context->smallcard_player;
           hovered_card = dialog_context->smallcard_card;
-          SendMessageA(g_duel_card_preview_window_hwnd, 0x401, smallcard_image, (LPARAM)&hovered_player);
+          SendMessageA(g_duel_card_preview_window_hwnd, 0x401, (WPARAM)smallcard_image, (LPARAM)&hovered_player);
         }
       }
     }
@@ -1700,16 +1735,59 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             card_id != unk_008a8de8 &&
             card_id != unk_0092666c)
         {
-          DrawFullCard(paint_dc, (RECT *)DAT_006f6df8, global_raw_cards_storage + card_id, 0, 0x12, 0, &gs_illus_00789130);
+          DrawFullCard(paint_dc, &g_big_card_choice_full_card_rect, global_raw_cards_storage + card_id, 0, 0x12, 0, &gs_illus_00789130);
+          if (g_duel_dialog_refresh_state != 0)
+          {
+            sprintf(card_coordinates, "%d,%d", dialog_context->bigcard_player, dialog_context->bigcard_card);
+            SetBkMode(paint_dc, 1);
+            SetTextColor(paint_dc, 0);
+            coord_text_length = strlen(card_coordinates);
+            TextOutA(paint_dc,
+                     g_big_card_choice_full_card_rect.left + 5,
+                     g_big_card_choice_full_card_rect.top +
+                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100,
+                     card_coordinates,
+                     coord_text_length);
+            SetTextColor(paint_dc, 0xffffff);
+            coord_text_length = strlen(card_coordinates);
+            TextOutA(paint_dc,
+                     g_big_card_choice_full_card_rect.left + 4,
+                     g_big_card_choice_full_card_rect.top +
+                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100 - 1,
+                     card_coordinates,
+                     coord_text_length);
+          }
+        }
+      }
+      else
+      {
+        picture_number = get_card_display_pic_num(card_image_number,
+                                                  dialog_context->bigcard_player,
+                                                  dialog_context->bigcard_card);
+        if (card_image_number == unk_009266ac)
+        {
+          DrawCardBack(paint_dc, &g_big_card_choice_full_card_rect);
+        }
+        else if (card_image_number == unk_007a7d64 ||
+                 card_image_number == unk_00789b80 ||
+                 card_image_number == unk_008cf1ac ||
+                 card_image_number == unk_00789734 ||
+                 card_image_number == unk_008a8de8)
+        {
+          draw_special_effect_full_card((int)paint_dc,
+                                        (int)&g_big_card_choice_full_card_rect,
+                                        card_image_number,
+                                        dialog_context->bigcard_player,
+                                        dialog_context->bigcard_card);
         }
         else if (card_image_number == unk_0092666c)
         {
-          FUN_00559bc1((int)paint_dc, (int)DAT_006f6df8, dialog_context->bigcard_player, dialog_context->bigcard_card);
+          FUN_00559bc1((int)paint_dc, (int)&g_big_card_choice_full_card_rect, dialog_context->bigcard_player, dialog_context->bigcard_card);
         }
         else
         {
           FUN_00559999((int)paint_dc,
-                       (int)DAT_006f6df8,
+                       (int)&g_big_card_choice_full_card_rect,
                        (int)(global_raw_cards_storage + card_image_number),
                        dialog_context->bigcard_player,
                        dialog_context->bigcard_card,
@@ -1724,15 +1802,17 @@ INT_PTR CALLBACK FUN_00506fa0(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
           SetTextColor(paint_dc, 0);
           coord_text_length = strlen(card_coordinates);
           TextOutA(paint_dc,
-                   DAT_006f6df8[0] + 5,
-                   DAT_006f6df8[1] + ((DAT_006f6df8[3] - DAT_006f6df8[1]) * 0x14) / 100,
+                   g_big_card_choice_full_card_rect.left + 5,
+                   g_big_card_choice_full_card_rect.top +
+                     ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100,
                    card_coordinates,
                    coord_text_length);
           SetTextColor(paint_dc, 0xffffff);
           coord_text_length = strlen(card_coordinates);
           TextOutA(paint_dc,
-                   DAT_006f6df8[0] + 4,
-                   DAT_006f6df8[1] + ((DAT_006f6df8[3] - DAT_006f6df8[1]) * 0x14) / 100 - 1,
+                   g_big_card_choice_full_card_rect.left + 4,
+                   g_big_card_choice_full_card_rect.top +
+                     ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100 - 1,
                    card_coordinates,
                    coord_text_length);
         }

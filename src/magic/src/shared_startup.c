@@ -15,6 +15,7 @@
 extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[];
 extern card_data_t global_cards_data[];
+extern BITMAPINFO g_duel_backbuffer_bmi;
 
 // GLOBAL: SHANDALAR 0x0093a230
 // GLOBAL: MAGIC 0x00926100
@@ -34,7 +35,7 @@ char global_duelsounds_path[0x110];
 
 // GLOBAL: SHANDALAR 0x008bdaf0
 // GLOBAL: MAGIC 0x008a98f0
-char global_savegame_path[0x110];
+char global_savegame_path[0x108];
 
 // GLOBAL: SHANDALAR 0x007a00a0
 // GLOBAL: MAGIC 0x00789310
@@ -257,7 +258,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   if (!CreateOffscreen32bppDibSection(GetSystemMetrics(SM_CXSCREEN),
                                       GetSystemMetrics(SM_CYSCREEN),
                                       &g_shared_offscreen_dc,
-                                      (BITMAPINFO *)&gs_cardtitle_draw_a_card_008b4330[0x40],
+                                      &g_duel_backbuffer_bmi,
                                       &g_shared_offscreen_bitmap,
                                       &g_shared_offscreen_prev_object,
                                       &g_shared_offscreen_bits))

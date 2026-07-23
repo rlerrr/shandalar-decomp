@@ -39,7 +39,7 @@ HBITMAP load_pic(char *filename);
 void ApplyCardArtPaletteToDc(HDC dc);
 void TileBitmapIntoRect(HDC dc, RECT *rect, HBITMAP bitmap);
 int FUN_10025b5e(int hwnd, unsigned int msg, int wparam, int lparam);
-int card_window_matches_card_id(HWND hwnd, int card_id);
+int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
 void layout_phase_display_window(HWND hwnd, LPRECT rect);
 int handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -318,8 +318,13 @@ int spell_chain_entry_matches(spell_chain_window_entry_t window_entry, spell_cha
     int matches;
     int i;
   } s;
+  s.matches = 1;
 
-  s.matches = window_entry.target_count == display_entry.number_of_targets;
+  if (window_entry.target_count != display_entry.number_of_targets)
+  {
+    s.matches = 0;
+  }
+
   for (s.i = 0; !(window_entry.target_count <= s.i); ++s.i)
   {
     if (card_window_matches_player_and_card(window_entry.target_windows[s.i], &display_entry.targets[s.i].player) == 0)

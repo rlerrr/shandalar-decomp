@@ -207,13 +207,13 @@ void set_duel_tooltip_text(char *text)
 
 // FUNCTION: MAGIC 0x004466b5
 int run_target_selection_modal(int who_chooses,
-                               int arg_2,
+                               int player,
                                char *prompt,
                                int allow_cancel,
-                               int arg_5,
-                               int arg_6,
-                               int arg_7,
-                               int arg_8,
+                               int type_flags,
+                               int color_flags,
+                               int owner,
+                               int zone_flags,
                                int *out_selection_code,
                                int *out_target_player,
                                int allow_ai_player,
@@ -270,11 +270,11 @@ int run_target_selection_modal(int who_chooses,
   s.cursor_window = WindowFromPoint(s.cursor_pos);
   SendMessageA(s.cursor_window, 0x20, (WPARAM)s.cursor_window, 0x2000001);
 
-  s.request.arg_2 = arg_2;
-  s.request.arg_5 = arg_5;
-  s.request.arg_6 = arg_6;
-  s.request.arg_7 = arg_7;
-  s.request.arg_8 = arg_8;
+  s.request.player = player;
+  s.request.type_flags = type_flags;
+  s.request.color_flags = color_flags;
+  s.request.owner = owner;
+  s.request.zone_flags = zone_flags;
   s.request.allow_ai_player = allow_ai_player;
   s.request.allow_human_player = allow_human_player;
   strcpy(s.request.prompt, s.prompt_buffer);

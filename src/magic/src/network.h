@@ -26,6 +26,15 @@ typedef struct
   char thread_exit_code;
 } target_selection_network_packet_t;
 
+typedef struct
+{
+  char packet_type;
+  char pad_1;
+  short packet_number;
+  int raw_mana_available[8];
+} xpool_network_packet_t;
+STATIC_ASSERT(sizeof(xpool_network_packet_t) == 0x24, xpool_network_packet_t_wrong_size);
+
 // GLOBAL: MAGIC 0x00789a44
 NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 
@@ -82,7 +91,7 @@ NETWORK_EXTERN short *unk_0091ca98;
 NETWORK_EXTERN int unk_0091d07c;
 
 // GLOBAL: MAGIC 0x009251b0
-NETWORK_EXTERN char unk_009251b0;
+NETWORK_EXTERN xpool_network_packet_t g_xpool_network_packet;
 
 // GLOBAL: MAGIC 0x008cf200
 NETWORK_EXTERN target_selection_network_packet_t g_target_selection_network_packet;

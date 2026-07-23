@@ -23,14 +23,14 @@ extern char global_base_directory[];
 int load_text_with_tab_escapes(char *filename, char *section_name);
 LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 unsigned int get_displayed_card_special_counters(int player, int card);
-int get_displayed_card_id(int player, int card);
+card_id_t get_displayed_card_id(int player, int card);
 int get_displayed_card_internal_id(int player, int card);
 int FUN_004483be(int player, int card);
 int FUN_00449057(int player, int card);
 void FUN_00449249(int player, int card, int *power, int *toughness);
 unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, int param_6, int param_7);
 void FUN_00559bc1(int dc, int rect, int player, int card);
-void FUN_00559e9c(int dc, int rect, int card_id, int player, int card);
+void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int player, int card);
 void save_duel_interface_options_to_registry(void);
 
 // GLOBAL: MAGIC 0x0057f444
@@ -545,7 +545,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
         s.changed = get_displayed_card_id(s.player, s.card);
         if (s.changed != -1)
         {
-          FUN_00559e9c((int)g_shared_offscreen_dc, (int)&s.client_rect, (int)s.window_card_id, s.player, s.card);
+          draw_special_effect_full_card((int)g_shared_offscreen_dc, (int)&s.client_rect, (card_id_t)s.window_card_id, s.player, s.card);
         }
         else
         {

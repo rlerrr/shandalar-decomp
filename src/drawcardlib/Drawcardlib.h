@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-    __declspec(dllimport) void DrawSmallCardTitle(HDC param_1, int *param_2, char* name, int param_4, int param_5);
+    __declspec(dllimport) void DrawSmallCardTitle(HDC dc, RECT *rect, char* name, int param_4, int param_5);
     __declspec(dllimport) void DrawSmallCard(HDC dc,RECT *rect, card_ptr_t *card, uint param_4, int param_5);
     __declspec(dllimport) uint CalcDrawManaText(HDC dc,RECT *rect,char* text);
     __declspec(dllimport) uint DrawManaText(HDC dc,RECT *param_2,char *text,int param_4);

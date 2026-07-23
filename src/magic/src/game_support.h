@@ -10,16 +10,17 @@ extern card_data_t global_cards_data[];
 
 typedef struct
 {
-  int arg_2;
-  int arg_5;
-  int arg_6;
-  int arg_7;
-  int arg_8;
+  int player;
+  int type_flags;
+  int color_flags;
+  int owner;
+  int zone_flags;
   int allow_cancel;
   char prompt[200];
   int allow_ai_player;
   int allow_human_player;
 } target_selection_request_t;
+STATIC_ASSERT(sizeof(target_selection_request_t) == 0xe8, target_selection_request_t_wrong_size);
 
 typedef struct
 {
@@ -82,13 +83,13 @@ void __stdcall FUN_004e4e9a(void);
 void __stdcall save_recorded_ai_actions(void);
 int ai_opinion_of_gamestate(int player);
 int run_target_selection_modal(int who_chooses,
-                               int arg_2,
+                               int player,
                                char *prompt,
                                int allow_cancel,
-                               int arg_5,
-                               int arg_6,
-                               int arg_7,
-                               int arg_8,
+                               int type_flags,
+                               int color_flags,
+                               int owner,
+                               int zone_flags,
                                int *out_selection_code,
                                int *out_target_player,
                                int allow_ai_player,

@@ -24,7 +24,7 @@ extern HWND g_main_window_hwnd;
 
 extern char global_base_directory[];
 extern int g_duel_modal_action_active;
-extern char g_duel_action_request_copy[];
+extern target_selection_request_t g_duel_action_request_copy;
 
 typedef struct mana_summary_values_t
 {
@@ -380,8 +380,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
         }
       }
       if (DAT_0072c8e0 != -1 && g_duel_modal_action_active != 0 &&
-          (((int *)g_duel_action_request_copy)[0] == -1 || ((int *)g_duel_action_request_copy)[0] == DAT_00715fa4) &&
-          (((int *)g_duel_action_request_copy)[4] == -1 || (((int *)g_duel_action_request_copy)[4] & 1) != 0))
+          (g_duel_action_request_copy.player == -1 || g_duel_action_request_copy.player == DAT_00715fa4) &&
+          (g_duel_action_request_copy.zone_flags == -1 || (g_duel_action_request_copy.zone_flags & 1) != 0))
       {
         unk_00715fb0 = s.peek_result;
         g_mana_summary_click_packet[0] = -3;
@@ -508,11 +508,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
       }
     }
     if (g_duel_modal_action_active != 0 && s.has_cuecard &&
-        (((int *)g_duel_action_request_copy)[0] == -1 || ((int *)g_duel_action_request_copy)[0] == DAT_00715fa4) &&
-        (((int *)g_duel_action_request_copy)[1] == -1 || ((int *)g_duel_action_request_copy)[1] == 0 || ((int *)g_duel_action_request_copy)[1] == 1) &&
-        (((int *)g_duel_action_request_copy)[2] == -1 || ((int *)g_duel_action_request_copy)[2] == 0 || ((int *)g_duel_action_request_copy)[2] == DAT_0072c8e0) &&
-        (((int *)g_duel_action_request_copy)[3] == -1 || ((int *)g_duel_action_request_copy)[3] == DAT_00715fa4) &&
-        (((int *)g_duel_action_request_copy)[4] == -1 || (((int *)g_duel_action_request_copy)[4] & 1) != 0))
+        (g_duel_action_request_copy.player == -1 || g_duel_action_request_copy.player == DAT_00715fa4) &&
+        (g_duel_action_request_copy.type_flags == -1 ||
+         g_duel_action_request_copy.type_flags == 0 ||
+         g_duel_action_request_copy.type_flags == 1) &&
+        (g_duel_action_request_copy.color_flags == -1 ||
+         g_duel_action_request_copy.color_flags == 0 ||
+         g_duel_action_request_copy.color_flags == DAT_0072c8e0) &&
+        (g_duel_action_request_copy.owner == -1 || g_duel_action_request_copy.owner == DAT_00715fa4) &&
+        (g_duel_action_request_copy.zone_flags == -1 || (g_duel_action_request_copy.zone_flags & 1) != 0))
     {
       GetCursorPos(&s.cursor_point);
       MapWindowPoints((HWND)0, hwnd, &s.cursor_point, 1);

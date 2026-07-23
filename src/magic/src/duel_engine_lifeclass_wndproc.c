@@ -106,17 +106,12 @@ HBITMAP g_life_lich_bitmap;
 // FUNCTION: MAGIC 0x00449bbf
 int is_invalid_duel_player(int player)
 {
-  if (player == 0)
+  if (player != 0 && player != 1)
   {
-    return 0;
+    return 1;
   }
 
-  if (player == 1)
-  {
-    return 0;
-  }
-
-  return 1;
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00449c4c

@@ -29,14 +29,14 @@ extern int g_duel_network_flags;
 extern int g_shared_startup_completed;
 extern int DAT_007aaeec;
 extern char global_base_directory[];
-int get_displayed_card_id(int player, int card);
+card_id_t get_displayed_card_id(int player, int card);
 unsigned int get_displayed_card_ui_flags(int player, int card);
 void get_displayed_card_attachment(int *player_and_card, int player, int card);
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd);
 int get_battlefield_card_stagger_offset(HWND hwnd);
 void reset_battlefield_layout_positions(HWND hwnd);
 void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag);
-int FUN_004486de(int player, int card);
+int get_displayed_card_blocking(int player, int card);
 void get_current_duel_selection(int *selected_player, int *selected_card);
 void FUN_00538e3d(int *player, int *phase, char *unused);
 void show_territory_options_dialog(HWND hwnd);
@@ -415,11 +415,11 @@ int card_window_matches_player_and_card(HWND hwnd, int *player_and_card)
 
 // FUNCTION: MAGIC 0x004d2517
 // FUNCTION: SHANDALAR 0x004f0137
-int card_window_matches_card_id(HWND hwnd, int card_id)
+int card_window_matches_card_id(HWND hwnd, card_id_t card_id)
 {
   LONG player;
   LONG card;
-  int displayed_card_id;
+  card_id_t displayed_card_id;
 
   if (hwnd == (HWND)0 || card_id < 0)
   {
@@ -439,11 +439,11 @@ int card_window_matches_card_id(HWND hwnd, int card_id)
 
 // FUNCTION: MAGIC 0x004d259b
 // FUNCTION: SHANDALAR 0x004f01bb
-int get_card_window_displayed_card_id(HWND hwnd)
+card_id_t get_card_window_displayed_card_id(HWND hwnd)
 {
   LONG player;
   LONG card;
-  int card_id;
+  card_id_t card_id;
 
   if (hwnd == (HWND)0)
   {
@@ -584,7 +584,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     int attached_player_and_card[2];
     int displayed_player;
     int displayed_card;
-    int displayed_card_id;
+    card_id_t displayed_card_id;
     HWND other_battlefield_window_400;
     int loop_index_400;
     HWND attached_window_400;
@@ -969,7 +969,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
         if ((get_displayed_card_ui_flags(s.scan_player, s.scan_card) & 4) != 0)
         {
           s.unique_flagged_count++;
-          s.unique_flag_id = FUN_004486de(s.scan_player, s.scan_card);
+          s.unique_flag_id = get_displayed_card_blocking(s.scan_player, s.scan_card);
           if (s.unique_flag_id != -1)
           {
             for (s.unique_inner_index = s.unique_outer_index + 1;
@@ -977,7 +977,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
                  s.unique_inner_index++)
             {
               SendMessageA(((HWND *)s.card_windows)[s.unique_inner_index], 0x401, (WPARAM)&s.scan_player, 0);
-              if (FUN_004486de(s.scan_player, s.scan_card) == s.unique_flag_id)
+              if (get_displayed_card_blocking(s.scan_player, s.scan_card) == s.unique_flag_id)
               {
                 ((int *)s.card_windows)[s.unique_inner_index] = 0;
               }

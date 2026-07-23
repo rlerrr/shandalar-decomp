@@ -43,6 +43,7 @@ int load_text_with_tab_escapes(char *filename, char *section_name);
 LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 // GLOBAL: MAGIC 0x0055e00c
 int DAT_0055e00c;
@@ -77,8 +78,23 @@ char s_DIALOG_VIEWANTES_0056e9f0[0x18] = "DIALOG_VIEWANTES";
 // GLOBAL: MAGIC 0x0056ea04
 char s__duel_hlp_0056ea04[0xc] = "\\duel.hlp";
 
+// GLOBAL: MAGIC 0x0056ea7c
+char s__s_WINBK_Ante_pic_0056ea7c[0x14] = "%s\\WINBK_Ante.pic";
+
+// GLOBAL: MAGIC 0x0056ea90
+char s__s_WINBK_AnteLabel_pic_0056ea90[0x18] = "%s\\WINBK_AnteLabel.pic";
+
+// GLOBAL: MAGIC 0x00637918
+HBITMAP g_view_antes_background_bitmap;
+
+// GLOBAL: MAGIC 0x0063791c
+COLORREF g_view_antes_text_color;
+
 // GLOBAL: MAGIC 0x00637958
-char g_graveyard_menu_view_text[0x38];
+char g_graveyard_menu_view_text[0x34];
+
+// GLOBAL: MAGIC 0x0063798c
+HBITMAP g_view_antes_label_bitmap;
 
 // GLOBAL: MAGIC 0x00637990
 char g_graveyard_menu_help_text[0x1c];
@@ -343,10 +359,273 @@ void copy_cached_ante_cards(int *opponent_antes, int *opponent_count, int *playe
   }
 }
 
+// FUNCTION: MAGIC 0x00452a75
+void get_view_antes_card_rect(RECT *rect, HWND hwnd, int opponent, int index)
+{
+  struct
+  {
+    int opponent_antes[16];
+    int player_antes[16];
+    int card_width;
+    int x_step;
+    RECT opponent_rect;
+    RECT player_rect;
+    int player_count;
+    int opponent_count;
+    RECT client_rect;
+  } s;
+
+  copy_cached_ante_cards(s.opponent_antes, &s.opponent_count, s.player_antes, &s.player_count);
+  GetWindowRect(GetDlgItem(hwnd, 0x4b3), &s.opponent_rect);
+  MapWindowPoints(NULL, hwnd, (LPPOINT)&s.opponent_rect, 2);
+  GetWindowRect(GetDlgItem(hwnd, 0x4b0), &s.player_rect);
+  MapWindowPoints(NULL, hwnd, (LPPOINT)&s.player_rect, 2);
+  s.card_width = s.opponent_rect.right - s.opponent_rect.left;
+  GetClientRect(hwnd, &s.client_rect);
+  s.client_rect.left = s.opponent_rect.left;
+
+  if (opponent == 0)
+  {
+    if (s.player_count < 1 || s.player_count <= index)
+    {
+      SetRect(rect, 0, 0, 0, 0);
+    }
+    else
+    {
+      s.x_step = (s.card_width * 60) / 100;
+      while (s.client_rect.right - s.client_rect.left < (s.player_count - 1) * s.x_step + s.card_width &&
+             (s.card_width * 10) / 100 < s.x_step)
+      {
+        --s.x_step;
+      }
+      CopyRect(rect, &s.player_rect);
+      OffsetRect(rect, s.x_step * index, 0);
+    }
+  }
+  else if (s.opponent_count < 1 || s.opponent_count <= index)
+  {
+    SetRect(rect, 0, 0, 0, 0);
+  }
+  else
+  {
+    s.x_step = (s.card_width * 60) / 100;
+    while (s.client_rect.right - s.client_rect.left < (s.opponent_count - 1) * s.x_step + s.card_width &&
+           (s.card_width * 10) / 100 < s.x_step)
+    {
+      --s.x_step;
+    }
+    CopyRect(rect, &s.opponent_rect);
+    OffsetRect(rect, s.x_step * index, 0);
+  }
+}
+
+// FUNCTION: MAGIC 0x00452059
+BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  struct
+  {
+    int opponent_antes[16];
+    int player_antes[16];
+    HDC paint_dc;
+    PAINTSTRUCT paint;
+    int player_count;
+    int index;
+    RECT card_rect;
+    int opponent_count;
+    int card_id;
+    HDC erase_dc;
+    HGDIOBJ font;
+    RECT text_rect;
+    RECT client_rect;
+    char text[100];
+    HWND ctl_hwnd;
+    int ctl_id;
+    HDC ctl_dc;
+    WPARAM hover_opponent_antes[16];
+    WPARAM hover_player_antes[16];
+    POINT mouse_point;
+    int hover_player_count;
+    int hover_index;
+    RECT hover_rect;
+    int hover_opponent_count;
+    WPARAM hover_card_id;
+    HDC measure_dc;
+    int label_height;
+    int label_width;
+    HGDIOBJ label_font;
+    SIZE label_size;
+    char path[264];
+    char label_text[200];
+    char opponent_name[100];
+    RECT window_rect;
+  } s;
+
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    ShowWindow(GetDlgItem(hwnd, 0x4b3), 0);
+    ShowWindow(GetDlgItem(hwnd, 0x4b0), 0);
+    ShowWindow(GetDlgItem(hwnd, 0x4b1), 0);
+    ShowWindow(GetDlgItem(hwnd, 0x4b2), 0);
+    sprintf(s.path, s__s_WINBK_Ante_pic_0056ea7c, global_duelart_path);
+    g_view_antes_background_bitmap = load_pic(s.path);
+    sprintf(s.path, s__s_WINBK_AnteLabel_pic_0056ea90, global_duelart_path);
+    g_view_antes_label_bitmap = load_pic(s.path);
+    g_view_antes_text_color = 0;
+    copy_opponent_name_prefix(s.opponent_name);
+    sprintf(s.label_text, g_graveyard_view_antes_opponent_text, s.opponent_name);
+    SetDlgItemTextA(hwnd, 0x4b1, s.label_text);
+    strcpy(s.label_text, g_graveyard_view_antes_player_text);
+    SetDlgItemTextA(hwnd, 0x4b2, s.label_text);
+    s.measure_dc = GetDC(hwnd);
+    ApplyCardArtPaletteToDc(s.measure_dc);
+    s.label_font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x4b1, WM_GETFONT, 0, 0);
+    SelectObject(s.measure_dc, s.label_font);
+    GetDlgItemTextA(hwnd, 0x4b1, s.label_text, 200);
+    GetTextExtentPoint32A(s.measure_dc, s.label_text, strlen(s.label_text), &s.label_size);
+    s.label_width = s.label_size.cx + s.label_size.cy;
+    s.label_height = (s.label_size.cy * 3) / 2;
+    SetWindowPos(GetDlgItem(hwnd, 0x4b1), NULL, 0, 0, s.label_width, s.label_height, SWP_NOZORDER | SWP_NOMOVE);
+    SetWindowPos(GetDlgItem(hwnd, 0x4b2), NULL, 0, 0, s.label_width, s.label_height, SWP_NOZORDER | SWP_NOMOVE);
+    ReleaseDC(hwnd, s.measure_dc);
+    GetWindowRect(hwnd, &s.window_rect);
+    SetWindowPos(hwnd, NULL, (GetSystemMetrics(SM_CXSCREEN) * 20) / 100, s.window_rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    SetFocus(hwnd);
+    return 0;
+
+  case WM_KEYDOWN:
+  case WM_COMMAND:
+    delete_and_close_object(g_view_antes_background_bitmap);
+    delete_and_close_object(g_view_antes_label_bitmap);
+    EndDialog(hwnd, 0);
+    return 1;
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDOWN:
+    copy_cached_ante_cards((int *)s.hover_opponent_antes, &s.hover_opponent_count, (int *)s.hover_player_antes, &s.hover_player_count);
+    s.mouse_point.x = (unsigned int)lparam & 0xffff;
+    s.mouse_point.y = (unsigned short)(((unsigned int)lparam >> 16) & 0xffff);
+    if ((msg == WM_MOUSEMOVE && g_duel_interface_options.layout != 2) || (msg == WM_RBUTTONDOWN && g_duel_interface_options.layout == 2))
+    {
+      s.hover_card_id = 0xffffffff;
+      if (s.hover_player_count != 0)
+      {
+        for (s.hover_index = s.hover_player_count - 1; s.hover_index >= 0 && s.hover_card_id == 0xffffffff; --s.hover_index)
+        {
+          get_view_antes_card_rect(&s.hover_rect, hwnd, 0, s.hover_index);
+          if (PtInRect(&s.hover_rect, s.mouse_point) != 0)
+          {
+            s.hover_card_id = s.hover_player_antes[s.hover_index];
+          }
+        }
+      }
+      if (s.hover_opponent_count != 0)
+      {
+        for (s.hover_index = s.hover_opponent_count - 1; s.hover_index >= 0 && s.hover_card_id == 0xffffffff; --s.hover_index)
+        {
+          get_view_antes_card_rect(&s.hover_rect, hwnd, 1, s.hover_index);
+          if (PtInRect(&s.hover_rect, s.mouse_point) != 0)
+          {
+            s.hover_card_id = s.hover_opponent_antes[s.hover_index];
+          }
+        }
+      }
+      if (s.hover_card_id != 0xffffffff)
+      {
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.hover_card_id, 0);
+      }
+    }
+    return 0;
+
+  case WM_LBUTTONDOWN:
+    delete_and_close_object(g_view_antes_background_bitmap);
+    delete_and_close_object(g_view_antes_label_bitmap);
+    EndDialog(hwnd, 0);
+    return 1;
+
+  case WM_CTLCOLORSTATIC:
+    s.ctl_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.ctl_dc);
+    s.ctl_hwnd = (HWND)lparam;
+    s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
+    SetBkMode(s.ctl_dc, TRANSPARENT);
+    SetTextColor(s.ctl_dc, g_view_antes_text_color);
+    return (BOOL)GetStockObject(NULL_BRUSH);
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTECHANGED:
+  case WM_PALETTEISCHANGING:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.client_rect);
+    s.font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x4b1, WM_GETFONT, 0, 0);
+    SelectObject(s.erase_dc, s.font);
+    SetTextColor(s.erase_dc, 0);
+    SetBkMode(s.erase_dc, TRANSPARENT);
+    if (g_view_antes_background_bitmap != NULL)
+    {
+      DrawBitmapToRect(s.erase_dc, &s.client_rect, g_view_antes_background_bitmap);
+    }
+    else
+    {
+      FillRect(s.erase_dc, &s.client_rect, GetStockObject(2));
+    }
+    GetWindowRect(GetDlgItem(hwnd, 0x4b1), &s.text_rect);
+    MapWindowPoints(NULL, hwnd, (LPPOINT)&s.text_rect, 2);
+    DrawBitmapToRect(s.erase_dc, &s.text_rect, g_view_antes_label_bitmap);
+    GetDlgItemTextA(hwnd, 0x4b1, s.text, 100);
+    s.text_rect.left += (s.text_rect.bottom - s.text_rect.top) / 4;
+    DrawTextA(s.erase_dc, s.text, -1, &s.text_rect, DT_SINGLELINE | DT_VCENTER);
+    GetWindowRect(GetDlgItem(hwnd, 0x4b2), &s.text_rect);
+    MapWindowPoints(NULL, hwnd, (LPPOINT)&s.text_rect, 2);
+    DrawBitmapToRect(s.erase_dc, &s.text_rect, g_view_antes_label_bitmap);
+    GetDlgItemTextA(hwnd, 0x4b2, s.text, 100);
+    s.text_rect.left += (s.text_rect.bottom - s.text_rect.top) / 4;
+    DrawTextA(s.erase_dc, s.text, -1, &s.text_rect, DT_SINGLELINE | DT_VCENTER);
+    return 1;
+
+  case WM_PAINT:
+    s.paint_dc = BeginPaint(hwnd, &s.paint);
+    if (s.paint_dc != NULL)
+    {
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      copy_cached_ante_cards(s.opponent_antes, &s.opponent_count, s.player_antes, &s.player_count);
+      if (s.opponent_count != 0)
+      {
+        for (s.index = 0; s.index < s.opponent_count; ++s.index)
+        {
+          get_view_antes_card_rect(&s.card_rect, hwnd, 1, s.index);
+          s.card_id = s.opponent_antes[s.index];
+          DrawFullCard(s.paint_dc, &s.card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0,
+                       gs_illus_00789130);
+        }
+      }
+      if (s.player_count != 0)
+      {
+        for (s.index = 0; s.player_count > s.index; ++s.index)
+        {
+          get_view_antes_card_rect(&s.card_rect, hwnd, 0, s.index);
+          s.card_id = s.player_antes[s.index];
+          DrawFullCard(s.paint_dc, &s.card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0,
+                       gs_illus_00789130);
+        }
+      }
+      EndPaint(hwnd, &s.paint);
+    }
+    return 1;
+
+  default:
+    return 0;
+  }
+}
+
 // FUNCTION: MAGIC 0x00452030
 void show_view_antes_dialog(void)
 {
-  DialogBoxParamA(g_app_instance, (LPCSTR)0xeb, DUEL_SHELL_WINDOW_HWND, (DLGPROC)DefWindowProcA, 0);
+  DialogBoxParamA(g_app_instance, (LPCSTR)0xeb, g_duel_window_hwnd, dlgproc_ViewAntes, 0);
 }
 
 // FUNCTION: MAGIC 0x00451926

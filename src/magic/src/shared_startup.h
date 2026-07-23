@@ -11,7 +11,7 @@ extern char global_playdeck_path[0x110];
 extern char global_faces_path[0x110];
 extern char global_duelart_path[0x110];
 extern char global_duelsounds_path[0x110];
-extern char global_savegame_path[0x110];
+extern char global_savegame_path[0x108];
 extern HDC g_shared_offscreen_dc;
 extern HBITMAP g_shared_offscreen_bitmap;
 extern HGDIOBJ g_shared_offscreen_prev_object;

@@ -87,9 +87,9 @@ int GetCardFromCLPacket(int packet_index);
 unsigned int refresh_duel_display_cache(void);
 unsigned int get_displayed_card_special_counters(int player, int card);
 int get_displayed_card_internal_id(int player, int card);
-int get_displayed_card_id(int player, int card);
+card_id_t get_displayed_card_id(int player, int card);
 int get_displayed_card_zone(int player, int card);
-int FUN_00448df6(int player, int card);
+int get_displayed_card_type(int player, int card);
 unsigned int get_displayed_card_ui_flags(int player, int card);
 void get_displayed_card_attachment(int *player_and_card, int player, int card);
 unsigned int get_displayed_card_display_flags(int player, int card);
@@ -97,9 +97,8 @@ int is_attack_phase_window_enabled(void);
 int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2);
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd);
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
-int get_card_window_displayed_card_id(HWND hwnd);
+card_id_t get_card_window_displayed_card_id(HWND hwnd);
 int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
-extern int g_cardclass_snapshot_window_long_offset;
 extern int DAT_008ced00[16];
 #ifdef SHANDALAR
 int DAT_007a79b8;
@@ -199,7 +198,7 @@ BITMAPINFO g_duel_backbuffer_bmi;
 
 // GLOBAL: MAGIC 0x00925ad0
 // GLOBAL: SHANDALAR 0x00939c00
-char g_duel_action_request_copy[0xe8];
+target_selection_request_t g_duel_action_request_copy;
 
 // GLOBAL: MAGIC 0x008961b0
 // GLOBAL: SHANDALAR 0x008aa3b0
@@ -218,6 +217,12 @@ int g_duel_window_userdata_player_offset;
 
 // GLOBAL: MAGIC 0x0055e16c
 int g_duel_window_userdata_card_offset = 4;
+
+// GLOBAL: MAGIC 0x0055e170
+int g_duel_window_userdata_8_offset = 8;
+
+// GLOBAL: MAGIC 0x0055e174
+int g_duel_window_userdata_snapshot_offset = 0xc;
 
 // GLOBAL: MAGIC 0x00939508
 int DAT_00939508;
@@ -264,7 +269,7 @@ void notify_duel_action(int player, unsigned int value)
     int attached_player_and_card[2];
     int action_player;
     int action_card;
-    int card_id;
+    card_id_t card_id;
     int card_index;
     int zone;
     int internal_card_id;
@@ -613,7 +618,7 @@ int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, H
   int card_count;
   int found;
   int index;
-  int found_card_id;
+  card_id_t found_card_id;
   HWND found_hwnd;
 
   if (hwnd == (HWND)0 || player_and_card == (int *)0)
@@ -665,7 +670,7 @@ LONG get_card_window_hidden_flag(HWND hwnd)
 int get_battlefield_card_stagger_offset(HWND hwnd)
 {
   int card;
-  int card_id;
+  card_id_t card_id;
   int player;
   unsigned int sign;
 
@@ -707,7 +712,7 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
 {
   int player;
   int type_flags;
-  int card_id;
+  card_id_t card_id;
   int hidden_descendants;
   RECT client_rect;
 
@@ -724,7 +729,7 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
     player = 1;
 
   GetClientRect(parent, &client_rect);
-  type_flags = FUN_00448df6(rect[0], rect[1]);
+  type_flags = get_displayed_card_type(rect[0], rect[1]);
   if ((type_flags & TYPE_CREATURE) != 0 && (type_flags & TYPE_LAND) == 0)
   {
     *x = g_battlefield_creature_x[player];
@@ -817,29 +822,34 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
 // FUNCTION: MAGIC 0x004e8e42
 void resize_battlefield_child_card_windows(HWND hwnd)
 {
-  HWND *card_windows;
-  HWND snapshot_window;
-  int card_count;
-  int index;
-
-  card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-  card_windows = (HWND *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
-  snapshot_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
-
-  for (index = 0; index < card_count; index++)
+  struct
   {
-    SetWindowPos(card_windows[index], (HWND)0, 0, 0,
+    int card_count;
+    int index;
+    HWND *card_windows;
+    RECT rect;
+    HWND snapshot_window;
+  } s;
+
+  GetClientRect(hwnd, &s.rect);
+  s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
+  s.card_windows = (HWND *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
+  s.snapshot_window = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_snapshot_offset);
+
+  for (s.index = 0; s.index < s.card_count; s.index++)
+  {
+    SetWindowPos(s.card_windows[s.index], (HWND)0, 0, 0,
                  g_showlist_smallcard_width, g_showlist_smallcard_height,
                  SWP_NOMOVE | SWP_NOZORDER);
   }
-  for (index = 0; index < card_count; index++)
+  for (s.index = 0; s.index < s.card_count; s.index++)
   {
-    SendMessageA(hwnd, 0x410, (WPARAM)card_windows[index], 0);
+    SendMessageA(hwnd, 0x410, (WPARAM)s.card_windows[s.index], 0);
   }
-  SetWindowPos(snapshot_window, (HWND)0, 0, 0,
+  SetWindowPos(s.snapshot_window, (HWND)0, 0, 0,
                g_showlist_smallcard_width, g_showlist_smallcard_height,
                SWP_NOMOVE | SWP_NOZORDER);
-  SendMessageA(hwnd, 0x410, (WPARAM)snapshot_window, 0);
+  SendMessageA(hwnd, 0x410, (WPARAM)s.snapshot_window, 0);
 }
 
 // FUNCTION: MAGIC 0x004d6c6d
@@ -1657,7 +1667,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.action_request = (target_selection_request_t *)wparam;
     s.action_result = (target_selection_result_t *)lparam;
     g_duel_modal_action_active = 1;
-    memcpy(g_duel_action_request_copy, s.action_request, sizeof(*s.action_request));
+    memcpy(&g_duel_action_request_copy, s.action_request, sizeof(*s.action_request));
     GetCursorPos(&s.cursor_pos);
     s.cursor_window = WindowFromPoint(s.cursor_pos);
     s.hit_test = SendMessageA(s.cursor_window, WM_NCHITTEST, 0, MAKELONG(s.cursor_pos.x, s.cursor_pos.y));

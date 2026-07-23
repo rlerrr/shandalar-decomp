@@ -525,8 +525,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
 // FUNCTION: MAGIC 0x00444d1f
 void reset_trigger_dispatch_state(void)
 {
-  max_trigger_dispatch_depth = 0;
-  trigger_dispatch_depth = 0;
+  trigger_dispatch_depth = max_trigger_dispatch_depth = 0;
   regenerate_or_graveyard_triggers_in_progress = 0;
 }
 
@@ -1374,12 +1373,7 @@ int FUN_00440c61(int player, int card)
     return 0;
   }
 
-  if ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_IN_PLAY | STATE_INVISIBLE)) != 0)
-  {
-    return 0;
-  }
-
-  return 1;
+  return ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_IN_PLAY | STATE_INVISIBLE)) != 0) ? 0 : 1;
 }
 
 // FUNCTION: MAGIC 0x00442cf9
@@ -4063,7 +4057,7 @@ static void setup_life_total_dialog_resources(HBITMAP *background,
                                               COLORREF *unfocus_text_color,
                                               COLORREF *focus_text_color)
 {
-  char path[268];
+  char path[264];
 
   sprintf(path, "%s\\WINBK_QuestN.pic", global_duelart_path);
   *background = load_pic(path);

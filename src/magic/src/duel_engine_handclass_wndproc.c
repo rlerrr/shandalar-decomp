@@ -19,10 +19,10 @@ extern char global_base_directory[];
 LOGFONTA *LoadFontFromIni(char *section, int must_load);
 int load_text_with_tab_escapes(char *filename, char *section_name);
 void delete_and_close_object(HANDLE obj);
-int get_displayed_card_id(int player, int card);
+card_id_t get_displayed_card_id(int player, int card);
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
-int card_window_matches_card_id(HWND hwnd, int card_id);
-int get_card_window_displayed_card_id(HWND hwnd);
+int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
+card_id_t get_card_window_displayed_card_id(HWND hwnd);
 
 // GLOBAL: MAGIC 0x0055e0d8
 int g_hand_card_windows_long_offset = 0;
@@ -397,7 +397,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     int invalidate_found;        // ebp - 0x34
     int invalidate_all_index;    // ebp - 0x30
     int refresh_index;           // ebp - 0x2c
-    int card_id;                 // ebp - 0x28
+    card_id_t card_id;           // ebp - 0x28
     int card_id_index;           // ebp - 0x24
     LONG art_bottom_height;      // ebp - 0x20
     int card_count;              // ebp - 0x1c

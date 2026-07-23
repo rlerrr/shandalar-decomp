@@ -417,13 +417,13 @@ int FUN_00501b6e(void)
 }
 
 // FUNCTION: MAGIC 0x00501bb2
-int FUN_00501bb2(void)
+int apply_xpool_packet_to_active_player(void)
 {
   int color;
 
   for (color = 0; color < 8; ++color)
   {
-    raw_mana_available[active_player][color] = *(int *)((char *)&unk_009251b0 + color * 4 + 4);
+    raw_mana_available[active_player][color] = g_xpool_network_packet.raw_mana_available[color];
   }
   copy_mana_pool_to_display();
   return 1;
@@ -677,18 +677,18 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 0x11:
-      memcpy(&unk_009251b0, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_009251b0 + 2) == unk_007a7d6c)
+      memcpy(&g_xpool_network_packet, s.packet_data, s.packet_size);
+      if (g_xpool_network_packet.packet_number == unk_007a7d6c)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, unk_007a7d6c);
         append_to_trace_txt(s.message);
       }
       else
       {
-        FUN_00500b2c(unk_007a7d6c, *(short *)((char *)&unk_009251b0 + 2));
+        FUN_00500b2c(unk_007a7d6c, g_xpool_network_packet.packet_number);
       }
       ++unk_007a7d6c;
-      FUN_00501bb2();
+      apply_xpool_packet_to_active_player();
       s.got_requested_packet = 0;
       break;
 
