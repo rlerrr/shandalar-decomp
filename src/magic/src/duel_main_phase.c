@@ -1120,12 +1120,6 @@ void choose_blockers_ai(int player)
   unk_00712938 = saved_event_state;
 }
 
-// FUNCTION: MAGIC 0x005136ed
-void resolve_combat_damage(int player)
-{
-  (void)player;
-}
-
 // FUNCTION: MAGIC 0x00515f34
 int cleanup_combat_state(int player)
 {
