@@ -2040,15 +2040,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.player_backdrop_color = 1;
         }
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into play", -1, -1);
-        s.command_selected_card = (int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase];
-        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] =
-            (unsigned char)((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
+        s.command_selected_card = (int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase];
+        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
+            (unsigned char)((int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
         if (s.command_saved_phase_flags != -1)
         {
           process_card_enters_play(s.player_backdrop_color, s.command_saved_phase_flags);
         }
-        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] = (unsigned char)s.command_selected_card;
+        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] = (unsigned char)s.command_selected_card;
         notify_duel_action(0, 0xff);
       }
       break;
@@ -2068,11 +2068,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into hand", -1, -1);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
         hand_count[s.player_backdrop_color] += 1;
-        if (((g_duel_network_flags & 2) != 0) && (nonactive_player == s.player_backdrop_color))
+        if (((g_duel_network_flags & 2) != 0) && (active_player == s.player_backdrop_color))
         {
           g_network_result_packet_type = 0x12;
           g_network_result_value = s.enemy_backdrop_result;
-          TENTATIVE_send_network_result(nonactive_player, 0x12);
+          TENTATIVE_send_network_result(active_player, 0x12);
         }
         notify_duel_action(0, 0xff);
       }

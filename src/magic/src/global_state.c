@@ -444,7 +444,7 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&DAT_007abce0, 8);
   result &= save_or_load_data(&DAT_00938e38, 8);
   result &= save_or_load_data(unk_007a7d80, 0x10);
-  result &= save_or_load_data(&human_player, 4);
+  result &= save_or_load_data(&current_player, 4);
   result &= save_or_load_data(&DAT_008ce538, 4);
   result &= save_or_load_data(&ai_modifier, 4);
   result &= save_or_load_data(&current_phase, 4);
@@ -455,8 +455,8 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&DAT_007a7874, 4);
   result &= save_or_load_data(&x_value, 4);
   result &= save_or_load_data(&max_x_value, 4);
-  result &= save_or_load_data(&nonactive_player, 4);
   result &= save_or_load_data(&active_player, 4);
+  result &= save_or_load_data(&other_player, 4);
   result &= save_or_load_data(&affected_card_controller, 4);
   result &= save_or_load_data(&affected_card, 4);
   result &= save_or_load_data(&unk_008b4dd0, 4);
@@ -652,7 +652,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(unk_008b44d0, 8);
   result &= save_or_load_data(&DAT_00938e38, 8);
   result &= save_or_load_data(unk_007a7d80, 0x10);
-  result &= save_or_load_data(&human_player, 4);
+  result &= save_or_load_data(&current_player, 4);
   result &= save_or_load_data(&DAT_008ce538, 4);
   result &= save_or_load_data(&ai_modifier, 4);
   result &= save_or_load_data(&current_phase, 4);
@@ -663,8 +663,8 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&DAT_007a7874, 4);
   result &= save_or_load_data(&x_value, 4);
   result &= save_or_load_data(&max_x_value, 4);
-  result &= save_or_load_data(&nonactive_player, 4);
   result &= save_or_load_data(&active_player, 4);
+  result &= save_or_load_data(&other_player, 4);
   result &= save_or_load_data(&affected_card_controller, 4);
   result &= save_or_load_data(&affected_card, 4);
   result &= save_or_load_data(&unk_008b4dd0, 4);

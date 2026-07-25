@@ -62,7 +62,7 @@ extern int g_text_menu_color_normal;
 extern int g_text_menu_color_selected;
 extern int(__cdecl *g_town_dialog_callback)(void);
 extern int g_duel_ante_card_ids[16];
-extern int nonactive_player;
+extern int active_player;
 extern int unk_00742fc4;
 extern int DAT_008c7408[7];
 extern char g_ui_message_buffer[0x1000];
@@ -2229,7 +2229,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
         FUN_004be570(s_dbox_spr_0058b074, 0x71, 0xe3);
-        s.selected_card_id = SelectAdventureListCardIndex(nonactive_player, global_library[1], 500,
+        s.selected_card_id = SelectAdventureListCardIndex(active_player, global_library[1], 500,
                                                           gs_encounter_preduel_0077f0d0[0x23], 1, &DAT_0058b080);
         if (global_library[1][s.selected_card_id] != -1)
         {
@@ -2911,7 +2911,7 @@ LAB_4F4BB2:
             s.temp_deck[slot_index] = s.temp_deck[slot_index] & 0xfff;
           }
         }
-        s.selected_card_id = SelectAdventureListCardIndex(nonactive_player, (int *)s.temp_deck, 500,
+        s.selected_card_id = SelectAdventureListCardIndex(active_player, (int *)s.temp_deck, 500,
                                                           gs_encounter_postduel_0077f050[0x19], 1, &DAT_0058b190);
         if (s.selected_card_id != 0xffffffff)
         {

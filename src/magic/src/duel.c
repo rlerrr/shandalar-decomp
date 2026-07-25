@@ -187,8 +187,8 @@ void reset_duel_globals(void)
   int card;
   int player;
 
-  nonactive_player = 0;
-  active_player = 1;
+  active_player = 0;
+  other_player = 1;
   for (card = g_card_count; card < g_card_count + 16; ++card)
   {
     global_cards_data[card].id = -1;
@@ -269,8 +269,8 @@ void reset_duel_globals(void)
   unk_008ce508 = -1;
   unk_008ce4f4 = -1;
   DAT_009251d4 = 0;
-  unk_007a79b0[active_player] = 0;
-  unk_007a79b0[nonactive_player] = unk_007a79b0[active_player];
+  unk_007a79b0[other_player] = 0;
+  unk_007a79b0[active_player] = unk_007a79b0[other_player];
   regenerate_or_graveyard_triggers_in_progress = 0;
 }
 
@@ -423,7 +423,7 @@ int restore_duel_turn_resume_state(void)
     else if (next_state == -10)
     {
       TENTATIVE_reassess_all_cards(0, 0xff);
-      stop_phase_player = human_player;
+      stop_phase_player = current_player;
       stop_phase = current_phase;
       if (current_phase == PHASE_START)
       {
@@ -486,9 +486,9 @@ int init_turn(int player)
     append_to_trace_txt(s.trace);
   }
   s.other_player = 1 - player;
-  human_player = player;
+  current_player = player;
   ai_decision_code = -1;
-  if (nonactive_player == player)
+  if (active_player == player)
   {
     DAT_0077784c++;
   }
@@ -878,11 +878,11 @@ int untap_phase_exe(unsigned int player)
         }
       }
 
-      if (((active_player == player) && ((g_duel_network_flags & 2) == 0)) ||
+      if (((other_player == player) && ((g_duel_network_flags & 2) == 0)) ||
           (g_duel_ai_mode_state == 1) || (g_duel_network_state != 0))
       {
         s.done = 1;
-        if ((active_player == player) &&
+        if ((other_player == player) &&
             ((g_duel_network_flags & 2) == 0) &&
             (g_duel_ai_mode_state != 1) &&
             (player_can_stop_at_phase(player, PHASE_UNTAP) != 0))
@@ -900,7 +900,7 @@ int untap_phase_exe(unsigned int player)
       if (s.done == 0)
       {
         reset_trigger_dispatch_state();
-        if (((nonactive_player == player) || ((g_duel_network_flags & 2) != 0)) &&
+        if (((active_player == player) || ((g_duel_network_flags & 2) != 0)) &&
             (g_duel_ai_mode_state != 1) &&
             (g_duel_network_state == 0) &&
             ((s.must_untap_count > 0) || (s.optional_untap_count > 0)))
@@ -910,7 +910,7 @@ int untap_phase_exe(unsigned int player)
         }
         else
         {
-          if (nonactive_player == player)
+          if (active_player == player)
           {
             stop_phase_player = -1;
             stop_phase = -1;
@@ -1175,7 +1175,7 @@ int draw_phase(unsigned int player)
     s.draw_count = event_result;
     if (s.draw_count > 0)
     {
-      if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
+      if ((player == other_player) && ((g_duel_network_flags & 2) == 0))
       {
         for (s.draw_index = 0; s.draw_count > s.draw_index; s.draw_index = s.draw_index + 1)
         {
@@ -1287,7 +1287,7 @@ int discard_phase(unsigned int player, int phase_mode)
   {
     if ((phase_mode == 0) &&
         (g_duel_ai_mode_state != 1) &&
-        (nonactive_player == player) &&
+        (active_player == player) &&
         ((g_duel_network_flags & 2) == 0))
     {
       TENTATIVE_reassess_all_cards(0, 0xff);
@@ -1309,7 +1309,7 @@ int discard_phase(unsigned int player, int phase_mode)
   } while (s.allow_response_result != 0);
 
   if ((g_duel_ai_mode_state != 1) ||
-      ((active_player == player) && ((g_duel_network_flags & 2) == 0)))
+      ((other_player == player) && ((g_duel_network_flags & 2) == 0)))
   {
     if (g_duel_ai_mode_state != 1)
     {
@@ -1319,7 +1319,7 @@ int discard_phase(unsigned int player, int phase_mode)
     {
       if ((g_duel_network_flags & 2) == 0)
       {
-        if (nonactive_player == player)
+        if (active_player == player)
         {
           s.hand_count_for_discard = 0;
         }
@@ -1347,13 +1347,13 @@ int discard_phase(unsigned int player, int phase_mode)
       {
         discard(player, 0, 1);
         s.hand_count_for_discard--;
-        if ((player == active_player) &&
+        if ((player == other_player) &&
             ((g_duel_network_flags & 2) == 0) &&
             (g_duel_ai_mode_state == 1))
         {
           ai_modifier -= 0x18;
         }
-        if (((nonactive_player == player) || ((g_duel_network_flags & 2) != 0)) &&
+        if (((active_player == player) || ((g_duel_network_flags & 2) != 0)) &&
             (g_duel_ai_mode_state == 0) &&
             (g_duel_network_state == 0))
         {
@@ -1529,17 +1529,17 @@ void end_turn_phase(unsigned int player)
       }
 
       s.dynamic_card_index = 0;
-      while (s.dynamic_card_index < MAX(active_cards_count[active_player], active_cards_count[nonactive_player]))
+      while (s.dynamic_card_index < MAX(active_cards_count[other_player], active_cards_count[active_player]))
       {
-        if ((global_card_instances[nonactive_player][s.dynamic_card_index].internal_card_id != -1) &&
-            ((global_card_instances[nonactive_player][s.dynamic_card_index].state & 2) != 0) &&
-            (global_card_instances[nonactive_player][s.dynamic_card_index].dummy3 == s.card))
-        {
-          found = 1;
-        }
         if ((global_card_instances[active_player][s.dynamic_card_index].internal_card_id != -1) &&
             ((global_card_instances[active_player][s.dynamic_card_index].state & 2) != 0) &&
             (global_card_instances[active_player][s.dynamic_card_index].dummy3 == s.card))
+        {
+          found = 1;
+        }
+        if ((global_card_instances[other_player][s.dynamic_card_index].internal_card_id != -1) &&
+            ((global_card_instances[other_player][s.dynamic_card_index].state & 2) != 0) &&
+            (global_card_instances[other_player][s.dynamic_card_index].dummy3 == s.card))
         {
           found = 1;
         }
@@ -1593,11 +1593,11 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     }
 
     C_dispatch_event_raw(199);
-    for (s.index = 0; s.index < active_cards_count[active_player]; s.index = s.index + 1)
+    for (s.index = 0; s.index < active_cards_count[other_player]; s.index = s.index + 1)
     {
-      if (global_card_instances[active_player][s.index].internal_card_id != -1)
+      if (global_card_instances[other_player][s.index].internal_card_id != -1)
       {
-        (*global_cards_data[global_card_instances[active_player][s.index].internal_card_id].code_pointer)(active_player, s.index, 0x38);
+        (*global_cards_data[global_card_instances[other_player][s.index].internal_card_id].code_pointer)(other_player, s.index, 0x38);
       }
     }
 
@@ -1612,7 +1612,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     }
 
     reassess_all_cards_and_mana();
-    s.ai_score = ai_modifier + ai_opinion_of_gamestate(active_player);
+    s.ai_score = ai_modifier + ai_opinion_of_gamestate(other_player);
     if (life[1] > 0)
     {
       ai_search_flags |= 4;
@@ -1739,7 +1739,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       return 1;
     }
-    if ((human_player == stop_phase_player) && (stop_phase == PHASE_CLEANUP2))
+    if ((current_player == stop_phase_player) && (stop_phase == PHASE_CLEANUP2))
     {
       stop_phase_player = -1;
       stop_phase = stop_phase_player;
@@ -2611,13 +2611,13 @@ idk:
       load_duel_run_mode_3_save(DAT_008a915c);
     }
     TENTATIVE_reassess_all_cards(0, 0xff);
-    s.next_player = human_player;
+    s.next_player = current_player;
   }
   else if (g_duel_ai_mode_state == -10)
   {
     load_gametype0(DAT_008a915c);
     TENTATIVE_reassess_all_cards(0, 0xff);
-    s.next_player = human_player;
+    s.next_player = current_player;
   }
   else if (g_duel_ai_mode_state == -1)
   {

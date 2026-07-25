@@ -620,7 +620,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
 
       case PHASE_DISPLAY_COMMAND_TOGGLE_BASE:
         s.toggle_player = s.command_player;
-        if (s.command_phase_index == 3 && nonactive_player == s.toggle_player)
+        if (s.command_phase_index == 3 && active_player == s.toggle_player)
           break;
         if (s.command_phase_index == 0)
           s.toggle_phase_code = 1;

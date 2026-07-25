@@ -85,7 +85,7 @@ int FUN_0049e8bb(int player,
     memcpy(s.available_cards, available, count << 2);
   }
 
-  if (active_player == player && (g_duel_network_flags & 2) != 0)
+  if (other_player == player && (g_duel_network_flags & 2) != 0)
   {
     s.stop_selection = 1;
   }
@@ -129,7 +129,7 @@ int FUN_0049e8bb(int player,
 
   if ((g_duel_network_flags & 2) != 0)
   {
-    if (active_player == player)
+    if (other_player == player)
     {
       TENTATIVE_wait_for_network_result(player, 0x16);
       s.packet_card = 0;
@@ -411,8 +411,8 @@ int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packe
 // FUNCTION: MAGIC 0x00501b6e
 int FUN_00501b6e(void)
 {
-  add_card_to_hand(active_player, g_network_result_value);
-  ++hand_count[active_player];
+  add_card_to_hand(other_player, g_network_result_value);
+  ++hand_count[other_player];
   return 1;
 }
 
@@ -423,7 +423,7 @@ int apply_xpool_packet_to_active_player(void)
 
   for (color = 0; color < 8; ++color)
   {
-    raw_mana_available[active_player][color] = g_xpool_network_packet.raw_mana_available[color];
+    raw_mana_available[other_player][color] = g_xpool_network_packet.raw_mana_available[color];
   }
   copy_mana_pool_to_display();
   return 1;

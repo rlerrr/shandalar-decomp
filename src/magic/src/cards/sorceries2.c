@@ -86,7 +86,7 @@ int card_darkpact(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).token_status |= 0x10000;
       }
       load_text("promptsX1.txt", "DARKPACT");
-      if (player == human_player)
+      if (player == current_player)
       {
         do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, text_lines[1], 0);
       }
@@ -157,7 +157,7 @@ int card_resurrection(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1))
+    if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1))
     {
       s.can_select = 1;
       s.graveyard_index = FUN_004087cc(player, 2);

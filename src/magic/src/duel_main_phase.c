@@ -392,7 +392,7 @@ void choose_blockers_human(int player)
             {
               trigger_cause_controller = selected_blocker.player;
               trigger_cause = selected_blocker.card;
-              dispatch_trigger_twice_once_with_each_player_as_reason(human_player, TRIGGER_BLOCKER_CHOSEN, gs_blocker_selected_00926210, 0);
+              dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_BLOCKER_CHOSEN, gs_blocker_selected_00926210, 0);
             }
           }
         }
@@ -443,15 +443,15 @@ void mark_blocked_attackers(int player)
 // FUNCTION: MAGIC 0x0044ae9e
 int human_has_phase_stop(phase_t phase)
 {
-  if (g_duel_phase_stop_settings[human_player].phase_flags[phase] != 0)
+  if (g_duel_phase_stop_settings[current_player].phase_flags[phase] != 0)
   {
     return 1;
   }
-  if ((phase == stop_phase) && (human_player == stop_phase_player))
+  if ((phase == stop_phase) && (current_player == stop_phase_player))
   {
     return 1;
   }
-  if ((previous_stop_phase == phase) && (human_player == previous_stop_phase_player))
+  if ((previous_stop_phase == phase) && (current_player == previous_stop_phase_player))
   {
     return 1;
   }
@@ -926,7 +926,7 @@ void setup_ai_combat_abilities(int player)
       state_ptr = (unsigned int *)&global_card_instances[player][card].regen_status;
       *state_ptr |= 0xe000000;
       saved_state = global_card_instances[player][card].state;
-      if (active_player == player)
+      if (other_player == player)
       {
         if (((unsigned char *)&global_card_instances[player][card].state)[1] & 0x20)
         {
@@ -945,7 +945,7 @@ void setup_ai_combat_abilities(int player)
       {
         combat_eval_abilities &= 0xfffffdff;
       }
-      if (nonactive_player == player)
+      if (active_player == player)
       {
         dispatch_event(player, card, EVENT_CHECK_ABILITIES);
       }
@@ -1024,7 +1024,7 @@ void setup_ai_combat_abilities(int player)
       {
         combat_eval_abilities &= 0xfffffdff;
       }
-      if (nonactive_player == defending_player)
+      if (active_player == defending_player)
       {
         dispatch_event(defending_player, card, EVENT_CHECK_ABILITIES);
       }
@@ -1088,7 +1088,7 @@ void choose_blockers_ai(int player)
   {
     ai_block_assignments[blocker_index] = 0;
   }
-  if (g_duel_ai_mode_state == 1 || nonactive_player == human_player)
+  if (g_duel_ai_mode_state == 1 || active_player == current_player)
   {
     for (blocker_index = 0; blocker_index < ai_blocker_count; blocker_index++)
     {
@@ -1097,14 +1097,14 @@ void choose_blockers_ai(int player)
         push_affected_card_stack();
         trigger_cause_controller = ai_blocker_player;
         trigger_cause = ai_blocker_cards[blocker_index];
-        dispatch_trigger(1 - human_player, TRIGGER_PAY_TO_BLOCK, gs_pay_for_blocker_009263f0, 1);
+        dispatch_trigger(1 - current_player, TRIGGER_PAY_TO_BLOCK, gs_pay_for_blocker_009263f0, 1);
         pop_affected_card_stack();
       }
       if ((ai_block_assignments[blocker_index] != -1) && ((battlefield_extra_ability_flags & 0x100000) != 0))
       {
         trigger_cause_controller = ai_blocker_player;
         trigger_cause = ai_blocker_cards[blocker_index];
-        dispatch_trigger_twice_once_with_each_player_as_reason(human_player, TRIGGER_BLOCKER_CHOSEN, gs_blocker_selected_00926210, 0);
+        dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_BLOCKER_CHOSEN, gs_blocker_selected_00926210, 0);
       }
       global_card_instances[ai_blocker_player][ai_blocker_cards[blocker_index]].blocking = (unsigned char)ai_block_assignments[blocker_index];
       if (g_duel_ai_mode_state != 1)
@@ -1214,7 +1214,7 @@ int main_phase(unsigned int player, int phase_mode, int *phase_value)
     phase_stop_suppressed = 0;
   }
 restart_active_main_phase_ai_prompt:
-  if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
+  if ((player == other_player) && ((g_duel_network_flags & 2) == 0))
   {
     TENTATIVE_reassess_all_cards(0, 0xff);
     start_ai_decision_search(1, ((current_phase < PHASE_MAIN2) - 1 & 0xffffffd3) + 0x5a);
@@ -1224,7 +1224,7 @@ resume_main_phase_response_window:
 
   phase_response_window_open = 1;
   _DAT_0091c0ec = 0;
-  if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
+  if ((player == other_player) && ((g_duel_network_flags & 2) == 0))
   {
     FUN_004e4e9a();
     DAT_008cdab4 = 0;
@@ -1244,7 +1244,7 @@ restart_main_phase_action_loop:
   do
   {
     DAT_0093d850 = 0;
-    if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1)) &&
+    if ((((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1)) &&
         ((DAT_00925d30 & 2U) != 0))
     {
       DAT_00925d30 = 0;
@@ -1255,7 +1255,7 @@ restart_main_phase_action_loop:
     {
       FUN_004b5fc9(&DAT_00896690);
     }
-    if ((player == nonactive_player) || ((g_duel_network_flags & 2) != 0))
+    if ((player == active_player) || ((g_duel_network_flags & 2) != 0))
     {
       if (spell_fizzled == 1)
       {
@@ -1284,7 +1284,7 @@ restart_main_phase_action_loop:
         }
         else
         {
-          if (player == human_player)
+          if (player == current_player)
           {
             strcpy(unk_00748770, gs_prompt_combat_choose_attackers_0093d990);
           }
@@ -1336,7 +1336,7 @@ restart_main_phase_action_loop:
 
         if (main_phase_selected_card == 0xfffffffe)
         {
-          if (player == nonactive_player)
+          if (player == active_player)
           {
             stop_phase_player = -1;
             stop_phase = stop_phase_player;
@@ -1403,8 +1403,8 @@ restart_main_phase_action_loop:
           update_phase_display(player, current_phase);
           if (!((attacking_creature_count == 0) &&
                 ((player_has_legal_attacker(player) == 0) || (should_skip_phase(player) != 0)) &&
-                ((nonactive_player != stop_phase_player) || (stop_phase != PHASE_DECLARE_ATTACKERS)) &&
-                ((active_player != previous_stop_phase_player) || (previous_stop_phase != PHASE_DECLARE_ATTACKERS)) &&
+                ((active_player != stop_phase_player) || (stop_phase != PHASE_DECLARE_ATTACKERS)) &&
+                ((other_player != previous_stop_phase_player) || (previous_stop_phase != PHASE_DECLARE_ATTACKERS)) &&
                 (((char)g_duel_phase_stop_settings[player].phase_flags[PHASE_DECLARE_ATTACKERS] & (PHASE_STOP_ENABLED | PHASE_STOP_OPPONENT)) == 0)))
           {
             if ((battlefield_extra_ability_flags & 0x2000000) != 0)
@@ -1422,18 +1422,18 @@ restart_main_phase_action_loop:
               phase_response_window_open = 1;
               phase_stop_suppressed = 0;
               s.human_stop_enabled = 0;
-              if (((nonactive_player == human_player) &&
-                   (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)) ||
-                  ((active_player == human_player &&
-                    (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0))))
+              if (((active_player == current_player) &&
+                   (((char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)) ||
+                  ((other_player == current_player &&
+                    (((char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0))))
               {
                 s.human_stop_enabled = 1;
               }
 
               if ((should_skip_phase(player) == 0) &&
                   (((s.human_stop_enabled != 0 ||
-                     ((human_player == previous_stop_phase_player && (previous_stop_phase == current_phase)))) ||
-                    ((human_player == stop_phase_player && (stop_phase == current_phase))))))
+                     ((current_player == previous_stop_phase_player && (previous_stop_phase == current_phase)))) ||
+                    ((current_player == stop_phase_player && (stop_phase == current_phase))))))
               {
                 DAT_00777aa8 = 1;
               }
@@ -1445,7 +1445,7 @@ restart_main_phase_action_loop:
               {
                 sprintf(s.trace_nonphasing_precombat_fast_effects, s__d__Main_Phase_Non_Phasing_playe_0056e6cc, duel_trace_counter++, current_phase);
                 append_to_trace_txt(s.trace_nonphasing_precombat_fast_effects);
-                if (process_response_actions(1 - human_player,
+                if (process_response_actions(1 - current_player,
                                              gs_prompt_main_phase_precombat_cast_spells_008cc710) != 0)
                 {
                   DAT_00777aa8 = s.saved_response_state;
@@ -1459,19 +1459,19 @@ restart_main_phase_action_loop:
               phase_stop_suppressed = 0;
             }
             current_phase = PHASE_DECLARE_ATTACKERS;
-            if (((nonactive_player == human_player) && (nonactive_player == stop_phase_player)) &&
+            if (((active_player == current_player) && (active_player == stop_phase_player)) &&
                 (stop_phase == PHASE_DECLARE_ATTACKERS))
-            {
-              g_duel_phase_stop_settings[nonactive_player].phase_flags[PHASE_DECLARE_ATTACKERS] = (char)g_duel_phase_stop_settings[nonactive_player].phase_flags[PHASE_DECLARE_ATTACKERS] | PHASE_STOP_SUPPRESSED;
-              g_duel_phase_stop_settings[nonactive_player].phase_flags[PHASE_BEFORE_BLOCKING] = (char)g_duel_phase_stop_settings[nonactive_player].phase_flags[PHASE_BEFORE_BLOCKING] | PHASE_STOP_SUPPRESSED;
-              g_duel_phase_stop_settings[nonactive_player].phase_flags[PHASE_AFTER_BLOCKING] = (char)g_duel_phase_stop_settings[nonactive_player].phase_flags[PHASE_AFTER_BLOCKING] | PHASE_STOP_SUPPRESSED;
-            }
-            if ((((g_duel_network_flags & 2) != 0) && (active_player == human_player)) &&
-                ((active_player == previous_stop_phase_player && (previous_stop_phase == PHASE_DECLARE_ATTACKERS))))
             {
               g_duel_phase_stop_settings[active_player].phase_flags[PHASE_DECLARE_ATTACKERS] = (char)g_duel_phase_stop_settings[active_player].phase_flags[PHASE_DECLARE_ATTACKERS] | PHASE_STOP_SUPPRESSED;
               g_duel_phase_stop_settings[active_player].phase_flags[PHASE_BEFORE_BLOCKING] = (char)g_duel_phase_stop_settings[active_player].phase_flags[PHASE_BEFORE_BLOCKING] | PHASE_STOP_SUPPRESSED;
               g_duel_phase_stop_settings[active_player].phase_flags[PHASE_AFTER_BLOCKING] = (char)g_duel_phase_stop_settings[active_player].phase_flags[PHASE_AFTER_BLOCKING] | PHASE_STOP_SUPPRESSED;
+            }
+            if ((((g_duel_network_flags & 2) != 0) && (other_player == current_player)) &&
+                ((other_player == previous_stop_phase_player && (previous_stop_phase == PHASE_DECLARE_ATTACKERS))))
+            {
+              g_duel_phase_stop_settings[other_player].phase_flags[PHASE_DECLARE_ATTACKERS] = (char)g_duel_phase_stop_settings[other_player].phase_flags[PHASE_DECLARE_ATTACKERS] | PHASE_STOP_SUPPRESSED;
+              g_duel_phase_stop_settings[other_player].phase_flags[PHASE_BEFORE_BLOCKING] = (char)g_duel_phase_stop_settings[other_player].phase_flags[PHASE_BEFORE_BLOCKING] | PHASE_STOP_SUPPRESSED;
+              g_duel_phase_stop_settings[other_player].phase_flags[PHASE_AFTER_BLOCKING] = (char)g_duel_phase_stop_settings[other_player].phase_flags[PHASE_AFTER_BLOCKING] | PHASE_STOP_SUPPRESSED;
             }
             if ((should_skip_phase(player) != 0) &&
                 (attacking_creature_count == 0) &&
@@ -1480,12 +1480,12 @@ restart_main_phase_action_loop:
               break;
             }
             update_phase_display(player, current_phase);
-            if (((player == nonactive_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state != 1))
+            if (((player == active_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state != 1))
             {
               strcpy(unk_00748770, gs_prompt_combat_choose_attackers_0093d990);
             }
 
-            break;
+            continue;
           }
           else
           {
@@ -1500,17 +1500,17 @@ restart_main_phase_action_loop:
               phase_response_window_open = 1;
               phase_stop_suppressed = 0;
               s.human_stop_enabled = 0;
-              if (((nonactive_player == human_player) &&
-                   (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)) ||
-                  ((active_player == human_player &&
-                    (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0))))
+              if (((active_player == current_player) &&
+                   (((char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)) ||
+                  ((other_player == current_player &&
+                    (((char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0))))
               {
                 s.human_stop_enabled = 1;
               }
               if ((should_skip_phase(player) == 0) &&
                   (((s.human_stop_enabled != 0 ||
-                     ((human_player == previous_stop_phase_player && (previous_stop_phase == current_phase)))) ||
-                    ((human_player == stop_phase_player && (stop_phase == current_phase))))))
+                     ((current_player == previous_stop_phase_player && (previous_stop_phase == current_phase)))) ||
+                    ((current_player == stop_phase_player && (stop_phase == current_phase))))))
               {
                 DAT_00777aa8 = 1;
               }
@@ -1522,7 +1522,7 @@ restart_main_phase_action_loop:
               {
                 sprintf(s.trace_no_attackers_nonphasing_fast_effects, s__d__Main_Phase__No_attackers__No_0056e70c, duel_trace_counter++, current_phase);
                 append_to_trace_txt(s.trace_no_attackers_nonphasing_fast_effects);
-                if (process_response_actions(1 - human_player,
+                if (process_response_actions(1 - current_player,
                                              gs_prompt_main_phase_precombat_cast_spells_008cc710) != 0)
                 {
                   DAT_00777aa8 = s.saved_response_state;
@@ -1558,17 +1558,17 @@ restart_main_phase_action_loop:
             phase_response_window_open = 1;
             phase_stop_suppressed = 0;
             s.human_stop_enabled = 0;
-            if (((nonactive_player == human_player) &&
-                 (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)) ||
-                ((active_player == human_player &&
-                  (((char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0))))
+            if (((active_player == current_player) &&
+                 (((char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & PHASE_STOP_OPPONENT) != 0)) ||
+                ((other_player == current_player &&
+                  (((char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & PHASE_STOP_ENABLED) != 0))))
             {
               s.human_stop_enabled = 1;
             }
             if ((should_skip_phase(player) == 0) &&
                 (((s.human_stop_enabled != 0 ||
-                   ((human_player == previous_stop_phase_player && (previous_stop_phase == current_phase)))) ||
-                  ((human_player == stop_phase_player && (stop_phase == current_phase))))))
+                   ((current_player == previous_stop_phase_player && (previous_stop_phase == current_phase)))) ||
+                  ((current_player == stop_phase_player && (stop_phase == current_phase))))))
             {
               DAT_00777aa8 = 1;
             }
@@ -1581,7 +1581,7 @@ restart_main_phase_action_loop:
               sprintf(s.trace_nonphasing_postcombat_fast_effects, s__d__Main_Phase_Non_Phasing_playe_0056e760, duel_trace_counter++, current_phase);
               append_to_trace_txt(s.trace_nonphasing_postcombat_fast_effects);
             }
-            if (process_response_actions(1 - human_player,
+            if (process_response_actions(1 - current_player,
                                          gs_prompt_main_phase_postcombat_cast_spells_007ab2d0) != 0)
             {
               DAT_00777aa8 = s.saved_response_state;
@@ -1651,7 +1651,7 @@ restart_main_phase_action_loop:
         unk_008ce508 = -1;
         if (put_card_on_stack(player, main_phase_selected_card, 0) != 0)
         {
-          if (((player == nonactive_player) && ((g_duel_network_flags & 2) == 0)) &&
+          if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) &&
               ((current_phase != PHASE_DECLARE_ATTACKERS && ((global_cards_data[main_phase_selected_internal_card_id].type & 1) == 0))))
           {
             start_ai_decision_search(4, 0x1e);
@@ -1673,7 +1673,7 @@ restart_main_phase_action_loop:
               main_phase_resume_mode = 6;
               if ((global_cards_data[main_phase_selected_internal_card_id].type & 1) != 0)
               {
-                if (player == nonactive_player)
+                if (player == active_player)
                 {
                   DAT_0091c500 = 0;
                 }
@@ -1685,7 +1685,7 @@ restart_main_phase_action_loop:
               }
             }
           }
-          if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) &&
+          if ((((player == other_player) && ((g_duel_network_flags & 2) == 0)) &&
                (g_duel_ai_mode_state != 1)) &&
               (DAT_0072c8e4 == 0))
             goto restart_active_main_phase_ai_prompt;
@@ -1696,7 +1696,7 @@ restart_main_phase_action_loop:
         }
       }
       else if (((current_phase <= PHASE_MAIN1) || (current_phase >= PHASE_MAIN2)) ||
-               ((active_player == player && ((g_duel_network_flags & 2) == 0))))
+               ((other_player == player && ((g_duel_network_flags & 2) == 0))))
       {
         max_x_value = -1;
         unk_00925bb8 = -1;
@@ -1705,10 +1705,10 @@ restart_main_phase_action_loop:
              ((global_cards_data[main_phase_selected_internal_card_id].extra_ability & 0x1000) != 0)) &&
             (dispatch_event_to_single_card(player, main_phase_selected_card, 0x73, s.other_player, -1) != 0))
         {
-          if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) &&
+          if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) &&
               (g_duel_ai_mode_state != 1))
           {
-            stop_phase_player = human_player;
+            stop_phase_player = current_player;
             stop_phase = current_phase;
           }
           if (g_duel_ai_mode_state != 1)
@@ -1720,7 +1720,7 @@ restart_main_phase_action_loop:
           if (s.activation_result != 0)
           {
             if ((((g_duel_network_flags & 2) == 0) && (g_duel_ai_mode_state != 1)) &&
-                ((player == nonactive_player &&
+                ((player == active_player &&
                   ((current_phase != PHASE_DECLARE_ATTACKERS &&
                     ((global_cards_data[global_card_instances[player][main_phase_selected_card].internal_card_id].extra_ability & 0x1000) == 0))))))
             {
@@ -1747,7 +1747,7 @@ restart_main_phase_action_loop:
           }
           if (spell_fizzled == 1)
           {
-            if ((player == active_player) && ((g_duel_network_flags & 2) == 0))
+            if ((player == other_player) && ((g_duel_network_flags & 2) == 0))
             {
               DAT_0093d850 = 1;
               *phase_value = 1;
@@ -1756,7 +1756,7 @@ restart_main_phase_action_loop:
             goto check_main_phase_abort;
           }
           spell_fizzled = 0;
-          if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) &&
+          if ((((player == other_player) && ((g_duel_network_flags & 2) == 0)) &&
                (g_duel_ai_mode_state != 1)) &&
               (DAT_0072c8e4 == 0))
             goto restart_active_main_phase_ai_prompt;
@@ -1767,7 +1767,7 @@ restart_main_phase_action_loop:
         }
         x_value = 0;
       }
-      else if ((((player == nonactive_player) || ((g_duel_network_flags & 2) != 0)) &&
+      else if ((((player == active_player) || ((g_duel_network_flags & 2) != 0)) &&
                 (((global_cards_data[main_phase_selected_internal_card_id].type & 2) != 0 ||
                   ((global_card_instances[player][main_phase_selected_card].state & 0x1000000) != 0)))) &&
                (((global_card_instances[player][main_phase_selected_card].state & 0x10014) == 0 &&
@@ -1827,7 +1827,7 @@ restart_main_phase_action_loop:
           {
             trigger_cause_controller = player;
             trigger_cause = main_phase_selected_card;
-            dispatch_trigger_twice_once_with_each_player_as_reason(human_player, 0xde, gs_attacker_selected_008b32d0, 0);
+            dispatch_trigger_twice_once_with_each_player_as_reason(current_player, 0xde, gs_attacker_selected_008b32d0, 0);
           }
           main_phase_resume_mode = 2;
         }
@@ -1850,14 +1850,14 @@ restart_main_phase_action_loop:
   unk_00712938 = 4;
   DAT_00789714 = 1;
   process_damage_prevention(player);
-  if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) &&
+  if ((((player == other_player) && ((g_duel_network_flags & 2) == 0)) &&
        ((g_duel_ai_mode_state != 1 || (ai_decision_code != 1)))) &&
       (current_phase == PHASE_MAIN2))
   {
     goto finish_main_phase;
   }
 
-  if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (current_phase < PHASE_MAIN2))
+  if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (current_phase < PHASE_MAIN2))
   {
     if ((battlefield_extra_ability_flags & 0x1000000) != 0)
     {
@@ -1865,7 +1865,7 @@ restart_main_phase_action_loop:
     }
     if (choose_attackers_ai(player) != 0)
     {
-      if (active_player == human_player)
+      if (other_player == current_player)
       {
         stop_phase = -1;
         stop_phase_player = stop_phase;
@@ -1957,7 +1957,7 @@ restart_main_phase_action_loop:
       attacking_creature_count = 1;
     }
   }
-  if (((player == nonactive_player) || ((g_duel_network_flags & 2) != 0)) && (current_phase < PHASE_MAIN2))
+  if (((player == active_player) || ((g_duel_network_flags & 2) != 0)) && (current_phase < PHASE_MAIN2))
   {
     if ((should_skip_phase(player) != 0) &&
         (attacking_creature_count == 0) &&
@@ -1970,7 +1970,7 @@ restart_main_phase_action_loop:
       choose_attackers_ai(player);
     }
     if ((update_attacker_count_and_check_combat_done(player) != 0) &&
-        (((player == active_player) && ((g_duel_network_flags & 2) == 0)) ||
+        (((player == other_player) && ((g_duel_network_flags & 2) == 0)) ||
          (human_has_phase_stop(PHASE_DECLARE_ATTACKERS) == 0)))
       goto advance_to_postcombat_main;
     if (attacking_creature_count == 0)
@@ -2043,10 +2043,10 @@ resolve_combat_if_needed:
   C_dispatch_event_raw(0x1a);
   mark_blocked_attackers(player);
   if (((((0 < attacking_creature_count) ||
-         (((player == nonactive_player) || ((g_duel_network_flags & 2) != 0)) &&
+         (((player == active_player) || ((g_duel_network_flags & 2) != 0)) &&
           (human_has_phase_stop(PHASE_AFTER_BLOCKING) != 0))) &&
         ((land_can_be_played & 8U) == 0))) ||
-      (((player == nonactive_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state == 1)))
+      (((player == active_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state == 1)))
   {
     do
     {
@@ -2095,7 +2095,7 @@ resolve_combat_if_needed:
   }
 
 advance_to_postcombat_main:
-  if (((player == nonactive_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state != 1))
+  if (((player == active_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state != 1))
   {
     if (current_phase < PHASE_MAIN2)
     {
@@ -2115,7 +2115,7 @@ advance_to_postcombat_main:
       FUN_004b5fc9(s__Give_up__you_re_doomed___0056e8ec);
     }
   }
-  if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (current_phase != PHASE_MAIN2))
+  if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (current_phase != PHASE_MAIN2))
   {
     current_phase = PHASE_MAIN2;
     update_phase_display(player, current_phase);

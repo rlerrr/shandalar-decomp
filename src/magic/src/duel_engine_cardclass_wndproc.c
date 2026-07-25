@@ -3634,15 +3634,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                      (int)(char)global_cards_data[s.command_unused_3a0].cc[0]);
         produce_mana(s.player, 0,
                      abs((int)(char)global_cards_data[s.command_unused_3a0].cc[1]));
-        if ((g_duel_network_flags & 2) != 0 && s.player == nonactive_player)
+        if ((g_duel_network_flags & 2) != 0 && s.player == active_player)
         {
           for (s.scratch = 0; s.scratch < 8; s.scratch++)
           {
             g_xpool_network_packet.raw_mana_available[s.scratch] =
-                raw_mana_available[nonactive_player][s.scratch];
+                raw_mana_available[active_player][s.scratch];
           }
           g_xpool_network_packet.packet_type = 0x11;
-          TENTATIVE_send_network_result(nonactive_player, 0x11);
+          TENTATIVE_send_network_result(active_player, 0x11);
         }
         copy_mana_pool_to_display();
         notify_duel_action(0, 0xff);
@@ -3660,12 +3660,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x264:
       if (g_duel_startup_state != 0)
       {
-        s.command_saved_phase_flags = g_duel_phase_stop_settings[human_player].phase_flags[current_phase];
-        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] =
-            (unsigned char)((int)(char)g_duel_phase_stop_settings[human_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
+        s.command_saved_phase_flags = g_duel_phase_stop_settings[current_player].phase_flags[current_phase];
+        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
+            (unsigned char)((int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
         CARDCLASS_TOKEN_STATUS(s.player, s.card) |= 8;
         kill_card(s.player, s.card, KILL_DESTROY);
-        g_duel_phase_stop_settings[human_player].phase_flags[current_phase] =
+        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
             s.command_saved_phase_flags;
         notify_duel_action(0, 0xff);
       }

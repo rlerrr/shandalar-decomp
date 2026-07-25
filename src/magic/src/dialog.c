@@ -778,7 +778,7 @@ int do_dialog(int who_chooses,
   int option_index;
   unsigned int at_start_of_line;
 
-  if (who_chooses == active_player && (g_duel_network_flags & 2) != 0)
+  if (who_chooses == other_player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(who_chooses, 0xd);
     ai_choice = DAT_008b293c;
@@ -796,7 +796,7 @@ int do_dialog(int who_chooses,
 
   strcpy(displayed_options, options);
   strcpy(unk_00748770, "");
-  if (who_chooses == active_player)
+  if (who_chooses == other_player)
   {
     sprintf(unk_00748770, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
     strcat(unk_00748770, "\n\n");
@@ -829,7 +829,7 @@ int do_dialog(int who_chooses,
     TENTATIVE_reassess_all_cards(0, 0xff);
   }
 
-  if (who_chooses == nonactive_player && g_duel_network_state == 0)
+  if (who_chooses == active_player && g_duel_network_state == 0)
   {
     dialog_mode = 1;
   }
@@ -841,14 +841,14 @@ int do_dialog(int who_chooses,
   dialog_result =
       raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, unk_00748770, dialog_mode);
 
-  if (who_chooses == nonactive_player && (g_duel_network_flags & 2) != 0)
+  if (who_chooses == active_player && (g_duel_network_flags & 2) != 0)
   {
     unk_008b2938 = '\r';
     DAT_008b293c = dialog_result;
     TENTATIVE_send_network_result(who_chooses, 0xd);
   }
 
-  if (who_chooses == nonactive_player && g_duel_network_state == 0)
+  if (who_chooses == active_player && g_duel_network_state == 0)
   {
     ai_choice = dialog_result;
   }

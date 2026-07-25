@@ -383,7 +383,7 @@ int card_shivan_dragon(int player, int card, event_t event)
   {
     if (has_mana(player, COLOR_RED, 1) != 0)
     {
-      if (human_player == player)
+      if (current_player == player)
       {
         charge_mana(player, 4, -1);
         if (x_value < 1)
@@ -470,7 +470,7 @@ int card_shivan_dragon(int player, int card, event_t event)
   {
     if (event == EVENT_SHOULD_AI_PLAY)
     {
-      if (active_player == player)
+      if (other_player == player)
       {
         ai_modifier += (basiclandtypes_controlled[player][COLOR_RED] * 3 + 3) * 4;
       }
@@ -524,9 +524,9 @@ int card_dragon_whelp(int player, int card, event_t event)
     if (result != 0)
     {
       x_value = 0;
-      if (player == human_player)
+      if (player == current_player)
       {
-        if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) || ((PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff0000) == 0x30000)) || unk_00715fb0 != 1)
+        if ((((player == other_player) && ((g_duel_network_flags & 2) == 0)) || ((PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff0000) == 0x30000)) || unk_00715fb0 != 1)
         {
           max_x_value = -1;
         }
@@ -632,7 +632,7 @@ int card_dragon_whelp(int player, int card, event_t event)
     }
     if (event == EVENT_SHOULD_AI_PLAY)
     {
-      if (player == active_player)
+      if (player == other_player)
       {
         ai_modifier += basiclandtypes_controlled[player][COLOR_RED] * 0xc;
       }
@@ -684,7 +684,7 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        if ((active_player == player) && ((g_duel_network_flags & 2) == 0))
+        if ((other_player == player) && ((g_duel_network_flags & 2) == 0))
         {
           PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
         }
@@ -1155,7 +1155,7 @@ int card_frozen_shade(int player, int card, event_t event)
   {
     if (has_mana(player, COLOR_BLACK, 1) != 0)
     {
-      if (player == human_player)
+      if (player == current_player)
       {
         charge_mana(player, COLOR_BLACK, -1);
         if (x_value < 1)
@@ -1302,7 +1302,7 @@ int card_wall_of_water(int player, int card, event_t event)
   {
     if (has_mana(player, COLOR_BLUE, 1) != 0)
     {
-      if (player == human_player)
+      if (player == current_player)
       {
         charge_mana(player, COLOR_BLUE, -1);
         if (x_value < 1)
@@ -1388,7 +1388,7 @@ int card_wall_of_water(int player, int card, event_t event)
   {
     if (event == EVENT_SHOULD_AI_PLAY)
     {
-      if (player == active_player)
+      if (player == other_player)
       {
         ai_modifier += basiclandtypes_controlled[player][COLOR_BLUE] * 0xc;
       }
@@ -1787,7 +1787,7 @@ int card_stone_giant(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).targets[0].player = selected_target.player;
       PLAYER_CARD_INSTANCE(player, card).targets[0].card = selected_target.card;
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-      if ((active_player == player) && ((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).token_status & 0x20) != 0))
+      if ((other_player == player) && ((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).token_status & 0x20) != 0))
       {
         ai_modifier += -0x60;
       }
@@ -2117,13 +2117,13 @@ int card_verduran_enchantress(int player, int card, event_t event)
 {
   int library_position;
 
-  if ((((((trigger_condition == TRIGGER_SPELL_CAST) && (affected_card == card)) && (affected_card_controller == player)) && ((current_turn == player) && (human_player == player))) && (((PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0) && ((affected_card_controller == player) && (PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id != -1)))) && ((global_cards_data[PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id]
+  if ((((((trigger_condition == TRIGGER_SPELL_CAST) && (affected_card == card)) && (affected_card_controller == player)) && ((current_turn == player) && (current_player == player))) && (((PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0) && ((affected_card_controller == player) && (PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id != -1)))) && ((global_cards_data[PLAYER_CARD_INSTANCE(trigger_cause_controller, trigger_cause).internal_card_id]
                                                                                                                                                                                                                                                                                                                                                                                                 .type &
                                                                                                                                                                                                                                                                                                                                                                                             TYPE_ENCHANTMENT) != 0))
   {
     if (event == EVENT_TRIGGER)
     {
-      if ((nonactive_player == player) || ((g_duel_network_flags & 2) != 0))
+      if ((active_player == player) || ((g_duel_network_flags & 2) != 0))
       {
         event_result |= RESOLVE_TRIGGER_OPTIONAL;
       }
@@ -2178,7 +2178,7 @@ int card_giant_spider(int player, int card, event_t event)
     {
       if (affected_card_controller == player)
       {
-        if (human_player == player)
+        if (current_player == player)
         {
           event_result &= ~KEYWORD_FLYING;
         }
@@ -2335,7 +2335,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
   }
   else
   {
-    if ((event == EVENT_SHOULD_AI_PLAY) && (player == human_player) && (active_player == player) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0))
+    if ((event == EVENT_SHOULD_AI_PLAY) && (player == current_player) && (other_player == player) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0))
     {
       ai_modifier += 0x18;
     }
@@ -2371,7 +2371,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
   } s;
 
   s.unused = 0;
-  if (nonactive_player == player || (g_duel_network_flags & 2) != 0)
+  if (active_player == player || (g_duel_network_flags & 2) != 0)
   {
     if (g_duel_ai_mode_state != 1)
     {
@@ -2853,7 +2853,7 @@ int card_phantasmal_forces(int player, int card, event_t event)
 {
   if (((event == EVENT_SETUP_UPKEEP_COSTS) && (affected_card == card)) && (affected_card_controller == player))
   {
-    if ((human_player == player) && (player == unk_00742f60))
+    if ((current_player == player) && (player == unk_00742f60))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 1;
       PLAYER_CARD_INSTANCE(player, card).upkeep_blue += 1;
@@ -2885,7 +2885,7 @@ int card_force_of_nature(int player, int card, event_t event)
     {
       if (affected_card_controller == player)
       {
-        if (human_player == player)
+        if (current_player == player)
         {
           if (unk_00742f60 == player)
           {
@@ -2971,7 +2971,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
   else if ((event == EVENT_ACTIVATE) && ((instance->state & STATE_TAPPED) == 0))
   {
     available_colors = (unsigned int)(unsigned char)instance->damage_source_card;
-    if ((((player == active_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
+    if ((((player == other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
       choice_hint = -1;
       current_color = 1;
@@ -3017,7 +3017,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
         undeclare_mana_available_hex(player, (unsigned char)instance->damage_source_card, 1);
         instance->state |= STATE_TAPPED;
         produced_mana_color = color;
-        if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
+        if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
         {
           load_text("prompts.txt", "BIRDS_OF_PARADISE2");
           if (color == COLOR_BLACK)
@@ -3211,11 +3211,11 @@ int card_nether_shadow(int player, int card, event_t event)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).state & 0x1000) != 0)
     {
-      hand_player = active_player;
+      hand_player = other_player;
     }
     else
     {
-      hand_player = nonactive_player;
+      hand_player = active_player;
     }
 
     hand_card = add_card_to_hand(hand_player, unk_008a9194);
@@ -3444,7 +3444,7 @@ int card_thicket_basilisk(int player, int card, event_t event)
   else if (event == 0x1a)
   {
     opponent = 1 - player;
-    if ((player == human_player) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x44) != 0))
+    if ((player == current_player) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x44) != 0))
     {
       if (PLAYER_CARD_INSTANCE(player, card).blocking == -1)
       {
@@ -3465,7 +3465,7 @@ int card_thicket_basilisk(int player, int card, event_t event)
       }
     }
 
-    if ((player != human_player) && (PLAYER_CARD_INSTANCE(player, card).blocking != -1))
+    if ((player != current_player) && (PLAYER_CARD_INSTANCE(player, card).blocking != -1))
     {
       grouped_blocker = (char)PLAYER_CARD_INSTANCE(opponent, (int)(char)PLAYER_CARD_INSTANCE(player, card).blocking).blocking;
       if (grouped_blocker == -1)

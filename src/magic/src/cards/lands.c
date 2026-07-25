@@ -81,7 +81,7 @@ int card_gem_bazaar(int player, int card, event_t event)
     {
       (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(FUN_00464a84(player, 5) + 1));
     }
-    else if (player == nonactive_player)
+    else if (player == active_player)
     {
       (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(internal_rand(5) + 1));
     }
@@ -163,7 +163,7 @@ int card_library_of_alexandria(int player, int card, event_t event)
       s.default_action = 0;
     }
 
-    if (((active_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
+    if (((other_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
     {
       s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
     }

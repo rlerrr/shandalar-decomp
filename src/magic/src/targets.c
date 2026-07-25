@@ -280,7 +280,7 @@ int run_target_selection_modal(int who_chooses,
   strcpy(s.request.prompt, s.prompt_buffer);
   s.request.allow_cancel = allow_cancel;
 
-  if (nonactive_player == who_chooses || (g_duel_network_flags & 2) == 0)
+  if (active_player == who_chooses || (g_duel_network_flags & 2) == 0)
   {
     if (DAT_0093d840 != 0)
     {

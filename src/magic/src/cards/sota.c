@@ -36,7 +36,7 @@ int card_basalt_monolith(int player, int card, event_t event)
     {
       result = 0;
     }
-    if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
+    if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       result = 0;
     }
@@ -109,7 +109,7 @@ int card_copper_tablet(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     if ((current_phase == PHASE_UPKEEP) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0) &&
-        (unk_00742f60 == human_player) &&
+        (unk_00742f60 == current_player) &&
         (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
          ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0)))
     {
@@ -128,7 +128,7 @@ int card_copper_tablet(int player, int card, event_t event)
   }
   if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
-    damage_player(human_player, 1, card_on_stack_controller, card_on_stack);
+    damage_player(current_player, 1, card_on_stack_controller, card_on_stack);
   }
   if (event == EVENT_CLEANUP)
   {
@@ -159,14 +159,14 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (current_phase == 4 && player == current_turn && player == human_player && (instance->state & STATE_TAPPED) == 0 && (((instance->untap_status & 3) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0) && has_mana(player, 7, 2) != 0)
+    if (current_phase == 4 && player == current_turn && player == current_player && (instance->state & STATE_TAPPED) == 0 && (((instance->untap_status & 3) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0) && has_mana(player, 7, 2) != 0)
     {
       can_activate = real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 1 - player, 0x200, TYPE_LAND, 0, 0,
                                            get_protections_from(player, card), 0, 0, chosen_land_type,
                                            -1, -1, -1, 0x100, 0, 0);
       if (can_activate != 0)
       {
-        if (player == nonactive_player || (g_duel_network_flags & 2) != 0)
+        if (player == active_player || (g_duel_network_flags & 2) != 0)
         {
           return 1;
         }
@@ -182,7 +182,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE && affected_card == card && affected_card_controller == player && !spell_fizzled)
   {
-    if (player == 1 - human_player && (g_duel_network_flags & 2) == 0)
+    if (player == 1 - current_player && (g_duel_network_flags & 2) == 0)
     {
       if (FUN_00466e6d(player, card, 1 - player))
       {
@@ -426,14 +426,14 @@ int card_icy_manipulator(int player, int card, event_t event)
         {
           instance->targets[0] = target;
           instance->number_of_targets = 1;
-          if (active_player == player)
+          if (other_player == player)
           {
             target_instance = &PLAYER_CARD_INSTANCE(target.player, target.card);
             if ((global_cards_data[target_instance->internal_card_id].type & TYPE_LAND) != 0)
             {
               ai_modifier -= 0x18;
             }
-            if (target.player == active_player)
+            if (target.player == other_player)
             {
               ai_modifier -= 0x60;
             }
@@ -502,7 +502,7 @@ int card_jade_statue(int player, int card, event_t event)
   {
     event_result = 1;
   }
-  if ((((trigger_condition == 0xdc) && (current_phase == 0x15) && (current_turn == human_player)) || ((trigger_condition == 0xdd) && (current_phase == 0x17) && (current_turn != human_player))) && card == card_on_stack && player == card_on_stack_controller && instance->info_slot == 0 && (instance->state & STATE_TAPPED) == 0 && trigger_cause_controller == player && trigger_cause == card)
+  if ((((trigger_condition == 0xdc) && (current_phase == 0x15) && (current_turn == current_player)) || ((trigger_condition == 0xdd) && (current_phase == 0x17) && (current_turn != current_player))) && card == card_on_stack && player == card_on_stack_controller && instance->info_slot == 0 && (instance->state & STATE_TAPPED) == 0 && trigger_cause_controller == player && trigger_cause == card)
   {
     if (!has_mana(player, 7, 2))
     {

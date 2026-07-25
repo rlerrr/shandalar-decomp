@@ -333,7 +333,7 @@ int card_demonic_hordes(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
     }
 
-    if (event == EVENT_SETUP_UPKEEP_COSTS && card == affected_card && player == affected_card_controller && player == human_player && unk_00742f60 == player)
+    if (event == EVENT_SETUP_UPKEEP_COSTS && card == affected_card && player == affected_card_controller && player == current_player && unk_00742f60 == player)
     {
       instance->upkeep_flags |= 1;
       instance->upkeep_black += 3;
@@ -365,7 +365,7 @@ int card_demonic_hordes(int player, int card, event_t event)
                                 0) != 0)
       {
         load_text("promptsX1.txt", "DEMONIC_HORDES_2");
-        if (human_player == player || (g_duel_network_flags & 2) != 0)
+        if (current_player == player || (g_duel_network_flags & 2) != 0)
         {
           C_real_select_target(player,
                                2,
@@ -608,7 +608,7 @@ int card_granite_gargoyle(int player, int card, event_t event)
       result = has_mana(player, COLOR_RED, 1);
       if (result != 0)
       {
-        if (human_player == player)
+        if (current_player == player)
         {
           charge_mana(player, 4, -1);
           if (x_value < 1)
@@ -693,7 +693,7 @@ int card_granite_gargoyle(int player, int card, event_t event)
 
       if (event == EVENT_SHOULD_AI_PLAY)
       {
-        if (active_player == player)
+        if (other_player == player)
         {
           ai_modifier += (basiclandtypes_controlled[player][COLOR_RED] * 3 + 3) * 4;
         }
@@ -801,7 +801,7 @@ int card_nettling_imp(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((instance->state & 0x20010) == 0 && player != human_player && current_phase < 0x1a && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, -1, 0xffffffff, 0xffffffff, 0x80, 0, 0x1000))
+    if ((instance->state & 0x20010) == 0 && player != current_player && current_phase < 0x1a && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, -1, 0xffffffff, 0xffffffff, 0x80, 0, 0x1000))
     {
       return 1;
     }
@@ -843,7 +843,7 @@ int card_nettling_imp(int player, int card, event_t event)
         instance->targets[0] = target;
         instance->number_of_targets = 1;
         instance->state |= STATE_TAPPED;
-        if (player == active_player)
+        if (player == other_player)
         {
           ai_modifier += 0x30;
         }
@@ -926,7 +926,7 @@ int card_rock_hydra(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
     set_special_counters(player, card, x_value);
-    if (active_player == player)
+    if (other_player == player)
     {
       ai_modifier += (x_value + x_value * 2 - 9) << 3;
     }
@@ -950,9 +950,9 @@ int card_rock_hydra(int player, int card, event_t event)
   {
     if ((((land_can_be_played & 4) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = has_effect_source_type(player, card, 0xffffffff)) == 0)))
     {
-      if (((current_phase == 4) && (player == human_player) && (player == unk_00742f60)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
+      if (((current_phase == 4) && (player == current_player) && (player == unk_00742f60)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
       {
-        if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) && (hand_count[player] - *(int *)((char *)basiclandtypes_controlled + player * 0x20 + 0x10) == 3))
+        if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (hand_count[player] - *(int *)((char *)basiclandtypes_controlled + player * 0x20 + 0x10) == 3))
         {
           unk_008b3270 |= 3;
         }
@@ -1200,7 +1200,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
 
   instance = &PLAYER_CARD_INSTANCE(player, card);
 
-  if (trigger_condition == 0xdf && affected_card == card && affected_card_controller == player && current_turn == player && player != human_player && player == trigger_cause_controller && card == trigger_cause)
+  if (trigger_condition == 0xdf && affected_card == card && affected_card_controller == player && current_turn == player && player != current_player && player == trigger_cause_controller && card == trigger_cause)
   {
     if (event == 0x7d)
     {
@@ -1677,7 +1677,7 @@ int card_veteran_bodyguard(int player, int card, event_t event)
     }
   }
 
-  if (trigger_condition == TRIGGER_END_DAMAGE_PREV && PLAYER_CARD_INSTANCE(player, card).eot_toughness == 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && affected_card == card && affected_card_controller == player && current_turn == player && player != human_player && is_in_play(player, card) && (current_phase == 0x1a || current_phase == 0x19))
+  if (trigger_condition == TRIGGER_END_DAMAGE_PREV && PLAYER_CARD_INSTANCE(player, card).eot_toughness == 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && affected_card == card && affected_card_controller == player && current_turn == player && player != current_player && is_in_play(player, card) && (current_phase == 0x1a || current_phase == 0x19))
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot = event;
     if (event == EVENT_TRIGGER)

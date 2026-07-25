@@ -110,7 +110,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
   } s;
   int result;
 
-  if ((player == active_player) &&
+  if ((player == other_player) &&
       ((g_duel_network_flags & 2) != 0) &&
       (unk_00742fc4 != 0))
   {
@@ -118,7 +118,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     return g_network_result_value;
   }
 
-  if (((player == active_player) &&
+  if (((player == other_player) &&
        ((g_duel_network_flags & 2) == 0)) ||
       (g_duel_ai_mode_state == 1))
   {
@@ -133,7 +133,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     }
 
     unk_00939340 = RandomIntLessThan(s.visible_count);
-    if (player != nonactive_player)
+    if (player != active_player)
     {
       if (g_duel_ai_mode_state == 1)
       {
@@ -338,7 +338,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     result = (int)FUN_0055837e(card_ids, card_count, title, require_card_click, (char *)out_selection);
   }
 
-  if ((player == nonactive_player) &&
+  if ((player == active_player) &&
       ((g_duel_network_flags & 2) != 0))
   {
     g_network_result_value = result;

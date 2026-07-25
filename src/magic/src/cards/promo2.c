@@ -19,8 +19,8 @@ int card_blaze_of_glory(int player, int card, event_t event)
     return (current_phase == PHASE_BEFORE_BLOCKING && real_target_available((int *)0,
                                                                             TARGET_SCAN_DIRECT,
                                                                             player,
-                                                                            1 - human_player,
-                                                                            1 - human_player,
+                                                                            1 - current_player,
+                                                                            1 - current_player,
                                                                             0x200,
                                                                             TYPE_CREATURE,
                                                                             0,
@@ -43,8 +43,8 @@ int card_blaze_of_glory(int player, int card, event_t event)
   {
     load_text("promptsX1.txt", "BLAZE_OF_GLORY");
     if (C_real_select_target(player,
-                             1 - human_player,
-                             1 - human_player,
+                             1 - current_player,
+                             1 - current_player,
                              TARGET_ZONE_IN_PLAY,
                              TYPE_CREATURE,
                              TYPE_NONE,
@@ -81,8 +81,8 @@ int card_blaze_of_glory(int player, int card, event_t event)
                                selected_target.card,
                                (char *)0,
                                player,
-                               1 - human_player,
-                               1 - human_player,
+                               1 - current_player,
+                               1 - current_player,
                                TARGET_ZONE_IN_PLAY,
                                TYPE_CREATURE,
                                TYPE_NONE,
@@ -283,7 +283,7 @@ int card_natural_selection(int player, int card, event_t event)
       instance->targets[0].player = target.player;
       instance->targets[0].card = target.card;
       instance->number_of_targets = 1;
-      if (player == active_player)
+      if (player == other_player)
       {
         ai_modifier += 0x18;
       }
@@ -307,7 +307,7 @@ int card_natural_selection(int player, int card, event_t event)
       }
     }
 
-    if ((player == human_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
+    if ((player == current_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
     {
       if (count > 0)
       {
@@ -369,7 +369,7 @@ int card_psionic_blast(int player, int card, event_t event)
   {
     load_text("promptsX1.txt", "PSIONIC_BLAST");
     FUN_0054ac4d(player, card, 4);
-    if (player == active_player)
+    if (player == other_player)
     {
       ai_modifier += (3 - PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).toughness) * 0xc;
     }
