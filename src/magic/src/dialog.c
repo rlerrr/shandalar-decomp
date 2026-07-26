@@ -46,6 +46,8 @@ dialog_context_t *g_big_card_choice_dialog_context;
 RECT g_big_card_choice_small_card_rect;
 // GLOBAL: MAGIC 0x006f6e20
 int g_big_card_choice_state_006f6e20;
+// GLOBAL: MAGIC 0x006f6e28
+char g_big_card_choice_window_text_buffer[0xc8];
 // GLOBAL: MAGIC 0x008950b4
 int g_big_card_choice_timeout_ms;
 

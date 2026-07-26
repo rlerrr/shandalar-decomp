@@ -141,6 +141,7 @@ int register_MAGICGAME_AttackClass(LPCSTR class_name);
 void destroy_MAGICGAME_AttackClass(LPCSTR class_name);
 int register_MAGICGAME_SpellChainClass(LPCSTR class_name);
 int register_MAGICGAME_ScrollbarClass(LPCSTR class_name);
+int register_MAGICGAME_BigCardChoiceClass(LPCSTR class_name);
 void destroy_MAGICGAME_ScrollbarClass(LPCSTR class_name);
 int register_MAGIC_TellUserClass(LPCSTR class_name);
 void destroy_MAGIC_TellUserClass(LPCSTR class_name);
@@ -674,19 +675,6 @@ int register_MAGICTHEME_IconButtonClass(LPCSTR class_name)
 
   SET_DUEL_WNDCLASS(wndclass, 8, wndproc_MAGICTHEME_IconButtonClass, 8,
                     (HICON)0, (HBRUSH)0x10, class_name);
-  atom = RegisterClassA(&wndclass);
-  return atom != 0;
-}
-
-// FUNCTION: MAGIC 0x00507e37
-// FUNCTION: SHANDALAR 0x004c6b35
-int register_MAGICGAME_BigCardChoiceClass(LPCSTR class_name)
-{
-  ATOM atom;
-  WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0, wndproc_MAGICGAME_BigCardChoiceClass, 0x14,
-                    LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0x6, class_name);
   atom = RegisterClassA(&wndclass);
   return atom != 0;
 }
@@ -1309,13 +1297,6 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
-}
-
-// FUNCTION: MAGIC 0x00507f42
-// FUNCTION: SHANDALAR 0x004c6c40
-LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 // FUNCTION: MAGIC 0x00507cfd
