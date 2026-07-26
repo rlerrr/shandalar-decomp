@@ -1,6 +1,9 @@
 #include <string.h>
 #include "../game_support.h"
+#include "../global_duel_ui_ids.h"
 #include "../global_strings.h"
+
+int get_card_display_pic_num(int card_id, int player, int card);
 
 // FUNCTION: MAGIC 0x0053aa50
 // FUNCTION: SHANDALAR 0x00488ca0
@@ -185,6 +188,34 @@ int card_nafs_asp(int player, int card, event_t event)
 {
 }
 
+// FUNCTION: MAGIC 0x0053dfb5
+int FUN_0053dfb5(int player, int card)
+{
+  struct
+  {
+    int target_player;
+    int effect_card;
+  } s;
+
+  s.target_player = (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+  s.effect_card = add_card_to_hand(s.target_player, DAT_008a918c);
+  if (s.effect_card != -1)
+  {
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).state |= STATE_IN_PLAY;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).token_status |= STATUS_OBLITERATED;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).info_slot = 1;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).color = PLAYER_CARD_INSTANCE(player, card).color;
+    *(unsigned int *)&PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).display_pic_csv_id =
+        (get_card_display_pic_num(0x1bc, player, card) << 16) | 0x1bc;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).damage_source_player = (char)player;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).damage_source_card = card;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).damage_target_player = (char)s.target_player;
+    PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).damage_target_card = -1;
+  }
+
+  return 0;
+}
+
 // FUNCTION: MAGIC 0x0053e216
 // FUNCTION: SHANDALAR 0x0048c465
 int card_giant_tortoise(int player, int card, event_t event)
@@ -226,7 +257,7 @@ int card_personal_incarnation(int player, int card, event_t event)
 
   if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
 
@@ -376,7 +407,7 @@ int card_shivan_dragon(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e503e(0);
+    load_recorded_action_code(0);
     return 0;
   }
   else if (event == EVENT_ACTIVATE)
@@ -514,7 +545,7 @@ int card_dragon_whelp(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e503e(0);
+    load_recorded_action_code(0);
     result = 0;
   }
   else if (event == EVENT_ACTIVATE)
@@ -833,7 +864,7 @@ int card_gaea_s_liege(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else if (event == EVENT_ACTIVATE)
   {
@@ -1014,7 +1045,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
   }
   else if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
   else if (event == EVENT_ACTIVATE && (land_can_be_played & 0x200) != 0)
@@ -1147,7 +1178,7 @@ int card_frozen_shade(int player, int card, event_t event)
 
   if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e503e(0);
+    load_recorded_action_code(0);
     return 0;
   }
 
@@ -1295,7 +1326,7 @@ int card_wall_of_water(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e503e(0);
+    load_recorded_action_code(0);
     return 0;
   }
   else if (event == EVENT_ACTIVATE)
@@ -1467,7 +1498,7 @@ int card_northern_paladin(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     result = 0;
   }
   else if (event == EVENT_ACTIVATE)
@@ -1637,7 +1668,7 @@ int card_royal_assassin(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
@@ -1749,7 +1780,7 @@ int card_stone_giant(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
   else if ((event == EVENT_ACTIVATE) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0))
@@ -1882,7 +1913,7 @@ int card_dwarven_warriors(int player, int card, event_t event)
   }
   else if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else if ((event == EVENT_ACTIVATE) && ((instance->state & 0x20010) == 0))
   {
@@ -2020,7 +2051,7 @@ int card_samite_healer(int player, int card, event_t event)
 
   if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
 
@@ -2211,7 +2242,7 @@ int card_zombie_master(int player, int card, event_t event)
 
   if (((event == EVENT_GRAVEYARD_FROM_PLAY) && (affected_card == card)) && (player == affected_card_controller))
   {
-    FUN_0055117d(FUN_005493a6, -1);
+    dispatch_three_arg_callback_to_cards_in_play(FUN_005493a6, -1);
     TENTATIVE_reassess_all_cards(0, 0xff);
   }
 
@@ -2303,7 +2334,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(1);
+    load_recorded_action_target(1);
     result = 0;
   }
   else if (event == EVENT_ACTIVATE)
@@ -2421,11 +2452,11 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
       else
         unk_00939340 = 1;
 
-      FUN_004e4f11();
+      record_ai_action_selection();
     }
     else
     {
-      FUN_004e5089();
+      replay_ai_action_selection();
     }
 
     if (unk_00939340 == 0)
@@ -2466,11 +2497,11 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
       {
         unk_00939340 = 0;
         unk_00925bb8 = ((unk_00742fcc == 0) ? 0 : 0x100) | 0xff;
-        FUN_004e4f11();
+        record_ai_action_selection();
       }
       else
       {
-        FUN_004e5089();
+        replay_ai_action_selection();
       }
     }
   }
@@ -2561,7 +2592,7 @@ int card_pirate_ship(int player, int card, event_t event)
 
   if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(1);
+    load_recorded_action_target(1);
     return 0;
   }
 
@@ -2666,7 +2697,7 @@ int card_orcish_artillery(int player, int card, event_t event)
 
   if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(1);
+    load_recorded_action_target(1);
     return 0;
   }
 
@@ -2725,7 +2756,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
   if (event == EVENT_ACTIVATE && (land_can_be_played & 0x200) != 0)
   {
     result = FUN_0054276d(player, card, EVENT_ACTIVATE, 0, 0);
-    FUN_005514cd(player, card, 1);
+    remove_special_counters(player, card, 1);
     return result;
   }
 
@@ -3121,7 +3152,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
       TENTATIVE_reassess_all_cards(0, 0x20);
       load_text("prompts.txt", "LORD_OF_THE_PIT");
 
-      creature_to_sacrifice = FUN_00551921(player);
+      creature_to_sacrifice = choose_creature_to_sacrifice(player);
 
       PLAYER_CARD_INSTANCE(player, card).state &= 0xffefffff;
       if (creature_to_sacrifice != -1)
@@ -3340,7 +3371,7 @@ int card_ley_druid(int player, int card, event_t event)
 
   if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
 

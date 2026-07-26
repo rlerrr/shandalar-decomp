@@ -125,7 +125,7 @@ int card_kormus_bell(int player, int card, event_t event)
     {
       land_can_be_played |= 0x10000;
     }
-    else if (FUN_00484581(event_result, instance->info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, FUN_005180ed, player) == -1)
+    else if (is_basic_land_internal_card_id_of_color(event_result, instance->info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, FUN_005180ed, player) == -1)
     {
       effect_card = create_legacy_effect(player, card, unk_0093933c, affected_card_controller, affected_card);
       if (effect_card != -1)
@@ -202,7 +202,7 @@ int card_living_lands(int player, int card, event_t event)
     {
       land_can_be_played |= 0x10000;
     }
-    else if (FUN_00484581(event_result, instance->info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, FUN_005180ed, player) == -1)
+    else if (is_basic_land_internal_card_id_of_color(event_result, instance->info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, FUN_005180ed, player) == -1)
     {
       effect_card = create_legacy_effect(player, card, unk_0093933c, affected_card_controller, affected_card);
       if (effect_card != -1)
@@ -351,11 +351,11 @@ int card_animate_dead(int player, int card, event_t event)
     if (g_duel_ai_mode_state == 1)
     {
       unk_00939340 = internal_rand(2);
-      FUN_004e4f11();
+      record_ai_action_selection();
     }
     else
     {
-      FUN_004e5089();
+      replay_ai_action_selection();
     }
     PLAYER_CARD_INSTANCE(player, card).info_slot = unk_00939340;
     return unk_007a7c58[unk_00939340] & TYPE_CREATURE;
@@ -447,7 +447,7 @@ int card_animate_dead(int player, int card, event_t event)
         }
 
         graveyard_data[3] =
-            FUN_004b41f2(player, global_graveyard_slots[chosen_graveyard], allowed, 500, prompt, 0, &gs_cancel_008a8c20);
+            select_card_from_graveyard(player, global_graveyard_slots[chosen_graveyard], allowed, 500, prompt, 0, &gs_cancel_008a8c20);
         if (graveyard_data[3] == -1)
         {
           spell_fizzled = 1;
@@ -502,7 +502,7 @@ int card_animate_dead(int player, int card, event_t event)
     }
     else
     {
-      FUN_004b15f7(chosen_graveyard, graveyard_data[3]);
+      remove_card_from_graveyard(chosen_graveyard, graveyard_data[3]);
       PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
       process_card_enters_play((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                    PLAYER_CARD_INSTANCE(player, card).damage_target_card);
@@ -1019,7 +1019,7 @@ int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type
       }
       else
       {
-        FUN_0055117d(FUN_0051c73d, -1);
+        dispatch_three_arg_callback_to_cards_in_play(FUN_0051c73d, -1);
       }
     }
   }
@@ -1556,7 +1556,7 @@ int card_cursed_land(int player, int card, event_t event)
     {
       load_text("prompts.txt", "CURSED_LAND");
     }
-    spell_fizzled = (unsigned int)(FUN_00551b60(player, 1 - player, card) == 0);
+    spell_fizzled = (unsigned int)(select_target_land_and_store(player, 1 - player, card) == 0);
     if (spell_fizzled != 1)
     {
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == active_player)
@@ -1767,7 +1767,7 @@ int card_evil_presence(int player, int card, event_t event)
     {
       load_text("prompts.txt", "EVIL_PRESENCE");
     }
-    spell_fizzled = (unsigned int)(FUN_00551b60(player, 1 - player, card) == 0);
+    spell_fizzled = (unsigned int)(select_target_land_and_store(player, 1 - player, card) == 0);
     if (spell_fizzled != 1)
     {
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == active_player)
@@ -2839,7 +2839,7 @@ int card_holy_armor(int player, int card, event_t event)
       local = single_color_test_bit_to_color_t((int)(unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (unk_0072c440[local] == 0)
       {
-        FUN_004e503e(0);
+        load_recorded_action_code(0);
       }
     }
 
@@ -3070,7 +3070,7 @@ int card_blessing(int player, int card, event_t event)
       local = single_color_test_bit_to_color_t((int)(unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (unk_0072c440[local] == 0)
       {
-        FUN_004e503e(0);
+        load_recorded_action_code(0);
       }
     }
 
@@ -3308,7 +3308,7 @@ int card_firebreathing(int player, int card, event_t event)
       local = single_color_test_bit_to_color_t((int)(unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
       if (raw_mana_available[player][local] == 0)
       {
-        FUN_004e503e(0);
+        load_recorded_action_code(0);
       }
       else
       {
@@ -4655,7 +4655,7 @@ int card_pestilence(int player, int card, event_t event)
     {
       event_result |= 2;
     }
-    if (event == EVENT_RESOLVE_TRIGGER && FUN_005510dc(player, TYPE_CREATURE) == 0 && FUN_005510dc(1 - player, TYPE_CREATURE) == 0)
+    if (event == EVENT_RESOLVE_TRIGGER && has_permanent_of_type(player, TYPE_CREATURE) == 0 && has_permanent_of_type(1 - player, TYPE_CREATURE) == 0)
     {
       kill_card(player, card, KILL_DESTROY);
     }
@@ -5616,7 +5616,7 @@ int card_regeneration(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
   else if (event == EVENT_ACTIVATE && (land_can_be_played & 0x200) != 0)
@@ -5850,7 +5850,7 @@ int card_phantasmal_terrain(int player, int card, event_t event)
     {
       load_text("prompts.txt", "PHANTASMAL_TERRAIN");
     }
-    if (!FUN_00551b60(player, 1 - player, card) == 0)
+    if (!select_target_land_and_store(player, 1 - player, card) == 0)
     {
       if ((player == active_player) || ((g_duel_network_flags & 2) != 0))
       {
@@ -5872,11 +5872,11 @@ int card_phantasmal_terrain(int player, int card, event_t event)
       {
         unk_00939340 = internal_rand(5) + 1;
         land_type = unk_00939340;
-        FUN_004e4f11();
+        record_ai_action_selection();
       }
       else
       {
-        FUN_004e5089();
+        replay_ai_action_selection();
         land_type = unk_00939340;
       }
 
@@ -5976,7 +5976,7 @@ int card_conversion(int player, int card, event_t event)
     return 0;
   }
 
-  if ((event == EVENT_SET_COLOR) && ((land_can_be_played & 0x200) == 0) && is_in_play(player, card) && is_in_play(affected_card_controller, affected_card) && FUN_00484581(affected_card_controller, get_hacked_color(player, card, 4)) != 0)
+  if ((event == EVENT_SET_COLOR) && ((land_can_be_played & 0x200) == 0) && is_in_play(player, card) && is_in_play(affected_card_controller, affected_card) && is_basic_land_internal_card_id_of_color(affected_card_controller, get_hacked_color(player, card, 4)) != 0)
   {
     event_result = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
   }
@@ -6016,7 +6016,7 @@ int card_wild_growth(int player, int card, event_t event)
     {
       load_text("prompts.txt", "WILD_GROWTH");
     }
-    if (FUN_00551b60(player, player, card) == 0)
+    if (select_target_land_and_store(player, player, card) == 0)
     {
       spell_fizzled = 1;
     }
@@ -6085,7 +6085,7 @@ int card_flight(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,

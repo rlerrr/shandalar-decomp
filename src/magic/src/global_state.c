@@ -407,9 +407,9 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&DAT_00742f64, 4);
   result &= save_or_load_data(&unk_00742f60, 4);
   result &= save_or_load_data(&DAT_007161d0, 4);
-  result &= save_or_load_data(unk_00742f70, 0x40);
+  result &= save_or_load_data(special_mana_pool, 0x40);
   result &= save_or_load_data(raw_mana_available_hex, 0x198);
-  result &= save_or_load_data(unk_007161e0, 0x58);
+  result &= save_or_load_data(mana_color_conversions, 0x58);
   result &= save_or_load_data(unk_00743080, 8);
   result &= save_or_load_data(raw_mana_available, 0x40);
   result &= save_or_load_data(basiclandtypes_controlled, 0x40);
@@ -459,8 +459,8 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&other_player, 4);
   result &= save_or_load_data(&affected_card_controller, 4);
   result &= save_or_load_data(&affected_card, 4);
-  result &= save_or_load_data(&unk_008b4dd0, 4);
-  result &= save_or_load_data(&unk_008cf6d4, 4);
+  result &= save_or_load_data(&affected_internal_card_id, 4);
+  result &= save_or_load_data(&affected_card_color, 4);
   result &= save_or_load_data(&attacking_card_controller, 4);
   result &= save_or_load_data(&attacking_card, 4);
   result &= save_or_load_data(&event_result, 4);
@@ -521,7 +521,7 @@ unsigned int __cdecl save_or_load_ver1(void)
   result &= save_or_load_data(&unk_008b3270, 4);
   result &= save_or_load_data(&unk_008cc844, 4);
   result &= save_or_load_data(&unk_00789a48, 4);
-  result &= save_or_load_data(&DAT_008cf1b8, 4);
+  result &= save_or_load_data(&last_single_card_event_result, 4);
   result &= save_or_load_data(&DAT_00777aa8, 4);
   result &= save_or_load_data(&unk_007a7c1c, 4);
   result &= save_or_load_data(&unk_008cc840, 4);
@@ -614,9 +614,9 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&DAT_00742f64, 4);
   result &= save_or_load_data(&unk_00742f60, 4);
   result &= save_or_load_data(&DAT_007161d0, 4);
-  result &= save_or_load_data(unk_00742f70, 0x40);
+  result &= save_or_load_data(special_mana_pool, 0x40);
   result &= save_or_load_data(raw_mana_available_hex, 0x198);
-  result &= save_or_load_data(unk_007161e0, 0x58);
+  result &= save_or_load_data(mana_color_conversions, 0x58);
   result &= save_or_load_data(unk_00743080, 8);
   result &= save_or_load_data(raw_mana_available, 0x40);
   result &= save_or_load_data(basiclandtypes_controlled, 0x40);
@@ -667,8 +667,8 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&other_player, 4);
   result &= save_or_load_data(&affected_card_controller, 4);
   result &= save_or_load_data(&affected_card, 4);
-  result &= save_or_load_data(&unk_008b4dd0, 4);
-  result &= save_or_load_data(&unk_008cf6d4, 4);
+  result &= save_or_load_data(&affected_internal_card_id, 4);
+  result &= save_or_load_data(&affected_card_color, 4);
   result &= save_or_load_data(&attacking_card_controller, 4);
   result &= save_or_load_data(&attacking_card, 4);
   result &= save_or_load_data(&event_result, 4);
@@ -729,7 +729,7 @@ unsigned int __cdecl save_or_load_ver2(void)
   result &= save_or_load_data(&unk_008b3270, 4);
   result &= save_or_load_data(&unk_008cc844, 4);
   result &= save_or_load_data(&unk_00789a48, 4);
-  result &= save_or_load_data(&DAT_008cf1b8, 4);
+  result &= save_or_load_data(&last_single_card_event_result, 4);
   result &= save_or_load_data(&DAT_00777aa8, 4);
   result &= save_or_load_data(&unk_007a7c1c, 4);
   result &= save_or_load_data(&unk_008cc840, 4);

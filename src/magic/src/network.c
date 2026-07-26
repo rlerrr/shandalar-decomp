@@ -122,7 +122,7 @@ int FUN_0049e8bb(int player,
     {
       ((int *)selected_indices)[s.selected_count] = selection;
       ++s.selected_count;
-      s.graveyard_copy[selection] = unk_008b28f8;
+      s.graveyard_copy[selection] = draw_card_placeholder_internal_card_id;
       s.available_cards[selection] = 0;
     }
   }
@@ -484,7 +484,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
           if (unk_008b60e8 != 0 && packet_type >= 0xc)
           {
             append_to_trace_txt("The duel has ended because your opponent has dropped.\n");
-            FUN_004b4110(3);
+            exit_duel_thread(3);
             FamInterface_Flush();
             ReleaseMutex((HANDLE)global_mutex_ReadPacket);
             g_waiting_for_network_packet = 0;
@@ -514,7 +514,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 
       if (unk_008b60e8 != 0)
       {
-        FUN_004b4110(3);
+        exit_duel_thread(3);
       }
 
       FamInterface_EndSession();

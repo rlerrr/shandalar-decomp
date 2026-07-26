@@ -10,7 +10,7 @@ int card_fork(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if (unk_008ce508 == -1)
     {
       return 0;
@@ -114,7 +114,7 @@ int card_mana_short(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    FUN_0055117d(FUN_004f6311, target_player);
+    dispatch_three_arg_callback_to_cards_in_play(FUN_004f6311, target_player);
     for (color = 0; color < 8; ++color)
     {
       raw_mana_available[target_player][color] = 0;
@@ -236,7 +236,7 @@ int card_simulacrum(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if (!real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, 0x200, 2, 0, 0,
                                get_protections_from(player, card), 0, 0, -1, -1, 0xffffffff,
                                0xffffffff, 0, 0, 0))
@@ -332,7 +332,7 @@ int card_shatter(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
                                  COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0);
   }
@@ -417,7 +417,7 @@ int card_disenchant(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -521,7 +521,7 @@ int card_twiddle(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -663,7 +663,7 @@ int card_tunnel(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -774,7 +774,7 @@ int card_howl_from_beyond(int player, int card, event_t event)
     {
       return 0;
     }
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -866,7 +866,7 @@ int card_berserk(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if (current_phase < 0x1e && real_target_available((int *)0,
                                                       TARGET_SCAN_DIRECT,
                                                       player,
@@ -957,7 +957,7 @@ int card_righteousness(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -1090,7 +1090,7 @@ int card_swords_to_plowshares(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -1177,7 +1177,7 @@ int card_death_ward(int player, int card, event_t event)
   {
     s.found_dead_creature = 0;
 
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     for (s.current_player = 0; s.current_player < 2; ++s.current_player)
     {
       for (s.current_card = 0; s.current_card < active_cards_count[s.current_player]; ++s.current_card)
@@ -1226,14 +1226,14 @@ int card_death_ward(int player, int card, event_t event)
       }
       else if (g_duel_ai_mode_state == 1)
       {
-        FUN_004e51bb();
+        rewind_recorded_action();
       }
       else
       {
         load_text("prompts.txt", "DEATH_WARD2");
-        FUN_004a61d6(text_lines[1]);
+        set_duel_prompt_text(text_lines[1]);
         Sleep(0x9c4);
-        FUN_004a61d6("");
+        set_duel_prompt_text("");
       }
     } while ((spell_fizzled != 1) && s.found_dead_creature == 0);
   }
@@ -1295,7 +1295,7 @@ int card_jump(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -1403,7 +1403,7 @@ int card_terror(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     illegal_color = 1 << ((unsigned char)get_sleighted_color(player, card, 1) & 0x1f);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
@@ -1502,7 +1502,7 @@ int card_lightning_bolt(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(1);
+    load_recorded_action_target(1);
     return 1;
   }
 
@@ -1542,7 +1542,7 @@ int card_giant_growth(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -1638,7 +1638,7 @@ int card_unsummon(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -1773,7 +1773,7 @@ int card_purelace(int player, int card, event_t event)
   {
     if (unk_008ce508 == -1)
     {
-      FUN_004e4ff3(0);
+      load_recorded_action_target(0);
       return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0xff, 0, 0,
                                    get_protections_from(player, card), 0, 0, -1, -1, 0xffffffff,
                                    0xffffffff, 0, 0, 0);
@@ -1909,14 +1909,14 @@ int card_magical_hack(int player, int card, event_t event)
     {
       if (unk_008ce508 == -1)
       {
-        FUN_004e4ff3(0);
+        load_recorded_action_target(0);
         return 1;
       }
       return 99;
     }
     if ((unk_008ce508 == -1) || (active_player != current_player))
     {
-      FUN_004e4ff3(0);
+      load_recorded_action_target(0);
       return 1;
     }
     return 99;
@@ -1999,15 +1999,15 @@ int card_magical_hack(int player, int card, event_t event)
           if (g_duel_ai_mode_state == 1)
           {
             unk_00939340 = s.old_color;
-            FUN_004e4f11();
+            record_ai_action_selection();
             unk_00939340 = s.new_color;
-            FUN_004e4f11();
+            record_ai_action_selection();
           }
           else
           {
-            FUN_004e5089();
+            replay_ai_action_selection();
             s.old_color = unk_00939340;
-            FUN_004e5089();
+            replay_ai_action_selection();
             s.new_color = unk_00939340;
           }
 
@@ -2096,14 +2096,14 @@ int card_sleight_of_mind(int player, int card, event_t event)
       {
         return 99;
       }
-      FUN_004e4ff3(0);
+      load_recorded_action_target(0);
       return 1;
     }
     if (unk_008ce508 != -1 && active_player == current_player)
     {
       return 99;
     }
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 1;
   }
 
@@ -2180,15 +2180,15 @@ int card_sleight_of_mind(int player, int card, event_t event)
         if (g_duel_ai_mode_state == 1)
         {
           unk_00939340 = s.old_color;
-          FUN_004e4f11();
+          record_ai_action_selection();
           unk_00939340 = s.new_color;
-          FUN_004e4f11();
+          record_ai_action_selection();
         }
         else
         {
-          FUN_004e5089();
+          replay_ai_action_selection();
           s.old_color = unk_00939340;
-          FUN_004e5089();
+          replay_ai_action_selection();
           s.new_color = unk_00939340;
         }
 
@@ -2238,7 +2238,7 @@ int card_blue_elemental_blast(int player, int card, event_t event)
   {
     if (unk_008ce508 == -1)
     {
-      FUN_004e4ff3(0);
+      load_recorded_action_target(0);
       color = get_sleighted_color(player, card, 4);
       return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0x1047, 0, 0,
                                    get_protections_from(player, card), 1 << ((unsigned char)color & 0x1f), 0, -1, -1,
@@ -2335,7 +2335,7 @@ int card_counterspell(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if (unk_008ce508 == -1)
     {
       return 0;
@@ -2402,7 +2402,7 @@ int card_power_sink(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if (unk_008ce508 == -1)
     {
       return 0;
@@ -2575,7 +2575,7 @@ int card_spell_blast(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if (unk_008ce508 == -1)
     {
       return 0;
@@ -2654,7 +2654,7 @@ int card_red_elemental_blast(int player, int card, event_t event)
   {
     if (unk_008ce508 == -1)
     {
-      FUN_004e4ff3(0);
+      load_recorded_action_target(0);
       color = get_sleighted_color(player, card, 2);
       return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0x1047, 0, 0,
                                    get_protections_from(player, card), 1 << ((unsigned char)color & 0x1f), 0, -1, -1,
@@ -2916,14 +2916,14 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
         }
         else if (g_duel_ai_mode_state == 1)
         {
-          FUN_004e51bb();
+          rewind_recorded_action();
         }
         else
         {
           load_text("prompts.txt", "HEALING_SALVE3");
-          FUN_004a61d6(text_lines[2]);
+          set_duel_prompt_text(text_lines[2]);
           Sleep(0x9c4);
-          FUN_004a61d6("");
+          set_duel_prompt_text("");
         }
       }
       for (target_index = 0; target_index < instance->number_of_targets; ++target_index)
@@ -3001,7 +3001,7 @@ int card_reverse_damage(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     if ((land_can_be_played & 4) == 0)
     {
       result = 1;
@@ -3116,7 +3116,7 @@ int card_reverse_damage(int player, int card, event_t event)
           else
           {
             load_text("prompts.txt", "REVERSE_DAMAGE");
-            s.selected = FUN_004b413c(player, s.internal_card_ids, s.damage_amounts, s.count, 0x89684c, 1, text_lines[1]);
+            s.selected = select_damage_card_from_list(player, s.internal_card_ids, s.damage_amounts, s.count, 0x89684c, 1, text_lines[1]);
           }
           gain_life(player,
                     unk_0093b280[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player][0] *

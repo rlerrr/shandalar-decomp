@@ -73,7 +73,7 @@ void notify_duel_action(int player, unsigned int value);
 unsigned int refresh_duel_display_cache(void);
 void set_duel_prompt_context(HWND hwnd, char *prompt, unsigned int mode);
 void set_duel_tooltip_text(char *text);
-void FUN_004480a6(char *text);
+void display_duel_prompt_text(char *text);
 int get_landwalk_evasion_masks();
 int can_block_attacker_with_abilities();
 int FUN_004d7953(int player, int card, int unused_player, int unused_card);
@@ -2085,7 +2085,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   else if (card_id == unk_00789b80)
   {
     s.ability_flags = get_displayed_card_special_counters(player, card);
-    sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, FUN_00495311(s.ability_flags));
+    sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, get_hunting_subtype_name(s.ability_flags));
   }
   else if (card_id == unk_008cf1ac)
   {
@@ -2111,7 +2111,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
   {
     strcpy(s.temporary_name, g_card_title_buffer_00709100);
-    FUN_0055d802(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
+    extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
   }
   s.transformed_card_id = get_displayed_card_id(s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
   if (card_id == unk_00789734 &&
@@ -2214,7 +2214,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
 
   if (dc != (HDC)0 && rect != NULL)
   {
-    if (card_id == unk_0092666c && FUN_00449ac3(player, card) == (unsigned int)unk_008b28f8)
+    if (card_id == unk_0092666c && FUN_00449ac3(player, card) == (unsigned int)draw_card_placeholder_internal_card_id)
     {
       DrawCardBack(dc, rect);
       DrawSmallCardTitle(dc, rect, gs_cardtitle_activation_007aaeb0, 0, 1);
@@ -3475,7 +3475,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
             else
             {
               UpdateWindow(g_duel_window_hwnd);
-              FUN_004480a6(g_cardclass_prompt_band_cannot_text);
+              display_duel_prompt_text(g_cardclass_prompt_band_cannot_text);
               UpdateWindow(g_duel_prompt_context_hwnd);
               Sleep(2000);
             }
@@ -3483,7 +3483,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           else
           {
             UpdateWindow(g_duel_window_hwnd);
-            FUN_004480a6(g_cardclass_prompt_band_error_text);
+            display_duel_prompt_text(g_cardclass_prompt_band_error_text);
             UpdateWindow(g_duel_prompt_context_hwnd);
             Sleep(2000);
           }
@@ -3582,7 +3582,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           else
           {
             UpdateWindow(g_duel_window_hwnd);
-            FUN_004480a6(g_cardclass_prompt_defend_error_text);
+            display_duel_prompt_text(g_cardclass_prompt_defend_error_text);
             UpdateWindow(g_duel_prompt_context_hwnd);
             Sleep(2000);
           }
@@ -3590,7 +3590,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         else
         {
           UpdateWindow(g_duel_window_hwnd);
-          FUN_004480a6(g_cardclass_prompt_defend_prompt_text);
+          display_duel_prompt_text(g_cardclass_prompt_defend_prompt_text);
           UpdateWindow(g_duel_prompt_context_hwnd);
           Sleep(2000);
         }

@@ -340,7 +340,7 @@ int run_target_selection_modal(int who_chooses,
   }
   else
   {
-    FUN_004a61d6(gs_waiting_for_opponent_007a7d30);
+    set_duel_prompt_text(gs_waiting_for_opponent_007a7d30);
     DAT_0093d840 = 1;
     TENTATIVE_wait_for_network_result(who_chooses, 0xc);
     s.result = g_target_selection_network_packet.result;
@@ -354,7 +354,7 @@ int run_target_selection_modal(int who_chooses,
     DAT_00715fa4 = g_target_selection_network_packet.aux_controller;
     s.thread_exit_code = (WPARAM)g_target_selection_network_packet.thread_exit_code;
     receive_battlefield_status_packet(who_chooses);
-    FUN_004a61d6("");
+    set_duel_prompt_text("");
   }
 
   *out_selection_code = s.action_result.selection_code;
@@ -585,12 +585,12 @@ int C_real_select_target(int who_chooses,
                       | (s.valid_cards[unk_00939340] & 0xff))
                      | 0x4000;
       unk_0057aae8 = 3;
-      FUN_004e4f11();
+      record_ai_action_selection();
     }
     else
     {
       unk_0057aae8 = 3;
-      FUN_004e5089();
+      replay_ai_action_selection();
       if (unk_00939340 == 99 || s.valid_count <= unk_00939340)
       {
         unk_00939340 = internal_rand(s.valid_count);
@@ -668,9 +668,9 @@ int C_real_select_target(int who_chooses,
           sprintf(s.validation_message, gs_illegal_target_with_reason_008ce7e0, gs_illegal_target_why_type_008a9a00);
           if (g_duel_ai_mode_state != 1)
           {
-            FUN_004a61d6(s.validation_message);
+            set_duel_prompt_text(s.validation_message);
             Sleep(2000);
-            FUN_004a61d6("");
+            set_duel_prompt_text("");
           }
         }
         else
@@ -715,9 +715,9 @@ int C_real_select_target(int who_chooses,
 
             if (g_duel_ai_mode_state != 1)
             {
-              FUN_004a61d6(s.validation_message);
+              set_duel_prompt_text(s.validation_message);
               Sleep(2000);
-              FUN_004a61d6("");
+              set_duel_prompt_text("");
             }
           }
         }
@@ -753,7 +753,7 @@ int C_real_select_target(int who_chooses,
     {
       DAT_0072c8e4 = 0;
     }
-    FUN_004a61d6("");
+    set_duel_prompt_text("");
     strcpy(text_lines[0], "");
   }
 

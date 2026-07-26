@@ -165,12 +165,12 @@ int card_balance(int player, int card, event_t event)
 
         if (s.player_1_count < s.player_0_count)
         {
-          s.current_card = FUN_00551921(0);
+          s.current_card = choose_creature_to_sacrifice(0);
           kill_card(0, s.current_card, KILL_SACRIFICE);
         }
         if (s.player_0_count < s.player_1_count)
         {
-          s.current_card = FUN_00551921(1);
+          s.current_card = choose_creature_to_sacrifice(1);
           kill_card(1, s.current_card, KILL_SACRIFICE);
         }
 
@@ -353,7 +353,7 @@ int card_winds_of_change(int player, int card, event_t event)
       {
         if (FUN_00440c61(s.current_player, s.current_card) != 0)
         {
-          FUN_004b5cf5(s.current_player, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id);
+          put_card_on_bottom_of_library(s.current_player, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id);
           PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id = -1;
           ++s.cards_moved;
         }
@@ -399,7 +399,7 @@ int card_timetwister(int player, int card, event_t event)
       {
         if (FUN_00440c61(current_player, current_card) != 0)
         {
-          FUN_004b5cf5(current_player, PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id);
+          put_card_on_bottom_of_library(current_player, PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id);
           PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id = -1;
         }
         ++current_card;
@@ -413,7 +413,7 @@ int card_timetwister(int player, int card, event_t event)
           break;
         }
 
-        FUN_004b5cf5(current_player, global_graveyard_slots[current_player][current_card]);
+        put_card_on_bottom_of_library(current_player, global_graveyard_slots[current_player][current_card]);
         ++current_card;
       }
 
@@ -1066,11 +1066,11 @@ int card_fireball(int player, int card, event_t event)
             unk_00939340 = PLAYER_CARD_INSTANCE(unk_008ce508, unk_008ce4f4).number_of_targets;
           }
 
-          FUN_004e4f11();
+          record_ai_action_selection();
         }
         else
         {
-          FUN_004e5089();
+          replay_ai_action_selection();
         }
 
         s.num_targets = unk_00939340;
@@ -1214,9 +1214,9 @@ int card_fireball(int player, int card, event_t event)
                 if (g_duel_ai_mode_state != 1 && s.chosen_target.card == -1 &&
                     s.player_target_selected[s.chosen_target.player] != 0)
                 {
-                  FUN_004a61d6(text_lines[1]);
+                  set_duel_prompt_text(text_lines[1]);
                   Sleep(0x9c4);
-                  FUN_004a61d6("");
+                  set_duel_prompt_text("");
                 }
               } while (s.select_ok != 0 && s.chosen_target.card == -1 &&
                        s.player_target_selected[s.chosen_target.player] != 0);
@@ -1313,9 +1313,9 @@ int card_fireball(int player, int card, event_t event)
             if (g_duel_ai_mode_state != 1 && s.chosen_target.card == -1 &&
                 s.player_target_selected[s.chosen_target.player] != 0)
             {
-              FUN_004a61d6(text_lines[1]);
+              set_duel_prompt_text(text_lines[1]);
               Sleep(0x9c4);
-              FUN_004a61d6("");
+              set_duel_prompt_text("");
             }
           } while (s.select_ok != 0 && s.chosen_target.card == -1 &&
                    s.player_target_selected[s.chosen_target.player] != 0);
@@ -1577,7 +1577,7 @@ int card_raise_dead(int player, int card, event_t event)
       }
       else
       {
-        FUN_004b15f7(player, s.graveyard_index);
+        remove_card_from_graveyard(player, s.graveyard_index);
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state &= 0xffffffdf;
@@ -1658,7 +1658,7 @@ int card_regrowth(int player, int card, event_t event)
       }
       else
       {
-        FUN_004b15f7(player, s.graveyard_index);
+        remove_card_from_graveyard(player, s.graveyard_index);
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state &= 0xffffffdf;
@@ -1701,11 +1701,11 @@ int card_demonic_tutor(int player, int card, event_t event)
         if (g_duel_ai_mode_state == 1)
         {
           unk_00939340 = internal_rand(4);
-          FUN_004e4f11();
+          record_ai_action_selection();
         }
         else
         {
-          FUN_004e5089();
+          replay_ai_action_selection();
         }
 
         switch (unk_00939340)
@@ -2119,7 +2119,7 @@ int card_stone_rain(int player, int card, event_t event)
         {
           load_text("prompts.txt", "STONE_RAIN");
         }
-        if (FUN_00551b60(player, 2, card) != 0)
+        if (select_target_land_and_store(player, 2, card) != 0)
         {
           ai_modifier +=
               ((-(unsigned int)(PLAYER_CARD_INSTANCE(player, card).targets[0].player == player) & 0xfffffffbU) * 3 + 9) * 4;
@@ -2230,7 +2230,7 @@ int card_drain_power(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     target_player = instance->targets[0].player;
-    FUN_0055117d(drain_power_draw_mana_from_land, target_player);
+    dispatch_three_arg_callback_to_cards_in_play(drain_power_draw_mana_from_land, target_player);
     if (target_player != player)
     {
       for (color_index = 0; color_index < 8; ++color_index)

@@ -43,7 +43,7 @@ int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
 void layout_phase_display_window(HWND hwnd, LPRECT rect);
 int handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-void FUN_00495fa1(void);
+void restack_duel_child_windows(void);
 
 // GLOBAL: MAGIC 0x0055e03c
 int g_spell_chain_windows_long_offset = 0;
@@ -872,7 +872,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
       ShowWindow((HWND)g_spell_minimized_hwnd, SW_HIDE);
       ShowWindow(hwnd, SW_SHOW);
       SendMessageA(g_duel_prompt_context_hwnd, 0x403, 0, 0);
-      FUN_00495fa1();
+      restack_duel_child_windows();
       break;
 
     case 100:

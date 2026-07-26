@@ -342,21 +342,21 @@ void copy_cached_ante_cards(int *opponent_antes, int *opponent_count, int *playe
 {
   int index;
 
-  if (opponent_antes != NULL && opponent_count != NULL && player_antes != NULL && player_count != NULL)
+  if (opponent_antes == NULL || opponent_count == NULL || player_antes == NULL || player_count == NULL)
+    return;
+
+  EnterCriticalSection(&g_duel_render_lock);
+  *opponent_count = DAT_008966d0;
+  for (index = 0; index < DAT_008966d0; index++)
   {
-    EnterCriticalSection(&g_duel_render_lock);
-    *opponent_count = DAT_008966d0;
-    for (index = 0; index < DAT_008966d0; index++)
-    {
-      opponent_antes[index] = CardIDFromType(DAT_00924ff0[index]);
-    }
-    *player_count = DAT_0093d84c;
-    for (index = 0; index < DAT_0093d84c; index++)
-    {
-      player_antes[index] = CardIDFromType(DAT_009397d0[index]);
-    }
-    LeaveCriticalSection(&g_duel_render_lock);
+    opponent_antes[index] = CardIDFromType(DAT_00924ff0[index]);
   }
+  *player_count = DAT_0093d84c;
+  for (index = 0; index < DAT_0093d84c; index++)
+  {
+    player_antes[index] = CardIDFromType(DAT_009397d0[index]);
+  }
+  LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x00452a75
@@ -817,7 +817,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
       ReleaseCapture();
       destroy_expanded_graveyard_window(s.captured_window);
       s.captured_window = (HWND)0;
-        SetWindowLongA(hwnd, g_graveyard_expanded_window_long_offset, 0);
+      SetWindowLongA(hwnd, g_graveyard_expanded_window_long_offset, 0);
     }
     return 0;
 

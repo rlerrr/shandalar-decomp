@@ -43,7 +43,7 @@ void show_territory_options_dialog(HWND hwnd);
 void refresh_duel_window(HWND hwnd);
 void set_player_directive_value(int player, int value);
 void layout_duel_child_windows(HWND hwnd, int layout);
-void FUN_004ec616(HWND hwnd);
+void position_duel_prompt_context_window(HWND hwnd);
 void resize_duel_hand_window(HWND hwnd);
 void save_duel_interface_options_to_registry(void);
 void apply_duel_backdrop_art(int player, int color, int variant);
@@ -375,7 +375,7 @@ void show_territory_options_dialog(HWND hwnd)
     set_player_directive_value(0, 0);
     set_player_directive_value(1, 0);
     layout_duel_child_windows(g_duel_window_hwnd, g_duel_interface_options.layout);
-    FUN_004ec616(g_duel_prompt_context_hwnd);
+    position_duel_prompt_context_window(g_duel_prompt_context_hwnd);
     refresh_duel_window(g_duel_player_battlefield_window_hwnd);
     refresh_duel_window(g_duel_help_owner_hwnd);
     resize_duel_hand_window(g_duel_full_card_window_hwnd);

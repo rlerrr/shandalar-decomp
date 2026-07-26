@@ -16,16 +16,16 @@ extern int ai_blocker_cards[16];
 
 void update_phase_display(int player, phase_t phase);
 int prompt_stop_phase_anyway(phase_t phase);
-char *FUN_0044a3bf(int player, int card);
-int FUN_004b0c12(int player, int card);
+char *get_displayed_card_name(int player, int card);
+int process_killed_card(int player, int card);
 int FUN_00515ee6(int damage_step, int abilities);
-int FUN_00515bba(int player, int card, short amount);
-void FUN_00516063(void);
-void FUN_005160c1(int player, int index, int has_trample, int damage_ids, int damage_step, int mode, int *best_low, int *best_high);
-void FUN_00516736(int player, int index, int multiple_attackers, int damage_ids, int damage_step, int mode, int *best_low, int *best_high);
-void FUN_00516db1(int player, int card, int highlight);
-void FUN_00516e2f(int player, int card, int highlight);
-int FUN_0051724e(int player, int card);
+int adjust_two_headed_giant_damage(int player, int card, int amount);
+void clear_combat_damage_assignment_matrix(void);
+void assign_attacker_combat_damage(int player, int index, int has_trample, int damage_ids, int damage_step, int mode, int *best_low, int *best_high);
+void assign_blocker_combat_damage(int player, int index, int multiple_attackers, int damage_ids, int damage_step, int mode, int *best_low, int *best_high);
+void highlight_combat_damage_attacker(int player, int card, int highlight);
+void highlight_combat_damage_blocker(int player, int card, int highlight);
+int has_damage_card_targeting(int player, int card);
 
 #define COMBAT_DAMAGE_FLAG_COMBAT 0x40000
 #define COMBAT_DAMAGE_FLAG_TRAMPLE 0x80000
@@ -90,62 +90,68 @@ int combat_damage_attacker_damage[16];
 int combat_damage_blocker_damage[16];
 
 // FUNCTION: MAGIC 0x00515bba
-int FUN_00515bba(int player, int card, short amount)
+int adjust_two_headed_giant_damage(int player, int card, int amount)
 {
-  card_function_pointer code_pointer;
-  int damage_source_player;
-  int damage_source_card;
-  int found_trampler;
-  int index;
-
-  found_trampler = 0;
-  code_pointer = global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].code_pointer;
-  damage_source_player = (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player;
-  damage_source_card = PLAYER_CARD_INSTANCE(player, card).damage_source_card;
-
-  if (code_pointer == card_two_headed_giant_of_foriys || code_pointer == FUN_00481e25)
+  struct
   {
-    found_trampler = 1;
+    card_instance_t *instance;
+    int index;
+    card_function_pointer code_pointer;
+    int found_trampler;
+    int damage_source_card;
+    int damage_source_player;
+    int damage_player;
+  } s;
+
+  s.damage_player = player;
+  s.found_trampler = 0;
+  s.code_pointer = global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].code_pointer;
+  s.damage_source_player = (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player;
+  s.damage_source_card = PLAYER_CARD_INSTANCE(player, card).damage_source_card;
+
+  if (s.code_pointer == card_two_headed_giant_of_foriys || s.code_pointer == FUN_00481e25)
+  {
+    s.found_trampler = 1;
   }
 
-  index = 0;
-  while (index < active_cards_count[player] && found_trampler == 0)
+  for (s.index = 0; s.index < active_cards_count[s.damage_player] && s.found_trampler == 0; s.index = s.index + 1)
   {
-    if (PLAYER_CARD_INSTANCE(player, index).internal_card_id == unk_008a8df0 &&
-        PLAYER_CARD_INSTANCE(player, index).damage_target_player == player &&
-        PLAYER_CARD_INSTANCE(player, index).damage_target_card == card)
+    if (PLAYER_CARD_INSTANCE(s.damage_player, s.index).internal_card_id == unk_008a8df0 &&
+        PLAYER_CARD_INSTANCE(s.damage_player, s.index).damage_target_player == player &&
+        PLAYER_CARD_INSTANCE(s.damage_player, s.index).damage_target_card == card)
     {
-      found_trampler = 1;
+      s.found_trampler = 1;
     }
-    index = index + 1;
   }
 
-  if (found_trampler != 0)
+  if (s.found_trampler != 0)
   {
-    if (code_pointer == FUN_00481e25)
+    if (s.code_pointer != FUN_00481e25)
     {
-      for (index = 0; index < active_cards_count[player]; index = index + 1)
+      for (s.index = 0; s.index < active_cards_count[s.damage_player]; s.index = s.index + 1)
       {
-        if (index != card &&
-            global_cards_data[PLAYER_CARD_INSTANCE(player, index).internal_card_id].code_pointer == FUN_00481e25 &&
-            PLAYER_CARD_INSTANCE(player, index).damage_source_player == damage_source_player &&
-            PLAYER_CARD_INSTANCE(player, index).damage_source_card == damage_source_card)
+        s.instance = &PLAYER_CARD_INSTANCE(s.damage_player, s.index);
+        if (global_cards_data[s.instance->internal_card_id].code_pointer == FUN_00481e25 &&
+            s.instance->damage_source_player == player &&
+            s.instance->damage_source_card == card)
         {
-          PLAYER_CARD_INSTANCE(player, index).power = amount;
-          PLAYER_CARD_INSTANCE(player, index).info_slot -= 1;
+          s.instance->power = amount;
+          s.instance->info_slot -= 1;
         }
       }
     }
     else
     {
-      for (index = 0; index < active_cards_count[player]; index = index + 1)
+      for (s.index = 0; s.index < active_cards_count[s.damage_player]; s.index = s.index + 1)
       {
-        if (global_cards_data[PLAYER_CARD_INSTANCE(player, index).internal_card_id].code_pointer == FUN_00481e25 &&
-            PLAYER_CARD_INSTANCE(player, index).damage_source_player == player &&
-            PLAYER_CARD_INSTANCE(player, index).damage_source_card == card)
+        s.instance = &PLAYER_CARD_INSTANCE(s.damage_player, s.index);
+        if (s.index != card &&
+            global_cards_data[s.instance->internal_card_id].code_pointer == FUN_00481e25 &&
+            s.instance->damage_source_player == s.damage_source_player &&
+            s.instance->damage_source_card == s.damage_source_card)
         {
-          PLAYER_CARD_INSTANCE(player, index).power = amount;
-          PLAYER_CARD_INSTANCE(player, index).info_slot -= 1;
+          s.instance->power = amount;
+          s.instance->info_slot -= 1;
         }
       }
     }
@@ -171,14 +177,14 @@ int FUN_00515ee6(int damage_step, int abilities)
 }
 
 // FUNCTION: MAGIC 0x00516063
-void FUN_00516063(void)
+void clear_combat_damage_assignment_matrix(void)
 {
   int blocker_index;
   int attacker_index;
 
-  for (attacker_index = 0; attacker_index < 16; attacker_index = attacker_index + 1)
+  for (blocker_index = 0; blocker_index < 16; blocker_index = blocker_index + 1)
   {
-    for (blocker_index = 0; blocker_index < 16; blocker_index = blocker_index + 1)
+    for (attacker_index = 0; attacker_index < 16; attacker_index = attacker_index + 1)
     {
       combat_damage_assignment_matrix[attacker_index][blocker_index] = 0;
     }
@@ -186,359 +192,380 @@ void FUN_00516063(void)
 }
 
 // FUNCTION: MAGIC 0x005160c1
-void FUN_005160c1(int player, int attacker_index, int has_trample, int damage_ids, int damage_step, int mode, int *best_low, int *best_high)
+void assign_attacker_combat_damage(int player, int attacker_index, int has_trample, int damage_ids, int damage_step, int mode, int *best_low, int *best_high)
 {
-  int defending_player;
-  int attacker_damage;
-  int assignment_base;
-  int combination_count;
-  int total_assigned;
-  int assignment_code;
-  int assignment_index;
-  int blocker_index;
-  int damage_to_assign;
-  int trample_assigned;
-  int life_after_trample;
-  int score;
-  int damage_card;
-
-  defending_player = 1 - player;
-  if (attacker_index < combat_damage_attacker_count)
+  struct
   {
-    attacker_damage = combat_damage_attacker_damage[attacker_index];
-    assignment_base = attacker_damage + 1;
-    combination_count = 1;
-    for (assignment_index = 0; assignment_index < ai_blocker_count; assignment_index = assignment_index + 1)
+    union
     {
-      combination_count *= assignment_base;
-    }
+      int terminal_total_assigned;
+      int assignment_base;
+    } shared_value;         // ebp - 0x3c
+    int combination_count;  // ebp - 0x38
+    int damage_remaining;   // ebp - 0x34
+    int defending_player;   // ebp - 0x30
+    int assignment_index;   // ebp - 0x2c
+    int assignment_code;    // ebp - 0x28
+    int blocker_index;      // ebp - 0x24
+    int damage_to_assign;   // ebp - 0x20
+    int use_shortcut;       // ebp - 0x1c
+    int trample_assigned;   // ebp - 0x18
+    int attacker_card;      // ebp - 0x14
+    int damage_card;        // ebp - 0x10
+    int life_after_trample; // ebp - 0xc
+    int score;              // ebp - 0x8
+    int trample_damage;     // ebp - 0x4
+  } s;
 
-    if (mode == 0)
+  s.defending_player = 1 - player;
+  if (combat_damage_attacker_count <= attacker_index)
+  {
+    s.score = 0;
+    s.life_after_trample = life[s.defending_player];
+    for (s.blocker_index = 0; s.blocker_index < ai_blocker_count; s.blocker_index = s.blocker_index + 1)
     {
-      if ((g_shandalar_difficulty + 1) * 0x100 < combination_count)
+      s.shared_value.terminal_total_assigned = s.trample_assigned = 0;
+      for (s.assignment_index = 0; s.assignment_index < combat_damage_attacker_count; s.assignment_index = s.assignment_index + 1)
       {
-        assignment_code = 0;
-        total_assigned = attacker_damage;
-        assignment_index = ai_blocker_count;
-        while (assignment_index = assignment_index - 1, 0 < assignment_index)
+        s.shared_value.terminal_total_assigned += combat_damage_assignment_matrix[s.assignment_index][s.blocker_index];
+        if ((combat_damage_attacker_abilities[s.assignment_index] & 0x80) != 0)
         {
-          if (combat_damage_blocker_toughness[assignment_index] < total_assigned &&
-              (((unsigned char *)&combat_damage_blocker_abilities[assignment_index])[1] & 2) == 0)
-          {
-            assignment_code += combat_damage_blocker_toughness[assignment_index];
-            combat_damage_assignment_matrix[attacker_index][assignment_index] =
-                combat_damage_blocker_toughness[assignment_index];
-            total_assigned -= combat_damage_blocker_toughness[assignment_index];
-          }
-          assignment_code *= assignment_base;
+          s.trample_assigned += combat_damage_assignment_matrix[s.assignment_index][s.blocker_index];
+          s.attacker_card = combat_damage_attacker_cards[s.assignment_index];
         }
-        if (total_assigned != 0)
-        {
-          assignment_code += total_assigned;
-        }
-        combat_damage_current_assignment_codes[attacker_index] = assignment_code;
-        FUN_005160c1(player, attacker_index + 1, has_trample, damage_ids, damage_step, 0, best_low, best_high);
+      }
+      if (combat_damage_blocker_toughness[s.blocker_index] <= s.shared_value.terminal_total_assigned)
+      {
+        s.score += PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.blocker_index]).attack_rating;
+        s.score += s.shared_value.terminal_total_assigned - combat_damage_blocker_toughness[s.blocker_index];
+        s.trample_damage = ClampIntToRange(s.shared_value.terminal_total_assigned - combat_damage_blocker_toughness[s.blocker_index], 0, s.trample_assigned);
+        s.life_after_trample -= s.trample_damage;
       }
       else
       {
-        if (4999999 < combination_count)
-        {
-          combination_count = 5000000;
-        }
-        for (assignment_index = 0; assignment_index < combination_count; assignment_index = assignment_index + 1)
-        {
-          assignment_code = assignment_index;
-          memset(&combat_damage_assignment_matrix[attacker_index][0], 0, 0x40);
-          blocker_index = 0;
-          for (total_assigned = attacker_damage; blocker_index < ai_blocker_count && 0 < total_assigned; total_assigned = total_assigned - damage_to_assign)
-          {
-            damage_to_assign = assignment_code % assignment_base;
-            combat_damage_assignment_matrix[attacker_index][blocker_index] = damage_to_assign;
-            assignment_code /= assignment_base;
-            blocker_index = blocker_index + 1;
-          }
-          if (total_assigned == 0)
-          {
-            combat_damage_current_assignment_codes[attacker_index] = assignment_index;
-            FUN_005160c1(player, attacker_index + 1, has_trample, damage_ids, damage_step, 0, best_low, best_high);
-          }
-        }
+        s.score += s.shared_value.terminal_total_assigned * 2;
       }
+    }
+
+    if (s.life_after_trample <= 0)
+    {
+      s.score += 999 - s.life_after_trample * 0x18;
     }
     else
     {
-      assignment_code = combat_damage_best_assignment_codes[attacker_index];
-      for (blocker_index = 0; blocker_index < ai_blocker_count; blocker_index = blocker_index + 1)
+      s.score += ((life[s.defending_player] - s.life_after_trample) * 0x30) / s.life_after_trample;
+    }
+
+    if (has_trample == 0)
+    {
+      if (*best_high < s.score)
       {
-        damage_to_assign = assignment_code % assignment_base;
-        if (FUN_0051724e(defending_player, ai_blocker_cards[blocker_index]) != 0)
+        *best_high = s.score;
+        for (s.blocker_index = 0; s.blocker_index < 16; s.blocker_index = s.blocker_index + 1)
         {
-          damage_to_assign = 0;
+          combat_damage_best_assignment_codes[s.blocker_index] = combat_damage_current_assignment_codes[s.blocker_index];
         }
-        if (damage_to_assign != 0)
-        {
-          damage_card = damage_creature(defending_player, ai_blocker_cards[blocker_index], damage_to_assign,
-                                        player, combat_damage_attacker_cards[attacker_index]);
-          *(int *)(damage_ids + blocker_index * 4) = damage_card;
-          if (damage_card != -1)
-          {
-            PLAYER_CARD_INSTANCE(player, damage_card).token_status |= COMBAT_DAMAGE_FLAG_COMBAT;
-            if ((combat_damage_attacker_abilities[attacker_index] & 0x80) != 0)
-            {
-              PLAYER_CARD_INSTANCE(player, damage_card).token_status |= COMBAT_DAMAGE_FLAG_TRAMPLE;
-            }
-            if (damage_step == 0)
-            {
-              PLAYER_CARD_INSTANCE(player, damage_card).token_status |= COMBAT_DAMAGE_FLAG_FIRST_STRIKE;
-            }
-          }
-        }
-        combat_damage_assignment_matrix[attacker_index][blocker_index] = damage_to_assign;
-        assignment_code /= assignment_base;
       }
-      FUN_005160c1(player, attacker_index + 1, has_trample, damage_ids, damage_step, mode, best_low, best_high);
+    }
+    else if (s.score < *best_low)
+    {
+      *best_low = s.score;
+      for (s.blocker_index = 0; s.blocker_index < 16; s.blocker_index = s.blocker_index + 1)
+      {
+        combat_damage_best_assignment_codes[s.blocker_index] = combat_damage_current_assignment_codes[s.blocker_index];
+      }
     }
   }
   else
   {
-    score = 0;
-    life_after_trample = life[defending_player];
-    for (blocker_index = 0; blocker_index < ai_blocker_count; blocker_index = blocker_index + 1)
+    s.shared_value.assignment_base = combat_damage_attacker_damage[attacker_index] + 1;
+    s.combination_count = 1;
+    for (s.blocker_index = 0; s.blocker_index < ai_blocker_count; s.blocker_index = s.blocker_index + 1)
     {
-      trample_assigned = 0;
-      total_assigned = 0;
-      for (assignment_index = 0; assignment_index < combat_damage_attacker_count; assignment_index = assignment_index + 1)
-      {
-        total_assigned += combat_damage_assignment_matrix[assignment_index][blocker_index];
-        if ((combat_damage_attacker_abilities[assignment_index] & 0x80) != 0)
-        {
-          trample_assigned += combat_damage_assignment_matrix[assignment_index][blocker_index];
-        }
-      }
-      if (total_assigned < combat_damage_blocker_toughness[blocker_index])
-      {
-        score += total_assigned * 2;
-      }
-      else
-      {
-        score += PLAYER_CARD_INSTANCE(defending_player, ai_blocker_cards[blocker_index]).attack_rating +
-                 (total_assigned - combat_damage_blocker_toughness[blocker_index]);
-        damage_card = ClampIntToRange(total_assigned - combat_damage_blocker_toughness[blocker_index], 0, trample_assigned);
-        life_after_trample -= damage_card;
-      }
+      s.combination_count *= s.shared_value.assignment_base;
     }
+    s.use_shortcut = (g_shandalar_difficulty + 1) * 0x100 < s.combination_count;
 
-    if (life_after_trample < 1)
+    if (mode != 0)
     {
-      life_after_trample = life_after_trample * -0x18 + 999;
+      s.damage_remaining = s.shared_value.assignment_base - 1;
+      s.assignment_code = combat_damage_best_assignment_codes[attacker_index];
+      for (s.assignment_index = 0; s.assignment_index < ai_blocker_count; s.assignment_index = s.assignment_index + 1)
+      {
+        s.damage_to_assign = s.assignment_code % s.shared_value.assignment_base;
+        if (has_damage_card_targeting(s.defending_player, ai_blocker_cards[s.assignment_index]) != 0)
+        {
+          s.damage_to_assign = 0;
+        }
+        if (s.damage_to_assign != 0)
+        {
+          s.damage_card = damage_creature(s.defending_player, ai_blocker_cards[s.assignment_index], s.damage_to_assign,
+                                          player, combat_damage_attacker_cards[attacker_index]);
+          *(int *)(damage_ids + s.assignment_index * 4) = s.damage_card;
+          if (s.damage_card != -1)
+          {
+            PLAYER_CARD_INSTANCE(player, s.damage_card).token_status |= COMBAT_DAMAGE_FLAG_COMBAT;
+            if ((combat_damage_attacker_abilities[attacker_index] & 0x80) != 0)
+            {
+              PLAYER_CARD_INSTANCE(player, s.damage_card).token_status |= COMBAT_DAMAGE_FLAG_TRAMPLE;
+            }
+            if (damage_step == 0)
+            {
+              PLAYER_CARD_INSTANCE(player, s.damage_card).token_status |= COMBAT_DAMAGE_FLAG_FIRST_STRIKE;
+            }
+          }
+        }
+        combat_damage_assignment_matrix[attacker_index][s.assignment_index] = s.damage_to_assign;
+        s.assignment_code /= s.shared_value.assignment_base;
+        s.damage_remaining -= s.damage_to_assign;
+      }
+      assign_attacker_combat_damage(player, attacker_index + 1, has_trample, damage_ids, damage_step, mode, best_low, best_high);
+    }
+    else if (s.use_shortcut != 0)
+    {
+      s.damage_remaining = s.shared_value.assignment_base - 1;
+      s.assignment_code = 0;
+      for (s.blocker_index = ai_blocker_count - 1; 0 < s.blocker_index; s.blocker_index = s.blocker_index - 1)
+      {
+        if (combat_damage_blocker_toughness[s.blocker_index] < s.damage_remaining &&
+            (combat_damage_blocker_abilities[s.blocker_index] & 0x200) == 0)
+        {
+          s.assignment_code += combat_damage_blocker_toughness[s.blocker_index];
+          combat_damage_assignment_matrix[attacker_index][s.blocker_index] =
+              combat_damage_blocker_toughness[s.blocker_index];
+          s.damage_remaining -= combat_damage_blocker_toughness[s.blocker_index];
+        }
+        s.assignment_code *= s.shared_value.assignment_base;
+      }
+      if (s.damage_remaining != 0)
+      {
+        s.assignment_code += s.damage_remaining;
+      }
+      combat_damage_current_assignment_codes[attacker_index] = s.assignment_code;
+      assign_attacker_combat_damage(player, attacker_index + 1, has_trample, damage_ids, damage_step, mode, best_low, best_high);
     }
     else
     {
-      life_after_trample = ((life[defending_player] - life_after_trample) * 0x30) / life_after_trample;
-    }
-    score += life_after_trample;
+      s.combination_count = MIN(s.combination_count, 5000000);
+      for (s.blocker_index = 0; s.blocker_index < s.combination_count; s.blocker_index = s.blocker_index + 1)
+      {
+        s.damage_remaining = s.shared_value.assignment_base - 1;
+        s.assignment_code = s.blocker_index;
+        memset(&combat_damage_assignment_matrix[attacker_index][0], 0, 0x40);
 
-    if (has_trample == 0)
-    {
-      if (*best_high < score)
-      {
-        *best_high = score;
-        for (assignment_index = 0; assignment_index < 16; assignment_index = assignment_index + 1)
+        for (s.assignment_index = 0; s.assignment_index < ai_blocker_count && 0 < s.damage_remaining; s.assignment_index = s.assignment_index + 1)
         {
-          combat_damage_best_assignment_codes[assignment_index] = combat_damage_current_assignment_codes[assignment_index];
+          s.damage_to_assign = s.assignment_code % s.shared_value.assignment_base;
+          if (s.use_shortcut != 0 && s.damage_to_assign > 1 && s.damage_to_assign < s.damage_remaining)
+          {
+            break;
+          }
+          combat_damage_assignment_matrix[attacker_index][s.assignment_index] = s.damage_to_assign;
+          s.assignment_code /= s.shared_value.assignment_base;
+          s.damage_remaining -= s.damage_to_assign;
         }
-      }
-    }
-    else if (score < *best_low)
-    {
-      *best_low = score;
-      for (assignment_index = 0; assignment_index < 16; assignment_index = assignment_index + 1)
-      {
-        combat_damage_best_assignment_codes[assignment_index] = combat_damage_current_assignment_codes[assignment_index];
+        if (s.damage_remaining != 0)
+        {
+          continue;
+        }
+
+        combat_damage_current_assignment_codes[attacker_index] = s.blocker_index;
+        assign_attacker_combat_damage(player, attacker_index + 1, has_trample, damage_ids, damage_step, mode, best_low, best_high);
       }
     }
   }
 }
 
 // FUNCTION: MAGIC 0x00516736
-void FUN_00516736(int player, int blocker_index, int multiple_attackers, int damage_ids, int damage_step, int mode, int *best_low, int *best_high)
+void assign_blocker_combat_damage(int player, int blocker_index, int multiple_attackers, int damage_ids, int damage_step, int mode, int *best_low, int *best_high)
 {
-  int defending_player;
-  int blocker_damage;
-  int assignment_base;
-  int combination_count;
-  int total_assigned;
-  int assignment_code;
-  int attacker_index;
-  int assignment_index;
-  int damage_to_assign;
-  int score;
-  int damage_card;
-
-  defending_player = 1 - player;
-  if (blocker_index < ai_blocker_count)
+  struct
   {
-    if ((PLAYER_CARD_INSTANCE(defending_player, ai_blocker_cards[blocker_index]).state & 0x10) == 0)
+    union
     {
-      blocker_damage = combat_damage_blocker_damage[blocker_index];
-      assignment_base = blocker_damage + 1;
-      combination_count = 1;
-      for (assignment_index = 0; assignment_index < combat_damage_attacker_count; assignment_index = assignment_index + 1)
-      {
-        combination_count *= assignment_base;
-      }
+      int terminal_total_assigned;
+      int assignment_base;
+    } shared_value;
+    int combination_count;
+    int damage_remaining;
+    int defending_player;
+    int attacker_index;
+    int assignment_code;
+    int assignment_index;
+    int damage_to_assign;
+    int restricted_assignments;
+    int damage_card;
+    int score;
+  } s;
 
-      if (mode == 0)
+  s.defending_player = 1 - player;
+  if (!(ai_blocker_count > blocker_index))
+  {
+    s.score = 0;
+    for (s.assignment_index = 0; s.assignment_index < combat_damage_attacker_count; s.assignment_index = s.assignment_index + 1)
+    {
+      s.shared_value.terminal_total_assigned = 0;
+      for (s.attacker_index = 0; s.attacker_index < ai_blocker_count; s.attacker_index = s.attacker_index + 1)
       {
-        for (assignment_index = 0; assignment_index < combination_count; assignment_index = assignment_index + 1)
-        {
-          assignment_code = assignment_index;
-          total_assigned = blocker_damage;
-          for (attacker_index = 0; attacker_index < combat_damage_attacker_count; attacker_index = attacker_index + 1)
-          {
-            damage_to_assign = assignment_code % assignment_base;
-            if (combination_count < 0x101 || damage_to_assign < 2 || total_assigned <= damage_to_assign)
-            {
-              combat_damage_assignment_matrix[blocker_index][attacker_index] = damage_to_assign;
-              assignment_code /= assignment_base;
-              total_assigned -= damage_to_assign;
-            }
-          }
-          if (total_assigned == 0)
-          {
-            combat_damage_current_assignment_codes[blocker_index] = assignment_index;
-            FUN_00516736(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, 0, best_low, best_high);
-          }
-        }
+        s.shared_value.terminal_total_assigned += combat_damage_assignment_matrix[s.attacker_index][s.assignment_index];
+      }
+      if (combat_damage_attacker_toughness[s.assignment_index] <= s.shared_value.terminal_total_assigned)
+      {
+        s.score += PLAYER_CARD_INSTANCE(player, combat_damage_attacker_cards[s.assignment_index]).attack_rating;
+        s.score += s.shared_value.terminal_total_assigned - combat_damage_attacker_toughness[s.assignment_index];
       }
       else
       {
-        assignment_code = combat_damage_best_assignment_codes[blocker_index];
-        for (attacker_index = 0; attacker_index < combat_damage_attacker_count; attacker_index = attacker_index + 1)
-        {
-          damage_to_assign = assignment_code % assignment_base;
-          if (FUN_0051724e(defending_player, ai_blocker_cards[attacker_index]) != 0)
-          {
-            damage_to_assign = 0;
-          }
-          if (damage_to_assign != 0)
-          {
-            damage_card = damage_creature(player, combat_damage_attacker_cards[attacker_index], damage_to_assign,
-                                          defending_player, ai_blocker_cards[blocker_index]);
-            *(int *)(damage_ids + attacker_index * 4) = damage_card;
-            if (damage_card != -1)
-            {
-              PLAYER_CARD_INSTANCE(defending_player, damage_card).token_status |= COMBAT_DAMAGE_FLAG_COMBAT;
-              if (damage_step == 0)
-              {
-                PLAYER_CARD_INSTANCE(defending_player, damage_card).token_status |= COMBAT_DAMAGE_FLAG_FIRST_STRIKE;
-              }
-            }
-          }
-          assignment_code /= assignment_base;
-        }
-        FUN_00516736(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, mode, best_low, best_high);
-      }
-    }
-    else
-    {
-      FUN_00516736(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, mode, best_low, best_high);
-    }
-  }
-  else
-  {
-    score = 0;
-    for (assignment_index = 0; assignment_index < combat_damage_attacker_count; assignment_index = assignment_index + 1)
-    {
-      total_assigned = 0;
-      for (attacker_index = 0; attacker_index < ai_blocker_count; attacker_index = attacker_index + 1)
-      {
-        total_assigned += combat_damage_assignment_matrix[attacker_index][assignment_index];
-      }
-      if (total_assigned < combat_damage_attacker_toughness[assignment_index])
-      {
-        score += total_assigned * 2;
-      }
-      else
-      {
-        score += PLAYER_CARD_INSTANCE(player, combat_damage_attacker_cards[assignment_index]).attack_rating +
-                 (total_assigned - combat_damage_attacker_toughness[assignment_index]);
+        s.score += s.shared_value.terminal_total_assigned * 2;
       }
     }
 
     if (multiple_attackers == 0)
     {
-      if (*best_high < score)
+      if (*best_high < s.score)
       {
-        *best_high = score;
-        for (assignment_index = 0; assignment_index < 16; assignment_index = assignment_index + 1)
+        *best_high = s.score;
+        for (s.assignment_index = 0; s.assignment_index < 16; s.assignment_index = s.assignment_index + 1)
         {
-          combat_damage_best_assignment_codes[assignment_index] = combat_damage_current_assignment_codes[assignment_index];
+          combat_damage_best_assignment_codes[s.assignment_index] = combat_damage_current_assignment_codes[s.assignment_index];
         }
       }
     }
-    else if (score < *best_low)
+    else if (s.score < *best_low)
     {
-      *best_low = score;
-      for (assignment_index = 0; assignment_index < 16; assignment_index = assignment_index + 1)
+      *best_low = s.score;
+      for (s.assignment_index = 0; s.assignment_index < 16; s.assignment_index = s.assignment_index + 1)
       {
-        combat_damage_best_assignment_codes[assignment_index] = combat_damage_current_assignment_codes[assignment_index];
+        combat_damage_best_assignment_codes[s.assignment_index] = combat_damage_current_assignment_codes[s.assignment_index];
+      }
+    }
+  }
+  else
+  {
+    if ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[blocker_index]).state & 0x10) != 0)
+    {
+      assign_blocker_combat_damage(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, mode, best_low, best_high);
+    }
+    else
+    {
+      s.shared_value.assignment_base = combat_damage_blocker_damage[blocker_index] + 1;
+      s.combination_count = 1;
+      for (s.assignment_index = 0; s.assignment_index < combat_damage_attacker_count; s.assignment_index = s.assignment_index + 1)
+      {
+        s.combination_count *= s.shared_value.assignment_base;
+      }
+      s.restricted_assignments = s.combination_count > 0x100;
+
+      if (mode != 0)
+      {
+        s.damage_remaining = s.shared_value.assignment_base - 1;
+        s.assignment_code = combat_damage_best_assignment_codes[blocker_index];
+        for (s.attacker_index = 0; s.attacker_index < combat_damage_attacker_count; s.attacker_index = s.attacker_index + 1)
+        {
+          s.damage_to_assign = s.assignment_code % s.shared_value.assignment_base;
+          if (has_damage_card_targeting(s.defending_player, ai_blocker_cards[s.attacker_index]) != 0)
+          {
+            s.damage_to_assign = 0;
+          }
+          if (s.damage_to_assign != 0)
+          {
+            s.damage_card = damage_creature(player, combat_damage_attacker_cards[s.attacker_index], s.damage_to_assign,
+                                            s.defending_player, ai_blocker_cards[blocker_index]);
+            *(int *)(damage_ids + s.attacker_index * 4) = s.damage_card;
+            if (s.damage_card != -1)
+            {
+              PLAYER_CARD_INSTANCE(s.defending_player, s.damage_card).token_status |= COMBAT_DAMAGE_FLAG_COMBAT;
+              if (damage_step == 0)
+              {
+                PLAYER_CARD_INSTANCE(s.defending_player, s.damage_card).token_status |= COMBAT_DAMAGE_FLAG_FIRST_STRIKE;
+              }
+            }
+          }
+          s.assignment_code /= s.shared_value.assignment_base;
+          s.damage_remaining -= s.damage_to_assign;
+        }
+        assign_blocker_combat_damage(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, mode, best_low, best_high);
+      }
+      else
+      {
+        for (s.assignment_index = 0; s.assignment_index < s.combination_count; s.assignment_index = s.assignment_index + 1)
+        {
+          s.damage_remaining = s.shared_value.assignment_base - 1;
+          s.assignment_code = s.assignment_index;
+          for (s.attacker_index = 0; s.attacker_index < combat_damage_attacker_count; s.attacker_index = s.attacker_index + 1)
+          {
+            s.damage_to_assign = s.assignment_code % s.shared_value.assignment_base;
+            if (s.restricted_assignments != 0 && s.damage_to_assign > 1 && s.damage_to_assign < s.damage_remaining)
+            {
+              continue;
+            }
+
+            combat_damage_assignment_matrix[blocker_index][s.attacker_index] = s.damage_to_assign;
+            s.assignment_code /= s.shared_value.assignment_base;
+            s.damage_remaining -= s.damage_to_assign;
+          }
+          if (s.damage_remaining != 0)
+          {
+            continue;
+          }
+
+          combat_damage_current_assignment_codes[blocker_index] = s.assignment_index;
+          assign_blocker_combat_damage(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, mode, best_low, best_high);
+        }
       }
     }
   }
 }
 
 // FUNCTION: MAGIC 0x00516db1
-void FUN_00516db1(int player, int card, int highlight)
+void highlight_combat_damage_attacker(int player, int card, int highlight)
 {
-  if (highlight == 0)
+  if (highlight != 0)
   {
-    PLAYER_CARD_INSTANCE(player, card).token_status &= 0xfffdffff;
+    PLAYER_CARD_INSTANCE(player, card).token_status |= 0x20000;
   }
   else
   {
-    PLAYER_CARD_INSTANCE(player, card).token_status |= 0x20000;
+    PLAYER_CARD_INSTANCE(player, card).token_status &= ~0x20000;
   }
 }
 
 // FUNCTION: MAGIC 0x00516e2f
-void FUN_00516e2f(int player, int card, int highlight)
+void highlight_combat_damage_blocker(int player, int card, int highlight)
 {
-  if (highlight == 0)
+  if (highlight != 0)
   {
-    PLAYER_CARD_INSTANCE(player, card).token_status &= 0xfffdffff;
+    PLAYER_CARD_INSTANCE(player, card).token_status |= 0x20000;
   }
   else
   {
-    PLAYER_CARD_INSTANCE(player, card).token_status |= 0x20000;
+    PLAYER_CARD_INSTANCE(player, card).token_status &= ~0x20000;
   }
 }
 
 // FUNCTION: MAGIC 0x0051724e
-int FUN_0051724e(int player, int card)
+int has_damage_card_targeting(int player, int card)
 {
-  int loop_player;
-  int loop_card;
-
-  loop_player = 0;
-  do
+  struct
   {
-    if (1 < loop_player)
-    {
-      return 0;
-    }
+    int loop_player;
+    int loop_card;
+  } s;
 
-    for (loop_card = 0; loop_card < active_cards_count[loop_player]; loop_card = loop_card + 1)
+  for (s.loop_player = 0; s.loop_player < 2; s.loop_player = s.loop_player + 1)
+  {
+    for (s.loop_card = 0; s.loop_card < active_cards_count[s.loop_player]; s.loop_card = s.loop_card + 1)
     {
-      if (PLAYER_CARD_INSTANCE(loop_player, loop_card).damage_target_player == player &&
-          PLAYER_CARD_INSTANCE(loop_player, loop_card).damage_target_card == card &&
-          global_cards_data[PLAYER_CARD_INSTANCE(loop_player, loop_card).internal_card_id].id == 0x285)
+      if (PLAYER_CARD_INSTANCE(s.loop_player, s.loop_card).damage_target_player == player &&
+          PLAYER_CARD_INSTANCE(s.loop_player, s.loop_card).damage_target_card == card &&
+          global_cards_data[PLAYER_CARD_INSTANCE(s.loop_player, s.loop_card).internal_card_id].id == 0x285)
       {
         return 1;
       }
     }
-    loop_player = loop_player + 1;
-  } while (1);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x005136ed
@@ -720,15 +747,15 @@ void resolve_combat_damage(int player)
         {
           s.attacker_score_bounds[0] = 0x7fffffff;
           s.attacker_score_bounds[1] = 0xffff8001;
-          FUN_00516063();
+          clear_combat_damage_assignment_matrix();
           for (s.loop_index = 0; s.loop_index < 16; s.loop_index = s.loop_index + 1)
           {
             s.attacker_damage_ids[s.loop_index] = -1;
           }
-          FUN_005160c1(player, 0, s.blocker_has_trample, (int)s.attacker_damage_ids, s.damage_step, 0,
-                       s.attacker_score_bounds, s.attacker_score_bounds + 1);
-          FUN_005160c1(player, 0, s.blocker_has_trample, (int)s.attacker_damage_ids, s.damage_step, 1,
-                       s.attacker_score_bounds, s.attacker_score_bounds + 1);
+          assign_attacker_combat_damage(player, 0, s.blocker_has_trample, (int)s.attacker_damage_ids, s.damage_step, 0,
+                                        s.attacker_score_bounds, s.attacker_score_bounds + 1);
+          assign_attacker_combat_damage(player, 0, s.blocker_has_trample, (int)s.attacker_damage_ids, s.damage_step, 1,
+                                        s.attacker_score_bounds, s.attacker_score_bounds + 1);
         }
         else
         {
@@ -748,13 +775,13 @@ void resolve_combat_damage(int player)
                 if (combat_damage_attacker_abilities[s.damage_index] & 0x80)
                 {
                   sprintf(unk_00748770, text_lines[1],
-                          FUN_0044a3bf(player, combat_damage_attacker_cards[s.damage_index]),
+                          get_displayed_card_name(player, combat_damage_attacker_cards[s.damage_index]),
                           s.attacker_damage_remaining);
                 }
                 else
                 {
                   sprintf(unk_00748770, text_lines[0],
-                          FUN_0044a3bf(player, combat_damage_attacker_cards[s.damage_index]),
+                          get_displayed_card_name(player, combat_damage_attacker_cards[s.damage_index]),
                           s.attacker_damage_remaining);
                 }
               }
@@ -767,7 +794,7 @@ void resolve_combat_damage(int player)
                 sprintf(unk_00748770, text_lines[2], s.attacker_damage_remaining);
               }
 
-              FUN_00516db1(player, combat_damage_attacker_cards[s.damage_index], 1);
+              highlight_combat_damage_attacker(player, combat_damage_attacker_cards[s.damage_index], 1);
               s.target_is_valid = 0;
               while (s.target_is_valid == 0)
               {
@@ -782,24 +809,24 @@ void resolve_combat_damage(int player)
                 }
                 if (s.target_is_valid == 0 && g_duel_ai_mode_state != 1)
                 {
-                  FUN_004a61d6(text_lines[4]);
+                  set_duel_prompt_text(text_lines[4]);
                   Sleep(1500);
-                  FUN_004a61d6(DAT_0057dd7c);
+                  set_duel_prompt_text(DAT_0057dd7c);
                 }
-                if (s.target_is_valid == 1 && FUN_0051724e(s.selected_target.player, s.selected_target.card) != 0)
+                if (s.target_is_valid == 1 && has_damage_card_targeting(s.selected_target.player, s.selected_target.card) != 0)
                 {
                   s.target_is_valid = 0;
                   if (g_duel_ai_mode_state != 1)
                   {
-                    FUN_004a61d6(text_lines[5]);
+                    set_duel_prompt_text(text_lines[5]);
                     Sleep(1500);
-                    FUN_004a61d6(DAT_0057dd80);
+                    set_duel_prompt_text(DAT_0057dd80);
                   }
                 }
               }
 
               strcpy(unk_00748770, DAT_0057dd84);
-              FUN_00516db1(player, combat_damage_attacker_cards[s.damage_index], 0);
+              highlight_combat_damage_attacker(player, combat_damage_attacker_cards[s.damage_index], 0);
               if (s.selected_target.player != -1 && s.selected_target.card != -1 && s.selected_target.card != -2)
               {
                 for (s.loop_index = 0; s.loop_index < ai_blocker_count; s.loop_index = s.loop_index + 1)
@@ -899,7 +926,7 @@ void resolve_combat_damage(int player)
                 (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer != FUN_00481e25 ||
                  PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot >= 2))
             {
-              FUN_00515bba(s.defending_player, ai_blocker_cards[s.damage_index], (short)combat_damage_blocker_damage[s.damage_index]);
+              adjust_two_headed_giant_damage(s.defending_player, ai_blocker_cards[s.damage_index], combat_damage_blocker_damage[s.damage_index]);
               combat_damage_blocker_damage[s.damage_index] = 0;
             }
           }
@@ -937,7 +964,7 @@ void resolve_combat_damage(int player)
                   (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer != FUN_00481e25 ||
                    PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot >= 2))
               {
-                FUN_00515bba(s.defending_player, ai_blocker_cards[s.damage_index], (short)s.blocker_score[3]);
+                adjust_two_headed_giant_damage(s.defending_player, ai_blocker_cards[s.damage_index], s.blocker_score[3]);
                 combat_damage_blocker_damage[s.damage_index] -= s.blocker_score[3];
               }
             }
@@ -964,13 +991,13 @@ void resolve_combat_damage(int player)
         {
           s.blocker_score[0] = 0x7fffffff;
           s.blocker_score[1] = -1;
-          FUN_00516063();
+          clear_combat_damage_assignment_matrix();
           for (s.loop_index = 0; s.loop_index < 16; s.loop_index = s.loop_index + 1)
           {
             s.blocker_damage_ids[s.loop_index] = -1;
           }
-          FUN_00516736(player, 0, s.multiple_attackers, (int)s.blocker_damage_ids, s.damage_step, 0, s.blocker_score, s.blocker_score + 1);
-          FUN_00516736(player, 0, s.multiple_attackers, (int)s.blocker_damage_ids, s.damage_step, 1, s.blocker_score, s.blocker_score + 1);
+          assign_blocker_combat_damage(player, 0, s.multiple_attackers, (int)s.blocker_damage_ids, s.damage_step, 0, s.blocker_score, s.blocker_score + 1);
+          assign_blocker_combat_damage(player, 0, s.multiple_attackers, (int)s.blocker_damage_ids, s.damage_step, 1, s.blocker_score, s.blocker_score + 1);
         }
         else
         {
@@ -989,14 +1016,14 @@ void resolve_combat_damage(int player)
               if (g_duel_interface_options.layout != 2)
               {
                 sprintf(unk_00748770, text_lines[6],
-                        FUN_0044a3bf(s.defending_player, ai_blocker_cards[s.damage_index]), s.blocker_damage_remaining);
+                        get_displayed_card_name(s.defending_player, ai_blocker_cards[s.damage_index]), s.blocker_damage_remaining);
               }
               else
               {
                 sprintf(unk_00748770, text_lines[7], s.blocker_damage_remaining);
               }
 
-              FUN_00516e2f(s.defending_player, ai_blocker_cards[s.damage_index], 1);
+              highlight_combat_damage_blocker(s.defending_player, ai_blocker_cards[s.damage_index], 1);
               s.target_is_valid = 0;
               if (combat_damage_attacker_count == 1 &&
                   ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).token_status & COMBAT_DAMAGE_FLAG_CANCELABLE) == 0 ||
@@ -1021,8 +1048,8 @@ void resolve_combat_damage(int player)
                 {
                   s.target_is_valid = 1;
                   s.canceled_assignment = 1;
-                  FUN_00515bba(s.defending_player, ai_blocker_cards[s.damage_index],
-                               (short)s.blocker_damage_remaining);
+                  adjust_two_headed_giant_damage(s.defending_player, ai_blocker_cards[s.damage_index],
+                                                 s.blocker_damage_remaining);
                 }
                 else
                 {
@@ -1035,25 +1062,25 @@ void resolve_combat_damage(int player)
                   }
                   if (s.target_is_valid == 0 && g_duel_ai_mode_state != 1)
                   {
-                    FUN_004a61d6(text_lines[8]);
+                    set_duel_prompt_text(text_lines[8]);
                     Sleep(1500);
-                    FUN_004a61d6(DAT_0057dda0);
+                    set_duel_prompt_text(DAT_0057dda0);
                   }
-                  if (s.target_is_valid == 1 && FUN_0051724e(s.selected_target.player, s.selected_target.card) != 0)
+                  if (s.target_is_valid == 1 && has_damage_card_targeting(s.selected_target.player, s.selected_target.card) != 0)
                   {
                     s.target_is_valid = 0;
                     if (g_duel_ai_mode_state != 1)
                     {
-                      FUN_004a61d6(text_lines[9]);
+                      set_duel_prompt_text(text_lines[9]);
                       Sleep(1500);
-                      FUN_004a61d6(DAT_0057dda4);
+                      set_duel_prompt_text(DAT_0057dda4);
                     }
                   }
                 }
               }
 
               strcpy(unk_00748770, DAT_0057dda8);
-              FUN_00516e2f(s.defending_player, ai_blocker_cards[s.damage_index], 0);
+              highlight_combat_damage_blocker(s.defending_player, ai_blocker_cards[s.damage_index], 0);
               if (s.selected_target.player != -1 && s.selected_target.card != -1 && s.selected_target.card != -2)
               {
                 for (s.loop_index = 0; s.loop_index < combat_damage_attacker_count; s.loop_index = s.loop_index + 1)
@@ -1103,8 +1130,8 @@ void resolve_combat_damage(int player)
               ((s.damage_step == 0 && (PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).regen_status & 0x100) != 0) ||
                (s.damage_step == 1 && (PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).regen_status & 0x100) == 0)))
           {
-            FUN_00515bba(s.defending_player, ai_blocker_cards[s.damage_index - 1],
-                         (short)s.blocker_damage_remaining);
+            adjust_two_headed_giant_damage(s.defending_player, ai_blocker_cards[s.damage_index - 1],
+                                           s.blocker_damage_remaining);
           }
         }
       }
@@ -1141,7 +1168,7 @@ void resolve_combat_damage(int player)
         combat_damage_blocker_toughness[ai_blocker_count] =
             C_get_abilities(s.defending_player, s.scan_card, 0x33, s.card) -
             PLAYER_CARD_INSTANCE(s.defending_player, s.scan_card).damage_on_card;
-        if (FUN_0051724e(s.defending_player, s.scan_card) != 0)
+        if (has_damage_card_targeting(s.defending_player, s.scan_card) != 0)
         {
           combat_damage_blocker_toughness[ai_blocker_count] = 0;
         }
@@ -1197,12 +1224,12 @@ void resolve_combat_damage(int player)
              (s.damage_step == 1 && (PLAYER_CARD_INSTANCE(player, s.card).token_status & COMBAT_DAMAGE_FLAG_FIRST_STRIKE) == 0)) &&
             (PLAYER_CARD_INSTANCE(player, s.card).token_status & COMBAT_DAMAGE_FLAG_TRAMPLE) != 0 &&
             s.blocker_damage_remaining - (PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 +
-                                           PLAYER_CARD_INSTANCE(player, s.card).info_slot) <
+                                          PLAYER_CARD_INSTANCE(player, s.card).info_slot) <
                 0)
         {
           damage_player(s.defending_player,
                         (-(s.blocker_damage_remaining - (PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 +
-                                                          PLAYER_CARD_INSTANCE(player, s.card).info_slot)) <
+                                                         PLAYER_CARD_INSTANCE(player, s.card).info_slot)) <
                          (PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 + PLAYER_CARD_INSTANCE(player, s.card).info_slot))
                             ? -(s.blocker_damage_remaining - (PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 +
                                                               PLAYER_CARD_INSTANCE(player, s.card).info_slot))
@@ -1220,7 +1247,7 @@ void resolve_combat_damage(int player)
     if ((battlefield_extra_ability_flags & 1) != 0)
     {
       battlefield_extra_ability_flags &= ~1;
-      DAT_007ab2cc = FUN_004b0c12;
+      pending_killed_card_handler = process_killed_card;
       regenerate_or_graveyard_triggers();
       process_damage_prevention(player);
     }

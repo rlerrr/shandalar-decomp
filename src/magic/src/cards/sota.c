@@ -388,7 +388,7 @@ int card_icy_manipulator(int player, int card, event_t event)
   }
   else if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else
   {
@@ -553,7 +553,7 @@ int card_jade_statue(int player, int card, event_t event)
     }
     if (event == 0x7e)
     {
-      FUN_005001c4(*(int *)((char *)instance + 0x1c));
+      invalidate_dynamic_card_type(*(int *)((char *)instance + 0x1c));
       *(int *)((char *)instance + 0x1c) = *(int *)((char *)instance + 0x34);
       *(int *)((char *)instance + 0x34) = -1;
       instance->info_slot = 0;

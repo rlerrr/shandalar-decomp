@@ -29,7 +29,7 @@ void TENTATIVE_savegame(int autosave_slot);
 void FUN_004e4e75(void);
 void update_phase_display(int player, phase_t phase);
 void layout_attack_phase_window(HWND hwnd);
-int FUN_004a616d(int player, int phase);
+int update_duel_selection_display_if_human(int player, int phase);
 int player_can_stop_at_phase(int player, phase_t phase);
 void reset_trigger_dispatch_state(void);
 int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card);
@@ -40,7 +40,7 @@ void resolve_mana_burn(void);
 int show_ai_action_log_dialog(int use_saved_actions, int score);
 int get_ai_search_elapsed_time(void);
 void FUN_00446036(void);
-int allow_response(int param_1, int param_2, char *param_3, int param_4);
+int allow_response(int param_1, int param_2, char *prompt, int param_4);
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response);
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
 void start_ai_decision_search(int decision_code, int time_scale);
@@ -185,9 +185,9 @@ void reset_duel_globals(void)
     {
       raw_mana_available[player][card] = 0;
       basiclandtypes_controlled[player][card] = raw_mana_available[player][card];
-      unk_00742f70[player][card] = basiclandtypes_controlled[player][card];
+      special_mana_pool[player][card] = basiclandtypes_controlled[player][card];
       raw_mana_available_hex[player][0] = -1;
-      unk_007161e0[player][0] = -1;
+      mana_color_conversions[player][0] = -1;
       unk_00743080[player] = 0;
     }
   }
@@ -758,7 +758,7 @@ void update_phase_display(int player, phase_t phase)
 {
   if (g_duel_ai_mode_state != 1)
   {
-    FUN_004a616d(player, phase);
+    update_duel_selection_display_if_human(player, phase);
   }
   spell_fizzled = 0;
 }
@@ -1128,6 +1128,7 @@ int upkeep_phase(unsigned int player)
 }
 
 // FUNCTION: MAGIC 0x0044caa3
+// FUNCTION: SHANDALAR 0x0040541e
 int draw_phase(unsigned int player)
 {
   int trace_counter;
@@ -1181,14 +1182,14 @@ int draw_phase(unsigned int player)
     {
       if (g_duel_ai_mode_state != 1)
       {
-        if ((stop_phase == -1) ||
-            ((stop_phase == PHASE_DRAW) && (player == stop_phase_player)))
+        if ((stop_phase != -1) &&
+            ((stop_phase != PHASE_DRAW) || (player != stop_phase_player)))
         {
-          phase_stop_suppressed = 0;
+          phase_stop_suppressed = 1;
         }
         else
         {
-          phase_stop_suppressed = 1;
+          phase_stop_suppressed = 0;
         }
       }
     }
@@ -1209,13 +1210,13 @@ int draw_phase(unsigned int player)
       {
         for (s.draw_index = 0; s.draw_count > s.draw_index; s.draw_index = s.draw_index + 1)
         {
-          s.card = add_card_to_hand(player, unk_008b28f8);
+          s.card = add_card_to_hand(player, draw_card_placeholder_internal_card_id);
           if (s.card != -1)
           {
             global_card_instances[player][s.card].state |= 2;
           }
         }
-        TENTATIVE_reassess_all_cards(0, 0xff);
+        TENTATIVE_reassess_all_cards(0, 0x30);
       }
     }
 
@@ -1611,8 +1612,8 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     s.opponent = 1 - player;
     for (s.index = 0; s.index <= 7; s.index = s.index + 1)
     {
-      s.saved_special_mana[s.opponent][s.index] = unk_00742f70[s.opponent][s.index];
-      unk_00742f70[s.opponent][s.index] = basiclandtypes_controlled[s.opponent][s.index];
+      s.saved_special_mana[s.opponent][s.index] = special_mana_pool[s.opponent][s.index];
+      special_mana_pool[s.opponent][s.index] = basiclandtypes_controlled[s.opponent][s.index];
     }
 
     C_dispatch_event_raw(199);
@@ -1630,7 +1631,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       for (s.index = 0; s.index <= 7; s.index = s.index + 1)
       {
-        unk_00742f70[s.loop_player][s.index] = s.saved_special_mana[s.loop_player][s.index];
+        special_mana_pool[s.loop_player][s.index] = s.saved_special_mana[s.loop_player][s.index];
       }
     }
 

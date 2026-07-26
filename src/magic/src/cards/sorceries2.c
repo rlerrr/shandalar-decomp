@@ -26,7 +26,7 @@ int card_contract_from_below(int player, int card, event_t event)
     {
       discard(player, 0, 0);
     }
-    FUN_004817fd(player);
+    ante_drawn_card(player);
     FUN_0040246a(player, 7);
     kill_card(player, card, KILL_BURY);
   }
@@ -117,8 +117,8 @@ int card_demonic_attorney(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    FUN_004817fd(player);
-    FUN_004817fd(1 - player);
+    ante_drawn_card(player);
+    ante_drawn_card(1 - player);
     kill_card(player, card, KILL_BURY);
   }
 
@@ -179,7 +179,7 @@ int card_resurrection(int player, int card, event_t event)
       }
       load_text("promptsX1.txt", "RESURRECTION");
       s.prompt = text_lines;
-      s.can_select = FUN_004a62d7(player,
+      s.can_select = select_from_graveyard_with_dialog(player,
                                        global_graveyard_slots[player],
                                        s.selectable,
                                        500,
@@ -217,7 +217,7 @@ int card_resurrection(int player, int card, event_t event)
     {
       process_card_enters_play(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                    PLAYER_CARD_INSTANCE(player, card).targets[0].card);
-      FUN_004b15f7(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+      remove_card_from_graveyard(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                    PLAYER_CARD_INSTANCE(player, card).info_slot);
     }
     else

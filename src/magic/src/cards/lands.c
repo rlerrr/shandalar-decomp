@@ -79,7 +79,7 @@ int card_gem_bazaar(int player, int card, event_t event)
 
     if ((g_duel_network_flags & 2) != 0)
     {
-      (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(FUN_00464a84(player, 5) + 1));
+      (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(network_random(player, 5) + 1));
     }
     else if (player == active_player)
     {

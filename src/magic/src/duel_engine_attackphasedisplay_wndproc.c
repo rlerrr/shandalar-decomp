@@ -121,7 +121,7 @@ int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
 card_id_t get_card_window_displayed_card_id(HWND hwnd);
 int is_attack_phase_window_enabled(void);
 void copy_opponent_name_prefix(char *name);
-void FUN_00495fa1(void);
+void restack_duel_child_windows(void);
 
 static void hit_test_attack_phase_display(POINT *point, RECT *client_rect, int *phase);
 static void get_attack_phase_display_phase_rect(RECT *rect, int phase, int width, int height);
@@ -685,7 +685,7 @@ void layout_attack_phase_window(HWND hwnd)
     UpdateWindow(DAT_0094ca30);
     UpdateWindow(hwnd);
     UpdateWindow(DAT_008a8d78);
-    FUN_00495fa1();
+    restack_duel_child_windows();
   }
   UpdateWindow(hwnd);
   UpdateWindow(g_duel_help_owner_hwnd);

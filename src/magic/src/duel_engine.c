@@ -117,11 +117,13 @@ int g_icon_button_icon_long_offset = 0;
 // GLOBAL: MAGIC 0x0055e160
 int g_icon_button_pressed_long_offset = 4;
 
-// GLOBAL: MAGIC 0x0055e164
+// GLOBAL: MAGIC 0x005707a8
 int g_palette_selected_color_window_long_offset = 0;
 
+// GLOBAL: MAGIC 0x005707b0
 int g_palette_grid_y_offset;
 
+// GLOBAL: MAGIC 0x005707ac
 int g_palette_grid_x_offset;
 
 // GLOBAL: MAGIC 0x005710cc
@@ -1122,7 +1124,6 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 {
   struct
   {
-    int padding_140;
     int menu_item_count;
     POINT popup_point;
     RECT popup_rect;
@@ -1162,7 +1163,7 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
     }
     else
     {
-      FillRect(s.erase_dc, &s.client_rect, GetStockObject(WHITE_BRUSH));
+      FillRect(s.erase_dc, &s.client_rect, GetStockObject(GRAY_BRUSH));
     }
     return 1;
 
@@ -1172,7 +1173,7 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 
   case WM_RBUTTONDOWN:
     s.popup_point.x = (unsigned int)lparam & 0xffff;
-    s.popup_point.y = (unsigned int)lparam >> 16;
+    s.popup_point.y = HIWORD(lparam);
     ClientToScreen(hwnd, &s.popup_point);
     SetRect(&s.popup_rect, s.popup_point.x, s.popup_point.y,
             s.popup_point.x + 1, s.popup_point.y + 1);
@@ -1204,6 +1205,8 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004e2ff4
@@ -1212,12 +1215,6 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
 {
   struct
   {
-    int padding_3c;
-    int padding_38;
-    RECT mouse_up_rect;
-    unsigned int mouse_x;
-    unsigned int mouse_y;
-    RECT mouse_move_rect;
     int pressed;
     HICON icon;
   } s;
@@ -1231,13 +1228,13 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
     return 0;
 
   case 0x401:
-    return GetWindowLongA(hwnd, g_icon_button_pressed_long_offset);
+    return s.pressed = GetWindowLongA(hwnd, g_icon_button_pressed_long_offset);
 
   case WM_CREATE:
     s.icon = LoadIconA(g_app_instance, ((CREATESTRUCTA *)lparam)->lpszName);
     SetWindowLongA(hwnd, g_icon_button_icon_long_offset, (LONG)s.icon);
     s.pressed = 0;
-    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, 0);
+    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
     return 0;
 
   case WM_DESTROY:
@@ -1257,17 +1254,19 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
   case WM_LBUTTONDOWN:
     SetCapture(hwnd);
     s.pressed = 1;
-    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, 1);
+    SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
     InvalidateRect(hwnd, NULL, TRUE);
     return 0;
 
   case WM_MOUSEMOVE:
     if (GetCapture() == hwnd)
     {
-      s.mouse_x = (unsigned int)lparam & 0xffff;
-      s.mouse_y = (unsigned int)lparam >> 16;
-      GetClientRect(hwnd, &s.mouse_move_rect);
-      s.pressed = PtInRect(&s.mouse_move_rect, *(POINT *)&s.mouse_x);
+      POINT mouse_move_point;
+      RECT mouse_move_rect;
+      mouse_move_point.x = (unsigned int)lparam & 0xffff;
+      mouse_move_point.y = HIWORD(lparam);
+      GetClientRect(hwnd, &mouse_move_rect);
+      s.pressed = PtInRect(&mouse_move_rect, mouse_move_point);
       SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
       InvalidateRect(hwnd, NULL, TRUE);
     }
@@ -1276,10 +1275,12 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
   case WM_LBUTTONUP:
     if (GetCapture() == hwnd)
     {
-      s.mouse_x = (unsigned int)lparam & 0xffff;
-      s.mouse_y = (unsigned int)lparam >> 16;
-      GetClientRect(hwnd, &s.mouse_up_rect);
-      s.pressed = PtInRect(&s.mouse_up_rect, *(POINT *)&s.mouse_x);
+      POINT mouse_up_point;
+      RECT mouse_up_rect;
+      mouse_up_point.x = (unsigned int)lparam & 0xffff;
+      mouse_up_point.y = HIWORD(lparam);
+      GetClientRect(hwnd, &mouse_up_rect);
+      s.pressed = PtInRect(&mouse_up_rect, mouse_up_point);
       SetWindowLongA(hwnd, g_icon_button_pressed_long_offset, s.pressed);
       InvalidateRect(hwnd, NULL, TRUE);
       ReleaseCapture();
@@ -1295,7 +1296,7 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
     return 0;
 
   case WM_SETFOCUS:
-    SendMessageA(GetParent(hwnd), WM_COMMAND, LOWORD(GetDlgCtrlID(hwnd)), (LPARAM)hwnd);
+    SendMessageA(GetParent(hwnd), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwnd), 0), (LPARAM)hwnd);
     return 0;
 
   case WM_QUERYNEWPALETTE:

@@ -293,7 +293,7 @@ int raw_do_dialog(int bigcard_player,
                   int dialog_mode);
 
 // FUNCTION: MAGIC 0x0044a3bf
-char *FUN_0044a3bf(int player, int card)
+char *get_displayed_card_name(int player, int card)
 {
   struct
   {
@@ -335,7 +335,7 @@ char *FUN_0044a3bf(int player, int card)
     }
     else if (s.csvid == unk_00789b80)
     {
-      sprintf(g_dialog_card_title_buffer, gs_cardtitle_hunting_00926750, FUN_00495311(PLAYER_CARD_INSTANCE(player, card).info_slot));
+      sprintf(g_dialog_card_title_buffer, gs_cardtitle_hunting_00926750, get_hunting_subtype_name(PLAYER_CARD_INSTANCE(player, card).info_slot));
     }
     else if (s.csvid == unk_008cf1ac)
     {
@@ -361,7 +361,7 @@ char *FUN_0044a3bf(int player, int card)
     if (s.csvid == unk_00789734 && 0 < (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness)
     {
       strcpy(s.temporary_name, g_dialog_card_title_buffer);
-      FUN_0055d802(g_dialog_card_title_buffer, s.temporary_name, PLAYER_CARD_INSTANCE(player, card).eot_toughness);
+      extract_numbered_text_choice(g_dialog_card_title_buffer, s.temporary_name, PLAYER_CARD_INSTANCE(player, card).eot_toughness);
     }
 
     s.transformed_card_id = get_card_id(s.source_player, s.source_card_data);
@@ -389,7 +389,7 @@ void FUN_0044a796(int player, int card)
 {
   char *card_name;
 
-  card_name = FUN_0044a3bf(player, card);
+  card_name = get_displayed_card_name(player, card);
   if (card_name != NULL)
   {
     strcat(unk_00748770, card_name);
@@ -1181,7 +1181,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
 
   s.displayed_type = FUN_00449990(player, card);
   s.card_id = CardIDFromType(s.displayed_type);
-  if ((s.card_id == unk_0092666c && FUN_00449ac3(player, card) == unk_008b28f8) || s.card_id == unk_009266ac)
+  if ((s.card_id == unk_0092666c && FUN_00449ac3(player, card) == draw_card_placeholder_internal_card_id) || s.card_id == unk_009266ac)
   {
     DrawCardBack((HDC)dc, (RECT *)rect);
     return;
@@ -1288,7 +1288,7 @@ void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int play
     }
     else if (card_id == unk_00789b80)
     {
-      sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, FUN_00495311(get_displayed_card_special_counters(player, card)));
+      sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, get_hunting_subtype_name(get_displayed_card_special_counters(player, card)));
     }
     else if (card_id == unk_008cf1ac)
     {
@@ -1310,7 +1310,7 @@ void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int play
     if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
     {
       strcpy(s.temporary_name, g_card_title_buffer_00709100);
-      FUN_0055d802(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
+      extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
     }
 
     s.transformed_card_id = get_displayed_card_id(s.displayed_player, s.displayed_card);
@@ -1456,7 +1456,7 @@ void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int play
     if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
     {
       strcpy(s.transformed_rules_text, g_card_rules_text_buffer_00708da8);
-      FUN_0055d802(g_card_rules_text_buffer_00708da8, s.transformed_rules_text, FUN_004491cd(player, card));
+      extract_numbered_text_choice(g_card_rules_text_buffer_00708da8, s.transformed_rules_text, FUN_004491cd(player, card));
     }
 
     if (card_id == unk_007a7d64)

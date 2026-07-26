@@ -15,8 +15,8 @@
 BOOL TileBitmapIntoRect(HDC hdc, RECT *rect, HBITMAP bitmap);
 void draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE background_bitmap, HPEN pen1,
                HPEN pen2, COLORREF text_color, int draw_focus, UINT format);
-void FUN_004ec616(HWND hwnd);
-void FUN_004ec6c3(HWND hwnd, HDC dc, int *rect);
+void position_duel_prompt_context_window(HWND hwnd);
+void setup_duel_prompt_context_text_dc(HWND hwnd, HDC dc, int *rect);
 void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2,
                   COLORREF color, int draw_focus);
 
@@ -297,7 +297,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
     return s.button_flags;
 
   case 0x403:
-    FUN_004ec616(hwnd);
+    position_duel_prompt_context_window(hwnd);
     return 0;
 
   case WM_COMMAND:
@@ -435,7 +435,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       LineTo(s.paint_dc, s.rect.right - 4, s.rect.bottom - 3);
       GetWindowTextA(hwnd, s.window_text, 200);
       SetBkMode(s.paint_dc, TRANSPARENT);
-      FUN_004ec6c3(hwnd, s.paint_dc, (int *)&s.rect.left);
+      setup_duel_prompt_context_text_dc(hwnd, s.paint_dc, (int *)&s.rect.left);
       DPtoLP(s.paint_dc, (LPPOINT)&s.rect, 2);
       OffsetRect(&s.rect, 2, 2);
       SetTextColor(s.paint_dc, g_tell_user_shadow_color);

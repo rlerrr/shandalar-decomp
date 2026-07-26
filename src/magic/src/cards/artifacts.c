@@ -437,11 +437,11 @@ int card_celestial_prism(int player, int card, event_t event)
         {
           unk_00939340 = unk_008cc840 % 5 + 1;
           color = unk_00939340;
-          FUN_004e4f11();
+          record_ai_action_selection();
         }
         else
         {
-          FUN_004e5089();
+          replay_ai_action_selection();
           if (unk_00939340 < 6)
           {
             color = unk_00939340;
@@ -582,7 +582,7 @@ int card_forcefield(int player, int card, event_t event)
 
   if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
 
@@ -797,7 +797,7 @@ int card_conservator(int player, int card, event_t event)
 
   if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return 0;
   }
 
@@ -1410,7 +1410,7 @@ int card_jade_monolith(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else
   {
@@ -1725,7 +1725,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
 {
   if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player)
   {
-    ai_modifier += (unk_00742f80[other_player][3] * 3 - 6) * 4;
+    ai_modifier += (special_mana_pool[other_player][COLOR_ANY] * 3 - 6) * 4;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
@@ -1737,7 +1737,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(1);
+    load_recorded_action_target(1);
   }
   else
   {
@@ -1995,7 +1995,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else
   {
@@ -2144,7 +2144,7 @@ int card_the_hive(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    int tmp = FUN_004b5f03(0x375);
+    int tmp = find_internal_card_id_by_csv_id(0x375);
     bee_card = add_card_to_hand(player, tmp);
     if (bee_card != -1)
     {
@@ -2300,7 +2300,7 @@ int card_sunglasses_of_urza(int player, int card, event_t event)
 {
   if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
-    FUN_004eaceb(player, get_sleighted_color(player, card, 5), get_sleighted_color(player, card, 4));
+    declare_mana_color_conversion(player, get_sleighted_color(player, card, 5), get_sleighted_color(player, card, 4));
   }
 
   return 0;

@@ -19,7 +19,7 @@ void InitializeDuelUiGlobalIds(void)
   unk_008b3104 = unk_009266a4 + 6;
   DAT_008a9198 = unk_009266a4 + 7;
   DAT_008ce7cc = unk_009266a4 + 8;
-  unk_008b28f8 = unk_009266a4 + 9;
+  draw_card_placeholder_internal_card_id = unk_009266a4 + 9;
   DAT_00925bf4 = unk_009266a4 + 10;
   DAT_007a7878 = unk_009266a4 + 0xb;
   DAT_00926734 = unk_009266a4 + 0xc;

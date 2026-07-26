@@ -123,7 +123,7 @@ int card_consecrate_land(int player, int card, event_t event)
       instance->damage_target_player = instance->targets[0].player;
       instance->damage_target_card = instance->targets[0].card;
       *(int *)((char *)&PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card) + 0x14) |= 0x4000000;
-      FUN_0055117d(FUN_00437375, -1);
+      dispatch_three_arg_callback_to_cards_in_play(FUN_00437375, -1);
     }
     instance->number_of_targets = 0;
   }
@@ -206,7 +206,7 @@ int card_earthbind(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     return real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -351,7 +351,7 @@ int card_farmstead(int player, int card, event_t event)
     if (event == EVENT_CAST_SPELL && affected_card == card && player == affected_card_controller)
     {
       load_text("promptsX1.txt", "FARMSTEAD");
-      if (!FUN_00551b60(player, player, card))
+      if (!select_target_land_and_store(player, player, card))
       {
         spell_fizzled = 1;
       }
@@ -615,7 +615,7 @@ int card_kudzu(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
     load_text("promptsX1.txt", "KUDZU");
-    if (!FUN_00551b60(player, 1 - player, card))
+    if (!select_target_land_and_store(player, 1 - player, card))
     {
       spell_fizzled = 1;
     }
@@ -699,7 +699,7 @@ int card_kudzu(int player, int card, event_t event)
         new_target.card = -1;
       }
     }
-    else if (FUN_0048194e(instance->damage_target_player, 1 - instance->damage_target_player, (int *)&new_target))
+    else if (select_best_land_target_by_score(instance->damage_target_player, 1 - instance->damage_target_player, (int *)&new_target))
     {
       do_dialog(0, 0, 0, new_target.player, new_target.card, text_lines[2], 0);
     }
@@ -806,7 +806,7 @@ int card_lich(int player, int card, event_t event)
         }
         else
         {
-          FUN_004b4110(player);
+          exit_duel_thread(player);
         }
       }
     }
@@ -866,11 +866,11 @@ int FUN_0043b4f3(int player, int amount)
         } while (!is_in_play(target.player, target.card));
         instance = &PLAYER_CARD_INSTANCE(target.player, target.card);
       } while ((global_cards_data[instance->internal_card_id].type & 0x7f) == 0 || (instance->token_status & 0x10) != 0);
-      FUN_004e4f11();
+      record_ai_action_selection();
     }
     else if (player == other_player && (g_duel_network_flags & 2) == 0)
     {
-      FUN_004e5089();
+      replay_ai_action_selection();
       target.player = player;
       target.card = unk_00939340;
     }

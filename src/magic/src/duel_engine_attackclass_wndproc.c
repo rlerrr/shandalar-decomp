@@ -58,7 +58,7 @@ card_id_t get_card_window_displayed_card_id(HWND hwnd);
 LONG get_card_window_hidden_flag(HWND hwnd);
 void layout_attack_phase_window(HWND hwnd);
 int FUN_10025b5e(int hwnd, int msg, void *wparam, int lparam);
-void FUN_00495fa1(void);
+void restack_duel_child_windows(void);
 
 extern char global_base_directory[];
 extern char global_duelart_path[];
@@ -1383,7 +1383,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       ShowWindow(DAT_0069c620, SW_HIDE);
       ShowWindow(hwnd, SW_SHOW);
       SendMessageA(g_duel_prompt_context_hwnd, 0x403, 0, 0);
-      FUN_00495fa1();
+      restack_duel_child_windows();
       break;
 
     case 100:

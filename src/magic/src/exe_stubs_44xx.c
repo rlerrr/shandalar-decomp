@@ -3,10 +3,10 @@
 #include "game_support.h"
 #include "global_strings.h"
 
-char *FUN_0044a3bf(int player, int card);
+char *get_displayed_card_name(int player, int card);
 
 // FUNCTION: MAGIC 0x00443898
-unsigned int FUN_00443898(void)
+unsigned int get_current_stack_action(void)
 {
   if (stack_size == 0)
   {
@@ -49,7 +49,7 @@ char *format_stack_action_text(char *out, int msg, int player, int card)
 
   if (player >= 0 && card >= 0)
   {
-    sprintf(s.tmp, "%s: %s", s.prefix, FUN_0044a3bf(player, card));
+    sprintf(s.tmp, "%s: %s", s.prefix, get_displayed_card_name(player, card));
   }
   else
   {

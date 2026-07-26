@@ -176,7 +176,7 @@ int card_clone(int player, int card, event_t event)
                                       .info_slot;
       }
       data_card_controller = player;
-      data_card_slot = add_card_to_hand(player, FUN_004b5f03(CARD_ID_DATA_CARD));
+      data_card_slot = add_card_to_hand(player, find_internal_card_id_by_csv_id(CARD_ID_DATA_CARD));
       if (data_card_slot != -1)
       {
         PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).state =
@@ -277,14 +277,14 @@ int card_demonic_hordes(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else
   {
     if (event == EVENT_ACTIVATE)
     {
       load_text("promptsX1.txt", "DEMONIC_HORDES");
-      if (!FUN_00551b60(player, 2, card))
+      if (!select_target_land_and_store(player, 2, card))
       {
         spell_fizzled = 1;
       }
@@ -388,7 +388,7 @@ int card_demonic_hordes(int player, int card, event_t event)
                                0,
                                &selected_target);
         }
-        else if (FUN_0048194e(1 - player, player, (int *)&selected_target))
+        else if (select_best_land_target_by_score(1 - player, player, (int *)&selected_target))
         {
           do_dialog(player,
                     player,
@@ -458,7 +458,7 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
   }
   else if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else
   {
@@ -598,7 +598,7 @@ int card_granite_gargoyle(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e503e(0);
+    load_recorded_action_code(0);
     result = 0;
   }
   else
@@ -808,7 +808,7 @@ int card_nettling_imp(int player, int card, event_t event)
   }
   else if (event == 0x90)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
   }
   else
   {
@@ -970,7 +970,7 @@ int card_rock_hydra(int player, int card, event_t event)
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
-    FUN_004e4ff3(0);
+    load_recorded_action_target(0);
     iVar4 = 0;
   }
   else
@@ -1029,13 +1029,13 @@ int card_rock_hydra(int player, int card, event_t event)
             }
             else if (g_duel_ai_mode_state == 1)
             {
-              FUN_004e51bb();
+              rewind_recorded_action();
             }
             else
             {
-              FUN_004a61d6(text_lines[1]);
+              set_duel_prompt_text(text_lines[1]);
               Sleep(0x9c4);
-              FUN_004a61d6("");
+              set_duel_prompt_text("");
             }
           } while ((spell_fizzled != 1) && (local_8 == 0));
         }
@@ -1113,7 +1113,7 @@ int card_rock_hydra(int player, int card, event_t event)
       }
       piVar1 = &PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot;
       *piVar1 -= local_18;
-      FUN_005514cd(player, card, local_18);
+      remove_special_counters(player, card, local_18);
       piVar1 = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card)
                     .info_slot;
@@ -1437,7 +1437,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
         source_internal_card_id = target_instance->internal_card_id;
       }
 
-      data_card_slot = add_card_to_hand(player, FUN_004b5f03(CARD_ID_DATA_CARD));
+      data_card_slot = add_card_to_hand(player, find_internal_card_id_by_csv_id(CARD_ID_DATA_CARD));
       if (data_card_slot != -1)
       {
         data_card = &PLAYER_CARD_INSTANCE(player, data_card_slot);
