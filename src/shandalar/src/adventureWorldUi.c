@@ -309,11 +309,11 @@ extern EncodedImage *g_tips_frame_sprite;
 extern EncodedImage *g_tips_icon_sprite;
 extern int g_world_lair_monster_sprite_widths[0x10];
 extern DIBSurface *g_graphics_pages[10];
-extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x14];
+extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 extern EncodedImage *g_world_magic_avatar_sprites[5];
 extern EncodedImage *g_worlds_extra_sprite_entries[4];
 extern EncodedImage *g_castles_sprite_entries[20];
-extern EncodedImage *DAT_00748f10;
+extern EncodedImage *g_wizard_controlled_town_sprite_entries[5];
 extern EncodedImage *DAT_00749418;
 extern WorldMagicChoiceButtonSpriteBank g_world_magic_choice_button_sprite_bank;
 
@@ -1386,7 +1386,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
                                     s.tile_screen_x,
                                     s.tile_base_screen_y - ScaleUiCoordinate(0xa6),
                                     s.tile_base_screen_y,
-                                    ((EncodedImage **)&DAT_00748f10)[s.wizard_index]);
+                                    g_wizard_controlled_town_sprite_entries[s.wizard_index]);
           }
           if (edge_mode != 0)
           {

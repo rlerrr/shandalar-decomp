@@ -378,7 +378,9 @@ int ExportGraphicsPage(int page_number, char *path)
 
   g_export_write_palette = 0;
   result = EncodeRpBitsImage(fd, ReadGraphicsScanline, page_number, 0, 0, 0x140, 0xc8);
+#ifndef _DEBUG
   _close(fd);
+#endif
   return result;
 }
 

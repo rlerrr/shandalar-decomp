@@ -103,7 +103,7 @@ extern DIBSurface *g_graphics_pages[10];
 extern FacemakerWindowBounds *PTR_DAT_005832b4;
 extern FacemakerWindowBounds *PTR_DAT_005832dc;
 extern FacemakerWindowBounds *PTR_DAT_00583304;
-extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x14];
+extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 extern int(__cdecl *g_town_dialog_callback)(void);
 
 char *BuildCreatureNameWithArticle(int creature_type);

@@ -650,7 +650,9 @@ int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int p
       g_export_write_palette = 0;
     }
     result = EncodeRpBitsImage(file_handle, ReadGraphicsScanline, param_1, param_2, param_3, param_4, param_5);
+#ifndef _DEBUG
     _close(file_handle);
+#endif
     return result;
   }
 }

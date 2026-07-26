@@ -318,15 +318,7 @@ EncodedImage *g_clocknew_sprite_entries[9];
 // GLOBAL: SHANDALAR 0x00748f04
 EncodedImage *g_tips_icon_sprite;
 // GLOBAL: SHANDALAR 0x00748f10
-EncodedImage *DAT_00748f10;
-// GLOBAL: SHANDALAR 0x00748f14
-EncodedImage *DAT_00748f14;
-// GLOBAL: SHANDALAR 0x00748f18
-EncodedImage *DAT_00748f18;
-// GLOBAL: SHANDALAR 0x00748f1c
-EncodedImage *DAT_00748f1c;
-// GLOBAL: SHANDALAR 0x00748f20
-EncodedImage *DAT_00748f20;
+EncodedImage *g_wizard_controlled_town_sprite_entries[5];
 // GLOBAL: SHANDALAR 0x00748f30
 EncodedImage *g_sland_sprite_entries[22][5];
 // GLOBAL: SHANDALAR 0x00749280
@@ -362,7 +354,7 @@ EncodedImage *g_ttsprite_grid_sprite_entries[0x40];
 // GLOBAL: SHANDALAR 0x00749560
 EncodedImage *g_castles_sprite_entries[20];
 // GLOBAL: SHANDALAR 0x007496a0
-OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x14];
+OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 // GLOBAL: SHANDALAR 0x0078df40
 EncodedImage *DAT_0078df40[10];
 // GLOBAL: SHANDALAR 0x0058b584
@@ -3276,10 +3268,13 @@ void MarkPathConnection(int x, int y, int direction_index)
 // FUNCTION: SHANDALAR 0x005019ad
 void SaveGameToSlot(int save_slot_index)
 {
-#ifdef _DEBUG
-  return;
-#endif
   int save_drive_index;
+#ifdef _DEBUG
+  if (save_slot_index == 3) {
+    // Disable auto-save in the debugger
+    return;
+  }
+#endif
   g_save_errno = 0;
   global_saveload_loading = g_save_errno;
   FUN_0046ed33();
@@ -3753,16 +3748,16 @@ void LoadOpeningMenuSpriteResources(void)
   s.location_block_start_index = s.entry_index;
   s.entry_index += ReadSpriteEntryPointers(&g_location_marker_sprite_entries[s.entry_index], BuildResolutionSpritePath("locatn04.spr"));
 
-  DAT_00748f14 = g_location_marker_sprite_entries[s.location_block_start_index + 2];
-  DAT_00748f20 = g_location_marker_sprite_entries[s.location_block_start_index + 3];
-  DAT_00748f18 = g_location_marker_sprite_entries[s.location_block_start_index + 8];
-  DAT_00748f10 = g_location_marker_sprite_entries[s.location_block_start_index + 10];
+  g_wizard_controlled_town_sprite_entries[1] = g_location_marker_sprite_entries[s.location_block_start_index + 2];
+  g_wizard_controlled_town_sprite_entries[4] = g_location_marker_sprite_entries[s.location_block_start_index + 3];
+  g_wizard_controlled_town_sprite_entries[2] = g_location_marker_sprite_entries[s.location_block_start_index + 8];
+  g_wizard_controlled_town_sprite_entries[0] = g_location_marker_sprite_entries[s.location_block_start_index + 10];
   DAT_00749418 = g_location_marker_sprite_entries[s.location_block_start_index + 6];
   s.entry_index += ReadSpriteEntryPointers(&g_location_marker_sprite_entries[s.entry_index], BuildResolutionSpritePath("locatn05.spr"));
   s.location_block_start_index = s.entry_index;
   s.entry_index += ReadSpriteEntryPointers(&g_location_marker_sprite_entries[s.entry_index], BuildResolutionSpritePath("locatn06.spr"));
 
-  DAT_00748f1c = g_location_marker_sprite_entries[s.location_block_start_index];
+  g_wizard_controlled_town_sprite_entries[3] = g_location_marker_sprite_entries[s.location_block_start_index];
 
   s.tsprite2_entry_index = 0;
   ReadSpriteEntryPointers(s.tsprite2_entries, "tsprite2.spr");
