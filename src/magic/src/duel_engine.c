@@ -855,9 +855,6 @@ void destroy_MAGICGAME_GraveyardClass(LPCSTR class_name)
     DestroyMenu(g_graveyard_popup_menu);
   }
   g_graveyard_popup_menu = (HMENU)0;
-  UnregisterClassA(CLASS_MAGICGAME_GRAVEYARD, g_app_instance);
-  UnregisterClassA(CLASS_EXPANDED_GRAVEYARD, g_app_instance);
-  UnregisterClassA(CLASS_GRAVEYARD_CARDS, g_app_instance);
 }
 
 // FUNCTION: MAGIC 0x00486369

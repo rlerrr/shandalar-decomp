@@ -10,7 +10,7 @@ void InitializeDuelUiGlobalIds(void)
   g_card_count = g_card_data_bytes / 0x48;
   g_card_count -= 0x10;
   unk_009266a4 = g_card_count - 0x2d;
-  
+
   LEGACY_EFFECT_PUMP = unk_009266a4 + 1;
   unk_007abc7c = unk_009266a4 + 2;
   unk_00896534 = unk_009266a4 + 3;
@@ -77,7 +77,7 @@ void InitializeDuelUiGlobalIds(void)
   DAT_008a8d6c = -1;
   DAT_007aadf0 = -1;
   produced_mana_color = -1;
-  active_player = 1;
+  other_player = 1;
   unk_00712938 = -1;
   DAT_00742f68 = 0x30;
   DAT_00742fc0 = 1;

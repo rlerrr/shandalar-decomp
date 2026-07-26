@@ -1344,7 +1344,7 @@ void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int play
 
     if (card_id == unk_007a7d64)
     {
-      strcpy(g_card_rules_text_buffer_00708da8, *(char **)(gs_words_to_sleight_00781bd0 + s.card_data.id * 0x14));
+      strcpy(g_card_rules_text_buffer_00708da8, gs_words_to_sleight_00781bd0[s.card_data.id]);
     }
     else if (card_id == unk_00789b80)
     {

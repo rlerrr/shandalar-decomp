@@ -574,8 +574,8 @@ char *GetQuestCardClassName(int quest_bitmap_mask)
 // FUNCTION: SHANDALAR 0x00561465
 char *BuildCreatureNameWithArticle(int creature_type)
 {
-  strcpy(g_creature_name_with_article_buffer, gs_creature_names_00591a08[creature_type].article);
-  strcat(g_creature_name_with_article_buffer, gs_creature_names_00591a08[creature_type].name);
+  strcpy(g_creature_name_with_article_buffer, g_shandalar_monster_definitions[creature_type].article);
+  strcat(g_creature_name_with_article_buffer, g_shandalar_monster_definitions[creature_type].name);
   return g_creature_name_with_article_buffer;
 }
 
@@ -2290,11 +2290,11 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       }
 
       s.current_entry_type = g_lair_or_monster_slots[s.slot_index].entry_type;
-      if ((gs_creature_names_00591a08[s.current_entry_type].flags_0a & 2U) != 0)
+      if ((g_shandalar_monster_definitions[s.current_entry_type].flags_0a & 2U) != 0)
       {
         s.current_entry_type -= (ShandalarEntryType)(((unsigned int)g_monster_timer >> 5) & 3);
       }
-      if (((gs_creature_names_00591a08[s.current_entry_type].flags_0a & 0x100U) != 0) &&
+      if (((g_shandalar_monster_definitions[s.current_entry_type].flags_0a & 0x100U) != 0) &&
           (ApproximateDistance(s.player_screen_x - 0x140, s.player_screen_y - 0xf0) > ScaleUiCoordinateFrom320(0x80)))
       {
         continue;
@@ -2315,7 +2315,7 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
       }
       else
       {
-        s.heading_sprite_index = (signed char)gs_creature_names_00591a08[s.current_entry_type].encounter_type;
+        s.heading_sprite_index = (signed char)g_shandalar_monster_definitions[s.current_entry_type].encounter_type;
         if (g_skip_world_sfx_preload != 0)
         {
           s.heading_sprite_index = 1;

@@ -344,7 +344,7 @@ void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_perc
   }
   DAT_00591270 = 0;
 
-  switch (gs_creature_names_00591a08[creature_type].encounter_type)
+  switch (g_shandalar_monster_definitions[creature_type].encounter_type)
   {
   case 1:
     LoadSoundWithDriveFallback("x:sound\\malewiz.wav", 0xf, 0);
@@ -571,7 +571,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       if ((s.slot_index == 0) && (g_current_quest_type < 0) && (-100 < g_current_quest_type))
       {
-        s.creature_tier = (int)gs_creature_names_00591a08[-g_current_quest_type].tier;
+        s.creature_tier = (int)g_shandalar_monster_definitions[-g_current_quest_type].tier;
       }
 
       if (s.creature_tier != 0)
@@ -605,7 +605,7 @@ void UpdateWorldLairAndMonsterSlots(void)
           s.new_distance = 0;
           for (s.i = 0; (s.i < 1000) && ((char)g_duel_victory_log[s.i] != '\0'); s.i = s.i + 1)
           {
-            if ((gs_creature_names_00591a08[s.creature_tier].encounter_type == ((char)g_duel_victory_log[s.i] & 0xf)) &&
+            if ((g_shandalar_monster_definitions[s.creature_tier].encounter_type == ((char)g_duel_victory_log[s.i] & 0xf)) &&
                 (((int)(char)g_duel_victory_log[s.i] >> 4) == s.color))
             {
               s.new_distance = s.new_distance + 1;
@@ -628,10 +628,10 @@ void UpdateWorldLairAndMonsterSlots(void)
         g_lair_or_monster_slots[s.slot_index].movement_heading = 0;
         g_lair_or_monster_slots[s.slot_index].movement_anim_frame = 0;
 
-        if (((1U << (byte)s.color) & (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask) &&
+        if (((1U << (byte)s.color) & (unsigned int)g_shandalar_monster_definitions[s.creature_tier].color_mask) &&
             ((g_defeated_wizards_bitmap & (1U << (byte)s.color)) != 0))
         {
-          s.target_dy = (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask & ~(1U << (byte)s.color);
+          s.target_dy = (unsigned int)g_shandalar_monster_definitions[s.creature_tier].color_mask & ~(1U << (byte)s.color);
           if ((s.target_dy == 0) || ((g_defeated_wizards_bitmap & s.target_dy) != 0))
           {
             FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
@@ -695,7 +695,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 	s.speed = 0;
 	s.range = 0;
 #endif
-    switch (gs_creature_names_00591a08[s.creature_tier].encounter_type)
+    switch (g_shandalar_monster_definitions[s.creature_tier].encounter_type)
     {
     case 0:
       s.range = -1;
@@ -754,7 +754,7 @@ void UpdateWorldLairAndMonsterSlots(void)
     }
 
     s.range = (s.range * 3) / 2;
-    if (gs_creature_names_00591a08[s.creature_tier].flags_0a & 0x200)
+    if (g_shandalar_monster_definitions[s.creature_tier].flags_0a & 0x200)
     {
       s.range = s.range << 1;
     }
@@ -790,7 +790,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       s.tile_dist_y = g_world_player_y - s.prev_y;
     }
 
-    if (gs_creature_names_00591a08[s.creature_tier].flags_0a & 1)
+    if (g_shandalar_monster_definitions[s.creature_tier].flags_0a & 1)
     {
       s.movement_step = 2;
     }
@@ -800,7 +800,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       s.new_distance = 0;
       for (s.i = 0; (s.i < 1000) && ((char)g_duel_victory_log[s.i] != '\0'); s.i = s.i + 1)
       {
-        if ((gs_creature_names_00591a08[s.creature_tier].encounter_type == ((char)g_duel_victory_log[s.i] & 0xf)) &&
+        if ((g_shandalar_monster_definitions[s.creature_tier].encounter_type == ((char)g_duel_victory_log[s.i] & 0xf)) &&
             (((int)(char)g_duel_victory_log[s.i] >> 4) == g_lair_or_monster_slots[s.slot_index].color))
         {
           s.new_distance = s.new_distance + 1;
@@ -829,8 +829,8 @@ void UpdateWorldLairAndMonsterSlots(void)
         g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
     s.color = GetWorldTileMagicMask(s.tile_y);
 
-    if ((gs_creature_names_00591a08[s.creature_tier].flags_0a & 0xf8) &&
-        ((gs_creature_names_00591a08[s.creature_tier].flags_0a & (s.color << 3)) != 0) &&
+    if ((g_shandalar_monster_definitions[s.creature_tier].flags_0a & 0xf8) &&
+        ((g_shandalar_monster_definitions[s.creature_tier].flags_0a & (s.color << 3)) != 0) &&
         (s.speed > 1))
     {
       s.speed = s.speed / 2;
@@ -932,7 +932,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       continue;
     }
 
-    if ((gs_creature_names_00591a08[s.creature_tier].flags_0a & 4) && ((g_monster_timer & 0x3fU) == 0))
+    if ((g_shandalar_monster_definitions[s.creature_tier].flags_0a & 4) && ((g_monster_timer & 0x3fU) == 0))
     {
       if (RandomIntLessThan(2) != 0)
       {
@@ -963,7 +963,7 @@ void UpdateWorldLairAndMonsterSlots(void)
         g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
     s.color = GetWorldTileMagicMask(s.tile_y);
 
-    if (((s.color & (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask) == 0) &&
+    if (((s.color & (unsigned int)g_shandalar_monster_definitions[s.creature_tier].color_mask) == 0) &&
         (s.range >= 0) && (s.slot_index != 7))
     {
       g_lair_or_monster_slots[s.slot_index].world_x = s.prev_x;
@@ -972,7 +972,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       s.color = GetWorldTileMagicMask(s.tile_y);
       g_lair_or_monster_slots[s.slot_index].movement_anim_frame = 0;
 
-      if ((s.color & (unsigned int)gs_creature_names_00591a08[s.creature_tier].color_mask) == 0)
+      if ((s.color & (unsigned int)g_shandalar_monster_definitions[s.creature_tier].color_mask) == 0)
       {
         FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
         g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;

@@ -979,7 +979,7 @@ int RenderStatsCreatureGridPage(int page_index)
         PTR_DAT_00583304->font_slot = 1;
         DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xb7, ScaleUiCoordinate(0x7c) * s.column + ScaleUiCoordinate(0x3e),
                                           ScaleUiCoordinate(s.row << 6) + ScaleUiCoordinate(0x36) + 0x80, "%s",
-                                          gs_creature_names_00591a08[s.creature_type + 1].name);
+                                          g_shandalar_monster_definitions[s.creature_type + 1].name);
       }
     }
   }
@@ -1911,7 +1911,7 @@ int ShowStatsWindow(int mode, int highlight)
     s.color_order[4] = 1;
     s.color_order[5] = 0;
     highlight &= 0xffff;
-    if (gs_creature_names_00591a08[highlight].color_mask == -1)
+    if (g_shandalar_monster_definitions[highlight].color_mask == -1)
     {
       mode = 0;
     }

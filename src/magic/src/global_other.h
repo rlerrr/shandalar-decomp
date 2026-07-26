@@ -13,11 +13,46 @@
 #define GLOBAL_OTHERS_EXTERN extern
 #endif
 
+typedef struct shandalar_monster_definition_struct
+{
+  char article[0x0a];
+  char name[0x32];
+  char plural[0x32];
+  char gender;
+  char tier;
+  char base_strength;
+  char encounter_type;
+  char color_mask;
+  char unknown_05;
+  int deck_number;
+  unsigned int flags_0a;
+  char flags_0e;
+  char flags_0f;
+  char flags_10;
+  char flags_11;
+  unsigned int preduel_flags;
+  unsigned int reward_flags;
+  int reward_card_id;
+} PACKED ShandalarMonsterDefinition;
+STATIC_ASSERT(sizeof(ShandalarMonsterDefinition) == 0x8c, shandalar_monster_definition_wrong_size);
+
 typedef struct
 {
   int x;
   int y;
 } int_pair_t;
+
+#if defined(GLOBALS_OTHERS_IMPL) && defined(SHANDALAR)
+// GLOBAL: SHANDALAR 0x00591a08
+ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39] = {
+#include "shandalar/src/creature_names_init.inc"
+};
+#elif defined(GLOBALS_OTHERS_IMPL) && !defined(SHANDALAR)
+// GLOBAL: MAGIC 0x00746880
+ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39];
+#else
+extern ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39];
+#endif
 
 // GLOBAL: MOK 0x543c10
 // GLOBAL: MAGIC 0x00791560

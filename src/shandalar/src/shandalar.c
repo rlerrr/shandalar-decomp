@@ -5904,33 +5904,33 @@ int LoadAdvStringsFile(const char *filename)
   s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
   for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.i].name, text_lines[s.i]);
+    strcpy(g_shandalar_monster_definitions[s.i].name, text_lines[s.i]);
   }
   for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.i].name, "");
+    strcpy(g_shandalar_monster_definitions[s.i].name, "");
   }
 
   s.line_count = LoadTextSectionLines(filename, "CREATURENAME_ARTICLES");
   s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
   for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.i].article, text_lines[s.i]);
+    strcpy(g_shandalar_monster_definitions[s.i].article, text_lines[s.i]);
   }
   for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.i].name, "");
+    strcpy(g_shandalar_monster_definitions[s.i].name, "");
   }
 
   s.line_count = LoadTextSectionLines(filename, "CREATURENAMES_PLURAL");
   s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
   for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.i].plural, text_lines[s.i]);
+    strcpy(g_shandalar_monster_definitions[s.i].plural, text_lines[s.i]);
   }
   for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    strcpy(gs_creature_names_00591a08[s.i].plural, "");
+    strcpy(g_shandalar_monster_definitions[s.i].plural, "");
   }
 
   LoadTextSectionLines(filename, "DIRECTIONS");

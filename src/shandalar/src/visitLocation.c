@@ -1013,7 +1013,7 @@ int IsCreatureTypeFeminine(int creature_type)
   {
     return 0;
   }
-  if (gs_creature_names_00591a08[creature_type].plural[0x32] == 'f')
+  if (g_shandalar_monster_definitions[creature_type].plural[0x32] == 'f')
   {
     return 1;
   }
@@ -1261,7 +1261,7 @@ void VisitTownWiseman(void)
     {
       if (g_current_quest_type < 0)
       {
-        if (gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] == '\x12')
+        if (g_shandalar_monster_definitions[-g_current_quest_type].plural[0x33] == '\x12')
         {
           sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[6], GetCreatureName(-g_current_quest_type));
         }
@@ -1272,7 +1272,7 @@ void VisitTownWiseman(void)
 
         if (g_town_slots[town_index].location_type == 1)
         {
-          if (((int)gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] / 7) == 0)
+          if (((int)g_shandalar_monster_definitions[-g_current_quest_type].plural[0x33] / 7) == 0)
           {
             sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_citywiseman_0074d800[8],
                     gs_amuletnames_0077d090[g_current_quest_color]);
@@ -2624,8 +2624,8 @@ ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int cre
   {
     creature_type = RandomIntLessThan((int)gs_creature_name_count_00593934 - 1) + 1;
     tries++;
-  } while (tries < 999 && (gs_creature_names_00591a08[creature_type].tier != creature_tier ||
-                           (wizard_color != 0 && ((1 << (unsigned char)wizard_color) & (int)(signed char)gs_creature_names_00591a08[creature_type].color_mask) == 0)));
+  } while (tries < 999 && (g_shandalar_monster_definitions[creature_type].tier != creature_tier ||
+                           (wizard_color != 0 && ((1 << (unsigned char)wizard_color) & (int)(signed char)g_shandalar_monster_definitions[creature_type].color_mask) == 0)));
 
   return (tries == 999) ? SHANDALAR_ENTRY_LAIR : (ShandalarEntryType)creature_type;
 }
@@ -2636,17 +2636,17 @@ void LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int 
   (void)name_id;
 
   strcpy(g_ui_message_buffer, s_decks_0_0058cb70);
-  if (gs_creature_names_00591a08[creature_type].deck_number < 100)
+  if (g_shandalar_monster_definitions[creature_type].deck_number < 100)
   {
     strcat(g_ui_message_buffer, DAT_0058cb78);
-    if (gs_creature_names_00591a08[creature_type].deck_number < 10)
+    if (g_shandalar_monster_definitions[creature_type].deck_number < 10)
     {
       strcat(g_ui_message_buffer, DAT_0058cb7c);
     }
   }
 
   strcat(g_ui_message_buffer,
-         _itoa(gs_creature_names_00591a08[creature_type].deck_number, DAT_0093a870, 10));
+         _itoa(g_shandalar_monster_definitions[creature_type].deck_number, DAT_0093a870, 10));
   strcat(g_ui_message_buffer, DAT_0058cb80);
 
   if (FileExists(g_ui_message_buffer) != 0)
@@ -2998,7 +2998,7 @@ void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
 
   for (s.i = 1; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    if ((*(int *)&amulet_color & (int)(signed char)gs_creature_names_00591a08[s.i].plural[0x36]) != 0)
+    if ((*(int *)&amulet_color & (int)(signed char)g_shandalar_monster_definitions[s.i].plural[0x36]) != 0)
     {
       s.aiStack_50[s.count] = s.i;
       s.count = s.count + 1;
@@ -3116,7 +3116,7 @@ int ComputeWisemanCityBlockValue(int color_index)
 
   s.creature_group = color_index * 7;
   s.color_bit = 1 << (unsigned char)color_index;
-  s.score = (int)(signed char)gs_creature_names_00591a08[s.creature_group].tier;
+  s.score = (int)(signed char)g_shandalar_monster_definitions[s.creature_group].tier;
 
   if (s.creature_group <= 0x24)
   {
@@ -3149,7 +3149,7 @@ int ComputeWisemanCityBlockValue(int color_index)
 
 after_difficulty_adjust:
 
-  if ((int)(signed char)gs_creature_names_00591a08[s.creature_group].encounter_type == 0xb)
+  if ((int)(signed char)g_shandalar_monster_definitions[s.creature_group].encounter_type == 0xb)
   {
     for (s.duel_log_index = 0; s.duel_log_index < 10; s.duel_log_index = s.duel_log_index + 1)
     {
@@ -3160,7 +3160,7 @@ after_difficulty_adjust:
     }
   }
 
-  if ((int)(signed char)gs_creature_names_00591a08[s.creature_group].encounter_type == 0xc)
+  if ((int)(signed char)g_shandalar_monster_definitions[s.creature_group].encounter_type == 0xc)
   {
     s.score = s.score + 10;
     s.duel_win_count = 0;
@@ -4665,7 +4665,7 @@ int VisitTownSlot(int town_index)
       g_lair_or_monster_slots[6].color = s.duel_wizard_color;
       g_lair_or_monster_slots[6].entry_type = (ShandalarEntryType)s.duel_creature_tier_or_type;
 
-      s.selected_card_id = FUN_0056c705(gs_creature_names_00591a08[s.duel_creature_tier_or_type].deck_number);
+      s.selected_card_id = FUN_0056c705(g_shandalar_monster_definitions[s.duel_creature_tier_or_type].deck_number);
       LoadCreatureDuelDeck(s.duel_creature_tier_or_type, (unsigned int)s.selected_card_id, 0, -1);
 
       DAT_008ce538 = s.duel_wizard_color;
@@ -4845,7 +4845,7 @@ int VisitTownSlot(int town_index)
       {
         s.first_card_browser_draw = 1;
         g_current_quest_type = g_current_quest_type + 100;
-        s.deck_card_index = (int)gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] / 7 + 1;
+        s.deck_card_index = (int)g_shandalar_monster_definitions[-g_current_quest_type].plural[0x33] / 7 + 1;
         if (IsCreatureTypeFeminine(-g_current_quest_type))
         {
           sprintf(g_ui_message_buffer, gs_visit_0077c4f0[0x15], GetCreatureName(-g_current_quest_type));
@@ -4896,7 +4896,7 @@ int VisitTownSlot(int town_index)
       else
       {
         g_current_quest_type = g_current_quest_type + 100;
-        s.deck_card_index = (int)gs_creature_names_00591a08[-g_current_quest_type].plural[0x33] / 7 + 1;
+        s.deck_card_index = (int)g_shandalar_monster_definitions[-g_current_quest_type].plural[0x33] / 7 + 1;
         if (IsCreatureTypeFeminine(-g_current_quest_type))
         {
           sprintf(g_ui_message_buffer, gs_visit_0077c4f0[26], GetCreatureName(-g_current_quest_type));

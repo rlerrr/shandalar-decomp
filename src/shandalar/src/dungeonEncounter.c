@@ -891,7 +891,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
     unk_00789308 = FUN_0056c705(g_castle_dungeon_slots[param_1].card_in_effect);
   }
   local_c = g_dungeon_runtime_state.encounter.selected.monster_creature_types[param_2];
-  DAT_007a7874 = (int)gs_creature_names_00591a08[local_c].base_strength;
+  DAT_007a7874 = (int)g_shandalar_monster_definitions[local_c].base_strength;
   DAT_00742fd0 = 0;
   if (param_2 != 4)
   {
@@ -910,7 +910,7 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
   }
   iVar2 = -1;
   color_filter = 0;
-  name_id = FUN_0056c705(gs_creature_names_00591a08[local_c].deck_number);
+  name_id = FUN_0056c705(g_shandalar_monster_definitions[local_c].deck_number);
   LoadCreatureDuelDeck(local_c, name_id, color_filter, iVar2);
   PlaySoundEffectOnChannel("x:sound\\dngnduel.wav", 0xf, 100, 100, 0);
   if (param_1 < 5)
@@ -1157,8 +1157,8 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
     DeckBuilderMain(g_main_window_hwnd, 1, 1);
     RestoreAdventureUiPaletteAndFocus();
     s.final_creature = PickRandomCreatureTypeForWizardTier(0, 100);
-    gs_creature_names_00591a08[s.final_creature].tier =
-        gs_creature_names_00591a08[s.final_creature].tier *
+    g_shandalar_monster_definitions[s.final_creature].tier =
+        g_shandalar_monster_definitions[s.final_creature].tier *
         (g_shandalar_difficulty + 1);
     LoadCreatureDuelDeck(s.final_creature, 0, 0, -1);
     DAT_008ce538 = s.wizard_color;

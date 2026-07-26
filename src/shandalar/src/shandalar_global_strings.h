@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "magic/src/duel_engine.h"
+#include "magic/src/global_other.h"
 
 /* Single header library style */
 #ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
@@ -34,41 +35,6 @@ typedef char sh_two_text_0x32_size_must_be_0x64[(sizeof(sh_two_text_0x32_t) == 0
 unsigned int gs_creature_name_count_00593934 = 0x39;
 #else
 extern unsigned int gs_creature_name_count_00593934;
-#endif
-
-/* [CREATURENAMES] packed record at 0x00591a08, stride 0x8c */
-#pragma pack(push, 1)
-typedef struct
-{
-  char article[0x0a];
-  sh_text_0x32_t name;
-  sh_text_0x32_t plural;
-  char gender;
-  char tier;
-  char base_strength;
-  char encounter_type;
-  char color_mask;
-  char unknown_05;
-  int deck_number;
-  unsigned int flags_0a;
-  char flags_0e;
-  char flags_0f;
-  char flags_10;
-  char flags_11;
-  unsigned int preduel_flags;
-  unsigned int reward_flags;
-  int reward_card_id;
-} sh_creature_name_entry_t;
-typedef char sh_creature_name_entry_size_must_be_0x8c[(sizeof(sh_creature_name_entry_t) == 0x8c) ? 1 : -1];
-#pragma pack(pop)
-
-#ifdef SHANDALAR_GLOBAL_STRINGS_IMPL
-SHANDALAR_GLOBAL_STRINGS_EXTERN sh_creature_name_entry_t gs_creature_names_00591a08[0x39] = {
-#include "creature_names_init.inc"
-};
-#else
-// GLOBAL: SHANDALAR 0x00591a08
-SHANDALAR_GLOBAL_STRINGS_EXTERN sh_creature_name_entry_t gs_creature_names_00591a08[0x39];
 #endif
 
 /* Pointer tables (arrays of char*) */

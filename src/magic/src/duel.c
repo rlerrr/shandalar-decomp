@@ -13,7 +13,6 @@
 #include "magic/src/global_strings.h"
 #ifdef SHANDALAR
 #include "deckdll/src/magsnd.h"
-#include "shandalar/src/shandalar_global_strings.h"
 #endif
 
 extern int life[2];
@@ -86,18 +85,6 @@ extern int _DAT_007483f4;
 int single_color_test_bit_to_color_t(int color_mask);
 #endif
 
-typedef struct
-{
-  unsigned char pad_00[0x1f]; // +0x00
-  char life;                  // +0x1f
-  unsigned char pad_20;       // +0x20
-  char kind;                  // +0x21
-  unsigned char pad_22[0x0e]; // +0x22
-  int flags;                  // +0x30
-  unsigned char pad_31[0x58]; // +0x34
-} ShandalarMonsterDefinition;
-STATIC_ASSERT(sizeof(ShandalarMonsterDefinition) == 0x8c, shandalar_monster_definition_wrong_size);
-
 // GLOBAL: MAGIC 0x005732b4
 char s_Starting_the_duel_005732b4[0x14] = "Starting the duel.\n";
 
@@ -142,9 +129,6 @@ char s__d__Entering_AI_Decision_Phase__0056e968[0x24] = "%d: Entering AI Decisio
 
 // GLOBAL: MAGIC 0x0056e98c
 char s_phase___3d_num_tries___4d_mtime___0056e98c[0x32] = "phase = %3d num tries = %4d mtime = %4d, %d\n";
-
-// GLOBAL: MAGIC 0x00746880
-ShandalarMonsterDefinition g_shandalar_monster_definitions[56];
 
 // GLOBAL: MAGIC 0x009251d4
 int DAT_009251d4;
@@ -314,7 +298,46 @@ void load_duel_run_mode_3_save(char *path)
 // FUNCTION: MAGIC 0x0044b56a
 int check_duel_finished(void)
 {
-  return 0;
+  int player_died;
+  int result;
+
+  if ((life[0] <= 0) || (life[1] <= 0))
+  {
+    player_died = 1;
+  }
+  else if ((DAT_007abce0 >= 10) || (DAT_007abce4 >= 10))
+  {
+    player_died = 1;
+  }
+  else
+  {
+    player_died = 0;
+  }
+  if (player_died)
+  {
+    if (g_duel_ai_mode_state == 1)
+    {
+      if (DAT_007abce0 >= 10)
+      {
+        life[0] = -99;
+      }
+      if (DAT_007abce4 >= 10)
+      {
+        life[1] = -99;
+      }
+      result = 0;
+    }
+    else
+    {
+      TENTATIVE_reassess_all_cards(0, 0xff);
+      result = 1;
+    }
+  }
+  else
+  {
+    result = 0;
+  }
+  return result;
 }
 
 // FUNCTION: MAGIC 0x0044a7e0
@@ -1829,7 +1852,7 @@ int CountDuelPoolEligibleTowns(void)
 char *GetCreatureName(int creature_type)
 {
 #ifdef SHANDALAR
-  return gs_creature_names_00591a08[creature_type].name;
+  return g_shandalar_monster_definitions[creature_type].name;
 #else
   (void)creature_type;
   return DAT_007a7c60;
@@ -2058,7 +2081,7 @@ int play_duel(int player, int creature_type)
     }
     DAT_00716024 = life[0];
     g_next_duel_life_delta = 0;
-    life[1] = g_shandalar_monster_definitions[creature_type].life;
+    life[1] = g_shandalar_monster_definitions[creature_type].base_strength;
     if (creature_type <= 0x24 && creature_type % 7 != 0)
     {
       life[1] += g_shandalar_difficulty * 2;
@@ -2075,7 +2098,7 @@ int play_duel(int player, int creature_type)
     {
       life[1] += g_shandalar_difficulty * 50;
     }
-    if (g_shandalar_monster_definitions[creature_type].kind == 0xb)
+    if (g_shandalar_monster_definitions[creature_type].encounter_type == 0xb)
     {
       for (s.card_index = 0; s.card_index < 10; s.card_index = s.card_index + 1)
       {
@@ -2085,7 +2108,7 @@ int play_duel(int player, int creature_type)
         }
       }
     }
-    if (g_shandalar_monster_definitions[creature_type].kind == 0xc)
+    if (g_shandalar_monster_definitions[creature_type].encounter_type == 0xc)
     {
       life[1] += 10;
       s.victory_count = 0;
@@ -2115,7 +2138,7 @@ int play_duel(int player, int creature_type)
       life[1] += s.town_count * g_shandalar_difficulty;
       life[1] = MAX(life[1], g_shandalar_difficulty * 5 + 20);
     }
-    if (g_shandalar_monster_definitions[creature_type].kind == 0xd)
+    if (g_shandalar_monster_definitions[creature_type].encounter_type == 0xd)
     {
       life[1] = g_shandalar_difficulty * 100 + 100;
     }
@@ -2314,7 +2337,7 @@ int play_duel(int player, int creature_type)
       global_library[1][s.card_index] = DrawRandomCardFromInitialLibrary(DAT_0057a750);
     }
     g_selected_wizard_color = -1;
-    if ((g_shandalar_monster_definitions[creature_type].flags & 2) != 0 && g_monster_timer % 3 == 0)
+    if ((g_shandalar_monster_definitions[creature_type].preduel_flags & 2) != 0 && g_monster_timer % 3 == 0)
     {
       memcpy(global_library[1], global_library[0], 1000);
       s.card_index = g_duel_ai_mode_state;

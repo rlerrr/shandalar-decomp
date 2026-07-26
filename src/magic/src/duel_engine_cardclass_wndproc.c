@@ -318,19 +318,19 @@ char s__B__Bury_this_card_0057558c[0x14] = "&B: Bury this card";
 char s__X__Increment_counters_for_this_c_005755a0[0x28] = "&X: Increment counters for this card";
 
 // GLOBAL: MAGIC 0x005755c8
-char s__s__s_005755c8[0xc] = "\n\n%s %s\n";
+char s__s__s_005755c8[] = "\n\n%s %s\n";
 
 // GLOBAL: MAGIC 0x005755d4
-char s__s__d__d_005755d4[0xc] = "%s %d %d ";
+char s__s__d__d_005755d4[] = "%s %d %d ";
 
 // GLOBAL: MAGIC 0x005755e0
-char s__s_005755e0[8] = "%s";
+char s__s_005755e0[] = "%s";
 
 // GLOBAL: MAGIC 0x005755e8
-char s__d__d_005755e8[8] = "%d,%d";
+char s__d__d_005755e8[] = "%d,%d";
 
 // GLOBAL: MAGIC 0x005755f0
-char s_Times_New_Roman_005755f0[0x10] = "Times New Roman";
+char s_Times_New_Roman_005755f0[] = "Times New Roman";
 
 // GLOBAL: MAGIC 0x0069b3b8
 char g_cardclass_menu_view_stats_text[0x68];
@@ -1200,32 +1200,32 @@ void format_special_counter_cuecard_text(char *text, card_id_t card_id, unsigned
 // FUNCTION: MAGIC 0x004d21a9
 void FUN_004d21a9(char *text, int counter_type, int counters)
 {
-  if (text != NULL)
+  if (text == NULL)
+    return;
+
+  strcpy(text, "");
+  if (counters == 0)
+    return;
+
+  if (counter_type == 1)
   {
-    strcpy(text, "");
-    if (counters != 0)
-    {
-      if (counter_type == 1)
-      {
-        sprintf(text, g_cardclass_cuecard_counter_orcish_catapult_text, counters);
-      }
-      else if (counter_type == 2)
-      {
-        sprintf(text, g_cardclass_cuecard_counter_unstable_mutation_text, counters);
-      }
-      else if (counter_type == 3)
-      {
-        sprintf(text, g_cardclass_cuecard_counter_spirit_shackle_text, counters);
-      }
-      else if (counter_type == 4)
-      {
-        sprintf(text, g_cardclass_cuecard_counter_dwarven_weaponsmith_text, counters);
-      }
-      else if (counter_type == 5)
-      {
-        sprintf(text, g_cardclass_cuecard_counter_ashnods_transmogrant_text, counters);
-      }
-    }
+    sprintf(text, g_cardclass_cuecard_counter_orcish_catapult_text, counters);
+  }
+  else if (counter_type == 2)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_unstable_mutation_text, counters);
+  }
+  else if (counter_type == 3)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_spirit_shackle_text, counters);
+  }
+  else if (counter_type == 4)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_dwarven_weaponsmith_text, counters);
+  }
+  else if (counter_type == 5)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_ashnods_transmogrant_text, counters);
   }
 }
 
@@ -3433,7 +3433,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
             {
               s.command_band_attach_card =
                   get_displayed_card_blocking(s.command_band_target.player,
-                               s.command_band_target.card);
+                                              s.command_band_target.card);
               if (s.command_band_attach_card != -1)
               {
                 CARDCLASS_STATE(s.player, s.card) |= 4;
@@ -3554,7 +3554,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           {
             s.command_defend_selected_parent_card =
                 get_displayed_card_blocking(s.command_defend_target.player,
-                             s.command_defend_target.card);
+                                            s.command_defend_target.card);
             if (s.command_defend_selected_parent_card == -1)
             {
               s.command_defend_attach_card = s.command_defend_target.card;
@@ -3837,9 +3837,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                                        s.paint_attached_player_and_card[1]);
             draw_target_canttarget(g_shared_offscreen_dc, &s.paint_rect,
                                    is_displayed_card_targetted(s.paint_attached_player_and_card[0],
-                                                s.paint_attached_player_and_card[1]),
+                                                               s.paint_attached_player_and_card[1]),
                                    is_displayed_card_untargetable(s.paint_attached_player_and_card[0],
-                                                s.paint_attached_player_and_card[1]));
+                                                                  s.paint_attached_player_and_card[1]));
             draw_id_tag(g_shared_offscreen_dc, &s.paint_rect,
                         s.paint_attached_player_and_card[0],
                         s.paint_attached_player_and_card[1],

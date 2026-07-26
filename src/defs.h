@@ -783,7 +783,7 @@ typedef struct card_instance_struct
 	int8_t color; /*  0x1E */				 // 8 bit version of color_test_t
 	int8_t destroys_if_blocked; /*  0x1F */	 /* Formerly enemy_against_color.  Uses values in destroys_if_blocked_t.  Set to 0 at the start of EVENT_CHANGE_TYPE, and should be reset in response.  AI hinting only. */
 	int32_t dummy3; /*  0x20 */				 // A dynamically-created internal_card_id stored here on a card in play, or in internal_card_id in any card, won't get reaped in end_turn_phase()
-	uint8_t blocking; /*  0x24 */			 // Banding id, if attacking
+	int8_t blocking; /*  0x24 */			 // Banding id, if attacking
 	int8_t initial_color; /*  0x25 */		 // Shandalar: untouched
 	int16_t unused0x26; /*  0x26 */			 // Exe version of rampage() uses this as temporary storage. (!)  That's no longer called, and the data's otherwise entirely untouched.  Shandalar: untouched
 	uint32_t regen_status; /*  0x28 */		 // Keywords.
@@ -907,26 +907,26 @@ typedef int(__cdecl *card_function_pointer)(int player, int card, event_t event)
 /* Data struct */
 typedef struct
 {
-	uint8_t secret;						/* 0x00 */
-	char name[18];						/* 0x01 */
-	uint8_t reserved1[17];				/* 0x13 */
-	card_id_t id;						/* 0x24 */
-	uint8_t type; /* 0x28 */			// ct_all.csv:Type:Effect..Type::Land
-	int8_t subtype; /* 0x29 */			// ct_all.csv:Family
-	int8_t color; /* 0x2a */			// ct_all.csv:Color Unused..Color Colorless
-	int8_t cc[3]; /* 0x2b */			// 0:colored mana, 1:colorless mana, 2:flags
-	int16_t power;						/* 0x2e */
-	int16_t toughness;					/* 0x30 */
-	uint8_t new_field; /* 0x32 */		// ct_all.csv:Extra Flags (Unused)..Modifies Casting Cost
-	uint8_t reserved3; /* 0x33 */		// ct_all.csv:Unused (next to Code Address)
-	card_function_pointer code_pointer; /* 0x34 */
-	keyword_t static_ability;			/* 0x38 */ // ct_all.csv:Ability:Unknown..Ability:Swampwalk
-	extra_abilities_t extra_ability;	/* 0x3c */ // ct_all.csv:Flags:Play Cost..Flags:Activate
-	uint8_t rarity;						/* 0x40 */ // unused in current Manalink
-	uint8_t act_phases;					/* 0x41 */ // ct_all.csv:Activate after Combat..Play before Combat
-	uint8_t expansion;					/* 0x42 */ // unused in current Manalink
-	uint8_t creature_rating;			/* 0x43 */ // only -2 through 3 are accepted by ct2exe
-	uint8_t reserved4[4];				/* 0x44 */
+	uint8_t secret;								/* 0x00 */
+	char name[18];								/* 0x01 */
+	uint8_t reserved1[17];						/* 0x13 */
+	card_id_t id;								/* 0x24 */
+	uint8_t type; /* 0x28 */					// ct_all.csv:Type:Effect..Type::Land
+	int8_t subtype; /* 0x29 */					// ct_all.csv:Family
+	int8_t color; /* 0x2a */					// ct_all.csv:Color Unused..Color Colorless
+	int8_t cc[3]; /* 0x2b */					// 0:colored mana, 1:colorless mana, 2:flags
+	int16_t power;								/* 0x2e */
+	int16_t toughness;							/* 0x30 */
+	uint8_t new_field; /* 0x32 */				// ct_all.csv:Extra Flags (Unused)..Modifies Casting Cost
+	uint8_t reserved3; /* 0x33 */				// ct_all.csv:Unused (next to Code Address)
+	card_function_pointer code_pointer;			/* 0x34 */
+	keyword_t static_ability; /* 0x38 */		// ct_all.csv:Ability:Unknown..Ability:Swampwalk
+	extra_abilities_t extra_ability; /* 0x3c */ // ct_all.csv:Flags:Play Cost..Flags:Activate
+	uint8_t rarity; /* 0x40 */					// unused in current Manalink
+	uint8_t act_phases; /* 0x41 */				// ct_all.csv:Activate after Combat..Play before Combat
+	uint8_t expansion; /* 0x42 */				// unused in current Manalink
+	uint8_t creature_rating; /* 0x43 */			// only -2 through 3 are accepted by ct2exe
+	uint8_t reserved4[4];						/* 0x44 */
 } PACKED card_data_t;
 STATIC_ASSERT(sizeof(card_data_t) == 72, card_data_t_wrong_size);
 

@@ -665,33 +665,29 @@ void resolve_mana_burn(void)
 
   if ((g_duel_network_flags & 2) == 0)
   {
-    while (raw_mana_available[other_player][7] != 0 && current_phase > 0x1a)
+  loop:
+    if (raw_mana_available[other_player][7] != 0 && current_phase > 0x1a)
     {
-      current_card = 0;
-      while (current_card < active_cards_count[other_player])
+      for (current_card = 0;
+           current_card < active_cards_count[other_player];
+           current_card++)
       {
         if (is_in_play(other_player, current_card) != 0)
         {
           dispatch_event_to_single_card(other_player, current_card, 0x8f, 1 - other_player, -1);
           if (DAT_008cf1b8 != 0)
           {
-            break;
+            if (activate(other_player, other_player, current_card) != 0)
+            {
+              resolve_activated_ability(other_player, current_card);
+            }
+            goto loop;
           }
         }
-        current_card = current_card + 1;
-      }
-      if (active_cards_count[other_player] <= current_card)
-      {
-        goto burn_remaining_mana;
-      }
-      if (activate(other_player, other_player, current_card) != 0)
-      {
-        resolve_activated_ability(other_player, current_card);
       }
     }
   }
 
-burn_remaining_mana:
   for (player = 0; player < 2; player = player + 1)
   {
     if (raw_mana_available[player][7] > 0)
