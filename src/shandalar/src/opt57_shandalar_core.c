@@ -234,7 +234,7 @@ BOOL UnloadFontSlot(int font_slot)
 }
 
 // FUNCTION: SHANDALAR 0x0057aa30
-int GetFontCharWidth(int font_slot, char ch_value)
+int GetFontCharWidth(int font_slot, unsigned char ch_value)
 {
   FontSlot *font;
   HDC hdc;
@@ -350,6 +350,12 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 void FUN_0057b590(FacemakerWindowBounds *window, int color_index, int x, int y, char *text)
 {
   DrawTextFormatted(window, color_index, 0, 1, 1, 1, x, y, (int *)&text);
+}
+
+// FUNCTION: SHANDALAR 0x0057b5f0
+void FUN_0057b5f0(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
+{
+  DrawTextFormatted(window, color_index, 1, 1, 0, 1, x, y, (int *)&format);
 }
 
 // FUNCTION: SHANDALAR 0x0057c7e0

@@ -32,6 +32,7 @@ extern char global_base_directory[];
 extern HINSTANCE g_app_instance;
 extern HWND DAT_008a8dec;
 extern int g_showlist_smallcard_width;
+extern int g_showlist_smallcard_height;
 extern spell_chain_display_entry_t DAT_008b1140[32];
 
 int load_text_with_tab_escapes(char *filename, char *section_name);
@@ -1136,4 +1137,190 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
   }
 
   return 0;
+}
+
+// FUNCTION: MAGIC 0x0048894d
+// FUNCTION: SHANDALAR 0x004cb522
+void layout_phase_display_window(HWND hwnd, LPRECT rect)
+{
+  struct
+  {
+    spell_chain_window_entry_t *windows;
+    int spell_gap_x;
+    int scrollbar_height;
+    int max_scroll_pos;
+    int card_player_and_card[2];
+    int top_spell_y;
+    int target_x_step;
+    int target_x;
+    int bottom_spell_y;
+    int target_gap_y;
+    int window_height;
+    int target_index;
+    int window_width;
+    int y;
+    int entry_index;
+    int x;
+    int left_margin;
+    int top_margin;
+    LONG window_count;
+    RECT content_rect;
+    int min_scroll_pos;
+    int target_y;
+    int has_targets;
+    RECT window_rect;
+    RECT battlefield_rect;
+    HWND scrollbar_hwnd;
+    LRESULT scroll_pos;
+  } s;
+
+  s.windows = (spell_chain_window_entry_t *)GetWindowLongA(hwnd, g_spell_chain_windows_long_offset);
+  s.window_count = GetWindowLongA(hwnd, g_spell_chain_count_long_offset);
+  s.scrollbar_hwnd = GetDlgItem(hwnd, 0);
+  s.scroll_pos = SendMessageA(s.scrollbar_hwnd, 0xe1, 0, 0);
+  if (s.window_count == 0)
+  {
+    if (IsWindowVisible(hwnd) != 0 || IsWindowVisible((HWND)g_spell_minimized_hwnd) != 0)
+    {
+      ShowWindow(hwnd, SW_HIDE);
+      ShowWindow((HWND)g_spell_minimized_hwnd, SW_HIDE);
+      UpdateWindow(g_duel_help_owner_hwnd);
+    }
+    if (rect != (LPRECT)0)
+    {
+      SetRect(rect, 0, 0, 0, 0);
+    }
+  }
+  else
+  {
+    GetWindowRect(s.scrollbar_hwnd, &s.window_rect);
+    s.scrollbar_height = s.window_rect.bottom - s.window_rect.top;
+    s.left_margin = 5;
+    s.top_margin = 5;
+    s.spell_gap_x = 5;
+    s.target_gap_y = 5;
+    s.target_x_step = g_showlist_smallcard_width / 4;
+    s.has_targets = 0;
+    for (s.entry_index = 0; s.entry_index < s.window_count; s.entry_index++)
+    {
+      if (s.windows[s.entry_index].target_count != 0)
+      {
+        s.has_targets = 1;
+      }
+    }
+    SetRect(&s.content_rect, 500, 500, 0, 0);
+    s.x = s.left_margin;
+    s.top_spell_y = s.top_margin;
+    s.bottom_spell_y = s.top_spell_y + g_showlist_smallcard_height / 2 + g_showlist_smallcard_height;
+    for (s.entry_index = 0; s.entry_index < s.window_count; s.entry_index++)
+    {
+      SendMessageA(s.windows[s.entry_index].spell_window, 0x401, (WPARAM)s.card_player_and_card, 0);
+      if (s.card_player_and_card[0] == 0)
+      {
+        s.y = s.bottom_spell_y;
+        s.target_y = (s.y - g_showlist_smallcard_height) - s.target_gap_y;
+      }
+      else
+      {
+        s.y = s.top_spell_y;
+        s.target_y = g_showlist_smallcard_height + s.y + s.target_gap_y;
+      }
+      MoveWindow(s.windows[s.entry_index].spell_window, s.x, s.y,
+                 g_showlist_smallcard_width, g_showlist_smallcard_height, TRUE);
+      if (s.content_rect.left > s.x)
+      {
+        s.content_rect.left = s.x;
+      }
+      if (s.content_rect.right < g_showlist_smallcard_width + s.x)
+      {
+        s.content_rect.right = g_showlist_smallcard_width + s.x;
+      }
+      if (s.content_rect.top > s.y)
+      {
+        s.content_rect.top = s.y;
+      }
+      if (s.content_rect.bottom < g_showlist_smallcard_height + s.y)
+      {
+        s.content_rect.bottom = g_showlist_smallcard_height + s.y;
+      }
+      s.target_x = s.x;
+      for (s.target_index = 0; s.target_index < s.windows[s.entry_index].target_count; s.target_index++)
+      {
+        MoveWindow(s.windows[s.entry_index].target_windows[s.target_index], s.target_x, s.target_y,
+                   g_showlist_smallcard_width, g_showlist_smallcard_height, TRUE);
+        if (s.content_rect.left > s.target_x)
+        {
+          s.content_rect.left = s.target_x;
+        }
+        if (s.content_rect.right < s.target_x + g_showlist_smallcard_width)
+        {
+          s.content_rect.right = s.target_x + g_showlist_smallcard_width;
+        }
+        if (s.content_rect.top > s.target_y)
+        {
+          s.content_rect.top = s.target_y;
+        }
+        if (s.content_rect.bottom < s.target_y + g_showlist_smallcard_height)
+        {
+          s.content_rect.bottom = s.target_y + g_showlist_smallcard_height;
+        }
+        s.target_x = s.target_x + s.target_x_step;
+      }
+      s.x = s.x + g_showlist_smallcard_width + s.spell_gap_x;
+      if (s.windows[s.entry_index].target_count != 0)
+      {
+        s.x = s.x + (s.windows[s.entry_index].target_count - 1) * s.target_x_step;
+      }
+    }
+    s.x -= -(-s.spell_gap_x);
+    s.x += s.left_margin;
+    s.content_rect.right = s.content_rect.right + s.content_rect.left;
+    s.content_rect.left = 0;
+    s.content_rect.top = 0;
+    s.content_rect.bottom = s.content_rect.bottom + s.top_margin;
+    s.window_rect.left = 0;
+    s.window_rect.right = s.x - s.spell_gap_x + s.left_margin;
+    s.window_rect.top = 0;
+    s.window_rect.bottom = s.top_margin + s.top_margin + g_showlist_smallcard_height + s.bottom_spell_y + s.scrollbar_height;
+    AdjustWindowRect(&s.window_rect, GetWindowLongA(hwnd, GWL_STYLE), FALSE);
+    GetWindowRect(g_duel_player_battlefield_window_hwnd, &s.battlefield_rect);
+    s.x = s.battlefield_rect.left;
+    s.y = max(0, s.battlefield_rect.top - (s.window_rect.bottom - s.window_rect.top));
+    s.window_width = min(s.window_rect.right - s.window_rect.left, s.battlefield_rect.right - s.battlefield_rect.left);
+    s.window_height = s.window_rect.bottom - s.window_rect.top;
+    MoveWindow(hwnd, s.x, s.y, s.window_width, s.window_height, TRUE);
+    s.scrollbar_hwnd = GetDlgItem(hwnd, 0);
+    if (s.window_width < s.window_rect.right - s.window_rect.left)
+    {
+      s.min_scroll_pos = 0;
+      s.max_scroll_pos = (s.window_rect.right - s.window_rect.left) - s.window_width;
+      SendMessageA(s.scrollbar_hwnd, 0xe2, s.min_scroll_pos, s.max_scroll_pos);
+      SendMessageA(s.scrollbar_hwnd, 0x468, 1, 0);
+    }
+    else
+    {
+      SendMessageA(s.scrollbar_hwnd, 0x468, 0, 0);
+    }
+    SendMessageA(s.scrollbar_hwnd, 0xe3, (WPARAM)&s.min_scroll_pos, (LPARAM)&s.max_scroll_pos);
+    if (s.min_scroll_pos > s.scroll_pos)
+    {
+      s.scroll_pos = s.min_scroll_pos;
+    }
+    if (s.scroll_pos > s.max_scroll_pos)
+    {
+      s.scroll_pos = s.max_scroll_pos;
+    }
+    SendMessageA(s.scrollbar_hwnd, 0xe0, 0, 0);
+    SendMessageA(s.scrollbar_hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.scroll_pos), (LPARAM)s.scrollbar_hwnd);
+    if (IsWindowVisible(hwnd) == 0 && IsWindowVisible((HWND)g_spell_minimized_hwnd) == 0)
+    {
+      ShowWindow(hwnd, SW_SHOW);
+      restack_duel_child_windows();
+    }
+    UpdateWindow(hwnd);
+    if (rect != (LPRECT)0)
+    {
+      CopyRect(rect, &s.content_rect);
+    }
+  }
 }

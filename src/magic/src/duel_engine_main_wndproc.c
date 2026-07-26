@@ -37,6 +37,7 @@ extern HWND DAT_008a8d78;
 extern int DAT_007a7d74;
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
+extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern CRITICAL_SECTION g_card_render_lock;
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
@@ -112,10 +113,58 @@ extern HANDLE global_mutex_GameInit;
 extern int g_world_location_music_active;
 extern int DAT_007483f0;
 extern int _DAT_007483f4;
+// GLOBAL: SHANDALAR 0x0058e048
+int g_showlibrary_menu_selection = 0;
 int single_color_test_bit_to_color_t(int color_mask);
 void AddJournalEntry(int entry_type, int entry_arg);
+int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 #endif
 int GetCardRarity(int card_id);
+int IsCardAvailable(csvid_t csvid, int expansion);
+
+#define PICK_CARD_FULLCARD_ID 1030
+#define PICK_CARD_LISTBOX_ID 1031
+#define PICK_CARD_COLOR_BLACK_ID 1032
+#define PICK_CARD_COLOR_BLUE_ID 1033
+#define PICK_CARD_COLOR_GREEN_ID 1034
+#define PICK_CARD_COLOR_RED_ID 1035
+#define PICK_CARD_COLOR_WHITE_ID 1036
+#define PICK_CARD_COLOR_GOLD_ID 1864
+#define PICK_CARD_TYPE_CREATURE_ID 1037
+#define PICK_CARD_TYPE_ARTIFACT_ID 1038
+#define PICK_CARD_TYPE_ENCHANTMENT_ID 1039
+#define PICK_CARD_TYPE_SORCERY_ID 1040
+#define PICK_CARD_TYPE_INSTANT_ID 1041
+#define PICK_CARD_TYPE_LAND_ID 1042
+
+#define PICK_CARD_COLOR_BLACK 0x2
+#define PICK_CARD_COLOR_BLUE 0x4
+#define PICK_CARD_COLOR_GREEN 0x8
+#define PICK_CARD_COLOR_RED 0x10
+#define PICK_CARD_COLOR_WHITE 0x20
+#define PICK_CARD_COLOR_GOLD 0x400
+
+#define PICK_CARD_TYPE_LAND 0x1
+#define PICK_CARD_TYPE_CREATURE 0x2
+#define PICK_CARD_TYPE_ENCHANTMENT 0x4
+#define PICK_CARD_TYPE_SORCERY 0x8
+#define PICK_CARD_TYPE_INSTANT 0x10
+#define PICK_CARD_TYPE_INTERRUPT 0x20
+#define PICK_CARD_TYPE_ARTIFACT 0x40
+
+typedef struct
+{
+  unsigned int color_filter;
+  unsigned int type_filter;
+  char *prompt;
+} PickCardDialogContext;
+
+// GLOBAL: MAGIC 0x0057d8a8
+// GLOBAL: SHANDALAR 0x00580d70
+PickCardDialogContext g_pick_card_dialog_context = {PICK_CARD_COLOR_BLACK, PICK_CARD_TYPE_CREATURE, NULL};
+
+// GLOBAL: MAGIC 0x006f6df4
+PickCardDialogContext *g_pick_card_dialog_context_ptr;
 
 // GLOBAL: MAGIC 0x008a9140
 // GLOBAL: SHANDALAR 0x008bd340
@@ -226,6 +275,7 @@ int g_duel_window_userdata_card_offset = 4;
 int g_duel_window_userdata_8_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e174
+// GLOBAL: SHANDALAR 0x0057f104
 int g_duel_window_userdata_snapshot_offset = 0xc;
 
 // GLOBAL: MAGIC 0x00939508
@@ -857,14 +907,6 @@ void resize_battlefield_child_card_windows(HWND hwnd)
   SendMessageA(hwnd, 0x410, (WPARAM)s.snapshot_window, 0);
 }
 
-// FUNCTION: MAGIC 0x0048894d
-// FUNCTION: SHANDALAR 0x004cb522
-void layout_phase_display_window(HWND hwnd, LPRECT rect)
-{
-  (void)hwnd;
-  (void)rect;
-}
-
 // FUNCTION: MAGIC 0x004dc512
 // FUNCTION: SHANDALAR 0x005431cd
 void layout_duel_child_windows(HWND hwnd, int layout)
@@ -1261,13 +1303,539 @@ int can_use_current_duel_selection(void)
   return 0;
 }
 
+static __inline int pick_card_color_matches(card_ptr_t *card, unsigned int color_filter)
+{
+  if (color_filter == PICK_CARD_COLOR_GOLD)
+  {
+    return card->color == CP_COLOR_MULTI;
+  }
+
+  if (card->color == CP_COLOR_ARTIFACT || card->color == CP_COLOR_LAND)
+  {
+    return 1;
+  }
+
+  if ((color_filter & PICK_CARD_COLOR_BLACK) != 0 && (card->color == CP_COLOR_BLACK || card->req.req_black != 0))
+  {
+    return 1;
+  }
+
+  if ((color_filter & PICK_CARD_COLOR_BLUE) != 0 && (card->color == CP_COLOR_BLUE || card->req.req_blue != 0))
+  {
+    return 1;
+  }
+
+  if ((color_filter & PICK_CARD_COLOR_GREEN) != 0 && (card->color == CP_COLOR_GREEN || card->req.req_green != 0))
+  {
+    return 1;
+  }
+
+  if ((color_filter & PICK_CARD_COLOR_RED) != 0 && (card->color == CP_COLOR_RED || card->req.req_red != 0))
+  {
+    return 1;
+  }
+
+  if ((color_filter & PICK_CARD_COLOR_WHITE) != 0 && (card->color == CP_COLOR_WHITE || card->req.req_white != 0))
+  {
+    return 1;
+  }
+
+  return 0;
+}
+
+static __inline int pick_card_type_matches(card_ptr_t *card, unsigned int type_filter)
+{
+  if ((type_filter & PICK_CARD_TYPE_LAND) != 0 && card->card_type == CP_TYPE_LAND)
+  {
+    return 1;
+  }
+
+  if ((type_filter & PICK_CARD_TYPE_CREATURE) != 0 && card->card_type == CP_TYPE_CREATURE)
+  {
+    return 1;
+  }
+
+  if ((type_filter & PICK_CARD_TYPE_ENCHANTMENT) != 0 && card->card_type == CP_TYPE_ENCHANTMENT)
+  {
+    return 1;
+  }
+
+  if ((type_filter & PICK_CARD_TYPE_SORCERY) != 0 && card->card_type == CP_TYPE_SORCERY)
+  {
+    return 1;
+  }
+
+  if ((type_filter & PICK_CARD_TYPE_INSTANT) != 0 && card->card_type == CP_TYPE_INSTANT)
+  {
+    return 1;
+  }
+
+  if ((type_filter & PICK_CARD_TYPE_INTERRUPT) != 0 && card->card_type == CP_TYPE_INTERRUPT)
+  {
+    return 1;
+  }
+
+  if ((type_filter & PICK_CARD_TYPE_ARTIFACT) != 0 && card->card_type == CP_TYPE_ARTIFACT)
+  {
+    return 1;
+  }
+
+  return 0;
+}
+
+static __inline int pick_card_is_available(csvid_t csvid)
+{
+  return IsCardAvailable(csvid, 0) != 0 || IsCardAvailable(csvid, 1) != 0 || IsCardAvailable(csvid, 2) != 0;
+}
+
+// FUNCTION: MAGIC 0x00506b4c
+static void populate_pick_card_list(HWND listbox, unsigned int color_filter, unsigned int type_filter)
+{
+  struct
+  {
+    int card_index;
+    int list_index;
+  } s;
+
+  SendMessageA(listbox, LB_RESETCONTENT, 0, 0);
+  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+  {
+    if (!pick_card_color_matches(&global_raw_cards_storage[s.card_index], color_filter))
+    {
+      continue;
+    }
+
+    if (!pick_card_type_matches(&global_raw_cards_storage[s.card_index], type_filter))
+    {
+      continue;
+    }
+
+    if (!pick_card_is_available(global_raw_cards_storage[s.card_index].id))
+    {
+      continue;
+    }
+
+    s.list_index = SendMessageA(listbox, LB_ADDSTRING, 0, (LPARAM)global_raw_cards_storage[s.card_index].full_name);
+    if (s.list_index != LB_ERR)
+    {
+      SendMessageA(listbox, LB_SETITEMDATA, s.list_index, s.card_index);
+    }
+  }
+}
+
+static __inline void check_pick_card_filter_buttons(HWND hwnd, PickCardDialogContext *context)
+{
+  if ((context->color_filter & PICK_CARD_COLOR_BLACK) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_COLOR_BLACK_ID, PICK_CARD_COLOR_GOLD_ID, PICK_CARD_COLOR_BLACK_ID);
+  }
+  else if ((context->color_filter & PICK_CARD_COLOR_BLUE) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_COLOR_BLACK_ID, PICK_CARD_COLOR_GOLD_ID, PICK_CARD_COLOR_BLUE_ID);
+  }
+  else if ((context->color_filter & PICK_CARD_COLOR_GREEN) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_COLOR_BLACK_ID, PICK_CARD_COLOR_GOLD_ID, PICK_CARD_COLOR_GREEN_ID);
+  }
+  else if ((context->color_filter & PICK_CARD_COLOR_RED) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_COLOR_BLACK_ID, PICK_CARD_COLOR_GOLD_ID, PICK_CARD_COLOR_RED_ID);
+  }
+  else if ((context->color_filter & PICK_CARD_COLOR_WHITE) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_COLOR_BLACK_ID, PICK_CARD_COLOR_GOLD_ID, PICK_CARD_COLOR_WHITE_ID);
+  }
+  else
+  {
+    CheckRadioButton(hwnd, PICK_CARD_COLOR_BLACK_ID, PICK_CARD_COLOR_GOLD_ID, PICK_CARD_COLOR_GOLD_ID);
+  }
+
+  if ((context->type_filter & PICK_CARD_TYPE_LAND) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, PICK_CARD_TYPE_LAND_ID, PICK_CARD_TYPE_LAND_ID);
+  }
+  else if ((context->type_filter & PICK_CARD_TYPE_CREATURE) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, PICK_CARD_TYPE_LAND_ID, PICK_CARD_TYPE_CREATURE_ID);
+  }
+  else if ((context->type_filter & PICK_CARD_TYPE_ENCHANTMENT) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, PICK_CARD_TYPE_LAND_ID, PICK_CARD_TYPE_ENCHANTMENT_ID);
+  }
+  else if ((context->type_filter & PICK_CARD_TYPE_SORCERY) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, PICK_CARD_TYPE_LAND_ID, PICK_CARD_TYPE_SORCERY_ID);
+  }
+  else if ((context->type_filter & (PICK_CARD_TYPE_INSTANT | PICK_CARD_TYPE_INTERRUPT)) != 0)
+  {
+    CheckRadioButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, PICK_CARD_TYPE_LAND_ID, PICK_CARD_TYPE_INSTANT_ID);
+  }
+  else
+  {
+    CheckRadioButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, PICK_CARD_TYPE_LAND_ID, PICK_CARD_TYPE_ARTIFACT_ID);
+  }
+}
+
+static __inline void set_pick_card_filter_from_command(PickCardDialogContext *context, unsigned int command)
+{
+  switch (command)
+  {
+  case PICK_CARD_COLOR_BLACK_ID:
+    context->color_filter = PICK_CARD_COLOR_BLACK;
+    break;
+  case PICK_CARD_COLOR_BLUE_ID:
+    context->color_filter = PICK_CARD_COLOR_BLUE;
+    break;
+  case PICK_CARD_COLOR_GREEN_ID:
+    context->color_filter = PICK_CARD_COLOR_GREEN;
+    break;
+  case PICK_CARD_COLOR_RED_ID:
+    context->color_filter = PICK_CARD_COLOR_RED;
+    break;
+  case PICK_CARD_COLOR_WHITE_ID:
+    context->color_filter = PICK_CARD_COLOR_WHITE;
+    break;
+  case PICK_CARD_COLOR_GOLD_ID:
+    context->color_filter = PICK_CARD_COLOR_GOLD;
+    break;
+  case PICK_CARD_TYPE_CREATURE_ID:
+    context->type_filter = PICK_CARD_TYPE_CREATURE;
+    break;
+  case PICK_CARD_TYPE_ARTIFACT_ID:
+    context->type_filter = PICK_CARD_TYPE_ARTIFACT;
+    break;
+  case PICK_CARD_TYPE_ENCHANTMENT_ID:
+    context->type_filter = PICK_CARD_TYPE_ENCHANTMENT;
+    break;
+  case PICK_CARD_TYPE_SORCERY_ID:
+    context->type_filter = PICK_CARD_TYPE_SORCERY;
+    break;
+  case PICK_CARD_TYPE_INSTANT_ID:
+    context->type_filter = PICK_CARD_TYPE_INSTANT | PICK_CARD_TYPE_INTERRUPT;
+    break;
+  case PICK_CARD_TYPE_LAND_ID:
+    context->type_filter = PICK_CARD_TYPE_LAND;
+    break;
+  }
+}
+
+static __inline int get_selected_pick_card_csvid(HWND hwnd)
+{
+  struct
+  {
+    HWND listbox;
+    int selected_index;
+  } s;
+
+  s.listbox = GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID);
+  s.selected_index = SendMessageA(s.listbox, LB_GETCURSEL, 0, 0);
+  if (s.selected_index == LB_ERR)
+  {
+    return -1;
+  }
+
+  return SendMessageA(s.listbox, LB_GETITEMDATA, s.selected_index, 0);
+}
+
+static __inline void select_first_pick_card(HWND hwnd)
+{
+  struct
+  {
+    HWND listbox;
+    int selected_csvid;
+  } s;
+
+  s.listbox = GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID);
+  if (SendMessageA(s.listbox, LB_GETCOUNT, 0, 0) > 0)
+  {
+    SendMessageA(s.listbox, LB_SETCURSEL, 0, 0);
+    s.selected_csvid = get_selected_pick_card_csvid(hwnd);
+    SendMessageA(GetDlgItem(hwnd, PICK_CARD_FULLCARD_ID), 0x401, s.selected_csvid, 0);
+  }
+  else
+  {
+    SendMessageA(GetDlgItem(hwnd, PICK_CARD_FULLCARD_ID), 0x401, (WPARAM)-1, 0);
+  }
+}
+
+// FUNCTION: MAGIC 0x0050630c
+static BOOL CALLBACK dlgproc_pick_card_from_list(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  struct
+  {
+    int selected_index;
+    int selected_card;
+    int show_color_filters;
+    int list_selected_index;
+    int list_selected_card;
+    int color_count;
+    int color_index;
+  } s;
+
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    g_pick_card_dialog_context_ptr = (PickCardDialogContext *)lparam;
+    if (g_pick_card_dialog_context_ptr->prompt != NULL)
+    {
+      SetWindowTextA(hwnd, g_pick_card_dialog_context_ptr->prompt);
+    }
+    SendDlgItemMessageA(hwnd, PICK_CARD_FULLCARD_ID, 0x401, (WPARAM)-1, 0);
+    SetWindowLongA(GetDlgItem(hwnd, PICK_CARD_FULLCARD_ID), 0xc, 1);
+
+    s.color_count = 0;
+    for (s.color_index = 0; s.color_index < 5; ++s.color_index)
+    {
+      if ((g_pick_card_dialog_context_ptr->color_filter & (1 << (byte)s.color_index)) != 0)
+      {
+        ++s.color_count;
+      }
+    }
+
+    if (s.color_count > 1)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_GOLD_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->color_filter & PICK_CARD_COLOR_BLACK) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_BLACK_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->color_filter & PICK_CARD_COLOR_BLUE) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_BLUE_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->color_filter & PICK_CARD_COLOR_GREEN) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_GREEN_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->color_filter & PICK_CARD_COLOR_RED) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_RED_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->color_filter & PICK_CARD_COLOR_WHITE) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_WHITE_ID, 1);
+    }
+    else
+    {
+      CheckDlgButton(hwnd, PICK_CARD_COLOR_WHITE_ID, 1);
+    }
+
+    if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_LAND) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_LAND_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_CREATURE) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_CREATURE_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_ENCHANTMENT) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_ENCHANTMENT_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_SORCERY) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_SORCERY_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_INSTANT) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_INSTANT_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_INTERRUPT) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_INSTANT_ID, 1);
+    }
+    else if ((g_pick_card_dialog_context_ptr->type_filter & PICK_CARD_TYPE_ARTIFACT) != 0)
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_ARTIFACT_ID, 1);
+    }
+    else
+    {
+      CheckDlgButton(hwnd, PICK_CARD_TYPE_ARTIFACT_ID, 1);
+    }
+
+    populate_pick_card_list(GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID),
+                            g_pick_card_dialog_context_ptr->color_filter,
+                            g_pick_card_dialog_context_ptr->type_filter);
+    SetFocus(GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID));
+    return 0;
+
+  case WM_COMMAND:
+    switch ((int)(wparam & 0xffff))
+    {
+    case PICK_CARD_LISTBOX_ID:
+      if (HIWORD(wparam) == LBN_SELCHANGE)
+      {
+        s.list_selected_index = SendDlgItemMessageA(hwnd, PICK_CARD_LISTBOX_ID, LB_GETCURSEL, 0, 0);
+        s.list_selected_card = SendDlgItemMessageA(hwnd, PICK_CARD_LISTBOX_ID, LB_GETITEMDATA, s.list_selected_index, 0);
+        SendDlgItemMessageA(hwnd, PICK_CARD_FULLCARD_ID, 0x401, s.list_selected_card, 0);
+      }
+      else if (HIWORD(wparam) == LBN_DBLCLK)
+      {
+        SendMessageA(hwnd, WM_COMMAND, IDOK, (LPARAM)GetDlgItem(hwnd, IDOK));
+      }
+      break;
+
+    case PICK_CARD_COLOR_BLACK_ID:
+    case PICK_CARD_COLOR_BLUE_ID:
+    case PICK_CARD_COLOR_GREEN_ID:
+    case PICK_CARD_COLOR_RED_ID:
+    case PICK_CARD_COLOR_WHITE_ID:
+    case PICK_CARD_COLOR_GOLD_ID:
+      if (HIWORD(wparam) == 0)
+      {
+        g_pick_card_dialog_context_ptr->color_filter = 0;
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_COLOR_BLACK_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->color_filter = PICK_CARD_COLOR_BLACK;
+        }
+        else if (IsDlgButtonChecked(hwnd, PICK_CARD_COLOR_WHITE_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->color_filter = PICK_CARD_COLOR_WHITE;
+        }
+        else if (IsDlgButtonChecked(hwnd, PICK_CARD_COLOR_BLUE_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->color_filter = PICK_CARD_COLOR_BLUE;
+        }
+        else if (IsDlgButtonChecked(hwnd, PICK_CARD_COLOR_RED_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->color_filter = PICK_CARD_COLOR_RED;
+        }
+        else if (IsDlgButtonChecked(hwnd, PICK_CARD_COLOR_GREEN_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->color_filter = PICK_CARD_COLOR_GREEN;
+        }
+        else if (IsDlgButtonChecked(hwnd, PICK_CARD_COLOR_GOLD_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->color_filter = PICK_CARD_COLOR_GOLD;
+        }
+
+        populate_pick_card_list(GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID),
+                                g_pick_card_dialog_context_ptr->color_filter,
+                                g_pick_card_dialog_context_ptr->type_filter);
+        SetFocus(GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID));
+      }
+      break;
+
+    case PICK_CARD_TYPE_CREATURE_ID:
+    case PICK_CARD_TYPE_ARTIFACT_ID:
+    case PICK_CARD_TYPE_ENCHANTMENT_ID:
+    case PICK_CARD_TYPE_SORCERY_ID:
+    case PICK_CARD_TYPE_INSTANT_ID:
+    case PICK_CARD_TYPE_LAND_ID:
+      if (HIWORD(wparam) == 0)
+      {
+        g_pick_card_dialog_context_ptr->type_filter = 0;
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_TYPE_LAND_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->type_filter |= PICK_CARD_TYPE_LAND;
+        }
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_TYPE_CREATURE_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->type_filter |= PICK_CARD_TYPE_CREATURE;
+        }
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_TYPE_ENCHANTMENT_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->type_filter |= PICK_CARD_TYPE_ENCHANTMENT;
+        }
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_TYPE_SORCERY_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->type_filter |= PICK_CARD_TYPE_SORCERY;
+        }
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_TYPE_INSTANT_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->type_filter |= PICK_CARD_TYPE_INSTANT | PICK_CARD_TYPE_INTERRUPT;
+        }
+        if (IsDlgButtonChecked(hwnd, PICK_CARD_TYPE_ARTIFACT_ID) != 0)
+        {
+          g_pick_card_dialog_context_ptr->type_filter |= PICK_CARD_TYPE_ARTIFACT;
+        }
+
+        populate_pick_card_list(GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID),
+                                g_pick_card_dialog_context_ptr->color_filter,
+                                g_pick_card_dialog_context_ptr->type_filter);
+        SetFocus(GetDlgItem(hwnd, PICK_CARD_LISTBOX_ID));
+
+        if ((wparam & 0xffff) == PICK_CARD_TYPE_LAND_ID || (wparam & 0xffff) == PICK_CARD_TYPE_ARTIFACT_ID)
+        {
+          s.show_color_filters = 0;
+        }
+        else
+        {
+          s.show_color_filters = 1;
+        }
+        ShowWindow(GetDlgItem(hwnd, PICK_CARD_COLOR_BLACK_ID), s.show_color_filters);
+        ShowWindow(GetDlgItem(hwnd, PICK_CARD_COLOR_BLUE_ID), s.show_color_filters);
+        ShowWindow(GetDlgItem(hwnd, PICK_CARD_COLOR_GREEN_ID), s.show_color_filters);
+        ShowWindow(GetDlgItem(hwnd, PICK_CARD_COLOR_RED_ID), s.show_color_filters);
+        ShowWindow(GetDlgItem(hwnd, PICK_CARD_COLOR_WHITE_ID), s.show_color_filters);
+        ShowWindow(GetDlgItem(hwnd, PICK_CARD_COLOR_GOLD_ID), s.show_color_filters);
+      }
+      break;
+
+    case IDOK:
+      s.selected_index = SendDlgItemMessageA(hwnd, PICK_CARD_LISTBOX_ID, LB_GETCURSEL, 0, 0);
+      s.selected_card = SendDlgItemMessageA(hwnd, PICK_CARD_LISTBOX_ID, LB_GETITEMDATA, s.selected_index, 0);
+      EndDialog(hwnd, s.selected_card);
+      break;
+
+    case IDCANCEL:
+      EndDialog(hwnd, -1);
+      break;
+
+    default:
+      break;
+    }
+    return 1;
+
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, (int)lparam);
+
+  default:
+    return 0;
+  }
+}
+
 // FUNCTION: MAGIC 0x00506240
 // FUNCTION: SHANDALAR 0x00411e30
 int pick_internal_card_from_list_dialog(char *prompt, int initial_card_id, int filter)
 {
-  (void)prompt;
-  (void)initial_card_id;
-  (void)filter;
+  struct
+  {
+    int dialog_result;
+    int card_index;
+  } s;
+
+  g_pick_card_dialog_context.prompt = prompt;
+  if (initial_card_id != -1)
+  {
+    g_pick_card_dialog_context.color_filter = initial_card_id;
+  }
+  if (filter != -1)
+  {
+    g_pick_card_dialog_context.type_filter = filter;
+  }
+
+  s.dialog_result = DialogBoxParamA(g_app_instance,
+                                    (LPCSTR)0xe0,
+                                    g_duel_window_hwnd,
+                                    dlgproc_pick_card_from_list,
+                                    (LPARAM)&g_pick_card_dialog_context);
+  if (s.dialog_result == -1)
+  {
+    return -1;
+  }
+
+  for (s.card_index = 0; s.card_index < g_card_count; ++s.card_index)
+  {
+    if (global_cards_data[s.card_index].id == s.dialog_result)
+    {
+      return s.card_index;
+    }
+  }
+
   return -1;
 }
 
@@ -1275,6 +1843,11 @@ int pick_internal_card_from_list_dialog(char *prompt, int initial_card_id, int f
 void show_opponent_library_window(int unused_color)
 {
   (void)unused_color;
+#ifdef SHANDALAR
+  SelectAdventureListCardIndex(active_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
+#else
+  show_deck(active_player, global_library[1], 500, text_lines, 0, "");
+#endif
 }
 
 // FUNCTION: MAGIC 0x00464a28
@@ -1282,6 +1855,11 @@ void show_opponent_library_window(int unused_color)
 void show_player_library_window(int unused_color)
 {
   (void)unused_color;
+#ifdef SHANDALAR
+  SelectAdventureListCardIndex(active_player, global_library[0], 500, gs_showlibrary_text_0074bcc0.title, 0, &g_showlibrary_menu_selection);
+#else
+  show_deck(active_player, global_library[0], 500, text_lines, 0, "");
+#endif
 }
 
 // FUNCTION: MAGIC 0x0048a8ee
@@ -2021,10 +2599,13 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       {
         g_duel_startup_state = 1;
       }
+#ifndef _DEBUG
+      // Immediately disables debug menu normally
       if (DAT_008ce504 == 0)
       {
         g_duel_startup_state = 0;
       }
+#endif
       break;
 
     case 0x25c:

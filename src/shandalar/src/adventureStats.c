@@ -330,6 +330,7 @@ void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int wi
 void DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
 void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+void FUN_0057b5f0(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 unsigned int FUN_004bb458(int world_magic_slot_index);
 int ScaleUiCoordinate(int value);
 void DrawTextAt(FacemakerWindowBounds *dst, int text_color, int x, int y, char *text, ...);
@@ -430,15 +431,18 @@ int RenderBasicImageMenuControl(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x00548eb1
 void DrawStatsRectFrame(FacemakerWindowBounds *window, int x, int y, int width, int height, int color_index)
 {
-  int x2;
-  int y2;
+  struct
+  {
+    int x2;
+    int y2;
+  } s;
 
-  x2 = width + x;
-  y2 = height + y;
-  DrawGraphicsLine(window, x, y, x2, y, color_index);
-  DrawGraphicsLine(window, x2, y, x2, y2, color_index);
-  DrawGraphicsLine(window, x2, y2, x, y2, color_index);
-  DrawGraphicsLine(window, x, y2, x, y, color_index);
+  s.x2 = width + x;
+  s.y2 = height + y;
+  DrawGraphicsLine(window, x, y, s.x2, y, color_index);
+  DrawGraphicsLine(window, s.x2, y, s.x2, s.y2, color_index);
+  DrawGraphicsLine(window, s.x2, s.y2, x, s.y2, color_index);
+  DrawGraphicsLine(window, x, s.y2, x, y, color_index);
 }
 
 // FUNCTION: SHANDALAR 0x005487c0
@@ -589,23 +593,30 @@ int RenderStatsWorldMagicControl(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x00548bb5
 static int RenderStatsScrollbarHotspot(AdvMenuControl *control, int mode)
 {
-  int mouse_inside;
+  struct
+  {
+    int mouse_inside;
+    int y;
+    int x;
+    int height;
+    int width;
+  } s;
 
   if (g_menu_render_guard == 0)
   {
     if ((g_mouse_x < control->x) || (control->width + control->x < g_mouse_x))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else
     {
-      mouse_inside = 1;
+      s.mouse_inside = 1;
     }
-    if (!mouse_inside)
+    if (!s.mouse_inside)
     {
       return 0;
     }
@@ -614,6 +625,10 @@ static int RenderStatsScrollbarHotspot(AdvMenuControl *control, int mode)
   {
     return 0;
   }
+  s.x = control->x;
+  s.y = control->y;
+  s.width = control->width;
+  s.height = control->height;
   if ((mode == 2) && (control->on_activate != 0))
   {
     control->on_activate(control);
@@ -778,48 +793,50 @@ static __inline void InitializeStatsWorldMagicControls(void)
 // FUNCTION: SHANDALAR 0x00548dfb
 int RenderStatsCreatureScrollbar(AdvMenuControl *control)
 {
-  EncodedImage *encoded_image;
-  int height;
-  int y;
+  struct
+  {
+    int page_count;
+    int y;
+    EncodedImage *encoded_image;
+    AdvMenuControl *thumb_control;
+  } s;
 
-  encoded_image = g_stats_menu_scroll_thumb_sprite;
-  height = control->mode_data[3];
-  y = control->y;
+  s.page_count = 0x11;
+  s.thumb_control = control + 1;
+  s.encoded_image = g_stats_menu_scroll_thumb_sprite;
+  s.y = control->y + s.thumb_control->height / 2;
   FillGraphicsRect(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, 0);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, (y + height / 2) - control->mode_data[3] / 2, control->width,
-                            ((int)encoded_image->height * control->width) / control->base_width, encoded_image);
+  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, s.y - s.thumb_control->height / 2, control->width,
+                            ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00548cba
 static int DragStatsCreatureScrollbar(AdvMenuControl *control)
 {
-  int page_count;
-  AdvMenuControl *thumb_control;
-  EncodedImage *encoded_image;
-  int y;
-  int page_index;
+  struct
+  {
+    int page_count;
+    int y;
+    EncodedImage *encoded_image;
+    int page_index;
+    AdvMenuControl *thumb_control;
+  } s;
 
-  page_count = 0x11;
-  thumb_control = control + 1;
-  encoded_image = g_stats_menu_scroll_thumb_sprite;
+  s.page_count = 0x11;
+  s.thumb_control = control + 1;
+  s.encoded_image = g_stats_menu_scroll_thumb_sprite;
   UpdateMouseSnapshot();
-  y = g_mouse_y_snapshot;
-  if (control->y + thumb_control->height / 2 > y)
-  {
-    y = control->y + thumb_control->height / 2;
-  }
-  if (control->y + control->height - thumb_control->height / 2 < y)
-  {
-    y = control->y + control->height - thumb_control->height / 2;
-  }
-  page_index = ((y - control->y - thumb_control->height / 2) * page_count) / (control->height - thumb_control->height);
+  s.y = g_mouse_y_snapshot;
+  s.y = MAX(control->y + s.thumb_control->height / 2, s.y);
+  s.y = MIN(control->y + control->height - s.thumb_control->height / 2, s.y);
+  s.page_index = ((s.y - control->y - s.thumb_control->height / 2) * s.page_count) / (control->height - s.thumb_control->height);
   FillGraphicsRect(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, 0);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, y - thumb_control->height / 2, control->width,
-                            ((int)encoded_image->height * control->width) / control->base_width, encoded_image);
-  RenderStatsCreatureGridPage(page_index);
+  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, s.y - s.thumb_control->height / 2, control->width,
+                            ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
+  RenderStatsCreatureGridPage(s.page_index);
   g_stats_menu_selection = control->selection_value;
-  return control->selection_value;
+  return g_stats_menu_selection;
 }
 
 // FUNCTION: SHANDALAR 0x0054a4aa
@@ -840,31 +857,26 @@ int RebuildStatsJournalCounts(void)
                       g_stats_journal_spells_found =
                           g_stats_journal_artifacts_found = 0;
 
-  journal_index = 0;
-  while (1)
+  for (journal_index = 0; journal_index < 10000; journal_index = journal_index + 1)
   {
-    if (9999 < journal_index)
-    {
-      return 0;
-    }
     entry_type = g_journal_entries[journal_index].type;
     entry_arg = g_journal_entries[journal_index].arg;
-    if (entry_type == JOURNAL_ENTRY_NONE)
+    if (g_journal_entries[journal_index].type == JOURNAL_ENTRY_NONE)
     {
       break;
     }
     switch (entry_type)
     {
     case 2:
-      if ((entry_arg & 0x80) == 0)
-      {
-        g_stats_journal_completed_quests = g_stats_journal_completed_quests + 1;
-        g_stats_creature_journal_counts[entry_arg & 0x7f].losses = g_stats_creature_journal_counts[entry_arg & 0x7f].losses + 1;
-      }
-      else
+      if ((entry_arg & 0x80) != 0)
       {
         g_stats_journal_failed_quests = g_stats_journal_failed_quests + 1;
         g_stats_creature_journal_counts[entry_arg & 0x7f].wins = g_stats_creature_journal_counts[entry_arg & 0x7f].wins + 1;
+      }
+      else
+      {
+        g_stats_journal_completed_quests = g_stats_journal_completed_quests + 1;
+        g_stats_creature_journal_counts[entry_arg & 0x7f].losses = g_stats_creature_journal_counts[entry_arg & 0x7f].losses + 1;
       }
       break;
     case 4:
@@ -887,8 +899,8 @@ int RebuildStatsJournalCounts(void)
       break;
     case 0x13:
       g_stats_journal_dungeons_explored = g_stats_journal_dungeons_explored + 1;
+      break;
     }
-    journal_index = journal_index + 1;
   }
   return 0;
 }
@@ -1097,23 +1109,23 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   InitializeStatsWorldMagicControls();
   ScaleMenuControlsForScreen(&g_stats_menu_controls[10], 0xc);
   RebuildStatsJournalCounts();
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x14, 0x184, gs_stats_0077cfa0[2]);
+  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x184, gs_stats_0077cfa0[2]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x184, s_decimal_005906b4, g_stats_journal_lairs_explored);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x14, 0x196, gs_stats_0077cfa0[3]);
+  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x196, gs_stats_0077cfa0[3]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x196, s_decimal_005906b8, g_stats_journal_cities_saved);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x14, 0x1a8, gs_stats_0077cfa0[4]);
+  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x1a8, gs_stats_0077cfa0[4]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1a8, s_decimal_slash_decimal_005906bc,
              g_stats_journal_spells_found, g_stats_journal_artifacts_found);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x14, 0x1ba, gs_stats_0077cfa0[5]);
+  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x1ba, gs_stats_0077cfa0[5]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1ba, s_decimal_slash_decimal_005906c4,
              g_stats_journal_failed_quests, g_stats_journal_completed_quests);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0xe9, 0x19a, gs_stats_0077cfa0[6]);
+  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0xe9, 0x19a, gs_stats_0077cfa0[6]);
   for (world_magic_slot_index = 0; (int)world_magic_slot_index < 5; world_magic_slot_index = world_magic_slot_index + 1)
   {
-    DrawTextAt(PTR_DAT_005832dc, colors[3], world_magic_slot_index * 0x39 + 0x165, 0x19a, "%d",
-               g_castle_dungeon_slots[world_magic_slot_index].times_entered + 1);
+    FUN_0057b5f0(PTR_DAT_005832dc, colors[3], world_magic_slot_index * 0x39 + 0x165, 0x19a, "%d",
+                 g_castle_dungeon_slots[world_magic_slot_index].times_entered + 1);
   }
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0xe9, 0x1c0, gs_stats_0077cfa0[7]);
+  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0xe9, 0x1c0, gs_stats_0077cfa0[7]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0x1a1, 0x1c0, s_decimal_005906d0, g_stats_journal_dungeons_explored);
   DrawTextAt(PTR_DAT_005832dc, colors[4], 0x1b0, 0x36, gs_stats_0077cfa0[8]);
 
@@ -1211,23 +1223,30 @@ static int ActivateJournalExitButtonControl(AdvMenuControl *control)
 // FUNCTION: SHANDALAR 0x00428d5e
 static int RenderJournalStepButtonControl(AdvMenuControl *control, int mode)
 {
-  int mouse_inside;
+  struct
+  {
+    int mouse_inside;
+    int y;
+    int x;
+    int height;
+    int width;
+  } s;
 
   if (g_menu_render_guard == 0)
   {
     if ((g_mouse_x < control->x) || (control->width + control->x < g_mouse_x))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else if ((g_mouse_y < control->y) || (control->y + control->height < g_mouse_y))
     {
-      mouse_inside = 0;
+      s.mouse_inside = 0;
     }
     else
     {
-      mouse_inside = 1;
+      s.mouse_inside = 1;
     }
-    if (!mouse_inside)
+    if (!s.mouse_inside)
     {
       return 0;
     }
@@ -1236,6 +1255,10 @@ static int RenderJournalStepButtonControl(AdvMenuControl *control, int mode)
   {
     return 0;
   }
+  s.x = control->x;
+  s.y = control->y;
+  s.width = control->width;
+  s.height = control->height;
   if ((mode == 2) && (control->on_activate != 0))
   {
     control->on_activate(control);
@@ -1276,16 +1299,21 @@ static int ActivateJournalStepButtonControl(AdvMenuControl *control)
 // FUNCTION: SHANDALAR 0x00428fe8
 static int RenderJournalScrollbar(AdvMenuControl *control)
 {
-  EncodedImage *encoded_image;
-  int thumb_height;
-  int y;
+  struct
+  {
+    int entry_count;
+    int y;
+    EncodedImage *encoded_image;
+    AdvMenuControl *thumb_control;
+  } s;
 
-  encoded_image = DAT_00746b04;
-  thumb_height = g_stats_journal_menu_controls[2].height;
-  y = control->y;
+  s.entry_count = control->unk_30;
+  s.thumb_control = control + 1;
+  s.encoded_image = DAT_00746b04;
+  s.y = control->y + s.thumb_control->height / 2;
   DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, DAT_0073ea94);
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, (y + thumb_height / 2) - g_stats_journal_menu_controls[2].height / 2,
-                            control->width, ((int)encoded_image->height * control->width) / control->base_width, encoded_image);
+  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, s.y - s.thumb_control->height / 2,
+                            control->width, ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   BlitGraphicsRect(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, PTR_DAT_005832b4, control->x,
                    control->y);
   return 0;
@@ -1457,44 +1485,47 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
 // FUNCTION: SHANDALAR 0x00429a62
 static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int tile_y)
 {
-  int previous_x;
-  int target_x;
-  int previous_y;
-  int target_y;
-  int delta_x;
-  int delta_y;
-  int text_width;
-  int line_height;
+  struct
+  {
+    int line_height;
+    int text_width;
+    int delta_y;
+    int delta_x;
+    int target_y;
+    int previous_y;
+    int target_x;
+    int previous_x;
+  } s;
 
   if (g_stats_journal_previous_marker_y == -1)
   {
     g_stats_journal_previous_marker_y = tile_x;
     g_stats_journal_previous_marker_x = tile_y;
-    FUN_00550164(tile_x, tile_y, &target_x, &target_y);
-    target_x = (global_screen_width * target_x) / 0x280;
-    target_y = (global_screen_height * target_y) / 0x1e0;
-    target_y += ScaleUiCoordinate(0x40);
+    FUN_00550164(tile_x, tile_y, &s.target_x, &s.target_y);
+    s.target_x = (global_screen_width * s.target_x) / 0x280;
+    s.target_y = (global_screen_height * s.target_y) / 0x1e0;
+    s.target_y += ScaleUiCoordinate(0x40);
   }
   else
   {
-    FUN_00550164(g_stats_journal_previous_marker_y, g_stats_journal_previous_marker_x, &previous_x, &previous_y);
-    previous_x = (previous_x * global_screen_width) / 0x280;
-    previous_y = (global_screen_height * previous_y) / 0x1e0;
-    previous_y += ScaleUiCoordinate(0x40);
-    FUN_00550164(tile_x, tile_y, &target_x, &target_y);
-    target_x = (global_screen_width * target_x) / 0x280;
-    target_y = (global_screen_height * target_y) / 0x1e0;
-    target_y += ScaleUiCoordinate(0x40);
+    FUN_00550164(g_stats_journal_previous_marker_y, g_stats_journal_previous_marker_x, &s.previous_x, &s.previous_y);
+    s.previous_x = (s.previous_x * global_screen_width) / 0x280;
+    s.previous_y = (global_screen_height * s.previous_y) / 0x1e0;
+    s.previous_y += ScaleUiCoordinate(0x40);
+    FUN_00550164(tile_x, tile_y, &s.target_x, &s.target_y);
+    s.target_x = (global_screen_width * s.target_x) / 0x280;
+    s.target_y = (global_screen_height * s.target_y) / 0x1e0;
+    s.target_y += ScaleUiCoordinate(0x40);
     g_stats_journal_previous_marker_y = tile_x;
     g_stats_journal_previous_marker_x = tile_y;
-    delta_x = target_x - previous_x;
-    delta_y = target_y - previous_y;
-    tile_x = previous_x;
-    tile_y = previous_y;
+    s.delta_x = s.target_x - s.previous_x;
+    s.delta_y = s.target_y - s.previous_y;
+    tile_x = s.previous_x;
+    tile_y = s.previous_y;
 
-    if (abs(delta_y) < abs(delta_x))
+    if (abs(s.delta_y) < abs(s.delta_x))
     {
-      while (tile_x != target_x)
+      while (tile_x != s.target_x)
       {
         FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
         DelayUiTicks(5);
@@ -1506,13 +1537,13 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
         {
           BlitGraphicsRect(PTR_DAT_005832dc, tile_x, tile_y, 2, 2, PTR_DAT_005832b4, tile_x, tile_y);
         }
-        tile_x += SignNonZero(delta_x);
-        tile_y = previous_y + (abs(tile_x - previous_x) * delta_y) / abs(delta_x);
+        tile_x += SignNonZero(s.delta_x);
+        tile_y = s.previous_y + (abs(tile_x - s.previous_x) * s.delta_y) / abs(s.delta_x);
       }
     }
     else
     {
-      while (tile_y != target_y)
+      while (tile_y != s.target_y)
       {
         FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
         DelayUiTicks(5);
@@ -1524,30 +1555,30 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
         {
           BlitGraphicsRect(PTR_DAT_005832dc, tile_x, tile_y, 2, 2, PTR_DAT_005832b4, tile_x, tile_y);
         }
-        tile_y += SignNonZero(delta_y);
-        tile_x = previous_x + (abs(tile_y - previous_y) * delta_x) / abs(delta_y);
+        tile_y += SignNonZero(s.delta_y);
+        tile_x = s.previous_x + (abs(tile_y - s.previous_y) * s.delta_x) / abs(s.delta_y);
       }
     }
   }
 
-  g_stats_journal_marker_x = target_x;
-  g_stats_journal_marker_y = target_y;
+  g_stats_journal_marker_x = s.target_x;
+  g_stats_journal_marker_y = s.target_y;
   if (g_ui_message_buffer[0] == '\0')
   {
     return;
   }
 
-  tile_x = ClampIntToRange(target_x - 0x50, 0, 0xa0);
-  tile_y = ClampIntToRange(target_y - 10, 0, 0xbf);
-  text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
-  line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  tile_x = ClampIntToRange(s.target_x - 0x50, 0, 0xa0);
+  tile_y = ClampIntToRange(s.target_y - 10, 0, 0xbf);
+  s.text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
+  s.line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
   PTR_DAT_00583304->font_slot = PTR_DAT_005832b4->font_slot;
-  BlitGraphicsRect(PTR_DAT_005832dc, (target_x - 2) - text_width / 2, target_y - 2, text_width + 2, line_height + 2,
+  BlitGraphicsRect(PTR_DAT_005832dc, (s.target_x - 2) - s.text_width / 2, s.target_y - 2, s.text_width + 2, s.line_height + 2,
                    PTR_DAT_00583304, 0, 0xa0);
-  ApplyPortraitTintMap(PTR_DAT_00583304, 0, 0xa0, text_width + 2, line_height + 2, 0x3f3f3f, 1);
-  DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xff, text_width / 2 + 1, line_height / 2 + 0xa1, g_ui_message_buffer);
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0xa0, text_width + 2, line_height + 2, PTR_DAT_005832b4,
-                   (target_x - 2) - text_width / 2, target_y - 2);
+  ApplyPortraitTintMap(PTR_DAT_00583304, 0, 0xa0, s.text_width + 2, s.line_height + 2, 0x3f3f3f, 1);
+  DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xff, s.text_width / 2 + 1, s.line_height / 2 + 0xa1, g_ui_message_buffer);
+  BlitGraphicsRect(PTR_DAT_00583304, 0, 0xa0, s.text_width + 2, s.line_height + 2, PTR_DAT_005832b4,
+                   (s.target_x - 2) - s.text_width / 2, s.target_y - 2);
 }
 
 // FUNCTION: SHANDALAR 0x00429161
@@ -1661,7 +1692,7 @@ void DrawScaledTextNoShadow(char *text, int x, int y, int color_index)
 }
 
 // FUNCTION: SHANDALAR 0x00549002
-void RunAdventureStatsMenu(void)
+int RunAdventureStatsMenu(void)
 {
   int world_magic_slot_index;
   struct
@@ -1711,7 +1742,7 @@ void RunAdventureStatsMenu(void)
   PTR_DAT_005832dc->font_slot = 6;
   for (world_magic_slot_index = 0; world_magic_slot_index < 3; world_magic_slot_index = world_magic_slot_index + 1)
   {
-    SetFontStyleSize(6, 9 - (world_magic_slot_index == 2));
+    SetFontStyleSize(6, 9 + (((unsigned int)(world_magic_slot_index - 2) < 1) ? -1 : 0));
     DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x55 + 0x2b, 0xc,
                                       s_string_00590644, (char *)g_stats_text_table[0]);
     g_stats_menu_button_sprites.normal[world_magic_slot_index] =
@@ -1755,79 +1786,74 @@ void RunAdventureStatsMenu(void)
     RenderStatsCreatureGridPage(g_stats_creature_page_index);
     RenderStatsCreatureScrollbar(&g_stats_menu_controls[4]);
 
-    while (1)
+  retry:
+    s.menu_context = BeginMenuContext();
+    ResetMenuContext(s.menu_context);
+    AddMenuControlsToContext(g_stats_menu_controls, 0x16, s.menu_context);
+    g_menu_render_guard = 1;
+    for (s.button_index = 0; s.button_index < 3; s.button_index = s.button_index + 1)
     {
-      s.menu_context = BeginMenuContext();
-      ResetMenuContext(s.menu_context);
-      AddMenuControlsToContext(g_stats_menu_controls, 0x16, s.menu_context);
-      g_menu_render_guard = 1;
-      for (s.button_index = 0; s.button_index < 3; s.button_index = s.button_index + 1)
-      {
-        RenderStatsTabButtonControl(&g_stats_menu_controls[s.button_index], 0);
-      }
-      for (s.button_index = 10; s.button_index < 0x16; s.button_index = s.button_index + 1)
-      {
-        RenderBasicImageMenuControl(&g_stats_menu_controls[s.button_index], 0);
-      }
-      g_menu_render_guard = 0;
-      g_stats_menu_selection = -1;
-      while (g_stats_menu_selection == -1)
-      {
-        UpdateMouseSnapshot();
-        UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-      }
-      EndMenuContext();
+      RenderStatsTabButtonControl(&g_stats_menu_controls[s.button_index], 0);
+    }
+    for (s.button_index = 10; s.button_index < 0x16; s.button_index = s.button_index + 1)
+    {
+      RenderBasicImageMenuControl(&g_stats_menu_controls[s.button_index], 0);
+    }
+    g_menu_render_guard = 0;
+    g_stats_menu_selection = -1;
+    while (g_stats_menu_selection == -1)
+    {
+      UpdateMouseSnapshot();
+      UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+    }
+    EndMenuContext();
 
-      switch (g_stats_menu_selection)
+    switch (g_stats_menu_selection)
+    {
+    case 1:
+      ClearInputAndWaitForMouseRelease();
+      ShowStatsWindow(0, -1);
+      break;
+    case 2:
+      RunStatsWorldMapJournalMenu();
+      break;
+    case 3:
+      FreeSpriteBlob(g_stats_menu_color_sprites[0]);
+      AnimatePaletteToColor(0, g_default_palette_fade_steps);
+      LoadPcxIntoPageNoPalette(s_advfac64_pic_00590730);
+      return 0;
+    case 4:
+    case 5:
+      goto retry;
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+      if (g_world_magic_town_flags[g_stats_menu_selection - 10] != 0)
       {
-      case 1:
-        ClearInputAndWaitForMouseRelease();
-        ShowStatsWindow(0, -1);
-        break;
-      case 2:
-        RunStatsWorldMapJournalMenu();
-        break;
-      case 3:
-        FreeSpriteBlob(g_stats_menu_color_sprites[0]);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
-        LoadPcxIntoPageNoPalette(s_advfac64_pic_00590730);
-        return;
-      case 4:
-      case 5:
-        continue;
-      case 10:
-      case 11:
-      case 12:
-      case 13:
-      case 14:
-        if (g_world_magic_town_flags[g_stats_menu_selection - 10] != 0)
-        {
-          AnimatePaletteToColor(0, g_default_palette_fade_steps);
-          ShowStatsWindow(0x101, g_stats_menu_selection - 9);
-        }
-        ClearInputAndWaitForMouseRelease();
-        if (g_world_magic_town_flags[g_stats_menu_selection - 10] == 0)
-        {
-          continue;
-        }
-        break;
-      case 15:
-      case 16:
-      case 17:
-      case 18:
-      case 19:
-      case 20:
-      case 21:
-      case 22:
-      case 23:
-      case 24:
-      case 25:
-      case 26:
-        ShowWorldMagicStatsDetail(g_stats_menu_selection - 0xf);
-        break;
-      default:
-        break;
+        ShowStatsWindow(0x101, g_stats_menu_selection - 9);
       }
+      ClearInputAndWaitForMouseRelease();
+      if (g_world_magic_town_flags[g_stats_menu_selection - 10] == 0)
+      {
+        goto retry;
+      }
+      break;
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+    case 26:
+      ShowWorldMagicStatsDetail(g_stats_menu_selection - 0xf);
       break;
     }
   }
@@ -1875,8 +1901,11 @@ int ShowStatsWindow(int mode, int highlight)
     else
     {
       s.required_duel_wins = s.color_order[6] = g_shandalar_difficulty * s.ruled_town_count + g_shandalar_difficulty * 5 + 0x1e;
-      for (s.scan_index = 0; (s.scan_index < 1000 && ((char)g_duel_victory_log[s.scan_index] != '\0')); s.scan_index = s.scan_index + 1)
+      for (s.scan_index = 0; s.scan_index < 1000; s.scan_index = s.scan_index + 1)
       {
+        if (g_duel_victory_log[s.scan_index] == '\0')
+          break;
+
         if (((int)(char)g_duel_victory_log[s.scan_index] >> 4) == s.wizard_color_index + 1)
         {
           s.duel_win_count = s.duel_win_count + 1;
@@ -1991,7 +2020,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
       {
         for (s.column_index = 1; s.column_index < 7; s.column_index = s.column_index + 1)
         {
-          if (((1 << ((byte)s.column_index & 0x1f)) & (int)global_cards_data[s.card_id_masked].color) != 0)
+          if (((1 << (byte)s.column_index) & (int)global_cards_data[s.card_id_masked].color) != 0)
           {
             s.land_color_count[s.column_index] = s.land_color_count[s.column_index] + 1;
             s.land_color_count[7] = s.land_color_count[7] + 1;
@@ -2041,7 +2070,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     ClearGraphicsPageWithPaletteColor(0, 0);
     PTR_DAT_005832b4->font_slot = 4;
     s.x = 0x10;
-    s.y = 0x10;
+    s.y = s.x;
     sprintf(g_ui_message_buffer, gs_analyze_0074b870[0], DAT_00650264);
     DrawScaledTextNoShadow(g_ui_message_buffer, s.x, s.y, 0xf6);
     DrawScaledCenteredTextNoShadow(gs_analyze_0074b870[1], 0x80, s.y, 0xff);

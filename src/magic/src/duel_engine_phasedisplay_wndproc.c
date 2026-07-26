@@ -275,6 +275,7 @@ void get_phase_display_selected_half(int *selected_half)
 }
 
 // FUNCTION: MAGIC 0x0044a376
+// FUNCTION: SHANDALAR 0x00453ef9
 void get_phase_display_action_selection(int *player, int *phase)
 {
   EnterCriticalSection(&g_duel_render_lock);

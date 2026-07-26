@@ -37,6 +37,7 @@ extern FacemakerWindowBounds *PTR_DAT_005832dc;
 extern FacemakerWindowBounds *PTR_DAT_00583304;
 
 extern int g_world_scroll_cache_ready;
+extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 
 // External functions
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1);
@@ -723,136 +724,128 @@ page_loop:
 // FUNCTION: SHANDALAR 0x0050bb6d
 int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int x, int y)
 {
-  size_t len;
-  char *mid;
-  char *space_fwd;
-  char *space_back;
-  unsigned int tile_mask;
-  unsigned int tile_class;
-  int text_color;
-  int i;
-  int wizard_count;
-  int wizard_sprite_x;
-  int sprite_width;
-  int sprite_height;
-  EncodedImage *sprite;
-  int sprite_index_by_wizard_bit[6];
+  struct
+  {
+    int avatar_indices[5];
+    char *space_fwd;
+    char *space_back;
+    unsigned int tile_class;
+    int world_magic_slot_result;
+    int wizard_sprite_x;
+    int i;
+    char *mid;
+    int sprite_height;
+    int sprite_width;
+    int text_color;
+    int wizard_count;
+  } s;
 
   (void)dst;
 
-  // Map wizard-bit positions 1..5 to avatar sprite indices 0..4
-  sprite_index_by_wizard_bit[0] = 0;
-  sprite_index_by_wizard_bit[1] = 2;
-  sprite_index_by_wizard_bit[2] = 1;
-  sprite_index_by_wizard_bit[3] = 4;
-  sprite_index_by_wizard_bit[4] = 3;
-  sprite_index_by_wizard_bit[5] = 0;
-
-  if (g_town_slots[town_index].location_type == 4)
-  {
-    strcpy(g_ui_message_buffer, gs_cityname_castle_00765dc0);
-  }
-  else
+  if (g_town_slots[town_index].location_type != 4)
   {
     strcpy(g_ui_message_buffer, BuildTownDisplayName(town_index));
   }
-
-  len = strlen(g_ui_message_buffer);
-  mid = g_ui_message_buffer + (len >> 1);
-
-  for (space_fwd = mid; (*space_fwd != '\0') && (*space_fwd != ' '); space_fwd++)
-  {
-  }
-  if (*space_fwd != ' ')
-  {
-    space_fwd = (char *)0;
-  }
-
-  for (space_back = mid; (space_back > g_ui_message_buffer) && (*space_back != ' '); space_back--)
-  {
-  }
-  if ((space_back <= g_ui_message_buffer) || (*space_back != ' '))
-  {
-    space_back = (char *)0;
-  }
-
-  if ((space_fwd == (char *)0) || ((space_back != (char *)0) && ((mid - space_fwd) < (space_back - mid))))
-  {
-    if ((space_back != (char *)0) && ((space_fwd == (char *)0) || ((mid - space_fwd) <= (space_back - mid))))
-    {
-      *space_back = '\n';
-    }
-  }
   else
   {
-    *space_fwd = '\n';
+    strcpy(g_ui_message_buffer, gs_cityname_castle_00765dc0);
+  }
+
+  s.mid = g_ui_message_buffer + (strlen(g_ui_message_buffer) >> 1);
+
+  for (s.space_fwd = s.mid; (*s.space_fwd != '\0') && (*s.space_fwd != ' '); s.space_fwd++)
+  {
+  }
+  if (*s.space_fwd != ' ')
+  {
+    s.space_fwd = (char *)0;
+  }
+
+  for (s.space_back = s.mid; (*s.space_back != ' ') && (s.space_back >= g_ui_message_buffer); s.space_back--)
+  {
+  }
+  if (*s.space_back != ' ')
+  {
+    s.space_back = (char *)0;
+  }
+
+  if ((s.space_fwd != (char *)0) && ((s.space_back == (char *)0) || ((s.space_back - s.mid) <= (s.mid - s.space_fwd))))
+  {
+    *s.space_fwd = '\n';
+  }
+  else if ((s.space_back != (char *)0) && ((s.space_fwd == (char *)0) || ((s.space_back - s.mid) >= (s.mid - s.space_fwd))))
+  {
+    *s.space_back = '\n';
   }
 
   strcat(g_ui_message_buffer, s_city_info_newline);
 
-  tile_mask = GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
-  GetWorldTileMagicMask(tile_mask);
+  s.tile_class = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y));
 
-  if ((g_town_slots[town_index].status_and_ruling_wizard & 1) == 0)
+  if ((g_town_slots[town_index].status_and_ruling_wizard & 1) != 0)
   {
-    text_color = 0xe3;
+    s.text_color = 0xff;
   }
   else
   {
-    text_color = 0xff;
+    s.text_color = 0xe3;
   }
 
-  if (((g_town_slots[town_index].status_and_ruling_wizard & 0xffffff00U) >> 8) != 0)
+  if (*(char *)((char *)&g_town_slots[town_index].status_and_ruling_wizard + 1) != '\0')
   {
-    text_color = g_wizard_text_colors[(unsigned char)(g_town_slots[town_index].status_and_ruling_wizard >> 8)];
+    s.text_color = *(int *)((char *)g_wizard_text_colors + (((int)(g_town_slots[town_index].status_and_ruling_wizard & 0xffffff00)) >> 6));
   }
 
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
   if ((g_town_slots[town_index].status_and_ruling_wizard & 1) != 0)
   {
-    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x20c), y, g_ui_message_buffer);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x20c), y, s_city_info_x_string);
   }
 
-  tile_mask = GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
-  tile_class = GetWorldTileMagicMask(tile_mask);
+  s.tile_class = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y));
 
-  wizard_count = 0;
-  for (i = 1; i < 6; i++)
+  s.wizard_count = 0;
+  for (s.i = 1; s.i < 6; s.i++)
   {
-    if ((tile_class & (1U << ((unsigned char)i & 0x1f))) != 0)
+    if ((s.tile_class & (1U << (unsigned char)s.i)) != 0)
     {
-      wizard_count++;
+      s.wizard_count++;
     }
   }
 
-  sprite_width = (int)g_world_magic_avatar_sprites[0]->width;
-  sprite_height = (int)g_world_magic_avatar_sprites[0]->height;
-  wizard_sprite_x = ScaleUiCoordinate(((x + 0x80) - (sprite_width * wizard_count) / 2) - (wizard_count * 5 - 5));
+  s.sprite_width = (int)g_world_magic_avatar_sprites[0]->width;
+  s.sprite_height = (int)g_world_magic_avatar_sprites[0]->height;
+  s.wizard_sprite_x = ScaleUiCoordinate(((x + 0x80) - (s.sprite_width * s.wizard_count) / 2) - ((s.wizard_count - 1) * 5));
 
-  for (i = 1; i < 6; i++)
+  for (s.i = 1; s.i < 6; s.i++)
   {
-    if ((tile_class & (1U << ((unsigned char)i & 0x1f))) != 0)
+    s.avatar_indices[0] = 2;
+    s.avatar_indices[1] = 1;
+    s.avatar_indices[2] = 4;
+    s.avatar_indices[3] = 3;
+    s.avatar_indices[4] = 0;
+
+    if ((s.tile_class & (1U << (unsigned char)s.i)) != 0)
     {
-      sprite = g_world_magic_avatar_sprites[sprite_index_by_wizard_bit[i]];
-      DrawEncodedImageResampled(PTR_DAT_005832dc, wizard_sprite_x, y - ScaleUiCoordinate(sprite_height / 2), ScaleUiCoordinate(sprite_width),
-                                ScaleUiCoordinate(sprite_height), sprite);
-      wizard_sprite_x += ScaleUiCoordinate(sprite_width + 5);
+      DrawEncodedImageResampled(PTR_DAT_005832dc, s.wizard_sprite_x, y - ScaleUiCoordinate(s.sprite_height / 2), ScaleUiCoordinate(s.sprite_width),
+                                ScaleUiCoordinate(s.sprite_height), g_world_magic_avatar_sprites[s.avatar_indices[s.i - 1]]);
+      s.wizard_sprite_x += ScaleUiCoordinate(s.sprite_width + 5);
     }
   }
 
   strcpy(g_ui_message_buffer, FUN_004f2e17(town_index));
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
 
   strcpy(g_ui_message_buffer, s_city_info_empty_string);
-  for (i = 0; i < 0xc; i++)
+  for (s.i = 0; s.i < 0xc; s.i++)
   {
-    if ((town_index != 0) && (Scards[i].worldmagic_city == town_index))
+    if ((town_index != 0) && (g_world_magic_slot_timers[s.i].town_index == town_index))
     {
-      FUN_004bb458(i);
-      strcat(g_ui_message_buffer, gs_worldmagic_names_00780660[i]);
+      s.world_magic_slot_result = FUN_004bb458(s.i);
+      strcat(g_ui_message_buffer, gs_worldmagic_names_00780660[s.i]);
     }
   }
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, text_color, ScaleUiCoordinate(x + 0x19c), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x19c), y, g_ui_message_buffer);
 
   return 0;
 }

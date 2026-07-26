@@ -178,14 +178,14 @@ int show_cardlist_if_human(int *graveyard,
                  unsigned int big_card_mode,
                  char *prompt);
 int show_cardlist(int *graveyard,
-                 int *alternate_csvids,
-                 int *available,
-                 int count,
-                 void *context,
-                 unsigned int big_card_mode,
-                 char *prompt);
+                  int *card_counts,
+                  int *available,
+                  int count,
+                  void *context,
+                  unsigned int big_card_mode,
+                  char *prompt);
 void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color);
-void FUN_0049fdf9(int brush1, int pen1, int pen2, int pen3, int brush2);
+void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2);
 int select_from_graveyard_with_dialog(int player,
                  int *graveyard,
                  void *available,

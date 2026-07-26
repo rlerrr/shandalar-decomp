@@ -426,7 +426,7 @@ void show_territory_options_dialog(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x004d2495
-// FUNCTION: SHANDALAR 0x004f00b5
+// FUNCTION: SHANDALAR 0x00578a71
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card)
 {
   LONG player;
@@ -448,7 +448,7 @@ int card_window_matches_player_and_card(HWND hwnd, int *player_and_card)
 }
 
 // FUNCTION: MAGIC 0x004d2517
-// FUNCTION: SHANDALAR 0x004f0137
+// FUNCTION: SHANDALAR 0x00578af3
 int card_window_matches_card_id(HWND hwnd, card_id_t card_id)
 {
   LONG player;
@@ -472,7 +472,7 @@ int card_window_matches_card_id(HWND hwnd, card_id_t card_id)
 }
 
 // FUNCTION: MAGIC 0x004d259b
-// FUNCTION: SHANDALAR 0x004f01bb
+// FUNCTION: SHANDALAR 0x00578b77
 card_id_t get_card_window_displayed_card_id(HWND hwnd)
 {
   LONG player;
@@ -838,15 +838,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
         }
       }
     }
+    
     if (s.query_found != 0)
     {
       return s.query_value;
     }
-    if (msg == 0x40e)
+    else
     {
-      return -1;
+      return (msg == 0x40e) ? -1 : 0;
     }
-    return 0;
 
   case 0x40d:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);

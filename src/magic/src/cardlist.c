@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #include "cardartlib/src/palette.h"
@@ -11,23 +12,26 @@
 typedef ptrdiff_t INT_PTR;
 
 // GLOBAL: MAGIC 0x00572920
-// GLOBAL: SHANDALAR 0x0058f448
-char s_ShowListCard_00572920[16] = "ShowListCard";
+// GLOBAL: SHANDALAR 0x0058f428
+char g_showlist_card_class_name_00572920[16] = "ShowListCard";
 // GLOBAL: MAGIC 0x0055e0c0
 // GLOBAL: SHANDALAR 0x0057f128
-int unk_0055e0c0;
+int g_showlist_card_csvid_window_long_offset = 0;
 // GLOBAL: MAGIC 0x0055e0c4
 // GLOBAL: SHANDALAR 0x0057f12c
-int unk_0055e0c4;
+int g_showlist_card_count_window_long_offset = 4;
 // GLOBAL: MAGIC 0x0055e0c8
 // GLOBAL: SHANDALAR 0x0057f130
-int unk_0055e0c8;
+int g_showlist_card_show_count_window_long_offset = 8;
 // GLOBAL: MAGIC 0x0055e0cc
 // GLOBAL: SHANDALAR 0x0057f134
-int unk_0055e0cc;
+int g_showlist_card_window_extra_bytes = 0xc;
 // GLOBAL: MAGIC 0x00572930
 // GLOBAL: SHANDALAR 0x0058f438
-char unk_00572930[16] = "\0\0\0\0List Card";
+char g_showlist_window_title_storage_00572930[16] = "\0\0\0\0List Card";
+// GLOBAL: MAGIC 0x00572940
+// GLOBAL: SHANDALAR 0x0058f448
+char g_showlist_card_class_name_duplicate_00572940[16] = "ShowListCard";
 
 // GLOBAL: MAGIC 0x008a9190
 // GLOBAL: SHANDALAR 0x008bd390
@@ -197,7 +201,11 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       destroy_result = GetWindowLongA(hwnd, 8);
       if (destroy_result == 0)
       {
-        FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
+        FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+                     (HGDIOBJ)DAT_00638b68,
+                     (HGDIOBJ)DAT_00638c44,
+                     (HGDIOBJ)DAT_00638b70,
+                     (HGDIOBJ)DAT_00638bf4);
         EndDialog(hwnd, -1);
       }
       return 1;
@@ -384,7 +392,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       GetClientRect(hwnd, &rect);
       for (button_index = 0; button_index < DAT_00638ba4[0x5dd]; ++button_index)
       {
-        card_window = CreateWindowExA(0, s_ShowListCard_00572920, unk_00572930 + 4, 0x50000000, button_x, button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(button_index + 10),
+        card_window = CreateWindowExA(0, g_showlist_card_class_name_duplicate_00572940, g_showlist_window_title_storage_00572930 + 4, 0x50000000, button_x, button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(button_index + 10),
                                       g_app_instance, (LPVOID)DAT_00638ba4[button_index + 1]);
         if (DAT_00638ba4[0x5de] != 0)
         {
@@ -475,14 +483,22 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       {
         if (has_selection == 0)
         {
-          FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
+          FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+                       (HGDIOBJ)DAT_00638b68,
+                       (HGDIOBJ)DAT_00638c44,
+                       (HGDIOBJ)DAT_00638b70,
+                       (HGDIOBJ)DAT_00638bf4);
           EndDialog(hwnd, -1);
         }
       }
       else if (dialog_data != 0 && *((int *)DAT_00638ba4 + command + 0x3df) != 0)
       {
         button_index = command - 10;
-        FUN_0049fdf9(DAT_00638c40, DAT_00638b68, DAT_00638c44, DAT_00638b70, DAT_00638bf4);
+        FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+                     (HGDIOBJ)DAT_00638b68,
+                     (HGDIOBJ)DAT_00638c44,
+                     (HGDIOBJ)DAT_00638b70,
+                     (HGDIOBJ)DAT_00638bf4);
         EndDialog(hwnd, button_index);
       }
       return 1;
@@ -520,7 +536,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
   switch (message)
   {
   case 0x437:
-    s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+    s.csvid = GetWindowLongA(card_window, g_showlist_card_csvid_window_long_offset);
     if (SHOWLIST_MOUSE_MODE != 2)
     {
       SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
@@ -530,18 +546,18 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
   case 0x414:
     s.show_count_flag = (LONG)wparam_window;
     s.count = (LONG)lparam_data;
-    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
-    SetWindowLongA(card_window, unk_0055e0c4, s.count);
+    SetWindowLongA(card_window, g_showlist_card_show_count_window_long_offset, s.show_count_flag);
+    SetWindowLongA(card_window, g_showlist_card_count_window_long_offset, s.count);
     InvalidateRect(card_window, NULL, TRUE);
     return 0;
 
   case WM_CREATE:
     s.csvid = *(LONG *)lparam_data;
-    SetWindowLongA(card_window, unk_0055e0c0, s.csvid);
+    SetWindowLongA(card_window, g_showlist_card_csvid_window_long_offset, s.csvid);
     s.show_count_flag = 0;
     s.count = 0;
-    SetWindowLongA(card_window, unk_0055e0c8, s.show_count_flag);
-    SetWindowLongA(card_window, unk_0055e0c4, s.count);
+    SetWindowLongA(card_window, g_showlist_card_show_count_window_long_offset, s.show_count_flag);
+    SetWindowLongA(card_window, g_showlist_card_count_window_long_offset, s.count);
     return 0;
 
   case WM_GETDLGCODE:
@@ -562,7 +578,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
   case WM_RBUTTONDOWN:
     if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
     {
-      s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
+      s.csvid = GetWindowLongA(card_window, g_showlist_card_csvid_window_long_offset);
       if ((int)DAT_00638c08 != (int)card_window)
       {
         SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
@@ -572,9 +588,9 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     return 0;
 
   case WM_PAINT:
-    s.csvid = GetWindowLongA(card_window, unk_0055e0c0);
-    s.show_count_flag = GetWindowLongA(card_window, unk_0055e0c8);
-    s.count = GetWindowLongA(card_window, unk_0055e0c4);
+    s.csvid = GetWindowLongA(card_window, g_showlist_card_csvid_window_long_offset);
+    s.show_count_flag = GetWindowLongA(card_window, g_showlist_card_show_count_window_long_offset);
+    s.count = GetWindowLongA(card_window, g_showlist_card_count_window_long_offset);
 
     EnterCriticalSection(&g_card_render_lock);
     GetClientRect(card_window, &s.client_rect);
@@ -590,7 +606,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
     if (s.show_count_flag != 0)
     {
-      FUN_0055b9f0(g_shared_offscreen_dc, (int *)&s.client_rect, s.count);
+      FUN_0055b9f0((int)g_shared_offscreen_dc, (int *)&s.client_rect, s.count);
     }
 
     s.paint_dc = BeginPaint(card_window, &s.ps);
@@ -626,7 +642,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 // FUNCTION: MAGIC 0x0049e6aa
 // FUNCTION: SHANDALAR 0x0053a054
 int show_cardlist(int *graveyard,
-                  int *alternate_csvids,
+                  int *card_counts,
                   int *available,
                   int count,
                   void *context,
@@ -637,9 +653,10 @@ int show_cardlist(int *graveyard,
   {
     void *dialog_context;
     int displayed_csvids[500];
-    int available_cards[500];
+    int card_counts[500];
+    int selectable_cards[500];
     int item_count;
-    unsigned int copy_alternate_csvids;
+    unsigned int show_card_counts;
     int show_bigcard;
     char title[12];
     int index;
@@ -655,13 +672,13 @@ int show_cardlist(int *graveyard,
   wndclass.style = 0;
   wndclass.lpfnWndProc = wndproc_ShowListCard;
   wndclass.cbClsExtra = 0;
-  wndclass.cbWndExtra = unk_0055e0cc;
+  wndclass.cbWndExtra = g_showlist_card_window_extra_bytes;
   wndclass.hInstance = g_app_instance;
   wndclass.hIcon = LoadIconA(0, (const char *)0x7f00);
   wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
-  wndclass.hbrBackground = 6;
+  wndclass.hbrBackground = (HBRUSH)6;
   wndclass.lpszMenuName = 0;
-  wndclass.lpszClassName = s_ShowListCard_00572920;
+  wndclass.lpszClassName = g_showlist_card_class_name_00572920;
   RegisterClassA(&wndclass);
 
   s.dialog_context = context;
@@ -671,12 +688,12 @@ int show_cardlist(int *graveyard,
   }
 
   s.item_count = s.index;
-  s.copy_alternate_csvids = alternate_csvids != 0;
-  if (s.copy_alternate_csvids != 0)
+  s.show_card_counts = card_counts != 0;
+  if (s.show_card_counts != 0)
   {
     for (s.index = 0; s.index < s.item_count; ++s.index)
     {
-      s.displayed_csvids[s.index] = alternate_csvids[s.index];
+      s.card_counts[s.index] = card_counts[s.index];
     }
   }
 
@@ -684,11 +701,11 @@ int show_cardlist(int *graveyard,
   {
     if (available == 0)
     {
-      s.available_cards[s.index] = 1;
+      s.selectable_cards[s.index] = 1;
     }
     else
     {
-      s.available_cards[s.index] = available[s.index];
+      s.selectable_cards[s.index] = available[s.index];
     }
   }
 
@@ -699,7 +716,7 @@ int show_cardlist(int *graveyard,
   }
   else
   {
-    strcpy(s.title, unk_00572930);
+    strcpy(s.title, g_showlist_window_title_storage_00572930);
   }
 
   return DialogBoxParam(g_app_instance, (const char *)0xe9, g_duel_window_hwnd, dlgfunc_show_deck, (long)&s.dialog_context);

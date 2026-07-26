@@ -355,6 +355,7 @@ GLOBAL_OTHERS_EXTERN HWND g_duel_player_face_window_hwnd;
 GLOBAL_OTHERS_EXTERN HWND g_duel_opponent_face_window_hwnd;
 
 // GLOBAL: MAGIC 0x008cee70
+// GLOBAL: SHANDALAR 0x008e2fc0
 GLOBAL_OTHERS_EXTERN HWND g_duel_player_graveyard_window_hwnd;
 
 // GLOBAL: MAGIC 0x0091ce30

@@ -257,9 +257,6 @@ DungeonGrid g_dungeon_grid;
 #define DUNGEON_GRID_CELL(x, y) g_dungeon_grid[(x)][(y)]
 // GLOBAL: SHANDALAR 0x0078e44c
 int g_dungeon_grid_generation_state;
-// GLOBAL: SHANDALAR 0x00716024
-int g_dungeon_pre_duel_life_total;
-
 static __inline int GetDungeonGridCellOrZero(int x, int y)
 {
   if (x < 0 || x >= DUNGEON_GRID_WIDTH || y < 0 || y >= DUNGEON_GRID_HEIGHT)
@@ -839,119 +836,114 @@ int RunCastleDungeonBoard(int dungeon_index)
 }
 
 // FUNCTION: SHANDALAR 0x00446220
-int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
+int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
 {
-  uchar uVar1;
-  int iVar2;
-  uint name_id;
-  char *pcVar3;
-  size_t sVar4;
-  int iVar5;
-  DWORD DVar6;
-  uint color_filter;
-  int full_card;
-  int local_1c;
-  int local_18;
-  int local_14;
-  uint local_10;
-  int local_c;
-  int local_8;
+  struct
+  {
+    int sound_state;
+    int work_index;
+    int deck_index;
+    uint card_id;
+    int creature_type;
+    int duel_result;
+  } s;
 
-  for (local_14 = 0; local_14 < 500; local_14 = local_14 + 1)
+  for (s.deck_index = 0; s.deck_index < 500; s.deck_index = s.deck_index + 1)
   {
-    local_10 = deck[local_14] & 0xfff;
-    if ((g_castle_dungeon_slots[param_1].rules_bitmap & 0x80) != 0)
+    s.card_id = deck[s.deck_index] & 0xfff;
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x80) != 0)
     {
       DAT_00742fc0 = 0;
-      if ((global_cards_data[local_10].type & 0x30) != 0)
+      if ((global_cards_data[s.card_id].type & 0x30) != 0)
       {
-        deck[local_14] = deck[local_14] | 0x8000;
+        deck[s.deck_index] |= 0x8000;
       }
     }
-    if ((g_castle_dungeon_slots[param_1].rules_bitmap & 0x40) != 0)
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x40) != 0)
     {
       DAT_00742fc0 = 0;
-      if ((global_cards_data[local_10].type & 0x40) != 0)
+      if ((global_cards_data[s.card_id].type & 0x40) != 0)
       {
-        deck[local_14] = deck[local_14] | 0x8000;
+        deck[s.deck_index] |= 0x8000;
       }
     }
-    if ((g_castle_dungeon_slots[param_1].rules_bitmap & 0x10) != 0)
+    if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x10) != 0)
     {
       DAT_00742fc0 = 0;
-      if (1 << (byte)g_castle_dungeon_slots[param_1].color == (int)global_cards_data[local_10].color)
+      if ((int)global_cards_data[s.card_id].color == 1 << (byte)g_castle_dungeon_slots[dungeon_index].color)
       {
-        deck[local_14] = deck[local_14] | 0x8000;
+        deck[s.deck_index] |= 0x8000;
       }
     }
   }
-  DAT_008ce538 = (int)(char)g_castle_dungeon_slots[param_1].color;
-  if (g_castle_dungeon_slots[param_1].card_in_effect != -1)
+  DAT_008ce538 = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
+  if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
   {
-    unk_00789308 = FUN_0056c705(g_castle_dungeon_slots[param_1].card_in_effect);
+    unk_00789308 = FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect);
   }
-  local_c = g_dungeon_runtime_state.encounter.selected.monster_creature_types[param_2];
-  DAT_007a7874 = (int)g_shandalar_monster_definitions[local_c].base_strength;
+  s.creature_type = g_dungeon_runtime_state.encounter.selected.monster_creature_types[monster_slot];
+  DAT_007a7874 = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
   DAT_00742fd0 = 0;
-  if (param_2 != 4)
+  if (monster_slot != 4)
   {
     DAT_007a7d10[0] = 0x10;
   }
-  if (param_1 < 5)
+  if (dungeon_index < 5)
   {
     DAT_007a7874 = 2;
-    local_18 = g_shandalar_difficulty + param_2 + -3;
-    if (-1 < local_18)
+    s.work_index = monster_slot + g_shandalar_difficulty + DAT_007a7874 - 5;
+    if (s.work_index >= 0)
     {
-      uVar1 = g_castle_dungeon_slots[param_1].color;
-      iVar2 = ClampIntToRange(local_18, 0, 2);
-      DAT_008cf6d0 = FUN_0056c705(*(int *)(&g_dungeon_monster_duel_music_csvids + ((char)uVar1 * 3 + -3) * 4 + iVar2 * 4));
+      DAT_008cf6d0 =
+          FUN_0056c705(((int (*)[3])g_dungeon_monster_duel_music_csvids)
+                           [(char)g_castle_dungeon_slots[dungeon_index].color - 1][ClampIntToRange(s.work_index, 0, 2)]);
     }
   }
-  iVar2 = -1;
-  color_filter = 0;
-  name_id = FUN_0056c705(g_shandalar_monster_definitions[local_c].deck_number);
-  LoadCreatureDuelDeck(local_c, name_id, color_filter, iVar2);
+  LoadCreatureDuelDeck(s.creature_type, FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].deck_number), 0,
+                       -1);
   PlaySoundEffectOnChannel("x:sound\\dngnduel.wav", 0xf, 100, 100, 0);
-  if (param_1 < 5)
+  if (dungeon_index < 5)
   {
-    pcVar3 = BuildCreatureNameWithArticle(local_c);
-    sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0xf], pcVar3);
+    sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0xf], BuildCreatureNameWithArticle(s.creature_type));
   }
   else
   {
-    pcVar3 = BuildCreatureNameWithArticle(local_c);
-    sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0x10], pcVar3);
+    sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0x10], BuildCreatureNameWithArticle(s.creature_type));
   }
   if (DAT_008cf6d0 != -1)
   {
-    local_18 = g_dungeon_monster_duel_music_csvids[(g_castle_dungeon_slots[param_1].color - 1) * 3 + ClampIntToRange(local_18, 0, 2)];
-    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_dungeon_0077f000[17], GetCreatureName(local_c), global_cards_data[FUN_0056c705(local_18)].name);
+    s.work_index =
+        ((int (*)[3])g_dungeon_monster_duel_music_csvids)[(char)g_castle_dungeon_slots[dungeon_index].color - 1]
+                                                         [ClampIntToRange(s.work_index, 0, 2)];
+    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000,
+                                                gs_dungeon_0077f000[0x11], GetCreatureName(s.creature_type),
+                                                global_cards_data[FUN_0056c705(s.work_index)].name);
   }
   if (unk_00789308 != -1)
   {
-    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_dungeon_0077f000[0x12], global_cards_data[FUN_0056c705(g_castle_dungeon_slots[param_1].card_in_effect)].name);
+    sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_dungeon_0077f000[0x12],
+            global_cards_data[FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
   }
   RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50);
-  for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1)
+  for (s.work_index = 0; s.work_index < 0x10; s.work_index = s.work_index + 1)
   {
-    g_duel_ante_card_ids[local_18] = -1;
-    global_ante_cards[0][local_18] = g_duel_ante_card_ids[local_18];
+    g_duel_ante_card_ids[s.work_index] = -1;
+    global_ante_cards[0][s.work_index] = g_duel_ante_card_ids[s.work_index];
   }
   ExitIfNoUsableDeckCards();
   do
   {
     do
     {
-      local_18 = RandomIntLessThan(500);
-    } while (deck[local_18] == -1);
-  } while (((*(byte *)((int)deck + local_18 * 4 + 1) & 0x40) != 0) ||
-           ((deck[local_18] & 0xfffU) < 5));
-  global_ante_cards[0][0] = deck[local_18] & 0xfff;
+      s.work_index = RandomIntLessThan(500);
+    } while (deck[s.work_index] == -1);
+  } while (((deck[s.work_index] & 0x4000) != 0) || ((deck[s.work_index] & 0xfff) <= 4));
+  global_ante_cards[0][0] = deck[s.work_index] & 0xfff;
   if ((0 < g_next_duel_card_id) && (g_next_duel_card_id <= 5))
   {
     g_next_duel_card_id = -1;
   }
+  life[0] = CountDuelPoolEligibleTowns();
   life[0] = CountDuelPoolEligibleTowns();
   life[0] += g_next_duel_life_delta;
   life[0] = life[0] + g_dungeon_life_reward_delta;
@@ -959,16 +951,21 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
   {
     life[0] = life[0] + g_next_duel_card_id;
   }
-  g_dungeon_pre_duel_life_total = life[0];
-  if (param_3 != 0)
+  DAT_00716024 = life[0];
+  if (final_battle != 0)
   {
     sound_stop(100);
     do
     {
-      iVar2 = FUN_0056d5c0(100, &local_1c);
-      if (iVar2 == 4)
-        break;
-    } while (local_1c == 1);
+      if (FUN_0056d5c0(100, &s.sound_state) != 4)
+      {
+        if (s.sound_state == 1)
+        {
+          continue;
+        }
+      }
+      break;
+    } while (1);
     sound_unload(100);
   }
   else
@@ -976,50 +973,48 @@ int RunDungeonMonsterDuel(int param_1, int param_2, int param_3)
     sound_stop(100);
   }
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
-  local_8 = RunDuelEngine(0xffffffff, local_c);
+  s.duel_result = RunDuelEngine(0xffffffff, s.creature_type);
   LoadPcxIntoPageNoPalette("advfac64.pic");
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
-  if ((local_8 != 1) && (local_8 == 0))
+  if ((s.duel_result != 1) && (s.duel_result == 0))
   {
-    for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1)
+    for (s.deck_index = 0; s.deck_index < 0x10; s.deck_index = s.deck_index + 1)
     {
-      if (global_ante_cards[0][local_14] != -1)
+      if (global_ante_cards[0][s.deck_index] == -1)
       {
-        strcpy(g_ui_message_buffer, gs_dungeon_0077f000[0x13]);
-        LoadPcxIntoPage(1, "losedul2.pic");
-        StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
-                                global_screen_height);
-        iVar2 = ScaleUiCoordinate(10);
-        iVar2 = RandomIntLessThan(iVar2);
-        iVar2 = iVar2 + 0x50;
-        iVar5 = ScaleUiCoordinate(10);
-        iVar5 = RandomIntLessThan(iVar5);
-        DrawAdventureCard(global_ante_cards[0][0], iVar5 + local_14 * 0x62 + 0x21, iVar2, 1,
-                          g_ui_message_buffer);
-        ClearInputAndWaitForMouseRelease();
-        WaitForInputEventUnlessBlocked();
-        RemoveCardFromDeckById(global_ante_cards[0][local_14]);
+        continue;
       }
+      strcpy(g_ui_message_buffer, gs_dungeon_0077f000[0x13]);
+      LoadPcxIntoPage(1, "losedul2.pic");
+      StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+                              global_screen_height);
+      DrawAdventureCard(global_ante_cards[0][0],
+                        RandomIntLessThan(ScaleUiCoordinate(10)) + s.deck_index * 0x62 + 0x21,
+                        RandomIntLessThan(ScaleUiCoordinate(10)) + 0x50, 1, g_ui_message_buffer);
+      ClearInputAndWaitForMouseRelease();
+      WaitForInputEventUnlessBlocked();
+      RemoveCardFromDeckById(global_ante_cards[0][s.deck_index]);
     }
   }
-  if ((g_castle_dungeon_slots[param_1].rules_bitmap & 1) != 0)
+  if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 1) != 0)
   {
-    g_dungeon_life_reward_delta = g_dungeon_life_reward_delta + (life[0] - g_dungeon_pre_duel_life_total);
+    g_next_duel_life_delta = life[0] - DAT_00716024;
+    g_dungeon_life_reward_delta += g_next_duel_life_delta;
     g_next_duel_life_delta = 0;
   }
-  if ((g_castle_dungeon_slots[param_1].rules_bitmap & 2) != 0)
+  if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 2) != 0)
   {
     g_next_duel_life_delta = 0;
     g_dungeon_life_reward_delta = 0;
   }
   g_next_duel_card_id = -1;
-  if ((param_3 == 0) || (local_8 == -1))
+  if ((final_battle == 0) || (s.duel_result == -1))
   {
     FUN_00562835("x:sound\\dambloop.wav", 100);
     FUN_0056279e(100, 0x50, 0);
     set_sound_loop(100, 1);
   }
-  return local_8;
+  return s.duel_result;
 }
 
 // FUNCTION: SHANDALAR 0x0050c0ff
@@ -1783,11 +1778,7 @@ int PopulateDungeonCellEvents(void)
   {
     for (s.x = 0; s.x < DUNGEON_GRID_WIDTH; s.x++)
     {
-      if (DUNGEON_GRID_CELL(s.x, s.y) == 0)
-      {
-        continue;
-      }
-      if ((s.x == g_dungeon_runtime_state.player_x) && (s.y == g_dungeon_runtime_state.player_y))
+      if (DUNGEON_GRID_CELL(s.x, s.y) == 0 || ((g_dungeon_runtime_state.player_x == s.x) && (g_dungeon_runtime_state.player_y == s.y)))
       {
         continue;
       }
@@ -1825,83 +1816,74 @@ int PopulateDungeonCellEvents(void)
       }
     }
   }
-  if ((s.generation_ok != 0) && (2 < s.branch_count))
+  if ((s.generation_ok == 0) || (s.branch_count < 3))
   {
-    s.previous_row = 0;
-    s.branch_count = s.previous_row;
-    for (s.y = 0; s.y < DUNGEON_GRID_HEIGHT; s.y++)
+    return s.generation_ok;
+  }
+
+  s.previous_row = 0;
+  s.branch_count = s.previous_row;
+  for (s.y = 0; s.y < DUNGEON_GRID_HEIGHT; s.y++)
+  {
+    for (s.x = 0; s.x < DUNGEON_GRID_WIDTH; s.x++)
     {
-      for (s.x = 0; s.x < DUNGEON_GRID_WIDTH; s.x++)
+      if (DUNGEON_GRID_CELL(s.x, s.y) == 0 || ((g_dungeon_runtime_state.player_x == s.x) && (g_dungeon_runtime_state.player_y == s.y)))
       {
-        if (DUNGEON_GRID_CELL(s.x, s.y) == 0)
+        continue;
+      }
+      s.diagonal_count = 0;
+      s.connected_count = s.diagonal_count;
+      for (s.direction = 1; s.direction <= 8; s.direction += 2)
+      {
+        if (DUNGEON_GRID_CELL(s.x + g_neighbor_dx[s.direction], s.y + g_neighbor_dy[s.direction]) != 0)
         {
-          continue;
+          s.connected_count++;
         }
-        if ((s.x == g_dungeon_runtime_state.player_x) && (s.y == g_dungeon_runtime_state.player_y))
+        if (DUNGEON_GRID_CELL(s.x + g_neighbor_dx[s.direction + 1], s.y + g_neighbor_dy[s.direction + 1]) != 0)
         {
-          continue;
+          s.diagonal_count++;
         }
-        s.diagonal_count = 0;
-        s.connected_count = 0;
-        for (s.direction = 1; s.direction <= 8; s.direction += 2)
+      }
+      if (s.connected_count == 1)
+      {
+        if ((DUNGEON_CELL_DISTANCE(s.x, s.y) < 0x10) || (s.previous_row == s.y))
         {
-          if (DUNGEON_GRID_CELL(s.x + g_neighbor_dx[s.direction], s.y + g_neighbor_dy[s.direction]) != 0)
-          {
-            s.connected_count++;
-          }
-          if (DUNGEON_GRID_CELL(s.x + g_neighbor_dx[s.direction + 1], s.y + g_neighbor_dy[s.direction + 1]) != 0)
-          {
-            s.diagonal_count++;
-          }
+          s.generation_ok = 0;
         }
-        if (s.connected_count == 1)
+        else if (s.previous_row != s.y)
         {
-          if ((DUNGEON_CELL_DISTANCE(s.x, s.y) >= 0x10) && (s.previous_row == s.y))
+          s.branch_count++;
+          s.previous_row = s.y;
+          if ((g_dungeon_runtime_state.current_dungeon_index < 5) && (s.branch_count == 1))
           {
-            s.generation_ok = 0;
+            DUNGEON_GRID_CELL(s.x, s.y) |= 0xf0;
           }
-          else if (s.previous_row != s.y)
+          else
           {
-            s.branch_count++;
-            s.previous_row = s.y;
-            if ((g_dungeon_runtime_state.current_dungeon_index < 5) && (s.branch_count == 1))
-            {
-              DUNGEON_GRID_CELL(s.x, s.y) |= 0xf0;
-            }
-            else
-            {
-              DUNGEON_GRID_CELL(s.x, s.y) |= 0x70;
-            }
-          }
-        }
-        else
-        {
-          s.event_code = g_castle_dungeon_slots[g_dungeon_runtime_state.current_dungeon_index].times_entered +
-                         g_shandalar_difficulty;
-          if (s.event_code > 2)
-          {
-            s.event_code = 3;
-          }
-          if ((((s.min_dead_end_depth - DUNGEON_CELL_DISTANCE(s.x, s.y)) + 1) % (5 - s.event_code)) == 0)
-          {
-            if ((DUNGEON_CELL_DISTANCE(s.x, s.y) < s.max_reachable_depth) && (DUNGEON_CELL_DISTANCE(s.x, s.y) >= 8))
-            {
-              s.event_code = ClampIntToRange(((DUNGEON_CELL_DISTANCE(s.x, s.y) - s.min_dead_end_depth) / 4) + -2 +
-                                                 RandomIntLessThan(6) + s.diagonal_count + s.connected_count,
-                                             0, 6);
-              if (RandomIntLessThan(g_shandalar_difficulty + 3) == 0)
-              {
-                s.event_code = 1;
-              }
-              DUNGEON_GRID_CELL(s.x, s.y) |= s.event_code << 4;
-            }
+            DUNGEON_GRID_CELL(s.x, s.y) |= 0x70;
           }
         }
       }
+      else if (((s.min_dead_end_depth - DUNGEON_CELL_DISTANCE(s.x, s.y) + 1) %
+                    (5 - ((g_castle_dungeon_slots[g_dungeon_runtime_state.current_dungeon_index].times_entered + g_shandalar_difficulty < 3)
+                              ? g_castle_dungeon_slots[g_dungeon_runtime_state.current_dungeon_index].times_entered + g_shandalar_difficulty
+                              : 3)) ==
+                0) &&
+               (DUNGEON_CELL_DISTANCE(s.x, s.y) < s.max_reachable_depth) &&
+               (DUNGEON_CELL_DISTANCE(s.x, s.y) >= 8))
+      {
+        s.event_code = ClampIntToRange(((DUNGEON_CELL_DISTANCE(s.x, s.y) - s.min_dead_end_depth) / 4 - 2) +
+                                           RandomIntLessThan(6) + s.connected_count + s.diagonal_count,
+                                       0, 6);
+        if (RandomIntLessThan(g_shandalar_difficulty + 3) == 0)
+        {
+          s.event_code = 1;
+        }
+        DUNGEON_GRID_CELL(s.x, s.y) |= s.event_code << 4;
+      }
     }
-    return 2;
   }
-  return s.generation_ok;
+  return 2;
 }
 
 // FUNCTION: SHANDALAR 0x004469f7

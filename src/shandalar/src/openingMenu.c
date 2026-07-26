@@ -1648,26 +1648,28 @@ int DrawLoadSaveFrame(FacemakerWindowBounds *window, int x, int y, int width, in
                             y - ((int)s.sprite_headers[0].height - (int)s.sprite_headers[5].height),
                             (int)s.sprite_headers[0].width, (int)s.sprite_headers[0].height, s.sprite_table[0]);
 
+  s.cursor_x = ((x + width / 2) - (int)s.sprite_headers[0].width / 2) - (int)s.sprite_headers[5].width;
   s.right_span_x = ((int)s.sprite_headers[0].width / 2) + (width / 2) + x;
-  for (s.cursor_x = ((x + width / 2) - (int)s.sprite_headers[0].width / 2) - (int)s.sprite_headers[5].width; x < s.cursor_x;
-       s.cursor_x = s.cursor_x - (int)s.sprite_headers[5].width)
+  while (x < s.cursor_x)
   {
     DrawEncodedImageResampled(window, s.cursor_x, y, (int)s.sprite_headers[5].width, (int)s.sprite_headers[5].height, s.sprite_table[5]);
     DrawEncodedImageResampled(window, s.right_span_x, y, (int)s.sprite_headers[5].width, (int)s.sprite_headers[5].height, s.sprite_table[5]);
-    s.right_span_x = s.right_span_x + (int)s.sprite_headers[5].width;
+    s.cursor_x -= (int)s.sprite_headers[5].width;
+    s.right_span_x += (int)s.sprite_headers[5].width;
   }
 
   DrawEncodedImageResampled(window, x, y, (int)s.sprite_headers[1].width, (int)s.sprite_headers[1].height, s.sprite_table[1]);
   DrawEncodedImageResampled(window, (width + x) - (int)s.sprite_headers[2].width, y, (int)s.sprite_headers[2].width,
                             (int)s.sprite_headers[2].height, s.sprite_table[2]);
 
-  s.cursor_x = (int)s.sprite_headers[8].width;
-  for (s.cursor_y = (int)s.sprite_headers[1].height + y; s.cursor_y < (height + y) - (int)s.sprite_headers[3].height;
-       s.cursor_y = s.cursor_y + (int)s.sprite_headers[8].height)
+  s.cursor_y = (int)s.sprite_headers[1].height + y;
+  s.right_span_x = (width + x) - (int)s.sprite_headers[8].width;  
+  while (s.cursor_y < (height + y) - (int)s.sprite_headers[3].height)
   {
     DrawEncodedImageResampled(window, x, s.cursor_y, (int)s.sprite_headers[8].width, (int)s.sprite_headers[8].height, s.sprite_table[8]);
-    DrawEncodedImageResampled(window, (width + x) - s.cursor_x, s.cursor_y,
+    DrawEncodedImageResampled(window, s.right_span_x, s.cursor_y,
                               (int)s.sprite_headers[6].width, (int)s.sprite_headers[6].height, s.sprite_table[6]);
+    s.cursor_y += (int)s.sprite_headers[8].height;
   }
 
   DrawEncodedImageResampled(window, x, (height + y) - (int)s.sprite_headers[3].height, (int)s.sprite_headers[3].width,
@@ -1675,13 +1677,15 @@ int DrawLoadSaveFrame(FacemakerWindowBounds *window, int x, int y, int width, in
   DrawEncodedImageResampled(window, (width + x) - (int)s.sprite_headers[4].width, (height + y) - (int)s.sprite_headers[4].height,
                             (int)s.sprite_headers[4].width, (int)s.sprite_headers[4].height, s.sprite_table[4]);
 
+  s.cursor_x = (int)s.sprite_headers[3].width + x;
   s.right_span_x = ((width + x) - (int)s.sprite_headers[4].width) - (int)s.sprite_headers[7].width;
   y = y + (height - (int)s.sprite_headers[7].height);
-  for (s.cursor_x = (int)s.sprite_headers[3].width + x; s.cursor_x < x + width / 2; s.cursor_x = s.cursor_x + (int)s.sprite_headers[7].width)
+  while (s.cursor_x < x + width / 2)
   {
     DrawEncodedImageResampled(window, s.cursor_x, y, (int)s.sprite_headers[7].width, (int)s.sprite_headers[7].height, s.sprite_table[7]);
     DrawEncodedImageResampled(window, s.right_span_x, y, (int)s.sprite_headers[7].width, (int)s.sprite_headers[7].height, s.sprite_table[7]);
-    s.right_span_x = s.right_span_x - (int)s.sprite_headers[7].width;
+    s.cursor_x += (int)s.sprite_headers[7].width;
+    s.right_span_x -= (int)s.sprite_headers[7].width;
   }
 
   return 0;

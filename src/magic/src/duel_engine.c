@@ -45,6 +45,7 @@ extern char g_graveyard_view_antes_opponent_text[];
 extern char g_graveyard_view_antes_player_text[];
 extern char s_MENU_GRAVEYARD_0056e9e0[];
 extern char s_DIALOG_VIEWANTES_0056e9f0[];
+extern HWND g_duel_toggleable_status_window_hwnd;
 extern HPALETTE global_cart_art_hpalette;
 extern HBITMAP g_spell_minimized_background_bitmap;
 extern HMENU g_spell_minimized_popup_menu;
@@ -148,6 +149,28 @@ int g_palette_grid_x_offset;
 // GLOBAL: MAGIC 0x005710cc
 char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
 
+// GLOBAL: MAGIC 0x00560188
+// GLOBAL: SHANDALAR 0x00583268
+char g_kim_debug_class_name_00560188[12] = "KimDebug";
+// GLOBAL: MAGIC 0x00560194
+// GLOBAL: SHANDALAR 0x00583274
+char g_kim_debug_window_title_00560194[4] = "Kim";
+// GLOBAL: MAGIC 0x00560198
+// GLOBAL: SHANDALAR 0x00583278
+char g_kim_debug_class_name_duplicate_00560198[12] = "KimDebug";
+// GLOBAL: MAGIC 0x005601a4
+// GLOBAL: SHANDALAR 0x00583284
+char g_kim_debug_empty_text_005601a4[4] = "";
+// GLOBAL: MAGIC 0x005601a8
+// GLOBAL: SHANDALAR 0x00583288
+char s_LISTBOX_005601a8[8] = "LISTBOX";
+
+// GLOBAL: MAGIC 0x00637554
+// GLOBAL: SHANDALAR 0x005a8b2c
+HWND g_kim_debug_listbox_hwnd;
+
+#define KIM_DEBUG_APPEND_MESSAGE 0x4c8
+
 int register_window_classes(void);
 int destroy_windowclasses(void);
 int register_MAGICGAME_LifeClass(LPCSTR class_name);
@@ -187,6 +210,103 @@ void prepare_duel_video_mode_transition(void)
 // FUNCTION: SHANDALAR 0x0040f067
 void finish_duel_video_mode_transition(void)
 {
+}
+
+// FUNCTION: MAGIC 0x004224b5
+// FUNCTION: SHANDALAR 0x00430bfb
+LRESULT CALLBACK wndproc_KimDebug(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  LRESULT result;
+
+  if (msg == KIM_DEBUG_APPEND_MESSAGE)
+  {
+    if (SendMessageA(g_kim_debug_listbox_hwnd, LB_INSERTSTRING, 0, lparam) == LB_ERRSPACE)
+    {
+      result = SendMessageA(g_kim_debug_listbox_hwnd, LB_GETCOUNT, 0, 0);
+      SendMessageA(g_kim_debug_listbox_hwnd, LB_DELETESTRING, result - 1, 0);
+      SendMessageA(g_kim_debug_listbox_hwnd, LB_DELETESTRING, result - 2, 0);
+      SendMessageA(g_kim_debug_listbox_hwnd, LB_INSERTSTRING, 0, lparam);
+    }
+    return 0;
+  }
+
+  switch (msg)
+  {
+  case WM_SIZE:
+    MoveWindow(g_kim_debug_listbox_hwnd, 0, 0, lparam & 0xffff, HIWORD(lparam), TRUE);
+    return 0;
+
+  case WM_MOVE:
+    SendMessageA(g_kim_debug_listbox_hwnd, LB_RESETCONTENT, 0, 0);
+    return 0;
+
+  case WM_CREATE:
+    g_kim_debug_listbox_hwnd = CreateWindowExA(0,
+                                               s_LISTBOX_005601a8,
+                                               g_kim_debug_empty_text_005601a4,
+                                               0x50240000,
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               hwnd,
+                                               (HMENU)0,
+                                               g_app_instance,
+                                               (LPVOID)0);
+    return 0;
+
+  case WM_DESTROY:
+    KillTimer(hwnd, 1);
+    return 0;
+
+  case WM_TIMER:
+    InvalidateRect(hwnd, (RECT *)0, TRUE);
+    return 0;
+
+  case WM_LBUTTONDOWN:
+    InvalidateRect(hwnd, (RECT *)0, TRUE);
+    return 0;
+
+  case WM_CLOSE:
+    ShowWindow(hwnd, SW_HIDE);
+    return 0;
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+}
+
+// FUNCTION: MAGIC 0x00422405
+// FUNCTION: SHANDALAR 0x00430b4b
+int create_kim_debug_window(void)
+{
+  WNDCLASSA wndclass;
+
+  wndclass.style = 0;
+  wndclass.lpfnWndProc = wndproc_KimDebug;
+  wndclass.cbClsExtra = 0;
+  wndclass.cbWndExtra = 0;
+  wndclass.hInstance = g_app_instance;
+  wndclass.hIcon = (HICON)0;
+  wndclass.hCursor = LoadCursorA((HINSTANCE)0, (LPCSTR)0x7f00);
+  wndclass.hbrBackground = GetStockObject(1);
+  wndclass.lpszMenuName = (LPCSTR)0;
+  wndclass.lpszClassName = g_kim_debug_class_name_00560188;
+  RegisterClassA(&wndclass);
+
+  g_duel_toggleable_status_window_hwnd = CreateWindowExA(0,
+                                                         g_kim_debug_class_name_duplicate_00560198,
+                                                         g_kim_debug_window_title_00560194,
+                                                         0x80cc0000,
+                                                         10,
+                                                         10,
+                                                         0xfa,
+                                                         0x113,
+                                                         g_duel_window_hwnd,
+                                                         (HMENU)0,
+                                                         g_app_instance,
+                                                         (LPVOID)0);
+  return 1;
 }
 
 // FUNCTION: MAGIC 0x00421f0a
@@ -546,6 +666,9 @@ int initialize_duel_engine_window(void)
   }
   else
   {
+#ifdef _DEBUG
+    create_kim_debug_window();
+#endif
     return 1;
   }
 }

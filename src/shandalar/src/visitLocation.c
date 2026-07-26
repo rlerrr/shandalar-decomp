@@ -337,8 +337,7 @@ char s_advfac64_pic_00594070[] = "advfac64.pic";
 // GLOBAL: SHANDALAR 0x00594080
 char s_todpal_tr_00594080[] = "todpal.tr";
 
-// GLOBAL: SHANDALAR 0x0058e048
-int g_showlibrary_menu_selection = 0;
+extern int g_showlibrary_menu_selection;
 // GLOBAL: SHANDALAR 0x0058edd0
 int g_wiseman_city_block_active_town_count = 0;
 
