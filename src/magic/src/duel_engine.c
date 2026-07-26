@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "cardartlib/src/assert.h"
@@ -44,6 +45,7 @@ extern char g_graveyard_view_antes_opponent_text[];
 extern char g_graveyard_view_antes_player_text[];
 extern char s_MENU_GRAVEYARD_0056e9e0[];
 extern char s_DIALOG_VIEWANTES_0056e9f0[];
+extern HPALETTE global_cart_art_hpalette;
 extern HBITMAP g_spell_minimized_background_bitmap;
 extern HMENU g_spell_minimized_popup_menu;
 extern char g_spell_minimized_menu_help_text[];
@@ -114,6 +116,13 @@ int g_icon_button_icon_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e160
 int g_icon_button_pressed_long_offset = 4;
+
+// GLOBAL: MAGIC 0x0055e164
+int g_palette_selected_color_window_long_offset = 0;
+
+int g_palette_grid_y_offset;
+
+int g_palette_grid_x_offset;
 
 // GLOBAL: MAGIC 0x005710cc
 char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
@@ -1336,7 +1345,105 @@ LRESULT CALLBACK wndproc_MAGICGAME_BigCardCardClass(HWND hwnd, UINT msg, WPARAM 
 // FUNCTION: SHANDALAR 0x004543d4
 LRESULT CALLBACK wndproc_MAGIC_PaletteClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
+  struct
+  {
+    char color_text[100];
+    int paint_column;
+    HDC paint_dc;
+    int paint_row;
+    PAINTSTRUCT paint_struct;
+    PALETTEENTRY palette_entry;
+    HBRUSH color_brush;
+    RECT paint_rect;
+    int hit_color;
+    int column;
+    int mouse_x;
+    int mouse_y;
+    int row;
+    RECT mouse_rect;
+    int hit_found;
+    int selected_color;
+  } s;
+
+  switch (msg)
+  {
+  case WM_CLOSE:
+    ShowWindow(hwnd, SW_HIDE);
+    return 0;
+
+  case WM_CREATE:
+    s.selected_color = 0;
+    SetWindowLongA(hwnd, g_palette_selected_color_window_long_offset, s.selected_color);
+    return 0;
+
+  case WM_MOUSEMOVE:
+    s.selected_color = GetWindowLongA(hwnd, g_palette_selected_color_window_long_offset);
+    s.mouse_x = lparam & 0xffff;
+    s.mouse_y = (unsigned short)((lparam >> 16) & 0xffff);
+    s.hit_found = 0;
+    for (s.row = 0; s.row < 16 && s.hit_found == 0; s.row = s.row + 1)
+    {
+      for (s.column = 0; s.column < 16 && s.hit_found == 0; s.column = s.column + 1)
+      {
+        SetRect(&s.mouse_rect, s.column << 4, s.row << 4, (s.column + 1) << 4, (s.row + 1) << 4);
+        OffsetRect(&s.mouse_rect, g_palette_grid_x_offset, g_palette_grid_y_offset);
+        if (((BOOL(WINAPI *)(const RECT *, int, int))PtInRect)(&s.mouse_rect, s.mouse_x, s.mouse_y) != 0)
+        {
+          s.hit_found = 1;
+          s.hit_color = (s.row << 4) + s.column;
+        }
+      }
+    }
+    if (s.hit_found != 0)
+    {
+      if (s.selected_color != s.hit_color)
+      {
+        s.selected_color = s.hit_color;
+        SetWindowLongA(hwnd, g_palette_selected_color_window_long_offset, s.selected_color);
+        InvalidateRect(hwnd, (RECT *)0, FALSE);
+      }
+    }
+    return 0;
+
+  case WM_PAINT:
+    s.selected_color = GetWindowLongA(hwnd, g_palette_selected_color_window_long_offset);
+    s.paint_dc = BeginPaint(hwnd, &s.paint_struct);
+    if (s.paint_dc != (HDC)0)
+    {
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      GetClientRect(hwnd, &s.paint_rect);
+      g_palette_grid_x_offset = ((s.paint_rect.right - s.paint_rect.left) - 0x100) / 2;
+      g_palette_grid_y_offset = ((s.paint_rect.bottom - s.paint_rect.top) - 0x100) / 2;
+      for (s.paint_row = 0; s.paint_row < 16; s.paint_row = s.paint_row + 1)
+      {
+        for (s.paint_column = 0; s.paint_column < 16; s.paint_column = s.paint_column + 1)
+        {
+          s.color_brush = CreateSolidBrush(PALETTEINDEX((WORD)((s.paint_row << 4) + s.paint_column)));
+          SetRect(&s.paint_rect, s.paint_column << 4, s.paint_row << 4, (s.paint_column + 1) << 4, (s.paint_row + 1) << 4);
+          OffsetRect(&s.paint_rect, g_palette_grid_x_offset, g_palette_grid_y_offset);
+          FillRect(s.paint_dc, &s.paint_rect, s.color_brush);
+          DeleteObject(s.color_brush);
+        }
+      }
+      if (GetPaletteEntries(global_cart_art_hpalette, s.selected_color, 1, &s.palette_entry) != 0)
+      {
+        sprintf(s.color_text, "#%3d: %3d,%3d,%3d         ", s.selected_color, s.palette_entry.peRed,
+                s.palette_entry.peGreen, s.palette_entry.peBlue);
+      }
+      else
+      {
+        sprintf(s.color_text, "#%3d: not in palette         ", s.selected_color);
+      }
+      TextOutA(s.paint_dc, 0, 0, s.color_text, strlen(s.color_text));
+      EndPaint(hwnd, &s.paint_struct);
+    }
+    return 0;
+
+  default:
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004b18ca
