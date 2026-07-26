@@ -609,7 +609,12 @@ int initialize_duel_engine_window(void)
   s.created_window = 1;
   SetThreadPriority(GetCurrentThread(), 1);
   InitializeCriticalSection(&g_duel_render_lock);
-  g_duel_startup_state = 0;
+#ifdef _DEBUG
+  // This is annoying to toggle since F12 is the debugger pause hotkey in VS, so start enabled
+  g_duel_cheats_state = 1;
+#else
+  g_duel_cheats_state = 0;
+#endif
   g_duel_surface_reset_state = 0;
   g_shared_startup_completed = 1;
   g_duel_dialog_refresh_state = 0;

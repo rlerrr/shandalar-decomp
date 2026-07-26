@@ -1341,7 +1341,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       AppendMenuA(g_territory_popup_menu, MF_POPUP, (UINT)g_territory_submenu,
                   g_territory_menu_submenu_text);
     }
-    if (g_duel_startup_state != 0)
+    if (g_duel_cheats_state != 0)
     {
       AppendMenuA(g_territory_popup_menu, MF_SEPARATOR, 0, NULL);
       AppendMenuA(g_territory_popup_menu, MF_SEPARATOR, 0, NULL);

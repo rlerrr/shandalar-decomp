@@ -2591,25 +2591,25 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 599:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
-        g_duel_startup_state = 0;
+        g_duel_cheats_state = 0;
       }
       else
       {
-        g_duel_startup_state = 1;
+        g_duel_cheats_state = 1;
       }
 #ifndef _DEBUG
       // Immediately disables debug menu normally
       if (DAT_008ce504 == 0)
       {
-        g_duel_startup_state = 0;
+        g_duel_cheats_state = 0;
       }
 #endif
       break;
 
     case 0x25c:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         g_duel_surface_reset_state = (g_duel_surface_reset_state == 0);
         resize_duel_hand_window(g_duel_life_window_hwnd);
@@ -2617,14 +2617,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x25d:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         show_opponent_library_window(DAT_0057a750);
       }
       break;
 
     case 0x25e:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         show_player_library_window(DAT_0057a750);
       }
@@ -2632,7 +2632,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 0x26b:
     case 0x26c:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         if (((unsigned int)wparam & 0xffff) == 0x26b)
         {
@@ -2658,7 +2658,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 0x26d:
     case 0x26e:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         if (((unsigned int)wparam & 0xffff) == 0x26d)
         {
@@ -2683,7 +2683,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 0x269:
     case 0x26a:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         if (((unsigned int)wparam & 0xffff) == 0x269)
         {
@@ -2700,7 +2700,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 0x26f:
     case 0x270:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         if (((unsigned int)wparam & 0xffff) == 0x26f)
         {
@@ -2719,7 +2719,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 0x267:
     case 0x268:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         if (((unsigned int)wparam & 0xffff) == 0x267)
         {
@@ -2736,7 +2736,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x263:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         life[0] = 0;
         life[1] = 0;
@@ -2746,7 +2746,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x271:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         ShowWindow(g_duel_palette_window_hwnd, SW_SHOW);
       }
@@ -2756,7 +2756,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x276:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         if (g_duel_palette_refresh_pending == 0)
         {
@@ -2770,7 +2770,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x277:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         ShowWindow(g_duel_toggleable_status_window_hwnd,
                    -((IsWindowVisible(g_duel_toggleable_status_window_hwnd) == 0)) & SW_SHOW);
@@ -2778,7 +2778,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x273:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         g_shared_startup_completed = (g_shared_startup_completed == 0);
         SendMessageA(g_duel_player_battlefield_window_hwnd, 0x435, 0, 0);
@@ -2790,14 +2790,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x274:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         g_duel_network_state = 0;
       }
       break;
 
     case 0x272:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         g_duel_dialog_refresh_state = (g_duel_dialog_refresh_state == 0);
         SendMessageA(g_duel_player_battlefield_window_hwnd, 0x435, 0, 0);

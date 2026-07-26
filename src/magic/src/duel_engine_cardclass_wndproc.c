@@ -3706,7 +3706,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x262:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         s.command_unused_3a0 = CARDCLASS_INTERNAL_CARD_ID(s.player, s.card);
         produce_mana(s.player,
@@ -3731,7 +3731,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x263:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         CARDCLASS_STATE(s.player, s.card) ^= 0x10;
         notify_duel_action(0, 0xff);
@@ -3739,7 +3739,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x264:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         s.command_saved_phase_flags = g_duel_phase_stop_settings[current_player].phase_flags[current_phase];
         g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
@@ -3753,7 +3753,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x266:
-      if (g_duel_startup_state != 0)
+      if (g_duel_cheats_state != 0)
       {
         add_special_counter(s.player, s.card);
         notify_duel_action(0, 0xff);
@@ -4096,7 +4096,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       CheckMenuItem(g_cardclass_popup_menu, 0x75, MF_CHECKED);
     }
     AppendMenuA(g_cardclass_popup_menu, 0, 0x71, g_cardclass_menu_help_text);
-    if (g_duel_startup_state != 0 && g_duel_modal_action_active != 0)
+    if (g_duel_cheats_state != 0 && g_duel_modal_action_active != 0)
     {
       if (s.untap_status == 0)
       {

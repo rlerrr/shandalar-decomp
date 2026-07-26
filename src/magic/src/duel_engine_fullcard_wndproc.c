@@ -415,7 +415,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
     {
       return 0;
     }
-    if (g_duel_startup_state == 0)
+    if (g_duel_cheats_state == 0)
     {
       return 0;
     }
