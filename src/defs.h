@@ -792,7 +792,7 @@ typedef struct card_instance_struct
 
 	int16_t power;								   /*  0x34 */
 	int8_t number_of_targets;					   /*  0x36 */
-	uint8_t unknown0x37; /*  0x37 */			   // Used only on damage cards, apparently for temporary storage
+	int8_t unknown0x37; /*  0x37 */				   // Used only on damage cards, apparently for temporary storage
 	int32_t info_slot;							   /*  0x38 */
 	int32_t original_internal_card_id; /*  0x3C */ // Mok : CD_CardIDinCT_Parent
 	int8_t color_id[6]; /*  0x40 */				   // cless -> black -> blue -> green -> red -> white - Sleight of Mind data
