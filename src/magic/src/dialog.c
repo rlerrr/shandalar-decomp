@@ -47,8 +47,10 @@ RECT g_big_card_choice_small_card_rect;
 // GLOBAL: MAGIC 0x006f6e20
 int g_big_card_choice_state_006f6e20;
 // GLOBAL: MAGIC 0x006f6e28
+// GLOBAL: SHANDALAR 0x005b7688
 char g_big_card_choice_window_text_buffer[0xc8];
 // GLOBAL: MAGIC 0x008950b4
+// GLOBAL: SHANDALAR 0x008a92b4
 int g_big_card_choice_timeout_ms;
 
 // GLOBAL: MAGIC 0x00777848
@@ -293,6 +295,7 @@ int raw_do_dialog(int bigcard_player,
                   int dialog_mode);
 
 // FUNCTION: MAGIC 0x0044a3bf
+// FUNCTION: SHANDALAR 0x00453f42
 char *get_displayed_card_name(int player, int card)
 {
   struct
@@ -413,6 +416,7 @@ int FUN_004483be(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004486de
+// FUNCTION: SHANDALAR 0x0045225b
 int get_displayed_card_blocking(int player, int card)
 {
   int blocking;
@@ -429,6 +433,7 @@ int get_displayed_card_blocking(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004487d8
+// FUNCTION: SHANDALAR 0x00452355
 int get_displayed_card_internal_id(int player, int card)
 {
   int internal_card_id;
@@ -445,6 +450,7 @@ int get_displayed_card_internal_id(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448857
+// FUNCTION: SHANDALAR 0x004523d4
 card_id_t get_displayed_card_id(int player, int card)
 {
   int internal_card_id;
@@ -464,6 +470,7 @@ card_id_t get_displayed_card_id(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449057
+// FUNCTION: SHANDALAR 0x00452bd4
 int FUN_00449057(int player, int card)
 {
   int displayed_color;
@@ -527,6 +534,7 @@ unsigned int FUN_00449990(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449a0f
+// FUNCTION: SHANDALAR 0x00453590
 void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
 {
   if (FUN_004483be(player, card) != 0)
@@ -542,6 +550,7 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448c93
+// FUNCTION: SHANDALAR 0x00452810
 unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card)
 {
   unsigned int display_info;
@@ -566,6 +575,7 @@ unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448490
+// FUNCTION: SHANDALAR 0x0045200d
 unsigned int get_displayed_card_special_counters(int player, int card)
 {
   unsigned int info_slot;
@@ -602,6 +612,7 @@ int FUN_004491cd(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449249
+// FUNCTION: SHANDALAR 0x00452dc6
 void FUN_00449249(int player, int card, int *power, int *toughness)
 {
   if (power == NULL || toughness == NULL)
@@ -620,6 +631,7 @@ void FUN_00449249(int player, int card, int *power, int *toughness)
 }
 
 // FUNCTION: MAGIC 0x00449898
+// FUNCTION: SHANDALAR 0x00453419
 unsigned int get_displayed_card_display_flags(int player, int card)
 {
   unsigned int displayed_flags;
@@ -765,6 +777,7 @@ card_id_t get_card_id(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004a63b8
+// FUNCTION: SHANDALAR 0x00558538
 int do_dialog(int who_chooses,
               int bigcard_player,
               int bigcard_card,
@@ -859,6 +872,7 @@ int do_dialog(int who_chooses,
 }
 
 // FUNCTION: MAGIC 0x004a55c7
+// FUNCTION: SHANDALAR 0x00540f38
 int raw_do_dialog(int bigcard_player,
                   int bigcard_card,
                   int smallcard_player,
@@ -911,6 +925,7 @@ int raw_do_dialog(int bigcard_player,
 }
 
 // FUNCTION: MAGIC 0x00446e4b
+// FUNCTION: SHANDALAR 0x004509c9
 unsigned int refresh_duel_display_cache(void)
 {
   struct
@@ -1065,6 +1080,7 @@ unsigned int refresh_duel_display_cache(void)
 }
 
 // FUNCTION: MAGIC 0x00449ac3
+// FUNCTION: SHANDALAR 0x00453644
 unsigned int FUN_00449ac3(int player, int card)
 {
   int displayed_card_type;
@@ -1081,6 +1097,7 @@ unsigned int FUN_00449ac3(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00559999
+// FUNCTION: SHANDALAR 0x0056fce9
 unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, int param_6, int param_7)
 {
   struct
@@ -1159,6 +1176,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
 }
 
 // FUNCTION: MAGIC 0x00559bc1
+// FUNCTION: SHANDALAR 0x0056ff11
 void FUN_00559bc1(int dc, int rect, int player, int card)
 {
   struct
@@ -1245,6 +1263,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00559e9c
+// FUNCTION: SHANDALAR 0x005701e5
 void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int player, int card)
 {
   struct

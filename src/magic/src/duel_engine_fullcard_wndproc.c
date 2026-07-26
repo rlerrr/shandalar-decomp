@@ -43,33 +43,43 @@ char s__duel_hlp_0057f454[0xc] = "\\duel.hlp";
 char s__duel_hlp_0057f460[0xc] = "\\duel.hlp";
 
 // GLOBAL: MAGIC 0x0055e1c8
+// GLOBAL: SHANDALAR 0x0057f184
 int g_full_card_card_id_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e1cc
+// GLOBAL: SHANDALAR 0x0057f188
 int g_full_card_player_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e1d0
+// GLOBAL: SHANDALAR 0x0057f18c
 int g_full_card_card_window_long_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e1d4
+// GLOBAL: SHANDALAR 0x0057f190
 int g_full_card_counters_window_long_offset = 0xc;
 
 // GLOBAL: MAGIC 0x0055e1d8
+// GLOBAL: SHANDALAR 0x0057f194
 int g_full_card_color_window_long_offset = 0x10;
 
 // GLOBAL: MAGIC 0x0057f440
+// GLOBAL: SHANDALAR 0x005a0d94
 int g_full_card_preview_repositioned;
 
 // GLOBAL: MAGIC 0x00708b10
+// GLOBAL: SHANDALAR 0x00732188
 char g_full_card_menu_help_text[0x38];
 
 // GLOBAL: MAGIC 0x00708b48
+// GLOBAL: SHANDALAR 0x007321c0
 char g_full_card_menu_expand_text[0x38];
 
 // GLOBAL: MAGIC 0x00708b80
+// GLOBAL: SHANDALAR 0x007321f8
 char g_full_card_menu_more_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x00708ba0
+// GLOBAL: SHANDALAR 0x00732218
 RECT g_full_card_saved_window_rect;
 
 // FUNCTION: MAGIC 0x00557850
@@ -112,6 +122,7 @@ void destroy_MAGICGAME_FullCardClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x004493ec
+// FUNCTION: SHANDALAR 0x00452f69
 int FUN_004493ec(int player, int card)
 {
   int result;

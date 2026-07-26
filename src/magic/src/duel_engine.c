@@ -61,15 +61,18 @@ LOGFONTA *LoadFontFromIni(char *section, int must_load);
 #define CHAT_FONT_WINDOW_LONG_OFFSET g_magicgame_chat_font_window_long_offset
 
 // GLOBAL: MAGIC 0x0055fcb4
+// GLOBAL: SHANDALAR 0x00582d94
 int g_duel_directive_hover_timer_id;
 
 // GLOBAL: MAGIC 0x00573068
+// GLOBAL: SHANDALAR 0x00589d60
 HWND g_duel_last_cue_card_hwnd;
 
 // GLOBAL: MAGIC 0x0057306c
 int DAT_0057306c;
 
 // GLOBAL: MAGIC 0x00573070
+// GLOBAL: SHANDALAR 0x00589d68
 int g_duel_last_cue_card_x;
 
 // GLOBAL: MAGIC 0x00573074
@@ -79,51 +82,67 @@ int g_duel_last_cue_card_y;
 char s_CueCard_00573078[8] = "CueCard";
 
 // GLOBAL: MAGIC 0x0055e0d0
+// GLOBAL: SHANDALAR 0x0057f0dc
 int g_duel_cue_card_font_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e0d4
+// GLOBAL: SHANDALAR 0x0057f0e0
 int g_duel_cue_card_window_extra_bytes = 4;
 
 // GLOBAL: MAGIC 0x0064f0ac
+// GLOBAL: SHANDALAR 0x005b7c68
 HFONT g_duel_cue_card_font;
 
 // GLOBAL: MAGIC 0x0064f0b0
+// GLOBAL: SHANDALAR 0x005b7c6c
 COLORREF g_duel_cue_card_text_color;
 
 // GLOBAL: MAGIC 0x0064f0b4
+// GLOBAL: SHANDALAR 0x005b7c70
 HBRUSH g_duel_cue_card_shadow_brush;
 
 // GLOBAL: MAGIC 0x0064f0b8
+// GLOBAL: SHANDALAR 0x005b7c74
 HBRUSH g_duel_cue_card_background_brush;
 
 // GLOBAL: MAGIC 0x007ab2c4
+// GLOBAL: SHANDALAR 0x007bf4c0
 int g_duel_cue_card_mouse_threshold;
 
 // GLOBAL: MAGIC 0x008a8df4
+// GLOBAL: SHANDALAR 0x008bcff4
 int g_duel_cue_card_timer_elapsed;
 
 // GLOBAL: MAGIC 0x008b44d8
+// GLOBAL: SHANDALAR 0x008c8658
 int g_duel_cue_card_y_offset;
 
 // GLOBAL: MAGIC 0x008ce7d4
+// GLOBAL: SHANDALAR 0x008e2924
 int g_duel_cue_card_timer_id;
 
 // GLOBAL: MAGIC 0x0093a7f8
+// GLOBAL: SHANDALAR 0x0094e918
 int g_duel_cue_card_x_offset;
 
 // GLOBAL: MAGIC 0x0055e15c
+// GLOBAL: SHANDALAR 0x0057f178
 int g_icon_button_icon_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e160
+// GLOBAL: SHANDALAR 0x0057f17c
 int g_icon_button_pressed_long_offset = 4;
 
 // GLOBAL: MAGIC 0x005707a8
+// GLOBAL: SHANDALAR 0x005854b0
 int g_palette_selected_color_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x005707b0
+// GLOBAL: SHANDALAR 0x005854b8
 int g_palette_grid_y_offset;
 
 // GLOBAL: MAGIC 0x005707ac
+// GLOBAL: SHANDALAR 0x005854b4
 int g_palette_grid_x_offset;
 
 // GLOBAL: MAGIC 0x005710cc

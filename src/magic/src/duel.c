@@ -131,6 +131,7 @@ char s__d__Entering_AI_Decision_Phase__0056e968[0x24] = "%d: Entering AI Decisio
 char s_phase___3d_num_tries___4d_mtime___0056e98c[0x32] = "phase = %3d num tries = %4d mtime = %4d, %d\n";
 
 // GLOBAL: MAGIC 0x009251d4
+// GLOBAL: SHANDALAR 0x00939304
 int DAT_009251d4;
 
 // GLOBAL: MAGIC 0x00896690
@@ -143,9 +144,11 @@ int DAT_00712544;
 int DAT_00743098;
 
 // GLOBAL: MAGIC 0x0091c0ec
+// GLOBAL: SHANDALAR 0x0093022c
 int _DAT_0091c0ec;
 
 // FUNCTION: MAGIC 0x004d2a09
+// FUNCTION: SHANDALAR 0x004f87d9
 void copy_autosave_to_save_file(LPCSTR save_path)
 {
   (void)save_path;
@@ -278,24 +281,28 @@ void load_selected_duel_save_slot(int player)
 }
 
 // FUNCTION: MAGIC 0x004ef17b
+// FUNCTION: SHANDALAR 0x0050416b
 void load_duel_run_mode_1_save(char *path)
 {
   (void)path;
 }
 
 // FUNCTION: MAGIC 0x004ef35a
+// FUNCTION: SHANDALAR 0x0050434b
 void load_duel_run_mode_2_save(char *path)
 {
   (void)path;
 }
 
 // FUNCTION: MAGIC 0x004ef54b
+// FUNCTION: SHANDALAR 0x0050453d
 void load_duel_run_mode_3_save(char *path)
 {
   (void)path;
 }
 
 // FUNCTION: MAGIC 0x0044b56a
+// FUNCTION: SHANDALAR 0x00403eeb
 int check_duel_finished(void)
 {
   int player_died;
@@ -431,6 +438,7 @@ void run_duel_turn(unsigned int player)
 }
 
 // FUNCTION: MAGIC 0x0044bcf7
+// FUNCTION: SHANDALAR 0x00404677
 int restore_duel_turn_resume_state(void)
 {
   int next_state = 10;
@@ -490,6 +498,7 @@ int restore_duel_turn_resume_state(void)
 }
 
 // FUNCTION: MAGIC 0x0044b89b
+// FUNCTION: SHANDALAR 0x0040421c
 int init_turn(int player)
 {
   struct
@@ -556,6 +565,7 @@ int init_turn(int player)
 }
 
 // FUNCTION: MAGIC 0x0044be6f
+// FUNCTION: SHANDALAR 0x004047ef
 int TENTATIVE_start_turn(int player)
 {
   struct
@@ -754,6 +764,7 @@ void FUN_004e4e75(void)
 }
 
 // FUNCTION: MAGIC 0x004432ed
+// FUNCTION: SHANDALAR 0x0040eb87
 void update_phase_display(int player, phase_t phase)
 {
   if (g_duel_ai_mode_state != 1)
@@ -821,6 +832,7 @@ int update_duel_selection_display(int player, int phase)
 }
 
 // FUNCTION: MAGIC 0x0044bfe9
+// FUNCTION: SHANDALAR 0x00404969
 int untap_phase_exe(unsigned int player)
 {
   int trace_counter;
@@ -1055,6 +1067,7 @@ int untap_phase_exe(unsigned int player)
 }
 
 // FUNCTION: MAGIC 0x0044c88f
+// FUNCTION: SHANDALAR 0x0040520a
 int upkeep_phase(unsigned int player)
 {
   struct
@@ -1239,6 +1252,7 @@ int draw_phase(unsigned int player)
 }
 
 // FUNCTION: MAGIC 0x0044f682
+// FUNCTION: SHANDALAR 0x00407feb
 int discard_phase(unsigned int player, int phase_mode)
 {
   struct
@@ -1400,6 +1414,7 @@ int discard_phase(unsigned int player, int phase_mode)
 }
 
 // FUNCTION: MAGIC 0x0044fb96
+// FUNCTION: SHANDALAR 0x004084f7
 void cleanup_phase(unsigned int player)
 {
   struct
@@ -1479,6 +1494,7 @@ void cleanup_phase(unsigned int player)
 }
 
 // FUNCTION: MAGIC 0x0044fe1a
+// FUNCTION: SHANDALAR 0x0040877b
 void end_turn_phase(unsigned int player)
 {
   struct
@@ -1581,6 +1597,7 @@ void end_turn_phase(unsigned int player)
 }
 
 // FUNCTION: MAGIC 0x00450468
+// FUNCTION: SHANDALAR 0x00408dcc
 int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int *phase_value)
 {
   struct
@@ -1874,6 +1891,7 @@ int SeedRandomFromTickCount(void)
 }
 
 // FUNCTION: MAGIC 0x004b5416
+// FUNCTION: SHANDALAR 0x0056bc19
 int draw_random_unmarked_deck_card(void)
 {
   int candidate_count;
@@ -1900,6 +1918,7 @@ int draw_random_unmarked_deck_card(void)
 }
 
 // FUNCTION: MAGIC 0x00464700
+// FUNCTION: SHANDALAR 0x005221b0
 void copy_initial_library_to_player_zero(int wizard_color)
 {
   int card_index;
@@ -1912,6 +1931,7 @@ void copy_initial_library_to_player_zero(int wizard_color)
 }
 
 // FUNCTION: MAGIC 0x0046476f
+// FUNCTION: SHANDALAR 0x0052221f
 void remove_iid_from_initial_library(int player, int internal_card_id)
 {
   int card_index;
@@ -1928,6 +1948,7 @@ void remove_iid_from_initial_library(int player, int internal_card_id)
 }
 
 // FUNCTION: MAGIC 0x004b3dee
+// FUNCTION: SHANDALAR 0x0056a05a
 void perform_player_mulligan(int player, int wizard_color)
 {
   (void)player;
@@ -1935,6 +1956,7 @@ void perform_player_mulligan(int player, int wizard_color)
 }
 
 // FUNCTION: MAGIC 0x004b3cc2
+// FUNCTION: SHANDALAR 0x00569f2e
 void evaluate_opening_hand_land_counts(int *redraw_result, int *ante_result, int *ante_info)
 {
   int card_index;

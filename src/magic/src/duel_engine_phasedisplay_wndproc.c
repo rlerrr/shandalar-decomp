@@ -46,42 +46,55 @@ char s__duel_hlp_0057e4e4[0xc] = "\\duel.hlp";
 char s__WINBK_Phase_pic_0057e4f0[0x14] = "\\WINBK_Phase.pic";
 
 // GLOBAL: MAGIC 0x0055e1b4
+// GLOBAL: SHANDALAR 0x0057f16c
 int g_phase_display_selected_card_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e1b8
+// GLOBAL: SHANDALAR 0x0057f170
 int g_phase_display_selected_player_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e1bc
+// GLOBAL: SHANDALAR 0x0057f174
 int g_phase_display_window_extra_bytes = 8;
 
 // GLOBAL: MAGIC 0x00708768
+// GLOBAL: SHANDALAR 0x006695a0
 HANDLE g_magicgame_phase_display_pic;
 
 // GLOBAL: MAGIC 0x00708770
+// GLOBAL: SHANDALAR 0x006695a8
 char g_phase_display_menu_phase_help_text[0x38];
 
 // GLOBAL: MAGIC 0x007087a8
+// GLOBAL: SHANDALAR 0x006695e0
 char g_phase_display_menu_toggle_text[0x38];
 
 // GLOBAL: MAGIC 0x007087e0
+// GLOBAL: SHANDALAR 0x00669618
 int g_phase_display_click_packet[3];
 
 // GLOBAL: MAGIC 0x007087f0
+// GLOBAL: SHANDALAR 0x00669628
 char g_phase_display_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x0070880c
+// GLOBAL: SHANDALAR 0x00669644
 HBRUSH g_phase_display_hatch_brush;
 
 // GLOBAL: MAGIC 0x00708810
+// GLOBAL: SHANDALAR 0x00669648
 HMENU g_phase_display_menu;
 
 // GLOBAL: MAGIC 0x00708818
+// GLOBAL: SHANDALAR 0x00669650
 int g_phase_display_menu_packet[3];
 
 // GLOBAL: MAGIC 0x00708848
+// GLOBAL: SHANDALAR 0x00669680
 int g_phase_display_bitmap_divisor;
 
 // GLOBAL: MAGIC 0x00708850
+// GLOBAL: SHANDALAR 0x00669688
 char g_phase_display_menu_stop_text[0x38];
 
 extern char global_base_directory[];
@@ -109,6 +122,7 @@ void draw_phase_display_status_markers(HDC dc, RECT *client_rect);
 void noop_phase_display_user_message(HWND hwnd, WPARAM wparam, LPARAM lparam);
 
 // FUNCTION: MAGIC 0x00536e7e
+// FUNCTION: SHANDALAR 0x0055b6af
 static void hit_test_phase_display(POINT *point, RECT *client_rect, int *player, int *phase)
 {
   struct
@@ -186,6 +200,7 @@ static void hit_test_phase_display(POINT *point, RECT *client_rect, int *player,
 }
 
 // FUNCTION: MAGIC 0x0053726a
+// FUNCTION: SHANDALAR 0x0055ba9b
 static void get_phase_display_phase_rect(RECT *rect, int player, int phase, int width, int height)
 {
   struct
@@ -233,6 +248,7 @@ static void get_phase_display_phase_rect(RECT *rect, int player, int phase, int 
 }
 
 // FUNCTION: MAGIC 0x0044a213
+// FUNCTION: SHANDALAR 0x00453d96
 void copy_phase_stop_flags(int *phase_flags, int player)
 {
   if (phase_flags == (int *)0)
@@ -249,6 +265,7 @@ void copy_phase_stop_flags(int *phase_flags, int player)
 }
 
 // FUNCTION: MAGIC 0x0044a288
+// FUNCTION: SHANDALAR 0x00453e0b
 void get_phase_display_selected_half(int *selected_half)
 {
   EnterCriticalSection(&g_duel_render_lock);
@@ -269,6 +286,7 @@ void get_phase_display_action_selection(int *player, int *phase)
 }
 
 // FUNCTION: MAGIC 0x005374b3
+// FUNCTION: SHANDALAR 0x0055bce4
 void draw_phase_display_status_markers(HDC dc, RECT *client_rect)
 {
   struct
@@ -353,6 +371,7 @@ void draw_phase_display_status_markers(HDC dc, RECT *client_rect)
 }
 
 // FUNCTION: MAGIC 0x005390d6
+// FUNCTION: SHANDALAR 0x0055d8fa
 void noop_phase_display_user_message(HWND hwnd, WPARAM wparam, LPARAM lparam)
 {
 }

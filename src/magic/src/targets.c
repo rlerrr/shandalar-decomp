@@ -11,18 +11,23 @@ int GetNextManaSymbol(char **param_1);
 extern int g_spell_minimized_hwnd;
 
 // GLOBAL: MAGIC 0x007a7d74
+// GLOBAL: SHANDALAR 0x007beb00
 int DAT_007a7d74;
 
 // GLOBAL: MAGIC 0x007aa928
+// GLOBAL: SHANDALAR 0x007beb20
 int DAT_007aa928;
 
 // GLOBAL: MAGIC 0x007aaeec
+// GLOBAL: SHANDALAR 0x007bf0ec
 int DAT_007aaeec;
 
 // GLOBAL: MAGIC 0x008a8d78
+// GLOBAL: SHANDALAR 0x008bcf78
 int DAT_008a8d78;
 
 // GLOBAL: MAGIC 0x008a8dec
+// GLOBAL: SHANDALAR 0x008bcfec
 int DAT_008a8dec;
 
 // GLOBAL: MAGIC 0x0093d840
@@ -118,6 +123,7 @@ int get_tooltip_text_width(HWND window, char *text)
 }
 
 // FUNCTION: MAGIC 0x004480e4
+// FUNCTION: SHANDALAR 0x00451c62
 void set_duel_tooltip_text(char *text)
 {
   struct
@@ -417,6 +423,7 @@ int run_target_selection_modal(int who_chooses,
 }
 
 // FUNCTION: MAGIC 0x004c0080
+// FUNCTION: SHANDALAR 0x004c0efa
 int C_real_select_target(int who_chooses,
                          int allowed_controller,
                          int preferred_controller,

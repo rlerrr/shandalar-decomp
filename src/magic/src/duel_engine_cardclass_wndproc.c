@@ -132,9 +132,11 @@ extern int DAT_007a7d74;
   (*(int *)((char *)&global_card_instances[0][(card)] + (player) * 0xb0f4 + 0x6c))
 
 // GLOBAL: MAGIC 0x0055e0fc
+// GLOBAL: SHANDALAR 0x0057f19c
 int g_cardclass_player_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e100
+// GLOBAL: SHANDALAR 0x0057f1a0
 int g_cardclass_card_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e104
@@ -144,9 +146,11 @@ int g_cardclass_hidden_parent_window_long_offset = 8;
 int g_cardclass_snapshot_window_long_offset = 0xc;
 
 // GLOBAL: MAGIC 0x0055e10c
+// GLOBAL: SHANDALAR 0x0057f1ac
 int g_cardclass_previous_z_order_window_long_offset = 0x10;
 
 // GLOBAL: MAGIC 0x0055e110
+// GLOBAL: SHANDALAR 0x0057f1b0
 int g_cardclass_window_extra_bytes = 0x14;
 
 // GLOBAL: MAGIC 0x00575100
@@ -210,6 +214,7 @@ char s_UntapStatus_005751bc[0x10] = "UntapStatus ";
 char s_Dying_005751cc[8] = "Dying ";
 
 // GLOBAL: MAGIC 0x005751d4
+// GLOBAL: SHANDALAR 0x005a11dc
 char s_Empty_005751d4[4] = "";
 
 // GLOBAL: MAGIC 0x005751d8
@@ -333,129 +338,170 @@ char s__d__d_005755e8[] = "%d,%d";
 char s_Times_New_Roman_005755f0[] = "Times New Roman";
 
 // GLOBAL: MAGIC 0x0069b3b8
+// GLOBAL: SHANDALAR 0x00732800
 char g_cardclass_menu_view_stats_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b420
+// GLOBAL: SHANDALAR 0x00732868
 char g_cardclass_menu_view_card_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b488
+// GLOBAL: SHANDALAR 0x007328d0
 char g_cardclass_cuecard_counter_tetravus_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b4f0
+// GLOBAL: SHANDALAR 0x00732938
 char g_cardclass_prompt_defend_attacker_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b558
+// GLOBAL: SHANDALAR 0x007329a0
 char g_cardclass_cuecard_counter_unstable_mutation_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b5c0
+// GLOBAL: SHANDALAR 0x00732a08
 char g_cardclass_cuecard_counter_ashnods_transmogrant_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b628
+// GLOBAL: SHANDALAR 0x00732a70
 char g_cardclass_cuecard_counter_rock_hydra_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b690
+// GLOBAL: SHANDALAR 0x00732ad8
 char g_cardclass_cuecard_counter_cyclone_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b6f8
+// GLOBAL: SHANDALAR 0x00732b40
 char g_cardclass_menu_autotarget_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b760
+// GLOBAL: SHANDALAR 0x00732ba8
 char g_cardclass_cuecard_counter_orcish_catapult_text[0x64];
 
 // GLOBAL: MAGIC 0x0069b7c4
+// GLOBAL: SHANDALAR 0x00732c0c
 HMENU g_cardclass_alternate_card_submenu;
 
 // GLOBAL: MAGIC 0x0069b7c8
+// GLOBAL: SHANDALAR 0x00732c10
 char g_cardclass_menu_protect_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b830
+// GLOBAL: SHANDALAR 0x00732c78
 char g_cardclass_cuecard_counter_lucky_charms_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b898
+// GLOBAL: SHANDALAR 0x00732ce0
 char g_cardclass_prompt_band_whom_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b900
+// GLOBAL: SHANDALAR 0x00732d48
 char g_cardclass_cuecard_counter_citanul_druid_text[0x68];
 
 // GLOBAL: MAGIC 0x0069b968
+// GLOBAL: SHANDALAR 0x00732db0
 int g_cardclass_ability_masks[0x11];
 
 // GLOBAL: MAGIC 0x0069b9b0
+// GLOBAL: SHANDALAR 0x00732df8
 char g_cardclass_cuecard_counter_osai_vultures_text[0x68];
 
 // GLOBAL: MAGIC 0x0069ba18
+// GLOBAL: SHANDALAR 0x00732e60
 char g_cardclass_prompt_defend_error_text[0x68];
 
 // GLOBAL: MAGIC 0x0069ba80
+// GLOBAL: SHANDALAR 0x00732ec8
 char g_cardclass_prompt_band_error_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bae8
+// GLOBAL: SHANDALAR 0x00732f30
 char g_cardclass_cuecard_counter_clockwork_avian_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bb50
+// GLOBAL: SHANDALAR 0x00732f98
 char g_cardclass_cuecard_counter_armageddon_clock_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bbb8
+// GLOBAL: SHANDALAR 0x00733000
 char g_cardclass_cuecard_counter_clockwork_beast_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bc20
+// GLOBAL: SHANDALAR 0x00733068
 char g_cardclass_cuecard_counter_spirit_shackle_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bc88
+// GLOBAL: SHANDALAR 0x007330d0
 char g_cardclass_cuecard_counter_dwarven_weaponsmith_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bcf0
+// GLOBAL: SHANDALAR 0x00733138
 char g_cardclass_menu_help_text[0x64];
 
 // GLOBAL: MAGIC 0x0069bd54
+// GLOBAL: SHANDALAR 0x0073319c
 HMENU g_cardclass_popup_menu;
 
 // GLOBAL: MAGIC 0x0069bd58
+// GLOBAL: SHANDALAR 0x007331a0
 char g_cardclass_prompt_defend_prompt_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bdc0
+// GLOBAL: SHANDALAR 0x00733208
 char g_cardclass_cuecard_counter_triskelion_text[0x70];
 
 // GLOBAL: MAGIC 0x0069be30
+// GLOBAL: SHANDALAR 0x00733278
 char g_cardclass_cuecard_counter_sengir_vampire_text[0x68];
 
 // GLOBAL: MAGIC 0x0069be98
+// GLOBAL: SHANDALAR 0x007332e0
 char g_cardclass_cuecard_counter_khabal_ghoul_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bf00
+// GLOBAL: SHANDALAR 0x00733348
 char g_cardclass_menu_show_damage_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bf68
+// GLOBAL: SHANDALAR 0x007333b0
 char g_cardclass_cuecard_counter_living_artifact_text[0x68];
 
 // GLOBAL: MAGIC 0x0069bfd0
+// GLOBAL: SHANDALAR 0x00733418
 char g_cardclass_cuecard_counter_time_vault_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c038
+// GLOBAL: SHANDALAR 0x00733480
 char g_cardclass_prompt_band_cannot_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c0a0
+// GLOBAL: SHANDALAR 0x007334e8
 char g_cardclass_cuecard_counter_fungusaur_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c108
+// GLOBAL: SHANDALAR 0x00733550
 char g_cardclass_cuecard_counter_mana_battery_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c170
+// GLOBAL: SHANDALAR 0x007335b8
 char g_cardclass_cuecard_counter_whirling_dervish_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c1d8
+// GLOBAL: SHANDALAR 0x00733620
 char g_cardclass_menu_id_tags_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c240
 target_selection_result_t g_cardclass_click_action_result;
 
 // GLOBAL: MAGIC 0x0069c250
+// GLOBAL: SHANDALAR 0x00733698
 char g_cardclass_cuecard_counter_scavenging_ghouls_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c2b8
+// GLOBAL: SHANDALAR 0x00733700
 char g_cardclass_cuecard_counter_necropolis_of_azar_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c320
+// GLOBAL: SHANDALAR 0x00733768
 char g_cardclass_menu_alternate_card_text[0x68];
 
 // GLOBAL: MAGIC 0x005750b0
@@ -483,6 +529,7 @@ char *PTR_s_Type_005750b0[20] =
         s_Dying_005751cc};
 
 // FUNCTION: MAGIC 0x00449e0a
+// FUNCTION: SHANDALAR 0x0045398b
 int copy_displayed_card_snapshot(card_instance_t *snapshot, int player, int card)
 {
   if (snapshot == NULL)
@@ -617,6 +664,7 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
 }
 
 // FUNCTION: MAGIC 0x004d15b3
+// FUNCTION: SHANDALAR 0x00577b8f
 int card_snapshots_match_for_redraw(card_instance_t *old_snapshot, card_instance_t *new_snapshot)
 {
   int unchanged;
@@ -710,6 +758,7 @@ int card_snapshots_match_for_redraw(card_instance_t *old_snapshot, card_instance
 }
 
 // FUNCTION: MAGIC 0x004d1c68
+// FUNCTION: SHANDALAR 0x00578244
 int card_snapshots_match_ability_icons(card_instance_t *old_snapshot, card_instance_t *new_snapshot)
 {
   int unchanged;
@@ -723,6 +772,7 @@ int card_snapshots_match_ability_icons(card_instance_t *old_snapshot, card_insta
 }
 
 // FUNCTION: MAGIC 0x004d1314
+// FUNCTION: SHANDALAR 0x005778f0
 int card_window_matches_action_request(HWND hwnd)
 {
   struct
@@ -797,6 +847,7 @@ int card_window_matches_action_request(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x004d1263
+// FUNCTION: SHANDALAR 0x0057783f
 void post_card_action_selection(HWND hwnd)
 {
   struct
@@ -826,6 +877,7 @@ void post_card_action_selection(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x0044850c
+// FUNCTION: SHANDALAR 0x00452089
 unsigned int FUN_0044850c(int player, int card)
 {
   unsigned int counters;
@@ -842,6 +894,7 @@ unsigned int FUN_0044850c(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044858d
+// FUNCTION: SHANDALAR 0x0045210a
 void FUN_0044858d(int player,
                   int card,
                   unsigned int *counter_power,
@@ -863,6 +916,7 @@ void FUN_0044858d(int player,
 }
 
 // FUNCTION: MAGIC 0x0044875b
+// FUNCTION: SHANDALAR 0x004522d8
 int get_displayed_card_damage_on_card(int player, int card)
 {
   int damage_on_card;
@@ -879,6 +933,7 @@ int get_displayed_card_damage_on_card(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448df6
+// FUNCTION: SHANDALAR 0x00452973
 int get_displayed_card_type(int player, int card)
 {
   int internal_card_id;
@@ -900,6 +955,7 @@ int get_displayed_card_type(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448f5c
+// FUNCTION: SHANDALAR 0x00452ad9
 unsigned int get_displayed_card_regen_status(int player, int card)
 {
   unsigned int regen_status;
@@ -941,6 +997,7 @@ int get_displayed_card_mana_color(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449151
+// FUNCTION: SHANDALAR 0x00452cce
 state_t get_displayed_card_state(int player, int card)
 {
   state_t state;
@@ -957,6 +1014,7 @@ state_t get_displayed_card_state(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044931a
+// FUNCTION: SHANDALAR 0x00452e97
 unsigned int is_displayed_card_owned_by_opponent(int player, int card)
 {
   unsigned int state;
@@ -1000,6 +1058,7 @@ unsigned int get_displayed_card_mana_source_flag(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004494a3
+// FUNCTION: SHANDALAR 0x00453020
 unsigned int FUN_004494a3(int player, int card)
 {
   unsigned int info_slot;
@@ -1016,6 +1075,7 @@ unsigned int FUN_004494a3(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044951f
+// FUNCTION: SHANDALAR 0x0045309c
 int is_displayed_card_targetted(int player, int card)
 {
   int result;
@@ -1032,6 +1092,7 @@ int is_displayed_card_targetted(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004495b2
+// FUNCTION: SHANDALAR 0x0045312f
 int is_displayed_card_untargetable(int player, int card)
 {
   int result;
@@ -1055,6 +1116,7 @@ int is_displayed_card_untargetable(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449914
+// FUNCTION: SHANDALAR 0x00453495
 unsigned int get_displayed_card_untap_status(int player, int card)
 {
   unsigned int untap_status;
@@ -1071,6 +1133,7 @@ unsigned int get_displayed_card_untap_status(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449b42
+// FUNCTION: SHANDALAR 0x004536c3
 int get_displayed_card_kill_code(int player, int card)
 {
   int kill_code;
@@ -1102,6 +1165,7 @@ int get_displayed_player_card_counts(int *player_card_counts)
 }
 
 // FUNCTION: MAGIC 0x004d1d5d
+// FUNCTION: SHANDALAR 0x00578339
 void format_special_counter_cuecard_text(char *text, card_id_t card_id, unsigned int counters)
 {
   if (text != NULL)
@@ -1198,6 +1262,7 @@ void format_special_counter_cuecard_text(char *text, card_id_t card_id, unsigned
 }
 
 // FUNCTION: MAGIC 0x004d21a9
+// FUNCTION: SHANDALAR 0x00578785
 void FUN_004d21a9(char *text, int counter_type, int counters)
 {
   if (text == NULL)
@@ -1230,6 +1295,7 @@ void FUN_004d21a9(char *text, int counter_type, int counters)
 }
 
 // FUNCTION: MAGIC 0x0055bcb1
+// FUNCTION: SHANDALAR 0x00571fcf
 void FUN_0055bcb1(LPRECT rect, RECT *client_rect)
 {
   int width;
@@ -1254,6 +1320,7 @@ void FUN_0055bcb1(LPRECT rect, RECT *client_rect)
 }
 
 // FUNCTION: MAGIC 0x0055c12a
+// FUNCTION: SHANDALAR 0x00572448
 void get_special_counter_icons_rect(LPRECT rect, RECT *client_rect, int counters)
 {
   struct
@@ -1315,6 +1382,7 @@ void get_special_counter_icons_rect(LPRECT rect, RECT *client_rect, int counters
 }
 
 // FUNCTION: MAGIC 0x0055ca6f
+// FUNCTION: SHANDALAR 0x00572d8c
 void get_ability_icon_rect(LPRECT rect, unsigned int ability, RECT *client_rect, unsigned int ability_flags)
 {
   struct
@@ -1404,6 +1472,7 @@ void get_ability_icon_rect(LPRECT rect, unsigned int ability, RECT *client_rect,
 }
 
 // FUNCTION: MAGIC 0x0055d471
+// FUNCTION: SHANDALAR 0x0057378d
 void FUN_0055d471(LPRECT rect, RECT *client_rect)
 {
   int width;
@@ -2046,6 +2115,7 @@ int get_card_special_counter_icon(card_id_t card_id)
 }
 
 // FUNCTION: MAGIC 0x0055a986
+// FUNCTION: SHANDALAR 0x00570cbe
 void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned int player, int card)
 {
   struct
@@ -2200,6 +2270,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
 }
 
 // FUNCTION: MAGIC 0x0055af78
+// FUNCTION: SHANDALAR 0x0057129f
 void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned int player, int card,
                                 int attached_player, int attached_card)
 {
@@ -2270,6 +2341,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
 }
 
 // FUNCTION: MAGIC 0x0055b1e4
+// FUNCTION: SHANDALAR 0x00571504
 void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card, int ui_flags,
                                unsigned int target_ui_flags, int parent_card, int activation, int upkeep)
 {
@@ -2419,6 +2491,7 @@ void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card
 }
 
 // FUNCTION: MAGIC 0x0055bd85
+// FUNCTION: SHANDALAR 0x005720a3
 void draw_id_tag(HDC dc, RECT *rect, int player, int card, int enabled)
 {
   int saved_dc;
@@ -2553,6 +2626,7 @@ void set_dib_pixel(unsigned char *bits, int bit_count, int width, int x, int y, 
 }
 
 // FUNCTION: MAGIC 0x00494cf0
+// FUNCTION: SHANDALAR 0x0046578a
 void rotate_dib_rect_clockwise(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
 {
   struct
@@ -2596,6 +2670,7 @@ void rotate_dib_rect_clockwise(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
 }
 
 // FUNCTION: MAGIC 0x0055d26d
+// FUNCTION: SHANDALAR 0x00573589
 unsigned int draw_target_canttarget(HDC dc, RECT *rect, int is_target, int can_target)
 {
   int saved_dc;
@@ -2626,6 +2701,7 @@ unsigned int draw_target_canttarget(HDC dc, RECT *rect, int is_target, int can_t
 }
 
 // FUNCTION: MAGIC 0x0055d393
+// FUNCTION: SHANDALAR 0x005736af
 void FUN_0055d393(HDC dc, RECT *rect, int highlighted)
 {
   HPEN pen;
@@ -2644,6 +2720,7 @@ void FUN_0055d393(HDC dc, RECT *rect, int highlighted)
 }
 
 // FUNCTION: MAGIC 0x0055d429
+// FUNCTION: SHANDALAR 0x00573745
 void FUN_0055d429(HDC dc, RECT *rect, unsigned int untap_status)
 {
   RECT untap_rect;
@@ -2656,6 +2733,7 @@ void FUN_0055d429(HDC dc, RECT *rect, unsigned int untap_status)
 }
 
 // FUNCTION: MAGIC 0x0055d910
+// FUNCTION: SHANDALAR 0x00573c2a
 void FUN_0055d910(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
 {
   (void)bmi;
@@ -2664,6 +2742,7 @@ void FUN_0055d910(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
 }
 
 // FUNCTION: MAGIC 0x004d2385
+// FUNCTION: SHANDALAR 0x00578961
 void FUN_004d2385(HDC dc, RECT *rect, int player, int card)
 {
   size_t text_length;
@@ -2689,6 +2768,7 @@ void FUN_004d2385(HDC dc, RECT *rect, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004d7953
+// FUNCTION: SHANDALAR 0x004615b1
 int FUN_004d7953(int player, int card, int unused_player, int unused_card)
 {
   int result;
@@ -2740,6 +2820,7 @@ int FUN_0044184B(int blocker_player, int blocker_card, int attacker_player, int 
 }
 
 // FUNCTION: MAGIC 0x00441b94
+// FUNCTION: SHANDALAR 0x0040d414
 int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacker_player, int attacker_card)
 {
   int saved_state;

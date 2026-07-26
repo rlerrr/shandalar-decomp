@@ -1454,6 +1454,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 }
 
 // FUNCTION: MAGIC 0x004996d0
+// FUNCTION: SHANDALAR 0x00535090
 int run_duel_coin_flip_dialogs(unsigned int *starting_player,
                                unsigned int *mulligan_accepted,
                                unsigned int starting_player_value,

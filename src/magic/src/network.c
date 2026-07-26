@@ -160,6 +160,7 @@ int FUN_0049e8bb(int player,
 }
 
 // FUNCTION: MAGIC 0x00501e96
+// FUNCTION: SHANDALAR 0x0056c959
 void AddCardToCLPacket(int card_in_packet)
 {
   unsigned short *write_ptr;
@@ -188,6 +189,7 @@ void AddCardToCLPacket(int card_in_packet)
 }
 
 // FUNCTION: MAGIC 0x00501f3f
+// FUNCTION: SHANDALAR 0x0056c964
 int GetCardFromCLPacket(int packet_index)
 {
   int packet_card;
@@ -334,6 +336,7 @@ int FUN_00501c19(int player, int packet_type, unsigned char *packet)
 }
 
 // FUNCTION: MAGIC 0x00502124
+// FUNCTION: SHANDALAR 0x0056c97a
 void append_to_trace_txt(char *text)
 {
   FILE *trace_file;
@@ -786,6 +789,7 @@ int TENTATIVE_send_network_result(int player, signed int packet_type)
 }
 
 // FUNCTION: MAGIC 0x00501d78
+// FUNCTION: SHANDALAR 0x0056c943
 void send_battlefield_status_packet(int player)
 {
   int phase;
@@ -801,6 +805,7 @@ void send_battlefield_status_packet(int player)
 }
 
 // FUNCTION: MAGIC 0x00501deb
+// FUNCTION: SHANDALAR 0x0056c94e
 void receive_battlefield_status_packet(int player)
 {
   int phase;

@@ -52,6 +52,7 @@ void get_mana_pool_text_rect(LPRECT rect, HWND hwnd, int mana_color);
 char s_MENU_MANAPOOL_0057e64c[0x10] = "MENU_MANAPOOL";
 
 // GLOBAL: MAGIC 0x0055e1c4
+// GLOBAL: SHANDALAR 0x0057f13c
 int g_magicgame_mana_summary_window_extra_bytes = 4;
 
 // GLOBAL: MAGIC 0x0057e65c
@@ -70,42 +71,55 @@ char s__WINBK_ManaPool_pic_0057e688[0x14] = "\\WINBK_ManaPool.pic";
 char s__d_0057e69c[4] = "%d";
 
 // GLOBAL: MAGIC 0x00708888
+// GLOBAL: SHANDALAR 0x00652fc0
 int g_mana_summary_click_packet[3];
 
 // GLOBAL: MAGIC 0x00708898
+// GLOBAL: SHANDALAR 0x00652fd0
 char g_mana_summary_menu_blue_text[0x48];
 
 // GLOBAL: MAGIC 0x007088d0
+// GLOBAL: SHANDALAR 0x00653008
 int g_mana_summary_menu_packet[3];
 
 // GLOBAL: MAGIC 0x007088e0
+// GLOBAL: SHANDALAR 0x00653018
 char g_mana_summary_menu_colorless_text[0x38];
 
 // GLOBAL: MAGIC 0x00708918
+// GLOBAL: SHANDALAR 0x00653050
 char g_mana_summary_menu_white_text[0x38];
 
 // GLOBAL: MAGIC 0x00708950
+// GLOBAL: SHANDALAR 0x00653088
 char g_mana_summary_menu_red_text[0x38];
 
 // GLOBAL: MAGIC 0x00708988
+// GLOBAL: SHANDALAR 0x006530c0
 char g_mana_summary_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x007089a4
+// GLOBAL: SHANDALAR 0x006530dc
 HMENU g_mana_summary_popup_menu;
 
 // GLOBAL: MAGIC 0x007089a8
+// GLOBAL: SHANDALAR 0x006530e0
 char g_mana_summary_menu_black_text[0x34];
 
 // GLOBAL: MAGIC 0x007089dc
+// GLOBAL: SHANDALAR 0x00653114
 HFONT g_mana_summary_font;
 
 // GLOBAL: MAGIC 0x007089e0
+// GLOBAL: SHANDALAR 0x00653118
 char g_mana_summary_menu_green_text[0x34];
 
 // GLOBAL: MAGIC 0x00708a14
+// GLOBAL: SHANDALAR 0x0065314c
 HBITMAP g_mana_summary_background_bitmap;
 
 // GLOBAL: MAGIC 0x00708a18
+// GLOBAL: SHANDALAR 0x00653150
 char g_mana_summary_menu_artifact_text[0x4c];
 
 // FUNCTION: MAGIC 0x00539320
@@ -599,6 +613,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
 }
 
 // FUNCTION: MAGIC 0x00449d7e
+// FUNCTION: SHANDALAR 0x004538ff
 int get_displayed_mana_pool(mana_summary_values_t *mana_pool, int player)
 {
   if (mana_pool == (mana_summary_values_t *)0)
@@ -625,6 +640,7 @@ int get_displayed_mana_pool(mana_summary_values_t *mana_pool, int player)
 }
 
 // FUNCTION: MAGIC 0x0053a876
+// FUNCTION: SHANDALAR 0x00552144
 void get_mana_pool_text_rect(LPRECT rect, HWND hwnd, int mana_color)
 {
   struct

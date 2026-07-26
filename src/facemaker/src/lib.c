@@ -50,6 +50,7 @@ char s_Graphic_Page_number_out_of_range_0040d110[] = "Graphic Page number out of
 char s_Cannot_explicitly_Deallocate_page_0_0040d140[] = "Cannot explicitly Deallocate page 0\n";
 
 // GLOBAL: FACEMAKER 0x0040d090
+// GLOBAL: SHANDALAR 0x005a1610
 int g_scanline_palette_needs_refresh = 1;
 
 // GLOBAL: FACEMAKER 0x0040d168
@@ -64,6 +65,7 @@ unsigned int g_key_input_queue[50];
 int g_keyboard_init_done;
 
 // GLOBAL: FACEMAKER 0x00417188
+// GLOBAL: SHANDALAR 0x00737fe8
 BITMAPINFO *g_scanline_bitmap_info;
 
 // GLOBAL: FACEMAKER 0x00417998

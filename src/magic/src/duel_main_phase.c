@@ -1141,6 +1141,7 @@ int cleanup_combat_state(int player)
 }
 
 // FUNCTION: MAGIC 0x0044cda7
+// FUNCTION: SHANDALAR 0x0040571e
 int main_phase(unsigned int player, int phase_mode, int *phase_value)
 {
   struct

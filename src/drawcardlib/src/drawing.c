@@ -82,6 +82,7 @@ int GetNextManaSymbol(char **param_1)
 // FUNCTION: DRAWCARDLIB 0x1000aab9
 // FUNCTION: DECKDLL 0x10023b0b
 // FUNCTION: MAGIC 0x00494270
+// FUNCTION: SHANDALAR 0x00464d0b
 BOOL DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,int param_6,int param_7
             ,int param_8,int param_9)
 
@@ -127,6 +128,7 @@ BOOL DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,i
 
 // FUNCTION: DECKDLL 0x10023972
 // FUNCTION: MAGIC 0x004940d6
+// FUNCTION: SHANDALAR 0x00464b72
 BOOL TileBitmapIntoRect(HDC hdc, RECT *r, HBITMAP bmp)
 {
   struct

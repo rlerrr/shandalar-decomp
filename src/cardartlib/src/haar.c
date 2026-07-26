@@ -41,22 +41,27 @@ undefined4 global_dither_kernel_id = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d25c
 // GLOBAL: DRAWCARDLIB 0x1002104c
+// GLOBAL: SHANDALAR 0x00581ebc
 undefined4 global_serpentine = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d260
 // GLOBAL: DRAWCARDLIB 0x10021050
+// GLOBAL: SHANDALAR 0x00581ec0
 int g_ditherKernelTapCounts[0xa] = {0,0,2,4,12,7,10,12,12,0};
 
 // GLOBAL: CARDARTLIB 0x1001d288
 // GLOBAL: DRAWCARDLIB 0x10021078
+// GLOBAL: SHANDALAR 0x00581ee8
 int g_ditherKernelErrorRowCounts[8] = {0,0,2,2,3,2,3,3};
 
 // GLOBAL: CARDARTLIB 0x1001d2b0
 // GLOBAL: DRAWCARDLIB 0x100210a0
+// GLOBAL: SHANDALAR 0x00581f10
 int g_ditherKernelDivisors[0xa] = {0,0,16,16,42,32,32,48,236,0};
 
 // GLOBAL: CARDARTLIB 0x1001d2d8
 // GLOBAL: DRAWCARDLIB 0x100210c8
+// GLOBAL: SHANDALAR 0x00581f38
 undefined1 g_ditherKernelTable[0xd80] = {
 #include "g_ditherKernelTable.inc"
 };
@@ -67,18 +72,22 @@ undefined1 g_u8ClampTableStorage[0x400];
 
 // GLOBAL: CARDARTLIB 0x1001e058
 // GLOBAL: DRAWCARDLIB 0x10021e48
+// GLOBAL: SHANDALAR 0x00582cb8
 undefined1 *g_u8ClampTable = g_u8ClampTableStorage + 0x200;
 
 // GLOBAL: CARDARTLIB 0x1001e05c
 // GLOBAL: DRAWCARDLIB 0x10021e4c
+// GLOBAL: SHANDALAR 0x00582cbc
 undefined4 g_paletteDitherKernelCachedId = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e060
 // GLOBAL: DRAWCARDLIB 0x10021e50
+// GLOBAL: SHANDALAR 0x00582cc0
 undefined4 g_rgbQuantKernelCachedId = 0xFFFFFFFF;
 
 // GLOBAL: CARDARTLIB 0x1001e0e0
 // GLOBAL: DRAWCARDLIB 0x100223c0
+// GLOBAL: SHANDALAR 0x00593cd0
 int g_rowAlignBytes = 0x00000004;
 
 // GLOBAL: CARDARTLIB 0x1001e12c
@@ -187,6 +196,7 @@ unsigned char g_catalogReadScratch[0x3CC00];
 
 // GLOBAL: CARDARTLIB 0x100edb10
 // GLOBAL: DRAWCARDLIB 0x10128e40
+// GLOBAL: SHANDALAR 0x00952bf0
 undefined1 g_errorDiffusionRowStorage[5 * 0x8060];
 
 // GLOBAL: CARDARTLIB 0x100ecb04
@@ -195,10 +205,12 @@ BOOL g_unpackResultUnused;
 
 // GLOBAL: CARDARTLIB 0x100322cc
 // GLOBAL: DRAWCARDLIB 0x1002931c
+// GLOBAL: SHANDALAR 0x005a8b1c
 undefined4 g_rgbQuantClampInit;
 
 // GLOBAL: CARDARTLIB 0x100322d0
 // GLOBAL: DRAWCARDLIB 0x10029320
+// GLOBAL: SHANDALAR 0x005a8b20
 undefined4 g_paletteClampInit;
 
 // GLOBAL: CARDARTLIB 0x100ea31c
@@ -211,6 +223,7 @@ int *g_haarScratchA;
 
 // GLOBAL: CARDARTLIB 0x10117100
 // GLOBAL: DRAWCARDLIB 0x10152430
+// GLOBAL: SHANDALAR 0x0097c1e0
 void *g_errorDiffusionDeltaTablePtrs[0x41];
 
 // GLOBAL: CARDARTLIB 0x101221e8
@@ -406,6 +419,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id,int serpentine,uint *bgr24,i
 // FUNCTION: CARDARTLIB 0x10005cb4
 // FUNCTION: DRAWCARDLIB 0x10002264
 // FUNCTION: MAGIC 0x004bae9a
+// FUNCTION: SHANDALAR 0x0042f1c7
 void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
 {
   undefined4 uVar1;  
@@ -628,6 +642,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id,int serpentine,uint 
 // FUNCTION: CARDARTLIB 0x100068d0
 // FUNCTION: DRAWCARDLIB 0x10002e80
 // FUNCTION: MAGIC 0x004bbac0
+// FUNCTION: SHANDALAR 0x0042fde0
 uint Rgb888_QuantizeToF8(uint param_1)
 {
   return param_1 & 0xf8f8f8;
@@ -716,6 +731,7 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 // FUNCTION: CARDARTLIB 0x10006be3
 // FUNCTION: DRAWCARDLIB 0x10008663
 // FUNCTION: MAGIC 0x0041f965
+// FUNCTION: SHANDALAR 0x00566693
 byte * Wvl_DecodeHaar(WvlEntry *param_1,byte *param_2)
 {
   struct {
@@ -887,6 +903,7 @@ void CopyBytes(void *dst,const void *src,size_t num)
 
 // FUNCTION: CARDARTLIB 0x10007273
 // FUNCTION: DRAWCARDLIB 0x10008cf3
+// FUNCTION: SHANDALAR 0x00566d25
 void SetBytes(void *dst, int value, size_t num)
 {
 #ifdef MODERN_FIXES

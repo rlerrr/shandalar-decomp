@@ -279,6 +279,7 @@ int card_mishra_s_workshop(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x004b99d0
+// FUNCTION: SHANDALAR 0x0042d790
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color)
 {
   if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player)

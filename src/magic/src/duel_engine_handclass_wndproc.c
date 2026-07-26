@@ -25,27 +25,35 @@ int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
 card_id_t get_card_window_displayed_card_id(HWND hwnd);
 
 // GLOBAL: MAGIC 0x0055e0d8
+// GLOBAL: SHANDALAR 0x0057f068
 int g_hand_card_windows_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e0dc
+// GLOBAL: SHANDALAR 0x0057f06c
 int g_hand_card_count_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e0e0
+// GLOBAL: SHANDALAR 0x0057f070
 int g_hand_art_width_long_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e0e4
+// GLOBAL: SHANDALAR 0x0057f074
 int g_hand_art_title_height_long_offset = 0xc;
 
 // GLOBAL: MAGIC 0x0055e0e8
+// GLOBAL: SHANDALAR 0x0057f078
 int g_hand_art_side_width_long_offset = 0x10;
 
 // GLOBAL: MAGIC 0x0055e0ec
+// GLOBAL: SHANDALAR 0x0057f07c
 int g_hand_art_bottom_height_long_offset = 0x14;
 
 // GLOBAL: MAGIC 0x0055e0f0
+// GLOBAL: SHANDALAR 0x0057f080
 int g_hand_background_bitmap_long_offset = 0x18;
 
 // GLOBAL: MAGIC 0x0055e0f4
+// GLOBAL: SHANDALAR 0x0057f084
 int g_hand_selected_index_long_offset = 0x1c;
 
 // GLOBAL: MAGIC 0x0055e0f8
@@ -70,18 +78,23 @@ char s__duel_hlp_00574434[0xc] = "\\duel.hlp";
 char s__s___d__00574440[8] = "%s (%d)";
 
 // GLOBAL: MAGIC 0x0064f8f8
+// GLOBAL: SHANDALAR 0x005a9d58
 COLORREF g_hand_title_text_color;
 
 // GLOBAL: MAGIC 0x0064f8fc
+// GLOBAL: SHANDALAR 0x005a9d5c
 COLORREF g_hand_title_shadow_color;
 
 // GLOBAL: MAGIC 0x0064f900
+// GLOBAL: SHANDALAR 0x005a9d60
 char g_hand_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x0064f91c
+// GLOBAL: SHANDALAR 0x005a9d7c
 HMENU g_hand_popup_menu;
 
 // GLOBAL: MAGIC 0x0064f920
+// GLOBAL: SHANDALAR 0x005a9d80
 HFONT g_hand_title_font;
 
 // FUNCTION: MAGIC 0x004bbae0
@@ -127,6 +140,7 @@ void destroy_MAGICGAME_HandClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x004bd6dd
+// FUNCTION: SHANDALAR 0x00470a12
 void calculate_hand_art_offsets(int card_width, int card_height, int art_width,
                                 int title_art_height, int side_art_width,
                                 int bottom_art_height, int *title_height,
@@ -151,6 +165,7 @@ void calculate_hand_art_offsets(int card_width, int card_height, int art_width,
 }
 
 // FUNCTION: MAGIC 0x004bd468
+// FUNCTION: SHANDALAR 0x0047079d
 void draw_hand_window_frame(HDC dc, int *outer_rect, int *inner_rect,
                             int edge_width, int art_width, int title_art_height,
                             int side_art_width, int bottom_art_height,
@@ -204,6 +219,7 @@ void draw_hand_window_frame(HDC dc, int *outer_rect, int *inner_rect,
 }
 
 // FUNCTION: MAGIC 0x004bd768
+// FUNCTION: SHANDALAR 0x00470a9d
 void update_hand_window_title(char *title, HWND hwnd, int card_count)
 {
   sprintf(title, s__s___d__00574440,
@@ -214,6 +230,7 @@ void update_hand_window_title(char *title, HWND hwnd, int card_count)
 }
 
 // FUNCTION: MAGIC 0x004bd131
+// FUNCTION: SHANDALAR 0x00470468
 void resize_duel_hand_window(HWND hwnd)
 {
   struct

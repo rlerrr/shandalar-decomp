@@ -1047,6 +1047,7 @@ int card_raging_river(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0043c7ab
+// FUNCTION: SHANDALAR 0x004ff15c
 int FUN_0043c7ab(int who_is_being_divided, int player, int card)
 {
   int bank;

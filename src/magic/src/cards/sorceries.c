@@ -446,6 +446,7 @@ int card_timetwister(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0040246a
+// FUNCTION: SHANDALAR 0x0044818c
 void FUN_0040246a(int player, int amount)
 {
   int cards_drawn;
@@ -943,6 +944,7 @@ int card_winter_blast(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x00404c4c
+// FUNCTION: SHANDALAR 0x0044a96c
 int FUN_00404c4c(int player, int internal_card_id)
 {
   int card;
@@ -961,6 +963,7 @@ int FUN_00404c4c(int player, int internal_card_id)
 }
 
 // FUNCTION: MAGIC 0x00404cff
+// FUNCTION: SHANDALAR 0x0044aa1f
 int FUN_00404cff(int player, int internal_card_id, int who_to_check)
 {
   int card;
@@ -1861,6 +1864,7 @@ int card_mind_bomb(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x004087cc
+// FUNCTION: SHANDALAR 0x0044e4ed
 int FUN_004087cc(int player, unsigned int type)
 {
   int score;

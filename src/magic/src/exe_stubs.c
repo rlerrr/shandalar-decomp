@@ -658,6 +658,7 @@ void prompt_player_for_stop_action(int player, char *prompt)
 }
 
 // FUNCTION: MAGIC 0x0044b3d4
+// FUNCTION: SHANDALAR 0x00403d55
 void resolve_mana_burn(void)
 {
   int current_card;
@@ -1026,6 +1027,7 @@ int FUN_004af6f4(void)
 }
 
 // FUNCTION: MAGIC 0x0044ac96
+// FUNCTION: SHANDALAR 0x00403615
 int player_can_stop_at_phase(int param_1, phase_t param_2)
 {
   struct
@@ -1116,6 +1118,7 @@ int get_recorded_action_count(void)
 }
 
 // FUNCTION: MAGIC 0x004aec05
+// FUNCTION: SHANDALAR 0x0046bbe0
 unsigned int FUN_004aec05(int player)
 {
   struct
@@ -1266,6 +1269,7 @@ unsigned int FUN_004aec05(int player)
 }
 
 // FUNCTION: MAGIC 0x00440ad2
+// FUNCTION: SHANDALAR 0x0040c352
 int FUN_00440ad2(int player, int card, int arg_3)
 {
   struct
@@ -1364,6 +1368,7 @@ int resolve_activated_ability(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00440c61
+// FUNCTION: SHANDALAR 0x0040c4e1
 int FUN_00440c61(int player, int card)
 {
   if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == -1)
@@ -1375,6 +1380,7 @@ int FUN_00440c61(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00442cf9
+// FUNCTION: SHANDALAR 0x0040e593
 int is_nonactivated_mana_source(int player, int card)
 {
   int result;
@@ -1563,6 +1569,7 @@ int get_card_response_action_type(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044b6af
+// FUNCTION: SHANDALAR 0x00404030
 int can_activate_mana_source_for_stop_prompt(int player, int card)
 {
   if (is_in_play(player, card) != 0 &&
@@ -1580,6 +1587,7 @@ int can_activate_mana_source_for_stop_prompt(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044b7d4
+// FUNCTION: SHANDALAR 0x00404155
 int FUN_0044b7d4(int player, int card)
 {
   unk_00938e2c = 0x3e;
@@ -1607,6 +1615,7 @@ int FUN_0044b7d4(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00445f61
+// FUNCTION: SHANDALAR 0x004117fa
 int FUN_00445f61(int player, int card)
 {
   int internal_card_id;
@@ -2002,6 +2011,7 @@ void FUN_0050aa5d(void)
 }
 
 // FUNCTION: MAGIC 0x004b5fc9
+// FUNCTION: SHANDALAR 0x0056c7cb
 void FUN_004b5fc9(char *text)
 {
   if (g_duel_ai_mode_state == 1)
@@ -2636,6 +2646,7 @@ void FUN_004e1c8c(unsigned int internal_card_id, int unk1, char *prompt, int unk
 }
 
 // FUNCTION: MAGIC 0x00435c1f
+// FUNCTION: SHANDALAR 0x004170f8
 int begin_mana_payment_record(void)
 {
   int color;
@@ -2656,6 +2667,7 @@ int begin_mana_payment_record(void)
 }
 
 // FUNCTION: MAGIC 0x00435cdd
+// FUNCTION: SHANDALAR 0x004171b7
 int end_mana_payment_record(void)
 {
   if (mana_payment_record_depth > 0)
@@ -2670,6 +2682,7 @@ int end_mana_payment_record(void)
 }
 
 // FUNCTION: MAGIC 0x00435d11
+// FUNCTION: SHANDALAR 0x004171eb
 int restore_recorded_mana_to_pool(int player)
 {
   int color;
@@ -2691,6 +2704,7 @@ int restore_recorded_mana_to_pool(int player)
 }
 
 // FUNCTION: MAGIC 0x004438cb
+// FUNCTION: SHANDALAR 0x0040f165
 int refresh_stack_proxy_card(int param_1)
 {
   struct
@@ -2759,6 +2773,7 @@ int refresh_stack_proxy_card(int param_1)
 }
 
 // FUNCTION: MAGIC 0x00444443
+// FUNCTION: SHANDALAR 0x0040fcdd
 int set_stack_damage_targets(void)
 {
   struct
@@ -2816,6 +2831,7 @@ int FUN_00496128(int windows, int count);
 int FUN_004961ab(HWND param_1, int param_2, int param_3);
 
 // FUNCTION: MAGIC 0x00495fa1
+// FUNCTION: SHANDALAR 0x00466a34
 void restack_duel_child_windows(void)
 {
   struct
@@ -3830,6 +3846,7 @@ int get_ai_search_elapsed_time(void)
 }
 
 // FUNCTION: MAGIC 0x004a09c6
+// FUNCTION: SHANDALAR 0x0053f510
 int prompt_for_life_total(int player, char *prompt, int maxnum)
 {
   struct

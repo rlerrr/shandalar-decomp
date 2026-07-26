@@ -251,6 +251,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x00466e6d
+// FUNCTION: SHANDALAR 0x0045659d
 int FUN_00466e6d(int player, int card, int target_player)
 {
   card_instance_t *instance;

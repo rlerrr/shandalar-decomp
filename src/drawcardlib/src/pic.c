@@ -289,6 +289,7 @@ DIBSurface *CreateDIBSurface(int width, int height, int bitsPerPixel)
 // FUNCTION: DRAWCARDLIB 0x1000b40f
 // FUNCTION: DECKDLL 0x1002ceab
 // FUNCTION: MAGIC 0x004853bf
+// FUNCTION: SHANDALAR 0x004c882b
 HBITMAP
 LoadPicFile(int param_1, undefined4 param_2, undefined4 param_3, char *pcxFilename, undefined1 *palette)
 {

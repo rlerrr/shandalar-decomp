@@ -25,12 +25,15 @@ LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 int load_text_with_tab_escapes(char *filename, char *section_name);
 
 // GLOBAL: MAGIC 0x0055e02c
+// GLOBAL: SHANDALAR 0x0057f004
 int g_face_picture_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e030
+// GLOBAL: SHANDALAR 0x0057f008
 int g_face_picture_ownership_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e034
+// GLOBAL: SHANDALAR 0x0057f00c
 int g_magicgame_face_window_extra_bytes = 8;
 
 // GLOBAL: MAGIC 0x0056faa0
@@ -61,15 +64,18 @@ char s_Face_0056fb0c[8] = "Face";
 char s__duel_hlp_0056fb14[0xa] = "\\duel.hlp";
 
 // GLOBAL: MAGIC 0x00637b48
+// GLOBAL: SHANDALAR 0x005a8160
 COLORREF g_face_name_text_color;
 
 // GLOBAL: MAGIC 0x00637b4c
 int DAT_00637b4c;
 
 // GLOBAL: MAGIC 0x00637b50
+// GLOBAL: SHANDALAR 0x005a8168
 char g_face_menu_end_directive_text[0x34];
 
 // GLOBAL: MAGIC 0x00637b84
+// GLOBAL: SHANDALAR 0x005a819c
 COLORREF g_face_name_shadow_color;
 
 // GLOBAL: MAGIC 0x00637b88
@@ -79,21 +85,27 @@ int g_face_directive_packet[3];
 int DAT_00637b94;
 
 // GLOBAL: MAGIC 0x00637b98
+// GLOBAL: SHANDALAR 0x005a81b0
 char g_face_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x00637bb4
+// GLOBAL: SHANDALAR 0x005a81cc
 HMENU g_face_popup_menu;
 
 // GLOBAL: MAGIC 0x00637bb8
+// GLOBAL: SHANDALAR 0x005a81d0
 char g_face_menu_directive_format[100];
 
 // GLOBAL: MAGIC 0x00637c1c
+// GLOBAL: SHANDALAR 0x005a8234
 HFONT g_face_name_font;
 
 // GLOBAL: MAGIC 0x00637c20
+// GLOBAL: SHANDALAR 0x005a8238
 char g_face_menu_directive_self_text[0x38];
 
 // GLOBAL: MAGIC 0x00637c58
+// GLOBAL: SHANDALAR 0x005a8270
 HBITMAP g_face_background_pics[6];
 
 // GLOBAL: MAGIC 0x00925bb0
@@ -366,6 +378,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam,
 }
 
 // FUNCTION: MAGIC 0x00464209
+// FUNCTION: SHANDALAR 0x0042693e
 void draw_duel_face_window(HDC dc, RECT *rect, int player)
 {
   struct
@@ -454,6 +467,7 @@ void draw_duel_face_window(HDC dc, RECT *rect, int player)
 }
 
 // FUNCTION: MAGIC 0x0046452a
+// FUNCTION: SHANDALAR 0x00426c59
 void set_player_directive_value(int player, int value)
 {
   struct
@@ -533,6 +547,7 @@ void set_player_directive_value(int player, int value)
 }
 
 // FUNCTION: MAGIC 0x00464671
+// FUNCTION: SHANDALAR 0x00426da0
 void post_face_directive_action(int player)
 {
   g_face_directive_packet[0] = 0;
@@ -542,6 +557,7 @@ void post_face_directive_action(int player)
 }
 
 // FUNCTION: MAGIC 0x004646b0
+// FUNCTION: SHANDALAR 0x00426ddf
 int is_face_directive_action_enabled(int player)
 {
   if ((player == 1 && g_opponent_face_directive_action_enabled != 0) ||
@@ -556,6 +572,7 @@ int is_face_directive_action_enabled(int player)
 }
 
 // FUNCTION: MAGIC 0x004941ee
+// FUNCTION: SHANDALAR 0x00464c8a
 int draw_masked_bitmap_left_half_to_rect(HDC dc, RECT *rect, HANDLE bitmap)
 {
   struct
@@ -582,6 +599,7 @@ int draw_masked_bitmap_left_half_to_rect(HDC dc, RECT *rect, HANDLE bitmap)
 }
 
 // FUNCTION: MAGIC 0x0049545f
+// FUNCTION: SHANDALAR 0x00465efa
 LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   switch (msg)
@@ -603,6 +621,7 @@ LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 }
 
 // FUNCTION: MAGIC 0x004ecbd4
+// FUNCTION: SHANDALAR 0x0056cdb4
 int load_text_with_tab_escapes(char *filename, char *section_name)
 {
   int loaded_count;

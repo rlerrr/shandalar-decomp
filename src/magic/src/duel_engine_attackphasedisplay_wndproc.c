@@ -78,9 +78,11 @@ int DAT_0069c6ac;
 int DAT_0069c6b0;
 
 // GLOBAL: MAGIC 0x00708828
+// GLOBAL: SHANDALAR 0x00669660
 int g_attack_phase_display_click_packet[3];
 
 // GLOBAL: MAGIC 0x00708838
+// GLOBAL: SHANDALAR 0x00669670
 int g_attack_phase_display_menu_packet[3];
 
 extern HWND DAT_0069c620;
@@ -154,6 +156,7 @@ int FUN_004954ef(char *text, COLORREF color, HBRUSH brush)
 }
 
 // FUNCTION: MAGIC 0x00538854
+// FUNCTION: SHANDALAR 0x0055d078
 static void hit_test_attack_phase_display(POINT *point, RECT *client_rect, int *phase)
 {
   struct
@@ -196,6 +199,7 @@ static void hit_test_attack_phase_display(POINT *point, RECT *client_rect, int *
 }
 
 // FUNCTION: MAGIC 0x00538a11
+// FUNCTION: SHANDALAR 0x0055d235
 static void get_attack_phase_display_phase_rect(RECT *rect, int phase, int width, int height)
 {
   int top;
@@ -232,6 +236,7 @@ static void get_attack_phase_display_phase_rect(RECT *rect, int phase, int width
 }
 
 // FUNCTION: MAGIC 0x00538bd2
+// FUNCTION: SHANDALAR 0x0055d3f6
 static void draw_attack_phase_display_status_markers(HDC dc, RECT *client_rect)
 {
   struct
@@ -353,6 +358,7 @@ static void set_attack_phase_window_title(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x004d8879
+// FUNCTION: SHANDALAR 0x004624cf
 int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2)
 {
   struct
@@ -430,6 +436,7 @@ int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1,
 }
 
 // FUNCTION: MAGIC 0x004d6c6d
+// FUNCTION: SHANDALAR 0x004608d2
 void layout_attack_phase_window(HWND hwnd)
 {
   struct
@@ -692,6 +699,7 @@ void layout_attack_phase_window(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x0053582a
+// FUNCTION: SHANDALAR 0x0055a06a
 int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
 {
   struct
@@ -713,6 +721,7 @@ int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x005358fb
+// FUNCTION: SHANDALAR 0x0055a13b
 void destroy_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
 {
   (void)class_name;

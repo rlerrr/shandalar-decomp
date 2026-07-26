@@ -83,12 +83,14 @@ const char s_PROMPT_DRAWACARD_00561784[] = "PROMPT_DRAWACARD";
 const char s_PROMPT_DRAWACARD_00561798[] = "PROMPT_DRAWACARD";
 
 // GLOBAL: MAGIC 0x005617ac
+// GLOBAL: SHANDALAR 0x00580bbc
 const char empty_active_player_draw_message[4] = {0, 0, 0, 0};
 
 // GLOBAL: MAGIC 0x005617b0
 const char s_PROMPT_DRAWACARD_005617b0[] = "PROMPT_DRAWACARD";
 
 // GLOBAL: MAGIC 0x005617c4
+// GLOBAL: SHANDALAR 0x00580bd4
 const char empty_opponent_draw_message[4] = {0, 0, 0, 0};
 
 int can_target(target_definition_t *td)
@@ -563,6 +565,7 @@ int resolve_card_on_stack(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004456ad
+// FUNCTION: SHANDALAR 0x00410f46
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response)
 {
   struct
@@ -828,6 +831,7 @@ int is_opponent_random_draw_color_allowed(int color, int preferred_color, int co
 }
 
 // FUNCTION: MAGIC 0x00551ed7
+// FUNCTION: SHANDALAR 0x004a011a
 int select_target_artifact_and_store(int player, unsigned int preferred_controller, int card)
 {
   target_t selected_target;
@@ -869,6 +873,7 @@ int select_target_artifact_and_store(int player, unsigned int preferred_controll
 }
 
 // FUNCTION: MAGIC 0x00449bef
+// FUNCTION: SHANDALAR 0x00453770
 void copy_opponent_name_prefix(char *name)
 {
   char *source;
@@ -901,6 +906,7 @@ void default_target_definition(int player, int card, target_definition_t *td, in
 }
 
 // FUNCTION: MAGIC 0x004464f0
+// FUNCTION: SHANDALAR 0x00411d90
 int is_in_play(int player, int card)
 {
   if (global_card_instances[player][card].internal_card_id == -1)
@@ -910,6 +916,7 @@ int is_in_play(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x005001e0
+// FUNCTION: SHANDALAR 0x004ba309
 int get_hacked_color(int player, int card, int orig_color)
 {
   if ((char)global_card_instances[player][card].hack_mode[orig_color] == 0)
@@ -923,6 +930,7 @@ int get_hacked_color(int player, int card, int orig_color)
 }
 
 // FUNCTION: MAGIC 0x0050026d
+// FUNCTION: SHANDALAR 0x004ba392
 int get_sleighted_color(int player, int card, int orig_color)
 {
   if ((char)global_card_instances[player][card].color_id[orig_color] == 0)
@@ -965,6 +973,7 @@ color_t single_color_test_bit_to_color_t(color_test_t color_test)
 }
 
 // FUNCTION: MAGIC 0x004832f4
+// FUNCTION: SHANDALAR 0x00486e05
 int graveyard_has_type(int player, int type)
 {
   struct
@@ -1017,6 +1026,7 @@ int graveyard_has_type(int player, int type)
 }
 
 // FUNCTION: MAGIC 0x00484581
+// FUNCTION: SHANDALAR 0x0048808b
 int is_basic_land_internal_card_id_of_color(int internal_card_id, color_t color)
 {
   int result;
@@ -1035,6 +1045,7 @@ int is_basic_land_internal_card_id_of_color(int internal_card_id, color_t color)
 }
 
 // FUNCTION: MAGIC 0x004a62d7
+// FUNCTION: SHANDALAR 0x00558457
 int select_from_graveyard_with_dialog(int player,
                  int *graveyard,
                  void *available,
@@ -1105,6 +1116,7 @@ int find_internal_card_id_by_csv_id(int card_id)
 }
 
 // FUNCTION: MAGIC 0x004b41f2
+// FUNCTION: SHANDALAR 0x0056a45f
 int select_card_from_graveyard(int player,
                  int *graveyard,
                  int *allowed_cards,
@@ -1143,6 +1155,7 @@ int select_card_from_graveyard(int player,
 }
 
 // FUNCTION: MAGIC 0x00483e3e
+// FUNCTION: SHANDALAR 0x0048794a
 int choose_best_card_from_library(int player, unsigned int type_mask)
 {
   int best_score;
@@ -1282,6 +1295,7 @@ int FUN_00481e25(int player, int card, int event)
 }
 
 // FUNCTION: MAGIC 0x0048194e
+// FUNCTION: SHANDALAR 0x00485458
 int select_best_land_target_by_score(int preferred_player, int only_player, int *target_data)
 {
   struct
@@ -1530,6 +1544,7 @@ void receive_library_contents(int deck_owner)
 }
 
 // FUNCTION: MAGIC 0x004b59b2
+// FUNCTION: SHANDALAR 0x0056c1b5
 void shuffle_duel_library(int player, int deck_owner)
 {
   struct
@@ -1587,6 +1602,7 @@ void shuffle_duel_library(int player, int deck_owner)
 }
 
 // FUNCTION: MAGIC 0x004b5c94
+// FUNCTION: SHANDALAR 0x0056c496
 void remove_card_from_deck(int player, int position)
 {
   int current_slot;
@@ -1600,6 +1616,7 @@ void remove_card_from_deck(int player, int position)
 }
 
 // FUNCTION: MAGIC 0x004b0b53
+// FUNCTION: SHANDALAR 0x0046db2e
 int regenerate_or_graveyard_triggers(void)
 {
   if (pending_killed_card_handler == 0 || regenerate_or_graveyard_triggers_in_progress != 0)
@@ -1624,6 +1641,7 @@ int regenerate_or_graveyard_triggers(void)
 }
 
 // FUNCTION: MAGIC 0x005510dc
+// FUNCTION: SHANDALAR 0x0049f31f
 int has_permanent_of_type(int player, int type_mask)
 {
   int current_card;
@@ -1640,6 +1658,7 @@ int has_permanent_of_type(int player, int type_mask)
 }
 
 // FUNCTION: MAGIC 0x004b15f7
+// FUNCTION: SHANDALAR 0x0046e5d2
 void remove_card_from_graveyard(int player, int graveyard_index)
 {
   int i = graveyard_index;
@@ -1771,6 +1790,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
 
 // FUNCTION: MOK 0x00459AA0
 // FUNCTION: MAGIC 0x00485060
+// FUNCTION: SHANDALAR 0x00488b70
 int dispatch_function_to_all_cards_in_play(int player, int card, in_play_card_callback_t callback, int who_to_check)
 {
   int saved_event_result;
@@ -1829,6 +1849,7 @@ int get_card_display_pic_num(card_id_t card_id, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0050047c
+// FUNCTION: SHANDALAR 0x004ba5a1
 int damage_creature(int target_player, int target_card, int amount, int source_player, int source_card)
 {
   struct
@@ -1947,6 +1968,7 @@ int add_card_to_hand(int player, int internal_card_id)
 int calculate_attack_rating(int player, int card);
 
 // FUNCTION: MAGIC 0x004b4720
+// FUNCTION: SHANDALAR 0x0056af29
 void initialize_card_instance(int player, int internal_card_id, int card)
 {
   int i;
@@ -2116,6 +2138,7 @@ int calculate_attack_rating(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00500135
+// FUNCTION: SHANDALAR 0x004ba25e
 int create_a_card_type(int internal_card_id)
 {
   int new_internal_card_id;
@@ -2186,6 +2209,7 @@ int dispatch_event_to_single_card(int player,
 }
 
 // FUNCTION: MAGIC 0x004428be
+// FUNCTION: SHANDALAR 0x0040e158
 int dispatch_event(int player, int card, event_t event)
 {
   struct
@@ -2569,6 +2593,7 @@ finish_get_available_card_action:
 }
 
 // FUNCTION: MAGIC 0x004e1cd1
+// FUNCTION: SHANDALAR 0x00426f3c
 void redraw_shandalar_duel_screen(int view_player, int present_after_draw)
 {
   /*
@@ -2582,6 +2607,7 @@ void redraw_shandalar_duel_screen(int view_player, int present_after_draw)
 
 // FUNCTION: MOK 0x0049d510
 // FUNCTION: MAGIC 0x004eaf09
+// FUNCTION: SHANDALAR 0x00441699
 int has_mana(int player, color_t color, int amount)
 {
   struct
@@ -2690,6 +2716,7 @@ int has_mana(int player, color_t color, int amount)
 }
 
 // FUNCTION: MAGIC 0x0043fdb3
+// FUNCTION: SHANDALAR 0x0040b633
 int can_pay_card_mana_cost(int player, int target_player, int target_card)
 {
   struct
@@ -2749,6 +2776,7 @@ int can_pay_card_mana_cost(int player, int target_player, int target_card)
 }
 
 // FUNCTION: MAGIC 0x00442dac
+// FUNCTION: SHANDALAR 0x0040e646
 void push_affected_card_stack(void)
 {
   if (affected_card_context_depth >= 0x20)
@@ -2765,6 +2793,7 @@ void push_affected_card_stack(void)
 }
 
 // FUNCTION: MAGIC 0x00442e62
+// FUNCTION: SHANDALAR 0x0040e6fc
 void pop_affected_card_stack(void)
 {
   if (affected_card_context_depth > 0)
@@ -2782,6 +2811,7 @@ void pop_affected_card_stack(void)
 }
 
 // FUNCTION: MAGIC 0x00445b56
+// FUNCTION: SHANDALAR 0x004113ef
 int can_pay_untap_cost(int player, int card)
 {
   struct
@@ -2823,6 +2853,7 @@ int can_pay_untap_cost(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00445918
+// FUNCTION: SHANDALAR 0x004111b1
 int TENTATIVE_set_timestamps(int player, int card)
 {
   int slot;
@@ -2841,6 +2872,7 @@ int TENTATIVE_set_timestamps(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0055117d
+// FUNCTION: SHANDALAR 0x0049f3c0
 void dispatch_three_arg_callback_to_cards_in_play(int(__cdecl *callback)(int, int, int), int who_to_check)
 {
   int test_card;
@@ -2864,6 +2896,7 @@ void dispatch_three_arg_callback_to_cards_in_play(int(__cdecl *callback)(int, in
 }
 
 // FUNCTION: MAGIC 0x00551638
+// FUNCTION: SHANDALAR 0x0049f87b
 int select_target_creature_and_store(int player, unsigned int preferred_controller, int card)
 {
   target_t selected_target;
@@ -2906,6 +2939,7 @@ int select_target_creature_and_store(int player, unsigned int preferred_controll
 }
 
 // FUNCTION: MAGIC 0x004eab5c
+// FUNCTION: SHANDALAR 0x004412ec
 void declare_mana_available_hex(int player, color_test_t colors, int amount)
 {
   int i;
@@ -2925,6 +2959,7 @@ void declare_mana_available_hex(int player, color_test_t colors, int amount)
 }
 
 // FUNCTION: MAGIC 0x004eac0c
+// FUNCTION: SHANDALAR 0x0044139c
 void undeclare_mana_available_hex(int player, color_test_t color, int amount)
 {
   struct
@@ -2965,6 +3000,7 @@ void undeclare_mana_available_hex(int player, color_test_t color, int amount)
 }
 
 // FUNCTION: MAGIC 0x004eada9
+// FUNCTION: SHANDALAR 0x00441539
 int declare_mana_available(int player, color_t color, int amount)
 {
   special_mana_pool[player][color] += amount;
@@ -2981,6 +3017,7 @@ int undeclare_mana_available(int player, color_t color, int amount)
 }
 
 // FUNCTION: MAGIC 0x004eaec1
+// FUNCTION: SHANDALAR 0x00441651
 int undeclare_mana_available_and_produce_it(int player, color_t color, int amount)
 {
   undeclare_mana_available(player, color, amount);
@@ -2989,6 +3026,7 @@ int undeclare_mana_available_and_produce_it(int player, color_t color, int amoun
 }
 
 // FUNCTION: MAGIC 0x005513d7
+// FUNCTION: SHANDALAR 0x0049f61a
 void add_special_counters(int player, int card, int amount)
 {
   if ((PLAYER_CARD_INSTANCE(player, card).special_counters & 0xffu) == 0xffu)
@@ -3005,6 +3043,7 @@ void add_special_counters(int player, int card, int amount)
 }
 
 // FUNCTION: MAGIC 0x004a686a
+// FUNCTION: SHANDALAR 0x005589ed
 int choose_a_color(int player, const char *prompt, int use_color_names_instead_of_land, int ai_choice, unsigned int available_colors)
 {
   int chosen_color;
@@ -3062,6 +3101,7 @@ int internal_rand(int maximum)
 }
 
 // FUNCTION: MAGIC 0x00464a84
+// FUNCTION: SHANDALAR 0x00522535
 int network_random(int player, int maximum)
 {
   if (player == active_player)
@@ -3128,6 +3168,7 @@ void replay_ai_action_selection(void)
 }
 
 // FUNCTION: MAGIC 0x0048463d
+// FUNCTION: SHANDALAR 0x00488147
 int card_has_basic_land_type(int player, int card, int land_color)
 {
   struct
@@ -3165,6 +3206,7 @@ int card_has_basic_land_type(int player, int card, int land_color)
 }
 
 // FUNCTION: MAGIC 0x004817fd
+// FUNCTION: SHANDALAR 0x00485308
 int ante_drawn_card(int player)
 {
   int ante_slot = 0;
@@ -3301,6 +3343,7 @@ int basic_land_matches_type_index(int internal_card_id, int extra)
 }
 
 // FUNCTION: MAGIC 0x004848a0
+// FUNCTION: SHANDALAR 0x004883aa
 int gain_life(int player, int amount)
 {
   int saved_trigger_cause_controller;
@@ -3337,6 +3380,7 @@ int gain_life(int player, int amount)
 }
 
 // FUNCTION: MAGIC 0x00445663
+// FUNCTION: SHANDALAR 0x00410efc
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4)
 {
   dispatch_trigger(reason_for_trig, trig, prompt, a4);
@@ -3489,6 +3533,7 @@ int process_killed_card(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004b08e6
+// FUNCTION: SHANDALAR 0x0046d8c1
 void kill_card(int player, int card, kill_t kill_mode)
 {
   int internal_card_id;
@@ -3581,6 +3626,7 @@ void clear_card_attachments(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0043e668
+// FUNCTION: SHANDALAR 0x00409ee8
 void discard(int player, int flags, int player_who_controls_effect)
 {
   struct
@@ -3721,6 +3767,7 @@ void discard(int player, int flags, int player_who_controls_effect)
 }
 
 // FUNCTION: MAGIC 0x004eae35
+// FUNCTION: SHANDALAR 0x004415c5
 int produce_mana(int player, color_t color, int amount)
 {
   raw_mana_available[player][color] += amount;
@@ -3759,6 +3806,7 @@ int ClampIntToRange(int a1, int a2, int a3)
 
 // FUNCTION: MOK 0x0042de60
 // FUNCTION: MAGIC 0x00432f00
+// FUNCTION: SHANDALAR 0x004143e0
 int charge_mana(int player, color_t color, int amount)
 {
   struct
@@ -5009,6 +5057,7 @@ int activate_mana_sources_for_payment(int player,
 }
 
 // FUNCTION: MAGIC 0x004e9c50
+// FUNCTION: SHANDALAR 0x00507a50
 int select_card_for_action(int player,
                            int arg_2,
                            int player_to_check,
@@ -5222,6 +5271,7 @@ int select_card_for_action(int player,
 }
 
 // FUNCTION: MAGIC 0x004e4ff3
+// FUNCTION: SHANDALAR 0x004c4263
 int load_recorded_action_target(int a1)
 {
   if (g_duel_ai_mode_state != 1)
@@ -5237,6 +5287,7 @@ int load_recorded_action_target(int a1)
 
 // FUNCTION: MOK 0x00499010
 // FUNCTION: MAGIC 0x004e503e
+// FUNCTION: SHANDALAR 0x004c42ae
 int load_recorded_action_code(int a1)
 {
   if (g_duel_ai_mode_state != 1)
@@ -5252,6 +5303,7 @@ int load_recorded_action_code(int a1)
 
 // FUNCTION: MOK 0x0049d710
 // FUNCTION: MAGIC 0x004eb23d
+// FUNCTION: SHANDALAR 0x004419ca
 int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 {
   int result;
@@ -5292,6 +5344,7 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 
 // FUNCTION: MOK 0x004a09a0
 // FUNCTION: MAGIC 0x004ef850
+// FUNCTION: SHANDALAR 0x004a9910
 int create_legacy_effect(int player, int card, int legacy_iid, int target_player, int target_card)
 {
   /* Group locals to force the original /Od stack slots: i @ -0xc, legacy_card @ -8, source_internal_card_id @ -4. */
@@ -5343,6 +5396,7 @@ int create_legacy_effect(int player, int card, int legacy_iid, int target_player
 }
 
 // FUNCTION: MAGIC 0x0043ece1
+// FUNCTION: SHANDALAR 0x0040a561
 int resolve_cast_card(int player, int card)
 {
   int force_special_mode;
@@ -5411,6 +5465,7 @@ void request_duel_display_refresh(int player, int card, int unk1, int unk2)
 }
 
 // FUNCTION: MAGIC 0x004a61a1
+// FUNCTION: SHANDALAR 0x00558321
 void request_duel_display_refresh_if_human(int player, int card, int unk1, int unk2)
 {
   if (g_duel_ai_mode_state == 1)
@@ -5447,6 +5502,7 @@ void move_card_to_graveyard(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004b5cf5
+// FUNCTION: SHANDALAR 0x0056c4f7
 void put_card_on_bottom_of_library(int player, int internal_card_id)
 {
   int deck_position;
@@ -5495,6 +5551,7 @@ void get_landwalk_evasion_masks(unsigned int *param_1, unsigned int *param_2)
 }
 
 // FUNCTION: MAGIC 0x00441f16
+// FUNCTION: SHANDALAR 0x0040d7b2
 int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
 {
   card_instance_t *instance;
@@ -5775,6 +5832,7 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
 }
 
 // FUNCTION: MAGIC 0x00500a13
+// FUNCTION: SHANDALAR 0x004bab38
 int damage_player(int target_player, int amount, int source_player, int source_card)
 {
   return damage_creature(target_player, -1, amount, source_player, source_card);
@@ -5782,6 +5840,7 @@ int damage_player(int target_player, int amount, int source_player, int source_c
 
 // FUNCTION: MOK 0x004302c0
 // FUNCTION: MAGIC 0x00435e27
+// FUNCTION: SHANDALAR 0x00417301
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
 {
   int result;
@@ -5796,6 +5855,7 @@ int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
 }
 
 // FUNCTION: MAGIC 0x0044331f
+// FUNCTION: SHANDALAR 0x0040ebb9
 void play_sound_effect(wav_t sound_id)
 {
   static const char *sound_filenames[] = {
@@ -5974,6 +6034,7 @@ void play_sound_effect(wav_t sound_id)
 }
 
 // FUNCTION: MAGIC 0x0044125c
+// FUNCTION: SHANDALAR 0x0040cadc
 int can_attack(int player, int card)
 {
   int saved_affected_card;
@@ -6049,6 +6110,7 @@ int can_attack(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x005001c4
+// FUNCTION: SHANDALAR 0x004ba2ed
 void invalidate_dynamic_card_type(int internal_card_id)
 {
   global_cards_data[internal_card_id].id = -1;
@@ -6200,6 +6262,7 @@ int show_cardlist_if_human(int *cards, int count, void *context, unsigned int bi
 }
 
 // FUNCTION: MAGIC 0x004ec616
+// FUNCTION: SHANDALAR 0x0046a315
 void position_duel_prompt_context_window(HWND param_1)
 {
   struct
@@ -6227,6 +6290,7 @@ void position_duel_prompt_context_window(HWND param_1)
 }
 
 // FUNCTION: MAGIC 0x004ec6c3
+// FUNCTION: SHANDALAR 0x0046a3c1
 void setup_duel_prompt_context_text_dc(HWND param_1, HDC param_2, int *param_3)
 {
   struct
@@ -6409,6 +6473,7 @@ void set_duel_prompt_context(HWND param_1, char *param_2, unsigned int param_3)
 }
 
 // FUNCTION: MAGIC 0x004480a6
+// FUNCTION: SHANDALAR 0x00451c24
 void display_duel_prompt_text(char *text)
 {
   char *msg;
@@ -6426,6 +6491,7 @@ void display_duel_prompt_text(char *text)
 }
 
 // FUNCTION: MAGIC 0x004a61d6
+// FUNCTION: SHANDALAR 0x00558356
 void set_duel_prompt_text(char *text)
 {
   strcpy(current_duel_prompt_text, text);
@@ -6433,6 +6499,7 @@ void set_duel_prompt_text(char *text)
 }
 
 // FUNCTION: MAGIC 0x00482a97
+// FUNCTION: SHANDALAR 0x004865a8
 int has_effect_source_type(int player, int card, unsigned int flags)
 {
   struct
@@ -6496,6 +6563,7 @@ int has_effect_source_type(int player, int card, unsigned int flags)
 }
 
 // FUNCTION: MAGIC 0x00551b60
+// FUNCTION: SHANDALAR 0x0049fda3
 int select_target_land_and_store(int player, int preferred_controller, int card)
 {
   target_t selected_target;
@@ -6540,6 +6608,7 @@ int select_target_land_and_store(int player, int preferred_controller, int card)
  *   1 = scan damage cards by damage_target_player/card
  *   2 = scan damage cards by damage_source_player/card
  */
+// FUNCTION: SHANDALAR 0x004be650
 int real_target_available(int *num_valid_targets,
                           target_scan_mode_t target_source_mode,
                           int who_chooses,
@@ -6722,6 +6791,7 @@ int real_target_available(int *num_valid_targets,
 }
 
 // FUNCTION: MAGIC 0x004bdc06
+// FUNCTION: SHANDALAR 0x004bea85
 unsigned int C_real_validate_target(int tgt_player,
                                     int tgt_card,
                                     char *return_error_str,
@@ -7468,6 +7538,7 @@ void rewind_recorded_action(void)
 }
 
 // FUNCTION: MAGIC 0x00551240
+// FUNCTION: SHANDALAR 0x0049f483
 void add_special_counter(int player, int card)
 {
   if ((PLAYER_CARD_INSTANCE(player, card).special_counters & 0xffu) == 0xffu)
@@ -7487,6 +7558,7 @@ void add_special_counter(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x005514cd
+// FUNCTION: SHANDALAR 0x0049f710
 void remove_special_counters(int player, int card, int amount)
 {
   global_card_instances[player][card].special_counters =
@@ -7494,6 +7566,7 @@ void remove_special_counters(int player, int card, int amount)
 }
 
 // FUNCTION: MAGIC 0x00551572
+// FUNCTION: SHANDALAR 0x0049f7b5
 void set_special_counters(int player, int card, int amount)
 {
   if (amount > 0xff)
@@ -7506,12 +7579,14 @@ void set_special_counters(int player, int card, int amount)
 }
 
 // FUNCTION: MAGIC 0x005515f5
+// FUNCTION: SHANDALAR 0x0049f838
 unsigned int C_get_special_counters(int player, int card)
 {
   return global_card_instances[player][card].special_counters & 0xff;
 }
 
 // FUNCTION: MAGIC 0x00441514
+// FUNCTION: SHANDALAR 0x0040cd94
 int has_vigilance(int player, int card)
 {
   if (PLAYER_CARD_INSTANCE(player, card).state & STATE_VIGILANCE)
@@ -7664,6 +7739,7 @@ int push_card_onto_stack(int player, int card, int event, int extra, int prompt)
 }
 
 // FUNCTION: MAGIC 0x004eaceb
+// FUNCTION: SHANDALAR 0x0044147b
 void declare_mana_color_conversion(int player, int color_to_produce, int color_to_consume)
 {
   struct
@@ -7689,6 +7765,7 @@ void declare_mana_color_conversion(int player, int color_to_produce, int color_t
 }
 
 // FUNCTION: MAGIC 0x00551334
+// FUNCTION: SHANDALAR 0x0049f577
 void remove_special_counter(int player, int card)
 {
   /* The exe only decrements the low byte of special_counters and preserves the upper 3 bytes. */
@@ -7698,6 +7775,7 @@ void remove_special_counter(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00444b74
+// FUNCTION: SHANDALAR 0x0041040d
 int obliterate_top_card_of_stack(void)
 {
   struct
@@ -7826,6 +7904,7 @@ int resolve_top_card_on_stack(void)
 }
 
 // FUNCTION: MAGIC 0x004482f3
+// FUNCTION: SHANDALAR 0x00451e70
 int copy_mana_pool_to_display(void)
 {
   if (g_duel_ai_mode_state != 1)
@@ -7842,6 +7921,7 @@ int copy_mana_pool_to_display(void)
 }
 
 // FUNCTION: MAGIC 0x00441d78
+// FUNCTION: SHANDALAR 0x0040d614
 void reassess_all_cards_and_mana(void)
 {
   int player;
@@ -7880,6 +7960,7 @@ void reassess_all_cards_and_mana(void)
 }
 
 // FUNCTION: MAGIC 0x004afa4b
+// FUNCTION: SHANDALAR 0x0046ca26
 void process_damage_prevention(int player)
 {
   struct
@@ -8041,6 +8122,7 @@ void kill_creatures_with_lethal_damage(void)
 }
 
 // FUNCTION: MAGIC 0x0044aa01
+// FUNCTION: SHANDALAR 0x00403381
 int should_skip_phase(int player)
 {
   if ((g_duel_network_flags & 2) != 0)
@@ -8155,6 +8237,7 @@ int should_skip_phase(int player)
 }
 
 // FUNCTION: MAGIC 0x0044541f
+// FUNCTION: SHANDALAR 0x00410cb8
 int can_stop_for_phase(int param_1)
 {
   int can_respond;
@@ -8225,6 +8308,7 @@ int can_stop_for_phase(int param_1)
 }
 
 // FUNCTION: MAGIC 0x004460d3
+// FUNCTION: SHANDALAR 0x0041196b
 void reset_upkeep_costs(void)
 {
   int player;
@@ -8270,6 +8354,7 @@ unsigned int get_duel_time_units_if_available(void)
 }
 
 // FUNCTION: MAGIC 0x004b082f
+// FUNCTION: SHANDALAR 0x0046d80a
 int dispatch_card_trigger_event(int player, int card, event_t event, int extra)
 {
   if (event == EVENT_TRIGGER && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_PROCESSING) != 0 || unk_00777850 != 0))
@@ -8292,6 +8377,7 @@ int dispatch_card_trigger_event(int player, int card, event_t event, int extra)
 }
 
 // FUNCTION: MAGIC 0x0044295b
+// FUNCTION: SHANDALAR 0x0040e1f5
 void C_dispatch_event_raw(event_t event)
 {
   struct
@@ -8354,6 +8440,7 @@ void C_dispatch_event_raw(event_t event)
 }
 
 // FUNCTION: MAGIC 0x004a6d0e
+// FUNCTION: SHANDALAR 0x00558e90
 void count_mana(void)
 {
   struct
@@ -8421,6 +8508,7 @@ void count_mana(void)
   }
 }
 // FUNCTION: MAGIC 0x004a6faa
+// FUNCTION: SHANDALAR 0x0055912c
 void C_count_colors_of_lands_in_play(void)
 {
   int player;
@@ -8538,6 +8626,7 @@ void C_count_colors_of_lands_in_play(void)
 }
 
 // FUNCTION: MAGIC 0x00551e49
+// FUNCTION: SHANDALAR 0x004a008c
 int sacrifice_a_land(int player)
 {
   target_t target;
@@ -8559,6 +8648,7 @@ int sacrifice_a_land(int player)
 }
 
 // FUNCTION: MAGIC 0x00551921
+// FUNCTION: SHANDALAR 0x0049fb64
 int choose_creature_to_sacrifice(int player)
 {
   struct
@@ -8690,6 +8780,7 @@ int FUN_004823a5(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004a67bd
+// FUNCTION: SHANDALAR 0x00558941
 int choose_a_number(int player, char *prompt, int maxnum)
 {
   int chosen;
@@ -8718,6 +8809,7 @@ int choose_a_number(int player, char *prompt, int maxnum)
 }
 
 // FUNCTION: MAGIC 0x004b4110
+// FUNCTION: SHANDALAR 0x0056a37b
 void exit_duel_thread(int player)
 {
   PostMessageA((void *)g_duel_window_hwnd, 0x401, (unsigned int)player, 0);
@@ -8725,6 +8817,7 @@ void exit_duel_thread(int player)
 }
 
 // FUNCTION: MAGIC 0x004b5d72
+// FUNCTION: SHANDALAR 0x0056c574
 void real_put_on_top_of_deck(int player, int internal_card_id)
 {
   int index;
@@ -8737,6 +8830,7 @@ void real_put_on_top_of_deck(int player, int internal_card_id)
 }
 
 // FUNCTION: MAGIC 0x004b6002
+// FUNCTION: SHANDALAR 0x0056c804
 void show_duel_system_error(const char *param_1)
 {
   char buf[500];

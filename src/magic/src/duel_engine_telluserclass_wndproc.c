@@ -470,6 +470,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
 }
 
 // FUNCTION: MAGIC 0x004955ae
+// FUNCTION: SHANDALAR 0x00466049
 void FUN_004955ae(DRAWITEMSTRUCT *draw_item_struct, HBRUSH brush, HPEN pen1, HPEN pen2,
                   COLORREF color, int draw_focus)
 {

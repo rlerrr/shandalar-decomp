@@ -183,84 +183,117 @@ char s_Show_art_on_cards_A_0057adb0[0x14] = "Show art on cards\tA";
 char s_Turn_off_cheats_F12_0057adc4[0x18] = "Turn off cheats\tF12";
 
 // GLOBAL: MAGIC 0x006ab370
+// GLOBAL: SHANDALAR 0x00602fc0
 char g_territory_menu_default_action_text[0x68];
 // GLOBAL: MAGIC 0x006ab3d8
+// GLOBAL: SHANDALAR 0x00603028
 char g_territory_menu_action_20_text[0x68];
 // GLOBAL: MAGIC 0x006ab548
+// GLOBAL: SHANDALAR 0x00603198
 char g_territory_menu_action_21_text[0x68];
 // GLOBAL: MAGIC 0x006ab440
+// GLOBAL: SHANDALAR 0x00603090
 char g_territory_menu_action_22_text[0x68];
 // GLOBAL: MAGIC 0x006ab4a8
+// GLOBAL: SHANDALAR 0x006030f8
 char g_territory_menu_action_23_text[0x64];
 // GLOBAL: MAGIC 0x006abb10
+// GLOBAL: SHANDALAR 0x00603760
 char g_territory_menu_action_24_text[0x68];
 // GLOBAL: MAGIC 0x006ab760
+// GLOBAL: SHANDALAR 0x006033b0
 char g_territory_menu_action_25_text[0x68];
 // GLOBAL: MAGIC 0x006abaa8
+// GLOBAL: SHANDALAR 0x006036f8
 char g_territory_menu_end_turn_text[0x68];
 // GLOBAL: MAGIC 0x006ab868
+// GLOBAL: SHANDALAR 0x006034b8
 char g_territory_menu_action_1_text[0x68];
 // GLOBAL: MAGIC 0x006ab690
+// GLOBAL: SHANDALAR 0x006032e0
 char g_territory_menu_action_30_text[0x68];
 // GLOBAL: MAGIC 0x006ab6f8
+// GLOBAL: SHANDALAR 0x00603348
 char g_territory_menu_action_31_text[0x68];
 // GLOBAL: MAGIC 0x006ab7c8
+// GLOBAL: SHANDALAR 0x00603418
 char g_territory_menu_main_window_text[0x38];
 // GLOBAL: MAGIC 0x006ab938
+// GLOBAL: SHANDALAR 0x00603588
 char g_territory_menu_submenu_text[0x38];
 // GLOBAL: MAGIC 0x006ab50c
+// GLOBAL: SHANDALAR 0x0060315c
 HMENU g_territory_submenu;
 // GLOBAL: MAGIC 0x006ab618
+// GLOBAL: SHANDALAR 0x00603268
 char g_territory_menu_action_2_to_5_text[0x78];
 // GLOBAL: MAGIC 0x006ab864
+// GLOBAL: SHANDALAR 0x006034b4
 HMENU g_territory_popup_menu;
 // GLOBAL: MAGIC 0x006ab970
+// GLOBAL: SHANDALAR 0x006035c0
 char g_territory_menu_action_10_text[0x68];
 // GLOBAL: MAGIC 0x006abd80
+// GLOBAL: SHANDALAR 0x006039d0
 char g_territory_menu_your_battlefield_text[0x68];
 // GLOBAL: MAGIC 0x006ab800
+// GLOBAL: SHANDALAR 0x00603450
 char g_territory_menu_skip_full_card_off_text[0x32];
 // GLOBAL: MAGIC 0x006ab832
 char g_territory_menu_skip_full_card_on_text[0x32];
 // GLOBAL: MAGIC 0x006ab8d0
+// GLOBAL: SHANDALAR 0x00603520
 char g_territory_menu_draw_response_off_text[0x32];
 // GLOBAL: MAGIC 0x006ab902
 char g_territory_menu_draw_response_on_text[0x32];
 // GLOBAL: MAGIC 0x006ab9d8
+// GLOBAL: SHANDALAR 0x00603628
 char g_territory_menu_action_19_1a_text[0x68];
 // GLOBAL: MAGIC 0x006aba40
+// GLOBAL: SHANDALAR 0x00603690
 char g_territory_menu_action_1b_text[0x68];
 // GLOBAL: MAGIC 0x006ab5b0
 char g_territory_menu_show_options_text[0x68];
 // GLOBAL: MAGIC 0x006abb78
+// GLOBAL: SHANDALAR 0x006037c8
 char g_territory_menu_action_18_text[0x68];
 // GLOBAL: MAGIC 0x006abbe0
+// GLOBAL: SHANDALAR 0x00603830
 char g_territory_menu_action_6f_text[0x68];
 // GLOBAL: MAGIC 0x006abc48
+// GLOBAL: SHANDALAR 0x00603898
 char g_territory_menu_action_69_text[0x68];
 // GLOBAL: MAGIC 0x006ab510
+// GLOBAL: SHANDALAR 0x00603160
 char g_territory_menu_action_68_text[0x38];
 // GLOBAL: MAGIC 0x006abcb0
+// GLOBAL: SHANDALAR 0x00603900
 char g_territory_menu_opponent_battlefield_text[0x68];
 // GLOBAL: MAGIC 0x006abd18
+// GLOBAL: SHANDALAR 0x00603968
 char g_territory_menu_action_20_25_text[0x68];
 
 // GLOBAL: MAGIC 0x006ab614
+// GLOBAL: SHANDALAR 0x00603264
 HMENU g_territory_debug_menu_a;
 
 // GLOBAL: MAGIC 0x006ab96c
+// GLOBAL: SHANDALAR 0x006035bc
 HMENU g_territory_debug_menu_b;
 
 // GLOBAL: MAGIC 0x006ab680
+// GLOBAL: SHANDALAR 0x006032d0
 int g_territory_command_packet[3];
 
 // GLOBAL: MAGIC 0x00789720
+// GLOBAL: SHANDALAR 0x007a04b0
 char DAT_00789720[0x100];
 
 // GLOBAL: MAGIC 0x00925ae4
 int DAT_00925ae4;
 
 // FUNCTION: MAGIC 0x00538e3d
+// FUNCTION: SHANDALAR 0x0055d661
 void FUN_00538e3d(int *player, int *phase, char *text)
 {
   struct
@@ -359,6 +392,7 @@ void FUN_00538e3d(int *player, int *phase, char *text)
 }
 
 // FUNCTION: MAGIC 0x004893e0
+// FUNCTION: SHANDALAR 0x004a5070
 void show_territory_options_dialog(HWND hwnd)
 {
   if (DialogBoxParamA(g_app_instance, (LPCSTR)0xe1, hwnd, dlgproc_duel_interface_options, 0) != 0)

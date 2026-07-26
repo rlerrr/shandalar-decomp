@@ -638,6 +638,7 @@ int card_twiddle(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x004f7783
+// FUNCTION: SHANDALAR 0x004b183c
 int FUN_004f7783(int player, int card)
 {
   if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
@@ -1870,6 +1871,7 @@ int card_purelace(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x004faee2
+// FUNCTION: SHANDALAR 0x004b4fb3
 void FUN_004faee2(int player, int card, int color_from, unsigned char color_to)
 {
   int current_color;
@@ -2056,6 +2058,7 @@ int card_magical_hack(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x004fb8fd
+// FUNCTION: SHANDALAR 0x004b59fb
 void FUN_004fb8fd(int player, int card, int color_from, unsigned char color_to)
 {
   int current_color;
@@ -2785,6 +2788,7 @@ int card_healing_salve(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x004fdfd8
+// FUNCTION: SHANDALAR 0x004b8102
 int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
 {
   card_instance_t *instance;

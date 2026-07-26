@@ -37,6 +37,7 @@ char s_Error_Opening_File__s_0040d2c0[] = "Error Opening File %s\r\n";
 char g_pcx_extension[] = ".pcx";
 
 // GLOBAL: FACEMAKER 0x0040d1b8
+// GLOBAL: SHANDALAR 0x005a1738
 unsigned char g_rpbits_palette_magic[5] = {'M', '1', 2, 3, 0};
 
 // GLOBAL: FACEMAKER 0x0041aa08
@@ -52,18 +53,22 @@ typedef struct RpBitsOutputHeader
 } RpBitsOutputHeader;
 
 // GLOBAL: FACEMAKER 0x0041a9f0
+// GLOBAL: SHANDALAR 0x0073b868
 int g_rpbits_bit_accumulator;
 
 // GLOBAL: FACEMAKER 0x0041a9f4
+// GLOBAL: SHANDALAR 0x0073b86c
 int g_rpbits_code_bits;
 
 // GLOBAL: FACEMAKER 0x0041a9f8
+// GLOBAL: SHANDALAR 0x0073b870
 int g_rpbits_bit_count;
 
 // GLOBAL: FACEMAKER 0x0041aa00
 RpBitsOutputHeader g_rpbits_header;
 
 // GLOBAL: FACEMAKER 0x0041aa0c
+// GLOBAL: SHANDALAR 0x0073b884
 int g_rpbits_output_fd;
 
 // GLOBAL: FACEMAKER 0x0041aa10
@@ -76,6 +81,7 @@ int g_rpbits_prev_code;
 int g_rpbits_output_bytes;
 
 // GLOBAL: FACEMAKER 0x0041aa1c
+// GLOBAL: SHANDALAR 0x0073b894
 int g_rpbits_dict_table;
 
 // GLOBAL: FACEMAKER 0x0041aa20
@@ -94,6 +100,7 @@ unsigned char g_rpbits_symbol_buffer[0x1000];
 unsigned char g_rpbits_bitstream_buffer[0x200];
 
 // GLOBAL: FACEMAKER 0x00423330
+// GLOBAL: SHANDALAR 0x0097f990
 int *g_rpbits_dict_entry_ptr;
 
 void RpBitsEncodeSymbol(int param_1);

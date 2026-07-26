@@ -1873,6 +1873,7 @@ int card_clockwork_avian(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0041c752
+// FUNCTION: SHANDALAR 0x0051ef70
 int FUN_0041c752(int player, int card, int event, int amount)
 {
   unsigned int special_counters;
@@ -2308,6 +2309,7 @@ int card_sunglasses_of_urza(int player, int card, event_t event)
 
 // FUNCTION: MOK 0x00427740
 // FUNCTION: MAGIC 0x0041f4c0
+// FUNCTION: SHANDALAR 0x00521cd0
 int helper_mox(int player, int card, event_t event, int color)
 {
   if (event == EVENT_CAN_ACTIVATE)

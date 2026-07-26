@@ -59,6 +59,7 @@ HDC global_screen_dc = (HDC)0x0;
 // GLOBAL: CARDARTLIB 0x1001d240
 // GLOBAL: DRAWCARDLIB 0x10021030
 // GLOBAL: DECKDLL 0x10031930
+// GLOBAL: SHANDALAR 0x00581ea0
 int g_octree_depth_max = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x1001d244
@@ -76,16 +77,19 @@ undefined4 global_diff_squared_initialized = 0x00000000;
 // GLOBAL: CARDARTLIB 0x1001d24c
 // GLOBAL: DRAWCARDLIB 0x1002103c
 // GLOBAL: DECKDLL 0x1003193c
+// GLOBAL: SHANDALAR 0x00581eac
 undefined1 * global_PTR_BluePathBitsTable = global_BluePathBitsTable;
 
 // GLOBAL: CARDARTLIB 0x1001d250
 // GLOBAL: DRAWCARDLIB 0x10021040
 // GLOBAL: DECKDLL 0x10031940
+// GLOBAL: SHANDALAR 0x00581eb0
 undefined1 * global_PTR_GreenPathBitsTable = global_GreenPathBitsTable;
 
 // GLOBAL: CARDARTLIB 0x1001d254
 // GLOBAL: DRAWCARDLIB 0x10021044
 // GLOBAL: DECKDLL 0x10031944
+// GLOBAL: SHANDALAR 0x00581eb4
 undefined1 * global_PTR_RedPathBitsTable = global_RedPathBitsTable;
 
 // GLOBAL: CARDARTLIB 0x100209e0
@@ -136,11 +140,13 @@ undefined1 g_octree_path_tmp_alt[8];
 // GLOBAL: CARDARTLIB 0x10031eb8
 // GLOBAL: DRAWCARDLIB 0x10028f08
 // GLOBAL: DECKDLL 0x100f2c80
+// GLOBAL: SHANDALAR 0x005a8708
 int g_octree_leaf_count;
 
 // GLOBAL: CARDARTLIB 0x10031ec0
 // GLOBAL: DRAWCARDLIB 0x10028f10
 // GLOBAL: DECKDLL 0x100f2c88
+// GLOBAL: SHANDALAR 0x005a8710
 uint g_paletteRgbTable[0x100];
 
 // GLOBAL: CARDARTLIB 0x100322c0
@@ -151,6 +157,7 @@ undefined1 g_octree_path_tmp[8];
 // GLOBAL: CARDARTLIB 0x100322d4
 // GLOBAL: DRAWCARDLIB 0x10029324
 // GLOBAL: DECKDLL 0x100f309c
+// GLOBAL: SHANDALAR 0x005a8b24
 int g_octree_depth_current;
 
 // GLOBAL: CARDARTLIB 0x100ecb10
@@ -334,6 +341,7 @@ void checked_DeleteDC_DeleteObject(HDC dc,HGDIOBJ obj)
 // FUNCTION: DRAWCARDLIB 0x1000a885
 // FUNCTION: DECKDLL 0x100237c0
 // FUNCTION: MAGIC 0x00493f24
+// FUNCTION: SHANDALAR 0x004649c0
 BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 {
   BITMAP bm;
@@ -350,6 +358,7 @@ BOOL DrawBitmapToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap)
 // FUNCTION: DRAWCARDLIB 0x1000a8ed
 // FUNCTION: DECKDLL 0x10023828
 // FUNCTION: MAGIC 0x00493f8c
+// FUNCTION: SHANDALAR 0x00464a28
 BOOL DrawBitmapSubrectToRect(HDC dst_dc,const RECT *dst_rect,HBITMAP bitmap,int src_x,int src_y,
                                    int src_width,int src_height)
 {
@@ -634,6 +643,7 @@ void OctreeNode_CollectLeafIndices(OctNode *node,int out_base,int *out_index)
 // FUNCTION: DRAWCARDLIB 0x10001378
 // FUNCTION: DECKDLL 0x10009d33
 // FUNCTION: MAGIC 0x004b9fa3
+// FUNCTION: SHANDALAR 0x0042e2d3
 int OctreeNode_FinalizeSubtree(OctNode *node)
 {
   struct {
@@ -776,6 +786,7 @@ undefined4 InitOctreeBitTables(void)
 // FUNCTION: DRAWCARDLIB 0x100017a5
 // FUNCTION: DECKDLL 0x1000a169
 // FUNCTION: MAGIC 0x004ba3da
+// FUNCTION: SHANDALAR 0x0042e709
 undefined4 Octree_FindNearestColor(uint rgb_color)
 {
   struct {
@@ -954,6 +965,7 @@ int Octree_FlattenLeafValues(int *node,int *out_values)
 // This maybe shouldn't be in palette, it's not in DECKDLL
 // FUNCTION: CARDARTLIB 0x10005591
 // FUNCTION: DRAWCARDLIB 0x10001b41
+// FUNCTION: SHANDALAR 0x0042eaa5
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24,int height,int width,int row_padding)
 {
   struct {
@@ -1059,6 +1071,7 @@ int Palette_FindNearestEntryIndex(int target_r,int target_g,int target_b,byte *p
 // FUNCTION: DRAWCARDLIB 0x1000b00c
 // FUNCTION: DECKDLL 0x10025b00
 // FUNCTION: MAGIC 0x0049626e
+// FUNCTION: SHANDALAR 0x00466d01
 COLORREF GetPaletteColor(int index)
 {
   struct

@@ -32,18 +32,23 @@ void post_life_directive_action(int player);
 extern char global_base_directory[];
 
 // GLOBAL: MAGIC 0x0055e148
+// GLOBAL: SHANDALAR 0x0057f0e4
 int g_life_window_life_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e14c
+// GLOBAL: SHANDALAR 0x0057f0e8
 int g_life_window_poison_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e150
+// GLOBAL: SHANDALAR 0x0057f0ec
 int g_life_window_lich_window_long_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e154
+// GLOBAL: SHANDALAR 0x0057f0f0
 int g_life_window_bitmap_window_long_offset = 0xc;
 
 // GLOBAL: MAGIC 0x0055e158
+// GLOBAL: SHANDALAR 0x0057f0f4
 int g_magicgame_life_window_extra_bytes = 0x10;
 
 // GLOBAL: MAGIC 0x0057aa7c
@@ -71,36 +76,46 @@ char s__s_LIFE_liched_pic_0057aac4[0x14] = "%s\\LIFE_liched.pic";
 char s__s_Poison_pic_0057aad8[0x10] = "%s\\Poison.pic";
 
 // GLOBAL: MAGIC 0x0069e290
+// GLOBAL: SHANDALAR 0x005b7c78
 char g_life_menu_set_life_text[0x48];
 
 // GLOBAL: MAGIC 0x0069e2c4
+// GLOBAL: SHANDALAR 0x005b7cac
 COLORREF g_life_text_color;
 
 // GLOBAL: MAGIC 0x0069e2c8
+// GLOBAL: SHANDALAR 0x005b7cb0
 COLORREF g_life_shadow_color;
 
 // GLOBAL: MAGIC 0x0069e2cc
+// GLOBAL: SHANDALAR 0x005b7cb4
 HFONT g_life_font;
 
 // GLOBAL: MAGIC 0x0069e2d0
+// GLOBAL: SHANDALAR 0x005b7cb8
 HBITMAP g_life_poison_bitmap;
 
 // GLOBAL: MAGIC 0x0069e2d8
+// GLOBAL: SHANDALAR 0x005b7cc0
 char g_life_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x0069e2f4
+// GLOBAL: SHANDALAR 0x005b7cdc
 HMENU g_life_popup_menu;
 
 // GLOBAL: MAGIC 0x0069e2f8
+// GLOBAL: SHANDALAR 0x005b7ce0
 char g_life_menu_directive_format[0x68];
 
 // GLOBAL: MAGIC 0x0069e360
 int g_life_directive_packet[3];
 
 // GLOBAL: MAGIC 0x0069e370
+// GLOBAL: SHANDALAR 0x005b7d58
 char g_life_menu_directive_self_text[0x34];
 
 // GLOBAL: MAGIC 0x0069e3a4
+// GLOBAL: SHANDALAR 0x005b7d8c
 HBITMAP g_life_lich_bitmap;
 
 // FUNCTION: MAGIC 0x00449bbf
@@ -115,6 +130,7 @@ int is_invalid_duel_player(int player)
 }
 
 // FUNCTION: MAGIC 0x00449c4c
+// FUNCTION: SHANDALAR 0x004537cd
 int get_displayed_life_total(int player)
 {
   int result;
@@ -139,6 +155,7 @@ int get_displayed_life_total(int player)
 }
 
 // FUNCTION: MAGIC 0x00449cb2
+// FUNCTION: SHANDALAR 0x00453833
 int get_displayed_poison_total(int player)
 {
   int result;
@@ -163,6 +180,7 @@ int get_displayed_poison_total(int player)
 }
 
 // FUNCTION: MAGIC 0x00449d18
+// FUNCTION: SHANDALAR 0x00453899
 int get_displayed_lich_state(int player)
 {
   int result;
@@ -658,6 +676,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
 }
 
 // FUNCTION: MAGIC 0x004e2edd
+// FUNCTION: SHANDALAR 0x004cdcdc
 void post_life_directive_action(int player)
 {
   g_life_directive_packet[0] = 0;

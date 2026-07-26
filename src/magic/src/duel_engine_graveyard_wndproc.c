@@ -49,12 +49,15 @@ BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 int DAT_0055e00c;
 
 // GLOBAL: MAGIC 0x0055e010
+// GLOBAL: SHANDALAR 0x0057f10c
 int g_graveyard_card_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e014
+// GLOBAL: SHANDALAR 0x0057f110
 int g_graveyard_expanded_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e018
+// GLOBAL: SHANDALAR 0x0057f114
 int g_graveyard_bitmap_window_long_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e01c
@@ -64,6 +67,7 @@ int g_graveyard_window_extra_bytes = 0xc;
 int g_expanded_graveyard_window_extra_bytes = 0;
 
 // GLOBAL: MAGIC 0x0055e024
+// GLOBAL: SHANDALAR 0x0057f120
 int DAT_0055e024;
 
 // GLOBAL: MAGIC 0x0055e028
@@ -91,27 +95,34 @@ HBITMAP g_view_antes_background_bitmap;
 COLORREF g_view_antes_text_color;
 
 // GLOBAL: MAGIC 0x00637958
+// GLOBAL: SHANDALAR 0x00603a90
 char g_graveyard_menu_view_text[0x34];
 
 // GLOBAL: MAGIC 0x0063798c
 HBITMAP g_view_antes_label_bitmap;
 
 // GLOBAL: MAGIC 0x00637990
+// GLOBAL: SHANDALAR 0x00603ac8
 char g_graveyard_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x006379ac
+// GLOBAL: SHANDALAR 0x00603ae4
 HMENU g_graveyard_popup_menu;
 
 // GLOBAL: MAGIC 0x006379c0
+// GLOBAL: SHANDALAR 0x00603af8
 char g_graveyard_view_antes_opponent_text[0x68];
 
 // GLOBAL: MAGIC 0x00637920
+// GLOBAL: SHANDALAR 0x00603a58
 char g_graveyard_view_antes_player_text[0x38];
 
 // GLOBAL: MAGIC 0x00637a28
+// GLOBAL: SHANDALAR 0x00603b60
 char g_graveyard_menu_view_antes_text[0x38];
 
 // GLOBAL: MAGIC 0x00637a60
+// GLOBAL: SHANDALAR 0x00603b98
 char g_graveyard_menu_view_exile_text[0x34];
 
 extern int g_graveyard_card_window_long_offset;
@@ -120,6 +131,7 @@ extern int g_graveyard_bitmap_window_long_offset;
 extern int DAT_0055e024;
 
 // FUNCTION: MAGIC 0x00449ea5
+// FUNCTION: SHANDALAR 0x00453a26
 int copy_cached_graveyard_cards_and_get_count(void *cards, int player)
 {
   int result;
@@ -149,6 +161,7 @@ int copy_cached_graveyard_cards_and_get_count(void *cards, int player)
 }
 
 // FUNCTION: MAGIC 0x00449f48
+// FUNCTION: SHANDALAR 0x00453ac9
 int copy_cached_exile_cards_and_get_count(void *cards, int player)
 {
   int result;
@@ -223,12 +236,14 @@ int get_cached_top_graveyard_card_id(int player)
 }
 
 // FUNCTION: MAGIC 0x00451fc3
+// FUNCTION: SHANDALAR 0x0050eb13
 void destroy_expanded_graveyard_window(HWND hwnd)
 {
   DestroyWindow(hwnd);
 }
 
 // FUNCTION: MAGIC 0x00451bf9
+// FUNCTION: SHANDALAR 0x0050e749
 HWND create_expanded_graveyard_window(HWND hwnd, int show_graveyard)
 {
   struct
@@ -623,6 +638,7 @@ BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 }
 
 // FUNCTION: MAGIC 0x00452030
+// FUNCTION: SHANDALAR 0x0050eb80
 void show_view_antes_dialog(void)
 {
   DialogBoxParamA(g_app_instance, (LPCSTR)0xeb, g_duel_window_hwnd, dlgproc_ViewAntes, 0);

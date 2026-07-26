@@ -118,6 +118,7 @@ void AddJournalEntry(int entry_type, int entry_arg);
 int GetCardRarity(int card_id);
 
 // GLOBAL: MAGIC 0x008a9140
+// GLOBAL: SHANDALAR 0x008bd340
 OPENFILENAMEA g_duel_save_game_openfilename;
 
 // GLOBAL: MAGIC 0x00746368
@@ -182,6 +183,7 @@ extern int g_duel_cached_unk_008b44d0_player_1;
 extern int g_duel_cached_unk_008b44d0_player_0;
 
 // GLOBAL: MAGIC 0x0094ca2c
+// GLOBAL: SHANDALAR 0x00951be0
 HWND g_duel_toggleable_status_window_hwnd;
 
 extern int g_duel_cached_library_count_player_1;
@@ -213,9 +215,11 @@ int g_duel_main_window_closing;
 int g_duel_main_window_deferred_resize;
 
 // GLOBAL: MAGIC 0x0055e168
+// GLOBAL: SHANDALAR 0x0057f0f8
 int g_duel_window_userdata_player_offset;
 
 // GLOBAL: MAGIC 0x0055e16c
+// GLOBAL: SHANDALAR 0x0057f0fc
 int g_duel_window_userdata_card_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e170
@@ -225,9 +229,11 @@ int g_duel_window_userdata_8_offset = 8;
 int g_duel_window_userdata_snapshot_offset = 0xc;
 
 // GLOBAL: MAGIC 0x00939508
+// GLOBAL: SHANDALAR 0x0094d638
 int DAT_00939508;
 
 // GLOBAL: MAGIC 0x00789710
+// GLOBAL: SHANDALAR 0x007a04a0
 int DAT_00789710;
 
 // GLOBAL: MAGIC 0x0057ab6c
@@ -492,6 +498,7 @@ void notify_duel_action(int player, unsigned int value)
 }
 
 // FUNCTION: MAGIC 0x004488c5
+// FUNCTION: SHANDALAR 0x00452442
 int get_displayed_card_zone(int player, int card)
 {
   card_instance_t *instance;
@@ -526,6 +533,7 @@ int get_displayed_card_zone(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448999
+// FUNCTION: SHANDALAR 0x00452516
 unsigned int get_displayed_card_ui_flags(int player, int card)
 {
   card_instance_t *instance;
@@ -567,6 +575,7 @@ unsigned int get_displayed_card_ui_flags(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448bc6
+// FUNCTION: SHANDALAR 0x00452743
 void get_displayed_card_attachment(int *player_and_card, int player, int card)
 {
   card_instance_t *instance;
@@ -590,6 +599,7 @@ void get_displayed_card_attachment(int *player_and_card, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044a342
+// FUNCTION: SHANDALAR 0x00453ec5
 int is_attack_phase_window_enabled(void)
 {
   int result;
@@ -601,6 +611,7 @@ int is_attack_phase_window_enabled(void)
 }
 
 // FUNCTION: MAGIC 0x004e994f
+// FUNCTION: SHANDALAR 0x0050775c
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd)
 {
   HWND *card_windows;
@@ -650,12 +661,14 @@ int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, H
 }
 
 // FUNCTION: MAGIC 0x004d25fe
+// FUNCTION: SHANDALAR 0x00578bda
 LONG get_card_window_hidden_flag(HWND hwnd)
 {
   return GetWindowLongA(hwnd, 8);
 }
 
 // FUNCTION: MAGIC 0x004d153b
+// FUNCTION: SHANDALAR 0x00577b17
 int get_battlefield_card_stagger_offset(HWND hwnd)
 {
   int card;
@@ -671,6 +684,7 @@ int get_battlefield_card_stagger_offset(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x004e915a
+// FUNCTION: SHANDALAR 0x00506f72
 void reset_battlefield_layout_positions(HWND hwnd)
 {
   RECT rect;
@@ -697,6 +711,7 @@ void reset_battlefield_layout_positions(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x004e9256
+// FUNCTION: SHANDALAR 0x0050706e
 void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag)
 {
   int player;
@@ -809,6 +824,7 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
 }
 
 // FUNCTION: MAGIC 0x004e8e42
+// FUNCTION: SHANDALAR 0x00506c5a
 void resize_battlefield_child_card_windows(HWND hwnd)
 {
   struct
@@ -842,6 +858,7 @@ void resize_battlefield_child_card_windows(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x0048894d
+// FUNCTION: SHANDALAR 0x004cb522
 void layout_phase_display_window(HWND hwnd, LPRECT rect)
 {
   (void)hwnd;
@@ -1245,6 +1262,7 @@ int can_use_current_duel_selection(void)
 }
 
 // FUNCTION: MAGIC 0x00506240
+// FUNCTION: SHANDALAR 0x00411e30
 int pick_internal_card_from_list_dialog(char *prompt, int initial_card_id, int filter)
 {
   (void)prompt;
@@ -1260,12 +1278,14 @@ void show_opponent_library_window(int unused_color)
 }
 
 // FUNCTION: MAGIC 0x00464a28
+// FUNCTION: SHANDALAR 0x005224d9
 void show_player_library_window(int unused_color)
 {
   (void)unused_color;
 }
 
 // FUNCTION: MAGIC 0x0048a8ee
+// FUNCTION: SHANDALAR 0x004a657e
 void save_duel_interface_options_to_registry(void)
 {
 }
@@ -1403,6 +1423,7 @@ int get_primary_color_from_duel_deck(int player)
 }
 
 // FUNCTION: MAGIC 0x004dd719
+// FUNCTION: SHANDALAR 0x005443ca
 void apply_duel_backdrop_art(int player, int color, int variant)
 {
   struct
@@ -1577,6 +1598,7 @@ void apply_duel_backdrop_art(int player, int color, int variant)
 }
 
 // FUNCTION: MAGIC 0x004ee26e
+// FUNCTION: SHANDALAR 0x0050325f
 unsigned int load_gametype0(char *path)
 {
   (void)path;

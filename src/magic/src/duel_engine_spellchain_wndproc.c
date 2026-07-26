@@ -46,15 +46,19 @@ int handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 void restack_duel_child_windows(void);
 
 // GLOBAL: MAGIC 0x0055e03c
+// GLOBAL: SHANDALAR 0x0057f0d0
 int g_spell_chain_windows_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e040
+// GLOBAL: SHANDALAR 0x0057f0d4
 int g_spell_chain_count_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e044
+// GLOBAL: SHANDALAR 0x0057f0d8
 int g_spell_chain_window_extra_bytes = 8;
 
 // GLOBAL: MAGIC 0x00570f64
+// GLOBAL: SHANDALAR 0x00589be0
 int g_spell_chain_scrollbar_direction;
 
 // GLOBAL: MAGIC 0x00570f68
@@ -82,12 +86,14 @@ char s__WINBK_SpellMin_pic_00570ff0[] = "\\WINBK_SpellMin.pic";
 char s__duel_hlp_00571004[] = "\\duel.hlp";
 
 // GLOBAL: MAGIC 0x00571010
+// GLOBAL: SHANDALAR 0x00589c8c
 char s_empty_00571010[] = "";
 
 // GLOBAL: MAGIC 0x00571014
 char s_MAGICGAME_ScrollbarClass_00571014[] = "MAGICGAME_ScrollbarClass";
 
 // GLOBAL: MAGIC 0x00571030
+// GLOBAL: SHANDALAR 0x00589cac
 char s_empty_00571030[] = "";
 
 // GLOBAL: MAGIC 0x00571034
@@ -103,51 +109,67 @@ char s_Spell_Card_0057105c[] = "Spell Card";
 char s_MAGICGAME_CardClass_00571068[] = "MAGICGAME_CardClass";
 
 // GLOBAL: MAGIC 0x00637e58
+// GLOBAL: SHANDALAR 0x005b7ba8
 int g_spell_minimized_hwnd;
 
 // GLOBAL: MAGIC 0x00637e60
+// GLOBAL: SHANDALAR 0x005b7bb0
 char g_spell_chain_menu_minimize_text[0x1c];
 
 // GLOBAL: MAGIC 0x00637e7c
+// GLOBAL: SHANDALAR 0x005b7bcc
 COLORREF g_spell_chain_title_text_color;
 
 // GLOBAL: MAGIC 0x00637e80
+// GLOBAL: SHANDALAR 0x005b7bd0
 HPEN g_spell_chain_shadow_pen;
 
 // GLOBAL: MAGIC 0x00637e88
+// GLOBAL: SHANDALAR 0x005b7bd8
 char g_spell_chain_menu_help_text[0x20];
 
 // GLOBAL: MAGIC 0x00637ea8
+// GLOBAL: SHANDALAR 0x005b7bf8
 char g_spell_minimized_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x00637ec4
+// GLOBAL: SHANDALAR 0x005b7c14
 HMENU g_spell_minimized_popup_menu;
 
 // GLOBAL: MAGIC 0x00637ec8
+// GLOBAL: SHANDALAR 0x005b7c18
 HPEN g_spell_chain_dark_pen;
 
 // GLOBAL: MAGIC 0x00637ed0
+// GLOBAL: SHANDALAR 0x005b7c20
 RECT g_spell_chain_layout_rect;
 
 // GLOBAL: MAGIC 0x00637ee0
+// GLOBAL: SHANDALAR 0x005b7c30
 HBITMAP g_spell_chain_scrollbar_track_bitmap;
 
 // GLOBAL: MAGIC 0x00637ee4
+// GLOBAL: SHANDALAR 0x005b7c34
 HBITMAP g_spell_chain_scrollbar_thumb_bitmap;
 
 // GLOBAL: MAGIC 0x00637ee8
+// GLOBAL: SHANDALAR 0x005b7c38
 HBITMAP g_spell_minimized_background_bitmap;
 
 // GLOBAL: MAGIC 0x00637ef0
+// GLOBAL: SHANDALAR 0x005b7c40
 char g_spell_minimized_menu_restore_text[0x1c];
 
 // GLOBAL: MAGIC 0x00637f0c
+// GLOBAL: SHANDALAR 0x005b7c5c
 HBITMAP g_spell_chain_background_bitmap;
 
 // GLOBAL: MAGIC 0x00637f10
+// GLOBAL: SHANDALAR 0x005b7c60
 HBRUSH g_spell_chain_title_brush;
 
 // GLOBAL: MAGIC 0x00637f14
+// GLOBAL: SHANDALAR 0x005b7c64
 HPEN g_spell_chain_highlight_pen;
 
 // FUNCTION: MAGIC 0x0044a08e
@@ -244,6 +266,7 @@ int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x00488229
+// FUNCTION: SHANDALAR 0x004cadfe
 int find_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t entry, int start_index)
 {
   struct
@@ -273,6 +296,7 @@ int find_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t entry, int sta
 }
 
 // FUNCTION: MAGIC 0x004882d8
+// FUNCTION: SHANDALAR 0x004caead
 void remove_spell_chain_entry(HWND hwnd, int entry_index)
 {
   struct
@@ -311,6 +335,7 @@ void remove_spell_chain_entry(HWND hwnd, int entry_index)
 }
 
 // FUNCTION: MAGIC 0x00488425
+// FUNCTION: SHANDALAR 0x004caffa
 int spell_chain_entry_matches(spell_chain_window_entry_t window_entry, spell_chain_display_entry_t display_entry)
 {
   struct
@@ -336,6 +361,7 @@ int spell_chain_entry_matches(spell_chain_window_entry_t window_entry, spell_cha
 }
 
 // FUNCTION: MAGIC 0x004884a2
+// FUNCTION: SHANDALAR 0x004cb077
 int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, int insert_index)
 {
   struct
@@ -419,6 +445,7 @@ int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, 
 }
 
 // FUNCTION: MAGIC 0x004886db
+// FUNCTION: SHANDALAR 0x004cb2b0
 void destroy_spell_chain_target_windows(HWND hwnd, int entry_index)
 {
   struct
@@ -450,6 +477,7 @@ void destroy_spell_chain_target_windows(HWND hwnd, int entry_index)
 }
 
 // FUNCTION: MAGIC 0x004887c0
+// FUNCTION: SHANDALAR 0x004cb395
 int update_spell_chain_entry_targets(HWND hwnd, spell_chain_display_entry_t display_entry, int entry_index)
 {
   struct

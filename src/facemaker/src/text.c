@@ -32,15 +32,19 @@ int *g_sprite_blob_base;
 int *g_sprite_blob_cursor;
 
 // GLOBAL: FACEMAKER 0x004189b8
+// GLOBAL: SHANDALAR 0x00739818
 int g_resample_step_x;
 
 // GLOBAL: FACEMAKER 0x004189bc
+// GLOBAL: SHANDALAR 0x0073981c
 int g_resample_step_y;
 
 // GLOBAL: FACEMAKER 0x004189c0
+// GLOBAL: SHANDALAR 0x00739820
 int g_resample_clip_right;
 
 // GLOBAL: FACEMAKER 0x004189c8
+// GLOBAL: SHANDALAR 0x00739828
 int g_resample_first_dst_x_by_src_x[0x400];
 
 // GLOBAL: FACEMAKER 0x004199d0
@@ -62,6 +66,7 @@ int g_resample_clip_left;
 int g_resample_cached_width;
 
 // GLOBAL: FACEMAKER 0x004199e8
+// GLOBAL: SHANDALAR 0x0073a848
 int g_resample_src_x_for_dst_x[0x400];
 
 // GLOBAL: FACEMAKER 0x0041a9e8
@@ -87,6 +92,7 @@ char s_Can_not_load_more_than__d_fonts_0040d200[] = "Can not load more than %d f
 char s_File__s_could_not_be_opened__EXITING_0040c0b4[] = "File %s could not be opened: EXITING\r\n";
 
 // GLOBAL: FACEMAKER 0x0040c0b0
+// GLOBAL: SHANDALAR 0x005861c4
 char *PTR_s_File__s_could_not_be_opened__EXI_0040c0b0 = s_File__s_could_not_be_opened__EXITING_0040c0b4;
 
 // FUNCTION: SHANDALAR 0x0057a4e0

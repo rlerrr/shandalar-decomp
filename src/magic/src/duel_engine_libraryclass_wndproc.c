@@ -30,21 +30,27 @@ extern int is_invalid_duel_player(int player);
 extern LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 // GLOBAL: MAGIC 0x0055e0b8
+// GLOBAL: SHANDALAR 0x0057f098
 int g_library_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e0bc
+// GLOBAL: SHANDALAR 0x0057f09c
 int g_library_window_extra_bytes = 4;
 
 // GLOBAL: MAGIC 0x00638ac8
+// GLOBAL: SHANDALAR 0x005aa630
 char g_library_menu_help_text[0x1c];
 
 // GLOBAL: MAGIC 0x00638ae4
+// GLOBAL: SHANDALAR 0x005aa64c
 HMENU g_library_popup_menu;
 
 // GLOBAL: MAGIC 0x00638ae8
+// GLOBAL: SHANDALAR 0x005aa650
 HMENU g_library_submenu;
 
 // GLOBAL: MAGIC 0x00638af0
+// GLOBAL: SHANDALAR 0x005aa658
 char g_library_menu_count_text[0x20];
 
 // FUNCTION: MAGIC 0x00449feb

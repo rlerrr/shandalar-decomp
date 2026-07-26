@@ -20,6 +20,7 @@ int card_data_card(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0053aa74
+// FUNCTION: SHANDALAR 0x00488cc4
 unsigned int get_protections_from(int player, int card)
 {
   struct
@@ -189,6 +190,7 @@ int card_nafs_asp(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0053dfb5
+// FUNCTION: SHANDALAR 0x0048c204
 int FUN_0053dfb5(int player, int card)
 {
   struct
@@ -1014,6 +1016,7 @@ int card_ghost_ship(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0054276d
+// FUNCTION: SHANDALAR 0x004909b0
 int FUN_0054276d(int player, int card, event_t event, unsigned int color, int amount)
 {
   int can_activate;
@@ -1070,6 +1073,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
 }
 
 // FUNCTION: MAGIC 0x00542a2a
+// FUNCTION: SHANDALAR 0x00490c6d
 void FUN_00542a2a(int player, int card)
 {
   struct
@@ -2391,6 +2395,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0054ac4d
+// FUNCTION: SHANDALAR 0x00498e8a
 int FUN_0054ac4d(int player, int card, int damage_unused)
 {
   struct
@@ -2518,6 +2523,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
 }
 
 // FUNCTION: MAGIC 0x0054af10
+// FUNCTION: SHANDALAR 0x0049914d
 int FUN_0054af10(int player, int card, event_t event, int amount)
 {
   int source_player;
@@ -3191,6 +3197,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0054dccd
+// FUNCTION: SHANDALAR 0x0049bf0e
 int FUN_0054dccd(int player, int card)
 {
   int current_card;
@@ -3302,6 +3309,7 @@ int card_black_knight(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0054e470
+// FUNCTION: SHANDALAR 0x0049c6b1
 void FUN_0054e470(int player, int card, int color)
 {
   int test_player;

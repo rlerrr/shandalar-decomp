@@ -544,6 +544,7 @@ int card_animate_dead(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0051a41c
+// FUNCTION: SHANDALAR 0x004d1c03
 int process_card_enters_play(int player, int card)
 {
   int internal_card_id;
@@ -905,6 +906,7 @@ int card_steal_artifact(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0051bcf0
+// FUNCTION: SHANDALAR 0x004d34d6
 int FUN_0051bcf0(int player, int card, event_t event, unsigned int required_type)
 {
   struct
@@ -2581,6 +2583,7 @@ int card_lure(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0052460c
+// FUNCTION: SHANDALAR 0x004dbdfc
 int FUN_0052460c(int blocker_player, int blocker_card, int attacker_player, int attacker_card)
 {
   struct
@@ -3905,6 +3908,7 @@ int card_paralyze(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0052adf2
+// FUNCTION: SHANDALAR 0x004e25e6
 int FUN_0052adf2(int player, int card)
 {
   struct
@@ -4676,6 +4680,7 @@ int FUN_0052d761(int source_player, int source_card, int test_player, int test_c
 }
 
 // FUNCTION: MAGIC 0x0052d7a5
+// FUNCTION: SHANDALAR 0x004e4fa0
 int FUN_0052d7a5(int player, int card, int event, unsigned int trigger_flag)
 {
   if (event == EVENT_CAN_CAST)
@@ -4810,6 +4815,7 @@ int card_weakness(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0052dd74
+// FUNCTION: SHANDALAR 0x004e5571
 int FUN_0052dd74(int player, int card, event_t event, int power_modifier, int toughness_modifier)
 {
   int preferred_controller;
@@ -4970,6 +4976,7 @@ int card_white_ward(int player, int card, event_t event)
 
 // FUNCTION: MOK 0x004bc490
 // FUNCTION: MAGIC 0x0052e400
+// FUNCTION: SHANDALAR 0x004e5bfd
 int helper_ward(int player, int card, event_t event, int color)
 {
   card_instance_t *instance;
@@ -5691,6 +5698,7 @@ int card_co_p_green(int player, int card, event_t event)
 
 // FUNCTION: MOK 0x004bdc80
 // FUNCTION: MAGIC 0x00532bea
+// FUNCTION: SHANDALAR 0x004ea3e7
 int helper_circle_of_protection(int player, int card, event_t event, int color)
 {
   card_instance_t *instance;
@@ -6360,6 +6368,7 @@ int card_deathgrip(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x00534ddb
+// FUNCTION: SHANDALAR 0x004ec5d7
 int FUN_00534ddb(int player, int mode)
 {
   struct

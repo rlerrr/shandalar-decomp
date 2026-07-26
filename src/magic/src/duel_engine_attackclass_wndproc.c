@@ -71,15 +71,19 @@ extern int g_duel_window_userdata_card_offset;
 extern int g_duel_window_userdata_player_offset;
 
 // GLOBAL: MAGIC 0x0055e114
+// GLOBAL: SHANDALAR 0x0057f014
 int g_attackclass_data_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e118
+// GLOBAL: SHANDALAR 0x0057f018
 int g_attackclass_count_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e11c
+// GLOBAL: SHANDALAR 0x0057f01c
 int g_attackclass_window_extra_bytes = 8;
 
 // GLOBAL: MAGIC 0x00579ab4
+// GLOBAL: SHANDALAR 0x00585734
 int DAT_00579ab4 = 6;
 
 // GLOBAL: MAGIC 0x00579adc
@@ -116,12 +120,15 @@ char s_Card_in_attack_00579bb0[0x10] = "Card in attack";
 char s__duel_hlp_00579bd4[0xc] = "\\duel.hlp";
 
 // GLOBAL: MAGIC 0x00579be0
+// GLOBAL: SHANDALAR 0x00585860
 char DAT_00579be0[4] = "";
 
 // GLOBAL: MAGIC 0x00579c00
+// GLOBAL: SHANDALAR 0x00585880
 char DAT_00579c00[4] = "";
 
 // GLOBAL: MAGIC 0x00579c18
+// GLOBAL: SHANDALAR 0x00585898
 char DAT_00579c18[4] = "";
 
 // GLOBAL: MAGIC 0x00579c2c
@@ -176,30 +183,39 @@ char g_attack_minimized_menu_help_text[0x20];
 HMENU g_attack_minimized_popup_menu;
 
 // GLOBAL: MAGIC 0x0069c6a0
+// GLOBAL: SHANDALAR 0x005a9068
 HBITMAP DAT_0069c6a0;
 
 // GLOBAL: MAGIC 0x0069c6a4
+// GLOBAL: SHANDALAR 0x005a906c
 HPEN DAT_0069c6a4;
 
 // GLOBAL: MAGIC 0x0069c6a8
+// GLOBAL: SHANDALAR 0x005a9070
 HPEN DAT_0069c6a8;
 
 // GLOBAL: MAGIC 0x0069c6b4
+// GLOBAL: SHANDALAR 0x005a907c
 HBRUSH DAT_0069c6b4;
 
 // GLOBAL: MAGIC 0x0069c6b8
+// GLOBAL: SHANDALAR 0x005a9080
 HBITMAP g_attack_minimized_background_bitmap;
 
 // GLOBAL: MAGIC 0x0069c6bc
+// GLOBAL: SHANDALAR 0x005a9084
 HPEN DAT_0069c6bc;
 
 // GLOBAL: MAGIC 0x0069c6c0
+// GLOBAL: SHANDALAR 0x005a9088
 int DAT_0069c6c0;
 
 // GLOBAL: MAGIC 0x0069c6c8
+// GLOBAL: SHANDALAR 0x005a9090
 char g_attack_minimized_menu_restore_text[0x20];
 
 // GLOBAL: MAGIC 0x0069c6e8
+// GLOBAL: SHANDALAR 0x005a90b0
 HBITMAP DAT_0069c6e8;
 
 // FUNCTION: MAGIC 0x004d2ac0
@@ -378,6 +394,7 @@ void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x004d6b78
+// FUNCTION: SHANDALAR 0x004607dd
 int FUN_004d6b78(HWND hwnd, HWND *windows, int window_count)
 {
   int destroyed;
@@ -408,6 +425,7 @@ int FUN_004d6b78(HWND hwnd, HWND *windows, int window_count)
 }
 
 // FUNCTION: MAGIC 0x004e9751
+// FUNCTION: SHANDALAR 0x0050755e
 void FUN_004e9751(HWND parent_hwnd, HWND source_hwnd)
 {
   struct
