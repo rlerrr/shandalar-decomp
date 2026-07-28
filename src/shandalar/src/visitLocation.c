@@ -123,6 +123,7 @@ int MeasureTextLineWidth(char *text);
 int PopNormalizedQueuedKeyInput(void);
 int RunTextMenuAt(char *menu_text, int left_x, int top_y);
 int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
+int RunRightClickMenuAndQueueInput(void);
 void ClearInputAndWaitForMouseRelease(void);
 unsigned int WaitForInputEventUnlessBlocked(void);
 
@@ -2336,7 +2337,7 @@ loop:
     (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
     if ((g_mouse_button_down_mask & 2U) != 0)
     {
-      s.menu_context = RunStartupMenuAndQueueInput();
+      s.menu_context = RunRightClickMenuAndQueueInput();
 
       switch (s.menu_context)
       {

@@ -79,6 +79,10 @@ extern EncodedImage *g_world_magic_avatar_sprites[5];
 extern EncodedImage *g_worlds_extra_sprite_entries[4];
 extern int g_advfac64_load_state;
 
+#ifdef _DEBUG
+extern int g_debug_lair_event_type;
+#endif
+
 char *BuildCreatureNameWithArticle(int creature_type);
 char *BuildTownDisplayName(int town_index);
 char *FUN_00428783(unsigned int mana_mask);
@@ -1340,6 +1344,19 @@ void RunLairExplorationEvent(int color)
   EnsureAdvfac64Loaded(1);
 
 retry:
+#ifdef _DEBUG
+  if (g_debug_lair_event_type != -1)
+  {
+    s.event_type = g_debug_lair_event_type;
+    if (s.event_type < 5)
+    {
+      s.reward_card = s.event_type;
+      goto end;
+    }
+    AddJournalEntry(JOURNAL_ENTRY_RANDOM_EVENT, s.event_type);
+  }
+  else
+#endif
   if (((g_monster_timer >> 2) % 3) != 0)
   {
     s.event_type = color - 1;
@@ -1373,7 +1390,11 @@ retry:
     s.event_random_flag = 0;
   }
 
+#ifdef _DEBUG
+  if ((g_debug_lair_event_type == -1) && (g_next_duel_card_id != -1) && ((s.event_type == 0xb) || (s.event_type == 0x11)))
+#else
   if ((g_next_duel_card_id != -1) && ((s.event_type == 0xb) || (s.event_type == 0x11)))
+#endif
   {
     goto retry;
   }

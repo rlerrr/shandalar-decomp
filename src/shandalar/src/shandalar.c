@@ -499,6 +499,10 @@ int DAT_005873d4 = 0;
 // GLOBAL: SHANDALAR 0x0074cfe4
 int g_selected_save_slot_index;
 
+#ifdef _DEBUG
+int g_debug_lair_event_type = -1;
+#endif
+
 int InitLicenseSecretsFromRegistry(void);
 int LoadAdvStringsFile(const char *filename);
 int LoadTextSectionStringTable(const char *filename, const char *section, char **out_table, int max_entries, char *string_buf,
@@ -601,7 +605,7 @@ void RebuildDeckEntriesByCardGroup(void);
 void RefreshAdventureInterfaceLayout(void);
 int ConsumeUiTickCount(void);
 void RenderAdventureWorldScene(int world_x, int world_y, int world_state);
-int RunStartupMenuAndQueueInput(void);
+int RunRightClickMenuAndQueueInput(void);
 int QueuePendingMenuActionInput(void);
 void UpdateAdventureWorldInputAndMovement(void);
 void UpdateWorldLairAndMonsterSlots(void);
@@ -633,6 +637,10 @@ void destroy_create_fonts_resources(void);
 void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index);
 unsigned int __cdecl save_or_load_ver1(void);
 void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
+
+#ifdef _DEBUG
+void RunLairExplorationEvent(int color);
+#endif
 
 void DelayUiTicks(int param_1);
 int FUN_0056c705(int param_1);
@@ -927,7 +935,7 @@ opening_menu:
 
       if ((g_mouse_button_down_mask & 2U) != 0)
       {
-        RunStartupMenuAndQueueInput();
+        RunRightClickMenuAndQueueInput();
       }
       QueuePendingMenuActionInput();
 
@@ -4274,53 +4282,98 @@ void RefreshAdventureInterfaceLayout(void)
 }
 
 // FUNCTION: SHANDALAR 0x0055e1b2
-int RunStartupMenuAndQueueInput(void)
+int RunRightClickMenuAndQueueInput(void)
 {
-  int menu_x;
-  int menu_y;
-  int previous_font_slot;
-
-  previous_font_slot = PTR_DAT_005832b4->font_slot;
-  LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-  PTR_DAT_005832b4->font_slot = 4;
-  menu_x = ScaleUiCoordinate(0x40);
-  menu_y = ScaleUiCoordinate(0x50);
-
-  switch (RunTextMenuAt(text_lines[1], menu_y, menu_x))
+  struct
   {
-  case 0:
+    int menu_selection;
+    int previous_font_slot;
+    char *menu_text;
+  } s;
+
+  s.previous_font_slot = PTR_DAT_005832b4->font_slot;
+  LoadTextSectionLines("ADVstrings.txt", "STARTUP");
+  s.menu_text = text_lines[1];
+  PTR_DAT_005832b4->font_slot = 4;
+
+#ifdef _DEBUG
+  strcpy(g_ui_message_buffer, s.menu_text);
+  strcat(g_ui_message_buffer, " _Encounter Lair\n");
+  s.menu_text = g_ui_message_buffer;
+#endif
+  s.menu_selection = RunTextMenuAt(s.menu_text, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
+  switch (s.menu_selection + 1)
+  {
+  case 1:
     PushQueuedKeyInput(0x53);
     break;
-  case 1:
+  case 2:
     PushQueuedKeyInput(0x4c);
     break;
-  case 2:
+  case 3:
     PushQueuedKeyInput(0x51);
     break;
-  case 3:
+  case 4:
     PushQueuedKeyInput(0x3b00);
     break;
-  case 4:
+  case 5:
     PushQueuedKeyInput(0x3c00);
     break;
-  case 5:
+  case 6:
     PushQueuedKeyInput(0x3d00);
     break;
-  case 6:
+  case 7:
     PushQueuedKeyInput(0x3e00);
     break;
-  case 7:
+  case 8:
     PushQueuedKeyInput(0x3f00);
     break;
-  case 8:
+  case 9:
     PushQueuedKeyInput(0x4000);
     break;
+#ifdef _DEBUG
+  case 10:
+  {
+    int lair_index;
+    int lair_color;
+    strcpy(g_ui_message_buffer, "Encounter Lair\n");
+    for (lair_index = 0; lair_index < 0x13; lair_index = lair_index + 1)
+    {
+      strcat(g_ui_message_buffer, " ");
+      strcat(g_ui_message_buffer, gs_lair_names_0077c020[lair_index]);
+      strcat(g_ui_message_buffer, "\n");
+    }
+
+    lair_index = RunTextMenuAt(g_ui_message_buffer, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
+    if (lair_index != -1)
+    {
+      if (lair_index < 5)
+      {
+        lair_color = lair_index + 1;
+      }
+      else
+      {
+        lair_color = g_selected_wizard_color;
+        if ((lair_color < 1) || (lair_color > 5))
+        {
+          lair_color = 1;
+        }
+      }
+      g_debug_lair_event_type = lair_index;
+      RunLairExplorationEvent(lair_color);
+      g_debug_lair_event_type = -1;
+    }
+    RefreshAdventureInterfaceLayout();
+    break;
+  }
+#endif
   default:
     RefreshAdventureInterfaceLayout();
     break;
   }
 
-  PTR_DAT_005832b4->font_slot = previous_font_slot;
+  PTR_DAT_005832b4->font_slot = s.previous_font_slot;
+  return s.menu_selection + 1;
 }
 
 // FUNCTION: SHANDALAR 0x0055e651
