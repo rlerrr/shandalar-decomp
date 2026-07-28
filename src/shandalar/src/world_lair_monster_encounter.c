@@ -1357,7 +1357,8 @@ retry:
   }
   else
 #endif
-  if (((g_monster_timer >> 2) % 3) != 0)
+
+      if (((g_monster_timer >> 2) % 3) != 0)
   {
     s.event_type = color - 1;
     if (RandomIntLessThan(2) != 0)
@@ -1481,11 +1482,13 @@ retry:
                   gs_amuletnames_0077d090[s.i + 1], g_amulet_inventory[s.i]);
         }
         s.menu_selection = RunTextMenuAt(g_ui_message_buffer, 0x5a, 100);
-        if ((s.menu_selection > 0) && (Gold >= 200))
+        if ((s.menu_selection <= 0) || (Gold < 200))
         {
-          Gold -= 200;
-          g_amulet_inventory[s.menu_selection - 1]++;
+          break;
         }
+
+        Gold -= 200;
+        g_amulet_inventory[s.menu_selection - 1]++;
       } while (Gold >= 200);
       break;
     case 0xd:
