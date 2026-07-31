@@ -86,11 +86,11 @@ void __cdecl DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, in
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x00603a34
-int g_adv_menu_selected_value = 0;
+int g_adv_menu_selected_value;
 // GLOBAL: SHANDALAR 0x00603a38
-int g_city_info_strings_loaded = 0;
+int g_city_info_strings_loaded;
 // GLOBAL: SHANDALAR 0x00603a48
-int *g_city_info_heading_strings = (int *)0;
+int *g_city_info_heading_strings;
 
 // GLOBAL: SHANDALAR 0x00746e60
 EncodedImage *g_city_info_done_button_sprites[3];
@@ -98,7 +98,7 @@ EncodedImage *g_city_info_done_button_sprites[3];
 EncodedImage *g_city_info_scroll_button_sprites[0x10];
 
 // GLOBAL: SHANDALAR 0x007894f4
-int g_reveal_all_world_info = 0;
+int g_reveal_all_world_info;
 
 // GLOBAL: SHANDALAR 0x00581918
 int g_wizard_text_colors[0x10] = {

@@ -125,7 +125,7 @@ int DAT_007ab2c0;
 int DAT_00925d2c;
 
 // GLOBAL: MAGIC 0x0056ef74
-HWND DAT_0056ef74;
+HWND DAT_0056ef74 = (HWND)0;
 
 int InitLicenseSecretsFromRegistry(void);
 char *CsvParseNextField(char **txt);

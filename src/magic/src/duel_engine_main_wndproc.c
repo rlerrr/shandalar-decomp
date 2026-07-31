@@ -202,7 +202,7 @@ HANDLE g_duel_thread_handle;
 
 // GLOBAL: MAGIC 0x00579f24
 // GLOBAL: SHANDALAR 0x0058f654
-int g_duel_main_window_minimized;
+int g_duel_main_window_minimized = 0;
 
 // GLOBAL: MAGIC 0x008b3bcc
 // GLOBAL: SHANDALAR 0x008c7d4c
@@ -264,11 +264,11 @@ int g_duel_main_window_closing;
 
 // GLOBAL: MAGIC 0x00579f20
 // GLOBAL: SHANDALAR 0x0058f650
-int g_duel_main_window_deferred_resize;
+int g_duel_main_window_deferred_resize = 0;
 
 // GLOBAL: MAGIC 0x0055e168
 // GLOBAL: SHANDALAR 0x0057f0f8
-int g_duel_window_userdata_player_offset;
+int g_duel_window_userdata_player_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e16c
 // GLOBAL: SHANDALAR 0x0057f0fc
@@ -290,7 +290,7 @@ int DAT_00939508;
 int DAT_00789710;
 
 // GLOBAL: MAGIC 0x0057ab6c
-int DAT_0057ab6c;
+int DAT_0057ab6c = 0;
 
 // GLOBAL: MAGIC 0x008b2878
 int g_battlefield_land_x[2];

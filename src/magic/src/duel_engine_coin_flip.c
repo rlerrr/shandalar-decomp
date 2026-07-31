@@ -86,7 +86,7 @@ COLORREF g_coin_flip_dialog_button_normal_color;
 COLORREF g_coin_flip_dialog_button_focus_color;
 
 // GLOBAL: MAGIC 0x005726a0
-HWND g_coin_flip_animation_mci_hwnd;
+HWND g_coin_flip_animation_mci_hwnd = (HWND)0;
 
 // GLOBAL: MAGIC 0x00638b7c
 HBRUSH g_coin_flip_animation_dialog_brush;

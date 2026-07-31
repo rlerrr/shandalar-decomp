@@ -61,7 +61,7 @@ int g_spell_chain_window_extra_bytes = 8;
 
 // GLOBAL: MAGIC 0x00570f64
 // GLOBAL: SHANDALAR 0x00589be0
-int g_spell_chain_scrollbar_direction;
+int g_spell_chain_scrollbar_direction = 3;
 
 // GLOBAL: MAGIC 0x00570f68
 char s_SpellMinimized_00570f68[] = "SpellMinimized";

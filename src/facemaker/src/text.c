@@ -89,6 +89,7 @@ char s_D__NewMagic__sources__sidlib__text_c_0040d228[] = "D:\\NewMagic\\sources\
 char s_Can_not_load_more_than__d_fonts_0040d200[] = "Can not load more than %d fonts\n";
 
 // GLOBAL: FACEMAKER 0x0040c0b4
+// GLOBAL: SHANDALAR 0x005861c8
 char s_File__s_could_not_be_opened__EXITING_0040c0b4[] = "File %s could not be opened: EXITING\r\n";
 
 // GLOBAL: FACEMAKER 0x0040c0b0

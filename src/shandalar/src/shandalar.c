@@ -3685,7 +3685,7 @@ char *BuildResolutionSpritePath(char *sprite_filename)
 void LoadOpeningMenuSpriteResources(void)
 {
   // GLOBAL: SHANDALAR 0x005892b0
-  static int gender_map[] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+  static int gender_map[] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0};
 
   struct
   {

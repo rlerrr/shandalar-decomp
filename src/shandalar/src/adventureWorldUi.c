@@ -85,7 +85,7 @@ int g_world_ui_cached_next_duel_life_delta = 0;
 // GLOBAL: SHANDALAR 0x005907a4
 int g_world_ui_cached_next_duel_card_id = -1;
 // GLOBAL: SHANDALAR 0x0078cee0
-int g_current_quest_giver_town_index = -1;
+int g_current_quest_giver_town_index;
 // GLOBAL: SHANDALAR 0x00590808
 unsigned char g_castle_sprite_lookup_by_tile_class[0x40] = {
     0x08,

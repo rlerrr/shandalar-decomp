@@ -177,17 +177,33 @@ GLOBAL_OTHERS_EXTERN int _DAT_0064f0a8;
 // GLOBAL: MAGIC 0x00637558
 GLOBAL_OTHERS_EXTERN int recorded_mana_payments[10][7];
 
+#ifdef GLOBALS_OTHERS_IMPL
+int mana_payment_record_depth = 0;
+#else
 // GLOBAL: MAGIC 0x005607e0
 GLOBAL_OTHERS_EXTERN int mana_payment_record_depth;
+#endif
 
+#ifdef GLOBALS_OTHERS_IMPL
+int affected_card_context_depth = 0;
+#else
 // GLOBAL: MAGIC 0x00561268
 GLOBAL_OTHERS_EXTERN int affected_card_context_depth;
+#endif
 
+#ifdef GLOBALS_OTHERS_IMPL
+int DAT_00561390 = 0;
+#else
 // GLOBAL: MAGIC 0x00561390
 GLOBAL_OTHERS_EXTERN int DAT_00561390;
+#endif
 
+#ifdef GLOBALS_OTHERS_IMPL
+char empty_duel_prompt_text[1] = "";
+#else
 // GLOBAL: MAGIC 0x0056e494
 GLOBAL_OTHERS_EXTERN char empty_duel_prompt_text[1];
+#endif
 
 // GLOBAL: MAGIC 0x00939344
 GLOBAL_OTHERS_EXTERN HWND unk_00939344;
@@ -235,7 +251,6 @@ GLOBAL_OTHERS_EXTERN char ai_action_dialog_number_buffer[12];
 // GLOBAL: MAGIC 0x0092674c
 GLOBAL_OTHERS_EXTERN int g_waiting_for_network_packet;
 
-
 // GLOBAL: MAGIC 0x0093f9c0
 GLOBAL_OTHERS_EXTERN int unk_0093f9c0;
 
@@ -244,7 +259,6 @@ GLOBAL_OTHERS_EXTERN int affected_card_context_stack[32][10];
 
 // GLOBAL: MAGIC 0x0093f4b4
 GLOBAL_OTHERS_EXTERN int unk_0093f4b4;
-
 
 // GLOBAL: MAGIC 0x00925030
 GLOBAL_OTHERS_EXTERN HINSTANCE g_app_instance;
@@ -258,23 +272,47 @@ GLOBAL_OTHERS_EXTERN int unk_00939530[2][8];
 // GLOBAL: MAGIC 0x008cdab4
 GLOBAL_OTHERS_EXTERN int DAT_008cdab4;
 
+#ifdef GLOBALS_OTHERS_IMPL
+int unk_0057a75c = 0;
+#else
 // GLOBAL: MAGIC 0x0057a75c
 GLOBAL_OTHERS_EXTERN int unk_0057a75c;
+#endif
 
+#ifdef GLOBALS_OTHERS_IMPL
+int ai_recorded_action_type = 0;
+#else
 // GLOBAL: MAGIC 0x0057aae8
 GLOBAL_OTHERS_EXTERN int ai_recorded_action_type;
+#endif
 
+#if defined(GLOBALS_OTHERS_IMPL) && defined(MAGIC)
 // GLOBAL: MAGIC 0x0057d9f0
+int global_screen_width = 0x280;
+#else
 GLOBAL_OTHERS_EXTERN int global_screen_width;
+#endif
 
+#if defined(GLOBALS_OTHERS_IMPL) && defined(MAGIC)
 // GLOBAL: MAGIC 0x0057d9f4
+int global_screen_height = 0x1e0;
+#else
 GLOBAL_OTHERS_EXTERN int global_screen_height;
+#endif
 
+#ifdef GLOBALS_OTHERS_IMPL
 // GLOBAL: MAGIC 0x0057f758
+char unk_0057f758[4] = {0x7c, 0x23, 0, 0};
+#else
 GLOBAL_OTHERS_EXTERN char unk_0057f758[4];
+#endif
 
+#ifdef GLOBALS_OTHERS_IMPL
 // GLOBAL: MAGIC 0x0057f75c
+char unk_0057f75c[4] = {0x7c, 0x23, 0, 0};
+#else
 GLOBAL_OTHERS_EXTERN char unk_0057f75c[4];
+#endif
 
 // GLOBAL: MAGIC 0x00637670
 GLOBAL_OTHERS_EXTERN char g_dialog_card_title_buffer[0x68];
@@ -392,8 +430,12 @@ GLOBAL_OTHERS_EXTERN int g_duel_timer_id;
 // GLOBAL: MAGIC 0x0094ca30
 GLOBAL_OTHERS_EXTERN HWND DAT_0094ca30;
 
+#ifdef GLOBALS_OTHERS_IMPL
+int DAT_0055e17c = 0;
+#else
 // GLOBAL: MAGIC 0x0055e17c
 GLOBAL_OTHERS_EXTERN int DAT_0055e17c;
+#endif
 
 // GLOBAL: SHANDALAR 0x007483f0
 // GLOBAL: MAGIC 0x0074b630
@@ -401,4 +443,3 @@ GLOBAL_OTHERS_EXTERN int DAT_007483f0;
 
 #undef GLOBAL_OTHERS_EXTERN
 #endif
-

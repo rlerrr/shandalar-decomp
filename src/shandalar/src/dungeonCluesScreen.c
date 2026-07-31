@@ -496,9 +496,9 @@ void DrawAdventureCardSized(int card_index, int x, int y, int width, int height,
  */
 
 // GLOBAL: SHANDALAR 0x00603a3c
-int g_dungeon_clues_list_strings_loaded = 0;
+int g_dungeon_clues_list_strings_loaded;
 // GLOBAL: SHANDALAR 0x00603a40
-int *g_dungeon_clues_list_strings = (int *)0;
+int *g_dungeon_clues_list_strings;
 
 // GLOBAL: SHANDALAR 0x00746e20
 DungeonCluesListSpriteStorage g_dungeon_clues_list_sprite_storage;
@@ -514,7 +514,7 @@ AdvMenuControl g_dungeon_clues_list_controls[3] = {
 };
 
 // GLOBAL: SHANDALAR 0x0058c804
-int DAT_0058c804 = 0;
+int DAT_0058c804 = 1;
 
 // GLOBAL: SHANDALAR 0x0058c808
 unsigned char g_dungeon_clues_castle_sprite_lookup_by_tile_class[0x18] = {
@@ -597,9 +597,9 @@ char s_ADVstrings_txt_0058cb60[] = "ADVstrings.txt";
  */
 
 // GLOBAL: SHANDALAR 0x00603a44
-int *g_dungeon_clue_detail_strings = (int *)0;
+int *g_dungeon_clue_detail_strings;
 // GLOBAL: SHANDALAR 0x00603a4c
-int g_dungeon_clue_detail_strings_loaded = 0;
+int g_dungeon_clue_detail_strings_loaded;
 
 // GLOBAL: SHANDALAR 0x00746e10
 EncodedImage *g_dungeon_clue_detail_done_button_sprites[3];

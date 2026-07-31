@@ -82,7 +82,7 @@ static int g_adventure_list_record_extra_values[256];
 static int g_adventure_list_selection_record_count;
 
 // GLOBAL: SHANDALAR 0x00589a38
-static int g_adventure_list_selection_extra_value;
+static int g_adventure_list_selection_extra_value = 0;
 
 // FUNCTION: SHANDALAR 0x004c4181
 void record_adventure_list_ai_choice(void)

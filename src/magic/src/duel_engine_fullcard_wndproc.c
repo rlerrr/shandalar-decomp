@@ -70,7 +70,7 @@ int g_full_card_window_extra_bytes = 0x14;
 
 // GLOBAL: MAGIC 0x0057f440
 // GLOBAL: SHANDALAR 0x005a0d94
-int g_full_card_preview_repositioned;
+int g_full_card_preview_repositioned = 0;
 
 // GLOBAL: MAGIC 0x00708b10
 // GLOBAL: SHANDALAR 0x00732188

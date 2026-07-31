@@ -21,7 +21,7 @@ char packet_names_0057cba8[20][20] = {
     "QUESTIONMANA",  "GRABMANA",        "XPOOL",      "CHEATCARD",     "PHASESTOPPER"};
 
 // GLOBAL: MAGIC 0x0057d440
-char gs_player_receiving_packet_0057d440[] = "Player %d is receiving a %s packet. This is packet number %d.\n\n";
+char gs_player_receiving_packet_0057d440[] = "Player %d is receiving a %s packet. This is packet number %d.\n";
 
 // GLOBAL: MAGIC 0x0057d480
 char gs_packet_error_0057d480[] = "Packet Error";

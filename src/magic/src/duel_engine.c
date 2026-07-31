@@ -63,21 +63,21 @@ LOGFONTA *LoadFontFromIni(char *section, int must_load);
 
 // GLOBAL: MAGIC 0x0055fcb4
 // GLOBAL: SHANDALAR 0x00582d94
-int g_duel_directive_hover_timer_id;
+int g_duel_directive_hover_timer_id = 0;
 
 // GLOBAL: MAGIC 0x00573068
 // GLOBAL: SHANDALAR 0x00589d60
-HWND g_duel_last_cue_card_hwnd;
+HWND g_duel_last_cue_card_hwnd = (HWND)0;
 
 // GLOBAL: MAGIC 0x0057306c
-int DAT_0057306c;
+int DAT_0057306c = 0;
 
 // GLOBAL: MAGIC 0x00573070
 // GLOBAL: SHANDALAR 0x00589d68
-int g_duel_last_cue_card_x;
+int g_duel_last_cue_card_x = 0;
 
 // GLOBAL: MAGIC 0x00573074
-int g_duel_last_cue_card_y;
+int g_duel_last_cue_card_y = 0;
 
 // GLOBAL: MAGIC 0x00573078
 char s_CueCard_00573078[8] = "CueCard";
@@ -140,11 +140,11 @@ int g_palette_selected_color_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x005707b0
 // GLOBAL: SHANDALAR 0x005854b8
-int g_palette_grid_y_offset;
+int g_palette_grid_y_offset = 0;
 
 // GLOBAL: MAGIC 0x005707ac
 // GLOBAL: SHANDALAR 0x005854b4
-int g_palette_grid_x_offset;
+int g_palette_grid_x_offset = 0;
 
 // GLOBAL: MAGIC 0x005710cc
 char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
@@ -169,19 +169,19 @@ char s_LISTBOX_005601a8[8] = "LISTBOX";
 // GLOBAL: SHANDALAR 0x00580680
 const char *g_duel_sound_filenames[] = {
     "artifact.wav", "buried.wav", "draw.wav", "enchant.wav", "endphase.wav",
-    "endturn.wav", "instant.wav", "interupt.wav", "grey.wav", "black.wav",
-    "blue.wav", "green.wav", "red.wav", "white.wav", "lifeloss.wav",
+    "endturn.wav", "instant.wav", "interupt.wav", "GREY.wav", "BLACK.wav",
+    "BLUE.wav", "GREEN.wav", "RED.wav", "WHITE.wav", "lifeloss.wav",
     "sacrfice.wav", "sorcery.wav", "summon.wav", "tap.wav", "untap.wav",
     "attack2.wav", "block2.wav", "damage.wav", "destroy.wav", "discard.wav",
-    "kill.wav", "regen.wav", "blackred.wav", "greenblack.wav", "whitered.wav",
-    "whitegreen.wav", "blackwhite.wav", "greenred.wav", "greenblue.wav", "whiteblue.wav",
-    "blueblack.wav", "redblue.wav", "counter.wav", "fastfx.wav", "changec.wav",
+    "kill.wav", "regen.wav", "BLACKRED.wav", "GREENBLACK.wav", "WHITERED.wav",
+    "WHITEGREEN.wav", "BLACKWHITE.wav", "GREENRED.wav", "GREENBLUE.wav", "WHITEBLUE.wav",
+    "BLUEBLACK.wav", "REDBLUE.wav", "counter.wav", "fastfx.wav", (char *)0, "changec.wav",
     "changet.wav", "control.wav", "manaburn.wav", "shuffle.wav", "shell_loseduel.wav",
-    "shell_winduel.wav", "aswanjag.wav", "callgrav.wav", "faerdrag.wav", "gembazar.wav",
+    "shell_winduel.wav", (char *)0, "aswanjag.wav", "callgrav.wav", "faerdrag.wav", "gembazar.wav",
     "necrazar.wav", "polkamix.wav", "pandora.wav", "prsmdrag.wav", "pwrstrgl.wav",
     "catatap.wav", "orcart.wav", "whimsy.wav", "rainbowk.wav", "toss.wav",
     "shell_shandalar.wav", "shell_tooltime.wav", "shell_helpme.wav", "shell_hallofrecords.wav",
-    "shell_duelmenow.wav", "exp1_openfoil.wav", "exp1_openbox.wav", "exp1_outofpack.wav",
+    "shell_duelmenow.wav", (char *)0, "exp1_openfoil.wav", "exp1_openbox.wav", "exp1_outofpack.wav",
     "exp1_backinpack.wav"};
 
 // GLOBAL: MAGIC 0x00637554

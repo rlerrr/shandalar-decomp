@@ -332,7 +332,7 @@ int ai_castable_phase_mask;
 int ai_activatable_phase_mask;
 
 // GLOBAL: MAGIC 0x0057aaec
-int ai_search_candidate_offset;
+int ai_search_candidate_offset = 0;
 
 // GLOBAL: MAGIC 0x0057dd20
 int DAT_0057dd20[16] = {4, 4, 4, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};

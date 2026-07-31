@@ -24,7 +24,7 @@ static char *s_sealed_deck_registry_path_005710e0 = "Software\\MicroProse\\Magic
 // GLOBAL: MAGIC 0x005710ec
 static char *s_solo_options_registry_path_00571284 = "Software\\MicroProse\\Magic: The Gathering\\SoloOptions";
 // GLOBAL: MAGIC 0x005710f4
-static char *s_gauntlet_options_registry_path_00571338 = "Software\\MicroProse\\Magic: The Gathering\\GauntletOptions";
+static char *s_gauntlet_options_registry_path_00571338 = "Software\\MicroProse\\Magic: The Gathering\\GauntletEx1Options";
 
 // FUNCTION: MAGIC 0x004a5a1b
 // FUNCTION: SHANDALAR 0x00557b9b
@@ -921,7 +921,7 @@ unsigned int load_duel_save_file_ver1(char *path)
   {
     return 0;
   }
-  
+
   global_saveload_loading = 1;
   save_or_load_ver1();
   _close(g_save_file_fd);

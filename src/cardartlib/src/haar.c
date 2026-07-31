@@ -68,6 +68,7 @@ undefined1 g_ditherKernelTable[0xd80] = {
 
 // GLOBAL: CARDARTLIB 0x10031aa0
 // GLOBAL: DRAWCARDLIB 0x10028af0
+// GLOBAL: SHANDALAR 0x005a82f0
 undefined1 g_u8ClampTableStorage[0x400];
 
 // GLOBAL: CARDARTLIB 0x1001e058
@@ -1369,4 +1370,3 @@ uint * Wvl_DecodeToBgr24(byte *param_1,WvlEntry *wvl_entry,int width,int height)
 
   return (uint *)s.out_base;
 }
-

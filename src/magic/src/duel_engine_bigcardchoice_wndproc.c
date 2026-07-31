@@ -21,23 +21,23 @@ extern int g_big_card_choice_timeout_ms;
 
 // GLOBAL: MAGIC 0x0055e19c
 // GLOBAL: SHANDALAR 0x0057f0b8
-int g_big_card_choice_font_window_long_offset = 8;
+int g_big_card_choice_font_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e1a0
 // GLOBAL: SHANDALAR 0x0057f0bc
-int g_big_card_choice_items_window_long_offset = 0xc;
+int g_big_card_choice_items_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e1a4
 // GLOBAL: SHANDALAR 0x0057f0c0
-int g_big_card_choice_count_window_long_offset = 0;
+int g_big_card_choice_count_window_long_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e1a8
 // GLOBAL: SHANDALAR 0x0057f0c4
-int g_big_card_choice_selected_window_long_offset = 0x10;
+int g_big_card_choice_selected_window_long_offset = 0xc;
 
 // GLOBAL: MAGIC 0x0055e1ac
 // GLOBAL: SHANDALAR 0x0057f0c8
-int g_big_card_choice_mode_window_long_offset = 4;
+int g_big_card_choice_mode_window_long_offset = 0x10;
 
 // GLOBAL: MAGIC 0x0055e1b0
 // GLOBAL: SHANDALAR 0x0057f0cc

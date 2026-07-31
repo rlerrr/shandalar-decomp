@@ -45,7 +45,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
 BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 // GLOBAL: MAGIC 0x0055e00c
-int DAT_0055e00c;
+int DAT_0055e00c = 0;
 
 // GLOBAL: MAGIC 0x0055e010
 // GLOBAL: SHANDALAR 0x0057f10c
@@ -67,7 +67,7 @@ int g_expanded_graveyard_window_extra_bytes = 0;
 
 // GLOBAL: MAGIC 0x0055e024
 // GLOBAL: SHANDALAR 0x0057f120
-int DAT_0055e024;
+int DAT_0055e024 = 0;
 
 // GLOBAL: MAGIC 0x0055e028
 int g_graveyard_cards_window_extra_bytes = 4;
@@ -76,7 +76,7 @@ int g_graveyard_cards_window_extra_bytes = 4;
 char s_MENU_GRAVEYARD_0056e9e0[0x10] = "MENU_GRAVEYARD";
 
 // GLOBAL: MAGIC 0x0056e9f0
-char s_DIALOG_VIEWANTES_0056e9f0[0x18] = "DIALOG_VIEWANTES";
+char s_DIALOG_VIEWANTES_0056e9f0[0x14] = "DIALOG_VIEWANTES";
 
 // GLOBAL: MAGIC 0x0056ea04
 char s__duel_hlp_0056ea04[0xc] = "\\duel.hlp";

@@ -130,7 +130,7 @@ char s__d__Entering_End_Turn_Phase__0056e948[0x1f] = "%d: Entering End Turn Phas
 char s__d__Entering_AI_Decision_Phase__0056e968[0x24] = "%d: Entering AI Decision Phase.\n";
 
 // GLOBAL: MAGIC 0x0056e98c
-char s_phase___3d_num_tries___4d_mtime___0056e98c[0x32] = "phase = %3d num tries = %4d mtime = %4d, %d\n";
+char s_phase___3d_num_tries___4d_mtime___0056e98c[0x30] = "phase: %3d num tries: %4d mtime %4d calls %d\n";
 
 // GLOBAL: MAGIC 0x009251d4
 // GLOBAL: SHANDALAR 0x00939304

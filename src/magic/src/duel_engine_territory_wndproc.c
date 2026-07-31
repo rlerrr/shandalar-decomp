@@ -83,19 +83,19 @@ char s_DRAWRESPONSE_0057aba4[0x10] = "DRAWRESPONSE";
 char s_MP_UISTRINGS_TXT_0057abb4[0x14] = "MP_UISTRINGS.TXT";
 
 // GLOBAL: MAGIC 0x0057abc8
-char s_In_play_Card_0057abc8[0x10] = "In play Card";
+char s_In_play_Card_0057abc8[0x10] = "In-play Card";
 
 // GLOBAL: MAGIC 0x0057abd8
-char s_MAGICGAME_CardClass_0057abd8[0x20] = "MAGICGAME_CardClass";
+char s_MAGICGAME_CardClass_0057abd8[0x14] = "MAGICGAME_CardClass";
+
+// GLOBAL: MAGIC 0x0057abec
+char s__duel_hlp_0057abec[0xc] = "\\duel.hlp";
 
 // GLOBAL: MAGIC 0x0057abf8
 char s_Player_Card_0057abf8[0xc] = "Player Card";
 
 // GLOBAL: MAGIC 0x0057ac04
 char s_MAGICGAME_CardClass_0057ac04[0x14] = "MAGICGAME_CardClass";
-
-// GLOBAL: MAGIC 0x0057abec
-char s__duel_hlp_0057abec[0xc] = "\\duel.hlp";
 
 // GLOBAL: MAGIC 0x0057e534
 char s_Upkeep_phase_0057e534[0x10] = "Upkeep phase";
@@ -140,7 +140,7 @@ char s_Start_of_next_turn_0057e62c[0x14] = "Start of next turn";
 char s_next_phase_0057e640[0xc] = "next phase";
 
 // GLOBAL: MAGIC 0x0057ac18
-char s_Show_player_card_and___on_librar_0057ac18[0x24] = "Show player card and # on library";
+char s_Show_player_card_and___on_librar_0057ac18[0x24] = "Show player,card and # on library\tI";
 
 // GLOBAL: MAGIC 0x0057ac3c
 char s_Show_the_palette_P_0057ac3c[0x14] = "Show the palette\tP";

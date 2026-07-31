@@ -558,12 +558,6 @@ GLOBAL_STATE_EXTERN int DAT_008a8de4;
 // GLOBAL: SHANDALAR 0x008e266c
 GLOBAL_STATE_EXTERN int max_trigger_dispatch_depth;
 
-#ifdef GLOBAL_STATE_IMPL
-int unk_008ce4f4 = -1;
-
-int unk_008ce508 = -1;
-#endif
-
 // GLOBAL: MAGIC 0x008ce510
 // GLOBAL: SHANDALAR 0x008e2690
 GLOBAL_STATE_EXTERN int mana_charge[8];
@@ -1001,7 +995,7 @@ GLOBAL_STATE_EXTERN int DAT_0074302c;
 // GLOBAL: SHANDALAR 0x0073ea20
 GLOBAL_STATE_EXTERN int g_quest_restock_timer;
 
-#ifdef GLOBAL_STATE_IMPL
+#if defined(GLOBAL_STATE_IMPL) && defined(SHANDALAR)
 // GLOBAL: MAGIC 0x007497a8
 // GLOBAL: SHANDALAR 0x005911f8
 GLOBAL_STATE_EXTERN int g_world_player_x = 1296;
@@ -1009,7 +1003,7 @@ GLOBAL_STATE_EXTERN int g_world_player_x = 1296;
 GLOBAL_STATE_EXTERN int g_world_player_x;
 #endif
 
-#ifdef GLOBAL_STATE_IMPL
+#if defined(GLOBAL_STATE_IMPL) && defined(SHANDALAR)
 // GLOBAL: MAGIC 0x007497ac
 // GLOBAL: SHANDALAR 0x005911fc
 GLOBAL_STATE_EXTERN int g_world_player_y = 816;
@@ -1021,7 +1015,7 @@ GLOBAL_STATE_EXTERN int g_world_player_y;
 // GLOBAL: SHANDALAR 0x0073ea64
 GLOBAL_STATE_EXTERN int g_siege_indicator;
 
-#ifdef GLOBAL_STATE_IMPL
+#if defined(GLOBAL_STATE_IMPL) && defined(SHANDALAR)
 GLOBAL_STATE_EXTERN int g_siege_timer = 1;
 #else
 // GLOBAL: MAGIC 0x007497c0
@@ -1029,7 +1023,7 @@ GLOBAL_STATE_EXTERN int g_siege_timer = 1;
 GLOBAL_STATE_EXTERN int g_siege_timer;
 #endif
 
-#ifdef GLOBAL_STATE_IMPL
+#if defined(GLOBAL_STATE_IMPL) && defined(SHANDALAR)
 GLOBAL_STATE_EXTERN char g_name_entry_buffer[0x40] = "Ned Way the Ratiocinator";
 #else
 // GLOBAL: MAGIC 0x007497d0
