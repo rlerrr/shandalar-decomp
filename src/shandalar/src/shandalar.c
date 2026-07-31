@@ -500,6 +500,7 @@ int DAT_005873d4 = 0;
 int g_selected_save_slot_index;
 
 #ifdef _DEBUG
+extern int g_reveal_all_world_info;
 int g_debug_lair_event_type = -1;
 #endif
 
@@ -4281,6 +4282,114 @@ void RefreshAdventureInterfaceLayout(void)
   }
 }
 
+#ifdef _DEBUG
+void RunDebugEncounterLairMenu(void)
+{
+  int lair_index;
+  int lair_color;
+
+  strcpy(g_ui_message_buffer, "Encounter Lair\n");
+  for (lair_index = 0; lair_index < 0x13; lair_index = lair_index + 1)
+  {
+    strcat(g_ui_message_buffer, " ");
+    strcat(g_ui_message_buffer, gs_lair_names_0077c020[lair_index]);
+    strcat(g_ui_message_buffer, "\n");
+  }
+
+  lair_index = RunTextMenuAt(g_ui_message_buffer, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
+  if (lair_index != -1)
+  {
+    if (lair_index < 5)
+    {
+      lair_color = lair_index + 1;
+    }
+    else
+    {
+      lair_color = g_selected_wizard_color;
+      if ((lair_color < 1) || (lair_color > 5))
+      {
+        lair_color = 1;
+      }
+    }
+    g_debug_lair_event_type = lair_index;
+    RunLairExplorationEvent(lair_color);
+    g_debug_lair_event_type = -1;
+  }
+}
+
+void RunDebugToggleWorldMagicMenu(void)
+{
+  int loaded_count;
+  int menu_selection;
+  int world_magic_index;
+  char *world_magic_name;
+
+  loaded_count = LoadTextSectionLines("ADVstrings.txt", "WORLDMAGIC_NAMES");
+  if (loaded_count < 0)
+  {
+    loaded_count = 0;
+  }
+  if (loaded_count > 0xc)
+  {
+    loaded_count = 0xc;
+  }
+
+  do
+  {
+    strcpy(g_ui_message_buffer, "Toggle World Magic\n");
+    for (world_magic_index = 0; world_magic_index < 0xc; world_magic_index = world_magic_index + 1)
+    {
+      if (world_magic_index < loaded_count)
+      {
+        world_magic_name = text_lines[world_magic_index];
+      }
+      else
+      {
+        world_magic_name = gs_worldmagic_names_00780660[world_magic_index];
+      }
+      sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), " %s [%s]\n", world_magic_name,
+              ((g_world_magic_bitmap & (1 << (unsigned char)world_magic_index)) != 0) ? "ON" : "OFF");
+    }
+
+    menu_selection = RunTextMenuAt(g_ui_message_buffer, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
+    if (menu_selection != -1)
+    {
+      if ((g_world_magic_bitmap & (1 << (unsigned char)menu_selection)) != 0)
+      {
+        g_world_magic_bitmap = g_world_magic_bitmap & ~(1 << (unsigned char)menu_selection);
+      }
+      else
+      {
+        g_world_magic_bitmap = g_world_magic_bitmap | (1 << (unsigned char)menu_selection);
+        g_world_magic_slot_timers[menu_selection].town_index = 0;
+      }
+    }
+  } while (menu_selection != -1);
+}
+
+void RunDebugRightClickMenu(void)
+{
+  int menu_selection;
+
+  sprintf(g_ui_message_buffer, "DEBUG\n Encounter Lair\n Toggle World Magic\n Reveal All World Info [%s]\n",
+          (g_reveal_all_world_info != 0) ? "ON" : "OFF");
+  menu_selection = RunTextMenuAt(g_ui_message_buffer, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
+  switch (menu_selection)
+  {
+  case 0:
+    RunDebugEncounterLairMenu();
+    break;
+  case 1:
+    RunDebugToggleWorldMagicMenu();
+    break;
+  case 2:
+    // Shows entire map and enables map screen click to teleport
+    g_reveal_all_world_info = (g_reveal_all_world_info == 0);
+    break;
+  }
+}
+#endif
+
 // FUNCTION: SHANDALAR 0x0055e1b2
 int RunRightClickMenuAndQueueInput(void)
 {
@@ -4298,7 +4407,7 @@ int RunRightClickMenuAndQueueInput(void)
 
 #ifdef _DEBUG
   strcpy(g_ui_message_buffer, s.menu_text);
-  strcat(g_ui_message_buffer, " _Encounter Lair\n");
+  strcat(g_ui_message_buffer, " DEBUG\n");
   s.menu_text = g_ui_message_buffer;
 #endif
   s.menu_selection = RunTextMenuAt(s.menu_text, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
@@ -4333,39 +4442,9 @@ int RunRightClickMenuAndQueueInput(void)
     break;
 #ifdef _DEBUG
   case 10:
-  {
-    int lair_index;
-    int lair_color;
-    strcpy(g_ui_message_buffer, "Encounter Lair\n");
-    for (lair_index = 0; lair_index < 0x13; lair_index = lair_index + 1)
-    {
-      strcat(g_ui_message_buffer, " ");
-      strcat(g_ui_message_buffer, gs_lair_names_0077c020[lair_index]);
-      strcat(g_ui_message_buffer, "\n");
-    }
-
-    lair_index = RunTextMenuAt(g_ui_message_buffer, ScaleUiCoordinate(0x50), ScaleUiCoordinate(0x40));
-    if (lair_index != -1)
-    {
-      if (lair_index < 5)
-      {
-        lair_color = lair_index + 1;
-      }
-      else
-      {
-        lair_color = g_selected_wizard_color;
-        if ((lair_color < 1) || (lair_color > 5))
-        {
-          lair_color = 1;
-        }
-      }
-      g_debug_lair_event_type = lair_index;
-      RunLairExplorationEvent(lair_color);
-      g_debug_lair_event_type = -1;
-    }
+    RunDebugRightClickMenu();
     RefreshAdventureInterfaceLayout();
     break;
-  }
 #endif
   default:
     RefreshAdventureInterfaceLayout();
