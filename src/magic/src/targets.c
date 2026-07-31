@@ -587,26 +587,26 @@ int C_real_select_target(int who_chooses,
 
     if (g_duel_ai_mode_state == 1)
     {
-      unk_00939340 = internal_rand(s.valid_count);
-      unk_00925bb8 = (((s.valid_players[unk_00939340] == 0) ? 0 : 0x100)
-                      | (s.valid_cards[unk_00939340] & 0xff))
+      ai_recorded_choice = internal_rand(s.valid_count);
+      ai_recorded_action = (((s.valid_players[ai_recorded_choice] == 0) ? 0 : 0x100)
+                      | (s.valid_cards[ai_recorded_choice] & 0xff))
                      | 0x4000;
-      unk_0057aae8 = 3;
+      ai_recorded_action_type = 3;
       record_ai_action_selection();
     }
     else
     {
-      unk_0057aae8 = 3;
+      ai_recorded_action_type = 3;
       replay_ai_action_selection();
-      if (unk_00939340 == 99 || s.valid_count <= unk_00939340)
+      if (ai_recorded_choice == 99 || s.valid_count <= ai_recorded_choice)
       {
-        unk_00939340 = internal_rand(s.valid_count);
+        ai_recorded_choice = internal_rand(s.valid_count);
       }
     }
 
-    unk_00742fcc = s.valid_players[unk_00939340];
-    ret_tgt->player = s.valid_players[unk_00939340];
-    ret_tgt->card = s.valid_cards[unk_00939340];
+    unk_00742fcc = s.valid_players[ai_recorded_choice];
+    ret_tgt->player = s.valid_players[ai_recorded_choice];
+    ret_tgt->card = s.valid_cards[ai_recorded_choice];
     s.result = 1;
     return s.result;
   }
@@ -758,7 +758,7 @@ int C_real_select_target(int who_chooses,
     }
     if (s.result != 0)
     {
-      DAT_0072c8e4 = 0;
+      ai_action_replay_available = 0;
     }
     set_duel_prompt_text("");
     strcpy(text_lines[0], "");

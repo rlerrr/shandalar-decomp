@@ -2000,17 +2000,17 @@ int card_magical_hack(int player, int card, event_t event)
 
           if (g_duel_ai_mode_state == 1)
           {
-            unk_00939340 = s.old_color;
+            ai_recorded_choice = s.old_color;
             record_ai_action_selection();
-            unk_00939340 = s.new_color;
+            ai_recorded_choice = s.new_color;
             record_ai_action_selection();
           }
           else
           {
             replay_ai_action_selection();
-            s.old_color = unk_00939340;
+            s.old_color = ai_recorded_choice;
             replay_ai_action_selection();
-            s.new_color = unk_00939340;
+            s.new_color = ai_recorded_choice;
           }
 
           PLAYER_CARD_INSTANCE(player, card).info_slot = s.new_color * 0x100 + s.old_color;
@@ -2182,17 +2182,17 @@ int card_sleight_of_mind(int player, int card, event_t event)
 
         if (g_duel_ai_mode_state == 1)
         {
-          unk_00939340 = s.old_color;
+          ai_recorded_choice = s.old_color;
           record_ai_action_selection();
-          unk_00939340 = s.new_color;
+          ai_recorded_choice = s.new_color;
           record_ai_action_selection();
         }
         else
         {
           replay_ai_action_selection();
-          s.old_color = unk_00939340;
+          s.old_color = ai_recorded_choice;
           replay_ai_action_selection();
-          s.new_color = unk_00939340;
+          s.new_color = ai_recorded_choice;
         }
 
         s.instance->info_slot = s.new_color * 0x100 + s.old_color;

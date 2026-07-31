@@ -32,7 +32,7 @@ typedef struct
 STATIC_ASSERT(sizeof(dialog_stack_entry_t) == 0xac, dialog_stack_entry_t_wrong_size);
 
 #define DISPLAYED_PLAYER_CARD_INSTANCE(player_, card_) global_displayed_card_instances[(player_)][(card_)]
-#define DISPLAYED_PIC_INFO(player_, card_) (*(unsigned int *)&DISPLAYED_PLAYER_CARD_INSTANCE((player_), (card_)).display_pic_csv_id)
+#define DISPLAYED_PLAYER_CARD_ROW(player_) global_displayed_card_instances[(player_)]
 
 extern card_ptr_t global_raw_cards_storage[2000];
 extern int g_showlist_smallcard_width;
@@ -265,25 +265,25 @@ char DAT_008b4e76[50];
 char DAT_008b4ea8[50];
 
 unsigned int refresh_duel_display_cache(void);
-unsigned int FUN_00449ac3(int player, int card);
-unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card);
+unsigned int get_displayed_card_original_internal_id(int player, int card);
+unsigned int get_displayed_card_display_pic_info(int *displayed_player_and_card, int player, int card);
 unsigned int get_displayed_card_special_counters(int player, int card);
-int FUN_00449057(int player, int card);
-int FUN_004491cd(int player, int card);
-void FUN_00449249(int player, int card, int *power, int *toughness);
-void FUN_00449645(int player, int card, char *text);
-void FUN_00449706(int player, int card, char *text);
+int get_displayed_card_color_flags(int player, int card);
+int get_displayed_card_eot_toughness(int player, int card);
+void get_displayed_card_counter_power_toughness(int player, int card, int *power, int *toughness);
+void apply_displayed_card_sleight_words(int player, int card, char *text);
+void apply_displayed_card_hack_words(int player, int card, char *text);
 unsigned int get_displayed_card_display_flags(int player, int card);
-unsigned int FUN_00449990(int player, int card);
-void FUN_00449a0f(int *displayed_player_and_card, int player, int card);
-void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace);
-void FUN_0049511c(char *text, int source_color, int target_color, int parenthesize);
-void FUN_00495217(char *text, int source_color, int target_color, int parenthesize);
+unsigned int get_displayed_card_base_internal_id(int player, int card);
+void get_displayed_card_parent(int *displayed_player_and_card, int player, int card);
+void replace_text_token(char *text, char *search, int case_sensitive, char *replace);
+void replace_hack_color_words(char *text, int source_color, int target_color, int parenthesize);
+void replace_sleight_color_words(char *text, int source_color, int target_color, int parenthesize);
 int get_card_display_pic_num(card_id_t card_id, int player, int card);
-unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, int param_6, int param_7);
-void FUN_00559bc1(int dc, int rect, int player, int card);
-void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int player, int card);
-int FUN_004a583e(int player, int card);
+unsigned int draw_displayed_full_card(HDC dc, RECT *rect, card_ptr_t *raw_card, int player, int card, int draw_mode, int expand_text_box);
+void draw_displayed_card_overlaid_full_card(HDC dc, RECT *rect, int player, int card);
+void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int player, int card);
+int get_original_internal_card_id(int player, int card);
 int get_card_internal_id(int player, int card);
 card_id_t get_card_id(int player, int card);
 INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -300,7 +300,7 @@ char *get_displayed_card_name(int player, int card)
 {
   struct
   {
-  card_id_t transformed_card_id;
+    card_id_t transformed_card_id;
     char temporary_name[52];
     int source_card_data;
     int source_player;
@@ -325,7 +325,7 @@ char *get_displayed_card_name(int player, int card)
   {
     if (s.csvid == unk_0092666c)
     {
-      s.csvid = CardIDFromType(FUN_004a583e(player, card));
+      s.csvid = CardIDFromType(get_original_internal_card_id(player, card));
     }
 
     s.choice = (unsigned int)PLAYER_CARD_INSTANCE(player, card).display_pic_csv_id;
@@ -346,11 +346,11 @@ char *get_displayed_card_name(int player, int card)
     }
     else if (s.csvid == unk_00789734)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].damage_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].effect_title);
     }
     else if (s.csvid == unk_008a8de8)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].effect_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].legacy_title);
     }
     else if (s.csvid == unk_009266ac)
     {
@@ -371,7 +371,7 @@ char *get_displayed_card_name(int player, int card)
     if (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
         s.transformed_card_id == CARD_ID_WHIMSY)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.transformed_card_id].damage_text);
+      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.transformed_card_id].effect_title);
     }
 
     if (g_dialog_card_title_buffer[0] == '\0')
@@ -388,7 +388,7 @@ char *get_displayed_card_name(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044a796
-void FUN_0044a796(int player, int card)
+void append_displayed_card_name(int player, int card)
 {
   char *card_name;
 
@@ -400,7 +400,7 @@ void FUN_0044a796(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004483be
-int FUN_004483be(int player, int card)
+int displayed_card_indices_invalid(int player, int card)
 {
   if (player != 0 && player != 1)
   {
@@ -421,7 +421,7 @@ int get_displayed_card_blocking(int player, int card)
 {
   int blocking;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -438,7 +438,7 @@ int get_displayed_card_internal_id(int player, int card)
 {
   int internal_card_id;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return -1;
   }
@@ -455,7 +455,7 @@ card_id_t get_displayed_card_id(int player, int card)
 {
   int internal_card_id;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return -1;
   }
@@ -471,11 +471,11 @@ card_id_t get_displayed_card_id(int player, int card)
 
 // FUNCTION: MAGIC 0x00449057
 // FUNCTION: SHANDALAR 0x00452bd4
-int FUN_00449057(int player, int card)
+int get_displayed_card_color_flags(int player, int card)
 {
   int displayed_color;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -488,7 +488,7 @@ int FUN_00449057(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449645
-void FUN_00449645(int player, int card, char *text)
+void apply_displayed_card_sleight_words(int player, int card, char *text)
 {
   int color_index;
 
@@ -497,14 +497,14 @@ void FUN_00449645(int player, int card, char *text)
   {
     if (DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index] != '\0')
     {
-      FUN_00495217(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index], 0);
+      replace_sleight_color_words(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).color_id[color_index], 0);
     }
   }
   LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x00449706
-void FUN_00449706(int player, int card, char *text)
+void apply_displayed_card_hack_words(int player, int card, char *text)
 {
   int color_index;
 
@@ -513,18 +513,18 @@ void FUN_00449706(int player, int card, char *text)
   {
     if (DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index] != '\0')
     {
-      FUN_0049511c(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index], 0);
+      replace_hack_color_words(text, color_index, (int)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).hack_mode[color_index], 0);
     }
   }
   LeaveCriticalSection(&g_duel_render_lock);
 }
 
 // FUNCTION: MAGIC 0x00449990
-unsigned int FUN_00449990(int player, int card)
+unsigned int get_displayed_card_base_internal_id(int player, int card)
 {
   int result;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
     return -1;
 
   EnterCriticalSection(&g_duel_render_lock);
@@ -535,9 +535,9 @@ unsigned int FUN_00449990(int player, int card)
 
 // FUNCTION: MAGIC 0x00449a0f
 // FUNCTION: SHANDALAR 0x00453590
-void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
+void get_displayed_card_parent(int *displayed_player_and_card, int player, int card)
 {
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
     return;
 
   if (displayed_player_and_card == NULL)
@@ -551,24 +551,29 @@ void FUN_00449a0f(int *displayed_player_and_card, int player, int card)
 
 // FUNCTION: MAGIC 0x00448c93
 // FUNCTION: SHANDALAR 0x00452810
-unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card)
+unsigned int get_displayed_card_display_pic_info(int *displayed_player_and_card, int player, int card)
 {
   unsigned int display_info;
 
-  if (FUN_004483be(player, card) == 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
+  {
+    if (displayed_player_and_card != NULL)
+    {
+      displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_player;
+      displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_card;
+    }
+    return 0xffffffff;
+  }
+  else
   {
     EnterCriticalSection(&g_duel_render_lock);
     if (displayed_player_and_card != NULL)
     {
-      displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_INSTANCE(player, card).damage_source_player;
-      displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).damage_source_card;
+      displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_player;
+      displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_card;
     }
-    display_info = DISPLAYED_PIC_INFO(player, card);
+    display_info = DISPLAYED_PLAYER_CARD_ROW(player)[card].display_pic_info;
     LeaveCriticalSection(&g_duel_render_lock);
-  }
-  else
-  {
-    display_info = 0xffffffff;
   }
 
   return display_info;
@@ -580,26 +585,24 @@ unsigned int get_displayed_card_special_counters(int player, int card)
 {
   unsigned int info_slot;
 
-  if (FUN_004483be(player, card) == 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
-    EnterCriticalSection(&g_duel_render_lock);
-    info_slot = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).info_slot;
-    LeaveCriticalSection(&g_duel_render_lock);
+    return 0;
   }
-  else
-  {
-    info_slot = 0;
-  }
+
+  EnterCriticalSection(&g_duel_render_lock);
+  info_slot = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).info_slot;
+  LeaveCriticalSection(&g_duel_render_lock);
 
   return info_slot;
 }
 
 // FUNCTION: MAGIC 0x004491cd
-int FUN_004491cd(int player, int card)
+int get_displayed_card_eot_toughness(int player, int card)
 {
   int displayed_value;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -613,19 +616,19 @@ int FUN_004491cd(int player, int card)
 
 // FUNCTION: MAGIC 0x00449249
 // FUNCTION: SHANDALAR 0x00452dc6
-void FUN_00449249(int player, int card, int *power, int *toughness)
+void get_displayed_card_counter_power_toughness(int player, int card, int *power, int *toughness)
 {
   if (power == NULL || toughness == NULL)
   {
   }
-  else if (FUN_004483be(player, card))
+  else if (displayed_card_indices_invalid(player, card))
   {
   }
   else
   {
     EnterCriticalSection(&g_duel_render_lock);
-    *power = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_power;
-    *toughness = DISPLAYED_PLAYER_CARD_INSTANCE(player, card).counter_toughness;
+    *power = DISPLAYED_PLAYER_CARD_ROW(player)[card].counter_power;
+    *toughness = DISPLAYED_PLAYER_CARD_ROW(player)[card].counter_toughness;
     LeaveCriticalSection(&g_duel_render_lock);
   }
 }
@@ -636,7 +639,7 @@ unsigned int get_displayed_card_display_flags(int player, int card)
 {
   unsigned int displayed_flags;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -649,7 +652,7 @@ unsigned int get_displayed_card_display_flags(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00494e91
-void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace)
+void replace_text_token(char *text, char *search, int case_sensitive, char *replace)
 {
   struct
   {
@@ -700,51 +703,57 @@ void FUN_00494e91(char *text, char *search, int case_sensitive, char *replace)
 }
 
 // FUNCTION: MAGIC 0x0049511c
-void FUN_0049511c(char *text, color_t source_color, color_t target_color, int parenthesize)
+void replace_hack_color_words(char *text, color_t source_color, color_t target_color, int parenthesize)
 {
-  char replacement_text[100];
-  int color_index;
-  char search_text[100];
-
-  for (color_index = 0; color_index < gs_words_to_hack_count_008cd924; ++color_index)
+  struct
   {
-    sprintf(search_text, s_HackWordSearchFormat_0057248c, gs_words_to_hack_00789c80[source_color][color_index]);
-    if (parenthesize == 0)
+    char search_text[100];
+    int color_index;
+    char replacement_text[100];
+  } s;
+
+  for (s.color_index = 0; gs_words_to_hack_count_008cd924 > s.color_index; ++s.color_index)
+  {
+    sprintf(s.search_text, s_HackWordSearchFormat_0057248c, gs_words_to_hack_00789c80[source_color][s.color_index]);
+    if (parenthesize != 0)
     {
-      strcpy(replacement_text, gs_words_hacked_0091d260[target_color][color_index]);
+      sprintf(s.replacement_text, s_HackWordReplacementFormat_00572494, gs_words_hacked_0091d260[target_color][s.color_index]);
     }
     else
     {
-      sprintf(replacement_text, s_HackWordReplacementFormat_00572494, gs_words_hacked_0091d260[target_color][color_index]);
+      strcpy(s.replacement_text, gs_words_hacked_0091d260[target_color][s.color_index]);
     }
-    FUN_00494e91(text, search_text, 1, replacement_text);
+    replace_text_token(text, s.search_text, 1, s.replacement_text);
   }
 }
 
 // FUNCTION: MAGIC 0x00495217
-void FUN_00495217(char *text, color_t source_color, int target_color, int parenthesize)
+void replace_sleight_color_words(char *text, color_t source_color, int target_color, int parenthesize)
 {
-  char replacement_text[100];
-  int color_index;
-  char search_text[100];
-
-  for (color_index = 0; color_index < gs_words_to_sleight_count_00789c34; ++color_index)
+  struct
   {
-    sprintf(search_text, s_ColorWordSearchFormat_0057249c, gs_words_to_sleight_00781bd0[source_color][color_index]);
-    if (parenthesize == 0)
+    char search_text[100];
+    int color_index;
+    char replacement_text[100];
+  } s;
+
+  for (s.color_index = 0; gs_words_to_sleight_count_00789c34 > s.color_index; ++s.color_index)
+  {
+    sprintf(s.search_text, s_ColorWordSearchFormat_0057249c, gs_words_to_sleight_00781bd0[source_color][s.color_index]);
+    if (parenthesize != 0)
     {
-      strcpy(replacement_text, gs_words_sleighted_008a9c10[target_color][color_index]);
+      sprintf(s.replacement_text, s_ColorWordReplacementFormat_005724a4, gs_words_sleighted_008a9c10[target_color][s.color_index]);
     }
     else
     {
-      sprintf(replacement_text, s_ColorWordReplacementFormat_005724a4, gs_words_sleighted_008a9c10[target_color][color_index]);
+      strcpy(s.replacement_text, gs_words_sleighted_008a9c10[target_color][s.color_index]);
     }
-    FUN_00494e91(text, search_text, 1, replacement_text);
+    replace_text_token(text, s.search_text, 1, s.replacement_text);
   }
 }
 
 // FUNCTION: MAGIC 0x004a583e
-int FUN_004a583e(int player, int card)
+int get_original_internal_card_id(int player, int card)
 {
   return *(int *)((char *)&global_card_instances[0][card] + player * 0xb0f4 + 0x3c);
 }
@@ -786,12 +795,16 @@ int do_dialog(int who_chooses,
               const char *options,
               int ai_choice)
 {
-  int dialog_mode;
-  char displayed_options[600];
-  int remaining_choice;
-  int dialog_result;
-  int option_index;
-  unsigned int at_start_of_line;
+  struct
+  {
+    int dialog_mode;
+    int unused_padding;
+    char displayed_options[600];
+    int remaining_choice;
+    int dialog_result;
+    int option_index;
+    unsigned int at_start_of_line;
+  } s;
 
   if (who_chooses == other_player && (g_duel_network_flags & 2) != 0)
   {
@@ -809,66 +822,70 @@ int do_dialog(int who_chooses,
     return ai_choice;
   }
 
-  strcpy(displayed_options, options);
+  strcpy(s.displayed_options, options);
   strcpy(unk_00748770, "");
   if (who_chooses == other_player)
   {
     sprintf(unk_00748770, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
     strcat(unk_00748770, "\n\n");
-    at_start_of_line = 1;
-    remaining_choice = ai_choice;
-    for (option_index = 0; option_index < 1000; ++option_index)
+    s.at_start_of_line = 1;
+    s.remaining_choice = ai_choice;
+    for (s.option_index = 0; s.option_index < 1000; ++s.option_index)
     {
-      if (at_start_of_line != 0 && displayed_options[option_index] == ' ')
+      if (s.at_start_of_line != 0 && s.displayed_options[s.option_index] == ' ')
       {
-        if (remaining_choice-- == 0)
+        s.unused_padding = s.remaining_choice;
+        --s.remaining_choice;
+        if (s.unused_padding == 0)
         {
-          displayed_options[option_index] = '>';
+          s.displayed_options[s.option_index] = '>';
           break;
         }
       }
 
-      at_start_of_line = displayed_options[option_index] == '\n';
+      s.at_start_of_line = s.displayed_options[s.option_index] == '\n';
     }
   }
   else
   {
-    FUN_0044a796(bigcard_player, bigcard_card);
+    append_displayed_card_name(bigcard_player, bigcard_card);
     strcat(unk_00748770, "...\n");
   }
 
-  strcat(unk_00748770, displayed_options);
+  strcat(unk_00748770, s.displayed_options);
   if (PLAYER_CARD_INSTANCE(bigcard_player, bigcard_card).internal_card_id == -1 ||
       PLAYER_CARD_INSTANCE(smallcard_player, smallcard_card).internal_card_id == -1)
   {
-    TENTATIVE_reassess_all_cards(0, 0xff);
+    TENTATIVE_reassess_all_cards(1, 0xff);
   }
 
   if (who_chooses == active_player && g_duel_network_state == 0)
   {
-    dialog_mode = 1;
+    s.dialog_mode = 1;
   }
   else
   {
-    dialog_mode = 0;
+    s.dialog_mode = 0;
   }
 
-  dialog_result =
-      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, unk_00748770, dialog_mode);
+  s.dialog_result =
+      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, unk_00748770, s.dialog_mode);
 
   if (who_chooses == active_player && (g_duel_network_flags & 2) != 0)
   {
     unk_008b2938 = '\r';
-    DAT_008b293c = dialog_result;
+    DAT_008b293c = s.dialog_result;
     TENTATIVE_send_network_result(who_chooses, 0xd);
   }
 
   if (who_chooses == active_player && g_duel_network_state == 0)
   {
-    ai_choice = dialog_result;
+    return s.dialog_result;
   }
-
-  return ai_choice;
+  else
+  {
+    return ai_choice;
+  }
 }
 
 // FUNCTION: MAGIC 0x004a55c7
@@ -880,9 +897,11 @@ int raw_do_dialog(int bigcard_player,
                   char *prompt,
                   int dialog_mode)
 {
-  INT_PTR dialog_result;
-  card_id_t card_image_number;
-  dialog_context_t s;
+  struct
+  {
+    dialog_context_t context;
+    INT_PTR dialog_result;
+  } s;
 
   KillTimer((HWND)g_duel_window_hwnd, g_duel_timer_id);
   if (smallcard_card == 0xff)
@@ -892,8 +911,7 @@ int raw_do_dialog(int bigcard_player,
 
   if (bigcard_player != -1 && bigcard_card != -1)
   {
-    card_image_number = get_displayed_card_id(bigcard_player, bigcard_card);
-    if (card_image_number == -1)
+    if (get_displayed_card_id(bigcard_player, bigcard_card) == -1)
     {
       refresh_duel_display_cache();
     }
@@ -901,27 +919,28 @@ int raw_do_dialog(int bigcard_player,
 
   if (smallcard_player != -1 && smallcard_card != -1)
   {
-    card_image_number = get_displayed_card_id(smallcard_player, smallcard_card);
-    if (card_image_number == -1)
+    if (get_displayed_card_id(smallcard_player, smallcard_card) == -1)
     {
       refresh_duel_display_cache();
     }
   }
 
-  s.bigcard_player = bigcard_player;
-  s.bigcard_card = bigcard_card;
-  s.smallcard_player = smallcard_player;
-  s.smallcard_card = smallcard_card;
-  s.prompt = prompt;
-  s.dialog_mode = dialog_mode;
+  s.context.bigcard_player = bigcard_player;
+  s.context.bigcard_card = bigcard_card;
+  s.context.smallcard_player = smallcard_player;
+  s.context.smallcard_card = smallcard_card;
+  s.context.prompt = prompt;
+  s.context.dialog_mode = dialog_mode;
 
-  dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_duel_window_hwnd, big_card_choice_dialog_proc, (LPARAM)&s);
-  if (dialog_result == 0)
+  s.dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdf, (HWND)g_duel_window_hwnd, big_card_choice_dialog_proc, (LPARAM)&s.context);
+  if (s.dialog_result == 0)
   {
     return -1;
   }
-
-  return dialog_result - 1;
+  else
+  {
+    return s.dialog_result - 1;
+  }
 }
 
 // FUNCTION: MAGIC 0x00446e4b
@@ -1081,11 +1100,11 @@ unsigned int refresh_duel_display_cache(void)
 
 // FUNCTION: MAGIC 0x00449ac3
 // FUNCTION: SHANDALAR 0x00453644
-unsigned int FUN_00449ac3(int player, int card)
+unsigned int get_displayed_card_original_internal_id(int player, int card)
 {
   int displayed_card_type;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return -1;
   }
@@ -1098,7 +1117,7 @@ unsigned int FUN_00449ac3(int player, int card)
 
 // FUNCTION: MAGIC 0x00559999
 // FUNCTION: SHANDALAR 0x0056fce9
-unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, int param_6, int param_7)
+unsigned int draw_displayed_full_card(HDC dc, RECT *rect, card_ptr_t *raw_card, int player, int card, int draw_mode, int expand_text_box)
 {
   struct
   {
@@ -1111,7 +1130,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
     card_id_t card_id;
   } s;
 
-  if (dc == 0 || rect == 0 || raw_card == 0)
+  if (dc == NULL || rect == NULL || raw_card == NULL)
   {
     return 0;
   }
@@ -1123,7 +1142,7 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
   }
 
   memcpy(&s.card_data, global_raw_cards_storage + s.card_id, 0x98);
-  s.color_test = FUN_00449057(player, card);
+  s.color_test = get_displayed_card_color_flags(player, card);
   s.number_of_colors = 0;
   for (s.color_index = 1; s.color_index <= 5; ++s.color_index)
   {
@@ -1162,25 +1181,26 @@ unsigned int FUN_00559999(int dc, int rect, int raw_card, int player, int card, 
   }
 
   strcpy(s.rules_text, global_raw_cards_storage[s.card_id].rules_text);
-  FUN_00449645(player, card, s.rules_text);
-  FUN_00449706(player, card, s.rules_text);
+  apply_displayed_card_sleight_words(player, card, s.rules_text);
+  apply_displayed_card_hack_words(player, card, s.rules_text);
   s.card_data.rules_text = s.rules_text;
   s.card_version = get_card_display_pic_num(s.card_id, player, card);
-  return DrawFullCard((HDC)dc,
-                      (RECT *)rect,
+  return DrawFullCard(dc,
+                      rect,
                       &s.card_data,
                       s.card_version,
-                      param_6,
-                      param_7,
+                      draw_mode,
+                      expand_text_box,
                       &gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559bc1
 // FUNCTION: SHANDALAR 0x0056ff11
-void FUN_00559bc1(int dc, int rect, int player, int card)
+void draw_displayed_card_overlaid_full_card(HDC dc, RECT *rect, int player, int card)
 {
   struct
   {
+    card_id_t card_id;
     int displayed_player;
     int displayed_card;
     int number_of_colors;
@@ -1188,24 +1208,23 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
     int color_index;
     card_ptr_t card_data;
     int card_version;
-    card_id_t card_id;
     int displayed_type;
   } s;
 
-  if (dc == 0 || rect == 0)
+  if (dc == NULL || rect == NULL)
   {
     return;
   }
 
-  s.displayed_type = FUN_00449990(player, card);
+  s.displayed_type = get_displayed_card_base_internal_id(player, card);
   s.card_id = CardIDFromType(s.displayed_type);
-  if ((s.card_id == unk_0092666c && FUN_00449ac3(player, card) == draw_card_placeholder_internal_card_id) || s.card_id == unk_009266ac)
+  if ((s.card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == draw_card_placeholder_internal_card_id) || s.card_id == unk_009266ac)
   {
-    DrawCardBack((HDC)dc, (RECT *)rect);
+    DrawCardBack(dc, rect);
     return;
   }
 
-  FUN_00449a0f(&s.displayed_player, player, card);
+  get_displayed_card_parent(&s.displayed_player, player, card);
   s.card_version = get_card_display_pic_num(s.card_id, s.displayed_player, s.displayed_card);
   if (s.card_id == unk_007a7d64 ||
       s.card_id == unk_00789b80 ||
@@ -1221,9 +1240,9 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
   }
 
   memcpy(&s.card_data, global_raw_cards_storage + s.card_id, 0x98);
-  s.color_test = FUN_00449057(player, card);
+  s.color_test = get_displayed_card_color_flags(player, card);
   s.number_of_colors = 0;
-  for (s.color_index = 1; s.color_index < 6; ++s.color_index)
+  for (s.color_index = 1; s.color_index <= 5; ++s.color_index)
   {
     if ((s.color_test & (1 << (unsigned char)s.color_index)) != 0)
     {
@@ -1231,7 +1250,7 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
     }
   }
 
-  if (s.number_of_colors >= 2)
+  if (s.number_of_colors > 1)
   {
     s.card_data.color = 4;
   }
@@ -1259,597 +1278,565 @@ void FUN_00559bc1(int dc, int rect, int player, int card)
     }
   }
 
-  DrawFullCard((HDC)dc, (RECT *)rect, &s.card_data, s.card_version, 2, DAT_0091c980, &gs_illus_00789130);
+  DrawFullCard(dc, rect, &s.card_data, s.card_version, 2, DAT_0091c980, &gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559e9c
 // FUNCTION: SHANDALAR 0x005701e5
-void draw_special_effect_full_card(int dc, int rect, card_id_t card_id, int player, int card)
+void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int player, int card)
 {
   struct
   {
+    unsigned int final_display_flags;
     char transformed_rules_text[400];
     int appended_text;
     int displayed_power;
     char value_text[100];
     int displayed_toughness;
+    unsigned int display_flags;
     card_id_t transformed_card_id;
     char temporary_name[52];
     int single_color;
     unsigned int display_info;
-    int displayed_player;
-    int displayed_card;
+    int displayed_player_and_card[2];
     int ability_index;
     card_ptr_t card_data;
-    unsigned int display_flags;
     unsigned int display_version;
   } s;
 
-  if (dc != 0 && rect != 0)
+  if (dc == NULL || rect == NULL)
   {
-    s.display_info = FUN_00448c93(&s.displayed_player, player, card);
-    s.display_version = s.display_info >> 0x10;
-    memset(&s.card_data, 0, sizeof(s.card_data));
-    s.card_data.id = s.display_info & 0xffff;
-
-    if (card_id == unk_007a7d64)
-    {
-      sprintf(g_card_title_buffer_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30, get_displayed_card_special_counters(player, card));
-      s.single_color = single_color_test_bit_to_color_t(FUN_00449057(player, card));
-      if (s.single_color == 1 ||
-          s.single_color == 2 ||
-          s.single_color == 4 ||
-          s.single_color == 3 ||
-          s.single_color == 5)
-      {
-        sprintf(g_card_title_buffer_00709100 + strlen(g_card_title_buffer_00709100), s_ParenthesizedColorFormat_0057f638, gs_color_word_capitalized_00709390[s.single_color]);
-      }
-    }
-    else if (card_id == unk_00789b80)
-    {
-      sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, get_hunting_subtype_name(get_displayed_card_special_counters(player, card)));
-    }
-    else if (card_id == unk_008cf1ac)
-    {
-      strcpy(g_card_title_buffer_00709100, gs_multiblock_creature_008cf040);
-    }
-    else if (card_id == unk_00789734)
-    {
-      strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].damage_text);
-    }
-    else if (card_id == unk_008a8de8)
-    {
-      strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].effect_text);
-    }
-    else
-    {
-      g_card_title_buffer_00709100[0] = '\0';
-    }
-
-    if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
-    {
-      strcpy(s.temporary_name, g_card_title_buffer_00709100);
-      extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
-    }
-
-    s.transformed_card_id = get_displayed_card_id(s.displayed_player, s.displayed_card);
-    if (card_id == unk_00789734 &&
-        (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
-         s.transformed_card_id == CARD_ID_WHIMSY))
-    {
-      strcpy(g_card_title_buffer_00709100, unk_00777e60[s.transformed_card_id].damage_text);
-    }
-
-    s.card_data.full_name = g_card_title_buffer_00709100;
-    s.card_data.name = g_card_title_buffer_00709100;
-    s.card_data.expansion = 0xffffffff;
-    s.card_data.color = 0xffffffff;
-    s.card_data.card_type = 0;
-    s.card_data.subtype = 0xffffffff;
-    s.card_data.type_text = NULL;
-    s.card_data.db_card_type_2 = 0;
-    s.card_data.rarity = 0;
-    memset(&s.card_data.req, 0, sizeof(s.card_data.req));
-    s.card_data.flags = 0;
-    s.card_data.unused0x38 = 0xffffffff;
-    s.card_data.unused0x3c = 0;
-    s.card_data.artist = NULL;
-    s.card_data.num_pics = 0xffffffff;
-    s.card_data.mana_cost_text = NULL;
-    s.card_data.ai_modifiers1 = 0;
-    s.card_data.ai_modifiers2 = 0;
-    memset(s.card_data.abilities, 0, sizeof(s.card_data.abilities));
-    s.card_data.flavor_text = s_Empty_0057f718;
-    s.card_data.power = 0;
-    s.card_data.toughness = 0;
-
-    if (card_id == unk_007a7d64)
-    {
-      strcpy(g_card_rules_text_buffer_00708da8, gs_words_to_sleight_00781bd0[s.card_data.id]);
-    }
-    else if (card_id == unk_00789b80)
-    {
-      strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_title);
-    }
-    else if (card_id == unk_008cf1ac)
-    {
-      strcpy(g_card_rules_text_buffer_00708da8, gs_multiblock_shadow_blocker_00925e70);
-    }
-    else if (card_id == unk_00789734)
-    {
-      strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_title);
-    }
-    else if (card_id == unk_008a8de8)
-    {
-      strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].legacy_title);
-    }
-    else
-    {
-      g_card_rules_text_buffer_00708da8[0] = '\0';
-    }
-
-    s.display_flags = get_displayed_card_display_flags(player, card);
-    if ((s.display_flags & 0x2000000) == 0)
-    {
-      FUN_00449645(player, card, g_card_rules_text_buffer_00708da8);
-      FUN_00449706(player, card, g_card_rules_text_buffer_00708da8);
-    }
-    else
-    {
-      FUN_00449645(s.displayed_player, s.displayed_card, g_card_rules_text_buffer_00708da8);
-      FUN_00449706(s.displayed_player, s.displayed_card, g_card_rules_text_buffer_00708da8);
-    }
-
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord1_0057f644, 1, s_Empty_0057f640);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord2_0057f64c, 1, s_Empty_0057f648);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord3_0057f654, 1, s_Empty_0057f650);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWord4_0057f65c, 1, s_Empty_0057f658);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_HackWordAny_0057f664, 1, s_Empty_0057f660);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord1_0057f66c, 1, s_Empty_0057f668);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord2_0057f674, 1, s_Empty_0057f670);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord3_0057f67c, 1, s_Empty_0057f678);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWord4_0057f684, 1, s_Empty_0057f680);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_ColorWordAny_0057f68c, 1, s_Empty_0057f688);
-
-    FUN_00449249(player, card, &s.displayed_power, &s.displayed_toughness);
-    sprintf(s.value_text, s_PlusPowerToughnessFormat_0057f690, s.displayed_power, s.displayed_toughness);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusPowerToughnessToken_0057f698, 0, s.value_text);
-    sprintf(s.value_text, s_PlusZeroToughnessFormat_0057f6a0, s.displayed_toughness);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusZeroToughnessToken_0057f6a8, 0, s.value_text);
-    sprintf(s.value_text, s_PlusPowerZeroFormat_0057f6b0, s.displayed_power);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusPowerZeroToken_0057f6b8, 0, s.value_text);
-    sprintf(s.value_text, s_MinusZeroToughnessFormat_0057f6c0, s.displayed_power);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_MinusZeroToughnessToken_0057f6c8, 0, s.value_text);
-    sprintf(s.value_text, s_PlusPowerMinusToughnessFormat_0057f6d0, s.displayed_power, s.displayed_toughness);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_PlusPowerMinusToughnessToken_0057f6d8, 0, s.value_text);
-    sprintf(s.value_text, s_NumberFormat_0057f6e0, s.displayed_toughness);
-    FUN_00494e91(g_card_rules_text_buffer_00708da8, s_NumberToken_0057f6e4, 0, s.value_text);
-
-    if (s.card_data.id == 0x21b)
-    {
-      s.display_flags = get_displayed_card_special_counters(player, card);
-      s.appended_text = 0;
-      strcpy(s.value_text, s_Empty_0057f6e8);
-      if ((s.display_flags & 0x20) != 0)
-      {
-        if (s.appended_text != 0)
-        {
-          strcat(s.value_text, s_CommaSpace_0057f6ec);
-        }
-        strcat(s.value_text, gs_ability_word_008b4de0);
-        s.appended_text = 1;
-      }
-      if ((s.display_flags & 0x100) != 0)
-      {
-        if (s.appended_text != 0)
-        {
-          strcat(s.value_text, s_CommaSpace_0057f6f0);
-        }
-        strcat(s.value_text, DAT_008b4ea8);
-        s.appended_text = 1;
-      }
-      if ((s.display_flags & 0x40) != 0)
-      {
-        if (s.appended_text != 0)
-        {
-          strcat(s.value_text, s_CommaSpace_0057f6f4);
-        }
-        strcat(s.value_text, DAT_008b4e44);
-        s.appended_text = 1;
-      }
-      if ((s.display_flags & 0x80) != 0)
-      {
-        if (s.appended_text != 0)
-        {
-          strcat(s.value_text, s_CommaSpace_0057f6f8);
-        }
-        strcat(s.value_text, DAT_008b4e76);
-        s.appended_text = 1;
-      }
-      FUN_00494e91(g_card_rules_text_buffer_00708da8, s_AbilityListMarker_0057f6fc, 0, s.value_text);
-      FUN_00449249(player, card, &s.displayed_power, &s.displayed_toughness);
-      sprintf(s.value_text, s_MinusPowerToughnessFormat_0057f700, s.displayed_power, s.displayed_toughness);
-      FUN_00494e91(g_card_rules_text_buffer_00708da8, s_MinusPowerToughnessToken_0057f708, 0, s.value_text);
-    }
-
-    if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
-    {
-      strcpy(s.transformed_rules_text, g_card_rules_text_buffer_00708da8);
-      extract_numbered_text_choice(g_card_rules_text_buffer_00708da8, s.transformed_rules_text, FUN_004491cd(player, card));
-    }
-
-    if (card_id == unk_007a7d64)
-    {
-      s.display_flags = get_displayed_card_display_flags(player, card);
-      if (g_card_rules_text_buffer_00708da8[0] != '\0' && g_card_rules_text_buffer_00708da8[0] != '\n')
-      {
-        strcat(g_card_rules_text_buffer_00708da8, s_Newline_0057f710);
-      }
-      if ((s.display_flags & 0x100000) != 0)
-      {
-        strcat(g_card_rules_text_buffer_00708da8, DAT_008b4ea8);
-        strcat(g_card_rules_text_buffer_00708da8, s_Newline_0057f714);
-      }
-      if ((s.display_flags & 0x80000) != 0)
-      {
-        strcat(g_card_rules_text_buffer_00708da8, DAT_008b4e76);
-      }
-    }
-
-    s.card_data.rules_text = g_card_rules_text_buffer_00708da8;
-    DrawFullCard((HDC)dc, (RECT *)rect, &s.card_data, s.display_version, 2, DAT_0091c980, &gs_illus_00789130);
+    return;
   }
+
+  s.display_info = get_displayed_card_display_pic_info(s.displayed_player_and_card, player, card);
+  s.display_version = (unsigned short)((s.display_info >> 0x10) & 0xffff);
+  s.card_data.id = s.display_info & 0xffff;
+
+  if (card_id == unk_007a7d64)
+  {
+    sprintf(g_card_title_buffer_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30, get_displayed_card_special_counters(player, card));
+    s.single_color = single_color_test_bit_to_color_t(get_displayed_card_color_flags(player, card));
+    if (s.single_color == 1 ||
+        s.single_color == 2 ||
+        s.single_color == 4 ||
+        s.single_color == 3 ||
+        s.single_color == 5)
+    {
+      sprintf(g_card_title_buffer_00709100 + strlen(g_card_title_buffer_00709100), s_ParenthesizedColorFormat_0057f638, gs_color_word_capitalized_00709390[s.single_color]);
+    }
+  }
+  else if (card_id == unk_00789b80)
+  {
+    sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, get_hunting_subtype_name(get_displayed_card_special_counters(player, card)));
+  }
+  else if (card_id == unk_008cf1ac)
+  {
+    strcpy(g_card_title_buffer_00709100, gs_multiblock_creature_008cf040);
+  }
+  else if (card_id == unk_00789734)
+  {
+    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].effect_title);
+  }
+  else if (card_id == unk_008a8de8)
+  {
+    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].legacy_title);
+  }
+  else
+  {
+    g_card_title_buffer_00709100[0] = '\0';
+  }
+
+  if (card_id == unk_00789734 && get_displayed_card_eot_toughness(player, card) > 0)
+  {
+    strcpy(s.temporary_name, g_card_title_buffer_00709100);
+    extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, get_displayed_card_eot_toughness(player, card));
+  }
+
+  s.transformed_card_id = get_displayed_card_id(s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
+  if (card_id == unk_00789734 &&
+      (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
+       s.transformed_card_id == CARD_ID_WHIMSY))
+  {
+    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.transformed_card_id].effect_title);
+  }
+
+  s.card_data.name = g_card_title_buffer_00709100;
+  s.card_data.full_name = s.card_data.name;
+  s.card_data.expansion = 0xffffffff;
+  s.card_data.color = 0xffffffff;
+  s.card_data.card_type = 0;
+  s.card_data.subtype = 0xffffffff;
+  s.card_data.type_text = NULL;
+  s.card_data.db_card_type_2 = 0xffffffff;
+  s.card_data.rarity = 0;
+  for (s.ability_index = 0; s.ability_index < 10; ++s.ability_index)
+  {
+    s.card_data.abilities[s.ability_index] = 0;
+  }
+  s.card_data.unused0x38 = 0xffffffff;
+  s.card_data.unused0x3c = 0;
+  s.card_data.artist = NULL;
+  s.card_data.num_pics = 0;
+  s.card_data.mana_cost_text = NULL;
+  s.card_data.ai_modifiers1 = 0;
+  s.card_data.ai_modifiers2 = 0;
+  s.card_data.req.req_black = 0;
+  s.card_data.req.req_blue = 0;
+  s.card_data.req.req_colorless = 0;
+  s.card_data.req.req_green = 0;
+  s.card_data.req.req_red = 0;
+  s.card_data.req.req_white = 0;
+
+  if (card_id == unk_007a7d64)
+  {
+    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].damage_text);
+  }
+  else if (card_id == unk_00789b80)
+  {
+    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_text);
+  }
+  else if (card_id == unk_008cf1ac)
+  {
+    strcpy(g_card_rules_text_buffer_00708da8, gs_multiblock_shadow_blocker_00925e70);
+  }
+  else if (card_id == unk_00789734)
+  {
+    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_text);
+  }
+  else if (card_id == unk_008a8de8)
+  {
+    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].legacy_text);
+  }
+  else
+  {
+    g_card_rules_text_buffer_00708da8[0] = '\0';
+  }
+
+  if ((get_displayed_card_display_flags(player, card) & 0x2000000) != 0)
+  {
+    apply_displayed_card_sleight_words(s.displayed_player_and_card[0], s.displayed_player_and_card[1], g_card_rules_text_buffer_00708da8);
+    apply_displayed_card_hack_words(s.displayed_player_and_card[0], s.displayed_player_and_card[1], g_card_rules_text_buffer_00708da8);
+  }
+  else
+  {
+    apply_displayed_card_sleight_words(player, card, g_card_rules_text_buffer_00708da8);
+    apply_displayed_card_hack_words(player, card, g_card_rules_text_buffer_00708da8);
+  }
+
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_HackWord1_0057f644, 1, s_Empty_0057f640);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_HackWord2_0057f64c, 1, s_Empty_0057f648);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_HackWord3_0057f654, 1, s_Empty_0057f650);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_HackWord4_0057f65c, 1, s_Empty_0057f658);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_HackWordAny_0057f664, 1, s_Empty_0057f660);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_ColorWord1_0057f66c, 1, s_Empty_0057f668);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_ColorWord2_0057f674, 1, s_Empty_0057f670);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_ColorWord3_0057f67c, 1, s_Empty_0057f678);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_ColorWord4_0057f684, 1, s_Empty_0057f680);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_ColorWordAny_0057f68c, 1, s_Empty_0057f688);
+
+  get_displayed_card_counter_power_toughness(player, card, &s.displayed_power, &s.displayed_toughness);
+  sprintf(s.value_text, s_PlusPowerToughnessFormat_0057f690, s.displayed_power, s.displayed_toughness);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_PlusPowerToughnessToken_0057f698, 0, s.value_text);
+  sprintf(s.value_text, s_PlusZeroToughnessFormat_0057f6a0, s.displayed_toughness);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_PlusZeroToughnessToken_0057f6a8, 0, s.value_text);
+  sprintf(s.value_text, s_PlusPowerZeroFormat_0057f6b0, s.displayed_power);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_PlusPowerZeroToken_0057f6b8, 0, s.value_text);
+  sprintf(s.value_text, s_MinusZeroToughnessFormat_0057f6c0, s.displayed_power);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_MinusZeroToughnessToken_0057f6c8, 0, s.value_text);
+  sprintf(s.value_text, s_PlusPowerMinusToughnessFormat_0057f6d0, s.displayed_power, s.displayed_toughness);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_PlusPowerMinusToughnessToken_0057f6d8, 0, s.value_text);
+  sprintf(s.value_text, s_NumberFormat_0057f6e0, s.displayed_toughness);
+  replace_text_token(g_card_rules_text_buffer_00708da8, s_NumberToken_0057f6e4, 0, s.value_text);
+
+  if (s.card_data.id == 0x21b)
+  {
+    s.display_flags = get_displayed_card_special_counters(player, card);
+    s.appended_text = 0;
+    strcpy(s.value_text, s_Empty_0057f6e8);
+    if ((s.display_flags & 0x20) != 0)
+    {
+      if (s.appended_text != 0)
+      {
+        strcat(s.value_text, s_CommaSpace_0057f6ec);
+      }
+      strcat(s.value_text, gs_ability_word_008b4de0[0]);
+      s.appended_text = 1;
+    }
+    if ((s.display_flags & 0x100) != 0)
+    {
+      if (s.appended_text != 0)
+      {
+        strcat(s.value_text, s_CommaSpace_0057f6f0);
+      }
+      strcat(s.value_text, gs_ability_word_008b4de0[4]);
+      s.appended_text = 1;
+    }
+    if ((s.display_flags & 0x40) != 0)
+    {
+      if (s.appended_text != 0)
+      {
+        strcat(s.value_text, s_CommaSpace_0057f6f4);
+      }
+      strcat(s.value_text, gs_ability_word_008b4de0[2]);
+      s.appended_text = 1;
+    }
+    if ((s.display_flags & 0x80) != 0)
+    {
+      if (s.appended_text != 0)
+      {
+        strcat(s.value_text, s_CommaSpace_0057f6f8);
+      }
+      strcat(s.value_text, gs_ability_word_008b4de0[3]);
+      s.appended_text = 1;
+    }
+    replace_text_token(g_card_rules_text_buffer_00708da8, s_AbilityListMarker_0057f6fc, 0, s.value_text);
+    get_displayed_card_counter_power_toughness(player, card, &s.displayed_power, &s.displayed_toughness);
+    sprintf(s.value_text, s_MinusPowerToughnessFormat_0057f700, s.displayed_power, s.displayed_toughness);
+    replace_text_token(g_card_rules_text_buffer_00708da8, s_MinusPowerToughnessToken_0057f708, 0, s.value_text);
+  }
+
+  if (card_id == unk_00789734 && get_displayed_card_eot_toughness(player, card) > 0)
+  {
+    strcpy(s.transformed_rules_text, g_card_rules_text_buffer_00708da8);
+    extract_numbered_text_choice(g_card_rules_text_buffer_00708da8, s.transformed_rules_text, get_displayed_card_eot_toughness(player, card));
+  }
+
+  if (card_id == unk_007a7d64)
+  {
+    s.final_display_flags = get_displayed_card_display_flags(player, card);
+    if (g_card_rules_text_buffer_00708da8[0] != '\0' && g_card_rules_text_buffer_00708da8[0] != '\n')
+    {
+      strcat(g_card_rules_text_buffer_00708da8, s_Newline_0057f710);
+    }
+    if ((s.final_display_flags & 0x100000) != 0)
+    {
+      strcat(g_card_rules_text_buffer_00708da8, gs_ability_word_008b4de0[4]);
+      strcat(g_card_rules_text_buffer_00708da8, s_Newline_0057f714);
+    }
+    if ((s.final_display_flags & 0x80000) != 0)
+    {
+      strcat(g_card_rules_text_buffer_00708da8, gs_ability_word_008b4de0[3]);
+    }
+  }
+
+  s.card_data.rules_text = g_card_rules_text_buffer_00708da8;
+  s.card_data.flavor_text = s_Empty_0057f718;
+  s.card_data.power = 0;
+  s.card_data.toughness = 0;
+  s.card_data.sleight_color = 0;
+  DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, DAT_0091c980, &gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00506fa0
 INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  POINT cursor_point;
-  POINT secondary_point;
-  LRESULT listbox_selection;
-  UINT notification_code;
-  HBRUSH background_brush;
-  int drag_y;
-  int drag_x;
-  BOOL point_in_rect;
-  HWND child_window;
-  unsigned int card_type;
-  size_t coord_text_length;
-  HGDIOBJ font_handle;
-  char card_coordinates[12];
-  HDC paint_dc;
-  PAINTSTRUCT paint_struct;
-  card_id_t card_image_number;
-  card_id_t card_id;
-  int picture_number;
-  int hovered_player;
-  int hovered_card;
-  unsigned int mouse_x;
-  unsigned int mouse_y;
-  card_id_t bigcard_image;
-  card_id_t smallcard_image;
-  RECT before_drag_rect;
-  unsigned int was_dragged;
-  RECT after_drag_rect;
-  HDC erase_dc;
-  RECT erase_rect;
-  LRESULT current_selection;
-  HGDIOBJ old_font;
-  LOGFONTA listbox_font_info;
-  HFONT bold_font;
-  HANDLE listbox_font_handle;
-  int smallcard_player;
-  int smallcard_card;
-  HWND smallcard_window;
-  RECT listbox_rect;
-  int listbox_top;
-  int listbox_right_margin;
-  RECT client_rect;
-  dialog_context_t *dialog_context;
-
-  dialog_context = g_big_card_choice_dialog_context;
-
-  if (msg == WM_ERASEBKGND)
+  struct
   {
-    erase_dc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(erase_dc);
-    GetClientRect(hwnd, &erase_rect);
-    if (g_magicgame_big_card_choice_pic == 0)
-    {
-      background_brush = GetStockObject(BLACK_BRUSH);
-      FillRect(erase_dc, &erase_rect, background_brush);
-    }
-    else
-    {
-      DrawBitmapToRect(erase_dc, &erase_rect, (HBITMAP)g_magicgame_big_card_choice_pic);
-    }
-    return 1;
-  }
+    HGDIOBJ timer_font;
+    char card_coordinates[12];
+    HDC paint_dc;
+    PAINTSTRUCT paint_struct;
+    int picture_number;
+    card_id_t card_id;
+    card_id_t card_image_number;
+    int hovered_player;
+    int hovered_card;
+    POINT cursor_point;
+    card_id_t bigcard_image;
+    card_id_t smallcard_image;
+    RECT before_drag_rect;
+    unsigned int was_dragged;
+    RECT after_drag_rect;
+    HDC erase_dc;
+    RECT erase_rect;
+    LRESULT current_selection;
+    UINT notification_code;
+    HGDIOBJ old_font;
+    LOGFONTA listbox_font_info;
+    HFONT bold_font;
+    HANDLE listbox_font_handle;
+    int smallcard_player;
+    int smallcard_card;
+    HWND smallcard_window;
+    RECT listbox_rect;
+    int listbox_top;
+    int listbox_right_margin;
+    RECT client_rect;
+  } s;
 
-  if (msg == WM_INITDIALOG)
+  switch (msg)
   {
+  case WM_INITDIALOG:
     g_big_card_choice_state_006f6e20 = 0;
     if (g_duel_network_state != 0)
     {
       SetTimer(hwnd, 1, 2000, (TIMERPROC)0);
     }
 
-    child_window = GetDlgItem(hwnd, 0x3fd);
-    GetWindowRect(child_window, &listbox_rect);
-    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&listbox_rect, 2);
-    GetClientRect(hwnd, &client_rect);
-    listbox_top = listbox_rect.top;
-    listbox_right_margin = client_rect.right - listbox_rect.right;
-    InflateRect(&client_rect, -listbox_rect.top, -listbox_right_margin);
-    CopyRect(&g_big_card_choice_full_card_rect, &client_rect);
-    g_big_card_choice_full_card_rect.right = listbox_rect.left - listbox_top;
-    CopyRect(&g_big_card_choice_small_card_rect, &client_rect);
-    g_big_card_choice_small_card_rect.left = listbox_rect.left;
-    g_big_card_choice_small_card_rect.top = listbox_rect.bottom;
-    if (g_big_card_choice_small_card_rect.bottom - listbox_rect.bottom <
-        g_big_card_choice_small_card_rect.right - listbox_rect.left)
+    GetWindowRect(GetDlgItem(hwnd, 0x3fd), &s.listbox_rect);
+    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.listbox_rect, 2);
+    GetClientRect(hwnd, &s.client_rect);
+    s.listbox_top = s.listbox_rect.top;
+    s.listbox_right_margin = s.client_rect.right - s.listbox_rect.right;
+    InflateRect(&s.client_rect, -s.listbox_top, -s.listbox_right_margin);
+    CopyRect(&g_big_card_choice_full_card_rect, &s.client_rect);
+    g_big_card_choice_full_card_rect.right = s.listbox_rect.left - s.listbox_top;
+    CopyRect(&g_big_card_choice_small_card_rect, &s.client_rect);
+    g_big_card_choice_small_card_rect.left = s.listbox_rect.left;
+    g_big_card_choice_small_card_rect.top = s.listbox_rect.bottom;
+    if (g_big_card_choice_small_card_rect.bottom - g_big_card_choice_small_card_rect.top <
+        g_big_card_choice_small_card_rect.right - g_big_card_choice_small_card_rect.left)
     {
       g_big_card_choice_small_card_rect.right =
-        g_big_card_choice_small_card_rect.bottom - listbox_rect.bottom + listbox_rect.left;
+          g_big_card_choice_small_card_rect.bottom - g_big_card_choice_small_card_rect.top + g_big_card_choice_small_card_rect.left;
     }
     else
     {
       g_big_card_choice_small_card_rect.bottom =
-        g_big_card_choice_small_card_rect.right - listbox_rect.left + listbox_rect.bottom;
+          g_big_card_choice_small_card_rect.right - g_big_card_choice_small_card_rect.left + g_big_card_choice_small_card_rect.top;
     }
 
     g_big_card_choice_dialog_context = (dialog_context_t *)lparam;
-    dialog_context = g_big_card_choice_dialog_context;
-    SetDlgItemTextA(hwnd, 0x3fd, dialog_context->prompt);
-    SendDlgItemMessageA(hwnd, 0x3fd, 0x401, dialog_context->dialog_mode, 0);
-    if (dialog_context->smallcard_player != -1)
+    SetDlgItemTextA(hwnd, 0x3fd, g_big_card_choice_dialog_context->prompt);
+    SendDlgItemMessageA(hwnd, 0x3fd, 0x401, g_big_card_choice_dialog_context->dialog_mode, 0);
+    if (g_big_card_choice_dialog_context->smallcard_player != -1)
     {
-      smallcard_player = dialog_context->smallcard_player;
-      smallcard_card = dialog_context->smallcard_card;
-      smallcard_window = CreateWindowExA(0,
-                                         "MAGICGAME_BigCardCardClass",
-                                         "BigCard small card",
-                                         0x50000000,
-                                         g_big_card_choice_small_card_rect.left,
-                                         g_big_card_choice_small_card_rect.top,
-                                         g_showlist_smallcard_width,
-                                         g_showlist_smallcard_height,
-                                         hwnd,
-                                         (HMENU)1,
-                                         g_app_instance,
-                                         &smallcard_player);
-      (void)smallcard_window;
+      s.smallcard_player = g_big_card_choice_dialog_context->smallcard_player;
+      s.smallcard_card = g_big_card_choice_dialog_context->smallcard_card;
+      s.smallcard_window = CreateWindowExA(0,
+                                           "MAGICGAME_BigCardCardClass",
+                                           "BigCard small card",
+                                           0x50000000,
+                                           g_big_card_choice_small_card_rect.left,
+                                           g_big_card_choice_small_card_rect.top,
+                                           g_showlist_smallcard_width,
+                                           g_showlist_smallcard_height,
+                                           hwnd,
+                                           (HMENU)1,
+                                           g_app_instance,
+                                           &s.smallcard_player);
     }
 
-    listbox_font_handle = (HANDLE)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
-    GetObjectA(listbox_font_handle, sizeof(listbox_font_info), &listbox_font_info);
-    listbox_font_info.lfWeight = 700;
-    bold_font = CreateFontIndirectA(&listbox_font_info);
-    SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, (WPARAM)bold_font, 0);
-    child_window = GetDlgItem(hwnd, 0x3fd);
-    SetFocus(child_window);
-    listbox_selection = SendDlgItemMessageA(hwnd, 0x3fd, 0x400, 0, 0);
-    if (listbox_selection == 0 || dialog_context->dialog_mode == 0)
+    s.listbox_font_handle = (HANDLE)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
+    GetObjectA(s.listbox_font_handle, sizeof(s.listbox_font_info), &s.listbox_font_info);
+    s.listbox_font_info.lfWeight = 700;
+    s.bold_font = CreateFontIndirectA(&s.listbox_font_info);
+    SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, (WPARAM)s.bold_font, 0);
+    SetFocus(GetDlgItem(hwnd, 0x3fd));
+    if (SendDlgItemMessageA(hwnd, 0x3fd, 0x400, 0, 0) == 0 || g_big_card_choice_dialog_context->dialog_mode == 0)
     {
       SetTimer(hwnd, 1, g_big_card_choice_timeout_ms, (TIMERPROC)0);
     }
     return 0;
-  }
 
-  if (msg == WM_COMMAND)
-  {
-    if (LOWORD(wparam) == 1 || LOWORD(wparam) == 2)
+  case WM_COMMAND:
+    if ((lparam & 0xffff) == 1 || (lparam & 0xffff) == 2)
     {
-      child_window = GetDlgItem(hwnd, 0x3fd);
-      SendMessageA(hwnd, WM_COMMAND, 0x3fd, (LPARAM)child_window);
+      SendMessageA(hwnd, WM_COMMAND, 0x3fd, (LPARAM)GetDlgItem(hwnd, 0x3fd));
     }
-    else if (LOWORD(wparam) == 0x3fd)
+    else if ((wparam & 0xffff) == 0x3fd)
     {
-      notification_code = HIWORD(wparam);
-      current_selection = SendDlgItemMessageA(hwnd, 0x3fd, 0x400, 0, 0);
-      if (notification_code == 0)
+      s.notification_code = HIWORD(wparam);
+      s.current_selection = SendDlgItemMessageA(hwnd, 0x3fd, 0x400, 0, 0);
+      if (s.notification_code != 0)
       {
-        if (current_selection == 0 || dialog_context->dialog_mode == 0)
-        {
-          old_font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
-          SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, 0, 0);
-          DeleteObject(old_font);
-          EndDialog(hwnd, notification_code);
-        }
-      }
-      else
-      {
-        old_font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
+        s.old_font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
         SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, 0, 0);
-        DeleteObject(old_font);
-        EndDialog(hwnd, notification_code);
+        DeleteObject(s.old_font);
+        EndDialog(hwnd, s.notification_code);
+      }
+      else if (s.current_selection == 0 || g_big_card_choice_dialog_context->dialog_mode == 0)
+      {
+        s.old_font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
+        SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, 0, 0);
+        DeleteObject(s.old_font);
+        EndDialog(hwnd, s.notification_code);
       }
     }
     return 1;
-  }
 
-  if (msg == WM_TIMER)
-  {
-    font_handle = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
-    SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, 0, 0);
-    DeleteObject(font_handle);
-    EndDialog(hwnd, 0);
-    return 1;
-  }
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+  case WM_QUERYNEWPALETTE:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, (int)lparam);
 
-  if (msg == WM_LBUTTONDOWN)
-  {
-    GetWindowRect(hwnd, &before_drag_rect);
-    SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
-    GetWindowRect(hwnd, &after_drag_rect);
-    drag_y = abs(before_drag_rect.top - after_drag_rect.top);
-    drag_x = abs(before_drag_rect.left - after_drag_rect.left);
-    was_dragged = (drag_y + drag_x > 4);
-    if (was_dragged == 0)
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.erase_rect);
+    if (g_magicgame_big_card_choice_pic != 0)
     {
-      child_window = GetDlgItem(hwnd, 0x3fd);
-      SendMessageA(hwnd, WM_COMMAND, 0x3fd, (LPARAM)child_window);
+      DrawBitmapToRect(s.erase_dc, &s.erase_rect, (HBITMAP)g_magicgame_big_card_choice_pic);
+    }
+    else
+    {
+      FillRect(s.erase_dc, &s.erase_rect, GetStockObject(0));
     }
     return 1;
-  }
 
-  if (msg == WM_MOUSEMOVE || msg == WM_RBUTTONDOWN)
-  {
-    mouse_x = LOWORD(lparam);
-    mouse_y = HIWORD(lparam);
+  case WM_LBUTTONDOWN:
+    GetWindowRect(hwnd, &s.before_drag_rect);
+    SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
+    GetWindowRect(hwnd, &s.after_drag_rect);
+    if (abs(s.before_drag_rect.top - s.after_drag_rect.top) +
+            abs(s.before_drag_rect.left - s.after_drag_rect.left) < 5)
+    {
+      s.was_dragged = 0;
+    }
+    else
+    {
+      s.was_dragged = 1;
+    }
+    if (s.was_dragged == 0)
+    {
+      SendMessageA(hwnd, WM_COMMAND, 0x3fd, (LPARAM)GetDlgItem(hwnd, 0x3fd));
+    }
+    return 1;
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDOWN:
+    s.cursor_point.x = lparam & 0xffff;
+    s.cursor_point.y = HIWORD(lparam);
     if ((msg == WM_MOUSEMOVE && g_duel_interface_options.layout != 2) || (msg == WM_RBUTTONDOWN && g_duel_interface_options.layout == 2))
     {
-      bigcard_image = get_displayed_card_id(dialog_context->bigcard_player, dialog_context->bigcard_card);
-      if (dialog_context->smallcard_player == -1 || dialog_context->smallcard_card == -1)
+      s.bigcard_image = get_displayed_card_id(g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card);
+      if (g_big_card_choice_dialog_context->smallcard_player == -1 || g_big_card_choice_dialog_context->smallcard_card == -1)
       {
-        smallcard_image = -1;
+        s.smallcard_image = -1;
       }
       else
       {
-        smallcard_image = get_displayed_card_id(dialog_context->smallcard_player, dialog_context->smallcard_card);
+        s.smallcard_image = get_displayed_card_id(g_big_card_choice_dialog_context->smallcard_player, g_big_card_choice_dialog_context->smallcard_card);
       }
 
-      cursor_point.x = mouse_x;
-      cursor_point.y = mouse_y;
-      point_in_rect = PtInRect(&g_big_card_choice_full_card_rect, cursor_point);
-      if (bigcard_image != -1 && point_in_rect != 0)
+      if (s.bigcard_image != -1 && PtInRect(&g_big_card_choice_full_card_rect, s.cursor_point) != 0)
       {
-        hovered_player = dialog_context->bigcard_player;
-        hovered_card = dialog_context->bigcard_card;
-        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, (WPARAM)bigcard_image, (LPARAM)&hovered_player);
+        s.hovered_player = g_big_card_choice_dialog_context->bigcard_player;
+        s.hovered_card = g_big_card_choice_dialog_context->bigcard_card;
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, (WPARAM)s.bigcard_image, (LPARAM)&s.hovered_player);
       }
-      else if (smallcard_image != -1)
+      else if (s.smallcard_image != -1)
       {
-        secondary_point.x = mouse_x;
-        secondary_point.y = mouse_y;
-        point_in_rect = PtInRect(&g_big_card_choice_small_card_rect, secondary_point);
-        if (point_in_rect != 0)
+        if (PtInRect(&g_big_card_choice_small_card_rect, s.cursor_point) != 0)
         {
-          hovered_player = dialog_context->smallcard_player;
-          hovered_card = dialog_context->smallcard_card;
-          SendMessageA(g_duel_card_preview_window_hwnd, 0x401, (WPARAM)smallcard_image, (LPARAM)&hovered_player);
+          s.hovered_player = g_big_card_choice_dialog_context->smallcard_player;
+          s.hovered_card = g_big_card_choice_dialog_context->smallcard_card;
+          SendMessageA(g_duel_card_preview_window_hwnd, 0x401, (WPARAM)s.smallcard_image, (LPARAM)&s.hovered_player);
         }
       }
     }
     return 0;
-  }
 
-  if (msg == WM_PAINT)
-  {
-    child_window = GetDlgItem(hwnd, 0x3fd);
-    UpdateWindow(child_window);
-    paint_dc = BeginPaint(hwnd, &paint_struct);
-    if (paint_dc != 0)
+  case WM_PAINT:
+    UpdateWindow(GetDlgItem(hwnd, 0x3fd));
+    s.paint_dc = BeginPaint(hwnd, &s.paint_struct);
+    if (s.paint_dc != 0)
     {
-      ApplyCardArtPaletteToDc(paint_dc);
-      card_image_number = get_displayed_card_id(dialog_context->bigcard_player, dialog_context->bigcard_card);
-      card_type = FUN_00449ac3(dialog_context->bigcard_player, dialog_context->bigcard_card);
-      card_id = CardIDFromType(card_type);
-      if (card_image_number == -1)
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      s.card_image_number = get_displayed_card_id(g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card);
+      s.card_id = CardIDFromType(get_displayed_card_original_internal_id(g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card));
+      if (s.card_image_number != -1)
       {
-        if (card_id != -1 &&
-            card_id != unk_009266ac &&
-            card_id != unk_007a7d64 &&
-            card_id != unk_00789b80 &&
-            card_id != unk_008cf1ac &&
-            card_id != unk_00789734 &&
-            card_id != unk_008a8de8 &&
-            card_id != unk_0092666c)
+        s.picture_number = get_card_display_pic_num(s.card_image_number,
+                                                    g_big_card_choice_dialog_context->bigcard_player,
+                                                    g_big_card_choice_dialog_context->bigcard_card);
+        if (s.card_image_number == unk_009266ac)
         {
-          DrawFullCard(paint_dc, &g_big_card_choice_full_card_rect, global_raw_cards_storage + card_id, 0, 0x12, 0, &gs_illus_00789130);
-          if (g_duel_dialog_refresh_state != 0)
-          {
-            sprintf(card_coordinates, "%d,%d", dialog_context->bigcard_player, dialog_context->bigcard_card);
-            SetBkMode(paint_dc, 1);
-            SetTextColor(paint_dc, 0);
-            coord_text_length = strlen(card_coordinates);
-            TextOutA(paint_dc,
-                     g_big_card_choice_full_card_rect.left + 5,
-                     g_big_card_choice_full_card_rect.top +
-                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100,
-                     card_coordinates,
-                     coord_text_length);
-            SetTextColor(paint_dc, 0xffffff);
-            coord_text_length = strlen(card_coordinates);
-            TextOutA(paint_dc,
-                     g_big_card_choice_full_card_rect.left + 4,
-                     g_big_card_choice_full_card_rect.top +
-                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100 - 1,
-                     card_coordinates,
-                     coord_text_length);
-          }
+          DrawCardBack(s.paint_dc, &g_big_card_choice_full_card_rect);
         }
-      }
-      else
-      {
-        picture_number = get_card_display_pic_num(card_image_number,
-                                                  dialog_context->bigcard_player,
-                                                  dialog_context->bigcard_card);
-        if (card_image_number == unk_009266ac)
+        else if (s.card_image_number == unk_007a7d64 ||
+                 s.card_image_number == unk_00789b80 ||
+                 s.card_image_number == unk_008cf1ac ||
+                 s.card_image_number == unk_00789734 ||
+                 s.card_image_number == unk_008a8de8)
         {
-          DrawCardBack(paint_dc, &g_big_card_choice_full_card_rect);
+          draw_special_effect_full_card(s.paint_dc,
+                                        &g_big_card_choice_full_card_rect,
+                                        s.card_image_number,
+                                        g_big_card_choice_dialog_context->bigcard_player,
+                                        g_big_card_choice_dialog_context->bigcard_card);
         }
-        else if (card_image_number == unk_007a7d64 ||
-                 card_image_number == unk_00789b80 ||
-                 card_image_number == unk_008cf1ac ||
-                 card_image_number == unk_00789734 ||
-                 card_image_number == unk_008a8de8)
+        else if (s.card_image_number == unk_0092666c)
         {
-          draw_special_effect_full_card((int)paint_dc,
-                                        (int)&g_big_card_choice_full_card_rect,
-                                        card_image_number,
-                                        dialog_context->bigcard_player,
-                                        dialog_context->bigcard_card);
-        }
-        else if (card_image_number == unk_0092666c)
-        {
-          FUN_00559bc1((int)paint_dc, (int)&g_big_card_choice_full_card_rect, dialog_context->bigcard_player, dialog_context->bigcard_card);
+          draw_displayed_card_overlaid_full_card(s.paint_dc, &g_big_card_choice_full_card_rect, g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card);
         }
         else
         {
-          FUN_00559999((int)paint_dc,
-                       (int)&g_big_card_choice_full_card_rect,
-                       (int)(global_raw_cards_storage + card_image_number),
-                       dialog_context->bigcard_player,
-                       dialog_context->bigcard_card,
-                       0x12,
-                       0);
+          draw_displayed_full_card(s.paint_dc,
+                                   &g_big_card_choice_full_card_rect,
+                                   global_raw_cards_storage + s.card_image_number,
+                                   g_big_card_choice_dialog_context->bigcard_player,
+                                   g_big_card_choice_dialog_context->bigcard_card,
+                                   0x12,
+                                   0);
         }
 
         if (g_duel_dialog_refresh_state != 0)
         {
-          sprintf(card_coordinates, "%d,%d", dialog_context->bigcard_player, dialog_context->bigcard_card);
-          SetBkMode(paint_dc, 1);
-          SetTextColor(paint_dc, 0);
-          coord_text_length = strlen(card_coordinates);
-          TextOutA(paint_dc,
+          sprintf(s.card_coordinates, "%d,%d", g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card);
+          SetBkMode(s.paint_dc, 1);
+          SetTextColor(s.paint_dc, 0);
+          TextOutA(s.paint_dc,
                    g_big_card_choice_full_card_rect.left + 5,
                    g_big_card_choice_full_card_rect.top +
-                     ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100,
-                   card_coordinates,
-                   coord_text_length);
-          SetTextColor(paint_dc, 0xffffff);
-          coord_text_length = strlen(card_coordinates);
-          TextOutA(paint_dc,
+                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100,
+                   s.card_coordinates,
+                   strlen(s.card_coordinates));
+          SetTextColor(s.paint_dc, 0xffffff);
+          TextOutA(s.paint_dc,
                    g_big_card_choice_full_card_rect.left + 4,
                    g_big_card_choice_full_card_rect.top +
-                     ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100 - 1,
-                   card_coordinates,
-                   coord_text_length);
+                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100 - 1,
+                   s.card_coordinates,
+                   strlen(s.card_coordinates));
         }
 
-        (void)picture_number;
+        (void)s.picture_number;
+      }
+      else if (s.card_id != -1 &&
+               s.card_id != unk_009266ac &&
+               s.card_id != unk_007a7d64 &&
+               s.card_id != unk_00789b80 &&
+               s.card_id != unk_008cf1ac &&
+               s.card_id != unk_00789734 &&
+               s.card_id != unk_008a8de8 &&
+               s.card_id != unk_0092666c)
+      {
+        DrawFullCard(s.paint_dc, &g_big_card_choice_full_card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0, &gs_illus_00789130);
+        if (g_duel_dialog_refresh_state != 0)
+        {
+          sprintf(s.card_coordinates, "%d,%d", g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card);
+          SetBkMode(s.paint_dc, 1);
+          SetTextColor(s.paint_dc, 0);
+          TextOutA(s.paint_dc,
+                   g_big_card_choice_full_card_rect.left + 5,
+                   g_big_card_choice_full_card_rect.top +
+                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100,
+                   s.card_coordinates,
+                   strlen(s.card_coordinates));
+          SetTextColor(s.paint_dc, 0xffffff);
+          TextOutA(s.paint_dc,
+                   g_big_card_choice_full_card_rect.left + 4,
+                   g_big_card_choice_full_card_rect.top +
+                       ((g_big_card_choice_full_card_rect.bottom - g_big_card_choice_full_card_rect.top) * 0x14) / 100 - 1,
+                   s.card_coordinates,
+                   strlen(s.card_coordinates));
+        }
       }
 
-      EndPaint(hwnd, &paint_struct);
+      EndPaint(hwnd, &s.paint_struct);
     }
     return 1;
-  }
 
-  if (msg > 0x30e && msg < 0x312)
-  {
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, (int)lparam);
-  }
+  case WM_TIMER:
+    s.timer_font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x3fd, WM_GETFONT, 0, 0);
+    SendDlgItemMessageA(hwnd, 0x3fd, WM_SETFONT, 0, 0);
+    DeleteObject(s.timer_font);
+    EndDialog(hwnd, 0);
+    return 1;
 
-  return 0;
+  default:
+    return 0;
+  }
 }

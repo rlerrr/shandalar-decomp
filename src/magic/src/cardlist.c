@@ -11,9 +11,6 @@
 
 typedef ptrdiff_t INT_PTR;
 
-// GLOBAL: MAGIC 0x00572920
-// GLOBAL: SHANDALAR 0x0058f428
-char g_showlist_card_class_name_00572920[16] = "ShowListCard";
 // GLOBAL: MAGIC 0x0055e0c0
 // GLOBAL: SHANDALAR 0x0057f128
 int g_showlist_card_csvid_window_long_offset = 0;
@@ -26,21 +23,12 @@ int g_showlist_card_show_count_window_long_offset = 8;
 // GLOBAL: MAGIC 0x0055e0cc
 // GLOBAL: SHANDALAR 0x0057f134
 int g_showlist_card_window_extra_bytes = 0xc;
-// GLOBAL: MAGIC 0x00572930
-// GLOBAL: SHANDALAR 0x0058f438
-char g_showlist_window_title_storage_00572930[16] = "\0\0\0\0List Card";
-// GLOBAL: MAGIC 0x00572940
-// GLOBAL: SHANDALAR 0x0058f448
-char g_showlist_card_class_name_duplicate_00572940[16] = "ShowListCard";
-
 // GLOBAL: MAGIC 0x008a9190
 // GLOBAL: SHANDALAR 0x008bd390
 int g_showlist_smallcard_width;
-
 // GLOBAL: MAGIC 0x008cf1b0
 // GLOBAL: SHANDALAR 0x008e3300
 int g_showlist_smallcard_height;
-
 // GLOBAL: MAGIC 0x00638b34
 // GLOBAL: SHANDALAR 0x0065027c
 int DAT_00638b34;
@@ -143,63 +131,144 @@ void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDI
 // FUNCTION: SHANDALAR 0x0053a586
 INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM lparam_data)
 {
-  UINT command;
-  int button_index;
-  int button_x;
-  int button_y;
-  int columns;
-  int rows;
-  int title_bar_height;
-  int client_bottom;
-  int frame_width;
-  int row;
-  int right_border_width;
-  int bottom_border_height;
-  int window_style;
-  int scroll_pos;
-  int scroll_min;
-  int scroll_max;
-  int new_scroll_pos;
-  int current_button_state;
-  int destroy_result;
-  int nc_calc_result;
-  int client_top_limit;
-  int width;
-  int height;
-  LONG long_result;
-  RECT rect;
-  RECT client_rect;
-  RECT window_rect;
-  RECT title_rect;
-  RECT scroll_rect;
-  RECT erase_rect;
-  SIZE text_extent;
-  HDC dc;
-  HDC screen_dc;
-  HGDIOBJ old_obj;
-  HWND card_window;
-  LONG has_selection;
-  DWORD style;
-  UINT flags;
-  BOOL has_menu;
-  char title_text[100];
-  int *dialog_data;
-
-  if (msg < 0x15)
+  struct
   {
-    if (msg == 0x14)
+    int unused_160;   // ebp-0x160
+    LONG long_result; // ebp-0x15c
+    HDC screen_dc;
+    int nc_calc_result;         // ebp-0x154
+    RECT hit_rect;              // ebp-0x150
+    SIZE text_extent;           // ebp-0x140
+    int right_border_width;     // ebp-0x138
+    RECT client_rect;           // ebp-0x134
+    char title_text[100];       // ebp-0x124
+    HDC dc;                     // ebp-0x0c0
+    int row;                    // ebp-0x0bc
+    int frame_width;            // ebp-0x0b8
+    int bottom_border_height;   // ebp-0x0b4
+    int other_frame_width;      // ebp-0x0b0
+    LONG has_selection;         // ebp-0x0ac
+    int current_button_state;   // ebp-0x0a8
+    RECT title_rect;            // ebp-0x0a4
+    RECT window_rect;           // ebp-0x094
+    HDC erase_dc;               // ebp-0x084
+    RECT erase_rect;            // ebp-0x080
+    int scroll_pos;             // ebp-0x070
+    int scroll_frame_width;     // ebp-0x06c
+    int scroll_min;             // ebp-0x068
+    int client_bottom;          // ebp-0x064
+    RECT scroll_rect;           // ebp-0x060
+    int scroll_max;             // ebp-0x050
+    int new_scroll_pos;         // ebp-0x04c
+    UINT command;               // ebp-0x048
+    LONG command_has_selection; // ebp-0x044
+    int *dialog_data;           // ebp-0x040
+    int selection_index;        // ebp-0x03c
+    int destroy_result;         // ebp-0x038
+    HWND card_window;           // ebp-0x034
+    int init_dummy_top;         // ebp-0x030
+    int columns;                // ebp-0x02c
+    int rows;                   // ebp-0x028
+    int button_index;           // ebp-0x024
+    int button_y;               // ebp-0x020
+    int button_x;               // ebp-0x01c
+    int client_top_limit;       // ebp-0x018
+    int title_bar_height;       // ebp-0x014
+    RECT rect;                  // ebp-0x010
+  } s;
+
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    s.init_dummy_top = 1;
+    DAT_00638ba4 = (int *)lparam_data;
+    SetWindowLongA(hwnd, 8, DAT_00638ba4[0x5df]);
+    DAT_00638c08 = 0;
+    FUN_0049fd0c(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
+    SetWindowTextA(hwnd, (LPCSTR)*DAT_00638ba4);
+    s.columns = DAT_00638ba4[0x5dd];
+    DAT_00638b80 = (g_showlist_smallcard_width * 2) / 3;
+    DAT_00638c84 = (g_showlist_smallcard_height * 2) / 3;
+    DAT_00638b48 = 8;
+    DAT_00638b34 = 8;
+    s.rows = 6;
+    if (s.columns % s.rows == 1)
     {
-      dc = (HDC)wparam_dc;
-      ApplyCardArtPaletteToDc(dc);
-      GetClientRect(hwnd, &erase_rect);
-      FillRect(dc, &erase_rect, (HBRUSH)DAT_00638c40);
-      return 1;
+      --s.rows;
     }
-    if (msg == 0x10)
+    s.title_bar_height = s.columns / s.rows;
+    if (s.columns % s.rows > 0)
     {
-    destroy_window:
-      destroy_result = GetWindowLongA(hwnd, 8);
-      if (destroy_result == 0)
+      ++s.title_bar_height;
+    }
+    else
+    {
+    }
+    s.client_top_limit = 4;
+    SetRect(&s.rect,
+            0,
+            0,
+            (DAT_00638b48 + DAT_00638b80) * s.rows + DAT_00638b48,
+            (DAT_00638c84 + DAT_00638b34) * s.title_bar_height + DAT_00638b34);
+    SetWindowLongA(hwnd, GWL_STYLE, GetWindowLongA(hwnd, GWL_STYLE) & ~WS_VSCROLL);
+    if (s.client_top_limit < s.title_bar_height)
+    {
+      SetWindowLongA(hwnd, GWL_STYLE, GetWindowLongA(hwnd, GWL_STYLE) | WS_VSCROLL);
+      SetScrollRange(hwnd, 1, 0, s.rect.bottom - ((DAT_00638c84 + DAT_00638b34) * s.client_top_limit + DAT_00638b34), 1);
+      SetScrollPos(hwnd, 1, 0, 1);
+      s.rect.bottom = (DAT_00638c84 + DAT_00638b34) * s.client_top_limit + s.rect.top + DAT_00638b34;
+      s.rect.right += GetSystemMetrics(2);
+    }
+    AdjustWindowRect(&s.rect, GetWindowLongA(hwnd, GWL_STYLE), 0);
+    SetWindowPos(hwnd,
+                 0,
+                 (GetSystemMetrics(0) - (s.rect.right - s.rect.left)) / 2,
+                 (GetSystemMetrics(1) - (s.rect.bottom - s.rect.top)) / 2,
+                 s.rect.right - s.rect.left,
+                 s.rect.bottom - s.rect.top,
+                 4);
+    s.button_x = DAT_00638b48;
+    s.button_y = DAT_00638b34;
+    GetClientRect(hwnd, &s.rect);
+    for (s.button_index = 0; s.button_index < DAT_00638ba4[0x5dd]; ++s.button_index)
+    {
+      s.card_window = CreateWindowExA(0,  "ShowListCard", "List Card", 0x50000000, s.button_x, s.button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(s.button_index + 10),
+                                      g_app_instance, (LPVOID)DAT_00638ba4[s.button_index + 1]);
+      if (DAT_00638ba4[0x5de] != 0)
+      {
+        SendMessageA(s.card_window, 0x414, 1, DAT_00638ba4[s.button_index + 0x1f5]);
+      }
+      s.button_x += DAT_00638b48 + DAT_00638b80;
+      if (s.rect.right < s.button_x + DAT_00638b80)
+      {
+        s.button_y += DAT_00638c84 + DAT_00638b34;
+        s.button_x = DAT_00638b48;
+      }
+    }
+    SetFocus(hwnd);
+    return 0;
+  case WM_LBUTTONDOWN:
+  case WM_CLOSE:
+
+    s.destroy_result = GetWindowLongA(hwnd, 8);
+    if (s.destroy_result == 0)
+    {
+      FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+                   (HGDIOBJ)DAT_00638b68,
+                   (HGDIOBJ)DAT_00638c44,
+                   (HGDIOBJ)DAT_00638b70,
+                   (HGDIOBJ)DAT_00638bf4);
+      EndDialog(hwnd, -1);
+    }
+    return 1;
+
+  case WM_COMMAND:
+    s.command = (unsigned int)wparam_dc & 0xffff;
+    s.dialog_data = (int *)lparam_data;
+    s.command_has_selection = GetWindowLongA(hwnd, 8);
+    if (s.command == 2 || s.command == 1)
+    {
+      if (s.command_has_selection == 0)
       {
         FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
                      (HGDIOBJ)DAT_00638b68,
@@ -208,315 +277,247 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
                      (HGDIOBJ)DAT_00638bf4);
         EndDialog(hwnd, -1);
       }
-      return 1;
     }
-  }
-  else if (msg < 0xa2)
-  {
-    if (msg == 0xa1)
+    else if (s.dialog_data != 0)
     {
-      if ((HDC)wparam_dc == (HDC)0xc8)
+      s.selection_index = s.command - 10;
+      if (DAT_00638ba4[s.selection_index + 0x3e9] == 0)
       {
-        SendMessageA(hwnd, 0x10, 0, 0);
-        long_result = 0;
       }
       else
       {
-        long_result = DefWindowProcA(hwnd, 0xa1, wparam_dc, lparam_data);
-      }
-      SetWindowLongA(hwnd, 0, long_result);
-      return 1;
-    }
-    if (msg == 0x84)
-    {
-      nc_calc_result = DefWindowProcA(hwnd, 0x84, wparam_dc, lparam_data);
-      if (nc_calc_result == 8 || nc_calc_result == 2)
-      {
-        screen_dc = GetDC(0);
-        GetTextExtentPoint32A(screen_dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), strlen((char *)DAT_00638ba4 + 0x1780), &text_extent);
-        ReleaseDC(0, screen_dc);
-        GetClientRect(hwnd, &rect);
-        MapWindowPoints(hwnd, 0, (LPPOINT)&rect, 2);
-        if (rect.right - text_extent.cx <= (int)((unsigned long)lparam_data & 0xffff))
-        {
-          nc_calc_result = 200;
-        }
-      }
-      SetWindowLongA(hwnd, 0, nc_calc_result);
-      return 1;
-    }
-    if (msg > 0x84 && msg < 0x87)
-    {
-      has_selection = GetWindowLongA(hwnd, 8);
-      GetWindowRect(hwnd, &window_rect);
-      OffsetRect(&window_rect, -window_rect.left, -window_rect.top);
-      if (window_rect.right != window_rect.left && window_rect.bottom != window_rect.top)
-      {
-        if (msg == 0x85)
-        {
-          DefWindowProcA(hwnd, 0x85, wparam_dc, lparam_data);
-        }
-        current_button_state = (msg != 0x85);
-        dc = GetWindowDC(hwnd);
-        if (dc != 0)
-        {
-          ApplyCardArtPaletteToDc(dc);
-          GetWindowRect(hwnd, &window_rect);
-          GetClientRect(hwnd, &client_rect);
-          MapWindowPoints(hwnd, 0, (LPPOINT)&client_rect, 2);
-          OffsetRect(&client_rect, -window_rect.left, -window_rect.top);
-          OffsetRect(&window_rect, -window_rect.left, -window_rect.top);
-          GetWindowTextA(hwnd, title_text, 100);
-          right_border_width = client_rect.left - window_rect.left;
-          bottom_border_height = window_rect.bottom - client_rect.bottom;
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, 0, 0, 0);
-          LineTo(dc, window_rect.right - 1, 0);
-          SelectObject(dc, (HGDIOBJ)DAT_00638b68);
-          for (row = 1; row <= bottom_border_height - 2; ++row)
-          {
-            MoveToEx(dc, 1, row, 0);
-            LineTo(dc, (window_rect.right - right_border_width) + 1, row);
-          }
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, right_border_width - 1, bottom_border_height - 1, 0);
-          LineTo(dc, window_rect.right - right_border_width, bottom_border_height - 1);
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, 0, 0, 0);
-          LineTo(dc, 0, window_rect.bottom - 1);
-          SelectObject(dc, (HGDIOBJ)DAT_00638b68);
-          for (row = 1; row <= right_border_width - 2; ++row)
-          {
-            MoveToEx(dc, row, 1, 0);
-            LineTo(dc, row, window_rect.bottom - 1);
-          }
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, client_rect.left - 1, bottom_border_height - 1, 0);
-          LineTo(dc, client_rect.left - 1, client_rect.bottom + 1);
-          old_obj = GetStockObject(7);
-          SelectObject(dc, old_obj);
-          MoveToEx(dc, window_rect.right - 1, 0, 0);
-          LineTo(dc, window_rect.right - 1, window_rect.bottom);
-          SelectObject(dc, (HGDIOBJ)DAT_00638b70);
-          for (row = 1, frame_width = window_rect.right - 2; row <= right_border_width - 2; ++row, --frame_width)
-          {
-            MoveToEx(dc, frame_width, 1, 0);
-            LineTo(dc, frame_width, window_rect.bottom - 1);
-          }
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, window_rect.right - right_border_width, bottom_border_height - 1, 0);
-          LineTo(dc, window_rect.right - right_border_width, client_rect.bottom + 1);
-          old_obj = GetStockObject(7);
-          SelectObject(dc, old_obj);
-          MoveToEx(dc, 0, window_rect.bottom - 1, 0);
-          LineTo(dc, window_rect.right, window_rect.bottom - 1);
-          SelectObject(dc, (HGDIOBJ)DAT_00638b70);
-          for (row = 1, frame_width = window_rect.bottom - 2; row <= bottom_border_height - 2; ++row, --frame_width)
-          {
-            MoveToEx(dc, 1, frame_width, 0);
-            LineTo(dc, window_rect.right - 1, frame_width);
-          }
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, right_border_width - 1, window_rect.bottom - bottom_border_height, 0);
-          LineTo(dc, window_rect.right - 2, window_rect.bottom - bottom_border_height);
-          SelectObject(dc, (HGDIOBJ)DAT_00638c44);
-          MoveToEx(dc, client_rect.left, client_rect.top - 1, 0);
-          LineTo(dc, window_rect.right - right_border_width, client_rect.top - 1);
-          SetRect(&title_rect, client_rect.left, bottom_border_height, window_rect.right - right_border_width, client_rect.top - 1);
-          FillRect(dc, &title_rect, (HBRUSH)DAT_00638bf4);
-          SetTextColor(dc, DAT_00638c6c);
-          SetBkMode(dc, 1);
-          title_rect.left += 5;
-          DrawTextA(dc, title_text, -1, &title_rect, 0x24);
-          if (has_selection == 0)
-          {
-            DrawTextA(dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), -1, &title_rect, 0x26);
-          }
-          ReleaseDC(hwnd, dc);
-        }
-        SetWindowLongA(hwnd, 0, current_button_state);
-        return 1;
-      }
-      return DefWindowProcA(hwnd, msg, wparam_dc, lparam_data);
-    }
-  }
-  else if (msg < 0x111)
-  {
-    if (msg == 0x110)
-    {
-      dialog_data = (int *)lparam_data;
-      DAT_00638ba4 = dialog_data;
-      SetWindowLongA(hwnd, 8, dialog_data[0x5df]);
-      DAT_00638c08 = 0;
-      FUN_0049fd0c(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
-      SetWindowTextA(hwnd, (LPCSTR)*DAT_00638ba4);
-      columns = DAT_00638ba4[0x5dd];
-      DAT_00638b80 = (g_showlist_smallcard_width * 2) / 3;
-      DAT_00638c84 = (g_showlist_smallcard_height * 2) / 3;
-      DAT_00638b48 = 8;
-      DAT_00638b34 = 8;
-      rows = 6;
-      if (columns % 6 == 1)
-      {
-        rows = 5;
-      }
-      title_bar_height = columns / rows;
-      if (columns % rows > 0)
-      {
-        ++title_bar_height;
-      }
-      client_top_limit = 4;
-      SetRect(&rect, 0, 0, (DAT_00638b80 + 8) * rows + 8, (DAT_00638c84 + 8) * title_bar_height + 8);
-      style = GetWindowLongA(hwnd, -0x10);
-      SetWindowLongA(hwnd, -0x10, style & 0xffdfffff);
-      if (client_top_limit < title_bar_height)
-      {
-        style = GetWindowLongA(hwnd, -0x10);
-        SetWindowLongA(hwnd, -0x10, style | 0x200000);
-        SetScrollRange(hwnd, 1, 0, rect.bottom - ((DAT_00638c84 + DAT_00638b34) * client_top_limit + DAT_00638b34), 1);
-        SetScrollPos(hwnd, 1, 0, 1);
-        rect.bottom = (DAT_00638c84 + DAT_00638b34) * client_top_limit + rect.top + DAT_00638b34;
-        rect.right += GetSystemMetrics(2);
-      }
-      has_menu = 0;
-      window_style = GetWindowLongA(hwnd, -0x10);
-      AdjustWindowRect(&rect, window_style, has_menu);
-      flags = 4;
-      height = rect.bottom - rect.top;
-      width = rect.right - rect.left;
-      button_y = (GetSystemMetrics(1) - (rect.bottom - rect.top)) / 2;
-      button_x = (GetSystemMetrics(0) - (rect.right - rect.left)) / 2;
-      SetWindowPos(hwnd, 0, button_x, button_y, width, height, flags);
-      button_x = DAT_00638b48;
-      button_y = DAT_00638b34;
-      GetClientRect(hwnd, &rect);
-      for (button_index = 0; button_index < DAT_00638ba4[0x5dd]; ++button_index)
-      {
-        card_window = CreateWindowExA(0, g_showlist_card_class_name_duplicate_00572940, g_showlist_window_title_storage_00572930 + 4, 0x50000000, button_x, button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(button_index + 10),
-                                      g_app_instance, (LPVOID)DAT_00638ba4[button_index + 1]);
-        if (DAT_00638ba4[0x5de] != 0)
-        {
-          SendMessageA(card_window, 0x414, 1, DAT_00638ba4[button_index + 0x1f5]);
-        }
-        button_x += DAT_00638b48 + DAT_00638b80;
-        if (rect.right < button_x + DAT_00638b80)
-        {
-          button_y += DAT_00638c84 + DAT_00638b34;
-          button_x = DAT_00638b48;
-        }
-      }
-      SetFocus(hwnd);
-      return 0;
-    }
-    if (msg == 0x100)
-    {
-      if ((HDC)wparam_dc == (HDC)0x22)
-      {
-        SendMessageA(hwnd, 0x115, 3, 0);
-      }
-      else if ((HDC)wparam_dc == (HDC)0x21)
-      {
-        SendMessageA(hwnd, 0x115, 2, 0);
-      }
-      else if ((HDC)wparam_dc == (HDC)0x28)
-      {
-        SendMessageA(hwnd, 0x115, 1, 0);
-      }
-      else if ((HDC)wparam_dc == (HDC)0x26)
-      {
-        SendMessageA(hwnd, 0x115, 0, 0);
-      }
-      else if ((HDC)wparam_dc == (HDC)0x1b)
-      {
-        SendMessageA(hwnd, 0x10, 0, 0);
-      }
-      return 1;
-    }
-  }
-  else if (msg < 0x116)
-  {
-    if (msg == 0x115)
-    {
-      scroll_pos = GetScrollPos(hwnd, 1);
-      GetScrollRange(hwnd, 1, &scroll_min, &scroll_max);
-      GetClientRect(hwnd, &scroll_rect);
-      frame_width = DAT_00638c84 + DAT_00638b34;
-      client_bottom = scroll_rect.bottom - DAT_00638b34;
-      switch ((unsigned int)wparam_dc & 0xffff)
-      {
-      case 0:
-        new_scroll_pos = scroll_pos - frame_width;
-        break;
-      case 1:
-        new_scroll_pos = scroll_pos + frame_width;
-        break;
-      case 2:
-      case 4:
-      case 5:
-        new_scroll_pos = (unsigned int)wparam_dc >> 16;
-        break;
-      case 3:
-        new_scroll_pos = scroll_pos + client_bottom;
-        break;
-      default:
-        new_scroll_pos = scroll_pos;
-        break;
-      }
-      if (new_scroll_pos < scroll_min)
-      {
-        new_scroll_pos = scroll_min;
-      }
-      if (new_scroll_pos > scroll_max)
-      {
-        new_scroll_pos = scroll_max;
-      }
-      ScrollWindow(hwnd, 0, -(new_scroll_pos - scroll_pos), 0, 0);
-      SetScrollPos(hwnd, 1, new_scroll_pos, 1);
-      return 1;
-    }
-    if (msg == 0x111)
-    {
-      command = (unsigned int)wparam_dc & 0xffff;
-      dialog_data = (int *)lparam_data;
-      has_selection = GetWindowLongA(hwnd, 8);
-      if (command == 2 || command == 1)
-      {
-        if (has_selection == 0)
-        {
-          FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
-                       (HGDIOBJ)DAT_00638b68,
-                       (HGDIOBJ)DAT_00638c44,
-                       (HGDIOBJ)DAT_00638b70,
-                       (HGDIOBJ)DAT_00638bf4);
-          EndDialog(hwnd, -1);
-        }
-      }
-      else if (dialog_data != 0 && *((int *)DAT_00638ba4 + command + 0x3df) != 0)
-      {
-        button_index = command - 10;
         FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
                      (HGDIOBJ)DAT_00638b68,
                      (HGDIOBJ)DAT_00638c44,
                      (HGDIOBJ)DAT_00638b70,
                      (HGDIOBJ)DAT_00638bf4);
-        EndDialog(hwnd, button_index);
+        EndDialog(hwnd, s.selection_index);
       }
-      return 1;
     }
-  }
-  else
-  {
-    if (msg == 0x201)
-    {
-      goto destroy_window;
-    }
-    if (msg > 0x30e && msg < 0x312)
-    {
-      return FUN_10025b5e((int)hwnd, msg, (int)wparam_dc, (int)lparam_data);
-    }
-  }
+    return 1;
 
-  return 0;
+  case WM_KEYDOWN:
+    if (wparam_dc == VK_NEXT)
+    {
+      SendMessageA(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+    }
+    else if (wparam_dc == VK_PRIOR)
+    {
+      SendMessageA(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
+    }
+    else if (wparam_dc == VK_DOWN)
+    {
+      SendMessageA(hwnd, WM_VSCROLL, SB_LINEDOWN, 0);
+    }
+    else if (wparam_dc == VK_UP)
+    {
+      SendMessageA(hwnd, WM_VSCROLL, SB_LINEUP, 0);
+    }
+    else if (wparam_dc == VK_ESCAPE)
+    {
+      SendMessageA(hwnd, WM_CLOSE, 0, 0);
+    }
+    return 1;
+
+  case WM_VSCROLL:
+    s.scroll_pos = GetScrollPos(hwnd, SB_VERT);
+    GetScrollRange(hwnd, SB_VERT, &s.scroll_min, &s.scroll_max);
+    GetClientRect(hwnd, &s.scroll_rect);
+    s.scroll_frame_width = DAT_00638c84 + DAT_00638b34;
+    s.client_bottom = s.scroll_rect.bottom - DAT_00638b34;
+
+    switch ((unsigned int)wparam_dc & 0xffff)
+    {
+    case SB_LINEUP:
+      s.new_scroll_pos = s.scroll_pos - s.scroll_frame_width;
+      break;
+    case SB_PAGEUP:
+      s.new_scroll_pos = s.scroll_pos - s.client_bottom;
+    case SB_THUMBPOSITION:
+    case SB_THUMBTRACK:
+      s.new_scroll_pos = HIWORD(wparam_dc);
+      break;
+    case SB_PAGEDOWN:
+      s.new_scroll_pos = s.scroll_pos + s.client_bottom;
+      break;
+    case SB_LINEDOWN:
+      s.new_scroll_pos = s.scroll_pos + s.scroll_frame_width;
+      break;
+    default:
+      s.new_scroll_pos = s.scroll_pos;
+      break;
+    }
+
+    if (s.scroll_min > s.new_scroll_pos)
+    {
+      s.new_scroll_pos = s.scroll_min;
+    }
+
+    if (s.scroll_max < s.new_scroll_pos)
+    {
+      s.new_scroll_pos = s.scroll_max;
+    }
+
+    ScrollWindow(hwnd, 0, -(s.new_scroll_pos - s.scroll_pos), 0, 0);
+    SetScrollPos(hwnd, SB_VERT, s.new_scroll_pos, TRUE);
+    return 1;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTEISCHANGING:
+  case WM_PALETTECHANGED:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam_dc, (int)lparam_data);
+
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam_dc;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.erase_rect);
+    FillRect(s.erase_dc, &s.erase_rect, (HBRUSH)DAT_00638c40);
+    return 1;
+
+  case WM_NCPAINT:
+  case WM_NCACTIVATE:
+    s.has_selection = GetWindowLongA(hwnd, 8);
+    GetWindowRect(hwnd, &s.window_rect);
+    OffsetRect(&s.window_rect, -s.window_rect.left, -s.window_rect.top);
+    if (s.window_rect.right - s.window_rect.left == 0 || s.window_rect.bottom - s.window_rect.top == 0)
+    {
+      return DefWindowProcA(hwnd, msg, wparam_dc, lparam_data);
+    }
+
+    if (msg == WM_NCPAINT)
+    {
+      DefWindowProcA(hwnd, msg, wparam_dc, lparam_data);
+      s.current_button_state = 0;
+    }
+    else
+    {
+      s.current_button_state = 1;
+    }
+    s.dc = GetWindowDC(hwnd);
+    if (s.dc != 0)
+    {
+      ApplyCardArtPaletteToDc(s.dc);
+      GetWindowRect(hwnd, &s.window_rect);
+      GetClientRect(hwnd, &s.client_rect);
+      MapWindowPoints(hwnd, 0, (LPPOINT)&s.client_rect, 2);
+      OffsetRect(&s.client_rect, -s.window_rect.left, -s.window_rect.top);
+      OffsetRect(&s.window_rect, -s.window_rect.left, -s.window_rect.top);
+      GetWindowTextA(hwnd, s.title_text, 100);
+      s.right_border_width = s.client_rect.left - s.window_rect.left;
+      s.bottom_border_height = s.window_rect.bottom - s.client_rect.bottom;
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.frame_width = 0;
+      MoveToEx(s.dc, 0, s.frame_width, 0);
+      LineTo(s.dc, s.window_rect.right - 1, s.frame_width);
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638b68);
+      for (s.row = 1, s.frame_width = 1; s.row <= s.bottom_border_height - 2; ++s.row, ++s.frame_width)
+      {
+        MoveToEx(s.dc, 1, s.frame_width, 0);
+        LineTo(s.dc, (s.window_rect.right - s.right_border_width) + 1, s.frame_width);
+      }
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.frame_width = s.bottom_border_height - 1;
+      MoveToEx(s.dc, s.right_border_width - 1, s.frame_width, 0);
+      LineTo(s.dc, s.window_rect.right - s.right_border_width, s.frame_width);
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.other_frame_width = 0;
+      MoveToEx(s.dc, s.other_frame_width, 0, 0);
+      LineTo(s.dc, s.other_frame_width, s.window_rect.bottom - 1);
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638b68);
+      for (s.row = 1, s.other_frame_width = 1; s.row <= s.right_border_width - 2; ++s.row, ++s.other_frame_width)
+      {
+        MoveToEx(s.dc, s.other_frame_width, 1, 0);
+        LineTo(s.dc, s.other_frame_width, s.window_rect.bottom - 1);
+      }
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.other_frame_width = s.client_rect.left - 1;
+      MoveToEx(s.dc, s.other_frame_width, s.bottom_border_height - 1, 0);
+      LineTo(s.dc, s.other_frame_width, s.client_rect.bottom + 1);
+      SelectObject(s.dc, GetStockObject(7));
+      s.other_frame_width = s.window_rect.right - 1;
+      MoveToEx(s.dc, s.other_frame_width, 0, 0);
+      LineTo(s.dc, s.other_frame_width, s.window_rect.bottom);
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638b70);
+      for (s.row = 1, s.other_frame_width = s.window_rect.right - 2; s.row <= s.right_border_width - 2; ++s.row, --s.other_frame_width)
+      {
+        MoveToEx(s.dc, s.other_frame_width, 1, 0);
+        LineTo(s.dc, s.other_frame_width, s.window_rect.bottom - 1);
+      }
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.other_frame_width = s.window_rect.right - s.right_border_width;
+      MoveToEx(s.dc, s.other_frame_width, s.bottom_border_height - 1, 0);
+      LineTo(s.dc, s.other_frame_width, s.client_rect.bottom + 1);
+      SelectObject(s.dc, GetStockObject(7));
+      s.frame_width = s.window_rect.bottom - 1;
+      MoveToEx(s.dc, 0, s.frame_width, 0);
+      LineTo(s.dc, s.window_rect.right, s.frame_width);
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638b70);
+
+      s.frame_width = s.window_rect.bottom - 2;
+      s.row = 1;
+      for (; s.row <= s.bottom_border_height - 2; --s.frame_width, ++s.row)
+      {
+        MoveToEx(s.dc, 1, s.frame_width, 0);
+        LineTo(s.dc, s.window_rect.right - 1, s.frame_width);
+      }
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.frame_width = s.window_rect.bottom - s.bottom_border_height;
+      MoveToEx(s.dc, s.right_border_width - 1, s.frame_width, 0);
+      LineTo(s.dc, s.window_rect.right - 2, s.frame_width);
+      SelectObject(s.dc, (HGDIOBJ)DAT_00638c44);
+      s.frame_width = s.client_rect.top - 1;
+      MoveToEx(s.dc, s.client_rect.left, s.frame_width, 0);
+      LineTo(s.dc, s.window_rect.right - s.right_border_width, s.frame_width);
+      SetRect(&s.title_rect, s.client_rect.left, s.bottom_border_height, s.window_rect.right - s.right_border_width, s.client_rect.top - 1);
+      FillRect(s.dc, &s.title_rect, (HBRUSH)DAT_00638bf4);
+      SetTextColor(s.dc, DAT_00638c6c);
+      SetBkMode(s.dc, 1);
+      s.title_rect.left += 5;
+      DrawTextA(s.dc, s.title_text, -1, &s.title_rect, DT_SINGLELINE | DT_VCENTER);
+      if (s.has_selection == 0)
+      {
+        DrawTextA(s.dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), -1, &s.title_rect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
+      }
+      ReleaseDC(hwnd, s.dc);
+    }
+
+    SetWindowLongA(hwnd, 0, s.current_button_state);
+    return 1;
+
+  case WM_NCHITTEST:
+    s.nc_calc_result = DefWindowProcA(hwnd, msg, wparam_dc, lparam_data);
+    if (s.nc_calc_result == HTMINBUTTON || s.nc_calc_result == HTCAPTION)
+    {
+      s.screen_dc = GetDC(0);
+      GetTextExtentPoint32A(s.screen_dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), strlen((char *)DAT_00638ba4 + 0x1780), &s.text_extent);
+      ReleaseDC(0, s.screen_dc);
+      GetClientRect(hwnd, &s.hit_rect);
+      MapWindowPoints(hwnd, 0, (LPPOINT)&s.hit_rect, 2);
+      if (s.hit_rect.right - s.text_extent.cx <= (int)((unsigned long)lparam_data & 0xffff))
+      {
+        s.nc_calc_result = 200;
+      }
+    }
+    SetWindowLongA(hwnd, 0, s.nc_calc_result);
+    return 1;
+
+  case WM_NCLBUTTONDOWN:
+    s.unused_160 = (int)wparam_dc;
+    if (s.unused_160 == 0xc8)
+    {
+      SendMessageA(hwnd, WM_CLOSE, 0, 0);
+      s.long_result = 0;
+    }
+    else
+    {
+      s.long_result = DefWindowProcA(hwnd, msg, wparam_dc, lparam_data);
+    }
+    SetWindowLongA(hwnd, 0, s.long_result);
+    return 1;
+
+  default:
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x0049fe68
@@ -678,7 +679,7 @@ int show_cardlist(int *graveyard,
   wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
   wndclass.hbrBackground = (HBRUSH)6;
   wndclass.lpszMenuName = 0;
-  wndclass.lpszClassName = g_showlist_card_class_name_00572920;
+  wndclass.lpszClassName = "ShowListCard";
   RegisterClassA(&wndclass);
 
   s.dialog_context = context;
@@ -716,7 +717,7 @@ int show_cardlist(int *graveyard,
   }
   else
   {
-    strcpy(s.title, g_showlist_window_title_storage_00572930);
+    strcpy(s.title, "");
   }
 
   return DialogBoxParam(g_app_instance, (const char *)0xe9, g_duel_window_hwnd, dlgfunc_show_deck, (long)&s.dialog_context);

@@ -163,6 +163,7 @@ int FUN_0049e8bb(int player,
 // FUNCTION: SHANDALAR 0x0056c959
 void AddCardToCLPacket(int card_in_packet)
 {
+#ifdef MAGIC
   unsigned short *write_ptr;
 
   if ((int)unk_0091ca94 != 0)
@@ -186,12 +187,14 @@ void AddCardToCLPacket(int card_in_packet)
   write_ptr = (unsigned short *)((char *)write_ptr + ((int)unk_0091ca94 * 2));
   *write_ptr = (unsigned short)card_in_packet;
   ++unk_0091ca94;
+#endif
 }
 
 // FUNCTION: MAGIC 0x00501f3f
 // FUNCTION: SHANDALAR 0x0056c964
 int GetCardFromCLPacket(int packet_index)
 {
+#ifdef MAGIC
   int packet_card;
   short *read_ptr;
 
@@ -214,6 +217,7 @@ int GetCardFromCLPacket(int packet_index)
   }
 
   return packet_card;
+#endif
 }
 
 #ifdef MAGIC
@@ -339,6 +343,8 @@ int FUN_00501c19(int player, int packet_type, unsigned char *packet)
 // FUNCTION: SHANDALAR 0x0056c97a
 void append_to_trace_txt(char *text)
 {
+  // We always leave this in place for debugging, but shandalar doesn't actually contain it
+#if defined(MAGIC) || defined(_DEBUG)
   FILE *trace_file;
 
   if (g_duel_ai_mode_state == 1)
@@ -351,6 +357,7 @@ void append_to_trace_txt(char *text)
 
   fwrite(text, strlen(text), 1, trace_file);
   fclose(trace_file);
+#endif
 }
 
 // FUNCTION: MAGIC 0x00500a40
@@ -394,7 +401,6 @@ void FUN_00500b2c(int expected_packet_number, int actual_packet_number)
 }
 
 // FUNCTION: MAGIC 0x00500bb0
-// FUNCTION: SHANDALAR 0x0056c91f
 int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packet_type)
 {
 #ifdef MAGIC
@@ -433,6 +439,7 @@ int apply_xpool_packet_to_active_player(void)
 }
 
 // FUNCTION: MAGIC 0x005012d7
+// FUNCTION: SHANDALAR 0x0056c91f
 int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 {
 #ifdef MAGIC
@@ -792,6 +799,7 @@ int TENTATIVE_send_network_result(int player, signed int packet_type)
 // FUNCTION: SHANDALAR 0x0056c943
 void send_battlefield_status_packet(int player)
 {
+#ifdef MAGIC
   int phase;
 
   unk_008b27f0 = 0x13;
@@ -802,12 +810,14 @@ void send_battlefield_status_packet(int player)
   }
 
   TENTATIVE_send_network_result(player, 0x13);
+#endif
 }
 
 // FUNCTION: MAGIC 0x00501deb
 // FUNCTION: SHANDALAR 0x0056c94e
 void receive_battlefield_status_packet(int player)
 {
+#ifdef MAGIC
   int phase;
   int target_player;
 
@@ -822,4 +832,5 @@ void receive_battlefield_status_packet(int player)
       }
     }
   }
+#endif
 }

@@ -579,7 +579,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARA
 }
 
 // FUNCTION: MAGIC 0x00509154
-// FUNCTION: SHANDALAR 0x004c7e52
+// FUNCTION: SHANDALAR 0x004c7e59
 int big_card_choice_item_is_enabled(HWND hwnd, int item)
 {
   struct
@@ -603,14 +603,9 @@ int big_card_choice_item_is_enabled(HWND hwnd, int item)
   }
 
   s.item_text = s.items;
-  s.index = 0;
-  while (1)
+
+  for (s.index = 0; s.index < item; s.index++)
   {
-    s.index++;
-    if (item <= s.index)
-    {
-      break;
-    }
     s.item_text += strlen(s.item_text) + 1;
   }
 

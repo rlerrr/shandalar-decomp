@@ -45,6 +45,7 @@ int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
 void layout_phase_display_window(HWND hwnd, LPRECT rect);
 int handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void restack_duel_child_windows(void);
+void delete_and_close_object(HANDLE obj);
 
 // GLOBAL: MAGIC 0x0055e03c
 // GLOBAL: SHANDALAR 0x0057f0d0
@@ -264,6 +265,57 @@ int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
   }
 
   return s.registered;
+}
+
+// FUNCTION: MAGIC 0x00486369
+// FUNCTION: SHANDALAR 0x004c8f49
+void destroy_MAGICGAME_SpellChainClass(LPCSTR class_name)
+{
+  if (g_spell_minimized_popup_menu != (HMENU)0)
+  {
+    DestroyMenu(g_spell_minimized_popup_menu);
+  }
+  g_spell_minimized_popup_menu = (HMENU)0;
+  if (g_spell_chain_background_bitmap != (HBITMAP)0)
+  {
+    delete_and_close_object(g_spell_chain_background_bitmap);
+  }
+  if (g_spell_chain_scrollbar_thumb_bitmap != (HBITMAP)0)
+  {
+    delete_and_close_object(g_spell_chain_scrollbar_thumb_bitmap);
+  }
+  if (g_spell_chain_scrollbar_track_bitmap != (HBITMAP)0)
+  {
+    delete_and_close_object(g_spell_chain_scrollbar_track_bitmap);
+  }
+  if (g_spell_minimized_background_bitmap != (HBITMAP)0)
+  {
+    delete_and_close_object(g_spell_minimized_background_bitmap);
+  }
+  if (g_spell_chain_shadow_pen != (HPEN)0)
+  {
+    DeleteObject(g_spell_chain_shadow_pen);
+  }
+  if (g_spell_chain_highlight_pen != (HPEN)0)
+  {
+    DeleteObject(g_spell_chain_highlight_pen);
+  }
+  if (g_spell_chain_dark_pen != (HPEN)0)
+  {
+    DeleteObject(g_spell_chain_dark_pen);
+  }
+  if (g_spell_chain_title_brush != (HBRUSH)0)
+  {
+    DeleteObject(g_spell_chain_title_brush);
+  }
+  g_spell_chain_background_bitmap = (HBITMAP)0;
+  g_spell_chain_scrollbar_thumb_bitmap = (HBITMAP)0;
+  g_spell_chain_scrollbar_track_bitmap = (HBITMAP)0;
+  g_spell_minimized_background_bitmap = (HBITMAP)0;
+  g_spell_chain_shadow_pen = (HPEN)0;
+  g_spell_chain_highlight_pen = (HPEN)0;
+  g_spell_chain_dark_pen = (HPEN)0;
+  g_spell_chain_title_brush = (HBRUSH)0;
 }
 
 // FUNCTION: MAGIC 0x00488229

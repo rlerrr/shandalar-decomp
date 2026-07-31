@@ -816,8 +816,15 @@ typedef struct card_instance_struct
 
 	uint32_t upkeep_flags; /*  0x5C */ // Eventual candidate for reclamation.  Used in: Curse Artifact, Mishra's War Machine, Brass Man, Colossus of Sardia, Elder Spawn, Cyclone, 0x434040, 0x435b50, 0x436740, 0x437620, 0x437670, Copper Tablet, Mana Crypt, Ghazban Ogre, Serendib Djinn, Juzam Djinn, Yawgmoth Demon, 0x475a30, 0x476b90, 0x477410, Feedback, Power Leak, Energy Flux, Erosion, Cursed Land, Karma, Sunken City, Stasis, Magnetic Mountain, Power Surge, Wanderlust, Unstable Mutation, Warp Artifact, Power Struggle, Conversion, Junun Efreet, Phantasmal Forces, Force of Nature, Cosmic Horror, Lord of the Pit, 0x4d9a30.
 	int32_t attack_rating;			   /*  0x60 */
-	uint16_t display_pic_csv_id;	   /*  0x64 */
-	uint16_t display_pic_num;		   /*  0x66 */
+	union
+	{
+		struct
+		{
+			uint16_t display_pic_csv_id; /*  0x64 */
+			uint16_t display_pic_num;	/*  0x66 */
+		};
+		uint32_t display_pic_info;
+	};
 	uint8_t kill_code;				   /*  0x68 */
 
 	uint8_t unk69; /*  0x69 */ // Entirely untouched by exe.
@@ -1069,10 +1076,8 @@ typedef struct
 	const char *mana_cost_text; // e.g. "|4|GU|GU"
 	uint32_t ai_modifiers1;
 	uint32_t ai_modifiers2;
-	uint8_t ai_inc_power;
-	uint8_t ai_inc_toughness;
-	uint8_t ai_power;
-	uint8_t ai_toughness;
+	uint16_t ai_inc_power_toughness;
+	uint16_t ai_power_toughness;
 	int16_t ai_base_value;
 	int16_t ai_dependencies;	// deck constructor only
 	int32_t sleight_color;		// csv2dat doesn't seem to put anything here

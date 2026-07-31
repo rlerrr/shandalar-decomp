@@ -651,7 +651,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
     AppendMenuA(g_life_popup_menu, 0, 0x65, g_life_menu_help_text);
     return 0;
 
-  case WM_INITMENUPOPUP:
+  case WM_MENUSELECT:
     if (HIWORD(wparam) == 0xffff && lparam == 0)
     {
       s.menu_item_count = GetMenuItemCount(g_life_popup_menu);

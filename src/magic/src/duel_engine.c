@@ -165,6 +165,25 @@ char g_kim_debug_empty_text_005601a4[4] = "";
 // GLOBAL: SHANDALAR 0x00583288
 char s_LISTBOX_005601a8[8] = "LISTBOX";
 
+// GLOBAL: MAGIC 0x00561270
+// GLOBAL: SHANDALAR 0x00580680
+const char *g_duel_sound_filenames[] = {
+    "artifact.wav", "buried.wav", "draw.wav", "enchant.wav", "endphase.wav",
+    "endturn.wav", "instant.wav", "interupt.wav", "grey.wav", "black.wav",
+    "blue.wav", "green.wav", "red.wav", "white.wav", "lifeloss.wav",
+    "sacrfice.wav", "sorcery.wav", "summon.wav", "tap.wav", "untap.wav",
+    "attack2.wav", "block2.wav", "damage.wav", "destroy.wav", "discard.wav",
+    "kill.wav", "regen.wav", "blackred.wav", "greenblack.wav", "whitered.wav",
+    "whitegreen.wav", "blackwhite.wav", "greenred.wav", "greenblue.wav", "whiteblue.wav",
+    "blueblack.wav", "redblue.wav", "counter.wav", "fastfx.wav", "changec.wav",
+    "changet.wav", "control.wav", "manaburn.wav", "shuffle.wav", "shell_loseduel.wav",
+    "shell_winduel.wav", "aswanjag.wav", "callgrav.wav", "faerdrag.wav", "gembazar.wav",
+    "necrazar.wav", "polkamix.wav", "pandora.wav", "prsmdrag.wav", "pwrstrgl.wav",
+    "catatap.wav", "orcart.wav", "whimsy.wav", "rainbowk.wav", "toss.wav",
+    "shell_shandalar.wav", "shell_tooltime.wav", "shell_helpme.wav", "shell_hallofrecords.wav",
+    "shell_duelmenow.wav", "exp1_openfoil.wav", "exp1_openbox.wav", "exp1_outofpack.wav",
+    "exp1_backinpack.wav"};
+
 // GLOBAL: MAGIC 0x00637554
 // GLOBAL: SHANDALAR 0x005a8b2c
 HWND g_kim_debug_listbox_hwnd;
@@ -184,6 +203,7 @@ void destroy_MAGICGAME_HandClass(LPCSTR class_name);
 int register_MAGICGAME_CardClass(LPCSTR class_name);
 void destroy_MAGICGAME_CardClass(LPCSTR class_name);
 int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name);
+void destroy_MAGICGAME_PhaseDisplayClass(LPCSTR class_name);
 int register_MAGICGAME_LibraryClass(LPCSTR class_name);
 int register_MAGICGAME_GraveyardClass(LPCSTR class_name);
 int register_MAGICGAME_FaceClass(LPCSTR class_name);
@@ -193,6 +213,7 @@ void destroy_MAGICGAME_TerritoryClass(LPCSTR class_name);
 int register_MAGICGAME_AttackClass(LPCSTR class_name);
 void destroy_MAGICGAME_AttackClass(LPCSTR class_name);
 int register_MAGICGAME_SpellChainClass(LPCSTR class_name);
+void destroy_MAGICGAME_SpellChainClass(LPCSTR class_name);
 int register_MAGICGAME_ScrollbarClass(LPCSTR class_name);
 int register_MAGICGAME_BigCardChoiceClass(LPCSTR class_name);
 void destroy_MAGICGAME_ScrollbarClass(LPCSTR class_name);
@@ -210,6 +231,23 @@ void prepare_duel_video_mode_transition(void)
 // FUNCTION: SHANDALAR 0x0040f067
 void finish_duel_video_mode_transition(void)
 {
+  struct
+  {
+    char path[264];
+    int sound_id;
+    int unused[7];
+    unsigned int flags;
+  } s;
+
+  s.flags &= 0xfffffffb;
+  sound_unload_all();
+  for (s.sound_id = 0; s.sound_id < 20; s.sound_id++)
+  {
+    strcpy(s.path, global_duelsounds_path);
+    strcat(s.path, "\\");
+    strcat(s.path, g_duel_sound_filenames[s.sound_id]);
+    sound_load(s.path, s.sound_id, (Sound *)0);
+  }
 }
 
 // FUNCTION: MAGIC 0x004224b5
@@ -642,7 +680,7 @@ int initialize_duel_engine_window(void)
   }
 
   g_duel_window_hwnd = CreateWindowExA(0, CLASS_MAGICGAME_MAINCLASS, gs_magic_the_gathering_title_00789460,
-                                       s.style, 1, 0, s.width, s.height, g_duel_parent_window_hwnd,
+                                       s.style, 1, 0, s.width, s.height, g_main_window_hwnd,
                                        (HMENU)0, g_app_instance, (LPVOID)0);
   if (g_duel_window_hwnd == (HWND)0)
   {
@@ -969,13 +1007,6 @@ void destroy_MAGICGAME_ChatClass(LPCSTR class_name)
   g_magicgame_chat_font = (HFONT)0;
 }
 
-// FUNCTION: MAGIC 0x005357b4
-// FUNCTION: SHANDALAR 0x00559ff4
-void destroy_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
-{
-  UnregisterClassA(CLASS_MAGICGAME_PHASE_DISPLAY, g_app_instance);
-}
-
 // FUNCTION: MAGIC 0x00498142
 // FUNCTION: SHANDALAR 0x004c19a2
 void destroy_MAGICGAME_LibraryClass(LPCSTR class_name)
@@ -1001,14 +1032,6 @@ void destroy_MAGICGAME_GraveyardClass(LPCSTR class_name)
     DestroyMenu(g_graveyard_popup_menu);
   }
   g_graveyard_popup_menu = (HMENU)0;
-}
-
-// FUNCTION: MAGIC 0x00486369
-// FUNCTION: SHANDALAR 0x004c8f49
-void destroy_MAGICGAME_SpellChainClass(LPCSTR class_name)
-{
-  UnregisterClassA(CLASS_MAGICGAME_SPELL_CHAIN, g_app_instance);
-  UnregisterClassA(CLASS_SPELL_MINIMIZED, g_app_instance);
 }
 
 // FUNCTION: MAGIC 0x00507f12

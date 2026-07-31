@@ -350,15 +350,15 @@ int card_animate_dead(int player, int card, event_t event)
 
     if (g_duel_ai_mode_state == 1)
     {
-      unk_00939340 = internal_rand(2);
+      ai_recorded_choice = internal_rand(2);
       record_ai_action_selection();
     }
     else
     {
       replay_ai_action_selection();
     }
-    PLAYER_CARD_INSTANCE(player, card).info_slot = unk_00939340;
-    return unk_007a7c58[unk_00939340] & TYPE_CREATURE;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = ai_recorded_choice;
+    return unk_007a7c58[ai_recorded_choice] & TYPE_CREATURE;
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
@@ -2847,7 +2847,7 @@ int card_holy_armor(int player, int card, event_t event)
     }
 
     unk_00715fa8 = 1;
-    unk_00925bb8 = ((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player << 8) |
+    ai_recorded_action = ((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player << 8) |
                    PLAYER_CARD_INSTANCE(player, card).damage_target_card;
     return 0;
   }
@@ -3078,7 +3078,7 @@ int card_blessing(int player, int card, event_t event)
     }
 
     unk_00715fa8 = 1;
-    unk_00925bb8 = ((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player << 8) |
+    ai_recorded_action = ((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player << 8) |
                    PLAYER_CARD_INSTANCE(player, card).damage_target_card;
     return 0;
   }
@@ -5878,14 +5878,14 @@ int card_phantasmal_terrain(int player, int card, event_t event)
       }
       else if (g_duel_ai_mode_state == 1)
       {
-        unk_00939340 = internal_rand(5) + 1;
-        land_type = unk_00939340;
+        ai_recorded_choice = internal_rand(5) + 1;
+        land_type = ai_recorded_choice;
         record_ai_action_selection();
       }
       else
       {
         replay_ai_action_selection();
-        land_type = unk_00939340;
+        land_type = ai_recorded_choice;
       }
 
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)

@@ -90,7 +90,8 @@ void destroy_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name);
 DUEL_ENGINE_EXTERN HWND g_duel_window_hwnd;
 
 // GLOBAL: MAGIC 0x0074875c
-DUEL_ENGINE_EXTERN HWND g_duel_parent_window_hwnd;
+// GLOBAL: SHANDALAR 0x00748420
+DUEL_ENGINE_EXTERN HWND g_main_window_hwnd;
 
 // GLOBAL: MAGIC 0x008cf078
 // GLOBAL: SHANDALAR 0x008a92b0

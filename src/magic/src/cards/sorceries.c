@@ -1061,12 +1061,12 @@ int card_fireball(int player, int card, event_t event)
             {
               s.possible_targets = 5;
             }
-            unk_00939340 =
+            ai_recorded_choice =
                 ClampIntToRange(internal_rand((x_value + 1) / 2) + 1, 1, s.possible_targets);
           }
           else
           {
-            unk_00939340 = PLAYER_CARD_INSTANCE(unk_008ce508, unk_008ce4f4).number_of_targets;
+            ai_recorded_choice = PLAYER_CARD_INSTANCE(unk_008ce508, unk_008ce4f4).number_of_targets;
           }
 
           record_ai_action_selection();
@@ -1076,7 +1076,7 @@ int card_fireball(int player, int card, event_t event)
           replay_ai_action_selection();
         }
 
-        s.num_targets = unk_00939340;
+        s.num_targets = ai_recorded_choice;
         if (s.num_targets == 99)
         {
           s.num_targets = 1;
@@ -1703,7 +1703,7 @@ int card_demonic_tutor(int player, int card, event_t event)
       {
         if (g_duel_ai_mode_state == 1)
         {
-          unk_00939340 = internal_rand(4);
+          ai_recorded_choice = internal_rand(4);
           record_ai_action_selection();
         }
         else
@@ -1711,7 +1711,7 @@ int card_demonic_tutor(int player, int card, event_t event)
           replay_ai_action_selection();
         }
 
-        switch (unk_00939340)
+        switch (ai_recorded_choice)
         {
         default:
         case 0:

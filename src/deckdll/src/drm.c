@@ -342,6 +342,71 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   return 0;
 }
 
+unsigned int HasExpansion(unsigned char param_1);
+
+// FUNCTION: DECKDLL 0x1002709f
+// FUNCTION: MAGIC 0x00497811
+// FUNCTION: SHANDALAR 0x004682a0
+int IsCardAvailable(csvid_t csvid, int expansion)
+{
+  int result;
+
+  result = 1;
+  if (expansion == 1)
+  {
+    if (HasExpansion(2) == 0)
+      result = 0;
+  }
+  if (expansion == 2)
+  {
+    if (HasExpansion(4) == 0)
+      result = 0;
+  }
+  if ((((csvid < 0) || (0x3FF < csvid)) || (expansion < 0)) || (2 < expansion))
+    result = 0;
+
+  if ((*(int *)&card_coded[expansion][(csvid >> 5) << 2] & (1 << (csvid & 0x1f))) == 0)
+    result = 0;
+
+  return result;
+}
+
+// FUNCTION: DECKDLL 0x10027164
+// FUNCTION: MAGIC 0x004978d6
+// FUNCTION: SHANDALAR 0x00468365
+int is_card_available_in_expansion(unsigned int csvid, int expansion)
+{
+  int result;
+
+  result = 1;
+  if ((((int)csvid < 0) || (0x3FF < (int)csvid)) || (expansion < 0) || (2 < expansion))
+    result = 0;
+
+  if ((*(int *)&card_coded[expansion][((int)(csvid & 0xffffffe0)) >> 3] & (1 << (csvid & 0x1f))) == 0)
+    result = 0;
+
+  return result;
+}
+
+#ifndef DECKDLL
+// FUNCTION: MAGIC 0x00497955
+// FUNCTION: SHANDALAR 0x004683e4
+int is_card_available_in_installed_expansion(unsigned int csvid)
+{
+  int result;
+
+  result = 0;
+  if (HasExpansion(1) != 0 && is_card_available_in_expansion(csvid, 0) != 0)
+    result = 1;
+  else if (HasExpansion(2) != 0 && is_card_available_in_expansion(csvid, 1) != 0)
+    result = 1;
+  else if (HasExpansion(4) != 0 && is_card_available_in_expansion(csvid, 2) != 0)
+    result = 1;
+
+  return result;
+}
+#endif
+
 // FUNCTION: DECKDLL 0x100271e3
 // FUNCTION: MAGIC 0x00497a09
 // FUNCTION: SHANDALAR 0x00468498
@@ -369,6 +434,10 @@ unsigned int HasExpansion(unsigned char param_1)
     result = 1;
   else if ((param_1 & 0x10) == 0x10 && (serial & 0x10000000))
     result = 1;
+#ifndef DECKDLL
+  else if ((param_1 & 0x20) == 0x20 && (serial & 0x2000))
+    result = 1;
+#endif
   else
     result = 0;
 
@@ -376,31 +445,4 @@ unsigned int HasExpansion(unsigned char param_1)
 #else
   return 1;
 #endif
-}
-
-// FUNCTION: DECKDLL 0x1002709f
-// FUNCTION: MAGIC 0x00497811
-// FUNCTION: SHANDALAR 0x004682a0
-int IsCardAvailable(csvid_t csvid, int expansion)
-{
-  int result;
-
-  result = 1;
-  if (expansion == 1)
-  {
-    if (HasExpansion(2) == 0)
-      result = 0;
-  }
-  if (expansion == 2)
-  {
-    if (HasExpansion(4) == 0)
-      result = 0;
-  }
-  if ((((csvid < 0) || (0x3FF < csvid)) || (expansion < 0)) || (2 < expansion))
-    result = 0;
-
-  if ((*(int *)&card_coded[expansion][(csvid >> 5) << 2] & (1 << (csvid & 0x1f))) == 0)
-    result = 0;
-
-  return result;
 }

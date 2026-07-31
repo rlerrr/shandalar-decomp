@@ -11,13 +11,14 @@
 #include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
+#include "magic/src/network.h"
 #ifdef SHANDALAR
 #include "deckdll/src/magsnd.h"
 #endif
 
 extern int life[2];
-unsigned int load_gametype0(char *path);
 int DrawRandomCardFromInitialLibrary(int library_index);
+int add_card_to_hand(int player, int internal_card_id);
 int AddCardToDeckSorted(int card_id);
 int GetCardRarity(int card_id);
 void AddJournalEntry(int entry_type, int entry_arg);
@@ -44,7 +45,7 @@ int allow_response(int param_1, int param_2, char *prompt, int param_4);
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response);
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
 void start_ai_decision_search(int decision_code, int time_scale);
-void __stdcall FUN_004e4e9a(void);
+void __stdcall reset_ai_search_trial_state(void);
 int reset_empty_card_original_ids(void);
 void compact_timestamp_slots(void);
 int reset_stack_tracking_state(void);
@@ -52,6 +53,7 @@ void rebuild_battlefield_summary(void);
 extern int DAT_008ced00[16];
 extern int DAT_007aa928;
 extern int DAT_007aaeec;
+extern int DAT_00637c70;
 extern HWND DAT_008a8dec;
 extern HWND DAT_008a8d78;
 extern int g_duel_selected_player_card;
@@ -167,6 +169,12 @@ void StopWorldLocationMusic(void)
 #endif
 }
 
+// FUNCTION: MAGIC 0x00464bb0
+void FUN_00464bb0(void)
+{
+  DAT_00637c70 = 0;
+}
+
 // FUNCTION: MAGIC 0x0043de00
 // FUNCTION: SHANDALAR 0x00409680
 void reset_duel_globals(void)
@@ -272,33 +280,6 @@ int reset_timestamp_players(void)
   }
 
   return 0;
-}
-
-// FUNCTION: MAGIC 0x004ecdc0
-void load_selected_duel_save_slot(int player)
-{
-  (void)player;
-}
-
-// FUNCTION: MAGIC 0x004ef17b
-// FUNCTION: SHANDALAR 0x0050416b
-void load_duel_run_mode_1_save(char *path)
-{
-  (void)path;
-}
-
-// FUNCTION: MAGIC 0x004ef35a
-// FUNCTION: SHANDALAR 0x0050434b
-void load_duel_run_mode_2_save(char *path)
-{
-  (void)path;
-}
-
-// FUNCTION: MAGIC 0x004ef54b
-// FUNCTION: SHANDALAR 0x0050453d
-void load_duel_run_mode_3_save(char *path)
-{
-  (void)path;
 }
 
 // FUNCTION: MAGIC 0x0044b56a
@@ -1333,7 +1314,7 @@ int discard_phase(unsigned int player, int phase_mode)
     }
     if (ai_decision_code == 3)
     {
-      FUN_004e4e9a();
+      reset_ai_search_trial_state();
       DAT_008cdab4 = 0;
       DAT_008cdab0 = DAT_008cdab4;
       DAT_008a8de4 = DAT_008cdab0;
@@ -1662,38 +1643,41 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     {
       show_ai_action_log_dialog(0, s.ai_score);
     }
-    if ((DAT_0089652c < s.ai_score) && (DAT_0093d850 == 0))
+    if ((ai_search_best_score < s.ai_score) && (DAT_0093d850 == 0))
     {
-      DAT_0089652c = s.ai_score;
+      ai_search_best_score = s.ai_score;
       save_recorded_ai_actions();
       s.saved_ai_flags = ai_search_flags;
-      s.saved_ai_try_count = unk_008cc840;
+      s.saved_ai_try_count = ai_search_try_count;
     }
-    if (DAT_008a8d7c == 999)
+    if (ai_search_target_depth == 999)
     {
-      DAT_008a8d7c = -1;
+      ai_search_target_depth = -1;
     }
-    DAT_008a8d74 = 0;
-    *phase_value = DAT_008a8d74;
+    ai_search_force_pass = 0;
+    *phase_value = ai_search_force_pass;
     DAT_0093d850 = *phase_value;
-    if ((DAT_0091c500 / 2 < get_ai_search_elapsed_time()) &&
-        (((g_shandalar_difficulty * 5 + 5) * 5 <= unk_008cc840) ||
+    if ((ai_search_time_limit / 2 < get_ai_search_elapsed_time()) &&
+        ((((g_shandalar_difficulty + 1) * 5) * 5 <= ai_search_try_count) ||
          (((ai_search_flags & 4) == 0 ? 0xc8 : 0x32) < get_ai_search_elapsed_time())) &&
-        ((DAT_00712544 == 0) || (unk_008cc840 > 0x32)))
+        ((DAT_00712544 == 0) || (ai_search_try_count > 0x32)))
     {
-      sprintf(s.debug_text, s_phase___3d_num_tries___4d_mtime___0056e98c, DAT_00743098, unk_008cc840, DAT_0091c500 / 2, unk_0093f9c0);
+      sprintf(s.debug_text, s_phase___3d_num_tries___4d_mtime___0056e98c, DAT_00743098, ai_search_try_count, ai_search_time_limit / 2, unk_0093f9c0);
       OutputDebugStringA(s.debug_text);
       if (DAT_00712544 != 0)
       {
-        show_ai_action_log_dialog(1, DAT_0089652c);
+        show_ai_action_log_dialog(1, ai_search_best_score);
       }
       unk_00712938 = -1;
       g_duel_ai_mode_state = 0;
-      DAT_008a8d7c = -1;
+      ai_search_target_depth = -1;
       ai_search_flags = s.saved_ai_flags;
     }
+    else
+    {
+    }
 
-    unk_008cc840++;
+    ai_search_try_count++;
     DAT_007161cc = 0;
     if (ai_decision_code == 1)
     {
@@ -1951,8 +1935,82 @@ void remove_iid_from_initial_library(int player, int internal_card_id)
 // FUNCTION: SHANDALAR 0x0056a05a
 void perform_player_mulligan(int player, int wizard_color)
 {
-  (void)player;
-  (void)wizard_color;
+  struct
+  {
+    char trace_text[500];
+    int library_index;
+    int card_index;
+    int packet_card;
+    int found_card;
+  } s;
+
+  if ((g_duel_network_flags & 2) != 0)
+  {
+    append_to_trace_txt("Doing the mulligan.\n");
+  }
+  if ((g_duel_network_flags & 2) != 0)
+  {
+    append_to_trace_txt("Discarding my the hand.\n");
+  }
+  for (s.card_index = 0; s.card_index < 0x96; s.card_index++)
+  {
+    if (global_card_instances[player][s.card_index].internal_card_id != -1)
+    {
+      s.found_card = 0;
+
+      for (s.library_index = 0; (s.library_index < 200) && (s.found_card == 0); s.library_index++)
+      {
+        if (CardTypeFromID(initial_library[wizard_color][s.library_index].csvid) ==
+            global_card_instances[player][s.card_index].internal_card_id)
+        {
+          initial_library[wizard_color][s.library_index].numcards++;
+          s.found_card = 1;
+        }
+      }
+      global_card_instances[player][s.card_index].internal_card_id = -1;
+    }
+  }
+  if ((g_duel_network_flags & 2) != 0)
+  {
+    if (active_player == player)
+    {
+      append_to_trace_txt("Re-dealing my hand.\n");
+      for (s.card_index = 0; s.card_index < 7; s.card_index++)
+      {
+        s.packet_card = DrawRandomCardFromInitialLibrary(wizard_color);
+        add_card_to_hand(player, s.packet_card);
+        AddCardToCLPacket(s.packet_card);
+        sprintf(s.trace_text, "%s(%d)\n", global_cards_data[s.packet_card].name, s.packet_card);
+        append_to_trace_txt(s.trace_text);
+      }
+      append_to_trace_txt("NONE\n");
+      AddCardToCLPacket(-1);
+      TENTATIVE_send_network_result(0, 3);
+    }
+    else
+    {
+      append_to_trace_txt("Getting opponent's hand.\n");
+      TENTATIVE_wait_for_network_result(1, 3);
+      s.card_index = s.packet_card = 0;
+      while (s.packet_card != -1)
+      {
+        s.packet_card = GetCardFromCLPacket(s.card_index++);
+        sprintf(s.trace_text, "%s(%d)\n", global_cards_data[s.packet_card].name, s.packet_card);
+        append_to_trace_txt(s.trace_text);
+        if (s.packet_card != -1)
+        {
+          add_card_to_hand(player, s.packet_card);
+        }
+      }
+    }
+  }
+  else
+  {
+    for (s.card_index = 0; s.card_index < 7; s.card_index++)
+    {
+      add_card_to_hand(player, DrawRandomCardFromInitialLibrary(wizard_color));
+    }
+  }
 }
 
 // FUNCTION: MAGIC 0x004b3cc2

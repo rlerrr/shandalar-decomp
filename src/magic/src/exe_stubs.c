@@ -19,8 +19,7 @@ int raw_do_dialog(int bigcard_player,
                   int smallcard_card,
                   char *prompt,
                   int dialog_mode);
-void save_ai_search_state(void);
-void restore_ai_search_state(void);
+void FUN_00464bb0(void);
 int FUN_00447f59(void);
 int FUN_004e1b84(void);
 int get_duel_thread_time_ms(void);
@@ -34,7 +33,6 @@ void prompt_player_for_stop_action(int player, char *prompt);
 void show_mana_burn_dialog(int player, int amount);
 BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-int get_ai_search_elapsed_time(void);
 void delete_and_close_object(HANDLE obj);
 HBITMAP load_pic(char *filename);
 void ApplyCardArtPaletteToDc(HDC hdc);
@@ -44,7 +42,6 @@ extern int DAT_00712544;
 void __cdecl _assert(void *expr, void *filename, unsigned line);
 void change_buttonclass_wndproc(HWND hwnd);
 void save_duel_interface_options_to_registry(void);
-int ai_opinion_of_gamestate_continued(int player, int score);
 void FUN_0044a796(int player, int card);
 int card_ball_lightning(int player, int card, event_t event);
 void FUN_004955ae(DRAWITEMSTRUCT *draw_item_struct,
@@ -159,52 +156,6 @@ static void cleanup_duel_options_dialog_resources(HBITMAP background,
     DeleteObject(pen2);
   }
 }
-
-typedef struct
-{
-  card_instance_t card_instances[2][151];
-  card_data_t extra_card_data[16];
-  int library[2][500];
-  int graveyard[2][500];
-  int exile[2][500];
-  int special_mana[2][8];
-  int raw_mana[2][8];
-  int basic_lands[2][8];
-  int raw_mana_hex[2][51];
-  int life_totals[2];
-  int DAT_007abce0_pair[2];
-  unsigned int card_types[2];
-  int graveyard_type_flags[2];
-  unsigned char DAT_008cfd70_copy[0x60];
-  int ante_cards[2][16];
-  int timestamp_player[500];
-  int timestamp_card[500];
-  int land_play_flags;
-  phase_t phase;
-  int current_casting_internal_card_id_value;
-  int combat_count;
-  int spell_fizzled_value;
-  int stack_events[32];
-  target_t stack_cards[32];
-  target_t stack_damage_targets[32];
-  int active_counts[2];
-  int stack_count;
-  int(__cdecl *DAT_007ab2cc_value)(int, int);
-  int DAT_0093a848_value;
-  int damage_matrix[2][151][2][4];
-  int cost_mod[8];
-  int mana_charge[8];
-  int x_value_copy;
-  int max_x_value_copy;
-  int extra_turn_player;
-  phase_t stop_phase_copy;
-  int stop_phase_player_copy;
-  int battlefield_flags;
-  int unk_008b44d0_copy[2];
-  int unk_007a79b0_copy[2];
-} AiSearchBackup;
-
-static AiSearchBackup g_ai_search_backup;
 
 // FUNCTION: MAGIC 0x0048958a
 BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -983,7 +934,7 @@ cleanup:
 
   if (s.result != 0)
   {
-    DAT_0072c8e4 = 0;
+    ai_action_replay_available = 0;
   }
 
   return s.result;
@@ -1216,43 +1167,43 @@ unsigned int FUN_004aec05(int player)
   {
     if (internal_rand(2) == 0 || get_recorded_action_count() == 0)
     {
-      unk_00939340 = internal_rand(s.num_candidates);
+      ai_recorded_choice = internal_rand(s.num_candidates);
     }
     else
     {
-      unk_00939340 = s.num_candidates - 1;
+      ai_recorded_choice = s.num_candidates - 1;
     }
 
-    if (DAT_008a8d74 != 0)
+    if (ai_search_force_pass != 0)
     {
-      unk_00939340 = s.num_candidates - 1;
-      if (DAT_008a8d74 == 1)
+      ai_recorded_choice = s.num_candidates - 1;
+      if (ai_search_force_pass == 1)
       {
-        DAT_008a8d74 = -1;
+        ai_search_force_pass = -1;
       }
     }
 
-    unk_00925bb8 = (((unsigned int)-(((PLAYER_CARD_INSTANCE(player, (int)s.candidates[unk_00939340]).state & 2) == 0))) &
+    ai_recorded_action = (((unsigned int)-(((PLAYER_CARD_INSTANCE(player, (int)s.candidates[ai_recorded_choice]).state & 2) == 0))) &
                     0xfffff000) +
                    0x2000;
-    unk_00925bb8 |= s.candidates[unk_00939340];
-    unk_00925bb8 |= (((player == 0) - 1) & 0x100);
+    ai_recorded_action |= s.candidates[ai_recorded_choice];
+    ai_recorded_action |= (((player == 0) - 1) & 0x100);
 
-    unk_0057aae8 = 4;
+    ai_recorded_action_type = 4;
     record_ai_action_selection();
   }
   else
   {
-    unk_0057aae8 = 4;
+    ai_recorded_action_type = 4;
     replay_ai_action_selection();
 
-    if (s.num_candidates <= unk_00939340)
+    if (s.num_candidates <= ai_recorded_choice)
     {
-      unk_00939340 = s.num_candidates - 1;
+      ai_recorded_choice = s.num_candidates - 1;
     }
   }
 
-  if (s.candidates[unk_00939340] != 0xffffffffU)
+  if (s.candidates[ai_recorded_choice] != 0xffffffffU)
   {
     if (DAT_008a8de4 > 0xf)
     {
@@ -1260,12 +1211,12 @@ unsigned int FUN_004aec05(int player)
     }
 
     DAT_0091bf70[DAT_008a8de4] =
-        PLAYER_CARD_INSTANCE(player, (int)s.candidates[unk_00939340]).internal_card_id;
-    DAT_007abc00[DAT_008a8de4] = s.candidates[unk_00939340];
+        PLAYER_CARD_INSTANCE(player, (int)s.candidates[ai_recorded_choice]).internal_card_id;
+    DAT_007abc00[DAT_008a8de4] = s.candidates[ai_recorded_choice];
     ++DAT_008a8de4;
   }
 
-  return s.candidates[unk_00939340];
+  return s.candidates[ai_recorded_choice];
 }
 
 // FUNCTION: MAGIC 0x00440ad2
@@ -1483,10 +1434,10 @@ int get_card_response_action_type(int player, int card)
       }
 
       if ((land_can_be_played & 4) == 0 ||
-           ((land_can_be_played & 4) != 0 &&
-            (global_cards_data[s.internal_card_id].extra_ability & 0x1004) != 0) ||
-           (DAT_007aadec == 0xd3 &&
-            (global_cards_data[s.internal_card_id].extra_ability & 0x4000) != 0))
+          ((land_can_be_played & 4) != 0 &&
+           (global_cards_data[s.internal_card_id].extra_ability & 0x1004) != 0) ||
+          (DAT_007aadec == 0xd3 &&
+           (global_cards_data[s.internal_card_id].extra_ability & 0x4000) != 0))
       {
         unk_008b3270 &= ~2;
 
@@ -1701,7 +1652,7 @@ int activate(int who_activates, int player, int card)
 
   if (s.who_pays == other_player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state != 1)
   {
-    unk_00925bb8 = -1;
+    ai_recorded_action = -1;
     dispatch_event_to_single_card(player, card, EVENT_GET_SELECTED_CARD, 1 - player, -1);
 
     LoadTextSectionLines(global_ui_strings_filename, "PROMPT_TAP1");
@@ -1719,14 +1670,14 @@ int activate(int who_activates, int player, int card)
 
     if (instance->number_of_targets == 0)
     {
-      if (unk_00925bb8 == -1)
+      if (ai_recorded_action == -1)
       {
         raw_do_dialog(player, card, -1, -1, s.prompt, 0);
       }
       else
       {
         /* Unreachable in practice, but present in the original binary. */
-        raw_do_dialog(player, card, (unk_00925bb8 >> 8), (unk_00925bb8 & 0xff), s.prompt, 0);
+        raw_do_dialog(player, card, (ai_recorded_action >> 8), (ai_recorded_action & 0xff), s.prompt, 0);
       }
     }
     else if (instance->number_of_targets == 1)
@@ -2164,7 +2115,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
 
   if ((g_duel_network_flags & 2) == 0)
   {
-    if (g_duel_ai_mode_state == 1 || DAT_0072c8e4 != 0 ||
+    if (g_duel_ai_mode_state == 1 || ai_action_replay_available != 0 ||
         (trigger_condition != -1 && current_turn == other_player) || DAT_007aadec == 4 ||
         (other_player == unk_00742f60 && (land_can_be_played & 0x200) != 0))
     {
@@ -2979,124 +2930,6 @@ int FUN_004961ab(HWND param_1, HWND *param_2, int param_3)
   }
 }
 
-// FUNCTION: MAGIC 0x00441cf2
-void start_ai_decision_search(int decision_code, int time_scale)
-{
-  DAT_0089652c = -9999;
-  g_duel_ai_mode_state = 1;
-  ai_decision_code = decision_code;
-  DAT_0091c500 = ((g_shandalar_difficulty + 1) * time_scale) / 4;
-
-  DAT_00775d3c = 1 << (unsigned char)(internal_rand(5) + 1);
-
-  save_ai_search_state();
-  FUN_004e1b84();
-  update_duel_thread_time_marker();
-
-  unk_008cc840 = 0;
-  DAT_008a8d74 = 1;
-  unk_00712938 = 0;
-}
-
-// FUNCTION: MAGIC 0x004e430e
-void save_ai_search_state(void)
-{
-  saved_recorded_action_count = 0;
-  memcpy(g_ai_search_backup.card_instances, global_card_instances, sizeof(g_ai_search_backup.card_instances));
-  memcpy(g_ai_search_backup.extra_card_data, global_cards_data + g_card_count, sizeof(g_ai_search_backup.extra_card_data));
-  memcpy(g_ai_search_backup.library, global_library, sizeof(g_ai_search_backup.library));
-  memcpy(g_ai_search_backup.graveyard, global_graveyard_slots, sizeof(g_ai_search_backup.graveyard));
-  memcpy(g_ai_search_backup.exile, global_exile, sizeof(g_ai_search_backup.exile));
-  memcpy(g_ai_search_backup.special_mana, special_mana_pool, sizeof(g_ai_search_backup.special_mana));
-  memcpy(g_ai_search_backup.raw_mana, raw_mana_available, sizeof(g_ai_search_backup.raw_mana));
-  memcpy(g_ai_search_backup.basic_lands, basiclandtypes_controlled, sizeof(g_ai_search_backup.basic_lands));
-  memcpy(g_ai_search_backup.raw_mana_hex, raw_mana_available_hex, sizeof(g_ai_search_backup.raw_mana_hex));
-  memcpy(g_ai_search_backup.life_totals, life, sizeof(g_ai_search_backup.life_totals));
-  memcpy(g_ai_search_backup.DAT_007abce0_pair, &DAT_007abce0, sizeof(g_ai_search_backup.DAT_007abce0_pair));
-  memcpy(g_ai_search_backup.card_types, card_types_in_play, sizeof(g_ai_search_backup.card_types));
-  memcpy(g_ai_search_backup.graveyard_type_flags, unk_007a7c58, sizeof(g_ai_search_backup.graveyard_type_flags));
-  memcpy(g_ai_search_backup.DAT_008cfd70_copy, DAT_008cfd70, sizeof(g_ai_search_backup.DAT_008cfd70_copy));
-  memcpy(g_ai_search_backup.ante_cards, global_ante_cards, sizeof(g_ai_search_backup.ante_cards));
-  memcpy(g_ai_search_backup.timestamp_player, TENTATIVE_timestamp_player, sizeof(g_ai_search_backup.timestamp_player));
-  memcpy(g_ai_search_backup.timestamp_card, TENTATIVE_timestamp_card, sizeof(g_ai_search_backup.timestamp_card));
-  g_ai_search_backup.land_play_flags = land_can_be_played;
-  g_ai_search_backup.phase = current_phase;
-  DAT_00743098 = g_ai_search_backup.phase;
-  g_ai_search_backup.current_casting_internal_card_id_value = current_casting_internal_card_id;
-  g_ai_search_backup.combat_count = attacking_creature_count;
-  g_ai_search_backup.spell_fizzled_value = spell_fizzled;
-  memcpy(g_ai_search_backup.stack_events, stack_data, sizeof(g_ai_search_backup.stack_events));
-  memcpy(g_ai_search_backup.stack_cards, global_stack_cards, sizeof(g_ai_search_backup.stack_cards));
-  memcpy(g_ai_search_backup.stack_damage_targets, global_stack_damage_targets, sizeof(g_ai_search_backup.stack_damage_targets));
-  memcpy(g_ai_search_backup.active_counts, active_cards_count, sizeof(g_ai_search_backup.active_counts));
-  if (stack_size < 0)
-  {
-    _assert("ScWilly>=0", "D:\\Newmagic\\multiplayer\\sid\\Ai.c", 0x1cb);
-  }
-  g_ai_search_backup.stack_count = stack_size;
-  g_ai_search_backup.DAT_007ab2cc_value = pending_killed_card_handler;
-  g_ai_search_backup.DAT_0093a848_value = DAT_0093a848;
-  memcpy(g_ai_search_backup.damage_matrix, unk_0093b280, sizeof(g_ai_search_backup.damage_matrix));
-  memcpy(g_ai_search_backup.cost_mod, unk_0072c440, sizeof(g_ai_search_backup.cost_mod));
-  memcpy(g_ai_search_backup.mana_charge, mana_charge, sizeof(g_ai_search_backup.mana_charge));
-  g_ai_search_backup.x_value_copy = x_value;
-  g_ai_search_backup.max_x_value_copy = max_x_value;
-  g_ai_search_backup.extra_turn_player = g_duel_extra_turn_player;
-  g_ai_search_backup.DAT_0093a848_value = DAT_0093a848;
-  g_ai_search_backup.stop_phase_copy = stop_phase;
-  g_ai_search_backup.stop_phase_player_copy = stop_phase_player;
-  g_ai_search_backup.battlefield_flags = battlefield_extra_ability_flags;
-  memcpy(g_ai_search_backup.unk_008b44d0_copy, unk_008b44d0, sizeof(g_ai_search_backup.unk_008b44d0_copy));
-  memcpy(g_ai_search_backup.unk_007a79b0_copy, unk_007a79b0, sizeof(g_ai_search_backup.unk_007a79b0_copy));
-  StopWorldLocationMusic();
-}
-
-// FUNCTION: MAGIC 0x004e4632
-void restore_ai_search_state(void)
-{
-  memcpy(global_card_instances, g_ai_search_backup.card_instances, sizeof(g_ai_search_backup.card_instances));
-  memcpy(global_cards_data + g_card_count, g_ai_search_backup.extra_card_data, sizeof(g_ai_search_backup.extra_card_data));
-  memcpy(global_library, g_ai_search_backup.library, sizeof(g_ai_search_backup.library));
-  memcpy(global_graveyard_slots, g_ai_search_backup.graveyard, sizeof(g_ai_search_backup.graveyard));
-  memcpy(global_exile, g_ai_search_backup.exile, sizeof(g_ai_search_backup.exile));
-  memcpy(special_mana_pool, g_ai_search_backup.special_mana, sizeof(g_ai_search_backup.special_mana));
-  memcpy(raw_mana_available, g_ai_search_backup.raw_mana, sizeof(g_ai_search_backup.raw_mana));
-  memcpy(basiclandtypes_controlled, g_ai_search_backup.basic_lands, sizeof(g_ai_search_backup.basic_lands));
-  memcpy(raw_mana_available_hex, g_ai_search_backup.raw_mana_hex, sizeof(g_ai_search_backup.raw_mana_hex));
-  memcpy(life, g_ai_search_backup.life_totals, sizeof(g_ai_search_backup.life_totals));
-  memcpy(&DAT_007abce0, g_ai_search_backup.DAT_007abce0_pair, sizeof(g_ai_search_backup.DAT_007abce0_pair));
-  memcpy(card_types_in_play, g_ai_search_backup.card_types, sizeof(g_ai_search_backup.card_types));
-  memcpy(unk_007a7c58, g_ai_search_backup.graveyard_type_flags, sizeof(g_ai_search_backup.graveyard_type_flags));
-  memcpy(DAT_008cfd70, g_ai_search_backup.DAT_008cfd70_copy, sizeof(g_ai_search_backup.DAT_008cfd70_copy));
-  memcpy(global_ante_cards, g_ai_search_backup.ante_cards, sizeof(g_ai_search_backup.ante_cards));
-  memcpy(TENTATIVE_timestamp_player, g_ai_search_backup.timestamp_player, sizeof(g_ai_search_backup.timestamp_player));
-  memcpy(TENTATIVE_timestamp_card, g_ai_search_backup.timestamp_card, sizeof(g_ai_search_backup.timestamp_card));
-  land_can_be_played = g_ai_search_backup.land_play_flags;
-  current_phase = g_ai_search_backup.phase;
-  current_casting_internal_card_id = g_ai_search_backup.current_casting_internal_card_id_value;
-  attacking_creature_count = g_ai_search_backup.combat_count;
-  spell_fizzled = g_ai_search_backup.spell_fizzled_value;
-  memcpy(stack_data, g_ai_search_backup.stack_events, sizeof(g_ai_search_backup.stack_events));
-  memcpy(global_stack_cards, g_ai_search_backup.stack_cards, sizeof(g_ai_search_backup.stack_cards));
-  memcpy(global_stack_damage_targets, g_ai_search_backup.stack_damage_targets, sizeof(g_ai_search_backup.stack_damage_targets));
-  memcpy(active_cards_count, g_ai_search_backup.active_counts, sizeof(g_ai_search_backup.active_counts));
-  stack_size = g_ai_search_backup.stack_count;
-  pending_killed_card_handler = g_ai_search_backup.DAT_007ab2cc_value;
-  DAT_0093a848 = g_ai_search_backup.DAT_0093a848_value;
-  memcpy(unk_0093b280, g_ai_search_backup.damage_matrix, sizeof(g_ai_search_backup.damage_matrix));
-  memcpy(unk_0072c440, g_ai_search_backup.cost_mod, sizeof(g_ai_search_backup.cost_mod));
-  memcpy(mana_charge, g_ai_search_backup.mana_charge, sizeof(g_ai_search_backup.mana_charge));
-  x_value = g_ai_search_backup.x_value_copy;
-  max_x_value = g_ai_search_backup.max_x_value_copy;
-  g_duel_extra_turn_player = g_ai_search_backup.extra_turn_player;
-  DAT_0093a848 = g_ai_search_backup.DAT_0093a848_value;
-  stop_phase = g_ai_search_backup.stop_phase_copy;
-  stop_phase_player = g_ai_search_backup.stop_phase_player_copy;
-  battlefield_extra_ability_flags = g_ai_search_backup.battlefield_flags;
-  memcpy(unk_008b44d0, g_ai_search_backup.unk_008b44d0_copy, sizeof(g_ai_search_backup.unk_008b44d0_copy));
-  memcpy(unk_007a79b0, g_ai_search_backup.unk_007a79b0_copy, sizeof(g_ai_search_backup.unk_007a79b0_copy));
-}
-
 // FUNCTION: MAGIC 0x00447f59
 int FUN_00447f59(void)
 {
@@ -3255,598 +3088,8 @@ BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
   }
 }
 
-// FUNCTION: MAGIC 0x004e4e9a
-void __stdcall FUN_004e4e9a(void)
-{
-  int i;
-
-  DAT_0093d850 = 0;
-  recorded_action_count = DAT_0093d850;
-  _DAT_00743020 = -1;
-  for (i = 0; i < 0x100; ++i)
-  {
-    unk_006a6ee8[i] = 0x63;
-  }
-  restore_ai_search_state();
-  if (g_duel_ai_mode_state != 1)
-  {
-    ai_decision_code = -1;
-  }
-}
-
-// FUNCTION: MAGIC 0x004e50f5
-void __stdcall save_recorded_ai_actions(void)
-{
-  int action_index;
-
-  for (action_index = 0; action_index < recorded_action_count; action_index = action_index + 1)
-  {
-    recorded_action_codes[action_index] = unk_006a6ee8[action_index];
-    unk_006a1db8[action_index] = unk_006a21b8[action_index];
-    saved_recorded_action_internal_card_ids[action_index] = unk_006a8258[action_index];
-    unk_006a5f18[action_index] = unk_006a8660[action_index];
-  }
-
-  recorded_action_codes[recorded_action_count] = 99;
-  if (recorded_action_codes[0] == 99)
-  {
-    saved_recorded_action_count = recorded_action_count;
-  }
-  DAT_0072c8e4 = 1;
-}
-
-// FUNCTION: MAGIC 0x004e51e8
-int ai_opinion_of_gamestate(int player)
-{
-  struct
-  {
-    int block_result;
-    int power_score;
-    int toughness;
-    unsigned int abilities;
-    unsigned int landwalk_masks[2];
-    char attached_to_card[300];
-    int card_value;
-    int opponent;
-    int loop2;
-    int life_score;
-    int card;
-    int damage_power;
-    int internal_card_id;
-    int side_score;
-    int score;
-    int current_player;
-  } s;
-
-  unk_00712938 = 1;
-  s.score = 0;
-  s.opponent = 1 - player;
-  get_landwalk_evasion_masks(&s.landwalk_masks[0], &s.landwalk_masks[1]);
-  memset(s.attached_to_card, 0, 0x12c);
-
-  s.life_score = 0;
-  s.score = s.life_score;
-  for (s.card = 1; s.card <= life[player]; s.card = s.card + 1)
-  {
-    s.life_score += 0x18 / s.card + 0xc;
-  }
-  s.score += (DAT_007a7d10[player] * s.life_score) / 8;
-
-  s.life_score = 0;
-  for (s.card = 1; s.card <= life[s.opponent]; s.card = s.card + 1)
-  {
-    s.life_score += 0x18 / s.card + 0xc;
-  }
-  s.score -= (DAT_007a7d10[s.opponent] * s.life_score) / 8;
-
-  if (life[player] <= 0)
-  {
-    s.score += (life[player] * 4 - 8) * 0x4b;
-  }
-  if (life[s.opponent] <= 0)
-  {
-    s.score -= (life[s.opponent] - 2) * 0x100;
-  }
-
-  if (DAT_00712544 != 0)
-  {
-    strcpy(unk_00748770, "");
-  }
-
-  for (s.current_player = 0; s.current_player < 2; s.current_player = s.current_player + 1)
-  {
-    s.opponent = 1 - s.current_player;
-    s.side_score = -(((other_player == s.current_player ? 0x30 : 0) + 0x18) *
-                     raw_mana_available[s.current_player][7]);
-
-    for (s.card = 1; s.card < 6; s.card = s.card + 1)
-    {
-      for (s.loop2 = 1; s.loop2 <= basiclandtypes_controlled[s.current_player][s.card]; s.loop2 = s.loop2 + 1)
-      {
-        s.side_score += 0x30 / s.loop2;
-      }
-    }
-
-    for (s.card = 0; s.card < active_cards_count[s.current_player]; s.card = s.card + 1)
-    {
-      if (global_card_instances[s.current_player][s.card].internal_card_id == -1)
-      {
-        continue;
-      }
-      if ((global_card_instances[s.current_player][s.card].state & STATE_OUBLIETTED) != 0)
-      {
-        continue;
-      }
-
-      s.internal_card_id = global_card_instances[s.current_player][s.card].internal_card_id;
-      if ((global_cards_data[s.internal_card_id].type & TYPE_EFFECT) != 0)
-      {
-        continue;
-      }
-
-      s.card_value = 1;
-      if ((global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0)
-      {
-        s.abilities = C_get_abilities(s.current_player, s.card, EVENT_ABILITIES, -1);
-        s.power_score = C_get_abilities(s.current_player, s.card, EVENT_POWER, -1) & ~0x4000;
-        s.power_score *= 2;
-        s.damage_power = s.power_score;
-        if (global_cards_data[s.internal_card_id].subtype == 0)
-        {
-          s.damage_power = 0;
-          s.power_score = s.damage_power;
-        }
-        s.toughness = C_get_abilities(s.current_player, s.card, EVENT_TOUGHNESS, -1) & ~0x4000;
-        s.card_value = ((s.power_score + 3) * (s.toughness + 4)) / 2;
-
-        if ((global_card_instances[s.current_player][s.card].state & STATE_TAPPED) != 0 &&
-            current_player == s.current_player)
-        {
-          s.card_value--;
-        }
-        if ((s.abilities & 0x80) != 0)
-        {
-          s.card_value = (s.card_value * 3) / 2;
-        }
-        if ((s.abilities & 0x100) != 0)
-        {
-          s.card_value = (s.card_value * 3) / 2;
-        }
-        if ((global_cards_data[s.internal_card_id].extra_ability & 3) != 0)
-        {
-          s.card_value = (s.card_value * 3) / 2;
-        }
-        if ((s.abilities & 0x40) != 0)
-        {
-          s.card_value = ((s.toughness + 1) * s.card_value) / 2;
-        }
-        if ((s.abilities & 0x200) != 0)
-        {
-          s.card_value = (s.card_value * 3) / 2;
-        }
-
-        if (DAT_0093f4b0 == 0 &&
-            player != s.current_player &&
-            player == current_player &&
-            (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0)
-        {
-          s.block_result = 0;
-          s.abilities = C_get_abilities(s.current_player, s.card, EVENT_ABILITIES, -1);
-          for (s.loop2 = 0; s.loop2 < active_cards_count[s.opponent]; s.loop2 = s.loop2 + 1)
-          {
-            if (can_block_attacker_with_abilities(s.opponent,
-                                                  s.loop2,
-                                                  s.current_player,
-                                                  s.card,
-                                                  s.abilities,
-                                                  s.landwalk_masks[s.current_player]) != 0)
-            {
-              s.block_result |= 1;
-              if (C_get_abilities(s.opponent, s.loop2, EVENT_TOUGHNESS, s.card) > s.power_score ||
-                  C_get_abilities(s.opponent, s.loop2, EVENT_POWER, s.card) >= s.toughness)
-              {
-                s.block_result |= 2;
-                break;
-              }
-            }
-          }
-          if ((s.block_result & 2) == 0)
-          {
-            s.side_score += (DAT_007a7d10[s.opponent] * s.damage_power * 0x18) / 0x10;
-            if (s.block_result == 0 && life[s.opponent] <= s.power_score)
-            {
-              s.side_score += 0x100;
-            }
-          }
-        }
-
-        if ((global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0)
-        {
-          s.card_value *= 3;
-        }
-        else if (global_cards_data[s.internal_card_id].code_pointer == card_ball_lightning)
-        {
-          s.card_value = 1;
-        }
-
-        s.card_value = (unk_007a7d18[s.current_player] * s.card_value) / 8;
-      }
-
-      if ((global_cards_data[s.internal_card_id].type & TYPE_LAND) != 0)
-      {
-        if ((global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) == 0)
-        {
-          s.card_value = 2;
-        }
-        else if ((global_card_instances[s.current_player][s.card].state & STATE_TAPPED) == 0)
-        {
-          s.card_value = 1;
-        }
-        else
-        {
-          s.card_value = 0;
-        }
-      }
-
-      if (global_cards_data[s.internal_card_id].type == TYPE_ARTIFACT &&
-          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0)
-      {
-        s.card_value = ((global_cards_data[s.internal_card_id].cc[1] * 3 + 3) * 4) / 2;
-      }
-
-      if (global_cards_data[s.internal_card_id].type == TYPE_ENCHANTMENT &&
-          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) != 0 &&
-          (char)global_card_instances[s.current_player][s.card].damage_target_player != -1 &&
-          global_card_instances[s.current_player][s.card].damage_target_card != -1)
-      {
-        s.attached_to_card[(int)(char)global_card_instances[s.current_player][s.card].damage_target_player * 150 +
-                           global_card_instances[s.current_player][s.card].damage_target_card] |=
-            (char)(1 << (unsigned char)s.current_player);
-      }
-
-      if ((global_cards_data[s.internal_card_id].type & TYPE_SPELL) != 0 &&
-          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) == 0)
-      {
-        s.card_value = GetCardRarity(s.internal_card_id) * 0xc;
-      }
-
-      if ((global_cards_data[s.internal_card_id].type & TYPE_ENCHANTMENT) != 0 &&
-          (global_card_instances[s.current_player][s.card].state & STATE_IN_PLAY) == 0)
-      {
-        s.card_value = 3;
-      }
-
-      s.side_score += s.card_value;
-      if ((DAT_00712544 & 2) != 0 && s.current_player + 2 == DAT_00712544)
-      {
-        FUN_0044a796(s.current_player, s.card);
-        strcat(unk_00748770, " ");
-        strcat(unk_00748770, _itoa(s.card_value, ai_action_dialog_number_buffer, 10));
-        strcat(unk_00748770, "\n");
-      }
-    }
-
-    if (s.current_player == 0)
-    {
-      DAT_008cdab0 = s.side_score;
-    }
-    else
-    {
-      DAT_008cdab4 = s.side_score;
-    }
-
-    if (player == s.current_player)
-    {
-      s.score += s.side_score;
-    }
-    else
-    {
-      s.score -= s.side_score;
-    }
-  }
-
-  for (s.current_player = 0; s.current_player < 2; s.current_player = s.current_player + 1)
-  {
-    for (s.card = 0; s.card < active_cards_count[s.current_player]; s.card = s.card + 1)
-    {
-      if (((int)(char)s.attached_to_card[s.card + s.current_player * 150] & (1 << (unsigned char)player)) != 0)
-      {
-        s.score += 2;
-      }
-      if (((int)(char)s.attached_to_card[s.card + s.current_player * 150] & (1 << (unsigned char)(1 - player))) != 0)
-      {
-        s.score -= 2;
-      }
-    }
-  }
-
-  if (DAT_0093f4b0 == 0 && player == current_player)
-  {
-    s.score = ai_opinion_of_gamestate_continued(player, s.score);
-  }
-  unk_00712938 = 0;
-  return s.score;
-}
-
-// FUNCTION: MAGIC 0x004e5db4
-int ai_opinion_of_gamestate_continued(int player, int score)
-{
-  struct
-  {
-    int attacker_power;
-    int attacker_toughness;
-    unsigned int block_result;
-    int best_blocker;
-    int opponent_player;
-    int test_card;
-    unsigned int landwalk_mask;
-    int expected_damage;
-    int card;
-    int internal_card_id;
-    unsigned int attacker_abilities;
-    int blocker_toughness[16];
-    int ranked_attackers[24];
-    int creature_index;
-    int blocker_power[16];
-    int test_toughness;
-    char creature_index_by_card[152];
-    int smallest_blocker_score;
-    int blocker_scores[16];
-    int test_power;
-    int ranked_index;
-    int creature_count;
-    char saved_special_mana[8];
-  } s;
-
-  s.opponent_player = 1 - player;
-  get_landwalk_evasion_masks(&s.landwalk_mask, NULL);
-
-  for (s.card = 0; s.card < 8; s.card = s.card + 1)
-  {
-    s.saved_special_mana[s.card] = (char)special_mana_pool[s.opponent_player][s.card];
-    special_mana_pool[s.opponent_player][s.card] = basiclandtypes_controlled[s.opponent_player][s.card];
-  }
-
-  for (s.ranked_index = 0; s.ranked_index < 8; s.ranked_index = s.ranked_index + 1)
-  {
-    s.ranked_attackers[s.ranked_index * 3 + 1] = -1;
-  }
-
-  s.creature_count = 0;
-  for (s.test_card = 0; s.test_card < active_cards_count[player]; s.test_card = s.test_card + 1)
-  {
-    if (global_card_instances[player][s.test_card].internal_card_id != -1 &&
-        (global_card_instances[player][s.test_card].state & (STATE_IN_PLAY | STATE_PLAYED_FROM_HAND)) != 0 &&
-        (global_card_instances[player][s.test_card].state & STATE_OUBLIETTED) == 0 &&
-        (global_cards_data[global_card_instances[player][s.test_card].internal_card_id].type & TYPE_CREATURE) != 0)
-    {
-      s.creature_index_by_card[s.test_card] = (char)s.creature_count;
-      s.blocker_power[s.creature_count] = C_get_abilities(player, s.test_card, EVENT_POWER, -1);
-      s.blocker_toughness[s.creature_count] = C_get_abilities(player, s.test_card, EVENT_TOUGHNESS, -1);
-      s.blocker_scores[s.creature_count] = (int)global_card_instances[player][s.test_card].mana_color;
-      s.creature_count++;
-    }
-  }
-
-  for (s.card = 0; s.card < active_cards_count[s.opponent_player]; s.card = s.card + 1)
-  {
-    s.internal_card_id = global_card_instances[s.opponent_player][s.card].internal_card_id;
-    if (is_in_play(s.opponent_player, s.card) != 0 &&
-        (global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0 &&
-        (global_cards_data[s.internal_card_id].subtype != 0 ||
-         (global_card_instances[s.opponent_player][s.card].token_status & 0x800) != 0))
-    {
-      s.attacker_power = C_get_abilities(s.opponent_player, s.card, EVENT_POWER, -1);
-      s.attacker_toughness = C_get_abilities(s.opponent_player, s.card, EVENT_TOUGHNESS, -1);
-      if (active_player == s.opponent_player)
-      {
-        if ((global_cards_data[s.internal_card_id].extra_ability & EA_INF_POWER) != 0)
-        {
-          s.attacker_power += (*global_cards_data[s.internal_card_id].code_pointer)(s.opponent_player, s.card, 0x39);
-        }
-        if ((global_cards_data[s.internal_card_id].extra_ability & EA_INF_TOUGHNESS) != 0)
-        {
-          s.attacker_toughness += (*global_cards_data[s.internal_card_id].code_pointer)(s.opponent_player, s.card, 0x3a);
-        }
-      }
-
-      s.test_card = 0;
-      while (s.test_card < 8)
-      {
-        if (s.attacker_power > s.ranked_attackers[s.test_card * 3 + 1])
-        {
-          for (s.ranked_index = 7; s.test_card < s.ranked_index; s.ranked_index = s.ranked_index - 1)
-          {
-            s.ranked_attackers[s.ranked_index * 3] = s.ranked_attackers[s.ranked_index * 3 - 3];
-            s.ranked_attackers[s.ranked_index * 3 + 1] = s.ranked_attackers[s.ranked_index * 3 - 2];
-            s.ranked_attackers[s.ranked_index * 3 + 2] = s.ranked_attackers[s.ranked_index * 3 - 1];
-          }
-          s.ranked_attackers[s.test_card * 3] = s.card;
-          s.ranked_attackers[s.test_card * 3 + 1] = s.attacker_power;
-          s.ranked_attackers[s.test_card * 3 + 2] = s.attacker_toughness;
-          break;
-        }
-        s.test_card++;
-      }
-    }
-  }
-
-  s.expected_damage = 0;
-  s.ranked_index = 0;
-  while (s.ranked_index < 8 && s.ranked_attackers[s.ranked_index * 3 + 1] != -1)
-  {
-    s.card = s.ranked_attackers[s.ranked_index * 3];
-    s.attacker_abilities = C_get_abilities(s.opponent_player, s.card, EVENT_ABILITIES, -1);
-    s.attacker_power = s.ranked_attackers[s.ranked_index * 3 + 1];
-    s.attacker_toughness = s.ranked_attackers[s.ranked_index * 3 + 2];
-    s.best_blocker = 0;
-    s.block_result = 0;
-    s.creature_index = 0;
-    s.smallest_blocker_score = 0x7fff;
-
-    for (s.test_card = 0; s.test_card < active_cards_count[player]; s.test_card = s.test_card + 1)
-    {
-      if (is_in_play(player, s.test_card) != 0 &&
-          (global_cards_data[global_card_instances[player][s.test_card].internal_card_id].type & TYPE_CREATURE) != 0)
-      {
-        s.creature_index = (int)s.creature_index_by_card[s.test_card];
-        s.test_power = s.blocker_power[s.creature_index];
-        s.test_toughness = s.blocker_toughness[s.creature_index];
-        if ((global_card_instances[player][s.test_card].state &
-             ((has_vigilance(player, s.test_card) == 0 ? STATE_ATTACKING : 0) + STATE_BLOCKING)) == 0 &&
-            can_block_attacker_with_abilities(player,
-                                              s.test_card,
-                                              s.opponent_player,
-                                              s.card,
-                                              s.attacker_abilities,
-                                              s.landwalk_mask) != 0)
-        {
-          s.block_result = 1;
-          if (s.attacker_power < s.test_toughness || s.attacker_toughness <= s.test_power)
-          {
-            s.block_result = 3;
-            global_card_instances[player][s.test_card].state |= STATE_BLOCKING;
-            break;
-          }
-          if (s.blocker_scores[s.creature_index] < s.smallest_blocker_score)
-          {
-            s.smallest_blocker_score = s.blocker_scores[s.creature_index];
-            s.best_blocker = s.test_card;
-          }
-        }
-      }
-    }
-
-    if ((s.block_result & 2) == 0)
-    {
-      s.test_toughness = (DAT_007a7d10[player] * s.attacker_power * 0x18) / ClampIntToRange(life[player] + 1, 1, 99);
-      s.test_power = (DAT_007a7d10[player + 2] * s.smallest_blocker_score) / 0x10;
-      if (s.block_result == 0 || (s.test_toughness < s.test_power && s.expected_damage + s.attacker_power < life[player]))
-      {
-        s.expected_damage += s.attacker_power;
-        score -= s.test_toughness;
-      }
-      else
-      {
-        score -= s.test_power;
-        global_card_instances[player][s.best_blocker].state |= STATE_BLOCKING;
-      }
-    }
-    s.ranked_index++;
-  }
-
-  if (life[player] <= s.expected_damage && life[s.opponent_player] > 0)
-  {
-    score -= 0x100;
-  }
-
-  for (s.card = 0; s.card < 8; s.card = s.card + 1)
-  {
-    special_mana_pool[s.opponent_player][s.card] = (int)s.saved_special_mana[s.card];
-  }
-
-  return score;
-}
-
-// FUNCTION: MAGIC 0x004e6754
-int show_ai_action_log_dialog(int use_saved_actions, int score)
-{
-  struct
-  {
-    int internal_card_id;
-    int action_count;
-    unsigned int action_flags;
-    int action_index;
-  } s;
-
-  strcpy(unk_00748770, "AI:");
-  strcat(unk_00748770, _itoa(score, ai_action_dialog_number_buffer, 10));
-  strcat(unk_00748770, " L:");
-  strcat(unk_00748770, _itoa(life[0], ai_action_dialog_number_buffer, 10));
-  strcat(unk_00748770, "/");
-  strcat(unk_00748770, _itoa(life[1], ai_action_dialog_number_buffer, 10));
-  strcat(unk_00748770, " ...\n");
-
-  s.action_index = 0;
-  while (1)
-  {
-    if (use_saved_actions != 0)
-    {
-      s.action_count = saved_recorded_action_count;
-    }
-    else
-    {
-      s.action_count = recorded_action_count;
-    }
-
-    if (s.action_count <= s.action_index)
-    {
-      break;
-    }
-
-    if (use_saved_actions != 0)
-    {
-      s.action_flags = unk_006a1db8[s.action_index];
-    }
-    else
-    {
-      s.action_flags = unk_006a21b8[s.action_index];
-    }
-
-    if (s.action_flags != (unsigned int)-1)
-    {
-      if ((s.action_flags & 0x1000) != 0)
-      {
-        strcat(unk_00748770, "Cast ");
-      }
-      if ((s.action_flags & 0x2000) != 0)
-      {
-        strcat(unk_00748770, "Tap ");
-      }
-      if ((s.action_flags & 0x4000) != 0)
-      {
-        strcat(unk_00748770, "...target ");
-      }
-      if ((s.action_flags & 0x100) == 0)
-      {
-        strcat(unk_00748770, "e");
-      }
-      if ((unsigned char)s.action_flags == 0xff)
-      {
-        strcat(unk_00748770, "Player");
-      }
-      else
-      {
-        if (use_saved_actions != 0)
-        {
-          s.internal_card_id = saved_recorded_action_internal_card_ids[s.action_index];
-        }
-        else
-        {
-          s.internal_card_id = unk_006a8258[s.action_index];
-        }
-        strcat(unk_00748770, global_cards_data[s.internal_card_id].name);
-      }
-      strcat(unk_00748770, "\n");
-    }
-    s.action_index = s.action_index + 1;
-  }
-
-  do_dialog(0, 0, 0, -1, -1, unk_00748770, 0);
-  return 0;
-}
-
-// FUNCTION: MAGIC 0x004a7ccf
-int get_ai_search_elapsed_time(void)
-{
-  unsigned int current_time;
-
-  current_time = get_duel_thread_time_ms();
-  return (int)((current_time - DAT_0064ee98) * 100) / 0x151d;
-}
-
 // FUNCTION: MAGIC 0x004a09c6
-// FUNCTION: SHANDALAR 0x0053f510
+// FUNCTION: SHANDALAR 0x0053c35e
 int prompt_for_life_total(int player, char *prompt, int maxnum)
 {
   struct

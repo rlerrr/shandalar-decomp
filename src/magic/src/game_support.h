@@ -80,7 +80,7 @@ void start_ai_decision_search(int decision_code, int time_scale);
 void reset_upkeep_costs(void);
 unsigned int get_current_stack_action(void);
 char *format_stack_action_text(char *out, int msg, int player, int card);
-void __stdcall FUN_004e4e9a(void);
+void __stdcall reset_ai_search_trial_state(void);
 void __stdcall save_recorded_ai_actions(void);
 int ai_opinion_of_gamestate(int player);
 int run_target_selection_modal(int who_chooses,

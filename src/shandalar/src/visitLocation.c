@@ -2459,12 +2459,7 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
   DAT_00742fc0 = 1;
   DestroyCachedCardArt();
 
-#ifdef XXX_DEBUG
-  // Instantly win every duel
-  s.thread_exit_code = 1;
-#else
   s.thread_exit_code = 2;
-#endif
 
   if (s.thread_exit_code == 2)
   {

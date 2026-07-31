@@ -241,13 +241,13 @@ csv_write_card(FILE *out, int csvid, const card_ptr_t *c)
   fputc(',', out);
   csv_write_hex_u32(out, (unsigned long)c->ai_modifiers2);
   fputc(',', out);
-  csv_write_u32(out, (unsigned long)c->ai_inc_power);
+  csv_write_u32(out, (unsigned long)BYTE0(c->ai_inc_power_toughness));
   fputc(',', out);
-  csv_write_u32(out, (unsigned long)c->ai_inc_toughness);
+  csv_write_u32(out, (unsigned long)BYTE1(c->ai_inc_power_toughness));
   fputc(',', out);
-  csv_write_u32(out, (unsigned long)c->ai_power);
+  csv_write_u32(out, (unsigned long)BYTE0(c->ai_power_toughness));
   fputc(',', out);
-  csv_write_u32(out, (unsigned long)c->ai_toughness);
+  csv_write_u32(out, (unsigned long)BYTE1(c->ai_power_toughness));
   fputc(',', out);
   csv_write_s32(out, (long)c->ai_base_value);
   fputc(',', out);
@@ -428,4 +428,3 @@ main(int argc, char **argv)
   free(cards);
   return 0;
 }
-

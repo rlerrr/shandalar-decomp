@@ -26,7 +26,6 @@
 extern HWND global_main_hwnd;
 #define DUEL_MAIN_WINDOW_HWND global_main_hwnd
 #else
-extern HWND g_main_window_hwnd;
 #define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
 #endif
 
@@ -414,6 +413,27 @@ int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
   g_phase_display_bitmap_divisor = 2;
   g_phase_display_hatch_brush = CreateHatchBrush(3, 0x808080);
   return s.result;
+}
+
+// FUNCTION: MAGIC 0x005357b4
+// FUNCTION: SHANDALAR 0x00559ff4
+void destroy_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
+{
+  if (g_phase_display_menu != (HMENU)0)
+  {
+    DestroyMenu(g_phase_display_menu);
+  }
+  g_phase_display_menu = (HMENU)0;
+  if (g_magicgame_phase_display_pic != (HANDLE)0)
+  {
+    delete_and_close_object(g_magicgame_phase_display_pic);
+  }
+  if (g_phase_display_hatch_brush != (HBRUSH)0)
+  {
+    DeleteObject(g_phase_display_hatch_brush);
+  }
+  g_magicgame_phase_display_pic = (HANDLE)0;
+  g_phase_display_hatch_brush = (HBRUSH)0;
 }
 
 // FUNCTION: MAGIC 0x0053592b

@@ -36,6 +36,7 @@ int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, H
 int get_battlefield_card_stagger_offset(HWND hwnd);
 void reset_battlefield_layout_positions(HWND hwnd);
 void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag);
+int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
 int get_displayed_card_blocking(int player, int card);
 void get_current_duel_selection(int *selected_player, int *selected_card);
 void FUN_00538e3d(int *player, int *phase, char *unused);
@@ -53,7 +54,6 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
 extern HWND global_main_hwnd;
 #define DUEL_MAIN_WINDOW_HWND global_main_hwnd
 #else
-extern HWND g_main_window_hwnd;
 #define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
 #endif
 
@@ -61,6 +61,11 @@ extern int g_cardclass_player_window_long_offset;
 extern int g_cardclass_card_window_long_offset;
 extern int g_cardclass_hidden_parent_window_long_offset;
 extern int g_cardclass_snapshot_window_long_offset;
+extern int g_duel_window_userdata_snapshot_offset;
+extern int g_duel_window_userdata_8_offset;
+
+// GLOBAL: MAGIC 0x0055e178
+int g_magicgame_territory_window_extra_bytes = 0x10;
 
 // GLOBAL: MAGIC 0x0057ab70
 char s_MENU_TERRITORY_0057ab70[0x10] = "MENU_TERRITORY";
@@ -238,14 +243,10 @@ char g_territory_menu_action_10_text[0x68];
 char g_territory_menu_your_battlefield_text[0x68];
 // GLOBAL: MAGIC 0x006ab800
 // GLOBAL: SHANDALAR 0x00603450
-char g_territory_menu_skip_full_card_off_text[0x32];
-// GLOBAL: MAGIC 0x006ab832
-char g_territory_menu_skip_full_card_on_text[0x32];
+char g_territory_menu_skip_full_card_text[2][0x32];
 // GLOBAL: MAGIC 0x006ab8d0
 // GLOBAL: SHANDALAR 0x00603520
-char g_territory_menu_draw_response_off_text[0x32];
-// GLOBAL: MAGIC 0x006ab902
-char g_territory_menu_draw_response_on_text[0x32];
+char g_territory_menu_draw_response_text[2][0x32];
 // GLOBAL: MAGIC 0x006ab9d8
 // GLOBAL: SHANDALAR 0x00603628
 char g_territory_menu_action_19_1a_text[0x68];
@@ -443,8 +444,10 @@ int card_window_matches_player_and_card(HWND hwnd, int *player_and_card)
   {
     return 1;
   }
-
-  return 0;
+  else
+  {
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x004d2517
@@ -467,8 +470,10 @@ int card_window_matches_card_id(HWND hwnd, card_id_t card_id)
   {
     return 1;
   }
-
-  return 0;
+  else
+  {
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x004d259b
@@ -488,6 +493,34 @@ card_id_t get_card_window_displayed_card_id(HWND hwnd)
   card = GetWindowLongA(hwnd, g_cardclass_card_window_long_offset);
   card_id = get_displayed_card_id(player, card);
   return card_id;
+}
+
+// FUNCTION: MAGIC 0x004e9a76
+int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_card)
+{
+  struct
+  {
+    int card_count;
+    int loop_index;
+    HWND *card_windows;
+    HWND found_window;
+  } s;
+
+  s.card_windows = (HWND *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
+  s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
+  s.found_window = (HWND)0;
+  for (s.loop_index = 0; s.loop_index < s.card_count; s.loop_index++)
+  {
+    if (card_window_matches_player_and_card(s.card_windows[s.loop_index], player_and_card) != 0)
+    {
+      s.found_window = s.card_windows[s.loop_index];
+    }
+  }
+  if (s.found_window != (HWND)0)
+  {
+    return count_hidden_battlefield_descendants(hwnd, s.found_window);
+  }
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004e9b26
@@ -517,12 +550,14 @@ int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent)
 // FUNCTION: SHANDALAR 0x00504850
 int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
 {
-  ATOM atom;
+  int atom;
   WNDCLASSA wndclass;
-
-  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_TerritoryClass, 0x10,
+  atom = 1;
+  SET_DUEL_WNDCLASS(wndclass, 0xb, wndproc_MAGICGAME_TerritoryClass, g_magicgame_territory_window_extra_bytes,
                     (HICON)0, (HBRUSH)0, class_name);
-  atom = RegisterClassA(&wndclass);
+  if (RegisterClassA(&wndclass) == 0)
+    atom = 0;
+
   g_territory_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_TERRITORY_0057ab70);
   strcpy(g_territory_menu_action_1_text, text_lines[0]);
@@ -553,12 +588,12 @@ int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
   g_territory_submenu = CreatePopupMenu();
   AppendMenuA(g_territory_submenu, MF_STRING, 0x6c, g_territory_menu_action_25_text);
   load_text_with_tab_escapes(s_MP_UISTRINGS_TXT_0057ab90, s_SKIPFULLCARD_0057ab80);
-  strcpy(g_territory_menu_skip_full_card_off_text, text_lines[0]);
-  strcpy(g_territory_menu_skip_full_card_on_text, text_lines[1]);
+  strcpy(g_territory_menu_skip_full_card_text[0], text_lines[0]);
+  strcpy(g_territory_menu_skip_full_card_text[1], text_lines[1]);
   load_text_with_tab_escapes(s_MP_UISTRINGS_TXT_0057abb4, s_DRAWRESPONSE_0057aba4);
-  strcpy(g_territory_menu_draw_response_off_text, text_lines[0]);
-  strcpy(g_territory_menu_draw_response_on_text, text_lines[1]);
-  return atom != 0;
+  strcpy(g_territory_menu_draw_response_text[0], text_lines[0]);
+  strcpy(g_territory_menu_draw_response_text[1], text_lines[1]);
+  return atom;
 }
 
 // FUNCTION: MAGIC 0x004e6dc8
@@ -719,18 +754,18 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     return 0;
 
   case 0x439:
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_8_offset);
     if (s.background_bitmap != (HWND)0)
     {
       DeleteObject(s.background_bitmap);
     }
     s.background_bitmap = (HWND)wparam;
-    SetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset, (LONG)s.background_bitmap);
+    SetWindowLongA(hwnd, g_duel_window_userdata_8_offset, (LONG)s.background_bitmap);
     InvalidateRect(hwnd, NULL, TRUE);
     return 0;
 
   case 0x438:
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_8_offset);
     return (LRESULT)s.background_bitmap;
 
   case 0x40a:
@@ -838,7 +873,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
         }
       }
     }
-    
+
     if (s.query_found != 0)
     {
       return s.query_value;
@@ -868,7 +903,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x400:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
+    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_snapshot_offset);
     for (s.loop_index_400 = 0; s.card_count > s.loop_index_400; s.loop_index_400++)
     {
       SendMessageA(((HWND *)s.card_windows)[s.loop_index_400], 0x401, (WPARAM)&s.displayed_player, 0);
@@ -1029,7 +1064,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case 0x412:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     s.card_count = GetWindowLongA(hwnd, g_duel_window_userdata_card_offset);
-    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset);
+    s.player_card_window = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_snapshot_offset);
     GetClientRect(hwnd, &s.resize_rect);
     s.descendant_count = count_hidden_battlefield_descendants(hwnd, s.player_card_window);
     if (s.descendant_count > 0)
@@ -1114,6 +1149,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       SendMessageA(g_duel_window_hwnd, msg, 0x27c, 0);
       break;
     case 0x258:
+    case 0x259:
     case 0x25c:
     case 0x25e:
     case 0x261:
@@ -1134,7 +1170,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.card_windows = malloc(800);
     SetWindowLongA(hwnd, g_duel_window_userdata_player_offset, (LONG)s.card_windows);
     s.background_bitmap = (HWND)0;
-    SetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset, (LONG)s.background_bitmap);
+    SetWindowLongA(hwnd, g_duel_window_userdata_8_offset, (LONG)s.background_bitmap);
     if (GetDlgCtrlID(hwnd) == 0x79)
     {
       s.create_data[0] = 0;
@@ -1147,7 +1183,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.player_card_window =
         CreateWindowExA(0, s_MAGICGAME_CardClass_0057ac04, s_Player_Card_0057abf8, 0x44000000, 0, 0, 0, 0,
                         hwnd, (HMENU)0, g_app_instance, s.create_data);
-    SetWindowLongA(hwnd, g_cardclass_snapshot_window_long_offset, (LONG)s.player_card_window);
+    SetWindowLongA(hwnd, g_duel_window_userdata_snapshot_offset, (LONG)s.player_card_window);
     if (s.card_windows == NULL || s.player_card_window == (HWND)0)
     {
       return -1;
@@ -1157,7 +1193,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case WM_DESTROY:
     s.card_windows = (void *)GetWindowLongA(hwnd, g_duel_window_userdata_player_offset);
     free(s.card_windows);
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_8_offset);
     if (s.background_bitmap != (HWND)0)
     {
       delete_and_close_object(s.background_bitmap);
@@ -1165,7 +1201,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     return 0;
 
   case WM_ERASEBKGND:
-    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_cardclass_hidden_parent_window_long_offset);
+    s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_8_offset);
     s.erase_dc = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.erase_dc);
     GetClientRect(hwnd, &s.erase_rect);
@@ -1310,22 +1346,22 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
         if (DAT_007abc80 != 0)
         {
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x70,
-                      g_territory_menu_skip_full_card_off_text);
+                      g_territory_menu_skip_full_card_text[0]);
         }
         else
         {
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x70,
-                      g_territory_menu_skip_full_card_off_text + 0x32);
+                      g_territory_menu_skip_full_card_text[1]);
         }
         if (DAT_007aaeec != 0)
         {
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x71,
-                      g_territory_menu_draw_response_off_text);
+                      g_territory_menu_draw_response_text[0]);
         }
         else
         {
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x71,
-                      g_territory_menu_draw_response_off_text + 0x32);
+                      g_territory_menu_draw_response_text[1]);
         }
       }
       AppendMenuA(g_territory_popup_menu, MF_STRING, 0x6d, g_territory_menu_action_68_text);

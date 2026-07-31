@@ -18,7 +18,6 @@
 extern HWND global_main_hwnd;
 #define DUEL_MAIN_WINDOW_HWND global_main_hwnd
 #else
-extern HWND g_main_window_hwnd;
 #define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
 #endif
 

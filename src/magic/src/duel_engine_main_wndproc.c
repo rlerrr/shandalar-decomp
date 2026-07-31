@@ -14,6 +14,7 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
+#include "drawcardlib/Drawcardlib.h"
 #include "drawcardlib/src/pic.h"
 #ifdef SHANDALAR
 #include "deckdll/src/magsnd.h"
@@ -22,13 +23,11 @@
 
 #ifndef SHANDALAR
 extern HWND global_main_hwnd;
-#define DUEL_SHELL_WINDOW_HWND g_duel_parent_window_hwnd
 #define DUEL_MAIN_WINDOW_HWND global_main_hwnd
 #else
-extern HWND g_main_window_hwnd;
-#define DUEL_SHELL_WINDOW_HWND g_main_window_hwnd
 #define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
 #endif
+#define DUEL_SHELL_WINDOW_HWND g_main_window_hwnd
 
 extern int life[2];
 extern HINSTANCE g_app_instance;
@@ -54,16 +53,11 @@ void layout_phase_display_window(HWND hwnd, LPRECT rect);
 void resize_duel_hand_window(HWND hwnd);
 void set_player_directive_value(int player, int value);
 void get_current_duel_selection(int *selected_player, int *selected_card);
-unsigned int load_gametype0(char *path);
 void copy_autosave_to_save_file(LPCSTR save_path);
 DWORD WINAPI start_duel_thread(LPVOID unused);
 void StopWorldLocationMusic(void);
 void reset_duel_globals(void);
 void reset_timestamp_players(void);
-void load_selected_duel_save_slot(int player);
-void load_duel_run_mode_1_save(char *path);
-void load_duel_run_mode_2_save(char *path);
-void load_duel_run_mode_3_save(char *path);
 int check_duel_finished(void);
 void run_duel_turn(unsigned int player);
 int CountDuelPoolEligibleTowns(void);
@@ -100,6 +94,8 @@ int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, H
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
 card_id_t get_card_window_displayed_card_id(HWND hwnd);
 int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
+int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_card);
+int displayed_card_indices_invalid(int player, int card);
 extern int DAT_008ced00[16];
 #ifdef SHANDALAR
 int DAT_007a79b8;
@@ -121,6 +117,13 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
 #endif
 int GetCardRarity(int card_id);
 int IsCardAvailable(csvid_t csvid, int expansion);
+int copy_cached_library_cards_and_get_count(void *cards, int player);
+void copy_opponent_name_prefix(char *name);
+void delete_and_close_object(HANDLE obj);
+void change_buttonclass_wndproc(HWND hwnd);
+void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
+BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+BOOL CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 #define PICK_CARD_FULLCARD_ID 1030
 #define PICK_CARD_LISTBOX_ID 1031
@@ -586,41 +589,44 @@ int get_displayed_card_zone(int player, int card)
 // FUNCTION: SHANDALAR 0x00452516
 unsigned int get_displayed_card_ui_flags(int player, int card)
 {
-  card_instance_t *instance;
-  unsigned char result;
+  unsigned int result;
+  int card_type;
 
-  if (((player == 0) || (player == 1)) && (card >= 0) && (card <= 0x96))
+  result = 0;
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
-    EnterCriticalSection(&g_duel_render_lock);
-    instance = &global_displayed_card_instances[player][card];
-    result = (unsigned char)((instance->regen_status & 3) != 0);
-    if (((instance->state & STATE_TAPPED) != 0) &&
-        ((global_cards_data[instance->internal_card_id].type & 0x47) != TYPE_ENCHANTMENT))
-    {
-      result |= 2;
-    }
-    if ((instance->state & STATE_ATTACKING) != 0)
-    {
-      result |= 4;
-    }
-    if (instance->damage_target_player != -1)
-    {
-      result |= 8;
-    }
-    if ((instance->parent_controller != -1) && (instance->damage_target_card != -1))
-    {
-      result |= 0x10;
-    }
-    if ((instance->regen_status & 0x800000) != 0)
-    {
-      result |= 0x20;
-    }
-    LeaveCriticalSection(&g_duel_render_lock);
+    return 0;
   }
-  else
+
+  EnterCriticalSection(&g_duel_render_lock);
+  card_type = global_cards_data[global_displayed_card_instances[player][card].internal_card_id].type;
+  if ((global_displayed_card_instances[player][card].state & STATE_SUMMONSICK_BOTH) != 0)
   {
-    result = 0;
+    result |= 1;
   }
+  if (((global_displayed_card_instances[player][card].state & STATE_TAPPED) != 0) &&
+      ((card_type & 0x47) != TYPE_ENCHANTMENT))
+  {
+    result |= 2;
+  }
+  if ((global_displayed_card_instances[player][card].state & STATE_ATTACKING) != 0)
+  {
+    result |= 4;
+  }
+  if (global_displayed_card_instances[player][card].blocking != -1)
+  {
+    result |= 8;
+  }
+  if ((global_displayed_card_instances[player][card].damage_target_player != -1) &&
+      (global_displayed_card_instances[player][card].damage_target_card != -1))
+  {
+    result |= 0x10;
+  }
+  if ((global_displayed_card_instances[player][card].state & STATE_OUBLIETTED) != 0)
+  {
+    result |= 0x20;
+  }
+  LeaveCriticalSection(&g_duel_render_lock);
   return result;
 }
 
@@ -628,23 +634,23 @@ unsigned int get_displayed_card_ui_flags(int player, int card)
 // FUNCTION: SHANDALAR 0x00452743
 void get_displayed_card_attachment(int *player_and_card, int player, int card)
 {
-  card_instance_t *instance;
-
-  if (player_and_card != (int *)0)
+  if (player_and_card == (int *)0)
   {
-    if (((player == 0) || (player == 1)) && (card >= 0) && (card <= 0x96))
-    {
-      EnterCriticalSection(&g_duel_render_lock);
-      instance = &global_displayed_card_instances[player][card];
-      player_and_card[0] = instance->damage_target_player;
-      player_and_card[1] = instance->damage_target_card;
-      LeaveCriticalSection(&g_duel_render_lock);
-    }
-    else
-    {
-      player_and_card[0] = -1;
-      player_and_card[1] = -1;
-    }
+    return;
+  }
+
+  if (displayed_card_indices_invalid(player, card) != 0)
+  {
+    player_and_card[0] = -1;
+    player_and_card[1] = -1;
+  }
+  else
+  {
+    EnterCriticalSection(&g_duel_render_lock);
+    player_and_card[0] = global_displayed_card_instances[player][card].damage_target_player;
+    player_and_card[1] = global_displayed_card_instances[player][card].damage_target_card;
+    LeaveCriticalSection(&g_duel_render_lock);
+    return;
   }
 }
 
@@ -765,9 +771,9 @@ void reset_battlefield_layout_positions(HWND hwnd)
 void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *x, int *y, int flag)
 {
   int player;
-  int type_flags;
-  card_id_t card_id;
   int hidden_descendants;
+  int result_x;
+  int result_y;
   RECT client_rect;
 
   if (parent == (HWND)0 || rect == (int *)0 ||
@@ -782,12 +788,14 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
   else
     player = 1;
 
+  result_y = 0;
+  result_x = result_y;
   GetClientRect(parent, &client_rect);
-  type_flags = get_displayed_card_type(rect[0], rect[1]);
-  if ((type_flags & TYPE_CREATURE) != 0 && (type_flags & TYPE_LAND) == 0)
+  if ((get_displayed_card_type(rect[0], rect[1]) & TYPE_CREATURE) != 0 &&
+      (get_displayed_card_type(rect[0], rect[1]) & TYPE_LAND) == 0)
   {
-    *x = g_battlefield_creature_x[player];
-    *y = g_battlefield_creature_y[player] - value / 2;
+    result_x = g_battlefield_creature_x[player];
+    result_y = g_battlefield_creature_y[player] - value / 2;
     if (flag != 0)
     {
       g_battlefield_creature_x[player] += g_battlefield_creature_x_step + g_showlist_smallcard_width;
@@ -821,13 +829,13 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
       }
     }
   }
-  else if ((type_flags & TYPE_LAND) != 0)
+  else if ((get_displayed_card_type(rect[0], rect[1]) & TYPE_LAND) != 0)
   {
-    *x = g_battlefield_land_x[player] + value;
-    *y = g_battlefield_land_y[player];
-    hidden_descendants = count_hidden_battlefield_descendants(parent, (HWND)SendMessageA(parent, 0x40f, (WPARAM)rect, 0));
+    result_x = g_battlefield_land_x[player] + value;
+    result_y = g_battlefield_land_y[player];
+    hidden_descendants = count_hidden_battlefield_descendants_for_card(parent, rect);
     if (0 < hidden_descendants)
-      *y += hidden_descendants * DAT_00939508 + 5;
+      result_y += hidden_descendants * DAT_00939508 + 5;
     if (flag != 0)
     {
       if (hidden_descendants != 0)
@@ -842,21 +850,20 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
   }
   else
   {
-    card_id = get_displayed_card_id(rect[0], rect[1]);
-    if (card_id == unk_007a7d64)
+    if (get_displayed_card_id(rect[0], rect[1]) == unk_007a7d64)
     {
-      *x = g_battlefield_draw_placeholder_x[player];
-      *y = g_battlefield_draw_placeholder_y[player];
+      result_x = g_battlefield_draw_placeholder_x[player];
+      result_y = g_battlefield_draw_placeholder_y[player];
       if (flag != 0)
         g_battlefield_draw_placeholder_y[player] += DAT_00939508;
     }
     else
     {
-      *x = g_battlefield_noncreature_x[player] + value;
-      *y = g_battlefield_noncreature_y[player];
-      hidden_descendants = count_hidden_battlefield_descendants(parent, (HWND)SendMessageA(parent, 0x40f, (WPARAM)rect, 0));
+      result_x = g_battlefield_noncreature_x[player] + value;
+      result_y = g_battlefield_noncreature_y[player];
+      hidden_descendants = count_hidden_battlefield_descendants_for_card(parent, rect);
       if (0 < hidden_descendants)
-        *y += hidden_descendants * DAT_00939508;
+        result_y += hidden_descendants * DAT_00939508;
       if (flag != 0)
       {
         if (hidden_descendants != 0)
@@ -871,6 +878,8 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
       }
     }
   }
+  *x = result_x;
+  *y = result_y;
 }
 
 // FUNCTION: MAGIC 0x004e8e42
@@ -1272,12 +1281,553 @@ void refresh_duel_window(HWND hwnd)
 // FUNCTION: SHANDALAR 0x005448a5
 void run_duel_timer_tick(void)
 {
+  if (g_your_attack_window_hwnd != (HWND)0)
+    return;
+
+  DialogBoxParamA(g_app_instance, (LPCSTR)0xf9, g_duel_window_hwnd, still_thinking_dialog_proc, 0);
+  g_your_attack_window_hwnd = (HWND)0;
 }
+
+typedef struct post_duel_draws_dialog_params_struct
+{
+  char message[300];
+  int show_continue_button;
+  int show_keep_button;
+  int player_top_card;
+  int opponent_top_card;
+} post_duel_draws_dialog_params_t;
+
+// GLOBAL: MAGIC 0x00638c78
+static HBITMAP g_post_duel_draws_background_bitmap;
+// GLOBAL: MAGIC 0x00638bb0
+static COLORREF g_post_duel_draws_text_color;
+// GLOBAL: MAGIC 0x00638b44
+static COLORREF g_post_duel_draws_button_text_color;
+// GLOBAL: MAGIC 0x00638bdc
+static HBRUSH g_post_duel_draws_button_brush;
+// GLOBAL: MAGIC 0x00638b64
+static HPEN g_post_duel_draws_button_pen1;
+// GLOBAL: MAGIC 0x00638c24
+static HPEN g_post_duel_draws_button_pen2;
+// GLOBAL: MAGIC 0x00638b3c
+static COLORREF g_post_duel_draws_button_unfocus_color;
+// GLOBAL: MAGIC 0x00638bb4
+static COLORREF g_post_duel_draws_button_focus_color;
+// GLOBAL: MAGIC 0x0069e24c
+static COLORREF g_still_thinking_shadow_color;
+// GLOBAL: MAGIC 0x0069e248
+static COLORREF g_still_thinking_text_color;
+
+void setup_post_duel_draws_dialog_resources(HBITMAP *background,
+                                            COLORREF *text_color,
+                                            COLORREF *button_text_color,
+                                            HBRUSH *button_brush,
+                                            HPEN *pen1,
+                                            HPEN *pen2,
+                                            COLORREF *button_unfocus_color,
+                                            COLORREF *button_focus_color);
+void cleanup_post_duel_draws_dialog_resources(HBITMAP background, HBRUSH button_brush, HPEN pen1, HPEN pen2);
 
 // FUNCTION: MAGIC 0x0049d77b
 // FUNCTION: SHANDALAR 0x00539128
 void show_post_duel_draws(int duel_result)
 {
+  struct
+  {
+    post_duel_draws_dialog_params_t dialog_params;
+    int cached_library_cards[500];
+    int opponent_top_card;
+    char opponent_name[100];
+    int player_top_card;
+    int unused;
+  } s;
+
+  KillTimer(g_duel_window_hwnd, g_duel_timer_id);
+  if (copy_cached_library_cards_and_get_count(s.cached_library_cards, 0) != 0)
+  {
+    s.player_top_card = s.cached_library_cards[0];
+  }
+  else
+  {
+    s.player_top_card = -1;
+  }
+  if (copy_cached_library_cards_and_get_count(s.cached_library_cards, 1) != 0)
+  {
+    s.opponent_top_card = s.cached_library_cards[0];
+  }
+  else
+  {
+    s.opponent_top_card = -1;
+  }
+  load_text(global_ui_strings_filename, "DIALOG_SHANDALARENDDUEL");
+  if (duel_result == 0)
+  {
+    copy_opponent_name_prefix(s.opponent_name);
+    sprintf(s.dialog_params.message, text_lines[0], s.opponent_name);
+  }
+  else if (duel_result == 1)
+  {
+    strcpy(s.dialog_params.message, text_lines[1]);
+  }
+  else
+  {
+    strcpy(s.dialog_params.message, text_lines[2]);
+  }
+  s.dialog_params.show_continue_button = 0;
+  s.dialog_params.show_keep_button = 0;
+  s.dialog_params.player_top_card = s.player_top_card;
+  s.dialog_params.opponent_top_card = s.opponent_top_card;
+  s.unused = DialogBoxParamA(g_app_instance, (LPCSTR)0xf6, g_duel_window_hwnd, post_duel_draws_dialog_proc,
+                             (LPARAM)&s.dialog_params);
+}
+
+// FUNCTION: MAGIC 0x0049d9b4
+// FUNCTION: SHANDALAR 0x00539361
+BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  struct
+  {
+    HDC paint_dc;
+    PAINTSTRUCT paint;
+    int control_id;
+    RECT card_rect;
+    int selected_player;
+    int card_id;
+    int preview_player_card;
+    POINT mouse_point;
+    RECT opponent_card_rect;
+    RECT player_card_rect;
+    int preview_opponent_card;
+    RECT drag_after_rect;
+    RECT drag_before_rect;
+    HDC erase_dc;
+    RECT erase_rect;
+    COLORREF draw_color;
+    DRAWITEMSTRUCT *draw_item;
+    HWND ctl_hwnd;
+    int ctl_id;
+    HDC ctl_hdc;
+    HBRUSH brush;
+    HWND previous_control;
+    HWND current_control;
+    int selected_control;
+    char text[200];
+    char opponent_name[200];
+    post_duel_draws_dialog_params_t *dialog_params;
+  } s;
+
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    s.dialog_params = (post_duel_draws_dialog_params_t *)lparam;
+    SetWindowLongA(hwnd, DWL_USER, s.dialog_params);
+    setup_post_duel_draws_dialog_resources(&g_post_duel_draws_background_bitmap,
+                                           &g_post_duel_draws_text_color,
+                                           &g_post_duel_draws_button_text_color,
+                                           &g_post_duel_draws_button_brush,
+                                           &g_post_duel_draws_button_pen1,
+                                           &g_post_duel_draws_button_pen2,
+                                           &g_post_duel_draws_button_unfocus_color,
+                                           &g_post_duel_draws_button_focus_color);
+    ShowWindow(GetDlgItem(hwnd, 0x4e5), SW_HIDE);
+    ShowWindow(GetDlgItem(hwnd, 0x4e6), SW_HIDE);
+    SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
+    load_text(global_ui_strings_filename, "DIALOG_ENDDUEL");
+    copy_opponent_name_prefix(s.opponent_name);
+    sprintf(s.text, text_lines[0], s.opponent_name);
+    SetDlgItemTextA(hwnd, 0x4e3, s.text);
+    SetDlgItemTextA(hwnd, 0x4e2, text_lines[1]);
+    SetDlgItemTextA(hwnd, 0x4e4, s.dialog_params->message);
+    load_text(global_ui_strings_filename, "DIALOG_GAUNTLETENDDUEL");
+    SetDlgItemTextA(hwnd, 0x4e7, text_lines[2]);
+    SetDlgItemTextA(hwnd, 0x4e8, text_lines[3]);
+    if (s.dialog_params->show_continue_button == 0)
+    {
+      ShowWindow(GetDlgItem(hwnd, 0x4e7), SW_HIDE);
+      ShowWindow(GetDlgItem(hwnd, 0x4e8), SW_HIDE);
+    }
+    else
+    {
+      if (s.dialog_params->show_keep_button != 0)
+      {
+        s.selected_control = 0x4e7;
+      }
+      else
+      {
+        ShowWindow(GetDlgItem(hwnd, 0x4e7), SW_HIDE);
+        SetDlgItemTextA(hwnd, 0x4e8, gs_ok_00924800);
+        s.selected_control = 0x4e8;
+      }
+      SetFocus(GetDlgItem(hwnd, s.selected_control));
+      SendMessageA(hwnd, 0x401, s.selected_control, 0);
+      change_buttonclass_wndproc(hwnd);
+    }
+    return FALSE;
+
+  case WM_COMMAND:
+    if ((wparam & 0xffff) == 0x4e7)
+    {
+      cleanup_post_duel_draws_dialog_resources(g_post_duel_draws_background_bitmap,
+                                               g_post_duel_draws_button_brush,
+                                               g_post_duel_draws_button_pen1,
+                                               g_post_duel_draws_button_pen2);
+      EndDialog(hwnd, 4);
+    }
+    else if (((wparam & 0xffff) == 0x4e8) || ((wparam & 0xffff) == IDCANCEL))
+    {
+      cleanup_post_duel_draws_dialog_resources(g_post_duel_draws_background_bitmap,
+                                               g_post_duel_draws_button_brush,
+                                               g_post_duel_draws_button_pen1,
+                                               g_post_duel_draws_button_pen2);
+      EndDialog(hwnd, 0);
+    }
+    return TRUE;
+
+  case 0x4c8:
+    s.current_control = (HWND)wparam;
+    s.previous_control = (HWND)lparam;
+    if (s.current_control != (HWND)0)
+    {
+      SendMessageA(hwnd, 0x401, (WPARAM)s.current_control, 0);
+    }
+    if (s.current_control != (HWND)0)
+    {
+      InvalidateRect(s.current_control, (RECT *)0, TRUE);
+    }
+    if (s.previous_control != (HWND)0)
+    {
+      InvalidateRect(s.previous_control, (RECT *)0, TRUE);
+    }
+    return FALSE;
+
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.ctl_hdc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.ctl_hdc);
+    s.ctl_hwnd = (HWND)lparam;
+    s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
+    if ((s.ctl_id == 0x4e7) || (s.ctl_id == 0x4e8))
+    {
+      if (GetFocus() == s.ctl_hwnd)
+      {
+        SetTextColor(s.ctl_hdc, g_post_duel_draws_button_focus_color);
+      }
+      else
+      {
+        SetTextColor(s.ctl_hdc, g_post_duel_draws_button_text_color);
+      }
+      SetBkMode(s.ctl_hdc, TRANSPARENT);
+      s.brush = GetStockObject(NULL_BRUSH);
+    }
+    else
+    {
+      SetTextColor(s.ctl_hdc, g_post_duel_draws_text_color);
+      SetBkMode(s.ctl_hdc, TRANSPARENT);
+      s.brush = GetStockObject(NULL_BRUSH);
+    }
+    return (BOOL)s.brush;
+
+  case WM_DRAWITEM:
+    s.draw_item = (DRAWITEMSTRUCT *)lparam;
+    if (GetFocus() == s.draw_item->hwndItem)
+    {
+      s.draw_color = g_post_duel_draws_button_focus_color;
+    }
+    else
+    {
+      s.draw_color = g_post_duel_draws_button_unfocus_color;
+    }
+    if (*(int *)&gs_window_title_your_hand_00777bf0[20] == 0)
+    {
+      s.draw_color = g_post_duel_draws_button_unfocus_color;
+    }
+    FUN_004955ae(s.draw_item,
+                 g_post_duel_draws_button_brush,
+                 g_post_duel_draws_button_pen1,
+                 g_post_duel_draws_button_pen2,
+                 s.draw_color,
+                 0);
+    return TRUE;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTECHANGED:
+  case WM_PALETTEISCHANGING:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.erase_rect);
+    if (g_post_duel_draws_background_bitmap != (HBITMAP)0)
+    {
+      DrawBitmapToRect(s.erase_dc, &s.erase_rect, g_post_duel_draws_background_bitmap);
+    }
+    else
+    {
+      FillRect(s.erase_dc, &s.erase_rect, GetStockObject(GRAY_BRUSH));
+    }
+    return TRUE;
+
+  case WM_CHAR:
+    s.dialog_params = (post_duel_draws_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+    if (s.dialog_params->show_continue_button == 0)
+    {
+      if ((wparam == 0xd) || (wparam == 0x20) || (wparam == 0x1b))
+      {
+        cleanup_post_duel_draws_dialog_resources(g_post_duel_draws_background_bitmap,
+                                                 g_post_duel_draws_button_brush,
+                                                 g_post_duel_draws_button_pen1,
+                                                 g_post_duel_draws_button_pen2);
+        EndDialog(hwnd, 1);
+      }
+    }
+    return TRUE;
+
+  case WM_LBUTTONDOWN:
+    GetWindowRect(hwnd, &s.drag_before_rect);
+    SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
+    GetWindowRect(hwnd, &s.drag_after_rect);
+    if (abs(s.drag_after_rect.left - s.drag_before_rect.left) + abs(s.drag_after_rect.top - s.drag_before_rect.top) > 5)
+    {
+    }
+    else
+    {
+      s.dialog_params = (post_duel_draws_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+      if (s.dialog_params->show_continue_button == 0)
+      {
+        cleanup_post_duel_draws_dialog_resources(g_post_duel_draws_background_bitmap,
+                                                 g_post_duel_draws_button_brush,
+                                                 g_post_duel_draws_button_pen1,
+                                                 g_post_duel_draws_button_pen2);
+        EndDialog(hwnd, 1);
+      }
+    }
+    return TRUE;
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDOWN:
+    s.mouse_point.x = lparam & 0xffff;
+    s.mouse_point.y = (unsigned short)(((unsigned int)lparam >> 16) & 0xffff);
+    s.dialog_params = (post_duel_draws_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+    if (((msg == WM_MOUSEMOVE) && (g_duel_interface_options.layout != 2)) ||
+        ((msg == WM_RBUTTONDOWN) && (g_duel_interface_options.layout == 2)))
+    {
+      s.preview_opponent_card = s.dialog_params->player_top_card;
+      GetWindowRect(GetDlgItem(hwnd, 0x4e6), &s.opponent_card_rect);
+      MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.opponent_card_rect, 2);
+      s.preview_player_card = s.dialog_params->opponent_top_card;
+      GetWindowRect(GetDlgItem(hwnd, 0x4e5), &s.player_card_rect);
+      MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.player_card_rect, 2);
+      if ((s.preview_opponent_card != -1) && (PtInRect(&s.opponent_card_rect, s.mouse_point) != 0))
+      {
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.preview_opponent_card, 0);
+      }
+      else if ((s.preview_player_card != -1) && (PtInRect(&s.player_card_rect, s.mouse_point) != 0))
+      {
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.preview_player_card, 0);
+      }
+    }
+    return FALSE;
+
+  case WM_PAINT:
+    s.dialog_params = (post_duel_draws_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+    UpdateWindow(GetDlgItem(hwnd, 0x4e4));
+    get_current_duel_selection(&s.selected_player, (int *)0);
+    if (s.selected_player == 0)
+    {
+      UpdateWindow(GetDlgItem(hwnd, 0x4e2));
+    }
+    else
+    {
+      UpdateWindow(GetDlgItem(hwnd, 0x4e3));
+    }
+    s.paint_dc = BeginPaint(hwnd, &s.paint);
+    if (s.paint_dc != (HDC)0)
+    {
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      if (s.selected_player == 0)
+      {
+        s.card_id = s.dialog_params->player_top_card;
+      }
+      else
+      {
+        s.card_id = s.dialog_params->opponent_top_card;
+      }
+      if (s.selected_player == 0)
+      {
+        s.control_id = 0x4e6;
+      }
+      else
+      {
+        s.control_id = 0x4e5;
+      }
+      if (s.card_id != -1)
+      {
+        GetWindowRect(GetDlgItem(hwnd, s.control_id), &s.card_rect);
+        MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.card_rect, 2);
+        DrawFullCard(s.paint_dc, &s.card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0, gs_illus_00789130);
+      }
+      if (s.selected_player == 0)
+      {
+        s.card_id = s.dialog_params->opponent_top_card;
+      }
+      else
+      {
+        s.card_id = s.dialog_params->player_top_card;
+      }
+      if (s.selected_player == 0)
+      {
+        s.control_id = 0x4e5;
+      }
+      else
+      {
+        s.control_id = 0x4e6;
+      }
+      if (s.card_id != -1)
+      {
+        GetWindowRect(GetDlgItem(hwnd, s.control_id), &s.card_rect);
+        MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.card_rect, 2);
+        DrawFullCard(s.paint_dc, &s.card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0, gs_illus_00789130);
+      }
+      EndPaint(hwnd, &s.paint);
+    }
+    return TRUE;
+
+  default:
+    return FALSE;
+  }
+}
+
+// FUNCTION: MAGIC 0x0049e567
+void setup_post_duel_draws_dialog_resources(HBITMAP *background,
+                                            COLORREF *text_color,
+                                            COLORREF *button_text_color,
+                                            HBRUSH *button_brush,
+                                            HPEN *pen1,
+                                            HPEN *pen2,
+                                            COLORREF *button_unfocus_color,
+                                            COLORREF *button_focus_color)
+{
+  char path[264];
+
+  sprintf(path, "%s\\WINBK_EndDuel.pic", global_duelart_path);
+  *background = load_pic(path);
+  *text_color = 0x1000040;
+  *button_text_color = 0x1000040;
+  *button_brush = CreateSolidBrush(0x100001a);
+  *pen1 = CreatePen(0, 0, 0x100008c);
+  *pen2 = CreatePen(0, 0, 0x1000001);
+  *button_unfocus_color = 0x1000040;
+  *button_focus_color = 0x10000bf;
+  if (*button_brush == (HBRUSH)0)
+  {
+    *button_brush = GetStockObject(GRAY_BRUSH);
+  }
+  if (*pen1 == (HPEN)0)
+  {
+    *pen1 = GetStockObject(6);
+  }
+  if (*pen2 == (HPEN)0)
+  {
+    *pen2 = GetStockObject(7);
+  }
+}
+
+// FUNCTION: MAGIC 0x0049e64d
+void cleanup_post_duel_draws_dialog_resources(HBITMAP background, HBRUSH button_brush, HPEN pen1, HPEN pen2)
+{
+  if (background != (HBITMAP)0)
+  {
+    delete_and_close_object(background);
+  }
+  if (button_brush != (HBRUSH)0)
+  {
+    DeleteObject(button_brush);
+  }
+  if (pen1 != (HPEN)0)
+  {
+    DeleteObject(pen1);
+  }
+  if (pen2 != (HPEN)0)
+  {
+    DeleteObject(pen2);
+  }
+}
+
+// FUNCTION: MAGIC 0x004ddc39
+// FUNCTION: SHANDALAR 0x005448ea
+BOOL CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  struct
+  {
+    char text[100];
+    HDC dc;
+    HGDIOBJ font;
+    RECT rect;
+    int player;
+    int card;
+    HWND card_window;
+    RECT client_rect;
+  } s;
+
+  switch (msg)
+  {
+  case WM_INITDIALOG:
+    g_your_attack_window_hwnd = hwnd;
+    g_still_thinking_shadow_color = 0x100009a;
+    g_still_thinking_text_color = 0x10000c9;
+    SetDlgItemTextA(hwnd, 0x402, gs_still_thinking_0091bd10);
+    s.player = 1;
+    s.card = -1;
+    GetClientRect(hwnd, &s.client_rect);
+    s.card_window = CreateWindowExA(0, "MAGICGAME_CardClass", "StillThinking small card", WS_CHILD | WS_VISIBLE,
+                                    (s.client_rect.right - g_showlist_smallcard_width) / 2,
+                                    (s.client_rect.bottom - g_showlist_smallcard_height) - 10,
+                                    g_showlist_smallcard_width, g_showlist_smallcard_height, hwnd, (HMENU)1, g_app_instance, &s.player);
+    SetTimer(hwnd, 1, 3000, (TIMERPROC)0);
+    return TRUE;
+
+  case WM_QUERYNEWPALETTE:
+  case WM_PALETTECHANGED:
+  case WM_PALETTEISCHANGING:
+    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+
+  case WM_ERASEBKGND:
+    s.dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.dc);
+    GetClientRect(hwnd, &s.rect);
+    FillRect(s.dc, &s.rect, GetStockObject(BLACK_BRUSH));
+    s.font = (HGDIOBJ)SendDlgItemMessageA(hwnd, 0x402, WM_GETFONT, 0, 0);
+    SelectObject(s.dc, s.font);
+    SetBkMode(s.dc, TRANSPARENT);
+    SetTextColor(s.dc, g_still_thinking_shadow_color);
+    GetWindowRect(GetDlgItem(hwnd, 0x402), &s.rect);
+    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.rect, 2);
+    GetDlgItemTextA(hwnd, 0x402, s.text, 100);
+    SetTextColor(s.dc, g_still_thinking_text_color);
+    DrawTextA(s.dc, s.text, -1, &s.rect, DT_CENTER);
+    OffsetRect(&s.rect, -2, -2);
+    SetTextColor(s.dc, g_still_thinking_shadow_color);
+    DrawTextA(s.dc, s.text, -1, &s.rect, DT_CENTER);
+    return TRUE;
+
+  case WM_COMMAND:
+  case WM_KEYDOWN:
+    EndDialog(hwnd, 0);
+    return TRUE;
+
+  case WM_LBUTTONDOWN:
+  case WM_RBUTTONDOWN:
+    EndDialog(hwnd, 0);
+    return TRUE;
+
+  case WM_TIMER:
+    EndDialog(hwnd, 0);
+    return TRUE;
+
+  default:
+    return FALSE;
+  }
 }
 
 // FUNCTION: MAGIC 0x0044a1ca
@@ -1862,12 +2412,6 @@ void show_player_library_window(int unused_color)
 #endif
 }
 
-// FUNCTION: MAGIC 0x0048a8ee
-// FUNCTION: SHANDALAR 0x004a657e
-void save_duel_interface_options_to_registry(void)
-{
-}
-
 // FUNCTION: MAGIC 0x004e1b99
 #ifndef SHANDALAR
 void AddJournalEntry(int entry_type, int entry_arg)
@@ -1996,8 +2540,118 @@ int GetCardRarity(int param_1)
 // FUNCTION: SHANDALAR 0x005440c4
 int get_primary_color_from_duel_deck(int player)
 {
-  (void)player;
-  return 0;
+  struct
+  {
+    int white_count;      // ebp - 0x2c
+    int card_id;          // ebp - 0x28
+    int red_count;        // ebp - 0x24
+    int card_count;       // ebp - 0x20
+    color_test_t color;   // ebp - 0x1c
+    int card_index;       // ebp - 0x18
+    int internal_card_id; // ebp - 0x14
+    int result;           // ebp - 0x10
+    int green_count;      // ebp - 0xc
+    int blue_count;       // ebp - 0x8
+    int black_count;      // ebp - 0x4
+  } s;
+
+  s.black_count = s.white_count = s.green_count = s.red_count = s.blue_count = 0;
+
+  if (player == -1)
+  {
+    for (s.card_index = 0; s.card_index < 500; s.card_index++)
+    {
+      if ((deck[s.card_index] != -1) && ((deck[s.card_index] & 0xc000) == 0))
+      {
+        s.internal_card_id = deck[s.card_index] & 0xfff;
+        s.color = global_cards_data[s.internal_card_id].color;
+        s.card_count = 1;
+        if ((s.color & COLOR_TEST_BLACK) != 0)
+        {
+          s.black_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_WHITE) != 0)
+        {
+          s.white_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_GREEN) != 0)
+        {
+          s.green_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_RED) != 0)
+        {
+          s.red_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_BLUE) != 0)
+        {
+          s.blue_count += s.card_count;
+        }
+      }
+    }
+  }
+  else
+  {
+    for (s.card_index = 0; s.card_index < 200; s.card_index++)
+    {
+      s.card_id = initial_library[player][s.card_index].csvid;
+      s.card_count = initial_library[player][s.card_index].numcards;
+      if ((s.card_id != -1) && (s.card_count != 0))
+      {
+        s.internal_card_id = CardTypeFromID(s.card_id);
+        s.color = global_cards_data[s.internal_card_id].color;
+        if ((s.color & COLOR_TEST_BLACK) != 0)
+        {
+          s.black_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_WHITE) != 0)
+        {
+          s.white_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_GREEN) != 0)
+        {
+          s.green_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_RED) != 0)
+        {
+          s.red_count += s.card_count;
+        }
+        if ((s.color & COLOR_TEST_BLUE) != 0)
+        {
+          s.blue_count += s.card_count;
+        }
+      }
+    }
+  }
+
+  s.result = COLOR_COLORLESS;
+  if ((((s.black_count >= s.white_count) && (s.black_count >= s.green_count)) &&
+       (s.black_count >= s.red_count)) &&
+      (s.black_count >= s.blue_count))
+  {
+    s.result = COLOR_BLACK;
+  }
+  else if (((s.white_count >= s.black_count) && (s.white_count >= s.green_count)) &&
+           ((s.white_count >= s.red_count) && (s.white_count >= s.blue_count)))
+  {
+    s.result = COLOR_WHITE;
+  }
+  else if (((s.green_count >= s.black_count) && (s.green_count >= s.white_count)) &&
+           ((s.green_count >= s.red_count) && (s.green_count >= s.blue_count)))
+  {
+    s.result = COLOR_GREEN;
+  }
+  else if ((((s.red_count >= s.black_count) && (s.red_count >= s.green_count)) &&
+            (s.red_count >= s.white_count)) &&
+           (s.red_count >= s.blue_count))
+  {
+    s.result = COLOR_RED;
+  }
+  else if (((s.blue_count >= s.black_count) && (s.blue_count >= s.green_count)) &&
+           ((s.blue_count >= s.red_count) && (s.blue_count >= s.white_count)))
+  {
+    s.result = COLOR_BLUE;
+  }
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x004dd719
@@ -2173,14 +2827,6 @@ void apply_duel_backdrop_art(int player, int color, int variant)
     s.hand_window = g_duel_life_window_hwnd;
   }
   SendMessageA(s.hand_window, 0x439, (WPARAM)s.bitmap, (LPARAM)&s.hand_rect);
-}
-
-// FUNCTION: MAGIC 0x004ee26e
-// FUNCTION: SHANDALAR 0x0050325f
-unsigned int load_gametype0(char *path)
-{
-  (void)path;
-  return 0;
 }
 
 void dispatch_duel_engine_message(MSG *message);

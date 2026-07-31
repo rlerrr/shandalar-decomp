@@ -69,5 +69,6 @@ These instructions apply to the entire repository.
 - Prefer writing `reccmp` logs into `temp/` and keep them out of git:
   - `mkdir -Force temp | Out-Null`
   - `$env:PYTHONUTF8='1'; make.bat | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX *> temp\\reccmp_0xXXXXXXXX.txt`
+- If a reccmp diff appears to cut off the original function epilogue, check the corresponding row in the project's `Ghidra/*.csv`; the `orig_size` may be too short. Update the size to include the full original function, then rerun `reccmp-reccmp` without rebuilding.
 
 </INSTRUCTIONS>

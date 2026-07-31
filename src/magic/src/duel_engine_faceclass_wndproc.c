@@ -108,6 +108,9 @@ char g_face_menu_directive_self_text[0x38];
 // GLOBAL: SHANDALAR 0x005a8270
 HBITMAP g_face_background_pics[6];
 
+// GLOBAL: MAGIC 0x00637c70
+int DAT_00637c70;
+
 // GLOBAL: MAGIC 0x00925bb0
 int g_opponent_face_directive_action_enabled;
 

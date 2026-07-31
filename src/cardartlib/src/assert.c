@@ -67,6 +67,7 @@ void assert(int condition, char *file, int line, char *fmt, ...)
 // FUNCTION: DRAWCARDLIB 0x1000c206
 // FUNCTION: DECKDLL 0x1000f044
 // FUNCTION: FACEMAKER 0x00401531
+// FUNCTION: SHANDALAR 0x0046a674
 void assert_noabort(int condition, char *file, int line, char *fmt, ...)
 {
   time_t now;

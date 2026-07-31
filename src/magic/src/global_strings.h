@@ -23,6 +23,7 @@ typedef char text_100_t[100];
 typedef char text_150_t[0x96];
 typedef char text_200_t[200];
 typedef char text_300_t[300];
+typedef char text_112_t[0x70];
 
 // GLOBAL: MAGIC 0x00896720
 // GLOBAL: SHANDALAR 0x008aa920
@@ -621,7 +622,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_hunting_subtype_name_00926930[212];
 
 // GLOBAL: MAGIC 0x00938e40
 // GLOBAL: SHANDALAR 0x0094cf70
-GLOBAL_STRINGS_EXTERN text_300_t gs_phasebar_opponent_discard_00938e40;
+GLOBAL_STRINGS_EXTERN text_112_t gs_phasebar_opponent_discard_00938e40;
 
 // GLOBAL: MAGIC 0x00939050
 // GLOBAL: SHANDALAR 0x0094d180

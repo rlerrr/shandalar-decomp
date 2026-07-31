@@ -14,6 +14,7 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/global_other.h"
+#include "magic/src/duel_engine.h"
 #include "magic/src/shared_startup.h"
 #include "shandalar_global_strings.h"
 #include "cardartlib/src/assert.h"
@@ -104,8 +105,6 @@ FacemakerWindowBounds *PTR_DAT_0058332c = &DAT_00583308;
 FacemakerWindowBounds DAT_00583330 = {5, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x00583354
 FacemakerWindowBounds *PTR_DAT_00583354 = &DAT_00583330;
-// GLOBAL: SHANDALAR 0x00748420
-HWND g_main_window_hwnd;
 // GLOBAL: SHANDALAR 0x00939160
 HINSTANCE g_app_instance;
 // GLOBAL: SHANDALAR 0x00591210
@@ -698,7 +697,7 @@ int RestoreAdventureUiPaletteAndFocus(void);
 int VisitTownSlot(int town_index);
 int RunSaveMenuAndSelectSlot(void);
 void *DrawAdventureInterfaceLayout(int force_redraw);
-void SetupRandomAiDuelDecks(void);
+int RunRandomAiDuelDemo(void);
 void EnsureAdvfac64Loaded(int state);
 void StartWizardTownSiege(void);
 void ResolveWizardTownSiege(void);
@@ -733,6 +732,10 @@ extern DIBSurface *g_facemaker_page4_dib;
 extern HBITMAP g_facemaker_page4_bitmap;
 extern int g_frontbuffer_direct_blit_enabled;
 extern int(__cdecl *g_town_dialog_callback)();
+extern int g_duel_ante_card_ids[16];
+
+void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, unsigned int color_filter, int speed_filter);
+int RunDuelEngine(unsigned int card_id, int creature_type);
 
 // FUNCTION: SHANDALAR 0x005501fe
 int ScaleUiCoordinate(int value)
@@ -2628,7 +2631,7 @@ void GenerateTownConnections(void)
         s.candidate_index = RandomIntLessThan(0x80);
         s.distance =
             ApproximateDistance(g_town_slots[s.town_index].world_x - g_town_slots[s.candidate_index].world_x,
-                         g_town_slots[s.town_index].world_y - g_town_slots[s.candidate_index].world_y);
+                                g_town_slots[s.town_index].world_y - g_town_slots[s.candidate_index].world_y);
         if (s.distance < s.best_dist)
         {
           s.best_dist = s.distance;
@@ -3020,7 +3023,7 @@ void InitializeCastleDungeonSlots(void)
         }
 
         s.distance = ApproximateDistance(g_town_slots[s.scan_index].world_x - s.candidate_x,
-                                  g_town_slots[s.scan_index].world_y - s.candidate_y);
+                                         g_town_slots[s.scan_index].world_y - s.candidate_y);
         if (s.nearest_distance > s.distance)
         {
           s.nearest_distance = s.distance;
@@ -3279,7 +3282,8 @@ void SaveGameToSlot(int save_slot_index)
 {
   int save_drive_index;
 #ifdef _DEBUG
-  if (save_slot_index == 3) {
+  if (save_slot_index == 3)
+  {
     // Disable auto-save in the debugger
     return;
   }
@@ -4829,7 +4833,7 @@ void UpdateAdventureWorldInputAndMovement(void)
             if (SHANDALAR_ENTRY_LAIR < g_lair_or_monster_slots[s.slot_index].entry_type)
             {
               s.nearest_slot_distance = ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
-                                                     g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
+                                                            g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y);
               if ((int)s.nearest_slot_distance < (int)s.tile_magic_mask)
               {
                 s.tile_magic_mask = s.nearest_slot_distance;
@@ -4868,7 +4872,7 @@ void UpdateAdventureWorldInputAndMovement(void)
   if ((DAT_006696fc != 0) && (++DAT_00669700 > 500))
   {
     // Some sort of demo? Looks unreachable since DAT_006696fc is never set
-    SetupRandomAiDuelDecks();
+    RunRandomAiDuelDemo();
     DAT_00669700 = 300;
   }
 
@@ -5024,7 +5028,7 @@ void UpdateAdventureWorldInputAndMovement(void)
         if (g_town_slots[s.nearest_town_index].location_type != -1)
         {
           s.castle_index = ApproximateDistance(g_town_slots[s.nearest_town_index].world_x * 0x20 + 0x10 - g_world_player_x,
-                                        g_town_slots[s.nearest_town_index].world_y * 0x20 + 0x10 - g_world_player_y);
+                                               g_town_slots[s.nearest_town_index].world_y * 0x20 + 0x10 - g_world_player_y);
           if (s.castle_index < s.nearest_town_distance)
           {
             s.nearest_town_distance = s.castle_index;
@@ -5208,7 +5212,7 @@ void UpdateAdventureWorldInputAndMovement(void)
           if (SHANDALAR_ENTRY_LAIR < g_lair_or_monster_slots[s.slot_index].entry_type)
           {
             if (ApproximateDistance(g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x,
-                             g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y) < 0x60)
+                                    g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y) < 0x60)
             {
               s.delta_x = g_world_player_x - g_lair_or_monster_slots[s.slot_index].world_x;
               s.delta_y = g_world_player_y - g_lair_or_monster_slots[s.slot_index].world_y;
@@ -5371,10 +5375,52 @@ int RunSaveMenuAndSelectSlot(void)
 }
 
 // FUNCTION: SHANDALAR 0x00559807
-void SetupRandomAiDuelDecks(void)
+int RunRandomAiDuelDemo(void)
 {
-  // TODO(decomp): Periodic "demo/attract" style action: chooses some prebuilt decks, resets ante state, then kicks off
-  // a larger sequence (calls FUN_00568320) and refreshes the screen.
+  int creature_type;
+  int ante_index;
+  int player;
+
+  for (player = 0; player < 2; player++)
+  {
+    switch (RandomIntLessThan(5))
+    {
+    case 0:
+      ClearAndLoadInitialLibraryFromDeckFile("decks\\0016.dck", player, 1, -1);
+      creature_type = 2;
+      break;
+    case 1:
+      ClearAndLoadInitialLibraryFromDeckFile("decks\\0283.dck", player, 1, -1);
+      creature_type = 10;
+      break;
+    case 2:
+      ClearAndLoadInitialLibraryFromDeckFile("decks\\0150.dck", player, 1, -1);
+      creature_type = 0x10;
+      break;
+    case 3:
+      ClearAndLoadInitialLibraryFromDeckFile("decks\\0076.dck", player, 1, -1);
+      creature_type = 0x17;
+      break;
+    case 4:
+      ClearAndLoadInitialLibraryFromDeckFile("decks\\0102.dck", player, 1, -1);
+      creature_type = 0x20;
+      break;
+    }
+  }
+
+  g_selected_wizard_color = 0;
+  DAT_0057a750 = 1;
+  for (ante_index = 0; ante_index < 0x10; ante_index++)
+  {
+    g_duel_ante_card_ids[ante_index] = -1;
+    global_ante_cards[0][ante_index] = g_duel_ante_card_ids[ante_index];
+  }
+
+  g_duel_network_state = 1;
+  RunDuelEngine(0, creature_type);
+  g_duel_network_state = 0;
+  RefreshAdventureInterfaceLayout();
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x005616cb

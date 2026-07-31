@@ -66,7 +66,7 @@ if (MSVC)
   set_property(TARGET shandalar PROPERTY LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/shandalar.def\"")
   set_property(TARGET shandalar APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/shandalar.def")
   target_link_options(shandalar PRIVATE "/SUBSYSTEM:WINDOWS")
-  target_compile_options(shandalar PRIVATE  /Od /Ob1 /Zi /DSHANDALAR)
+  target_compile_options(shandalar PRIVATE /Od /Ob1 /Zi /DSHANDALAR)
 endif()
 
 if (MSVC_FOR_DECOMP)

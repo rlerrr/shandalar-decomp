@@ -81,7 +81,7 @@ static const char *const_db_artist_names[] = {
 int global_available_slots;
 
 // GLOBAL: DECKDLL 0x10147220
-// GLOBAL: MAGIC 0x8d0350
+// GLOBAL: MAGIC 0x008d0350
 // GLOBAL: SHANDALAR 0x008e44a0
 card_ptr_t global_raw_cards_storage[2000];
 

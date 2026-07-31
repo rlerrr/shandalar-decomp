@@ -556,9 +556,9 @@ int has_damage_card_targeting(int player, int card)
   {
     for (s.loop_card = 0; s.loop_card < active_cards_count[s.loop_player]; s.loop_card = s.loop_card + 1)
     {
-      if (PLAYER_CARD_INSTANCE(s.loop_player, s.loop_card).damage_target_player == player &&
-          PLAYER_CARD_INSTANCE(s.loop_player, s.loop_card).damage_target_card == card &&
-          global_cards_data[PLAYER_CARD_INSTANCE(s.loop_player, s.loop_card).internal_card_id].id == 0x285)
+      if (global_card_instances[s.loop_player][s.loop_card].damage_target_player == player &&
+          global_card_instances[s.loop_player][s.loop_card].damage_target_card == card &&
+          global_cards_data[global_card_instances[s.loop_player][s.loop_card].internal_card_id].id == 0x285)
       {
         return 1;
       }

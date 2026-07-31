@@ -11,13 +11,7 @@
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
 
-#ifndef SHANDALAR
-extern HWND global_main_hwnd;
 #define DUEL_MAIN_WINDOW_HWND g_duel_window_hwnd
-#else
-extern HWND g_main_window_hwnd;
-#define DUEL_MAIN_WINDOW_HWND g_duel_window_hwnd
-#endif
 
 #define CLASS_SHUFFLE_CARD "ShuffleCard"
 

@@ -30,8 +30,8 @@ typedef BOOL(WINAPI *PtInRectByCoordsProc)(const RECT *rect, LONG x, LONG y);
 int load_text_with_tab_escapes(char *filename, char *section_name);
 LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void draw_duel_face_window(HDC dc, RECT *rect, int player);
-int FUN_004483be(int player, int card);
-unsigned int FUN_00448c93(int *displayed_player_and_card, int player, int card);
+int displayed_card_indices_invalid(int player, int card);
+unsigned int get_displayed_card_display_pic_info(int *displayed_player_and_card, int player, int card);
 card_id_t get_displayed_card_id(int player, int card);
 int get_displayed_card_internal_id(int player, int card);
 unsigned int get_displayed_card_special_counters(int player, int card);
@@ -40,10 +40,10 @@ unsigned int get_displayed_card_ui_flags(int player, int card);
 int get_displayed_card_blocking(int player, int card);
 int get_displayed_card_type(int player, int card);
 int get_displayed_card_zone(int player, int card);
-int FUN_00449057(int player, int card);
+int get_displayed_card_color_flags(int player, int card);
 int get_displayed_card_mana_color(int player, int card);
-unsigned int FUN_00449ac3(int player, int card);
-void FUN_00449a0f(int *displayed_player_and_card, int player, int card);
+unsigned int get_displayed_card_original_internal_id(int player, int card);
+void get_displayed_card_parent(int *displayed_player_and_card, int player, int card);
 unsigned int get_displayed_card_mana_source_flag(int player, int card);
 int get_displayed_player_card_counts(int *player_card_counts);
 void get_displayed_card_attachment(int *player_and_card, int player, int card);
@@ -57,15 +57,15 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
 void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned int player, int card, int attached_player, int attached_card);
 void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card, int ui_flags,
                                unsigned int target_ui_flags, int parent_card, int activation, int upkeep);
-void FUN_0055d393(HDC dc, RECT *rect, int highlighted);
-void FUN_0055d429(HDC dc, RECT *rect, unsigned int untap_status);
-void FUN_0055d910(BITMAPINFO *bmi, unsigned char *bits, RECT *rect);
+void draw_card_highlight_frame(HDC dc, RECT *rect, int highlighted);
+void draw_will_untap_overlay(HDC dc, RECT *rect, unsigned int untap_status);
+void draw_summoning_sickness_dib_overlay(BITMAPINFO *bmi, unsigned char *bits, RECT *rect);
 unsigned int get_dib_pixel(unsigned char *bits, int bit_count, int width, int x, int y);
 void set_dib_pixel(unsigned char *bits, int bit_count, int width, int x, int y, unsigned int color);
 void rotate_dib_rect_clockwise(BITMAPINFO *bmi, unsigned char *bits, RECT *rect);
 unsigned int draw_target_canttarget(HDC dc, RECT *rect, int is_target, int can_target);
 void draw_id_tag(HDC dc, RECT *rect, int player, int card, int enabled);
-void FUN_004d2385(HDC dc, RECT *rect, int player, int card);
+void draw_card_debug_id_tag(HDC dc, RECT *rect, int player, int card);
 int card_window_matches_action_request(HWND hwnd);
 int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1, HWND *child_hwnd, int *unused2);
 int find_battlefield_card_window(HWND hwnd, int *player_and_card, int *unused, HWND *child_hwnd);
@@ -76,11 +76,11 @@ void set_duel_tooltip_text(char *text);
 void display_duel_prompt_text(char *text);
 int get_landwalk_evasion_masks();
 int can_block_attacker_with_abilities();
-int FUN_004d7953(int player, int card, int unused_player, int unused_card);
-int FUN_0044184B(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
+int can_card_join_banding_group(int player, int card, int unused_player, int unused_card);
+int can_block_attacker_with_landwalk_checks(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
 int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
 int get_card_display_pic_num(card_id_t card_id, int player, int card);
-int FUN_004491cd(int player, int card);
+int get_displayed_card_eot_toughness(int player, int card);
 int get_displayed_card_toughness(int player, int card);
 int get_displayed_card_power(int player, int card);
 void draw_manastripes(HDC dc, RECT *rect, int player, int card);
@@ -93,6 +93,16 @@ int draw_damage(HDC dc, RECT *rect, int damage);
 int get_card_special_counter_icon(card_id_t card_id);
 int draw_special_counter_icons(HDC dc, RECT *rect, int icon, int count);
 void get_special_counter_icons_rect(LPRECT rect, RECT *client_rect, int counters);
+unsigned int get_displayed_card_special_counter_count(int player, int card);
+void get_displayed_card_standard_counters(int player, int card, unsigned int *counter_power,
+                                          unsigned int *counter_m1m1,
+                                          unsigned int *counter_p1p1,
+                                          unsigned int *counter_p0p1,
+                                          unsigned int *counter_p1p0);
+unsigned int get_displayed_card_title_flags(int player, int card);
+void format_standard_counter_cuecard_text(char *text, int counter_type, int counters);
+void get_damage_overlay_rect(LPRECT rect, RECT *client_rect);
+void get_will_untap_overlay_rect(LPRECT rect, RECT *client_rect);
 int draw_standard_counters(HDC dc, RECT *rect, int power, int m1m1,
                            int p1p1, int loyalty, int charge);
 
@@ -119,17 +129,6 @@ extern BITMAPINFO g_duel_backbuffer_bmi;
 extern int g_duel_modal_action_active;
 extern target_selection_request_t g_duel_action_request_copy;
 extern int DAT_007a7d74;
-
-#define CARDCLASS_STATE(player, card) \
-  (*(int *)((char *)&global_card_instances[0][(card)] + (player) * 0xb0f4 + 8))
-#define CARDCLASS_DISPLAYED_STATE(player, card) \
-  (*(int *)((char *)&global_displayed_card_instances[0][(card)] + (player) * 0xb0f4 + 8))
-#define CARDCLASS_TOKEN_STATUS(player, card) \
-  (*(int *)((char *)&global_card_instances[0][(card)] + (player) * 0xb0f4 + 0x18))
-#define CARDCLASS_BLOCKING(player, card) \
-  (*(unsigned char *)((char *)&global_card_instances[0][(card)] + (player) * 0xb0f4 + 0x24))
-#define CARDCLASS_INTERNAL_CARD_ID(player, card) \
-  (*(int *)((char *)&global_card_instances[0][(card)] + (player) * 0xb0f4 + 0x6c))
 
 // GLOBAL: MAGIC 0x0055e0fc
 // GLOBAL: SHANDALAR 0x0057f19c
@@ -537,7 +536,7 @@ int copy_displayed_card_snapshot(card_instance_t *snapshot, int player, int card
     return 0;
   }
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -556,29 +555,36 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
   char debug_text[256];
 
   changed_flags = 0;
-  if (new_snapshot->internal_card_id == old_snapshot->internal_card_id)
+  if (new_snapshot->internal_card_id != old_snapshot->internal_card_id)
   {
-    if (((old_snapshot->state ^ (new_snapshot->state & 0x30000U)) & 0x30000U) != 0)
+    changed_flags |= 1;
+  }
+  else
+  {
+    if ((new_snapshot->state & STATE_SUMMONSICK_BOTH) !=
+        (old_snapshot->state & STATE_SUMMONSICK_BOTH))
     {
       changed_flags = 2;
     }
-    if (((old_snapshot->state ^ (new_snapshot->state & 0x10U)) & 0x10U) != 0)
+    if ((new_snapshot->state & STATE_TAPPED) != (old_snapshot->state & STATE_TAPPED))
     {
       changed_flags |= 8;
     }
-    if (((old_snapshot->state ^ (new_snapshot->state & 0x1000U)) & 0x1000U) != 0)
+    if ((new_snapshot->state & STATE_OWNED_BY_OPPONENT) !=
+        (old_snapshot->state & STATE_OWNED_BY_OPPONENT))
     {
       changed_flags |= 0x10;
     }
-    if (((old_snapshot->state ^ (new_snapshot->state & 0x200000U)) & 0x200000U) != 0)
+    if ((new_snapshot->state & STATE_TARGETTED) != (old_snapshot->state & STATE_TARGETTED))
     {
       changed_flags |= 0x20;
     }
-    if (((old_snapshot->state ^ (new_snapshot->state & 0x100000U)) & 0x100000U) != 0)
+    if ((new_snapshot->state & STATE_CANNOT_TARGET) !=
+        (old_snapshot->state & STATE_CANNOT_TARGET))
     {
       changed_flags |= 0x40;
     }
-    if (((old_snapshot->state ^ (new_snapshot->state & 0x800000U)) & 0x800000U) != 0)
+    if ((new_snapshot->state & STATE_OUBLIETTED) != (old_snapshot->state & STATE_OUBLIETTED))
     {
       changed_flags |= 0x40;
     }
@@ -618,7 +624,8 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
     {
       changed_flags |= 0x8000;
     }
-    if (((new_snapshot->token_status ^ (old_snapshot->token_status & 0x20000U)) & 0x20000U) != 0)
+    if ((new_snapshot->token_status & STATUS_RED_BORDER) !=
+        (old_snapshot->token_status & STATUS_RED_BORDER))
     {
       changed_flags |= 0x10000;
     }
@@ -635,11 +642,6 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
       changed_flags |= 0x80000;
     }
   }
-  else
-  {
-    changed_flags = 1;
-  }
-
   sprintf(debug_text, s__s__s_005755c8,
           global_cards_data[old_snapshot->internal_card_id].name,
           global_cards_data[new_snapshot->internal_card_id].name);
@@ -674,27 +676,30 @@ int card_snapshots_match_for_redraw(card_instance_t *old_snapshot, card_instance
   {
     unchanged = 0;
   }
-  if (((new_snapshot->state ^ (old_snapshot->state & 0x30000U)) & 0x30000U) != 0)
+  if ((new_snapshot->state & STATE_SUMMONSICK_BOTH) !=
+      (old_snapshot->state & STATE_SUMMONSICK_BOTH))
   {
     unchanged = 0;
   }
-  if (((new_snapshot->state ^ (old_snapshot->state & 0x10U)) & 0x10U) != 0)
+  if ((new_snapshot->state & STATE_TAPPED) != (old_snapshot->state & STATE_TAPPED))
   {
     unchanged = 0;
   }
-  if (((new_snapshot->state ^ (old_snapshot->state & 0x1000U)) & 0x1000U) != 0)
+  if ((new_snapshot->state & STATE_OWNED_BY_OPPONENT) !=
+      (old_snapshot->state & STATE_OWNED_BY_OPPONENT))
   {
     unchanged = 0;
   }
-  if (((new_snapshot->state ^ (old_snapshot->state & 0x200000U)) & 0x200000U) != 0)
+  if ((new_snapshot->state & STATE_TARGETTED) != (old_snapshot->state & STATE_TARGETTED))
   {
     unchanged = 0;
   }
-  if (((new_snapshot->state ^ (old_snapshot->state & 0x100000U)) & 0x100000U) != 0)
+  if ((new_snapshot->state & STATE_CANNOT_TARGET) !=
+      (old_snapshot->state & STATE_CANNOT_TARGET))
   {
     unchanged = 0;
   }
-  if (((new_snapshot->state ^ (old_snapshot->state & 0x800000U)) & 0x800000U) != 0)
+  if ((new_snapshot->state & STATE_OUBLIETTED) != (old_snapshot->state & STATE_OUBLIETTED))
   {
     unchanged = 0;
   }
@@ -734,7 +739,8 @@ int card_snapshots_match_for_redraw(card_instance_t *old_snapshot, card_instance
   {
     unchanged = 0;
   }
-  if (((new_snapshot->token_status ^ (old_snapshot->token_status & 0x20000U)) & 0x20000U) != 0)
+  if ((new_snapshot->token_status & STATUS_RED_BORDER) !=
+      (old_snapshot->token_status & STATUS_RED_BORDER))
   {
     unchanged = 0;
   }
@@ -790,7 +796,7 @@ int card_window_matches_action_request(HWND hwnd)
   s.player = GetWindowLongA(hwnd, CARDCLASS_PLAYER_WINDOW_LONG_OFFSET);
   s.card = GetWindowLongA(hwnd, CARDCLASS_CARD_WINDOW_LONG_OFFSET);
   s.type_flags = get_displayed_card_type(s.player, s.card);
-  s.color_flags = FUN_00449057(s.player, s.card);
+  s.color_flags = get_displayed_card_color_flags(s.player, s.card);
   s.requested_owner = -1;
   s.requested_zone = -1;
   s.parent = GetParent(hwnd);
@@ -863,7 +869,7 @@ void post_card_action_selection(HWND hwnd)
   s.card_id = get_displayed_card_id(s.player, s.card);
   if (unk_0092666c == s.card_id)
   {
-    FUN_00449a0f(s.attached_player_and_card, s.player, s.card);
+    get_displayed_card_parent(s.attached_player_and_card, s.player, s.card);
     g_cardclass_click_action_result.target_player = s.attached_player_and_card[0];
     g_cardclass_click_action_result.target_card = s.attached_player_and_card[1];
   }
@@ -878,11 +884,11 @@ void post_card_action_selection(HWND hwnd)
 
 // FUNCTION: MAGIC 0x0044850c
 // FUNCTION: SHANDALAR 0x00452089
-unsigned int FUN_0044850c(int player, int card)
+unsigned int get_displayed_card_special_counter_count(int player, int card)
 {
   unsigned int counters;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -895,15 +901,15 @@ unsigned int FUN_0044850c(int player, int card)
 
 // FUNCTION: MAGIC 0x0044858d
 // FUNCTION: SHANDALAR 0x0045210a
-void FUN_0044858d(int player,
-                  int card,
-                  unsigned int *counter_power,
-                  unsigned int *counter_m1m1,
-                  unsigned int *counter_p1p1,
-                  unsigned int *counter_p0p1,
-                  unsigned int *counter_p1p0)
+void get_displayed_card_standard_counters(int player,
+                                          int card,
+                                          unsigned int *counter_power,
+                                          unsigned int *counter_m1m1,
+                                          unsigned int *counter_p1p1,
+                                          unsigned int *counter_p0p1,
+                                          unsigned int *counter_p1p0)
 {
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
     return;
 
   EnterCriticalSection(&g_duel_render_lock);
@@ -921,7 +927,7 @@ int get_displayed_card_damage_on_card(int player, int card)
 {
   int damage_on_card;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -938,7 +944,7 @@ int get_displayed_card_type(int player, int card)
 {
   int internal_card_id;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -960,7 +966,7 @@ unsigned int get_displayed_card_regen_status(int player, int card)
 {
   unsigned int regen_status;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -985,7 +991,7 @@ int get_displayed_card_mana_color(int player, int card)
 {
   int mana_color;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1002,7 +1008,7 @@ state_t get_displayed_card_state(int player, int card)
 {
   state_t state;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1019,7 +1025,7 @@ unsigned int is_displayed_card_owned_by_opponent(int player, int card)
 {
   unsigned int state;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0xffffffff;
   }
@@ -1042,7 +1048,7 @@ unsigned int get_displayed_card_mana_source_flag(int player, int card)
   int internal_card_id;
   unsigned int result;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1059,11 +1065,11 @@ unsigned int get_displayed_card_mana_source_flag(int player, int card)
 
 // FUNCTION: MAGIC 0x004494a3
 // FUNCTION: SHANDALAR 0x00453020
-unsigned int FUN_004494a3(int player, int card)
+unsigned int get_displayed_card_title_flags(int player, int card)
 {
   unsigned int info_slot;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1080,7 +1086,7 @@ int is_displayed_card_targetted(int player, int card)
 {
   int result;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1097,7 +1103,7 @@ int is_displayed_card_untargetable(int player, int card)
 {
   int result;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1121,7 +1127,7 @@ unsigned int get_displayed_card_untap_status(int player, int card)
 {
   unsigned int untap_status;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1138,7 +1144,7 @@ int get_displayed_card_kill_code(int player, int card)
 {
   int kill_code;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1168,102 +1174,128 @@ int get_displayed_player_card_counts(int *player_card_counts)
 // FUNCTION: SHANDALAR 0x00578339
 void format_special_counter_cuecard_text(char *text, card_id_t card_id, unsigned int counters)
 {
-  if (text != NULL)
+  if (text == NULL)
   {
-    if (card_id == CARD_ID_ARMAGEDDON_CLOCK)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_armageddon_clock_text, counters);
-    }
-    else if (card_id == CARD_ID_BLACK_MANA_BATTERY ||
-             card_id == CARD_ID_BLUE_MANA_BATTERY ||
-             card_id == CARD_ID_GREEN_MANA_BATTERY ||
-             card_id == CARD_ID_RED_MANA_BATTERY ||
-             card_id == CARD_ID_WHITE_MANA_BATTERY)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_mana_battery_text, counters);
-    }
-    else if (card_id == CARD_ID_CLOCKWORK_AVIAN)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_clockwork_avian_text, counters);
-    }
-    else if (card_id == CARD_ID_CLOCKWORK_BEAST)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_clockwork_beast_text, counters);
-    }
-    else if (card_id == CARD_ID_CRYSTAL_ROD ||
-             card_id == CARD_ID_IRON_STAR ||
-             card_id == CARD_ID_IVORY_CUP ||
-             card_id == CARD_ID_THRONE_OF_BONE ||
-             card_id == CARD_ID_WOODEN_SPHERE)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_lucky_charms_text, counters);
-    }
-    else if (card_id == CARD_ID_FUNGUSAUR)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_fungusaur_text, counters);
-    }
-    else if (card_id == CARD_ID_WHIRLING_DERVISH)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_whirling_dervish_text, counters);
-    }
-    else if (card_id == CARD_ID_LIVING_ARTIFACT)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_living_artifact_text, counters);
-    }
-    else if (card_id == CARD_ID_OSAI_VULTURES)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_osai_vultures_text, counters);
-    }
-    else if (card_id == CARD_ID_SCAVENGING_GHOUL)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_scavenging_ghouls_text, counters);
-    }
-    else if (card_id == CARD_ID_SENGIR_VAMPIRE)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_sengir_vampire_text, counters);
-    }
-    else if (card_id == CARD_ID_NECROPOLIS_OF_AZAR)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_necropolis_of_azar_text, counters);
-    }
-    else if (card_id == CARD_ID_TRISKELION)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_triskelion_text, counters);
-    }
-    else if (card_id == CARD_ID_TETRAVUS)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_tetravus_text, counters);
-    }
-    else if (card_id == CARD_ID_TIME_VAULT)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_time_vault_text, counters);
-    }
-    else if (card_id == CARD_ID_CYCLONE)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_cyclone_text, counters);
-    }
-    else if (card_id == CARD_ID_CITANUL_DRUID)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_citanul_druid_text, counters);
-    }
-    else if (card_id == CARD_ID_ROCK_HYDRA)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_rock_hydra_text, counters);
-    }
-    else if (card_id == CARD_ID_KHABAL_GHOUL)
-    {
-      sprintf(text, g_cardclass_cuecard_counter_khabal_ghoul_text, counters);
-    }
-    else
-    {
-      text[0] = '\0';
-    }
+    return;
+  }
+
+  if (card_id == CARD_ID_ARMAGEDDON_CLOCK)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_armageddon_clock_text, counters);
+  }
+  else if (card_id == CARD_ID_BLACK_MANA_BATTERY)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_mana_battery_text, counters);
+  }
+  else if (card_id == CARD_ID_BLUE_MANA_BATTERY)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_mana_battery_text, counters);
+  }
+  else if (card_id == CARD_ID_GREEN_MANA_BATTERY)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_mana_battery_text, counters);
+  }
+  else if (card_id == CARD_ID_RED_MANA_BATTERY)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_mana_battery_text, counters);
+  }
+  else if (card_id == CARD_ID_WHITE_MANA_BATTERY)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_mana_battery_text, counters);
+  }
+  else if (card_id == CARD_ID_CLOCKWORK_AVIAN)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_clockwork_avian_text, counters);
+  }
+  else if (card_id == CARD_ID_CLOCKWORK_BEAST)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_clockwork_beast_text, counters);
+  }
+  else if (card_id == CARD_ID_CRYSTAL_ROD)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_lucky_charms_text, counters);
+  }
+  else if (card_id == CARD_ID_IRON_STAR)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_lucky_charms_text, counters);
+  }
+  else if (card_id == CARD_ID_IVORY_CUP)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_lucky_charms_text, counters);
+  }
+  else if (card_id == CARD_ID_THRONE_OF_BONE)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_lucky_charms_text, counters);
+  }
+  else if (card_id == CARD_ID_WOODEN_SPHERE)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_lucky_charms_text, counters);
+  }
+  else if (card_id == CARD_ID_FUNGUSAUR)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_fungusaur_text, counters);
+  }
+  else if (card_id == CARD_ID_WHIRLING_DERVISH)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_whirling_dervish_text, counters);
+  }
+  else if (card_id == CARD_ID_LIVING_ARTIFACT)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_living_artifact_text, counters);
+  }
+  else if (card_id == CARD_ID_OSAI_VULTURES)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_osai_vultures_text, counters);
+  }
+  else if (card_id == CARD_ID_SCAVENGING_GHOUL)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_scavenging_ghouls_text, counters);
+  }
+  else if (card_id == CARD_ID_SENGIR_VAMPIRE)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_sengir_vampire_text, counters);
+  }
+  else if (card_id == CARD_ID_NECROPOLIS_OF_AZAR)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_necropolis_of_azar_text, counters);
+  }
+  else if (card_id == CARD_ID_TRISKELION)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_triskelion_text, counters);
+  }
+  else if (card_id == CARD_ID_TETRAVUS)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_tetravus_text, counters);
+  }
+  else if (card_id == CARD_ID_TIME_VAULT)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_time_vault_text, counters);
+  }
+  else if (card_id == CARD_ID_CYCLONE)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_cyclone_text, counters);
+  }
+  else if (card_id == CARD_ID_CITANUL_DRUID)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_citanul_druid_text, counters);
+  }
+  else if (card_id == CARD_ID_ROCK_HYDRA)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_rock_hydra_text, counters);
+  }
+  else if (card_id == CARD_ID_KHABAL_GHOUL)
+  {
+    sprintf(text, g_cardclass_cuecard_counter_khabal_ghoul_text, counters);
+  }
+  else
+  {
+    text[0] = '\0';
   }
 }
 
 // FUNCTION: MAGIC 0x004d21a9
 // FUNCTION: SHANDALAR 0x00578785
-void FUN_004d21a9(char *text, int counter_type, int counters)
+void format_standard_counter_cuecard_text(char *text, int counter_type, int counters)
 {
   if (text == NULL)
     return;
@@ -1296,7 +1328,7 @@ void FUN_004d21a9(char *text, int counter_type, int counters)
 
 // FUNCTION: MAGIC 0x0055bcb1
 // FUNCTION: SHANDALAR 0x00571fcf
-void FUN_0055bcb1(LPRECT rect, RECT *client_rect)
+void get_damage_overlay_rect(LPRECT rect, RECT *client_rect)
 {
   int width;
   int height;
@@ -1314,8 +1346,8 @@ void FUN_0055bcb1(LPRECT rect, RECT *client_rect)
     height = client_rect->bottom - client_rect->top;
     rect->left = client_rect->left + (width * 0x41) / 100;
     rect->right = client_rect->right - (width * 3) / 100;
-    rect->top = client_rect->top + (height * 8) / 100;
-    rect->bottom = client_rect->top + (height * 0x1c) / 100;
+    rect->top = (height * 8) / 100 + client_rect->top;
+    rect->bottom = (height * 0x1c) / 100 + client_rect->top;
   }
 }
 
@@ -1419,61 +1451,63 @@ void get_ability_icon_rect(LPRECT rect, unsigned int ability, RECT *client_rect,
   s.ability_masks[16] = 0x10000;
   s.ability_masks[17] = 0x11;
 
-  if (rect != NULL)
+  if (rect == NULL)
   {
-    if (client_rect == NULL)
+    return;
+  }
+
+  if (client_rect == NULL)
+  {
+    SetRect(rect, 0, 0, 0, 0);
+  }
+  else if (ability_flags == 0)
+  {
+    SetRect(rect, 0, 0, 0, 0);
+  }
+  else
+  {
+    s.icon_width = ((client_rect->right - client_rect->left) * 0x11) / 100;
+    if (global_abilities_pic != NULL)
     {
-      SetRect(rect, 0, 0, 0, 0);
-    }
-    else if (ability_flags == 0)
-    {
-      SetRect(rect, 0, 0, 0, 0);
+      GetObjectA(global_abilities_pic, sizeof(BITMAP), &s.bitmap);
+      s.bitmap_width = s.bitmap.bmWidth;
+      s.bitmap_row_height = s.bitmap.bmHeight / (int)(s.ability_masks[17] + 1);
+      s.icon_height = (s.icon_width * s.bitmap_row_height) / s.bitmap_width;
     }
     else
     {
-      s.icon_width = ((client_rect->right - client_rect->left) * 0x11) / 100;
-      if (global_abilities_pic != NULL)
+      s.icon_height = s.icon_width;
+    }
+    s.x = client_rect->left + 1;
+    s.y = (client_rect->bottom - 1) - s.icon_height;
+    SetRect(&s.result_rect, 0, 0, 0, 0);
+    s.row = 1;
+    for (s.index = 0; s.index < (int)s.ability_masks[17]; s.index++)
+    {
+      if ((ability_flags & s.ability_masks[s.index]) != 0)
       {
-        GetObjectA(global_abilities_pic, sizeof(BITMAP), &s.bitmap);
-        s.bitmap_width = s.bitmap.bmWidth;
-        s.bitmap_row_height = s.bitmap.bmHeight / (int)(s.ability_masks[17] + 1);
-        s.icon_height = (s.icon_width * s.bitmap_row_height) / s.bitmap_width;
-      }
-      else
-      {
-        s.icon_height = s.icon_width;
-      }
-      s.x = client_rect->left + 1;
-      s.y = (client_rect->bottom - 1) - s.icon_height;
-      SetRect(&s.result_rect, 0, 0, 0, 0);
-      s.row = 1;
-      for (s.index = 0; s.index < (int)s.ability_masks[17]; s.index++)
-      {
-        if ((ability_flags & s.ability_masks[s.index]) != 0)
+        if (s.ability_masks[s.index] == ability)
         {
-          if (s.ability_masks[s.index] == ability)
-          {
-            SetRect(&s.result_rect, s.x, s.y, s.icon_width + s.x, s.icon_height + s.y);
-          }
-          s.x += s.icon_width + 1;
-          if ((s.row < 3 &&
-               client_rect->right - ((client_rect->right - client_rect->left) * 0x19) / 100 < s.icon_width + s.x) ||
-              (s.row >= 3 && client_rect->right < s.icon_width + s.x))
-          {
-            s.x = client_rect->left + 1;
-            s.y -= s.icon_height + 1;
-            s.row++;
-          }
+          SetRect(&s.result_rect, s.x, s.y, s.icon_width + s.x, s.icon_height + s.y);
+        }
+        s.x += s.icon_width + 1;
+        if ((s.row < 3 &&
+             client_rect->right - ((client_rect->right - client_rect->left) * 0x19) / 100 < s.icon_width + s.x) ||
+            (s.row >= 3 && client_rect->right < s.icon_width + s.x))
+        {
+          s.x = client_rect->left + 1;
+          s.y -= s.icon_height + 1;
+          s.row++;
         }
       }
-      CopyRect(rect, &s.result_rect);
     }
+    CopyRect(rect, &s.result_rect);
   }
 }
 
 // FUNCTION: MAGIC 0x0055d471
 // FUNCTION: SHANDALAR 0x0057378d
-void FUN_0055d471(LPRECT rect, RECT *client_rect)
+void get_will_untap_overlay_rect(LPRECT rect, RECT *client_rect)
 {
   int width;
   int height;
@@ -1501,7 +1535,7 @@ int get_displayed_card_toughness(int player, int card)
 {
   int toughness;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1517,7 +1551,7 @@ int get_displayed_card_power(int player, int card)
 {
   int power;
 
-  if (FUN_004483be(player, card) != 0)
+  if (displayed_card_indices_invalid(player, card) != 0)
   {
     return 0;
   }
@@ -1538,45 +1572,46 @@ void draw_powertoughness_on_smallcard(HDC dc, RECT *rect, unsigned int power, un
     int saved_dc;
   } s;
 
-  if (dc != NULL && rect != NULL)
+  if (dc == NULL || rect == NULL)
   {
-    s.saved_dc = SaveDC(dc);
-    SetMapMode(dc, MM_ANISOTROPIC);
-    SetWindowExtEx(dc, 200, 0x118, NULL);
-    SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, NULL);
-    SetWindowOrgEx(dc, 0, 0, NULL);
-    SetViewportOrgEx(dc, rect->left, rect->top, NULL);
-
-    s.infinity_mask = 0x4000;
-    s.text[0] = '\0';
-    if ((power & s.infinity_mask) != 0)
-    {
-      strcat(s.text, s_InfinityPowerText_0057f734);
-    }
-    else
-    {
-      wsprintfA(s.text + strlen(s.text), s_PowerFormat_0057f738, power);
-    }
-
-    strcat(s.text, s_PowerToughnessSeparator_0057f73c);
-    if ((toughness & s.infinity_mask) != 0)
-    {
-      strcat(s.text, s_InfinityToughnessText_0057f740);
-    }
-    else
-    {
-      wsprintfA(s.text + strlen(s.text), s_ToughnessFormat_0057f744, toughness);
-    }
-
-    SelectObject(dc, global_smallcard_pt_font);
-    SetTextAlign(dc, 10);
-    SetBkMode(dc, TRANSPARENT);
-    SetTextColor(dc, global_palette_col_c9);
-    TextOutA(dc, 0xca, 0x11a, s.text, strlen(s.text));
-    SetTextColor(dc, global_palette_col_9e_a);
-    TextOutA(dc, 0xc6, 0x116, s.text, strlen(s.text));
-    RestoreDC(dc, s.saved_dc);
+    return;
   }
+  s.saved_dc = SaveDC(dc);
+  SetMapMode(dc, MM_ANISOTROPIC);
+  SetWindowExtEx(dc, 200, 0x118, NULL);
+  SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, NULL);
+  SetWindowOrgEx(dc, 0, 0, NULL);
+  SetViewportOrgEx(dc, rect->left, rect->top, NULL);
+
+  s.infinity_mask = 0x4000;
+  s.text[0] = '\0';
+  if ((power & s.infinity_mask) != 0)
+  {
+    strcat(s.text, s_InfinityPowerText_0057f734);
+  }
+  else
+  {
+    wsprintfA(&s.text[strlen(s.text)], s_PowerFormat_0057f738, power);
+  }
+
+  strcat(s.text, s_PowerToughnessSeparator_0057f73c);
+  if ((toughness & s.infinity_mask) != 0)
+  {
+    strcat(s.text, s_InfinityToughnessText_0057f740);
+  }
+  else
+  {
+    wsprintfA(&s.text[strlen(s.text)], s_ToughnessFormat_0057f744, toughness);
+  }
+
+  SelectObject(dc, global_smallcard_pt_font);
+  SetTextAlign(dc, 10);
+  SetBkMode(dc, TRANSPARENT);
+  SetTextColor(dc, global_palette_col_c9);
+  TextOutA(dc, 0xca, 0x11a, s.text, strlen(s.text));
+  SetTextColor(dc, global_palette_col_9e_a);
+  TextOutA(dc, 0xc6, 0x116, s.text, strlen(s.text));
+  RestoreDC(dc, s.saved_dc);
 }
 
 // FUNCTION: MAGIC 0x0055bb59
@@ -1596,7 +1631,7 @@ int draw_damage(HDC dc, RECT *rect, int damage)
   }
 
   s.saved_dc = SaveDC(dc);
-  FUN_0055bcb1(&s.damage_rect, rect);
+  get_damage_overlay_rect(&s.damage_rect, rect);
   s.result = draw_masked_bitmap_left_half_to_rect(dc, &s.damage_rect, global_damage_pic);
   sprintf(s.text, s_DamageFormat_0057f74c, damage);
   SelectObject(dc, global_damage_font);
@@ -1640,31 +1675,34 @@ int draw_special_counter_icons(HDC dc, RECT *rect, int icon, int count)
 
   if (dc == NULL || rect == NULL)
   {
-    s.result = 0;
+    return 0;
   }
-  else if (icon < 0 || 0x17 < icon)
+
+  if (icon < 0 || 0x17 < icon)
   {
-    s.result = 0;
+    return 0;
   }
-  else if (global_card_counters_pic == NULL)
-  {
-    s.result = 0;
-  }
-  else
+
+  if (global_card_counters_pic != NULL)
   {
     get_special_counter_icons_rect(&s.counters_rect, rect, count);
     GetObjectA(global_card_counters_pic, sizeof(BITMAP), &s.bitmap);
     s.bitmap_width = s.bitmap.bmWidth;
     s.icon_row_height = s.bitmap.bmHeight / 0x19;
     s.icon_height = s.counters_rect.bottom - s.counters_rect.top;
-    s.icon_width = (s.bitmap.bmWidth * s.icon_height) / s.icon_row_height;
+    s.icon_width = (s.bitmap_width * s.icon_height) / s.icon_row_height;
     s.x = s.counters_rect.left;
     s.unused_padding = s.counters_rect.top;
-    s.step_width = s.icon_width;
-    if (1 < count)
+
+    if (count > 1)
     {
       s.step_width = ((s.counters_rect.right - s.counters_rect.left) - s.icon_width) / (count - 1);
     }
+    else
+    {
+      s.step_width = s.icon_width;
+    }
+
     s.src_y = s.icon_row_height * icon;
     s.mask_y = s.bitmap.bmHeight - s.icon_row_height;
     s.x = s.counters_rect.right - s.icon_width;
@@ -1677,6 +1715,10 @@ int draw_special_counter_icons(HDC dc, RECT *rect, int icon, int count)
       s.x -= s.step_width;
     }
     s.result = 1;
+  }
+  else
+  {
+    s.result = 0;
   }
 
   return s.result;
@@ -1834,7 +1876,10 @@ void draw_ability_icons_on_smallcard(HDC dc, RECT *rect, unsigned int ability_fl
     int bitmap_width;
     int mask_y;
     int unused_left;
-    int ability_masks[20];
+    int ability_masks[17];
+    int ability_count;
+    int src_x;
+    int src_y;
     int icon_rows[17];
     RECT ability_rect;
     int mask_x;
@@ -1875,34 +1920,41 @@ void draw_ability_icons_on_smallcard(HDC dc, RECT *rect, unsigned int ability_fl
   s.icon_rows[14] = 6;
   s.icon_rows[15] = 9;
   s.icon_rows[16] = 10;
-  s.ability_masks[17] = 0x11;
+  s.ability_count = 0x11;
 
-  if (dc != NULL && rect != NULL && ability_flags != 0)
+  if (dc == NULL || rect == NULL)
   {
-    s.saved_dc = SaveDC(dc);
-    if (global_abilities_pic != NULL)
+    return;
+  }
+
+  if (ability_flags == 0)
+  {
+    return;
+  }
+
+  s.saved_dc = SaveDC(dc);
+  if (global_abilities_pic != NULL)
+  {
+    GetObjectA(global_abilities_pic, sizeof(BITMAP), &s.bitmap);
+    s.bitmap_width = s.bitmap.bmWidth;
+    icon_height = s.bitmap.bmHeight / (s.ability_count + 1);
+    s.mask_x = 0;
+    s.mask_y = s.bitmap.bmHeight - icon_height;
+    s.unused_left = rect->left;
+    s.unused_bottom = rect->bottom - icon_height;
+    for (s.ability_index = 0; s.ability_index < s.ability_count; s.ability_index++)
     {
-      GetObjectA(global_abilities_pic, sizeof(BITMAP), &s.bitmap);
-      s.bitmap_width = s.bitmap.bmWidth;
-      icon_height = s.bitmap.bmHeight / (s.ability_masks[17] + 1);
-      s.mask_x = 0;
-      s.mask_y = s.bitmap.bmHeight - icon_height;
-      s.unused_left = rect->left;
-      s.unused_bottom = rect->bottom - icon_height;
-      for (s.ability_index = 0; s.ability_index < (int)s.ability_masks[17]; s.ability_index++)
+      if ((ability_flags & s.ability_masks[s.ability_index]) != 0)
       {
-        if ((ability_flags & s.ability_masks[s.ability_index]) != 0)
-        {
-          get_ability_icon_rect(&s.ability_rect, s.ability_masks[s.ability_index], rect, ability_flags);
-          s.ability_masks[18] = 0;
-          s.ability_masks[19] = s.icon_rows[s.ability_index] * icon_height;
-          DrawMaskedBitmapToRect(dc, &s.ability_rect, global_abilities_pic, s.bitmap_width,
-                                 icon_height, 0, s.ability_masks[19], s.mask_x, s.mask_y);
-        }
+        get_ability_icon_rect(&s.ability_rect, s.ability_masks[s.ability_index], rect, ability_flags);
+        s.src_x = 0;
+        s.src_y = s.icon_rows[s.ability_index] * icon_height;
+        DrawMaskedBitmapToRect(dc, &s.ability_rect, global_abilities_pic, s.bitmap_width,
+                               icon_height, s.src_x, s.src_y, s.mask_x, s.mask_y);
       }
     }
-    RestoreDC(dc, s.saved_dc);
   }
+  RestoreDC(dc, s.saved_dc);
 }
 
 // FUNCTION: MAGIC 0x0055ccd2
@@ -2135,7 +2187,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   if (dc == (HDC)0 || rect == NULL)
     return;
 
-  s.display_info = FUN_00448c93(s.displayed_player_and_card, player, card);
+  s.display_info = get_displayed_card_display_pic_info(s.displayed_player_and_card, player, card);
   s.display_version = (unsigned short)(s.display_info >> 0x10);
   s.card_data.id = s.display_info & 0xffff;
 
@@ -2144,7 +2196,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
     s.ability_flags = get_displayed_card_special_counters(player, card);
     sprintf(g_card_title_buffer_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30,
             s.ability_flags);
-    s.single_color = single_color_test_bit_to_color_t(FUN_00449057(player, card));
+    s.single_color = single_color_test_bit_to_color_t(get_displayed_card_color_flags(player, card));
     if (s.single_color == 1 || s.single_color == 2 || s.single_color == 4 ||
         s.single_color == 3 || s.single_color == 5)
     {
@@ -2178,10 +2230,10 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
     g_card_title_buffer_00709100[0] = '\0';
   }
 
-  if (card_id == unk_00789734 && FUN_004491cd(player, card) > 0)
+  if (card_id == unk_00789734 && get_displayed_card_eot_toughness(player, card) > 0)
   {
     strcpy(s.temporary_name, g_card_title_buffer_00709100);
-    extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, FUN_004491cd(player, card));
+    extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, get_displayed_card_eot_toughness(player, card));
   }
   s.transformed_card_id = get_displayed_card_id(s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
   if (card_id == unk_00789734 &&
@@ -2248,7 +2300,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
 
   DrawSmallCard(dc, rect, &s.card_data, s.display_version, 1);
   draw_manastripes(dc, rect, player, card);
-  DrawSmallCardTitle(dc, rect, s.card_data.full_name, FUN_004494a3(player, card),
+  DrawSmallCardTitle(dc, rect, s.card_data.full_name, get_displayed_card_title_flags(player, card),
                      is_displayed_card_owned_by_opponent(player, card) == player);
   if (card_id == unk_007a7d64)
   {
@@ -2285,14 +2337,14 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
 
   if (dc != (HDC)0 && rect != NULL)
   {
-    if (card_id == unk_0092666c && FUN_00449ac3(player, card) == (unsigned int)draw_card_placeholder_internal_card_id)
+    if (card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == (unsigned int)draw_card_placeholder_internal_card_id)
     {
       DrawCardBack(dc, rect);
       DrawSmallCardTitle(dc, rect, gs_cardtitle_activation_007aaeb0, 0, 1);
     }
     else
     {
-      s.display_info = FUN_00448c93(s.displayed_player_and_card, player, card);
+      s.display_info = get_displayed_card_display_pic_info(s.displayed_player_and_card, player, card);
       memset(&s.card_data, 0, sizeof(s.card_data));
       s.display_version = s.display_info >> 0x10;
       s.card_data.id = s.display_info & 0xffff;
@@ -2334,7 +2386,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
 
       DrawSmallCard(dc, rect, &s.card_data, s.display_version, 1);
       draw_manastripes(dc, rect, attached_player, attached_card);
-      DrawSmallCardTitle(dc, rect, s.card_data.full_name, FUN_004494a3(player, card),
+      DrawSmallCardTitle(dc, rect, s.card_data.full_name, get_displayed_card_title_flags(player, card),
                          is_displayed_card_owned_by_opponent(player, card) == player);
     }
   }
@@ -2378,7 +2430,7 @@ void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card
   s.saved_dc = SaveDC(dc);
   memcpy(&s.card_data, global_raw_cards_storage + s.card_id, sizeof(s.card_data));
 
-  s.color_flags = FUN_00449057(player, card);
+  s.color_flags = get_displayed_card_color_flags(player, card);
   s.color_count = 0;
   for (s.color_index = 1; s.color_index <= 5; ++s.color_index)
   {
@@ -2467,7 +2519,7 @@ void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card
   s.counter_rect.right = rect->right - ((rect->right - rect->left) * 10) / 100;
   s.counter_rect.top = rect->top + ((rect->bottom - rect->top) * 8) / 100;
   s.counter_rect.bottom = rect->top + ((rect->bottom - rect->top) * 0x23) / 100;
-  s.special_counters = FUN_0044850c(player, card);
+  s.special_counters = get_displayed_card_special_counter_count(player, card);
   if (s.special_counters != 0)
   {
     draw_special_counter_icons(dc, rect, get_card_special_counter_icon(s.card_id),
@@ -2475,11 +2527,11 @@ void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card
   }
   s.counter_rect.top = rect->top + ((rect->bottom - rect->top) * 0x23) / 100;
   s.counter_rect.bottom = rect->top + ((rect->bottom - rect->top) * 0x3e) / 100;
-  FUN_0044858d(player, card, &s.counter_power, &s.counter_m1m1, &s.counter_p1p1,
-               &s.counter_loyalty, &s.counter_charge);
+  get_displayed_card_standard_counters(player, card, &s.counter_power, &s.counter_m1m1, &s.counter_p1p1,
+                                       &s.counter_loyalty, &s.counter_charge);
   draw_standard_counters(dc, &s.counter_rect, s.counter_power, s.counter_m1m1,
                          s.counter_p1p1, s.counter_loyalty, s.counter_charge);
-  DrawSmallCardTitle(dc, rect, s.card_data.name, FUN_004494a3(player, card),
+  DrawSmallCardTitle(dc, rect, s.card_data.name, get_displayed_card_title_flags(player, card),
                      is_displayed_card_owned_by_opponent(player, card) == player);
   if (player == 0 && (get_displayed_card_state(player, card) & 0x40000) != 0)
   {
@@ -2498,8 +2550,17 @@ void draw_id_tag(HDC dc, RECT *rect, int player, int card, int enabled)
   char text[8];
   RECT tag_rect;
 
-  if (dc != (HDC)0 && rect != NULL && (player == 0 || player == 1) &&
-      card != -1 && enabled != 0 && get_displayed_card_zone(player, card) == 1)
+  if (dc == (HDC)0 || rect == NULL)
+  {
+    return;
+  }
+
+  if ((player != 0 && player != 1) || card == -1)
+  {
+    return;
+  }
+
+  if (enabled != 0 && get_displayed_card_zone(player, card) == 1)
   {
     saved_dc = SaveDC(dc);
     tag_rect.left = rect->left + ((rect->right - rect->left) * 0x50) / 100;
@@ -2702,7 +2763,7 @@ unsigned int draw_target_canttarget(HDC dc, RECT *rect, int is_target, int can_t
 
 // FUNCTION: MAGIC 0x0055d393
 // FUNCTION: SHANDALAR 0x005736af
-void FUN_0055d393(HDC dc, RECT *rect, int highlighted)
+void draw_card_highlight_frame(HDC dc, RECT *rect, int highlighted)
 {
   HPEN pen;
   int saved_dc;
@@ -2721,20 +2782,20 @@ void FUN_0055d393(HDC dc, RECT *rect, int highlighted)
 
 // FUNCTION: MAGIC 0x0055d429
 // FUNCTION: SHANDALAR 0x00573745
-void FUN_0055d429(HDC dc, RECT *rect, unsigned int untap_status)
+void draw_will_untap_overlay(HDC dc, RECT *rect, unsigned int untap_status)
 {
   RECT untap_rect;
 
   if ((untap_status & 1) != 0 && (untap_status & 2) != 0)
   {
-    FUN_0055d471(&untap_rect, rect);
+    get_will_untap_overlay_rect(&untap_rect, rect);
     draw_masked_bitmap_left_half_to_rect(dc, &untap_rect, global_will_untap_pic);
   }
 }
 
 // FUNCTION: MAGIC 0x0055d910
 // FUNCTION: SHANDALAR 0x00573c2a
-void FUN_0055d910(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
+void draw_summoning_sickness_dib_overlay(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
 {
   (void)bmi;
   (void)bits;
@@ -2743,33 +2804,33 @@ void FUN_0055d910(BITMAPINFO *bmi, unsigned char *bits, RECT *rect)
 
 // FUNCTION: MAGIC 0x004d2385
 // FUNCTION: SHANDALAR 0x00578961
-void FUN_004d2385(HDC dc, RECT *rect, int player, int card)
+void draw_card_debug_id_tag(HDC dc, RECT *rect, int player, int card)
 {
-  size_t text_length;
-  char text[12];
-  int saved_dc;
-  HFONT font;
+  struct
+  {
+    char text[12];
+    int saved_dc;
+    HFONT font;
+  } s;
 
-  saved_dc = SaveDC(dc);
-  sprintf(text, s__d__d_005755e8, player, card);
-  font = CreateFontA(0x12, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0x12,
-                     s_Times_New_Roman_005755f0);
-  SelectObject(dc, font);
+  s.saved_dc = SaveDC(dc);
+  sprintf(s.text, s__d__d_005755e8, player, card);
+  s.font = CreateFontA(0x12, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0x12,
+                       s_Times_New_Roman_005755f0);
+  SelectObject(dc, s.font);
   SetBkMode(dc, TRANSPARENT);
   SetTextAlign(dc, TA_RIGHT);
   SetTextColor(dc, 0xffffff);
-  text_length = strlen(text);
-  TextOutA(dc, rect->right, rect->top + 1, text, (int)text_length);
+  TextOutA(dc, rect->right, rect->top + 1, s.text, strlen(s.text));
   SetTextColor(dc, 0x808080);
-  text_length = strlen(text);
-  TextOutA(dc, rect->right - 1, rect->top, text, (int)text_length);
-  RestoreDC(dc, saved_dc);
-  DeleteObject(font);
+  TextOutA(dc, rect->right - 1, rect->top, s.text, strlen(s.text));
+  RestoreDC(dc, s.saved_dc);
+  DeleteObject(s.font);
 }
 
 // FUNCTION: MAGIC 0x004d7953
 // FUNCTION: SHANDALAR 0x004615b1
-int FUN_004d7953(int player, int card, int unused_player, int unused_card)
+int can_card_join_banding_group(int player, int card, int unused_player, int unused_card)
 {
   int result;
 
@@ -2787,7 +2848,7 @@ int FUN_004d7953(int player, int card, int unused_player, int unused_card)
 }
 
 // FUNCTION: MAGIC 0x0044184b
-int FUN_0044184B(int blocker_player, int blocker_card, int attacker_player, int attacker_card)
+int can_block_attacker_with_landwalk_checks(int blocker_player, int blocker_card, int attacker_player, int attacker_card)
 {
   struct
   {
@@ -2830,9 +2891,9 @@ int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacke
   saved_state = global_card_instances[blocker_player][blocker_card].state;
   saved_blocking = (int)(char)global_card_instances[blocker_player][blocker_card].blocking;
   global_card_instances[blocker_player][blocker_card].state &= ~8;
-  global_card_instances[blocker_player][blocker_card].blocking = 0xff;
+  global_card_instances[blocker_player][blocker_card].blocking = (unsigned char)0xff;
 
-  result = FUN_0044184B(blocker_player, blocker_card, attacker_player, attacker_card);
+  result = can_block_attacker_with_landwalk_checks(blocker_player, blocker_card, attacker_player, attacker_card);
   if (result == 0)
   {
     global_card_instances[blocker_player][blocker_card].state = saved_state;
@@ -3112,16 +3173,16 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         }
       }
 
-      s.special_counters = FUN_0044850c(s.player, s.card);
-      FUN_0044858d(s.player, s.card, &s.counter_power, &s.counter_m1m1, &s.counter_p1p1,
-                   &s.counter_p0p1, &s.counter_p1p0);
+      s.special_counters = get_displayed_card_special_counter_count(s.player, s.card);
+      get_displayed_card_standard_counters(s.player, s.card, &s.counter_power, &s.counter_m1m1, &s.counter_p1p1,
+                                           &s.counter_p0p1, &s.counter_p1p0);
       get_special_counter_icons_rect(&s.special_counter_rect, &s.client_rect, s.special_counters);
       s.is_target = is_displayed_card_targetted(s.player, s.card);
       s.can_target_again = is_displayed_card_untargetable(s.player, s.card) == 0;
       s.damage_on_card = get_displayed_card_damage_on_card(s.player, s.card);
-      FUN_0055bcb1(&s.damage_rect, &s.client_rect);
+      get_damage_overlay_rect(&s.damage_rect, &s.client_rect);
       s.untap_status = get_displayed_card_untap_status(s.player, s.card);
-      FUN_0055d471(&s.untap_rect, &s.client_rect);
+      get_will_untap_overlay_rect(&s.untap_rect, &s.client_rect);
       s.kill_code = get_displayed_card_kill_code(s.player, s.card);
 
       if ((s.untap_status & 1) != 0 &&
@@ -3155,15 +3216,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.counter_column_width = (s.client_rect.right - s.client_rect.left) / 3;
         if ((int)s.mouse_x < s.client_rect.left + s.counter_column_width)
         {
-          FUN_004d21a9(s.cuecard_text, 1, s.counter_p1p1);
+          format_standard_counter_cuecard_text(s.cuecard_text, 1, s.counter_p1p1);
         }
         else if ((int)s.mouse_x < s.counter_column_width * 2 + s.client_rect.left)
         {
-          FUN_004d21a9(s.cuecard_text, 2, s.counter_m1m1);
+          format_standard_counter_cuecard_text(s.cuecard_text, 2, s.counter_m1m1);
         }
         else
         {
-          FUN_004d21a9(s.cuecard_text, 3, s.counter_power);
+          format_standard_counter_cuecard_text(s.cuecard_text, 3, s.counter_power);
         }
         s.cuecard_found = 1;
       }
@@ -3174,11 +3235,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.counter_column_width = (s.client_rect.right - s.client_rect.left) / 2;
         if ((int)s.mouse_x < s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2)
         {
-          FUN_004d21a9(s.cuecard_text, 4, s.counter_p0p1);
+          format_standard_counter_cuecard_text(s.cuecard_text, 4, s.counter_p0p1);
         }
         else
         {
-          FUN_004d21a9(s.cuecard_text, 5, s.counter_p1p0);
+          format_standard_counter_cuecard_text(s.cuecard_text, 5, s.counter_p1p0);
         }
         s.cuecard_found = 1;
       }
@@ -3307,7 +3368,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           GetClientRect(hwnd, &s.msg_432_title_rect);
           DrawSmallCardTitle(s.msg_432_title_dc, &s.msg_432_title_rect,
                              global_raw_cards_storage[s.msg_432_card_id].full_name,
-                             FUN_004494a3(s.player, s.card),
+                             get_displayed_card_title_flags(s.player, s.card),
                              (unsigned int)(is_displayed_card_owned_by_opponent(s.player, s.card) - s.player) < 1);
           ReleaseDC(hwnd, s.msg_432_title_dc);
           s.snapshot->unknown0x70 = s.msg_432_snapshot.unknown0x70;
@@ -3398,15 +3459,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       s.command_protect_on = s.command_protect_on == 0;
       if (s.command_protect_on != 0)
       {
-        CARDCLASS_STATE(s.player, s.card) |= STATE_NO_AUTO_TAPPING;
+        global_card_instances[s.player][s.card].state |= STATE_NO_AUTO_TAPPING;
       }
       else
       {
-        CARDCLASS_STATE(s.player, s.card) &= ~STATE_NO_AUTO_TAPPING;
+        global_card_instances[s.player][s.card].state &= ~STATE_NO_AUTO_TAPPING;
       }
       EnterCriticalSection(&g_duel_render_lock);
-      CARDCLASS_DISPLAYED_STATE(s.player, s.card) =
-          CARDCLASS_STATE(s.player, s.card);
+      global_displayed_card_instances[s.player][s.card].state =
+          global_card_instances[s.player][s.card].state;
       LeaveCriticalSection(&g_duel_render_lock);
       InvalidateRect(hwnd, (RECT *)0, 1);
       break;
@@ -3451,8 +3512,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       if (can_attack(s.player, s.card) != 0)
       {
         s.command_attach_card = -1;
-        CARDCLASS_STATE(s.player, s.card) |= 4;
-        CARDCLASS_BLOCKING(s.player, s.card) =
+        global_card_instances[s.player][s.card].state |= 4;
+        global_card_instances[s.player][s.card].blocking =
             (unsigned char)s.command_attach_card;
         refresh_duel_display_cache();
         if (s.command_selected_card > 0x14 &&
@@ -3473,8 +3534,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       {
         SendMessageA(hwnd, WM_COMMAND, 0x69, 0);
       }
-      CARDCLASS_STATE(s.player, s.card) &= ~STATUS_SLEIGHTED;
-      CARDCLASS_BLOCKING(s.player, s.card) = 0xff;
+      global_card_instances[s.player][s.card].state &= ~STATUS_SLEIGHTED;
+      global_card_instances[s.player][s.card].blocking = (unsigned char)0xff;
       refresh_duel_display_cache();
       if (s.command_child_hwnd == hwnd)
       {
@@ -3508,17 +3569,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                                            s.command_band_target.card) &
                4) != 0)
           {
-            if (FUN_004d7953(s.player, s.card,
-                             s.command_band_target.player,
-                             s.command_band_target.card) != 0)
+            if (can_card_join_banding_group(s.player, s.card,
+                                            s.command_band_target.player,
+                                            s.command_band_target.card) != 0)
             {
               s.command_band_attach_card =
                   get_displayed_card_blocking(s.command_band_target.player,
                                               s.command_band_target.card);
               if (s.command_band_attach_card != -1)
               {
-                CARDCLASS_STATE(s.player, s.card) |= 4;
-                CARDCLASS_BLOCKING(s.player, s.card) =
+                global_card_instances[s.player][s.card].state |= 4;
+                global_card_instances[s.player][s.card].blocking =
                     (unsigned char)s.command_band_attach_card;
                 refresh_duel_display_cache();
                 SendMessageA(hwnd, 0x432, 0, 0);
@@ -3530,13 +3591,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
               else
               {
                 s.command_band_attach_card = s.command_band_target.card;
-                CARDCLASS_STATE(s.player, s.card) |= 4;
-                CARDCLASS_BLOCKING(s.player, s.card) =
+                global_card_instances[s.player][s.card].state |= 4;
+                global_card_instances[s.player][s.card].blocking =
                     (unsigned char)s.command_band_attach_card;
-                CARDCLASS_STATE(s.command_band_target.player,
-                                s.command_band_target.card) |= 4;
-                CARDCLASS_BLOCKING(s.command_band_target.player,
-                                   s.command_band_target.card) =
+                global_card_instances[s.command_band_target.player]
+                                     [s.command_band_target.card]
+                                         .state |= 4;
+                global_card_instances[s.command_band_target.player]
+                                     [s.command_band_target.card]
+                                         .blocking =
                     (unsigned char)s.command_band_attach_card;
                 refresh_duel_display_cache();
                 SendMessageA(hwnd, 0x432, 0, 0);
@@ -3589,7 +3652,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
             get_displayed_card_blocking(s.player, s.command_linked_scan_card) ==
                 s.command_linked_unique_card)
         {
-          CARDCLASS_BLOCKING(s.player, s.command_linked_scan_card) = 0xff;
+          global_card_instances[s.player][s.command_linked_scan_card].blocking = (unsigned char)0xff;
           refresh_duel_display_cache();
           s.command_player_and_card[0] = s.player;
           s.command_player_and_card[1] = s.command_linked_scan_card;
@@ -3645,8 +3708,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
               s.command_defend_attach_card =
                   s.command_defend_selected_parent_card;
             }
-            CARDCLASS_STATE(s.player, s.card) |= 8;
-            CARDCLASS_BLOCKING(s.player, s.card) =
+            global_card_instances[s.player][s.card].state |= 8;
+            global_card_instances[s.player][s.card].blocking =
                 (unsigned char)s.command_defend_attach_card;
             refresh_duel_display_cache();
             if (IsWindowVisible(g_duel_attack_phase_window_hwnd) != 0 &&
@@ -3685,8 +3748,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       break;
 
     case 0x6c:
-      CARDCLASS_STATE(s.player, s.card) &= ~STATUS_OBLITERATED;
-      CARDCLASS_BLOCKING(s.player, s.card) = 0xff;
+      global_card_instances[s.player][s.card].state &= ~STATUS_OBLITERATED;
+      global_card_instances[s.player][s.card].blocking = (unsigned char)0xff;
       refresh_duel_display_cache();
       if (s.command_child_hwnd == hwnd)
       {
@@ -3708,10 +3771,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x262:
       if (g_duel_cheats_state != 0)
       {
-        s.command_unused_3a0 = CARDCLASS_INTERNAL_CARD_ID(s.player, s.card);
+        s.command_unused_3a0 = global_card_instances[s.player][s.card].internal_card_id;
         produce_mana(s.player,
                      single_color_test_bit_to_color_t(
-                         (int)global_cards_data[CARDCLASS_INTERNAL_CARD_ID(s.player, s.card)].color),
+                         (int)global_cards_data[global_card_instances[s.player][s.card].internal_card_id].color),
                      (int)(char)global_cards_data[s.command_unused_3a0].cc[0]);
         produce_mana(s.player, 0,
                      abs((int)(char)global_cards_data[s.command_unused_3a0].cc[1]));
@@ -3733,7 +3796,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x263:
       if (g_duel_cheats_state != 0)
       {
-        CARDCLASS_STATE(s.player, s.card) ^= 0x10;
+        global_card_instances[s.player][s.card].state ^= 0x10;
         notify_duel_action(0, 0xff);
       }
       break;
@@ -3744,7 +3807,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.command_saved_phase_flags = g_duel_phase_stop_settings[current_player].phase_flags[current_phase];
         g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
             (unsigned char)((int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
-        CARDCLASS_TOKEN_STATUS(s.player, s.card) |= 8;
+        global_card_instances[s.player][s.card].token_status |= 8;
         kill_card(s.player, s.card, KILL_DESTROY);
         g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
             s.command_saved_phase_flags;
@@ -3888,7 +3951,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
             DrawCardBack(s.paint_dc, &s.paint_rect);
             DrawSmallCardTitle(s.paint_dc, &s.paint_rect,
                                gs_cardtitle_draw_a_card_008b4330,
-                               FUN_004494a3(s.player, s.card), 1);
+                               get_displayed_card_title_flags(s.player, s.card), 1);
           }
           else if (s.paint_card_id == unk_007a7d64 ||
                    unk_00789b80 == s.paint_card_id ||
@@ -3896,11 +3959,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                    s.paint_card_id == unk_00789734 ||
                    s.paint_card_id == unk_008a8de8)
           {
-            FUN_00448c93(s.paint_displayed_player_and_card, s.player, s.card);
+            get_displayed_card_display_pic_info(s.paint_displayed_player_and_card, s.player, s.card);
             draw_special_effect_small_card(s.paint_dc, &s.paint_rect,
                                            s.paint_card_id, s.player, s.card);
-            FUN_0055d393(s.paint_dc, &s.paint_rect,
-                         get_displayed_card_display_flags(s.player, s.card) & 0x20000);
+            draw_card_highlight_frame(s.paint_dc, &s.paint_rect,
+                                      get_displayed_card_display_flags(s.player, s.card) & 0x20000);
             draw_target_canttarget(s.paint_dc, &s.paint_rect,
                                    is_displayed_card_targetted(s.player, s.card),
                                    is_displayed_card_untargetable(s.player, s.card));
@@ -3911,7 +3974,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           }
           else if (unk_0092666c == s.paint_card_id)
           {
-            FUN_00449a0f(s.paint_attached_player_and_card, s.player, s.card);
+            get_displayed_card_parent(s.paint_attached_player_and_card, s.player, s.card);
             draw_activation_small_card(g_shared_offscreen_dc, &s.paint_rect,
                                        s.paint_card_id, s.player, s.card,
                                        s.paint_attached_player_and_card[0],
@@ -3942,24 +4005,24 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
               s.paint_parent_card = get_displayed_card_blocking(s.player, s.card);
             }
             draw_cardclass_small_card(g_shared_offscreen_dc, &s.paint_rect, s.player, s.card,
-                                      FUN_004494a3(s.player, s.card),
+                                      get_displayed_card_title_flags(s.player, s.card),
                                       s.paint_target_ui_flags,
                                       s.paint_parent_card, 0, 0);
             draw_target_canttarget(g_shared_offscreen_dc, &s.paint_rect,
                                    is_displayed_card_targetted(s.player, s.card),
                                    is_displayed_card_untargetable(s.player, s.card));
-            FUN_0055d393(g_shared_offscreen_dc, &s.paint_rect,
-                         get_displayed_card_display_flags(s.player, s.card) & 0x20000);
-            FUN_0055d429(g_shared_offscreen_dc, &s.paint_rect,
-                         get_displayed_card_untap_status(s.player, s.card));
+            draw_card_highlight_frame(g_shared_offscreen_dc, &s.paint_rect,
+                                      get_displayed_card_display_flags(s.player, s.card) & 0x20000);
+            draw_will_untap_overlay(g_shared_offscreen_dc, &s.paint_rect,
+                                    get_displayed_card_untap_status(s.player, s.card));
             draw_id_tag(g_shared_offscreen_dc, &s.paint_rect, s.player, s.card,
                         g_duel_interface_options.show_id_tags_on_cards);
             if (((get_displayed_card_type(s.player, s.card) & 2) != 0 ||
                  g_duel_interface_options.show_all_cards_summon_sickness != 0) &&
                 (get_displayed_card_ui_flags(s.player, s.card) & 1) != 0)
             {
-              FUN_0055d910(&g_duel_backbuffer_bmi, g_shared_offscreen_bits,
-                           &s.paint_rect);
+              draw_summoning_sickness_dib_overlay(&g_duel_backbuffer_bmi, g_shared_offscreen_bits,
+                                                  &s.paint_rect);
             }
             if ((s.paint_ui_flags & 2) != 0)
             {
@@ -3975,7 +4038,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           copy_displayed_card_snapshot(s.snapshot, s.player, s.card);
           if (g_duel_dialog_refresh_state != 0)
           {
-            FUN_004d2385(s.paint_dc, &s.paint_rect, s.player, s.card);
+            draw_card_debug_id_tag(s.paint_dc, &s.paint_rect, s.player, s.card);
           }
         }
       }
@@ -4051,7 +4114,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.counter_p0p1 = global_cards_data[s.special_counters].extra_ability & 0x1000;
     s.type_flags = get_displayed_card_type(s.player, s.card);
     s.previous_z_order = GetParent(hwnd);
-    s.counter_power = FUN_00449ac3(s.player, s.card);
+    s.counter_power = get_displayed_card_original_internal_id(s.player, s.card);
     get_current_duel_selection(&s.counter_m1m1, &s.counter_p1p0);
 
     if (s.special_counters != s.counter_power)

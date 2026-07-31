@@ -2453,9 +2453,9 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
     if (g_duel_ai_mode_state == 1)
     {
       if (internal_rand(3) != 0)
-        unk_00939340 = 0;
+        ai_recorded_choice = 0;
       else
-        unk_00939340 = 1;
+        ai_recorded_choice = 1;
 
       record_ai_action_selection();
     }
@@ -2464,7 +2464,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
       replay_ai_action_selection();
     }
 
-    if (unk_00939340 == 0)
+    if (ai_recorded_choice == 0)
     {
       if (g_duel_ai_mode_state == 1)
         s.prompt = "";
@@ -2500,8 +2500,8 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
       unk_00742fcc = 1 - player;
       if (g_duel_ai_mode_state == 1)
       {
-        unk_00939340 = 0;
-        unk_00925bb8 = ((unk_00742fcc == 0) ? 0 : 0x100) | 0xff;
+        ai_recorded_choice = 0;
+        ai_recorded_action = ((unk_00742fcc == 0) ? 0 : 0x100) | 0xff;
         record_ai_action_selection();
       }
       else

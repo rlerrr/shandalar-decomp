@@ -435,16 +435,16 @@ int card_celestial_prism(int player, int card, event_t event)
       {
         if (g_duel_ai_mode_state == 1)
         {
-          unk_00939340 = unk_008cc840 % 5 + 1;
-          color = unk_00939340;
+          ai_recorded_choice = ai_search_try_count % 5 + 1;
+          color = ai_recorded_choice;
           record_ai_action_selection();
         }
         else
         {
           replay_ai_action_selection();
-          if (unk_00939340 < 6)
+          if (ai_recorded_choice < 6)
           {
-            color = unk_00939340;
+            color = ai_recorded_choice;
           }
           else
           {

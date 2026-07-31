@@ -1,5 +1,6 @@
 #include <direct.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <windows.h>
 
@@ -16,6 +17,71 @@ extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[];
 extern card_data_t global_cards_data[];
 extern BITMAPINFO g_duel_backbuffer_bmi;
+
+typedef struct
+{
+  int color_mask;
+  int land_count;
+  int spell_count;
+  int allow_artifact_spells;
+} SealedDeckStarterTemplate;
+
+typedef struct
+{
+  char name[0x34];
+  int starter_count;
+  int booster_count;
+  int free_lands;
+  int rounds;
+  int color_count;
+} SealedDeckPackDefinition;
+
+// GLOBAL: SHANDALAR 0x0094cfe0
+// GLOBAL: MAGIC 0x00938eb0
+int g_rarity_csv_sealed_template_counts[3][3];
+
+// GLOBAL: SHANDALAR 0x0094d004
+// GLOBAL: MAGIC 0x00938ed4
+int g_rarity_csv_sealed_card_weights[3][20];
+
+// GLOBAL: SHANDALAR 0x0094d0f4
+// GLOBAL: MAGIC 0x00938fc4
+int g_rarity_csv_sealed_starter_counts[3];
+
+// GLOBAL: SHANDALAR 0x0094d100
+// GLOBAL: MAGIC 0x00938fd0
+int g_rarity_csv_sealed_booster_counts[3];
+
+// GLOBAL: SHANDALAR 0x0094d10c
+// GLOBAL: MAGIC 0x00938fdc
+int g_rarity_csv_sealed_color_weights[3][3];
+
+// GLOBAL: SHANDALAR 0x0094d130
+// GLOBAL: MAGIC 0x00939000
+int g_rarity_csv_sealed_land_weights[3][6];
+
+// GLOBAL: SHANDALAR 0x0079ff90
+// GLOBAL: MAGIC 0x00789200
+char g_exp1_art_path[0x110];
+
+// GLOBAL: SHANDALAR 0x00746dc0
+// GLOBAL: MAGIC 0x0074b5f0
+SealedDeckStarterTemplate g_sealed_starter_templates[3];
+
+// GLOBAL: SHANDALAR 0x00746b20
+// GLOBAL: MAGIC 0x0074b350
+SealedDeckPackDefinition g_sealed_pack_definitions[9];
+
+int LoadRarityCsvCardData(const char *filename);
+char *CsvParseNextField(char **txt);
+char *SkipCsvField(char *field);
+int ParseRarityCsvExpansionMask(char *field);
+int ParseRarityCsvDeckBuilderRarity(char *field);
+int ParseRarityCsvExpansionRarity(char *field);
+int ParseRarityCsvBooleanField(char **field);
+int ParseRarityCsvIntFieldClamped(char **field, int maximum);
+unsigned short PackRarityCsvDigitPattern(char *field);
+int PackRarityCsvThreeBitValue(int value, int slot);
 
 // GLOBAL: SHANDALAR 0x0093a230
 // GLOBAL: MAGIC 0x00926100
@@ -135,10 +201,12 @@ int CardTypeFromID(int csvid)
 // FUNCTION: SHANDALAR 0x00557b6a
 int CardInDeck(int param_1)
 {
-  if (param_1 == -1) {
+  if (param_1 == -1)
+  {
     return -1;
   }
-  else {
+  else
+  {
     return param_1 & 0x4000;
   }
 }
@@ -595,9 +663,591 @@ void LoadDuelInterfaceRegistryOptions(void)
 // FUNCTION: MAGIC 0x004c0c20
 int LoadRarityCsv(const char *filename)
 {
-  //TODO: This seems to initialize useless stuff for SHANDALAR, only used in MAGIC
-  (void)filename;
-  return 0;
+  struct
+  {
+    SealedDeckPackDefinition *pack;
+    int result;
+    SealedDeckStarterTemplate *starter_template;
+  } s;
+
+  s.result = 1;
+  strcpy(g_exp1_art_path, global_base_directory);
+  strcat(g_exp1_art_path, "\\Exp1Art");
+
+  s.starter_template = &g_sealed_starter_templates[0];
+  s.starter_template->color_mask = 0;
+  s.starter_template->land_count = 0xb;
+  s.starter_template->spell_count = 3;
+  s.starter_template->allow_artifact_spells = 1;
+
+  s.starter_template = &g_sealed_starter_templates[1];
+  s.starter_template->color_mask = 0;
+  s.starter_template->land_count = 9;
+  s.starter_template->spell_count = 3;
+  s.starter_template->allow_artifact_spells = 0;
+
+  s.starter_template = &g_sealed_starter_templates[2];
+  s.starter_template->color_mask = 0;
+  s.starter_template->land_count = 6;
+  s.starter_template->spell_count = 2;
+  s.starter_template->allow_artifact_spells = 0;
+
+  load_text(global_ui_strings_filename, "SEALEDDECK_PACKNAMES");
+
+  s.pack = &g_sealed_pack_definitions[0];
+  strcpy(s.pack->name, text_lines[0]);
+  s.pack->starter_count = 2;
+  s.pack->booster_count = 1;
+  s.pack->free_lands = 0;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[1];
+  strcpy(s.pack->name, text_lines[1]);
+  s.pack->starter_count = 2;
+  s.pack->booster_count = 1;
+  s.pack->free_lands = 0;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[2];
+  strcpy(s.pack->name, text_lines[2]);
+  s.pack->starter_count = 7;
+  s.pack->booster_count = 1;
+  s.pack->free_lands = 0;
+  s.pack->rounds = 1;
+  s.pack->color_count = 5;
+
+  s.pack = &g_sealed_pack_definitions[3];
+  strcpy(s.pack->name, text_lines[3]);
+  s.pack->starter_count = 2;
+  s.pack->booster_count = 0;
+  s.pack->free_lands = 2;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[4];
+  strcpy(s.pack->name, text_lines[4]);
+  s.pack->starter_count = 2;
+  s.pack->booster_count = 0;
+  s.pack->free_lands = 2;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[5];
+  strcpy(s.pack->name, text_lines[5]);
+  s.pack->starter_count = 0;
+  s.pack->booster_count = 0;
+  s.pack->free_lands = 0;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[6];
+  strcpy(s.pack->name, text_lines[6]);
+  s.pack->starter_count = 0;
+  s.pack->booster_count = 0;
+  s.pack->free_lands = 2;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[7];
+  strcpy(s.pack->name, text_lines[7]);
+  s.pack->starter_count = 0;
+  s.pack->booster_count = 0;
+  s.pack->free_lands = 1;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.pack = &g_sealed_pack_definitions[8];
+  strcpy(s.pack->name, text_lines[8]);
+  s.pack->starter_count = 0;
+  s.pack->booster_count = 1;
+  s.pack->free_lands = 0;
+  s.pack->rounds = 1;
+  s.pack->color_count = 1;
+
+  s.result &= LoadRarityCsvCardData(filename);
+  return s.result;
+}
+
+// FUNCTION: SHANDALAR 0x00523ef4
+// FUNCTION: MAGIC 0x004c1d0e
+char *SkipCsvField(char *field)
+{
+  while (*field != '\0' && *field != ',' && *field != '\n' && *field != '\r')
+    ++field;
+
+  if (*field == ',')
+    ++field;
+
+  return field;
+}
+
+// FUNCTION: SHANDALAR 0x00523f5c
+// FUNCTION: MAGIC 0x004c1d76
+int ParseRarityCsvExpansionMask(char *field)
+{
+  int result;
+  int expansion_index;
+
+  if (_strnicmp(field, "Un", 2) == 0)
+    expansion_index = 0xb;
+  else if (_strnicmp(field, "Da", 2) == 0)
+    expansion_index = 5;
+  else if (_strnicmp(field, "Ar", 2) == 0)
+    expansion_index = 2;
+  else if (_strnicmp(field, "An", 2) == 0)
+    expansion_index = 1;
+  else if (_strnicmp(field, "Le", 2) == 0)
+    expansion_index = 8;
+  else if (_strnicmp(field, "As", 2) == 0)
+    expansion_index = 3;
+  else if (_strnicmp(field, "Ut", 2) == 0)
+    expansion_index = 0xc;
+  else if (_strnicmp(field, "To", 2) == 0)
+    expansion_index = 0xc;
+  else if (_strnicmp(field, "Pr", 2) == 0)
+    expansion_index = 9;
+  else
+    expansion_index = -1;
+
+  if (expansion_index == -1)
+    result = -1;
+  else
+    result = 1 << (unsigned char)expansion_index;
+
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x00524104
+// FUNCTION: MAGIC 0x004c1f1e
+int ParseRarityCsvDeckBuilderRarity(char *field)
+{
+  int result;
+
+  if (*field == 'C')
+    result = 1;
+  else if (*field == 'U')
+    result = 4;
+  else if (*field == 'R')
+    result = 2;
+  else
+    result = -1;
+
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x00524172
+// FUNCTION: MAGIC 0x004c1f8c
+int ParseRarityCsvExpansionRarity(char *field)
+{
+  int result;
+
+  result = 0;
+  if (*field == 'U')
+    result = 1;
+  else if (*field == 'C')
+    result = 5;
+  else if (*field == 'R')
+    result = 9;
+
+  if (result != 0)
+  {
+    ++field;
+    if (*field < '1' || *field > '4')
+    {
+      if (*field > '4' && *field < ':')
+        result += 3;
+    }
+    else
+    {
+      result += *field - '1';
+    }
+  }
+
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x00524239
+// FUNCTION: MAGIC 0x004c2053
+int ParseRarityCsvBooleanField(char **field)
+{
+  int result;
+
+  if (field == NULL || *field == NULL || **field == '-' || **field == '0')
+    result = 0;
+  else
+    result = 1;
+
+  *field = SkipCsvField(*field);
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x005242ad
+// FUNCTION: MAGIC 0x004c20c7
+int ParseRarityCsvIntFieldClamped(char **field, int maximum)
+{
+  int result;
+  int is_negative;
+
+  if (field == NULL || *field == NULL)
+    return 0;
+
+  result = 0;
+  if (**field == '-')
+  {
+    is_negative = 1;
+    ++*field;
+  }
+  else
+  {
+    is_negative = 0;
+  }
+
+  while ('0' <= **field && **field <= '9')
+  {
+    result = **field - '0' + result * 10;
+    ++*field;
+  }
+
+  if (is_negative)
+    result = -result;
+
+  *field = SkipCsvField(*field);
+  if (maximum <= result)
+    result = maximum;
+
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x0052f9e0
+// FUNCTION: MAGIC 0x004cd840
+unsigned short PackRarityCsvDigitPattern(char *field)
+{
+  unsigned short result;
+
+  if (field == NULL || *field == '-' || *field == '\0')
+  {
+    result = 0;
+  }
+  else
+  {
+    result = (unsigned short)(((((((field[3] - '0' < 3) ? field[3] - '0' : 3) << 8) |
+                                 (((field[4] - '0' < 3) ? field[4] - '0' : 3) << 6)) |
+                                (((field[2] - '0' < 3) ? field[2] - '0' : 3) << 2)) |
+                               (((field[1] - '0' < 3) ? field[1] - '0' : 3) << 4)) |
+                              (((field[0] - '0' < 3) ? field[0] - '0' : 3) << 10));
+  }
+
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x0052fac0
+// FUNCTION: MAGIC 0x004cd920
+int PackRarityCsvThreeBitValue(int value, int slot)
+{
+  return value << (slot * 3);
+}
+
+// FUNCTION: SHANDALAR 0x005231ec
+// FUNCTION: MAGIC 0x004c100c
+int LoadRarityCsvCardData(const char *filename)
+{
+  struct
+  {
+    int parsed_db_rarity;
+    int temp_value2;
+    char *next_field;
+    unsigned short ai_dependencies;
+    int inflatable_value;
+    int parsed_expansion;
+    int ai_modifiers2;
+    int temp_value;
+    int ai_modifiers1;
+    char *file_buffer;
+    card_ptr_t *raw_card;
+    HANDLE file;
+    DWORD start_tick;
+    int result;
+    DWORD bytes_read;
+    DWORD file_size;
+    unsigned char mana_source_colors;
+    int field_index;
+    unsigned int expansion_rarity;
+    char *cursor;
+    int row_index;
+  } s;
+
+  s.start_tick = GetTickCount();
+  s.file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+  if (s.file != INVALID_HANDLE_VALUE)
+  {
+    s.file_size = GetFileSize(s.file, NULL);
+    s.file_buffer = malloc(s.file_size + 1);
+    if (s.file_buffer != NULL)
+    {
+      ReadFile(s.file, s.file_buffer, s.file_size, &s.bytes_read, NULL);
+      s.cursor = s.file_buffer;
+      s.cursor = strchr(s.cursor, '\n') + 1;
+      s.cursor = strchr(s.cursor, '\n') + 1;
+
+      for (s.row_index = 0; s.row_index < 3; ++s.row_index)
+      {
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+
+        for (s.field_index = 0; s.field_index < 3; ++s.field_index)
+          g_rarity_csv_sealed_template_counts[s.row_index][s.field_index] =
+              ParseRarityCsvIntFieldClamped(&s.cursor, 99);
+
+        for (s.field_index = 0; s.field_index < 0x14; ++s.field_index)
+          g_rarity_csv_sealed_card_weights[s.row_index][s.field_index] =
+              ParseRarityCsvIntFieldClamped(&s.cursor, 99);
+
+        s.cursor = SkipCsvField(s.cursor);
+        g_rarity_csv_sealed_starter_counts[s.row_index] = ParseRarityCsvIntFieldClamped(&s.cursor, 99);
+        g_rarity_csv_sealed_booster_counts[s.row_index] = ParseRarityCsvIntFieldClamped(&s.cursor, 99);
+
+        for (s.field_index = 0; s.field_index < 3; ++s.field_index)
+          g_rarity_csv_sealed_color_weights[s.row_index][s.field_index] =
+              ParseRarityCsvIntFieldClamped(&s.cursor, 99);
+
+        for (s.field_index = 0; s.field_index < 6; ++s.field_index)
+          g_rarity_csv_sealed_land_weights[s.row_index][s.field_index] =
+              ParseRarityCsvIntFieldClamped(&s.cursor, 99);
+
+        if (*s.cursor != '\n')
+          s.cursor = strchr(s.cursor, '\n') + 1;
+      }
+
+      for (s.field_index = 0; s.field_index < global_available_slots; ++s.field_index)
+      {
+        s.raw_card = &global_raw_cards_storage[s.field_index];
+
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.cursor = SkipCsvField(s.cursor);
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.cursor = s.next_field;
+        s.cursor = SkipCsvField(s.cursor);
+
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.parsed_expansion = ParseRarityCsvExpansionMask(s.cursor);
+        if (s.parsed_expansion != -1)
+          s.raw_card->expansion = s.parsed_expansion;
+
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.parsed_db_rarity = ParseRarityCsvDeckBuilderRarity(s.cursor);
+        if (s.parsed_db_rarity != -1)
+          s.raw_card->rarity = s.parsed_db_rarity;
+
+        s.expansion_rarity = 0;
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.expansion_rarity |= ParseRarityCsvExpansionRarity(s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.expansion_rarity |= ParseRarityCsvExpansionRarity(s.cursor) << 4;
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.expansion_rarity |= ParseRarityCsvExpansionRarity(s.cursor) << 8;
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.expansion_rarity |= ParseRarityCsvExpansionRarity(s.cursor) << 0xc;
+        s.raw_card->expansion_rarity = s.expansion_rarity;
+
+        s.mana_source_colors = 0;
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        if (*s.cursor == '-')
+        {
+        }
+        else
+        {
+          s.mana_source_colors = (unsigned char)(((*s.cursor - '0') << 5) | s.mana_source_colors);
+        }
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        if (*s.cursor == '-')
+        {
+        }
+        else
+        {
+          s.mana_source_colors = (unsigned char)(((*s.cursor - '0') * 4) | s.mana_source_colors);
+        }
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        if (*s.cursor == '-')
+        {
+        }
+        else
+        {
+          s.mana_source_colors = (unsigned char)(((*s.cursor - '0') * 2) | s.mana_source_colors);
+        }
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        if (*s.cursor == '-')
+        {
+        }
+        else
+        {
+          s.mana_source_colors = (unsigned char)(((*s.cursor - '0') << 4) | s.mana_source_colors);
+        }
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        if (*s.cursor == '-')
+        {
+        }
+        else
+        {
+          s.mana_source_colors = (unsigned char)(((*s.cursor - '0') * 8) | s.mana_source_colors);
+        }
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        if (*s.cursor == '-')
+        {
+        }
+        else
+        {
+          s.mana_source_colors = (unsigned char)((*s.cursor - '0') | s.mana_source_colors);
+        }
+        s.raw_card->mana_source_colors = (int8_t)s.mana_source_colors;
+
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.raw_card->ai_against_color = PackRarityCsvDigitPattern(s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.raw_card->ai_for_color = PackRarityCsvDigitPattern(s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.raw_card->ai_counts_as_color = PackRarityCsvDigitPattern(s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.raw_card->ai_against_land = PackRarityCsvDigitPattern(s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.raw_card->ai_for_land = PackRarityCsvDigitPattern(s.cursor);
+        s.cursor = s.next_field;
+        s.next_field = CsvParseNextField(&s.cursor);
+        s.raw_card->ai_counts_as_land = PackRarityCsvDigitPattern(s.cursor);
+
+        s.cursor = s.next_field;
+        s.ai_dependencies = 0;
+        s.ai_dependencies |= PackRarityCsvThreeBitValue((unsigned short)ParseRarityCsvBooleanField(&s.cursor), 0);
+        s.ai_dependencies |= PackRarityCsvThreeBitValue((unsigned short)ParseRarityCsvBooleanField(&s.cursor), 1);
+        s.ai_dependencies |= PackRarityCsvThreeBitValue((unsigned short)ParseRarityCsvBooleanField(&s.cursor), 2);
+        s.raw_card->ai_dependencies = s.ai_dependencies;
+
+        s.ai_modifiers1 = 0;
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 0);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 1);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 2);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 3);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 4);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 5);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 6);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 7);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 8);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 9);
+
+        s.ai_modifiers2 = 0;
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 0);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 1);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 2);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 3);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 4);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 5);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 6);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 7);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 8);
+        s.ai_modifiers2 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 9);
+        s.raw_card->ai_modifiers1 = s.ai_modifiers1;
+        s.raw_card->ai_modifiers2 = s.ai_modifiers2;
+
+        s.raw_card->ai_base_value = (short)ParseRarityCsvIntFieldClamped(&s.cursor, 999);
+        s.temp_value = ParseRarityCsvIntFieldClamped(&s.cursor, 999);
+        s.temp_value2 = ParseRarityCsvIntFieldClamped(&s.cursor, 999);
+        s.raw_card->ai_power_toughness = MAKEWORD(s.temp_value, s.temp_value2);
+        s.temp_value = ParseRarityCsvIntFieldClamped(&s.cursor, 0xff);
+        s.temp_value2 = ParseRarityCsvIntFieldClamped(&s.cursor, 0xff);
+        s.raw_card->ai_inc_power_toughness = MAKEWORD(s.temp_value, s.temp_value2);
+
+        s.inflatable_value = ParseRarityCsvIntFieldClamped(&s.cursor, 1);
+        if (s.inflatable_value != 0)
+          s.raw_card->inflatable = 1;
+        else
+          s.raw_card->inflatable = 0;
+
+        s.ai_modifiers1 = 0;
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 0);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 1);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 2);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 3);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 4);
+        s.ai_modifiers1 |= PackRarityCsvThreeBitValue(ParseRarityCsvIntFieldClamped(&s.cursor, 7), 5);
+        s.raw_card->ai_abilities = s.ai_modifiers1;
+
+        if (*s.cursor != '\n')
+          s.cursor = strchr(s.cursor, '\n') + 1;
+      }
+
+      global_raw_cards_storage[239].db_card_type_2 = 0;
+      global_raw_cards_storage[188].db_card_type_2 = 0;
+      global_raw_cards_storage[91].db_card_type_2 = 0;
+      global_raw_cards_storage[126].db_card_type_2 = 0;
+      global_raw_cards_storage[164].db_card_type_2 = 0;
+
+      s.result = 1;
+      free(s.file_buffer);
+    }
+    else
+    {
+      s.result = 0;
+    }
+
+    CloseHandle(s.file);
+  }
+  else
+  {
+    s.result = 0;
+  }
+
+  s.start_tick = GetTickCount() - s.start_tick;
+  return s.result;
 }
 
 // FUNCTION: SHANDALAR 0x0046901b

@@ -861,8 +861,8 @@ int FUN_0043b4f3(int player, int amount)
       {
         do
         {
-          unk_00939340 = internal_rand(active_cards_count[player]);
-          target.card = unk_00939340;
+          ai_recorded_choice = internal_rand(active_cards_count[player]);
+          target.card = ai_recorded_choice;
         } while (!is_in_play(target.player, target.card));
         instance = &PLAYER_CARD_INSTANCE(target.player, target.card);
       } while ((global_cards_data[instance->internal_card_id].type & 0x7f) == 0 || (instance->token_status & 0x10) != 0);
@@ -872,7 +872,7 @@ int FUN_0043b4f3(int player, int amount)
     {
       replay_ai_action_selection();
       target.player = player;
-      target.card = unk_00939340;
+      target.card = ai_recorded_choice;
     }
     else
     {
