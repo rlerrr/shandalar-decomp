@@ -810,7 +810,19 @@ undefined4 Octree_FindNearestColor(uint rgb_color)
 
   Octree_BuildPathBytesFromRgb(rgb_color,(undefined8 *)&g_octree_path_tmp);
 
-  //TODO: how on earth can you mimic this with /Od?
+#ifdef MODERN_FIXES
+  while (1) {
+    OctNode *child = s.node->children[*s.path];
+    s.path++;
+    if (child == 0) {
+      break;
+    }
+    s.node = child;
+    if ((byte)s.node->flags == 1) {
+      return g_paletteRgbTable[s.node->palette_idx];
+    }
+  }
+#else
   __asm {
     mov eax, g_paletteOctreeRoot
     mov ebx, offset g_octree_path_tmp
@@ -831,6 +843,7 @@ undefined4 Octree_FindNearestColor(uint rgb_color)
   loop_end:
     mov s.node, edx
   }
+#endif
   
   if (s.node->flags == 0) {
     s.index_list = s.node->list;
@@ -861,7 +874,9 @@ undefined4 Octree_FindNearestColor(uint rgb_color)
     return g_paletteRgbTable[s.node->palette_idx];
   }
 
+#ifndef MODERN_FIXES
 end:  ;
+#endif
 }
 
 // FUNCTION: CARDARTLIB 0x10005383
@@ -886,12 +901,24 @@ uint Octree_FindNearestPaletteIndex(uint rgb_color)
     byte *path;        // edp - 4
   } s;
 
-  s.path = &g_octree_path_tmp_alt;
+  s.path = g_octree_path_tmp_alt;
   s.node = g_paletteOctreeRoot;
   
   Octree_BuildPathBytesFromRgb(rgb_color,(undefined8 *)&g_octree_path_tmp_alt);
 
-  //TODO: how on earth can you mimic this with /Od?
+#ifdef MODERN_FIXES
+  while (1) {
+    OctNode *child = s.node->children[*s.path];
+    s.path++;
+    if (child == 0) {
+      break;
+    }
+    s.node = child;
+    if ((byte)s.node->flags == 1) {
+      return s.node->palette_idx;
+    }
+  }
+#else
   __asm {
     mov eax, g_paletteOctreeRoot
     mov ebx, offset g_octree_path_tmp_alt
@@ -910,6 +937,7 @@ uint Octree_FindNearestPaletteIndex(uint rgb_color)
   loop_end:
     mov s.node, edx
   }
+#endif
   
   if (s.node->flags == 0) {
     s.index_list = s.node->list;
@@ -936,7 +964,9 @@ uint Octree_FindNearestPaletteIndex(uint rgb_color)
   else
     return s.node->palette_idx;
 
+#ifndef MODERN_FIXES
   end: ;
+#endif
 }
 
 // FUNCTION: CARDARTLIB 0x100054fb
