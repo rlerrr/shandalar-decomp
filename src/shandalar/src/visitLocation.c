@@ -41,6 +41,7 @@ extern int g_card_count;
 extern int g_default_palette_fade_steps;
 extern int g_adventure_world_exit_requested;
 extern char DAT_0097e340[0x110];
+#define g_last_parsed_deck_path DAT_0097e340
 extern int g_reveal_all_world_info;
 extern int g_current_quest_giver_town_index;
 extern int g_done_text_table_entry;
@@ -162,7 +163,7 @@ void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_ind
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 char *BuildCreatureNameWithArticle(int creature_type);
 void SetWorldMapPixelFlags(unsigned int param_1, int param_2, int param_3);
-int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned int color_filter, int speed_filter);
+int ParseDeckFileIntoInitialLibrary(char *deck_path, csvid_and_numcards *library_entries, unsigned int color_filter, int speed_filter);
 
 int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, char *palette_source_path, char *portrait_path);
 void BeginSpriteEncodeSession(void);
@@ -189,7 +190,7 @@ int FUN_004bb1cf(int param_1);
 int FUN_0056c0e5(int param_1, int param_2, int param_3);
 int GetCardRarity(int param_1);
 int FUN_0056c705(int param_1);
-int FindDeckSlotForQuestColorAndType(unsigned char quest_color, unsigned char quest_bitmap_mask);
+int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask);
 char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID world_magic_button_sprite, ...);
 char *GetQuestCardClassName(int quest_bitmap_mask);
@@ -328,8 +329,6 @@ int g_wiseman_card_choice_result = 0;
 int DAT_0073c010[500];
 // GLOBAL: SHANDALAR 0x0073c7e0
 int DAT_0073c7e0;
-// GLOBAL: SHANDALAR 0x00926668
-int DAT_00926668;
 
 // GLOBAL: SHANDALAR 0x00594054
 char s_OneDeck_ONEDECK_ONE_DECK_00594054[] = "OneDeck ONEDECK ONE DECK\n";
@@ -429,7 +428,7 @@ int g_town_menu_result_state;
 // GLOBAL: SHANDALAR 0x007481dc
 int g_buy_cards_done_clicked;
 // GLOBAL: SHANDALAR 0x007483e8
-int _DAT_007483e8;
+int g_town_hint_offer_slot_index;
 
 // GLOBAL: SHANDALAR 0x007481f0
 char g_town_button_labels[5][0x64];
@@ -578,8 +577,6 @@ char s_x_sound_reward_wav_0058ad40[] = "x:sound\\reward.wav";
 // GLOBAL: SHANDALAR 0x0058ad6c
 char s_worlbak1_pic_0058ad6c[] = "worlbak1.pic";
 
-// GLOBAL: SHANDALAR 0x0058b1d0
-char s_prdfrmc_pic_0058b1d0[] = "prdfrmc.pic\0prdfrmb.pic";
 // GLOBAL: SHANDALAR 0x0058b1e8
 char s_advfac64_pic_0058b1e8[] = "advfac64.pic";
 // GLOBAL: SHANDALAR 0x0058b1f8
@@ -597,11 +594,11 @@ char s______________00580e74[] = "%[^,\n] %[,\n]";
 char DAT_00580e84[] = ",";
 
 // GLOBAL: SHANDALAR 0x00580e8c
-char DAT_00580e8c[] = "rt\0";
+char s_text_read_mode_00580e8c[] = "rt\0";
 // GLOBAL: SHANDALAR 0x00580ea0
-char s_______00580ea0[] = "%[^\n]\0\0";
+char s_scan_until_newline_00580ea0[] = "%[^\n]\0\0";
 // GLOBAL: SHANDALAR 0x00580ea8
-char s__d__d_00580ea8[] = "%d %d\0\0";
+char s_deck_entry_scan_format_00580ea8[] = "%d %d\0\0";
 // GLOBAL: SHANDALAR 0x00580eb0
 char s__vNONE_00580eb0[] = ".vNONE\0";
 // GLOBAL: SHANDALAR 0x00580eb8
@@ -625,7 +622,7 @@ char s__vARTIFACT_00580efc[] = ".vARTIFACT\0";
 // GLOBAL: SHANDALAR 0x00580f08
 char s_4th_Edition_00580f08[] = "4th Edition";
 // GLOBAL: SHANDALAR 0x00580f14
-char DAT_00580f14[] = "%[\n]\0\0\0";
+char s_scan_newline_00580f14[] = "%[\n]\0\0\0";
 // GLOBAL: SHANDALAR 0x0058b214
 char s_advfac64_pic_0058b214[] = "advfac64.pic";
 // GLOBAL: SHANDALAR 0x0058b224
@@ -1194,15 +1191,21 @@ void BuyFoodFromTown(void)
 // FUNCTION: SHANDALAR 0x004f04c5
 void VisitTownWiseman(void)
 {
-  int town_index;
-  int(__cdecl * saved_callback)(void);
-  int quest_time_units;
-  char local_quest_text[100];
+  struct
+  {
+    char local_quest_text[100];         /* -0x78 */
+    int(__cdecl *saved_callback)(void); /* -0x14 */
+    int temp_flag;                      /* -0x10 */
+    int town_index;                     /* -0x0c */
+    int preferred_color;                /* -0x08 */
+    int quest_time_units;               /* -0x04 */
+  } s;
 
-  town_index = g_active_town_services_town_index;
-  saved_callback = g_town_dialog_callback;
+  s.town_index = g_active_town_services_town_index;
+  s.preferred_color = g_town_preferred_magic_color;
+  s.saved_callback = g_town_dialog_callback;
 
-  if ((g_town_slots[town_index].status_and_ruling_wizard & 4) != 0)
+  if ((g_town_slots[s.town_index].status_and_ruling_wizard & 4) != 0)
   {
     AnimateVisitBackdropZoomIn(s_wiseman3_pic_0058ae14);
     strcpy(g_ui_message_buffer, gs_citywiseman_0074d800[0]);
@@ -1211,14 +1214,14 @@ void VisitTownWiseman(void)
                               ScaleUiCoordinate(0x13c) - GetFontLineHeight(PTR_DAT_005832b4->font_slot) * 4, g_ui_message_buffer);
     ClearInputAndWaitForMouseRelease();
     (void)WaitForInputEventUnlessBlocked();
-    AnimateVisitBackdropZoomIn(GET_TOWN_PIC(town_index));
+    AnimateVisitBackdropZoomIn(GET_TOWN_PIC(s.town_index));
     g_town_menu_result_state = -2;
     return;
   }
 
   if (((g_current_quest_destination == -1) && (g_pending_quest_destination != -1)) &&
       (((g_shandalar_difficulty + 3) * 0x10) <
-       (g_quest_restock_timer - g_town_slots[town_index].quest_restock_timer)))
+       (g_quest_restock_timer - g_town_slots[s.town_index].quest_restock_timer)))
   {
     AnimateVisitBackdropZoomIn(s_wiseman3_pic_0058ae3c);
     g_current_quest_destination = g_pending_quest_destination;
@@ -1227,35 +1230,36 @@ void VisitTownWiseman(void)
 
     if ((g_current_quest_type == 0) || (g_current_quest_type == 2))
     {
-      SetWorldMapPixelFlags(0x80, g_town_slots[g_pending_quest_destination].world_x, g_town_slots[g_pending_quest_destination].world_y);
+      SetWorldMapPixelFlags(0x80, g_town_slots[g_current_quest_destination].world_x, g_town_slots[g_current_quest_destination].world_y);
       g_current_quest_data = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x, g_town_slots[g_current_quest_destination].world_y);
-      (void)BuildTownDisplayName(g_current_quest_destination);
 
       FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_citywiseman_0074d800[1],
                                                   gs_directions_00765d50[g_current_quest_data], BuildTownDisplayName(g_current_quest_destination));
 
       if (g_current_quest_type == 0)
       {
+        s.temp_flag = 0;
         strcat(g_ui_message_buffer, gs_citywiseman_0074d800[2]);
       }
       else
       {
+        s.temp_flag = 1;
         sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_citywiseman_0074d800[3], gs_amuletnames_0077d090[g_current_quest_color]);
       }
-      quest_time_units = 0x20;
+      s.quest_time_units = 0x20;
     }
     else if (g_current_quest_type == 1)
     {
-      SetWorldMapPixelFlags(0x80, g_town_slots[g_pending_quest_destination].world_x, g_town_slots[g_pending_quest_destination].world_y);
+      SetWorldMapPixelFlags(0x80, g_town_slots[g_current_quest_destination].world_x, g_town_slots[g_current_quest_destination].world_y);
       g_current_quest_data = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x, g_town_slots[g_current_quest_destination].world_y);
 
-      FormatQuestSpellName(local_quest_text, 100);
-      (void)BuildTownDisplayName(g_current_quest_destination);
+      FormatQuestSpellName(s.local_quest_text, 100);
 
       FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_citywiseman_0074d800[4],
-                                                  gs_directions_00765d50[g_current_quest_data], BuildTownDisplayName(g_current_quest_destination), local_quest_text);
+                                                  s.local_quest_text, gs_directions_00765d50[g_current_quest_data], BuildTownDisplayName(g_current_quest_destination));
+      s.temp_flag = 1;
       sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_citywiseman_0074d800[5], gs_amuletnames_0077d090[g_current_quest_color]);
-      quest_time_units = 0x28;
+      s.quest_time_units = 0x28;
     }
     else
     {
@@ -1270,57 +1274,61 @@ void VisitTownWiseman(void)
           sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[7], GetCreatureName(-g_current_quest_type));
         }
 
-        if (g_town_slots[town_index].location_type == 1)
+        if (g_town_slots[s.town_index].location_type == 1)
         {
-          if (((int)g_shandalar_monster_definitions[-g_current_quest_type].plural[0x33] / 7) == 0)
+          s.temp_flag = (int)g_shandalar_monster_definitions[-g_current_quest_type].plural[0x33] / 7 + 1;
+          if (s.temp_flag == 1)
           {
             sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_citywiseman_0074d800[8],
                     gs_amuletnames_0077d090[g_current_quest_color]);
           }
           else
           {
-            FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_citywiseman_0074d800[9]);
+            FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000, gs_citywiseman_0074d800[9],
+                                                        s.temp_flag, gs_amuletnames_plural_0077edd0[g_current_quest_color]);
           }
         }
         else
         {
-          sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_citywiseman_0074d800[10], FUN_004f2e17(town_index));
+          s.temp_flag = 0;
+          sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_citywiseman_0074d800[10], FUN_004f2e17(s.town_index));
         }
+
+        s.quest_time_units = 0x18;
       }
-      quest_time_units = 0x18;
     }
 
     strcat(g_ui_message_buffer, gs_citywiseman_0074d800[0xb]);
     g_town_dialog_callback = QuestCardChooserCallback;
 
-    if (RunTextMenuAtScaled(g_ui_message_buffer, 0x2d, 0x24) == 0)
-    {
-      LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058ae4c);
-      g_current_quest_giver_town_index = town_index;
-      g_current_quest_deadline = quest_time_units * 2 + g_quest_restock_timer - 1;
-      g_town_slots[town_index].quest_restock_timer = g_quest_restock_timer;
-
-      sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[0xc], ((int)(quest_time_units + ((quest_time_units >> 0x1f) & 7U)) >> 3));
-      (void)RunTextMenuAtScaled(g_ui_message_buffer, 0x48, 0x48);
-      SetWorldMapPixelFlags(0x80, g_town_slots[town_index].world_x, g_town_slots[town_index].world_y);
-      AddJournalEntry(JOURNAL_ENTRY_QUEST_ACCEPTED, g_current_quest_type);
-      g_town_dialog_callback = saved_callback;
-    }
-    else
+    if (RunTextMenuAtScaled(g_ui_message_buffer, 0x2d, 0x24) != 0)
     {
       g_current_quest_destination = -1;
       g_current_quest_type = 0;
-      g_town_dialog_callback = saved_callback;
     }
+    else
+    {
+      LoadVisitBackdropAndCopyToPage0(s_wiseman3_pic_0058ae4c);
+      g_current_quest_giver_town_index = s.town_index;
+      g_current_quest_deadline = s.quest_time_units * 2 + g_quest_restock_timer - 1;
+      g_town_slots[s.town_index].quest_restock_timer = g_quest_restock_timer;
+
+      sprintf(g_ui_message_buffer, gs_citywiseman_0074d800[0xc], s.quest_time_units / 8);
+      (void)RunTextMenuAtScaled(g_ui_message_buffer, 0x48, 0x48);
+      SetWorldMapPixelFlags(0x80, g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y);
+      AddJournalEntry(JOURNAL_ENTRY_QUEST_ACCEPTED, g_current_quest_type);
+    }
+
+    g_town_dialog_callback = s.saved_callback;
   }
   else
   {
-    (void)RunWisemanAdviceSequence(g_town_preferred_magic_color, (g_last_town_services_town_index != g_active_town_services_town_index), g_active_town_services_town_index);
+    (void)RunWisemanAdviceSequence(s.preferred_color, (g_last_town_services_town_index != s.town_index), s.town_index);
   }
 
-  g_last_town_services_town_index = town_index;
+  g_last_town_services_town_index = s.town_index;
   (void)DrawAdventureInterfaceLayout(1);
-  AnimateVisitBackdropZoomIn(GET_TOWN_PIC(town_index));
+  AnimateVisitBackdropZoomIn(GET_TOWN_PIC(s.town_index));
   g_town_menu_result_state = -2;
 }
 
@@ -1478,7 +1486,7 @@ void RunTownBuyCardsScreen(void)
   BeginSpriteEncodeSession();
   for (s.loop_i = 0; s.loop_i < 3; s.loop_i = s.loop_i + 1)
   {
-    SetFontStyleSize(7, (unsigned int)(((-(unsigned int)(s.loop_i == 2)) & 0xfffffffeU) + 0xb));
+    SetFontStyleSize(7, (s.loop_i == 2) ? 9 : 11);
     DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[s.loop_i], s.loop_i * 0x5a + 0x2e, 0x10, "%s", (char *)g_done_text_table_entry);
     g_buy_cards_done_button_sprites[s.loop_i] = EncodeSpriteFromPage(1, s.loop_i * 0x5a + 1, 1, 0x59, 0x23);
   }
@@ -1507,131 +1515,126 @@ void RunTownBuyCardsScreen(void)
   }
   AddMenuControlsToContext(&g_buy_cards_done_button_control, 1, s.menu_context);
 
-  while (1)
+redraw_buy_cards_screen:
+  LoadPcxIntoPage(1, s_buycards_pic_0058aea8);
+  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x200, 0x118, PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0x20), ScaleUiCoordinateFrom320(0x18), ScaleUiCoordinateFrom320(0x100),
+                          ScaleUiCoordinateFrom320(0x8c));
+  DrawVisitScreenOverlays(PTR_DAT_005832b4);
+
+  RenderCurrentMenuContextControls();
+  (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
+
+  s.center_x_320 = 0xa0;
+  s.title_y_200 = 0x1f;
+  s.title = gs_visit_citybuy_0077f1d0[0];
+  PTR_DAT_005832b4->font_slot = 4;
+  s.title_line_h = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  s.title_text_w = MeasureTextLineWidth(s.title);
+  DrawEncodedImageResampled(PTR_DAT_005832b4, global_screen_width / 2 - s.title_text_w / 2 - 0x14,
+                            (s.title_y_200 * global_screen_height) / 0xf0 - s.title_line_h, s.title_text_w + 0x28, s.title_line_h * 3, g_buy_cards_title_panel_sprite);
+  DrawUiScaledCenteredText(s.title, s.center_x_320, s.title_y_200, 0x1b);
+
+  s.y_base = 0x40;
+  s.tile_w = 0xf4 / s.item_count;
+  memset(s.rects, 0xff, 0xa0);
+
+  for (s.idx = s.item_count - 1; s.idx >= 0; s.idx = s.idx - 1)
   {
-    LoadPcxIntoPage(1, s_buycards_pic_0058aea8);
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x200, 0x118, PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0x20), ScaleUiCoordinateFrom320(0x18), ScaleUiCoordinateFrom320(0x100),
-                            ScaleUiCoordinateFrom320(0x8c));
-    DrawVisitScreenOverlays(PTR_DAT_005832b4);
-
-    RenderCurrentMenuContextControls();
-    (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-
-    s.center_x_320 = 0xa0;
-    s.title_y_200 = 0x1f;
-    s.title = gs_visit_citybuy_0077f1d0[0];
-    PTR_DAT_005832b4->font_slot = 4;
-    s.title_line_h = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-    s.title_text_w = MeasureTextLineWidth(s.title);
-    DrawEncodedImageResampled(PTR_DAT_005832b4, global_screen_width / 2 - s.title_text_w / 2 - 0x14,
-                              (s.title_y_200 * global_screen_height) / 0xf0 - s.title_line_h, s.title_text_w + 0x28, s.title_line_h * 3, g_buy_cards_title_panel_sprite);
-    DrawUiScaledCenteredText(s.title, s.center_x_320, s.title_y_200, 0x1b);
-
-    s.y_base = 0x40;
-    s.tile_w = 0xf4 / s.item_count;
-    memset(s.rects, 0xff, 0xa0);
-
-    for (s.idx = s.item_count - 1; s.idx >= 0; s.idx = s.idx - 1)
+    if (g_town_shop_card_ids[s.idx] != -1)
     {
-      if (g_town_shop_card_ids[s.idx] != -1)
-      {
-        DrawUiScaledSprite(PTR_DAT_005832b4, s.tile_w * s.idx + 0x2c, (g_town_shop_card_ids[s.idx] & 7) + s.y_base - 0xc, s.tile_w - 4, 0xc, g_buy_cards_price_tag_sprite);
+      DrawUiScaledSprite(PTR_DAT_005832b4, s.tile_w * s.idx + 0x2c, (g_town_shop_card_ids[s.idx] & 7) + s.y_base - 0xc, s.tile_w - 4, 0xc, g_buy_cards_price_tag_sprite);
 
-        sprintf(g_ui_message_buffer, gs_visit_citybuy_0077f1d0[1], g_town_shop_card_prices[s.idx]);
-        PTR_DAT_005832b4->font_slot = 1;
-        DrawUiScaledCenteredText(g_ui_message_buffer, s.tile_w * s.idx + s.tile_w / 2 + 0x29, (g_town_shop_card_ids[s.idx] & 7) + s.y_base - 8, 0x1b);
+      sprintf(g_ui_message_buffer, gs_visit_citybuy_0077f1d0[1], g_town_shop_card_prices[s.idx]);
+      PTR_DAT_005832b4->font_slot = 1;
+      DrawUiScaledCenteredText(g_ui_message_buffer, s.tile_w * s.idx + s.tile_w / 2 + 0x29, (g_town_shop_card_ids[s.idx] & 7) + s.y_base - 8, 0x1b);
 
-        DrawAdventureCard(g_town_shop_card_ids[s.idx],
-                          ClampIntToRange(s.tile_w * s.idx + s.tile_w / 2 + 0x12, 0, global_screen_width - 0x62),
-                          (g_town_shop_card_ids[s.idx] & 7) + s.y_base + 4, 0, (char *)&s_empty_buy_card_banner_0058aeb8);
+      DrawAdventureCard(g_town_shop_card_ids[s.idx],
+                        ClampIntToRange(s.tile_w * s.idx + s.tile_w / 2 + 0x12, 0, global_screen_width - 0x62),
+                        (g_town_shop_card_ids[s.idx] & 7) + s.y_base + 4, 0, (char *)&s_empty_buy_card_banner_0058aeb8);
 
-        s.rects[s.idx].x0 = ScaleUiCoordinateFrom320(ClampIntToRange(s.tile_w * s.idx + s.tile_w / 2 + 0x12, 0, global_screen_width - 0x62));
-        s.rects[s.idx].y0 = ScaleUiCoordinateFrom320((g_town_shop_card_ids[s.idx] & 7) + s.y_base + 4);
-        s.rects[s.idx].x1 = s.rects[s.idx].x0 + ScaleUiCoordinateFrom320(0x30);
-        s.rects[s.idx].y1 = s.rects[s.idx].y0 + ScaleUiCoordinateFrom320(0x30);
-      }
+      s.rects[s.idx].x0 = ScaleUiCoordinateFrom320(ClampIntToRange(s.tile_w * s.idx + s.tile_w / 2 + 0x12, 0, global_screen_width - 0x62));
+      s.rects[s.idx].y0 = ScaleUiCoordinateFrom320((g_town_shop_card_ids[s.idx] & 7) + s.y_base + 4);
+      s.rects[s.idx].x1 = s.rects[s.idx].x0 + ScaleUiCoordinateFrom320(0x30);
+      s.rects[s.idx].y1 = s.rects[s.idx].y0 + ScaleUiCoordinateFrom320(0x30);
     }
+  }
 
-    g_buy_cards_done_clicked = 0;
-    while (g_buy_cards_done_clicked == 0)
+  g_buy_cards_done_clicked = 0;
+  while (g_buy_cards_done_clicked == 0)
+  {
+    s.selected_idx = -1;
+    UpdateMouseSnapshot();
+    s.mouse_x = g_mouse_x_snapshot;
+    s.mouse_y = g_mouse_y_snapshot;
+
+    if (g_mouse_button_down_mask != 0)
     {
-      s.selected_idx = -1;
-      UpdateMouseSnapshot();
-      s.mouse_x = g_mouse_x_snapshot;
-      s.mouse_y = g_mouse_y_snapshot;
-
-      if (g_mouse_button_down_mask == 0)
+      for (s.idx = 0; s.idx < s.item_count; s.idx = s.idx + 1)
       {
-        (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, 0);
+        if ((s.rects[s.idx].x0 <= s.mouse_x) && (s.mouse_x <= s.rects[s.idx].x1) &&
+            (s.rects[s.idx].y0 <= s.mouse_y) && (s.mouse_y <= s.rects[s.idx].y1))
+        {
+          s.selected_idx = s.idx;
+          break;
+        }
       }
-      else
-      {
-        s.idx = 0;
-        while (s.idx < s.item_count)
-        {
-          if ((s.rects[s.idx].x0 <= s.mouse_x) && (s.mouse_x <= s.rects[s.idx].x1) &&
-              (s.rects[s.idx].y0 <= s.mouse_y) && (s.mouse_y <= s.rects[s.idx].y1))
-          {
-            s.selected_idx = s.idx;
-            break;
-          }
-          s.idx = s.idx + 1;
-        }
 
-        if (s.selected_idx == -1)
-        {
-          (void)UpdateMenuControlSelection(s.mouse_x, s.mouse_y, g_mouse_button_down_mask);
-        }
+      if (s.selected_idx == -1)
+      {
+        (void)UpdateMenuControlSelection(s.mouse_x, s.mouse_y, g_mouse_button_down_mask);
+        continue;
+      }
+      /*else
+      {
+
       }
 
       if (s.selected_idx != -1)
       {
         break;
-      }
-    }
+      }*/
 
-    if (g_buy_cards_done_clicked != 0)
-    {
-      break;
-    }
+      sprintf(g_ui_message_buffer, gs_visit_citybuy_0077f1d0[2], g_town_shop_card_prices[s.idx]);
+      DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2, ScaleUiCoordinateFrom320(0xc5) / 2, ScaleUiCoordinateFrom320(0x10f) / 2, g_buy_cards_preview_panel_sprite);
+      DrawAdventureCardSized(g_town_shop_card_ids[s.idx], 0x7a, 0x29, 0x4b, 0x70, 1, (char *)&s_empty_buy_card_banner_0058aebc);
+      FUN_0057b590(PTR_DAT_005832b4, 0x1b, 0x140, 0x47, g_ui_message_buffer);
+      ClearInputAndWaitForMouseRelease();
+      s.key = PopNormalizedQueuedKeyInput();
 
-    sprintf(g_ui_message_buffer, gs_visit_citybuy_0077f1d0[2], g_town_shop_card_prices[s.selected_idx]);
-    DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2, ScaleUiCoordinateFrom320(0xc5) / 2, ScaleUiCoordinateFrom320(0x10f) / 2, g_buy_cards_preview_panel_sprite);
-    DrawAdventureCardSized(g_town_shop_card_ids[s.selected_idx], 0x7a, 0x29, 0x4b, 0x70, 1, (char *)&s_empty_buy_card_banner_0058aebc);
-    FUN_0057b590(PTR_DAT_005832b4, 0x1b, 0x140, 0x47, g_ui_message_buffer);
-    ClearInputAndWaitForMouseRelease();
-    s.key = PopNormalizedQueuedKeyInput();
-
-    s.accept_cursor = gs_visit_citybuy_0077f1d0[3];
-    s.accepted = 0;
-    while (*s.accept_cursor != '\0')
-    {
-      s.accept_scan = s.accept_cursor;
-      s.accept_cursor = s.accept_cursor + 1;
-      if ((int)(signed char)*s.accept_scan == s.key)
+      s.accept_cursor = gs_visit_citybuy_0077f1d0[3];
+      s.accepted = 0;
+      while (*s.accept_cursor != '\0')
       {
-        s.accepted = 1;
+        s.accept_scan = s.accept_cursor;
+        s.accept_cursor = s.accept_cursor + 1;
+        if ((int)(signed char)*s.accept_scan == s.key)
+        {
+          s.accepted = 1;
+        }
       }
-    }
 
-    if ((s.accepted != 0) && (g_town_shop_card_prices[s.selected_idx] <= Gold))
-    {
-      Gold = Gold - g_town_shop_card_prices[s.selected_idx];
-      s.deck_slot = AddCardToDeckSorted((unsigned int)g_town_shop_card_ids[s.selected_idx]);
-      deck[s.deck_slot] = deck[s.deck_slot] | 0x4000;
-      g_town_shop_card_ids[s.selected_idx] = -1;
-      g_town_shop_card_prices[s.selected_idx] = 0;
-
-      if (_DAT_007483e8 == s.selected_idx)
+      if ((s.accepted != 0) && (g_town_shop_card_prices[s.idx] <= Gold))
       {
-        g_town_hint_pair_index = -1;
-      }
+        Gold = Gold - g_town_shop_card_prices[s.idx];
+        s.deck_slot = AddCardToDeckSorted((unsigned int)g_town_shop_card_ids[s.idx]);
+        deck[s.deck_slot] = deck[s.deck_slot] | 0x4000;
+        g_town_shop_card_ids[s.idx] = -1;
+        g_town_shop_card_prices[s.idx] = 0;
 
-      g_town_slots[s.town_index].card_restock_timers[s.selected_idx + 3] =
-          RandomIntLessThan(5) * (g_shandalar_difficulty + 2) + g_quest_restock_timer;
-      RecountDeckCardTotals();
-      (void)DrawAdventureInterfaceLayout(1);
+        if (g_town_hint_offer_slot_index == s.idx)
+        {
+          g_town_hint_pair_index = -1;
+        }
+
+        g_town_slots[s.town_index].card_restock_timers[s.idx] =
+            RandomIntLessThan(5) * (g_shandalar_difficulty + 2) + g_quest_restock_timer;
+        RecountDeckCardTotals();
+        (void)DrawAdventureInterfaceLayout(1);
+      }
+      goto redraw_buy_cards_screen;
     }
+
+    (void)UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
   }
 
   (void)EndMenuContext();
@@ -1646,19 +1649,33 @@ void RunTownBuyCardsScreen(void)
 // FUNCTION: SHANDALAR 0x004f0b50
 int RenderBuyCardsDoneButton(AdvMenuControl *control, int mode)
 {
-  int w_scaled;
-  int h_scaled;
-  int x_left;
-  int y_top;
-  FacemakerWindowBounds *dst;
+  struct
+  {
+    int mouse_inside;           /* -0x1c */
+    int y_top;                  /* -0x18 */
+    int x_left;                 /* -0x14 */
+    int h_scaled;               /* -0x10 */
+    int w_scaled;               /* -0x0c */
+    EncodedImage *sprite;       /* -0x08 */
+    FacemakerWindowBounds *dst; /* -0x04 */
+  } s;
 
   if (g_menu_render_guard == 0)
   {
     if ((g_mouse_x < control->x) || ((control->x + control->width) < g_mouse_x))
     {
-      return 0;
+      s.mouse_inside = 0;
     }
-    if ((g_mouse_y < control->y) || ((control->y + control->height) < g_mouse_y))
+    else if ((g_mouse_y < control->y) || ((control->y + control->height) < g_mouse_y))
+    {
+      s.mouse_inside = 0;
+    }
+    else
+    {
+      s.mouse_inside = 1;
+    }
+
+    if (s.mouse_inside == 0)
     {
       return 0;
     }
@@ -1669,18 +1686,26 @@ int RenderBuyCardsDoneButton(AdvMenuControl *control, int mode)
     return 0;
   }
 
-  dst = (mode == 2) ? PTR_DAT_005832dc : PTR_DAT_005832b4;
-  w_scaled = ScaleUiCoordinateFrom320((int)g_buy_cards_done_button_sprites[0]->width) / 2;
-  h_scaled = ScaleUiCoordinateFrom320((int)g_buy_cards_done_button_sprites[0]->height) / 2;
-  x_left = global_screen_width / 2 - w_scaled / 2;
-  y_top = ScaleUiCoordinateFrom320(0x112) / 2;
+  if (mode != 2)
+  {
+    s.dst = PTR_DAT_005832b4;
+  }
+  else
+  {
+    s.dst = PTR_DAT_005832dc;
+  }
+  s.sprite = g_buy_cards_done_button_sprites[0];
+  s.w_scaled = ScaleUiCoordinateFrom320((int)s.sprite->width) / 2;
+  s.h_scaled = ScaleUiCoordinateFrom320((int)s.sprite->height) / 2;
+  s.x_left = global_screen_width / 2 - s.w_scaled / 2;
+  s.y_top = ScaleUiCoordinateFrom320(0x112) / 2;
 
-  DrawEncodedImageResampled(dst, x_left, y_top, w_scaled, h_scaled, g_buy_cards_done_button_sprites[mode]);
+  DrawEncodedImageResampled(s.dst, s.x_left, s.y_top, s.w_scaled, s.h_scaled, g_buy_cards_done_button_sprites[mode]);
 
   if (mode == 2)
   {
     FUN_00562736(0x12, 100, 100, 0);
-    BlitGraphicsRect(PTR_DAT_005832dc, x_left, y_top, w_scaled, h_scaled, PTR_DAT_005832b4, x_left, y_top);
+    BlitGraphicsRect(PTR_DAT_005832dc, s.x_left, s.y_top, s.w_scaled, s.h_scaled, PTR_DAT_005832b4, s.x_left, s.y_top);
     g_buy_cards_done_clicked = 1;
   }
   return 1;
@@ -1752,34 +1777,33 @@ int FindHintPairIndexForOfferCard(int card_internal_id)
         if ((DeckContainsCsvid(DAT_0097e450[s.hint_pair_index].first) == 0) &&
             ((DAT_0097df40[s.hint_pair_index] & (1 << (unsigned char)g_shandalar_difficulty)) != 0))
         {
-          s.deck_scan_index = 0;
-          while (s.deck_scan_index < 500)
+          for (s.deck_scan_index = 0; s.deck_scan_index < 500; s.deck_scan_index = s.deck_scan_index + 1)
           {
             s.deck_card_internal_id = deck[s.deck_scan_index] & 0xfff;
 
             if (((unsigned char)global_cards_data[s.deck_card_internal_id].type & 1) != 0)
             {
-              if (((signed char)global_cards_data[s.deck_card_internal_id].color &
-                   (signed char)global_cards_data[card_internal_id].color) != 0)
+              if (((signed char)global_cards_data[card_internal_id].color &
+                   (signed char)global_cards_data[s.deck_card_internal_id].color) != 0)
               {
+                s.result_hint_pair_index = s.hint_pair_index;
                 break;
               }
             }
-
-            s.deck_scan_index = s.deck_scan_index + 1;
           }
         }
       }
     }
   }
 
-  if (s.candidate_hint_pair_count != 0)
+  if (s.candidate_hint_pair_count == 0)
   {
-    s.result_hint_pair_index = RandomIntLessThan(s.candidate_hint_pair_count);
-    s.result_hint_pair_index = s.candidate_hint_pair_indices[s.result_hint_pair_index];
+    return -1;
   }
-
-  return s.result_hint_pair_index;
+  else
+  {
+    return s.candidate_hint_pair_indices[RandomIntLessThan(s.candidate_hint_pair_count)];
+  }
 }
 
 // FUNCTION: SHANDALAR 0x004f1bcc
@@ -1824,32 +1848,29 @@ int CalculateCardShopPrice(int card_index)
   switch (global_cards_data[card_index].type)
   {
   case 2:
-  case 'B':
-    base_value = (int)global_cards_data[card_index].power & 0xffffbfff;
-    if (base_value + 2 == 0)
+  case 66:
+    if (((int)global_cards_data[card_index].power & 0xffffbfff) + 2 != 0)
+    {
+      base_value = ((int)global_cards_data[card_index].power & 0xffffbfff) + 3;
+    }
+    else
     {
       base_value = (int)global_cards_data[card_index].power;
     }
-    else
-    {
-      base_value = base_value + 3;
-    }
 
-    creature_value = (int)global_cards_data[card_index].toughness & 0xffffbfff;
-    if (creature_value + 2 == 0)
+    if (((int)global_cards_data[card_index].toughness & 0xffffbfff) + 2 != 0)
+    {
+      creature_value = ((int)global_cards_data[card_index].toughness & 0xffffbfff) + 3;
+    }
+    else
     {
       creature_value = (int)global_cards_data[card_index].toughness;
     }
-    else
-    {
-      creature_value = creature_value + 3;
-    }
 
-    creature_value = (*(int *)global_cards_data[card_index].reserved4 + base_value) * creature_value;
-    price = creature_value * 5;
+    price = (global_cards_data[card_index].ai_base_value + base_value) * creature_value * 5;
     if ((global_cards_data[card_index].static_ability & 0x1f) != 0)
     {
-      price = (creature_value * 0xf) / 2;
+      price = (price * 3) / 2;
     }
     if ((global_cards_data[card_index].static_ability & 0x200) != 0)
     {
@@ -1876,27 +1897,30 @@ int CalculateCardShopPrice(int card_index)
     break;
 
   case 4:
-    base_value = abs((int)(char)global_cards_data[card_index].cc[1]) + (char)global_cards_data[card_index].cc[0] + *(int *)global_cards_data[card_index].reserved4;
-    base_value = base_value * 5 + 5;
-    price = base_value * 5;
+    price = (abs((int)(char)global_cards_data[card_index].cc[1]) + (char)global_cards_data[card_index].cc[0] + global_cards_data[card_index].ai_base_value + 1) * 25;
     if ((global_cards_data[card_index].extra_ability & 3) != 0)
     {
-      price = base_value * 10;
+      price *= 2;
     }
     break;
 
-  case '\b':
-    price = ((abs((int)(char)global_cards_data[card_index].cc[1]) + (char)global_cards_data[card_index].cc[0] + *(int *)global_cards_data[card_index].reserved4) * 4 + 4) * 5;
+  case 8:
+    price = (abs((int)(char)global_cards_data[card_index].cc[1]) + (char)global_cards_data[card_index].cc[0] + global_cards_data[card_index].ai_base_value + 1) * 20;
     break;
 
-  case '@':
-    price = 0xfa / (*(int *)global_cards_data[card_index].reserved4 + abs((int)(char)global_cards_data[card_index].cc[1]) + 2);
+  case 64:
+    price = 0xfa / (global_cards_data[card_index].ai_base_value + abs((int)(char)global_cards_data[card_index].cc[1]) + 2);
+
+    if (global_cards_data[card_index].extra_ability & 3)
+    {
+      // Nada
+    }
+
     break;
 
-  case 0x10:
-  case ' ':
-    price = *(int *)global_cards_data[card_index].reserved4 * 0x14 +
-            ((abs((int)(char)global_cards_data[card_index].cc[1]) + (char)global_cards_data[card_index].cc[0]) * 5 + 5) * 8;
+  case 16:
+  case 32:
+    price = global_cards_data[card_index].ai_base_value * 0x14 + (abs((int)(char)global_cards_data[card_index].cc[1]) + (char)global_cards_data[card_index].cc[0] + 1) * 40;
     if ((char)global_cards_data[card_index].cc[1] == -1)
     {
       price = (price * 3) / 2;
@@ -2177,7 +2201,7 @@ int RunTownServicesMenu(int town_index)
     {
       s.rand_slot = RandomIntLessThan(s.hint_pair_count);
       g_town_hint_pair_index = s.hint_pairs[s.rand_slot].hint_pair_index;
-      _DAT_007483e8 = s.hint_pairs[s.rand_slot].hint_pair_index;
+      g_town_hint_offer_slot_index = s.hint_pairs[s.rand_slot].slot_index;
     }
 
     /* Price each offer. */
@@ -2525,7 +2549,7 @@ int RunDuelEngine(unsigned int card_id, int creature_type)
     DAT_00742fc0 = 1;
     attacking_creature_count = 0;
     g_duel_selection_pending = attacking_creature_count;
-    DAT_00926668 = -1;
+    g_duel_extra_turn_player = -1;
     current_phase = 0;
 
     ShowWindow(g_main_window_hwnd, SW_SHOW);
@@ -2666,13 +2690,13 @@ void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, 
     initial_library[library_index][i].numcards = 0;
     initial_library[library_index][i].csvid = initial_library[library_index][i].numcards;
   }
-  ParseDeckFileIntoInitialLibrary(deck_path, (int)(initial_library + library_index), color_filter, speed_filter);
+  ParseDeckFileIntoInitialLibrary(deck_path, initial_library[library_index], color_filter, speed_filter);
 
   return;
 }
 
 // FUNCTION: SHANDALAR 0x00417e11
-int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned int color_filter, int speed_filter)
+int ParseDeckFileIntoInitialLibrary(char *deck_path, csvid_and_numcards *library_entries, unsigned int color_filter, int speed_filter)
 {
   struct
   {
@@ -2693,8 +2717,8 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
     int scan_ret;                        /* ebp-0x4 */
   } s;
 
-  strcpy(DAT_0097e340, deck_path);
-  s.f = fopen(deck_path, DAT_00580e8c);
+  strcpy(g_last_parsed_deck_path, deck_path);
+  s.f = fopen(deck_path, s_text_read_mode_00580e8c);
   if (s.f == (FILE *)0)
   {
     return 0;
@@ -2717,18 +2741,18 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
 
   do
   {
-    s.scan_ret = fscanf(s.f, s_______00580ea0, s.line);
+    s.scan_ret = fscanf(s.f, s_scan_until_newline_00580ea0, s.line);
     if (s.line[0] == '.')
     {
       if (s.line[1] != 'v')
       {
-        sscanf(s.line + 1, s__d__d_00580ea8, &s.csvid, &s.numcards);
+        sscanf(s.line + 1, s_deck_entry_scan_format_00580ea8, &s.csvid, &s.numcards);
         s.total_cards = s.total_cards + s.numcards;
 
         if (((s.current_color_filter == 0) || ((color_filter & s.current_color_filter) != 0)) && ((s.current_speed_filter == -1) || (s.current_speed_filter == speed_filter)))
         {
-          *(int *)(library_ptr + s.entry_index * 8) = s.csvid;
-          *(int *)(library_ptr + 4 + s.entry_index * 8) = s.numcards;
+          library_entries[s.entry_index].csvid = s.csvid;
+          library_entries[s.entry_index].numcards = s.numcards;
 
           s.card_index = FUN_0056c705(s.csvid);
           if (s.numcards == 0)
@@ -2751,11 +2775,10 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
           else
           {
             if ((s.last_basic_entry_index != 0xffffffff) &&
-                (*(int *)(library_ptr + 4 + s.last_basic_entry_index * 8) > s.numcards))
+                (library_entries[s.last_basic_entry_index].numcards > s.numcards))
             {
-              *(int *)(library_ptr + 4 + s.last_basic_entry_index * 8) =
-                  *(int *)(library_ptr + 4 + s.last_basic_entry_index * 8) -
-                  (int)((s.entry_index & 1) + s.numcards) / 2;
+              library_entries[s.last_basic_entry_index].numcards =
+                  library_entries[s.last_basic_entry_index].numcards - (int)((s.entry_index & 1) + s.numcards) / 2;
             }
           }
         }
@@ -2824,7 +2847,7 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
         s.deck_type = -2;
       }
     }
-    s.scan_ret = fscanf(s.f, DAT_00580f14, s.line);
+    s.scan_ret = fscanf(s.f, s_scan_newline_00580f14, s.line);
   } while ((((int)s.entry_index < 200) && (s.total_cards < 500) && (s.scan_ret != -1)) &&
            ((s.csvid != 0) || (s.numcards != 0)));
 
@@ -2849,15 +2872,18 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, int library_ptr, unsigned i
 // FUNCTION: SHANDALAR 0x004f6886
 void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, int mode)
 {
-  DIBSurface *dst_page;
-  DIBSurface *src_page;
-  int dst_right;
-  int dst_bottom;
-  EncodedImage *portrait_frame_sprite;
-  char face_path[24];
-  EncodedImage *face_sprite;
+  struct
+  {
+    DIBSurface *dst_page;                /* ebp-0x30 */
+    DIBSurface *src_page;                /* ebp-0x2c */
+    int dst_right;                       /* ebp-0x28 */
+    int dst_bottom;                      /* ebp-0x24 */
+    EncodedImage *face_sprite;           /* ebp-0x20 */
+    char face_path[24];                  /* ebp-0x1c */
+    EncodedImage *portrait_frame_sprite; /* ebp-0x4 */
+  } s;
 
-  LoadPcxIntoPage(1, s_prdfrmc_pic_0058b1d0 + (((tinted != 0) - 1) & 0xc));
+  LoadPcxIntoPage(1, (tinted != 0) ? "prdfrmc.pic" : "prdfrmb.pic");
   PTR_DAT_005832dc->font_slot = 4;
   PTR_DAT_005832b4->font_slot = 4;
 
@@ -2867,24 +2893,24 @@ void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, i
   }
 
   BeginSpriteEncodeSession();
-  portrait_frame_sprite = EncodeSpriteFromPage(1, 1, 0x15a, 0xb3, 0x23);
+  s.portrait_frame_sprite = EncodeSpriteFromPage(1, 1, 0x15a, 0xb3, 0x23);
   FinalizeSpriteEncodeSession();
 
-  dst_right = global_screen_width - ScaleUiCoordinate(0xb4);
-  dst_bottom = global_screen_height - ScaleUiCoordinate(0xb4);
+  s.dst_right = global_screen_width - ScaleUiCoordinate(0xb4);
+  s.dst_bottom = global_screen_height - ScaleUiCoordinate(0xb4);
 
   if (mode == 1)
   {
     PTR_DAT_005832b4->page_number = 1;
   }
 
-  DrawEncodedImageResampled(PTR_DAT_005832b4, x_320 - ScaleUiCoordinate((int)portrait_frame_sprite->width / 2), y_200,
-                            ScaleUiCoordinate((int)portrait_frame_sprite->width),
-                            ScaleUiCoordinate((int)portrait_frame_sprite->height), portrait_frame_sprite);
+  DrawEncodedImageResampled(PTR_DAT_005832b4, x_320 - ScaleUiCoordinate((int)s.portrait_frame_sprite->width / 2), y_200,
+                            ScaleUiCoordinate((int)s.portrait_frame_sprite->width),
+                            ScaleUiCoordinate((int)s.portrait_frame_sprite->height), s.portrait_frame_sprite);
 
   strcpy(g_ui_message_buffer, GetCreatureName(creature_type));
-  DrawFormattedTextNoShadowCentered(PTR_DAT_005832b4, (-(unsigned int)(tinted == 0) & 0x38) + 0xae, x_320,
-                                    y_200 + ScaleUiCoordinate((int)portrait_frame_sprite->height / 2), g_ui_message_buffer);
+  DrawFormattedTextNoShadowCentered(PTR_DAT_005832b4, (tinted == 0) ? 0xe6 : 0xae, x_320,
+                                    y_200 + ScaleUiCoordinate((int)s.portrait_frame_sprite->height / 2), g_ui_message_buffer);
 
   PTR_DAT_005832b4->font_slot = 1;
   if (mode == 1)
@@ -2892,50 +2918,50 @@ void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, i
     PTR_DAT_005832b4->page_number = 0;
   }
 
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 1, 0xa5, 0xb4, 0xb4, PTR_DAT_005832dc, dst_right, dst_bottom, ScaleUiCoordinate(0xb4),
+  StretchBlitGraphicsRect(PTR_DAT_005832dc, 1, 0xa5, 0xb4, 0xb4, PTR_DAT_005832dc, s.dst_right, s.dst_bottom, ScaleUiCoordinate(0xb4),
                           ScaleUiCoordinate(0xb4));
 
-  sprintf(face_path, s_faces__03d_pic_0058b204, creature_type);
-  LoadPcxResource(1, 0, global_screen_height - 0xf0, face_path, (void *)0);
+  sprintf(s.face_path, s_faces__03d_pic_0058b204, creature_type);
+  LoadPcxResource(1, 0, global_screen_height - 0xf0, s.face_path, (void *)0);
   BeginSpriteEncodeSession();
-  face_sprite = EncodeSpriteFromPage(1, 0, global_screen_height - 0xf0, 0x8a, 0xaa);
+  s.face_sprite = EncodeSpriteFromPage(1, 0, global_screen_height - 0xf0, 0x8a, 0xaa);
   FinalizeSpriteEncodeSession();
 
-  DrawEncodedImageResampled(PTR_DAT_005832dc, dst_right + ScaleUiCoordinate(0x15), dst_bottom + ScaleUiCoordinate(5), ScaleUiCoordinate(0x8a),
-                            ScaleUiCoordinate(0xaa), face_sprite);
+  DrawEncodedImageResampled(PTR_DAT_005832dc, s.dst_right + ScaleUiCoordinate(0x15), s.dst_bottom + ScaleUiCoordinate(5), ScaleUiCoordinate(0x8a),
+                            ScaleUiCoordinate(0xaa), s.face_sprite);
 
   if (tinted != 0)
   {
-    ApplyPortraitPaletteMap(PTR_DAT_005832dc, dst_right, dst_bottom, (unsigned int)ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), s_prdblk_pic_0058b224,
+    ApplyPortraitPaletteMap(PTR_DAT_005832dc, s.dst_right, s.dst_bottom, (unsigned int)ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), s_prdblk_pic_0058b224,
                             s_advfac64_pic_0058b214);
   }
 
   if (mode == 0)
   {
-    BlitGraphicsRect(PTR_DAT_005832dc, dst_right, dst_bottom, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), PTR_DAT_005832b4,
+    BlitGraphicsRect(PTR_DAT_005832dc, s.dst_right, s.dst_bottom, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), PTR_DAT_005832b4,
                      x_320 - ScaleUiCoordinate(0x5a), y_200 + ScaleUiCoordinate(0x2d));
   }
   else
   {
-    src_page = g_graphics_pages[PTR_DAT_005832dc->page_number];
-    dst_page = g_graphics_pages[PTR_DAT_005832b4->page_number];
+    s.src_page = g_graphics_pages[PTR_DAT_005832dc->page_number];
+    s.dst_page = g_graphics_pages[PTR_DAT_005832b4->page_number];
 
-    BlitGraphicsRect(PTR_DAT_005832dc, dst_right, dst_bottom, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), PTR_DAT_005832dc,
+    BlitGraphicsRect(PTR_DAT_005832dc, s.dst_right, s.dst_bottom, ScaleUiCoordinate(0xb4), ScaleUiCoordinate(0xb4), PTR_DAT_005832dc,
                      x_320 - ScaleUiCoordinate(0x5a), y_200 + ScaleUiCoordinate(0x2d));
-    BlitRectByRandomTileOrderInPlace(dst_page->hTempDC, x_320 - ScaleUiCoordinate(0x5a), y_200 + ScaleUiCoordinate(0x2d), ScaleUiCoordinate(0xb4),
-                                     ScaleUiCoordinate(0xb4), 3, 3, src_page->hTempDC);
+    BlitRectByRandomTileOrderInPlace(s.dst_page->hTempDC, x_320 - ScaleUiCoordinate(0x5a), y_200 + ScaleUiCoordinate(0x2d), ScaleUiCoordinate(0xb4),
+                                     ScaleUiCoordinate(0xb4), 3, 3, s.src_page->hTempDC);
 
     if (mode == 1)
     {
-      BlitRectByRandomTileOrderInPlace(dst_page->hTempDC,
-                                       x_320 - ScaleUiCoordinate((int)portrait_frame_sprite->width / 2 + -0xb), y_200,
-                                       ScaleUiCoordinate(portrait_frame_sprite->width + -0x16),
-                                       ScaleUiCoordinate((int)portrait_frame_sprite->height), 2, 2, src_page->hTempDC);
+      BlitRectByRandomTileOrderInPlace(s.dst_page->hTempDC,
+                                       x_320 - ScaleUiCoordinate((int)s.portrait_frame_sprite->width / 2 + -0xb), y_200,
+                                       ScaleUiCoordinate(s.portrait_frame_sprite->width + -0x16),
+                                       ScaleUiCoordinate((int)s.portrait_frame_sprite->height), 2, 2, s.src_page->hTempDC);
     }
   }
 
-  FreeSpriteBlob(face_sprite);
-  FreeSpriteBlob(portrait_frame_sprite);
+  FreeSpriteBlob(s.face_sprite);
+  FreeSpriteBlob(s.portrait_frame_sprite);
 }
 
 // FUNCTION: SHANDALAR 0x005629c3
@@ -3544,7 +3570,7 @@ LAB_00531ee7:
       if ((g_current_quest_type == 0) || (g_current_quest_type == 2) ||
           ((g_current_quest_type == 1) &&
            (FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
-                                             (unsigned char)(1 << (g_current_quest_destination & 3))) != 0)))
+                                             1 << (g_current_quest_destination & 3)))))
       {
         g_current_quest_data =
             GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
@@ -4351,9 +4377,10 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
         }
         break;
       case 2:
-      default:
         s.copies = 1;
         break;
+      default:
+        s.copies = 1;
       }
 
       if ((s.required < 2) && ((global_cards_data[s.card_id].extra_ability & 0x400) != 0))
@@ -4379,30 +4406,13 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
         }
       }
 
-      /* numerator = price * 0x4e2 (1250) via *5 chain, preserved across the RNG call */
-      s.tile_magic_index = s.price;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index * 4;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index * 4;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index * 4;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index * 4;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index;
-
-      s.random_color = RandomIntLessThan(((g_world_player_y & 0x1f) * (g_world_player_x & 0x1f)) / 10);
-      s.price = s.tile_magic_index / (s.random_color + 0x2ee);
+      s.price = (s.price * 0x4e2) / (RandomIntLessThan(((g_world_player_y & 0x1f) * (g_world_player_x & 0x1f)) / 10) + 0x2ee);
 
       s.price = ClampIntToRange((s.price / 0x32) * 5, 5, 1000);
 
       s.price = s.copies * s.price;
 
-      /* required*0x32, then max(required*0x32, copies*price). */
-      s.tile_magic_index = s.required;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index * 4;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index * 4;
-      s.tile_magic_index = s.tile_magic_index + s.tile_magic_index;
-      if (s.tile_magic_index > s.price)
-      {
-        s.price = s.tile_magic_index;
-      }
+      s.price = MAX(s.required * 0x32, s.price);
 
       if (payment_color >= 0)
       {
@@ -4431,15 +4441,9 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
       {
         s.can_afford = 0;
       }
-      if (payment_color == -1)
+      if ((payment_color == -1) && (s.price > Gold))
       {
-        if (Gold >= s.price)
-        {
-        }
-        else
-        {
-          s.can_afford = 0;
-        }
+        s.can_afford = 0;
       }
 
       if (s.can_afford != 0)
@@ -4476,13 +4480,10 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
           g_amulet_inventory[s.random_color] = g_amulet_inventory[s.random_color] - 1;
         } while (s.required != 0);
       }
-      if (payment_color == -1)
+      if ((payment_color == -1) && (s.price <= Gold))
       {
-        if (Gold >= s.price)
-        {
-          s.can_afford = 1;
-          Gold = Gold - s.price;
-        }
+        s.can_afford = 1;
+        Gold = Gold - s.price;
       }
 
       if (s.can_afford == 0)
@@ -4491,19 +4492,13 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
       }
     }
 
-    s.i = 0;
-    while (1)
+    for (s.i = 0; s.copies > s.i; s.i = s.i + 1)
     {
-      if (s.copies <= s.i)
-      {
-        break;
-      }
       s.random_color = AddCardToDeckSorted(s.card_id);
       if (s.random_color != -1)
       {
         deck[s.random_color] = deck[s.random_color] | 0x4000;
       }
-      s.i = s.i + 1;
     }
 
     (void)RecountDeckCardTotals();
@@ -4810,10 +4805,10 @@ int VisitTownSlot(int town_index)
 
     if ((g_current_quest_type == 1) &&
         FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
-                                         (unsigned char)(1 << (g_current_quest_destination & 3))))
+                                         1 << (g_current_quest_destination & 3)))
     {
       s.found_deck_slot = FindDeckSlotForQuestColorAndType((unsigned char)g_current_quest_color,
-                                                           (unsigned char)(1 << (g_current_quest_destination & 3)));
+                                                           (1 << (g_current_quest_destination & 3)));
       g_amulet_inventory[g_current_quest_color - 1] += 1;
 
       sprintf(g_ui_message_buffer, gs_visit_0077c4f0[0x13], global_cards_data[deck[s.found_deck_slot - 1] & 0xfff].name);

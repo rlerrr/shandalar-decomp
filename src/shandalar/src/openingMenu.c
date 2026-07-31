@@ -247,7 +247,7 @@ EncodedImage *g_loadsave_frame_sprites[9];
 // GLOBAL: SHANDALAR 0x005aa4a0
 int g_loadsave_slot_has_data[10];
 // GLOBAL: SHANDALAR 0x005aa4c8
-EncodedImage *g_loadsave_slot_button_state_sprites[6];
+EncodedImage *g_loadsave_slot_button_state_sprites[2][3];
 // GLOBAL: SHANDALAR 0x005aa4e0
 int g_loadsave_cursor_index;
 // GLOBAL: SHANDALAR 0x005aa4e4
@@ -1012,84 +1012,83 @@ int HandleColorMenuControlActivate(AdvMenuControl *control)
 // FUNCTION: SHANDALAR 0x004a21ad
 int RunFacemakerFlow(void)
 {
-  unsigned int is_topmost_window;
-  EncodedImage *selected_menu_entry;
-  int x;
-  int y;
-  int spawn_result;
-  int image_width;
-  int image_height;
-  int scaled_face_x;
-  int screen_center_x;
-  int parse_result;
-  int old_page_rect[4];
-  char *pedestal_images[6];
-  char *pixel;
-  char facemaker_path[MAX_PATH];
-  FacemakerWindowBounds page4_bounds;
-  FacemakerWindowBounds *page4_bounds_ptr;
-  DIBSurface *page4_dib;
-  EncodedImage *page2_sprite;
-  void *load_palette_data;
+  struct
+  {
+    int old_page_rect[3];
+    char *pedestal_images[6];
+    int parse_result;
+    FacemakerWindowBounds page4_bounds;
+    FacemakerWindowBounds *page4_bounds_ptr;
+    int y;
+    DIBSurface *page4_dib;
+    int x;
+    int image_height;
+    int image_width;
+    char *pixel;
+    EncodedImage *selected_menu_entry;
+    char facemaker_path[MAX_PATH];
+    int spawn_result;
+    EncodedImage *page2_sprite;
+    unsigned int is_topmost_window;
+  } s;
 
   DelayUiTicks(0x14);
-  set_global_base_directory(facemaker_path);
-  strcat(facemaker_path, "\\Facemaker.exe");
+  set_global_base_directory(s.facemaker_path);
+  strcat(s.facemaker_path, "\\Facemaker.exe");
 
-  while (1)
+  do
   {
-    is_topmost_window = (unsigned int)((GetWindowLongA(g_main_window_hwnd, -0x14) & 8) != 0);
-    if (is_topmost_window != 0)
+    s.is_topmost_window = (unsigned int)((GetWindowLongA(g_main_window_hwnd, -0x14) & 8) != 0);
+    if (s.is_topmost_window != 0)
     {
       SetWindowPos(g_main_window_hwnd, (HWND)-2, 0, 0, 0, 0, 3);
     }
 
-    spawn_result = (int)_spawnl(0, facemaker_path, facemaker_path, "/S", 0);
+    s.spawn_result = (int)_spawnl(0, s.facemaker_path, s.facemaker_path, "/S", 0);
     BringWindowToTop(g_main_window_hwnd);
     SetForegroundWindow(g_main_window_hwnd);
     SetFocus(g_main_window_hwnd);
-    if (spawn_result == -1)
+    if (s.spawn_result == -1)
     {
       return -1;
     }
 
-    page4_bounds.page_number = 4;
-    page4_bounds.clip_left = 0;
-    page4_bounds.clip_top = 0;
-    page4_bounds.max_x = 800;
-    page4_bounds.max_y = 600;
-    page4_bounds.draw_shadow_enabled = 1;
-    page4_bounds.text_color = 0x0f;
-    page4_bounds.unk_1c = 4;
-    page4_bounds.font_slot = 0;
-    page4_bounds_ptr = &page4_bounds;
+    s.page4_bounds.page_number = 4;
+    s.page4_bounds.clip_left = 0;
+    s.page4_bounds.clip_top = 0;
+    s.page4_bounds.max_x = 800;
+    s.page4_bounds.max_y = 600;
+    s.page4_bounds.draw_shadow_enabled = 1;
+    s.page4_bounds.text_color = 0x0f;
+    s.page4_bounds.unk_1c = 4;
+    s.page4_bounds.font_slot = 0;
+    s.page4_bounds_ptr = &s.page4_bounds;
 
-    selected_menu_entry = g_face_preview_sprite_group[g_menu_selection_value];
-    (void)selected_menu_entry;
+    s.selected_menu_entry = g_face_preview_sprite_group[g_menu_selection_value];
+    (void)s.selected_menu_entry;
 
     BeginSpriteEncodeSession();
-    page2_sprite = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
+    s.page2_sprite = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
     FinalizeSpriteEncodeSession();
 
-    image_width = 0x89;
-    image_height = 0xa9;
-    page4_dib = (DIBSurface *)CreateGraphicsPage(4, 0x112, 0xa9, 8);
-    SetGraphicsPage(4, page4_dib);
-    PushGraphicsClipRect((AdvMenuRect *)old_page_rect, page4_bounds_ptr, 0, 0, image_width * 2, image_height);
+    s.image_width = 0x89;
+    s.image_height = 0xa9;
+    s.page4_dib = (DIBSurface *)CreateGraphicsPage(4, s.image_width * 2, s.image_height, 8);
+    SetGraphicsPage(4, s.page4_dib);
+    PushGraphicsClipRect((AdvMenuRect *)s.old_page_rect, s.page4_bounds_ptr, 0, 0, s.image_width * 2, s.image_height);
     LoadPcxIntoPageNoPalette("menu4.pic");
-    FillGraphicsRect(page4_bounds_ptr, 0, 0, image_width, image_height, 0);
-    BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x8a, 0xaa, page4_bounds_ptr, 0, 0);
+    FillGraphicsRect(s.page4_bounds_ptr, 0, 0, s.image_width, s.image_height, 0);
+    BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x8a, 0xaa, s.page4_bounds_ptr, 0, 0);
 
-    for (y = 0; y < image_height; y = y + 1)
+    for (s.y = 0; s.y < s.image_height; s.y = s.y + 1)
     {
-      pixel = (char *)g_graphics_pages[4]->pBits + (g_graphics_pages[4]->width + g_graphics_pages[4]->rowPadding) * y;
-      for (x = 0; x < image_width; x = x + 1)
+      s.pixel = (char *)g_graphics_pages[4]->pBits + (g_graphics_pages[4]->width + g_graphics_pages[4]->rowPadding) * s.y;
+      for (s.x = 0; s.image_width > s.x; s.x = s.x + 1, s.pixel = s.pixel + 1)
       {
-        if (*pixel == '\0')
+        if ((unsigned char)*s.pixel == '\0')
         {
-          pixel[image_width] = (char)0xff;
+          s.pixel[s.image_width] = (char)0xff;
         }
-        pixel = pixel + 1;
       }
     }
 
@@ -1099,24 +1098,21 @@ int RunFacemakerFlow(void)
     BuildFacemakerPortraitSprites(PTR_DAT_00583304);
     g_graphics_pages[4] = (DIBSurface *)0;
 
-    pedestal_images[1] = "prdblk.pic";
-    pedestal_images[2] = "prdblu.pic";
-    pedestal_images[3] = "prdgrn.pic";
-    pedestal_images[4] = "prdrd.pic";
-    pedestal_images[5] = "prdwt.pic";
+    s.pedestal_images[1] = "prdblk.pic";
+    s.pedestal_images[2] = "prdblu.pic";
+    s.pedestal_images[3] = "prdgrn.pic";
+    s.pedestal_images[4] = "prdrd.pic";
+    s.pedestal_images[5] = "prdwt.pic";
 
     LoadPcxIntoPageNoPalette("pedstls.pic");
-    load_palette_data = (g_graphics_bpp == 8) ? (void *)&g_palette_data_words : (void *)1;
     LoadPcxResource(1, global_screen_width - 0x280, global_screen_height - 0x1e0,
-                    pedestal_images[((int *)g_color_menu_selection_to_deck_color - 1)[g_menu_selection_value]],
-                    load_palette_data);
+                    s.pedestal_images[((int *)g_color_menu_selection_to_deck_color - 1)[g_menu_selection_value]],
+                    (g_graphics_bpp == 8) ? &g_palette_data_words : 1);
     StretchBlitGraphicsRect(PTR_DAT_005832dc, global_screen_width - 0x280, global_screen_height - 0x1e0, 0x280, 0x1e0,
                             PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height);
 
-    screen_center_x = global_screen_width / 2;
-    scaled_face_x = ScaleUiCoordinate(0x89);
-    DrawEncodedImageResampled(PTR_DAT_005832dc, screen_center_x - scaled_face_x, ScaleUiCoordinate(0x14),
-                              ScaleUiCoordinate(0x112), ScaleUiCoordinate(0x152), page2_sprite);
+    DrawEncodedImageResampled(PTR_DAT_005832dc, global_screen_width / 2 - ScaleUiCoordinate(0x89), ScaleUiCoordinate(0x14),
+                              ScaleUiCoordinate(0x112), ScaleUiCoordinate(0x152), s.page2_sprite);
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
 
     memset(g_name_entry_buffer, 0, 0x40);
@@ -1127,12 +1123,8 @@ int RunFacemakerFlow(void)
     PTR_DAT_005832b4->font_slot = 1;
     ReadGraphicsScanline((unsigned int *)g_name_entry_buffer, 2, 1, 200, 0x3f);
 
-    parse_result = RunNameEntryDialog(g_name_entry_buffer);
-    if (parse_result != -1)
-    {
-      break;
-    }
-  }
+    s.parse_result = RunNameEntryDialog(g_name_entry_buffer);
+  } while (s.parse_result == -1);
 
   strcpy(g_player_name, g_name_entry_buffer);
   return g_player_is_male;
@@ -1319,28 +1311,28 @@ int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsign
     s.run_length = 0;
     for (s.x = 0; s.x < (int)width; s.x = s.x + 1)
     {
-      if (*((unsigned char *)s.local_3f4 + s.x) != '\0')
+      if (*((unsigned char *)s.local_3f4 + s.x) == '\0')
       {
-        s.run_length = s.run_length + 1;
-      }
-      else
-      {
-        if (s.run_length == 0)
+        if (s.run_length != 0)
         {
+          WriteGraphicsScanline(s.run_start, dst->page_number, ((int)s.run_start - (int)s.local_3f4) + dst_x, dst_y + s.row, s.run_length);
+          s.run_length = 0;
           s.run_start = (unsigned int *)((char *)s.local_3f4 + s.x);
         }
         else
         {
-          WriteGraphicsScanline(s.run_start, dst->page_number, (int)s.run_start + (dst_x - (int)s.local_3f4), dst_y + s.row, s.run_length);
-          s.run_length = 0;
           s.run_start = (unsigned int *)((char *)s.local_3f4 + s.x);
         }
+      }
+      else
+      {
+        s.run_length = s.run_length + 1;
       }
     }
 
     if (s.run_length != 0)
     {
-      WriteGraphicsScanline(s.run_start, dst->page_number, (int)s.run_start + (dst_x - (int)s.local_3f4), dst_y + s.row, s.run_length);
+      WriteGraphicsScanline(s.run_start, dst->page_number, ((int)s.run_start - (int)s.local_3f4) + dst_x, dst_y + s.row, s.run_length);
     }
   }
 
@@ -1590,7 +1582,7 @@ int DrawLoadSaveSlotEntry(int slot_index, int visual_state)
     s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
     break;
   case 2:
-    s.slot_state_sprites = g_loadsave_slot_button_state_sprites + 3;
+    s.slot_state_sprites = &g_loadsave_slot_button_state_sprites[1];
     break;
   case 3:
     s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
@@ -1663,7 +1655,7 @@ int DrawLoadSaveFrame(FacemakerWindowBounds *window, int x, int y, int width, in
                             (int)s.sprite_headers[2].height, s.sprite_table[2]);
 
   s.cursor_y = (int)s.sprite_headers[1].height + y;
-  s.right_span_x = (width + x) - (int)s.sprite_headers[8].width;  
+  s.right_span_x = (width + x) - (int)s.sprite_headers[8].width;
   while (s.cursor_y < (height + y) - (int)s.sprite_headers[3].height)
   {
     DrawEncodedImageResampled(window, x, s.cursor_y, (int)s.sprite_headers[8].width, (int)s.sprite_headers[8].height, s.sprite_table[8]);
@@ -1696,10 +1688,9 @@ int RunLoadSaveMenu(int param_1)
 {
   struct
   {
-    size_t text_index;
     int menu_control_count;
-    int temp_int;
-    unsigned int key_code;
+    size_t text_index;
+    int key_code;
     char saved_slot_name[0xff];
     char edit_buffer[0x101];
     int selected_slot;
@@ -1713,7 +1704,6 @@ int RunLoadSaveMenu(int param_1)
     int slot_index;
     FILE *save_desc_file;
   } s;
-  EncodedImage *sprite;
 
   s.map_path = g_loadsave_magic_map_path;
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
@@ -1735,7 +1725,7 @@ int RunLoadSaveMenu(int param_1)
   {
     for (s.slot_index = 0; s.slot_index < 3; s.slot_index = s.slot_index + 1)
     {
-      *(EncodedImage **)((char *)g_loadsave_slot_button_state_sprites + s.row * 0xc + s.slot_index * 4) =
+      g_loadsave_slot_button_state_sprites[s.row][s.slot_index] =
           EncodeSpriteFromPage(1, s.slot_index * 0x41 + 1, s.row * 0x1c + 0x55, 0x1e, 0x1b);
     }
   }
@@ -1763,10 +1753,8 @@ int RunLoadSaveMenu(int param_1)
     fgets(g_loadsave_slot_descriptions[s.slot_index], 0x40, s.save_desc_file);
     s.text_index = strlen(g_loadsave_slot_descriptions[s.slot_index]);
     (&g_loadsave_slot_descriptions[s.slot_index][0])[-1 + s.text_index] = '\0';
-    s.temp_int = FUN_004ece40(s.slot_index + 4);
-    s.map_path[5] = (char)s.temp_int;
-    s.temp_int = FileExists(s.map_path);
-    g_loadsave_slot_has_data[s.slot_index] = s.temp_int;
+    s.map_path[5] = (char)FUN_004ece40(s.slot_index + 4);
+    g_loadsave_slot_has_data[s.slot_index] = FileExists(s.map_path);
     if (g_loadsave_slot_has_data[s.slot_index] == 0)
     {
       strcpy(g_loadsave_slot_descriptions[s.slot_index], gs_loadsave_0077d1b0[2]);
@@ -1781,27 +1769,23 @@ int RunLoadSaveMenu(int param_1)
   {
     for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
     {
-      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].x);
-      g_loadsave_menu_controls[s.slot_index].x = s.temp_int;
-      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].y);
-      g_loadsave_menu_controls[s.slot_index].y = s.temp_int;
-      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].width);
-      g_loadsave_menu_controls[s.slot_index].width = s.temp_int;
-      s.temp_int = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].height);
-      g_loadsave_menu_controls[s.slot_index].height = s.temp_int;
+      g_loadsave_menu_controls[s.slot_index].x = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].x);
+      g_loadsave_menu_controls[s.slot_index].y = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].y);
+      g_loadsave_menu_controls[s.slot_index].width = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].width);
+      g_loadsave_menu_controls[s.slot_index].height = ScaleUiCoordinate(g_loadsave_menu_controls[s.slot_index].height);
     }
   }
 
 restart_menu_loop:
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
-  if ((param_1 == 0) && (g_loadsave_skip_esc == 0))
+  if ((param_1 != 0) || (g_loadsave_skip_esc != 0))
   {
-    s.menu_control_count = 10;
+    s.menu_control_count = 0xb;
   }
   else
   {
-    s.menu_control_count = 0xb;
+    s.menu_control_count = 10;
   }
   AddMenuControlsToContext(g_loadsave_menu_controls, s.menu_control_count, s.menu_context);
   for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
@@ -1830,158 +1814,116 @@ restart_menu_loop:
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
     return -1;
   }
-  if (param_1 == 0)
+  if (param_1 != 0)
   {
-  save_and_return:
-    fclose(s.save_desc_file);
-    FreeSpriteBlob(g_loadsave_frame_sprites[0]);
-    AnimatePaletteToColor(0, g_default_palette_fade_steps);
-    return g_loadsave_menu_selection;
-  }
 
-  s.selected_slot = g_loadsave_menu_selection - 4;
-  strcpy(s.saved_slot_name, g_loadsave_slot_descriptions[s.selected_slot]);
-  g_loadsave_edit_active = 1;
-  memset(s.edit_buffer + 1, 0, 0x100);
-  strcpy(s.edit_buffer + 1, g_loadsave_slot_descriptions[s.selected_slot]);
-  s.temp_int = strcmp(s.edit_buffer + 1, gs_loadsave_0077d1b0[2]);
-  if (s.temp_int == 0)
-  {
-    s.edit_buffer[1] = '\0';
-  }
-  g_loadsave_cursor_index = strlen(s.edit_buffer + 1);
-  DrawLoadSaveSlotEntry(s.selected_slot, 2);
-  do
-  {
-    s.key_code = PopQueuedKeyInput();
-    s.text_index = g_loadsave_cursor_index;
-    if (s.key_code == 0x1c0d)
+    s.selected_slot = g_loadsave_menu_selection - 4;
+    strcpy(s.saved_slot_name, g_loadsave_slot_descriptions[s.selected_slot]);
+    g_loadsave_edit_active = 1;
+    memset(s.edit_buffer + 1, 0, 0x100);
+    strcpy(s.edit_buffer + 1, g_loadsave_slot_descriptions[s.selected_slot]);
+    if (strcmp(s.edit_buffer + 1, gs_loadsave_0077d1b0[2]) == 0)
     {
-      g_loadsave_edit_active = 0;
-      fseek(s.save_desc_file, 0, 0);
-      for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
-      {
-        fprintf(s.save_desc_file, g_loadsave_description_line_format, g_loadsave_slot_descriptions[s.slot_index]);
-      }
-      goto save_and_return;
+      s.edit_buffer[1] = '\0';
     }
-    if ((int)s.key_code < 0xe09)
+    g_loadsave_cursor_index = strlen(s.edit_buffer + 1);
+    DrawLoadSaveSlotEntry(s.selected_slot, 2);
+
+    while ((s.key_code = PopQueuedKeyInput()) != 0x1c0d)
     {
-      if (s.key_code == 0xe08)
+      switch (s.key_code)
       {
-        if (g_loadsave_cursor_index != 0)
+      case 0x4b00:
+        if (g_loadsave_cursor_index >= 0)
         {
           g_loadsave_cursor_index = g_loadsave_cursor_index - 1;
-          strcpy(s.edit_buffer + s.text_index, s.edit_buffer + s.text_index + 1);
         }
-      }
-      else
-      {
-        if (s.key_code == 0x11b)
-        {
-          break;
-        }
-        goto handle_name_char;
-      }
-    }
-    else if ((int)s.key_code < 0xf10)
-    {
-      if (s.key_code == 0xf0f)
-      {
-        g_loadsave_cursor_index = g_loadsave_cursor_index - 8;
-        if ((int)g_loadsave_cursor_index < 1)
-        {
-          g_loadsave_cursor_index = 0;
-        }
-      }
-      else
-      {
-        if (s.key_code != 0xf09)
-        {
-          goto handle_name_char;
-        }
-        g_loadsave_cursor_index = g_loadsave_cursor_index + 8;
-      }
-    }
-    else if ((int)s.key_code < 0x4701)
-    {
-      if (s.key_code == 0x4700)
-      {
-        g_loadsave_cursor_index = 0;
-      }
-      else if (s.key_code != 0x1c0d)
-      {
-        goto handle_name_char;
-      }
-    }
-    else if ((int)s.key_code < 0x4d01)
-    {
-      if (s.key_code == 0x4d00)
-      {
-        s.text_index = strlen(s.edit_buffer + 1);
-        if (s.text_index == g_loadsave_cursor_index)
+        break;
+
+      case 0x4d00:
+        if (strlen(s.edit_buffer + 1) == g_loadsave_cursor_index)
         {
           strcat(s.edit_buffer + 1, g_loadsave_space_string);
         }
-        g_loadsave_cursor_index = g_loadsave_cursor_index + 1;
-      }
-      else
-      {
-        if (s.key_code != 0x4b00)
+        g_loadsave_cursor_index++;
+        break;
+
+      case 0xf09:
+        g_loadsave_cursor_index += 8;
+        break;
+
+      case 0xf0f:
+        g_loadsave_cursor_index -= 8;
+        g_loadsave_cursor_index = MAX(g_loadsave_cursor_index, 0);
+        break;
+
+      case 0xe08:
+        if (g_loadsave_cursor_index == 0)
         {
-          goto handle_name_char;
+          break;
         }
-        if (-1 < (int)g_loadsave_cursor_index)
-        {
-          g_loadsave_cursor_index = g_loadsave_cursor_index - 1;
-        }
-      }
-    }
-    else if (s.key_code == 0x4f00)
-    {
-      g_loadsave_cursor_index = strlen(s.edit_buffer + 1);
-    }
-    else if (s.key_code == 0x5200)
-    {
-      g_loadsave_insert_mode = g_loadsave_insert_mode ^ 1;
-    }
-    else
-    {
-      if (s.key_code != 0x5300)
-      {
-        goto handle_name_char;
-      }
-      s.text_index = strlen(s.edit_buffer + 1);
-      if ((int)g_loadsave_cursor_index < (int)s.text_index)
-      {
+
+        g_loadsave_cursor_index--;
         strcpy(s.edit_buffer + g_loadsave_cursor_index + 1, s.edit_buffer + g_loadsave_cursor_index + 2);
-      }
-    }
-    goto redraw_edited_slot;
+        break;
 
-  handle_name_char:
-    s.key_code = s.key_code & 0xff;
-    if ((((0x40 < s.key_code) && (s.key_code < 0x5b)) || ((0x60 < s.key_code) && (s.key_code < 0x7b))) ||
-        (((0x2f < s.key_code) && (s.key_code < 0x3a)) || (s.key_code == 0x20)))
+      case 0x5300:
+        if (g_loadsave_cursor_index < (int)strlen(s.edit_buffer + 1))
+        {
+          strcpy(s.edit_buffer + g_loadsave_cursor_index + 1, s.edit_buffer + g_loadsave_cursor_index + 2);
+        }
+        break;
+
+      case 0x5200:
+        g_loadsave_insert_mode = g_loadsave_insert_mode ^ 1;
+        break;
+
+      case 0x4700:
+        g_loadsave_cursor_index = 0;
+        break;
+
+      case 0x4f00:
+        g_loadsave_cursor_index = strlen(s.edit_buffer + 1);
+        break;
+
+      case 0x11b:
+        g_loadsave_edit_active = 0;
+        strcpy(g_loadsave_slot_descriptions[s.selected_slot], s.saved_slot_name);
+
+      case 0x1c0d:
+        goto restart_menu_loop;
+
+      default:
+        s.key_code = s.key_code & 0xff;
+        if ((((s.key_code >= 0x41) && (s.key_code <= 0x5a)) || ((s.key_code >= 0x61) && (s.key_code <= 0x7a))) ||
+            (((s.key_code >= 0x30) && (s.key_code <= 0x39)) || (s.key_code == 0x20)))
+        {
+          if (g_loadsave_insert_mode != 0)
+          {
+            memmove(s.edit_buffer + g_loadsave_cursor_index + 2, s.edit_buffer + g_loadsave_cursor_index + 1,
+                    (0x100 - g_loadsave_cursor_index) - 1);
+          }
+          s.edit_buffer[g_loadsave_cursor_index + 1] = (char)s.key_code;
+          g_loadsave_cursor_index = g_loadsave_cursor_index + 1;
+        }
+      }
+
+      strcpy(g_loadsave_slot_descriptions[s.selected_slot], s.edit_buffer + 1);
+      DrawLoadSaveSlotEntry(s.selected_slot, 2);
+    }
+
+    g_loadsave_edit_active = 0;
+    fseek(s.save_desc_file, 0, 0);
+    for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
     {
-      if (g_loadsave_insert_mode != 0)
-      {
-        memmove(s.edit_buffer + g_loadsave_cursor_index + 2, s.edit_buffer + g_loadsave_cursor_index + 1,
-                0xff - g_loadsave_cursor_index);
-      }
-      s.temp_int = (char)s.key_code;
-      s.edit_buffer[g_loadsave_cursor_index + 1] = (char)s.temp_int;
-      g_loadsave_cursor_index = g_loadsave_cursor_index + 1;
+      fprintf(s.save_desc_file, g_loadsave_description_line_format, g_loadsave_slot_descriptions[s.slot_index]);
     }
+  }
 
-  redraw_edited_slot:
-    strcpy(g_loadsave_slot_descriptions[s.selected_slot], s.edit_buffer + 1);
-    DrawLoadSaveSlotEntry(s.selected_slot, 2);
-  } while (1);
-
-  g_loadsave_edit_active = 0;
-  strcpy(g_loadsave_slot_descriptions[s.selected_slot], s.saved_slot_name);
-  goto restart_menu_loop;
+  fclose(s.save_desc_file);
+  FreeSpriteBlob(g_loadsave_frame_sprites[0]);
+  AnimatePaletteToColor(0, g_default_palette_fade_steps);
+  return g_loadsave_menu_selection;
 }
 
 // FUNCTION: SHANDALAR 0x004a97e7

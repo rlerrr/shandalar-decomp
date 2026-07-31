@@ -1031,18 +1031,19 @@ void StartWizardTownSiege(void)
 {
   struct
   {
+    int unused_stack_slot;
     int ruled_by_color_count[7];
-    int lair_world_x_by_color[7];
-    int lair_world_y_by_color[7];
     int town_index;
     int color;
     int best_score;
     int nearest_distance;
     int best_color;
-    int best_town_index;
+    int lair_world_y_by_color[7];
+    int lair_world_x_by_color[7];
+    int scan_index;
     int creature_tier;
     int dist;
-    int scan_index;
+    int best_town_index;
     int score;
   } s;
 
@@ -1068,55 +1069,63 @@ void StartWizardTownSiege(void)
       s.lair_world_y_by_color[s.color] = g_town_slots[s.scan_index].world_y;
     }
 
-    if (*(char *)((char *)&g_town_slots[s.scan_index].status_and_ruling_wizard + 1) != '\0')
+    if (g_town_slots[s.scan_index].status_and_ruling_wizard & 0xff00)
     {
-      *(int *)((char *)s.ruled_by_color_count + (((int)(g_town_slots[s.scan_index].status_and_ruling_wizard & 0xffffff3f)) >> 6)) += 1;
+      s.ruled_by_color_count[g_town_slots[s.scan_index].status_and_ruling_wizard >> 8] += 1;
     }
   }
 
+  s.unused_stack_slot = 0;
   s.best_score = 0x7fff;
-  s.best_color = -1;
-  s.best_town_index = -1;
+  s.color = -1;
 
   for (s.town_index = 0; s.town_index < 0x80; s.town_index = s.town_index + 1)
   {
-    if ((((*(char *)((char *)&g_town_slots[s.town_index].status_and_ruling_wizard + 1) == '\0') && (g_town_slots[s.town_index].location_type != 4)) &&
-         (g_town_slots[s.town_index].location_type != 1)) &&
-        (g_town_slots[s.town_index].location_type != 5))
+    if ((((g_town_slots[s.town_index].status_and_ruling_wizard & 0xff00) ||
+          (g_town_slots[s.town_index].location_type == 4)) ||
+         (g_town_slots[s.town_index].location_type == 1)) ||
+        (g_town_slots[s.town_index].location_type == 5))
     {
-      s.nearest_distance = 0x7fff;
-      for (s.scan_index = 1; s.scan_index < 6; s.scan_index = s.scan_index + 1)
+      continue;
+    }
+
+    s.nearest_distance = 0x7fff;
+    for (s.scan_index = 1; s.scan_index < 6; s.scan_index = s.scan_index + 1)
+    {
+      if (s.lair_world_x_by_color[s.scan_index] == -1)
       {
-        if (s.lair_world_x_by_color[s.scan_index] != -1)
-        {
-          s.dist = ApproximateDistance(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
-                                       g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
-          if (s.dist < s.nearest_distance)
-          {
-            s.nearest_distance = s.dist;
-            s.color = s.scan_index;
-          }
-        }
+        continue;
       }
 
-      s.score = RandomIntLessThan(0x80) + s.ruled_by_color_count[s.color] * 0x20;
-      if (s.score < s.best_score)
+      s.dist = ApproximateDistance(g_town_slots[s.town_index].world_x - s.lair_world_x_by_color[s.scan_index],
+                                   g_town_slots[s.town_index].world_y - s.lair_world_y_by_color[s.scan_index]);
+      if (s.dist < s.nearest_distance)
       {
-        s.best_score = s.score;
-        s.best_town_index = s.town_index;
-        s.best_color = s.color;
+        s.nearest_distance = s.dist;
+        s.color = s.scan_index;
       }
+    }
+
+    s.score = s.ruled_by_color_count[s.color] * 0x20 + RandomIntLessThan(0x80);
+    if (s.score < s.best_score)
+    {
+      s.best_score = s.score;
+      s.best_town_index = s.town_index;
+      s.best_color = s.color;
     }
   }
 
   s.color = s.best_color;
   s.town_index = s.best_town_index;
 
-  if (s.color != -1)
+  if (s.color == -1)
+  {
+  }
+  else
   {
     s.scan_index = 7;
 
-    switch ((int)((g_siege_timer + ((g_siege_timer >> 0x1f) & 0x7fU)) >> 7))
+    switch (g_siege_timer / 0x80)
     {
     case 0:
       s.creature_tier = 4;
@@ -1131,18 +1140,18 @@ void StartWizardTownSiege(void)
       s.creature_tier = 0xc;
       break;
     default:
-      if ((g_town_slots[s.town_index].world_y & 1) == 0)
+      if ((g_town_slots[s.town_index].world_y & 1) != 0)
       {
-        s.creature_tier = 0x10;
+        s.creature_tier = 0xc;
       }
       else
       {
-        s.creature_tier = 0xc;
+        s.creature_tier = 0x10;
       }
       break;
     }
 
-    FreeOpeningMenuSpriteWorkEntries(7, 0xf);
+    FreeOpeningMenuSpriteWorkEntries(s.scan_index, s.scan_index + 8);
     g_lair_or_monster_slots[s.scan_index].entry_type = PickRandomCreatureTypeForWizardTier(s.color, s.creature_tier);
     g_lair_or_monster_slots[s.scan_index].world_x = g_town_slots[s.town_index].world_x * 0x20 + 0x10;
     g_lair_or_monster_slots[s.scan_index].world_y = g_town_slots[s.town_index].world_y * 0x20 + 0x10;
@@ -1196,7 +1205,7 @@ void ResolveWizardTownSiege(void)
   s.town_index = FindNearestTownIndex(g_lair_or_monster_slots[s.slot_index].world_x / 0x20,
                                       g_lair_or_monster_slots[s.slot_index].world_y / 0x20);
 
-  *(int *)&g_town_slots[s.town_index].status_and_ruling_wizard &= -65281;
+  g_town_slots[s.town_index].status_and_ruling_wizard &= -65281;
   g_town_slots[s.town_index].status_and_ruling_wizard |= s.wizard_color << 8;
 
   s.ruled_count = 0;
@@ -1257,7 +1266,7 @@ void ResolveWizardTownSiege(void)
 
   if ((g_town_slots[s.town_index].status_and_ruling_wizard & 1) != 0)
   {
-    *(int *)&g_town_slots[s.town_index].status_and_ruling_wizard &= -2;
+    g_town_slots[s.town_index].status_and_ruling_wizard &= -2;
     strcat(g_ui_message_buffer, gs_newsflash_0077d140[10]);
   }
 
@@ -1274,7 +1283,7 @@ void ResolveWizardTownSiege(void)
   RefreshAdventureInterfaceLayout();
   g_siege_indicator = 0;
 
-  if (s.ruled_count > s.required_count)
+  if (s.ruled_count >= s.required_count)
   {
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
     LoadPcxIntoPageOpaque(1, "uth-arz.pic");

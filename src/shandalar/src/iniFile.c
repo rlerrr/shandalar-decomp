@@ -40,11 +40,14 @@ int TrimIniTrailingWhitespace(char *line, int line_len)
 // FUNCTION: SHANDALAR 0x004c84c7
 size_t StripIniCommentSuffix(char *line, size_t line_len)
 {
-  size_t comment_pos;
-  size_t removed_count;
+  struct
+  {
+    size_t removed_count;
+    size_t comment_pos;
+  } s;
 
-  comment_pos = 0;
-  removed_count = 0;
+  s.comment_pos = 0;
+  s.removed_count = 0;
   if (line_len == 0)
   {
     return 0;
@@ -55,62 +58,62 @@ size_t StripIniCommentSuffix(char *line, size_t line_len)
     return line_len;
   }
 
-  while (1)
+  while ((s.comment_pos = strcspn(line + s.comment_pos, ";")) != line_len)
   {
-    comment_pos = strcspn(line + comment_pos, ";");
-    if (comment_pos == line_len)
+    if (line[s.comment_pos - 1] == '\\')
     {
-      return removed_count;
+      strcpy(line + (s.comment_pos - 1), line + s.comment_pos);
+      s.removed_count = s.removed_count + 1;
     }
-
-    if (line[comment_pos - 1] != '\\')
+    else
     {
-      line[comment_pos] = '\0';
-      return (line_len - comment_pos) + removed_count;
+      line[s.comment_pos] = '\0';
+      return (line_len - s.comment_pos) + s.removed_count;
     }
-
-    strcpy(line + (comment_pos - 1), line + comment_pos);
-    removed_count = removed_count + 1;
   }
+
+  return s.removed_count;
 }
 
 // FUNCTION: SHANDALAR 0x004c83bb
 int ReadIniTrimmedLine(FILE *file, char *line_out)
 {
-  char *read_result;
-  size_t line_len;
-  size_t leading_trimmed_count;
-  size_t comment_trimmed_count;
-  int trailing_trimmed_count;
-  int trimmed_len;
-
-  do
+  struct
   {
-    do
+    int trimmed_len;
+    int unused;
+    size_t leading_trimmed_count;
+  } s;
+
+  while (1)
+  {
+    if (fgets(line_out, 0x200, file) == (char *)0)
     {
-      read_result = fgets(line_out, 0x200, file);
-      if (read_result == (char *)0)
-      {
-        *line_out = '\0';
-        return 0;
-      }
+      *line_out = '\0';
+      return 0;
+    }
 
-      line_len = strlen(line_out);
-      assert((unsigned int)(line_out[line_len] != '\n'), "D:\\Newmagic\\multiplayer\\sid\\iniFile.c", 0xc0,
-             "Line too long in input file");
-      trimmed_len = (int)line_len - 1;
-      line_out[trimmed_len] = '\0';
-    } while (trimmed_len == 0);
+    s.trimmed_len = strlen(line_out);
+    assert(line_out[s.trimmed_len] != '\n', "D:\\Newmagic\\multiplayer\\sid\\iniFile.c", 0xc0,
+           "Line too long in input file\n");
+    line_out[--s.trimmed_len] = '\0';
+    if (s.trimmed_len == 0)
+    {
+      continue;
+    }
 
-    leading_trimmed_count = strspn(line_out, " \t");
-    comment_trimmed_count = StripIniCommentSuffix(line_out + leading_trimmed_count, (size_t)(trimmed_len - (int)leading_trimmed_count));
-    trimmed_len = (trimmed_len - (int)leading_trimmed_count) - (int)comment_trimmed_count;
-    trailing_trimmed_count = TrimIniTrailingWhitespace(line_out + leading_trimmed_count, trimmed_len);
-    trimmed_len = trimmed_len - trailing_trimmed_count;
-  } while (trimmed_len == 0);
+    s.leading_trimmed_count = strspn(line_out, " \t");
+    s.trimmed_len -= s.leading_trimmed_count;
+    s.trimmed_len -= (int)StripIniCommentSuffix(line_out + s.leading_trimmed_count, s.trimmed_len);
 
-  strcpy(line_out, line_out + leading_trimmed_count);
-  return trimmed_len;
+    if ((s.trimmed_len -= TrimIniTrailingWhitespace(line_out + s.leading_trimmed_count, s.trimmed_len)) == 0)
+    {
+      continue;
+    }
+
+    strcpy(line_out, line_out + s.leading_trimmed_count);
+    return s.trimmed_len;
+  }
 }
 
 // FUNCTION: SHANDALAR 0x004c7f20
@@ -199,83 +202,80 @@ char *FindIniHeaderEntry(FILE *file, char *headers_section_name, char *entry_nam
 // FUNCTION: SHANDALAR 0x004c80d8
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2)
 {
-  char *entry_line;
-  int entry_count;
-  char *bracket_section_name;
-  int found_section;
-  int entry_index;
-  int *entry_table;
-  char *decoded_write_ptr;
-  char decoded_line[0x200];
-  char *table_entry_str;
-  char *scan_ptr;
+  struct
+  {
+    int entry_count_remaining;
+    int entry_count;
+    int *entry_table;
+    char *decoded_write_ptr;
+    char decoded_line[0x200];
+    char *entry_line;
+    int *table_entry_ptr;
+  } s;
 
-  entry_line = FindIniHeaderEntry(ini_file, "[headers]", section_name);
-  if (entry_line == (char *)0)
+  s.entry_line = FindIniHeaderEntry(ini_file, "[headers]", section_name);
+  if (s.entry_line == (char *)0)
   {
     return (int *)0;
   }
 
-  entry_line = strchr(entry_line, ':');
-  entry_count = atoi(entry_line + 1);
-  bracket_section_name = BuildIniSectionHeader(section_name, 0);
-  found_section = SeekIniLine(ini_file, bracket_section_name);
-  if (found_section == 0)
+  s.entry_line = strchr(s.entry_line, ':');
+  s.entry_count = atoi(s.entry_line + 1);
+  if (SeekIniLine(ini_file, ((char *(__cdecl *)(char *, int, int))BuildIniSectionHeader)(section_name, unk1, 0)) == 0)
   {
     return (int *)0;
   }
 
-  entry_table = (int *)malloc((size_t)entry_count << 2);
-  memset(entry_table, 0, (size_t)entry_count << 2);
-  strcpy(decoded_line, BuildIniSectionHeader(section_name, 0));
+  s.entry_table = (int *)malloc((size_t)s.entry_count << 2);
+  s.table_entry_ptr = s.entry_table;
+  memset(s.entry_table, 0, (size_t)s.entry_count << 2);
+  strcpy(s.decoded_line, ((char *(__cdecl *)(char *, int, int))BuildIniSectionHeader)(section_name, unk1, 0));
 
-  found_section = SeekIniLine(ini_file, decoded_line);
-  assert(found_section, "D:\\Newmagic\\multiplayer\\sid\\iniFile.c", 0x7b, "Could not locate section header!");
+  assert(SeekIniLine(ini_file, s.decoded_line), "D:\\Newmagic\\multiplayer\\sid\\iniFile.c", 0x7b,
+         "Could not locate section header %s\n", s.decoded_line);
 
-  entry_index = 0;
-  while (entry_index < entry_count && ReadIniSectionEntry(ini_file, decoded_line))
+  while ((s.entry_count_remaining = s.entry_count--) != 0 && ReadIniSectionEntry(ini_file, s.decoded_line) != 0)
   {
-    decoded_write_ptr = decoded_line;
-    scan_ptr = decoded_line;
-    while (*scan_ptr != '\0')
+    s.entry_line = s.decoded_line;
+    s.decoded_write_ptr = s.entry_line;
+    while (*s.entry_line != '\0')
     {
-      if (*scan_ptr == '\\')
+      if (*s.entry_line == '\\')
       {
-        scan_ptr = scan_ptr + 1;
-        if (*scan_ptr == 'n')
+        s.entry_line = s.entry_line + 1;
+        switch (*s.entry_line)
         {
-          *decoded_write_ptr = '\n';
-          decoded_write_ptr = decoded_write_ptr + 1;
-          scan_ptr = scan_ptr + 1;
-          continue;
-        }
-        if (*scan_ptr == 'r')
-        {
-          *decoded_write_ptr = '\r';
-          decoded_write_ptr = decoded_write_ptr + 1;
-          scan_ptr = scan_ptr + 1;
-          continue;
-        }
-        if (*scan_ptr == 'x')
-        {
-          *decoded_write_ptr = (char)((IniHexDigitToInt((int)scan_ptr[1]) << 4) + IniHexDigitToInt((int)scan_ptr[2]));
-          decoded_write_ptr = decoded_write_ptr + 1;
-          scan_ptr = scan_ptr + 3;
-          continue;
+        case 'n':
+          *s.decoded_write_ptr = '\n';
+          s.decoded_write_ptr = s.decoded_write_ptr + 1;
+          s.entry_line = s.entry_line + 1;
+          break;
+        case 'r':
+          *s.decoded_write_ptr = '\r';
+          s.decoded_write_ptr = s.decoded_write_ptr + 1;
+          s.entry_line = s.entry_line + 1;
+          break;
+        case 'x':
+          *s.decoded_write_ptr = (char)((IniHexDigitToInt((int)s.entry_line[1]) << 4) +
+                                        IniHexDigitToInt((int)s.entry_line[2]));
+          s.decoded_write_ptr = s.decoded_write_ptr + 1;
+          s.entry_line = s.entry_line + 3;
+          break;
         }
       }
-
-      *decoded_write_ptr = *scan_ptr;
-      decoded_write_ptr = decoded_write_ptr + 1;
-      scan_ptr = scan_ptr + 1;
+      else
+      {
+        *s.decoded_write_ptr = *s.entry_line;
+        s.entry_line = s.entry_line + 1;
+        s.decoded_write_ptr = s.decoded_write_ptr + 1;
+      }
     }
 
-    *decoded_write_ptr = '\0';
-    table_entry_str = (char *)malloc(strlen(decoded_line) + 2);
-    entry_table[entry_index] = (int)table_entry_str;
-    strcpy(table_entry_str, decoded_line);
-    entry_index = entry_index + 1;
+    *s.decoded_write_ptr = '\0';
+    *s.table_entry_ptr = (int)malloc(strlen(s.decoded_line) + 2);
+    strcpy((char *)*s.table_entry_ptr, s.decoded_line);
+    s.table_entry_ptr = s.table_entry_ptr + 1;
   }
 
-  return entry_table;
+  return s.entry_table;
 }

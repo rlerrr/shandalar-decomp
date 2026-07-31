@@ -933,7 +933,7 @@ typedef struct
 	uint8_t act_phases; /* 0x41 */				// ct_all.csv:Activate after Combat..Play before Combat
 	uint8_t expansion; /* 0x42 */				// unused in current Manalink
 	uint8_t creature_rating; /* 0x43 */			// only -2 through 3 are accepted by ct2exe
-	uint8_t reserved4[4];						/* 0x44 */
+	int32_t ai_base_value; /* 0x44 */			// Cards.dat ai_base_value, widened from int16_t
 } PACKED card_data_t;
 STATIC_ASSERT(sizeof(card_data_t) == 72, card_data_t_wrong_size);
 

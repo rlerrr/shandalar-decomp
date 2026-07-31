@@ -344,7 +344,7 @@ void run_duel_turn(unsigned int player)
   s.next_state = 0;
   if (TRACE_ENABLED)
   {
-    append_to_trace_txt(unk_0056e49c);
+    append_to_trace_txt("___________________________________________________________________________\n");
     if (player != 0)
     {
       sprintf(s.trace, s_Turn___d__We_are_the_non_phasing_0056e4f0, DAT_009251d4, player);

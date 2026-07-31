@@ -368,7 +368,7 @@ int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_sca
 int CountDuelPoolEligibleTowns(void);
 void AddJournalEntry(int entry_type, int entry_arg);
 int GetRelativeWorldQuadrant(int world_x, int world_y);
-int FindDeckSlotForQuestColorAndType(unsigned char quest_color, unsigned char quest_bitmap_mask);
+int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask);
 char *FUN_004f2e17(int town_index);
 char *GetQuestCardClassName(int quest_bitmap_mask);
 int FindNearestTownIndex(int world_x, int world_y);
@@ -476,58 +476,64 @@ char *FUN_004f2e17(int town_index)
 // FUNCTION: SHANDALAR 0x004f21bb
 int GetRelativeWorldQuadrant(int world_x, int world_y)
 {
-  int delta_y;
-  int delta_x;
-  int quadrant_index;
-
-  delta_x = world_x - g_world_player_tile_x;
-  delta_y = world_y - g_world_player_tile_y;
-  if (delta_y > 0)
+  struct
   {
-    quadrant_index = 2;
-    if (0 < delta_x)
+    int delta_y;
+    int delta_x;
+    int quadrant_index;
+  } s;
+
+  s.delta_x = world_x - g_world_player_tile_x;
+  s.delta_y = world_y - g_world_player_tile_y;
+  if (s.delta_y > 0)
+  {
+    if (0 < s.delta_x)
     {
-      quadrant_index = 1;
+      s.quadrant_index = 1;
+    }
+    else
+    {
+      s.quadrant_index = 2;
     }
   }
   else
   {
-    quadrant_index = 3;
-    if (0 < delta_x)
+    if (0 < s.delta_x)
     {
-      quadrant_index = 0;
+      s.quadrant_index = 0;
+    }
+    else
+    {
+      s.quadrant_index = 3;
     }
   }
-  return quadrant_index;
+  return s.quadrant_index;
 }
 
 // FUNCTION: SHANDALAR 0x004f2322
-int FindDeckSlotForQuestColorAndType(unsigned char quest_color, unsigned char quest_bitmap_mask)
+int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask)
 {
-  int card_id;
-  int deck_slot_index;
-
-  deck_slot_index = 0;
-  while (1)
+  struct
   {
-    if (499 < deck_slot_index)
+    int deck_slot_index;
+    int card_id;
+  } s;
+
+  for (s.deck_slot_index = 0; s.deck_slot_index < 500; ++s.deck_slot_index)
+  {
+    if (deck[s.deck_slot_index] != -1)
     {
-      return 0;
-    }
-    if (deck[deck_slot_index] != -1)
-    {
-      card_id = deck[deck_slot_index] & 0xfff;
-      if (((1 << (quest_color & 0x1f)) & (int)(char)global_cards_data[card_id].color) != 0)
+      s.card_id = deck[s.deck_slot_index] & 0xfff;
+      if (((1 << quest_color) & (int)(char)global_cards_data[s.card_id].color) != 0)
       {
-        if ((((int)quest_bitmap_mask & (int)(unsigned char)global_cards_data[card_id].type)) != 0)
+        if ((quest_bitmap_mask & (unsigned char)global_cards_data[s.card_id].type) != 0)
         {
-          break;
+          return s.deck_slot_index + 1;
         }
       }
     }
-    deck_slot_index = deck_slot_index + 1;
   }
-  return deck_slot_index + 1;
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00428615
@@ -1992,11 +1998,20 @@ void DrawQueuedWorldSprites(void)
 // FUNCTION: SHANDALAR 0x0054aa04
 void WorldSubtileOffsetToScreen(int world_subcell_x, int world_subcell_y, int *out_screen_x, int *out_screen_y)
 {
-  int height_delta;
+  struct
+  {
+    int world_subcell_y;
+    int screen_x;
+    int world_subcell_x;
+    int screen_y;
+  } s;
 
-  height_delta = (world_subcell_y - world_subcell_x) * global_screen_height;
-  *out_screen_x = ((world_subcell_y + world_subcell_x) * global_screen_width * 2) / 0x280;
-  *out_screen_y = height_delta / 0x1e0;
+  s.world_subcell_x = world_subcell_x;
+  s.world_subcell_y = world_subcell_y;
+  s.screen_x = ((s.world_subcell_y + s.world_subcell_x) * global_screen_width * 2) / 0x280;
+  s.screen_y = ((s.world_subcell_y - s.world_subcell_x) * global_screen_height) / 0x1e0;
+  *out_screen_x = s.screen_x;
+  *out_screen_y = s.screen_y;
 }
 
 // FUNCTION: SHANDALAR 0x0054aa60
@@ -2040,13 +2055,18 @@ void WorldPointToScreen(int world_x, int world_y, int *out_screen_x, int *out_sc
 // FUNCTION: SHANDALAR 0x0054ab73
 void ScreenToWorldPoint(int screen_x, int screen_y, int *out_world_x, int *out_world_y)
 {
-  int world_delta_y;
-  int world_delta_x;
+  struct
+  {
+    int world_delta_y;
+    int world_delta_x;
+  } s;
 
-  world_delta_y = (((screen_y - g_world_ui_top_offset) - g_world_camera_viewport_height_pixels / 2) * 0x1e0) / global_screen_height;
-  world_delta_x = (((screen_x - g_world_camera_viewport_width_pixels / 2) * 0x280) / global_screen_width) >> 1;
-  *out_world_x = g_world_player_world_x_cached + (world_delta_x - world_delta_y) / 2;
-  *out_world_y = g_world_player_world_y_cached + (world_delta_x + world_delta_y) / 2;
+  s.world_delta_x = screen_x - g_world_camera_viewport_width_pixels / 2;
+  s.world_delta_y = (screen_y - g_world_ui_top_offset) - g_world_camera_viewport_height_pixels / 2;
+  s.world_delta_x = (s.world_delta_x * 0x280) / global_screen_width;
+  s.world_delta_y = (s.world_delta_y * 0x1e0) / global_screen_height;
+  *out_world_x = g_world_player_world_x_cached + ((s.world_delta_x >> 1) - s.world_delta_y) / 2;
+  *out_world_y = g_world_player_world_y_cached + ((s.world_delta_x >> 1) + s.world_delta_y) / 2;
 }
 
 // FUNCTION: SHANDALAR 0x004318c7

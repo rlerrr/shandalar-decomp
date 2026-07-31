@@ -669,7 +669,7 @@ int C_real_select_target(int who_chooses,
         s.selected_internal_card_id = PLAYER_CARD_INSTANCE(s.selected_player, s.selected_card).internal_card_id;
         if (s.selected_internal_card_id >= 0
             && (special & TARGET_SPECIAL_ALLOW_MULTIBLOCKER) == 0
-            && global_cards_data[s.selected_internal_card_id].code_pointer == FUN_00481e25)
+            && global_cards_data[s.selected_internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy)
         {
           s.show_validation_message = 1;
           sprintf(s.validation_message, gs_illegal_target_with_reason_008ce7e0, gs_illegal_target_why_type_008a9a00);

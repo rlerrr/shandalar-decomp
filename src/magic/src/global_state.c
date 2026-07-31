@@ -906,7 +906,7 @@ int int_to_hex_digit(int value)
 // FUNCTION: MAGIC 0x004ed186
 int get_duel_save_slot_source(void)
 {
-  return DAT_0057b174;
+  return g_save_path_needs_init;
 }
 
 // FUNCTION: MAGIC 0x004ed1ad

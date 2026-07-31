@@ -269,7 +269,7 @@ void count_mana(void);
 int damage_creature(int target_player, int target_card, int amount, int source_player, int source_card);
 int damage_target0(int player, int card, int dmg);	// Convenient frontend to damage_creature().  Deals dmg damage to targets[0].player/card.  Promotes to parent if an activation card.  Does not validate.
 int damage_creature_or_player(int source_player, int source_card, event_t event, int amount);	// Mostly a wrapper around damage_creature().  Also validates.  Damage is always dealt by activating_player/activating_card; the player/card given are used only in validation.  This usually isn't what you want - damage_target0 is better.  Avoid.
-int damage_player(int target_player, int amount, int source_player, int source_card);	// Identical to damage_creature(target_player, -1, amount, source_player, source_card)
+void damage_player(int target_player, int amount, int source_player, int source_card);	// Identical to damage_creature(target_player, -1, amount, source_player, source_card)
 void deathtouch(int player, int card, event_t event);
 int declare_mana_available(int player, color_t color, int amount);
 void declare_mana_available_hex(int player, color_test_t colors, int amount);

@@ -109,7 +109,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
   s.damage_source_player = (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player;
   s.damage_source_card = PLAYER_CARD_INSTANCE(player, card).damage_source_card;
 
-  if (s.code_pointer == card_two_headed_giant_of_foriys || s.code_pointer == FUN_00481e25)
+  if (s.code_pointer == card_two_headed_giant_of_foriys || s.code_pointer == card_two_headed_giant_of_foriys_legacy)
   {
     s.found_trampler = 1;
   }
@@ -126,12 +126,12 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
 
   if (s.found_trampler != 0)
   {
-    if (s.code_pointer != FUN_00481e25)
+    if (s.code_pointer != card_two_headed_giant_of_foriys_legacy)
     {
       for (s.index = 0; s.index < active_cards_count[s.damage_player]; s.index = s.index + 1)
       {
         s.instance = &PLAYER_CARD_INSTANCE(s.damage_player, s.index);
-        if (global_cards_data[s.instance->internal_card_id].code_pointer == FUN_00481e25 &&
+        if (global_cards_data[s.instance->internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
             s.instance->damage_source_player == player &&
             s.instance->damage_source_card == card)
         {
@@ -146,7 +146,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
       {
         s.instance = &PLAYER_CARD_INSTANCE(s.damage_player, s.index);
         if (s.index != card &&
-            global_cards_data[s.instance->internal_card_id].code_pointer == FUN_00481e25 &&
+            global_cards_data[s.instance->internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
             s.instance->damage_source_player == s.damage_source_player &&
             s.instance->damage_source_card == s.damage_source_card)
         {
@@ -923,7 +923,7 @@ void resolve_combat_damage(int player)
           for (s.damage_index = 0; s.damage_index < ai_blocker_count; s.damage_index = s.damage_index + 1)
           {
             if ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).token_status & COMBAT_DAMAGE_FLAG_CANCELABLE) != 0 &&
-                (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer != FUN_00481e25 ||
+                (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer != card_two_headed_giant_of_foriys_legacy ||
                  PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot >= 2))
             {
               adjust_two_headed_giant_damage(s.defending_player, ai_blocker_cards[s.damage_index], combat_damage_blocker_damage[s.damage_index]);
@@ -961,7 +961,7 @@ void resolve_combat_damage(int player)
                 }
               }
               if (s.blocker_score[3] != 0 &&
-                  (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer != FUN_00481e25 ||
+                  (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer != card_two_headed_giant_of_foriys_legacy ||
                    PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot >= 2))
               {
                 adjust_two_headed_giant_damage(s.defending_player, ai_blocker_cards[s.damage_index], s.blocker_score[3]);
@@ -1027,7 +1027,7 @@ void resolve_combat_damage(int player)
               s.target_is_valid = 0;
               if (combat_damage_attacker_count == 1 &&
                   ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).token_status & COMBAT_DAMAGE_FLAG_CANCELABLE) == 0 ||
-                   (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer == FUN_00481e25 &&
+                   (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
                     PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot < 2)))
               {
                 s.target_is_valid = 1;
@@ -1088,7 +1088,7 @@ void resolve_combat_damage(int player)
                   if (combat_damage_attacker_cards[s.loop_index] == s.selected_target.card)
                   {
                     if (unk_00715fb0 != 0 ||
-                        (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer == FUN_00481e25 &&
+                        (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
                          PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot < 2))
                     {
                       s.damage_to_assign = s.blocker_damage_remaining;
@@ -1125,7 +1125,7 @@ void resolve_combat_damage(int player)
 
           if ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).token_status & COMBAT_DAMAGE_FLAG_CANCELABLE) != 0 &&
               s.selected_target.card != -2 &&
-              (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).internal_card_id].code_pointer != FUN_00481e25 ||
+              (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).internal_card_id].code_pointer != card_two_headed_giant_of_foriys_legacy ||
                PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).info_slot >= 2) &&
               ((s.damage_step == 0 && (PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).regen_status & 0x100) != 0) ||
                (s.damage_step == 1 && (PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index - 1]).regen_status & 0x100) == 0)))

@@ -250,8 +250,6 @@ char s_PowerToughnessSeparator_0057f73c[4] = "/";
 char s_InfinityToughnessText_0057f740[4] = "*";
 // GLOBAL: MAGIC 0x0057f744
 char s_ToughnessFormat_0057f744[4] = "%d";
-// GLOBAL: MAGIC 0x0057f748
-char s_NumberFormat_0057f748[4] = "%d";
 // GLOBAL: MAGIC 0x0057f74c
 char s_DamageFormat_0057f74c[4] = "%d";
 // GLOBAL: MAGIC 0x0057f750
@@ -320,7 +318,7 @@ char *get_displayed_card_name(int player, int card)
   }
 
   s.csvid = CardIDFromType(s.type);
-  s.card_name = unk_0056e49c;
+  s.card_name = "";
   if (s.csvid != -1)
   {
     if (s.csvid == unk_0092666c)

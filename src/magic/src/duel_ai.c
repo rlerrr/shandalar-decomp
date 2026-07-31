@@ -1750,7 +1750,7 @@ int score_ai_attacker_candidate(int player, int card)
     s.adjusted_toughness_plus_3 = s.adjusted_toughness;
   }
   s.adjusted_toughness_plus_2 = s.adjusted_toughness_plus_3 + 2;
-  s.score = (*(int *)global_cards_data[s.internal_card_id].reserved4 + s.adjusted_power_plus_2) * s.adjusted_toughness_plus_2 * 5;
+  s.score = (global_cards_data[s.internal_card_id].ai_base_value + s.adjusted_power_plus_2) * s.adjusted_toughness_plus_2 * 5;
   if ((global_cards_data[s.internal_card_id].static_ability & 0x1f) != 0)
   {
     s.score = (s.score * 3) / 2;
@@ -2473,7 +2473,7 @@ int score_ai_blocker_candidate(int player, int card)
     s.adjusted_toughness = s.toughness;
   }
   s.toughness_plus_two = s.adjusted_toughness + 2;
-  s.score = ((*(int *)global_cards_data[s.internal_card_id].reserved4 + s.power_plus_two) * s.toughness_plus_two) * 5;
+  s.score = ((global_cards_data[s.internal_card_id].ai_base_value + s.power_plus_two) * s.toughness_plus_two) * 5;
   if ((global_cards_data[s.internal_card_id].static_ability & 0x200) != 0)
   {
     s.score = (s.score * 3) / 2;

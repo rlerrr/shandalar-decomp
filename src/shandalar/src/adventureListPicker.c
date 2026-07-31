@@ -172,7 +172,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
       ((g_duel_network_flags & 2) != 0) &&
       (unk_00742fc4 != 0))
   {
-    ReportUnexpectedNetworkPacketType(player, 0x19);
+    TENTATIVE_wait_for_network_result(player, 0x19);
     return g_network_result_value;
   }
 

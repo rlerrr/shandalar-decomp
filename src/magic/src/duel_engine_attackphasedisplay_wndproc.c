@@ -47,9 +47,6 @@ typedef struct msvc_bitmap
 // GLOBAL: MAGIC 0x00571d20
 int DAT_00571d20 = -1;
 
-// GLOBAL: MAGIC 0x005724ac
-char unk_005724ac[] = "";
-
 // GLOBAL: MAGIC 0x0057e4c0
 char s__WINBK_PhaseCombat_pic_0057e4c0[0x17] = "\\WINBK_PhaseCombat.pic";
 

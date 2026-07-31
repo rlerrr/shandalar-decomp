@@ -96,7 +96,7 @@ int ClampIntToRange(int value, int min_value, int max_value);
 int CountDuelPoolEligibleTowns(void);
 int DrawRandomCardFromInitialLibrary(int param_1);
 int ExitIfNoUsableDeckCards(void);
-int FindDeckSlotForQuestColorAndType(unsigned char color, unsigned char type);
+int FindDeckSlotForQuestColorAndType(unsigned char color, int type);
 int FindNearestTownIndex(int world_x, int world_y);
 int single_color_test_bit_to_color_t(int mask);
 int FUN_004bb1cf(unsigned int card_id);
@@ -371,53 +371,60 @@ static char DAT_00590b64[] = "\n";
 static char DAT_00590b68[] = "\n";
 
 // FUNCTION: SHANDALAR 0x004be570
-void *__cdecl FUN_004be570(char *param_1, int param_2, int param_3)
+void *__cdecl LoadDialogBoxFrameSprites(char *sprite_path, int normal_text_color, int selected_text_color)
 {
-  int local_330;
-  int local_32c;
-  int local_328;
-  EncodedImage *local_324[200];
+  struct
+  {
+    int sprite_entry_index;
+    int frame_piece_index;
+    int frame_style_index;
+    EncodedImage *sprite_entries[200];
+  } s;
 
-  local_330 = 0;
+  s.sprite_entry_index = 0;
   if (g_dialog_box_sprite_bank.frame[0][0] != (EncodedImage *)0x0)
   {
     FreeSpriteBlob(g_dialog_box_sprite_bank.frame[0][0]);
   }
-  ReadSpriteEntryPointers(local_324, param_1);
-  for (local_328 = 0; local_328 < 4; local_328 = local_328 + 1)
+  ReadSpriteEntryPointers(s.sprite_entries, sprite_path);
+  for (s.frame_style_index = 0; s.frame_style_index < 4; s.frame_style_index = s.frame_style_index + 1)
   {
-    for (local_32c = 0; local_32c < 9; local_32c = local_32c + 1)
+    for (s.frame_piece_index = 0; s.frame_piece_index < 9; s.frame_piece_index = s.frame_piece_index + 1)
     {
-      g_dialog_box_sprite_bank.frame[local_328][local_32c] = local_324[local_330];
-      local_330 = local_330 + 1;
+      g_dialog_box_sprite_bank.frame[s.frame_style_index][s.frame_piece_index] = s.sprite_entries[s.sprite_entry_index];
+      s.sprite_entry_index = s.sprite_entry_index + 1;
     }
   }
-  g_text_menu_color_normal = param_2;
-  g_text_menu_color_selected = param_3;
+  g_text_menu_color_normal = normal_text_color;
+  g_text_menu_color_selected = selected_text_color;
   return g_dialog_box_sprite_bank.frame[0][0];
 }
 
 // FUNCTION: SHANDALAR 0x004ed7c8
-undefined4 FUN_004ed7c8(char *param_1)
+int ShowLairBackdropTransition(char *pcx_path)
 {
-  DIBSurface *pDVar1;
-  DIBSurface *pDVar2;
-  int src_x;
-  int src_y;
-  int copy_w;
-  int copy_h;
+  struct
+  {
+    DIBSurface *screen_page;
+    DIBSurface *work_page;
+    int src_y;
+    int src_x;
+    int copy_h;
+    int copy_w;
+  } s;
 
-  src_x = ScaleUiCoordinate(0x40);
-  src_y = ScaleUiCoordinate(0x30);
-  copy_w = ScaleUiCoordinate(0x200);
-  copy_h = ScaleUiCoordinate(0x118);
-  pDVar1 = g_graphics_pages[PTR_DAT_005832dc->page_number];
-  pDVar2 = g_graphics_pages[PTR_DAT_005832b4->page_number];
-  LoadPcxResource(1, 0, global_screen_height + -0x118, param_1, (void *)0x0);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height + -0x118, 0x200, 0x118, PTR_DAT_005832dc, src_x,
-                          src_y, copy_w, copy_h);
+  s.src_x = ScaleUiCoordinate(0x40);
+  s.src_y = ScaleUiCoordinate(0x30);
+  s.copy_w = ScaleUiCoordinate(0x200);
+  s.copy_h = ScaleUiCoordinate(0x118);
+  s.work_page = g_graphics_pages[PTR_DAT_005832dc->page_number];
+  s.screen_page = g_graphics_pages[PTR_DAT_005832b4->page_number];
+  LoadPcxResource(1, 0, global_screen_height + -0x118, pcx_path, (void *)0x0);
+  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height + -0x118, 0x200, 0x118, PTR_DAT_005832dc, s.src_x,
+                          s.src_y, s.copy_w, s.copy_h);
   DrawVisitScreenOverlays(PTR_DAT_005832dc);
-  BlitRectByRandomTileOrderInPlace(pDVar2->hTempDC, src_x, src_y, copy_w, copy_h, 5, 5, pDVar1->hTempDC);
+  BlitRectByRandomTileOrderInPlace(s.screen_page->hTempDC, s.src_x, s.src_y, s.copy_w, s.copy_h, 5, 5,
+                                   s.work_page->hTempDC);
   DelayUiTicks(0x2d);
   return 0;
 }
@@ -447,11 +454,11 @@ char *__cdecl FUN_005307c3(int param_1)
 void TruncateLairTextToWidth(char *text, int width)
 {
   size_t text_len;
+  int unused;
 
   while (MeasureTextLineWidth(text) > width)
   {
-    text_len = strlen(text);
-    if (text[text_len - 3] != ' ')
+    if (text[strlen(text) - 3] != ' ')
     {
       text_len = strlen(text);
       text[text_len - 2] = '.';
@@ -476,61 +483,52 @@ int DrawWrappedLairText(char *text, int width_chars, int x, int y, int color)
     int last_break_index;
   } s;
 
-#define last_break_index s.last_break_index
-#define line_pixel_width s.line_pixel_width
-#define line_start_index s.line_start_index
-#define saved_char s.saved_char
-#define char_index s.char_index
-#define text_len s.text_len
-#define line_height s.line_height
-#define normalized_char s.normalized_char
-
-  last_break_index = 0;
-  line_start_index = last_break_index;
-  line_pixel_width = line_start_index;
-  line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-  text_len = strlen(text);
-  for (char_index = 0; char_index < (int)text_len; char_index = char_index + 1)
+  s.last_break_index = 0;
+  s.line_start_index = s.last_break_index;
+  s.line_pixel_width = s.line_start_index;
+  s.line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  s.text_len = strlen(text);
+  for (s.char_index = 0; s.char_index < (int)s.text_len; s.char_index++)
   {
-    if (text[char_index] >= '\0')
+    if (text[s.char_index] >= '\0')
     {
-      normalized_char = text[char_index];
+      s.normalized_char = text[s.char_index];
     }
     else
     {
-      normalized_char = text[char_index] + 0x80;
+      s.normalized_char = text[s.char_index] + 0x80;
     }
 
-    line_pixel_width += GetFontCharWidth(PTR_DAT_005832b4->font_slot, normalized_char);
+    s.line_pixel_width += GetFontCharWidth(PTR_DAT_005832b4->font_slot, s.normalized_char);
 
-    if (((text[char_index] == ' ') || (text[char_index] == '\n')) || (text[char_index] == '^'))
+    if (((text[s.char_index] == ' ') || (text[s.char_index] == '\n')) || (text[s.char_index] == '^'))
     {
-      last_break_index = char_index;
+      s.last_break_index = s.char_index;
     }
 
-    if (((text[char_index] == '\n') || (text[char_index] == '^')) || (line_pixel_width > width_chars * 8))
+    if (((text[s.char_index] == '\n') || (text[s.char_index] == '^')) || (s.line_pixel_width > width_chars * 8))
     {
-      saved_char = text[last_break_index];
-      text[last_break_index] = '\0';
-      if (10 < line_height)
+      s.saved_char = text[s.last_break_index];
+      text[s.last_break_index] = '\0';
+      if (10 < s.line_height)
       {
         strcpy(text + 0x200, text);
-        TruncateLairTextToWidth(text + line_start_index, (global_screen_width - 2) - x);
+        TruncateLairTextToWidth(text + s.line_start_index, (global_screen_width - 2) - x);
       }
-      DrawTextLineNoShadow(text + line_start_index, x, y, color);
-      if (10 < line_height)
+      DrawTextLineNoShadow(text + s.line_start_index, x, y, color);
+      if (10 < s.line_height)
       {
         strcpy(text, text + 0x200);
       }
-      text[last_break_index] = saved_char;
-      y = y + line_height;
-      line_pixel_width = 0;
-      line_start_index = last_break_index + 1;
-      if (text[char_index] == '^')
+      text[s.last_break_index] = s.saved_char;
+      y = y + s.line_height;
+      s.line_pixel_width = 0;
+      s.line_start_index = s.last_break_index + 1;
+      if (text[s.char_index] == '^')
       {
-        line_start_index++;
+        s.line_start_index++;
       }
-      char_index = last_break_index;
+      s.char_index = s.last_break_index;
       if (global_screen_height - 8 < y)
       {
         break;
@@ -538,26 +536,14 @@ int DrawWrappedLairText(char *text, int width_chars, int x, int y, int color)
     }
   }
 
-  if ((line_pixel_width <= 0) || (global_screen_height - 8 < y))
+  if ((s.line_pixel_width > 0) && (global_screen_height - 8 >= y))
   {
-    return 0;
-  }
-  else
-  {
-    DrawTextLineNoShadow(text + line_start_index, x, y, color);
-    y = y + line_height;
+    DrawTextLineNoShadow(text + s.line_start_index, x, y, color);
+    y += s.line_height;
   }
 
   return y;
-
-#undef last_break_index
-#undef line_pixel_width
-#undef line_start_index
-#undef saved_char
-#undef char_index
-#undef text_len
-#undef line_height
-#undef normalized_char
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00426e30
@@ -828,90 +814,80 @@ void FUN_005584d5(uint param_1, undefined4 param_2, char *param_3, int param_4)
 // FUNCTION: SHANDALAR 0x005307dd
 void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  char *pcVar4;
-  int iVar5;
-  int full_card;
-  uint auStack_20[5];
-  int local_c;
-  int local_8;
+  struct
+  {
+    int card_spacing;
+    int rarity_index;
+    uint selected_card_id;
+    uint ante_card_ids[5];
+    int loop_index;
+    int creature_type;
+  } s;
 
-  for (local_c = 0; local_c < ante_card_count; local_c = local_c + 1)
+  for (s.loop_index = 0; s.loop_index < ante_card_count; s.loop_index = s.loop_index + 1)
   {
     do
     {
       do
       {
-        uVar1 = RandomIntLessThan(g_card_count - 0x39);
-        iVar2 = GetCardRarity(uVar1);
-      } while (iVar2 < 3);
-      uVar3 = GetCardAvailabilityMask(uVar1);
-    } while (uVar3 == 0);
-    auStack_20[local_c] = uVar1;
-    DrawAdventureCard(uVar1, (int)(0x96 / (longlong)ante_card_count) * local_c + 100,
-                      (int)(10 / (longlong)ante_card_count) * local_c + 100, 1, DAT_0058f04c);
+        s.selected_card_id = RandomIntLessThan(g_card_count - 0x39);
+      } while (GetCardRarity(s.selected_card_id) < 3);
+    } while (GetCardAvailabilityMask(s.selected_card_id) == 0);
+    s.ante_card_ids[s.loop_index] = s.selected_card_id;
+    DrawAdventureCard(s.selected_card_id, (0x96 / ante_card_count) * s.loop_index + 100,
+                      (10 / ante_card_count) * s.loop_index + 100, 1, DAT_0058f04c);
   }
   do
   {
-    local_8 = PickRandomCreatureTypeForWizardTier(0, creature_tier);
-  } while (0x36 < local_8);
+    s.creature_type = PickRandomCreatureTypeForWizardTier(0, creature_tier);
+  } while (s.creature_type >= 0x37);
   if (creature_tier == 0xd)
   {
-    pcVar4 = BuildCreatureNameWithArticle(local_8);
-    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[0], pcVar4);
+    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[0], BuildCreatureNameWithArticle(s.creature_type));
   }
   else if (creature_tier == 0x10)
   {
-    pcVar4 = BuildCreatureNameWithArticle(local_8);
-    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[1], pcVar4);
+    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[1], BuildCreatureNameWithArticle(s.creature_type));
   }
   else if (creature_tier == 0x12)
   {
-    pcVar4 = BuildCreatureNameWithArticle(local_8);
-    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[2], pcVar4);
+    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[2], BuildCreatureNameWithArticle(s.creature_type));
   }
   else
   {
-    pcVar4 = BuildCreatureNameWithArticle(local_8);
-    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[3], pcVar4);
+    sprintf(g_ui_message_buffer, gs_monsterlair_0074cff0[3], BuildCreatureNameWithArticle(s.creature_type));
   }
   strcat(g_ui_message_buffer, gs_monsterlair_0074cff0[4]);
-  iVar2 = RunTextMenuAt(g_ui_message_buffer, 0x5a, 100);
-  if (iVar2 == 1)
+  if (RunTextMenuAt(g_ui_message_buffer, 0x5a, 100) == 1)
   {
-    uVar1 = FUN_0056c705(g_shandalar_monster_definitions[local_8].deck_number);
-    LoadCreatureDuelDeck(local_8, uVar1, 0, -1);
-    DAT_008ce538 = single_color_test_bit_to_color_t((int)g_shandalar_monster_definitions[local_8].color_mask);
+    s.selected_card_id = FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].deck_number);
+    LoadCreatureDuelDeck(s.creature_type, s.selected_card_id, 0, -1);
+    DAT_008ce538 = single_color_test_bit_to_color_t((int)g_shandalar_monster_definitions[s.creature_type].color_mask);
     DAT_00742fd0 = 0;
     DAT_007a7874 = 3;
     global_ante_cards[0][0] = -1;
-    for (local_c = 0; local_c < ante_card_count; local_c = local_c + 1)
+    for (s.loop_index = 0; s.loop_index < ante_card_count; s.loop_index = s.loop_index + 1)
     {
-      g_duel_ante_card_ids[local_c] = auStack_20[local_c];
+      g_duel_ante_card_ids[s.loop_index] = s.ante_card_ids[s.loop_index];
     }
-    iVar2 = RunDuelEngine(uVar1, local_8);
-    if (iVar2 != 0)
+    if (RunDuelEngine(s.selected_card_id, s.creature_type) != 0)
     {
       LoadPcxIntoPageOpaque(1, s_winbak01_pic_0058f050);
       PlayDuelMusic(1);
       StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                               global_screen_height);
-      for (local_c = 0; local_c < ante_card_count; local_c = local_c + 1)
+      for (s.loop_index = 0; s.loop_index < ante_card_count; s.loop_index = s.loop_index + 1)
       {
-        iVar2 = (int)(300 / (longlong)(ante_card_count + 1));
-        iVar5 = GetCardRarity(auStack_20[local_c]);
-        strcpy(g_ui_message_buffer, gs_browse_0074da20[iVar5 + 0xc]);
-        pcVar4 = g_ui_message_buffer;
-        full_card = 1;
-        iVar5 = RandomIntLessThan(10);
-        DrawAdventureCard(auStack_20[local_c], (iVar2 * local_c + 0x6f) - ((ante_card_count + -1) * iVar2) / 2,
-                          iVar5 + 0x10, full_card, pcVar4);
-        local_8 = AddCardToDeckSorted(auStack_20[local_c]);
-        if (local_8 != -1)
+        s.card_spacing = 300 / (ante_card_count + 1);
+        s.rarity_index = GetCardRarity(s.ante_card_ids[s.loop_index]) - 1;
+        strcpy(g_ui_message_buffer, gs_browse_0074da20[s.rarity_index + 0xd]);
+        DrawAdventureCard(s.ante_card_ids[s.loop_index],
+                          (s.card_spacing * s.loop_index + 0x6f) - ((ante_card_count + -1) * s.card_spacing) / 2,
+                          RandomIntLessThan(10) + 0x10, 1, g_ui_message_buffer);
+        s.creature_type = AddCardToDeckSorted(s.ante_card_ids[s.loop_index]);
+        if (s.creature_type != -1)
         {
-          deck[local_8] = deck[local_8] | 0x4000;
+          deck[s.creature_type] = deck[s.creature_type] | 0x4000;
         }
       }
       PTR_DAT_005832b4->font_slot = 4;
@@ -919,7 +895,6 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
     }
     sound_stop(0x10);
   }
-  return;
 }
 
 // FUNCTION: SHANDALAR 0x00534530
@@ -1304,7 +1279,7 @@ void RunLairExplorationEvent(int color)
     int copied_creature_type;
   } s;
 
-  FUN_004ed7c8(PTR_DAT_0058edb8[color]);
+  ShowLairBackdropTransition(PTR_DAT_0058edb8[color]);
   DrawVisitScreenOverlays(PTR_DAT_005832b4);
 
   for (s.reward_card = 1; s.reward_card <= 3; s.reward_card = s.reward_card + 1)
@@ -1644,7 +1619,7 @@ end:
 // FUNCTION: SHANDALAR 0x0054c6ba
 undefined4 BuildQuestStatusMessage(void)
 {
-  int unused;
+  int tmp;
   int value;
 
   strcpy(g_ui_message_buffer, DAT_00590b54);
@@ -1723,12 +1698,12 @@ undefined4 BuildQuestStatusMessage(void)
     if ((((g_current_quest_type == 0) || (g_current_quest_type == 2)) ||
          ((g_current_quest_type == 1 &&
            (FindDeckSlotForQuestColorAndType((uchar)g_current_quest_color,
-                                             (uchar)(1 << (g_current_quest_destination & 3))) != 0)))) ||
+                                             (1 << (g_current_quest_destination & 3))) != 0)))) ||
         (g_current_quest_type < -100))
     {
-      value = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
+      tmp = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
                                        g_town_slots[g_current_quest_destination].world_y);
-      if (value != g_current_quest_data)
+      if (tmp != g_current_quest_data)
       {
         g_current_quest_data = -1;
       }
@@ -1871,7 +1846,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     goto LAB_004f683f;
   }
 
-  FUN_004be570(s_dbox2_spr_0058afb8, 0xd5, 0xd2);
+  LoadDialogBoxFrameSprites(s_dbox2_spr_0058afb8, 0xd5, 0xd2);
   s.creature_type = g_lair_or_monster_slots[slot_index].entry_type;
   DAT_008ce538 = monster_color;
   DAT_007a7874 = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
@@ -2252,7 +2227,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         }
         SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
-        FUN_004be570(s_dbox_spr_0058b074, 0x71, 0xe3);
+        LoadDialogBoxFrameSprites(s_dbox_spr_0058b074, 0x71, 0xe3);
         s.selected_card_id = SelectAdventureListCardIndex(active_player, global_library[1], 500,
                                                           gs_encounter_preduel_0077f0d0[0x23], 1, &DAT_0058b080);
         if (global_library[1][s.selected_card_id] != -1)
@@ -2389,7 +2364,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       AnimatePaletteToColor(0, g_default_palette_fade_steps);
       ClearGraphicsPageWithPaletteColor(0, 0);
       LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b0a8);
-      FUN_004be570(s_dbox_spr_0058b0b8, 0x71, 0xe3);
+      LoadDialogBoxFrameSprites(s_dbox_spr_0058b0b8, 0x71, 0xe3);
       return 0;
     }
     if (s.bribe_option_index == s.menu_choice)
@@ -2398,7 +2373,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
       AnimatePaletteToColor(0, g_default_palette_fade_steps);
       LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b0c4);
-      FUN_004be570(s_dbox_spr_0058b0d4, 0x71, 0xe3);
+      LoadDialogBoxFrameSprites(s_dbox_spr_0058b0d4, 0x71, 0xe3);
       return 0;
     }
   }
@@ -2566,7 +2541,7 @@ LAB_4F4BB2:
   DestroyCachedCardArt();
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
-  FUN_004be570(s_dbox_spr_0058b110, 0x71, 0xe3);
+  LoadDialogBoxFrameSprites(s_dbox_spr_0058b110, 0x71, 0xe3);
   sound_stop(0);
   s.duel_prompt_done = -1;
   s.duel_prompt_choice = 0;
@@ -3011,7 +2986,7 @@ LAB_4F4BB2:
   }
 
 LAB_004f683f:
-  FUN_004be570(s_dbox_spr_0058b1b4, 0x71, 0xe3);
+  LoadDialogBoxFrameSprites(s_dbox_spr_0058b1b4, 0x71, 0xe3);
   SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
   LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b1c0);
   ClearInputAndWaitForMouseRelease();

@@ -1211,7 +1211,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
       giant_copy_internal_id = create_a_card_type(instance->internal_card_id);
       if (giant_copy_internal_id != -1)
       {
-        global_cards_data[giant_copy_internal_id].code_pointer = FUN_00481e25;
+        global_cards_data[giant_copy_internal_id].code_pointer = card_two_headed_giant_of_foriys_legacy;
         global_cards_data[giant_copy_internal_id].extra_ability = 0;
         global_cards_data[giant_copy_internal_id].id = (unsigned short)unk_008cf1ac;
 
@@ -1242,7 +1242,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
     {
       for (current_card = 0; current_card < active_cards_count[player]; ++current_card)
       {
-        if (is_in_play(player, current_card) && global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].code_pointer == FUN_00481e25 && *((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 8) == player && *((int *)((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 0x44)) == card)
+        if (is_in_play(player, current_card) && global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy && *((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 8) == player && *((int *)((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 0x44)) == card)
         {
           kill_card(player, current_card, KILL_DESTROY);
         }
@@ -1254,7 +1254,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
   {
     for (current_card = 0; current_card < active_cards_count[player]; ++current_card)
     {
-      if (is_in_play(player, current_card) && global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].code_pointer == FUN_00481e25 && *((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 8) == player && *((int *)((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 0x44)) == card)
+      if (is_in_play(player, current_card) && global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy && *((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 8) == player && *((int *)((char *)&PLAYER_CARD_INSTANCE(player, current_card) + 0x44)) == card)
       {
         kill_card(player, current_card, KILL_DESTROY);
       }

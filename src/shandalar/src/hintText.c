@@ -58,15 +58,18 @@ char s_BuyButtons_spr_00580fc8[] = "BuyButtons.spr";
 // FUNCTION: SHANDALAR 0x0041871f
 void AppendTownHintBodyText(int hint_index)
 {
-  char hint_text[256];
-  FILE *hints_file;
-  int item_count;
+  struct
+  {
+    char hint_text[256];
+    FILE *hints_file;
+    int item_count;
+  } s;
 
-  hints_file = fopen(s_hints_txt_00580f98, DAT_00580f94);
-  fseek(hints_file, DAT_0097db40[hint_index], 0);
-  item_count = fscanf(hints_file, s_______00580fa4, hint_text);
-  strcat(g_ui_message_buffer, hint_text);
-  fclose(hints_file);
+  s.hints_file = fopen(s_hints_txt_00580f98, DAT_00580f94);
+  fseek(s.hints_file, DAT_0097db40[hint_index], 0);
+  s.item_count = fscanf(s.hints_file, s_______00580fa4, s.hint_text);
+  strcat(g_ui_message_buffer, s.hint_text);
+  fclose(s.hints_file);
 }
 
 // FUNCTION: SHANDALAR 0x00418a8f
@@ -92,74 +95,77 @@ char *FindTextWordBreak(char *text)
   }
 }
 
+#pragma intrinsic(memset)
+
 // FUNCTION: SHANDALAR 0x00418b24
 char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
 {
-  int word_width;
-  char *word_end;
-  int line_width;
-  size_t word_length;
-  char *scan;
-  char current_line[256];
+  struct
+  {
+    char *word_end;
+    int line_width;
+    size_t word_length;
+    char *scan;
+    char current_line[256];
+  } s;
 
-  line_width = 0;
-  scan = src;
-  current_line[0] = '\0';
+  s.line_width = 0;
+  s.scan = src;
+  s.current_line[0] = '\0';
+  memset(&s.current_line[1], 0, 255);
   dst[0] = '\0';
 
-  while ((word_end = FindTextWordBreak(scan)) != (char *)0)
+  while ((s.word_end = FindTextWordBreak(s.scan)) != (char *)0)
   {
-    word_length = (int)word_end - (int)scan;
-    word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, scan, word_length);
-    if (max_width < line_width + word_width)
+    s.word_length = (int)s.word_end - (int)s.scan;
+    if (max_width < s.line_width + MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length))
     {
-      strcat(current_line, DAT_00580fac);
-      strcat(dst, current_line);
-      current_line[0] = '\0';
-      while ((scan != (char *)0) && (*scan == ' '))
+      strcat(s.current_line, DAT_00580fac);
+      strcat(dst, s.current_line);
+      s.current_line[0] = '\0';
+      while ((s.scan != (char *)0) && (*s.scan == ' '))
       {
-        scan++;
-        word_length--;
+        s.scan++;
+        s.word_length--;
       }
-      strncat(current_line, scan, word_length);
-      while ((*word_end != '\0') && (*word_end == '\n'))
+      strncat(s.current_line, s.scan, s.word_length);
+      while ((*s.word_end != '\0') && (*s.word_end == '\n'))
       {
         strcat(dst, DAT_00580fb0);
-        word_end++;
+        s.word_end++;
       }
-      line_width = MeasureTextSpanWidth(PTR_DAT_005832b4, word_end, word_length);
-      scan = word_end;
+      s.scan = s.word_end;
+      s.line_width = MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
     }
     else
     {
-      word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, scan, word_length);
-      line_width += word_width;
-      strncat(current_line, scan, word_length);
-      if (*word_end == '\n')
+      s.line_width += MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
+      strncat(s.current_line, s.scan, s.word_length);
+      if (*s.word_end == '\n')
       {
-        strcat(dst, current_line);
+        strcat(dst, s.current_line);
       }
-      while ((scan = word_end, *word_end != '\0') && (*word_end == '\n'))
+      while ((*s.word_end != '\0') && (*s.word_end == '\n'))
       {
         strcat(dst, DAT_00580fb4);
-        line_width = 0;
-        current_line[0] = '\0';
-        word_end++;
+        s.word_end++;
+        s.line_width = 0;
+        s.current_line[0] = '\0';
       }
+      s.scan = s.word_end;
     }
   }
 
-  word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, scan, word_length);
-  if (max_width < line_width + word_width)
+  if (max_width < s.line_width + MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length))
   {
-    strcat(current_line, DAT_00580fb8);
-    strcat(dst, current_line);
-    strcat(dst, scan);
+    strcat(s.current_line, DAT_00580fb8);
+    strcat(dst, s.current_line);
+    strcat(dst, s.scan);
   }
   else
   {
-    strcat(dst, current_line);
-    strcat(dst, scan);
+    strcat(dst, s.current_line);
+    strcat(dst, s.scan);
   }
 
   return dst;
@@ -168,74 +174,75 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
 // FUNCTION: SHANDALAR 0x00418e15
 char *WrapTextToWidthForPopup(char *src, char *dst, int max_width)
 {
-  int done;
-  int word_width;
-  char *word_end;
-  int line_width;
-  size_t word_length;
-  char *scan;
-  char current_line[256];
+  struct
+  {
+    char *word_end;
+    int line_width;
+    size_t word_length;
+    int done;
+    char *scan;
+    int word_width;
+    char current_line[256];
+  } s;
 
   if (dst == (char *)0)
   {
-    dst = (char *)0;
+    return 0;
   }
-  else if (src == (char *)0)
+  if (src == (char *)0)
   {
     dst[0] = '\0';
+    return dst;
   }
-  else
-  {
-    dst[0] = '\0';
-    scan = src;
-    current_line[0] = '\0';
-    line_width = 0;
-    done = 0;
+  dst[0] = '\0';
+  s.scan = src;
+  s.current_line[0] = '\0';
+  s.line_width = 0;
+  s.done = 0;
 
-    while (done == 0)
+  while (s.done == 0)
+  {
+    if (*s.scan == '\0')
     {
-      if (*scan == '\0')
+      strcat(dst, s.current_line);
+      s.done = 1;
+    }
+    else if (*s.scan == '\n')
+    {
+      strcat(s.current_line, DAT_00580fbc);
+      strcat(dst, s.current_line);
+      s.current_line[0] = '\0';
+      s.line_width = 0;
+      s.scan++;
+    }
+    else
+    {
+      s.word_end = s.scan;
+      while (*s.word_end == ' ')
       {
-        strcat(dst, current_line);
-        done = 1;
+        s.word_end++;
       }
-      else if (*scan == '\n')
+      while ((*s.word_end != ' ') && (*s.word_end != '\n') && (*s.word_end != '\0'))
       {
-        strcat(current_line, DAT_00580fbc);
-        strcat(dst, current_line);
-        current_line[0] = '\0';
-        line_width = 0;
-        scan++;
+        s.word_end++;
       }
-      else
+      s.word_length = (int)s.word_end - (int)s.scan;
+      s.word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
+      if (max_width < s.word_width + s.line_width)
       {
-        word_end = scan;
-        while (*word_end == ' ')
+        strcat(s.current_line, DAT_00580fc0);
+        strcat(dst, s.current_line);
+        s.current_line[0] = '\0';
+        s.line_width = 0;
+        while (*s.scan == ' ')
         {
-          word_end++;
+          s.scan++;
+          s.word_length--;
         }
-        while ((*word_end != ' ') && (*word_end != '\n') && (*word_end != '\0'))
-        {
-          word_end++;
-        }
-        word_length = (int)word_end - (int)scan;
-        word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, scan, word_length);
-        if (max_width < word_width + line_width)
-        {
-          strcat(current_line, DAT_00580fc0);
-          strcat(dst, current_line);
-          current_line[0] = '\0';
-          line_width = 0;
-          while (*scan == ' ')
-          {
-            scan++;
-            word_length--;
-          }
-        }
-        strncat(current_line, scan, word_length);
-        line_width += word_width;
-        scan = word_end;
       }
+      strncat(s.current_line, s.scan, s.word_length);
+      s.line_width += s.word_width;
+      s.scan = s.word_end;
     }
   }
 
@@ -245,60 +252,60 @@ char *WrapTextToWidthForPopup(char *src, char *dst, int max_width)
 // FUNCTION: SHANDALAR 0x0041905e
 void ShowTownHintTextPopup(int hint_index)
 {
-  int card_name_index;
-  int popup_width;
-  int popup_y;
-  int popup_x;
-  int i;
-  EncodedImage *loaded_button_sprites[12];
-  int player_has_first_card;
-  EncodedImage *button_sprites[12];
-  char wrapped_hint_text[1000];
+  struct
+  {
+    int i;
+    EncodedImage *loaded_button_sprites[12];
+    int card_name_index;
+    int player_has_first_card;
+    EncodedImage *button_sprites[10];
+    char wrapped_hint_text[1000];
+    EncodedImage *button_sprite_10;
+    EncodedImage *button_sprite_11;
+  } s;
 
   if (DAT_0097e450[hint_index].second != -1)
   {
-    card_name_index = DeckContainsCsvid(DAT_0097e450[hint_index].first);
-    player_has_first_card = (card_name_index != 0);
-    card_name_index = FUN_0056c705((&DAT_0097e450[hint_index].first)[player_has_first_card ^ 1]);
-    popup_width = FUN_0056c705((&DAT_0097e450[hint_index].first)[player_has_first_card]);
-    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_hinttext_0077e580[0], global_cards_data[popup_width].name,
-                 global_cards_data[card_name_index].name);
+    s.player_has_first_card = (DeckContainsCsvid(DAT_0097e450[hint_index].first) != 0);
+    FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_hinttext_0077e580[0],
+                                                global_cards_data[FUN_0056c705((&DAT_0097e450[hint_index].first)[s.player_has_first_card])].name,
+                                                global_cards_data[FUN_0056c705((&DAT_0097e450[hint_index].first)[s.player_has_first_card ^ 1])].name);
   }
   else
   {
-    card_name_index = FUN_0056c705(DAT_0097e450[hint_index].first);
-    sprintf(g_ui_message_buffer, gs_hinttext_0077e580[1], global_cards_data[card_name_index].name);
+    sprintf(g_ui_message_buffer, gs_hinttext_0077e580[1],
+            global_cards_data[FUN_0056c705(DAT_0097e450[hint_index].first)].name);
   }
 
   AppendTownHintBodyText(hint_index);
   FUN_0057e826(g_ui_message_buffer, DAT_00580fc4);
-  ReadSpriteEntryPointers(loaded_button_sprites, s_BuyButtons_spr_00580fc8);
+  ReadSpriteEntryPointers(s.loaded_button_sprites, s_BuyButtons_spr_00580fc8);
 
-  button_sprites[10] = loaded_button_sprites[0];
-  button_sprites[11] = loaded_button_sprites[1];
-  button_sprites[6] = loaded_button_sprites[2];
-  for (i = 0; i < 3; i++)
+  s.button_sprite_10 = s.loaded_button_sprites[0];
+  s.button_sprite_11 = s.loaded_button_sprites[1];
+  s.button_sprites[6] = s.loaded_button_sprites[2];
+  for (s.i = 0; s.i < 3; s.i++)
   {
-    button_sprites[7 + i] = loaded_button_sprites[3 + i];
+    s.button_sprites[7 + s.i] = s.loaded_button_sprites[3 + s.i];
   }
-  for (i = 0; i < 3; i++)
+  for (s.i = 0; s.i < 3; s.i++)
   {
-    button_sprites[3 + i] = loaded_button_sprites[6 + i];
+    s.button_sprites[3 + s.i] = s.loaded_button_sprites[6 + s.i];
   }
-  for (i = 0; i < 3; i++)
+  for (s.i = 0; s.i < 3; s.i++)
   {
-    button_sprites[i] = loaded_button_sprites[9 + i];
+    s.button_sprites[s.i] = s.loaded_button_sprites[9 + s.i];
   }
 
-  card_name_index = ScaleUiCoordinate(0x10f);
-  popup_width = ScaleUiCoordinate(0xc5);
-  popup_y = ScaleUiCoordinate(0x34);
-  popup_x = ScaleUiCoordinate(0xdc);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, popup_x, popup_y, popup_width, card_name_index, loaded_button_sprites[0]);
+  DrawEncodedImageResampled(PTR_DAT_005832b4,
+                            ScaleUiCoordinate(0xdc),
+                            ScaleUiCoordinate(0x34),
+                            ScaleUiCoordinate(0xc5),
+                            ScaleUiCoordinate(0x10f),
+                            s.button_sprite_10);
 
-  card_name_index = ScaleUiCoordinate(0x85);
-  WrapTextToWidthForPopup(g_ui_message_buffer, wrapped_hint_text, card_name_index);
-  DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x140, 0xbc, wrapped_hint_text);
+  WrapTextToWidthForPopup(g_ui_message_buffer, s.wrapped_hint_text, ScaleUiCoordinate(0x85));
+  DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x140, 0xbc, s.wrapped_hint_text);
   WaitForInputEventUnlessBlocked();
-  FreeSpriteBlob(button_sprites[10]);
+  FreeSpriteBlob(s.button_sprite_10);
 }

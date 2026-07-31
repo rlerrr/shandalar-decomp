@@ -191,7 +191,7 @@ static void
 write_header(FILE *out)
 {
   fputs("index,secret,name,id,type,subtype,color,cc0,cc1,cc2,power,toughness,new_field,reserved3,"
-        "code_pointer,static_ability,extra_ability,rarity,act_phases,expansion,creature_rating\n",
+        "code_pointer,static_ability,extra_ability,rarity,act_phases,expansion,creature_rating,ai_base_value\n",
         out);
 }
 
@@ -208,8 +208,9 @@ write_row(FILE *out, int idx, const card_data_t *cd)
   fprintf(out, "%u,%u,", (unsigned)cd->new_field, (unsigned)cd->reserved3);
   fprintf(out, "0x%08lX,", read_code_pointer_raw(cd));
   fprintf(out, "0x%08lX,0x%08lX,", (unsigned long)cd->static_ability, (unsigned long)cd->extra_ability);
-  fprintf(out, "%u,%u,%u,%u\n",
-          (unsigned)cd->rarity, (unsigned)cd->act_phases, (unsigned)cd->expansion, (unsigned)cd->creature_rating);
+  fprintf(out, "%u,%u,%u,%u,%ld\n",
+          (unsigned)cd->rarity, (unsigned)cd->act_phases, (unsigned)cd->expansion, (unsigned)cd->creature_rating,
+          (long)cd->ai_base_value);
 }
 
 int
