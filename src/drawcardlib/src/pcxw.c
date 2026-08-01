@@ -94,7 +94,7 @@ PcxHeader_t gPcxHeader;
 
 // FUNCTION: DRAWCARDLIB 0x1000b80f
 // FUNCTION: DECKDLL 0x1002d2b3
-void FUN_1000b80f(byte *dstScanline, undefined *srcPixels, undefined4 arg3, undefined4 arg4, int width)
+void PcxBuildSaveScanline(byte *dstScanline, undefined *srcPixels, undefined4 arg3, undefined4 arg4, int width)
 {
 }
 
@@ -185,7 +185,7 @@ bool PcxReadHeaderAndPaletteFromPath(char *path, void *paletteOut)
 // FUNCTION: FACEMAKER 0x0040aa50
 undefined4 PcxReadHeaderAndPalette(void *paletteOut)
 {
-  int local_8;
+  int paletteIndex;
 
   fread(&gPcxHeader, 0x80, 1, gPcxInFile);
   assert(gPcxHeader.manufacturer == 0x0a, PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0, 0xad,
@@ -207,9 +207,9 @@ undefined4 PcxReadHeaderAndPalette(void *paletteOut)
   else if ((gPcxHeader.nPlanes == 4) && (gPcxHeader.bitsPerPixel == 1))
   {
     fseek(gPcxInFile, 0x10, 2);
-    for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1)
+    for (paletteIndex = 0; paletteIndex < 0x10; paletteIndex = paletteIndex + 1)
     {
-      fread((void *)(local_8 * 4 + (int)paletteOut), 1, 3, gPcxInFile);
+      fread((void *)(paletteIndex * 4 + (int)paletteOut), 1, 3, gPcxInFile);
     }
     fseek(gPcxInFile, 0x80, 0);
   }
@@ -298,7 +298,7 @@ PcxSave8bppImage(undefined *srcPixels, char *path, void *palette, undefined4 unu
   PcxWriteHeader(width, height);
   for (s.row = 0; s.row < height; s.row = s.row + 1)
   {
-    FUN_1000b80f((byte *)s.scanline, srcPixels, unused_param_4, (undefined4)(s.row + (int)unused_param_5), width);
+    PcxBuildSaveScanline((byte *)s.scanline, srcPixels, unused_param_4, (undefined4)(s.row + (int)unused_param_5), width);
     PcxWriteScanlineRle((char *)s.scanline, width);
   }
   PcxWritePalette256(palette);
@@ -423,10 +423,10 @@ int CountRepeats(unsigned char value, unsigned char *buffer, int maxCount)
 // FUNCTION: DECKDLL 0x10016b61
 undefined4 PcxWritePalette256(void *palette)
 {
-  undefined1 local_8[4];
+  undefined1 paletteIndex[4];
 
-  local_8[0] = 0xc;
-  fwrite(local_8, 1, 1, gPcxOutFile);
+  paletteIndex[0] = 0xc;
+  fwrite(paletteIndex, 1, 1, gPcxOutFile);
   fwrite(palette, 3, 0x100, gPcxOutFile);
   return 0;
 }

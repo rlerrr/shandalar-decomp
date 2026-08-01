@@ -61,15 +61,15 @@ unsigned char g_treeNodeTable[0x10000];
 
 // FUNCTION: CARDARTLIB 0x10001f40
 // FUNCTION: DRAWCARDLIB 0x10002ea0
-void MemZeroDwords(undefined8 *param_1,uint param_2)
+void MemZeroDwords(undefined8 *dst, uint dword_count)
 {
 #ifdef MODERN_FIXES
-  memset(param_1,0,(size_t)param_2 * 4);
+  memset(dst, 0, (size_t)dword_count * 4);
 #else
   //TODO: I don't think MSVC can generate this??  This gotta be inline asm
   __asm {
-    mov edi, dword ptr param_1
-    mov ecx, dword ptr param_2
+    mov edi, dword ptr dst
+    mov ecx, dword ptr dword_count
     test edi, 4
     je memzero_aligned
     mov byte ptr [edi], 0
@@ -109,14 +109,14 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
     uint bit_count;
     uint new_bits;
     uint bit;
-    int local_14;
+    int decoded_count;
     int symbol;
     undefined4 *out_base;
     int lookahead;
     int node;
   } s;
 
-  s.local_14 = 0;
+  s.decoded_count = 0;
   s.out_base = out_dwords;
   g_bitstreamCursor = (uint *)bitstream_start;
   g_bitstreamBase = (int)g_bitstreamCursor;

@@ -4,7 +4,7 @@
 // FUNCTION: DRAWCARDLIB 0x10007296
 // FUNCTION: DECKDLL 0x10015fe0
 // FUNCTION: MAGIC 0x0055d9ed
-int GetNextManaSymbol(char **param_1)
+int GetNextManaSymbol(char **textCursor)
 {
   struct {
     char result;
@@ -12,7 +12,7 @@ int GetNextManaSymbol(char **param_1)
     char *chr;
   } s;
   
-  s.chr = (char *)*param_1;
+  s.chr = (char *)*textCursor;
   s.result = '\0';
   if (*s.chr == '|') {
     if (s.chr[1] == 'X') {
@@ -75,7 +75,7 @@ int GetNextManaSymbol(char **param_1)
     s.chr++;
     s.chr++;
   }
-  *param_1 = s.chr;
+  *textCursor = s.chr;
   return (int)s.result;
 }
 
@@ -83,8 +83,7 @@ int GetNextManaSymbol(char **param_1)
 // FUNCTION: DECKDLL 0x10023b0b
 // FUNCTION: MAGIC 0x00494270
 // FUNCTION: SHANDALAR 0x00464d0b
-BOOL DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,int param_6,int param_7
-            ,int param_8,int param_9)
+BOOL DrawMaskedBitmapToRect(HDC dc, RECT *rect, HANDLE bitmap, int wSrc, int hSrc, int srcX, int srcY, int maskX, int maskY)
 
 {
   struct {
@@ -96,13 +95,13 @@ BOOL DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,i
     int xDest;
   } s;
   
-  if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (param_3 == (HANDLE)0x0)) {
+  if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (bitmap == (HANDLE)0x0)) {
     return 0;
   }
   EnterCriticalSection(&global_critical_section_for_drawing);
   s.nSavedDC = SaveDC(dc);
-  SelectObject(global_screen_dc,param_3);
-  GetObjectA(param_3,0x18,&s.bm);
+  SelectObject(global_screen_dc,bitmap);
+  GetObjectA(bitmap,0x18,&s.bm);
   s.xDest = rect->left;
   s.yDest = rect->top;
   if (rect->right >= rect->left) {
@@ -118,9 +117,9 @@ BOOL DrawMaskedBitmapToRect(HDC dc,RECT *rect,HANDLE param_3,int wSrc,int hSrc,i
     s.hDest = hSrc;
   }
   ApplyCardArtPaletteToDc(global_screen_dc);
-  StretchBlt(dc,s.xDest,s.yDest,s.wDest,s.hDest,global_screen_dc,param_8,param_9,wSrc,hSrc,SRCAND);
+  StretchBlt(dc,s.xDest,s.yDest,s.wDest,s.hDest,global_screen_dc,maskX,maskY,wSrc,hSrc,SRCAND);
   ApplyCardArtPaletteToDc(global_screen_dc);
-  StretchBlt(dc,s.xDest,s.yDest,s.wDest,s.hDest,global_screen_dc,param_6,param_7,wSrc,hSrc,SRCPAINT);
+  StretchBlt(dc,s.xDest,s.yDest,s.wDest,s.hDest,global_screen_dc,srcX,srcY,wSrc,hSrc,SRCPAINT);
   RestoreDC(dc,s.nSavedDC);
   LeaveCriticalSection(&global_critical_section_for_drawing);
   return 1;

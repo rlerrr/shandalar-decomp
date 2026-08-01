@@ -46,8 +46,8 @@ typedef struct WvlEntry {
 STATIC_ASSERT(sizeof(WvlEntry) == 0x1b0, WvlEntry_wrong_size);
 
 WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar);
-uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int height);
-byte *Wvl_DecodeHaar(WvlEntry *param_1, byte *param_2);
+uint *Wvl_DecodeToBgr24(byte *out_bgr24, WvlEntry *wvl_entry, int width, int height);
+byte *Wvl_DecodeHaar(WvlEntry *wvl, byte *dst);
 
 extern undefined4 global_dither_kernel_id;
 extern undefined4 global_color_depth;

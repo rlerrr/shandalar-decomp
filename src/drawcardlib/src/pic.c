@@ -12,8 +12,8 @@
 typedef unsigned short ushort;
 
 /* Local helpers moved with load_pic(). */
-int OpenPcxFile(char *param_1, int param_2);
-void ClosePcxFile(int param_1);
+int OpenPcxFile(char *filename, int flags);
+void ClosePcxFile(int fileDescriptor);
 void RpBits_Setup(int fileDescriptor);
 int RpBitsRefill(void);
 
@@ -91,9 +91,9 @@ BITMAPINFO *CreateBitmapInfo(int width, int height, int bitsPerPixel)
 // FUNCTION: DRAWCARDLIB 0x1000977f
 // FUNCTION: DECKDLL 0x10001120
 // FUNCTION: SHANDALAR 0x0057a4c0
-BOOL FreeBitmapInfo(void *param_1)
+BOOL FreeBitmapInfo(void *bitmapInfo)
 {
-  free(param_1);
+  free(bitmapInfo);
   return 1;
 }
 
@@ -105,13 +105,13 @@ BOOL FreeBitmapInfo(void *param_1)
 // GLOBAL: DECKDLL 0x10105338
 // GLOBAL: SHANDALAR 0x005b7b78
 // GLOBAL: MAGIC 0x00637e28
-DIBSurface DAT_100f23b0;
+DIBSurface g_dibSurfaceStorage;
 
 // GLOBAL: DRAWCARDLIB 0x10022528
 // GLOBAL: DECKDLL 0x1003a840
 // GLOBAL: MAGIC 0x00570f2c
 // GLOBAL: SHANDALAR 0x00589bc4
-DIBSurface *global_dibSurface = &DAT_100f23b0;
+DIBSurface *global_dibSurface = &g_dibSurfaceStorage;
 
 // GLOBAL: DRAWCARDLIB 0x100f35a0
 // GLOBAL: DECKDLL 0x10105730
@@ -130,11 +130,11 @@ byte *rpbits_stream_end = rpbits_buffer + 0x200;
 
 // GLOBAL: DRAWCARDLIB 0x10022530
 // GLOBAL: DECKDLL 0x1003a848
-undefined4 DAT_10022530 = 0xFFFFFFFF;
+undefined4 g_invalidPcxFileDescriptor = 0xFFFFFFFF;
 
 // GLOBAL: DRAWCARDLIB 0x100f2394
 // GLOBAL: DECKDLL 0x1010531c
-int DAT_100f2394;
+int g_pcxPaddedWidth;
 
 // GLOBAL: DRAWCARDLIB 0x100f239c
 // GLOBAL: DECKDLL 0x10105324
@@ -171,7 +171,7 @@ byte *rpbits_stream_ptr;
 // LIBRARY: SHANDALAR 0x0098a000 SYMBOL
 // LIBRARY: FACEMAKER 0x00428000 SYMBOL
 // _RpBits_ReadTables
-void RpBits_ReadTables(ushort *param_3);
+void RpBits_ReadTables(ushort *palette);
 
 // LIBRARY: DRAWCARDLIB 0x10155484 SYMBOL
 // LIBRARY: DECKDLL 0x101f7484 SYMBOL
@@ -292,19 +292,19 @@ DIBSurface *CreateDIBSurface(int width, int height, int bitsPerPixel)
 // FUNCTION: MAGIC 0x004853bf
 // FUNCTION: SHANDALAR 0x004c882b
 HBITMAP
-LoadPicFile(int param_1, undefined4 param_2, undefined4 param_3, char *pcxFilename, undefined1 *palette)
+LoadPicFile(int loadFlags, undefined4 unused_arg2, undefined4 unused_arg3, char *pcxFilename, undefined1 *palette)
 {
   struct
   {
-    int local_414;
-    int local_410;
-    undefined1 local_40c[1024];
-    char *local_c;
+    int pic_width_padding;
+    int pcx_width_padding;
+    undefined1 temp_palette[1024];
+    char *dst_scanline;
     int bitsPerPixel;
   } s;
 
-  param_2 = param_2;
-  param_3 = param_3;
+  unused_arg2 = unused_arg2;
+  unused_arg3 = unused_arg3;
   s.bitsPerPixel = 8;
 
   if (strcmpi(".pcx", strchr(pcxFilename, '.')) == 0)
@@ -318,7 +318,7 @@ LoadPicFile(int param_1, undefined4 param_2, undefined4 param_3, char *pcxFilena
     gPcxPath = pcxFilename;
     if (palette == (undefined1 *)0x1)
     {
-      palette = s.local_40c;
+      palette = s.temp_palette;
     }
     if (palette != (undefined1 *)0x0)
     {
@@ -332,25 +332,25 @@ LoadPicFile(int param_1, undefined4 param_2, undefined4 param_3, char *pcxFilena
     else
     {
       PcxReadHeaderAndPalette(0);
-      if (param_1 < 0)
+      if (loadFlags < 0)
       {
         global_pcxw_image_height = 0;
       }
       if ((global_pcxw_image_width & 3) != 0)
       {
-        s.local_410 = 4 - (global_pcxw_image_width & 3);
+        s.pcx_width_padding = 4 - (global_pcxw_image_width & 3);
       }
       else
       {
-        s.local_410 = 0;
+        s.pcx_width_padding = 0;
       }
-      DAT_100f2394 = global_pcxw_image_width + s.local_410;
-      CreateDIBSurface(DAT_100f2394, global_pcxw_image_height, s.bitsPerPixel);
-      s.local_c = (char *)global_dibSurface->pBits;
+      g_pcxPaddedWidth = global_pcxw_image_width + s.pcx_width_padding;
+      CreateDIBSurface(g_pcxPaddedWidth, global_pcxw_image_height, s.bitsPerPixel);
+      s.dst_scanline = (char *)global_dibSurface->pBits;
       for (global_pcx_lineNum = 0; (int)global_pcx_lineNum < global_pcxw_image_height; global_pcx_lineNum++,
-          s.local_c += (s.bitsPerPixel / 8 * DAT_100f2394))
+          s.dst_scanline += (s.bitsPerPixel / 8 * g_pcxPaddedWidth))
       {
-        PcxReadScanlineRle(s.local_c);
+        PcxReadScanlineRle(s.dst_scanline);
       }
       fclose(gPcxInFile);
     }
@@ -365,22 +365,22 @@ LoadPicFile(int param_1, undefined4 param_2, undefined4 param_3, char *pcxFilena
       RpBits_ReadTables((ushort *)palette);
       if ((global_pcxw_image_width & 3) != 0)
       {
-        s.local_414 = 4 - (global_pcxw_image_width & 3);
+        s.pic_width_padding = 4 - (global_pcxw_image_width & 3);
       }
       else
       {
-        s.local_414 = 0;
+        s.pic_width_padding = 0;
       }
-      DAT_100f2394 = global_pcxw_image_width + s.local_414;
+      g_pcxPaddedWidth = global_pcxw_image_width + s.pic_width_padding;
 
       if (CreateDIBSurface(global_pcxw_image_width, global_pcxw_image_height, s.bitsPerPixel) != 0)
       {
-        s.local_c = (char *)global_dibSurface->pBits;
+        s.dst_scanline = (char *)global_dibSurface->pBits;
 
         for (global_pcx_lineNum = 0; (int)global_pcx_lineNum < global_pcxw_image_height; global_pcx_lineNum++,
-            s.local_c += global_dibSurface->rowPadding + (global_pcxw_image_width * s.bitsPerPixel) / 8)
+            s.dst_scanline += global_dibSurface->rowPadding + (global_pcxw_image_width * s.bitsPerPixel) / 8)
         {
-          RpBits_DecodeImage(s.local_c, global_pcxw_image_width);
+          RpBits_DecodeImage(s.dst_scanline, global_pcxw_image_width);
         }
       }
       else
@@ -414,11 +414,11 @@ HBITMAP load_pic(char *filename)
 // FUNCTION: DRAWCARDLIB 0x1000b745
 // FUNCTION: DECKDLL 0x1002d1e6
 // FUNCTION: MAGIC 0x004856fa
-int OpenPcxFile(char *param_1, int param_2)
+int OpenPcxFile(char *filename, int flags)
 {
   int iVar1;
 
-  iVar1 = _open(param_1, param_2);
+  iVar1 = _open(filename, flags);
   _DAT_100f23a8 = 0xffffffff;
   return iVar1;
 }
@@ -426,11 +426,11 @@ int OpenPcxFile(char *param_1, int param_2)
 // FUNCTION: DRAWCARDLIB 0x1000b778
 // FUNCTION: DECKDLL 0x1002d21a
 // FUNCTION: MAGIC 0x0048572e
-void ClosePcxFile(int param_1)
+void ClosePcxFile(int fileDescriptor)
 {
-  if (param_1 == (int)DAT_10022530)
+  if (fileDescriptor == (int)g_invalidPcxFileDescriptor)
     return;
-  _close(param_1);
+  _close(fileDescriptor);
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000b7a2

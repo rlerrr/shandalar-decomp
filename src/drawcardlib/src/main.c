@@ -39,7 +39,7 @@ char global_dual_dat_filename[260];
 char global_cardart_directory[0x105];
 
 // GLOBAL: DRAWCARDLIB 0x100223ac
-undefined4 DAT_100223ac = 0;
+undefined4 g_emptyStringStorage = 0;
 
 // GLOBAL: DRAWCARDLIB 0x10022504
 undefined4 global_dwPlatformId = 0xFFFFFFFF;
@@ -60,10 +60,10 @@ HBITMAP global_CARDBK_White;
 HBITMAP global_CARDBK_GreenLand;
 
 // GLOBAL: DRAWCARDLIB 0x10039fdc
-HFONT DAT_10039fdc;
+HFONT g_bigCardSubtitleFont;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe0
-COLORREF DAT_10039fe0;
+COLORREF g_smallCardTitleColor;
 
 // GLOBAL: DRAWCARDLIB 0x10039fe4
 HBITMAP global_CardSets;
@@ -72,7 +72,7 @@ HBITMAP global_CardSets;
 HBITMAP global_CARDBK_BlackLand;
 
 // GLOBAL: DRAWCARDLIB 0x10039fec
-COLORREF DAT_10039fec;
+COLORREF g_cardTextShadowColor;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff0
 HBITMAP global_CARDBK_WhiteLand;
@@ -81,19 +81,19 @@ HBITMAP global_CARDBK_WhiteLand;
 HBITMAP global_CARDBK_Gold;
 
 // GLOBAL: DRAWCARDLIB 0x10039ff8
-HFONT DAT_10039ff8;
+HFONT g_bigCardPowerToughnessFont;
 
 // GLOBAL: DRAWCARDLIB 0x10039ffc
-COLORREF DAT_10039ffc;
+COLORREF g_defaultCardFrameColor;
 
 // GLOBAL: DRAWCARDLIB 0x1003a000
-HFONT DAT_1003a000;
+HFONT g_bigCardTextFont;
 
 // GLOBAL: DRAWCARDLIB 0x1003a004
 HBITMAP global_CARDBK_BlueLand;
 
 // GLOBAL: DRAWCARDLIB 0x1003a008
-HFONT DAT_1003a008;
+HFONT g_bigCardTitleFont;
 
 // GLOBAL: DRAWCARDLIB 0x1003a00c
 HBITMAP global_CARDBK_RedLand;
@@ -105,10 +105,10 @@ HBITMAP global_CardBack;
 HBITMAP global_CARDBK_DarklandsLand;
 
 // GLOBAL: DRAWCARDLIB 0x1003a018
-HFONT DAT_1003a018;
+HFONT g_smallCardTitleFont;
 
 // GLOBAL: DRAWCARDLIB 0x1003a01c
-undefined4 DAT_1003a01c;
+undefined4 g_cardBorderPen;
 
 // GLOBAL: DRAWCARDLIB 0x1003a020
 HBITMAP global_CARDBK_Special;
@@ -120,22 +120,22 @@ HBITMAP global_CARDBK_Artifact;
 HBITMAP global_CARDBK_ArabianNightsLand;
 
 // GLOBAL: DRAWCARDLIB 0x1003a02c
-COLORREF DAT_1003a02c;
+COLORREF g_alternateCardFrameColor;
 
 // GLOBAL: DRAWCARDLIB 0x1003a030
-undefined4 DAT_1003a030;
+undefined4 g_defaultCardFrameBrush;
 
 // GLOBAL: DRAWCARDLIB 0x1003a034
 HBITMAP global_CARDBK_Blue;
 
 // GLOBAL: DRAWCARDLIB 0x1003a038
-undefined4 DAT_1003a038;
+undefined4 g_alternateCardFrameBrush;
 
 // GLOBAL: DRAWCARDLIB 0x1003a03c
 HBITMAP global_CARDBK_Red;
 
 // GLOBAL: DRAWCARDLIB 0x1003a040
-HFONT DAT_1003a040;
+HFONT g_bigCardTextItalicFont;
 
 // GLOBAL: DRAWCARDLIB 0x1003a084
 HBITMAP global_CARDBK_AntiquitiesLand;
@@ -144,86 +144,86 @@ HBITMAP global_CARDBK_AntiquitiesLand;
 HBITMAP global_CARDBK_Black;
 
 // GLOBAL: DRAWCARDLIB 0x1003a08c
-COLORREF DAT_1003a08c;
+COLORREF g_smallCardTitleAltColor;
 
 // GLOBAL: DRAWCARDLIB 0x1003a198
 HBITMAP global_ManaSymbols;
 
 // GLOBAL: DRAWCARDLIB 0x1003a19c
-COLORREF DAT_1003a19c;
+COLORREF g_smallCardTitleFallbackColor;
 
 // GLOBAL: DRAWCARDLIB 0x1003a1a0
-COLORREF DAT_1003a1a0;
+COLORREF g_rulesTextColor;
 
 // GLOBAL: DRAWCARDLIB 0x1003a1a4
-COLORREF DAT_1003a1a4;
+COLORREF g_cardBorderColor;
 
 // GLOBAL: DRAWCARDLIB 0x100f37d0
-char DAT_100f37d0[100 * 1024];
+char g_cardNames[100 * 1024];
 
 // GLOBAL: DRAWCARDLIB 0x100f3833
-char DAT_100f3833[100 * 1024];
+char g_cardNameSlotTerminators[100 * 1024];
 
 // GLOBAL: DRAWCARDLIB 0x10124510
-undefined4 _DAT_10124510;
+undefined4 g_drawCardLibInstance;
 
 // GLOBAL: DRAWCARDLIB 0x1012655c
-COLORREF DAT_1012655c;
+COLORREF g_smallCardTitleBackgroundColor;
 
 // FUNCTION: DRAWCARDLIB 0x10004970
 undefined4 prepare_fonts_and_imgs(void)
 {
-  CHAR local_10c[264];
+  CHAR resourcePath[264];
 
   strcpy(global_dual_dat_filename, global_base_directory);
   strcat(global_dual_dat_filename, "\\DuelArt");
   strcat(global_dual_dat_filename, "\\Duel.dat");
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0530m_.TTF");
-  AddFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Magis___.TTF");
-  AddFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0127m_.TTF");
-  AddFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0085m_.TTF");
-  AddFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0298m_.TTF");
-  AddFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0299m_.TTF");
-  AddFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0300m_.TTF");
-  AddFontResourceA(local_10c);
-  sprintf(local_10c, "%s\\ManaSymbols.pic", &global_cardart_directory);
-  global_ManaSymbols = load_pic(local_10c);
-  sprintf(local_10c, "%s\\CardSets.pic", &global_cardart_directory);
-  global_CardSets = load_pic(local_10c);
-  sprintf(local_10c, "%s\\CardBack.pic", &global_cardart_directory);
-  global_CardBack = load_pic(local_10c);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0530m_.TTF");
+  AddFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Magis___.TTF");
+  AddFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0127m_.TTF");
+  AddFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0085m_.TTF");
+  AddFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0298m_.TTF");
+  AddFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0299m_.TTF");
+  AddFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0300m_.TTF");
+  AddFontResourceA(resourcePath);
+  sprintf(resourcePath, "%s\\ManaSymbols.pic", &global_cardart_directory);
+  global_ManaSymbols = load_pic(resourcePath);
+  sprintf(resourcePath, "%s\\CardSets.pic", &global_cardart_directory);
+  global_CardSets = load_pic(resourcePath);
+  sprintf(resourcePath, "%s\\CardBack.pic", &global_cardart_directory);
+  global_CardBack = load_pic(resourcePath);
 
-  DAT_1003a008 = CreateFontIndirectA(LoadFontFromIni("BigCardTitle", 0));
-  DAT_10039fdc = CreateFontIndirectA(LoadFontFromIni("BigCardSubtitle", 0));
-  DAT_10039ff8 = CreateFontIndirectA(LoadFontFromIni("BigCardPT", 0));
-  DAT_1003a000 = CreateFontIndirectA(LoadFontFromIni("BigCardText", 0));
-  DAT_1003a040 = CreateFontIndirectA(LoadFontFromIni("BigCardText", 1));
-  DAT_1003a018 = CreateFontIndirectA(LoadFontFromIni("SmallCardTitle", 0));
-  DAT_10039ffc = GetPaletteColor(0xbe);
-  DAT_1003a02c = GetPaletteColor(0xca);
-  DAT_10039fec = GetPaletteColor(0xc9);
-  DAT_10039fe0 = GetPaletteColor(0xbf);
-  DAT_1003a08c = GetPaletteColor(0xd8);
-  DAT_1003a19c = GetPaletteColor(0x31);
-  DAT_1003a1a0 = GetPaletteColor(0xc9);
-  DAT_1012655c = GetPaletteColor(0xc4);
-  DAT_1003a1a4 = GetPaletteColor(0xc4);
-  DAT_1003a01c = (undefined4)CreatePen(0, 0, DAT_1003a1a4);
-  DAT_1003a030 = (undefined4)CreateSolidBrush(DAT_10039ffc);
-  DAT_1003a038 = (undefined4)CreateSolidBrush(DAT_1003a02c);
+  g_bigCardTitleFont = CreateFontIndirectA(LoadFontFromIni("BigCardTitle", 0));
+  g_bigCardSubtitleFont = CreateFontIndirectA(LoadFontFromIni("BigCardSubtitle", 0));
+  g_bigCardPowerToughnessFont = CreateFontIndirectA(LoadFontFromIni("BigCardPT", 0));
+  g_bigCardTextFont = CreateFontIndirectA(LoadFontFromIni("BigCardText", 0));
+  g_bigCardTextItalicFont = CreateFontIndirectA(LoadFontFromIni("BigCardText", 1));
+  g_smallCardTitleFont = CreateFontIndirectA(LoadFontFromIni("SmallCardTitle", 0));
+  g_defaultCardFrameColor = GetPaletteColor(0xbe);
+  g_alternateCardFrameColor = GetPaletteColor(0xca);
+  g_cardTextShadowColor = GetPaletteColor(0xc9);
+  g_smallCardTitleColor = GetPaletteColor(0xbf);
+  g_smallCardTitleAltColor = GetPaletteColor(0xd8);
+  g_smallCardTitleFallbackColor = GetPaletteColor(0x31);
+  g_rulesTextColor = GetPaletteColor(0xc9);
+  g_smallCardTitleBackgroundColor = GetPaletteColor(0xc4);
+  g_cardBorderColor = GetPaletteColor(0xc4);
+  g_cardBorderPen = (undefined4)CreatePen(0, 0, g_cardBorderColor);
+  g_defaultCardFrameBrush = (undefined4)CreateSolidBrush(g_defaultCardFrameColor);
+  g_alternateCardFrameBrush = (undefined4)CreateSolidBrush(g_alternateCardFrameColor);
   global_CARDBK_Artifact = 0;
   global_CARDBK_Gold = global_CARDBK_Artifact;
   global_CARDBK_Red = global_CARDBK_Gold;
@@ -243,10 +243,10 @@ undefined4 prepare_fonts_and_imgs(void)
   global_CARDBK_GreenLand = global_CARDBK_WhiteLand;
   global_CARDBK_Special = 0;
   if ((((((global_ManaSymbols == (HBITMAP)0x0) || (global_CardSets == (HBITMAP)0x0)) || (global_CardBack == (HBITMAP)0x0)) ||
-        ((DAT_1003a008 == (HFONT)0x0 || (DAT_10039fdc == (HFONT)0x0)))) ||
-       ((DAT_1003a000 == (HFONT)0x0 || ((DAT_1003a040 == (HFONT)0x0 || (DAT_1003a018 == (HFONT)0x0)))))) ||
-      (((HPEN)DAT_1003a01c == (HPEN)0x0 ||
-        (((HBRUSH)DAT_1003a030 == (HBRUSH)0x0 || ((HBRUSH)DAT_1003a038 == (HBRUSH)0x0))))))
+        ((g_bigCardTitleFont == (HFONT)0x0 || (g_bigCardSubtitleFont == (HFONT)0x0)))) ||
+       ((g_bigCardTextFont == (HFONT)0x0 || ((g_bigCardTextItalicFont == (HFONT)0x0 || (g_smallCardTitleFont == (HFONT)0x0)))))) ||
+      (((HPEN)g_cardBorderPen == (HPEN)0x0 ||
+        (((HBRUSH)g_defaultCardFrameBrush == (HBRUSH)0x0 || ((HBRUSH)g_alternateCardFrameBrush == (HBRUSH)0x0))))))
   {
     DestroyAllResources();
     return 0;
@@ -256,30 +256,30 @@ undefined4 prepare_fonts_and_imgs(void)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10004e82
-LOGFONTA *LoadFontFromIni(char *param_1, int param_2)
+LOGFONTA *LoadFontFromIni(char *fontKeySuffix, int italic)
 {
   CHAR key[100];
-  UINT local_8;
+  UINT boldSetting;
 
   memcpy(&global_temp_font, &global_template_font, sizeof(LOGFONTA));
   strcpy(key, "size");
-  strcat(key, param_1);
+  strcat(key, fontKeySuffix);
   global_temp_font.lfHeight = GetPrivateProfileIntA("Fonts", key, 0x14, global_dual_dat_filename);
 
   strcpy(key, "bold");
-  strcat(key, param_1);
-  local_8 = GetPrivateProfileIntA("Fonts", key, 0, global_dual_dat_filename);
-  if (local_8 != 0)
+  strcat(key, fontKeySuffix);
+  boldSetting = GetPrivateProfileIntA("Fonts", key, 0, global_dual_dat_filename);
+  if (boldSetting != 0)
   {
     global_temp_font.lfWeight = FW_BOLD;
   }
-  if (param_2 != 0)
+  if (italic != 0)
   {
     global_temp_font.lfItalic = TRUE;
   }
 
   strcpy(key, "font");
-  strcat(key, param_1);
+  strcat(key, fontKeySuffix);
   GetPrivateProfileStringA("Fonts", key, "MS Sans Serif", global_temp_font.lfFaceName, 0x20, global_dual_dat_filename);
   return &global_temp_font;
 }
@@ -381,32 +381,32 @@ void __inline DestroyAllCardBackgrounds_impl(void)
 // FUNCTION: DRAWCARDLIB 0x10004f8e
 void DestroyAllResources(void)
 {
-  CHAR local_10c[264];
+  CHAR resourcePath[264];
 
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Magim___.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0530m_.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Magis___.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0127m_.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0085m_.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0298m_.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0299m_.TTF");
-  RemoveFontResourceA(local_10c);
-  strcpy(local_10c, global_base_directory);
-  strcat(local_10c, "\\Tt0300m_.TTF");
-  RemoveFontResourceA(local_10c);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Magim___.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0530m_.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Magis___.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0127m_.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0085m_.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0298m_.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0299m_.TTF");
+  RemoveFontResourceA(resourcePath);
+  strcpy(resourcePath, global_base_directory);
+  strcat(resourcePath, "\\Tt0300m_.TTF");
+  RemoveFontResourceA(resourcePath);
   if (global_ManaSymbols != 0)
   {
     DeleteAndCloseObject(global_ManaSymbols);
@@ -425,51 +425,51 @@ void DestroyAllResources(void)
 
   DestroyAllCardBackgrounds_impl();
 
-  if (DAT_1003a008 != (HGDIOBJ)0x0)
+  if (g_bigCardTitleFont != (HGDIOBJ)0x0)
   {
-    DeleteObject(DAT_1003a008);
+    DeleteObject(g_bigCardTitleFont);
   }
-  DAT_1003a008 = (HGDIOBJ)0x0;
-  if (DAT_10039fdc != (HGDIOBJ)0x0)
+  g_bigCardTitleFont = (HGDIOBJ)0x0;
+  if (g_bigCardSubtitleFont != (HGDIOBJ)0x0)
   {
-    DeleteObject(DAT_10039fdc);
+    DeleteObject(g_bigCardSubtitleFont);
   }
-  DAT_10039fdc = (HGDIOBJ)0x0;
-  if (DAT_10039ff8 != (HGDIOBJ)0x0)
+  g_bigCardSubtitleFont = (HGDIOBJ)0x0;
+  if (g_bigCardPowerToughnessFont != (HGDIOBJ)0x0)
   {
-    DeleteObject(DAT_10039ff8);
+    DeleteObject(g_bigCardPowerToughnessFont);
   }
-  DAT_10039ff8 = (HGDIOBJ)0x0;
-  if (DAT_1003a000 != (HGDIOBJ)0x0)
+  g_bigCardPowerToughnessFont = (HGDIOBJ)0x0;
+  if (g_bigCardTextFont != (HGDIOBJ)0x0)
   {
-    DeleteObject(DAT_1003a000);
+    DeleteObject(g_bigCardTextFont);
   }
-  DAT_1003a000 = (HGDIOBJ)0x0;
-  if (DAT_1003a040 != (HGDIOBJ)0x0)
+  g_bigCardTextFont = (HGDIOBJ)0x0;
+  if (g_bigCardTextItalicFont != (HGDIOBJ)0x0)
   {
-    DeleteObject(DAT_1003a040);
+    DeleteObject(g_bigCardTextItalicFont);
   }
-  DAT_1003a040 = (HGDIOBJ)0x0;
-  if (DAT_1003a018 != (HGDIOBJ)0x0)
+  g_bigCardTextItalicFont = (HGDIOBJ)0x0;
+  if (g_smallCardTitleFont != (HGDIOBJ)0x0)
   {
-    DeleteObject(DAT_1003a018);
+    DeleteObject(g_smallCardTitleFont);
   }
-  DAT_1003a018 = (HGDIOBJ)0x0;
-  if ((HGDIOBJ)DAT_1003a01c != (HGDIOBJ)0x0)
+  g_smallCardTitleFont = (HGDIOBJ)0x0;
+  if ((HGDIOBJ)g_cardBorderPen != (HGDIOBJ)0x0)
   {
-    DeleteObject((HGDIOBJ)DAT_1003a01c);
+    DeleteObject((HGDIOBJ)g_cardBorderPen);
   }
-  DAT_1003a01c = (undefined4)(HGDIOBJ)0x0;
-  if ((HGDIOBJ)DAT_1003a030 != (HGDIOBJ)0x0)
+  g_cardBorderPen = (undefined4)(HGDIOBJ)0x0;
+  if ((HGDIOBJ)g_defaultCardFrameBrush != (HGDIOBJ)0x0)
   {
-    DeleteObject((HGDIOBJ)DAT_1003a030);
+    DeleteObject((HGDIOBJ)g_defaultCardFrameBrush);
   }
-  DAT_1003a030 = (undefined4)(HGDIOBJ)0x0;
-  if ((HGDIOBJ)DAT_1003a038 != (HGDIOBJ)0x0)
+  g_defaultCardFrameBrush = (undefined4)(HGDIOBJ)0x0;
+  if ((HGDIOBJ)g_alternateCardFrameBrush != (HGDIOBJ)0x0)
   {
-    DeleteObject((HGDIOBJ)DAT_1003a038);
+    DeleteObject((HGDIOBJ)g_alternateCardFrameBrush);
   }
-  DAT_1003a038 = (undefined4)(HGDIOBJ)0x0;
+  g_alternateCardFrameBrush = (undefined4)(HGDIOBJ)0x0;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000558b
@@ -510,7 +510,7 @@ void DrawCardBack(HDC dc, RECT *rect)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000592c
-undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version, uint param_5, bool expanded_text, LPCSTR param_7)
+undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version, uint drawFlags, bool expanded_text, LPCSTR artistFormat)
 {
   struct
   {
@@ -579,12 +579,12 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   SetRect(&s.powerToughnessRect, 0xc, 0x114, 0xbc, 0x124);
   if (card->expansion == -1 || (card->expansion & 0x10) != 0 || (card->expansion & 0x80) != 0)
   {
-    s.frameBrush = CreateSolidBrush(DAT_10039ffc);
+    s.frameBrush = CreateSolidBrush(g_defaultCardFrameColor);
     SelectObject(dc, s.frameBrush);
   }
   else
   {
-    s.frameBrush = CreateSolidBrush(DAT_1003a02c);
+    s.frameBrush = CreateSolidBrush(g_alternateCardFrameColor);
     SelectObject(dc, s.frameBrush);
   }
   SelectObject(dc, GetStockObject(8));
@@ -611,16 +611,16 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   s.backgroundBitmap = *s.backgroundPointer;
   s.shadowOffset = 1;
   s.textColor = GetPaletteColor(0xbf);
-  SelectObject(dc, DAT_1003a008);
+  SelectObject(dc, g_bigCardTitleFont);
   SetBkMode(dc, 1);
-  SetTextColor(dc, DAT_10039fec);
+  SetTextColor(dc, g_cardTextShadowColor);
   OffsetRect(&s.nameRect, s.shadowOffset, s.shadowOffset);
   DrawTextA(dc, card->full_name, -1, &s.nameRect, 0x824);
   OffsetRect(&s.nameRect, -s.shadowOffset, -s.shadowOffset);
   SetTextColor(dc, s.textColor);
   DrawTextA(dc, card->full_name, -1, &s.nameRect, 0x824);
   s.defaultPowerToughness = 0x64;
-  SelectObject(dc, DAT_10039ff8);
+  SelectObject(dc, g_bigCardPowerToughnessFont);
   if ((card->power != 0) || (card->toughness != 0))
   {
     s.tempText[0] = '\0';
@@ -649,19 +649,19 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
     {
       wsprintfA((char *)((ptrdiff_t)&s.tempText + strlen(s.tempText)), "%d", card->toughness);
     }
-    SetTextColor(dc, DAT_10039fec);
+    SetTextColor(dc, g_cardTextShadowColor);
     OffsetRect(&s.powerToughnessRect, s.shadowOffset, s.shadowOffset);
     DrawTextA(dc, s.tempText, -1, &s.powerToughnessRect, 0x26);
     OffsetRect(&s.powerToughnessRect, -s.shadowOffset, -s.shadowOffset);
     SetTextColor(dc, s.textColor);
     DrawTextA(dc, s.tempText, -1, &s.powerToughnessRect, 0x26);
   }
-  SelectObject(dc, DAT_10039fdc);
+  SelectObject(dc, g_bigCardSubtitleFont);
   SetBkMode(dc, 1);
   if ((card->card_type != -1) && (card->card_type != 0))
   {
     s.typeText = card->type_text;
-    SetTextColor(dc, DAT_10039fec);
+    SetTextColor(dc, g_cardTextShadowColor);
     OffsetRect(&s.typeLineRect, s.shadowOffset, s.shadowOffset);
     DrawTextA(dc, s.typeText, -1, &s.typeLineRect, 0x24);
     OffsetRect(&s.typeLineRect, -s.shadowOffset, -s.shadowOffset);
@@ -670,8 +670,8 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   }
   if (card->artist != 0)
   {
-    wsprintfA(s.tempText, param_7, card->artist);
-    SetTextColor(dc, DAT_10039fec);
+    wsprintfA(s.tempText, artistFormat, card->artist);
+    SetTextColor(dc, g_cardTextShadowColor);
     OffsetRect(&s.artistRect, s.shadowOffset, s.shadowOffset);
     DrawTextA(dc, s.tempText, -1, &s.artistRect, 0x824);
     OffsetRect(&s.artistRect, -s.shadowOffset, -s.shadowOffset);
@@ -690,7 +690,7 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   LPtoDP(dc, (LPPOINT)&s.artDeviceRect, 2);
 
   // HMMM
-  switch (param_5 & 0xf)
+  switch (drawFlags & 0xf)
   {
   case 0:
     if (IsBigArtIn(card->id, version) != 0)
@@ -706,7 +706,7 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   case 1:
     if (IsBigArtIn(card->id, version) == 0)
     {
-      if (((param_5 & 0x10) != 0) && (IsSmallArtIn(card->id, version) != 0))
+      if (((drawFlags & 0x10) != 0) && (IsSmallArtIn(card->id, version) != 0))
       {
         DrawSmallArt(dc, &s.artRect, card->id, version);
       }
@@ -716,7 +716,7 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
     DrawBigArt(dc, &s.artRect, card->id, version);
     break;
   default:
-    if (((IsBigArtIn(card->id, version) == 0) && ((param_5 & 0x10) != 0)) &&
+    if (((IsBigArtIn(card->id, version) == 0) && ((drawFlags & 0x10) != 0)) &&
         (IsSmallArtIn(card->id, version) != 0))
     {
       DrawSmallArt(dc, &s.artRect, card->id, version);
@@ -745,17 +745,17 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
   ReplaceSubstring(s.rules_text, "|S3", 1, "");
   ReplaceSubstring(s.rules_text, "|S4", 1, "");
   ReplaceSubstring(s.rules_text, "|S", 1, "");
-  SetTextColor(dc, DAT_1003a1a0);
+  SetTextColor(dc, g_rulesTextColor);
   SetBkMode(dc, 1);
   if (expanded_text != 0)
   {
-    SelectObject(dc, DAT_1003a000);
+    SelectObject(dc, g_bigCardTextFont);
     s.manaTextHeight = (unsigned short)((CalcDrawManaText(dc, &s.rulesTextRect, s.rules_text) >> 0x10) & 0xffff);
     GetTextMetricsA(dc, &s.textMetrics);
     CopyRect(&s.flavorRect, &s.rulesTextRect);
     s.flavorRect.top += s.manaTextHeight;
     s.flavorRect.top += s.textMetrics.tmHeight / 2;
-    SelectObject(dc, DAT_1003a040);
+    SelectObject(dc, g_bigCardTextItalicFont);
     DrawTextA(dc, card->flavor_text, -1, &s.flavorRect, 0x410);
     s.textBlockHeight = s.flavorRect.bottom - s.rulesTextRect.top;
     if (s.rulesTextRect.bottom - s.rulesTextRect.top < s.textBlockHeight)
@@ -782,13 +782,13 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
       }
     }
   }
-  SelectObject(dc, DAT_1003a000);
+  SelectObject(dc, g_bigCardTextFont);
   s.manaTextHeight = (unsigned short)((DrawManaText(dc, &s.rulesTextRect, s.rules_text, 1) >> 0x10) & 0xffff);
   GetTextMetricsA(dc, &s.textMetrics);
   CopyRect(&s.flavorRect, &s.rulesTextRect);
   s.flavorRect.top += s.manaTextHeight;
   s.flavorRect.top += s.textMetrics.tmHeight / 3;
-  SelectObject(dc, DAT_1003a040);
+  SelectObject(dc, g_bigCardTextItalicFont);
   DrawTextA(dc, card->flavor_text, -1, &s.flavorRect, 0x10);
   RestoreDC(dc, s.nSavedDC);
   return s.result;
@@ -863,23 +863,23 @@ HBITMAP *GetCardBackgroundPointer(card_ptr_t *card)
             }
             else
             {
-              if (strcmp(card->full_name, DAT_100f37d0 + 0x5d5c) == 0)
+              if (strcmp(card->full_name, g_cardNames + 0x5d5c) == 0)
               {
                 result = &global_CARDBK_BlackLand;
               }
-              else if (strcmp(card->full_name, DAT_100f37d0 + 0x4970) == 0)
+              else if (strcmp(card->full_name, g_cardNames + 0x4970) == 0)
               {
                 result = &global_CARDBK_WhiteLand;
               }
-              else if (strcmp(card->full_name, DAT_100f37d0 + 0x4010) == 0)
+              else if (strcmp(card->full_name, g_cardNames + 0x4010) == 0)
               {
                 result = &global_CARDBK_RedLand;
               }
-              else if (strcmp(card->full_name, DAT_100f37d0 + 0x238c) == 0)
+              else if (strcmp(card->full_name, g_cardNames + 0x238c) == 0)
               {
                 result = &global_CARDBK_GreenLand;
               }
-              else if (strcmp(card->full_name, DAT_100f37d0 + 0x3138) == 0)
+              else if (strcmp(card->full_name, g_cardNames + 0x3138) == 0)
               {
                 result = &global_CARDBK_BlueLand;
               }
@@ -995,7 +995,7 @@ BOOL LoadCardBackground(HBITMAP *outBitmap)
   }
   else
   {
-    strcpy(s.filename, (char *)&DAT_100223ac);
+    strcpy(s.filename, (char *)&g_emptyStringStorage);
   }
   if (s.filename[0] != '\0')
   {
@@ -1011,7 +1011,7 @@ BOOL LoadCardBackground(HBITMAP *outBitmap)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006d5f
-void DrawCardSet(int param_1, RECT *param_2, uint param_3)
+void DrawCardSet(int dc, RECT *rect, uint expansion)
 {
   struct
   {
@@ -1026,57 +1026,57 @@ void DrawCardSet(int param_1, RECT *param_2, uint param_3)
     int dstH;
   } s;
 
-  if (param_1 == 0 || param_2 == (RECT *)0x0)
+  if (dc == 0 || rect == (RECT *)0x0)
   {
     return;
   }
-  if ((param_3 & 0x800) != 0)
+  if ((expansion & 0x800) != 0)
   {
     return;
   }
-  if (param_3 == 0xffffffff || (param_3 & 0x10) != 0 || (param_3 & 0x80) != 0)
+  if (expansion == 0xffffffff || (expansion & 0x10) != 0 || (expansion & 0x80) != 0)
   {
     return;
   }
   if (global_CardSets != NULL)
   {
-    if (((param_3 & 0x2e) != 0) || ((param_3 & 0x100) != 0))
+    if (((expansion & 0x2e) != 0) || ((expansion & 0x100) != 0))
     {
       GetObjectA(global_CardSets, 0x18, &s.bm);
       s.cellW = s.bm.bmWidth / 10;
       s.cellH = s.bm.bmHeight;
-      if ((param_3 & 0x20) != 0)
+      if ((expansion & 0x20) != 0)
       {
         s.srcX = 0;
       }
-      else if ((param_3 & 0x100) != 0)
+      else if ((expansion & 0x100) != 0)
       {
         s.srcX = s.cellW * 2;
       }
-      else if ((param_3 & 4) != 0)
+      else if ((expansion & 4) != 0)
       {
         s.srcX = s.cellW << 2;
       }
-      else if ((param_3 & 2) != 0)
+      else if ((expansion & 2) != 0)
       {
         s.srcX = s.cellW * 6;
       }
-      else if ((param_3 & 8) != 0)
+      else if ((expansion & 8) != 0)
       {
         s.srcX = s.cellW << 3;
       }
 
       s.srcX2 = s.cellW + s.srcX;
-      s.dstH = param_2->bottom - param_2->top;
+      s.dstH = rect->bottom - rect->top;
       s.dstW = (s.dstH * s.cellW) / s.cellH;
-      SetRect(&s.dstRect, param_2->right - s.dstW, param_2->top, param_2->right, param_2->top + s.dstH);
-      DrawMaskedBitmapToRect(param_1, &s.dstRect, global_CardSets, s.cellW, s.cellH, s.srcX, 0, s.srcX2, 0);
+      SetRect(&s.dstRect, rect->right - s.dstW, rect->top, rect->right, rect->top + s.dstH);
+      DrawMaskedBitmapToRect(dc, &s.dstRect, global_CardSets, s.cellW, s.cellH, s.srcX, 0, s.srcX2, 0);
     }
   }
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006eed
-void DrawCastingCost(HDC dc, RECT *param_2, casting_cost_t *castingCost)
+void DrawCastingCost(HDC dc, RECT *rect, casting_cost_t *castingCost)
 {
   struct
   {
@@ -1091,7 +1091,7 @@ void DrawCastingCost(HDC dc, RECT *param_2, casting_cost_t *castingCost)
     int pad;
   } s;
 
-  if (dc == 0 || param_2 == 0 || castingCost == NULL)
+  if (dc == 0 || rect == 0 || castingCost == NULL)
   {
   }
   else
@@ -1103,10 +1103,10 @@ void DrawCastingCost(HDC dc, RECT *param_2, casting_cost_t *castingCost)
     s.costReqs[4] = (int)(char)castingCost->req_red;
     s.costReqs[2] = (int)(char)castingCost->req_blue;
     BuildCostString(s.costReqs, s.castingCostString);
-    s.height = param_2->bottom - param_2->top;
+    s.height = rect->bottom - rect->top;
     s.width = s.height;
-    s.left = param_2->right - (strlen(s.castingCostString) >> 1) * s.width;
-    s.top = param_2->top;
+    s.left = rect->right - (strlen(s.castingCostString) >> 1) * s.width;
+    s.top = rect->top;
     s.stringPtr = s.castingCostString;
     while (*s.stringPtr != '\0')
     {
@@ -1248,7 +1248,7 @@ int BuildCostString(int *costReqs, char *costStringOut)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100074b2
-void DrawManaSymbol(HDC dc, char param_2, int left, int top, int width, int height)
+void DrawManaSymbol(HDC dc, char symbol, int left, int top, int width, int height)
 {
   struct
   {
@@ -1264,7 +1264,7 @@ void DrawManaSymbol(HDC dc, char param_2, int left, int top, int width, int heig
   {
     return;
   }
-  if (param_2 < -0x12 || -1 < param_2)
+  if (symbol < -0x12 || -1 < symbol)
   {
     return;
   }
@@ -1272,75 +1272,75 @@ void DrawManaSymbol(HDC dc, char param_2, int left, int top, int width, int heig
   s.wSrc = s.bm.bmHeight;
   s.hSrc = s.wSrc;
   s.maskX = s.bm.bmWidth - s.wSrc;
-  if (param_2 == -0x10)
+  if (symbol == -0x10)
   {
     s.symbolX = 0;
   }
-  else if (param_2 == -0xf)
+  else if (symbol == -0xf)
   {
     s.symbolX = s.wSrc;
   }
-  else if (param_2 == -0xe)
+  else if (symbol == -0xe)
   {
     s.symbolX = s.wSrc * 2;
   }
-  else if (param_2 == -0xd)
+  else if (symbol == -0xd)
   {
     s.symbolX = s.wSrc * 3;
   }
-  else if (param_2 == -0xc)
+  else if (symbol == -0xc)
   {
     s.symbolX = s.wSrc << 2;
   }
-  else if (param_2 == -0xb)
+  else if (symbol == -0xb)
   {
     s.symbolX = s.wSrc * 5;
   }
-  else if (param_2 == -10)
+  else if (symbol == -10)
   {
     s.symbolX = (s.wSrc * 3) * 2;
   }
-  else if (param_2 == -9)
+  else if (symbol == -9)
   {
     s.symbolX = s.wSrc * 7;
   }
-  else if (param_2 == -8)
+  else if (symbol == -8)
   {
     s.symbolX = s.wSrc << 3;
   }
-  else if (param_2 == -7)
+  else if (symbol == -7)
   {
     s.symbolX = s.wSrc * 9;
   }
-  else if (param_2 == -6)
+  else if (symbol == -6)
   {
     s.symbolX = s.wSrc * 10;
   }
-  else if (param_2 == -0x11)
+  else if (symbol == -0x11)
   {
     s.symbolX = s.wSrc * 0xb;
   }
-  else if (param_2 == -5)
+  else if (symbol == -5)
   {
     s.symbolX = s.wSrc * 0xc;
   }
-  else if (param_2 == -4)
+  else if (symbol == -4)
   {
     s.symbolX = s.wSrc * 0xd;
   }
-  else if (param_2 == -3)
+  else if (symbol == -3)
   {
     s.symbolX = s.wSrc * 0xe;
   }
-  else if (param_2 == -2)
+  else if (symbol == -2)
   {
     s.symbolX = s.wSrc * 0xf;
   }
-  else if (param_2 == -1)
+  else if (symbol == -1)
   {
     s.symbolX = s.wSrc << 4;
   }
-  else if (param_2 == -0x12)
+  else if (symbol == -0x12)
   {
     s.symbolX = s.wSrc * 17;
   }
@@ -1370,7 +1370,7 @@ undefined4 CalcDrawManaText(HDC dc, RECT *rect, char *text)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100077dd
-uint DrawManaText(HDC dc, RECT *param_2, char *text, int param_4)
+uint DrawManaText(HDC dc, RECT *rect, char *text, int drawSymbols)
 {
   struct
   {
@@ -1394,7 +1394,7 @@ uint DrawManaText(HDC dc, RECT *param_2, char *text, int param_4)
     int height;               // ebp - 0x4
   } s;
 
-  if (((dc == (HDC)0x0) || (param_2 == (RECT *)0x0)) || (text == (char *)0x0))
+  if (((dc == (HDC)0x0) || (rect == (RECT *)0x0)) || (text == (char *)0x0))
   {
     return 0;
   }
@@ -1415,11 +1415,11 @@ uint DrawManaText(HDC dc, RECT *param_2, char *text, int param_4)
   s.symbol_step = ((s.rc.right - s.rc.left) * 0x55) / 100;
   s.symbol_height = (s.text_metrics.tmHeight * 0x4b) / 100;
   s.font_height = s.text_metrics.tmHeight;
-  IntersectClipRect(dc, param_2->left, param_2->top, param_2->right + 1, param_2->bottom);
+  IntersectClipRect(dc, rect->left, rect->top, rect->right + 1, rect->bottom);
   SelectObject(dc, GetStockObject(4));
   SelectObject(dc, GetStockObject(8));
-  s.left = param_2->left;
-  s.top = param_2->top;
+  s.left = rect->left;
+  s.top = rect->top;
   while (*text != '\0')
   {
     if (*text == ' ')
@@ -1442,7 +1442,7 @@ uint DrawManaText(HDC dc, RECT *param_2, char *text, int param_4)
     {
       text = text + 1;
       s.top = s.top + s.line_height + s.line_height / 3;
-      s.left = param_2->left;
+      s.left = rect->left;
     }
     else
     {
@@ -1458,16 +1458,16 @@ uint DrawManaText(HDC dc, RECT *param_2, char *text, int param_4)
         }
         s.buf[s.idx] = '\0';
         s.size.cx = s.idx * s.symbol_width;
-        if (param_2->right < s.size.cx + s.left)
+        if (rect->right < s.size.cx + s.left)
         {
-          s.max_width = max(s.max_width, s.left - param_2->left);
+          s.max_width = max(s.max_width, s.left - rect->left);
           s.top = s.top + s.line_height;
-          s.left = param_2->left;
+          s.left = rect->left;
         }
         s.temp = strlen(s.buf);
         for (s.idx = 0; s.temp > s.idx; s.idx = s.idx + 1)
         {
-          if (param_4 != 0)
+          if (drawSymbols != 0)
           {
             DrawManaSymbol(dc, s.buf[s.idx], s.left + (s.symbol_step - s.symbol_width) / 2,
                            s.top + (s.font_height - s.symbol_height) / 2, s.symbol_width, s.symbol_height);
@@ -1507,25 +1507,25 @@ uint DrawManaText(HDC dc, RECT *param_2, char *text, int param_4)
         }
         s.buf[s.idx] = '\0';
         GetTextExtentPoint32A(dc, s.buf, s.idx, &s.size);
-        if (param_2->right < s.size.cx + s.left)
+        if (rect->right < s.size.cx + s.left)
         {
-          s.max_width = max(s.max_width, s.left - param_2->left);
+          s.max_width = max(s.max_width, s.left - rect->left);
           s.top = s.top + s.line_height;
-          s.left = param_2->left;
+          s.left = rect->left;
         }
         TextOutA(dc, s.left, s.top, s.buf, strlen(s.buf));
         s.left = s.left + s.size.cx;
       }
     }
   }
-  s.max_width = max(s.max_width, s.left - param_2->left);
-  s.height = (s.line_height + s.top) - param_2->top;
+  s.max_width = max(s.max_width, s.left - rect->left);
+  s.height = (s.line_height + s.top) - rect->top;
   RestoreDC(dc, s.nSavedDC);
   return ((unsigned short)s.height << 0x10) | (unsigned short)s.max_width;
 }
 
 // FUNCTION: DRAWCARDLIB 0x10007dd7
-void DrawSmallCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 param_4, int param_5)
+void DrawSmallCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version, int reloadIfWrongSize)
 {
   struct
   {
@@ -1554,7 +1554,7 @@ void DrawSmallCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 param_4, int
   DrawCardBackground(dc, rect, card);
   DrawSmallCardTitle(dc, rect, card->name, 0, 1);
   SelectObject(dc, GetStockObject(5));
-  SelectObject(dc, (HGDIOBJ)DAT_1003a01c);
+  SelectObject(dc, (HGDIOBJ)g_cardBorderPen);
   Rectangle(dc, 0, 0, 200, 0x118);
   SetMapMode(dc, 1);
   s.cardWidth = rect->right - rect->left;
@@ -1564,18 +1564,18 @@ void DrawSmallCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 param_4, int
   s.artWidth = ((s.cardWidth * 0xd3) / 0xe4 - s.artLeft) + 1;
   s.artHeight = (s.cardHeight * 0xb2) / 0xbf - s.artTop;
   SetRect(&s.artRect, s.artLeft, s.artTop, s.artWidth + s.artLeft, s.artHeight + s.artTop);
-  if (IsSmallArtIn(card->id, param_4) == 0)
+  if (IsSmallArtIn(card->id, version) == 0)
   {
-    LoadSmallArt(card->id, param_4, s.artWidth, s.artHeight);
+    LoadSmallArt(card->id, version, s.artWidth, s.artHeight);
   }
-  else if (param_5 != 0)
+  else if (reloadIfWrongSize != 0)
   {
-    ReloadSmallArtIfWrongSize(card->id, param_4, s.artWidth, s.artHeight);
+    ReloadSmallArtIfWrongSize(card->id, version, s.artWidth, s.artHeight);
   }
-  s.status = DrawSmallArt(dc, &s.artRect, card->id, param_4);
+  s.status = DrawSmallArt(dc, &s.artRect, card->id, version);
   if (s.status == 0)
   {
-    DrawBigArt(dc, &s.artRect, card->id, param_4);
+    DrawBigArt(dc, &s.artRect, card->id, version);
   }
   RestoreDC(dc, s.nSavedDC);
 }
@@ -1620,7 +1620,7 @@ void DrawCardBackground(HDC dc, RECT *rect, card_ptr_t *card)
 }
 
 // FUNCTION: DRAWCARDLIB 0x100081b2
-void DrawSmallCardTitle(HDC dc, RECT *rect, char *name, int param_4, int param_5)
+void DrawSmallCardTitle(HDC dc, RECT *rect, char *name, int colorMode, int transparentBackground)
 {
   struct
   {
@@ -1641,30 +1641,30 @@ void DrawSmallCardTitle(HDC dc, RECT *rect, char *name, int param_4, int param_5
   SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, (LPSIZE)0x0);
   SetWindowOrgEx(dc, 0, 0, (LPPOINT)0x0);
   SetViewportOrgEx(dc, rect->left, rect->top, (LPPOINT)0x0);
-  if (param_4 == 0)
+  if (colorMode == 0)
   {
-    s.titleColor = DAT_10039fe0;
+    s.titleColor = g_smallCardTitleColor;
   }
-  else if (param_4 == 2)
+  else if (colorMode == 2)
   {
-    s.titleColor = DAT_1003a08c;
+    s.titleColor = g_smallCardTitleAltColor;
   }
   else
   {
-    s.titleColor = DAT_1003a19c;
+    s.titleColor = g_smallCardTitleFallbackColor;
   }
-  SelectObject(dc, DAT_1003a018);
+  SelectObject(dc, g_smallCardTitleFont);
   SetTextAlign(dc, 0);
-  if (param_5 == 0)
+  if (transparentBackground == 0)
   {
     SetBkMode(dc, 2);
-    SetBkColor(dc, DAT_1012655c);
+    SetBkColor(dc, g_smallCardTitleBackgroundColor);
   }
   else
   {
     SetBkMode(dc, 1);
   }
-  SetTextColor(dc, DAT_10039fec);
+  SetTextColor(dc, g_cardTextShadowColor);
   TextOutA(dc, 5, 1, s.titleText, strlen(s.titleText));
   SetTextColor(dc, s.titleColor);
   SetBkMode(dc, 1);
@@ -1673,7 +1673,7 @@ void DrawSmallCardTitle(HDC dc, RECT *rect, char *name, int param_4, int param_5
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000ac34
-void DeleteAndCloseObject(HANDLE param_1)
+void DeleteAndCloseObject(HANDLE handle)
 {
   struct
   {
@@ -1697,13 +1697,13 @@ void DeleteAndCloseObject(HANDLE param_1)
       global_dwPlatformId = 0;
     }
   }
-  if (param_1 != (HANDLE)0x0)
+  if (handle != (HANDLE)0x0)
   {
-    GetObjectA(param_1, 0x54, &s.dibSection);
+    GetObjectA(handle, 0x54, &s.dibSection);
     s.sectionHandle = s.dibSection.dshSection;
     s.bitsPointer = (char *)s.dibSection.dsBm.bmBits;
     s.bitsPointer += s.dibSection.dsOffset;
-    DeleteObject(param_1);
+    DeleteObject(handle);
     if (s.sectionHandle != (HANDLE)0x0)
     {
       if (global_dwPlatformId != 0)
@@ -1789,7 +1789,7 @@ BOOL WINAPI DllMain(undefined4 hinst, uint reason, undefined4 reserved)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000be22
-int read_cfg(undefined4 param_1)
+int read_cfg(undefined4 hinst)
 {
   struct
   {
@@ -1806,7 +1806,7 @@ int read_cfg(undefined4 param_1)
   } s;
 
   s.result = 1;
-  _DAT_10124510 = param_1;
+  g_drawCardLibInstance = hinst;
   InitializeCriticalSection(&global_critical_section_for_catalog);
 
 #ifdef _DEBUG
@@ -1842,8 +1842,8 @@ int read_cfg(undefined4 param_1)
            s.slotIndex = s.slotIndex + 1)
       {
         s.record_table[s.slotIndex * 0x26 + 1] = s.record_table[s.slotIndex * 0x26 + 1] + (int)s.recordBuf;
-        strncpy(DAT_100f37d0 + s.slotIndex * 100, (char *)s.record_table[s.slotIndex * 0x26 + 1], 100);
-        DAT_100f3833[s.slotIndex * 100] = 0;
+        strncpy(g_cardNames + s.slotIndex * 100, (char *)s.record_table[s.slotIndex * 0x26 + 1], 100);
+        g_cardNameSlotTerminators[s.slotIndex * 100] = 0;
       }
       free(s.recordBuf);
     }
@@ -1862,7 +1862,7 @@ int read_cfg(undefined4 param_1)
     for (s.slotIndex = 0; (int)s.global_available_slots > s.slotIndex;
          s.slotIndex = s.slotIndex + 1)
     {
-      strcpy(DAT_100f37d0 + s.slotIndex * 100, "");
+      strcpy(g_cardNames + s.slotIndex * 100, "");
     }
   }
   return s.result;

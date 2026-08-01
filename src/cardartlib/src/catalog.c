@@ -10,7 +10,7 @@
 
 // GLOBAL: CARDARTLIB 0x1001d108
 // GLOBAL: DRAWCARDLIB 0x10026974
-undefined4 DAT_1001d108 = 0x00000000;
+undefined4 g_catalogDuplicateCheckEnabled = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x101221d0
 // GLOBAL: DRAWCARDLIB 0x10124520
@@ -40,7 +40,7 @@ STATIC_ASSERT(sizeof(Catalog) == 0x114, Catalog_wrong_size);
 // GLOBAL: DRAWCARDLIB 0x100f2e30
 // GLOBAL: DECKDLL 0x101e6f80
 // GLOBAL: MAGIC 0x0094ea50
-Catalog DAT_10117290[5];
+Catalog g_catalogs[5];
 
 uint Catalog_MakeKeyFromPath(const char *path);
 
@@ -64,7 +64,7 @@ int Catalog_Open(const char *catalog_path)
 
   for (s.other_slot = 0; s.other_slot < 5; s.other_slot++)
   {
-    if (DAT_10117290[s.other_slot].file == 0)
+    if (g_catalogs[s.other_slot].file == 0)
     {
       s.slot_index = s.other_slot;
       break;
@@ -74,7 +74,7 @@ int Catalog_Open(const char *catalog_path)
   assert((uint)(s.slot_index != -1), "D:\\Newmagic\\sources\\NedCard\\Catalog.c", 0x43,
          "Too many open Catalogs: Max %d\n", 5);
 
-  s.catalog = &DAT_10117290[s.slot_index];
+  s.catalog = &g_catalogs[s.slot_index];
   s.catalog->cached_entry = (CatalogEntry *)0x0;
   strcpy(s.catalog->path, catalog_path);
   s.catalog->file = fopen(catalog_path, "rb");
@@ -85,17 +85,17 @@ int Catalog_Open(const char *catalog_path)
   fread(&s.catalog->entry_count, 4, 1, s.catalog_file);
   s.catalog->entries = (CatalogEntry *)malloc(s.catalog->entry_count * sizeof(CatalogEntry));
   fread(s.catalog->entries, sizeof(CatalogEntry), (size_t)s.catalog->entry_count, s.catalog_file);
-  if (DAT_1001d108 != 0)
+  if (g_catalogDuplicateCheckEnabled != 0)
   {
     for (s.other_slot = 0; s.other_slot < 5; s.other_slot = s.other_slot + 1)
     {
       if (s.slot_index == s.other_slot)
         continue;
 
-      if (DAT_10117290[s.other_slot].file == 0)
+      if (g_catalogs[s.other_slot].file == 0)
         continue;
 
-      s.other_catalog = &DAT_10117290[s.other_slot];
+      s.other_catalog = &g_catalogs[s.other_slot];
 
       for (s.entry_index = 0; 0 != s.catalog->entry_count; s.entry_index++)
       {
@@ -118,13 +118,13 @@ int Catalog_Open(const char *catalog_path)
 // FUNCTION: DRAWCARDLIB 0x1000ba6a
 bool Catalog_Close(int handle)
 {
-  if (DAT_10117290[--handle].file == 0)
+  if (g_catalogs[--handle].file == 0)
     return 0;
-  free(DAT_10117290[handle].entries);
-  fclose(DAT_10117290[handle].file);
-  DAT_10117290[handle].entries = (CatalogEntry *)0x0;
-  DAT_10117290[handle].file = (FILE *)0x0;
-  DAT_10117290[handle].entry_count = 0;
+  free(g_catalogs[handle].entries);
+  fclose(g_catalogs[handle].file);
+  g_catalogs[handle].entries = (CatalogEntry *)0x0;
+  g_catalogs[handle].file = (FILE *)0x0;
+  g_catalogs[handle].entry_count = 0;
   return 1;
 }
 
@@ -182,7 +182,7 @@ size_t Catalog_ReadEntry(int catalog_handle, const char *name, void **buffer)
   Catalog *catalog;
   CatalogEntry *entry;
 
-  catalog = &DAT_10117290[catalog_handle + -1];
+  catalog = &g_catalogs[catalog_handle + -1];
   entry = Catalog_FindEntryCached(catalog, name);
   if (entry == (CatalogEntry *)0x0)
   {

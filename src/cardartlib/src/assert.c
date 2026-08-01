@@ -38,10 +38,10 @@ void assert(int condition, char *file, int line, char *fmt, ...)
 #ifdef FACEMAKER
     logFile = fopen("assertFile.txt", "at");
 #else
-    char local_114[260];
-    strcpy(local_114, global_base_directory);
-    strcat(local_114, "\\assertFile.txt");
-    logFile = fopen(local_114, "at");
+    char assertPath[260];
+    strcpy(assertPath, global_base_directory);
+    strcat(assertPath, "\\assertFile.txt");
+    logFile = fopen(assertPath, "at");
 #endif
 
     va_start(args, fmt);
@@ -79,10 +79,10 @@ void assert_noabort(int condition, char *file, int line, char *fmt, ...)
 #ifdef FACEMAKER
     logFile = fopen("assertFile.txt", "at");
 #else
-    char local_114[260];
-    strcpy(local_114, global_base_directory);
-    strcat(local_114, "\\assertFile.txt");
-    logFile = fopen(local_114, "at");
+    char assertPath[260];
+    strcpy(assertPath, global_base_directory);
+    strcat(assertPath, "\\assertFile.txt");
+    logFile = fopen(assertPath, "at");
 #endif
 
     va_start(args, fmt);

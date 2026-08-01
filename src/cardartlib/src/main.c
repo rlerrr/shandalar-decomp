@@ -353,21 +353,21 @@ int IsBigArtIn(card_id_t id, int version)
 // FUNCTION: CARDARTLIB 0x10003867
 int IsBigArtRightSize(card_id_t id, int version, int width, int height)
 {
-  int local_8 = 0;
+  int cache_entry = 0;
   if (id == -1)
   {
     return 0;
   }
 
   EnterCriticalSection(&global_critical_section_for_big_art);
-  local_8 = IsBigArtIn(id, version);
-  if ((local_8 != 0) && ((*(int *)(local_8 + 8) != width || (*(int *)(local_8 + 0xc) != height))))
+  cache_entry = IsBigArtIn(id, version);
+  if ((cache_entry != 0) && ((*(int *)(cache_entry + 8) != width || (*(int *)(cache_entry + 0xc) != height))))
   {
-    local_8 = 0;
+    cache_entry = 0;
   }
   LeaveCriticalSection(&global_critical_section_for_big_art);
 
-  return local_8;
+  return cache_entry;
 }
 
 // FUNCTION: CARDARTLIB 0x100038ed
@@ -451,7 +451,7 @@ void DestroyBigArt(card_id_t id, int version)
   {
     int j;
     int i;
-    int local_4;
+    int found;
   } s;
 
   if (id == -1)
@@ -461,13 +461,13 @@ void DestroyBigArt(card_id_t id, int version)
 
   EnterCriticalSection(&global_critical_section_for_big_art);
   s.i = 0;
-  s.local_4 = 0;
+  s.found = 0;
 
-  for (; s.i < g_versionedBigArtCount && (s.local_4 == 0); s.i++)
+  for (; s.i < g_versionedBigArtCount && (s.found == 0); s.i++)
   {
     if (g_versionedBigArtCache[s.i].id == id && g_versionedBigArtCache[s.i].version == version)
     {
-      s.local_4 = 1;
+      s.found = 1;
 
       if (g_versionedBigArtCache[s.i].hbm != 0)
       {
@@ -896,8 +896,8 @@ int DrawVersionedSmallArt(HDC hdc, RECT *rect, card_id_t id, int version)
 {
   struct
   {
-    int local_14;
-    int local_10;
+    int result;
+    int found_index;
     int i;
     bool bVar1;
   } s;
@@ -912,25 +912,25 @@ int DrawVersionedSmallArt(HDC hdc, RECT *rect, card_id_t id, int version)
     if (g_versionedSmallArtCache[s.i].id == id && g_versionedSmallArtCache[s.i].version == version)
     {
       s.bVar1 = true;
-      s.local_10 = s.i;
+      s.found_index = s.i;
     }
   }
 
   if (s.bVar1)
   {
-    s.local_14 = DrawBitmapToRect(hdc, rect, g_versionedSmallArtCache[s.local_10].hbm);
+    s.result = DrawBitmapToRect(hdc, rect, g_versionedSmallArtCache[s.found_index].hbm);
   }
   else
   {
-    s.local_14 = 0;
+    s.result = 0;
   }
-  if (s.local_14 == 0)
+  if (s.result == 0)
   {
     FillRect(hdc, rect, GetStockObject(2));
   }
   LeaveCriticalSection(&global_critical_section_for_small_art);
 
-  return s.local_14;
+  return s.result;
 }
 
 // MATCHING

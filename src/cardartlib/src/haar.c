@@ -8,15 +8,15 @@
 #include "huffman.h"
 
 // Forward declarations for globals referenced elsewhere.
-int Palette_FindNearestEntryIndex(int param_1, int param_2, int param_3, byte *param_4);
-uint Rgb888_QuantizeToF8(uint param_1);
-void RotateDwordsLeft1(undefined4 *param_1, uint param_2);
+int Palette_FindNearestEntryIndex(int red, int green, int blue, byte *palette);
+uint Rgb888_QuantizeToF8(uint rgb);
+void RotateDwordsLeft1(undefined4 *dwords, uint count);
 undefined4 QuantizeBgr24ToNearestPaletteColorInPlace(uint *bgr24, int height, int width, int row_padding);
 int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24, int height, int width,
                                int row_padding);
 int InitErrorDiffusionDeltaTables(int dither_kernel_id, int *delta_table_ptrs_base);
-int Octree_FindNearestColor(uint param_1);
-void MemZeroDwords(undefined8 *param_1, uint param_2);
+int Octree_FindNearestColor(uint rgb);
+void MemZeroDwords(undefined8 *dst, uint dword_count);
 
 void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24, byte *src_bgr24, int dst_x, int dst_y,
                                     int rect_width, int rect_height, int dst_stride_pixels, int unused);
@@ -29,11 +29,11 @@ void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int ro
                              undefined4 src_stride_unused, int dst_stride);
 undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int *chroma_u, int *chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420);
-BOOL Wvl_UnpackPieces(byte *param_1, WvlEntry *param_2);
+BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl);
 
 // GLOBAL: CARDARTLIB 0x100ea098
 // GLOBAL: DRAWCARDLIB 0x100f1f68
-undefined4 DAT_100ea098;
+undefined4 g_activeWvlCatalogHandle;
 
 // GLOBAL: CARDARTLIB 0x1001d258
 // GLOBAL: DRAWCARDLIB 0x10021048
@@ -97,19 +97,19 @@ unsigned char g_waveletScaleTableStorage[0x801];
 
 // GLOBAL: CARDARTLIB 0x10032adc
 // GLOBAL: DRAWCARDLIB 0x1003a9ac
-undefined4 DAT_10032adc;
+undefined4 g_wvlCatalogsInitialized;
 
 // GLOBAL: CARDARTLIB 0x1001e11c
 // GLOBAL: DRAWCARDLIB 0x100223fc
-undefined4 DAT_1001e11c = 0x00000001;
+undefined4 g_smallArtCatalogHandle = 0x00000001;
 
 // GLOBAL: CARDARTLIB 0x1001e120
 // GLOBAL: DRAWCARDLIB 0x10022400
-undefined4 DAT_1001e120 = 0x00000002;
+undefined4 g_medArtCatalogHandle = 0x00000002;
 
 // GLOBAL: CARDARTLIB 0x10032ae8
 // GLOBAL: DRAWCARDLIB 0x1003a9b8
-WvlEntry DAT_10032ae8;
+WvlEntry g_wvlEntryScratch;
 
 // GLOBAL: CARDARTLIB 0x1001e118
 // GLOBAL: DRAWCARDLIB 0x100223f8
@@ -399,13 +399,13 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24
 // FUNCTION: DRAWCARDLIB 0x10002264
 // FUNCTION: MAGIC 0x004bae9a
 // FUNCTION: SHANDALAR 0x0042f1c7
-void RotateDwordsLeft1(undefined4 *param_1, uint param_2)
+void RotateDwordsLeft1(undefined4 *dwords, uint count)
 {
   undefined4 uVar1;
-  uVar1 = *param_1;
+  uVar1 = *dwords;
 
-  memcpy(param_1, param_1 + 1, (param_2 - 1) * 4);
-  param_1[param_2 - 1] = uVar1;
+  memcpy(dwords, dwords + 1, (count - 1) * 4);
+  dwords[count - 1] = uVar1;
 }
 
 // FUNCTION: CARDARTLIB 0x10005cf5
@@ -415,39 +415,39 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id, int *delta_table_ptrs_ba
 {
   struct
   {
-    int local_14;
-    int local_10; // EBP - 0xc
-    int iVar2;    // EBP - 8
-    int iVar1;    // EBP - 4
+    int delta;
+    int tap_index; // EBP - 0xc
+    int tap_weight; // EBP - 8
+    int half_divisor; // EBP - 4
   } s;
 
-  s.iVar1 = g_ditherKernelDivisors[dither_kernel_id] >> 1;
-  for (s.local_10 = 0; s.local_10 < g_ditherKernelTapCounts[dither_kernel_id]; s.local_10 = s.local_10 + 1)
+  s.half_divisor = g_ditherKernelDivisors[dither_kernel_id] >> 1;
+  for (s.tap_index = 0; s.tap_index < g_ditherKernelTapCounts[dither_kernel_id]; s.tap_index = s.tap_index + 1)
   {
-    s.iVar2 = *(int *)&g_ditherKernelTable[(s.local_10 << 4) + ((dither_kernel_id << 6) * 3)];
+    s.tap_weight = *(int *)&g_ditherKernelTable[(s.tap_index << 4) + ((dither_kernel_id << 6) * 3)];
 
-    if (delta_table_ptrs_base[s.iVar2] != 0)
+    if (delta_table_ptrs_base[s.tap_weight] != 0)
     {
-      *(int *)&g_ditherKernelTable[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x400;
+      *(int *)&g_ditherKernelTable[0xc + ((dither_kernel_id << 6) * 3) + (s.tap_index << 4)] = delta_table_ptrs_base[s.tap_weight] + 0x400;
       continue;
     }
 
-    delta_table_ptrs_base[s.iVar2] = (int)malloc(0x800);
-    assert((uint)(delta_table_ptrs_base[s.iVar2] != 0), "D:\\Newmagic\\sources\\NedCard\\Palette.c",
+    delta_table_ptrs_base[s.tap_weight] = (int)malloc(0x800);
+    assert((uint)(delta_table_ptrs_base[s.tap_weight] != 0), "D:\\Newmagic\\sources\\NedCard\\Palette.c",
            0x4fd, "Not enough memory for delta array\r\n");
-    for (s.local_14 = -0x100; s.local_14 < 0x100; s.local_14 = s.local_14 + 1)
+    for (s.delta = -0x100; s.delta < 0x100; s.delta = s.delta + 1)
     {
-      *(int *)(delta_table_ptrs_base[s.iVar2] + 0x400 + s.local_14 * 4) =
-          ((s.iVar2 * s.local_14 + s.iVar1) * 0x100) / g_ditherKernelDivisors[dither_kernel_id];
+      *(int *)(delta_table_ptrs_base[s.tap_weight] + 0x400 + s.delta * 4) =
+          ((s.tap_weight * s.delta + s.half_divisor) * 0x100) / g_ditherKernelDivisors[dither_kernel_id];
     }
-    *(int *)&g_ditherKernelTable[0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
+    *(int *)&g_ditherKernelTable[0xc + ((dither_kernel_id << 6) * 3) + (s.tap_index << 4)] = delta_table_ptrs_base[s.tap_weight] + 0x3fc;
   }
 
-  for (s.local_10 = 0; s.local_10 < g_ditherKernelTapCounts[dither_kernel_id]; s.local_10 = s.local_10 + 1)
+  for (s.tap_index = 0; s.tap_index < g_ditherKernelTapCounts[dither_kernel_id]; s.tap_index = s.tap_index + 1)
   {
-    s.iVar2 = *(int *)&g_ditherKernelTable[0xc + 0x6b4 + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)];
+    s.tap_weight = *(int *)&g_ditherKernelTable[0xc + 0x6b4 + ((dither_kernel_id << 6) * 3) + (s.tap_index << 4)];
 
-    *(int *)&g_ditherKernelTable[0xc + 0x6b4 + 0xc + ((dither_kernel_id << 6) * 3) + (s.local_10 << 4)] = delta_table_ptrs_base[s.iVar2] + 0x3fc;
+    *(int *)&g_ditherKernelTable[0xc + 0x6b4 + 0xc + ((dither_kernel_id << 6) * 3) + (s.tap_index << 4)] = delta_table_ptrs_base[s.tap_weight] + 0x3fc;
   }
   return 0;
 }
@@ -647,9 +647,9 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id, int serpentine, uin
 // FUNCTION: DRAWCARDLIB 0x10002e80
 // FUNCTION: MAGIC 0x004bbac0
 // FUNCTION: SHANDALAR 0x0042fde0
-uint Rgb888_QuantizeToF8(uint param_1)
+uint Rgb888_QuantizeToF8(uint rgb)
 {
-  return param_1 & 0xf8f8f8;
+  return rgb & 0xf8f8f8;
 }
 
 // FUNCTION: CARDARTLIB 0x100068f0
@@ -668,28 +668,28 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
     char *dir_end;        /* [ebp-0x04] */
   } s;
 
-  s.entry = &DAT_10032ae8;
+  s.entry = &g_wvlEntryScratch;
   EnterCriticalSection(&global_critical_section_for_catalog);
   _splitpath(wvl_path, (char *)0x0, s.dir, s.fname, s.ext);
-  if (DAT_10032adc == 0)
+  if (g_wvlCatalogsInitialized == 0)
   {
     strcpy(s.fullpath, s.dir);
     strcat(s.fullpath, "SmallArt.cat");
-    DAT_1001e11c = Catalog_Open(s.fullpath);
+    g_smallArtCatalogHandle = Catalog_Open(s.fullpath);
     strcpy(s.fullpath, s.dir);
     strcat(s.fullpath, "MedArt.cat");
-    DAT_1001e120 = Catalog_Open(s.fullpath);
-    DAT_10032adc = 1;
+    g_medArtCatalogHandle = Catalog_Open(s.fullpath);
+    g_wvlCatalogsInitialized = 1;
   }
   s.dir_end = s.dir + strlen(s.dir);
 
   if (catalog_id == 0)
   {
-    DAT_100ea098 = DAT_1001e11c;
+    g_activeWvlCatalogHandle = g_smallArtCatalogHandle;
   }
   else if (catalog_id == 1)
   {
-    DAT_100ea098 = DAT_1001e120;
+    g_activeWvlCatalogHandle = g_medArtCatalogHandle;
   }
   else
   {
@@ -706,7 +706,7 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
     memset(s.entry, 0, 0x1b0);
     strcpy(s.entry->wvl_path, wvl_path);
     s.entry->data_ptr = (byte *)&g_catalogReadScratch;
-    s.entry_size = Catalog_ReadEntry(DAT_100ea098, s.dir, (void **)&s.entry->data_ptr);
+    s.entry_size = Catalog_ReadEntry(g_activeWvlCatalogHandle, s.dir, (void **)&s.entry->data_ptr);
     if (s.entry_size == (size_t)-1)
     {
       strcat(wvl_path, "\n");
@@ -749,7 +749,7 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 // FUNCTION: DRAWCARDLIB 0x10008663
 // FUNCTION: MAGIC 0x0041f965
 // FUNCTION: SHANDALAR 0x00566693
-byte *Wvl_DecodeHaar(WvlEntry *param_1, byte *param_2)
+byte *Wvl_DecodeHaar(WvlEntry *wvl, byte *dst)
 {
   struct
   {
@@ -795,53 +795,53 @@ byte *Wvl_DecodeHaar(WvlEntry *param_1, byte *param_2)
     g_waveletScaleToByteTableInit = 1;
   }
 
-  if (param_2 == NULL)
+  if (dst == NULL)
   {
-    param_2 = malloc(param_1->decode_bytes + 2000);
-    MemZeroDwords((undefined8 *)param_2, (param_1->decode_bytes + 2000) / 4);
+    dst = malloc(wvl->decode_bytes + 2000);
+    MemZeroDwords((undefined8 *)dst, (wvl->decode_bytes + 2000) / 4);
   }
   else
   {
-    MemZeroDwords((undefined8 *)param_2, (param_1->decode_bytes + 2000) / 4);
+    MemZeroDwords((undefined8 *)dst, (wvl->decode_bytes + 2000) / 4);
     s.have_dst = 1;
   }
 
-  g_unpackResultUnused = Wvl_UnpackPieces(param_2, param_1);
+  g_unpackResultUnused = Wvl_UnpackPieces(dst, wvl);
 
-  if (param_1->pieces == 1)
+  if (wvl->pieces == 1)
   {
     s.pieces_per_row = 1;
   }
-  else if (param_1->pieces == 4)
+  else if (wvl->pieces == 4)
   {
     s.pieces_per_row = 2;
   }
-  else if (param_1->pieces == 0x10)
+  else if (wvl->pieces == 0x10)
   {
     s.pieces_per_row = 4;
   }
   else
   {
     assert(0, "D:\\Newmagic\\sources\\NedCard\\haar.c", 0x15e,
-           "wavelet pieces has illegal value: %d", param_1->pieces);
+           "wavelet pieces has illegal value: %d", wvl->pieces);
   }
 
-  s.image_size = param_1->width;
+  s.image_size = wvl->width;
   s.height_px = s.image_size;
-  s.block_width = param_1->width / s.pieces_per_row;
+  s.block_width = wvl->width / s.pieces_per_row;
   s.block_height = s.block_width;
-  s.alloc_bytes = param_1->base_size;
-  s.base_size = param_1->height / s.pieces_per_row;
-  s.unused1 = &param_1->unk_2c;
-  s.unused2 = &param_1->unk_3c;
-  s.unused3 = &param_1->unk_4c;
+  s.alloc_bytes = wvl->base_size;
+  s.base_size = wvl->height / s.pieces_per_row;
+  s.unused1 = &wvl->unk_2c;
+  s.unused2 = &wvl->unk_3c;
+  s.unused3 = &wvl->unk_4c;
 
-  for (s.piece_idx = 0; s.piece_idx < param_1->pieces; s.piece_idx = s.piece_idx + 1)
+  for (s.piece_idx = 0; s.piece_idx < wvl->pieces; s.piece_idx = s.piece_idx + 1)
   {
-    if (param_1->chroma_is_420 != 0)
+    if (wvl->chroma_is_420 != 0)
     {
-      s.chroma_w = (s.block_height / s.pieces_per_row) / (((param_1->pieces == 1) ? 2 : 1));
-      s.chroma_base = (s.base_size / s.pieces_per_row) / (((param_1->pieces == 1) ? 2 : 1));
+      s.chroma_w = (s.block_height / s.pieces_per_row) / (((wvl->pieces == 1) ? 2 : 1));
+      s.chroma_base = (s.base_size / s.pieces_per_row) / (((wvl->pieces == 1) ? 2 : 1));
     }
     else
     {
@@ -849,7 +849,7 @@ byte *Wvl_DecodeHaar(WvlEntry *param_1, byte *param_2)
       s.chroma_base = s.base_size;
     }
 
-    s.y_plane = (int *)&param_2[(s.block_height * s.block_height + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4];
+    s.y_plane = (int *)&dst[(s.block_height * s.block_height + s.chroma_w * s.chroma_w * 2 + 0x40) * s.piece_idx * 4];
     s.u_plane = &s.y_plane[s.block_height * s.block_height] + 0x20;
     s.v_plane = &s.u_plane[s.chroma_w * s.chroma_w] + 0x20;
 
@@ -857,26 +857,26 @@ byte *Wvl_DecodeHaar(WvlEntry *param_1, byte *param_2)
     Haar2D_ReconstructInPlace(s.u_plane, s.chroma_w, s.alloc_bytes);
     Haar2D_ReconstructInPlace(s.v_plane, s.chroma_w, s.alloc_bytes);
 
-    if (s.piece_idx < param_1->pieces / 2)
+    if (s.piece_idx < wvl->pieces / 2)
     {
       s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch, s.y_plane, s.block_height, s.block_height,
-                                   s.u_plane, s.v_plane, s.chroma_w, s.chroma_w, param_1->chroma_is_420);
+                                   s.u_plane, s.v_plane, s.chroma_w, s.chroma_w, wvl->chroma_is_420);
     }
-    else if (param_1->pieces > 1)
+    else if (wvl->pieces > 1)
     {
-      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch, s.y_plane, s.block_height, param_1->height - s.block_width,
-                                   s.u_plane, s.v_plane, s.chroma_w, s.chroma_base, param_1->chroma_is_420);
+      s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch, s.y_plane, s.block_height, wvl->height - s.block_width,
+                                   s.u_plane, s.v_plane, s.chroma_w, s.chroma_base, wvl->chroma_is_420);
     }
     else
     {
       s.bgr_tmp = YuvPlanesToBgr24(g_haarDecodeScratch, s.y_plane, s.block_height, s.base_size,
-                                   s.u_plane, s.v_plane, s.chroma_w, s.chroma_base, param_1->chroma_is_420);
+                                   s.u_plane, s.v_plane, s.chroma_w, s.chroma_base, wvl->chroma_is_420);
     }
 
-    if (param_1->pieces > 1)
+    if (wvl->pieces > 1)
     {
 
-      CopyBgr24RectIntoStridedBuffer(param_2, s.bgr_tmp,
+      CopyBgr24RectIntoStridedBuffer(dst, s.bgr_tmp,
                                      (s.height_px / s.pieces_per_row) * (s.piece_idx % s.pieces_per_row),
                                      (s.height_px / s.pieces_per_row) * (s.piece_idx / s.pieces_per_row), s.block_height,
                                      s.block_height, s.height_px, s.height_px);
@@ -886,12 +886,12 @@ byte *Wvl_DecodeHaar(WvlEntry *param_1, byte *param_2)
     {
       if (s.have_dst == 0)
       {
-        free(param_2);
+        free(dst);
       }
-      param_2 = s.bgr_tmp;
+      dst = s.bgr_tmp;
     }
   }
-  return param_2;
+  return dst;
 }
 
 // FUNCTION: CARDARTLIB 0x10007035
@@ -1203,7 +1203,7 @@ undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int he
 
 // FUNCTION: CARDARTLIB 0x100078b8
 // FUNCTION: DRAWCARDLIB 0x10009338
-BOOL Wvl_UnpackPieces(byte *param_1, WvlEntry *param_2)
+BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
 {
   struct
   {
@@ -1224,14 +1224,14 @@ BOOL Wvl_UnpackPieces(byte *param_1, WvlEntry *param_2)
     byte *dst_u;        /* ebp - 0x04 */
   } s;
 
-  s.wvl = param_2;
+  s.wvl = wvl;
 
   s.full_w = s.wvl->width / ((s.wvl->pieces == 1) ? 1 : 2);
   s.full_h = s.full_w;
   s.chroma_w = s.full_h / ((s.wvl->chroma_is_420 == 0) ? 1 : 2);
   s.chroma_h = s.chroma_w;
 
-  s.bitstream = param_2->data_ptr;
+  s.bitstream = wvl->data_ptr;
   s.huff_data = s.bitstream;
   s.base_size = s.wvl->base_size;
 
@@ -1248,7 +1248,7 @@ BOOL Wvl_UnpackPieces(byte *param_1, WvlEntry *param_2)
 
   for (s.layer = 0; s.layer < s.wvl->pieces; s.layer = s.layer + 1)
   {
-    s.dst_y = &param_1[(((s.tmp + 0x40) * s.layer) << 2)];
+    s.dst_y = &dst[(((s.tmp + 0x40) * s.layer) << 2)];
 
     s.dst_u = &s.dst_y[((s.full_w * s.full_h) << 2)] + 0x80;
 
@@ -1287,11 +1287,11 @@ BOOL Wvl_UnpackPieces(byte *param_1, WvlEntry *param_2)
 // FUNCTION: CARDARTLIB 0x1000807f
 // FUNCTION: DRAWCARDLIB 0x10009aff
 // FUNCTION: SHANDALAR 0x005678fa
-uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int height)
+uint *Wvl_DecodeToBgr24(byte *out_bgr24, WvlEntry *wvl_entry, int width, int height)
 {
   struct
   {
-    int unk_5060;
+    int output_row_align;
     int row_padding;
     int y_step;
     int x_step;
@@ -1329,11 +1329,11 @@ uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int heigh
 
   s.x_acc = 0;
   s.y_acc = 0;
-  s.out_base = param_1;
+  s.out_base = out_bgr24;
   s.out_start = (byte *)0;
   s.x_map_ptr = s.x_map;
   s.y_map_ptr = s.y_map;
-  if (param_1 != (byte *)0)
+  if (out_bgr24 != (byte *)0)
   {
     s.out_nonnull = 1;
   }
@@ -1368,14 +1368,14 @@ uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int heigh
   s.zero_1010 = 0;
   s.row_pad = (g_rowAlignBytes - (width * 3) % g_rowAlignBytes) % g_rowAlignBytes;
 
-  if (param_1 == (byte *)0)
+  if (out_bgr24 == (byte *)0)
   {
-    param_1 = g_catalogReadScratch;
-    s.out_base = param_1;
+    out_bgr24 = g_catalogReadScratch;
+    s.out_base = out_bgr24;
   }
   else
   {
-    s.out_base = param_1;
+    s.out_base = out_bgr24;
   }
 
   for (s.x = 0, s.x_acc = 0; s.x < width; s.x += 1, s.x_acc += s.x_step, s.x_map_ptr += 1)
@@ -1393,13 +1393,13 @@ uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int heigh
 
   if (wvl_entry->height < height)
   {
-    param_1 += (height - wvl_entry->height) * (s.row_pad + width * 3);
-    s.out_ptr = param_1;
+    out_bgr24 += (height - wvl_entry->height) * (s.row_pad + width * 3);
+    s.out_ptr = out_bgr24;
   }
   else
-    s.out_ptr = (byte *)param_1;
+    s.out_ptr = (byte *)out_bgr24;
 
-  for (s.y = 0; s.y < wvl_entry->height; s.y += 1, param_1 += s.row_pad)
+  for (s.y = 0; s.y < wvl_entry->height; s.y += 1, out_bgr24 += s.row_pad)
   {
     s.tmp_4 = s.decoded + (s.src_width * s.tmp_8 + s.zero_1010) * s.y;
     s.x_map_ptr = s.x_map;
@@ -1408,11 +1408,11 @@ uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int heigh
     {
       s.src_ptr = s.tmp_4 + (((int)*s.x_map_ptr >> 8) * 3);
 
-      param_1[0] = ((int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
-      param_1[1] = ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
-      param_1[2] = ((int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
+      out_bgr24[0] = ((int)((uint)s.src_ptr[3] - (uint)s.src_ptr[0]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
+      out_bgr24[1] = ((int)((uint)s.src_ptr[4] - (uint)s.src_ptr[1]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
+      out_bgr24[2] = ((int)((uint)s.src_ptr[5] - (uint)s.src_ptr[2]) * (*s.x_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
 
-      param_1 += 3;
+      out_bgr24 += 3;
     }
   }
 
@@ -1437,17 +1437,17 @@ uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int heigh
 
   for (s.x = 0; s.x < width; s.x++)
   {
-    param_1 = &s.out_base[s.x * 3];
+    out_bgr24 = &s.out_base[s.x * 3];
     s.tmp_4 = s.out_ptr + s.x * 3;
     s.y_map_ptr = s.y_map;
 
-    for (s.y = 0; s.y < height - 1; s.y++, s.y_map_ptr++, param_1 += s.row_bytes)
+    for (s.y = 0; s.y < height - 1; s.y++, s.y_map_ptr++, out_bgr24 += s.row_bytes)
     {
       s.src_ptr = (byte *)(MIN((int)*s.y_map_ptr >> 8, wvl_entry->height - 2) * s.row_bytes + (int)s.tmp_4);
 
-      param_1[0] = ((int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
-      param_1[1] = ((int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
-      param_1[2] = ((int)((uint)s.src_ptr[s.row_bytes + 2] - (uint)s.src_ptr[2]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
+      out_bgr24[0] = ((int)((uint)s.src_ptr[s.row_bytes] - (uint)s.src_ptr[0]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[0];
+      out_bgr24[1] = ((int)((uint)s.src_ptr[s.row_bytes + 1] - (uint)s.src_ptr[1]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[1];
+      out_bgr24[2] = ((int)((uint)s.src_ptr[s.row_bytes + 2] - (uint)s.src_ptr[2]) * (*s.y_map_ptr & 0xff) >> 8) + (int)(uint)s.src_ptr[2];
     }
   }
 
@@ -1460,8 +1460,8 @@ uint *Wvl_DecodeToBgr24(byte *param_1, WvlEntry *wvl_entry, int width, int heigh
     memset(&s.out_base[(height - 1) * s.row_bytes], 0, s.row_bytes);
   }
 
-  s.unk_5060 = 4;
-  s.row_padding = (s.unk_5060 - ((width * 3) % s.unk_5060)) % s.unk_5060;
+  s.output_row_align = 4;
+  s.row_padding = (s.output_row_align - ((width * 3) % s.output_row_align)) % s.output_row_align;
   if (global_dither_kernel_id == 0)
   {
     QuantizeBgr24ToNearestPaletteColorInPlace((uint *)s.out_base, height, width, s.row_padding);
