@@ -365,7 +365,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam_dc, (int)lparam_data);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam_dc, (int)lparam_data);
 
   case WM_ERASEBKGND:
     s.erase_dc = (HDC)wparam_dc;
@@ -631,7 +631,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)card_window, message, (int)wparam_window, (int)lparam_data);
+    return handle_button_palette_message((int)card_window, message, (int)wparam_window, (int)lparam_data);
 
   default:
     return DefWindowProcA(card_window, message, wparam_window, lparam_data);

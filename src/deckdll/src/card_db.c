@@ -105,7 +105,7 @@ char *global_base_txt;
 
 // GLOBAL: MAGIC 0x00777e60
 // GLOBAL: SHANDALAR 0x0078ebf0
-name_table_entry_t unk_00777e60[866];
+name_table_entry_t global_legacy_names[866];
 
 // FUNCTION: DECKDLL 0x1001a940
 // FUNCTION: MAGIC 0x452cf0
@@ -114,20 +114,20 @@ int read_db_guts(char *cards_dat_filename)
 {
   struct
   {
-    int init_idx;               /* local_808 */
-    int flavor_out_idx;         /* local_804 */
-    int flavor_card_idx;        /* local_800 */
-    char flavor_text_buf[1000]; /* local_7fc */
-    char *flavor_in;            /* local_414 */
-    int rules_out_idx;          /* local_410 */
-    int rules_card_idx;         /* local_40c */
-    char rules_text_buf[1000];  /* local_408 */
-    char *rules_in;             /* local_20 */
-    int req_idx;                /* local_1c */
-    int exp_idx;                /* local_18 */
+    int init_idx;               /* ebp - 0x80c */
+    int flavor_out_idx;         /* ebp - 0x808 */
+    int flavor_card_idx;        /* ebp - 0x804 */
+    char flavor_text_buf[1000]; /* ebp - 0x800 */
+    char *flavor_in;            /* ebp - 0x418 */
+    int rules_out_idx;          /* ebp - 0x414 */
+    int rules_card_idx;         /* ebp - 0x410 */
+    char rules_text_buf[1000];  /* ebp - 0x40c */
+    char *rules_in;             /* ebp - 0x24 */
+    int req_idx;                /* ebp - 0x20 */
+    int exp_idx;                /* ebp - 0x1c */
     card_ptr_t *cp;
     size_t record_size;
-    int card_idx; /* local_c */
+    int card_idx; /* ebp - 0x10 */
     FILE *cards_dat;
   } s;
 
@@ -406,11 +406,11 @@ int ReadLegacyCsv(const char *filename)
 
   for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
   {
-    unk_00777e60[s.card_index].damage_text = "";
-    unk_00777e60[s.card_index].effect_title = "";
-    unk_00777e60[s.card_index].effect_text = "";
-    unk_00777e60[s.card_index].legacy_title = "";
-    unk_00777e60[s.card_index].legacy_text = "";
+    global_legacy_names[s.card_index].damage_text = "";
+    global_legacy_names[s.card_index].effect_title = "";
+    global_legacy_names[s.card_index].effect_text = "";
+    global_legacy_names[s.card_index].legacy_title = "";
+    global_legacy_names[s.card_index].legacy_text = "";
   }
 
   s.file = CreateFileA(filename,
@@ -441,23 +441,23 @@ int ReadLegacyCsv(const char *filename)
         s.line = s.next;
 
         s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].damage_text = s.line;
+        global_legacy_names[s.card_index].damage_text = s.line;
         s.line = s.next;
 
         s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].effect_title = s.line;
+        global_legacy_names[s.card_index].effect_title = s.line;
         s.line = s.next;
 
         s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].effect_text = s.line;
+        global_legacy_names[s.card_index].effect_text = s.line;
         s.line = s.next;
 
         s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].legacy_title = s.line;
+        global_legacy_names[s.card_index].legacy_title = s.line;
         s.line = s.next;
 
         s.next = CsvParseNextField(&s.line);
-        unk_00777e60[s.card_index].legacy_text = s.line;
+        global_legacy_names[s.card_index].legacy_text = s.line;
         s.line = s.next;
       }
 

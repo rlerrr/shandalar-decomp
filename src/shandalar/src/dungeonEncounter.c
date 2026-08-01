@@ -135,7 +135,7 @@ int ScaleUiCoordinateFrom320(int value);
 int FUN_005501fe(int value);
 int AddCardToDeckSorted(int card_id);
 int FindCardIndexByCsvid(int csvid);
-int FUN_0056d5c0(int sound_id, int *out_state);
+int sound_get_state(int sound_id, int *out_state);
 int GetUiTickCount(void);
 int IsKeyInputQueueEmpty(void);
 int IsWizardColorFeminine(int color_index);
@@ -954,7 +954,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     sound_stop(100);
     do
     {
-      if (FUN_0056d5c0(100, &s.sound_state) != 4)
+      if (sound_get_state(100, &s.sound_state) != 4)
       {
         if (s.sound_state == 1)
         {

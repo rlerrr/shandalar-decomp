@@ -223,11 +223,11 @@ char *get_displayed_card_name(int player, int card)
     }
     else if (s.csvid == unk_00789734)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].effect_title);
+      strcpy(g_dialog_card_title_buffer, global_legacy_names[s.choice].effect_title);
     }
     else if (s.csvid == unk_008a8de8)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.choice].legacy_title);
+      strcpy(g_dialog_card_title_buffer, global_legacy_names[s.choice].legacy_title);
     }
     else if (s.csvid == unk_009266ac)
     {
@@ -248,7 +248,7 @@ char *get_displayed_card_name(int player, int card)
     if (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
         s.transformed_card_id == CARD_ID_WHIMSY)
     {
-      strcpy(g_dialog_card_title_buffer, unk_00777e60[s.transformed_card_id].effect_title);
+      strcpy(g_dialog_card_title_buffer, global_legacy_names[s.transformed_card_id].effect_title);
     }
 
     if (g_dialog_card_title_buffer[0] == '\0')
@@ -1213,11 +1213,11 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   }
   else if (card_id == unk_00789734)
   {
-    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].effect_title);
+    strcpy(g_card_title_buffer_00709100, global_legacy_names[s.card_data.id].effect_title);
   }
   else if (card_id == unk_008a8de8)
   {
-    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].legacy_title);
+    strcpy(g_card_title_buffer_00709100, global_legacy_names[s.card_data.id].legacy_title);
   }
   else
   {
@@ -1235,7 +1235,7 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
       (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
        s.transformed_card_id == CARD_ID_WHIMSY))
   {
-    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.transformed_card_id].effect_title);
+    strcpy(g_card_title_buffer_00709100, global_legacy_names[s.transformed_card_id].effect_title);
   }
 
   s.card_data.name = g_card_title_buffer_00709100;
@@ -1267,11 +1267,11 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
 
   if (card_id == unk_007a7d64)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].damage_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].damage_text);
   }
   else if (card_id == unk_00789b80)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].effect_text);
   }
   else if (card_id == unk_008cf1ac)
   {
@@ -1279,11 +1279,11 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   }
   else if (card_id == unk_00789734)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].effect_text);
   }
   else if (card_id == unk_008a8de8)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].legacy_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].legacy_text);
   }
   else
   {
@@ -1536,7 +1536,7 @@ INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam,
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
   case WM_QUERYNEWPALETTE:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, (int)lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, (int)lparam);
 
   case WM_ERASEBKGND:
     s.erase_dc = (HDC)wparam;

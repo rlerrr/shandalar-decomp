@@ -554,7 +554,7 @@ BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_dc = (HDC)wparam;
@@ -698,7 +698,7 @@ LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPAR
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -971,7 +971,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

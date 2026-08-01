@@ -376,7 +376,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

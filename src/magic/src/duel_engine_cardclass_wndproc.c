@@ -2021,11 +2021,11 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   }
   else if (card_id == unk_00789734)
   {
-    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].effect_title);
+    strcpy(g_card_title_buffer_00709100, global_legacy_names[s.card_data.id].effect_title);
   }
   else if (card_id == unk_008a8de8)
   {
-    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.card_data.id].legacy_title);
+    strcpy(g_card_title_buffer_00709100, global_legacy_names[s.card_data.id].legacy_title);
   }
   else if (card_id == unk_0092666c)
   {
@@ -2046,7 +2046,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
       (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
        s.transformed_card_id == CARD_ID_WHIMSY))
   {
-    strcpy(g_card_title_buffer_00709100, unk_00777e60[s.transformed_card_id].effect_title);
+    strcpy(g_card_title_buffer_00709100, global_legacy_names[s.transformed_card_id].effect_title);
   }
 
   s.card_data.name = g_card_title_buffer_00709100;
@@ -2077,11 +2077,11 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   s.card_data.req.req_white = 0;
   if (card_id == unk_007a7d64)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].damage_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].damage_text);
   }
   else if (card_id == unk_00789b80)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].effect_text);
   }
   else if (card_id == unk_008cf1ac)
   {
@@ -2089,11 +2089,11 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   }
   else if (card_id == unk_00789734)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].effect_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].effect_text);
   }
   else if (card_id == unk_008a8de8)
   {
-    strcpy(g_card_rules_text_buffer_00708da8, unk_00777e60[s.card_data.id].legacy_text);
+    strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].legacy_text);
   }
   else
   {
@@ -4018,7 +4018,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

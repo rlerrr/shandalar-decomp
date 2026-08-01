@@ -8,7 +8,7 @@
 
 BOOL DrawMaskedBitmapToRect(HDC dc, RECT *rect, HANDLE bitmap, int width, int height, int src_x, int src_y, int mask_x, int mask_y);
 int draw_masked_bitmap_left_half_to_rect(HDC dc, RECT *rect, HANDLE bitmap);
-int FUN_10025b5e(int hwnd, int msg, void *wparam, int lparam);
+int handle_button_palette_message(int hwnd, int msg, void *wparam, int lparam);
 
 #define SCROLLBAR_OFFSCREEN_DC_PTR (&g_scrollbar_offscreen_dc)
 #define SCROLLBAR_OFFSCREEN_BITMAP_PTR (&g_scrollbar_offscreen_bitmap)
@@ -678,7 +678,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wp
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (void *)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (void *)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

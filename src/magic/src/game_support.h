@@ -53,7 +53,7 @@ void copy_opponent_name_prefix(char *name);
 int FUN_0041c752(int player, int card, int event, int amount);
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
 int FUN_0042d790(int player, int card, event_t event, int color);
-int FUN_10025b5e(int window, unsigned int message, int other_window, int data);
+int handle_button_palette_message(int window, unsigned int message, int other_window, int data);
 int helper_destroy_basiclandtype(int source_player,
                                         int source_card,
                                         int test_player,

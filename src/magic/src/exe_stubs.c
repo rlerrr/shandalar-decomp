@@ -444,7 +444,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_hdc = (HDC)wparam;
@@ -3021,7 +3021,7 @@ BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.dc = (HDC)wparam;
@@ -3251,7 +3251,7 @@ BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, 
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_hdc = (HDC)wparam;

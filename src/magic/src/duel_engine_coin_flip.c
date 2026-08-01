@@ -356,7 +356,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wpara
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_dc = (HDC)wparam;
@@ -837,7 +837,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_dc = (HDC)wparam;
@@ -1384,7 +1384,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.hdc = (HDC)wparam;

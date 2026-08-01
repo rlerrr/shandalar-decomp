@@ -57,7 +57,7 @@ int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
 card_id_t get_card_window_displayed_card_id(HWND hwnd);
 LONG get_card_window_hidden_flag(HWND hwnd);
 void layout_attack_phase_window(HWND hwnd);
-int FUN_10025b5e(int hwnd, int msg, void *wparam, int lparam);
+int handle_button_palette_message(int hwnd, int msg, void *wparam, int lparam);
 void restack_duel_child_windows(void);
 
 extern char global_base_directory[];
@@ -1664,7 +1664,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (void *)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (void *)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1917,7 +1917,7 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (void *)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (void *)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -2008,7 +2008,7 @@ LRESULT CALLBACK wndproc_AttackMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPA
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (void *)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (void *)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

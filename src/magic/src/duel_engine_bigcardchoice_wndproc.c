@@ -9,7 +9,7 @@
 #include "magic/src/shared_startup.h"
 
 HBITMAP load_pic(char *filename);
-LRESULT FUN_10025b5e(int hwnd, unsigned int msg, int wparam, int lparam);
+LRESULT handle_button_palette_message(int hwnd, unsigned int msg, int wparam, int lparam);
 
 extern int g_big_card_choice_timeout_ms;
 
@@ -571,7 +571,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARA
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

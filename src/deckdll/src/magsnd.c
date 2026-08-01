@@ -47,8 +47,8 @@ typedef int   (__cdecl *PFN_PlaySndMarker)(int num, unsigned int marker);
 typedef DWORD (__cdecl *PFN_GetSndTime)(int num, unsigned int *out_time);
 typedef DWORD (__cdecl *PFN_ResetSnd)(void);
 typedef DWORD (__cdecl *PFN_GetSndState)(int num, DWORD *out_state);
-typedef void *(__cdecl *PFN_GetAVISndBuff)(int param_1, unsigned int param_2);
-typedef DWORD (__cdecl *PFN_ReleaseAVISndBuff)(int param_1);
+typedef void *(__cdecl *PFN_GetAVISndBuff)(int avi_id, unsigned int buffer_size);
+typedef DWORD (__cdecl *PFN_ReleaseAVISndBuff)(int avi_id);
 typedef HWND  (__cdecl *PFN_GetSndHWND)(void);
 typedef int   (__cdecl *PFN_IsSndLoaded)(int loadId, int *out_slot);
 typedef DWORD (__cdecl *PFN_GetLRUSnd)(int *out_num, int start, int end);
@@ -163,14 +163,14 @@ int sound_stop(int a1)
 }
 
 // FUNCTION: SHANDALAR 0x0056d362
-int sound_set_vol(int param_1, unsigned int param_2)
+int sound_set_vol(int num, unsigned int vol)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2))
   {
     return 4;
   }
 
-  return global_sound_vtable.SetVol(param_1, param_2);
+  return global_sound_vtable.SetVol(num, vol);
 }
 
 // FUNCTION: DECKDLL 0x1002daee
@@ -256,25 +256,25 @@ int set_sound_loop(int num, int num2)
 }
 
 // FUNCTION: SHANDALAR 0x0056d4f5
-int play_snd_marker(int param_1, unsigned int param_2)
+int play_snd_marker(int num, unsigned int marker)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2))
   {
     return 4;
   }
 
-  return global_sound_vtable.PlaySndMarker(param_1, param_2);
+  return global_sound_vtable.PlaySndMarker(num, marker);
 }
 
 // FUNCTION: SHANDALAR 0x0056d5c0
-int FUN_0056d5c0(int param_1, int *param_2)
+int sound_get_state(int num, int *out_state)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2))
   {
     return 4;
   }
 
-  return global_sound_vtable.GetSndState(param_1, (DWORD *)param_2);
+  return global_sound_vtable.GetSndState(num, (DWORD *)out_state);
 }
 
 // FUNCTION: MAGIC 0x00485f81

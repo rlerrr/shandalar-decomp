@@ -1198,7 +1198,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ChatClass(HWND hwnd, UINT msg, WPARAM wparam,
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1229,7 +1229,7 @@ LRESULT CALLBACK wndproc_ShuffleCard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1274,7 +1274,7 @@ LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, L
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1365,7 +1365,7 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1467,7 +1467,7 @@ LRESULT CALLBACK wndproc_MAGICTHEME_IconButtonClass(HWND hwnd, UINT msg, WPARAM 
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1735,7 +1735,7 @@ LRESULT CALLBACK wndproc_MAGIC_CueCardClass(HWND hwnd, UINT msg, WPARAM wparam, 
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1794,7 +1794,7 @@ LRESULT CALLBACK wndproc_MAGIC_PlayerDirectiveClass(HWND hwnd, UINT msg, WPARAM 
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);
   }

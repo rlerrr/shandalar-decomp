@@ -16,19 +16,19 @@ uint8_t card_coded[3][128] = {
 
 // GLOBAL: DECKDLL 0x10033008
 // GLOBAL: SHANDALAR 0x00583848
-char DAT_10033008[] = {0x12, 0x0e, 0x07, 0x15, 0x16, 0x00, 0x13, 0x04, 0x1d, 0x0c, 0x28, 0x22, 0x33, 0x2e, 0x32, 0x2e, 0x27, 0x35, 0x1d, 0x16, 0x28, 0x2f, 0x25, 0x2e, 0x36, 0x32, 0x1d, 0x02, 0x34, 0x33, 0x33, 0x24, 0x2f, 0x35, 0x17, 0x24, 0x33, 0x32, 0x28, 0x2e, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+char encoded_windows_current_version_key[] = {0x12, 0x0e, 0x07, 0x15, 0x16, 0x00, 0x13, 0x04, 0x1d, 0x0c, 0x28, 0x22, 0x33, 0x2e, 0x32, 0x2e, 0x27, 0x35, 0x1d, 0x16, 0x28, 0x2f, 0x25, 0x2e, 0x36, 0x32, 0x1d, 0x02, 0x34, 0x33, 0x33, 0x24, 0x2f, 0x35, 0x17, 0x24, 0x33, 0x32, 0x28, 0x2e, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // GLOBAL: DECKDLL 0x10033038
 // GLOBAL: SHANDALAR 0x00583878
-char DAT_10033038[40] = {0x12, 0x0e, 0x07, 0x15, 0x16, 0x00, 0x13, 0x04, 0x1d, 0x0c, 0x28, 0x22, 0x33, 0x2e, 0x11, 0x33, 0x2e, 0x32, 0x24, 0x1d, 0x0c, 0x20, 0x26, 0x28, 0x22, 0x7b, 0x61, 0x15, 0x29, 0x24, 0x61, 0x06, 0x20, 0x35, 0x29, 0x24, 0x33, 0x28, 0x2f, 0x26};
+char encoded_magic_registry_key[40] = {0x12, 0x0e, 0x07, 0x15, 0x16, 0x00, 0x13, 0x04, 0x1d, 0x0c, 0x28, 0x22, 0x33, 0x2e, 0x11, 0x33, 0x2e, 0x32, 0x24, 0x1d, 0x0c, 0x20, 0x26, 0x28, 0x22, 0x7b, 0x61, 0x15, 0x29, 0x24, 0x61, 0x06, 0x20, 0x35, 0x29, 0x24, 0x33, 0x28, 0x2f, 0x26};
 
 // GLOBAL: DECKDLL 0x10033060
 // GLOBAL: SHANDALAR 0x005838a0
-char DAT_10033060[] = {0x07, 0x28, 0x33, 0x32, 0x35, 0x08, 0x2f, 0x32, 0x35, 0x20, 0x2d, 0x2d, 0x05, 0x20, 0x35, 0x24, 0x15, 0x28, 0x2c, 0x24, 0x00, 0x00, 0x00, 0x00};
+char encoded_first_install_date_time[] = {0x07, 0x28, 0x33, 0x32, 0x35, 0x08, 0x2f, 0x32, 0x35, 0x20, 0x2d, 0x2d, 0x05, 0x20, 0x35, 0x24, 0x15, 0x28, 0x2c, 0x24, 0x00, 0x00, 0x00, 0x00};
 
 // GLOBAL: DECKDLL 0x10033078
 // GLOBAL: SHANDALAR 0x005838b8
-char DAT_10033078[] = {0x11, 0x33, 0x2e, 0x25, 0x34, 0x22, 0x35, 0x08, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+char encoded_product_id_value[] = {0x11, 0x33, 0x2e, 0x25, 0x34, 0x22, 0x35, 0x08, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // GLOBAL: DECKDLL 0x10033088
 char s__10033088[] = {0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00};
@@ -44,11 +44,11 @@ char s__100330f8[] = {0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
 
 // GLOBAL: DECKDLL 0x101bc86c
 // GLOBAL: SHANDALAR 0x0078e5bc
-uint32_t DAT_101bc86c;
+uint32_t global_serial_part_a;
 
 // GLOBAL: DECKDLL 0x101bc870
 // GLOBAL: SHANDALAR 0x0078e5c0
-int DAT_101bc870;
+int global_serial_part_b;
 
 // GLOBAL: DECKDLL 0x101bc874
 // GLOBAL: SHANDALAR 0x0078e5c4
@@ -56,43 +56,43 @@ int global_Windows_FirstInstallDateTime;
 
 // GLOBAL: DECKDLL 0x101bc878
 // GLOBAL: SHANDALAR 0x0078e5c8
-int DAT_101bc878;
+int global_product_id_seed_a;
 
 // GLOBAL: DECKDLL 0x101bc87c
 // GLOBAL: SHANDALAR 0x0078e5cc
-int DAT_101bc87c;
+int global_product_id_seed_b;
 
 // FUNCTION: DECKDLL 0x1000de30
 // FUNCTION: MAGIC 0x0043d210
 // FUNCTION: SHANDALAR 0x00441b70
-static void ScrubString(char *param_1)
+static void ScrubString(char *decoded_string)
 {
-  memset(param_1, 0x20, strlen(param_1));
+  memset(decoded_string, 0x20, strlen(decoded_string));
 }
 
 // FUNCTION: DECKDLL 0x1000de56
 // FUNCTION: SHANDALAR 0x00441b96
-static void ReverseBits32(uint *param_1)
+static void ReverseBits32(uint *value)
 {
   struct
   {
     int i;        // ebp - 0x10
     uint result;  // ebp - 0x0c
-    uint local_c; // ebp - 0x08
-    uint local_8; // ebp - 0x04
+    uint dst_bit_mask; // ebp - 0x08
+    uint src_bit_mask; // ebp - 0x04
   } s;
 
   s.result = 0;
-  s.local_8 = 1;
-  s.local_c = 0x80000000;
+  s.src_bit_mask = 1;
+  s.dst_bit_mask = 0x80000000;
   for (s.i = 0; s.i < 0x20; s.i++)
   {
-    if (s.local_8 & *param_1)
-      s.result |= s.local_c;
-    s.local_8 <<= 1;
-    s.local_c >>= 1;
+    if (s.src_bit_mask & *value)
+      s.result |= s.dst_bit_mask;
+    s.src_bit_mask <<= 1;
+    s.dst_bit_mask >>= 1;
   }
-  *param_1 = s.result;
+  *value = s.result;
 }
 
 // FUNCTION: DECKDLL 0x1000deb9
@@ -106,7 +106,7 @@ int InitLicenseSecretsFromRegistry(void)
     int sProductIdLength;
     size_t sFirstInstallDateTimeLength;
     int sWindowsCurrentVersionKeyLength;
-    int local_420;
+    int repeat_idx;
     DWORD lpcbData;
     size_t winProductIdLength;
     uint i;
@@ -120,7 +120,7 @@ int InitLicenseSecretsFromRegistry(void)
   // This generates "SOFTWARE\Microsoft\Windows\CurrentVersion"
   for (s.i = 0; strlen(s__100330c8) > s.i; s.i++)
   {
-    s__100330c8[s.i] = DAT_10033008[s.i] ^ 0x41;
+    s__100330c8[s.i] = encoded_windows_current_version_key[s.i] ^ 0x41;
   }
   s.sWindowsCurrentVersionKeyLength = strlen(s__100330c8);
   s__100330c8[s.sWindowsCurrentVersionKeyLength] = '\0';
@@ -138,7 +138,7 @@ int InitLicenseSecretsFromRegistry(void)
   // This generates "FirstInstallDateTime" which is a Windows 95/98/ME thing
   for (s.i = 0; strlen(s__100330f8) > s.i; s.i++)
   {
-    s__100330f8[s.i] = DAT_10033060[s.i] ^ 0x41;
+    s__100330f8[s.i] = encoded_first_install_date_time[s.i] ^ 0x41;
   }
 
   s.sFirstInstallDateTimeLength = strlen(s__100330f8);
@@ -158,7 +158,7 @@ int InitLicenseSecretsFromRegistry(void)
   // This generates "ProductId"
   for (s.i = 0; strlen(s__100330b8) > s.i; s.i++)
   {
-    s__100330b8[s.i] = DAT_10033078[s.i] ^ 0x41;
+    s__100330b8[s.i] = encoded_product_id_value[s.i] ^ 0x41;
   }
 
   s.sProductIdLength = strlen(s__100330b8);
@@ -175,19 +175,19 @@ int InitLicenseSecretsFromRegistry(void)
   s.winProductIdLength = strlen((char *)s.winProductId);
 
   // Repeats product key into itself up to 16 chars
-  for (s.local_420 = 0; strlen((char *)s.winProductId) < 0x10;)
+  for (s.repeat_idx = 0; strlen((char *)s.winProductId) < 0x10;)
   {
-    s.winProductId[s.winProductIdLength] = s.winProductId[s.local_420];
-    s.local_420 = s.local_420 + 1;
+    s.winProductId[s.winProductIdLength] = s.winProductId[s.repeat_idx];
+    s.repeat_idx = s.repeat_idx + 1;
     s.winProductIdLength++;
     s.winProductId[s.winProductIdLength] = '\0';
   }
 
   // Using product key as entropy in a weird way (just the last 8 chars)
   s.prodKeyPtr = &(s.winProductId - 8)[strlen((char *)s.winProductId)];
-  memcpy(&DAT_101bc878, s.prodKeyPtr, 4);
+  memcpy(&global_product_id_seed_a, s.prodKeyPtr, 4);
   s.prodKeyPtr += 4;
-  memcpy(&DAT_101bc87c, s.prodKeyPtr, 4);
+  memcpy(&global_product_id_seed_b, s.prodKeyPtr, 4);
   s.prodKeyPtr = NULL;
   RegCloseKey(s.hKey);
 #endif
@@ -228,7 +228,7 @@ static int ValidateRegistrySerial(uint32_t *out_value)
 
   for (s.i = 0; s.i < strlen(s__10033088); s.i++)
   {
-    s__10033088[s.i] = DAT_10033038[s.i] ^ 0x41;
+    s__10033088[s.i] = encoded_magic_registry_key[s.i] ^ 0x41;
   }
   s.regPathLength = strlen(s__10033088);
   s__10033088[s.regPathLength] = '\0';
@@ -277,9 +277,9 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   // Split serial fields
   // ------------------------------------------------------------
   s.pad6 = s.buf;
-  memcpy(&DAT_101bc86c, s.pad6, 4); // part A
+  memcpy(&global_serial_part_a, s.pad6, 4); // part A
   s.pad6 += 4;
-  memcpy(&DAT_101bc870, s.pad6, 4); // part B
+  memcpy(&global_serial_part_b, s.pad6, 4); // part B
   s.pad6 += 4;
   memcpy(&s.checksum, s.pad6, 4); // checksum
   s.pad6 = NULL;
@@ -288,14 +288,14 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   // ------------------------------------------------------------
   // Nibble checksum verification
   // ------------------------------------------------------------
-  *(byte *)&s.sumpt1 = ((DAT_101bc86c >> 24) & 0xF);
-  *(byte *)&s.sumpt2 = ((DAT_101bc86c >> 16) & 0xF);
-  *(byte *)&s.sumpt3 = ((DAT_101bc86c >> 8) & 0xF);
-  *(byte *)&s.sumpt4 = ((DAT_101bc86c >> 0) & 0xF);
-  *(byte *)&s.sumpt5 = ((DAT_101bc870 >> 24) & 0xF);
-  *(byte *)&s.sumpt6 = ((DAT_101bc870 >> 16) & 0xF);
-  *(byte *)&s.sumpt7 = ((DAT_101bc870 >> 8) & 0xF);
-  *(byte *)&s.sumpt8 = ((DAT_101bc870 >> 0) & 0xF);
+  *(byte *)&s.sumpt1 = ((global_serial_part_a >> 24) & 0xF);
+  *(byte *)&s.sumpt2 = ((global_serial_part_a >> 16) & 0xF);
+  *(byte *)&s.sumpt3 = ((global_serial_part_a >> 8) & 0xF);
+  *(byte *)&s.sumpt4 = ((global_serial_part_a >> 0) & 0xF);
+  *(byte *)&s.sumpt5 = ((global_serial_part_b >> 24) & 0xF);
+  *(byte *)&s.sumpt6 = ((global_serial_part_b >> 16) & 0xF);
+  *(byte *)&s.sumpt7 = ((global_serial_part_b >> 8) & 0xF);
+  *(byte *)&s.sumpt8 = ((global_serial_part_b >> 0) & 0xF);
 
   //*(byte*)&s.sum =
 
@@ -314,35 +314,35 @@ static int ValidateRegistrySerial(uint32_t *out_value)
   // Serial decryption / mixing
   // ------------------------------------------------------------
 
-  DAT_101bc86c ^= DAT_101bc878;
-  DAT_101bc870 ^= DAT_101bc87c;
+  global_serial_part_a ^= global_product_id_seed_a;
+  global_serial_part_b ^= global_product_id_seed_b;
 
   // TODO: this is almost possible using _rotl/_rotr
   // the push/pop make no sense even for an inlined function
   __asm {
     push eax
     rol dword ptr [global_Windows_FirstInstallDateTime], 6
-    mov eax, dword ptr [DAT_101bc86c]
+    mov eax, dword ptr [global_serial_part_a]
     xor eax, dword ptr [global_Windows_FirstInstallDateTime]
-    mov dword ptr [DAT_101bc86c], eax
+    mov dword ptr [global_serial_part_a], eax
     ror dword ptr [global_Windows_FirstInstallDateTime], 0xc
-    mov eax, dword ptr [DAT_101bc870]
+    mov eax, dword ptr [global_serial_part_b]
     xor eax, dword ptr [global_Windows_FirstInstallDateTime]
-    mov dword ptr [DAT_101bc870], eax
+    mov dword ptr [global_serial_part_b], eax
     rol dword ptr [global_Windows_FirstInstallDateTime], 6
     pop eax
   }
 
-  ReverseBits32(&DAT_101bc870);
+  ReverseBits32(&global_serial_part_b);
 
-  if (DAT_101bc86c != DAT_101bc870)
+  if (global_serial_part_a != global_serial_part_b)
     return 2;
 
-  *out_value = DAT_101bc86c;
+  *out_value = global_serial_part_a;
   return 0;
 }
 
-unsigned int HasExpansion(unsigned char param_1);
+unsigned int HasExpansion(unsigned char expansion_mask);
 
 // FUNCTION: DECKDLL 0x1002709f
 // FUNCTION: MAGIC 0x00497811
@@ -410,32 +410,32 @@ int is_card_available_in_installed_expansion(unsigned int csvid)
 // FUNCTION: DECKDLL 0x100271e3
 // FUNCTION: MAGIC 0x00497a09
 // FUNCTION: SHANDALAR 0x00468498
-unsigned int HasExpansion(unsigned char param_1)
+unsigned int HasExpansion(unsigned char expansion_mask)
 {
 #ifndef MODERN_FIXES
   unsigned int serial;
   unsigned int result;
 
   result = 0;
-  if ((param_1 & 1) == 1)
+  if ((expansion_mask & 1) == 1)
     return 1;
 
   serial = 0;
   if (ValidateRegistrySerial(&serial) != 0)
     return 0;
 
-  if ((param_1 & 1) == 1 && (serial & 0x400000))
+  if ((expansion_mask & 1) == 1 && (serial & 0x400000))
     result = 1;
-  else if ((param_1 & 2) == 2 && (serial & 0x100))
+  else if ((expansion_mask & 2) == 2 && (serial & 0x100))
     result = 1;
-  else if ((param_1 & 4) == 4 && (serial & 0x800))
+  else if ((expansion_mask & 4) == 4 && (serial & 0x800))
     result = 1;
-  else if ((param_1 & 8) == 8 && (serial & 0x20000))
+  else if ((expansion_mask & 8) == 8 && (serial & 0x20000))
     result = 1;
-  else if ((param_1 & 0x10) == 0x10 && (serial & 0x10000000))
+  else if ((expansion_mask & 0x10) == 0x10 && (serial & 0x10000000))
     result = 1;
 #ifndef DECKDLL
-  else if ((param_1 & 0x20) == 0x20 && (serial & 0x2000))
+  else if ((expansion_mask & 0x20) == 0x20 && (serial & 0x2000))
     result = 1;
 #endif
   else

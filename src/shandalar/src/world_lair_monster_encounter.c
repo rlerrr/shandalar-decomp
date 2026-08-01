@@ -113,7 +113,7 @@ int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int colo
 int FUN_0056c0e5(int card_color, int color_mask, int param_3);
 int GetCardRarity(int card_id);
 unsigned int FindCardIndexByCsvid(int csvid);
-int FUN_0056d5c0(int param_1, int *param_2);
+int sound_get_state(int param_1, int *param_2);
 int GetCardAvailabilityMask(unsigned int card_id);
 int GetFontLineHeight(int font_slot);
 int GetQuestCardClassName(int card_class);
@@ -2385,7 +2385,7 @@ LAB_4F4BB2:
   s.duel_prompt_choice = 0;
   while ((s.duel_prompt_done != 0 && (s.duel_prompt_choice != 4)))
   {
-    s.duel_prompt_choice = FUN_0056d5c0(0, &s.duel_prompt_done);
+    s.duel_prompt_choice = sound_get_state(0, &s.duel_prompt_done);
   }
   s.duel_result = RunDuelEngine(s.selected_card_id, s.creature_type);
   LoadPcxIntoPageNoPalette("advfac64.pic");

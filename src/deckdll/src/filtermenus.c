@@ -68,12 +68,12 @@ extern struct global_filters_t global_filters;
 
 extern int (*global_is_valid_card_fn)(int);
 
-int IsCardAvailable(csvid_t csvid, int param_2);
+int IsCardAvailable(csvid_t csvid, int expansion);
 
 int load_text(const char *file_name, const char *section_name);
 void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist);
 void play_sound(int a1, int a2, int a3, int a4);
-unsigned int HasExpansion(unsigned char param_1);
+unsigned int HasExpansion(unsigned char expansion_mask);
 
 static void rotatem();
 
@@ -87,13 +87,13 @@ static int global_filter_gle_dlg_value;
 static HANDLE global_filter_creature_background_pic;
 
 // GLOBAL: DECKDLL 0x10104d88
-static HDC DAT_10104d88;
+static HDC global_filter_buttons_hdc;
 /* Padding (unnamed in the original). */
 static char pad_10104d8c[0x0c];
 // GLOBAL: DECKDLL 0x10104d98
-static HFONT DAT_10104d98;
+static HFONT global_filter_buttons_font;
 // GLOBAL: DECKDLL 0x10104da0
-static RECT DAT_10104da0;
+static RECT global_filter_buttons_rect;
 
 struct filter_dlg_title_t
 {
@@ -914,27 +914,27 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   switch (msg)
   {
   case 0x402:
-    GetClientRect(cardlistfilter_hwnd, &DAT_10104da0);
+    GetClientRect(cardlistfilter_hwnd, &global_filter_buttons_rect);
 
-    if (DAT_10104d88)
-      DeleteDC(DAT_10104d88);
+    if (global_filter_buttons_hdc)
+      DeleteDC(global_filter_buttons_hdc);
     s.hdc = GetDC(hwnd);
     ApplyCardArtPaletteToDc(s.hdc);
 
-    DAT_10104d88 = CreateCompatibleDC(s.hdc);
-    ApplyCardArtPaletteToDc(DAT_10104d88);
+    global_filter_buttons_hdc = CreateCompatibleDC(s.hdc);
+    ApplyCardArtPaletteToDc(global_filter_buttons_hdc);
 
     global_filter_dlg_title.bmp =
-        CreateCompatibleBitmap(s.hdc, DAT_10104da0.right - DAT_10104da0.left, DAT_10104da0.bottom - DAT_10104da0.top);
-    SelectObject(DAT_10104d88, global_filter_dlg_title.bmp);
+        CreateCompatibleBitmap(s.hdc, global_filter_buttons_rect.right - global_filter_buttons_rect.left, global_filter_buttons_rect.bottom - global_filter_buttons_rect.top);
+    SelectObject(global_filter_buttons_hdc, global_filter_dlg_title.bmp);
 
-    DAT_10104d98 = CreateFontA(DAT_10104da0.bottom - 6, 0, 0, 0, 400, 0, 0, 0, 0, 4, 0, 0, 0x40, NULL);
-    SelectObject(DAT_10104d88, DAT_10104d98);
+    global_filter_buttons_font = CreateFontA(global_filter_buttons_rect.bottom - 6, 0, 0, 0, 400, 0, 0, 0, 0, 4, 0, 0, 0x40, NULL);
+    SelectObject(global_filter_buttons_hdc, global_filter_buttons_font);
 
     ReleaseDC(hwnd, s.hdc);
 
-    FillRect(DAT_10104d88, &DAT_10104da0, global_create_brush_5);
-    draw_filter_buttons(DAT_10104d88, DAT_10104da0);
+    FillRect(global_filter_buttons_hdc, &global_filter_buttons_rect, global_create_brush_5);
+    draw_filter_buttons(global_filter_buttons_hdc, global_filter_buttons_rect);
     InvalidateRect(hwnd, NULL, TRUE);
     return 0;
 
@@ -1305,9 +1305,9 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
       GetClientRect(hwnd, &s.r3);
       filterbuttons_setcoords(&s.r3, s.cmd, &s.r4);
-      FillRect(DAT_10104d88, &s.r3, global_create_brush_5);
+      FillRect(global_filter_buttons_hdc, &s.r3, global_create_brush_5);
 
-      draw_filter_buttons(DAT_10104d88, s.r3);
+      draw_filter_buttons(global_filter_buttons_hdc, s.r3);
       InvalidateRect(hwnd, NULL, FALSE);
     }
 
@@ -1388,10 +1388,10 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return 0;
 
   case WM_DESTROY:
-    if (DAT_10104d88)
-      DeleteDC(DAT_10104d88);
+    if (global_filter_buttons_hdc)
+      DeleteDC(global_filter_buttons_hdc);
     DeleteObject((HGDIOBJ)global_filter_dlg_title.bmp);
-    DeleteObject(DAT_10104d98);
+    DeleteObject(global_filter_buttons_font);
     destroy_filter_menus();
     KillTimer(hwnd, 1);
     return 0;
@@ -1515,7 +1515,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       filterbuttons_setcoords(&s.r, s.i, &s.r2);
       if (PtInRect(&s.r2, s.pt))
       {
-        FillRect(DAT_10104d88, &s.r, global_create_brush_5);
+        FillRect(global_filter_buttons_hdc, &s.r, global_create_brush_5);
 
         if (toggle_filterbutton(s.i))
         {
@@ -1529,7 +1529,7 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
         SendMessage(global_horzlist_hwnd, 0x186, 0, 0);
         filter_cards_in_lists(global_listbox_hwnd, global_horzlist_hwnd);
-        draw_filter_buttons(DAT_10104d88, s.r);
+        draw_filter_buttons(global_filter_buttons_hdc, s.r);
         InvalidateRect(hwnd, NULL, FALSE);
         return 0;
       }
@@ -1551,8 +1551,8 @@ wndproc_CardListFilterClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   case WM_PAINT:
     s.hdc2 = BeginPaint(hwnd, &s.paint);
     ApplyCardArtPaletteToDc(s.hdc2);
-    BitBlt(s.hdc2, DAT_10104da0.left, DAT_10104da0.top, DAT_10104da0.right - DAT_10104da0.left,
-           DAT_10104da0.bottom - DAT_10104da0.top, DAT_10104d88, 0, 0, SRCCOPY);
+    BitBlt(s.hdc2, global_filter_buttons_rect.left, global_filter_buttons_rect.top, global_filter_buttons_rect.right - global_filter_buttons_rect.left,
+           global_filter_buttons_rect.bottom - global_filter_buttons_rect.top, global_filter_buttons_hdc, 0, 0, SRCCOPY);
     EndPaint(hwnd, &s.paint);
     return 0;
 
@@ -1670,20 +1670,20 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
   {
     HDC hdc2; // ebp - 0x204
     RECT r;
-    unsigned int local_1f4;
+    unsigned int ctl_hwnd;
     HDC hdc;           // ebp - 0x1ec
-    HGDIOBJ local_1ec; // ebp - 0x1e8
-    int local_1e8;
+    HGDIOBJ hollow_brush; // ebp - 0x1e8
+    int selected_idx;
 
     int selected[0x33];
     char path[264];
 
-    unsigned int local_10;
-    unsigned int local_8;
-    unsigned int local_4;
+    unsigned int artist_count;
+    unsigned int qmask_low;
+    unsigned int qmask_high;
   } s;
 
-#define QMASK (*(unsigned __int64 *)&s.local_8)
+#define QMASK (*(unsigned __int64 *)&s.qmask_low)
 
   switch (msg)
   {
@@ -1699,14 +1699,14 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
     SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
     SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
-    s.local_10 = (unsigned int)load_text("menus", "ARTISTNAMES");
+    s.artist_count = (unsigned int)load_text("menus", "ARTISTNAMES");
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
     ShowWindow(GetDlgItem(hdlg, RES_FILTERLIST_ENABLEFILTER), 0);
 
-    if (s.local_10 != 0xffffffff)
+    if (s.artist_count != 0xffffffff)
     {
       QMASK = 0;
-      while ((signed __int64)QMASK < (signed __int64)(int)s.local_10)
+      while ((signed __int64)QMASK < (signed __int64)(int)s.artist_count)
       {
         SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_ADDSTRING, 0,
                             (LPARAM)(text_lines[0] + (int)(QMASK * 0x80)));
@@ -1735,16 +1735,16 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
     switch (LOWORD(wparam))
     {
     case RES_BUTTON_OK:
-      for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
-        s.selected[s.local_1e8] = -1;
+      for (s.selected_idx = 0; s.selected_idx < 0x34; s.selected_idx = s.selected_idx + 1)
+        s.selected[s.selected_idx] = -1;
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0x33, (LPARAM)s.selected);
       global_filters.artists_list = 0;
 
-      for (s.local_1e8 = 0; s.local_1e8 < 0x34; s.local_1e8 = s.local_1e8 + 1)
-        if (s.selected[s.local_1e8] != -1)
+      for (s.selected_idx = 0; s.selected_idx < 0x34; s.selected_idx = s.selected_idx + 1)
+        if (s.selected[s.selected_idx] != -1)
         {
           QMASK = (unsigned __int64)1;
-          QMASK = QMASK << (unsigned char)s.selected[s.local_1e8];
+          QMASK = QMASK << (unsigned char)s.selected[s.selected_idx];
           global_filters.artists_list |= (unsigned int)QMASK;
         }
 
@@ -1755,14 +1755,14 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
       return 1;
     case RES_FILTERLIST_SELECTALL:
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_1e8 = 0x32; -1 < s.local_1e8; s.local_1e8 = s.local_1e8 + -1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_1e8);
+      for (s.selected_idx = 0x32; -1 < s.selected_idx; s.selected_idx = s.selected_idx + -1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.selected_idx);
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
       return 1;
     case RES_FILTERLIST_CLEARALL:
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_1e8 = 0; s.local_1e8 < 0x33; s.local_1e8 = s.local_1e8 + 1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_1e8);
+      for (s.selected_idx = 0; s.selected_idx < 0x33; s.selected_idx = s.selected_idx + 1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.selected_idx);
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
       return 1;
     default:
@@ -1773,9 +1773,9 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
   case WM_CTLCOLORSTATIC:
     s.hdc = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.hdc);
-    s.local_1f4 = (unsigned int)lparam;
+    s.ctl_hwnd = (unsigned int)lparam;
     SetBkMode(s.hdc, TRANSPARENT);
-    return (INT_PTR)(s.local_1ec = GetStockObject(HOLLOW_BRUSH));
+    return (INT_PTR)(s.hollow_brush = GetStockObject(HOLLOW_BRUSH));
 
   case WM_ERASEBKGND:
     s.hdc2 = (HDC)wparam;
@@ -1802,16 +1802,16 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
   {
     HDC hdc2; // ebp - 0x4bc
     RECT r;
-    unsigned int local_4ac;
+    unsigned int ctl_hwnd;
     HDC hdc;           // ebp - 0x4a4
-    HGDIOBJ local_4a4; // ebp - 0x4a0
-    int local_4a0;
-    int local_49c;
+    HGDIOBJ hollow_brush; // ebp - 0x4a0
+    int word_idx;
+    int selected_idx;
     int selected[0xe0];
     char path[264];
-    int local_10;
-    int local_c;          // ebp - 0x8
-    unsigned int local_8; // ebp - 0x4
+    int list_word_idx;
+    int item_idx;          // ebp - 0x8
+    unsigned int creature_name_count; // ebp - 0x4
   } s;
 
   switch (msg)
@@ -1828,23 +1828,23 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_OK), text_lines[0]);
     SetWindowTextA(GetDlgItem(hdlg, RES_BUTTON_CANCEL), text_lines[1]);
 
-    s.local_8 = (unsigned int)load_text("menus", "CREATURENAMES");
+    s.creature_name_count = (unsigned int)load_text("menus", "CREATURENAMES");
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
 
     if (global_filters.cardtypes & FT_CREATURE_LIST)
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_ENABLEFILTER, BM_SETCHECK, 1, 0);
 
-    if (s.local_8 != 0xffffffff)
-      for (s.local_c = 0; s.local_c < (int)s.local_8; s.local_c = s.local_c + 1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_INSERTSTRING, 0xffffffff, (LPARAM)(text_lines + s.local_c));
+    if (s.creature_name_count != 0xffffffff)
+      for (s.item_idx = 0; s.item_idx < (int)s.creature_name_count; s.item_idx = s.item_idx + 1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_INSERTSTRING, 0xffffffff, (LPARAM)(text_lines + s.item_idx));
 
-    for (s.local_10 = 0; s.local_10 < 7; s.local_10 = s.local_10 + 1)
-      for (s.local_c = 0; s.local_c < 0x20; s.local_c = s.local_c + 1)
+    for (s.list_word_idx = 0; s.list_word_idx < 7; s.list_word_idx = s.list_word_idx + 1)
+      for (s.item_idx = 0; s.item_idx < 0x20; s.item_idx = s.item_idx + 1)
       {
-        if (global_filters.creature_list[s.local_10] & (1U << (unsigned char)s.local_c))
-          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_10 * 0x20 + s.local_c);
+        if (global_filters.creature_list[s.list_word_idx] & (1U << (unsigned char)s.item_idx))
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.list_word_idx * 0x20 + s.item_idx);
         else
-          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_10 * 0x20 + s.local_c);
+          SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.list_word_idx * 0x20 + s.item_idx);
       }
 
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
@@ -1858,20 +1858,20 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
     switch (LOWORD(wparam))
     {
     case RES_BUTTON_OK:
-      for (s.local_49c = 0; s.local_49c < 0xe0; s.local_49c = s.local_49c + 1)
-        s.selected[s.local_49c] = -1;
+      for (s.selected_idx = 0; s.selected_idx < 0xe0; s.selected_idx = s.selected_idx + 1)
+        s.selected[s.selected_idx] = -1;
 
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_GETSELITEMS, 0xdd, (LPARAM)s.selected);
-      for (s.local_49c = 0; s.local_49c < 7; s.local_49c = s.local_49c + 1)
-        global_filters.creature_list[s.local_49c] = 0;
+      for (s.selected_idx = 0; s.selected_idx < 7; s.selected_idx = s.selected_idx + 1)
+        global_filters.creature_list[s.selected_idx] = 0;
 
-      for (s.local_4a0 = 0; s.local_4a0 < 7; s.local_4a0 = s.local_4a0 + 1)
-        for (s.local_49c = 0; s.local_49c < 0xdd; s.local_49c = s.local_49c + 1)
-          if (((s.selected[s.local_49c] != -1) && (s.local_4a0 * 0x20 <= s.selected[s.local_49c])) &&
-              (s.selected[s.local_49c] < (s.local_4a0 + 1) * 0x20))
+      for (s.word_idx = 0; s.word_idx < 7; s.word_idx = s.word_idx + 1)
+        for (s.selected_idx = 0; s.selected_idx < 0xdd; s.selected_idx = s.selected_idx + 1)
+          if (((s.selected[s.selected_idx] != -1) && (s.word_idx * 0x20 <= s.selected[s.selected_idx])) &&
+              (s.selected[s.selected_idx] < (s.word_idx + 1) * 0x20))
           {
-            global_filters.creature_list[s.local_4a0] |=
-                1U << (s.selected[s.local_49c] % 32);
+            global_filters.creature_list[s.word_idx] |=
+                1U << (s.selected[s.selected_idx] % 32);
           }
 
       if (global_filter_creature_background_pic)
@@ -1887,15 +1887,15 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
 
     case RES_FILTERLIST_SELECTALL:
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_c = 0xdc; -1 < s.local_c; s.local_c = s.local_c + -1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.local_c);
+      for (s.item_idx = 0xdc; -1 < s.item_idx; s.item_idx = s.item_idx + -1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, s.item_idx);
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
       return 1;
 
     case RES_FILTERLIST_CLEARALL:
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 0, 0);
-      for (s.local_c = 0; s.local_c < 0xdd; s.local_c = s.local_c + 1)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.local_c);
+      for (s.item_idx = 0; s.item_idx < 0xdd; s.item_idx = s.item_idx + 1)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, s.item_idx);
       SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, WM_SETREDRAW, 1, 0);
       return 1;
 
@@ -1911,9 +1911,9 @@ INT_PTR CALLBACK dlgproc_FilterCreatureList(HWND hdlg, UINT msg, WPARAM wparam, 
   case WM_CTLCOLORSTATIC:
     s.hdc = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.hdc);
-    s.local_4ac = (unsigned int)lparam;
+    s.ctl_hwnd = (unsigned int)lparam;
     SetBkMode(s.hdc, TRANSPARENT);
-    return (INT_PTR)(s.local_4a4 = GetStockObject(HOLLOW_BRUSH));
+    return (INT_PTR)(s.hollow_brush = GetStockObject(HOLLOW_BRUSH));
 
   case WM_ERASEBKGND:
     s.hdc2 = (HDC)wparam;
@@ -2534,7 +2534,7 @@ bool check_filters(csvid_t csvid)
     casting_cost_t *req;         // ebp - 0x14
     unsigned int toughness_ok;   // ebp - 0x10
     unsigned int cardtype;       // ebp - 0xc
-    int local_c;                 // ebp - 0x8
+    int result;                  // ebp - 0x8
     unsigned int power_ok;       // ebp - 0x4
   } s;
 
@@ -2609,15 +2609,15 @@ bool check_filters(csvid_t csvid)
   if (s.color_ok && s.set_ok != 0 && s.type_ok &&
       s.i != 0 && s.power_ok != 0 && s.toughness_ok != 0 && s.rarity_ok != 0 &&
       s.abils_ok != 0 && s.artist_ok != 0)
-    s.local_c = 1;
+    s.result = 1;
   else
-    s.local_c = 0;
+    s.result = 0;
 
-  if (check_filters_debug_log_enabled != 0 && s.local_c != 0)
+  if (check_filters_debug_log_enabled != 0 && s.result != 0)
   {
     sprintf(s.txt, "%d\n", csvid);
     fprintf(check_filters_debug_log_file, s.txt);
   }
 
-  return s.local_c;
+  return s.result;
 }

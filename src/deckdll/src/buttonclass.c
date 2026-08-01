@@ -8,7 +8,7 @@ static WNDPROC global_wndproc_std_ButtonClass;
 
 // FUNCTION: DECKDLL 0x10025d1b
 // FUNCTION: MAGIC 0x00496489
-static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
+static BOOL CALLBACK enum_child_palette_message_proc(HWND child_hwnd, LPARAM lparam)
 {
   int *args;
 
@@ -21,7 +21,7 @@ static BOOL CALLBACK FUN_10025d1b(HWND child_hwnd, LPARAM lparam)
 // FUNCTION: DECKDLL 0x10025b5e
 // FUNCTION: MAGIC 0x004962cc
 // FUNCTION: SHANDALAR 0x00466d5f
-int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
+int handle_button_palette_message(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
 {
   struct
   {
@@ -77,7 +77,7 @@ int FUN_10025b5e(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM lparam)
       s.args.msg = msg;
       s.args.wparam = wparam_hwnd;
       s.args.lparam = lparam;
-      EnumChildWindows(hwnd, FUN_10025d1b, (LPARAM)&s.args);
+      EnumChildWindows(hwnd, enum_child_palette_message_proc, (LPARAM)&s.args);
     }
     return 0;
 
@@ -118,39 +118,39 @@ LRESULT CALLBACK wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 {
   struct
   {
-    HWND local_10;
-    HWND local_c;
-    LRESULT local_8;
+    HWND lost_focus_button;
+    HWND focused_button;
+    LRESULT result;
   } s;
 
   if ((msg == WM_SETFOCUS) || (msg == WM_KILLFOCUS))
   {
     if (msg == WM_SETFOCUS)
     {
-      s.local_c = hwnd;
-      s.local_10 = (HWND)wparam;
+      s.focused_button = hwnd;
+      s.lost_focus_button = (HWND)wparam;
     }
     else
     {
-      s.local_10 = hwnd;
-      s.local_c = (HWND)wparam;
+      s.lost_focus_button = hwnd;
+      s.focused_button = (HWND)wparam;
     }
-    if (is_buttonclass(s.local_c) == 0)
-      s.local_c = (HWND)0;
-    if (is_buttonclass(s.local_10) == 0)
-      s.local_10 = (HWND)0;
-    SendMessageA(GetParent(hwnd), WM_USER + 0xC8, (WPARAM)s.local_c, (LPARAM)s.local_10);
-    s.local_8 = 0;
+    if (is_buttonclass(s.focused_button) == 0)
+      s.focused_button = (HWND)0;
+    if (is_buttonclass(s.lost_focus_button) == 0)
+      s.lost_focus_button = (HWND)0;
+    SendMessageA(GetParent(hwnd), WM_USER + 0xC8, (WPARAM)s.focused_button, (LPARAM)s.lost_focus_button);
+    s.result = 0;
   }
   else if ((msg == WM_PALETTECHANGED) || (msg == WM_PALETTEISCHANGING) || (msg == WM_QUERYNEWPALETTE))
   {
-    s.local_8 = CallWindowProcA(global_wndproc_std_ButtonClass, hwnd, msg, wparam, lparam);
-    FUN_10025b5e(hwnd, msg, (HWND)wparam, lparam);
+    s.result = CallWindowProcA(global_wndproc_std_ButtonClass, hwnd, msg, wparam, lparam);
+    handle_button_palette_message(hwnd, msg, (HWND)wparam, lparam);
   }
   else
-    s.local_8 = CallWindowProcA(global_wndproc_std_ButtonClass, hwnd, msg, wparam, lparam);
+    s.result = CallWindowProcA(global_wndproc_std_ButtonClass, hwnd, msg, wparam, lparam);
 
-  return s.local_8;
+  return s.result;
 }
 
 // FUNCTION: DECKDLL 0x10025552

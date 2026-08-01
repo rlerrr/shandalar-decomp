@@ -39,7 +39,7 @@ int load_text_with_tab_escapes(char *filename, char *section_name);
 HBITMAP load_pic(char *filename);
 void ApplyCardArtPaletteToDc(HDC dc);
 void TileBitmapIntoRect(HDC dc, RECT *rect, HBITMAP bitmap);
-int FUN_10025b5e(int hwnd, unsigned int msg, int wparam, int lparam);
+int handle_button_palette_message(int hwnd, unsigned int msg, int wparam, int lparam);
 int card_window_matches_card_id(HWND hwnd, card_id_t card_id);
 int card_window_matches_player_and_card(HWND hwnd, int *player_and_card);
 void layout_phase_display_window(HWND hwnd, LPRECT rect);
@@ -1123,7 +1123,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   default:
     return DefWindowProcA(hwnd, msg, wparam, lparam);

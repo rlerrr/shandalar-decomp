@@ -1532,7 +1532,7 @@ BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LP
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_dc = (HDC)wparam;
@@ -1770,7 +1770,7 @@ BOOL CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPA
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:
   case WM_PALETTEISCHANGING:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.dc = (HDC)wparam;
@@ -2321,7 +2321,7 @@ static BOOL CALLBACK dlgproc_pick_card_from_list(HWND hwnd, UINT msg, WPARAM wpa
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, (int)lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, (int)lparam);
 
   default:
     return 0;
@@ -3561,7 +3561,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
   case 0x30f:
   case 0x310:
   case 0x311:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_TIMER:
     if ((int)wparam == g_duel_timer_id)

@@ -67,8 +67,8 @@ bool create_fonts(void)
   struct
   {
     char path[MAX_PATH + 4]; /* big buffer first */
-    int local_c;             /* ebp - 0x8 */
-    int local_8;             /* ebp - 0x4 */
+    int debug_pen_index;     /* ebp - 0x8 */
+    int debug_pens_ok;       /* ebp - 0x4 */
   } s;
 
   strcpy(s.path, global_base_directory);
@@ -131,22 +131,22 @@ bool create_fonts(void)
   global_pen_palette_5d = CreatePen(6, 2, global_palette_col_5d);
   global_pen_palette_1f = CreatePen(6, 2, global_palette_col_1f);
 
-  for (s.local_c = 0, s.local_8 = 1; s.local_c < 10; ++s.local_c)
+  for (s.debug_pen_index = 0, s.debug_pens_ok = 1; s.debug_pen_index < 10; ++s.debug_pen_index)
   {
-    global_debug_pens[s.local_c] =
+    global_debug_pens[s.debug_pen_index] =
         CreatePen(6, 3,
-                  ((unsigned int)(BYTE)(s.local_c * 75) << 16) |
-                      ((unsigned int)(BYTE)(s.local_c * 20) << 8) |
-                      (unsigned int)(BYTE)(s.local_c * 10));
-    if (global_debug_pens[s.local_c] == (HPEN)0)
-      s.local_8 = 0;
+                  ((unsigned int)(BYTE)(s.debug_pen_index * 75) << 16) |
+                      ((unsigned int)(BYTE)(s.debug_pen_index * 20) << 8) |
+                      (unsigned int)(BYTE)(s.debug_pen_index * 10));
+    if (global_debug_pens[s.debug_pen_index] == (HPEN)0)
+      s.debug_pens_ok = 0;
   }
 
   if (!global_damage_pic || !global_card_counters_pic || !global_mana_symbols_pic ||
       !global_abilities_pic || !global_mana_stripes_pic || !global_summon_pic ||
       !global_dying_pic || !global_target_pic || !global_cant_target_pic ||
       !global_will_untap_pic || !global_smallcard_pt_font || !global_damage_font ||
-      !global_idtag_font || !global_pen_palette_5d || !global_pen_palette_1f || !s.local_8)
+      !global_idtag_font || !global_pen_palette_5d || !global_pen_palette_1f || !s.debug_pens_ok)
   {
     destroy_create_fonts_resources();
     return false;

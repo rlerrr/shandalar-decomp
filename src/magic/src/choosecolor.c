@@ -38,7 +38,7 @@ HBITMAP load_pic(char *filename);
 void delete_and_close_object(HANDLE obj);
 void change_buttonclass_wndproc(HWND hwnd);
 void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
-int FUN_10025b5e(int hwnd, unsigned int msg, int wparam, int lparam);
+int handle_button_palette_message(int hwnd, unsigned int msg, int wparam, int lparam);
 int draw_masked_bitmap_left_half_to_rect(HDC dc, RECT *rect, HANDLE bitmap);
 
 BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -490,7 +490,7 @@ BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
   case WM_QUERYNEWPALETTE:
   case WM_PALETTEISCHANGING:
   case WM_PALETTECHANGED:
-    return FUN_10025b5e((int)hwnd, msg, (int)wparam, lparam);
+    return handle_button_palette_message((int)hwnd, msg, (int)wparam, lparam);
 
   case WM_ERASEBKGND:
     s.erase_hdc = (HDC)wparam;
