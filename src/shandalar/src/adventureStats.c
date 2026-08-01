@@ -87,7 +87,7 @@ extern FacemakerWindowBounds *PTR_DAT_005832dc;
 extern FacemakerWindowBounds *PTR_DAT_00583304;
 extern int _DAT_007483e4;
 extern card_data_t global_cards_data[];
-extern char DAT_0093a870[0x20];
+extern char g_itoa_buffer[0x20];
 extern int g_menu_render_guard;
 extern int g_mouse_x;
 extern int g_mouse_y;
@@ -102,11 +102,11 @@ extern int g_mouse_y_snapshot;
 extern int g_mouse_button_down_mask;
 extern int Gold;
 extern FacemakerWindowBounds *g_menu_control_draw_target_page;
-extern EncodedImage *DAT_0073ea94;
-extern EncodedImage *DAT_00746b04;
-extern EncodedImage *DAT_0073eab0[5][3];
-extern int DAT_00789938;
-extern int DAT_0078df68;
+extern EncodedImage *g_adv_scrollbar_track_sprite;
+extern EncodedImage *g_adv_scrollbar_thumb_sprite;
+extern EncodedImage *g_map_button_sprites[5][3];
+extern int g_deck_total_card_count;
+extern int g_deck_active_card_count;
 
 // GLOBAL: SHANDALAR 0x00590618
 static char s_statText_00590618[] = "statText";
@@ -124,7 +124,7 @@ static int g_stats_portrait_frame_colors[5][2] = {
     {127, 2}};
 
 // GLOBAL: SHANDALAR 0x00650264
-int DAT_00650264;
+int g_deck_analysis_card_count;
 // GLOBAL: SHANDALAR 0x0073ea30
 static StatWinData g_statwin_data;
 // GLOBAL: SHANDALAR 0x00650630
@@ -278,7 +278,7 @@ int ConsumeUiTickCount(void);
 int GetUiTickCount(void);
 int IsKeyInputQueueEmpty(void);
 int PopQueuedKeyInput(void);
-void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
+void ConvertWorldTileToMapScreenCoords(int tile_x, int tile_y, int *out_x, int *out_y);
 void DelayUiTicks(int ticks);
 int SignNonZero(int value);
 int ClampIntToRange(int value, int min_value, int max_value);
@@ -998,8 +998,8 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x102, "%d", Gold);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x102, "%d", g_food);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x138, "%d", CountDuelPoolEligibleTowns());
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x138, "%d/%d", DAT_0078df68,
-             DAT_00789938);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x138, "%d/%d", g_deck_active_card_count,
+             g_deck_total_card_count);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0x29, 0x161, "%d", g_amulet_inventory[0]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4e, 0x161, "%d", g_amulet_inventory[1]);
   DrawTextAt(PTR_DAT_005832dc, colors[3], 0x73, 0x161, "%d", g_amulet_inventory[2]);
@@ -1118,7 +1118,7 @@ static int RenderJournalExitButtonControl(AdvMenuControl *control, int mode)
   s.draw_w = g_stats_journal_menu_controls[0].width;
   s.draw_h = g_stats_journal_menu_controls[0].height;
   DrawEncodedImageResampled(PTR_DAT_005832b4, s.draw_x, s.draw_y, s.draw_w, s.draw_h,
-                            DAT_0073eab0[s.selection_value][s.draw_state]);
+                            g_map_button_sprites[s.selection_value][s.draw_state]);
   if ((mode == 2) && (control->on_activate != 0))
   {
     control->on_activate(control);
@@ -1192,15 +1192,15 @@ static int ActivateJournalStepButtonControl(AdvMenuControl *control)
     AdvMenuControl *thumb_control;
   } s;
 
-  s.entry_count = control->unk_30;
+  s.entry_count = control->data_value;
   s.thumb_control = control + 1;
-  s.encoded_image = DAT_00746b04;
+  s.encoded_image = g_adv_scrollbar_thumb_sprite;
   UpdateMouseSnapshot();
   s.y = g_mouse_y_snapshot;
   s.y = MAX(control->y + s.thumb_control->height / 2, s.y);
   s.y = MIN(control->y + control->height - s.thumb_control->height / 2, s.y);
   s.journal_index = ((s.y - control->y - s.thumb_control->height / 2) * s.entry_count) / (control->height - s.thumb_control->height);
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, DAT_0073ea94);
+  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, g_adv_scrollbar_track_sprite);
   DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, s.y - s.thumb_control->height / 2, control->width,
                             ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   BlitGraphicsRect(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, PTR_DAT_005832b4, control->x,
@@ -1221,11 +1221,11 @@ static int RenderJournalScrollbar(AdvMenuControl *control)
     AdvMenuControl *thumb_control;
   } s;
 
-  s.entry_count = control->unk_30;
+  s.entry_count = control->data_value;
   s.thumb_control = control + 1;
-  s.encoded_image = DAT_00746b04;
+  s.encoded_image = g_adv_scrollbar_thumb_sprite;
   s.y = control->y + s.thumb_control->height / 2;
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, DAT_0073ea94);
+  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, g_adv_scrollbar_track_sprite);
   DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, s.y - s.thumb_control->height / 2,
                             control->width, ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   BlitGraphicsRect(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, PTR_DAT_005832b4, control->x,
@@ -1415,18 +1415,18 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
   {
     g_stats_journal_previous_marker_y = tile_x;
     g_stats_journal_previous_marker_x = tile_y;
-    FUN_00550164(tile_x, tile_y, &s.target_x, &s.target_y);
+    ConvertWorldTileToMapScreenCoords(tile_x, tile_y, &s.target_x, &s.target_y);
     s.target_x = (global_screen_width * s.target_x) / 0x280;
     s.target_y = (global_screen_height * s.target_y) / 0x1e0;
     s.target_y += ScaleUiCoordinate(0x40);
   }
   else
   {
-    FUN_00550164(g_stats_journal_previous_marker_y, g_stats_journal_previous_marker_x, &s.previous_x, &s.previous_y);
+    ConvertWorldTileToMapScreenCoords(g_stats_journal_previous_marker_y, g_stats_journal_previous_marker_x, &s.previous_x, &s.previous_y);
     s.previous_x = (s.previous_x * global_screen_width) / 0x280;
     s.previous_y = (global_screen_height * s.previous_y) / 0x1e0;
     s.previous_y += ScaleUiCoordinate(0x40);
-    FUN_00550164(tile_x, tile_y, &s.target_x, &s.target_y);
+    ConvertWorldTileToMapScreenCoords(tile_x, tile_y, &s.target_x, &s.target_y);
     s.target_x = (global_screen_width * s.target_x) / 0x280;
     s.target_y = (global_screen_height * s.target_y) / 0x1e0;
     s.target_y += ScaleUiCoordinate(0x40);
@@ -1517,7 +1517,7 @@ void RunStatsWorldMapJournalMenu(void)
     }
   }
   g_stats_journal_entry_count = s.journal_index;
-  g_stats_journal_menu_controls[1].unk_30 = g_stats_journal_entry_count;
+  g_stats_journal_menu_controls[1].data_value = g_stats_journal_entry_count;
   g_stats_journal_current_entry = -1;
   ScaleMenuControlsForScreen(g_stats_journal_menu_controls, 3);
   s.menu_context = BeginMenuContext();
@@ -1571,7 +1571,7 @@ retry:
   case 4:
     ClearInputAndWaitForMouseRelease();
     EndMenuContext();
-    FreeSpriteBlob(DAT_0073eab0[0][0]);
+    FreeSpriteBlob(g_map_button_sprites[0][0]);
     break;
   case 1:
     goto retry;
@@ -1592,7 +1592,7 @@ void __cdecl ShowStatWinDialog(void *statwin_data, int mode)
 void DrawDeckAnalysisPercentCentered(int value, int center_x, int y, int color_index)
 {
   strcpy(g_ui_message_buffer, "");
-  strcat(g_ui_message_buffer, _itoa((value * 100) / DAT_00650264, DAT_0093a870, 10));
+  strcat(g_ui_message_buffer, _itoa((value * 100) / g_deck_analysis_card_count, g_itoa_buffer, 10));
   strcat(g_ui_message_buffer, "%");
   DrawScaledCenteredTextNoShadow(g_ui_message_buffer, center_x, y, color_index);
 }
@@ -1898,7 +1898,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     int rarity_count[3];
   } s;
 
-  DAT_00650264 = 0;
+  g_deck_analysis_card_count = 0;
   for (s.color_index = 0; s.color_index <= 7; s.color_index = s.color_index + 1)
   {
     s.land_color_count[s.color_index] = 0;
@@ -1915,7 +1915,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
   {
     if ((deck[s.deck_index] & 0x4000) == 0)
     {
-      DAT_00650264 = DAT_00650264 + 1;
+      g_deck_analysis_card_count = g_deck_analysis_card_count + 1;
       s.card_id_masked = deck[s.deck_index] & 0xfff;
       s.color_index = (int)global_cards_data[s.card_id_masked].color;
       if (global_cards_data[s.card_id_masked].rarity == '\x03')
@@ -1985,7 +1985,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     PTR_DAT_005832b4->font_slot = 4;
     s.x = 0x10;
     s.y = s.x;
-    sprintf(g_ui_message_buffer, gs_analyze_0074b870[0], DAT_00650264);
+    sprintf(g_ui_message_buffer, gs_analyze_0074b870[0], g_deck_analysis_card_count);
     DrawScaledTextNoShadow(g_ui_message_buffer, s.x, s.y, 0xf6);
     DrawScaledCenteredTextNoShadow(gs_analyze_0074b870[1], 0x80, s.y, 0xff);
     DrawScaledCenteredTextNoShadow(gs_analyze_0074b870[2], 0xb0, s.y, 0xff);

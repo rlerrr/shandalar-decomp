@@ -89,7 +89,7 @@ int GetFontLineHeight(int param_1);
 void DrawLoadSaveButtonText(FacemakerWindowBounds *window, int color, int x, int y, ...);
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 int RenderAdvMenuControlNormally(AdvMenuControl *control);
-int FUN_004ece40(int param_1);
+int GetHexDigitChar(int value);
 int ShowHallBackgroundScreen(void);
 int RunNameEntryDialog(char *name_buffer);
 void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
@@ -1281,17 +1281,17 @@ int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsign
   {
     int row;
     int x;
-    unsigned int local_3f4[250];
+    unsigned int scanline_buffer[250];
     unsigned int *run_start;
     unsigned int run_length;
   } s;
 
   for (s.row = 0; s.row < height; s.row = s.row + 1)
   {
-    ReadGraphicsScanline(s.local_3f4, src->page_number, src_x, src_y + s.row, width);
-    if ((unsigned char)s.local_3f4[0] != '\0')
+    ReadGraphicsScanline(s.scanline_buffer, src->page_number, src_x, src_y + s.row, width);
+    if ((unsigned char)s.scanline_buffer[0] != '\0')
     {
-      s.run_start = s.local_3f4;
+      s.run_start = s.scanline_buffer;
     }
     else
     {
@@ -1301,17 +1301,17 @@ int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsign
     s.run_length = 0;
     for (s.x = 0; s.x < (int)width; s.x = s.x + 1)
     {
-      if (*((unsigned char *)s.local_3f4 + s.x) == '\0')
+      if (*((unsigned char *)s.scanline_buffer + s.x) == '\0')
       {
         if (s.run_length != 0)
         {
-          WriteGraphicsScanline(s.run_start, dst->page_number, ((int)s.run_start - (int)s.local_3f4) + dst_x, dst_y + s.row, s.run_length);
+          WriteGraphicsScanline(s.run_start, dst->page_number, ((int)s.run_start - (int)s.scanline_buffer) + dst_x, dst_y + s.row, s.run_length);
           s.run_length = 0;
-          s.run_start = (unsigned int *)((char *)s.local_3f4 + s.x);
+          s.run_start = (unsigned int *)((char *)s.scanline_buffer + s.x);
         }
         else
         {
-          s.run_start = (unsigned int *)((char *)s.local_3f4 + s.x);
+          s.run_start = (unsigned int *)((char *)s.scanline_buffer + s.x);
         }
       }
       else
@@ -1322,7 +1322,7 @@ int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsign
 
     if (s.run_length != 0)
     {
-      WriteGraphicsScanline(s.run_start, dst->page_number, ((int)s.run_start - (int)s.local_3f4) + dst_x, dst_y + s.row, s.run_length);
+      WriteGraphicsScanline(s.run_start, dst->page_number, ((int)s.run_start - (int)s.scanline_buffer) + dst_x, dst_y + s.row, s.run_length);
     }
   }
 
@@ -1743,7 +1743,7 @@ int RunLoadSaveMenu(int param_1)
     fgets(g_loadsave_slot_descriptions[s.slot_index], 0x40, s.save_desc_file);
     s.text_index = strlen(g_loadsave_slot_descriptions[s.slot_index]);
     (&g_loadsave_slot_descriptions[s.slot_index][0])[-1 + s.text_index] = '\0';
-    s.map_path[5] = (char)FUN_004ece40(s.slot_index + 4);
+    s.map_path[5] = (char)GetHexDigitChar(s.slot_index + 4);
     g_loadsave_slot_has_data[s.slot_index] = FileExists(s.map_path);
     if (g_loadsave_slot_has_data[s.slot_index] == 0)
     {

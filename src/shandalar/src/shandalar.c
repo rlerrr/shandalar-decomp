@@ -219,17 +219,17 @@ int DAT_00669700;
 // GLOBAL: SHANDALAR 0x00669710
 int DAT_00669710;
 // GLOBAL: SHANDALAR 0x00789938
-int DAT_00789938;
+int g_deck_total_card_count;
 // GLOBAL: SHANDALAR 0x0078df68
-int DAT_0078df68;
+int g_deck_active_card_count;
 // GLOBAL: SHANDALAR 0x0097db40
-long DAT_0097db40[0x100];
+long g_hint_text_offsets[0x100];
 // GLOBAL: SHANDALAR 0x0097df40
-int DAT_0097df40[0x100];
+int g_hint_difficulty_masks[0x100];
 // GLOBAL: SHANDALAR 0x0097e340
 char DAT_0097e340[0x110];
 // GLOBAL: SHANDALAR 0x0097e450
-HintPair DAT_0097e450[0x100];
+HintPair g_hint_card_pairs[0x100];
 // GLOBAL: SHANDALAR 0x007898f4
 int g_mouse_x_snapshot;
 // GLOBAL: SHANDALAR 0x007898f8
@@ -558,7 +558,7 @@ DWORD WINAPI FUN_0046e6f0(LPVOID);
 void FUN_00578c70(int param_1, int param_2, int param_3);
 char *BuildResolutionSpritePath(char *sprite_filename);
 int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entries, char *path, int max_entries);
-void FUN_004184d2(void);
+void LoadTownHintMetadata(void);
 void FUN_0041786e(void);
 void FUN_0046ed03(void);
 void FUN_0046ed33(void);
@@ -641,7 +641,7 @@ void RunLairExplorationEvent(int color);
 #endif
 
 void DelayUiTicks(int param_1);
-int FUN_0056c705(int param_1);
+int FindCardIndexByCsvid(int csvid);
 unsigned int FUN_004bdccc(unsigned int param_1);
 int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
@@ -669,12 +669,12 @@ int MeasureTextLineWidth(char *text);
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
 int FUN_004bb458(int param_1);
 void PushQueuedKeyInput(int param_1);
-int FUN_0055e31f(int param_1, int param_2);
+int MapWorldClickToMovementKey(int x, int y);
 int RenderMenuControlRange(int first_index, int count);
 int GetUiTickCount(void);
 int SeedRandomFromTickCount(void);
 int ClampIntToRange(int value, int min_value, int max_value);
-int FUN_004ece40(int param_1);
+int GetHexDigitChar(int value);
 unsigned int ValidateOrLoadSaveGame(char *save_file_path, int validate_only);
 int SaveGameWithMessage(char *save_file_path);
 int GetSaveDriveIndex(void);
@@ -765,7 +765,7 @@ int FUN_0055db50(void)
     DAT_007a7d10[s.loop_index] = 8;
   }
 
-  FUN_004184d2();
+  LoadTownHintMetadata();
   FUN_0041786e();
   FUN_00578c70(1, 1, (int)g_ttsprite_special_sprite_a);
   FUN_0046ed03();
@@ -887,15 +887,15 @@ opening_menu:
   LoadPcxIntoPageNoPalette("advfac64.pic");
   RefreshAdventureInterfaceLayout();
   DAT_00669700 = 0;
-  DAT_0078df68 = DAT_00789938 = 0;
+  g_deck_active_card_count = g_deck_total_card_count = 0;
   for (s.loop_index = 0; s.loop_index < 500; s.loop_index = s.loop_index + 1)
   {
     if (deck[s.loop_index] != -1)
     {
-      DAT_00789938 = DAT_00789938 + 1;
+      g_deck_total_card_count = g_deck_total_card_count + 1;
       if ((deck[s.loop_index] & 0x4000) == 0)
       {
-        DAT_0078df68 = DAT_0078df68 + 1;
+        g_deck_active_card_count = g_deck_active_card_count + 1;
       }
     }
   }
@@ -1495,72 +1495,72 @@ int DrawTextMenu(char *menu_text, int selected_option)
 }
 
 // FUNCTION: SHANDALAR 0x004184d2
-void FUN_004184d2(void)
+void LoadTownHintMetadata(void)
 {
   struct
   {
-    int local_124;
-    char local_120[8];
-    int local_118;
-    int local_114;
-    int local_110;
-    char location_block_start_index[256];
-    FILE *inner_index;
-    int entry_index;
+    int first_csvid;
+    char difficulty_codes[8];
+    int hint_index;
+    int second_csvid;
+    int card_index;
+    char line[256];
+    FILE *hints_file;
+    int scan_result;
   } s;
 
-  s.inner_index = fopen("hints.txt", "rt");
-  s.local_118 = 0;
+  s.hints_file = fopen("hints.txt", "rt");
+  s.hint_index = 0;
   do
   {
-    s.entry_index = fscanf(s.inner_index, "%[^\n]", s.location_block_start_index);
-    if (s.location_block_start_index[0] == '.')
+    s.scan_result = fscanf(s.hints_file, "%[^\n]", s.line);
+    if (s.line[0] == '.')
     {
-      sscanf(s.location_block_start_index + 1, "%d %d %s", &s.local_124, &s.local_114, s.local_120);
-      DAT_0097e450[s.local_118].first = s.local_124;
-      DAT_0097e450[s.local_118].second = s.local_114;
-      DAT_0097df40[s.local_118] = 0;
+      sscanf(s.line + 1, "%d %d %s", &s.first_csvid, &s.second_csvid, s.difficulty_codes);
+      g_hint_card_pairs[s.hint_index].first = s.first_csvid;
+      g_hint_card_pairs[s.hint_index].second = s.second_csvid;
+      g_hint_difficulty_masks[s.hint_index] = 0;
 
-      if (strchr(s.local_120, 'A') != (char *)0)
+      if (strchr(s.difficulty_codes, 'A') != (char *)0)
       {
-        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 1;
+        g_hint_difficulty_masks[s.hint_index] = g_hint_difficulty_masks[s.hint_index] | 1;
       }
 
-      if (strchr(s.local_120, 'B') != (char *)0)
+      if (strchr(s.difficulty_codes, 'B') != (char *)0)
       {
-        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 2;
+        g_hint_difficulty_masks[s.hint_index] = g_hint_difficulty_masks[s.hint_index] | 2;
       }
 
-      if (strchr(s.local_120, 'C') != (char *)0)
+      if (strchr(s.difficulty_codes, 'C') != (char *)0)
       {
-        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 4;
+        g_hint_difficulty_masks[s.hint_index] = g_hint_difficulty_masks[s.hint_index] | 4;
       }
 
-      if (strchr(s.local_120, 'D') != (char *)0)
+      if (strchr(s.difficulty_codes, 'D') != (char *)0)
       {
-        DAT_0097df40[s.local_118] = DAT_0097df40[s.local_118] | 8;
+        g_hint_difficulty_masks[s.hint_index] = g_hint_difficulty_masks[s.hint_index] | 8;
       }
 
-      s.local_110 = FUN_0056c705(s.local_124);
-      s.local_110 = FUN_0056c705(s.local_114);
-      s.entry_index = fscanf(s.inner_index, "%[\n]", s.location_block_start_index);
-      DAT_0097db40[s.local_118] = ftell(s.inner_index);
-      s.local_118 = s.local_118 + 1;
+      s.card_index = FindCardIndexByCsvid(s.first_csvid);
+      s.card_index = FindCardIndexByCsvid(s.second_csvid);
+      s.scan_result = fscanf(s.hints_file, "%[\n]", s.line);
+      g_hint_text_offsets[s.hint_index] = ftell(s.hints_file);
+      s.hint_index = s.hint_index + 1;
     }
     else
     {
-      s.entry_index = fscanf(s.inner_index, "%[\n]", s.location_block_start_index);
+      s.scan_result = fscanf(s.hints_file, "%[\n]", s.line);
     }
-  } while ((s.local_118 < 0x100) && (s.entry_index != -1));
+  } while ((s.hint_index < 0x100) && (s.scan_result != -1));
 
   do
   {
-    DAT_0097e450[s.local_118].second = -1;
-    DAT_0097e450[s.local_118].first = DAT_0097e450[s.local_118].second;
-    s.local_118 = s.local_118 + 1;
-  } while (s.local_118 < 0x100);
+    g_hint_card_pairs[s.hint_index].second = -1;
+    g_hint_card_pairs[s.hint_index].first = g_hint_card_pairs[s.hint_index].second;
+    s.hint_index = s.hint_index + 1;
+  } while (s.hint_index < 0x100);
 
-  fclose(s.inner_index);
+  fclose(s.hints_file);
 }
 // FUNCTION: SHANDALAR 0x0041786e
 void FUN_0041786e(void)
@@ -1966,12 +1966,12 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
 }
 
 // FUNCTION: SHANDALAR 0x0056c705
-int FUN_0056c705(int param_1)
+int FindCardIndexByCsvid(int csvid)
 {
   int ret;
   int entry_index;
 
-  if (param_1 == -1)
+  if (csvid == -1)
   {
     return -1;
   }
@@ -1979,7 +1979,7 @@ int FUN_0056c705(int param_1)
   ret = -1;
   for (entry_index = 0; entry_index < g_card_count + 0x10; entry_index = entry_index + 1)
   {
-    if (global_cards_data[entry_index].id == param_1)
+    if (global_cards_data[entry_index].id == csvid)
     {
       return entry_index;
     }
@@ -3321,7 +3321,7 @@ void SaveGameToSlot(int save_slot_index)
     if (save_slot_index != -1)
     {
       g_selected_save_slot_index = save_slot_index;
-      g_save_file_path[7] = (char)FUN_004ece40(save_slot_index);
+      g_save_file_path[7] = (char)GetHexDigitChar(save_slot_index);
       if (SaveGameWithMessage(g_save_file_path) != 0)
       {
         if (g_save_errno == 0)
@@ -3374,7 +3374,7 @@ int LoadGameFromSlot(int save_slot_index)
 
       for (slot_index = 0; slot_index < 10; slot_index = slot_index + 1)
       {
-        g_save_file_path[7] = (char)FUN_004ece40(slot_index);
+        g_save_file_path[7] = (char)GetHexDigitChar(slot_index);
         if (ValidateOrLoadSaveGame(g_save_file_path, 1) != 0)
         {
           g_load_menu_valid_slot_mask_0077f1c8 |= (1 << (unsigned char)slot_index);
@@ -3396,7 +3396,7 @@ int LoadGameFromSlot(int save_slot_index)
 
     if (g_selected_save_slot_index != -1)
     {
-      g_save_file_path[7] = (char)FUN_004ece40(g_selected_save_slot_index);
+      g_save_file_path[7] = (char)GetHexDigitChar(g_selected_save_slot_index);
       if (ValidateOrLoadSaveGame(g_save_file_path, 0) == 0)
       {
         g_selected_save_slot_index = -1;
@@ -3420,15 +3420,15 @@ int LoadGameFromSlot(int save_slot_index)
 }
 
 // FUNCTION: SHANDALAR 0x004ece40
-int FUN_004ece40(int param_1)
+int GetHexDigitChar(int value)
 {
-  if ((0 <= param_1) && (param_1 <= 9))
+  if ((0 <= value) && (value <= 9))
   {
-    return param_1 + 0x30;
+    return value + 0x30;
   }
-  else if ((10 <= param_1) && (param_1 <= 0xf))
+  else if ((10 <= value) && (value <= 0xf))
   {
-    return param_1 + 0x57;
+    return value + 0x57;
   }
   else
   {
@@ -3957,10 +3957,10 @@ int HandlePortraitMainMenuControlEvent(AdvMenuControl *control, int event_type)
     int mouse_inside_control;
     int clamped_required_wins;
     int avatar_sprite_index;
-    int local_y;
-    DWORD local_height;
-    int local_x;
-    unsigned int local_width;
+    int draw_y;
+    DWORD draw_height;
+    int draw_x;
+    unsigned int draw_width;
     EncodedImage *sprite;
   } s;
 
@@ -3995,21 +3995,21 @@ int HandlePortraitMainMenuControlEvent(AdvMenuControl *control, int event_type)
   {
     return 0;
   }
-  s.local_height = (DWORD)ScaleUiCoordinate(0x30);
-  s.local_width = (unsigned int)ScaleUiCoordinate((s.sprite->width * 0x30) / (int)s.sprite->height);
-  s.local_x = ScaleUiCoordinate(0x20) - (int)s.local_width / 2;
-  s.local_y = ScaleUiCoordinate(0x106) - (int)s.local_height / 2;
+  s.draw_height = (DWORD)ScaleUiCoordinate(0x30);
+  s.draw_width = (unsigned int)ScaleUiCoordinate((s.sprite->width * 0x30) / (int)s.sprite->height);
+  s.draw_x = ScaleUiCoordinate(0x20) - (int)s.draw_width / 2;
+  s.draw_y = ScaleUiCoordinate(0x106) - (int)s.draw_height / 2;
   if (event_type != 2)
   {
-    DrawEncodedImageResampled(g_menu_control_draw_target_page, s.local_x, s.local_y, s.local_width, (int)s.local_height, s.sprite);
+    DrawEncodedImageResampled(g_menu_control_draw_target_page, s.draw_x, s.draw_y, s.draw_width, (int)s.draw_height, s.sprite);
   }
   else
   {
     s.avatar_sprite_index = ScaleUiCoordinate(4);
     s.clamped_required_wins = ScaleUiCoordinate(8);
-    BlitGraphicsRect(PTR_DAT_00583354, s.local_x, s.local_y, s.local_width, s.local_height, PTR_DAT_005832dc, s.local_x, s.local_y);
-    DrawEncodedImageResampled(PTR_DAT_005832dc, s.avatar_sprite_index + s.local_x, s.avatar_sprite_index + s.local_y, s.local_width - s.clamped_required_wins, (int)s.local_height - s.clamped_required_wins, s.sprite);
-    BlitGraphicsRect(PTR_DAT_005832dc, s.local_x, s.local_y, s.local_width, s.local_height, PTR_DAT_005832b4, s.local_x, s.local_y);
+    BlitGraphicsRect(PTR_DAT_00583354, s.draw_x, s.draw_y, s.draw_width, s.draw_height, PTR_DAT_005832dc, s.draw_x, s.draw_y);
+    DrawEncodedImageResampled(PTR_DAT_005832dc, s.avatar_sprite_index + s.draw_x, s.avatar_sprite_index + s.draw_y, s.draw_width - s.clamped_required_wins, (int)s.draw_height - s.clamped_required_wins, s.sprite);
+    BlitGraphicsRect(PTR_DAT_005832dc, s.draw_x, s.draw_y, s.draw_width, s.draw_height, PTR_DAT_005832b4, s.draw_x, s.draw_y);
   }
   if (event_type == 2 && control->on_activate != (AdvMenuActivateCallback)0)
   {
@@ -4527,7 +4527,7 @@ int QueuePendingMenuActionInput(void)
     UpdateMouseSnapshot();
     if (g_mouse_button_mask_snapshot != 0)
     {
-      unused_mapped_key = FUN_0055e31f(g_mouse_x_snapshot, g_mouse_y_snapshot);
+      unused_mapped_key = MapWorldClickToMovementKey(g_mouse_x_snapshot, g_mouse_y_snapshot);
     }
     if (unused_mapped_key != -1)
     {
@@ -4541,14 +4541,14 @@ int QueuePendingMenuActionInput(void)
 }
 
 // FUNCTION: SHANDALAR 0x0055e31f
-int FUN_0055e31f(int x, int y)
+int MapWorldClickToMovementKey(int x, int y)
 {
   struct
   {
-    int local_18;
-    int local_14;
-    int local_10;
-    int local_c;
+    int center_y;
+    int center_x;
+    int abs_y;
+    int abs_x;
     unsigned int direction;
   } s;
   int keycode_map[10];
@@ -4574,12 +4574,12 @@ int FUN_0055e31f(int x, int y)
     return 0x20;
   }
 
-  s.local_14 = ScaleUiCoordinate(0x140);
-  s.local_18 = ScaleUiCoordinate(0xbc);
-  x = x - s.local_14;
-  y = s.local_18 - y;
-  s.local_c = abs(x);
-  s.local_10 = abs(y);
+  s.center_x = ScaleUiCoordinate(0x140);
+  s.center_y = ScaleUiCoordinate(0xbc);
+  x = x - s.center_x;
+  y = s.center_y - y;
+  s.abs_x = abs(x);
+  s.abs_y = abs(y);
 
   if (x >= 0 && y >= 0)
   {
@@ -4598,11 +4598,11 @@ int FUN_0055e31f(int x, int y)
     s.direction = 6;
   }
 
-  if ((s.direction & 2) == 0 && s.local_10 < s.local_c)
+  if ((s.direction & 2) == 0 && s.abs_y < s.abs_x)
   {
     s.direction++;
   }
-  else if ((s.direction & 2) != 0 && s.local_c < s.local_10)
+  else if ((s.direction & 2) != 0 && s.abs_x < s.abs_y)
   {
     s.direction++;
   }
@@ -4613,7 +4613,7 @@ int FUN_0055e31f(int x, int y)
   case 3:
   case 4:
   case 7:
-    keycode_map[9] = (s.local_c * 0x9a85) >> 0xe;
+    keycode_map[9] = (s.abs_x * 0x9a85) >> 0xe;
     if (y < 0)
     {
       keycode_map[9] = -keycode_map[9];
@@ -4623,7 +4623,7 @@ int FUN_0055e31f(int x, int y)
   case 2:
   case 5:
   case 6:
-    keycode_map[9] = (s.local_c * 0x1a82) >> 0xe;
+    keycode_map[9] = (s.abs_x * 0x1a82) >> 0xe;
     if (y < 0)
     {
       keycode_map[9] = -keycode_map[9];
@@ -5284,16 +5284,16 @@ void UpdateAdventureWorldInputAndMovement(void)
       }
     }
 
-    DAT_00789938 = 0;
-    DAT_0078df68 = DAT_00789938;
+    g_deck_total_card_count = 0;
+    g_deck_active_card_count = g_deck_total_card_count;
     for (s.slot_index = 0; s.slot_index < 500; s.slot_index = s.slot_index + 1)
     {
       if (deck[s.slot_index] != -1)
       {
-        DAT_00789938 = DAT_00789938 + 1;
+        g_deck_total_card_count = g_deck_total_card_count + 1;
         if ((deck[s.slot_index] & 0x4000) == 0)
         {
-          DAT_0078df68 = DAT_0078df68 + 1;
+          g_deck_active_card_count = g_deck_active_card_count + 1;
         }
       }
     }
@@ -5363,15 +5363,15 @@ int RecountDeckCardTotals(void)
 {
   int deck_index;
 
-  DAT_0078df68 = DAT_00789938 = 0;
+  g_deck_active_card_count = g_deck_total_card_count = 0;
   for (deck_index = 0; deck_index < 500; deck_index = deck_index + 1)
   {
     if (deck[deck_index] != -1)
     {
-      DAT_00789938 = DAT_00789938 + 1;
+      g_deck_total_card_count = g_deck_total_card_count + 1;
       if ((deck[deck_index] & 0x4000) == 0)
       {
-        DAT_0078df68++;
+        g_deck_active_card_count++;
       }
     }
   }

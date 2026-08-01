@@ -134,7 +134,7 @@ int RunCardRiddleChallenge(void);
 int ScaleUiCoordinateFrom320(int value);
 int FUN_005501fe(int value);
 int AddCardToDeckSorted(int card_id);
-int FUN_0056c705(int csvid);
+int FindCardIndexByCsvid(int csvid);
 int FUN_0056d5c0(int sound_id, int *out_state);
 int GetUiTickCount(void);
 int IsKeyInputQueueEmpty(void);
@@ -876,7 +876,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   DAT_008ce538 = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
   if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
   {
-    unk_00789308 = FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect);
+    unk_00789308 = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
   }
   s.creature_type = g_dungeon_runtime_state.encounter.selected.monster_creature_types[monster_slot];
   DAT_007a7874 = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
@@ -892,11 +892,11 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     if (s.work_index >= 0)
     {
       DAT_008cf6d0 =
-          FUN_0056c705(((int (*)[3])g_dungeon_monster_duel_music_csvids)
+          FindCardIndexByCsvid(((int (*)[3])g_dungeon_monster_duel_music_csvids)
                            [(char)g_castle_dungeon_slots[dungeon_index].color - 1][ClampIntToRange(s.work_index, 0, 2)]);
     }
   }
-  LoadCreatureDuelDeck(s.creature_type, FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].deck_number), 0,
+  LoadCreatureDuelDeck(s.creature_type, FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number), 0,
                        -1);
   PlaySoundEffectOnChannel("x:sound\\dngnduel.wav", 0xf, 100, 100, 0);
   if (dungeon_index < 5)
@@ -914,12 +914,12 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
                                                          [ClampIntToRange(s.work_index, 0, 2)];
     FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer + strlen(g_ui_message_buffer), 0x1000,
                                                 gs_dungeon_0077f000[0x11], GetCreatureName(s.creature_type),
-                                                global_cards_data[FUN_0056c705(s.work_index)].name);
+                                                global_cards_data[FindCardIndexByCsvid(s.work_index)].name);
   }
   if (unk_00789308 != -1)
   {
     sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_dungeon_0077f000[0x12],
-            global_cards_data[FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
+            global_cards_data[FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
   }
   RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50);
   for (s.work_index = 0; s.work_index < 0x10; s.work_index = s.work_index + 1)
@@ -1158,8 +1158,8 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
     DAT_007a7874 = 3;
     g_next_duel_life_delta = 0;
     sound_stop(0x10);
-    DAT_008cf6d0 = FUN_0056c705(0x11);
-    unk_00789308 = FUN_0056c705(0x1d);
+    DAT_008cf6d0 = FindCardIndexByCsvid(0x11);
+    unk_00789308 = FindCardIndexByCsvid(0x1d);
     RunDuelEngine(0, s.final_creature);
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, 0xb7);
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
@@ -1472,7 +1472,7 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
 
   if ((initial_draw != 0) && (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1))
   {
-    s.work = FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect);
+    s.work = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
     sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0xe], global_cards_data[s.work].name);
     DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2,
                               ScaleUiCoordinateFrom320(0xc5) / 2, ScaleUiCoordinateFrom320(0x10f) / 2,

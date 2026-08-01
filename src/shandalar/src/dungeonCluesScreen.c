@@ -97,7 +97,7 @@ int BeginMenuContext(void);
 int ResetMenuContext(int context_index);
 int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
 int EndMenuContext(void);
-int FUN_00500129(int allow_arrow_nav);
+int SetCurrentMenuContextArrowNavigation(int allow_arrow_nav);
 int RenderCurrentMenuContextControls(void);
 
 int ScaleUiCoordinateFrom320(int value);
@@ -142,7 +142,7 @@ void ResetWorldDrawQueue(void);
 void UpdateWorldViewportBuffer(int world_x, int world_y);
 void DrawQueuedWorldSprites(void);
 void DestroyCachedCardArt(void);
-unsigned int FUN_0056c705(int csvid);
+unsigned int FindCardIndexByCsvid(int csvid);
 
 /* Card rendering (drawcardlib) */
 extern unsigned char global_raw_cards_storage[];
@@ -302,7 +302,7 @@ int RenderDungeonCluesListButton(AdvMenuControl *control, int mode)
   }
 
   DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
-                            g_dungeon_clues_list_button_sprites[control->unk_30][mode]);
+                            g_dungeon_clues_list_button_sprites[control->data_value][mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -806,7 +806,7 @@ void ShowDungeonCluesScreen(int unused)
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
   AddMenuControlsToContext(g_dungeon_clues_list_controls, 3, s.menu_context);
-  FUN_00500129(0);
+  SetCurrentMenuContextArrowNavigation(0);
 
 redraw_background:
   if (s.redraw_background == 0)
@@ -1209,7 +1209,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
     if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
     {
       sprintf(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x13],
-              global_cards_data[FUN_0056c705(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
+              global_cards_data[FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
       s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
     }
     else if (g_castle_dungeon_slots[dungeon_index].rules_bitmap == 0)

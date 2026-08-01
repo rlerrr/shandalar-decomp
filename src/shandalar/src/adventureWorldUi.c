@@ -320,12 +320,12 @@ extern int g_next_duel_card_id;
 extern int Gold;
 extern int g_food;
 
-extern int DAT_00789938;
-extern int DAT_0078df68;
+extern int g_deck_total_card_count;
+extern int g_deck_active_card_count;
 extern int DAT_00586498;
 extern card_data_t global_cards_data[];
 extern char g_ini_string_scratch[0x28];
-extern char DAT_0093a870[0x20];
+extern char g_itoa_buffer[0x20];
 
 void FUN_0046ed03(void);
 void FUN_0046ed33(void);
@@ -1829,7 +1829,7 @@ void *DrawAdventureInterfaceLayout(int force_redraw)
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, g_world_ui_stats_color_index, ScaleUiCoordinate(0x12), ScaleUiCoordinate(10), "%d", Gold);
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, g_world_ui_stats_color_index, ScaleUiCoordinate(0x60), ScaleUiCoordinate(10), "%d", g_food);
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, g_world_ui_stats_color_index, ScaleUiCoordinate(0xab), ScaleUiCoordinate(10), "%d", CountDuelPoolEligibleTowns());
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, g_world_ui_stats_color_index, ScaleUiCoordinate(0x10c), ScaleUiCoordinate(10), "%d/%d", DAT_0078df68, DAT_00789938);
+  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, g_world_ui_stats_color_index, ScaleUiCoordinate(0x10c), ScaleUiCoordinate(10), "%d/%d", g_deck_active_card_count, g_deck_total_card_count);
 
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, (unsigned int)ScaleUiCoordinate(0x126), ScaleUiCoordinate(0x15b) - ScaleUiCoordinate(0x148),
                    PTR_DAT_005832b4, ScaleUiCoordinate(0x58), ScaleUiCoordinate(0x15b));
@@ -2285,9 +2285,9 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
                                   (&g_opening_menu_sprite_work_buffer[0x11].sprites[((g_world_player_animation_direction + 2) & 7) * 5])
                                       [g_world_player_animation_frame]);
   strcpy(g_ui_message_buffer, "");
-  strcat(g_ui_message_buffer, _itoa(s.tile_x_text, DAT_0093a870, 10));
+  strcat(g_ui_message_buffer, _itoa(s.tile_x_text, g_itoa_buffer, 10));
   strcat(g_ui_message_buffer, " ");
-  strcat(g_ui_message_buffer, _itoa(s.tile_y, DAT_0093a870, 10));
+  strcat(g_ui_message_buffer, _itoa(s.tile_y, g_itoa_buffer, 10));
 
   for (s.slot_index = 0; s.slot_index < 8; s.slot_index = s.slot_index + 1)
   {

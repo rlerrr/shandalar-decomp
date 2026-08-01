@@ -16,7 +16,7 @@ typedef struct AdvMenuControl
   AdvMenuRenderCallback on_render;
   AdvMenuActivateCallback on_activate;
   int selection_value;
-  int unk_30;
+  int data_value;
   char *navigate_hotkeys;
   char *activate_hotkeys;
   int direct_hotkey;

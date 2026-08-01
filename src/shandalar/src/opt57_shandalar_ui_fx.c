@@ -13,7 +13,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
 extern FontSlot g_font_slots[0x10];
 
 // From visitLocation.c (used by FUN_0057d500)
-extern int DAT_005a1870[0x14];
+extern int g_ui_fx_lcg_multipliers[0x14];
 
 // FUNCTION: SHANDALAR 0x0057ae30
 #pragma optimize("gy", on)
@@ -392,7 +392,7 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
       *state = (state[-5] * 5 + 1) % (int)modulus;
       rng_step = rng_list_index % 0x14;
       rng_list_index = rng_list_index + 1;
-      state[1] = DAT_005a1870[rng_step] * 4 + 1;
+      state[1] = g_ui_fx_lcg_multipliers[rng_step] * 4 + 1;
       state[2] = 1;
       state[3] = modulus;
       state[4] = modulus;

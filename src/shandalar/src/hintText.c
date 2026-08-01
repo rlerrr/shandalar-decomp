@@ -17,13 +17,13 @@ typedef struct
 extern char g_ui_message_buffer[0x1000];
 extern FacemakerWindowBounds *PTR_DAT_005832b4;
 extern card_data_t global_cards_data[];
-extern long DAT_0097db40[0x100];
-extern HintPair DAT_0097e450[0x100];
+extern long g_hint_text_offsets[0x100];
+extern HintPair g_hint_card_pairs[0x100];
 
 int DeckContainsCsvid(int csvid);
-int FUN_0056c705(int card_id);
+int FindCardIndexByCsvid(int card_id);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
-char *FUN_0057e826(char *dst, char *src);
+char *AppendString(char *dst, char *src);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 int ScaleUiCoordinate(int value);
 int MeasureTextSpanWidth(FacemakerWindowBounds *window, char *text, int length);
@@ -43,7 +43,7 @@ void AppendTownHintBodyText(int hint_index)
   } s;
 
   s.hints_file = fopen("hints.txt", "rt");
-  fseek(s.hints_file, DAT_0097db40[hint_index], 0);
+  fseek(s.hints_file, g_hint_text_offsets[hint_index], 0);
   s.item_count = fscanf(s.hints_file, "%[^\n]", s.hint_text);
   strcat(g_ui_message_buffer, s.hint_text);
   fclose(s.hints_file);
@@ -241,21 +241,21 @@ void ShowTownHintTextPopup(int hint_index)
     EncodedImage *button_sprite_11;
   } s;
 
-  if (DAT_0097e450[hint_index].second != -1)
+  if (g_hint_card_pairs[hint_index].second != -1)
   {
-    s.player_has_first_card = (DeckContainsCsvid(DAT_0097e450[hint_index].first) != 0);
+    s.player_has_first_card = (DeckContainsCsvid(g_hint_card_pairs[hint_index].first) != 0);
     FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_hinttext_0077e580[0],
-                                                global_cards_data[FUN_0056c705((&DAT_0097e450[hint_index].first)[s.player_has_first_card])].name,
-                                                global_cards_data[FUN_0056c705((&DAT_0097e450[hint_index].first)[s.player_has_first_card ^ 1])].name);
+                                                global_cards_data[FindCardIndexByCsvid((&g_hint_card_pairs[hint_index].first)[s.player_has_first_card])].name,
+                                                global_cards_data[FindCardIndexByCsvid((&g_hint_card_pairs[hint_index].first)[s.player_has_first_card ^ 1])].name);
   }
   else
   {
     sprintf(g_ui_message_buffer, gs_hinttext_0077e580[1],
-            global_cards_data[FUN_0056c705(DAT_0097e450[hint_index].first)].name);
+            global_cards_data[FindCardIndexByCsvid(g_hint_card_pairs[hint_index].first)].name);
   }
 
   AppendTownHintBodyText(hint_index);
-  FUN_0057e826(g_ui_message_buffer, "\x94");
+  AppendString(g_ui_message_buffer, "\x94");
   ReadSpriteEntryPointers(s.loaded_button_sprites, "BuyButtons.spr");
 
   s.button_sprite_10 = s.loaded_button_sprites[0];

@@ -106,15 +106,15 @@ void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pit
 unsigned int GetWorldTileType(int x, int y);
 unsigned int FUN_004314ca(int x, int y);
 unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
-void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y);
-void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y);
+void ConvertWorldTileToMapScreenCoords(int tile_x, int tile_y, int *out_x, int *out_y);
+void ConvertMapScreenToWorldTileCoords(int x, int y, int *out_tile_x, int *out_tile_y);
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
 int single_color_test_bit_to_color_t(int mask);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
 int FUN_004bb458(int world_magic_slot_index);
 int FindNearestTownIndex(int world_x, int world_y);
 int FUN_004bb040(int world_x, int world_y);
-char *FUN_00428783(unsigned int color_bitmask);
+char *GetPluralCardClassNameFromColorMask(unsigned int color_bitmask);
 
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 
@@ -126,81 +126,81 @@ int RenderMapMenuControl(AdvMenuControl *control, int mode);
 int ActivateMapMenuControl(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x00650f20
-int DAT_00650f20;
+int g_map_button_labels_loaded;
 // GLOBAL: SHANDALAR 0x006527a4
-char **DAT_006527a4;
+char **g_map_button_labels;
 // GLOBAL: SHANDALAR 0x00650f1c
-EncodedImage *DAT_00650f1c;
+EncodedImage *g_map_amulet_panel_sprite;
 // GLOBAL: SHANDALAR 0x006506e0
-EncodedImage *DAT_006506e0;
+EncodedImage *g_map_summary_panel_sprite;
 // GLOBAL: SHANDALAR 0x0073ea94
-EncodedImage *DAT_0073ea94;
+EncodedImage *g_adv_scrollbar_track_sprite;
 // GLOBAL: SHANDALAR 0x00746b04
-EncodedImage *DAT_00746b04;
+EncodedImage *g_adv_scrollbar_thumb_sprite;
 // GLOBAL: SHANDALAR 0x006506e8
-int DAT_006506e8;
+int g_map_menu_selection;
 
 // GLOBAL: SHANDALAR 0x0073eab0
-EncodedImage *DAT_0073eab0[5][3];
+EncodedImage *g_map_button_sprites[5][3];
 
 // GLOBAL: SHANDALAR 0x00590a30
-int DAT_00590a30[6] = {2, 3, 5, 7, 11, 13};
+int g_map_tile_variant_primes[6] = {2, 3, 5, 7, 11, 13};
 
 // GLOBAL: SHANDALAR 0x00590850
-int DAT_00590850 = 48;
+int g_map_button_slot_left_x = 48;
 // GLOBAL: SHANDALAR 0x00590854
-int DAT_00590854 = 5;
+int g_map_button_slot_left_y = 5;
 // GLOBAL: SHANDALAR 0x00590858
-int DAT_00590858 = 148;
+int g_map_button_slot_right_x = 148;
 // GLOBAL: SHANDALAR 0x0059085c
-int DAT_0059085c = 5;
+int g_map_button_slot_right_y = 5;
 
 // GLOBAL: SHANDALAR 0x00590b08
-char DAT_00590b08[] = "Mm";
+char g_map_view_nav_hotkeys[] = "Mm";
 // GLOBAL: SHANDALAR 0x00590b0c
-char DAT_00590b0c[] = "Mm";
+char g_map_view_activate_hotkeys[] = "Mm";
 // GLOBAL: SHANDALAR 0x00590b10
-char DAT_00590b10[] = "Pp";
+char g_planeswalk_nav_hotkeys[] = "Pp";
 // GLOBAL: SHANDALAR 0x00590b14
-char DAT_00590b14[] = "Pp";
+char g_planeswalk_activate_hotkeys[] = "Pp";
 // GLOBAL: SHANDALAR 0x00590b18
-char DAT_00590b18[] = "Ii";
+char g_info_view_nav_hotkeys[] = "Ii";
 // GLOBAL: SHANDALAR 0x00590b1c
-char DAT_00590b1c[] = "Ii";
+char g_info_view_activate_hotkeys[] = "Ii";
 // GLOBAL: SHANDALAR 0x00590b20
-char DAT_00590b20[] = "Cc";
+char g_city_list_nav_hotkeys[] = "Cc";
 // GLOBAL: SHANDALAR 0x00590b24
-char DAT_00590b24[] = "Cc";
+char g_city_list_activate_hotkeys[] = "Cc";
 // GLOBAL: SHANDALAR 0x00590b28
-char DAT_00590b28[] = " \rDd";
+char g_map_done_nav_hotkeys[] = " \rDd";
 // GLOBAL: SHANDALAR 0x00590b30
-char DAT_00590b30[] = " \rDd";
+char g_map_done_activate_hotkeys[] = " \rDd";
 
 // GLOBAL: SHANDALAR 0x00590888
 AdvMenuControl g_map_menu_controls_00590888[5] = {
-    {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 0, 0, DAT_00590b08, DAT_00590b0c, 0, 0, {0, 0, 0, 0}},
-    {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 2, 0, DAT_00590b10, DAT_00590b14, 0, 0, {0, 0, 0, 0}},
-    {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 1, 0, DAT_00590b18, DAT_00590b1c, 0, 0, {0, 0, 0, 0}},
-    {398, 5, 94, 28, 398, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 3, 0, DAT_00590b20, DAT_00590b24, 0, 0, {0, 0, 0, 0}},
-    {499, 5, 94, 28, 499, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 4, 0, DAT_00590b28, DAT_00590b30, 0, 0, {0, 0, 0, 0}},
+    {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 0, 0, g_map_view_nav_hotkeys, g_map_view_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
+    {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 2, 0, g_planeswalk_nav_hotkeys, g_planeswalk_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
+    {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 1, 0, g_info_view_nav_hotkeys, g_info_view_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
+    {398, 5, 94, 28, 398, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 3, 0, g_city_list_nav_hotkeys, g_city_list_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
+    {499, 5, 94, 28, 499, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 4, 0, g_map_done_nav_hotkeys, g_map_done_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
 };
 
 // FUNCTION: SHANDALAR 0x00550164
-void FUN_00550164(int tile_x, int tile_y, int *out_x, int *out_y)
+void ConvertWorldTileToMapScreenCoords(int tile_x, int tile_y, int *out_x, int *out_y)
 {
   *out_x = (tile_y + tile_x) * 6 - 0x40;
   *out_y = (tile_y - tile_x) * 6 + 200;
 }
 
 // FUNCTION: SHANDALAR 0x00550197
-void FUN_00550197(int x, int y, int *out_tile_x, int *out_tile_y)
+void ConvertMapScreenToWorldTileCoords(int x, int y, int *out_tile_x, int *out_tile_y)
 {
   *out_tile_x = ((x + 0x40) - (y - 200)) / 0xc;
   *out_tile_y = *out_tile_x + (y - 200) / 6;
 }
 
 // FUNCTION: SHANDALAR 0x00428783
-char *FUN_00428783(unsigned int color_bitmask)
+char *GetPluralCardClassNameFromColorMask(unsigned int color_bitmask)
 {
   char *result;
 
@@ -315,7 +315,7 @@ int RenderMapMenuControl(AdvMenuControl *control, int mode)
   s.button_width = g_map_menu_controls_00590888[s.mapped_button_row].width;
   s.button_height = g_map_menu_controls_00590888[s.mapped_button_row].height;
   DrawEncodedImageResampled(PTR_DAT_005832b4, s.button_x, s.button_y, s.button_width, s.button_height,
-                            DAT_0073eab0[s.mapped_button_row][s.sprite_state_col]);
+                            g_map_button_sprites[s.mapped_button_row][s.sprite_state_col]);
 
   PTR_DAT_005832b4->page_number = s.saved_page_number;
 
@@ -331,7 +331,7 @@ int RenderMapMenuControl(AdvMenuControl *control, int mode)
 int ActivateMapMenuControl(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
-  DAT_006506e8 = control->selection_value;
+  g_map_menu_selection = control->selection_value;
   return 0;
 }
 
@@ -527,11 +527,11 @@ void ShowWorldMapScreen(int mode)
   LoadPcxIntoPage(1, "mapbttns.pic");
   BeginSpriteEncodeSession();
 
-  if (DAT_00650f20 == 0)
+  if (g_map_button_labels_loaded == 0)
   {
-    DAT_006527a4 = (char **)((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "mapButtons",
+    g_map_button_labels = (char **)((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "mapButtons",
                                                                                                (int)g_ini_string_scratch);
-    DAT_00650f20 = 1;
+    g_map_button_labels_loaded = 1;
   }
 
   PTR_DAT_005832dc->font_slot = 7;
@@ -542,15 +542,15 @@ void ShowWorldMapScreen(int mode)
     {
       SetFontStyleSize(7, 9 + ((unsigned int)(s.dir - 2) < 1 ? -1 : 0));
       DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.button_text_colors[s.dir], s.dir * 0x5e + 0x30, s.i * 0x1c + 0xe,
-                                        "%s", DAT_006527a4[s.i]);
-      DAT_0073eab0[s.i][s.dir] = EncodeSpriteFromPage(1, s.dir * 0x5e + 1, s.i * 0x1c + 1, 0x5d, 0x1b);
+                                        "%s", g_map_button_labels[s.i]);
+      g_map_button_sprites[s.i][s.dir] = EncodeSpriteFromPage(1, s.dir * 0x5e + 1, s.i * 0x1c + 1, 0x5d, 0x1b);
     }
   }
 
-  DAT_00650f1c = EncodeSpriteFromPage(1, 1, 0x8d, 0x2b, 0xe9);
-  DAT_006506e0 = EncodeSpriteFromPage(1, 0x2d, 0x8d, 0xd1, 0x1c);
-  DAT_0073ea94 = EncodeSpriteFromPage(1, 0xe8, 0xaa, 0x13, 0x117);
-  DAT_00746b04 = EncodeSpriteFromPage(1, 0xfc, 0xaa, 0xf, 0x46);
+  g_map_amulet_panel_sprite = EncodeSpriteFromPage(1, 1, 0x8d, 0x2b, 0xe9);
+  g_map_summary_panel_sprite = EncodeSpriteFromPage(1, 0x2d, 0x8d, 0xd1, 0x1c);
+  g_adv_scrollbar_track_sprite = EncodeSpriteFromPage(1, 0xe8, 0xaa, 0x13, 0x117);
+  g_adv_scrollbar_thumb_sprite = EncodeSpriteFromPage(1, 0xfc, 0xaa, 0xf, 0x46);
 
   FinalizeSpriteEncodeSession();
 
@@ -586,32 +586,32 @@ retry:
   switch (mode)
   {
   case 0:
-    g_map_menu_controls_00590888[1].x = ScaleUiCoordinate(DAT_00590850);
-    g_map_menu_controls_00590888[1].y = ScaleUiCoordinate(DAT_00590854);
+    g_map_menu_controls_00590888[1].x = ScaleUiCoordinate(g_map_button_slot_left_x);
+    g_map_menu_controls_00590888[1].y = ScaleUiCoordinate(g_map_button_slot_left_y);
     AddMenuControlsToContext(&g_map_menu_controls_00590888[1], 1, s.menu_context);
 
-    g_map_menu_controls_00590888[2].x = ScaleUiCoordinate(DAT_00590858);
-    g_map_menu_controls_00590888[2].y = ScaleUiCoordinate(DAT_0059085c);
+    g_map_menu_controls_00590888[2].x = ScaleUiCoordinate(g_map_button_slot_right_x);
+    g_map_menu_controls_00590888[2].y = ScaleUiCoordinate(g_map_button_slot_right_y);
     AddMenuControlsToContext(&g_map_menu_controls_00590888[2], 1, s.menu_context);
     break;
 
   case 1:
-    g_map_menu_controls_00590888[0].x = ScaleUiCoordinate(DAT_00590850);
-    g_map_menu_controls_00590888[0].y = ScaleUiCoordinate(DAT_00590854);
+    g_map_menu_controls_00590888[0].x = ScaleUiCoordinate(g_map_button_slot_left_x);
+    g_map_menu_controls_00590888[0].y = ScaleUiCoordinate(g_map_button_slot_left_y);
     AddMenuControlsToContext(&g_map_menu_controls_00590888[0], 1, s.menu_context);
 
-    g_map_menu_controls_00590888[1].x = ScaleUiCoordinate(DAT_00590858);
-    g_map_menu_controls_00590888[1].y = ScaleUiCoordinate(DAT_0059085c);
+    g_map_menu_controls_00590888[1].x = ScaleUiCoordinate(g_map_button_slot_right_x);
+    g_map_menu_controls_00590888[1].y = ScaleUiCoordinate(g_map_button_slot_right_y);
     AddMenuControlsToContext(&g_map_menu_controls_00590888[1], 1, s.menu_context);
     break;
 
   case 2:
-    g_map_menu_controls_00590888[0].x = ScaleUiCoordinate(DAT_00590850);
-    g_map_menu_controls_00590888[0].y = ScaleUiCoordinate(DAT_00590854);
+    g_map_menu_controls_00590888[0].x = ScaleUiCoordinate(g_map_button_slot_left_x);
+    g_map_menu_controls_00590888[0].y = ScaleUiCoordinate(g_map_button_slot_left_y);
     AddMenuControlsToContext(&g_map_menu_controls_00590888[0], 1, s.menu_context);
 
-    g_map_menu_controls_00590888[2].x = ScaleUiCoordinate(DAT_00590858);
-    g_map_menu_controls_00590888[2].y = ScaleUiCoordinate(DAT_0059085c);
+    g_map_menu_controls_00590888[2].x = ScaleUiCoordinate(g_map_button_slot_right_x);
+    g_map_menu_controls_00590888[2].y = ScaleUiCoordinate(g_map_button_slot_right_y);
     AddMenuControlsToContext(&g_map_menu_controls_00590888[2], 1, s.menu_context);
     break;
   }
@@ -634,7 +634,7 @@ retry:
         continue;
       }
 
-      FUN_00550164(s.tile_x, s.tile_y, &s.screen_x, &s.screen_y);
+      ConvertWorldTileToMapScreenCoords(s.tile_x, s.tile_y, &s.screen_x, &s.screen_y);
       if (s.screen_x > global_screen_width - 8 || s.screen_x < 8)
       {
         continue;
@@ -650,7 +650,7 @@ retry:
       if ((6 < s.screen_x) && (6 < s.screen_y))
       {
         DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 6, s.screen_y - 6,
-                                 g_ttsprite_grid_sprite_entries[((DAT_00590a30[(s.tile_y + s.tile_x) % 6] * DAT_00590a30[(s.tile_y * s.tile_x) % 6]) % 3) * 0x10 + (int)s.tile_class], 0xe, 0xe);
+                                 g_ttsprite_grid_sprite_entries[((g_map_tile_variant_primes[(s.tile_y + s.tile_x) % 6] * g_map_tile_variant_primes[(s.tile_y * s.tile_x) % 6]) % 3) * 0x10 + (int)s.tile_class], 0xe, 0xe);
       }
       s.screen_y -= 0x40;
 
@@ -691,7 +691,7 @@ retry:
     {
       s.map_overlay_colors[7] = FUN_004314ca(s.tile_x, s.tile_y);
       s.tile_class = s.map_overlay_colors[7] & 0xf;
-      FUN_00550164(s.tile_x, s.tile_y, &s.screen_x, &s.screen_y);
+      ConvertWorldTileToMapScreenCoords(s.tile_x, s.tile_y, &s.screen_x, &s.screen_y);
 
       s.screen_x = (s.screen_x * global_screen_width) / 0x280;
       s.screen_y = (s.screen_y * global_screen_height) / 0x1e0;
@@ -795,7 +795,7 @@ retry:
             }
             else
             {
-              strcpy(g_ui_message_buffer, FUN_00428783(1U << ((unsigned char)((unsigned int)g_town_slots[s.town_index].trade_color_and_type >> 8) - 1U)));
+              strcpy(g_ui_message_buffer, GetPluralCardClassNameFromColorMask(1U << ((unsigned char)((unsigned int)g_town_slots[s.town_index].trade_color_and_type >> 8) - 1U)));
             }
 
             s.text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
@@ -863,12 +863,12 @@ retry:
   }
 
   DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0xdc), ScaleUiCoordinate(0x36),
-                            ScaleUiCoordinate((int)DAT_006506e0->width), ScaleUiCoordinate((int)DAT_006506e0->height), DAT_006506e0);
+                            ScaleUiCoordinate((int)g_map_summary_panel_sprite->width), ScaleUiCoordinate((int)g_map_summary_panel_sprite->height), g_map_summary_panel_sprite);
 
   if (s.original_mode != 4)
   {
     DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0), ScaleUiCoordinate(0x85),
-                              ScaleUiCoordinate((int)DAT_00650f1c->width), ScaleUiCoordinate((int)DAT_00650f1c->height), DAT_00650f1c);
+                              ScaleUiCoordinate((int)g_map_amulet_panel_sprite->width), ScaleUiCoordinate((int)g_map_amulet_panel_sprite->height), g_map_amulet_panel_sprite);
     for (s.dir = 0; s.dir < 5; s.dir++)
     {
       DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x18, s.dir * 0x1a + 0xc6, "%d", g_amulet_inventory[s.dir]);
@@ -886,11 +886,11 @@ retry:
 
   RenderCurrentMenuContextControls();
 
-  FUN_00550164(g_world_player_tile_x, g_world_player_tile_y, &s.screen_x, &s.screen_y);
+  ConvertWorldTileToMapScreenCoords(g_world_player_tile_x, g_world_player_tile_y, &s.screen_x, &s.screen_y);
   s.screen_x = (s.screen_x * global_screen_width) / 0x280;
   s.screen_y = ScaleUiCoordinate(0x40) + (s.screen_y * global_screen_height) / 0x1e0;
 
-  DAT_006506e8 = -1;
+  g_map_menu_selection = -1;
   s.blink_on = 1;
   ConsumeUiTickCount();
   s.screen_x_unscaled_debug = s.screen_y_unscaled_debug = -1;
@@ -913,7 +913,7 @@ retry:
     if (g_mouse_button_down_mask != 0)
     {
       UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
-      if ((g_mouse_button_down_mask != 0) && (g_reveal_all_world_info != 0) && (DAT_006506e8 < 0))
+      if ((g_mouse_button_down_mask != 0) && (g_reveal_all_world_info != 0) && (g_map_menu_selection < 0))
       {
         BlitGraphicsRect(PTR_DAT_005832dc, s.screen_x - 1, s.screen_y - 1, 4, 4, PTR_DAT_005832b4, s.screen_x - 1, s.screen_y - 1);
         s.screen_x = s.screen_x_unscaled_debug = g_mouse_x_snapshot;
@@ -921,11 +921,11 @@ retry:
 
         s.screen_x_unscaled_debug = (s.screen_x_unscaled_debug * 0x280) / global_screen_width;
         s.screen_y_unscaled_debug = ((s.screen_y_unscaled_debug - ScaleUiCoordinate(0x40)) * 0x1e0) / global_screen_height;
-        FUN_00550197(s.screen_x_unscaled_debug, s.screen_y_unscaled_debug, &g_world_player_tile_x, &g_world_player_tile_y);
+        ConvertMapScreenToWorldTileCoords(s.screen_x_unscaled_debug, s.screen_y_unscaled_debug, &g_world_player_tile_x, &g_world_player_tile_y);
         g_world_player_x = g_world_player_tile_x * 0x20 + 0x10;
         g_world_player_y = g_world_player_tile_y * 0x20 + 0x10;
 
-        FUN_00550164(g_world_player_tile_x, g_world_player_tile_y, &s.screen_x, &s.screen_y);
+        ConvertWorldTileToMapScreenCoords(g_world_player_tile_x, g_world_player_tile_y, &s.screen_x, &s.screen_y);
         s.screen_x = (s.screen_x * global_screen_width) / 0x280;
         s.screen_y = ScaleUiCoordinate(0x40) + (s.screen_y * global_screen_height) / 0x1e0;
 
@@ -936,9 +936,9 @@ retry:
     {
       UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
     }
-  } while (DAT_006506e8 == -1);
+  } while (g_map_menu_selection == -1);
 
-  if (DAT_006506e8 == 3)
+  if (g_map_menu_selection == 3)
   {
     ClearInputAndWaitForMouseRelease();
     ShowCityInfoScreen(1);
@@ -947,9 +947,9 @@ retry:
     goto retry;
   }
 
-  if (DAT_006506e8 != 4)
+  if (g_map_menu_selection != 4)
   {
-    mode = DAT_006506e8;
+    mode = g_map_menu_selection;
     ClearInputAndWaitForMouseRelease();
     EndMenuContext();
     goto retry;
@@ -957,7 +957,7 @@ retry:
   else
   {
     EndMenuContext();
-    FreeSpriteBlob(DAT_0073eab0[0][0]);
+    FreeSpriteBlob(g_map_button_sprites[0][0]);
     ClearInputAndWaitForMouseRelease();
   }
 }

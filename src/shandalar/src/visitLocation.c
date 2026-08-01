@@ -52,7 +52,7 @@ extern char text_lines[249][300];
 extern int g_loadsave_skip_esc;
 extern jmp_buf DAT_0073e990;
 extern jmp_buf DAT_0073e9e0;
-extern DAT_0093a870[0x20];
+extern char g_itoa_buffer[0x20];
 
 extern int card_dummy(int player, int card, event_t event);
 
@@ -62,8 +62,8 @@ typedef struct
   int second;
 } HintPair;
 
-extern int DAT_0097df40[0x100];
-extern HintPair DAT_0097e450[0x100];
+extern int g_hint_difficulty_masks[0x100];
+extern HintPair g_hint_card_pairs[0x100];
 
 // GLOBAL: SHANDALAR 0x0073ea68
 int g_wizard_siege_count;
@@ -189,7 +189,7 @@ int AddCardToDeckSorted(int card_id);
 int FUN_004bb1cf(int param_1);
 int FUN_0056c0e5(int param_1, int param_2, int param_3);
 int GetCardRarity(int param_1);
-int FUN_0056c705(int param_1);
+int FindCardIndexByCsvid(int csvid);
 int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask);
 char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID world_magic_button_sprite, ...);
@@ -205,7 +205,7 @@ extern int g_dungeon_monster_duel_music_csvids[];
 void FormatQuestSpellName(char *dst, DWORD dst_size);
 unsigned int RunWisemanAdviceSequence(int preferred_color, int new_town_visit, int town_index);
 int BuyAnyCardFromTown(int payment_color, int town_index);
-char *FUN_0057e826(char *dst, char *src);
+char *AppendString(char *dst, char *src);
 
 int RunDuelEngine(unsigned int card_id, int creature_type);
 int ExitIfNoUsableDeckCards(void);
@@ -264,15 +264,15 @@ extern EncodedImage *g_main_menu_button_sprites_normal[4];
 extern EncodedImage *g_main_menu_button_sprites_highlight[4];
 
 // GLOBAL: SHANDALAR 0x00582d40
-int DAT_00582d40[3] = {0x40, 0x50, 0x66};
+int g_visit_tips_frame_x_by_resolution[3] = {0x40, 0x50, 0x66};
 // GLOBAL: SHANDALAR 0x00582d50
-int DAT_00582d50[3] = {0x48, 0x5a, 0x72};
+int g_visit_tips_frame_y_by_resolution[3] = {0x48, 0x5a, 0x72};
 // GLOBAL: SHANDALAR 0x00582d60
-int DAT_00582d60[3] = {0xcb, 0xfd, 0x143};
+int g_visit_tips_left_icon_x_by_resolution[3] = {0xcb, 0xfd, 0x143};
 // GLOBAL: SHANDALAR 0x00582d6c
-int DAT_00582d6c[3] = {0x1af, 0x21a, 0x2b0};
+int g_visit_tips_right_icon_x_by_resolution[3] = {0x1af, 0x21a, 0x2b0};
 // GLOBAL: SHANDALAR 0x00582d78
-int DAT_00582d78[3] = {0x2f, 0x3c, 0x4d};
+int g_visit_tips_icon_y_by_resolution[3] = {0x2f, 0x3c, 0x4d};
 
 int sound_unload(int sound_id);
 void FUN_00562835(char *filename, int sound_id);
@@ -473,7 +473,7 @@ AdvMenuControl g_town_icon_menu_controls[5] = {
 };
 
 // GLOBAL: SHANDALAR 0x005a1870
-int DAT_005a1870[0x14] = {5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79};
+int g_ui_fx_lcg_multipliers[0x14] = {5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79};
 
 #define GET_TOWN_PIC(_i) ((g_town_slots[_i].location_type == 1) ? "village.pic" : "city.pic")
 
@@ -563,9 +563,9 @@ int DrawVisitScreenOverlays(FacemakerWindowBounds *page)
   DrawEncodedImageResampled(page, ScaleUiCoordinate(0x181), ScaleUiCoordinate(0x135), ScaleUiCoordinate((int)*(short *)((char *)s.questnew_entry + 4)),
                             ScaleUiCoordinate((int)*(short *)((char *)s.questnew_entry + 6)), g_questnew_sprite_entries[0]);
 
-  DrawEncodedImageUnscaled(page, DAT_00582d40[s.resolution_index], DAT_00582d50[s.resolution_index], g_tips_frame_sprite);
-  DrawEncodedImageUnscaled(page, DAT_00582d60[s.resolution_index], DAT_00582d78[s.resolution_index], g_tips_icon_sprite);
-  DrawEncodedImageUnscaled(page, DAT_00582d6c[s.resolution_index], DAT_00582d78[s.resolution_index], g_tips_icon_sprite);
+  DrawEncodedImageUnscaled(page, g_visit_tips_frame_x_by_resolution[s.resolution_index], g_visit_tips_frame_y_by_resolution[s.resolution_index], g_tips_frame_sprite);
+  DrawEncodedImageUnscaled(page, g_visit_tips_left_icon_x_by_resolution[s.resolution_index], g_visit_tips_icon_y_by_resolution[s.resolution_index], g_tips_icon_sprite);
+  DrawEncodedImageUnscaled(page, g_visit_tips_right_icon_x_by_resolution[s.resolution_index], g_visit_tips_icon_y_by_resolution[s.resolution_index], g_tips_icon_sprite);
 
   PushGraphicsClipRect(&s.clip_restore, PTR_DAT_005832b4, s.saved_clip_rect.x, s.saved_clip_rect.y, s.saved_clip_rect.width, s.saved_clip_rect.height);
   return 0;
@@ -977,7 +977,7 @@ int RenderTownIconMenuControl(AdvMenuControl *control, int mode)
   }
 
   DrawTownMenuIconWithTooltip(control->x + control->width / 2, control->y + control->height / 2, control->selection_value - 1, mode,
-                              g_town_button_labels[control->unk_30]);
+                              g_town_button_labels[control->data_value]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -1572,22 +1572,22 @@ int FindHintPairIndexForOfferCard(int card_internal_id)
 
   for (; s.hint_pair_index < 0x100; s.hint_pair_index = s.hint_pair_index + 1)
   {
-    if (DAT_0097e450[s.hint_pair_index].second != -1)
+    if (g_hint_card_pairs[s.hint_pair_index].second != -1)
     {
-      s.is_hint_first_in_deck = DeckContainsCsvid(DAT_0097e450[s.hint_pair_index].first);
-      s.is_hint_second_in_deck = DeckContainsCsvid(DAT_0097e450[s.hint_pair_index].second);
+      s.is_hint_first_in_deck = DeckContainsCsvid(g_hint_card_pairs[s.hint_pair_index].first);
+      s.is_hint_second_in_deck = DeckContainsCsvid(g_hint_card_pairs[s.hint_pair_index].second);
 
       if ((s.is_hint_first_in_deck == 0) || (s.is_hint_second_in_deck == 0))
       {
-        if ((DAT_0097df40[s.hint_pair_index] & (1 << (unsigned char)g_shandalar_difficulty)) != 0)
+        if ((g_hint_difficulty_masks[s.hint_pair_index] & (1 << (unsigned char)g_shandalar_difficulty)) != 0)
         {
-          if ((global_cards_data[card_internal_id].id == DAT_0097e450[s.hint_pair_index].first) && (s.is_hint_second_in_deck != 0))
+          if ((global_cards_data[card_internal_id].id == g_hint_card_pairs[s.hint_pair_index].first) && (s.is_hint_second_in_deck != 0))
           {
             s.candidate_hint_pair_indices[s.candidate_hint_pair_count] = s.hint_pair_index;
             s.candidate_hint_pair_count = s.candidate_hint_pair_count + 1;
           }
 
-          if ((DAT_0097e450[s.hint_pair_index].second == global_cards_data[card_internal_id].id) && (s.is_hint_first_in_deck != 0))
+          if ((g_hint_card_pairs[s.hint_pair_index].second == global_cards_data[card_internal_id].id) && (s.is_hint_first_in_deck != 0))
           {
             s.candidate_hint_pair_indices[s.candidate_hint_pair_count] = s.hint_pair_index;
             s.candidate_hint_pair_count = s.candidate_hint_pair_count + 1;
@@ -1597,10 +1597,10 @@ int FindHintPairIndexForOfferCard(int card_internal_id)
     }
     else
     {
-      if (global_cards_data[card_internal_id].id == DAT_0097e450[s.hint_pair_index].first)
+      if (global_cards_data[card_internal_id].id == g_hint_card_pairs[s.hint_pair_index].first)
       {
-        if ((DeckContainsCsvid(DAT_0097e450[s.hint_pair_index].first) == 0) &&
-            ((DAT_0097df40[s.hint_pair_index] & (1 << (unsigned char)g_shandalar_difficulty)) != 0))
+        if ((DeckContainsCsvid(g_hint_card_pairs[s.hint_pair_index].first) == 0) &&
+            ((g_hint_difficulty_masks[s.hint_pair_index] & (1 << (unsigned char)g_shandalar_difficulty)) != 0))
         {
           for (s.deck_scan_index = 0; s.deck_scan_index < 500; s.deck_scan_index = s.deck_scan_index + 1)
           {
@@ -2490,7 +2490,7 @@ void LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int 
   }
 
   strcat(g_ui_message_buffer,
-         _itoa(g_shandalar_monster_definitions[creature_type].deck_number, DAT_0093a870, 10));
+         _itoa(g_shandalar_monster_definitions[creature_type].deck_number, g_itoa_buffer, 10));
   strcat(g_ui_message_buffer, ".dck");
 
   if (FileExists(g_ui_message_buffer) != 0)
@@ -2579,7 +2579,7 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, csvid_and_numcards *library
           library_entries[s.entry_index].csvid = s.csvid;
           library_entries[s.entry_index].numcards = s.numcards;
 
-          s.card_index = FUN_0056c705(s.csvid);
+          s.card_index = FindCardIndexByCsvid(s.csvid);
           if (s.numcards == 0)
           {
             s.numcards = g_shandalar_difficulty;
@@ -3530,7 +3530,7 @@ LAB_00531ee7:
   case 4:
     if (g_next_duel_card_id == -1)
     {
-      g_next_duel_card_id = FUN_0056c705(g_wiseman_duel_reward_card_csvids[(RandomIntLessThan(2) - 2) + param_1 * 2]);
+      g_next_duel_card_id = FindCardIndexByCsvid(g_wiseman_duel_reward_card_csvids[(RandomIntLessThan(2) - 2) + param_1 * 2]);
       sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x10], global_cards_data[g_next_duel_card_id].name);
     }
     else
@@ -3971,7 +3971,7 @@ loop:
     if (s.owned_copies != 0)
     {
       strcat(g_ui_message_buffer, "-");
-      strcat(g_ui_message_buffer, _itoa(s.owned_copies, DAT_0093a870, 10));
+      strcat(g_ui_message_buffer, _itoa(s.owned_copies, g_itoa_buffer, 10));
     }
 
     if (g_card_browser_hover_card == 0xffffffff)
@@ -4273,11 +4273,11 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
 
       if (s.can_afford != 0)
       {
-        (void)FUN_0057e826(g_ui_message_buffer, gs_buyanycard_0074ccd0[3]);
+        (void)AppendString(g_ui_message_buffer, gs_buyanycard_0074ccd0[3]);
       }
       else
       {
-        (void)FUN_0057e826(g_ui_message_buffer, gs_buyanycard_0074ccd0[4]);
+        (void)AppendString(g_ui_message_buffer, gs_buyanycard_0074ccd0[4]);
       }
 
       s.menu_result = RunTextMenuAt(g_ui_message_buffer, ScaleUiCoordinate(0xea), ScaleUiCoordinate(0x160));
@@ -4475,12 +4475,12 @@ int VisitTownSlot(int town_index)
 
     if (RunTextMenuAtScaled(g_ui_message_buffer, 0x78, 0x38) == 1)
     {
-      unk_00789308 = FUN_0056c705(
+      unk_00789308 = FindCardIndexByCsvid(
           *(&g_dungeon_monster_duel_music_csvids[(s.duel_wizard_color - 1) * 3] + RandomIntLessThan(3)));
       g_lair_or_monster_slots[6].color = s.duel_wizard_color;
       g_lair_or_monster_slots[6].entry_type = (ShandalarEntryType)s.duel_creature_tier_or_type;
 
-      s.selected_card_id = FUN_0056c705(g_shandalar_monster_definitions[s.duel_creature_tier_or_type].deck_number);
+      s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.duel_creature_tier_or_type].deck_number);
       LoadCreatureDuelDeck(s.duel_creature_tier_or_type, (unsigned int)s.selected_card_id, 0, -1);
 
       DAT_008ce538 = s.duel_wizard_color;

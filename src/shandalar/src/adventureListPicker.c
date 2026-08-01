@@ -126,14 +126,14 @@ void replay_adventure_list_ai_choice(void)
 }
 
 // FUNCTION: SHANDALAR 0x0055837e
-INT_PTR __cdecl FUN_0055837e(int *param_1, int param_2, void *param_3, int param_4, char *param_5)
+INT_PTR __cdecl ShowAdventureListCardList(int *card_ids, int card_count, void *title, int require_card_click, char *out_selection)
 {
   if (g_duel_ai_mode_state == 1)
   {
     return 1;
   }
 
-  return show_cardlist(param_1, 0, 0, param_2, param_3, (unsigned int)param_4, param_5);
+  return show_cardlist(card_ids, 0, 0, card_count, title, (unsigned int)require_card_click, out_selection);
 }
 
 // FUNCTION: SHANDALAR 0x0056a515
@@ -393,7 +393,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
   }
   else
   {
-    result = (int)FUN_0055837e(card_ids, card_count, title, require_card_click, (char *)out_selection);
+    result = (int)ShowAdventureListCardList(card_ids, card_count, title, require_card_click, (char *)out_selection);
   }
 
   if ((player == active_player) &&

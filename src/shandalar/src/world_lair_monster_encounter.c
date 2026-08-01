@@ -46,8 +46,8 @@ extern int g_world_magic_town_flags[5];
 extern int g_world_location_music_active;
 extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 
-extern int DAT_00789938;
-extern int DAT_0078df68;
+extern int g_deck_total_card_count;
+extern int g_deck_active_card_count;
 extern int g_reveal_all_world_info;
 extern int DAT_00716024;
 // GLOBAL: SHANDALAR 0x007483e4
@@ -55,7 +55,7 @@ int _DAT_007483e4;
 // GLOBAL: SHANDALAR 0x0073c7e4
 int DAT_0073c7e4;
 // GLOBAL: SHANDALAR 0x0093a870
-char DAT_0093a870[0x20];
+char g_itoa_buffer[0x20];
 extern int g_world_magic_offer_slot_index;
 extern int g_world_scroll_cache_ready;
 extern int g_text_menu_color_normal;
@@ -85,7 +85,7 @@ extern int g_debug_lair_event_type;
 
 char *BuildCreatureNameWithArticle(int creature_type);
 char *BuildTownDisplayName(int town_index);
-char *FUN_00428783(unsigned int mana_mask);
+char *GetPluralCardClassNameFromColorMask(unsigned int mana_mask);
 char *FUN_004f2e17(int town_index);
 char *GetDungeonName(int dungeon_index);
 char *GetCreatureName(int creature_type);
@@ -112,7 +112,7 @@ int AddCardToDeckSorted(int card_id);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
 int FUN_0056c0e5(int card_color, int color_mask, int param_3);
 int GetCardRarity(int card_id);
-unsigned int FUN_0056c705(int csvid);
+unsigned int FindCardIndexByCsvid(int csvid);
 int FUN_0056d5c0(int param_1, int *param_2);
 int GetCardAvailabilityMask(unsigned int card_id);
 int GetFontLineHeight(int font_slot);
@@ -545,7 +545,7 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
       if ((char)global_cards_data[card_index].cc[1] == -1)
       {
         strcpy(g_ui_message_buffer, "X is ");
-        strcat(g_ui_message_buffer, _itoa(x_value, DAT_0093a870, 10));
+        strcat(g_ui_message_buffer, _itoa(x_value, g_itoa_buffer, 10));
         DrawTextLineNoShadow(g_ui_message_buffer, global_screen_width / 2 - 0x60, 0xb0, 0);
       }
 
@@ -698,7 +698,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
   strcat(g_ui_message_buffer, gs_monsterlair_0074cff0[4]);
   if (RunTextMenuAt(g_ui_message_buffer, 0x5a, 100) == 1)
   {
-    s.selected_card_id = FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].deck_number);
+    s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number);
     LoadCreatureDuelDeck(s.creature_type, s.selected_card_id, 0, -1);
     DAT_008ce538 = single_color_test_bit_to_color_t((int)g_shandalar_monster_definitions[s.creature_type].color_mask);
     DAT_00742fd0 = 0;
@@ -1279,7 +1279,7 @@ retry:
       RunRandomCreatureAnteDuel(0x12, 4);
       break;
     case 0xb:
-      g_next_duel_card_id = FUN_0056c705(0x1b4);
+      g_next_duel_card_id = FindCardIndexByCsvid(0x1b4);
       PlaySoundEffectOnChannel("x:Duelsounds\\aswanjag.wav", 0x97, 100, 100, 0);
       RunRandomCreatureAnteDuel(0xd, 2);
       break;
@@ -1700,7 +1700,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   }
   else
   {
-    s.selected_card_id = FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].deck_number);
+    s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number);
     if (s.selected_card_id == 0xffffffff)
     {
       s.selected_card_id = monster_color - 1;
@@ -1804,7 +1804,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   PTR_DAT_005832b4->font_slot = 4;
   DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x188, "%d", Gold);
   DrawTextAt(PTR_DAT_005832b4, 0xd2, 0xbd, 0x188, "%d", g_food);
-  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x1b5, "%d/%d", DAT_0078df68, DAT_00789938);
+  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x1b5, "%d/%d", g_deck_active_card_count, g_deck_total_card_count);
   DrawTextAt(PTR_DAT_005832b4, 0xd2, 0xc3, 0x1b5, "%d", CountDuelPoolEligibleTowns());
   PTR_DAT_005832b4->font_slot = 2;
   DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x1d4), ScaleUiCoordinate(0x15e),
@@ -2293,7 +2293,7 @@ LAB_4F4BB2:
             strcat(g_ui_message_buffer, DAT_0058b104);
           }
         }
-        strcat(g_ui_message_buffer, _itoa(g_shandalar_monster_definitions[s.deck_or_card_index].deck_number, DAT_0093a870,
+        strcat(g_ui_message_buffer, _itoa(g_shandalar_monster_definitions[s.deck_or_card_index].deck_number, g_itoa_buffer,
                                           10));
         strcat(g_ui_message_buffer, ".dck");
         ClearAndLoadInitialLibraryFromDeckFile(g_ui_message_buffer, 0, 0, -1);
@@ -2322,7 +2322,7 @@ LAB_4F4BB2:
     }
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xc1) != 0)
     {
-      DAT_008cf6d0 = FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+      DAT_008cf6d0 = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
     }
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xcb) != 0)
     {
@@ -2538,9 +2538,9 @@ LAB_4F4BB2:
       }
       ClearInputAndWaitForMouseRelease();
       RecountDeckCardTotals();
-      if (DAT_00789938 >= 0x1c2)
+      if (g_deck_total_card_count >= 0x1c2)
       {
-        sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x1f], DAT_00789938);
+        sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x1f], g_deck_total_card_count);
         RunTextMenuAt(g_ui_message_buffer,
                       (global_screen_width / 2 - MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer) / 2) +
                           -2,
@@ -2672,7 +2672,7 @@ LAB_4F4BB2:
       if ((s.reward_flags & 4) != 0)
       {
         g_next_duel_card_id =
-            FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+            FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
         s.deck_or_card_index = AddCardToDeckSorted(g_next_duel_card_id);
         if (s.deck_or_card_index != 0xffffffff)
         {
@@ -2692,7 +2692,7 @@ LAB_4F4BB2:
       if ((s.reward_flags & 0x20) != 0)
       {
         g_next_duel_card_id =
-            FUN_0056c705(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+            FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
         sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x15],
                 global_cards_data[g_next_duel_card_id].name);
         DrawAdventureCard(g_next_duel_card_id, 0xa0, 0x70, 1, g_ui_message_buffer);

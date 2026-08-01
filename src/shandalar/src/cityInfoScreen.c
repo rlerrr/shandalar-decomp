@@ -122,24 +122,24 @@ int g_wizard_text_colors[0x10] = {
 
 // Forward decls
 int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode);
-int __cdecl FUN_0050a828(AdvMenuControl *control);
+int __cdecl ActivateCityInfoScrollButton(AdvMenuControl *control);
 int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode);
-int __cdecl FUN_0050a970(AdvMenuControl *control);
+int __cdecl ActivateCityInfoDoneButton(AdvMenuControl *control);
 extern char g_city_info_done_navigate_hotkeys[];
 extern char g_city_info_done_activate_hotkeys[];
 
 // GLOBAL: SHANDALAR 0x0058c8f8
 AdvMenuControl g_city_info_menu_controls[5] = {
     // PageUp
-    {27, 171, 17, 58, 27, 171, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, -2, 0, (char *)0, (char *)0, 0x4900, 0, {0, 0, 0, 0}},
+    {27, 171, 17, 58, 27, 171, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)ActivateCityInfoScrollButton, -2, 0, (char *)0, (char *)0, 0x4900, 0, {0, 0, 0, 0}},
     // Up
-    {27, 230, 17, 58, 27, 230, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, -1, 1, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
+    {27, 230, 17, 58, 27, 230, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)ActivateCityInfoScrollButton, -1, 1, (char *)0, (char *)0, 0x4800, 0, {0, 0, 0, 0}},
     // Down
-    {27, 289, 17, 58, 27, 289, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, 1, 2, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
+    {27, 289, 17, 58, 27, 289, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)ActivateCityInfoScrollButton, 1, 2, (char *)0, (char *)0, 0x5000, 0, {0, 0, 0, 0}},
     // PageDown
-    {27, 348, 17, 58, 27, 348, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, 2, 3, (char *)0, (char *)0, 0x5100, 0, {0, 0, 0, 0}},
+    {27, 348, 17, 58, 27, 348, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)ActivateCityInfoScrollButton, 2, 3, (char *)0, (char *)0, 0x5100, 0, {0, 0, 0, 0}},
     // Done
-    {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)RenderCityInfoDoneButton, (AdvMenuActivateCallback)FUN_0050a970, 0, 0, g_city_info_done_navigate_hotkeys, g_city_info_done_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
+    {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)RenderCityInfoDoneButton, (AdvMenuActivateCallback)ActivateCityInfoDoneButton, 0, 0, g_city_info_done_navigate_hotkeys, g_city_info_done_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
 };
 
 // GLOBAL: SHANDALAR 0x0058cad4
@@ -162,7 +162,7 @@ int RenderAdvMenuControlNormally(AdvMenuControl *control)
 }
 
 // FUNCTION: SHANDALAR 0x00500129
-int __cdecl FUN_00500129(int allow_arrow_nav)
+int __cdecl SetCurrentMenuContextArrowNavigation(int allow_arrow_nav)
 {
   g_menu_allow_arrow_nav_by_context[g_menu_context_index] = allow_arrow_nav;
   return 1;
@@ -215,7 +215,7 @@ int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode)
   }
 
   DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
-                            g_city_info_scroll_button_sprites[control->unk_30 * 4 + mode]);
+                            g_city_info_scroll_button_sprites[control->data_value * 4 + mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -226,7 +226,7 @@ int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode)
 }
 
 // FUNCTION: SHANDALAR 0x0050a828
-int __cdecl FUN_0050a828(AdvMenuControl *control)
+int __cdecl ActivateCityInfoScrollButton(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_adv_menu_selected_value = control->selection_value;
@@ -275,7 +275,7 @@ int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode)
 }
 
 // FUNCTION: SHANDALAR 0x0050a970
-int __cdecl FUN_0050a970(AdvMenuControl *control)
+int __cdecl ActivateCityInfoDoneButton(AdvMenuControl *control)
 {
   PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_adv_menu_selected_value = control->selection_value;
@@ -385,7 +385,7 @@ void ShowCityInfoScreen(int param_1)
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
   AddMenuControlsToContext(g_city_info_menu_controls, 5, s.menu_context);
-  FUN_00500129(0);
+  SetCurrentMenuContextArrowNavigation(0);
 
   // Prepare background
   g_world_scroll_cache_ready = 1;

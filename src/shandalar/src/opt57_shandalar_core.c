@@ -385,7 +385,7 @@ int ExportGraphicsPage(int page_number, char *path)
 }
 
 // FUNCTION: SHANDALAR 0x0057e826
-char *FUN_0057e826(char *dst, char *src)
+char *AppendString(char *dst, char *src)
 {
   char *p;
 
