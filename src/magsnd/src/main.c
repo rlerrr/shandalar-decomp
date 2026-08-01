@@ -76,8 +76,8 @@ struct SndInstance
 STATIC_ASSERT(sizeof(SndInstance) == 0x204, SndInstance_wrong_size);
 
 void __cdecl ReleaseSnd(void);
-int __cdecl LoadSnd(LPSTR param_1, int slot, Sound *param_3);
-undefined4 __cdecl UnloadSnd(int param_1);
+int __cdecl LoadSnd(LPSTR path, int slot, Sound *sound);
+undefined4 __cdecl UnloadSnd(int slot);
 undefined4 __cdecl UnloadAllSnds(void);
 undefined4 __cdecl PlaySnd(int slot, Sound *sound);
 int __cdecl PlaySndFile(LPSTR filename, int slot, Sound *sound);
@@ -101,7 +101,7 @@ undefined4 __cdecl GetSndState(int slot, undefined4 *outState);
 void *__cdecl GetAVISndBuff(int slot, uint bytesRequested);
 undefined4 __cdecl ReleaseAVISndBuff(int slot);
 int __cdecl IsSndLoaded(int loadId, int *outSlot);
-undefined4 __cdecl GetLRUSnd(int *outSlot, int loadId, int skipSlot);
+undefined4 __cdecl GetLRUSnd(int *outSlot, int startSlot, int endSlot);
 
 void __cdecl UpdateMmioSnd(SndInstance *snd);
 int __cdecl UpdateAviSnd(SndInstance *snd);
@@ -110,6 +110,9 @@ void __cdecl RemoveFromUpdateList(SndInstance *snd);
 void __cdecl AddToActiveList(SndInstance *snd);
 void __cdecl RemoveFromActiveList(SndInstance *snd);
 undefined4 __cdecl AcquireFreeDsBuffer(SndInstance *snd, LPDIRECTSOUNDBUFFER *outBuffer);
+int __cdecl PlaySndInstance(SndInstance *snd, Sound *sound);
+undefined4 __cdecl StopSndNow(int slot);
+int __cdecl ResetAndPrimeSndInstance(SndInstance *snd);
 undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs);
 void __cdecl StopUpdateTimer(void);
 void CALLBACK UpdateTimerProc(UINT u1, UINT u2, DWORD dw1, DWORD dw2, DWORD dw3);
@@ -122,9 +125,10 @@ undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefi
 void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample);
 int __cdecl MmioTellFromInfo(MMIOINFO *info);
 undefined4 __cdecl LoadWaveFromFileHandle(FILE *file, SndInstance **outSnd);
-undefined4 __cdecl FindRiffChunk(FILE *file, int riffType, long chunkOffset, uint chunkSize);
+undefined4 __cdecl FindRiffChunk(FILE *file, int chunkId, long searchStart, uint searchEnd);
 SndInstance *__cdecl CreateSndInstance(IDirectSound *dSound, DWORD dwBufferBytes, WAVEFORMATEX *wfxFormat, DWORD dwFlags);
 undefined4 __cdecl DestroySndInstance(SndInstance *snd);
+undefined4 __cdecl CleanupAviStream(SndInstance *snd);
 void *__cdecl operator_new(unsigned int size);
 void __cdecl operator_delete(void *p);
 
@@ -204,7 +208,7 @@ undefined4 g_sndRefCount = 0x00000000;
 uint g_lastSndTime = 0x00000000;
 
 // GLOBAL: MAGSND 0x1000706C
-undefined4 DAT_1000706c = 0x00000000;
+undefined4 g_updateSndDisabled = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007074
 uint g_sndTimeSampleIndex = 0x00000000;
@@ -228,22 +232,22 @@ undefined4 g_updateTimerId = 0x00000000;
 TIMECAPS g_timeCaps = {0};
 
 // FUNCTION: MAGSND 0x10001000
-undefined4 __cdecl InitSnd(HWND param_1, undefined4 param_2, uint param_3)
+undefined4 __cdecl InitSnd(HWND hwnd, undefined4 unused, uint flags)
 {
   struct
   {
-    HRESULT local_8;
+    HRESULT hr;
     DWORD format;
   } s;
 
-  if (param_3 & (byte)0x2)
+  if (flags & (byte)0x2)
   {
     if (g_sndRefCount == 0)
     {
       return 4;
     }
   }
-  if (param_3 & 2)
+  if (flags & 2)
   {
     if (g_sndRefCount != 0)
     {
@@ -252,36 +256,36 @@ undefined4 __cdecl InitSnd(HWND param_1, undefined4 param_2, uint param_3)
   }
   if (g_sndRefCount == 0)
   {
-    if (param_1 != 0)
+    if (hwnd != 0)
     {
-      s.local_8 = DirectSoundCreate(0, &g_directSound, 0);
-      if (s.local_8 != 0)
+      s.hr = DirectSoundCreate(0, &g_directSound, 0);
+      if (s.hr != 0)
       {
         return 4;
       }
-      s.local_8 = g_directSound->lpVtbl->SetCooperativeLevel(g_directSound, param_1, 3);
-      if (s.local_8 != 0)
-      {
-        ReleaseSnd();
-        return 4;
-      }
-      s.local_8 = g_directSound->lpVtbl->CreateSoundBuffer(g_directSound, &g_primaryDsDesc, &g_primaryDsBuffer, 0);
-      if (s.local_8 != 0)
+      s.hr = g_directSound->lpVtbl->SetCooperativeLevel(g_directSound, hwnd, 3);
+      if (s.hr != 0)
       {
         ReleaseSnd();
         return 4;
       }
-      s.local_8 = g_primaryDsBuffer->lpVtbl->SetFormat(g_primaryDsBuffer, &g_primaryWaveFormat);
-      if (s.local_8 != 0)
+      s.hr = g_directSound->lpVtbl->CreateSoundBuffer(g_directSound, &g_primaryDsDesc, &g_primaryDsBuffer, 0);
+      if (s.hr != 0)
+      {
+        ReleaseSnd();
+        return 4;
+      }
+      s.hr = g_primaryDsBuffer->lpVtbl->SetFormat(g_primaryDsBuffer, &g_primaryWaveFormat);
+      if (s.hr != 0)
       {
         g_primaryDsBuffer->lpVtbl->GetFormat(g_primaryDsBuffer, &g_primaryWaveFormat, 0x12, &s.format);
       }
-      g_sndHwnd = param_1;
+      g_sndHwnd = hwnd;
       g_sndRefCount = g_sndRefCount + 1;
       InitializeCriticalSection(&g_sndCs);
     }
   }
-  if ((param_3 & 1) != 0)
+  if ((flags & 1) != 0)
   {
     if (g_updateTimerActive != 0)
     {
@@ -415,7 +419,7 @@ undefined4 __cdecl UnloadSnd(int slot)
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  FUN_100026d1(slot);
+  StopSndNow(slot);
   RemoveFromActiveList(g_sndSlots[slot]);
   if (((g_sndSlots[slot]->flags2 >> 1) & 1) != 0)
   {
@@ -464,7 +468,7 @@ undefined4 __cdecl PlaySnd(int slot, Sound *sound)
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  unused = FUN_10001701(g_sndSlots[slot], sound);
+  unused = PlaySndInstance(g_sndSlots[slot], sound);
   g_sndSlots[slot]->lruCounter++;
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -473,7 +477,7 @@ undefined4 __cdecl PlaySnd(int slot, Sound *sound)
 #define ONE 1
 
 // FUNCTION: MAGSND 0x10001701
-int __cdecl FUN_10001701(SndInstance *snd, Sound *sound)
+int __cdecl PlaySndInstance(SndInstance *snd, Sound *sound)
 
 {
   struct
@@ -494,7 +498,7 @@ int __cdecl FUN_10001701(SndInstance *snd, Sound *sound)
   {
     if ((snd->flags & 1) != 0)
     {
-      FUN_100026d1(snd->slotIndex);
+      StopSndNow(snd->slotIndex);
     }
     if ((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0))
     {
@@ -513,7 +517,7 @@ int __cdecl FUN_10001701(SndInstance *snd, Sound *sound)
     s.dsBuffer = snd->dsBuffer;
     if (((snd->flags >> 5) & 1) == 0)
     {
-      s.result = FUN_10003656(snd);
+      s.result = ResetAndPrimeSndInstance(snd);
       if (s.result != 0)
       {
         UnloadSnd(snd->slotIndex);
@@ -611,15 +615,15 @@ int __cdecl PlaySndFile(LPSTR filename, int slot, Sound *sound)
 {
   struct
   {
-    undefined1 local_1c[4];
+    DWORD writeCursorBytes;
     int volume;
     int pan;
     int nSamplesPerSec;
-    int local_c;
-    undefined4 local_8;
+    int result;
+    undefined4 scratch;
   } s;
 
-  s.local_8 = 0;
+  s.scratch = 0;
   s.volume = 0;
   s.nSamplesPerSec = 0;
   if ((0xff < slot) || (slot < 0))
@@ -632,22 +636,22 @@ int __cdecl PlaySndFile(LPSTR filename, int slot, Sound *sound)
     LeaveCriticalSection(&g_sndCs);
     return 2;
   }
-  s.local_c = LoadWaveMmio(filename, (&g_sndSlots[slot]), s.local_8);
-  if (s.local_c != 0)
+  s.result = LoadWaveMmio(filename, (&g_sndSlots[slot]), s.scratch);
+  if (s.result != 0)
   {
     LeaveCriticalSection(&g_sndCs);
-    return s.local_c;
+    return s.result;
   }
   AddToActiveList(g_sndSlots[slot]);
   AddToUpdateList(g_sndSlots[slot]);
   if ((g_updateTimerEnabled == 1) && (g_updateTimerActive == 0))
   {
-    s.local_c = StartUpdateTimer(g_updateResolutionMs);
-    if (s.local_c != 0)
+    s.result = StartUpdateTimer(g_updateResolutionMs);
+    if (s.result != 0)
     {
       UnloadSnd(slot);
       LeaveCriticalSection(&g_sndCs);
-      return s.local_c;
+      return s.result;
     }
   }
   g_sndSlots[slot]->slotIndex = slot;
@@ -712,7 +716,7 @@ int __cdecl PlaySndFile(LPSTR filename, int slot, Sound *sound)
   PrimeDsBufferFromSource(g_sndSlots[slot], 0);
 
   g_sndSlots[slot]->dsBuffer->lpVtbl->Play(g_sndSlots[slot]->dsBuffer, 0, 0, 1);
-  g_sndSlots[slot]->dsBuffer->lpVtbl->GetCurrentPosition(g_sndSlots[slot]->dsBuffer, (int)&g_sndSlots[slot]->ringCursorBytes, s.local_1c);
+  g_sndSlots[slot]->dsBuffer->lpVtbl->GetCurrentPosition(g_sndSlots[slot]->dsBuffer, (int)&g_sndSlots[slot]->ringCursorBytes, &s.writeCursorBytes);
   g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 1;
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -920,7 +924,7 @@ int __cdecl PlaySndMarker(int slot, uint markerIndex)
 
   if ((s.snd->flags & 1) != 0)
   {
-    FUN_100026d1(slot);
+    StopSndNow(slot);
   }
 
   s.marker->volume = g_sndSlots[slot]->volume;
@@ -931,7 +935,7 @@ int __cdecl PlaySndMarker(int slot, uint markerIndex)
   s.sound.pan = s.marker->pan;
   s.sound.flags = (s.marker->flags2 & 1) | (s.sound.flags & 0xfffffffe);
 
-  s.result = FUN_10001701(s.marker, &s.sound);
+  s.result = PlaySndInstance(s.marker, &s.sound);
   if (s.result == 0)
   {
     g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 0x40;
@@ -1032,7 +1036,7 @@ void StopAllSnds(void)
 }
 
 // FUNCTION: MAGSND 0x100026D1
-undefined4 __cdecl FUN_100026d1(int slot)
+undefined4 __cdecl StopSndNow(int slot)
 {
   struct
   {
@@ -1293,7 +1297,7 @@ undefined4 UpdateSnd(void)
     SndInstance *next;
   } s;
 
-  if (DAT_1000706c != 0)
+  if (g_updateSndDisabled != 0)
   {
     return 0xd;
   }
@@ -1345,65 +1349,65 @@ undefined4 UpdateSnd(void)
 
 #pragma pack(push, 4)
 // FUNCTION: MAGSND 0x10002EB5
-undefined4 __cdecl GetSndTime(int param_1, uint *outSndTime)
+undefined4 __cdecl GetSndTime(int slot, uint *outSndTime)
 {
   struct
   {
-    unsigned long local_1c;
-    SndInstance *local_18;
-    uint local_14;
-    double local_10;
-    uint local_8;
-    unsigned long local_4;
+    unsigned long playCursorBytes;
+    SndInstance *snd;
+    uint prevCursorBytes;
+    double timeBytes;
+    uint blockIndex;
+    unsigned long writeCursorBytes;
   } s;
 
-  if (0x10f < param_1 || param_1 < 0)
+  if (0x10f < slot || slot < 0)
   {
     return 5;
   }
   EnterCriticalSection(&g_sndCs);
-  if (g_sndSlots[param_1] == (SndInstance *)0x0)
+  if (g_sndSlots[slot] == (SndInstance *)0x0)
   {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  s.local_18 = g_sndSlots[param_1];
-  s.local_18->dsBuffer->lpVtbl->GetCurrentPosition(s.local_18->dsBuffer, &s.local_1c, &s.local_4);
-  s.local_14 = s.local_18->timeBytes % s.local_18->dsDesc.dwBufferBytes;
-  if (s.local_14 < s.local_1c)
+  s.snd = g_sndSlots[slot];
+  s.snd->dsBuffer->lpVtbl->GetCurrentPosition(s.snd->dsBuffer, &s.playCursorBytes, &s.writeCursorBytes);
+  s.prevCursorBytes = s.snd->timeBytes % s.snd->dsDesc.dwBufferBytes;
+  if (s.prevCursorBytes < s.playCursorBytes)
   {
-    s.local_18->timeBytes += (s.local_1c - s.local_14);
+    s.snd->timeBytes += (s.playCursorBytes - s.prevCursorBytes);
   }
   else
   {
-    s.local_18->timeBytes += (s.local_18->dsDesc.dwBufferBytes - s.local_14);
-    s.local_18->timeBytes += s.local_1c;
+    s.snd->timeBytes += (s.snd->dsDesc.dwBufferBytes - s.prevCursorBytes);
+    s.snd->timeBytes += s.playCursorBytes;
   }
-  if (((s.local_18->flags2 >> 5) & 1) != 0)
+  if (((s.snd->flags2 >> 5) & 1) != 0)
   {
-    s.local_8 = s.local_18->timeBytes / s.local_18->blockBytes;
-    while (s.local_18->timeEventCount < s.local_8)
+    s.blockIndex = s.snd->timeBytes / s.snd->blockBytes;
+    while (s.snd->timeEventCount < s.blockIndex)
     {
-      PostMessageA(g_sndHwnd, 0x3bd, 0, s.local_8);
-      s.local_18->timeEventCount++;
+      PostMessageA(g_sndHwnd, 0x3bd, 0, s.blockIndex);
+      s.snd->timeEventCount++;
     }
   }
-  s.local_10 = (double)s.local_18->timeBytes;
-  if (s.local_18->waveFmt.nAvgBytesPerSec == 0x15888)
+  s.timeBytes = (double)s.snd->timeBytes;
+  if (s.snd->waveFmt.nAvgBytesPerSec == 0x15888)
   {
-    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_88200);
+    *outSndTime = (uint)(long)(s.timeBytes / g_sndTimeDiv_88200);
   }
-  else if (s.local_18->waveFmt.nAvgBytesPerSec == 0xac44)
+  else if (s.snd->waveFmt.nAvgBytesPerSec == 0xac44)
   {
-    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_44100);
+    *outSndTime = (uint)(long)(s.timeBytes / g_sndTimeDiv_44100);
   }
-  else if (s.local_18->waveFmt.nAvgBytesPerSec == 0x5622)
+  else if (s.snd->waveFmt.nAvgBytesPerSec == 0x5622)
   {
-    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_22050);
+    *outSndTime = (uint)(long)(s.timeBytes / g_sndTimeDiv_22050);
   }
-  else if (s.local_18->waveFmt.nAvgBytesPerSec == 0x2b11)
+  else if (s.snd->waveFmt.nAvgBytesPerSec == 0x2b11)
   {
-    *outSndTime = (uint)(long)(s.local_10 / g_sndTimeDiv_11025);
+    *outSndTime = (uint)(long)(s.timeBytes / g_sndTimeDiv_11025);
   }
   else
   {
@@ -1427,23 +1431,23 @@ undefined4 __cdecl GetSndTime(int param_1, uint *outSndTime)
 #pragma pack(pop)
 
 // FUNCTION: MAGSND 0x1000314D
-undefined4 __cdecl GetSndState(int param_1, undefined4 *outSndState)
+undefined4 __cdecl GetSndState(int slot, undefined4 *outSndState)
 {
-  if ((0x10f < param_1) || (param_1 < 0))
+  if ((0x10f < slot) || (slot < 0))
   {
     return 5;
   }
   EnterCriticalSection(&g_sndCs);
-  if (g_sndSlots[param_1] == (SndInstance *)0x0)
+  if (g_sndSlots[slot] == (SndInstance *)0x0)
   {
     LeaveCriticalSection(&g_sndCs);
     return 1;
   }
-  if ((g_sndSlots[param_1]->flags & 1) != 0)
+  if ((g_sndSlots[slot]->flags & 1) != 0)
   {
     *outSndState = 1;
   }
-  else if (((g_sndSlots[param_1]->flags >> 3) & 1) != 0)
+  else if (((g_sndSlots[slot]->flags >> 3) & 1) != 0)
   {
     *outSndState = 2;
   }
@@ -1491,53 +1495,53 @@ int __cdecl IsSndLoaded(int loadId, int *outSlot)
 }
 
 // FUNCTION: MAGSND 0x100032AD
-undefined4 __cdecl GetLRUSnd(int *param_1, int param_2, int param_3)
+undefined4 __cdecl GetLRUSnd(int *outSlot, int startSlot, int endSlot)
 {
   struct
   {
-    int local_10;
+    int selectedSlot;
     int slot;
-    uint local_8;
-    int local_4;
+    uint lowestLruCounter;
+    int foundEmptySlot;
   } s;
 
-  s.local_4 = 0;
-  s.local_8 = -1;
-  if (param_3 != 0 && param_3 > param_2 && param_3 < 0x100)
+  s.foundEmptySlot = 0;
+  s.lowestLruCounter = -1;
+  if (endSlot != 0 && endSlot > startSlot && endSlot < 0x100)
   {
-    s.slot = param_2;
+    s.slot = startSlot;
   }
   else
   {
     s.slot = 0;
-    param_3 = 0xff;
+    endSlot = 0xff;
   }
 
   EnterCriticalSection(&g_sndCs);
-  for (; s.slot < param_3; s.slot = s.slot + 1)
+  for (; s.slot < endSlot; s.slot = s.slot + 1)
   {
     if (g_sndSlots[s.slot] != 0)
     {
-      if (g_sndSlots[s.slot]->lruCounter < s.local_8)
+      if (g_sndSlots[s.slot]->lruCounter < s.lowestLruCounter)
       {
-        s.local_8 = g_sndSlots[s.slot]->lruCounter;
-        s.local_10 = g_sndSlots[s.slot]->slotIndex;
+        s.lowestLruCounter = g_sndSlots[s.slot]->lruCounter;
+        s.selectedSlot = g_sndSlots[s.slot]->slotIndex;
       }
     }
     else
     {
-      s.local_10 = s.slot;
-      s.local_4 = 1;
+      s.selectedSlot = s.slot;
+      s.foundEmptySlot = 1;
       break;
     }
   }
-  *param_1 = s.local_10;
+  *outSlot = s.selectedSlot;
   LeaveCriticalSection(&g_sndCs);
-  return s.local_4;
+  return s.foundEmptySlot;
 }
 
 // FUNCTION: MAGSND 0x100033A2
-void *__cdecl GetAVISndBuff(int slot, uint param_2)
+void *__cdecl GetAVISndBuff(int slot, uint blockNumber)
 {
   struct
   {
@@ -1575,7 +1579,7 @@ void *__cdecl GetAVISndBuff(int slot, uint param_2)
     return 0;
   }
 
-  s.blockIndex = param_2 % s.snd->blockCount;
+  s.blockIndex = blockNumber % s.snd->blockCount;
   s.offset = s.snd->blockBytes * s.blockIndex;
   s.hr = s.snd->dsBuffer->lpVtbl->Lock(
       s.snd->dsBuffer, s.offset, s.snd->blockBytes,
@@ -1645,7 +1649,7 @@ undefined4 __cdecl ReleaseAVISndBuff(int slot)
 }
 
 // FUNCTION: MAGSND 0x10003656
-int __cdecl FUN_10003656(SndInstance *snd)
+int __cdecl ResetAndPrimeSndInstance(SndInstance *snd)
 {
   struct
   {
@@ -2440,27 +2444,27 @@ undefined4 __cdecl LoadWaveFromFileHandle(FILE *file, SndInstance **outSnd)
 }
 
 // FUNCTION: MAGSND 0x10004C8A
-undefined4 __cdecl SeekMmioToSample(SndInstance *sndObj, int param_2)
+undefined4 __cdecl SeekMmioToSample(SndInstance *sndObj, int sampleIndex)
 {
   struct
   {
-    int iVar1;
-    int iVar3;
-    int iVar2;
+    int seekDelta;
+    int currentOffset;
+    int targetOffset;
   } s;
 
   mmioGetInfo(sndObj->hMmio, (LPMMIOINFO)&sndObj->mmioInfo, 0);
-  s.iVar2 = sndObj->waveFmt.nBlockAlign * param_2 + sndObj->mmioBaseOffset;
-  s.iVar3 = MmioTellFromInfo(&sndObj->mmioInfo);
-  s.iVar1 = s.iVar2 - s.iVar3;
-  mmioSeek(sndObj->hMmio, s.iVar1, 1);
+  s.targetOffset = sndObj->waveFmt.nBlockAlign * sampleIndex + sndObj->mmioBaseOffset;
+  s.currentOffset = MmioTellFromInfo(&sndObj->mmioInfo);
+  s.seekDelta = s.targetOffset - s.currentOffset;
+  mmioSeek(sndObj->hMmio, s.seekDelta, 1);
   mmioGetInfo(sndObj->hMmio, (LPMMIOINFO)&sndObj->mmioInfo, 0);
   mmioAdvance(sndObj->hMmio, (LPMMIOINFO)&sndObj->mmioInfo, 0);
   return 0;
 }
 
 // FUNCTION: MAGSND 0x10004D3F
-undefined4 __cdecl FindRiffChunk(FILE *param_1, int param_2, long param_3, uint param_4)
+undefined4 __cdecl FindRiffChunk(FILE *file, int chunkId, long searchStart, uint searchEnd)
 {
   struct
   {
@@ -2469,36 +2473,36 @@ undefined4 __cdecl FindRiffChunk(FILE *param_1, int param_2, long param_3, uint 
     int hdr[3];
   } s;
 
-  fseek(param_1, param_3, 0);
-  fread(s.hdr, 1, 0xc, param_1);
-  if (s.hdr[0] == param_2)
+  fseek(file, searchStart, 0);
+  fread(s.hdr, 1, 0xc, file);
+  if (s.hdr[0] == chunkId)
   {
-    fseek(param_1, param_3, 0);
+    fseek(file, searchStart, 0);
     return 1;
   }
   while (1)
   {
-    s.pos = ftell(param_1);
-    fread(s.chunk, 1, 8, param_1);
-    if (param_4 <= (uint)s.pos)
+    s.pos = ftell(file);
+    fread(s.chunk, 1, 8, file);
+    if (searchEnd <= (uint)s.pos)
     {
-      fseek(param_1, param_3, 0);
+      fseek(file, searchStart, 0);
       return 0;
     }
-    if (s.chunk[0] == param_2)
+    if (s.chunk[0] == chunkId)
     {
       break;
     }
 
-    s.pos = ftell(param_1);
+    s.pos = ftell(file);
     if ((s.chunk[1] & 1) != 0)
     {
       s.chunk[1] = s.chunk[1] + 1;
     }
-    fseek(param_1, s.chunk[1], 1);
+    fseek(file, s.chunk[1], 1);
   }
 
-  fseek(param_1, s.pos, 0);
+  fseek(file, s.pos, 0);
   return 1;
 }
 
@@ -2557,7 +2561,7 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd, int startSample)
   {
     if (((snd->flags2 >> 5) & 1) != 0)
     {
-      FUN_1000575e((undefined4 *)snd);
+      CleanupAviStream((undefined4 *)snd);
     }
     else
     {
@@ -2652,55 +2656,55 @@ undefined4 __cdecl PrimeAviAudio(SndInstance *snd, int unused)
 {
   struct
   {
-    int buff;
-    uint local_2c;
-    undefined1 local_28[4];
-    uint local_24;
-    int local_20;
-    undefined1 local_1c[4];
-    int local_18;
-    int local_14;
-    int local_10;
-    int local_c;
-    uint local_8;
-    int local_4;
+    int lockPtr1;
+    uint blockIndex;
+    LONG aviBytesRead;
+    uint samplesPerBlock;
+    int lockBytesTotal;
+    LONG aviSamplesRead;
+    int writePtr;
+    int lockPtr2;
+    int lockBytes2;
+    int streamSample;
+    uint lockBytes1;
+    int hr;
   } s;
 
-  s.local_20 = snd->blockCount * snd->blockBytes;
-  s.local_4 = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, 0, s.local_20, &s.buff, &s.local_8, &s.local_14, &s.local_10, 0);
-  if (s.local_4 != 0)
+  s.lockBytesTotal = snd->blockCount * snd->blockBytes;
+  s.hr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, 0, s.lockBytesTotal, &s.lockPtr1, &s.lockBytes1, &s.lockPtr2, &s.lockBytes2, 0);
+  if (s.hr != 0)
   {
-    FUN_1000575e(snd);
+    CleanupAviStream(snd);
     DestroySndInstance(snd);
     return 9;
   }
-  if (s.local_14 != 0)
+  if (s.lockPtr2 != 0)
   {
-    snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer, s.buff, s.local_8, s.local_14, s.local_10);
-    FUN_1000575e(snd);
+    snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer, s.lockPtr1, s.lockBytes1, s.lockPtr2, s.lockBytes2);
+    CleanupAviStream(snd);
     DestroySndInstance(snd);
     return 9;
   }
   snd->ringCursorBytes = 0;
   snd->writeCursorBytes = 0;
   snd->readCursorBytes = 0;
-  s.local_18 = s.buff;
-  s.local_c = 0;
-  s.local_24 = snd->blockBytes / snd->blockScale;
-  // s.local_4 = 0;
-  for (s.local_2c = 0; s.local_2c < snd->blockCount; s.local_2c = s.local_2c + 1)
+  s.writePtr = s.lockPtr1;
+  s.streamSample = 0;
+  s.samplesPerBlock = snd->blockBytes / snd->blockScale;
+  // s.hr = 0;
+  for (s.blockIndex = 0; s.blockIndex < snd->blockCount; s.blockIndex = s.blockIndex + 1)
   {
-    AVIStreamRead((PAVISTREAM *)snd->streamOrMmio, s.local_c, s.local_24, (void *)s.local_18, snd->blockBytes, s.local_28,
-                  s.local_1c);
+    AVIStreamRead((PAVISTREAM *)snd->streamOrMmio, s.streamSample, s.samplesPerBlock, (void *)s.writePtr, snd->blockBytes, &s.aviBytesRead,
+                  &s.aviSamplesRead);
     snd->ringCursorBytes = snd->ringCursorBytes + snd->blockBytes;
     snd->ringCursorBytes = snd->ringCursorBytes % snd->dsDesc.dwBufferBytes;
     snd->writeCursorBytes = snd->writeCursorBytes + snd->blockBytes;
     snd->readCursorBytes = snd->readCursorBytes + snd->blockBytes;
-    s.local_18 += (int)snd->blockBytes;
-    s.local_c = s.local_c + s.local_24;
+    s.writePtr += (int)snd->blockBytes;
+    s.streamSample = s.streamSample + s.samplesPerBlock;
   }
-  s.local_4 = snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer, s.buff, s.local_8, s.local_14, s.local_10);
-  if (s.local_4 != 0)
+  s.hr = snd->dsBuffer->lpVtbl->Unlock(snd->dsBuffer, s.lockPtr1, s.lockBytes1, s.lockPtr2, s.lockBytes2);
+  if (s.hr != 0)
   {
     CloseMmioAndFreeSource((SndInstance *)snd);
     DestroySndInstance((SndInstance *)snd);
@@ -2714,9 +2718,9 @@ SndInstance *__cdecl CreateSndInstance(IDirectSound *dSound, DWORD dwBufferBytes
 {
   struct
   {
-    void *local_10;
-    void *local_c;
-    int local_8;
+    void *deletePtr2;
+    void *deletePtr1;
+    int hr;
     SndInstance *result;
   } s;
 
@@ -2728,12 +2732,12 @@ SndInstance *__cdecl CreateSndInstance(IDirectSound *dSound, DWORD dwBufferBytes
   s.result->dsDesc.lpwfxFormat = wfxFormat;
   memcpy(&s.result->waveFmt, wfxFormat, sizeof(WAVEFORMATEX));
 
-  s.local_8 = dSound->lpVtbl->CreateSoundBuffer(dSound, &s.result->dsDesc, &s.result->dsBuffer, 0);
-  if (s.local_8 != 0)
+  s.hr = dSound->lpVtbl->CreateSoundBuffer(dSound, &s.result->dsDesc, &s.result->dsBuffer, 0);
+  if (s.hr != 0)
   {
-    s.local_c = s.result;
-    s.local_10 = s.local_c;
-    operator_delete(s.local_10);
+    s.deletePtr1 = s.result;
+    s.deletePtr2 = s.deletePtr1;
+    operator_delete(s.deletePtr2);
     return (SndInstance *)0x0;
   }
   else
@@ -2759,40 +2763,40 @@ undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefi
 {
   struct
   {
-    WAVEFORMATEX local_fc;
+    WAVEFORMATEX waveFmt;
     byte pad_e6[2];
-    MMIOINFO local_e8;
-    LONG local_9c;
-    int local_98;
-    int local_94;
-    int local_90;
-    AVISTREAMINFOA local_8c;
+    MMIOINFO mmioInfo;
+    LONG firstReadBytes;
+    int bufferBytes;
+    int dataBytes;
+    int formatSize;
+    AVISTREAMINFOA streamInfo;
   } s;
 
-  s.local_90 = 0x12;
-  AVIStreamInfoA((PAVISTREAM)stream, &s.local_8c, 0x8c);
-  if (s.local_8c.fccType != 0x73647561)
+  s.formatSize = 0x12;
+  AVIStreamInfoA((PAVISTREAM)stream, &s.streamInfo, 0x8c);
+  if (s.streamInfo.fccType != 0x73647561)
   {
     return 8;
   }
-  AVIStreamRead((PAVISTREAM)stream, 0, 1, 0, 0, &s.local_9c, 0);
-  s.local_94 = (int)s.local_8c.dwSampleSize * (int)s.local_8c.dwLength;
-  AVIStreamReadFormat((PAVISTREAM)stream, 0, &s.local_fc, (LONG *)&s.local_90);
-  s.local_fc.cbSize = 0;
+  AVIStreamRead((PAVISTREAM)stream, 0, 1, 0, 0, &s.firstReadBytes, 0);
+  s.dataBytes = (int)s.streamInfo.dwSampleSize * (int)s.streamInfo.dwLength;
+  AVIStreamReadFormat((PAVISTREAM)stream, 0, &s.waveFmt, (LONG *)&s.formatSize);
+  s.waveFmt.cbSize = 0;
   scratch = 0xe8;
-  s.local_98 = (int)s.local_8c.dwSuggestedBufferSize * 0xb;
-  *outSnd = CreateSndInstance(g_directSound, s.local_98, &s.local_fc, scratch);
+  s.bufferBytes = (int)s.streamInfo.dwSuggestedBufferSize * 0xb;
+  *outSnd = CreateSndInstance(g_directSound, s.bufferBytes, &s.waveFmt, scratch);
   if (*outSnd != (SndInstance *)0x0)
   {
     (*outSnd)->mmioBaseOffset = 0;
     (*outSnd)->hMmio = (HMMIO)0;
-    (*outSnd)->mmioInfo = s.local_e8;
-    (*outSnd)->dataBytes = s.local_94;
+    (*outSnd)->mmioInfo = s.mmioInfo;
+    (*outSnd)->dataBytes = s.dataBytes;
     (*outSnd)->streamOrMmio = stream;
     (*outSnd)->flags2 = (int)(*outSnd)->flags2 | 0x20;
     (*outSnd)->flags2 = (int)(*outSnd)->flags2 | 2;
-    (*outSnd)->blockBytes = s.local_8c.dwSuggestedBufferSize;
-    (*outSnd)->blockScale = s.local_8c.dwSampleSize;
+    (*outSnd)->blockBytes = s.streamInfo.dwSuggestedBufferSize;
+    (*outSnd)->blockScale = s.streamInfo.dwSampleSize;
     (*outSnd)->blockCount = 0xb;
     (*outSnd)->timeBytes = 0;
   }
@@ -2806,38 +2810,38 @@ void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample)
 {
   struct
   {
-    int local_1c;
-    int local_18;
-    int local_14;
-    int local_10;
-    int local_c;
-    long local_8;
-    size_t local_4;
+    int unused_1c;
+    int bytesToRead;
+    int unused_14;
+    int bytesRemainingInData;
+    int unused_c;
+    long aviBytesRead;
+    size_t bufferedBytes;
   } s;
 
-  s.local_8 = 0;
-  s.local_c = 0;
-  s.local_14 = 0;
-  s.local_1c = 0;
-  s.local_4 = sndObj->writeCursorBytes - sndObj->readCursorBytes;
-  if ((sndObj->mmioInfo.pchEndRead - sndObj->mmioInfo.pchNext) != s.local_4)
+  s.aviBytesRead = 0;
+  s.unused_c = 0;
+  s.unused_14 = 0;
+  s.unused_1c = 0;
+  s.bufferedBytes = sndObj->writeCursorBytes - sndObj->readCursorBytes;
+  if ((sndObj->mmioInfo.pchEndRead - sndObj->mmioInfo.pchNext) != s.bufferedBytes)
   {
     g_mmioInfoMismatchCount = g_mmioInfoMismatchCount + 1;
   }
-  s.local_10 = sndObj->dataBytes - sndObj->writeCursorBytes;
-  s.local_18 = sndObj->mmioInfo.cchBuffer - s.local_4;
-  if (s.local_18 > s.local_10)
+  s.bytesRemainingInData = sndObj->dataBytes - sndObj->writeCursorBytes;
+  s.bytesToRead = sndObj->mmioInfo.cchBuffer - s.bufferedBytes;
+  if (s.bytesToRead > s.bytesRemainingInData)
   {
-    s.local_18 = s.local_10;
+    s.bytesToRead = s.bytesRemainingInData;
   }
-  if (s.local_4 != 0)
+  if (s.bufferedBytes != 0)
   {
-    memmove((void *)sndObj->mmioInfo.pchBuffer, (void *)sndObj->mmioInfo.pchNext, s.local_4);
+    memmove((void *)sndObj->mmioInfo.pchBuffer, (void *)sndObj->mmioInfo.pchNext, s.bufferedBytes);
   }
-  sndObj->mmioInfo.pchNext = &sndObj->mmioInfo.pchBuffer[s.local_4];
+  sndObj->mmioInfo.pchNext = &sndObj->mmioInfo.pchBuffer[s.bufferedBytes];
   AVIStreamRead((PAVISTREAM)sndObj->streamOrMmio, streamStartSample,
-                s.local_18 / (int)(uint)sndObj->waveFmt.nBlockAlign, sndObj->mmioInfo.pchNext, s.local_18,
-                &s.local_8, 0);
+                s.bytesToRead / (int)(uint)sndObj->waveFmt.nBlockAlign, sndObj->mmioInfo.pchNext, s.bytesToRead,
+                &s.aviBytesRead, 0);
   sndObj->mmioInfo.pchEndRead = sndObj->mmioInfo.pchBuffer + sndObj->mmioInfo.cchBuffer;
   sndObj->mmioInfo.pchNext = sndObj->mmioInfo.pchBuffer;
   mmioSetInfo(sndObj->hMmio, &sndObj->mmioInfo, 0);
@@ -2848,7 +2852,7 @@ void __cdecl RefillAviMmioBuffer(SndInstance *sndObj, long streamStartSample)
 int __cdecl MmioTellFromInfo(MMIOINFO *info) { return (int)info->lDiskOffset - ((int)info->pchEndRead - (int)info->pchNext); }
 
 // FUNCTION: MAGSND 0x1000575E
-undefined4 __cdecl FUN_1000575e(SndInstance *snd)
+undefined4 __cdecl CleanupAviStream(SndInstance *snd)
 {
   (void)snd;
   return 0;

@@ -5,16 +5,16 @@
 #include "mystdbool.h"
 
 // GLOBAL: CDTOOLS 0x100123cc
-HINSTANCE DAT_100123cc;
+HINSTANCE g_cdtoolsInstance;
 
 // GLOBAL: CDTOOLS 0x100123d0
 undefined4 g_originalNoDriveTypeAutoRun;
 
 // GLOBAL: CDTOOLS 0x100123d4
-undefined4 DAT_100123d4;
+undefined4 g_queryCancelAutoplayMsg;
 
 // FUNCTION: CDTOOLS 0x10001000
-undefined4 __cdecl CheckOriginalCD(undefined4 param_1, int *param_2, undefined4 param_3)
+undefined4 __cdecl CheckOriginalCD(undefined4 unused, int *maxTries, undefined4 drivePath)
 {
   struct
   {
@@ -31,12 +31,12 @@ undefined4 __cdecl CheckOriginalCD(undefined4 param_1, int *param_2, undefined4 
     CHAR rootPath[0x108];         /* EBP - 0x108 */
   } s;
 
-  for (s.found = 0, s.tries = 0; *param_2 > s.tries && s.found == 0; s.tries++)
+  for (s.found = 0, s.tries = 0; *maxTries > s.tries && s.found == 0; s.tries++)
   {
-    s.result = IsCDDrive(param_3);
+    s.result = IsCDDrive(drivePath);
     if (s.result != 0)
     {
-      sprintf(s.rootPath, "%s\\", param_3);
+      sprintf(s.rootPath, "%s\\", drivePath);
       s.result = GetVolumeInformationA(s.rootPath, s.volumeName, 0x104, &s.volumeSerial,
                                        &s.maximumComponentLength, &s.fileSystemFlags,
                                        s.fileSystemName, 0x104);
@@ -61,7 +61,7 @@ undefined4 __cdecl CheckOriginalCD(undefined4 param_1, int *param_2, undefined4 
     return 0;
   }
 
-  sprintf(s.rootPath, "%s\\%s", param_3, "DuelSounds\\Manaball.wav");
+  sprintf(s.rootPath, "%s\\%s", drivePath, "DuelSounds\\Manaball.wav");
   s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
   if (s.hFile != (HANDLE)-1)
   {
@@ -69,7 +69,7 @@ undefined4 __cdecl CheckOriginalCD(undefined4 param_1, int *param_2, undefined4 
     return 0;
   }
 
-  sprintf(s.rootPath, "%s\\%s", param_3, "Sound\\Locmus15.wav");
+  sprintf(s.rootPath, "%s\\%s", drivePath, "Sound\\Locmus15.wav");
   s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
   if (s.hFile == (HANDLE)-1)
   {
@@ -88,7 +88,7 @@ undefined4 __cdecl CheckOriginalCD(undefined4 param_1, int *param_2, undefined4 
 }
 
 // FUNCTION: CDTOOLS 0x10001234
-undefined4 __cdecl CheckDoPCD(undefined4 param_1, int *param_2, undefined4 param_3)
+undefined4 __cdecl CheckDoPCD(undefined4 unused, int *maxTries, undefined4 drivePath)
 {
   struct
   {
@@ -105,12 +105,12 @@ undefined4 __cdecl CheckDoPCD(undefined4 param_1, int *param_2, undefined4 param
     CHAR rootPath[0x108];         /* EBP - 0x108 */
   } s;
 
-  for (s.found = 0, s.tries = 0; *param_2 > s.tries && s.found == 0; s.tries++)
+  for (s.found = 0, s.tries = 0; *maxTries > s.tries && s.found == 0; s.tries++)
   {
-    s.result = IsCDDrive(param_3);
+    s.result = IsCDDrive(drivePath);
     if (s.result != 0)
     {
-      sprintf(s.rootPath, "%s\\", param_3);
+      sprintf(s.rootPath, "%s\\", drivePath);
       s.result = GetVolumeInformationA(s.rootPath, s.volumeName, 0x104, &s.volumeSerial,
                                        &s.maximumComponentLength, &s.fileSystemFlags,
                                        s.fileSystemName, 0x104);
@@ -135,7 +135,7 @@ undefined4 __cdecl CheckDoPCD(undefined4 param_1, int *param_2, undefined4 param
     return 0;
   }
 
-  sprintf(s.rootPath, "%s\\%s", param_3, "DuelSounds\\Deep.wav");
+  sprintf(s.rootPath, "%s\\%s", drivePath, "DuelSounds\\Deep.wav");
   s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
   if (s.hFile == (HANDLE)-1)
   {
@@ -144,7 +144,7 @@ undefined4 __cdecl CheckDoPCD(undefined4 param_1, int *param_2, undefined4 param
 
   CloseHandle(s.hFile);
 
-  sprintf(s.rootPath, "%s\\%s", param_3, "Sound\\Locmus15.wav");
+  sprintf(s.rootPath, "%s\\%s", drivePath, "Sound\\Locmus15.wav");
   s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
   if (s.hFile == (HANDLE)-1)
   {
@@ -163,7 +163,7 @@ undefined4 __cdecl CheckDoPCD(undefined4 param_1, int *param_2, undefined4 param
 }
 
 // FUNCTION: CDTOOLS 0x10001468
-undefined4 __cdecl CheckSotaCD(undefined4 param_1, int *param_2, undefined4 param_3)
+undefined4 __cdecl CheckSotaCD(undefined4 unused, int *maxTries, undefined4 drivePath)
 
 {
   struct
@@ -181,12 +181,12 @@ undefined4 __cdecl CheckSotaCD(undefined4 param_1, int *param_2, undefined4 para
     CHAR rootPath[0x108];         /* EBP - 0x108 */
   } s;
 
-  for (s.found = 0, s.tries = 0; *param_2 > s.tries && s.found == 0; s.tries++)
+  for (s.found = 0, s.tries = 0; *maxTries > s.tries && s.found == 0; s.tries++)
   {
-    s.result = IsCDDrive(param_3);
+    s.result = IsCDDrive(drivePath);
     if (s.result != 0)
     {
-      sprintf(s.rootPath, "%s\\", param_3);
+      sprintf(s.rootPath, "%s\\", drivePath);
       s.result = GetVolumeInformationA(s.rootPath, s.volumeName, 0x104, &s.volumeSerial,
                                        &s.maximumComponentLength, &s.fileSystemFlags,
                                        s.fileSystemName, 0x104);
@@ -211,7 +211,7 @@ undefined4 __cdecl CheckSotaCD(undefined4 param_1, int *param_2, undefined4 para
     return 0;
   }
 
-  sprintf(s.rootPath, "%s\\%s", param_3, "DuelSounds\\Manaball.wav");
+  sprintf(s.rootPath, "%s\\%s", drivePath, "DuelSounds\\Manaball.wav");
   s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
   if (s.hFile == (HANDLE)-1)
   {
@@ -219,7 +219,7 @@ undefined4 __cdecl CheckSotaCD(undefined4 param_1, int *param_2, undefined4 para
   }
 
   CloseHandle(s.hFile);
-  sprintf(s.rootPath, "%s\\%s", param_3, "Sound\\Locmus15.wav");
+  sprintf(s.rootPath, "%s\\%s", drivePath, "Sound\\Locmus15.wav");
   s.hFile = CreateFileA(s.rootPath, 0x80000000, 1, (LPSECURITY_ATTRIBUTES)0x0, 3, 0x80, (HANDLE)0x0);
   if (s.hFile == (HANDLE)-1)
   {
@@ -238,7 +238,7 @@ undefined4 __cdecl CheckSotaCD(undefined4 param_1, int *param_2, undefined4 para
 }
 
 // FUNCTION: CDTOOLS 0x1000169C
-bool __cdecl IsCDDrive(undefined4 param_1)
+bool __cdecl IsCDDrive(undefined4 drivePath)
 {
   struct
   {
@@ -251,7 +251,7 @@ bool __cdecl IsCDDrive(undefined4 param_1)
     char rootPathName[0x106];    /* EBP - 0x108*/
   } s;
 
-  sprintf(s.rootPathName, "%s\\", param_1);
+  sprintf(s.rootPathName, "%s\\", drivePath);
 
   // Rest of the code is unreachable?
   if (GetDriveTypeA(s.rootPathName) == 5)
@@ -269,7 +269,7 @@ bool __cdecl IsCDDrive(undefined4 param_1)
   if (s.sectorsPerCluster * s.bytesPerSector * s.numberOfFreeClusters != 0)
     return 0;
 
-  sprintf(s.idk, "%s\\Testdir.tmp", param_1);
+  sprintf(s.idk, "%s\\Testdir.tmp", drivePath);
   s.testDirTmp = fopen(s.idk, "wb");
   if (s.testDirTmp != 0)
   {
@@ -317,7 +317,7 @@ undefined4 Autoplay_ShutDown(void)
     RegFlushKey(s.hKey);
     RegCloseKey(s.hKey);
   }
-  DAT_100123d4 = RegisterWindowMessageA("QueryCancelAutoPlay");
+  g_queryCancelAutoplayMsg = RegisterWindowMessageA("QueryCancelAutoPlay");
   return 1;
 }
 
@@ -342,7 +342,7 @@ BOOL Autoplay_Restore(void)
 // FUNCTION: CDTOOLS 0x10001910
 int WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID reserved)
 {
-  DAT_100123cc = hDllHandle;
+  g_cdtoolsInstance = hDllHandle;
   switch (nReason)
   {
   case 1:
