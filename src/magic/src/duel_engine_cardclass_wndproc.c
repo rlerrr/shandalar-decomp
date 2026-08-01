@@ -110,16 +110,6 @@ extern char g_card_rules_text_buffer_00708da8[];
 extern char g_activation_rules_text_buffer_00708f48[];
 extern char g_card_title_buffer_00709100[];
 extern char g_activation_card_title_buffer_00709150[];
-extern char s_CardValueFormat_0057f630[];
-extern char s_ParenthesizedColorFormat_0057f638[];
-extern char s_Empty_0057f72c[];
-extern char s_Empty_0057f730[];
-extern char s_InfinityPowerText_0057f734[];
-extern char s_PowerFormat_0057f738[];
-extern char s_PowerToughnessSeparator_0057f73c[];
-extern char s_InfinityToughnessText_0057f740[];
-extern char s_ToughnessFormat_0057f744[];
-extern char s_DamageFormat_0057f74c[];
 extern int g_duel_cached_active_cards_count_player_0;
 extern int g_duel_cached_active_cards_count_player_1;
 extern char global_base_directory[];
@@ -151,190 +141,6 @@ int g_cardclass_previous_z_order_window_long_offset = 0x10;
 // GLOBAL: MAGIC 0x0055e110
 // GLOBAL: SHANDALAR 0x0057f1b0
 int g_cardclass_window_extra_bytes = 0x14;
-
-// GLOBAL: MAGIC 0x00575100
-char s_Type_00575100[8] = "Type ";
-
-// GLOBAL: MAGIC 0x00575108
-char s_Summoned_00575108[0xc] = "Summoned ";
-
-// GLOBAL: MAGIC 0x00575114
-char s_Attacking_Bit_00575114[0x10] = "Attacking Bit ";
-
-// GLOBAL: MAGIC 0x00575124
-char s_Tapped_Bit_00575124[0xc] = "Tapped Bit ";
-
-// GLOBAL: MAGIC 0x00575130
-char s_Owner_00575130[8] = "Owner ";
-
-// GLOBAL: MAGIC 0x00575138
-char s_Targeted_00575138[0xc] = "Targeted ";
-
-// GLOBAL: MAGIC 0x00575144
-char s_MayNotTarget_00575144[0x10] = "MayNotTarget ";
-
-// GLOBAL: MAGIC 0x00575154
-char s_Damage_00575154[8] = "Damage ";
-
-// GLOBAL: MAGIC 0x0057515c
-char s_Power_0057515c[8] = "Power ";
-
-// GLOBAL: MAGIC 0x00575164
-char s_Tough_00575164[8] = "Tough ";
-
-// GLOBAL: MAGIC 0x0057516c
-char s_Mana_0057516c[8] = "Mana ";
-
-// GLOBAL: MAGIC 0x00575174
-char s_Color_00575174[8] = "Color ";
-
-// GLOBAL: MAGIC 0x0057517c
-char s_Blocking_0057517c[0xc] = "Blocking ";
-
-// GLOBAL: MAGIC 0x00575188
-char s_Hack_00575188[8] = "Hack ";
-
-// GLOBAL: MAGIC 0x00575190
-char s_Data_00575190[8] = "Data ";
-
-// GLOBAL: MAGIC 0x00575198
-char s_Counters_00575198[0xc] = "Counters ";
-
-// GLOBAL: MAGIC 0x005751a4
-char s_HighLight_005751a4[0xc] = "HighLight ";
-
-// GLOBAL: MAGIC 0x005751b0
-char s_LinkedID_005751b0[0xc] = "LinkedID ";
-
-// GLOBAL: MAGIC 0x005751bc
-char s_UntapStatus_005751bc[0x10] = "UntapStatus ";
-
-// GLOBAL: MAGIC 0x005751cc
-char s_Dying_005751cc[8] = "Dying ";
-
-// GLOBAL: MAGIC 0x005751d4
-// GLOBAL: SHANDALAR 0x005a11dc
-char s_Empty_005751d4[4] = "";
-
-// GLOBAL: MAGIC 0x005751d8
-char s_MENU_SMALLCARD_005751d8[0x10] = "MENU_SMALLCARD";
-
-// GLOBAL: MAGIC 0x005751e8
-char s_PROMPT_BANDWITHWHOM_005751e8[0x14] = "PROMPT_BANDWITHWHOM";
-
-// GLOBAL: MAGIC 0x005751fc
-char s_PROMPT_DEFENDWHOM_005751fc[0x14] = "PROMPT_DEFENDWHOM";
-
-// GLOBAL: MAGIC 0x00575210
-char s_CUECARD_COUNTERS_ArmageddonClock_00575210[0x24] = "CUECARD_COUNTERS_ArmageddonClock";
-
-// GLOBAL: MAGIC 0x00575234
-char s_CUECARD_COUNTERS_ManaBattery_00575234[0x20] = "CUECARD_COUNTERS_ManaBattery";
-
-// GLOBAL: MAGIC 0x00575254
-char s_CUECARD_COUNTERS_ClockworkAvian_00575254[0x20] = "CUECARD_COUNTERS_ClockworkAvian";
-
-// GLOBAL: MAGIC 0x00575274
-char s_CUECARD_COUNTERS_ClockworkBeast_00575274[0x20] = "CUECARD_COUNTERS_ClockworkBeast";
-
-// GLOBAL: MAGIC 0x00575294
-char s_CUECARD_COUNTERS_LuckyCharms_00575294[0x20] = "CUECARD_COUNTERS_LuckyCharms";
-
-// GLOBAL: MAGIC 0x005752b4
-char s_CUECARD_COUNTERS_Fungusaur_005752b4[0x1c] = "CUECARD_COUNTERS_Fungusaur";
-
-// GLOBAL: MAGIC 0x005752d0
-char s_CUECARD_COUNTERS_WhirlingDervish_005752d0[0x24] = "CUECARD_COUNTERS_WhirlingDervish";
-
-// GLOBAL: MAGIC 0x005752f4
-char s_CUECARD_COUNTERS_LivingArtifact_005752f4[0x20] = "CUECARD_COUNTERS_LivingArtifact";
-
-// GLOBAL: MAGIC 0x00575314
-char s_CUECARD_COUNTERS_OsaiVultures_00575314[0x20] = "CUECARD_COUNTERS_OsaiVultures";
-
-// GLOBAL: MAGIC 0x00575334
-char s_CUECARD_COUNTERS_ScavengingGhoul_00575334[0x24] = "CUECARD_COUNTERS_ScavengingGhouls";
-
-// GLOBAL: MAGIC 0x00575358
-char s_CUECARD_COUNTERS_SengirVampire_00575358[0x20] = "CUECARD_COUNTERS_SengirVampire";
-
-// GLOBAL: MAGIC 0x00575378
-char s_CUECARD_COUNTERS_NecropolisOfAza_00575378[0x24] = "CUECARD_COUNTERS_NecropolisOfAzar";
-
-// GLOBAL: MAGIC 0x0057539c
-char s_CUECARD_COUNTERS_Triskelion_0057539c[0x1c] = "CUECARD_COUNTERS_Triskelion";
-
-// GLOBAL: MAGIC 0x005753b8
-char s_CUECARD_COUNTERS_Tetravus_005753b8[0x1c] = "CUECARD_COUNTERS_Tetravus";
-
-// GLOBAL: MAGIC 0x005753d4
-char s_CUECARD_COUNTERS_TimeVault_005753d4[0x1c] = "CUECARD_COUNTERS_TimeVault";
-
-// GLOBAL: MAGIC 0x005753f0
-char s_CUECARD_COUNTERS_Cyclone_005753f0[0x1c] = "CUECARD_COUNTERS_Cyclone";
-
-// GLOBAL: MAGIC 0x0057540c
-char s_CUECARD_COUNTERS_CitanulDruid_0057540c[0x20] = "CUECARD_COUNTERS_CitanulDruid";
-
-// GLOBAL: MAGIC 0x0057542c
-char s_CUECARD_COUNTERS_RockHydra_0057542c[0x1c] = "CUECARD_COUNTERS_RockHydra";
-
-// GLOBAL: MAGIC 0x00575448
-char s_CUECARD_COUNTERS_KhabalGhoul_00575448[0x20] = "CUECARD_COUNTERS_KhabalGhoul";
-
-// GLOBAL: MAGIC 0x00575468
-char s_CUECARD_COUNTERS_OrcishCatapult_00575468[0x20] = "CUECARD_COUNTERS_OrcishCatapult";
-
-// GLOBAL: MAGIC 0x00575488
-char s_CUECARD_COUNTERS_UnstableMutatio_00575488[0x24] = "CUECARD_COUNTERS_UnstableMutation";
-
-// GLOBAL: MAGIC 0x005754ac
-char s_CUECARD_COUNTERS_SpiritShackle_005754ac[0x20] = "CUECARD_COUNTERS_SpiritShackle";
-
-// GLOBAL: MAGIC 0x005754cc
-char s_CUECARD_COUNTERS_DwarvenWeaponsm_005754cc[0x24] = "CUECARD_COUNTERS_DwarvenWeaponsmith";
-
-// GLOBAL: MAGIC 0x005754f0
-char s_CUECARD_COUNTERS_AshnodsTransmor_005754f0[0x28] = "CUECARD_COUNTERS_AshnodsTransmorgrant";
-
-// GLOBAL: MAGIC 0x00575518
-char s_Comma_00575518[4] = ",";
-
-// GLOBAL: MAGIC 0x0057551c
-char s__duel_hlp_0057551c[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x00575528
-char s__M__Add_mana_for_this_card_00575528[0x1c] = "&M: Add mana for this card";
-
-// GLOBAL: MAGIC 0x00575544
-char s__B__Bury_this_card_00575544[0x14] = "&B: Bury this card";
-
-// GLOBAL: MAGIC 0x00575558
-char s__M__Add_mana_for_this_card_00575558[0x1c] = "&M: Add mana for this card";
-
-// GLOBAL: MAGIC 0x00575574
-char s__T__Tap_untap_this_card_00575574[0x18] = "&T: Tap/untap this card";
-
-// GLOBAL: MAGIC 0x0057558c
-char s__B__Bury_this_card_0057558c[0x14] = "&B: Bury this card";
-
-// GLOBAL: MAGIC 0x005755a0
-char s__X__Increment_counters_for_this_c_005755a0[0x28] = "&X: Increment counters for this card";
-
-// GLOBAL: MAGIC 0x005755c8
-char s__s__s_005755c8[] = "\n\n%s %s\n";
-
-// GLOBAL: MAGIC 0x005755d4
-char s__s__d__d_005755d4[] = "%s %d %d ";
-
-// GLOBAL: MAGIC 0x005755e0
-char s__s_005755e0[] = "%s";
-
-// GLOBAL: MAGIC 0x005755e8
-char s__d__d_005755e8[] = "%d,%d";
-
-// GLOBAL: MAGIC 0x005755f0
-char s_Times_New_Roman_005755f0[] = "Times New Roman";
 
 // GLOBAL: MAGIC 0x0069b3b8
 // GLOBAL: SHANDALAR 0x00732800
@@ -506,26 +312,26 @@ char g_cardclass_menu_alternate_card_text[0x68];
 // GLOBAL: MAGIC 0x005750b0
 char *PTR_s_Type_005750b0[20] =
     {
-        s_Type_00575100,
-        s_Summoned_00575108,
-        s_Attacking_Bit_00575114,
-        s_Tapped_Bit_00575124,
-        s_Owner_00575130,
-        s_Targeted_00575138,
-        s_MayNotTarget_00575144,
-        s_Damage_00575154,
-        s_Power_0057515c,
-        s_Tough_00575164,
-        s_Mana_0057516c,
-        s_Color_00575174,
-        s_Blocking_0057517c,
-        s_Hack_00575188,
-        s_Data_00575190,
-        s_Counters_00575198,
-        s_HighLight_005751a4,
-        s_LinkedID_005751b0,
-        s_UntapStatus_005751bc,
-        s_Dying_005751cc};
+        "Type ",
+        "Summoned ",
+        "Attacking Bit ",
+        "Tapped Bit ",
+        "Owner ",
+        "Targeted ",
+        "MayNotTarget ",
+        "Damage ",
+        "Power ",
+        "Tough ",
+        "Mana ",
+        "Color ",
+        "Blocking ",
+        "Hack ",
+        "Data ",
+        "Counters ",
+        "HighLight ",
+        "LinkedID ",
+        "UntapStatus ",
+        "Dying "};
 
 // FUNCTION: MAGIC 0x00449e0a
 // FUNCTION: SHANDALAR 0x0045398b
@@ -642,7 +448,7 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
       changed_flags |= 0x80000;
     }
   }
-  sprintf(debug_text, s__s__s_005755c8,
+  sprintf(debug_text, "\n\n%s %s\n",
           global_cards_data[old_snapshot->internal_card_id].name,
           global_cards_data[new_snapshot->internal_card_id].name);
   OutputDebugStringA(debug_text);
@@ -652,12 +458,12 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
     {
       if (changed_index == 0)
       {
-        sprintf(debug_text, s__s__d__d_005755d4, PTR_s_Type_005750b0[0],
+        sprintf(debug_text, "%s %d %d ", PTR_s_Type_005750b0[0],
                 old_snapshot->internal_card_id, new_snapshot->internal_card_id);
       }
       else
       {
-        sprintf(debug_text, s__s_005755e0, PTR_s_Type_005750b0[changed_index]);
+        sprintf(debug_text, "%s", PTR_s_Type_005750b0[changed_index]);
       }
       OutputDebugStringA(debug_text);
     }
@@ -1587,21 +1393,21 @@ void draw_powertoughness_on_smallcard(HDC dc, RECT *rect, unsigned int power, un
   s.text[0] = '\0';
   if ((power & s.infinity_mask) != 0)
   {
-    strcat(s.text, s_InfinityPowerText_0057f734);
+    strcat(s.text, "*");
   }
   else
   {
-    wsprintfA(&s.text[strlen(s.text)], s_PowerFormat_0057f738, power);
+    wsprintfA(&s.text[strlen(s.text)], "%d", power);
   }
 
-  strcat(s.text, s_PowerToughnessSeparator_0057f73c);
+  strcat(s.text, "/");
   if ((toughness & s.infinity_mask) != 0)
   {
-    strcat(s.text, s_InfinityToughnessText_0057f740);
+    strcat(s.text, "*");
   }
   else
   {
-    wsprintfA(&s.text[strlen(s.text)], s_ToughnessFormat_0057f744, toughness);
+    wsprintfA(&s.text[strlen(s.text)], "%d", toughness);
   }
 
   SelectObject(dc, global_smallcard_pt_font);
@@ -1633,7 +1439,7 @@ int draw_damage(HDC dc, RECT *rect, int damage)
   s.saved_dc = SaveDC(dc);
   get_damage_overlay_rect(&s.damage_rect, rect);
   s.result = draw_masked_bitmap_left_half_to_rect(dc, &s.damage_rect, global_damage_pic);
-  sprintf(s.text, s_DamageFormat_0057f74c, damage);
+  sprintf(s.text, "%d", damage);
   SelectObject(dc, global_damage_font);
   SetTextAlign(dc, 0);
   SetBkMode(dc, TRANSPARENT);
@@ -2194,13 +2000,13 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   if (card_id == unk_007a7d64)
   {
     s.ability_flags = get_displayed_card_special_counters(player, card);
-    sprintf(g_card_title_buffer_00709100, s_CardValueFormat_0057f630, gs_cardtitle_damage_008cfd30,
+    sprintf(g_card_title_buffer_00709100, "%s: %d", gs_cardtitle_damage_008cfd30,
             s.ability_flags);
     s.single_color = single_color_test_bit_to_color_t(get_displayed_card_color_flags(player, card));
     if (s.single_color == 1 || s.single_color == 2 || s.single_color == 4 ||
         s.single_color == 3 || s.single_color == 5)
     {
-      sprintf(g_card_title_buffer_00709100 + strlen(g_card_title_buffer_00709100), s_ParenthesizedColorFormat_0057f638,
+      sprintf(g_card_title_buffer_00709100 + strlen(g_card_title_buffer_00709100), " (%s)",
               gs_color_word_capitalized_00709390[s.single_color]);
     }
   }
@@ -2294,7 +2100,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
     g_card_rules_text_buffer_00708da8[0] = '\0';
   }
   s.card_data.rules_text = g_card_rules_text_buffer_00708da8;
-  s.card_data.flavor_text = s_Empty_0057f72c;
+  s.card_data.flavor_text = "";
   s.card_data.power = 0;
   s.card_data.toughness = 0;
 
@@ -2380,7 +2186,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
       s.card_data.req.req_white = 0;
       g_activation_rules_text_buffer_00708f48[0] = '\0';
       s.card_data.rules_text = g_activation_rules_text_buffer_00708f48;
-      s.card_data.flavor_text = s_Empty_0057f730;
+      s.card_data.flavor_text = "";
       s.card_data.power = 0;
       s.card_data.toughness = 0;
 
@@ -2572,7 +2378,7 @@ void draw_id_tag(HDC dc, RECT *rect, int player, int card, int enabled)
     SetViewportExtEx(dc, tag_rect.right - tag_rect.left, tag_rect.bottom - tag_rect.top,
                      NULL);
     DPtoLP(dc, (LPPOINT)&tag_rect, 2);
-    sprintf(text, "%d", card);
+    sprintf(text, " %d ", card);
     SelectObject(dc, global_idtag_font);
     if (player == 0)
     {
@@ -2814,9 +2620,9 @@ void draw_card_debug_id_tag(HDC dc, RECT *rect, int player, int card)
   } s;
 
   s.saved_dc = SaveDC(dc);
-  sprintf(s.text, s__d__d_005755e8, player, card);
+  sprintf(s.text, "%d,%d", player, card);
   s.font = CreateFontA(0x12, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0x12,
-                       s_Times_New_Roman_005755f0);
+                       "Times New Roman");
   SelectObject(dc, s.font);
   SetBkMode(dc, TRANSPARENT);
   SetTextAlign(dc, TA_RIGHT);
@@ -2923,9 +2729,9 @@ int register_MAGICGAME_CardClass(LPCSTR class_name)
 
   g_cardclass_popup_menu = CreatePopupMenu();
   g_cardclass_alternate_card_submenu = CreatePopupMenu();
-  AppendMenuA(g_cardclass_alternate_card_submenu, 0, 0x72, s_Empty_005751d4);
+  AppendMenuA(g_cardclass_alternate_card_submenu, 0, 0x72, "");
 
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_SMALLCARD_005751d8);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_SMALLCARD");
   strcpy(g_cardclass_menu_alternate_card_text, text_lines[0]);
   strcpy(g_cardclass_menu_view_stats_text, text_lines[1]);
   strcpy(g_cardclass_menu_view_card_text, text_lines[2]);
@@ -2953,63 +2759,63 @@ int register_MAGICGAME_CardClass(LPCSTR class_name)
   g_cardclass_ability_masks[15] = 0x8000;
   g_cardclass_ability_masks[16] = 0x10000;
 
-  load_text_with_tab_escapes(global_ui_strings_filename, s_PROMPT_BANDWITHWHOM_005751e8);
+  load_text_with_tab_escapes(global_ui_strings_filename, "PROMPT_BANDWITHWHOM");
   strcpy(g_cardclass_prompt_band_whom_text, text_lines[0]);
   strcpy(g_cardclass_prompt_band_cannot_text, text_lines[1]);
   strcpy(g_cardclass_prompt_band_error_text, text_lines[2]);
 
-  load_text_with_tab_escapes(global_ui_strings_filename, s_PROMPT_DEFENDWHOM_005751fc);
+  load_text_with_tab_escapes(global_ui_strings_filename, "PROMPT_DEFENDWHOM");
   strcpy(g_cardclass_prompt_defend_attacker_text, text_lines[0]);
   strcpy(g_cardclass_prompt_defend_error_text, text_lines[1]);
   strcpy(g_cardclass_prompt_defend_prompt_text, text_lines[2]);
 
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_ArmageddonClock_00575210);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ArmageddonClock");
   strcpy(g_cardclass_cuecard_counter_armageddon_clock_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_ManaBattery_00575234);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ManaBattery");
   strcpy(g_cardclass_cuecard_counter_mana_battery_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_ClockworkAvian_00575254);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ClockworkAvian");
   strcpy(g_cardclass_cuecard_counter_clockwork_avian_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_ClockworkBeast_00575274);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ClockworkBeast");
   strcpy(g_cardclass_cuecard_counter_clockwork_beast_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_LuckyCharms_00575294);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_LuckyCharms");
   strcpy(g_cardclass_cuecard_counter_lucky_charms_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_Fungusaur_005752b4);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Fungusaur");
   strcpy(g_cardclass_cuecard_counter_fungusaur_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_WhirlingDervish_005752d0);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_WhirlingDervish");
   strcpy(g_cardclass_cuecard_counter_whirling_dervish_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_LivingArtifact_005752f4);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_LivingArtifact");
   strcpy(g_cardclass_cuecard_counter_living_artifact_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_OsaiVultures_00575314);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_OsaiVultures");
   strcpy(g_cardclass_cuecard_counter_osai_vultures_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_ScavengingGhoul_00575334);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ScavengingGhouls");
   strcpy(g_cardclass_cuecard_counter_scavenging_ghouls_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_SengirVampire_00575358);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_SengirVampire");
   strcpy(g_cardclass_cuecard_counter_sengir_vampire_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_NecropolisOfAza_00575378);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_NecropolisOfAzar");
   strcpy(g_cardclass_cuecard_counter_necropolis_of_azar_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_Triskelion_0057539c);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Triskelion");
   strcpy(g_cardclass_cuecard_counter_triskelion_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_Tetravus_005753b8);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Tetravus");
   strcpy(g_cardclass_cuecard_counter_tetravus_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_TimeVault_005753d4);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_TimeVault");
   strcpy(g_cardclass_cuecard_counter_time_vault_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_Cyclone_005753f0);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Cyclone");
   strcpy(g_cardclass_cuecard_counter_cyclone_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_CitanulDruid_0057540c);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_CitanulDruid");
   strcpy(g_cardclass_cuecard_counter_citanul_druid_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_RockHydra_0057542c);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_RockHydra");
   strcpy(g_cardclass_cuecard_counter_rock_hydra_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_KhabalGhoul_00575448);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_KhabalGhoul");
   strcpy(g_cardclass_cuecard_counter_khabal_ghoul_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_OrcishCatapult_00575468);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_OrcishCatapult");
   strcpy(g_cardclass_cuecard_counter_orcish_catapult_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_UnstableMutatio_00575488);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_UnstableMutation");
   strcpy(g_cardclass_cuecard_counter_unstable_mutation_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_SpiritShackle_005754ac);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_SpiritShackle");
   strcpy(g_cardclass_cuecard_counter_spirit_shackle_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_DwarvenWeaponsm_005754cc);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_DwarvenWeaponsmith");
   strcpy(g_cardclass_cuecard_counter_dwarven_weaponsmith_text, text_lines[0]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_CUECARD_COUNTERS_AshnodsTransmor_005754f0);
+  load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_AshnodsTransmorgrant");
   strcpy(g_cardclass_cuecard_counter_ashnods_transmogrant_text, text_lines[0]);
 
   return s.registered;
@@ -3289,7 +3095,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
               (get_displayed_card_ui_flags(s.player, s.card) & 0x20) != 0)
           {
             strcpy(s.cuecard_text, gs_cuecard_summoning_sickness_008a8e00);
-            strcat(s.cuecard_text, s_Comma_00575518);
+            strcat(s.cuecard_text, ",");
             strcat(s.cuecard_text, gs_cuecard_phased_007aae00);
             s.cuecard_found = 1;
           }
@@ -3481,7 +3287,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       if (s.command_help_card_id != -1)
       {
         strcpy(s.command_help_path, global_base_directory);
-        strcat(s.command_help_path, s__duel_hlp_0057551c);
+        strcat(s.command_help_path, "\\duel.hlp");
         WinHelpA(g_duel_window_hwnd, s.command_help_path, HELP_CONTEXT,
                  s.command_help_card_id);
       }
@@ -4164,17 +3970,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       if (s.untap_status == 0)
       {
         AppendMenuA(g_cardclass_popup_menu, MF_SEPARATOR, 0, (LPCSTR)0);
-        AppendMenuA(g_cardclass_popup_menu, 0, 0x262, s__M__Add_mana_for_this_card_00575528);
-        AppendMenuA(g_cardclass_popup_menu, 0, 0x264, s__B__Bury_this_card_00575544);
+        AppendMenuA(g_cardclass_popup_menu, 0, 0x262, "&M: Add mana for this card");
+        AppendMenuA(g_cardclass_popup_menu, 0, 0x264, "&B: Bury this card");
       }
       else
       {
         AppendMenuA(g_cardclass_popup_menu, MF_SEPARATOR, 0, (LPCSTR)0);
-        AppendMenuA(g_cardclass_popup_menu, 0, 0x262, s__M__Add_mana_for_this_card_00575558);
-        AppendMenuA(g_cardclass_popup_menu, 0, 0x263, s__T__Tap_untap_this_card_00575574);
-        AppendMenuA(g_cardclass_popup_menu, 0, 0x264, s__B__Bury_this_card_0057558c);
+        AppendMenuA(g_cardclass_popup_menu, 0, 0x262, "&M: Add mana for this card");
+        AppendMenuA(g_cardclass_popup_menu, 0, 0x263, "&T: Tap/untap this card");
+        AppendMenuA(g_cardclass_popup_menu, 0, 0x264, "&B: Bury this card");
         AppendMenuA(g_cardclass_popup_menu, 0, 0x266,
-                    s__X__Increment_counters_for_this_c_005755a0);
+                    "&X: Increment counters for this card");
       }
     }
     return 0;

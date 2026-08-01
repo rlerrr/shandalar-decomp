@@ -7,9 +7,9 @@
 #include "drawcardlib/src/pcxw.h"
 
 extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                 unsigned int param_5);
+                                  unsigned int param_5);
 extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                         unsigned int param_5);
+                                 unsigned int param_5);
 extern unsigned char gPcxScanlineBuffer[0x1000];
 extern void RpBits_Setup(int fileDescriptor);
 extern void RpBits_ReadTables(unsigned short *param_3);
@@ -21,7 +21,7 @@ extern DIBSurface *g_graphics_pages[10];
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 
 typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                             unsigned int param_5);
+                                                  unsigned int param_5);
 
 #pragma intrinsic(memset)
 #pragma intrinsic(memcpy)
@@ -32,9 +32,6 @@ char s_D__NewMagic__sources__sidlib__Fileio_c_0040d29c[] = "D:\\NewMagic\\source
 
 // GLOBAL: FACEMAKER 0x0040d2c0
 char s_Error_Opening_File__s_0040d2c0[] = "Error Opening File %s\r\n";
-
-// GLOBAL: FACEMAKER 0x0040d2d8
-char g_pcx_extension[] = ".pcx";
 
 // GLOBAL: FACEMAKER 0x0040d1b8
 // GLOBAL: SHANDALAR 0x005a1738
@@ -142,7 +139,7 @@ void WriteRpBitsPalette(int file_handle)
 // FUNCTION: SHANDALAR 0x0057de20
 // FUNCTION: FACEMAKER 0x004094b0
 int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param_3, int param_4, int param_5,
-                 int param_6, int param_7)
+                      int param_6, int param_7)
 {
   unsigned char *dictionary_ptr;
   unsigned char *scanline_ptr;
@@ -674,15 +671,15 @@ void LoadPcxIntoPage(int page_number, char *path)
 // FUNCTION: SHANDALAR 0x0057c820
 void LoadPcxIntoPageNoPalette(
 #ifndef SHANDALAR
-  int page_number,
+    int page_number,
 #endif
-  char *path)
+    char *path)
 {
 #ifdef SHANDALAR
   LoadPcxResource(-1, 0, 0, path, (void *)1);
 #else
   LoadPcxResource(page_number, 0, 0, path, (void *)0);
-#endif  
+#endif
 }
 
 // FUNCTION: SHANDALAR 0x0057c840
@@ -703,7 +700,7 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   unsigned short local_palette[0x200];
 
   ext = strchr(path, '.');
-  if (_stricmp(g_pcx_extension, ext) != 0)
+  if (_stricmp(".pcx", ext) != 0)
   {
     file_handle = _open(path, 0x8000);
     assert((unsigned int)(file_handle != -1), s_D__NewMagic__sources__sidlib__Fileio_c_0040d29c, 0x88,

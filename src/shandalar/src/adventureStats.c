@@ -108,98 +108,12 @@ extern EncodedImage *DAT_0073eab0[5][3];
 extern int DAT_00789938;
 extern int DAT_0078df68;
 
-// GLOBAL: SHANDALAR 0x005919c8
-static char s_advfac64_pic_005919c8[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x005919d8
-static char s_advfac64_pic_005919d8[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x005919e8
-static char s_todpal_tr_005919e8[] = "todpal.tr";
-// GLOBAL: SHANDALAR 0x0059074c
-static char s_worlbak1_pic_0059074c[] = "worlbak1.pic";
 // GLOBAL: SHANDALAR 0x00590618
 static char s_statText_00590618[] = "statText";
-// GLOBAL: SHANDALAR 0x00590604
-static char s_button2_wav_00590604[] = "x:sound\\button2.wav";
 // GLOBAL: SHANDALAR 0x005905f8
 static char s_stats_card_tab_navigate_hotkeys_005905f8[4] = {'D', 'd', '\x1b', ' '};
 // GLOBAL: SHANDALAR 0x00590600
 static char s_stats_card_tab_activate_hotkeys_00590600[4] = {'\x1b', ' ', '\0', '\0'};
-// GLOBAL: SHANDALAR 0x00581c2c
-static char s_x_sound_button2_wav_00581c2c[] = "x:sound\\button2.wav";
-// GLOBAL: SHANDALAR 0x00581c40
-static char s_empty_00581c40[4] = "";
-// GLOBAL: SHANDALAR 0x00581c44
-static char s_empty_00581c44[4] = "";
-// GLOBAL: SHANDALAR 0x00581c48
-static char s_empty_00581c48[4] = "";
-// GLOBAL: SHANDALAR 0x00581c4c
-static char s_empty_00581c4c[4] = "";
-// GLOBAL: SHANDALAR 0x00581c50
-static char s_empty_00581c50[4] = "";
-// GLOBAL: SHANDALAR 0x00581c54
-static char s_empty_00581c54[4] = "";
-// GLOBAL: SHANDALAR 0x00590624
-static char s_advfac64_pic_00590624[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x00590634
-static char s_statbut1_pic_00590634[] = "statbut1.pic";
-// GLOBAL: SHANDALAR 0x00590644
-static char s_string_00590644[] = "%s";
-// GLOBAL: SHANDALAR 0x00590648
-static char s_string_00590648[] = "%s";
-// GLOBAL: SHANDALAR 0x0059064c
-static char s_string_0059064c[] = "%s";
-// GLOBAL: SHANDALAR 0x00590650
-static char s_statbak_8bpp_pic_00590650[] = "statbak.pic";
-// GLOBAL: SHANDALAR 0x0059065c
-static char s_statbak_pic_0059065c[] = "statbak.pic";
-// GLOBAL: SHANDALAR 0x00590668
-static char s_advfac64_pic_00590668[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x00590678
-static char s_prdblk_pic_00590678[] = "prdblk.pic";
-// GLOBAL: SHANDALAR 0x00590684
-static char s_decimal_00590684[] = "%d";
-// GLOBAL: SHANDALAR 0x00590688
-static char s_decimal_00590688[] = "%d";
-// GLOBAL: SHANDALAR 0x0059068c
-static char s_decimal_0059068c[] = "%d";
-// GLOBAL: SHANDALAR 0x00590690
-static char s_decimal_slash_decimal_00590690[] = "%d/%d";
-// GLOBAL: SHANDALAR 0x00590698
-static char s_decimal_00590698[] = "%d";
-// GLOBAL: SHANDALAR 0x0059069c
-static char s_decimal_0059069c[] = "%d";
-// GLOBAL: SHANDALAR 0x005906a0
-static char s_decimal_005906a0[] = "%d";
-// GLOBAL: SHANDALAR 0x005906a4
-static char s_decimal_005906a4[] = "%d";
-// GLOBAL: SHANDALAR 0x005906a8
-static char s_decimal_005906a8[] = "%d";
-// GLOBAL: SHANDALAR 0x005906ac
-static char s_string_005906ac[] = "%s";
-// GLOBAL: SHANDALAR 0x005906b0
-static char s_string_005906b0[] = "%s";
-// GLOBAL: SHANDALAR 0x005906b4
-static char s_decimal_005906b4[] = "%d";
-// GLOBAL: SHANDALAR 0x005906b8
-static char s_decimal_005906b8[] = "%d";
-// GLOBAL: SHANDALAR 0x005906bc
-static char s_decimal_slash_decimal_005906bc[] = "%d/%d";
-// GLOBAL: SHANDALAR 0x005906c4
-static char s_decimal_slash_decimal_005906c4[] = "%d/%d";
-// GLOBAL: SHANDALAR 0x005906d0
-static char s_decimal_005906d0[] = "%d";
-// GLOBAL: SHANDALAR 0x005906d4
-static char s_advfac64_pic_005906d4[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x005906e4
-static char s_advfac64_pic_005906e4[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x005906f4
-static char s_creatures640_pic_005906f4[] = "creatures640.pic";
-// GLOBAL: SHANDALAR 0x00590708
-static char s_creatures800_pic_00590708[] = "creatures800.pic";
-// GLOBAL: SHANDALAR 0x0059071c
-static char s_creatures1024_pic_0059071c[] = "creatures1024.pic";
-// GLOBAL: SHANDALAR 0x00590730
-static char s_advfac64_pic_00590730[] = "advfac64.pic";
 
 // GLOBAL: SHANDALAR 0x005905c8
 static int g_stats_portrait_frame_colors[5][2] = {
@@ -519,7 +433,7 @@ static int ActivateStatsMenuControl(AdvMenuControl *control)
   }
   else
   {
-    PlaySoundEffectOnChannel(s_button2_wav_00590604, 0xf, 100, 100, 0);
+    PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   }
   g_stats_menu_selection = control->selection_value;
   return g_stats_menu_selection;
@@ -1020,7 +934,7 @@ int ShowWorldMagicStatsDetail(int world_magic_slot_index)
   s.icon_right = 0x19e;
   s.icon_top = 0x4c;
   s.icon_bottom = 0x9a;
-  LoadPcxIntoPage(1, s_worlbak1_pic_0059074c);
+  LoadPcxIntoPage(1, "worlbak1.pic");
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
   s.detail_result = FUN_004bb458(world_magic_slot_index);
   s.y = 0x28;
@@ -1060,11 +974,11 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   SelectObject(g_graphics_pages[4]->hTempDC, g_facemaker_page4_bitmap);
   if (g_graphics_bpp == 8)
   {
-    LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_statbak_8bpp_pic_00590650, (void *)1);
+    LoadPcxResource(1, 0, global_screen_height - 0x1e0, "statbak.pic", (void *)1);
   }
   else
   {
-    LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_statbak_pic_0059065c, (void *)1);
+    LoadPcxResource(1, 0, global_screen_height - 0x1e0, "statbak.pic", (void *)1);
   }
   DrawStatsRectFrame(PTR_DAT_005832dc, 0x26, global_screen_height - 0x1d1, 0x8c, 0xac,
                      g_stats_portrait_frame_colors[g_starting_color - 1][0]);
@@ -1077,23 +991,23 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   BlitGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xf7), ScaleUiCoordinate(0x43), ScaleUiCoordinate(0x173),
                    ScaleUiCoordinate(0x7f), PTR_DAT_00583304, 0, 0x154);
   ApplyPortraitPaletteMap(PTR_DAT_005832dc, ScaleUiCoordinate(0x28), ScaleUiCoordinate(0x11), ScaleUiCoordinate(0x89),
-                          ScaleUiCoordinate(0xa9), s_prdblk_pic_00590678, s_advfac64_pic_00590668);
+                          ScaleUiCoordinate(0xa9), "prdblk.pic", "advfac64.pic");
   SelectObject(g_graphics_pages[4]->hTempDC, g_graphics_pages[4]->hPreviousBitmap);
   g_graphics_pages[4] = (DIBSurface *)0;
 
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x102, s_decimal_00590684, Gold);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x102, s_decimal_00590688, g_food);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x138, s_decimal_0059068c, CountDuelPoolEligibleTowns());
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x138, s_decimal_slash_decimal_00590690, DAT_0078df68,
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x102, "%d", Gold);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x102, "%d", g_food);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x138, "%d", CountDuelPoolEligibleTowns());
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x138, "%d/%d", DAT_0078df68,
              DAT_00789938);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x29, 0x161, s_decimal_00590698, g_amulet_inventory[0]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4e, 0x161, s_decimal_0059069c, g_amulet_inventory[1]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x73, 0x161, s_decimal_005906a0, g_amulet_inventory[2]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x98, 0x161, s_decimal_005906a4, g_amulet_inventory[3]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xbd, 0x161, s_decimal_005906a8, g_amulet_inventory[4]);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x69, 0xc6, s_string_005906ac,
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x29, 0x161, "%d", g_amulet_inventory[0]);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4e, 0x161, "%d", g_amulet_inventory[1]);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x73, 0x161, "%d", g_amulet_inventory[2]);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x98, 0x161, "%d", g_amulet_inventory[3]);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xbd, 0x161, "%d", g_amulet_inventory[4]);
+  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x69, 0xc6, "%s",
              gs_difficultylevels_0077d130[g_shandalar_difficulty]);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x69, 0xd6, s_string_005906b0, g_name_entry_buffer);
+  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x69, 0xd6, "%s", g_name_entry_buffer);
   DrawTextAt(PTR_DAT_005832dc, colors[4], 0x10e, 0x16c, gs_stats_0077cfa0[0]);
 
   for (world_magic_slot_index = 0; (int)world_magic_slot_index < 5; world_magic_slot_index = world_magic_slot_index + 1)
@@ -1110,14 +1024,14 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   ScaleMenuControlsForScreen(&g_stats_menu_controls[10], 0xc);
   RebuildStatsJournalCounts();
   FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x184, gs_stats_0077cfa0[2]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x184, s_decimal_005906b4, g_stats_journal_lairs_explored);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x184, "%d", g_stats_journal_lairs_explored);
   FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x196, gs_stats_0077cfa0[3]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x196, s_decimal_005906b8, g_stats_journal_cities_saved);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x196, "%d", g_stats_journal_cities_saved);
   FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x1a8, gs_stats_0077cfa0[4]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1a8, s_decimal_slash_decimal_005906bc,
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1a8, "%d/%d",
              g_stats_journal_spells_found, g_stats_journal_artifacts_found);
   FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x1ba, gs_stats_0077cfa0[5]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1ba, s_decimal_slash_decimal_005906c4,
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1ba, "%d/%d",
              g_stats_journal_failed_quests, g_stats_journal_completed_quests);
   FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0xe9, 0x19a, gs_stats_0077cfa0[6]);
   for (world_magic_slot_index = 0; (int)world_magic_slot_index < 5; world_magic_slot_index = world_magic_slot_index + 1)
@@ -1126,7 +1040,7 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
                  g_castle_dungeon_slots[world_magic_slot_index].times_entered + 1);
   }
   FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0xe9, 0x1c0, gs_stats_0077cfa0[7]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x1a1, 0x1c0, s_decimal_005906d0, g_stats_journal_dungeons_explored);
+  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x1a1, 0x1c0, "%d", g_stats_journal_dungeons_explored);
   DrawTextAt(PTR_DAT_005832dc, colors[4], 0x1b0, 0x36, gs_stats_0077cfa0[8]);
 
   if (g_graphics_bpp == 8)
@@ -1136,11 +1050,11 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   }
   if (g_graphics_bpp == 8)
   {
-    LoadPcxResource(-1, 0, 0, s_advfac64_pic_005906d4, &g_palette_data_words);
+    LoadPcxResource(-1, 0, 0, "advfac64.pic", &g_palette_data_words);
   }
   else
   {
-    LoadPcxIntoPageNoPalette(s_advfac64_pic_005906e4);
+    LoadPcxIntoPageNoPalette("advfac64.pic");
   }
   BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
@@ -1215,7 +1129,7 @@ static int RenderJournalExitButtonControl(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x00428d2c
 static int ActivateJournalExitButtonControl(AdvMenuControl *control)
 {
-  PlaySoundEffectOnChannel(s_x_sound_button2_wav_00581c2c, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_stats_journal_menu_selection = control->selection_value;
   return 0;
 }
@@ -1346,7 +1260,7 @@ static int SelectStatsJournalEntry(int journal_index)
   {
     return 0;
   }
-  strcpy(g_ui_message_buffer, s_empty_00581c40);
+  strcpy(g_ui_message_buffer, "");
   while (g_ui_message_buffer[0] == 0)
   {
     s.entry_type = g_journal_entries[journal_index].type;
@@ -1358,7 +1272,7 @@ static int SelectStatsJournalEntry(int journal_index)
       return 0;
     }
     BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
-    strcpy(g_ui_message_buffer, s_empty_00581c44);
+    strcpy(g_ui_message_buffer, "");
     BuildStatsJournalEntryMessage(s.entry_type, s.entry_arg, s.tile_x, s.tile_y);
     if (g_ui_message_buffer[0] != '\0')
     {
@@ -1403,7 +1317,7 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
     sprintf(s.formatted_message, gs_logstrings_0077c9a0[2], BuildTownDisplayName(entry_arg));
     break;
   case 13:
-    strcpy(g_ui_message_buffer, s_empty_00581c48);
+    strcpy(g_ui_message_buffer, "");
     FindNearestTownIndex(tile_x, tile_y);
     strcpy(s.nearest_town_name, g_ui_message_buffer);
     sprintf(s.formatted_message, gs_logstrings_0077c9a0[3], s.nearest_town_name);
@@ -1436,7 +1350,7 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
   case 5:
     if ((int)entry_arg < 5)
     {
-      strcpy(s.formatted_message, s_empty_00581c4c);
+      strcpy(s.formatted_message, "");
     }
     else
     {
@@ -1471,12 +1385,12 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
       sprintf(s.formatted_message, gs_logstrings_0077c9a0[15], BuildTownDisplayName(FindNearestTownIndex(tile_x, tile_y)));
       break;
     default:
-      strcpy(s.formatted_message, s_empty_00581c50);
+      strcpy(s.formatted_message, "");
       break;
     }
     break;
   default:
-    strcpy(s.formatted_message, s_empty_00581c54);
+    strcpy(s.formatted_message, "");
     break;
   }
   strcpy(g_ui_message_buffer, s.formatted_message);
@@ -1730,8 +1644,8 @@ int RunAdventureStatsMenu(void)
 
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   FillGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, 0);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_00590624);
-  LoadPcxIntoPage(1, s_statbut1_pic_00590634);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
+  LoadPcxIntoPage(1, "statbut1.pic");
   BeginSpriteEncodeSession();
   for (world_magic_slot_index = 0; world_magic_slot_index < 5; world_magic_slot_index = world_magic_slot_index + 1)
   {
@@ -1744,15 +1658,15 @@ int RunAdventureStatsMenu(void)
   {
     SetFontStyleSize(6, 9 + (((unsigned int)(world_magic_slot_index - 2) < 1) ? -1 : 0));
     DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x55 + 0x2b, 0xc,
-                                      s_string_00590644, (char *)g_stats_text_table[0]);
+                                      "%s", (char *)g_stats_text_table[0]);
     g_stats_menu_button_sprites.normal[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x55 + 1, 1, 0x54, 0x18);
     DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x4a + 0x26, 0x25,
-                                      s_string_00590648, (char *)g_stats_text_table[1]);
+                                      "%s", (char *)g_stats_text_table[1]);
     g_stats_menu_button_sprites.highlight[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x4a + 1, 0x1a, 0x49, 0x18);
     DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x32 + 0x1a, 0x3e,
-                                      s_string_0059064c, (char *)g_stats_text_table[2]);
+                                      "%s", (char *)g_stats_text_table[2]);
     g_stats_menu_button_sprites.pressed[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x32 + 1, 0x33, 0x31, 0x18);
   }
@@ -1770,15 +1684,15 @@ int RunAdventureStatsMenu(void)
     switch (global_screen_width)
     {
     case 0x280:
-      LoadPcxIntoPageOpaque(1, s_creatures640_pic_005906f4);
+      LoadPcxIntoPageOpaque(1, "creatures640.pic");
       g_stats_creature_sheet_resolution = 0;
       break;
     case 800:
-      LoadPcxIntoPageOpaque(1, s_creatures800_pic_00590708);
+      LoadPcxIntoPageOpaque(1, "creatures800.pic");
       g_stats_creature_sheet_resolution = 1;
       break;
     case 0x400:
-      LoadPcxIntoPageOpaque(1, s_creatures1024_pic_0059071c);
+      LoadPcxIntoPageOpaque(1, "creatures1024.pic");
       g_stats_creature_sheet_resolution = 2;
       break;
     }
@@ -1820,7 +1734,7 @@ int RunAdventureStatsMenu(void)
     case 3:
       FreeSpriteBlob(g_stats_menu_color_sprites[0]);
       AnimatePaletteToColor(0, g_default_palette_fade_steps);
-      LoadPcxIntoPageNoPalette(s_advfac64_pic_00590730);
+      LoadPcxIntoPageNoPalette("advfac64.pic");
       return 0;
     case 4:
     case 5:
@@ -1877,7 +1791,7 @@ int ShowStatsWindow(int mode, int highlight)
 
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   ClearGraphicsPageWithPaletteColor(0, 0);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_005919c8);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
   s.old_timer_thread_priority = GetThreadPriority(g_timer_thread_handle);
 
   for (s.wizard_color_index = 0; s.wizard_color_index < 5; s.wizard_color_index = s.wizard_color_index + 1)
@@ -1960,8 +1874,8 @@ int ShowStatsWindow(int mode, int highlight)
   SetForegroundWindow(g_main_window_hwnd);
   BringWindowToTop(g_main_window_hwnd);
   SetFocus(g_main_window_hwnd);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_005919d8);
-  ReadPalette(s_todpal_tr_005919e8, (char *)0);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
+  ReadPalette("todpal.tr", (char *)0);
   SelectPalette(g_graphics_pages[0]->hTempDC, g_palette_handle, 0);
   RealizePalette(g_graphics_pages[0]->hTempDC);
   return 0;

@@ -176,26 +176,6 @@ OPENFILENAMEA g_duel_save_game_openfilename;
 // GLOBAL: MAGIC 0x00746368
 void *g_duel_player_face_pic;
 
-// GLOBAL: MAGIC 0x00579f28
-// GLOBAL: SHANDALAR 0x0058f658
-char s_Congratulations_00579f28[0x14] = "Congratulations!";
-
-// GLOBAL: MAGIC 0x00579f3c
-// GLOBAL: SHANDALAR 0x0058f66c
-char s_Too_bad_00579f3c[8] = "Too bad";
-
-// GLOBAL: MAGIC 0x00579f44
-// GLOBAL: SHANDALAR 0x0058f674
-char s_Oh_well_00579f44[0xc] = "Oh well...";
-
-// GLOBAL: MAGIC 0x00579f50
-// GLOBAL: SHANDALAR 0x0058f680
-char s_Want_to_play_again_00579f50[0x18] = "\n\nWant to play again?";
-
-// GLOBAL: MAGIC 0x00579f68
-// GLOBAL: SHANDALAR 0x0058f698
-char s_End_of_duel_00579f68[0xc] = "End of duel";
-
 // GLOBAL: MAGIC 0x0091c9a4
 // GLOBAL: SHANDALAR 0x00930ae4
 HANDLE g_duel_thread_handle;
@@ -2987,15 +2967,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       s.has_replay_prompt = 1;
       if (s.duel_result == (HWND)1)
       {
-        strcpy(s.replay_prompt, s_Congratulations_00579f28);
+        strcpy(s.replay_prompt, "Congratulations!");
       }
       else if (s.duel_result == (HWND)0)
       {
-        strcpy(s.replay_prompt, s_Too_bad_00579f3c);
+        strcpy(s.replay_prompt, "Too bad");
       }
       else if (s.duel_result == (HWND)-1)
       {
-        strcpy(s.replay_prompt, s_Oh_well_00579f44);
+        strcpy(s.replay_prompt, "Oh well...");
       }
       else
       {
@@ -3003,8 +2983,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       }
       if (s.has_replay_prompt != 0)
       {
-        strcat(s.replay_prompt, s_Want_to_play_again_00579f50);
-        if (MessageBoxA(hwnd, s.replay_prompt, s_End_of_duel_00579f68, MB_YESNO) == IDYES)
+        strcat(s.replay_prompt, "\n\nWant to play again?");
+        if (MessageBoxA(hwnd, s.replay_prompt, "End of duel", MB_YESNO) == IDYES)
         {
           s.should_quit = 0;
           SendMessageA(hwnd, 0x400, 0, 0);

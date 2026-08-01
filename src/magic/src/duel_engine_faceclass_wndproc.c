@@ -36,33 +36,6 @@ int g_face_picture_ownership_window_long_offset = 4;
 // GLOBAL: SHANDALAR 0x0057f00c
 int g_magicgame_face_window_extra_bytes = 8;
 
-// GLOBAL: MAGIC 0x0056faa0
-char s_MENU_FACE_0056faa0[0xc] = "MENU_FACE";
-
-// GLOBAL: MAGIC 0x0056faac
-char s__FACE_MULTI_pic_0056faac[0x10] = "\\FACE_MULTI.pic";
-
-// GLOBAL: MAGIC 0x0056fabc
-char s__FACE_BLACK_pic_0056fabc[0x10] = "\\FACE_BLACK.pic";
-
-// GLOBAL: MAGIC 0x0056facc
-char s__FACE_BLUE_pic_0056facc[0x10] = "\\FACE_BLUE.pic";
-
-// GLOBAL: MAGIC 0x0056fadc
-char s__FACE_GREEN_pic_0056fadc[0x10] = "\\FACE_GREEN.pic";
-
-// GLOBAL: MAGIC 0x0056faec
-char s__FACE_RED_pic_0056faec[0x10] = "\\FACE_RED.pic";
-
-// GLOBAL: MAGIC 0x0056fafc
-char s__FACE_WHITE_pic_0056fafc[0x10] = "\\FACE_WHITE.pic";
-
-// GLOBAL: MAGIC 0x0056fb0c
-char s_Face_0056fb0c[8] = "Face";
-
-// GLOBAL: MAGIC 0x0056fb14
-char s__duel_hlp_0056fb14[0xa] = "\\duel.hlp";
-
 // GLOBAL: MAGIC 0x00637b48
 // GLOBAL: SHANDALAR 0x005a8160
 COLORREF g_face_name_text_color;
@@ -145,37 +118,37 @@ int register_MAGICGAME_FaceClass(LPCSTR class_name)
   }
 
   g_face_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_FACE_0056faa0);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_FACE");
   strcpy(g_face_menu_directive_format, text_lines[0]);
   strcpy(g_face_menu_directive_self_text, text_lines[1]);
   strcpy(g_face_menu_end_directive_text, text_lines[2]);
   strcpy(g_face_menu_help_text, text_lines[3]);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__FACE_MULTI_pic_0056faac);
+  strcat(s.path, "\\FACE_MULTI.pic");
   g_face_background_pics[0] = load_pic(s.path);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__FACE_BLACK_pic_0056fabc);
+  strcat(s.path, "\\FACE_BLACK.pic");
   g_face_background_pics[1] = load_pic(s.path);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__FACE_BLUE_pic_0056facc);
+  strcat(s.path, "\\FACE_BLUE.pic");
   g_face_background_pics[2] = load_pic(s.path);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__FACE_GREEN_pic_0056fadc);
+  strcat(s.path, "\\FACE_GREEN.pic");
   g_face_background_pics[3] = load_pic(s.path);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__FACE_RED_pic_0056faec);
+  strcat(s.path, "\\FACE_RED.pic");
   g_face_background_pics[4] = load_pic(s.path);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__FACE_WHITE_pic_0056fafc);
+  strcat(s.path, "\\FACE_WHITE.pic");
   g_face_background_pics[5] = load_pic(s.path);
 
-  g_face_name_font = CreateFontIndirectA(LoadFontFromIni(s_Face_0056fb0c, 0));
+  g_face_name_font = CreateFontIndirectA(LoadFontFromIni("Face", 0));
   g_face_name_text_color = 0x2f6f7f7;
   g_face_name_shadow_color = 0x2565656;
   return s.result;
@@ -269,7 +242,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 101:
       s.help_context = 0xbdf;
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_0056fb14);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
     default:

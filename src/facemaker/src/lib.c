@@ -53,9 +53,6 @@ char s_Cannot_explicitly_Deallocate_page_0_0040d140[] = "Cannot explicitly Deall
 // GLOBAL: SHANDALAR 0x005a1610
 int g_scanline_palette_needs_refresh = 1;
 
-// GLOBAL: FACEMAKER 0x0040d168
-char s_GetLine_not_implemented_for_page_0040d168[] = "GetLine not implemented for page 0\n";
-
 // GLOBAL: SHANDALAR 0x005a7520
 // GLOBAL: FACEMAKER 0x004128a0
 unsigned int g_key_input_queue[50];
@@ -868,7 +865,7 @@ void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst
     if ((g_graphics_bpp != 8) && (g_scanline_palette_needs_refresh != 0))
     {
       memcpy(g_scanline_bitmap_info->bmiColors, g_palette_rgb, 0x400);
- 
+
       g_scanline_palette_needs_refresh = 0;
     }
     SetDIBitsToDevice(page->hTempDC, dst_x, dst_y, byte_count, 1, 0, 0, 0, 1, scanline_data, g_scanline_bitmap_info,
@@ -923,7 +920,7 @@ void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x
   void *src_ptr;
 
   assert((unsigned int)(page_number != 0), s_D__NewMagic__sources__sidlib__lib_c_0040d0ec, 0x503,
-         s_GetLine_not_implemented_for_page_0040d168);
+         "GetLine not implemented for page 0\n");
   page = g_graphics_pages[page_number];
   src_ptr = (char *)page->pBits + (page->rowPadding + page->width) * src_y + src_x;
   memcpy(out_scanline, src_ptr, byte_count);

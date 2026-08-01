@@ -47,27 +47,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
 int get_displayed_mana_pool(mana_summary_values_t *mana_pool, int player);
 void get_mana_pool_text_rect(LPRECT rect, HWND hwnd, int mana_color);
 
-// GLOBAL: MAGIC 0x0057e64c
-char s_MENU_MANAPOOL_0057e64c[0x10] = "MENU_MANAPOOL";
-
 // GLOBAL: MAGIC 0x0055e1c4
 // GLOBAL: SHANDALAR 0x0057f13c
 int g_magicgame_mana_summary_window_extra_bytes = 4;
-
-// GLOBAL: MAGIC 0x0057e65c
-char s__WINBK_ManaPool_pic_0057e65c[0x14] = "\\WINBK_ManaPool.pic";
-
-// GLOBAL: MAGIC 0x0057e670
-char s_ManaPool_0057e670[0xc] = "ManaPool";
-
-// GLOBAL: MAGIC 0x0057e67c
-char s__duel_hlp_0057e67c[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057e688
-char s__WINBK_ManaPool_pic_0057e688[0x14] = "\\WINBK_ManaPool.pic";
-
-// GLOBAL: MAGIC 0x0057e69c
-char s__d_0057e69c[4] = "%d";
 
 // GLOBAL: MAGIC 0x00708888
 // GLOBAL: SHANDALAR 0x00652fc0
@@ -149,7 +131,7 @@ int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name)
   }
 
   g_mana_summary_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_MANAPOOL_0057e64c);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_MANAPOOL");
   strcpy(g_mana_summary_menu_black_text, text_lines[0]);
   strcpy(g_mana_summary_menu_blue_text, text_lines[1]);
   strcpy(g_mana_summary_menu_green_text, text_lines[2]);
@@ -160,9 +142,9 @@ int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name)
   strcpy(g_mana_summary_menu_help_text, text_lines[7]);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__WINBK_ManaPool_pic_0057e65c);
+  strcat(s.path, "\\WINBK_ManaPool.pic");
   g_mana_summary_background_bitmap = load_pic(s.path);
-  g_mana_summary_font = CreateFontIndirectA(LoadFontFromIni(s_ManaPool_0057e670, 0));
+  g_mana_summary_font = CreateFontIndirectA(LoadFontFromIni("ManaPool", 0));
   return s.result;
 }
 
@@ -328,7 +310,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
     case 100:
       s.help_context = 0x7ea;
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_0057e67c);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
 
@@ -426,7 +408,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
     if (g_mana_summary_background_bitmap == (HBITMAP)0)
     {
       strcpy(s.background_path, global_duelart_path);
-      strcat(s.background_path, s__WINBK_ManaPool_pic_0057e688);
+      strcat(s.background_path, "\\WINBK_ManaPool.pic");
       g_mana_summary_background_bitmap = load_pic(s.background_path);
     }
     if (g_mana_summary_background_bitmap != (HBITMAP)0)
@@ -457,7 +439,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
 
     for (s.color_index = 0; s.color_index < 7; s.color_index++)
     {
-      wsprintfA(s.amount_text, s__d_0057e69c, ((int *)&s.paint_mana_pool)[s.color_index]);
+      wsprintfA(s.amount_text, "%d", ((int *)&s.paint_mana_pool)[s.color_index]);
       get_mana_pool_text_rect(&s.text_rect, hwnd, s.color_index);
       DPtoLP(s.dc, (LPPOINT)&s.text_rect, 2);
       if (s.color_index != 6)

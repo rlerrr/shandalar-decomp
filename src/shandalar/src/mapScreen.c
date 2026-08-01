@@ -176,31 +176,6 @@ char DAT_00590b28[] = " \rDd";
 // GLOBAL: SHANDALAR 0x00590b30
 char DAT_00590b30[] = " \rDd";
 
-// GLOBAL: SHANDALAR 0x00590b6c
-char s_x_sound_button2_wav_00590b6c[] = "x:sound\\button2.wav";
-
-// GLOBAL: SHANDALAR 0x00590b8c
-char s_advfac64_pic_00590b8c[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x00590b9c
-char s_mapbttns_pic_00590b9c[] = "mapbttns.pic";
-// GLOBAL: SHANDALAR 0x00590bac
-char s_mapButtons_00590bac[] = "mapButtons";
-// GLOBAL: SHANDALAR 0x00590bbc
-char s_mapback_pic_00590bbc[] = "mapback.pic";
-
-// GLOBAL: SHANDALAR 0x00590b80
-char DAT_00590b80[] = "";
-// GLOBAL: SHANDALAR 0x00590b84
-char DAT_00590b84[] = "";
-// GLOBAL: SHANDALAR 0x00590b88
-char DAT_00590b88[] = "";
-
-// GLOBAL: SHANDALAR 0x00590bc8
-char DAT_00590bc8[] = "%d";
-
-// GLOBAL: SHANDALAR 0x00581af8
-char DAT_00581af8[] = "";
-
 // GLOBAL: SHANDALAR 0x00590888
 AdvMenuControl g_map_menu_controls_00590888[5] = {
     {48, 5, 94, 28, 48, 5, 94, 28, 1, RenderMapMenuControl, ActivateMapMenuControl, 0, 0, DAT_00590b08, DAT_00590b0c, 0, 0, {0, 0, 0, 0}},
@@ -259,7 +234,7 @@ char *FUN_00428783(unsigned int color_bitmask)
     result = gs_cardclassnames_plural_0077e1f0[8];
     break;
   default:
-    result = DAT_00581af8;
+    result = "";
     break;
   }
 
@@ -355,7 +330,7 @@ int RenderMapMenuControl(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x0054e94c
 int ActivateMapMenuControl(AdvMenuControl *control)
 {
-  PlaySoundEffectOnChannel(s_x_sound_button2_wav_00590b6c, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   DAT_006506e8 = control->selection_value;
   return 0;
 }
@@ -374,11 +349,11 @@ void SplitMapTooltipTextIntoTwoLines(char *src, char *dst_first, char *dst_secon
   {
     if (dst_first != (char *)0)
     {
-      strcpy(dst_first, DAT_00590b80);
+      strcpy(dst_first, "");
     }
     if (dst_second != (char *)0)
     {
-      strcpy(dst_second, DAT_00590b84);
+      strcpy(dst_second, "");
     }
     return;
   }
@@ -434,7 +409,7 @@ void SplitMapTooltipTextIntoTwoLines(char *src, char *dst_first, char *dst_secon
   }
   else
   {
-    strcpy(dst_second, DAT_00590b88);
+    strcpy(dst_second, "");
   }
 }
 
@@ -538,7 +513,7 @@ void ShowWorldMapScreen(int mode)
   s.screen_y_unscaled_debug = -1;
 
   EnsureAdvfac64Loaded(0);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_00590b8c);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
 
   if (mode == 4)
   {
@@ -549,12 +524,12 @@ void ShowWorldMapScreen(int mode)
   s.button_text_colors[1] = 0x3f;
   s.button_text_colors[2] = 0x40;
 
-  LoadPcxIntoPage(1, s_mapbttns_pic_00590b9c);
+  LoadPcxIntoPage(1, "mapbttns.pic");
   BeginSpriteEncodeSession();
 
   if (DAT_00650f20 == 0)
   {
-    DAT_006527a4 = (char **)((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, s_mapButtons_00590bac,
+    DAT_006527a4 = (char **)((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "mapButtons",
                                                                                                (int)g_ini_string_scratch);
     DAT_00650f20 = 1;
   }
@@ -597,7 +572,7 @@ retry:
   PTR_DAT_005832b4->page_number = 1;
 
   ClearGraphicsPageWithPaletteColor(PTR_DAT_005832b4->page_number, 0);
-  LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_mapback_pic_00590bbc, &g_palette_data_words);
+  LoadPcxResource(1, 0, global_screen_height - 0x1e0, "mapback.pic", &g_palette_data_words);
 
   if (global_screen_width != 0x1e0)
   {
@@ -896,7 +871,7 @@ retry:
                               ScaleUiCoordinate((int)DAT_00650f1c->width), ScaleUiCoordinate((int)DAT_00650f1c->height), DAT_00650f1c);
     for (s.dir = 0; s.dir < 5; s.dir++)
     {
-      DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x18, s.dir * 0x1a + 0xc6, DAT_00590bc8, g_amulet_inventory[s.dir]);
+      DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x18, s.dir * 0x1a + 0xc6, "%d", g_amulet_inventory[s.dir]);
     }
   }
 

@@ -32,29 +32,6 @@ void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *te
 unsigned int WaitForInputEventUnlessBlocked(void);
 void FreeSpriteBlob(void *sprite_blob);
 
-// GLOBAL: SHANDALAR 0x00580f94
-char DAT_00580f94[] = "rt";
-// GLOBAL: SHANDALAR 0x00580f98
-char s_hints_txt_00580f98[] = "hints.txt";
-// GLOBAL: SHANDALAR 0x00580fa4
-char s_______00580fa4[] = "%[^\n]";
-// GLOBAL: SHANDALAR 0x00580fac
-char DAT_00580fac[] = "\n";
-// GLOBAL: SHANDALAR 0x00580fb0
-char DAT_00580fb0[] = "\n";
-// GLOBAL: SHANDALAR 0x00580fb4
-char DAT_00580fb4[] = "\n";
-// GLOBAL: SHANDALAR 0x00580fb8
-char DAT_00580fb8[] = "\n";
-// GLOBAL: SHANDALAR 0x00580fbc
-char DAT_00580fbc[] = "\n";
-// GLOBAL: SHANDALAR 0x00580fc0
-char DAT_00580fc0[] = "\n";
-// GLOBAL: SHANDALAR 0x00580fc4
-char DAT_00580fc4[] = "\x94";
-// GLOBAL: SHANDALAR 0x00580fc8
-char s_BuyButtons_spr_00580fc8[] = "BuyButtons.spr";
-
 // FUNCTION: SHANDALAR 0x0041871f
 void AppendTownHintBodyText(int hint_index)
 {
@@ -65,9 +42,9 @@ void AppendTownHintBodyText(int hint_index)
     int item_count;
   } s;
 
-  s.hints_file = fopen(s_hints_txt_00580f98, DAT_00580f94);
+  s.hints_file = fopen("hints.txt", "rt");
   fseek(s.hints_file, DAT_0097db40[hint_index], 0);
-  s.item_count = fscanf(s.hints_file, s_______00580fa4, s.hint_text);
+  s.item_count = fscanf(s.hints_file, "%[^\n]", s.hint_text);
   strcat(g_ui_message_buffer, s.hint_text);
   fclose(s.hints_file);
 }
@@ -120,7 +97,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
     s.word_length = (int)s.word_end - (int)s.scan;
     if (max_width < s.line_width + MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length))
     {
-      strcat(s.current_line, DAT_00580fac);
+      strcat(s.current_line, "\n");
       strcat(dst, s.current_line);
       s.current_line[0] = '\0';
       while ((s.scan != (char *)0) && (*s.scan == ' '))
@@ -131,7 +108,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
       strncat(s.current_line, s.scan, s.word_length);
       while ((*s.word_end != '\0') && (*s.word_end == '\n'))
       {
-        strcat(dst, DAT_00580fb0);
+        strcat(dst, "\n");
         s.word_end++;
       }
       s.scan = s.word_end;
@@ -147,7 +124,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
       }
       while ((*s.word_end != '\0') && (*s.word_end == '\n'))
       {
-        strcat(dst, DAT_00580fb4);
+        strcat(dst, "\n");
         s.word_end++;
         s.line_width = 0;
         s.current_line[0] = '\0';
@@ -158,7 +135,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
 
   if (max_width < s.line_width + MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length))
   {
-    strcat(s.current_line, DAT_00580fb8);
+    strcat(s.current_line, "\n");
     strcat(dst, s.current_line);
     strcat(dst, s.scan);
   }
@@ -209,7 +186,7 @@ char *WrapTextToWidthForPopup(char *src, char *dst, int max_width)
     }
     else if (*s.scan == '\n')
     {
-      strcat(s.current_line, DAT_00580fbc);
+      strcat(s.current_line, "\n");
       strcat(dst, s.current_line);
       s.current_line[0] = '\0';
       s.line_width = 0;
@@ -230,7 +207,7 @@ char *WrapTextToWidthForPopup(char *src, char *dst, int max_width)
       s.word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
       if (max_width < s.word_width + s.line_width)
       {
-        strcat(s.current_line, DAT_00580fc0);
+        strcat(s.current_line, "\n");
         strcat(dst, s.current_line);
         s.current_line[0] = '\0';
         s.line_width = 0;
@@ -278,8 +255,8 @@ void ShowTownHintTextPopup(int hint_index)
   }
 
   AppendTownHintBodyText(hint_index);
-  FUN_0057e826(g_ui_message_buffer, DAT_00580fc4);
-  ReadSpriteEntryPointers(s.loaded_button_sprites, s_BuyButtons_spr_00580fc8);
+  FUN_0057e826(g_ui_message_buffer, "\x94");
+  ReadSpriteEntryPointers(s.loaded_button_sprites, "BuyButtons.spr");
 
   s.button_sprite_10 = s.loaded_button_sprites[0];
   s.button_sprite_11 = s.loaded_button_sprites[1];

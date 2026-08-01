@@ -25,6 +25,8 @@ static char *s_sealed_deck_registry_path_005710e0 = "Software\\MicroProse\\Magic
 static char *s_solo_options_registry_path_00571284 = "Software\\MicroProse\\Magic: The Gathering\\SoloOptions";
 // GLOBAL: MAGIC 0x005710f4
 static char *s_gauntlet_options_registry_path_00571338 = "Software\\MicroProse\\Magic: The Gathering\\GauntletEx1Options";
+// GLOBAL: MAGIC 0x00588100
+static char *s_duel_options_registry_path_00588100 = "Software\\MicroProse\\Magic: The Gathering\\DuelOptions";
 
 // FUNCTION: MAGIC 0x004a5a1b
 // FUNCTION: SHANDALAR 0x00557b9b
@@ -368,7 +370,7 @@ void save_duel_interface_options_to_registry(void)
     DWORD disposition;
   } s;
 
-  if (RegCreateKeyExA(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions", 0, NULL, 0, 0xf003f,
+  if (RegCreateKeyExA(HKEY_CURRENT_USER, s_duel_options_registry_path_00588100, 0, NULL, 0, 0xf003f,
                       NULL, &s.options_key, &s.disposition) == ERROR_SUCCESS)
   {
     wsprintfA((char *)s.value_buffer, "%d", g_duel_interface_options.layout);

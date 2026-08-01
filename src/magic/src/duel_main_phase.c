@@ -103,67 +103,6 @@ int main_phase_selected_card;
 // GLOBAL: MAGIC 0x0093f4ac
 int legal_attacker_count;
 
-
-// GLOBAL: MAGIC 0x0056e60c
-char s__d__Entering_Main_Phase__0056e60c[0x1a] = "%d: Entering Main Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e628
-char DAT_0056e628[4] = "";
-
-// GLOBAL: MAGIC 0x0056e62c
-char s__d__Main_Phase_skipping_PickACar_0056e62c[0x61] = "%d: Main Phase skipping PickACard. SkipPhase:%d ThePhase:%d mustattackers:%d UserWantsToStop:%d\n";
-
-// GLOBAL: MAGIC 0x0056e690
-char s__d__Main_Phase_PickACard__ThePha_0056e690[0x39] = "%d: Main Phase PickACard: ThePhase:%d Player:%d card:%d\n";
-
-// GLOBAL: MAGIC 0x0056e6cc
-char s__d__Main_Phase_Non_Phasing_playe_0056e6cc[0x3f] = "%d: Main Phase Non-Phasing player's Fast Effects: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e70c
-char s__d__Main_Phase__No_attackers__No_0056e70c[0x4e] = "%d: Main Phase (No attackers) Non-Phasing player's Fast Effects: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e75c
-char DAT_0056e75c[4] = "";
-
-// GLOBAL: MAGIC 0x0056e760
-char s__d__Main_Phase_Non_Phasing_playe_0056e760[0x3f] = "%d: Main Phase Non-Phasing player's Fast Effects: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e7a0
-char s__d__Main_Phase_assigning_attacke_0056e7a0[0x42] = "%d: Main Phase assigning attacker: ThePhase:%d Player:%d card:%d\n";
-
-// GLOBAL: MAGIC 0x0056e7e4
-char DAT_0056e7e4[4] = "";
-
-// GLOBAL: MAGIC 0x0056e7e8
-char s__d__Main_Phase_PX_Choose_Attacke_0056e7e8[0x31] = "%d: Main Phase PX Choose Attackers: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e81c
-char s__d__Main_Phase_Attackers_Fast_Ef_0056e81c[0x34] = "%d: Main Phase Attackers Fast Effects: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e850
-char s__d__Main_Phase_PX_Choose_Blocker_0056e850[0x30] = "%d: Main Phase PX Choose Blockers: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e880
-char s__d__Main_Phase_Blockers_Fast_Eff_0056e880[0x33] = "%d: Main Phase Blockers Fast Effects: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e8b4
-char s__d__Main_Phase_Combat__ThePhase__0056e8b4[0x24] = "%d: Main Phase Combat: ThePhase:%d\n";
-
-// GLOBAL: MAGIC 0x0056e8d8
-char s__Ouch__that_hurt___0056e8d8[0x14] = "'Ouch, that hurt.'";
-
-// GLOBAL: MAGIC 0x0056e8ec
-char s__Give_up__you_re_doomed___0056e8ec[0x1a] = "'Give up, you're doomed.'";
-
-// GLOBAL: MAGIC 0x00561904
-char s_PROMPT_CHOOSEBLOCKERS_00561904[0x18] = "PROMPT_CHOOSEBLOCKERS";
-
-// GLOBAL: MAGIC 0x0056191c
-char s_PROMPT_CHOOSEBLOCKERS_0056191c[0x18] = "PROMPT_CHOOSEBLOCKERS";
-
-// GLOBAL: MAGIC 0x00561934
-char DAT_00561934[4] = "";
-
 // FUNCTION: MAGIC 0x0044118f
 int player_has_legal_attacker(int player)
 {
@@ -310,7 +249,7 @@ void choose_blockers_human(int player)
     s.done = 0;
     while ((s.done == 0) && (player_has_available_blocker(s.defending_player) != 0))
     {
-      load_text(global_ui_strings_filename, s_PROMPT_CHOOSEBLOCKERS_00561904);
+      load_text(global_ui_strings_filename, "PROMPT_CHOOSEBLOCKERS");
       if (C_real_select_target(s.defending_player, s.defending_player, s.defending_player, 0x2200, 0x2000002, 0, 0, 0, 0, 0,
                                -1, -1, -1, -1, 0x400, 0, 0x11, text_lines[0], 2, &s.selected_blocker) == 0)
       {
@@ -357,10 +296,10 @@ void choose_blockers_human(int player)
           }
           else if (g_duel_ai_mode_state != 1)
           {
-            load_text(global_ui_strings_filename, s_PROMPT_CHOOSEBLOCKERS_0056191c);
+            load_text(global_ui_strings_filename, "PROMPT_CHOOSEBLOCKERS");
             set_duel_prompt_text(text_lines[2]);
             Sleep(2000);
-            set_duel_prompt_text(DAT_00561934);
+            set_duel_prompt_text("");
           }
         }
       }
@@ -469,7 +408,7 @@ int main_phase(unsigned int player, int phase_mode, int *phase_value)
   s.other_player = 1 - player;
   if (TRACE_ENABLED)
   {
-    sprintf(s.trace_enter_phase, s__d__Entering_Main_Phase__0056e60c, duel_trace_counter++);
+    sprintf(s.trace_enter_phase, "%d: Entering Main Phase.\n", duel_trace_counter++);
     append_to_trace_txt(s.trace_enter_phase);
   }
   switch (phase_mode)
@@ -554,7 +493,7 @@ restart_main_phase_action_loop:
       {
         s.retry_phase_prompt = 1;
         land_can_be_played |= 0x80;
-        strcpy(unk_00748770, DAT_0056e628);
+        strcpy(unk_00748770, "");
         if (current_phase <= PHASE_MAIN1)
         {
           strcpy(unk_00748770, gs_prompt_main_phase_precombat_cast_spells_008cc710);
@@ -607,7 +546,7 @@ restart_main_phase_action_loop:
           main_phase_selected_card = 0xffffffff;
           if (TRACE_ENABLED)
           {
-            sprintf(s.trace_skip_pick_card, s__d__Main_Phase_skipping_PickACar_0056e62c, duel_trace_counter++, s.skip_phase,
+            sprintf(s.trace_skip_pick_card, "%d: Main Phase skipping PickACard. SkipPhase:%d ThePhase:%d mustattackers:%d UserWantsToStop:%d\n", duel_trace_counter++, s.skip_phase,
                     current_phase, legal_attacker_count, s.player_can_stop_here);
             append_to_trace_txt(s.trace_skip_pick_card);
           }
@@ -617,7 +556,7 @@ restart_main_phase_action_loop:
           main_phase_selected_card = select_card_for_action(player, player, player, 0, 0, unk_00748770, 2);
           if (TRACE_ENABLED)
           {
-            sprintf(s.trace_pick_card, s__d__Main_Phase_PickACard__ThePha_0056e690, duel_trace_counter++, current_phase,
+            sprintf(s.trace_pick_card, "%d: Main Phase PickACard: ThePhase:%d Player:%d card:%d\n", duel_trace_counter++, current_phase,
                     player, main_phase_selected_card);
             append_to_trace_txt(s.trace_pick_card);
           }
@@ -732,7 +671,7 @@ restart_main_phase_action_loop:
               }
               if (DAT_00777aa8 != 0)
               {
-                sprintf(s.trace_nonphasing_precombat_fast_effects, s__d__Main_Phase_Non_Phasing_playe_0056e6cc, duel_trace_counter++, current_phase);
+                sprintf(s.trace_nonphasing_precombat_fast_effects, "%d: Main Phase Non-Phasing player's Fast Effects: ThePhase:%d\n", duel_trace_counter++, current_phase);
                 append_to_trace_txt(s.trace_nonphasing_precombat_fast_effects);
                 if (process_response_actions(1 - current_player,
                                              gs_prompt_main_phase_precombat_cast_spells_008cc710) != 0)
@@ -809,7 +748,7 @@ restart_main_phase_action_loop:
               }
               if (DAT_00777aa8 != 0)
               {
-                sprintf(s.trace_no_attackers_nonphasing_fast_effects, s__d__Main_Phase__No_attackers__No_0056e70c, duel_trace_counter++, current_phase);
+                sprintf(s.trace_no_attackers_nonphasing_fast_effects, "%d: Main Phase (No attackers) Non-Phasing player's Fast Effects: ThePhase:%d\n", duel_trace_counter++, current_phase);
                 append_to_trace_txt(s.trace_no_attackers_nonphasing_fast_effects);
                 if (process_response_actions(1 - current_player,
                                              gs_prompt_main_phase_precombat_cast_spells_008cc710) != 0)
@@ -830,7 +769,7 @@ restart_main_phase_action_loop:
         {
           if (current_phase < PHASE_MAIN2)
           {
-            strcpy(unk_00748770, DAT_0056e75c);
+            strcpy(unk_00748770, "");
             if ((0 < attacking_creature_count) || (update_attacker_count_and_check_combat_done(player) == 0))
             {
               *phase_value = 1;
@@ -869,7 +808,7 @@ restart_main_phase_action_loop:
               }
               if (TRACE_ENABLED)
               {
-                sprintf(s.trace_nonphasing_postcombat_fast_effects, s__d__Main_Phase_Non_Phasing_playe_0056e760, duel_trace_counter++, current_phase);
+                sprintf(s.trace_nonphasing_postcombat_fast_effects, "%d: Main Phase Non-Phasing player's Fast Effects: ThePhase:%d\n", duel_trace_counter++, current_phase);
                 append_to_trace_txt(s.trace_nonphasing_postcombat_fast_effects);
               }
               if (process_response_actions(1 - current_player,
@@ -1068,7 +1007,7 @@ restart_main_phase_action_loop:
       {
         if (TRACE_ENABLED)
         {
-          sprintf(s.trace_assign_attacker, s__d__Main_Phase_assigning_attacke_0056e7a0, duel_trace_counter++, current_phase,
+          sprintf(s.trace_assign_attacker, "%d: Main Phase assigning attacker: ThePhase:%d Player:%d card:%d\n", duel_trace_counter++, current_phase,
                   player, main_phase_selected_card);
           append_to_trace_txt(s.trace_assign_attacker);
         }
@@ -1127,7 +1066,7 @@ restart_main_phase_action_loop:
         {
           set_duel_prompt_text(gs_prompt_illegal_attacker_008b3d20);
           Sleep(2000);
-          set_duel_prompt_text(DAT_0056e7e4);
+          set_duel_prompt_text("");
         }
       }
     }
@@ -1277,7 +1216,7 @@ restart_main_phase_action_loop:
     }
     if (TRACE_ENABLED)
     {
-      sprintf(s.trace_choose_attackers, s__d__Main_Phase_PX_Choose_Attacke_0056e7e8, duel_trace_counter++, current_phase);
+      sprintf(s.trace_choose_attackers, "%d: Main Phase PX Choose Attackers: ThePhase:%d\n", duel_trace_counter++, current_phase);
       append_to_trace_txt(s.trace_choose_attackers);
     }
     dispatch_trigger(player, 0xd9, gs_choose_attackers_00939570, 0);
@@ -1305,7 +1244,7 @@ restart_main_phase_action_loop:
       phase_response_window_open = 1;
       if (TRACE_ENABLED)
       {
-        sprintf(s.trace_attackers_fast_effects, s__d__Main_Phase_Attackers_Fast_Ef_0056e81c, duel_trace_counter++, current_phase);
+        sprintf(s.trace_attackers_fast_effects, "%d: Main Phase Attackers Fast Effects: ThePhase:%d\n", duel_trace_counter++, current_phase);
         append_to_trace_txt(s.trace_attackers_fast_effects);
       }
       s.allow_response_result = allow_response(-2, current_phase, gs_assign_attackers_008b45f0, PHASE_BEFORE_BLOCKING);
@@ -1315,7 +1254,7 @@ restart_main_phase_action_loop:
     update_phase_display(player, current_phase);
     if (TRACE_ENABLED)
     {
-      sprintf(s.trace_choose_blockers, s__d__Main_Phase_PX_Choose_Blocker_0056e850, duel_trace_counter++, current_phase);
+      sprintf(s.trace_choose_blockers, "%d: Main Phase PX Choose Blockers: ThePhase:%d\n", duel_trace_counter++, current_phase);
       append_to_trace_txt(s.trace_choose_blockers);
     }
     dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xda, gs_choose_defenders_00789a50, 0);
@@ -1360,7 +1299,7 @@ resolve_combat_if_needed:
       update_phase_display(player, current_phase);
       if (TRACE_ENABLED)
       {
-        sprintf(s.trace_blockers_fast_effects, s__d__Main_Phase_Blockers_Fast_Eff_0056e880, duel_trace_counter++, current_phase);
+        sprintf(s.trace_blockers_fast_effects, "%d: Main Phase Blockers Fast Effects: ThePhase:%d\n", duel_trace_counter++, current_phase);
         append_to_trace_txt(s.trace_blockers_fast_effects);
       }
       phase_response_window_open = 1;
@@ -1369,7 +1308,7 @@ resolve_combat_if_needed:
     } while (s.allow_response_result != 0);
     if (TRACE_ENABLED)
     {
-      sprintf(s.trace_combat, s__d__Main_Phase_Combat__ThePhase__0056e8b4, duel_trace_counter++, current_phase);
+      sprintf(s.trace_combat, "%d: Main Phase Combat: ThePhase:%d\n", duel_trace_counter++, current_phase);
       append_to_trace_txt(s.trace_combat);
     }
     resolve_combat_damage(player);
@@ -1393,7 +1332,7 @@ advance_to_postcombat_main:
     {
       if (life[1] <= (int)*(int *)&DAT_008cfd70[4] / 2)
       {
-        FUN_004b5fc9(s__Ouch__that_hurt___0056e8d8);
+        FUN_004b5fc9("'Ouch, that hurt.'");
       }
       attacking_creature_count = 0;
       current_phase = PHASE_MAIN2;
@@ -1404,7 +1343,7 @@ advance_to_postcombat_main:
     }
     else if (life[0] <= life[1] / 2)
     {
-      FUN_004b5fc9(s__Give_up__you_re_doomed___0056e8ec);
+      FUN_004b5fc9("'Give up, you're doomed.'");
     }
   }
   if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (current_phase != PHASE_MAIN2))

@@ -260,16 +260,6 @@ char g_loadsave_slot_descriptions[10][0x40];
 char g_loadsave_esc_key[] = "\x1b";
 // GLOBAL: SHANDALAR 0x00588dc0
 char g_loadsave_esc_key_2[] = "\x1b";
-// GLOBAL: SHANDALAR 0x00588dd8
-char g_loadsave_magic_map_path[] = "magic4.map";
-// GLOBAL: SHANDALAR 0x00588dfc
-char g_loadsave_file_open_mode[] = "r+t";
-// GLOBAL: SHANDALAR 0x00588e00
-char g_loadsave_description_file_path[] = "saveDescs";
-// GLOBAL: SHANDALAR 0x00588e0c
-char g_loadsave_space_string[] = " ";
-// GLOBAL: SHANDALAR 0x00588e10
-char g_loadsave_description_line_format[] = "%s\n";
 
 // GLOBAL: SHANDALAR 0x00588a20
 AdvMenuControl g_loadsave_menu_controls[11] = {
@@ -1705,7 +1695,7 @@ int RunLoadSaveMenu(int param_1)
     FILE *save_desc_file;
   } s;
 
-  s.map_path = g_loadsave_magic_map_path;
+  s.map_path = "magic4.map";
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, "menopt.pic", (g_graphics_bpp == 8) ? &g_palette_data_words : (void *)1);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
@@ -1747,7 +1737,7 @@ int RunLoadSaveMenu(int param_1)
   }
 
   s.map_path[5] = '4';
-  s.save_desc_file = fopen(g_loadsave_description_file_path, g_loadsave_file_open_mode);
+  s.save_desc_file = fopen("saveDescs", "r+t");
   for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
   {
     fgets(g_loadsave_slot_descriptions[s.slot_index], 0x40, s.save_desc_file);
@@ -1843,7 +1833,7 @@ restart_menu_loop:
       case 0x4d00:
         if (strlen(s.edit_buffer + 1) == g_loadsave_cursor_index)
         {
-          strcat(s.edit_buffer + 1, g_loadsave_space_string);
+          strcat(s.edit_buffer + 1, " ");
         }
         g_loadsave_cursor_index++;
         break;
@@ -1916,7 +1906,7 @@ restart_menu_loop:
     fseek(s.save_desc_file, 0, 0);
     for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
     {
-      fprintf(s.save_desc_file, g_loadsave_description_line_format, g_loadsave_slot_descriptions[s.slot_index]);
+      fprintf(s.save_desc_file, "%s\n", g_loadsave_slot_descriptions[s.slot_index]);
     }
   }
 

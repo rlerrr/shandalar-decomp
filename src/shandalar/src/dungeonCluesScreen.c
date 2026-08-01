@@ -80,8 +80,6 @@ extern char g_dungeon_clues_list_done_keys[];
 extern char g_dungeon_clues_list_done_alt_keys[];
 extern char g_dungeon_clue_detail_done_keys[];
 extern char g_dungeon_clue_detail_done_alt_keys[];
-extern char s_x_sound_button2_wav_0058cae4[];
-extern char s_x_sound_button2_wav_0058caf8[];
 
 void ShowDungeonClueDetailScreen(int dungeon_index);
 
@@ -317,7 +315,7 @@ int RenderDungeonCluesListButton(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x00509064
 int ActivateDungeonCluesListButton(AdvMenuControl *control)
 {
-  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058caf8, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
@@ -374,7 +372,7 @@ int RenderDungeonClueDetailDoneButton(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x00508b57
 int ActivateDungeonClueDetailDoneButton(AdvMenuControl *control)
 {
-  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cae4, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
@@ -577,21 +575,6 @@ char g_dungeon_clues_list_done_keys[] = " Dd\r\x1b";
 // GLOBAL: SHANDALAR 0x0058cacc
 char g_dungeon_clues_list_done_alt_keys[] = " Dd\r\x1b";
 
-// GLOBAL: SHANDALAR 0x0058cb0c
-char s_dunClues_0058cb0c[] = "dunClues";
-// GLOBAL: SHANDALAR 0x0058cb18
-char s_dun_bar_pic_0058cb18[] = "dun_bar.pic";
-// GLOBAL: SHANDALAR 0x0058cb28
-char s_dung_bd_pic_0058cb28[] = "dung_bd.pic";
-// GLOBAL: SHANDALAR 0x0058cb38
-char s_dung_bd_pic_0058cb38[] = "dung_bd.pic";
-// GLOBAL: SHANDALAR 0x0058cb48
-char s_dung_bd_pic_0058cb48[] = "dung_bd.pic";
-// GLOBAL: SHANDALAR 0x0058cb54
-char s_CAVELIST_0058cb54[] = "CAVELIST";
-// GLOBAL: SHANDALAR 0x0058cb60
-char s_ADVstrings_txt_0058cb60[] = "ADVstrings.txt";
-
 /*
  * Globals used by the clue detail screen.
  */
@@ -616,24 +599,6 @@ AdvMenuControl g_dungeon_clue_detail_controls[1] = {
 char g_dungeon_clue_detail_done_keys[] = " \rDd\x1b";
 // GLOBAL: SHANDALAR 0x0058cabc
 char g_dungeon_clue_detail_done_alt_keys[] = " \rDd\x1b";
-
-// GLOBAL: SHANDALAR 0x0058cae4
-char s_x_sound_button2_wav_0058cae4[] = "x:sound\\button2.wav";
-// GLOBAL: SHANDALAR 0x0058caf8
-char s_x_sound_button2_wav_0058caf8[] = "x:sound\\button2.wav";
-
-// GLOBAL: SHANDALAR 0x0058ccac
-char s_dunClues_0058ccac[] = "dunClues";
-// GLOBAL: SHANDALAR 0x0058ccb8
-char s_advfac64_pic_0058ccb8[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x0058ccc8
-char s_cluebutn_pic_0058ccc8[] = "cluebutn.pic";
-// GLOBAL: SHANDALAR 0x0058ccdc
-char s_clueback_pic_0058ccdc[] = "clueback.pic";
-// GLOBAL: SHANDALAR 0x0058ccec
-char s__s____s__0058ccec[] = "%s\n      (%s)";
-// GLOBAL: SHANDALAR 0x0058ccfc
-char s_empty_card_banner_0058ccfc[] = "";
 
 char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width);
 void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
@@ -747,12 +712,12 @@ void ShowDungeonCluesScreen(int unused)
 
   if (g_dungeon_clues_list_strings_loaded == 0)
   {
-    g_dungeon_clues_list_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, s_dunClues_0058cb0c,
+    g_dungeon_clues_list_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "dunClues",
                                                                                                       (int)g_ini_string_scratch);
     g_dungeon_clues_list_strings_loaded = 1;
   }
 
-  LoadPcxIntoPage(1, s_dun_bar_pic_0058cb18);
+  LoadPcxIntoPage(1, "dun_bar.pic");
 
   BeginSpriteEncodeSession();
   g_dungeon_clues_scrollbar_sprite = EncodeSpriteFromPage(1, 2, 1, 0xd, 0x70);
@@ -787,7 +752,7 @@ void ShowDungeonCluesScreen(int unused)
     }
   }
 
-  LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb28, (void *)0);
+  LoadPcxResource(1, 0, global_screen_height - 0x1e0, "dung_bd.pic", (void *)0);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
                           global_screen_height);
 
@@ -846,7 +811,7 @@ void ShowDungeonCluesScreen(int unused)
 redraw_background:
   if (s.redraw_background == 0)
   {
-    LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb38, (void *)0);
+    LoadPcxResource(1, 0, global_screen_height - 0x1e0, "dung_bd.pic", (void *)0);
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0,
                             global_screen_width, global_screen_height);
 
@@ -892,7 +857,7 @@ redraw_list:
 
   RenderCurrentMenuContextControls();
 
-  LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_dung_bd_pic_0058cb48, (void *)0);
+  LoadPcxResource(1, 0, global_screen_height - 0x1e0, "dung_bd.pic", (void *)0);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
                           global_screen_height);
 
@@ -919,7 +884,7 @@ redraw_list:
     s.visible_dungeon_indices[s.visible_count] = s.dungeon_index;
     if ((int)s.dungeon_index < 5)
     {
-      LoadTextSectionLines(s_ADVstrings_txt_0058cb60, s_CAVELIST_0058cb54);
+      LoadTextSectionLines("ADVstrings.txt", "CAVELIST");
       FormatMessageFromStringStripCarriageReturns(
           g_ui_message_buffer, 0x1000, text_lines[0], GetDungeonName(s.dungeon_index),
           gs_cityname_manacastle_0077de00[s.dungeon_index + 1]);
@@ -1119,14 +1084,14 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
 
   if (g_dungeon_clue_detail_strings_loaded == 0)
   {
-    g_dungeon_clue_detail_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, s_dunClues_0058ccac,
+    g_dungeon_clue_detail_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "dunClues",
                                                                                                        (int)g_ini_string_scratch);
     g_dungeon_clue_detail_strings_loaded = 1;
   }
 
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_0058ccb8);
-  LoadPcxIntoPage(1, s_cluebutn_pic_0058ccc8);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
+  LoadPcxIntoPage(1, "cluebutn.pic");
 
   BeginSpriteEncodeSession();
   PTR_DAT_005832dc->font_slot = 7;
@@ -1151,7 +1116,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
   AddMenuControlsToContext(g_dungeon_clue_detail_controls, 1, s.menu_context);
   FinalizeSpriteEncodeSession();
 
-  LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_clueback_pic_0058ccdc, (void *)0);
+  LoadPcxResource(1, 0, global_screen_height - 0x1e0, "clueback.pic", (void *)0);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
                           global_screen_height);
   CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
@@ -1166,7 +1131,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
   /* Title */
   if (dungeon_index < 5)
   {
-    sprintf(g_ui_message_buffer, s__s____s__0058ccec, GetDungeonName(dungeon_index),
+    sprintf(g_ui_message_buffer, "%s\n      (%s)", GetDungeonName(dungeon_index),
             (char *)gs_cityname_manacastle_0077de00[dungeon_index + 1]);
     DrawFormattedTextShadowed(PTR_DAT_005832b4, s.title_colors[4], 0x12, 0x1c, g_ui_message_buffer);
     s.text_y = ScaleUiCoordinateFrom320(0x24);
@@ -1186,7 +1151,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
     }
 
     DrawAdventureCard((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.i], s.i * 0x29 + 0xa0,
-                      ((s.i == 0) ? 8 : 0) + s.i * 4 + 0x76, 1, s_empty_card_banner_0058ccfc);
+                      ((s.i == 0) ? 8 : 0) + s.i * 4 + 0x76, 1, "");
   }
 
   if (((g_castle_dungeon_slots[dungeon_index].clues_bitmap & 2) != 0) || (g_reveal_all_world_info != 0))

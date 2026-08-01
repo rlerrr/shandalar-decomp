@@ -63,53 +63,6 @@ int g_spell_chain_window_extra_bytes = 8;
 // GLOBAL: SHANDALAR 0x00589be0
 int g_spell_chain_scrollbar_direction = 3;
 
-// GLOBAL: MAGIC 0x00570f68
-char s_SpellMinimized_00570f68[] = "SpellMinimized";
-
-// GLOBAL: MAGIC 0x00570f78
-char s_MENU_SPELLCHAIN_00570f78[] = "MENU_SPELLCHAIN";
-
-// GLOBAL: MAGIC 0x00570f88
-char s_MENU_MINIMIZEDSPELLCHAIN_00570f88[] = "MENU_MINIMIZEDSPELLCHAIN";
-
-// GLOBAL: MAGIC 0x00570fa4
-char s__WINBK_SpellChain_pic_00570fa4[] = "\\WINBK_SpellChain.pic";
-
-// GLOBAL: MAGIC 0x00570fbc
-char s__WINBK_SpellMushrooms_pic_00570fbc[] = "\\WINBK_SpellMushrooms.pic";
-
-// GLOBAL: MAGIC 0x00570fd8
-char s__WINBK_SpellSnails_pic_00570fd8[] = "\\WINBK_SpellSnails.pic";
-
-// GLOBAL: MAGIC 0x00570ff0
-char s__WINBK_SpellMin_pic_00570ff0[] = "\\WINBK_SpellMin.pic";
-
-// GLOBAL: MAGIC 0x00571004
-char s__duel_hlp_00571004[] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x00571010
-// GLOBAL: SHANDALAR 0x00589c8c
-char s_empty_00571010[] = "";
-
-// GLOBAL: MAGIC 0x00571014
-char s_MAGICGAME_ScrollbarClass_00571014[] = "MAGICGAME_ScrollbarClass";
-
-// GLOBAL: MAGIC 0x00571030
-// GLOBAL: SHANDALAR 0x00589cac
-char s_empty_00571030[] = "";
-
-// GLOBAL: MAGIC 0x00571034
-char s_SpellMinimized_00571034[] = "SpellMinimized";
-
-// GLOBAL: MAGIC 0x00571044
-char s__WINBK_SpellChain_pic_00571044[] = "\\WINBK_SpellChain.pic";
-
-// GLOBAL: MAGIC 0x0057105c
-char s_Spell_Card_0057105c[] = "Spell Card";
-
-// GLOBAL: MAGIC 0x00571068
-char s_MAGICGAME_CardClass_00571068[] = "MAGICGAME_CardClass";
-
 // GLOBAL: MAGIC 0x00637e58
 // GLOBAL: SHANDALAR 0x005b7ba8
 int g_spell_minimized_hwnd;
@@ -193,18 +146,6 @@ int copy_spell_chain_display_entries(spell_chain_display_entry_t *entries)
   return count;
 }
 
-// GLOBAL: MAGIC 0x0057107c
-char s_Spell_Target_Card_0057107c[] = "Spell Target Card";
-
-// GLOBAL: MAGIC 0x00571090
-char s_MAGICGAME_CardClass_00571090[] = "MAGICGAME_CardClass";
-
-// GLOBAL: MAGIC 0x005710a4
-char s_Spell_Target_Card_005710a4[] = "Spell Target Card";
-
-// GLOBAL: MAGIC 0x005710b8
-char s_MAGICGAME_CardClass_005710b8[] = "MAGICGAME_CardClass";
-
 // FUNCTION: MAGIC 0x00486050
 // FUNCTION: SHANDALAR 0x004c8c30
 int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
@@ -224,32 +165,32 @@ int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
     s.registered = 0;
   }
 
-  SET_DUEL_WNDCLASS(s.wndclass, 3, wndproc_SpellMinimized, 0, (HICON)0, (HBRUSH)0x6, s_SpellMinimized_00570f68);
+  SET_DUEL_WNDCLASS(s.wndclass, 3, wndproc_SpellMinimized, 0, (HICON)0, (HBRUSH)0x6, "SpellMinimized");
   if (RegisterClassA(&s.wndclass) == 0)
   {
     s.registered = 0;
   }
 
   g_spell_minimized_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_SPELLCHAIN_00570f78);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_SPELLCHAIN");
   strcpy(g_spell_chain_menu_minimize_text, text_lines[0]);
   strcpy(g_spell_chain_menu_help_text, text_lines[1]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_MINIMIZEDSPELLCHAIN_00570f88);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_MINIMIZEDSPELLCHAIN");
   strcpy(g_spell_minimized_menu_restore_text, text_lines[0]);
   strcpy(g_spell_minimized_menu_help_text, text_lines[1]);
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__WINBK_SpellChain_pic_00570fa4);
+  strcat(s.path, "\\WINBK_SpellChain.pic");
   g_spell_chain_background_bitmap = load_pic(s.path);
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__WINBK_SpellMushrooms_pic_00570fbc);
+  strcat(s.path, "\\WINBK_SpellMushrooms.pic");
   g_spell_chain_scrollbar_thumb_bitmap = load_pic(s.path);
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__WINBK_SpellSnails_pic_00570fd8);
+  strcat(s.path, "\\WINBK_SpellSnails.pic");
   g_spell_chain_scrollbar_track_bitmap = load_pic(s.path);
   g_spell_chain_scrollbar_direction = 3;
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__WINBK_SpellMin_pic_00570ff0);
+  strcat(s.path, "\\WINBK_SpellMin.pic");
   g_spell_minimized_background_bitmap = load_pic(s.path);
 
   SetRect(&g_spell_chain_layout_rect, 0, 0, 0, 0);
@@ -445,7 +386,7 @@ int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, 
   s.result = 1;
   s.create_target.player = display_entry.player;
   s.create_target.card = display_entry.card;
-  s.spell_window = CreateWindowExA(0, s_MAGICGAME_CardClass_00571068, s_Spell_Card_0057105c, 0x50000000,
+  s.spell_window = CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Card", 0x50000000,
                                    0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
   if (s.spell_window == (HWND)0)
   {
@@ -457,7 +398,7 @@ int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, 
   {
     s.create_target = display_entry.targets[s.target_index];
     s.target_windows[s.target_index] =
-        CreateWindowExA(0, s_MAGICGAME_CardClass_00571090, s_Spell_Target_Card_0057107c, 0x50000000,
+        CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Target Card", 0x50000000,
                         0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
     if (s.target_windows[s.target_index] == (HWND)0)
     {
@@ -559,7 +500,7 @@ int update_spell_chain_entry_targets(HWND hwnd, spell_chain_display_entry_t disp
   {
     s.create_target = display_entry.targets[s.target_index];
     s.target_windows[s.target_index] =
-        CreateWindowExA(0, s_MAGICGAME_CardClass_005710b8, s_Spell_Target_Card_005710a4, 0x50000000,
+        CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Target Card", 0x50000000,
                         0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
     if (s.target_windows[s.target_index] == (HWND)0)
     {
@@ -959,7 +900,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
     case 100:
       s.help_topic = 0xbd2;
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_00571004);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_topic);
       break;
     }
@@ -970,14 +911,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
     SetWindowLongA(hwnd, g_spell_chain_count_long_offset, s.window_count);
     s.windows = (spell_chain_window_entry_t *)malloc(0x2260);
     SetWindowLongA(hwnd, g_spell_chain_windows_long_offset, (LONG)s.windows);
-    s.create_scrollbar_hwnd = CreateWindowExA(0, s_MAGICGAME_ScrollbarClass_00571014, s_empty_00571010, WS_CHILD | WS_VISIBLE,
+    s.create_scrollbar_hwnd = CreateWindowExA(0, "MAGICGAME_ScrollbarClass", "", WS_CHILD | WS_VISIBLE,
                                               0, 0, 0, 0, hwnd, (HMENU)0, g_app_instance, NULL);
     if (s.create_scrollbar_hwnd != (HWND)0)
     {
       SendMessageA(s.create_scrollbar_hwnd, 0x464, (WPARAM)g_spell_chain_scrollbar_thumb_bitmap, 0);
       SendMessageA(s.create_scrollbar_hwnd, 0x466, (WPARAM)g_spell_chain_scrollbar_track_bitmap, g_spell_chain_scrollbar_direction);
     }
-    g_spell_minimized_hwnd = (int)CreateWindowExA(0, s_SpellMinimized_00571034, s_empty_00571030, WS_POPUP,
+    g_spell_minimized_hwnd = (int)CreateWindowExA(0, "SpellMinimized", "", WS_POPUP,
                                                   0, 0, 0, 0, hwnd, (HMENU)0, g_app_instance, NULL);
     if (s.windows == NULL || s.create_scrollbar_hwnd == (HWND)0 || (HWND)g_spell_minimized_hwnd == (HWND)0)
     {
@@ -1002,7 +943,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
     if (g_spell_chain_background_bitmap == (HBITMAP)0)
     {
       strcpy(s.background_path, global_duelart_path);
-      strcat(s.background_path, s__WINBK_SpellChain_pic_00571044);
+      strcat(s.background_path, "\\WINBK_SpellChain.pic");
       g_spell_chain_background_bitmap = load_pic(s.background_path);
     }
     if (g_spell_chain_background_bitmap != (HBITMAP)0)

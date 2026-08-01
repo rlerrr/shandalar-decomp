@@ -283,9 +283,6 @@ int g_dungeon_monster_duel_music_csvids[] = {0x343, 0x24d, 0x75, 0xa0, 0x35b, 0x
 // GLOBAL: SHANDALAR 0x0058caa0
 static int g_castle_defeat_music_ids[] = {0, 2, 3, 4, 1};
 
-// GLOBAL: SHANDALAR 0x00583af8
-static char g_dungeon_ambient_sound_path[] = "x:sound\\damb1.wav";
-
 // FUNCTION: SHANDALAR 0x00443940
 int RunCastleDungeonBoard(int dungeon_index)
 {
@@ -325,7 +322,7 @@ int RunCastleDungeonBoard(int dungeon_index)
     int lost_required_duel;                     // ebp-0x4
   } s;
 
-  s.ambient_sound_path = g_dungeon_ambient_sound_path;
+  s.ambient_sound_path = "x:sound\\damb1.wav";
   s.ambient_repeat_count = 0;
   s.lost_required_duel = 0;
   if (dungeon_index >= 5)

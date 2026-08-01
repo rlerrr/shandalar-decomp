@@ -242,12 +242,6 @@ DialogBoxSpriteBank g_dialog_box_sprite_bank;
 HANDLE g_statwin_dll_module = 0;
 // GLOBAL: SHANDALAR 0x0058c038
 char g_save_file_path[] = "D:MAGIC0.SVE";
-// GLOBAL: SHANDALAR 0x0058a86c
-char s_advfac64_pic_path_0058a86c[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x0058a87c
-char s_todpal_tr_path_0058a87c[] = "todpal.tr";
-// GLOBAL: SHANDALAR 0x00591684
-char s_advfac64_pic_path_00591684[] = "advfac64.pic";
 // GLOBAL: SHANDALAR 0x0058c5ec
 int g_dungeon_card_effect_by_color[4] = {0, 8, 867, 939};
 // GLOBAL: SHANDALAR 0x0058c5fc
@@ -5388,8 +5382,8 @@ int RecountDeckCardTotals(void)
 int RestoreAdventureUiPaletteAndFocus(void)
 {
   SetFocus(g_main_window_hwnd);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_path_0058a86c);
-  ReadPalette(s_todpal_tr_path_0058a87c, (char *)0);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
+  ReadPalette("todpal.tr", (char *)0);
   SelectPalette(g_graphics_pages[0]->hTempDC, g_palette_handle, FALSE);
   RealizePalette(g_graphics_pages[0]->hTempDC);
   RecountDeckCardTotals();
@@ -5457,7 +5451,7 @@ void EnsureAdvfac64Loaded(int state)
 {
   if (state != g_advfac64_load_state)
   {
-    LoadPcxIntoPageNoPalette(s_advfac64_pic_path_00591684);
+    LoadPcxIntoPageNoPalette("advfac64.pic");
     g_advfac64_load_state = state;
   }
 }

@@ -32,30 +32,6 @@ int has_damage_card_targeting(int player, int card);
 #define COMBAT_DAMAGE_FLAG_FIRST_STRIKE 0x100000
 #define COMBAT_DAMAGE_FLAG_CANCELABLE 0x8000000
 
-// GLOBAL: MAGIC 0x0057dd64
-char s_PROMPT_RESOLVECOMBAT_0057dd64[0x18] = "PROMPT_RESOLVECOMBAT";
-
-// GLOBAL: MAGIC 0x0057dd7c
-char DAT_0057dd7c[4] = "";
-
-// GLOBAL: MAGIC 0x0057dd80
-char DAT_0057dd80[4] = "";
-
-// GLOBAL: MAGIC 0x0057dd84
-char DAT_0057dd84[4] = "";
-
-// GLOBAL: MAGIC 0x0057dd88
-char s_PROMPT_RESOLVECOMBAT_0057dd88[0x18] = "PROMPT_RESOLVECOMBAT";
-
-// GLOBAL: MAGIC 0x0057dda0
-char DAT_0057dda0[4] = "";
-
-// GLOBAL: MAGIC 0x0057dda4
-char DAT_0057dda4[4] = "";
-
-// GLOBAL: MAGIC 0x0057dda8
-char DAT_0057dda8[4] = "";
-
 // GLOBAL: MAGIC 0x00707c18
 int combat_damage_attacker_abilities[16];
 
@@ -769,7 +745,7 @@ void resolve_combat_damage(int player)
 
             while (s.attacker_damage_remaining != 0)
             {
-              load_text(global_ui_strings_filename, s_PROMPT_RESOLVECOMBAT_0057dd64);
+              load_text(global_ui_strings_filename, "PROMPT_RESOLVECOMBAT");
               if (g_duel_interface_options.layout != 2)
               {
                 if (combat_damage_attacker_abilities[s.damage_index] & 0x80)
@@ -811,7 +787,7 @@ void resolve_combat_damage(int player)
                 {
                   set_duel_prompt_text(text_lines[4]);
                   Sleep(1500);
-                  set_duel_prompt_text(DAT_0057dd7c);
+                  set_duel_prompt_text("");
                 }
                 if (s.target_is_valid == 1 && has_damage_card_targeting(s.selected_target.player, s.selected_target.card) != 0)
                 {
@@ -820,12 +796,12 @@ void resolve_combat_damage(int player)
                   {
                     set_duel_prompt_text(text_lines[5]);
                     Sleep(1500);
-                    set_duel_prompt_text(DAT_0057dd80);
+                    set_duel_prompt_text("");
                   }
                 }
               }
 
-              strcpy(unk_00748770, DAT_0057dd84);
+              strcpy(unk_00748770, "");
               highlight_combat_damage_attacker(player, combat_damage_attacker_cards[s.damage_index], 0);
               if (s.selected_target.player != -1 && s.selected_target.card != -1 && s.selected_target.card != -2)
               {
@@ -1012,7 +988,7 @@ void resolve_combat_damage(int player)
 
             while (s.blocker_damage_remaining != 0 && s.canceled_assignment == 0)
             {
-              load_text(global_ui_strings_filename, s_PROMPT_RESOLVECOMBAT_0057dd88);
+              load_text(global_ui_strings_filename, "PROMPT_RESOLVECOMBAT");
               if (g_duel_interface_options.layout != 2)
               {
                 sprintf(unk_00748770, text_lines[6],
@@ -1064,7 +1040,7 @@ void resolve_combat_damage(int player)
                   {
                     set_duel_prompt_text(text_lines[8]);
                     Sleep(1500);
-                    set_duel_prompt_text(DAT_0057dda0);
+                    set_duel_prompt_text("");
                   }
                   if (s.target_is_valid == 1 && has_damage_card_targeting(s.selected_target.player, s.selected_target.card) != 0)
                   {
@@ -1073,13 +1049,13 @@ void resolve_combat_damage(int player)
                     {
                       set_duel_prompt_text(text_lines[9]);
                       Sleep(1500);
-                      set_duel_prompt_text(DAT_0057dda4);
+                      set_duel_prompt_text("");
                     }
                   }
                 }
               }
 
-              strcpy(unk_00748770, DAT_0057dda8);
+              strcpy(unk_00748770, "");
               highlight_combat_damage_blocker(s.defending_player, ai_blocker_cards[s.damage_index], 0);
               if (s.selected_target.player != -1 && s.selected_target.card != -1 && s.selected_target.card != -2)
               {

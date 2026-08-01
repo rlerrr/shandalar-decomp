@@ -120,52 +120,13 @@ int g_wizard_text_colors[0x10] = {
     0x0000001d,
 };
 
-// GLOBAL: SHANDALAR 0x0058cad4
-char s_city_info_done_nav_hotkeys[] = " \rDd\x1b";
-// GLOBAL: SHANDALAR 0x0058cadc
-char s_city_info_done_activate_hotkeys[] = " \rDd\x1b";
-
-// GLOBAL: SHANDALAR 0x0058cb98
-char s_x_sound_button2_wav_0058cb98[] = "x:sound\\button2.wav";
-// GLOBAL: SHANDALAR 0x0058cbac
-char s_x_sound_button2_wav_0058cbac[] = "x:sound\\button2.wav";
-
-// GLOBAL: SHANDALAR 0x0058cbc0
-char s_cityInfo_0058cbc0[] = "cityInfo";
-// GLOBAL: SHANDALAR 0x0058cbcc
-char s_infobar_pic_0058cbcc[] = "infobar.pic";
-// GLOBAL: SHANDALAR 0x0058cbd8
-char s_cityinfo_pic_0058cbd8[] = "cityinfo.pic";
-// GLOBAL: SHANDALAR 0x0058cc00
-char s_cinfopce_pic_0058cc00[] = "cinfopce.pic";
-
-// GLOBAL: SHANDALAR 0x0058cbe8
-char s_city_info_heading_format_0[] = "%s";
-// GLOBAL: SHANDALAR 0x0058cbec
-char s_city_info_heading_format_1[] = "%s";
-// GLOBAL: SHANDALAR 0x0058cbf0
-char s_city_info_heading_format_2[] = "%s";
-// GLOBAL: SHANDALAR 0x0058cbf4
-char s_city_info_heading_format_3[] = "%s";
-// GLOBAL: SHANDALAR 0x0058cbf8
-char s_city_info_heading_format_4[] = "%s";
-// GLOBAL: SHANDALAR 0x0058cbfc
-char s_city_info_heading_format_5[] = "%s";
-
-// GLOBAL: SHANDALAR 0x0058cc10
-char s_city_info_amulet_count_format[] = "%d";
-// GLOBAL: SHANDALAR 0x0058cc14
-char s_city_info_newline[] = "\n";
-// GLOBAL: SHANDALAR 0x0058cc18
-char s_city_info_x_string[] = "X";
-// GLOBAL: SHANDALAR 0x0058cc1c
-char s_city_info_empty_string[] = "";
-
 // Forward decls
 int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode);
 int __cdecl FUN_0050a828(AdvMenuControl *control);
 int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode);
 int __cdecl FUN_0050a970(AdvMenuControl *control);
+extern char g_city_info_done_navigate_hotkeys[];
+extern char g_city_info_done_activate_hotkeys[];
 
 // GLOBAL: SHANDALAR 0x0058c8f8
 AdvMenuControl g_city_info_menu_controls[5] = {
@@ -178,8 +139,14 @@ AdvMenuControl g_city_info_menu_controls[5] = {
     // PageDown
     {27, 348, 17, 58, 27, 348, 17, 58, 1, (AdvMenuRenderCallback)RenderCityInfoScrollButton, (AdvMenuActivateCallback)FUN_0050a828, 2, 3, (char *)0, (char *)0, 0x5100, 0, {0, 0, 0, 0}},
     // Done
-    {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)RenderCityInfoDoneButton, (AdvMenuActivateCallback)FUN_0050a970, 0, 0, s_city_info_done_nav_hotkeys, s_city_info_done_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
+    {544, 28, 58, 26, 544, 28, 58, 26, 1, (AdvMenuRenderCallback)RenderCityInfoDoneButton, (AdvMenuActivateCallback)FUN_0050a970, 0, 0, g_city_info_done_navigate_hotkeys, g_city_info_done_activate_hotkeys, 0, 0, {0, 0, 0, 0}},
 };
+
+// GLOBAL: SHANDALAR 0x0058cad4
+char g_city_info_done_navigate_hotkeys[8] = " \rDd\x1b";
+
+// GLOBAL: SHANDALAR 0x0058cadc
+char g_city_info_done_activate_hotkeys[8] = " \rDd\x1b";
 
 // FUNCTION: SHANDALAR 0x004ffd0a
 int RenderAdvMenuControlNormally(AdvMenuControl *control)
@@ -261,7 +228,7 @@ int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x0050a828
 int __cdecl FUN_0050a828(AdvMenuControl *control)
 {
-  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cb98, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
@@ -310,7 +277,7 @@ int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode)
 // FUNCTION: SHANDALAR 0x0050a970
 int __cdecl FUN_0050a970(AdvMenuControl *control)
 {
-  PlaySoundEffectOnChannel(s_x_sound_button2_wav_0058cbac, 0xf, 100, 100, 0);
+  PlaySoundEffectOnChannel("x:sound\\button2.wav", 0xf, 100, 100, 0);
   g_adv_menu_selected_value = control->selection_value;
   return 0;
 }
@@ -361,11 +328,11 @@ void ShowCityInfoScreen(int param_1)
 
   if (g_city_info_strings_loaded == 0)
   {
-    g_city_info_heading_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, s_cityInfo_0058cbc0, (int)g_ini_string_scratch);
+    g_city_info_heading_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, "cityInfo", (int)g_ini_string_scratch);
     g_city_info_strings_loaded = 1;
   }
 
-  LoadPcxIntoPage(1, s_infobar_pic_0058cbcc);
+  LoadPcxIntoPage(1, "infobar.pic");
 
   BeginSpriteEncodeSession();
 
@@ -422,19 +389,19 @@ void ShowCityInfoScreen(int param_1)
 
   // Prepare background
   g_world_scroll_cache_ready = 1;
-  LoadPcxResource(1, 0, global_screen_height - 0x1e0, s_cityinfo_pic_0058cbd8, (void *)0);
+  LoadPcxResource(1, 0, global_screen_height - 0x1e0, "cityinfo.pic", (void *)0);
   StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
                           global_screen_height);
 
   // Headings, loaded from advButtons [cityInfo] (format strings in .rdata are \"%s\")
   PTR_DAT_005832dc->font_slot = 7;
   SetFontStyleSize(7, (unsigned int)ScaleUiCoordinate(10));
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x69, 0x28, s_city_info_heading_format_0, (char *)g_city_info_heading_strings[0]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x54, 0x45, s_city_info_heading_format_1, (char *)g_city_info_heading_strings[1]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0xb3, 0x45, s_city_info_heading_format_2, (char *)g_city_info_heading_strings[2]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x130, 0x45, s_city_info_heading_format_3, (char *)g_city_info_heading_strings[3]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x1cc, 0x45, s_city_info_heading_format_4, (char *)g_city_info_heading_strings[4]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x23f, 0x45, s_city_info_heading_format_5, (char *)g_city_info_heading_strings[5]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x69, 0x28, "%s", (char *)g_city_info_heading_strings[0]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x54, 0x45, "%s", (char *)g_city_info_heading_strings[1]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0xb3, 0x45, "%s", (char *)g_city_info_heading_strings[2]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x130, 0x45, "%s", (char *)g_city_info_heading_strings[3]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x1cc, 0x45, "%s", (char *)g_city_info_heading_strings[4]);
+  DrawTextAt(PTR_DAT_005832dc, 200, 0x23f, 0x45, "%s", (char *)g_city_info_heading_strings[5]);
 
   EnsureAdvfac64Loaded(1);
 
@@ -443,7 +410,7 @@ void ShowCityInfoScreen(int param_1)
   PTR_DAT_005832dc->font_slot = 1;
   PTR_DAT_00583304->font_slot = 1;
 
-  LoadPcxResource(2, 0, PTR_DAT_00583304->max_y - 0x46, s_cinfopce_pic_0058cc00, (void *)0);
+  LoadPcxResource(2, 0, PTR_DAT_00583304->max_y - 0x46, "cinfopce.pic", (void *)0);
 
   // List panel geometry
   s.list_panel_x = (global_screen_width * 0x30 + global_screen_width / 2) / 0x280;
@@ -477,7 +444,7 @@ void ShowCityInfoScreen(int param_1)
 
   for (s.i = 0; s.i < 5; s.i++)
   {
-    DrawTextAt(PTR_DAT_005832b4, 0xfe, s.i * 0x2a + 0xcc, 0x2a, s_city_info_amulet_count_format, g_amulet_inventory[s.i]);
+    DrawTextAt(PTR_DAT_005832b4, 0xfe, s.i * 0x2a + 0xcc, 0x2a, "%d", g_amulet_inventory[s.i]);
   }
 
 main_loop:
@@ -685,7 +652,7 @@ page_loop:
           if (s.scroll_top_index + 10 < s.town_count)
           {
             DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 10], 0x30,
-                         ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
+                                ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
           }
         }
       }
@@ -778,7 +745,7 @@ int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int 
     *s.space_back = '\n';
   }
 
-  strcat(g_ui_message_buffer, s_city_info_newline);
+  strcat(g_ui_message_buffer, "\n");
 
   s.tile_class = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y));
 
@@ -799,7 +766,7 @@ int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int 
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
   if ((g_town_slots[town_index].status_and_ruling_wizard & 1) != 0)
   {
-    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x20c), y, s_city_info_x_string);
+    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x20c), y, "X");
   }
 
   s.tile_class = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y));
@@ -836,7 +803,7 @@ int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int 
   strcpy(g_ui_message_buffer, FUN_004f2e17(town_index));
   DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
 
-  strcpy(g_ui_message_buffer, s_city_info_empty_string);
+  strcpy(g_ui_message_buffer, "");
   for (s.i = 0; s.i < 0xc; s.i++)
   {
     if ((town_index != 0) && (g_world_magic_slot_timers[s.i].town_index == town_index))

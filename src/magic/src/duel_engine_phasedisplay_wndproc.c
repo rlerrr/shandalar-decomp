@@ -29,21 +29,6 @@ extern HWND global_main_hwnd;
 #define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
 #endif
 
-// GLOBAL: MAGIC 0x0057e49c
-char s_MENU_PHASEBAR_0057e49c[0x10] = "MENU_PHASEBAR";
-
-// GLOBAL: MAGIC 0x0057e4ac
-char s__WINBK_Phase_pic_0057e4ac[0x14] = "\\WINBK_Phase.pic";
-
-// GLOBAL: MAGIC 0x0057e4d8
-char s__duel_hlp_0057e4d8[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057e4e4
-char s__duel_hlp_0057e4e4[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057e4f0
-char s__WINBK_Phase_pic_0057e4f0[0x14] = "\\WINBK_Phase.pic";
-
 // GLOBAL: MAGIC 0x0055e1b4
 // GLOBAL: SHANDALAR 0x0057f16c
 int g_phase_display_selected_card_window_long_offset = 0;
@@ -402,13 +387,13 @@ int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
     s.result = 0;
 
   g_phase_display_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_PHASEBAR_0057e49c);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_PHASEBAR");
   strcpy(g_phase_display_menu_stop_text, text_lines[0]);
   strcpy(g_phase_display_menu_toggle_text, text_lines[1]);
   strcpy(g_phase_display_menu_phase_help_text, text_lines[2]);
   strcpy(g_phase_display_menu_help_text, text_lines[3]);
   strcpy(s.pic_path, global_duelart_path);
-  strcat(s.pic_path, s__WINBK_Phase_pic_0057e4ac);
+  strcat(s.pic_path, "\\WINBK_Phase.pic");
   g_magicgame_phase_display_pic = load_pic(s.pic_path);
   g_phase_display_bitmap_divisor = 2;
   g_phase_display_hatch_brush = CreateHatchBrush(3, 0x808080);
@@ -597,7 +582,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
     case PHASE_DISPLAY_COMMAND_HELP:
       s.general_help_context = 0x7e5;
       strcpy(s.general_help_path, global_base_directory);
-      strcat(s.general_help_path, s__duel_hlp_0057e4d8);
+      strcat(s.general_help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.general_help_path, HELP_CONTEXT, s.general_help_context);
       break;
 
@@ -715,7 +700,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
         else if (s.command_phase_index == 7)
           s.phase_help_context = 0x7df;
         strcpy(s.phase_help_path, global_base_directory);
-        strcat(s.phase_help_path, s__duel_hlp_0057e4e4);
+        strcat(s.phase_help_path, "\\duel.hlp");
         WinHelpA(g_duel_window_hwnd, s.phase_help_path, HELP_CONTEXT, s.phase_help_context);
         break;
       }
@@ -762,7 +747,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
     if (g_magicgame_phase_display_pic == (HANDLE)0)
     {
       strcpy(s.pic_path, global_duelart_path);
-      strcat(s.pic_path, s__WINBK_Phase_pic_0057e4f0);
+      strcat(s.pic_path, "\\WINBK_Phase.pic");
       g_magicgame_phase_display_pic = load_pic(s.pic_path);
     }
 

@@ -67,126 +67,6 @@ extern int g_duel_window_userdata_8_offset;
 // GLOBAL: MAGIC 0x0055e178
 int g_magicgame_territory_window_extra_bytes = 0x10;
 
-// GLOBAL: MAGIC 0x0057ab70
-char s_MENU_TERRITORY_0057ab70[0x10] = "MENU_TERRITORY";
-
-// GLOBAL: MAGIC 0x0057ab80
-char s_SKIPFULLCARD_0057ab80[0x10] = "SKIPFULLCARD";
-
-// GLOBAL: MAGIC 0x0057ab90
-char s_MP_UISTRINGS_TXT_0057ab90[0x14] = "MP_UISTRINGS.TXT";
-
-// GLOBAL: MAGIC 0x0057aba4
-char s_DRAWRESPONSE_0057aba4[0x10] = "DRAWRESPONSE";
-
-// GLOBAL: MAGIC 0x0057abb4
-char s_MP_UISTRINGS_TXT_0057abb4[0x14] = "MP_UISTRINGS.TXT";
-
-// GLOBAL: MAGIC 0x0057abc8
-char s_In_play_Card_0057abc8[0x10] = "In-play Card";
-
-// GLOBAL: MAGIC 0x0057abd8
-char s_MAGICGAME_CardClass_0057abd8[0x14] = "MAGICGAME_CardClass";
-
-// GLOBAL: MAGIC 0x0057abec
-char s__duel_hlp_0057abec[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057abf8
-char s_Player_Card_0057abf8[0xc] = "Player Card";
-
-// GLOBAL: MAGIC 0x0057ac04
-char s_MAGICGAME_CardClass_0057ac04[0x14] = "MAGICGAME_CardClass";
-
-// GLOBAL: MAGIC 0x0057e534
-char s_Upkeep_phase_0057e534[0x10] = "Upkeep phase";
-
-// GLOBAL: MAGIC 0x0057e544
-char s_Draw_phase_0057e544[0xc] = "Draw phase";
-
-// GLOBAL: MAGIC 0x0057e550
-char s_Main_phase__pre_combat__0057e550[0x18] = "Main phase (pre-combat)";
-
-// GLOBAL: MAGIC 0x0057e568
-char s_Main_phase__combat__0057e568[0x14] = "Main phase (combat)";
-
-// GLOBAL: MAGIC 0x0057e57c
-char s_Attack_fast_effects_phase_0057e57c[0x1c] = "Attack fast effects phase";
-
-// GLOBAL: MAGIC 0x0057e598
-char s_Choose_defenders_phase_0057e598[0x18] = "Choose defenders phase";
-
-// GLOBAL: MAGIC 0x0057e5b0
-char s_Block_fast_effects_phase_0057e5b0[0x1c] = "Block fast effects phase";
-
-// GLOBAL: MAGIC 0x0057e5cc
-char s_Resolve_1st_strike_0057e5cc[0x14] = "Resolve 1st strike";
-
-// GLOBAL: MAGIC 0x0057e5e0
-char s_Resolve_attack_0057e5e0[0x10] = "Resolve attack";
-
-// GLOBAL: MAGIC 0x0057e5f0
-char s_Main_phase__post_combat__0057e5f0[0x1c] = "Main phase (post-combat)";
-
-// GLOBAL: MAGIC 0x0057e60c
-char s_Discard_phase_0057e60c[0x10] = "Discard phase";
-
-// GLOBAL: MAGIC 0x0057e61c
-char s_Cleanup_phase_0057e61c[0x10] = "Cleanup phase";
-
-// GLOBAL: MAGIC 0x0057e62c
-char s_Start_of_next_turn_0057e62c[0x14] = "Start of next turn";
-
-// GLOBAL: MAGIC 0x0057e640
-char s_next_phase_0057e640[0xc] = "next phase";
-
-// GLOBAL: MAGIC 0x0057ac18
-char s_Show_player_card_and___on_librar_0057ac18[0x24] = "Show player,card and # on library\tI";
-
-// GLOBAL: MAGIC 0x0057ac3c
-char s_Show_the_palette_P_0057ac3c[0x14] = "Show the palette\tP";
-
-// GLOBAL: MAGIC 0x0057ac50
-char s_Flash_small_cards_on_repaint_F_0057ac50[0x20] = "Flash small cards on repaint\tF";
-
-// GLOBAL: MAGIC 0x0057ac70
-char s_Show_Kim_debug_window_K_0057ac70[0x18] = "Show Kim debug window\tK";
-
-// GLOBAL: MAGIC 0x0057ac88
-char s_Save_game_S_0057ac88[0xc] = "Save game\tS";
-
-// GLOBAL: MAGIC 0x0057ac94
-char s_Put_a_specific_card_IN_PLAY__you_0057ac94[0x3c] = "Put a specific card IN PLAY (your/oppon's territory)\tG/F2";
-
-// GLOBAL: MAGIC 0x0057acd0
-char s_Put_a_specific_card_into_your_op_0057acd0[0x30] = "Put a specific card into your/oppon's HAND\tH/F3";
-
-// GLOBAL: MAGIC 0x0057ad00
-char s_DRAW_a_card_into_your_oppon_s_ha_0057ad00[0x2c] = "DRAW a card into your/oppon's hand\tD/AltD";
-
-// GLOBAL: MAGIC 0x0057ad2c
-char s__10_to_your_oppon_s_LIFE_L_AltL_0057ad2c[0x20] = "+10 to your/oppon's LIFE\tL/AltL";
-
-// GLOBAL: MAGIC 0x0057ad4c
-char s_Win_W_0057ad4c[8] = "Win\tW";
-
-// GLOBAL: MAGIC 0x0057ad54
-char s_Tie__draw__T_0057ad54[0x10] = "Tie (draw)\tT";
-
-// GLOBAL: MAGIC 0x0057ad64
-char s_Show_opponent_s_hand_F8_0057ad64[0x18] = "Show opponent's hand\tF8";
-
-// GLOBAL: MAGIC 0x0057ad7c
-char s_Show_opponent_s_library_F9_0057ad7c[0x1c] = "Show opponent's library\tF9";
-
-// GLOBAL: MAGIC 0x0057ad98
-char s_Show_your_library_F10_0057ad98[0x18] = "Show your library\tF10";
-
-// GLOBAL: MAGIC 0x0057adb0
-char s_Show_art_on_cards_A_0057adb0[0x14] = "Show art on cards\tA";
-
-// GLOBAL: MAGIC 0x0057adc4
-char s_Turn_off_cheats_F12_0057adc4[0x18] = "Turn off cheats\tF12";
-
 // GLOBAL: MAGIC 0x006ab370
 // GLOBAL: SHANDALAR 0x00602fc0
 char g_territory_menu_default_action_text[0x68];
@@ -314,55 +194,55 @@ void FUN_00538e3d(int *player, int *phase, char *text)
   {
   case 1:
     s.next_phase = 4;
-    strcpy(s.phase_text, s_Upkeep_phase_0057e534);
+    strcpy(s.phase_text, "Upkeep phase");
     break;
   case 2:
   case 3:
   case 4:
   case 5:
     s.next_phase = 10;
-    strcpy(s.phase_text, s_Draw_phase_0057e544);
+    strcpy(s.phase_text, "Draw phase");
     break;
   case 10:
     s.next_phase = 0x14;
-    strcpy(s.phase_text, s_Main_phase__pre_combat__0057e550);
+    strcpy(s.phase_text, "Main phase (pre-combat)");
     break;
   case 0x14:
     s.next_phase = 0x15;
-    strcpy(s.phase_text, s_Main_phase__combat__0057e568);
+    strcpy(s.phase_text, "Main phase (combat)");
     break;
   case 0x15:
     s.next_phase = 0x16;
-    strcpy(s.phase_text, s_Attack_fast_effects_phase_0057e57c);
+    strcpy(s.phase_text, "Attack fast effects phase");
     break;
   case 0x16:
     s.next_phase = 0x17;
-    strcpy(s.phase_text, s_Choose_defenders_phase_0057e598);
+    strcpy(s.phase_text, "Choose defenders phase");
     break;
   case 0x17:
     s.next_phase = 0x18;
-    strcpy(s.phase_text, s_Block_fast_effects_phase_0057e5b0);
+    strcpy(s.phase_text, "Block fast effects phase");
     break;
   case 0x18:
     s.next_phase = 0x19;
-    strcpy(s.phase_text, s_Resolve_1st_strike_0057e5cc);
+    strcpy(s.phase_text, "Resolve 1st strike");
     break;
   case 0x19:
   case 0x1a:
     s.next_phase = 0x1b;
-    strcpy(s.phase_text, s_Resolve_attack_0057e5e0);
+    strcpy(s.phase_text, "Resolve attack");
     break;
   case 0x1b:
     s.next_phase = 0x1e;
-    strcpy(s.phase_text, s_Main_phase__post_combat__0057e5f0);
+    strcpy(s.phase_text, "Main phase (post-combat)");
     break;
   case 0x1e:
     s.next_phase = 0x1f;
-    strcpy(s.phase_text, s_Discard_phase_0057e60c);
+    strcpy(s.phase_text, "Discard phase");
     break;
   case 0x1f:
     s.next_phase = 0x20;
-    strcpy(s.phase_text, s_Cleanup_phase_0057e61c);
+    strcpy(s.phase_text, "Cleanup phase");
     break;
   case 0x20:
   case 0x21:
@@ -370,11 +250,11 @@ void FUN_00538e3d(int *player, int *phase, char *text)
   case 0x25:
     s.next_phase = 0;
     s.switch_phase = 1 - s.current_phase;
-    strcpy(s.phase_text, s_Start_of_next_turn_0057e62c);
+    strcpy(s.phase_text, "Start of next turn");
     break;
   default:
     s.next_phase = -1;
-    strcpy(s.phase_text, s_next_phase_0057e640);
+    strcpy(s.phase_text, "next phase");
     break;
   }
 
@@ -559,7 +439,7 @@ int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
     atom = 0;
 
   g_territory_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_TERRITORY_0057ab70);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_TERRITORY");
   strcpy(g_territory_menu_action_1_text, text_lines[0]);
   strcpy(g_territory_menu_action_2_to_5_text, text_lines[1]);
   strcpy(g_territory_menu_action_10_text, text_lines[2]);
@@ -587,10 +467,10 @@ int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
   strcpy(g_territory_menu_action_25_text, text_lines[0x18]);
   g_territory_submenu = CreatePopupMenu();
   AppendMenuA(g_territory_submenu, MF_STRING, 0x6c, g_territory_menu_action_25_text);
-  load_text_with_tab_escapes(s_MP_UISTRINGS_TXT_0057ab90, s_SKIPFULLCARD_0057ab80);
+  load_text_with_tab_escapes("MP_UISTRINGS.TXT", "SKIPFULLCARD");
   strcpy(g_territory_menu_skip_full_card_text[0], text_lines[0]);
   strcpy(g_territory_menu_skip_full_card_text[1], text_lines[1]);
-  load_text_with_tab_escapes(s_MP_UISTRINGS_TXT_0057abb4, s_DRAWRESPONSE_0057aba4);
+  load_text_with_tab_escapes("MP_UISTRINGS.TXT", "DRAWRESPONSE");
   strcpy(g_territory_menu_draw_response_text[0], text_lines[0]);
   strcpy(g_territory_menu_draw_response_text[1], text_lines[1]);
   return atom;
@@ -784,7 +664,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     if (find_battlefield_card_window(hwnd, s.player_and_card, NULL, &s.found_window) == 0)
     {
       s.found_window =
-          CreateWindowExA(0, s_MAGICGAME_CardClass_0057abd8, s_In_play_Card_0057abc8, 0x44000000,
+          CreateWindowExA(0, "MAGICGAME_CardClass", "In-play Card", 0x44000000,
                           0, 0, g_showlist_smallcard_width, g_showlist_smallcard_height,
                           hwnd, (HMENU)1, g_app_instance, s.player_and_card);
       if (s.found_window == (HWND)0)
@@ -1130,7 +1010,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     case 0x6e:
       s.help_context = 0x7e2;
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_0057abec);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
     case 0x6f:
@@ -1181,7 +1061,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     }
     s.create_data[1] = 0xffffffff;
     s.player_card_window =
-        CreateWindowExA(0, s_MAGICGAME_CardClass_0057ac04, s_Player_Card_0057abf8, 0x44000000, 0, 0, 0, 0,
+        CreateWindowExA(0, "MAGICGAME_CardClass", "Player Card", 0x44000000, 0, 0, 0, 0,
                         hwnd, (HMENU)0, g_app_instance, s.create_data);
     SetWindowLongA(hwnd, g_duel_window_userdata_snapshot_offset, (LONG)s.player_card_window);
     if (s.card_windows == NULL || s.player_card_window == (HWND)0)
@@ -1383,44 +1263,44 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       AppendMenuA(g_territory_popup_menu, MF_SEPARATOR, 0, NULL);
       g_territory_debug_menu_a = g_territory_popup_menu;
       AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x272,
-                  s_Show_player_card_and___on_librar_0057ac18);
+                  "Show player,card and # on library\tI");
       if (g_duel_dialog_refresh_state != 0)
       {
         CheckMenuItem(g_territory_debug_menu_a, 0x272, MF_CHECKED);
       }
-      AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x271, s_Show_the_palette_P_0057ac3c);
-      AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x276, s_Flash_small_cards_on_repaint_F_0057ac50);
+      AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x271, "Show the palette\tP");
+      AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x276, "Flash small cards on repaint\tF");
       if (g_duel_palette_refresh_pending != 0)
       {
         CheckMenuItem(g_territory_debug_menu_a, 0x276, MF_CHECKED);
       }
-      AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x277, s_Show_Kim_debug_window_K_0057ac70);
+      AppendMenuA(g_territory_debug_menu_a, MF_STRING, 0x277, "Show Kim debug window\tK");
       if (IsWindowVisible(g_duel_toggleable_status_window_hwnd) != 0)
       {
         CheckMenuItem(g_territory_debug_menu_a, 0x277, MF_CHECKED);
       }
       g_territory_debug_menu_b = g_territory_popup_menu;
       AppendMenuA(g_territory_popup_menu, MF_SEPARATOR, 0, NULL);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25f, s_Save_game_S_0057ac88);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x26b, s_Put_a_specific_card_IN_PLAY__you_0057ac94);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x26d, s_Put_a_specific_card_into_your_op_0057acd0);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x269, s_DRAW_a_card_into_your_oppon_s_ha_0057ad00);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x26f, s__10_to_your_oppon_s_LIFE_L_AltL_0057ad2c);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x267, s_Win_W_0057ad4c);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x263, s_Tie__draw__T_0057ad54);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25c, s_Show_opponent_s_hand_F8_0057ad64);
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25f, "Save game\tS");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x26b, "Put a specific card IN PLAY (your/oppon's territory)\tG/F2");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x26d, "Put a specific card into your/oppon's HAND\tH/F3");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x269, "DRAW a card into your/oppon's hand\tD/AltD");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x26f, "+10 to your/oppon's LIFE\tL/AltL");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x267, "Win\tW");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x263, "Tie (draw)\tT");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25c, "Show opponent's hand\tF8");
       if (g_duel_surface_reset_state != 0)
       {
         CheckMenuItem(g_territory_debug_menu_b, 0x25c, MF_CHECKED);
       }
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25d, s_Show_opponent_s_library_F9_0057ad7c);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25e, s_Show_your_library_F10_0057ad98);
-      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x273, s_Show_art_on_cards_A_0057adb0);
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25d, "Show opponent's library\tF9");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x25e, "Show your library\tF10");
+      AppendMenuA(g_territory_debug_menu_b, MF_STRING, 0x273, "Show art on cards\tA");
       if (g_shared_startup_completed != 0)
       {
         CheckMenuItem(g_territory_debug_menu_b, 0x273, MF_CHECKED);
       }
-      AppendMenuA(g_territory_popup_menu, MF_STRING, 599, s_Turn_off_cheats_F12_0057adc4);
+      AppendMenuA(g_territory_popup_menu, MF_STRING, 599, "Turn off cheats\tF12");
     }
     return 0;
 

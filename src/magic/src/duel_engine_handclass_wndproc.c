@@ -59,24 +59,6 @@ int g_hand_selected_index_long_offset = 0x1c;
 // GLOBAL: MAGIC 0x0055e0f8
 int g_hand_window_extra_bytes = 0x20;
 
-// GLOBAL: MAGIC 0x00574400
-char s_MENU_HAND_00574400[0xc] = "MENU_HAND";
-
-// GLOBAL: MAGIC 0x0057440c
-char s_Hand_0057440c[8] = "Hand";
-
-// GLOBAL: MAGIC 0x00574414
-char s_Hand_Card_00574414[0xc] = "Hand Card";
-
-// GLOBAL: MAGIC 0x00574420
-char s_MAGICGAME_CardClass_00574420[0x14] = "MAGICGAME_CardClass";
-
-// GLOBAL: MAGIC 0x00574434
-char s__duel_hlp_00574434[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x00574440
-char s__s___d__00574440[8] = "%s (%d)";
-
 // GLOBAL: MAGIC 0x0064f8f8
 // GLOBAL: SHANDALAR 0x005a9d58
 COLORREF g_hand_title_text_color;
@@ -115,9 +97,9 @@ int register_MAGICGAME_HandClass(LPCSTR class_name)
     s.registered = 0;
   }
   g_hand_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_HAND_00574400);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_HAND");
   strcpy(g_hand_menu_help_text, text_lines[0]);
-  g_hand_title_font = CreateFontIndirectA(LoadFontFromIni(s_Hand_0057440c, 0));
+  g_hand_title_font = CreateFontIndirectA(LoadFontFromIni("Hand", 0));
   g_hand_title_text_color = 0x10000bf;
   g_hand_title_shadow_color = 0x10000c9;
   return s.registered;
@@ -222,7 +204,7 @@ void draw_hand_window_frame(HDC dc, int *outer_rect, int *inner_rect,
 // FUNCTION: SHANDALAR 0x00470a9d
 void update_hand_window_title(char *title, HWND hwnd, int card_count)
 {
-  sprintf(title, s__s___d__00574440,
+  sprintf(title, "%s (%d)",
           hwnd == g_duel_full_card_window_hwnd ? gs_window_title_your_hand_00777bf0 : gs_window_title_opponent_0091c820,
           card_count);
   SetWindowTextA(hwnd, title);
@@ -545,7 +527,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.existing_hwnd = (HWND)SendMessageA(hwnd, 0x40f, s.add_player_card, 0);
     if (s.existing_hwnd == (HWND)0)
     {
-      s.existing_hwnd = CreateWindowExA(0, s_MAGICGAME_CardClass_00574420, s_Hand_Card_00574414,
+      s.existing_hwnd = CreateWindowExA(0, "MAGICGAME_CardClass", "Hand Card",
                                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 0, 0, 0, 0, hwnd, (HMENU)1,
                                         g_app_instance, s.add_player_card);
       if (s.existing_hwnd == (HWND)0)
@@ -714,7 +696,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 100:
       s.help_context = 0x7e3;
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_00574434);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
     default:

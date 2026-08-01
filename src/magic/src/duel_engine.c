@@ -79,9 +79,6 @@ int g_duel_last_cue_card_x = 0;
 // GLOBAL: MAGIC 0x00573074
 int g_duel_last_cue_card_y = 0;
 
-// GLOBAL: MAGIC 0x00573078
-char s_CueCard_00573078[8] = "CueCard";
-
 // GLOBAL: MAGIC 0x0055e0d0
 // GLOBAL: SHANDALAR 0x0057f0dc
 int g_duel_cue_card_font_window_long_offset = 0;
@@ -146,24 +143,22 @@ int g_palette_grid_y_offset = 0;
 // GLOBAL: SHANDALAR 0x005854b4
 int g_palette_grid_x_offset = 0;
 
-// GLOBAL: MAGIC 0x005710cc
-char s__WINBK_SpellMin_pic_005710cc[0x14] = "\\WINBK_SpellMin.pic";
-
 // GLOBAL: MAGIC 0x00560188
 // GLOBAL: SHANDALAR 0x00583268
 char g_kim_debug_class_name_00560188[12] = "KimDebug";
+
 // GLOBAL: MAGIC 0x00560194
 // GLOBAL: SHANDALAR 0x00583274
 char g_kim_debug_window_title_00560194[4] = "Kim";
+
 // GLOBAL: MAGIC 0x00560198
 // GLOBAL: SHANDALAR 0x00583278
 char g_kim_debug_class_name_duplicate_00560198[12] = "KimDebug";
+
 // GLOBAL: MAGIC 0x005601a4
 // GLOBAL: SHANDALAR 0x00583284
 char g_kim_debug_empty_text_005601a4[4] = "";
-// GLOBAL: MAGIC 0x005601a8
-// GLOBAL: SHANDALAR 0x00583288
-char s_LISTBOX_005601a8[8] = "LISTBOX";
+
 
 // GLOBAL: MAGIC 0x00561270
 // GLOBAL: SHANDALAR 0x00580680
@@ -280,7 +275,7 @@ LRESULT CALLBACK wndproc_KimDebug(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 
   case WM_CREATE:
     g_kim_debug_listbox_hwnd = CreateWindowExA(0,
-                                               s_LISTBOX_005601a8,
+                                               "LISTBOX",
                                                g_kim_debug_empty_text_005601a4,
                                                0x50240000,
                                                0,
@@ -931,7 +926,7 @@ int register_MAGIC_CueCardClass(LPCSTR class_name)
   g_duel_cue_card_x_offset = 10;
   g_duel_cue_card_y_offset = 0x12;
   g_duel_cue_card_mouse_threshold = 0x14;
-  g_duel_cue_card_font = CreateFontIndirectA(LoadFontFromIni(s_CueCard_00573078, 0));
+  g_duel_cue_card_font = CreateFontIndirectA(LoadFontFromIni("CueCard", 0));
   g_duel_cue_card_background_brush = CreateSolidBrush(0x296bed2);
   g_duel_cue_card_shadow_brush = CreateSolidBrush(0x27f7f7f);
   g_duel_cue_card_text_color = 0x2505050;
@@ -1324,7 +1319,7 @@ LRESULT CALLBACK wndproc_SpellMinimized(HWND hwnd, UINT msg, WPARAM wparam, LPAR
     if (g_spell_minimized_background_bitmap == (HBITMAP)0)
     {
       strcpy(s.background_path, global_duelart_path);
-      strcat(s.background_path, s__WINBK_SpellMin_pic_005710cc);
+      strcat(s.background_path, "\\WINBK_SpellMin.pic");
       g_spell_minimized_background_bitmap = load_pic(s.background_path);
     }
     if (g_spell_minimized_background_bitmap != (HBITMAP)0)

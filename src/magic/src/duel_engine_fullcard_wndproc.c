@@ -35,15 +35,6 @@ void draw_displayed_card_overlaid_full_card(HDC dc, RECT *rect, int player, int 
 void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int player, int card);
 void save_duel_interface_options_to_registry(void);
 
-// GLOBAL: MAGIC 0x0057f444
-char s_MENU_FULLCARD_0057f444[0x10] = "MENU_FULLCARD";
-
-// GLOBAL: MAGIC 0x0057f454
-char s__duel_hlp_0057f454[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057f460
-char s__duel_hlp_0057f460[0xc] = "\\duel.hlp";
-
 // GLOBAL: MAGIC 0x0055e1c8
 // GLOBAL: SHANDALAR 0x0057f184
 int g_full_card_card_id_window_long_offset = 0;
@@ -115,7 +106,7 @@ int register_MAGICGAME_FullCardClass(LPCSTR class_name)
     s.result = 0;
   }
   g_magicgame_full_card_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_FULLCARD_0057f444);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_FULLCARD");
   strcpy(g_full_card_menu_expand_text, text_lines[0]);
   strcpy(g_full_card_menu_help_text, text_lines[1]);
   strcpy(g_full_card_menu_more_help_text, text_lines[2]);
@@ -378,7 +369,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
       if (s.help_context != 0xffffffff)
       {
         strcpy(s.help_path, global_base_directory);
-        strcat(s.help_path, s__duel_hlp_0057f454);
+        strcat(s.help_path, "\\duel.hlp");
         WinHelpA(DUEL_MAIN_WINDOW_HWND, s.help_path, HELP_CONTEXT, s.help_context);
       }
       break;
@@ -386,7 +377,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
     case 0x65:
       s.more_help_context = 0x7e7;
       strcpy(s.more_help_path, global_base_directory);
-      strcat(s.more_help_path, s__duel_hlp_0057f460);
+      strcat(s.more_help_path, "\\duel.hlp");
       WinHelpA(DUEL_MAIN_WINDOW_HWND, s.more_help_path, HELP_CONTEXT, s.more_help_context);
       break;
 
@@ -613,12 +604,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
         if (s.player != -1 && s.card != -1 && get_displayed_card_id(s.player, s.card) != -1)
         {
           s.draw_result = draw_displayed_full_card(g_shared_offscreen_dc,
-                                       &s.client_rect,
-                                       global_raw_cards_storage + (int)s.window_card_id,
-                                       s.player,
-                                       s.card,
-                                       0,
-                                       DAT_0091c980);
+                                                   &s.client_rect,
+                                                   global_raw_cards_storage + (int)s.window_card_id,
+                                                   s.player,
+                                                   s.card,
+                                                   0,
+                                                   DAT_0091c980);
         }
         else if (s.window_card_id != (HWND)-1)
         {
@@ -642,12 +633,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
           if (s.player != -1 && s.card != -1 && get_displayed_card_id(s.player, s.card) != -1)
           {
             draw_displayed_full_card(g_shared_offscreen_dc,
-                         &s.client_rect,
-                         global_raw_cards_storage + (int)s.window_card_id,
-                         s.player,
-                         s.card,
-                         2,
-                         DAT_0091c980);
+                                     &s.client_rect,
+                                     global_raw_cards_storage + (int)s.window_card_id,
+                                     s.player,
+                                     s.card,
+                                     2,
+                                     DAT_0091c980);
           }
           else if (s.window_card_id != (HWND)-1)
           {

@@ -188,187 +188,25 @@ void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, i
                              FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
 void WisemanChooseLairCreatureAndSetupDuel(unsigned char color);
 
-// GLOBAL: SHANDALAR 0x0058afb8
-static char s_dbox2_spr_0058afb8[] = "dbox2.spr";
-// GLOBAL: SHANDALAR 0x0058afd0
-static char s_prdblk_pic_0058afd0[] = "prdblk.pic";
-// GLOBAL: SHANDALAR 0x0058afe8
-static char s_prdblu_pic_0058afe8[] = "prdblu.pic";
-// GLOBAL: SHANDALAR 0x0058b000
-static char s_prdgrn_pic_0058b000[] = "prdgrn.pic";
-// GLOBAL: SHANDALAR 0x0058b018
-static char s_prdrd_pic_0058b018[] = "prdrd.pic";
-// GLOBAL: SHANDALAR 0x0058b030
-static char s_prdwt_pic_0058b030[] = "prdwt.pic";
-// GLOBAL: SHANDALAR 0x0058b03c
-static char s_prdfrma_pic_0058b03c[] = "prdfrma.pic";
-// GLOBAL: SHANDALAR 0x0058b048
-static char DAT_0058b048[] = "%d";
-// GLOBAL: SHANDALAR 0x0058b04c
-static char DAT_0058b04c[] = "%d";
-// GLOBAL: SHANDALAR 0x0058b050
-static char s__d__d_0058b050[] = "%d/%d";
-// GLOBAL: SHANDALAR 0x0058b058
-static char DAT_0058b058[] = "%d";
-// GLOBAL: SHANDALAR 0x0058b05c
-static char s_prdfrmb_pic_0058b05c[] = "prdfrmb.pic";
-// GLOBAL: SHANDALAR 0x0058b068
-static char DAT_0058b068[] = "";
-// GLOBAL: SHANDALAR 0x0058b06c
-static char DAT_0058b06c[] = "";
-// GLOBAL: SHANDALAR 0x0058b070
-static char DAT_0058b070[] = "\n";
-// GLOBAL: SHANDALAR 0x0058b074
-static char s_dbox_spr_0058b074[] = "dbox.spr";
-// GLOBAL: SHANDALAR 0x0058b080
-static int DAT_0058b080 = 0;
-// GLOBAL: SHANDALAR 0x0058b084
-static char DAT_0058b084[] = " ";
-// GLOBAL: SHANDALAR 0x0058b088
-static char DAT_0058b088[] = "\n";
-// GLOBAL: SHANDALAR 0x0058b08c
-static char s_losedul2_pic_0058b08c[] = "losedul2.pic";
-// GLOBAL: SHANDALAR 0x0058b09c
-static char s_Prdblk_pic_0058b09c[] = "Prdblk.pic";
-// GLOBAL: SHANDALAR 0x0058b0a8
-static char s_advfac64_pic_0058b0a8[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x0058b0b8
-static char s_dbox_spr_0058b0b8[] = "dbox.spr";
-// GLOBAL: SHANDALAR 0x0058b0c4
-static char s_advfac64_pic_0058b0c4[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x0058b0d4
-static char s_dbox_spr_0058b0d4[] = "dbox.spr";
-// GLOBAL: SHANDALAR 0x0058b0e0
-static char DAT_0058b0e0[] = "";
-// GLOBAL: SHANDALAR 0x0058b0e4
-static char s_x_sound_dsummon_wav_0058b0e4[] = "x:sound\\dsummon.wav";
-// GLOBAL: SHANDALAR 0x0058b0f8
-static char s_decks_0_0058b0f8[] = "decks\\0";
 // GLOBAL: SHANDALAR 0x0058b100
 static char DAT_0058b100[] = "0";
 // GLOBAL: SHANDALAR 0x0058b104
 static char DAT_0058b104[] = "0";
-// GLOBAL: SHANDALAR 0x0058b108
-static char DAT_0058b108[] = ".dck";
-// GLOBAL: SHANDALAR 0x0058b110
-static char s_dbox_spr_0058b110[] = "dbox.spr";
-// GLOBAL: SHANDALAR 0x0058b11c
-static char s_advfac64_pic_0058b11c[] = "advfac64.pic";
-// GLOBAL: SHANDALAR 0x0058b12c
-static char s_winbak01_pic_0058b12c[] = "winbak01.pic";
-// GLOBAL: SHANDALAR 0x0058b13c
-static char s_endplak_pic_0058b13c[] = "endplak.pic";
-// GLOBAL: SHANDALAR 0x0058b148
-static char DAT_0058b148[] = "";
-// GLOBAL: SHANDALAR 0x0058b14c
-static char DAT_0058b14c[] = ", ";
-// GLOBAL: SHANDALAR 0x0058b150
-static char DAT_0058b150[] = "";
-// GLOBAL: SHANDALAR 0x0058b154
-static char s_winbak02_pic_0058b154[] = "winbak02.pic";
-// GLOBAL: SHANDALAR 0x0058b164
-static char s_x_sound_treasure_wav_0058b164[] = "x:sound\\treasure.wav";
-// GLOBAL: SHANDALAR 0x0058b17c
-static char s_winbak02_pic_0058b17c[] = "winbak02.pic";
-// GLOBAL: SHANDALAR 0x0058b18c
-static char DAT_0058b18c[] = "";
+
+// GLOBAL: SHANDALAR 0x0058b080
+static int DAT_0058b080 = 0;
+
 // GLOBAL: SHANDALAR 0x0058b190
 static int DAT_0058b190 = 0;
-// GLOBAL: SHANDALAR 0x0058b194
-static char s_losedul2_pic_0058b194[] = "losedul2.pic";
-// GLOBAL: SHANDALAR 0x0058b1a4
-static char s_losedul2_pic_0058b1a4[] = "losedul2.pic";
-// GLOBAL: SHANDALAR 0x0058b1b4
-static char s_dbox_spr_0058b1b4[] = "dbox.spr";
-// GLOBAL: SHANDALAR 0x0058b1c0
-static char s_advfac64_pic_0058b1c0[] = "advfac64.pic";
 
-// GLOBAL: SHANDALAR 0x0058ee08
-static char s_zero_pic_marker_0058ee08[] = "0";
-// GLOBAL: SHANDALAR 0x0058ee0c
-static char s_0333_pic_0058ee0c[] = "0333.pic";
-// GLOBAL: SHANDALAR 0x0058ee18
-static char s_0873_pic_0058ee18[] = "0873.pic";
-// GLOBAL: SHANDALAR 0x0058ee24
-static char s_0281_pic_0058ee24[] = "0281.pic";
-// GLOBAL: SHANDALAR 0x0058ee30
-static char s_0329_pic_0058ee30[] = "0329.pic";
-// GLOBAL: SHANDALAR 0x0058ee3c
-static char s_0569_pic_0058ee3c[] = "0569.pic";
 // GLOBAL: SHANDALAR 0x0058edb8
 static char *PTR_DAT_0058edb8[6] = {
-    s_zero_pic_marker_0058ee08,
-    s_0333_pic_0058ee0c,
-    s_0873_pic_0058ee18,
-    s_0281_pic_0058ee24,
-    s_0329_pic_0058ee30,
-    s_0569_pic_0058ee3c};
-// GLOBAL: SHANDALAR 0x0058ee48
-static char s_x_sound_treasure_wav_0058ee48[] = "x:sound\\treasure.wav";
-// GLOBAL: SHANDALAR 0x0058ee60
-static char s_x_Duelsounds_aswanjag_wav_0058ee60[] = "x:Duelsounds\\aswanjag.wav";
-// GLOBAL: SHANDALAR 0x0058ee7c
-static char s_x_Duelsounds_aswanjag_wav_0058ee7c[] = "x:Duelsounds\\aswanjag.wav";
-// GLOBAL: SHANDALAR 0x0058ee98
-static char s_x_Duelsounds_aswanjag_wav_0058ee98[] = "x:Duelsounds\\aswanjag.wav";
-// GLOBAL: SHANDALAR 0x0058eeb4
-static char s_x_sound_treasure_wav_0058eeb4[] = "x:sound\\treasure.wav";
-// GLOBAL: SHANDALAR 0x0058eecc
-static char s_x_Duelsounds_aswanjag_wav_0058eecc[] = "x:Duelsounds\\aswanjag.wav";
-// GLOBAL: SHANDALAR 0x0058eee8
-static char s_x_sound_treasure_wav_0058eee8[] = "x:sound\\treasure.wav";
-// GLOBAL: SHANDALAR 0x0058ef00
-static char s_x_DuelSounds_summon_wav_0058ef00[] = "x:DuelSounds\\summon.wav";
-// GLOBAL: SHANDALAR 0x0058ef18
-static char s_x_DuelSounds_artifact_wav_0058ef18[] = "x:DuelSounds\\artifact.wav";
-// GLOBAL: SHANDALAR 0x0058ef34
-static char s_x_DuelSounds_enchant_wav_0058ef34[] = "x:DuelSounds\\enchant.wav";
-// GLOBAL: SHANDALAR 0x0058ef50
-static char s_x_DuelSounds_instant_wav_0058ef50[] = "x:DuelSounds\\instant.wav";
-// GLOBAL: SHANDALAR 0x0058ef6c
-static char s_x_DuelSounds_interupt_wav_0058ef6c[] = "x:DuelSounds\\interupt.wav";
-// GLOBAL: SHANDALAR 0x0058ef88
-static char s_x_DuelSounds_sorcery_wav_0058ef88[] = "x:DuelSounds\\sorcery.wav";
-// GLOBAL: SHANDALAR 0x0058efa4
-static char s_x_DuelSounds_black_wav_0058efa4[] = "x:DuelSounds\\black.wav";
-// GLOBAL: SHANDALAR 0x0058efbc
-static char s_x_DuelSounds_blue_wav_0058efbc[] = "x:DuelSounds\\blue.wav";
-// GLOBAL: SHANDALAR 0x0058efd4
-static char s_x_DuelSounds_green_wav_0058efd4[] = "x:DuelSounds\\green.wav";
-// GLOBAL: SHANDALAR 0x0058efec
-static char s_x_DuelSounds_red_wav_0058efec[] = "x:DuelSounds\\red.wav";
-// GLOBAL: SHANDALAR 0x0058f004
-static char s_x_DuelSounds_white_wav_0058f004[] = "x:DuelSounds\\white.wav";
-// GLOBAL: SHANDALAR 0x0058f01c
-static char s_x_DuelSounds_grey_wav_0058f01c[] = "x:DuelSounds\\grey.wav";
-// GLOBAL: SHANDALAR 0x0058f034
-static char s_x_sound_treasure_wav_0058f034[] = "x:sound\\treasure.wav";
-// GLOBAL: SHANDALAR 0x0058f04c
-static char DAT_0058f04c[] = "";
-// GLOBAL: SHANDALAR 0x0058f050
-static char s_winbak01_pic_0058f050[] = "winbak01.pic";
-// GLOBAL: SHANDALAR 0x0058f180
-static char s___0_1_2_3_4_5_6_7_8__0058f180[] = "?\n 0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8+\n";
-// GLOBAL: SHANDALAR 0x0058f1a0
-static char DAT_0058f1a0[] = " ";
-// GLOBAL: SHANDALAR 0x0058f1a4
-static char DAT_0058f1a4[] = ".\n";
-// GLOBAL: SHANDALAR 0x00581a64
-static char s_dungbutt_spr_00581a64[] = "dungbutt.spr";
-// GLOBAL: SHANDALAR 0x00581a74
-static char DAT_00581a74[4] = "";
-// GLOBAL: SHANDALAR 0x00590b54
-static char DAT_00590b54[] = "";
-// GLOBAL: SHANDALAR 0x00590b58
-static char DAT_00590b58[] = " ";
-// GLOBAL: SHANDALAR 0x00590b5c
-static char DAT_00590b5c[] = "\n\n";
-// GLOBAL: SHANDALAR 0x00590b60
-static char DAT_00590b60[] = "\n";
-// GLOBAL: SHANDALAR 0x00590b64
-static char DAT_00590b64[] = "\n";
-// GLOBAL: SHANDALAR 0x00590b68
-static char DAT_00590b68[] = "\n";
+    "0",
+    "0333.pic",
+    "0873.pic",
+    "0281.pic",
+    "0329.pic",
+    "0569.pic"};
 
 // FUNCTION: SHANDALAR 0x004be570
 void *__cdecl LoadDialogBoxFrameSprites(char *sprite_path, int normal_text_color, int selected_text_color)
@@ -690,10 +528,10 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
   {
     FUN_0046ed33();
     strcpy(s.button_text_copy, button_text);
-    ReadSpriteEntryPointers(s.button_sprites, s_dungbutt_spr_00581a64);
+    ReadSpriteEntryPointers(s.button_sprites, "dungbutt.spr");
     DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2,
                               ScaleUiCoordinateFrom320(0xc5) / 2, ScaleUiCoordinateFrom320(0x10f) / 2, s.button_sprites[0]);
-    DrawAdventureCardSized(card_index, 0x7a, 0x29, 0x4b, 0x70, 1, DAT_00581a74);
+    DrawAdventureCardSized(card_index, 0x7a, 0x29, 0x4b, 0x70, 1, "");
     FreeSpriteBlob(s.button_sprites[0]);
     if (0)
     {
@@ -835,7 +673,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
     } while (GetCardAvailabilityMask(s.selected_card_id) == 0);
     s.ante_card_ids[s.loop_index] = s.selected_card_id;
     DrawAdventureCard(s.selected_card_id, (0x96 / ante_card_count) * s.loop_index + 100,
-                      (10 / ante_card_count) * s.loop_index + 100, 1, DAT_0058f04c);
+                      (10 / ante_card_count) * s.loop_index + 100, 1, "");
   }
   do
   {
@@ -872,7 +710,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
     }
     if (RunDuelEngine(s.selected_card_id, s.creature_type) != 0)
     {
-      LoadPcxIntoPageOpaque(1, s_winbak01_pic_0058f050);
+      LoadPcxIntoPageOpaque(1, "winbak01.pic");
       PlayDuelMusic(1);
       StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                               global_screen_height);
@@ -1066,7 +904,7 @@ find_riddle_candidate:
 
     if (s.numeric_answer != -1)
     {
-      strcat(g_ui_message_buffer, s___0_1_2_3_4_5_6_7_8__0058f180);
+      strcat(g_ui_message_buffer, "?\n 0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8+\n");
       s.correct_answer = ClampIntToRange(s.numeric_answer, 0, 8);
       s.menu_selection = RunTextMenuAt(g_ui_message_buffer, 0x50, 100);
     }
@@ -1243,9 +1081,9 @@ find_riddle_candidate:
 
   for (s.clue_count = 0; s.clue_count < s.choice_count; s.clue_count = s.clue_count + 1)
   {
-    strcat(g_ui_message_buffer, DAT_0058f1a0);
+    strcat(g_ui_message_buffer, " ");
     strcat(g_ui_message_buffer, global_cards_data[s.choice_cards[s.clue_count]].name);
-    strcat(g_ui_message_buffer, DAT_0058f1a4);
+    strcat(g_ui_message_buffer, ".\n");
   }
   s.menu_selection = RunTextMenuAt(g_ui_message_buffer, 0x50, 100);
   EnsureAdvfac64Loaded(1);
@@ -1407,7 +1245,7 @@ retry:
     case 7:
       if ((RandomIntLessThan(2) != 0) || (g_siege_timer < 0x80))
       {
-        PlaySoundEffectOnChannel(s_x_sound_treasure_wav_0058ee48, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:sound\\treasure.wav", 0xf, 100, 100, 0);
         strcpy(g_ui_message_buffer, gs_lair_0077e180[1]);
         Gold = Gold + 500;
         s.reward_card = -1;
@@ -1426,7 +1264,7 @@ retry:
       } while (BuyAnyCardFromTown(-1, -1) != 0);
       break;
     case 9:
-      PlaySoundEffectOnChannel(s_x_Duelsounds_aswanjag_wav_0058ee60, 0x97, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:Duelsounds\\aswanjag.wav", 0x97, 100, 100, 0);
       if (g_siege_timer < 0x100)
       {
         RunRandomCreatureAnteDuel(8, 2);
@@ -1437,16 +1275,16 @@ retry:
       }
       break;
     case 10:
-      PlaySoundEffectOnChannel(s_x_Duelsounds_aswanjag_wav_0058ee7c, 0x97, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:Duelsounds\\aswanjag.wav", 0x97, 100, 100, 0);
       RunRandomCreatureAnteDuel(0x12, 4);
       break;
     case 0xb:
       g_next_duel_card_id = FUN_0056c705(0x1b4);
-      PlaySoundEffectOnChannel(s_x_Duelsounds_aswanjag_wav_0058ee98, 0x97, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:Duelsounds\\aswanjag.wav", 0x97, 100, 100, 0);
       RunRandomCreatureAnteDuel(0xd, 2);
       break;
     case 0xc:
-      PlaySoundEffectOnChannel(s_x_sound_treasure_wav_0058eeb4, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:sound\\treasure.wav", 0xf, 100, 100, 0);
       do
       {
         strcpy(g_ui_message_buffer, gs_lair_0077e180[3]);
@@ -1479,7 +1317,7 @@ retry:
              g_shandalar_monster_definitions[s.copied_creature_type].plural);
       g_shandalar_monster_definitions[gs_creature_name_count_00593934 - 1].gender =
           g_shandalar_monster_definitions[s.copied_creature_type].gender;
-      PlaySoundEffectOnChannel(s_x_Duelsounds_aswanjag_wav_0058eecc, 0x97, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:Duelsounds\\aswanjag.wav", 0x97, 100, 100, 0);
       RunRandomCreatureAnteDuel(0x10, 3);
       break;
     case 0xe:
@@ -1491,7 +1329,7 @@ retry:
     case 0xf:
       if ((RandomIntLessThan(2) != 0) || (g_siege_timer < 0x80))
       {
-        PlaySoundEffectOnChannel(s_x_sound_treasure_wav_0058eee8, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:sound\\treasure.wav", 0xf, 100, 100, 0);
         strcpy(g_ui_message_buffer, gs_lair_0077e180[6]);
         for (s.i = 0; s.i < 5; s.i = s.i + 1)
         {
@@ -1554,55 +1392,55 @@ end:
   {
     if ((global_cards_data[s.reward_card].type & 2) != 0)
     {
-      PlaySoundEffectOnChannel(s_x_DuelSounds_summon_wav_0058ef00, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:DuelSounds\\summon.wav", 0xf, 100, 100, 0);
     }
     else if ((global_cards_data[s.reward_card].type & 0x40) != 0)
     {
-      PlaySoundEffectOnChannel(s_x_DuelSounds_artifact_wav_0058ef18, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:DuelSounds\\artifact.wav", 0xf, 100, 100, 0);
     }
     else if ((global_cards_data[s.reward_card].type & 4) != 0)
     {
-      PlaySoundEffectOnChannel(s_x_DuelSounds_enchant_wav_0058ef34, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:DuelSounds\\enchant.wav", 0xf, 100, 100, 0);
     }
     else if ((global_cards_data[s.reward_card].type & 0x10) != 0)
     {
-      PlaySoundEffectOnChannel(s_x_DuelSounds_instant_wav_0058ef50, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:DuelSounds\\instant.wav", 0xf, 100, 100, 0);
     }
     else if ((global_cards_data[s.reward_card].type & 0x20) != 0)
     {
-      PlaySoundEffectOnChannel(s_x_DuelSounds_interupt_wav_0058ef6c, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:DuelSounds\\interupt.wav", 0xf, 100, 100, 0);
     }
     else if ((global_cards_data[s.reward_card].type & 8) != 0)
     {
-      PlaySoundEffectOnChannel(s_x_DuelSounds_sorcery_wav_0058ef88, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:DuelSounds\\sorcery.wav", 0xf, 100, 100, 0);
     }
     else if ((global_cards_data[s.reward_card].type & 1) != 0)
     {
       switch ((int)global_cards_data[s.reward_card].color)
       {
       case 2:
-        PlaySoundEffectOnChannel(s_x_DuelSounds_black_wav_0058efa4, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:DuelSounds\\black.wav", 0xf, 100, 100, 0);
         break;
       case 4:
-        PlaySoundEffectOnChannel(s_x_DuelSounds_blue_wav_0058efbc, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:DuelSounds\\blue.wav", 0xf, 100, 100, 0);
         break;
       case 8:
-        PlaySoundEffectOnChannel(s_x_DuelSounds_green_wav_0058efd4, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:DuelSounds\\green.wav", 0xf, 100, 100, 0);
         break;
       case 0x10:
-        PlaySoundEffectOnChannel(s_x_DuelSounds_red_wav_0058efec, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:DuelSounds\\red.wav", 0xf, 100, 100, 0);
         break;
       case 0x20:
-        PlaySoundEffectOnChannel(s_x_DuelSounds_white_wav_0058f004, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:DuelSounds\\white.wav", 0xf, 100, 100, 0);
         break;
       default:
-        PlaySoundEffectOnChannel(s_x_DuelSounds_grey_wav_0058f01c, 0xf, 100, 100, 0);
+        PlaySoundEffectOnChannel("x:DuelSounds\\grey.wav", 0xf, 100, 100, 0);
         break;
       }
     }
     else
     {
-      PlaySoundEffectOnChannel(s_x_sound_treasure_wav_0058f034, 0xf, 100, 100, 0);
+      PlaySoundEffectOnChannel("x:sound\\treasure.wav", 0xf, 100, 100, 0);
     }
 
     ClearInputAndWaitForMouseRelease();
@@ -1622,7 +1460,7 @@ undefined4 BuildQuestStatusMessage(void)
   int tmp;
   int value;
 
-  strcpy(g_ui_message_buffer, DAT_00590b54);
+  strcpy(g_ui_message_buffer, "");
   if (g_lair_or_monster_slots[7].entry_type != SHANDALAR_ENTRY_NONE)
   {
     value = 7;
@@ -1669,12 +1507,12 @@ undefined4 BuildQuestStatusMessage(void)
     else if (g_next_duel_card_id > 5)
     {
       strcat(g_ui_message_buffer, global_cards_data[g_next_duel_card_id].name);
-      strcat(g_ui_message_buffer, DAT_00590b58);
+      strcat(g_ui_message_buffer, " ");
       DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x254), ScaleUiCoordinate(0x90),
                                 ScaleUiCoordinate(0x1c), ScaleUiCoordinate(0x25),
                                 g_worlds_extra_sprite_entries[0]);
     }
-    strcat(g_ui_message_buffer, DAT_00590b5c);
+    strcat(g_ui_message_buffer, "\n\n");
   }
   if ((g_reveal_all_world_info == 0) && (g_current_quest_destination != -1))
   {
@@ -1683,12 +1521,12 @@ undefined4 BuildQuestStatusMessage(void)
       if (g_town_slots[g_current_quest_destination].location_type == 1)
       {
         strcat(g_ui_message_buffer, gs_queststatus_0077e0a0[g_current_quest_color + 4]);
-        strcat(g_ui_message_buffer, DAT_00590b60);
+        strcat(g_ui_message_buffer, "\n");
       }
       else
       {
         strcat(g_ui_message_buffer, FUN_004f2e17(g_current_quest_destination));
-        strcat(g_ui_message_buffer, DAT_00590b64);
+        strcat(g_ui_message_buffer, "\n");
       }
     }
     else
@@ -1702,7 +1540,7 @@ undefined4 BuildQuestStatusMessage(void)
         (g_current_quest_type < -100))
     {
       tmp = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
-                                       g_town_slots[g_current_quest_destination].world_y);
+                                     g_town_slots[g_current_quest_destination].world_y);
       if (tmp != g_current_quest_data)
       {
         g_current_quest_data = -1;
@@ -1743,7 +1581,7 @@ undefined4 BuildQuestStatusMessage(void)
                 BuildTownDisplayName(g_current_quest_destination));
         break;
       }
-      strcat(g_ui_message_buffer, DAT_00590b68);
+      strcat(g_ui_message_buffer, "\n");
     }
     else
     {
@@ -1846,7 +1684,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     goto LAB_004f683f;
   }
 
-  LoadDialogBoxFrameSprites(s_dbox2_spr_0058afb8, 0xd5, 0xd2);
+  LoadDialogBoxFrameSprites("dbox2.spr", 0xd5, 0xd2);
   s.creature_type = g_lair_or_monster_slots[slot_index].entry_type;
   DAT_008ce538 = monster_color;
   DAT_007a7874 = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
@@ -1905,11 +1743,11 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     global_ante_cards[0][s.loop_index] = deck[s.deck_or_card_index] & 0xfff;
   }
   s.font_slot = 2;
-  s.preduel_background_paths[0] = s_prdblk_pic_0058afd0;
-  s.preduel_background_paths[1] = s_prdblu_pic_0058afe8;
-  s.preduel_background_paths[2] = s_prdgrn_pic_0058b000;
-  s.preduel_background_paths[3] = s_prdrd_pic_0058b018;
-  s.preduel_background_paths[4] = s_prdwt_pic_0058b030;
+  s.preduel_background_paths[0] = "prdblk.pic";
+  s.preduel_background_paths[1] = "prdblu.pic";
+  s.preduel_background_paths[2] = "prdgrn.pic";
+  s.preduel_background_paths[3] = "prdrd.pic";
+  s.preduel_background_paths[4] = "prdwt.pic";
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, s.preduel_background_paths[monster_color - 1],
                   (g_graphics_bpp == 8) ? &g_palette_data_words : (RpBitsPalettePacket *)1);
@@ -1917,7 +1755,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
                           global_screen_height);
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
   ApplyCardArtPaletteToDc(global_main_hdc);
-  LoadPcxIntoPage(1, s_prdfrma_pic_0058b03c);
+  LoadPcxIntoPage(1, "prdfrma.pic");
   BeginSpriteEncodeSession();
   s.preduel_card_frame_left = EncodeSpriteFromPage(1, 1, 1, 0x68, 0x2c);
   s.preduel_card_frame_right = EncodeSpriteFromPage(1, 1, 0x2e, 0x67, 0x31);
@@ -1964,10 +1802,10 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
                             ScaleUiCoordinate((int)s.preduel_bottom_right_sprite->height),
                             s.preduel_bottom_right_sprite);
   PTR_DAT_005832b4->font_slot = 4;
-  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x188, DAT_0058b048, Gold);
-  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0xbd, 0x188, DAT_0058b04c, g_food);
-  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x1b5, s__d__d_0058b050, DAT_0078df68, DAT_00789938);
-  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0xc3, 0x1b5, DAT_0058b058, CountDuelPoolEligibleTowns());
+  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x188, "%d", Gold);
+  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0xbd, 0x188, "%d", g_food);
+  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0x5b, 0x1b5, "%d/%d", DAT_0078df68, DAT_00789938);
+  DrawTextAt(PTR_DAT_005832b4, 0xd2, 0xc3, 0x1b5, "%d", CountDuelPoolEligibleTowns());
   PTR_DAT_005832b4->font_slot = 2;
   DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0x1d4), ScaleUiCoordinate(0x15e),
                             ScaleUiCoordinate((int)s.duel_pool_panel_sprite->width),
@@ -1978,7 +1816,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   FinalizeSpriteEncodeSession();
   FreeSpriteBlob(s.preduel_card_frame_left);
   DrawCreaturePortrait(s.creature_type, ScaleUiCoordinate(0x140), ScaleUiCoordinate(10), 0, 0);
-  LoadPcxIntoPage(1, s_prdfrmb_pic_0058b05c);
+  LoadPcxIntoPage(1, "prdfrmb.pic");
   PTR_DAT_005832dc->font_slot = 4;
   PTR_DAT_005832b4->font_slot = 4;
   BeginSpriteEncodeSession();
@@ -2002,7 +1840,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[2], GetCreatureName(s.creature_type));
   if ((g_duel_ai_mode_state == 0) && (g_shandalar_monster_definitions[s.creature_type].encounter_type != '\v'))
   {
-    DrawAdventureCard(g_duel_ante_card_ids[0], 0xe8, 0x18, 1, DAT_0058b068);
+    DrawAdventureCard(g_duel_ante_card_ids[0], 0xe8, 0x18, 1, "");
   }
   s.bribe_gold_cost = ClampIntToRange(s.creature_strength * 10, 10, s.creature_strength * 0x32);
 
@@ -2031,7 +1869,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       if (g_duel_ai_mode_state == 0)
       {
         DrawAdventureCard(global_ante_cards[0][s.loop_index], s.loop_index * 0x18 + 10,
-                          s.loop_index * 0xc + 0x18, 1, DAT_0058b06c);
+                          s.loop_index * 0xc + 0x18, 1, "");
       }
     }
     s.victory_count = 0;
@@ -2137,7 +1975,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     {
       if (s.world_magic_ante_used != 0)
       {
-        strcat(g_ui_message_buffer, DAT_0058b070);
+        strcat(g_ui_message_buffer, "\n");
 
         s.world_magic_option_index = 0xffffffff;
       }
@@ -2227,7 +2065,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         }
         SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
-        LoadDialogBoxFrameSprites(s_dbox_spr_0058b074, 0x71, 0xe3);
+        LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
         s.selected_card_id = SelectAdventureListCardIndex(active_player, global_library[1], 500,
                                                           gs_encounter_preduel_0077f0d0[0x23], 1, &DAT_0058b080);
         if (global_library[1][s.selected_card_id] != -1)
@@ -2247,9 +2085,9 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         {
           if ((g_world_magic_bitmap & 1 << (byte)slot_index) == 0)
           {
-            strcat(g_ui_message_buffer, DAT_0058b084);
+            strcat(g_ui_message_buffer, " ");
             strcat(g_ui_message_buffer, gs_worldmagic_names_00780660[slot_index]);
-            strcat(g_ui_message_buffer, DAT_0058b088);
+            strcat(g_ui_message_buffer, "\n");
             s.temp_deck[s.world_magic_list_count] = slot_index;
             s.world_magic_list_count = s.world_magic_list_count + 1;
           }
@@ -2347,7 +2185,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       {
         PlayDuelMusic(2);
         strcpy(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x28]);
-        LoadPcxIntoPage(1, s_losedul2_pic_0058b08c);
+        LoadPcxIntoPage(1, "losedul2.pic");
         StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                                 global_screen_height);
         DrawAdventureCard(global_ante_cards[0][0], 0x17, 0x50, 1, g_ui_message_buffer);
@@ -2359,12 +2197,12 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       {
         DelayUiTicks(0x1e);
       }
-      LoadPcxIntoPageNoPalette(s_Prdblk_pic_0058b09c);
+      LoadPcxIntoPageNoPalette("Prdblk.pic");
       SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
       AnimatePaletteToColor(0, g_default_palette_fade_steps);
       ClearGraphicsPageWithPaletteColor(0, 0);
-      LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b0a8);
-      LoadDialogBoxFrameSprites(s_dbox_spr_0058b0b8, 0x71, 0xe3);
+      LoadPcxIntoPageNoPalette("advfac64.pic");
+      LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
       return 0;
     }
     if (s.bribe_option_index == s.menu_choice)
@@ -2372,8 +2210,8 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       Gold = Gold - s.bribe_gold_cost;
       SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
       AnimatePaletteToColor(0, g_default_palette_fade_steps);
-      LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b0c4);
-      LoadDialogBoxFrameSprites(s_dbox_spr_0058b0d4, 0x71, 0xe3);
+      LoadPcxIntoPageNoPalette("advfac64.pic");
+      LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
       return 0;
     }
   }
@@ -2384,7 +2222,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
       if (g_duel_ai_mode_state == 0)
       {
         DrawAdventureCard(global_ante_cards[0][s.loop_index], s.loop_index * 0x18 + 10,
-                          s.loop_index * 0xc + 0x18, 1, DAT_0058b0e0);
+                          s.loop_index * 0xc + 0x18, 1, "");
       }
     }
     if (IsWizardColorFeminine(monster_color) != 0)
@@ -2440,13 +2278,13 @@ LAB_4F4BB2:
   s.allow_random_reward = (uint)(((g_monster_timer >> 2) % 3) == 0);
   if (s.allow_random_reward != 0)
   {
-    PlaySoundEffectOnChannel(s_x_sound_dsummon_wav_0058b0e4, 0xf, 100, 100, 0);
+    PlaySoundEffectOnChannel("x:sound\\dsummon.wav", 0xf, 100, 100, 0);
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 4) != 0)
     {
       if (RandomIntLessThan(3) == 0)
       {
         s.deck_or_card_index = RandomIntLessThan(0x23) + 1;
-        strcpy(g_ui_message_buffer, s_decks_0_0058b0f8);
+        strcpy(g_ui_message_buffer, "decks\\0");
         if (g_shandalar_monster_definitions[s.deck_or_card_index].deck_number < 100)
         {
           strcat(g_ui_message_buffer, DAT_0058b100);
@@ -2457,7 +2295,7 @@ LAB_4F4BB2:
         }
         strcat(g_ui_message_buffer, _itoa(g_shandalar_monster_definitions[s.deck_or_card_index].deck_number, DAT_0093a870,
                                           10));
-        strcat(g_ui_message_buffer, DAT_0058b108);
+        strcat(g_ui_message_buffer, ".dck");
         ClearAndLoadInitialLibraryFromDeckFile(g_ui_message_buffer, 0, 0, -1);
         g_selected_wizard_color = 0;
         strcpy(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[0x2b]);
@@ -2541,7 +2379,7 @@ LAB_4F4BB2:
   DestroyCachedCardArt();
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
-  LoadDialogBoxFrameSprites(s_dbox_spr_0058b110, 0x71, 0xe3);
+  LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
   sound_stop(0);
   s.duel_prompt_done = -1;
   s.duel_prompt_choice = 0;
@@ -2550,7 +2388,7 @@ LAB_4F4BB2:
     s.duel_prompt_choice = FUN_0056d5c0(0, &s.duel_prompt_done);
   }
   s.duel_result = RunDuelEngine(s.selected_card_id, s.creature_type);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b11c);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
   if (s.duel_result == 1)
   {
     s.reward_text_color = 0xca;
@@ -2589,7 +2427,7 @@ LAB_4F4BB2:
         s.loop_index = s.loop_index - (((global_cards_data[s.selected_card_id].extra_ability & 0x400) >> 10) + GetCardRarity(s.selected_card_id));
       } while (0 < s.loop_index);
       PlayDuelMusic(1);
-      LoadPcxIntoPageOpaque(1, s_winbak01_pic_0058b12c);
+      LoadPcxIntoPageOpaque(1, "winbak01.pic");
       StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                               global_screen_height);
       s.reward_card_spacing = 300 / (int)(s.menu_option_count + 1);
@@ -2604,14 +2442,14 @@ LAB_4F4BB2:
       if (s.hint_dungeon_index != -1)
       {
         s.text_y = 0xcb;
-        LoadPcxIntoPage(1, s_endplak_pic_0058b13c);
+        LoadPcxIntoPage(1, "endplak.pic");
         StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x128, 0x36, PTR_DAT_005832b4,
                                 ScaleUiCoordinate(0x34), ScaleUiCoordinate(0x195),
                                 ScaleUiCoordinate(0x128), ScaleUiCoordinate(0x36));
         strcpy(g_ui_message_buffer, GetDungeonName(s.hint_dungeon_index));
         DrawUiScaledCenteredText(g_ui_message_buffer, 100, s.text_y + 3, 0xca);
         s.text_y = s.text_y + 9;
-        strcpy(g_ui_message_buffer, DAT_0058b148);
+        strcpy(g_ui_message_buffer, "");
         for (s.loop_index = 0; s.loop_index < 3; s.loop_index = s.loop_index + 1)
         {
           if ((&g_castle_dungeon_slots[s.hint_dungeon_index].card_slot_1)[s.loop_index] == -1)
@@ -2620,7 +2458,7 @@ LAB_4F4BB2:
           }
           if (s.loop_index != 0)
           {
-            strcat(g_ui_message_buffer, DAT_0058b14c);
+            strcat(g_ui_message_buffer, ", ");
           }
           strcat(g_ui_message_buffer,
                  global_cards_data[(&g_castle_dungeon_slots[s.hint_dungeon_index].card_slot_1)[s.loop_index]].name);
@@ -2649,7 +2487,7 @@ LAB_4F4BB2:
         }
         else
         {
-          strcpy(g_ui_message_buffer, DAT_0058b150);
+          strcpy(g_ui_message_buffer, "");
         }
         DrawScaledCenteredTextNoShadow(g_ui_message_buffer, 100, s.text_y, 200);
         if (IsCreatureTypeFeminine(s.creature_type) != 0)
@@ -2721,7 +2559,7 @@ LAB_4F4BB2:
         s.scratch_values[4] = 3;
         s.scratch_values[5] = 0;
         g_amulet_inventory[monster_color - 1] += 1;
-        LoadPcxIntoPage(1, s_winbak02_pic_0058b154);
+        LoadPcxIntoPage(1, "winbak02.pic");
         StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                                 global_screen_height);
         ClearInputAndWaitForMouseRelease();
@@ -2749,8 +2587,8 @@ LAB_4F4BB2:
       }
       if (s.reward_flags != 0)
       {
-        PlaySoundEffectOnChannel(s_x_sound_treasure_wav_0058b164, 0xf, 100, 100, 0);
-        LoadPcxIntoPage(1, s_winbak02_pic_0058b17c);
+        PlaySoundEffectOnChannel("x:sound\\treasure.wav", 0xf, 100, 100, 0);
+        LoadPcxIntoPage(1, "winbak02.pic");
         StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                                 global_screen_height);
         DrawCreaturePortrait(s.creature_type, ScaleUiCoordinate(s.reward_text_x), ScaleUiCoordinate(0x23), 1, 0);
@@ -2801,7 +2639,7 @@ LAB_4F4BB2:
         }
         else
         {
-          strcpy(g_ui_message_buffer, DAT_0058b18c);
+          strcpy(g_ui_message_buffer, "");
         }
         DrawTextAt(PTR_DAT_005832b4, s.reward_text_color, s.reward_text_x, s.reward_text_y, g_ui_message_buffer);
         s.reward_text_y = s.reward_text_y + 0x28;
@@ -2943,7 +2781,7 @@ LAB_4F4BB2:
   if (s.duel_result == 0)
   {
     PlayDuelMusic(2);
-    LoadPcxIntoPage(1, s_losedul2_pic_0058b194);
+    LoadPcxIntoPage(1, "losedul2.pic");
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                             global_screen_height);
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, s.creature_type);
@@ -2963,7 +2801,7 @@ LAB_4F4BB2:
   }
   if (s.duel_result == -1)
   {
-    LoadPcxIntoPage(1, s_losedul2_pic_0058b1a4);
+    LoadPcxIntoPage(1, "losedul2.pic");
     StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
                             global_screen_height);
     DrawCreaturePortrait(s.creature_type, global_screen_width / 4, ScaleUiCoordinate(0x3c), 1, 0);
@@ -2986,9 +2824,9 @@ LAB_4F4BB2:
   }
 
 LAB_004f683f:
-  LoadDialogBoxFrameSprites(s_dbox_spr_0058b1b4, 0x71, 0xe3);
+  LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
   SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
-  LoadPcxIntoPageNoPalette(s_advfac64_pic_0058b1c0);
+  LoadPcxIntoPageNoPalette("advfac64.pic");
   ClearInputAndWaitForMouseRelease();
   return s.duel_result;
 }

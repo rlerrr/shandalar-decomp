@@ -23,45 +23,17 @@ void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2,
 extern int g_duel_modal_action_active;
 extern char DAT_00789720[0x100];
 
-// GLOBAL: MAGIC 0x0057afe8
-// GLOBAL: SHANDALAR 0x00586154
-char s__WINBK_TellUser_pic_0057afe8[0x14] = "\\WINBK_TellUser.pic";
-
-// GLOBAL: MAGIC 0x0057affc
-// GLOBAL: SHANDALAR 0x00586168
-char s_BUTTONLABELS_0057affc[0x10] = "BUTTONLABELS";
-
-// GLOBAL: MAGIC 0x0057b00c
-// GLOBAL: SHANDALAR 0x00586178
-char s_TellUser_0057b00c[0xc] = "TellUser";
-
-// GLOBAL: MAGIC 0x0057b018
-// GLOBAL: SHANDALAR 0x00586184
-char s_TellUser_0057b018[0xc] = "TellUser";
-
 // GLOBAL: MAGIC 0x0057b024
 // GLOBAL: SHANDALAR 0x00586190
 char DAT_0057b024[4] = "";
-
-// GLOBAL: MAGIC 0x0057b028
-// GLOBAL: SHANDALAR 0x00586194
-char s_BUTTON_0057b028[8] = "BUTTON";
 
 // GLOBAL: MAGIC 0x0057b030
 // GLOBAL: SHANDALAR 0x0058619c
 char DAT_0057b030[4] = "";
 
-// GLOBAL: MAGIC 0x0057b034
-// GLOBAL: SHANDALAR 0x005861a0
-char s_BUTTON_0057b034[8] = "BUTTON";
-
 // GLOBAL: MAGIC 0x0057b03c
 // GLOBAL: SHANDALAR 0x005861a8
 char DAT_0057b03c[4] = "";
-
-// GLOBAL: MAGIC 0x0057b040
-// GLOBAL: SHANDALAR 0x005861ac
-char s__WINBK_TellUser_pic_0057b040[0x14] = "\\WINBK_TellUser.pic";
 
 // GLOBAL: MAGIC 0x0055e180
 // GLOBAL: SHANDALAR 0x0057f064
@@ -141,13 +113,13 @@ int register_MAGIC_TellUserClass(LPCSTR class_name)
   }
 
   strcpy(s.path, global_duelart_path);
-  strcat(s.path, s__WINBK_TellUser_pic_0057afe8);
+  strcat(s.path, "\\WINBK_TellUser.pic");
   g_tell_user_background_bitmap = load_pic(s.path);
-  load_text(global_ui_strings_filename, s_BUTTONLABELS_0057affc);
+  load_text(global_ui_strings_filename, "BUTTONLABELS");
   strcpy(DAT_008ce680, text_lines[0]);
   strcpy(DAT_00789720, text_lines[1]);
-  g_tell_user_font = CreateFontIndirectA(LoadFontFromIni(s_TellUser_0057b00c, 0));
-  g_tell_user_button_font = CreateFontIndirectA(LoadFontFromIni(s_TellUser_0057b018, 0));
+  g_tell_user_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
+  g_tell_user_button_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
   g_tell_user_border_pen_1 = CreatePen(0, 0, 0x10000cb);
   g_tell_user_border_pen_2 = CreatePen(0, 0, 0x10000cd);
   g_tell_user_border_pen_3 = CreatePen(0, 0, 0x10000cf);
@@ -318,9 +290,9 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
   case WM_CREATE:
     s.font = g_tell_user_font;
     SetWindowLongA(hwnd, DAT_0055e17c, (LONG)s.font);
-    DAT_00743090 = CreateWindowExA(0, s_BUTTON_0057b028, DAT_0057b024, 0x4080000b,
+    DAT_00743090 = CreateWindowExA(0, "BUTTON", DAT_0057b024, 0x4080000b,
                                    0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, (LPVOID)0);
-    DAT_0074308c = CreateWindowExA(0, s_BUTTON_0057b034, DAT_0057b030, 0x4080000b,
+    DAT_0074308c = CreateWindowExA(0, "BUTTON", DAT_0057b030, 0x4080000b,
                                    0, 0, 0, 0, hwnd, (HMENU)2, g_app_instance, (LPVOID)0);
     if (DAT_00743090 == (HWND)0 || DAT_0074308c == (HWND)0)
     {
@@ -382,7 +354,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       if (g_tell_user_background_bitmap == (HBITMAP)0)
       {
         strcpy(s.path, global_duelart_path);
-        strcat(s.path, s__WINBK_TellUser_pic_0057b040);
+        strcat(s.path, "\\WINBK_TellUser.pic");
         g_tell_user_background_bitmap = load_pic(s.path);
       }
       if (g_tell_user_background_bitmap != (HBITMAP)0)

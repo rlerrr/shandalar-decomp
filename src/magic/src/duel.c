@@ -87,51 +87,6 @@ extern int _DAT_007483f4;
 int single_color_test_bit_to_color_t(int color_mask);
 #endif
 
-// GLOBAL: MAGIC 0x005732b4
-char s_Starting_the_duel_005732b4[0x14] = "Starting the duel.\n";
-
-// GLOBAL: MAGIC 0x0056e4f0
-char s_Turn___d__We_are_the_non_phasing_0056e4f0[0x2f] = "Turn #%d. We are the non-phasing player(%d).\n\n";
-
-// GLOBAL: MAGIC 0x0056e520
-char s_Turn___d__We_are_the_phasing_pla_0056e520[0x2b] = "Turn #%d. We are the phasing player(%d).\n\n";
-
-// GLOBAL: MAGIC 0x0056e560
-char s__d__Entering_Init_Turn__0056e560[0x19] = "%d: Entering Init Turn.\n";
-
-// GLOBAL: MAGIC 0x0056e57c
-char s__d__Entering_Start_Turn__0056e57c[0x1a] = "%d: Entering Start Turn.\n";
-
-// GLOBAL: MAGIC 0x0056e598
-char s__d__Entering_Untap_Phase__0056e598[0x1c] = "%d: Entering Untap Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e5b4
-char s_PROMPT_UNTAP_0056e5b4[0x10] = "PROMPT_UNTAP";
-
-// GLOBAL: MAGIC 0x0056e5c4
-char s_PROMPT_UNTAP_0056e5c4[0x10] = "PROMPT_UNTAP";
-
-// GLOBAL: MAGIC 0x0056e5d4
-char s__d__Entering_UpKeep_Phase__0056e5d4[0x1c] = "%d: Entering UpKeep Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e5f0
-char s__d__Entering_Draw_Phase__0056e5f0[0x1a] = "%d: Entering Draw Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e908
-char s__d__Entering_Discard_Phase__0056e908[0x1d] = "%d: Entering Discard Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e928
-char s__d__Entering_Cleanup_Phase__0056e928[0x1d] = "%d: Entering Cleanup Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e948
-char s__d__Entering_End_Turn_Phase__0056e948[0x1f] = "%d: Entering End Turn Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e968
-char s__d__Entering_AI_Decision_Phase__0056e968[0x24] = "%d: Entering AI Decision Phase.\n";
-
-// GLOBAL: MAGIC 0x0056e98c
-char s_phase___3d_num_tries___4d_mtime___0056e98c[0x30] = "phase: %3d num tries: %4d mtime %4d calls %d\n";
-
 // GLOBAL: MAGIC 0x009251d4
 // GLOBAL: SHANDALAR 0x00939304
 int DAT_009251d4;
@@ -347,11 +302,11 @@ void run_duel_turn(unsigned int player)
     append_to_trace_txt("___________________________________________________________________________\n");
     if (player != 0)
     {
-      sprintf(s.trace, s_Turn___d__We_are_the_non_phasing_0056e4f0, DAT_009251d4, player);
+      sprintf(s.trace, "Turn #%d. We are the non-phasing player(%d).\n\n", DAT_009251d4, player);
     }
     else
     {
-      sprintf(s.trace, s_Turn___d__We_are_the_phasing_pla_0056e520, DAT_009251d4, player);
+      sprintf(s.trace, "Turn #%d. We are the phasing player(%d).\n\n", DAT_009251d4, player);
     }
     append_to_trace_txt(s.trace);
   }
@@ -495,7 +450,7 @@ int init_turn(int player)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_Init_Turn__0056e560, s.trace_counter);
+    sprintf(s.trace, "%d: Entering Init Turn.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
   }
   s.other_player = 1 - player;
@@ -560,7 +515,7 @@ int TENTATIVE_start_turn(int player)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_Start_Turn__0056e57c, s.trace_counter);
+    sprintf(s.trace, "%d: Entering Start Turn.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
   }
   if ((g_duel_ai_mode_state != 1) && ((g_duel_network_flags & 2) == 0))
@@ -837,7 +792,7 @@ int untap_phase_exe(unsigned int player)
   {
     trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_Untap_Phase__0056e598, trace_counter);
+    sprintf(s.trace, "%d: Entering Untap Phase.\n", trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -921,7 +876,7 @@ int untap_phase_exe(unsigned int player)
             (g_duel_network_state == 0) &&
             ((s.must_untap_count > 0) || (s.optional_untap_count > 0)))
         {
-          load_text(global_ui_strings_filename, s_PROMPT_UNTAP_0056e5b4);
+          load_text(global_ui_strings_filename, "PROMPT_UNTAP");
           s.selected_card = select_card_for_action(player, -1, player, 0xff, 0, text_lines[0], 2);
         }
         else
@@ -936,7 +891,7 @@ int untap_phase_exe(unsigned int player)
             previous_stop_phase_player = -1;
             previous_stop_phase = -1;
           }
-          load_text(global_ui_strings_filename, s_PROMPT_UNTAP_0056e5c4);
+          load_text(global_ui_strings_filename, "PROMPT_UNTAP");
           s.selected_card = select_card_for_action(player, player, player, 0xff, 0, text_lines[1], 2);
           phase_was_skipped = 1;
         }
@@ -1061,7 +1016,7 @@ int upkeep_phase(unsigned int player)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_UpKeep_Phase__0056e5d4, s.trace_counter);
+    sprintf(s.trace, "%d: Entering UpKeep Phase.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -1138,7 +1093,7 @@ int draw_phase(unsigned int player)
   {
     trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_Draw_Phase__0056e5f0, trace_counter);
+    sprintf(s.trace, "%d: Entering Draw Phase.\n", trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -1251,7 +1206,7 @@ int discard_phase(unsigned int player, int phase_mode)
   if (TRACE_ENABLED)
   {
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_Discard_Phase__0056e908, s.trace_counter);
+    sprintf(s.trace, "%d: Entering Discard Phase.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -1411,7 +1366,7 @@ void cleanup_phase(unsigned int player)
   {
     s.trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_Cleanup_Phase__0056e928, s.trace_counter);
+    sprintf(s.trace, "%d: Entering Cleanup Phase.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -1495,7 +1450,7 @@ void end_turn_phase(unsigned int player)
   if (TRACE_ENABLED)
   {
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_End_Turn_Phase__0056e948, s.trace_counter);
+    sprintf(s.trace, "%d: Entering End Turn Phase.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -1600,7 +1555,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
   {
     trace_counter = duel_trace_counter;
     duel_trace_counter++;
-    sprintf(s.trace, s__d__Entering_AI_Decision_Phase__0056e968, trace_counter);
+    sprintf(s.trace, "%d: Entering AI Decision Phase.\n", trace_counter);
     append_to_trace_txt(s.trace);
   }
 
@@ -1662,7 +1617,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
          (((ai_search_flags & 4) == 0 ? 0xc8 : 0x32) < get_ai_search_elapsed_time())) &&
         ((DAT_00712544 == 0) || (ai_search_try_count > 0x32)))
     {
-      sprintf(s.debug_text, s_phase___3d_num_tries___4d_mtime___0056e98c, DAT_00743098, ai_search_try_count, ai_search_time_limit / 2, unk_0093f9c0);
+      sprintf(s.debug_text, "phase: %3d num tries: %4d mtime %4d calls %d\n", DAT_00743098, ai_search_try_count, ai_search_time_limit / 2, unk_0093f9c0);
       OutputDebugStringA(s.debug_text);
       if (DAT_00712544 != 0)
       {
@@ -2469,7 +2424,7 @@ int play_duel(int player, int creature_type)
   {
     if (TRACE_ENABLED)
     {
-      append_to_trace_txt(s_Starting_the_duel_005732b4);
+      append_to_trace_txt("Starting the duel.\n");
     }
     life[1] = 0x14;
     life[0] = life[1];

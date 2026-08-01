@@ -51,30 +51,6 @@ int g_life_window_bitmap_window_long_offset = 0xc;
 // GLOBAL: SHANDALAR 0x0057f0f4
 int g_magicgame_life_window_extra_bytes = 0x10;
 
-// GLOBAL: MAGIC 0x0057aa7c
-char s_MENU_LIFE_0057aa7c[0xc] = "MENU_LIFE";
-
-// GLOBAL: MAGIC 0x0057aa88
-char s__s_Poison_pic_0057aa88[0x10] = "%s\\Poison.pic";
-
-// GLOBAL: MAGIC 0x0057aa98
-char s__s_LIFE_liched_pic_0057aa98[0x14] = "%s\\LIFE_liched.pic";
-
-// GLOBAL: MAGIC 0x0057aaac
-char s_Life_0057aaac[8] = "Life";
-
-// GLOBAL: MAGIC 0x0057aab4
-char s__duel_hlp_0057aab4[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057aac0
-char s__d_0057aac0[4] = "%d";
-
-// GLOBAL: MAGIC 0x0057aac4
-char s__s_LIFE_liched_pic_0057aac4[0x14] = "%s\\LIFE_liched.pic";
-
-// GLOBAL: MAGIC 0x0057aad8
-char s__s_Poison_pic_0057aad8[0x10] = "%s\\Poison.pic";
-
 // GLOBAL: MAGIC 0x0069e290
 // GLOBAL: SHANDALAR 0x005b7c78
 char g_life_menu_set_life_text[0x48];
@@ -232,18 +208,18 @@ int register_MAGICGAME_LifeClass(LPCSTR class_name)
   }
 
   g_life_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_LIFE_0057aa7c);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_LIFE");
   strcpy(g_life_menu_directive_format, text_lines[0]);
   strcpy(g_life_menu_directive_self_text, text_lines[1]);
   strcpy(g_life_menu_set_life_text, text_lines[2]);
   strcpy(g_life_menu_help_text, text_lines[3]);
 
-  sprintf(s.path, s__s_Poison_pic_0057aa88, global_cardart_path);
+  sprintf(s.path, "%s\\Poison.pic", global_cardart_path);
   g_life_poison_bitmap = load_pic(s.path);
-  sprintf(s.path, s__s_LIFE_liched_pic_0057aa98, global_duelart_path);
+  sprintf(s.path, "%s\\LIFE_liched.pic", global_duelart_path);
   g_life_lich_bitmap = load_pic(s.path);
 
-  g_life_font = CreateFontIndirectA(LoadFontFromIni(s_Life_0057aaac, 0));
+  g_life_font = CreateFontIndirectA(LoadFontFromIni("Life", 0));
   g_life_text_color = 0x100004a;
   g_life_shadow_color = 0x10000c9;
   return s.result;
@@ -458,7 +434,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.help_context = 0x7e8;
       }
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_0057aab4);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
     default:
@@ -510,7 +486,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
       s.life_total = get_displayed_life_total(1);
     }
-    wsprintfA(s.life_text, s__d_0057aac0, s.life_total);
+    wsprintfA(s.life_text, "%d", s.life_total);
     if (hwnd == g_duel_life_status_window_1_hwnd)
     {
       s.poison_total = get_displayed_poison_total(0);
@@ -551,7 +527,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
       if (g_life_lich_bitmap == (HBITMAP)0)
       {
-        sprintf(s.lich_path, s__s_LIFE_liched_pic_0057aac4, global_duelart_path);
+        sprintf(s.lich_path, "%s\\LIFE_liched.pic", global_duelart_path);
         g_life_lich_bitmap = load_pic(s.lich_path);
       }
       DrawBitmapToRect(s.dc, &s.client_rect, g_life_lich_bitmap);
@@ -559,7 +535,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     if (g_life_poison_bitmap == (HBITMAP)0)
     {
-      sprintf(s.poison_path, s__s_Poison_pic_0057aad8, global_cardart_path);
+      sprintf(s.poison_path, "%s\\Poison.pic", global_cardart_path);
       g_life_poison_bitmap = load_pic(s.poison_path);
     }
 

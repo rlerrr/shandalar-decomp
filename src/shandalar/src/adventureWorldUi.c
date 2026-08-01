@@ -222,8 +222,6 @@ int g_world_camera_last_anchor_y;
 int g_world_player_tile_x;
 // GLOBAL: SHANDALAR 0x0073e9d4
 int g_world_player_tile_y;
-// GLOBAL: SHANDALAR 0x00581af4
-char g_empty_string[] = "";
 
 // GLOBAL: SHANDALAR 0x00590a48
 AdvMenuRect g_adventure_interface_world_magic_icon_rects[0xc] = {
@@ -571,7 +569,7 @@ char *GetQuestCardClassName(int quest_bitmap_mask)
     result = gs_cardclassnames_0077cf70[8];
     break;
   default:
-    result = g_empty_string;
+    result = "";
     break;
   }
   return result;

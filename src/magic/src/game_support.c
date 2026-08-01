@@ -78,23 +78,6 @@ const unsigned char wizard_card_color_preference_table[18] = {
     0x05,
 };
 
-// GLOBAL: MAGIC 0x00561784
-const char s_PROMPT_DRAWACARD_00561784[] = "PROMPT_DRAWACARD";
-
-// GLOBAL: MAGIC 0x00561798
-const char s_PROMPT_DRAWACARD_00561798[] = "PROMPT_DRAWACARD";
-
-// GLOBAL: MAGIC 0x005617ac
-// GLOBAL: SHANDALAR 0x00580bbc
-const char empty_active_player_draw_message[4] = {0, 0, 0, 0};
-
-// GLOBAL: MAGIC 0x005617b0
-const char s_PROMPT_DRAWACARD_005617b0[] = "PROMPT_DRAWACARD";
-
-// GLOBAL: MAGIC 0x005617c4
-// GLOBAL: SHANDALAR 0x00580bd4
-const char empty_opponent_draw_message[4] = {0, 0, 0, 0};
-
 int can_target(target_definition_t *td)
 {
   return td != NULL;
@@ -2280,7 +2263,7 @@ int draw_card_for_player(int player)
       TENTATIVE_reassess_all_cards(0, 0x30);
       if (g_duel_ai_mode_state != 1)
       {
-        load_text(global_ui_strings_filename, s_PROMPT_DRAWACARD_00561784);
+        load_text(global_ui_strings_filename, "PROMPT_DRAWACARD");
         if (unk_00742fc4 != 0)
         {
           show_duel_card_preview(PLAYER_CARD_INSTANCE(player, s.drawn_card).internal_card_id,
@@ -2301,10 +2284,10 @@ int draw_card_for_player(int player)
     }
     else if (g_duel_ai_mode_state != 1)
     {
-      load_text(global_ui_strings_filename, s_PROMPT_DRAWACARD_00561798);
+      load_text(global_ui_strings_filename, "PROMPT_DRAWACARD");
       set_duel_prompt_text(text_lines[1]);
       Sleep(0x9c4);
-      set_duel_prompt_text((char *)empty_active_player_draw_message);
+      set_duel_prompt_text("");
       exit_duel_thread(0);
     }
     else
@@ -2363,10 +2346,10 @@ int draw_card_for_player(int player)
     {
       if (g_duel_ai_mode_state != 1)
       {
-        load_text(global_ui_strings_filename, s_PROMPT_DRAWACARD_005617b0);
+        load_text(global_ui_strings_filename, "PROMPT_DRAWACARD");
         set_duel_prompt_text(text_lines[2]);
         Sleep(0x9c4);
-        set_duel_prompt_text((char *)empty_opponent_draw_message);
+        set_duel_prompt_text("");
         exit_duel_thread(1);
       }
       else

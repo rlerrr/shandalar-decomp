@@ -47,21 +47,6 @@ typedef struct msvc_bitmap
 // GLOBAL: MAGIC 0x00571d20
 int DAT_00571d20 = -1;
 
-// GLOBAL: MAGIC 0x0057e4c0
-char s__WINBK_PhaseCombat_pic_0057e4c0[0x17] = "\\WINBK_PhaseCombat.pic";
-
-// GLOBAL: MAGIC 0x0057e504
-char s__duel_hlp_0057e504[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057e510
-char s__duel_hlp_0057e510[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0057e51c
-char s__WINBK_PhaseCombat_pic_0057e51c[0x17] = "\\WINBK_PhaseCombat.pic";
-
-// GLOBAL: MAGIC 0x00579c40
-char s_LayoutAttackCards_00579c40[0x12] = "LayoutAttackCards";
-
 // GLOBAL: MAGIC 0x0069c618
 int DAT_0069c618;
 
@@ -140,7 +125,7 @@ int FUN_004954ef(char *text, COLORREF color, HBRUSH brush)
   SetRect(&s.rect, 0, 0x23f, 0x8c, 0x26c);
   if (DAT_00571d20 != -1)
   {
-    
+
     s.dc = CreateDCA("DISPLAY", (LPCSTR)0, (LPCSTR)0, (DEVMODEA *)0);
     SetTextColor(s.dc, color);
     SetBkMode(s.dc, TRANSPARENT);
@@ -502,7 +487,7 @@ void layout_attack_phase_window(HWND hwnd)
     return;
   }
 
-  FUN_004954ef(s_LayoutAttackCards_00579c40, 0xff00ff, GetStockObject(LTGRAY_BRUSH));
+  FUN_004954ef("LayoutAttackCards", 0xff00ff, GetStockObject(LTGRAY_BRUSH));
   DAT_0069c654 = 10;
   DAT_0069c6c0 = 10;
   DAT_0069c69c = (g_showlist_smallcard_width * 0xf) / 100;
@@ -564,10 +549,12 @@ void layout_attack_phase_window(HWND hwnd)
   }
 
   DAT_0069c6ac = (s.visible_blocker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_blocker_rows) *
-                 DAT_00939508 + DAT_0069c6c0;
+                     DAT_00939508 +
+                 DAT_0069c6c0;
 
   DAT_0069c6b0 = (s.visible_attacker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_attacker_rows) *
-                 DAT_00939508 + g_showlist_smallcard_height +
+                     DAT_00939508 +
+                 g_showlist_smallcard_height +
                  DAT_0069c6ac + s.scrollbar_height + DAT_0069c618 + DAT_0069c618;
 
   s.attacker_spacing = g_showlist_smallcard_width / 3;
@@ -580,7 +567,7 @@ void layout_attack_phase_window(HWND hwnd)
   s.content_rect.right = s.card_x;
   s.content_rect.top = DAT_0069c6ac -
                        (s.visible_blocker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_blocker_rows) *
-                       DAT_00939508;
+                           DAT_00939508;
   s.content_rect.bottom = g_showlist_smallcard_height + DAT_0069c6b0;
   if (s.current_player == 0)
   {
@@ -712,7 +699,7 @@ int register_MAGICGAME_AttackPhaseDisplayClass(LPCSTR class_name)
   if (RegisterClassA(&s.wndclass) == 0)
     s.registered = 0;
   strcpy(s.pic_path, global_duelart_path);
-  strcat(s.pic_path, s__WINBK_PhaseCombat_pic_0057e4c0);
+  strcat(s.pic_path, "\\WINBK_PhaseCombat.pic");
   ATTACK_PHASE_DISPLAY_PIC = load_pic(s.pic_path);
   return s.registered;
 }
@@ -831,7 +818,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     {
       s.general_help_context = 0x7e5;
       strcpy(s.general_help_path, global_base_directory);
-      strcat(s.general_help_path, s__duel_hlp_0057e504);
+      strcat(s.general_help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.general_help_path, HELP_CONTEXT, s.general_help_context);
     }
     else
@@ -925,7 +912,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
         else if (s.command_phase == 6)
           s.help_context = 0x7dd;
         strcpy(s.help_path, global_base_directory);
-        strcat(s.help_path, s__duel_hlp_0057e510);
+        strcat(s.help_path, "\\duel.hlp");
         WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       }
     }
@@ -965,7 +952,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     if (ATTACK_PHASE_DISPLAY_PIC == (HBITMAP)0)
     {
       strcpy(s.pic_path, global_duelart_path);
-      strcat(s.pic_path, s__WINBK_PhaseCombat_pic_0057e51c);
+      strcat(s.pic_path, "\\WINBK_PhaseCombat.pic");
       ATTACK_PHASE_DISPLAY_PIC = load_pic(s.pic_path);
     }
     if (s.paint_selected_phase != s.cached_phase)

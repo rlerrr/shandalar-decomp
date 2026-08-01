@@ -72,21 +72,6 @@ int DAT_0055e024 = 0;
 // GLOBAL: MAGIC 0x0055e028
 int g_graveyard_cards_window_extra_bytes = 4;
 
-// GLOBAL: MAGIC 0x0056e9e0
-char s_MENU_GRAVEYARD_0056e9e0[0x10] = "MENU_GRAVEYARD";
-
-// GLOBAL: MAGIC 0x0056e9f0
-char s_DIALOG_VIEWANTES_0056e9f0[0x14] = "DIALOG_VIEWANTES";
-
-// GLOBAL: MAGIC 0x0056ea04
-char s__duel_hlp_0056ea04[0xc] = "\\duel.hlp";
-
-// GLOBAL: MAGIC 0x0056ea7c
-char s__s_WINBK_Ante_pic_0056ea7c[0x14] = "%s\\WINBK_Ante.pic";
-
-// GLOBAL: MAGIC 0x0056ea90
-char s__s_WINBK_AnteLabel_pic_0056ea90[0x18] = "%s\\WINBK_AnteLabel.pic";
-
 // GLOBAL: MAGIC 0x00637918
 HBITMAP g_view_antes_background_bitmap;
 
@@ -208,12 +193,12 @@ int register_MAGICGAME_GraveyardClass(LPCSTR class_name)
                     LoadIconA((HINSTANCE)0, (LPCSTR)0x7f00), (HBRUSH)0x6, CLASS_GRAVEYARD_CARDS);
   atom3 = RegisterClassA(&wndclass);
   g_graveyard_popup_menu = CreatePopupMenu();
-  load_text_with_tab_escapes(global_ui_strings_filename, s_MENU_GRAVEYARD_0056e9e0);
+  load_text_with_tab_escapes(global_ui_strings_filename, "MENU_GRAVEYARD");
   strcpy(g_graveyard_menu_view_text, text_lines[0]);
   strcpy(g_graveyard_menu_view_exile_text, text_lines[1]);
   strcpy(g_graveyard_menu_view_antes_text, text_lines[2]);
   strcpy(g_graveyard_menu_help_text, text_lines[3]);
-  load_text_with_tab_escapes(global_ui_strings_filename, s_DIALOG_VIEWANTES_0056e9f0);
+  load_text_with_tab_escapes(global_ui_strings_filename, "DIALOG_VIEWANTES");
   strcpy(g_graveyard_view_antes_opponent_text, text_lines[0]);
   strcpy(g_graveyard_view_antes_player_text, text_lines[1]);
   return atom1 != 0 && atom2 != 0 && atom3 != 0;
@@ -481,9 +466,9 @@ BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     ShowWindow(GetDlgItem(hwnd, 0x4b0), 0);
     ShowWindow(GetDlgItem(hwnd, 0x4b1), 0);
     ShowWindow(GetDlgItem(hwnd, 0x4b2), 0);
-    sprintf(s.path, s__s_WINBK_Ante_pic_0056ea7c, global_duelart_path);
+    sprintf(s.path, "%s\\WINBK_Ante.pic", global_duelart_path);
     g_view_antes_background_bitmap = load_pic(s.path);
-    sprintf(s.path, s__s_WINBK_AnteLabel_pic_0056ea90, global_duelart_path);
+    sprintf(s.path, "%s\\WINBK_AnteLabel.pic", global_duelart_path);
     g_view_antes_label_bitmap = load_pic(s.path);
     g_view_antes_text_color = 0;
     copy_opponent_name_prefix(s.opponent_name);
@@ -851,7 +836,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
     case 0x67:
       s.help_context = 0x7e6;
       strcpy(s.help_path, global_base_directory);
-      strcat(s.help_path, s__duel_hlp_0056ea04);
+      strcat(s.help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
       break;
     }

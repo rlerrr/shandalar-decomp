@@ -16,28 +16,9 @@ undefined4 DAT_1001d108 = 0x00000000;
 // GLOBAL: DRAWCARDLIB 0x10124520
 CRITICAL_SECTION global_critical_section_for_catalog;
 
-// GLOBAL: CARDARTLIB 0x1001d12c
-// GLOBAL: DRAWCARDLIB 0x10026998
-char s_D__Newmagic_sources_NedCard_Cata_1001d12c[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
-
-// GLOBAL: CARDARTLIB 0x1001d1b4
-// GLOBAL: DRAWCARDLIB 0x10026a20
-char s_D__Newmagic_sources_NedCard_Cata_1001d1b4[] = "D:\\Newmagic\\sources\\NedCard\\Catalog.c";
-
-// GLOBAL: CARDARTLIB 0x1001d10c
-// GLOBAL: DRAWCARDLIB 0x10026978
-char s_Too_many_open_Catalogs__Max__d_1001d10c[] = "Too many open Catalogs: Max %d\n";
-
-// GLOBAL: CARDARTLIB 0x1001d158
-// GLOBAL: DRAWCARDLIB 0x100269c4
-char s_Duplicate_short_name_found_in_ca_1001d158[] = "Duplicate short name found in catalogs\n%s entry %d and\n%s entry %d\nShortName value 0x%08lx";
-
-// GLOBAL: CARDARTLIB 0x1001d154
-// GLOBAL: DRAWCARDLIB 0x100269c0
-char s_rb_1001d154[] = "rb";
-
 // SIZE 0xc
-typedef struct CatalogEntry {
+typedef struct CatalogEntry
+{
   int key;
   uint offset;
   uint size;
@@ -45,7 +26,8 @@ typedef struct CatalogEntry {
 STATIC_ASSERT(sizeof(CatalogEntry) == 0xc, CatalogEntry_wrong_size);
 
 // SIZE 0x114
-typedef struct Catalog {
+typedef struct Catalog
+{
   FILE *file;
   int entry_count;
   CatalogEntry *entries;
@@ -67,7 +49,8 @@ uint Catalog_MakeKeyFromPath(const char *path);
 // FUNCTION: DRAWCARDLIB 0x1000b820
 int Catalog_Open(const char *catalog_path)
 {
-  struct {
+  struct
+  {
     int iVar1;
     int entry_index;
     Catalog *other_catalog;
@@ -79,29 +62,33 @@ int Catalog_Open(const char *catalog_path)
 
   s.slot_index = -1;
 
-  for (s.other_slot = 0; s.other_slot < 5; s.other_slot++) {
-    if (DAT_10117290[s.other_slot].file == 0) {
+  for (s.other_slot = 0; s.other_slot < 5; s.other_slot++)
+  {
+    if (DAT_10117290[s.other_slot].file == 0)
+    {
       s.slot_index = s.other_slot;
       break;
     }
   }
 
-  assert((uint)(s.slot_index != -1),s_D__Newmagic_sources_NedCard_Cata_1001d12c,0x43,
-            s_Too_many_open_Catalogs__Max__d_1001d10c,5);
+  assert((uint)(s.slot_index != -1), "D:\\Newmagic\\sources\\NedCard\\Catalog.c", 0x43,
+         "Too many open Catalogs: Max %d\n", 5);
 
   s.catalog = &DAT_10117290[s.slot_index];
   s.catalog->cached_entry = (CatalogEntry *)0x0;
-  strcpy(s.catalog->path,catalog_path);
-  s.catalog->file = fopen(catalog_path,s_rb_1001d154);
+  strcpy(s.catalog->path, catalog_path);
+  s.catalog->file = fopen(catalog_path, "rb");
   s.catalog_file = s.catalog->file;
   if (s.catalog_file == (FILE *)0x0)
     return 0;
 
-  fread(&s.catalog->entry_count,4,1,s.catalog_file);
+  fread(&s.catalog->entry_count, 4, 1, s.catalog_file);
   s.catalog->entries = (CatalogEntry *)malloc(s.catalog->entry_count * sizeof(CatalogEntry));
-  fread(s.catalog->entries,sizeof(CatalogEntry),(size_t)s.catalog->entry_count,s.catalog_file);
-  if (DAT_1001d108 != 0) {
-    for (s.other_slot = 0; s.other_slot < 5; s.other_slot = s.other_slot + 1) {
+  fread(s.catalog->entries, sizeof(CatalogEntry), (size_t)s.catalog->entry_count, s.catalog_file);
+  if (DAT_1001d108 != 0)
+  {
+    for (s.other_slot = 0; s.other_slot < 5; s.other_slot = s.other_slot + 1)
+    {
       if (s.slot_index == s.other_slot)
         continue;
 
@@ -110,12 +97,14 @@ int Catalog_Open(const char *catalog_path)
 
       s.other_catalog = &DAT_10117290[s.other_slot];
 
-      for (s.entry_index = 0; 0 != s.catalog->entry_count; s.entry_index++) {
-        for (s.iVar1 = 0; s.iVar1 < s.other_catalog->entry_count; s.iVar1 = s.iVar1 + 1) {
+      for (s.entry_index = 0; 0 != s.catalog->entry_count; s.entry_index++)
+      {
+        for (s.iVar1 = 0; s.iVar1 < s.other_catalog->entry_count; s.iVar1 = s.iVar1 + 1)
+        {
           assert(s.catalog->entries[s.entry_index].key - s.other_catalog->entries[s.entry_index].key != 0,
-                  s_D__Newmagic_sources_NedCard_Cata_1001d1b4,0x69,
-                  s_Duplicate_short_name_found_in_ca_1001d158,s.catalog->path,s.entry_index,
-                  s.other_catalog->path,s.iVar1,s.catalog->entries[s.entry_index].key);
+                 "D:\\Newmagic\\sources\\NedCard\\Catalog.c", 0x69,
+                 "Duplicate short name found in catalogs\n%s entry %d and\n%s entry %d\nShortName value 0x%08lx", s.catalog->path, s.entry_index,
+                 s.other_catalog->path, s.iVar1, s.catalog->entries[s.entry_index].key);
         }
       }
     }
@@ -146,12 +135,16 @@ bool Catalog_Close(int handle)
 // FUNCTION: MAGIC 0x0040cd3c
 static int CatalogEntry_CompareKey(const int *key, const CatalogEntry *entry)
 {
-  if (entry->key < *key) {
+  if (entry->key < *key)
+  {
     return 1;
   }
-  else if (*key < entry->key) {
+  else if (*key < entry->key)
+  {
     return -1;
-  } else {
+  }
+  else
+  {
     return 0;
   }
 }
@@ -161,17 +154,18 @@ static int CatalogEntry_CompareKey(const int *key, const CatalogEntry *entry)
 // FUNCTION: DRAWCARDLIB 0x1000bb76
 // FUNCTION: DECKDLL 0x1000979a
 // FUNCTION: MAGIC 0x0040cd8c
-CatalogEntry *Catalog_FindEntryCached(Catalog *catalog,const char *name)
+CatalogEntry *Catalog_FindEntryCached(Catalog *catalog, const char *name)
 {
   CatalogEntry *entry;
   uint key;
 
   key = Catalog_MakeKeyFromPath(name);
-  if ((catalog->cached_entry != (CatalogEntry *)0x0) && ((uint)catalog->cached_entry->key == key)) {
+  if ((catalog->cached_entry != (CatalogEntry *)0x0) && ((uint)catalog->cached_entry->key == key))
+  {
     return catalog->cached_entry;
   }
 
-  entry = (CatalogEntry *)bsearch(&key,catalog->entries,(size_t)catalog->entry_count,sizeof(CatalogEntry),
+  entry = (CatalogEntry *)bsearch(&key, catalog->entries, (size_t)catalog->entry_count, sizeof(CatalogEntry),
                                   CatalogEntry_CompareKey);
   catalog->cached_entry = entry;
   return entry;
@@ -182,23 +176,25 @@ CatalogEntry *Catalog_FindEntryCached(Catalog *catalog,const char *name)
 // FUNCTION: DRAWCARDLIB 0x1000bbf1
 // FUNCTION: DECKDLL 0x10009816
 // FUNCTION: MAGIC 0x0040ce08
-size_t Catalog_ReadEntry(int catalog_handle,const char *name,void **buffer)
+size_t Catalog_ReadEntry(int catalog_handle, const char *name, void **buffer)
 
 {
   Catalog *catalog;
   CatalogEntry *entry;
 
   catalog = &DAT_10117290[catalog_handle + -1];
-  entry = Catalog_FindEntryCached(catalog,name);
-  if (entry == (CatalogEntry *)0x0) {
+  entry = Catalog_FindEntryCached(catalog, name);
+  if (entry == (CatalogEntry *)0x0)
+  {
     return 0xffffffff;
   }
 
-  if (*buffer == (void *)0x0) {
+  if (*buffer == (void *)0x0)
+  {
     *buffer = malloc(entry->size + 0x10);
   }
-  fseek(catalog->file,(long)entry->offset,0);
-  return fread(*buffer,1,entry->size,catalog->file);
+  fseek(catalog->file, (long)entry->offset, 0);
+  return fread(*buffer, 1, entry->size, catalog->file);
 }
 
 // MATCHING
@@ -208,7 +204,8 @@ size_t Catalog_ReadEntry(int catalog_handle,const char *name,void **buffer)
 // FUNCTION: MAGIC 0x0040ceb4
 uint Catalog_MakeKeyFromPath(const char *path)
 {
-  struct {
+  struct
+  {
     int acc_odd;
     char ext_buf[16];
     char dir_buf[256];
@@ -225,16 +222,19 @@ uint Catalog_MakeKeyFromPath(const char *path)
   s.pad0 = 0;
   s.acc_odd = 0;
   s.acc_even = 0;
-  _splitpath(path,s.ext_buf,s.dir_buf,s.filename_buf,s.ext_buf);
+  _splitpath(path, s.ext_buf, s.dir_buf, s.filename_buf, s.ext_buf);
   path = s.filename_buf;
-  strcat(s.filename_buf,s.ext_buf);
+  strcat(s.filename_buf, s.ext_buf);
   s.key = (undefined4)(((int)(signed char)path[1] ^ (int)(signed char)path[0]) << 0x18);
 
-  while ((s.ch = (int)(signed char)*(path++)) != 0) {
-    if ((s.multiplier & 1) != 0) {
+  while ((s.ch = (int)(signed char)*(path++)) != 0)
+  {
+    if ((s.multiplier & 1) != 0)
+    {
       s.acc_odd = s.multiplier * s.ch + s.acc_odd;
     }
-    else {
+    else
+    {
       s.acc_even = s.multiplier * s.ch + s.acc_even;
     }
     s.multiplier = s.multiplier + 1;

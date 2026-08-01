@@ -357,51 +357,6 @@ int g_mouse_button_down;
 // GLOBAL: FACEMAKER 0x00423340
 int g_mouse_button_mask;
 
-// GLOBAL: FACEMAKER 0x0040c62c
-char g_text_write_mode[] = "wt";
-
-// GLOBAL: FACEMAKER 0x0040c658
-char g_text_read_mode[] = "rt";
-
-// GLOBAL: FACEMAKER 0x0040c65c
-char s_FaceButtons_txt_0040c65c[] = "FaceButtons.txt";
-
-// GLOBAL: FACEMAKER 0x0040c66c
-char s________c_0040c66c[] = "%[^\n]%*c";
-
-// GLOBAL: FACEMAKER 0x0040c678
-char s________c_0040c678[] = "%[^\n]%*c";
-
-// GLOBAL: FACEMAKER 0x0040c684
-char s________c_0040c684[] = "%[^\n]%*c";
-
-// GLOBAL: FACEMAKER 0x0040c690
-char s__d__d__d__d__d_0040c690[] = "%d %d,%d,%d,%d";
-
-// GLOBAL: FACEMAKER 0x0040c6a0
-char s_FaceArt_facebut1_pcx_0040c6a0[] = "FaceArt/facebut1.pcx";
-
-// GLOBAL: FACEMAKER 0x0040c6b8
-char s_FaceArt_facfrsh2New_pcx_0040c6b8[] = "FaceArt/facfrsh2New.pcx";
-
-// GLOBAL: FACEMAKER 0x0040c6d0
-char g_text_read_mode_alt[] = "rt";
-
-// GLOBAL: FACEMAKER 0x0040c6d4
-char s_FaceData_txt_0040c6d4[] = "FaceData.txt";
-
-// GLOBAL: FACEMAKER 0x0040caa0
-char s_FaceArt_evil_0040caa0[] = "FaceArt\\evil";
-
-// GLOBAL: FACEMAKER 0x0040cad4
-char s_PlayFace_0040cad4[] = "PlayFace";
-
-// GLOBAL: FACEMAKER 0x0040cae0
-char s___pic_0040cae0[] = "*.pic";
-
-// GLOBAL: FACEMAKER 0x0040cae8
-char s___pic_0040cae8[] = "*.pic";
-
 // GLOBAL: FACEMAKER 0x00412088
 char g_open_file_filter_buffer[0x400];
 
@@ -423,7 +378,7 @@ void InitOpenFileDialog(HWND owner_hwnd, OPENFILENAMEA *open_file, char *initial
   open_file->nMaxFile = 0x104;
   open_file->lpstrFileTitle = (LPSTR)0;
   open_file->nMaxFileTitle = 0x200;
-  open_file->lpstrInitialDir = s_PlayFace_0040cad4;
+  open_file->lpstrInitialDir = "PlayFace";
   open_file->lpstrTitle = g_save_dialog_title;
   open_file->Flags = 0x6000c;
   open_file->nFileOffset = 0;
@@ -443,8 +398,8 @@ int ShowSaveFaceDialog(void)
     int save_result;
   } s;
 
-  strcpy(g_face_output_path, s___pic_0040cae0);
-  InitOpenFileDialog(g_main_hwnd, &s.open_file, g_default_face_filename, s___pic_0040cae8, g_face_output_path);
+  strcpy(g_face_output_path, "*.pic");
+  InitOpenFileDialog(g_main_hwnd, &s.open_file, g_default_face_filename, "*.pic", g_face_output_path);
   s.save_result = GetSaveFileNameA(&s.open_file);
   g_mouse_button_down = 0;
   if (s.save_result != 0)
@@ -529,20 +484,20 @@ int InitializeFaceMakerAssets(void)
   local.style_values[3] = 10;
   local.button_text_ids[0] = 2;
 
-  local.file = fopen(s_FaceButtons_txt_0040c65c, g_text_read_mode);
-  fscanf(local.file, s________c_0040c66c, g_save_dialog_title);
-  fscanf(local.file, s________c_0040c678, g_default_face_filename);
+  local.file = fopen("FaceButtons.txt", "rt");
+  fscanf(local.file, "%[^\n]%*c", g_save_dialog_title);
+  fscanf(local.file, "%[^\n]%*c", g_default_face_filename);
   for (local.loop_index = 0; local.loop_index < 4; local.loop_index = local.loop_index + 1)
   {
-    fscanf(local.file, s________c_0040c684, g_face_button_text_buffer + local.loop_index * 0x20);
+    fscanf(local.file, "%[^\n]%*c", g_face_button_text_buffer + local.loop_index * 0x20);
   }
 
-  fscanf(local.file, s__d__d__d__d__d_0040c690, local.button_text_ids, local.style_values,
+  fscanf(local.file, "%d %d,%d,%d,%d", local.button_text_ids, local.style_values,
          local.style_values + 1, local.style_values + 2, local.style_values + 3);
   fclose(local.file);
 
   BeginSpriteEncodeSession();
-  LoadPcxIntoPageNoPalette(2, s_FaceArt_facebut1_pcx_0040c6a0);
+  LoadPcxIntoPageNoPalette(2, "FaceArt/facebut1.pcx");
   g_face_fullscreen_bounds->font_slot = local.button_text_ids[0];
 
   for (local.loop_index = 0; local.loop_index < 4;
@@ -648,11 +603,11 @@ int InitializeFaceMakerAssets(void)
   g_face_scroll_divider_sprite =
       EncodeSpriteFromPage(2, local.face_slot_x, local.style_values[5], 3, 0x1d);
 
-  LoadPcxIntoPageNoPalette(2, s_FaceArt_facfrsh2New_pcx_0040c6b8);
+  LoadPcxIntoPageNoPalette(2, "FaceArt/facfrsh2New.pcx");
   g_face_slot_background_sprite = EncodeSpriteFromPage(2, 0, 0, 0x8a, 0xac);
   FinalizeSpriteEncodeSession();
 
-  local.tmp_x = (int)fopen(s_FaceData_txt_0040c6d4, g_text_read_mode_alt);
+  local.tmp_x = (int)fopen("FaceData.txt", "rt");
   local.tmp_y = _filelength(_fileno((FILE *)local.tmp_x));
   g_face_set_display_names[0] = malloc(local.tmp_y);
   local.scan_ptr = g_face_set_display_names[0];
@@ -844,7 +799,7 @@ void AcceptFaceSelection(FaceControl *control)
     ComposeSelectedFaceImage(control);
   }
 
-  recent_face_file = fopen("FaceMostRecent.txt", g_text_write_mode);
+  recent_face_file = fopen("FaceMostRecent.txt", "wt");
   if (recent_face_file != (FILE *)0)
   {
     fprintf(recent_face_file, "%d, %s", g_selected_face_set_index,
@@ -1758,7 +1713,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     switch (wparam)
     {
     case 0x9c46:
-      strcpy(face_art_path, s_FaceArt_evil_0040caa0);
+      strcpy(face_art_path, "FaceArt\\evil");
       LoadFaceSpriteSet(face_art_path, g_face_group_frame_counts, g_face_sprite_entries.flat,
                         g_face_sprite_roots.flat);
       PresentGraphicsPage(1);
