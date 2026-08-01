@@ -878,7 +878,7 @@ void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst
 
 // FUNCTION: SHANDALAR 0x00579520
 // FUNCTION: FACEMAKER 0x00406da0
-unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
+unsigned int ReadGraphicsPixel(int page_number, int x, int y)
 {
   DIBSurface *page;
   COLORREF CVar2;
@@ -886,10 +886,10 @@ unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
   unsigned char *pbVar4;
   unsigned int uVar5;
 
-  page = g_graphics_pages[param_1];
-  if (param_1 == 0)
+  page = g_graphics_pages[page_number];
+  if (page_number == 0)
   {
-    CVar2 = GetPixel(global_main_hdc, param_2, param_3);
+    CVar2 = GetPixel(global_main_hdc, x, y);
     pbVar4 = (unsigned char *)&g_palette_entries;
     uVar3 = 0;
     uVar5 = (-(unsigned int)(g_graphics_bpp == 0x10) & 0xfffffff9) + 0xff;
@@ -906,7 +906,7 @@ unsigned int ReadGraphicsPixel(int param_1, int param_2, int param_3)
   }
   else
   {
-    uVar3 = (unsigned int)*((unsigned char *)page->pBits + (page->rowPadding + page->width) * param_3 + param_2);
+    uVar3 = (unsigned int)*((unsigned char *)page->pBits + (page->rowPadding + page->width) * y + x);
   }
   return uVar3;
 }

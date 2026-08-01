@@ -22,7 +22,7 @@ extern int g_graphics_bpp;
 int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen,
                       int center_x, int center_y, int x, int y, int *format_and_args);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7);
+int ExportEncodedImage(int page_number, int x, int y, int width, int height, int write_palette, char *path);
 
 typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *scanline, int page_number, int x, int y, unsigned int width);
 int EncodeRpBitsImage(int fd, EncodeRpBitsImage_Callback scanline_cb, int page_number, int x, int y, int width, int height);
@@ -253,9 +253,9 @@ int GetFontCharWidth(int font_slot, unsigned char ch_value)
   }
   if (font->has_packed_widths != 0)
   {
-    return (unsigned int)font->has_packed_widths + (unsigned int)font->unk_05;
+    return (unsigned int)font->has_packed_widths + (unsigned int)font->glyph_spacing;
   }
-  return (unsigned int)font->unk_05 + (unsigned int)font->data.bitmap.glyph_advance[ch];
+  return (unsigned int)font->glyph_spacing + (unsigned int)font->data.bitmap.glyph_advance[ch];
 }
 
 // FUNCTION: SHANDALAR 0x0057acb0
@@ -286,11 +286,11 @@ int MeasureTextSpanWidth(FacemakerWindowBounds *window, char *text, int length)
         if (glyph_width == 0)
         {
           glyph_width = font->data.bitmap.glyph_advance[(unsigned char)ch];
-          glyph_spacing = font->unk_05;
+          glyph_spacing = font->glyph_spacing;
         }
         else
         {
-          glyph_spacing = font->unk_05;
+          glyph_spacing = font->glyph_spacing;
         }
         char_width = (unsigned int)glyph_spacing + (unsigned int)glyph_width;
       }
@@ -325,7 +325,7 @@ int GetFontLineHeight(int font_slot)
   {
     return (unsigned int)font->point_size + font->tm_leading;
   }
-  return (unsigned int)font->point_size + (unsigned int)font->unk_06;
+  return (unsigned int)font->point_size + (unsigned int)font->line_spacing;
 }
 
 // FUNCTION: SHANDALAR 0x0057b4d0

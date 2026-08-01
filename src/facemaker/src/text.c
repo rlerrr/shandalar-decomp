@@ -15,7 +15,8 @@ extern int SetFontStyleSize(int font_id, unsigned int style);
 extern int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y,
                              int x, int y, int *format_and_args);
 extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
-extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4, unsigned int param_5);
+extern void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y,
+                                  unsigned int byte_count);
 extern char s_D__NewMagic__sources__sidlib__lib_c_0040d0ec[];
 extern DIBSurface *g_graphics_pages[10];
 extern PALETTEENTRY g_palette_entries[256];
@@ -715,7 +716,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
 
 // FUNCTION: SHANDALAR 0x0057aae0
 // FUNCTION: FACEMAKER 0x004080d0
-int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
+int MeasureMultilineTextWidth(FacemakerWindowBounds *window_bounds, char *text)
 {
     char *line_ptr;
     char c;
@@ -730,19 +731,19 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
 
     line_width = 0;
     max_width = -1;
-    font = &g_font_slots[param_1->font_slot];
+    font = &g_font_slots[window_bounds->font_slot];
     if (font->font_loaded != 0)
     {
-        page_hdc = g_graphics_pages[param_1->page_number]->hTempDC;
+        page_hdc = g_graphics_pages[window_bounds->page_number]->hTempDC;
         old_object = SelectObject(page_hdc, font->hfont);
-        line_ptr = param_2;
-        c = *param_2;
+        line_ptr = text;
+        c = *text;
         while (c != '\0')
         {
-            if (*param_2 == '\n')
+            if (*text == '\n')
             {
                 ulen = 0xffffffff;
-                *param_2 = '\0';
+                *text = '\0';
                 do
                 {
                     if (ulen == 0)
@@ -758,11 +759,11 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
                 {
                     max_width = abc.abcA + 2;
                 }
-                line_ptr = param_2 + 1;
-                *param_2 = '\n';
+                line_ptr = text + 1;
+                *text = '\n';
             }
-            param_2 = param_2 + 1;
-            c = *param_2;
+            text = text + 1;
+            c = *text;
         }
 
         ulen = 0xffffffff;
@@ -785,10 +786,10 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
         return max_width;
     }
 
-    c = *param_2;
+    c = *text;
     while (c != '\0')
     {
-        c = *param_2;
+        c = *text;
         if (c == '\n')
         {
             if (max_width < line_width)
@@ -803,11 +804,11 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
             {
                 if (font->has_packed_widths == 0)
                 {
-                    char_width = (int)font->data.bitmap.glyph_advance[(unsigned char)c] + (int)(unsigned char)font->unk_05;
+                    char_width = (int)font->data.bitmap.glyph_advance[(unsigned char)c] + (int)(unsigned char)font->glyph_spacing;
                 }
                 else
                 {
-                    char_width = (int)font->has_packed_widths + (int)(unsigned char)font->unk_05;
+                    char_width = (int)font->has_packed_widths + (int)(unsigned char)font->glyph_spacing;
                 }
             }
             else
@@ -820,8 +821,8 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
             }
             line_width = line_width + char_width;
         }
-        param_2 = param_2 + 1;
-        c = *param_2;
+        text = text + 1;
+        c = *text;
     }
     if (max_width <= line_width)
     {
@@ -832,13 +833,13 @@ int MeasureMultilineTextWidth(FacemakerWindowBounds *param_1, char *param_2)
 
 // FUNCTION: SHANDALAR 0x0057ae50
 // FUNCTION: FACEMAKER 0x004082e0
-int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char *param_4)
+int DrawTextLine(FacemakerWindowBounds *window_bounds, int x, int y, char *text)
 {
     struct
     {
         union
         {
-            int local_30;
+            int unused_int;
             HDC hdc;
             char *line_ptr;
         } slot30;
@@ -854,42 +855,42 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
     int line_left;
     unsigned int ulen;
 
-    line_left = param_2;
-    local.start = param_4;
-    if (*param_4 == '\0')
+    line_left = x;
+    local.start = text;
+    if (*text == '\0')
     {
         return 0;
     }
-    if (param_1->clip_top <= param_3)
+    if (window_bounds->clip_top <= y)
     {
         FontSlot *font;
 
-        font = &g_font_slots[param_1->font_slot];
+        font = &g_font_slots[window_bounds->font_slot];
         if (font->font_loaded == 0)
         {
-            if ((int)((unsigned int)font->point_size + (unsigned int)font->unk_06 + param_3) > param_1->max_y)
+            if ((int)((unsigned int)font->point_size + (unsigned int)font->line_spacing + y) > window_bounds->max_y)
             {
                 return 0;
             }
         }
-        else if ((int)((unsigned int)font->point_size + font->tm_leading + param_3) > param_1->max_y)
+        else if ((int)((unsigned int)font->point_size + font->tm_leading + y) > window_bounds->max_y)
         {
             return 0;
         }
 
         if (font->font_loaded != 0)
         {
-            local.page_hdc = g_graphics_pages[param_1->page_number]->hTempDC;
+            local.page_hdc = g_graphics_pages[window_bounds->page_number]->hTempDC;
             local.old_page_object = SelectObject(local.page_hdc, font->hfont);
-            local.text_color = (unsigned int)param_1->text_color;
+            local.text_color = (unsigned int)window_bounds->text_color;
             if (0xfd < (int)local.text_color)
             {
                 local.text_color = 0xfe;
             }
             SetTextColor(local.page_hdc, local.text_color & 0xffff | 0x1000000);
             SetBkMode(local.page_hdc, 1);
-            ulen = strlen(param_4);
-            TextOutA(local.page_hdc, param_2, param_3 - font->tm_leading, param_4, ulen);
+            ulen = strlen(text);
+            TextOutA(local.page_hdc, x, y - font->tm_leading, text, ulen);
             SelectObject(local.page_hdc, local.old_page_object);
 #ifdef MODERN_FIXES
             GdiFlush();
@@ -897,12 +898,12 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
             return 1;
         }
 
-        local.page_hdc = g_graphics_pages[param_1->page_number]->hTempDC;
+        local.page_hdc = g_graphics_pages[window_bounds->page_number]->hTempDC;
         local.font_hdc = font->hdc;
         SelectObject(local.font_hdc, font->bitmap_inverted);
         SetTextColor(local.page_hdc, 0x1000000);
         SetBkColor(local.page_hdc, 0xffffff);
-        local.slot30.line_ptr = param_4;
+        local.slot30.line_ptr = text;
         do
         {
             local.ch = (unsigned int)*local.slot30.line_ptr;
@@ -916,30 +917,30 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
             }
             else if (font->has_packed_widths == 0)
             {
-                local.char_width = (int)font->data.bitmap.glyph_advance[local.ch] + (int)(unsigned char)font->unk_05;
+                local.char_width = (int)font->data.bitmap.glyph_advance[local.ch] + (int)(unsigned char)font->glyph_spacing;
             }
             else
             {
-                local.char_width = (int)font->has_packed_widths + (int)(unsigned char)font->unk_05;
+                local.char_width = (int)font->has_packed_widths + (int)(unsigned char)font->glyph_spacing;
             }
             local.slot30.line_ptr = local.slot30.line_ptr + 1;
-            BitBlt(local.page_hdc, param_2, param_3, local.char_width, (unsigned int)font->point_size, local.font_hdc,
+            BitBlt(local.page_hdc, x, y, local.char_width, (unsigned int)font->point_size, local.font_hdc,
                    (local.ch - (unsigned int)font->first_char) * (unsigned int)font->glyph_width * 8, 0, 0x8800c6);
-            param_2 = param_2 + local.char_width;
+            x = x + local.char_width;
         } while (*local.slot30.line_ptr != '\0');
 
-        param_2 = line_left;
+        x = line_left;
         local.text_color = 0xfe;
-        if (param_1->text_color != 0xff)
+        if (window_bounds->text_color != 0xff)
         {
-            local.text_color = (unsigned int)param_1->text_color;
+            local.text_color = (unsigned int)window_bounds->text_color;
         }
         SelectObject(local.font_hdc, font->bitmap_normal);
         SetTextColor(local.page_hdc, 0x1000000);
         SetBkColor(local.page_hdc, local.text_color & 0xffff | 0x1000000);
         do
         {
-            local.ch = (unsigned int)*param_4;
+            local.ch = (unsigned int)*text;
             if (font->font_loaded != 0)
             {
                 local.slot30.hdc = GetDC((HWND)0);
@@ -950,18 +951,18 @@ int DrawTextLine(FacemakerWindowBounds *param_1, int param_2, int param_3, char 
             }
             else if (font->has_packed_widths == 0)
             {
-                local.char_width = (int)font->data.bitmap.glyph_advance[local.ch] + (int)(unsigned char)font->unk_05;
+                local.char_width = (int)font->data.bitmap.glyph_advance[local.ch] + (int)(unsigned char)font->glyph_spacing;
             }
             else
             {
-                local.char_width = (int)font->has_packed_widths + (int)(unsigned char)font->unk_05;
+                local.char_width = (int)font->has_packed_widths + (int)(unsigned char)font->glyph_spacing;
             }
-            BitBlt(local.page_hdc, param_2, param_3, local.char_width, (unsigned int)font->point_size, local.font_hdc,
+            BitBlt(local.page_hdc, x, y, local.char_width, (unsigned int)font->point_size, local.font_hdc,
                    (local.ch - (unsigned int)font->first_char) * (unsigned int)font->glyph_width * 8, 0, 0xee0086);
-            param_2 = param_2 + local.char_width;
-            param_4 = param_4 + 1;
-        } while (*param_4 != '\0');
-        return (int)param_4 - (int)local.start;
+            x = x + local.char_width;
+            text = text + 1;
+        } while (*text != '\0');
+        return (int)text - (int)local.start;
     }
     return 0;
 }
@@ -1056,7 +1057,7 @@ int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shado
         line_start = line_end + 1;
         if (g_font_slots[dst->font_slot].font_loaded == 0)
         {
-            y = y + (int)g_font_slots[dst->font_slot].point_size + (int)g_font_slots[dst->font_slot].unk_06;
+            y = y + (int)g_font_slots[dst->font_slot].point_size + (int)g_font_slots[dst->font_slot].line_spacing;
         }
         else
         {

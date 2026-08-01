@@ -16,10 +16,10 @@ size_t WriteSpriteBlob(void *sprite_blob, char *output_path);
 EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width, int height);
 
 extern int ReadGraphicsPixel(int page_number, int x, int y);
-extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                 unsigned int param_5);
-extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                 unsigned int param_5);
+extern void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y,
+                                 unsigned int byte_count);
+extern void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y,
+                                 unsigned int byte_count);
 extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
 extern void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 extern void LoadPcxIntoPageNoPalette(int page_number, char *path);

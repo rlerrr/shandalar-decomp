@@ -38,8 +38,8 @@ typedef struct FontSlot
   unsigned char glyph_width;
   unsigned char has_packed_widths;
   unsigned char point_size;
-  unsigned char unk_05;
-  unsigned char unk_06;
+  unsigned char glyph_spacing;
+  unsigned char line_spacing;
   unsigned char row_padding;
   HBITMAP bitmap_inverted;
   HBITMAP bitmap_normal;

@@ -121,8 +121,8 @@ extern int SetFontStyleSize(int font_id, unsigned int style);
 extern void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text, ...);
 extern EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int width,
                                           int height);
-extern int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
-                              char *param_7);
+extern int ExportEncodedImage(int page_number, int x, int y, int width, int height, int write_palette,
+                              char *path);
 extern void FinalizeSpriteEncodeSession(void);
 extern void FreeSpriteBlob(void *memory);
 extern int ConsumeUiTickCount(void);
@@ -130,10 +130,10 @@ extern int PeekUiTickCount(void);
 extern int HasQueuedKeyInput(void);
 extern int PopQueuedKeyInput(void);
 extern int CleanupLegacyVideoStub(void);
-extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                  unsigned int param_5);
-extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                 unsigned int param_5);
+extern void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y,
+                                  unsigned int byte_count);
+extern void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y,
+                                 unsigned int byte_count);
 extern ATOM RegisterPaletteClass(HINSTANCE hInstance);
 extern HWND CreatePalettePopupWindow(HINSTANCE hInstance, HWND parent_hwnd);
 extern int AnimatePaletteToColor(int enabled, int mode);
@@ -425,9 +425,9 @@ void BlitScaledRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width,
 // FUNCTION: FACEMAKER 0x0040268a
 void DrawEncodedImageAutoScale(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image)
 {
-  EncodedImage *local_encoded_image;
+  EncodedImage *image;
 
-  local_encoded_image = encoded_image;
+  image = encoded_image;
   if (global_screen_width == 640)
   {
     DrawEncodedImageUnscaled(dst, x, y, encoded_image);
@@ -435,8 +435,8 @@ void DrawEncodedImageAutoScale(FacemakerWindowBounds *dst, int x, int y, Encoded
   else
   {
     DrawEncodedImageResampled(dst, ScaleUiCoordinate(x), ScaleUiCoordinate(y),
-                              ScaleUiCoordinate((int)local_encoded_image->width),
-                              ScaleUiCoordinate((int)local_encoded_image->height), encoded_image);
+                              ScaleUiCoordinate((int)image->width),
+                              ScaleUiCoordinate((int)image->height), encoded_image);
   }
 }
 
@@ -1415,7 +1415,7 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
     int tile_index;
     int group_count;
     long find_handle;
-    char local_34c[260];
+    char path_buffer[260];
     int use_pcx_tiles;
     int saw_separator;
     long pcx_find_handle;
@@ -1434,12 +1434,12 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
   face_loader.use_pcx_tiles = 0;
   memset(group_entries, 0, 4);
   *face_loader.group_suffix = 'a';
-  strcpy(face_loader.local_34c, base_path);
-  face_loader.find_handle = _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.find_data);
-  strcpy(face_loader.local_34c, base_path);
-  strcat(face_loader.local_34c, "*.pcx");
+  strcpy(face_loader.path_buffer, base_path);
+  face_loader.find_handle = _findfirst(face_loader.path_buffer, (struct _finddata_t *)face_loader.find_data);
+  strcpy(face_loader.path_buffer, base_path);
+  strcat(face_loader.path_buffer, "*.pcx");
   face_loader.pcx_find_handle =
-      _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.pcx_find_data);
+      _findfirst(face_loader.path_buffer, (struct _finddata_t *)face_loader.pcx_find_data);
   if ((face_loader.pcx_find_handle == -1) && (face_loader.find_handle == -1))
   {
     return face_loader.group_count;
@@ -1466,13 +1466,13 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
   {
     _findclose(face_loader.find_handle);
   }
-  strcpy(face_loader.local_34c, base_path);
-  strcat(face_loader.local_34c, ".pcx");
+  strcpy(face_loader.path_buffer, base_path);
+  strcat(face_loader.path_buffer, ".pcx");
   if (face_loader.use_pcx_tiles == 0)
   {
     return LoadSpriteGroupsFromFile(base_path, group_frame_counts, group_entries, first_sprite_out);
   }
-  LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
+  LoadPcxIntoPageNoPalette(2, face_loader.path_buffer);
   ReplacePaletteIndexInRect(g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
   BeginSpriteEncodeSession();
   *first_sprite_out = EncodeSpriteFromPage(2, 0, 0, 0x89, 0xa9);
@@ -1521,19 +1521,19 @@ int LoadFaceSpriteSet(char *base_path, int *group_frame_counts, EncodedImage **g
     } while (face_loader.tile_index < 8);
 
     face_loader.tile_index = 0;
-    strcpy(face_loader.local_34c, base_path);
-    strcat(face_loader.local_34c, face_loader.group_suffix);
-    strcat(face_loader.local_34c, ".pcx");
+    strcpy(face_loader.path_buffer, base_path);
+    strcat(face_loader.path_buffer, face_loader.group_suffix);
+    strcat(face_loader.path_buffer, ".pcx");
     ++*face_loader.group_suffix;
     face_loader.pcx_find_handle =
-        _findfirst(face_loader.local_34c, (struct _finddata_t *)face_loader.pcx_find_data);
+        _findfirst(face_loader.path_buffer, (struct _finddata_t *)face_loader.pcx_find_data);
     if (face_loader.pcx_find_handle == -1)
     {
       break;
     }
     else
       _findclose(face_loader.pcx_find_handle);
-    LoadPcxIntoPageNoPalette(2, face_loader.local_34c);
+    LoadPcxIntoPageNoPalette(2, face_loader.path_buffer);
     ReplacePaletteIndexInRect(g_face_fullscreen_bounds, 0, 0, 0x22c, 0x158, 0x6d, 0);
   }
 
@@ -1623,19 +1623,19 @@ int ReplacePaletteIndexInRect(FacemakerWindowBounds *page, int x, int y, unsigne
 {
   int row_index;
   int pixel_index;
-  unsigned char local_800[2048];
+  unsigned char scanline[2048];
 
   for (row_index = 0; row_index < height; row_index = row_index + 1)
   {
-    ReadGraphicsScanline((unsigned int *)local_800, page->page_number, x, row_index + y, width);
+    ReadGraphicsScanline((unsigned int *)scanline, page->page_number, x, row_index + y, width);
     for (pixel_index = 0; pixel_index < (int)width; pixel_index = pixel_index + 1)
     {
-      if (local_800[pixel_index] == from_color)
+      if (scanline[pixel_index] == from_color)
       {
-        local_800[pixel_index] = to_color;
+        scanline[pixel_index] = to_color;
       }
     }
-    WriteGraphicsScanline((unsigned int *)local_800, page->page_number, x, row_index + y, width);
+    WriteGraphicsScanline((unsigned int *)scanline, page->page_number, x, row_index + y, width);
   }
   return height;
 }

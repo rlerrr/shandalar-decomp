@@ -619,7 +619,7 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void LoadPcxIntoPageOpaque(int page_number, char *path);
 int ExportGraphicsPage(int page_number, char *path);
-int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7);
+int ExportEncodedImage(int page_number, int x, int y, int width, int height, int write_palette, char *path);
 unsigned int WaitForInputEventUnlessBlocked(void);
 int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 unsigned int PeekQueuedKeyInput(void);

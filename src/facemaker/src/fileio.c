@@ -6,13 +6,13 @@
 #include "drawcardlib/src/pic.h"
 #include "drawcardlib/src/pcxw.h"
 
-extern void WriteGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                  unsigned int param_5);
-extern void ReadGraphicsScanline(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                 unsigned int param_5);
+extern void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y,
+                                  unsigned int byte_count);
+extern void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y,
+                                 unsigned int byte_count);
 extern unsigned char gPcxScanlineBuffer[0x1000];
 extern void RpBits_Setup(int fileDescriptor);
-extern void RpBits_ReadTables(unsigned short *param_3);
+extern void RpBits_ReadTables(unsigned short *palette);
 extern void RpBits_DecodeImage(void *dst, int count);
 extern char g_file_read_mode[];
 extern PALETTEENTRY g_palette_entries[256];
@@ -20,8 +20,8 @@ extern DIBSurface *g_graphics_pages[10];
 
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 
-typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *param_1, int param_2, int param_3, int param_4,
-                                                  unsigned int param_5);
+typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *scanline, int page_number, int x, int y,
+                                                  unsigned int width);
 
 #pragma intrinsic(memset)
 #pragma intrinsic(memcpy)
@@ -100,10 +100,10 @@ unsigned char g_rpbits_bitstream_buffer[0x200];
 // GLOBAL: SHANDALAR 0x0097f990
 int *g_rpbits_dict_entry_ptr;
 
-void RpBitsEncodeSymbol(int param_1);
+void RpBitsEncodeSymbol(int symbol);
 void RpBitsResetDictionary(void);
-unsigned int RpBitsLookupSymbol(int param_1);
-void RpBitsWriteBits(int param_1, unsigned int param_2);
+unsigned int RpBitsLookupSymbol(int symbol);
+void RpBitsWriteBits(int bit_count, unsigned int bits);
 
 // FUNCTION: SHANDALAR 0x0057a340
 // FUNCTION: FACEMAKER 0x00407a00
@@ -138,8 +138,8 @@ void WriteRpBitsPalette(int file_handle)
 
 // FUNCTION: SHANDALAR 0x0057de20
 // FUNCTION: FACEMAKER 0x004094b0
-int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param_3, int param_4, int param_5,
-                      int param_6, int param_7)
+int EncodeRpBitsImage(int file_handle, EncodeRpBitsImage_Callback read_scanline, int page_number, int x, int y,
+                      int width, int height)
 {
   unsigned char *dictionary_ptr;
   unsigned char *scanline_ptr;
@@ -153,14 +153,14 @@ int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param
   int reached_last_row;
   unsigned char *cursor_ptr;
 
-  g_rpbits_output_fd = param_1;
+  g_rpbits_output_fd = file_handle;
   g_rpbits_dict_table = (int)malloc(0xbfd0);
   g_rpbits_max_symbol_len = -1;
   g_rpbits_header.payload_size = 0;
   g_rpbits_bit_count = 0;
   g_rpbits_bit_accumulator = 0;
-  g_rpbits_header.width = (unsigned short)param_6;
-  g_rpbits_header.height = (unsigned short)param_7;
+  g_rpbits_header.width = (unsigned short)width;
+  g_rpbits_header.height = (unsigned short)height;
   g_rpbits_header.signature = 0x3058;
   g_rpbits_output_bytes = 0;
   max_match_len = 7;
@@ -173,16 +173,16 @@ int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param
   } while (max_match_len != -1);
 
   run_length = 1;
-  scanline_ptr = g_rpbits_scanline_buffer + param_4;
+  scanline_ptr = g_rpbits_scanline_buffer + x;
   current_value = 0xffffffff;
-  cursor_ptr = scanline_ptr + param_6;
+  cursor_ptr = scanline_ptr + width;
   do
   {
     run_value = current_value;
-    if (scanline_ptr + param_6 <= cursor_ptr)
+    if (scanline_ptr + width <= cursor_ptr)
     {
-      reached_last_row = (param_7 == 0);
-      param_7 = param_7 - 1;
+      reached_last_row = (height == 0);
+      height = height - 1;
       if (reached_last_row != 0)
       {
         max_match_len = g_rpbits_max_symbol_len;
@@ -283,13 +283,13 @@ int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param
         return _close(g_rpbits_output_fd);
       }
 
-      next_row_index = param_5 + 1;
-      param_2((unsigned int *)scanline_ptr, param_3, param_4, param_5, param_6);
-      param_5 = next_row_index;
+      next_row_index = y + 1;
+      read_scanline((unsigned int *)scanline_ptr, page_number, x, y, width);
+      y = next_row_index;
       cursor_ptr = scanline_ptr;
       if (current_value == 0xffffffff)
       {
-        cursor_ptr = g_rpbits_scanline_buffer + param_4 + 1;
+        cursor_ptr = g_rpbits_scanline_buffer + x + 1;
         run_value = (unsigned int)*scanline_ptr;
       }
     }
@@ -390,7 +390,7 @@ int EncodeRpBitsImage(int param_1, EncodeRpBitsImage_Callback param_2, int param
 
 // FUNCTION: SHANDALAR 0x0057e390
 // FUNCTION: FACEMAKER 0x00409a20
-void RpBitsEncodeSymbol(int param_1)
+void RpBitsEncodeSymbol(int symbol)
 {
   unsigned char *dictionary_ptr;
   int next_code_length;
@@ -401,7 +401,7 @@ void RpBitsEncodeSymbol(int param_1)
   int probe_stride;
 
   probe_stride = g_rpbits_max_symbol_len;
-  code_byte = (unsigned char)param_1;
+  code_byte = (unsigned char)symbol;
   if (g_rpbits_max_symbol_len == -1)
   {
     probe_stride = 0;
@@ -428,7 +428,7 @@ void RpBitsEncodeSymbol(int param_1)
     g_rpbits_code_bits = 9;
     g_rpbits_next_code = 0x101;
     g_rpbits_symbol_length = 1;
-    g_rpbits_prev_code = param_1;
+    g_rpbits_prev_code = symbol;
     g_rpbits_symbol_buffer[0] = code_byte;
     return;
   }
@@ -467,7 +467,7 @@ void RpBitsEncodeSymbol(int param_1)
     {
       break;
     }
-    if ((param_1 == *g_rpbits_dict_entry_ptr) && (g_rpbits_dict_entry_ptr[1] == g_rpbits_prev_code))
+    if ((symbol == *g_rpbits_dict_entry_ptr) && (g_rpbits_dict_entry_ptr[1] == g_rpbits_prev_code))
     {
       goto MATCH_FOUND;
     }
@@ -490,12 +490,12 @@ MATCH_FOUND:
     return;
   }
 
-  *g_rpbits_dict_entry_ptr = param_1;
+  *g_rpbits_dict_entry_ptr = symbol;
   g_rpbits_dict_entry_ptr[1] = g_rpbits_prev_code;
   g_rpbits_dict_entry_ptr[2] = g_rpbits_next_code;
   g_rpbits_next_code = g_rpbits_next_code + 1;
   RpBitsWriteBits(g_rpbits_code_bits, *(unsigned int *)(g_rpbits_dict_table + 8 + g_rpbits_prev_code * 0xc));
-  g_rpbits_prev_code = param_1;
+  g_rpbits_prev_code = symbol;
   g_rpbits_symbol_length = 1;
   g_rpbits_symbol_buffer[0] = code_byte;
   if ((1 << ((unsigned char)g_rpbits_code_bits & 0x1f)) < g_rpbits_next_code)
@@ -540,7 +540,7 @@ void RpBitsResetDictionary(void)
 
 // FUNCTION: SHANDALAR 0x0057e6a0
 // FUNCTION: FACEMAKER 0x00409d30
-unsigned int RpBitsLookupSymbol(int param_1)
+unsigned int RpBitsLookupSymbol(int symbol)
 {
   int scan_offset;
   unsigned int hash_sum;
@@ -574,7 +574,7 @@ unsigned int RpBitsLookupSymbol(int param_1)
     {
       return 0xffffffff;
     }
-    if ((param_1 == *g_rpbits_dict_entry_ptr) && (g_rpbits_dict_entry_ptr[1] == g_rpbits_prev_code))
+    if ((symbol == *g_rpbits_dict_entry_ptr) && (g_rpbits_dict_entry_ptr[1] == g_rpbits_prev_code))
     {
       break;
     }
@@ -593,15 +593,15 @@ unsigned int RpBitsLookupSymbol(int param_1)
 
 // FUNCTION: SHANDALAR 0x0057e770
 // FUNCTION: FACEMAKER 0x00409e00
-void RpBitsWriteBits(int param_1, unsigned int param_2)
+void RpBitsWriteBits(int bit_count, unsigned int bits)
 {
   int file_handle;
   unsigned int bit_accumulator;
 
   file_handle = g_rpbits_output_fd;
-  while (param_1 != 0)
+  while (bit_count != 0)
   {
-    param_1 = param_1 - 1;
+    bit_count = bit_count - 1;
     bit_accumulator = g_rpbits_bit_accumulator;
     if (7 < g_rpbits_bit_count)
     {
@@ -619,25 +619,25 @@ void RpBitsWriteBits(int param_1, unsigned int param_2)
       }
     }
     g_rpbits_bit_accumulator = (int)bit_accumulator >> 1;
-    if ((param_2 & 1) != 0)
+    if ((bits & 1) != 0)
     {
       g_rpbits_bit_accumulator = g_rpbits_bit_accumulator | 0x80;
     }
-    param_2 = (unsigned int)((int)param_2 >> 1);
+    bits = (unsigned int)((int)bits >> 1);
     g_rpbits_bit_count = g_rpbits_bit_count + 1;
   }
 }
 
 // FUNCTION: SHANDALAR 0x0057dd90
 // FUNCTION: FACEMAKER 0x00409420
-int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char *param_7)
+int ExportEncodedImage(int page_number, int x, int y, int width, int height, int write_palette, char *path)
 {
   int result;
   int file_handle;
 
-  if ((file_handle = _open(param_7, 0x8302, 0x80)) != -1)
+  if ((file_handle = _open(path, 0x8302, 0x80)) != -1)
   {
-    if (param_6)
+    if (write_palette)
     {
       WriteRpBitsPalette(file_handle);
       g_export_write_palette = 1;
@@ -646,7 +646,7 @@ int ExportEncodedImage(int param_1, int param_2, int param_3, int param_4, int p
     {
       g_export_write_palette = 0;
     }
-    result = EncodeRpBitsImage(file_handle, ReadGraphicsScanline, param_1, param_2, param_3, param_4, param_5);
+    result = EncodeRpBitsImage(file_handle, ReadGraphicsScanline, page_number, x, y, width, height);
 #ifndef _DEBUG
     _close(file_handle);
 #endif
@@ -697,7 +697,7 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   int file_handle;
   int line;
   RpBitsPalettePacket *palette;
-  unsigned short local_palette[0x200];
+  unsigned short palette_buffer[0x200];
 
   ext = strchr(path, '.');
   if (_stricmp(".pcx", ext) != 0)
@@ -732,7 +732,7 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   palette = (RpBitsPalettePacket *)opaque;
   if (palette == (RpBitsPalettePacket *)1)
   {
-    palette = (RpBitsPalettePacket *)local_palette;
+    palette = (RpBitsPalettePacket *)palette_buffer;
   }
   if (palette == (RpBitsPalettePacket *)0)
   {
