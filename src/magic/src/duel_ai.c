@@ -56,7 +56,7 @@ int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacke
 void get_landwalk_evasion_masks(unsigned int *param_1, unsigned int *param_2);
 int can_block_attacker_with_abilities(int blocker_player, int blocker_card, int attacker_player, int attacker_card, unsigned int attacker_abilities,
                                       unsigned int evasion_mask);
-void play_sound_effect(int sound_id);
+int play_sound_effect(int sound_id);
 void record_ai_action_selection(void);
 void replay_ai_action_selection(void);
 void save_ai_search_state(void);

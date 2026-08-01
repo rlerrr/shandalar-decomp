@@ -67,7 +67,7 @@ int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacke
 void get_landwalk_evasion_masks(unsigned int *param_1, unsigned int *param_2);
 int can_block_attacker_with_abilities(int blocker_player, int blocker_card, int attacker_player, int attacker_card, unsigned int attacker_abilities,
                                       unsigned int evasion_mask);
-void play_sound_effect(int sound_id);
+int play_sound_effect(int sound_id);
 void save_combat_simulation_state(void);
 void restore_combat_simulation_state(void);
 void setup_combat_damage_simulation(int player);

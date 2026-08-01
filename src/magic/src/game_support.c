@@ -5802,7 +5802,7 @@ int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
 
 // FUNCTION: MAGIC 0x0044331f
 // FUNCTION: SHANDALAR 0x0040ebb9
-void play_sound_effect(wav_t sound_id)
+int play_sound_effect(wav_t sound_id)
 {
   struct
   {
@@ -5811,9 +5811,7 @@ void play_sound_effect(wav_t sound_id)
     int sound_num;
     Sound sound;
   } s;
-  int found_sound;
 
-  s.sound_num = sound_id;
   s.sound.volume = 300;
   s.sound.sampleRate = 0;
   s.sound.pan = 0;
@@ -5825,19 +5823,17 @@ void play_sound_effect(wav_t sound_id)
 
   if (g_duel_ai_mode_state == 1)
   {
-    return;
+    return 0;
   }
 
-  if (sound_id < 0x14)
+  s.sound_num = sound_id;
+  if (s.sound_num <= 0x13)
   {
-    sound_play(sound_id, 0);
-    return;
+    sound_play(s.sound_num, 0);
   }
-
-  if (sound_id < 0x27)
+  else if (s.sound_num <= 0x26)
   {
-    found_sound = sound_is_loaded(sound_id, &s.sound_num);
-    if (found_sound == 0)
+    if (sound_is_loaded(sound_id, &s.sound_num) == 0)
     {
       s.replacement_result = sound_get_lru(&s.sound_num, 0x14, 0x16);
       if (s.replacement_result == 0)
@@ -5846,7 +5842,7 @@ void play_sound_effect(wav_t sound_id)
       }
       else if (s.replacement_result != 1)
       {
-        return;
+        return 0;
       }
 
       strcpy(s.path, global_duelsounds_path);
@@ -5856,13 +5852,10 @@ void play_sound_effect(wav_t sound_id)
     }
 
     sound_play(s.sound_num, 0);
-    return;
   }
-
-  if (sound_id < 0x2e)
+  else if (s.sound_num <= 0x2d)
   {
-    found_sound = sound_is_loaded(sound_id, &s.sound_num);
-    if (found_sound == 0)
+    if (sound_is_loaded(sound_id, &s.sound_num) == 0)
     {
       s.replacement_result = sound_get_lru(&s.sound_num, 0x27, 0x27);
       if (s.replacement_result == 0)
@@ -5871,48 +5864,54 @@ void play_sound_effect(wav_t sound_id)
       }
       else if (s.replacement_result != 1)
       {
-        return;
+        return 0;
       }
 
       strcpy(s.path, global_duelsounds_path);
       strcat(s.path, "\\");
-      strcat(s.path, g_duel_sound_filenames[sound_id]);
+      strcat(s.path, g_duel_sound_filenames[sound_id + 1]);
       sound_load(s.path, s.sound_num, &s.sound);
     }
 
     sound_play(s.sound_num, 0);
-    return;
   }
-
-  if (sound_id < 0x3c)
+  else if (s.sound_num <= 0x3b)
   {
     s.sound.volume = 400;
-    found_sound = sound_is_loaded(sound_id, &s.sound_num);
-    if (sound_id == WAV_CATATAP)
+    if (sound_is_loaded(sound_id, &s.sound_num) == 0)
     {
-      s.sound.field_14 = -1;
+      if (sound_id != WAV_CATATAP)
+      {
+        s.sound.flags |= 4U;
+      }
+      else
+      {
+        s.sound.field_14 = -1;
+      }
+
+      strcpy(s.path, global_duelsounds_path);
+      strcat(s.path, "\\");
+      strcat(s.path, g_duel_sound_filenames[sound_id + 2]);
+      sound_load(s.path, s.sound_num, &s.sound);
+      sound_play(s.sound_num, &s.sound);
     }
     else
     {
-      s.sound.flags |= 4;
-    }
+      if (sound_id != WAV_CATATAP)
+      {
+        s.sound.flags |= 4U;
+      }
+      else
+      {
+        s.sound.field_14 = -1;
+      }
 
-    if (found_sound == 0)
-    {
-      strcpy(s.path, global_duelsounds_path);
-      strcat(s.path, "\\");
-      strcat(s.path, g_duel_sound_filenames[sound_id]);
-      sound_load(s.path, s.sound_num, &s.sound);
+      sound_play(s.sound_num, &s.sound);
     }
-
-    sound_play(s.sound_num, &s.sound);
-    return;
   }
-
-  if (sound_id < 0x41)
+  else if (s.sound_num <= 0x40)
   {
-    found_sound = sound_is_loaded(sound_id, &s.sound_num);
-    if (found_sound == 0)
+    if (sound_is_loaded(sound_id, &s.sound_num) == 0)
     {
       s.replacement_result = sound_get_lru(&s.sound_num, 0x3c, 0x40);
       if (s.replacement_result == 0)
@@ -5921,23 +5920,20 @@ void play_sound_effect(wav_t sound_id)
       }
       else if (s.replacement_result != 1)
       {
-        return;
+        return 0;
       }
 
       strcpy(s.path, global_duelsounds_path);
       strcat(s.path, "\\");
-      strcat(s.path, g_duel_sound_filenames[sound_id]);
+      strcat(s.path, g_duel_sound_filenames[sound_id + 2]);
       sound_load(s.path, s.sound_num, &s.sound);
     }
 
     sound_play(s.sound_num, 0);
-    return;
   }
-
-  if (sound_id < 0x45)
+  else if (s.sound_num <= 0x44)
   {
-    found_sound = sound_is_loaded(sound_id, &s.sound_num);
-    if (found_sound == 0)
+    if (sound_is_loaded(sound_id, &s.sound_num) == 0)
     {
       s.replacement_result = sound_get_lru(&s.sound_num, 0x41, 0x44);
       if (s.replacement_result == 0)
@@ -5946,17 +5942,23 @@ void play_sound_effect(wav_t sound_id)
       }
       else if (s.replacement_result != 1)
       {
-        return;
+        return 0;
       }
 
       strcpy(s.path, global_duelsounds_path);
       strcat(s.path, "\\");
-      strcat(s.path, g_duel_sound_filenames[sound_id]);
+      strcat(s.path, g_duel_sound_filenames[sound_id + 3]);
       sound_load(s.path, s.sound_num, &s.sound);
     }
 
     sound_play(s.sound_num, 0);
   }
+  else
+  {
+    return 0;
+  }
+
+  return 1;
 }
 
 // FUNCTION: MAGIC 0x0044125c

@@ -248,7 +248,7 @@ int do_dialog(int who_chooses,
               const char *options,
               int ai_choice);
 void undeclare_mana_available_hex(int player, color_test_t color, int amount);
-void play_sound_effect(int sound_id);
+int play_sound_effect(int sound_id);
 int load_recorded_action_target(int offset);
 void record_ai_action_selection(void);
 int load_recorded_action_code(int offset);

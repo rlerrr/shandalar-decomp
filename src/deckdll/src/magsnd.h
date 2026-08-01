@@ -4,15 +4,15 @@
 #include <windows.h>
 
 typedef struct Sound_t
-{ // very little idea what any of these fields do.
-  int volume; // 0x00
+{                 // very little idea what any of these fields do.
+  int volume;     // 0x00
   int sampleRate; // 0x04
-  int pan; // 0x08
-  int field_C; // 0x0c
-  int field_10; // 0x10
-  int field_14; // 0x14
-  int loadId; // 0x18
-  unsigned int flags; // 0x1c
+  int pan;        // 0x08
+  int field_C;    // 0x0c
+  int field_10;   // 0x10
+  int field_14;   // 0x14
+  int loadId;     // 0x18
+  int flags;      // 0x1c
 } Sound;
 
 int sound_unload(int idx);
