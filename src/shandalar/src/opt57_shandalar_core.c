@@ -32,13 +32,13 @@ extern int g_export_write_palette;
 #pragma optimize("gy", on)
 
 // FUNCTION: SHANDALAR 0x00578c20
-int FUN_00578c20(void)
+int InitializeLegacyMouseStub(void)
 {
   return -1;
 }
 
 // FUNCTION: SHANDALAR 0x00578c30
-int FUN_00578c30(void)
+int ShutdownLegacyMouseStub(void)
 {
   return -1;
 }
@@ -66,7 +66,7 @@ int ConsumeMouseButtonReleaseMask(void)
 }
 
 // FUNCTION: SHANDALAR 0x00578c70
-void FUN_00578c70(int unused_a, int unused_b, int unused_c)
+void NoopSetSpecialSprite(int unused_a, int unused_b, int unused_c)
 {
   (void)unused_a;
   (void)unused_b;
@@ -74,7 +74,7 @@ void FUN_00578c70(int unused_a, int unused_b, int unused_c)
 }
 
 // FUNCTION: SHANDALAR 0x00578c80
-int FUN_00578c80(int ignored_result)
+int IgnoreFontConfigLoadResult(int ignored_result)
 {
   (void)ignored_result;
   return 0;

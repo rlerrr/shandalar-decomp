@@ -39,7 +39,7 @@ STATIC_ASSERT(sizeof(xpool_network_packet_t) == 0x24, xpool_network_packet_t_wro
 NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 
 // GLOBAL: MAGIC 0x007a7d6c
-NETWORK_EXTERN int unk_007a7d6c;
+NETWORK_EXTERN int g_next_expected_network_packet_number;
 
 // GLOBAL: MAGIC 0x007a7d08
 // GLOBAL: SHANDALAR 0x007bea98
@@ -73,22 +73,22 @@ NETWORK_EXTERN char unk_008b34a0;
 NETWORK_EXTERN int unk_008b60e8;
 
 // GLOBAL: MAGIC 0x0091ca90
-NETWORK_EXTERN char unk_0091ca90;
+NETWORK_EXTERN char g_card_list_packet_type;
 
 // GLOBAL: MAGIC 0x0091ca92
-NETWORK_EXTERN short unk_0091ca92;
+NETWORK_EXTERN short g_card_list_packet_number;
 
 // GLOBAL: MAGIC 0x0091ca94
-NETWORK_EXTERN short unk_0091ca94;
+NETWORK_EXTERN short g_card_list_packet_card_count;
 
 // GLOBAL: MAGIC 0x0091ca96
-NETWORK_EXTERN char unk_0091ca96;
+NETWORK_EXTERN char g_card_list_packet_capacity_blocks;
 
 // GLOBAL: MAGIC 0x0091ca98
-NETWORK_EXTERN short *unk_0091ca98;
+NETWORK_EXTERN short *g_card_list_packet_cards;
 
 // GLOBAL: MAGIC 0x0091d07c
-NETWORK_EXTERN int unk_0091d07c;
+NETWORK_EXTERN int g_next_outgoing_card_list_packet_number;
 
 // GLOBAL: MAGIC 0x009251b0
 NETWORK_EXTERN xpool_network_packet_t g_xpool_network_packet;
@@ -99,7 +99,7 @@ NETWORK_EXTERN target_selection_network_packet_t g_target_selection_network_pack
 // GLOBAL: MAGIC 0x008cf3a0
 NETWORK_EXTERN char unk_008cf3a0;
 
-int FUN_0049e8bb(int player,
+int select_multiple_cards_from_card_list(int player,
                  int *graveyard,
                  int unused,
                  void *available,

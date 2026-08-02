@@ -69,7 +69,7 @@ unsigned char DAT_007a7d90[STARTUP_DIALOG_COUNT * STARTUP_DIALOG_ROW_STRIDE];
 int DAT_0074b62c;
 
 // GLOBAL: MAGIC 0x007a79b8
-int DAT_007a79b8;
+int g_manalink_is_host;
 
 extern char *global_base_txt;
 
@@ -80,7 +80,7 @@ HWND global_main_hwnd;
 int DAT_008b3bd8;
 
 // GLOBAL: MAGIC 0x008b32bc
-int DAT_008b32bc;
+int g_manalink_opponent_monitor_active;
 
 // GLOBAL: MAGIC 0x008b4dd4
 int DAT_008b4dd4;
@@ -107,7 +107,7 @@ char DAT_0091ce40[300];
 HANDLE global_mutex_WritePacket;
 
 // GLOBAL: MAGIC 0x00939560
-int DAT_00939560;
+int g_manalink_opponent_status_dirty;
 
 // GLOBAL: MAGIC 0x006381c0
 char DAT_006381c0[0x358];
@@ -119,25 +119,25 @@ char DAT_00638518[0xd0];
 char DAT_006385e8[0x40];
 
 // GLOBAL: MAGIC 0x007ab2c0
-int DAT_007ab2c0;
+int g_manalink_current_opponent_present;
 
 // GLOBAL: MAGIC 0x00925d2c
-int DAT_00925d2c;
+int g_manalink_previous_opponent_present;
 
 // GLOBAL: MAGIC 0x0056ef74
-HWND DAT_0056ef74 = (HWND)0;
+HWND g_manalink_lower_dialog_hwnd = (HWND)0;
 
 int InitLicenseSecretsFromRegistry(void);
 char *CsvParseNextField(char **txt);
-static void FUN_0048fa0a(void);
-static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time);
-static int FUN_004e027c(void);
-static void FUN_0048fcb5(void);
-static int FUN_00497c8d(void);
-static int FUN_00500c56(void);
-static void FUN_00500d46(void);
-static void FUN_00459b6e(void *window);
-static LRESULT CALLBACK FUN_005539c3(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static void save_active_screen_name_profile(void);
+static void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time);
+static int validate_deckbuilder_data_stub(void);
+static void load_active_screen_name_profile(void);
+static int should_launch_manalink(void);
+static int initialize_action_packets(void);
+static void free_action_packets(void);
+static void monitor_manalink_opponent_thread(void *window);
+static LRESULT CALLBACK magic_shell_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 int read_db_guts(char *cards_dat_filename);
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
@@ -146,7 +146,7 @@ void DestroyCardArtPalette(void);
 
 
 // FUNCTION: MAGIC 0x005532e9
-void FUN_005532e9(void)
+void load_binary_version_strings(void)
 {
   typedef struct
   {
@@ -202,7 +202,7 @@ void FUN_005532e9(void)
 }
 
 // FUNCTION: MAGIC 0x0055357b
-unsigned int FUN_0055357b(HWND hwnd, MSG *msg)
+unsigned int handle_magic_shell_accelerator_message(HWND hwnd, MSG *msg)
 {
   CHAR text[100];
   int accelerator_index;
@@ -313,7 +313,7 @@ int register_MagicShellClass(LPCSTR class_name)
   WNDCLASSA wndclass;
 
   wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-  wndclass.lpfnWndProc = FUN_005539c3;
+  wndclass.lpfnWndProc = magic_shell_window_proc;
   wndclass.cbClsExtra = 0;
   wndclass.cbWndExtra = 0x1e;
   wndclass.hInstance = (HINSTANCE)g_app_instance;
@@ -330,18 +330,18 @@ int register_MagicShellClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x005539b8
-void FUN_005539b8(void *unused)
+void noop_unregister_magic_shell_class(void *unused)
 {
   (void)unused;
 }
 
 // FUNCTION: MAGIC 0x0048fa0a
-static void FUN_0048fa0a(void)
+static void save_active_screen_name_profile(void)
 {
   FILE *screen_name_file;
   char screen_name_filename[100];
 
-  FUN_0048fd9f(&DAT_008a91a0, 0);
+  initialize_screen_name_profile(&DAT_008a91a0, 0);
   sprintf(screen_name_filename, "ScreenNames\\%s.scn", DAT_008a91a0.screen_name);
   SetFileAttributesA(screen_name_filename, FILE_ATTRIBUTE_NORMAL);
   screen_name_file = fopen(screen_name_filename, "wb");
@@ -354,13 +354,13 @@ static void FUN_0048fa0a(void)
 }
 
 // FUNCTION: MAGIC 0x004e027c
-static int FUN_004e027c(void)
+static int validate_deckbuilder_data_stub(void)
 {
   return 1;
 }
 
 // FUNCTION: MAGIC 0x0048fcb5
-static void FUN_0048fcb5(void)
+static void load_active_screen_name_profile(void)
 {
   struct
   {
@@ -372,7 +372,7 @@ static void FUN_0048fcb5(void)
   s.screen_name_file = fopen("ScreenNames\\ActiveName.dat", "rb");
   if (s.screen_name_file == NULL)
   {
-    FUN_0048fa0a();
+    save_active_screen_name_profile();
   }
   else
   {
@@ -383,7 +383,7 @@ static void FUN_0048fcb5(void)
     s.screen_name_file = fopen(s.screen_name_filename, "rb");
     if (s.screen_name_file == NULL)
     {
-      FUN_0048fd9f(&DAT_008a91a0, 0);
+      initialize_screen_name_profile(&DAT_008a91a0, 0);
     }
     else
     {
@@ -394,7 +394,7 @@ static void FUN_0048fcb5(void)
 }
 
 // FUNCTION: MAGIC 0x0048fd9f
-static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_time)
+static void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time)
 {
   time_t current_time;
 
@@ -442,7 +442,7 @@ static void FUN_0048fd9f(screen_name_file_t *screen_name_data, int use_current_t
 }
 
 // FUNCTION: MAGIC 0x00497c8d
-static int FUN_00497c8d(void)
+static int should_launch_manalink(void)
 {
   struct
   {
@@ -484,14 +484,14 @@ static int FUN_00497c8d(void)
 }
 
 // FUNCTION: MAGIC 0x00500c56
-static int FUN_00500c56(void)
+static int initialize_action_packets(void)
 {
-  unk_007a7d6c = 0;
-  unk_0091d07c = unk_007a7d6c;
-  DAT_00939560 = 1;
-  DAT_00925d2c = 0;
-  DAT_007ab2c0 = DAT_00925d2c;
-  DAT_008b32bc = 1;
+  g_next_expected_network_packet_number = 0;
+  g_next_outgoing_card_list_packet_number = g_next_expected_network_packet_number;
+  g_manalink_opponent_status_dirty = 1;
+  g_manalink_previous_opponent_present = 0;
+  g_manalink_current_opponent_present = g_manalink_previous_opponent_present;
+  g_manalink_opponent_monitor_active = 1;
   g_waiting_for_network_packet = 0;
   unk_008b27f0 = '\0';
   g_target_selection_network_packet.packet_type = '\0';
@@ -500,61 +500,61 @@ static int FUN_00500c56(void)
   unk_008b34a0 = '\0';
   unk_008cf3a0 = '\0';
   unk_00926080 = '\0';
-  unk_0091ca90 = '\0';
+  g_card_list_packet_type = '\0';
 
-  if (unk_0091ca98 != NULL)
+  if (g_card_list_packet_cards != NULL)
   {
-    free(unk_0091ca98);
+    free(g_card_list_packet_cards);
   }
 
-  unk_0091ca98 = malloc(0x20);
-  if (unk_0091ca98 == NULL)
+  g_card_list_packet_cards = malloc(0x20);
+  if (g_card_list_packet_cards == NULL)
   {
     MessageBoxA(NULL, "Memory allocation error in InitActionPackets!", "Packet Error", MB_ICONHAND);
   }
 
-  unk_0091ca94 = 0;
-  unk_0091ca96 = 1;
+  g_card_list_packet_card_count = 0;
+  g_card_list_packet_capacity_blocks = 1;
   return 1;
 }
 
 // FUNCTION: MAGIC 0x00500d46
-static void FUN_00500d46(void)
+static void free_action_packets(void)
 {
-  free(unk_0091ca98);
-  unk_0091ca98 = NULL;
-  DAT_008b32bc = 0;
+  free(g_card_list_packet_cards);
+  g_card_list_packet_cards = NULL;
+  g_manalink_opponent_monitor_active = 0;
 }
 
 // FUNCTION: MAGIC 0x00459b6e
-static void FUN_00459b6e(void *window)
+static void monitor_manalink_opponent_thread(void *window)
 {
   void *tmp = window;
 
-  while (DAT_008b32bc != 0)
+  while (g_manalink_opponent_monitor_active != 0)
   {
-    DAT_007ab2c0 = FamInterface_HasOpponent();
-    if (DAT_00925d2c != DAT_007ab2c0 || DAT_00939560 != 0)
+    g_manalink_current_opponent_present = FamInterface_HasOpponent();
+    if (g_manalink_previous_opponent_present != g_manalink_current_opponent_present || g_manalink_opponent_status_dirty != 0)
     {
       if (WaitForSingleObject(global_mutex_LowerDialog, 500) == 0)
       {
-        DAT_00925d2c = DAT_007ab2c0;
-        DAT_00939560 = 0;
-        if (DAT_007ab2c0 != 0)
+        g_manalink_previous_opponent_present = g_manalink_current_opponent_present;
+        g_manalink_opponent_status_dirty = 0;
+        if (g_manalink_current_opponent_present != 0)
         {
           OutputDebugStringA("Registering an opponent.\n");
-          DAT_007a79b8 = FamInterface_IsHost();
-          SendMessageA(DAT_0056ef74, WM_COMMAND, 0x404, 0);
+          g_manalink_is_host = FamInterface_IsHost();
+          SendMessageA(g_manalink_lower_dialog_hwnd, WM_COMMAND, 0x404, 0);
         }
         else
         {
           OutputDebugStringA("Unregistering an opponent.\n");
-          SendMessageA(DAT_0056ef74, WM_COMMAND, 0x405, 0);
+          SendMessageA(g_manalink_lower_dialog_hwnd, WM_COMMAND, 0x405, 0);
         }
       }
       else
       {
-        DAT_00925d2c = -1;
+        g_manalink_previous_opponent_present = -1;
       }
 
       ReleaseMutex(global_mutex_LowerDialog);
@@ -567,7 +567,7 @@ static void FUN_00459b6e(void *window)
 }
 
 // FUNCTION: MAGIC 0x005539c3
-static LRESULT CALLBACK FUN_005539c3(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static LRESULT CALLBACK magic_shell_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
@@ -606,7 +606,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   unk_00742fc4 = g_duel_message_loop_active;
   DAT_0074b62c = 0;
 
-  FUN_005532e9();
+  load_binary_version_strings();
   if (InitLicenseSecretsFromRegistry() != 0)
   {
     return 0;
@@ -653,20 +653,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   global_mutex_LowerDialog = CreateMutexA(NULL, TRUE, "LowerDialog");
   unk_0092607c = (int)CreateEventA(NULL, TRUE, TRUE, NULL);
 
-  if (FUN_004e027c() == 0)
+  if (validate_deckbuilder_data_stub() == 0)
   {
     MessageBoxA(NULL, "Deckbuilder.dat is either missing or currupt!", "Magic: The Gathering", MB_ICONHAND);
     return 0;
   }
 
-  FUN_0048fcb5();
-  if (FUN_00497c8d() != 0)
+  load_active_screen_name_profile();
+  if (should_launch_manalink() != 0)
   {
     WinExec("manalink.exe RUNFROMSHELL", SW_SHOW);
   }
 
   FamInterface_SetDuelVersion(1, 3);
-  FUN_00500c56();
+  initialize_action_packets();
   InitializeCriticalSection(&g_card_render_lock);
 
   if (register_MagicShellClass("MAGICGAME_MagicShellClass"))
@@ -705,7 +705,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     return 0;
   }
 
-  _beginthread(FUN_00459b6e, 0, global_main_hwnd);
+  _beginthread(monitor_manalink_opponent_thread, 0, global_main_hwnd);
 
   s.slash = cmdLine;
   while (*s.slash != '\0' && (s.slash = strchr(s.slash, '/')) != NULL)
@@ -758,7 +758,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     {
       FamInterface_Taunt();
     }
-    else if (!FUN_0055357b(global_main_hwnd, &s.msg) &&
+    else if (!handle_magic_shell_accelerator_message(global_main_hwnd, &s.msg) &&
              (DAT_0079141c == NULL || !IsDialogMessageA(DAT_0079141c, &s.msg)))
     {
       TranslateMessage(&s.msg);
@@ -775,8 +775,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   ShutdownSharedStartupResources();
   DeleteCriticalSection(&g_shared_startup_lock);
   DeleteCriticalSection(&g_card_render_lock);
-  FUN_005539b8("MAGICGAME_MagicShellClass");
-  FUN_00500d46();
+  noop_unregister_magic_shell_class("MAGICGAME_MagicShellClass");
+  free_action_packets();
   CloseHandle(global_mutex_GameInit);
   CloseHandle((HANDLE)global_mutex_ReadPacket);
   CloseHandle(global_mutex_WritePacket);

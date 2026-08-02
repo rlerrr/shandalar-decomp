@@ -27,7 +27,7 @@ int card_contract_from_below(int player, int card, event_t event)
       discard(player, 0, 0);
     }
     ante_drawn_card(player);
-    FUN_0040246a(player, 7);
+    draw_cards_and_set_hand_count(player, 7);
     kill_card(player, card, KILL_BURY);
   }
 
@@ -160,7 +160,7 @@ int card_resurrection(int player, int card, event_t event)
     if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1))
     {
       s.can_select = 1;
-      s.graveyard_index = FUN_004087cc(player, 2);
+      s.graveyard_index = find_highest_value_graveyard_card_by_type(player, 2);
     }
     else
     {

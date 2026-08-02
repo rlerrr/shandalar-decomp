@@ -30,21 +30,21 @@ static char *s_duel_options_registry_path_00588100 = "Software\\MicroProse\\Magi
 
 // FUNCTION: MAGIC 0x004a5a1b
 // FUNCTION: SHANDALAR 0x00557b9b
-void SetCardInDeck(int param_1, int param_2)
+void SetCardInDeck(int deck_index, int enabled)
 {
-  if (param_2 == 1)
+  if (enabled == 1)
   {
-    deck[param_1] = deck[param_1] | 0x4000;
+    deck[deck_index] = deck[deck_index] | 0x4000;
   }
   else
   {
-    deck[param_1] = deck[param_1] & 0x8fff;
+    deck[deck_index] = deck[deck_index] & 0x8fff;
   }
 }
 
 // FUNCTION: MAGIC 0x004ed13a
 // FUNCTION: SHANDALAR 0x00501b31
-int FUN_004ed13a(int file_descriptor, void *buffer, unsigned int count)
+int write_save_data(int file_descriptor, void *buffer, unsigned int count)
 {
   if (write(file_descriptor, buffer, count) == -1)
   {
@@ -59,7 +59,7 @@ int FUN_004ed13a(int file_descriptor, void *buffer, unsigned int count)
 
 // FUNCTION: MAGIC 0x004ef073
 // FUNCTION: SHANDALAR 0x00504063
-unsigned int FUN_004ef073(void)
+unsigned int save_or_load_duel_mode_state(void)
 {
   unsigned int result;
 
@@ -467,7 +467,7 @@ int save_or_load_data(void *buf, unsigned int count)
   }
   else
   {
-    ok = FUN_004ed13a(g_save_file_fd, buf, count);
+    ok = write_save_data(g_save_file_fd, buf, count);
   }
 
   if (ok == 0)
@@ -571,8 +571,8 @@ unsigned int save_or_load_ver1(void)
   result &= save_or_load_data(&DAT_008a8d6c, 4);
   result &= save_or_load_data(&DAT_007aadf0, 4);
   result &= save_or_load_data(&produced_mana_color, 4);
-  result &= save_or_load_data(&unk_008ce508, 4);
-  result &= save_or_load_data(&unk_008ce4f4, 4);
+  result &= save_or_load_data(&current_spell_player, 4);
+  result &= save_or_load_data(&current_spell_card, 4);
   result &= save_or_load_data(&unk_008cfd20, 4);
   result &= save_or_load_data(&trigger_condition, 4);
   result &= save_or_load_data(&trigger_cause_controller, 4);
@@ -580,7 +580,7 @@ unsigned int save_or_load_ver1(void)
   result &= save_or_load_data(&card_on_stack_controller, 4);
   result &= save_or_load_data(&card_on_stack, 4);
   result &= save_or_load_data(&current_turn, 4);
-  result &= save_or_load_data(&DAT_007aadec, 4);
+  result &= save_or_load_data(&current_action_event_code, 4);
   result &= save_or_load_data(&unk_00789308, 4);
   result &= save_or_load_data(&DAT_008cf6d0, 4);
   result &= save_or_load_data(&DAT_00925ac4, 4);
@@ -779,8 +779,8 @@ unsigned int save_or_load_ver2(void)
   result &= save_or_load_data(&DAT_008a8d6c, 4);
   result &= save_or_load_data(&DAT_007aadf0, 4);
   result &= save_or_load_data(&produced_mana_color, 4);
-  result &= save_or_load_data(&unk_008ce508, 4);
-  result &= save_or_load_data(&unk_008ce4f4, 4);
+  result &= save_or_load_data(&current_spell_player, 4);
+  result &= save_or_load_data(&current_spell_card, 4);
   result &= save_or_load_data(&unk_008cfd20, 4);
   result &= save_or_load_data(&trigger_condition, 4);
   result &= save_or_load_data(&trigger_cause_controller, 4);
@@ -788,7 +788,7 @@ unsigned int save_or_load_ver2(void)
   result &= save_or_load_data(&card_on_stack_controller, 4);
   result &= save_or_load_data(&card_on_stack, 4);
   result &= save_or_load_data(&current_turn, 4);
-  result &= save_or_load_data(&DAT_007aadec, 4);
+  result &= save_or_load_data(&current_action_event_code, 4);
   result &= save_or_load_data(&unk_00789308, 4);
   result &= save_or_load_data(&DAT_008cf6d0, 4);
   result &= save_or_load_data(&DAT_00925ac4, 4);
@@ -947,11 +947,11 @@ unsigned int load_or_probe_duel_save_slot(char *path, int probe_only)
     g_save_file_fd = _open(path, 0x8000);
     if (g_save_file_fd != -1)
     {
-      strcat(unk_00748770, "OK\n");
+      strcat(g_duel_text_scratch_buffer, "OK\n");
     }
     else
     {
-      sprintf(unk_00748770, "%s\n", _DAT_00742fb8);
+      sprintf(g_duel_text_scratch_buffer, "%s\n", _DAT_00742fb8);
     }
     _close(g_save_file_fd);
     return (g_save_file_fd != -1);
@@ -977,7 +977,7 @@ int load_selected_duel_save_slot(int player)
   {
     if (player == -1)
     {
-      strcpy(unk_00748770, "\x8c"
+      strcpy(g_duel_text_scratch_buffer, "\x8c"
                            "Select Load File...\n");
       _DAT_00743028 = 0;
       for (s.slot = 0; s.slot < 10; s.slot++)
@@ -1072,7 +1072,7 @@ void save_soloduel(char *path)
     global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
     save_or_load_ver2();
-    FUN_004ef073();
+    save_or_load_duel_mode_state();
     LoadSoloDuelRegistryOptions();
     save_or_load_data(&g_solo_duel_options.best_of, 4);
     save_or_load_data(&g_solo_duel_options.allow_sideboarding, 4);
@@ -1090,7 +1090,7 @@ void save_gauntlet(char *path)
     global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
     save_or_load_ver2();
-    FUN_004ef073();
+    save_or_load_duel_mode_state();
     LoadGauntletRegistryOptions();
     save_or_load_data(&g_gauntlet_options.best_of, 4);
     save_or_load_data(&g_gauntlet_options.allow_sideboarding, 4);
@@ -1114,7 +1114,7 @@ void save_sealeddeck(char *path)
     global_saveload_loading = 0;
     save_or_load_data(&DAT_0057b178, 4);
     save_or_load_ver2();
-    FUN_004ef073();
+    save_or_load_duel_mode_state();
     LoadSealedDeckRegistryOptions();
     save_or_load_data(&g_sealed_deck_options.best_of, 4);
     save_or_load_data((void *)DAT_0093d844, 0x4ae64);
@@ -1221,7 +1221,7 @@ int validate_loaded_duel_card_availability(void)
     for (s.card = 0; s.card < 0x97 && s.card <= active_cards_count[s.player]; s.card++)
     {
       s.internal_card_id = global_card_instances[s.player][s.card].original_internal_card_id;
-      if (s.internal_card_id < unk_009266a4 || unk_009266a4 + 0x2d <= s.internal_card_id)
+      if (s.internal_card_id < damage_card_internal_card_id || damage_card_internal_card_id + 0x2d <= s.internal_card_id)
       {
         if (s.internal_card_id > -1)
           s.card_id = global_cards_data[s.internal_card_id].id;
@@ -1269,7 +1269,7 @@ unsigned int load_duel_run_mode_1_save(char *path)
     if (DAT_0057b178 == s.save_version)
     {
       s.result &= save_or_load_ver2();
-      s.result &= FUN_004ef073();
+      s.result &= save_or_load_duel_mode_state();
       s.result &= save_or_load_data(&g_solo_duel_options.best_of, 4);
       s.result &= save_or_load_data(&g_solo_duel_options.allow_sideboarding, 4);
       save_solo_duel_options_to_registry();
@@ -1310,7 +1310,7 @@ unsigned int load_duel_run_mode_2_save(char *path)
     if (s.save_version == DAT_0057b178)
     {
       s.result &= save_or_load_ver2();
-      s.result &= FUN_004ef073();
+      s.result &= save_or_load_duel_mode_state();
       s.result &= save_or_load_data(&g_gauntlet_options.best_of, 4);
       s.result &= save_or_load_data(&g_gauntlet_options.allow_sideboarding, 4);
       s.result &= save_or_load_data(&g_gauntlet_options.gauntlet_length, 4);
@@ -1357,7 +1357,7 @@ unsigned int load_duel_run_mode_3_save(char *path)
     if (s.save_version == DAT_0057b178)
     {
       s.result &= save_or_load_ver2();
-      s.result &= FUN_004ef073();
+      s.result &= save_or_load_duel_mode_state();
       s.result &= save_or_load_data(&g_sealed_deck_options.best_of, 4);
       s.result &= save_or_load_data(DAT_006abe40, 0x4ae64);
       DAT_0093d844 = DAT_006abe40;

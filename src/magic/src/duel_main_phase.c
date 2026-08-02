@@ -23,14 +23,14 @@ void append_to_trace_txt(char *text);
 void update_phase_display(int player, phase_t phase);
 void reset_trigger_dispatch_state(void);
 int player_can_stop_at_phase(int player, phase_t phase);
-int allow_response(int param_1, int param_2, char *prompt, int param_4);
+int allow_response(int response_player, int phase, char *prompt, int event_code);
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response);
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
 void start_ai_decision_search(int decision_code, int time_scale);
 void __stdcall reset_ai_search_trial_state(void);
 void resolve_mana_burn(void);
 int check_duel_finished(void);
-void FUN_004b5fc9(char *text);
+void show_opponent_taunt(char *text);
 int player_has_legal_attacker(int player);
 int human_has_phase_stop(phase_t phase);
 int should_skip_phase(int player);
@@ -64,7 +64,7 @@ int is_in_play(int player, int card);
 int has_mana(int player, color_t color, int amount);
 int player_has_available_blocker(int player);
 int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
-void get_landwalk_evasion_masks(unsigned int *param_1, unsigned int *param_2);
+void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *out_basic_land_mask);
 int can_block_attacker_with_abilities(int blocker_player, int blocker_card, int attacker_player, int attacker_card, unsigned int attacker_abilities,
                                       unsigned int evasion_mask);
 int play_sound_effect(int sound_id);
@@ -461,7 +461,7 @@ resume_main_phase_response_window:
     ai_modifier = DAT_008a8de4;
     if ((g_duel_ai_mode_state != 1) && (((land_can_be_played & 0x40U) == 0 && (DAT_00896690 != '\0'))))
     {
-      FUN_004b5fc9(&DAT_00896690);
+      show_opponent_taunt(&DAT_00896690);
       land_can_be_played |= 0x40;
       DAT_00896690 = '\0';
     }
@@ -481,7 +481,7 @@ restart_main_phase_action_loop:
     unk_00712938 = 0;
     if ((g_duel_ai_mode_state != 1) && (DAT_00896690 != '\0'))
     {
-      FUN_004b5fc9(&DAT_00896690);
+      show_opponent_taunt(&DAT_00896690);
     }
     if ((player == active_player) || ((g_duel_network_flags & 2) != 0))
     {
@@ -493,32 +493,32 @@ restart_main_phase_action_loop:
       {
         s.retry_phase_prompt = 1;
         land_can_be_played |= 0x80;
-        strcpy(unk_00748770, "");
+        strcpy(g_duel_text_scratch_buffer, "");
         if (current_phase <= PHASE_MAIN1)
         {
-          strcpy(unk_00748770, gs_prompt_main_phase_precombat_cast_spells_008cc710);
+          strcpy(g_duel_text_scratch_buffer, gs_prompt_main_phase_precombat_cast_spells_008cc710);
           if ((land_can_be_played & 1U) == 0)
           {
-            strcpy(unk_00748770, gs_prompt_main_phase_precombat_cast_spells_play_land_00777970);
+            strcpy(g_duel_text_scratch_buffer, gs_prompt_main_phase_precombat_cast_spells_play_land_00777970);
           }
         }
         else if (current_phase >= PHASE_MAIN2)
         {
-          strcpy(unk_00748770, gs_prompt_main_phase_postcombat_cast_spells_007ab2d0);
+          strcpy(g_duel_text_scratch_buffer, gs_prompt_main_phase_postcombat_cast_spells_007ab2d0);
           if ((land_can_be_played & 1U) == 0)
           {
-            strcpy(unk_00748770, gs_prompt_main_phase_postcombat_cast_spells_play_land_0091cf50);
+            strcpy(g_duel_text_scratch_buffer, gs_prompt_main_phase_postcombat_cast_spells_play_land_0091cf50);
           }
         }
         else
         {
           if (player == current_player)
           {
-            strcpy(unk_00748770, gs_prompt_combat_choose_attackers_0093d990);
+            strcpy(g_duel_text_scratch_buffer, gs_prompt_combat_choose_attackers_0093d990);
           }
           else
           {
-            strcpy(unk_00748770, gs_prompt_combat_choose_blockers_008b4140);
+            strcpy(g_duel_text_scratch_buffer, gs_prompt_combat_choose_blockers_008b4140);
           }
           if ((player_has_legal_attacker(player) == 0) && (human_has_phase_stop(PHASE_DECLARE_ATTACKERS) == 0))
           {
@@ -553,7 +553,7 @@ restart_main_phase_action_loop:
         }
         else
         {
-          main_phase_selected_card = select_card_for_action(player, player, player, 0, 0, unk_00748770, 2);
+          main_phase_selected_card = select_card_for_action(player, player, player, 0, 0, g_duel_text_scratch_buffer, 2);
           if (TRACE_ENABLED)
           {
             sprintf(s.trace_pick_card, "%d: Main Phase PickACard: ThePhase:%d Player:%d card:%d\n", duel_trace_counter++, current_phase,
@@ -710,7 +710,7 @@ restart_main_phase_action_loop:
             update_phase_display(player, current_phase);
             if (((player == active_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state != 1))
             {
-              strcpy(unk_00748770, gs_prompt_combat_choose_attackers_0093d990);
+              strcpy(g_duel_text_scratch_buffer, gs_prompt_combat_choose_attackers_0093d990);
             }
 
             continue;
@@ -769,7 +769,7 @@ restart_main_phase_action_loop:
         {
           if (current_phase < PHASE_MAIN2)
           {
-            strcpy(unk_00748770, "");
+            strcpy(g_duel_text_scratch_buffer, "");
             if ((0 < attacking_creature_count) || (update_attacker_count_and_check_combat_done(player) == 0))
             {
               *phase_value = 1;
@@ -879,7 +879,7 @@ restart_main_phase_action_loop:
         }
 
         x_value = 0;
-        unk_008ce508 = -1;
+        current_spell_player = -1;
         if (put_card_on_stack(player, main_phase_selected_card, 0) != 0)
         {
           if (((player == active_player) && ((g_duel_network_flags & 2) == 0)) &&
@@ -1015,11 +1015,11 @@ restart_main_phase_action_loop:
         if ((battlefield_extra_ability_flags & 0x400000) != 0)
         {
           push_affected_card_stack();
-          strcpy(&DAT_00637808, unk_00748770);
+          strcpy(&DAT_00637808, g_duel_text_scratch_buffer);
           trigger_cause_controller = player;
           trigger_cause = main_phase_selected_card;
           dispatch_trigger(player, 0xdc, gs_pay_for_attacker_007a7880, 1);
-          strcpy(unk_00748770, &DAT_00637808);
+          strcpy(g_duel_text_scratch_buffer, &DAT_00637808);
           pop_affected_card_stack();
         }
         if (combat_assignment_cancelled == 0)
@@ -1036,9 +1036,9 @@ restart_main_phase_action_loop:
           }
           if ((((C_get_abilities(player, main_phase_selected_card, 0x34, -1) & 0x200040) != 0) && (1 < attacking_creature_count)) && (unk_00715fb0 == 0))
           {
-            strcpy(unk_00748770, gs_prompt_band_with_other_attacker_007a7af0);
+            strcpy(g_duel_text_scratch_buffer, gs_prompt_band_with_other_attacker_007a7af0);
             if (C_real_select_target(player, player, player, 0x200, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, 0, 2, 0,
-                                     unk_00748770, 2, &s.selected_bandmate) != 0)
+                                     g_duel_text_scratch_buffer, 2, &s.selected_bandmate) != 0)
             {
               main_phase_selected_bandmate_card = s.selected_bandmate.card;
               if ((char)global_card_instances[player][main_phase_selected_bandmate_card].blocking == -1)
@@ -1113,9 +1113,9 @@ restart_main_phase_action_loop:
           if ((battlefield_extra_ability_flags & 0x400000) != 0)
           {
             push_affected_card_stack();
-            strcpy(&DAT_00637808, unk_00748770);
+            strcpy(&DAT_00637808, g_duel_text_scratch_buffer);
             dispatch_trigger(player, 0xdc, gs_pay_for_attacker_007a7880, 1);
-            strcpy(unk_00748770, &DAT_00637808);
+            strcpy(g_duel_text_scratch_buffer, &DAT_00637808);
             pop_affected_card_stack();
           }
           if (combat_assignment_cancelled != 0)
@@ -1332,7 +1332,7 @@ advance_to_postcombat_main:
     {
       if (life[1] <= (int)*(int *)&DAT_008cfd70[4] / 2)
       {
-        FUN_004b5fc9("'Ouch, that hurt.'");
+        show_opponent_taunt("'Ouch, that hurt.'");
       }
       attacking_creature_count = 0;
       current_phase = PHASE_MAIN2;
@@ -1343,7 +1343,7 @@ advance_to_postcombat_main:
     }
     else if (life[0] <= life[1] / 2)
     {
-      FUN_004b5fc9("'Give up, you're doomed.'");
+      show_opponent_taunt("'Give up, you're doomed.'");
     }
   }
   if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (current_phase != PHASE_MAIN2))

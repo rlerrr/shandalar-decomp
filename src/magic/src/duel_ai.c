@@ -24,7 +24,7 @@ int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATI
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
 void resolve_mana_burn(void);
 int check_duel_finished(void);
-void FUN_004b5fc9(char *text);
+void show_opponent_taunt(char *text);
 void FUN_00464bb0(void);
 int get_duel_thread_time_ms(void);
 int put_card_on_stack(int player, int card, int pay_costs);
@@ -44,7 +44,7 @@ void mark_blocked_attackers(int player);
 void resolve_combat_damage(int player);
 void reassess_all_cards_and_mana(void);
 int GetCardRarity(int card_id);
-int FUN_004e1b84(void);
+int reset_duel_tick_timer_indirect(void);
 void update_duel_thread_time_marker(void);
 void StopWorldLocationMusic(void);
 void __cdecl _assert(void *expr, void *filename, unsigned line);
@@ -53,7 +53,7 @@ int is_in_play(int player, int card);
 int has_mana(int player, color_t color, int amount);
 int player_has_available_blocker(int player);
 int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
-void get_landwalk_evasion_masks(unsigned int *param_1, unsigned int *param_2);
+void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *out_basic_land_mask);
 int can_block_attacker_with_abilities(int blocker_player, int blocker_card, int attacker_player, int attacker_card, unsigned int attacker_abilities,
                                       unsigned int evasion_mask);
 int play_sound_effect(int sound_id);
@@ -880,7 +880,7 @@ int ai_opinion_of_gamestate(int player)
 
   if (DAT_00712544 != 0)
   {
-    strcpy(unk_00748770, "");
+    strcpy(g_duel_text_scratch_buffer, "");
   }
 
   for (s.current_player = 0; s.current_player < 2; s.current_player = s.current_player + 1)
@@ -1050,9 +1050,9 @@ int ai_opinion_of_gamestate(int player)
       if ((DAT_00712544 & 2) != 0 && s.current_player + 2 == DAT_00712544)
       {
         append_displayed_card_name(s.current_player, s.card);
-        strcat(unk_00748770, " ");
-        strcat(unk_00748770, _itoa(s.card_value, ai_action_dialog_number_buffer, 10));
-        strcat(unk_00748770, "\n");
+        strcat(g_duel_text_scratch_buffer, " ");
+        strcat(g_duel_text_scratch_buffer, _itoa(s.card_value, ai_action_dialog_number_buffer, 10));
+        strcat(g_duel_text_scratch_buffer, "\n");
       }
     }
 
@@ -1304,13 +1304,13 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
     int action_index;
   } s;
 
-  strcpy(unk_00748770, "AI:");
-  strcat(unk_00748770, _itoa(score, ai_action_dialog_number_buffer, 10));
-  strcat(unk_00748770, " L:");
-  strcat(unk_00748770, _itoa(life[0], ai_action_dialog_number_buffer, 10));
-  strcat(unk_00748770, "/");
-  strcat(unk_00748770, _itoa(life[1], ai_action_dialog_number_buffer, 10));
-  strcat(unk_00748770, " ...\n");
+  strcpy(g_duel_text_scratch_buffer, "AI:");
+  strcat(g_duel_text_scratch_buffer, _itoa(score, ai_action_dialog_number_buffer, 10));
+  strcat(g_duel_text_scratch_buffer, " L:");
+  strcat(g_duel_text_scratch_buffer, _itoa(life[0], ai_action_dialog_number_buffer, 10));
+  strcat(g_duel_text_scratch_buffer, "/");
+  strcat(g_duel_text_scratch_buffer, _itoa(life[1], ai_action_dialog_number_buffer, 10));
+  strcat(g_duel_text_scratch_buffer, " ...\n");
 
   for (s.action_index = 0; (s.action_count = use_saved_actions != 0 ? saved_recorded_action_count : recorded_action_count) > s.action_index; s.action_index++)
   {
@@ -1327,23 +1327,23 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
     {
       if ((s.action_flags & 0x1000) != 0)
       {
-        strcat(unk_00748770, "Cast ");
+        strcat(g_duel_text_scratch_buffer, "Cast ");
       }
       if ((s.action_flags & 0x2000) != 0)
       {
-        strcat(unk_00748770, "Tap ");
+        strcat(g_duel_text_scratch_buffer, "Tap ");
       }
       if ((s.action_flags & 0x4000) != 0)
       {
-        strcat(unk_00748770, "...target ");
+        strcat(g_duel_text_scratch_buffer, "...target ");
       }
       if ((s.action_flags & 0x100) == 0)
       {
-        strcat(unk_00748770, "e");
+        strcat(g_duel_text_scratch_buffer, "e");
       }
       if ((s.action_flags & 0xff) == 0xff)
       {
-        strcat(unk_00748770, "Player");
+        strcat(g_duel_text_scratch_buffer, "Player");
       }
       else
       {
@@ -1355,13 +1355,13 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
         {
           s.internal_card_id = unk_006a8258[s.action_index];
         }
-        strcat(unk_00748770, global_cards_data[s.internal_card_id].name);
+        strcat(g_duel_text_scratch_buffer, global_cards_data[s.internal_card_id].name);
       }
-      strcat(unk_00748770, "\n");
+      strcat(g_duel_text_scratch_buffer, "\n");
     }
   }
 
-  do_dialog(0, 0, 0, -1, -1, unk_00748770, 0);
+  do_dialog(0, 0, 0, -1, -1, g_duel_text_scratch_buffer, 0);
   return 0;
 }
 
@@ -1376,7 +1376,7 @@ void start_ai_decision_search(int decision_code, int time_scale)
   DAT_00775d3c = 1 << (unsigned char)(internal_rand(5) + 1);
 
   save_ai_search_state();
-  FUN_004e1b84();
+  reset_duel_tick_timer_indirect();
   update_duel_thread_time_marker();
 
   ai_search_try_count = 0;

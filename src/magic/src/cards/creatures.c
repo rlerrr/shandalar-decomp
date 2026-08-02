@@ -144,7 +144,7 @@ int card_elven_riders(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048b71c
 int card_hypnotic_specter(int player, int card, event_t event)
 {
-  if ((event == EVENT_DEAL_DAMAGE) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4))
+  if ((event == EVENT_DEAL_DAMAGE) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == damage_card_internal_card_id))
   {
     if ((PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == -1) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_player == player) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_card == card) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0))
     {
@@ -191,7 +191,7 @@ int card_nafs_asp(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0053dfb5
 // FUNCTION: SHANDALAR 0x0048c204
-int FUN_0053dfb5(int player, int card)
+int create_damage_effect_copy_for_target_player(int player, int card)
 {
   struct
   {
@@ -200,7 +200,7 @@ int FUN_0053dfb5(int player, int card)
   } s;
 
   s.target_player = (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-  s.effect_card = add_card_to_hand(s.target_player, DAT_008a918c);
+  s.effect_card = add_card_to_hand(s.target_player, damage_effect_internal_card_id);
   if (s.effect_card != -1)
   {
     PLAYER_CARD_INSTANCE(s.target_player, s.effect_card).state |= STATE_IN_PLAY;
@@ -274,7 +274,7 @@ int card_personal_incarnation(int player, int card, event_t event)
       }
 
       if (!C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
-                                COLOR_TEST_0, COLOR_TEST_0, unk_009266a4, ~SUB_WALL,
+                                COLOR_TEST_0, COLOR_TEST_0, damage_card_internal_card_id, ~SUB_WALL,
                                 -1, -1, 0, 0, 0, text_lines[0], 1, &target))
       {
         spell_fizzled = 1;
@@ -1009,7 +1009,7 @@ int card_ghost_ship(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, 2, 3);
+    return generic_regeneration_ability(player, card, event, 2, 3);
   }
 
   return 0;
@@ -1017,7 +1017,7 @@ int card_ghost_ship(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0054276d
 // FUNCTION: SHANDALAR 0x004909b0
-int FUN_0054276d(int player, int card, event_t event, unsigned int color, int amount)
+int generic_regeneration_ability(int player, int card, event_t event, unsigned int color, int amount)
 {
   int can_activate;
 
@@ -1065,7 +1065,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
   else if (event == EVENT_RESOLVE_ACTIVATION && (land_can_be_played & 0x200) != 0)
   {
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot = 0;
-    FUN_00542a2a(card_on_stack_controller, card_on_stack);
+    regenerate_card(card_on_stack_controller, card_on_stack);
     return 0;
   }
 
@@ -1074,7 +1074,7 @@ int FUN_0054276d(int player, int card, event_t event, unsigned int color, int am
 
 // FUNCTION: MAGIC 0x00542a2a
 // FUNCTION: SHANDALAR 0x00490c6d
-void FUN_00542a2a(int player, int card)
+void regenerate_card(int player, int card)
 {
   struct
   {
@@ -1112,7 +1112,7 @@ void FUN_00542a2a(int player, int card)
     PLAYER_CARD_INSTANCE(player, card).kill_code = 0;
     PLAYER_CARD_INSTANCE(player, card).unknown0x14 = 0;
     PLAYER_CARD_INSTANCE(player, card).damage_on_card = 0;
-    FUN_004f7783(player, card);
+    tap_card_and_dispatch_event(player, card);
     if (g_duel_ai_mode_state != 1)
     {
       play_sound_effect(WAV_REGEN);
@@ -1139,7 +1139,7 @@ int card_uthden_troll(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, color, 1);
+    return generic_regeneration_ability(player, card, event, color, 1);
   }
 
   return 0;
@@ -2035,7 +2035,7 @@ int card_samite_healer(int player, int card, event_t event)
                                 0,
                                 0,
                                 0,
-                                unk_009266a4,
+                                damage_card_internal_card_id,
                                 -1,
                                 -1,
                                 -1,
@@ -2075,7 +2075,7 @@ int card_samite_healer(int player, int card, event_t event)
                              0,
                              COLOR_TEST_0,
                              COLOR_TEST_0,
-                             unk_009266a4,
+                             damage_card_internal_card_id,
                              -1,
                              -1,
                              -1,
@@ -2115,7 +2115,7 @@ int card_samite_healer(int player, int card, event_t event)
                                0,
                                COLOR_TEST_0,
                                COLOR_TEST_0,
-                               unk_009266a4,
+                               damage_card_internal_card_id,
                                -1,
                                -1,
                                -1,
@@ -2246,7 +2246,7 @@ int card_zombie_master(int player, int card, event_t event)
 
   if (((event == EVENT_GRAVEYARD_FROM_PLAY) && (affected_card == card)) && (player == affected_card_controller))
   {
-    dispatch_three_arg_callback_to_cards_in_play(FUN_005493a6, -1);
+    dispatch_three_arg_callback_to_cards_in_play(mark_zombie_as_nonregenerable, -1);
     TENTATIVE_reassess_all_cards(0, 0xff);
   }
 
@@ -2254,7 +2254,7 @@ int card_zombie_master(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x005493a6
-int FUN_005493a6(int player, int card, int internal_card_id)
+int mark_zombie_as_nonregenerable(int player, int card, int internal_card_id)
 {
   if (global_cards_data[internal_card_id].subtype == SUB_ZOMBIE)
   {
@@ -2270,7 +2270,7 @@ int card_scathe_zombies(int player, int card, event_t event)
 {
   if (((event == EVENT_CAN_ACTIVATE) || (event == EVENT_ACTIVATE)) || (event == EVENT_RESOLVE_ACTIVATION))
   {
-    return FUN_0054276d(player, card, event, 1, 1);
+    return generic_regeneration_ability(player, card, event, 1, 1);
   }
 
   return 0;
@@ -2347,7 +2347,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
     {
       load_text("prompts.txt", "PRODIGAL_SORCERER");
     }
-    FUN_0054ac4d(player, card, 1);
+    select_damage_target(player, card, 1);
     if (spell_fizzled != 1)
     {
       state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state;
@@ -2357,7 +2357,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    FUN_0054af10(player, card, event, 1);
+    deal_damage_to_selected_target(player, card, event, 1);
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .number_of_targets = 0;
@@ -2396,7 +2396,7 @@ int card_prodigal_sorcerer(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0054ac4d
 // FUNCTION: SHANDALAR 0x00498e8a
-int FUN_0054ac4d(int player, int card, int damage_unused)
+int select_damage_target(int player, int card, int damage_unused)
 {
   struct
   {
@@ -2524,7 +2524,7 @@ int FUN_0054ac4d(int player, int card, int damage_unused)
 
 // FUNCTION: MAGIC 0x0054af10
 // FUNCTION: SHANDALAR 0x0049914d
-int FUN_0054af10(int player, int card, event_t event, int amount)
+int deal_damage_to_selected_target(int player, int card, event_t event, int amount)
 {
   int source_player;
   int source_card;
@@ -2608,7 +2608,7 @@ int card_pirate_ship(int player, int card, event_t event)
     {
       load_text("prompts.txt", "PIRATE_SHIP");
     }
-    FUN_0054ac4d(player, card, 1);
+    select_damage_target(player, card, 1);
     if (spell_fizzled != 1)
     {
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
@@ -2617,7 +2617,7 @@ int card_pirate_ship(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    FUN_0054af10(player, card, event, 1);
+    deal_damage_to_selected_target(player, card, event, 1);
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .number_of_targets = 0;
@@ -2713,7 +2713,7 @@ int card_orcish_artillery(int player, int card, event_t event)
     {
       load_text("prompts.txt", "ORCISH_ARTILLERY");
     }
-    FUN_0054ac4d(player, card, 2);
+    select_damage_target(player, card, 2);
     if (spell_fizzled != 1)
     {
       PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
@@ -2723,7 +2723,7 @@ int card_orcish_artillery(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (FUN_0054af10(player, card, event, 2) != 0)
+    if (deal_damage_to_selected_target(player, card, event, 2) != 0)
     {
       damage_player(player, 3, card_on_stack_controller, card_on_stack);
     }
@@ -2751,7 +2751,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE && (land_can_be_played & 0x200) != 0)
   {
-    result = FUN_0054276d(player, card, EVENT_CAN_ACTIVATE, 0, 0);
+    result = generic_regeneration_ability(player, card, EVENT_CAN_ACTIVATE, 0, 0);
     if (C_get_special_counters(player, card) == 0)
     {
       result = 0;
@@ -2761,14 +2761,14 @@ int card_scavenging_ghoul(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE && (land_can_be_played & 0x200) != 0)
   {
-    result = FUN_0054276d(player, card, EVENT_ACTIVATE, 0, 0);
+    result = generic_regeneration_ability(player, card, EVENT_ACTIVATE, 0, 0);
     remove_special_counters(player, card, 1);
     return result;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION && (land_can_be_played & 0x200) != 0)
   {
-    return FUN_0054276d(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
+    return generic_regeneration_ability(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
   }
 
   if ((trigger_condition == 0xcd || event == 199) && affected_card == card && affected_card_controller == player && unk_008cfdac != 0 && player == current_turn)
@@ -2798,7 +2798,7 @@ int card_sengir_vampire(int player, int card, event_t event)
     int tracked;           /* [ebp-0x04] */
   } s;
 
-  if (event == 0x6e && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)
+  if (event == 0x6e && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == damage_card_internal_card_id && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)
   {
     if (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_card == card && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_player == player && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card != -1)
     {
@@ -3124,7 +3124,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
 
   if (event == EVENT_CHECK_UPK_PAYMENT)
   {
-    if (FUN_0054dccd(player, card) == 0)
+    if (has_other_creature_in_play(player, card) == 0)
     {
       event_result |= 1;
     }
@@ -3138,7 +3138,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
 
   if (event == EVENT_SHOULD_AI_PLAY)
   {
-    if (FUN_0054dccd(player, card) == 0)
+    if (has_other_creature_in_play(player, card) == 0)
     {
       ++ai_modifier;
     }
@@ -3148,7 +3148,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && affected_card == card && affected_card_controller == player)
   {
     ++PLAYER_CARD_INSTANCE(player, card).info_slot;
-    if (FUN_0054dccd(player, card) == 0)
+    if (has_other_creature_in_play(player, card) == 0)
     {
       event_result |= 1;
     }
@@ -3198,7 +3198,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0054dccd
 // FUNCTION: SHANDALAR 0x0049bf0e
-int FUN_0054dccd(int player, int card)
+int has_other_creature_in_play(int player, int card)
 {
   int current_card;
 
@@ -3284,7 +3284,7 @@ int card_white_knight(int player, int card, event_t event)
   {
     event_result |= KEYWORD_PROT_BLACK << ((get_sleighted_color(player, card, COLOR_BLACK) - 1U));
     saved_event_result = event_result;
-    FUN_0054e470(player, card, COLOR_BLACK);
+    destroy_attached_auras_of_color(player, card, COLOR_BLACK);
     event_result = saved_event_result;
   }
 
@@ -3301,7 +3301,7 @@ int card_black_knight(int player, int card, event_t event)
   {
     event_result |= 0x800 << (get_sleighted_color(player, card, 5) - 1U);
     saved_event_result = event_result;
-    FUN_0054e470(player, card, 5);
+    destroy_attached_auras_of_color(player, card, 5);
     event_result = saved_event_result;
   }
 
@@ -3310,7 +3310,7 @@ int card_black_knight(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0054e470
 // FUNCTION: SHANDALAR 0x0049c6b1
-void FUN_0054e470(int player, int card, int color)
+void destroy_attached_auras_of_color(int player, int card, int color)
 {
   int test_player;
   int test_card;

@@ -536,9 +536,9 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
                              FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-int FUN_00578c80(int ignored_result);
-int FUN_00578c20(void);
-int FUN_00578c30(void);
+int IgnoreFontConfigLoadResult(int ignored_result);
+int InitializeLegacyMouseStub(void);
+int ShutdownLegacyMouseStub(void);
 void *InitializeGraphicsSystemDefaultMode(void);
 void SetGraphicsPage(int page_number, void *page);
 void PresentGraphicsPage(int page_number);
@@ -555,7 +555,7 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
 DWORD WINAPI AdventureWorkerThread(LPVOID);
-void FUN_00578c70(int unused_a, int unused_b, int unused_c);
+void NoopSetSpecialSprite(int unused_a, int unused_b, int unused_c);
 char *BuildResolutionSpritePath(char *sprite_filename);
 int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entries, char *path, int max_entries);
 void LoadTownHintMetadata(void);
@@ -767,7 +767,7 @@ int RunAdventureSession(void)
 
   LoadTownHintMetadata();
   LoadCardRaritiesAndCsvOffsets();
-  FUN_00578c70(1, 1, (int)g_ttsprite_special_sprite_a);
+  NoopSetSpecialSprite(1, 1, (int)g_ttsprite_special_sprite_a);
   ShowMouseCursorNested();
   HideMouseCursorNested();
   s.temp_value = GdiGetBatchLimit();
@@ -6579,9 +6579,9 @@ DWORD WINAPI AdventureWorkerThread(LPVOID unused)
   strcpy(g_ini_string_scratch, "");
   g_done_text_table_entry = LoadIniEscapedStringTable(g_advbuttons_ini_file, "done", g_ini_string_scratch, 0)[0];
 
-  FUN_00578c80(LoadFontConfigIfPresent("misc.exe", (char *)0));
-  FUN_00578c80(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
-  FUN_00578c80(LoadFontConfigIfPresent("nsound.cvl", (char *)0));
+  IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("misc.exe", (char *)0));
+  IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
+  IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("nsound.cvl", (char *)0));
 
   if (global_screen_width == 0x280)
   {
@@ -6648,7 +6648,7 @@ DWORD WINAPI AdventureWorkerThread(LPVOID unused)
   g_page0_window_bounds->font_slot = 1;
 
   PresentGraphicsPage(0);
-  g_legacy_mouse_active = FUN_00578c20();
+  g_legacy_mouse_active = InitializeLegacyMouseStub();
   do
   {
     RunAdventureSession();
@@ -6657,7 +6657,7 @@ DWORD WINAPI AdventureWorkerThread(LPVOID unused)
   UnloadFontSlot(5);
   if (g_legacy_mouse_active != 0)
   {
-    FUN_00578c30();
+    ShutdownLegacyMouseStub();
   }
 
   PostMessageA(g_main_window_hwnd, 0x10, 0, 0);

@@ -39,7 +39,7 @@ void get_next_battlefield_card_position(HWND parent, int *rect, int value, int *
 int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
 int get_displayed_card_blocking(int player, int card);
 void get_current_duel_selection(int *selected_player, int *selected_card);
-void FUN_00538e3d(int *player, int *phase, char *unused);
+void get_next_phase_stop(int *player, int *phase, char *unused);
 void show_territory_options_dialog(HWND hwnd);
 void refresh_duel_window(HWND hwnd);
 void set_player_directive_value(int player, int value);
@@ -168,14 +168,14 @@ int g_territory_command_packet[3];
 
 // GLOBAL: MAGIC 0x00789720
 // GLOBAL: SHANDALAR 0x007a04b0
-char DAT_00789720[0x100];
+char g_custom_duel_action_text[0x100];
 
 // GLOBAL: MAGIC 0x00925ae4
-int DAT_00925ae4;
+int g_territory_popup_action_flags;
 
 // FUNCTION: MAGIC 0x00538e3d
 // FUNCTION: SHANDALAR 0x0055d661
-void FUN_00538e3d(int *player, int *phase, char *text)
+void get_next_phase_stop(int *player, int *phase, char *text)
 {
   struct
   {
@@ -982,7 +982,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
       break;
     case 0x64:
-      FUN_00538e3d(&stop_phase_player, &stop_phase, NULL);
+      get_next_phase_stop(&stop_phase_player, &stop_phase, NULL);
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
@@ -1119,11 +1119,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case WM_INITMENU:
     if (g_duel_modal_action_active != 0)
     {
-      if ((DAT_00925ae4 & 2) != 0)
+      if ((g_territory_popup_action_flags & 2) != 0)
       {
-        AppendMenuA(g_territory_popup_menu, MF_STRING, 0x66, DAT_00789720);
+        AppendMenuA(g_territory_popup_menu, MF_STRING, 0x66, g_custom_duel_action_text);
       }
-      if ((DAT_00925ae4 & 1) != 0)
+      if ((g_territory_popup_action_flags & 1) != 0)
       {
         AppendMenuA(g_territory_popup_menu, MF_STRING, 0x65, DAT_008ce680);
       }

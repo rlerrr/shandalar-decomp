@@ -27,21 +27,21 @@ void append_to_trace_txt(char *text);
 void AddCardToCLPacket(int card_in_packet);
 int GetCardFromCLPacket(int packet_index);
 void TENTATIVE_savegame(int autosave_slot);
-void FUN_004e4e75(void);
+void reset_recorded_actions(void);
 void update_phase_display(int player, phase_t phase);
 void layout_attack_phase_window(HWND hwnd);
 int update_duel_selection_display_if_human(int player, int phase);
 int player_can_stop_at_phase(int player, phase_t phase);
 void reset_trigger_dispatch_state(void);
-int FUN_0044b646(int *card_pairs, int card_pair_count, int player, int card);
+int contains_player_card_pair(int *card_pairs, int card_pair_count, int player, int card);
 int can_activate_mana_source_for_stop_prompt(int player, int card);
-int FUN_0044b7d4(int player, int card);
+int activate_mana_source_card(int player, int card);
 int prompt_stop_phase_anyway(phase_t phase);
 void resolve_mana_burn(void);
 int show_ai_action_log_dialog(int use_saved_actions, int score);
 int get_ai_search_elapsed_time(void);
-void FUN_00446036(void);
-int allow_response(int param_1, int param_2, char *prompt, int param_4);
+void clear_all_upkeep_flags(void);
+int allow_response(int response_player, int phase, char *prompt, int event_code);
 int dispatch_trigger(int player, trigger_t trig, const char *prompt, int TENTATIVE_allow_response);
 int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
 void start_ai_decision_search(int decision_code, int time_scale);
@@ -61,9 +61,9 @@ extern int g_duel_selected_opponent_card;
 extern int g_duel_selection_pending;
 extern int g_duel_current_selection_forced;
 #ifdef SHANDALAR
-int DAT_007a79b8;
+int g_manalink_is_host;
 #else
-extern int DAT_007a79b8;
+extern int g_manalink_is_host;
 #endif
 
 int init_turn(int player);
@@ -181,7 +181,7 @@ void reset_duel_globals(void)
   DAT_007a7d78 = 0;
   DAT_007abc80 = 0;
   DAT_007aaeec = 0;
-  DAT_007aadec = -1;
+  current_action_event_code = -1;
   if (g_shandalar_difficulty == 0)
   {
     DAT_00925ac4 |= 2;
@@ -216,8 +216,8 @@ void reset_duel_globals(void)
   }
 
   max_x_value = -1;
-  unk_008ce508 = -1;
-  unk_008ce4f4 = -1;
+  current_spell_player = -1;
+  current_spell_card = -1;
   DAT_009251d4 = 0;
   unk_007a79b0[other_player] = 0;
   unk_007a79b0[active_player] = unk_007a79b0[other_player];
@@ -528,7 +528,7 @@ int TENTATIVE_start_turn(int player)
     C_dispatch_event_raw(0x22);
     return 1;
   }
-  FUN_004e4e75();
+  reset_recorded_actions();
   current_phase = PHASE_START;
   update_phase_display(player, current_phase);
   C_dispatch_event_raw(0x6a);
@@ -693,7 +693,7 @@ void TENTATIVE_savegame(int autosave_slot)
 }
 
 // FUNCTION: MAGIC 0x004e4e75
-void FUN_004e4e75(void)
+void reset_recorded_actions(void)
 {
   recorded_action_count = 0;
   recorded_action_codes[recorded_action_count] = 99;
@@ -711,7 +711,7 @@ void update_phase_display(int player, phase_t phase)
 }
 
 // FUNCTION: MAGIC 0x00446036
-void FUN_00446036(void)
+void clear_all_upkeep_flags(void)
 {
   int card;
   int player;
@@ -904,13 +904,13 @@ int untap_phase_exe(unsigned int player)
           }
           else if ((g_target_selection_status_code == 0) && (s.selected_card != -1))
           {
-            if ((FUN_0044b646(s.must_untap_cards, s.must_untap_count, unk_00742fcc, s.selected_card) == 0) &&
-                (FUN_0044b646(s.optional_untap_cards, s.optional_untap_count, unk_00742fcc, s.selected_card) == 0))
+            if ((contains_player_card_pair(s.must_untap_cards, s.must_untap_count, unk_00742fcc, s.selected_card) == 0) &&
+                (contains_player_card_pair(s.optional_untap_cards, s.optional_untap_count, unk_00742fcc, s.selected_card) == 0))
             {
               if ((can_activate_mana_source_for_stop_prompt(unk_00742fcc, s.selected_card) != 0) &&
                   (unk_00742fcc == player))
               {
-                FUN_0044b7d4(unk_00742fcc, s.selected_card);
+                activate_mana_source_card(unk_00742fcc, s.selected_card);
               }
             }
             else
@@ -1059,7 +1059,7 @@ int upkeep_phase(unsigned int player)
   dispatch_trigger(player, 0xc9, gs_begin_upkeep_008cf080, 0);
   phase_response_window_open = 1;
   current_phase = PHASE_UPKEEP;
-  FUN_00446036();
+  clear_all_upkeep_flags();
   allow_response(-1, current_phase, gs_upkeep_phase_00777d30, PHASE_UPKEEP);
   phase_response_window_open = 0;
   dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xcb, gs_end_upkeep_00925c00, 0);
@@ -1544,7 +1544,7 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
     int opponent;
     int index;
     int loop_player;
-    int local_50;
+    int skip_cleanup_stop_prompt;
     int saved_special_mana[2][8];
     int saved_ai_flags;
     int ai_score;
@@ -1709,8 +1709,8 @@ int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int
   if (*next_state == -1)
   {
     current_phase = PHASE_CLEANUP2;
-    s.local_50 = 0;
-    if (s.local_50 == 0)
+    s.skip_cleanup_stop_prompt = 0;
+    if (s.skip_cleanup_stop_prompt == 0)
     {
       prompt_stop_phase_anyway(0x20);
     }
@@ -1741,7 +1741,7 @@ int AddCardToDeckSorted(int card_id)
     int location_block_start_index;
     unsigned int inner_index;
     int entry_index;
-    int local_4;
+    int candidate_sort_key;
   } s;
 
   if (GetCardRarity(card_id) >= 3)
@@ -1770,9 +1770,9 @@ int AddCardToDeckSorted(int card_id)
     }
 
     s.inner_index = (unsigned int)deck[s.location_block_start_index] & 0xfff;
-    s.local_4 = single_color_test_bit_to_color_t(global_cards_data[s.inner_index].color) * 0x20 + (int)global_cards_data[s.inner_index].name[0] +
-                (unsigned int)global_cards_data[s.inner_index].type * 0x100;
-    if (s.local_4 >= s.entry_index)
+    s.candidate_sort_key = single_color_test_bit_to_color_t(global_cards_data[s.inner_index].color) * 0x20 + (int)global_cards_data[s.inner_index].name[0] +
+                           (unsigned int)global_cards_data[s.inner_index].type * 0x100;
+    if (s.candidate_sort_key >= s.entry_index)
     {
       deck[s.location_block_start_index + 1] = card_id;
       card_id = (unsigned int)-1;
@@ -2465,7 +2465,7 @@ int play_duel(int player, int creature_type)
     }
     if ((g_duel_network_flags & 2) != 0)
     {
-      if (DAT_007a79b8 != 0)
+      if (g_manalink_is_host != 0)
       {
         g_network_result_packet_type = 1;
         g_network_result_value = 1 - s.starting_player;

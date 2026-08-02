@@ -350,7 +350,7 @@ void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
 
 // FUNCTION: MAGIC 0x004d6b78
 // FUNCTION: SHANDALAR 0x004607dd
-int FUN_004d6b78(HWND hwnd, HWND *windows, int window_count)
+int destroy_attack_window_tree(HWND hwnd, HWND *windows, int window_count)
 {
   int destroyed;
   int i;
@@ -360,7 +360,7 @@ int FUN_004d6b78(HWND hwnd, HWND *windows, int window_count)
   {
     if (windows[i] != (HWND)0 && (HWND)get_card_window_hidden_flag(windows[i]) == hwnd)
     {
-      FUN_004d6b78(windows[i], windows, window_count);
+      destroy_attack_window_tree(windows[i], windows, window_count);
       DestroyWindow(windows[i]);
       windows[i] = (HWND)0;
     }
@@ -381,7 +381,7 @@ int FUN_004d6b78(HWND hwnd, HWND *windows, int window_count)
 
 // FUNCTION: MAGIC 0x004e9751
 // FUNCTION: SHANDALAR 0x0050755e
-void FUN_004e9751(HWND parent_hwnd, HWND source_hwnd)
+void propagate_attack_window_selection(HWND parent_hwnd, HWND source_hwnd)
 {
   struct
   {
@@ -409,7 +409,7 @@ void FUN_004e9751(HWND parent_hwnd, HWND source_hwnd)
       SendMessageA(s.windows[s.i], 0x401, (WPARAM)s.player_and_card, 0);
       SendMessageA(g_duel_attack_phase_window_hwnd, 0x406,
                    (WPARAM)s.player_and_card, (LPARAM)s.attack_window);
-      FUN_004e9751(parent_hwnd, s.windows[s.i]);
+      propagate_attack_window_selection(parent_hwnd, s.windows[s.i]);
     }
   }
 }
@@ -1004,7 +1004,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
           if (s.groups[s.case402_i].attackers[s.case402_j] == s.case402_child_hwnd)
           {
             s.case402_found = 1;
-            FUN_004d6b78(s.case402_child_hwnd, s.groups[s.case402_i].attackers,
+            destroy_attack_window_tree(s.case402_child_hwnd, s.groups[s.case402_i].attackers,
                          s.groups[s.case402_i].attacker_count);
             s.case402_compact_index = 0;
             for (s.case402_compact_j = 0; s.case402_compact_j < s.groups[s.case402_i].attacker_count; s.case402_compact_j++)
@@ -1027,7 +1027,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
           if (s.groups[s.case402_i].blockers[s.case402_j] == s.case402_child_hwnd)
           {
             s.case402_found = 1;
-            FUN_004d6b78(s.case402_child_hwnd, s.groups[s.case402_i].blockers,
+            destroy_attack_window_tree(s.case402_child_hwnd, s.groups[s.case402_i].blockers,
                          s.groups[s.case402_i].blocker_count);
             s.case402_compact_index = 0;
             for (s.case402_compact_j = 0; s.case402_compact_j < s.groups[s.case402_i].blocker_count; s.case402_compact_j++)
@@ -1256,7 +1256,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
                   if (s.case412_child_hwnd == (HWND)0)
                   {
                     SendMessageA(hwnd, 0x401, (WPARAM)s.case412_player_and_card, 0);
-                    FUN_004e9751(GetParent(s.case412_battlefield_hwnd), s.case412_battlefield_hwnd);
+                    propagate_attack_window_selection(GetParent(s.case412_battlefield_hwnd), s.case412_battlefield_hwnd);
                     s.case412_changed = 1;
                     SendMessageA(GetParent(s.case412_battlefield_hwnd), 0x402,
                                  (WPARAM)s.case412_battlefield_hwnd, 0);
@@ -1274,7 +1274,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
                   if (s.case412_child_hwnd == (HWND)0)
                   {
                     SendMessageA(hwnd, 0x400, (WPARAM)s.case412_player_and_card, 0);
-                    FUN_004e9751(GetParent(s.case412_battlefield_hwnd), s.case412_battlefield_hwnd);
+                    propagate_attack_window_selection(GetParent(s.case412_battlefield_hwnd), s.case412_battlefield_hwnd);
                     s.case412_changed = 1;
                     SendMessageA(GetParent(s.case412_battlefield_hwnd), 0x402,
                                  (WPARAM)s.case412_battlefield_hwnd, 0);

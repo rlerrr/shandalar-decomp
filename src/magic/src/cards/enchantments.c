@@ -123,7 +123,7 @@ int card_consecrate_land(int player, int card, event_t event)
       instance->damage_target_player = instance->targets[0].player;
       instance->damage_target_card = instance->targets[0].card;
       *(int *)((char *)&PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card) + 0x14) |= 0x4000000;
-      dispatch_three_arg_callback_to_cards_in_play(FUN_00437375, -1);
+      dispatch_three_arg_callback_to_cards_in_play(destroy_other_auras_on_same_permanent, -1);
     }
     instance->number_of_targets = 0;
   }
@@ -158,7 +158,7 @@ int card_consecrate_land(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x00437375
-int FUN_00437375(int player, int card, int internal_card_id)
+int destroy_other_auras_on_same_permanent(int player, int card, int internal_card_id)
 {
   if ((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player ==
       (int)(char)PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player)
@@ -725,7 +725,7 @@ int card_lance(int player, int card, event_t event)
     load_text("promptsX1.txt", "LANCE");
   }
 
-  return FUN_0052d7a5(player, card, event, 0x100);
+  return generic_creature_ability_aura(player, card, event, 0x100);
 }
 
 // FUNCTION: MAGIC 0x0043af43
@@ -766,7 +766,7 @@ int card_lich(int player, int card, event_t event)
       unk_008b44d0[player] = 1;
     }
 
-    if (event == EVENT_DEAL_DAMAGE && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player == player && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == -1 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)
+    if (event == EVENT_DEAL_DAMAGE && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == damage_card_internal_card_id && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_player == player && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_target_card == -1 && PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)
     {
       instance->targets[instance->info_slot].player = affected_card_controller;
       instance->targets[instance->info_slot].card = affected_card;
@@ -786,7 +786,7 @@ int card_lich(int player, int card, event_t event)
         {
           damage_card = &PLAYER_CARD_INSTANCE(instance->targets[instance->info_slot - 1].player,
                                               instance->targets[instance->info_slot - 1].card);
-          FUN_0043b4f3(player, damage_card->info_slot);
+          sacrifice_permanents_for_lich_damage(player, damage_card->info_slot);
           --instance->info_slot;
           if (instance->info_slot == 0)
           {
@@ -816,7 +816,7 @@ int card_lich(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0043b4f3
-int FUN_0043b4f3(int player, int amount)
+int sacrifice_permanents_for_lich_damage(int player, int amount)
 {
   card_instance_t *instance;
   int max_targets;
@@ -942,7 +942,7 @@ int card_raging_river(int player, int card, event_t event)
     return player == active_player || (g_duel_network_flags & 2) != 0;
   }
 
-  if ((event == EVENT_RESOLVE_SPELL) && dispatch_function_to_all_cards_in_play(player, card, FUN_00483190, player) == -1)
+  if ((event == EVENT_RESOLVE_SPELL) && dispatch_function_to_all_cards_in_play(player, card, find_matching_active_control_effect, player) == -1)
   {
     *(int *)((char *)instance + 0x14) |= 0x1000000;
   }
@@ -1008,7 +1008,7 @@ int card_raging_river(int player, int card, event_t event)
     }
     else
     {
-      FUN_0043c7ab(defender, player, card);
+      divide_creatures_into_two_piles(defender, player, card);
     }
   }
 
@@ -1036,7 +1036,7 @@ int card_raging_river(int player, int card, event_t event)
 
   if (event == 0x77 && card == card_on_stack && player == card_on_stack_controller && ((*(unsigned char *)((char *)instance + 0x17) & 1) != 0))
   {
-    legacy_card = dispatch_function_to_all_cards_in_play(player, card, FUN_00483242, player);
+    legacy_card = dispatch_function_to_all_cards_in_play(player, card, find_matching_inactive_control_effect, player);
     if (legacy_card != -1)
     {
       *(int *)((char *)&PLAYER_CARD_INSTANCE(player, legacy_card) + 0x14) |= 0x1000000;
@@ -1048,7 +1048,7 @@ int card_raging_river(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0043c7ab
 // FUNCTION: SHANDALAR 0x004ff15c
-int FUN_0043c7ab(int who_is_being_divided, int player, int card)
+int divide_creatures_into_two_piles(int who_is_being_divided, int player, int card)
 {
   int bank;
   int current_card;

@@ -14,7 +14,7 @@
 
 int LoadTextSectionLines(char *filename, char *section_name);
 int load_text(const char *file_name, const char *section_name);
-void FUN_00491f1e(char *filename);
+void load_global_ui_strings(char *filename);
 
 typedef char text_20_t[0x14];
 typedef char text_50_t[0x32];

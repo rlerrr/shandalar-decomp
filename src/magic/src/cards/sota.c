@@ -184,7 +184,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
   {
     if (player == 1 - current_player && (g_duel_network_flags & 2) == 0)
     {
-      if (FUN_00466e6d(player, card, 1 - player))
+      if (select_land_for_cyclopean_tomb_ai(player, card, 1 - player))
       {
         instance->state |= STATE_TAPPED;
       }
@@ -252,7 +252,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x00466e6d
 // FUNCTION: SHANDALAR 0x0045659d
-int FUN_00466e6d(int player, int card, int target_player)
+int select_land_for_cyclopean_tomb_ai(int player, int card, int target_player)
 {
   card_instance_t *instance;
   int land_type;
@@ -472,7 +472,7 @@ int card_icy_manipulator(int player, int card, event_t event)
       }
       else
       {
-        FUN_004f7783(target.player, target.card);
+        tap_card_and_dispatch_event(target.player, target.card);
       }
       parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
       parent->number_of_targets = 0;
@@ -588,7 +588,7 @@ int card_living_wall(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, 0, 1);
+    return generic_regeneration_ability(player, card, event, 0, 1);
   }
 
   return 0;

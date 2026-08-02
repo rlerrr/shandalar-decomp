@@ -3,7 +3,7 @@
 #include "../global_duel_ui_ids.h"
 #include "../global_strings.h"
 
-int FUN_0053dfb5(int player, int card);
+int create_damage_effect_copy_for_target_player(int player, int card);
 
 // FUNCTION: MAGIC 0x004efd03
 // FUNCTION: SHANDALAR 0x004a9dc3
@@ -164,14 +164,14 @@ int card_damage(int player, int card, event_t event)
 
     if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                              PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-                .original_internal_card_id == DAT_008a918c &&
+                .original_internal_card_id == damage_effect_internal_card_id &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                            PLAYER_CARD_INSTANCE(player, card).damage_source_card)
           .eot_toughness = (unsigned int)(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player;
-      FUN_0053dfb5((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                    PLAYER_CARD_INSTANCE(player, card).damage_source_card);
+      create_damage_effect_copy_for_target_player((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
+                                            PLAYER_CARD_INSTANCE(player, card).damage_source_card);
     }
 
     if (PLAYER_CARD_INSTANCE(player, card).damage_target_card == -1)

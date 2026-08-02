@@ -108,7 +108,7 @@ int LoadTextSectionLines(char *filename, char *section_name)
 
 // FUNCTION: SHANDALAR 0x004629be
 // FUNCTION: MAGIC 0x00491f1e
-void FUN_00491f1e(char *filename)
+void load_global_ui_strings(char *filename)
 {
   int loaded_count;
   int color_index;

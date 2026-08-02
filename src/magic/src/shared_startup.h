@@ -30,7 +30,7 @@ int setup_paths_and_load_text_etc(char *message_buffer);
 int CopyRawCardNamesAndRarities(void);
 int InitMpstimeVxdTimer(void);
 void FreeBaseTextBuffer(void);
-void FUN_004432ff(void);
+void free_duel_interface_resource_buffer(void);
 void LoadDuelInterfaceRegistryOptions(void);
 int LoadRarityCsv(const char *filename);
 unsigned int setup_shared_startup(void);

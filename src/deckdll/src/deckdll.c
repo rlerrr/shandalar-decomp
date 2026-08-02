@@ -5481,7 +5481,7 @@ void draw_ownerdraw_button_item(DRAWITEMSTRUCT *item, HBRUSH brush, HPEN pen1, H
 }
 
 // FUNCTION: DECKDLL 0x1000942e
-static void FUN_1000942e(HWND hwnd, int csvid)
+static void NoopProcessHorzListCard(HWND hwnd, int csvid)
 {
   (void)hwnd;
   (void)csvid;
@@ -6620,7 +6620,7 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     for (s.artist_i = s.wLeft;
          MIN(s.wPicsInline + s.wLeft, s.wLast) > (int)s.artist_i;
          ++s.artist_i)
-      FUN_1000942e(global_horzlist_hwnd, s.horz_list_addr[s.artist_i]);
+      NoopProcessHorzListCard(global_horzlist_hwnd, s.horz_list_addr[s.artist_i]);
 
     BringWindowToTop(global_title_hwnd);
     BringWindowToTop(cardlistfilter_hwnd);

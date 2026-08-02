@@ -70,7 +70,7 @@ extern CRITICAL_SECTION g_card_render_lock;
 extern HDC g_shared_offscreen_dc;
 extern HINSTANCE g_app_instance;
 
-void FUN_0055b9f0(int dc, int *rect, int value);
+void draw_card_list_count(int dc, int *rect, int value);
 
 // TODO: cleanup this bucket of shit
 #ifdef SHANDALAR
@@ -82,7 +82,7 @@ void FUN_0055b9f0(int dc, int *rect, int value);
 
 // FUNCTION: MAGIC 0x0049fd0c
 // FUNCTION: SHANDALAR 0x0053b6af
-void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
+void create_card_list_gdi_objects(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
 {
   *brush1 = (int)CreateSolidBrush(0x10000c7);
   *pen1 = (int)CreatePen(0, 0, 0x1000086);
@@ -109,7 +109,7 @@ void FUN_0049fd0c(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int
 
 // FUNCTION: MAGIC 0x0049fdf9
 // FUNCTION: SHANDALAR 0x0053b79c
-void FUN_0049fdf9(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2)
+void delete_card_list_gdi_objects(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2)
 {
   if (brush1)
     DeleteObject(brush1);
@@ -184,7 +184,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     DAT_00638ba4 = (int *)lparam_data;
     SetWindowLongA(hwnd, 8, DAT_00638ba4[0x5df]);
     DAT_00638c08 = 0;
-    FUN_0049fd0c(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
+    create_card_list_gdi_objects(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
     SetWindowTextA(hwnd, (LPCSTR)*DAT_00638ba4);
     s.columns = DAT_00638ba4[0x5dd];
     DAT_00638b80 = (g_showlist_smallcard_width * 2) / 3;
@@ -253,7 +253,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     s.destroy_result = GetWindowLongA(hwnd, 8);
     if (s.destroy_result == 0)
     {
-      FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+      delete_card_list_gdi_objects((HGDIOBJ)DAT_00638c40,
                    (HGDIOBJ)DAT_00638b68,
                    (HGDIOBJ)DAT_00638c44,
                    (HGDIOBJ)DAT_00638b70,
@@ -270,7 +270,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     {
       if (s.command_has_selection == 0)
       {
-        FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+        delete_card_list_gdi_objects((HGDIOBJ)DAT_00638c40,
                      (HGDIOBJ)DAT_00638b68,
                      (HGDIOBJ)DAT_00638c44,
                      (HGDIOBJ)DAT_00638b70,
@@ -286,7 +286,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       }
       else
       {
-        FUN_0049fdf9((HGDIOBJ)DAT_00638c40,
+        delete_card_list_gdi_objects((HGDIOBJ)DAT_00638c40,
                      (HGDIOBJ)DAT_00638b68,
                      (HGDIOBJ)DAT_00638c44,
                      (HGDIOBJ)DAT_00638b70,
@@ -607,7 +607,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
     if (s.show_count_flag != 0)
     {
-      FUN_0055b9f0((int)g_shared_offscreen_dc, (int *)&s.client_rect, s.count);
+      draw_card_list_count((int)g_shared_offscreen_dc, (int *)&s.client_rect, s.count);
     }
 
     s.paint_dc = BeginPaint(card_window, &s.ps);
@@ -725,7 +725,7 @@ int show_cardlist(int *graveyard,
 
 // FUNCTION: MAGIC 0x0055b9f0
 // FUNCTION: SHANDALAR 0x00571d0e
-void FUN_0055b9f0(int dc, int *rect, int value)
+void draw_card_list_count(int dc, int *rect, int value)
 {
   struct
   {

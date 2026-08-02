@@ -267,7 +267,7 @@ int card_drowned(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, 1, 1);
+    return generic_regeneration_ability(player, card, event, 1, 1);
   }
 
   return 0;

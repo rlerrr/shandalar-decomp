@@ -6,7 +6,7 @@
 #include "global_state.h"
 #include "global_strings.h"
 
-int GetNextManaSymbol(char **param_1);
+int GetNextManaSymbol(char **text);
 
 extern int g_spell_minimized_hwnd;
 
@@ -33,8 +33,8 @@ int DAT_008a8dec;
 // GLOBAL: MAGIC 0x0093d840
 int DAT_0093d840;
 
-int FUN_0048930a(void);
-int FUN_00489362(void);
+int show_spell_window_for_target_selection(void);
+int restore_spell_window_after_target_selection(void);
 
 // FUNCTION: MAGIC 0x0055d91b
 int get_text_width_with_mana_symbols(HDC dc, char *text)
@@ -639,7 +639,7 @@ int C_real_select_target(int who_chooses,
       s.allow_ai_player = 0;
     }
 
-    s.window_was_visible = FUN_0048930a();
+    s.window_was_visible = show_spell_window_for_target_selection();
     s.retry_selection = 1;
     while (s.retry_selection != 0)
     {
@@ -649,7 +649,7 @@ int C_real_select_target(int who_chooses,
       }
       else
       {
-        s.selection_prompt = unk_00748770;
+        s.selection_prompt = g_duel_text_scratch_buffer;
       }
 
       s.result = run_target_selection_modal(who_chooses,
@@ -754,7 +754,7 @@ int C_real_select_target(int who_chooses,
 
     if (s.window_was_visible == 0)
     {
-      FUN_00489362();
+      restore_spell_window_after_target_selection();
     }
     if (s.result != 0)
     {
@@ -768,7 +768,7 @@ int C_real_select_target(int who_chooses,
 }
 
 // FUNCTION: MAGIC 0x0048930a
-int FUN_0048930a(void)
+int show_spell_window_for_target_selection(void)
 {
   int visible;
 
@@ -782,7 +782,7 @@ int FUN_0048930a(void)
 }
 
 // FUNCTION: MAGIC 0x00489362
-int FUN_00489362(void)
+int restore_spell_window_after_target_selection(void)
 {
   int hidden;
 

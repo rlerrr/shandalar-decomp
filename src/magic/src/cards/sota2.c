@@ -918,10 +918,10 @@ int card_rock_hydra(int player, int card, event_t event)
   int *piVar1;
   unsigned int uVar3;
   int iVar4;
-  unsigned int local_18;
-  target_t local_14;
-  int local_c;
-  int local_8;
+  unsigned int damage_prevented;
+  target_t selected_damage;
+  int legacy_card;
+  int valid_target_selected;
 
   if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
   {
@@ -934,15 +934,15 @@ int card_rock_hydra(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    local_c = create_legacy_effect(player, card, unk_0093d848, player, card);
-    if (local_c != -1)
+    legacy_card = create_legacy_effect(player, card, unk_0093d848, player, card);
+    if (legacy_card != -1)
     {
       uVar3 = C_get_special_counters(player, card);
-      PLAYER_CARD_INSTANCE(player, local_c).info_slot = (uVar3 << 8) | uVar3;
-      PLAYER_CARD_INSTANCE(player, local_c).eot_toughness = 0x40c;
-      PLAYER_CARD_INSTANCE(player, local_c).token_status = 0x10020;
+      PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = (uVar3 << 8) | uVar3;
+      PLAYER_CARD_INSTANCE(player, legacy_card).eot_toughness = 0x40c;
+      PLAYER_CARD_INSTANCE(player, legacy_card).token_status = 0x10020;
       PLAYER_CARD_INSTANCE(player, card).damage_source_player = (char)player;
-      PLAYER_CARD_INSTANCE(player, card).damage_source_card = local_c;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_card = legacy_card;
     }
   }
 
@@ -992,7 +992,7 @@ int card_rock_hydra(int player, int card, event_t event)
         charge_mana(player, 4, 1);
         if (spell_fizzled != 1)
         {
-          local_8 = 0;
+          valid_target_selected = 0;
           do
           {
             load_text("promptsX1.txt", "ROCK_HYDRA");
@@ -1006,7 +1006,7 @@ int card_rock_hydra(int player, int card, event_t event)
                                          0,
                                          0,
                                          0,
-                                         unk_009266a4,
+                                         damage_card_internal_card_id,
                                          -1,
                                          -1,
                                          -1,
@@ -1015,17 +1015,17 @@ int card_rock_hydra(int player, int card, event_t event)
                                          0,
                                          text_lines[0],
                                          1,
-                                         &local_14);
+                                         &selected_damage);
             if (iVar4 == 0)
             {
               spell_fizzled = 1;
             }
-            else if (PLAYER_CARD_INSTANCE(local_14.player, local_14.card).damage_source_player == player && PLAYER_CARD_INSTANCE(local_14.player, local_14.card).damage_source_card == card)
+            else if (PLAYER_CARD_INSTANCE(selected_damage.player, selected_damage.card).damage_source_player == player && PLAYER_CARD_INSTANCE(selected_damage.player, selected_damage.card).damage_source_card == card)
             {
-              PLAYER_CARD_INSTANCE(player, card).targets[0].player = local_14.player;
-              PLAYER_CARD_INSTANCE(player, card).targets[0].card = local_14.card;
+              PLAYER_CARD_INSTANCE(player, card).targets[0].player = selected_damage.player;
+              PLAYER_CARD_INSTANCE(player, card).targets[0].card = selected_damage.card;
               PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-              local_8 = 1;
+              valid_target_selected = 1;
             }
             else if (g_duel_ai_mode_state == 1)
             {
@@ -1037,7 +1037,7 @@ int card_rock_hydra(int player, int card, event_t event)
               Sleep(0x9c4);
               set_duel_prompt_text("");
             }
-          } while ((spell_fizzled != 1) && (local_8 == 0));
+          } while ((spell_fizzled != 1) && (valid_target_selected == 0));
         }
       }
     }
@@ -1072,7 +1072,7 @@ int card_rock_hydra(int player, int card, event_t event)
               0,
               COLOR_TEST_0,
               COLOR_TEST_0,
-              unk_009266a4,
+              damage_card_internal_card_id,
               ~SUB_WALL,
               -1,
               -1,
@@ -1100,24 +1100,24 @@ int card_rock_hydra(int player, int card, event_t event)
           .number_of_targets = 0;
     }
 
-    if ((((event == EVENT_DEAL_DAMAGE) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == unk_009266a4)) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_card == card)) && ((PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_player == player) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)))
+    if ((((event == EVENT_DEAL_DAMAGE) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id == damage_card_internal_card_id)) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_card == card)) && ((PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).damage_source_player == player) && (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot != 0)))
     {
       uVar3 = C_get_special_counters(player, card);
       if (PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot < (int)uVar3)
       {
-        local_18 = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot;
+        damage_prevented = PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot;
       }
       else
       {
-        local_18 = C_get_special_counters(player, card);
+        damage_prevented = C_get_special_counters(player, card);
       }
       piVar1 = &PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).info_slot;
-      *piVar1 -= local_18;
-      remove_special_counters(player, card, local_18);
+      *piVar1 -= damage_prevented;
+      remove_special_counters(player, card, damage_prevented);
       piVar1 = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card)
                     .info_slot;
-      *piVar1 -= (local_18 << 8) | local_18;
+      *piVar1 -= (damage_prevented << 8) | damage_prevented;
     }
     iVar4 = 0;
   }
@@ -1165,7 +1165,7 @@ int card_sedge_troll(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, 1, 1);
+    return generic_regeneration_ability(player, card, event, 1, 1);
   }
 
   return 0;
@@ -1723,7 +1723,7 @@ static int veteran_bodyguard_prevent_damage_callback(int source_player,
   s.source_card_id = global_cards_data[PLAYER_CARD_INSTANCE(source_player, source_card).internal_card_id].id;
   s.preventer = &PLAYER_CARD_INSTANCE(player, card);
 
-  if (unk_009266a4 == internal_card_id && s.preventer->info_slot != 0 && s.preventer->damage_target_player == source_player && s.preventer->damage_target_card == -1 && ((s.source_card_id == CARD_ID_VETERAN_BODYGUARD && (s.preventer->token_status & 0x140000) != 0) || (s.source_card_id == CARD_ID_MARTYRS_OF_KORLIS && (s.preventer->eot_toughness & 0x40) != 0)))
+  if (damage_card_internal_card_id == internal_card_id && s.preventer->info_slot != 0 && s.preventer->damage_target_player == source_player && s.preventer->damage_target_card == -1 && ((s.source_card_id == CARD_ID_VETERAN_BODYGUARD && (s.preventer->token_status & 0x140000) != 0) || (s.source_card_id == CARD_ID_MARTYRS_OF_KORLIS && (s.preventer->eot_toughness & 0x40) != 0)))
   {
     s.protects_damage = 1;
   }

@@ -544,7 +544,7 @@ int card_clay_statue(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, 0, 2);
+    return generic_regeneration_ability(player, card, event, 0, 2);
   }
 
   return 0;
@@ -556,7 +556,7 @@ int card_diabolic_machine(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
   {
-    return FUN_0054276d(player, card, event, 0, 3);
+    return generic_regeneration_ability(player, card, event, 0, 3);
   }
 
   return 0;
@@ -605,7 +605,7 @@ int card_forcefield(int player, int card, event_t event)
                                 0,
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
-                                unk_009266a4,
+                                damage_card_internal_card_id,
                                 ~SUB_WALL,
                                 -1,
                                 -1,
@@ -655,7 +655,7 @@ int card_forcefield(int player, int card, event_t event)
                                0,
                                COLOR_TEST_0,
                                COLOR_TEST_0,
-                               unk_009266a4,
+                               damage_card_internal_card_id,
                                ~SUB_WALL,
                                -1,
                                -1,
@@ -788,7 +788,7 @@ int card_conservator(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((land_can_be_played & 4) == 0 || is_animated_and_sick(player, card) || (instance->state & STATE_TAPPED) || !has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3) || !real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, unk_009266a4, ~SUB_WALL, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
+    if ((land_can_be_played & 4) == 0 || is_animated_and_sick(player, card) || (instance->state & STATE_TAPPED) || !has_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 3) || !real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, damage_card_internal_card_id, ~SUB_WALL, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
     {
       return 0;
     }
@@ -825,7 +825,7 @@ int card_conservator(int player, int card, event_t event)
                                   0,
                                   COLOR_TEST_0,
                                   COLOR_TEST_0,
-                                  unk_009266a4,
+                                  damage_card_internal_card_id,
                                   ~SUB_WALL,
                                   -1,
                                   -1,
@@ -891,7 +891,7 @@ int card_conservator(int player, int card, event_t event)
                                   0,
                                   COLOR_TEST_0,
                                   COLOR_TEST_0,
-                                  unk_009266a4,
+                                  damage_card_internal_card_id,
                                   ~SUB_WALL,
                                   -1,
                                   -1,
@@ -1157,7 +1157,7 @@ int card_jayemdae_tome(int player, int card, event_t event)
   {
     int artifact_count;
 
-    artifact_count = FUN_00404cff(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, player);
+    artifact_count = count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, player);
     if (artifact_count != 0 && basiclandtypes_controlled[other_player][7] / artifact_count > 3)
     {
       ai_modifier += 0x30;
@@ -1328,7 +1328,7 @@ int card_meekstone(int player, int card, event_t event)
   int max_cards;
   int ai_delta;
 
-  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && FUN_00404cff(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1) != 0)
+  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1) != 0)
   {
     ai_modifier -= 0xf0;
   }
@@ -1484,7 +1484,7 @@ int card_jade_monolith(int player, int card, event_t event)
       }
       else
       {
-        FUN_00419667(selected_target.player, selected_target.card, player);
+        redirect_pending_damage_to_player(selected_target.player, selected_target.card, player);
       }
     }
   }
@@ -1493,7 +1493,7 @@ int card_jade_monolith(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x00419667
-void FUN_00419667(int target_player, int target_card, int damage_target_player)
+void redirect_pending_damage_to_player(int target_player, int target_card, int damage_target_player)
 {
   int current_player;
   int current_card;
@@ -1502,7 +1502,7 @@ void FUN_00419667(int target_player, int target_card, int damage_target_player)
   {
     for (current_card = 0; current_card < active_cards_count[current_player]; ++current_card)
     {
-      if (PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id == unk_009266a4 && (PLAYER_CARD_INSTANCE(current_player, current_card).state & 0x800002) == 2 && PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_player == target_player && PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_card == target_card)
+      if (PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id == damage_card_internal_card_id && (PLAYER_CARD_INSTANCE(current_player, current_card).state & 0x800002) == 2 && PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_player == target_player && PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_card == target_card)
       {
         PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id = -1;
         damage_player(damage_target_player,
@@ -1550,7 +1550,7 @@ int card_nevinyrral_s_disk(int player, int card, event_t event)
 
   if (event == 0x6c && affected_card == card && affected_card_controller == player)
   {
-    result = FUN_00404cff(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1);
+    result = count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1);
     if (result == 0)
     {
       ai_modifier += (landsofcolor_controlled[1 - player][2] - landsofcolor_controlled[player][2]) *
@@ -1750,7 +1750,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
         {
           load_text("prompts.txt", "ROD_OF_RUIN");
         }
-        FUN_0054ac4d(player, card, 1);
+        select_damage_target(player, card, 1);
         if (spell_fizzled != 1)
         {
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
@@ -1759,7 +1759,7 @@ int card_rod_of_ruin(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_ACTIVATION)
     {
-      FUN_0054af10(player, card, EVENT_RESOLVE_ACTIVATION, 1);
+      deal_damage_to_selected_target(player, card, EVENT_RESOLVE_ACTIVATION, 1);
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .number_of_targets = 0;
@@ -1776,7 +1776,7 @@ int card_winter_orb(int player, int card, event_t event)
   target_t selected_target;
   int current_card;
 
-  if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player && FUN_00404cff(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1) == 0)
+  if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player && count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1) == 0)
   {
     ai_modifier += (landsofcolor_controlled[other_player][7] - landsofcolor_controlled[active_player][7]) * 0xc;
   }
@@ -1799,7 +1799,7 @@ int card_winter_orb(int player, int card, event_t event)
       if (other_player == current_player && (g_duel_network_flags & 2) == 0)
       {
         selected_target.player = current_player;
-        selected_target.card = FUN_00534ddb(current_player, 1);
+        selected_target.card = choose_best_tapped_permanent_for_ai(current_player, 1);
         load_text("prompts.txt", "WINTERORB");
         do_dialog(player, player, card, selected_target.player, selected_target.card, text_lines[1], 0);
       }
@@ -1863,7 +1863,7 @@ int card_dragon_engine(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051ef24
 int card_clockwork_beast(int player, int card, event_t event)
 {
-  return FUN_0041c752(player, card, event, 7);
+  return generic_clockwork_creature(player, card, event, 7);
 }
 
 // FUNCTION: MAGIC 0x0041c72c
@@ -1874,12 +1874,12 @@ int card_clockwork_avian(int player, int card, event_t event)
 
 // FUNCTION: MAGIC 0x0041c752
 // FUNCTION: SHANDALAR 0x0051ef70
-int FUN_0041c752(int player, int card, int event, int amount)
+int generic_clockwork_creature(int player, int card, int event, int amount)
 {
   unsigned int special_counters;
   int old_max_x_value;
   int mana_result;
-  int local_zero;
+  int zero;
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
@@ -1920,9 +1920,9 @@ int FUN_0041c752(int player, int card, int event, int amount)
   else if (event == EVENT_GET_SELECTED_CARD)
   {
     mana_result = has_mana(player, COLOR_ANY, 1);
-    local_zero = 0;
+    zero = 0;
     special_counters = C_get_special_counters(player, card);
-    unk_00715fa8 = ClampIntToRange(amount - special_counters, local_zero, mana_result);
+    unk_00715fa8 = ClampIntToRange(amount - special_counters, zero, mana_result);
   }
   else
   {
@@ -1953,10 +1953,10 @@ int FUN_0041c752(int player, int card, int event, int amount)
                                                                   PLAYER_CARD_INSTANCE(player, card).parent_card)
                                                      .internal_card_id != -1)
     {
-      local_zero = 0;
+      zero = 0;
       mana_result = PLAYER_CARD_INSTANCE(player, card).info_slot;
       special_counters = C_get_special_counters(card_on_stack_controller, card_on_stack);
-      mana_result = ClampIntToRange(mana_result + special_counters, local_zero, amount);
+      mana_result = ClampIntToRange(mana_result + special_counters, zero, amount);
       set_special_counters(card_on_stack_controller, card_on_stack, mana_result);
     }
   }

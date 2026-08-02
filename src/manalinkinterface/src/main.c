@@ -5,10 +5,10 @@
 #include "inttypes.h"
 #include "mystdbool.h"
 
-void DebugLog(char *str, int idk);
+void DebugLog(char *str, int log_level);
 
 // GLOBAL: MANALINKINTERFACE 0x10008000
-undefined4 DAT_10008000 = 0x00006938;
+undefined4 g_fam_interface_mapping_size = 0x00006938;
 
 // GLOBAL: MANALINKINTERFACE 0x10009030
 HANDLE g_FamInterfaceGpd_handle = 0x00000000;
@@ -79,7 +79,7 @@ BOOL InitFamInterfaceGpd(void)
     BOOL success;
   } s;
 
-  g_FamInterfaceGpd_handle = CreateFileMappingA((HANDLE)0xffffffff, (LPSECURITY_ATTRIBUTES)0x0, 4, 0, DAT_10008000,
+  g_FamInterfaceGpd_handle = CreateFileMappingA((HANDLE)0xffffffff, (LPSECURITY_ATTRIBUTES)0x0, 4, 0, g_fam_interface_mapping_size,
                                                 "FamInterfaceGpd");
   if (g_FamInterfaceGpd_handle == (HANDLE)0x0)
   {
@@ -136,12 +136,12 @@ undefined4 FamInterface_Flush(void)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x1000129A
-undefined4 __cdecl FamInterface_SendPacket(int param_1, uint param_2)
+undefined4 __cdecl FamInterface_SendPacket(int packet, uint packet_type)
 {
   struct
   {
     char debugMsg[1024];
-    LPVOID local_8;
+    LPVOID packet_data;
   } s;
 
   while ((*g_FamInterfaceGpd_addr & 0x100) != 0)
@@ -156,18 +156,18 @@ undefined4 __cdecl FamInterface_SendPacket(int param_1, uint param_2)
       ReleaseMutex(g_fam_InterfaceMutex);
       return 10;
     }
-    if (*(uint *)(param_1 + 0x28) < 0x3400)
+    if (*(uint *)(packet + 0x28) < 0x3400)
     {
       *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x100;
-      g_FamInterfaceGpd_addr[4] = param_2;
-      g_FamInterfaceGpd_addr[5] = *(uint *)(param_1 + 0x20);
-      g_FamInterfaceGpd_addr[6] = *(uint *)(param_1 + 0x24);
-      g_FamInterfaceGpd_addr[7] = *(uint *)(param_1 + 0x28);
-      if (*(uint *)(param_1 + 0x28) > 0)
+      g_FamInterfaceGpd_addr[4] = packet_type;
+      g_FamInterfaceGpd_addr[5] = *(uint *)(packet + 0x20);
+      g_FamInterfaceGpd_addr[6] = *(uint *)(packet + 0x24);
+      g_FamInterfaceGpd_addr[7] = *(uint *)(packet + 0x28);
+      if (*(uint *)(packet + 0x28) > 0)
       {
-        s.local_8 = GlobalLock(*(HGLOBAL *)(param_1 + 0x2c));
-        memcpy(g_FamInterfaceGpd_addr + 8, s.local_8, *(size_t *)(param_1 + 0x28));
-        GlobalUnlock(*(HGLOBAL *)(param_1 + 0x2c));
+        s.packet_data = GlobalLock(*(HGLOBAL *)(packet + 0x2c));
+        memcpy(g_FamInterfaceGpd_addr + 8, s.packet_data, *(size_t *)(packet + 0x28));
+        GlobalUnlock(*(HGLOBAL *)(packet + 0x2c));
       }
       *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x40;
       ReleaseMutex(g_fam_InterfaceMutex);
@@ -185,7 +185,7 @@ undefined4 __cdecl FamInterface_SendPacket(int param_1, uint param_2)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x10001410
-undefined4 __cdecl FamInterface_ReceivePacket(uint param_1, int param_2)
+undefined4 __cdecl FamInterface_ReceivePacket(uint packet_type, int out_packet)
 {
   if (WaitForSingleObject(g_fam_InterfaceMutex, 0xffffffff) == 0)
   {
@@ -201,33 +201,33 @@ undefined4 __cdecl FamInterface_ReceivePacket(uint param_1, int param_2)
       return 10;
     }
 
-    if (g_FamInterfaceGpd_addr[0xd09] != param_1)
+    if (g_FamInterfaceGpd_addr[0xd09] != packet_type)
     {
       ReleaseMutex(g_fam_InterfaceMutex);
       return 4;
     }
 
-    *(uint *)(param_2 + 0x20) = g_FamInterfaceGpd_addr[0xd08];
-    *(uint *)(param_2 + 0x28) = g_FamInterfaceGpd_addr[0xd0a];
-    if (*(uint *)(param_2 + 0x28) > 0)
+    *(uint *)(out_packet + 0x20) = g_FamInterfaceGpd_addr[0xd08];
+    *(uint *)(out_packet + 0x28) = g_FamInterfaceGpd_addr[0xd0a];
+    if (*(uint *)(out_packet + 0x28) > 0)
     {
-      *(HGLOBAL *)(param_2 + 0x2c) = GlobalAlloc(0x42, *(size_t *)(param_2 + 0x28));
-      if (*(int *)(param_2 + 0x2c) == 0)
+      *(HGLOBAL *)(out_packet + 0x2c) = GlobalAlloc(0x42, *(size_t *)(out_packet + 0x28));
+      if (*(int *)(out_packet + 0x2c) == 0)
       {
         DebugLog("Could not lock down the packet's global data", 1);
-        *(undefined4 *)(param_2 + 0x20) = 0;
-        *(undefined4 *)(param_2 + 0x28) = 0;
-        *(undefined4 *)(param_2 + 0x2c) = 0;
+        *(undefined4 *)(out_packet + 0x20) = 0;
+        *(undefined4 *)(out_packet + 0x28) = 0;
+        *(undefined4 *)(out_packet + 0x2c) = 0;
         ReleaseMutex(g_fam_InterfaceMutex);
         return 1;
       }
 
-      memcpy(GlobalLock(*(HGLOBAL *)(param_2 + 0x2c)), g_FamInterfaceGpd_addr + 0xd0b, *(size_t *)(param_2 + 0x28));
-      GlobalUnlock(*(HGLOBAL *)(param_2 + 0x2c));
+      memcpy(GlobalLock(*(HGLOBAL *)(out_packet + 0x2c)), g_FamInterfaceGpd_addr + 0xd0b, *(size_t *)(out_packet + 0x28));
+      GlobalUnlock(*(HGLOBAL *)(out_packet + 0x2c));
     }
     else
     {
-      *(undefined4 *)(param_2 + 0x2c) = 0;
+      *(undefined4 *)(out_packet + 0x2c) = 0;
     }
     *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr & 0xffffff7f;
     ReleaseMutex(g_fam_InterfaceMutex);
@@ -238,7 +238,7 @@ undefined4 __cdecl FamInterface_ReceivePacket(uint param_1, int param_2)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x100015A4
-int __cdecl FamInterface_WaitForOpponent(uint param_1)
+int __cdecl FamInterface_WaitForOpponent(uint session_id)
 {
   int result = 1;
 
@@ -258,14 +258,14 @@ int __cdecl FamInterface_WaitForOpponent(uint param_1)
     Sleep(500);
   }
   *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x200;
-  g_FamInterfaceGpd_addr[1] = param_1;
+  g_FamInterfaceGpd_addr[1] = session_id;
   *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x20;
   while ((*g_FamInterfaceGpd_addr & 0x10) == 0)
   {
     Sleep(0);
   }
 
-  if (g_FamInterfaceGpd_addr[2] == param_1)
+  if (g_FamInterfaceGpd_addr[2] == session_id)
   {
     result = 0;
   }
@@ -288,17 +288,17 @@ undefined4 FamInterface_Taunt(void)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x100016B8
-undefined4 __cdecl FamInterface_SetDuelVersion(undefined1 param_1, undefined1 param_2)
+undefined4 __cdecl FamInterface_SetDuelVersion(undefined1 major_version, undefined1 minor_version)
 {
-  ((undefined1 *)(g_FamInterfaceGpd_addr))[0x6935] = param_1;
-  ((undefined1 *)(g_FamInterfaceGpd_addr))[0x6936] = param_2;
+  ((undefined1 *)(g_FamInterfaceGpd_addr))[0x6935] = major_version;
+  ((undefined1 *)(g_FamInterfaceGpd_addr))[0x6936] = minor_version;
   return 0;
 }
 
 // FUNCTION: MANALINKINTERFACE 0x100016E8
-undefined4 __cdecl FamInterface_SetDuelState(int param_1)
+undefined4 __cdecl FamInterface_SetDuelState(int in_duel)
 {
-  if (param_1 != 0)
+  if (in_duel != 0)
   {
     *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x8000;
   }
@@ -311,21 +311,21 @@ undefined4 __cdecl FamInterface_SetDuelState(int param_1)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x1000172A
-undefined4 __cdecl FamInterface_GetDuelState(uint *param_1)
+undefined4 __cdecl FamInterface_GetDuelState(uint *out_duel_state)
 {
-  *param_1 = *g_FamInterfaceGpd_addr & 0x8000;
+  *out_duel_state = *g_FamInterfaceGpd_addr & 0x8000;
   return 0;
 }
 
 // FUNCTION: MANALINKINTERFACE 0x1000174D
-undefined4 __cdecl FamInterface_PostDuelResult(uint param_1)
+undefined4 __cdecl FamInterface_PostDuelResult(uint duel_result)
 
 {
   /* 0x174d  10  FamInterface_PostDuelResult */
   if (((*g_FamInterfaceGpd_addr & 2) != 0) && ((*g_FamInterfaceGpd_addr & 0x8000) != 0))
   {
     *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x40000;
-    g_FamInterfaceGpd_addr[3] = param_1;
+    g_FamInterfaceGpd_addr[3] = duel_result;
   }
   return 0;
 }
@@ -390,7 +390,7 @@ undefined4 FamInterface_HasOpponent(void)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x100018BB
-undefined4 __cdecl FamInterface_SendFile(uint param_1, char *param_2)
+undefined4 __cdecl FamInterface_SendFile(uint file_type, char *filename)
 {
   if ((*g_FamInterfaceGpd_addr & 0x4000) == 0)
   {
@@ -405,8 +405,8 @@ undefined4 __cdecl FamInterface_SendFile(uint param_1, char *param_2)
   if ((*g_FamInterfaceGpd_addr & GPD_FLAGS_HAS_OPPONENT) != 0)
   {
     *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x2000;
-    g_FamInterfaceGpd_addr[0x1a0b] = param_1;
-    _mbscpy((char *)(g_FamInterfaceGpd_addr + 0x1a0c), param_2);
+    g_FamInterfaceGpd_addr[0x1a0b] = file_type;
+    _mbscpy((char *)(g_FamInterfaceGpd_addr + 0x1a0c), filename);
     *g_FamInterfaceGpd_addr = *g_FamInterfaceGpd_addr | 0x1000;
     return 0;
   }

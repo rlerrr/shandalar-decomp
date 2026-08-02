@@ -135,7 +135,7 @@ int card_guardian_angel(int player, int card, event_t event)
                                                           0,
                                                           COLOR_TEST_0,
                                                           COLOR_TEST_0,
-                                                          unk_009266a4,
+                                                          damage_card_internal_card_id,
                                                           ~SUB_WALL,
                                                           -1,
                                                           -1,
@@ -161,7 +161,7 @@ int card_guardian_angel(int player, int card, event_t event)
                               0,
                               COLOR_TEST_0,
                               COLOR_TEST_0,
-                              unk_009266a4,
+                              damage_card_internal_card_id,
                               ~SUB_WALL,
                               -1,
                               -1,
@@ -198,7 +198,7 @@ int card_guardian_angel(int player, int card, event_t event)
                                 0,
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
-                                unk_009266a4,
+                                damage_card_internal_card_id,
                                 ~SUB_WALL,
                                 -1,
                                 -1,
@@ -368,7 +368,7 @@ int card_psionic_blast(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
     load_text("promptsX1.txt", "PSIONIC_BLAST");
-    FUN_0054ac4d(player, card, 4);
+    select_damage_target(player, card, 4);
     if (player == other_player)
     {
       ai_modifier += (3 - PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).toughness) * 0xc;
@@ -377,7 +377,7 @@ int card_psionic_blast(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (FUN_0054af10(player, card, EVENT_RESOLVE_SPELL, 4) != 0)
+    if (deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, 4) != 0)
     {
       damage_player(player, 2, player, card);
     }

@@ -37,7 +37,7 @@ extern HINSTANCE g_app_instance;
 HBITMAP load_pic(char *filename);
 void delete_and_close_object(HANDLE obj);
 void change_buttonclass_wndproc(HWND hwnd);
-void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
+void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
 int handle_button_palette_message(int hwnd, unsigned int msg, int wparam, int lparam);
 int draw_masked_bitmap_left_half_to_rect(HDC dc, RECT *rect, HANDLE bitmap);
 
@@ -479,7 +479,7 @@ BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
     {
       s.button_text_color = g_choose_color_button_unfocus_text_color;
     }
-    FUN_004955ae(s.draw_item,
+    draw_owner_draw_button_centered(s.draw_item,
                  g_choose_color_button_brush,
                  g_choose_color_button_pen1,
                  g_choose_color_button_pen2,

@@ -98,9 +98,9 @@ int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_car
 int displayed_card_indices_invalid(int player, int card);
 extern int DAT_008ced00[16];
 #ifdef SHANDALAR
-int DAT_007a79b8;
+int g_manalink_is_host;
 #else
-extern int DAT_007a79b8;
+extern int g_manalink_is_host;
 #endif
 #ifndef SHANDALAR
 extern HANDLE global_mutex_GameInit;
@@ -121,7 +121,7 @@ int copy_cached_library_cards_and_get_count(void *cards, int player);
 void copy_opponent_name_prefix(char *name);
 void delete_and_close_object(HANDLE obj);
 void change_buttonclass_wndproc(HWND hwnd);
-void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
+void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
 BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -361,7 +361,7 @@ void notify_duel_action(int player, unsigned int value)
 
           if (((s.internal_card_id == -1) ||
                (((s.display_flags & 0x10000) != 0) && (g_duel_interface_options.show_invisible_effect_cards == 0))) ||
-              ((unk_009266a4 == s.internal_card_id) && (get_displayed_card_special_counters(s.player_index, s.card_index) == 0)))
+              ((damage_card_internal_card_id == s.internal_card_id) && (get_displayed_card_special_counters(s.player_index, s.card_index) == 0)))
           {
             SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
             SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
@@ -908,7 +908,7 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     char chat_text1[200];
     unsigned int chat_text1_length;
     CHAR tooltip_text1[100];
-    int local_f0;
+    int left_phasebar_x;
     int preview_height;
     int opponent_chat_y;
     int lower_life_y;
@@ -924,7 +924,7 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     int client_height;       // ebp - 0xb8
     POINT point;             // ebp - 0xb4
     int lower_middle_height; // ebp - 0xac
-    int local_ac;            // ebp - 0xa8
+    int left_phasebar_x_copy; // ebp - 0xa8
     int divider_width;       // ebp - 0xa4
     int chat_height;         // ebp - 0xa0
     int client_width;        // ebp - 0x9c
@@ -935,12 +935,12 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     int preview_left;        // ebp - 0x88
     int preview_top;         // ebp - 0x84
     int right_column_y;      // ebp - 0x80
-    int local_80;            // ebp - 0x7c
+    int player_row_y_copy;   // ebp - 0x7c
     int lower_phasebar_y;
     int right_chat_x;
     int player_chat_y;
     int opponent_life_y;
-    int local_70;
+    int player_row_y;
     int lower_phasebar_height;
     int small_chat_height;
     int battlefield_width;
@@ -1008,17 +1008,17 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     s.phasebar_height = s.half_phasebar_height;
     s.face_x = s.preview_x - s.phasebar_width;
     s.right_phasebar_x = s.face_x;
-    s.local_f0 = s.right_phasebar_x - s.lower_phasebar_y;
-    s.local_ac = s.local_f0;
+    s.left_phasebar_x = s.right_phasebar_x - s.lower_phasebar_y;
+    s.left_phasebar_x_copy = s.left_phasebar_x;
     s.opponent_phasebar_x = s.preview_top - s.half_phasebar_height;
     s.lower_middle_y = s.opponent_phasebar_x;
-    s.local_70 = s.preview_height + s.preview_top;
-    s.local_80 = s.local_70;
+    s.player_row_y = s.preview_height + s.preview_top;
+    s.player_row_y_copy = s.player_row_y;
     s.small_chat_height = s.preview_width - s.left_phasebar_width;
     s.player_life_x = s.rect.left;
     s.opponent_life_x = s.player_life_x;
     s.opponent_life_y = s.rect.top;
-    s.lower_life_y = s.half_phasebar_height + s.local_70;
+    s.lower_life_y = s.half_phasebar_height + s.player_row_y;
     s.top_middle_height = s.opponent_phasebar_x - s.opponent_life_y;
     s.player_life_height = s.rect.bottom - s.lower_life_y;
     s.face_top = s.preview_width + s.preview_left;
@@ -1048,10 +1048,10 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     MoveWindow(g_duel_life_status_window_1_hwnd, s.player_life_x, s.lower_life_y, s.small_chat_height, s.player_life_height, 1);
     MoveWindow(unk_00939344, s.preview_x, s.preview_y, s.left_phasebar_width, s.top_face_height, 1);
     MoveWindow(unk_008ce534, s.battlefield_width, s.player_face_x, s.left_phasebar_width, s.lower_middle_height, 1);
-    MoveWindow(DAT_0092680c, s.local_ac, s.lower_middle_y, s.lower_phasebar_y, s.phasebar_height, 1);
-    MoveWindow(DAT_0091ce30, s.local_f0, s.local_80, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(DAT_0092680c, s.left_phasebar_x_copy, s.lower_middle_y, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(DAT_0091ce30, s.left_phasebar_x, s.player_row_y_copy, s.lower_phasebar_y, s.phasebar_height, 1);
     MoveWindow(g_phasebar_your_untap_window_hwnd, s.right_phasebar_x, s.opponent_phasebar_x, s.phasebar_width, s.half_phasebar_height, 1);
-    MoveWindow(g_duel_player_graveyard_window_hwnd, s.face_x, s.local_70, s.phasebar_width, s.half_phasebar_height, 1);
+    MoveWindow(g_duel_player_graveyard_window_hwnd, s.face_x, s.player_row_y, s.phasebar_width, s.half_phasebar_height, 1);
     s.point.x = s.preview_left;
     s.point.y = s.preview_top;
     ClientToScreen(hwnd, &s.point);
@@ -1071,7 +1071,7 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     MoveWindow(DAT_008a8dec, s.face_top, s.face_y, s.divider_width, s.face_height, 1);
     MoveWindow(DAT_008a8d78, s.face_top, s.face_y, s.divider_width, s.face_height, 1);
     MoveWindow(g_duel_opponent_face_window_hwnd, s.opponent_life_x, s.opponent_life_y, s.left_phasebar_width + s.small_chat_height, s.top_face_height, 1);
-    MoveWindow(g_duel_player_face_window_hwnd, s.player_life_x, s.local_80, s.left_phasebar_width + s.small_chat_height, s.lower_middle_height, 1);
+    MoveWindow(g_duel_player_face_window_hwnd, s.player_life_x, s.player_row_y_copy, s.left_phasebar_width + s.small_chat_height, s.lower_middle_height, 1);
     s.point.x = s.opponent_chat_x;
     s.point.y = s.opponent_chat_y;
     ClientToScreen(hwnd, &s.point);
@@ -1118,17 +1118,17 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     s.phasebar_height = s.half_phasebar_height;
     s.face_x = (s.small_chat_height + s.opponent_life_x) - s.phasebar_width;
     s.right_phasebar_x = s.face_x;
-    s.local_f0 = s.opponent_life_x;
-    s.local_ac = s.local_f0;
+    s.left_phasebar_x = s.opponent_life_x;
+    s.left_phasebar_x_copy = s.left_phasebar_x;
     s.opponent_phasebar_x = s.opponent_life_y - s.phasebar_height;
     s.lower_middle_y = s.opponent_phasebar_x;
-    s.local_70 = s.player_life_height + s.lower_life_y;
-    s.local_80 = s.local_70;
+    s.player_row_y = s.player_life_height + s.lower_life_y;
+    s.player_row_y_copy = s.player_row_y;
     s.left_phasebar_width = s.small_chat_height;
     s.battlefield_width = s.opponent_life_x;
     s.preview_x = s.battlefield_width;
     s.preview_y = s.rect.top;
-    s.player_face_x = s.local_80 + s.phasebar_height;
+    s.player_face_x = s.player_row_y_copy + s.phasebar_height;
     s.top_face_height = s.lower_middle_y - s.rect.top;
     s.lower_middle_height = s.rect.bottom - s.player_face_x;
     s.face_top = s.left_phasebar_width + s.preview_x;
@@ -1158,10 +1158,10 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     MoveWindow(g_duel_life_status_window_1_hwnd, s.player_life_x, s.lower_life_y, s.small_chat_height, s.player_life_height, 1);
     MoveWindow(unk_00939344, s.preview_x, s.preview_y, s.left_phasebar_width, s.top_face_height, 1);
     MoveWindow(unk_008ce534, s.battlefield_width, s.player_face_x, s.left_phasebar_width, s.lower_middle_height, 1);
-    MoveWindow(DAT_0092680c, s.local_ac, s.lower_middle_y, s.lower_phasebar_y, s.phasebar_height, 1);
-    MoveWindow(DAT_0091ce30, s.local_f0, s.local_80, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(DAT_0092680c, s.left_phasebar_x_copy, s.lower_middle_y, s.lower_phasebar_y, s.phasebar_height, 1);
+    MoveWindow(DAT_0091ce30, s.left_phasebar_x, s.player_row_y_copy, s.lower_phasebar_y, s.phasebar_height, 1);
     MoveWindow(g_phasebar_your_untap_window_hwnd, s.right_phasebar_x, s.opponent_phasebar_x, s.phasebar_width, s.half_phasebar_height, 1);
-    MoveWindow(g_duel_player_graveyard_window_hwnd, s.face_x, s.local_70, s.phasebar_width, s.half_phasebar_height, 1);
+    MoveWindow(g_duel_player_graveyard_window_hwnd, s.face_x, s.player_row_y, s.phasebar_width, s.half_phasebar_height, 1);
     MoveWindow(g_duel_card_preview_window_hwnd, s.preview_left, s.preview_top, s.preview_width, s.preview_height, 1);
     MoveWindow(g_duel_help_owner_hwnd, s.right_battlefield_x, s.right_column_y, s.player_battlefield_width, s.top_battlefield_height, 1);
     SendMessageA(g_duel_help_owner_hwnd, 0x412, 0, 0);
@@ -1521,7 +1521,7 @@ BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LP
     {
       s.draw_color = g_post_duel_draws_button_unfocus_color;
     }
-    FUN_004955ae(s.draw_item,
+    draw_owner_draw_button_centered(s.draw_item,
                  g_post_duel_draws_button_brush,
                  g_post_duel_draws_button_pen1,
                  g_post_duel_draws_button_pen2,
@@ -2472,7 +2472,7 @@ void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name)
 
 // FUNCTION: MAGIC 0x004b5de8
 // FUNCTION: SHANDALAR 0x0056c5ea
-int GetCardRarity(int param_1)
+int GetCardRarity(int internal_card_id)
 {
   struct
   {
@@ -2480,19 +2480,19 @@ int GetCardRarity(int param_1)
     int rarity;
   } s;
 
-  if (((global_cards_data[param_1].extra_ability & 0x180U) != 0) || (global_cards_data[param_1].expansion == '@'))
+  if (((global_cards_data[internal_card_id].extra_ability & 0x180U) != 0) || (global_cards_data[internal_card_id].expansion == '@'))
   {
-    global_cards_data[param_1].rarity = 4;
+    global_cards_data[internal_card_id].rarity = 4;
   }
 
-  if ((signed char)global_cards_data[param_1].rarity != -1)
+  if ((signed char)global_cards_data[internal_card_id].rarity != -1)
   {
-    s.rarity = (int)(signed char)global_cards_data[param_1].rarity;
+    s.rarity = (int)(signed char)global_cards_data[internal_card_id].rarity;
 
     return s.rarity;
   }
 
-  ReadCsvFieldByCsvid(s.rarity_str, global_cards_data[param_1].id, 9, "info.csv");
+  ReadCsvFieldByCsvid(s.rarity_str, global_cards_data[internal_card_id].id, 9, "info.csv");
 
   s.rarity = 1;
 
@@ -2511,7 +2511,7 @@ int GetCardRarity(int param_1)
     s.rarity = 2;
   }
 
-  global_cards_data[param_1].rarity = (unsigned char)s.rarity;
+  global_cards_data[internal_card_id].rarity = (unsigned char)s.rarity;
 
   return s.rarity;
 }

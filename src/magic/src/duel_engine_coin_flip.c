@@ -24,7 +24,7 @@
 #endif
 
 extern HINSTANCE g_app_instance;
-extern int DAT_007a79b8;
+extern int g_manalink_is_host;
 extern int DAT_00638c08;
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
@@ -163,7 +163,7 @@ int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_of
   KillTimer(g_duel_window_hwnd, g_duel_timer_id);
   if ((g_duel_network_flags & 2) != 0)
   {
-    if (DAT_007a79b8 != 0)
+    if (g_manalink_is_host != 0)
     {
       g_network_result_packet_type = 1;
       s.animation_context.coin_result = rand() % 2;
@@ -558,7 +558,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         g_redraw_ante_waiting_for_both_network_choices = 1;
       }
       ShowWindow(GetDlgItem(hwnd, IDOK), SW_HIDE);
-      if (s.context->redraw_result != 0 && (s.context->ante_result == 0 || DAT_007a79b8 != 0))
+      if (s.context->redraw_result != 0 && (s.context->ante_result == 0 || g_manalink_is_host != 0))
       {
         SetDlgItemTextA(hwnd, 0x444, text_lines[10]);
         ShowWindow(GetDlgItem(hwnd, 0x444), SW_SHOW);
@@ -1484,7 +1484,7 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
     if ((g_duel_network_flags & 2) != 0)
     {
       s.coin_flip_context.coin_flip_result = coin_flip(starting_player_value, text_lines[0], 0);
-      if (DAT_007a79b8 != 0)
+      if (g_manalink_is_host != 0)
       {
         s.coin_flip_context.coin_winner = 1 - s.coin_flip_context.coin_flip_result;
       }

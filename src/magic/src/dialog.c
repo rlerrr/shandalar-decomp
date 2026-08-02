@@ -272,7 +272,7 @@ void append_displayed_card_name(int player, int card)
   card_name = get_displayed_card_name(player, card);
   if (card_name != NULL)
   {
-    strcat(unk_00748770, card_name);
+    strcat(g_duel_text_scratch_buffer, card_name);
   }
 }
 
@@ -700,11 +700,11 @@ int do_dialog(int who_chooses,
   }
 
   strcpy(s.displayed_options, options);
-  strcpy(unk_00748770, "");
+  strcpy(g_duel_text_scratch_buffer, "");
   if (who_chooses == other_player)
   {
-    sprintf(unk_00748770, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
-    strcat(unk_00748770, "\n\n");
+    sprintf(g_duel_text_scratch_buffer, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
+    strcat(g_duel_text_scratch_buffer, "\n\n");
     s.at_start_of_line = 1;
     s.remaining_choice = ai_choice;
     for (s.option_index = 0; s.option_index < 1000; ++s.option_index)
@@ -726,10 +726,10 @@ int do_dialog(int who_chooses,
   else
   {
     append_displayed_card_name(bigcard_player, bigcard_card);
-    strcat(unk_00748770, "...\n");
+    strcat(g_duel_text_scratch_buffer, "...\n");
   }
 
-  strcat(unk_00748770, s.displayed_options);
+  strcat(g_duel_text_scratch_buffer, s.displayed_options);
   if (PLAYER_CARD_INSTANCE(bigcard_player, bigcard_card).internal_card_id == -1 ||
       PLAYER_CARD_INSTANCE(smallcard_player, smallcard_card).internal_card_id == -1)
   {
@@ -746,7 +746,7 @@ int do_dialog(int who_chooses,
   }
 
   s.dialog_result =
-      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, unk_00748770, s.dialog_mode);
+      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, g_duel_text_scratch_buffer, s.dialog_mode);
 
   if (who_chooses == active_player && (g_duel_network_flags & 2) != 0)
   {

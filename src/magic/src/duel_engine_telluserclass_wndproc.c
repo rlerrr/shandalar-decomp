@@ -17,11 +17,11 @@ void draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE background_bitmap, HPE
                HPEN pen2, COLORREF text_color, int draw_focus, UINT format);
 void position_duel_prompt_context_window(HWND hwnd);
 void setup_duel_prompt_context_text_dc(HWND hwnd, HDC dc, int *rect);
-void FUN_004955ae(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2,
+void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2,
                   COLORREF color, int draw_focus);
 
 extern int g_duel_modal_action_active;
-extern char DAT_00789720[0x100];
+extern char g_custom_duel_action_text[0x100];
 
 // GLOBAL: MAGIC 0x0057b024
 // GLOBAL: SHANDALAR 0x00586190
@@ -117,7 +117,7 @@ int register_MAGIC_TellUserClass(LPCSTR class_name)
   g_tell_user_background_bitmap = load_pic(s.path);
   load_text(global_ui_strings_filename, "BUTTONLABELS");
   strcpy(DAT_008ce680, text_lines[0]);
-  strcpy(DAT_00789720, text_lines[1]);
+  strcpy(g_custom_duel_action_text, text_lines[1]);
   g_tell_user_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
   g_tell_user_button_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
   g_tell_user_border_pen_1 = CreatePen(0, 0, 0x10000cb);
@@ -303,7 +303,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
   case WM_DRAWITEM:
     s.draw_item = (DRAWITEMSTRUCT *)lparam;
     s.draw_item->itemState &= ~ODS_FOCUS;
-    FUN_004955ae(s.draw_item, g_tell_user_button_brush, g_tell_user_border_pen_1,
+    draw_owner_draw_button_centered(s.draw_item, g_tell_user_button_brush, g_tell_user_border_pen_1,
                  g_tell_user_border_pen_3, g_tell_user_button_text_color, 0);
     if (s.draw_item->CtlID == 1)
     {
@@ -311,7 +311,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
     }
     else if (s.draw_item->CtlID == 2)
     {
-      s.button_text = DAT_00789720;
+      s.button_text = g_custom_duel_action_text;
     }
     else
     {
@@ -443,7 +443,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
 
 // FUNCTION: MAGIC 0x004955ae
 // FUNCTION: SHANDALAR 0x00466049
-void FUN_004955ae(DRAWITEMSTRUCT *draw_item_struct, HBRUSH brush, HPEN pen1, HPEN pen2,
+void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item_struct, HBRUSH brush, HPEN pen1, HPEN pen2,
                   COLORREF color, int draw_focus)
 {
   draw_item(draw_item_struct, brush, (HANDLE)0, pen1, pen2, color, draw_focus,

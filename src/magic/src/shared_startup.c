@@ -199,15 +199,15 @@ int CardTypeFromID(int csvid)
 
 // FUNCTION: MAGIC 0x004a59ea
 // FUNCTION: SHANDALAR 0x00557b6a
-int CardInDeck(int param_1)
+int CardInDeck(int deck_entry)
 {
-  if (param_1 == -1)
+  if (deck_entry == -1)
   {
     return -1;
   }
   else
   {
-    return param_1 & 0x4000;
+    return deck_entry & 0x4000;
   }
 }
 
@@ -269,7 +269,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   strcat(global_savegame_path, "\\SaveGame");
   _mkdir(global_savegame_path);
 
-  FUN_00491f1e(global_ui_strings_filename);
+  load_global_ui_strings(global_ui_strings_filename);
 
   strcpy(s.path, global_base_directory);
   strcat(s.path, "\\CARDS.DAT");
@@ -438,7 +438,7 @@ void FreeBaseTextBuffer(void)
 
 // FUNCTION: SHANDALAR 0x004432ff
 // FUNCTION: MAGIC 0x00453b3c
-void FUN_004432ff(void)
+void free_duel_interface_resource_buffer(void)
 {
   if (DAT_00637a94 != 0)
   {
@@ -1256,22 +1256,22 @@ unsigned int setup_shared_startup(void)
 {
   struct
   {
-    unsigned int local_7d8;
-    char local_7d4[2000];
+    unsigned int result;
+    char startup_message[2000];
   } s;
 
-  s.local_7d8 = 1;
+  s.result = 1;
   if (g_shared_startup_lock_initialized == 0)
   {
     InitializeCriticalSection(&g_shared_startup_lock);
     g_shared_startup_lock_initialized = 1;
   }
-  s.local_7d4[0] = '\0';
-  s.local_7d8 |= setup_paths_and_load_text_etc(s.local_7d4);
+  s.startup_message[0] = '\0';
+  s.result |= setup_paths_and_load_text_etc(s.startup_message);
   LoadDuelInterfaceRegistryOptions();
   g_shared_startup_completed = 1;
   InitializeCriticalSection(&g_card_render_lock);
-  return s.local_7d8;
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x00422bea
@@ -1279,7 +1279,7 @@ unsigned int setup_shared_startup(void)
 void ShutdownSharedStartupResources(void)
 {
   FreeBaseTextBuffer();
-  FUN_004432ff();
+  free_duel_interface_resource_buffer();
   FreeRaritiesCsvRaw();
   DestroyCardArtPalette();
   checked_DeleteDC_DeleteObject(g_shared_offscreen_dc, g_shared_offscreen_bitmap);

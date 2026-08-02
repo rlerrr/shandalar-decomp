@@ -117,7 +117,7 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
     char *last_slash;           /* -0x4a4a4 */
     char cards_dat_path[0x108]; /* -0x4a4a0 */
     int card_count;             /* -0x4a398 */
-    int unk_4a394;              /* -0x4a394 */
+    int unused_header_value;    /* -0x4a394 */
     int idx;                    /* -0x4a390 */
     FILE *cards_file;           /* -0x4a38c */
     card_ptr_t records[2000];   /* -0x4a388 */
@@ -153,7 +153,7 @@ static BOOL CardArtLib_Initialize(HINSTANCE instance)
   if (s.cards_file != (FILE *)0x0)
   {
     fread(&s.card_count, 4, 1, s.cards_file);
-    fread(&s.unk_4a394, 4, 1, s.cards_file);
+    fread(&s.unused_header_value, 4, 1, s.cards_file);
     fread(s.records, 0x98, (size_t)s.card_count, s.cards_file);
 
     for (s.idx = 0; s.idx < s.card_count; s.idx = s.idx + 1)

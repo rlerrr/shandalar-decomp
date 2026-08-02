@@ -114,7 +114,7 @@ static int count_attack_phase_hidden_descendants(HWND hwnd, HWND parent_card_hwn
 static void set_attack_phase_window_title(HWND hwnd);
 
 // FUNCTION: MAGIC 0x004954ef
-int FUN_004954ef(char *text, COLORREF color, HBRUSH brush)
+int debug_draw_attack_phase_message(char *text, COLORREF color, HBRUSH brush)
 {
   struct
   {
@@ -487,7 +487,7 @@ void layout_attack_phase_window(HWND hwnd)
     return;
   }
 
-  FUN_004954ef("LayoutAttackCards", 0xff00ff, GetStockObject(LTGRAY_BRUSH));
+  debug_draw_attack_phase_message("LayoutAttackCards", 0xff00ff, GetStockObject(LTGRAY_BRUSH));
   DAT_0069c654 = 10;
   DAT_0069c6c0 = 10;
   DAT_0069c69c = (g_showlist_smallcard_width * 0xf) / 100;

@@ -713,9 +713,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
 {
   struct
   {
-    int local_a70;
-    int local_a6c;
-    int local_a68;
+    int unused_padding_a70;
+    int unused_padding_a6c;
+    int unused_padding_a68;
     int menu_item_count;
     int cards[500];
     unsigned int player;
@@ -738,8 +738,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
     int previous_card_id;
     HBITMAP background_bitmap;
     HWND captured_window;
-    int local_padding_4;
-    int local_padding_0;
+    int unused_padding_4;
+    int unused_padding_0;
   } s;
 
   switch (msg)
