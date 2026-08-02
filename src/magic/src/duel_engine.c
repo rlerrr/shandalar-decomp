@@ -743,7 +743,7 @@ WPARAM run_duel_engine_message_loop(void)
     s.result = (WPARAM)-1;
   }
 
-  unk_00742fc4 = 0;
+  duel_active = 0;
   g_duel_message_loop_active = 0;
   return s.result;
 }

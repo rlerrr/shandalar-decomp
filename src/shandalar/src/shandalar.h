@@ -45,8 +45,8 @@ typedef struct
 {
   int town_index;
   int timer;
-  int unk_08;
-  int unk_0c;
+  int overlap_next_world_magic_csvid;
+  int overlap_next_world_magic_price;
 } WorldMagicSlotTimer;
 
 #ifdef SHANDALAR

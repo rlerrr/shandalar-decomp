@@ -603,7 +603,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   g_duel_card_preview_window_hwnd = 0;
   DAT_008b4dd4 = 0;
   g_duel_message_loop_active = DAT_008b4dd4;
-  unk_00742fc4 = g_duel_message_loop_active;
+  duel_active = g_duel_message_loop_active;
   DAT_0074b62c = 0;
 
   load_binary_version_strings();

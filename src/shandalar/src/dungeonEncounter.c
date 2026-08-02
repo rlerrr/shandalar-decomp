@@ -40,16 +40,16 @@ typedef struct DungeonRuntimeState
   } encounter;                      // 0x000
   EncodedImage *button_sprite_blob; // 0x020
   int cell_tile_variants[171];      // 0x024
-  char unk_2d0[0x60];               // 0x2d0
+  char padding_2d0[0x60];               // 0x2d0
   int current_dungeon_index;        // 0x330
   int player_x;                     // 0x334
   int player_y;                     // 0x338
-  char unk_33c[0xec];               // 0x33c
+  char padding_33c[0xec];               // 0x33c
   int reveal_dirty;                 // 0x428
   EncodedImage *button_sprite_aux0; // 0x42c
   EncodedImage *button_sprite_aux1; // 0x430
   EncodedImage *button_sprite_aux2; // 0x434
-  char unk_438[0xf8];               // 0x438
+  char padding_438[0xf8];               // 0x438
 } DungeonRuntimeState;
 typedef char DungeonRuntimeState_size_must_be_0x530[(sizeof(DungeonRuntimeState) == 0x530) ? 1 : -1];
 
@@ -87,12 +87,12 @@ extern int g_world_lair_monster_sprite_widths[0x10];
 extern int g_world_location_music_track_id;
 extern int g_world_location_music_active;
 extern int DAT_00742fc0;
-extern int DAT_00742fd0;
-extern int DAT_007a7874;
-extern int DAT_007a7d10[4];
-extern int DAT_008ce538;
-extern int DAT_008cf6d0;
-extern int unk_00789308;
+extern int encounter_opening_hand_size_modifier;
+extern int current_encounter_strength;
+extern int ai_combat_value_weights[4];
+extern int current_encounter_color;
+extern int opponent_starting_card_id_1;
+extern int opponent_starting_card_id_2;
 extern int Gold;
 extern int life[2];
 extern int deck[500];
@@ -873,25 +873,25 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
       }
     }
   }
-  DAT_008ce538 = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
+  current_encounter_color = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
   if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
   {
-    unk_00789308 = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
+    opponent_starting_card_id_2 = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
   }
   s.creature_type = g_dungeon_runtime_state.encounter.selected.monster_creature_types[monster_slot];
-  DAT_007a7874 = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
-  DAT_00742fd0 = 0;
+  current_encounter_strength = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
+  encounter_opening_hand_size_modifier = 0;
   if (monster_slot != 4)
   {
-    DAT_007a7d10[0] = 0x10;
+    ai_combat_value_weights[0] = 0x10;
   }
   if (dungeon_index < 5)
   {
-    DAT_007a7874 = 2;
-    s.work_index = monster_slot + g_shandalar_difficulty + DAT_007a7874 - 5;
+    current_encounter_strength = 2;
+    s.work_index = monster_slot + g_shandalar_difficulty + current_encounter_strength - 5;
     if (s.work_index >= 0)
     {
-      DAT_008cf6d0 =
+      opponent_starting_card_id_1 =
           FindCardIndexByCsvid(((int (*)[3])g_dungeon_monster_duel_music_csvids)
                            [(char)g_castle_dungeon_slots[dungeon_index].color - 1][ClampIntToRange(s.work_index, 0, 2)]);
     }
@@ -907,7 +907,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   {
     sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0x10], BuildCreatureNameWithArticle(s.creature_type));
   }
-  if (DAT_008cf6d0 != -1)
+  if (opponent_starting_card_id_1 != -1)
   {
     s.work_index =
         ((int (*)[3])g_dungeon_monster_duel_music_csvids)[(char)g_castle_dungeon_slots[dungeon_index].color - 1]
@@ -916,7 +916,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
                                                 gs_dungeon_0077f000[0x11], GetCreatureName(s.creature_type),
                                                 global_cards_data[FindCardIndexByCsvid(s.work_index)].name);
   }
-  if (unk_00789308 != -1)
+  if (opponent_starting_card_id_2 != -1)
   {
     sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_dungeon_0077f000[0x12],
             global_cards_data[FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
@@ -948,7 +948,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   {
     life[0] = life[0] + g_next_duel_card_id;
   }
-  DAT_00716024 = life[0];
+  player_starting_life = life[0];
   if (final_battle != 0)
   {
     sound_stop(100);
@@ -995,7 +995,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   }
   if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 1) != 0)
   {
-    g_next_duel_life_delta = life[0] - DAT_00716024;
+    g_next_duel_life_delta = life[0] - player_starting_life;
     g_dungeon_life_reward_delta += g_next_duel_life_delta;
     g_next_duel_life_delta = 0;
   }
@@ -1153,13 +1153,13 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
         g_shandalar_monster_definitions[s.final_creature].tier *
         (g_shandalar_difficulty + 1);
     LoadCreatureDuelDeck(s.final_creature, 0, 0, -1);
-    DAT_008ce538 = s.wizard_color;
-    DAT_00742fd0 = 0;
-    DAT_007a7874 = 3;
+    current_encounter_color = s.wizard_color;
+    encounter_opening_hand_size_modifier = 0;
+    current_encounter_strength = 3;
     g_next_duel_life_delta = 0;
     sound_stop(0x10);
-    DAT_008cf6d0 = FindCardIndexByCsvid(0x11);
-    unk_00789308 = FindCardIndexByCsvid(0x1d);
+    opponent_starting_card_id_1 = FindCardIndexByCsvid(0x11);
+    opponent_starting_card_id_2 = FindCardIndexByCsvid(0x1d);
     RunDuelEngine(0, s.final_creature);
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, 0xb7);
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
@@ -1211,8 +1211,8 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
 void EnterCastleDungeon(int dungeon_index)
 {
   RunCastleDungeonBoard(dungeon_index);
-  DAT_008cf6d0 = -1;
-  unk_00789308 = -1;
+  opponent_starting_card_id_1 = -1;
+  opponent_starting_card_id_2 = -1;
   return;
 }
 

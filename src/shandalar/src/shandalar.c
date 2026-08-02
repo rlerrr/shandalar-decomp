@@ -209,13 +209,13 @@ int g_world_player_animation_direction;
 // GLOBAL: SHANDALAR 0x0073ea8c
 int g_world_player_animation_frame;
 // GLOBAL: SHANDALAR 0x006696f4
-int DAT_006696f4;
+int g_world_location_entry_latched;
 // GLOBAL: SHANDALAR 0x006696f8
 int g_advfac64_load_state;
 // GLOBAL: SHANDALAR 0x006696fc
-int DAT_006696fc;
+int g_adventure_demo_enabled;
 // GLOBAL: SHANDALAR 0x00669700
-int DAT_00669700;
+int g_adventure_demo_idle_ticks;
 // GLOBAL: SHANDALAR 0x00669710
 int g_world_scene_force_redraw;
 // GLOBAL: SHANDALAR 0x00789938
@@ -409,9 +409,9 @@ int g_menu_allow_arrow_nav_by_context[50];
 // GLOBAL: SHANDALAR 0x008c7408
 int g_duel_special_rules_by_color[7];
 // GLOBAL: SHANDALAR 0x0073e990
-jmp_buf DAT_0073e990;
+jmp_buf g_adventure_session_restart_jump_buffer;
 // GLOBAL: SHANDALAR 0x0073e9e0
-jmp_buf DAT_0073e9e0;
+jmp_buf g_adventure_world_exit_jump_buffer;
 // GLOBAL: SHANDALAR 0x006527b0
 int DAT_006527b0;
 // GLOBAL: SHANDALAR 0x00590764
@@ -757,12 +757,12 @@ int RunAdventureSession(void)
 
   s.initialized_world = 0;
   s.proceed_to_main_loop = 0;
-  DAT_008cf6d0 = -1;
-  unk_00789308 = DAT_008cf6d0;
+  opponent_starting_card_id_1 = -1;
+  opponent_starting_card_id_2 = opponent_starting_card_id_1;
   InitializeDuelUiGlobalIds();
   for (s.loop_index = 0; s.loop_index < 4; s.loop_index = s.loop_index + 1)
   {
-    DAT_007a7d10[s.loop_index] = 8;
+    ai_combat_value_weights[s.loop_index] = 8;
   }
 
   LoadTownHintMetadata();
@@ -812,7 +812,7 @@ opening_menu:
     LoadPcxIntoPageNoPalette("advfac64.pic");
     LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
     BlitGraphicsRect((int *)g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, (int *)g_page0_window_bounds, 0, 0);
-    DAT_00715f10 = 0;
+    skip_new_game_state_initialization = 0;
     if (s.initialized_world == 0)
     {
       setup_shared_startup();
@@ -840,12 +840,12 @@ opening_menu:
     SaveGameToSlot(3);
     break;
   case 1:
-    DAT_00715f10 = 0;
+    skip_new_game_state_initialization = 0;
     LoadGameFromSlot(RunLoadGameMenu());
     break;
 
   case 2:
-    DAT_00715f10 = 0;
+    skip_new_game_state_initialization = 0;
     LoadGameFromSlot(3);
     break;
 
@@ -886,7 +886,7 @@ opening_menu:
 
   LoadPcxIntoPageNoPalette("advfac64.pic");
   RefreshAdventureInterfaceLayout();
-  DAT_00669700 = 0;
+  g_adventure_demo_idle_ticks = 0;
   g_deck_active_card_count = g_deck_total_card_count = 0;
   for (s.loop_index = 0; s.loop_index < 500; s.loop_index = s.loop_index + 1)
   {
@@ -903,8 +903,8 @@ opening_menu:
   s.proceed_to_main_loop = 1;
 
   // Jumpbufs for exiting the game
-  setjmp(&DAT_0073e990);
-  setjmp(&DAT_0073e9e0);
+  setjmp(&g_adventure_session_restart_jump_buffer);
+  setjmp(&g_adventure_world_exit_jump_buffer);
 
   if (g_adventure_world_exit_requested != 0)
   {
@@ -950,7 +950,7 @@ opening_menu:
       g_monster_timer = g_monster_timer + 1;
       ClearInputAndWaitForMouseRelease();
       ClearQueuedKeyInput();
-      setjmp(&DAT_0073e9e0);
+      setjmp(&g_adventure_world_exit_jump_buffer);
     } while (g_adventure_world_exit_requested == 0);
   }
 
@@ -1058,14 +1058,14 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   {
     g_text_menu_needs_layout = 0;
     g_mouse_button_mask_snapshot = 0;
-    if (DAT_007483f0 == 0)
+    if (random_seed_initialized == 0)
     {
       SeedRandomFromTickCount();
     }
 
     if (g_text_menu_timeout_seconds != -1)
     {
-      s.timer_seconds_left = g_text_menu_timeout_seconds - GetUiTickCount() / (DAT_0057d9e4 * 0x3c);
+      s.timer_seconds_left = g_text_menu_timeout_seconds - GetUiTickCount() / (game_time_scale * 0x3c);
       if (s.timer_seconds_left == 0)
       {
         s.selected_menu_entry = -1;
@@ -1724,14 +1724,14 @@ void InitializeNewGameState(void)
     deck[s.location_block_start_index] = -1;
   }
 
-  if (DAT_00715f10)
+  if (skip_new_game_state_initialization)
   {
     return;
   }
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 7; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    DAT_008b3240[s.location_block_start_index] = 0;
+    opponent_deck_color_filter_by_color[s.location_block_start_index] = 0;
     g_duel_special_rules_by_color[s.location_block_start_index] = -1;
   }
 
@@ -1805,7 +1805,7 @@ void InitializeNewGameState(void)
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 4; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    DAT_007a7d10[s.location_block_start_index] = 8;
+    ai_combat_value_weights[s.location_block_start_index] = 8;
   }
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 0x96; s.location_block_start_index = s.location_block_start_index + 1)
@@ -3491,7 +3491,7 @@ int LoadGameFromPath(char *save_file_path)
     }
   }
 
-  if (unk_00742fc4 == 0)
+  if (duel_active == 0)
   {
     HideMouseCursorNested();
     strcpy(save_file_path + 9, "map");
@@ -3568,7 +3568,7 @@ int SaveGameToPath(char *save_file_path)
     FacemakerWindowBounds *page4_bounds_ptr;
   } s;
 
-  if (unk_00742fc4 == 0)
+  if (duel_active == 0)
   {
     strcpy(save_file_path + 9, "map");
     if (ExportGraphicsPage(2, save_file_path) != 0)
@@ -4694,7 +4694,7 @@ void UpdateAdventureWorldInputAndMovement(void)
   if (IsKeyInputQueueEmpty() == 0)
   {
     s.key_code = PopNormalizedQueuedKeyInput();
-    DAT_00669700 = 0;
+    g_adventure_demo_idle_ticks = 0;
 
     switch (s.key_code)
     {
@@ -4892,11 +4892,11 @@ void UpdateAdventureWorldInputAndMovement(void)
     EnsureAdvfac64Loaded(0);
   }
 
-  if ((DAT_006696fc != 0) && (++DAT_00669700 > 500))
+  if ((g_adventure_demo_enabled != 0) && (++g_adventure_demo_idle_ticks > 500))
   {
-    // Some sort of demo? Looks unreachable since DAT_006696fc is never set
+    // Some sort of demo? Looks unreachable since g_adventure_demo_enabled is never set
     RunRandomAiDuelDemo();
-    DAT_00669700 = 300;
+    g_adventure_demo_idle_ticks = 300;
   }
 
   s.random_value = g_neighbor_dx[g_world_move_dir_index] + g_world_player_x;
@@ -5040,7 +5040,7 @@ void UpdateAdventureWorldInputAndMovement(void)
     g_world_player_tile_y = g_world_player_y / 32;
     if ((s.random_value != g_world_player_tile_x) || (s.random_world_x != g_world_player_tile_y))
     {
-      DAT_006696f4 = 0;
+      g_world_location_entry_latched = 0;
     }
 
     if ((g_monster_timer & 1U) == 0)
@@ -5218,7 +5218,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       }
     }
 
-    if ((DAT_006696f4 == 0) && (abs((g_world_player_x & 0x1fU) - 0x10) < 0xc) &&
+    if ((g_world_location_entry_latched == 0) && (abs((g_world_player_x & 0x1fU) - 0x10) < 0xc) &&
         (abs((g_world_player_y & 0x1fU) - 0x10) < 0xc) && ((GetWorldMapPixelFlags(g_world_player_tile_x, g_world_player_tile_y) & 0x10) != 0))
     {
       s.move_step_divisor = FindTownAtWorldCoordinates(g_world_player_tile_x, g_world_player_tile_y);
@@ -5228,7 +5228,7 @@ void UpdateAdventureWorldInputAndMovement(void)
         play_snd_marker(0x10, 1);
         VisitTownSlot(s.move_step_divisor);
         DAT_00591214 = 1;
-        DAT_006696f4 = DAT_00591214;
+        g_world_location_entry_latched = DAT_00591214;
         g_world_move_dir_index = 0;
         for (s.slot_index = 0; s.slot_index < 6; s.slot_index = s.slot_index + 1)
         {
@@ -5273,11 +5273,11 @@ void UpdateAdventureWorldInputAndMovement(void)
       }
     }
 
-    if ((DAT_006696f4 == 0) && ((g_world_player_x - 8U & 0x10) == 0) && ((g_world_player_y - 8U & 0x10) == 0) &&
+    if ((g_world_location_entry_latched == 0) && ((g_world_player_x - 8U & 0x10) == 0) && ((g_world_player_y - 8U & 0x10) == 0) &&
         ((GetWorldMapPixelFlags(g_world_player_tile_x, g_world_player_tile_y) & 0x40) != 0))
     {
       s.dungeon_index = FindCastleDungeonAtWorldCoordinates(g_world_player_tile_x, g_world_player_tile_y);
-      DAT_006696f4 = 1;
+      g_world_location_entry_latched = 1;
       if ((s.dungeon_index != -1) && (g_castle_dungeon_slots[s.dungeon_index].card_slot_1 != -1) && (g_castle_dungeon_slots[s.dungeon_index].clues_bitmap != 0))
       {
         EnterCastleDungeon(s.dungeon_index);
@@ -5432,7 +5432,7 @@ int RunRandomAiDuelDemo(void)
   }
 
   g_selected_wizard_color = 0;
-  DAT_0057a750 = 1;
+  opponent_initial_library_index = 1;
   for (ante_index = 0; ante_index < 0x10; ante_index++)
   {
     g_duel_ante_card_ids[ante_index] = -1;
@@ -5883,7 +5883,7 @@ unsigned int WaitForInputEventUnlessBlocked(void)
     return 0;
   }
 
-  return (unk_00742fc4 != 0) ? 0 : WaitForInputEvent();
+  return (duel_active != 0) ? 0 : WaitForInputEvent();
 }
 
 // FUNCTION: SHANDALAR 0x004ecf30

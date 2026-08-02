@@ -107,7 +107,7 @@ extern HANDLE global_mutex_GameInit;
 #endif
 #ifdef SHANDALAR
 extern int g_world_location_music_active;
-extern int DAT_007483f0;
+extern int random_seed_initialized;
 extern int _DAT_007483f4;
 // GLOBAL: SHANDALAR 0x0058e048
 int g_showlibrary_menu_selection = 0;
@@ -3064,12 +3064,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       }
       else if ((g_duel_mode_flags & 4) != 0)
       {
-        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(DAT_0057a750);
+        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(opponent_initial_library_index);
         g_last_duel_player_primary_color = get_primary_color_from_duel_deck(g_selected_wizard_color);
       }
       else if ((g_duel_mode_flags & 1) != 0)
       {
-        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(DAT_0057a750);
+        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(opponent_initial_library_index);
         g_last_duel_player_primary_color = get_primary_color_from_duel_deck(g_selected_wizard_color);
       }
     }
@@ -3245,14 +3245,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x25d:
       if (g_duel_cheats_state != 0)
       {
-        show_opponent_library_window(DAT_0057a750);
+        show_opponent_library_window(opponent_initial_library_index);
       }
       break;
 
     case 0x25e:
       if (g_duel_cheats_state != 0)
       {
-        show_player_library_window(DAT_0057a750);
+        show_player_library_window(opponent_initial_library_index);
       }
       break;
 

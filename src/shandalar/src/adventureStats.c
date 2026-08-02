@@ -85,7 +85,7 @@ extern DIBSurface *g_graphics_pages[10];
 extern FacemakerWindowBounds *g_page0_window_bounds;
 extern FacemakerWindowBounds *g_page1_window_bounds;
 extern FacemakerWindowBounds *g_page2_window_bounds;
-extern int _DAT_007483e4;
+extern int g_analyzed_deck_special_rules;
 extern card_data_t global_cards_data[];
 extern char g_itoa_buffer[0x20];
 extern int g_menu_render_guard;
@@ -2049,15 +2049,15 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     s.y = s.y + 8;
     WaitForInputEventUnlessBlocked();
   }
-  _DAT_007483e4 = 0;
+  g_analyzed_deck_special_rules = 0;
   s.max_creature_count = s.card_type_count_by_color[2][0];
   if (s.max_creature_count < s.card_type_count_by_color[3][0])
   {
-    _DAT_007483e4 = 1;
+    g_analyzed_deck_special_rules = 1;
     s.max_creature_count = s.card_type_count_by_color[3][0];
   }
   if (s.max_creature_count < s.card_type_count_by_color[5][0] + s.card_type_count_by_color[6][0])
   {
-    _DAT_007483e4 = 2;
+    g_analyzed_deck_special_rules = 2;
   }
 }

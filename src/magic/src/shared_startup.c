@@ -563,7 +563,7 @@ void LoadDuelInterfaceRegistryOptions(void)
         step = 0;
         while (step < 0x25 && *phase_value != '\0')
         {
-          if (unk_00742fc4 == 0)
+          if (duel_active == 0)
           {
             if (*phase_value == 'S')
               g_phase_stoppers[phase][step] = 1;

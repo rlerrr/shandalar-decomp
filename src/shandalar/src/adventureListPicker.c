@@ -170,7 +170,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
 
   if ((player == other_player) &&
       ((g_duel_network_flags & 2) != 0) &&
-      (unk_00742fc4 != 0))
+      (duel_active != 0))
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
     return g_network_result_value;
@@ -206,7 +206,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     return s.card_indices[ai_recorded_choice];
   }
 
-  if (unk_00742fc4 == 0)
+  if (duel_active == 0)
   {
     ReadPalette("todpal.tr", (char *)0);
     ClearGraphicsPageWithPaletteColor(0, 0);

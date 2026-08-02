@@ -776,7 +776,7 @@ void show_card_preview_if_human(unsigned int internal_card_id, int unk1, char *p
     return;
   }
 
-  if (unk_00742fc4 != 0)
+  if (duel_active != 0)
   {
     show_duel_card_preview(internal_card_id, -1, -1, unk1, prompt, unk2);
   }
@@ -1681,7 +1681,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
     int result;
   } s;
 
-  if (((player == other_player) && ((g_duel_network_flags & 2) != 0)) && unk_00742fc4 != 0)
+  if (((player == other_player) && ((g_duel_network_flags & 2) != 0)) && duel_active != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
     return g_network_result_value;
@@ -1713,7 +1713,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
 
     return s.valid_graveyards[ai_recorded_choice];
   }
-  else if (unk_00742fc4 == 0)
+  else if (duel_active == 0)
   {
     ReadPalette("todpal.tr", (char *)0);
     legacy_clear_graphics_page_stub(0, 0);
@@ -2269,7 +2269,7 @@ int draw_card_for_player(int player)
       if (g_duel_ai_mode_state != 1)
       {
         load_text(global_ui_strings_filename, "PROMPT_DRAWACARD");
-        if (unk_00742fc4 != 0)
+        if (duel_active != 0)
         {
           show_duel_card_preview(PLAYER_CARD_INSTANCE(player, s.drawn_card).internal_card_id,
                                  player,
@@ -2303,7 +2303,7 @@ int draw_card_for_player(int player)
   }
   else
   {
-    if (DAT_0057a750 == -1)
+    if (opponent_initial_library_index == -1)
     {
       switch (internal_rand(3))
       {
@@ -2322,9 +2322,9 @@ int draw_card_for_player(int player)
       {
         s.drawn_card = internal_rand(g_card_count);
         s.candidate_ok = is_opponent_random_draw_color_allowed((int)(char)global_cards_data[s.drawn_card].color,
-                                                               DAT_008ce538,
+                                                               current_encounter_color,
                                                                DAT_008951c8);
-        if (s.candidate_ok != 0 && GetCardRarity(s.drawn_card) > DAT_007a7874)
+        if (s.candidate_ok != 0 && GetCardRarity(s.drawn_card) > current_encounter_strength)
         {
           s.candidate_ok = 0;
         }
@@ -5543,7 +5543,7 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   ++unk_0093f9c0;
   current_abilities = unk_00712938;
-  if (unk_00742fc4 != 0)
+  if (duel_active != 0)
   {
     push_affected_card_stack();
   }
@@ -5660,7 +5660,7 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
   }
 
   event_result = result;
-  if (unk_00742fc4 != 0)
+  if (duel_active != 0)
   {
     C_dispatch_event_raw(event);
     if (((land_can_be_played & 0x10000) != 0) && (event == EVENT_CHANGE_TYPE))
@@ -5691,7 +5691,7 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
     regenerate_or_graveyard_triggers();
   }
 
-  if (unk_00742fc4 != 0)
+  if (duel_active != 0)
   {
     pop_affected_card_stack();
   }
@@ -8025,7 +8025,7 @@ void process_damage_prevention(int player)
         ai_search_target_depth = -1;
       }
       ai_search_force_pass = 0;
-      if (get_duel_time_units_if_available() > (DAT_0057d9e4 * ai_search_time_limit) / 5)
+      if (get_duel_time_units_if_available() > (game_time_scale * ai_search_time_limit) / 5)
       {
         g_duel_ai_mode_state = 0;
         ai_search_target_depth = -1;
@@ -8381,9 +8381,9 @@ void C_dispatch_event_raw(event_t event)
   {
     reassess_all_cards_and_mana();
   }
-  if (unk_00789308 != -1)
+  if (opponent_starting_card_id_2 != -1)
   {
-    (*global_cards_data[unk_00789308].code_pointer)(0, 0x94, event);
+    (*global_cards_data[opponent_starting_card_id_2].code_pointer)(0, 0x94, event);
   }
   unk_00712938 = s.saved_trigger_condition;
 }
@@ -8871,7 +8871,7 @@ void TENTATIVE_reassess_all_cards(int view_player, int present_after_draw)
     }
   }
 
-  if (unk_00742fc4 != 0)
+  if (duel_active != 0)
   {
     SendMessageA((HWND)g_duel_window_hwnd, 0x464, s.flags, 0);
   }

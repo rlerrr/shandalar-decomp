@@ -64,11 +64,11 @@ void InitializeDuelUiGlobalIds(void)
   unk_0092666c = 0x38a;
   unk_008cf1ac = 0x38b;
 
-  DAT_007a7d10[0] = 8;
-  DAT_007a7d10[1] = 8;
+  ai_combat_value_weights[0] = 8;
+  ai_combat_value_weights[1] = 8;
 #ifdef SHANDALAR
-  DAT_007a7d10[2] = 0xc;
-  DAT_007a7d10[3] = 0xc;
+  ai_combat_value_weights[2] = 0xc;
+  ai_combat_value_weights[3] = 0xc;
 #else
   unk_007a7d18[0] = 0xc;
   unk_007a7d18[1] = 0xc;
@@ -81,5 +81,5 @@ void InitializeDuelUiGlobalIds(void)
   unk_00712938 = -1;
   DAT_00742f68 = 0x30;
   DAT_00742fc0 = 1;
-  DAT_0057d9e4 = 2;
+  game_time_scale = 2;
 }

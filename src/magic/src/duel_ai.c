@@ -860,14 +860,14 @@ int ai_opinion_of_gamestate(int player)
   {
     s.life_score += 0x18 / s.card + 0xc;
   }
-  s.score += (DAT_007a7d10[player] * s.life_score) / 8;
+  s.score += (ai_combat_value_weights[player] * s.life_score) / 8;
 
   s.life_score = 0;
   for (s.card = 1; s.card <= life[s.opponent]; s.card = s.card + 1)
   {
     s.life_score += 0x18 / s.card + 0xc;
   }
-  s.score -= (DAT_007a7d10[s.opponent] * s.life_score) / 8;
+  s.score -= (ai_combat_value_weights[s.opponent] * s.life_score) / 8;
 
   if (life[player] <= 0)
   {
@@ -982,7 +982,7 @@ int ai_opinion_of_gamestate(int player)
           }
           if ((s.block_result & 2) == 0)
           {
-            s.side_score += (DAT_007a7d10[s.opponent] * s.damage_power * 0x18) / 0x10;
+            s.side_score += (ai_combat_value_weights[s.opponent] * s.damage_power * 0x18) / 0x10;
             if (s.block_result == 0 && life[s.opponent] <= s.power_score)
             {
               s.side_score += 0x100;
@@ -1265,7 +1265,7 @@ int ai_opinion_of_gamestate_continued(int player, int score)
 
     if ((s.block_result & 2) == 0)
     {
-      s.damage_to_player_score = ((DAT_007a7d10[player] * s.attacker_power * 0x18) / 4) / ClampIntToRange(life[player] + 1, 1, 99);
+      s.damage_to_player_score = ((ai_combat_value_weights[player] * s.attacker_power * 0x18) / 4) / ClampIntToRange(life[player] + 1, 1, 99);
       s.blocker_trade_score = (unk_007a7d18[player] * s.smallest_blocker_score) / 0x10;
       if (s.block_result == 0 || (s.damage_to_player_score < s.blocker_trade_score && life[player] > s.expected_damage + s.attacker_power))
       {
@@ -2291,7 +2291,7 @@ unsigned int choose_attackers_ai(int player)
 
       if ((s.block_result_mask & 2) == 0)
       {
-        s.pressure_score = (DAT_007a7d10[player] * s.blocker_power_value * 0x18) / 4;
+        s.pressure_score = (ai_combat_value_weights[player] * s.blocker_power_value * 0x18) / 4;
         s.test_toughness = life[player] - s.blocker_power_value;
         if (s.test_toughness < 2)
         {
@@ -2301,7 +2301,7 @@ unsigned int choose_attackers_ai(int player)
         s.pressure_score /= s.test_toughness;
         if (s.block_result_mask != 0)
         {
-          s.cost_to_chump = (DAT_007a7d10[player + 2] * s.smallest_blocker_score) / 8;
+          s.cost_to_chump = (ai_combat_value_weights[player + 2] * s.smallest_blocker_score) / 8;
           if (s.cost_to_chump <= s.pressure_score)
           {
             DAT_00708698 += s.cost_to_chump;
@@ -2888,7 +2888,7 @@ void setup_combat_damage_simulation(int player)
       }
       AI_CARD_STATE(ai_blocker_player, s.card) &= ~STATE_BLOCKING;
       DAT_00707c98[ai_blocker_count] =
-          (DAT_007a7d10[ai_blocker_player + 2] * DAT_00708728[ai_blocker_count]) /
+          (ai_combat_value_weights[ai_blocker_player + 2] * DAT_00708728[ai_blocker_count]) /
           ClampIntToRange(combat_damage_blocker_toughness[ai_blocker_count] + 1, 1, 99);
       ai_blocker_count++;
       if ((g_duel_ai_mode_state == 1) && (7 <= ai_blocker_count))
@@ -3244,7 +3244,7 @@ int score_current_ai_block_assignment(void)
          ((untapped_royal_assassin_count != 0) &&
           (DAT_00707ea8[s.attacker_index] < untapped_royal_assassin_count))))
     {
-      s.assignment_score += (DAT_007a7d10[3 - ai_blocker_player] * DAT_00708658[s.attacker_index]) / 8;
+      s.assignment_score += (ai_combat_value_weights[3 - ai_blocker_player] * DAT_00708658[s.attacker_index]) / 8;
     }
 
     s.best_damage_assignment_score = -1;
@@ -3368,7 +3368,7 @@ int score_current_ai_block_assignment(void)
   }
   else
   {
-    s.assignment_score -= (((life[ai_blocker_player] - s.remaining_life) * DAT_007a7d10[ai_blocker_player] * 0x18) / 4) / s.remaining_life;
+    s.assignment_score -= (((life[ai_blocker_player] - s.remaining_life) * ai_combat_value_weights[ai_blocker_player] * 0x18) / 4) / s.remaining_life;
     if (DAT_00707dd8 != 0)
     {
       DAT_00708610 = ((life[ai_blocker_player] - s.remaining_life) * 700) / life[ai_blocker_player];
