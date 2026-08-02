@@ -33,8 +33,8 @@ extern FILE *g_advbuttons_ini_file;
 extern char g_ini_string_scratch[0x28];
 extern char g_ui_message_buffer[0x1000];
 
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
 
 extern RpBitsPalettePacket g_palette_data_words;
 
@@ -104,21 +104,21 @@ void EnsureAdvfac64Loaded(int state);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 
 unsigned int GetWorldTileType(int x, int y);
-unsigned int FUN_004314ca(int x, int y);
+unsigned int GetWorldMapPixelFlags(int x, int y);
 unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
 void ConvertWorldTileToMapScreenCoords(int tile_x, int tile_y, int *out_x, int *out_y);
 void ConvertMapScreenToWorldTileCoords(int x, int y, int *out_tile_x, int *out_tile_y);
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
 int single_color_test_bit_to_color_t(int mask);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-int FUN_004bb458(int world_magic_slot_index);
+int FindWorldMagicCardIndex(int world_magic_slot_index);
 int FindNearestTownIndex(int world_x, int world_y);
-int FUN_004bb040(int world_x, int world_y);
+int FindTownAtWorldCoordinates(int world_x, int world_y);
 char *GetPluralCardClassNameFromColorMask(unsigned int color_bitmask);
 
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 
-void ShowCityInfoScreen(int param_1);
+void ShowCityInfoScreen(int unused);
 
 void FormatMessageFromStringStripCarriageReturns(char *dst, int max_length, char *format, ...);
 
@@ -292,8 +292,8 @@ int RenderMapMenuControl(AdvMenuControl *control, int mode)
     return 0;
   }
 
-  s.saved_page_number = PTR_DAT_005832b4->page_number;
-  PTR_DAT_005832b4->page_number = 0;
+  s.saved_page_number = g_page0_window_bounds->page_number;
+  g_page0_window_bounds->page_number = 0;
 
   s.mapped_button_row = g_map_menu_controls_00590888[control->selection_value].selection_value;
 
@@ -314,10 +314,10 @@ int RenderMapMenuControl(AdvMenuControl *control, int mode)
   s.button_y = g_map_menu_controls_00590888[s.mapped_button_row].y;
   s.button_width = g_map_menu_controls_00590888[s.mapped_button_row].width;
   s.button_height = g_map_menu_controls_00590888[s.mapped_button_row].height;
-  DrawEncodedImageResampled(PTR_DAT_005832b4, s.button_x, s.button_y, s.button_width, s.button_height,
+  DrawEncodedImageResampled(g_page0_window_bounds, s.button_x, s.button_y, s.button_width, s.button_height,
                             g_map_button_sprites[s.mapped_button_row][s.sprite_state_col]);
 
-  PTR_DAT_005832b4->page_number = s.saved_page_number;
+  g_page0_window_bounds->page_number = s.saved_page_number;
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -534,14 +534,14 @@ void ShowWorldMapScreen(int mode)
     g_map_button_labels_loaded = 1;
   }
 
-  PTR_DAT_005832dc->font_slot = 7;
+  g_page1_window_bounds->font_slot = 7;
 
   for (s.i = 0; s.i < 5; s.i++)
   {
     for (s.dir = 0; s.dir < 3; s.dir++)
     {
       SetFontStyleSize(7, 9 + ((unsigned int)(s.dir - 2) < 1 ? -1 : 0));
-      DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.button_text_colors[s.dir], s.dir * 0x5e + 0x30, s.i * 0x1c + 0xe,
+      DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.button_text_colors[s.dir], s.dir * 0x5e + 0x30, s.i * 0x1c + 0xe,
                                         "%s", g_map_button_labels[s.i]);
       g_map_button_sprites[s.i][s.dir] = EncodeSpriteFromPage(1, s.dir * 0x5e + 1, s.i * 0x1c + 1, 0x5d, 0x1b);
     }
@@ -568,15 +568,15 @@ void ShowWorldMapScreen(int mode)
 
 retry:
 
-  PTR_DAT_005832b4->font_slot = 1;
-  PTR_DAT_005832b4->page_number = 1;
+  g_page0_window_bounds->font_slot = 1;
+  g_page0_window_bounds->page_number = 1;
 
-  ClearGraphicsPageWithPaletteColor(PTR_DAT_005832b4->page_number, 0);
+  ClearGraphicsPageWithPaletteColor(g_page0_window_bounds->page_number, 0);
   LoadPcxResource(1, 0, global_screen_height - 0x1e0, "mapback.pic", &g_palette_data_words);
 
   if (global_screen_width != 0x1e0)
   {
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
+    StretchBlitGraphicsRect(g_page1_window_bounds, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height);
   }
 
   s.menu_context = BeginMenuContext();
@@ -626,7 +626,7 @@ retry:
   {
     for (s.tile_y = 0; s.tile_y < 0x40; s.tile_y++)
     {
-      s.map_overlay_colors[7] = FUN_004314ca(s.tile_x, s.tile_y);
+      s.map_overlay_colors[7] = GetWorldMapPixelFlags(s.tile_x, s.tile_y);
       s.tile_class = s.map_overlay_colors[7] & 0xf;
 
       if (((s.map_overlay_colors[7] & 0x80) == 0) && (g_reveal_all_world_info == 0))
@@ -649,7 +649,7 @@ retry:
       s.screen_y += 0x40;
       if ((6 < s.screen_x) && (6 < s.screen_y))
       {
-        DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 6, s.screen_y - 6,
+        DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 6, s.screen_y - 6,
                                  g_ttsprite_grid_sprite_entries[((g_map_tile_variant_primes[(s.tile_y + s.tile_x) % 6] * g_map_tile_variant_primes[(s.tile_y * s.tile_x) % 6]) % 3) * 0x10 + (int)s.tile_class], 0xe, 0xe);
       }
       s.screen_y -= 0x40;
@@ -662,9 +662,9 @@ retry:
       {
         if (WorldRoadTileHasDirection(s.tile_x, s.tile_y, (char)((s.dir & 7) + 1)) != 0)
         {
-          DrawGraphicsLine(PTR_DAT_005832b4, s.screen_x, s.screen_y, s.screen_x + ScaleUiCoordinate(g_neighbor_dx[s.dir] * 7),
+          DrawGraphicsLine(g_page0_window_bounds, s.screen_x, s.screen_y, s.screen_x + ScaleUiCoordinate(g_neighbor_dx[s.dir] * 7),
                            s.screen_y + ScaleUiCoordinate(g_neighbor_dy[s.dir] * 7), 0xd2);
-          DrawGraphicsLine(PTR_DAT_005832b4, s.screen_x - 1, s.screen_y,
+          DrawGraphicsLine(g_page0_window_bounds, s.screen_x - 1, s.screen_y,
                            (s.screen_x - 1) + ScaleUiCoordinate(g_neighbor_dx[s.dir] * 7),
                            s.screen_y + ScaleUiCoordinate(g_neighbor_dy[s.dir] * 7), 0xd2);
         }
@@ -689,7 +689,7 @@ retry:
   {
     for (s.tile_y = 0; s.tile_y < 0x40; s.tile_y++)
     {
-      s.map_overlay_colors[7] = FUN_004314ca(s.tile_x, s.tile_y);
+      s.map_overlay_colors[7] = GetWorldMapPixelFlags(s.tile_x, s.tile_y);
       s.tile_class = s.map_overlay_colors[7] & 0xf;
       ConvertWorldTileToMapScreenCoords(s.tile_x, s.tile_y, &s.screen_x, &s.screen_y);
 
@@ -709,7 +709,7 @@ retry:
 
       if ((s.map_overlay_colors[7] & 0x10) != 0)
       {
-        s.town_index = FUN_004bb040(s.tile_x, s.tile_y);
+        s.town_index = FindTownAtWorldCoordinates(s.tile_x, s.tile_y);
 
         if (g_town_slots[s.town_index].status_and_ruling_wizard & 0xff00)
         {
@@ -740,7 +740,7 @@ retry:
           s.saved_page_number = 1;
         }
 
-        DrawEncodedImageResampled(PTR_DAT_005832b4, s.screen_x - ScaleUiCoordinate(7), s.screen_y - ScaleUiCoordinate(0x12), ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x14),
+        DrawEncodedImageResampled(g_page0_window_bounds, s.screen_x - ScaleUiCoordinate(7), s.screen_y - ScaleUiCoordinate(0x12), ScaleUiCoordinate(0xd), ScaleUiCoordinate(0x14),
                                   g_ttsprite_aux_sprite_entries[s.saved_page_number]);
 
         if (s.town_index != -1 && 1 < g_town_slots[s.town_index].location_type)
@@ -760,7 +760,7 @@ retry:
           {
             s.wizard_count = 0;
             s.world_magic_avatar_width = (int)g_world_magic_avatar_sprites[0]->width;
-            s.world_magic_line_height = GetFontStyleSize(PTR_DAT_005832b4->font_slot);
+            s.world_magic_line_height = GetFontStyleSize(g_page0_window_bounds->font_slot);
 
             s.mana_mask = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[s.town_index].world_x, g_town_slots[s.town_index].world_y));
             for (s.dir = 1; s.dir < 6; s.dir++)
@@ -783,7 +783,7 @@ retry:
 
               if ((s.mana_mask & (1U << (s.dir & 0xff))) != 0)
               {
-                DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.button_text_colors[3], s.screen_y + 0xc, g_world_magic_avatar_sprites[s.avatar_indices[s.dir - 1]]);
+                DrawEncodedImageUnscaled(g_page0_window_bounds, s.button_text_colors[3], s.screen_y + 0xc, g_world_magic_avatar_sprites[s.avatar_indices[s.dir - 1]]);
                 s.button_text_colors[3] -= s.world_magic_avatar_width;
               }
             }
@@ -798,9 +798,9 @@ retry:
               strcpy(g_ui_message_buffer, GetPluralCardClassNameFromColorMask(1U << ((unsigned char)((unsigned int)g_town_slots[s.town_index].trade_color_and_type >> 8) - 1U)));
             }
 
-            s.text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
+            s.text_width = MeasureMultilineTextWidth(g_page0_window_bounds, g_ui_message_buffer);
 
-            ApplyPortraitTintMap(PTR_DAT_005832b4, (s.screen_x - 2) - s.text_width / 2, s.screen_y - 2, s.text_width + 4, GetFontLineHeight(PTR_DAT_005832b4->font_slot) + 2, 0x3f3f3f,
+            ApplyPortraitTintMap(g_page0_window_bounds, (s.screen_x - 2) - s.text_width / 2, s.screen_y - 2, s.text_width + 4, GetFontLineHeight(g_page0_window_bounds->font_slot) + 2, 0x3f3f3f,
                                  (s.any_tooltip_drawn == 0));
             s.any_tooltip_drawn = 1;
             DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.screen_x, s.screen_y, s.text_color);
@@ -809,13 +809,13 @@ retry:
             {
               if ((s.town_index != 0) && (g_world_magic_slot_timers[s.dir].town_index == s.town_index))
               {
-                s.world_magic_slot_result = FUN_004bb458(s.dir);
+                s.world_magic_slot_result = FindWorldMagicCardIndex(s.dir);
                 strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[s.dir]);
-                s.text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
+                s.text_width = MeasureMultilineTextWidth(g_page0_window_bounds, g_ui_message_buffer);
 
-                ApplyPortraitTintMap(PTR_DAT_005832b4, (s.screen_x - 2) - s.text_width / 2,
+                ApplyPortraitTintMap(g_page0_window_bounds, (s.screen_x - 2) - s.text_width / 2,
                                      s.screen_y + s.world_magic_line_height,
-                                     s.text_width + 4, GetFontLineHeight(PTR_DAT_005832b4->font_slot) + 2, 0x3f3f3f, (s.any_tooltip_drawn == 0));
+                                     s.text_width + 4, GetFontLineHeight(g_page0_window_bounds->font_slot) + 2, 0x3f3f3f, (s.any_tooltip_drawn == 0));
                 DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.screen_x,
                                                s.screen_y + s.world_magic_line_height,
                                                s.text_color);
@@ -825,7 +825,7 @@ retry:
 
           if ((mode == 0) || ((mode == 1) && (g_town_slots[s.town_index].location_type == 4)))
           {
-            s.tooltip_line_height = (int)GetFontStyleSize(PTR_DAT_005832b4->font_slot);
+            s.tooltip_line_height = (int)GetFontStyleSize(g_page0_window_bounds->font_slot);
 
             if ((g_town_slots[s.town_index].location_type == 4) || (g_town_slots[s.town_index].location_type == 5))
             {
@@ -839,17 +839,17 @@ retry:
             SplitMapTooltipTextIntoTwoLines(g_ui_message_buffer, s.line1, s.line2);
 
             strcpy(g_ui_message_buffer, s.line1);
-            s.text_width2 = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
+            s.text_width2 = MeasureMultilineTextWidth(g_page0_window_bounds, g_ui_message_buffer);
 
-            ApplyPortraitTintMap(PTR_DAT_005832b4, (s.screen_x - 2) - s.text_width2 / 2, s.screen_y - 2, s.text_width2 + 4, GetFontLineHeight(PTR_DAT_005832b4->font_slot) + 2, 0x4f4f4f,
+            ApplyPortraitTintMap(g_page0_window_bounds, (s.screen_x - 2) - s.text_width2 / 2, s.screen_y - 2, s.text_width2 + 4, GetFontLineHeight(g_page0_window_bounds->font_slot) + 2, 0x4f4f4f,
                                  (s.any_tooltip_drawn == 0));
             s.any_tooltip_drawn = 1;
             DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.screen_x, s.screen_y, s.text_color);
 
             strcpy(g_ui_message_buffer, s.line2);
-            s.text_width2 = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
+            s.text_width2 = MeasureMultilineTextWidth(g_page0_window_bounds, g_ui_message_buffer);
 
-            ApplyPortraitTintMap(PTR_DAT_005832b4, (s.screen_x - 2) - s.text_width2 / 2, s.screen_y + s.tooltip_line_height, s.text_width2 + 4, GetFontLineHeight(PTR_DAT_005832b4->font_slot), 0x4f4f4f, 0);
+            ApplyPortraitTintMap(g_page0_window_bounds, (s.screen_x - 2) - s.text_width2 / 2, s.screen_y + s.tooltip_line_height, s.text_width2 + 4, GetFontLineHeight(g_page0_window_bounds->font_slot), 0x4f4f4f, 0);
             DrawCenteredTextLineWithShadow(g_ui_message_buffer, s.screen_x, s.screen_y + s.tooltip_line_height, s.text_color);
           }
         }
@@ -857,26 +857,26 @@ retry:
 
       if ((g_reveal_all_world_info != 0) && ((s.map_overlay_colors[7] & 0x40) != 0))
       {
-        FillGraphicsRect(PTR_DAT_005832b4, s.screen_x + 1, s.screen_y + 1, 2, 2, 0xf6);
+        FillGraphicsRect(g_page0_window_bounds, s.screen_x + 1, s.screen_y + 1, 2, 2, 0xf6);
       }
     }
   }
 
-  DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0xdc), ScaleUiCoordinate(0x36),
+  DrawEncodedImageResampled(g_page0_window_bounds, ScaleUiCoordinate(0xdc), ScaleUiCoordinate(0x36),
                             ScaleUiCoordinate((int)g_map_summary_panel_sprite->width), ScaleUiCoordinate((int)g_map_summary_panel_sprite->height), g_map_summary_panel_sprite);
 
   if (s.original_mode != 4)
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(0), ScaleUiCoordinate(0x85),
+    DrawEncodedImageResampled(g_page0_window_bounds, ScaleUiCoordinate(0), ScaleUiCoordinate(0x85),
                               ScaleUiCoordinate((int)g_map_amulet_panel_sprite->width), ScaleUiCoordinate((int)g_map_amulet_panel_sprite->height), g_map_amulet_panel_sprite);
     for (s.dir = 0; s.dir < 5; s.dir++)
     {
-      DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x18, s.dir * 0x1a + 0xc6, "%d", g_amulet_inventory[s.dir]);
+      DrawTextAt(g_page0_window_bounds, 0xfe, 0x18, s.dir * 0x1a + 0xc6, "%d", g_amulet_inventory[s.dir]);
     }
   }
 
-  PTR_DAT_005832b4->page_number = 0;
-  BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+  g_page0_window_bounds->page_number = 0;
+  BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
 
   if (s.original_mode == 4)
   {
@@ -899,12 +899,12 @@ retry:
   {
     if ((GetUiTickCount() % 0x14 < 10) && (s.blink_on != 0))
     {
-      FillGraphicsRect(PTR_DAT_005832b4, s.screen_x - 1, s.screen_y - 1, 4, 4, 0xff);
+      FillGraphicsRect(g_page0_window_bounds, s.screen_x - 1, s.screen_y - 1, 4, 4, 0xff);
       s.blink_on = 0;
     }
     else if ((10 <= (GetUiTickCount() % 0x14)) && (s.blink_on == 0))
     {
-      FillGraphicsRect(PTR_DAT_005832b4, s.screen_x - 1, s.screen_y - 1, 4, 4, 0);
+      FillGraphicsRect(g_page0_window_bounds, s.screen_x - 1, s.screen_y - 1, 4, 4, 0);
       s.blink_on = 1;
     }
 
@@ -915,7 +915,7 @@ retry:
       UpdateMenuControlSelection(g_mouse_x_snapshot, g_mouse_y_snapshot, g_mouse_button_down_mask);
       if ((g_mouse_button_down_mask != 0) && (g_reveal_all_world_info != 0) && (g_map_menu_selection < 0))
       {
-        BlitGraphicsRect(PTR_DAT_005832dc, s.screen_x - 1, s.screen_y - 1, 4, 4, PTR_DAT_005832b4, s.screen_x - 1, s.screen_y - 1);
+        BlitGraphicsRect(g_page1_window_bounds, s.screen_x - 1, s.screen_y - 1, 4, 4, g_page0_window_bounds, s.screen_x - 1, s.screen_y - 1);
         s.screen_x = s.screen_x_unscaled_debug = g_mouse_x_snapshot;
         s.screen_y = s.screen_y_unscaled_debug = g_mouse_y_snapshot;
 

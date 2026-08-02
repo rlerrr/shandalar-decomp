@@ -92,25 +92,25 @@ WorldMagicSlotTimer g_world_magic_slot_timers[0xc] = {
 // GLOBAL: SHANDALAR 0x00589de8
 char *PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
 // GLOBAL: SHANDALAR 0x00583290
-FacemakerWindowBounds DAT_00583290 = {0, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
+FacemakerWindowBounds g_page0_window_bounds_storage = {0, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x005832b4
-FacemakerWindowBounds *PTR_DAT_005832b4 = &DAT_00583290;
+FacemakerWindowBounds *g_page0_window_bounds = &g_page0_window_bounds_storage;
 // GLOBAL: SHANDALAR 0x005832b8
-FacemakerWindowBounds DAT_005832b8 = {1, 0, 0, 0x320, 0x258, 1, 0x0f, 4, 0};
+FacemakerWindowBounds g_page1_window_bounds_storage = {1, 0, 0, 0x320, 0x258, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x005832dc
-FacemakerWindowBounds *PTR_DAT_005832dc = &DAT_005832b8;
+FacemakerWindowBounds *g_page1_window_bounds = &g_page1_window_bounds_storage;
 // GLOBAL: SHANDALAR 0x005832e0
-FacemakerWindowBounds DAT_005832e0 = {2, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
+FacemakerWindowBounds g_page2_window_bounds_storage = {2, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x00583304
-FacemakerWindowBounds *PTR_DAT_00583304 = &DAT_005832e0;
+FacemakerWindowBounds *g_page2_window_bounds = &g_page2_window_bounds_storage;
 // GLOBAL: SHANDALAR 0x00583308
-FacemakerWindowBounds DAT_00583308 = {3, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
+FacemakerWindowBounds g_page3_window_bounds_storage = {3, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x0058332c
-FacemakerWindowBounds *PTR_DAT_0058332c = &DAT_00583308;
+FacemakerWindowBounds *g_page3_window_bounds = &g_page3_window_bounds_storage;
 // GLOBAL: SHANDALAR 0x00583330
-FacemakerWindowBounds DAT_00583330 = {5, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
+FacemakerWindowBounds g_page5_window_bounds_storage = {5, 0, 0, 0x27f, 0x1df, 1, 0x0f, 4, 0};
 // GLOBAL: SHANDALAR 0x00583354
-FacemakerWindowBounds *PTR_DAT_00583354 = &DAT_00583330;
+FacemakerWindowBounds *g_page5_window_bounds = &g_page5_window_bounds_storage;
 // GLOBAL: SHANDALAR 0x00939160
 HINSTANCE g_app_instance;
 // GLOBAL: SHANDALAR 0x00591210
@@ -175,9 +175,9 @@ char g_ini_string_scratch[0x28];
 // GLOBAL: SHANDALAR 0x0078df38
 int g_done_text_table_entry;
 // GLOBAL: SHANDALAR 0x00586494
-int DAT_00586494 = 0;
+int g_legacy_mouse_active = 0;
 // GLOBAL: SHANDALAR 0x00586498
-int DAT_00586498 = 0;
+int g_hide_world_map_overlays = 0;
 // GLOBAL: SHANDALAR 0x009300f0
 int g_adventure_world_exit_requested;
 // GLOBAL: SHANDALAR 0x007486d0
@@ -217,7 +217,7 @@ int DAT_006696fc;
 // GLOBAL: SHANDALAR 0x00669700
 int DAT_00669700;
 // GLOBAL: SHANDALAR 0x00669710
-int DAT_00669710;
+int g_world_scene_force_redraw;
 // GLOBAL: SHANDALAR 0x00789938
 int g_deck_total_card_count;
 // GLOBAL: SHANDALAR 0x0078df68
@@ -227,7 +227,7 @@ long g_hint_text_offsets[0x100];
 // GLOBAL: SHANDALAR 0x0097df40
 int g_hint_difficulty_masks[0x100];
 // GLOBAL: SHANDALAR 0x0097e340
-char DAT_0097e340[0x110];
+char g_last_parsed_deck_path[0x110];
 // GLOBAL: SHANDALAR 0x0097e450
 HintPair g_hint_card_pairs[0x100];
 // GLOBAL: SHANDALAR 0x007898f4
@@ -339,7 +339,7 @@ EncodedImage *g_ttsprite_special_sprite_b;
 // GLOBAL: SHANDALAR 0x00749414
 EncodedImage *g_ttsprite_special_sprite_c;
 // GLOBAL: SHANDALAR 0x00749418
-EncodedImage *DAT_00749418;
+EncodedImage *g_current_location_marker_sprite;
 // GLOBAL: SHANDALAR 0x00749420
 EncodedImage *g_compnew_sprite_entries[5];
 // GLOBAL: SHANDALAR 0x00749434
@@ -353,7 +353,7 @@ EncodedImage *g_castles_sprite_entries[20];
 // GLOBAL: SHANDALAR 0x007496a0
 OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 // GLOBAL: SHANDALAR 0x0078df40
-EncodedImage *DAT_0078df40[10];
+EncodedImage *g_ttsprite_extra_sprite_entries[10];
 // GLOBAL: SHANDALAR 0x0058b584
 int g_menu_context_index = 0;
 // GLOBAL: SHANDALAR 0x0058b588
@@ -407,7 +407,7 @@ int g_menu_input_unhandled;
 // GLOBAL: SHANDALAR 0x005b80e0
 int g_menu_allow_arrow_nav_by_context[50];
 // GLOBAL: SHANDALAR 0x008c7408
-int DAT_008c7408[7];
+int g_duel_special_rules_by_color[7];
 // GLOBAL: SHANDALAR 0x0073e990
 jmp_buf DAT_0073e990;
 // GLOBAL: SHANDALAR 0x0073e9e0
@@ -419,7 +419,7 @@ int DAT_00590764 = -1;
 // GLOBAL: SHANDALAR 0x00590768
 int g_adventure_ui_layout_dirty = 1;
 // GLOBAL: SHANDALAR 0x00650f28
-int DAT_00650f28;
+int g_adventure_ui_edge_pages_initialized;
 // GLOBAL: SHANDALAR 0x0073eaa0
 int g_world_scroll_cache_ready;
 // GLOBAL: SHANDALAR 0x0073e880
@@ -447,7 +447,7 @@ int g_text_menu_color_normal = 0x71;
 // GLOBAL: SHANDALAR 0x00580da0
 int g_text_menu_color_selected = 0xe3;
 // GLOBAL: SHANDALAR 0x005a5fe8
-int DAT_005a5fe8[0x20];
+int g_text_menu_line_offsets[0x20];
 // GLOBAL: SHANDALAR 0x005a6068
 int g_text_menu_color_base;
 // GLOBAL: SHANDALAR 0x005a606c
@@ -458,7 +458,7 @@ int g_text_menu_line_count;
 int g_text_menu_hovered_selection;
 
 // GLOBAL: SHANDALAR 0x0078cef0
-char DAT_0078cef0[0xc];
+char g_text_menu_timer_itoa_buffer[0xc];
 // GLOBAL: SHANDALAR 0x00789934
 int DAT_00789934;
 // GLOBAL: SHANDALAR 0x0097ec50
@@ -489,7 +489,7 @@ int g_text_menu_disabled_option_mask;
 // GLOBAL: SHANDALAR 0x005aa414
 int DAT_005aa414;
 // GLOBAL: SHANDALAR 0x005aa62c
-int DAT_005aa62c;
+int g_last_matching_deck_card_index;
 // GLOBAL: SHANDALAR 0x005873d4
 int DAT_005873d4 = 0;
 
@@ -509,8 +509,8 @@ int LoadAdvBlocksFile(const char *filename);
 int FindNextTextBlock(char *scan_start, char *scan_end, int *out_block_start, int *out_next_scan);
 void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
-void FUN_00562d03(void);
-void FUN_00565faa(void);
+void PreloadWorldAmbientSounds(void);
+void FreeAdvblocksFileBuffer(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
@@ -536,7 +536,7 @@ void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y,
 void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
 void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
                              FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-int FUN_00578c80(int param_1);
+int FUN_00578c80(int ignored_result);
 int FUN_00578c20(void);
 int FUN_00578c30(void);
 void *InitializeGraphicsSystemDefaultMode(void);
@@ -546,7 +546,7 @@ int ReadPalette(char *palette_text_path, char *palette_binary_path);
 int ScaleUiCoordinate(int value);
 int LoadFontConfigIfPresent(char *executable_name, char *config_name);
 int LoadSystemFont(int font_id, unsigned int point_size, char *font_file, char *font_name, int weight, DWORD italic);
-int FUN_0055db50(void);
+int RunAdventureSession(void);
 BOOL UnloadFontSlot(int font_slot);
 int FileExists(const char *filename);
 char FindDriveWithAsset(char *filename);
@@ -554,14 +554,14 @@ char GetSoundAssetDriveLetter(void);
 unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
-DWORD WINAPI FUN_0046e6f0(LPVOID);
-void FUN_00578c70(int param_1, int param_2, int param_3);
+DWORD WINAPI AdventureWorkerThread(LPVOID);
+void FUN_00578c70(int unused_a, int unused_b, int unused_c);
 char *BuildResolutionSpritePath(char *sprite_filename);
 int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entries, char *path, int max_entries);
 void LoadTownHintMetadata(void);
-void FUN_0041786e(void);
-void FUN_0046ed03(void);
-void FUN_0046ed33(void);
+void LoadCardRaritiesAndCsvOffsets(void);
+void ShowMouseCursorNested(void);
+void HideMouseCursorNested(void);
 void ShowMouseCursor(void);
 void HideMouseCursor(void);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
@@ -570,29 +570,29 @@ void AnimatePaletteToColor(int color_index, int palette_id);
 int RunOpeningMenu(void);
 int RunDifficultyMenu(void);
 int RunColorMenu(void);
-int RandomIntLessThan(int param_1);
+int RandomIntLessThan(int max_exclusive);
 int RunFacemakerFlow(void);
 void InitializeNewGameState(void);
-void FUN_004f6d90(void);
+void GenerateAdventureWorldMap(void);
 void InitializeAnimatedNoiseGrid(void);
-int FUN_004f7fb9(int param_1, int param_2);
+int CalculateWorldTerrainValue(int x, int y);
 void PropagatePathConnectivity(void);
 int GenerateWorldTownSlots(void);
 void GenerateTownConnections(void);
 int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_y);
 void FloodFillPathConnectivity(int x, int y, unsigned int depth);
 void InitializeCastleDungeonSlots(void);
-unsigned int GetWorldTileType(int param_1, int param_2);
-unsigned int GetWorldTileMagicMask(unsigned int param_1);
-unsigned int FUN_004314ca(int param_1, int param_2);
-void SetWorldMapPixelFlags(unsigned int param_1, int param_2, int param_3);
-void ClearWorldMapPixelFlags(unsigned int param_1, int param_2, int param_3);
+unsigned int GetWorldTileType(int x, int y);
+unsigned int GetWorldTileMagicMask(unsigned int tile_type);
+unsigned int GetWorldMapPixelFlags(int x, int y);
+void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
+void ClearWorldMapPixelFlags(unsigned int mask, int x, int y);
 void MarkPathConnection(int x, int y, int direction_index);
 int SampleAnimatedNoiseGridBilinear(int x_fixed, int y_fixed);
 void SaveGameToSlot(int save_slot_index);
-int FUN_005031a8(void);
+int RunLoadGameMenu(void);
 int LoadGameFromSlot(int save_slot_index);
-int single_color_test_bit_to_color_t(int param_1);
+int single_color_test_bit_to_color_t(int mask);
 void AddJournalEntry(int entry_type, int entry_arg);
 int LoadStatWinDllExports(void);
 void LoadOpeningMenuSpriteResources(void);
@@ -624,7 +624,7 @@ unsigned int WaitForInputEventUnlessBlocked(void);
 int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 unsigned int PeekQueuedKeyInput(void);
 unsigned int WaitForInputEvent(void);
-int ApproximateDistance(int param_1, int param_2);
+int ApproximateDistance(int delta_x, int delta_y);
 void ClearInputAndWaitForMouseRelease(void);
 void ClearQueuedKeyInput(void);
 void UnloadStatWinDllExports(void);
@@ -640,19 +640,19 @@ void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
 void RunLairExplorationEvent(int color);
 #endif
 
-void DelayUiTicks(int param_1);
+void DelayUiTicks(int ticks);
 int FindCardIndexByCsvid(int csvid);
-unsigned int FUN_004bdccc(unsigned int param_1);
+unsigned int PickRandomColorBitExcludingMask(unsigned int excluded_mask);
 int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
-int FUN_0056c0e5(int param_1, int param_2, int param_3);
-int AddCardToDeckSorted(int param_1);
-int GetCardRarity(int param_1);
-int FUN_004bb1cf(unsigned int param_1);
-unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *param_1, int param_2, int param_3);
-int RunLoadSaveMenu(int param_1);
-int FUN_0052280c(void *param_1);
-int FUN_0056302b(int param_1);
+int IsCardColorCompatibleWithMask(int card_color, int color_mask, int compatibility_level);
+int AddCardToDeckSorted(int card_id);
+int GetCardRarity(int card_id);
+int GetRemainingAllowedCardCopies(unsigned int card_id);
+unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y);
+int RunLoadSaveMenu(int save_mode);
+int UpdateStatWindowProgress(void *progress_values);
+int MapWizardColorToDisplayIndex(int wizard_color);
 int ConsumeMouseButtonReleaseMask(void);
 int RunTextMenuAt(char *menu_text, int left_x, int top_y);
 int RunTextMenuCore(char *menu_text, int clear_input_before_show);
@@ -667,8 +667,8 @@ void DrawTextLineNoShadow(char *text, int x, int y, int color_index);
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 int MeasureTextLineWidth(char *text);
 void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
-int FUN_004bb458(int param_1);
-void PushQueuedKeyInput(int param_1);
+int FindWorldMagicCardIndex(int world_magic_slot_index);
+void PushQueuedKeyInput(int key_code);
 int MapWorldClickToMovementKey(int x, int y);
 int RenderMenuControlRange(int first_index, int count);
 int GetUiTickCount(void);
@@ -680,8 +680,8 @@ int SaveGameWithMessage(char *save_file_path);
 int GetSaveDriveIndex(void);
 int LoadGameFromPath(char *save_file_path);
 int SaveGameToPath(char *save_file_path);
-int GetFontCharWidth(int param_1, char param_2);
-int GetFontLineHeight(int param_1);
+int GetFontCharWidth(int font_slot, char ch);
+int GetFontLineHeight(int font_slot);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 int DrawTextLine(FacemakerWindowBounds *window_bounds, int x, int y, char *text);
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
@@ -699,19 +699,19 @@ int RunRandomAiDuelDemo(void);
 void EnsureAdvfac64Loaded(int state);
 void StartWizardTownSiege(void);
 void ResolveWizardTownSiege(void);
-void FUN_00562736(int param_1, int param_2, int param_3, int param_4);
-void FUN_0056279e(int param_1, int param_2, int param_3);
-void FUN_00562835(char *param_1, int param_2);
-void UpdateAmbientWizardColorSound(int param_1);
-void EnterCastleDungeon(int param_1);
-void ShowCityInfoScreen(int param_1);
+void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent);
+void PlayLoopingSoundWithPan(int sound_id, int volume, int pan_percent);
+void LoadLoopingSound(char *sound_path, int channel);
+void UpdateAmbientWizardColorSound(int wizard_color);
+void EnterCastleDungeon(int dungeon_index);
+void ShowCityInfoScreen(int unused);
 void ShowDungeonCluesScreen(int unused);
 void RunAdventureStatsMenu(void);
 void ShowWorldMapScreen(int mode);
 void ShowStatsWindow(int mode, int highlight);
 void AnalyzeDeckAndMaybeShowReport(int show_ui);
-int FUN_004bb040(int world_x, int world_y);
-int FUN_00508b89(int world_x, int world_y);
+int FindTownAtWorldCoordinates(int world_x, int world_y);
+int FindCastleDungeonAtWorldCoordinates(int world_x, int world_y);
 extern int g_world_player_tile_x;
 extern int g_world_player_tile_y;
 extern char *global_base_txt;
@@ -742,7 +742,7 @@ int ScaleUiCoordinate(int value)
 }
 
 // FUNCTION: SHANDALAR 0x0055db50
-int FUN_0055db50(void)
+int RunAdventureSession(void)
 {
   struct
   {
@@ -766,10 +766,10 @@ int FUN_0055db50(void)
   }
 
   LoadTownHintMetadata();
-  FUN_0041786e();
+  LoadCardRaritiesAndCsvOffsets();
   FUN_00578c70(1, 1, (int)g_ttsprite_special_sprite_a);
-  FUN_0046ed03();
-  FUN_0046ed33();
+  ShowMouseCursorNested();
+  HideMouseCursorNested();
   s.temp_value = GdiGetBatchLimit();
   GdiSetBatchLimit(100);
   LoadPcxIntoPageNoPalette("advfac64.pic");
@@ -811,19 +811,19 @@ opening_menu:
     g_deck_color_bitmap = 1 << ((unsigned char)g_selected_wizard_color & 0xff);
     LoadPcxIntoPageNoPalette("advfac64.pic");
     LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
-    BlitGraphicsRect((int *)PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, (int *)PTR_DAT_005832b4, 0, 0);
+    BlitGraphicsRect((int *)g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, (int *)g_page0_window_bounds, 0, 0);
     DAT_00715f10 = 0;
     if (s.initialized_world == 0)
     {
       setup_shared_startup();
     }
     s.initialized_world = 1;
-    PTR_DAT_005832b4->font_slot = 5;
+    g_page0_window_bounds->font_slot = 5;
     LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-    DrawTextAt((int *)PTR_DAT_005832b4, 0xff, 0x140, 0xbc, text_lines[0]);
+    DrawTextAt((int *)g_page0_window_bounds, 0xff, 0x140, 0xbc, text_lines[0]);
     g_world_scene_reveal_effect_pending = 1;
     InitializeNewGameState();
-    FUN_004f6d90();
+    GenerateAdventureWorldMap();
     InitializeCastleDungeonSlots();
     Gold = (5 - g_shandalar_difficulty) * 0x32;
     DAT_00591214 = 0;
@@ -835,13 +835,13 @@ opening_menu:
         g_world_player_y = RandomIntLessThan(0x40) * 0x20 + 0x10;
         s.tile_mask = GetWorldTileMagicMask(GetWorldTileType(g_world_player_x / 0x20, g_world_player_y / 0x20));
       } while ((g_deck_color_bitmap & s.tile_mask) == 0);
-    } while ((FUN_004314ca(g_world_player_x / 0x20, g_world_player_y / 0x20) & 0x10) != 0);
+    } while ((GetWorldMapPixelFlags(g_world_player_x / 0x20, g_world_player_y / 0x20) & 0x10) != 0);
 
     SaveGameToSlot(3);
     break;
   case 1:
     DAT_00715f10 = 0;
-    LoadGameFromSlot(FUN_005031a8());
+    LoadGameFromSlot(RunLoadGameMenu());
     break;
 
   case 2:
@@ -927,8 +927,8 @@ opening_menu:
       s.last_tick = 0;
 #endif
       ConsumeUiTickCount();
-      RenderAdventureWorldScene(g_world_player_x, g_world_player_y, DAT_00669710);
-      DAT_00669710 = 0;
+      RenderAdventureWorldScene(g_world_player_x, g_world_player_y, g_world_scene_force_redraw);
+      g_world_scene_force_redraw = 0;
 
       while (clock() - s.last_tick < 0x3c)
       {
@@ -1003,7 +1003,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   s.selected_menu_entry = s.previous_menu_entry;
   g_text_menu_mouse_active = 0;
   g_text_menu_mouse_released = g_text_menu_mouse_active;
-  if (DAT_00586494 == 0)
+  if (g_legacy_mouse_active == 0)
   {
     if (s.selected_menu_entry == -1)
     {
@@ -1026,7 +1026,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   g_text_menu_first_option_line = -1;
   g_text_menu_needs_layout = 1;
   g_text_menu_hovered_selection = -1;
-  g_text_menu_line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+  g_text_menu_line_height = GetFontLineHeight(g_page0_window_bounds->font_slot);
   s.current_menu_entry = 3;
   s.line_height = 0x16;
   g_text_menu_color_base = 0xff;
@@ -1038,9 +1038,9 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
 
   s.mouse_active = 0;
   s.done = s.mouse_active;
-  FUN_0046ed33();
+  HideMouseCursorNested();
   DrawTextMenu(menu_text, g_text_menu_initial_selection);
-  FUN_0046ed03();
+  ShowMouseCursorNested();
 
   if (g_text_menu_abort_requested != 0)
   {
@@ -1073,8 +1073,8 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
       }
       if (s.timer_seconds_left != s.last_timer_seconds)
       {
-        strcpy(s.timer_text, _itoa(s.timer_seconds_left, DAT_0078cef0, 10));
-        FillGraphicsRect(PTR_DAT_005832b4, g_text_menu_right - 0xe, g_text_menu_top + 4, 0xc, 7, 0xbc);
+        strcpy(s.timer_text, _itoa(s.timer_seconds_left, g_text_menu_timer_itoa_buffer, 10));
+        FillGraphicsRect(g_page0_window_bounds, g_text_menu_right - 0xe, g_text_menu_top + 4, 0xc, 7, 0xbc);
         DrawCenteredTextLineClamped(s.timer_text, g_text_menu_right - 8, g_text_menu_top + 5, 0xff);
         s.last_timer_seconds = s.timer_seconds_left;
       }
@@ -1169,10 +1169,10 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   g_text_menu_finish_flash = 1;
   if (s.selected_menu_entry != -1)
   {
-    FUN_0046ed33();
+    HideMouseCursorNested();
     DrawTextMenu(menu_text, s.selected_menu_entry);
     DelayUiTicks(0x14);
-    FUN_0046ed03();
+    ShowMouseCursorNested();
   }
   else
   {
@@ -1191,7 +1191,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
 // FUNCTION: SHANDALAR 0x00430e00
 void DrawUiLine(int x1, int y1, int x2, int y2, int color_index)
 {
-  DrawGraphicsLine(PTR_DAT_005832b4, x1, y1, x2, y2, color_index);
+  DrawGraphicsLine(g_page0_window_bounds, x1, y1, x2, y2, color_index);
 }
 
 // FUNCTION: SHANDALAR 0x004138bd
@@ -1212,37 +1212,37 @@ void DrawTiledDialogBoxFrame(int x, int y, int width, int height, int frame_styl
   x -= ((tile_columns << 4) - width) / 2;
   y -= ((tile_rows << 4) - height) / 2;
 
-  PTR_DAT_005832b4->page_number = 1;
-  FillGraphicsRect(PTR_DAT_005832b4, x, y, tile_columns << 4, tile_rows << 4, 0xe3);
+  g_page0_window_bounds->page_number = 1;
+  FillGraphicsRect(g_page0_window_bounds, x, y, tile_columns << 4, tile_rows << 4, 0xe3);
 
   for (row = 0; tile_rows > row; row = row + 1)
   {
     for (col = 0; tile_columns > col; col = col + 1)
     {
-      DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + x, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][0]);
+      DrawEncodedImageUnscaled(g_page0_window_bounds, col * 0x10 + x, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][0]);
     }
   }
 
   for (col = 0; tile_columns > col; col = col + 1)
   {
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + x, y - 10, g_dialog_box_sprite_bank.frame[frame_style][5]);
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, col * 0x10 + x, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][7]);
+    DrawEncodedImageUnscaled(g_page0_window_bounds, col * 0x10 + x, y - 10, g_dialog_box_sprite_bank.frame[frame_style][5]);
+    DrawEncodedImageUnscaled(g_page0_window_bounds, col * 0x10 + x, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][7]);
   }
 
   for (row = 0; tile_rows > row; row = row + 1)
   {
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, x - 10, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][8]);
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + x - 6, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][6]);
+    DrawEncodedImageUnscaled(g_page0_window_bounds, x - 10, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][8]);
+    DrawEncodedImageUnscaled(g_page0_window_bounds, tile_columns * 0x10 + x - 6, row * 0x10 + y, g_dialog_box_sprite_bank.frame[frame_style][6]);
   }
 
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, x - 10, y - 10, g_dialog_box_sprite_bank.frame[frame_style][1]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + x - 6, y - 10, g_dialog_box_sprite_bank.frame[frame_style][2]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, x - 10, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][3]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, tile_columns * 0x10 + x - 6, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][4]);
+  DrawEncodedImageUnscaled(g_page0_window_bounds, x - 10, y - 10, g_dialog_box_sprite_bank.frame[frame_style][1]);
+  DrawEncodedImageUnscaled(g_page0_window_bounds, tile_columns * 0x10 + x - 6, y - 10, g_dialog_box_sprite_bank.frame[frame_style][2]);
+  DrawEncodedImageUnscaled(g_page0_window_bounds, x - 10, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][3]);
+  DrawEncodedImageUnscaled(g_page0_window_bounds, tile_columns * 0x10 + x - 6, tile_rows * 0x10 + y - 6, g_dialog_box_sprite_bank.frame[frame_style][4]);
 
-  PTR_DAT_005832b4->page_number = 0;
-  BlitGraphicsRect(PTR_DAT_005832dc, x - 10, y - 10, tile_columns * 0x10 + 0x14, tile_rows * 0x10 + 0x14,
-                   PTR_DAT_005832b4, x - 10, y - 10);
+  g_page0_window_bounds->page_number = 0;
+  BlitGraphicsRect(g_page1_window_bounds, x - 10, y - 10, tile_columns * 0x10 + 0x14, tile_rows * 0x10 + 0x14,
+                   g_page0_window_bounds, x - 10, y - 10);
 }
 
 // FUNCTION: SHANDALAR 0x004136ab
@@ -1276,13 +1276,13 @@ void DrawTextLineClamped(char *text, int x, int y, int color_index)
     x = global_screen_width - 1 - MeasureTextLineWidth(text);
   }
 
-  if (global_screen_height <= y + GetFontLineHeight(PTR_DAT_005832b4->font_slot))
+  if (global_screen_height <= y + GetFontLineHeight(g_page0_window_bounds->font_slot))
   {
-    y = global_screen_height - 1 - GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+    y = global_screen_height - 1 - GetFontLineHeight(g_page0_window_bounds->font_slot);
   }
 
-  PTR_DAT_005832b4->text_color = color_index;
-  DrawTextLine(PTR_DAT_005832b4, x, y, text);
+  g_page0_window_bounds->text_color = color_index;
+  DrawTextLine(g_page0_window_bounds, x, y, text);
 }
 
 // FUNCTION: SHANDALAR 0x00413796
@@ -1297,16 +1297,16 @@ void DrawRectangleBorder(int x, int y, int width, int height, int color_index)
 // FUNCTION: SHANDALAR 0x00430ef4
 void DrawTextLineNoShadow(char *text, int x, int y, int color_index)
 {
-  PTR_DAT_005832b4->draw_shadow_enabled = 0;
+  g_page0_window_bounds->draw_shadow_enabled = 0;
   DrawTextLineClamped(text, x, y, color_index);
-  PTR_DAT_005832b4->draw_shadow_enabled = 1;
+  g_page0_window_bounds->draw_shadow_enabled = 1;
 }
 
 // FUNCTION: SHANDALAR 0x004310e8
 int MeasureTextLineWidth(char *text)
 {
   unsigned char *cursor = text;
-  int font_slot = PTR_DAT_005832b4->font_slot;
+  int font_slot = g_page0_window_bounds->font_slot;
   int result = 0;
   while (*cursor)
   {
@@ -1319,9 +1319,9 @@ int MeasureTextLineWidth(char *text)
 void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index)
 {
   center_x -= MeasureTextLineWidth(text) / 2;
-  PTR_DAT_005832b4->draw_shadow_enabled = 0;
+  g_page0_window_bounds->draw_shadow_enabled = 0;
   DrawTextLineClamped(text, center_x, y, color_index);
-  PTR_DAT_005832b4->draw_shadow_enabled = 1;
+  g_page0_window_bounds->draw_shadow_enabled = 1;
 }
 
 // FUNCTION: SHANDALAR 0x004ce97d
@@ -1353,10 +1353,10 @@ int DrawTextMenu(char *menu_text, int selected_option)
     int line_width;      // ebp - 0x4
   } s;
 
-  DAT_005a5fe8[0] = 0;
+  g_text_menu_line_offsets[0] = 0;
   if (g_text_menu_needs_layout == 1)
   {
-    g_text_menu_line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
+    g_text_menu_line_height = GetFontLineHeight(g_page0_window_bounds->font_slot);
     for (s.line_idx = 0; s.line_idx < 0x20; s.line_idx = s.line_idx + 1)
     {
       g_text_menu_hotkey_by_option[s.line_idx] = -1;
@@ -1376,7 +1376,7 @@ int DrawTextMenu(char *menu_text, int selected_option)
         }
         s.line_width = 0;
         g_text_menu_line_count = g_text_menu_line_count + 1;
-        DAT_005a5fe8[g_text_menu_line_count] = s.line_idx + 1;
+        g_text_menu_line_offsets[g_text_menu_line_count] = s.line_idx + 1;
       }
       else
       {
@@ -1392,7 +1392,7 @@ int DrawTextMenu(char *menu_text, int selected_option)
           }
           s.menu_option_idx = s.menu_option_idx + 1;
         }
-        s.line_width = s.line_width + GetFontCharWidth(PTR_DAT_005832b4->font_slot, menu_text[s.line_idx]);
+        s.line_width = s.line_width + GetFontCharWidth(g_page0_window_bounds->font_slot, menu_text[s.line_idx]);
       }
     }
 
@@ -1430,18 +1430,18 @@ int DrawTextMenu(char *menu_text, int selected_option)
   }
 
   g_text_menu_color_base = g_text_menu_color_normal;
-  PTR_DAT_005832b4->text_color = g_text_menu_color_base;
+  g_page0_window_bounds->text_color = g_text_menu_color_base;
   for (s.line_idx = 0; g_text_menu_line_count > s.line_idx; s.line_idx = s.line_idx + 1)
   {
     if ((g_text_menu_needs_layout != 0) || (s.menu_option_idx == g_text_menu_hovered_selection) || (s.menu_option_idx == selected_option))
     {
-      menu_text[DAT_005a5fe8[s.line_idx + 1] - 1] = '\0';
+      menu_text[g_text_menu_line_offsets[s.line_idx + 1] - 1] = '\0';
       if ((s.menu_option_idx >= 0) && ((g_text_menu_caret_prefix_mask & (1 << ((unsigned char)s.menu_option_idx))) != 0))
       {
-        menu_text[DAT_005a5fe8[s.line_idx]] = '^';
+        menu_text[g_text_menu_line_offsets[s.line_idx]] = '^';
         if ((g_text_menu_finish_flash != 0) && (s.menu_option_idx == selected_option))
         {
-          DrawTextLineNoShadow(menu_text + DAT_005a5fe8[s.line_idx], g_text_menu_left + 5, s.line_idx * g_text_menu_line_height + g_text_menu_top + 5, 0xff);
+          DrawTextLineNoShadow(menu_text + g_text_menu_line_offsets[s.line_idx], g_text_menu_left + 5, s.line_idx * g_text_menu_line_height + g_text_menu_top + 5, 0xff);
         }
         else
         {
@@ -1460,9 +1460,9 @@ int DrawTextMenu(char *menu_text, int selected_option)
           {
             s.highlight_color = g_text_menu_color_base;
           }
-          DrawTextLineNoShadow(menu_text + DAT_005a5fe8[s.line_idx], g_text_menu_left + 5, s.line_idx * g_text_menu_line_height + g_text_menu_top + 5, s.highlight_color);
+          DrawTextLineNoShadow(menu_text + g_text_menu_line_offsets[s.line_idx], g_text_menu_left + 5, s.line_idx * g_text_menu_line_height + g_text_menu_top + 5, s.highlight_color);
         }
-        menu_text[DAT_005a5fe8[s.line_idx]] = ' ';
+        menu_text[g_text_menu_line_offsets[s.line_idx]] = ' ';
       }
       else
       {
@@ -1481,12 +1481,12 @@ int DrawTextMenu(char *menu_text, int selected_option)
         {
           s.text_color = g_text_menu_color_base;
         }
-        DrawTextLineNoShadow(menu_text + DAT_005a5fe8[s.line_idx], g_text_menu_left + 5, s.line_idx * g_text_menu_line_height + g_text_menu_top + 5, s.text_color);
+        DrawTextLineNoShadow(menu_text + g_text_menu_line_offsets[s.line_idx], g_text_menu_left + 5, s.line_idx * g_text_menu_line_height + g_text_menu_top + 5, s.text_color);
       }
-      menu_text[DAT_005a5fe8[s.line_idx + 1] - 1] = '\n';
+      menu_text[g_text_menu_line_offsets[s.line_idx + 1] - 1] = '\n';
     }
 
-    if ((menu_text[DAT_005a5fe8[s.line_idx + 1]] == ' ') || (menu_text[DAT_005a5fe8[s.line_idx + 1]] == '_'))
+    if ((menu_text[g_text_menu_line_offsets[s.line_idx + 1]] == ' ') || (menu_text[g_text_menu_line_offsets[s.line_idx + 1]] == '_'))
     {
       s.menu_option_idx = s.menu_option_idx + 1;
     }
@@ -1563,7 +1563,7 @@ void LoadTownHintMetadata(void)
   fclose(s.hints_file);
 }
 // FUNCTION: SHANDALAR 0x0041786e
-void FUN_0041786e(void)
+void LoadCardRaritiesAndCsvOffsets(void)
 {
   struct
   {
@@ -1573,7 +1573,7 @@ void FUN_0041786e(void)
     int location_block_start_index;
     int inner_index;
     FILE *entry_index;
-    int local_4;
+    int scan_result;
   } s;
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 0x4e2; s.location_block_start_index = s.location_block_start_index + 1)
@@ -1587,7 +1587,7 @@ void FUN_0041786e(void)
   for (s.location_block_start_index = 0; s.location_block_start_index < g_card_count; s.location_block_start_index = s.location_block_start_index + 1)
   {
     s.inner_index = global_cards_data[s.location_block_start_index].id;
-    s.local_4 = fscanf(s.entry_index, "%d %d %ld\n", &s.icon_width_scaled, &s.icon_height_scaled, &s.selected_state_sprite);
+    s.scan_result = fscanf(s.entry_index, "%d %d %ld\n", &s.icon_width_scaled, &s.icon_height_scaled, &s.selected_state_sprite);
     global_cards_data[s.location_block_start_index].rarity = (unsigned char)s.icon_height_scaled;
     master_csv_offsets[s.inner_index] = s.selected_state_sprite;
   }
@@ -1595,19 +1595,19 @@ void FUN_0041786e(void)
   fclose(s.entry_index);
 }
 // FUNCTION: SHANDALAR 0x0046ed03
-void FUN_0046ed03(void)
+void ShowMouseCursorNested(void)
 {
   g_cursor_visibility_depth = g_cursor_visibility_depth + 1;
-  if ((DAT_00586494 != 0) && (g_cursor_visibility_depth == 1))
+  if ((g_legacy_mouse_active != 0) && (g_cursor_visibility_depth == 1))
   {
     ShowMouseCursor();
   }
 }
 
 // FUNCTION: SHANDALAR 0x0046ed33
-void FUN_0046ed33(void)
+void HideMouseCursorNested(void)
 {
-  if ((DAT_00586494 != 0) && (g_cursor_visibility_depth == 1))
+  if ((g_legacy_mouse_active != 0) && (g_cursor_visibility_depth == 1))
   {
     HideMouseCursor();
   }
@@ -1687,9 +1687,9 @@ int EndMenuContext(void)
 }
 
 // FUNCTION: SHANDALAR 0x00522508
-int RandomIntLessThan(int param_1)
+int RandomIntLessThan(int max_exclusive)
 {
-  return (param_1 > 1) ? rand() % param_1 : 0;
+  return (max_exclusive > 1) ? rand() % max_exclusive : 0;
 }
 
 // FUNCTION: SHANDALAR 0x004ce992
@@ -1711,7 +1711,7 @@ void InitializeNewGameState(void)
     unsigned int uVar2;
     int location_block_start_index;
     int entry_index;
-    int local_4;
+    int difficulty_copy;
   } s;
 
   if (g_duel_ai_mode_state != 0)
@@ -1732,7 +1732,7 @@ void InitializeNewGameState(void)
   for (s.location_block_start_index = 0; s.location_block_start_index < 7; s.location_block_start_index = s.location_block_start_index + 1)
   {
     DAT_008b3240[s.location_block_start_index] = 0;
-    DAT_008c7408[s.location_block_start_index] = -1;
+    g_duel_special_rules_by_color[s.location_block_start_index] = -1;
   }
 
   g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
@@ -1740,7 +1740,7 @@ void InitializeNewGameState(void)
 
   s.uVar2 = 1 << (BYTE)g_selected_wizard_color;
   s.entry_index = g_shandalar_difficulty + 1;
-  s.local_4 = s.entry_index;
+  s.difficulty_copy = s.entry_index;
   if (g_shandalar_difficulty == 3)
   {
     s.entry_index = 1;
@@ -1761,13 +1761,13 @@ void InitializeNewGameState(void)
     break;
   case 1:
     AddRandomStarterDeckCards(s.uVar2, 0xb, 4, 0xc, 1, 1);
-    AddRandomStarterDeckCards(FUN_004bdccc(s.uVar2), 4, 3, 4, 0, 1);
+    AddRandomStarterDeckCards(PickRandomColorBitExcludingMask(s.uVar2), 4, 3, 4, 0, 1);
     break;
   case 2:
     AddRandomStarterDeckCards(s.uVar2, 9, 3, 9, 1, 1);
-    s.uVar3 = FUN_004bdccc(s.uVar2);
+    s.uVar3 = PickRandomColorBitExcludingMask(s.uVar2);
     AddRandomStarterDeckCards(s.uVar3, 5, 3, 4, 0, 1);
-    AddRandomStarterDeckCards(FUN_004bdccc(s.uVar2 | s.uVar3), 4, 3, 3, 0, 1);
+    AddRandomStarterDeckCards(PickRandomColorBitExcludingMask(s.uVar2 | s.uVar3), 4, 3, 3, 0, 1);
     break;
   case 3:
     AddRandomStarterDeckCards(s.uVar2, 6, 3, 5, 1, 1);
@@ -1816,14 +1816,14 @@ void InitializeNewGameState(void)
 }
 
 // FUNCTION: SHANDALAR 0x004bdccc
-unsigned int FUN_004bdccc(unsigned int param_1)
+unsigned int PickRandomColorBitExcludingMask(unsigned int excluded_mask)
 {
   int entry_index;
 
   do
   {
     entry_index = RandomIntLessThan(5) + 1;
-  } while ((param_1 & (1U << (entry_index & 0xff))) != 0);
+  } while ((excluded_mask & (1U << (entry_index & 0xff))) != 0);
 
   return 1U << (entry_index & 0xff);
 }
@@ -1845,7 +1845,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
   for (s.added_count = 0; land_count > (int)s.added_count; s.added_count = s.added_count + 1)
   {
     s.selected_card_id = PickRandomCardMatchingTypeAndColor(1, color_mask);
-    if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
+    if ((IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
         ((int)s.selected_card_id <= 4) &&
         ((global_cards_data[s.selected_card_id].expansion & 0xc1) != 0))
     {
@@ -1899,7 +1899,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
         s.required_color_mask = color_mask;
       }
 
-      if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card_id].color, s.required_color_mask, 0) != 0) &&
+      if ((IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, s.required_color_mask, 0) != 0) &&
           (GetCardRarity(s.selected_card_id) <= ((s.added_count & 1) == 0 ? 2 : 1)) &&
           ((global_cards_data[s.selected_card_id].expansion & 0xc1) != 0))
       {
@@ -1926,14 +1926,14 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
     {
       if (s.duplicate_attempt_count < 1000)
       {
-        s.card_ok = 1 <= FUN_004bb1cf(s.selected_card_id);
+        s.card_ok = 1 <= GetRemainingAllowedCardCopies(s.selected_card_id);
       }
       else
       {
         s.card_ok = 1;
       }
 
-      if ((FUN_0056c0e5((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
+      if ((IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
           (GetCardRarity(s.selected_card_id) <= ((s.added_count & 1) == 0 ? 2 : 1)) &&
           (s.card_ok && ((global_cards_data[s.selected_card_id].expansion & 0xc1) != 0)))
       {
@@ -1953,9 +1953,9 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
       do
       {
         s.selected_card_id = PickRandomCardMatchingTypeAndColor(0xe, 1);
-      } while (FUN_0056c0e5((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 1) == 0);
+      } while (IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 1) == 0);
     } while ((GetCardRarity(s.selected_card_id) < 3) ||
-             (FUN_004bb1cf(s.selected_card_id) <= 0) ||
+             (GetRemainingAllowedCardCopies(s.selected_card_id) <= 0) ||
              ((g_shandalar_difficulty == 0 && ((global_cards_data[s.selected_card_id].static_ability & 3) != 0))) ||
              ((global_cards_data[s.selected_card_id].extra_ability & 0x900) != 0) ||
              ((global_cards_data[s.selected_card_id].expansion & 0xc1) == 0));
@@ -2018,10 +2018,10 @@ int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int colo
 }
 
 // FUNCTION: SHANDALAR 0x0056c0e5
-int FUN_0056c0e5(int param_1, int param_2, int param_3)
+int IsCardColorCompatibleWithMask(int card_color, int color_mask, int compatibility_level)
 {
   // GLOBAL: SHANDALAR 0x00593e20
-  static const signed char DAT_00593e20[18] = {
+  static const signed char color_compatibility_by_mask_color[18] = {
       0, 0, 0,
       1, 4, 2,
       2, 1, 5,
@@ -2029,29 +2029,29 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
       4, 3, 1,
       5, 2, 5};
 
-  if ((param_1 == 1) || (param_2 == 1))
+  if ((card_color == 1) || (color_mask == 1))
   {
     return 1;
   }
 
-  param_1 = single_color_test_bit_to_color_t(param_1);
-  param_2 = single_color_test_bit_to_color_t(param_2);
-  if (DAT_00593e20[param_2 * 3] == param_1)
+  card_color = single_color_test_bit_to_color_t(card_color);
+  color_mask = single_color_test_bit_to_color_t(color_mask);
+  if (color_compatibility_by_mask_color[color_mask * 3] == card_color)
   {
     return 1;
   }
 
-  if (param_3 > 1 && DAT_00593e20[param_2 * 3 + 1] == param_1)
+  if (compatibility_level > 1 && color_compatibility_by_mask_color[color_mask * 3 + 1] == card_color)
   {
     return 1;
   }
 
-  if (param_3 > 2 && DAT_00593e20[param_2 * 3 + 2] == param_1)
+  if (compatibility_level > 2 && color_compatibility_by_mask_color[color_mask * 3 + 2] == card_color)
   {
     return 1;
   }
 
-  if (param_3 > 3)
+  if (compatibility_level > 3)
   {
     return 1;
   }
@@ -2059,7 +2059,7 @@ int FUN_0056c0e5(int param_1, int param_2, int param_3)
 }
 
 // FUNCTION: SHANDALAR 0x004bb1cf
-int FUN_004bb1cf(unsigned int param_1)
+int GetRemainingAllowedCardCopies(unsigned int card_id)
 {
   struct
   {
@@ -2071,7 +2071,7 @@ int FUN_004bb1cf(unsigned int param_1)
     int color_counts[7];
   } s;
 
-  if ((int)param_1 <= 4)
+  if ((int)card_id <= 4)
   {
     return 99;
   }
@@ -2093,10 +2093,10 @@ int FUN_004bb1cf(unsigned int param_1)
       s.color_counts[s.color_index] = s.color_counts[s.color_index] + 1;
     }
 
-    if (((unsigned int)deck[s.i] & 0xffff7fffU) == param_1)
+    if (((unsigned int)deck[s.i] & 0xffff7fffU) == card_id)
     {
       s.copies_in_deck = s.copies_in_deck + 1;
-      DAT_005aa62c = s.i;
+      g_last_matching_deck_card_index = s.i;
     }
   }
 
@@ -2136,11 +2136,11 @@ int FUN_004bb1cf(unsigned int param_1)
     s.max_color_count = s.max_color_count + 1;
   }
 
-  if ((global_cards_data[param_1].extra_ability & 0x100) != 0)
+  if ((global_cards_data[card_id].extra_ability & 0x100) != 0)
   {
     s.max_color_count = (g_shandalar_difficulty <= s.max_color_count);
   }
-  else if ((global_cards_data[param_1].expansion & 0xc1) == 0)
+  else if ((global_cards_data[card_id].expansion & 0xc1) == 0)
   {
     s.max_color_count = s.max_color_count / 2;
   }
@@ -2149,7 +2149,7 @@ int FUN_004bb1cf(unsigned int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x004bb458
-int FUN_004bb458(shandalar_worldmagic_index_t inx)
+int FindWorldMagicCardIndex(shandalar_worldmagic_index_t inx)
 {
   int entry_index;
 
@@ -2176,20 +2176,20 @@ void AddJournalEntry(int entry_type, int entry_arg)
 }
 
 // FUNCTION: SHANDALAR 0x0052280c
-int FUN_0052280c(void *param_1)
+int UpdateStatWindowProgress(void *progress_values)
 {
   if (g_statwin_exports_by_ordinal[1] != 0)
   {
-    return ((int(__cdecl *)(void *))g_statwin_exports_by_ordinal[1])(param_1);
+    return ((int(__cdecl *)(void *))g_statwin_exports_by_ordinal[1])(progress_values);
   }
 
   return 0;
 }
 
 // FUNCTION: SHANDALAR 0x0056302b
-int FUN_0056302b(int param_1)
+int MapWizardColorToDisplayIndex(int wizard_color)
 {
-  switch (param_1)
+  switch (wizard_color)
   {
   case 1:
     return 4;
@@ -2209,7 +2209,7 @@ int FUN_0056302b(int param_1)
 }
 
 // FUNCTION: SHANDALAR 0x004f6d90
-void FUN_004f6d90(void)
+void GenerateAdventureWorldMap(void)
 {
   struct
   {
@@ -2227,7 +2227,7 @@ void FUN_004f6d90(void)
 start:
 
   InitializeAnimatedNoiseGrid();
-  FillGraphicsRect(PTR_DAT_00583304, 0, 0, 0x140, 200, 0);
+  FillGraphicsRect(g_page2_window_bounds, 0, 0, 0x140, 200, 0);
   s.icon_y_scaled = 0;
   for (s.location_block_start_index = 0; s.location_block_start_index < 0x40; s.location_block_start_index++)
   {
@@ -2235,7 +2235,7 @@ start:
     {
       if (((s.location_block_start_index < 2) || (s.icon_width_scaled < 2)) || ((0x3e <= s.location_block_start_index) || (0x3e <= s.icon_width_scaled)))
       {
-        PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, 0);
+        PutGraphicsPixel(g_page2_window_bounds, s.location_block_start_index, s.icon_width_scaled, 0);
         continue;
       }
 
@@ -2243,11 +2243,11 @@ start:
       s.inner_index = (s.icon_width_scaled - s.location_block_start_index) * 3 + 100;
       if ((s.selected_state_sprite < 4) || (s.inner_index < 4) || ((0x13c <= s.selected_state_sprite) || (0xc4 <= s.inner_index)))
       {
-        PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, 0);
+        PutGraphicsPixel(g_page2_window_bounds, s.location_block_start_index, s.icon_width_scaled, 0);
         continue;
       }
 
-      s.uVar1 = FUN_004f7fb9(s.location_block_start_index, s.icon_width_scaled);
+      s.uVar1 = CalculateWorldTerrainValue(s.location_block_start_index, s.icon_width_scaled);
       switch (s.uVar1 / 8)
       {
       case 0:
@@ -2313,7 +2313,7 @@ start:
         break;
       }
 
-      PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, (int)s.entry_index);
+      PutGraphicsPixel(g_page2_window_bounds, s.location_block_start_index, s.icon_width_scaled, (int)s.entry_index);
       if (s.entry_index != 0)
       {
         s.icon_y_scaled++;
@@ -2345,7 +2345,7 @@ start:
         }
         if (s.neighbor_is_open == 0)
         {
-          PutGraphicsPixel(PTR_DAT_00583304, s.location_block_start_index, s.icon_width_scaled, 6);
+          PutGraphicsPixel(g_page2_window_bounds, s.location_block_start_index, s.icon_width_scaled, 6);
         }
       }
     }
@@ -2692,7 +2692,7 @@ int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_
   s.cur_y = start_y;
   s.step_count = 0;
 
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x40, 0x80, PTR_DAT_00583304, 0x40, 0);
+  BlitGraphicsRect(g_page2_window_bounds, 0, 0, 0x40, 0x80, g_page2_window_bounds, 0x40, 0);
   SetWorldMapPixelFlags(0x20, s.cur_x, s.cur_y);
 
   do
@@ -2727,7 +2727,7 @@ int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_
         s.score = s.score + 4;
       }
 
-      if ((FUN_004314ca(s.next_x, s.next_y) & 0x20) != 0)
+      if ((GetWorldMapPixelFlags(s.next_x, s.next_y) & 0x20) != 0)
       {
         if (s.step_count >= 1)
         {
@@ -2744,13 +2744,13 @@ int CreateTownConnectionPath(int start_x, int start_y, int target_x, int target_
 
     if (s.best_direction == -1)
     {
-      BlitGraphicsRect(PTR_DAT_00583304, 0x40, 0, 0x40, 0x80, PTR_DAT_00583304, 0, 0);
+      BlitGraphicsRect(g_page2_window_bounds, 0x40, 0, 0x40, 0x80, g_page2_window_bounds, 0, 0);
       return 0;
     }
 
     s.next_x = g_neighbor_dx[s.best_direction] + s.cur_x;
     s.next_y = g_neighbor_dy[s.best_direction] + s.cur_y;
-    s.flags_masked = FUN_004314ca(s.next_x, s.next_y) & 0x20;
+    s.flags_masked = GetWorldMapPixelFlags(s.next_x, s.next_y) & 0x20;
 
     MarkPathConnection(s.cur_x, s.cur_y, s.best_direction);
 
@@ -2779,7 +2779,7 @@ void PropagatePathConnectivity(void)
     int scan_y;       /* -0x04 */
   } s;
 
-  PutGraphicsPixel(PTR_DAT_00583304, 0xa8, 0x58, 0xff);
+  PutGraphicsPixel(g_page2_window_bounds, 0xa8, 0x58, 0xff);
   do
   {
     s.found_change = 0;
@@ -2787,23 +2787,23 @@ void PropagatePathConnectivity(void)
     {
       for (s.y = 4; s.y < 0x40; s.y = s.y + 4)
       {
-        if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.x + 0x80, s.y + 0x40) != 0)
+        if (ReadGraphicsPixel(g_page2_window_bounds->page_number, s.x + 0x80, s.y + 0x40) != 0)
         {
-          FillGraphicsRect(PTR_DAT_00583304, 0x40, 0, 0x40, 0x40, 0);
+          FillGraphicsRect(g_page2_window_bounds, 0x40, 0, 0x40, 0x40, 0);
           FloodFillPathConnectivity(s.x, s.y, 8);
-          PutGraphicsPixel(PTR_DAT_00583304, s.x + 0x80, s.y + 0x40, 0);
+          PutGraphicsPixel(g_page2_window_bounds, s.x + 0x80, s.y + 0x40, 0);
 
           for (s.scan_x = 0; s.scan_x < 0x40; s.scan_x = s.scan_x + 1)
           {
             for (s.scan_y = 0; s.scan_y < 0x40; s.scan_y = s.scan_y + 1)
             {
-              if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.scan_x + 0x40, s.scan_y) != 0)
+              if (ReadGraphicsPixel(g_page2_window_bounds->page_number, s.scan_x + 0x40, s.scan_y) != 0)
               {
-                if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.scan_x + 0x80, s.scan_y) == 0)
+                if (ReadGraphicsPixel(g_page2_window_bounds->page_number, s.scan_x + 0x80, s.scan_y) == 0)
                 {
                   s.found_change = 1;
-                  PutGraphicsPixel(PTR_DAT_00583304, s.scan_x + 0x80, s.scan_y, 0xff);
-                  PutGraphicsPixel(PTR_DAT_00583304, s.scan_x + 0x80, s.scan_y + 0x40, 0xff);
+                  PutGraphicsPixel(g_page2_window_bounds, s.scan_x + 0x80, s.scan_y, 0xff);
+                  PutGraphicsPixel(g_page2_window_bounds, s.scan_x + 0x80, s.scan_y + 0x40, 0xff);
                 }
               }
             }
@@ -2817,9 +2817,9 @@ void PropagatePathConnectivity(void)
   {
     for (s.y = 0; s.y < 0x40; s.y = s.y + 1)
     {
-      if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.x + 0x80, s.y) == 0)
+      if (ReadGraphicsPixel(g_page2_window_bounds->page_number, s.x + 0x80, s.y) == 0)
       {
-        PutGraphicsPixel(PTR_DAT_00583304, s.x, s.y, 0);
+        PutGraphicsPixel(g_page2_window_bounds, s.x, s.y, 0);
       }
     }
   }
@@ -2840,7 +2840,7 @@ void FloodFillPathConnectivity(int x, int y, unsigned int depth)
     char pad_01[3];
   } s;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x + 0x40, y, depth);
+  PutGraphicsPixel(g_page2_window_bounds, x + 0x40, y, depth);
   if ((int)depth <= 1)
   {
   }
@@ -2850,10 +2850,10 @@ void FloodFillPathConnectivity(int x, int y, unsigned int depth)
     {
       s.next_x = (char)(g_neighbor_dx[(int)s.direction_index] + x);
       s.next_y = (char)(g_neighbor_dy[(int)s.direction_index] + y);
-      s.tile_value = (char)ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.next_x + 0x40, s.next_y);
+      s.tile_value = (char)ReadGraphicsPixel(g_page2_window_bounds->page_number, s.next_x + 0x40, s.next_y);
       if ((int)s.tile_value < (int)depth)
       {
-        if (ReadGraphicsPixel(PTR_DAT_00583304->page_number, s.next_x, s.next_y) != 0)
+        if (ReadGraphicsPixel(g_page2_window_bounds->page_number, s.next_x, s.next_y) != 0)
         {
           FloodFillPathConnectivity(s.next_x, s.next_y, depth - 1);
         }
@@ -2863,29 +2863,29 @@ void FloodFillPathConnectivity(int x, int y, unsigned int depth)
 }
 
 // FUNCTION: SHANDALAR 0x004f7fb9
-int FUN_004f7fb9(int param_1, int param_2)
+int CalculateWorldTerrainValue(int x, int y)
 {
-  int entry_index;
-  int local_4;
+  int edge_penalty;
+  int terrain_value;
 
-  entry_index = 0x10 / (param_1 + 2);
-  entry_index = entry_index + 0x10 / (param_2 + 2);
-  entry_index = entry_index + 0x10 / (0x41 - param_1);
-  entry_index = entry_index + 0x10 / (0x41 - param_2);
+  edge_penalty = 0x10 / (x + 2);
+  edge_penalty = edge_penalty + 0x10 / (y + 2);
+  edge_penalty = edge_penalty + 0x10 / (0x41 - x);
+  edge_penalty = edge_penalty + 0x10 / (0x41 - y);
 
-  entry_index = abs(param_1 - 0x20) + abs(param_2 - 0x20);
-  entry_index = (entry_index * entry_index) / 512;
-  entry_index += abs(param_1 - param_2) / 16;
+  edge_penalty = abs(x - 0x20) + abs(y - 0x20);
+  edge_penalty = (edge_penalty * edge_penalty) / 512;
+  edge_penalty += abs(x - y) / 16;
 
-  param_1 = param_1 << 5;
-  param_2 = param_2 << 5;
-  local_4 = SampleAnimatedNoiseGridBilinear(param_1, param_2) << 2;
+  x = x << 5;
+  y = y << 5;
+  terrain_value = SampleAnimatedNoiseGridBilinear(x, y) << 2;
 
-  local_4 = local_4 + SampleAnimatedNoiseGridBilinear(param_1 << 3, param_2 << 3) * 2;
-  local_4 = local_4 + SampleAnimatedNoiseGridBilinear(param_1 << 4, param_2 << 4);
-  local_4 = local_4 - ClampIntToRange(entry_index, 0, 0xc) * 0x200;
+  terrain_value = terrain_value + SampleAnimatedNoiseGridBilinear(x << 3, y << 3) * 2;
+  terrain_value = terrain_value + SampleAnimatedNoiseGridBilinear(x << 4, y << 4);
+  terrain_value = terrain_value - ClampIntToRange(edge_penalty, 0, 0xc) * 0x200;
 
-  return ClampIntToRange(((7 * local_4) / 64) / 4, 0, 100);
+  return ClampIntToRange(((7 * terrain_value) / 64) / 4, 0, 100);
 }
 
 // FUNCTION: SHANDALAR 0x004f8101
@@ -2937,7 +2937,7 @@ void InitializeAnimatedNoiseGrid(void)
 // FUNCTION: SHANDALAR 0x004f82f2
 int SampleAnimatedNoiseGridBilinear(int x_fixed, int y_fixed)
 {
-  int local_4;
+  int weighted_sample;
   unsigned int entry_index;
   unsigned int inner_index;
   unsigned int location_block_start_index;
@@ -2950,11 +2950,11 @@ int SampleAnimatedNoiseGridBilinear(int x_fixed, int y_fixed)
   inner_index = (y_fixed >> 8) & 0xf;
   selected_state_sprite = (y_fixed & 0xff) / 8;
 
-  local_4 = (int)g_animated_noise_grid[1].samples[entry_index][inner_index] * (0x20 - selected_state_sprite) * (0x20 - location_block_start_index);
-  local_4 = local_4 + (int)g_animated_noise_grid[1].samples[entry_index + 1][inner_index] * (0x20 - selected_state_sprite) * location_block_start_index;
-  local_4 = local_4 + (int)g_animated_noise_grid[1].samples[entry_index][inner_index + 1] * (0x20 - location_block_start_index) * selected_state_sprite;
-  local_4 = local_4 + (int)g_animated_noise_grid[1].samples[entry_index + 1][inner_index + 1] * selected_state_sprite * location_block_start_index;
-  return local_4 / 32;
+  weighted_sample = (int)g_animated_noise_grid[1].samples[entry_index][inner_index] * (0x20 - selected_state_sprite) * (0x20 - location_block_start_index);
+  weighted_sample = weighted_sample + (int)g_animated_noise_grid[1].samples[entry_index + 1][inner_index] * (0x20 - selected_state_sprite) * location_block_start_index;
+  weighted_sample = weighted_sample + (int)g_animated_noise_grid[1].samples[entry_index][inner_index + 1] * (0x20 - location_block_start_index) * selected_state_sprite;
+  weighted_sample = weighted_sample + (int)g_animated_noise_grid[1].samples[entry_index + 1][inner_index + 1] * selected_state_sprite * location_block_start_index;
+  return weighted_sample / 32;
 }
 
 // FUNCTION: SHANDALAR 0x005081fa
@@ -3021,7 +3021,7 @@ void InitializeCastleDungeonSlots(void)
           s.candidate_x = RandomIntLessThan(0x40);
           s.candidate_y = RandomIntLessThan(0x40);
         } while (GetWorldTileType(s.candidate_x, s.candidate_y) == 0);
-      } while ((FUN_004314ca(s.candidate_x, s.candidate_y) & 0x30) != 0);
+      } while ((GetWorldMapPixelFlags(s.candidate_x, s.candidate_y) & 0x30) != 0);
 
       s.nearest_distance = 0xff;
       for (s.scan_index = 0; s.scan_index < 0x80; s.scan_index = s.scan_index + 1)
@@ -3173,7 +3173,7 @@ unsigned int GetWorldTileType(int x, int y)
   {
     y = 0;
   }
-  return GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y) & 0xf;
+  return GetGraphicsPixelColorRef(g_page2_window_bounds, x, y) & 0xf;
 }
 
 // FUNCTION: SHANDALAR 0x005611c8
@@ -3237,7 +3237,7 @@ unsigned int GetWorldTileMagicMask(unsigned int tile_type)
 }
 
 // FUNCTION: SHANDALAR 0x004314ca
-unsigned int FUN_004314ca(int x, int y)
+unsigned int GetWorldMapPixelFlags(int x, int y)
 {
   if (x >= 0x40 || x < 0)
     return 0;
@@ -3245,11 +3245,11 @@ unsigned int FUN_004314ca(int x, int y)
   if (y >= 0x40 || y < 0)
     return 0;
 
-  return GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y);
+  return GetGraphicsPixelColorRef(g_page2_window_bounds, x, y);
 }
 
 // FUNCTION: SHANDALAR 0x00431526
-void SetWorldMapPixelFlags(unsigned int param_1, int x, int y)
+void SetWorldMapPixelFlags(unsigned int mask, int x, int y)
 {
   if (x >= 0x40 || x < 0)
     return;
@@ -3257,11 +3257,11 @@ void SetWorldMapPixelFlags(unsigned int param_1, int x, int y)
   if (y >= 0x40 || y < 0)
     return;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x, y, GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y) | param_1);
+  PutGraphicsPixel(g_page2_window_bounds, x, y, GetGraphicsPixelColorRef(g_page2_window_bounds, x, y) | mask);
 }
 
 // FUNCTION: SHANDALAR 0x00431593
-void ClearWorldMapPixelFlags(unsigned int param_1, int x, int y)
+void ClearWorldMapPixelFlags(unsigned int mask, int x, int y)
 {
   if (x >= 0x40 || x < 0)
     return;
@@ -3269,7 +3269,7 @@ void ClearWorldMapPixelFlags(unsigned int param_1, int x, int y)
   if (y >= 0x40 || y < 0)
     return;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x, y, GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y) & ~param_1);
+  PutGraphicsPixel(g_page2_window_bounds, x, y, GetGraphicsPixelColorRef(g_page2_window_bounds, x, y) & ~mask);
 }
 
 // FUNCTION: SHANDALAR 0x0043174d
@@ -3281,16 +3281,16 @@ void MarkPathConnection(int x, int y, int direction_index)
   if (y >= 0x40 || y < 0)
     return;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40,
-                   GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40) | (1 << (direction_index - 1)));
+  PutGraphicsPixel(g_page2_window_bounds, x, y + 0x40,
+                   GetGraphicsPixelColorRef(g_page2_window_bounds, x, y + 0x40) | (1 << (direction_index - 1)));
   SetWorldMapPixelFlags(0x20, x, y);
 
   x += g_neighbor_dx[direction_index];
   y += g_neighbor_dy[direction_index];
   direction_index = ((direction_index + 3) & 7) + 1;
 
-  PutGraphicsPixel(PTR_DAT_00583304, x, y + 0x40,
-                   GetGraphicsPixelColorRef(PTR_DAT_00583304, x, y + 0x40) | (1 << (direction_index - 1)));
+  PutGraphicsPixel(g_page2_window_bounds, x, y + 0x40,
+                   GetGraphicsPixelColorRef(g_page2_window_bounds, x, y + 0x40) | (1 << (direction_index - 1)));
   SetWorldMapPixelFlags(0x20, x, y);
 }
 
@@ -3307,15 +3307,15 @@ void SaveGameToSlot(int save_slot_index)
 #endif
   g_save_errno = 0;
   global_saveload_loading = g_save_errno;
-  FUN_0046ed33();
+  HideMouseCursorNested();
   save_drive_index = GetSaveDriveIndex();
   if (save_drive_index != -1)
   {
     if (save_slot_index == -1)
     {
-      FUN_0046ed03();
+      ShowMouseCursorNested();
       save_slot_index = RunTextMenuAt(g_ui_message_buffer, 0x30, 0x20);
-      FUN_0046ed33();
+      HideMouseCursorNested();
     }
 
     if (save_slot_index != -1)
@@ -3331,7 +3331,7 @@ void SaveGameToSlot(int save_slot_index)
         else
         {
           strcpy(g_ui_message_buffer, " Game NOT saved.\n");
-          FillGraphicsRect(PTR_DAT_005832b4, 0x40, 0x7f, 0xc0, 0x22, 0xc);
+          FillGraphicsRect(g_page0_window_bounds, 0x40, 0x7f, 0xc0, 0x22, 0xc);
         }
 
         if (g_save_errno == 0xd)
@@ -3347,11 +3347,11 @@ void SaveGameToSlot(int save_slot_index)
       }
     }
   }
-  FUN_0046ed03();
+  ShowMouseCursorNested();
 }
 
 // FUNCTION: SHANDALAR 0x005031a8
-int FUN_005031a8(void)
+int RunLoadGameMenu(void)
 {
   return RunLoadSaveMenu(0);
 }
@@ -3363,7 +3363,7 @@ int LoadGameFromSlot(int save_slot_index)
   unsigned int slot_index;
 
   global_saveload_loading = 1;
-  FUN_0046ed33();
+  HideMouseCursorNested();
   save_drive_index = GetSaveDriveIndex();
   if (save_drive_index != -1)
   {
@@ -3381,9 +3381,9 @@ int LoadGameFromSlot(int save_slot_index)
         }
       }
 
-      FUN_0046ed03();
+      ShowMouseCursorNested();
       g_selected_save_slot_index = RunTextMenuAt(g_ui_message_buffer, 0x30, 0x40);
-      FUN_0046ed33();
+      HideMouseCursorNested();
       if ((g_load_menu_valid_slot_mask_0077f1c8 & (1 << (unsigned char)g_selected_save_slot_index)) == 0)
       {
         g_selected_save_slot_index = -1;
@@ -3409,12 +3409,12 @@ int LoadGameFromSlot(int save_slot_index)
       exit(1);
     }
 
-    FUN_0046ed03();
+    ShowMouseCursorNested();
     return g_selected_save_slot_index;
   }
   else
   {
-    FUN_0046ed03();
+    ShowMouseCursorNested();
     return -1;
   }
 }
@@ -3493,10 +3493,10 @@ int LoadGameFromPath(char *save_file_path)
 
   if (unk_00742fc4 == 0)
   {
-    FUN_0046ed33();
+    HideMouseCursorNested();
     strcpy(save_file_path + 9, "map");
     LoadPcxIntoPage(2, save_file_path);
-    FUN_0046ed03();
+    ShowMouseCursorNested();
   }
 
   s.page4_bounds.page_number = 4;
@@ -3754,7 +3754,7 @@ void LoadOpeningMenuSpriteResources(void)
   }
   for (s.ttsprite_col_index = 0; s.ttsprite_col_index < 10; s.ttsprite_col_index = s.ttsprite_col_index + 1)
   {
-    DAT_0078df40[s.ttsprite_col_index] = s.ttsprite_entries[s.ttsprite_entry_index];
+    g_ttsprite_extra_sprite_entries[s.ttsprite_col_index] = s.ttsprite_entries[s.ttsprite_entry_index];
     s.ttsprite_entry_index = s.ttsprite_entry_index + 1;
   }
   g_ttsprite_special_sprite_a = s.ttsprite_entries[s.ttsprite_entry_index];
@@ -3783,7 +3783,7 @@ void LoadOpeningMenuSpriteResources(void)
   g_wizard_controlled_town_sprite_entries[4] = g_location_marker_sprite_entries[s.location_block_start_index + 3];
   g_wizard_controlled_town_sprite_entries[2] = g_location_marker_sprite_entries[s.location_block_start_index + 8];
   g_wizard_controlled_town_sprite_entries[0] = g_location_marker_sprite_entries[s.location_block_start_index + 10];
-  DAT_00749418 = g_location_marker_sprite_entries[s.location_block_start_index + 6];
+  g_current_location_marker_sprite = g_location_marker_sprite_entries[s.location_block_start_index + 6];
   s.entry_index += ReadSpriteEntryPointers(&g_location_marker_sprite_entries[s.entry_index], BuildResolutionSpritePath("locatn05.spr"));
   s.location_block_start_index = s.entry_index;
   s.entry_index += ReadSpriteEntryPointers(&g_location_marker_sprite_entries[s.entry_index], BuildResolutionSpritePath("locatn06.spr"));
@@ -3935,11 +3935,11 @@ int HandleMainMenuButtonControlEvent(AdvMenuControl *control, int event_type)
   {
     preview_panel_y_offset = ScaleUiCoordinate(4);
     avatar_sprite_index = ScaleUiCoordinate(8);
-    BlitGraphicsRect(PTR_DAT_00583354, (unsigned int)control->x, control->y, (unsigned int)control->width, (DWORD)control->height, PTR_DAT_005832dc,
+    BlitGraphicsRect(g_page5_window_bounds, (unsigned int)control->x, control->y, (unsigned int)control->width, (DWORD)control->height, g_page1_window_bounds,
                      control->x, control->y);
-    DrawEncodedImageResampled(PTR_DAT_005832dc, control->x + preview_panel_y_offset, control->y + preview_panel_y_offset, control->width - avatar_sprite_index, control->height - avatar_sprite_index,
+    DrawEncodedImageResampled(g_page1_window_bounds, control->x + preview_panel_y_offset, control->y + preview_panel_y_offset, control->width - avatar_sprite_index, control->height - avatar_sprite_index,
                               (EncodedImage *)control->mode_data[event_type]);
-    BlitGraphicsRect(PTR_DAT_005832dc, (unsigned int)control->x, control->y, (unsigned int)control->width, (DWORD)control->height, PTR_DAT_005832b4,
+    BlitGraphicsRect(g_page1_window_bounds, (unsigned int)control->x, control->y, (unsigned int)control->width, (DWORD)control->height, g_page0_window_bounds,
                      control->x, control->y);
   }
   if (event_type == 2 && control->on_activate != (AdvMenuActivateCallback)0)
@@ -4007,9 +4007,9 @@ int HandlePortraitMainMenuControlEvent(AdvMenuControl *control, int event_type)
   {
     s.avatar_sprite_index = ScaleUiCoordinate(4);
     s.clamped_required_wins = ScaleUiCoordinate(8);
-    BlitGraphicsRect(PTR_DAT_00583354, s.draw_x, s.draw_y, s.draw_width, s.draw_height, PTR_DAT_005832dc, s.draw_x, s.draw_y);
-    DrawEncodedImageResampled(PTR_DAT_005832dc, s.avatar_sprite_index + s.draw_x, s.avatar_sprite_index + s.draw_y, s.draw_width - s.clamped_required_wins, (int)s.draw_height - s.clamped_required_wins, s.sprite);
-    BlitGraphicsRect(PTR_DAT_005832dc, s.draw_x, s.draw_y, s.draw_width, s.draw_height, PTR_DAT_005832b4, s.draw_x, s.draw_y);
+    BlitGraphicsRect(g_page5_window_bounds, s.draw_x, s.draw_y, s.draw_width, s.draw_height, g_page1_window_bounds, s.draw_x, s.draw_y);
+    DrawEncodedImageResampled(g_page1_window_bounds, s.avatar_sprite_index + s.draw_x, s.avatar_sprite_index + s.draw_y, s.draw_width - s.clamped_required_wins, (int)s.draw_height - s.clamped_required_wins, s.sprite);
+    BlitGraphicsRect(g_page1_window_bounds, s.draw_x, s.draw_y, s.draw_width, s.draw_height, g_page0_window_bounds, s.draw_x, s.draw_y);
   }
   if (event_type == 2 && control->on_activate != (AdvMenuActivateCallback)0)
   {
@@ -4064,12 +4064,12 @@ int HandleWorldMagicChoiceControlEvent(AdvMenuControl *control_ptr, int event_ty
   }
   if ((g_world_magic_bitmap & (1 << (unsigned char)s.world_magic_slot_index)) != 0)
   {
-    s.world_magic_unlock_score = FUN_004bb458(s.world_magic_slot_index);
+    s.world_magic_unlock_score = FindWorldMagicCardIndex(s.world_magic_slot_index);
     if (g_amulet_inventory[s.world_magic_slot_index / 2 - 1] != 0)
     {
       if (event_type != 2)
       {
-        DrawEncodedImageUiScaled(PTR_DAT_005832b4, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y,
+        DrawEncodedImageUiScaled(g_page0_window_bounds, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y,
                                  (EncodedImage *)g_world_magic_choice_controls[control_ptr->selection_value - 0x31].mode_data[event_type],
                                  g_world_magic_icon_rects[s.world_magic_slot_index].width, g_world_magic_icon_rects[s.world_magic_slot_index].height);
       }
@@ -4081,10 +4081,10 @@ int HandleWorldMagicChoiceControlEvent(AdvMenuControl *control_ptr, int event_ty
         s.icon_width_scaled = (unsigned int)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].width);
         s.icon_height_scaled = (DWORD)ScaleUiCoordinate(g_world_magic_icon_rects[s.world_magic_slot_index].height);
         s.icon_border_padding = ScaleUiCoordinate(4);
-        BlitGraphicsRect(PTR_DAT_0058332c, s.icon_x_scaled, s.icon_y_scaled - ScaleUiCoordinate(0x148), s.icon_width_scaled, s.icon_height_scaled, PTR_DAT_005832dc, s.icon_x_scaled, s.icon_y_scaled);
-        DrawEncodedImageUiScaled(PTR_DAT_005832dc, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y, (EncodedImage *)g_world_magic_choice_button_sprite_bank.named.icon[s.world_magic_slot_index],
+        BlitGraphicsRect(g_page3_window_bounds, s.icon_x_scaled, s.icon_y_scaled - ScaleUiCoordinate(0x148), s.icon_width_scaled, s.icon_height_scaled, g_page1_window_bounds, s.icon_x_scaled, s.icon_y_scaled);
+        DrawEncodedImageUiScaled(g_page1_window_bounds, g_world_magic_icon_rects[s.world_magic_slot_index].x, g_world_magic_icon_rects[s.world_magic_slot_index].y, (EncodedImage *)g_world_magic_choice_button_sprite_bank.named.icon[s.world_magic_slot_index],
                                  g_world_magic_icon_rects[s.world_magic_slot_index].width, g_world_magic_icon_rects[s.world_magic_slot_index].height);
-        DrawEncodedImageResampled(PTR_DAT_005832dc,
+        DrawEncodedImageResampled(g_page1_window_bounds,
                                   s.icon_border_padding + (int)s.icon_x_scaled,
                                   s.icon_border_padding + s.icon_y_scaled,
                                   s.icon_width_scaled - s.icon_border_padding * 2,
@@ -4104,11 +4104,11 @@ int HandleWorldMagicChoiceControlEvent(AdvMenuControl *control_ptr, int event_ty
         s.avatar_sprite_draw_order[3] = 3;
         s.avatar_sprite_draw_order[4] = 0;
         s.avatar_sprite_draw_order[5] = s.world_magic_slot_index / 2 - 1;
-        PTR_DAT_005832b4->font_slot = 4;
+        g_page0_window_bounds->font_slot = 4;
         s.avatar_draw_y -= (int)s.avatar_sprite->height / 2;
-        DrawEncodedImageUiScaled(PTR_DAT_005832dc, s.avatar_x_positions[s.avatar_sprite_draw_order[5]] - 0x1e, s.avatar_draw_y, g_world_magic_avatar_sprites[s.avatar_sprite_draw_order[s.avatar_sprite_draw_order[5]]], (int)s.avatar_sprite->width,
+        DrawEncodedImageUiScaled(g_page1_window_bounds, s.avatar_x_positions[s.avatar_sprite_draw_order[5]] - 0x1e, s.avatar_draw_y, g_world_magic_avatar_sprites[s.avatar_sprite_draw_order[s.avatar_sprite_draw_order[5]]], (int)s.avatar_sprite->width,
                                  (int)s.avatar_sprite->height);
-        BlitGraphicsRect(PTR_DAT_005832dc, s.icon_x_scaled, s.icon_y_scaled, s.icon_width_scaled, s.icon_height_scaled, PTR_DAT_005832b4, s.icon_x_scaled, s.icon_y_scaled);
+        BlitGraphicsRect(g_page1_window_bounds, s.icon_x_scaled, s.icon_y_scaled, s.icon_width_scaled, s.icon_height_scaled, g_page0_window_bounds, s.icon_x_scaled, s.icon_y_scaled);
       }
       if ((event_type == 2) && (control_ptr->on_activate != (AdvMenuActivateCallback)0))
       {
@@ -4152,7 +4152,7 @@ int InitializeMainMenuAndWorldMagicChoiceControls(void)
   int sprite_index;
   int scale_control_index;
 
-  g_menu_saved_window_bounds = *PTR_DAT_005832b4;
+  g_menu_saved_window_bounds = *g_page0_window_bounds;
 
   for (i = 0; i < 4; i = i + 1)
   {
@@ -4219,7 +4219,7 @@ void UpdateWorldMagicUnlockProgress(void)
   {
     s.world_magic_duel_win_count = 0;
     s.town_count_for_wizard_color = 0;
-    s.mapped_world_magic_index = FUN_0056302b(s.wizard_color_index + 1);
+    s.mapped_world_magic_index = MapWizardColorToDisplayIndex(s.wizard_color_index + 1);
     for (s.scan_index = 0; s.scan_index < 0x80; s.scan_index = s.scan_index + 1)
     {
       if ((g_town_slots[s.scan_index].status_and_ruling_wizard & 0xff00) &&
@@ -4257,7 +4257,7 @@ void UpdateWorldMagicUnlockProgress(void)
   s.unused_flag_a = 0;
   s.unused_flag_b = 0;
   s.unused_flag_c = 0;
-  FUN_0052280c(s.world_magic_progress_values);
+  UpdateStatWindowProgress(s.world_magic_progress_values);
 }
 
 // FUNCTION: SHANDALAR 0x0056bff1
@@ -4296,16 +4296,16 @@ void RefreshAdventureInterfaceLayout(void)
   if (g_duel_ai_mode_state == 0)
   {
     LoadPcxIntoPage(1, PTR_s_advinter800_pic_00589de8);
-    BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+    BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
     RenderMenuControlRange(0, 4);
   }
 
   g_world_scroll_cache_ready = 0;
-  if (DAT_00650f28 == 0)
+  if (g_adventure_ui_edge_pages_initialized == 0)
   {
-    BlitGraphicsRect(PTR_DAT_005832dc, 0, ScaleUiCoordinate(0x148), ScaleUiCoordinate(0x280), ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148), PTR_DAT_0058332c, 0, 0);
-    BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), PTR_DAT_00583354, 0, 0);
-    DAT_00650f28 = 1;
+    BlitGraphicsRect(g_page1_window_bounds, 0, ScaleUiCoordinate(0x148), ScaleUiCoordinate(0x280), ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148), g_page3_window_bounds, 0, 0);
+    BlitGraphicsRect(g_page1_window_bounds, 0, 0, ScaleUiCoordinate(0x40), ScaleUiCoordinate(0x148), g_page5_window_bounds, 0, 0);
+    g_adventure_ui_edge_pages_initialized = 1;
   }
 }
 
@@ -4427,10 +4427,10 @@ int RunRightClickMenuAndQueueInput(void)
     char *menu_text;
   } s;
 
-  s.previous_font_slot = PTR_DAT_005832b4->font_slot;
+  s.previous_font_slot = g_page0_window_bounds->font_slot;
   LoadTextSectionLines("ADVstrings.txt", "STARTUP");
   s.menu_text = text_lines[1];
-  PTR_DAT_005832b4->font_slot = 4;
+  g_page0_window_bounds->font_slot = 4;
 
 #ifdef _DEBUG
   strcpy(g_ui_message_buffer, s.menu_text);
@@ -4478,7 +4478,7 @@ int RunRightClickMenuAndQueueInput(void)
     break;
   }
 
-  PTR_DAT_005832b4->font_slot = s.previous_font_slot;
+  g_page0_window_bounds->font_slot = s.previous_font_slot;
   return s.menu_selection + 1;
 }
 
@@ -4701,7 +4701,7 @@ void UpdateAdventureWorldInputAndMovement(void)
     case 0x1b:
     case 0x51:
     case 0x71:
-      PTR_DAT_005832b4->font_slot = 4;
+      g_page0_window_bounds->font_slot = 4;
       LoadTextSectionLines("ADVstrings.txt", "SHUTDOWN");
       strcpy(g_ui_message_buffer, text_lines[0]);
       if (RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50) == 1)
@@ -4783,7 +4783,7 @@ void UpdateAdventureWorldInputAndMovement(void)
     case 0x4c:
     case 0x6c:
       g_loadsave_skip_esc = 1;
-      s.previous_world_y_adjusted = FUN_005031a8();
+      s.previous_world_y_adjusted = RunLoadGameMenu();
       if (s.previous_world_y_adjusted != -1)
       {
         LoadGameFromSlot(s.previous_world_y_adjusted);
@@ -4971,7 +4971,7 @@ void UpdateAdventureWorldInputAndMovement(void)
 
     if (g_world_move_dir_index != 0)
     {
-      FUN_00562736(((g_world_player_animation_frame & 1U) - 2) + s.abs_delta_y * 2, RandomIntLessThan(0x19) + 0x4b, RandomIntLessThan(0x28) + 0x50, 0);
+      PlaySoundWithPitchAndPan(((g_world_player_animation_frame & 1U) - 2) + s.abs_delta_y * 2, RandomIntLessThan(0x19) + 0x4b, RandomIntLessThan(0x28) + 0x50, 0);
     }
 
     if (g_world_move_dir_index == 0)
@@ -5029,7 +5029,7 @@ void UpdateAdventureWorldInputAndMovement(void)
         g_siege_timer = g_siege_timer + ClampIntToRange(g_shandalar_difficulty + g_siege_timer / 0x40 + g_shandalar_difficulty, 0, 0x20);
       }
 
-      DAT_00669710 = 1;
+      g_world_scene_force_redraw = 1;
       if (g_siege_timer >= 8)
       {
         DAT_00591214 = 1;
@@ -5089,19 +5089,19 @@ void UpdateAdventureWorldInputAndMovement(void)
               switch (s.key_magic_index + 1)
               {
               case 1:
-                FUN_00562835("x:sound\\bcastle.wav", 0x10);
+                LoadLoopingSound("x:sound\\bcastle.wav", 0x10);
                 break;
               case 2:
-                FUN_00562835("x:sound\\ucastle.wav", 0x10);
+                LoadLoopingSound("x:sound\\ucastle.wav", 0x10);
                 break;
               case 3:
-                FUN_00562835("x:sound\\gcastle.wav", 0x10);
+                LoadLoopingSound("x:sound\\gcastle.wav", 0x10);
                 break;
               case 4:
-                FUN_00562835("x:sound\\rcastle.wav", 0x10);
+                LoadLoopingSound("x:sound\\rcastle.wav", 0x10);
                 break;
               case 5:
-                FUN_00562835("x:sound\\wcastle.wav", 0x10);
+                LoadLoopingSound("x:sound\\wcastle.wav", 0x10);
                 break;
               }
               s.key_magic_index += +0x15;
@@ -5116,7 +5116,7 @@ void UpdateAdventureWorldInputAndMovement(void)
             }
             if (g_world_location_music_track_id != 0x32)
             {
-              FUN_00562835("x:sound\\locmus0.wav", 0x10);
+              LoadLoopingSound("x:sound\\locmus0.wav", 0x10);
             }
             g_world_location_music_track_id = s.key_magic_index = 0x32;
           }
@@ -5132,73 +5132,73 @@ void UpdateAdventureWorldInputAndMovement(void)
               switch (s.key_magic_index)
               {
               case 0:
-                FUN_00562835("x:sound\\locmus1.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus1.wav", 0x10);
                 break;
               case 1:
-                FUN_00562835("x:sound\\locmus2.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus2.wav", 0x10);
                 break;
               case 2:
-                FUN_00562835("x:sound\\locmus3.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus3.wav", 0x10);
                 break;
               case 3:
-                FUN_00562835("x:sound\\locmus4.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus4.wav", 0x10);
                 break;
               case 4:
-                FUN_00562835("x:sound\\locmus5.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus5.wav", 0x10);
                 break;
               case 5:
-                FUN_00562835("x:sound\\locmus6.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus6.wav", 0x10);
                 break;
               case 6:
-                FUN_00562835("x:sound\\locmus7.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus7.wav", 0x10);
                 break;
               case 7:
-                FUN_00562835("x:sound\\locmus8.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus8.wav", 0x10);
                 break;
               case 8:
-                FUN_00562835("x:sound\\locmus9.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus9.wav", 0x10);
                 break;
               case 9:
-                FUN_00562835("x:sound\\locmus10.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus10.wav", 0x10);
                 break;
               case 10:
-                FUN_00562835("x:sound\\locmus11.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus11.wav", 0x10);
                 break;
               case 0xb:
-                FUN_00562835("x:sound\\locmus12.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus12.wav", 0x10);
                 break;
               case 0xc:
-                FUN_00562835("x:sound\\locmus13.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus13.wav", 0x10);
                 break;
               case 0xd:
-                FUN_00562835("x:sound\\locmus14.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus14.wav", 0x10);
                 break;
               case 0xe:
-                FUN_00562835("x:sound\\locmus15.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus15.wav", 0x10);
                 break;
               case 0xf:
-                FUN_00562835("x:sound\\locmus16.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus16.wav", 0x10);
                 break;
               case 0x10:
-                FUN_00562835("x:sound\\locmus17.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus17.wav", 0x10);
                 break;
               case 0x11:
-                FUN_00562835("x:sound\\locmus18.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus18.wav", 0x10);
                 break;
               case 0x12:
-                FUN_00562835("x:sound\\locmus19.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus19.wav", 0x10);
                 break;
               case 0x13:
-                FUN_00562835("x:sound\\tmplmus1.wav", 0x10);
+                LoadLoopingSound("x:sound\\tmplmus1.wav", 0x10);
                 break;
               default:
-                FUN_00562835("x:sound\\locmus0.wav", 0x10);
+                LoadLoopingSound("x:sound\\locmus0.wav", 0x10);
                 break;
               }
             }
             g_world_location_music_track_id = s.key_magic_index;
           }
-          FUN_0056279e(0x10, s.town_index, 0);
+          PlayLoopingSoundWithPan(0x10, s.town_index, 0);
           set_sound_loop(0x10, 1);
         }
         else
@@ -5219,9 +5219,9 @@ void UpdateAdventureWorldInputAndMovement(void)
     }
 
     if ((DAT_006696f4 == 0) && (abs((g_world_player_x & 0x1fU) - 0x10) < 0xc) &&
-        (abs((g_world_player_y & 0x1fU) - 0x10) < 0xc) && ((FUN_004314ca(g_world_player_tile_x, g_world_player_tile_y) & 0x10) != 0))
+        (abs((g_world_player_y & 0x1fU) - 0x10) < 0xc) && ((GetWorldMapPixelFlags(g_world_player_tile_x, g_world_player_tile_y) & 0x10) != 0))
     {
-      s.move_step_divisor = FUN_004bb040(g_world_player_tile_x, g_world_player_tile_y);
+      s.move_step_divisor = FindTownAtWorldCoordinates(g_world_player_tile_x, g_world_player_tile_y);
       if (s.move_step_divisor != -1)
       {
         sound_set_vol(0x10, 400);
@@ -5274,9 +5274,9 @@ void UpdateAdventureWorldInputAndMovement(void)
     }
 
     if ((DAT_006696f4 == 0) && ((g_world_player_x - 8U & 0x10) == 0) && ((g_world_player_y - 8U & 0x10) == 0) &&
-        ((FUN_004314ca(g_world_player_tile_x, g_world_player_tile_y) & 0x40) != 0))
+        ((GetWorldMapPixelFlags(g_world_player_tile_x, g_world_player_tile_y) & 0x40) != 0))
     {
-      s.dungeon_index = FUN_00508b89(g_world_player_tile_x, g_world_player_tile_y);
+      s.dungeon_index = FindCastleDungeonAtWorldCoordinates(g_world_player_tile_x, g_world_player_tile_y);
       DAT_006696f4 = 1;
       if ((s.dungeon_index != -1) && (g_castle_dungeon_slots[s.dungeon_index].card_slot_1 != -1) && (g_castle_dungeon_slots[s.dungeon_index].clues_bitmap != 0))
       {
@@ -5328,7 +5328,7 @@ unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, int direction_ind
     return 0;
   }
 
-  return GetGraphicsPixelColorRef(PTR_DAT_00583304, tile_x, tile_y + 0x40) & (1U << ((unsigned char)(direction_index - 1U)));
+  return GetGraphicsPixelColorRef(g_page2_window_bounds, tile_x, tile_y + 0x40) & (1U << ((unsigned char)(direction_index - 1U)));
 }
 
 // FUNCTION: SHANDALAR 0x004bdaad
@@ -5457,21 +5457,21 @@ void EnsureAdvfac64Loaded(int state)
 }
 
 // FUNCTION: SHANDALAR 0x00562736
-void FUN_00562736(int param_1, int param_2, int param_3, int param_4)
+void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent)
 {
   Sound snd;
 
   memset(&snd, 0, 0x20);
-  snd.volume = param_2 << 2;
-  snd.sampleRate = (param_3 * 0x5622) / 100;
-  snd.pan = param_4 << 2;
+  snd.volume = volume << 2;
+  snd.sampleRate = (pitch_percent * 0x5622) / 100;
+  snd.pan = pan_percent << 2;
   snd.flags &= 0xfffffffe;
   snd.flags &= 0xffffffef;
-  sound_play(param_1, &snd);
+  sound_play(sound_id, &snd);
 }
 
 // FUNCTION: SHANDALAR 0x005627ee
-void FUN_005627ee(int sound_id, int volume, int pan)
+void PlaySoundWithPan(int sound_id, int volume, int pan)
 {
   Sound snd;
 
@@ -5483,20 +5483,20 @@ void FUN_005627ee(int sound_id, int volume, int pan)
 }
 
 // FUNCTION: SHANDALAR 0x0056279e
-void FUN_0056279e(int param_1, int param_2, int param_3)
+void PlayLoopingSoundWithPan(int sound_id, int volume, int pan_percent)
 {
   Sound snd;
 
   memset(&snd, 0, 0x20);
-  snd.volume = param_2 << 2;
+  snd.volume = volume << 2;
   snd.sampleRate = 0x5622;
-  snd.pan = param_3 << 2;
+  snd.pan = pan_percent << 2;
   snd.flags = (int)snd.flags | 1;
-  sound_play(param_1, &snd);
+  sound_play(sound_id, &snd);
 }
 
 // FUNCTION: SHANDALAR 0x00562835
-void FUN_00562835(char *filename, int param_2)
+void LoadLoopingSound(char *sound_path, int channel)
 {
   Sound snd;
 
@@ -5505,21 +5505,21 @@ void FUN_00562835(char *filename, int param_2)
   snd.volume = 400;
   snd.sampleRate = 0;
   snd.pan = 0;
-  LoadSoundWithDriveFallback(filename, param_2, &snd);
-  set_sound_loop(param_2, 1);
+  LoadSoundWithDriveFallback(sound_path, channel, &snd);
+  set_sound_loop(channel, 1);
 }
 
 // FUNCTION: SHANDALAR 0x00562a29
-void UpdateAmbientWizardColorSound(int param_1)
+void UpdateAmbientWizardColorSound(int wizard_color)
 {
-  int channel = param_1 + 9;
+  int channel = wizard_color + 9;
 
-  FUN_00562736(channel, 100, RandomIntLessThan(0x32) + 0x46, RandomIntLessThan(200) - 100);
+  PlaySoundWithPitchAndPan(channel, 100, RandomIntLessThan(0x32) + 0x46, RandomIntLessThan(200) - 100);
 
   if (RandomIntLessThan(3) == 0)
   {
     sound_unload(channel);
-    switch (param_1)
+    switch (wizard_color)
     {
     case 1:
       switch (RandomIntLessThan(3))
@@ -5607,7 +5607,7 @@ void TickWorldMagicSlotTimers(void)
 // FUNCTION: SHANDALAR 0x0046eca4
 void UpdateMouseSnapshot(void)
 {
-  if (DAT_00586494 != 0)
+  if (g_legacy_mouse_active != 0)
   {
     g_mouse_button_mask_snapshot = ConsumeMouseButtonReleaseMask() | g_mouse_button_down_mask;
     g_mouse_x_snapshot = g_mouse_x;
@@ -5887,37 +5887,37 @@ unsigned int WaitForInputEventUnlessBlocked(void)
 }
 
 // FUNCTION: SHANDALAR 0x004ecf30
-int ApproximateDistance(int param_1, int param_2)
+int ApproximateDistance(int delta_x, int delta_y)
 {
-  int local_8;
+  int weighted_distance;
 
-  if (param_1 < 0)
+  if (delta_x < 0)
   {
-    param_1 = -param_1;
+    delta_x = -delta_x;
   }
-  if (param_2 < 0)
+  if (delta_y < 0)
   {
-    param_2 = -param_2;
+    delta_y = -delta_y;
   }
-  if (param_2 < param_1)
+  if (delta_y < delta_x)
   {
-    local_8 = param_1 * 2 + param_2;
+    weighted_distance = delta_x * 2 + delta_y;
   }
   else
   {
-    local_8 = param_2 * 2 + param_1;
+    weighted_distance = delta_y * 2 + delta_x;
   }
-  if (local_8 < 0)
+  if (weighted_distance < 0)
   {
-    local_8 = 0x7ffe;
+    weighted_distance = 0x7ffe;
   }
-  return local_8;
+  return weighted_distance;
 }
 
 // FUNCTION: SHANDALAR 0x004ecfa2
 void ClearInputAndWaitForMouseRelease(void)
 {
-  if (DAT_00586494 != 0)
+  if (g_legacy_mouse_active != 0)
   {
     do
     {
@@ -6430,7 +6430,7 @@ int LoadAdvBlocksFile(const char *filename)
 }
 
 // FUNCTION: SHANDALAR 0x00562d03
-void FUN_00562d03(void)
+void PreloadWorldAmbientSounds(void)
 {
   LoadSoundWithDriveFallback("x:sound\\kwalkl.wav", 0, 0);
   LoadSoundWithDriveFallback("x:sound\\kwalkr.wav", 1, 0);
@@ -6450,7 +6450,7 @@ void FUN_00562d03(void)
 }
 
 // FUNCTION: SHANDALAR 0x00565faa
-void FUN_00565faa(void)
+void FreeAdvblocksFileBuffer(void)
 {
   if (g_advblocks_file_buffer != 0)
   {
@@ -6564,7 +6564,7 @@ int FileExists(const char *filename)
 }
 
 // FUNCTION: SHANDALAR 0x0046e6f0
-DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
+DWORD WINAPI AdventureWorkerThread(LPVOID unused)
 {
   struct
   {
@@ -6573,7 +6573,7 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
     int max_pages;
   } s;
 
-  (void)param_1;
+  (void)unused;
 
   g_advbuttons_ini_file = fopen("advButtons.txt", "rt");
   strcpy(g_ini_string_scratch, "");
@@ -6635,27 +6635,27 @@ DWORD WINAPI FUN_0046e6f0(LPVOID param_1)
                               (ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148)) + 3, 8);
   SetGraphicsPage(3, s.page);
 
-  PTR_DAT_0058332c->max_x = ScaleUiCoordinate(0x280);
-  PTR_DAT_00583304->max_x = PTR_DAT_0058332c->max_x;
-  PTR_DAT_005832dc->max_x = PTR_DAT_00583304->max_x;
-  PTR_DAT_005832b4->max_x = PTR_DAT_005832dc->max_x;
-  PTR_DAT_00583304->max_x = ScaleUiCoordinate(0x1e0);
-  PTR_DAT_005832dc->max_y = PTR_DAT_00583304->max_x;
-  PTR_DAT_005832b4->max_y = PTR_DAT_005832dc->max_y;
-  PTR_DAT_0058332c->max_y = ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148);
-  PTR_DAT_00583354->max_y = ScaleUiCoordinate(0x148);
-  PTR_DAT_00583354->max_x = ScaleUiCoordinate(0x40);
-  PTR_DAT_005832b4->font_slot = 1;
+  g_page3_window_bounds->max_x = ScaleUiCoordinate(0x280);
+  g_page2_window_bounds->max_x = g_page3_window_bounds->max_x;
+  g_page1_window_bounds->max_x = g_page2_window_bounds->max_x;
+  g_page0_window_bounds->max_x = g_page1_window_bounds->max_x;
+  g_page2_window_bounds->max_x = ScaleUiCoordinate(0x1e0);
+  g_page1_window_bounds->max_y = g_page2_window_bounds->max_x;
+  g_page0_window_bounds->max_y = g_page1_window_bounds->max_y;
+  g_page3_window_bounds->max_y = ScaleUiCoordinate(0x1e0) - ScaleUiCoordinate(0x148);
+  g_page5_window_bounds->max_y = ScaleUiCoordinate(0x148);
+  g_page5_window_bounds->max_x = ScaleUiCoordinate(0x40);
+  g_page0_window_bounds->font_slot = 1;
 
   PresentGraphicsPage(0);
-  DAT_00586494 = FUN_00578c20();
+  g_legacy_mouse_active = FUN_00578c20();
   do
   {
-    FUN_0055db50();
+    RunAdventureSession();
   } while (g_adventure_world_exit_requested == 0);
 
   UnloadFontSlot(5);
-  if (DAT_00586494 != 0)
+  if (g_legacy_mouse_active != 0)
   {
     FUN_00578c30();
   }
@@ -6707,7 +6707,7 @@ void ShutdownUiTimer(void)
 }
 
 // FUNCTION: SHANDALAR 0x004ce9e9
-void FUN_004ce9e9(void)
+void RestoreSystemPaletteAtExit(void)
 {
   SetSystemPaletteUse(global_main_hdc, 1);
 }
@@ -6975,8 +6975,8 @@ cmd_parse:
       cmdLine[0] = 0;
       goto cmd_parse;
     }
-    PTR_DAT_005832b4->max_x = global_screen_width - 1;
-    PTR_DAT_005832b4->max_y = global_screen_height - 1;
+    g_page0_window_bounds->max_x = global_screen_width - 1;
+    g_page0_window_bounds->max_y = global_screen_height - 1;
   }
   else
   {
@@ -7003,8 +7003,8 @@ cmd_parse:
       PTR_s_advinter800_pic_00589de8 = "advinter1024.pic";
       break;
     }
-    PTR_DAT_005832b4->max_x = global_screen_width - 1;
-    PTR_DAT_005832b4->max_y = global_screen_height - 1;
+    g_page0_window_bounds->max_x = global_screen_width - 1;
+    g_page0_window_bounds->max_y = global_screen_height - 1;
   }
 #ifdef _DEBUG
   // Annoying trying to debug with window always on top
@@ -7031,7 +7031,7 @@ cmd_parse:
 
   if (g_skip_world_sfx_preload == 0)
   {
-    FUN_00562d03();
+    PreloadWorldAmbientSounds();
   }
 
   timeBeginPeriod(g_timer_resolution_ms);
@@ -7045,7 +7045,7 @@ cmd_parse:
          "Could not start timer\n");
 
   SetSystemPaletteUse(global_main_hdc, 2);
-  atexit(FUN_004ce9e9);
+  atexit(RestoreSystemPaletteAtExit);
 
   g_main_thread_handle = GetCurrentThread();
   DuplicateHandle(GetCurrentProcess(), g_main_thread_handle, GetCurrentProcess(), &g_main_thread_handle, 0x1f03ff, FALSE, 0);
@@ -7056,7 +7056,7 @@ cmd_parse:
     g_shared_startup_lock_initialized = 1;
   }
 
-  g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, FUN_0046e6f0, (LPVOID)0, 0, &s.thread_id);
+  g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, AdventureWorkerThread, (LPVOID)0, 0, &s.thread_id);
 
   while (GetMessageA(&s.msg, (HWND)0, 0, 0))
   {
@@ -7070,7 +7070,7 @@ cmd_parse:
     g_shared_startup_lock_initialized = 0;
   }
 
-  FUN_00565faa();
+  FreeAdvblocksFileBuffer();
   ChangeDisplayResolution(0, 0);
 
   s.screen_hdc = GetDC((HWND)0);

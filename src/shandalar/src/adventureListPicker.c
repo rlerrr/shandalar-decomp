@@ -23,10 +23,10 @@ extern HDC global_main_hdc;
 extern HPALETTE g_realized_palette_handle;
 extern RpBitsPalettePacket g_palette_data_words;
 
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
 
-int RandomIntLessThan(int param_1);
+int RandomIntLessThan(int max_exclusive);
 int ScaleUiCoordinateFrom320(int value);
 
 int ReadPalette(char *palette_text_path, char *palette_binary_path);
@@ -214,7 +214,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
 
     LoadPcxIntoPageNoPalette("advfac64.pic");
     LoadPcxResource(1, 0, 0, "seedeck.pic", &g_palette_data_words);
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
+    StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height);
 
     s.x = 0;
     s.row_count = 0;
@@ -338,17 +338,17 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     if (require_card_click != 0)
     {
 
-      BlitGraphicsRect(PTR_DAT_005832b4,
+      BlitGraphicsRect(g_page0_window_bounds,
                        ScaleUiCoordinateFrom320(0xdc) / 2,
                        ScaleUiCoordinateFrom320(0x34) / 2,
                        ScaleUiCoordinateFrom320(0xc5) / 2,
                        ScaleUiCoordinateFrom320(0x111) / 2,
-                       PTR_DAT_005832dc,
+                       g_page1_window_bounds,
                        ScaleUiCoordinateFrom320(0xdc) / 2,
                        ScaleUiCoordinateFrom320(0x34) / 2);
 
       strcpy(g_ui_message_buffer, gs_showcard_text_0077e110.title);
-      DrawEncodedImageResampled(PTR_DAT_005832b4,
+      DrawEncodedImageResampled(g_page0_window_bounds,
                                 ScaleUiCoordinateFrom320(0xdc) / 2,
                                 ScaleUiCoordinateFrom320(0x34) / 2,
                                 ScaleUiCoordinateFrom320(0xc5) / 2,
@@ -356,7 +356,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
                                 s.buy_button_sprite);
       DrawAdventureCardSized(card_ids[s.selected_index] & 0xfff, 0x7a, 0x29, 0x4b, 0x70, 1, "");
 
-      PTR_DAT_005832b4->font_slot = 1;
+      g_page0_window_bounds->font_slot = 1;
       DrawScaledTextNoShadow(g_ui_message_buffer, 0x76, 0x20, 0x1b);
 
       s.key_code = PopNormalizedQueuedKeyInput();
@@ -374,12 +374,12 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
 
       if (s.accept_key == 0)
       {
-        BlitGraphicsRect(PTR_DAT_005832dc,
+        BlitGraphicsRect(g_page1_window_bounds,
                          ScaleUiCoordinateFrom320(0xdc) / 2,
                          ScaleUiCoordinateFrom320(0x34) / 2,
                          ScaleUiCoordinateFrom320(0xc5) / 2,
                          ScaleUiCoordinateFrom320(0x111) / 2,
-                         PTR_DAT_005832b4,
+                         g_page0_window_bounds,
                          ScaleUiCoordinateFrom320(0xdc) / 2,
                          ScaleUiCoordinateFrom320(0x34) / 2);
         ClearInputAndWaitForMouseRelease();

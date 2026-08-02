@@ -30,9 +30,9 @@ extern EncodedImage *g_face_preview_sprite_selected;
 extern DIBSurface *g_graphics_pages[10];
 extern char text_lines[249][300];
 
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
-extern FacemakerWindowBounds *PTR_DAT_00583304;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
+extern FacemakerWindowBounds *g_page2_window_bounds;
 
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *window, char *text);
@@ -80,12 +80,12 @@ void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pi
 void SetGraphicsPage(int page_number, void *page);
 void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y, unsigned int byte_count);
 void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y, unsigned int byte_count);
-void FillGraphicsRect(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, unsigned int param_6);
-void DrawGraphicsLine(FacemakerWindowBounds *param_1, int param_2, int param_3, int param_4, int param_5, int param_6);
-void DelayUiTicks(int param_1);
+void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index);
+void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
+void DelayUiTicks(int ticks);
 int GetUiTickCount(void);
-int GetFontCharWidth(int param_1, char param_2);
-int GetFontLineHeight(int param_1);
+int GetFontCharWidth(int font_slot, char ch);
+int GetFontLineHeight(int font_slot);
 void DrawLoadSaveButtonText(FacemakerWindowBounds *window, int color, int x, int y, ...);
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 int RenderAdvMenuControlNormally(AdvMenuControl *control);
@@ -320,9 +320,9 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
   s.label_x_2 = 0xbb;
   s.label_x_3 = 0x40;
 
-  PTR_DAT_005832b4->page_number = 1;
-  BlitGraphicsRect(PTR_DAT_00583304, g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y,
-                   global_screen_width - g_opening_menu_entry_rects[entry_index].x, ScaleUiCoordinate(0x2d), PTR_DAT_005832dc,
+  g_page0_window_bounds->page_number = 1;
+  BlitGraphicsRect(g_page2_window_bounds, g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y,
+                   global_screen_width - g_opening_menu_entry_rects[entry_index].x, ScaleUiCoordinate(0x2d), g_page1_window_bounds,
                    g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y);
 
   switch (entry_index)
@@ -376,25 +376,25 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
   s.pressed_offset_y = ScaleUiCoordinate(2) / 2;
   if (visual_state == 2)
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, (int)(*(volatile int *)&s.pressed_offset_x) + s.icon_x,
+    DrawEncodedImageResampled(g_page0_window_bounds, (int)(*(volatile int *)&s.pressed_offset_x) + s.icon_x,
                               s.icon_y + s.pressed_offset_y, g_opening_menu_icon_size, g_opening_menu_icon_size,
                               g_opening_menu_icon_state_sprites[s.icon_sprite_index]);
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, s.icon_x, s.icon_y, g_opening_menu_icon_size, g_opening_menu_icon_size,
+    DrawEncodedImageResampled(g_page0_window_bounds, s.icon_x, s.icon_y, g_opening_menu_icon_size, g_opening_menu_icon_size,
                               g_opening_menu_icon_state_sprites[s.icon_sprite_index]);
   }
 
-  PTR_DAT_005832b4->font_slot = 6;
-  DrawFormattedTextShadowed(PTR_DAT_005832b4, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
+  g_page0_window_bounds->font_slot = 6;
+  DrawFormattedTextShadowed(g_page0_window_bounds, (&s.label_x_0)[s.icon_sprite_index], s.icon_x + ScaleUiCoordinate(0x24),
                             (s.icon_y + g_opening_menu_icon_size / 2) - (GetFontStyleSize(6) / 2),
                             "%s",
                             (char *)g_opening_menu_text_table[s.text_table_index]);
 
-  PTR_DAT_005832b4->page_number = 0;
-  BlitGraphicsRect(PTR_DAT_005832dc, g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y,
-                   global_screen_width - g_opening_menu_entry_rects[entry_index].x, ScaleUiCoordinate(0x2d), PTR_DAT_005832b4,
+  g_page0_window_bounds->page_number = 0;
+  BlitGraphicsRect(g_page1_window_bounds, g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y,
+                   global_screen_width - g_opening_menu_entry_rects[entry_index].x, ScaleUiCoordinate(0x2d), g_page0_window_bounds,
                    g_opening_menu_entry_rects[entry_index].x, g_opening_menu_entry_rects[entry_index].y);
   (void)s.unused_button_sprite_group;
   return 0;
@@ -432,14 +432,14 @@ loop:
   LoadPcxResource(1, 0, 0, "menubak.pic",
                   (g_graphics_bpp == 8) ? &g_palette_data_words : (RpBitsPalettePacket *)1);
 
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                           global_screen_height);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_00583304, 0, 0, global_screen_width,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page2_window_bounds, 0, 0, global_screen_width,
                           global_screen_height);
 
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
-  PTR_DAT_005832b4->font_slot = 5;
-  PTR_DAT_005832b4->font_slot = 1;
+  g_page0_window_bounds->font_slot = 5;
+  g_page0_window_bounds->font_slot = 1;
 
   g_opening_menu_entry_enabled[2] = FileExists(s.map_name);
   for (s.loop_index = 4; s.loop_index < 0xe; s.loop_index = s.loop_index + 1)
@@ -551,7 +551,7 @@ loop:
   EndMenuContext();
   ResetMenuContext(s.menu_context);
   FreeSpriteBlob((void *)g_opening_menu_sprite_blob_handle);
-  PTR_DAT_005832b4->font_slot = 1;
+  g_page0_window_bounds->font_slot = 1;
 
   if (g_menu_selection_value == 4)
   {
@@ -628,13 +628,13 @@ int DrawDifficultyMenuEntry(int difficulty_index, int visual_state)
   switch (visual_state)
   {
   case 0:
-    s.source_page = PTR_DAT_005832dc;
+    s.source_page = g_page1_window_bounds;
     break;
   case 1:
-    s.source_page = PTR_DAT_00583304;
+    s.source_page = g_page2_window_bounds;
     break;
   case 2:
-    s.source_page = PTR_DAT_00583304;
+    s.source_page = g_page2_window_bounds;
   default:
     break;
   }
@@ -645,14 +645,14 @@ int DrawDifficultyMenuEntry(int difficulty_index, int visual_state)
 
   if (visual_state == 2)
   {
-    BlitGraphicsRect(PTR_DAT_005832dc, 200, s.preview_y - ScaleUiCoordinate(0x43), s.preview_width, s.preview_height, PTR_DAT_005832dc, 0, 0);
-    StretchBlitGraphicsRect(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, PTR_DAT_005832dc, 4, 4, s.preview_width - 4,
+    BlitGraphicsRect(g_page1_window_bounds, 200, s.preview_y - ScaleUiCoordinate(0x43), s.preview_width, s.preview_height, g_page1_window_bounds, 0, 0);
+    StretchBlitGraphicsRect(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, g_page1_window_bounds, 4, 4, s.preview_width - 4,
                             s.preview_height - 4);
-    CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, s.preview_width, s.preview_height, PTR_DAT_005832b4, s.preview_x, s.preview_y);
+    CopyGraphicsRect(g_page1_window_bounds, 0, 0, s.preview_width, s.preview_height, g_page0_window_bounds, s.preview_x, s.preview_y);
   }
   else
   {
-    CopyGraphicsRect(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, PTR_DAT_005832b4, s.preview_x, s.preview_y);
+    CopyGraphicsRect(s.source_page, s.preview_x, s.preview_y, s.preview_width, s.preview_height, g_page0_window_bounds, s.preview_x, s.preview_y);
   }
   return 0;
 }
@@ -675,12 +675,12 @@ int RunDifficultyMenu(void)
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, "menu2.pic",
                   (g_graphics_bpp == 8) ? &g_palette_data_words : (RpBitsPalettePacket *)1);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                           global_screen_height);
 
-  PTR_DAT_005832b4->font_slot = 7;
+  g_page0_window_bounds->font_slot = 7;
   SetFontStyleSize(7, ScaleUiCoordinate(0x1b));
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0x76, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x2d), "%s",
+  DrawFormattedTextShadowedCentered(g_page0_window_bounds, 0x76, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x2d), "%s",
                                     (char *)g_difficulty_caption_table[0]);
 
   SetFontStyleSize(7, ScaleUiCoordinate(0x16));
@@ -689,24 +689,24 @@ int RunDifficultyMenu(void)
 
     for (difficulty_index = 0; difficulty_index < 4; difficulty_index = difficulty_index + 1)
     {
-      text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, (char *)g_difficulty_option_table[difficulty_index]);
-      DrawFormattedTextShadowedCenterY(PTR_DAT_005832b4, 0x7b, ScaleUiCoordinate(0x1b0) - text_width,
+      text_width = MeasureMultilineTextWidth(g_page0_window_bounds, (char *)g_difficulty_option_table[difficulty_index]);
+      DrawFormattedTextShadowedCenterY(g_page0_window_bounds, 0x7b, ScaleUiCoordinate(0x1b0) - text_width,
                                        ScaleUiCoordinate(difficulty_index * 100 + 0x75),
                                        "%s", (char *)g_difficulty_option_table[difficulty_index]);
     }
   }
 
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0x1b1, 0x43, 0xa4, 0x19d, PTR_DAT_005832dc, 200, 0, ScaleUiCoordinate(0xa4),
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0x1b1, 0x43, 0xa4, 0x19d, g_page1_window_bounds, 200, 0, ScaleUiCoordinate(0xa4),
                           ScaleUiCoordinate(0x19d));
 
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
 
   LoadPcxIntoPage(1, "menu2-norm.pic");
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0xa4, 0x19d, PTR_DAT_005832dc, ScaleUiCoordinate(0x1b1),
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0xa4, 0x19d, g_page1_window_bounds, ScaleUiCoordinate(0x1b1),
                           ScaleUiCoordinate(0x43), ScaleUiCoordinate(0xa4), ScaleUiCoordinate(0x19d));
 
   LoadPcxIntoPage(2, "menu2-hi.pic");
-  StretchBlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0xa4, 0x19d, PTR_DAT_00583304, ScaleUiCoordinate(0x1b1),
+  StretchBlitGraphicsRect(g_page2_window_bounds, 0, 0, 0xa4, 0x19d, g_page2_window_bounds, ScaleUiCoordinate(0x1b1),
                           ScaleUiCoordinate(0x43), ScaleUiCoordinate(0xa4), ScaleUiCoordinate(0x19d));
 
   if (g_difficulty_menu_controls[0].x == g_difficulty_menu_controls[0].base_x)
@@ -823,13 +823,13 @@ int DrawColorMenuEntry(int color_index, int visual_state)
 
   if (visual_state == 2)
   {
-    DrawEncodedImageResampled(PTR_DAT_00583304, s.swatch_x + 2, s.swatch_y + 2, s.swatch_width - 4, s.swatch_height - 4,
+    DrawEncodedImageResampled(g_page2_window_bounds, s.swatch_x + 2, s.swatch_y + 2, s.swatch_width - 4, s.swatch_height - 4,
                               *(s.swatch_sprite_table + color_index));
-    BlitGraphicsRect(PTR_DAT_00583304, s.swatch_x, s.swatch_y, s.swatch_width, s.swatch_height, PTR_DAT_005832b4, s.swatch_x, s.swatch_y);
+    BlitGraphicsRect(g_page2_window_bounds, s.swatch_x, s.swatch_y, s.swatch_width, s.swatch_height, g_page0_window_bounds, s.swatch_x, s.swatch_y);
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, s.swatch_x, s.swatch_y, s.swatch_width, s.swatch_height, *(s.swatch_sprite_table + color_index));
+    DrawEncodedImageResampled(g_page0_window_bounds, s.swatch_x, s.swatch_y, s.swatch_width, s.swatch_height, *(s.swatch_sprite_table + color_index));
   }
   return 0;
 }
@@ -865,34 +865,34 @@ int RunColorMenu(void)
 
   LoadPcxResource(1, 0, 0, "menu3.pic", (g_graphics_bpp == 8) ? &g_palette_data_words : (RpBitsPalettePacket *)1);
   LoadPcxIntoPageNoPalette("menu3.pic");
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832dc, 0, 0);
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page2_window_bounds, 0, 0, global_screen_width, global_screen_height);
+  BlitGraphicsRect(g_page2_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page1_window_bounds, 0, 0);
 
-  PTR_DAT_005832dc->font_slot = 7;
+  g_page1_window_bounds->font_slot = 7;
   SetFontStyleSize(7, ScaleUiCoordinate(0x1b));
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0x9b, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x22), "%s",
+  DrawFormattedTextShadowedCentered(g_page1_window_bounds, 0x9b, ScaleUiCoordinate(0x140), ScaleUiCoordinate(0x22), "%s",
                                     (char *)g_color_caption_table[0]);
 
   SetFontStyleSize(7, ScaleUiCoordinate(0x12));
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
-    DrawFormattedTextShadowed(PTR_DAT_005832dc, 0xa3, ScaleUiCoordinate(0x7d), ScaleUiCoordinate(s.color_index * 0x4c + 0x4c), "%s",
+    DrawFormattedTextShadowed(g_page1_window_bounds, 0xa3, ScaleUiCoordinate(0x7d), ScaleUiCoordinate(s.color_index * 0x4c + 0x4c), "%s",
                               (char *)g_color_menu_color_name_table[s.color_index]);
   }
 
   SetFontStyleSize(7, ScaleUiCoordinate(10));
   for (s.color_index = 0; s.color_index < 5; s.color_index = s.color_index + 1)
   {
-    DrawFormattedTextShadowed(PTR_DAT_005832dc, 0x71, ScaleUiCoordinate(0x85), ScaleUiCoordinate(s.color_index * 0x4c + 100), "%s",
+    DrawFormattedTextShadowed(g_page1_window_bounds, 0x71, ScaleUiCoordinate(0x85), ScaleUiCoordinate(s.color_index * 0x4c + 100), "%s",
                               (char *)g_color_menu_flavor_table[s.color_index]);
   }
 
   AnimatePaletteToColor(0, 4);
-  BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+  BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
   LoadPcxResource(-1, 0, 0, "menu3.pic", &g_palette_data_words);
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
 
-  *(AdvMenuRect *)&s.restore_rect_x = *PushGraphicsClipRect((AdvMenuRect *)s.temp_rect_buffer, PTR_DAT_00583304, 0, 0, global_screen_width, global_screen_height);
+  *(AdvMenuRect *)&s.restore_rect_x = *PushGraphicsClipRect((AdvMenuRect *)s.temp_rect_buffer, g_page2_window_bounds, 0, 0, global_screen_width, global_screen_height);
 
   BeginSpriteEncodeSession();
   LoadPcxIntoPageOpaque(1, "menu3-but1.pic");
@@ -940,7 +940,7 @@ int RunColorMenu(void)
   EndMenuContext();
   ResetMenuContext(s.menu_context);
   FreeSpriteBlob(g_color_menu_normal_swatch_sprites[0]);
-  PushGraphicsClipRect((AdvMenuRect *)s.restore_rect_buffer, PTR_DAT_00583304, s.restore_rect_x, s.restore_rect_y, s.restore_rect_width, s.restore_rect_height);
+  PushGraphicsClipRect((AdvMenuRect *)s.restore_rect_buffer, g_page2_window_bounds, s.restore_rect_x, s.restore_rect_y, s.restore_rect_width, s.restore_rect_height);
 
   if (g_menu_selection_value == 0)
   {
@@ -1068,7 +1068,7 @@ int RunFacemakerFlow(void)
     PushGraphicsClipRect((AdvMenuRect *)s.old_page_rect, s.page4_bounds_ptr, 0, 0, s.image_width * 2, s.image_height);
     LoadPcxIntoPageNoPalette("menu4.pic");
     FillGraphicsRect(s.page4_bounds_ptr, 0, 0, s.image_width, s.image_height, 0);
-    BlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x8a, 0xaa, s.page4_bounds_ptr, 0, 0);
+    BlitGraphicsRect(g_page2_window_bounds, 0, 0, 0x8a, 0xaa, s.page4_bounds_ptr, 0, 0);
 
     for (s.y = 0; s.y < s.image_height; s.y = s.y + 1)
     {
@@ -1085,7 +1085,7 @@ int RunFacemakerFlow(void)
     g_facemaker_page4_bitmap = g_graphics_pages[4]->hBitmap;
     g_facemaker_page4_dib = g_graphics_pages[4];
     SelectObject(g_graphics_pages[4]->hTempDC, g_graphics_pages[4]->hPreviousBitmap);
-    BuildFacemakerPortraitSprites(PTR_DAT_00583304);
+    BuildFacemakerPortraitSprites(g_page2_window_bounds);
     g_graphics_pages[4] = (DIBSurface *)0;
 
     s.pedestal_images[1] = "prdblk.pic";
@@ -1098,19 +1098,19 @@ int RunFacemakerFlow(void)
     LoadPcxResource(1, global_screen_width - 0x280, global_screen_height - 0x1e0,
                     s.pedestal_images[((int *)g_color_menu_selection_to_deck_color - 1)[g_menu_selection_value]],
                     (g_graphics_bpp == 8) ? &g_palette_data_words : 1);
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, global_screen_width - 0x280, global_screen_height - 0x1e0, 0x280, 0x1e0,
-                            PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height);
+    StretchBlitGraphicsRect(g_page1_window_bounds, global_screen_width - 0x280, global_screen_height - 0x1e0, 0x280, 0x1e0,
+                            g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height);
 
-    DrawEncodedImageResampled(PTR_DAT_005832dc, global_screen_width / 2 - ScaleUiCoordinate(0x89), ScaleUiCoordinate(0x14),
+    DrawEncodedImageResampled(g_page1_window_bounds, global_screen_width / 2 - ScaleUiCoordinate(0x89), ScaleUiCoordinate(0x14),
                               ScaleUiCoordinate(0x112), ScaleUiCoordinate(0x152), s.page2_sprite);
-    BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+    BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
 
     memset(g_name_entry_buffer, 0, 0x40);
     ReadGraphicsScanline((unsigned int *)g_name_entry_buffer, 2, 0, 200, 0x40);
     g_player_is_male = (g_name_entry_buffer[0] == 'm');
     strcpy(g_name_entry_buffer, g_name_entry_buffer + 1);
     g_name_entry_cursor = (int)strlen(g_name_entry_buffer);
-    PTR_DAT_005832b4->font_slot = 1;
+    g_page0_window_bounds->font_slot = 1;
     ReadGraphicsScanline((unsigned int *)g_name_entry_buffer, 2, 1, 200, 0x3f);
 
     s.parse_result = RunNameEntryDialog(g_name_entry_buffer);
@@ -1129,13 +1129,13 @@ int RunNameEntryDialog(char *name_buffer)
 
   dialog_top = 0x12c;
   LoadPcxIntoPageOpaque(1, "namepick.pic");
-  PTR_DAT_005832dc->font_slot = PTR_DAT_005832b4->font_slot;
+  g_page1_window_bounds->font_slot = g_page0_window_bounds->font_slot;
   LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-  DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xed, 0x8b, 0x19, &text_lines[2][0]);
-  DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xb4, 0x8a, 0x18, &text_lines[2][0]);
-  BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x114, 0x6a, PTR_DAT_005832dc, 0, 200);
-  DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xb4, 0x8a, 0x100, "%s", name_buffer);
-  BlitTransparentRuns(PTR_DAT_005832dc, 0, 200, 0x114, 0x6a, PTR_DAT_005832b4, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));
+  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xed, 0x8b, 0x19, &text_lines[2][0]);
+  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xb4, 0x8a, 0x18, &text_lines[2][0]);
+  BlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x114, 0x6a, g_page1_window_bounds, 0, 200);
+  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xb4, 0x8a, 0x100, "%s", name_buffer);
+  BlitTransparentRuns(g_page1_window_bounds, 0, 200, 0x114, 0x6a, g_page0_window_bounds, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));
   do
   {
     key_code = PopQueuedKeyInput();
@@ -1143,7 +1143,7 @@ int RunNameEntryDialog(char *name_buffer)
     {
       break;
     }
-    text_width = MeasureMultilineTextWidth(PTR_DAT_005832dc, name_buffer);
+    text_width = MeasureMultilineTextWidth(g_page1_window_bounds, name_buffer);
     if (key_code != 0)
     {
       if (key_code == 0x11b)
@@ -1151,11 +1151,11 @@ int RunNameEntryDialog(char *name_buffer)
         return -1;
       }
       ApplyNameEntryKey(name_buffer, (unsigned int)key_code, 0x19);
-      BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x114, 0x6a, PTR_DAT_005832dc, 0, 200);
-      DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, 0xb4, 0x8a, 0x100, "%s", name_buffer);
-      BlitTransparentRuns(PTR_DAT_005832dc, 0, 200, 0x114, 0x6a, PTR_DAT_005832b4, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));
+      BlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x114, 0x6a, g_page1_window_bounds, 0, 200);
+      DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xb4, 0x8a, 0x100, "%s", name_buffer);
+      BlitTransparentRuns(g_page1_window_bounds, 0, 200, 0x114, 0x6a, g_page0_window_bounds, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));
     }
-    DrawBlinkingNameCaret(PTR_DAT_005832b4, 0xb4, ScaleUiCoordinate(0x140) - text_width / 2, ScaleUiCoordinate(dialog_top) + 0x30, name_buffer,
+    DrawBlinkingNameCaret(g_page0_window_bounds, 0xb4, ScaleUiCoordinate(0x140) - text_width / 2, ScaleUiCoordinate(dialog_top) + 0x30, name_buffer,
                           g_name_entry_cursor);
   } while (1);
 
@@ -1584,8 +1584,8 @@ int DrawLoadSaveSlotEntry(int slot_index, int visual_state)
   s.slot_w = g_loadsave_menu_controls[slot_index].width;
   s.slot_h = g_loadsave_menu_controls[slot_index].height;
 
-  DrawLoadSaveButton(PTR_DAT_005832dc, s.slot_state_sprites, 0x168, 0x1b, g_loadsave_slot_descriptions[slot_index], 4, visual_state);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, ScaleUiCoordinate(0x168), ScaleUiCoordinate(0x1a), PTR_DAT_005832b4,
+  DrawLoadSaveButton(g_page1_window_bounds, s.slot_state_sprites, 0x168, 0x1b, g_loadsave_slot_descriptions[slot_index], 4, visual_state);
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, ScaleUiCoordinate(0x168), ScaleUiCoordinate(0x1a), g_page0_window_bounds,
                           s.slot_x, s.slot_y, s.slot_w, s.slot_h);
   return 0;
 }
@@ -1674,7 +1674,7 @@ int DrawLoadSaveFrame(FacemakerWindowBounds *window, int x, int y, int width, in
 }
 
 // FUNCTION: SHANDALAR 0x004a8da8
-int RunLoadSaveMenu(int param_1)
+int RunLoadSaveMenu(int save_mode)
 {
   struct
   {
@@ -1698,7 +1698,7 @@ int RunLoadSaveMenu(int param_1)
   s.map_path = "magic4.map";
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
   LoadPcxResource(1, 0, 0, "menopt.pic", (g_graphics_bpp == 8) ? &g_palette_data_words : (void *)1);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height);
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
   LoadPcxIntoPage(1, "optbox.pic");
   BeginSpriteEncodeSession();
@@ -1725,9 +1725,9 @@ int RunLoadSaveMenu(int param_1)
   s.frame_y = 0x45;
   s.frame_width = 0x1a4 - s.frame_x;
   s.frame_height = 0x18e - s.frame_y;
-  DrawLoadSaveFrame(PTR_DAT_005832b4, s.frame_x, s.frame_y, s.frame_width, s.frame_height);
+  DrawLoadSaveFrame(g_page0_window_bounds, s.frame_x, s.frame_y, s.frame_width, s.frame_height);
 
-  if (param_1 != 0)
+  if (save_mode != 0)
   {
     strcpy(g_ui_message_buffer, gs_loadsave_0077d1b0[0]);
   }
@@ -1749,7 +1749,7 @@ int RunLoadSaveMenu(int param_1)
     {
       strcpy(g_loadsave_slot_descriptions[s.slot_index], gs_loadsave_0077d1b0[2]);
     }
-    if (param_1 != 0)
+    if (save_mode != 0)
     {
       g_loadsave_slot_has_data[s.slot_index] = 1;
     }
@@ -1769,7 +1769,7 @@ int RunLoadSaveMenu(int param_1)
 restart_menu_loop:
   s.menu_context = BeginMenuContext();
   ResetMenuContext(s.menu_context);
-  if ((param_1 != 0) || (g_loadsave_skip_esc != 0))
+  if ((save_mode != 0) || (g_loadsave_skip_esc != 0))
   {
     s.menu_control_count = 0xb;
   }
@@ -1804,7 +1804,7 @@ restart_menu_loop:
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
     return -1;
   }
-  if (param_1 != 0)
+  if (save_mode != 0)
   {
 
     s.selected_slot = g_loadsave_menu_selection - 4;
@@ -1967,7 +1967,7 @@ int ActivateLoadSaveSlotControl(AdvMenuControl *control)
 int ShowHallBackgroundScreen(void)
 {
   LoadPcxIntoPageOpaque(1, "hallback.pic");
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                           global_screen_height);
   WaitForInputEventUnlessBlocked();
   return 0;

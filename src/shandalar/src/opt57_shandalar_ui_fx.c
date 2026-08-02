@@ -12,7 +12,7 @@ void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int wid
 
 extern FontSlot g_font_slots[0x10];
 
-// From visitLocation.c (used by FUN_0057d500)
+// From visitLocation.c (used by BlitRectByStaggeredRandomTileOrder)
 extern int g_ui_fx_lcg_multipliers[0x14];
 
 // FUNCTION: SHANDALAR 0x0057ae30
@@ -317,7 +317,8 @@ unsigned int BlitRectByRandomTileOrder(HDC dst_hdc, int dst_x, int dst_y, int wi
   return result;
 }
 // FUNCTION: SHANDALAR 0x0057d500
-void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a, int unk_b, int unk_c, HDC src_hdc)
+void BlitRectByStaggeredRandomTileOrder(HDC dst_hdc, int x, int y, int w, int h, int strip_width, int active_strip_count,
+                                       int tile_width, int tile_height, HDC src_hdc)
 {
   int dst_block_y;
   int iVar1;
@@ -344,17 +345,17 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
   int dst_x;
   int iStack_1c;
   int y_00;
-  int local_38;
+  int current_strip_index;
   int iStack_30;
   int *piStack_2c;
   int iStack_20;
   int iStack_c;
 
-  local_38 = -unk_a + 1;
-  block_count_x = (unsigned int)(unk_20 % unk_b != 0) + unk_20 / unk_b;
+  current_strip_index = -active_strip_count + 1;
+  block_count_x = (unsigned int)(strip_width % tile_width != 0) + strip_width / tile_width;
   bit_cursor = 0x40000000;
-  total_block_count = ((unsigned int)(h % unk_c != 0) + h / unk_c) * block_count_x;
-  iVar3 = (unsigned int)(w % unk_20 != 0) + w / unk_20;
+  total_block_count = ((unsigned int)(h % tile_height != 0) + h / tile_height) * block_count_x;
+  iVar3 = (unsigned int)(w % strip_width != 0) + w / strip_width;
   modulus = 0;
   iVar1 = 0;
   do
@@ -374,11 +375,11 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
     modulus = modulus * 2;
   }
 
-  state_storage = malloc(((unk_a + iVar3) * 4 + 0x14) * 5);
+  state_storage = malloc(((active_strip_count + iVar3) * 4 + 0x14) * 5);
   tick = GetTickCount();
-  rng_list_index = -unk_a + 2;
-  *(int *)((int)state_storage + local_38 * 0x14 + unk_a * 0x14) = (int)tick % (int)modulus;
-  piStack_2c = (int *)((int)state_storage + local_38 * 0x14 + unk_a * 0x14);
+  rng_list_index = -active_strip_count + 2;
+  *(int *)((int)state_storage + current_strip_index * 0x14 + active_strip_count * 0x14) = (int)tick % (int)modulus;
+  piStack_2c = (int *)((int)state_storage + current_strip_index * 0x14 + active_strip_count * 0x14);
   piStack_2c[1] = 5;
   piStack_2c[2] = 1;
   piStack_2c[3] = modulus;
@@ -386,7 +387,7 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
 
   if (rng_list_index < iVar3)
   {
-    state = (int *)((int)state_storage + rng_list_index * 0x14 + unk_a * 0x14);
+    state = (int *)((int)state_storage + rng_list_index * 0x14 + active_strip_count * 0x14);
     do
     {
       *state = (state[-5] * 5 + 1) % (int)modulus;
@@ -400,24 +401,24 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
     } while (rng_list_index < iVar3);
   }
 
-  if (local_38 < iVar3)
+  if (current_strip_index < iVar3)
   {
-    x_offset = unk_20 * local_38;
+    x_offset = strip_width * current_strip_index;
     do
     {
-      iStack_1c = unk_a;
-      if (local_38 < unk_a + local_38)
+      iStack_1c = active_strip_count;
+      if (current_strip_index < active_strip_count + current_strip_index)
       {
-        iStack_c = unk_a;
+        iStack_c = active_strip_count;
         do
         {
-          iStack_30 = local_38;
-          iVar1 = local_38 + iStack_1c;
-          if (iVar3 <= local_38 + iStack_1c)
+          iStack_30 = current_strip_index;
+          iVar1 = current_strip_index + iStack_1c;
+          if (iVar3 <= current_strip_index + iStack_1c)
           {
             iVar1 = iVar3;
           }
-          if (local_38 < iVar1)
+          if (current_strip_index < iVar1)
           {
             iStack_20 = x_offset;
             state = piStack_2c;
@@ -430,21 +431,21 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
               {
                 dst_block_y = rand_value / block_count_x;
                 src_block_x = rand_value % block_count_x;
-                dst_x = src_block_x * unk_b + x + iStack_20;
-                dst_block_x = dst_block_y * unk_c + y;
-                copy_w = unk_b;
-                if (w + x <= unk_b + dst_x)
+                dst_x = src_block_x * tile_width + x + iStack_20;
+                dst_block_x = dst_block_y * tile_height + y;
+                copy_w = tile_width;
+                if (w + x <= tile_width + dst_x)
                 {
                   copy_w = (w - dst_x) + x;
                 }
-                copy_h = unk_c;
-                if (h + y <= unk_c + dst_block_x)
+                copy_h = tile_height;
+                if (h + y <= tile_height + dst_block_x)
                 {
                   copy_h = y + (h - dst_block_x);
                 }
                 if (-1 < iStack_30)
                 {
-                  if ((unk_b == 1) && (unk_c == 1))
+                  if ((tile_width == 1) && (tile_height == 1))
                   {
                     color = GetPixel(src_hdc, src_block_x, dst_block_y);
                     SetPixel(dst_hdc, src_block_x, dst_block_y, color);
@@ -455,7 +456,7 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
                   }
                 }
               }
-              iStack_20 = iStack_20 + unk_20;
+              iStack_20 = iStack_20 + strip_width;
               state = state + 5;
               iStack_30 = iStack_30 + 1;
             } while (iStack_30 < iVar1);
@@ -467,10 +468,10 @@ void FUN_0057d500(HDC dst_hdc, int x, int y, int w, int h, int unk_20, int unk_a
       if (piStack_2c[4] < 1)
       {
         piStack_2c = piStack_2c + 5;
-        x_offset = x_offset + unk_20;
-        local_38 = local_38 + 1;
+        x_offset = x_offset + strip_width;
+        current_strip_index = current_strip_index + 1;
       }
-    } while (local_38 < iVar3);
+    } while (current_strip_index < iVar3);
   }
 
   free(state_storage);

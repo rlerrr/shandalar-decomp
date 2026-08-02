@@ -29,8 +29,8 @@ extern int g_world_lair_monster_sprite_top_clips[0x10];
 
 #define OPENING_MENU_WORK_ENTRY_SPRITES(entry_index) (g_opening_menu_sprite_work_buffer[(entry_index)].sprites)
 
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
 
 extern int g_wizard_siege_count;
 extern char g_ui_message_buffer[0x1000];
@@ -43,17 +43,17 @@ ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int cre
 int FindNearestTownIndex(int world_x, int world_y);
 int ClampIntToRange(int value, int min_value, int max_value);
 int ApproximateDistance(int x, int y);
-int RandomIntLessThan(int param_1);
+int RandomIntLessThan(int max_exclusive);
 int single_color_test_bit_to_color_t(int mask);
 unsigned int GetWorldTileType(int x, int y);
-unsigned int FUN_004314ca(int x, int y);
+unsigned int GetWorldMapPixelFlags(int x, int y);
 void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
 void AddJournalEntry(int entry_type, int entry_arg);
 void SaveGameToSlot(int save_slot_index);
 void EnsureAdvfac64Loaded(int state);
 void RefreshAdventureInterfaceLayout(void);
-void FUN_00562736(int param_1, int param_2, int param_3, int param_4);
+void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent);
 void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 void AnimateVisitBackdropZoomIn(char *pcx_path);
 void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
@@ -76,15 +76,15 @@ void UnloadStatWinDllExports(void);
 int ShutdownSharedStartup(void);
 unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 int sound_unload(int sound_id);
-void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_percent);
+void PlayCreatureEncounterSound(int creature_type, int volume, int pitch_percent, int pan_percent);
 void ResolveWizardTownSiege(void);
 int RunWorldLairMonsterEncounter(int slot_index, int monster_color);
 
 // GLOBAL: SHANDALAR 0x00591270
-int DAT_00591270 = 1;
+int g_creature_encounter_sound_is_first = 1;
 
 // FUNCTION: SHANDALAR 0x004bc6d3
-void FUN_004bc6d3(int creature_type, int work_entry_index_a, int work_entry_index_b)
+void LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int work_entry_index_b)
 {
   struct
   {
@@ -337,13 +337,13 @@ void FUN_004bc6d3(int creature_type, int work_entry_index_a, int work_entry_inde
 }
 
 // FUNCTION: SHANDALAR 0x005614c3
-void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_percent)
+void PlayCreatureEncounterSound(int creature_type, int volume, int pitch_percent, int pan_percent)
 {
-  if (DAT_00591270 == 0)
+  if (g_creature_encounter_sound_is_first == 0)
   {
     sound_unload(0xf);
   }
-  DAT_00591270 = 0;
+  g_creature_encounter_sound_is_first = 0;
 
   switch (g_shandalar_monster_definitions[creature_type].encounter_type)
   {
@@ -379,7 +379,7 @@ void FUN_005614c3(int creature_type, int volume, int pitch_percent, int pan_perc
     break;
   }
 
-  FUN_00562736(0xf, volume, pitch_percent, -pan_percent);
+  PlaySoundWithPitchAndPan(0xf, volume, pitch_percent, -pan_percent);
 }
 
 // FUNCTION: SHANDALAR 0x0055fd27
@@ -644,7 +644,7 @@ void UpdateWorldLairAndMonsterSlots(void)
           }
         }
 
-        if ((FUN_004314ca(s.spawn_x, s.spawn_y) & 0x10) != 0)
+        if ((GetWorldMapPixelFlags(s.spawn_x, s.spawn_y) & 0x10) != 0)
         {
           FreeOpeningMenuSpriteWorkEntries(s.slot_index, s.slot_index + 8);
           g_lair_or_monster_slots[s.slot_index].entry_type = SHANDALAR_ENTRY_NONE;
@@ -688,7 +688,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
     if (s.creature_tier > SHANDALAR_ENTRY_LAIR)
     {
-      FUN_004bc6d3(s.creature_tier, s.slot_index, s.slot_index + 8);
+      LoadCreatureEncounterSprites(s.creature_tier, s.slot_index, s.slot_index + 8);
     }
 
     s.movement_step = 1;
@@ -1019,7 +1019,7 @@ void UpdateWorldLairAndMonsterSlots(void)
              (g_lair_or_monster_slots[s.slot_index].movement_anim_frame != 0) &&
              (s.distance_to_player < 0x50) && (RandomIntLessThan(s.distance_to_player) < 4))
     {
-      FUN_005614c3(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
+      PlayCreatureEncounterSound(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
                    g_neighbor_dx[(g_lair_or_monster_slots[s.slot_index].movement_heading + 2U) & 7] *
                        100);
     }
@@ -1169,9 +1169,9 @@ void StartWizardTownSiege(void)
                                                 BuildCreatureNameWithArticle(g_lair_or_monster_slots[s.scan_index].entry_type),
                                                 BuildTownDisplayName(s.town_index));
 
-    PTR_DAT_005832b4->font_slot = 5;
-    DrawTextAt(PTR_DAT_005832b4, 0xbe, 0x140, 0xf7, g_ui_message_buffer);
-    PTR_DAT_005832b4->font_slot = 1;
+    g_page0_window_bounds->font_slot = 5;
+    DrawTextAt(g_page0_window_bounds, 0xbe, 0x140, 0xf7, g_ui_message_buffer);
+    g_page0_window_bounds->font_slot = 1;
     ClearInputAndWaitForMouseRelease();
     WaitForInputEventUnlessBlocked();
     RefreshAdventureInterfaceLayout();
@@ -1271,9 +1271,9 @@ void ResolveWizardTownSiege(void)
   }
 
   g_wizard_siege_count = g_wizard_siege_count + 1;
-  PTR_DAT_005832b4->font_slot = 5;
-  DrawTextAt(PTR_DAT_005832b4, 0xbe, 0x140, 0xf7, g_ui_message_buffer);
-  PTR_DAT_005832b4->font_slot = 1;
+  g_page0_window_bounds->font_slot = 5;
+  DrawTextAt(g_page0_window_bounds, 0xbe, 0x140, 0xf7, g_ui_message_buffer);
+  g_page0_window_bounds->font_slot = 1;
   ClearInputAndWaitForMouseRelease();
   WaitForInputEventUnlessBlocked();
 
@@ -1295,7 +1295,7 @@ void ResolveWizardTownSiege(void)
     {
       s.font_size = 0xc;
     }
-    PTR_DAT_005832dc->font_slot = 5;
+    g_page1_window_bounds->font_slot = 5;
     SetFontStyleSize(5, (unsigned int)ScaleUiCoordinate(s.font_size));
 
     strcpy(g_ui_message_buffer, gs_questfailed_0077c580[1]);
@@ -1309,8 +1309,8 @@ void ResolveWizardTownSiege(void)
     }
     strcat(g_ui_message_buffer, gs_questfailed_0077c580[5]);
 
-    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, 0xea, 0x140, 0x1e0 - GetFontLineHeight(PTR_DAT_005832dc->font_slot) * 7, g_ui_message_buffer);
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
+    DrawFormattedTextShadowedCentered(g_page1_window_bounds, 0xea, 0x140, 0x1e0 - GetFontLineHeight(g_page1_window_bounds->font_slot) * 7, g_ui_message_buffer);
+    StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height);
     ClearInputAndWaitForMouseRelease();
     WaitForInputEventUnlessBlocked();
     AnimatePaletteToColor(0, g_default_palette_fade_steps);

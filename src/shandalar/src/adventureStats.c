@@ -68,7 +68,7 @@ char *BuildTownDisplayName(int town_index);
 char *BuildCreatureNameWithArticle(int creature_type);
 char *__cdecl GetDungeonName(int dungeon_index);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
-char *__cdecl FUN_005307c3(int param_1);
+char *__cdecl GetLairName(int lair_type);
 int FindNearestTownIndex(int world_x, int world_y);
 
 extern int global_screen_width;
@@ -82,9 +82,9 @@ extern HANDLE g_main_thread_handle;
 extern HANDLE g_timer_thread_handle;
 extern HPALETTE g_palette_handle;
 extern DIBSurface *g_graphics_pages[10];
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
-extern FacemakerWindowBounds *PTR_DAT_00583304;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
+extern FacemakerWindowBounds *g_page2_window_bounds;
 extern int _DAT_007483e4;
 extern card_data_t global_cards_data[];
 extern char g_itoa_buffer[0x20];
@@ -226,7 +226,7 @@ void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxIntoPageNoPalette(char *path);
 int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
-int FUN_0056302b(int param_1);
+int MapWizardColorToDisplayIndex(int wizard_color);
 void ReadPalette(char *palette_text_path, char *palette_binary_path);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 unsigned int WaitForInputEventUnlessBlocked(void);
@@ -244,8 +244,8 @@ void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int wi
 void DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
 void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void FUN_0057b5f0(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-unsigned int FUN_004bb458(int world_magic_slot_index);
+void DrawUiScaledTextWithShadowCenterY(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
+unsigned int FindWorldMagicCardIndex(int world_magic_slot_index);
 int ScaleUiCoordinate(int value);
 void DrawTextAt(FacemakerWindowBounds *dst, int text_color, int x, int y, char *text, ...);
 void DrawUiScaledCenteredText(char *text, int center_x, int y, int color_index);
@@ -404,9 +404,9 @@ int RenderStatsTabButtonControl(AdvMenuControl *control, int mode)
   s.height = control->height;
   if (mode == 2)
   {
-    DrawEncodedImageResampled(PTR_DAT_00583304, 0, s.y + 0x80, s.width, s.height, s.highlight_image);
-    DrawEncodedImageResampled(PTR_DAT_00583304, 2, s.y + 0x82, s.width - 4, s.height - 4, s.encoded_image);
-    BlitGraphicsRect(PTR_DAT_00583304, 0, s.y + 0x80, s.width, s.height, PTR_DAT_005832b4, s.x, s.y);
+    DrawEncodedImageResampled(g_page2_window_bounds, 0, s.y + 0x80, s.width, s.height, s.highlight_image);
+    DrawEncodedImageResampled(g_page2_window_bounds, 2, s.y + 0x82, s.width - 4, s.height - 4, s.encoded_image);
+    BlitGraphicsRect(g_page2_window_bounds, 0, s.y + 0x80, s.width, s.height, g_page0_window_bounds, s.x, s.y);
 
     if (mode == 2)
     {
@@ -418,7 +418,7 @@ int RenderStatsTabButtonControl(AdvMenuControl *control, int mode)
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, s.x, s.y, s.width, s.height, s.encoded_image);
+    DrawEncodedImageResampled(g_page0_window_bounds, s.x, s.y, s.width, s.height, s.encoded_image);
   }
   return 1;
 }
@@ -486,7 +486,7 @@ int RenderStatsWorldMagicControl(AdvMenuControl *control, int mode)
 
   if (mode == 2)
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, control->x + 2, control->y + 2, control->width - 4, control->height - 4,
+    DrawEncodedImageResampled(g_page0_window_bounds, control->x + 2, control->y + 2, control->width - 4, control->height - 4,
                               s.highlight_sprite);
 
     if (mode == 2)
@@ -499,7 +499,7 @@ int RenderStatsWorldMagicControl(AdvMenuControl *control, int mode)
   }
   else
   {
-    DrawEncodedImageResampled(PTR_DAT_005832b4, s.x, s.y, s.width, s.height, s.sprite);
+    DrawEncodedImageResampled(g_page0_window_bounds, s.x, s.y, s.width, s.height, s.sprite);
   }
   return 1;
 }
@@ -719,8 +719,8 @@ int RenderStatsCreatureScrollbar(AdvMenuControl *control)
   s.thumb_control = control + 1;
   s.encoded_image = g_stats_menu_scroll_thumb_sprite;
   s.y = control->y + s.thumb_control->height / 2;
-  FillGraphicsRect(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, 0);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, s.y - s.thumb_control->height / 2, control->width,
+  FillGraphicsRect(g_page0_window_bounds, control->x, control->y, control->width, control->height, 0);
+  DrawEncodedImageResampled(g_page0_window_bounds, control->x, s.y - s.thumb_control->height / 2, control->width,
                             ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   return 0;
 }
@@ -745,8 +745,8 @@ static int DragStatsCreatureScrollbar(AdvMenuControl *control)
   s.y = MAX(control->y + s.thumb_control->height / 2, s.y);
   s.y = MIN(control->y + control->height - s.thumb_control->height / 2, s.y);
   s.page_index = ((s.y - control->y - s.thumb_control->height / 2) * s.page_count) / (control->height - s.thumb_control->height);
-  FillGraphicsRect(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, 0);
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, s.y - s.thumb_control->height / 2, control->width,
+  FillGraphicsRect(g_page0_window_bounds, control->x, control->y, control->width, control->height, 0);
+  DrawEncodedImageResampled(g_page0_window_bounds, control->x, s.y - s.thumb_control->height / 2, control->width,
                             ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
   RenderStatsCreatureGridPage(s.page_index);
   g_stats_menu_selection = control->selection_value;
@@ -849,7 +849,7 @@ int RenderStatsCreatureGridPage(int page_index)
   s.text_colors[3] = 0xf4;
   s.text_colors[4] = 0xf6;
   s.creature_type = page_index * 3;
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0x154, ScaleUiCoordinate(0x173), ScaleUiCoordinate(0x7f), PTR_DAT_00583304, 0, 0x80);
+  BlitGraphicsRect(g_page2_window_bounds, 0, 0x154, ScaleUiCoordinate(0x173), ScaleUiCoordinate(0x7f), g_page2_window_bounds, 0, 0x80);
   for (s.row = 0; s.row < s.row_count; s.row++)
   {
     s.column = 0;
@@ -890,26 +890,26 @@ int RenderStatsCreatureGridPage(int page_index)
         {
           s.color_index = 3;
         }
-        BlitGraphicsRect(PTR_DAT_005832dc,
+        BlitGraphicsRect(g_page1_window_bounds,
                          g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][0] * ((int)s.creature_type % 8) + 1,
                          g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][1] * ((int)s.creature_type / 8) +
                              ScaleUiCoordinate(3) + 1,
                          g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][0] - 2,
                          (g_stats_creature_sheet_cell_dims[g_stats_creature_sheet_resolution][1] - 2) - ScaleUiCoordinate(3),
-                         PTR_DAT_00583304, ScaleUiCoordinate(0x7c) * s.column, ScaleUiCoordinate(s.row << 6) + 0x80);
-        PTR_DAT_00583304->font_slot = 4;
-        DrawFormattedTextShadowedCentered(PTR_DAT_00583304, s.text_colors[s.color_index],
+                         g_page2_window_bounds, ScaleUiCoordinate(0x7c) * s.column, ScaleUiCoordinate(s.row << 6) + 0x80);
+        g_page2_window_bounds->font_slot = 4;
+        DrawFormattedTextShadowedCentered(g_page2_window_bounds, s.text_colors[s.color_index],
                                           ScaleUiCoordinate(0x7c) * s.column + ScaleUiCoordinate(0x5e),
                                           ScaleUiCoordinate(s.row * 0x40 + -3) + ScaleUiCoordinate(0x20) + 0x80, "%d/%d",
                                           g_stats_creature_journal_counts[s.creature_type + 1].wins, g_stats_creature_journal_counts[s.creature_type + 1].losses);
-        PTR_DAT_00583304->font_slot = 1;
-        DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xb7, ScaleUiCoordinate(0x7c) * s.column + ScaleUiCoordinate(0x3e),
+        g_page2_window_bounds->font_slot = 1;
+        DrawFormattedTextShadowedCentered(g_page2_window_bounds, 0xb7, ScaleUiCoordinate(0x7c) * s.column + ScaleUiCoordinate(0x3e),
                                           ScaleUiCoordinate(s.row << 6) + ScaleUiCoordinate(0x36) + 0x80, "%s",
                                           g_shandalar_monster_definitions[s.creature_type + 1].name);
       }
     }
   }
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0x80, ScaleUiCoordinate(0x7c) * 3 - 2, ScaleUiCoordinate(0x40) * 2 - 2, PTR_DAT_005832b4,
+  BlitGraphicsRect(g_page2_window_bounds, 0, 0x80, ScaleUiCoordinate(0x7c) * 3 - 2, ScaleUiCoordinate(0x40) * 2 - 2, g_page0_window_bounds,
                    ScaleUiCoordinate(0xf6), ScaleUiCoordinate(0x43));
   g_stats_creature_page_index = page_index;
   return page_index;
@@ -935,28 +935,28 @@ int ShowWorldMagicStatsDetail(int world_magic_slot_index)
   s.icon_top = 0x4c;
   s.icon_bottom = 0x9a;
   LoadPcxIntoPage(1, "worlbak1.pic");
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height);
-  s.detail_result = FUN_004bb458(world_magic_slot_index);
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height);
+  s.detail_result = FindWorldMagicCardIndex(world_magic_slot_index);
   s.y = 0x28;
   s.y += 0x10;
   s.encoded_image = g_world_magic_choice_button_sprite_bank.named.normal[world_magic_slot_index];
   s.y = ((s.icon_bottom - s.icon_top) - s.encoded_image->height) / 2 + s.icon_top;
   s.x = ((s.icon_right - s.icon_left) - s.encoded_image->width) / 2 + s.icon_left;
-  DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinate(s.x), ScaleUiCoordinate(s.y),
+  DrawEncodedImageResampled(g_page0_window_bounds, ScaleUiCoordinate(s.x), ScaleUiCoordinate(s.y),
                             ScaleUiCoordinate((int)s.encoded_image->width), ScaleUiCoordinate((int)s.encoded_image->height),
                             g_world_magic_choice_button_sprite_bank.named.normal[world_magic_slot_index]);
   s.y += (int)s.encoded_image->height + 0x10;
   s.y /= 2;
   s.x += (int)s.encoded_image->width / 2;
   s.x /= 2;
-  PTR_DAT_005832b4->font_slot = 4;
-  DrawTextAt(PTR_DAT_005832b4, 0x7b, 0x176, 0x4b, gs_worldmagic_title_0077e1d0);
+  g_page0_window_bounds->font_slot = 4;
+  DrawTextAt(g_page0_window_bounds, 0x7b, 0x176, 0x4b, gs_worldmagic_title_0077e1d0);
   s.y -= 5;
   strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[world_magic_slot_index]);
   DrawUiScaledCenteredText(g_ui_message_buffer, s.x, s.y, 0x40);
   s.y += 8;
   strcpy(g_ui_message_buffer, gs_worldmagic_explains_0074b8f0[world_magic_slot_index]);
-  DrawWorldUiFormattedText(PTR_DAT_005832b4, 0x7b, ScaleUiCoordinateFrom320(s.x), ScaleUiCoordinateFrom320(s.y), g_ui_message_buffer);
+  DrawWorldUiFormattedText(g_page0_window_bounds, 0x7b, ScaleUiCoordinateFrom320(s.x), ScaleUiCoordinateFrom320(s.y), g_ui_message_buffer);
   s.y += 0x10;
   ClearInputAndWaitForMouseRelease();
   WaitForInputEventUnlessBlocked();
@@ -968,8 +968,8 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
 {
   int world_magic_slot_index;
 
-  PTR_DAT_005832dc->font_slot = 4;
-  PTR_DAT_00583304->font_slot = 4;
+  g_page1_window_bounds->font_slot = 4;
+  g_page2_window_bounds->font_slot = 4;
   g_graphics_pages[4] = g_facemaker_page4_dib;
   SelectObject(g_graphics_pages[4]->hTempDC, g_facemaker_page4_bitmap);
   if (g_graphics_bpp == 8)
@@ -980,68 +980,68 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   {
     LoadPcxResource(1, 0, global_screen_height - 0x1e0, "statbak.pic", (void *)1);
   }
-  DrawStatsRectFrame(PTR_DAT_005832dc, 0x26, global_screen_height - 0x1d1, 0x8c, 0xac,
+  DrawStatsRectFrame(g_page1_window_bounds, 0x26, global_screen_height - 0x1d1, 0x8c, 0xac,
                      g_stats_portrait_frame_colors[g_starting_color - 1][0]);
-  DrawStatsRectFrame(PTR_DAT_005832dc, 0x27, global_screen_height - 0x1d0, 0x8a, 0xaa,
+  DrawStatsRectFrame(g_page1_window_bounds, 0x27, global_screen_height - 0x1d0, 0x8a, 0xaa,
                      g_stats_portrait_frame_colors[g_starting_color - 1][1]);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, g_page1_window_bounds, 0, 0,
                           global_screen_width, global_screen_height);
-  StretchBlitGraphicsRect(portrait_work_page, 0, 0, 0x89, 0xa9, PTR_DAT_005832dc, ScaleUiCoordinate(0x28),
+  StretchBlitGraphicsRect(portrait_work_page, 0, 0, 0x89, 0xa9, g_page1_window_bounds, ScaleUiCoordinate(0x28),
                           ScaleUiCoordinate(0x11), ScaleUiCoordinate(0x89), ScaleUiCoordinate(0xa9));
-  BlitGraphicsRect(PTR_DAT_005832dc, ScaleUiCoordinate(0xf7), ScaleUiCoordinate(0x43), ScaleUiCoordinate(0x173),
-                   ScaleUiCoordinate(0x7f), PTR_DAT_00583304, 0, 0x154);
-  ApplyPortraitPaletteMap(PTR_DAT_005832dc, ScaleUiCoordinate(0x28), ScaleUiCoordinate(0x11), ScaleUiCoordinate(0x89),
+  BlitGraphicsRect(g_page1_window_bounds, ScaleUiCoordinate(0xf7), ScaleUiCoordinate(0x43), ScaleUiCoordinate(0x173),
+                   ScaleUiCoordinate(0x7f), g_page2_window_bounds, 0, 0x154);
+  ApplyPortraitPaletteMap(g_page1_window_bounds, ScaleUiCoordinate(0x28), ScaleUiCoordinate(0x11), ScaleUiCoordinate(0x89),
                           ScaleUiCoordinate(0xa9), "prdblk.pic", "advfac64.pic");
   SelectObject(g_graphics_pages[4]->hTempDC, g_graphics_pages[4]->hPreviousBitmap);
   g_graphics_pages[4] = (DIBSurface *)0;
 
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x102, "%d", Gold);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x102, "%d", g_food);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4f, 0x138, "%d", CountDuelPoolEligibleTowns());
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb7, 0x138, "%d/%d", g_deck_active_card_count,
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x4f, 0x102, "%d", Gold);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xb7, 0x102, "%d", g_food);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x4f, 0x138, "%d", CountDuelPoolEligibleTowns());
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xb7, 0x138, "%d/%d", g_deck_active_card_count,
              g_deck_total_card_count);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x29, 0x161, "%d", g_amulet_inventory[0]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x4e, 0x161, "%d", g_amulet_inventory[1]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x73, 0x161, "%d", g_amulet_inventory[2]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x98, 0x161, "%d", g_amulet_inventory[3]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xbd, 0x161, "%d", g_amulet_inventory[4]);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x69, 0xc6, "%s",
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x29, 0x161, "%d", g_amulet_inventory[0]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x4e, 0x161, "%d", g_amulet_inventory[1]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x73, 0x161, "%d", g_amulet_inventory[2]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x98, 0x161, "%d", g_amulet_inventory[3]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xbd, 0x161, "%d", g_amulet_inventory[4]);
+  DrawTextAt(g_page1_window_bounds, colors[4], 0x69, 0xc6, "%s",
              gs_difficultylevels_0077d130[g_shandalar_difficulty]);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x69, 0xd6, "%s", g_name_entry_buffer);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x10e, 0x16c, gs_stats_0077cfa0[0]);
+  DrawTextAt(g_page1_window_bounds, colors[4], 0x69, 0xd6, "%s", g_name_entry_buffer);
+  DrawTextAt(g_page1_window_bounds, colors[4], 0x10e, 0x16c, gs_stats_0077cfa0[0]);
 
   for (world_magic_slot_index = 0; (int)world_magic_slot_index < 5; world_magic_slot_index = world_magic_slot_index + 1)
   {
     if (g_world_magic_town_flags[world_magic_slot_index] != 0)
     {
-      DrawEncodedImageResampled(PTR_DAT_005832dc, ScaleUiCoordinate(world_magic_slot_index * 0x39 + 0x14d), ScaleUiCoordinate(0x154),
+      DrawEncodedImageResampled(g_page1_window_bounds, ScaleUiCoordinate(world_magic_slot_index * 0x39 + 0x14d), ScaleUiCoordinate(0x154),
                                 ScaleUiCoordinate(0x30), ScaleUiCoordinate(0x30), g_stats_menu_color_sprites[world_magic_slot_index]);
     }
   }
 
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x118, 0xeb, gs_stats_0077cfa0[1]);
+  DrawTextAt(g_page1_window_bounds, colors[4], 0x118, 0xeb, gs_stats_0077cfa0[1]);
   InitializeStatsWorldMagicControls();
   ScaleMenuControlsForScreen(&g_stats_menu_controls[10], 0xc);
   RebuildStatsJournalCounts();
-  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x184, gs_stats_0077cfa0[2]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x184, "%d", g_stats_journal_lairs_explored);
-  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x196, gs_stats_0077cfa0[3]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x196, "%d", g_stats_journal_cities_saved);
-  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x1a8, gs_stats_0077cfa0[4]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1a8, "%d/%d",
+  DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[4], 0x14, 0x184, gs_stats_0077cfa0[2]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xb2, 0x184, "%d", g_stats_journal_lairs_explored);
+  DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[4], 0x14, 0x196, gs_stats_0077cfa0[3]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xb2, 0x196, "%d", g_stats_journal_cities_saved);
+  DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[4], 0x14, 0x1a8, gs_stats_0077cfa0[4]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xb2, 0x1a8, "%d/%d",
              g_stats_journal_spells_found, g_stats_journal_artifacts_found);
-  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0x14, 0x1ba, gs_stats_0077cfa0[5]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0xb2, 0x1ba, "%d/%d",
+  DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[4], 0x14, 0x1ba, gs_stats_0077cfa0[5]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0xb2, 0x1ba, "%d/%d",
              g_stats_journal_failed_quests, g_stats_journal_completed_quests);
-  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0xe9, 0x19a, gs_stats_0077cfa0[6]);
+  DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[4], 0xe9, 0x19a, gs_stats_0077cfa0[6]);
   for (world_magic_slot_index = 0; (int)world_magic_slot_index < 5; world_magic_slot_index = world_magic_slot_index + 1)
   {
-    FUN_0057b5f0(PTR_DAT_005832dc, colors[3], world_magic_slot_index * 0x39 + 0x165, 0x19a, "%d",
+    DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[3], world_magic_slot_index * 0x39 + 0x165, 0x19a, "%d",
                  g_castle_dungeon_slots[world_magic_slot_index].times_entered + 1);
   }
-  FUN_0057b5f0(PTR_DAT_005832dc, colors[4], 0xe9, 0x1c0, gs_stats_0077cfa0[7]);
-  DrawTextAt(PTR_DAT_005832dc, colors[3], 0x1a1, 0x1c0, "%d", g_stats_journal_dungeons_explored);
-  DrawTextAt(PTR_DAT_005832dc, colors[4], 0x1b0, 0x36, gs_stats_0077cfa0[8]);
+  DrawUiScaledTextWithShadowCenterY(g_page1_window_bounds, colors[4], 0xe9, 0x1c0, gs_stats_0077cfa0[7]);
+  DrawTextAt(g_page1_window_bounds, colors[3], 0x1a1, 0x1c0, "%d", g_stats_journal_dungeons_explored);
+  DrawTextAt(g_page1_window_bounds, colors[4], 0x1b0, 0x36, gs_stats_0077cfa0[8]);
 
   if (g_graphics_bpp == 8)
   {
@@ -1056,7 +1056,7 @@ static __inline void RenderAdventureStatsOverview(FacemakerWindowBounds *portrai
   {
     LoadPcxIntoPageNoPalette("advfac64.pic");
   }
-  BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+  BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
   FadeInPaletteFromGray(0, g_default_palette_fade_steps);
 }
 
@@ -1098,7 +1098,7 @@ static int RenderJournalExitButtonControl(AdvMenuControl *control, int mode)
   {
     return 0;
   }
-  s.old_page_number = PTR_DAT_005832b4->page_number;
+  s.old_page_number = g_page0_window_bounds->page_number;
   s.selection_value = g_stats_journal_menu_controls[0].selection_value;
   switch (mode)
   {
@@ -1117,7 +1117,7 @@ static int RenderJournalExitButtonControl(AdvMenuControl *control, int mode)
   s.draw_y = g_stats_journal_menu_controls[0].y;
   s.draw_w = g_stats_journal_menu_controls[0].width;
   s.draw_h = g_stats_journal_menu_controls[0].height;
-  DrawEncodedImageResampled(PTR_DAT_005832b4, s.draw_x, s.draw_y, s.draw_w, s.draw_h,
+  DrawEncodedImageResampled(g_page0_window_bounds, s.draw_x, s.draw_y, s.draw_w, s.draw_h,
                             g_map_button_sprites[s.selection_value][s.draw_state]);
   if ((mode == 2) && (control->on_activate != 0))
   {
@@ -1200,10 +1200,10 @@ static int ActivateJournalStepButtonControl(AdvMenuControl *control)
   s.y = MAX(control->y + s.thumb_control->height / 2, s.y);
   s.y = MIN(control->y + control->height - s.thumb_control->height / 2, s.y);
   s.journal_index = ((s.y - control->y - s.thumb_control->height / 2) * s.entry_count) / (control->height - s.thumb_control->height);
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, g_adv_scrollbar_track_sprite);
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, s.y - s.thumb_control->height / 2, control->width,
+  DrawEncodedImageResampled(g_page1_window_bounds, control->x, control->y, control->width, control->height, g_adv_scrollbar_track_sprite);
+  DrawEncodedImageResampled(g_page1_window_bounds, control->x, s.y - s.thumb_control->height / 2, control->width,
                             ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
-  BlitGraphicsRect(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, PTR_DAT_005832b4, control->x,
+  BlitGraphicsRect(g_page1_window_bounds, control->x, control->y, control->width, control->height, g_page0_window_bounds, control->x,
                    control->y);
   SelectStatsJournalEntry(s.journal_index);
   g_stats_journal_menu_selection = control->selection_value;
@@ -1225,10 +1225,10 @@ static int RenderJournalScrollbar(AdvMenuControl *control)
   s.thumb_control = control + 1;
   s.encoded_image = g_adv_scrollbar_thumb_sprite;
   s.y = control->y + s.thumb_control->height / 2;
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, g_adv_scrollbar_track_sprite);
-  DrawEncodedImageResampled(PTR_DAT_005832dc, control->x, s.y - s.thumb_control->height / 2,
+  DrawEncodedImageResampled(g_page1_window_bounds, control->x, control->y, control->width, control->height, g_adv_scrollbar_track_sprite);
+  DrawEncodedImageResampled(g_page1_window_bounds, control->x, s.y - s.thumb_control->height / 2,
                             control->width, ((int)s.encoded_image->height * control->width) / control->base_width, s.encoded_image);
-  BlitGraphicsRect(PTR_DAT_005832dc, control->x, control->y, control->width, control->height, PTR_DAT_005832b4, control->x,
+  BlitGraphicsRect(g_page1_window_bounds, control->x, control->y, control->width, control->height, g_page0_window_bounds, control->x,
                    control->y);
   return 0;
 }
@@ -1271,7 +1271,7 @@ static int SelectStatsJournalEntry(int journal_index)
     {
       return 0;
     }
-    BlitGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+    BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
     strcpy(g_ui_message_buffer, "");
     BuildStatsJournalEntryMessage(s.entry_type, s.entry_arg, s.tile_x, s.tile_y);
     if (g_ui_message_buffer[0] != '\0')
@@ -1354,7 +1354,7 @@ static void BuildStatsJournalEntryMessage(int entry_type, unsigned int entry_arg
     }
     else
     {
-      sprintf(s.formatted_message, gs_logstrings_0077c9a0[9], FUN_005307c3(entry_arg));
+      sprintf(s.formatted_message, gs_logstrings_0077c9a0[9], GetLairName(entry_arg));
     }
     break;
   case 6:
@@ -1441,15 +1441,15 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
     {
       while (tile_x != s.target_x)
       {
-        FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
+        FillGraphicsRect(g_page0_window_bounds, tile_x, tile_y, 2, 2, 0xff);
         DelayUiTicks(5);
         if ((tile_x & 1) != 0)
         {
-          FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0);
+          FillGraphicsRect(g_page0_window_bounds, tile_x, tile_y, 2, 2, 0);
         }
         else
         {
-          BlitGraphicsRect(PTR_DAT_005832dc, tile_x, tile_y, 2, 2, PTR_DAT_005832b4, tile_x, tile_y);
+          BlitGraphicsRect(g_page1_window_bounds, tile_x, tile_y, 2, 2, g_page0_window_bounds, tile_x, tile_y);
         }
         tile_x += SignNonZero(s.delta_x);
         tile_y = s.previous_y + (abs(tile_x - s.previous_x) * s.delta_y) / abs(s.delta_x);
@@ -1459,15 +1459,15 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
     {
       while (tile_y != s.target_y)
       {
-        FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0xff);
+        FillGraphicsRect(g_page0_window_bounds, tile_x, tile_y, 2, 2, 0xff);
         DelayUiTicks(5);
         if ((tile_y & 1) != 0)
         {
-          FillGraphicsRect(PTR_DAT_005832b4, tile_x, tile_y, 2, 2, 0);
+          FillGraphicsRect(g_page0_window_bounds, tile_x, tile_y, 2, 2, 0);
         }
         else
         {
-          BlitGraphicsRect(PTR_DAT_005832dc, tile_x, tile_y, 2, 2, PTR_DAT_005832b4, tile_x, tile_y);
+          BlitGraphicsRect(g_page1_window_bounds, tile_x, tile_y, 2, 2, g_page0_window_bounds, tile_x, tile_y);
         }
         tile_y += SignNonZero(s.delta_y);
         tile_x = s.previous_x + (abs(tile_y - s.previous_y) * s.delta_x) / abs(s.delta_y);
@@ -1484,14 +1484,14 @@ static void AnimateStatsJournalMarkerToTile(unsigned int tile_x, unsigned int ti
 
   tile_x = ClampIntToRange(s.target_x - 0x50, 0, 0xa0);
   tile_y = ClampIntToRange(s.target_y - 10, 0, 0xbf);
-  s.text_width = MeasureMultilineTextWidth(PTR_DAT_005832b4, g_ui_message_buffer);
-  s.line_height = GetFontLineHeight(PTR_DAT_005832b4->font_slot);
-  PTR_DAT_00583304->font_slot = PTR_DAT_005832b4->font_slot;
-  BlitGraphicsRect(PTR_DAT_005832dc, (s.target_x - 2) - s.text_width / 2, s.target_y - 2, s.text_width + 2, s.line_height + 2,
-                   PTR_DAT_00583304, 0, 0xa0);
-  ApplyPortraitTintMap(PTR_DAT_00583304, 0, 0xa0, s.text_width + 2, s.line_height + 2, 0x3f3f3f, 1);
-  DrawFormattedTextShadowedCentered(PTR_DAT_00583304, 0xff, s.text_width / 2 + 1, s.line_height / 2 + 0xa1, g_ui_message_buffer);
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0xa0, s.text_width + 2, s.line_height + 2, PTR_DAT_005832b4,
+  s.text_width = MeasureMultilineTextWidth(g_page0_window_bounds, g_ui_message_buffer);
+  s.line_height = GetFontLineHeight(g_page0_window_bounds->font_slot);
+  g_page2_window_bounds->font_slot = g_page0_window_bounds->font_slot;
+  BlitGraphicsRect(g_page1_window_bounds, (s.target_x - 2) - s.text_width / 2, s.target_y - 2, s.text_width + 2, s.line_height + 2,
+                   g_page2_window_bounds, 0, 0xa0);
+  ApplyPortraitTintMap(g_page2_window_bounds, 0, 0xa0, s.text_width + 2, s.line_height + 2, 0x3f3f3f, 1);
+  DrawFormattedTextShadowedCentered(g_page2_window_bounds, 0xff, s.text_width / 2 + 1, s.line_height / 2 + 0xa1, g_ui_message_buffer);
+  BlitGraphicsRect(g_page2_window_bounds, 0, 0xa0, s.text_width + 2, s.line_height + 2, g_page0_window_bounds,
                    (s.target_x - 2) - s.text_width / 2, s.target_y - 2);
 }
 
@@ -1506,7 +1506,7 @@ void RunStatsWorldMapJournalMenu(void)
   } s;
 
   ShowWorldMapScreen(4);
-  BlitGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832dc, 0, 0);
+  BlitGraphicsRect(g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page1_window_bounds, 0, 0);
   g_stats_journal_previous_marker_x = -1;
   g_stats_journal_previous_marker_y = g_stats_journal_previous_marker_x;
   for (s.journal_index = 0; s.journal_index < 10000; s.journal_index = s.journal_index + 1)
@@ -1525,11 +1525,11 @@ void RunStatsWorldMapJournalMenu(void)
   g_stats_journal_menu_controls[2].state = 3;
   AddMenuControlsToContext(g_stats_journal_menu_controls, 3, s.menu_context);
   g_menu_render_guard = 1;
-  PTR_DAT_005832b4->page_number = 1;
+  g_page0_window_bounds->page_number = 1;
   RenderJournalExitButtonControl(&g_stats_journal_menu_controls[0], 0);
   RenderJournalScrollbar(&g_stats_journal_menu_controls[1]);
   g_menu_render_guard = 0;
-  PTR_DAT_005832b4->page_number = 0;
+  g_page0_window_bounds->page_number = 0;
   SelectStatsJournalEntry(0);
 
 retry:
@@ -1539,11 +1539,11 @@ retry:
   {
     if ((((GetUiTickCount() % 0x14) == 0) & ((GetUiTickCount() % 10) == 0)) != 0)
     {
-      FillGraphicsRect(PTR_DAT_005832b4, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, 0xff);
+      FillGraphicsRect(g_page0_window_bounds, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, 0xff);
     }
     if ((((GetUiTickCount() % 10) == 0) & (GetUiTickCount() % 0x14)) != 0)
     {
-      BlitGraphicsRect(PTR_DAT_005832dc, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, PTR_DAT_005832b4,
+      BlitGraphicsRect(g_page1_window_bounds, g_stats_journal_marker_x - 2, g_stats_journal_marker_y - 2, 5, 5, g_page0_window_bounds,
                        g_stats_journal_marker_x, g_stats_journal_marker_y);
     }
     UpdateMouseSnapshot();
@@ -1643,7 +1643,7 @@ int RunAdventureStatsMenu(void)
   }
 
   AnimatePaletteToColor(0, g_default_palette_fade_steps);
-  FillGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, 0);
+  FillGraphicsRect(g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height, 0);
   LoadPcxIntoPageNoPalette("advfac64.pic");
   LoadPcxIntoPage(1, "statbut1.pic");
   BeginSpriteEncodeSession();
@@ -1653,19 +1653,19 @@ int RunAdventureStatsMenu(void)
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x31 + 1, 0x4c, 0x30, 0x30);
   }
 
-  PTR_DAT_005832dc->font_slot = 6;
+  g_page1_window_bounds->font_slot = 6;
   for (world_magic_slot_index = 0; world_magic_slot_index < 3; world_magic_slot_index = world_magic_slot_index + 1)
   {
     SetFontStyleSize(6, 9 + (((unsigned int)(world_magic_slot_index - 2) < 1) ? -1 : 0));
-    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x55 + 0x2b, 0xc,
+    DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[world_magic_slot_index], world_magic_slot_index * 0x55 + 0x2b, 0xc,
                                       "%s", (char *)g_stats_text_table[0]);
     g_stats_menu_button_sprites.normal[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x55 + 1, 1, 0x54, 0x18);
-    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x4a + 0x26, 0x25,
+    DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[world_magic_slot_index], world_magic_slot_index * 0x4a + 0x26, 0x25,
                                       "%s", (char *)g_stats_text_table[1]);
     g_stats_menu_button_sprites.highlight[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x4a + 1, 0x1a, 0x49, 0x18);
-    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.colors[world_magic_slot_index], world_magic_slot_index * 0x32 + 0x1a, 0x3e,
+    DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[world_magic_slot_index], world_magic_slot_index * 0x32 + 0x1a, 0x3e,
                                       "%s", (char *)g_stats_text_table[2]);
     g_stats_menu_button_sprites.pressed[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x32 + 1, 0x33, 0x31, 0x18);
@@ -1798,7 +1798,7 @@ int ShowStatsWindow(int mode, int highlight)
   {
     s.duel_win_count = 0;
     s.ruled_town_count = 0;
-    s.mapped_color = FUN_0056302b(s.wizard_color_index + 1);
+    s.mapped_color = MapWizardColorToDisplayIndex(s.wizard_color_index + 1);
     for (s.scan_index = 0; s.scan_index < 0x80; s.scan_index = s.scan_index + 1)
     {
       if ((g_town_slots[s.scan_index].status_and_ruling_wizard & 0xff00) &&
@@ -1841,7 +1841,7 @@ int ShowStatsWindow(int mode, int highlight)
     {
       g_world_magic_town_flags[highlight - 1] = 1;
     }
-    g_statwin_data.highlighted_wizard_color = (unsigned char)FUN_0056302b(highlight);
+    g_statwin_data.highlighted_wizard_color = (unsigned char)MapWizardColorToDisplayIndex(highlight);
     g_statwin_data.progress_by_color[g_statwin_data.highlighted_wizard_color] = 0;
     mode &= 0xff;
   }
@@ -1982,7 +1982,7 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
   if (show_ui != 0)
   {
     ClearGraphicsPageWithPaletteColor(0, 0);
-    PTR_DAT_005832b4->font_slot = 4;
+    g_page0_window_bounds->font_slot = 4;
     s.x = 0x10;
     s.y = s.x;
     sprintf(g_ui_message_buffer, gs_analyze_0074b870[0], g_deck_analysis_card_count);
@@ -1993,8 +1993,8 @@ void AnalyzeDeckAndMaybeShowReport(int show_ui)
     DrawScaledCenteredTextNoShadow(gs_analyze_0074b870[4], 0xf0, s.y, 0xff);
     DrawScaledCenteredTextNoShadow(gs_analyze_0074b870[5], 0x110, s.y, 0xff);
     DrawScaledCenteredTextNoShadow(gs_analyze_0074b870[6], 0x130, s.y, 0xff);
-    DrawGraphicsLine(PTR_DAT_005832b4, 0, s.y * 2 + 0x18, global_screen_width - 1, s.y * 2 + 0x18, 0xf4);
-    DrawGraphicsLine(PTR_DAT_005832b4, 0x130, 0, 0x130, global_screen_height - 1, 0xf4);
+    DrawGraphicsLine(g_page0_window_bounds, 0, s.y * 2 + 0x18, global_screen_width - 1, s.y * 2 + 0x18, 0xf4);
+    DrawGraphicsLine(g_page0_window_bounds, 0x130, 0, 0x130, global_screen_height - 1, 0xf4);
     s.y = 0x20;
     DrawScaledTextNoShadow(gs_analyze_0074b870[7], s.x, s.y, 0xff);
     DrawDeckAnalysisPercentCentered(s.card_type_count_by_color[0][0], 0x80, s.y, 0xff);

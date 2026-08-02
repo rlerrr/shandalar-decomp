@@ -32,9 +32,9 @@ extern char g_ini_string_scratch[0x28];
 extern char g_ui_message_buffer[0x1000];
 extern int g_done_text_table_entry;
 
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
-extern FacemakerWindowBounds *PTR_DAT_00583304;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
+extern FacemakerWindowBounds *g_page2_window_bounds;
 
 extern int g_world_scroll_cache_ready;
 extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
@@ -74,8 +74,8 @@ void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pit
 
 unsigned int GetWorldTileType(int x, int y);
 unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-int FUN_004bb458(int world_magic_slot_index);
-char *FUN_004f2e17(int town_index);
+int FindWorldMagicCardIndex(int world_magic_slot_index);
+char *GetTownCardDescription(int town_index);
 
 // From city-info helpers
 DWORD __cdecl FormatMessageFromStringStripCarriageReturns(char *dst, DWORD dst_len, LPCVOID format, ...);
@@ -214,7 +214,7 @@ int __cdecl RenderCityInfoScrollButton(AdvMenuControl *control, int mode)
     return 0;
   }
 
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height,
+  DrawEncodedImageResampled(g_page0_window_bounds, control->x, control->y, control->width, control->height,
                             g_city_info_scroll_button_sprites[control->data_value * 4 + mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
@@ -264,7 +264,7 @@ int __cdecl RenderCityInfoDoneButton(AdvMenuControl *control, int mode)
     return 0;
   }
 
-  DrawEncodedImageResampled(PTR_DAT_005832b4, control->x, control->y, control->width, control->height, g_city_info_done_button_sprites[mode]);
+  DrawEncodedImageResampled(g_page0_window_bounds, control->x, control->y, control->width, control->height, g_city_info_done_button_sprites[mode]);
 
   if ((mode == 2) && (control->on_activate != (AdvMenuActivateCallback)0))
   {
@@ -293,13 +293,13 @@ static void CityInfo_DrawVisibleRows(int *town_indices_1based, int town_count, i
     int list_index = first_index + i;
     if (list_index < town_count)
     {
-      DrawCityInfoTownRow(PTR_DAT_005832dc, town_indices_1based[list_index + 1], 0x30, y0 + i * row_height_scaled);
+      DrawCityInfoTownRow(g_page1_window_bounds, town_indices_1based[list_index + 1], 0x30, y0 + i * row_height_scaled);
     }
   }
 }
 
 // FUNCTION: SHANDALAR 0x0050a9a2
-void ShowCityInfoScreen(int param_1)
+void ShowCityInfoScreen(int unused)
 {
   struct
   {
@@ -321,7 +321,7 @@ void ShowCityInfoScreen(int param_1)
     int list_top_y;          // ebp - 0x4
   } s;
 
-  (void)param_1;
+  (void)unused;
 
   s.town_count = 0;
   s.scroll_top_index = 0;
@@ -363,7 +363,7 @@ void ShowCityInfoScreen(int param_1)
   }
 
   // Build 3-state Done button sprites into g_city_info_done_button_sprites
-  PTR_DAT_005832dc->font_slot = 7;
+  g_page1_window_bounds->font_slot = 7;
   SetFontStyleSize(7, (unsigned int)ScaleUiCoordinate(10));
   for (s.i = 0; s.i < 3; s.i++)
   {
@@ -372,7 +372,7 @@ void ShowCityInfoScreen(int param_1)
     s.x_table[2] = 0x40;
 
     SetFontStyleSize(7, (unsigned int)(10 - s.i / 2));
-    DrawFormattedTextNoShadowCentered(PTR_DAT_005832dc, s.x_table[s.i], s.i * 0x3c + 0x49, 0xe, (char *)g_done_text_table_entry);
+    DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.x_table[s.i], s.i * 0x3c + 0x49, 0xe, (char *)g_done_text_table_entry);
   }
 
   for (s.i = 0; s.i < 3; s.i++)
@@ -390,27 +390,27 @@ void ShowCityInfoScreen(int param_1)
   // Prepare background
   g_world_scroll_cache_ready = 1;
   LoadPcxResource(1, 0, global_screen_height - 0x1e0, "cityinfo.pic", (void *)0);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0, 0, global_screen_width,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, global_screen_height - 0x1e0, 0x280, 0x1e0, g_page1_window_bounds, 0, 0, global_screen_width,
                           global_screen_height);
 
   // Headings, loaded from advButtons [cityInfo] (format strings in .rdata are \"%s\")
-  PTR_DAT_005832dc->font_slot = 7;
+  g_page1_window_bounds->font_slot = 7;
   SetFontStyleSize(7, (unsigned int)ScaleUiCoordinate(10));
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x69, 0x28, "%s", (char *)g_city_info_heading_strings[0]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x54, 0x45, "%s", (char *)g_city_info_heading_strings[1]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0xb3, 0x45, "%s", (char *)g_city_info_heading_strings[2]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x130, 0x45, "%s", (char *)g_city_info_heading_strings[3]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x1cc, 0x45, "%s", (char *)g_city_info_heading_strings[4]);
-  DrawTextAt(PTR_DAT_005832dc, 200, 0x23f, 0x45, "%s", (char *)g_city_info_heading_strings[5]);
+  DrawTextAt(g_page1_window_bounds, 200, 0x69, 0x28, "%s", (char *)g_city_info_heading_strings[0]);
+  DrawTextAt(g_page1_window_bounds, 200, 0x54, 0x45, "%s", (char *)g_city_info_heading_strings[1]);
+  DrawTextAt(g_page1_window_bounds, 200, 0xb3, 0x45, "%s", (char *)g_city_info_heading_strings[2]);
+  DrawTextAt(g_page1_window_bounds, 200, 0x130, 0x45, "%s", (char *)g_city_info_heading_strings[3]);
+  DrawTextAt(g_page1_window_bounds, 200, 0x1cc, 0x45, "%s", (char *)g_city_info_heading_strings[4]);
+  DrawTextAt(g_page1_window_bounds, 200, 0x23f, 0x45, "%s", (char *)g_city_info_heading_strings[5]);
 
   EnsureAdvfac64Loaded(1);
 
   // Reset font slots
-  PTR_DAT_005832b4->font_slot = 1;
-  PTR_DAT_005832dc->font_slot = 1;
-  PTR_DAT_00583304->font_slot = 1;
+  g_page0_window_bounds->font_slot = 1;
+  g_page1_window_bounds->font_slot = 1;
+  g_page2_window_bounds->font_slot = 1;
 
-  LoadPcxResource(2, 0, PTR_DAT_00583304->max_y - 0x46, "cinfopce.pic", (void *)0);
+  LoadPcxResource(2, 0, g_page2_window_bounds->max_y - 0x46, "cinfopce.pic", (void *)0);
 
   // List panel geometry
   s.list_panel_x = (global_screen_width * 0x30 + global_screen_width / 2) / 0x280;
@@ -419,15 +419,15 @@ void ShowCityInfoScreen(int param_1)
   s.row_height_scaled = ScaleUiCoordinate(0x2a);
 
   // Build repeating row background on the offscreen page
-  StretchBlitGraphicsRect(PTR_DAT_00583304, 0, PTR_DAT_00583304->max_y - 0x2c, 0x231, 0x2a, PTR_DAT_00583304, 0, 0x80, s.list_width_scaled,
+  StretchBlitGraphicsRect(g_page2_window_bounds, 0, g_page2_window_bounds->max_y - 0x2c, 0x231, 0x2a, g_page2_window_bounds, 0, 0x80, s.list_width_scaled,
                           s.row_height_scaled);
   for (s.i = 0; s.i < 9; s.i++)
   {
-    CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+    CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x,
                      s.i * s.row_height_scaled + s.list_top_y);
   }
 
-  CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+  CopyGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
 
   // Build town list (1-based indexing like the original)
   s.row_y = 2;
@@ -444,14 +444,14 @@ void ShowCityInfoScreen(int param_1)
 
   for (s.i = 0; s.i < 5; s.i++)
   {
-    DrawTextAt(PTR_DAT_005832b4, 0xfe, s.i * 0x2a + 0xcc, 0x2a, "%d", g_amulet_inventory[s.i]);
+    DrawTextAt(g_page0_window_bounds, 0xfe, s.i * 0x2a + 0xcc, 0x2a, "%d", g_amulet_inventory[s.i]);
   }
 
 main_loop:
   // Rebuild row backgrounds
   for (s.i = 0; s.i < 9; s.i++)
   {
-    CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+    CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x,
                      s.i * s.row_height_scaled + s.list_top_y);
   }
 
@@ -460,11 +460,11 @@ main_loop:
   {
     s.town_scan_index = s.town_indices[s.visible_town_index];
     s.row_y = ScaleUiCoordinate(0x68) + s.j * s.row_height_scaled;
-    DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_scan_index, 0x30, s.row_y);
+    DrawCityInfoTownRow(g_page1_window_bounds, s.town_scan_index, 0x30, s.row_y);
   }
 
   // Copy list area to the visible page
-  CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, PTR_DAT_005832b4, s.list_panel_x,
+  CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, g_page0_window_bounds, s.list_panel_x,
                    s.list_top_y);
 
   if (s.town_count > 9)
@@ -478,37 +478,37 @@ main_loop:
       s.list_buffer_y = s.row_height_scaled;
     }
 
-    CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, PTR_DAT_005832dc, s.list_panel_x,
+    CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, s.list_top_y, s.list_width_scaled, s.row_height_scaled * 9, g_page1_window_bounds, s.list_panel_x,
                      s.list_buffer_y);
 
     if (s.scroll_top_index == 0)
     {
-      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+      CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x,
                        s.row_height_scaled * 9);
-      DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 9], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 9);
+      DrawCityInfoTownRow(g_page1_window_bounds, s.town_indices[s.scroll_top_index + 9], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 9);
 
-      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+      CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x,
                        s.row_height_scaled * 10);
 
       if (s.scroll_top_index + 10 < s.town_count)
       {
-        DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 10], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
+        DrawCityInfoTownRow(g_page1_window_bounds, s.town_indices[s.scroll_top_index + 10], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
       }
     }
     else
     {
-      CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x, 0);
-      DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index - 1], 0x30, ScaleUiCoordinate(0x15));
+      CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x, 0);
+      DrawCityInfoTownRow(g_page1_window_bounds, s.town_indices[s.scroll_top_index - 1], 0x30, ScaleUiCoordinate(0x15));
 
       if (s.scroll_top_index + 10 < s.town_count)
       {
-        CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+        CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x,
                          s.row_height_scaled * 10);
       }
 
       if (s.scroll_top_index + 10 < s.town_count)
       {
-        DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 9], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
+        DrawCityInfoTownRow(g_page1_window_bounds, s.town_indices[s.scroll_top_index + 9], 0x30, ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
       }
     }
   }
@@ -603,20 +603,20 @@ page_loop:
 
         for (s.i = 0; ScaleUiCoordinate(0x2b) > s.i; s.i += 3)
         {
-          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_y - s.i + ScaleUiCoordinate(3), s.list_width_scaled,
-                           s.row_height_scaled * 9 - ScaleUiCoordinate(5), PTR_DAT_005832b4, s.list_panel_x, s.list_top_y + ScaleUiCoordinate(3));
+          CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, s.row_y - s.i + ScaleUiCoordinate(3), s.list_width_scaled,
+                           s.row_height_scaled * 9 - ScaleUiCoordinate(5), g_page0_window_bounds, s.list_panel_x, s.list_top_y + ScaleUiCoordinate(3));
         }
 
-        CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, 0, s.list_width_scaled, s.row_height_scaled * 9 - ScaleUiCoordinate(5), PTR_DAT_005832b4,
+        CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, 0, s.list_width_scaled, s.row_height_scaled * 9 - ScaleUiCoordinate(5), g_page0_window_bounds,
                          s.list_panel_x, s.list_top_y);
 
         if (s.scroll_top_index >= 1)
         {
-          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, 0, s.list_width_scaled, s.row_height_scaled * 10, PTR_DAT_005832dc, s.list_panel_x,
+          CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, 0, s.list_width_scaled, s.row_height_scaled * 10, g_page1_window_bounds, s.list_panel_x,
                            s.row_height_scaled);
           s.row_y = s.row_height_scaled;
-          CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x, 0);
-          DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index - 1], 0x30, ScaleUiCoordinate(0x15));
+          CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x, 0);
+          DrawCityInfoTownRow(g_page1_window_bounds, s.town_indices[s.scroll_top_index - 1], 0x30, ScaleUiCoordinate(0x15));
         }
         else
         {
@@ -631,27 +631,27 @@ page_loop:
       {
         for (s.i = 0; ScaleUiCoordinate(0x2b) > s.i; s.i += 3)
         {
-          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_y + s.i + ScaleUiCoordinate(3), s.list_width_scaled,
-                           s.row_height_scaled * 9 - ScaleUiCoordinate(5), PTR_DAT_005832b4, s.list_panel_x, s.list_top_y + ScaleUiCoordinate(3));
+          CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, s.row_y + s.i + ScaleUiCoordinate(3), s.list_width_scaled,
+                           s.row_height_scaled * 9 - ScaleUiCoordinate(5), g_page0_window_bounds, s.list_panel_x, s.list_top_y + ScaleUiCoordinate(3));
         }
 
-        CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_y + s.row_height_scaled, s.list_width_scaled, s.row_height_scaled * 9 - ScaleUiCoordinate(5),
-                         PTR_DAT_005832b4, s.list_panel_x, s.list_top_y);
+        CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, s.row_y + s.row_height_scaled, s.list_width_scaled, s.row_height_scaled * 9 - ScaleUiCoordinate(5),
+                         g_page0_window_bounds, s.list_panel_x, s.list_top_y);
 
         s.row_y = s.row_height_scaled;
         if ((s.scroll_top_index >= 1) && (s.scroll_top_index < s.town_count - 9))
         {
-          CopyGraphicsRect(PTR_DAT_005832dc, s.list_panel_x, s.row_height_scaled, s.list_width_scaled, s.row_height_scaled * 10, PTR_DAT_005832dc,
+          CopyGraphicsRect(g_page1_window_bounds, s.list_panel_x, s.row_height_scaled, s.list_width_scaled, s.row_height_scaled * 10, g_page1_window_bounds,
                            s.list_panel_x, 0);
           if (s.scroll_top_index + 10 < s.town_count)
           {
-            CopyGraphicsRect(PTR_DAT_00583304, 0, 0x80, s.list_width_scaled, s.row_height_scaled, PTR_DAT_005832dc, s.list_panel_x,
+            CopyGraphicsRect(g_page2_window_bounds, 0, 0x80, s.list_width_scaled, s.row_height_scaled, g_page1_window_bounds, s.list_panel_x,
                              s.row_height_scaled * 10);
           }
 
           if (s.scroll_top_index + 10 < s.town_count)
           {
-            DrawCityInfoTownRow(PTR_DAT_005832dc, s.town_indices[s.scroll_top_index + 10], 0x30,
+            DrawCityInfoTownRow(g_page1_window_bounds, s.town_indices[s.scroll_top_index + 10], 0x30,
                                 ScaleUiCoordinate(0x15) + s.row_height_scaled * 10);
           }
         }
@@ -763,10 +763,10 @@ int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int 
     s.text_color = *(int *)((char *)g_wizard_text_colors + (((int)(g_town_slots[town_index].status_and_ruling_wizard & 0xffffff00)) >> 6));
   }
 
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);
   if ((g_town_slots[town_index].status_and_ruling_wizard & 1) != 0)
   {
-    DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x20c), y, "X");
+    DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.text_color, ScaleUiCoordinate(x + 0x20c), y, "X");
   }
 
   s.tile_class = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[town_index].world_x, g_town_slots[town_index].world_y));
@@ -794,25 +794,25 @@ int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int 
 
     if ((s.tile_class & (1U << (unsigned char)s.i)) != 0)
     {
-      DrawEncodedImageResampled(PTR_DAT_005832dc, s.wizard_sprite_x, y - ScaleUiCoordinate(s.sprite_height / 2), ScaleUiCoordinate(s.sprite_width),
+      DrawEncodedImageResampled(g_page1_window_bounds, s.wizard_sprite_x, y - ScaleUiCoordinate(s.sprite_height / 2), ScaleUiCoordinate(s.sprite_width),
                                 ScaleUiCoordinate(s.sprite_height), g_world_magic_avatar_sprites[s.avatar_indices[s.i - 1]]);
       s.wizard_sprite_x += ScaleUiCoordinate(s.sprite_width + 5);
     }
   }
 
-  strcpy(g_ui_message_buffer, FUN_004f2e17(town_index));
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
+  strcpy(g_ui_message_buffer, GetTownCardDescription(town_index));
+  DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.text_color, ScaleUiCoordinate(x + 0xff), y, g_ui_message_buffer);
 
   strcpy(g_ui_message_buffer, "");
   for (s.i = 0; s.i < 0xc; s.i++)
   {
     if ((town_index != 0) && (g_world_magic_slot_timers[s.i].town_index == town_index))
     {
-      s.world_magic_slot_result = FUN_004bb458(s.i);
+      s.world_magic_slot_result = FindWorldMagicCardIndex(s.i);
       strcat(g_ui_message_buffer, gs_worldmagic_names_00780660[s.i]);
     }
   }
-  DrawFormattedTextShadowedCentered(PTR_DAT_005832dc, s.text_color, ScaleUiCoordinate(x + 0x19c), y, g_ui_message_buffer);
+  DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.text_color, ScaleUiCoordinate(x + 0x19c), y, g_ui_message_buffer);
 
   return 0;
 }

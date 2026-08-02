@@ -66,16 +66,17 @@ int ConsumeMouseButtonReleaseMask(void)
 }
 
 // FUNCTION: SHANDALAR 0x00578c70
-void FUN_00578c70(int param_1, int param_2, int param_3)
+void FUN_00578c70(int unused_a, int unused_b, int unused_c)
 {
-  (void)param_1;
-  (void)param_2;
-  (void)param_3;
+  (void)unused_a;
+  (void)unused_b;
+  (void)unused_c;
 }
 
 // FUNCTION: SHANDALAR 0x00578c80
-int FUN_00578c80(int param_1)
+int FUN_00578c80(int ignored_result)
 {
+  (void)ignored_result;
   return 0;
 }
 
@@ -347,13 +348,13 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 }
 
 // FUNCTION: SHANDALAR 0x0057b590
-void FUN_0057b590(FacemakerWindowBounds *window, int color_index, int x, int y, char *text)
+void DrawUiScaledCenteredTextNoShadow(FacemakerWindowBounds *window, int color_index, int x, int y, char *text)
 {
   DrawTextFormatted(window, color_index, 0, 1, 1, 1, x, y, (int *)&text);
 }
 
 // FUNCTION: SHANDALAR 0x0057b5f0
-void FUN_0057b5f0(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
+void DrawUiScaledTextWithShadowCenterY(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...)
 {
   DrawTextFormatted(window, color_index, 1, 1, 0, 1, x, y, (int *)&format);
 }

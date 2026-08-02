@@ -15,7 +15,7 @@ typedef struct
 } HintPair;
 
 extern char g_ui_message_buffer[0x1000];
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
+extern FacemakerWindowBounds *g_page0_window_bounds;
 extern card_data_t global_cards_data[];
 extern long g_hint_text_offsets[0x100];
 extern HintPair g_hint_card_pairs[0x100];
@@ -95,7 +95,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
   while ((s.word_end = FindTextWordBreak(s.scan)) != (char *)0)
   {
     s.word_length = (int)s.word_end - (int)s.scan;
-    if (max_width < s.line_width + MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length))
+    if (max_width < s.line_width + MeasureTextSpanWidth(g_page0_window_bounds, s.scan, s.word_length))
     {
       strcat(s.current_line, "\n");
       strcat(dst, s.current_line);
@@ -112,11 +112,11 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
         s.word_end++;
       }
       s.scan = s.word_end;
-      s.line_width = MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
+      s.line_width = MeasureTextSpanWidth(g_page0_window_bounds, s.scan, s.word_length);
     }
     else
     {
-      s.line_width += MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
+      s.line_width += MeasureTextSpanWidth(g_page0_window_bounds, s.scan, s.word_length);
       strncat(s.current_line, s.scan, s.word_length);
       if (*s.word_end == '\n')
       {
@@ -133,7 +133,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
     }
   }
 
-  if (max_width < s.line_width + MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length))
+  if (max_width < s.line_width + MeasureTextSpanWidth(g_page0_window_bounds, s.scan, s.word_length))
   {
     strcat(s.current_line, "\n");
     strcat(dst, s.current_line);
@@ -204,7 +204,7 @@ char *WrapTextToWidthForPopup(char *src, char *dst, int max_width)
         s.word_end++;
       }
       s.word_length = (int)s.word_end - (int)s.scan;
-      s.word_width = MeasureTextSpanWidth(PTR_DAT_005832b4, s.scan, s.word_length);
+      s.word_width = MeasureTextSpanWidth(g_page0_window_bounds, s.scan, s.word_length);
       if (max_width < s.word_width + s.line_width)
       {
         strcat(s.current_line, "\n");
@@ -274,7 +274,7 @@ void ShowTownHintTextPopup(int hint_index)
     s.button_sprites[s.i] = s.loaded_button_sprites[9 + s.i];
   }
 
-  DrawEncodedImageResampled(PTR_DAT_005832b4,
+  DrawEncodedImageResampled(g_page0_window_bounds,
                             ScaleUiCoordinate(0xdc),
                             ScaleUiCoordinate(0x34),
                             ScaleUiCoordinate(0xc5),
@@ -282,7 +282,7 @@ void ShowTownHintTextPopup(int hint_index)
                             s.button_sprite_10);
 
   WrapTextToWidthForPopup(g_ui_message_buffer, s.wrapped_hint_text, ScaleUiCoordinate(0x85));
-  DrawTextAt(PTR_DAT_005832b4, 0xfe, 0x140, 0xbc, s.wrapped_hint_text);
+  DrawTextAt(g_page0_window_bounds, 0xfe, 0x140, 0xbc, s.wrapped_hint_text);
   WaitForInputEventUnlessBlocked();
   FreeSpriteBlob(s.button_sprite_10);
 }

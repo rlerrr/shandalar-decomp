@@ -100,9 +100,9 @@ extern char g_ui_message_buffer[0x1000];
 extern HPALETTE g_palette_handle;
 extern HWND g_main_window_hwnd;
 extern DIBSurface *g_graphics_pages[10];
-extern FacemakerWindowBounds *PTR_DAT_005832b4;
-extern FacemakerWindowBounds *PTR_DAT_005832dc;
-extern FacemakerWindowBounds *PTR_DAT_00583304;
+extern FacemakerWindowBounds *g_page0_window_bounds;
+extern FacemakerWindowBounds *g_page1_window_bounds;
+extern FacemakerWindowBounds *g_page2_window_bounds;
 extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 extern int(__cdecl *g_town_dialog_callback)(void);
 
@@ -124,15 +124,15 @@ void ConvertDungeonCellToScreen(int dungeon_x, int dungeon_y, int *out_screen_x,
 void ConvertMouseToDungeonCell(int mouse_x, int mouse_y, int *out_x, int *out_y);
 int QueueDungeonMouseNavigationInput(int mouse_x, int mouse_y);
 int ShutdownSharedStartup(void);
-int FUN_004bb040(int world_x, int world_y);
-int FUN_004bc6d3(int creature_type, int work_entry_index_a, int work_entry_index_b);
+int FindTownAtWorldCoordinates(int world_x, int world_y);
+int LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int work_entry_index_b);
 int SeedRandomFromTickCount(void);
 char *GetDungeonName(int dungeon_index);
 int CalculateDungeonEndgameScore(void);
 int RandomIntLessThan(int max_value);
 int RunCardRiddleChallenge(void);
 int ScaleUiCoordinateFrom320(int value);
-int FUN_005501fe(int value);
+int ScaleUiCoordinate(int value);
 int AddCardToDeckSorted(int card_id);
 int FindCardIndexByCsvid(int csvid);
 int sound_get_state(int sound_id, int *out_state);
@@ -146,7 +146,7 @@ int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path
 int ReadSpriteEntryPointersWithLimit(EncodedImage **out_sprite_entries, char *sprite_path, int max_entries);
 int RemoveCardFromDeckById(unsigned int card_id);
 int ResetMenuContext(int context_index);
-int RunCardBrowser(char *title, int color_mask, unsigned int param_3, int param_4, int param_5);
+int RunCardBrowser(char *title, int color_mask, unsigned int type_mask, int reset_filters, int show_done_button);
 int RunCastleDungeonBoard(int dungeon_index);
 int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle);
 undefined4 HandleDefeatedWizardCastle(int dungeon_index);
@@ -158,7 +158,7 @@ int MeasureTextLineWidth(char *text);
 int sound_stop(int sound_id);
 int sound_unload(int sound_id);
 unsigned int GetWorldTileType(int x, int y);
-unsigned int FUN_004314ca(int x, int y);
+unsigned int GetWorldMapPixelFlags(int x, int y);
 unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 unsigned int WaitForInputEventUnlessBlocked(void);
 void AnimatePaletteToColor(int color_index, int palette_id);
@@ -182,20 +182,20 @@ void AppendDungeonRewardDescription(void);
 void InitDungeonScratchPage(void);
 void FreeDungeonScratchPage(void);
 void DelayUiTicks(int ticks);
-void FUN_004ed135(void);
+void RestoreAdventureUiPaletteAndFocus(void);
 undefined4 TransitionPcxToScreenRandomTiles8(char *path);
 undefined4 TransitionPcxToScreenRandomTiles(char *path, int x_scale, int y_scale);
-void FUN_004ecfa2(void);
+void ClearInputAndWaitForMouseRelease(void);
 void DrawAdventureCard(unsigned int card_id, int x, int y, int full_card, char *banner_text);
 void DrawAdventureCardSized(int card_id, int x, int y, int width, int height, int full_card, char *label);
-void FUN_005000fb(int context_index);
-void FUN_005616aa(int param_1);
+int ResetMenuContext(int context_index);
+void ForceReloadAdvfac64(int state);
 undefined4 PlayStatWinMovie(char *path, int x, int y, int flags);
-void FUN_00562736(int sound_id, int volume, int pitch_percent, int pan_percent);
-void FUN_0056279e(int sound_id, int volume, int pan_percent);
-void FUN_00562835(char *sound_path, int channel);
+void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent);
+void PlayLoopingSoundWithPan(int sound_id, int volume, int pan_percent);
+void LoadLoopingSound(char *sound_path, int channel);
 void StopWorldLocationMusic(void);
-void PlayCastleMusic(int param_1);
+void PlayCastleMusic(int castle_music_index);
 int FreeGraphicsPage(int page_number);
 void DrawUiScaledCenteredTextWithShadow(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
 void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
@@ -355,8 +355,8 @@ int RunCastleDungeonBoard(int dungeon_index)
   {
     ReadSpriteEntryPointers((EncodedImage **)&g_dungeon_sprite_entries, g_dungeon_sprite_paths[RandomIntLessThan(3)]);
   }
-  FUN_00562835("x:sound\\dambloop.wav", 100);
-  FUN_0056279e(100, 0x50, 0);
+  LoadLoopingSound("x:sound\\dambloop.wav", 100);
+  PlayLoopingSoundWithPan(100, 0x50, 0);
   set_sound_loop(100, 1);
   LoadPcxIntoPage(2, "CaveBkgd.pic");
   ReadSpriteEntryPointers(s.button_sprite_entries, "dungbutt.spr");
@@ -426,7 +426,7 @@ int RunCastleDungeonBoard(int dungeon_index)
           PickRandomCreatureTypeForWizardTier((int)(char)g_castle_dungeon_slots[dungeon_index].color, s.creature_tier);
     } while (g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.monster_slot] == 0);
     FreeOpeningMenuSpriteWorkEntries(s.monster_slot, s.monster_slot + 8);
-    FUN_004bc6d3(g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.monster_slot], s.monster_slot, s.monster_slot + 8);
+    LoadCreatureEncounterSprites(g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.monster_slot], s.monster_slot, s.monster_slot + 8);
     if ((dungeon_index < 5) && (s.monster_slot == 4))
     {
       g_dungeon_runtime_state.encounter.selected.monster_creature_types[s.monster_slot] =
@@ -510,7 +510,7 @@ int RunCastleDungeonBoard(int dungeon_index)
       if ((s.ambient_sound_path[0xc] == '5') && (s.ambient_repeat_count != 0))
       {
         s.ambient_repeat_count = s.ambient_repeat_count + -1;
-        FUN_00562736(0x65, RandomIntLessThan(0x14) + 0x50, 100, RandomIntLessThan(100) + -0x32);
+        PlaySoundWithPitchAndPan(0x65, RandomIntLessThan(0x14) + 0x50, 100, RandomIntLessThan(100) + -0x32);
         s.next_ambient_ticks = RandomIntLessThan(0x3c) + 0x1e;
         ConsumeUiTickCount();
         continue;
@@ -525,7 +525,7 @@ int RunCastleDungeonBoard(int dungeon_index)
       }
       sound_unload(0x65);
       LoadSoundWithDriveFallback(s.ambient_sound_path, 0x65, 0);
-      FUN_00562736(0x65, RandomIntLessThan(0x14) + 0x50, 100, RandomIntLessThan(100) + -0x32);
+      PlaySoundWithPitchAndPan(0x65, RandomIntLessThan(0x14) + 0x50, 100, RandomIntLessThan(100) + -0x32);
       if ((s.ambient_sound_path[0xc] == '5') && (s.ambient_repeat_count == 0))
       {
         s.ambient_repeat_count = RandomIntLessThan(3) + 2;
@@ -683,7 +683,7 @@ int RunCastleDungeonBoard(int dungeon_index)
                 AddJournalEntry(JOURNAL_ENTRY_DUNGEON_TREASURE,
                                 (&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code] | 0x10000);
                 DrawAdventureCardSized((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code], 0x22, 0x53, 0x4b, 0x70, 1, "");
-                DrawTextAt(PTR_DAT_005832b4, 0x1b, 0x90, 0x93, gs_dungeon_0077f000[3]);
+                DrawTextAt(g_page0_window_bounds, 0x1b, 0x90, 0x93, gs_dungeon_0077f000[3]);
                 ClearInputAndWaitForMouseRelease();
                 WaitForInputEventUnlessBlocked();
                 DrawCastleDungeonBoard(0, 0, dungeon_index);
@@ -823,9 +823,9 @@ int RunCastleDungeonBoard(int dungeon_index)
       {
         s.grid_x = RandomIntLessThan(0x40);
         s.grid_y = RandomIntLessThan(0x40);
-        s.random_or_flags = FUN_004314ca(s.grid_x, s.grid_y) & 0xf;
+        s.random_or_flags = GetWorldMapPixelFlags(s.grid_x, s.grid_y) & 0xf;
       } while (GetWorldTileType(s.grid_x, s.grid_y) == 0);
-    } while ((FUN_004314ca(s.grid_x, s.grid_y) & 0x30) != 0);
+    } while ((GetWorldMapPixelFlags(s.grid_x, s.grid_y) & 0x30) != 0);
     g_castle_dungeon_slots[dungeon_index].world_x = s.grid_x;
     g_castle_dungeon_slots[dungeon_index].world_y = s.grid_y;
     SetWorldMapPixelFlags(0x40, s.grid_x, s.grid_y);
@@ -983,7 +983,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
       }
       strcpy(g_ui_message_buffer, gs_dungeon_0077f000[0x13]);
       LoadPcxIntoPage(1, "losedul2.pic");
-      StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+      StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                               global_screen_height);
       DrawAdventureCard(global_ante_cards[0][0],
                         RandomIntLessThan(ScaleUiCoordinate(10)) + s.deck_index * 0x62 + 0x21,
@@ -1007,15 +1007,15 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   g_next_duel_card_id = -1;
   if ((final_battle == 0) || (s.duel_result == -1))
   {
-    FUN_00562835("x:sound\\dambloop.wav", 100);
-    FUN_0056279e(100, 0x50, 0);
+    LoadLoopingSound("x:sound\\dambloop.wav", 100);
+    PlayLoopingSoundWithPan(100, 0x50, 0);
     set_sound_loop(100, 1);
   }
   return s.duel_result;
 }
 
 // FUNCTION: SHANDALAR 0x0050c0ff
-undefined4 HandleDefeatedWizardCastle(int param_1)
+undefined4 HandleDefeatedWizardCastle(int castle_index)
 {
   struct
   {
@@ -1032,14 +1032,14 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
     uint selected_cards[3];       // ebp - 0xc
   } s;
 
-  s.wizard_color = (int)(char)g_castle_dungeon_slots[param_1].color;
-  AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, (g_castle_defeat_music_ids[param_1] + 1) * 7 | 0x80);
-  ShowStatsWindow(1, (int)(char)g_castle_dungeon_slots[param_1].color);
+  s.wizard_color = (int)(char)g_castle_dungeon_slots[castle_index].color;
+  AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, (g_castle_defeat_music_ids[castle_index] + 1) * 7 | 0x80);
+  ShowStatsWindow(1, (int)(char)g_castle_dungeon_slots[castle_index].color);
   LoadPcxIntoPageNoPalette("advfac64.pic");
   LoadPcxIntoPage(1, "tradscrn.pic");
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                           global_screen_height);
-  PlayCastleMusic(param_1 + 1);
+  PlayCastleMusic(castle_index + 1);
   if (IsWizardColorFeminine(s.wizard_color) != 0)
   {
     sprintf(g_ui_message_buffer, gs_castlewin_0074b8c0[0], gs_wizardnames_0077ee70[s.wizard_color]);
@@ -1057,10 +1057,10 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
       strcat(g_ui_message_buffer, gs_castlewin_0074b8c0[2]);
     }
   }
-  DrawUiScaledCenteredTextWithShadow(PTR_DAT_005832b4, 0xfe, 0x140, 0x72, g_ui_message_buffer);
+  DrawUiScaledCenteredTextWithShadow(g_page0_window_bounds, 0xfe, 0x140, 0x72, g_ui_message_buffer);
   g_defeated_wizards_bitmap = g_defeated_wizards_bitmap | 1 << (byte)s.wizard_color;
-  s.town_index = FUN_004bb040(g_castle_dungeon_slots[param_1].world_x,
-                              g_castle_dungeon_slots[param_1].world_y);
+  s.town_index = FindTownAtWorldCoordinates(g_castle_dungeon_slots[castle_index].world_x,
+                              g_castle_dungeon_slots[castle_index].world_y);
   g_town_slots[s.town_index].location_type = 5;
   for (s.loop_index = 0; s.loop_index < 8; s.loop_index = s.loop_index + 1)
   {
@@ -1072,12 +1072,12 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
   }
   s.card_browser_page = 1;
   sprintf(g_ui_message_buffer, gs_castlewin_0074b8c0[3], gs_colorcards_0077c5e0[s.wizard_color]);
-  DrawUiScaledCenteredTextWithShadow(PTR_DAT_005832b4, 0xfe, 0x140, 200, g_ui_message_buffer);
+  DrawUiScaledCenteredTextWithShadow(g_page0_window_bounds, 0xfe, 0x140, 200, g_ui_message_buffer);
   ClearInputAndWaitForMouseRelease();
   WaitForInputEventUnlessBlocked();
   g_town_dialog_callback = QuestCardChooserCallback;
   ResetMenuContext(BeginMenuContext());
-  FUN_005616aa(1);
+  ForceReloadAdvfac64(1);
   g_defeated_wizards_bitmap = g_defeated_wizards_bitmap & ~(1 << (byte)s.wizard_color);
 
   for (s.loop_index = 0; s.loop_index < 3; s.loop_index = s.loop_index + 1)
@@ -1132,17 +1132,17 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
   {
     DelayUiTicks(0x3c);
     LoadPcxIntoPageOpaque(1, "5thwiz.pic");
-    StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0, global_screen_width,
+    StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                             global_screen_height);
     strcpy(g_ui_message_buffer, gs_castlewin_0074b8c0[6]);
-    *(undefined4 *)((int)PTR_DAT_005832b4 + 0x20) = 5;
-    DrawUiScaledCenteredTextWithShadow(PTR_DAT_005832b4, 99, 0x140, 0x100, g_ui_message_buffer);
+    *(undefined4 *)((int)g_page0_window_bounds + 0x20) = 5;
+    DrawUiScaledCenteredTextWithShadow(g_page0_window_bounds, 99, 0x140, 0x100, g_ui_message_buffer);
     ClearInputAndWaitForMouseRelease();
     WaitForInputEventUnlessBlocked();
     s.endgame_score = CalculateDungeonEndgameScore();
     sprintf(g_ui_message_buffer, gs_castlewin_0074b8c0[7], MAX(s.endgame_score, 0));
     strcat(g_ui_message_buffer, gs_castlewin_0074b8c0[8]);
-    DrawUiScaledCenteredTextWithShadow(PTR_DAT_005832b4, 99, 0x140, 0x15e, g_ui_message_buffer);
+    DrawUiScaledCenteredTextWithShadow(g_page0_window_bounds, 99, 0x140, 0x15e, g_ui_message_buffer);
     ClearInputAndWaitForMouseRelease();
     WaitForInputEventUnlessBlocked();
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
@@ -1192,7 +1192,7 @@ undefined4 HandleDefeatedWizardCastle(int param_1)
     TransitionPcxToScreenRandomTiles("wingame.pic", s.transition_tile_size, s.transition_tile_size);
     sprintf(g_ui_message_buffer, gs_castlewin_0074b8c0[9], s.endgame_score);
     strcat(g_ui_message_buffer, gs_castlewin_0074b8c0[10]);
-    DrawTextAt(PTR_DAT_005832b4, 0xd8, 0x140, 0x81, g_ui_message_buffer);
+    DrawTextAt(g_page0_window_bounds, 0xd8, 0x140, 0x81, g_ui_message_buffer);
     ClearInputAndWaitForMouseRelease();
     WaitForInputEventUnlessBlocked();
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
@@ -1219,7 +1219,7 @@ void EnterCastleDungeon(int dungeon_index)
 // FUNCTION: SHANDALAR 0x00446a57
 void FreeDungeonScratchPage(void)
 {
-  BlitGraphicsRect(g_dungeon_scratch_page9, 0, 0, global_screen_width, 0x80, PTR_DAT_00583304, 0, 0);
+  BlitGraphicsRect(g_dungeon_scratch_page9, 0, 0, global_screen_width, 0x80, g_page2_window_bounds, 0, 0);
   FreeGraphicsPage(9);
 }
 
@@ -1271,11 +1271,11 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
 
   if (initial_draw == 0)
   {
-    PTR_DAT_005832b4->page_number = 1;
+    g_page0_window_bounds->page_number = 1;
   }
-  StretchBlitGraphicsRect(PTR_DAT_00583304, 0, 0, 0x280, 0x1e0, PTR_DAT_005832b4, 0, 0,
+  StretchBlitGraphicsRect(g_page2_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0,
                           ScaleUiCoordinateFrom320(0x140), ScaleUiCoordinateFrom320(0xf0));
-  PTR_DAT_005832b4->font_slot = 4;
+  g_page0_window_bounds->font_slot = 4;
   strcpy(g_ui_message_buffer, GetDungeonName(dungeon_index));
   s.title_width = MeasureTextLineWidth(g_ui_message_buffer);
   s.title_piece_count = 0;
@@ -1289,22 +1289,22 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
     s.title_tmp += s.title_middle_width;
   }
   s.title_left = ScaleUiCoordinate(0x140) - (s.title_middle_width * s.title_piece_count) / 2 - s.title_piece_width;
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux0);
+  DrawEncodedImageUnscaled(g_page0_window_bounds, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux0);
   s.title_left += s.title_piece_width;
   while (s.title_piece_count-- != 0)
   {
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux1);
+    DrawEncodedImageUnscaled(g_page0_window_bounds, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux1);
     s.title_left += s.title_middle_width;
   }
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux2);
+  DrawEncodedImageUnscaled(g_page0_window_bounds, s.title_left, 1, g_dungeon_runtime_state.button_sprite_aux2);
   DrawCenteredTextLineWithShadow(g_ui_message_buffer, ScaleUiCoordinate(0x140), 0x12, 0xff);
 
-  PTR_DAT_005832b4->font_slot = 1;
+  g_page0_window_bounds->font_slot = 1;
   if (g_next_duel_card_id != -1)
   {
     strcpy(g_ui_message_buffer, "");
     AppendDungeonRewardDescription();
-    DrawFormattedTextShadowedCentered(PTR_DAT_005832b4, 0xd0, ScaleUiCoordinate(0x140), 0x30, g_ui_message_buffer);
+    DrawFormattedTextShadowedCentered(g_page0_window_bounds, 0xd0, ScaleUiCoordinate(0x140), 0x30, g_ui_message_buffer);
   }
 
   for (s.cell_x = DUNGEON_GRID_WIDTH - 1; s.cell_x >= 0; s.cell_x--)
@@ -1330,7 +1330,7 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
             }
             if (s.work > 1)
             {
-              DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+              DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                        g_dungeon_sprite_entries[0x14], 0x40, 0x40);
             }
           }
@@ -1362,7 +1362,7 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
           s.work += 0x1c;
           break;
         }
-        DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+        DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                  g_dungeon_sprite_entries[s.work], 0x40, 0x40);
 
         s.work = 0;
@@ -1382,7 +1382,7 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
         {
           s.work += 4;
         }
-        DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+        DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                  g_dungeon_sprite_entries[s.work + 0xc], 0x40, 0x40);
       }
 
@@ -1393,35 +1393,35 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
         switch (s.work)
         {
         case 1:
-          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+          DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                    g_dungeon_sprite_entries[10], 0x40, 0x40);
           break;
         case 2:
-          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+          DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                    g_dungeon_sprite_entries[9], 0x40, 0x40);
           break;
         case 3:
           break;
-          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xd8);
+          FillUiScaledGraphicsRect(g_page0_window_bounds, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xd8);
           break;
         case 4:
           break;
-          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xdc);
+          FillUiScaledGraphicsRect(g_page0_window_bounds, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xdc);
           break;
         case 5:
           break;
-          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xbc);
+          FillUiScaledGraphicsRect(g_page0_window_bounds, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xbc);
           break;
         case 6:
           break;
-          FillUiScaledGraphicsRect(PTR_DAT_005832b4, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xbe);
+          FillUiScaledGraphicsRect(g_page0_window_bounds, s.screen_x + 2, s.screen_y + 2, 0xc, 0xc, 0xbe);
           break;
         case 7:
-          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+          DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                    g_dungeon_sprite_entries[8], 0x40, 0x40);
           break;
         case 0xf:
-          DrawEncodedImageUiScaled(PTR_DAT_005832b4, s.screen_x - 0x20, s.screen_y - 0x30,
+          DrawEncodedImageUiScaled(g_page0_window_bounds, s.screen_x - 0x20, s.screen_y - 0x30,
                                    g_dungeon_sprite_entries[0x31], 0x40, 0x40);
           break;
         }
@@ -1440,11 +1440,11 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
               s.draw_direction = s.monster_direction;
             }
           }
-          DrawEncodedImageUnscaled(PTR_DAT_005832b4,
+          DrawEncodedImageUnscaled(g_page0_window_bounds,
                                    ScaleUiCoordinate(s.screen_x + 4) - g_world_lair_monster_sprite_widths[s.work] / 2,
                                    ScaleUiCoordinate(s.screen_y + 4) - g_world_lair_monster_sprite_top_clips[s.work],
                                    g_opening_menu_sprite_work_buffer[s.work + 8].sprites[((s.draw_direction + 2) & 7) * 5]);
-          DrawEncodedImageUnscaled(PTR_DAT_005832b4,
+          DrawEncodedImageUnscaled(g_page0_window_bounds,
                                    ScaleUiCoordinate(s.screen_x + 4) - g_world_lair_monster_sprite_widths[s.work] / 2,
                                    ScaleUiCoordinate(s.screen_y + 4) - g_world_lair_monster_sprite_top_clips[s.work],
                                    g_opening_menu_sprite_work_buffer[s.work].sprites[((s.draw_direction + 2) & 7) * 5]);
@@ -1474,27 +1474,27 @@ void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_in
   {
     s.work = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
     sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0xe], global_cards_data[s.work].name);
-    DrawEncodedImageResampled(PTR_DAT_005832b4, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2,
+    DrawEncodedImageResampled(g_page0_window_bounds, ScaleUiCoordinateFrom320(0xdc) / 2, ScaleUiCoordinateFrom320(0x34) / 2,
                               ScaleUiCoordinateFrom320(0xc5) / 2, ScaleUiCoordinateFrom320(0x10f) / 2,
                               g_dungeon_runtime_state.button_sprite_blob);
     DrawAdventureCardSized(s.work, 0x7a, 0x29, 0x4b, 0x70, 1, "");
     DrawScaledTextNoShadow(g_ui_message_buffer, 0x76, 0x20, 0x1b);
   }
 
-  PTR_DAT_005832b4->page_number = 0;
+  g_page0_window_bounds->page_number = 0;
   if (initial_draw == 0)
   {
-    CopyGraphicsRect(PTR_DAT_005832dc, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832b4, 0, 0);
+    CopyGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
   }
   else
   {
-    CopyGraphicsRect(PTR_DAT_005832b4, 0, 0, global_screen_width, global_screen_height, PTR_DAT_005832dc, 0, 0);
+    CopyGraphicsRect(g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page1_window_bounds, 0, 0);
   }
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4,
+  DrawEncodedImageUnscaled(g_page0_window_bounds,
                            ScaleUiCoordinate(s.player_screen_x) - g_sego_sprite_width / 2,
                            ScaleUiCoordinate(s.player_screen_y) - g_sego_sprite_draw_height,
                            g_opening_menu_sprite_work_buffer[0x11].sprites[g_dungeon_move_direction * 5]);
-  DrawEncodedImageUnscaled(PTR_DAT_005832b4,
+  DrawEncodedImageUnscaled(g_page0_window_bounds,
                            ScaleUiCoordinate(s.player_screen_x) - g_ego_sprite_width / 2,
                            ScaleUiCoordinate(s.player_screen_y) - g_ego_sprite_draw_height,
                            g_opening_menu_sprite_work_buffer[0x10].sprites[g_dungeon_move_direction * 5]);
@@ -1578,8 +1578,8 @@ void SetDungeonPassageHighlight(int direction, int enable)
   {
     s.draw_x = s.screen_x - g_ego_sprite_width / 2;
     s.draw_y = s.screen_y - g_ego_sprite_draw_height;
-    CopyUiScaledGraphicsRect(PTR_DAT_005832dc, s.draw_x / 2, s.draw_y / 2, g_ego_sprite_width / 2,
-                             g_ego_sprite_height / 2, PTR_DAT_005832b4, s.draw_x / 2, s.draw_y / 2);
+    CopyUiScaledGraphicsRect(g_page1_window_bounds, s.draw_x / 2, s.draw_y / 2, g_ego_sprite_width / 2,
+                             g_ego_sprite_height / 2, g_page0_window_bounds, s.draw_x / 2, s.draw_y / 2);
     s.draw_x = ScaleUiCoordinate(s.screen_x) - g_ego_sprite_width / 2;
     s.draw_y = ScaleUiCoordinate(s.screen_y) - g_ego_sprite_draw_height;
     if (s.frame == 8)
@@ -1590,7 +1590,7 @@ void SetDungeonPassageHighlight(int direction, int enable)
     {
       s.sego_sprite_frame = (s.frame & 3) + 1;
     }
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.draw_x, s.draw_y,
+    DrawEncodedImageUnscaled(g_page0_window_bounds, s.draw_x, s.draw_y,
                              g_opening_menu_sprite_work_buffer[0x11].sprites[g_dungeon_move_direction * 5 + s.sego_sprite_frame]);
     if (s.frame == 8)
     {
@@ -1600,7 +1600,7 @@ void SetDungeonPassageHighlight(int direction, int enable)
     {
       s.ego_sprite_frame = (s.frame & 3) + 1;
     }
-    DrawEncodedImageUnscaled(PTR_DAT_005832b4, s.draw_x, s.draw_y,
+    DrawEncodedImageUnscaled(g_page0_window_bounds, s.draw_x, s.draw_y,
                              g_opening_menu_sprite_work_buffer[0x10].sprites[g_dungeon_move_direction * 5 + s.ego_sprite_frame]);
     s.screen_x += (g_neighbor_dx[((direction - 2) & 7) + 1] << 4) / 4;
     s.screen_y += (g_neighbor_dy[((direction - 2) & 7) + 1] << 4) / 8;
@@ -1615,10 +1615,10 @@ undefined4 TransitionPcxToScreenRandomTiles8(char *path)
   DIBSurface *work_page;
   DIBSurface *screen_page;
 
-  work_page = g_graphics_pages[PTR_DAT_005832dc->page_number];
-  screen_page = g_graphics_pages[PTR_DAT_005832b4->page_number];
+  work_page = g_graphics_pages[g_page1_window_bounds->page_number];
+  screen_page = g_graphics_pages[g_page0_window_bounds->page_number];
   LoadPcxResource(1, 0, global_screen_height + -0x1e0, path, (void *)0);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height + -0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, global_screen_height + -0x1e0, 0x280, 0x1e0, g_page1_window_bounds, 0,
                           0, global_screen_width, global_screen_height);
   BlitRectByRandomTileOrderInPlace(screen_page->hTempDC, 0, 0, global_screen_width, global_screen_height, 8, 8,
                                    work_page->hTempDC);
@@ -1888,7 +1888,7 @@ void InitDungeonScratchPage(void)
 {
   SetGraphicsPage(9, CreateGraphicsPage(9, global_screen_width, 0x81, 8));
   g_dungeon_scratch_page9->font_slot = 1;
-  BlitGraphicsRect(PTR_DAT_00583304, 0, 0, global_screen_width, 0x80, g_dungeon_scratch_page9, 0, 0);
+  BlitGraphicsRect(g_page2_window_bounds, 0, 0, global_screen_width, 0x80, g_dungeon_scratch_page9, 0, 0);
 }
 
 // FUNCTION: SHANDALAR 0x004ed98c
@@ -1897,10 +1897,10 @@ undefined4 TransitionPcxToScreenRandomTiles(char *path, int x_scale, int y_scale
   DIBSurface *work_page;
   DIBSurface *screen_page;
 
-  work_page = g_graphics_pages[PTR_DAT_005832dc->page_number];
-  screen_page = g_graphics_pages[PTR_DAT_005832b4->page_number];
+  work_page = g_graphics_pages[g_page1_window_bounds->page_number];
+  screen_page = g_graphics_pages[g_page0_window_bounds->page_number];
   LoadPcxResource(1, 0, global_screen_height + -0x1e0, path, (void *)0);
-  StretchBlitGraphicsRect(PTR_DAT_005832dc, 0, global_screen_height + -0x1e0, 0x280, 0x1e0, PTR_DAT_005832dc, 0,
+  StretchBlitGraphicsRect(g_page1_window_bounds, 0, global_screen_height + -0x1e0, 0x280, 0x1e0, g_page1_window_bounds, 0,
                           0, global_screen_width, global_screen_height);
   BlitRectByRandomTileOrderInPlace(screen_page->hTempDC, 0, 0, global_screen_width, global_screen_height, x_scale,
                                    y_scale, work_page->hTempDC);
@@ -1908,36 +1908,36 @@ undefined4 TransitionPcxToScreenRandomTiles(char *path, int x_scale, int y_scale
 }
 
 // FUNCTION: SHANDALAR 0x005628bf
-void PlayCastleMusic(int param_1)
+void PlayCastleMusic(int castle_music_index)
 {
   StopWorldLocationMusic();
   if (g_world_location_music_track_id != -1)
   {
     sound_unload(0x10);
   }
-  g_world_location_music_track_id = param_1 + 0x15;
-  switch (param_1)
+  g_world_location_music_track_id = castle_music_index + 0x15;
+  switch (castle_music_index)
   {
   case 1:
-    FUN_00562835("x:sound\\bcastle.wav", 0x10);
+    LoadLoopingSound("x:sound\\bcastle.wav", 0x10);
     break;
   case 2:
-    FUN_00562835("x:sound\\ucastle.wav", 0x10);
+    LoadLoopingSound("x:sound\\ucastle.wav", 0x10);
     break;
   case 3:
-    FUN_00562835("x:sound\\gcastle.wav", 0x10);
+    LoadLoopingSound("x:sound\\gcastle.wav", 0x10);
     break;
   case 4:
-    FUN_00562835("x:sound\\rcastle.wav", 0x10);
+    LoadLoopingSound("x:sound\\rcastle.wav", 0x10);
     break;
   case 5:
-    FUN_00562835("x:sound\\wcastle.wav", 0x10);
+    LoadLoopingSound("x:sound\\wcastle.wav", 0x10);
     break;
   case 6:
-    FUN_00562835("x:sound\\wingame.wav", 0x10);
+    LoadLoopingSound("x:sound\\wingame.wav", 0x10);
     break;
   }
-  FUN_0056279e(0x10, 100, 0);
+  PlayLoopingSoundWithPan(0x10, 100, 0);
   g_world_location_music_active = 1;
 }
 
