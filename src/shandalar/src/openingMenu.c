@@ -108,7 +108,7 @@ int ActivateLoadSaveSlotControl(AdvMenuControl *control);
 int HandleOpeningMenuControlEvent(AdvMenuControl *control, int event_type);
 int HandleOpeningMenuControlActivate(AdvMenuControl *control);
 
-int SetSelectedMenuValue(AdvMenuControl *control);
+int SetSelectedMenuValue(AdvMenuControl *control, int event_type);
 int HandleEscControlEvent(AdvMenuControl *control, int event_type);
 int HandleDifficultyMenuControlEvent(AdvMenuControl *control, int event_type);
 int DrawDifficultyMenuEntry(int difficulty_index, int visual_state);

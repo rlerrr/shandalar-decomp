@@ -13,7 +13,7 @@ extern "C" {
 	undefined4 __cdecl CheckSotaCD(undefined4 unused,int *maxTries,undefined4 drivePath);
 	BOOL __cdecl IsCDDrive(undefined4 drivePath);
 	undefined4 Autoplay_ShutDown(void);
-	undefined4 Autoplay_Restore(void);
+	BOOL Autoplay_Restore(void);
 	int WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID reserved);
 
 #ifdef __cplusplus

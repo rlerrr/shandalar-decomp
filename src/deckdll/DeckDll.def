@@ -1,4 +1,4 @@
-LIBRARY "DeckDll.dll" BASE=0x10000000
+LIBRARY "DeckDll.dll" BASE=268435456
 
 EXPORTS
 DeckBuilderMain @ 1

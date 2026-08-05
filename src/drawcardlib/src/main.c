@@ -1765,7 +1765,7 @@ void ReplaceSubstring(char *inOutStr, char *needle, int caseSensitive, char *rep
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000bd90
-BOOL WINAPI DllMain(undefined4 hinst, uint reason, undefined4 reserved)
+BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved)
 {
   undefined4 result;
 

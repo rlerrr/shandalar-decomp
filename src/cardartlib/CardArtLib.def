@@ -1,4 +1,4 @@
-LIBRARY "CardArtLib.dll" BASE=0x10000000
+LIBRARY "CardArtLib.dll" BASE=268435456
 
 EXPORTS
 LoadBigArt

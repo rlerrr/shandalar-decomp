@@ -1,4 +1,4 @@
-LIBRARY "magsnd.dll" BASE=0x10000000
+LIBRARY "magsnd.dll" BASE=268435456
 
 EXPORTS
 InitSnd @1
@@ -28,4 +28,3 @@ ReleaseAVISndBuff @24
 GetSndHWND @25
 IsSndLoaded @26
 GetLRUSnd @27
-

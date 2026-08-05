@@ -48,6 +48,33 @@ if (SHANDALAR_MODERN_FIXES)
   add_compile_definitions(MODERN_FIXES)
 endif()
 
+if (SHANDALAR_MODERN_FIXES AND CMAKE_C_COMPILER_ID MATCHES "Clang")
+  if (CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    add_compile_options(
+      $<$<COMPILE_LANGUAGE:C>:/clang:-std=gnu89>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-fcommon>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=deprecated-non-prototype>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=implicit-function-declaration>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=incompatible-function-pointer-types>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=incompatible-pointer-types>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=int-conversion>
+      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=return-type>
+    )
+    add_link_options(/INCREMENTAL:NO)
+  else()
+    add_compile_options(
+      $<$<COMPILE_LANGUAGE:C>:-std=gnu89>
+      $<$<COMPILE_LANGUAGE:C>:-fcommon>
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=deprecated-non-prototype>
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=implicit-function-declaration>
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=incompatible-function-pointer-types>
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=incompatible-pointer-types>
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=int-conversion>
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=return-type>
+    )
+  endif()
+endif()
+
 if (MSVC_FOR_DECOMP)
   set(CMAKE_C_FLAGS "/W3 /D \"WIN32\" /D \"_WINDOWS\"")
   set(CMAKE_C_FLAGS_DEBUG "/Gm /Zi /Od /D \"_DEBUG\"")

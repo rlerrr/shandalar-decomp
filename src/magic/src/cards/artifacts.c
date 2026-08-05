@@ -1101,7 +1101,16 @@ int card_soul_net(int player, int card, event_t event)
     }
   }
 
-  if (trigger_condition == 0xd5 && affected_card == card && affected_card_controller == player && PLAYER_CARD_INSTANCE(player, card).info_slot != 0 && player == current_turn && ((((unsigned int)PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x100), ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
+  dummy = 0;
+  if (trigger_condition == 0xd5 && affected_card == card && affected_card_controller == player &&
+      PLAYER_CARD_INSTANCE(player, card).info_slot != 0 && player == current_turn)
+  {
+    PLAYER_CARD_INSTANCE(player, card).info_slot = (int)((unsigned int)PLAYER_CARD_INSTANCE(player, card).info_slot | 0x100);
+    dummy = ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
+            (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE);
+  }
+
+  if (dummy)
   {
     if (event == EVENT_TRIGGER)
     {

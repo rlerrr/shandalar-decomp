@@ -6,6 +6,7 @@
 #include "mystdbool.h"
 
 void DebugLog(char *str, int log_level);
+int FamInterface_HasOpponent(void);
 
 // GLOBAL: MANALINKINTERFACE 0x10008000
 undefined4 g_fam_interface_mapping_size = 0x00006938;
@@ -384,7 +385,7 @@ uint FamInterface_IsHost(void)
 }
 
 // FUNCTION: MANALINKINTERFACE 0x10001882
-undefined4 FamInterface_HasOpponent(void)
+int FamInterface_HasOpponent(void)
 {
   return ((*g_FamInterfaceGpd_addr & GPD_FLAGS_HAS_OPPONENT) != 0) && ((*g_FamInterfaceGpd_addr & 0x80000) != 0) ? 1 : 0;
 }

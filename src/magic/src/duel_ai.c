@@ -37,7 +37,7 @@ int can_attack(int player, int card);
 int get_recorded_action_count(void);
 void push_affected_card_stack(void);
 void pop_affected_card_stack(void);
-unsigned int C_get_abilities(int player, int card, int event, int a4);
+int C_get_abilities(int player, int card, int event, int a4);
 void set_duel_prompt_text(char *text);
 void process_damage_prevention(int player);
 void mark_blocked_attackers(int player);

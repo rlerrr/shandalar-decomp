@@ -16,11 +16,9 @@
 
 /* Dungeon / castle encounter flow rooted at SHANDALAR 0x0050a5c1. */
 
-typedef unsigned int uint;
 typedef unsigned char byte;
 typedef unsigned char uchar;
 typedef int undefined3;
-typedef int undefined4;
 typedef int bool;
 #define DUNGEON_GRID_WIDTH 0xf
 #define DUNGEON_GRID_HEIGHT 0xd

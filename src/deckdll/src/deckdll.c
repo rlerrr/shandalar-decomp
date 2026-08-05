@@ -1694,7 +1694,8 @@ dlgproc_DeckInfo(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     ApplyCardArtPaletteToDc(s.hdc);
     s.lparam_copy = lparam;
     SetBkMode(s.hdc, TRANSPARENT);
-    return (INT_PTR)s.hollow_brush = GetStockObject(HOLLOW_BRUSH);
+    s.hollow_brush = GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)s.hollow_brush;
   }
 
   case WM_ERASEBKGND:

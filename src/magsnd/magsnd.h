@@ -16,7 +16,7 @@ typedef struct Sound_t
   int flags; // 0x1c
 } Sound;
 
-undefined4 __cdecl InitSnd(HWND hwnd, undefined4 unused, BYTE flags);
+undefined4 __cdecl InitSnd(HWND hwnd, undefined4 unused, uint flags);
 void __cdecl ReleaseSnd(void);
 int __cdecl LoadSnd(LPSTR path, int num, Sound *snd);
 undefined4 __cdecl UnloadSnd(int num);

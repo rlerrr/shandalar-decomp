@@ -2778,8 +2778,8 @@ int count_colored_cards_in_hand(int player)
   return s.count;
 }
 
-int find_first_visible_window_index(int windows, int count);
-int restack_visible_windows_after(HWND previous_window, int windows, int window_count);
+int find_first_visible_window_index(HWND *windows, int count);
+int restack_visible_windows_after(HWND previous_window, HWND *windows, int window_count);
 
 // FUNCTION: MAGIC 0x00495fa1
 // FUNCTION: SHANDALAR 0x00466a34
@@ -2851,7 +2851,7 @@ void restack_duel_child_windows(void)
 
   if (s.changed != 0)
   {
-    s.found_index = find_first_visible_window_index((int)&s.windows[0], s.count);
+    s.found_index = find_first_visible_window_index(&s.windows[0], s.count);
     if (s.found_index != -1)
     {
       SetWindowPos(s.windows[s.found_index], (HWND)1, 0, 0, 0, 0, 3);
@@ -2865,7 +2865,7 @@ void restack_duel_child_windows(void)
         s.next = &s.windows[s.found_index + 1];
       }
 
-      restack_visible_windows_after(s.windows[s.found_index], (int)s.next, s.count - (s.found_index + 1));
+      restack_visible_windows_after(s.windows[s.found_index], s.next, s.count - (s.found_index + 1));
     }
   }
 }
@@ -2921,7 +2921,7 @@ int restack_visible_windows_after(HWND previous_window, HWND *windows, int windo
       s.next = &windows[s.i + 1];
     }
 
-    restack_visible_windows_after(windows[s.i], (int)s.next, window_count - (s.i + 1));
+    restack_visible_windows_after(windows[s.i], s.next, window_count - (s.i + 1));
     return 1;
   }
   else

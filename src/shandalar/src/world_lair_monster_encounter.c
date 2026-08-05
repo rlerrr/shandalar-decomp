@@ -14,11 +14,9 @@
 #include "drawcardlib/src/pic.h"
 #include "cardartlib/src/palette.h"
 
-typedef unsigned int uint;
 typedef unsigned char byte;
 typedef unsigned char uchar;
 typedef int undefined3;
-typedef int undefined4;
 typedef __int64 longlong;
 #ifndef true
 #define true 1

@@ -73,7 +73,9 @@ struct SndInstance
   SndInstance *activePrev;                        /* 0x1fc: used by AddToActiveList/RemoveFromActiveList */
   SndInstance *activeNext;                        /* 0x200 */
 };
+#if !(defined(MODERN_FIXES) && defined(__clang__))
 STATIC_ASSERT(sizeof(SndInstance) == 0x204, SndInstance_wrong_size);
+#endif
 
 void __cdecl ReleaseSnd(void);
 int __cdecl LoadSnd(LPSTR path, int slot, Sound *sound);

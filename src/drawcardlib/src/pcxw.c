@@ -10,7 +10,9 @@
 #pragma intrinsic(abs)
 
 typedef void *pointer;
+#ifndef MODERN_FIXES
 typedef char byte;
+#endif
 typedef unsigned short ushort;
 
 typedef struct

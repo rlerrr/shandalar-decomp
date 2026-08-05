@@ -79,6 +79,8 @@ extern void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int
                              DWORD height, FacemakerWindowBounds *src, int src_x, int src_y);
 extern void PutGraphicsPixel(FacemakerWindowBounds *dst, int x, int y, int char_code);
 extern void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
+int ReplacePaletteIndexInRect(FacemakerWindowBounds *page, int x, int y, unsigned int width, int height,
+                              unsigned int from_color, unsigned char to_color);
 extern void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height,
                                       EncodedImage *encoded_image);
 extern void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);

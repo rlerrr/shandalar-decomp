@@ -1,4 +1,4 @@
-LIBRARY "DrawCardlib.dll" BASE=0x10000000
+LIBRARY "DrawCardlib.dll" BASE=268435456
 
 EXPORTS
 DrawSmallCardTitle
