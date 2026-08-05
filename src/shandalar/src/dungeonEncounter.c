@@ -38,16 +38,16 @@ typedef struct DungeonRuntimeState
   } encounter;                      // 0x000
   EncodedImage *button_sprite_blob; // 0x020
   int cell_tile_variants[171];      // 0x024
-  char padding_2d0[0x60];               // 0x2d0
+  char padding_2d0[0x60];           // 0x2d0
   int current_dungeon_index;        // 0x330
   int player_x;                     // 0x334
   int player_y;                     // 0x338
-  char padding_33c[0xec];               // 0x33c
+  char padding_33c[0xec];           // 0x33c
   int reveal_dirty;                 // 0x428
   EncodedImage *button_sprite_aux0; // 0x42c
   EncodedImage *button_sprite_aux1; // 0x430
   EncodedImage *button_sprite_aux2; // 0x434
-  char padding_438[0xf8];               // 0x438
+  char padding_438[0xf8];           // 0x438
 } DungeonRuntimeState;
 typedef char DungeonRuntimeState_size_must_be_0x530[(sizeof(DungeonRuntimeState) == 0x530) ? 1 : -1];
 
@@ -316,11 +316,19 @@ int RunCastleDungeonBoard(int dungeon_index)
     int ambient_repeat_count;                   // ebp-0x14
     int target_x;                               // ebp-0x10
     int monster_slot;                           // ebp-0xc
-    char *ambient_sound_path;                   // ebp-0x8
-    int lost_required_duel;                     // ebp-0x4
+#ifdef MODERN_FIXES
+    char ambient_sound_path[100]; // ebp-0x8
+#else
+    char *ambient_sound_path; // ebp-0x8
+#endif
+    int lost_required_duel; // ebp-0x4
   } s;
 
+#ifdef MODERN_FIXES
+  strcpy(&s.ambient_sound_path, "x:sound\\damb1.wav");
+#else
   s.ambient_sound_path = "x:sound\\damb1.wav";
+#endif
   s.ambient_repeat_count = 0;
   s.lost_required_duel = 0;
   if (dungeon_index >= 5)
@@ -891,7 +899,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     {
       opponent_starting_card_id_1 =
           FindCardIndexByCsvid(((int (*)[3])g_dungeon_monster_duel_music_csvids)
-                           [(char)g_castle_dungeon_slots[dungeon_index].color - 1][ClampIntToRange(s.work_index, 0, 2)]);
+                                   [(char)g_castle_dungeon_slots[dungeon_index].color - 1][ClampIntToRange(s.work_index, 0, 2)]);
     }
   }
   LoadCreatureDuelDeck(s.creature_type, FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number), 0,
@@ -1058,7 +1066,7 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
   DrawUiScaledCenteredTextWithShadow(g_page0_window_bounds, 0xfe, 0x140, 0x72, g_ui_message_buffer);
   g_defeated_wizards_bitmap = g_defeated_wizards_bitmap | 1 << (byte)s.wizard_color;
   s.town_index = FindTownAtWorldCoordinates(g_castle_dungeon_slots[castle_index].world_x,
-                              g_castle_dungeon_slots[castle_index].world_y);
+                                            g_castle_dungeon_slots[castle_index].world_y);
   g_town_slots[s.town_index].location_type = 5;
   for (s.loop_index = 0; s.loop_index < 8; s.loop_index = s.loop_index + 1)
   {

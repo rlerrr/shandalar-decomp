@@ -4,7 +4,7 @@ call "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevC
 if errorlevel 1 exit /b %errorlevel%
 
 set "PATH=C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja;%PATH%"
-set "MSVC_LINK=C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x86/link.exe"
+set "LLVM_LINK=C:/Program Files (x86)/LLVM/bin/lld-link.exe"
 set "WINDOWS_RC=C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x86/rc.exe"
 
 cmake -S . ^
@@ -15,10 +15,10 @@ cmake -S . ^
     -DCMAKE_INSTALL_PREFIX="C:/Magic-Copy/Program" ^
     -DCMAKE_C_COMPILER="C:/Program Files (x86)/LLVM/bin/clang-cl.exe" ^
     -DCMAKE_CXX_COMPILER="C:/Program Files (x86)/LLVM/bin/clang-cl.exe" ^
-    -DCMAKE_LINKER="%MSVC_LINK%" ^
+    -DCMAKE_LINKER="%LLVM_LINK%" ^
     -DCMAKE_RC_COMPILER="%WINDOWS_RC%" ^
-    -DCMAKE_C_FLAGS="-fuse-ld=link" ^
-    -DCMAKE_CXX_FLAGS="-fuse-ld=link" ^
+    -DCMAKE_C_FLAGS="-fuse-ld=lld" ^
+    -DCMAKE_CXX_FLAGS="-fuse-ld=lld" ^
     -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=out/bin/ninja-clangcl-modern-cl ^
     -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=out/bin/ninja-clangcl-modern-cl
 

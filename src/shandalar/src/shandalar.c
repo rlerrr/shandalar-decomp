@@ -6525,6 +6525,12 @@ char GetSoundAssetDriveLetter(void)
 // FUNCTION: SHANDALAR 0x00562f92
 unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags)
 {
+#ifdef MODERN_FIXES
+  char filename_copy[260];
+  strcpy(&filename_copy, filename);
+  filename = &filename_copy;
+#endif
+
   if (g_cached_cwd_initialized == 0)
   {
     _getcwd(g_cached_cwd, 0x100);

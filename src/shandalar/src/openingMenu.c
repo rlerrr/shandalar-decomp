@@ -410,11 +410,19 @@ int RunOpeningMenu(void)
     int copied_entry_count;
     EncodedImage *sprite_entry_pointers[100];
     int menu_context;
+#ifdef MODERN_FIXES
+    char map_name[100];
+#else
     char *map_name;
+#endif
     int loop_index;
   } s;
 
+#ifdef MODERN_FIXES
+  strcpy(&s.map_name, "magic3.map");
+#else
   s.map_name = "magic3.map";
+#endif
   if (g_opening_menu_strings_loaded == 0)
   {
     g_opening_menu_text_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "openingMenu",
