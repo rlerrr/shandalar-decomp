@@ -2181,7 +2181,7 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
   /* Stack layout is extremely sensitive; keep locals grouped. */
   struct
   {
-    int pad;
+    HDC pad;
     RECT client_rect;        /* [ebp-0x53c] */
     LPARAM lparam_copy;      /* [ebp-0x530] */
     HDC hdc_copy;            /* [ebp-0x52c] */
@@ -2696,7 +2696,7 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
   case WM_ERASEBKGND:
   {
-    s.hdc = wparam;
+    s.hdc = (HDC)wparam;
     ApplyCardArtPaletteToDc(s.hdc);
 
     s.chdc = CreateCompatibleDC(s.hdc);
@@ -2913,7 +2913,7 @@ void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
   for (; s.csvid < global_available_slots; ++s.csvid, ++s.cp)
     if (check_filters(s.csvid))
     {
-      s.idx = SendMessage(hwnd_listbox, LB_ADDSTRING, 0, s.cp->full_name);
+      s.idx = SendMessage(hwnd_listbox, LB_ADDSTRING, 0, (LPARAM)s.cp->full_name);
       SendMessage(hwnd_listbox, LB_SETITEMDATA, s.idx, s.csvid);
       if (s.csvid == s.data)
         s.newsel = s.idx;
@@ -2924,19 +2924,19 @@ void filter_cards_in_lists(HWND hwnd_listbox, HWND hwnd_horzlist)
 
   SendMessage(hwnd_listbox, LB_SETCURSEL, s.newsel, 0);
 
-  SendMessage(GetParent(hwnd_listbox), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_listbox), 1), hwnd_listbox);
+  SendMessage(GetParent(hwnd_listbox), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_listbox), 1), (LPARAM)hwnd_listbox);
   UpdateWindow(hwnd_listbox);
 
   s.count = SendMessage(hwnd_listbox, LB_GETCOUNT, 0, 0);
   for (s.idx = 0; s.idx < s.count; ++s.idx)
   {
     s.csvid = SendMessage(hwnd_listbox, LB_GETITEMDATA, s.idx, 0);
-    SendMessage(hwnd_horzlist, LB_ADDSTRING, 0, s.csvid);
+    SendMessage(hwnd_horzlist, LB_ADDSTRING, 0, (LPARAM)s.csvid);
   }
 
   SendMessage(hwnd_horzlist, LB_SETCURSEL, 0, 0);
 
-  SendMessage(GetParent(hwnd_horzlist), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_horzlist), 1), hwnd_horzlist);
+  SendMessage(GetParent(hwnd_horzlist), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_horzlist), 1), (LPARAM)hwnd_horzlist);
 }
 
 // FUNCTION: DECKDLL 0x1002b8f0
@@ -3628,7 +3628,7 @@ TENTATIVE_remove_selected_from_horzlist(HWND hwnd_listbox, HWND hwnd_horzlist)
   {
     SendMessage(hwnd_listbox, LB_SETCURSEL, s.cursel, 0);
     SendMessage(hwnd_horzlist, LB_SETCURSEL, s.cursel, 0);
-    SendMessage(GetParent(hwnd_listbox), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_listbox), 1), hwnd_listbox);
+    SendMessage(GetParent(hwnd_listbox), WM_COMMAND, MAKELONG2(GetDlgCtrlID(hwnd_listbox), 1), (LPARAM)hwnd_listbox);
   }
 }
 
@@ -6083,84 +6083,84 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                        WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                                        0, 0, 0, 0,
                                        hwnd,
-                                       1,
+                                       (HMENU)1,
                                        global_hinstance, 0);
 
     global_fullcard_hwnd = CreateWindowEx(0, "MagicFullCardClass", wndname_fullcard,
                                           WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                                           0, 0, 0, 0,
                                           hwnd,
-                                          2,
+                                          (HMENU)2,
                                           global_hinstance, 0);
 
     global_decksurface_hwnd = CreateWindowEx(0, "MAGICDECK_DeckSurfaceClass", wndname_decksurface,
                                              WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_BORDER,
                                              0, 0, 0, 0,
                                              hwnd,
-                                             7,
+                                             (HMENU)7,
                                              global_hinstance, 0);
 
     global_button_stats_hwnd = CreateWindowEx(0, "BUTTON", wndname_button_stats,
                                               WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
                                               0, 0, 0, 0,
                                               hwnd,
-                                              RES_MAINMENU_BUTTON_STATS,
+                                              (HMENU)RES_MAINMENU_BUTTON_STATS,
                                               global_hinstance, 0);
 
     button_deckinfo = CreateWindowEx(0, "BUTTON", wndname_button_deckinfo,
                                      WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
                                      0, 0, 0, 0,
                                      hwnd,
-                                     RES_MAINMENU_BUTTON_DECKINFO,
+                                     (HMENU)RES_MAINMENU_BUTTON_DECKINFO,
                                      global_hinstance, 0);
 
     button_exit = CreateWindowEx(0, "BUTTON", wndname_button_exit,
                                  WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
                                  0, 0, 0, 0,
                                  hwnd,
-                                 RES_MAINMENU_BUTTON_EXIT,
+                                 (HMENU)RES_MAINMENU_BUTTON_EXIT,
                                  global_hinstance, 0);
 
     button_deck1 = CreateWindowEx(0, "BUTTON", wndname_button_deck1,
                                   WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
                                   0, 0, 0, 0,
                                   hwnd,
-                                  RES_MAINMENU_BUTTON_DECK_1,
+                                  (HMENU)RES_MAINMENU_BUTTON_DECK_1,
                                   global_hinstance, 0);
 
     button_deck2 = CreateWindowEx(0, "BUTTON", wndname_button_deck2,
                                   WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
                                   0, 0, 0, 0,
                                   hwnd,
-                                  RES_MAINMENU_BUTTON_DECK_2,
+                                  (HMENU)RES_MAINMENU_BUTTON_DECK_2,
                                   global_hinstance, 0);
 
     button_deck3 = CreateWindowEx(0, "BUTTON", wndname_button_deck3,
                                   WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_OWNERDRAW,
                                   0, 0, 0, 0,
                                   hwnd,
-                                  RES_MAINMENU_BUTTON_DECK_3,
+                                  (HMENU)RES_MAINMENU_BUTTON_DECK_3,
                                   global_hinstance, 0);
 
     global_listbox_hwnd = CreateWindowEx(0, "LISTBOX", wndname_listbox,
                                          (WS_CHILDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL | WS_THICKFRAME | LBS_NOINTEGRALHEIGHT | LBS_HASSTRINGS | LBS_OWNERDRAWFIXED | LBS_SORT),
                                          0, 0, 0, 0,
                                          hwnd,
-                                         4,
+                                         (HMENU)4,
                                          global_hinstance, 0);
 
     global_horzlist_hwnd = CreateWindowEx(0, "MAGICDECK_HorzListClass", wndname_horzlist,
                                           WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL,
                                           0, 0, 0, 0,
                                           hwnd,
-                                          5,
+                                          (HMENU)5,
                                           global_hinstance, 0);
 
     cardlistfilter_hwnd = CreateWindowEx(0, "MAGICDECK_CardListFiltersClass", wndname_cardlistfilter,
                                          WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                                          0, 0, 0, 0,
                                          hwnd,
-                                         3,
+                                         (HMENU)3,
                                          global_hinstance, 0);
 
     popup = CreatePopupMenu();

@@ -386,8 +386,8 @@ static int add_smallcard_window(HWND hwnd_parent, csvid_t csvid, int num)
                         WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                         0, 0, global_smallcard_width, global_smallcard_height,
                         hwnd_parent,
-                        1,
-                        global_hinstance, csvid);
+                        (HMENU)1,
+                        global_hinstance, (LPVOID)csvid);
   if (hwnd)
   {
     BringWindowToTop(hwnd);
@@ -517,7 +517,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     RECT r2;        /* [ebp-0x64] */
     RECT refresh_rect;
     int pad2;     /* [ebp-0x44] */
-    char *pcVar1; /* [ebp-0x40] */
+    LRESULT pcVar1; /* [ebp-0x40] */
     int x;        /* [ebp-0x3c] */
     int y;        /* [ebp-0x38] */
     int tile;     /* [ebp-0x34] */
@@ -531,7 +531,7 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     int idx_d; /* [ebp-0x20] */
     int idx_c; /* [ebp-0x1c] */
 
-    int mosaics[5]; /* [ebp-0x18] */
+    HDC mosaics[5]; /* [ebp-0x18] */
 
     LRESULT result; /* [ebp-0x4] */
   } s;
@@ -723,8 +723,8 @@ wndproc_DeckSurfaceClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                    WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
                                    s.x, s.y, global_smallcard_width, global_smallcard_height,
                                    hwnd,
-                                   1,
-                                   global_hinstance, s.csvid);
+                                   (HMENU)1,
+                                   global_hinstance, (LPVOID)s.csvid);
       if (s.hwnd_card)
       {
         BringWindowToTop(s.hwnd_card);

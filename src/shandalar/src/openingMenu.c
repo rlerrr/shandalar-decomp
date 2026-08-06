@@ -34,7 +34,7 @@ extern FacemakerWindowBounds *g_page0_window_bounds;
 extern FacemakerWindowBounds *g_page1_window_bounds;
 extern FacemakerWindowBounds *g_page2_window_bounds;
 
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *window, char *text);
 int SetFontStyleSize(int font_id, unsigned int style);
 int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y, int x,
@@ -425,8 +425,7 @@ int RunOpeningMenu(void)
 #endif
   if (g_opening_menu_strings_loaded == 0)
   {
-    g_opening_menu_text_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "openingMenu",
-                                                                                                   (int)g_ini_string_scratch);
+    g_opening_menu_text_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, "openingMenu", g_ini_string_scratch);
     g_opening_menu_strings_loaded = 1;
   }
 
@@ -673,10 +672,8 @@ int RunDifficultyMenu(void)
 
   if (g_difficulty_menu_strings_loaded == 0)
   {
-    g_difficulty_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "diffCaption",
-                                                                                                    (int)g_ini_string_scratch);
-    g_difficulty_option_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "diffs",
-                                                                                                   (int)g_ini_string_scratch);
+    g_difficulty_caption_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, "diffCaption", g_ini_string_scratch);
+    g_difficulty_option_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, "diffs", g_ini_string_scratch);
     g_difficulty_menu_strings_loaded = 1;
   }
 
@@ -859,9 +856,9 @@ int RunColorMenu(void)
 
   if (g_color_menu_strings_loaded == 0)
   {
-    g_color_caption_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "colorCaption", (int)g_ini_string_scratch);
-    g_color_menu_color_name_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "colorMenuColors", (int)g_ini_string_scratch);
-    g_color_menu_flavor_table = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "colorMenuFlavor", (int)g_ini_string_scratch);
+    g_color_caption_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, "colorCaption", g_ini_string_scratch);
+    g_color_menu_color_name_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, "colorMenuColors", g_ini_string_scratch);
+    g_color_menu_flavor_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, "colorMenuFlavor", g_ini_string_scratch);
     g_color_menu_strings_loaded = 1;
   }
 

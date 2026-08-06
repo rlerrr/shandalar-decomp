@@ -514,7 +514,7 @@ void FreeAdvblocksFileBuffer(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *window_bounds, char *text);
 int SetFontStyleSize(int font_id, unsigned int style);
 void LoadPcxIntoPageNoPalette(char *path);
@@ -551,7 +551,7 @@ BOOL UnloadFontSlot(int font_slot);
 int FileExists(const char *filename);
 char FindDriveWithAsset(char *filename);
 char GetSoundAssetDriveLetter(void);
-unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
+unsigned int LoadSoundWithDriveFallback(char *filename, int channel, Sound *sound);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
 DWORD WINAPI AdventureWorkerThread(LPVOID);
@@ -3526,8 +3526,8 @@ int LoadGameFromPath(char *save_file_path)
   LoadPcxIntoPage(4, save_file_path);
   BuildFacemakerPortraitSprites(&s.page4_bounds);
   LoadPcxIntoPage(4, save_file_path);
-  g_facemaker_page4_bitmap = (int)g_graphics_pages[4]->hBitmap;
-  g_facemaker_page4_dib = (int)g_graphics_pages[4];
+  g_facemaker_page4_bitmap = g_graphics_pages[4]->hBitmap;
+  g_facemaker_page4_dib = g_graphics_pages[4];
   SelectObject(g_graphics_pages[4]->hTempDC, g_graphics_pages[4]->hPreviousBitmap);
   g_graphics_pages[4] = (DIBSurface *)0;
   return 1;
@@ -6522,7 +6522,7 @@ char GetSoundAssetDriveLetter(void)
 }
 
 // FUNCTION: SHANDALAR 0x00562f92
-unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags)
+unsigned int LoadSoundWithDriveFallback(char *filename, int channel, Sound *sound)
 {
 #ifdef MODERN_FIXES
   char filename_copy[260];
@@ -6549,7 +6549,7 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags)
   {
   }
 
-  sound_load(filename, channel, flags);
+  sound_load(filename, channel, sound);
   return 0;
 }
 
@@ -6582,7 +6582,7 @@ DWORD WINAPI AdventureWorkerThread(LPVOID unused)
 
   g_advbuttons_ini_file = fopen("advButtons.txt", "rt");
   strcpy(g_ini_string_scratch, "");
-  g_done_text_table_entry = LoadIniEscapedStringTable(g_advbuttons_ini_file, "done", g_ini_string_scratch, 0)[0];
+  g_done_text_table_entry = LoadIniEscapedStringTable(g_advbuttons_ini_file, "done", g_ini_string_scratch)[0];
 
   IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("misc.exe", (char *)0));
   IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));

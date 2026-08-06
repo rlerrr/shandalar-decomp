@@ -15,7 +15,7 @@ undefined4 g_fam_interface_mapping_size = 0x00006938;
 HANDLE g_FamInterfaceGpd_handle = 0x00000000;
 
 // GLOBAL: MANALINKINTERFACE 0x10009034
-undefined4 g_fam_InterfaceMutex = 0x00000000;
+HANDLE g_fam_InterfaceMutex = 0x00000000;
 
 // GLOBAL: MANALINKINTERFACE 0x10009038
 HANDLE g_famI_SendEvent = 0x00000000;

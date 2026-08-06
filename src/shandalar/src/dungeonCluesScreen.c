@@ -82,7 +82,7 @@ extern char g_dungeon_clue_detail_done_alt_keys[];
 void ShowDungeonClueDetailScreen(int dungeon_index);
 
 /* External functions */
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 void LoadPcxIntoPageNoPalette(char *path);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
@@ -710,8 +710,7 @@ void ShowDungeonCluesScreen(int unused)
 
   if (g_dungeon_clues_list_strings_loaded == 0)
   {
-    g_dungeon_clues_list_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "dunClues",
-                                                                                                      (int)g_ini_string_scratch);
+    g_dungeon_clues_list_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, "dunClues", g_ini_string_scratch);
     g_dungeon_clues_list_strings_loaded = 1;
   }
 
@@ -1082,8 +1081,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
 
   if (g_dungeon_clue_detail_strings_loaded == 0)
   {
-    g_dungeon_clue_detail_strings = ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "dunClues",
-                                                                                                       (int)g_ini_string_scratch);
+    g_dungeon_clue_detail_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, "dunClues", g_ini_string_scratch);
     g_dungeon_clue_detail_strings_loaded = 1;
   }
 

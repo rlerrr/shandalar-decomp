@@ -1888,7 +1888,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   }
 
   // lmfao it's a miracle this doesn't crash (nBufferLength == 0 so the write to address 0x100 is elided)
-  GetCurrentDirectoryA(g_original_working_dir[0], 0x100);
+  GetCurrentDirectoryA((DWORD)g_original_working_dir[0], (LPSTR)0x100);
 
   strcpy(module_path, (*__p___argv())[0]);
   slash = strrchr(module_path, '\\');

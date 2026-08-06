@@ -1400,7 +1400,7 @@ BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LP
   {
   case WM_INITDIALOG:
     s.dialog_params = (post_duel_draws_dialog_params_t *)lparam;
-    SetWindowLongA(hwnd, DWL_USER, s.dialog_params);
+    SetWindowLongA(hwnd, DWL_USER, (LONG)s.dialog_params);
     setup_post_duel_draws_dialog_resources(&g_post_duel_draws_background_bitmap,
                                            &g_post_duel_draws_text_color,
                                            &g_post_duel_draws_button_text_color,

@@ -40,7 +40,7 @@ extern int g_world_scroll_cache_ready;
 extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 
 // External functions
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 void BeginSpriteEncodeSession(void);
@@ -328,7 +328,7 @@ void ShowCityInfoScreen(int unused)
 
   if (g_city_info_strings_loaded == 0)
   {
-    g_city_info_heading_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, "cityInfo", (int)g_ini_string_scratch);
+    g_city_info_heading_strings = LoadIniEscapedStringTable(g_advbuttons_ini_file, "cityInfo", g_ini_string_scratch);
     g_city_info_strings_loaded = 1;
   }
 

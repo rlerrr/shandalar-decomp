@@ -225,7 +225,7 @@ void AnimatePaletteToColor(int color_index, int steps);
 void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxIntoPageNoPalette(char *path);
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 int MapWizardColorToDisplayIndex(int wizard_color);
 void ReadPalette(char *palette_text_path, char *palette_binary_path);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
@@ -1636,9 +1636,7 @@ int RunAdventureStatsMenu(void)
 
   if (g_stats_text_loaded == 0)
   {
-    g_stats_text_table =
-        ((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, s_statText_00590618,
-                                                                           (int)g_ini_string_scratch);
+    g_stats_text_table = LoadIniEscapedStringTable(g_advbuttons_ini_file, s_statText_00590618, g_ini_string_scratch);
     g_stats_text_loaded = 1;
   }
 

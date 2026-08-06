@@ -494,7 +494,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     return 0;
 
   case 0x438:
-    return s.background_bitmap = GetWindowLongA(hwnd, g_hand_background_bitmap_long_offset);
+    return (LRESULT)(s.background_bitmap = (HWND)GetWindowLongA(hwnd, g_hand_background_bitmap_long_offset));
 
   case 0x400:
     s.card_windows = (HWND *)GetWindowLongA(hwnd, g_hand_card_windows_long_offset);
@@ -524,12 +524,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
       return 0;
     }
     s.add_player_card = (int *)wparam;
-    s.existing_hwnd = (HWND)SendMessageA(hwnd, 0x40f, s.add_player_card, 0);
+    s.existing_hwnd = (HWND)SendMessageA(hwnd, 0x40f, (WPARAM)s.add_player_card, 0);
     if (s.existing_hwnd == (HWND)0)
     {
       s.existing_hwnd = CreateWindowExA(0, "MAGICGAME_CardClass", "Hand Card",
                                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 0, 0, 0, 0, hwnd, (HMENU)1,
-                                        g_app_instance, s.add_player_card);
+                                        g_app_instance, (LPVOID)s.add_player_card);
       if (s.existing_hwnd == (HWND)0)
       {
         return 0;
@@ -558,8 +558,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     else if (card_window_matches_card_id(s.existing_hwnd,
                                          get_displayed_card_id(s.add_player_card[0], s.add_player_card[1])) == 0)
     {
-      SendMessageA(hwnd, 0x40b, s.add_player_card, 0);
-      SendMessageA(hwnd, 0x40a, s.add_player_card, 0);
+      SendMessageA(hwnd, 0x40b, (WPARAM)s.add_player_card, 0);
+      SendMessageA(hwnd, 0x40a, (WPARAM)s.add_player_card, 0);
     }
     return s.card_count;
 
@@ -718,7 +718,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     SetWindowLongA(hwnd, g_hand_art_side_width_long_offset, s.art_side_width);
     SetWindowLongA(hwnd, g_hand_art_bottom_height_long_offset, s.art_bottom_height);
     s.background_bitmap = (HWND)0;
-    SetWindowLongA(hwnd, g_hand_background_bitmap_long_offset, s.background_bitmap);
+    SetWindowLongA(hwnd, g_hand_background_bitmap_long_offset, (LONG)s.background_bitmap);
     s.selected_index = -1;
     SetWindowLongA(hwnd, g_hand_selected_index_long_offset, s.selected_index);
     if (s.card_windows == NULL)

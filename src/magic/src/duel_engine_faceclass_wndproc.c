@@ -219,7 +219,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     s.face_bitmap = (HBITMAP)wparam;
     s.owns_face_bitmap = lparam;
-    SetWindowLongA(hwnd, g_face_picture_window_long_offset, s.face_bitmap);
+    SetWindowLongA(hwnd, g_face_picture_window_long_offset, (LONG)s.face_bitmap);
     SetWindowLongA(hwnd, g_face_picture_ownership_window_long_offset, s.owns_face_bitmap);
     InvalidateRect(hwnd, (RECT *)0, 0);
     return 0;
@@ -252,7 +252,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam,
 
   case WM_CREATE:
     s.face_bitmap = (HBITMAP)0;
-    SetWindowLongA(hwnd, g_face_picture_window_long_offset, s.face_bitmap);
+    SetWindowLongA(hwnd, g_face_picture_window_long_offset, (LONG)s.face_bitmap);
     s.owns_face_bitmap = 0;
     SetWindowLongA(hwnd, g_face_picture_ownership_window_long_offset, s.owns_face_bitmap);
     return 0;

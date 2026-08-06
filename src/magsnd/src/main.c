@@ -718,7 +718,7 @@ int __cdecl PlaySndFile(LPSTR filename, int slot, Sound *sound)
   PrimeDsBufferFromSource(g_sndSlots[slot], 0);
 
   g_sndSlots[slot]->dsBuffer->lpVtbl->Play(g_sndSlots[slot]->dsBuffer, 0, 0, 1);
-  g_sndSlots[slot]->dsBuffer->lpVtbl->GetCurrentPosition(g_sndSlots[slot]->dsBuffer, (int)&g_sndSlots[slot]->ringCursorBytes, &s.writeCursorBytes);
+  g_sndSlots[slot]->dsBuffer->lpVtbl->GetCurrentPosition(g_sndSlots[slot]->dsBuffer, (LPDWORD)&g_sndSlots[slot]->ringCursorBytes, &s.writeCursorBytes);
   g_sndSlots[slot]->flags = (int)g_sndSlots[slot]->flags | 1;
   LeaveCriticalSection(&g_sndCs);
   return 0;
@@ -2167,7 +2167,7 @@ undefined4 __cdecl StartUpdateTimer(undefined4 resolutionMs)
     return 0xc;
   }
   timeBeginPeriod(g_updatePeriodMs);
-  g_updateTimerId = timeSetEvent(g_updatePeriodMs, g_timeCaps.wPeriodMin, UpdateTimerProc, &g_sndHwnd, 1);
+  g_updateTimerId = timeSetEvent(g_updatePeriodMs, g_timeCaps.wPeriodMin, UpdateTimerProc, (DWORD)&g_sndHwnd, 1);
   if (g_updateTimerId == 0)
   {
     timeEndPeriod(g_updatePeriodMs);
@@ -2658,14 +2658,14 @@ undefined4 __cdecl PrimeAviAudio(SndInstance *snd, int unused)
 {
   struct
   {
-    int lockPtr1;
+    HPSTR lockPtr1;
     uint blockIndex;
     LONG aviBytesRead;
     uint samplesPerBlock;
     int lockBytesTotal;
     LONG aviSamplesRead;
-    int writePtr;
-    int lockPtr2;
+    HPSTR writePtr;
+    HPSTR lockPtr2;
     int lockBytes2;
     int streamSample;
     uint lockBytes1;

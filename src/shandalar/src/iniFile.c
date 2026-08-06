@@ -156,7 +156,7 @@ int ReadIniSectionEntry(FILE *file, char *line_out)
 }
 
 // FUNCTION: SHANDALAR 0x004c7fe3
-char *BuildIniSectionHeader(char *section_name, int unused)
+char *BuildIniSectionHeader(char *section_name, char *unused)
 {
   // GLOBAL: SHANDALAR 0x005b7958
   static char section_header_005b7958[0x100];
@@ -200,7 +200,7 @@ char *FindIniHeaderEntry(FILE *file, char *headers_section_name, char *entry_nam
 }
 
 // FUNCTION: SHANDALAR 0x004c80d8
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2)
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch)
 {
   struct
   {
@@ -221,7 +221,7 @@ int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int
 
   s.entry_line = strchr(s.entry_line, ':');
   s.entry_count = atoi(s.entry_line + 1);
-  if (SeekIniLine(ini_file, ((char *(__cdecl *)(char *, int, int))BuildIniSectionHeader)(section_name, unk1, 0)) == 0)
+  if (SeekIniLine(ini_file, BuildIniSectionHeader(section_name, scratch)) == 0)
   {
     return (int *)0;
   }
@@ -229,7 +229,7 @@ int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int
   s.entry_table = (int *)malloc((size_t)s.entry_count << 2);
   s.table_entry_ptr = s.entry_table;
   memset(s.entry_table, 0, (size_t)s.entry_count << 2);
-  strcpy(s.decoded_line, ((char *(__cdecl *)(char *, int, int))BuildIniSectionHeader)(section_name, unk1, 0));
+  strcpy(s.decoded_line, BuildIniSectionHeader(section_name, scratch));
 
   assert(SeekIniLine(ini_file, s.decoded_line), "D:\\Newmagic\\multiplayer\\sid\\iniFile.c", 0x7b,
          "Could not locate section header %s\n", s.decoded_line);

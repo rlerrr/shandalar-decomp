@@ -147,7 +147,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_BigCardChoiceClass(HWND hwnd, UINT msg, WPARA
     return 0;
 
   case WM_CREATE:
-    SetWindowLongA(hwnd, BIGCARD_CHOICE_FONT_WINDOW_LONG_OFFSET, s.font = 0);
+    SetWindowLongA(hwnd, BIGCARD_CHOICE_FONT_WINDOW_LONG_OFFSET, (LONG)(s.font = 0));
     s.items = (char *)malloc(0x3e8);
     s.count = 0;
     s.selected = -1;

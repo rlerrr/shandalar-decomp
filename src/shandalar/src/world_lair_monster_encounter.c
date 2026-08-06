@@ -604,7 +604,7 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
 
 // FUNCTION: SHANDALAR 0x00450925
 void UpdateVisibleDuelCardPreview(uint card_index, int preview_x, int preview_y, uint unused_color,
-                                  undefined4 unused_text, char *unused_flag)
+                                  char *unused_text, int unused_flag)
 {
   int preview_x_copy;
   int preview_y_copy;
@@ -620,7 +620,7 @@ void UpdateVisibleDuelCardPreview(uint card_index, int preview_x, int preview_y,
   {
     if ((preview_x != -1) && (preview_y != -1))
     {
-      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, CardIDFromType(card_index), &preview_x_copy);
+      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, CardIDFromType(card_index), (LPARAM)&preview_x_copy);
     }
     else
     {

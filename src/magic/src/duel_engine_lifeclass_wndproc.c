@@ -403,12 +403,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
       DeleteObject(s.background_bitmap);
     }
     s.background_bitmap = (HBITMAP)wparam;
-    SetWindowLongA(hwnd, g_life_window_bitmap_window_long_offset, s.background_bitmap);
+    SetWindowLongA(hwnd, g_life_window_bitmap_window_long_offset, (LONG)s.background_bitmap);
     InvalidateRect(hwnd, (RECT *)0, 1);
     return 0;
 
   case 0x438:
-    return s.background_bitmap = GetWindowLongA(hwnd, g_life_window_bitmap_window_long_offset);
+    return (LRESULT)(s.background_bitmap = (HBITMAP)GetWindowLongA(hwnd, g_life_window_bitmap_window_long_offset));
 
   case WM_COMMAND:
     switch ((unsigned int)wparam & 0xffff)
@@ -450,7 +450,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.cached_lich_state = 0;
     SetWindowLongA(hwnd, g_life_window_lich_window_long_offset, s.cached_lich_state);
     s.background_bitmap = (HBITMAP)0;
-    SetWindowLongA(hwnd, g_life_window_bitmap_window_long_offset, s.background_bitmap);
+    SetWindowLongA(hwnd, g_life_window_bitmap_window_long_offset, (LONG)s.background_bitmap);
     return 0;
 
   case WM_DESTROY:

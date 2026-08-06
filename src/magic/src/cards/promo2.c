@@ -312,7 +312,7 @@ int card_natural_selection(int player, int card, event_t event)
       if (count > 0)
       {
         choice_count =
-            select_from_graveyard_with_dialog(player, top_three, available, count, 0x89684c, 1, selected, 0, count);
+            select_from_graveyard_with_dialog(player, top_three, available, count, 0x89684c, 1, selected[0], 0, count);
       }
       else
       {

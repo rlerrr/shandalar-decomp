@@ -575,7 +575,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
         FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(4));
         if (get_displayed_card_id(s.player, s.card) != -1)
         {
-          draw_special_effect_full_card((int)g_shared_offscreen_dc, (int)&s.client_rect, (card_id_t)s.window_card_id, s.player, s.card);
+          draw_special_effect_full_card(g_shared_offscreen_dc, &s.client_rect, (card_id_t)s.window_card_id, s.player, s.card);
         }
         else
         {

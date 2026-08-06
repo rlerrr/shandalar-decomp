@@ -303,7 +303,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24
   for (s.x = 0; (uint)s.x < 5; s.x = s.x + 1)
   {
     SetBytes((void *)(g_errorDiffusionRowStorage + s.x * 0x8060), 0, 0x8060);
-    s.err_row_ptrs[s.x + 1] = (int)(g_errorDiffusionRowStorage + s.x * 0x8060) + 0x28;
+    s.err_row_ptrs[s.x + 1] = (int *)((int)(g_errorDiffusionRowStorage + s.x * 0x8060) + 0x28);
   }
 
   s.kernel_count = g_ditherKernelTapCounts[dither_kernel_id];

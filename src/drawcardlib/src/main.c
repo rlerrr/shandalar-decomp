@@ -165,7 +165,7 @@ char g_cardNames[100 * 1024];
 char g_cardNameSlotTerminators[100 * 1024];
 
 // GLOBAL: DRAWCARDLIB 0x10124510
-undefined4 g_drawCardLibInstance;
+HINSTANCE g_drawCardLibInstance;
 
 // GLOBAL: DRAWCARDLIB 0x1012655c
 COLORREF g_smallCardTitleBackgroundColor;
@@ -1011,7 +1011,7 @@ BOOL LoadCardBackground(HBITMAP *outBitmap)
 }
 
 // FUNCTION: DRAWCARDLIB 0x10006d5f
-void DrawCardSet(int dc, RECT *rect, uint expansion)
+void DrawCardSet(HDC dc, RECT *rect, uint expansion)
 {
   struct
   {
@@ -1789,7 +1789,7 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved)
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000be22
-int read_cfg(undefined4 hinst)
+int read_cfg(HINSTANCE hinst)
 {
   struct
   {

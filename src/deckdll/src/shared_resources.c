@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "mystdbool.h"
 #include "cardartlib/src/assert.h"
+#include "drawcardlib/src/pic.h"
 
 #define SHARED_RESOURCES_IMPL
 #include "shared_resources.h"

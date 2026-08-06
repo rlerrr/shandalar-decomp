@@ -13,7 +13,7 @@ void DrawCardBack(HDC dc, RECT *rect);
 undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version, uint drawFlags, bool expanded_text, LPCSTR artistFormat);
 HBITMAP *GetCardBackgroundPointer(card_ptr_t *card);
 BOOL LoadCardBackground(HBITMAP *outBitmap);
-void DrawCardSet(int dc, RECT *rect, uint expansion);
+void DrawCardSet(HDC dc, RECT *rect, uint expansion);
 void DrawCastingCost(HDC dc, RECT *rect, casting_cost_t *castingCost);
 int BuildCostString(int *costReqs, char *costStringOut);
 int GetNextManaSymbol(char **textCursor);
@@ -27,6 +27,6 @@ BOOL DrawMaskedBitmapToRect(HDC dc, RECT *rect, HANDLE bitmap, int wSrc, int hSr
 void DeleteAndCloseObject(HANDLE handle);
 COLORREF GetPaletteColor(int index);
 void ReplaceSubstring(char *inOutStr, char *needle, int caseSensitive, char *replacement);
-int read_cfg(undefined4 hinst);
+int read_cfg(HINSTANCE hinst);
 void DrawCardLib_Shutdown(void);
 #endif

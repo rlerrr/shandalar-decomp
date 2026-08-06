@@ -158,7 +158,7 @@ LRESULT CALLBACK wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 BOOL CALLBACK enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 {
   if (is_buttonclass(hwnd))
-    global_wndproc_std_ButtonClass = SetWindowLong(hwnd, GWL_WNDPROC, wndproc_ButtonClass);
+    global_wndproc_std_ButtonClass = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (LONG)wndproc_ButtonClass);
   return TRUE;
 }
 

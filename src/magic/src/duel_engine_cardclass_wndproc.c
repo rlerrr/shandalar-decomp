@@ -3213,7 +3213,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     return 0;
 
   case 0x403:
-    return s.hidden_parent = GetWindowLongA(hwnd, CARDCLASS_HIDDEN_PARENT_WINDOW_LONG_OFFSET);
+    return (LRESULT)(s.hidden_parent = (HWND)GetWindowLongA(hwnd, CARDCLASS_HIDDEN_PARENT_WINDOW_LONG_OFFSET));
 
   case 0x404:
     s.player = GetWindowLongA(hwnd, CARDCLASS_PLAYER_WINDOW_LONG_OFFSET);

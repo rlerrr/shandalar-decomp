@@ -201,7 +201,7 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 
   if (global_hmodule_magsnd_dll) {
     for (i = 0; i < SND_MAX + 1; ++i) {
-      if (!(global_sound_fns[i] = GetProcAddress(global_hmodule_magsnd_dll, (i + 1) & 0xffff))) {
+      if (!(global_sound_fns[i] = GetProcAddress(global_hmodule_magsnd_dll, (LPCSTR)((i + 1) & 0xffff)))) {
         FreeLibrary(global_hmodule_magsnd_dll);
         clear_sound_imports_table();
         return 4;

@@ -58,7 +58,7 @@ extern FontSlot g_font_slots[0x10];
 extern char g_world_ui_text_scratch_buffer[0x1000];
 
 /* Engine / UI helpers */
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, int unk1, int unk2);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 void LoadPcxIntoPageNoPalette(char *path);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
@@ -529,8 +529,7 @@ void ShowWorldMapScreen(int mode)
 
   if (g_map_button_labels_loaded == 0)
   {
-    g_map_button_labels = (char **)((int *(__cdecl *)(FILE *, char *, int))LoadIniEscapedStringTable)(g_advbuttons_ini_file, "mapButtons",
-                                                                                               (int)g_ini_string_scratch);
+    g_map_button_labels = (char **)LoadIniEscapedStringTable(g_advbuttons_ini_file, "mapButtons", g_ini_string_scratch);
     g_map_button_labels_loaded = 1;
   }
 
