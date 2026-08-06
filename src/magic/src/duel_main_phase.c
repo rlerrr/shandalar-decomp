@@ -49,7 +49,6 @@ int get_recorded_action_count(void);
 void push_affected_card_stack(void);
 void pop_affected_card_stack(void);
 int C_get_abilities(int player, int card, int event, int a4);
-int C_real_select_target();
 void set_duel_prompt_text(char *text);
 void process_damage_prevention(int player);
 unsigned int choose_attackers_ai(int player);

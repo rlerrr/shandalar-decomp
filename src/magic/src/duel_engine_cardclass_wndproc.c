@@ -74,8 +74,9 @@ unsigned int refresh_duel_display_cache(void);
 void set_duel_prompt_context(HWND hwnd, char *prompt, unsigned int mode);
 void set_duel_tooltip_text(char *text);
 void display_duel_prompt_text(char *text);
-int get_landwalk_evasion_masks();
-int can_block_attacker_with_abilities();
+void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *out_basic_land_mask);
+int can_block_attacker_with_abilities(int blocker_player, int blocker_card, int attacker_player, int attacker_card,
+                                      unsigned int attacker_abilities, unsigned int land_bits);
 int can_card_join_banding_group(int player, int card, int unused_player, int unused_card);
 int can_block_attacker_with_landwalk_checks(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
 int assign_blocker_to_attacker(int blocker_player, int blocker_card, int attacker_player, int attacker_card);

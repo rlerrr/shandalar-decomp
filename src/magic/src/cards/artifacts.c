@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "../cards.h"
 #include "../game_support.h"

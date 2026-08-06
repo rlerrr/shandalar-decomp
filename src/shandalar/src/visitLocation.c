@@ -293,7 +293,7 @@ char *PTR_s_x_sound_dueltune_wav_00591278[3] = {
 int g_current_town_slot_index;
 
 // GLOBAL: SHANDALAR 0x00580da4
-int(__cdecl *g_town_dialog_callback)(void) = DrawTiledDialogBoxFrame;
+TownDialogCallback g_town_dialog_callback = (TownDialogCallback)DrawTiledDialogBoxFrame;
 
 // GLOBAL: SHANDALAR 0x008e2e50
 int g_duel_ante_card_ids[16];
@@ -1019,7 +1019,7 @@ void VisitTownWiseman(void)
   struct
   {
     char quest_spell_name[100];         /* -0x78 */
-    int(__cdecl *saved_callback)(void); /* -0x14 */
+    TownDialogCallback saved_callback; /* -0x14 */
     int temp_flag;                      /* -0x10 */
     int town_index;                     /* -0x0c */
     int preferred_color;                /* -0x08 */
@@ -1124,7 +1124,7 @@ void VisitTownWiseman(void)
     }
 
     strcat(g_ui_message_buffer, gs_citywiseman_0074d800[0xb]);
-    g_town_dialog_callback = QuestCardChooserCallback;
+    g_town_dialog_callback = (TownDialogCallback)QuestCardChooserCallback;
 
     if (RunTextMenuAtScaled(g_ui_message_buffer, 0x2d, 0x24) != 0)
     {
@@ -2127,7 +2127,7 @@ loop:
   }
   g_town_button_labels[4][0] = '\0';
   s.tmp_k = 0;
-  g_town_icon_menu_controls[4].on_activate = VisitTownWiseman;
+  g_town_icon_menu_controls[4].on_activate = (AdvMenuActivateCallback)VisitTownWiseman;
 
   if (g_town_slots[town_index].location_type != 1)
   {
@@ -2137,7 +2137,7 @@ loop:
       strcpy(g_ui_message_buffer, "");
       FormatMessageFromStringStripCarriageReturns(g_town_button_labels[4], 0x64, gs_cityscreen_buttons_0077f5e0[5], gs_amuletnames_0077d090[s.card_id],
                                                   GetTownCardDescription(town_index));
-      g_town_icon_menu_controls[4].on_activate = BuyTownSpecialCardOffer;
+      g_town_icon_menu_controls[4].on_activate = (AdvMenuActivateCallback)BuyTownSpecialCardOffer;
     }
     else if (((g_current_quest_destination == -1) && (g_pending_quest_destination != -1)) &&
              (((g_shandalar_difficulty + 3) * 0x10) <
@@ -3951,7 +3951,7 @@ loop:
     s.filtered_count = s.filtered_count + 1;
   }
 
-  qsort(s.filtered_card_ids, s.filtered_count, 4, CompareCardNamesForQsort);
+  qsort(s.filtered_card_ids, s.filtered_count, 4, (int(__cdecl *)(const void *, const void *))CompareCardNamesForQsort);
 
   for (s.sorted_index = 0; (int)s.filtered_count > s.sorted_index; s.sorted_index = s.sorted_index + 1)
   {
@@ -4130,7 +4130,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
   {
     int tile_magic_index;               // ebp - 0x30
     unsigned int card_id;               // ebp - 0x2c
-    int(__cdecl *saved_callback)(void); // ebp - 0x28
+    TownDialogCallback saved_callback; // ebp - 0x28
     int required;                       // ebp - 0x24
     int total_mana;                     // ebp - 0x20
     int can_afford;                     // ebp - 0x1c
@@ -4144,7 +4144,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
 
   s.first_time = 1;
   s.saved_callback = g_town_dialog_callback;
-  g_town_dialog_callback = QuestCardChooserCallback;
+  g_town_dialog_callback = (TownDialogCallback)QuestCardChooserCallback;
 
   while (1)
   {
@@ -4675,7 +4675,7 @@ int VisitTownSlot(int town_index)
 
         // TODO(decomp): This branch continues into the large "choose a card" UI (RunCardBrowser) and then
         // marks the selected card slot with 0x4000.
-        g_town_dialog_callback = QuestCardChooserCallback;
+        g_town_dialog_callback = (TownDialogCallback)QuestCardChooserCallback;
         s.selected_card_id = -1;
         while (s.selected_card_id == -1)
         {
@@ -4706,7 +4706,7 @@ int VisitTownSlot(int town_index)
             DelayUiTicks(0xf);
           }
         }
-        g_town_dialog_callback = DrawTiledDialogBoxFrame;
+        g_town_dialog_callback = (TownDialogCallback)DrawTiledDialogBoxFrame;
       }
       else
       {

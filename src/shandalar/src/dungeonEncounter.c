@@ -102,8 +102,6 @@ extern FacemakerWindowBounds *g_page0_window_bounds;
 extern FacemakerWindowBounds *g_page1_window_bounds;
 extern FacemakerWindowBounds *g_page2_window_bounds;
 extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
-extern int(__cdecl *g_town_dialog_callback)(void);
-
 char *BuildCreatureNameWithArticle(int creature_type);
 char *BuildTownDisplayName(int town_index);
 char *GetCreatureName(int creature_type);
@@ -1081,7 +1079,7 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
   DrawUiScaledCenteredTextWithShadow(g_page0_window_bounds, 0xfe, 0x140, 200, g_ui_message_buffer);
   ClearInputAndWaitForMouseRelease();
   WaitForInputEventUnlessBlocked();
-  g_town_dialog_callback = QuestCardChooserCallback;
+  g_town_dialog_callback = (TownDialogCallback)QuestCardChooserCallback;
   ResetMenuContext(BeginMenuContext());
   ForceReloadAdvfac64(1);
   g_defeated_wizards_bitmap = g_defeated_wizards_bitmap & ~(1 << (byte)s.wizard_color);
@@ -1128,7 +1126,7 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
   }
   EndMenuContext();
   g_defeated_wizards_bitmap = g_defeated_wizards_bitmap | 1 << (byte)s.wizard_color;
-  g_town_dialog_callback = (int(__cdecl *)(void))DrawTiledDialogBoxFrame;
+  g_town_dialog_callback = (TownDialogCallback)DrawTiledDialogBoxFrame;
   if (g_defeated_wizards_bitmap != 0x3e)
   {
     sound_stop(0x10);

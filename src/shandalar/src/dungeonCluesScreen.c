@@ -40,8 +40,6 @@ extern char g_ini_string_scratch[0x28];
 extern char g_ui_message_buffer[0x1000];
 extern int g_world_scroll_cache_ready;
 extern int g_world_ui_top_offset;
-extern int(__cdecl *g_town_dialog_callback)();
-
 extern FacemakerWindowBounds *g_page0_window_bounds;
 extern FacemakerWindowBounds *g_page1_window_bounds;
 extern FacemakerWindowBounds *g_page2_window_bounds;

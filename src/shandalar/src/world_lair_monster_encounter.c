@@ -58,7 +58,6 @@ extern int g_world_magic_offer_slot_index;
 extern int g_world_scroll_cache_ready;
 extern int g_text_menu_color_normal;
 extern int g_text_menu_color_selected;
-extern int(__cdecl *g_town_dialog_callback)(void);
 extern int g_duel_ante_card_ids[16];
 extern int active_player;
 extern int duel_active;

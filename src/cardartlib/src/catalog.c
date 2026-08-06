@@ -166,7 +166,7 @@ CatalogEntry *Catalog_FindEntryCached(Catalog *catalog, const char *name)
   }
 
   entry = (CatalogEntry *)bsearch(&key, catalog->entries, (size_t)catalog->entry_count, sizeof(CatalogEntry),
-                                  CatalogEntry_CompareKey);
+                                  (int(__cdecl *)(const void *, const void *))CatalogEntry_CompareKey);
   catalog->cached_entry = entry;
   return entry;
 }

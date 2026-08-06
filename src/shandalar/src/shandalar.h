@@ -1,8 +1,13 @@
 
-typedef int(__cdecl *AdvMenuRenderCallback)(void *control, int mode);
-typedef int(__cdecl *AdvMenuActivateCallback)(void *control);
+typedef struct AdvMenuControl AdvMenuControl;
 
-typedef struct AdvMenuControl
+typedef int(__cdecl *AdvMenuRenderCallback)(AdvMenuControl *control, int mode);
+typedef int(__cdecl *AdvMenuActivateCallback)(AdvMenuControl *control);
+typedef int(__cdecl *TownDialogCallback)(int x, int y, int width, int height, int frame_style);
+
+extern TownDialogCallback g_town_dialog_callback;
+
+struct AdvMenuControl
 {
   int base_x;
   int base_y;
@@ -22,7 +27,7 @@ typedef struct AdvMenuControl
   int direct_hotkey;
   int state;
   int mode_data[4];
-} AdvMenuControl;
+};
 
 typedef struct AdvMenuRect
 {

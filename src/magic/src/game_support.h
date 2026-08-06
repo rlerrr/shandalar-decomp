@@ -237,7 +237,7 @@ int real_target_available(int *num_valid_targets,
                           target_state_t required_state,
                           target_state_t illegal_state);
 void set_duel_prompt_text(char *text);
-int gain_life();
+int gain_life(int player, int amount, ...);
 void discard(int player, int flags, int player_who_controls_effect);
 void declare_mana_available_hex(int player, color_test_t colors, int amount);
 int do_dialog(int who_chooses,

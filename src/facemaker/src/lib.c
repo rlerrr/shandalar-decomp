@@ -290,7 +290,7 @@ int LoadFontConfigIfPresent(char *executable_name, char *config_name)
 }
 
 // FUNCTION: FACEMAKER 0x004065e0
-int LegacyInitNoop()
+int LegacyInitNoop(int unused)
 {
   return 0;
 }

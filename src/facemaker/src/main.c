@@ -66,7 +66,7 @@ typedef union FaceSpriteRootStorage
 
 extern DIBSurface *InitializeGraphicsSystem(int width, int height, int bits_per_pixel);
 extern DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
-extern int LegacyInitNoop();
+extern int LegacyInitNoop(int unused);
 extern int LoadFontConfigIfPresent(char *executable_name, char *config_name);
 extern DIBSurface *GetPrimaryPage(int unused);
 extern DIBSurface *GetPageByNumber(int page_number);

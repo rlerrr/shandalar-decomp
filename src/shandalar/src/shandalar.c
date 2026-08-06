@@ -729,7 +729,6 @@ extern card_data_t global_cards_data[];
 extern DIBSurface *g_facemaker_page4_dib;
 extern HBITMAP g_facemaker_page4_bitmap;
 extern int g_frontbuffer_direct_blit_enabled;
-extern int(__cdecl *g_town_dialog_callback)();
 extern int g_duel_ante_card_ids[16];
 
 void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, unsigned int color_filter, int speed_filter);

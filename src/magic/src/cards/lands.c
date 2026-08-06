@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "../game_support.h"
 #include "../global_strings.h"

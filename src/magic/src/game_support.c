@@ -3290,7 +3290,7 @@ int basic_land_matches_type_index(int internal_card_id, int extra)
 
 // FUNCTION: MAGIC 0x004848a0
 // FUNCTION: SHANDALAR 0x004883aa
-int gain_life(int player, int amount)
+int gain_life(int player, int amount, ...)
 {
   int saved_trigger_cause_controller;
   int saved_trigger_cause;
