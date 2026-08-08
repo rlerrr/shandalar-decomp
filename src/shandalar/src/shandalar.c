@@ -724,7 +724,6 @@ extern card_data_t global_cards_data[];
 extern DIBSurface *g_facemaker_page4_dib;
 extern HBITMAP g_facemaker_page4_bitmap;
 extern int g_frontbuffer_direct_blit_enabled;
-extern int g_duel_ante_card_ids[16];
 
 void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, unsigned int color_filter, int speed_filter);
 int RunDuelEngine(unsigned int card_id, int creature_type);
@@ -5318,8 +5317,8 @@ int RunRandomAiDuelDemo(void)
   opponent_initial_library_index = 1;
   for (ante_index = 0; ante_index < 0x10; ante_index++)
   {
-    g_duel_ante_card_ids[ante_index] = -1;
-    global_ante_cards[0][ante_index] = g_duel_ante_card_ids[ante_index];
+    global_ante_cards[1][ante_index] = -1;
+    global_ante_cards[0][ante_index] = global_ante_cards[1][ante_index];
   }
 
   g_duel_network_state = 1;

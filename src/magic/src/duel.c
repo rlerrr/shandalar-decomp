@@ -50,7 +50,6 @@ int reset_empty_card_original_ids(void);
 void compact_timestamp_slots(void);
 int reset_stack_tracking_state(void);
 void rebuild_battlefield_summary(void);
-extern int g_duel_ante_card_ids[16];
 extern int DAT_007aa928;
 extern int DAT_007aaeec;
 extern int DAT_00637c70;
@@ -2317,9 +2316,9 @@ int play_duel(int player, int creature_type)
       if (g_selected_wizard_color == -1)
       {
         copy_initial_library_to_player_zero(opponent_initial_library_index);
-        if (g_duel_ante_card_ids[0] != -1)
+        if (global_ante_cards[1][0] != -1)
         {
-          remove_iid_from_initial_library(0, g_duel_ante_card_ids[0]);
+          remove_iid_from_initial_library(0, global_ante_cards[1][0]);
         }
       }
       for (s.card_index = 0; s.opening_hand_count > s.card_index; s.card_index = s.card_index + 1)
@@ -2332,7 +2331,7 @@ int play_duel(int player, int creature_type)
                                &s.mulligan_accepted,
                                s.starting_player,
                                s.random_starting_player,
-                               g_duel_ante_card_ids[0],
+                               global_ante_cards[1][0],
                                global_ante_cards[0][0],
                                s.ante_info,
                                s.ante_result,
@@ -2383,9 +2382,9 @@ int play_duel(int player, int creature_type)
       if (g_selected_wizard_color == -1)
       {
         copy_initial_library_to_player_zero(opponent_initial_library_index);
-        if (g_duel_ante_card_ids[0] != -1)
+        if (global_ante_cards[1][0] != -1)
         {
-          remove_iid_from_initial_library(0, g_duel_ante_card_ids[0]);
+          remove_iid_from_initial_library(0, global_ante_cards[1][0]);
         }
       }
       for (s.card_index = 0; s.opening_hand_count > s.card_index; s.card_index = s.card_index + 1)
@@ -2531,8 +2530,8 @@ int play_duel(int player, int creature_type)
       TENTATIVE_reassess_all_cards(0, 0x30);
       for (s.loop_5c = 0; s.loop_5c < 0x10; s.loop_5c = s.loop_5c + 1)
       {
-        g_duel_ante_card_ids[s.loop_5c] = -1;
-        global_ante_cards[0][s.loop_5c] = g_duel_ante_card_ids[s.loop_5c];
+        global_ante_cards[1][s.loop_5c] = -1;
+        global_ante_cards[0][s.loop_5c] = global_ante_cards[1][s.loop_5c];
       }
       if (DAT_00789104 != 0)
       {
@@ -2543,12 +2542,12 @@ int play_duel(int player, int creature_type)
           g_network_result_value = global_ante_cards[0][0];
           TENTATIVE_send_network_result(0, 2);
           TENTATIVE_wait_for_network_result(1, 2);
-          g_duel_ante_card_ids[0] = g_network_result_value;
+          global_ante_cards[1][0] = g_network_result_value;
         }
         else
         {
           global_ante_cards[0][0] = DrawRandomCardFromInitialLibrary(g_selected_wizard_color);
-          g_duel_ante_card_ids[0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
+          global_ante_cards[1][0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
         }
       }
       if ((g_duel_network_flags & 2) != 0)
@@ -2616,7 +2615,7 @@ int play_duel(int player, int creature_type)
                                  &s.mulligan_accepted,
                                  s.starting_player,
                                  s.random_starting_player,
-                                 g_duel_ante_card_ids[0],
+                                 global_ante_cards[1][0],
                                  global_ante_cards[0][0],
                                  s.ante_info,
                                  s.ante_result,

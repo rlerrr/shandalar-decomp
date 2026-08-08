@@ -96,9 +96,6 @@ int g_duel_cached_library_count_player_0;
 // GLOBAL: MAGIC 0x008ce500
 // GLOBAL: SHANDALAR 0x008e2680
 int g_duel_cached_exile_count_player_1;
-// GLOBAL: MAGIC 0x008ced00
-// GLOBAL: SHANDALAR 0x008e2e50
-int g_duel_ante_card_ids[16];
 // GLOBAL: MAGIC 0x008cefb4
 // GLOBAL: SHANDALAR 0x008e3100
 int g_duel_cached_library_count_player_1;
@@ -971,7 +968,7 @@ unsigned int refresh_duel_display_cache(void)
 
   s.zone_index = 0;
   DAT_008966d0 = 0;
-  for (; s.zone_index < 0x10 && g_duel_ante_card_ids[s.zone_index] != -1; ++s.zone_index)
+  for (; s.zone_index < 0x10 && global_ante_cards[1][s.zone_index] != -1; ++s.zone_index)
   {
     ++DAT_008966d0;
   }

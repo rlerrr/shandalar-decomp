@@ -96,7 +96,6 @@ card_id_t get_card_window_displayed_card_id(HWND hwnd);
 int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
 int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_card);
 int displayed_card_indices_invalid(int player, int card);
-extern int g_duel_ante_card_ids[16];
 extern int g_manalink_is_host;
 #ifndef SHANDALAR
 extern HANDLE global_mutex_GameInit;

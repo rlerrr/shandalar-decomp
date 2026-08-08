@@ -56,7 +56,6 @@ extern int g_world_magic_offer_slot_index;
 extern int g_world_scroll_cache_ready;
 extern int g_text_menu_color_normal;
 extern int g_text_menu_color_selected;
-extern int g_duel_ante_card_ids[16];
 extern int active_player;
 extern int duel_active;
 extern int g_duel_special_rules_by_color[7];
@@ -702,7 +701,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
     global_ante_cards[0][0] = -1;
     for (s.loop_index = 0; s.loop_index < ante_card_count; s.loop_index = s.loop_index + 1)
     {
-      g_duel_ante_card_ids[s.loop_index] = s.ante_card_ids[s.loop_index];
+      global_ante_cards[1][s.loop_index] = s.ante_card_ids[s.loop_index];
     }
     if (RunDuelEngine(s.selected_card_id, s.creature_type) != 0)
     {
@@ -1710,11 +1709,11 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     {
       do
       {
-        g_duel_ante_card_ids[0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
-      } while (g_duel_ante_card_ids[0] <= 4);
-    } while ((((global_cards_data[g_duel_ante_card_ids[0]].extra_ability & 0x100) != 0) ||
-              (GetCardAvailabilityMask(g_duel_ante_card_ids[0]) == 0)) ||
-             (global_cards_data[g_duel_ante_card_ids[0]].id ==
+        global_ante_cards[1][0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
+      } while (global_ante_cards[1][0] <= 4);
+    } while ((((global_cards_data[global_ante_cards[1][0]].extra_ability & 0x100) != 0) ||
+              (GetCardAvailabilityMask(global_ante_cards[1][0]) == 0)) ||
+             (global_cards_data[global_ante_cards[1][0]].id ==
               g_shandalar_monster_definitions[s.creature_type].deck_number));
   }
   if (g_shandalar_monster_definitions[s.creature_type].encounter_type == '\f')
@@ -1836,7 +1835,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   sprintf(g_ui_message_buffer, gs_encounter_preduel_0077f0d0[2], GetCreatureName(s.creature_type));
   if ((g_duel_ai_mode_state == 0) && (g_shandalar_monster_definitions[s.creature_type].encounter_type != '\v'))
   {
-    DrawAdventureCard(g_duel_ante_card_ids[0], 0xe8, 0x18, 1, "");
+    DrawAdventureCard(global_ante_cards[1][0], 0xe8, 0x18, 1, "");
   }
   s.bribe_gold_cost = ClampIntToRange(s.creature_strength * 10, 10, s.creature_strength * 0x32);
 
@@ -2414,9 +2413,9 @@ LAB_4F4BB2:
                                 ((s.menu_option_count & 1) ? 1 : 3)) == 0);
         } while (((GetRemainingAllowedCardCopies(s.selected_card_id) <= 0) || ((global_cards_data[s.selected_card_id].extra_ability & 0x900) != 0)) ||
                  (GetCardAvailabilityMask(s.selected_card_id) == 0));
-        if (((int)s.menu_option_count < 3) && (g_duel_ante_card_ids[s.menu_option_count] != -1))
+        if (((int)s.menu_option_count < 3) && (global_ante_cards[1][s.menu_option_count] != -1))
         {
-          s.selected_card_id = g_duel_ante_card_ids[s.menu_option_count];
+          s.selected_card_id = global_ante_cards[1][s.menu_option_count];
         }
         s.reward_card_ids[s.menu_option_count] = s.selected_card_id;
         s.menu_option_count = s.menu_option_count + 1;

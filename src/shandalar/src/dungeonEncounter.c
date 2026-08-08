@@ -70,7 +70,6 @@ extern int g_mouse_y_snapshot;
 extern int g_defeated_wizards_bitmap;
 extern int g_next_duel_card_id;
 extern int g_next_duel_life_delta;
-extern int g_duel_ante_card_ids[16];
 extern int g_neighbor_dx[9];
 extern int g_neighbor_dy[9];
 extern int g_statwin_exports_by_ordinal[3];
@@ -927,8 +926,8 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50);
   for (s.work_index = 0; s.work_index < 0x10; s.work_index = s.work_index + 1)
   {
-    g_duel_ante_card_ids[s.work_index] = -1;
-    global_ante_cards[0][s.work_index] = g_duel_ante_card_ids[s.work_index];
+    global_ante_cards[1][s.work_index] = -1;
+    global_ante_cards[0][s.work_index] = global_ante_cards[1][s.work_index];
   }
   ExitIfNoUsableDeckCards();
   do

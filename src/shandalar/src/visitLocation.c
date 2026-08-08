@@ -296,8 +296,6 @@ int g_current_town_slot_index;
 // GLOBAL: SHANDALAR 0x00580da4
 TownDialogCallback g_town_dialog_callback = (TownDialogCallback)DrawTiledDialogBoxFrame;
 
-extern int g_duel_ante_card_ids[16];
-
 // GLOBAL: SHANDALAR 0x0058edd8
 int g_wiseman_duel_reward_card_csvids[10] = {0x24d, 0x1b3, 0xc1, 0x1b8, 0x106, 0x1d0, 0x87, 0x1dd, 0xd3, 0xd};
 // GLOBAL: SHANDALAR 0x0058ee00
@@ -4382,8 +4380,8 @@ int VisitTownSlot(int town_index)
 
     for (s.duel_ante_slot = 0; s.duel_ante_slot < 0x10; s.duel_ante_slot = s.duel_ante_slot + 1)
     {
-      g_duel_ante_card_ids[s.duel_ante_slot] = 0xffffffff;
-      global_ante_cards[0][s.duel_ante_slot] = g_duel_ante_card_ids[s.duel_ante_slot];
+      global_ante_cards[1][s.duel_ante_slot] = 0xffffffff;
+      global_ante_cards[0][s.duel_ante_slot] = global_ante_cards[1][s.duel_ante_slot];
     }
 
     (void)ExitIfNoUsableDeckCards();
@@ -4441,11 +4439,11 @@ int VisitTownSlot(int town_index)
     {
       do
       {
-        g_duel_ante_card_ids[0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
-      } while (g_duel_ante_card_ids[0] <= 4);
-    } while ((global_cards_data[g_duel_ante_card_ids[0]].extra_ability & 0x100) != 0);
+        global_ante_cards[1][0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
+      } while (global_ante_cards[1][0] <= 4);
+    } while ((global_cards_data[global_ante_cards[1][0]].extra_ability & 0x100) != 0);
 
-    DrawAdventureCard((int)g_duel_ante_card_ids[0], 0xe0, 0x40, 1, gs_visit_0077c4f0[1]);
+    DrawAdventureCard((int)global_ante_cards[1][0], 0xe0, 0x40, 1, gs_visit_0077c4f0[1]);
     DrawCreaturePortrait(s.duel_creature_tier_or_type, 0xa0, 0x20, 1, 2);
 
     if (IsWizardColorFeminine(s.duel_wizard_color) != 0)
@@ -4492,7 +4490,7 @@ int VisitTownSlot(int town_index)
         StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height);
 
         sprintf(g_ui_message_buffer, gs_visit_0077c4f0[8], BuildTownDisplayName(town_index));
-        AddCardToDeckSorted((unsigned int)g_duel_ante_card_ids[0]);
+        AddCardToDeckSorted((unsigned int)global_ante_cards[1][0]);
         RunTextMenuAtScaled(g_ui_message_buffer, 0x14, 0x14);
         AddJournalEntry(JOURNAL_ENTRY_CITY_SAVED, town_index);
       }
