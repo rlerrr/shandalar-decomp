@@ -20,7 +20,6 @@ extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern char global_base_directory[];
 extern CRITICAL_SECTION g_card_render_lock;
-extern int DAT_0091c980;
 
 int load_text_with_tab_escapes(char *filename, char *section_name);
 LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -355,7 +354,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
     switch ((UINT)wparam & 0xffff)
     {
     case 1:
-      DAT_0091c980 = (DAT_0091c980 == 0);
+      g_duel_interface_options.expand_text_box_on_big_card = (g_duel_interface_options.expand_text_box_on_big_card == 0);
       save_duel_interface_options_to_registry();
       InvalidateRect(hwnd, (RECT *)0, 0);
       break;
@@ -609,7 +608,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
                                                    s.player,
                                                    s.card,
                                                    0,
-                                                   DAT_0091c980);
+                                                   g_duel_interface_options.expand_text_box_on_big_card);
         }
         else if (s.window_card_id != (HWND)-1)
         {
@@ -618,7 +617,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
                                        global_raw_cards_storage + (int)s.window_card_id,
                                        0,
                                        0,
-                                       DAT_0091c980,
+                                       g_duel_interface_options.expand_text_box_on_big_card,
                                        gs_illus_00789130);
         }
         else
@@ -638,7 +637,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
                                      s.player,
                                      s.card,
                                      2,
-                                     DAT_0091c980);
+                                     g_duel_interface_options.expand_text_box_on_big_card);
           }
           else if (s.window_card_id != (HWND)-1)
           {
@@ -647,7 +646,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
                          global_raw_cards_storage + (int)s.window_card_id,
                          0,
                          2,
-                         DAT_0091c980,
+                         g_duel_interface_options.expand_text_box_on_big_card,
                          gs_illus_00789130);
           }
           BitBlt(s.paint_dc, 0, 0, s.client_rect.right, s.client_rect.bottom,
@@ -678,7 +677,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
 
   case WM_INITMENU:
     AppendMenuA(g_magicgame_full_card_menu, 0, 1, g_full_card_menu_expand_text);
-    if (DAT_0091c980 != 0)
+    if (g_duel_interface_options.expand_text_box_on_big_card != 0)
     {
       CheckMenuItem(g_magicgame_full_card_menu, 1, MF_CHECKED);
     }

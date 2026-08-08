@@ -167,6 +167,7 @@ PickCardDialogContext g_pick_card_dialog_context = {PICK_CARD_COLOR_BLACK, PICK_
 PickCardDialogContext *g_pick_card_dialog_context_ptr;
 
 // GLOBAL: MAGIC 0x008a9140
+// GLOBAL: SHANDALAR 0x008bd340
 OPENFILENAMEA g_duel_save_game_openfilename;
 
 // GLOBAL: MAGIC 0x00746368

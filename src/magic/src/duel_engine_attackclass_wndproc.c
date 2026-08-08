@@ -14,9 +14,6 @@
 #define ATTACK_MAX_GROUPS 100
 #define ATTACK_MAX_CARDS_PER_GROUP 50
 
-#define ATTACK_DEFENDER_BRUSH (*(HBRUSH *)(g_attack_minimized_menu_help_text + 0x1c))
-#define ATTACK_TEXT_SHADOW_COLOR (*(COLORREF *)(g_attack_minimized_menu_restore_text + 0x1c))
-
 typedef struct attack_window_group
 {
   int group_card;
@@ -99,42 +96,59 @@ char DAT_00579c00[4] = "";
 char DAT_00579c18[4] = "";
 
 // GLOBAL: MAGIC 0x0069c610
+// GLOBAL: SHANDALAR 0x005a8fd8
 HBITMAP DAT_0069c610;
 
 // GLOBAL: MAGIC 0x0069c614
+// GLOBAL: SHANDALAR 0x005a8fdc
 HBITMAP DAT_0069c614;
 
 // GLOBAL: MAGIC 0x0069c61c
+// GLOBAL: SHANDALAR 0x005a8fe4
 HPEN DAT_0069c61c;
 
 // GLOBAL: MAGIC 0x0069c620
+// GLOBAL: SHANDALAR 0x005a8fe8
 HWND DAT_0069c620;
 
 // GLOBAL: MAGIC 0x0069c628
+// GLOBAL: SHANDALAR 0x005a8ff0
 char DAT_0069c628[0x1c];
 
 // GLOBAL: MAGIC 0x0069c644
+// GLOBAL: SHANDALAR 0x005a900c
 HBITMAP DAT_0069c644;
 
 // GLOBAL: MAGIC 0x0069c648
+// GLOBAL: SHANDALAR 0x005a9010
 HPEN DAT_0069c648;
 
 // GLOBAL: MAGIC 0x0069c64c
+// GLOBAL: SHANDALAR 0x005a9014
 COLORREF DAT_0069c64c;
 
 // GLOBAL: MAGIC 0x0069c650
+// GLOBAL: SHANDALAR 0x005a9018
 HPEN DAT_0069c650;
 
 // GLOBAL: MAGIC 0x0069c654
+// GLOBAL: SHANDALAR 0x005a901c
 int DAT_0069c654;
 
 // GLOBAL: MAGIC 0x0069c658
+// GLOBAL: SHANDALAR 0x005a9020
 char DAT_0069c658[0x20];
 
 // GLOBAL: MAGIC 0x0069c678
-char g_attack_minimized_menu_help_text[0x20];
+// GLOBAL: SHANDALAR 0x005a9040
+char g_attack_minimized_menu_help_text[0x1c];
+
+// GLOBAL: MAGIC 0x0069c694
+// GLOBAL: SHANDALAR 0x005a905c
+HBRUSH g_attack_defender_brush;
 
 // GLOBAL: MAGIC 0x0069c698
+// GLOBAL: SHANDALAR 0x005a9060
 HMENU g_attack_minimized_popup_menu;
 
 // GLOBAL: MAGIC 0x0069c6a0
@@ -167,7 +181,11 @@ int DAT_0069c6c0;
 
 // GLOBAL: MAGIC 0x0069c6c8
 // GLOBAL: SHANDALAR 0x005a9090
-char g_attack_minimized_menu_restore_text[0x20];
+char g_attack_minimized_menu_restore_text[0x1c];
+
+// GLOBAL: MAGIC 0x0069c6e4
+// GLOBAL: SHANDALAR 0x005a90ac
+COLORREF g_attack_text_shadow_color;
 
 // GLOBAL: MAGIC 0x0069c6e8
 // GLOBAL: SHANDALAR 0x005a90b0
@@ -238,16 +256,16 @@ int register_MAGICGAME_AttackClass(LPCSTR class_name)
   DAT_0069c650 = CreatePen(PS_SOLID, 0, 0x10000b4);
   DAT_0069c6bc = CreatePen(PS_SOLID, 0, 0x100007c);
   DAT_0069c61c = CreatePen(PS_SOLID, 0, 0x1000050);
-  ATTACK_DEFENDER_BRUSH = CreateSolidBrush(0x1000076);
+  g_attack_defender_brush = CreateSolidBrush(0x1000076);
   DAT_0069c6a4 = CreatePen(PS_SOLID, 0, 0x10000d3);
   DAT_0069c6a8 = CreatePen(PS_SOLID, 0, 0x100002f);
   DAT_0069c648 = CreatePen(PS_SOLID, 0, 0x10000d7);
   DAT_0069c6b4 = CreateSolidBrush(0x100003a);
   DAT_0069c64c = 0x10000bf;
-  ATTACK_TEXT_SHADOW_COLOR = 0x10000c9;
+  g_attack_text_shadow_color = 0x10000c9;
 
   if (DAT_0069c650 == (HPEN)0 || DAT_0069c6bc == (HPEN)0 ||
-      DAT_0069c61c == (HPEN)0 || ATTACK_DEFENDER_BRUSH == (HBRUSH)0 ||
+      DAT_0069c61c == (HPEN)0 || g_attack_defender_brush == (HBRUSH)0 ||
       DAT_0069c6a4 == (HPEN)0 || DAT_0069c6a8 == (HPEN)0 ||
       DAT_0069c648 == (HPEN)0 || DAT_0069c6b4 == (HBRUSH)0)
   {
@@ -311,9 +329,9 @@ void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
   {
     DeleteObject(DAT_0069c61c);
   }
-  if (ATTACK_DEFENDER_BRUSH != (HBRUSH)0)
+  if (g_attack_defender_brush != (HBRUSH)0)
   {
-    DeleteObject(ATTACK_DEFENDER_BRUSH);
+    DeleteObject(g_attack_defender_brush);
   }
   if (DAT_0069c6a4 != (HPEN)0)
   {
@@ -341,7 +359,7 @@ void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
   DAT_0069c650 = (HPEN)0;
   DAT_0069c6bc = (HPEN)0;
   DAT_0069c61c = (HPEN)0;
-  ATTACK_DEFENDER_BRUSH = (HBRUSH)0;
+  g_attack_defender_brush = (HBRUSH)0;
   DAT_0069c6a4 = (HPEN)0;
   DAT_0069c6a8 = (HPEN)0;
   DAT_0069c648 = (HPEN)0;
@@ -1551,7 +1569,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
           s.ncpaint_light_pen = DAT_0069c650;
           s.ncpaint_dark_pen = DAT_0069c6bc;
           s.ncpaint_shade_pen = DAT_0069c61c;
-          s.ncpaint_caption_brush = ATTACK_DEFENDER_BRUSH;
+          s.ncpaint_caption_brush = g_attack_defender_brush;
         }
         else
         {
@@ -1621,7 +1639,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
         FillRect(s.ncpaint_dc, &s.ncpaint_caption_rect, s.ncpaint_caption_brush);
         SetBkMode(s.ncpaint_dc, TRANSPARENT);
         OffsetRect(&s.ncpaint_caption_rect, 1, 1);
-        SetTextColor(s.ncpaint_dc, ATTACK_TEXT_SHADOW_COLOR);
+        SetTextColor(s.ncpaint_dc, g_attack_text_shadow_color);
         DrawTextA(s.ncpaint_dc, s.ncpaint_caption, -1, &s.ncpaint_caption_rect,
                   DT_SINGLELINE | DT_VCENTER);
         OffsetRect(&s.ncpaint_caption_rect, -1, -1);
@@ -1805,7 +1823,7 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
         s.light_pen = DAT_0069c650;
         s.dark_pen = DAT_0069c6bc;
         s.shade_pen = DAT_0069c61c;
-        s.caption_brush = ATTACK_DEFENDER_BRUSH;
+        s.caption_brush = g_attack_defender_brush;
       }
       else
       {

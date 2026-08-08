@@ -52,20 +52,28 @@ void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item_struct,
                   int draw_focus);
 
 // GLOBAL: MAGIC 0x00637f2c
+// GLOBAL: SHANDALAR 0x005aa460
 static HBRUSH g_duel_options_dialog_button_brush;
 // GLOBAL: MAGIC 0x00637f18
+// GLOBAL: SHANDALAR 0x005aa44c
 static HPEN g_duel_options_dialog_pen1;
 // GLOBAL: MAGIC 0x00637f28
+// GLOBAL: SHANDALAR 0x005aa45c
 static HPEN g_duel_options_dialog_pen2;
 // GLOBAL: MAGIC 0x00637f24
+// GLOBAL: SHANDALAR 0x005aa458
 static COLORREF g_duel_options_dialog_focus_text_color;
 // GLOBAL: MAGIC 0x00637f34
+// GLOBAL: SHANDALAR 0x005aa468
 static COLORREF g_duel_options_dialog_unfocus_text_color;
 // GLOBAL: MAGIC 0x00637f30
+// GLOBAL: SHANDALAR 0x005aa464
 static COLORREF g_duel_options_dialog_text_color;
 // GLOBAL: MAGIC 0x00637f1c
+// GLOBAL: SHANDALAR 0x005aa450
 static COLORREF g_duel_options_dialog_title_color;
 // GLOBAL: MAGIC 0x00637f20
+// GLOBAL: SHANDALAR 0x005aa454
 static HBITMAP g_duel_options_dialog_background;
 
 // GLOBAL: MAGIC 0x00638c8c
@@ -99,6 +107,7 @@ static void cleanup_life_total_dialog_resources(HBITMAP background,
 static LRESULT CALLBACK life_total_edit_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 // FUNCTION: MAGIC 0x00489f9f
+// FUNCTION: SHANDALAR 0x004a5c2f
 static void setup_duel_options_dialog_resources(HBITMAP *background,
                                                 COLORREF *title_color,
                                                 COLORREF *text_color,
@@ -134,6 +143,7 @@ static void setup_duel_options_dialog_resources(HBITMAP *background,
 }
 
 // FUNCTION: MAGIC 0x0048a085
+// FUNCTION: SHANDALAR 0x004a5d15
 static void cleanup_duel_options_dialog_resources(HBITMAP background,
                                                   HBRUSH button_brush,
                                                   HPEN pen1,
@@ -158,6 +168,7 @@ static void cleanup_duel_options_dialog_resources(HBITMAP background,
 }
 
 // FUNCTION: MAGIC 0x0048958a
+// FUNCTION: SHANDALAR 0x004a521a
 BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
@@ -222,7 +233,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
     CheckDlgButton(hwnd, s.selected_control, 1);
     CheckRadioButton(hwnd, 0x426, 0x427, s.selected_control);
 
-    if (g_duel_interface_options.directive_tracks_mouse != 0)
+    if (g_duel_interface_options.show_coin_flips != 0)
     {
       CheckDlgButton(hwnd, 0x438, 1);
     }
@@ -238,7 +249,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
     {
       CheckDlgButton(hwnd, 0x42b, 1);
     }
-    if (g_duel_interface_options.show_coin_flips != 0)
+    if (g_duel_interface_options.see_next_draws_at_end_of_duel != 0)
     {
       CheckDlgButton(hwnd, 0x437, 1);
     }
@@ -303,9 +314,8 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
                                             g_duel_options_dialog_pen1,
                                             g_duel_options_dialog_pen2);
       EndDialog(hwnd, 0);
-      return 1;
     }
-    if ((wparam & 0xffff) == IDOK)
+    else if ((wparam & 0xffff) == IDOK)
     {
       if (IsDlgButtonChecked(hwnd, 0x426) != 0)
       {
@@ -315,11 +325,11 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
       {
         g_duel_interface_options.layout = 2;
       }
-      g_duel_interface_options.directive_tracks_mouse = IsDlgButtonChecked(hwnd, 0x438);
+      g_duel_interface_options.show_coin_flips = IsDlgButtonChecked(hwnd, 0x438);
       g_duel_interface_options.show_cue_cards = IsDlgButtonChecked(hwnd, 0x429);
       g_duel_interface_options.show_power_toughness_on_cards = IsDlgButtonChecked(hwnd, 0x42a);
       g_duel_interface_options.show_abilities_on_cards = IsDlgButtonChecked(hwnd, 0x42b);
-      g_duel_interface_options.show_coin_flips = IsDlgButtonChecked(hwnd, 0x437);
+      g_duel_interface_options.see_next_draws_at_end_of_duel = IsDlgButtonChecked(hwnd, 0x437);
 
       if (IsDlgButtonChecked(hwnd, 0x42f) != 0)
       {
@@ -365,9 +375,9 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
                                             g_duel_options_dialog_pen1,
                                             g_duel_options_dialog_pen2);
       EndDialog(hwnd, 1);
-      return 1;
     }
-    return 0;
+
+    return 1;
 
   case 0x4c8:
     s.current_control = (int)wparam;
@@ -400,7 +410,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
     {
       SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
       SetBkMode(s.ctl_hdc, TRANSPARENT);
-      s.brush = (HBRUSH)g_duel_options_dialog_pen2;
+      s.brush = g_duel_options_dialog_button_brush;
     }
     else if (s.ctl_id == 0x424)
     {

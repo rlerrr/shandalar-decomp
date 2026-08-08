@@ -52,6 +52,7 @@ char *PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = "D:\\NewMagic\\sources\\
 #else
 // GLOBAL: DRAWCARDLIB 0x10021ed0
 // GLOBAL: DECKDLL 0x10033914
+// GLOBAL: SHANDALAR 0x005a5d10
 char *PTR_s_D__Newmagic_sources_sidlib_Pcxw__10021ed0 = "D:\\Newmagic\\sources\\sidlib\\Pcxw.c";
 #endif
 

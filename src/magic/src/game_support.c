@@ -2078,6 +2078,7 @@ void initialize_card_instance(int player, int internal_card_id, int card)
 }
 
 // FUNCTION: MAGIC 0x004b5274
+// FUNCTION: SHANDALAR 0x0056ba7d
 int calculate_attack_rating(int player, int card)
 {
   struct

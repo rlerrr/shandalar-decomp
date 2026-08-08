@@ -48,9 +48,8 @@ typedef struct DungeonRuntimeState
   EncodedImage *button_sprite_aux0; // 0x42c
   EncodedImage *button_sprite_aux1; // 0x430
   EncodedImage *button_sprite_aux2; // 0x434
-  char padding_438[0xf8];           // 0x438
 } DungeonRuntimeState;
-typedef char DungeonRuntimeState_size_must_be_0x530[(sizeof(DungeonRuntimeState) == 0x530) ? 1 : -1];
+typedef char DungeonRuntimeState_size_must_be_0x438[(sizeof(DungeonRuntimeState) == 0x438) ? 1 : -1];
 
 #ifndef CONCAT31
 #define CONCAT31(a, b) ((int)(b))

@@ -74,6 +74,7 @@ int g_rpbits_output_fd;
 int g_rpbits_symbol_length;
 
 // GLOBAL: FACEMAKER 0x0041aa14
+// GLOBAL: SHANDALAR 0x0073b88c
 int g_rpbits_prev_code;
 
 // GLOBAL: FACEMAKER 0x0041aa18
@@ -96,6 +97,7 @@ int g_rpbits_next_code;
 unsigned char g_rpbits_scanline_buffer[0x718];
 
 // GLOBAL: FACEMAKER 0x0041b140
+// GLOBAL: SHANDALAR 0x0078cf0f
 unsigned char g_rpbits_symbol_buffer[0x1000];
 
 // GLOBAL: FACEMAKER 0x00422120

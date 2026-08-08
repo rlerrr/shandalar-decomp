@@ -487,6 +487,7 @@ GLOBAL_STATE_EXTERN int trigger_cause_controller;
 // GLOBAL: SHANDALAR 0x007bf4bc
 GLOBAL_STATE_EXTERN int DAT_007ab2bc;
 // GLOBAL: MAGIC 0x007ab2cc
+// GLOBAL: SHANDALAR 0x007bf4c8
 GLOBAL_STATE_EXTERN int(__cdecl *pending_killed_card_handler)(int, int);
 
 // GLOBAL: MAGIC 0x008cee74
@@ -516,8 +517,22 @@ GLOBAL_STATE_EXTERN int current_action_event_code;
 // GLOBAL: SHANDALAR 0x007bfe00
 GLOBAL_STATE_EXTERN unsigned int DAT_007abc00[16];
 
+enum
+{
+  DUEL_PHASE_STOP_COUNT = 0x26,
+  PHASE_STOP_ENABLED = 0x01,
+  PHASE_STOP_SUPPRESSED = 0x02,
+  PHASE_STOP_OPPONENT = 0x04
+};
+
+typedef struct duel_phase_stop_settings_struct
+{
+  unsigned char phase_flags[DUEL_PHASE_STOP_COUNT];
+} duel_phase_stop_settings_t;
+
+// GLOBAL: MAGIC 0x007abc90
 // GLOBAL: SHANDALAR 0x007bfe90
-GLOBAL_STATE_EXTERN unsigned char g_phase_stoppers[2][0x26];
+GLOBAL_STATE_EXTERN duel_phase_stop_settings_t g_duel_phase_stop_settings[2];
 
 // GLOBAL: MAGIC 0x008b3270
 // GLOBAL: SHANDALAR 0x008c7420

@@ -96,6 +96,7 @@ GLOBAL_OTHERS_EXTERN int previous_stop_phase_player;
 GLOBAL_OTHERS_EXTERN int g_target_selection_status_code;
 
 // GLOBAL: MAGIC 0x0072c440
+// GLOBAL: SHANDALAR 0x00765420
 GLOBAL_OTHERS_EXTERN int unk_0072c440[8];
 
 // GLOBAL: MAGIC 0x00743000
@@ -208,6 +209,7 @@ GLOBAL_OTHERS_EXTERN int recorded_mana_payments[10][7];
 int mana_payment_record_depth = 0;
 #else
 // GLOBAL: MAGIC 0x005607e0
+// GLOBAL: SHANDALAR 0x00580dac
 GLOBAL_OTHERS_EXTERN int mana_payment_record_depth;
 #endif
 
@@ -215,6 +217,7 @@ GLOBAL_OTHERS_EXTERN int mana_payment_record_depth;
 int affected_card_context_depth = 0;
 #else
 // GLOBAL: MAGIC 0x00561268
+// GLOBAL: SHANDALAR 0x00580678
 GLOBAL_OTHERS_EXTERN int affected_card_context_depth;
 #endif
 
@@ -222,6 +225,7 @@ GLOBAL_OTHERS_EXTERN int affected_card_context_depth;
 int DAT_00561390 = 0;
 #else
 // GLOBAL: MAGIC 0x00561390
+// GLOBAL: SHANDALAR 0x005807a0
 GLOBAL_OTHERS_EXTERN int DAT_00561390;
 #endif
 
@@ -229,6 +233,7 @@ GLOBAL_OTHERS_EXTERN int DAT_00561390;
 char empty_duel_prompt_text[1] = "";
 #else
 // GLOBAL: MAGIC 0x0056e494
+// GLOBAL: SHANDALAR 0x00583fb8
 GLOBAL_OTHERS_EXTERN char empty_duel_prompt_text[1];
 #endif
 
@@ -273,6 +278,7 @@ GLOBAL_OTHERS_EXTERN int g_deck_restore_buffer[500];
 GLOBAL_OTHERS_EXTERN int DAT_00896718;
 
 // GLOBAL: MAGIC 0x00925d3c
+// GLOBAL: SHANDALAR 0x0097db30
 GLOBAL_OTHERS_EXTERN int unk_00925d3c;
 
 // GLOBAL: MAGIC 0x00925d38
@@ -457,22 +463,6 @@ GLOBAL_OTHERS_EXTERN HWND DAT_0092680c;
 // GLOBAL: SHANDALAR 0x007bfe74
 GLOBAL_OTHERS_EXTERN int DAT_007abc74;
 
-enum
-{
-  DUEL_PHASE_STOP_COUNT = 0x26,
-  PHASE_STOP_ENABLED = 0x01,
-  PHASE_STOP_SUPPRESSED = 0x02,
-  PHASE_STOP_OPPONENT = 0x04
-};
-
-typedef struct duel_phase_stop_settings_struct
-{
-  unsigned char phase_flags[DUEL_PHASE_STOP_COUNT];
-} duel_phase_stop_settings_t;
-
-// GLOBAL: MAGIC 0x007abc90
-GLOBAL_OTHERS_EXTERN duel_phase_stop_settings_t g_duel_phase_stop_settings[2];
-
 // GLOBAL: MAGIC 0x0069c6f0
 // GLOBAL: SHANDALAR 0x005a6198
 GLOBAL_OTHERS_EXTERN int master_csv_offsets[0x4e2];
@@ -489,6 +479,7 @@ GLOBAL_OTHERS_EXTERN HWND DAT_0094ca30;
 int DAT_0055e17c = 0;
 #else
 // GLOBAL: MAGIC 0x0055e17c
+// GLOBAL: SHANDALAR 0x0057f060
 GLOBAL_OTHERS_EXTERN int DAT_0055e17c;
 #endif
 

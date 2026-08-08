@@ -314,6 +314,7 @@ char g_cardclass_cuecard_counter_necropolis_of_azar_text[0x68];
 char g_cardclass_menu_alternate_card_text[0x68];
 
 // GLOBAL: MAGIC 0x005750b0
+// GLOBAL: SHANDALAR 0x005a10b8
 char *PTR_s_Type_005750b0[20] =
     {
         "Type ",

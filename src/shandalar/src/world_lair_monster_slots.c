@@ -94,12 +94,7 @@ void LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int
     int sprite_count_b;
   } s;
 
-#define sprite_header s.sprite_header
-#define sprite_count_a s.sprite_count_a
-#define ok s.ok
-#define sprite_count_b s.sprite_count_b
-
-  ok = 1;
+  s.ok = 1;
   if (g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0] != (EncodedImage *)0)
   {
     return;
@@ -108,215 +103,215 @@ void LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int
   switch (creature_type)
   {
   case 1:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_FWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_FWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
     break;
   case 2:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_KHT.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_KHT.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_KHT.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_KHT.spr"));
     break;
   case 3:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_MWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_MWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
     break;
   case 4:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_LRD.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_LRD.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_LRD.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_LRD.spr"));
     break;
   case 5:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_WG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SBK_WG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_WG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SBK_WG.spr"));
     break;
   case 6:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_AMG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_AMG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_AMG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_AMG.spr"));
     break;
   case 8:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_MWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_MWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_MWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_MWZ.spr"));
     break;
   case 9:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_FWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_FWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
     break;
   case 0xa:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_KHT.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SKHT.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_KHT.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SKHT.spr"));
     break;
   case 0xb:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_LRD.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_LRD.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_LRD.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_LRD.spr"));
     break;
   case 0xc:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_WG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_WG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_WG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_WG.spr"));
     break;
   case 0xd:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_AMG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_AMG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("W_AMG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SW_AMG.spr"));
     break;
   case 0xf:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_FWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_FWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
     break;
   case 0x10:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_LRD.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SU_LRD.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_LRD.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SU_LRD.spr"));
     break;
   case 0x11:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_MWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_MWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
     break;
   case 0x12:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_WRM.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SWRM.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_WRM.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SWRM.spr"));
     break;
   case 0x13:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("B_SFR.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_SFT.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("B_SFR.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SB_SFT.spr"));
     break;
   case 0x14:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_AMG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SU_AMG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_AMG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SU_AMG.spr"));
     break;
   case 0x16:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_MWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_MWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
     break;
   case 0x17:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_KHT.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SKHT.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_KHT.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SKHT.spr"));
     break;
   case 0x18:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_FWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_FWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
     break;
   case 0x19:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_WRM.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SWRM.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_WRM.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SWRM.spr"));
     break;
   case 0x1a:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_LRD.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SG_LRD.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_LRD.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SG_LRD.spr"));
     break;
   case 0x1b:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_AMG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SG_AMG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_AMG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SG_AMG.spr"));
     break;
   case 0x1d:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_FWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_FWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_FWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_FWZ.spr"));
     break;
   case 0x1e:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_MWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_MWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SMWZ.spr"));
     break;
   case 0x1f:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("TROLL.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("STRL.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("TROLL.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("STRL.spr"));
     break;
   case 0x20:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_LRD.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_LRD.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_LRD.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_LRD.spr"));
     break;
   case 0x21:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_WRM.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_WRM.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_WRM.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_WRM.spr"));
     break;
   case 0x22:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_AMG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_AMG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_AMG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_AMG.spr"));
     break;
   case 0x23:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_AMG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_AMG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_AMG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SR_AMG.spr"));
     break;
   case 0x24:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_TSK.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_TSK.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_TSK.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_TSK.spr"));
     break;
   case 0x25:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_TRL.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_TRL.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_TRL.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_TRL.spr"));
     break;
   case 0x26:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_APE.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_APE.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_APE.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_APE.spr"));
     break;
   case 0x27:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_CEN2.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_CEN.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_CEN2.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_CEN.spr"));
     break;
   case 0x28:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_WG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_WG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_WG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_WG.spr"));
     break;
   case 0x29:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_FNG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_FNG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_FNG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_FNG.spr"));
     break;
   case 0x2a:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_CEN.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_CEN2.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_CEN.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_CEN2.spr"));
     break;
   case 0x2b:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_LRD.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_LRD.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_LRD.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SM_LRD.spr"));
     break;
   case 0x2c:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_KHT.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SKHT.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_KHT.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SKHT.spr"));
     break;
   case 0x2d:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_FWZ.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("M_FWZ.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SFWZ.spr"));
     break;
   case 0x2e:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_DJN.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BK_DJN.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
     break;
   case 0x2f:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_DJN.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("G_DJN.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
     break;
   case 0x30:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_DJN.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("R_DJN.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
     break;
   case 0x31:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_DJN.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("BU_DJN.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("SDJN.spr"));
     break;
   case 0x32:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_BRU.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_BRU.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
     break;
   case 0x33:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_UWB.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_UWB.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
     break;
   case 0x34:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_GWR.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_GWR.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
     break;
   case 0x35:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_RBG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_RBG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
     break;
   case 0x36:
-    sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_WUG.spr"));
-    sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
+    s.sprite_count_a = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites, BuildResolutionSpritePath("DG_WUG.spr"));
+    s.sprite_count_b = ReadSpriteEntryPointers(g_opening_menu_sprite_work_buffer[work_entry_index_b].sprites, BuildResolutionSpritePath("S_DG.spr"));
     break;
   default:
-    ok = 0;
+    s.ok = 0;
   }
 
-  if (ok)
+  if (s.ok)
   {
-    sprite_header = g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0];
-    g_world_lair_monster_sprite_widths[work_entry_index_a] = sprite_header->width;
-    g_world_lair_monster_sprite_heights[work_entry_index_a] = sprite_header->height;
-    g_world_lair_monster_sprite_top_clips[work_entry_index_a] = sprite_header->top_clip;
+    s.sprite_header = g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0];
+    g_world_lair_monster_sprite_widths[work_entry_index_a] = s.sprite_header->width;
+    g_world_lair_monster_sprite_heights[work_entry_index_a] = s.sprite_header->height;
+    g_world_lair_monster_sprite_top_clips[work_entry_index_a] = s.sprite_header->top_clip;
     if (g_world_lair_monster_sprite_heights[work_entry_index_a] < g_world_lair_monster_sprite_top_clips[work_entry_index_a])
     {
       g_world_lair_monster_sprite_top_clips[work_entry_index_a] = (g_world_lair_monster_sprite_heights[work_entry_index_a] * 2) / 3;
@@ -330,10 +325,6 @@ void LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int
     g_opening_menu_sprite_work_buffer[work_entry_index_a].sprites[0] = (EncodedImage *)0;
   }
 
-#undef ok
-#undef sprite_count_b
-#undef sprite_count_a
-#undef sprite_header
 }
 
 // FUNCTION: SHANDALAR 0x005614c3

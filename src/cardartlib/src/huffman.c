@@ -17,6 +17,7 @@ int Huffman13_BuildDecodeTable(int node_count);
 
 // GLOBAL: CARDARTLIB 0x10021a88
 // GLOBAL: DRAWCARDLIB 0x10029fb0
+// GLOBAL: SHANDALAR 0x0066a3a0
 uint *g_bitstreamCursor;
 
 // GLOBAL: CARDARTLIB 0x10021a8c

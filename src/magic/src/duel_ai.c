@@ -158,6 +158,7 @@ typedef struct ai_combat_eval_entry_t
 #define AI_EVAL(player_, card_) (*(ai_combat_eval_table[(player_)] + (card_)))
 
 // GLOBAL: MAGIC 0x007081ac
+// GLOBAL: SHANDALAR 0x005a7ba4
 int ai_blocker_count;
 
 // GLOBAL: MAGIC 0x007086e0
@@ -252,9 +253,11 @@ int DAT_00708728[16];
 int DAT_00707c98[16];
 
 // GLOBAL: MAGIC 0x00707bf8
+// GLOBAL: SHANDALAR 0x005a75f0
 unsigned int DAT_00707bf8;
 
 // GLOBAL: MAGIC 0x00707dd8
+// GLOBAL: SHANDALAR 0x005a77d0
 int DAT_00707dd8;
 
 // GLOBAL: MAGIC 0x0070a830
@@ -351,6 +354,7 @@ static int combat_sim_saved_active_cards_count[2];
 // GLOBAL: SHANDALAR 0x005b3e90
 static int combat_sim_saved_stack_size;
 // GLOBAL: MAGIC 0x006a0d50
+// GLOBAL: SHANDALAR 0x005ad038
 static int(__cdecl *combat_sim_saved_pending_killed_card_handler)(int, int);
 // GLOBAL: MAGIC 0x006a0d08
 // GLOBAL: SHANDALAR 0x005acff0

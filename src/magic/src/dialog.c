@@ -39,12 +39,16 @@ extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
 
 // GLOBAL: MAGIC 0x006f6df8
+// GLOBAL: SHANDALAR 0x005b7658
 RECT g_big_card_choice_full_card_rect;
 // GLOBAL: MAGIC 0x006f6e08
+// GLOBAL: SHANDALAR 0x005b7668
 dialog_context_t *g_big_card_choice_dialog_context;
 // GLOBAL: MAGIC 0x006f6e10
+// GLOBAL: SHANDALAR 0x005b7670
 RECT g_big_card_choice_small_card_rect;
 // GLOBAL: MAGIC 0x006f6e20
+// GLOBAL: SHANDALAR 0x005b7680
 int g_big_card_choice_state_006f6e20;
 // GLOBAL: MAGIC 0x006f6e28
 // GLOBAL: SHANDALAR 0x005b7688
@@ -140,8 +144,6 @@ int g_duel_cached_state_007abce4;
 // GLOBAL: MAGIC 0x0093d84c
 // GLOBAL: SHANDALAR 0x0095196c
 int DAT_0093d84c;
-// GLOBAL: MAGIC 0x0091c980
-int DAT_0091c980;
 // GLOBAL: MAGIC 0x00708da8
 char g_card_rules_text_buffer_00708da8[0x190];
 // GLOBAL: MAGIC 0x00708f48
@@ -1185,7 +1187,7 @@ void draw_displayed_card_overlaid_full_card(HDC dc, RECT *rect, int player, int 
     }
   }
 
-  DrawFullCard(dc, rect, &s.card_data, s.card_version, 2, DAT_0091c980, gs_illus_00789130);
+  DrawFullCard(dc, rect, &s.card_data, s.card_version, 2, g_duel_interface_options.expand_text_box_on_big_card, gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559e9c
@@ -1432,7 +1434,7 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   s.card_data.power = 0;
   s.card_data.toughness = 0;
   s.card_data.sleight_color = 0;
-  DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, DAT_0091c980, gs_illus_00789130);
+  DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, g_duel_interface_options.expand_text_box_on_big_card, gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00506fa0

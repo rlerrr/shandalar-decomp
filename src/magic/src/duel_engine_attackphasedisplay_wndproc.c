@@ -48,6 +48,7 @@ typedef struct msvc_bitmap
 int DAT_00571d20 = -1;
 
 // GLOBAL: MAGIC 0x0069c618
+// GLOBAL: SHANDALAR 0x005a8fe0
 int DAT_0069c618;
 
 // GLOBAL: MAGIC 0x0069c69c
