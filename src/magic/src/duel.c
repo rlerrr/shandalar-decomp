@@ -1043,14 +1043,14 @@ int upkeep_phase(unsigned int player)
   {
     if (g_duel_ai_mode_state != 1)
     {
-      if ((stop_phase == -1) ||
-          ((stop_phase == PHASE_UPKEEP) && (player == stop_phase_player)))
+      if ((stop_phase != -1) &&
+          ((stop_phase != PHASE_UPKEEP) || (player != stop_phase_player)))
       {
-        phase_stop_suppressed = 0;
+        phase_stop_suppressed = 1;
       }
       else
       {
-        phase_stop_suppressed = 1;
+        phase_stop_suppressed = 0;
       }
     }
   }
@@ -1812,7 +1812,7 @@ char *GetCreatureName(int creature_type)
   return g_shandalar_monster_definitions[creature_type].name;
 #else
   (void)creature_type;
-  return DAT_007a7c60;
+  return "";
 #endif
 }
 
@@ -2117,7 +2117,7 @@ int play_duel(int player, int creature_type)
     }
     player_starting_life = life[0];
     g_next_duel_life_delta = 0;
-    life[1] = g_shandalar_monster_definitions[creature_type].base_strength;
+    life[1] = g_shandalar_monster_definitions[creature_type].tier;
     if (creature_type <= 0x24 && creature_type % 7 != 0)
     {
       life[1] += g_shandalar_difficulty * 2;

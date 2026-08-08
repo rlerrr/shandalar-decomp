@@ -143,7 +143,7 @@ void DestroyCachedCardArt(void);
 unsigned int FindCardIndexByCsvid(int csvid);
 
 /* Card rendering (drawcardlib) */
-extern unsigned char global_raw_cards_storage[];
+extern card_ptr_t global_raw_cards_storage[2000];
 extern card_data_t global_cards_data[];
 extern EncodedImage *g_endtop_banner_sprite;
 
@@ -412,12 +412,12 @@ void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner
   if (full_card != 0)
   {
     DrawFullCard(g_graphics_pages[g_page0_window_bounds->page_number]->hTempDC, &s.clip,
-                 (card_ptr_t *)(global_raw_cards_storage + global_cards_data[card_index].id * 0x98), 0, 1, 1, gs_illus_00789130);
+                 &global_raw_cards_storage[global_cards_data[card_index].id], 0, 1, 1, gs_illus_00789130);
   }
   else
   {
     DrawSmallCard(g_graphics_pages[g_page0_window_bounds->page_number]->hTempDC, &s.clip,
-                  (card_ptr_t *)(global_raw_cards_storage + global_cards_data[card_index].id * 0x98), 0, 1);
+                  &global_raw_cards_storage[global_cards_data[card_index].id], 0, 1);
   }
 
   RestoreDC(g_graphics_pages[g_page0_window_bounds->page_number]->hTempDC, s.saved_dc);
@@ -467,12 +467,12 @@ void DrawAdventureCardSized(int card_index, int x, int y, int width, int height,
   if (full_card != 0)
   {
     DrawFullCard(g_graphics_pages[g_page0_window_bounds->page_number]->hTempDC, &s.clip,
-                 (card_ptr_t *)(global_raw_cards_storage + global_cards_data[card_index].id * 0x98), 0, 1, 1, gs_illus_00789130);
+                 &global_raw_cards_storage[global_cards_data[card_index].id], 0, 1, 1, gs_illus_00789130);
   }
   else
   {
     DrawSmallCard(g_graphics_pages[g_page0_window_bounds->page_number]->hTempDC, &s.clip,
-                  (card_ptr_t *)(global_raw_cards_storage + global_cards_data[card_index].id * 0x98), 0, 1);
+                  &global_raw_cards_storage[global_cards_data[card_index].id], 0, 1);
   }
 
   RestoreDC(g_graphics_pages[g_page0_window_bounds->page_number]->hTempDC, s.saved_dc);

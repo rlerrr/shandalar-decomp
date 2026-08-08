@@ -12,7 +12,6 @@
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
 
-#define ATTACK_PHASE_DISPLAY_SELECTED_PHASE_OFFSET 0
 #define ATTACK_PHASE_DISPLAY_COMMAND_HELP 0x64
 #define ATTACK_PHASE_DISPLAY_COMMAND_STOP_BASE 0x96
 #define ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE 0xc8
@@ -87,6 +86,7 @@ extern int g_attackclass_data_window_long_offset;
 extern int g_attackclass_count_window_long_offset;
 
 extern char g_phase_display_menu_phase_help_text[0x38];
+extern int g_phase_display_selected_card_window_long_offset;
 extern char g_phase_display_menu_toggle_text[0x38];
 extern char g_phase_display_menu_help_text[0x1c];
 extern HMENU g_phase_display_menu;
@@ -143,38 +143,37 @@ static void hit_test_attack_phase_display(POINT *point, RECT *client_rect, int *
 {
   struct
   {
-    POINT points[7];
+    POINT point_copy;
     RECT client_copy;
     RECT phase_rect;
     int found_phase;
-    int index;
   } s;
 
   CopyRect(&s.client_copy, client_rect);
-  for (s.index = 0; s.index < 7; s.index++)
-    s.points[s.index] = *point;
+  s.point_copy.x = point->x;
+  s.point_copy.y = point->y;
   s.found_phase = -1;
 
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x15, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[0]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x15;
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x16, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[1]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x16;
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x17, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[2]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x17;
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x18, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[3]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x18;
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x19, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[4]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x19;
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x1b, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[5]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x1b;
   get_attack_phase_display_phase_rect(&s.phase_rect, 0x1e, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, s.points[6]) != 0)
+  if (PtInRect(&s.phase_rect, s.point_copy) != 0)
     s.found_phase = 0x1e;
 
   *phase = s.found_phase;
@@ -184,7 +183,11 @@ static void hit_test_attack_phase_display(POINT *point, RECT *client_rect, int *
 // FUNCTION: SHANDALAR 0x0055d235
 static void get_attack_phase_display_phase_rect(RECT *rect, int phase, int width, int height)
 {
-  int top;
+  struct
+  {
+    int phase_height;
+    int top;
+  } s;
 
   if (phase == -1)
   {
@@ -192,29 +195,31 @@ static void get_attack_phase_display_phase_rect(RECT *rect, int phase, int width
     return;
   }
 
-  if (phase == 0x15)
-    top = (height * 2) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x16)
-    top = (height * 0x2b) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x17)
-    top = (height * 0x54) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x18)
-    top = (height * 0x7d) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x19)
-    top = (height * 0xa6) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x1a)
-    top = (height * 0xcf) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x1b)
-    top = (height * 0xcf) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else if (phase == 0x1e)
-    top = (height * 0x121) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
-  else
-    top = -1;
+  s.phase_height = (height * 0x28) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
 
-  if (top == -1)
+  if (phase == 0x15)
+    s.top = (height * 2) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x16)
+    s.top = (height * 0x2b) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x17)
+    s.top = (height * 0x54) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x18)
+    s.top = (height * 0x7d) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x19)
+    s.top = (height * 0xa6) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x1a)
+    s.top = (height * 0xcf) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x1b)
+    s.top = (height * 0xcf) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else if (phase == 0x1e)
+    s.top = (height * 0x121) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH;
+  else
+    s.top = -1;
+
+  if (s.top == -1)
     SetRect(rect, 0, 0, 0, 0);
   else
-    SetRect(rect, 0, top, width, (height * 0x28) / ATTACK_PHASE_DISPLAY_BITMAP_WIDTH + top);
+    SetRect(rect, 0, s.top, width, s.phase_height + s.top);
 }
 
 // FUNCTION: MAGIC 0x00538bd2
@@ -223,15 +228,15 @@ static void draw_attack_phase_display_status_markers(HDC dc, RECT *client_rect)
 {
   struct
   {
-    int selected_player;
-    int selected_phase;
-    int current_player;
     int phase;
     int phase_flags[38];
-    HBRUSH brush;
     HGDIOBJ old_brush;
     RECT phase_rect;
+    int selected_phase;
     RECT marker_rect;
+    HBRUSH brush;
+    int current_player;
+    int selected_player;
   } s;
 
   get_phase_display_action_selection(&s.selected_player, &s.selected_phase);
@@ -241,7 +246,7 @@ static void draw_attack_phase_display_status_markers(HDC dc, RECT *client_rect)
     s.old_brush = SelectObject(dc, s.brush);
     get_current_duel_selection(&s.current_player, (int *)0);
     copy_phase_stop_flags(s.phase_flags, s.current_player);
-    for (s.phase = 0x15; s.phase < 0x1f; s.phase++)
+    for (s.phase = 0x15; s.phase <= 0x1e; s.phase++)
     {
       if (s.phase_flags[s.phase] != 0)
       {
@@ -266,7 +271,7 @@ static void draw_attack_phase_display_status_markers(HDC dc, RECT *client_rect)
   {
     s.brush = CreateSolidBrush(0xff00);
     s.old_brush = SelectObject(dc, s.brush);
-    for (s.phase = 0x15; s.phase < 0x1f; s.phase++)
+    for (s.phase = 0x15; s.phase <= 0x1e; s.phase++)
     {
       if (s.selected_phase == s.phase)
       {
@@ -291,29 +296,38 @@ static void draw_attack_phase_display_status_markers(HDC dc, RECT *client_rect)
 // FUNCTION: MAGIC 0x004d8b29
 static int count_attack_phase_hidden_descendants(HWND hwnd, HWND parent_card_hwnd)
 {
-  attack_window_group_t *groups;
-  int group_count;
-  int result;
-  int group_index;
-  int card_index;
-
-  groups = (attack_window_group_t *)GetWindowLongA(hwnd, 0);
-  group_count = GetWindowLongA(hwnd, 4);
-  result = 0;
-  for (group_index = 0; group_index < group_count; group_index++)
+  struct
   {
-    for (card_index = 0; card_index < groups[group_index].attacker_count; card_index++)
+    attack_window_group_t *groups;
+    int group_count;
+    int result;
+    int card_index;
+    int group_index;
+  } s;
+
+  s.groups = (attack_window_group_t *)GetWindowLongA(hwnd, g_attackclass_data_window_long_offset);
+  s.group_count = GetWindowLongA(hwnd, g_attackclass_count_window_long_offset);
+  s.result = 0;
+  for (s.group_index = 0; s.group_count > s.group_index; s.group_index++)
+  {
+    for (s.card_index = 0; s.card_index < (s.groups + s.group_index)->attacker_count; s.card_index++)
     {
-      if ((HWND)get_card_window_hidden_flag(groups[group_index].attackers[card_index]) == parent_card_hwnd)
-        result += count_attack_phase_hidden_descendants(hwnd, groups[group_index].attackers[card_index]) + 1;
+      if ((HWND)get_card_window_hidden_flag((s.groups + s.group_index)->attackers[s.card_index]) == parent_card_hwnd)
+      {
+        s.result++;
+        s.result += count_attack_phase_hidden_descendants(hwnd, (s.groups + s.group_index)->attackers[s.card_index]);
+      }
     }
-    for (card_index = 0; card_index < groups[group_index].blocker_count; card_index++)
+    for (s.card_index = 0; s.card_index < (s.groups + s.group_index)->blocker_count; s.card_index++)
     {
-      if ((HWND)get_card_window_hidden_flag(groups[group_index].blockers[card_index]) == parent_card_hwnd)
-        result += count_attack_phase_hidden_descendants(hwnd, groups[group_index].blockers[card_index]) + 1;
+      if ((HWND)get_card_window_hidden_flag((s.groups + s.group_index)->blockers[s.card_index]) == parent_card_hwnd)
+      {
+        s.result++;
+        s.result += count_attack_phase_hidden_descendants(hwnd, (s.groups + s.group_index)->blockers[s.card_index]);
+      }
     }
   }
-  return result;
+  return s.result;
 }
 
 // FUNCTION: MAGIC 0x004d8468
@@ -366,8 +380,9 @@ int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1,
     s.found = 0;
     for (s.group_index = 0; s.group_index < s.group_count; s.group_index++)
     {
-      s.card_index = 0;
-      while (s.card_index < s.groups[s.group_index].attacker_count && s.found == 0)
+      for (s.card_index = 0;
+           s.card_index < s.groups[s.group_index].attacker_count && s.found == 0;
+           s.card_index++)
       {
         if (card_window_matches_player_and_card(s.groups[s.group_index].attackers[s.card_index], player_and_card) != 0)
         {
@@ -376,10 +391,10 @@ int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1,
           s.found_hwnd = s.groups[s.group_index].attackers[s.card_index];
           s.found_is_attacker = 1;
         }
-        s.card_index++;
       }
-      s.card_index = 0;
-      while (s.card_index < s.groups[s.group_index].blocker_count && s.found == 0)
+      for (s.card_index = 0;
+           s.card_index < s.groups[s.group_index].blocker_count && s.found == 0;
+           s.card_index++)
       {
         if (card_window_matches_player_and_card(s.groups[s.group_index].blockers[s.card_index], player_and_card) != 0)
         {
@@ -388,7 +403,6 @@ int find_attack_phase_card_window(HWND hwnd, int *player_and_card, int *unused1,
           s.found_hwnd = s.groups[s.group_index].blockers[s.card_index];
           s.found_is_attacker = 0;
         }
-        s.card_index++;
       }
     }
   }
@@ -583,7 +597,7 @@ void layout_attack_phase_window(HWND hwnd)
   for (s.layout_group_index = 0; s.layout_group_index < s.group_count; s.layout_group_index++)
   {
     s.blocker_x = s.card_x;
-    s.attacker_x = s.card_x;
+    s.attacker_x = s.blocker_x;
     s.visible_card_count = 0;
     for (s.layout_card_index = 0;
          s.layout_card_index < ATTACK_GROUPS[s.layout_group_index].attacker_count;
@@ -664,7 +678,7 @@ void layout_attack_phase_window(HWND hwnd)
   {
     SendMessageA(s.scrollbar_hwnd, 0x468, 0, 0);
     s.scroll_pos = 0;
-    SendMessageA(hwnd, WM_HSCROLL, SB_THUMBPOSITION, (LPARAM)s.scrollbar_hwnd);
+    SendMessageA(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.scroll_pos), (LPARAM)s.scrollbar_hwnd);
   }
 
   if (IsWindowVisible(hwnd) == 0 && IsWindowVisible(DAT_0069c620) == 0)
@@ -721,9 +735,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
 {
   struct
   {
+    int paint_selected_phase_index;
     int phase_index;
-    int selected_phase;
     int menu_count;
+    int selected_phase;
+    int phase_flags[38];
     POINT menu_point;
     unsigned int phase_help_command;
     int menu_phase_index;
@@ -769,9 +785,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     int cue_valid;
     RECT cue_client_rect;
     int cached_phase;
-    int phase_flags[38];
   } s;
-  unsigned int command;
 
   switch (msg)
   {
@@ -797,13 +811,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
       strcpy(s.cue_text, gs_phasebar_main_phase_postcombat_00789870);
     else
       s.cue_valid = 0;
-    if (s.cue_valid == 0)
-      return 0;
-    strcpy((char *)wparam, s.cue_text);
+    if (s.cue_valid != 0)
+      strcpy((char *)wparam, s.cue_text);
     return s.cue_valid;
 
   case 0x432:
-    s.cached_phase = GetWindowLongA(hwnd, ATTACK_PHASE_DISPLAY_SELECTED_PHASE_OFFSET);
+    s.cached_phase = GetWindowLongA(hwnd, g_phase_display_selected_card_window_long_offset);
     get_current_duel_selection((int *)0, &s.refresh_phase);
     if (s.cached_phase != s.refresh_phase)
       InvalidateRect(hwnd, (RECT *)0, 0);
@@ -814,113 +827,112 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     return 0;
 
   case WM_COMMAND:
-    if (((unsigned int)wparam & 0xffff) == ATTACK_PHASE_DISPLAY_COMMAND_HELP)
+    switch ((int)((unsigned int)wparam & 0xffff))
     {
+    case ATTACK_PHASE_DISPLAY_COMMAND_HELP:
       s.general_help_context = 0x7e5;
       strcpy(s.general_help_path, global_base_directory);
       strcat(s.general_help_path, "\\duel.hlp");
       WinHelpA(g_duel_window_hwnd, s.general_help_path, HELP_CONTEXT, s.general_help_context);
-    }
-    else
-    {
-      command = (unsigned int)wparam & 0xffff;
-      if (command < ATTACK_PHASE_DISPLAY_COMMAND_HELP_BASE)
-      {
-        if (command < ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE)
-          s.command_base = ATTACK_PHASE_DISPLAY_COMMAND_STOP_BASE;
-        else
-          s.command_base = ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE;
-      }
-      else
-      {
+      break;
+
+    default:
+      s.command_phase = (int)((unsigned int)wparam & 0xffff);
+      if (s.command_phase >= ATTACK_PHASE_DISPLAY_COMMAND_HELP_BASE)
         s.command_base = ATTACK_PHASE_DISPLAY_COMMAND_HELP_BASE;
-      }
-      s.command_phase = command - s.command_base;
+      else if (s.command_phase >= ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE)
+        s.command_base = ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE;
+      else
+        s.command_base = ATTACK_PHASE_DISPLAY_COMMAND_STOP_BASE;
+      s.command_phase -= s.command_base;
       s.command_index = s.command_phase;
 
-      if (s.command_base == ATTACK_PHASE_DISPLAY_COMMAND_STOP_BASE)
+      switch (s.command_base)
       {
-        if ((g_duel_network_flags & 2) == 0)
-        {
-          if (s.command_phase == 0)
-            s.stop_phase_code = 0x15;
-          else if (s.command_phase == 1)
-            s.stop_phase_code = 0x16;
-          else if (s.command_phase == 2)
-            s.stop_phase_code = 0x17;
-          else if (s.command_phase == 3)
-            s.stop_phase_code = 0x18;
-          else if (s.command_phase == 4)
-            s.stop_phase_code = 0x19;
-          else if (s.command_phase == 5)
-            s.stop_phase_code = 0x1b;
-          else if (s.command_phase == 6)
-            s.stop_phase_code = 0x1e;
-          get_current_duel_selection(&s.stop_player, (int *)0);
-          stop_phase_player = s.stop_player;
-          stop_phase = s.stop_phase_code;
-          unk_00715fb0 = 0;
-          g_attack_phase_display_menu_packet[0] = -2;
-          g_attack_phase_display_menu_packet[1] = -1;
-          g_attack_phase_display_menu_packet[2] = -1;
-          PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_attack_phase_display_menu_packet);
-        }
-      }
-      else if (s.command_base == ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE)
-      {
-        if (s.command_phase == 0)
+      case ATTACK_PHASE_DISPLAY_COMMAND_STOP_BASE:
+        if ((g_duel_network_flags & 2) != 0)
+          break;
+
+        if (s.command_index == 0)
+          s.stop_phase_code = 0x15;
+        else if (s.command_index == 1)
+          s.stop_phase_code = 0x16;
+        else if (s.command_index == 2)
+          s.stop_phase_code = 0x17;
+        else if (s.command_index == 3)
+          s.stop_phase_code = 0x18;
+        else if (s.command_index == 4)
+          s.stop_phase_code = 0x19;
+        else if (s.command_index == 5)
+          s.stop_phase_code = 0x1b;
+        else if (s.command_index == 6)
+          s.stop_phase_code = 0x1e;
+        get_current_duel_selection(&s.stop_player, (int *)0);
+        stop_phase_player = s.stop_player;
+        stop_phase = s.stop_phase_code;
+        unk_00715fb0 = 0;
+        g_attack_phase_display_menu_packet[0] = -2;
+        g_attack_phase_display_menu_packet[1] = -1;
+        g_attack_phase_display_menu_packet[2] = -1;
+        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_attack_phase_display_menu_packet);
+        break;
+
+      case ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE:
+        if (s.command_index == 0)
           s.toggle_phase = 0x15;
-        else if (s.command_phase == 1)
+        else if (s.command_index == 1)
           s.toggle_phase = 0x16;
-        else if (s.command_phase == 2)
+        else if (s.command_index == 2)
           s.toggle_phase = 0x17;
-        else if (s.command_phase == 3)
+        else if (s.command_index == 3)
           s.toggle_phase = 0x18;
-        else if (s.command_phase == 4)
+        else if (s.command_index == 4)
           s.toggle_phase = 0x19;
-        else if (s.command_phase == 5)
+        else if (s.command_index == 5)
           s.toggle_phase = 0x1b;
-        else if (s.command_phase == 6)
+        else if (s.command_index == 6)
           s.toggle_phase = 0x1e;
         get_current_duel_selection(&s.toggle_player, (int *)0);
-        if ((g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase] & PHASE_STOP_ENABLED) == 0)
+        if (((int)(char)g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase] & PHASE_STOP_ENABLED) != 0)
           g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase] =
-              (unsigned char)(g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase] | PHASE_STOP_ENABLED);
+              (unsigned char)(((int)(char)g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase]) & ~PHASE_STOP_ENABLED);
         else
           g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase] =
-              (unsigned char)(g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase] & ~PHASE_STOP_ENABLED);
+              (unsigned char)(((int)(char)g_duel_phase_stop_settings[s.toggle_player].phase_flags[s.toggle_phase]) | PHASE_STOP_ENABLED);
         refresh_duel_display_cache();
         GetClientRect(hwnd, &s.toggle_client_rect);
         get_attack_phase_display_phase_rect(&s.toggle_phase_rect, s.toggle_phase,
                                             s.toggle_client_rect.right, s.toggle_client_rect.bottom);
         InvalidateRect(hwnd, &s.toggle_phase_rect, 0);
-      }
-      else if (s.command_base == ATTACK_PHASE_DISPLAY_COMMAND_HELP_BASE)
-      {
-        if (s.command_phase == 0)
+        break;
+
+      case ATTACK_PHASE_DISPLAY_COMMAND_HELP_BASE:
+        if (s.command_index == 0)
           s.help_context = 0x7dd;
-        else if (s.command_phase == 1)
+        else if (s.command_index == 1)
           s.help_context = 0x7dd;
-        else if (s.command_phase == 2)
+        else if (s.command_index == 2)
           s.help_context = 0x7dd;
-        else if (s.command_phase == 3)
+        else if (s.command_index == 3)
           s.help_context = 0x7dd;
-        else if (s.command_phase == 4)
+        else if (s.command_index == 4)
           s.help_context = 0x7dd;
-        else if (s.command_phase == 5)
+        else if (s.command_index == 5)
           s.help_context = 0x7dd;
-        else if (s.command_phase == 6)
+        else if (s.command_index == 6)
           s.help_context = 0x7dd;
         strcpy(s.help_path, global_base_directory);
         strcat(s.help_path, "\\duel.hlp");
         WinHelpA(g_duel_window_hwnd, s.help_path, HELP_CONTEXT, s.help_context);
+        break;
       }
+      break;
     }
     return 0;
 
   case WM_CREATE:
     s.cached_phase = 0;
-    SetWindowLongA(hwnd, ATTACK_PHASE_DISPLAY_SELECTED_PHASE_OFFSET, s.cached_phase);
+    SetWindowLongA(hwnd, g_phase_display_selected_card_window_long_offset, s.cached_phase);
     return 0;
 
   case WM_ERASEBKGND:
@@ -947,7 +959,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     return 0;
 
   case WM_PAINT:
-    s.cached_phase = GetWindowLongA(hwnd, ATTACK_PHASE_DISPLAY_SELECTED_PHASE_OFFSET);
+    s.cached_phase = GetWindowLongA(hwnd, g_phase_display_selected_card_window_long_offset);
     get_current_duel_selection(&s.paint_player, &s.paint_selected_phase);
     if (ATTACK_PHASE_DISPLAY_PIC == (HBITMAP)0)
     {
@@ -963,11 +975,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     s.paint_saved_dc = SaveDC(g_shared_offscreen_dc);
     GetClientRect(hwnd, &s.paint_client_rect);
     get_current_duel_selection(&s.paint_player, (int *)0);
-    if (ATTACK_PHASE_DISPLAY_PIC == (HBITMAP)0)
-    {
-      FillRect(s.paint_dc, &s.paint_client_rect, GetStockObject(GRAY_BRUSH));
-    }
-    else
+    if (ATTACK_PHASE_DISPLAY_PIC != (HBITMAP)0)
     {
       GetObjectA(ATTACK_PHASE_DISPLAY_PIC, sizeof(s.paint_bitmap), &s.paint_bitmap);
       if (s.paint_player == 1)
@@ -976,8 +984,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
         s.phase_index = s.paint_bitmap.bmWidth / 2;
       DrawBitmapSubrectToRect(s.paint_dc, &s.paint_client_rect, ATTACK_PHASE_DISPLAY_PIC,
                               s.phase_index, 0,
-                              (s.paint_bitmap.bmWidth + (s.paint_bitmap.bmWidth >> 31 & 3)) >> 2,
+                              s.paint_bitmap.bmWidth / 4,
                               s.paint_bitmap.bmHeight);
+    }
+    else
+    {
+      FillRect(s.paint_dc, &s.paint_client_rect, GetStockObject(BLACK_BRUSH));
     }
     if (s.paint_selected_phase != -1)
     {
@@ -986,22 +998,21 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
                                           s.paint_client_rect.right, s.paint_client_rect.bottom);
       s.paint_clip_region = CreateRectRgnIndirect(&s.paint_phase_rect);
       SelectClipRgn(s.paint_dc, s.paint_clip_region);
-      if (ATTACK_PHASE_DISPLAY_PIC == (HBITMAP)0)
-      {
-        FillRect(s.paint_dc, &s.paint_client_rect, GetStockObject(BLACK_BRUSH));
-      }
-      else
+      if (ATTACK_PHASE_DISPLAY_PIC != (HBITMAP)0)
       {
         GetObjectA(ATTACK_PHASE_DISPLAY_PIC, sizeof(s.paint_bitmap), &s.paint_bitmap);
         if (s.paint_player == 1)
-          s.phase_index = s.paint_bitmap.bmWidth + (s.paint_bitmap.bmWidth >> 31 & 3);
+          s.paint_selected_phase_index = s.paint_bitmap.bmWidth / 4;
         else
-          s.phase_index = s.paint_bitmap.bmWidth * 3 + (s.paint_bitmap.bmWidth * 3 >> 31 & 3);
-        s.phase_index >>= 2;
+          s.paint_selected_phase_index = (s.paint_bitmap.bmWidth * 3) / 4;
         DrawBitmapSubrectToRect(s.paint_dc, &s.paint_client_rect, ATTACK_PHASE_DISPLAY_PIC,
-                                s.phase_index, 0,
-                                (s.paint_bitmap.bmWidth + (s.paint_bitmap.bmWidth >> 31 & 3)) >> 2,
+                                s.paint_selected_phase_index, 0,
+                                s.paint_bitmap.bmWidth / 4,
                                 s.paint_bitmap.bmHeight);
+      }
+      else
+      {
+        FillRect(s.paint_dc, &s.paint_client_rect, GetStockObject(GRAY_BRUSH));
       }
       SelectClipRgn(s.paint_dc, (HRGN)0);
       DeleteObject(s.paint_clip_region);
@@ -1018,7 +1029,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
              g_shared_offscreen_dc, 0, 0, SRCCOPY);
       EndPaint(hwnd, &s.paint);
       s.cached_phase = s.paint_selected_phase;
-      SetWindowLongA(hwnd, ATTACK_PHASE_DISPLAY_SELECTED_PHASE_OFFSET, s.paint_selected_phase);
+      SetWindowLongA(hwnd, g_phase_display_selected_card_window_long_offset, s.cached_phase);
     }
     LeaveCriticalSection(&g_card_render_lock);
     return 0;
@@ -1083,16 +1094,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     if (HIWORD(wparam) == 0xffff && lparam == 0)
     {
       s.menu_count = GetMenuItemCount(g_phase_display_menu);
-      while (s.menu_count != 0)
+      while (s.menu_count-- != 0)
       {
         DeleteMenu(g_phase_display_menu, 0, MF_BYPOSITION);
-        s.menu_count--;
       }
     }
     return 0;
 
   case WM_SETCURSOR:
-    return handle_duel_inactive_cursor(hwnd, WM_SETCURSOR, wparam, lparam);
+    return handle_duel_inactive_cursor(hwnd, msg, wparam, lparam);
 
   case 0x30f:
   case 0x310:

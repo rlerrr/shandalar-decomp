@@ -3189,6 +3189,7 @@ int ante_drawn_card(int player)
 }
 
 // FUNCTION: MAGIC 0x00483489
+// FUNCTION: SHANDALAR 0x00486f9a
 int card_matches_excluded_land_type(int player, int card, int excluded_internal_card_id)
 {
   int internal_card_id;
@@ -3220,6 +3221,7 @@ int card_matches_excluded_land_type(int player, int card, int excluded_internal_
 }
 
 // FUNCTION: MAGIC 0x004bff5a
+// FUNCTION: SHANDALAR 0x004c0dd4
 int has_pending_damage(int player, int card)
 {
   struct
@@ -3246,6 +3248,7 @@ int has_pending_damage(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004c081a
+// FUNCTION: SHANDALAR 0x004c1695
 int is_basic_land(int player, int card)
 {
   int result;
@@ -3260,6 +3263,7 @@ int is_basic_land(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004c0880
+// FUNCTION: SHANDALAR 0x004c16fb
 int basic_land_matches_type_index(int internal_card_id, int extra)
 {
   int result;
@@ -4267,17 +4271,17 @@ int format_mana_payment_prompt(char *prompt, int *mana_cost, int x_paid, int max
 {
   struct
   {
-    char symbol[8];      /* [ebp-0x1b8] */
-    int total_generic;   /* [ebp-0x1b0] */
-    char tmp[300];       /* [ebp-0x1ac] */
-    char mana_text[100]; /* [ebp-0x80] */
-    int stack_card;      /* [ebp-0x1c] */
+    char symbol[8];               /* [ebp-0x1b8] */
+    int total_generic;            /* [ebp-0x1b0] */
+    char tmp[300];                /* [ebp-0x1ac] */
+    char mana_text[100];          /* [ebp-0x80] */
+    int stack_card;               /* [ebp-0x1c] */
     size_t unused_layout_padding; /* [ebp-0x18] (intentionally unused, but stabilizes layout) */
-    unsigned int action; /* [ebp-0x14] */
-    int i;               /* [ebp-0x10] */
-    int color;           /* [ebp-0x0c] */
-    unsigned int msg;    /* [ebp-0x08] */
-    int stack_player;    /* [ebp-0x04] */
+    unsigned int action;          /* [ebp-0x14] */
+    int i;                        /* [ebp-0x10] */
+    int color;                    /* [ebp-0x0c] */
+    unsigned int msg;             /* [ebp-0x08] */
+    int stack_player;             /* [ebp-0x04] */
   } s;
 
   (void)prompt;
@@ -6755,30 +6759,31 @@ unsigned int C_real_validate_target(int tgt_player,
     int tmp118; /* local_118 */
     int tmp114; /* local_114 */
     int unused_110;
-    int is_not_blocking;  /* local_10c */
-    int is_not_attacking; /* local_108 */
-    int unused_104;
-    int unused_100;
-    unsigned int pt_val;                /* local_fc (uVar17) */
-    subtype_in_card_data_t alt_subtype; /* local_f8 */
-    unsigned int pt_cmp;                /* local_f4 (uVar18) */
-    int illegal_type_iid;               /* local_f0 */
-    card_instance_t *test_instance;
-    int type_iid;            /* local_e8 */
-    int required_controller; /* local_e4 */
-    int required_owner;      /* local_e0 */
-    int tmp_match;           /* bVar19 */
-    int tmp_dc;              /* local_dc */
-    int tmp_d8;              /* local_d8 */
-    int is_illegal;          /* bVar20 */
-    char errbuf[200];        /* local_d0 */
-    unsigned int is_valid;   /* local_4 */
+    int is_not_blocking;                /* local_10c */
+    int is_not_attacking;               /* local_108 */
+    unsigned int toughness_pt_val;      /* local_104 */
+    unsigned int toughness_pt_cmp;      /* local_100 */
+    unsigned int power_pt_val;          /* local_fc */
+    unsigned int power_pt_cmp;          /* local_f8 */
+    subtype_in_card_data_t alt_subtype; /* local_f4 */
+    int illegal_type_match;             /* local_f0 */
+    int illegal_type_iid;               /* local_ec */
+    int type_match;                     /* local_e8 */
+    int type_iid;                       /* local_e4 */
+    int required_controller;            /* local_e0 */
+    int required_owner;                 /* local_dc */
+    int player_allowed_ai;              /* local_d8 */
+    int player_allowed_human;           /* local_d4 */
+    int is_illegal;                     /* bVar20 */
+    char errbuf[200];                   /* local_d0 */
+    unsigned int is_valid;              /* local_4 */
   } s;
 
   if (tgt_player == -1)
   {
     if (return_error_str != NULL)
     {
+      // STRING: SHANDALAR 0x005899a0
       strcpy(return_error_str, "");
     }
     return 0;
@@ -6790,6 +6795,7 @@ unsigned int C_real_validate_target(int tgt_player,
     {
       if (return_error_str != NULL)
       {
+        // STRING: SHANDALAR 0x005899a4
         strcpy(return_error_str, "");
       }
       return 0;
@@ -6797,6 +6803,7 @@ unsigned int C_real_validate_target(int tgt_player,
   }
 
   s.is_illegal = 0;
+  // STRING: SHANDALAR 0x005899a8
   strcpy(s.errbuf, "");
 
   if (tgt_card == -1)
@@ -6805,27 +6812,33 @@ unsigned int C_real_validate_target(int tgt_player,
     {
       if ((((active_player == who_chooses) || ((g_duel_network_flags & 2) != 0)) && ((allowed_controller & ANYBODY) != 0)) || (who_chooses == AI && ((preferred_controller & ANYBODY) != 0)))
       {
-        s.tmp_d8 = AI;
-        s.tmp_dc = 1;
+        s.player_allowed_human = AI;
+        s.player_allowed_ai = 1;
       }
       else if ((((active_player == who_chooses) || ((g_duel_network_flags & 2) != 0)) && ((allowed_controller & AI) != 0)) || (who_chooses == AI && ((preferred_controller & AI) != 0)))
       {
-        s.tmp_d8 = HUMAN;
-        s.tmp_dc = 1;
+        s.player_allowed_human = HUMAN;
+        s.player_allowed_ai = 1;
       }
       else
       {
-        s.tmp_d8 = AI;
-        s.tmp_dc = 0;
+        if ((active_player == who_chooses) || ((g_duel_network_flags & 2) != 0))
+        {
+        }
+        else
+        {
+          s.player_allowed_human = AI;
+          s.player_allowed_ai = 0;
+        }
       }
     }
     else
     {
-      s.tmp_d8 = HUMAN;
-      s.tmp_dc = 0;
+      s.player_allowed_human = HUMAN;
+      s.player_allowed_ai = 0;
     }
 
-    if ((tgt_player == HUMAN && s.tmp_d8 == 0) || (tgt_player == AI && s.tmp_dc == 0))
+    if ((tgt_player == HUMAN && s.player_allowed_human == 0) || (tgt_player == AI && s.player_allowed_ai == 0))
     {
       s.is_illegal = 1;
       strcat(s.errbuf, gs_illegal_target_why_player_008b3110);
@@ -6835,49 +6848,19 @@ unsigned int C_real_validate_target(int tgt_player,
   {
     if ((active_player == who_chooses) || ((g_duel_network_flags & 2) != 0))
     {
-      if ((allowed_controller & TARGET_PLAYER_OWNER) == 0)
+      if ((allowed_controller & TARGET_PLAYER_OWNER) != 0)
       {
-        if ((allowed_controller & ANYBODY) == 0)
-        {
-          if ((allowed_controller & AI) == 0)
-          {
-            s.required_controller = HUMAN;
-          }
-          else
-          {
-            s.required_controller = AI;
-          }
-        }
-        else
-        {
-          s.required_controller = -1;
-        }
-
-        if ((allowed_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
-        {
-          s.required_owner = s.required_controller;
-        }
-        else
+        if ((allowed_controller & ANYBODY) != 0)
         {
           s.required_owner = -1;
         }
-      }
-      else
-      {
-        if ((allowed_controller & ANYBODY) == 0)
+        else if ((allowed_controller & AI) != 0)
         {
-          if ((allowed_controller & AI) == 0)
-          {
-            s.required_owner = HUMAN;
-          }
-          else
-          {
-            s.required_owner = AI;
-          }
+          s.required_owner = AI;
         }
         else
         {
-          s.required_owner = -1;
+          s.required_owner = HUMAN;
         }
 
         if ((allowed_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
@@ -6889,59 +6872,80 @@ unsigned int C_real_validate_target(int tgt_player,
           s.required_controller = -1;
         }
       }
-    }
-    else if ((preferred_controller & TARGET_PLAYER_OWNER) == 0)
-    {
-      if ((preferred_controller & ANYBODY) == 0)
+      else
       {
-        if ((preferred_controller & AI) == 0)
+        if ((allowed_controller & ANYBODY) != 0)
         {
-          s.required_controller = HUMAN;
+          s.required_controller = -1;
         }
-        else
+        else if ((allowed_controller & AI) != 0)
         {
           s.required_controller = AI;
         }
-      }
-      else
-      {
-        s.required_controller = -1;
-      }
+        else
+        {
+          s.required_controller = HUMAN;
+        }
 
-      if ((preferred_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
-      {
-        s.required_owner = s.required_controller;
-      }
-      else
-      {
-        s.required_owner = -1;
+        if ((allowed_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
+        {
+          s.required_owner = s.required_controller;
+        }
+        else
+        {
+          s.required_owner = -1;
+        }
       }
     }
     else
     {
-      if ((preferred_controller & ANYBODY) == 0)
+      if ((preferred_controller & TARGET_PLAYER_OWNER) != 0)
       {
-        if ((preferred_controller & AI) == 0)
+        if ((preferred_controller & ANYBODY) != 0)
         {
-          s.required_owner = HUMAN;
+          s.required_owner = -1;
         }
-        else
+        else if ((preferred_controller & AI) != 0)
         {
           s.required_owner = AI;
         }
-      }
-      else
-      {
-        s.required_owner = -1;
-      }
+        else
+        {
+          s.required_owner = HUMAN;
+        }
 
-      if ((preferred_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
-      {
-        s.required_controller = s.required_owner;
+        if ((preferred_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
+        {
+          s.required_controller = s.required_owner;
+        }
+        else
+        {
+          s.required_controller = -1;
+        }
       }
       else
       {
-        s.required_controller = -1;
+        if ((preferred_controller & ANYBODY) != 0)
+        {
+          s.required_controller = -1;
+        }
+        else if ((preferred_controller & AI) != 0)
+        {
+          s.required_controller = AI;
+        }
+        else
+        {
+          s.required_controller = HUMAN;
+        }
+
+        if ((preferred_controller & TARGET_PLAYER_OWNER_AND_CONTROLLER) == TARGET_PLAYER_OWNER_AND_CONTROLLER)
+        {
+          s.required_owner = s.required_controller;
+        }
+        else
+        {
+          s.required_owner = -1;
+        }
       }
     }
 
@@ -6971,8 +6975,8 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (s.required_owner != -1)
     {
-      s.tmp114 = (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_OWNED_BY_OPPONENT) != 0 ? 1 - tgt_player : tgt_player;
-      if (s.tmp114 != s.required_owner)
+      if (((PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_OWNED_BY_OPPONENT) != 0 && s.required_owner == HUMAN) ||
+          ((PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_OWNED_BY_OPPONENT) == 0 && s.required_owner != HUMAN))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_owner_007aacc0);
@@ -6981,41 +6985,41 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (required_type != TYPE_NONE)
     {
-      if ((special & TARGET_SPECIAL_USE_ORIGINAL_TYPE) == 0)
-      {
-        s.type_iid = PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id;
-      }
-      else
+      if ((special & TARGET_SPECIAL_USE_ORIGINAL_TYPE) != 0)
       {
         s.type_iid = PLAYER_CARD_INSTANCE(tgt_player, tgt_card).original_internal_card_id;
       }
+      else
+      {
+        s.type_iid = PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id;
+      }
 
-      s.tmp_match = 0;
+      s.type_match = 0;
       if (((required_type & global_cards_data[s.type_iid].type) != TYPE_NONE) || ((required_type & TARGET_TYPE_NONCREATURE_CAN_BLOCK) != TYPE_NONE && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_NONCREATURE_CAN_BLOCK) != 0))
       {
-        s.tmp_match = 1;
+        s.type_match = 1;
       }
       if ((required_type & TYPE_EFFECT) != TYPE_NONE && (global_cards_data[s.type_iid].id == unk_00789734 || global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id == unk_00789b80))
       {
-        s.tmp_match = 1;
+        s.type_match = 1;
       }
       if ((required_type & TARGET_TYPE_TOKEN) != TYPE_NONE && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).token_status & STATUS_TOKEN) != 0)
       {
-        s.tmp_match = 1;
+        s.type_match = 1;
       }
       if ((required_type & TARGET_TYPE_DAMAGE_LEGACY) != TYPE_NONE && global_cards_data[s.type_iid].id == unk_007a7d64)
       {
-        s.tmp_match = 1;
+        s.type_match = 1;
       }
       if ((required_type & TARGET_TYPE_HACK_SLEIGHT_LEGACY) != TYPE_NONE && global_cards_data[s.type_iid].id == unk_008a8de8)
       {
-        s.tmp_match = 1;
+        s.type_match = 1;
       }
       if ((required_type & TARGET_TYPE_DRAW_CARD_LEGACY) != TYPE_NONE && global_cards_data[s.type_iid].id == unk_009266ac)
       {
-        s.tmp_match = 1;
+        s.type_match = 1;
       }
-      if (!s.tmp_match)
+      if (!s.type_match)
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_type_008a9a00);
@@ -7024,37 +7028,41 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (illegal_type != TYPE_NONE)
     {
-      if ((special & TARGET_SPECIAL_USE_ORIGINAL_TYPE) == 0)
-      {
-        s.illegal_type_iid = PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id;
-      }
-      else
+      if ((special & TARGET_SPECIAL_USE_ORIGINAL_TYPE) != 0)
       {
         s.illegal_type_iid = PLAYER_CARD_INSTANCE(tgt_player, tgt_card).original_internal_card_id;
       }
+      else
+      {
+        s.illegal_type_iid = PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id;
+      }
 
-      s.tmp_match = (illegal_type & global_cards_data[s.illegal_type_iid].type) != TYPE_NONE;
+      s.illegal_type_match = 0;
+      if ((illegal_type & global_cards_data[s.illegal_type_iid].type) != TYPE_NONE)
+      {
+        s.illegal_type_match = 1;
+      }
       if ((illegal_type & TYPE_EFFECT) != TYPE_NONE && (global_cards_data[s.illegal_type_iid].id == unk_00789734 || global_cards_data[s.illegal_type_iid].id == unk_00789b80))
       {
-        s.tmp_match = 1;
+        s.illegal_type_match = 1;
       }
       if ((illegal_type & TARGET_TYPE_TOKEN) != TYPE_NONE && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).token_status & STATUS_TOKEN) != 0)
       {
-        s.tmp_match = 1;
+        s.illegal_type_match = 1;
       }
       if ((illegal_type & TARGET_TYPE_DAMAGE_LEGACY) != TYPE_NONE && global_cards_data[s.illegal_type_iid].id == unk_007a7d64)
       {
-        s.tmp_match = 1;
+        s.illegal_type_match = 1;
       }
       if ((illegal_type & TARGET_TYPE_HACK_SLEIGHT_LEGACY) != TYPE_NONE && global_cards_data[s.illegal_type_iid].id == unk_008a8de8)
       {
-        s.tmp_match = 1;
+        s.illegal_type_match = 1;
       }
       if ((illegal_type & TARGET_TYPE_DRAW_CARD_LEGACY) != TYPE_NONE && global_cards_data[s.illegal_type_iid].id == unk_009266ac)
       {
-        s.tmp_match = 1;
+        s.illegal_type_match = 1;
       }
-      if (s.tmp_match)
+      if (s.illegal_type_match)
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_type_008a9a00);
@@ -7102,7 +7110,7 @@ unsigned int C_real_validate_target(int tgt_player,
       }
       else
       {
-        if (extra < 5)
+        if (extra <= 4)
         {
           if (card_has_basic_land_type(tgt_player, tgt_card, extra + 1) == 0)
           {
@@ -7120,65 +7128,67 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (required_subtype != ~SUB_WALL)
     {
-      if ((special & TARGET_SPECIAL_0x10) == 0)
+      if ((special & TARGET_SPECIAL_0x10) != 0)
       {
-        s.alt_subtype = required_subtype;
-      }
-      else if (required_subtype == (SUB_DJINN | SUB_MERFOLK))
-      {
-        s.alt_subtype = SUB_RAT;
-      }
-      else if (required_subtype == SUB_RAT)
-      {
-        s.alt_subtype = SUB_DJINN | SUB_MERFOLK;
-      }
-      else if (required_subtype == SUB_ENCHANT_WORLD)
-      {
-        s.alt_subtype = SUB_ENCHANT_WORLD | SUB_MERFOLK;
-      }
-      else if (required_subtype == (SUB_ENCHANT_WORLD | SUB_MERFOLK))
-      {
-        s.alt_subtype = SUB_ENCHANT_WORLD;
-      }
-      else if (required_subtype == 0x49)
-      {
-        s.alt_subtype = 0x4a;
-      }
-      else if (required_subtype == 0x4a)
-      {
-        s.alt_subtype = 0x49;
-      }
-      else if (required_subtype == 0x56)
-      {
-        s.alt_subtype = 0x57;
-      }
-      else if (required_subtype == 0x57)
-      {
-        s.alt_subtype = 0x56;
-      }
-      else if (required_subtype == 0x59)
-      {
-        s.alt_subtype = 0x5a;
-      }
-      else if (required_subtype == 0x5a)
-      {
-        s.alt_subtype = 0x59;
-      }
-      else if (required_subtype == 0x69)
-      {
-        s.alt_subtype = 0x6a;
-      }
-      else if (required_subtype == 0x6a)
-      {
-        s.alt_subtype = 0x69;
+        if (required_subtype == (SUB_DJINN | SUB_MERFOLK))
+        {
+          s.alt_subtype = SUB_RAT;
+        }
+        else if (required_subtype == SUB_RAT)
+        {
+          s.alt_subtype = SUB_DJINN | SUB_MERFOLK;
+        }
+        else if (required_subtype == SUB_ENCHANT_WORLD)
+        {
+          s.alt_subtype = SUB_ENCHANT_WORLD | SUB_MERFOLK;
+        }
+        else if (required_subtype == (SUB_ENCHANT_WORLD | SUB_MERFOLK))
+        {
+          s.alt_subtype = SUB_ENCHANT_WORLD;
+        }
+        else if (required_subtype == 0x49)
+        {
+          s.alt_subtype = 0x4a;
+        }
+        else if (required_subtype == 0x4a)
+        {
+          s.alt_subtype = 0x49;
+        }
+        else if (required_subtype == 0x56)
+        {
+          s.alt_subtype = 0x57;
+        }
+        else if (required_subtype == 0x57)
+        {
+          s.alt_subtype = 0x56;
+        }
+        else if (required_subtype == 0x59)
+        {
+          s.alt_subtype = 0x5a;
+        }
+        else if (required_subtype == 0x5a)
+        {
+          s.alt_subtype = 0x59;
+        }
+        else if (required_subtype == 0x69)
+        {
+          s.alt_subtype = 0x6a;
+        }
+        else if (required_subtype == 0x6a)
+        {
+          s.alt_subtype = 0x69;
+        }
+        else
+        {
+          s.alt_subtype = required_subtype;
+        }
       }
       else
       {
         s.alt_subtype = required_subtype;
       }
 
-      s.tmp114 = global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id;
-      if ((subtype_in_card_data_t)global_raw_cards_storage[s.tmp114].subtype != required_subtype && (subtype_in_card_data_t)global_raw_cards_storage[s.tmp114].subtype != s.alt_subtype)
+      if ((subtype_in_card_data_t)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id].subtype != required_subtype && (subtype_in_card_data_t)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id].subtype != s.alt_subtype)
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_subtype_008cea20);
@@ -7187,9 +7197,9 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (power_requirement != -1)
     {
-      s.pt_val = power_requirement & TARGET_PT_MASK;
-      s.pt_cmp = power_requirement & 0xf000;
-      if ((s.pt_cmp == 0 && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).power != (int)s.pt_val) || (s.pt_cmp == TARGET_PT_GREATER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).power < (int)s.pt_val) || (s.pt_cmp == TARGET_PT_LESSER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).power > (int)s.pt_val))
+      s.power_pt_val = power_requirement & TARGET_PT_MASK;
+      s.power_pt_cmp = power_requirement & 0xf000;
+      if ((s.power_pt_cmp == 0 && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).power != (int)s.power_pt_val) || (s.power_pt_cmp == TARGET_PT_GREATER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).power < (int)s.power_pt_val) || (s.power_pt_cmp == TARGET_PT_LESSER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).power > (int)s.power_pt_val))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_power_00781aa0);
@@ -7198,9 +7208,9 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (toughness_requirement != -1)
     {
-      s.pt_val = toughness_requirement & TARGET_PT_MASK;
-      s.pt_cmp = toughness_requirement & 0xf000;
-      if ((s.pt_cmp == 0 && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).toughness != (int)s.pt_val) || (s.pt_cmp == TARGET_PT_GREATER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).toughness < (int)s.pt_val) || (s.pt_cmp == TARGET_PT_LESSER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).toughness > (int)s.pt_val))
+      s.toughness_pt_val = toughness_requirement & TARGET_PT_MASK;
+      s.toughness_pt_cmp = toughness_requirement & 0xf000;
+      if ((s.toughness_pt_cmp == 0 && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).toughness != (int)s.toughness_pt_val) || (s.toughness_pt_cmp == TARGET_PT_GREATER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).toughness < (int)s.toughness_pt_val) || (s.toughness_pt_cmp == TARGET_PT_LESSER_OR_EQUAL && PLAYER_CARD_INSTANCE(tgt_player, tgt_card).toughness > (int)s.toughness_pt_val))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_toughness_007894b0);
@@ -7209,18 +7219,17 @@ unsigned int C_real_validate_target(int tgt_player,
 
     if (special != 0)
     {
-      s.tmp114 = global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id;
-      if ((special & TARGET_SPECIAL_WALL) != 0 && (subtype_in_card_data_t)global_raw_cards_storage[s.tmp114].subtype != 0xc5 && global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].subtype != 0)
+      if ((special & TARGET_SPECIAL_WALL) != 0 && (subtype_in_card_data_t)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id].subtype != 0xc5 && global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].subtype != 0)
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_walls_008b34c0);
       }
-      if ((special & TARGET_SPECIAL_NON_WALL) != 0 && ((subtype_in_card_data_t)global_raw_cards_storage[s.tmp114].subtype == 0xc5 || global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].subtype == 0))
+      if ((special & TARGET_SPECIAL_NON_WALL) != 0 && ((subtype_in_card_data_t)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].id].subtype == 0xc5 || global_cards_data[PLAYER_CARD_INSTANCE(tgt_player, tgt_card).internal_card_id].subtype == 0))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_walls_008b34c0);
       }
-      if ((special & TARGET_SPECIAL_SPELL_ON_STACK) != 0 && ((current_spell_player == -1 || tgt_player != current_spell_player) || current_spell_card != tgt_card || (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_SUMMONSICK) != 0))
+      if ((special & TARGET_SPECIAL_SPELL_ON_STACK) != 0 && ((current_spell_player == -1 || tgt_player != current_spell_player) || tgt_card != current_spell_card || (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_SUMMONSICK) != 0))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_spell_0091be40);
@@ -7235,7 +7244,7 @@ unsigned int C_real_validate_target(int tgt_player,
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_artifact_creature_008ced40);
       }
-      if ((special & TARGET_SPECIAL_DAMAGE_PLAYER) != 0 && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_source_player != who_chooses || PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_target_card != -1))
+      if ((special & TARGET_SPECIAL_DAMAGE_PLAYER) != 0 && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_target_player != who_chooses || PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_target_card != -1))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_target_player_0091c360);
@@ -7269,29 +7278,31 @@ unsigned int C_real_validate_target(int tgt_player,
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_blocked_0091caa0);
       }
-      if ((required_state & TARGET_STATE_BLOCKING) != 0 && (tgt_player == current_player || (int)(char)PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_target_player == -1))
+      if ((required_state & TARGET_STATE_BLOCKING) != 0 && (tgt_player == current_player || (int)(char)PLAYER_CARD_INSTANCE(tgt_player, tgt_card).blocking == -1))
       {
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_blocking_007ab160);
       }
       if ((required_state & TARGET_STATE_IN_COMBAT) != 0)
       {
-        if ((int)(char)PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_target_player == -1)
-        {
-          s.is_not_blocking = 1;
-        }
-        else
-        {
-          s.is_not_blocking = 0;
-        }
+        s.is_not_blocking = 0;
+        s.is_not_attacking = s.is_not_blocking;
 
         if ((PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_ATTACKING) == 0)
         {
           s.is_not_attacking = 1;
         }
+
+        if (current_phase > 0x14 && current_phase < 0x1e && tgt_player != current_player)
+        {
+          if (tgt_player == current_player || (int)(char)PLAYER_CARD_INSTANCE(tgt_player, tgt_card).blocking == -1)
+          {
+            s.is_not_blocking = 1;
+          }
+        }
         else
         {
-          s.is_not_attacking = 0;
+          s.is_not_blocking = 1;
         }
 
         if (s.is_not_attacking != 0)
@@ -7305,19 +7316,21 @@ unsigned int C_real_validate_target(int tgt_player,
       }
       if ((required_state & TARGET_STATE_ENCHANTED) != 0)
       {
-        s.tmp_match = 0;
-        for (s.tmp114 = 0; s.tmp114 < 2; ++s.tmp114)
+        s.tmp118 = 0;
+        for (s.unused_110 = 0; s.unused_110 < 2; ++s.unused_110)
         {
-          for (s.tmp118 = 0; s.tmp118 < active_cards_count[s.tmp114]; ++s.tmp118)
+          for (s.tmp114 = 0; s.tmp114 < active_cards_count[s.unused_110]; ++s.tmp114)
           {
-            s.test_instance = &global_card_instances[s.tmp114][s.tmp118];
-            if (s.test_instance->internal_card_id != -1 && (global_cards_data[s.test_instance->internal_card_id].type & TYPE_ENCHANTMENT) != 0 && s.test_instance->damage_target_player == tgt_player && s.test_instance->damage_target_card == tgt_card)
+            if (global_card_instances[s.unused_110][s.tmp114].internal_card_id != -1 &&
+                (global_cards_data[global_card_instances[s.unused_110][s.tmp114].internal_card_id].type & TYPE_ENCHANTMENT) != 0 &&
+                global_card_instances[s.unused_110][s.tmp114].damage_target_player == tgt_player &&
+                global_card_instances[s.unused_110][s.tmp114].damage_target_card == tgt_card)
             {
-              s.tmp_match = 1;
+              s.tmp118 = 1;
             }
           }
         }
-        if (!s.tmp_match)
+        if (!s.tmp118)
         {
           s.is_illegal = 1;
           strcat(s.errbuf, gs_illegal_target_why_enchanted_008cf3c0);
@@ -7379,7 +7392,7 @@ unsigned int C_real_validate_target(int tgt_player,
       }
       if (((illegal_state & TARGET_STATE_BLOCKING) != 0) || ((illegal_state & TARGET_STATE_IN_COMBAT) != 0))
       {
-        if ((int)(char)PLAYER_CARD_INSTANCE(tgt_player, tgt_card).damage_target_player != -1 && tgt_player != current_player)
+        if ((int)(char)PLAYER_CARD_INSTANCE(tgt_player, tgt_card).blocking != -1 && tgt_player != current_player)
         {
           s.is_illegal = 1;
           strcat(s.errbuf, gs_illegal_target_why_blocking_007ab160);
@@ -7387,19 +7400,21 @@ unsigned int C_real_validate_target(int tgt_player,
       }
       if ((illegal_state & TARGET_STATE_ENCHANTED) != 0)
       {
-        s.tmp_match = 0;
-        for (s.tmp120 = 0; s.tmp120 < 2; ++s.tmp120)
+        s.tmp124 = 0;
+        for (s.unused_11c = 0; s.unused_11c < 2; ++s.unused_11c)
         {
-          for (s.tmp124 = 0; s.tmp124 < active_cards_count[s.tmp120]; ++s.tmp124)
+          for (s.tmp120 = 0; s.tmp120 < active_cards_count[s.unused_11c]; ++s.tmp120)
           {
-            s.test_instance = &global_card_instances[s.tmp120][s.tmp124];
-            if (s.test_instance->internal_card_id != -1 && (global_cards_data[s.test_instance->internal_card_id].type & TYPE_ENCHANTMENT) != 0 && s.test_instance->damage_target_player == tgt_player && s.test_instance->damage_target_card == tgt_card)
+            if (global_card_instances[s.unused_11c][s.tmp120].internal_card_id != -1 &&
+                (global_cards_data[global_card_instances[s.unused_11c][s.tmp120].internal_card_id].type & TYPE_ENCHANTMENT) != 0 &&
+                global_card_instances[s.unused_11c][s.tmp120].damage_target_player == tgt_player &&
+                global_card_instances[s.unused_11c][s.tmp120].damage_target_card == tgt_card)
             {
-              s.tmp_match = 1;
+              s.tmp124 = 1;
             }
           }
         }
-        if (s.tmp_match)
+        if (s.tmp124)
         {
           s.is_illegal = 1;
           strcat(s.errbuf, gs_illegal_target_why_enchanted_008cf3c0);
@@ -7944,103 +7959,100 @@ void process_damage_prevention(int player)
   }
 
   s.did_setup = 0;
-  while (1)
+setup:
+  if (((g_duel_network_flags & 2) == 0) && g_duel_ai_mode_state != 1 && ai_action_replay_available == 0)
   {
-    if (((g_duel_network_flags & 2) == 0) && g_duel_ai_mode_state != 1 && ai_action_replay_available == 0)
-    {
-      start_ai_decision_search(9, 0xf);
-      s.best_score = -99999;
-      s.did_setup = 1;
-    }
+    start_ai_decision_search(9, 0xf);
+    s.best_score = -99999;
+    s.did_setup = 1;
+  }
 
-    if (ai_decision_code == 9 && s.did_setup)
-    {
-      reset_ai_search_trial_state();
-      DAT_008cdab4 = 0;
-      DAT_008cdab0 = DAT_008cdab4;
-      DAT_008a8de4 = DAT_008cdab0;
-      ai_modifier = DAT_008a8de4;
-    }
+after_setup:
+  if (ai_decision_code == 9 && s.did_setup)
+  {
+    reset_ai_search_trial_state();
+    DAT_008cdab4 = 0;
+    DAT_008cdab0 = DAT_008cdab4;
+    DAT_008a8de4 = DAT_008cdab0;
+    ai_modifier = DAT_008a8de4;
+  }
 
-    if (allow_response(-2, -1, gs_damage_prevention_00939200, 0x8e) != 0)
-    {
-      continue;
-    }
+  if (allow_response(-2, -1, gs_damage_prevention_00939200, 0x8e) != 0)
+  {
+    goto setup;
+  }
 
-    C_dispatch_event_raw(0x25);
-    if ((battlefield_extra_ability_flags & 0x00040000) != 0)
-    {
-      dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_END_DAMAGE_PREV, gs_end_damage_prevention_00789740, 0);
-    }
+  C_dispatch_event_raw(0x25);
+  if ((battlefield_extra_ability_flags & 0x00040000) != 0)
+  {
+    dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_END_DAMAGE_PREV, gs_end_damage_prevention_00789740, 0);
+  }
 
-    for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  {
+    for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
     {
-      for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
+      if (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).internal_card_id == damage_card_internal_card_id &&
+          is_in_play(s.test_player, s.test_card) != 0 &&
+          (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).state & 0x10) == 0)
       {
-        if (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).internal_card_id == damage_card_internal_card_id &&
-            is_in_play(s.test_player, s.test_card) != 0 &&
-            (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).state & 0x10) == 0)
+        dispatch_event(s.test_player, s.test_card, 0x6e);
+      }
+    }
+  }
+
+  dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_DEAL_DAMAGE, gs_damage_dealing_00777ab0, 0);
+
+  for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  {
+    for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
+    {
+      if (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).internal_card_id == damage_card_internal_card_id &&
+          is_in_play(s.test_player, s.test_card) != 0)
+      {
+        if ((PLAYER_CARD_INSTANCE(s.test_player, s.test_card).state & 0x10) != 0)
         {
-          dispatch_event(s.test_player, s.test_card, 0x6e);
+          kill_card(s.test_player, s.test_card, 1);
+        }
+        else
+        {
+          land_can_be_played |= 2;
         }
       }
     }
+  }
 
-    dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_DEAL_DAMAGE, gs_damage_dealing_00777ab0, 0);
+  kill_creatures_with_lethal_damage();
+  land_can_be_played &= ~4;
 
-    for (s.test_player = 0; s.test_player < 2; ++s.test_player)
+  if (g_duel_ai_mode_state == 1 && s.did_setup != 0 && ai_decision_code == 9)
+  {
+    regenerate_or_graveyard_triggers();
+    s.temp = ai_modifier + ai_opinion_of_gamestate(other_player);
+    if (s.temp > s.best_score)
     {
-      for (s.test_card = 0; s.test_card < active_cards_count[s.test_player]; ++s.test_card)
-      {
-        if (PLAYER_CARD_INSTANCE(s.test_player, s.test_card).internal_card_id == damage_card_internal_card_id &&
-            is_in_play(s.test_player, s.test_card) != 0)
-        {
-          if ((PLAYER_CARD_INSTANCE(s.test_player, s.test_card).state & 0x10) != 0)
-          {
-            kill_card(s.test_player, s.test_card, 1);
-          }
-          else
-          {
-            land_can_be_played |= 2;
-          }
-        }
-      }
+      s.best_score = s.temp;
+      save_recorded_ai_actions();
+      s.saved_777854 = ai_search_flags;
     }
-
-    kill_creatures_with_lethal_damage();
-    land_can_be_played &= ~4;
-
-    if (g_duel_ai_mode_state == 1 && s.did_setup != 0 && ai_decision_code == 9)
+    if (ai_search_target_depth == 999)
     {
-      regenerate_or_graveyard_triggers();
-      s.temp = ai_modifier + ai_opinion_of_gamestate(other_player);
-      if (s.temp > s.best_score)
-      {
-        s.best_score = s.temp;
-        save_recorded_ai_actions();
-        s.saved_777854 = ai_search_flags;
-      }
-      if (ai_search_target_depth == 999)
-      {
-        ai_search_target_depth = -1;
-      }
-      ai_search_force_pass = 0;
-      if (get_duel_time_units_if_available() > (game_time_scale * ai_search_time_limit) / 5)
-      {
-        g_duel_ai_mode_state = 0;
-        ai_search_target_depth = -1;
-        ai_search_flags = s.saved_777854;
-      }
-      land_can_be_played |= 4;
+      ai_search_target_depth = -1;
     }
-    else
+    ai_search_force_pass = 0;
+    if (get_duel_time_units_if_available() > (game_time_scale * ai_search_time_limit) / 5)
     {
-      if (g_duel_ai_mode_state != 1 && s.did_setup != 0)
-      {
-        ai_action_replay_available = 0;
-      }
-      return;
+      g_duel_ai_mode_state = 0;
+      ai_search_target_depth = -1;
+      ai_search_flags = s.saved_777854;
     }
+    land_can_be_played |= 4;
+    goto after_setup;
+  }
+
+  if (g_duel_ai_mode_state != 1 && s.did_setup != 0)
+  {
+    ai_action_replay_available = 0;
   }
 }
 
@@ -8288,16 +8300,16 @@ void reset_upkeep_costs(void)
 }
 
 // FUNCTION: MAGIC 0x00447f80
-unsigned int get_duel_time_units(void)
+int get_duel_time_units(void)
 {
-  unsigned int ticks = GetTickCount();
-  unsigned int diff = ticks - unk_0093f4b4 - g_duel_tick_adjustment;
-  unsigned int result = diff / 0x37;
+  int ticks = GetTickCount();
+  int diff = ticks - unk_0093f4b4 - g_duel_tick_adjustment;
+  int result = diff / 0x37;
   return result;
 }
 
 // FUNCTION: MAGIC 0x004e1b6f
-unsigned int get_duel_time_units_if_available(void)
+int get_duel_time_units_if_available(void)
 {
   return get_duel_time_units();
 }

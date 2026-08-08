@@ -48,7 +48,7 @@ ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39] = {
 #include "shandalar/src/creature_names_init.inc"
 };
 #elif defined(GLOBALS_OTHERS_IMPL) && !defined(SHANDALAR)
-// GLOBAL: MAGIC 0x00746880
+// GLOBAL: MAGIC 0x00746830
 ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39];
 #else
 extern ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39];
@@ -229,11 +229,7 @@ GLOBAL_OTHERS_EXTERN int DAT_00776510;
 
 // GLOBAL: MAGIC 0x00776514
 // GLOBAL: SHANDALAR 0x0073c7e4
-#if defined(GLOBALS_OTHERS_IMPL) && defined(SHANDALAR)
-extern int g_force_opponent_starts_duel;
-#else
 GLOBAL_OTHERS_EXTERN int g_force_opponent_starts_duel;
-#endif
 
 // GLOBAL: MAGIC 0x00775d40
 GLOBAL_OTHERS_EXTERN int DAT_00775d40[500];

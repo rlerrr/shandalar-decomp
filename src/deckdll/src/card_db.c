@@ -8,24 +8,16 @@ char *CsvParseNextField(char **txt);
 
 // GLOBAL: DECKDLL 0x100355d8
 // GLOBAL: MAGIC 0x0056eab4
-// GLOBAL: SHANDALAR 0x008e4514
-#ifdef SHANDALAR
-static char read_db_empty_rules[1];
-#else
+// GLOBAL: SHANDALAR 0x0058397c
 static char read_db_empty_rules[1] = "";
-#endif
 
 // GLOBAL: DECKDLL 0x100355ec
 // GLOBAL: MAGIC 0x0056eac8
-// GLOBAL: SHANDALAR 0x008e4518
-#ifdef SHANDALAR
-static char read_db_empty_flavor[1];
-#else
+// GLOBAL: SHANDALAR 0x00583990
 static char read_db_empty_flavor[1] = "";
-#endif
 
 // GLOBAL: DECKDLL 0x10033e48
-// GLOBAL: MAGIC 0x57b668
+// GLOBAL: MAGIC 0x0057b668
 // GLOBAL: SHANDALAR 0x005843f0
 static const char *const_db_artist_names[] = {
     "None",
@@ -84,7 +76,7 @@ static const char *const_db_artist_names[] = {
 };
 
 // GLOBAL: DECKDLL 0x101427b4
-// GLOBAL: MAGIC 0x8b40d0
+// GLOBAL: MAGIC 0x008b40d0
 // GLOBAL: SHANDALAR 0x008c8250
 int global_available_slots;
 
@@ -99,16 +91,16 @@ card_ptr_t global_raw_cards_storage[2000];
 static char *global_rarities_csv_raw;
 
 // GLOBAL: DECKDLL 0x1012df3c
-// GLOBAL: MAGIC 0x7a7d70
+// GLOBAL: MAGIC 0x007a7d70
 // GLOBAL: SHANDALAR 0x007beafc
 char *global_base_txt;
 
 // GLOBAL: MAGIC 0x00777e60
 // GLOBAL: SHANDALAR 0x0078ebf0
-name_table_entry_t global_legacy_names[866];
+name_table_entry_t global_legacy_names[2000];
 
 // FUNCTION: DECKDLL 0x1001a940
-// FUNCTION: MAGIC 0x452cf0
+// FUNCTION: MAGIC 0x00452cf0
 // FUNCTION: SHANDALAR 0x004424b0
 int read_db_guts(char *cards_dat_filename)
 {

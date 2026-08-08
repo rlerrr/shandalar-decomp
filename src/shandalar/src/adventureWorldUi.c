@@ -1158,7 +1158,7 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
         s.terrain_pattern = abs(s.world_tile_y) * 3 + abs(s.world_tile_x) * 7;
         switch (s.tile_type)
         {
-        case 0:
+        case 3:
           s.terrain_column = 0;
           break;
         case 1:
@@ -1167,25 +1167,25 @@ void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_s
         case 2:
           s.terrain_column = 2;
           break;
-        case 3:
+        case 5:
           s.terrain_column = 3;
           break;
-        case 5:
+        case 6:
           s.terrain_column = 4;
           break;
-        case 6:
+        case 8:
           s.terrain_column = 5;
           break;
-        case 8:
+        case 0xd:
           s.terrain_column = 6;
           break;
         case 10:
           s.terrain_column = 7;
           break;
-        case 0xd:
+        case 0xf:
           s.terrain_column = 8;
           break;
-        case 0xf:
+        case 0:
           s.terrain_column = -1;
           break;
         default:

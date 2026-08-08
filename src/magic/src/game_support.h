@@ -97,7 +97,7 @@ int run_target_selection_modal(int who_chooses,
                                int allow_human_player);
 int can_pay_card_mana_cost(int player, int target_player, int target_card);
 int check_attached_aura_can_pay_cost(int player, int card, int internal_card_id);
-unsigned int get_duel_time_units(void);
+int get_duel_time_units(void);
 int get_available_card_action(int player, int card);
 void redraw_shandalar_duel_screen(int view_player, int present_after_draw);
 int graveyard_has_type(int player, int type);
@@ -255,7 +255,7 @@ int load_recorded_action_code(int offset);
 void replay_ai_action_selection(void);
 void rewind_recorded_action(void);
 void kill_creatures_with_lethal_damage(void);
-unsigned int get_duel_time_units_if_available(void);
+int get_duel_time_units_if_available(void);
 void extract_numbered_text_choice(char *out, char *in, int choice);
 void declare_mana_color_conversion(int player, int color_to_produce, int color_to_consume);
 int has_mana(int player, color_t color, int amount);

@@ -1970,7 +1970,10 @@ void show_opponent_taunt(char *text)
 
   begin_opponent_taunt_animation_stub();
   show_opponent_taunt_text_stub(text);
+#ifndef MODERN_FIXES
+  // TODO: why the fuck did they do this??
   text[0] = '\0';
+#endif
   end_opponent_taunt_animation_stub();
 }
 

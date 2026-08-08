@@ -241,6 +241,7 @@ GLOBAL_STRINGS_EXTERN char gs_cuecard_not_controlled_by_owner_008a8e40[0x90];
 GLOBAL_STRINGS_EXTERN text_300_t gs_mana_so_far_008a9010;
 
 // GLOBAL: MAGIC 0x008a9a00
+// GLOBAL: SHANDALAR 0x008bdc00
 GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_type_008a9a00;
 
 // GLOBAL: MAGIC 0x008a9b30
