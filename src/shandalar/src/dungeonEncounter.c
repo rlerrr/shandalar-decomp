@@ -5,6 +5,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/game_support.h"
 #include "magic/src/global_strings.h"
@@ -125,7 +126,7 @@ int LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int 
 int SeedRandomFromTickCount(void);
 char *GetDungeonName(int dungeon_index);
 int CalculateDungeonEndgameScore(void);
-int RandomIntLessThan(int max_value);
+int internal_rand(int max_value);
 int RunCardRiddleChallenge(void);
 int ScaleUiCoordinateFrom320(int value);
 int ScaleUiCoordinate(int value);
@@ -238,8 +239,7 @@ DungeonRuntimeState g_dungeon_runtime_state;
 // GLOBAL: SHANDALAR 0x007495b0
 EncodedImage *g_dungeon_sprite_entries[0x3c];
 #define g_dungeon_sprite_blob g_dungeon_sprite_entries[0]
-// GLOBAL: SHANDALAR 0x0078df88
-int g_dungeon_life_reward_delta;
+extern int g_dungeon_life_reward_delta;
 // GLOBAL: SHANDALAR 0x0078df8c
 int g_dungeon_exit_x;
 // GLOBAL: SHANDALAR 0x0078df90
@@ -357,7 +357,7 @@ int RunCastleDungeonBoard(int dungeon_index)
   }
   else
   {
-    ReadSpriteEntryPointers((EncodedImage **)&g_dungeon_sprite_entries, g_dungeon_sprite_paths[RandomIntLessThan(3)]);
+    ReadSpriteEntryPointers((EncodedImage **)&g_dungeon_sprite_entries, g_dungeon_sprite_paths[internal_rand(3)]);
   }
   LoadLoopingSound("x:sound\\dambloop.wav", 100);
   PlayLoopingSoundWithPan(100, 0x50, 0);
@@ -399,7 +399,7 @@ int RunCastleDungeonBoard(int dungeon_index)
 
       if (dungeon_index < 5)
       {
-        switch (RandomIntLessThan(6))
+        switch (internal_rand(6))
         {
         case 0:
           s.creature_tier = 10;
@@ -478,9 +478,9 @@ int RunCastleDungeonBoard(int dungeon_index)
   DUNGEON_GRID_CELL(g_dungeon_runtime_state.player_x, g_dungeon_runtime_state.player_y) = 1;
   do
   {
-    s.grid_x = RandomIntLessThan(7) * 2;
-    s.grid_y = RandomIntLessThan(6) * 2;
-    if (RandomIntLessThan(2) != 0)
+    s.grid_x = internal_rand(7) * 2;
+    s.grid_y = internal_rand(6) * 2;
+    if (internal_rand(2) != 0)
     {
       s.grid_x = s.grid_x + 1;
     }
@@ -504,7 +504,7 @@ int RunCastleDungeonBoard(int dungeon_index)
   DrawCastleDungeonBoard(0, 1, dungeon_index);
   WaitForInputEventUnlessBlocked();
   DrawCastleDungeonBoard(0, 0, dungeon_index);
-  s.next_ambient_ticks = RandomIntLessThan(0x5a) + 0x5a;
+  s.next_ambient_ticks = internal_rand(0x5a) + 0x5a;
   ConsumeUiTickCount();
   s.board_state = 1;
   do
@@ -514,8 +514,8 @@ int RunCastleDungeonBoard(int dungeon_index)
       if ((s.ambient_sound_path[0xc] == '5') && (s.ambient_repeat_count != 0))
       {
         s.ambient_repeat_count = s.ambient_repeat_count + -1;
-        PlaySoundWithPitchAndPan(0x65, RandomIntLessThan(0x14) + 0x50, 100, RandomIntLessThan(100) + -0x32);
-        s.next_ambient_ticks = RandomIntLessThan(0x3c) + 0x1e;
+        PlaySoundWithPitchAndPan(0x65, internal_rand(0x14) + 0x50, 100, internal_rand(100) + -0x32);
+        s.next_ambient_ticks = internal_rand(0x3c) + 0x1e;
         ConsumeUiTickCount();
         continue;
       }
@@ -523,21 +523,21 @@ int RunCastleDungeonBoard(int dungeon_index)
       {
         do
         {
-          s.input_or_sound_code = RandomIntLessThan(5) + 0x31;
+          s.input_or_sound_code = internal_rand(5) + 0x31;
         } while (s.ambient_sound_path[0xc] == s.input_or_sound_code);
         s.ambient_sound_path[0xc] = (char)s.input_or_sound_code;
       }
       sound_unload(0x65);
       LoadSoundWithDriveFallback(s.ambient_sound_path, 0x65, 0);
-      PlaySoundWithPitchAndPan(0x65, RandomIntLessThan(0x14) + 0x50, 100, RandomIntLessThan(100) + -0x32);
+      PlaySoundWithPitchAndPan(0x65, internal_rand(0x14) + 0x50, 100, internal_rand(100) + -0x32);
       if ((s.ambient_sound_path[0xc] == '5') && (s.ambient_repeat_count == 0))
       {
-        s.ambient_repeat_count = RandomIntLessThan(3) + 2;
-        s.next_ambient_ticks = RandomIntLessThan(0x1e) + 0x3c;
+        s.ambient_repeat_count = internal_rand(3) + 2;
+        s.next_ambient_ticks = internal_rand(0x1e) + 0x3c;
       }
       else
       {
-        s.next_ambient_ticks = RandomIntLessThan(0x5a) + 0x78;
+        s.next_ambient_ticks = internal_rand(0x5a) + 0x78;
       }
       ConsumeUiTickCount();
     }
@@ -603,7 +603,7 @@ int RunCastleDungeonBoard(int dungeon_index)
               PlaySoundEffectOnChannel("x:sound\\dice.wav", 0xf, 100, 100, 0);
               if ((rand() & 1) != 0)
               {
-                g_next_duel_card_id = RandomIntLessThan(3) + 1;
+                g_next_duel_card_id = internal_rand(3) + 1;
                 g_dungeon_life_reward_delta = g_dungeon_life_reward_delta + g_next_duel_card_id;
                 goto LAB_004443bd;
               }
@@ -612,7 +612,7 @@ int RunCastleDungeonBoard(int dungeon_index)
               {
                 do
                 {
-                  s.event_code = deck[RandomIntLessThan(500)];
+                  s.event_code = deck[internal_rand(500)];
                   s.candidate_card_id = s.event_code & 0xfff;
                 } while (s.candidate_card_id < 6);
               } while ((s.event_code & 0x4000) != 0);
@@ -677,7 +677,7 @@ int RunCastleDungeonBoard(int dungeon_index)
               s.card_slot_attempts = 0;
               do
               {
-                s.event_code = RandomIntLessThan(3);
+                s.event_code = internal_rand(3);
               } while ((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code] == -1 && ++s.card_slot_attempts < 100);
 
               if ((&g_castle_dungeon_slots[dungeon_index].card_slot_1)[s.event_code] != -1)
@@ -697,7 +697,7 @@ int RunCastleDungeonBoard(int dungeon_index)
               }
               else
               {
-                s.gold_reward = RandomIntLessThan(100) * (g_shandalar_difficulty + 2) + 100;
+                s.gold_reward = internal_rand(100) * (g_shandalar_difficulty + 2) + 100;
                 s.has_mana_reward = 0;
                 s.gold_reward = s.gold_reward - s.gold_reward % 10;
                 PlaySoundEffectOnChannel("x:sound\\treasure.wav", 0xf, 100, 100, 0);
@@ -705,7 +705,7 @@ int RunCastleDungeonBoard(int dungeon_index)
                 s.mana_reward_text[0] = '\0';
                 for (s.mana_color = 1; s.mana_color <= 5; s.mana_color = s.mana_color + 1)
                 {
-                  s.mana_reward_delta = RandomIntLessThan(2);
+                  s.mana_reward_delta = internal_rand(2);
                   if (s.mana_reward_delta != 0)
                   {
                     sprintf((char *)((int)s.mana_reward_text + strlen(s.mana_reward_text)), gs_dungeon_0077f000[s.mana_color + 5], s.mana_reward_delta);
@@ -825,8 +825,8 @@ int RunCastleDungeonBoard(int dungeon_index)
     {
       do
       {
-        s.grid_x = RandomIntLessThan(0x40);
-        s.grid_y = RandomIntLessThan(0x40);
+        s.grid_x = internal_rand(0x40);
+        s.grid_y = internal_rand(0x40);
         s.random_or_flags = GetWorldMapPixelFlags(s.grid_x, s.grid_y) & 0xf;
       } while (GetWorldTileType(s.grid_x, s.grid_y) == 0);
     } while ((GetWorldMapPixelFlags(s.grid_x, s.grid_y) & 0x30) != 0);
@@ -936,7 +936,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   {
     do
     {
-      s.work_index = RandomIntLessThan(500);
+      s.work_index = internal_rand(500);
     } while (deck[s.work_index] == -1);
   } while (((deck[s.work_index] & 0x4000) != 0) || ((deck[s.work_index] & 0xfff) <= 4));
   global_ante_cards[0][0] = deck[s.work_index] & 0xfff;
@@ -990,8 +990,8 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
       StretchBlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x280, 0x1e0, g_page0_window_bounds, 0, 0, global_screen_width,
                               global_screen_height);
       DrawAdventureCard(global_ante_cards[0][0],
-                        RandomIntLessThan(ScaleUiCoordinate(10)) + s.deck_index * 0x62 + 0x21,
-                        RandomIntLessThan(ScaleUiCoordinate(10)) + 0x50, 1, g_ui_message_buffer);
+                        internal_rand(ScaleUiCoordinate(10)) + s.deck_index * 0x62 + 0x21,
+                        internal_rand(ScaleUiCoordinate(10)) + 0x50, 1, g_ui_message_buffer);
       ClearInputAndWaitForMouseRelease();
       WaitForInputEventUnlessBlocked();
       RemoveCardFromDeckById(global_ante_cards[0][s.deck_index]);
@@ -1874,9 +1874,9 @@ int PopulateDungeonCellEvents(void)
                (DUNGEON_CELL_DISTANCE(s.x, s.y) >= 8))
       {
         s.event_code = ClampIntToRange(((DUNGEON_CELL_DISTANCE(s.x, s.y) - s.min_dead_end_depth) / 4 - 2) +
-                                           RandomIntLessThan(6) + s.connected_count + s.diagonal_count,
+                                           internal_rand(6) + s.connected_count + s.diagonal_count,
                                        0, 6);
-        if (RandomIntLessThan(g_shandalar_difficulty + 3) == 0)
+        if (internal_rand(g_shandalar_difficulty + 3) == 0)
         {
           s.event_code = 1;
         }

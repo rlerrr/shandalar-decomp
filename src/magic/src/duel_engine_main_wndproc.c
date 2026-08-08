@@ -96,12 +96,8 @@ card_id_t get_card_window_displayed_card_id(HWND hwnd);
 int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
 int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_card);
 int displayed_card_indices_invalid(int player, int card);
-extern int DAT_008ced00[16];
-#ifdef SHANDALAR
-int g_manalink_is_host;
-#else
+extern int g_duel_ante_card_ids[16];
 extern int g_manalink_is_host;
-#endif
 #ifndef SHANDALAR
 extern HANDLE global_mutex_GameInit;
 #endif
@@ -171,7 +167,6 @@ PickCardDialogContext g_pick_card_dialog_context = {PICK_CARD_COLOR_BLACK, PICK_
 PickCardDialogContext *g_pick_card_dialog_context_ptr;
 
 // GLOBAL: MAGIC 0x008a9140
-// GLOBAL: SHANDALAR 0x008bd340
 OPENFILENAMEA g_duel_save_game_openfilename;
 
 // GLOBAL: MAGIC 0x00746368

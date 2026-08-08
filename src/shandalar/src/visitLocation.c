@@ -6,6 +6,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
@@ -145,7 +146,7 @@ int RestoreAdventureUiPaletteAndFocus(void);
 void RunAdventureStatsMenu(void);
 
 void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner_label);
-int RandomIntLessThan(int max_exclusive);
+int internal_rand(int max_exclusive);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 void DrawAdventureCardSized(int card_index, int x, int y, int width, int height, int full_card, char *banner_label);
 void ShowTownHintTextPopup(int hint_index);
@@ -227,7 +228,7 @@ void CopyGraphicsRect(FacemakerWindowBounds *src_page, int src_x, int src_y, int
 int RunSaveMenuAndSelectSlot(void);
 int RunLoadGameMenu(void);
 void SaveGameToSlot(int save_slot_index);
-int LoadGameFromSlot(int save_slot_index);
+int load_selected_duel_save_slot(int save_slot_index);
 int RestoreAdventureUiPaletteAndFocus(void);
 void ShowWorldMapScreen(int mode);
 void ShowCityInfoScreen(int unused);
@@ -295,8 +296,7 @@ int g_current_town_slot_index;
 // GLOBAL: SHANDALAR 0x00580da4
 TownDialogCallback g_town_dialog_callback = (TownDialogCallback)DrawTiledDialogBoxFrame;
 
-// GLOBAL: SHANDALAR 0x008e2e50
-int g_duel_ante_card_ids[16];
+extern int g_duel_ante_card_ids[16];
 
 // GLOBAL: SHANDALAR 0x0058edd8
 int g_wiseman_duel_reward_card_csvids[10] = {0x24d, 0x1b3, 0xc1, 0x1b8, 0x106, 0x1d0, 0x87, 0x1dd, 0xd3, 0xd};
@@ -307,11 +307,6 @@ int g_wiseman_city_block_index = -1;
 
 // GLOBAL: SHANDALAR 0x0058f0ac
 int g_wiseman_card_choice_result = 0;
-
-// GLOBAL: SHANDALAR 0x0073c010
-int g_deck_restore_buffer[500];
-// GLOBAL: SHANDALAR 0x0073c7e0
-int g_restore_deck_after_duel;
 
 extern int g_showlibrary_menu_selection;
 // GLOBAL: SHANDALAR 0x0058edd0
@@ -738,7 +733,7 @@ void TriggerWizardSiegeNewsflash(int wizard_color)
       }
     }
 
-    s.score = (s.ruled_by_color_count[s.color] << 5) + RandomIntLessThan(0x80);
+    s.score = (s.ruled_by_color_count[s.color] << 5) + internal_rand(0x80);
     if (s.score < s.best_score)
     {
       s.best_score = s.score;
@@ -1452,7 +1447,7 @@ redraw_buy_cards_screen:
         }
 
         g_town_slots[s.town_index].card_restock_timers[s.idx] =
-            RandomIntLessThan(5) * (g_shandalar_difficulty + 2) + g_quest_restock_timer;
+            internal_rand(5) * (g_shandalar_difficulty + 2) + g_quest_restock_timer;
         RecountDeckCardTotals();
         (void)DrawAdventureInterfaceLayout(1);
       }
@@ -1627,7 +1622,7 @@ int FindHintPairIndexForOfferCard(int card_internal_id)
   }
   else
   {
-    return s.candidate_hint_pair_indices[RandomIntLessThan(s.candidate_hint_pair_count)];
+    return s.candidate_hint_pair_indices[internal_rand(s.candidate_hint_pair_count)];
   }
 }
 
@@ -1831,7 +1826,7 @@ int RunTownServicesMenu(int town_index)
   s.card_id = 0xffffffff;
   for (s.slot_i = 0; s.slot_i < 199; s.slot_i = s.slot_i + 1)
   {
-    s.scan_color = RandomIntLessThan(5) + 1;
+    s.scan_color = internal_rand(5) + 1;
     if (((g_amulet_inventory[s.scan_color - 1] != 0) || (0x50 < s.slot_i)) &&
         ((s.tile_magic_mask & (1U << (unsigned char)s.scan_color)) != 0))
     {
@@ -1847,13 +1842,13 @@ int RunTownServicesMenu(int town_index)
   if (town_index != g_last_town_services_town_index)
   {
     /* Choose a quest/encounter target for this visit. */
-    if ((RandomIntLessThan(3) != 0 || (g_town_slots[town_index].status_and_ruling_wizard & 1) != 0) &&
+    if ((internal_rand(3) != 0 || (g_town_slots[town_index].status_and_ruling_wizard & 1) != 0) &&
         g_town_slots[town_index].location_type == 1)
     {
       s.quest_button_enabled = 0;
       do
       {
-        g_pending_quest_destination = RandomIntLessThan(0x80);
+        g_pending_quest_destination = internal_rand(0x80);
         s.tmp_i = ApproximateDistance(g_town_slots[town_index].world_x - g_town_slots[g_pending_quest_destination].world_x,
                                       g_town_slots[town_index].world_y - g_town_slots[g_pending_quest_destination].world_y);
         s.quest_button_enabled = s.quest_button_enabled + 1;
@@ -1863,7 +1858,7 @@ int RunTownServicesMenu(int town_index)
                                                    ((s.quest_button_enabled / 0x10 + 0x10) < s.tmp_i) ||
                                                    ((g_town_slots[g_pending_quest_destination].status_and_ruling_wizard & 0xff01U) != 0)));
 
-      if (RandomIntLessThan(2) != 0)
+      if (internal_rand(2) != 0)
       {
         g_pending_quest_type = 0;
       }
@@ -1884,9 +1879,9 @@ int RunTownServicesMenu(int town_index)
         }
       }
 
-      s.scan_color = RandomIntLessThan(5) + 1;
+      s.scan_color = internal_rand(5) + 1;
       if ((IsCardColorCompatibleWithMask(1 << (unsigned char)s.scan_color, 1 << (unsigned char)s.card_id, 3) == 0) &&
-          (RandomIntLessThan(2) != 0))
+          (internal_rand(2) != 0))
       {
         g_pending_quest_type = 1;
         g_pending_quest_color = s.scan_color;
@@ -1895,7 +1890,7 @@ int RunTownServicesMenu(int town_index)
     else
     {
     choose_lair_or_monster:
-      s.scan_color = (unsigned int)RandomIntLessThan(6);
+      s.scan_color = (unsigned int)internal_rand(6);
       if (g_lair_or_monster_slots[s.scan_color].entry_type > SHANDALAR_ENTRY_LAIR)
       {
         g_pending_quest_destination = town_index;
@@ -1906,10 +1901,10 @@ int RunTownServicesMenu(int town_index)
         g_pending_quest_destination = -1;
       }
 
-      if ((RandomIntLessThan(4) == 0) || (g_pending_quest_destination == -1))
+      if ((internal_rand(4) == 0) || (g_pending_quest_destination == -1))
       {
         g_pending_quest_destination = town_index;
-        g_pending_quest_type = -PickRandomCreatureTypeForWizardTier(s.card_id, (RandomIntLessThan(8) + 2) * 2);
+        g_pending_quest_type = -PickRandomCreatureTypeForWizardTier(s.card_id, (internal_rand(8) + 2) * 2);
         FreeOpeningMenuSpriteWorkEntries(0, 8);
         g_lair_or_monster_slots[0].entry_type = SHANDALAR_ENTRY_NONE;
       }
@@ -1920,7 +1915,7 @@ int RunTownServicesMenu(int town_index)
       s.scan_color = GetWorldTileMagicMask(GetWorldTileType(g_town_slots[g_pending_quest_destination].world_x, g_town_slots[g_pending_quest_destination].world_y));
       do
       {
-        g_pending_quest_color = RandomIntLessThan(5) + 1;
+        g_pending_quest_color = internal_rand(5) + 1;
       } while ((s.scan_color & (1U << (unsigned char)g_pending_quest_color)) == 0);
     }
 
@@ -1952,7 +1947,7 @@ int RunTownServicesMenu(int town_index)
       }
     }
 
-    s.scan_color = RandomIntLessThan(s.slot_count);
+    s.scan_color = internal_rand(s.slot_count);
     for (s.slot_i = 0; s.slot_i < s.slot_count; s.slot_i = s.slot_i + 1)
     {
       if (g_town_shop_card_ids[s.slot_i] != -1 ||
@@ -1962,16 +1957,16 @@ int RunTownServicesMenu(int town_index)
         continue;
       }
 
-      s.rand_mask = 1 << (unsigned char)RandomIntLessThan(7);
+      s.rand_mask = 1 << (unsigned char)internal_rand(7);
       do
       {
         if (s.slot_i == s.scan_color)
         {
-          g_town_shop_card_ids[s.slot_i] = s.distance = RandomIntLessThan(5);
+          g_town_shop_card_ids[s.slot_i] = s.distance = internal_rand(5);
         }
         else
         {
-          g_town_shop_card_ids[s.slot_i] = s.distance = RandomIntLessThan(g_card_count - 0x39);
+          g_town_shop_card_ids[s.slot_i] = s.distance = internal_rand(g_card_count - 0x39);
         }
 
         s.ok = 0;
@@ -2024,7 +2019,7 @@ int RunTownServicesMenu(int town_index)
     }
     if (s.hint_pair_count != 0)
     {
-      s.rand_slot = RandomIntLessThan(s.hint_pair_count);
+      s.rand_slot = internal_rand(s.hint_pair_count);
       g_town_hint_pair_index = s.hint_pairs[s.rand_slot].hint_pair_index;
       g_town_hint_offer_slot_index = s.hint_pairs[s.rand_slot].slot_index;
     }
@@ -2225,7 +2220,7 @@ loop:
         s.save_slot_index = RunLoadGameMenu();
         if (s.save_slot_index != -1)
         {
-          (void)LoadGameFromSlot(s.save_slot_index);
+          (void)load_selected_duel_save_slot(s.save_slot_index);
         }
         LoadPcxIntoPageNoPalette("advfac64.pic");
         RefreshAdventureInterfaceLayout();
@@ -2466,7 +2461,7 @@ ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int cre
   tries = 0;
   do
   {
-    creature_type = RandomIntLessThan((int)gs_creature_name_count_00593934 - 1) + 1;
+    creature_type = internal_rand((int)gs_creature_name_count_00593934 - 1) + 1;
     tries++;
   } while (tries < 999 && (g_shandalar_monster_definitions[creature_type].tier != creature_tier ||
                            (wizard_color != 0 && ((1 << (unsigned char)wizard_color) & (int)(signed char)g_shandalar_monster_definitions[creature_type].color_mask) == 0)));
@@ -2933,7 +2928,7 @@ int PickUndefeatedWizardColor(void)
     }
   }
 
-  s.selection = RandomIntLessThan(s.available_count);
+  s.selection = internal_rand(s.available_count);
 
   for (s.wizard_index = 1; (s.wizard_index <= 5) && (s.selection != 0); s.wizard_index = s.wizard_index + 1)
   {
@@ -3090,11 +3085,11 @@ int FillWisemanCityBlockTownNameSubstitutions(char *out_a, char *out_b, int choo
 
     if (g_wiseman_city_block_active_town_count >= 2)
     {
-      g_wiseman_city_block_town_choice_index_a = RandomIntLessThan(g_wiseman_city_block_active_town_count);
-      g_wiseman_city_block_town_choice_index_b = RandomIntLessThan(g_wiseman_city_block_active_town_count);
+      g_wiseman_city_block_town_choice_index_a = internal_rand(g_wiseman_city_block_active_town_count);
+      g_wiseman_city_block_town_choice_index_b = internal_rand(g_wiseman_city_block_active_town_count);
       while (g_wiseman_city_block_town_choice_index_b == g_wiseman_city_block_town_choice_index_a)
       {
-        g_wiseman_city_block_town_choice_index_b = RandomIntLessThan(g_wiseman_city_block_active_town_count);
+        g_wiseman_city_block_town_choice_index_b = internal_rand(g_wiseman_city_block_active_town_count);
       }
     }
     else
@@ -3158,7 +3153,7 @@ int PickOpenWorldMagicSlot(void)
     return -1;
   }
 
-  s.selection = RandomIntLessThan(s.open_slot_count);
+  s.selection = internal_rand(s.open_slot_count);
 
   for (s.slot_index = 0; (s.slot_index < 0xc) && (s.selection != 0); s.slot_index = s.slot_index + 1)
   {
@@ -3197,7 +3192,7 @@ int PickWisemanCastleDungeonSlotForHint(void)
     s.score = ApproximateDistance(g_world_player_tile_x - g_castle_dungeon_slots[s.dungeon_index].world_x,
                                   g_world_player_tile_y - g_castle_dungeon_slots[s.dungeon_index].world_y);
 
-    s.score = RandomIntLessThan(s.score) + s.score / 2;
+    s.score = internal_rand(s.score) + s.score / 2;
 
     if ((g_castle_dungeon_slots[s.dungeon_index].rules_bitmap & 0x200) != 0)
     {
@@ -3221,7 +3216,7 @@ void RevealRandomCastleDungeonClue(int dungeon_index)
 
   do
   {
-    clue_index = RandomIntLessThan(3);
+    clue_index = internal_rand(3);
   } while ((g_castle_dungeon_slots[dungeon_index].clues_bitmap & (1U << (unsigned char)clue_index)) != 0);
 
   g_castle_dungeon_slots[dungeon_index].clues_bitmap |= 1 << (unsigned char)clue_index;
@@ -3274,7 +3269,7 @@ unsigned int RunWisemanAdviceSequence(int preferred_color, int new_town_visit, i
   }
 
 LAB_0053197c:
-  if (((RandomIntLessThan(5) == 0) || (s.force_current_advice_stage != 0)) || (new_town_visit == 0))
+  if (((internal_rand(5) == 0) || (s.force_current_advice_stage != 0)) || (new_town_visit == 0))
   {
     if ((g_wiseman_general_block_index == -1) || (new_town_visit != 0))
     {
@@ -3306,7 +3301,7 @@ LAB_0053197c:
   }
 
 LAB_00531afb:
-  if ((RandomIntLessThan(5) == 0) || (s.force_current_advice_stage != 0))
+  if ((internal_rand(5) == 0) || (s.force_current_advice_stage != 0))
   {
     s.previous_city_block_index = g_wiseman_city_block_index;
     if ((g_wiseman_city_block_index == -1) || (new_town_visit != 0))
@@ -3388,7 +3383,7 @@ LAB_00531afb:
 
   /* Quest/status block + special actions. */
 LAB_00531ee7:
-  if ((RandomIntLessThan(5) < 2) || (s.force_current_advice_stage != 0))
+  if ((internal_rand(5) < 2) || (s.force_current_advice_stage != 0))
   {
     if (g_current_quest_destination != -1)
     {
@@ -3530,7 +3525,7 @@ LAB_00531ee7:
   case 4:
     if (g_next_duel_card_id == -1)
     {
-      g_next_duel_card_id = FindCardIndexByCsvid(g_wiseman_duel_reward_card_csvids[(RandomIntLessThan(2) - 2) + preferred_color * 2]);
+      g_next_duel_card_id = FindCardIndexByCsvid(g_wiseman_duel_reward_card_csvids[(internal_rand(2) - 2) + preferred_color * 2]);
       sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x10], global_cards_data[g_next_duel_card_id].name);
     }
     else
@@ -4231,7 +4226,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
         }
       }
 
-      s.price = (s.price * 0x4e2) / (RandomIntLessThan(((g_world_player_y & 0x1f) * (g_world_player_x & 0x1f)) / 10) + 0x2ee);
+      s.price = (s.price * 0x4e2) / (internal_rand(((g_world_player_y & 0x1f) * (g_world_player_x & 0x1f)) / 10) + 0x2ee);
 
       s.price = ClampIntToRange((s.price / 0x32) * 5, 5, 1000);
 
@@ -4299,7 +4294,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
         {
           do
           {
-            s.random_color = RandomIntLessThan(5);
+            s.random_color = internal_rand(5);
           } while (g_amulet_inventory[s.random_color] == 0);
           s.required = s.required - 1;
           g_amulet_inventory[s.random_color] = g_amulet_inventory[s.random_color] - 1;
@@ -4476,7 +4471,7 @@ int VisitTownSlot(int town_index)
     if (RunTextMenuAtScaled(g_ui_message_buffer, 0x78, 0x38) == 1)
     {
       opponent_starting_card_id_2 = FindCardIndexByCsvid(
-          *(&g_dungeon_monster_duel_music_csvids[(s.duel_wizard_color - 1) * 3] + RandomIntLessThan(3)));
+          *(&g_dungeon_monster_duel_music_csvids[(s.duel_wizard_color - 1) * 3] + internal_rand(3)));
       g_lair_or_monster_slots[6].color = s.duel_wizard_color;
       g_lair_or_monster_slots[6].entry_type = (ShandalarEntryType)s.duel_creature_tier_or_type;
 

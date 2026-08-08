@@ -93,7 +93,8 @@ int g_duel_cached_library_count_player_0;
 // GLOBAL: SHANDALAR 0x008e2680
 int g_duel_cached_exile_count_player_1;
 // GLOBAL: MAGIC 0x008ced00
-int DAT_008ced00[16];
+// GLOBAL: SHANDALAR 0x008e2e50
+int g_duel_ante_card_ids[16];
 // GLOBAL: MAGIC 0x008cefb4
 // GLOBAL: SHANDALAR 0x008e3100
 int g_duel_cached_library_count_player_1;
@@ -290,7 +291,7 @@ void append_displayed_card_name(int player, int card)
   card_name = get_displayed_card_name(player, card);
   if (card_name != NULL)
   {
-    strcat(g_duel_text_scratch_buffer, card_name);
+    strcat(g_ui_message_buffer, card_name);
   }
 }
 
@@ -729,11 +730,11 @@ int do_dialog(int who_chooses,
   }
 
   strcpy(s.displayed_options, options);
-  strcpy(g_duel_text_scratch_buffer, "");
+  strcpy(g_ui_message_buffer, "");
   if (who_chooses == other_player)
   {
-    sprintf(g_duel_text_scratch_buffer, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
-    strcat(g_duel_text_scratch_buffer, "\n\n");
+    sprintf(g_ui_message_buffer, gs_prompt_new_full_card_0091b150, DAT_007a7c60);
+    strcat(g_ui_message_buffer, "\n\n");
     s.at_start_of_line = 1;
     s.remaining_choice = ai_choice;
     for (s.option_index = 0; s.option_index < 1000; ++s.option_index)
@@ -755,10 +756,10 @@ int do_dialog(int who_chooses,
   else
   {
     append_displayed_card_name(bigcard_player, bigcard_card);
-    strcat(g_duel_text_scratch_buffer, "...\n");
+    strcat(g_ui_message_buffer, "...\n");
   }
 
-  strcat(g_duel_text_scratch_buffer, s.displayed_options);
+  strcat(g_ui_message_buffer, s.displayed_options);
   if (PLAYER_CARD_INSTANCE(bigcard_player, bigcard_card).internal_card_id == -1 ||
       PLAYER_CARD_INSTANCE(smallcard_player, smallcard_card).internal_card_id == -1)
   {
@@ -775,7 +776,7 @@ int do_dialog(int who_chooses,
   }
 
   s.dialog_result =
-      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, g_duel_text_scratch_buffer, s.dialog_mode);
+      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, g_ui_message_buffer, s.dialog_mode);
 
   if (who_chooses == active_player && (g_duel_network_flags & 2) != 0)
   {
@@ -968,7 +969,7 @@ unsigned int refresh_duel_display_cache(void)
 
   s.zone_index = 0;
   DAT_008966d0 = 0;
-  for (; s.zone_index < 0x10 && DAT_008ced00[s.zone_index] != -1; ++s.zone_index)
+  for (; s.zone_index < 0x10 && g_duel_ante_card_ids[s.zone_index] != -1; ++s.zone_index)
   {
     ++DAT_008966d0;
   }
@@ -1435,6 +1436,7 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
 }
 
 // FUNCTION: MAGIC 0x00506fa0
+// FUNCTION: SHANDALAR 0x004c5ca0
 INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct

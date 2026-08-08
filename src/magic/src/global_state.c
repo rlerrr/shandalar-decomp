@@ -10,15 +10,23 @@
 #include "magic/src/game_support.h"
 #include "magic/src/global_duel_ui_ids.h"
 #include "magic/src/global_other.h"
+#ifdef SHANDALAR
+#include "shandalar/src/shandalar_global_strings.h"
+#endif
 
 extern card_data_t global_cards_data[];
 
 int CardTypeFromID(int csvid);
 int is_card_available_in_installed_expansion(unsigned int csvid);
 int save_or_load_data(void *buf, unsigned int count);
+#ifdef SHANDALAR
+void HideMouseCursorNested(void);
+void ShowMouseCursorNested(void);
+int GetSaveDriveIndex(void);
+int RunTextMenuAt(char *menu_text, int left_x, int top_y);
+int LoadGameFromPath(char *save_file_path);
+#endif
 
-// GLOBAL: MAGIC 0x0057b070
-static char s_D_MAGIC0_SVE_0057b070[] = "D:MAGIC0.SVE";
 // GLOBAL: MAGIC 0x005710f8
 // GLOBAL: SHANDALAR 0x00588114
 static char *s_sealed_deck_registry_path_005710e0 = "Software\\MicroProse\\Magic: The Gathering\\SealedDeckOptions";
@@ -899,6 +907,7 @@ void save_gametype0(char *path)
 }
 
 // FUNCTION: MAGIC 0x004c09b0
+// FUNCTION: SHANDALAR 0x004ece40
 int int_to_hex_digit(int value)
 {
   if (value >= 0 && value <= 9)
@@ -943,6 +952,7 @@ unsigned int load_duel_save_file_ver1(char *path)
 }
 
 // FUNCTION: MAGIC 0x004ecf12
+// FUNCTION: SHANDALAR 0x005018e8
 unsigned int load_or_probe_duel_save_slot(char *path, int probe_only)
 {
   strcpy(path + 9, "SVE");
@@ -951,24 +961,96 @@ unsigned int load_or_probe_duel_save_slot(char *path, int probe_only)
     g_save_file_fd = _open(path, 0x8000);
     if (g_save_file_fd != -1)
     {
-      strcat(g_duel_text_scratch_buffer, "OK\n");
+      strcat(g_ui_message_buffer, "OK\n");
     }
     else
     {
-      sprintf(g_duel_text_scratch_buffer, "%s\n", _DAT_00742fb8);
+#ifdef SHANDALAR
+      sprintf(g_ui_message_buffer, "%s\n", gs_loadsave_0077d1b0[2]);
+#else
+      sprintf(g_ui_message_buffer, "%s\n", _DAT_00742fb8);
+#endif
     }
     _close(g_save_file_fd);
     return (g_save_file_fd != -1);
   }
 
+#ifdef SHANDALAR
+  return (unsigned int)LoadGameFromPath(path);
+#else
   return load_duel_save_file_ver1(path);
+#endif
 
   return 1;
 }
 
 // FUNCTION: MAGIC 0x004ecdc0
+// FUNCTION: SHANDALAR 0x00501760
 int load_selected_duel_save_slot(int player)
 {
+#ifdef SHANDALAR
+  struct
+  {
+    int save_drive_index;
+    unsigned int slot_index;
+  } s;
+
+  global_saveload_loading = 1;
+  HideMouseCursorNested();
+  s.save_drive_index = GetSaveDriveIndex();
+  if (s.save_drive_index != -1)
+  {
+    if (player == -1)
+    {
+      strcpy(g_ui_message_buffer, "\x8cSelect Load File...\n");
+      g_load_menu_valid_slot_mask = 0;
+
+      for (s.slot_index = 0; s.slot_index < 10; s.slot_index = s.slot_index + 1)
+      {
+        g_save_file_path[7] = (char)int_to_hex_digit(s.slot_index);
+        if (load_or_probe_duel_save_slot(g_save_file_path, 1) != 0)
+        {
+          g_load_menu_valid_slot_mask |= (1 << (unsigned char)s.slot_index);
+        }
+      }
+
+      ShowMouseCursorNested();
+      g_selected_save_slot_index = RunTextMenuAt(g_ui_message_buffer, 0x30, 0x40);
+      HideMouseCursorNested();
+      if ((g_load_menu_valid_slot_mask & (1 << (unsigned char)g_selected_save_slot_index)) == 0)
+      {
+        g_selected_save_slot_index = -1;
+      }
+    }
+    else
+    {
+      g_selected_save_slot_index = player;
+    }
+
+    if (g_selected_save_slot_index != -1)
+    {
+      g_save_file_path[7] = (char)int_to_hex_digit(g_selected_save_slot_index);
+      if (load_or_probe_duel_save_slot(g_save_file_path, 0) == 0)
+      {
+        g_selected_save_slot_index = -1;
+      }
+    }
+
+    if (g_selected_save_slot_index == -1)
+    {
+      RunTextMenuAt("Error Loading Save Game File:EXITING\n ", 100, 0x50);
+      exit(1);
+    }
+
+    ShowMouseCursorNested();
+    return g_selected_save_slot_index;
+  }
+  else
+  {
+    ShowMouseCursorNested();
+    return -1;
+  }
+#else
   struct
   {
     int save_slot_source;
@@ -981,39 +1063,39 @@ int load_selected_duel_save_slot(int player)
   {
     if (player == -1)
     {
-      strcpy(g_duel_text_scratch_buffer, "\x8c"
-                           "Select Load File...\n");
-      _DAT_00743028 = 0;
+      strcpy(g_ui_message_buffer, "\x8cSelect Load File...\n");
+      g_load_menu_valid_slot_mask = 0;
       for (s.slot = 0; s.slot < 10; s.slot++)
       {
-        s_D_MAGIC0_SVE_0057b070[7] = (char)int_to_hex_digit(s.slot);
-        if (load_or_probe_duel_save_slot(s_D_MAGIC0_SVE_0057b070, 1) != 0)
-          _DAT_00743028 |= 1 << (char)s.slot;
+        g_save_file_path[7] = (char)int_to_hex_digit(s.slot);
+        if (load_or_probe_duel_save_slot(g_save_file_path, 1) != 0)
+          g_load_menu_valid_slot_mask |= 1 << (char)s.slot;
       }
-      DAT_00716238 = 0;
-      if ((_DAT_00743028 & (1 << (char)DAT_00716238)) == 0)
-        DAT_00716238 = -1;
+      g_selected_save_slot_index = 0;
+      if ((g_load_menu_valid_slot_mask & (1 << (char)g_selected_save_slot_index)) == 0)
+        g_selected_save_slot_index = -1;
     }
     else
     {
-      DAT_00716238 = player;
+      g_selected_save_slot_index = player;
     }
 
-    if (DAT_00716238 != -1)
+    if (g_selected_save_slot_index != -1)
     {
-      s_D_MAGIC0_SVE_0057b070[7] = (char)int_to_hex_digit(DAT_00716238);
-      if (load_or_probe_duel_save_slot(s_D_MAGIC0_SVE_0057b070, 0) == 0)
-        DAT_00716238 = -1;
+      g_save_file_path[7] = (char)int_to_hex_digit(g_selected_save_slot_index);
+      if (load_or_probe_duel_save_slot(g_save_file_path, 0) == 0)
+        g_selected_save_slot_index = -1;
     }
 
-    if (DAT_00716238 == -1)
+    if (g_selected_save_slot_index == -1)
       exit(1);
-    return DAT_00716238;
+    return g_selected_save_slot_index;
   }
   else
   {
     return -1;
   }
+#endif
 }
 
 // FUNCTION: MAGIC 0x004ee26e

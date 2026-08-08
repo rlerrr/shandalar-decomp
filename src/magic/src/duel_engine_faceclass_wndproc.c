@@ -83,6 +83,7 @@ char g_face_menu_directive_self_text[0x38];
 HBITMAP g_face_background_pics[6];
 
 // GLOBAL: MAGIC 0x00637c70
+// GLOBAL: SHANDALAR 0x00604420
 int DAT_00637c70;
 
 // GLOBAL: MAGIC 0x00925bb0

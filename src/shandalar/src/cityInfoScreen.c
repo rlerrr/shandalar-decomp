@@ -97,8 +97,7 @@ EncodedImage *g_city_info_done_button_sprites[3];
 // GLOBAL: SHANDALAR 0x00746e70
 EncodedImage *g_city_info_scroll_button_sprites[0x10];
 
-// GLOBAL: SHANDALAR 0x007894f4
-int g_reveal_all_world_info;
+extern int g_reveal_all_world_info;
 
 // GLOBAL: SHANDALAR 0x00581918
 int g_wizard_text_colors[0x10] = {

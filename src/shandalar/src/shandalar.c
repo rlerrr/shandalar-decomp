@@ -168,8 +168,7 @@ char g_sound_drive_letter;
 char *g_advblocks_file_buffer;
 // GLOBAL: SHANDALAR 0x0078cf08
 FILE *g_advbuttons_ini_file;
-// GLOBAL: SHANDALAR 0x0078cf10
-char g_ui_message_buffer[0x1000];
+extern char g_ui_message_buffer[0x1000];
 // GLOBAL: SHANDALAR 0x0078df10
 char g_ini_string_scratch[0x28];
 // GLOBAL: SHANDALAR 0x0078df38
@@ -178,8 +177,7 @@ int g_done_text_table_entry;
 int g_legacy_mouse_active = 0;
 // GLOBAL: SHANDALAR 0x00586498
 int g_hide_world_map_overlays = 0;
-// GLOBAL: SHANDALAR 0x009300f0
-int g_adventure_world_exit_requested;
+extern int g_adventure_world_exit_requested;
 // GLOBAL: SHANDALAR 0x007486d0
 EncodedImage *g_ttsprite_special_sprite_a;
 // GLOBAL: SHANDALAR 0x007486e0
@@ -188,8 +186,7 @@ EncodedImage *g_world_magic_avatar_sprites[5];
 EncodedImage *g_face_preview_sprite_selected;
 // GLOBAL: SHANDALAR 0x0078172c
 EncodedImage *g_face_preview_sprite_group[6];
-// GLOBAL: SHANDALAR 0x0077f1c8
-unsigned int g_load_menu_valid_slot_mask_0077f1c8;
+extern unsigned int g_load_menu_valid_slot_mask;
 // GLOBAL: SHANDALAR 0x0073e9dc
 int g_world_scene_reveal_effect_pending;
 // GLOBAL: SHANDALAR 0x00591214
@@ -240,8 +237,7 @@ int g_mouse_button_mask_snapshot;
 DialogBoxSpriteBank g_dialog_box_sprite_bank;
 // GLOBAL: SHANDALAR 0x0058e050
 HANDLE g_statwin_dll_module = 0;
-// GLOBAL: SHANDALAR 0x0058c038
-char g_save_file_path[] = "D:MAGIC0.SVE";
+extern char g_save_file_path[13];
 // GLOBAL: SHANDALAR 0x0058c5ec
 int g_dungeon_card_effect_by_color[4] = {0, 8, 867, 939};
 // GLOBAL: SHANDALAR 0x0058c5fc
@@ -493,8 +489,7 @@ int g_last_matching_deck_card_index;
 // GLOBAL: SHANDALAR 0x005873d4
 int DAT_005873d4 = 0;
 
-// GLOBAL: SHANDALAR 0x0074cfe4
-int g_selected_save_slot_index;
+extern int g_selected_save_slot_index;
 
 #ifdef _DEBUG
 extern int g_reveal_all_world_info;
@@ -570,7 +565,6 @@ void AnimatePaletteToColor(int color_index, int palette_id);
 int RunOpeningMenu(void);
 int RunDifficultyMenu(void);
 int RunColorMenu(void);
-int RandomIntLessThan(int max_exclusive);
 int RunFacemakerFlow(void);
 void InitializeNewGameState(void);
 void GenerateAdventureWorldMap(void);
@@ -591,7 +585,7 @@ void MarkPathConnection(int x, int y, int direction_index);
 int SampleAnimatedNoiseGridBilinear(int x_fixed, int y_fixed);
 void SaveGameToSlot(int save_slot_index);
 int RunLoadGameMenu(void);
-int LoadGameFromSlot(int save_slot_index);
+int load_selected_duel_save_slot(int save_slot_index);
 int single_color_test_bit_to_color_t(int mask);
 void AddJournalEntry(int entry_type, int entry_arg);
 int LoadStatWinDllExports(void);
@@ -674,8 +668,8 @@ int RenderMenuControlRange(int first_index, int count);
 int GetUiTickCount(void);
 int SeedRandomFromTickCount(void);
 int ClampIntToRange(int value, int min_value, int max_value);
-int GetHexDigitChar(int value);
-unsigned int ValidateOrLoadSaveGame(char *save_file_path, int validate_only);
+int int_to_hex_digit(int value);
+unsigned int load_or_probe_duel_save_slot(char *save_file_path, int validate_only);
 int SaveGameWithMessage(char *save_file_path);
 int GetSaveDriveIndex(void);
 int LoadGameFromPath(char *save_file_path);
@@ -794,7 +788,7 @@ opening_menu:
     g_selected_wizard_color = RunColorMenu();
     g_starting_color = g_selected_wizard_color;
     g_duel_interface_options.player_territory_color = g_selected_wizard_color;
-    g_duel_interface_options.player_territory_type = RandomIntLessThan(3);
+    g_duel_interface_options.player_territory_type = internal_rand(3);
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
     if (g_starting_color == -1)
     {
@@ -831,8 +825,8 @@ opening_menu:
     {
       do
       {
-        g_world_player_x = RandomIntLessThan(0x40) * 0x20 + 0x10;
-        g_world_player_y = RandomIntLessThan(0x40) * 0x20 + 0x10;
+        g_world_player_x = internal_rand(0x40) * 0x20 + 0x10;
+        g_world_player_y = internal_rand(0x40) * 0x20 + 0x10;
         s.tile_mask = GetWorldTileMagicMask(GetWorldTileType(g_world_player_x / 0x20, g_world_player_y / 0x20));
       } while ((g_deck_color_bitmap & s.tile_mask) == 0);
     } while ((GetWorldMapPixelFlags(g_world_player_x / 0x20, g_world_player_y / 0x20) & 0x10) != 0);
@@ -841,12 +835,12 @@ opening_menu:
     break;
   case 1:
     skip_new_game_state_initialization = 0;
-    LoadGameFromSlot(RunLoadGameMenu());
+    load_selected_duel_save_slot(RunLoadGameMenu());
     break;
 
   case 2:
     skip_new_game_state_initialization = 0;
-    LoadGameFromSlot(3);
+    load_selected_duel_save_slot(3);
     break;
 
   case 3:
@@ -1686,12 +1680,6 @@ int EndMenuContext(void)
   return g_menu_context_index;
 }
 
-// FUNCTION: SHANDALAR 0x00522508
-int RandomIntLessThan(int max_exclusive)
-{
-  return (max_exclusive > 1) ? rand() % max_exclusive : 0;
-}
-
 // FUNCTION: SHANDALAR 0x004ce992
 void DelayUiTicks(int delay)
 {
@@ -1784,7 +1772,7 @@ void InitializeNewGameState(void)
   g_amulet_inventory[g_selected_wizard_color - 1]++;
   for (s.location_block_start_index = 0; s.location_block_start_index < 3 - g_shandalar_difficulty; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    s.icon_width_scaled = RandomIntLessThan(5);
+    s.icon_width_scaled = internal_rand(5);
     g_amulet_inventory[s.icon_width_scaled]++;
   }
 
@@ -1822,7 +1810,7 @@ unsigned int PickRandomColorBitExcludingMask(unsigned int excluded_mask)
 
   do
   {
-    entry_index = RandomIntLessThan(5) + 1;
+    entry_index = internal_rand(5) + 1;
   } while ((excluded_mask & (1U << (entry_index & 0xff))) != 0);
 
   return 1U << (entry_index & 0xff);
@@ -2001,7 +1989,7 @@ int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int colo
   do
   {
     s.found = 0;
-    s.card_index = RandomIntLessThan(g_card_count - 0x39);
+    s.card_index = internal_rand(g_card_count - 0x39);
     if ((type_mask != 0) && ((type_mask & global_cards_data[s.card_index].type) == 0))
     {
     }
@@ -2416,8 +2404,8 @@ generate_pass:
     do
     {
       s.valid_world = 0;
-      s.candidate_x = RandomIntLessThan(0x40);
-      s.candidate_y = RandomIntLessThan(0x40);
+      s.candidate_x = internal_rand(0x40);
+      s.candidate_y = internal_rand(0x40);
       s.tile_type = GetWorldTileType(s.candidate_x, s.candidate_y);
       if (s.tile_type == 0)
       {
@@ -2511,7 +2499,7 @@ generate_pass:
           {
             for (s.scan_index = 0; s.scan_index < 99; s.scan_index = s.scan_index + 1)
             {
-              s.magic_slot_or_trade_color_index = RandomIntLessThan(10) + 2;
+              s.magic_slot_or_trade_color_index = internal_rand(10) + 2;
               if (g_world_magic_slot_timers[s.magic_slot_or_trade_color_index].town_index != 0)
               {
                 continue;
@@ -2528,7 +2516,7 @@ generate_pass:
 
             if (0x63 <= s.scan_index)
             {
-              s.random_timer = RandomIntLessThan(2);
+              s.random_timer = internal_rand(2);
               g_world_magic_slot_timers[s.random_timer].town_index = s.placement_slot_index;
             }
 
@@ -2567,13 +2555,13 @@ generate_pass:
     {
       do
       {
-        s.town_index = RandomIntLessThan(0x80);
+        s.town_index = internal_rand(0x80);
       } while (g_town_slots[s.town_index].location_type <= 1);
     } while ((g_town_slots[s.town_index].location_type == 4) || (g_town_slots[s.town_index].trade_color_and_type != 0));
     g_town_slots[s.town_index].trade_color_and_type = 1 << (char)s.magic_slot_or_trade_color_index;
   }
 
-  s.scan_index = RandomIntLessThan(0xc);
+  s.scan_index = internal_rand(0xc);
   for (s.town_index = 0; s.town_index < 0x80; s.town_index = s.town_index + 1)
   {
     if ((1 < g_town_slots[s.town_index].location_type) && (g_town_slots[s.town_index].location_type < 4))
@@ -2645,7 +2633,7 @@ void GenerateTownConnections(void)
       s.sample_index = 0;
       for (; s.sample_index < 0x2a; s.sample_index = s.sample_index + 1)
       {
-        s.candidate_index = RandomIntLessThan(0x80);
+        s.candidate_index = internal_rand(0x80);
         s.distance =
             ApproximateDistance(g_town_slots[s.town_index].world_x - g_town_slots[s.candidate_index].world_x,
                                 g_town_slots[s.town_index].world_y - g_town_slots[s.candidate_index].world_y);
@@ -2903,7 +2891,7 @@ void InitializeAnimatedNoiseGrid(void)
   {
     for (s.x = 0; s.x < 0x12; s.x = s.x + 1)
     {
-      g_animated_noise_grid[0].samples[s.y][s.x] = (char)RandomIntLessThan(0x10);
+      g_animated_noise_grid[0].samples[s.y][s.x] = (char)internal_rand(0x10);
     }
     g_animated_noise_grid[0].samples[s.y][0x12] = g_animated_noise_grid[0].samples[s.y][0];
   }
@@ -2993,7 +2981,7 @@ void InitializeCastleDungeonSlots(void)
 
     do
     {
-      s.entry_index = RandomIntLessThan(10) + 5;
+      s.entry_index = internal_rand(10) + 5;
     } while (g_castle_dungeon_slots[s.entry_index].card_slot_3 != -1);
 
     if (g_castle_dungeon_slots[s.entry_index].card_slot_1 == -1)
@@ -3018,8 +3006,8 @@ void InitializeCastleDungeonSlots(void)
       {
         do
         {
-          s.candidate_x = RandomIntLessThan(0x40);
-          s.candidate_y = RandomIntLessThan(0x40);
+          s.candidate_x = internal_rand(0x40);
+          s.candidate_y = internal_rand(0x40);
         } while (GetWorldTileType(s.candidate_x, s.candidate_y) == 0);
       } while ((GetWorldMapPixelFlags(s.candidate_x, s.candidate_y) & 0x30) != 0);
 
@@ -3062,7 +3050,7 @@ void InitializeCastleDungeonSlots(void)
     g_castle_dungeon_slots[s.entry_index].world_x = s.candidate_x;
     g_castle_dungeon_slots[s.entry_index].world_y = s.candidate_y;
     g_castle_dungeon_slots[s.entry_index].north_of_town_index = s.nearest_town_index;
-    g_castle_dungeon_slots[s.entry_index].color = (unsigned char)(RandomIntLessThan(5) + 1);
+    g_castle_dungeon_slots[s.entry_index].color = (unsigned char)(internal_rand(5) + 1);
     g_castle_dungeon_slots[s.entry_index].monster_flags = 2;
 
     if (s.entry_index < 5)
@@ -3074,7 +3062,7 @@ void InitializeCastleDungeonSlots(void)
     }
 
     s.inner_index = 0;
-    if ((int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags <= RandomIntLessThan(2) + 1)
+    if ((int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags <= internal_rand(2) + 1)
     {
       if (1 < (int)(unsigned int)(unsigned char)g_castle_dungeon_slots[s.entry_index].monster_flags)
       {
@@ -3106,7 +3094,7 @@ void InitializeCastleDungeonSlots(void)
 
     g_castle_dungeon_slots[s.entry_index].card_in_effect =
         g_dungeon_card_effect_by_monster_flags[((g_castle_dungeon_slots[s.entry_index].monster_flags & 0xc0) != 0 ? 4 : 0) +
-                                               (g_castle_dungeon_slots[s.entry_index].monster_flags & 0x7f) + RandomIntLessThan(2)];
+                                               (g_castle_dungeon_slots[s.entry_index].monster_flags & 0x7f) + internal_rand(2)];
     g_castle_dungeon_slots[s.entry_index].rules_bitmap = 1;
 
     switch (s.inner_index / 4)
@@ -3117,13 +3105,13 @@ void InitializeCastleDungeonSlots(void)
       g_castle_dungeon_slots[s.entry_index].monster_flags++;
     case 3:
       g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
-      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(RandomIntLessThan(5) + 4);
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(internal_rand(5) + 4);
       break;
     case 4:
       g_castle_dungeon_slots[s.entry_index].card_in_effect = g_dungeon_card_effect_by_color[(char)g_castle_dungeon_slots[s.entry_index].color];
       break;
     case 5:
-      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(RandomIntLessThan(5) + 4);
+      g_castle_dungeon_slots[s.entry_index].rules_bitmap = g_castle_dungeon_slots[s.entry_index].rules_bitmap | 1 << (char)(internal_rand(5) + 4);
       g_castle_dungeon_slots[s.entry_index].card_in_effect = -1;
       break;
     case 6:
@@ -3321,7 +3309,7 @@ void SaveGameToSlot(int save_slot_index)
     if (save_slot_index != -1)
     {
       g_selected_save_slot_index = save_slot_index;
-      g_save_file_path[7] = (char)GetHexDigitChar(save_slot_index);
+      g_save_file_path[7] = (char)int_to_hex_digit(save_slot_index);
       if (SaveGameWithMessage(g_save_file_path) != 0)
       {
         if (g_save_errno == 0)
@@ -3354,86 +3342,6 @@ void SaveGameToSlot(int save_slot_index)
 int RunLoadGameMenu(void)
 {
   return RunLoadSaveMenu(0);
-}
-
-// FUNCTION: SHANDALAR 0x00501760
-int LoadGameFromSlot(int save_slot_index)
-{
-  int save_drive_index;
-  unsigned int slot_index;
-
-  global_saveload_loading = 1;
-  HideMouseCursorNested();
-  save_drive_index = GetSaveDriveIndex();
-  if (save_drive_index != -1)
-  {
-    if (save_slot_index == -1)
-    {
-      strcpy(g_ui_message_buffer, "\x8cSelect Load File...\n");
-      g_load_menu_valid_slot_mask_0077f1c8 = 0;
-
-      for (slot_index = 0; slot_index < 10; slot_index = slot_index + 1)
-      {
-        g_save_file_path[7] = (char)GetHexDigitChar(slot_index);
-        if (ValidateOrLoadSaveGame(g_save_file_path, 1) != 0)
-        {
-          g_load_menu_valid_slot_mask_0077f1c8 |= (1 << (unsigned char)slot_index);
-        }
-      }
-
-      ShowMouseCursorNested();
-      g_selected_save_slot_index = RunTextMenuAt(g_ui_message_buffer, 0x30, 0x40);
-      HideMouseCursorNested();
-      if ((g_load_menu_valid_slot_mask_0077f1c8 & (1 << (unsigned char)g_selected_save_slot_index)) == 0)
-      {
-        g_selected_save_slot_index = -1;
-      }
-    }
-    else
-    {
-      g_selected_save_slot_index = save_slot_index;
-    }
-
-    if (g_selected_save_slot_index != -1)
-    {
-      g_save_file_path[7] = (char)GetHexDigitChar(g_selected_save_slot_index);
-      if (ValidateOrLoadSaveGame(g_save_file_path, 0) == 0)
-      {
-        g_selected_save_slot_index = -1;
-      }
-    }
-
-    if (g_selected_save_slot_index == -1)
-    {
-      RunTextMenuAt("Error Loading Save Game File:EXITING\n ", 100, 0x50);
-      exit(1);
-    }
-
-    ShowMouseCursorNested();
-    return g_selected_save_slot_index;
-  }
-  else
-  {
-    ShowMouseCursorNested();
-    return -1;
-  }
-}
-
-// FUNCTION: SHANDALAR 0x004ece40
-int GetHexDigitChar(int value)
-{
-  if ((0 <= value) && (value <= 9))
-  {
-    return value + 0x30;
-  }
-  else if ((10 <= value) && (value <= 0xf))
-  {
-    return value + 0x57;
-  }
-  else
-  {
-    return 0;
-  }
 }
 
 // FUNCTION: SHANDALAR 0x00501b7d
@@ -3531,31 +3439,6 @@ int LoadGameFromPath(char *save_file_path)
   g_facemaker_page4_dib = g_graphics_pages[4];
   SelectObject(g_graphics_pages[4]->hTempDC, g_graphics_pages[4]->hPreviousBitmap);
   g_graphics_pages[4] = (DIBSurface *)0;
-  return 1;
-}
-
-// FUNCTION: SHANDALAR 0x005018e8
-unsigned int ValidateOrLoadSaveGame(char *save_file_path, int validate_only)
-{
-  strcpy(save_file_path + 9, "SVE");
-  if (validate_only != 0)
-  {
-    g_save_file_fd = open(save_file_path, 0x8000);
-    if (g_save_file_fd != -1)
-    {
-      strcat(g_ui_message_buffer, "OK\n");
-    }
-    else
-    {
-      sprintf(g_ui_message_buffer, "%s\n", gs_loadsave_0077d1b0[2]);
-    }
-
-    close(g_save_file_fd);
-    return (g_save_file_fd != -1) ? 1 : 0;
-  }
-
-  return (unsigned int)LoadGameFromPath(save_file_path);
-
   return 1;
 }
 
@@ -4786,7 +4669,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       s.previous_world_y_adjusted = RunLoadGameMenu();
       if (s.previous_world_y_adjusted != -1)
       {
-        LoadGameFromSlot(s.previous_world_y_adjusted);
+        load_selected_duel_save_slot(s.previous_world_y_adjusted);
       }
       LoadPcxIntoPageNoPalette("advfac64.pic");
       g_world_move_dir_index = 0;
@@ -4817,7 +4700,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       s.key_magic_index = s.key_code - 0x30;
       if ((g_amulet_inventory[s.key_magic_index - 1] != 0) && ((g_world_magic_bitmap & (1 << (s.key_magic_index * 2))) != 0))
       {
-        if (RandomIntLessThan(4 - g_shandalar_difficulty) == 0)
+        if (internal_rand(4 - g_shandalar_difficulty) == 0)
         {
           g_amulet_inventory[s.key_magic_index - 1] = g_amulet_inventory[s.key_magic_index - 1] - 1;
         }
@@ -4835,8 +4718,8 @@ void UpdateAdventureWorldInputAndMovement(void)
         case 2:
           do
           {
-            s.random_world_y = RandomIntLessThan(0x40);
-            s.abs_delta_x = RandomIntLessThan(0x40);
+            s.random_world_y = internal_rand(0x40);
+            s.abs_delta_x = internal_rand(0x40);
           } while (GetWorldTileType(s.random_world_y, s.abs_delta_x) == 0);
           AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_TELEPORT_RANDOM);
           g_world_player_x = s.random_world_y * 0x20 + 0x10;
@@ -4907,7 +4790,7 @@ void UpdateAdventureWorldInputAndMovement(void)
   {
     do
     {
-      s.abs_delta_y = RandomIntLessThan(5) + 1;
+      s.abs_delta_y = internal_rand(5) + 1;
     } while ((s.key_magic_index & (1 << (unsigned char)s.abs_delta_y)) == 0);
   }
   else
@@ -4971,7 +4854,7 @@ void UpdateAdventureWorldInputAndMovement(void)
 
     if (g_world_move_dir_index != 0)
     {
-      PlaySoundWithPitchAndPan(((g_world_player_animation_frame & 1U) - 2) + s.abs_delta_y * 2, RandomIntLessThan(0x19) + 0x4b, RandomIntLessThan(0x28) + 0x50, 0);
+      PlaySoundWithPitchAndPan(((g_world_player_animation_frame & 1U) - 2) + s.abs_delta_y * 2, internal_rand(0x19) + 0x4b, internal_rand(0x28) + 0x50, 0);
     }
 
     if (g_world_move_dir_index == 0)
@@ -5000,7 +4883,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       g_world_player_y = s.previous_world_y;
     }
 
-    if ((RandomIntLessThan(0x28) == 0) && (g_skip_world_sfx_preload == 0))
+    if ((internal_rand(0x28) == 0) && (g_skip_world_sfx_preload == 0))
     {
       UpdateAmbientWizardColorSound(s.abs_delta_y);
     }
@@ -5406,7 +5289,7 @@ int RunRandomAiDuelDemo(void)
 
   for (player = 0; player < 2; player++)
   {
-    switch (RandomIntLessThan(5))
+    switch (internal_rand(5))
     {
     case 0:
       ClearAndLoadInitialLibraryFromDeckFile("decks\\0016.dck", player, 1, -1);
@@ -5514,15 +5397,15 @@ void UpdateAmbientWizardColorSound(int wizard_color)
 {
   int channel = wizard_color + 9;
 
-  PlaySoundWithPitchAndPan(channel, 100, RandomIntLessThan(0x32) + 0x46, RandomIntLessThan(200) - 100);
+  PlaySoundWithPitchAndPan(channel, 100, internal_rand(0x32) + 0x46, internal_rand(200) - 100);
 
-  if (RandomIntLessThan(3) == 0)
+  if (internal_rand(3) == 0)
   {
     sound_unload(channel);
     switch (wizard_color)
     {
     case 1:
-      switch (RandomIntLessThan(3))
+      switch (internal_rand(3))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\kbird1.wav", channel, 0);
@@ -5536,7 +5419,7 @@ void UpdateAmbientWizardColorSound(int wizard_color)
       }
       break;
     case 2:
-      switch (RandomIntLessThan(3))
+      switch (internal_rand(3))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\bbird1.wav", channel, 0);
@@ -5550,7 +5433,7 @@ void UpdateAmbientWizardColorSound(int wizard_color)
       }
       break;
     case 3:
-      switch (RandomIntLessThan(2))
+      switch (internal_rand(2))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\gbird1.wav", channel, 0);
@@ -5561,7 +5444,7 @@ void UpdateAmbientWizardColorSound(int wizard_color)
       }
       break;
     case 4:
-      switch (RandomIntLessThan(2))
+      switch (internal_rand(2))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\rbird1.wav", channel, 0);
@@ -5572,7 +5455,7 @@ void UpdateAmbientWizardColorSound(int wizard_color)
       }
       break;
     case 5:
-      switch (RandomIntLessThan(2))
+      switch (internal_rand(2))
       {
       case 0:
         LoadSoundWithDriveFallback("x:sound\\wbird1.wav", channel, 0);

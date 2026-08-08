@@ -770,24 +770,24 @@ void resolve_combat_damage(int player)
               {
                 if (combat_damage_attacker_abilities[s.damage_index] & 0x80)
                 {
-                  sprintf(g_duel_text_scratch_buffer, text_lines[1],
+                  sprintf(g_ui_message_buffer, text_lines[1],
                           get_displayed_card_name(player, combat_damage_attacker_cards[s.damage_index]),
                           s.attacker_damage_remaining);
                 }
                 else
                 {
-                  sprintf(g_duel_text_scratch_buffer, text_lines[0],
+                  sprintf(g_ui_message_buffer, text_lines[0],
                           get_displayed_card_name(player, combat_damage_attacker_cards[s.damage_index]),
                           s.attacker_damage_remaining);
                 }
               }
               else if (combat_damage_attacker_abilities[s.damage_index] & 0x80)
               {
-                sprintf(g_duel_text_scratch_buffer, text_lines[3], s.attacker_damage_remaining);
+                sprintf(g_ui_message_buffer, text_lines[3], s.attacker_damage_remaining);
               }
               else
               {
-                sprintf(g_duel_text_scratch_buffer, text_lines[2], s.attacker_damage_remaining);
+                sprintf(g_ui_message_buffer, text_lines[2], s.attacker_damage_remaining);
               }
 
               highlight_combat_damage_attacker(player, combat_damage_attacker_cards[s.damage_index], 1);
@@ -795,7 +795,7 @@ void resolve_combat_damage(int player)
               while (s.target_is_valid == 0)
               {
                 C_real_select_target(s.assigning_player, s.defending_player, s.defending_player, 0x200, 2, 0, 0, 0, 0, 0,
-                                     -1, -1, -1, -1, 0, 0x10, 0, g_duel_text_scratch_buffer, 0, &s.selected_target);
+                                     -1, -1, -1, -1, 0, 0x10, 0, g_ui_message_buffer, 0, &s.selected_target);
                 for (s.loop_index = 0; s.loop_index < ai_blocker_count; s.loop_index = s.loop_index + 1)
                 {
                   if (ai_blocker_cards[s.loop_index] == s.selected_target.card)
@@ -821,7 +821,7 @@ void resolve_combat_damage(int player)
                 }
               }
 
-              strcpy(g_duel_text_scratch_buffer, "");
+              strcpy(g_ui_message_buffer, "");
               highlight_combat_damage_attacker(player, combat_damage_attacker_cards[s.damage_index], 0);
               if (s.selected_target.player != -1 && s.selected_target.card != -1 && s.selected_target.card != -2)
               {
@@ -1011,12 +1011,12 @@ void resolve_combat_damage(int player)
               load_text(global_ui_strings_filename, "PROMPT_RESOLVECOMBAT");
               if (g_duel_interface_options.layout != 2)
               {
-                sprintf(g_duel_text_scratch_buffer, text_lines[6],
+                sprintf(g_ui_message_buffer, text_lines[6],
                         get_displayed_card_name(s.defending_player, ai_blocker_cards[s.damage_index]), s.blocker_damage_remaining);
               }
               else
               {
-                sprintf(g_duel_text_scratch_buffer, text_lines[7], s.blocker_damage_remaining);
+                sprintf(g_ui_message_buffer, text_lines[7], s.blocker_damage_remaining);
               }
 
               highlight_combat_damage_blocker(s.defending_player, ai_blocker_cards[s.damage_index], 1);
@@ -1035,7 +1035,7 @@ void resolve_combat_damage(int player)
               while (s.target_is_valid == 0)
               {
                 C_real_select_target(s.assigning_player, player, player, 0x200, 2, 0, 0, 0, 0, 0,
-                                     -1, -1, -1, -1, 0, 2, 0, g_duel_text_scratch_buffer,
+                                     -1, -1, -1, -1, 0, 2, 0, g_ui_message_buffer,
                                      (PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).token_status &
                                       COMBAT_DAMAGE_FLAG_CANCELABLE) >>
                                          26,
@@ -1075,7 +1075,7 @@ void resolve_combat_damage(int player)
                 }
               }
 
-              strcpy(g_duel_text_scratch_buffer, "");
+              strcpy(g_ui_message_buffer, "");
               highlight_combat_damage_blocker(s.defending_player, ai_blocker_cards[s.damage_index], 0);
               if (s.selected_target.player != -1 && s.selected_target.card != -1 && s.selected_target.card != -2)
               {

@@ -43,7 +43,7 @@ ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int cre
 int FindNearestTownIndex(int world_x, int world_y);
 int ClampIntToRange(int value, int min_value, int max_value);
 int ApproximateDistance(int x, int y);
-int RandomIntLessThan(int max_exclusive);
+int internal_rand(int max_exclusive);
 int single_color_test_bit_to_color_t(int mask);
 unsigned int GetWorldTileType(int x, int y);
 unsigned int GetWorldMapPixelFlags(int x, int y);
@@ -450,15 +450,15 @@ void UpdateWorldLairAndMonsterSlots(void)
     {
       do
       {
-        if (RandomIntLessThan(2) != 0)
+        if (internal_rand(2) != 0)
         {
-          s.spawn_x = (RandomIntLessThan(2) ? 4 : -4) + g_world_player_tile_x;
-          s.spawn_y = g_world_player_tile_y + RandomIntLessThan(9) - 4;
+          s.spawn_x = (internal_rand(2) ? 4 : -4) + g_world_player_tile_x;
+          s.spawn_y = g_world_player_tile_y + internal_rand(9) - 4;
         }
         else
         {
-          s.spawn_y = (RandomIntLessThan(2) ? 4 : -4) + g_world_player_tile_y;
-          s.spawn_x = g_world_player_tile_x + RandomIntLessThan(9) - 4;
+          s.spawn_y = (internal_rand(2) ? 4 : -4) + g_world_player_tile_y;
+          s.spawn_x = g_world_player_tile_x + internal_rand(9) - 4;
         }
 
         s.tile_y = GetWorldTileType(s.spawn_x, s.spawn_y);
@@ -467,7 +467,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       do
       {
-        s.victory_count = RandomIntLessThan(6);
+        s.victory_count = internal_rand(6);
       } while ((s.color & (1U << (byte)s.victory_count)) == 0);
       s.color = s.victory_count;
 
@@ -482,7 +482,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       s.move_dir = ClampIntToRange(0x80 / (s.victory_count + 4), 6, 0x14);
 
-      switch (RandomIntLessThan(s.move_dir) + 5 / (s.victory_count + 1))
+      switch (internal_rand(s.move_dir) + 5 / (s.victory_count + 1))
       {
       case 0:
         s.creature_tier = 10;
@@ -539,7 +539,7 @@ void UpdateWorldLairAndMonsterSlots(void)
 
       if (s.creature_tier == 10)
       {
-        s.creature_tier = RandomIntLessThan(200);
+        s.creature_tier = internal_rand(200);
         if (s.creature_tier < 0x32)
         {
           s.creature_tier = 10;
@@ -935,9 +935,9 @@ void UpdateWorldLairAndMonsterSlots(void)
 
     if ((g_shandalar_monster_definitions[s.creature_tier].flags_0a & 4) && ((g_monster_timer & 0x3fU) == 0))
     {
-      if (RandomIntLessThan(2) != 0)
+      if (internal_rand(2) != 0)
       {
-        if (RandomIntLessThan(2) != 0)
+        if (internal_rand(2) != 0)
         {
           g_lair_or_monster_slots[s.slot_index].world_x = g_lair_or_monster_slots[s.slot_index].world_x + 0x20;
         }
@@ -948,7 +948,7 @@ void UpdateWorldLairAndMonsterSlots(void)
       }
       else
       {
-        if (RandomIntLessThan(2) != 0)
+        if (internal_rand(2) != 0)
         {
           g_lair_or_monster_slots[s.slot_index].world_y = g_lair_or_monster_slots[s.slot_index].world_y + 0x20;
         }
@@ -1017,7 +1017,7 @@ void UpdateWorldLairAndMonsterSlots(void)
     }
     else if ((s.creature_tier != 0) &&
              (g_lair_or_monster_slots[s.slot_index].movement_anim_frame != 0) &&
-             (s.distance_to_player < 0x50) && (RandomIntLessThan(s.distance_to_player) < 4))
+             (s.distance_to_player < 0x50) && (internal_rand(s.distance_to_player) < 4))
     {
       PlayCreatureEncounterSound(s.creature_tier, 0x68 - s.distance_to_player / 2, 100 - s.distance_to_player / 3,
                    g_neighbor_dx[(g_lair_or_monster_slots[s.slot_index].movement_heading + 2U) & 7] *
@@ -1106,7 +1106,7 @@ void StartWizardTownSiege(void)
       }
     }
 
-    s.score = s.ruled_by_color_count[s.color] * 0x20 + RandomIntLessThan(0x80);
+    s.score = s.ruled_by_color_count[s.color] * 0x20 + internal_rand(0x80);
     if (s.score < s.best_score)
     {
       s.best_score = s.score;

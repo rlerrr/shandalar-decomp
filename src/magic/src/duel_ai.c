@@ -60,6 +60,9 @@ int play_sound_effect(int sound_id);
 void record_ai_action_selection(void);
 void replay_ai_action_selection(void);
 void save_ai_search_state(void);
+#ifdef SHANDALAR
+void refresh_ai_random_table(void);
+#endif
 void restore_ai_search_state(void);
 int ai_opinion_of_gamestate_continued(int player, int score);
 void setup_ai_combat_abilities(int player);
@@ -83,7 +86,7 @@ extern int combat_damage_attacker_toughness[16];
 extern int combat_damage_blocker_abilities[16];
 extern int combat_damage_blocker_damage[16];
 extern int combat_damage_blocker_toughness[16];
-extern int DAT_00712544;
+extern int g_reveal_all_world_info;
 extern int DAT_00743098;
 
 typedef struct
@@ -960,9 +963,9 @@ int ai_opinion_of_gamestate(int player)
     s.score -= (life[s.opponent] - 2) * 0x100;
   }
 
-  if (DAT_00712544 != 0)
+  if (g_reveal_all_world_info != 0)
   {
-    strcpy(g_duel_text_scratch_buffer, "");
+    strcpy(g_ui_message_buffer, "");
   }
 
   for (s.current_player = 0; s.current_player < 2; s.current_player = s.current_player + 1)
@@ -1129,12 +1132,12 @@ int ai_opinion_of_gamestate(int player)
       }
 
       s.side_score += s.card_value;
-      if ((DAT_00712544 & 2) != 0 && s.current_player + 2 == DAT_00712544)
+      if ((g_reveal_all_world_info & 2) != 0 && s.current_player + 2 == g_reveal_all_world_info)
       {
         append_displayed_card_name(s.current_player, s.card);
-        strcat(g_duel_text_scratch_buffer, " ");
-        strcat(g_duel_text_scratch_buffer, _itoa(s.card_value, ai_action_dialog_number_buffer, 10));
-        strcat(g_duel_text_scratch_buffer, "\n");
+        strcat(g_ui_message_buffer, " ");
+        strcat(g_ui_message_buffer, _itoa(s.card_value, ai_action_dialog_number_buffer, 10));
+        strcat(g_ui_message_buffer, "\n");
       }
     }
 
@@ -1388,13 +1391,13 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
     int action_index;
   } s;
 
-  strcpy(g_duel_text_scratch_buffer, "AI:");
-  strcat(g_duel_text_scratch_buffer, _itoa(score, ai_action_dialog_number_buffer, 10));
-  strcat(g_duel_text_scratch_buffer, " L:");
-  strcat(g_duel_text_scratch_buffer, _itoa(life[0], ai_action_dialog_number_buffer, 10));
-  strcat(g_duel_text_scratch_buffer, "/");
-  strcat(g_duel_text_scratch_buffer, _itoa(life[1], ai_action_dialog_number_buffer, 10));
-  strcat(g_duel_text_scratch_buffer, " ...\n");
+  strcpy(g_ui_message_buffer, "AI:");
+  strcat(g_ui_message_buffer, _itoa(score, ai_action_dialog_number_buffer, 10));
+  strcat(g_ui_message_buffer, " L:");
+  strcat(g_ui_message_buffer, _itoa(life[0], ai_action_dialog_number_buffer, 10));
+  strcat(g_ui_message_buffer, "/");
+  strcat(g_ui_message_buffer, _itoa(life[1], ai_action_dialog_number_buffer, 10));
+  strcat(g_ui_message_buffer, " ...\n");
 
   for (s.action_index = 0; (s.action_count = use_saved_actions != 0 ? saved_recorded_action_count : recorded_action_count) > s.action_index; s.action_index++)
   {
@@ -1411,23 +1414,23 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
     {
       if ((s.action_flags & 0x1000) != 0)
       {
-        strcat(g_duel_text_scratch_buffer, "Cast ");
+        strcat(g_ui_message_buffer, "Cast ");
       }
       if ((s.action_flags & 0x2000) != 0)
       {
-        strcat(g_duel_text_scratch_buffer, "Tap ");
+        strcat(g_ui_message_buffer, "Tap ");
       }
       if ((s.action_flags & 0x4000) != 0)
       {
-        strcat(g_duel_text_scratch_buffer, "...target ");
+        strcat(g_ui_message_buffer, "...target ");
       }
       if ((s.action_flags & 0x100) == 0)
       {
-        strcat(g_duel_text_scratch_buffer, "e");
+        strcat(g_ui_message_buffer, "e");
       }
       if ((s.action_flags & 0xff) == 0xff)
       {
-        strcat(g_duel_text_scratch_buffer, "Player");
+        strcat(g_ui_message_buffer, "Player");
       }
       else
       {
@@ -1439,13 +1442,13 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
         {
           s.internal_card_id = unk_006a8258[s.action_index];
         }
-        strcat(g_duel_text_scratch_buffer, global_cards_data[s.internal_card_id].name);
+        strcat(g_ui_message_buffer, global_cards_data[s.internal_card_id].name);
       }
-      strcat(g_duel_text_scratch_buffer, "\n");
+      strcat(g_ui_message_buffer, "\n");
     }
   }
 
-  do_dialog(0, 0, 0, -1, -1, g_duel_text_scratch_buffer, 0);
+  do_dialog(0, 0, 0, -1, -1, g_ui_message_buffer, 0);
   return 0;
 }
 
@@ -1527,7 +1530,11 @@ void save_ai_search_state(void)
   g_ai_search_backup.battlefield_flags = battlefield_extra_ability_flags;
   memcpy(g_ai_search_backup.unk_008b44d0_copy, unk_008b44d0, sizeof(g_ai_search_backup.unk_008b44d0_copy));
   memcpy(g_ai_search_backup.unk_007a79b0_copy, unk_007a79b0, sizeof(g_ai_search_backup.unk_007a79b0_copy));
+#ifndef SHANDALAR
   StopWorldLocationMusic();
+#else
+  refresh_ai_random_table();
+#endif
 }
 
 // FUNCTION: MAGIC 0x004e4632

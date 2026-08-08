@@ -38,7 +38,7 @@ HBITMAP load_pic(char *filename);
 void ApplyCardArtPaletteToDc(HDC hdc);
 BOOL DrawBitmapToRect(HDC dst_dc, const RECT *dst_rect, HBITMAP bitmap);
 extern int DAT_00743098;
-extern int DAT_00712544;
+extern int g_reveal_all_world_info;
 void __cdecl _assert(void *expr, void *filename, unsigned line);
 void change_buttonclass_wndproc(HWND hwnd);
 void save_duel_interface_options_to_registry(void);
@@ -1295,7 +1295,7 @@ int resolve_activated_ability(int player, int card)
 
   if (!has_mana_source_and_color && unk_007a7c1c == 0)
   {
-    sprintf(g_duel_text_scratch_buffer, gs_activate_0091b2d0, get_displayed_card_name(player, card));
+    sprintf(g_ui_message_buffer, gs_activate_0091b2d0, get_displayed_card_name(player, card));
 
     if (phase_stop_suppressed != 0 && (active_player == player || (g_duel_network_flags & 2) != 0))
     {
@@ -1306,7 +1306,7 @@ int resolve_activated_ability(int player, int card)
       response_player = -2;
     }
 
-    allow_response(response_player, current_phase, g_duel_text_scratch_buffer, 0x6d);
+    allow_response(response_player, current_phase, g_ui_message_buffer, 0x6d);
   }
 
   resolve_top_card_on_stack();
@@ -2385,7 +2385,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
       strcpy(s.prompt_format, gs_triggered_effects_009396a0);
     }
 
-    sprintf(g_duel_text_scratch_buffer, s.prompt_format, s.prompt_copy);
+    sprintf(g_ui_message_buffer, s.prompt_format, s.prompt_copy);
 
     if (phase_stop_suppressed == 0 || (s.response_mask & 2) != 0)
     {
@@ -2440,7 +2440,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
               previous_stop_phase = -1;
             }
 
-            s.selected_card = select_card_for_action(s.player, -1, s.player, 0xff, 0, g_duel_text_scratch_buffer, 2);
+            s.selected_card = select_card_for_action(s.player, -1, s.player, 0xff, 0, g_ui_message_buffer, 2);
             s.selected_player = unk_00742fcc;
             if ((int)s.selected_card >= 0)
             {
@@ -2499,7 +2499,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
     }
 
     /* original uses an empty string at 0x00573048 */
-    g_duel_text_scratch_buffer[0] = '\0';
+    g_ui_message_buffer[0] = '\0';
 
     if ((g_duel_network_flags & 2) == 0)
     {

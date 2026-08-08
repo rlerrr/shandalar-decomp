@@ -407,7 +407,8 @@ GLOBAL_STATE_EXTERN int _DAT_00743024;
 GLOBAL_STATE_EXTERN unsigned int _DAT_00743020;
 
 // GLOBAL: MAGIC 0x00743028
-GLOBAL_STATE_EXTERN unsigned int _DAT_00743028;
+// GLOBAL: SHANDALAR 0x0077f1c8
+GLOBAL_STATE_EXTERN unsigned int g_load_menu_valid_slot_mask;
 
 // GLOBAL: MAGIC 0x007161e0
 // GLOBAL: SHANDALAR 0x0074cdc0
@@ -967,7 +968,8 @@ GLOBAL_STATE_EXTERN int DAT_007161c8;
 GLOBAL_STATE_EXTERN int DAT_007161cc;
 
 // GLOBAL: MAGIC 0x00716238
-GLOBAL_STATE_EXTERN int DAT_00716238;
+// GLOBAL: SHANDALAR 0x0074cfe4
+GLOBAL_STATE_EXTERN int g_selected_save_slot_index;
 
 // GLOBAL: MAGIC 0x0071623c
 // GLOBAL: SHANDALAR 0x0074cfe8
@@ -1190,10 +1192,19 @@ GLOBAL_STATE_EXTERN shandalar_worldmagic_t Scards[12];
 
 unsigned int load_gametype0(char *path);
 int load_selected_duel_save_slot(int player);
+unsigned int load_or_probe_duel_save_slot(char *path, int probe_only);
 unsigned int load_duel_run_mode_1_save(char *path);
 unsigned int load_duel_run_mode_2_save(char *path);
 unsigned int load_duel_run_mode_3_save(char *path);
 void save_duel_interface_options_to_registry(void);
+
+#ifdef GLOBAL_STATE_IMPL
+// GLOBAL: MAGIC 0x0057b070
+// GLOBAL: SHANDALAR 0x0058c038
+GLOBAL_STATE_EXTERN char g_save_file_path[13] = "D:MAGIC0.SVE";
+#else
+GLOBAL_STATE_EXTERN char g_save_file_path[13];
+#endif
 
 #undef GLOBAL_STATE_EXTERN
 

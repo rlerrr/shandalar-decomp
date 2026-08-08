@@ -89,7 +89,7 @@ int GetFontLineHeight(int font_slot);
 void DrawLoadSaveButtonText(FacemakerWindowBounds *window, int color, int x, int y, ...);
 int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 int RenderAdvMenuControlNormally(AdvMenuControl *control);
-int GetHexDigitChar(int value);
+int int_to_hex_digit(int value);
 int ShowHallBackgroundScreen(void);
 int RunNameEntryDialog(char *name_buffer);
 void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
@@ -1748,7 +1748,7 @@ int RunLoadSaveMenu(int save_mode)
     fgets(g_loadsave_slot_descriptions[s.slot_index], 0x40, s.save_desc_file);
     s.text_index = strlen(g_loadsave_slot_descriptions[s.slot_index]);
     (&g_loadsave_slot_descriptions[s.slot_index][0])[-1 + s.text_index] = '\0';
-    s.map_path[5] = (char)GetHexDigitChar(s.slot_index + 4);
+    s.map_path[5] = (char)int_to_hex_digit(s.slot_index + 4);
     g_loadsave_slot_has_data[s.slot_index] = FileExists(s.map_path);
     if (g_loadsave_slot_has_data[s.slot_index] == 0)
     {

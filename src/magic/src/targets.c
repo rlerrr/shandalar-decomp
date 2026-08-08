@@ -653,7 +653,7 @@ int C_real_select_target(int who_chooses,
       }
       else
       {
-        s.selection_prompt = g_duel_text_scratch_buffer;
+        s.selection_prompt = g_ui_message_buffer;
       }
 
       s.result = run_target_selection_modal(who_chooses,

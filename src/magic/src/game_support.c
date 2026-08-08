@@ -341,8 +341,8 @@ int put_card_on_stack(int player, int card, int mode)
         DAT_007a7d78 |= 2;
       }
 
-      sprintf(g_duel_text_scratch_buffer, (const char *)gs_trying_to_cast_007a79c0, get_displayed_card_name(current_spell_player, current_spell_card));
-      allow_response(-2, current_phase, g_duel_text_scratch_buffer, 0xd3);
+      sprintf(g_ui_message_buffer, (const char *)gs_trying_to_cast_007a79c0, get_displayed_card_name(current_spell_player, current_spell_card));
+      allow_response(-2, current_phase, g_ui_message_buffer, 0xd3);
       if ((DAT_007a7d78 & 2) != 0)
       {
         request_duel_display_refresh_if_human(player, card, 2, 1);
@@ -478,8 +478,8 @@ int resolve_card_on_stack(int player, int card)
   if (global_cards_data[internal_card_id].type != 0x01 &&
       (global_cards_data[internal_card_id].type != 0x20 || (global_cards_data[internal_card_id].extra_ability & 0x1000) == 0))
   {
-    sprintf(g_duel_text_scratch_buffer, gs_cast_008b4720, get_displayed_card_name(player, card));
-    allow_response(-2, current_phase, g_duel_text_scratch_buffer, 0x6c);
+    sprintf(g_ui_message_buffer, gs_cast_008b4720, get_displayed_card_name(player, card));
+    allow_response(-2, current_phase, g_ui_message_buffer, 0x6c);
   }
 
   PLAYER_CARD_INSTANCE(player, card).state &= ~0x20;
@@ -542,7 +542,7 @@ int resolve_card_on_stack(int player, int card)
     if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "PROMPT_FIZZLE");
-      set_duel_prompt_text(g_duel_text_scratch_buffer);
+      set_duel_prompt_text(g_ui_message_buffer);
       Sleep(2000);
       set_duel_prompt_text("");
     }
@@ -3091,6 +3091,7 @@ int legacy_clear_graphics_page_stub()
 }
 
 // FUNCTION: MAGIC 0x00464a57
+// FUNCTION: SHANDALAR 0x00522508
 int internal_rand(int maximum)
 {
   return (maximum > 1) ? rand() % maximum : 0;
@@ -4013,9 +4014,9 @@ int charge_mana(int player, color_t color, int amount)
           }
         }
 
-        format_mana_payment_prompt(g_duel_text_scratch_buffer, mana_charge, x_value, max_x_value);
+        format_mana_payment_prompt(g_ui_message_buffer, mana_charge, x_value, max_x_value);
         s.selected_card =
-            select_card_for_action(player, player, player, 0, 0, g_duel_text_scratch_buffer, s.only_variable_costs != 0 ? 3 : 1);
+            select_card_for_action(player, player, player, 0, 0, g_ui_message_buffer, s.only_variable_costs != 0 ? 3 : 1);
 
         if (unk_00742fcc == -1 && (s.selected_card == -1 || s.selected_card == -2))
         {
@@ -4380,10 +4381,10 @@ int format_mana_payment_prompt(char *prompt, int *mana_cost, int x_paid, int max
     }
   }
 
-  strcpy(g_duel_text_scratch_buffer, s.tmp);
-  strcat(g_duel_text_scratch_buffer, ", ");
+  strcpy(g_ui_message_buffer, s.tmp);
+  strcat(g_ui_message_buffer, ", ");
   sprintf(s.tmp, gs_tap_for_mana_0091c230, s.mana_text);
-  strcat(g_duel_text_scratch_buffer, s.tmp);
+  strcat(g_ui_message_buffer, s.tmp);
 
   return 0;
 }
@@ -5197,14 +5198,14 @@ int select_card_for_action(int player,
 
   if (required_type != 0 && required_type != 0xff)
   {
-    strcpy(g_duel_text_scratch_buffer, "");
+    strcpy(g_ui_message_buffer, "");
     s.action = get_current_stack_action();
     if (s.action != -1)
     {
       s.action_msg = ((unsigned int)s.action >> 0x10) & 0xff;
       s.stack_player = global_stack_cards[stack_size - 1].player;
       s.stack_card = global_stack_cards[stack_size - 1].card;
-      format_stack_action_text(g_duel_text_scratch_buffer,
+      format_stack_action_text(g_ui_message_buffer,
                                s.action_msg,
                                s.stack_player,
                                s.stack_card);

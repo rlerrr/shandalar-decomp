@@ -68,8 +68,7 @@ unsigned char DAT_007a7d90[STARTUP_DIALOG_COUNT * STARTUP_DIALOG_ROW_STRIDE];
 // GLOBAL: MAGIC 0x0074b62c
 int DAT_0074b62c;
 
-// GLOBAL: MAGIC 0x007a79b8
-int g_manalink_is_host;
+extern int g_manalink_is_host;
 
 extern char *global_base_txt;
 

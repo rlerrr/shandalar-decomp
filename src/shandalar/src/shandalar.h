@@ -58,6 +58,7 @@ typedef struct
 void StopWorldLocationMusic(void);
 char *GetCreatureName(int creature_type);
 int SeedRandomFromTickCount(void);
+int internal_rand(int max_exclusive);
 int AddCardToDeckSorted(int card_id);
 void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 int GetCardRarity(int card_id);

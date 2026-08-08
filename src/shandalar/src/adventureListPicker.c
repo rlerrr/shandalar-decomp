@@ -26,7 +26,7 @@ extern RpBitsPalettePacket g_palette_data_words;
 extern FacemakerWindowBounds *g_page0_window_bounds;
 extern FacemakerWindowBounds *g_page1_window_bounds;
 
-int RandomIntLessThan(int max_exclusive);
+int internal_rand(int max_exclusive);
 int ScaleUiCoordinateFrom320(int value);
 
 int ReadPalette(char *palette_text_path, char *palette_binary_path);
@@ -190,7 +190,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
       }
     }
 
-    ai_recorded_choice = RandomIntLessThan(s.visible_count);
+    ai_recorded_choice = internal_rand(s.visible_count);
     if (player != active_player)
     {
       if (g_duel_ai_mode_state == 1)
