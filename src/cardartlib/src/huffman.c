@@ -21,46 +21,57 @@ uint *g_bitstreamCursor;
 
 // GLOBAL: CARDARTLIB 0x10021a8c
 // GLOBAL: DRAWCARDLIB 0x10029fb4
+// GLOBAL: SHANDALAR 0x0066a3a4
 int g_bitstreamBase;
 
 // GLOBAL: CARDARTLIB 0x10021a90
 // GLOBAL: DRAWCARDLIB 0x10029fb8
+// GLOBAL: SHANDALAR 0x0066a3a8
 int g_bitstreamEnd;
 
 // GLOBAL: CARDARTLIB 0x1001d1dc
 // GLOBAL: DRAWCARDLIB 0x10021ecc
+// GLOBAL: SHANDALAR 0x00591a04
 undefined4 g_bitsRemaining = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x10020e88
 // GLOBAL: DRAWCARDLIB 0x100293b0
+// GLOBAL: SHANDALAR 0x006697a0
 unsigned char g_decodeLookup[0x100 * 0xc];
 
 // GLOBAL: CARDARTLIB 0x10020e84
 // GLOBAL: DRAWCARDLIB 0x100293ac
+// GLOBAL: SHANDALAR 0x0066979c
 undefined4 g_bitBuffer;
 
 // GLOBAL: CARDARTLIB 0x10020e00
 // GLOBAL: DRAWCARDLIB 0x10029328
+// GLOBAL: SHANDALAR 0x00669718
 uint g_bitMaskTable[0x21];
 
 // GLOBAL: CARDARTLIB 0x10021a94
 // GLOBAL: DRAWCARDLIB 0x10029fbc
+// GLOBAL: SHANDALAR 0x0066a3ac
 undefined4 g_nodeCount;
 
 // GLOBAL: CARDARTLIB 0x10021a98
 // GLOBAL: DRAWCARDLIB 0x10029fc0
+// GLOBAL: SHANDALAR 0x0066a3b0
 int g_nodeBase;
 
 // GLOBAL: CARDARTLIB 0x10021a9c
 // GLOBAL: DRAWCARDLIB 0x10029fc4
+// GLOBAL: SHANDALAR 0x0066a3b4
 undefined4 g_symbolTable;
 
 // GLOBAL: CARDARTLIB 0x10021aa0
 // GLOBAL: DRAWCARDLIB 0x10029fc8
+// GLOBAL: SHANDALAR 0x0066a3b8
 unsigned char g_treeNodeTable[0x10000];
 
 // FUNCTION: CARDARTLIB 0x10001f40
 // FUNCTION: DRAWCARDLIB 0x10002ea0
+// FUNCTION: SHANDALAR 0x00563cc0
 void MemZeroDwords(undefined8 *dst, uint dword_count)
 {
 #ifdef MODERN_FIXES
@@ -161,6 +172,7 @@ int Huffman13_DecodeDwords(undefined4 *out_dwords,undefined4 bitstream_start,und
 
 // FUNCTION: CARDARTLIB 0x100025cb
 // FUNCTION: DRAWCARDLIB 0x1000352b
+// FUNCTION: SHANDALAR 0x0056434a
 int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4 node_index_base)
 {
   struct {
@@ -197,6 +209,7 @@ int Huffman13_Init(undefined4 bitstream_start,undefined4 symbol_table,undefined4
 // MATCHING
 // FUNCTION: CARDARTLIB 0x100026e3
 // FUNCTION: DRAWCARDLIB 0x10003643
+// FUNCTION: SHANDALAR 0x0056445f
 int Huffman13_BuildDecodeTable(int node_count)
 {
   struct {
@@ -300,6 +313,7 @@ int Huffman13_BuildDecodeTable(int node_count)
 
 // FUNCTION: CARDARTLIB 0x10002cde
 // FUNCTION: DRAWCARDLIB 0x10003c3e
+// FUNCTION: SHANDALAR 0x00564a5a
 int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,undefined4 bitstream_end)
 {
   struct {
@@ -404,6 +418,7 @@ int Huffman13_DecodeDwordsWithZeroRuns(undefined8 *out_dwords,uint *bitstream,un
 
 // FUNCTION: CARDARTLIB 0x10002f70
 // FUNCTION: DRAWCARDLIB 0x10003ed0
+// FUNCTION: SHANDALAR 0x00564cf0
 uint BitStream_ReadBits(uint bit_count)
 {
   uint bits_in_buf;
@@ -435,6 +450,7 @@ uint BitStream_ReadBits(uint bit_count)
 // MATCHING
 // FUNCTION: CARDARTLIB 0x10003060
 // FUNCTION: DRAWCARDLIB 0x10003fc0
+// FUNCTION: SHANDALAR 0x00564de0
 static uint BitStream_ReadBit(void)
 {
   uint result = 0;

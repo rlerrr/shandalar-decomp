@@ -52,6 +52,7 @@ char g_face_menu_end_directive_text[0x34];
 COLORREF g_face_name_shadow_color;
 
 // GLOBAL: MAGIC 0x00637b88
+// GLOBAL: SHANDALAR 0x005a81a0
 int g_face_directive_packet[3];
 
 // GLOBAL: MAGIC 0x00637b94

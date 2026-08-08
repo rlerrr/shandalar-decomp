@@ -6,6 +6,7 @@
 char *get_displayed_card_name(int player, int card);
 
 // FUNCTION: MAGIC 0x00443898
+// FUNCTION: SHANDALAR 0x0040f132
 unsigned int get_current_stack_action(void)
 {
   if (stack_size == 0)
@@ -17,6 +18,7 @@ unsigned int get_current_stack_action(void)
 }
 
 // FUNCTION: MAGIC 0x00444c43
+// FUNCTION: SHANDALAR 0x004104db
 char *format_stack_action_text(char *out, int msg, int player, int card)
 {
   struct

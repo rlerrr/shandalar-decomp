@@ -84,6 +84,7 @@ int g_choose_color_selected_color;
 COLORREF g_choose_color_button_unfocus_text_color;
 
 // FUNCTION: MAGIC 0x004a116d
+// FUNCTION: SHANDALAR 0x0053cb05
 int choose_a_color_dialog(int player, const char *prompt, int use_color_names_instead_of_land, int ai_choice, unsigned int available_colors)
 {
   struct

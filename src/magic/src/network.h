@@ -62,8 +62,10 @@ NETWORK_EXTERN char unk_008b27f0;
 NETWORK_EXTERN unsigned char DAT_008b27f4[0x4c];
 
 // GLOBAL: MAGIC 0x008b2938
+// GLOBAL: SHANDALAR 0x008c6ae8
 NETWORK_EXTERN char unk_008b2938;
 // GLOBAL: MAGIC 0x008b293c
+// GLOBAL: SHANDALAR 0x008c6aec
 NETWORK_EXTERN int DAT_008b293c;
 
 // GLOBAL: MAGIC 0x008b34a0
@@ -91,9 +93,11 @@ NETWORK_EXTERN short *g_card_list_packet_cards;
 NETWORK_EXTERN int g_next_outgoing_card_list_packet_number;
 
 // GLOBAL: MAGIC 0x009251b0
+// GLOBAL: SHANDALAR 0x009392e0
 NETWORK_EXTERN xpool_network_packet_t g_xpool_network_packet;
 
 // GLOBAL: MAGIC 0x008cf200
+// GLOBAL: SHANDALAR 0x008e3350
 NETWORK_EXTERN target_selection_network_packet_t g_target_selection_network_packet;
 
 // GLOBAL: MAGIC 0x008cf3a0

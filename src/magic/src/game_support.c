@@ -89,6 +89,7 @@ int can_target(target_definition_t *td)
 }
 
 // FUNCTION: MAGIC 0x0043edab
+// FUNCTION: SHANDALAR 0x0040a62b
 int put_card_on_stack(int player, int card, int mode)
 {
   struct
@@ -448,6 +449,7 @@ finish_put_card_on_stack:
 }
 
 // FUNCTION: MAGIC 0x0043f9ed
+// FUNCTION: SHANDALAR 0x0040b26d
 int resolve_card_on_stack(int player, int card)
 {
   int internal_card_id;
@@ -759,6 +761,7 @@ int DrawRandomCardFromInitialLibrary(int library_index)
 }
 
 // FUNCTION: MAGIC 0x004a616d
+// FUNCTION: SHANDALAR 0x005582ed
 int update_duel_selection_display_if_human(int player, int phase)
 {
   if (g_duel_ai_mode_state == 1)
@@ -1072,6 +1075,7 @@ INT_PTR show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amou
 }
 
 // FUNCTION: MAGIC 0x004a628e
+// FUNCTION: SHANDALAR 0x0055840e
 INT_PTR show_selectable_cardlist(int *graveyard, int *available, int count, void *context, unsigned int big_card_mode, char *prompt)
 {
   if (g_duel_ai_mode_state == 1)
@@ -1468,6 +1472,7 @@ int reattach_if_attached_to_source(int source_player, int source_card, int test_
 }
 
 // FUNCTION: MAGIC 0x0044837e
+// FUNCTION: SHANDALAR 0x00451efb
 void notify_library_shuffled(int deck_owner)
 {
   HWND hwnd;
@@ -1485,6 +1490,7 @@ void notify_library_shuffled(int deck_owner)
 }
 
 // FUNCTION: MAGIC 0x004b5b7a
+// FUNCTION: SHANDALAR 0x0056c37c
 void send_library_contents(int deck_owner)
 {
   int done;
@@ -1506,6 +1512,7 @@ void send_library_contents(int deck_owner)
 }
 
 // FUNCTION: MAGIC 0x004b5c19
+// FUNCTION: SHANDALAR 0x0056c41b
 void receive_library_contents(int deck_owner)
 {
   struct
@@ -1815,6 +1822,7 @@ int dispatch_function_to_all_cards_in_play(int player, int card, in_play_card_ca
 }
 
 // FUNCTION: MAGIC 0x004964dd
+// FUNCTION: SHANDALAR 0x00466f70
 int get_card_display_pic_num(card_id_t card_id, int player, int card)
 {
   int num_pics;
@@ -2996,6 +3004,7 @@ int declare_mana_available(int player, color_t color, int amount)
 }
 
 // FUNCTION: MAGIC 0x004eadeb
+// FUNCTION: SHANDALAR 0x0044157b
 int undeclare_mana_available(int player, color_t color, int amount)
 {
   special_mana_pool[player][color] -= amount;
@@ -4223,6 +4232,7 @@ skipped_for_copied_card:
 }
 
 // FUNCTION: MAGIC 0x004346ab
+// FUNCTION: SHANDALAR 0x00415b89
 int is_mana_cost_paid(int *mana_cost, int required_colorless, int max_x)
 {
   int color;
@@ -4249,6 +4259,7 @@ int is_mana_cost_paid(int *mana_cost, int required_colorless, int max_x)
 }
 
 // FUNCTION: MAGIC 0x00434746
+// FUNCTION: SHANDALAR 0x00415c24
 unsigned int get_required_mana_color_mask(int *mana)
 {
   int color;
@@ -4267,6 +4278,7 @@ unsigned int get_required_mana_color_mask(int *mana)
 }
 
 // FUNCTION: MAGIC 0x0043479e
+// FUNCTION: SHANDALAR 0x00415c7c
 int format_mana_payment_prompt(char *prompt, int *mana_cost, int x_paid, int max_x)
 {
   struct
@@ -4377,6 +4389,7 @@ int format_mana_payment_prompt(char *prompt, int *mana_cost, int x_paid, int max
 }
 
 // FUNCTION: MAGIC 0x00435c91
+// FUNCTION: SHANDALAR 0x0041716b
 int record_paid_mana(int color, int amount)
 {
   if (0 < mana_payment_record_depth)
@@ -4389,6 +4402,7 @@ int record_paid_mana(int color, int amount)
 }
 
 // FUNCTION: MAGIC 0x004eae77
+// FUNCTION: SHANDALAR 0x00441607
 int unproduce_mana(int player, int color, int amount)
 {
   raw_mana_available[player][color] -= amount;
@@ -4397,6 +4411,7 @@ int unproduce_mana(int player, int color, int amount)
 }
 
 // FUNCTION: MAGIC 0x00435b18
+// FUNCTION: SHANDALAR 0x00416ff1
 void spend_mana_for_cost(int *mana_cost,
                          int cost_color,
                          int amount,
@@ -4424,6 +4439,7 @@ void spend_mana_for_cost(int *mana_cost,
 }
 
 // FUNCTION: MAGIC 0x0043410a
+// FUNCTION: SHANDALAR 0x004155ee
 void auto_pay_colored_mana(int player, int *mana_paid_by_color, int *total_mana_paid, int max_colorless)
 {
   unsigned short produced_color;
@@ -4459,6 +4475,7 @@ void auto_pay_colored_mana(int player, int *mana_paid_by_color, int *total_mana_
 }
 
 // FUNCTION: MAGIC 0x004342b3
+// FUNCTION: SHANDALAR 0x00415794
 void auto_pay_variable_mana(int player,
                             int *mana_paid_by_color,
                             int *total_mana_paid,
@@ -4518,6 +4535,7 @@ void auto_pay_variable_mana(int player,
 }
 
 // FUNCTION: MAGIC 0x004344b0
+// FUNCTION: SHANDALAR 0x0041598e
 void auto_pay_generic_mana(int player,
                            int *mana_paid_by_color,
                            int *total_mana_paid,
@@ -4599,6 +4617,7 @@ void auto_pay_generic_mana(int player,
 }
 
 // FUNCTION: MAGIC 0x00435b88
+// FUNCTION: SHANDALAR 0x00417061
 int get_mana_payment_amount(int *mana_cost,
                             int cost_color,
                             int *mana_available,
@@ -4636,6 +4655,7 @@ int get_mana_payment_amount(int *mana_cost,
 }
 
 // FUNCTION: MAGIC 0x00435db0
+// FUNCTION: SHANDALAR 0x0041728a
 int refund_paid_mana(int *mana_paid_by_color)
 {
   int color;
@@ -4656,6 +4676,7 @@ int refund_paid_mana(int *mana_paid_by_color)
 }
 
 // FUNCTION: MAGIC 0x00435643
+// FUNCTION: SHANDALAR 0x00416b1c
 int can_activate_mana_source(int player, int card, int activation_flags)
 {
   struct
@@ -4701,6 +4722,7 @@ int can_activate_mana_source(int player, int card, int activation_flags)
 }
 
 // FUNCTION: MAGIC 0x00435881
+// FUNCTION: SHANDALAR 0x00416d5a
 int activate_mana_source_for_payment(int player, int card)
 {
   struct
@@ -4763,6 +4785,7 @@ int activate_mana_source_for_payment(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00434af9
+// FUNCTION: SHANDALAR 0x00415fd7
 int activate_mana_sources_for_payment(int player,
                                       int *mana_paid_by_color,
                                       int *total_mana_paid,
@@ -5390,6 +5413,7 @@ int resolve_cast_card(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0043ec38
+// FUNCTION: SHANDALAR 0x0040a4b8
 int discard_card_from_hand(int player, int card)
 {
   dispatch_event_to_single_card(player, card, EVENT_DISCARD, 1 - player, -1);
@@ -5405,6 +5429,7 @@ int discard_card_from_hand(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00446c95
+// FUNCTION: SHANDALAR 0x00450813
 void request_duel_display_refresh(int player, int card, int unk1, int unk2)
 {
   (void)player;
@@ -5425,6 +5450,7 @@ void request_duel_display_refresh_if_human(int player, int card, int unk1, int u
 }
 
 // FUNCTION: MAGIC 0x004b14f5
+// FUNCTION: SHANDALAR 0x0046e4d0
 void move_card_to_graveyard(int player, int card)
 {
   int graveyard_index;
@@ -5469,6 +5495,7 @@ void put_card_on_bottom_of_library(int player, int internal_card_id)
 }
 
 // FUNCTION: MAGIC 0x004e698f
+// FUNCTION: SHANDALAR 0x004c5bf6
 void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *out_basic_land_mask)
 {
   int color;
@@ -5501,6 +5528,7 @@ void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *o
 }
 
 // FUNCTION: MAGIC 0x004827ad
+// FUNCTION: SHANDALAR 0x004862c0
 unsigned int get_card_color_after_hacks(int player, int card)
 {
   unsigned int result;
@@ -6119,6 +6147,7 @@ int select_damage_card_from_list(int player,
 }
 
 // FUNCTION: MAGIC 0x0055d802
+// FUNCTION: SHANDALAR 0x00573b1c
 void extract_numbered_text_choice(char *out, char *in, int choice)
 {
   struct
@@ -6177,6 +6206,7 @@ void *copy_bytes(void *dest, const void *src, unsigned int count)
 }
 
 // FUNCTION: MAGIC 0x00495311
+// FUNCTION: SHANDALAR 0x00465dac
 char *get_hunting_subtype_name(int value)
 {
   if (value < 0 || value >= 0xd4)
@@ -7477,6 +7507,7 @@ unsigned int C_real_validate_target(int tgt_player,
 }
 
 // FUNCTION: MAGIC 0x004e51bb
+// FUNCTION: SHANDALAR 0x004c442a
 void rewind_recorded_action(void)
 {
   if (recorded_action_count > 0)
@@ -7548,6 +7579,7 @@ int has_vigilance(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004418c6
+// FUNCTION: SHANDALAR 0x0040d146
 int can_block_attacker_with_abilities(int blocker_player,
                                       int blocker_card,
                                       int attacker_player,
@@ -8057,6 +8089,7 @@ after_setup:
 }
 
 // FUNCTION: MAGIC 0x004aff25
+// FUNCTION: SHANDALAR 0x0046cf00
 void kill_creatures_with_lethal_damage(void)
 {
   int player;
@@ -8667,6 +8700,7 @@ int choose_creature_to_sacrifice(int player)
 }
 
 // FUNCTION: MAGIC 0x004823a5
+// FUNCTION: SHANDALAR 0x00485eb8
 int resolve_control_aura_conflict(int player, int card)
 {
   struct

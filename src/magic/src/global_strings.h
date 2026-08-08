@@ -74,6 +74,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_damage_dealing_00777ab0;
 GLOBAL_STRINGS_EXTERN char gs_window_title_your_hand_00777bf0[0x18];
 
 // GLOBAL: MAGIC 0x00777d30
+// GLOBAL: SHANDALAR 0x0078eac0
 GLOBAL_STRINGS_EXTERN text_300_t gs_upkeep_phase_00777d30;
 
 // GLOBAL: MAGIC 0x00781aa0
@@ -108,6 +109,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_end_damage_prevention_00789740;
 GLOBAL_STRINGS_EXTERN char gs_phasebar_main_phase_postcombat_00789870[0x40];
 
 // GLOBAL: MAGIC 0x007898b0
+// GLOBAL: SHANDALAR 0x007a0640
 GLOBAL_STRINGS_EXTERN text_300_t DAT_007898b0;
 
 // GLOBAL: MAGIC 0x00789a50
@@ -127,6 +129,7 @@ GLOBAL_STRINGS_EXTERN char gs_cuecard_opponent_library_00789bd0[0x64];
 GLOBAL_STRINGS_EXTERN int gs_words_to_sleight_count_00789c34;
 
 // GLOBAL: MAGIC 0x00789c40
+// GLOBAL: SHANDALAR 0x007a09d0
 GLOBAL_STRINGS_EXTERN char gs_cuecard_is_a_target_00789c40[0x40];
 
 // GLOBAL: MAGIC 0x007911b0
@@ -142,6 +145,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_activating_007912e0;
 GLOBAL_STRINGS_EXTERN text_300_t gs_mana_so_far_max_00791420;
 
 // GLOBAL: MAGIC 0x007a77d0
+// GLOBAL: SHANDALAR 0x007be560
 GLOBAL_STRINGS_EXTERN char gs_cuecard_damage_to_player_007a77d0[0x40];
 
 // GLOBAL: MAGIC 0x007a7810
@@ -165,6 +169,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_prompt_band_with_other_attacker_007a7af0;
 GLOBAL_STRINGS_EXTERN char gs_phasebar_your_upkeep_007a7c20[0x38];
 
 // GLOBAL: MAGIC 0x007a7cd0
+// GLOBAL: SHANDALAR 0x007bea60
 GLOBAL_STRINGS_EXTERN char gs_phasebar_your_main_declare_combat_007a7cd0[0x38];
 
 // GLOBAL: MAGIC 0x007a7d30
@@ -180,6 +185,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_aboutbox_text_007aa930;
 GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_owner_007aacc0;
 
 // GLOBAL: MAGIC 0x007aae00
+// GLOBAL: SHANDALAR 0x007bf000
 GLOBAL_STRINGS_EXTERN char gs_cuecard_phased_007aae00[0x40];
 
 // GLOBAL: MAGIC 0x007aae40
@@ -231,9 +237,11 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_assign_blockers_008a8c40;
 GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_untap_008a8d80[0x64];
 
 // GLOBAL: MAGIC 0x008a8e00
+// GLOBAL: SHANDALAR 0x008bd000
 GLOBAL_STRINGS_EXTERN char gs_cuecard_summoning_sickness_008a8e00[0x40];
 
 // GLOBAL: MAGIC 0x008a8e40
+// GLOBAL: SHANDALAR 0x008bd040
 GLOBAL_STRINGS_EXTERN char gs_cuecard_not_controlled_by_owner_008a8e40[0x90];
 
 // GLOBAL: MAGIC 0x008a9010
@@ -331,6 +339,7 @@ GLOBAL_STRINGS_EXTERN char gs_cuecard_minimized_attack_window_008b4280[0x64];
 GLOBAL_STRINGS_EXTERN char gs_window_title_spell_chain_008b42f0[0x40];
 
 // GLOBAL: MAGIC 0x008b45f0
+// GLOBAL: SHANDALAR 0x008c8770
 GLOBAL_STRINGS_EXTERN text_300_t gs_assign_attackers_008b45f0;
 
 // GLOBAL: MAGIC 0x008b4720
@@ -342,6 +351,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_cast_008b4720;
 GLOBAL_STRINGS_EXTERN text_300_t gs_casting_008b4850;
 
 // GLOBAL: MAGIC 0x008b4990
+// GLOBAL: SHANDALAR 0x008c8b10
 GLOBAL_STRINGS_EXTERN char gs_cuecard_cant_target_this_008b4990[0x34];
 
 // GLOBAL: MAGIC 0x008b4de0
@@ -405,8 +415,10 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_artifact_creature_008ced4
 GLOBAL_STRINGS_EXTERN text_300_t gs_main_phase_008cee80;
 
 // GLOBAL: MAGIC 0x008cf230
+// GLOBAL: SHANDALAR 0x008e3380
 GLOBAL_STRINGS_EXTERN char gs_cuecard_is_a_target_cant_target_again_008cf230[0x50];
 // GLOBAL: MAGIC 0x008cf280
+// GLOBAL: SHANDALAR 0x008e33d0
 GLOBAL_STRINGS_EXTERN int g_battlefield_land_y[2];
 // GLOBAL: MAGIC 0x008cf288
 GLOBAL_STRINGS_EXTERN int DAT_008cf288[2];
@@ -440,6 +452,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_illegal_target_why_abilities_0091a810;
 GLOBAL_STRINGS_EXTERN char gs_phasebar_your_draw_0091b110[0x40];
 
 // GLOBAL: MAGIC 0x0091b290
+// GLOBAL: SHANDALAR 0x0092f3e0
 GLOBAL_STRINGS_EXTERN char gs_cuecard_damage_n_0091b290[0x34];
 
 // GLOBAL: MAGIC 0x0091b2d0
@@ -483,6 +496,7 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_draw_0091c490[0x64];
 GLOBAL_STRINGS_EXTERN text_300_t gs_end_draw_0091c510;
 
 // GLOBAL: MAGIC 0x0091c640
+// GLOBAL: SHANDALAR 0x00930780
 GLOBAL_STRINGS_EXTERN char gs_cuecard_dying_0091c640[0x40];
 
 // GLOBAL: MAGIC 0x0091c680
@@ -530,6 +544,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_discard_phase_0091d080;
 GLOBAL_STRINGS_EXTERN char gs_cuecard_opponent_life_points_lich_0091d1b0[0x70];
 
 // GLOBAL: MAGIC 0x0091d220
+// GLOBAL: SHANDALAR 0x00931350
 GLOBAL_STRINGS_EXTERN char gs_phasebar_resolve_first_strike_damage_0091d220[0x34];
 
 // GLOBAL: MAGIC 0x00924790
@@ -541,6 +556,7 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_opponent_main_precombat_00924790[0x70];
 GLOBAL_STRINGS_EXTERN char gs_ok_00924800[0x20];
 
 // GLOBAL: MAGIC 0x00925040
+// GLOBAL: SHANDALAR 0x00939170
 GLOBAL_STRINGS_EXTERN char gs_cuecard_this_card_will_untap_00925040[0x40];
 
 // GLOBAL: MAGIC 0x00925080
@@ -587,9 +603,11 @@ GLOBAL_STRINGS_EXTERN int g_battlefield_creature_x_step;
 GLOBAL_STRINGS_EXTERN HWND g_your_attack_window_hwnd;
 
 // GLOBAL: MAGIC 0x00926090
+// GLOBAL: SHANDALAR 0x0093a1c0
 GLOBAL_STRINGS_EXTERN char gs_cuecard_minimized_spell_chain_00926090[0x70];
 
 // GLOBAL: MAGIC 0x00926210
+// GLOBAL: SHANDALAR 0x0093a340
 GLOBAL_STRINGS_EXTERN text_300_t gs_blocker_selected_00926210;
 
 // GLOBAL: MAGIC 0x00926380
@@ -611,6 +629,7 @@ GLOBAL_STRINGS_EXTERN char gs_phasebar_your_main_postcombat_00926670[0x34];
 // GLOBAL: MAGIC 0x00926750
 GLOBAL_STRINGS_EXTERN char gs_cardtitle_hunting_00926750[0x38];
 // GLOBAL: MAGIC 0x00926788
+// GLOBAL: SHANDALAR 0x0093a8b8
 GLOBAL_STRINGS_EXTERN int g_battlefield_creature_x[2];
 
 // GLOBAL: MAGIC 0x009267a0
@@ -638,6 +657,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_damage_prevention_00939200;
 GLOBAL_STRINGS_EXTERN char gs_phasebar_your_discard_00939350[0x40];
 
 // GLOBAL: MAGIC 0x009394a0
+// GLOBAL: SHANDALAR 0x0094d5d0
 GLOBAL_STRINGS_EXTERN char gs_cuecard_your_life_points_009394a0[0x64];
 
 // GLOBAL: MAGIC 0x00939570
@@ -670,6 +690,7 @@ GLOBAL_STRINGS_EXTERN text_300_t gs_prompt_combat_choose_attackers_0093d990;
 
 // GLOBAL: MAGIC 0x008a8c20
 // GLOBAL: SHANDALAR 0x008bce20
+// GLOBAL: SHANDALAR 0x00583e38
 GLOBAL_STRINGS_EXTERN char gs_cancel_008a8c20[0x14];
 
 // GLOBAL: MAGIC 0x008b40e0
@@ -700,6 +721,7 @@ GLOBAL_STRINGS_EXTERN char gs_multiblock_creature_008cf040[0x34];
 GLOBAL_STRINGS_EXTERN int g_multiblock_creature_count;
 
 // GLOBAL: MAGIC 0x008cf080
+// GLOBAL: SHANDALAR 0x008e31d0
 GLOBAL_STRINGS_EXTERN text_300_t gs_begin_upkeep_008cf080;
 
 // GLOBAL: MAGIC 0x0091b150

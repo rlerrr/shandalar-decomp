@@ -48,6 +48,7 @@ HMENU g_library_submenu;
 char g_library_menu_count_text[0x20];
 
 // FUNCTION: MAGIC 0x00449feb
+// FUNCTION: SHANDALAR 0x00453b6c
 int copy_cached_library_cards_and_get_count(void *cards, int player)
 {
   int result;

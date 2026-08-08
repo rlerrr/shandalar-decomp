@@ -31,12 +31,14 @@ int DAT_008a8d78;
 int DAT_008a8dec;
 
 // GLOBAL: MAGIC 0x0093d840
+// GLOBAL: SHANDALAR 0x00951960
 int DAT_0093d840;
 
 int show_spell_window_for_target_selection(void);
 int restore_spell_window_after_target_selection(void);
 
 // FUNCTION: MAGIC 0x0055d91b
+// FUNCTION: SHANDALAR 0x00573c35
 int get_text_width_with_mana_symbols(HDC dc, char *text)
 {
   struct
@@ -81,6 +83,7 @@ int get_text_width_with_mana_symbols(HDC dc, char *text)
 }
 
 // FUNCTION: MAGIC 0x0049535a
+// FUNCTION: SHANDALAR 0x00465df5
 int get_tooltip_text_width(HWND window, char *text)
 {
   struct
@@ -212,6 +215,7 @@ void set_duel_tooltip_text(char *text)
 }
 
 // FUNCTION: MAGIC 0x004466b5
+// FUNCTION: SHANDALAR 0x00450233
 int run_target_selection_modal(int who_chooses,
                                int player,
                                char *prompt,
@@ -768,6 +772,7 @@ int C_real_select_target(int who_chooses,
 }
 
 // FUNCTION: MAGIC 0x0048930a
+// FUNCTION: SHANDALAR 0x004cbed2
 int show_spell_window_for_target_selection(void)
 {
   int visible;
@@ -782,6 +787,7 @@ int show_spell_window_for_target_selection(void)
 }
 
 // FUNCTION: MAGIC 0x00489362
+// FUNCTION: SHANDALAR 0x004cbf2a
 int restore_spell_window_after_target_selection(void)
 {
   int hidden;

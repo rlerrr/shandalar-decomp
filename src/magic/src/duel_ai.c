@@ -137,6 +137,7 @@ typedef struct
   int unk_007a79b0_copy[2];
 } AiSearchBackup;
 
+// GLOBAL: SHANDALAR 0x0074f1f0
 static AiSearchBackup g_ai_search_backup;
 
 typedef struct ai_combat_eval_entry_t
@@ -157,66 +158,94 @@ typedef struct ai_combat_eval_entry_t
 int ai_blocker_count;
 
 // GLOBAL: MAGIC 0x007086e0
+// GLOBAL: SHANDALAR 0x005a80d8
 int ai_blocker_cards[16];
 
 // GLOBAL: MAGIC 0x00707d58
+// GLOBAL: SHANDALAR 0x005a7750
 int ai_block_damage_orders[16];
 
 // GLOBAL: MAGIC 0x00707de0
+// GLOBAL: SHANDALAR 0x005a77d8
 int ai_block_assignments[16];
 
 // GLOBAL: MAGIC 0x00708080
+// GLOBAL: SHANDALAR 0x005a7a78
 int ai_blocker_player;
 
 // GLOBAL: MAGIC 0x00708698
+// GLOBAL: SHANDALAR 0x005a8090
 int DAT_00708698;
 
 // GLOBAL: MAGIC 0x00708610
+// GLOBAL: SHANDALAR 0x005a8008
 int DAT_00708610;
 
 // GLOBAL: MAGIC 0x00708658
+// GLOBAL: SHANDALAR 0x005a8050
 int DAT_00708658[16];
 // GLOBAL: MAGIC 0x00707ef0
+// GLOBAL: SHANDALAR 0x005a78e8
 int DAT_00707ef0[16];
 // GLOBAL: MAGIC 0x00708128
+// GLOBAL: SHANDALAR 0x005a7b20
 int DAT_00708128[16];
 // GLOBAL: MAGIC 0x00707f38
+// GLOBAL: SHANDALAR 0x005a7930
 int DAT_00707f38[16];
 // GLOBAL: MAGIC 0x00707d98
+// GLOBAL: SHANDALAR 0x005a7790
 int DAT_00707d98[16];
 // GLOBAL: MAGIC 0x007080c8
+// GLOBAL: SHANDALAR 0x005a7ac0
 int DAT_007080c8[16];
 // GLOBAL: MAGIC 0x00708088
+// GLOBAL: SHANDALAR 0x005a7a80
 int DAT_00708088[16];
 // GLOBAL: MAGIC 0x00707ea8
+// GLOBAL: SHANDALAR 0x005a78a0
 int DAT_00707ea8[16];
 // GLOBAL: MAGIC 0x007081a8
+// GLOBAL: SHANDALAR 0x005a7ba0
 int DAT_007081a8;
 // GLOBAL: MAGIC 0x00708108
+// GLOBAL: SHANDALAR 0x005a7b00
 unsigned int DAT_00708108[7];
 // GLOBAL: MAGIC 0x00708168
+// GLOBAL: SHANDALAR 0x005a7b60
 int DAT_00708168[16];
 // GLOBAL: MAGIC 0x007081b0
+// GLOBAL: SHANDALAR 0x005a7ba8
 unsigned int DAT_007081b0[7];
 // GLOBAL: MAGIC 0x00707ff8
+// GLOBAL: SHANDALAR 0x005a79f0
 int DAT_00707ff8;
 // GLOBAL: MAGIC 0x00707ffc
+// GLOBAL: SHANDALAR 0x005a79f4
 unsigned int DAT_00707ffc;
 // GLOBAL: MAGIC 0x00707e20
+// GLOBAL: SHANDALAR 0x005a7818
 int _DAT_00707e20;
 // GLOBAL: MAGIC 0x00707ee8
+// GLOBAL: SHANDALAR 0x005a78e0
 int DAT_00707ee8;
 // GLOBAL: MAGIC 0x00707fb8
+// GLOBAL: SHANDALAR 0x005a79b0
 int ai_candidate_block_assignments[16];
 // GLOBAL: MAGIC 0x007081d0
+// GLOBAL: SHANDALAR 0x005a7bc8
 int ai_attacker_blocker_counts[16];
 // GLOBAL: MAGIC 0x00708720
+// GLOBAL: SHANDALAR 0x005a8118
 int DAT_00708720;
 // GLOBAL: MAGIC 0x00708724
+// GLOBAL: SHANDALAR 0x005a811c
 unsigned int DAT_00708724;
 // GLOBAL: MAGIC 0x00708728
+// GLOBAL: SHANDALAR 0x005a8120
 int DAT_00708728[16];
 // GLOBAL: MAGIC 0x00707c98
+// GLOBAL: SHANDALAR 0x005a7690
 int DAT_00707c98[16];
 
 // GLOBAL: MAGIC 0x00707bf8
@@ -226,118 +255,168 @@ unsigned int DAT_00707bf8;
 int DAT_00707dd8;
 
 // GLOBAL: MAGIC 0x0070a830
+// GLOBAL: SHANDALAR 0x0097db20
 int untapped_royal_assassin_count;
 
 // GLOBAL: MAGIC 0x0070a834
+// GLOBAL: SHANDALAR 0x0097db24
 int defending_cop_color_mask;
 
 // GLOBAL: MAGIC 0x0070a838
+// GLOBAL: SHANDALAR 0x0097db2c
 int defending_cop_available_mana;
 
 // GLOBAL: MAGIC 0x0072c8f0
+// GLOBAL: SHANDALAR 0x00765e30
 static card_instance_t combat_sim_saved_card_instances[2][151];
 // GLOBAL: MAGIC 0x00742ae0
+// GLOBAL: SHANDALAR 0x0077c070
 static card_data_t combat_sim_saved_dynamic_card_data[16];
 // GLOBAL: MAGIC 0x0069fbc8
+// GLOBAL: SHANDALAR 0x005abeb0
 static int combat_sim_saved_library[2][500];
 // GLOBAL: MAGIC 0x006a4ef0
+// GLOBAL: SHANDALAR 0x005b11d8
 static int combat_sim_saved_graveyard_slots[2][500];
 // GLOBAL: MAGIC 0x006aa3c8
+// GLOBAL: SHANDALAR 0x005b66b0
 static int combat_sim_saved_exile[2][500];
 // GLOBAL: MAGIC 0x006aa380
+// GLOBAL: SHANDALAR 0x005b6668
 static int combat_sim_saved_special_mana_pool[2][8];
 // GLOBAL: MAGIC 0x006a4eb0
+// GLOBAL: SHANDALAR 0x005b1198
 static int combat_sim_saved_raw_mana_available[2][8];
 // GLOBAL: MAGIC 0x006a4e20
+// GLOBAL: SHANDALAR 0x005b1108
 static int combat_sim_saved_basiclandtypes_controlled[2][8];
 // GLOBAL: MAGIC 0x006a0b70
+// GLOBAL: SHANDALAR 0x005ace58
 static int combat_sim_saved_raw_mana_available_hex[2][51];
 // GLOBAL: MAGIC 0x0069e3b0
+// GLOBAL: SHANDALAR 0x005aa698
 static int combat_sim_saved_life[2];
 // GLOBAL: MAGIC 0x006a4e60
+// GLOBAL: SHANDALAR 0x005b1148
 static int combat_sim_saved_DAT_007abce0[2];
 // GLOBAL: MAGIC 0x006a4e88
+// GLOBAL: SHANDALAR 0x005b1170
 static unsigned int combat_sim_saved_card_types_in_play[2];
 // GLOBAL: MAGIC 0x006a4e90
+// GLOBAL: SHANDALAR 0x005b1178
 static int combat_sim_saved_unk_007a7c58[2];
 // GLOBAL: MAGIC 0x006a72f0
+// GLOBAL: SHANDALAR 0x005b35d8
 static unsigned char combat_sim_saved_DAT_008cfd70[0x60];
 // GLOBAL: MAGIC 0x006a5e90
+// GLOBAL: SHANDALAR 0x005b2178
 static int combat_sim_saved_ante_cards[2][16];
 // GLOBAL: MAGIC 0x006a9b38
+// GLOBAL: SHANDALAR 0x005b5e20
 static int combat_sim_saved_timestamp_player[500];
 // GLOBAL: MAGIC 0x0069e3b8
+// GLOBAL: SHANDALAR 0x005aa6a0
 static int combat_sim_saved_timestamp_card[500];
 // GLOBAL: MAGIC 0x006a4d18
+// GLOBAL: SHANDALAR 0x005b1000
 static int combat_sim_saved_land_can_be_played;
 // GLOBAL: MAGIC 0x006a8a64
+// GLOBAL: SHANDALAR 0x005b4d4c
 static phase_t combat_sim_saved_current_phase;
 // GLOBAL: MAGIC 0x006a4e9c
+// GLOBAL: SHANDALAR 0x005b1184
 static int combat_sim_saved_current_casting_internal_card_id;
 // GLOBAL: MAGIC 0x006a4ea8
+// GLOBAL: SHANDALAR 0x005b1190
 static int combat_sim_saved_attacking_creature_count;
 // GLOBAL: MAGIC 0x006a7350
+// GLOBAL: SHANDALAR 0x005b3638
 static int combat_sim_saved_spell_fizzled;
 // GLOBAL: MAGIC 0x0069fb40
+// GLOBAL: SHANDALAR 0x005abe28
 static int combat_sim_saved_stack_data[32];
 // GLOBAL: MAGIC 0x006a7bb8
+// GLOBAL: SHANDALAR 0x005b3ea0
 static target_t combat_sim_saved_stack_cards[32];
 // GLOBAL: MAGIC 0x006a4c18
+// GLOBAL: SHANDALAR 0x005b0f00
 static target_t combat_sim_saved_stack_damage_targets[32];
 // GLOBAL: MAGIC 0x006a4ea0
+// GLOBAL: SHANDALAR 0x005b1188
 static int combat_sim_saved_active_cards_count[2];
 // GLOBAL: MAGIC 0x006a7ba8
+// GLOBAL: SHANDALAR 0x005b3e90
 static int combat_sim_saved_stack_size;
 // GLOBAL: MAGIC 0x006a0d50
 static int(__cdecl *combat_sim_saved_pending_killed_card_handler)(int, int);
 // GLOBAL: MAGIC 0x006a0d08
+// GLOBAL: SHANDALAR 0x005acff0
 static int combat_sim_saved_ai_modifier;
 // GLOBAL: MAGIC 0x006aa310
+// GLOBAL: SHANDALAR 0x005b65f8
 static int combat_sim_saved_mana_charge[8];
 // GLOBAL: MAGIC 0x006a7bac
+// GLOBAL: SHANDALAR 0x005b3e94
 static int combat_sim_saved_x_value;
 // GLOBAL: MAGIC 0x006a9b28
+// GLOBAL: SHANDALAR 0x005b5e10
 static int combat_sim_saved_max_x_value;
 // GLOBAL: MAGIC 0x006a7bb4
+// GLOBAL: SHANDALAR 0x005b3e9c
 static int combat_sim_saved_extra_turn_player;
 // GLOBAL: MAGIC 0x006a8658
+// GLOBAL: SHANDALAR 0x005b4940
 static int combat_sim_saved_DAT_0093a848;
 // GLOBAL: MAGIC 0x006a8a60
+// GLOBAL: SHANDALAR 0x005b4d48
 static phase_t combat_sim_saved_stop_phase;
 // GLOBAL: MAGIC 0x006aa330
+// GLOBAL: SHANDALAR 0x005b6618
 static int combat_sim_saved_stop_phase_player;
 // GLOBAL: MAGIC 0x006a25b8
+// GLOBAL: SHANDALAR 0x005ae8a0
 static int combat_sim_saved_battlefield_extra_ability_flags;
 // GLOBAL: MAGIC 0x006aa308
+// GLOBAL: SHANDALAR 0x005b65f0
 static int combat_sim_saved_unk_008b44d0[2];
 // GLOBAL: MAGIC 0x006a4c10
+// GLOBAL: SHANDALAR 0x005b0ef8
 static int combat_sim_saved_unk_007a79b0[2];
 
 // GLOBAL: MAGIC 0x00709570
+// GLOBAL: SHANDALAR 0x0097c860
 ai_combat_eval_entry_t ai_combat_eval_table[2][150];
 
 // GLOBAL: MAGIC 0x008cefac
+// GLOBAL: SHANDALAR 0x0097db28
 int combat_eval_power;
 
 // GLOBAL: MAGIC 0x0093b278
+// GLOBAL: SHANDALAR 0x0097db38
 int combat_eval_toughness;
 
 // GLOBAL: MAGIC 0x0092608c
+// GLOBAL: SHANDALAR 0x0097db34
 int combat_eval_abilities;
 
 // GLOBAL: MAGIC 0x0069fbc0
+// GLOBAL: SHANDALAR 0x005abea8
 int ai_castable_phase_mask;
 
 // GLOBAL: MAGIC 0x006a72e8
+// GLOBAL: SHANDALAR 0x005b35d0
 int ai_activatable_phase_mask;
 
 // GLOBAL: MAGIC 0x0057aaec
+// GLOBAL: SHANDALAR 0x00589a3c
 int ai_search_candidate_offset = 0;
 
 // GLOBAL: MAGIC 0x0057dd20
+// GLOBAL: SHANDALAR 0x00581808
 int DAT_0057dd20[16] = {4, 4, 4, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 // FUNCTION: MAGIC 0x004e3380
+// FUNCTION: SHANDALAR 0x004c25f0
 int choose_ai_main_phase_action(int player)
 {
   struct
@@ -786,6 +865,7 @@ void replay_ai_action_selection(void)
 }
 
 // FUNCTION: MAGIC 0x004e4e9a
+// FUNCTION: SHANDALAR 0x004c410a
 void __stdcall reset_ai_search_trial_state(void)
 {
   int i;
@@ -805,6 +885,7 @@ void __stdcall reset_ai_search_trial_state(void)
 }
 
 // FUNCTION: MAGIC 0x004e50f5
+// FUNCTION: SHANDALAR 0x004c4364
 void __stdcall save_recorded_ai_actions(void)
 {
   int action_index;
@@ -826,6 +907,7 @@ void __stdcall save_recorded_ai_actions(void)
 }
 
 // FUNCTION: MAGIC 0x004e51e8
+// FUNCTION: SHANDALAR 0x004c4457
 int ai_opinion_of_gamestate(int player)
 {
   struct
@@ -1099,6 +1181,7 @@ int ai_opinion_of_gamestate(int player)
 }
 
 // FUNCTION: MAGIC 0x004e5db4
+// FUNCTION: SHANDALAR 0x004c501b
 int ai_opinion_of_gamestate_continued(int player, int score)
 {
   struct
@@ -1294,6 +1377,7 @@ int ai_opinion_of_gamestate_continued(int player, int score)
 }
 
 // FUNCTION: MAGIC 0x004e6754
+// FUNCTION: SHANDALAR 0x004c59bb
 int show_ai_action_log_dialog(int use_saved_actions, int score)
 {
   struct
@@ -1366,6 +1450,7 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
 }
 
 // FUNCTION: MAGIC 0x00441cf2
+// FUNCTION: SHANDALAR 0x0040d572
 void start_ai_decision_search(int decision_code, int time_scale)
 {
   ai_search_best_score = -9999;
@@ -1385,6 +1470,7 @@ void start_ai_decision_search(int decision_code, int time_scale)
 }
 
 // FUNCTION: MAGIC 0x004e430e
+// FUNCTION: SHANDALAR 0x004c357e
 void save_ai_search_state(void)
 {
   saved_recorded_action_count = 0;
@@ -1445,6 +1531,7 @@ void save_ai_search_state(void)
 }
 
 // FUNCTION: MAGIC 0x004e4632
+// FUNCTION: SHANDALAR 0x004c38a2
 void restore_ai_search_state(void)
 {
   memcpy(global_card_instances, g_ai_search_backup.card_instances, sizeof(g_ai_search_backup.card_instances));
@@ -1499,6 +1586,7 @@ void restore_ai_search_state(void)
 }
 
 // FUNCTION: MAGIC 0x004a7ccf
+// FUNCTION: SHANDALAR 0x00559e52
 int get_ai_search_elapsed_time(void)
 {
   unsigned int current_time;
@@ -1508,6 +1596,7 @@ int get_ai_search_elapsed_time(void)
 }
 
 // FUNCTION: MAGIC 0x0050e79b
+// FUNCTION: SHANDALAR 0x0041d33b
 void setup_ai_combat_abilities(int player)
 {
   struct
@@ -1715,6 +1804,7 @@ void setup_ai_combat_abilities(int player)
 }
 
 // FUNCTION: MAGIC 0x00516ecf
+// FUNCTION: SHANDALAR 0x00425a82
 int score_ai_attacker_candidate(int player, int card)
 {
   struct
@@ -1787,6 +1877,7 @@ int score_ai_attacker_candidate(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00510a3f
+// FUNCTION: SHANDALAR 0x0041f5e3
 unsigned int choose_attackers_ai(int player)
 {
   struct
@@ -2393,6 +2484,7 @@ unsigned int choose_attackers_ai(int player)
 }
 
 // FUNCTION: MAGIC 0x0050e6f0
+// FUNCTION: SHANDALAR 0x0041d290
 int score_gamestate_after_simulated_card_death(int player, int card)
 {
   int saved_ai_modifier;
@@ -2412,6 +2504,7 @@ int score_gamestate_after_simulated_card_death(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00516bf1
+// FUNCTION: SHANDALAR 0x004257a4
 void dispatch_ai_combat_pump_checks(int player)
 {
   int card;
@@ -2438,6 +2531,7 @@ void dispatch_ai_combat_pump_checks(int player)
 }
 
 // FUNCTION: MAGIC 0x005170d1
+// FUNCTION: SHANDALAR 0x00425c7e
 int score_ai_blocker_candidate(int player, int card)
 {
   struct
@@ -2498,6 +2592,7 @@ int score_ai_blocker_candidate(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00446281
+// FUNCTION: SHANDALAR 0x00411b19
 unsigned int get_destroy_if_blocked_combat_flags(int attacker_player, int attacker_card, int blocker_player, int blocker_card)
 {
   unsigned int flags;
@@ -2534,6 +2629,7 @@ unsigned int get_destroy_if_blocked_combat_flags(int attacker_player, int attack
 }
 
 // FUNCTION: MAGIC 0x0050f53a
+// FUNCTION: SHANDALAR 0x0041e0d9
 void setup_combat_damage_simulation(int player)
 {
   int unused_padding_1;
@@ -2923,6 +3019,7 @@ void setup_combat_damage_simulation(int player)
 }
 
 // FUNCTION: MAGIC 0x004e4913
+// FUNCTION: SHANDALAR 0x004c3b83
 void save_combat_simulation_state(void)
 {
   memcpy(combat_sim_saved_card_instances, global_card_instances, sizeof(combat_sim_saved_card_instances));
@@ -2967,6 +3064,7 @@ void save_combat_simulation_state(void)
 }
 
 // FUNCTION: MAGIC 0x004e4bc4
+// FUNCTION: SHANDALAR 0x004c3e34
 void restore_combat_simulation_state(void)
 {
   memcpy(global_card_instances, combat_sim_saved_card_instances, sizeof(combat_sim_saved_card_instances));
@@ -3011,6 +3109,7 @@ void restore_combat_simulation_state(void)
 }
 
 // FUNCTION: MAGIC 0x005129d1
+// FUNCTION: SHANDALAR 0x00421578
 void choose_blockers_ai(int player)
 {
   int saved_event_state;
@@ -3058,6 +3157,7 @@ void choose_blockers_ai(int player)
 }
 
 // FUNCTION: MAGIC 0x00512bb2
+// FUNCTION: SHANDALAR 0x00421758
 void enumerate_ai_block_assignments(int player, int blocker_index)
 {
   struct
@@ -3113,6 +3213,7 @@ void enumerate_ai_block_assignments(int player, int blocker_index)
 }
 
 // FUNCTION: MAGIC 0x00512d46
+// FUNCTION: SHANDALAR 0x004218ec
 int score_current_ai_block_assignment(void)
 {
   struct
@@ -3379,6 +3480,7 @@ int score_current_ai_block_assignment(void)
 }
 
 // FUNCTION: MAGIC 0x00515f34
+// FUNCTION: SHANDALAR 0x00424ae4
 int cleanup_combat_state(int player)
 {
   int card;

@@ -128,7 +128,7 @@ HBRUSH g_spell_chain_title_brush;
 HPEN g_spell_chain_highlight_pen;
 
 // FUNCTION: MAGIC 0x0044a08e
-// FUNCTION: SHANDALAR 0x0047360e
+// FUNCTION: SHANDALAR 0x00453c0f
 int copy_spell_chain_display_entries(spell_chain_display_entry_t *entries)
 {
   int count;

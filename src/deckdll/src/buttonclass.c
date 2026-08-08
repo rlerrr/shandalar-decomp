@@ -164,6 +164,7 @@ BOOL CALLBACK enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 
 // FUNCTION: DECKDLL 0x10025536
 // FUNCTION: MAGIC 0x00495ca4
+// FUNCTION: SHANDALAR 0x00466737
 void change_buttonclass_wndproc(HWND hwnd)
 {
   EnumChildWindows(hwnd, enumfunc_change_buttonclass_wndproc, 0);

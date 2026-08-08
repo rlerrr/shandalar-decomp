@@ -44,18 +44,22 @@ typedef struct msvc_bitmap
 } msvc_bitmap_t;
 
 // GLOBAL: MAGIC 0x00571d20
+// GLOBAL: SHANDALAR 0x00585928
 int DAT_00571d20 = -1;
 
 // GLOBAL: MAGIC 0x0069c618
 int DAT_0069c618;
 
 // GLOBAL: MAGIC 0x0069c69c
+// GLOBAL: SHANDALAR 0x005a9064
 int DAT_0069c69c;
 
 // GLOBAL: MAGIC 0x0069c6ac
+// GLOBAL: SHANDALAR 0x005a9074
 int DAT_0069c6ac;
 
 // GLOBAL: MAGIC 0x0069c6b0
+// GLOBAL: SHANDALAR 0x005a9078
 int DAT_0069c6b0;
 
 // GLOBAL: MAGIC 0x00708828
@@ -114,6 +118,7 @@ static int count_attack_phase_hidden_descendants(HWND hwnd, HWND parent_card_hwn
 static void set_attack_phase_window_title(HWND hwnd);
 
 // FUNCTION: MAGIC 0x004954ef
+// FUNCTION: SHANDALAR 0x00465f8a
 int debug_draw_attack_phase_message(char *text, COLORREF color, HBRUSH brush)
 {
   struct
@@ -294,6 +299,7 @@ static void draw_attack_phase_display_status_markers(HDC dc, RECT *client_rect)
 }
 
 // FUNCTION: MAGIC 0x004d8b29
+// FUNCTION: SHANDALAR 0x0046277f
 static int count_attack_phase_hidden_descendants(HWND hwnd, HWND parent_card_hwnd)
 {
   struct
@@ -331,6 +337,7 @@ static int count_attack_phase_hidden_descendants(HWND hwnd, HWND parent_card_hwn
 }
 
 // FUNCTION: MAGIC 0x004d8468
+// FUNCTION: SHANDALAR 0x004620c4
 static void set_attack_phase_window_title(HWND hwnd)
 {
   struct

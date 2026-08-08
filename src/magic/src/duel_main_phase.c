@@ -85,24 +85,31 @@ extern int combat_damage_blocker_damage[16];
 extern int combat_damage_blocker_toughness[16];
 
 // GLOBAL: MAGIC 0x00637804
+// GLOBAL: SHANDALAR 0x005a5ed4
 int main_phase_selected_internal_card_id;
 
 // GLOBAL: MAGIC 0x00637808
+// GLOBAL: SHANDALAR 0x005a5ed8
 char DAT_00637808[0x100];
 
 // GLOBAL: MAGIC 0x00637908
+// GLOBAL: SHANDALAR 0x005a5fd8
 int main_phase_resume_mode;
 
 // GLOBAL: MAGIC 0x0063790c
+// GLOBAL: SHANDALAR 0x005a5fdc
 int main_phase_selected_bandmate_card;
 
 // GLOBAL: MAGIC 0x00637910
+// GLOBAL: SHANDALAR 0x005a5fe0
 int main_phase_selected_card;
 
 // GLOBAL: MAGIC 0x0093f4ac
+// GLOBAL: SHANDALAR 0x0097f1a8
 int legal_attacker_count;
 
 // FUNCTION: MAGIC 0x0044118f
+// FUNCTION: SHANDALAR 0x0040ca0f
 int player_has_legal_attacker(int player)
 {
   int card;
@@ -124,6 +131,7 @@ int player_has_legal_attacker(int player)
 }
 
 // FUNCTION: MAGIC 0x00441565
+// FUNCTION: SHANDALAR 0x0040cde5
 int update_attacker_count_and_check_combat_done(int player)
 {
   int card;
@@ -155,6 +163,7 @@ int update_attacker_count_and_check_combat_done(int player)
 }
 
 // FUNCTION: MAGIC 0x00441688
+// FUNCTION: SHANDALAR 0x0040cf08
 int player_has_available_blocker(int player)
 {
   struct
@@ -204,6 +213,7 @@ int player_has_available_blocker(int player)
 }
 
 // FUNCTION: MAGIC 0x00440d82
+// FUNCTION: SHANDALAR 0x0040c602
 void choose_blockers_human(int player)
 {
   struct
@@ -307,6 +317,7 @@ void choose_blockers_human(int player)
 }
 
 // FUNCTION: MAGIC 0x00445d1a
+// FUNCTION: SHANDALAR 0x004115b3
 void mark_blocked_attackers(int player)
 {
   struct
@@ -355,6 +366,7 @@ void mark_blocked_attackers(int player)
 }
 
 // FUNCTION: MAGIC 0x0044ae9e
+// FUNCTION: SHANDALAR 0x00403818
 int human_has_phase_stop(phase_t phase)
 {
   if ((char)g_duel_phase_stop_settings[current_player].phase_flags[phase] != 0)

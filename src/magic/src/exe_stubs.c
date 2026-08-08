@@ -474,6 +474,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
 // temporarily until their proper home is decided.
 
 // FUNCTION: MAGIC 0x00444d1f
+// FUNCTION: SHANDALAR 0x004105b7
 void reset_trigger_dispatch_state(void)
 {
   trigger_dispatch_depth = max_trigger_dispatch_depth = 0;
@@ -481,6 +482,7 @@ void reset_trigger_dispatch_state(void)
 }
 
 // FUNCTION: MAGIC 0x0044af2d
+// FUNCTION: SHANDALAR 0x004038a8
 int prompt_stop_phase_anyway(phase_t phase)
 {
   if (g_duel_ai_mode_state != 1 &&
@@ -570,6 +572,7 @@ int prompt_stop_phase_anyway(phase_t phase)
 }
 
 // FUNCTION: MAGIC 0x0044b2b3
+// FUNCTION: SHANDALAR 0x00403c34
 void prompt_player_for_stop_action(int player, char *prompt)
 {
   int selected_card;
@@ -659,6 +662,7 @@ void resolve_mana_burn(void)
 }
 
 // FUNCTION: MAGIC 0x0044b646
+// FUNCTION: SHANDALAR 0x00403fc7
 int contains_player_card_pair(int *card_pairs, int card_pair_count, int player, int card)
 {
   struct
@@ -941,6 +945,7 @@ cleanup:
 }
 
 // FUNCTION: MAGIC 0x004af6f4
+// FUNCTION: SHANDALAR 0x0046c6cf
 int is_phase_stop_allowed_for_current_event(void)
 {
   if (current_action_event_code == 0x8e)
@@ -1063,6 +1068,7 @@ int player_can_stop_at_phase(int player, phase_t phase)
 }
 
 // FUNCTION: MAGIC 0x004e51a6
+// FUNCTION: SHANDALAR 0x004c4415
 int get_recorded_action_count(void)
 {
   return recorded_action_count;
@@ -1916,6 +1922,7 @@ void begin_opponent_taunt_animation_stub(void)
 }
 
 // FUNCTION: MAGIC 0x00446cb8
+// FUNCTION: SHANDALAR 0x00450836
 void show_opponent_taunt_text_stub(char *text)
 {
   RECT rect;
@@ -2750,6 +2757,7 @@ int set_stack_damage_targets(void)
 }
 
 // FUNCTION: MAGIC 0x004427d9
+// FUNCTION: SHANDALAR 0x0040e073
 int count_colored_cards_in_hand(int player)
 {
   struct
@@ -2874,6 +2882,7 @@ void restack_duel_child_windows(void)
 }
 
 // FUNCTION: MAGIC 0x00496128
+// FUNCTION: SHANDALAR 0x00466bbb
 int find_first_visible_window_index(HWND *windows, int count)
 {
   int result;
@@ -2897,6 +2906,7 @@ int find_first_visible_window_index(HWND *windows, int count)
 }
 
 // FUNCTION: MAGIC 0x004961ab
+// FUNCTION: SHANDALAR 0x00466c3e
 int restack_visible_windows_after(HWND previous_window, HWND *windows, int window_count)
 {
   struct
@@ -2948,6 +2958,7 @@ int reset_duel_tick_timer_indirect(void)
 }
 
 // FUNCTION: MAGIC 0x004a7c4a
+// FUNCTION: SHANDALAR 0x00559dcd
 int get_duel_thread_time_ms(void)
 {
   struct
@@ -2971,12 +2982,14 @@ int get_duel_thread_time_ms(void)
 }
 
 // FUNCTION: MAGIC 0x004a7cba
+// FUNCTION: SHANDALAR 0x00559e3d
 void update_duel_thread_time_marker(void)
 {
   DAT_0064ee98 = get_duel_thread_time_ms();
 }
 
 // FUNCTION: MAGIC 0x004a3662
+// FUNCTION: SHANDALAR 0x0053eff0
 void show_mana_burn_dialog(int player, int amount)
 {
   struct

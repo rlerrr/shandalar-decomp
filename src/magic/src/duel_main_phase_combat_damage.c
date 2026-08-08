@@ -33,39 +33,51 @@ int has_damage_card_targeting(int player, int card);
 #define COMBAT_DAMAGE_FLAG_CANCELABLE 0x8000000
 
 // GLOBAL: MAGIC 0x00707c18
+// GLOBAL: SHANDALAR 0x005a7610
 int combat_damage_attacker_abilities[16];
 
 // GLOBAL: MAGIC 0x00707c58
+// GLOBAL: SHANDALAR 0x005a7650
 int combat_damage_blocker_abilities[16];
 
 // GLOBAL: MAGIC 0x00707cd8
+// GLOBAL: SHANDALAR 0x005a76d0
 int combat_damage_attacker_cards[16];
 
 // GLOBAL: MAGIC 0x00707e28
+// GLOBAL: SHANDALAR 0x005a7820
 int combat_damage_attacker_toughness[16];
 
 // GLOBAL: MAGIC 0x00707e68
+// GLOBAL: SHANDALAR 0x005a7860
 int combat_damage_blocker_toughness[16];
 
 // GLOBAL: MAGIC 0x00707f78
+// GLOBAL: SHANDALAR 0x005a7970
 int combat_damage_best_assignment_codes[16];
 
 // GLOBAL: MAGIC 0x00708040
+// GLOBAL: SHANDALAR 0x005a7a38
 int combat_damage_current_assignment_codes[16];
 
 // GLOBAL: MAGIC 0x00708124
+// GLOBAL: SHANDALAR 0x005a7b1c
 int combat_damage_attacker_count;
 
 // GLOBAL: MAGIC 0x00708210
+// GLOBAL: SHANDALAR 0x005a7c08
 int combat_damage_assignment_matrix[16][16];
 
 // GLOBAL: MAGIC 0x00708618
+// GLOBAL: SHANDALAR 0x005a8010
 int combat_damage_attacker_damage[16];
 
 // GLOBAL: MAGIC 0x007086a0
+// GLOBAL: SHANDALAR 0x005a8098
 int combat_damage_blocker_damage[16];
 
 // FUNCTION: MAGIC 0x00515bba
+// FUNCTION: SHANDALAR 0x0042476a
 int adjust_two_headed_giant_damage(int player, int card, int amount)
 {
   struct
@@ -137,6 +149,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
 }
 
 // FUNCTION: MAGIC 0x00515ee6
+// FUNCTION: SHANDALAR 0x00424a96
 int is_combat_damage_ability_in_step(int damage_step, int abilities)
 {
   if (damage_step == 0 && (abilities & 0x100) != 0)
@@ -153,6 +166,7 @@ int is_combat_damage_ability_in_step(int damage_step, int abilities)
 }
 
 // FUNCTION: MAGIC 0x00516063
+// FUNCTION: SHANDALAR 0x00424c13
 void clear_combat_damage_assignment_matrix(void)
 {
   int blocker_index;
@@ -168,6 +182,7 @@ void clear_combat_damage_assignment_matrix(void)
 }
 
 // FUNCTION: MAGIC 0x005160c1
+// FUNCTION: SHANDALAR 0x00424c71
 void assign_attacker_combat_damage(int player, int attacker_index, int has_trample, int damage_ids, int damage_step, int mode, int *best_low, int *best_high)
 {
   struct
@@ -353,6 +368,7 @@ void assign_attacker_combat_damage(int player, int attacker_index, int has_tramp
 }
 
 // FUNCTION: MAGIC 0x00516736
+// FUNCTION: SHANDALAR 0x004252e8
 void assign_blocker_combat_damage(int player, int blocker_index, int multiple_attackers, int damage_ids, int damage_step, int mode, int *best_low, int *best_high)
 {
   struct
@@ -494,6 +510,7 @@ void assign_blocker_combat_damage(int player, int blocker_index, int multiple_at
 }
 
 // FUNCTION: MAGIC 0x00516db1
+// FUNCTION: SHANDALAR 0x00425964
 void highlight_combat_damage_attacker(int player, int card, int highlight)
 {
   if (highlight != 0)
@@ -507,6 +524,7 @@ void highlight_combat_damage_attacker(int player, int card, int highlight)
 }
 
 // FUNCTION: MAGIC 0x00516e2f
+// FUNCTION: SHANDALAR 0x004259e2
 void highlight_combat_damage_blocker(int player, int card, int highlight)
 {
   if (highlight != 0)
@@ -520,6 +538,7 @@ void highlight_combat_damage_blocker(int player, int card, int highlight)
 }
 
 // FUNCTION: MAGIC 0x0051724e
+// FUNCTION: SHANDALAR 0x00425df8
 int has_damage_card_targeting(int player, int card)
 {
   struct
@@ -545,6 +564,7 @@ int has_damage_card_targeting(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x005136ed
+// FUNCTION: SHANDALAR 0x00422294
 void resolve_combat_damage(int player)
 {
   struct

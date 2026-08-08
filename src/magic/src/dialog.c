@@ -54,29 +54,37 @@ char g_big_card_choice_window_text_buffer[0xc8];
 int g_big_card_choice_timeout_ms;
 
 // GLOBAL: MAGIC 0x00777848
+// GLOBAL: SHANDALAR 0x0078e5d4
 int DAT_00777848;
 // GLOBAL: MAGIC 0x007ab14c
 // GLOBAL: SHANDALAR 0x007bf34c
 int g_duel_cached_state_007abce0;
 // GLOBAL: MAGIC 0x007ab430
+// GLOBAL: SHANDALAR 0x007bf630
 int DAT_007ab430[500];
 // GLOBAL: MAGIC 0x008a8c18
 // GLOBAL: SHANDALAR 0x008bce18
 int g_duel_cached_unk_008b44d0_player_1;
 // GLOBAL: MAGIC 0x008a99f8
+// GLOBAL: SHANDALAR 0x008bdbf8
 int g_duel_cached_active_cards_count_player_0;
 // GLOBAL: MAGIC 0x008a99fc
+// GLOBAL: SHANDALAR 0x008bdbfc
 int g_duel_cached_active_cards_count_player_1;
 // GLOBAL: MAGIC 0x008b1140
+// GLOBAL: SHANDALAR 0x008c5340
 dialog_stack_entry_t DAT_008b1140[32];
 // GLOBAL: MAGIC 0x008b2940
 // GLOBAL: SHANDALAR 0x008c6af0
 int g_duel_cached_life_player_0;
 // GLOBAL: MAGIC 0x008b3400
+// GLOBAL: SHANDALAR 0x008c75a0
 int DAT_008b3400[0x26];
 // GLOBAL: MAGIC 0x008b5140
+// GLOBAL: SHANDALAR 0x008c92c0
 int DAT_008b5140[500];
 // GLOBAL: MAGIC 0x008cdac0
+// GLOBAL: SHANDALAR 0x008e1c40
 int DAT_008cdac0[500];
 // GLOBAL: MAGIC 0x008ce4f8
 // GLOBAL: SHANDALAR 0x008e2678
@@ -90,17 +98,22 @@ int DAT_008ced00[16];
 // GLOBAL: SHANDALAR 0x008e3100
 int g_duel_cached_library_count_player_1;
 // GLOBAL: MAGIC 0x008966d0
+// GLOBAL: SHANDALAR 0x008aa8d0
 int DAT_008966d0;
 // GLOBAL: MAGIC 0x0091a940
+// GLOBAL: SHANDALAR 0x0092ea90
 int DAT_0091a940[500];
 // GLOBAL: MAGIC 0x0091b400
+// GLOBAL: SHANDALAR 0x0092f550
 int DAT_0091b400[500];
 // GLOBAL: MAGIC 0x0091c4f4
 // GLOBAL: SHANDALAR 0x00930634
 int g_duel_cached_unk_008b44d0_player_0;
 // GLOBAL: MAGIC 0x00924820
+// GLOBAL: SHANDALAR 0x00938950
 int DAT_00924820[500];
 // GLOBAL: MAGIC 0x00924ff0
+// GLOBAL: SHANDALAR 0x00939120
 int DAT_00924ff0[16];
 // GLOBAL: MAGIC 0x00925d34
 // GLOBAL: SHANDALAR 0x00939e60
@@ -109,11 +122,13 @@ int g_duel_cached_life_player_1;
 // GLOBAL: SHANDALAR 0x0093a0cc
 int g_duel_cached_graveyard_count_player_0;
 // GLOBAL: MAGIC 0x00925360
+// GLOBAL: SHANDALAR 0x00939490
 int DAT_00925360[0x26];
 // GLOBAL: MAGIC 0x009266a8
 // GLOBAL: SHANDALAR 0x0093a7d8
 int g_duel_cached_exile_count_player_0;
 // GLOBAL: MAGIC 0x009397d0
+// GLOBAL: SHANDALAR 0x0094d8f0
 int DAT_009397d0[16];
 // GLOBAL: MAGIC 0x0093a7f4
 // GLOBAL: SHANDALAR 0x0094e914
@@ -122,6 +137,7 @@ int g_duel_cached_graveyard_count_player_1;
 // GLOBAL: SHANDALAR 0x0094ea9c
 int g_duel_cached_state_007abce4;
 // GLOBAL: MAGIC 0x0093d84c
+// GLOBAL: SHANDALAR 0x0095196c
 int DAT_0093d84c;
 // GLOBAL: MAGIC 0x0091c980
 int DAT_0091c980;
@@ -132,6 +148,7 @@ char g_activation_rules_text_buffer_00708f48[0x190];
 // GLOBAL: MAGIC 0x00709100
 char g_card_title_buffer_00709100[0x34];
 // GLOBAL: MAGIC 0x00709150
+// GLOBAL: SHANDALAR 0x007327c8
 char g_activation_card_title_buffer_00709150[0x34];
 
 // GLOBAL: MAGIC 0x008b4e44
@@ -265,6 +282,7 @@ char *get_displayed_card_name(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044a796
+// FUNCTION: SHANDALAR 0x00454311
 void append_displayed_card_name(int player, int card)
 {
   char *card_name;
@@ -277,6 +295,7 @@ void append_displayed_card_name(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004483be
+// FUNCTION: SHANDALAR 0x00451f3b
 int displayed_card_indices_invalid(int player, int card)
 {
   if (player != 0 && player != 1)
@@ -365,6 +384,7 @@ int get_displayed_card_color_flags(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00449645
+// FUNCTION: SHANDALAR 0x004531c2
 void apply_displayed_card_sleight_words(int player, int card, char *text)
 {
   int color_index;
@@ -381,6 +401,7 @@ void apply_displayed_card_sleight_words(int player, int card, char *text)
 }
 
 // FUNCTION: MAGIC 0x00449706
+// FUNCTION: SHANDALAR 0x00453287
 void apply_displayed_card_hack_words(int player, int card, char *text)
 {
   int color_index;
@@ -397,6 +418,7 @@ void apply_displayed_card_hack_words(int player, int card, char *text)
 }
 
 // FUNCTION: MAGIC 0x00449990
+// FUNCTION: SHANDALAR 0x00453511
 unsigned int get_displayed_card_base_internal_id(int player, int card)
 {
   int result;
@@ -475,6 +497,7 @@ unsigned int get_displayed_card_special_counters(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004491cd
+// FUNCTION: SHANDALAR 0x00452d4a
 int get_displayed_card_eot_toughness(int player, int card)
 {
   int displayed_value;
@@ -529,6 +552,7 @@ unsigned int get_displayed_card_display_flags(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00494e91
+// FUNCTION: SHANDALAR 0x0046592b
 void replace_text_token(char *text, char *search, int case_sensitive, char *replace)
 {
   struct
@@ -580,6 +604,7 @@ void replace_text_token(char *text, char *search, int case_sensitive, char *repl
 }
 
 // FUNCTION: MAGIC 0x0049511c
+// FUNCTION: SHANDALAR 0x00465bb6
 void replace_hack_color_words(char *text, color_t source_color, color_t target_color, int parenthesize)
 {
   struct
@@ -605,6 +630,7 @@ void replace_hack_color_words(char *text, color_t source_color, color_t target_c
 }
 
 // FUNCTION: MAGIC 0x00495217
+// FUNCTION: SHANDALAR 0x00465cb1
 void replace_sleight_color_words(char *text, color_t source_color, int target_color, int parenthesize)
 {
   struct
@@ -630,18 +656,21 @@ void replace_sleight_color_words(char *text, color_t source_color, int target_co
 }
 
 // FUNCTION: MAGIC 0x004a583e
+// FUNCTION: SHANDALAR 0x005579be
 int get_original_internal_card_id(int player, int card)
 {
   return *(int *)((char *)&global_card_instances[0][card] + player * 0xb0f4 + 0x3c);
 }
 
 // FUNCTION: MAGIC 0x004a587c
+// FUNCTION: SHANDALAR 0x005579fc
 int get_card_internal_id(int player, int card)
 {
   return PLAYER_CARD_INSTANCE(player, card).internal_card_id;
 }
 
 // FUNCTION: MAGIC 0x004a58ba
+// FUNCTION: SHANDALAR 0x00557a3a
 card_id_t get_card_id(int player, int card)
 {
   if (player == -1 || card == -1)

@@ -84,6 +84,7 @@ HMENU g_life_popup_menu;
 char g_life_menu_directive_format[0x68];
 
 // GLOBAL: MAGIC 0x0069e360
+// GLOBAL: SHANDALAR 0x005b7d48
 int g_life_directive_packet[3];
 
 // GLOBAL: MAGIC 0x0069e370
@@ -95,6 +96,7 @@ char g_life_menu_directive_self_text[0x34];
 HBITMAP g_life_lich_bitmap;
 
 // FUNCTION: MAGIC 0x00449bbf
+// FUNCTION: SHANDALAR 0x00453740
 int is_invalid_duel_player(int player)
 {
   if (player != 0 && player != 1)

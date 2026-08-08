@@ -278,6 +278,7 @@ int sound_get_state(int num, int *out_state)
 }
 
 // FUNCTION: MAGIC 0x00485f81
+// FUNCTION: SHANDALAR 0x0056d6c3
 int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2)) {
@@ -288,6 +289,7 @@ int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
 }
 
 // FUNCTION: MAGIC 0x00485fc3
+// FUNCTION: SHANDALAR 0x0056d705
 int sound_get_lru(int *out_num, int start, int end)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2)) {

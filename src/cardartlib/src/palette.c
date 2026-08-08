@@ -152,6 +152,7 @@ uint g_paletteRgbTable[0x100];
 // GLOBAL: CARDARTLIB 0x100322c0
 // GLOBAL: DRAWCARDLIB 0x10029310
 // GLOBAL: DECKDLL 0x100f3088
+// GLOBAL: SHANDALAR 0x005a8b10
 undefined1 g_octree_path_tmp[8];
 
 // GLOBAL: CARDARTLIB 0x100322d4
@@ -625,6 +626,7 @@ bool InitDiffSquaredLookupTable(void)
 // FUNCTION: DRAWCARDLIB 0x100012f9
 // FUNCTION: DECKDLL 0x10009cb4
 // FUNCTION: MAGIC 0x004b9f24
+// FUNCTION: SHANDALAR 0x0042e254
 void OctreeNode_CollectLeafIndices(OctNode *node,int out_base,int *out_index)
 {
   int i;
@@ -744,6 +746,7 @@ int Octree_Destroy(OctNode *node)
 // FUNCTION: CARDARTLIB 0x1000508d
 // FUNCTION: DRAWCARDLIB 0x1000163d
 // FUNCTION: DECKDLL 0x1000a002
+// FUNCTION: SHANDALAR 0x0042e5a2
 void Octree_BuildPathBytesFromRgb(uint rgb_color,undefined8 *out_path_words)
 {
   struct {

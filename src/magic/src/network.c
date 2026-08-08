@@ -36,6 +36,7 @@ char gs_packet_error_0057d4bc[] = "Packet Error";
 char gs_memory_allocation_error_in_AddCardToCLPacket_0057d4cc[] = "Memory allocation error in AddCardToCLPacket!";
 
 // FUNCTION: MAGIC 0x0049e8bb
+// FUNCTION: SHANDALAR 0x0053a265
 int select_multiple_cards_from_card_list(int player,
                  int *graveyard,
                  int unused,

@@ -1109,6 +1109,7 @@ int rewire_control_aura_source(int player, int card, int internal_card_id)
 }
 
 // FUNCTION: MAGIC 0x0051c8c0
+// FUNCTION: SHANDALAR 0x004d40a4
 int gain_control(int player, int card)
 {
   struct

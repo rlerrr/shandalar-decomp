@@ -92,12 +92,14 @@ int single_color_test_bit_to_color_t(int color_mask);
 int DAT_009251d4;
 
 // GLOBAL: MAGIC 0x00896690
+// GLOBAL: SHANDALAR 0x008aa890
 char DAT_00896690;
 
 // GLOBAL: MAGIC 0x00712544
 int DAT_00712544;
 
 // GLOBAL: MAGIC 0x00743098
+// GLOBAL: SHANDALAR 0x00748430
 int DAT_00743098;
 
 // GLOBAL: MAGIC 0x0091c0ec
@@ -125,6 +127,7 @@ void StopWorldLocationMusic(void)
 }
 
 // FUNCTION: MAGIC 0x00464bb0
+// FUNCTION: SHANDALAR 0x00522660
 void FUN_00464bb0(void)
 {
   DAT_00637c70 = 0;
@@ -550,6 +553,7 @@ int TENTATIVE_start_turn(int player)
 }
 
 // FUNCTION: MAGIC 0x004b51b9
+// FUNCTION: SHANDALAR 0x0056b9c2
 int reset_empty_card_original_ids(void)
 {
   int player;
@@ -569,6 +573,7 @@ int reset_empty_card_original_ids(void)
 }
 
 // FUNCTION: MAGIC 0x004459b5
+// FUNCTION: SHANDALAR 0x0041124e
 void compact_timestamp_slots(void)
 {
   int next_slot;
@@ -597,6 +602,7 @@ void compact_timestamp_slots(void)
 }
 
 // FUNCTION: MAGIC 0x0044386c
+// FUNCTION: SHANDALAR 0x0040f106
 int reset_stack_tracking_state(void)
 {
   stack_size = 0;
@@ -605,6 +611,7 @@ int reset_stack_tracking_state(void)
 }
 
 // FUNCTION: MAGIC 0x00442f0c
+// FUNCTION: SHANDALAR 0x0040e7a6
 void rebuild_battlefield_summary(void)
 {
   int card;
@@ -687,12 +694,14 @@ void rebuild_battlefield_summary(void)
 }
 
 // FUNCTION: MAGIC 0x004d2843
+// FUNCTION: SHANDALAR 0x004f8613
 void TENTATIVE_savegame(int autosave_slot)
 {
   (void)autosave_slot;
 }
 
 // FUNCTION: MAGIC 0x004e4e75
+// FUNCTION: SHANDALAR 0x004c40e5
 void reset_recorded_actions(void)
 {
   recorded_action_count = 0;
@@ -711,6 +720,7 @@ void update_phase_display(int player, phase_t phase)
 }
 
 // FUNCTION: MAGIC 0x00446036
+// FUNCTION: SHANDALAR 0x004118ce
 void clear_all_upkeep_flags(void)
 {
   int card;
@@ -729,6 +739,7 @@ void clear_all_upkeep_flags(void)
 }
 
 // FUNCTION: MAGIC 0x00446590
+// FUNCTION: SHANDALAR 0x00450110
 int update_duel_selection_display(int player, int phase)
 {
   int changed;

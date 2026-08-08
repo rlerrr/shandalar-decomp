@@ -65,6 +65,7 @@ extern int g_duel_window_userdata_snapshot_offset;
 extern int g_duel_window_userdata_8_offset;
 
 // GLOBAL: MAGIC 0x0055e178
+// GLOBAL: SHANDALAR 0x0057f108
 int g_magicgame_territory_window_extra_bytes = 0x10;
 
 // GLOBAL: MAGIC 0x006ab370
@@ -134,6 +135,7 @@ char g_territory_menu_action_19_1a_text[0x68];
 // GLOBAL: SHANDALAR 0x00603690
 char g_territory_menu_action_1b_text[0x68];
 // GLOBAL: MAGIC 0x006ab5b0
+// GLOBAL: SHANDALAR 0x00603200
 char g_territory_menu_show_options_text[0x68];
 // GLOBAL: MAGIC 0x006abb78
 // GLOBAL: SHANDALAR 0x006037c8
@@ -376,6 +378,7 @@ card_id_t get_card_window_displayed_card_id(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x004e9a76
+// FUNCTION: SHANDALAR 0x00507883
 int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_card)
 {
   struct

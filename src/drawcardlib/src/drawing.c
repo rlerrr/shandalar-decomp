@@ -4,6 +4,7 @@
 // FUNCTION: DRAWCARDLIB 0x10007296
 // FUNCTION: DECKDLL 0x10015fe0
 // FUNCTION: MAGIC 0x0055d9ed
+// FUNCTION: SHANDALAR 0x00573d07
 int GetNextManaSymbol(char **textCursor)
 {
   struct {
@@ -162,6 +163,7 @@ BOOL TileBitmapIntoRect(HDC hdc, RECT *r, HBITMAP bmp)
 
 // FUNCTION: DECKDLL 0x10024ed5
 // FUNCTION: MAGIC 0x0049563b
+// FUNCTION: SHANDALAR 0x004660d6
 void draw_item(DRAWITEMSTRUCT *item, HBRUSH brush, HANDLE hbmp_bkgrd, HPEN pen1, HPEN pen2, COLORREF col, int do_focus, UINT format)
 {
   struct

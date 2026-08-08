@@ -20,12 +20,16 @@ int save_or_load_data(void *buf, unsigned int count);
 // GLOBAL: MAGIC 0x0057b070
 static char s_D_MAGIC0_SVE_0057b070[] = "D:MAGIC0.SVE";
 // GLOBAL: MAGIC 0x005710f8
+// GLOBAL: SHANDALAR 0x00588114
 static char *s_sealed_deck_registry_path_005710e0 = "Software\\MicroProse\\Magic: The Gathering\\SealedDeckOptions";
 // GLOBAL: MAGIC 0x005710ec
+// GLOBAL: SHANDALAR 0x00588108
 static char *s_solo_options_registry_path_00571284 = "Software\\MicroProse\\Magic: The Gathering\\SoloOptions";
 // GLOBAL: MAGIC 0x005710f4
+// GLOBAL: SHANDALAR 0x00588110
 static char *s_gauntlet_options_registry_path_00571338 = "Software\\MicroProse\\Magic: The Gathering\\GauntletEx1Options";
 // GLOBAL: MAGIC 0x00588100
+// GLOBAL: SHANDALAR 0x00588100
 static char *s_duel_options_registry_path_00588100 = "Software\\MicroProse\\Magic: The Gathering\\DuelOptions";
 
 // FUNCTION: MAGIC 0x004a5a1b

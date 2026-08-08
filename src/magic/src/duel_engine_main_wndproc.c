@@ -110,6 +110,7 @@ extern int g_world_location_music_active;
 extern int random_seed_initialized;
 extern int _DAT_007483f4;
 // GLOBAL: SHANDALAR 0x0058e048
+// GLOBAL: SHANDALAR 0x0058e04c
 int g_showlibrary_menu_selection = 0;
 int single_color_test_bit_to_color_t(int color_mask);
 void AddJournalEntry(int entry_type, int entry_arg);
@@ -255,6 +256,7 @@ int g_duel_window_userdata_player_offset = 0;
 int g_duel_window_userdata_card_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e170
+// GLOBAL: SHANDALAR 0x0057f100
 int g_duel_window_userdata_8_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e174
@@ -270,27 +272,35 @@ int DAT_00939508;
 int DAT_00789710;
 
 // GLOBAL: MAGIC 0x0057ab6c
+// GLOBAL: SHANDALAR 0x0058c37c
 int DAT_0057ab6c = 0;
 
 // GLOBAL: MAGIC 0x008b2878
+// GLOBAL: SHANDALAR 0x008c6a28
 int g_battlefield_land_x[2];
 
 // GLOBAL: MAGIC 0x007ab2b0
+// GLOBAL: SHANDALAR 0x007bf4b0
 int g_battlefield_creature_y[2];
 
 // GLOBAL: MAGIC 0x008cff18
+// GLOBAL: SHANDALAR 0x008e4064
 int g_battlefield_creature_x_spacing;
 
 // GLOBAL: MAGIC 0x007aaee8
+// GLOBAL: SHANDALAR 0x007bf0e8
 int g_battlefield_creature_y_margin;
 
 // GLOBAL: MAGIC 0x008b3498
+// GLOBAL: SHANDALAR 0x008c7638
 int g_battlefield_noncreature_y[2];
 
 // GLOBAL: MAGIC 0x008cfd28
+// GLOBAL: SHANDALAR 0x008e3e78
 int g_battlefield_draw_placeholder_x[2];
 
 // GLOBAL: MAGIC 0x0093a800
+// GLOBAL: SHANDALAR 0x0094e920
 int g_battlefield_draw_placeholder_y[2];
 
 // FUNCTION: MAGIC 0x00447627
@@ -1278,24 +1288,34 @@ typedef struct post_duel_draws_dialog_params_struct
 } post_duel_draws_dialog_params_t;
 
 // GLOBAL: MAGIC 0x00638c78
+// GLOBAL: SHANDALAR 0x006503c0
 static HBITMAP g_post_duel_draws_background_bitmap;
 // GLOBAL: MAGIC 0x00638bb0
+// GLOBAL: SHANDALAR 0x006502f8
 static COLORREF g_post_duel_draws_text_color;
 // GLOBAL: MAGIC 0x00638b44
+// GLOBAL: SHANDALAR 0x0065028c
 static COLORREF g_post_duel_draws_button_text_color;
 // GLOBAL: MAGIC 0x00638bdc
+// GLOBAL: SHANDALAR 0x00650324
 static HBRUSH g_post_duel_draws_button_brush;
 // GLOBAL: MAGIC 0x00638b64
+// GLOBAL: SHANDALAR 0x006502ac
 static HPEN g_post_duel_draws_button_pen1;
 // GLOBAL: MAGIC 0x00638c24
+// GLOBAL: SHANDALAR 0x0065036c
 static HPEN g_post_duel_draws_button_pen2;
 // GLOBAL: MAGIC 0x00638b3c
+// GLOBAL: SHANDALAR 0x00650284
 static COLORREF g_post_duel_draws_button_unfocus_color;
 // GLOBAL: MAGIC 0x00638bb4
+// GLOBAL: SHANDALAR 0x006502fc
 static COLORREF g_post_duel_draws_button_focus_color;
 // GLOBAL: MAGIC 0x0069e24c
+// GLOBAL: SHANDALAR 0x006503f4
 static COLORREF g_still_thinking_shadow_color;
 // GLOBAL: MAGIC 0x0069e248
+// GLOBAL: SHANDALAR 0x006503f0
 static COLORREF g_still_thinking_text_color;
 
 void setup_post_duel_draws_dialog_resources(HBITMAP *background,
@@ -1679,6 +1699,7 @@ BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LP
 }
 
 // FUNCTION: MAGIC 0x0049e567
+// FUNCTION: SHANDALAR 0x00539f11
 void setup_post_duel_draws_dialog_resources(HBITMAP *background,
                                             COLORREF *text_color,
                                             COLORREF *button_text_color,
@@ -1714,6 +1735,7 @@ void setup_post_duel_draws_dialog_resources(HBITMAP *background,
 }
 
 // FUNCTION: MAGIC 0x0049e64d
+// FUNCTION: SHANDALAR 0x00539ff7
 void cleanup_post_duel_draws_dialog_resources(HBITMAP background, HBRUSH button_brush, HPEN pen1, HPEN pen2)
 {
   if (background != (HBITMAP)0)

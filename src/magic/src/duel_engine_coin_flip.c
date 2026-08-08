@@ -145,6 +145,7 @@ int g_redraw_ante_waiting_for_both_network_choices;
 char g_redraw_ante_opponent_choice_received;
 
 // FUNCTION: MAGIC 0x004a3b82
+// FUNCTION: SHANDALAR 0x0053f510
 int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off)
 {
   struct

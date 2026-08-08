@@ -95,6 +95,7 @@ DUEL_ENGINE_EXTERN HWND g_main_window_hwnd;
 
 // GLOBAL: MAGIC 0x008cf078
 // GLOBAL: SHANDALAR 0x008a92b0
+// GLOBAL: SHANDALAR 0x008e31c8
 DUEL_ENGINE_EXTERN HWND g_duel_help_owner_hwnd;
 
 // GLOBAL: MAGIC 0x00938e30
@@ -178,15 +179,19 @@ DUEL_ENGINE_EXTERN HWND g_duel_card_preview_window_hwnd;
 DUEL_ENGINE_EXTERN HWND g_duel_player_battlefield_window_hwnd;
 
 // GLOBAL: MAGIC 0x008cc2d8
+// GLOBAL: SHANDALAR 0x008e0458
 DUEL_ENGINE_EXTERN HWND g_duel_cue_card_window_hwnd;
 
 // GLOBAL: MAGIC 0x008cc6fc
+// GLOBAL: SHANDALAR 0x008e087c
 DUEL_ENGINE_EXTERN HWND g_duel_player_chat_window_hwnd;
 
 // GLOBAL: MAGIC 0x008cd920
+// GLOBAL: SHANDALAR 0x008e1aa0
 DUEL_ENGINE_EXTERN HWND g_duel_life_status_window_1_hwnd;
 
 // GLOBAL: MAGIC 0x00938e28
+// GLOBAL: SHANDALAR 0x0094cf58
 DUEL_ENGINE_EXTERN HWND g_duel_life_status_window_2_hwnd;
 
 // GLOBAL: MAGIC 0x007912dc

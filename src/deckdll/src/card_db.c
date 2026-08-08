@@ -9,11 +9,13 @@ char *CsvParseNextField(char **txt);
 // GLOBAL: DECKDLL 0x100355d8
 // GLOBAL: MAGIC 0x0056eab4
 // GLOBAL: SHANDALAR 0x0058397c
+// GLOBAL: SHANDALAR 0x008e4514
 static char read_db_empty_rules[1] = "";
 
 // GLOBAL: DECKDLL 0x100355ec
 // GLOBAL: MAGIC 0x0056eac8
 // GLOBAL: SHANDALAR 0x00583990
+// GLOBAL: SHANDALAR 0x008e4518
 static char read_db_empty_flavor[1] = "";
 
 // GLOBAL: DECKDLL 0x10033e48
@@ -97,6 +99,7 @@ char *global_base_txt;
 
 // GLOBAL: MAGIC 0x00777e60
 // GLOBAL: SHANDALAR 0x0078ebf0
+// GLOBAL: SHANDALAR 0x00583994
 name_table_entry_t global_legacy_names[2000];
 
 // FUNCTION: DECKDLL 0x1001a940

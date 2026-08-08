@@ -62,6 +62,7 @@ int g_rpbits_code_bits;
 int g_rpbits_bit_count;
 
 // GLOBAL: FACEMAKER 0x0041aa00
+// GLOBAL: SHANDALAR 0x0073b878
 RpBitsOutputHeader g_rpbits_header;
 
 // GLOBAL: FACEMAKER 0x0041aa0c
@@ -69,12 +70,14 @@ RpBitsOutputHeader g_rpbits_header;
 int g_rpbits_output_fd;
 
 // GLOBAL: FACEMAKER 0x0041aa10
+// GLOBAL: SHANDALAR 0x0073b888
 int g_rpbits_symbol_length;
 
 // GLOBAL: FACEMAKER 0x0041aa14
 int g_rpbits_prev_code;
 
 // GLOBAL: FACEMAKER 0x0041aa18
+// GLOBAL: SHANDALAR 0x0073b890
 int g_rpbits_output_bytes;
 
 // GLOBAL: FACEMAKER 0x0041aa1c
@@ -82,9 +85,11 @@ int g_rpbits_output_bytes;
 int g_rpbits_dict_table;
 
 // GLOBAL: FACEMAKER 0x0041aa20
+// GLOBAL: SHANDALAR 0x0073b898
 int g_rpbits_max_symbol_len;
 
 // GLOBAL: FACEMAKER 0x0041aa24
+// GLOBAL: SHANDALAR 0x0073b89c
 int g_rpbits_next_code;
 
 // GLOBAL: FACEMAKER 0x0041aa28

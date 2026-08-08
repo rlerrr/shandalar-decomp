@@ -113,10 +113,12 @@ WvlEntry g_wvlEntryScratch;
 
 // GLOBAL: CARDARTLIB 0x1001e118
 // GLOBAL: DRAWCARDLIB 0x100223f8
+// GLOBAL: SHANDALAR 0x00593d08
 unsigned char *g_waveletScaleToByteTable = g_waveletScaleTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x1001e124
 // GLOBAL: DRAWCARDLIB 0x10022404
+// GLOBAL: SHANDALAR 0x00593d14
 undefined4 g_haarScratchInit = 0x00000000;
 
 // GLOBAL: CARDARTLIB 0x100eaB00
@@ -129,10 +131,12 @@ undefined1 *g_yuvClampTable = g_yuvClampTableStorage + 0x400;
 
 // GLOBAL: CARDARTLIB 0x10032ae0
 // GLOBAL: DRAWCARDLIB 0x1003a9b0
+// GLOBAL: SHANDALAR 0x0067abc8
 undefined4 g_waveletScaleToByteTableInit;
 
 // GLOBAL: CARDARTLIB 0x100ea09c
 // GLOBAL: DRAWCARDLIB 0x100f1f6c
+// GLOBAL: SHANDALAR 0x00732184
 undefined4 g_yuvClampTableInit;
 
 #ifdef MODERN_FIXES
@@ -158,6 +162,7 @@ undefined1 g_errorDiffusionRowStorage[5 * 0x8060];
 
 // GLOBAL: CARDARTLIB 0x100ecb04
 // GLOBAL: DRAWCARDLIB 0x10126554
+// GLOBAL: SHANDALAR 0x0073e7f4
 BOOL g_unpackResultUnused;
 
 // GLOBAL: CARDARTLIB 0x100322cc
@@ -896,6 +901,7 @@ byte *Wvl_DecodeHaar(WvlEntry *wvl, byte *dst)
 
 // FUNCTION: CARDARTLIB 0x10007035
 // FUNCTION: DRAWCARDLIB 0x10008ab5
+// FUNCTION: SHANDALAR 0x00566ae7
 void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24, byte *src_bgr24, int dst_x, int dst_y, int rect_width,
                                     int rect_height, int dst_stride_pixels, int unused)
 {
@@ -980,6 +986,7 @@ void SetBytes(void *dst, int value, size_t num)
 
 // FUNCTION: CARDARTLIB 0x100072dc
 // FUNCTION: DRAWCARDLIB 0x10008d5c
+// FUNCTION: SHANDALAR 0x00566d8e
 void Haar2D_ReconstructInPlace(int *coeffs, int full_size, int base_size)
 {
   struct
@@ -1027,6 +1034,7 @@ void Haar2D_ReconstructInPlace(int *coeffs, int full_size, int base_size)
 
 // FUNCTION: CARDARTLIB 0x10007419
 // FUNCTION: DRAWCARDLIB 0x10008e99
+// FUNCTION: SHANDALAR 0x00566ecc
 void Haar_CombineSumDiff(int *src_a, int *src_b, int *dst, int width, int rows, undefined4 src_stride_unused, int dst_stride)
 {
   struct
@@ -1061,6 +1069,7 @@ void Haar_CombineSumDiff(int *src_a, int *src_b, int *dst, int width, int rows, 
 
 // FUNCTION: CARDARTLIB 0x100074ee
 // FUNCTION: DRAWCARDLIB 0x10008f6e
+// FUNCTION: SHANDALAR 0x00566fa1
 void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int rows, undefined4 src_stride_unused, int dst_stride)
 {
   struct
@@ -1092,6 +1101,7 @@ void Haar_CombineSumDiffHalf(int *src_a, int *src_b, int *dst, int width, int ro
 
 // FUNCTION: CARDARTLIB 0x100075ef
 // FUNCTION: DRAWCARDLIB 0x1000906f
+// FUNCTION: SHANDALAR 0x0056709e
 undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int height, int *chroma_u, int *chroma_v,
                              int chroma_stride, undefined4 unused_chroma_height, int chroma_is_420)
 
@@ -1203,6 +1213,7 @@ undefined1 *YuvPlanesToBgr24(undefined1 *out_bgr24, int *luma, int width, int he
 
 // FUNCTION: CARDARTLIB 0x100078b8
 // FUNCTION: DRAWCARDLIB 0x10009338
+// FUNCTION: SHANDALAR 0x0056735f
 BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
 {
   struct

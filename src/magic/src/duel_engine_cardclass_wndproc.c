@@ -130,9 +130,11 @@ int g_cardclass_player_window_long_offset = 0;
 int g_cardclass_card_window_long_offset = 4;
 
 // GLOBAL: MAGIC 0x0055e104
+// GLOBAL: SHANDALAR 0x0057f1a4
 int g_cardclass_hidden_parent_window_long_offset = 8;
 
 // GLOBAL: MAGIC 0x0055e108
+// GLOBAL: SHANDALAR 0x0057f1a8
 int g_cardclass_snapshot_window_long_offset = 0xc;
 
 // GLOBAL: MAGIC 0x0055e10c
@@ -296,6 +298,7 @@ char g_cardclass_cuecard_counter_whirling_dervish_text[0x68];
 char g_cardclass_menu_id_tags_text[0x68];
 
 // GLOBAL: MAGIC 0x0069c240
+// GLOBAL: SHANDALAR 0x00733688
 target_selection_result_t g_cardclass_click_action_result;
 
 // GLOBAL: MAGIC 0x0069c250
@@ -355,6 +358,7 @@ int copy_displayed_card_snapshot(card_instance_t *snapshot, int player, int card
 }
 
 // FUNCTION: MAGIC 0x004d1889
+// FUNCTION: SHANDALAR 0x00577e65
 unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_instance_t *new_snapshot)
 {
   unsigned int changed_flags;
@@ -794,6 +798,7 @@ unsigned int get_displayed_card_regen_status(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x004490d4
+// FUNCTION: SHANDALAR 0x00452c51
 int get_displayed_card_mana_color(int player, int card)
 {
   int mana_color;
@@ -850,6 +855,7 @@ unsigned int is_displayed_card_owned_by_opponent(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044937e
+// FUNCTION: SHANDALAR 0x00452efb
 unsigned int get_displayed_card_mana_source_flag(int player, int card)
 {
   int internal_card_id;
@@ -963,6 +969,7 @@ int get_displayed_card_kill_code(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0044a2f1
+// FUNCTION: SHANDALAR 0x00453e74
 int get_displayed_player_card_counts(int *player_card_counts)
 {
   if (player_card_counts == NULL)
@@ -1338,6 +1345,7 @@ void get_will_untap_overlay_rect(LPRECT rect, RECT *client_rect)
 }
 
 // FUNCTION: MAGIC 0x00448edf
+// FUNCTION: SHANDALAR 0x00452a5c
 int get_displayed_card_toughness(int player, int card)
 {
   int toughness;
@@ -1354,6 +1362,7 @@ int get_displayed_card_toughness(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x00448e62
+// FUNCTION: SHANDALAR 0x004529df
 int get_displayed_card_power(int player, int card)
 {
   int power;
@@ -1370,6 +1379,7 @@ int get_displayed_card_power(int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0055b806
+// FUNCTION: SHANDALAR 0x00571b24
 void draw_powertoughness_on_smallcard(HDC dc, RECT *rect, unsigned int power, unsigned int toughness)
 {
   struct
@@ -1422,6 +1432,7 @@ void draw_powertoughness_on_smallcard(HDC dc, RECT *rect, unsigned int power, un
 }
 
 // FUNCTION: MAGIC 0x0055bb59
+// FUNCTION: SHANDALAR 0x00571e77
 int draw_damage(HDC dc, RECT *rect, int damage)
 {
   struct
@@ -1460,6 +1471,7 @@ int draw_damage(HDC dc, RECT *rect, int damage)
 }
 
 // FUNCTION: MAGIC 0x0055bfa9
+// FUNCTION: SHANDALAR 0x005722c7
 int draw_special_counter_icons(HDC dc, RECT *rect, int icon, int count)
 {
   struct
@@ -1532,6 +1544,7 @@ int draw_special_counter_icons(HDC dc, RECT *rect, int icon, int count)
 }
 
 // FUNCTION: MAGIC 0x0055c2e8
+// FUNCTION: SHANDALAR 0x00572606
 int draw_standard_counters(HDC dc, RECT *rect, int power, int m1m1,
                            int p1p1, int loyalty, int charge)
 {
@@ -1672,6 +1685,7 @@ int draw_standard_counters(HDC dc, RECT *rect, int power, int m1m1,
 }
 
 // FUNCTION: MAGIC 0x0055c7d8
+// FUNCTION: SHANDALAR 0x00572af5
 void draw_ability_icons_on_smallcard(HDC dc, RECT *rect, unsigned int ability_flags)
 {
   struct
@@ -1765,6 +1779,7 @@ void draw_ability_icons_on_smallcard(HDC dc, RECT *rect, unsigned int ability_fl
 }
 
 // FUNCTION: MAGIC 0x0055ccd2
+// FUNCTION: SHANDALAR 0x00572fef
 void draw_manastripes(HDC dc, RECT *rect, int player, int card)
 {
   struct
@@ -1865,6 +1880,7 @@ void draw_manastripes(HDC dc, RECT *rect, int player, int card)
 }
 
 // FUNCTION: MAGIC 0x0055cfca
+// FUNCTION: SHANDALAR 0x005732e6
 void draw_summoning_sickness_overlay(HDC dc, RECT *rect)
 {
   RECT summon_rect;
@@ -1877,6 +1893,7 @@ void draw_summoning_sickness_overlay(HDC dc, RECT *rect)
 }
 
 // FUNCTION: MAGIC 0x0055d051
+// FUNCTION: SHANDALAR 0x0057336d
 void draw_card_ui_flag_20_overlay(HDC dc, RECT *rect)
 {
   HBRUSH hatch_brush;
@@ -1897,6 +1914,7 @@ void draw_card_ui_flag_20_overlay(HDC dc, RECT *rect)
 }
 
 // FUNCTION: MAGIC 0x0055d14d
+// FUNCTION: SHANDALAR 0x00573469
 void draw_dying_overlay(HDC dc, RECT *rect)
 {
   RECT dying_rect;
@@ -1909,6 +1927,7 @@ void draw_dying_overlay(HDC dc, RECT *rect)
 }
 
 // FUNCTION: MAGIC 0x0055d54e
+// FUNCTION: SHANDALAR 0x00573868
 int get_card_special_counter_icon(card_id_t card_id)
 {
   int result;
@@ -2402,6 +2421,7 @@ void draw_id_tag(HDC dc, RECT *rect, int player, int card, int enabled)
 }
 
 // FUNCTION: MAGIC 0x00497d70
+// FUNCTION: SHANDALAR 0x00468800
 unsigned int get_dib_pixel(unsigned char *bits, int bit_count, int width, int x, int y)
 {
   struct
@@ -2448,6 +2468,7 @@ unsigned int get_dib_pixel(unsigned char *bits, int bit_count, int width, int x,
 }
 
 // FUNCTION: MAGIC 0x00497eb0
+// FUNCTION: SHANDALAR 0x00468940
 void set_dib_pixel(unsigned char *bits, int bit_count, int width, int x, int y, unsigned int color)
 {
   struct
@@ -2655,6 +2676,7 @@ int can_card_join_banding_group(int player, int card, int unused_player, int unu
 }
 
 // FUNCTION: MAGIC 0x0044184b
+// FUNCTION: SHANDALAR 0x0040d0cb
 int can_block_attacker_with_landwalk_checks(int blocker_player, int blocker_card, int attacker_player, int attacker_card)
 {
   struct

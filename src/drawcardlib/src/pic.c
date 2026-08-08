@@ -130,6 +130,7 @@ byte *rpbits_stream_end = rpbits_buffer + 0x200;
 
 // GLOBAL: DRAWCARDLIB 0x10022530
 // GLOBAL: DECKDLL 0x1003a848
+// GLOBAL: SHANDALAR 0x00589bc8
 undefined4 g_invalidPcxFileDescriptor = 0xFFFFFFFF;
 
 // GLOBAL: DRAWCARDLIB 0x100f2394
@@ -152,6 +153,7 @@ undefined4 rpbits_file_descriptor;
 // GLOBAL: DRAWCARDLIB 0x100f23a8
 // GLOBAL: DECKDLL 0x10105330
 // GLOBAL: MAGIC 0x00637e20
+// GLOBAL: SHANDALAR 0x005b7b70
 undefined4 _DAT_100f23a8;
 
 // GLOBAL: DRAWCARDLIB 0x100f33a0
@@ -414,6 +416,7 @@ HBITMAP load_pic(char *filename)
 // FUNCTION: DRAWCARDLIB 0x1000b745
 // FUNCTION: DECKDLL 0x1002d1e6
 // FUNCTION: MAGIC 0x004856fa
+// FUNCTION: SHANDALAR 0x004c8b65
 int OpenPcxFile(char *filename, int flags)
 {
   int iVar1;
@@ -426,6 +429,7 @@ int OpenPcxFile(char *filename, int flags)
 // FUNCTION: DRAWCARDLIB 0x1000b778
 // FUNCTION: DECKDLL 0x1002d21a
 // FUNCTION: MAGIC 0x0048572e
+// FUNCTION: SHANDALAR 0x004c8b99
 void ClosePcxFile(int fileDescriptor)
 {
   if (fileDescriptor == (int)g_invalidPcxFileDescriptor)
