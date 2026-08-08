@@ -1553,8 +1553,8 @@ void *__cdecl GetAVISndBuff(int slot, uint blockNumber)
     uint blockIndex;
     int hr;
     void *lockPtr2;
-    uint lockBytes2;
-    uint lockBytes1;
+    DWORD lockBytes2;
+    DWORD lockBytes1;
     int offset;
   } s;
 
@@ -1695,18 +1695,18 @@ void __cdecl UpdateMmioSnd(SndInstance *snd)
   struct
   {
     int silenceByte;
-    uint playCursorBytes;
+    DWORD playCursorBytes;
     void *lockPtr1;
     uint bufferedSourceBytes;
     uint silenceBytes;
     uint bytesUntilDataEnd;
-    uint writeCursorBytes;
+    DWORD writeCursorBytes;
     uint pendingSourceBytes;
     uint sourceBytes;
     int hr;
     void *lockPtr2;
-    size_t lockBytes2;
-    size_t lockBytes1;
+    DWORD lockBytes2;
+    DWORD lockBytes1;
   } s;
 
   s.writeCursorBytes = 0;
@@ -1874,7 +1874,7 @@ int __cdecl UpdateAviSnd(SndInstance *snd)
   struct
   {
     uint aviStartSample;
-    uint playCursorBytes;
+    DWORD playCursorBytes;
     void *lockPtr1;
     uint unused_3c;
     uint unused_38;
@@ -1882,15 +1882,15 @@ int __cdecl UpdateAviSnd(SndInstance *snd)
     uint playBlockIndex;
     uint ringBlockIndex;
     long aviBytesRead;
-    uint writeCursorBytes;
+    DWORD writeCursorBytes;
     uint unused_20;
     uint previousRingBlockIndex;
     long aviSamplesRead;
     uint blockBytes;
     int hr;
     void *lockPtr2;
-    uint lockBytes2;
-    uint lockBytes1;
+    DWORD lockBytes2;
+    DWORD lockBytes1;
   } s;
 
   s.writeCursorBytes = 0;
@@ -1984,7 +1984,7 @@ undefined4 __cdecl AcquireFreeDsBuffer(SndInstance *snd, LPDIRECTSOUNDBUFFER *ou
 {
   struct
   {
-    uint status;
+    DWORD status;
     LPDIRECTSOUNDBUFFER dupOut;
     int hr;
     LPDIRECTSOUNDBUFFER buffer;
@@ -2205,7 +2205,7 @@ undefined4 __cdecl LoadFromFile(char *filename, SndInstance **outSnd)
   {
     return 7;
   }
-  status = LoadWaveFromFileHandle(file, (int *)outSnd);
+  status = LoadWaveFromFileHandle(file, outSnd);
   fclose(file);
   return status;
 }
@@ -2255,7 +2255,7 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4
     return 8;
   }
   s.riffChunkSize = s.riffChunk.cksize;
-  if (mmioRead(s.fileHandle, &s.riffHeader, s.riffChunkSize) != s.riffChunkSize)
+  if (mmioRead(s.fileHandle, (HPSTR)&s.riffHeader, s.riffChunkSize) != s.riffChunkSize)
   {
     mmioClose(s.fileHandle, 0);
     return 8;
@@ -2307,9 +2307,9 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4
   if (mmioDescend(s.fileHandle, &s.riffChunk, &s.riff, 0x10) == 0)
   {
     // TODO: this is fuckin weird no?
-    s.sndInstanceHacked = &(*outSnd)->mmck;
+    s.sndInstanceHacked = (SndInstanceSlice *)&(*outSnd)->mmck;
     memcpy(s.sndInstanceHacked, &s.riffChunk, sizeof(MMCKINFO));
-    if (mmioRead(s.fileHandle, &s.sndInstanceHacked->markerCount, 4) != 4)
+    if (mmioRead(s.fileHandle, (HPSTR)&s.sndInstanceHacked->markerCount, 4) != 4)
     {
       DestroySndInstance(*outSnd);
       mmioClose(s.fileHandle, 0);
@@ -2323,7 +2323,7 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4
       return 3;
     }
     s.riffChunkSize = s.sndInstanceHacked->markerCount * 0x18;
-    if (mmioRead(s.fileHandle, s.sndInstanceHacked->markers[0], s.riffChunkSize) != (LONG)s.riffChunkSize)
+    if (mmioRead(s.fileHandle, (HPSTR)s.sndInstanceHacked->markers[0], s.riffChunkSize) != (LONG)s.riffChunkSize)
     {
       DestroySndInstance(*outSnd);
       mmioClose(s.fileHandle, 0);
@@ -2375,10 +2375,10 @@ undefined4 __cdecl LoadWaveFromFileHandle(FILE *file, SndInstance **outSnd)
     int riffSize;
     int waveTag;
     void *ptr2; // ebp - 0x20
-    int bytes2; // ebp - 0x1c
+    DWORD bytes2; // ebp - 0x1c
     int chunkHdr[2];
     HRESULT lockHr;
-    int bytes1;      // ebp - 0xc
+    DWORD bytes1;   // ebp - 0xc
     int bytesRead;   // ebp - 0x8
     int createFlags; // ebp - 0x4
   } s;
@@ -2416,7 +2416,7 @@ undefined4 __cdecl LoadWaveFromFileHandle(FILE *file, SndInstance **outSnd)
   fread(s.chunkHdr, 1, 8, file);
   s.createFlags = 0xea;
 
-  *outSnd = CreateSndInstance(g_directSound, s.chunkHdr[1], s.waveFmt, s.createFlags);
+  *outSnd = CreateSndInstance(g_directSound, s.chunkHdr[1], (WAVEFORMATEX *)s.waveFmt, s.createFlags);
   //*outSnd = s.bytes1;
   if (*outSnd == 0)
   {
@@ -2515,7 +2515,7 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd, int startSample)
   {
     int bytesRemainingInData; // ebp - 0x48
     int samplesReadAdvance;   // ebp - 0x44
-    int blockAlignCopy;       // ebp - 0x40
+    LONG blockAlignCopy;      // ebp - 0x40
     HPSTR lockPtr1;           // ebp - 0x3c
     int startOffsetBytes;     // ebp - 0x38
     int done;                 // ebp - 0x34
@@ -2526,11 +2526,11 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd, int startSample)
     int wrapWindowBytes;      // ebp - 0x20
     int sourceOffsetBytes;    // ebp - 0x1c
     HPSTR lockPtr2;           // ebp - 0x18
-    int lockSize2;            // ebp - 0x14
+    DWORD lockSize2;          // ebp - 0x14
     int lockHr;               // ebp - 0x10
-    int bytesRead;            // ebp - 0xc
+    LONG bytesRead;           // ebp - 0xc
     int streamByteOffset;     // ebp - 0x8
-    int lockSize1;            // ebp - 0x4
+    DWORD lockSize1;          // ebp - 0x4
   } s;
 
   s.lockPtr1 = (HPSTR)0x0;
@@ -2558,12 +2558,12 @@ undefined4 __cdecl PrimeDsBufferFromSource(SndInstance *snd, int startSample)
     return 5;
   }
 
-  s.lockHr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, 0, 0x10000, &s.lockPtr1, &s.lockSize1, &s.lockPtr2, &s.lockSize2, 0);
+  s.lockHr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, 0, 0x10000, (LPVOID *)&s.lockPtr1, &s.lockSize1, (LPVOID *)&s.lockPtr2, &s.lockSize2, 0);
   if (s.lockHr != 0)
   {
     if (((snd->flags2 >> 5) & 1) != 0)
     {
-      CleanupAviStream((undefined4 *)snd);
+      CleanupAviStream(snd);
     }
     else
     {
@@ -2666,14 +2666,14 @@ undefined4 __cdecl PrimeAviAudio(SndInstance *snd, int unused)
     LONG aviSamplesRead;
     HPSTR writePtr;
     HPSTR lockPtr2;
-    int lockBytes2;
+    DWORD lockBytes2;
     int streamSample;
-    uint lockBytes1;
+    DWORD lockBytes1;
     int hr;
   } s;
 
   s.lockBytesTotal = snd->blockCount * snd->blockBytes;
-  s.hr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, 0, s.lockBytesTotal, &s.lockPtr1, &s.lockBytes1, &s.lockPtr2, &s.lockBytes2, 0);
+  s.hr = snd->dsBuffer->lpVtbl->Lock(snd->dsBuffer, 0, s.lockBytesTotal, (LPVOID *)&s.lockPtr1, &s.lockBytes1, (LPVOID *)&s.lockPtr2, &s.lockBytes2, 0);
   if (s.hr != 0)
   {
     CleanupAviStream(snd);
@@ -2696,7 +2696,7 @@ undefined4 __cdecl PrimeAviAudio(SndInstance *snd, int unused)
   // s.hr = 0;
   for (s.blockIndex = 0; s.blockIndex < snd->blockCount; s.blockIndex = s.blockIndex + 1)
   {
-    AVIStreamRead((PAVISTREAM *)snd->streamOrMmio, s.streamSample, s.samplesPerBlock, (void *)s.writePtr, snd->blockBytes, &s.aviBytesRead,
+    AVIStreamRead((PAVISTREAM)snd->streamOrMmio, s.streamSample, s.samplesPerBlock, (void *)s.writePtr, snd->blockBytes, &s.aviBytesRead,
                   &s.aviSamplesRead);
     snd->ringCursorBytes = snd->ringCursorBytes + snd->blockBytes;
     snd->ringCursorBytes = snd->ringCursorBytes % snd->dsDesc.dwBufferBytes;

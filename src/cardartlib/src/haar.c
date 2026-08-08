@@ -385,7 +385,7 @@ int DitherBgr24ToPaletteColors(int dither_kernel_id, int serpentine, uint *bgr24
       }
     }
 
-    RotateDwordsLeft1(s.err_row_ptrs + 1, g_ditherKernelErrorRowCounts[dither_kernel_id]);
+    RotateDwordsLeft1((undefined4 *)(s.err_row_ptrs + 1), g_ditherKernelErrorRowCounts[dither_kernel_id]);
     memset((void *)(s.err_row_ptrs[g_ditherKernelErrorRowCounts[dither_kernel_id]] + -10), 0, s.clear_dwords << 2);
     if (serpentine != 0)
     {
@@ -631,7 +631,7 @@ undefined4 DitherBgr24ToRgbQuantizedF8(int dither_kernel_id, int serpentine, uin
       }
     }
 
-    RotateDwordsLeft1(s.err_row_ptrs + 1, g_ditherKernelErrorRowCounts[dither_kernel_id]);
+    RotateDwordsLeft1((undefined4 *)(s.err_row_ptrs + 1), g_ditherKernelErrorRowCounts[dither_kernel_id]);
     memset((void *)(s.err_row_ptrs[g_ditherKernelErrorRowCounts[dither_kernel_id]] + -0x28), 0, s.clear_dwords << 2);
     if (serpentine != 0)
     {

@@ -65,7 +65,7 @@ int load_text(const char *file_name, const char *section_name)
 
 // FUNCTION: MAGIC 0x004eca6d
 // FUNCTION: SHANDALAR 0x0056cc4d
-int LoadTextSectionLines(char *filename, char *section_name)
+int LoadTextSectionLines(const char *filename, const char *section_name)
 {
   int loaded_count;
   int line_index;

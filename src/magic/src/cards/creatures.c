@@ -2082,7 +2082,7 @@ int card_samite_healer(int player, int card, event_t event)
                              0,
                              0,
                              0,
-                             text_lines,
+                             text_lines[0],
                              1,
                              &target))
     {
@@ -2400,7 +2400,7 @@ int select_damage_target(int player, int card, int damage_unused)
 {
   struct
   {
-    char (*prompt)[300];
+    char *prompt;
     int target_card;
     target_t target;
     int unused;
@@ -2469,7 +2469,7 @@ int select_damage_target(int player, int card, int damage_unused)
       if (g_duel_ai_mode_state == 1)
         s.prompt = "";
       else
-        s.prompt = text_lines;
+        s.prompt = text_lines[0];
 
       C_real_select_target(player,
                            2,
@@ -2488,7 +2488,7 @@ int select_damage_target(int player, int card, int damage_unused)
                            0,
                            0,
                            0,
-                           *s.prompt,
+                           s.prompt,
                            1,
                            &s.target);
       s.target_card = s.target.card;

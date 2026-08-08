@@ -2453,7 +2453,7 @@ FILE *check_filters_debug_log_file;
 
 // FUNCTION: DECKDLL 0x10010b1e
 static int
-find_artist_name_idx(char *artist, int num_artists)
+find_artist_name_idx(const char *artist, int num_artists)
 {
   struct
   {
@@ -2485,7 +2485,7 @@ find_artist_name_idx(char *artist, int num_artists)
 
 // Don't touch this, code is super weird and this will eventually match!
 // FUNCTION: DECKDLL 0x10010a72
-static int check_artist_filter(csvid_t csvid, char *artist)
+static int check_artist_filter(csvid_t csvid, const char *artist)
 {
   char txt[80];         /* ebp - 0x5c */
   unsigned __int64 idx; /* ebp - 0xc */
@@ -2530,7 +2530,7 @@ bool check_filters(csvid_t csvid)
     char txt[52];                // ebp - 0x54
     unsigned int rarity_ok;      // ebp - 0x20
     unsigned int db_card_type_2; // ebp - 0x1c
-    char *artist;                // ebp - 0x18
+    const char *artist;          // ebp - 0x18
     casting_cost_t *req;         // ebp - 0x14
     unsigned int toughness_ok;   // ebp - 0x10
     unsigned int cardtype;       // ebp - 0xc

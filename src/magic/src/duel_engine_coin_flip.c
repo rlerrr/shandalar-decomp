@@ -780,7 +780,6 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
       }
       SetTimer(hwnd, 1, 2000, (TIMERPROC)0);
       break;
-
     }
     return 1;
 
@@ -1168,7 +1167,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
     DRAWITEMSTRUCT *draw_item; // ebp - 0x190
     HWND ctl_hwnd;             // ebp - 0x18c
     int ctl_id;                // ebp - 0x188
-    HWND hwnd_a;               // ebp - 0x184
+    HDC hdc_a;                 // ebp - 0x184
     HWND invalidate_b;         // ebp - 0x180
     HWND custom_hwnd;          // ebp - 0x17c
     int command_id;            // ebp - 0x178
@@ -1355,12 +1354,12 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
     return 0;
 
   case WM_CTLCOLORSTATIC:
-    s.hwnd_a = (HWND)wparam;
-    ApplyCardArtPaletteToDc(s.hwnd_a);
+    s.hdc_a = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.hdc_a);
     s.ctl_hwnd = (HWND)lparam;
     s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
-    SetBkMode(s.hwnd_a, TRANSPARENT);
-    SetTextColor(s.hwnd_a, g_coin_flip_dialog_text_color);
+    SetBkMode(s.hdc_a, TRANSPARENT);
+    SetTextColor(s.hdc_a, g_coin_flip_dialog_text_color);
     return (BOOL)GetStockObject(HOLLOW_BRUSH);
 
   case WM_DRAWITEM:

@@ -214,13 +214,13 @@ static int ValidateRegistrySerial(uint32_t *out_value)
     char *pad6;        // ebp - 0x2c
     uint32_t checksum; // ebp - 0x28
     int sumpt6;        // ebp - 0x24
-    uint32_t size;     // ebp - 0x20
+    DWORD size;        // ebp - 0x20
     int sumpt5;        // ebp - 0x1c
     HKEY hKey;
     int sumpt4;      // ebp - 0x14
     int sumpt3;      // ebp - 0x10
     int sumpt2;      // ebp - 0xc
-    uint32_t type;   // ebp - 0x8
+    DWORD type;      // ebp - 0x8
     uint32_t sumpt1; // ebp - 0x4
   } s;
 

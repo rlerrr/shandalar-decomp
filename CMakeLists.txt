@@ -53,7 +53,6 @@ if (SHANDALAR_MODERN_FIXES AND CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(
       $<$<COMPILE_LANGUAGE:C>:/clang:-std=gnu89>
       $<$<COMPILE_LANGUAGE:C>:/clang:-fcommon>
-      $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=incompatible-pointer-types>
       $<$<COMPILE_LANGUAGE:C>:/clang:-Wno-error=return-type>
     )
     add_link_options(/INCREMENTAL:NO)
@@ -61,7 +60,6 @@ if (SHANDALAR_MODERN_FIXES AND CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(
       $<$<COMPILE_LANGUAGE:C>:-std=gnu89>
       $<$<COMPILE_LANGUAGE:C>:-fcommon>
-      $<$<COMPILE_LANGUAGE:C>:-Wno-error=incompatible-pointer-types>
       $<$<COMPILE_LANGUAGE:C>:-Wno-error=return-type>
     )
   endif()

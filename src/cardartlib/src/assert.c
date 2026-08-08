@@ -27,7 +27,7 @@ char global_base_directory[0x105];
 // FUNCTION: MAGIC 0x004da0e0
 // FUNCTION: SHANDALAR 0x0046a520
 // FUNCTION: FACEMAKER 0x00401440
-void assert(int condition, char *file, int line, char *fmt, ...)
+void assert(int condition, const char *file, int line, const char *fmt, ...)
 {
   time_t now;
   FILE *logFile;
@@ -45,7 +45,7 @@ void assert(int condition, char *file, int line, char *fmt, ...)
 #endif
 
     va_start(args, fmt);
-    if ((file != (char *)0x0) && (line != 0))
+    if ((file != (const char *)0x0) && (line != 0))
     {
       sprintf(g_assertMessageBuffer, "File-> %s, Line-> %d\n", file, line);
     }
@@ -68,7 +68,7 @@ void assert(int condition, char *file, int line, char *fmt, ...)
 // FUNCTION: DECKDLL 0x1000f044
 // FUNCTION: FACEMAKER 0x00401531
 // FUNCTION: SHANDALAR 0x0046a674
-void assert_noabort(int condition, char *file, int line, char *fmt, ...)
+void assert_noabort(int condition, const char *file, int line, const char *fmt, ...)
 {
   time_t now;
   FILE *logFile;
@@ -86,7 +86,7 @@ void assert_noabort(int condition, char *file, int line, char *fmt, ...)
 #endif
 
     va_start(args, fmt);
-    if ((file != (char *)0x0) && (line != 0))
+    if ((file != (const char *)0x0) && (line != 0))
     {
       sprintf(g_assertMessageBuffer, "File-> %s, Line-> %d\n", file, line);
     }

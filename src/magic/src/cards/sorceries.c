@@ -1743,7 +1743,7 @@ int card_demonic_tutor(int player, int card, event_t event)
     else
     {
       load_text("prompts.txt", "DEMONIC_TUTOR");
-      found_card = show_deck(player, global_library[player], 500, text_lines, 1, &gs_cancel_008a8c20);
+      found_card = show_deck(player, global_library[player], 500, text_lines, 1, gs_cancel_008a8c20);
     }
 
     if (found_card != -1 && global_library[player][found_card] != -1)

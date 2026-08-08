@@ -1068,7 +1068,7 @@ unsigned int draw_displayed_full_card(HDC dc, RECT *rect, card_ptr_t *raw_card, 
                       s.card_version,
                       draw_mode,
                       expand_text_box,
-                      &gs_illus_00789130);
+                      gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559bc1
@@ -1155,7 +1155,7 @@ void draw_displayed_card_overlaid_full_card(HDC dc, RECT *rect, int player, int 
     }
   }
 
-  DrawFullCard(dc, rect, &s.card_data, s.card_version, 2, DAT_0091c980, &gs_illus_00789130);
+  DrawFullCard(dc, rect, &s.card_data, s.card_version, 2, DAT_0091c980, gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00559e9c
@@ -1402,7 +1402,7 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   s.card_data.power = 0;
   s.card_data.toughness = 0;
   s.card_data.sleight_color = 0;
-  DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, DAT_0091c980, &gs_illus_00789130);
+  DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, DAT_0091c980, gs_illus_00789130);
 }
 
 // FUNCTION: MAGIC 0x00506fa0
@@ -1681,7 +1681,7 @@ INT_PTR CALLBACK big_card_choice_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam,
                s.card_id != unk_008a8de8 &&
                s.card_id != unk_0092666c)
       {
-        DrawFullCard(s.paint_dc, &g_big_card_choice_full_card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0, &gs_illus_00789130);
+        DrawFullCard(s.paint_dc, &g_big_card_choice_full_card_rect, global_raw_cards_storage + s.card_id, 0, 0x12, 0, gs_illus_00789130);
         if (g_duel_dialog_refresh_state != 0)
         {
           sprintf(s.card_coordinates, "%d,%d", g_big_card_choice_dialog_context->bigcard_player, g_big_card_choice_dialog_context->bigcard_card);

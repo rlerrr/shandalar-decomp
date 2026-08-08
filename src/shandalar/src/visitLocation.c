@@ -242,7 +242,7 @@ int EndMenuContext(void);
 int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 int QueuePendingMenuActionInput(void);
 int RenderCurrentMenuContextControls(void);
-int LoadTextSectionLines(char *filename, char *section);
+int LoadTextSectionLines(const char *filename, const char *section);
 int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
 void ShowMouseCursorNested(void);
 void HideMouseCursorNested(void);

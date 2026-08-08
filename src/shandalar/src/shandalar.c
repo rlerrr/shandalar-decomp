@@ -685,8 +685,9 @@ int GetFontLineHeight(int font_slot);
 void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 int DrawTextLine(FacemakerWindowBounds *window_bounds, int x, int y, char *text);
 void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
+void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
-int LoadTextSectionLines(char *filename, char *section);
+int LoadTextSectionLines(const char *filename, const char *section);
 int IsKeyInputQueueEmpty(void);
 unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, int direction_index);
 int FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
@@ -810,7 +811,7 @@ opening_menu:
     g_deck_color_bitmap = 1 << ((unsigned char)g_selected_wizard_color & 0xff);
     LoadPcxIntoPageNoPalette("advfac64.pic");
     LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
-    BlitGraphicsRect((int *)g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, (int *)g_page0_window_bounds, 0, 0);
+    BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
     skip_new_game_state_initialization = 0;
     if (s.initialized_world == 0)
     {
@@ -819,7 +820,7 @@ opening_menu:
     s.initialized_world = 1;
     g_page0_window_bounds->font_slot = 5;
     LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-    DrawTextAt((int *)g_page0_window_bounds, 0xff, 0x140, 0xbc, text_lines[0]);
+    DrawTextAt(g_page0_window_bounds, 0xff, 0x140, 0xbc, text_lines[0]);
     g_world_scene_reveal_effect_pending = 1;
     InitializeNewGameState();
     GenerateAdventureWorldMap();
@@ -902,8 +903,8 @@ opening_menu:
   s.proceed_to_main_loop = 1;
 
   // Jumpbufs for exiting the game
-  setjmp(&g_adventure_session_restart_jump_buffer);
-  setjmp(&g_adventure_world_exit_jump_buffer);
+  setjmp(g_adventure_session_restart_jump_buffer);
+  setjmp(g_adventure_world_exit_jump_buffer);
 
   if (g_adventure_world_exit_requested != 0)
   {
@@ -949,7 +950,7 @@ opening_menu:
       g_monster_timer = g_monster_timer + 1;
       ClearInputAndWaitForMouseRelease();
       ClearQueuedKeyInput();
-      setjmp(&g_adventure_world_exit_jump_buffer);
+      setjmp(g_adventure_world_exit_jump_buffer);
     } while (g_adventure_world_exit_requested == 0);
   }
 
@@ -6526,8 +6527,8 @@ unsigned int LoadSoundWithDriveFallback(char *filename, int channel, Sound *soun
 {
 #ifdef MODERN_FIXES
   char filename_copy[260];
-  strcpy(&filename_copy, filename);
-  filename = &filename_copy;
+  strcpy(filename_copy, filename);
+  filename = filename_copy;
 #endif
 
   if (g_cached_cwd_initialized == 0)

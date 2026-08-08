@@ -101,7 +101,7 @@ int register_MAGICGAME_ScrollbarClass(LPCSTR class_name)
                                                  SCROLLBAR_OFFSCREEN_DC_PTR,
                                                  (BITMAPINFO *)0,
                                                  SCROLLBAR_OFFSCREEN_BITMAP_PTR,
-                                                 (HBITMAP *)0,
+                                                 (HGDIOBJ *)0,
                                                  (void **)0);
   return s.registered;
 }

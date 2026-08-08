@@ -42,7 +42,7 @@ int handle_button_palette_message(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM 
     DWORD tid_src;    // ebp - 0x10
     DWORD procid_dst; // ebp - 0xc
     HWND changed_hwnd; // ebp - 0x8
-    int procid_src;   // ebp - 0x4
+    DWORD procid_src; // ebp - 0x4
   } s;
 
   switch (msg)

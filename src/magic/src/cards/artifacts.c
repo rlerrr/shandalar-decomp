@@ -2259,7 +2259,7 @@ int card_glasses_of_urza(int player, int card, event_t event)
       }
     }
 
-    show_deck(player, internal_card_ids, count, (char (*)[300])0x89684c, 0, &gs_cancel_008a8c20);
+    show_deck(player, internal_card_ids, count, (char (*)[300])0x89684c, 0, gs_cancel_008a8c20);
   }
 
   return 0;

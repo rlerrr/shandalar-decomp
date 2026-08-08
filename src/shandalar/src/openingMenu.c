@@ -419,7 +419,7 @@ int RunOpeningMenu(void)
   } s;
 
 #ifdef MODERN_FIXES
-  strcpy(&s.map_name, "magic3.map");
+  strcpy(s.map_name, "magic3.map");
 #else
   s.map_name = "magic3.map";
 #endif
@@ -1571,16 +1571,16 @@ int DrawLoadSaveSlotEntry(int slot_index, int visual_state)
   switch (visual_state)
   {
   case 0:
-    s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
+    s.slot_state_sprites = &g_loadsave_slot_button_state_sprites[0][0];
     break;
   case 1:
-    s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
+    s.slot_state_sprites = &g_loadsave_slot_button_state_sprites[0][0];
     break;
   case 2:
-    s.slot_state_sprites = &g_loadsave_slot_button_state_sprites[1];
+    s.slot_state_sprites = &g_loadsave_slot_button_state_sprites[1][0];
     break;
   case 3:
-    s.slot_state_sprites = g_loadsave_slot_button_state_sprites;
+    s.slot_state_sprites = &g_loadsave_slot_button_state_sprites[0][0];
     break;
   }
 

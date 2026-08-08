@@ -376,7 +376,7 @@ int select_card_from_graveyard(int player,
                  int count,
                  const char *prompt,
                  int allow_cancel,
-                 int *title);
+                 char *title);
 int choose_best_card_from_library(int player, unsigned int type_mask);
 int select_best_land_target_by_score(int preferred_player, int only_player, int *target_data);
 int drain_power_draw_mana_from_land(int player, int card, int internal_card_id);

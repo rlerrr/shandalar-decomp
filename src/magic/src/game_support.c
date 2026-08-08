@@ -1113,7 +1113,7 @@ int select_card_from_graveyard(int player,
                                int count,
                                const char *prompt,
                                int allow_cancel,
-                               int *title)
+                               char *title)
 {
   int result;
 
@@ -1132,7 +1132,7 @@ int select_card_from_graveyard(int player,
                                            count,
                                            (void *)prompt,
                                            (unsigned int)allow_cancel,
-                                           (char *)title);
+                                           title);
     if ((g_duel_network_flags & 2) != 0)
     {
       g_network_result_packet_type = 0x19;
@@ -7970,7 +7970,7 @@ void process_damage_prevention(int player)
     C_dispatch_event_raw(0x25);
     if ((battlefield_extra_ability_flags & 0x00040000) != 0)
     {
-      dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_END_DAMAGE_PREV, &gs_end_damage_prevention_00789740, 0);
+      dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_END_DAMAGE_PREV, gs_end_damage_prevention_00789740, 0);
     }
 
     for (s.test_player = 0; s.test_player < 2; ++s.test_player)
@@ -7986,7 +7986,7 @@ void process_damage_prevention(int player)
       }
     }
 
-    dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_DEAL_DAMAGE, &gs_damage_dealing_00777ab0, 0);
+    dispatch_trigger_twice_once_with_each_player_as_reason(current_player, TRIGGER_DEAL_DAMAGE, gs_damage_dealing_00777ab0, 0);
 
     for (s.test_player = 0; s.test_player < 2; ++s.test_player)
     {

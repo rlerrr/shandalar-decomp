@@ -240,7 +240,7 @@ int sound_load(const char *path, int num, Sound *snd)
   if (global_sound_status == 0)
     return 4;
 
-  global_sound_vtable.LoadSnd(path, num, snd);
+  global_sound_vtable.LoadSnd((LPSTR)path, num, snd);
   return;
 }
 

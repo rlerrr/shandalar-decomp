@@ -8,7 +8,7 @@
 HINSTANCE g_cdtoolsInstance;
 
 // GLOBAL: CDTOOLS 0x100123d0
-undefined4 g_originalNoDriveTypeAutoRun;
+DWORD g_originalNoDriveTypeAutoRun;
 
 // GLOBAL: CDTOOLS 0x100123d4
 undefined4 g_queryCancelAutoplayMsg;
@@ -306,9 +306,9 @@ undefined4 Autoplay_ShutDown(void)
   {
 
     if (RegQueryValueExA(s.hKey, "NoDriveTypeAutoRun", (LPDWORD)0x0, (LPDWORD)0x0,
-                         &g_originalNoDriveTypeAutoRun, &s.lpcbData) == 0)
+                         (LPBYTE)&g_originalNoDriveTypeAutoRun, &s.lpcbData) == 0)
     {
-      RegSetValueExA(s.hKey, "NoDriveTypeAutoRun", 0, 3, &s.autoRunToSet, 4);
+      RegSetValueExA(s.hKey, "NoDriveTypeAutoRun", 0, 3, (const BYTE *)&s.autoRunToSet, 4);
     }
     else
     {
@@ -332,7 +332,7 @@ BOOL Autoplay_Restore(void)
                     &hKey) == 0)
   {
     result = 1;
-    RegSetValueExA(hKey, "NoDriveTypeAutoRun", 0, 3, &g_originalNoDriveTypeAutoRun, 4);
+    RegSetValueExA(hKey, "NoDriveTypeAutoRun", 0, 3, (const BYTE *)&g_originalNoDriveTypeAutoRun, 4);
     RegFlushKey(hKey);
     RegCloseKey(hKey);
   }

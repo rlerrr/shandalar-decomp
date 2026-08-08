@@ -156,7 +156,7 @@ void UpdateWorldViewportBuffer(int world_x, int world_y);
 
 unsigned int MarkPathConnection(int world_x, int world_y, int unused);
 char *BuildTownDisplayName(int town_index);
-int LoadTextSectionLines(char *filename, char *section);
+int LoadTextSectionLines(const char *filename, const char *section);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD dst_len, LPCVOID format, ...);
 unsigned int GetWorldMapPixelFlags(int x, int y);
 

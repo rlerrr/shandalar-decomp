@@ -448,7 +448,7 @@ int card_animate_dead(int player, int card, event_t event)
         }
 
         graveyard_data[3] =
-            select_card_from_graveyard(player, global_graveyard_slots[chosen_graveyard], allowed, 500, prompt, 0, &gs_cancel_008a8c20);
+            select_card_from_graveyard(player, global_graveyard_slots[chosen_graveyard], allowed, 500, prompt, 0, gs_cancel_008a8c20);
         if (graveyard_data[3] == -1)
         {
           spell_fizzled = 1;

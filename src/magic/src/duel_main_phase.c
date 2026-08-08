@@ -1014,11 +1014,11 @@ restart_main_phase_action_loop:
         if ((battlefield_extra_ability_flags & 0x400000) != 0)
         {
           push_affected_card_stack();
-          strcpy(&DAT_00637808, g_duel_text_scratch_buffer);
+          strcpy(DAT_00637808, g_duel_text_scratch_buffer);
           trigger_cause_controller = player;
           trigger_cause = main_phase_selected_card;
           dispatch_trigger(player, 0xdc, gs_pay_for_attacker_007a7880, 1);
-          strcpy(g_duel_text_scratch_buffer, &DAT_00637808);
+          strcpy(g_duel_text_scratch_buffer, DAT_00637808);
           pop_affected_card_stack();
         }
         if (combat_assignment_cancelled == 0)
@@ -1112,9 +1112,9 @@ restart_main_phase_action_loop:
           if ((battlefield_extra_ability_flags & 0x400000) != 0)
           {
             push_affected_card_stack();
-            strcpy(&DAT_00637808, g_duel_text_scratch_buffer);
+            strcpy(DAT_00637808, g_duel_text_scratch_buffer);
             dispatch_trigger(player, 0xdc, gs_pay_for_attacker_007a7880, 1);
-            strcpy(g_duel_text_scratch_buffer, &DAT_00637808);
+            strcpy(g_duel_text_scratch_buffer, DAT_00637808);
             pop_affected_card_stack();
           }
           if (combat_assignment_cancelled != 0)

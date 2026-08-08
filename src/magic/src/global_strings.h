@@ -12,7 +12,7 @@
 #define GLOBAL_STRINGS_INIT(value)
 #endif
 
-int LoadTextSectionLines(char *filename, char *section_name);
+int LoadTextSectionLines(const char *filename, const char *section_name);
 int load_text(const char *file_name, const char *section_name);
 void load_global_ui_strings(char *filename);
 

@@ -400,7 +400,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
     {
       SetTextColor(s.ctl_hdc, g_duel_options_dialog_text_color);
       SetBkMode(s.ctl_hdc, TRANSPARENT);
-      s.brush = g_duel_options_dialog_pen2;
+      s.brush = (HBRUSH)g_duel_options_dialog_pen2;
     }
     else if (s.ctl_id == 0x424)
     {

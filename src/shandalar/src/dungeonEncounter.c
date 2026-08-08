@@ -323,7 +323,7 @@ int RunCastleDungeonBoard(int dungeon_index)
   } s;
 
 #ifdef MODERN_FIXES
-  strcpy(&s.ambient_sound_path, "x:sound\\damb1.wav");
+  strcpy(s.ambient_sound_path, "x:sound\\damb1.wav");
 #else
   s.ambient_sound_path = "x:sound\\damb1.wav";
 #endif
