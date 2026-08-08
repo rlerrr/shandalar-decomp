@@ -443,6 +443,6 @@ unsigned int HasExpansion(unsigned char expansion_mask)
 
   return result;
 #else
-  return 1;
+  return (expansion_mask & 0x0f) != 0;
 #endif
 }
