@@ -539,34 +539,29 @@ void notify_duel_action(int player, unsigned int value)
 // FUNCTION: SHANDALAR 0x00452442
 int get_displayed_card_zone(int player, int card)
 {
-  card_instance_t *instance;
   int result;
 
-  if (((player == 0) || (player == 1)) && (card >= 0) && (card <= 0x96))
+  if (displayed_card_indices_invalid(player, card) != 0)
+    return 0;
+
+  EnterCriticalSection(&g_duel_render_lock);
+  if ((global_displayed_card_instances[player][card].state & STATE_IN_PLAY) != 0)
   {
-    EnterCriticalSection(&g_duel_render_lock);
-    instance = &global_displayed_card_instances[player][card];
-    if ((instance->state & STATE_IN_PLAY) == 0)
-    {
-      if ((instance->state & STATE_INVISIBLE) == 0)
-      {
-        result = 0;
-      }
-      else
-      {
-        result = 2;
-      }
-    }
-    else
-    {
-      result = 1;
-    }
-    LeaveCriticalSection(&g_duel_render_lock);
+    result = 1;
   }
   else
   {
-    result = 0;
+    if ((global_displayed_card_instances[player][card].state & STATE_INVISIBLE) != 0)
+    {
+      result = 2;
+    }
+    else
+    {
+      result = 0;
+    }
   }
+  LeaveCriticalSection(&g_duel_render_lock);
+
   return result;
 }
 
