@@ -394,7 +394,7 @@ int card_shivan_dragon(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][0];
+    ++ai_mana_demand_by_color[player][COLOR_RED];
     return 0;
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
@@ -532,7 +532,7 @@ int card_dragon_whelp(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][0];
+    ++ai_mana_demand_by_color[player][COLOR_RED];
     result = 0;
   }
   else if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (player == affected_card_controller))
@@ -694,7 +694,7 @@ int card_goblin_balloon_brigade(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][0];
+    ++ai_mana_demand_by_color[player][COLOR_RED];
     return 0;
   }
 
@@ -1133,7 +1133,7 @@ int card_uthden_troll(int player, int card, event_t event)
       *(char *)&global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].color);
   if (event == EVENT_UNTAP_PHASE)
   {
-    ((int *)((char *)unk_00939520 + player * 0x20))[color] += 2;
+    ai_mana_demand_by_color[player][color] += 2;
     return 0;
   }
 
@@ -1171,7 +1171,7 @@ int card_frozen_shade(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939520[player][COLOR_BLACK];
+    ++ai_mana_demand_by_color[player][COLOR_BLACK];
     return 0;
   }
 
@@ -1309,7 +1309,7 @@ int card_wall_of_water(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939520[player][COLOR_BLUE];
+    ++ai_mana_demand_by_color[player][COLOR_BLUE];
     return 0;
   }
   else if (event == EVENT_CAST_SPELL)
@@ -1463,7 +1463,7 @@ int card_northern_paladin(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939520[player][COLOR_WHITE];
+    ++ai_mana_demand_by_color[player][COLOR_WHITE];
     result = 0;
   }
   else if (event == EVENT_CAN_ACTIVATE)
@@ -2170,7 +2170,7 @@ int card_verduran_enchantress(int player, int card, event_t event)
           ++library_position;
         }
 
-        if ((hand_count[player] < 8) && (5 < library_position))
+        if ((duel_summary.hand_counts[player] < 8) && (5 < library_position))
         {
           event_result |= RESOLVE_TRIGGER_MANDATORY;
         }
@@ -2771,7 +2771,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
     return generic_regeneration_ability(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
   }
 
-  if ((trigger_condition == 0xcd || event == 199) && affected_card == card && affected_card_controller == player && unk_008cfdac != 0 && player == current_turn)
+  if ((trigger_condition == 0xcd || event == 199) && affected_card == card && affected_card_controller == player && duel_summary.creatures_died != 0 && player == current_turn)
   {
     if (event == 0x7d)
     {
@@ -2779,7 +2779,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
     }
     if (event == 0x7e || event == 199)
     {
-      add_special_counters(player, card, unk_008cfdac);
+      add_special_counters(player, card, duel_summary.creatures_died);
     }
   }
 
@@ -3115,7 +3115,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    if (creature_cards_in_play[player] < 2)
+    if (duel_summary.creature_counts[player] < 2)
     {
       ai_modifier -= 0xa8;
     }

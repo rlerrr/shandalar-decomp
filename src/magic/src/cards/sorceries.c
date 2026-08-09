@@ -127,15 +127,15 @@ int card_balance(int player, int card, event_t event)
 
       do
       {
-        if (hand_count[1] < hand_count[0])
+        if (duel_summary.hand_counts[1] < duel_summary.hand_counts[0])
         {
           discard(0, 0, 0);
         }
-        if (hand_count[0] < hand_count[1])
+        if (duel_summary.hand_counts[0] < duel_summary.hand_counts[1])
         {
           discard(1, 0, 0);
         }
-      } while (hand_count[0] != hand_count[1]);
+      } while (duel_summary.hand_counts[0] != duel_summary.hand_counts[1]);
 
       do
       {
@@ -272,7 +272,7 @@ int card_wheel_of_fortune(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
   {
-    ai_modifier += hand_count[player] * -0x18 + 0x30;
+    ai_modifier += duel_summary.hand_counts[player] * -0x18 + 0x30;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
@@ -280,7 +280,7 @@ int card_wheel_of_fortune(int player, int card, event_t event)
     current_player = current_player;
     for (player_index = 0; player_index < 2; ++player_index)
     {
-      cards_in_hand = hand_count[current_player];
+      cards_in_hand = duel_summary.hand_counts[current_player];
       for (current_card = 0; current_card < cards_in_hand; ++current_card)
       {
         discard(current_player, 1, 0);
@@ -386,7 +386,7 @@ int card_timetwister(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    ai_modifier += 0x30 - hand_count[player] * 0x18;
+    ai_modifier += 0x30 - duel_summary.hand_counts[player] * 0x18;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
@@ -460,7 +460,7 @@ void draw_cards_and_set_hand_count(int player, int amount)
       unk_007161d8 = 0;
     }
   }
-  hand_count[player] = amount;
+  duel_summary.hand_counts[player] = amount;
 }
 
 // FUNCTION: MAGIC 0x004024c5
@@ -1585,7 +1585,7 @@ int card_raise_dead(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state &= 0xffffffdf;
-        ++hand_count[player];
+        ++duel_summary.hand_counts[player];
       }
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       kill_card(player, card, KILL_BURY);
@@ -1666,7 +1666,7 @@ int card_regrowth(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state &= 0xffffffdf;
-        ++hand_count[player];
+        ++duel_summary.hand_counts[player];
       }
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       kill_card(player, card, KILL_BURY);
@@ -1750,7 +1750,7 @@ int card_demonic_tutor(int player, int card, event_t event)
     {
       add_card_to_hand(player, global_library[player][found_card]);
       remove_card_from_deck(player, found_card);
-      ++hand_count[player];
+      ++duel_summary.hand_counts[player];
       TENTATIVE_reassess_all_cards(0, 0xff);
       shuffle_duel_library(player, player);
     }
@@ -1826,19 +1826,19 @@ int card_mind_twist(int player, int card, event_t event)
       *((char *)instance + 0x32) = 1;
       if (player == other_player)
       {
-        amount = (hand_count[1 - player] - x_value) * 0xc;
+        amount = (duel_summary.hand_counts[1 - player] - x_value) * 0xc;
         if (amount < 1)
         {
           amount = 0;
         }
         ai_modifier -= amount;
-        if (x_value <= hand_count[1 - player])
+        if (x_value <= duel_summary.hand_counts[1 - player])
         {
           amount = x_value;
         }
         else
         {
-          amount = hand_count[1 - player];
+          amount = duel_summary.hand_counts[1 - player];
         }
         ai_modifier += amount * 0x18;
       }

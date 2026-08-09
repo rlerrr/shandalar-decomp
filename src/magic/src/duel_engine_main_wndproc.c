@@ -3313,7 +3313,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         }
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into hand", -1, -1);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
-        hand_count[s.player_backdrop_color] += 1;
+        duel_summary.hand_counts[s.player_backdrop_color] += 1;
         if (((g_duel_network_flags & 2) != 0) && (active_player == s.player_backdrop_color))
         {
           g_network_result_packet_type = 0x12;

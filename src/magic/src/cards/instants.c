@@ -2755,7 +2755,7 @@ int card_dark_ritual(int player, int card, event_t event)
 
   if ((event == EVENT_CAST_SPELL) && (card == affected_card) && (player == affected_card_controller))
   {
-    if (hand_count[player] < 8)
+    if (duel_summary.hand_counts[player] < 8)
     {
       ai_modifier -= 0x3c;
     }

@@ -647,11 +647,11 @@ GLOBAL_STATE_EXTERN int last_single_card_event_result;
 
 // GLOBAL: MAGIC 0x008cf1c0
 // GLOBAL: SHANDALAR 0x008e3310
-GLOBAL_STATE_EXTERN int unk_008cf1c0[2][8];
+GLOBAL_STATE_EXTERN int creature_power_by_color[2][8];
 
 // GLOBAL: MAGIC 0x00939520
 // GLOBAL: SHANDALAR 0x0094d650
-GLOBAL_STATE_EXTERN int unk_00939520[2][8];
+GLOBAL_STATE_EXTERN int ai_mana_demand_by_color[2][8];
 
 // GLOBAL: MAGIC 0x0093950c
 // GLOBAL: SHANDALAR 0x0094d63c
@@ -704,7 +704,7 @@ GLOBAL_STATE_EXTERN int card_on_stack;
 GLOBAL_STATE_EXTERN int unk_00939330;
 // GLOBAL: MAGIC 0x007a7c58
 // GLOBAL: SHANDALAR 0x007be9e8
-GLOBAL_STATE_EXTERN int unk_007a7c58[2];
+GLOBAL_STATE_EXTERN int graveyard_card_types[2];
 // GLOBAL: MAGIC 0x007a7c60
 // GLOBAL: SHANDALAR 0x007be9f0
 GLOBAL_STATE_EXTERN char DAT_007a7c60[100];
@@ -837,7 +837,7 @@ GLOBAL_STATE_EXTERN unsigned char DAT_008b3fc0[0x104];
 
 // GLOBAL: MAGIC 0x008b42e8
 // GLOBAL: SHANDALAR 0x008c8468
-GLOBAL_STATE_EXTERN int DAT_008b42e8[2];
+GLOBAL_STATE_EXTERN int creature_count_summary[2];
 
 // GLOBAL: MAGIC 0x008b42e4
 // GLOBAL: SHANDALAR 0x008c8464
@@ -888,7 +888,7 @@ GLOBAL_STATE_EXTERN SoloDuelOptions g_solo_duel_options;
 
 // GLOBAL: MAGIC 0x008cf690
 // GLOBAL: SHANDALAR 0x008e37e0
-GLOBAL_STATE_EXTERN unsigned char DAT_008cf690[0x40];
+GLOBAL_STATE_EXTERN int creature_toughness_by_color[2][8];
 
 // GLOBAL: MAGIC 0x008cf6d0
 // GLOBAL: SHANDALAR 0x008e3820
@@ -1155,9 +1155,25 @@ GLOBAL_STATE_EXTERN int g_deck_color_bitmap = 1;
 GLOBAL_STATE_EXTERN int g_deck_color_bitmap;
 #endif
 
+typedef struct duel_summary_struct
+{
+  int life_totals[2];
+  int hand_counts[2];
+  int creature_counts[2];
+  int artifact_counts[2];
+  int enchantment_counts[2];
+  int unknown_28[2];
+  int player_damage_totals[2];
+  int cards_drawn;
+  int creatures_died;
+  int land_entries;
+  int unknown_44[7];
+} duel_summary_t;
+STATIC_ASSERT(sizeof(duel_summary_t) == 0x60, duel_summary_t_wrong_size);
+
 // GLOBAL: MAGIC 0x008cfd70
 // GLOBAL: SHANDALAR 0x008e3ec0
-GLOBAL_STATE_EXTERN unsigned char DAT_008cfd70[0x60];
+GLOBAL_STATE_EXTERN duel_summary_t duel_summary;
 
 // GLOBAL: MAGIC 0x0094f790
 // GLOBAL: SHANDALAR 0x0097f1ac

@@ -637,80 +637,83 @@ int reset_stack_tracking_state(void)
 // FUNCTION: SHANDALAR 0x0040e7a6
 void rebuild_battlefield_summary(void)
 {
-  int card;
-  int color;
-  int internal_card_id;
-  int player;
-  int toughness;
-  int power;
-
-  for (color = 0; color < 8; color = color + 1)
+  struct
   {
-    unk_00939520[1][color] = 0;
-    unk_00939520[0][color] = unk_00939520[1][color];
-    ((int *)DAT_008cf690)[color + 8] = unk_00939520[0][color];
-    ((int *)DAT_008cf690)[color] = ((int *)DAT_008cf690)[color + 8];
-    unk_008cf1c0[1][color] = ((int *)DAT_008cf690)[color];
-    unk_008cf1c0[0][color] = unk_008cf1c0[1][color];
+    int toughness_color;
+    int power_color;
+    int toughness;
+    int card_color;
+    int power;
+    int card;
+    int player;
+    int internal_card_id;
+  } s;
+
+  for (s.card = 0; s.card <= 7; s.card = s.card + 1)
+  {
+    ai_mana_demand_by_color[1][s.card] = 0;
+    ai_mana_demand_by_color[0][s.card] = ai_mana_demand_by_color[1][s.card];
+    creature_toughness_by_color[1][s.card] = ai_mana_demand_by_color[0][s.card];
+    creature_toughness_by_color[0][s.card] = creature_toughness_by_color[1][s.card];
+    creature_power_by_color[1][s.card] = creature_toughness_by_color[0][s.card];
+    creature_power_by_color[0][s.card] = creature_power_by_color[1][s.card];
   }
   card_types_in_play[1] = 0;
-  card_types_in_play[0] = 0;
-  unk_007a7c58[1] = 0;
-  unk_007a7c58[0] = 0;
-  DAT_008b42e8[1] = 0;
-  DAT_008b42e8[0] = 0;
-  for (color = 0; color < 0x18; color = color + 1)
+  card_types_in_play[0] = card_types_in_play[1];
+  graveyard_card_types[1] = 0;
+  graveyard_card_types[0] = graveyard_card_types[1];
+  creature_count_summary[1] = 0;
+  creature_count_summary[0] = creature_count_summary[1];
+  memset(&duel_summary, 0, sizeof(duel_summary));
+  duel_summary.life_totals[0] = life[0];
+  duel_summary.life_totals[1] = life[1];
+  for (s.player = 0; s.player < 2; s.player = s.player + 1)
   {
-    ((int *)DAT_008cfd70)[color] = 0;
-  }
-  ((int *)DAT_008cfd70)[0] = life[0];
-  ((int *)DAT_008cfd70)[1] = life[1];
-  for (player = 0; player < 2; player = player + 1)
-  {
-    hand_count[player] = 0;
-    for (card = 0; card < active_cards_count[player]; card = card + 1)
+    duel_summary.hand_counts[s.player] = 0;
+    for (s.card = 0; s.card < active_cards_count[s.player]; s.card = s.card + 1)
     {
-      if (is_in_play(player, card))
+      if (is_in_play(s.player, s.card))
 
       {
-        internal_card_id = global_card_instances[player][card].internal_card_id;
-        if ((global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0)
+        s.internal_card_id = global_card_instances[s.player][s.card].internal_card_id;
+        s.card_color = global_cards_data[s.internal_card_id].color;
+        if ((global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0)
         {
-          power = C_get_abilities(player, card, EVENT_POWER, -1);
-          toughness = C_get_abilities(player, card, EVENT_TOUGHNESS, -1);
-          color = single_color_test_bit_to_color_t(global_cards_data[internal_card_id].color);
-          unk_008cf1c0[player][color] += power;
-          unk_008cf1c0[player][7] += power;
-          color = single_color_test_bit_to_color_t(global_cards_data[internal_card_id].color);
-          ((int *)DAT_008cf690)[player * 8 + color] += toughness;
-          ((int *)DAT_008cf690)[player * 8 + 7] += toughness;
-          DAT_008b42e8[player]++;
+          s.power = C_get_abilities(s.player, s.card, EVENT_POWER, -1);
+          s.toughness = C_get_abilities(s.player, s.card, EVENT_TOUGHNESS, -1);
+          s.power_color = single_color_test_bit_to_color_t(s.card_color);
+          creature_power_by_color[s.player][s.power_color] += s.power;
+          creature_power_by_color[s.player][7] += s.power;
+          s.toughness_color = single_color_test_bit_to_color_t(s.card_color);
+          creature_toughness_by_color[s.player][s.toughness_color] += s.toughness;
+          creature_toughness_by_color[s.player][7] += s.toughness;
+          creature_count_summary[s.player]++;
         }
-        card_types_in_play[player] |= global_cards_data[internal_card_id].type;
-        if ((global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0)
+        card_types_in_play[s.player] |= global_cards_data[s.internal_card_id].type;
+        if ((global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0)
         {
-          ((int *)DAT_008cfd70)[player + 4]++;
+          duel_summary.creature_counts[s.player]++;
         }
-        if ((global_cards_data[internal_card_id].type & TYPE_ARTIFACT) != 0)
+        if ((global_cards_data[s.internal_card_id].type & TYPE_ARTIFACT) != 0)
         {
-          ((int *)DAT_008cfd70)[player + 6]++;
+          duel_summary.artifact_counts[s.player]++;
         }
-        if ((global_cards_data[internal_card_id].type & TYPE_ENCHANTMENT) != 0)
+        if ((global_cards_data[s.internal_card_id].type & TYPE_ENCHANTMENT) != 0)
         {
-          ((int *)DAT_008cfd70)[player + 8]++;
+          duel_summary.enchantment_counts[s.player]++;
         }
       }
-      else if (((global_card_instances[player][card].state & STATE_OUBLIETTED) == 0) &&
-               (global_card_instances[player][card].internal_card_id != -1))
+      else if (((global_card_instances[s.player][s.card].state & STATE_OUBLIETTED) == 0) &&
+               (global_card_instances[s.player][s.card].internal_card_id != -1))
       {
-        hand_count[player]++;
+        duel_summary.hand_counts[s.player]++;
       }
     }
-    for (card = 0; card < 500; card = card + 1)
+    for (s.card = 0; s.card < 500; s.card = s.card + 1)
     {
-      if (global_graveyard_slots[player][card] != -1)
+      if (global_graveyard_slots[s.player][s.card] != -1)
       {
-        unk_007a7c58[player] |= global_cards_data[global_graveyard_slots[player][card]].type;
+        graveyard_card_types[s.player] |= global_cards_data[global_graveyard_slots[s.player][s.card]].type;
       }
     }
   }

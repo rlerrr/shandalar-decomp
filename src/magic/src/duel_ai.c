@@ -104,14 +104,14 @@ typedef struct
   int DAT_007abce0_pair[2];
   unsigned int card_types[2];
   int graveyard_type_flags[2];
-  unsigned char DAT_008cfd70_copy[0x60];
+  int duel_summary_copy[24];
   int hand_counts[2];
   int creature_counts[2];
   int artifact_counts[2];
   int enchantment_counts[2];
   int cards_drawn_value;
-  int unk_008cfdac_value;
-  int unk_008cfdb0_value;
+  int creatures_died_this_turn_value;
+  int land_entries_this_turn_value;
   int ante_cards[2][16];
   int timestamp_player[500];
   int timestamp_card[500];
@@ -310,10 +310,10 @@ static int combat_sim_saved_DAT_007abce0[2];
 static unsigned int combat_sim_saved_card_types_in_play[2];
 // GLOBAL: MAGIC 0x006a4e90
 // GLOBAL: SHANDALAR 0x005b1178
-static int combat_sim_saved_unk_007a7c58[2];
+static int combat_sim_saved_graveyard_card_types[2];
 // GLOBAL: MAGIC 0x006a72f0
 // GLOBAL: SHANDALAR 0x005b35d8
-static unsigned char combat_sim_saved_DAT_008cfd70[0x60];
+static int combat_sim_saved_duel_summary[24];
 // GLOBAL: MAGIC 0x006a5e90
 // GLOBAL: SHANDALAR 0x005b2178
 static int combat_sim_saved_ante_cards[2][16];
@@ -461,7 +461,7 @@ int choose_ai_main_phase_action(int player)
   s.possible_land_colors = s.missing_land_colors;
   s.land_colors_needed = s.possible_land_colors;
   s.playable_types = 2;
-  if ((land_can_be_played & 1U) || (hand_count[player] + unk_007161d8 <= 0))
+  if ((land_can_be_played & 1U) || (duel_summary.hand_counts[player] + unk_007161d8 <= 0))
   {
   }
   else
@@ -547,14 +547,14 @@ int choose_ai_main_phase_action(int player)
       s.preferred_land_color = s.land_colors_needed;
       for (s.card = 0; (int)s.card < 6; s.card++)
       {
-        if (0 < unk_00939520[player][s.card])
+        if (0 < ai_mana_demand_by_color[player][s.card])
         {
           s.missing_land_colors |= 1 << (unsigned char)s.card;
         }
         if (((s.land_colors_needed & (1 << (unsigned char)s.card)) != 0) &&
-            (basiclandtypes_controlled[player][s.card] - unk_00939520[player][s.card] < s.fewest_controlled))
+            (basiclandtypes_controlled[player][s.card] - ai_mana_demand_by_color[player][s.card] < s.fewest_controlled))
         {
-          s.fewest_controlled = basiclandtypes_controlled[player][s.card] - unk_00939520[player][s.card];
+          s.fewest_controlled = basiclandtypes_controlled[player][s.card] - ai_mana_demand_by_color[player][s.card];
           s.preferred_land_color = 1 << (unsigned char)s.card;
         }
       }
@@ -1493,15 +1493,15 @@ void save_ai_search_state(void)
   memcpy(g_ai_search_backup.life_totals, life, sizeof(g_ai_search_backup.life_totals));
   memcpy(g_ai_search_backup.DAT_007abce0_pair, &DAT_007abce0, sizeof(g_ai_search_backup.DAT_007abce0_pair));
   memcpy(g_ai_search_backup.card_types, card_types_in_play, sizeof(g_ai_search_backup.card_types));
-  memcpy(g_ai_search_backup.graveyard_type_flags, unk_007a7c58, sizeof(g_ai_search_backup.graveyard_type_flags));
-  memcpy(g_ai_search_backup.DAT_008cfd70_copy, DAT_008cfd70, sizeof(g_ai_search_backup.DAT_008cfd70_copy));
-  memcpy(g_ai_search_backup.hand_counts, hand_count, sizeof(g_ai_search_backup.hand_counts));
-  memcpy(g_ai_search_backup.creature_counts, creature_cards_in_play, sizeof(g_ai_search_backup.creature_counts));
-  memcpy(g_ai_search_backup.artifact_counts, artifact_cards_in_play, sizeof(g_ai_search_backup.artifact_counts));
-  memcpy(g_ai_search_backup.enchantment_counts, enchantments_in_play, sizeof(g_ai_search_backup.enchantment_counts));
-  g_ai_search_backup.cards_drawn_value = cards_drawn_count;
-  g_ai_search_backup.unk_008cfdac_value = unk_008cfdac;
-  g_ai_search_backup.unk_008cfdb0_value = unk_008cfdb0;
+  memcpy(g_ai_search_backup.graveyard_type_flags, graveyard_card_types, sizeof(g_ai_search_backup.graveyard_type_flags));
+  memcpy(g_ai_search_backup.duel_summary_copy, &duel_summary, sizeof(g_ai_search_backup.duel_summary_copy));
+  memcpy(g_ai_search_backup.hand_counts, duel_summary.hand_counts, sizeof(g_ai_search_backup.hand_counts));
+  memcpy(g_ai_search_backup.creature_counts, duel_summary.creature_counts, sizeof(g_ai_search_backup.creature_counts));
+  memcpy(g_ai_search_backup.artifact_counts, duel_summary.artifact_counts, sizeof(g_ai_search_backup.artifact_counts));
+  memcpy(g_ai_search_backup.enchantment_counts, duel_summary.enchantment_counts, sizeof(g_ai_search_backup.enchantment_counts));
+  g_ai_search_backup.cards_drawn_value = duel_summary.cards_drawn;
+  g_ai_search_backup.creatures_died_this_turn_value = duel_summary.creatures_died;
+  g_ai_search_backup.land_entries_this_turn_value = duel_summary.land_entries;
   memcpy(g_ai_search_backup.ante_cards, global_ante_cards, sizeof(g_ai_search_backup.ante_cards));
   memcpy(g_ai_search_backup.timestamp_player, TENTATIVE_timestamp_player, sizeof(g_ai_search_backup.timestamp_player));
   memcpy(g_ai_search_backup.timestamp_card, TENTATIVE_timestamp_card, sizeof(g_ai_search_backup.timestamp_card));
@@ -1557,15 +1557,15 @@ void restore_ai_search_state(void)
   memcpy(life, g_ai_search_backup.life_totals, sizeof(g_ai_search_backup.life_totals));
   memcpy(&DAT_007abce0, g_ai_search_backup.DAT_007abce0_pair, sizeof(g_ai_search_backup.DAT_007abce0_pair));
   memcpy(card_types_in_play, g_ai_search_backup.card_types, sizeof(g_ai_search_backup.card_types));
-  memcpy(unk_007a7c58, g_ai_search_backup.graveyard_type_flags, sizeof(g_ai_search_backup.graveyard_type_flags));
-  memcpy(DAT_008cfd70, g_ai_search_backup.DAT_008cfd70_copy, sizeof(g_ai_search_backup.DAT_008cfd70_copy));
-  memcpy(hand_count, g_ai_search_backup.hand_counts, sizeof(g_ai_search_backup.hand_counts));
-  memcpy(creature_cards_in_play, g_ai_search_backup.creature_counts, sizeof(g_ai_search_backup.creature_counts));
-  memcpy(artifact_cards_in_play, g_ai_search_backup.artifact_counts, sizeof(g_ai_search_backup.artifact_counts));
-  memcpy(enchantments_in_play, g_ai_search_backup.enchantment_counts, sizeof(g_ai_search_backup.enchantment_counts));
-  cards_drawn_count = g_ai_search_backup.cards_drawn_value;
-  unk_008cfdac = g_ai_search_backup.unk_008cfdac_value;
-  unk_008cfdb0 = g_ai_search_backup.unk_008cfdb0_value;
+  memcpy(graveyard_card_types, g_ai_search_backup.graveyard_type_flags, sizeof(g_ai_search_backup.graveyard_type_flags));
+  memcpy(&duel_summary, g_ai_search_backup.duel_summary_copy, sizeof(g_ai_search_backup.duel_summary_copy));
+  memcpy(duel_summary.hand_counts, g_ai_search_backup.hand_counts, sizeof(g_ai_search_backup.hand_counts));
+  memcpy(duel_summary.creature_counts, g_ai_search_backup.creature_counts, sizeof(g_ai_search_backup.creature_counts));
+  memcpy(duel_summary.artifact_counts, g_ai_search_backup.artifact_counts, sizeof(g_ai_search_backup.artifact_counts));
+  memcpy(duel_summary.enchantment_counts, g_ai_search_backup.enchantment_counts, sizeof(g_ai_search_backup.enchantment_counts));
+  duel_summary.cards_drawn = g_ai_search_backup.cards_drawn_value;
+  duel_summary.creatures_died = g_ai_search_backup.creatures_died_this_turn_value;
+  duel_summary.land_entries = g_ai_search_backup.land_entries_this_turn_value;
   memcpy(global_ante_cards, g_ai_search_backup.ante_cards, sizeof(g_ai_search_backup.ante_cards));
   memcpy(TENTATIVE_timestamp_player, g_ai_search_backup.timestamp_player, sizeof(g_ai_search_backup.timestamp_player));
   memcpy(TENTATIVE_timestamp_card, g_ai_search_backup.timestamp_card, sizeof(g_ai_search_backup.timestamp_card));
@@ -3045,8 +3045,8 @@ void save_combat_simulation_state(void)
   memcpy(combat_sim_saved_life, life, sizeof(combat_sim_saved_life));
   memcpy(combat_sim_saved_DAT_007abce0, &DAT_007abce0, sizeof(combat_sim_saved_DAT_007abce0));
   memcpy(combat_sim_saved_card_types_in_play, card_types_in_play, sizeof(combat_sim_saved_card_types_in_play));
-  memcpy(combat_sim_saved_unk_007a7c58, unk_007a7c58, sizeof(combat_sim_saved_unk_007a7c58));
-  memcpy(combat_sim_saved_DAT_008cfd70, DAT_008cfd70, sizeof(combat_sim_saved_DAT_008cfd70));
+  memcpy(combat_sim_saved_graveyard_card_types, graveyard_card_types, sizeof(combat_sim_saved_graveyard_card_types));
+  memcpy(combat_sim_saved_duel_summary, &duel_summary, sizeof(combat_sim_saved_duel_summary));
   memcpy(combat_sim_saved_ante_cards, global_ante_cards, sizeof(combat_sim_saved_ante_cards));
   memcpy(combat_sim_saved_timestamp_player, TENTATIVE_timestamp_player, sizeof(combat_sim_saved_timestamp_player));
   memcpy(combat_sim_saved_timestamp_card, TENTATIVE_timestamp_card, sizeof(combat_sim_saved_timestamp_card));
@@ -3090,8 +3090,8 @@ void restore_combat_simulation_state(void)
   memcpy(life, combat_sim_saved_life, sizeof(combat_sim_saved_life));
   memcpy(&DAT_007abce0, combat_sim_saved_DAT_007abce0, sizeof(combat_sim_saved_DAT_007abce0));
   memcpy(card_types_in_play, combat_sim_saved_card_types_in_play, sizeof(combat_sim_saved_card_types_in_play));
-  memcpy(unk_007a7c58, combat_sim_saved_unk_007a7c58, sizeof(combat_sim_saved_unk_007a7c58));
-  memcpy(DAT_008cfd70, combat_sim_saved_DAT_008cfd70, sizeof(combat_sim_saved_DAT_008cfd70));
+  memcpy(graveyard_card_types, combat_sim_saved_graveyard_card_types, sizeof(combat_sim_saved_graveyard_card_types));
+  memcpy(&duel_summary, combat_sim_saved_duel_summary, sizeof(combat_sim_saved_duel_summary));
   memcpy(global_ante_cards, combat_sim_saved_ante_cards, sizeof(combat_sim_saved_ante_cards));
   memcpy(TENTATIVE_timestamp_player, combat_sim_saved_timestamp_player, sizeof(combat_sim_saved_timestamp_player));
   memcpy(TENTATIVE_timestamp_card, combat_sim_saved_timestamp_card, sizeof(combat_sim_saved_timestamp_card));

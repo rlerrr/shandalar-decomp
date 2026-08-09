@@ -1341,7 +1341,7 @@ advance_to_postcombat_main:
   {
     if (current_phase < PHASE_MAIN2)
     {
-      if (life[1] <= (int)*(int *)&DAT_008cfd70[4] / 2)
+      if (life[1] <= duel_summary.life_totals[1] / 2)
       {
         show_opponent_taunt("'Ouch, that hurt.'");
       }

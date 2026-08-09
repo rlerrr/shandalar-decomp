@@ -195,11 +195,11 @@ int card_clone(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).color = global_cards_data[cloned_internal_card_id].color;
           if ((global_cards_data[cloned_internal_card_id].type & TYPE_ARTIFACT) != 0)
           {
-            ++artifact_cards_in_play[player];
+            ++duel_summary.artifact_counts[player];
           }
           if ((global_cards_data[cloned_internal_card_id].type & TYPE_ENCHANTMENT) != 0)
           {
-            ++enchantments_in_play[player];
+            ++duel_summary.enchantment_counts[player];
           }
           card_types_in_play[player] |= global_cards_data[cloned_internal_card_id].type;
           PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).info_slot =
@@ -577,7 +577,7 @@ int card_granite_gargoyle(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][0];
+    ++ai_mana_demand_by_color[player][COLOR_RED];
   }
 
   if (event == EVENT_CAST_SPELL)
@@ -952,7 +952,7 @@ int card_rock_hydra(int player, int card, event_t event)
     {
       if (((current_phase == 4) && (player == current_player) && (player == unk_00742f60)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
       {
-        if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (hand_count[player] - *(int *)((char *)basiclandtypes_controlled + player * 0x20 + 0x10) == 3))
+        if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) && (duel_summary.hand_counts[player] - *(int *)((char *)basiclandtypes_controlled + player * 0x20 + 0x10) == 3))
         {
           unk_008b3270 |= 3;
         }
@@ -1160,7 +1160,7 @@ int card_sedge_troll(int player, int card, event_t event)
   if (event == EVENT_UNTAP_PHASE)
   {
     color = get_hacked_color(player, card, COLOR_BLACK);
-    ((int *)((char *)unk_00939520 + player * 0x20))[color] += 2;
+    ((int *)((char *)ai_mana_demand_by_color + player * 0x20))[color] += 2;
   }
 
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)
@@ -1455,11 +1455,11 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
           instance->color = global_cards_data[copied_internal_id].color;
           if ((global_cards_data[copied_internal_id].type & TYPE_ARTIFACT) != 0)
           {
-            ++artifact_cards_in_play[player];
+            ++duel_summary.artifact_counts[player];
           }
           if ((global_cards_data[copied_internal_id].type & TYPE_ENCHANTMENT) != 0)
           {
-            ++enchantments_in_play[player];
+            ++duel_summary.enchantment_counts[player];
           }
           card_types_in_play[player] |= global_cards_data[copied_internal_id].type;
           data_card->info_slot = source_internal_card_id;

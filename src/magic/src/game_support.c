@@ -260,19 +260,19 @@ int put_card_on_stack(int player, int card, int mode)
   {
     current_casting_player = player;
     unk_008b2880 = 1;
-    --hand_count[player];
+    --duel_summary.hand_counts[player];
 
     if ((s.card_data->type & 2) != 0)
     {
-      ++creature_cards_in_play[player];
+      ++duel_summary.creature_counts[player];
     }
     if ((s.card_data->type & 0x40) != 0)
     {
-      ++artifact_cards_in_play[player];
+      ++duel_summary.artifact_counts[player];
     }
     if ((s.card_data->type & 4) != 0)
     {
-      ++enchantments_in_play[player];
+      ++duel_summary.enchantment_counts[player];
     }
 
     card_types_in_play[player] |= s.card_data->type;
@@ -416,19 +416,19 @@ int put_card_on_stack(int player, int card, int mode)
 finish_put_card_on_stack:
   if (spell_fizzled == 1)
   {
-    ++hand_count[player];
+    ++duel_summary.hand_counts[player];
 
     if ((s.card_data->type & 2) != 0)
     {
-      --creature_cards_in_play[player];
+      --duel_summary.creature_counts[player];
     }
     if ((s.card_data->type & 0x40) != 0)
     {
-      --artifact_cards_in_play[player];
+      --duel_summary.artifact_counts[player];
     }
     if ((s.card_data->type & 4) != 0)
     {
-      --enchantments_in_play[player];
+      --duel_summary.enchantment_counts[player];
     }
 
     *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state &= 0xffffff5d;
@@ -534,7 +534,7 @@ int resolve_card_on_stack(int player, int card)
 
   if ((global_cards_data[internal_card_id].type & 1) != 0)
   {
-    ++unk_008cfdb0;
+    ++duel_summary.land_entries;
   }
 
   if (spell_fizzled == 1)
@@ -2376,8 +2376,8 @@ int draw_card_for_player(int player)
     TENTATIVE_reassess_all_cards(0, 0x30);
   }
 
-  ++hand_count[player];
-  ++cards_drawn_count;
+  ++duel_summary.hand_counts[player];
+  ++duel_summary.cards_drawn;
   if (g_duel_ai_mode_state != 1 && s.drawn_card != -1)
   {
     play_sound_effect(2);
@@ -3178,7 +3178,7 @@ int ante_drawn_card(int player)
   {
     card_in_hand = draw_card_for_player(player);
     global_ante_cards[player][ante_slot] = PLAYER_CARD_INSTANCE(player, card_in_hand).internal_card_id;
-    --hand_count[player];
+    --duel_summary.hand_counts[player];
     load_text("promptsX1.txt", "ANTE_A_CARD");
     if (active_player == player)
     {
@@ -3393,7 +3393,7 @@ int process_killed_card(int player, int card)
         (((unsigned char)global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0) &&
         (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0)
     {
-      ++unk_008cfdac;
+      ++duel_summary.creatures_died;
     }
 
     if (((unsigned char)global_cards_data[s.internal_card_id].type & 0xc7) != 0)
@@ -3465,15 +3465,15 @@ int process_killed_card(int player, int card)
 
   if (((unsigned char)global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0)
   {
-    --creature_cards_in_play[player];
+    --duel_summary.creature_counts[player];
   }
   if (((unsigned char)global_cards_data[s.internal_card_id].type & TYPE_ARTIFACT) != 0)
   {
-    --artifact_cards_in_play[player];
+    --duel_summary.artifact_counts[player];
   }
   if (((unsigned char)global_cards_data[s.internal_card_id].type & TYPE_ENCHANTMENT) != 0)
   {
-    --enchantments_in_play[player];
+    --duel_summary.enchantment_counts[player];
   }
 
   PLAYER_CARD_INSTANCE(player, card).internal_card_id = -1;
@@ -3605,10 +3605,10 @@ void discard(int player, int flags, int player_who_controls_effect)
 
   s.tries = 0;
 
-  if (hand_count[player] <= 0)
+  if (duel_summary.hand_counts[player] <= 0)
     return;
 
-  if ((other_player == player && (g_duel_network_flags & 2) == 0 && (hand_count[player] + unk_007161d8) <= 0))
+  if ((other_player == player && (g_duel_network_flags & 2) == 0 && (duel_summary.hand_counts[player] + unk_007161d8) <= 0))
     return;
 
   if (((active_player == player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1) && flags == 0)
@@ -3718,7 +3718,7 @@ void discard(int player, int flags, int player_who_controls_effect)
       {
         play_sound_effect(WAV_DISCARD);
       }
-      --hand_count[player];
+      --duel_summary.hand_counts[player];
     }
     else
     {
@@ -5426,7 +5426,7 @@ int discard_card_from_hand(int player, int card)
   {
     play_sound_effect(WAV_DISCARD);
   }
-  --hand_count[player];
+  --duel_summary.hand_counts[player];
   return 0;
 }
 
@@ -5461,7 +5461,7 @@ void move_card_to_graveyard(int player, int card)
 
   original_internal_card_id = PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
   graveyard_player = (PLAYER_CARD_INSTANCE(player, card).state & 0x1000) != 0;
-  unk_007a7c58[graveyard_player] |= global_cards_data[original_internal_card_id].type;
+  graveyard_card_types[graveyard_player] |= global_cards_data[original_internal_card_id].type;
 
   graveyard_index = 0;
   while (graveyard_index < 500)

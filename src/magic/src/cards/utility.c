@@ -270,7 +270,7 @@ int card_damage(int player, int card, event_t event)
 
       life[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player] -=
           PLAYER_CARD_INSTANCE(player, card).info_slot;
-      ((int *)DAT_008cfd70)[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player + 12] +=
+      duel_summary.player_damage_totals[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player] +=
           PLAYER_CARD_INSTANCE(player, card).info_slot;
     }
     else if (is_in_play((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,

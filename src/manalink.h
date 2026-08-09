@@ -87,7 +87,6 @@ extern int *graveyard_ptr_mutable[];	// only use directly in deck.c, and only wh
 static inline const int* get_grave(int player){return graveyard_ptr_mutable[player];}
 extern int graveyard_source[2][500];
 extern int next_graveyard_source_id;
-extern int hand_count[2];
 extern char hunting_subtypes[15000];
 typedef struct
 {
@@ -100,12 +99,6 @@ extern int lands_played;
 extern int ldoubleclicked;
 extern int life[2];
 extern int life_gained;	// Amount of life just gained during TRIGGER_GAIN_LIFE.
-/* landsofcolor_controlled[player][color] contains the total number of all lands of the given color controlled by player.  It's possible it's meant to be the
- * total amount of mana produceable by all of player's lands, though.
- *
- * landsofcolor_controlled[player][COLOR_COLORLESS] is the total number of lands that aren't counted as a specific color, and [COLOR_ANY] keeps a count of all
- * lands.  Again, it might be intended to be colorless mana produceable and total mana produceable by lands. */
-extern int landsofcolor_controlled[2][8];
 /* basiclandtypes_controlled[player][color] contains the total number of lands controlled by player that are swamps/islands/forests/mountains/plains.
  * basiclandtypes_controlled[player][COLOR_COLORLESS] and [COLOR_ANY] keep a count of non-colored and total lands, respectively. */
 extern int basiclandtypes_controlled[2][8];

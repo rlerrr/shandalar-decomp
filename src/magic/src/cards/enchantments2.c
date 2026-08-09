@@ -52,7 +52,7 @@ int card_island_sanctuary(int player, int card, event_t event)
             }
             ++current_card;
           }
-          if (found_attacker && internal_rand(8 - hand_count[player]) == 0)
+          if (found_attacker && internal_rand(8 - duel_summary.hand_counts[player]) == 0)
           {
             PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
           }
@@ -408,7 +408,7 @@ int card_animate_dead(int player, int card, event_t event)
   {
     if (player == active_player || (g_duel_network_flags & 2) != 0)
     {
-      return (unk_007a7c58[0] | unk_007a7c58[1]) & TYPE_CREATURE;
+      return (graveyard_card_types[0] | graveyard_card_types[1]) & TYPE_CREATURE;
     }
 
     if (g_duel_ai_mode_state == 1)
@@ -421,7 +421,7 @@ int card_animate_dead(int player, int card, event_t event)
       replay_ai_action_selection();
     }
     PLAYER_CARD_INSTANCE(player, card).info_slot = ai_recorded_choice;
-    return unk_007a7c58[ai_recorded_choice] & TYPE_CREATURE;
+    return graveyard_card_types[ai_recorded_choice] & TYPE_CREATURE;
   }
   else if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
@@ -631,15 +631,15 @@ int process_card_enters_play(int player, int card)
 
   if ((card_type & 2) != 0)
   {
-    creature_cards_in_play[player] += 1;
+    duel_summary.creature_counts[player] += 1;
   }
   if ((card_type & 0x40) != 0)
   {
-    artifact_cards_in_play[player] += 1;
+    duel_summary.artifact_counts[player] += 1;
   }
   if ((card_type & 4) != 0)
   {
-    enchantments_in_play[player] += 1;
+    duel_summary.enchantment_counts[player] += 1;
   }
 
   card_types_in_play[player] |= (unsigned int)card_type;
@@ -658,7 +658,7 @@ int process_card_enters_play(int player, int card)
 
   if ((card_type & 1) != 0)
   {
-    unk_008cfdb0 += 1;
+    duel_summary.land_entries += 1;
   }
 
   return 0;
@@ -2065,14 +2065,14 @@ int card_energy_flux(int player, int card, event_t event)
   {
     if (player == other_player)
     {
-      if (*(int *)(DAT_008cfd70 + 0x18) == 0)
+      if (duel_summary.artifact_counts[0] == 0)
       {
         ai_modifier -= 0xf0;
       }
       else
       {
         ai_modifier += (has_mana(other_player, COLOR_ANY, 1) / 2 +
-                        (*(int *)(DAT_008cfd70 + 0x18) - *(int *)(DAT_008cfd70 + 0x1c))) *
+                        (duel_summary.artifact_counts[0] - duel_summary.artifact_counts[1])) *
                        0x18;
       }
     }
@@ -3282,7 +3282,7 @@ int card_orcish_oriflamme(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
   {
-    ai_modifier += creature_cards_in_play[player] * 0xc;
+    ai_modifier += duel_summary.creature_counts[player] * 0xc;
   }
   return 0;
 }
@@ -3786,7 +3786,7 @@ int card_holy_armor(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][1];
+    ++ai_mana_demand_by_color[player][COLOR_WHITE];
   }
 
   if (event == EVENT_CAN_CAST)
@@ -4017,7 +4017,7 @@ int card_blessing(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][1];
+    ++ai_mana_demand_by_color[player][COLOR_WHITE];
   }
 
   if (event == EVENT_CAN_CAST)
@@ -4253,7 +4253,7 @@ int card_firebreathing(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    ++unk_00939530[player][0];
+    ++ai_mana_demand_by_color[player][COLOR_RED];
   }
 
   if (event == EVENT_CAN_CAST)
@@ -4808,7 +4808,7 @@ int card_stasis(int player, int card, event_t event)
   {
     if (count_permanents_by_internal_card_id(player, instance->internal_card_id, -1) == 0)
     {
-      ai_modifier += landsofcolor_controlled[1 - player][2] - landsofcolor_controlled[player][2];
+      ai_modifier += creature_power_by_color[1 - player][7] - creature_power_by_color[player][7];
     }
     instance->damage_target_player = (char)player;
     return 0;
@@ -4897,7 +4897,8 @@ int card_magnetic_mountain(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    ai_modifier += unk_008cf1c0[1 - player][COLOR_BLUE] - unk_008cf1c0[player][COLOR_BLUE];
+    ai_modifier += creature_power_by_color[1 - player][COLOR_BLUE] -
+                   creature_power_by_color[player][COLOR_BLUE];
     return 0;
   }
 
@@ -5138,7 +5139,8 @@ int card_smoke(int player, int card, event_t event)
   {
     if (count_permanents_by_internal_card_id(player, instance->internal_card_id, -1) == 0)
     {
-      ai_modifier += (landsofcolor_controlled[active_player][2] - landsofcolor_controlled[other_player][2]) * 0xc;
+      ai_modifier +=
+          (creature_power_by_color[active_player][7] - creature_power_by_color[other_player][7]) * 0xc;
     }
     return 0;
   }
@@ -5805,7 +5807,7 @@ int card_greed(int player, int card, event_t event)
   if (event == EVENT_ACTIVATE)
   {
     charge_mana_w_global_cost_mod(player, card, COLOR_BLACK, 1);
-    ai_modifier += (((*(int *)(DAT_008cfd70 + player * 4 + 8) * 2 - 4) - life[player]) * 3 + 0x1e) * -4;
+    ai_modifier += (((duel_summary.hand_counts[player] * 2 - 4) - life[player]) * 3 + 0x1e) * -4;
     return 0;
   }
 
@@ -6414,7 +6416,7 @@ int helper_ward(int player, int card, event_t event, int color)
         }
         if (instance->targets[0].player == other_player)
         {
-          aura_count = unk_008cf1c0[active_player][color];
+          aura_count = creature_power_by_color[active_player][color];
           ai_modifier += (aura_count + 1) * C_get_abilities(instance->targets[0].player, instance->targets[0].card, EVENT_POWER, -1) * 3;
         }
         if (instance->targets[0].player == active_player)
@@ -6809,12 +6811,12 @@ int card_copy_artifact(int player, int card, event_t event)
         if ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_ARTIFACT) !=
             0)
         {
-          ++artifact_cards_in_play[player];
+          ++duel_summary.artifact_counts[player];
         }
         if ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type &
              TYPE_ENCHANTMENT) != 0)
         {
-          ++enchantments_in_play[player];
+          ++duel_summary.enchantment_counts[player];
         }
         card_types_in_play[player] |=
             (unsigned char)global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type;
@@ -7051,7 +7053,7 @@ int card_regeneration(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    unk_00939520[player][COLOR_GREEN] += 2;
+    ai_mana_demand_by_color[player][COLOR_GREEN] += 2;
   }
 
   if (event == EVENT_CAN_CAST)
@@ -7294,7 +7296,7 @@ int card_the_brute(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    unk_00939520[player][COLOR_RED] += 2;
+    ai_mana_demand_by_color[player][COLOR_RED] += 2;
     return 0;
   }
 
@@ -7471,7 +7473,9 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
     if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player && count_permanents_by_internal_card_id(player, instance->internal_card_id, player) == 0)
     {
       ai_modifier +=
-          (basiclandtypes_controlled[active_player][color] + unk_008cf1c0[active_player][color] / 2) * 0x18;
+          (basiclandtypes_controlled[active_player][color] +
+           creature_power_by_color[active_player][color] / 2) *
+          0x18;
     }
 
     if (event == EVENT_CAN_ACTIVATE)
@@ -7716,7 +7720,9 @@ int card_conversion(int player, int card, event_t event)
   if ((((event == EVENT_CAST_SPELL) || (event == EVENT_SHOULD_AI_PLAY)) && (affected_card == card)) && (affected_card_controller == player) && count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1) == 0)
   {
     ai_modifier +=
-        (landsofcolor_controlled[other_player][COLOR_WHITE] - landsofcolor_controlled[1 - other_player][COLOR_WHITE]) * 0xc;
+        (creature_power_by_color[other_player][COLOR_WHITE] -
+         creature_power_by_color[1 - other_player][COLOR_WHITE]) *
+        0xc;
   }
 
   if (event == EVENT_RESOLVE_SPELL)

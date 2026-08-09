@@ -422,7 +422,7 @@ int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packe
 int apply_cheat_card_packet(void)
 {
   add_card_to_hand(other_player, g_network_result_value);
-  ++hand_count[other_player];
+  ++duel_summary.hand_counts[other_player];
   return 1;
 }
 

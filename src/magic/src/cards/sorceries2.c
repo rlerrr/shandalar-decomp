@@ -16,12 +16,12 @@ int card_contract_from_below(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
   {
-    ai_modifier += hand_count[player] * -0x18 + 0x48;
+    ai_modifier += duel_summary.hand_counts[player] * -0x18 + 0x48;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    cards_in_hand = hand_count[player];
+    cards_in_hand = duel_summary.hand_counts[player];
     for (current_card = 0; current_card < cards_in_hand; ++current_card)
     {
       discard(player, 0, 0);

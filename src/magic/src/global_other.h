@@ -118,30 +118,9 @@ GLOBAL_OTHERS_EXTERN int phase_response_window_open;
 // GLOBAL: SHANDALAR 0x007a82dc
 GLOBAL_OTHERS_EXTERN int regenerate_or_graveyard_triggers_in_progress;
 
-// GLOBAL: MAGIC 0x008cfd78
-GLOBAL_OTHERS_EXTERN int hand_count[2];
-
-// GLOBAL: MAGIC 0x008cfd80
-GLOBAL_OTHERS_EXTERN int creature_cards_in_play[2];
-
-// GLOBAL: MAGIC 0x008cfda8
-GLOBAL_OTHERS_EXTERN int cards_drawn_count;
-
 // GLOBAL: MAGIC 0x008cff10
 // GLOBAL: SHANDALAR 0x008e4060
 GLOBAL_OTHERS_EXTERN int life_gained;
-
-// GLOBAL: MAGIC 0x008cfd88
-GLOBAL_OTHERS_EXTERN int artifact_cards_in_play[2];
-
-// GLOBAL: MAGIC 0x008cfd90
-GLOBAL_OTHERS_EXTERN int enchantments_in_play[2];
-
-// GLOBAL: MAGIC 0x008cfdac
-GLOBAL_OTHERS_EXTERN int unk_008cfdac;
-
-// GLOBAL: MAGIC 0x008cfdb0
-GLOBAL_OTHERS_EXTERN int unk_008cfdb0;
 
 // GLOBAL: MAGIC 0x00743038
 // GLOBAL: SHANDALAR 0x0077f600
@@ -308,12 +287,6 @@ GLOBAL_OTHERS_EXTERN int unk_0093f4b4;
 
 // GLOBAL: MAGIC 0x00925030
 GLOBAL_OTHERS_EXTERN HINSTANCE g_app_instance;
-
-// GLOBAL: MAGIC 0x008cf1d4
-GLOBAL_OTHERS_EXTERN int landsofcolor_controlled[2][8];
-
-// GLOBAL: MAGIC 0x00939530
-GLOBAL_OTHERS_EXTERN int unk_00939530[2][8];
 
 // GLOBAL: MAGIC 0x008cdab4
 // GLOBAL: SHANDALAR 0x008e1c34

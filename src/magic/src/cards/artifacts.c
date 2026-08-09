@@ -269,7 +269,7 @@ int card_black_vise(int player, int card, event_t event)
         s.damaged_player = active_player;
       }
 
-      s.damage = hand_count[s.damaged_player] - 4;
+      s.damage = duel_summary.hand_counts[s.damaged_player] - 4;
       if (s.damage < 1)
       {
         s.damage = 0;
@@ -316,7 +316,7 @@ int card_black_vise(int player, int card, event_t event)
       s.damaged_player = active_player;
     }
 
-    if (current_player == s.damaged_player && hand_count[s.damaged_player] > 4)
+    if (current_player == s.damaged_player && duel_summary.hand_counts[s.damaged_player] > 4)
     {
       if (event == EVENT_TRIGGER)
       {
@@ -324,7 +324,7 @@ int card_black_vise(int player, int card, event_t event)
       }
       if (event == EVENT_RESOLVE_TRIGGER)
       {
-        damage_player(s.damaged_player, hand_count[s.damaged_player] - 4, player, card);
+        damage_player(s.damaged_player, duel_summary.hand_counts[s.damaged_player] - 4, player, card);
       }
     }
   }
@@ -1563,7 +1563,7 @@ int card_nevinyrral_s_disk(int player, int card, event_t event)
     result = count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1);
     if (result == 0)
     {
-      ai_modifier += (landsofcolor_controlled[1 - player][2] - landsofcolor_controlled[player][2]) *
+      ai_modifier += (creature_power_by_color[1 - player][7] - creature_power_by_color[player][7]) *
                      0xc;
     }
     PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
@@ -1788,7 +1788,8 @@ int card_winter_orb(int player, int card, event_t event)
 
   if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player && count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, -1) == 0)
   {
-    ai_modifier += (landsofcolor_controlled[other_player][7] - landsofcolor_controlled[active_player][7]) * 0xc;
+    ai_modifier +=
+        (creature_power_by_color[other_player][7] - creature_power_by_color[active_player][7]) * 0xc;
   }
 
   if (event == 0x82 && (global_cards_data[PLAYER_CARD_INSTANCE(affected_card_controller, affected_card).internal_card_id].type & TYPE_LAND) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)
@@ -1994,7 +1995,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
 
   if (event == EVENT_SHOULD_AI_PLAY && affected_card == card && affected_card_controller == player)
   {
-    ai_modifier += (artifact_cards_in_play[player] * 0xc) / 2;
+    ai_modifier += (duel_summary.artifact_counts[player] * 0xc) / 2;
   }
 
   if (event == EVENT_CAN_ACTIVATE)

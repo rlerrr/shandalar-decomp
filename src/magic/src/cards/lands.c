@@ -147,7 +147,7 @@ int card_library_of_alexandria(int player, int card, event_t event)
       load_text("prompts.txt", "LIBRARY_OF_ALEXANDRIA");
     }
 
-    if (hand_count[player] == 7)
+    if (duel_summary.hand_counts[player] == 7)
     {
       if (g_duel_ai_mode_state != 1)
       {
