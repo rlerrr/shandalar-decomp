@@ -56,7 +56,7 @@ int select_multiple_cards_from_card_list(int player,
     char prompt[200];
     int available_cards[500];
     int index;
-    unsigned int show_bigcard;
+    unsigned int require_selection;
     int graveyard_copy[492];
     int unused_slot;
   } s;
@@ -107,13 +107,13 @@ int select_multiple_cards_from_card_list(int player,
       strcpy(s.prompt, ((char **)prompt_lines)[num_prompt_lines - 1]);
     }
 
-    s.show_bigcard = (unsigned int)(s.selected_count < highlighted_choices);
+    s.require_selection = (unsigned int)(s.selected_count < highlighted_choices);
     selection = show_cardlist(s.graveyard_copy,
                               0,
                               s.available_cards,
                               count,
                               &gs_done_008b40e0,
-                              s.show_bigcard,
+                              s.require_selection,
                               s.prompt);
     if (selection == -1)
     {

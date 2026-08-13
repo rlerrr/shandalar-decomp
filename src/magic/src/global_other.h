@@ -42,6 +42,13 @@ typedef struct
   int y;
 } int_pair_t;
 
+typedef struct mana_burn_dialog_context_struct
+{
+  int player;
+  int amount;
+} mana_burn_dialog_context_t;
+STATIC_ASSERT(sizeof(mana_burn_dialog_context_t) == 8, mana_burn_dialog_context_wrong_size);
+
 #if defined(GLOBALS_OTHERS_IMPL) && defined(SHANDALAR)
 // GLOBAL: SHANDALAR 0x00591a08
 ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39] = {
@@ -340,7 +347,7 @@ GLOBAL_OTHERS_EXTERN COLORREF g_mana_burn_dialog_text_color;
 GLOBAL_OTHERS_EXTERN COLORREF g_mana_burn_dialog_shadow_color;
 
 // GLOBAL: MAGIC 0x00638c80
-GLOBAL_OTHERS_EXTERN int *g_mana_burn_dialog_data;
+GLOBAL_OTHERS_EXTERN mana_burn_dialog_context_t *g_mana_burn_dialog_context;
 
 // GLOBAL: MAGIC 0x006a1db8
 // GLOBAL: SHANDALAR 0x005ae0a0

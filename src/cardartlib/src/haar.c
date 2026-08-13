@@ -1222,7 +1222,7 @@ BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
   struct
   {
     byte *dst_y;        /* ebp - 0x3c */
-    WvlEntry *wvl;      /* ebp - 0x38 */
+    WvlEntry *target;   /* ebp - 0x38 */
     int node_count;     /* ebp - 0x34 */
     int chroma_w;       /* ebp - 0x30 */
     int base_size;      /* ebp - 0x2c */
@@ -1238,16 +1238,16 @@ BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
     byte *dst_u;        /* ebp - 0x04 */
   } s;
 
-  s.wvl = wvl;
+  s.target = wvl;
 
-  s.full_w = s.wvl->width / ((s.wvl->pieces == 1) ? 1 : 2);
+  s.full_w = s.target->width / ((s.target->pieces == 1) ? 1 : 2);
   s.full_h = s.full_w;
-  s.chroma_w = s.full_h / ((s.wvl->chroma_is_420 == 0) ? 1 : 2);
+  s.chroma_w = s.full_h / ((s.target->chroma_is_420 == 0) ? 1 : 2);
   s.chroma_h = s.chroma_w;
 
   s.bitstream = wvl->data_ptr;
   s.huff_data = s.bitstream;
-  s.base_size = s.wvl->base_size;
+  s.base_size = s.target->base_size;
 
   s.tmp = (s.full_w * s.full_h) + s.chroma_w * s.chroma_h * 2;
 
@@ -1260,7 +1260,7 @@ BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
       s.bitstream +
       Huffman13_Init((undefined4)s.bitstream, (undefined4)s.symbol_table, (undefined4)s.node_count);
 
-  for (s.layer = 0; s.layer < s.wvl->pieces; s.layer = s.layer + 1)
+  for (s.layer = 0; s.layer < s.target->pieces; s.layer = s.layer + 1)
   {
     s.dst_y = &dst[(((s.tmp + 0x40) * s.layer) << 2)];
 
@@ -1274,8 +1274,8 @@ BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
 
     s.bitstream += (s.base_size * s.base_size) << 2;
 
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_y, (uint *)s.bitstream, s.wvl->huff_bytes_y[s.layer]);
-    s.bitstream = s.bitstream + s.wvl->huff_bytes_y[s.layer];
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_y, (uint *)s.bitstream, s.target->huff_bytes_y[s.layer]);
+    s.bitstream = s.bitstream + s.target->huff_bytes_y[s.layer];
 
     memcpy(s.dst_u, s.bitstream, (s.base_size * s.base_size) << 2);
 
@@ -1283,8 +1283,8 @@ BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
 
     s.bitstream += (s.base_size * s.base_size) << 2;
 
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_u, (uint *)s.bitstream, s.wvl->huff_bytes_u[s.layer]);
-    s.bitstream = s.bitstream + s.wvl->huff_bytes_u[s.layer];
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_u, (uint *)s.bitstream, s.target->huff_bytes_u[s.layer]);
+    s.bitstream = s.bitstream + s.target->huff_bytes_u[s.layer];
 
     memcpy(s.dst_v, s.bitstream, (s.base_size * s.base_size) << 2);
 
@@ -1292,8 +1292,8 @@ BOOL Wvl_UnpackPieces(byte *dst, WvlEntry *wvl)
 
     s.bitstream += (s.base_size * s.base_size) << 2;
 
-    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_v, (uint *)s.bitstream, s.wvl->huff_bytes_v[s.layer]);
-    s.bitstream = s.bitstream + s.wvl->huff_bytes_v[s.layer];
+    Huffman13_DecodeDwordsWithZeroRuns((undefined8 *)s.dst_v, (uint *)s.bitstream, s.target->huff_bytes_v[s.layer]);
+    s.bitstream = s.bitstream + s.target->huff_bytes_v[s.layer];
   }
   return 0;
 }

@@ -1075,14 +1075,19 @@ INT_PTR show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amou
 
 // FUNCTION: MAGIC 0x004a628e
 // FUNCTION: SHANDALAR 0x0055840e
-INT_PTR show_selectable_cardlist(int *graveyard, int *available, int count, void *context, unsigned int big_card_mode, char *prompt)
+INT_PTR show_selectable_cardlist(int *graveyard,
+                                 int *available,
+                                 int count,
+                                 void *window_title,
+                                 unsigned int require_selection,
+                                 char *prompt)
 {
   if (g_duel_ai_mode_state == 1)
   {
     return 1;
   }
 
-  return show_cardlist(graveyard, 0, available, count, context, big_card_mode, prompt);
+  return show_cardlist(graveyard, 0, available, count, window_title, require_selection, prompt);
 }
 
 // FUNCTION: MAGIC 0x004b5f03
@@ -6228,14 +6233,18 @@ char *get_hunting_subtype_name(int value)
 }
 
 // FUNCTION: MAGIC 0x004a61fe
-int show_cardlist_if_human(int *cards, int count, void *context, unsigned int big_card_mode, char *prompt)
+int show_cardlist_if_human(int *cards,
+                           int count,
+                           void *window_title,
+                           unsigned int require_selection,
+                           char *prompt)
 {
   if (g_duel_ai_mode_state == 1)
   {
     return 1;
   }
 
-  return show_cardlist(cards, 0, 0, count, context, big_card_mode, prompt);
+  return show_cardlist(cards, 0, 0, count, window_title, require_selection, prompt);
 }
 
 // FUNCTION: MAGIC 0x004ec616

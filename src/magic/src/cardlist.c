@@ -11,6 +11,19 @@
 
 typedef ptrdiff_t INT_PTR;
 
+typedef struct show_card_list_dialog_context_struct
+{
+  char *window_title;
+  int displayed_csvids[500];
+  int card_counts[500];
+  int selectable_cards[500];
+  int item_count;
+  unsigned int show_card_counts;
+  unsigned int require_selection;
+  char prompt[12];
+} show_card_list_dialog_context_t;
+STATIC_ASSERT(sizeof(show_card_list_dialog_context_t) == 0x178c, show_card_list_dialog_context_wrong_size);
+
 // GLOBAL: MAGIC 0x0055e0c0
 // GLOBAL: SHANDALAR 0x0057f128
 int g_showlist_card_csvid_window_long_offset = 0;
@@ -44,13 +57,13 @@ int DAT_00638b70;
 int DAT_00638b80;
 // GLOBAL: MAGIC 0x00638ba4
 // GLOBAL: SHANDALAR 0x006502ec
-int *DAT_00638ba4;
+show_card_list_dialog_context_t *g_show_card_list_dialog_context;
 // GLOBAL: MAGIC 0x00638bf4
 // GLOBAL: SHANDALAR 0x0065033c
 int DAT_00638bf4;
 // GLOBAL: MAGIC 0x00638c08
 // GLOBAL: SHANDALAR 0x00650350
-int DAT_00638c08;
+int g_show_card_list_last_preview_hwnd;
 // GLOBAL: MAGIC 0x00638c40
 // GLOBAL: SHANDALAR 0x00650388
 int DAT_00638c40;
@@ -162,7 +175,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     int new_scroll_pos;         // ebp-0x04c
     UINT command;               // ebp-0x048
     LONG command_has_selection; // ebp-0x044
-    int *dialog_data;           // ebp-0x040
+    HWND command_hwnd;          // ebp-0x040
     int selection_index;        // ebp-0x03c
     int destroy_result;         // ebp-0x038
     HWND card_window;           // ebp-0x034
@@ -181,12 +194,12 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
   {
   case WM_INITDIALOG:
     s.init_dummy_top = 1;
-    DAT_00638ba4 = (int *)lparam_data;
-    SetWindowLongA(hwnd, 8, DAT_00638ba4[0x5df]);
-    DAT_00638c08 = 0;
+    g_show_card_list_dialog_context = (show_card_list_dialog_context_t *)lparam_data;
+    SetWindowLongA(hwnd, 8, g_show_card_list_dialog_context->require_selection);
+    g_show_card_list_last_preview_hwnd = 0;
     create_card_list_gdi_objects(&DAT_00638c40, &DAT_00638b68, &DAT_00638c44, &DAT_00638b70, &DAT_00638bf4, &DAT_00638c6c);
-    SetWindowTextA(hwnd, (LPCSTR)*DAT_00638ba4);
-    s.columns = DAT_00638ba4[0x5dd];
+    SetWindowTextA(hwnd, g_show_card_list_dialog_context->window_title);
+    s.columns = g_show_card_list_dialog_context->item_count;
     DAT_00638b80 = (g_showlist_smallcard_width * 2) / 3;
     DAT_00638c84 = (g_showlist_smallcard_height * 2) / 3;
     DAT_00638b48 = 8;
@@ -230,13 +243,13 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     s.button_x = DAT_00638b48;
     s.button_y = DAT_00638b34;
     GetClientRect(hwnd, &s.rect);
-    for (s.button_index = 0; s.button_index < DAT_00638ba4[0x5dd]; ++s.button_index)
+    for (s.button_index = 0; s.button_index < g_show_card_list_dialog_context->item_count; ++s.button_index)
     {
       s.card_window = CreateWindowExA(0,  "ShowListCard", "List Card", 0x50000000, s.button_x, s.button_y, DAT_00638b80, DAT_00638c84, hwnd, (HMENU)(s.button_index + 10),
-                                      g_app_instance, (LPVOID)DAT_00638ba4[s.button_index + 1]);
-      if (DAT_00638ba4[0x5de] != 0)
+                                      g_app_instance, (LPVOID)g_show_card_list_dialog_context->displayed_csvids[s.button_index]);
+      if (g_show_card_list_dialog_context->show_card_counts != 0)
       {
-        SendMessageA(s.card_window, 0x414, 1, DAT_00638ba4[s.button_index + 0x1f5]);
+        SendMessageA(s.card_window, 0x414, 1, g_show_card_list_dialog_context->card_counts[s.button_index]);
       }
       s.button_x += DAT_00638b48 + DAT_00638b80;
       if (s.rect.right < s.button_x + DAT_00638b80)
@@ -264,7 +277,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
 
   case WM_COMMAND:
     s.command = (unsigned int)wparam_dc & 0xffff;
-    s.dialog_data = (int *)lparam_data;
+    s.command_hwnd = (HWND)lparam_data;
     s.command_has_selection = GetWindowLongA(hwnd, 8);
     if (s.command == 2 || s.command == 1)
     {
@@ -278,10 +291,10 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
         EndDialog(hwnd, -1);
       }
     }
-    else if (s.dialog_data != 0)
+    else if (s.command_hwnd != 0)
     {
       s.selection_index = s.command - 10;
-      if (DAT_00638ba4[s.selection_index + 0x3e9] == 0)
+      if (g_show_card_list_dialog_context->selectable_cards[s.selection_index] == 0)
       {
       }
       else
@@ -476,7 +489,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       DrawTextA(s.dc, s.title_text, -1, &s.title_rect, DT_SINGLELINE | DT_VCENTER);
       if (s.has_selection == 0)
       {
-        DrawTextA(s.dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), -1, &s.title_rect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
+        DrawTextA(s.dc, g_show_card_list_dialog_context->prompt, -1, &s.title_rect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
       }
       ReleaseDC(hwnd, s.dc);
     }
@@ -489,7 +502,10 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     if (s.nc_calc_result == HTMINBUTTON || s.nc_calc_result == HTCAPTION)
     {
       s.screen_dc = GetDC(0);
-      GetTextExtentPoint32A(s.screen_dc, (LPCSTR)((char *)DAT_00638ba4 + 0x1780), strlen((char *)DAT_00638ba4 + 0x1780), &s.text_extent);
+      GetTextExtentPoint32A(s.screen_dc,
+                            g_show_card_list_dialog_context->prompt,
+                            strlen(g_show_card_list_dialog_context->prompt),
+                            &s.text_extent);
       ReleaseDC(0, s.screen_dc);
       GetClientRect(hwnd, &s.hit_rect);
       MapWindowPoints(hwnd, 0, (LPPOINT)&s.hit_rect, 2);
@@ -580,10 +596,10 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
     {
       s.csvid = GetWindowLongA(card_window, g_showlist_card_csvid_window_long_offset);
-      if ((int)DAT_00638c08 != (int)card_window)
+      if (g_show_card_list_last_preview_hwnd != (int)card_window)
       {
         SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
-        DAT_00638c08 = (int)card_window;
+        g_show_card_list_last_preview_hwnd = (int)card_window;
       }
     }
     return 0;
@@ -646,81 +662,86 @@ int show_cardlist(int *graveyard,
                   int *card_counts,
                   int *available,
                   int count,
-                  void *context,
-                  unsigned int big_card_mode,
+                  void *window_title,
+                  unsigned int require_selection,
                   char *prompt)
 {
   struct
   {
-    void *dialog_context;
-    int displayed_csvids[500];
-    int card_counts[500];
-    int selectable_cards[500];
-    int item_count;
-    unsigned int show_card_counts;
-    int show_bigcard;
-    char title[12];
+    show_card_list_dialog_context_t dialog_context;
     int index;
+    WNDCLASS wndclass;
+    INT_PTR dialog_result;
   } s;
 
-  WNDCLASS wndclass;
-
-  if (count < 1 || graveyard == NULL || graveyard[0] == -1)
+  if (count <= 0 || graveyard == NULL || graveyard[0] == -1)
   {
     return -1;
   }
 
-  wndclass.style = 0;
-  wndclass.lpfnWndProc = wndproc_ShowListCard;
-  wndclass.cbClsExtra = 0;
-  wndclass.cbWndExtra = g_showlist_card_window_extra_bytes;
-  wndclass.hInstance = g_app_instance;
-  wndclass.hIcon = LoadIconA(0, (const char *)0x7f00);
-  wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
-  wndclass.hbrBackground = (HBRUSH)6;
-  wndclass.lpszMenuName = 0;
-  wndclass.lpszClassName = "ShowListCard";
-  RegisterClassA(&wndclass);
+  s.wndclass.style = 0;
+  s.wndclass.lpfnWndProc = wndproc_ShowListCard;
+  s.wndclass.cbClsExtra = 0;
+  s.wndclass.cbWndExtra = g_showlist_card_window_extra_bytes;
+  s.wndclass.hInstance = g_app_instance;
+  s.wndclass.hIcon = LoadIconA(0, (const char *)0x7f00);
+  s.wndclass.hCursor = LoadCursorA(0, (const char *)0x7f00);
+  s.wndclass.hbrBackground = (HBRUSH)6;
+  s.wndclass.lpszMenuName = 0;
+  s.wndclass.lpszClassName = "ShowListCard";
+  RegisterClassA(&s.wndclass);
 
-  s.dialog_context = context;
-  for (s.index = 0; s.index < count && graveyard[s.index] != -1; ++s.index)
+  s.dialog_context.window_title = (char *)window_title;
+  for (s.index = 0; count > s.index && graveyard[s.index] != -1; ++s.index)
   {
-    s.displayed_csvids[s.index] = CardIDFromType(graveyard[s.index] & 0xfff);
+    s.dialog_context.displayed_csvids[s.index] = CardIDFromType(graveyard[s.index] & 0xfff);
   }
 
-  s.item_count = s.index;
-  s.show_card_counts = card_counts != 0;
-  if (s.show_card_counts != 0)
+  s.dialog_context.item_count = s.index;
+  if (card_counts == 0)
   {
-    for (s.index = 0; s.index < s.item_count; ++s.index)
-    {
-      s.card_counts[s.index] = card_counts[s.index];
-    }
-  }
-
-  for (s.index = 0; s.index < s.item_count; ++s.index)
-  {
-    if (available == 0)
-    {
-      s.selectable_cards[s.index] = 1;
-    }
-    else
-    {
-      s.selectable_cards[s.index] = available[s.index];
-    }
-  }
-
-  s.show_bigcard = big_card_mode;
-  if (big_card_mode == 0)
-  {
-    strcpy(s.title, prompt);
+    s.dialog_context.show_card_counts = 0;
   }
   else
   {
-    strcpy(s.title, "");
+    s.dialog_context.show_card_counts = 1;
+  }
+  if (s.dialog_context.show_card_counts != 0)
+  {
+    for (s.index = 0; s.index < s.dialog_context.item_count; ++s.index)
+    {
+      s.dialog_context.card_counts[s.index] = card_counts[s.index];
+    }
   }
 
-  return DialogBoxParam(g_app_instance, (const char *)0xe9, g_duel_window_hwnd, dlgfunc_show_deck, (long)&s.dialog_context);
+  for (s.index = 0; s.index < s.dialog_context.item_count; ++s.index)
+  {
+    if (available != 0)
+    {
+      s.dialog_context.selectable_cards[s.index] = available[s.index];
+    }
+    else
+    {
+      s.dialog_context.selectable_cards[s.index] = 1;
+    }
+  }
+
+  s.dialog_context.require_selection = require_selection;
+  if (require_selection == 0)
+  {
+    strcpy(s.dialog_context.prompt, prompt);
+  }
+  else
+  {
+    strcpy(s.dialog_context.prompt, "");
+  }
+
+  s.dialog_result = DialogBoxParamA(g_app_instance,
+                                    (LPCSTR)0xe9,
+                                    g_duel_window_hwnd,
+                                    dlgfunc_show_deck,
+                                    (LPARAM)&s.dialog_context);
+  return s.dialog_result;
 }
 
 // FUNCTION: MAGIC 0x0055b9f0

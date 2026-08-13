@@ -174,15 +174,15 @@ int find_land_animation_legacy(int a1, int a2, int player, int card, int interna
 int destroy_land_animation_legacies(int parent_player, int parent_card, int player, int card, int internal_card_id);
 int show_cardlist_if_human(int *graveyard,
                  int count,
-                 void *context,
-                 unsigned int big_card_mode,
+                 void *window_title,
+                 unsigned int require_selection,
                  char *prompt);
 int show_cardlist(int *graveyard,
                   int *card_counts,
                   int *available,
                   int count,
-                  void *context,
-                  unsigned int big_card_mode,
+                  void *window_title,
+                  unsigned int require_selection,
                   char *prompt);
 void create_card_list_gdi_objects(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color);
 void delete_card_list_gdi_objects(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2);

@@ -1998,16 +1998,16 @@ void WorldSubtileOffsetToScreen(int world_subcell_x, int world_subcell_y, int *o
 {
   struct
   {
-    int world_subcell_y;
+    int world_subcell_y_copy;
     int screen_x;
-    int world_subcell_x;
+    int world_subcell_x_copy;
     int screen_y;
   } s;
 
-  s.world_subcell_x = world_subcell_x;
-  s.world_subcell_y = world_subcell_y;
-  s.screen_x = ((s.world_subcell_y + s.world_subcell_x) * global_screen_width * 2) / 0x280;
-  s.screen_y = ((s.world_subcell_y - s.world_subcell_x) * global_screen_height) / 0x1e0;
+  s.world_subcell_x_copy = world_subcell_x;
+  s.world_subcell_y_copy = world_subcell_y;
+  s.screen_x = ((s.world_subcell_y_copy + s.world_subcell_x_copy) * global_screen_width * 2) / 0x280;
+  s.screen_y = ((s.world_subcell_y_copy - s.world_subcell_x_copy) * global_screen_height) / 0x1e0;
   *out_screen_x = s.screen_x;
   *out_screen_y = s.screen_y;
 }

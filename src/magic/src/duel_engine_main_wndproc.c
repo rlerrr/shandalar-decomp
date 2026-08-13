@@ -41,7 +41,7 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern CRITICAL_SECTION g_card_render_lock;
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
 void set_duel_prompt_context(HWND hwnd, char *prompt, unsigned int mode);
-int prompt_for_life_total(int player, char *prompt, int maxnum);
+int prompt_for_life_total(int player, char *prompt, int initial_life_total);
 int get_battlefield_card_stagger_offset(HWND hwnd);
 LONG get_card_window_hidden_flag(HWND hwnd);
 void reset_battlefield_layout_positions(HWND hwnd);

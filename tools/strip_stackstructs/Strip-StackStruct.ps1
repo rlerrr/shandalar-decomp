@@ -5,7 +5,7 @@ param(
     [switch] $Apply
 )
 
-$sPrefixPattern = '(?<![A-Za-z0-9_])s\.'
+$sPrefixPattern = '(?<![A-Za-z0-9_%])s\.'
 
 function Remove-WrapperStructs {
     param([string] $Text)

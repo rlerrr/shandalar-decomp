@@ -25,7 +25,7 @@
 
 extern HINSTANCE g_app_instance;
 extern int g_manalink_is_host;
-extern int DAT_00638c08;
+extern int g_show_card_list_last_preview_hwnd;
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
 #ifndef SHANDALAR
@@ -478,7 +478,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     SetWindowLongA(hwnd, DWL_USER, (LONG)s.context);
     ShowWindow(GetDlgItem(hwnd, 0x448), SW_HIDE);
     ShowWindow(GetDlgItem(hwnd, 0x449), SW_HIDE);
-    DAT_00638c08 = 0;
+    g_show_card_list_last_preview_hwnd = 0;
     load_redraw_ante_dialog_assets(&g_redraw_ante_dialog_background,
                                    &g_redraw_ante_dialog_text_color,
                                    &g_redraw_ante_dialog_button_normal_bitmap,

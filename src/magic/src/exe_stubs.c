@@ -106,6 +106,14 @@ static void cleanup_life_total_dialog_resources(HBITMAP background,
                                                 HPEN pen2);
 static LRESULT CALLBACK life_total_edit_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+typedef struct life_total_dialog_context_struct
+{
+  char *prompt;
+  int initial_life_total;
+  int show_reset_button;
+} life_total_dialog_context_t;
+STATIC_ASSERT(sizeof(life_total_dialog_context_t) == 0xc, life_total_dialog_context_wrong_size);
+
 // FUNCTION: MAGIC 0x00489f9f
 // FUNCTION: SHANDALAR 0x004a5c2f
 static void setup_duel_options_dialog_resources(HBITMAP *background,
@@ -3004,15 +3012,19 @@ void show_mana_burn_dialog(int player, int amount)
 {
   struct
   {
-    int player;
-    int amount;
+    mana_burn_dialog_context_t dialog_context;
+    int dialog_result;
   } s;
 
   if (g_duel_ai_mode_state != 1)
   {
-    s.player = player;
-    s.amount = amount;
-    DialogBoxParamA(g_app_instance, (LPCSTR)0xf3, g_duel_window_hwnd, dlgproc_mana_burn, (LPARAM)&s.player);
+    s.dialog_context.player = player;
+    s.dialog_context.amount = amount;
+    s.dialog_result = DialogBoxParamA(g_app_instance,
+                                      (LPCSTR)0xf3,
+                                      g_duel_window_hwnd,
+                                      dlgproc_mana_burn,
+                                      (LPARAM)&s.dialog_context);
   }
 }
 
@@ -3032,7 +3044,7 @@ BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
   switch (msg)
   {
   case WM_INITDIALOG:
-    g_mana_burn_dialog_data = (int *)lparam;
+    g_mana_burn_dialog_context = (mana_burn_dialog_context_t *)lparam;
     sprintf(s.path, "%s\\WINBK_ManaBurn.pic", global_duelart_path);
     g_mana_burn_dialog_background = load_pic(s.path);
     g_mana_burn_dialog_text_color = 0x100009a;
@@ -3076,14 +3088,14 @@ BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     GetWindowRect(GetDlgItem(hwnd, 0x4ba), &s.rect);
     MapWindowPoints(NULL, hwnd, (LPPOINT)&s.rect, 2);
     load_text(global_ui_strings_filename, "DIALOG_MANABURN");
-    if (g_mana_burn_dialog_data[0] == 1)
+    if (g_mana_burn_dialog_context->player == 1)
     {
       copy_opponent_name_prefix(s.message_text);
-      sprintf(s.title_text, text_lines[1], s.message_text, g_mana_burn_dialog_data[1]);
+      sprintf(s.title_text, text_lines[1], s.message_text, g_mana_burn_dialog_context->amount);
     }
     else
     {
-      sprintf(s.title_text, text_lines[2], g_mana_burn_dialog_data[1]);
+      sprintf(s.title_text, text_lines[2], g_mana_burn_dialog_context->amount);
     }
     SetTextColor(s.dc, g_mana_burn_dialog_shadow_color);
     DrawTextA(s.dc, s.title_text, -1, &s.rect, 1);
@@ -3116,26 +3128,25 @@ BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
 // FUNCTION: MAGIC 0x004a09c6
 // FUNCTION: SHANDALAR 0x0053c35e
-int prompt_for_life_total(int player, char *prompt, int maxnum)
+int prompt_for_life_total(int player, char *prompt, int initial_life_total)
 {
-  struct
-  {
-    char *prompt;
-    int maxnum;
-    int show_reset_button;
-  } s;
+  life_total_dialog_context_t context;
   int result;
 
   if (player != 0)
   {
-    return maxnum;
+    return initial_life_total;
   }
   else
   {
-    s.prompt = prompt;
-    s.maxnum = maxnum;
-    s.show_reset_button = 0;
-    result = DialogBoxParamA(g_app_instance, (LPCSTR)0xdc, g_duel_window_hwnd, dlgproc_prompt_for_life_total, (LPARAM)&s.prompt);
+    context.prompt = prompt;
+    context.initial_life_total = initial_life_total;
+    context.show_reset_button = 0;
+    result = DialogBoxParamA(g_app_instance,
+                             (LPCSTR)0xdc,
+                             g_duel_window_hwnd,
+                             dlgproc_prompt_for_life_total,
+                             (LPARAM)&context);
     return result;
   }
 }
@@ -3159,14 +3170,14 @@ BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, 
     UINT selected_life;
     BOOL was_translated;
     UINT command_id;
-    HWND context;
+    life_total_dialog_context_t *context;
   } s;
 
   switch (msg)
   {
   case WM_INITDIALOG:
-    s.context = (HWND)lparam;
-    SetWindowLongA(hwnd, 8, ((int *)s.context)[1]);
+    s.context = (life_total_dialog_context_t *)lparam;
+    SetWindowLongA(hwnd, 8, s.context->initial_life_total);
     setup_life_total_dialog_resources(&g_life_total_dialog_background,
                                       &g_life_total_dialog_text_color,
                                       &g_life_total_dialog_button_brush,
@@ -3176,13 +3187,13 @@ BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, 
                                       &g_life_total_dialog_focus_text_color);
     SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
     SetDlgItemTextA(hwnd, IDCANCEL, gs_cancel_008a8c20);
-    SetDlgItemTextA(hwnd, 0x44d, (LPCSTR)((int *)s.context)[0]);
-    if (((int *)s.context)[2] == 0)
+    SetDlgItemTextA(hwnd, 0x44d, s.context->prompt);
+    if (s.context->show_reset_button == 0)
     {
       ShowWindow(GetDlgItem(hwnd, 0x44e), 0);
     }
     SendMessageA(hwnd, 0x401, IDOK, 0);
-    SetDlgItemInt(hwnd, 0x44c, ((int *)s.context)[1], 0);
+    SetDlgItemInt(hwnd, 0x44c, s.context->initial_life_total, 0);
     g_life_total_edit_wndproc = (WNDPROC)SetWindowLongA(GetDlgItem(hwnd, 0x44c), GWL_WNDPROC, (LONG)life_total_edit_wndproc);
     SetFocus(GetDlgItem(hwnd, 0x44c));
     SendDlgItemMessageA(hwnd, 0x44c, EM_SETSEL, 0, -1);
