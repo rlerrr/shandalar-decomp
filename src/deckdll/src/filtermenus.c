@@ -58,7 +58,7 @@ extern HWND global_main_hwnd;
 extern int global_deck_num_entries;
 extern GlobalDeckEntry global_deck[];
 extern int global_available_slots;
-extern card_ptr_t global_raw_cards_storage[1000];
+extern card_ptr_t global_raw_cards_storage[2000];
 extern char read_db_artist_names[][100];
 extern DBFlags global_db_flags_1;
 

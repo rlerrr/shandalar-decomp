@@ -397,15 +397,15 @@ void notify_duel_action(int player, unsigned int value)
               SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
               if (((s.card_flags & 0x10) != 0) &&
                   ((unk_007a7d64 <= s.card_id ||
-                    ((global_raw_cards_storage[s.card_id].db_card_type_2 == 2 &&
-                      (*(int *)&global_raw_cards_storage[s.card_id].rarity != 0xd3))))))
+                    ((global_raw_cards_storage[s.card_id].card_type == 2 &&
+                      (global_raw_cards_storage[s.card_id].subtype != 0xd3))))))
               {
                 get_displayed_card_attachment(s.attached_player_and_card, s.player_index, s.card_index);
                 while (((get_displayed_card_ui_flags(s.attached_player_and_card[0], s.attached_player_and_card[1]) & 0x10) != 0 &&
                         ((s.card_id = get_displayed_card_id(s.attached_player_and_card[0], s.attached_player_and_card[1])) != -1)) &&
                        (unk_007a7d64 <= s.card_id ||
-                        ((global_raw_cards_storage[s.card_id].db_card_type_2 == 2 &&
-                          (*(int *)&global_raw_cards_storage[s.card_id].rarity != 0xd3)))))
+                        ((global_raw_cards_storage[s.card_id].card_type == 2 &&
+                          (global_raw_cards_storage[s.card_id].subtype != 0xd3)))))
                 {
                   get_displayed_card_attachment(s.attached_player_and_card, s.attached_player_and_card[0], s.attached_player_and_card[1]);
                 }

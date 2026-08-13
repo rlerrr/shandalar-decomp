@@ -14,7 +14,7 @@
 #include "shared_startup.h"
 
 extern int global_available_slots;
-extern card_ptr_t global_raw_cards_storage[];
+extern card_ptr_t global_raw_cards_storage[2000];
 extern card_data_t global_cards_data[];
 extern BITMAPINFO g_duel_backbuffer_bmi;
 
@@ -1209,11 +1209,11 @@ int LoadRarityCsvCardData(const char *filename)
           s.cursor = strchr(s.cursor, '\n') + 1;
       }
 
-      global_raw_cards_storage[239].db_card_type_2 = 0;
-      global_raw_cards_storage[188].db_card_type_2 = 0;
-      global_raw_cards_storage[91].db_card_type_2 = 0;
-      global_raw_cards_storage[126].db_card_type_2 = 0;
-      global_raw_cards_storage[164].db_card_type_2 = 0;
+      global_raw_cards_storage[239].rarity = 0;
+      global_raw_cards_storage[188].rarity = 0;
+      global_raw_cards_storage[91].rarity = 0;
+      global_raw_cards_storage[126].rarity = 0;
+      global_raw_cards_storage[164].rarity = 0;
 
       s.result = 1;
       free(s.file_buffer);

@@ -794,8 +794,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       get_displayed_card_attachment(s.attached_player_and_card, s.displayed_player, s.displayed_card);
       if ((get_displayed_card_ui_flags(s.displayed_player, s.displayed_card) & 0x10) != 0 &&
           (s.displayed_card_id >= unk_007a7d64 ||
-           (global_raw_cards_storage[s.displayed_card_id].db_card_type_2 == 2 &&
-            global_raw_cards_storage[s.displayed_card_id].rarity != 0xd3)))
+           (global_raw_cards_storage[s.displayed_card_id].card_type == 2 &&
+            global_raw_cards_storage[s.displayed_card_id].subtype != 0xd3)))
       {
         if (find_battlefield_card_window(hwnd, s.attached_player_and_card, NULL, &s.attached_window_400) != 0)
         {

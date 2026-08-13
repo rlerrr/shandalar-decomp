@@ -1840,7 +1840,10 @@ int get_card_display_pic_num(card_id_t card_id, int player, int card)
   {
     return 0;
   }
-  return (player + card) % num_pics;
+  else
+  {
+    return (player + card) % num_pics;
+  }
 }
 
 // FUNCTION: MAGIC 0x0050047c

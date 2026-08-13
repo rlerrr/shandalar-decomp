@@ -3197,7 +3197,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           ApplyCardArtPaletteToDc(s.msg_432_title_dc);
           GetClientRect(hwnd, &s.msg_432_title_rect);
           DrawSmallCardTitle(s.msg_432_title_dc, &s.msg_432_title_rect,
-                             global_raw_cards_storage[s.msg_432_card_id].full_name,
+                             global_raw_cards_storage[s.msg_432_card_id].name,
                              get_displayed_card_title_flags(s.player, s.card),
                              (unsigned int)(is_displayed_card_owned_by_opponent(s.player, s.card) - s.player) < 1);
           ReleaseDC(hwnd, s.msg_432_title_dc);

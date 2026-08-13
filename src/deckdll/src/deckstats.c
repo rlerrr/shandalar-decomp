@@ -18,7 +18,7 @@ extern FullDeck global_edited_deck;
 extern GlobalDeckInfoBlob global_deckinfo;
 ;
 extern const card_ptr_t *cards_ptr;
-extern card_ptr_t global_raw_cards_storage[1000];
+extern card_ptr_t global_raw_cards_storage[2000];
 
 extern COLORREF global_colorref_darkgrey;
 extern COLORREF global_colorref_flesh;
