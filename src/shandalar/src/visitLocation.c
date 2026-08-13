@@ -176,7 +176,7 @@ void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_
 void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *world_magic_button_sprite, ...);
 unsigned int BlitRectByRandomTileOrderInPlace(HDC dst, int dst_x, int dst_y, int width, int height, int tile_w, int tile_h, HDC src);
 void BlitRectByStaggeredRandomTileOrder(HDC dst_hdc, int x, int y, int w, int h, int strip_width, int active_strip_count,
-                                       int tile_width, int tile_height, HDC src_hdc);
+                                        int tile_width, int tile_height, HDC src_hdc);
 
 void DestroyAllCardBackgrounds(void);
 void DestroyAllBigArts(void);
@@ -1011,12 +1011,12 @@ void VisitTownWiseman(void)
 {
   struct
   {
-    char quest_spell_name[100];         /* -0x78 */
+    char quest_spell_name[100];        /* -0x78 */
     TownDialogCallback saved_callback; /* -0x14 */
-    int temp_flag;                      /* -0x10 */
-    int town_index;                     /* -0x0c */
-    int preferred_color;                /* -0x08 */
-    int quest_time_units;               /* -0x04 */
+    int temp_flag;                     /* -0x10 */
+    int town_index;                    /* -0x0c */
+    int preferred_color;               /* -0x08 */
+    int quest_time_units;              /* -0x04 */
   } s;
 
   s.town_index = g_active_town_services_town_index;
@@ -1973,7 +1973,7 @@ int RunTownServicesMenu(int town_index)
           if ((s.tile_magic_mask & (1U << (unsigned char)s.right_click_action)) != 0)
           {
             if (IsCardColorCompatibleWithMask(1 << (unsigned char)s.right_click_action, (int)(signed char)global_cards_data[s.distance].color,
-                             (s.right_click_action & 1) ? 1 : 3) != 0)
+                                              (s.right_click_action & 1) ? 1 : 3) != 0)
             {
               s.ok = 1;
             }
@@ -2160,11 +2160,11 @@ loop:
 
   if (g_town_button_labels[4][0])
   {
-    g_town_icon_menu_controls[4].direct_hotkey = 1;
+    g_town_icon_menu_controls[4].state = 1;
   }
   else
   {
-    g_town_icon_menu_controls[4].direct_hotkey = 3;
+    g_town_icon_menu_controls[4].state = 3;
   }
 
   g_town_menu_show_tooltips = 1;
@@ -4121,18 +4121,18 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
 {
   struct
   {
-    int tile_magic_index;               // ebp - 0x30
-    unsigned int card_id;               // ebp - 0x2c
+    int tile_magic_index;              // ebp - 0x30
+    unsigned int card_id;              // ebp - 0x2c
     TownDialogCallback saved_callback; // ebp - 0x28
-    int required;                       // ebp - 0x24
-    int total_mana;                     // ebp - 0x20
-    int can_afford;                     // ebp - 0x1c
-    int menu_result;                    // ebp - 0x18
-    int random_color;                   // ebp - 0x14
-    int first_time;                     // ebp - 0x10
-    int i;                              // ebp - 0x0c
-    int copies;                         // ebp - 0x08
-    int price;                          // ebp - 0x04
+    int required;                      // ebp - 0x24
+    int total_mana;                    // ebp - 0x20
+    int can_afford;                    // ebp - 0x1c
+    int menu_result;                   // ebp - 0x18
+    int random_color;                  // ebp - 0x14
+    int first_time;                    // ebp - 0x10
+    int i;                             // ebp - 0x0c
+    int copies;                        // ebp - 0x08
+    int price;                         // ebp - 0x04
   } s;
 
   s.first_time = 1;
@@ -4163,7 +4163,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
 
     if (s.card_id == 0xffffffff)
     {
-      goto cleanup;
+      break;
     }
 
     if (payment_color == -2)
@@ -4303,13 +4303,12 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
         s.can_afford = 1;
         Gold = Gold - s.price;
       }
-
-      if (s.can_afford == 0)
-      {
-        goto cleanup;
-      }
     }
 
+    if (s.can_afford == 0)
+    {
+      break;
+    }
     for (s.i = 0; s.copies > s.i; s.i = s.i + 1)
     {
       s.random_color = AddCardToDeckSorted(s.card_id);
@@ -4323,7 +4322,6 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
     DestroyCachedCardArt();
   }
 
-cleanup:
   DestroyCachedCardArt();
   g_town_dialog_callback = s.saved_callback;
   return 0;

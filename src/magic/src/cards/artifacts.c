@@ -1933,7 +1933,7 @@ int generic_clockwork_creature(int player, int card, int event, int amount)
     mana_result = has_mana(player, COLOR_ANY, 1);
     zero = 0;
     special_counters = C_get_special_counters(player, card);
-    unk_00715fa8 = ClampIntToRange(amount - special_counters, zero, mana_result);
+    loaded_recorded_action_code = ClampIntToRange(amount - special_counters, zero, mana_result);
   }
   else
   {
@@ -1947,7 +1947,7 @@ int generic_clockwork_creature(int player, int card, int event, int amount)
       }
       else
       {
-        mana_result = charge_mana(player, 0, unk_00715fa8);
+        mana_result = charge_mana(player, 0, loaded_recorded_action_code);
       }
       PLAYER_CARD_INSTANCE(player, card).info_slot = mana_result;
       max_x_value = old_max_x_value;

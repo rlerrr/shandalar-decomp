@@ -831,16 +831,17 @@ int choose_ai_main_phase_action(int player)
 }
 
 // FUNCTION: MAGIC 0x004e4f11
+// FUNCTION: SHANDALAR 0x004c4181
 void record_ai_action_selection(void)
 {
   if (recorded_action_count < 0x100)
   {
-    unk_006a21b8[recorded_action_count] = ai_recorded_action;
-    unk_006a8258[recorded_action_count] = PLAYER_CARD_INSTANCE((ai_recorded_action & 0x100) >> 8, ai_recorded_action & 0xff).internal_card_id;
-    unk_006a8660[recorded_action_count] = ai_recorded_action_type;
-    unk_006a6ee8[recorded_action_count] = ai_recorded_choice;
+    trial_recorded_action_targets[recorded_action_count] = ai_recorded_action;
+    trial_recorded_action_internal_card_ids[recorded_action_count] = PLAYER_CARD_INSTANCE((ai_recorded_action & 0x100) >> 8, ai_recorded_action & 0xff).internal_card_id;
+    trial_recorded_action_types[recorded_action_count] = ai_recorded_action_type;
+    trial_recorded_action_codes[recorded_action_count] = ai_recorded_choice;
     ++recorded_action_count;
-    if (unk_006a6ee8[0] == 99 || recorded_action_codes[0] == 99)
+    if (trial_recorded_action_codes[0] == 99 || recorded_action_codes[0] == 99)
     {
       ai_recorded_action = -1;
     }
@@ -854,14 +855,15 @@ void record_ai_action_selection(void)
 }
 
 // FUNCTION: MAGIC 0x004e5089
+// FUNCTION: SHANDALAR 0x004c42f8
 void replay_ai_action_selection(void)
 {
-  if (unk_006a5f18[recorded_action_count] != ai_recorded_action_type)
+  if (recorded_action_types[recorded_action_count] != ai_recorded_action_type)
   {
     ai_recorded_action_type |= 0x100;
   }
 
-  ai_recorded_action = unk_006a1db8[recorded_action_count];
+  ai_recorded_action = recorded_action_targets[recorded_action_count];
   ai_recorded_choice = recorded_action_codes[recorded_action_count];
   if (ai_recorded_choice != 99)
   {
@@ -882,7 +884,7 @@ void __stdcall reset_ai_search_trial_state(void)
   _DAT_00743020 = -1;
   for (i = 0; i < 0x100; ++i)
   {
-    unk_006a6ee8[i] = 0x63;
+    trial_recorded_action_codes[i] = 0x63;
   }
   restore_ai_search_state();
   if (g_duel_ai_mode_state != 1)
@@ -899,10 +901,10 @@ void __stdcall save_recorded_ai_actions(void)
 
   for (action_index = 0; action_index < recorded_action_count; action_index = action_index + 1)
   {
-    recorded_action_codes[action_index] = unk_006a6ee8[action_index];
-    unk_006a1db8[action_index] = unk_006a21b8[action_index];
-    saved_recorded_action_internal_card_ids[action_index] = unk_006a8258[action_index];
-    unk_006a5f18[action_index] = unk_006a8660[action_index];
+    recorded_action_codes[action_index] = trial_recorded_action_codes[action_index];
+    recorded_action_targets[action_index] = trial_recorded_action_targets[action_index];
+    saved_recorded_action_internal_card_ids[action_index] = trial_recorded_action_internal_card_ids[action_index];
+    recorded_action_types[action_index] = trial_recorded_action_types[action_index];
   }
 
   recorded_action_codes[recorded_action_count] = 99;
@@ -1407,11 +1409,11 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
   {
     if (use_saved_actions != 0)
     {
-      s.action_flags = unk_006a1db8[s.action_index];
+      s.action_flags = recorded_action_targets[s.action_index];
     }
     else
     {
-      s.action_flags = unk_006a21b8[s.action_index];
+      s.action_flags = trial_recorded_action_targets[s.action_index];
     }
 
     if (s.action_flags != (unsigned int)-1)
@@ -1444,7 +1446,7 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
         }
         else
         {
-          s.internal_card_id = unk_006a8258[s.action_index];
+          s.internal_card_id = trial_recorded_action_internal_card_ids[s.action_index];
         }
         strcat(g_ui_message_buffer, global_cards_data[s.internal_card_id].name);
       }

@@ -57,74 +57,6 @@ void ClearInputAndWaitForMouseRelease(void);
 
 typedef ptrdiff_t INT_PTR;
 
-// GLOBAL: SHANDALAR 0x005ae0a0
-static int g_adventure_list_replay_targets[256];
-
-// GLOBAL: SHANDALAR 0x005b2200
-static int g_adventure_list_replay_extra_values[256];
-
-// GLOBAL: SHANDALAR 0x005b2dd0
-static int g_adventure_list_replay_choices[256];
-
-// GLOBAL: SHANDALAR 0x005ae4a0
-static int g_adventure_list_record_targets[256];
-
-// GLOBAL: SHANDALAR 0x005b31d0
-static int g_adventure_list_record_choices[256];
-
-// GLOBAL: SHANDALAR 0x005b4540
-static int g_adventure_list_record_internal_ids[256];
-
-// GLOBAL: SHANDALAR 0x005b4948
-static int g_adventure_list_record_extra_values[256];
-
-// GLOBAL: SHANDALAR 0x0074842c
-static int g_adventure_list_selection_record_count;
-
-// GLOBAL: SHANDALAR 0x00589a38
-static int g_adventure_list_selection_extra_value = 0;
-
-// FUNCTION: SHANDALAR 0x004c4181
-void record_adventure_list_ai_choice(void)
-{
-  if (g_adventure_list_selection_record_count < 0x100)
-  {
-    g_adventure_list_record_targets[g_adventure_list_selection_record_count] = ai_recorded_action;
-    g_adventure_list_record_internal_ids[g_adventure_list_selection_record_count] =
-        global_card_instances[(ai_recorded_action & 0x100) >> 8][ai_recorded_action & 0xff].internal_card_id;
-    g_adventure_list_record_extra_values[g_adventure_list_selection_record_count] =
-        g_adventure_list_selection_extra_value;
-    g_adventure_list_record_choices[g_adventure_list_selection_record_count] = ai_recorded_choice;
-    g_adventure_list_selection_record_count++;
-    if ((g_adventure_list_record_choices[0] == 99) || (g_adventure_list_replay_choices[0] == 99))
-    {
-      ai_recorded_action = -1;
-    }
-  }
-  else
-  {
-    spell_fizzled = 1;
-  }
-  g_adventure_list_selection_extra_value = 0;
-}
-
-// FUNCTION: SHANDALAR 0x004c42f8
-void replay_adventure_list_ai_choice(void)
-{
-  if (g_adventure_list_replay_extra_values[g_adventure_list_selection_record_count] !=
-      g_adventure_list_selection_extra_value)
-  {
-    g_adventure_list_selection_extra_value |= 0x100;
-  }
-  ai_recorded_action = g_adventure_list_replay_targets[g_adventure_list_selection_record_count];
-  ai_recorded_choice = g_adventure_list_replay_choices[g_adventure_list_selection_record_count];
-  if (ai_recorded_choice != 99)
-  {
-    g_adventure_list_selection_record_count++;
-  }
-  g_adventure_list_selection_extra_value = 0;
-}
-
 // FUNCTION: SHANDALAR 0x0055837e
 INT_PTR __cdecl ShowAdventureListCardList(int *card_ids, int card_count, void *title, int require_card_click, char *out_selection)
 {
@@ -195,11 +127,11 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     {
       if (g_duel_ai_mode_state == 1)
       {
-        record_adventure_list_ai_choice();
+        record_ai_action_selection();
       }
       else
       {
-        replay_adventure_list_ai_choice();
+        replay_ai_action_selection();
       }
     }
 

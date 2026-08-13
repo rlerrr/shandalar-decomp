@@ -59,7 +59,6 @@ int can_block_attacker_with_abilities(int blocker_player,
                                       int attacker_card,
                                       unsigned int attacker_abilities,
                                       unsigned int evasion_mask);
-void *copy_bytes(void *dest, const void *src, unsigned int count);
 
 // GLOBAL: MAGIC 0x00573080
 const unsigned char wizard_card_color_preference_table[18] = {
@@ -5254,7 +5253,7 @@ int load_recorded_action_target(int a1)
 {
   if (g_duel_ai_mode_state != 1)
   {
-    ai_recorded_action = unk_006a1db8[a1 + recorded_action_count];
+    ai_recorded_action = recorded_action_targets[a1 + recorded_action_count];
     if (ai_recorded_action != -1)
     {
       ai_recorded_action &= 0xfff;
@@ -5270,10 +5269,10 @@ int load_recorded_action_code(int a1)
 {
   if (g_duel_ai_mode_state != 1)
   {
-    unk_00715fa8 = recorded_action_codes[a1 + recorded_action_count];
-    if (unk_00715fa8 == 99)
+    loaded_recorded_action_code = recorded_action_codes[a1 + recorded_action_count];
+    if (loaded_recorded_action_code == 99)
     {
-      unk_00715fa8 = 0;
+      loaded_recorded_action_code = 0;
     }
   }
   return 0;
@@ -5325,7 +5324,6 @@ int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)
 // FUNCTION: SHANDALAR 0x004a9910
 int create_legacy_effect(int player, int card, int legacy_iid, int target_player, int target_card)
 {
-  /* Group locals to force the original /Od stack slots: i @ -0xc, legacy_card @ -8, source_internal_card_id @ -4. */
   struct
   {
     int i;
@@ -5336,7 +5334,7 @@ int create_legacy_effect(int player, int card, int legacy_iid, int target_player
   s.legacy_card = add_card_to_hand(player, legacy_iid);
   if (s.legacy_card != -1 && card != -1)
   {
-    PLAYER_CARD_INSTANCE(player, s.legacy_card).state = ((((unsigned int)player < 1U) - 1) & 0x1000) | 2;
+    PLAYER_CARD_INSTANCE(player, s.legacy_card).state = ((player != 0) ? STATE_OWNED_BY_OPPONENT : 0) | STATE_IN_PLAY;
     PLAYER_CARD_INSTANCE(player, s.legacy_card).mana_color = PLAYER_CARD_INSTANCE(player, card).mana_color;
     PLAYER_CARD_INSTANCE(player, s.legacy_card).color = PLAYER_CARD_INSTANCE(player, card).color;
     PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_source_player = (char)player;
@@ -5512,13 +5510,13 @@ void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *o
 
   for (color = 1; color <= 5; ++color)
   {
-    if (unk_00743000[0][color] > 0)
+    if (landwalk_basiclandtypes_controlled[0][color] > 0)
     {
-      bits1 |= 1u << ((unsigned char)color - 1);
+      bits1 |= 1u << (color - 1);
     }
     if (basiclandtypes_controlled[0][color] > 0)
     {
-      bits2 |= 1u << ((unsigned char)color - 1);
+      bits2 |= 1u << (color - 1);
     }
   }
 
@@ -6186,7 +6184,7 @@ void extract_numbered_text_choice(char *out, char *in, int choice)
   s.scan = in;
   while (s.done == 0)
   {
-    while (*s.scan != '\0' && strncmp(s.scan, unk_0057f758, 2) != 0)
+    while (*s.scan != '\0' && strncmp(s.scan, "|#", 2) != 0)
     {
       ++s.scan;
     }
@@ -6204,7 +6202,7 @@ void extract_numbered_text_choice(char *out, char *in, int choice)
         s.matched = 1;
         ++s.scan;
         s.write_ptr = out;
-        while (*s.scan != '\0' && strncmp(s.scan, unk_0057f75c, 2) != 0)
+        while (*s.scan != '\0' && strncmp(s.scan, "|#", 2) != 0)
         {
           *s.write_ptr = *s.scan;
           ++s.scan;
@@ -6215,12 +6213,6 @@ void extract_numbered_text_choice(char *out, char *in, int choice)
       }
     }
   }
-}
-
-// FUNCTION: MAGIC 0x0055dc4c
-void *copy_bytes(void *dest, const void *src, unsigned int count)
-{
-  return memcpy(dest, src, count);
 }
 
 // FUNCTION: MAGIC 0x00495311
@@ -8530,10 +8522,10 @@ void C_count_colors_of_lands_in_play(void)
 
   for (card = 0; card < 8; ++card)
   {
-    unk_00743000[0][card] = 0;
-    basiclandtypes_controlled[0][card] = unk_00743000[0][card];
-    unk_00743000[1][card] = 0;
-    basiclandtypes_controlled[1][card] = unk_00743000[1][card];
+    landwalk_basiclandtypes_controlled[0][card] = 0;
+    basiclandtypes_controlled[0][card] = landwalk_basiclandtypes_controlled[0][card];
+    landwalk_basiclandtypes_controlled[1][card] = 0;
+    basiclandtypes_controlled[1][card] = landwalk_basiclandtypes_controlled[1][card];
   }
   unk_00743080[0] = 0;
   unk_00743080[1] = 0;

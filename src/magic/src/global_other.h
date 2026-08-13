@@ -100,7 +100,8 @@ GLOBAL_OTHERS_EXTERN int g_target_selection_status_code;
 GLOBAL_OTHERS_EXTERN int unk_0072c440[8];
 
 // GLOBAL: MAGIC 0x00743000
-GLOBAL_OTHERS_EXTERN int unk_00743000[2][8];
+// GLOBAL: SHANDALAR 0x0077eda0
+GLOBAL_OTHERS_EXTERN int landwalk_basiclandtypes_controlled[2][8];
 
 // GLOBAL: MAGIC 0x007ab290
 // GLOBAL: SHANDALAR 0x007bf490
@@ -108,7 +109,7 @@ GLOBAL_OTHERS_EXTERN int g_duel_cached_raw_mana_player_1[7];
 
 // GLOBAL: MAGIC 0x00715fa8
 // GLOBAL: SHANDALAR 0x0074b868
-GLOBAL_OTHERS_EXTERN int unk_00715fa8;
+GLOBAL_OTHERS_EXTERN int loaded_recorded_action_code;
 
 // GLOBAL: MAGIC 0x00715fac
 // GLOBAL: SHANDALAR 0x0074b8b4
@@ -142,6 +143,7 @@ GLOBAL_OTHERS_EXTERN int unk_007a7d88[2];
 GLOBAL_OTHERS_EXTERN int unk_007a7d18[2];
 
 // GLOBAL: MAGIC 0x00743094
+// GLOBAL: SHANDALAR 0x0074842c
 GLOBAL_OTHERS_EXTERN int recorded_action_count;
 
 // GLOBAL: MAGIC 0x007abc78
@@ -300,9 +302,10 @@ GLOBAL_OTHERS_EXTERN int unk_0057a75c;
 #endif
 
 #ifdef GLOBALS_OTHERS_IMPL
+// GLOBAL: MAGIC 0x0057aae8
+// GLOBAL: SHANDALAR 0x00589a38
 int ai_recorded_action_type = 0;
 #else
-// GLOBAL: MAGIC 0x0057aae8
 GLOBAL_OTHERS_EXTERN int ai_recorded_action_type;
 #endif
 
@@ -318,20 +321,6 @@ GLOBAL_OTHERS_EXTERN int global_screen_width;
 int global_screen_height = 0x1e0;
 #else
 GLOBAL_OTHERS_EXTERN int global_screen_height;
-#endif
-
-#ifdef GLOBALS_OTHERS_IMPL
-// GLOBAL: MAGIC 0x0057f758
-char unk_0057f758[4] = {0x7c, 0x23, 0, 0};
-#else
-GLOBAL_OTHERS_EXTERN char unk_0057f758[4];
-#endif
-
-#ifdef GLOBALS_OTHERS_IMPL
-// GLOBAL: MAGIC 0x0057f75c
-char unk_0057f75c[4] = {0x7c, 0x23, 0, 0};
-#else
-GLOBAL_OTHERS_EXTERN char unk_0057f75c[4];
 #endif
 
 // GLOBAL: MAGIC 0x00637670
@@ -354,29 +343,36 @@ GLOBAL_OTHERS_EXTERN COLORREF g_mana_burn_dialog_shadow_color;
 GLOBAL_OTHERS_EXTERN int *g_mana_burn_dialog_data;
 
 // GLOBAL: MAGIC 0x006a1db8
-GLOBAL_OTHERS_EXTERN int unk_006a1db8[256];
+// GLOBAL: SHANDALAR 0x005ae0a0
+GLOBAL_OTHERS_EXTERN int recorded_action_targets[256];
 
 // GLOBAL: MAGIC 0x006a21b8
-GLOBAL_OTHERS_EXTERN int unk_006a21b8[256];
+// GLOBAL: SHANDALAR 0x005ae4a0
+GLOBAL_OTHERS_EXTERN int trial_recorded_action_targets[256];
 
 // GLOBAL: MAGIC 0x006a5f18
-GLOBAL_OTHERS_EXTERN int unk_006a5f18[256];
+// GLOBAL: SHANDALAR 0x005b2200
+GLOBAL_OTHERS_EXTERN int recorded_action_types[256];
 
 // GLOBAL: MAGIC 0x006a6ae8
+// GLOBAL: SHANDALAR 0x005b2dd0
 GLOBAL_OTHERS_EXTERN int recorded_action_codes[256];
 
 // GLOBAL: MAGIC 0x006a6ee8
-GLOBAL_OTHERS_EXTERN int unk_006a6ee8[256];
+// GLOBAL: SHANDALAR 0x005b31d0
+GLOBAL_OTHERS_EXTERN int trial_recorded_action_codes[256];
 
 // GLOBAL: MAGIC 0x006a7e58
 // GLOBAL: SHANDALAR 0x005b4140
 GLOBAL_OTHERS_EXTERN int saved_recorded_action_internal_card_ids[256];
 
 // GLOBAL: MAGIC 0x006a8258
-GLOBAL_OTHERS_EXTERN int unk_006a8258[256];
+// GLOBAL: SHANDALAR 0x005b4540
+GLOBAL_OTHERS_EXTERN int trial_recorded_action_internal_card_ids[256];
 
 // GLOBAL: MAGIC 0x006a8660
-GLOBAL_OTHERS_EXTERN int unk_006a8660[256];
+// GLOBAL: SHANDALAR 0x005b4948
+GLOBAL_OTHERS_EXTERN int trial_recorded_action_types[256];
 
 // GLOBAL: MAGIC 0x006ab368
 // GLOBAL: SHANDALAR 0x005b7650

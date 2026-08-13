@@ -1676,12 +1676,12 @@ int activate(int who_activates, int player, int card)
 
     if (card_activation_uses_x(player, card) != 0)
     {
-      sprintf(s.prompt, text_lines[1], DAT_007a7c60, unk_00715fa8);
+      sprintf(s.prompt, text_lines[1], DAT_007a7c60, loaded_recorded_action_code);
     }
     else if (((global_cards_data[instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
-             current_player == player && unk_00715fa8 != 0)
+             current_player == player && loaded_recorded_action_code != 0)
     {
-      sprintf(s.prompt, text_lines[2], DAT_007a7c60, unk_00715fa8);
+      sprintf(s.prompt, text_lines[2], DAT_007a7c60, loaded_recorded_action_code);
     }
 
     if (instance->number_of_targets == 0)
