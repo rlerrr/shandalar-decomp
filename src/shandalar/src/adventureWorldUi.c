@@ -2247,6 +2247,11 @@ void RenderAdventureWorldScene(int world_x, int world_y, int world_state)
     AdvMenuRect saved_clip_rect_ui;
   } s;
 
+#ifdef MODERN_FIXES
+  s.tile_x_text = 0;
+  s.tile_y = 0;
+#endif
+
   s.previous_page_number = g_page1_window_bounds->page_number;
   HideMouseCursorNested();
 

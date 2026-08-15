@@ -282,7 +282,7 @@ BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
       SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_GREEN, gs_color_word_capitalized_00709390[COLOR_GREEN]);
       SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_RED, gs_color_word_capitalized_00709390[COLOR_RED]);
       SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_WHITE, gs_color_word_capitalized_00709390[COLOR_WHITE]);
-      SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_COLORLESS, text_lines[0]);
+      SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_COLORLESS, g_text_lines[0]);
     }
     else
     {
@@ -291,7 +291,7 @@ BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
       SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_GREEN, gs_land_word_capitalized_00709290[COLOR_GREEN]);
       SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_RED, gs_land_word_capitalized_00709290[COLOR_RED]);
       SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_WHITE, gs_land_word_capitalized_00709290[COLOR_WHITE]);
-      SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_COLORLESS, text_lines[0]);
+      SetDlgItemTextA(hwnd, CHOOSE_COLOR_LABEL_COLORLESS, g_text_lines[0]);
     }
     if ((s.context->available_colors & COLOR_TEST_BLACK) == 0)
     {

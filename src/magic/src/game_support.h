@@ -92,7 +92,7 @@ int run_target_selection_modal(int who_chooses,
                                int owner,
                                int zone_flags,
                                int *out_selection_code,
-                               int *out_target_player,
+                               target_t *out_target,
                                int allow_ai_player,
                                int allow_human_player);
 int can_pay_card_mana_cost(int player, int target_player, int target_card);

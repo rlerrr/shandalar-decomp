@@ -47,7 +47,7 @@ extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 extern int g_deck_total_card_count;
 extern int g_deck_active_card_count;
 extern int g_reveal_all_world_info;
-extern int player_starting_life;
+extern int g_player_starting_life;
 // GLOBAL: SHANDALAR 0x007483e4
 int g_analyzed_deck_special_rules;
 // GLOBAL: SHANDALAR 0x0093a870
@@ -56,8 +56,8 @@ extern int g_world_magic_offer_slot_index;
 extern int g_world_scroll_cache_ready;
 extern int g_text_menu_color_normal;
 extern int g_text_menu_color_selected;
-extern int active_player;
-extern int duel_active;
+extern int g_active_player;
+extern int g_duel_active;
 extern int g_duel_special_rules_by_color[7];
 extern char g_ui_message_buffer[0x1000];
 extern char g_creature_name_with_article_buffer[0x80];
@@ -539,7 +539,7 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
       if ((char)global_cards_data[card_index].cc[1] == -1)
       {
         strcpy(g_ui_message_buffer, "X is ");
-        strcat(g_ui_message_buffer, _itoa(x_value, g_itoa_buffer, 10));
+        strcat(g_ui_message_buffer, _itoa(g_x_value, g_itoa_buffer, 10));
         DrawTextLineNoShadow(g_ui_message_buffer, global_screen_width / 2 - 0x60, 0xb0, 0);
       }
 
@@ -634,7 +634,7 @@ void ShowCardImageOrUpdatePreview(uint card_index, undefined4 text_color, char *
     return;
   }
 
-  if (duel_active != 0)
+  if (g_duel_active != 0)
   {
     UpdateVisibleDuelCardPreview(card_index, -1, -1, text_color, button_text, show_ok_button);
   }
@@ -695,9 +695,9 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
   {
     s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number);
     LoadCreatureDuelDeck(s.creature_type, s.selected_card_id, 0, -1);
-    current_encounter_color = single_color_test_bit_to_color_t((int)g_shandalar_monster_definitions[s.creature_type].color_mask);
-    encounter_opening_hand_size_modifier = 0;
-    current_encounter_strength = 3;
+    g_current_encounter_color = single_color_test_bit_to_color_t((int)g_shandalar_monster_definitions[s.creature_type].color_mask);
+    g_encounter_opening_hand_size_modifier = 0;
+    g_current_encounter_strength = 3;
     global_ante_cards[0][0] = -1;
     for (s.loop_index = 0; s.loop_index < ante_card_count; s.loop_index = s.loop_index + 1)
     {
@@ -1681,9 +1681,9 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
 
   LoadDialogBoxFrameSprites("dbox2.spr", 0xd5, 0xd2);
   s.creature_type = g_lair_or_monster_slots[slot_index].entry_type;
-  current_encounter_color = monster_color;
-  current_encounter_strength = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
-  s.creature_strength = current_encounter_strength + (int)g_shandalar_monster_definitions[s.creature_type].tier / 2;
+  g_current_encounter_color = monster_color;
+  g_current_encounter_strength = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
+  s.creature_strength = g_current_encounter_strength + (int)g_shandalar_monster_definitions[s.creature_type].tier / 2;
   if (g_shandalar_monster_definitions[s.creature_type].encounter_type >= '\v')
   {
     s.creature_strength = 0;
@@ -1709,7 +1709,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
     {
       do
       {
-        global_ante_cards[1][0] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
+        global_ante_cards[1][0] = DrawRandomCardFromInitialLibrary(g_opponent_initial_library_index);
       } while (global_ante_cards[1][0] <= 4);
     } while ((((global_cards_data[global_ante_cards[1][0]].extra_ability & 0x100) != 0) ||
               (GetCardAvailabilityMask(global_ante_cards[1][0]) == 0)) ||
@@ -2052,7 +2052,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         LoadCreatureDuelDeck(s.creature_type, 0xffffffff, 0, -1);
         for (slot_index = 0; slot_index < 500; slot_index = slot_index + 1)
         {
-          global_library[1][slot_index] = DrawRandomCardFromInitialLibrary(opponent_initial_library_index);
+          global_library[1][slot_index] = DrawRandomCardFromInitialLibrary(g_opponent_initial_library_index);
           if ((global_cards_data[global_library[1][slot_index]].extra_ability & 0x100) != 0)
           {
             global_library[1][slot_index] = -1;
@@ -2061,7 +2061,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
         LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
-        s.selected_card_id = SelectAdventureListCardIndex(active_player, global_library[1], 500,
+        s.selected_card_id = SelectAdventureListCardIndex(g_active_player, global_library[1], 500,
                                                           gs_encounter_preduel_0077f0d0[0x23], 1, &g_preduel_card_list_selection);
         if (global_library[1][s.selected_card_id] != -1)
         {
@@ -2247,7 +2247,7 @@ LAB_4F4BB2:
       s.prompt_counter = s.prompt_counter + 1;
     }
   }
-  s.deck_or_card_index = opponent_deck_color_filter_by_color[monster_color];
+  s.deck_or_card_index = g_opponent_deck_color_filter_by_color[monster_color];
   if (g_shandalar_monster_definitions[s.creature_type].encounter_type >= '\v')
   {
     s.deck_or_card_index = g_deck_color_bitmap;
@@ -2257,16 +2257,16 @@ LAB_4F4BB2:
   {
     s.duel_special_rules = g_analyzed_deck_special_rules;
   }
-  encounter_opening_hand_size_modifier = -ClampIntToRange(3 - s.prompt_counter / 3, 0, 3);
+  g_encounter_opening_hand_size_modifier = -ClampIntToRange(3 - s.prompt_counter / 3, 0, 3);
   if ((g_shandalar_difficulty == 3) || (g_shandalar_monster_definitions[s.creature_type].encounter_type >= '\v'))
   {
-    encounter_opening_hand_size_modifier = 0;
+    g_encounter_opening_hand_size_modifier = 0;
   }
   if (g_shandalar_monster_definitions[s.creature_type].encounter_type == '\v')
   {
-    encounter_opening_hand_size_modifier = Scards[g_world_magic_offer_slot_index].worldmagic_price / 500 + -1;
+    g_encounter_opening_hand_size_modifier = Scards[g_world_magic_offer_slot_index].worldmagic_price / 500 + -1;
   }
-  if (-g_shandalar_difficulty < encounter_opening_hand_size_modifier)
+  if (-g_shandalar_difficulty < g_encounter_opening_hand_size_modifier)
   {
     s.deck_or_card_index = g_deck_color_bitmap;
   }
@@ -2313,11 +2313,11 @@ LAB_4F4BB2:
                                                   GetCreatureName(s.creature_type), BuildCreatureNameWithArticle(s.deck_or_card_index));
       RunTextMenuAt(g_ui_message_buffer, 0xa0, 0x78);
       s.creature_type = s.deck_or_card_index;
-      s.creature_strength = current_encounter_strength + (int)g_shandalar_monster_definitions[s.creature_type].tier / 2;
+      s.creature_strength = g_current_encounter_strength + (int)g_shandalar_monster_definitions[s.creature_type].tier / 2;
     }
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xc1) != 0)
     {
-      opponent_starting_card_id_1 = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+      g_opponent_starting_card_id_1 = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
     }
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xcb) != 0)
     {
@@ -2340,15 +2340,15 @@ LAB_4F4BB2:
       }
       if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xc1) != 0)
       {
-        if (encounter_opening_hand_size_modifier < 0)
+        if (g_encounter_opening_hand_size_modifier < 0)
         {
-          opponent_starting_card_id_1 = -1;
+          g_opponent_starting_card_id_1 = -1;
           s.duel_setup_allowed = 0;
         }
         else
         {
           FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_encounter_preduel_0077f0d0[0x2f],
-                                                      GetCreatureName(s.creature_type), global_cards_data[opponent_starting_card_id_1].name);
+                                                      GetCreatureName(s.creature_type), global_cards_data[g_opponent_starting_card_id_1].name);
         }
       }
       if (s.duel_setup_allowed != 0)
@@ -2391,7 +2391,7 @@ LAB_4F4BB2:
     s.reward_text_y = 0x118;
     AppendDuelVictoryLogEntry(g_shandalar_monster_definitions[s.creature_type].encounter_type, monster_color);
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, s.creature_type | 0x80);
-    ShowStatsWindow(2, current_encounter_color << 0x10 | s.creature_type);
+    ShowStatsWindow(2, g_current_encounter_color << 0x10 | s.creature_type);
     if (-g_current_quest_type == s.creature_type)
     {
       g_current_quest_type = g_current_quest_type + -100;
@@ -2639,10 +2639,10 @@ LAB_4F4BB2:
         DrawTextAt(g_page0_window_bounds, s.reward_text_color, s.reward_text_x, s.reward_text_y, g_ui_message_buffer);
         s.reward_text_y = s.reward_text_y + 0x28;
       }
-      if (((s.reward_flags & 1) != 0) && (life[0] != player_starting_life))
+      if (((s.reward_flags & 1) != 0) && (g_life[0] != g_player_starting_life))
       {
-        g_next_duel_life_delta = life[0] - player_starting_life;
-        sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x10], life[0]);
+        g_next_duel_life_delta = g_life[0] - g_player_starting_life;
+        sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x10], g_life[0]);
         DrawTextAt(g_page0_window_bounds, s.reward_text_color, s.reward_text_x, s.reward_text_y, g_ui_message_buffer);
       }
       if ((s.reward_flags & 0x800) != 0)
@@ -2743,7 +2743,7 @@ LAB_4F4BB2:
             s.temp_deck[slot_index] = s.temp_deck[slot_index] & 0xfff;
           }
         }
-        s.selected_card_id = SelectAdventureListCardIndex(active_player, (int *)s.temp_deck, 500,
+        s.selected_card_id = SelectAdventureListCardIndex(g_active_player, (int *)s.temp_deck, 500,
                                                           gs_encounter_postduel_0077f050[0x19], 1, &g_postduel_card_list_selection);
         if (s.selected_card_id != 0xffffffff)
         {
@@ -2765,7 +2765,7 @@ LAB_4F4BB2:
       }
       if (internal_rand(0x40 / (g_shandalar_difficulty + 1)) < s.creature_strength)
       {
-        opponent_deck_color_filter_by_color[monster_color] = g_deck_color_bitmap;
+        g_opponent_deck_color_filter_by_color[monster_color] = g_deck_color_bitmap;
       }
       if (internal_rand(0x80 / (g_shandalar_difficulty + 1)) < s.creature_strength)
       {

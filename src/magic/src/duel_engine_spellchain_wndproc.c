@@ -173,11 +173,11 @@ int register_MAGICGAME_SpellChainClass(LPCSTR class_name)
 
   g_spell_minimized_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_SPELLCHAIN");
-  strcpy(g_spell_chain_menu_minimize_text, text_lines[0]);
-  strcpy(g_spell_chain_menu_help_text, text_lines[1]);
+  strcpy(g_spell_chain_menu_minimize_text, g_text_lines[0]);
+  strcpy(g_spell_chain_menu_help_text, g_text_lines[1]);
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_MINIMIZEDSPELLCHAIN");
-  strcpy(g_spell_minimized_menu_restore_text, text_lines[0]);
-  strcpy(g_spell_minimized_menu_help_text, text_lines[1]);
+  strcpy(g_spell_minimized_menu_restore_text, g_text_lines[0]);
+  strcpy(g_spell_minimized_menu_help_text, g_text_lines[1]);
 
   strcpy(s.path, global_duelart_path);
   strcat(s.path, "\\WINBK_SpellChain.pic");

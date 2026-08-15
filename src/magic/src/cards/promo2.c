@@ -16,11 +16,11 @@ int card_blaze_of_glory(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    return (current_phase == PHASE_BEFORE_BLOCKING && real_target_available((int *)0,
+    return (g_current_phase == PHASE_BEFORE_BLOCKING && real_target_available((int *)0,
                                                                             TARGET_SCAN_DIRECT,
                                                                             player,
-                                                                            1 - current_player,
-                                                                            1 - current_player,
+                                                                            1 - g_current_player,
+                                                                            1 - g_current_player,
                                                                             0x200,
                                                                             TYPE_CREATURE,
                                                                             0,
@@ -39,12 +39,12 @@ int card_blaze_of_glory(int player, int card, event_t event)
                : 0;
   }
 
-  if (((event == EVENT_CAST_SPELL) && (affected_card == card)) && (affected_card_controller == player))
+  if (((event == EVENT_CAST_SPELL) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     load_text("promptsX1.txt", "BLAZE_OF_GLORY");
     if (C_real_select_target(player,
-                             1 - current_player,
-                             1 - current_player,
+                             1 - g_current_player,
+                             1 - g_current_player,
                              TARGET_ZONE_IN_PLAY,
                              TYPE_CREATURE,
                              TYPE_NONE,
@@ -59,7 +59,7 @@ int card_blaze_of_glory(int player, int card, event_t event)
                              0,
                              0,
                              0,
-                             text_lines[0],
+                             g_text_lines[0],
                              1,
                              &selected_target))
     {
@@ -69,7 +69,7 @@ int card_blaze_of_glory(int player, int card, event_t event)
     }
     else
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
   }
 
@@ -81,8 +81,8 @@ int card_blaze_of_glory(int player, int card, event_t event)
                                selected_target.card,
                                (char *)0,
                                player,
-                               1 - current_player,
-                               1 - current_player,
+                               1 - g_current_player,
+                               1 - g_current_player,
                                TARGET_ZONE_IN_PLAY,
                                TYPE_CREATURE,
                                TYPE_NONE,
@@ -102,7 +102,7 @@ int card_blaze_of_glory(int player, int card, event_t event)
     }
     else
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_DESTROY);
@@ -123,7 +123,7 @@ int card_guardian_angel(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if ((land_can_be_played & 4) == 0 || !real_target_available((int *)0,
+    if ((g_land_can_be_played & 4) == 0 || !real_target_available((int *)0,
                                                           TARGET_SCAN_DIRECT,
                                                           player,
                                                           2,
@@ -135,7 +135,7 @@ int card_guardian_angel(int player, int card, event_t event)
                                                           0,
                                                           COLOR_TEST_0,
                                                           COLOR_TEST_0,
-                                                          damage_card_internal_card_id,
+                                                          g_damage_card_internal_card_id,
                                                           ~SUB_WALL,
                                                           -1,
                                                           -1,
@@ -148,7 +148,7 @@ int card_guardian_angel(int player, int card, event_t event)
     return 99;
   }
 
-  if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  if (((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller))
   {
     load_text("promptsX1.txt", "GUARDIAN_ANGLE");
     if (!C_real_select_target(player,
@@ -161,24 +161,24 @@ int card_guardian_angel(int player, int card, event_t event)
                               0,
                               COLOR_TEST_0,
                               COLOR_TEST_0,
-                              damage_card_internal_card_id,
+                              g_damage_card_internal_card_id,
                               ~SUB_WALL,
                               -1,
                               -1,
                               0,
                               0,
                               0,
-                              text_lines[0],
+                              g_text_lines[0],
                               1,
                               &selected_target))
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     else
     {
       instance->targets[0] = selected_target;
       instance->number_of_targets = 1;
-      instance->info_slot = x_value;
+      instance->info_slot = g_x_value;
     }
   }
 
@@ -198,7 +198,7 @@ int card_guardian_angel(int player, int card, event_t event)
                                 0,
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
-                                damage_card_internal_card_id,
+                                g_damage_card_internal_card_id,
                                 ~SUB_WALL,
                                 -1,
                                 -1,
@@ -206,7 +206,7 @@ int card_guardian_angel(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     else
     {
@@ -252,7 +252,7 @@ int card_natural_selection(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == EVENT_CAST_SPELL && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller)
   {
     load_text("promptsX1.txt", "NATURAL_SELECTION");
     if (!C_real_select_target(player,
@@ -272,20 +272,20 @@ int card_natural_selection(int player, int card, event_t event)
                               0,
                               0,
                               0,
-                              text_lines[0],
+                              g_text_lines[0],
                               1,
                               &target))
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     else
     {
       instance->targets[0].player = target.player;
       instance->targets[0].card = target.card;
       instance->number_of_targets = 1;
-      if (player == other_player)
+      if (player == g_other_player)
       {
-        ai_modifier += 0x18;
+        g_ai_modifier += 0x18;
       }
     }
     return 0;
@@ -307,7 +307,7 @@ int card_natural_selection(int player, int card, event_t event)
       }
     }
 
-    if ((player == current_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
+    if ((player == g_current_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
     {
       if (count > 0)
       {
@@ -365,13 +365,13 @@ int card_psionic_blast(int player, int card, event_t event)
     return 1;
   }
 
-  if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  if (((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller))
   {
     load_text("promptsX1.txt", "PSIONIC_BLAST");
     select_damage_target(player, card, 4);
-    if (player == other_player)
+    if (player == g_other_player)
     {
-      ai_modifier += (3 - PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).toughness) * 0xc;
+      g_ai_modifier += (3 - PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).toughness) * 0xc;
     }
   }
 
@@ -422,14 +422,14 @@ int card_sacrifice(int player, int card, event_t event)
                                  0, 0, 0, -1, -1, 0xffffffff, 0xffffffff, 0, 0, 0);
   }
 
-  if ((event == EVENT_CAST_SPELL) && (card == card_on_stack) && (player == card_on_stack_controller))
+  if ((event == EVENT_CAST_SPELL) && (card == g_card_on_stack) && (player == g_card_on_stack_controller))
   {
     load_text("promptsX1.txt", "SACRIFICE");
     if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE,
                               TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL,
-                              -1, -1, 0, 0, 0, text_lines[0], 0, &target))
+                              -1, -1, 0, 0, 0, g_text_lines[0], 0, &target))
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     else
     {

@@ -121,10 +121,10 @@ int register_MAGICGAME_FaceClass(LPCSTR class_name)
 
   g_face_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_FACE");
-  strcpy(g_face_menu_directive_format, text_lines[0]);
-  strcpy(g_face_menu_directive_self_text, text_lines[1]);
-  strcpy(g_face_menu_end_directive_text, text_lines[2]);
-  strcpy(g_face_menu_help_text, text_lines[3]);
+  strcpy(g_face_menu_directive_format, g_text_lines[0]);
+  strcpy(g_face_menu_directive_self_text, g_text_lines[1]);
+  strcpy(g_face_menu_end_directive_text, g_text_lines[2]);
+  strcpy(g_face_menu_help_text, g_text_lines[3]);
 
   strcpy(s.path, global_duelart_path);
   strcat(s.path, "\\FACE_MULTI.pic");
@@ -618,22 +618,22 @@ int load_text_with_tab_escapes(char *filename, char *section_name)
     loaded_count = load_text(filename, section_name);
     for (line_index = 0; line_count = abs(loaded_count), line_index < line_count; line_index++)
     {
-      line_length = strlen(text_lines[line_index]);
+      line_length = strlen(g_text_lines[line_index]);
       out_index = 0;
       for (char_index = 0; char_index < (int)line_length; char_index++)
       {
-        if (text_lines[line_index][char_index] == '\\' && text_lines[line_index][char_index + 1] == 't')
+        if (g_text_lines[line_index][char_index] == '\\' && g_text_lines[line_index][char_index + 1] == 't')
         {
-          text_lines[line_index][out_index] = '\t';
+          g_text_lines[line_index][out_index] = '\t';
           char_index++;
         }
         else
         {
-          text_lines[line_index][out_index] = text_lines[line_index][char_index];
+          g_text_lines[line_index][out_index] = g_text_lines[line_index][char_index];
         }
         out_index++;
       }
-      text_lines[line_index][out_index] = '\0';
+      g_text_lines[line_index][out_index] = '\0';
     }
   }
   return loaded_count;

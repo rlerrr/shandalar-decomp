@@ -72,7 +72,7 @@ GLOBAL_OTHERS_EXTERN int DAT_00775d3c;
 
 // GLOBAL: MAGIC 0x00777aa0
 // GLOBAL: SHANDALAR 0x0078e830
-GLOBAL_OTHERS_EXTERN int duel_trace_counter;
+GLOBAL_OTHERS_EXTERN int g_duel_trace_counter;
 
 // GLOBAL: MAGIC 0x0093917c
 // GLOBAL: SHANDALAR 0x0094d2ac
@@ -92,11 +92,11 @@ GLOBAL_OTHERS_EXTERN int _DAT_00743030;
 
 // GLOBAL: MAGIC 0x007161d4
 // GLOBAL: SHANDALAR 0x0074ccc4
-GLOBAL_OTHERS_EXTERN phase_t previous_stop_phase;
+GLOBAL_OTHERS_EXTERN phase_t g_previous_stop_phase;
 
 // GLOBAL: MAGIC 0x00743034
 // GLOBAL: SHANDALAR 0x0077f440
-GLOBAL_OTHERS_EXTERN int previous_stop_phase_player;
+GLOBAL_OTHERS_EXTERN int g_previous_stop_phase_player;
 
 // GLOBAL: MAGIC 0x0074303c
 // GLOBAL: SHANDALAR 0x00780690
@@ -108,7 +108,7 @@ GLOBAL_OTHERS_EXTERN int unk_0072c440[8];
 
 // GLOBAL: MAGIC 0x00743000
 // GLOBAL: SHANDALAR 0x0077eda0
-GLOBAL_OTHERS_EXTERN int landwalk_basiclandtypes_controlled[2][8];
+GLOBAL_OTHERS_EXTERN int g_landwalk_basiclandtypes_controlled[2][8];
 
 // GLOBAL: MAGIC 0x007ab290
 // GLOBAL: SHANDALAR 0x007bf490
@@ -116,19 +116,19 @@ GLOBAL_OTHERS_EXTERN int g_duel_cached_raw_mana_player_1[7];
 
 // GLOBAL: MAGIC 0x00715fa8
 // GLOBAL: SHANDALAR 0x0074b868
-GLOBAL_OTHERS_EXTERN int loaded_recorded_action_code;
+GLOBAL_OTHERS_EXTERN int g_loaded_recorded_action_code;
 
 // GLOBAL: MAGIC 0x00715fac
 // GLOBAL: SHANDALAR 0x0074b8b4
-GLOBAL_OTHERS_EXTERN int phase_response_window_open;
+GLOBAL_OTHERS_EXTERN int g_phase_response_window_open;
 
 // GLOBAL: MAGIC 0x00791550
 // GLOBAL: SHANDALAR 0x007a82dc
-GLOBAL_OTHERS_EXTERN int regenerate_or_graveyard_triggers_in_progress;
+GLOBAL_OTHERS_EXTERN int g_regenerate_or_graveyard_triggers_in_progress;
 
 // GLOBAL: MAGIC 0x008cff10
 // GLOBAL: SHANDALAR 0x008e4060
-GLOBAL_OTHERS_EXTERN int life_gained;
+GLOBAL_OTHERS_EXTERN int g_life_gained;
 
 // GLOBAL: MAGIC 0x00743038
 // GLOBAL: SHANDALAR 0x0077f600
@@ -151,11 +151,11 @@ GLOBAL_OTHERS_EXTERN int unk_007a7d18[2];
 
 // GLOBAL: MAGIC 0x00743094
 // GLOBAL: SHANDALAR 0x0074842c
-GLOBAL_OTHERS_EXTERN int recorded_action_count;
+GLOBAL_OTHERS_EXTERN int g_recorded_action_count;
 
 // GLOBAL: MAGIC 0x007abc78
 // GLOBAL: SHANDALAR 0x007bfe78
-GLOBAL_OTHERS_EXTERN int battlefield_extra_ability_flags;
+GLOBAL_OTHERS_EXTERN int g_battlefield_extra_ability_flags;
 
 // GLOBAL: MAGIC 0x007abc80
 // GLOBAL: SHANDALAR 0x007bfe80
@@ -179,7 +179,7 @@ GLOBAL_OTHERS_EXTERN int g_duel_cached_raw_mana_player_0[7];
 
 // GLOBAL: MAGIC 0x0064efa0
 // GLOBAL: SHANDALAR 0x00669498
-GLOBAL_OTHERS_EXTERN char current_duel_prompt_text[256];
+GLOBAL_OTHERS_EXTERN char g_current_duel_prompt_text[256];
 
 // GLOBAL: MAGIC 0x0064f0a4
 // GLOBAL: SHANDALAR 0x005a9d50
@@ -191,22 +191,22 @@ GLOBAL_OTHERS_EXTERN int _DAT_0064f0a8;
 
 // GLOBAL: MAGIC 0x00637558
 // GLOBAL: SHANDALAR 0x005a6080
-GLOBAL_OTHERS_EXTERN int recorded_mana_payments[10][7];
+GLOBAL_OTHERS_EXTERN int g_recorded_mana_payments[10][7];
 
 #ifdef GLOBALS_OTHERS_IMPL
-int mana_payment_record_depth = 0;
+int g_mana_payment_record_depth = 0;
 #else
 // GLOBAL: MAGIC 0x005607e0
 // GLOBAL: SHANDALAR 0x00580dac
-GLOBAL_OTHERS_EXTERN int mana_payment_record_depth;
+GLOBAL_OTHERS_EXTERN int g_mana_payment_record_depth;
 #endif
 
 #ifdef GLOBALS_OTHERS_IMPL
-int affected_card_context_depth = 0;
+int g_affected_card_context_depth = 0;
 #else
 // GLOBAL: MAGIC 0x00561268
 // GLOBAL: SHANDALAR 0x00580678
-GLOBAL_OTHERS_EXTERN int affected_card_context_depth;
+GLOBAL_OTHERS_EXTERN int g_affected_card_context_depth;
 #endif
 
 #ifdef GLOBALS_OTHERS_IMPL
@@ -218,11 +218,11 @@ GLOBAL_OTHERS_EXTERN int DAT_00561390;
 #endif
 
 #ifdef GLOBALS_OTHERS_IMPL
-char empty_duel_prompt_text[1] = "";
+char g_empty_duel_prompt_text[1] = "";
 #else
 // GLOBAL: MAGIC 0x0056e494
 // GLOBAL: SHANDALAR 0x00583fb8
-GLOBAL_OTHERS_EXTERN char empty_duel_prompt_text[1];
+GLOBAL_OTHERS_EXTERN char g_empty_duel_prompt_text[1];
 #endif
 
 // GLOBAL: MAGIC 0x00939344
@@ -235,7 +235,7 @@ GLOBAL_OTHERS_EXTERN HWND g_duel_prompt_context_hwnd;
 
 // GLOBAL: MAGIC 0x0093a844
 // GLOBAL: SHANDALAR 0x0094e964
-GLOBAL_OTHERS_EXTERN int phase_was_skipped;
+GLOBAL_OTHERS_EXTERN int g_phase_was_skipped;
 
 // GLOBAL: MAGIC 0x0091bfb0
 // GLOBAL: SHANDALAR 0x009300f0
@@ -278,7 +278,7 @@ GLOBAL_OTHERS_EXTERN int unk_00925d38;
 GLOBAL_OTHERS_EXTERN int DAT_00791418;
 
 // GLOBAL: MAGIC 0x00926740
-GLOBAL_OTHERS_EXTERN char ai_action_dialog_number_buffer[12];
+GLOBAL_OTHERS_EXTERN char g_ai_action_dialog_number_buffer[12];
 
 // GLOBAL: MAGIC 0x0092674c
 GLOBAL_OTHERS_EXTERN int g_waiting_for_network_packet;
@@ -289,7 +289,7 @@ GLOBAL_OTHERS_EXTERN int unk_0093f9c0;
 
 // GLOBAL: MAGIC 0x0093f4c0
 // GLOBAL: SHANDALAR 0x0097eca0
-GLOBAL_OTHERS_EXTERN int affected_card_context_stack[32][10];
+GLOBAL_OTHERS_EXTERN int g_affected_card_context_stack[32][10];
 
 // GLOBAL: MAGIC 0x0093f4b4
 GLOBAL_OTHERS_EXTERN int unk_0093f4b4;
@@ -311,9 +311,9 @@ GLOBAL_OTHERS_EXTERN int unk_0057a75c;
 #ifdef GLOBALS_OTHERS_IMPL
 // GLOBAL: MAGIC 0x0057aae8
 // GLOBAL: SHANDALAR 0x00589a38
-int ai_recorded_action_type = 0;
+int g_ai_recorded_action_type = 0;
 #else
-GLOBAL_OTHERS_EXTERN int ai_recorded_action_type;
+GLOBAL_OTHERS_EXTERN int g_ai_recorded_action_type;
 #endif
 
 #if defined(GLOBALS_OTHERS_IMPL) && defined(MAGIC)
@@ -351,39 +351,39 @@ GLOBAL_OTHERS_EXTERN mana_burn_dialog_context_t *g_mana_burn_dialog_context;
 
 // GLOBAL: MAGIC 0x006a1db8
 // GLOBAL: SHANDALAR 0x005ae0a0
-GLOBAL_OTHERS_EXTERN int recorded_action_targets[256];
+GLOBAL_OTHERS_EXTERN int g_recorded_action_targets[256];
 
 // GLOBAL: MAGIC 0x006a21b8
 // GLOBAL: SHANDALAR 0x005ae4a0
-GLOBAL_OTHERS_EXTERN int trial_recorded_action_targets[256];
+GLOBAL_OTHERS_EXTERN int g_trial_recorded_action_targets[256];
 
 // GLOBAL: MAGIC 0x006a5f18
 // GLOBAL: SHANDALAR 0x005b2200
-GLOBAL_OTHERS_EXTERN int recorded_action_types[256];
+GLOBAL_OTHERS_EXTERN int g_recorded_action_types[256];
 
 // GLOBAL: MAGIC 0x006a6ae8
 // GLOBAL: SHANDALAR 0x005b2dd0
-GLOBAL_OTHERS_EXTERN int recorded_action_codes[256];
+GLOBAL_OTHERS_EXTERN int g_recorded_action_codes[256];
 
 // GLOBAL: MAGIC 0x006a6ee8
 // GLOBAL: SHANDALAR 0x005b31d0
-GLOBAL_OTHERS_EXTERN int trial_recorded_action_codes[256];
+GLOBAL_OTHERS_EXTERN int g_trial_recorded_action_codes[256];
 
 // GLOBAL: MAGIC 0x006a7e58
 // GLOBAL: SHANDALAR 0x005b4140
-GLOBAL_OTHERS_EXTERN int saved_recorded_action_internal_card_ids[256];
+GLOBAL_OTHERS_EXTERN int g_saved_recorded_action_internal_card_ids[256];
 
 // GLOBAL: MAGIC 0x006a8258
 // GLOBAL: SHANDALAR 0x005b4540
-GLOBAL_OTHERS_EXTERN int trial_recorded_action_internal_card_ids[256];
+GLOBAL_OTHERS_EXTERN int g_trial_recorded_action_internal_card_ids[256];
 
 // GLOBAL: MAGIC 0x006a8660
 // GLOBAL: SHANDALAR 0x005b4948
-GLOBAL_OTHERS_EXTERN int trial_recorded_action_types[256];
+GLOBAL_OTHERS_EXTERN int g_trial_recorded_action_types[256];
 
 // GLOBAL: MAGIC 0x006ab368
 // GLOBAL: SHANDALAR 0x005b7650
-GLOBAL_OTHERS_EXTERN int saved_recorded_action_count;
+GLOBAL_OTHERS_EXTERN int g_saved_recorded_action_count;
 
 #ifdef SHANDALAR
 // GLOBAL: SHANDALAR 0x0078cf10
@@ -441,7 +441,7 @@ GLOBAL_OTHERS_EXTERN int DAT_007abc74;
 
 // GLOBAL: MAGIC 0x0069c6f0
 // GLOBAL: SHANDALAR 0x005a6198
-GLOBAL_OTHERS_EXTERN int master_csv_offsets[0x4e2];
+GLOBAL_OTHERS_EXTERN int g_master_csv_offsets[0x4e2];
 
 // GLOBAL: MAGIC 0x0091b280
 // GLOBAL: SHANDALAR 0x0092f3d0
@@ -461,7 +461,7 @@ GLOBAL_OTHERS_EXTERN int DAT_0055e17c;
 
 // GLOBAL: SHANDALAR 0x007483f0
 // GLOBAL: MAGIC 0x0074b630
-GLOBAL_OTHERS_EXTERN int random_seed_initialized;
+GLOBAL_OTHERS_EXTERN int g_random_seed_initialized;
 
 #undef GLOBAL_OTHERS_EXTERN
 #endif

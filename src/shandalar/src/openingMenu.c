@@ -28,7 +28,7 @@ extern HWND g_main_window_hwnd;
 extern EncodedImage *g_face_preview_sprite_group[6];
 extern EncodedImage *g_face_preview_sprite_selected;
 extern DIBSurface *g_graphics_pages[10];
-extern char text_lines[249][300];
+extern char g_text_lines[249][300];
 
 extern FacemakerWindowBounds *g_page0_window_bounds;
 extern FacemakerWindowBounds *g_page1_window_bounds;
@@ -1136,8 +1136,8 @@ int RunNameEntryDialog(char *name_buffer)
   LoadPcxIntoPageOpaque(1, "namepick.pic");
   g_page1_window_bounds->font_slot = g_page0_window_bounds->font_slot;
   LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xed, 0x8b, 0x19, &text_lines[2][0]);
-  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xb4, 0x8a, 0x18, &text_lines[2][0]);
+  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xed, 0x8b, 0x19, &g_text_lines[2][0]);
+  DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xb4, 0x8a, 0x18, &g_text_lines[2][0]);
   BlitGraphicsRect(g_page1_window_bounds, 0, 0, 0x114, 0x6a, g_page1_window_bounds, 0, 200);
   DrawFormattedTextNoShadowCentered(g_page1_window_bounds, 0xb4, 0x8a, 0x100, "%s", name_buffer);
   BlitTransparentRuns(g_page1_window_bounds, 0, 200, 0x114, 0x6a, g_page0_window_bounds, (global_screen_width - 0x114) / 2, ScaleUiCoordinate(dialog_top));

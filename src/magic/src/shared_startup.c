@@ -153,7 +153,7 @@ int DAT_00637a94;
 
 static __inline void append_startup_error(char *message_buffer, const char *path, int line_index)
 {
-  sprintf(message_buffer + strlen(message_buffer), text_lines[line_index], path);
+  sprintf(message_buffer + strlen(message_buffer), g_text_lines[line_index], path);
   strcat(message_buffer, "\n");
 }
 
@@ -311,7 +311,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[3]);
+    strcat(message_buffer, g_text_lines[3]);
     strcat(message_buffer, "\n");
   }
 
@@ -319,7 +319,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[4]);
+    strcat(message_buffer, g_text_lines[4]);
     strcat(message_buffer, "\n");
   }
 
@@ -333,7 +333,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[5]);
+    strcat(message_buffer, g_text_lines[5]);
     strcat(message_buffer, "\n");
   }
 
@@ -341,7 +341,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[6]);
+    strcat(message_buffer, g_text_lines[6]);
     strcat(message_buffer, "\n");
   }
 
@@ -349,7 +349,7 @@ int setup_paths_and_load_text_etc(char *message_buffer)
   {
     s.ok = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(message_buffer, text_lines[7]);
+    strcat(message_buffer, g_text_lines[7]);
     strcat(message_buffer, "\n");
   }
 
@@ -555,7 +555,7 @@ void LoadDuelInterfaceRegistryOptions(void)
         s.step = 0;
         while (s.step < 0x25 && *s.phase_value != '\0')
         {
-          if (duel_active == 0)
+          if (g_duel_active == 0)
           {
             if (*s.phase_value == 'S')
               g_duel_phase_stop_settings[s.phase].phase_flags[s.step] = 1;
@@ -679,7 +679,7 @@ int LoadRarityCsv(const char *filename)
   load_text(global_ui_strings_filename, "SEALEDDECK_PACKNAMES");
 
   s.pack = &g_sealed_pack_definitions[0];
-  strcpy(s.pack->name, text_lines[0]);
+  strcpy(s.pack->name, g_text_lines[0]);
   s.pack->starter_count = 2;
   s.pack->booster_count = 1;
   s.pack->free_lands = 0;
@@ -687,7 +687,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[1];
-  strcpy(s.pack->name, text_lines[1]);
+  strcpy(s.pack->name, g_text_lines[1]);
   s.pack->starter_count = 2;
   s.pack->booster_count = 1;
   s.pack->free_lands = 0;
@@ -695,7 +695,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[2];
-  strcpy(s.pack->name, text_lines[2]);
+  strcpy(s.pack->name, g_text_lines[2]);
   s.pack->starter_count = 7;
   s.pack->booster_count = 1;
   s.pack->free_lands = 0;
@@ -703,7 +703,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 5;
 
   s.pack = &g_sealed_pack_definitions[3];
-  strcpy(s.pack->name, text_lines[3]);
+  strcpy(s.pack->name, g_text_lines[3]);
   s.pack->starter_count = 2;
   s.pack->booster_count = 0;
   s.pack->free_lands = 2;
@@ -711,7 +711,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[4];
-  strcpy(s.pack->name, text_lines[4]);
+  strcpy(s.pack->name, g_text_lines[4]);
   s.pack->starter_count = 2;
   s.pack->booster_count = 0;
   s.pack->free_lands = 2;
@@ -719,7 +719,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[5];
-  strcpy(s.pack->name, text_lines[5]);
+  strcpy(s.pack->name, g_text_lines[5]);
   s.pack->starter_count = 0;
   s.pack->booster_count = 0;
   s.pack->free_lands = 0;
@@ -727,7 +727,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[6];
-  strcpy(s.pack->name, text_lines[6]);
+  strcpy(s.pack->name, g_text_lines[6]);
   s.pack->starter_count = 0;
   s.pack->booster_count = 0;
   s.pack->free_lands = 2;
@@ -735,7 +735,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[7];
-  strcpy(s.pack->name, text_lines[7]);
+  strcpy(s.pack->name, g_text_lines[7]);
   s.pack->starter_count = 0;
   s.pack->booster_count = 0;
   s.pack->free_lands = 1;
@@ -743,7 +743,7 @@ int LoadRarityCsv(const char *filename)
   s.pack->color_count = 1;
 
   s.pack = &g_sealed_pack_definitions[8];
-  strcpy(s.pack->name, text_lines[8]);
+  strcpy(s.pack->name, g_text_lines[8]);
   s.pack->starter_count = 0;
   s.pack->booster_count = 1;
   s.pack->free_lands = 0;

@@ -98,7 +98,7 @@ int register_MAGICGAME_HandClass(LPCSTR class_name)
   }
   g_hand_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_HAND");
-  strcpy(g_hand_menu_help_text, text_lines[0]);
+  strcpy(g_hand_menu_help_text, g_text_lines[0]);
   g_hand_title_font = CreateFontIndirectA(LoadFontFromIni("Hand", 0));
   g_hand_title_text_color = 0x10000bf;
   g_hand_title_shadow_color = 0x10000c9;
@@ -351,10 +351,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     int title_height;
     RECT blit_rect;
     int bottom_margin;
-    int inner_left;
-    int title_bottom;
-    int inner_right;
-    int inner_bottom;
+    RECT inner_rect;
     int hit_side_margin;   // ebp - 0x278
     int hit_edge_width;    // ebp - 0x274
     unsigned int click_x;  // ebp - 0x270
@@ -807,14 +804,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
                                s.art_bottom_height, &s.title_height, &s.bottom_margin,
                                &s.side_margin, &s.edge_width);
     GetClientRect(hwnd, &s.client_rect);
-    s.title_bottom = s.client_rect.top + s.title_height;
-    s.inner_bottom = s.client_rect.bottom - s.bottom_margin;
-    s.inner_left = s.client_rect.left + s.side_margin;
-    s.inner_right = s.client_rect.right - s.side_margin;
+    s.inner_rect.top = s.client_rect.top + s.title_height;
+    s.inner_rect.bottom = s.client_rect.bottom - s.bottom_margin;
+    s.inner_rect.left = s.client_rect.left + s.side_margin;
+    s.inner_rect.right = s.client_rect.right - s.side_margin;
     EnterCriticalSection(&g_card_render_lock);
     s.saved_dc = SaveDC(g_shared_offscreen_dc);
     FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(4));
-    draw_hand_window_frame(g_shared_offscreen_dc, (int *)&s.client_rect, &s.inner_left,
+    draw_hand_window_frame(g_shared_offscreen_dc, (int *)&s.client_rect, (int *)&s.inner_rect,
                            s.edge_width, s.art_width, s.art_title_height,
                            s.art_side_width, s.art_bottom_height, (HBITMAP)s.background_bitmap);
     SetMapMode(g_shared_offscreen_dc, MM_ANISOTROPIC);
@@ -825,7 +822,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_HandClass(HWND hwnd, UINT msg, WPARAM wparam,
     GetWindowTextA(hwnd, s.window_title, 100);
     SetBkMode(g_shared_offscreen_dc, TRANSPARENT);
     SetRect(&s.title_rect, s.client_rect.left, s.client_rect.top,
-            s.client_rect.right, s.title_bottom);
+            s.client_rect.right, s.inner_rect.top);
     DPtoLP(g_shared_offscreen_dc, (LPPOINT)&s.title_rect, 2);
     OffsetRect(&s.title_rect, 2, 2);
     SetTextColor(g_shared_offscreen_dc, g_hand_title_shadow_color);

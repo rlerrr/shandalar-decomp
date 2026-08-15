@@ -64,6 +64,7 @@ These instructions apply to the entire repository.
   - PowerShell example:
     - `$env:PYTHONUTF8='1'; make.bat | Out-Null; reccmp-reccmp --target CARDARTLIB --no-color --verbose 0xXXXXXXXX`
   - Note: set `PYTHONUTF8=1` to avoid Windows console encoding issues in verbose output.
+- Never run multiple `reccmp-reccmp` commands in parallel. They are memory-intensive; run them one at a time.
 - The hex address (`0xXXXXXXXX`) comes from the `reccmp`-style comment immediately above the function implementation, e.g.:
   - `// FUNCTION: CARDARTLIB 0x10002f70`
 - Prefer writing `reccmp` logs into `temp/` and keep them out of git:

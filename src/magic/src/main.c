@@ -400,8 +400,8 @@ static void initialize_screen_name_profile(screen_name_file_t *screen_name_data,
   if (strlen(DAT_006381c0) == 0)
   {
     load_text("MP_UIStrings.txt", "SHELLPAGE_SCREENNAME");
-    strcpy(DAT_006381c0, text_lines[2]);
-    strcpy(DAT_006385e8, text_lines[0x11]);
+    strcpy(DAT_006381c0, g_text_lines[2]);
+    strcpy(DAT_006385e8, g_text_lines[0x11]);
   }
 
   strcpy(screen_name_data->screen_name, DAT_006381c0);
@@ -602,7 +602,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   g_duel_card_preview_window_hwnd = 0;
   DAT_008b4dd4 = 0;
   g_duel_message_loop_active = DAT_008b4dd4;
-  duel_active = g_duel_message_loop_active;
+  g_duel_active = g_duel_message_loop_active;
   DAT_0074b62c = 0;
 
   load_binary_version_strings();
@@ -685,7 +685,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
     if (global_main_hwnd == NULL)
     {
       load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-      strcat(s.startup_message, text_lines[8]);
+      strcat(s.startup_message, g_text_lines[8]);
       strcat(s.startup_message, "\n");
       s.startup_ok = 0;
     }
@@ -693,7 +693,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   else
   {
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(s.startup_message, text_lines[8]);
+    strcat(s.startup_message, g_text_lines[8]);
     strcat(s.startup_message, "\n");
     s.startup_ok = 0;
   }

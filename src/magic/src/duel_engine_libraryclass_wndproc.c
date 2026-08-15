@@ -127,8 +127,8 @@ int register_MAGICGAME_LibraryClass(LPCSTR class_name)
   g_library_submenu = CreatePopupMenu();
   AppendMenuA(g_library_submenu, 0, 0x65, "");
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_LIBRARY");
-  strcpy(g_library_menu_count_text, text_lines[0]);
-  strcpy(g_library_menu_help_text, text_lines[1]);
+  strcpy(g_library_menu_count_text, g_text_lines[0]);
+  strcpy(g_library_menu_help_text, g_text_lines[1]);
   return s.result;
 }
 

@@ -681,7 +681,7 @@ int initialize_duel_engine_window(void)
   {
     s.created_window = 0;
     load_text(global_ui_strings_filename, "PROMPT_STARTUPERROR");
-    strcat(s.startup_error, text_lines[8]);
+    strcat(s.startup_error, g_text_lines[8]);
     strcat(s.startup_error, "\n");
   }
 
@@ -743,7 +743,7 @@ WPARAM run_duel_engine_message_loop(void)
     s.result = (WPARAM)-1;
   }
 
-  duel_active = 0;
+  g_duel_active = 0;
   g_duel_message_loop_active = 0;
   return s.result;
 }
@@ -802,12 +802,12 @@ DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type)
   if (g_duel_creature_type != -1)
   {
     load_text("Menus.txt", "DECKFACES");
-    strcpy(unk_009266d0, text_lines[g_duel_creature_type - 1]);
+    strcpy(unk_009266d0, g_text_lines[g_duel_creature_type - 1]);
   }
   else
   {
     load_text(global_ui_strings_filename, "OPPONENT");
-    strcpy(unk_009266d0, text_lines[0]);
+    strcpy(unk_009266d0, g_text_lines[0]);
   }
 
   if (initialize_duel_engine_window() != 0)

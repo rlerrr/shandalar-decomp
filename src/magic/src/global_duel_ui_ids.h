@@ -20,7 +20,7 @@ GLOBAL_DUEL_UI_IDS_EXTERN unsigned int g_card_data_bytes;
 // Duel UI card ids and related legacy-effect ids
 // GLOBAL: MAGIC 0x009266a4
 // GLOBAL: SHANDALAR 0x0093a7d4
-GLOBAL_DUEL_UI_IDS_EXTERN int damage_card_internal_card_id;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_damage_card_internal_card_id;
 // GLOBAL: MAGIC 0x008a8df8
 // GLOBAL: SHANDALAR 0x008bcff8
 GLOBAL_DUEL_UI_IDS_EXTERN int LEGACY_EFFECT_PUMP;
@@ -47,7 +47,7 @@ GLOBAL_DUEL_UI_IDS_EXTERN int DAT_008a9198;
 GLOBAL_DUEL_UI_IDS_EXTERN int DAT_008ce7cc;
 // GLOBAL: MAGIC 0x008b28f8
 // GLOBAL: SHANDALAR 0x008c6aa8
-GLOBAL_DUEL_UI_IDS_EXTERN int draw_card_placeholder_internal_card_id;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_draw_card_placeholder_internal_card_id;
 // GLOBAL: MAGIC 0x00925bf4
 // GLOBAL: SHANDALAR 0x00939d24
 GLOBAL_DUEL_UI_IDS_EXTERN int DAT_00925bf4;
@@ -68,7 +68,7 @@ GLOBAL_DUEL_UI_IDS_EXTERN int unk_008a8c34;
 GLOBAL_DUEL_UI_IDS_EXTERN int unk_008b49c4;
 // GLOBAL: MAGIC 0x008a918c
 // GLOBAL: SHANDALAR 0x008bd38c
-GLOBAL_DUEL_UI_IDS_EXTERN int damage_effect_internal_card_id;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_damage_effect_internal_card_id;
 // GLOBAL: MAGIC 0x008a9194
 // GLOBAL: SHANDALAR 0x008bd394
 GLOBAL_DUEL_UI_IDS_EXTERN int unk_008a9194;
@@ -77,7 +77,7 @@ GLOBAL_DUEL_UI_IDS_EXTERN int unk_008a9194;
 GLOBAL_DUEL_UI_IDS_EXTERN int unk_00939348;
 // GLOBAL: MAGIC 0x0091a80c
 // GLOBAL: SHANDALAR 0x0092e95c
-GLOBAL_DUEL_UI_IDS_EXTERN int stack_proxy_internal_card_id;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_stack_proxy_internal_card_id;
 // GLOBAL: MAGIC 0x00777d28
 // GLOBAL: SHANDALAR 0x0078eab8
 GLOBAL_DUEL_UI_IDS_EXTERN int _DAT_00777d28;
@@ -137,7 +137,7 @@ GLOBAL_DUEL_UI_IDS_EXTERN int DAT_007ab01c;
 GLOBAL_DUEL_UI_IDS_EXTERN int DAT_008b40cc;
 // GLOBAL: MAGIC 0x008d0340
 // GLOBAL: SHANDALAR 0x008e4490
-GLOBAL_DUEL_UI_IDS_EXTERN int control_aura_special_internal_card_id;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_control_aura_special_internal_card_id;
 // GLOBAL: MAGIC 0x0093933c
 // GLOBAL: SHANDALAR 0x0094d468
 GLOBAL_DUEL_UI_IDS_EXTERN int unk_0093933c;
@@ -149,7 +149,7 @@ GLOBAL_DUEL_UI_IDS_EXTERN int unk_008a8df0;
 GLOBAL_DUEL_UI_IDS_EXTERN int unk_008b3bd4;
 // GLOBAL: MAGIC 0x008cefb8
 // GLOBAL: SHANDALAR 0x008e3104
-GLOBAL_DUEL_UI_IDS_EXTERN int control_aura_legacy_internal_card_id;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_control_aura_legacy_internal_card_id;
 // GLOBAL: MAGIC 0x0091c48c
 // GLOBAL: SHANDALAR 0x009305cc
 GLOBAL_DUEL_UI_IDS_EXTERN int DAT_0091c48c;
@@ -185,9 +185,9 @@ GLOBAL_DUEL_UI_IDS_EXTERN int unk_00712938;
 #ifdef GLOBAL_DUEL_UI_IDS_IMPL
 // GLOBAL: MAGIC 0x0057d9e4
 // GLOBAL: SHANDALAR 0x005863ac
-GLOBAL_DUEL_UI_IDS_EXTERN int game_time_scale = 5;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_game_time_scale = 5;
 #else
-GLOBAL_DUEL_UI_IDS_EXTERN int game_time_scale;
+GLOBAL_DUEL_UI_IDS_EXTERN int g_game_time_scale;
 #endif
 
 void InitializeDuelUiGlobalIds(void);

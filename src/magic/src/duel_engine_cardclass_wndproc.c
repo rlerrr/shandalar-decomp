@@ -1785,8 +1785,7 @@ void draw_manastripes(HDC dc, RECT *rect, int player, int card)
 {
   struct
   {
-    int attached_player;
-    int attached_card;
+    int attached_player_and_card[2];
     int active_card_counts[2];
     int scan_card;
     int scan_player;
@@ -1818,10 +1817,10 @@ void draw_manastripes(HDC dc, RECT *rect, int player, int card)
     {
       for (s.scan_card = 0; s.scan_card < s.active_card_counts[s.scan_player]; s.scan_card++)
       {
-        get_displayed_card_attachment(&s.attached_player, s.scan_player, s.scan_card);
+        get_displayed_card_attachment(s.attached_player_and_card, s.scan_player, s.scan_card);
 
         if (get_displayed_card_id(s.scan_player, s.scan_card) == CARD_ID_WILD_GROWTH &&
-            s.attached_player == player && s.attached_card == card)
+            s.attached_player_and_card[0] == player && s.attached_player_and_card[1] == card)
         {
           s.mana_color_flags |= 8;
         }
@@ -2164,7 +2163,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
 
   if (dc != (HDC)0 && rect != NULL)
   {
-    if (card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == (unsigned int)draw_card_placeholder_internal_card_id)
+    if (card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == (unsigned int)g_draw_card_placeholder_internal_card_id)
     {
       DrawCardBack(dc, rect);
       DrawSmallCardTitle(dc, rect, gs_cardtitle_activation_007aaeb0, 0, 1);
@@ -2756,14 +2755,14 @@ int register_MAGICGAME_CardClass(LPCSTR class_name)
   AppendMenuA(g_cardclass_alternate_card_submenu, 0, 0x72, "");
 
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_SMALLCARD");
-  strcpy(g_cardclass_menu_alternate_card_text, text_lines[0]);
-  strcpy(g_cardclass_menu_view_stats_text, text_lines[1]);
-  strcpy(g_cardclass_menu_view_card_text, text_lines[2]);
-  strcpy(g_cardclass_menu_protect_text, text_lines[3]);
-  strcpy(g_cardclass_menu_id_tags_text, text_lines[4]);
-  strcpy(g_cardclass_menu_autotarget_text, text_lines[5]);
-  strcpy(g_cardclass_menu_show_damage_text, text_lines[6]);
-  strcpy(g_cardclass_menu_help_text, text_lines[7]);
+  strcpy(g_cardclass_menu_alternate_card_text, g_text_lines[0]);
+  strcpy(g_cardclass_menu_view_stats_text, g_text_lines[1]);
+  strcpy(g_cardclass_menu_view_card_text, g_text_lines[2]);
+  strcpy(g_cardclass_menu_protect_text, g_text_lines[3]);
+  strcpy(g_cardclass_menu_id_tags_text, g_text_lines[4]);
+  strcpy(g_cardclass_menu_autotarget_text, g_text_lines[5]);
+  strcpy(g_cardclass_menu_show_damage_text, g_text_lines[6]);
+  strcpy(g_cardclass_menu_help_text, g_text_lines[7]);
 
   g_cardclass_ability_masks[0] = 0x20;
   g_cardclass_ability_masks[1] = 0x400;
@@ -2784,63 +2783,63 @@ int register_MAGICGAME_CardClass(LPCSTR class_name)
   g_cardclass_ability_masks[16] = 0x10000;
 
   load_text_with_tab_escapes(global_ui_strings_filename, "PROMPT_BANDWITHWHOM");
-  strcpy(g_cardclass_prompt_band_whom_text, text_lines[0]);
-  strcpy(g_cardclass_prompt_band_cannot_text, text_lines[1]);
-  strcpy(g_cardclass_prompt_band_error_text, text_lines[2]);
+  strcpy(g_cardclass_prompt_band_whom_text, g_text_lines[0]);
+  strcpy(g_cardclass_prompt_band_cannot_text, g_text_lines[1]);
+  strcpy(g_cardclass_prompt_band_error_text, g_text_lines[2]);
 
   load_text_with_tab_escapes(global_ui_strings_filename, "PROMPT_DEFENDWHOM");
-  strcpy(g_cardclass_prompt_defend_attacker_text, text_lines[0]);
-  strcpy(g_cardclass_prompt_defend_error_text, text_lines[1]);
-  strcpy(g_cardclass_prompt_defend_prompt_text, text_lines[2]);
+  strcpy(g_cardclass_prompt_defend_attacker_text, g_text_lines[0]);
+  strcpy(g_cardclass_prompt_defend_error_text, g_text_lines[1]);
+  strcpy(g_cardclass_prompt_defend_prompt_text, g_text_lines[2]);
 
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ArmageddonClock");
-  strcpy(g_cardclass_cuecard_counter_armageddon_clock_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_armageddon_clock_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ManaBattery");
-  strcpy(g_cardclass_cuecard_counter_mana_battery_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_mana_battery_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ClockworkAvian");
-  strcpy(g_cardclass_cuecard_counter_clockwork_avian_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_clockwork_avian_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ClockworkBeast");
-  strcpy(g_cardclass_cuecard_counter_clockwork_beast_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_clockwork_beast_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_LuckyCharms");
-  strcpy(g_cardclass_cuecard_counter_lucky_charms_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_lucky_charms_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Fungusaur");
-  strcpy(g_cardclass_cuecard_counter_fungusaur_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_fungusaur_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_WhirlingDervish");
-  strcpy(g_cardclass_cuecard_counter_whirling_dervish_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_whirling_dervish_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_LivingArtifact");
-  strcpy(g_cardclass_cuecard_counter_living_artifact_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_living_artifact_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_OsaiVultures");
-  strcpy(g_cardclass_cuecard_counter_osai_vultures_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_osai_vultures_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_ScavengingGhouls");
-  strcpy(g_cardclass_cuecard_counter_scavenging_ghouls_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_scavenging_ghouls_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_SengirVampire");
-  strcpy(g_cardclass_cuecard_counter_sengir_vampire_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_sengir_vampire_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_NecropolisOfAzar");
-  strcpy(g_cardclass_cuecard_counter_necropolis_of_azar_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_necropolis_of_azar_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Triskelion");
-  strcpy(g_cardclass_cuecard_counter_triskelion_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_triskelion_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Tetravus");
-  strcpy(g_cardclass_cuecard_counter_tetravus_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_tetravus_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_TimeVault");
-  strcpy(g_cardclass_cuecard_counter_time_vault_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_time_vault_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_Cyclone");
-  strcpy(g_cardclass_cuecard_counter_cyclone_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_cyclone_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_CitanulDruid");
-  strcpy(g_cardclass_cuecard_counter_citanul_druid_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_citanul_druid_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_RockHydra");
-  strcpy(g_cardclass_cuecard_counter_rock_hydra_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_rock_hydra_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_KhabalGhoul");
-  strcpy(g_cardclass_cuecard_counter_khabal_ghoul_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_khabal_ghoul_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_OrcishCatapult");
-  strcpy(g_cardclass_cuecard_counter_orcish_catapult_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_orcish_catapult_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_UnstableMutation");
-  strcpy(g_cardclass_cuecard_counter_unstable_mutation_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_unstable_mutation_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_SpiritShackle");
-  strcpy(g_cardclass_cuecard_counter_spirit_shackle_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_spirit_shackle_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_DwarvenWeaponsmith");
-  strcpy(g_cardclass_cuecard_counter_dwarven_weaponsmith_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_dwarven_weaponsmith_text, g_text_lines[0]);
   load_text_with_tab_escapes(global_ui_strings_filename, "CUECARD_COUNTERS_AshnodsTransmorgrant");
-  strcpy(g_cardclass_cuecard_counter_ashnods_transmogrant_text, text_lines[0]);
+  strcpy(g_cardclass_cuecard_counter_ashnods_transmogrant_text, g_text_lines[0]);
 
   return s.registered;
 }
@@ -3474,7 +3473,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x69:
       s.command_linked_unique_card = get_displayed_card_blocking(s.player, s.card);
       for (s.command_linked_scan_card = 0;
-           s.command_linked_scan_card < active_cards_count[s.player];
+           s.command_linked_scan_card < g_active_cards_count[s.player];
            s.command_linked_scan_card++)
       {
         if (get_displayed_card_internal_id(s.player, s.command_linked_scan_card) != -1 &&
@@ -3608,15 +3607,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                      (int)(char)global_cards_data[s.command_unused_3a0].cc[0]);
         produce_mana(s.player, 0,
                      abs((int)(char)global_cards_data[s.command_unused_3a0].cc[1]));
-        if ((g_duel_network_flags & 2) != 0 && s.player == active_player)
+        if ((g_duel_network_flags & 2) != 0 && s.player == g_active_player)
         {
           for (s.scratch = 0; s.scratch < 8; s.scratch++)
           {
             g_xpool_network_packet.raw_mana_available[s.scratch] =
-                raw_mana_available[active_player][s.scratch];
+                g_raw_mana_available[g_active_player][s.scratch];
           }
           g_xpool_network_packet.packet_type = 0x11;
-          TENTATIVE_send_network_result(active_player, 0x11);
+          TENTATIVE_send_network_result(g_active_player, 0x11);
         }
         copy_mana_pool_to_display();
         notify_duel_action(0, 0xff);
@@ -3634,12 +3633,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x264:
       if (g_duel_cheats_state != 0)
       {
-        s.command_saved_phase_flags = g_duel_phase_stop_settings[current_player].phase_flags[current_phase];
-        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
-            (unsigned char)((int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
+        s.command_saved_phase_flags = g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase];
+        g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase] =
+            (unsigned char)((int)(char)g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase] & ~PHASE_STOP_ENABLED);
         global_card_instances[s.player][s.card].token_status |= 8;
         kill_card(s.player, s.card, KILL_DESTROY);
-        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
+        g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase] =
             s.command_saved_phase_flags;
         notify_duel_action(0, 0xff);
       }

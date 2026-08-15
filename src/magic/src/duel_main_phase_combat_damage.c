@@ -102,7 +102,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
     s.found_trampler = 1;
   }
 
-  for (s.index = 0; s.index < active_cards_count[s.damage_player] && s.found_trampler == 0; s.index = s.index + 1)
+  for (s.index = 0; s.index < g_active_cards_count[s.damage_player] && s.found_trampler == 0; s.index = s.index + 1)
   {
     if (PLAYER_CARD_INSTANCE(s.damage_player, s.index).internal_card_id == unk_008a8df0 &&
         PLAYER_CARD_INSTANCE(s.damage_player, s.index).damage_target_player == player &&
@@ -116,7 +116,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
   {
     if (s.code_pointer != card_two_headed_giant_of_foriys_legacy)
     {
-      for (s.index = 0; s.index < active_cards_count[s.damage_player]; s.index = s.index + 1)
+      for (s.index = 0; s.index < g_active_cards_count[s.damage_player]; s.index = s.index + 1)
       {
         s.instance = &PLAYER_CARD_INSTANCE(s.damage_player, s.index);
         if (global_cards_data[s.instance->internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
@@ -130,7 +130,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
     }
     else
     {
-      for (s.index = 0; s.index < active_cards_count[s.damage_player]; s.index = s.index + 1)
+      for (s.index = 0; s.index < g_active_cards_count[s.damage_player]; s.index = s.index + 1)
       {
         s.instance = &PLAYER_CARD_INSTANCE(s.damage_player, s.index);
         if (s.index != card &&
@@ -212,7 +212,7 @@ void assign_attacker_combat_damage(int player, int attacker_index, int has_tramp
   if (combat_damage_attacker_count <= attacker_index)
   {
     s.score = 0;
-    s.life_after_trample = life[s.defending_player];
+    s.life_after_trample = g_life[s.defending_player];
     for (s.blocker_index = 0; s.blocker_index < ai_blocker_count; s.blocker_index = s.blocker_index + 1)
     {
       s.shared_value.terminal_total_assigned = s.trample_assigned = 0;
@@ -244,7 +244,7 @@ void assign_attacker_combat_damage(int player, int attacker_index, int has_tramp
     }
     else
     {
-      s.score += ((life[s.defending_player] - s.life_after_trample) * 0x30) / s.life_after_trample;
+      s.score += ((g_life[s.defending_player] - s.life_after_trample) * 0x30) / s.life_after_trample;
     }
 
     if (has_trample == 0)
@@ -549,7 +549,7 @@ int has_damage_card_targeting(int player, int card)
 
   for (s.loop_player = 0; s.loop_player < 2; s.loop_player = s.loop_player + 1)
   {
-    for (s.loop_card = 0; s.loop_card < active_cards_count[s.loop_player]; s.loop_card = s.loop_card + 1)
+    for (s.loop_card = 0; s.loop_card < g_active_cards_count[s.loop_player]; s.loop_card = s.loop_card + 1)
     {
       if (global_card_instances[s.loop_player][s.loop_card].damage_target_player == player &&
           global_card_instances[s.loop_player][s.loop_card].damage_target_card == card &&
@@ -604,15 +604,15 @@ void resolve_combat_damage(int player)
   {
     if (s.damage_step != 0)
     {
-      current_phase = PHASE_NORMAL_COMBAT_DAMAGE;
+      g_current_phase = PHASE_NORMAL_COMBAT_DAMAGE;
     }
     else
     {
-      current_phase = PHASE_FIRST_STRIKE_DAMAGE;
+      g_current_phase = PHASE_FIRST_STRIKE_DAMAGE;
     }
-    update_phase_display(player, current_phase);
+    update_phase_display(player, g_current_phase);
 
-    for (s.card = 0; s.card < active_cards_count[player]; s.card = s.card + 1)
+    for (s.card = 0; s.card < g_active_cards_count[player]; s.card = s.card + 1)
     {
       if (PLAYER_CARD_INSTANCE(player, s.card).blocking != -1 &&
           PLAYER_CARD_INSTANCE(player, s.card).blocking != s.card)
@@ -629,7 +629,7 @@ void resolve_combat_damage(int player)
       combat_damage_attacker_count = s.total_attacker_damage = s.firststrike_attacker_damage = 0;
       s.multiple_attackers = 0;
 
-      for (s.scan_card = 0; s.scan_card < active_cards_count[player]; s.scan_card = s.scan_card + 1)
+      for (s.scan_card = 0; s.scan_card < g_active_cards_count[player]; s.scan_card = s.scan_card + 1)
       {
         if (((s.scan_card == s.card ||
               PLAYER_CARD_INSTANCE(player, s.scan_card).blocking == s.card) &&
@@ -674,7 +674,7 @@ void resolve_combat_damage(int player)
       ai_blocker_count = s.total_blocker_damage = 0;
       s.blocker_has_trample = 0;
 
-      for (s.scan_card = 0; s.scan_card < active_cards_count[s.defending_player]; s.scan_card = s.scan_card + 1)
+      for (s.scan_card = 0; s.scan_card < g_active_cards_count[s.defending_player]; s.scan_card = s.scan_card + 1)
       {
         if (is_in_play(s.defending_player, s.scan_card) != 0 &&
             PLAYER_CARD_INSTANCE(s.defending_player, s.scan_card).blocking == s.card)
@@ -728,18 +728,18 @@ void resolve_combat_damage(int player)
 
       if (ai_blocker_count > 1)
       {
-        if ((s.blocker_has_trample == 0 && player == other_player) ||
-            (s.blocker_has_trample != 0 && player == active_player))
+        if ((s.blocker_has_trample == 0 && player == g_other_player) ||
+            (s.blocker_has_trample != 0 && player == g_active_player))
         {
-          s.assigning_player = other_player;
+          s.assigning_player = g_other_player;
         }
         else
         {
-          s.assigning_player = active_player;
+          s.assigning_player = g_active_player;
         }
 
         if ((g_duel_network_flags & 2) == 0 &&
-            (g_duel_ai_mode_state == 1 || s.assigning_player == other_player))
+            (g_duel_ai_mode_state == 1 || s.assigning_player == g_other_player))
         {
           s.attacker_score_bounds[0] = 0x7fffffff;
           s.attacker_score_bounds[1] = 0xffff8001;
@@ -770,24 +770,24 @@ void resolve_combat_damage(int player)
               {
                 if (combat_damage_attacker_abilities[s.damage_index] & 0x80)
                 {
-                  sprintf(g_ui_message_buffer, text_lines[1],
+                  sprintf(g_ui_message_buffer, g_text_lines[1],
                           get_displayed_card_name(player, combat_damage_attacker_cards[s.damage_index]),
                           s.attacker_damage_remaining);
                 }
                 else
                 {
-                  sprintf(g_ui_message_buffer, text_lines[0],
+                  sprintf(g_ui_message_buffer, g_text_lines[0],
                           get_displayed_card_name(player, combat_damage_attacker_cards[s.damage_index]),
                           s.attacker_damage_remaining);
                 }
               }
               else if (combat_damage_attacker_abilities[s.damage_index] & 0x80)
               {
-                sprintf(g_ui_message_buffer, text_lines[3], s.attacker_damage_remaining);
+                sprintf(g_ui_message_buffer, g_text_lines[3], s.attacker_damage_remaining);
               }
               else
               {
-                sprintf(g_ui_message_buffer, text_lines[2], s.attacker_damage_remaining);
+                sprintf(g_ui_message_buffer, g_text_lines[2], s.attacker_damage_remaining);
               }
 
               highlight_combat_damage_attacker(player, combat_damage_attacker_cards[s.damage_index], 1);
@@ -805,7 +805,7 @@ void resolve_combat_damage(int player)
                 }
                 if (s.target_is_valid == 0 && g_duel_ai_mode_state != 1)
                 {
-                  set_duel_prompt_text(text_lines[4]);
+                  set_duel_prompt_text(g_text_lines[4]);
                   Sleep(1500);
                   set_duel_prompt_text("");
                 }
@@ -814,7 +814,7 @@ void resolve_combat_damage(int player)
                   s.target_is_valid = 0;
                   if (g_duel_ai_mode_state != 1)
                   {
-                    set_duel_prompt_text(text_lines[5]);
+                    set_duel_prompt_text(g_text_lines[5]);
                     Sleep(1500);
                     set_duel_prompt_text("");
                   }
@@ -908,8 +908,8 @@ void resolve_combat_damage(int player)
         }
       }
 
-      if ((battlefield_extra_ability_flags & 4) != 0 &&
-          s.defending_player == other_player &&
+      if ((g_battlefield_extra_ability_flags & 4) != 0 &&
+          s.defending_player == g_other_player &&
           (g_duel_network_flags & 2) == 0)
       {
         s.trample_damage = 0;
@@ -969,21 +969,21 @@ void resolve_combat_damage(int player)
       }
 
       if (combat_damage_attacker_count > 1 ||
-          ((battlefield_extra_ability_flags & 4) &&
-           (s.defending_player == active_player || (g_duel_network_flags & 2))))
+          ((g_battlefield_extra_ability_flags & 4) &&
+           (s.defending_player == g_active_player || (g_duel_network_flags & 2))))
       {
-        if ((s.multiple_attackers == 0 && player == active_player) ||
-            (s.multiple_attackers != 0 && player == other_player))
+        if ((s.multiple_attackers == 0 && player == g_active_player) ||
+            (s.multiple_attackers != 0 && player == g_other_player))
         {
-          s.assigning_player = other_player;
+          s.assigning_player = g_other_player;
         }
         else
         {
-          s.assigning_player = active_player;
+          s.assigning_player = g_active_player;
         }
 
         if ((g_duel_network_flags & 2) == 0 &&
-            (g_duel_ai_mode_state == 1 || s.assigning_player == other_player))
+            (g_duel_ai_mode_state == 1 || s.assigning_player == g_other_player))
         {
           s.blocker_score[0] = 0x7fffffff;
           s.blocker_score[1] = -1;
@@ -1011,12 +1011,12 @@ void resolve_combat_damage(int player)
               load_text(global_ui_strings_filename, "PROMPT_RESOLVECOMBAT");
               if (g_duel_interface_options.layout != 2)
               {
-                sprintf(g_ui_message_buffer, text_lines[6],
+                sprintf(g_ui_message_buffer, g_text_lines[6],
                         get_displayed_card_name(s.defending_player, ai_blocker_cards[s.damage_index]), s.blocker_damage_remaining);
               }
               else
               {
-                sprintf(g_ui_message_buffer, text_lines[7], s.blocker_damage_remaining);
+                sprintf(g_ui_message_buffer, g_text_lines[7], s.blocker_damage_remaining);
               }
 
               highlight_combat_damage_blocker(s.defending_player, ai_blocker_cards[s.damage_index], 1);
@@ -1058,7 +1058,7 @@ void resolve_combat_damage(int player)
                   }
                   if (s.target_is_valid == 0 && g_duel_ai_mode_state != 1)
                   {
-                    set_duel_prompt_text(text_lines[8]);
+                    set_duel_prompt_text(g_text_lines[8]);
                     Sleep(1500);
                     set_duel_prompt_text("");
                   }
@@ -1067,7 +1067,7 @@ void resolve_combat_damage(int player)
                     s.target_is_valid = 0;
                     if (g_duel_ai_mode_state != 1)
                     {
-                      set_duel_prompt_text(text_lines[9]);
+                      set_duel_prompt_text(g_text_lines[9]);
                       Sleep(1500);
                       set_duel_prompt_text("");
                     }
@@ -1155,7 +1155,7 @@ void resolve_combat_damage(int player)
     }
 
     ai_blocker_count = 0;
-    for (s.scan_card = 0; s.scan_card < active_cards_count[s.defending_player]; s.scan_card = s.scan_card + 1)
+    for (s.scan_card = 0; s.scan_card < g_active_cards_count[s.defending_player]; s.scan_card = s.scan_card + 1)
     {
       if (PLAYER_CARD_INSTANCE(s.defending_player, s.scan_card).internal_card_id != -1 &&
           PLAYER_CARD_INSTANCE(s.defending_player, s.scan_card).blocking != -1)
@@ -1178,18 +1178,18 @@ void resolve_combat_damage(int player)
 
     if (g_duel_ai_mode_state != 1)
     {
-      phase_was_skipped = 0;
+      g_phase_was_skipped = 0;
     }
-    phase_response_window_open = 0;
+    g_phase_response_window_open = 0;
     if (g_duel_ai_mode_state != 1)
     {
-      phase_stop_suppressed = 0;
+      g_phase_stop_suppressed = 0;
     }
 
     process_damage_prevention(player);
-    if (phase_was_skipped == 0 && (s.stop_prompt_result = prompt_stop_phase_anyway(current_phase)) != 0 && g_duel_ai_mode_state != 1)
+    if (g_phase_was_skipped == 0 && (s.stop_prompt_result = prompt_stop_phase_anyway(g_current_phase)) != 0 && g_duel_ai_mode_state != 1)
     {
-      phase_was_skipped = 1;
+      g_phase_was_skipped = 1;
     }
 
     for (s.loop_index = 0; s.loop_index < ai_blocker_count; s.loop_index = s.loop_index + 1)
@@ -1197,9 +1197,9 @@ void resolve_combat_damage(int player)
       s.scan_card = ai_blocker_cards[s.loop_index];
       s.blocker_damage_remaining = combat_damage_blocker_toughness[s.loop_index];
 
-      for (s.card = 0; s.card < active_cards_count[player]; s.card = s.card + 1)
+      for (s.card = 0; s.card < g_active_cards_count[player]; s.card = s.card + 1)
       {
-        if (PLAYER_CARD_INSTANCE(player, s.card).original_internal_card_id == damage_card_internal_card_id &&
+        if (PLAYER_CARD_INSTANCE(player, s.card).original_internal_card_id == g_damage_card_internal_card_id &&
             PLAYER_CARD_INSTANCE(player, s.card).damage_target_player == s.defending_player &&
             PLAYER_CARD_INSTANCE(player, s.card).damage_target_card == s.scan_card &&
             ((s.damage_step == 0 && (PLAYER_CARD_INSTANCE(player, s.card).token_status & COMBAT_DAMAGE_FLAG_FIRST_STRIKE) != 0) ||
@@ -1211,9 +1211,9 @@ void resolve_combat_damage(int player)
         }
       }
 
-      for (s.card = 0; s.card < active_cards_count[player]; s.card = s.card + 1)
+      for (s.card = 0; s.card < g_active_cards_count[player]; s.card = s.card + 1)
       {
-        if (PLAYER_CARD_INSTANCE(player, s.card).original_internal_card_id == damage_card_internal_card_id &&
+        if (PLAYER_CARD_INSTANCE(player, s.card).original_internal_card_id == g_damage_card_internal_card_id &&
             PLAYER_CARD_INSTANCE(player, s.card).damage_target_player == s.defending_player &&
             PLAYER_CARD_INSTANCE(player, s.card).damage_target_card == s.scan_card &&
             ((s.damage_step == 0 && (PLAYER_CARD_INSTANCE(player, s.card).token_status & COMBAT_DAMAGE_FLAG_FIRST_STRIKE) != 0) ||
@@ -1240,22 +1240,22 @@ void resolve_combat_damage(int player)
 
     regenerate_or_graveyard_triggers();
     process_damage_prevention(player);
-    if ((battlefield_extra_ability_flags & 1) != 0)
+    if ((g_battlefield_extra_ability_flags & 1) != 0)
     {
-      battlefield_extra_ability_flags &= ~1;
+      g_battlefield_extra_ability_flags &= ~1;
       pending_killed_card_handler = process_killed_card;
       regenerate_or_graveyard_triggers();
       process_damage_prevention(player);
     }
 
-    phase_response_window_open = 0;
+    g_phase_response_window_open = 0;
     if (g_duel_ai_mode_state != 1)
     {
-      phase_stop_suppressed = 0;
+      g_phase_stop_suppressed = 0;
     }
-    if (phase_was_skipped == 0)
+    if (g_phase_was_skipped == 0)
     {
-      prompt_stop_phase_anyway(current_phase);
+      prompt_stop_phase_anyway(g_current_phase);
     }
   }
 }

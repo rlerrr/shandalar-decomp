@@ -100,15 +100,15 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
   } s;
   int result;
 
-  if ((player == other_player) &&
+  if ((player == g_other_player) &&
       ((g_duel_network_flags & 2) != 0) &&
-      (duel_active != 0))
+      (g_duel_active != 0))
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
     return g_network_result_value;
   }
 
-  if (((player == other_player) &&
+  if (((player == g_other_player) &&
        ((g_duel_network_flags & 2) == 0)) ||
       (g_duel_ai_mode_state == 1))
   {
@@ -122,8 +122,8 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
       }
     }
 
-    ai_recorded_choice = internal_rand(s.visible_count);
-    if (player != active_player)
+    g_ai_recorded_choice = internal_rand(s.visible_count);
+    if (player != g_active_player)
     {
       if (g_duel_ai_mode_state == 1)
       {
@@ -135,10 +135,10 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
       }
     }
 
-    return s.card_indices[ai_recorded_choice];
+    return s.card_indices[g_ai_recorded_choice];
   }
 
-  if (duel_active == 0)
+  if (g_duel_active == 0)
   {
     ReadPalette("todpal.tr", (char *)0);
     ClearGraphicsPageWithPaletteColor(0, 0);
@@ -328,7 +328,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
     result = (int)ShowAdventureListCardList(card_ids, card_count, title, require_card_click, (char *)out_selection);
   }
 
-  if ((player == active_player) &&
+  if ((player == g_active_player) &&
       ((g_duel_network_flags & 2) != 0))
   {
     g_network_result_value = result;

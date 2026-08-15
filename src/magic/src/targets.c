@@ -225,7 +225,7 @@ int run_target_selection_modal(int who_chooses,
                                int owner,
                                int zone_flags,
                                int *out_selection_code,
-                               int *out_target_player,
+                               target_t *out_target,
                                int allow_ai_player,
                                int allow_human_player)
 {
@@ -290,7 +290,7 @@ int run_target_selection_modal(int who_chooses,
   strcpy(s.request.prompt, s.prompt_buffer);
   s.request.allow_cancel = allow_cancel;
 
-  if (active_player == who_chooses || (g_duel_network_flags & 2) == 0)
+  if (g_active_player == who_chooses || (g_duel_network_flags & 2) == 0)
   {
     if (DAT_0093d840 != 0)
     {
@@ -298,15 +298,15 @@ int run_target_selection_modal(int who_chooses,
       DAT_0093d840 = 0;
     }
 
-    if (DAT_007aaeec != 0 && current_phase == 10 && response_action_taken == 0)
+    if (DAT_007aaeec != 0 && g_current_phase == 10 && g_response_action_taken == 0)
     {
       s.result = 0;
       s.action_result.selection_code = -2;
       s.action_result.target_card = -2;
       s.action_result.target_player = -1;
       s.thread_exit_code = 0;
-      stop_phase_player = -1;
-      stop_phase = -1;
+      g_stop_phase_player = -1;
+      g_stop_phase = -1;
       unk_00715fb0 = 0;
       DAT_0072c8e0 = 0;
       DAT_00715fa4 = 0;
@@ -322,15 +322,15 @@ int run_target_selection_modal(int who_chooses,
       g_target_selection_network_packet.result = s.result;
       g_target_selection_network_packet.selection_code = s.action_result.selection_code;
       g_target_selection_network_packet.thread_exit_code = 1 - s.thread_exit_code;
-      if (stop_phase_player == -1)
+      if (g_stop_phase_player == -1)
       {
-        g_target_selection_network_packet.previous_player = stop_phase_player;
+        g_target_selection_network_packet.previous_player = g_stop_phase_player;
       }
       else
       {
-        g_target_selection_network_packet.previous_player = 1 - stop_phase_player;
+        g_target_selection_network_packet.previous_player = 1 - g_stop_phase_player;
       }
-      g_target_selection_network_packet.previous_phase = stop_phase;
+      g_target_selection_network_packet.previous_phase = g_stop_phase;
       g_target_selection_network_packet.target_card = s.action_result.target_card;
       if (s.result != 0)
       {
@@ -355,8 +355,8 @@ int run_target_selection_modal(int who_chooses,
     TENTATIVE_wait_for_network_result(who_chooses, 0xc);
     s.result = g_target_selection_network_packet.result;
     s.action_result.selection_code = g_target_selection_network_packet.selection_code;
-    previous_stop_phase_player = g_target_selection_network_packet.previous_player;
-    previous_stop_phase = g_target_selection_network_packet.previous_phase;
+    g_previous_stop_phase_player = g_target_selection_network_packet.previous_player;
+    g_previous_stop_phase = g_target_selection_network_packet.previous_phase;
     s.action_result.target_card = g_target_selection_network_packet.target_card;
     s.action_result.target_player = g_target_selection_network_packet.target_player;
     unk_00715fb0 = g_target_selection_network_packet.aux_player;
@@ -368,8 +368,8 @@ int run_target_selection_modal(int who_chooses,
   }
 
   *out_selection_code = s.action_result.selection_code;
-  *out_target_player = s.action_result.target_player;
-  out_target_player[1] = s.action_result.target_card;
+  out_target->player = s.action_result.target_player;
+  out_target->card = s.action_result.target_card;
   set_duel_tooltip_text(NULL);
 
   if (s.action_result.selection_code == -5)
@@ -385,12 +385,12 @@ int run_target_selection_modal(int who_chooses,
     EnterCriticalSection(&g_duel_render_lock);
     if (g_target_selection_status_code == -2)
     {
-      if (stop_phase == -1)
+      if (g_stop_phase == -1)
       {
         if ((g_duel_network_flags & 2) != 0)
         {
-          DAT_007aa928 = stop_phase_player;
-          DAT_007abc74 = stop_phase;
+          DAT_007aa928 = g_stop_phase_player;
+          DAT_007abc74 = g_stop_phase;
         }
         else
         {
@@ -399,14 +399,14 @@ int run_target_selection_modal(int who_chooses,
       }
       else
       {
-        DAT_007aa928 = stop_phase_player;
-        DAT_007abc74 = stop_phase;
+        DAT_007aa928 = g_stop_phase_player;
+        DAT_007abc74 = g_stop_phase;
       }
     }
     else if ((g_duel_network_flags & 2) != 0)
     {
-      DAT_007aa928 = stop_phase_player;
-      DAT_007abc74 = stop_phase;
+      DAT_007aa928 = g_stop_phase_player;
+      DAT_007abc74 = g_stop_phase;
     }
     else
     {
@@ -453,8 +453,7 @@ int C_real_select_target(int who_chooses,
   {
     char *selection_prompt;
     int selection_code;
-    int selected_player;
-    int selected_card;
+    target_t selected_target;
     int show_validation_message;
     char validation_message[200];
     char target_error[200];
@@ -478,7 +477,7 @@ int C_real_select_target(int who_chooses,
 
   if (((who_chooses == 1 && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1) || g_duel_network_state != 0)
   {
-    if ((ai_search_flags & 1) != 0 && (allowed_controller & 2) != 0)
+    if ((g_ai_search_flags & 1) != 0 && (allowed_controller & 2) != 0)
     {
       preferred_controller = allowed_controller;
     }
@@ -530,7 +529,7 @@ int C_real_select_target(int who_chooses,
       s.allow_ai_player = 0;
     }
 
-    if (spell_fizzled == 1)
+    if (g_spell_fizzled == 1)
     {
       return 0;
     }
@@ -538,7 +537,7 @@ int C_real_select_target(int who_chooses,
     s.valid_count = 0;
     for (s.current_player = 0; s.current_player < 2; ++s.current_player)
     {
-      for (s.current_card = 0; s.current_card < active_cards_count[s.current_player]; ++s.current_card)
+      for (s.current_card = 0; s.current_card < g_active_cards_count[s.current_player]; ++s.current_card)
       {
         if (PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id != -1)
         {
@@ -591,26 +590,26 @@ int C_real_select_target(int who_chooses,
 
     if (g_duel_ai_mode_state == 1)
     {
-      ai_recorded_choice = internal_rand(s.valid_count);
-      ai_recorded_action = (((s.valid_players[ai_recorded_choice] == 0) ? 0 : 0x100)
-                      | (s.valid_cards[ai_recorded_choice] & 0xff))
+      g_ai_recorded_choice = internal_rand(s.valid_count);
+      g_ai_recorded_action = (((s.valid_players[g_ai_recorded_choice] == 0) ? 0 : 0x100)
+                      | (s.valid_cards[g_ai_recorded_choice] & 0xff))
                      | 0x4000;
-      ai_recorded_action_type = 3;
+      g_ai_recorded_action_type = 3;
       record_ai_action_selection();
     }
     else
     {
-      ai_recorded_action_type = 3;
+      g_ai_recorded_action_type = 3;
       replay_ai_action_selection();
-      if (ai_recorded_choice == 99 || s.valid_count <= ai_recorded_choice)
+      if (g_ai_recorded_choice == 99 || s.valid_count <= g_ai_recorded_choice)
       {
-        ai_recorded_choice = internal_rand(s.valid_count);
+        g_ai_recorded_choice = internal_rand(s.valid_count);
       }
     }
 
-    unk_00742fcc = s.valid_players[ai_recorded_choice];
-    ret_tgt->player = s.valid_players[ai_recorded_choice];
-    ret_tgt->card = s.valid_cards[ai_recorded_choice];
+    unk_00742fcc = s.valid_players[g_ai_recorded_choice];
+    ret_tgt->player = s.valid_players[g_ai_recorded_choice];
+    ret_tgt->card = s.valid_cards[g_ai_recorded_choice];
     s.result = 1;
     return s.result;
   }
@@ -665,12 +664,12 @@ int C_real_select_target(int who_chooses,
                                             -1,
                                             -1,
                                             &s.selection_code,
-                                            &s.selected_player,
+                                            &s.selected_target,
                                             s.allow_ai_player,
                                             s.allow_human_player);
       if (s.result != 0)
       {
-        s.selected_internal_card_id = PLAYER_CARD_INSTANCE(s.selected_player, s.selected_card).internal_card_id;
+        s.selected_internal_card_id = PLAYER_CARD_INSTANCE(s.selected_target.player, s.selected_target.card).internal_card_id;
         if (s.selected_internal_card_id >= 0
             && (special & TARGET_SPECIAL_ALLOW_MULTIBLOCKER) == 0
             && global_cards_data[s.selected_internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy)
@@ -686,8 +685,8 @@ int C_real_select_target(int who_chooses,
         }
         else
         {
-          if (C_real_validate_target(s.selected_player,
-                                     s.selected_card,
+          if (C_real_validate_target(s.selected_target.player,
+                                     s.selected_target.card,
                                      s.target_error,
                                      who_chooses,
                                      allowed_controller,
@@ -708,8 +707,8 @@ int C_real_select_target(int who_chooses,
                                      illegal_state) != 0)
           {
             s.show_validation_message = 0;
-            ret_tgt->player = s.selected_player;
-            ret_tgt->card = s.selected_card;
+            ret_tgt->player = s.selected_target.player;
+            ret_tgt->card = s.selected_target.card;
             s.retry_selection = 0;
           }
           else
@@ -740,10 +739,10 @@ int C_real_select_target(int who_chooses,
         }
         else if (s.selection_code == -2)
         {
-          if (stop_phase_player == -1 && stop_phase == -1)
+          if (g_stop_phase_player == -1 && g_stop_phase == -1)
           {
-            ret_tgt->player = s.selected_player;
-            ret_tgt->card = s.selected_card;
+            ret_tgt->player = s.selected_target.player;
+            ret_tgt->card = s.selected_target.card;
             s.retry_selection = 0;
           }
           else if ((zone & TARGET_ZONE_0x2000) != 0)
@@ -762,10 +761,10 @@ int C_real_select_target(int who_chooses,
     }
     if (s.result != 0)
     {
-      ai_action_replay_available = 0;
+      g_ai_action_replay_available = 0;
     }
     set_duel_prompt_text("");
-    strcpy(text_lines[0], "");
+    strcpy(g_text_lines[0], "");
   }
 
   return s.result;

@@ -388,10 +388,10 @@ int register_MAGICGAME_PhaseDisplayClass(LPCSTR class_name)
 
   g_phase_display_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_PHASEBAR");
-  strcpy(g_phase_display_menu_stop_text, text_lines[0]);
-  strcpy(g_phase_display_menu_toggle_text, text_lines[1]);
-  strcpy(g_phase_display_menu_phase_help_text, text_lines[2]);
-  strcpy(g_phase_display_menu_help_text, text_lines[3]);
+  strcpy(g_phase_display_menu_stop_text, g_text_lines[0]);
+  strcpy(g_phase_display_menu_toggle_text, g_text_lines[1]);
+  strcpy(g_phase_display_menu_phase_help_text, g_text_lines[2]);
+  strcpy(g_phase_display_menu_help_text, g_text_lines[3]);
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_Phase.pic");
   g_magicgame_phase_display_pic = load_pic(s.pic_path);
@@ -634,8 +634,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
           s.stop_phase_code = 0x1f;
         else if (s.command_phase_index == 7)
           s.stop_phase_code = 0x20;
-        stop_phase_player = s.stop_player;
-        stop_phase = s.stop_phase_code;
+        g_stop_phase_player = s.stop_player;
+        g_stop_phase = s.stop_phase_code;
         unk_00715fb0 = 0;
         g_phase_display_menu_packet[0] = -2;
         g_phase_display_menu_packet[1] = -1;
@@ -645,7 +645,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
 
       case PHASE_DISPLAY_COMMAND_TOGGLE_BASE:
         s.toggle_player = s.command_player;
-        if (s.command_phase_index == 3 && active_player == s.toggle_player)
+        if (s.command_phase_index == 3 && g_active_player == s.toggle_player)
           break;
         if (s.command_phase_index == 0)
           s.toggle_phase_code = 1;
@@ -727,8 +727,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
     hit_test_phase_display(&s.click_point, &s.click_client_rect, &s.click_hit_player, &s.click_hit_phase);
     if ((g_duel_network_flags & 2) == 0 && s.click_hit_phase != -1 && g_duel_modal_action_active != 0)
     {
-      stop_phase_player = s.click_hit_player;
-      stop_phase = s.click_hit_phase;
+      g_stop_phase_player = s.click_hit_player;
+      g_stop_phase = s.click_hit_phase;
       unk_00715fb0 = s.peek_result;
       g_phase_display_click_packet[0] = -2;
       g_phase_display_click_packet[1] = -1;

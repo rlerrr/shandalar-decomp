@@ -29,7 +29,7 @@ extern HWND global_main_hwnd;
 #endif
 #define DUEL_SHELL_WINDOW_HWND g_main_window_hwnd
 
-extern int life[2];
+extern int g_life[2];
 extern HINSTANCE g_app_instance;
 extern HWND DAT_008a8dec;
 extern HWND DAT_008a8d78;
@@ -102,7 +102,7 @@ extern HANDLE global_mutex_GameInit;
 #endif
 #ifdef SHANDALAR
 extern int g_world_location_music_active;
-extern int random_seed_initialized;
+extern int g_random_seed_initialized;
 extern int _DAT_007483f4;
 // GLOBAL: SHANDALAR 0x0058e048
 // GLOBAL: SHANDALAR 0x0058e04c
@@ -311,8 +311,7 @@ void notify_duel_action(int player, unsigned int value)
     HWND child_window;
     HWND secondary_battlefield_window;
     int attached_player_and_card[2];
-    int action_player;
-    int action_card;
+    int action_player_and_card[2];
     card_id_t card_id;
     int card_index;
     int zone;
@@ -356,8 +355,8 @@ void notify_duel_action(int player, unsigned int value)
       {
         for (s.card_index = 0; s.card_index < 0x96; s.card_index++)
         {
-          s.action_player = s.player_index;
-          s.action_card = s.card_index;
+          s.action_player_and_card[0] = s.player_index;
+          s.action_player_and_card[1] = s.card_index;
           s.zone = get_displayed_card_zone(s.player_index, s.card_index);
           s.internal_card_id = get_displayed_card_internal_id(s.player_index, s.card_index);
           s.card_id = get_displayed_card_id(s.player_index, s.card_index);
@@ -366,35 +365,35 @@ void notify_duel_action(int player, unsigned int value)
 
           if (((s.internal_card_id == -1) ||
                (((s.display_flags & 0x10000) != 0) && (g_duel_interface_options.show_invisible_effect_cards == 0))) ||
-              ((damage_card_internal_card_id == s.internal_card_id) && (get_displayed_card_special_counters(s.player_index, s.card_index) == 0)))
+              ((g_damage_card_internal_card_id == s.internal_card_id) && (get_displayed_card_special_counters(s.player_index, s.card_index) == 0)))
           {
-            SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_card_preview_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_card_preview_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
             if ((IsWindowVisible(g_duel_attack_phase_window_hwnd) != 0) || (is_attack_phase_window_enabled() != 0))
             {
-              SendMessageA(g_duel_attack_phase_window_hwnd, 0x403, (WPARAM)&s.action_player, 0);
-              SendMessageA(g_duel_attack_phase_window_hwnd, 0x402, (WPARAM)&s.action_player, 0);
+              SendMessageA(g_duel_attack_phase_window_hwnd, 0x403, (WPARAM)s.action_player_and_card, 0);
+              SendMessageA(g_duel_attack_phase_window_hwnd, 0x402, (WPARAM)s.action_player_and_card, 0);
             }
           }
           else if (s.zone == 2)
           {
-            SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-            SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+            SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+            SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
           }
-          else if (stack_proxy_internal_card_id == s.internal_card_id)
+          else if (g_stack_proxy_internal_card_id == s.internal_card_id)
           {
           }
           else
           {
             if (s.zone == 1)
             {
-              SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-              SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+              SendMessageA(g_duel_full_card_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+              SendMessageA(g_duel_life_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
               if (((s.card_flags & 0x10) != 0) &&
                   ((unk_007a7d64 <= s.card_id ||
                     ((global_raw_cards_storage[s.card_id].card_type == 2 &&
@@ -425,16 +424,16 @@ void notify_duel_action(int player, unsigned int value)
                 {
                   s.primary_battlefield_window = g_duel_player_battlefield_window_hwnd;
                 }
-                SendMessageA(s.primary_battlefield_window, 0x40b, (WPARAM)&s.action_player, 0);
-                SendMessageA(s.secondary_battlefield_window, 0x40a, (WPARAM)&s.action_player, 0);
+                SendMessageA(s.primary_battlefield_window, 0x40b, (WPARAM)s.action_player_and_card, 0);
+                SendMessageA(s.secondary_battlefield_window, 0x40a, (WPARAM)s.action_player_and_card, 0);
                 if (find_attack_phase_card_window(g_duel_attack_phase_window_hwnd, s.attached_player_and_card, (int *)0, &s.child_window, (int *)0) != 0)
                 {
-                  SendMessageA(g_duel_attack_phase_window_hwnd, 0x406, (WPARAM)&s.action_player, (LPARAM)s.child_window);
+                  SendMessageA(g_duel_attack_phase_window_hwnd, 0x406, (WPARAM)s.action_player_and_card, (LPARAM)s.child_window);
                   SendMessageA(g_duel_attack_phase_window_hwnd, 0x410, (WPARAM)s.child_window, 0);
                   s.attack_phase_refresh_flag = 1;
                   if (((find_battlefield_card_window(s.secondary_battlefield_window, s.attached_player_and_card, (int *)0, &s.child_window) != 0) &&
                        (IsWindowVisible(s.child_window) == 0)) &&
-                      (find_battlefield_card_window(s.secondary_battlefield_window, &s.action_player, (int *)0, &s.child_window) != 0))
+                      (find_battlefield_card_window(s.secondary_battlefield_window, s.action_player_and_card, (int *)0, &s.child_window) != 0))
                   {
                     ShowWindow(s.child_window, SW_HIDE);
                   }
@@ -458,14 +457,14 @@ void notify_duel_action(int player, unsigned int value)
                 {
                   s.primary_battlefield_window = g_duel_player_battlefield_window_hwnd;
                 }
-                SendMessageA(s.primary_battlefield_window, 0x40b, (WPARAM)&s.action_player, 0);
-                SendMessageA(s.secondary_battlefield_window, 0x40a, (WPARAM)&s.action_player, 0);
+                SendMessageA(s.primary_battlefield_window, 0x40b, (WPARAM)s.action_player_and_card, 0);
+                SendMessageA(s.secondary_battlefield_window, 0x40a, (WPARAM)s.action_player_and_card, 0);
               }
             }
             else if (s.zone == 0)
             {
-              SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
-              SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)&s.action_player, 0);
+              SendMessageA(g_duel_player_battlefield_window_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
+              SendMessageA(g_duel_help_owner_hwnd, 0x40b, (WPARAM)s.action_player_and_card, 0);
               if (s.player_index == 0)
               {
                 s.life_window = g_duel_life_window_hwnd;
@@ -474,7 +473,7 @@ void notify_duel_action(int player, unsigned int value)
               {
                 s.life_window = g_duel_full_card_window_hwnd;
               }
-              SendMessageA(s.life_window, 0x40b, (WPARAM)&s.action_player, 0);
+              SendMessageA(s.life_window, 0x40b, (WPARAM)s.action_player_and_card, 0);
               if (s.player_index == 0)
               {
                 s.other_life_window = g_duel_full_card_window_hwnd;
@@ -483,7 +482,7 @@ void notify_duel_action(int player, unsigned int value)
               {
                 s.other_life_window = g_duel_life_window_hwnd;
               }
-              SendMessageA(s.other_life_window, 0x40a, (WPARAM)&s.action_player, 0);
+              SendMessageA(s.other_life_window, 0x40a, (WPARAM)s.action_player_and_card, 0);
             }
           }
         }
@@ -1353,15 +1352,15 @@ void show_post_duel_draws(int duel_result)
   if (duel_result == 0)
   {
     copy_opponent_name_prefix(s.opponent_name);
-    sprintf(s.dialog_params.message, text_lines[0], s.opponent_name);
+    sprintf(s.dialog_params.message, g_text_lines[0], s.opponent_name);
   }
   else if (duel_result == 1)
   {
-    strcpy(s.dialog_params.message, text_lines[1]);
+    strcpy(s.dialog_params.message, g_text_lines[1]);
   }
   else
   {
-    strcpy(s.dialog_params.message, text_lines[2]);
+    strcpy(s.dialog_params.message, g_text_lines[2]);
   }
   s.dialog_params.show_continue_button = 0;
   s.dialog_params.show_keep_button = 0;
@@ -1424,13 +1423,13 @@ BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LP
     SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
     load_text(global_ui_strings_filename, "DIALOG_ENDDUEL");
     copy_opponent_name_prefix(s.opponent_name);
-    sprintf(s.text, text_lines[0], s.opponent_name);
+    sprintf(s.text, g_text_lines[0], s.opponent_name);
     SetDlgItemTextA(hwnd, 0x4e3, s.text);
-    SetDlgItemTextA(hwnd, 0x4e2, text_lines[1]);
+    SetDlgItemTextA(hwnd, 0x4e2, g_text_lines[1]);
     SetDlgItemTextA(hwnd, 0x4e4, s.dialog_params->message);
     load_text(global_ui_strings_filename, "DIALOG_GAUNTLETENDDUEL");
-    SetDlgItemTextA(hwnd, 0x4e7, text_lines[2]);
-    SetDlgItemTextA(hwnd, 0x4e8, text_lines[3]);
+    SetDlgItemTextA(hwnd, 0x4e7, g_text_lines[2]);
+    SetDlgItemTextA(hwnd, 0x4e8, g_text_lines[3]);
     if (s.dialog_params->show_continue_button == 0)
     {
       ShowWindow(GetDlgItem(hwnd, 0x4e7), SW_HIDE);
@@ -2386,9 +2385,9 @@ void show_opponent_library_window(int unused_color)
 {
   (void)unused_color;
 #ifdef SHANDALAR
-  SelectAdventureListCardIndex(active_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
+  SelectAdventureListCardIndex(g_active_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
 #else
-  show_deck(active_player, global_library[1], 500, text_lines, 0, "");
+  show_deck(g_active_player, global_library[1], 500, g_text_lines, 0, "");
 #endif
 }
 
@@ -2398,9 +2397,9 @@ void show_player_library_window(int unused_color)
 {
   (void)unused_color;
 #ifdef SHANDALAR
-  SelectAdventureListCardIndex(active_player, global_library[0], 500, gs_showlibrary_text_0074bcc0.title, 0, &g_showlibrary_menu_selection);
+  SelectAdventureListCardIndex(g_active_player, global_library[0], 500, gs_showlibrary_text_0074bcc0.title, 0, &g_showlibrary_menu_selection);
 #else
-  show_deck(active_player, global_library[0], 500, text_lines, 0, "");
+  show_deck(g_active_player, global_library[0], 500, g_text_lines, 0, "");
 #endif
 }
 
@@ -2434,9 +2433,9 @@ void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name)
   s.field_idx = s.in_quotes;
   *out = '\0';
 
-  if ((master_csv_offsets[csvid] != -1) && (strcmp(csv_name, "master.csv") == 0))
+  if ((g_master_csv_offsets[csvid] != -1) && (strcmp(csv_name, "master.csv") == 0))
   {
-    fseek(s.fp, (long)master_csv_offsets[csvid], 0);
+    fseek(s.fp, (long)g_master_csv_offsets[csvid], 0);
   }
 
   do
@@ -2585,8 +2584,8 @@ int get_primary_color_from_duel_deck(int player)
   {
     for (s.card_index = 0; s.card_index < 200; s.card_index++)
     {
-      s.card_id = initial_library[player][s.card_index].csvid;
-      s.card_count = initial_library[player][s.card_index].numcards;
+      s.card_id = g_initial_library[player][s.card_index].csvid;
+      s.card_count = g_initial_library[player][s.card_index].numcards;
       if ((s.card_id != -1) && (s.card_count != 0))
       {
         s.internal_card_id = CardTypeFromID(s.card_id);
@@ -3076,12 +3075,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       }
       else if ((g_duel_mode_flags & 4) != 0)
       {
-        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(opponent_initial_library_index);
+        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(g_opponent_initial_library_index);
         g_last_duel_player_primary_color = get_primary_color_from_duel_deck(g_selected_wizard_color);
       }
       else if ((g_duel_mode_flags & 1) != 0)
       {
-        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(opponent_initial_library_index);
+        g_last_duel_enemy_primary_color = get_primary_color_from_duel_deck(g_opponent_initial_library_index);
         g_last_duel_player_primary_color = get_primary_color_from_duel_deck(g_selected_wizard_color);
       }
     }
@@ -3181,7 +3180,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     return 0;
 
   case WM_CLOSE:
-    life[0] = 0;
+    g_life[0] = 0;
     g_duel_main_window_closing = 1;
     return 0;
 
@@ -3257,14 +3256,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x25d:
       if (g_duel_cheats_state != 0)
       {
-        show_opponent_library_window(opponent_initial_library_index);
+        show_opponent_library_window(g_opponent_initial_library_index);
       }
       break;
 
     case 0x25e:
       if (g_duel_cheats_state != 0)
       {
-        show_player_library_window(opponent_initial_library_index);
+        show_player_library_window(g_opponent_initial_library_index);
       }
       break;
 
@@ -3281,15 +3280,15 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.player_backdrop_color = 1;
         }
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into play", -1, -1);
-        s.command_selected_card = (int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase];
-        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] =
-            (unsigned char)((int)(char)g_duel_phase_stop_settings[current_player].phase_flags[current_phase] & ~PHASE_STOP_ENABLED);
+        s.command_selected_card = (int)(char)g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase];
+        g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase] =
+            (unsigned char)((int)(char)g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase] & ~PHASE_STOP_ENABLED);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
         if (s.command_saved_phase_flags != -1)
         {
           process_card_enters_play(s.player_backdrop_color, s.command_saved_phase_flags);
         }
-        g_duel_phase_stop_settings[current_player].phase_flags[current_phase] = (unsigned char)s.command_selected_card;
+        g_duel_phase_stop_settings[g_current_player].phase_flags[g_current_phase] = (unsigned char)s.command_selected_card;
         notify_duel_action(0, 0xff);
       }
       break;
@@ -3308,12 +3307,12 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         }
         s.enemy_backdrop_result = pick_internal_card_from_list_dialog("Pick a card to put into hand", -1, -1);
         s.command_saved_phase_flags = add_card_to_hand(s.player_backdrop_color, s.enemy_backdrop_result);
-        duel_summary.hand_counts[s.player_backdrop_color] += 1;
-        if (((g_duel_network_flags & 2) != 0) && (active_player == s.player_backdrop_color))
+        g_duel_summary.hand_counts[s.player_backdrop_color] += 1;
+        if (((g_duel_network_flags & 2) != 0) && (g_active_player == s.player_backdrop_color))
         {
           g_network_result_packet_type = 0x12;
           g_network_result_value = s.enemy_backdrop_result;
-          TENTATIVE_send_network_result(active_player, 0x12);
+          TENTATIVE_send_network_result(g_active_player, 0x12);
         }
         notify_duel_action(0, 0xff);
       }
@@ -3348,9 +3347,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           s.player_backdrop_color = 1;
         }
-        life[s.player_backdrop_color] = prompt_for_life_total(0,
+        g_life[s.player_backdrop_color] = prompt_for_life_total(0,
                                                               s.player_backdrop_color == 0 ? "Set player lives to:" : "Set opponent lives tp:",
-                                                              life[s.player_backdrop_color]);
+                                                              g_life[s.player_backdrop_color]);
         notify_duel_action(0, 0xff);
       }
       break;
@@ -3367,7 +3366,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           s.player_backdrop_color = 0;
         }
-        life[s.player_backdrop_color] = 0;
+        g_life[s.player_backdrop_color] = 0;
         SendMessageA(g_duel_life_status_window_1_hwnd, 0x432, 0, 0);
         SendMessageA(g_duel_life_status_window_2_hwnd, 0x432, 0, 0);
       }
@@ -3376,8 +3375,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x263:
       if (g_duel_cheats_state != 0)
       {
-        life[0] = 0;
-        life[1] = 0;
+        g_life[0] = 0;
+        g_life[1] = 0;
         SendMessageA(g_duel_life_status_window_1_hwnd, 0x432, 0, 0);
         SendMessageA(g_duel_life_status_window_2_hwnd, 0x432, 0, 0);
       }

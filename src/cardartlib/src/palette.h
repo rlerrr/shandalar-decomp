@@ -3,6 +3,12 @@
 
 #include <windows.h>
 
+typedef struct PaletteLog {
+    WORD palVersion;
+    WORD palNumEntries;
+    PALETTEENTRY palPalEntry[0x100];
+} PaletteLog;
+
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
 void ApplyCardArtPaletteToDc(HDC hdc);
 void ShutdownCardArtGdiResources(void);

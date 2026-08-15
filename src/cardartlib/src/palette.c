@@ -23,12 +23,6 @@ typedef struct OctNode {
 };
 STATIC_ASSERT(sizeof(OctNode) == 0x30, OctNode_wrong_size);
 
-// SIZE 0x404
-typedef struct PaletteLog {
-    undefined2 palVersion;            /* +0 */
-    undefined2 palNumEntries;         /* +2 */
-    PALETTEENTRY palPalEntry[0x100];  /* +4 */
-} PaletteLog;
 STATIC_ASSERT(sizeof(PaletteLog) == 0x404, PaletteLog_wrong_size);
 
 /* Forward declarations for globals referenced before their definitions. */

@@ -252,13 +252,13 @@ typedef struct
 STATIC_ASSERT(sizeof(JournalEntry) == 0x10, journal_entry_wrong_size);
 
 #ifdef GLOBAL_STATE_IMPL
-GLOBAL_STATE_EXTERN csvid_and_numcards initial_library[2][200] = {
+GLOBAL_STATE_EXTERN csvid_and_numcards g_initial_library[2][200] = {
 #include "initial_library_init.inc"
 };
 #else
 // GLOBAL: MAGIC 0x0056fb20
 // GLOBAL: SHANDALAR 0x0058d3c8
-GLOBAL_STATE_EXTERN csvid_and_numcards initial_library[2][200];
+GLOBAL_STATE_EXTERN csvid_and_numcards g_initial_library[2][200];
 #endif
 
 // GLOBAL: MAGIC 0x008cc980
@@ -295,11 +295,11 @@ GLOBAL_STATE_EXTERN target_t global_stack_damage_targets[32];
 
 // GLOBAL: MAGIC 0x0078944c
 // GLOBAL: SHANDALAR 0x007a01dc
-GLOBAL_STATE_EXTERN int combat_assignment_cancelled;
+GLOBAL_STATE_EXTERN int g_combat_assignment_cancelled;
 
 // GLOBAL: MAGIC 0x00789450
 // GLOBAL: SHANDALAR 0x007a01e0
-GLOBAL_STATE_EXTERN int event_result;
+GLOBAL_STATE_EXTERN int g_event_result;
 
 // GLOBAL: MAGIC 0x00777850
 // GLOBAL: SHANDALAR 0x0078e5dc
@@ -307,7 +307,7 @@ GLOBAL_STATE_EXTERN int unk_00777850;
 
 // GLOBAL: MAGIC 0x00777854
 // GLOBAL: SHANDALAR 0x0078e5e0
-GLOBAL_STATE_EXTERN int ai_search_flags;
+GLOBAL_STATE_EXTERN int g_ai_search_flags;
 
 // GLOBAL: MAGIC 0x00789714
 // GLOBAL: SHANDALAR 0x007a04a4
@@ -315,22 +315,22 @@ GLOBAL_STATE_EXTERN int DAT_00789714;
 
 // GLOBAL: MAGIC 0x008b426c
 // GLOBAL: SHANDALAR 0x008c83ec
-GLOBAL_STATE_EXTERN int spell_fizzled;
+GLOBAL_STATE_EXTERN int g_spell_fizzled;
 
 // GLOBAL: MAGIC 0x00777a9c
 // GLOBAL: SHANDALAR 0x0078e82c
-GLOBAL_STATE_EXTERN int ai_decision_code;
+GLOBAL_STATE_EXTERN int g_ai_decision_code;
 // GLOBAL: MAGIC 0x00777aa8
 // GLOBAL: SHANDALAR 0x0078e838
 GLOBAL_STATE_EXTERN int DAT_00777aa8;
 
 // GLOBAL: MAGIC 0x00777be0
 // GLOBAL: SHANDALAR 0x0078e970
-GLOBAL_STATE_EXTERN int active_cards_count[2];
+GLOBAL_STATE_EXTERN int g_active_cards_count[2];
 
 // GLOBAL: MAGIC 0x00939048
 // GLOBAL: SHANDALAR 0x0094d178
-GLOBAL_STATE_EXTERN trigger_t trigger_condition;
+GLOBAL_STATE_EXTERN trigger_t g_trigger_condition;
 
 // GLOBAL: MAGIC 0x00938e2c
 // GLOBAL: SHANDALAR 0x0094cf5c
@@ -338,15 +338,15 @@ GLOBAL_STATE_EXTERN int unk_00938e2c;
 
 // GLOBAL: MAGIC 0x00939338
 // GLOBAL: SHANDALAR 0x0094d464
-GLOBAL_STATE_EXTERN phase_t current_phase;
+GLOBAL_STATE_EXTERN phase_t g_current_phase;
 
 // GLOBAL: MAGIC 0x00939340
 // GLOBAL: SHANDALAR 0x0094d46c
-GLOBAL_STATE_EXTERN int ai_recorded_choice;
+GLOBAL_STATE_EXTERN int g_ai_recorded_choice;
 
 // GLOBAL: MAGIC 0x00939510
 // GLOBAL: SHANDALAR 0x0094d640
-GLOBAL_STATE_EXTERN int trigger_dispatch_depth;
+GLOBAL_STATE_EXTERN int g_trigger_dispatch_depth;
 
 // GLOBAL: MAGIC 0x0093d850
 // GLOBAL: SHANDALAR 0x00951970
@@ -354,7 +354,7 @@ GLOBAL_STATE_EXTERN int DAT_0093d850;
 
 // GLOBAL: MAGIC 0x00939180
 // GLOBAL: SHANDALAR 0x0094d2b0
-GLOBAL_STATE_EXTERN int stack_data[32];
+GLOBAL_STATE_EXTERN int g_stack_data[32];
 
 // GLOBAL: MOK 0x005098b0
 // GLOBAL: MAGIC 0x0093b280
@@ -364,31 +364,31 @@ STATIC_ASSERT(sizeof(unk_0093b280) == 0x25c0, unk_0093b280_wrong_size);
 
 // GLOBAL: MAGIC 0x00895030
 // GLOBAL: SHANDALAR 0x008a9230
-GLOBAL_STATE_EXTERN int stack_trigger_condition[32];
+GLOBAL_STATE_EXTERN int g_stack_trigger_condition[32];
 
 // GLOBAL: MAGIC 0x007a7750
 // GLOBAL: SHANDALAR 0x007be4e0
-GLOBAL_STATE_EXTERN int stack_prompt_flags[32];
+GLOBAL_STATE_EXTERN int g_stack_prompt_flags[32];
 
 // GLOBAL: MAGIC 0x008b497c
 // GLOBAL: SHANDALAR 0x008c8afc
-GLOBAL_STATE_EXTERN int current_turn;
+GLOBAL_STATE_EXTERN int g_current_turn;
 
 // GLOBAL: MAGIC 0x008b32b8
 // GLOBAL: SHANDALAR 0x008c7468
-GLOBAL_STATE_EXTERN int other_player;
+GLOBAL_STATE_EXTERN int g_other_player;
 
 // GLOBAL: MAGIC 0x008b2934
 // GLOBAL: SHANDALAR 0x008c6ae4
-GLOBAL_STATE_EXTERN int stack_size;
+GLOBAL_STATE_EXTERN int g_stack_size;
 
 // GLOBAL: MAGIC 0x00742fc4
 // GLOBAL: SHANDALAR 0x0077e58c
-GLOBAL_STATE_EXTERN int duel_active;
+GLOBAL_STATE_EXTERN int g_duel_active;
 
 // GLOBAL: MAGIC 0x00742fc8
 // GLOBAL: SHANDALAR 0x0077e590
-GLOBAL_STATE_EXTERN int phase_stop_suppressed;
+GLOBAL_STATE_EXTERN int g_phase_stop_suppressed;
 // GLOBAL: MAGIC 0x00742fcc
 // GLOBAL: SHANDALAR 0x0077e6cc
 GLOBAL_STATE_EXTERN int unk_00742fcc;
@@ -412,7 +412,7 @@ GLOBAL_STATE_EXTERN unsigned int g_load_menu_valid_slot_mask;
 
 // GLOBAL: MAGIC 0x007161e0
 // GLOBAL: SHANDALAR 0x0074cdc0
-GLOBAL_STATE_EXTERN int mana_color_conversions[2][11];
+GLOBAL_STATE_EXTERN int g_mana_color_conversions[2][11];
 
 // GLOBAL: MAGIC 0x007161d0
 // GLOBAL: SHANDALAR 0x0074c960
@@ -434,21 +434,21 @@ GLOBAL_STATE_EXTERN int _DAT_00743088;
 
 // GLOBAL: MAGIC 0x00716030
 // GLOBAL: SHANDALAR 0x0074c790
-GLOBAL_STATE_EXTERN int raw_mana_available_hex[2][51];
+GLOBAL_STATE_EXTERN int g_raw_mana_available_hex[2][51];
 
 // GLOBAL: MAGIC 0x00742fe0
 // GLOBAL: SHANDALAR 0x0077ed80
-GLOBAL_STATE_EXTERN int basiclandtypes_controlled[2][8];
+GLOBAL_STATE_EXTERN int g_basiclandtypes_controlled[2][8];
 // GLOBAL: MAGIC 0x00742f70
 // GLOBAL: SHANDALAR 0x0077d170
-GLOBAL_STATE_EXTERN int special_mana_pool[2][8];
+GLOBAL_STATE_EXTERN int g_special_mana_pool[2][8];
 // GLOBAL: MAGIC 0x00743080
 // GLOBAL: SHANDALAR 0x007806e0
 GLOBAL_STATE_EXTERN int unk_00743080[2];
 
 // GLOBAL: MAGIC 0x00743040
 // GLOBAL: SHANDALAR 0x007806a0
-GLOBAL_STATE_EXTERN int raw_mana_available[2][8];
+GLOBAL_STATE_EXTERN int g_raw_mana_available[2][8];
 
 // GLOBAL: MAGIC 0x00715fb0
 // GLOBAL: SHANDALAR 0x0074b8b8
@@ -459,7 +459,7 @@ GLOBAL_STATE_EXTERN int DAT_00715fa4;
 
 // GLOBAL: MAGIC 0x00791554
 // GLOBAL: SHANDALAR 0x007a82e0
-GLOBAL_STATE_EXTERN int current_player;
+GLOBAL_STATE_EXTERN int g_current_player;
 // GLOBAL: MAGIC 0x00791410
 // GLOBAL: SHANDALAR 0x007a81a0
 GLOBAL_STATE_EXTERN int DAT_00791410;
@@ -468,21 +468,21 @@ GLOBAL_STATE_EXTERN int DAT_00791410;
 GLOBAL_STATE_EXTERN int DAT_0072c8e0;
 // GLOBAL: MAGIC 0x0072c8e4
 // GLOBAL: SHANDALAR 0x00765e24
-GLOBAL_STATE_EXTERN int ai_action_replay_available;
+GLOBAL_STATE_EXTERN int g_ai_action_replay_available;
 // GLOBAL: MAGIC 0x00789a48
 // GLOBAL: SHANDALAR 0x007a07d4
 GLOBAL_STATE_EXTERN int unk_00789a48;
 // GLOBAL: MAGIC 0x00789308
 // GLOBAL: SHANDALAR 0x007a0098
-GLOBAL_STATE_EXTERN int opponent_starting_card_id_2;
+GLOBAL_STATE_EXTERN int g_opponent_starting_card_id_2;
 
 // GLOBAL: MAGIC 0x0078930c
 // GLOBAL: SHANDALAR 0x007a009c
-GLOBAL_STATE_EXTERN int current_casting_player;
+GLOBAL_STATE_EXTERN int g_current_casting_player;
 
 // GLOBAL: MAGIC 0x007ab2b8
 // GLOBAL: SHANDALAR 0x007bf4b8
-GLOBAL_STATE_EXTERN int trigger_cause_controller;
+GLOBAL_STATE_EXTERN int g_trigger_cause_controller;
 // GLOBAL: MAGIC 0x007ab2bc
 // GLOBAL: SHANDALAR 0x007bf4bc
 GLOBAL_STATE_EXTERN int DAT_007ab2bc;
@@ -492,7 +492,7 @@ GLOBAL_STATE_EXTERN int(__cdecl *pending_killed_card_handler)(int, int);
 
 // GLOBAL: MAGIC 0x008cee74
 // GLOBAL: SHANDALAR 0x008e2fc4
-GLOBAL_STATE_EXTERN int trigger_cause;
+GLOBAL_STATE_EXTERN int g_trigger_cause;
 
 // GLOBAL: MAGIC 0x00742f60
 // GLOBAL: SHANDALAR 0x0077c57c
@@ -508,10 +508,10 @@ GLOBAL_STATE_EXTERN int unk_007a7d80[2];
 
 // GLOBAL: MAGIC 0x007a7874
 // GLOBAL: SHANDALAR 0x007be604
-GLOBAL_STATE_EXTERN int current_encounter_strength;
+GLOBAL_STATE_EXTERN int g_current_encounter_strength;
 // GLOBAL: MAGIC 0x007aadec
 // GLOBAL: SHANDALAR 0x007befec
-GLOBAL_STATE_EXTERN int current_action_event_code;
+GLOBAL_STATE_EXTERN int g_current_action_event_code;
 
 // GLOBAL: MAGIC 0x007abc00
 // GLOBAL: SHANDALAR 0x007bfe00
@@ -540,31 +540,31 @@ GLOBAL_STATE_EXTERN int unk_008b3270;
 
 // GLOBAL: MAGIC 0x008b35ec
 // GLOBAL: SHANDALAR 0x008c776c
-GLOBAL_STATE_EXTERN int active_player;
+GLOBAL_STATE_EXTERN int g_active_player;
 
 // GLOBAL: MAGIC 0x008b4270
 // GLOBAL: SHANDALAR 0x008c83f0
-GLOBAL_STATE_EXTERN int life[2];
+GLOBAL_STATE_EXTERN int g_life[2];
 
 // GLOBAL: MAGIC 0x008b4278
 // GLOBAL: SHANDALAR 0x008c83f8
-GLOBAL_STATE_EXTERN int land_can_be_played;
+GLOBAL_STATE_EXTERN int g_land_can_be_played;
 
 // GLOBAL: MAGIC 0x008b4dd0
 // GLOBAL: SHANDALAR 0x008c8f50
-GLOBAL_STATE_EXTERN int affected_internal_card_id;
+GLOBAL_STATE_EXTERN int g_affected_internal_card_id;
 
 // GLOBAL: MAGIC 0x00789b7c
 // GLOBAL: SHANDALAR 0x007a090c
-GLOBAL_STATE_EXTERN int current_casting_internal_card_id;
+GLOBAL_STATE_EXTERN int g_current_casting_internal_card_id;
 
 // GLOBAL: MAGIC 0x008a8d74
 // GLOBAL: SHANDALAR 0x008bcf74
-GLOBAL_STATE_EXTERN int ai_search_force_pass;
+GLOBAL_STATE_EXTERN int g_ai_search_force_pass;
 
 // GLOBAL: MAGIC 0x008a8d7c
 // GLOBAL: SHANDALAR 0x008bcf7c
-GLOBAL_STATE_EXTERN int ai_search_target_depth;
+GLOBAL_STATE_EXTERN int g_ai_search_target_depth;
 
 // GLOBAL: MAGIC 0x008a8de4
 // GLOBAL: SHANDALAR 0x008bcfe4
@@ -572,20 +572,20 @@ GLOBAL_STATE_EXTERN int DAT_008a8de4;
 
 // GLOBAL: MAGIC 0x008ce4ec
 // GLOBAL: SHANDALAR 0x008e266c
-GLOBAL_STATE_EXTERN int max_trigger_dispatch_depth;
+GLOBAL_STATE_EXTERN int g_max_trigger_dispatch_depth;
 
 // GLOBAL: MAGIC 0x008ce510
 // GLOBAL: SHANDALAR 0x008e2690
-GLOBAL_STATE_EXTERN int mana_charge[8];
+GLOBAL_STATE_EXTERN int g_mana_charge[8];
 #define MANA_CHARGE_POWER_ARTIFACT_REDUCTION 7
 
 // GLOBAL: MAGIC 0x008ce538
 // GLOBAL: SHANDALAR 0x008e26b8
-GLOBAL_STATE_EXTERN int current_encounter_color;
+GLOBAL_STATE_EXTERN int g_current_encounter_color;
 
 // GLOBAL: MAGIC 0x0091a6d0
 // GLOBAL: SHANDALAR 0x0092e820
-GLOBAL_STATE_EXTERN int nested_trigger_depth;
+GLOBAL_STATE_EXTERN int g_nested_trigger_depth;
 
 // GLOBAL: MAGIC 0x0091bf70
 // GLOBAL: SHANDALAR 0x009300b0
@@ -597,7 +597,7 @@ GLOBAL_STATE_EXTERN int unk_0091bfb4;
 
 // GLOBAL: MAGIC 0x008b60e0
 // GLOBAL: SHANDALAR 0x008ca260
-GLOBAL_STATE_EXTERN int attacking_creature_count;
+GLOBAL_STATE_EXTERN int g_attacking_creature_count;
 
 // GLOBAL: MAGIC 0x00926668
 // GLOBAL: SHANDALAR 0x0093a798
@@ -605,11 +605,11 @@ GLOBAL_STATE_EXTERN int g_duel_extra_turn_player;
 
 // GLOBAL: MAGIC 0x00926664
 // GLOBAL: SHANDALAR 0x0093a794
-GLOBAL_STATE_EXTERN int produced_mana_color;
+GLOBAL_STATE_EXTERN int g_produced_mana_color;
 
 // GLOBAL: MAGIC 0x008cc840
 // GLOBAL: SHANDALAR 0x008e09c0
-GLOBAL_STATE_EXTERN int ai_search_try_count;
+GLOBAL_STATE_EXTERN int g_ai_search_try_count;
 // GLOBAL: MAGIC 0x008cc844
 // GLOBAL: SHANDALAR 0x008e09c4
 GLOBAL_STATE_EXTERN int unk_008cc844;
@@ -624,11 +624,11 @@ GLOBAL_STATE_EXTERN int unk_008b2880;
 
 // GLOBAL: MAGIC 0x00925bb8
 // GLOBAL: SHANDALAR 0x00939ce8
-GLOBAL_STATE_EXTERN int ai_recorded_action;
+GLOBAL_STATE_EXTERN int g_ai_recorded_action;
 
 // GLOBAL: MAGIC 0x008b40f4
 // GLOBAL: SHANDALAR 0x008c8274
-GLOBAL_STATE_EXTERN int x_value;
+GLOBAL_STATE_EXTERN int g_x_value;
 
 // GLOBAL: MAGIC 0x008b44d0
 // GLOBAL: SHANDALAR 0x008c8650
@@ -636,26 +636,26 @@ GLOBAL_STATE_EXTERN int unk_008b44d0[2];
 
 // GLOBAL: MAGIC 0x008ce568
 // GLOBAL: SHANDALAR 0x008e26bc
-GLOBAL_STATE_EXTERN int max_x_value;
+GLOBAL_STATE_EXTERN int g_max_x_value;
 
 // GLOBAL: MAGIC 0x008cf6d4
 // GLOBAL: SHANDALAR 0x008e3824
-GLOBAL_STATE_EXTERN int affected_card_color;
+GLOBAL_STATE_EXTERN int g_affected_card_color;
 // GLOBAL: MAGIC 0x008cf1b8
 // GLOBAL: SHANDALAR 0x008e3308
-GLOBAL_STATE_EXTERN int last_single_card_event_result;
+GLOBAL_STATE_EXTERN int g_last_single_card_event_result;
 
 // GLOBAL: MAGIC 0x008cf1c0
 // GLOBAL: SHANDALAR 0x008e3310
-GLOBAL_STATE_EXTERN int creature_power_by_color[2][8];
+GLOBAL_STATE_EXTERN int g_creature_power_by_color[2][8];
 
 // GLOBAL: MAGIC 0x00939520
 // GLOBAL: SHANDALAR 0x0094d650
-GLOBAL_STATE_EXTERN int ai_mana_demand_by_color[2][8];
+GLOBAL_STATE_EXTERN int g_ai_mana_demand_by_color[2][8];
 
 // GLOBAL: MAGIC 0x0093950c
 // GLOBAL: SHANDALAR 0x0094d63c
-GLOBAL_STATE_EXTERN int ai_modifier;
+GLOBAL_STATE_EXTERN int g_ai_modifier;
 
 // GLOBAL: MAGIC 0x008cfd20
 // GLOBAL: SHANDALAR 0x008e3e70
@@ -663,24 +663,24 @@ GLOBAL_STATE_EXTERN int unk_008cfd20;
 
 // GLOBAL: MAGIC 0x0093dabc
 // GLOBAL: SHANDALAR 0x00951bdc
-GLOBAL_STATE_EXTERN int affected_card;
+GLOBAL_STATE_EXTERN int g_affected_card;
 
 // GLOBAL: MAGIC 0x008cd928
 // GLOBAL: SHANDALAR 0x008e1aa8
-GLOBAL_STATE_EXTERN int affected_card_controller;
+GLOBAL_STATE_EXTERN int g_affected_card_controller;
 // GLOBAL: MAGIC 0x0093a808
 // GLOBAL: SHANDALAR 0x0094e928
-GLOBAL_STATE_EXTERN int attacking_card_controller;
+GLOBAL_STATE_EXTERN int g_attacking_card_controller;
 
 // GLOBAL: MAGIC 0x008cdab0
 // GLOBAL: SHANDALAR 0x008e1c30
 GLOBAL_STATE_EXTERN int DAT_008cdab0;
 #ifdef GLOBAL_STATE_IMPL
-GLOBAL_STATE_EXTERN int opponent_initial_library_index = -1;
+GLOBAL_STATE_EXTERN int g_opponent_initial_library_index = -1;
 #else
 // GLOBAL: MAGIC 0x0057a750
 // GLOBAL: SHANDALAR 0x00591200
-GLOBAL_STATE_EXTERN int opponent_initial_library_index;
+GLOBAL_STATE_EXTERN int g_opponent_initial_library_index;
 #endif
 #ifdef GLOBAL_STATE_IMPL
 GLOBAL_STATE_EXTERN int g_selected_wizard_color = -1;
@@ -692,19 +692,19 @@ GLOBAL_STATE_EXTERN int g_selected_wizard_color;
 
 // GLOBAL: MAGIC 0x008ce530
 // GLOBAL: SHANDALAR 0x008e26b0
-GLOBAL_STATE_EXTERN int attacking_card;
+GLOBAL_STATE_EXTERN int g_attacking_card;
 // GLOBAL: MAGIC 0x0093b160
 // GLOBAL: SHANDALAR 0x0094f280
-GLOBAL_STATE_EXTERN int card_on_stack_controller;
+GLOBAL_STATE_EXTERN int g_card_on_stack_controller;
 // GLOBAL: MAGIC 0x0091ce2c
 // GLOBAL: SHANDALAR 0x00930f5c
-GLOBAL_STATE_EXTERN int card_on_stack;
+GLOBAL_STATE_EXTERN int g_card_on_stack;
 // GLOBAL: MAGIC 0x00939330
 // GLOBAL: SHANDALAR 0x0094d45c
 GLOBAL_STATE_EXTERN int unk_00939330;
 // GLOBAL: MAGIC 0x007a7c58
 // GLOBAL: SHANDALAR 0x007be9e8
-GLOBAL_STATE_EXTERN int graveyard_card_types[2];
+GLOBAL_STATE_EXTERN int g_graveyard_card_types[2];
 // GLOBAL: MAGIC 0x007a7c60
 // GLOBAL: SHANDALAR 0x007be9f0
 GLOBAL_STATE_EXTERN char DAT_007a7c60[100];
@@ -718,7 +718,7 @@ GLOBAL_STATE_EXTERN char DAT_00926702;
 
 // GLOBAL: MAGIC 0x00926790
 // GLOBAL: SHANDALAR 0x0093a8c0
-GLOBAL_STATE_EXTERN int response_action_taken;
+GLOBAL_STATE_EXTERN int g_response_action_taken;
 
 // GLOBAL: MAGIC 0x007a79b0
 // GLOBAL: SHANDALAR 0x007be740
@@ -730,7 +730,7 @@ GLOBAL_STATE_EXTERN int unk_0091c4fc;
 
 // GLOBAL: MAGIC 0x0091c500
 // GLOBAL: SHANDALAR 0x00930640
-GLOBAL_STATE_EXTERN int ai_search_time_limit;
+GLOBAL_STATE_EXTERN int g_ai_search_time_limit;
 
 // GLOBAL: MAGIC 0x006abe30
 // GLOBAL: SHANDALAR 0x005b8138
@@ -797,11 +797,11 @@ GLOBAL_STATE_EXTERN void *DAT_0093d844;
 
 // GLOBAL: MAGIC 0x0089652c
 // GLOBAL: SHANDALAR 0x008aa72c
-GLOBAL_STATE_EXTERN int ai_search_best_score;
+GLOBAL_STATE_EXTERN int g_ai_search_best_score;
 
 // GLOBAL: MAGIC 0x008a8c38
 // GLOBAL: SHANDALAR 0x008bce38
-GLOBAL_STATE_EXTERN unsigned int card_types_in_play[2];
+GLOBAL_STATE_EXTERN unsigned int g_card_types_in_play[2];
 
 // GLOBAL: MAGIC 0x008a8d6c
 // GLOBAL: SHANDALAR 0x008bcf6c
@@ -809,7 +809,7 @@ GLOBAL_STATE_EXTERN int DAT_008a8d6c;
 
 // GLOBAL: MAGIC 0x008a8ffc
 // GLOBAL: SHANDALAR 0x008bd1fc
-GLOBAL_STATE_EXTERN int starting_player_was_random;
+GLOBAL_STATE_EXTERN int g_starting_player_was_random;
 
 // GLOBAL: MAGIC 0x008b2874
 // GLOBAL: SHANDALAR 0x008c6a24
@@ -817,7 +817,7 @@ GLOBAL_STATE_EXTERN int g_last_duel_player_primary_color;
 
 // GLOBAL: MAGIC 0x008b3240
 // GLOBAL: SHANDALAR 0x008c73f0
-GLOBAL_STATE_EXTERN int opponent_deck_color_filter_by_color[12];
+GLOBAL_STATE_EXTERN int g_opponent_deck_color_filter_by_color[12];
 
 // GLOBAL: MAGIC 0x008b323c
 // GLOBAL: SHANDALAR 0x008c73ec
@@ -837,7 +837,7 @@ GLOBAL_STATE_EXTERN unsigned char DAT_008b3fc0[0x104];
 
 // GLOBAL: MAGIC 0x008b42e8
 // GLOBAL: SHANDALAR 0x008c8468
-GLOBAL_STATE_EXTERN int creature_count_summary[2];
+GLOBAL_STATE_EXTERN int g_creature_count_summary[2];
 
 // GLOBAL: MAGIC 0x008b42e4
 // GLOBAL: SHANDALAR 0x008c8464
@@ -845,7 +845,7 @@ GLOBAL_STATE_EXTERN int DAT_008b42e4;
 
 // GLOBAL: MAGIC 0x008b484c
 // GLOBAL: SHANDALAR 0x008c89cc
-GLOBAL_STATE_EXTERN int first_turn_draw_pending;
+GLOBAL_STATE_EXTERN int g_first_turn_draw_pending;
 
 // GLOBAL: MAGIC 0x008cd930
 // GLOBAL: SHANDALAR 0x008e1ab0
@@ -857,7 +857,7 @@ GLOBAL_STATE_EXTERN int DAT_008ce4f0;
 
 // GLOBAL: MAGIC 0x008ce4f4
 // GLOBAL: SHANDALAR 0x008e2674
-GLOBAL_STATE_EXTERN int current_spell_card;
+GLOBAL_STATE_EXTERN int g_current_spell_card;
 
 // GLOBAL: MAGIC 0x008ce4fc
 // GLOBAL: SHANDALAR 0x008e267c
@@ -868,7 +868,7 @@ GLOBAL_STATE_EXTERN int g_has_expansion_10;
 
 // GLOBAL: MAGIC 0x008ce508
 // GLOBAL: SHANDALAR 0x008e2688
-GLOBAL_STATE_EXTERN int current_spell_player;
+GLOBAL_STATE_EXTERN int g_current_spell_player;
 
 // GLOBAL: MAGIC 0x008ce570
 // GLOBAL: SHANDALAR 0x008e26c0
@@ -888,11 +888,11 @@ GLOBAL_STATE_EXTERN SoloDuelOptions g_solo_duel_options;
 
 // GLOBAL: MAGIC 0x008cf690
 // GLOBAL: SHANDALAR 0x008e37e0
-GLOBAL_STATE_EXTERN int creature_toughness_by_color[2][8];
+GLOBAL_STATE_EXTERN int g_creature_toughness_by_color[2][8];
 
 // GLOBAL: MAGIC 0x008cf6d0
 // GLOBAL: SHANDALAR 0x008e3820
-GLOBAL_STATE_EXTERN int opponent_starting_card_id_1;
+GLOBAL_STATE_EXTERN int g_opponent_starting_card_id_1;
 
 // GLOBAL: MAGIC 0x008cf6e0
 // GLOBAL: SHANDALAR 0x008e3830
@@ -964,7 +964,7 @@ GLOBAL_STATE_EXTERN int g_lairs_explored;
 
 // GLOBAL: MAGIC 0x00715f10
 // GLOBAL: SHANDALAR 0x0078df34
-GLOBAL_STATE_EXTERN int skip_new_game_state_initialization;
+GLOBAL_STATE_EXTERN int g_skip_new_game_state_initialization;
 
 // GLOBAL: MAGIC 0x00715f18
 // GLOBAL: SHANDALAR 0x0078df6c
@@ -972,7 +972,7 @@ GLOBAL_STATE_EXTERN int g_current_quest_data;
 
 // GLOBAL: MAGIC 0x00716024
 // GLOBAL: SHANDALAR 0x0074c0e8
-GLOBAL_STATE_EXTERN int player_starting_life;
+GLOBAL_STATE_EXTERN int g_player_starting_life;
 
 // GLOBAL: MAGIC 0x007161c8
 // GLOBAL: SHANDALAR 0x0074c940
@@ -992,11 +992,11 @@ GLOBAL_STATE_EXTERN int g_next_duel_life_delta;
 
 // GLOBAL: MAGIC 0x00716244
 // GLOBAL: SHANDALAR 0x0074d26c
-GLOBAL_STATE_EXTERN int stop_phase_player;
+GLOBAL_STATE_EXTERN int g_stop_phase_player;
 
 // GLOBAL: MAGIC 0x00716248
 // GLOBAL: SHANDALAR 0x0074f1e0
-GLOBAL_STATE_EXTERN phase_t stop_phase;
+GLOBAL_STATE_EXTERN phase_t g_stop_phase;
 
 // GLOBAL: MAGIC 0x00742fc0
 // GLOBAL: SHANDALAR 0x0077e588
@@ -1004,11 +1004,11 @@ GLOBAL_STATE_EXTERN int DAT_00742fc0;
 
 // GLOBAL: MAGIC 0x00742fd0
 // GLOBAL: SHANDALAR 0x0077e6d0
-GLOBAL_STATE_EXTERN int encounter_opening_hand_size_modifier;
+GLOBAL_STATE_EXTERN int g_encounter_opening_hand_size_modifier;
 
 // GLOBAL: MAGIC 0x0074302c
 // GLOBAL: SHANDALAR 0x0077f438
-GLOBAL_STATE_EXTERN int one_deck_mode;
+GLOBAL_STATE_EXTERN int g_one_deck_mode;
 
 // GLOBAL: MAGIC 0x00748768
 // GLOBAL: SHANDALAR 0x0073ea20
@@ -1084,7 +1084,7 @@ GLOBAL_STATE_EXTERN char DAT_00789a12;
 
 // GLOBAL: MAGIC 0x007a7d10
 // GLOBAL: SHANDALAR 0x007beaa0
-GLOBAL_STATE_EXTERN int ai_combat_value_weights[4];
+GLOBAL_STATE_EXTERN int g_ai_combat_value_weights[4];
 
 // GLOBAL: MAGIC 0x007a7d68
 // GLOBAL: SHANDALAR 0x007beaf8
@@ -1173,7 +1173,7 @@ STATIC_ASSERT(sizeof(duel_summary_t) == 0x60, duel_summary_t_wrong_size);
 
 // GLOBAL: MAGIC 0x008cfd70
 // GLOBAL: SHANDALAR 0x008e3ec0
-GLOBAL_STATE_EXTERN duel_summary_t duel_summary;
+GLOBAL_STATE_EXTERN duel_summary_t g_duel_summary;
 
 // GLOBAL: MAGIC 0x0094f790
 // GLOBAL: SHANDALAR 0x0097f1ac

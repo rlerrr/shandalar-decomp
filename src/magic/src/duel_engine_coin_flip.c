@@ -151,8 +151,7 @@ int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_of
   struct
   {
     int palette_index;           // ebp - 0x884
-    LOGPALETTE log_palette[128]; // ebp - 0x880
-    int pad;
+    PaletteLog log_palette;      // ebp - 0x880
     PALETTEENTRY palette_entries[256];
     HPALETTE coin_flip_palette;
     HPALETTE old_palette;
@@ -207,10 +206,10 @@ int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_of
     {
       s.palette_entries[s.palette_index].peFlags = 0;
     }
-    s.log_palette[0].palVersion = 0x300;
-    s.log_palette[0].palNumEntries = 0x100;
-    memcpy(s.log_palette[0].palPalEntry, s.palette_entries, 0x400);
-    s.coin_flip_palette = CreatePalette(s.log_palette);
+    s.log_palette.palVersion = 0x300;
+    s.log_palette.palNumEntries = 0x100;
+    memcpy(s.log_palette.palPalEntry, s.palette_entries, 0x400);
+    s.coin_flip_palette = CreatePalette((LOGPALETTE *)&s.log_palette);
     s.old_palette = global_cart_art_hpalette;
     global_cart_art_hpalette = s.coin_flip_palette;
     s.dialog_result = DialogBoxParamA(g_app_instance,
@@ -269,11 +268,11 @@ BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wpara
     load_text("UIStrings.txt", "DIALOG_COINFLIP");
     if (g_coin_flip_animation_dialog_context->coin_result != 0)
     {
-      SetDlgItemTextA(hwnd, 0x41c, text_lines[1]);
+      SetDlgItemTextA(hwnd, 0x41c, g_text_lines[1]);
     }
     else
     {
-      SetDlgItemTextA(hwnd, 0x41c, text_lines[0]);
+      SetDlgItemTextA(hwnd, 0x41c, g_text_lines[0]);
     }
     ShowWindow(GetDlgItem(hwnd, 0x41c), 0);
     SetDlgItemTextA(hwnd, 0x41b, g_coin_flip_animation_dialog_context->title);
@@ -490,42 +489,42 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     load_text(global_ui_strings_filename, "DIALOG_MULLIGAN");
     if (s.context->starting_player == 1)
     {
-      sprintf(s.text, text_lines[0], s.player_name);
+      sprintf(s.text, g_text_lines[0], s.player_name);
       SetDlgItemTextA(hwnd, 0x442, s.text);
     }
     else
     {
-      SetDlgItemTextA(hwnd, 0x442, text_lines[1]);
+      SetDlgItemTextA(hwnd, 0x442, g_text_lines[1]);
     }
-    sprintf(s.text, text_lines[2], s.player_name);
+    sprintf(s.text, g_text_lines[2], s.player_name);
     SetDlgItemTextA(hwnd, 0x446, s.text);
-    SetDlgItemTextA(hwnd, 0x447, text_lines[3]);
+    SetDlgItemTextA(hwnd, 0x447, g_text_lines[3]);
     if ((g_duel_network_flags & 2) == 0)
     {
       if (s.context->ante_result != 0)
       {
         if (s.context->ante_result == 1)
         {
-          sprintf(s.text, text_lines[4], s.player_name);
+          sprintf(s.text, g_text_lines[4], s.player_name);
         }
         else if (s.context->ante_result == 2)
         {
-          sprintf(s.text, text_lines[5], s.player_name);
+          sprintf(s.text, g_text_lines[5], s.player_name);
         }
         else
         {
-          sprintf(s.text, text_lines[6], s.player_name);
+          sprintf(s.text, g_text_lines[6], s.player_name);
         }
         SetDlgItemTextA(hwnd, 0x443, s.text);
       }
       else
       {
-        sprintf(s.text, text_lines[7], s.player_name);
+        sprintf(s.text, g_text_lines[7], s.player_name);
         SetDlgItemTextA(hwnd, 0x443, s.text);
       }
       if (s.context->ante_result != 0)
       {
-        SetDlgItemTextA(hwnd, 0x444, text_lines[10]);
+        SetDlgItemTextA(hwnd, 0x444, g_text_lines[10]);
         ShowWindow(GetDlgItem(hwnd, 0x444), SW_SHOW);
         SetFocus(GetDlgItem(hwnd, 0x444));
         SendMessageA(hwnd, 0x401, 0x444, 0);
@@ -538,7 +537,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
           {
             ShowWindow(GetDlgItem(hwnd, 0x443), SW_HIDE);
           }
-          SetDlgItemTextA(hwnd, 0x444, text_lines[10]);
+          SetDlgItemTextA(hwnd, 0x444, g_text_lines[10]);
           ShowWindow(GetDlgItem(hwnd, 0x444), SW_SHOW);
           SetFocus(GetDlgItem(hwnd, 0x444));
           SendMessageA(hwnd, 0x401, 0x444, 0);
@@ -561,7 +560,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
       ShowWindow(GetDlgItem(hwnd, IDOK), SW_HIDE);
       if (s.context->redraw_result != 0 && (s.context->ante_result == 0 || g_manalink_is_host != 0))
       {
-        SetDlgItemTextA(hwnd, 0x444, text_lines[10]);
+        SetDlgItemTextA(hwnd, 0x444, g_text_lines[10]);
         ShowWindow(GetDlgItem(hwnd, 0x444), SW_SHOW);
         SetFocus(GetDlgItem(hwnd, 0x444));
         SendMessageA(hwnd, 0x401, 0x444, 0);
@@ -588,16 +587,16 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     s.context->opponent_mulligan_accepted = 0;
     if (s.context->ante_info != 0)
     {
-      sprintf(s.text, text_lines[8], s.player_name);
+      sprintf(s.text, g_text_lines[8], s.player_name);
     }
     else
     {
-      sprintf(s.text, text_lines[9], s.player_name);
+      sprintf(s.text, g_text_lines[9], s.player_name);
     }
     SetDlgItemTextA(hwnd, 0x445, s.text);
     ShowWindow(GetDlgItem(hwnd, 0x445), SW_HIDE);
     s.context->mulligan_accepted = 0;
-    SetDlgItemTextA(hwnd, IDOK, text_lines[11]);
+    SetDlgItemTextA(hwnd, IDOK, g_text_lines[11]);
 
     s.measure_dc = GetDC(hwnd);
     ApplyCardArtPaletteToDc(s.measure_dc);
@@ -735,20 +734,20 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         {
           if (s.ante_info == 1)
           {
-            sprintf(s.text, text_lines[4], s.player_name);
+            sprintf(s.text, g_text_lines[4], s.player_name);
           }
           else if (s.ante_info == 2)
           {
-            sprintf(s.text, text_lines[5], s.player_name);
+            sprintf(s.text, g_text_lines[5], s.player_name);
           }
           else
           {
-            sprintf(s.text, text_lines[6], s.player_name);
+            sprintf(s.text, g_text_lines[6], s.player_name);
           }
           SetDlgItemTextA(hwnd, 0x443, s.text);
           ShowWindow(GetDlgItem(hwnd, 0x443), SW_SHOW);
         }
-        SetDlgItemTextA(hwnd, 0x444, text_lines[10]);
+        SetDlgItemTextA(hwnd, 0x444, g_text_lines[10]);
         ShowWindow(GetDlgItem(hwnd, 0x444), SW_SHOW);
         SetFocus(GetDlgItem(hwnd, 0x444));
         SendMessageA(hwnd, 0x401, 0x444, 0);
@@ -770,11 +769,11 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         copy_opponent_name_prefix(s.player_name);
         if (s.context->opponent_mulligan_accepted != 0)
         {
-          sprintf(s.text, text_lines[8], s.player_name);
+          sprintf(s.text, g_text_lines[8], s.player_name);
         }
         else
         {
-          sprintf(s.text, text_lines[9], s.player_name);
+          sprintf(s.text, g_text_lines[9], s.player_name);
         }
         SetDlgItemTextA(hwnd, 0x445, s.text);
         ShowWindow(GetDlgItem(hwnd, 0x445), SW_SHOW);
@@ -1208,7 +1207,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
     {
       if ((g_duel_network_flags & 2) != 0)
       {
-        sprintf(s.text, text_lines[0], s.player_name);
+        sprintf(s.text, g_text_lines[0], s.player_name);
         SetDlgItemTextA(hwnd, 0x4c4, s.text);
         ShowWindow(GetDlgItem(hwnd, 0x4c5), SW_HIDE);
         ShowWindow(GetDlgItem(hwnd, 0x4c6), SW_HIDE);
@@ -1218,21 +1217,21 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
       }
       else
       {
-        sprintf(s.text, text_lines[0], s.player_name);
+        sprintf(s.text, g_text_lines[0], s.player_name);
         SetDlgItemTextA(hwnd, 0x4c4, s.text);
         s.random_choice = internal_rand(2);
         s.context->play_draw_choice = s.random_choice;
         if (s.context->was_random_starting_player)
         {
-          sprintf(s.text, text_lines[0], s.player_name);
+          sprintf(s.text, g_text_lines[0], s.player_name);
           SetDlgItemTextA(hwnd, 0x4c4, s.text);
           if (s.random_choice)
           {
-            SetDlgItemTextA(hwnd, 0x4c7, text_lines[1]);
+            SetDlgItemTextA(hwnd, 0x4c7, g_text_lines[1]);
           }
           else
           {
-            SetDlgItemTextA(hwnd, 0x4c7, text_lines[2]);
+            SetDlgItemTextA(hwnd, 0x4c7, g_text_lines[2]);
           }
           ShowWindow(GetDlgItem(hwnd, 0x4c7), SW_HIDE);
           SetTimer(hwnd, 1, 1000, (TIMERPROC)0);
@@ -1242,11 +1241,11 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
           ShowWindow(GetDlgItem(hwnd, 0x4c4), SW_HIDE);
           if (s.random_choice)
           {
-            sprintf(s.text, text_lines[7], s.player_name);
+            sprintf(s.text, g_text_lines[7], s.player_name);
           }
           else
           {
-            sprintf(s.text, text_lines[8], s.player_name);
+            sprintf(s.text, g_text_lines[8], s.player_name);
           }
           SetDlgItemTextA(hwnd, 0x4c7, s.text);
         }
@@ -1260,15 +1259,15 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
     {
       if (s.context->was_random_starting_player)
       {
-        SetDlgItemTextA(hwnd, 0x4c4, text_lines[3]);
+        SetDlgItemTextA(hwnd, 0x4c4, g_text_lines[3]);
       }
       else
       {
         ShowWindow(GetDlgItem(hwnd, 0x4c4), SW_HIDE);
       }
-      SetDlgItemTextA(hwnd, 0x4c7, text_lines[4]);
-      SetDlgItemTextA(hwnd, 0x4c5, text_lines[5]);
-      SetDlgItemTextA(hwnd, 0x4c6, text_lines[6]);
+      SetDlgItemTextA(hwnd, 0x4c7, g_text_lines[4]);
+      SetDlgItemTextA(hwnd, 0x4c5, g_text_lines[5]);
+      SetDlgItemTextA(hwnd, 0x4c6, g_text_lines[6]);
       SetFocus(GetDlgItem(hwnd, 0x4c5));
       SendMessageA(hwnd, 0x401, 0x4c5, 0);
     }
@@ -1325,11 +1324,11 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
       load_text(global_ui_strings_filename, "DIALOG_PLAYORDRAW");
       if (s.context->play_draw_choice != 0)
       {
-        SetDlgItemTextA(hwnd, 0x4c7, text_lines[1]);
+        SetDlgItemTextA(hwnd, 0x4c7, g_text_lines[1]);
       }
       else
       {
-        SetDlgItemTextA(hwnd, 0x4c7, text_lines[2]);
+        SetDlgItemTextA(hwnd, 0x4c7, g_text_lines[2]);
       }
       ShowWindow(GetDlgItem(hwnd, 0x4c7), SW_SHOW);
       SetTimer(hwnd, 2, 3000, (TIMERPROC)0);
@@ -1483,7 +1482,7 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
   {
     if ((g_duel_network_flags & 2) != 0)
     {
-      s.coin_flip_context.coin_flip_result = coin_flip(starting_player_value, text_lines[0], 0);
+      s.coin_flip_context.coin_flip_result = coin_flip(starting_player_value, g_text_lines[0], 0);
       if (g_manalink_is_host != 0)
       {
         s.coin_flip_context.coin_winner = 1 - s.coin_flip_context.coin_flip_result;
@@ -1495,7 +1494,7 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
     }
     else
     {
-      if (coin_flip(starting_player_value, text_lines[0], 0) == 0)
+      if (coin_flip(starting_player_value, g_text_lines[0], 0) == 0)
       {
         s.coin_flip_context.coin_winner = 1;
       }
@@ -1512,7 +1511,7 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
     s.coin_flip_context.was_random_starting_player = 0;
   }
 
-  if (starting_player_was_random != 0)
+  if (g_starting_player_was_random != 0)
   {
     s.coin_flip_context.coin_flip_result =
         DialogBoxParamA(g_app_instance, (LPCSTR)0xf4, g_duel_window_hwnd, dlgproc_duel_coin_flip, (LPARAM)&s.coin_flip_context);

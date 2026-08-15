@@ -9,12 +9,12 @@ char *get_displayed_card_name(int player, int card);
 // FUNCTION: SHANDALAR 0x0040f132
 unsigned int get_current_stack_action(void)
 {
-  if (stack_size == 0)
+  if (g_stack_size == 0)
   {
     return 0xffffffffU;
   }
 
-  return (unsigned int)DAT_0093917c[stack_size];
+  return (unsigned int)DAT_0093917c[g_stack_size];
 }
 
 // FUNCTION: MAGIC 0x00444c43

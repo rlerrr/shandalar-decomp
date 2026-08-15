@@ -14,14 +14,14 @@ int card_contract_from_below(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
-    ai_modifier += duel_summary.hand_counts[player] * -0x18 + 0x48;
+    g_ai_modifier += g_duel_summary.hand_counts[player] * -0x18 + 0x48;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    cards_in_hand = duel_summary.hand_counts[player];
+    cards_in_hand = g_duel_summary.hand_counts[player];
     for (current_card = 0; current_card < cards_in_hand; ++current_card)
     {
       discard(player, 0, 0);
@@ -50,14 +50,14 @@ int card_darkpact(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     load_text("promptsX1.txt", "DARKPACT");
     if (!C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
-                              text_lines[0], 1, &s.target))
+                              g_text_lines[0], 1, &s.target))
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     else
     {
@@ -86,13 +86,13 @@ int card_darkpact(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).token_status |= 0x10000;
       }
       load_text("promptsX1.txt", "DARKPACT");
-      if (player == current_player)
+      if (player == g_current_player)
       {
-        do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, text_lines[1], 0);
+        do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, g_text_lines[1], 0);
       }
       else
       {
-        do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, text_lines[2], 0);
+        do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, g_text_lines[2], 0);
       }
       if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
       {
@@ -155,9 +155,9 @@ int card_resurrection(int player, int card, event_t event)
     return graveyard_has_type(player, 2);
   }
 
-  if (((event == EVENT_CAST_SPELL) && (card == affected_card)) && (player == affected_card_controller))
+  if (((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller))
   {
-    if (((player == other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1))
+    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1))
     {
       s.can_select = 1;
       s.graveyard_index = find_highest_value_graveyard_card_by_type(player, 2);
@@ -178,7 +178,7 @@ int card_resurrection(int player, int card, event_t event)
         }
       }
       load_text("promptsX1.txt", "RESURRECTION");
-      s.prompt = text_lines;
+      s.prompt = g_text_lines;
       s.can_select = select_from_graveyard_with_dialog(player,
                                        global_graveyard_slots[player],
                                        s.selectable,
@@ -204,7 +204,7 @@ int card_resurrection(int player, int card, event_t event)
     }
     else
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
   }
 
@@ -226,7 +226,7 @@ int card_resurrection(int player, int card, event_t event)
                            PLAYER_CARD_INSTANCE(player, card).targets[0].card)
           .token_status |= 4;
       kill_card(player, card, KILL_DESTROY);
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);

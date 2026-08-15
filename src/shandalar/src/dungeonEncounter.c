@@ -84,14 +84,14 @@ extern int g_world_lair_monster_sprite_widths[0x10];
 extern int g_world_location_music_track_id;
 extern int g_world_location_music_active;
 extern int DAT_00742fc0;
-extern int encounter_opening_hand_size_modifier;
-extern int current_encounter_strength;
-extern int ai_combat_value_weights[4];
-extern int current_encounter_color;
-extern int opponent_starting_card_id_1;
-extern int opponent_starting_card_id_2;
+extern int g_encounter_opening_hand_size_modifier;
+extern int g_current_encounter_strength;
+extern int g_ai_combat_value_weights[4];
+extern int g_current_encounter_color;
+extern int g_opponent_starting_card_id_1;
+extern int g_opponent_starting_card_id_2;
 extern int Gold;
-extern int life[2];
+extern int g_life[2];
 extern int deck[500];
 extern char g_ui_message_buffer[0x1000];
 extern HPALETTE g_palette_handle;
@@ -875,25 +875,25 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
       }
     }
   }
-  current_encounter_color = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
+  g_current_encounter_color = (int)(char)g_castle_dungeon_slots[dungeon_index].color;
   if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
   {
-    opponent_starting_card_id_2 = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
+    g_opponent_starting_card_id_2 = FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect);
   }
   s.creature_type = g_dungeon_runtime_state.encounter.selected.monster_creature_types[monster_slot];
-  current_encounter_strength = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
-  encounter_opening_hand_size_modifier = 0;
+  g_current_encounter_strength = (int)g_shandalar_monster_definitions[s.creature_type].base_strength;
+  g_encounter_opening_hand_size_modifier = 0;
   if (monster_slot != 4)
   {
-    ai_combat_value_weights[0] = 0x10;
+    g_ai_combat_value_weights[0] = 0x10;
   }
   if (dungeon_index < 5)
   {
-    current_encounter_strength = 2;
-    s.work_index = monster_slot + g_shandalar_difficulty + current_encounter_strength - 5;
+    g_current_encounter_strength = 2;
+    s.work_index = monster_slot + g_shandalar_difficulty + g_current_encounter_strength - 5;
     if (s.work_index >= 0)
     {
-      opponent_starting_card_id_1 =
+      g_opponent_starting_card_id_1 =
           FindCardIndexByCsvid(((int (*)[3])g_dungeon_monster_duel_music_csvids)
                                    [(char)g_castle_dungeon_slots[dungeon_index].color - 1][ClampIntToRange(s.work_index, 0, 2)]);
     }
@@ -909,7 +909,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   {
     sprintf(g_ui_message_buffer, gs_dungeon_0077f000[0x10], BuildCreatureNameWithArticle(s.creature_type));
   }
-  if (opponent_starting_card_id_1 != -1)
+  if (g_opponent_starting_card_id_1 != -1)
   {
     s.work_index =
         ((int (*)[3])g_dungeon_monster_duel_music_csvids)[(char)g_castle_dungeon_slots[dungeon_index].color - 1]
@@ -918,7 +918,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
                                                 gs_dungeon_0077f000[0x11], GetCreatureName(s.creature_type),
                                                 global_cards_data[FindCardIndexByCsvid(s.work_index)].name);
   }
-  if (opponent_starting_card_id_2 != -1)
+  if (g_opponent_starting_card_id_2 != -1)
   {
     sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_dungeon_0077f000[0x12],
             global_cards_data[FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
@@ -942,15 +942,15 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   {
     g_next_duel_card_id = -1;
   }
-  life[0] = CountDuelPoolEligibleTowns();
-  life[0] = CountDuelPoolEligibleTowns();
-  life[0] += g_next_duel_life_delta;
-  life[0] = life[0] + g_dungeon_life_reward_delta;
+  g_life[0] = CountDuelPoolEligibleTowns();
+  g_life[0] = CountDuelPoolEligibleTowns();
+  g_life[0] += g_next_duel_life_delta;
+  g_life[0] = g_life[0] + g_dungeon_life_reward_delta;
   if ((0 < g_next_duel_card_id) && (g_next_duel_card_id <= 5))
   {
-    life[0] = life[0] + g_next_duel_card_id;
+    g_life[0] = g_life[0] + g_next_duel_card_id;
   }
-  player_starting_life = life[0];
+  g_player_starting_life = g_life[0];
   if (final_battle != 0)
   {
     sound_stop(100);
@@ -997,7 +997,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
   }
   if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 1) != 0)
   {
-    g_next_duel_life_delta = life[0] - player_starting_life;
+    g_next_duel_life_delta = g_life[0] - g_player_starting_life;
     g_dungeon_life_reward_delta += g_next_duel_life_delta;
     g_next_duel_life_delta = 0;
   }
@@ -1155,13 +1155,13 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
         g_shandalar_monster_definitions[s.final_creature].tier *
         (g_shandalar_difficulty + 1);
     LoadCreatureDuelDeck(s.final_creature, 0, 0, -1);
-    current_encounter_color = s.wizard_color;
-    encounter_opening_hand_size_modifier = 0;
-    current_encounter_strength = 3;
+    g_current_encounter_color = s.wizard_color;
+    g_encounter_opening_hand_size_modifier = 0;
+    g_current_encounter_strength = 3;
     g_next_duel_life_delta = 0;
     sound_stop(0x10);
-    opponent_starting_card_id_1 = FindCardIndexByCsvid(0x11);
-    opponent_starting_card_id_2 = FindCardIndexByCsvid(0x1d);
+    g_opponent_starting_card_id_1 = FindCardIndexByCsvid(0x11);
+    g_opponent_starting_card_id_2 = FindCardIndexByCsvid(0x1d);
     RunDuelEngine(0, s.final_creature);
     AddJournalEntry(JOURNAL_ENTRY_CREATURE_DUEL, 0xb7);
     AnimatePaletteToColor(0, g_default_palette_fade_steps);
@@ -1177,7 +1177,7 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
     SelectPalette(g_graphics_pages[0]->hTempDC, g_palette_handle, 0);
     RealizePalette(g_graphics_pages[0]->hTempDC);
     PlayCastleMusic(6);
-    s.endgame_score = s.endgame_score + (100 - life[1]) * 10;
+    s.endgame_score = s.endgame_score + (100 - g_life[1]) * 10;
     LoadPcxIntoPageNoPalette("wingame.pic");
     if (global_screen_width == 0x280)
     {
@@ -1213,8 +1213,8 @@ undefined4 HandleDefeatedWizardCastle(int castle_index)
 void EnterCastleDungeon(int dungeon_index)
 {
   RunCastleDungeonBoard(dungeon_index);
-  opponent_starting_card_id_1 = -1;
-  opponent_starting_card_id_2 = -1;
+  g_opponent_starting_card_id_1 = -1;
+  g_opponent_starting_card_id_2 = -1;
   return;
 }
 

@@ -70,8 +70,8 @@ int card_gem_bazaar(int player, int card, event_t event)
   }
 
   if (event == EVENT_RESOLVE_SPELL ||
-      ((event == EVENT_TAP_CARD || event == EVENT_PLAY_ABILITY) && affected_card == card &&
-       affected_card_controller == player))
+      ((event == EVENT_TAP_CARD || event == EVENT_PLAY_ABILITY) && g_affected_card == card &&
+       g_affected_card_controller == player))
   {
     if (g_duel_ai_mode_state != 1)
     {
@@ -82,7 +82,7 @@ int card_gem_bazaar(int player, int card, event_t event)
     {
       (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(network_random(player, 5) + 1));
     }
-    else if (player == active_player)
+    else if (player == g_active_player)
     {
       (global_card_instances[player])[card].mana_color = (char)(1 << (unsigned char)(internal_rand(5) + 1));
     }
@@ -147,11 +147,11 @@ int card_library_of_alexandria(int player, int card, event_t event)
       load_text("prompts.txt", "LIBRARY_OF_ALEXANDRIA");
     }
 
-    if (duel_summary.hand_counts[player] == 7)
+    if (g_duel_summary.hand_counts[player] == 7)
     {
       if (g_duel_ai_mode_state != 1)
       {
-        sprintf(s.dialog, " %s\n %s\n %s", text_lines[0], text_lines[1], text_lines[2]);
+        sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
       }
       s.default_action = 1;
     }
@@ -159,12 +159,12 @@ int card_library_of_alexandria(int player, int card, event_t event)
     {
       if (g_duel_ai_mode_state != 1)
       {
-        sprintf(s.dialog, " %s\n %s\n %s", text_lines[0], text_lines[1], text_lines[2]);
+        sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
       }
       s.default_action = 0;
     }
 
-    if (((other_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
+    if (((g_other_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
     {
       s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
     }
@@ -183,11 +183,11 @@ int card_library_of_alexandria(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       undeclare_mana_available(player, COLOR_COLORLESS, 1);
       PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
-      produced_mana_color = -1;
+      g_produced_mana_color = -1;
     }
     else
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
 
     return 0;
@@ -242,7 +242,7 @@ int card_assembly_worker(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0042d548
 int card_mishra_s_workshop(int player, int card, event_t event)
 {
-  if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player)
+  if (event == EVENT_COUNT_MANA && g_affected_card == card && g_affected_card_controller == player)
   {
     if (!is_animated_and_sick(player, card))
     {
@@ -267,7 +267,7 @@ int card_mishra_s_workshop(int player, int card, event_t event)
   {
     undeclare_mana_available_and_produce_it(player, COLOR_ARTIFACT, 3);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-    produced_mana_color = COLOR_ARTIFACT;
+    g_produced_mana_color = COLOR_ARTIFACT;
     return 0;
   }
 
@@ -283,7 +283,7 @@ int card_mishra_s_workshop(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0042d790
 int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t color)
 {
-  if (event == EVENT_COUNT_MANA && affected_card == card && affected_card_controller == player)
+  if (event == EVENT_COUNT_MANA && g_affected_card == card && g_affected_card_controller == player)
   {
     if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {
@@ -304,7 +304,7 @@ int mana_producer_sound_on_resolve(int player, int card, event_t event, color_t 
   {
     undeclare_mana_available_and_produce_it(player, color, 1);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-    produced_mana_color = color;
+    g_produced_mana_color = color;
     return 0;
   }
 

@@ -132,14 +132,14 @@ int register_MAGICGAME_ManaSummaryClass(LPCSTR class_name)
 
   g_mana_summary_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_MANAPOOL");
-  strcpy(g_mana_summary_menu_black_text, text_lines[0]);
-  strcpy(g_mana_summary_menu_blue_text, text_lines[1]);
-  strcpy(g_mana_summary_menu_green_text, text_lines[2]);
-  strcpy(g_mana_summary_menu_red_text, text_lines[3]);
-  strcpy(g_mana_summary_menu_white_text, text_lines[4]);
-  strcpy(g_mana_summary_menu_colorless_text, text_lines[5]);
-  strcpy(g_mana_summary_menu_artifact_text, text_lines[6]);
-  strcpy(g_mana_summary_menu_help_text, text_lines[7]);
+  strcpy(g_mana_summary_menu_black_text, g_text_lines[0]);
+  strcpy(g_mana_summary_menu_blue_text, g_text_lines[1]);
+  strcpy(g_mana_summary_menu_green_text, g_text_lines[2]);
+  strcpy(g_mana_summary_menu_red_text, g_text_lines[3]);
+  strcpy(g_mana_summary_menu_white_text, g_text_lines[4]);
+  strcpy(g_mana_summary_menu_colorless_text, g_text_lines[5]);
+  strcpy(g_mana_summary_menu_artifact_text, g_text_lines[6]);
+  strcpy(g_mana_summary_menu_help_text, g_text_lines[7]);
 
   strcpy(s.path, global_duelart_path);
   strcat(s.path, "\\WINBK_ManaPool.pic");
@@ -497,7 +497,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
     s.has_cuecard = 0;
     for (s.menu_index = 0; s.menu_index < 7; s.menu_index++)
     {
-      if (mana_charge[s.menu_index] != 0)
+      if (g_mana_charge[s.menu_index] != 0)
       {
         s.has_cuecard = 1;
       }

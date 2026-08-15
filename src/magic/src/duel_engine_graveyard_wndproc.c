@@ -194,13 +194,13 @@ int register_MAGICGAME_GraveyardClass(LPCSTR class_name)
   atom3 = RegisterClassA(&wndclass);
   g_graveyard_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_GRAVEYARD");
-  strcpy(g_graveyard_menu_view_text, text_lines[0]);
-  strcpy(g_graveyard_menu_view_exile_text, text_lines[1]);
-  strcpy(g_graveyard_menu_view_antes_text, text_lines[2]);
-  strcpy(g_graveyard_menu_help_text, text_lines[3]);
+  strcpy(g_graveyard_menu_view_text, g_text_lines[0]);
+  strcpy(g_graveyard_menu_view_exile_text, g_text_lines[1]);
+  strcpy(g_graveyard_menu_view_antes_text, g_text_lines[2]);
+  strcpy(g_graveyard_menu_help_text, g_text_lines[3]);
   load_text_with_tab_escapes(global_ui_strings_filename, "DIALOG_VIEWANTES");
-  strcpy(g_graveyard_view_antes_opponent_text, text_lines[0]);
-  strcpy(g_graveyard_view_antes_player_text, text_lines[1]);
+  strcpy(g_graveyard_view_antes_opponent_text, g_text_lines[0]);
+  strcpy(g_graveyard_view_antes_player_text, g_text_lines[1]);
   return atom1 != 0 && atom2 != 0 && atom3 != 0;
 }
 

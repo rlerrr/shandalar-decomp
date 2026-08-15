@@ -750,12 +750,12 @@ int RunAdventureSession(void)
 
   s.initialized_world = 0;
   s.proceed_to_main_loop = 0;
-  opponent_starting_card_id_1 = -1;
-  opponent_starting_card_id_2 = opponent_starting_card_id_1;
+  g_opponent_starting_card_id_1 = -1;
+  g_opponent_starting_card_id_2 = g_opponent_starting_card_id_1;
   InitializeDuelUiGlobalIds();
   for (s.loop_index = 0; s.loop_index < 4; s.loop_index = s.loop_index + 1)
   {
-    ai_combat_value_weights[s.loop_index] = 8;
+    g_ai_combat_value_weights[s.loop_index] = 8;
   }
 
   LoadTownHintMetadata();
@@ -805,7 +805,7 @@ opening_menu:
     LoadPcxIntoPageNoPalette("advfac64.pic");
     LoadPcxIntoPage(1, (char *)PTR_s_advinter800_pic_00589de8);
     BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
-    skip_new_game_state_initialization = 0;
+    g_skip_new_game_state_initialization = 0;
     if (s.initialized_world == 0)
     {
       setup_shared_startup();
@@ -813,7 +813,7 @@ opening_menu:
     s.initialized_world = 1;
     g_page0_window_bounds->font_slot = 5;
     LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-    DrawTextAt(g_page0_window_bounds, 0xff, 0x140, 0xbc, text_lines[0]);
+    DrawTextAt(g_page0_window_bounds, 0xff, 0x140, 0xbc, g_text_lines[0]);
     g_world_scene_reveal_effect_pending = 1;
     InitializeNewGameState();
     GenerateAdventureWorldMap();
@@ -833,12 +833,12 @@ opening_menu:
     SaveGameToSlot(3);
     break;
   case 1:
-    skip_new_game_state_initialization = 0;
+    g_skip_new_game_state_initialization = 0;
     load_selected_duel_save_slot(RunLoadGameMenu());
     break;
 
   case 2:
-    skip_new_game_state_initialization = 0;
+    g_skip_new_game_state_initialization = 0;
     load_selected_duel_save_slot(3);
     break;
 
@@ -1051,14 +1051,14 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   {
     g_text_menu_needs_layout = 0;
     g_mouse_button_mask_snapshot = 0;
-    if (random_seed_initialized == 0)
+    if (g_random_seed_initialized == 0)
     {
       SeedRandomFromTickCount();
     }
 
     if (g_text_menu_timeout_seconds != -1)
     {
-      s.timer_seconds_left = g_text_menu_timeout_seconds - GetUiTickCount() / (game_time_scale * 0x3c);
+      s.timer_seconds_left = g_text_menu_timeout_seconds - GetUiTickCount() / (g_game_time_scale * 0x3c);
       if (s.timer_seconds_left == 0)
       {
         s.selected_menu_entry = -1;
@@ -1571,7 +1571,7 @@ void LoadCardRaritiesAndCsvOffsets(void)
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 0x4e2; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    master_csv_offsets[s.location_block_start_index] = -1;
+    g_master_csv_offsets[s.location_block_start_index] = -1;
   }
 
   s.entry_index = fopen("concise.csv", "rt");
@@ -1582,7 +1582,7 @@ void LoadCardRaritiesAndCsvOffsets(void)
     s.inner_index = global_cards_data[s.location_block_start_index].id;
     s.scan_result = fscanf(s.entry_index, "%d %d %ld\n", &s.icon_width_scaled, &s.icon_height_scaled, &s.selected_state_sprite);
     global_cards_data[s.location_block_start_index].rarity = (unsigned char)s.icon_height_scaled;
-    master_csv_offsets[s.inner_index] = s.selected_state_sprite;
+    g_master_csv_offsets[s.inner_index] = s.selected_state_sprite;
   }
 
   fclose(s.entry_index);
@@ -1711,14 +1711,14 @@ void InitializeNewGameState(void)
     deck[s.location_block_start_index] = -1;
   }
 
-  if (skip_new_game_state_initialization)
+  if (g_skip_new_game_state_initialization)
   {
     return;
   }
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 7; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    opponent_deck_color_filter_by_color[s.location_block_start_index] = 0;
+    g_opponent_deck_color_filter_by_color[s.location_block_start_index] = 0;
     g_duel_special_rules_by_color[s.location_block_start_index] = -1;
   }
 
@@ -1792,7 +1792,7 @@ void InitializeNewGameState(void)
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 4; s.location_block_start_index = s.location_block_start_index + 1)
   {
-    ai_combat_value_weights[s.location_block_start_index] = 8;
+    g_ai_combat_value_weights[s.location_block_start_index] = 8;
   }
 
   for (s.location_block_start_index = 0; s.location_block_start_index < 0x96; s.location_block_start_index = s.location_block_start_index + 1)
@@ -3393,12 +3393,12 @@ int LoadGameFromPath(char *save_file_path)
     {
       if (global_card_instances[s.player_index][s.slot_index].internal_card_id != -1)
       {
-        active_cards_count[s.player_index] = s.slot_index;
+        g_active_cards_count[s.player_index] = s.slot_index;
       }
     }
   }
 
-  if (duel_active == 0)
+  if (g_duel_active == 0)
   {
     HideMouseCursorNested();
     strcpy(save_file_path + 9, "map");
@@ -3450,7 +3450,7 @@ int SaveGameToPath(char *save_file_path)
     FacemakerWindowBounds *page4_bounds_ptr;
   } s;
 
-  if (duel_active == 0)
+  if (g_duel_active == 0)
   {
     strcpy(save_file_path + 9, "map");
     if (ExportGraphicsPage(2, save_file_path) != 0)
@@ -4250,7 +4250,7 @@ void RunDebugToggleWorldMagicMenu(void)
     {
       if (world_magic_index < loaded_count)
       {
-        world_magic_name = text_lines[world_magic_index];
+        world_magic_name = g_text_lines[world_magic_index];
       }
       else
       {
@@ -4311,7 +4311,7 @@ int RunRightClickMenuAndQueueInput(void)
 
   s.previous_font_slot = g_page0_window_bounds->font_slot;
   LoadTextSectionLines("ADVstrings.txt", "STARTUP");
-  s.menu_text = text_lines[1];
+  s.menu_text = g_text_lines[1];
   g_page0_window_bounds->font_slot = 4;
 
 #ifdef _DEBUG
@@ -4585,7 +4585,7 @@ void UpdateAdventureWorldInputAndMovement(void)
     case 0x71:
       g_page0_window_bounds->font_slot = 4;
       LoadTextSectionLines("ADVstrings.txt", "SHUTDOWN");
-      strcpy(g_ui_message_buffer, text_lines[0]);
+      strcpy(g_ui_message_buffer, g_text_lines[0]);
       if (RunTextMenuAtScaled(g_ui_message_buffer, 100, 0x50) == 1)
       {
         g_adventure_world_exit_requested = 1;
@@ -5314,7 +5314,7 @@ int RunRandomAiDuelDemo(void)
   }
 
   g_selected_wizard_color = 0;
-  opponent_initial_library_index = 1;
+  g_opponent_initial_library_index = 1;
   for (ante_index = 0; ante_index < 0x10; ante_index++)
   {
     global_ante_cards[1][ante_index] = -1;
@@ -5765,7 +5765,7 @@ unsigned int WaitForInputEventUnlessBlocked(void)
     return 0;
   }
 
-  return (duel_active != 0) ? 0 : WaitForInputEvent();
+  return (g_duel_active != 0) ? 0 : WaitForInputEvent();
 }
 
 // FUNCTION: SHANDALAR 0x004ecf30
@@ -5935,20 +5935,20 @@ int LoadAdvStringsFile(const char *filename)
   s.ok &= LoadTextSectionStringTable(filename, "LAIR_NAMES", gs_lair_names_0077c020, 0x13, gs_lair_names_buf_0074bd30, gs_lair_names_buf_0074bd30 + 0x3b6, (char **)0);
 
   LoadTextSectionLines(filename, "CITYNAMES_FORMAT");
-  strcpy(gs_cityname_format_left_0074c950, text_lines[0]);
-  strcpy(gs_cityname_format_right_0077f190, text_lines[1]);
+  strcpy(gs_cityname_format_left_0074c950, g_text_lines[0]);
+  strcpy(gs_cityname_format_right_0077f190, g_text_lines[1]);
 
   LoadTextSectionLines(filename, "CITYNAME_VILLAGE");
-  strcpy(gs_cityname_village_0077cfd0, text_lines[0]);
+  strcpy(gs_cityname_village_0077cfd0, g_text_lines[0]);
 
   LoadTextSectionLines(filename, "CITYNAME_CASTLE");
-  strcpy(gs_cityname_castle_00765dc0, text_lines[0]);
+  strcpy(gs_cityname_castle_00765dc0, g_text_lines[0]);
 
   LoadTextSectionLines(filename, "CITYNAME_MANACASTLE");
 
   for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_cityname_manacastle_0077de00[s.i + 1], text_lines[s.i]);
+    strcpy(gs_cityname_manacastle_0077de00[s.i + 1], g_text_lines[s.i]);
   }
   strcpy(gs_cityname_manacastle_0077de00[0], gs_cityname_castle_00765dc0);
 
@@ -5960,7 +5960,7 @@ int LoadAdvStringsFile(const char *filename)
 
   s.next_buf = gs_worldmagic_buf_0074b160;
   LoadTextSectionLines(filename, "WORLDMAGIC");
-  strcpy(gs_worldmagic_title_0077e1d0, text_lines[0]);
+  strcpy(gs_worldmagic_title_0077e1d0, g_text_lines[0]);
   s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_NAMES", gs_worldmagic_names_00780660, 0xc, gs_worldmagic_buf_0074b160,
                                      gs_worldmagic_buf_0074b160 + sizeof(gs_worldmagic_buf_0074b160), &s.next_buf);
   s.ok &= LoadTextSectionStringTable(filename, "WORLDMAGIC_EXPLAINS", gs_worldmagic_explains_0074b8f0, 0xc, s.next_buf,
@@ -5972,7 +5972,7 @@ int LoadAdvStringsFile(const char *filename)
   LoadTextSectionLines(filename, "WIZARDNAMES");
   for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_wizardnames_0077ee70[s.i + 1], text_lines[s.i]);
+    strcpy(gs_wizardnames_0077ee70[s.i + 1], g_text_lines[s.i]);
   }
   strcpy(gs_wizardnames_0077ee70[0], "");
 
@@ -5980,7 +5980,7 @@ int LoadAdvStringsFile(const char *filename)
   s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
   for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    strcpy(g_shandalar_monster_definitions[s.i].name, text_lines[s.i]);
+    strcpy(g_shandalar_monster_definitions[s.i].name, g_text_lines[s.i]);
   }
   for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
@@ -5991,7 +5991,7 @@ int LoadAdvStringsFile(const char *filename)
   s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
   for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    strcpy(g_shandalar_monster_definitions[s.i].article, text_lines[s.i]);
+    strcpy(g_shandalar_monster_definitions[s.i].article, g_text_lines[s.i]);
   }
   for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
@@ -6002,7 +6002,7 @@ int LoadAdvStringsFile(const char *filename)
   s.line_count = MIN(s.line_count, (int)gs_creature_name_count_00593934);
   for (s.i = 0; s.i < s.line_count; s.i = s.i + 1)
   {
-    strcpy(g_shandalar_monster_definitions[s.i].plural, text_lines[s.i]);
+    strcpy(g_shandalar_monster_definitions[s.i].plural, g_text_lines[s.i]);
   }
   for (s.i = s.line_count; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
@@ -6012,7 +6012,7 @@ int LoadAdvStringsFile(const char *filename)
   LoadTextSectionLines(filename, "DIRECTIONS");
   for (s.i = 0; s.i < 4; s.i = s.i + 1)
   {
-    strcpy(gs_directions_00765d50[s.i], text_lines[s.i]);
+    strcpy(gs_directions_00765d50[s.i], g_text_lines[s.i]);
   }
 
   s.next_buf = gs_cardclassnames_buf_0074c5c0;
@@ -6022,43 +6022,43 @@ int LoadAdvStringsFile(const char *filename)
                                      gs_cardclassnames_buf_0074c5c0 + sizeof(gs_cardclassnames_buf_0074c5c0), (char **)0);
 
   LoadTextSectionLines(filename, "SPELLNAMES");
-  strcpy(gs_spellname_primary_0077e6e0, text_lines[0]);
+  strcpy(gs_spellname_primary_0077e6e0, g_text_lines[0]);
   for (s.i = 1; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_spellnames_0077e220[s.i], text_lines[s.i]);
+    strcpy(gs_spellnames_0077e220[s.i], g_text_lines[s.i]);
   }
-  strcpy(gs_spellnames_0077e220[0], text_lines[6]);
+  strcpy(gs_spellnames_0077e220[0], g_text_lines[6]);
 
   LoadTextSectionLines(filename, "MANANAMES");
   for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_mananames_0074d980[s.i + 1], text_lines[s.i]);
+    strcpy(gs_mananames_0074d980[s.i + 1], g_text_lines[s.i]);
   }
   strcpy(gs_mananames_0074d980[0], "");
 
   LoadTextSectionLines(filename, "LANDWALKS");
   for (s.i = 0; s.i < 5; s.i = s.i + 1)
   {
-    strcpy(gs_landwalks_007806f0[s.i + 1], text_lines[s.i]);
+    strcpy(gs_landwalks_007806f0[s.i + 1], g_text_lines[s.i]);
   }
   strcpy(gs_landwalks_007806f0[0], "");
 
   LoadTextSectionLines(filename, "AMULETNAMES");
   for (s.i = 0; s.i < 6; s.i = s.i + 1)
   {
-    strcpy(gs_amuletnames_0077d090[s.i], text_lines[s.i]);
+    strcpy(gs_amuletnames_0077d090[s.i], g_text_lines[s.i]);
   }
 
   LoadTextSectionLines(filename, "AMULETNAMES_PLURAL");
   for (s.i = 0; s.i < 6; s.i = s.i + 1)
   {
-    strcpy(gs_amuletnames_plural_0077edd0[s.i], text_lines[s.i]);
+    strcpy(gs_amuletnames_plural_0077edd0[s.i], g_text_lines[s.i]);
   }
 
   LoadTextSectionLines(filename, "COLORCARDS");
   for (s.i = 0; s.i < 6; s.i = s.i + 1)
   {
-    strcpy(gs_colorcards_0077c5e0[s.i], text_lines[s.i]);
+    strcpy(gs_colorcards_0077c5e0[s.i], g_text_lines[s.i]);
   }
 
   s.ok &= LoadTextSectionStringTable(filename, "CAVE_SHOWCLUES", gs_cave_showclues_0077efa0, 0x17, gs_cave_showclues_buf_007658d0,
@@ -6120,12 +6120,12 @@ int LoadAdvStringsFile(const char *filename)
                                      gs_cityscreen_buttons_buf_0077f450 + sizeof(gs_cityscreen_buttons_buf_0077f450), (char **)0);
 
   LoadTextSectionLines(filename, "SHOWLIST");
-  strcpy(gs_showcard_text_0077e110.title, text_lines[0]);
-  strcpy(gs_showcard_text_0077e110.accept_keys, text_lines[1]);
+  strcpy(gs_showcard_text_0077e110.title, g_text_lines[0]);
+  strcpy(gs_showcard_text_0077e110.accept_keys, g_text_lines[1]);
 
   LoadTextSectionLines(filename, "SHOWLIBRARY");
-  strcpy(gs_showlibrary_text_0074bcc0.title, text_lines[0]);
-  strcpy(gs_showlibrary_text_0074bcc0.accept_keys, text_lines[1]);
+  strcpy(gs_showlibrary_text_0074bcc0.title, g_text_lines[0]);
+  strcpy(gs_showlibrary_text_0074bcc0.accept_keys, g_text_lines[1]);
 
   return s.ok;
 }
@@ -6153,10 +6153,10 @@ int LoadTextSectionStringTable(const char *filename, const char *section, char *
 
   for (s.i = 0; s.i < s.count && s.overflow == 0; s.i++)
   {
-    s.line_len = strlen(text_lines[s.i]);
+    s.line_len = strlen(g_text_lines[s.i]);
     if (s.cursor + s.line_len < s.end)
     {
-      strcpy(s.cursor, text_lines[s.i]);
+      strcpy(s.cursor, g_text_lines[s.i]);
       out_table[s.i] = s.cursor;
       s.cursor = s.cursor + s.line_len + 1;
     }

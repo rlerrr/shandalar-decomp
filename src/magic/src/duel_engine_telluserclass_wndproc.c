@@ -116,8 +116,8 @@ int register_MAGIC_TellUserClass(LPCSTR class_name)
   strcat(s.path, "\\WINBK_TellUser.pic");
   g_tell_user_background_bitmap = load_pic(s.path);
   load_text(global_ui_strings_filename, "BUTTONLABELS");
-  strcpy(DAT_008ce680, text_lines[0]);
-  strcpy(g_custom_duel_action_text, text_lines[1]);
+  strcpy(DAT_008ce680, g_text_lines[0]);
+  strcpy(g_custom_duel_action_text, g_text_lines[1]);
   g_tell_user_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
   g_tell_user_button_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
   g_tell_user_border_pen_1 = CreatePen(0, 0, 0x10000cb);
@@ -242,8 +242,8 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       {
         s.action_value = -1;
       }
-      stop_phase_player = -1;
-      stop_phase = -1;
+      g_stop_phase_player = -1;
+      g_stop_phase = -1;
       unk_00715fb0 = 0;
       g_tell_user_command_packet[0] = -2;
       g_tell_user_command_packet[1] = -1;

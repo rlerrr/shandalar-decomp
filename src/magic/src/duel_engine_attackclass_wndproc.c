@@ -227,11 +227,11 @@ int register_MAGICGAME_AttackClass(LPCSTR class_name)
 
   g_attack_minimized_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_ATTACK");
-  strcpy(DAT_0069c628, text_lines[0]);
-  strcpy(DAT_0069c658, text_lines[1]);
+  strcpy(DAT_0069c628, g_text_lines[0]);
+  strcpy(DAT_0069c658, g_text_lines[1]);
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_MINIMIZEDATTACK");
-  strcpy(g_attack_minimized_menu_restore_text, text_lines[0]);
-  strcpy(g_attack_minimized_menu_help_text, text_lines[1]);
+  strcpy(g_attack_minimized_menu_restore_text, g_text_lines[0]);
+  strcpy(g_attack_minimized_menu_help_text, g_text_lines[1]);
 
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_Attack.pic");
@@ -1226,7 +1226,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
                                          (int *)0, &s.case412_battlefield_hwnd);
           }
 
-          if (s.case412_internal_id == stack_proxy_internal_card_id || s.case412_card_zone == 2)
+          if (s.case412_internal_id == g_stack_proxy_internal_card_id || s.case412_card_zone == 2)
           {
           }
           else if (s.case412_internal_id == -1 || s.case412_card_zone != 1 ||

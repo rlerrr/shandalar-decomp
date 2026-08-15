@@ -876,8 +876,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
         else if (s.command_index == 6)
           s.stop_phase_code = 0x1e;
         get_current_duel_selection(&s.stop_player, (int *)0);
-        stop_phase_player = s.stop_player;
-        stop_phase = s.stop_phase_code;
+        g_stop_phase_player = s.stop_player;
+        g_stop_phase = s.stop_phase_code;
         unk_00715fb0 = 0;
         g_attack_phase_display_menu_packet[0] = -2;
         g_attack_phase_display_menu_packet[1] = -1;
@@ -956,8 +956,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
     if ((g_duel_network_flags & 2) == 0 && s.click_phase != -1 && g_duel_modal_action_active != 0)
     {
       get_current_duel_selection(&s.click_player, (int *)0);
-      stop_phase_player = s.click_player;
-      stop_phase = s.click_phase;
+      g_stop_phase_player = s.click_player;
+      g_stop_phase = s.click_phase;
       unk_00715fb0 = s.peek_result;
       g_attack_phase_display_click_packet[0] = -2;
       g_attack_phase_display_click_packet[1] = -1;

@@ -883,7 +883,7 @@ redraw_list:
     {
       LoadTextSectionLines("ADVstrings.txt", "CAVELIST");
       FormatMessageFromStringStripCarriageReturns(
-          g_ui_message_buffer, 0x1000, text_lines[0], GetDungeonName(s.dungeon_index),
+          g_ui_message_buffer, 0x1000, g_text_lines[0], GetDungeonName(s.dungeon_index),
           gs_cityname_manacastle_0077de00[s.dungeon_index + 1]);
     }
     else

@@ -9,20 +9,20 @@ int create_damage_effect_copy_for_target_player(int player, int card);
 // FUNCTION: SHANDALAR 0x004a9dc3
 int card_power_up(int player, int card, event_t event)
 {
-  if (PLAYER_CARD_INSTANCE(player, card).damage_target_card == affected_card)
+  if (PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card)
   {
-    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == affected_card_controller)
+    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller)
     {
-      if (affected_card != -1)
+      if (g_affected_card != -1)
       {
         if (event == EVENT_POWER)
         {
-          event_result += PLAYER_CARD_INSTANCE(player, card).counter_power;
+          g_event_result += PLAYER_CARD_INSTANCE(player, card).counter_power;
         }
 
         if (event == EVENT_TOUGHNESS)
         {
-          event_result += PLAYER_CARD_INSTANCE(player, card).power;
+          g_event_result += PLAYER_CARD_INSTANCE(player, card).power;
         }
       }
     }
@@ -47,10 +47,10 @@ int card_unblockable(int player, int card, event_t event)
 {
   if (event == EVENT_BLOCK_LEGALITY)
   {
-    if (attacking_card == PLAYER_CARD_INSTANCE(player, card).damage_target_card &&
-        attacking_card_controller == PLAYER_CARD_INSTANCE(player, card).damage_target_player)
+    if (g_attacking_card == PLAYER_CARD_INSTANCE(player, card).damage_target_card &&
+        g_attacking_card_controller == PLAYER_CARD_INSTANCE(player, card).damage_target_player)
     {
-      ++event_result;
+      ++g_event_result;
     }
   }
 
@@ -106,10 +106,10 @@ int card_damage(int player, int card, event_t event)
     int redirected_source_player;
   } s;
 
-  if (card == affected_card &&
-      player == affected_card_controller &&
+  if (card == g_affected_card &&
+      player == g_affected_card_controller &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_card != -1 &&
-      (land_can_be_played & 4) != 0)
+      (g_land_can_be_played & 4) != 0)
   {
     s.target_abilities =
         C_get_abilities((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -156,15 +156,15 @@ int card_damage(int player, int card, event_t event)
   }
 
   if (event == EVENT_DEAL_DAMAGE &&
-      card == affected_card &&
-      player == affected_card_controller &&
+      card == g_affected_card &&
+      player == g_affected_card_controller &&
       (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
 
     if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                              PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-                .original_internal_card_id == damage_effect_internal_card_id &&
+                .original_internal_card_id == g_damage_effect_internal_card_id &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
@@ -268,9 +268,9 @@ int card_damage(int player, int card, event_t event)
         }
       }
 
-      life[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player] -=
+      g_life[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player] -=
           PLAYER_CARD_INSTANCE(player, card).info_slot;
-      duel_summary.player_damage_totals[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player] +=
+      g_duel_summary.player_damage_totals[(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player] +=
           PLAYER_CARD_INSTANCE(player, card).info_slot;
     }
     else if (is_in_play((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -449,12 +449,12 @@ int card_activation(int player, int card, event_t event)
     return 0;
   }
 
-  card_on_stack_controller = PLAYER_CARD_INSTANCE(player, card).parent_controller;
-  card_on_stack = PLAYER_CARD_INSTANCE(player, card).parent_card;
+  g_card_on_stack_controller = PLAYER_CARD_INSTANCE(player, card).parent_controller;
+  g_card_on_stack = PLAYER_CARD_INSTANCE(player, card).parent_card;
   result = (*global_cards_data[PLAYER_CARD_INSTANCE(player, card).original_internal_card_id].code_pointer)(
       player, card, event);
-  card_on_stack_controller = -1;
-  card_on_stack = -1;
+  g_card_on_stack_controller = -1;
+  g_card_on_stack = -1;
 
   return result;
 }
@@ -463,8 +463,8 @@ int card_activation(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004afd4c
 int card_draw_card(int player, int card, event_t event)
 {
-  if (event == EVENT_CAN_ACTIVATE && current_phase == PHASE_DRAW && unk_00742f60 == player &&
-      PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && trigger_condition == -1)
+  if (event == EVENT_CAN_ACTIVATE && g_current_phase == PHASE_DRAW && unk_00742f60 == player &&
+      PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && g_trigger_condition == -1)
   {
     unk_008b3270 |= 3;
     return 1;
@@ -477,7 +477,7 @@ int card_draw_card(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    kill_card(card_on_stack_controller, card_on_stack, KILL_REMOVE);
+    kill_card(g_card_on_stack_controller, g_card_on_stack, KILL_REMOVE);
     draw_card_for_player(player);
   }
 

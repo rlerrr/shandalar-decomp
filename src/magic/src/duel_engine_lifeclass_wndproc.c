@@ -211,10 +211,10 @@ int register_MAGICGAME_LifeClass(LPCSTR class_name)
 
   g_life_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_LIFE");
-  strcpy(g_life_menu_directive_format, text_lines[0]);
-  strcpy(g_life_menu_directive_self_text, text_lines[1]);
-  strcpy(g_life_menu_set_life_text, text_lines[2]);
-  strcpy(g_life_menu_help_text, text_lines[3]);
+  strcpy(g_life_menu_directive_format, g_text_lines[0]);
+  strcpy(g_life_menu_directive_self_text, g_text_lines[1]);
+  strcpy(g_life_menu_set_life_text, g_text_lines[2]);
+  strcpy(g_life_menu_help_text, g_text_lines[3]);
 
   sprintf(s.path, "%s\\Poison.pic", global_cardart_path);
   g_life_poison_bitmap = load_pic(s.path);

@@ -262,7 +262,7 @@ int card_drowned(int player, int card, event_t event)
   if (event == EVENT_UNTAP_PHASE)
   {
     hacked_color = get_hacked_color(player, card, 1);
-    ++ai_mana_demand_by_color[player][hacked_color];
+    ++g_ai_mana_demand_by_color[player][hacked_color];
   }
 
   if (event == EVENT_CAN_ACTIVATE || event == EVENT_ACTIVATE || event == EVENT_RESOLVE_ACTIVATION)

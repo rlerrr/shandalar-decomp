@@ -443,39 +443,39 @@ int register_MAGICGAME_TerritoryClass(LPCSTR class_name)
 
   g_territory_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_TERRITORY");
-  strcpy(g_territory_menu_action_1_text, text_lines[0]);
-  strcpy(g_territory_menu_action_2_to_5_text, text_lines[1]);
-  strcpy(g_territory_menu_action_10_text, text_lines[2]);
-  strcpy(g_territory_menu_action_20_text, text_lines[3]);
-  strcpy(g_territory_menu_action_21_text, text_lines[4]);
-  strcpy(g_territory_menu_action_22_text, text_lines[5]);
-  strcpy(g_territory_menu_action_23_text, text_lines[6]);
-  strcpy(g_territory_menu_action_24_text, text_lines[7]);
-  strcpy(g_territory_menu_action_19_1a_text, text_lines[8]);
-  strcpy(g_territory_menu_action_1b_text, text_lines[9]);
-  strcpy(g_territory_menu_action_30_text, text_lines[10]);
-  strcpy(g_territory_menu_action_31_text, text_lines[0xb]);
-  strcpy(g_territory_menu_action_20_25_text, text_lines[0xc]);
-  strcpy(g_territory_menu_default_action_text, text_lines[0xd]);
-  strcpy(g_territory_menu_your_battlefield_text, text_lines[0xe]);
-  strcpy(g_territory_menu_opponent_battlefield_text, text_lines[0xf]);
-  strcpy(g_territory_menu_action_18_text, text_lines[0x10]);
-  strcpy(g_territory_menu_action_69_text, text_lines[0x11]);
-  strcpy(g_territory_menu_show_options_text, text_lines[0x12]);
-  strcpy(g_territory_menu_end_turn_text, text_lines[0x13]);
-  strcpy(g_territory_menu_action_68_text, text_lines[0x14]);
-  strcpy(g_territory_menu_action_6f_text, text_lines[0x15]);
-  strcpy(g_territory_menu_main_window_text, text_lines[0x16]);
-  strcpy(g_territory_menu_submenu_text, text_lines[0x17]);
-  strcpy(g_territory_menu_action_25_text, text_lines[0x18]);
+  strcpy(g_territory_menu_action_1_text, g_text_lines[0]);
+  strcpy(g_territory_menu_action_2_to_5_text, g_text_lines[1]);
+  strcpy(g_territory_menu_action_10_text, g_text_lines[2]);
+  strcpy(g_territory_menu_action_20_text, g_text_lines[3]);
+  strcpy(g_territory_menu_action_21_text, g_text_lines[4]);
+  strcpy(g_territory_menu_action_22_text, g_text_lines[5]);
+  strcpy(g_territory_menu_action_23_text, g_text_lines[6]);
+  strcpy(g_territory_menu_action_24_text, g_text_lines[7]);
+  strcpy(g_territory_menu_action_19_1a_text, g_text_lines[8]);
+  strcpy(g_territory_menu_action_1b_text, g_text_lines[9]);
+  strcpy(g_territory_menu_action_30_text, g_text_lines[10]);
+  strcpy(g_territory_menu_action_31_text, g_text_lines[0xb]);
+  strcpy(g_territory_menu_action_20_25_text, g_text_lines[0xc]);
+  strcpy(g_territory_menu_default_action_text, g_text_lines[0xd]);
+  strcpy(g_territory_menu_your_battlefield_text, g_text_lines[0xe]);
+  strcpy(g_territory_menu_opponent_battlefield_text, g_text_lines[0xf]);
+  strcpy(g_territory_menu_action_18_text, g_text_lines[0x10]);
+  strcpy(g_territory_menu_action_69_text, g_text_lines[0x11]);
+  strcpy(g_territory_menu_show_options_text, g_text_lines[0x12]);
+  strcpy(g_territory_menu_end_turn_text, g_text_lines[0x13]);
+  strcpy(g_territory_menu_action_68_text, g_text_lines[0x14]);
+  strcpy(g_territory_menu_action_6f_text, g_text_lines[0x15]);
+  strcpy(g_territory_menu_main_window_text, g_text_lines[0x16]);
+  strcpy(g_territory_menu_submenu_text, g_text_lines[0x17]);
+  strcpy(g_territory_menu_action_25_text, g_text_lines[0x18]);
   g_territory_submenu = CreatePopupMenu();
   AppendMenuA(g_territory_submenu, MF_STRING, 0x6c, g_territory_menu_action_25_text);
   load_text_with_tab_escapes("MP_UISTRINGS.TXT", "SKIPFULLCARD");
-  strcpy(g_territory_menu_skip_full_card_text[0], text_lines[0]);
-  strcpy(g_territory_menu_skip_full_card_text[1], text_lines[1]);
+  strcpy(g_territory_menu_skip_full_card_text[0], g_text_lines[0]);
+  strcpy(g_territory_menu_skip_full_card_text[1], g_text_lines[1]);
   load_text_with_tab_escapes("MP_UISTRINGS.TXT", "DRAWRESPONSE");
-  strcpy(g_territory_menu_draw_response_text[0], text_lines[0]);
-  strcpy(g_territory_menu_draw_response_text[1], text_lines[1]);
+  strcpy(g_territory_menu_draw_response_text[0], g_text_lines[0]);
+  strcpy(g_territory_menu_draw_response_text[1], g_text_lines[1]);
   return atom;
 }
 
@@ -513,8 +513,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     DWORD help_context;
     int descendant_count;
     RECT resize_rect;
-    int scan_player;
-    int scan_card;
+    int scan_player_and_card[2];
     int card_windows_copy[200];
     int unique_flagged_count;
     int unique_inner_index;
@@ -534,8 +533,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     RECT attachment_rect;
     HWND previous_attachment_window;
     int attached_player_and_card[2];
-    int displayed_player;
-    int displayed_card;
+    int displayed_player_and_card[2];
     card_id_t displayed_card_id;
     HWND other_battlefield_window_400;
     int loop_index_400;
@@ -789,10 +787,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     s.player_card_window = (HWND)GetWindowLongA(hwnd, g_duel_window_userdata_snapshot_offset);
     for (s.loop_index_400 = 0; s.card_count > s.loop_index_400; s.loop_index_400++)
     {
-      SendMessageA(((HWND *)s.card_windows)[s.loop_index_400], 0x401, (WPARAM)&s.displayed_player, 0);
-      s.displayed_card_id = get_displayed_card_id(s.displayed_player, s.displayed_card);
-      get_displayed_card_attachment(s.attached_player_and_card, s.displayed_player, s.displayed_card);
-      if ((get_displayed_card_ui_flags(s.displayed_player, s.displayed_card) & 0x10) != 0 &&
+      SendMessageA(((HWND *)s.card_windows)[s.loop_index_400], 0x401, (WPARAM)s.displayed_player_and_card, 0);
+      s.displayed_card_id = get_displayed_card_id(s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
+      get_displayed_card_attachment(s.attached_player_and_card, s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
+      if ((get_displayed_card_ui_flags(s.displayed_player_and_card[0], s.displayed_player_and_card[1]) & 0x10) != 0 &&
           (s.displayed_card_id >= unk_007a7d64 ||
            (global_raw_cards_storage[s.displayed_card_id].card_type == 2 &&
             global_raw_cards_storage[s.displayed_card_id].subtype != 0xd3)))
@@ -814,8 +812,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
           if (find_battlefield_card_window(s.other_battlefield_window_400, s.attached_player_and_card,
                                            NULL, &s.attached_window_400) != 0)
           {
-            SendMessageA(hwnd, 0x40b, (WPARAM)&s.displayed_player, 0);
-            SendMessageA(s.other_battlefield_window_400, 0x40a, (WPARAM)&s.displayed_player, 0);
+            SendMessageA(hwnd, 0x40b, (WPARAM)s.displayed_player_and_card, 0);
+            SendMessageA(s.other_battlefield_window_400, 0x40a, (WPARAM)s.displayed_player_and_card, 0);
             PostMessageA(s.other_battlefield_window_400, 0x400, 0, 0);
           }
         }
@@ -917,19 +915,19 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     {
       if (((int *)s.card_windows)[s.unique_outer_index] != 0)
       {
-        SendMessageA(((HWND *)s.card_windows)[s.unique_outer_index], 0x401, (WPARAM)&s.scan_player, 0);
-        if ((get_displayed_card_ui_flags(s.scan_player, s.scan_card) & 4) != 0)
+        SendMessageA(((HWND *)s.card_windows)[s.unique_outer_index], 0x401, (WPARAM)s.scan_player_and_card, 0);
+        if ((get_displayed_card_ui_flags(s.scan_player_and_card[0], s.scan_player_and_card[1]) & 4) != 0)
         {
           s.unique_flagged_count++;
-          s.unique_flag_id = get_displayed_card_blocking(s.scan_player, s.scan_card);
+          s.unique_flag_id = get_displayed_card_blocking(s.scan_player_and_card[0], s.scan_player_and_card[1]);
           if (s.unique_flag_id != -1)
           {
             for (s.unique_inner_index = s.unique_outer_index + 1;
                  s.card_count > s.unique_inner_index;
                  s.unique_inner_index++)
             {
-              SendMessageA(((HWND *)s.card_windows)[s.unique_inner_index], 0x401, (WPARAM)&s.scan_player, 0);
-              if (get_displayed_card_blocking(s.scan_player, s.scan_card) == s.unique_flag_id)
+              SendMessageA(((HWND *)s.card_windows)[s.unique_inner_index], 0x401, (WPARAM)s.scan_player_and_card, 0);
+              if (get_displayed_card_blocking(s.scan_player_and_card[0], s.scan_player_and_card[1]) == s.unique_flag_id)
               {
                 ((int *)s.card_windows)[s.unique_inner_index] = 0;
               }
@@ -967,8 +965,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     switch ((int)wparam & 0xffff)
     {
     case 0x66:
-      stop_phase = -1;
-      stop_phase_player = -1;
+      g_stop_phase = -1;
+      g_stop_phase_player = -1;
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
@@ -976,8 +974,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
       break;
     case 0x65:
-      stop_phase = -1;
-      stop_phase_player = -1;
+      g_stop_phase = -1;
+      g_stop_phase_player = -1;
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
@@ -985,7 +983,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
       break;
     case 0x64:
-      get_next_phase_stop(&stop_phase_player, &stop_phase, NULL);
+      get_next_phase_stop(&g_stop_phase_player, &g_stop_phase, NULL);
       unk_00715fb0 = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;

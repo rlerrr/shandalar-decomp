@@ -33,11 +33,11 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
     int internal_card_id;
   } s;
 
-  if (event == EVENT_CAST_SPELL && affected_card == card && affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
-    if (other_player == player)
+    if (g_other_player == player)
     {
-      ai_modifier += 0x30;
+      g_ai_modifier += 0x30;
     }
   }
 
@@ -52,12 +52,12 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (other_player == player && (g_duel_network_flags & 2) == 0)
+    if (g_other_player == player && (g_duel_network_flags & 2) == 0)
     {
       s.num_available = 0;
       s.num_lands = 0;
 
-      for (s.i = 0; s.i < active_cards_count[player]; ++s.i)
+      for (s.i = 0; s.i < g_active_cards_count[player]; ++s.i)
       {
         s.internal_card_id = PLAYER_CARD_INSTANCE(player, s.i).internal_card_id;
         if (s.internal_card_id != -1)
@@ -74,10 +74,10 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
         }
       }
 
-      ai_modifier += (7 - s.num_available) * -0x18;
+      g_ai_modifier += (7 - s.num_available) * -0x18;
       if (s.num_lands < 3 || 8 < s.num_lands)
       {
-        ai_modifier += 0x30;
+        g_ai_modifier += 0x30;
       }
     }
 
@@ -171,7 +171,7 @@ int card_urza_s_mine(int player, int card, event_t event)
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
-  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller)
   {
     if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
          (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
@@ -212,7 +212,7 @@ int card_urza_s_tower(int player, int card, event_t event)
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
-  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller)
+  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller)
   {
     if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
          (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
@@ -308,23 +308,23 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
         }
       }
 
-      if (player == other_player && (g_duel_network_flags & 2) == 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0)
       {
         color = first_available_color;
       }
       else if (num_available_colors == 1)
       {
-        color = choose_a_color(player, text_lines[0], 1, -1, colors_to_choose_from);
+        color = choose_a_color(player, g_text_lines[0], 1, -1, colors_to_choose_from);
       }
       else
       {
-        color = choose_a_color(player, text_lines[0], 1, -1, available_colors);
+        color = choose_a_color(player, g_text_lines[0], 1, -1, available_colors);
       }
     }
 
     if (color == -1)
     {
-      spell_fizzled = 1;
+      g_spell_fizzled = 1;
     }
     else
     {
@@ -333,36 +333,36 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       g_duel_special_land_card_ids[6] = color;
 
-      if (player == other_player && (g_duel_network_flags & 2) == 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0)
       {
         load_text("promptsX1.txt", "MULTI_LANDS");
         switch (color)
         {
         case COLOR_BLACK:
-          do_dialog(player, player, card, -1, -1, text_lines[0], 0);
+          do_dialog(player, player, card, -1, -1, g_text_lines[0], 0);
           break;
 
         case COLOR_BLUE:
-          do_dialog(player, player, card, -1, -1, text_lines[1], 0);
+          do_dialog(player, player, card, -1, -1, g_text_lines[1], 0);
           break;
 
         case COLOR_GREEN:
-          do_dialog(player, player, card, -1, -1, text_lines[2], 0);
+          do_dialog(player, player, card, -1, -1, g_text_lines[2], 0);
           break;
 
         case COLOR_RED:
-          do_dialog(player, player, card, -1, -1, text_lines[3], 0);
+          do_dialog(player, player, card, -1, -1, g_text_lines[3], 0);
           break;
 
         case COLOR_WHITE:
-          do_dialog(player, player, card, -1, -1, text_lines[4], 0);
+          do_dialog(player, player, card, -1, -1, g_text_lines[4], 0);
           break;
         }
       }
     }
   }
 
-  if (event == EVENT_COUNT_MANA && card == affected_card && player == affected_card_controller && ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller && ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
     declare_mana_available_hex(player, available_colors, 1);
   }
