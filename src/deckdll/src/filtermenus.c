@@ -1679,11 +1679,8 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
     char path[264];
 
     unsigned int artist_count;
-    unsigned int qmask_low;
-    unsigned int qmask_high;
+    unsigned __int64 qmask;
   } s;
-
-#define QMASK (*(unsigned __int64 *)&s.qmask_low)
 
   switch (msg)
   {
@@ -1705,24 +1702,24 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
 
     if (s.artist_count != 0xffffffff)
     {
-      QMASK = 0;
-      while ((signed __int64)QMASK < (signed __int64)(int)s.artist_count)
+      s.qmask = 0;
+      while (s.qmask < (signed __int64)(int)s.artist_count)
       {
         SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_ADDSTRING, 0,
-                            (LPARAM)(text_lines[0] + (int)(QMASK * 0x80)));
-        QMASK = QMASK + 1;
+                            (LPARAM)(text_lines[0] + (int)(s.qmask * 0x80)));
+        s.qmask = s.qmask + 1;
       }
     }
 
-    QMASK = 0;
-    while (QMASK < 0x34)
+    s.qmask = 0;
+    while (s.qmask < 0x34)
     {
-      if ((((__int64)1 << (int)QMASK) & global_filters.artists_list) != 0)
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, (LPARAM)(int)QMASK);
+      if ((((__int64)1 << (int)s.qmask) & global_filters.artists_list) != 0)
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 1, (LPARAM)(int)s.qmask);
       else
-        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, (LPARAM)(int)QMASK);
+        SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETSEL, 0, (LPARAM)(int)s.qmask);
 
-      QMASK = QMASK + 1;
+      s.qmask = s.qmask + 1;
     }
 
     SendDlgItemMessageA(hdlg, RES_FILTERLIST_LISTBOX, LB_SETCARETINDEX, 0, 0);
@@ -1743,9 +1740,9 @@ INT_PTR CALLBACK dlgproc_FilterSubtype(HWND hdlg, UINT msg, WPARAM wparam, LPARA
       for (s.selected_idx = 0; s.selected_idx < 0x34; s.selected_idx = s.selected_idx + 1)
         if (s.selected[s.selected_idx] != -1)
         {
-          QMASK = (unsigned __int64)1;
-          QMASK = QMASK << (unsigned char)s.selected[s.selected_idx];
-          global_filters.artists_list |= (unsigned int)QMASK;
+          s.qmask = (unsigned __int64)1;
+          s.qmask = s.qmask << (unsigned char)s.selected[s.selected_idx];
+          global_filters.artists_list |= (unsigned int)s.qmask;
         }
 
       EndDialog(hdlg, 1);

@@ -1087,8 +1087,7 @@ void DrawCastingCost(HDC dc, RECT *rect, casting_cost_t *castingCost)
     int left;
     char *stringPtr;
     int height;
-    int costReqs[6];
-    int pad;
+    int costReqs[7];
   } s;
 
   if (dc == 0 || rect == 0 || castingCost == NULL)
@@ -1111,7 +1110,7 @@ void DrawCastingCost(HDC dc, RECT *rect, casting_cost_t *castingCost)
     while (*s.stringPtr != '\0')
     {
       s.symbol = GetNextManaSymbol(&s.stringPtr);
-      DrawManaSymbol(dc, *(int *)&s.symbol, s.left, s.top, s.width, s.height);
+      DrawManaSymbol(dc, s.symbol, s.left, s.top, s.width, s.height);
       s.left += s.width;
     }
   }
@@ -1384,7 +1383,6 @@ uint DrawManaText(HDC dc, RECT *rect, char *text, int drawSymbols)
     int top;
     int idx;
     char symbol;
-    char pad_55[3];
     int max_width;            // ebp - 0x60
     int left;                 // ebp - 0x5c
     TEXTMETRICA text_metrics; // ebp - 0x58
@@ -1800,8 +1798,7 @@ int read_cfg(HINSTANCE hinst)
     size_t record_size;
     int slotIndex;
     FILE *cards_dat;
-    int record_table[75994];
-    char pad_18[0x18];
+    int record_table[76000];
     int result;
   } s;
 

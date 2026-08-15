@@ -50,25 +50,25 @@ int select_multiple_cards_from_card_list(int player,
 {
   struct
   {
-    int stop_selection;
-    int packet_card;
     int selected_count;
+    int selection;
     char prompt[200];
     int available_cards[500];
     int index;
     unsigned int require_selection;
-    int graveyard_copy[492];
+    int graveyard_copy[500];
     int unused_slot;
+    int packet_card;
+    int stop_selection;
   } s;
-  int selection;
 
   (void)unused;
 
-  if (selected_indices == 0 || max_choices < 1)
+  if (selected_indices == 0 || max_choices <= 0)
   {
     return 0;
   }
-  else if (count < 1 || graveyard == NULL || graveyard[0] == -1)
+  if (count <= 0 || graveyard == NULL || graveyard[0] == -1)
   {
     return 0;
   }
@@ -76,7 +76,7 @@ int select_multiple_cards_from_card_list(int player,
   memcpy(s.graveyard_copy, graveyard, count << 2);
   if (available == NULL)
   {
-    for (s.index = 0; s.index < count; ++s.index)
+    for (s.index = 0; count > s.index; ++s.index)
     {
       s.available_cards[s.index] = 1;
     }
@@ -98,7 +98,7 @@ int select_multiple_cards_from_card_list(int player,
   s.selected_count = 0;
   while (s.stop_selection == 0 && s.selected_count < max_choices)
   {
-    if (s.selected_count < num_prompt_lines)
+    if (num_prompt_lines > s.selected_count)
     {
       strcpy(s.prompt, ((char **)prompt_lines)[s.selected_count]);
     }
@@ -107,24 +107,34 @@ int select_multiple_cards_from_card_list(int player,
       strcpy(s.prompt, ((char **)prompt_lines)[num_prompt_lines - 1]);
     }
 
-    s.require_selection = (unsigned int)(s.selected_count < highlighted_choices);
-    selection = show_cardlist(s.graveyard_copy,
-                              0,
-                              s.available_cards,
-                              count,
-                              &gs_done_008b40e0,
-                              s.require_selection,
-                              s.prompt);
-    if (selection == -1)
+    if (s.selected_count >= highlighted_choices)
+    {
+      s.require_selection = 0;
+      s.unused_slot = (int)gs_done_008b40e0;
+    }
+    else
+    {
+      s.require_selection = 1;
+      s.unused_slot = 0;
+    }
+
+    s.selection = show_cardlist(s.graveyard_copy,
+                                0,
+                                s.available_cards,
+                                count,
+                                s.prompt,
+                                s.require_selection,
+                                gs_done_008b40e0);
+    if (s.selection == -1)
     {
       s.stop_selection = 1;
     }
     else
     {
-      ((int *)selected_indices)[s.selected_count] = selection;
+      ((int *)selected_indices)[s.selected_count] = s.selection;
       ++s.selected_count;
-      s.graveyard_copy[selection] = g_draw_card_placeholder_internal_card_id;
-      s.available_cards[selection] = 0;
+      s.graveyard_copy[s.selection] = g_draw_card_placeholder_internal_card_id;
+      s.available_cards[s.selection] = 0;
     }
   }
 
@@ -134,10 +144,9 @@ int select_multiple_cards_from_card_list(int player,
     {
       TENTATIVE_wait_for_network_result(player, 0x16);
       s.packet_card = 0;
-      s.index = 0;
+      s.index = s.packet_card;
       while (s.packet_card != -1)
       {
-        s.selected_count = s.index;
         s.packet_card = GetCardFromCLPacket(s.index);
         if (s.packet_card != -1)
         {
@@ -145,14 +154,15 @@ int select_multiple_cards_from_card_list(int player,
           ++s.index;
         }
       }
+      s.selected_count = s.index;
     }
     else
     {
       for (s.index = 0; s.index < s.selected_count; ++s.index)
       {
-        AddCardToCLPacket((short)((int *)selected_indices)[s.index]);
+        AddCardToCLPacket(((int *)selected_indices)[s.index]);
       }
-      AddCardToCLPacket(0xffff);
+      AddCardToCLPacket(-1);
       TENTATIVE_send_network_result(player, 0x16);
     }
   }

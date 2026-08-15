@@ -534,7 +534,6 @@ int ReadDeckbuilderCsv(const char *filename, OrigRarities *orig_rarities)
     DWORD size;       /* ebp - 0x80 */
     char *next;       /* ebp - 0x7c */
     char set_id;      /* ebp - 0x78 */
-    char pad_set_id[3];
     int i;      /* ebp - 0x74 */
     char *line; /* ebp - 0x70 */
   } s;

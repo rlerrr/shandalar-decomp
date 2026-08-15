@@ -1684,10 +1684,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
     int y;
     int x;
     int valid_count;
-    int valid_graveyards[488];
-    int draw_args[6];
-    int padding[5];
-    int unused_padding_c;
+    int valid_graveyards[500];
     int i;
     int result;
   } s;

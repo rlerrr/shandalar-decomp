@@ -2188,20 +2188,16 @@ dlgproc_LoadDeck(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
     int pad_500;             /* [ebp-0x524] */
     WPARAM sel;              /* [ebp-0x520] */
     char filename[32];       /* [ebp-0x51c] */
-    char path[0x104];        /* [ebp-0x4fc] */
-    int pad_3f8;             /* [ebp-0x3f8] */
-    char listbox_buf[0x104]; /* [ebp-0x3f4] */
-    int pad_2f0;             /* [ebp-0x2f0] */
+    char path[0x108];        /* [ebp-0x4fc] */
+    char listbox_buf[0x108]; /* [ebp-0x3f4] */
     HWND hwnd_list;          /* [ebp-0x2ec] */
     int count;               /* [ebp-0x2e8] */
     char deckname[200];      /* [ebp-0x2e4] */
-    char prev_dir[0x104];    /* [ebp-0x21c] */
-    int pad_118;             /* [ebp-0x118] */
+    char prev_dir[0x108];    /* [ebp-0x21c] */
     WPARAM i;                /* [ebp-0x114] */
     FILE *fp;                /* [ebp-0x110] */
     char *p;                 /* [ebp-0x10c] */
-    char gaun_path[0x100];   /* [ebp-0x108] */
-    char pad_end[8];         /* [ebp-0x008] */
+    char gaun_path[0x108];   /* [ebp-0x108] */
   } s;
 
   {
@@ -3992,14 +3988,12 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     RECT r7;              /* ebp - 0xb0 */
 
     WORD wOldSel;    /* ebp - 0xac */
-    WORD wOldSelPad; /* ebp - 0xaa */
     RECT r2;         /* ebp - 0xa8 */
 
     unsigned int wanted_card; /* ebp - 0x98 */
     int idx;                  /* ebp - 0x94 */
     RECT r3;                  /* ebp - 0x90 */
     WORD wPics;               /* ebp - 0x80 */
-    WORD wPicsPad;            /* ebp - 0x7e */
     int *horz_list_addr;      /* ebp - 0x7c */
 
     MSG m;          /* ebp - 0x78 */
@@ -4008,17 +4002,14 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     POINT p;        /* ebp - 0x54 */
     int j;          /* ebp - 0x4c */
     WORD wWidth;    /* ebp - 0x48 */
-    WORD wWidthPad; /* ebp - 0x46 */
     iid_t iid;      /* ebp - 0x44 */
     char buf[32];   /* ebp - 0x40 */
 
     int i;           /* ebp - 0x20 */
-    WORD wNewSel;    /* ebp - 0x1c */
-    WORD wNewSelPad; /* ebp - 0x1a */
+    WORD wNewSel[2]; /* ebp - 0x1c */
     WORD wLeft;      /* ebp - 0x18 */
     RECT r;          /* ebp - 0x14 */
     WORD wLast;      /* ebp - 4 */
-    WORD wLastPad;   /* ebp - 2 */
   } s;
 
   switch (msg)
@@ -4048,7 +4039,7 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
   }
 
   case LB_GETCURSEL:
-    return s.wNewSel = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
+    return s.wNewSel[0] = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
 
   case LB_SETCURSEL:
   {
@@ -4058,28 +4049,28 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     s.wOldSel = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
     s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
 
-    s.wNewSel = (WORD)wparam;
-    if (s.wNewSel >= 0 && s.wNewSel < s.wLast)
+    s.wNewSel[0] = (WORD)wparam;
+    if (s.wNewSel[0] >= 0 && s.wNewSel[0] < s.wLast)
     {
-      SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+      SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel[0]);
 
       if (s.wOldSel >= 0 && s.wOldSel < s.wLast)
       {
         horzlist_prep_rectangle(hwnd, s.wOldSel, &s.r2);
         // InvalidateRect(hwnd, &s.r2, 0);
       }
-      horzlist_prep_rectangle(hwnd, s.wNewSel, &s.r2);
+      horzlist_prep_rectangle(hwnd, s.wNewSel[0], &s.r2);
       // InvalidateRect(hwnd, &s.r2, 0);
       UpdateWindow(hwnd);
 
-      if (s.wNewSel < s.wLeft)
+      if (s.wNewSel[0] < s.wLeft)
       {
-        SendMessageA(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.wNewSel), 0);
+        SendMessageA(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.wNewSel[0]), 0);
       }
 
-      if ((s.wPics + s.wLeft - 1) < s.wNewSel)
+      if ((s.wPics + s.wLeft - 1) < s.wNewSel[0])
       {
-        SendMessageA(hwnd, WM_HSCROLL, MAKELONG3(SB_THUMBPOSITION, s.wNewSel - s.wPics + 1), 0);
+        SendMessageA(hwnd, WM_HSCROLL, MAKELONG3(SB_THUMBPOSITION, s.wNewSel[0] - s.wPics + 1), 0);
       }
       return 0;
     }
@@ -4213,16 +4204,16 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     s.horz_list_addr = (int *)realloc(s.horz_list_addr, 4);
 
     s.wLast = 0;
-    s.wNewSel = (WORD)-1;
+    s.wNewSel[0] = (WORD)-1;
     s.wLeft = 0;
 
     SetWindowLongA(hwnd, HORZLIST_ADDR_INDEX, (LONG)s.horz_list_addr);
     SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, s.wLast);
-    SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+    SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel[0]);
     SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
 
     SetScrollRange(hwnd, SB_HORZ, 0, -1, 0);
-    SetScrollPos(hwnd, SB_HORZ, s.wNewSel, 1);
+    SetScrollPos(hwnd, SB_HORZ, s.wNewSel[0], 1);
     InvalidateRect(hwnd, 0, 1);
 
     return 0;
@@ -4252,7 +4243,7 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     //   return -1;
 
     s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
-    s.wNewSel = (int)(short)GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
+    s.wNewSel[0] = (int)(short)GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
     s.wLeft = (int)(short)GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
     s.last_pic_index = (int)wparam;
     if (s.last_pic_index >= 0 && s.last_pic_index < s.wLast)
@@ -4270,9 +4261,9 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
       SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, --s.wLast);
 
-      if (s.wLast - 1 < s.wNewSel)
+      if (s.wLast - 1 < s.wNewSel[0])
       {
-        SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, --s.wNewSel);
+        SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, --s.wNewSel[0]);
       }
 
       if (s.wLeft > s.wLast - 1)
@@ -4292,9 +4283,9 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
       if (!s.wLast)
       {
-        s.wNewSel = -1;
+        s.wNewSel[0] = -1;
         s.wLeft = 0;
-        SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+        SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel[0]);
         SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
       }
 
@@ -4382,7 +4373,7 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     s.horz_list_addr = (int *)malloc(4);
 
     s.wLast = 0;
-    s.wNewSel = (WORD)-1;
+    s.wNewSel[0] = (WORD)-1;
     s.wLeft = 0;
 
     s.wWidth = (WORD)global_smallcard_piclist_width;
@@ -4393,14 +4384,14 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
     SetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX, s.wLast);
     SetWindowLongA(hwnd, HORZLIST_ADDR_INDEX, (LONG)s.horz_list_addr);
-    SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel);
+    SetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX, s.wNewSel[0]);
     SetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX, s.wLeft);
 
     SetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX, s.wWidth);
     SetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX, s.wPics);
 
     SetScrollRange(hwnd, SB_HORZ, 0, s.wLast - s.wPics + 1, 0);
-    SetScrollPos(hwnd, SB_HORZ, s.wNewSel, 1);
+    SetScrollPos(hwnd, SB_HORZ, s.wNewSel[0], 1);
 
     global_horzlist_popup = CreatePopupMenu();
 
@@ -4633,7 +4624,7 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
   {
     s.wLast = GetWindowWord(hwnd, HORZLIST_LASTPIC_INDEX);
     s.horz_list_addr = (int *)GetWindowLongA(hwnd, HORZLIST_ADDR_INDEX);
-    s.wNewSel = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
+    s.wNewSel[0] = GetWindowWord(hwnd, HORZLIST_CURRSEL_INDEX);
     s.wLeft = GetWindowWord(hwnd, HORZLIST_LEFTPIC_INDEX);
     s.wWidth = GetWindowWord(hwnd, HORZLIST_WIDTHPLUSSPACE_INDEX);
     s.wPics = GetWindowWord(hwnd, HORZLIST_PICSINLINE_INDEX);
@@ -5598,7 +5589,6 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     WPARAM wparam_copy; /* ebp - 0x7c */
 
     WORD wPicsInline; /* ebp - 0x78 */
-    WORD wPicsInlinePad;
     FILE *f;               /* ebp - 0x74 */
     int *horz_list_addr;   /* ebp - 0x70 */
     int i;                 /* ebp - 0x6c */
@@ -5608,11 +5598,9 @@ wndproc_MainClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     char message[80];  /* ebp - 0x60 */
 
     WORD wLeft;       /* ebp - 0x10 */
-    WORD wLeftPad;    /* ebp - 0xe */
     int excess;       /* ebp - 0xc */
     int check_excess; /* ebp - 8 */
     WORD wLast;       /* ebp - 4 */
-    WORD wLastPad;    /* ebp - 2 */
   } s;
   // GLOBAL: DECKDLL 0x10104c98
   static HPEN pen_ltgrey;

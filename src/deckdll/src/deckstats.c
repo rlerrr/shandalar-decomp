@@ -328,8 +328,7 @@ show_stats(HDC hdc, SIZE word_size, int *stepx, int *stepy, int *posx, int *star
 {
   struct
   {
-    char buf[260];
-    int u;
+    char buf[264];
     int y;
     int x;
   } s;

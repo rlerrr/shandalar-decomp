@@ -692,8 +692,7 @@ void ShowDungeonCluesScreen(int unused)
     int redraw_background;      // ebp - 0x12cc
     unsigned int dungeon_index; // ebp - 0x12c8
     int entry_count;            // ebp - 0x12c4
-    char name_buffer[50][0x30]; // ebp - 0x12c0
-    char stack_padding[0x960];
+    char name_buffer[100][0x30]; // ebp - 0x12c0
   } s;
 
   (void)unused;

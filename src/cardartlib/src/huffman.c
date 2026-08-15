@@ -223,9 +223,7 @@ int Huffman13_BuildDecodeTable(int node_count)
     int pow2[11];     /* -0xe4..-0xbc */
     int bits[0x20];   /* -0xb8..-0x3c */
     int depth;        /* -0x38 */
-    int node_stack[9];/* -0x34..-0x14 */
-    int pad_10;       /* -0x10 */
-    int pad_0c;       /* -0x0c */
+    int node_stack[11];/* -0x34..-0x0c */
     int sym;          /* -0x08 */
     int node;         /* -0x04 */
   } s;

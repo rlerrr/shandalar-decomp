@@ -9,7 +9,6 @@ int GetNextManaSymbol(char **textCursor)
 {
   struct {
     char result;
-    char pad[3];
     char *chr;
   } s;
   

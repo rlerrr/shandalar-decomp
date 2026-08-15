@@ -964,10 +964,6 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     int right_battlefield_x;
   } s;
 
-#ifdef MODERN_FIXES
-  memset(&s, 0, sizeof(s));
-#endif
-
   GetClientRect(hwnd, &s.rect);
   g_showlist_smallcard_width = s.rect.right / 8;
   g_showlist_smallcard_height = g_showlist_smallcard_width;
@@ -2417,13 +2413,10 @@ void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name)
   struct
   {
     char in_quotes;
-    char pad_01_to_03[3];
     int current_id;
-    char delim[11];
-    char pad_13;
+    char delim[12];
     char token[512];
     char field_idx;
-    char pad_215_to_217[3];
     FILE *fp;
     int fscanf_ret;
   } s;

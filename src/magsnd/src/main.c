@@ -14,6 +14,12 @@
 typedef unsigned char byte;
 typedef int(__stdcall code)();
 
+typedef struct PaddedWaveFormat_t
+{
+  WAVEFORMATEX fmt;
+  byte pad[2];
+} PaddedWaveFormat;
+
 typedef struct SndInstance SndInstance;
 typedef struct SndDuplicateBufferEntry SndDuplicateBufferEntry;
 
@@ -2224,8 +2230,7 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4
   {
     SndInstanceSlice *sndInstanceHacked;
     MMCKINFO riffChunk;
-    WAVEFORMATEX riffHeader; // ebp - 0x80
-    byte padbytes[2];
+    PaddedWaveFormat riffHeader; // ebp - 0x80
     MMIOINFO pmmioinfo;
     undefined4 unused;   // ebp - 0x24
     DWORD riffChunkSize; // ebp - 0x20
@@ -2261,7 +2266,7 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4
     return 8;
   }
 
-  s.riffHeader.cbSize = 0;
+  s.riffHeader.fmt.cbSize = 0;
   mmioAscend(s.fileHandle, &s.riffChunk, 0);
   s.riffChunk.ckid = 0x61746164;
   if (mmioDescend(s.fileHandle, &s.riffChunk, &s.riff, 0x10) != 0)
@@ -2273,7 +2278,7 @@ undefined4 __cdecl LoadWaveMmio(LPSTR filename, SndInstance **outSnd, undefined4
   mmioAdvance(s.fileHandle, &s.pmmioinfo, 0);
   s.mmioBaseOffset = s.pmmioinfo.lBufOffset;
   dwFlags = 0xe8;
-  *outSnd = CreateSndInstance(g_directSound, 0x10000, &s.riffHeader, dwFlags);
+  *outSnd = CreateSndInstance(g_directSound, 0x10000, &s.riffHeader.fmt, dwFlags);
   if (*outSnd != (SndInstance *)0x0)
   {
     (*outSnd)->mmioBaseOffset = s.mmioBaseOffset;
@@ -2765,8 +2770,7 @@ undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefi
 {
   struct
   {
-    WAVEFORMATEX waveFmt;
-    byte pad_e6[2];
+    PaddedWaveFormat waveFmt;
     MMIOINFO mmioInfo;
     LONG firstReadBytes;
     int bufferBytes;
@@ -2783,11 +2787,11 @@ undefined4 __cdecl LoadAviAudioStream(void *stream, SndInstance **outSnd, undefi
   }
   AVIStreamRead((PAVISTREAM)stream, 0, 1, 0, 0, &s.firstReadBytes, 0);
   s.dataBytes = (int)s.streamInfo.dwSampleSize * (int)s.streamInfo.dwLength;
-  AVIStreamReadFormat((PAVISTREAM)stream, 0, &s.waveFmt, (LONG *)&s.formatSize);
-  s.waveFmt.cbSize = 0;
+  AVIStreamReadFormat((PAVISTREAM)stream, 0, &s.waveFmt.fmt, (LONG *)&s.formatSize);
+  s.waveFmt.fmt.cbSize = 0;
   scratch = 0xe8;
   s.bufferBytes = (int)s.streamInfo.dwSuggestedBufferSize * 0xb;
-  *outSnd = CreateSndInstance(g_directSound, s.bufferBytes, &s.waveFmt, scratch);
+  *outSnd = CreateSndInstance(g_directSound, s.bufferBytes, &s.waveFmt.fmt, scratch);
   if (*outSnd != (SndInstance *)0x0)
   {
     (*outSnd)->mmioBaseOffset = 0;

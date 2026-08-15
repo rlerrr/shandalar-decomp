@@ -1328,15 +1328,7 @@ uint *Wvl_DecodeToBgr24(byte *out_bgr24, WvlEntry *wvl_entry, int width, int hei
     int x_scale;      // ebp - 0x1014
     int zero_1010;    // ebp - 0x1010
     byte *src_ptr;    // ebp - 0x100c
-    uint y_map[1016]; // ebp - 0x1008
-    int tmp_28;       // ebp - 0x28
-    int tmp_24;       // ebp - 0x24
-    int tmp_20;       // ebp - 0x20
-    int tmp_1c;       // ebp - 0x1c
-    int tmp_18;       // ebp - 0x18
-    int tmp_14;       // ebp - 0x14
-    int tmp_10;       // ebp - 0x10
-    int tmp_c;        // ebp - 0xc
+    uint y_map[1024]; // ebp - 0x1008
     int tmp_8;        // ebp - 0x8
     byte *tmp_4;      // ebp - 0x4
   } s;
