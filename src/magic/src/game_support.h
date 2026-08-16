@@ -276,6 +276,7 @@ void regenerate_card(int player, int card);
 int generic_creature_stat_aura(int player, int card, event_t event, int power_modifier, int toughness_modifier);
 int mark_zombie_as_nonregenerable(int player, int card, int internal_card_id);
 int select_target_creature_and_store(int player, unsigned int preferred_controller, int card);
+int select_target_creature_and_store_without_protection(int player, unsigned int preferred_controller, int card);
 int select_target_land_and_store(int player, int preferred_controller, int card);
 int select_target_artifact_and_store(int player, unsigned int preferred_controller, int card);
 void dispatch_three_arg_callback_to_cards_in_play(int(__cdecl *callback)(int, int, int), int who_to_check);

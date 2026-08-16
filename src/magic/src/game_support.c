@@ -1239,6 +1239,7 @@ int choose_best_card_from_library(int player, unsigned int type_mask)
 }
 
 // FUNCTION: MAGIC 0x00481e25
+// FUNCTION: SHANDALAR 0x0048592f
 int card_two_headed_giant_of_foriys_legacy(int player, int card, int event)
 {
   if (event == 0x78 && card == g_affected_card && player == g_affected_card_controller)
@@ -1459,6 +1460,7 @@ int select_best_land_target_by_score(int preferred_player, int only_player, int 
 }
 
 // FUNCTION: MAGIC 0x004821f5
+// FUNCTION: SHANDALAR 0x00485d06
 int reattach_if_attached_to_source(int source_player, int source_card, int test_player, int test_card, int internal_card_id)
 {
   (void)internal_card_id;
@@ -2936,6 +2938,46 @@ int select_target_creature_and_store(int player, unsigned int preferred_controll
   {
     return 0;
   }
+}
+
+// FUNCTION: MAGIC 0x005517b4
+// FUNCTION: SHANDALAR 0x0049f9f7
+int select_target_creature_and_store_without_protection(int player, unsigned int preferred_controller, int card)
+{
+  target_t selected_target;
+
+  if (preferred_controller == -1)
+  {
+    preferred_controller = 2;
+  }
+
+  if (C_real_select_target(player,
+                           2,
+                           preferred_controller,
+                           TARGET_ZONE_IN_PLAY,
+                           TYPE_CREATURE,
+                           TYPE_NONE,
+                           0,
+                           0,
+                           COLOR_TEST_0,
+                           COLOR_TEST_0,
+                           -1,
+                           -1,
+                           -1,
+                           -1,
+                           0,
+                           0,
+                           0,
+                           g_text_lines[0],
+                           1,
+                           &selected_target) != 0)
+  {
+    PLAYER_CARD_INSTANCE(player, card).targets[(char)PLAYER_CARD_INSTANCE(player, card).number_of_targets] = selected_target;
+    ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+    return 1;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004eab5c

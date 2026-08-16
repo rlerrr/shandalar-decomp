@@ -35,6 +35,15 @@ typedef struct
 } xpool_network_packet_t;
 STATIC_ASSERT(sizeof(xpool_network_packet_t) == 0x24, xpool_network_packet_t_wrong_size);
 
+typedef struct
+{
+  char packet_type;
+  char pad_1;
+  short packet_number;
+  target_t target;
+} target_pair_network_packet_t;
+STATIC_ASSERT(sizeof(target_pair_network_packet_t) == 0xc, target_pair_network_packet_t_wrong_size);
+
 // GLOBAL: MAGIC 0x00789a44
 NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 
@@ -54,6 +63,9 @@ NETWORK_EXTERN int unk_0092607c;
 
 // GLOBAL: MAGIC 0x00926080
 NETWORK_EXTERN char unk_00926080;
+
+// GLOBAL: SHANDALAR 0x0093a1b0
+NETWORK_EXTERN target_pair_network_packet_t g_orcish_catapult_target_packet;
 
 // GLOBAL: MAGIC 0x008b27f0
 NETWORK_EXTERN char unk_008b27f0;

@@ -463,17 +463,15 @@ unsigned int get_displayed_card_display_pic_info(int *displayed_player_and_card,
     }
     return 0xffffffff;
   }
-  else
+  
+  EnterCriticalSection(&g_duel_render_lock);
+  if (displayed_player_and_card != NULL)
   {
-    EnterCriticalSection(&g_duel_render_lock);
-    if (displayed_player_and_card != NULL)
-    {
-      displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_player;
-      displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_card;
-    }
-    display_info = DISPLAYED_PLAYER_CARD_ROW(player)[card].display_pic_info;
-    LeaveCriticalSection(&g_duel_render_lock);
+    displayed_player_and_card[0] = (int)(char)DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_player;
+    displayed_player_and_card[1] = DISPLAYED_PLAYER_CARD_ROW(player)[card].damage_source_card;
   }
+  display_info = DISPLAYED_PLAYER_CARD_ROW(player)[card].display_pic_info;
+  LeaveCriticalSection(&g_duel_render_lock);
 
   return display_info;
 }
