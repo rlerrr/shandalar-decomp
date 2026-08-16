@@ -30,62 +30,63 @@ static bool global_sound_unk1 = false;
 // GLOBAL: SHANDALAR 0x005a0d4c
 static char *PTR_s_magsnd_1003a86c = "magsnd";
 
-typedef DWORD (__cdecl *PFN_InitSnd)(HWND hwnd, DWORD unused, BYTE flags);
-typedef void  (__cdecl *PFN_ReleaseSnd)(void);
-typedef int   (__cdecl *PFN_LoadSnd)(LPSTR path, int num, Sound *snd);
-typedef DWORD (__cdecl *PFN_UnloadSnd)(int num);
-typedef DWORD (__cdecl *PFN_UnloadAllSnds)(void);
-typedef DWORD (__cdecl *PFN_PlaySnd)(int num, Sound *snd);
-typedef int   (__cdecl *PFN_PlaySndFile)(LPSTR path, int num, Sound *snd);
-typedef DWORD (__cdecl *PFN_StopSnd)(int num);
-typedef void  (__cdecl *PFN_StopAllSnds)(void);
-typedef DWORD (__cdecl *PFN_PlayMidiFile)(void);
-typedef DWORD (__cdecl *PFN_SetPitch)(int num, DWORD pitch);
-typedef DWORD (__cdecl *PFN_GetPitch)(void);
-typedef DWORD (__cdecl *PFN_SetVol)(int num, unsigned int vol);
-typedef DWORD (__cdecl *PFN_GetVol)(void);
-typedef DWORD (__cdecl *PFN_SetPan)(int num, int pan);
-typedef DWORD (__cdecl *PFN_GetPan)(void);
-typedef DWORD (__cdecl *PFN_UpdateSnd)(void);
-typedef int   (__cdecl *PFN_SetSndMarker)(int num, unsigned int marker);
-typedef int   (__cdecl *PFN_PlaySndMarker)(int num, unsigned int marker);
-typedef DWORD (__cdecl *PFN_GetSndTime)(int num, unsigned int *out_time);
-typedef DWORD (__cdecl *PFN_ResetSnd)(void);
-typedef DWORD (__cdecl *PFN_GetSndState)(int num, DWORD *out_state);
+typedef DWORD(__cdecl *PFN_InitSnd)(HWND hwnd, DWORD unused, BYTE flags);
+typedef void(__cdecl *PFN_ReleaseSnd)(void);
+typedef int(__cdecl *PFN_LoadSnd)(LPSTR path, int num, Sound *snd);
+typedef DWORD(__cdecl *PFN_UnloadSnd)(int num);
+typedef DWORD(__cdecl *PFN_UnloadAllSnds)(void);
+typedef DWORD(__cdecl *PFN_PlaySnd)(int num, Sound *snd);
+typedef int(__cdecl *PFN_PlaySndFile)(LPSTR path, int num, Sound *snd);
+typedef DWORD(__cdecl *PFN_StopSnd)(int num);
+typedef void(__cdecl *PFN_StopAllSnds)(void);
+typedef DWORD(__cdecl *PFN_PlayMidiFile)(void);
+typedef DWORD(__cdecl *PFN_SetPitch)(int num, DWORD pitch);
+typedef DWORD(__cdecl *PFN_GetPitch)(void);
+typedef DWORD(__cdecl *PFN_SetVol)(int num, unsigned int vol);
+typedef DWORD(__cdecl *PFN_GetVol)(void);
+typedef DWORD(__cdecl *PFN_SetPan)(int num, int pan);
+typedef DWORD(__cdecl *PFN_GetPan)(void);
+typedef DWORD(__cdecl *PFN_UpdateSnd)(void);
+typedef int(__cdecl *PFN_SetSndMarker)(int num, unsigned int marker);
+typedef int(__cdecl *PFN_PlaySndMarker)(int num, unsigned int marker);
+typedef DWORD(__cdecl *PFN_GetSndTime)(int num, unsigned int *out_time);
+typedef DWORD(__cdecl *PFN_ResetSnd)(void);
+typedef DWORD(__cdecl *PFN_GetSndState)(int num, DWORD *out_state);
 typedef void *(__cdecl *PFN_GetAVISndBuff)(int avi_id, unsigned int buffer_size);
-typedef DWORD (__cdecl *PFN_ReleaseAVISndBuff)(int avi_id);
-typedef HWND  (__cdecl *PFN_GetSndHWND)(void);
-typedef int   (__cdecl *PFN_IsSndLoaded)(int loadId, int *out_slot);
-typedef DWORD (__cdecl *PFN_GetLRUSnd)(int *out_num, int start, int end);
+typedef DWORD(__cdecl *PFN_ReleaseAVISndBuff)(int avi_id);
+typedef HWND(__cdecl *PFN_GetSndHWND)(void);
+typedef int(__cdecl *PFN_IsSndLoaded)(int loadId, int *out_slot);
+typedef DWORD(__cdecl *PFN_GetLRUSnd)(int *out_num, int start, int end);
 
-typedef struct SndApiVTable {
-    PFN_InitSnd            InitSnd;
-    PFN_ReleaseSnd         ReleaseSnd;
-    PFN_LoadSnd            LoadSnd;
-    PFN_UnloadSnd          UnloadSnd;
-    PFN_UnloadAllSnds      UnloadAllSnds;
-    PFN_PlaySnd            PlaySnd;
-    PFN_PlaySndFile        PlaySndFile;
-    PFN_StopSnd            StopSnd;
-    PFN_StopAllSnds        StopAllSnds;
-    PFN_PlayMidiFile       PlayMidiFile;
-    PFN_SetPitch           SetPitch;
-    PFN_GetPitch           GetPitch;
-    PFN_SetVol             SetVol;
-    PFN_GetVol             GetVol;
-    PFN_SetPan             SetPan;
-    PFN_GetPan             GetPan;
-    PFN_UpdateSnd          UpdateSnd;
-    PFN_SetSndMarker       SetSndMarker;
-    PFN_PlaySndMarker      PlaySndMarker;
-    PFN_GetSndTime         GetSndTime;
-    PFN_ResetSnd           ResetSnd;
-    PFN_GetSndState        GetSndState;
-    PFN_GetAVISndBuff      GetAVISndBuff;
-    PFN_ReleaseAVISndBuff  ReleaseAVISndBuff;
-    PFN_GetSndHWND         GetSndHWND;
-    PFN_IsSndLoaded        IsSndLoaded;
-    PFN_GetLRUSnd          GetLRUSnd;
+typedef struct SndApiVTable
+{
+  PFN_InitSnd InitSnd;                     // 0
+  PFN_ReleaseSnd ReleaseSnd;               // 1
+  PFN_LoadSnd LoadSnd;                     // 2
+  PFN_UnloadSnd UnloadSnd;                 // 3
+  PFN_UnloadAllSnds UnloadAllSnds;         // 4
+  PFN_PlaySnd PlaySnd;                     // 5
+  PFN_PlaySndFile PlaySndFile;             // 6
+  PFN_StopSnd StopSnd;                     // 7
+  PFN_StopAllSnds StopAllSnds;             // 8
+  PFN_PlayMidiFile PlayMidiFile;           // 9
+  PFN_SetPitch SetPitch;                   // 10
+  PFN_GetPitch GetPitch;                   // 11
+  PFN_SetVol SetVol;                       // 12
+  PFN_GetVol GetVol;                       // 13
+  PFN_SetPan SetPan;                       // 14
+  PFN_GetPan GetPan;                       // 15
+  PFN_UpdateSnd UpdateSnd;                 // 16
+  PFN_SetSndMarker SetSndMarker;           // 17
+  PFN_PlaySndMarker PlaySndMarker;         // 18
+  PFN_GetSndTime GetSndTime;               // 19
+  PFN_ResetSnd ResetSnd;                   // 20
+  PFN_GetSndState GetSndState;             // 21
+  PFN_GetAVISndBuff GetAVISndBuff;         // 22
+  PFN_ReleaseAVISndBuff ReleaseAVISndBuff; // 23
+  PFN_GetSndHWND GetSndHWND;               // 24
+  PFN_IsSndLoaded IsSndLoaded;             // 25
+  PFN_GetLRUSnd GetLRUSnd;                 // 26
 } SndApiVTable;
 
 // GLOBAL: DECKDLL 0x101054c0
@@ -94,15 +95,16 @@ typedef struct SndApiVTable {
 // GLOBAL: MAGIC 0x007775d0
 // GLOBAL: SHANDALAR 0x0073bfa0
 static SndApiVTable global_sound_vtable;
-typedef int (WINAPI *Int_fn_etc)();
-#define global_sound_fns ((Int_fn_etc*)(void*)&global_sound_vtable)
+typedef int(WINAPI *Int_fn_etc)();
+#define global_sound_fns ((Int_fn_etc *)(void *)&global_sound_vtable)
 
 // FUNCTION: DECKDLL 0x1002d4d3
 // FUNCTION: MAGIC 0x004859f1
+// FUNCTION: STATWIN 0x10002fb3
 // FUNCTION: SHANDALAR 0x0056d133
 int sound_unload(int idx)
 {
-  if (global_sound_status ==0)
+  if (global_sound_status == 0)
     return 4;
 
   global_sound_vtable.UnloadSnd(idx);
@@ -111,6 +113,7 @@ int sound_unload(int idx)
 
 // FUNCTION: DECKDLL 0x1002d507
 // FUNCTION: MAGIC 0x00485a25
+// FUNCTION: STATWIN 0x10002fe7
 // FUNCTION: SHANDALAR 0x0056d167
 int sound_unload_all(void)
 {
@@ -124,8 +127,10 @@ int sound_unload_all(void)
 
 // FUNCTION: DECKDLL 0x1002d421
 // FUNCTION: MAGIC 0x0048593f
+// FUNCTION: STATWIN 0x10002f01
 // FUNCTION: SHANDALAR 0x0056d081
-void sound_close() {
+void sound_close()
+{
   if (!global_sound_status)
     return;
 
@@ -145,28 +150,32 @@ void sound_close() {
 
 // FUNCTION: DECKDLL 0x1002d534
 // FUNCTION: MAGIC 0x00485a52
+// FUNCTION: STATWIN 0x10003014
 // FUNCTION: SHANDALAR 0x0056d194
 int sound_play(int num, Sound *snd)
 {
-  if ((global_sound_status == 0) || (global_sound_status == 2)) {
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
     return 4;
   }
 
-  global_sound_vtable.PlaySnd(num,snd);
+  global_sound_vtable.PlaySnd(num, snd);
   return;
 }
 
 // FUNCTION: DECKDLL 0x1002d5c2
+// FUNCTION: STATWIN 0x100030a2
 // FUNCTION: SHANDALAR 0x0056d222
 int sound_stop(int a1)
 {
-  if (!global_sound_status || global_sound_status == 2) 
+  if (!global_sound_status || global_sound_status == 2)
     return 4;
 
   global_sound_vtable.StopSnd(a1);
   return;
 }
 
+// FUNCTION: STATWIN 0x100031e2
 // FUNCTION: SHANDALAR 0x0056d362
 int sound_set_vol(int num, unsigned int vol)
 {
@@ -205,9 +214,12 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 
   global_hmodule_magsnd_dll = LoadLibrary(PTR_s_magsnd_1003a86c);
 
-  if (global_hmodule_magsnd_dll) {
-    for (i = 0; i < SND_MAX + 1; ++i) {
-      if (!(global_sound_fns[i] = GetProcAddress(global_hmodule_magsnd_dll, (LPCSTR)((i + 1) & 0xffff)))) {
+  if (global_hmodule_magsnd_dll)
+  {
+    for (i = 0; i < SND_MAX + 1; ++i)
+    {
+      if (!(global_sound_fns[i] = GetProcAddress(global_hmodule_magsnd_dll, (LPCSTR)((i + 1) & 0xffff))))
+      {
         FreeLibrary(global_hmodule_magsnd_dll);
         clear_sound_imports_table();
         return 4;
@@ -217,15 +229,19 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
   else
     return 4;
 
-  if (hwnd || (a3 & 2)) {
-    if ((result = global_sound_vtable.InitSnd(hwnd, a2, a3))) {
+  if (hwnd || (a3 & 2))
+  {
+    if ((result = global_sound_vtable.InitSnd(hwnd, a2, a3)))
+    {
       FreeLibrary(global_hmodule_magsnd_dll);
       clear_sound_imports_table();
-      return result;    
+      return result;
     }
-    
+
     global_sound_unk1 = true;
-  } else {
+  }
+  else
+  {
     FreeLibrary(global_hmodule_magsnd_dll);
     clear_sound_imports_table();
     return 5;
@@ -240,6 +256,7 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 
 // FUNCTION: DECKDLL 0x1002d497
 // FUNCTION: MAGIC 0x004859b5
+// FUNCTION: STATWIN 0x10002f77
 // FUNCTION: SHANDALAR 0x0056d0f7
 int sound_load(const char *path, int num, Sound *snd)
 {
@@ -251,6 +268,7 @@ int sound_load(const char *path, int num, Sound *snd)
 }
 
 // FUNCTION: DECKDLL 0x1002d850
+// FUNCTION: STATWIN 0x10003330
 // FUNCTION: SHANDALAR 0x0056d4b0
 int set_sound_loop(int num, int num2)
 {
@@ -261,6 +279,7 @@ int set_sound_loop(int num, int num2)
   return;
 }
 
+// FUNCTION: STATWIN 0x10003375
 // FUNCTION: SHANDALAR 0x0056d4f5
 int play_snd_marker(int num, unsigned int marker)
 {
@@ -272,6 +291,7 @@ int play_snd_marker(int num, unsigned int marker)
   return global_sound_vtable.PlaySndMarker(num, marker);
 }
 
+// FUNCTION: STATWIN 0x10003440
 // FUNCTION: SHANDALAR 0x0056d5c0
 int sound_get_state(int num, int *out_state)
 {
@@ -284,10 +304,12 @@ int sound_get_state(int num, int *out_state)
 }
 
 // FUNCTION: MAGIC 0x00485f81
+// FUNCTION: STATWIN 0x10003543
 // FUNCTION: SHANDALAR 0x0056d6c3
 int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
 {
-  if ((global_sound_status == 0) || (global_sound_status == 2)) {
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
     return 0;
   }
 
@@ -295,10 +317,12 @@ int sound_is_loaded(int sound_id, int *out_loaded_sound_num)
 }
 
 // FUNCTION: MAGIC 0x00485fc3
+// FUNCTION: STATWIN 0x10003585
 // FUNCTION: SHANDALAR 0x0056d705
 int sound_get_lru(int *out_num, int start, int end)
 {
-  if ((global_sound_status == 0) || (global_sound_status == 2)) {
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
     return 4;
   }
 
@@ -316,6 +340,7 @@ HWND get_sound_hwnd(void)
   return global_sound_vtable.GetSndHWND();
 }
 
+// FUNCTION: STATWIN 0x100032f6
 // FUNCTION: SHANDALAR 0x0056d476
 int update_snd(void)
 {
@@ -325,4 +350,136 @@ int update_snd(void)
   }
 
   return global_sound_vtable.UpdateSnd();
+}
+
+// FUNCTION: STATWIN 0x10003059
+int sound_play_file(const char *path, int num, Sound *snd)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.PlaySndFile((LPSTR)path, num, snd);
+}
+
+// FUNCTION: STATWIN 0x100030e3
+void sound_stop_all(void)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return;
+  }
+
+  global_sound_vtable.StopAllSnds();
+}
+
+// FUNCTION: STATWIN 0x10003113
+int sound_play_midi_file(int a1, int a2)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.PlayMidiFile(a1, a2);
+}
+
+// FUNCTION: STATWIN 0x10003158
+int sound_set_pitch(int num, unsigned int pitch)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.SetPitch(num, pitch);
+}
+
+// FUNCTION: STATWIN 0x1000319d
+int sound_get_pitch(int num, unsigned int *out_pitch)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.GetPitch(num, out_pitch);
+}
+
+// FUNCTION: STATWIN 0x10003227
+int sound_get_vol(int num, unsigned int *out_vol)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.GetVol(num, out_vol);
+}
+
+// FUNCTION: STATWIN 0x1000326c
+int sound_set_pan(int num, int pan)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.SetPan(num, pan);
+}
+
+// FUNCTION: STATWIN 0x100032b1
+int sound_get_pan(int num, int *out_pan)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.GetPan(num, out_pan);
+}
+
+// FUNCTION: STATWIN 0x100033ba
+int sound_reset(int num)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.ResetSnd(num);
+}
+
+// FUNCTION: STATWIN 0x100033fb
+int sound_get_time(int num, unsigned int *out_time)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.GetSndTime(num, out_time);
+}
+
+// FUNCTION: STATWIN 0x10003485
+void *sound_get_avi_buffer(int avi_id, unsigned int buffer_size)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return NULL;
+  }
+
+  return global_sound_vtable.GetAVISndBuff(avi_id, buffer_size);
+}
+
+// FUNCTION: STATWIN 0x100034c7
+int sound_release_avi_buffer(int avi_id, int a2)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return 4;
+  }
+
+  return global_sound_vtable.ReleaseAVISndBuff(avi_id, a2);
 }
