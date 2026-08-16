@@ -552,7 +552,7 @@ unsigned int save_or_load_ver1(void)
   result &= save_or_load_data(&g_ai_search_flags, 4);
   result &= save_or_load_data(&DAT_007a7c60, 100);
   result &= save_or_load_data(g_life, 8);
-  result &= save_or_load_data(&DAT_007abce0, 8);
+  result &= save_or_load_data(g_poison_counters, 8);
   result &= save_or_load_data(&DAT_00938e38, 8);
   result &= save_or_load_data(unk_007a7d80, 0x10);
   result &= save_or_load_data(&g_current_player, 4);
@@ -759,7 +759,7 @@ unsigned int save_or_load_ver2(void)
   result &= save_or_load_data(&g_ai_search_flags, 4);
   result &= save_or_load_data(&DAT_007a7c60, 100);
   result &= save_or_load_data(g_life, 8);
-  result &= save_or_load_data(&DAT_007abce0, 8);
+  result &= save_or_load_data(g_poison_counters, 8);
   result &= save_or_load_data(unk_008b44d0, 8);
   result &= save_or_load_data(&DAT_00938e38, 8);
   result &= save_or_load_data(unk_007a7d80, 0x10);
@@ -1252,7 +1252,7 @@ void save_solo_duel_options_to_registry(void)
 }
 
 // FUNCTION: MAGIC 0x0048b91e
-// FUNCTION: SHANDALAR 0x004a75af
+// FUNCTION: SHANDALAR 0x004a75ae
 void save_gauntlet_options_to_registry(void)
 {
   struct

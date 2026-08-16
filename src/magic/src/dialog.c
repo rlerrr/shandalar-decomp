@@ -657,7 +657,7 @@ void replace_sleight_color_words(char *text, color_t source_color, int target_co
 // FUNCTION: SHANDALAR 0x005579be
 int get_original_internal_card_id(int player, int card)
 {
-  return *(int *)((char *)&global_card_instances[0][card] + player * 0xb0f4 + 0x3c);
+  return PLAYER_CARD_INSTANCE(player, card).original_internal_card_id;
 }
 
 // FUNCTION: MAGIC 0x004a587c
@@ -876,12 +876,13 @@ unsigned int refresh_duel_display_cache(void)
   }
   g_duel_cached_life_player_0 = g_life[0];
   g_duel_cached_life_player_1 = g_life[1];
-  if (DAT_007abce0 != g_duel_cached_state_007abce0 || g_duel_cached_state_007abce4 != DAT_007abce4)
+  if (g_poison_counters[0] != g_duel_cached_state_007abce0 ||
+      g_duel_cached_state_007abce4 != g_poison_counters[1])
   {
     s.needs_refresh = 1;
   }
-  g_duel_cached_state_007abce0 = DAT_007abce0;
-  g_duel_cached_state_007abce4 = DAT_007abce4;
+  g_duel_cached_state_007abce0 = g_poison_counters[0];
+  g_duel_cached_state_007abce4 = g_poison_counters[1];
   if (unk_008b44d0[0] != g_duel_cached_unk_008b44d0_player_0 ||
       unk_008b44d0[1] != g_duel_cached_unk_008b44d0_player_1)
   {

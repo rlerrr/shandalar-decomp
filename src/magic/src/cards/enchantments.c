@@ -106,7 +106,7 @@ int card_artifact_ward(int player, int card, event_t event)
     else
     {
       if (player == g_other_player && (g_duel_network_flags & 2) == 0 &&
-          (is_selected_target_already_attached(player, card) != 0 ||
+          (is_selected_target_already_attached(player, card, PLAYER_CARD_INSTANCE(player, card).internal_card_id) != 0 ||
            (PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).card_color & COLOR_TEST_ARTIFACT) != 0))
       {
         g_ai_modifier -= 0x60;
@@ -1694,6 +1694,7 @@ int card_lich(int player, int card, event_t event)
 }
 
 // FUNCTION: MAGIC 0x0043b4f3
+// FUNCTION: SHANDALAR 0x004fde93
 int sacrifice_permanents_for_lich_damage(int player, int amount)
 {
   card_instance_t *instance;

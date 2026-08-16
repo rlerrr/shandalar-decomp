@@ -4,10 +4,12 @@ extern HPALETTE global_cart_art_hpalette;
 
 // GLOBAL: DECKDLL 0x1011279c
 // GLOBAL: MAGIC 0x007775b0
+// FUNCTION: SHANDALAR 0x0078df7c
 static WNDPROC global_wndproc_std_ButtonClass;
 
 // FUNCTION: DECKDLL 0x10025d1b
 // FUNCTION: MAGIC 0x00496489
+// FUNCTION: SHANDALAR 0x00466f1c
 static BOOL CALLBACK enum_child_palette_message_proc(HWND child_hwnd, LPARAM lparam)
 {
   int *args;
@@ -98,6 +100,7 @@ int handle_button_palette_message(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM 
 
 // FUNCTION: DECKDLL 0x100256c8
 // FUNCTION: MAGIC 0x00495e36
+// FUNCTION: SHANDALAR 0x004668c9
 static int is_buttonclass(HWND hwnd)
 {
   char classname[0x64];
@@ -114,6 +117,7 @@ static int is_buttonclass(HWND hwnd)
 
 // FUNCTION: DECKDLL 0x10025593
 // FUNCTION: MAGIC 0x00495d01
+// FUNCTION: SHANDALAR 0x00466794
 LRESULT CALLBACK wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
@@ -155,6 +159,7 @@ LRESULT CALLBACK wndproc_ButtonClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 
 // FUNCTION: DECKDLL 0x10025552
 // FUNCTION: MAGIC 0x00495cc0
+// FUNCTION: SHANDALAR 0x00466753
 BOOL CALLBACK enumfunc_change_buttonclass_wndproc(HWND hwnd, LPARAM lparam)
 {
   if (is_buttonclass(hwnd))

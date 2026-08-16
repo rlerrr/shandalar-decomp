@@ -3,6 +3,8 @@
 
 #include "defs.h"
 #include "cardartlib/src/palette.h"
+#include "magic/src/game_support.h"
+#include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
@@ -33,6 +35,7 @@ typedef struct choose_color_dialog_context_struct
 } choose_color_dialog_context_t;
 
 extern HINSTANCE g_app_instance;
+extern card_ptr_t global_raw_cards_storage[2000];
 
 HBITMAP load_pic(char *filename);
 void delete_and_close_object(HANDLE obj);
@@ -51,36 +54,47 @@ void cleanup_choose_color_dialog_resources(HBITMAP background, HBITMAP selection
 void get_choose_color_selection_rect(RECT *rect, HWND hwnd, int color);
 
 // GLOBAL: MAGIC 0x00638b5c
+// GLOBAL: SHANDALAR 0x006502a4
 COLORREF g_choose_color_button_focus_text_color;
 
 // GLOBAL: MAGIC 0x00638b88
+// GLOBAL: SHANDALAR 0x006502d0
 HBITMAP g_choose_color_mana_symbol_bitmaps[6];
 
 // GLOBAL: MAGIC 0x00638bcc
+// GLOBAL: SHANDALAR 0x00650314
 COLORREF g_choose_color_prompt_text_color;
 
 // GLOBAL: MAGIC 0x00638be4
+// GLOBAL: SHANDALAR 0x0065032c
 HBITMAP g_choose_color_selection_bitmap;
 
 // GLOBAL: MAGIC 0x00638be8
+// GLOBAL: SHANDALAR 0x00650330
 HPEN g_choose_color_button_pen2;
 
 // GLOBAL: MAGIC 0x00638c20
+// GLOBAL: SHANDALAR 0x00650368
 HPEN g_choose_color_button_pen1;
 
 // GLOBAL: MAGIC 0x00638c50
+// GLOBAL: SHANDALAR 0x00650398
 HBITMAP g_choose_color_background_bitmap;
 
 // GLOBAL: MAGIC 0x00638c54
+// GLOBAL: SHANDALAR 0x0065039c
 HBRUSH g_choose_color_button_brush;
 
 // GLOBAL: MAGIC 0x00638c90
+// GLOBAL: SHANDALAR 0x006503d8
 COLORREF g_choose_color_label_text_color;
 
 // GLOBAL: MAGIC 0x00638c98
+// GLOBAL: SHANDALAR 0x006503e0
 int g_choose_color_selected_color;
 
 // GLOBAL: MAGIC 0x00638ca0
+// GLOBAL: SHANDALAR 0x006503e8
 COLORREF g_choose_color_button_unfocus_text_color;
 
 // FUNCTION: MAGIC 0x004a116d
@@ -229,6 +243,7 @@ int choose_a_color_dialog(int player, const char *prompt, int use_color_names_in
 }
 
 // FUNCTION: MAGIC 0x004a142c
+// FUNCTION: SHANDALAR 0x0053cdc4
 BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
@@ -572,6 +587,7 @@ BOOL WINAPI dlgproc_choose_color(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
 }
 
 // FUNCTION: MAGIC 0x004a226c
+// FUNCTION: SHANDALAR 0x0053dbf2
 void setup_choose_color_dialog_resources(HBITMAP *background, COLORREF *prompt_text_color, HBITMAP *selection,
                                          HBITMAP color_bitmaps[6], COLORREF *label_text_color,
                                          HBRUSH *button_brush, HPEN *button_pen1, HPEN *button_pen2,
@@ -620,6 +636,7 @@ void setup_choose_color_dialog_resources(HBITMAP *background, COLORREF *prompt_t
 }
 
 // FUNCTION: MAGIC 0x004a2499
+// FUNCTION: SHANDALAR 0x0053de1f
 void cleanup_choose_color_dialog_resources(HBITMAP background, HBITMAP selection, HBITMAP color_bitmaps[6],
                                            HBRUSH button_brush, HPEN button_pen1, HPEN button_pen2)
 {
@@ -655,6 +672,7 @@ void cleanup_choose_color_dialog_resources(HBITMAP background, HBITMAP selection
 }
 
 // FUNCTION: MAGIC 0x004a254f
+// FUNCTION: SHANDALAR 0x0053ded5
 void get_choose_color_selection_rect(RECT *rect, HWND hwnd, int color)
 {
   struct
@@ -702,4 +720,37 @@ void get_choose_color_selection_rect(RECT *rect, HWND hwnd, int color)
     InflateRect(rect, 0, 10);
     MapWindowPoints((HWND)0, hwnd, (LPPOINT)rect, 2);
   }
+}
+
+// FUNCTION: SHANDALAR 0x0053e098
+int choose_magical_hack_colors(int player, target_t *target, const char *prompt, int initial_color_mask,
+                               int has_initial_color)
+{
+  int internal_card_id;
+  int old_color;
+  int new_color;
+  unsigned int available_colors;
+
+  if (player == g_other_player && (g_duel_network_flags & 2) == 0)
+  {
+    return (initial_color_mask == 0 && has_initial_color == 0) ? 0 : 1;
+  }
+
+  internal_card_id = PLAYER_CARD_INSTANCE(target->player, target->card).internal_card_id;
+  available_colors = global_raw_cards_storage[global_cards_data[internal_card_id].id].hack_colors;
+  old_color = choose_a_color_dialog(player, prompt, 0,
+                                    single_color_test_bit_to_color_t(initial_color_mask >> 8),
+                                    available_colors);
+  if (old_color == -1)
+  {
+    return -1;
+  }
+  new_color = choose_a_color_dialog(player, prompt, 0, old_color == COLOR_WHITE ? COLOR_BLUE : COLOR_WHITE,
+                                    COLOR_TEST_ANY_COLORED & ~(1 << (unsigned char)old_color));
+  if (new_color == -1)
+  {
+    return -1;
+  }
+
+  return (1 << (unsigned char)new_color) << 8 | (1 << (unsigned char)old_color);
 }

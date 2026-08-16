@@ -7,6 +7,7 @@
 #include "defs.h"
 #include "shandalar.h"
 #include "magic/src/global_other.h"
+#include "magic/src/game_support.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
@@ -188,9 +189,8 @@ int ApproximateDistance(int x, int y);
 int GetRelativeWorldQuadrant(int world_x, int world_y);
 int AddCardToDeckSorted(int card_id);
 int GetRemainingAllowedCardCopies(int card_id);
-int IsCardColorCompatibleWithMask(int card_color, int color_mask, int compatibility_level);
 int GetCardRarity(int card_id);
-int FindCardIndexByCsvid(int csvid);
+int find_internal_card_id_by_csv_id(card_id_t card_id);
 int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask);
 char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID world_magic_button_sprite, ...);
@@ -1641,7 +1641,7 @@ int SellPrice(int card_index)
   if (((int)(char)global_cards_data[card_index].color != s.tile_magic_mask) &&
       ((char)global_cards_data[card_index].color != 0))
   {
-    if (IsCardColorCompatibleWithMask(s.tile_magic_mask, (int)(char)global_cards_data[card_index].color, 3) != 0)
+    if (is_card_color_compatible_with_mask(s.tile_magic_mask, (int)(char)global_cards_data[card_index].color, 3) != 0)
     {
       s.price = (s.price * 4) / 3;
     }
@@ -1878,7 +1878,7 @@ int RunTownServicesMenu(int town_index)
       }
 
       s.scan_color = internal_rand(5) + 1;
-      if ((IsCardColorCompatibleWithMask(1 << (unsigned char)s.scan_color, 1 << (unsigned char)s.card_id, 3) == 0) &&
+      if ((is_card_color_compatible_with_mask(1 << (unsigned char)s.scan_color, 1 << (unsigned char)s.card_id, 3) == 0) &&
           (internal_rand(2) != 0))
       {
         g_pending_quest_type = 1;
@@ -1972,7 +1972,7 @@ int RunTownServicesMenu(int town_index)
         {
           if ((s.tile_magic_mask & (1U << (unsigned char)s.right_click_action)) != 0)
           {
-            if (IsCardColorCompatibleWithMask(1 << (unsigned char)s.right_click_action, (int)(signed char)global_cards_data[s.distance].color,
+            if (is_card_color_compatible_with_mask(1 << (unsigned char)s.right_click_action, (int)(signed char)global_cards_data[s.distance].color,
                                               (s.right_click_action & 1) ? 1 : 3) != 0)
             {
               s.ok = 1;
@@ -2037,7 +2037,7 @@ int RunTownServicesMenu(int town_index)
       if ((s.tile_magic_mask & (unsigned int)(signed char)global_cards_data[s.distance].color) == 0)
       {
         if (((signed char)global_cards_data[s.distance].color != 0) &&
-            (IsCardColorCompatibleWithMask((int)s.tile_magic_mask, (int)(signed char)global_cards_data[s.distance].color, 3) != 0))
+            (is_card_color_compatible_with_mask((int)s.tile_magic_mask, (int)(signed char)global_cards_data[s.distance].color, 3) != 0))
         {
           s.tmp_cost = (s.tmp_cost * 3) / 2;
         }
@@ -2572,7 +2572,7 @@ int ParseDeckFileIntoInitialLibrary(char *deck_path, csvid_and_numcards *library
           library_entries[s.entry_index].csvid = s.csvid;
           library_entries[s.entry_index].numcards = s.numcards;
 
-          s.card_index = FindCardIndexByCsvid(s.csvid);
+          s.card_index = find_internal_card_id_by_csv_id(s.csvid);
           if (s.numcards == 0)
           {
             s.numcards = g_shandalar_difficulty;
@@ -3523,7 +3523,7 @@ LAB_00531ee7:
   case 4:
     if (g_next_duel_card_id == -1)
     {
-      g_next_duel_card_id = FindCardIndexByCsvid(g_wiseman_duel_reward_card_csvids[(internal_rand(2) - 2) + preferred_color * 2]);
+      g_next_duel_card_id = find_internal_card_id_by_csv_id(g_wiseman_duel_reward_card_csvids[(internal_rand(2) - 2) + preferred_color * 2]);
       sprintf(g_ui_message_buffer + strlen(g_ui_message_buffer), gs_wiseman_0074d840[0x10], global_cards_data[g_next_duel_card_id].name);
     }
     else
@@ -4214,7 +4214,7 @@ int BuyAnyCardFromTown(int payment_color, int town_index)
       if (((s.tile_magic_index & (int)(signed char)global_cards_data[s.card_id].color) == 0) &&
           ((signed char)global_cards_data[s.card_id].color != 0))
       {
-        if (IsCardColorCompatibleWithMask(s.tile_magic_index, (int)(signed char)global_cards_data[s.card_id].color, 3) != 0)
+        if (is_card_color_compatible_with_mask(s.tile_magic_index, (int)(signed char)global_cards_data[s.card_id].color, 3) != 0)
         {
           s.price = (s.price * 3) / 2;
         }
@@ -4466,12 +4466,12 @@ int VisitTownSlot(int town_index)
 
     if (RunTextMenuAtScaled(g_ui_message_buffer, 0x78, 0x38) == 1)
     {
-      g_opponent_starting_card_id_2 = FindCardIndexByCsvid(
+      g_opponent_starting_card_id_2 = find_internal_card_id_by_csv_id(
           *(&g_dungeon_monster_duel_music_csvids[(s.duel_wizard_color - 1) * 3] + internal_rand(3)));
       g_lair_or_monster_slots[6].color = s.duel_wizard_color;
       g_lair_or_monster_slots[6].entry_type = (ShandalarEntryType)s.duel_creature_tier_or_type;
 
-      s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.duel_creature_tier_or_type].deck_number);
+      s.selected_card_id = find_internal_card_id_by_csv_id(g_shandalar_monster_definitions[s.duel_creature_tier_or_type].deck_number);
       LoadCreatureDuelDeck(s.duel_creature_tier_or_type, (unsigned int)s.selected_card_id, 0, -1);
 
       g_current_encounter_color = s.duel_wizard_color;

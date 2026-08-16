@@ -407,7 +407,7 @@ int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_car
 }
 
 // FUNCTION: MAGIC 0x004e9b26
-// FUNCTION: SHANDALAR 0x00507986
+// FUNCTION: SHANDALAR 0x00507933
 int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent)
 {
   HWND *card_windows;

@@ -36,7 +36,7 @@ int card_army_of_allah(int player, int card, event_t event)
     kill_card(player, card, KILL_BURY);
   }
 
-  if (event == EVENT_ATTACK_LEGALITY && has_mana(player, COLOR_WHITE, 2) != 0 && has_mana(player, COLOR_ANY, 3) != 0)
+  if (event == EVENT_CHECK_PUMP && has_mana(player, COLOR_WHITE, 2) != 0 && has_mana(player, COLOR_ANY, 3) != 0)
   {
     unk_007a7d80[player] += 2;
   }

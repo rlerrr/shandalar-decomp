@@ -5,6 +5,37 @@
 
 extern card_ptr_t global_raw_cards_storage[2000];
 
+// FUNCTION: SHANDALAR 0x004882b5
+unsigned int get_urza_land_types_in_play(int player)
+{
+  int current_card;
+  int internal_card_id;
+  unsigned int result;
+
+  result = 0;
+  for (current_card = 0; current_card < g_active_cards_count[player]; ++current_card)
+  {
+    internal_card_id = PLAYER_CARD_INSTANCE(player, current_card).internal_card_id;
+    if (is_in_play(player, current_card) && global_cards_data[internal_card_id].subtype == SUB_RAT)
+    {
+      if (global_cards_data[internal_card_id].id == CARD_ID_URZAS_MINE)
+      {
+        result |= 1;
+      }
+      if (global_cards_data[internal_card_id].id == CARD_ID_URZAS_POWER_PLANT)
+      {
+        result |= 2;
+      }
+      if (global_cards_data[internal_card_id].id == CARD_ID_URZAS_TOWER)
+      {
+        result |= 4;
+      }
+    }
+  }
+
+  return result;
+}
+
 // FUNCTION: MAGIC 0x004828ce
 // FUNCTION: SHANDALAR 0x004863e1
 int arena_has_targets(int player, int card)
@@ -46,6 +77,85 @@ int arena_has_targets(int player, int card)
   return found_active_player != 0 && found_other_player != 0;
 }
 
+// FUNCTION: SHANDALAR 0x00487749
+int select_best_arena_creature(int unused, int target_player, unsigned char required_type, target_t *target)
+{
+  int current_player;
+  int current_card;
+  int score;
+  int best_score;
+  unsigned int abilities;
+  int result;
+
+  best_score = -1;
+  result = 0;
+  target->player = -1;
+  target->card = -1;
+  for (current_player = 0; current_player < 2; ++current_player)
+  {
+    if (target_player == -1 || target_player == current_player)
+    {
+      for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
+      {
+        if (is_in_play(current_player, current_card) &&
+            (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type & required_type) != 0 &&
+            PLAYER_CARD_INSTANCE(current_player, current_card).kill_code != KILL_REMOVE &&
+            (PLAYER_CARD_INSTANCE(current_player, current_card).state & STATE_CANNOT_TARGET) == 0)
+        {
+          score = C_get_abilities(current_player, current_card, EVENT_POWER, -1);
+          score += C_get_abilities(current_player, current_card, EVENT_TOUGHNESS, -1);
+          abilities = C_get_abilities(current_player, current_card, EVENT_ABILITIES, -1);
+          if ((abilities & KEYWORD_FLYING) != 0)
+          {
+            ++score;
+          }
+          if ((abilities & KEYWORD_TRAMPLE) != 0)
+          {
+            ++score;
+          }
+          while (abilities != 0)
+          {
+            if ((abilities & 1) != 0)
+            {
+              ++score;
+            }
+            abilities >>= 1;
+          }
+          if ((global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].extra_ability & 0x1000) != 0)
+          {
+            ++score;
+          }
+          if ((global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].extra_ability & 1) != 0)
+          {
+            ++score;
+          }
+          if (best_score < score)
+          {
+            best_score = score;
+            target->player = current_player;
+            target->card = current_card;
+            result = 1;
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+// FUNCTION: SHANDALAR 0x00558828
+int send_arena_network_choice(int player, int choice)
+{
+  if (g_active_player == player && (g_duel_network_flags & 2) != 0)
+  {
+    g_network_result_packet_type = 0xd;
+    g_network_result_value = choice;
+    TENTATIVE_send_network_result(player, 0xd);
+  }
+  return choice;
+}
+
 // FUNCTION: MAGIC 0x005022a0
 // FUNCTION: SHANDALAR 0x00552320
 int card_arena(int player, int card, event_t event)
@@ -78,84 +188,87 @@ int card_arena(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_00938e2c != 0)
+    if (unk_00938e2c == 0)
     {
-      g_spell_fizzled = 1;
-      return 0;
-    }
+      charge_mana(player, COLOR_COLORLESS, 3);
+      if (g_spell_fizzled != 1)
+      {
+        if (g_active_player == player)
+        {
+          load_text("promptsX1.txt", "ARENA");
+          if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
+                                   get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                                   -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) == 0)
+          {
+            g_spell_fizzled = 1;
+          }
+          else
+          {
+            instance->targets[instance->number_of_targets] = target;
+            ++instance->number_of_targets;
+            instance->state |= STATE_TAPPED;
+            if ((g_duel_network_flags & 2) == 0)
+            {
+              select_best_arena_creature(1 - player, 1 - player, TYPE_CREATURE, &target);
+            }
+            else
+            {
+              send_arena_network_choice(player, 0);
+              load_text("promptsX1.txt", "ARENA");
+              C_real_select_target(1 - player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY,
+                                   TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
+                                   COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0,
+                                   g_text_lines[0], 0, &target);
+            }
+            instance->targets[instance->number_of_targets] = target;
+            ++instance->number_of_targets;
+            do_dialog(1 - player, player, card, target.player, target.card, g_text_lines[1], 0);
+          }
+        }
+        else
+        {
+          load_text("promptsX1.txt", "ARENA");
+          if ((g_duel_network_flags & 2) == 0)
+          {
+            g_spell_fizzled = select_best_arena_creature(player, player, TYPE_CREATURE, &target) == 0;
+          }
+          else
+          {
+            g_spell_fizzled = C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY,
+                                                   TYPE_CREATURE, TYPE_NONE, 0,
+                                                   get_protections_from(player, card), COLOR_TEST_0,
+                                                   COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0,
+                                                   g_text_lines[0], 1, &target) == 0;
+          }
+          if (g_spell_fizzled != 1)
+          {
+            instance->targets[instance->number_of_targets] = target;
+            ++instance->number_of_targets;
+            do_dialog(player, player, card, target.player, target.card, g_text_lines[1], 0);
+            load_text("promptsX1.txt", "ARENA");
+            C_real_select_target(1 - player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
+                                 COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0,
+                                 g_text_lines[0], 0, &target);
+            instance->targets[instance->number_of_targets] = target;
+            ++instance->number_of_targets;
+            instance->state |= STATE_TAPPED;
+            if ((g_duel_network_flags & 2) != 0)
+            {
+              send_arena_network_choice(1 - player, 0);
+            }
+          }
+        }
 
-    charge_mana(player, COLOR_COLORLESS, 3);
-    if (g_spell_fizzled == 1)
-    {
-      return 0;
-    }
-
-    instance->number_of_targets = 0;
-    if (!C_real_select_target(player,
-                              player,
-                              player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              "Select a creature you control.",
-                              1,
-                              &target))
-    {
-      g_spell_fizzled = 1;
+        if (g_spell_fizzled == 1)
+        {
+          instance->number_of_targets = 0;
+        }
+      }
     }
     else
     {
-      instance->targets[0] = target;
-      instance->number_of_targets = 1;
-    }
-
-    if (g_spell_fizzled != 1)
-    {
-      if (!C_real_select_target(1 - player,
-                                1 - player,
-                                1 - player,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_CREATURE,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                -1,
-                                -1,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                "Select a creature you control.",
-                                0,
-                                &target))
-      {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
-        instance->targets[1] = target;
-        instance->number_of_targets = 2;
-        instance->state |= STATE_TAPPED;
-      }
-    }
-
-    if (g_spell_fizzled == 1)
-    {
-      instance->number_of_targets = 0;
+      g_spell_fizzled = 1;
     }
     return 0;
   }
@@ -402,7 +515,7 @@ int card_city_of_brass(int player, int card, event_t event)
         produce_mana(player, s.color, 1);
         undeclare_mana_available_hex(player, s.available_colors, 1);
         instance->state |= STATE_TAPPED;
-        g_duel_special_land_card_ids[6] = s.color;
+        g_produced_mana_color = s.color;
       }
     }
   }
@@ -494,7 +607,7 @@ int card_desert(int player, int card, event_t event)
     }
     else if (s.choice == 1)
     {
-      g_duel_special_land_card_ids[6] = -1;
+      g_produced_mana_color = -1;
       if (!C_real_select_target(player,
                                 2,
                                 1 - player,
@@ -661,7 +774,7 @@ int card_diamond_valley(int player, int card, event_t event)
       kill_card(target.player, target.card, KILL_SACRIFICE);
       instance->info_slot = C_get_abilities(target.player, target.card, EVENT_TOUGHNESS, -1);
       instance->state |= STATE_TAPPED;
-      g_duel_special_land_card_ids[6] = -1;
+      g_produced_mana_color = -1;
     }
     return 0;
   }
@@ -773,7 +886,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
     }
     else if (s.choice == 1)
     {
-      g_duel_special_land_card_ids[6] = -1;
+      g_produced_mana_color = -1;
       s.done = 0;
       do
       {
@@ -818,7 +931,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
     return s.result;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && g_duel_special_land_card_ids[6] == -1)
+  if (event == EVENT_RESOLVE_ACTIVATION && g_produced_mana_color == -1)
   {
     target = instance->targets[0];
     if (!C_real_validate_target(target.player,
@@ -940,7 +1053,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
       instance->targets[0] = target;
       instance->number_of_targets = 1;
       instance->state |= STATE_TAPPED;
-      g_duel_special_land_card_ids[6] = -1;
+      g_produced_mana_color = -1;
     }
     return 0;
   }
@@ -995,20 +1108,14 @@ int card_island_of_wak_wak(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005553ee
 int card_urza_s_mine(int player, int card, event_t event)
 {
-  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  if (event == EVENT_UNTAP_PHASE)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
-  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller)
+  if (event == EVENT_RESOLVE_SPELL)
   {
-    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
-         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
-        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
-    {
-      declare_mana_available(player, COLOR_COLORLESS, 1);
-    }
-    return 0;
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
   if (event == EVENT_CAN_ACTIVATE)
@@ -1019,16 +1126,36 @@ int card_urza_s_mine(int player, int card, event_t event)
     {
       return 1;
     }
-    return 0;
+    else
+    {
+      return 0;
+    }
   }
 
   if (event == EVENT_ACTIVATE)
   {
     undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 1);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-    return 0;
+    g_produced_mana_color = COLOR_COLORLESS;
+    if (get_urza_land_types_in_play(player) == 7)
+    {
+      undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 1);
+    }
   }
 
+  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      declare_mana_available(player, COLOR_COLORLESS, 1);
+    }
+    if (get_urza_land_types_in_play(player) == 7)
+    {
+      declare_mana_available(player, COLOR_COLORLESS, 1);
+    }
+  }
   return 0;
 }
 
@@ -1036,20 +1163,14 @@ int card_urza_s_mine(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00555699
 int card_urza_s_tower(int player, int card, event_t event)
 {
-  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  if (event == EVENT_UNTAP_PHASE)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
-  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller)
+  if (event == EVENT_RESOLVE_SPELL)
   {
-    if (((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
-         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
-        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
-    {
-      declare_mana_available(player, COLOR_COLORLESS, 1);
-    }
-    return 0;
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
   if (event == EVENT_CAN_ACTIVATE)
@@ -1060,16 +1181,36 @@ int card_urza_s_tower(int player, int card, event_t event)
     {
       return 1;
     }
-    return 0;
+    else
+    {
+      return 0;
+    }
   }
 
   if (event == EVENT_ACTIVATE)
   {
     undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 1);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-    return 0;
+    g_produced_mana_color = COLOR_COLORLESS;
+    if (get_urza_land_types_in_play(player) == 7)
+    {
+      undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 2);
+    }
   }
 
+  if (event == EVENT_COUNT_MANA && card == g_affected_card && player == g_affected_card_controller)
+  {
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+        ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0 ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0))
+    {
+      declare_mana_available(player, COLOR_COLORLESS, 1);
+    }
+    if (get_urza_land_types_in_play(player) == 7)
+    {
+      declare_mana_available(player, COLOR_COLORLESS, 2);
+    }
+  }
   return 0;
 }
 
@@ -1160,7 +1301,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
       produce_mana(player, color, 1);
       undeclare_mana_available_hex(player, color, 1);
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-      g_duel_special_land_card_ids[6] = color;
+      g_produced_mana_color = color;
 
       if (player == g_other_player && (g_duel_network_flags & 2) == 0)
       {

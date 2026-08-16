@@ -922,7 +922,7 @@ int whimsy_apply_effect(int player, int card, int effect_index)
         }
         else
         {
-          loop_index = network_random(player, 2);
+          loop_index = network_random_boolean(player);
         }
         if (loop_index == 0)
         {

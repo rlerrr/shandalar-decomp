@@ -68,33 +68,43 @@ typedef struct DuelCoinFlipAnimationDialogContext
 } DuelCoinFlipAnimationDialogContext;
 
 // GLOBAL: MAGIC 0x00638c74
+// GLOBAL: SHANDALAR 0x006503bc
 HBITMAP g_coin_flip_dialog_background;
 
 // GLOBAL: MAGIC 0x00638c68
+// GLOBAL: SHANDALAR 0x006503b0
 int g_coin_flip_dialog_text_color;
 
 // GLOBAL: MAGIC 0x00638bac
+// GLOBAL: SHANDALAR 0x006502f4
 HBITMAP g_coin_flip_dialog_button_normal_bitmap;
 
 // GLOBAL: MAGIC 0x00638c58
+// GLOBAL: SHANDALAR 0x006503a0
 HBITMAP g_coin_flip_dialog_button_depressed_bitmap;
 
 // GLOBAL: MAGIC 0x00638be0
+// GLOBAL: SHANDALAR 0x00650328
 COLORREF g_coin_flip_dialog_button_normal_color;
 
 // GLOBAL: MAGIC 0x00638ba0
+// GLOBAL: SHANDALAR 0x006502e8
 COLORREF g_coin_flip_dialog_button_focus_color;
 
 // GLOBAL: MAGIC 0x005726a0
+// GLOBAL: SHANDALAR 0x0058f1a8
 HWND g_coin_flip_animation_mci_hwnd = (HWND)0;
 
 // GLOBAL: MAGIC 0x00638b7c
+// GLOBAL: SHANDALAR 0x006502c4
 HBRUSH g_coin_flip_animation_dialog_brush;
 
 // GLOBAL: MAGIC 0x00638c60
+// GLOBAL: SHANDALAR 0x006503a8
 COLORREF g_coin_flip_animation_dialog_text_color;
 
 // GLOBAL: MAGIC 0x00638c64
+// GLOBAL: SHANDALAR 0x006503ac
 DuelCoinFlipAnimationDialogContext *g_coin_flip_animation_dialog_context;
 
 typedef struct
@@ -118,30 +128,39 @@ typedef struct
 } DuelRedrawAnteDialogContext;
 
 // GLOBAL: MAGIC 0x00638c10
+// GLOBAL: SHANDALAR 0x00650358
 HBITMAP g_redraw_ante_dialog_background;
 
 // GLOBAL: MAGIC 0x00638c88
+// GLOBAL: SHANDALAR 0x006503d0
 int g_redraw_ante_dialog_text_color;
 
 // GLOBAL: MAGIC 0x00638c3c
+// GLOBAL: SHANDALAR 0x00650384
 HBITMAP g_redraw_ante_dialog_button_normal_bitmap;
 
 // GLOBAL: MAGIC 0x00638b4c
+// GLOBAL: SHANDALAR 0x00650294
 HBITMAP g_redraw_ante_dialog_button_depressed_bitmap;
 
 // GLOBAL: MAGIC 0x00638b40
+// GLOBAL: SHANDALAR 0x00650288
 HBITMAP g_redraw_ante_dialog_button_disabled_bitmap;
 
 // GLOBAL: MAGIC 0x00638c04
+// GLOBAL: SHANDALAR 0x0065034c
 COLORREF g_redraw_ante_dialog_button_normal_color;
 
 // GLOBAL: MAGIC 0x00638bf0
+// GLOBAL: SHANDALAR 0x00650338
 COLORREF g_redraw_ante_dialog_button_focus_color;
 
 // GLOBAL: MAGIC 0x00638b74
+// GLOBAL: SHANDALAR 0x006502bc
 int g_redraw_ante_waiting_for_both_network_choices;
 
 // GLOBAL: MAGIC 0x00638c0c
+// GLOBAL: SHANDALAR 0x00650354
 char g_redraw_ante_opponent_choice_received;
 
 // FUNCTION: MAGIC 0x004a3b82
@@ -227,6 +246,7 @@ int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_of
 }
 
 // FUNCTION: MAGIC 0x004a44b7
+// FUNCTION: SHANDALAR 0x0053fe44
 void load_coin_flip_animation_dialog_assets(HBRUSH *brush, COLORREF *text_color)
 {
   *brush = CreateSolidBrush(0x100000d);
@@ -234,6 +254,7 @@ void load_coin_flip_animation_dialog_assets(HBRUSH *brush, COLORREF *text_color)
 }
 
 // FUNCTION: MAGIC 0x004a44db
+// FUNCTION: SHANDALAR 0x0053fe68
 void cleanup_coin_flip_animation_dialog_assets(HGDIOBJ brush)
 {
   if (brush != (HGDIOBJ)0)
@@ -242,7 +263,38 @@ void cleanup_coin_flip_animation_dialog_assets(HGDIOBJ brush)
   }
 }
 
+// FUNCTION: SHANDALAR 0x0053fe87
+int choose_fireball_options(int player, int internal_card_id, int maximum_mana, int maximum_targets,
+                            int *mana_to_pay, int *number_of_targets, int *damage_per_target)
+{
+  if ((player == g_other_player && (g_duel_network_flags & 2) == 0) || player == -1 ||
+      internal_card_id == -1 || mana_to_pay == NULL || number_of_targets == NULL || damage_per_target == NULL)
+  {
+    return 0;
+  }
+
+  *mana_to_pay = maximum_mana;
+  *number_of_targets = 1;
+  if (maximum_targets > 1 && maximum_mana > 2)
+  {
+    *number_of_targets = 2;
+  }
+  if (*number_of_targets > maximum_targets)
+  {
+    *number_of_targets = maximum_targets;
+  }
+  *damage_per_target = (*mana_to_pay - (*number_of_targets - 1) + (*number_of_targets - 1)) /
+                       *number_of_targets;
+  if (*damage_per_target < 1)
+  {
+    *damage_per_target = 1;
+  }
+
+  return 1;
+}
+
 // FUNCTION: MAGIC 0x004a3d9c
+// FUNCTION: SHANDALAR 0x0053f72a
 BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
@@ -434,6 +486,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wpara
 }
 
 // FUNCTION: MAGIC 0x0049a6c8
+// FUNCTION: SHANDALAR 0x00536086
 BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
@@ -931,7 +984,8 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 }
 
 // FUNCTION: MAGIC 0x0049bc58
-void __cdecl redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
+// FUNCTION: SHANDALAR 0x0053760d
+void redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
 {
 #ifndef SHANDALAR
   struct
@@ -958,7 +1012,8 @@ void __cdecl redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
 }
 
 // FUNCTION: MAGIC 0x0049bccf
-void __cdecl redraw_ante_wait_for_opponent_done_thread(void *hwnd)
+// FUNCTION: SHANDALAR 0x00537684
+void redraw_ante_wait_for_opponent_done_thread(void *hwnd)
 {
 #ifndef SHANDALAR
   struct
@@ -985,6 +1040,7 @@ void __cdecl redraw_ante_wait_for_opponent_done_thread(void *hwnd)
 }
 
 // FUNCTION: MAGIC 0x0049bd46
+// FUNCTION: SHANDALAR 0x005376fb
 void load_redraw_ante_dialog_assets(HBITMAP *background,
                                     int *text_color,
                                     HBITMAP *normal_button_bitmap,
@@ -1012,6 +1068,7 @@ void load_redraw_ante_dialog_assets(HBITMAP *background,
 }
 
 // FUNCTION: MAGIC 0x0049be2a
+// FUNCTION: SHANDALAR 0x005377df
 void cleanup_redraw_ante_dialog_assets(HANDLE background,
                                        HANDLE normal_button_bitmap,
                                        HANDLE depressed_button_bitmap,
@@ -1036,6 +1093,7 @@ void cleanup_redraw_ante_dialog_assets(HANDLE background,
 }
 
 // FUNCTION: MAGIC 0x0049a5c5
+// FUNCTION: SHANDALAR 0x00535f83
 void load_coin_flip_dialog_assets(HBITMAP *background,
                                   int *text_color,
                                   HBITMAP *normal_button_bitmap,
@@ -1060,6 +1118,7 @@ void load_coin_flip_dialog_assets(HBITMAP *background,
 }
 
 // FUNCTION: MAGIC 0x0049a67b
+// FUNCTION: SHANDALAR 0x00536039
 void cleanup_coin_flip_dialog_assets(HANDLE background, HANDLE normal_button_bitmap, HANDLE depressed_button_bitmap)
 {
   if (background != 0)
@@ -1077,6 +1136,7 @@ void cleanup_coin_flip_dialog_assets(HANDLE background, HANDLE normal_button_bit
 }
 
 // FUNCTION: MAGIC 0x00495a69
+// FUNCTION: SHANDALAR 0x00466500
 void draw_duel_dialog_bitmap_button(DRAWITEMSTRUCT *draw_item,
                                     HBITMAP normal_bitmap,
                                     HBITMAP pressed_bitmap,
@@ -1132,7 +1192,8 @@ void draw_duel_dialog_bitmap_button(DRAWITEMSTRUCT *draw_item,
 }
 
 // FUNCTION: MAGIC 0x0049a558
-void __cdecl coin_flip_wait_for_network_choice_thread(void *hwnd)
+// FUNCTION: SHANDALAR 0x00535f16
+void coin_flip_wait_for_network_choice_thread(void *hwnd)
 {
 #ifndef SHANDALAR
   struct
@@ -1156,6 +1217,7 @@ void __cdecl coin_flip_wait_for_network_choice_thread(void *hwnd)
 }
 
 // FUNCTION: MAGIC 0x00499984
+// FUNCTION: SHANDALAR 0x00535344
 BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct

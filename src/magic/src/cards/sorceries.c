@@ -1838,27 +1838,18 @@ int card_fireball(int player, int card, event_t event)
         s.possible_targets += 2;
         mana_to_pay = mana_available_minus_one;
         num_selected_targets = 1;
-        if (mana_to_pay < 1)
+        if (choose_fireball_options(player,
+                                    PLAYER_CARD_INSTANCE(player, card).internal_card_id,
+                                    mana_available_minus_one,
+                                    s.possible_targets,
+                                    &mana_to_pay,
+                                    &num_selected_targets,
+                                    &s.damage_per_target) == 0)
         {
           g_spell_fizzled = 1;
         }
         else
         {
-          num_selected_targets = 1;
-          if (s.possible_targets > 1 && mana_to_pay > 2)
-          {
-            num_selected_targets = 2;
-          }
-          if (num_selected_targets > s.possible_targets)
-          {
-            num_selected_targets = s.possible_targets;
-          }
-          s.damage_per_target = mana_to_pay - (num_selected_targets - 1);
-          if (s.damage_per_target < 1)
-          {
-            s.damage_per_target = 1;
-          }
-
           PLAYER_CARD_INSTANCE(player, card).info_slot = s.damage_per_target;
           g_x_value = 0;
           g_mana_charge[4] = 1;

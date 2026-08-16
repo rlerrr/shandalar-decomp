@@ -15,9 +15,9 @@
 // See manalink.lds and ai.c for more some of these addresses and types
 // A lot of these can potentially be correlated through save_or_load_ver1 and save_or_load_ver2
 
-// GLOBAL: MOK 0x4ef540
-// GLOBAL: MAGIC 0x8b60f0
-// GLOBAL: SHANDALAR 0x8ca270
+// GLOBAL: MOK 0x004ef540
+// GLOBAL: MAGIC 0x008b60f0
+// GLOBAL: SHANDALAR 0x008ca270
 GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
 
 #define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
@@ -30,11 +30,11 @@ GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
 
 #define CAN_TAP(player_, card_) (IS_NOT_SICK(player_, card_) && ((PLAYER_CARD_INSTANCE(player_, card).state & STATE_TAPPED) == 0))
 
-// GLOBAL: MAGIC 0x939810
-// GLOBAL: SHANDALAR 0x94d930
+// GLOBAL: MAGIC 0x00939810
+// GLOBAL: SHANDALAR 0x0094d930
 GLOBAL_STATE_EXTERN int global_graveyard_slots[2][500];
 
-// GLOBAL: MAGIC 0x8cecc0
+// GLOBAL: MAGIC 0x008cecc0
 // GLOBAL: SHANDALAR 0x008e2e10
 GLOBAL_STATE_EXTERN int global_ante_cards[2][16];
 
@@ -1096,11 +1096,7 @@ GLOBAL_STATE_EXTERN int DAT_007aadf0;
 
 // GLOBAL: MAGIC 0x007abce0
 // GLOBAL: SHANDALAR 0x007bfee0
-GLOBAL_STATE_EXTERN int DAT_007abce0;
-
-// GLOBAL: MAGIC 0x007abce4
-// GLOBAL: SHANDALAR 0x007bfee4
-GLOBAL_STATE_EXTERN int DAT_007abce4;
+GLOBAL_STATE_EXTERN int g_poison_counters[2];
 
 // GLOBAL: MAGIC 0x00938e38
 // GLOBAL: SHANDALAR 0x0094cf68

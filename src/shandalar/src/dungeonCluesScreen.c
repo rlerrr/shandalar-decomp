@@ -140,7 +140,7 @@ void ResetWorldDrawQueue(void);
 void UpdateWorldViewportBuffer(int world_x, int world_y);
 void DrawQueuedWorldSprites(void);
 void DestroyCachedCardArt(void);
-unsigned int FindCardIndexByCsvid(int csvid);
+int find_internal_card_id_by_csv_id(card_id_t card_id);
 
 /* Card rendering (drawcardlib) */
 extern card_ptr_t global_raw_cards_storage[2000];
@@ -1204,7 +1204,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
     if (g_castle_dungeon_slots[dungeon_index].card_in_effect != -1)
     {
       sprintf(g_ui_message_buffer, gs_cave_showclues_0077efa0[0x13],
-              global_cards_data[FindCardIndexByCsvid(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
+              global_cards_data[find_internal_card_id_by_csv_id(g_castle_dungeon_slots[dungeon_index].card_in_effect)].name);
       s.text_y = DrawDungeonClueTextLine(s.text_y, s.title_colors[3]);
     }
     else if (g_castle_dungeon_slots[dungeon_index].rules_bitmap == 0)

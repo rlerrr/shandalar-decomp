@@ -704,7 +704,7 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   int file_handle;
   int line;
   RpBitsPalettePacket *palette;
-  unsigned short palette_buffer[0x200];
+  RpBitsPalettePacket palette_buffer;
 
   ext = strchr(path, '.');
   if (_stricmp(".pcx", ext) != 0)
@@ -739,7 +739,7 @@ void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque)
   palette = (RpBitsPalettePacket *)opaque;
   if (palette == (RpBitsPalettePacket *)1)
   {
-    palette = (RpBitsPalettePacket *)palette_buffer;
+    palette = &palette_buffer;
   }
   if (palette == (RpBitsPalettePacket *)0)
   {

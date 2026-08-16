@@ -131,7 +131,7 @@ DUEL_ENGINE_EXTERN int g_duel_network_state;
 
 // GLOBAL: MAGIC 0x0092664c
 // GLOBAL: SHANDALAR 0x0093a77c
-DUEL_ENGINE_EXTERN int g_duel_special_land_card_ids[7];
+DUEL_ENGINE_EXTERN int g_duel_special_land_card_ids[6];
 
 // GLOBAL: MAGIC 0x008a9000
 // GLOBAL: SHANDALAR 0x008bd200

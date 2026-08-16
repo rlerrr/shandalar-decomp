@@ -376,7 +376,7 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
     if ((new_snapshot->state & STATE_SUMMONSICK_BOTH) !=
         (old_snapshot->state & STATE_SUMMONSICK_BOTH))
     {
-      changed_flags = 2;
+      changed_flags |= 2;
     }
     if ((new_snapshot->state & STATE_TAPPED) != (old_snapshot->state & STATE_TAPPED))
     {
@@ -464,7 +464,7 @@ unsigned int log_card_snapshot_changes(card_instance_t *old_snapshot, card_insta
     {
       if (changed_index == 0)
       {
-        sprintf(debug_text, "%s %d %d ", PTR_s_Type_005750b0[0],
+        sprintf(debug_text, "%s %d %d ", PTR_s_Type_005750b0[changed_index],
                 old_snapshot->internal_card_id, new_snapshot->internal_card_id);
       }
       else

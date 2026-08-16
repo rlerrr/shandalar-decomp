@@ -104,9 +104,8 @@ int ScaleUiCoordinateFrom320(int value);
 int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 int AddCardToDeckSorted(int card_id);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
-int IsCardColorCompatibleWithMask(int card_color, int color_mask, int compatibility_level);
 int GetCardRarity(int card_id);
-unsigned int FindCardIndexByCsvid(int csvid);
+int find_internal_card_id_by_csv_id(card_id_t card_id);
 int sound_get_state(int sound_id, int *out_state);
 int GetCardAvailabilityMask(unsigned int card_id);
 int GetFontLineHeight(int font_slot);
@@ -506,7 +505,7 @@ undefined4 IsPlayerAvatarFemale(void)
 }
 
 // FUNCTION: SHANDALAR 0x0042811a
-void ShowCardImageDialog(int card_index, int text_color, char *button_text, int unused)
+void show_card_image_dialog(unsigned int card_index, int text_color, char *button_text, int unused)
 {
   struct
   {
@@ -599,51 +598,6 @@ void ShowCardImageDialog(int card_index, int text_color, char *button_text, int 
   }
 }
 
-// FUNCTION: SHANDALAR 0x00450925
-void UpdateVisibleDuelCardPreview(uint card_index, int preview_x, int preview_y, uint unused_color,
-                                  char *unused_text, int unused_flag)
-{
-  int preview_x_copy;
-  int preview_y_copy;
-
-  (void)unused_color;
-  (void)unused_text;
-  (void)unused_flag;
-
-  preview_x_copy = preview_x;
-  preview_y_copy = preview_y;
-
-  if (IsWindowVisible(g_duel_card_preview_window_hwnd))
-  {
-    if ((preview_x != -1) && (preview_y != -1))
-    {
-      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, CardIDFromType(card_index), (LPARAM)&preview_x_copy);
-    }
-    else
-    {
-      SendMessageA(g_duel_card_preview_window_hwnd, 0x401, CardIDFromType(card_index), 0);
-    }
-  }
-}
-
-// FUNCTION: SHANDALAR 0x005584d5
-void ShowCardImageOrUpdatePreview(uint card_index, undefined4 text_color, char *button_text, int show_ok_button)
-{
-  if (g_duel_ai_mode_state == 1)
-  {
-    return;
-  }
-
-  if (g_duel_active != 0)
-  {
-    UpdateVisibleDuelCardPreview(card_index, -1, -1, text_color, button_text, show_ok_button);
-  }
-  else
-  {
-    ShowCardImageDialog(card_index, text_color, button_text, show_ok_button);
-  }
-}
-
 // FUNCTION: SHANDALAR 0x005307dd
 void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
 {
@@ -693,7 +647,7 @@ void RunRandomCreatureAnteDuel(int creature_tier, int ante_card_count)
   strcat(g_ui_message_buffer, gs_monsterlair_0074cff0[4]);
   if (RunTextMenuAt(g_ui_message_buffer, 0x5a, 100) == 1)
   {
-    s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number);
+    s.selected_card_id = find_internal_card_id_by_csv_id(g_shandalar_monster_definitions[s.creature_type].deck_number);
     LoadCreatureDuelDeck(s.creature_type, s.selected_card_id, 0, -1);
     g_current_encounter_color = single_color_test_bit_to_color_t((int)g_shandalar_monster_definitions[s.creature_type].color_mask);
     g_encounter_opening_hand_size_modifier = 0;
@@ -919,11 +873,11 @@ find_riddle_candidate:
     EnsureAdvfac64Loaded(1);
     if (s.correct_answer == s.menu_selection)
     {
-      ShowCardImageOrUpdatePreview(s.selected_card, 0xce, gs_riddle_0077cf20[5], 1);
+      show_card_preview_if_human(s.selected_card, 0xce, gs_riddle_0077cf20[5], 1);
     }
     else
     {
-      ShowCardImageOrUpdatePreview(s.selected_card, 0xbc, gs_riddle_0077cf20[6], 1);
+      show_card_preview_if_human(s.selected_card, 0xbc, gs_riddle_0077cf20[6], 1);
     }
     WaitForInputEventUnlessBlocked();
     return (s.correct_answer == s.menu_selection);
@@ -1084,11 +1038,11 @@ find_riddle_candidate:
   EnsureAdvfac64Loaded(1);
   if (s.correct_answer == s.menu_selection)
   {
-    ShowCardImageOrUpdatePreview(s.choice_cards[s.correct_answer], 0xce, gs_riddle_0077cf20[5], 1);
+    show_card_preview_if_human(s.choice_cards[s.correct_answer], 0xce, gs_riddle_0077cf20[5], 1);
   }
   else
   {
-    ShowCardImageOrUpdatePreview(s.choice_cards[s.correct_answer], 0xbc, gs_riddle_0077cf20[0x10], 1);
+    show_card_preview_if_human(s.choice_cards[s.correct_answer], 0xbc, gs_riddle_0077cf20[0x10], 1);
   }
   WaitForInputEventUnlessBlocked();
 
@@ -1180,7 +1134,7 @@ retry:
         do
         {
           s.reward_card = internal_rand(g_card_count - 0x39);
-        } while (IsCardColorCompatibleWithMask((int)global_cards_data[s.reward_card].color, 1 << (byte)color, 1) == 0);
+        } while (is_card_color_compatible_with_mask((int)global_cards_data[s.reward_card].color, 1 << (byte)color, 1) == 0);
       } while (((global_cards_data[s.reward_card].extra_ability & 0x100) != 0) ||
                (GetCardAvailabilityMask(s.reward_card) == 0));
     }
@@ -1274,7 +1228,7 @@ retry:
       RunRandomCreatureAnteDuel(0x12, 4);
       break;
     case 0xb:
-      g_next_duel_card_id = FindCardIndexByCsvid(0x1b4);
+      g_next_duel_card_id = find_internal_card_id_by_csv_id(CARD_ID_KING_SULEIMAN);
       PlaySoundEffectOnChannel("x:Duelsounds\\aswanjag.wav", 0x97, 100, 100, 0);
       RunRandomCreatureAnteDuel(0xd, 2);
       break;
@@ -1439,7 +1393,7 @@ end:
     }
 
     ClearInputAndWaitForMouseRelease();
-    ShowCardImageOrUpdatePreview(s.reward_card, 0xd0, gs_lair_0077e180[0x12], 1);
+    show_card_preview_if_human(s.reward_card, 0xd0, gs_lair_0077e180[0x12], 1);
     s.card_or_deck_index = AddCardToDeckSorted(s.reward_card);
     if (s.card_or_deck_index != -1)
     {
@@ -1695,7 +1649,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
   }
   else
   {
-    s.selected_card_id = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].deck_number);
+    s.selected_card_id = find_internal_card_id_by_csv_id(g_shandalar_monster_definitions[s.creature_type].deck_number);
     if (s.selected_card_id == 0xffffffff)
     {
       s.selected_card_id = monster_color - 1;
@@ -2317,7 +2271,7 @@ LAB_4F4BB2:
     }
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xc1) != 0)
     {
-      g_opponent_starting_card_id_1 = FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+      g_opponent_starting_card_id_1 = find_internal_card_id_by_csv_id(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
     }
     if ((g_shandalar_monster_definitions[s.creature_type].preduel_flags & 0xcb) != 0)
     {
@@ -2408,7 +2362,7 @@ LAB_4F4BB2:
           do
           {
             s.selected_card_id = PickRandomCardMatchingTypeAndColor(1 << (byte)internal_rand(6), 1);
-          } while (IsCardColorCompatibleWithMask(1 << (byte)monster_color,
+          } while (is_card_color_compatible_with_mask(1 << (byte)monster_color,
                                 (int)global_cards_data[s.selected_card_id].color,
                                 ((s.menu_option_count & 1) ? 1 : 3)) == 0);
         } while (((GetRemainingAllowedCardCopies(s.selected_card_id) <= 0) || ((global_cards_data[s.selected_card_id].extra_ability & 0x900) != 0)) ||
@@ -2667,7 +2621,7 @@ LAB_4F4BB2:
       if ((s.reward_flags & 4) != 0)
       {
         g_next_duel_card_id =
-            FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+            find_internal_card_id_by_csv_id(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
         s.deck_or_card_index = AddCardToDeckSorted(g_next_duel_card_id);
         if (s.deck_or_card_index != 0xffffffff)
         {
@@ -2687,7 +2641,7 @@ LAB_4F4BB2:
       if ((s.reward_flags & 0x20) != 0)
       {
         g_next_duel_card_id =
-            FindCardIndexByCsvid(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
+            find_internal_card_id_by_csv_id(g_shandalar_monster_definitions[s.creature_type].reward_card_id);
         sprintf(g_ui_message_buffer, gs_encounter_postduel_0077f050[0x15],
                 global_cards_data[g_next_duel_card_id].name);
         DrawAdventureCard(g_next_duel_card_id, 0xa0, 0x70, 1, g_ui_message_buffer);

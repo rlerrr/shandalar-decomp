@@ -1629,12 +1629,18 @@ int card_jump(int player, int card, event_t event)
   return 0;
 }
 
+// GLOBAL: SHANDALAR 0x005aa4e8
+static int morale_source_player;
+
+// GLOBAL: SHANDALAR 0x005aa4ec
+static int morale_source_card;
+
+static int __cdecl morale_pump_attacker(int target_player, int target_card, int unused);
+
 // FUNCTION: MAGIC 0x004f9834
 // FUNCTION: SHANDALAR 0x004b3902
 int card_morale(int player, int card, event_t event)
 {
-  int current_card;
-  int effect_card;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -1643,34 +1649,59 @@ int card_morale(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    for (current_card = 0; current_card < g_active_cards_count[player]; ++current_card)
-    {
-      if (is_in_play(player, current_card) != 0 &&
-          (global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].type & TYPE_CREATURE) != 0 &&
-          (PLAYER_CARD_INSTANCE(player, current_card).state & STATE_ATTACKING) != 0)
-      {
-        effect_card = create_legacy_effect(player, card, LEGACY_EFFECT_PUMP, player, current_card);
-        if (effect_card != -1)
-        {
-          PLAYER_CARD_INSTANCE(player, effect_card).counter_power = 1;
-          PLAYER_CARD_INSTANCE(player, effect_card).power = 1;
-        }
-      }
-    }
+    morale_source_player = player;
+    morale_source_card = card;
+    dispatch_three_arg_callback_to_cards_in_play(morale_pump_attacker, g_current_player);
     kill_card(player, card, KILL_BURY);
+  }
+
+  if (event == EVENT_CHECK_PUMP)
+  {
+    if (has_mana(player, COLOR_WHITE, 2) != 0 &&
+        has_mana(player, COLOR_ANY, 3) != 0)
+    {
+      ++unk_007a7d80[player];
+      ++unk_007a7d88[player];
+    }
   }
 
   return 0;
 }
 
+// FUNCTION: SHANDALAR 0x004b39b5
+static int __cdecl morale_pump_attacker(int target_player, int target_card, int unused)
+{
+  int effect_card;
+
+  if ((PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_ATTACKING) != 0)
+  {
+    effect_card = create_legacy_effect(morale_source_player,
+                                       morale_source_card,
+                                       LEGACY_EFFECT_PUMP,
+                                       target_player,
+                                       target_card);
+    if (effect_card != -1)
+    {
+      PLAYER_CARD_INSTANCE(morale_source_player, effect_card).counter_power = 1;
+      PLAYER_CARD_INSTANCE(morale_source_player, effect_card).counter_toughness = 1;
+    }
+  }
+
+  return 0;
+}
+
+// GLOBAL: SHANDALAR 0x005aa61c
+static int piety_source_card;
+
+// GLOBAL: SHANDALAR 0x005aa620
+static int piety_source_player;
+
+static int __cdecl piety_pump_blocker(int target_player, int target_card, int unused);
+
 // FUNCTION: MAGIC 0x004f99c8
 // FUNCTION: SHANDALAR 0x004b3a96
 int card_piety(int player, int card, event_t event)
 {
-  int current_card;
-  int current_player;
-  int effect_card;
-
   if (event == EVENT_CAN_CAST)
   {
     return 1;
@@ -1678,25 +1709,42 @@ int card_piety(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    for (current_player = 0; current_player < 2; ++current_player)
-    {
-      for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
-      {
-        if (is_in_play(current_player, current_card) != 0 &&
-            (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type &
-             TYPE_CREATURE) != 0 &&
-            current_player != g_current_player &&
-            PLAYER_CARD_INSTANCE(current_player, current_card).blocking != -1)
-        {
-          effect_card = create_legacy_effect(player, card, LEGACY_EFFECT_PUMP, current_player, current_card);
-          if (effect_card != -1)
-          {
-            PLAYER_CARD_INSTANCE(player, effect_card).power = 3;
-          }
-        }
-      }
-    }
+    piety_source_player = player;
+    piety_source_card = card;
+    dispatch_three_arg_callback_to_cards_in_play(piety_pump_blocker, 1 - g_current_player);
     kill_card(player, card, KILL_BURY);
+  }
+
+  if (event == EVENT_CHECK_PUMP)
+  {
+    if (has_mana(player, COLOR_WHITE, 1) != 0 &&
+        has_mana(player, COLOR_ANY, 2) != 0)
+    {
+      unk_007a7d88[player] += 3;
+    }
+  }
+
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x004b3b46
+static int __cdecl piety_pump_blocker(int target_player, int target_card, int unused)
+{
+  int effect_card;
+
+  if (PLAYER_CARD_INSTANCE(target_player, target_card).blocking != -1 &&
+      (PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_ATTACKING) == 0)
+  {
+    effect_card = create_legacy_effect(piety_source_player,
+                                       piety_source_card,
+                                       LEGACY_EFFECT_PUMP,
+                                       target_player,
+                                       target_card);
+    if (effect_card != -1)
+    {
+      PLAYER_CARD_INSTANCE(piety_source_player, effect_card).counter_power = 0;
+      PLAYER_CARD_INSTANCE(piety_source_player, effect_card).counter_toughness = 3;
+    }
   }
 
   return 0;
@@ -2415,6 +2463,27 @@ int card_magical_hack(int player, int card, event_t event)
                       s.prompt,
                       0);
           }
+        }
+      }
+      else
+      {
+        s.old_color = internal_rand(5) + 1;
+        s.available_colors = choose_magical_hack_colors(
+            player,
+            &PLAYER_CARD_INSTANCE(player, card).targets[0],
+            get_displayed_card_name(player, card),
+            (1 << (unsigned char)s.old_color) << 8,
+            1);
+        if (s.available_colors == 0xffffffff)
+        {
+          s.old_color = -1;
+          g_spell_fizzled = 1;
+        }
+        else
+        {
+          s.new_color = single_color_test_bit_to_color_t((s.available_colors & 0xffff) >> 8);
+          s.old_color = single_color_test_bit_to_color_t(s.available_colors & 0xff);
+          PLAYER_CARD_INSTANCE(player, card).info_slot = s.new_color * 0x100 + s.old_color;
         }
       }
     }

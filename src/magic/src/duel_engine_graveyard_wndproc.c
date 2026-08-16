@@ -205,6 +205,7 @@ int register_MAGICGAME_GraveyardClass(LPCSTR class_name)
 }
 
 // FUNCTION: MAGIC 0x00451fd8
+// FUNCTION: SHANDALAR 0x0050eb28
 int get_cached_top_graveyard_card_id(int player)
 {
   int cards[500];

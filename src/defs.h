@@ -799,7 +799,7 @@ typedef struct card_instance_struct
 	uint16_t backup_internal_card_id; /*  0x46 */  // internal_card_id is stored here at the end of EVENT_CHANGE_TYPE.  A crutch to deal with the poor design decision of setting internal_card_id == -1 to indicate a card's left play.
 	int32_t damage_source_card; /*  0x48 */		   /* damage source card */
 
-	uint32_t eot_toughness; /*  0x4C */ // Bytes 0 and 1 manipulate text-modifiers on csvid=903 effect cards; otherwise reserved for individual card use.
+	int32_t eot_toughness; /*  0x4C */ // Bytes 0 and 1 manipulate text-modifiers on csvid=903 effect cards; otherwise reserved for individual card use.
 
 	int8_t damage_target_player; /*  0x50 */ // Player of card this aura or effect card is attached to.
 
@@ -825,7 +825,7 @@ typedef struct card_instance_struct
 		};
 		uint32_t display_pic_info;
 	};
-	uint8_t kill_code;				   /*  0x68 */
+	int8_t kill_code;				   /*  0x68 */
 
 	uint8_t unk69; /*  0x69 */ // Entirely untouched by exe.
 	uint8_t unk6A; /*  0x6A */ // Entirely untouched by exe.

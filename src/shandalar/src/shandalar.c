@@ -14,6 +14,7 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/global_other.h"
+#include "magic/src/game_support.h"
 #include "magic/src/duel_engine.h"
 #include "magic/src/shared_startup.h"
 #include "shandalar_global_strings.h"
@@ -635,11 +636,10 @@ void RunLairExplorationEvent(int color);
 #endif
 
 void DelayUiTicks(int ticks);
-int FindCardIndexByCsvid(int csvid);
+int find_internal_card_id_by_csv_id(card_id_t card_id);
 unsigned int PickRandomColorBitExcludingMask(unsigned int excluded_mask);
 int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell_count, int creature_count, int add_rare, int allow_artifact_spells);
 int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int color_mask);
-int IsCardColorCompatibleWithMask(int card_color, int color_mask, int compatibility_level);
 int AddCardToDeckSorted(int card_id);
 int GetCardRarity(int card_id);
 int GetRemainingAllowedCardCopies(unsigned int card_id);
@@ -1534,8 +1534,8 @@ void LoadTownHintMetadata(void)
         g_hint_difficulty_masks[s.hint_index] = g_hint_difficulty_masks[s.hint_index] | 8;
       }
 
-      s.card_index = FindCardIndexByCsvid(s.first_csvid);
-      s.card_index = FindCardIndexByCsvid(s.second_csvid);
+      s.card_index = find_internal_card_id_by_csv_id(s.first_csvid);
+      s.card_index = find_internal_card_id_by_csv_id(s.second_csvid);
       s.scan_result = fscanf(s.hints_file, "%[\n]", s.line);
       g_hint_text_offsets[s.hint_index] = ftell(s.hints_file);
       s.hint_index = s.hint_index + 1;
@@ -1832,7 +1832,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
   for (s.added_count = 0; land_count > (int)s.added_count; s.added_count = s.added_count + 1)
   {
     s.selected_card_id = PickRandomCardMatchingTypeAndColor(1, color_mask);
-    if ((IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
+    if ((is_card_color_compatible_with_mask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
         ((int)s.selected_card_id <= 4) &&
         ((global_cards_data[s.selected_card_id].expansion & 0xc1) != 0))
     {
@@ -1886,7 +1886,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
         s.required_color_mask = color_mask;
       }
 
-      if ((IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, s.required_color_mask, 0) != 0) &&
+      if ((is_card_color_compatible_with_mask((int)(char)global_cards_data[s.selected_card_id].color, s.required_color_mask, 0) != 0) &&
           (GetCardRarity(s.selected_card_id) <= ((s.added_count & 1) == 0 ? 2 : 1)) &&
           ((global_cards_data[s.selected_card_id].expansion & 0xc1) != 0))
       {
@@ -1920,7 +1920,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
         s.card_ok = 1;
       }
 
-      if ((IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
+      if ((is_card_color_compatible_with_mask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 0) != 0) &&
           (GetCardRarity(s.selected_card_id) <= ((s.added_count & 1) == 0 ? 2 : 1)) &&
           (s.card_ok && ((global_cards_data[s.selected_card_id].expansion & 0xc1) != 0)))
       {
@@ -1940,7 +1940,7 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
       do
       {
         s.selected_card_id = PickRandomCardMatchingTypeAndColor(0xe, 1);
-      } while (IsCardColorCompatibleWithMask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 1) == 0);
+      } while (is_card_color_compatible_with_mask((int)(char)global_cards_data[s.selected_card_id].color, color_mask, 1) == 0);
     } while ((GetCardRarity(s.selected_card_id) < 3) ||
              (GetRemainingAllowedCardCopies(s.selected_card_id) <= 0) ||
              ((g_shandalar_difficulty == 0 && ((global_cards_data[s.selected_card_id].static_ability & 3) != 0))) ||
@@ -1950,28 +1950,6 @@ int AddRandomStarterDeckCards(unsigned int color_mask, int land_count, int spell
 
   AddCardToDeckSorted(s.selected_card_id);
   return 0;
-}
-
-// FUNCTION: SHANDALAR 0x0056c705
-int FindCardIndexByCsvid(int csvid)
-{
-  int ret;
-  int entry_index;
-
-  if (csvid == -1)
-  {
-    return -1;
-  }
-
-  ret = -1;
-  for (entry_index = 0; entry_index < g_card_count + 0x10; entry_index = entry_index + 1)
-  {
-    if (global_cards_data[entry_index].id == csvid)
-    {
-      return entry_index;
-    }
-  }
-  return ret;
 }
 
 // FUNCTION: SHANDALAR 0x0056bcf7
@@ -2002,47 +1980,6 @@ int PickRandomCardMatchingTypeAndColor(unsigned int type_mask, unsigned int colo
   } while (s.found == 0 && ++s.attempt_count < 999);
 
   return s.card_index;
-}
-
-// FUNCTION: SHANDALAR 0x0056c0e5
-int IsCardColorCompatibleWithMask(int card_color, int color_mask, int compatibility_level)
-{
-  // GLOBAL: SHANDALAR 0x00593e20
-  static const signed char color_compatibility_by_mask_color[18] = {
-      0, 0, 0,
-      1, 4, 2,
-      2, 1, 5,
-      3, 5, 4,
-      4, 3, 1,
-      5, 2, 5};
-
-  if ((card_color == 1) || (color_mask == 1))
-  {
-    return 1;
-  }
-
-  card_color = single_color_test_bit_to_color_t(card_color);
-  color_mask = single_color_test_bit_to_color_t(color_mask);
-  if (color_compatibility_by_mask_color[color_mask * 3] == card_color)
-  {
-    return 1;
-  }
-
-  if (compatibility_level > 1 && color_compatibility_by_mask_color[color_mask * 3 + 1] == card_color)
-  {
-    return 1;
-  }
-
-  if (compatibility_level > 2 && color_compatibility_by_mask_color[color_mask * 3 + 2] == card_color)
-  {
-    return 1;
-  }
-
-  if (compatibility_level > 3)
-  {
-    return 1;
-  }
-  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x004bb1cf

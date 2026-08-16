@@ -2611,14 +2611,16 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
   return (int)s.result_flags;
 }
 
+#ifndef SHANDALAR
 // FUNCTION: MAGIC 0x004e1c8c
-void legacy_show_card_preview_stub(unsigned int internal_card_id, int unk1, char *prompt, int unk2)
+void show_card_image_dialog(unsigned int internal_card_id, int unk1, char *prompt, int unk2)
 {
   (void)internal_card_id;
   (void)unk1;
   (void)prompt;
   (void)unk2;
 }
+#endif
 
 // FUNCTION: MAGIC 0x00435c1f
 // FUNCTION: SHANDALAR 0x004170f8
@@ -3025,6 +3027,7 @@ void show_mana_burn_dialog(int player, int amount)
 }
 
 // FUNCTION: MAGIC 0x004a36ac
+// FUNCTION: SHANDALAR 0x0053f03a
 BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct

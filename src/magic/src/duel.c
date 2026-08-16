@@ -168,7 +168,7 @@ void reset_duel_globals(void)
 
   for (player = 0; player < 2; ++player)
   {
-    (&DAT_007abce0)[player] = 0;
+    g_poison_counters[player] = 0;
     for (card = 0; card <= 7; ++card)
     {
       g_raw_mana_available[player][card] = 0;
@@ -270,7 +270,7 @@ int check_duel_finished(void)
   {
     player_died = 1;
   }
-  else if ((DAT_007abce0 >= 10) || (DAT_007abce4 >= 10))
+  else if ((g_poison_counters[0] >= 10) || (g_poison_counters[1] >= 10))
   {
     player_died = 1;
   }
@@ -282,11 +282,11 @@ int check_duel_finished(void)
   {
     if (g_duel_ai_mode_state == 1)
     {
-      if (DAT_007abce0 >= 10)
+      if (g_poison_counters[0] >= 10)
       {
         g_life[0] = -99;
       }
-      if (DAT_007abce4 >= 10)
+      if (g_poison_counters[1] >= 10)
       {
         g_life[1] = -99;
       }
@@ -2806,11 +2806,11 @@ idk:
   }
   g_duel_active = 0;
   DAT_00742fc0 = 1;
-  if (g_life[0] > 0 && DAT_007abce0 < 10 && (g_life[1] <= 0 || DAT_007abce4 >= 10))
+  if (g_life[0] > 0 && g_poison_counters[0] < 10 && (g_life[1] <= 0 || g_poison_counters[1] >= 10))
   {
     return 1;
   }
-  if (g_life[1] > 0 && DAT_007abce4 < 10 && (g_life[0] <= 0 || DAT_007abce0 >= 10))
+  if (g_life[1] > 0 && g_poison_counters[1] < 10 && (g_life[0] <= 0 || g_poison_counters[0] >= 10))
   {
     return 0;
   }

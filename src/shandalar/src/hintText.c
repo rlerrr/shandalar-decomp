@@ -21,7 +21,7 @@ extern long g_hint_text_offsets[0x100];
 extern HintPair g_hint_card_pairs[0x100];
 
 int DeckContainsCsvid(int csvid);
-int FindCardIndexByCsvid(int card_id);
+int find_internal_card_id_by_csv_id(card_id_t card_id);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 char *AppendString(char *dst, char *src);
 int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
@@ -245,13 +245,13 @@ void ShowTownHintTextPopup(int hint_index)
   {
     s.player_has_first_card = (DeckContainsCsvid(g_hint_card_pairs[hint_index].first) != 0);
     FormatMessageFromStringStripCarriageReturns(g_ui_message_buffer, 0x1000, gs_hinttext_0077e580[0],
-                                                global_cards_data[FindCardIndexByCsvid((&g_hint_card_pairs[hint_index].first)[s.player_has_first_card])].name,
-                                                global_cards_data[FindCardIndexByCsvid((&g_hint_card_pairs[hint_index].first)[s.player_has_first_card ^ 1])].name);
+                                                global_cards_data[find_internal_card_id_by_csv_id((&g_hint_card_pairs[hint_index].first)[s.player_has_first_card])].name,
+                                                global_cards_data[find_internal_card_id_by_csv_id((&g_hint_card_pairs[hint_index].first)[s.player_has_first_card ^ 1])].name);
   }
   else
   {
     sprintf(g_ui_message_buffer, gs_hinttext_0077e580[1],
-            global_cards_data[FindCardIndexByCsvid(g_hint_card_pairs[hint_index].first)].name);
+            global_cards_data[find_internal_card_id_by_csv_id(g_hint_card_pairs[hint_index].first)].name);
   }
 
   AppendTownHintBodyText(hint_index);

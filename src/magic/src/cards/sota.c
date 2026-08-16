@@ -167,7 +167,7 @@ int card_ashnod_s_altar(int player, int card, event_t event)
     {
       kill_card(player, selected_card, KILL_SACRIFICE);
       undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 2);
-      g_duel_special_land_card_ids[6] = 0;
+      g_produced_mana_color = 0;
     }
   }
 
@@ -983,13 +983,9 @@ int card_jeweled_bird(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-        (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) ||
-         ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)))
-    {
-      return 1;
-    }
-    return 0;
+    return ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+            (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) ||
+             ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)));
   }
 
   if (event == EVENT_ACTIVATE)
@@ -1045,7 +1041,7 @@ int card_mana_crypt(int player, int card, event_t event)
   {
     undeclare_mana_available_and_produce_it(player, COLOR_COLORLESS, 2);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-    g_duel_special_land_card_ids[6] = 0;
+    g_produced_mana_color = 0;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
@@ -1151,78 +1147,76 @@ int card_obelisk_of_undoing(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-        (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) ||
-         ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)) &&
-        has_mana(player, COLOR_COLORLESS, 6) != 0 &&
-        real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player | 0xc, player | 0xc, TARGET_ZONE_IN_PLAY,
-                              0x1047, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                              -1, -1, -1, -1, 0, 0, 0) != 0)
-    {
-      return 1;
-    }
+    return ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+            (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) ||
+             ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)) &&
+            has_mana(player, COLOR_ANY, 6) != 0 &&
+            real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player | 0xc, player | 0xc, TARGET_ZONE_IN_PLAY,
+                                  0x1047, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                                  -1, -1, -1, -1, 0, 0, 0) != 0);
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
-  else
-  {
-    if (event == EVENT_ACTIVATE)
-    {
-      charge_mana(player, COLOR_COLORLESS, 6);
-      if (g_spell_fizzled != 1)
-      {
-        load_text("promptsX1.txt", "OBELISK_OF_UNDOING");
-        if (C_real_select_target(player, player | 0xc, player | 0xc, TARGET_ZONE_IN_PLAY,
-                                 0x1047, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                 -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) == 0)
-        {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
-          PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
-          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-        }
-      }
-    }
 
-    if (event == EVENT_RESOLVE_ACTIVATION)
+  if (event == EVENT_ACTIVATE)
+  {
+    charge_mana(player, COLOR_COLORLESS, 6);
+    if (g_spell_fizzled != 1)
     {
-      if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card,
-                                 (char *)0,
-                                 player,
-                                 player | 0xc,
-                                 player | 0xc,
-                                 TARGET_ZONE_IN_PLAY,
-                                 0x1047,
-                                 TYPE_NONE,
-                                 0,
-                                 get_protections_from(player, card),
-                                 COLOR_TEST_0,
-                                 COLOR_TEST_0,
-                                 -1,
-                                 -1,
-                                 -1,
-                                 -1,
-                                 0,
-                                 0,
-                                 0) == 0)
+      load_text("promptsX1.txt", "OBELISK_OF_UNDOING");
+      if (C_real_select_target(player, player | 0xc, player | 0xc, TARGET_ZONE_IN_PLAY,
+                               0x1047, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                               -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) != 0)
       {
-        g_spell_fizzled = 1;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
       else
       {
-        hurkyls_recall_bounce_artifact(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                       PLAYER_CARD_INSTANCE(player, card).targets[0].card);
+        g_spell_fizzled = 1;
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
     }
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                               (char *)0,
+                               player,
+                               player | 0xc,
+                               player | 0xc,
+                               TARGET_ZONE_IN_PLAY,
+                               0x1047,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0) != 0)
+    {
+      hurkyls_recall_bounce_artifact(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                     PLAYER_CARD_INSTANCE(player, card).targets[0].card);
+    }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
   }
 
   return 0;
@@ -2304,7 +2298,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
           parent->info_slot = target.card;
           tawnos_coffin_phase_out(target.player, target.card);
         }
-        *(unsigned char *)&parent->backup_internal_card_id = 0;
+        parent->number_of_targets = 0;
       }
     }
 

@@ -101,7 +101,7 @@ typedef struct
   int basic_lands[2][8];
   int raw_mana_hex[2][51];
   int life_totals[2];
-  int DAT_007abce0_pair[2];
+  int poison_counters[2];
   unsigned int card_types[2];
   int graveyard_type_flags[2];
   int duel_summary_copy[24];
@@ -304,7 +304,7 @@ static int combat_sim_saved_raw_mana_available_hex[2][51];
 static int combat_sim_saved_life[2];
 // GLOBAL: MAGIC 0x006a4e60
 // GLOBAL: SHANDALAR 0x005b1148
-static int combat_sim_saved_DAT_007abce0[2];
+static int combat_sim_saved_poison_counters[2];
 // GLOBAL: MAGIC 0x006a4e88
 // GLOBAL: SHANDALAR 0x005b1170
 static unsigned int combat_sim_saved_card_types_in_play[2];
@@ -1493,7 +1493,7 @@ void save_ai_search_state(void)
   memcpy(g_ai_search_backup.basic_lands, g_basiclandtypes_controlled, sizeof(g_ai_search_backup.basic_lands));
   memcpy(g_ai_search_backup.raw_mana_hex, g_raw_mana_available_hex, sizeof(g_ai_search_backup.raw_mana_hex));
   memcpy(g_ai_search_backup.life_totals, g_life, sizeof(g_ai_search_backup.life_totals));
-  memcpy(g_ai_search_backup.DAT_007abce0_pair, &DAT_007abce0, sizeof(g_ai_search_backup.DAT_007abce0_pair));
+  memcpy(g_ai_search_backup.poison_counters, g_poison_counters, sizeof(g_ai_search_backup.poison_counters));
   memcpy(g_ai_search_backup.card_types, g_card_types_in_play, sizeof(g_ai_search_backup.card_types));
   memcpy(g_ai_search_backup.graveyard_type_flags, g_graveyard_card_types, sizeof(g_ai_search_backup.graveyard_type_flags));
   memcpy(g_ai_search_backup.duel_summary_copy, &g_duel_summary, sizeof(g_ai_search_backup.duel_summary_copy));
@@ -1557,7 +1557,7 @@ void restore_ai_search_state(void)
   memcpy(g_basiclandtypes_controlled, g_ai_search_backup.basic_lands, sizeof(g_ai_search_backup.basic_lands));
   memcpy(g_raw_mana_available_hex, g_ai_search_backup.raw_mana_hex, sizeof(g_ai_search_backup.raw_mana_hex));
   memcpy(g_life, g_ai_search_backup.life_totals, sizeof(g_ai_search_backup.life_totals));
-  memcpy(&DAT_007abce0, g_ai_search_backup.DAT_007abce0_pair, sizeof(g_ai_search_backup.DAT_007abce0_pair));
+  memcpy(g_poison_counters, g_ai_search_backup.poison_counters, sizeof(g_ai_search_backup.poison_counters));
   memcpy(g_card_types_in_play, g_ai_search_backup.card_types, sizeof(g_ai_search_backup.card_types));
   memcpy(g_graveyard_card_types, g_ai_search_backup.graveyard_type_flags, sizeof(g_ai_search_backup.graveyard_type_flags));
   memcpy(&g_duel_summary, g_ai_search_backup.duel_summary_copy, sizeof(g_ai_search_backup.duel_summary_copy));
@@ -3045,7 +3045,7 @@ void save_combat_simulation_state(void)
   memcpy(combat_sim_saved_basiclandtypes_controlled, g_basiclandtypes_controlled, sizeof(combat_sim_saved_basiclandtypes_controlled));
   memcpy(combat_sim_saved_raw_mana_available_hex, g_raw_mana_available_hex, sizeof(combat_sim_saved_raw_mana_available_hex));
   memcpy(combat_sim_saved_life, g_life, sizeof(combat_sim_saved_life));
-  memcpy(combat_sim_saved_DAT_007abce0, &DAT_007abce0, sizeof(combat_sim_saved_DAT_007abce0));
+  memcpy(combat_sim_saved_poison_counters, g_poison_counters, sizeof(combat_sim_saved_poison_counters));
   memcpy(combat_sim_saved_card_types_in_play, g_card_types_in_play, sizeof(combat_sim_saved_card_types_in_play));
   memcpy(combat_sim_saved_graveyard_card_types, g_graveyard_card_types, sizeof(combat_sim_saved_graveyard_card_types));
   memcpy(combat_sim_saved_duel_summary, &g_duel_summary, sizeof(combat_sim_saved_duel_summary));
@@ -3090,7 +3090,7 @@ void restore_combat_simulation_state(void)
   memcpy(g_basiclandtypes_controlled, combat_sim_saved_basiclandtypes_controlled, sizeof(combat_sim_saved_basiclandtypes_controlled));
   memcpy(g_raw_mana_available_hex, combat_sim_saved_raw_mana_available_hex, sizeof(combat_sim_saved_raw_mana_available_hex));
   memcpy(g_life, combat_sim_saved_life, sizeof(combat_sim_saved_life));
-  memcpy(&DAT_007abce0, combat_sim_saved_DAT_007abce0, sizeof(combat_sim_saved_DAT_007abce0));
+  memcpy(g_poison_counters, combat_sim_saved_poison_counters, sizeof(combat_sim_saved_poison_counters));
   memcpy(g_card_types_in_play, combat_sim_saved_card_types_in_play, sizeof(combat_sim_saved_card_types_in_play));
   memcpy(g_graveyard_card_types, combat_sim_saved_graveyard_card_types, sizeof(combat_sim_saved_graveyard_card_types));
   memcpy(&g_duel_summary, combat_sim_saved_duel_summary, sizeof(combat_sim_saved_duel_summary));

@@ -79,6 +79,7 @@ int copy_cached_library_cards_and_get_count(void *cards, int player)
 }
 
 // FUNCTION: MAGIC 0x00498ca9
+// FUNCTION: SHANDALAR 0x004c2501
 int get_cached_library_count(int player)
 {
   char cards[2000];
