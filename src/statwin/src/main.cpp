@@ -13,7 +13,7 @@ extern "C"
 typedef unsigned char byte;
 typedef unsigned int uint;
 
-typedef struct DibState_t DibState;
+typedef struct DibState DibState;
 
 typedef struct StatWinData_t
 {
@@ -61,33 +61,37 @@ typedef struct ProgressTotalOffset_t
   int height;
 } ProgressTotalOffset;
 
-typedef struct DibState_t
+// VTABLE: STATWIN 0x1000a000
+class DibState
 {
-  void *vtable;
+public:
   BITMAPINFOHEADER *header;
   void *bits;
   int owns_bits;
-  void *field_10;
+  void *transparent_color;
   int field_14;
 
-  DibState_t();
+  DibState();
 
   // SYNTHETIC: STATWIN 0x10002d20
-  // DibState_t::`scalar deleting destructor'
-  ~DibState_t();
-  int load_bitmap(HWND hwnd, char *path, uint bit_count);
-  int save_bitmap(char *path);
-  void set_field_10_value(int value);
+  // DibState::`scalar deleting destructor'
+  ~DibState();
+  // The original vftable starts at load_bitmap; the destructor is not virtual.
+  virtual int load_bitmap(HWND hwnd, char *path, uint bit_count);
+  virtual int save_bitmap(char *path);
+  virtual int get_width(void);
+  virtual int get_height(void);
+  virtual int map_to_palette(HPALETTE palette);
+  virtual void get_bounds_rect(RECT *rect);
+  virtual void blit_to(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
+
+  void *get_pixel_address(int x, int y);
+  void set_transparent_color(int value);
   BITMAPINFOHEADER *get_header(void);
   void *get_bits(void);
-  void *get_pixel_address(int x, int y);
-  int get_width(void);
-  int get_height(void);
-  void get_bounds_rect(RECT *rect);
   int create(int width, int height, int bit_count);
   int attach_external_bits(BITMAPINFOHEADER *source_header, void *source_bits);
-  void blit_to(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
-} DibState;
+};
 
 typedef struct WriteCacheLocals_t
 {
@@ -112,8 +116,8 @@ public:
   StatWinData *cached_data;
   int field_04;
   byte *cached_bitmap_info;
-  DibState *field_0c;
-  DibState *field_10;
+  DibState *screen_dib;
+  DibState *foreground_dib;
   int cache_x;
   int cache_y;
   int field_1c;
@@ -132,8 +136,8 @@ public:
     this->cache_x = 0;
     this->cache_y = 0;
     this->cached_bitmap_info = 0;
-    this->field_10 = 0;
-    this->field_0c = 0;
+    this->foreground_dib = 0;
+    this->screen_dib = 0;
   }
 
   // SYNTHETIC: STATWIN 0x10002ca0
@@ -170,7 +174,7 @@ extern "C" void *__fastcall dib_state_get_palette(DibState *state);
 extern "C" int __fastcall dib_state_get_width(DibState *state);
 extern "C" int __fastcall dib_state_get_height(DibState *state);
 extern "C" int __fastcall dib_state_get_bit_count(DibState *state);
-extern "C" void __fastcall dib_state_release_field_10(DibState *state);
+extern "C" void __fastcall dib_state_release_transparent_color(DibState *state);
 extern "C" uint __fastcall dib_state_get_stride(DibState *state);
 extern "C" void __cdecl join_paths(char *out_path, char *base_path, char *filename);
 extern "C" int __cdecl duel_wins_to_skull_index(int duel_wins);
@@ -283,14 +287,14 @@ static DrawRect g_missing_color_avi_rects[5] = {
     {0xc8, 0, 0x104, 0x1cc}};
 // GLOBAL: STATWIN 0x1000d088
 static char *g_detail_creature_avi_names[56] = {
-    "cball00.avi", "b_fwz.avi",   "b_kht.avi", "b_mwz.avi",  "b_lrd.avi", "b_wg.avi",   "b_amg.avi",
-    "cbal00.avi",  "w_mwz.avi",   "w_fwz.avi", "w_kht.avi",  "w_lrd.avi", "w_wg.avi",   "w_amg.avi",
-    "cball00.avi", "u_fwz.avi",   "u_lrd.avi", "u_mwz.avi",  "u_wrm.avi", "u_sft.avi",  "u_amg.avi",
-    "cball00.avi", "g_mwz.avi",   "g_kht.avi", "g_fwz.avi",  "g_wrm.avi", "g_lrd.avi",  "g_amg.avi",
-    "cball00.avi", "r_fwz.avi",   "r_mwz.avi", "r_trl.avi",  "r_lrd.avi", "r_wrm.avi",  "r_amg.avi",
-    "r_amg.avi",   "m_tsk.avi",   "m_trl.avi", "m_ape.avi",  "m_cen2.avi", "m_wg.avi",  "m_fng.avi",
-    "m_cen.avi",   "m_lrd.avi",   "m_kht.avi", "m_fwz.avi",  "b_djn.avi", "g_djn.avi",  "r_djn.avi",
-    "u_djn.avi",   "dg_bru.avi", "dg_uwb.avi", "dg_gwr.avi", "dg_rgb.avi", "dg_wug.avi", "cball00.avi"};
+    "cball00.avi", "b_fwz.avi", "b_kht.avi", "b_mwz.avi", "b_lrd.avi", "b_wg.avi", "b_amg.avi",
+    "cbal00.avi", "w_mwz.avi", "w_fwz.avi", "w_kht.avi", "w_lrd.avi", "w_wg.avi", "w_amg.avi",
+    "cball00.avi", "u_fwz.avi", "u_lrd.avi", "u_mwz.avi", "u_wrm.avi", "u_sft.avi", "u_amg.avi",
+    "cball00.avi", "g_mwz.avi", "g_kht.avi", "g_fwz.avi", "g_wrm.avi", "g_lrd.avi", "g_amg.avi",
+    "cball00.avi", "r_fwz.avi", "r_mwz.avi", "r_trl.avi", "r_lrd.avi", "r_wrm.avi", "r_amg.avi",
+    "r_amg.avi", "m_tsk.avi", "m_trl.avi", "m_ape.avi", "m_cen2.avi", "m_wg.avi", "m_fng.avi",
+    "m_cen.avi", "m_lrd.avi", "m_kht.avi", "m_fwz.avi", "b_djn.avi", "g_djn.avi", "r_djn.avi",
+    "u_djn.avi", "dg_bru.avi", "dg_uwb.avi", "dg_gwr.avi", "dg_rgb.avi", "dg_wug.avi", "cball00.avi"};
 // GLOBAL: STATWIN 0x1000d168
 static DrawRect g_detail_wizard_rects[5] = {
     {0xf8, 0x3c, 0x90, 0x12c},
@@ -409,9 +413,6 @@ static ProgressTotalOffset g_progress_total_offsets[5] = {
     {70, 192},
     {85, 190},
     {20, 290}};
-
-// GLOBAL: STATWIN 0x1000a000
-static void *g_dib_state_vtable;
 
 // GLOBAL: STATWIN 0x1000e4e8
 WNDCLASSA g_window_class;
@@ -898,7 +899,6 @@ extern "C" int __cdecl set_vid_thread_priority(int avi, int priority)
 // FUNCTION: STATWIN 0x100053b2
 int StatWinState::apply_progress(StatWinData *data, int flags)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
   DibState *new_dib;
   char path[256];
   DibState unused_dib;
@@ -909,16 +909,16 @@ int StatWinState::apply_progress(StatWinData *data, int flags)
   this->field_04 = 2;
   this->field_1c = 0;
   new_dib = new DibState();
-  this->field_0c = new_dib;
+  this->screen_dib = new_dib;
   memcpy(this->cached_data, data, sizeof(StatWinData));
   join_paths(path, g_statwin_asset_dir, g_wizard_background_bitmap_name);
-  if ((this->field_0c->*(*(DibStateLoadBitmapFn *)this->field_0c->vtable))(0, path, 0x18) == 0)
+  if (this->screen_dib->load_bitmap(0, path, 0x18) == 0)
   {
     return 6;
   }
 
   this->prepare_missing_masks();
-  color_count = dib_state_get_color_count(this->field_0c);
+  color_count = dib_state_get_color_count(this->screen_dib);
   if (color_count == 0)
   {
     this->cached_bitmap_info = (byte *)operator new(0x2c);
@@ -928,11 +928,11 @@ int StatWinState::apply_progress(StatWinData *data, int flags)
     this->cached_bitmap_info = (byte *)operator new(color_count * 4 + 0x28);
     if (this->cached_bitmap_info != 0)
     {
-      memcpy(this->cached_bitmap_info, this->field_0c->get_header(), 0x28);
-      memcpy(this->cached_bitmap_info + 0x28, (byte *)this->field_0c->get_header() + 0x28, color_count << 2);
+      memcpy(this->cached_bitmap_info, this->screen_dib->get_header(), 0x28);
+      memcpy(this->cached_bitmap_info + 0x28, (byte *)this->screen_dib->get_header() + 0x28, color_count << 2);
     }
   }
-  memcpy(this->cached_bitmap_info, this->field_0c->get_header(), 0x2c);
+  memcpy(this->cached_bitmap_info, this->screen_dib->get_header(), 0x2c);
 
   switch (flags)
   {
@@ -970,18 +970,18 @@ int StatWinState::apply_progress(StatWinData *data, int flags)
 
   this->write_cache();
   this->has_window = 1;
-  if (this->field_0c != 0)
+  if (this->screen_dib != 0)
   {
-    delete this->field_0c;
+    delete this->screen_dib;
   }
-  this->field_0c = 0;
+  this->screen_dib = 0;
   operator delete(this->cached_data);
   this->cached_data = 0;
-  if (this->field_10 != 0)
+  if (this->foreground_dib != 0)
   {
-    delete this->field_10;
+    delete this->foreground_dib;
   }
-  this->field_10 = 0;
+  this->foreground_dib = 0;
   return 0;
 }
 
@@ -1161,7 +1161,7 @@ extern "C" int __cdecl bitmap_header_has_color_table(BITMAPINFOHEADER *header)
             ((rgbq).rgbBlue >> 3)))
 
 // FUNCTION: STATWIN 0x10004144
-int DibState_t::load_bitmap(HWND hwnd, char *path, uint bit_count)
+int DibState::load_bitmap(HWND hwnd, char *path, uint bit_count)
 {
   struct
   {
@@ -1287,7 +1287,7 @@ int DibState_t::load_bitmap(HWND hwnd, char *path, uint bit_count)
         {
           *(unsigned short *)s.dest16 = RGBQUAD_TO_RGB555(s.bmiColors[(uint)(byte)*s.source]);
           s.source++;
-          s.dest16++;
+          s.dest16 += 2;
         }
         s.source += ((s.source_header.biWidth + 3U) & 0xfffffffc) - s.source_header.biWidth;
         s.dest16 += (((int)(s.source_header.biWidth * bit_count) / 8) + 3U & 0xfffffffc) -
@@ -1325,7 +1325,7 @@ cleanup:
 }
 
 // FUNCTION: STATWIN 0x100046ba
-int DibState_t::save_bitmap(char *path)
+int DibState::save_bitmap(char *path)
 {
   struct
   {
@@ -1373,6 +1373,73 @@ extern "C" int __fastcall dib_state_get_color_count(DibState *state)
   return bitmap_header_color_count(state->header);
 }
 
+// FUNCTION: STATWIN 0x1000483d
+int DibState::map_to_palette(HPALETTE palette)
+{
+  struct
+  {
+    PALETTEENTRY entries[256];
+    uint palette_index;
+    int bits_size;
+    byte *bits;
+    byte index_map[256];
+    int remapped_count;
+    byte *dib_palette;
+  } s;
+
+  if (palette == 0)
+  {
+    return 0;
+  }
+  if (this->header->biBitCount != 8)
+  {
+    return 0;
+  }
+  if (this->field_14 != 0)
+  {
+    return 1;
+  }
+
+  s.dib_palette = (byte *)dib_state_get_palette(this);
+  s.remapped_count = 0;
+  for (s.palette_index = 0; s.palette_index < 0x100; s.palette_index++)
+  {
+    s.index_map[s.palette_index] =
+        (byte)GetNearestPaletteIndex(palette,
+                                     RGB(s.dib_palette[2], s.dib_palette[1], s.dib_palette[0]));
+    s.dib_palette += 4;
+    if (s.index_map[s.palette_index] != s.palette_index)
+    {
+      s.remapped_count++;
+    }
+    if ((this->transparent_color != 0) && (*(uint *)this->transparent_color == s.palette_index))
+    {
+      dib_state_release_transparent_color(this);
+      this->set_transparent_color(s.index_map[s.palette_index]);
+    }
+  }
+
+  s.bits = (byte *)this->get_bits();
+  s.bits_size = dib_state_get_stride(this) * dib_state_get_height(this);
+  while (s.bits_size-- != 0)
+  {
+    *s.bits = s.index_map[*s.bits];
+    s.bits++;
+  }
+
+  GetPaletteEntries(palette, 0, 0x100, s.entries);
+  s.dib_palette = (byte *)dib_state_get_palette(this);
+  for (s.palette_index = 0; s.palette_index < 0x100; s.palette_index++)
+  {
+    s.dib_palette[2] = s.entries[s.palette_index].peRed;
+    s.dib_palette[1] = s.entries[s.palette_index].peGreen;
+    s.dib_palette[0] = s.entries[s.palette_index].peBlue;
+    s.dib_palette += 4;
+  }
+  this->field_14 = 1;
+  return 1;
+}
+
 // FUNCTION: STATWIN 0x10005030
 extern "C" void *__fastcall dib_state_get_palette(DibState *state)
 {
@@ -1398,16 +1465,16 @@ extern "C" int __fastcall dib_state_get_bit_count(DibState *state)
 }
 
 // FUNCTION: STATWIN 0x10005120
-extern "C" void __fastcall dib_state_release_field_10(DibState *state)
+extern "C" void __fastcall dib_state_release_transparent_color(DibState *state)
 {
   void *delete_ptr;
-  void *field_10;
+  void *transparent_color;
 
-  if (state->field_10 != 0)
+  if (state->transparent_color != 0)
   {
-    delete_ptr = state->field_10;
-    field_10 = delete_ptr;
-    operator delete(field_10);
+    delete_ptr = state->transparent_color;
+    transparent_color = delete_ptr;
+    operator delete(transparent_color);
   }
 }
 
@@ -1425,29 +1492,29 @@ extern "C" void __cdecl join_paths(char *out_path, char *base_path, char *filena
 }
 
 // FUNCTION: STATWIN 0x10002ce0
-void DibState_t::set_field_10_value(int value)
+void DibState::set_transparent_color(int value)
 {
-  this->field_10 = operator new(4);
-  if (this->field_10 != 0)
+  this->transparent_color = operator new(4);
+  if (this->transparent_color != 0)
   {
-    *(int *)this->field_10 = value;
+    *(int *)this->transparent_color = value;
   }
 }
 
 // FUNCTION: STATWIN 0x10002d60
-BITMAPINFOHEADER *DibState_t::get_header(void)
+BITMAPINFOHEADER *DibState::get_header(void)
 {
   return this->header;
 }
 
 // FUNCTION: STATWIN 0x10002d80
-void *DibState_t::get_bits(void)
+void *DibState::get_bits(void)
 {
   return this->bits;
 }
 
 // FUNCTION: STATWIN 0x10004a9f
-void *DibState_t::get_pixel_address(int x, int y)
+void *DibState::get_pixel_address(int x, int y)
 {
   uint stride;
 
@@ -1463,23 +1530,21 @@ void *DibState_t::get_pixel_address(int x, int y)
 }
 
 // FUNCTION: STATWIN 0x10003bf0
-DibState_t::DibState_t()
+DibState::DibState()
 {
-  this->vtable = &g_dib_state_vtable;
   this->header = 0;
   this->bits = 0;
   this->owns_bits = 1;
-  this->field_10 = 0;
+  this->transparent_color = 0;
   this->field_14 = 0;
 }
 
 // FUNCTION: STATWIN 0x10003c44
-DibState_t::~DibState_t()
+DibState::~DibState()
 {
   void *delete_ptr;
-  void *field_10;
+  void *transparent_color;
 
-  this->vtable = &g_dib_state_vtable;
   if (this->header != 0)
   {
     free(this->header);
@@ -1488,11 +1553,11 @@ DibState_t::~DibState_t()
   {
     free(this->bits);
   }
-  if (this->field_10 != 0)
+  if (this->transparent_color != 0)
   {
-    delete_ptr = this->field_10;
-    field_10 = delete_ptr;
-    operator delete(field_10);
+    delete_ptr = this->transparent_color;
+    transparent_color = delete_ptr;
+    operator delete(transparent_color);
   }
 }
 
@@ -1504,28 +1569,28 @@ StatWinState::~StatWinState()
   {
     delete this->cached_bitmap_info;
   }
-  if (this->field_0c != 0)
+  if (this->screen_dib != 0)
   {
-    delete this->field_0c;
+    delete this->screen_dib;
   }
-  this->field_0c = 0;
+  this->screen_dib = 0;
   this->cached_bitmap_info = 0;
 }
 
 // FUNCTION: STATWIN 0x10005070
-int DibState_t::get_width(void)
+int DibState::get_width(void)
 {
   return dib_state_get_width(this);
 }
 
 // FUNCTION: STATWIN 0x10005090
-int DibState_t::get_height(void)
+int DibState::get_height(void)
 {
   return dib_state_get_height(this);
 }
 
 // FUNCTION: STATWIN 0x10004b22
-void DibState_t::get_bounds_rect(RECT *rect)
+void DibState::get_bounds_rect(RECT *rect)
 {
   rect->top = 0;
   rect->left = 0;
@@ -1534,7 +1599,7 @@ void DibState_t::get_bounds_rect(RECT *rect)
 }
 
 // FUNCTION: STATWIN 0x10004b69
-void DibState_t::blit_to(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y)
+void DibState::blit_to(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y)
 {
   struct
   {
@@ -1669,7 +1734,7 @@ void DibState_t::blit_to(DibState *dest, int dest_x, int dest_y, int width, int 
     {
       for (s.byte_index = 0; s.byte_index < s.row_width_bytes; s.byte_index++)
       {
-        if ((this->field_10 != 0) && ((uint)((byte *)s.source_line)[s.byte_index] == *(uint *)this->field_10))
+        if ((this->transparent_color != 0) && ((uint)((byte *)s.source_line)[s.byte_index] == *(uint *)this->transparent_color))
         {
         }
         else
@@ -1685,7 +1750,7 @@ void DibState_t::blit_to(DibState *dest, int dest_x, int dest_y, int width, int 
   {
     s.bytes_per_pixel = this->header->biBitCount >> 3;
     s.color_mask = 0xffffff;
-    if (this->field_10 != 0)
+    if (this->transparent_color != 0)
     {
       while (height--)
       {
@@ -1693,7 +1758,7 @@ void DibState_t::blit_to(DibState *dest, int dest_x, int dest_y, int width, int 
         {
           s.color = *(uint *)((byte *)s.source_line + s.pixel_offset);
           s.color &= s.color_mask;
-          if (*(uint *)this->field_10 == s.color)
+          if (*(uint *)this->transparent_color == s.color)
           {
           }
           else
@@ -1722,7 +1787,7 @@ void DibState_t::blit_to(DibState *dest, int dest_x, int dest_y, int width, int 
 }
 
 // FUNCTION: STATWIN 0x10003cd2
-int DibState_t::create(int width, int height, int bit_count)
+int DibState::create(int width, int height, int bit_count)
 {
   struct
   {
@@ -1791,7 +1856,7 @@ int DibState_t::create(int width, int height, int bit_count)
 }
 
 // FUNCTION: STATWIN 0x10003eb8
-int DibState_t::attach_external_bits(BITMAPINFOHEADER *source_header, void *source_bits)
+int DibState::attach_external_bits(BITMAPINFOHEADER *source_header, void *source_bits)
 {
   if (this->header != 0)
   {
@@ -1823,7 +1888,6 @@ int DibState_t::attach_external_bits(BITMAPINFOHEADER *source_header, void *sour
 // FUNCTION: STATWIN 0x10005caa
 int StatWinState::prepare_resources(void)
 {
-  typedef void (DibState::*DibStateGetBoundsRectFn)(RECT *rect);
   DibState cache_dib;
   char cache_path[256];
   int screen_width;
@@ -1839,12 +1903,12 @@ int StatWinState::prepare_resources(void)
 
   bits = 0;
   palette = 0;
-  if (this->field_0c != 0)
+  if (this->screen_dib != 0)
   {
-    delete this->field_0c;
-    this->field_0c = 0;
+    delete this->screen_dib;
+    this->screen_dib = 0;
   }
-  this->field_0c = new DibState();
+  this->screen_dib = new DibState();
   if (this->cached_data != 0)
   {
     operator delete(this->cached_data);
@@ -1854,15 +1918,15 @@ int StatWinState::prepare_resources(void)
   this->field_1c = 0;
   screen_width = GetSystemMetrics(SM_CXSCREEN);
   screen_height = GetSystemMetrics(SM_CYSCREEN);
-  this->field_0c->create(screen_width, screen_height, 0x18);
+  this->screen_dib->create(screen_width, screen_height, 0x18);
   join_paths(cache_path, g_statwin_asset_dir, g_stats_cache_bitmap_name);
   file = CreateFileA(cache_path, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
   if (file == INVALID_HANDLE_VALUE)
   {
-    if (this->field_0c != 0)
+    if (this->screen_dib != 0)
     {
-      delete this->field_0c;
-      this->field_0c = 0;
+      delete this->screen_dib;
+      this->screen_dib = 0;
     }
     operator delete(this->cached_data);
     this->cached_data = 0;
@@ -1920,10 +1984,10 @@ int StatWinState::prepare_resources(void)
 
   cache_dib.attach_external_bits(source_header, bits);
   cache_dib.get_bounds_rect(&source_bounds);
-  (this->field_0c->*(((DibStateGetBoundsRectFn *)this->field_0c->vtable)[5]))(&dest_bounds);
+  this->screen_dib->get_bounds_rect(&dest_bounds);
   if ((dest_bounds.right == source_bounds.right) && (dest_bounds.bottom == source_bounds.bottom))
   {
-    cache_dib.blit_to(this->field_0c, 0, 0, source_bounds.right, source_bounds.bottom, 0, 0);
+    cache_dib.blit_to(this->screen_dib, 0, 0, source_bounds.right, source_bounds.bottom, 0, 0);
     this->cache_x = 0;
     this->cache_y = 0;
   }
@@ -1937,7 +2001,7 @@ int StatWinState::prepare_resources(void)
     }
     this->cache_x = (dest_bounds.right - source_bounds.right) / 2;
     this->cache_y = (dest_bounds.bottom - source_bounds.bottom) / 2;
-    cache_dib.blit_to(this->field_0c, this->cache_x, this->cache_y, source_bounds.right, source_bounds.bottom, 0, 0);
+    cache_dib.blit_to(this->screen_dib, this->cache_x, this->cache_y, source_bounds.right, source_bounds.bottom, 0, 0);
   }
   operator delete(source_header);
   operator delete(bits);
@@ -2070,16 +2134,8 @@ static void __cdecl show_status_window(void)
 // FUNCTION: STATWIN 0x1000175a
 static void __cdecl show_world_magic_detail(StatWinData *data, int unused)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   struct
   {
-    int load_result;
-    HWND hwnd;
-    LPARAM lparam;
-    WPARAM wparam;
-    UINT msg;
-    DibState *mask_dib_new;
     char path[256];
     DibState *mask_dib;
     uint color;
@@ -2098,106 +2154,107 @@ static void __cdecl show_world_magic_detail(StatWinData *data, int unused)
   join_paths(s.path, g_status_flag_ptr, g_detail_creature_avi_names[data->highlighted_creature_type]);
   if (load_avi(s.path, &s.main_avi, &s.position, 1) == 0)
   {
-    join_paths(s.path, g_status_sound_dir, g_status_sound_name);
-    set_vid_background_to_dib((int)g_status_state->field_0c, s.main_avi);
+    join_paths(s.path, g_status_sound_dir, "statscrn.wav");
+    set_vid_background_to_dib((int)g_status_state->screen_dib, s.main_avi);
     set_vid_transparency(s.main_avi, 1);
     s.position.x = (short)(g_status_state->cache_x + g_detail_main_avi_position.x);
     s.position.y = (short)(g_detail_main_avi_position.y + g_status_state->cache_y);
     set_vid_pos(g_detail_main_avi, &s.position);
-    s.hit_avi = s.main_avi;
-    if (data->progress_by_color[s.color] != 0)
+  }
+  else
+  {
+    return;
+  }
+  s.hit_avi = s.main_avi;
+  if (data->progress_by_color[s.color] != 0)
+  {
+    s.position.x = (short)g_detail_wizard_rects[s.color].x;
+    s.position.y = (short)g_detail_wizard_rects[s.color].y;
+    join_paths(s.path, g_status_flag_ptr, g_wizard_hit_avi_names[s.color]);
+    if (load_avi(s.path, &s.hit_avi, &s.position, 5) == 0)
     {
-      s.position.x = (short)g_detail_wizard_rects[s.color].x;
-      s.position.y = (short)g_detail_wizard_rects[s.color].y;
-      join_paths(s.path, g_status_flag_ptr, g_wizard_hit_avi_names[s.color]);
-      if (load_avi(s.path, &s.hit_avi, &s.position, 5) == 0)
-      {
-        set_vid_background_to_dib((int)g_status_state->field_0c, s.hit_avi);
-        set_vid_transparency(s.hit_avi, 1);
-        s.position.x = (short)(g_status_state->cache_x + s.position.x);
-        s.position.y = (short)(s.position.y + g_status_state->cache_y);
-        set_vid_pos(s.hit_avi, &s.position);
-      }
+      set_vid_background_to_dib((int)g_status_state->screen_dib, s.hit_avi);
+      set_vid_transparency(s.hit_avi, 1);
+      s.position.x = (short)((int)g_status_state->cache_x + (int)s.position.x);
+      s.position.y = (short)(s.position.y + g_status_state->cache_y);
+      set_vid_pos(s.hit_avi, &s.position);
     }
-    s.process = GetCurrentProcess();
-    s.priority_class = GetPriorityClass(s.process);
-    join_paths(s.path, g_status_sound_dir, g_status_sound_name);
-    play_status_sound(s.path);
-    draw_vid_background(s.main_avi);
-    play_avi(s.main_avi);
-    *(int *)g_magvid_delay_fn = 1;
+  }
+  s.process = GetCurrentProcess();
+  s.priority_class = GetPriorityClass(s.process);
+  join_paths(s.path, g_status_sound_dir, g_status_sound_name);
+  play_status_sound(s.path);
+  draw_vid_background(s.main_avi);
+  play_avi(s.main_avi);
+  *(int *)g_magvid_delay_fn = 1;
+  g_video_stop_requested = 0;
+  while (vid_status(s.main_avi) != 0)
+  {
+    if (poll_statwin_messages() != 0)
+    {
+      stop_avi(s.main_avi);
+      break;
+      Sleep(500);
+    }
+    Sleep(0);
+  }
+  *(int *)g_magvid_delay_fn = 0;
+  draw_vid_background(s.main_avi);
+
+  s.mask_dib = new DibState();
+  s.mask_dib->set_transparent_color(0xff00);
+  join_paths(s.path, g_statwin_asset_dir, g_color_mask_assets[s.color].filename);
+  s.rect = g_color_mask_assets[s.color].rect;
+  if (s.mask_dib->load_bitmap(0, s.path, 0x18) == 1)
+  {
+    s.mask_dib->blit_to(g_status_state->screen_dib,
+                        g_status_state->cache_x + s.rect.x,
+                        g_status_state->cache_y + s.rect.y,
+                        s.rect.width,
+                        s.rect.height,
+                        0,
+                        0);
+
+    delete s.mask_dib;
+
+    s.mask_dib = 0;
+  }
+
+  if (g_status_state->prepare_duel_foreground(&g_detail_wizard_rects[s.color], s.color) == 0)
+  {
+    set_vid_foreground((int)g_status_state->foreground_dib, s.hit_avi);
+    g_status_state->foreground_dib->set_transparent_color(0);
+  }
+  if (data->progress_by_color[s.color] != 0)
+  {
+    play_avi(s.hit_avi);
     g_video_stop_requested = 0;
-    while (vid_status(s.main_avi) != 0)
+    while (vid_status(s.hit_avi) != 0)
     {
       if (poll_statwin_messages() != 0)
       {
-        stop_avi(s.main_avi);
+        stop_avi(s.hit_avi);
         break;
+        Sleep(500);
       }
-      Sleep(500);
+      Sleep(0);
     }
-    *(int *)g_magvid_delay_fn = 0;
-    draw_vid_background(s.main_avi);
-    s.mask_dib_new = new DibState();
-    s.mask_dib = s.mask_dib_new;
-    s.mask_dib->set_field_10_value(0xff00);
-    join_paths(s.path, g_statwin_asset_dir, g_color_mask_assets[s.color].filename);
-    s.rect = g_color_mask_assets[s.color].rect;
-    if ((s.mask_dib->*(*(DibStateLoadBitmapFn *)s.mask_dib->vtable))(0, s.path, 0x18) == 1)
-    {
-      (s.mask_dib->*(((DibStateBlitToFn *)s.mask_dib->vtable)[6]))(g_status_state->field_0c,
-                                                                   g_status_state->cache_x + s.rect.x,
-                                                                   g_status_state->cache_y + s.rect.y,
-                                                                   s.rect.width,
-                                                                   s.rect.height,
-                                                                   0,
-                                                                   0);
-      if (s.mask_dib != 0)
-      {
-        delete s.mask_dib;
-      }
-      s.mask_dib = 0;
-    }
-    s.load_result = g_status_state->prepare_duel_foreground(&g_detail_wizard_rects[s.color], s.color);
-    if (s.load_result == 0)
-    {
-      set_vid_foreground((int)g_status_state->field_10, s.hit_avi);
-      g_status_state->field_10->set_field_10_value(0);
-    }
-    if (data->progress_by_color[s.color] != 0)
-    {
-      play_avi(s.hit_avi);
-      g_video_stop_requested = 0;
-      while (vid_status(s.hit_avi) != 0)
-      {
-        if (poll_statwin_messages() != 0)
-        {
-          stop_avi(s.hit_avi);
-          break;
-        }
-        Sleep(0);
-      }
-    }
-    g_status_state->update(data, 1);
-    sound_stop(0xff);
-    draw_vid_background(s.hit_avi);
-    do
-    {
-      s.load_result = poll_statwin_messages();
-    } while (s.load_result == 0);
-    SetPriorityClass(s.process, s.priority_class);
-    if (data->progress_by_color[s.color] != 0)
-    {
-      unload_avi(s.hit_avi);
-    }
-    unload_avi(s.main_avi);
-    sound_unload(0xff);
-    s.lparam = 0;
-    s.wparam = 0;
-    s.msg = WM_QUIT;
-    s.hwnd = get_sound_hwnd();
-    SendMessageA(s.hwnd, s.msg, s.wparam, s.lparam);
   }
+  g_status_state->update(data, 1);
+  sound_stop(0xff);
+  draw_vid_background(s.hit_avi);
+  do
+  {
+  } while (poll_statwin_messages() == 0);
+  SetPriorityClass(s.process, s.priority_class);
+  if (data->progress_by_color[s.color] != 0)
+  {
+    unload_avi(s.hit_avi);
+  }
+  unload_avi(s.main_avi);
+  sound_unload(0xff);
+
+  SendMessageA(get_sound_hwnd(), WM_QUIT, 0, 0);
 }
 
 // FUNCTION: STATWIN 0x100023a1
@@ -2355,8 +2412,8 @@ void StatWinState::write_cache(void)
     return;
   }
 
-  s.color_count = dib_state_get_color_count(this->field_0c);
-  s.palette = dib_state_get_palette(this->field_0c);
+  s.color_count = dib_state_get_color_count(this->screen_dib);
+  s.palette = dib_state_get_palette(this->screen_dib);
   if (s.palette != 0)
   {
     if (WriteFile(s.file, s.palette, s.color_count << 2, &s.bytes_written, NULL) == 0)
@@ -2367,7 +2424,7 @@ void StatWinState::write_cache(void)
     }
   }
 
-  this->field_0c->blit_to(&s.cache_dib, 0, 0, s.cache_dib.get_width(), s.cache_dib.get_height(), this->cache_x, this->cache_y);
+  this->screen_dib->blit_to(&s.cache_dib, 0, 0, s.cache_dib.get_width(), s.cache_dib.get_height(), this->cache_x, this->cache_y);
   s.bits = s.cache_dib.get_bits();
   if (WriteFile(s.file, s.bits, s.header->biSizeImage, &s.bytes_written, NULL) == 0)
   {
@@ -2383,11 +2440,11 @@ void StatWinState::write_cache(void)
 int StatWinState::release_cache(void)
 {
   int result = 0;
-  if (this->field_0c != 0)
+  if (this->screen_dib != 0)
   {
-    delete this->field_0c;
+    delete this->screen_dib;
 
-    this->field_0c = 0;
+    this->screen_dib = 0;
   }
   if (this->cached_data != 0)
   {
@@ -2396,11 +2453,11 @@ int StatWinState::release_cache(void)
     this->cached_data = 0;
   }
 
-  if (this->field_10 != 0)
+  if (this->foreground_dib != 0)
   {
-    delete this->field_10;
+    delete this->foreground_dib;
 
-    this->field_10 = 0;
+    this->foreground_dib = 0;
   }
   return 0;
 }
@@ -2408,7 +2465,6 @@ int StatWinState::release_cache(void)
 // FUNCTION: STATWIN 0x100084f9
 void StatWinState::prepare_missing_masks(void)
 {
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   DibState *small_mask_dib;
   DibState *world_mask_dib;
   char path[256];
@@ -2418,11 +2474,11 @@ void StatWinState::prepare_missing_masks(void)
   {
     small_mask_dib = new DibState();
     small_mask_dib->create(g_small_missing_mask_assets[color].rect.width, g_small_missing_mask_assets[color].rect.height, 0x18);
-    (this->field_0c->*(((DibStateBlitToFn *)this->field_0c->vtable)[6]))(small_mask_dib, 0, 0,
-                                                                          g_small_missing_mask_assets[color].rect.width,
-                                                                          g_small_missing_mask_assets[color].rect.height,
-                                                                          g_small_missing_mask_assets[color].rect.x,
-                                                                          g_small_missing_mask_assets[color].rect.y);
+    this->screen_dib->blit_to(small_mask_dib, 0, 0,
+                              g_small_missing_mask_assets[color].rect.width,
+                              g_small_missing_mask_assets[color].rect.height,
+                              g_small_missing_mask_assets[color].rect.x,
+                              g_small_missing_mask_assets[color].rect.y);
     join_paths(path, g_statwin_asset_dir, g_small_missing_mask_assets[color].filename);
     small_mask_dib->save_bitmap(path);
     if (small_mask_dib != 0)
@@ -2432,11 +2488,11 @@ void StatWinState::prepare_missing_masks(void)
 
     world_mask_dib = new DibState();
     world_mask_dib->create(g_world_missing_mask_assets[color].rect.width, g_world_missing_mask_assets[color].rect.height, 0x18);
-    (this->field_0c->*(((DibStateBlitToFn *)this->field_0c->vtable)[6]))(world_mask_dib, 0, 0,
-                                                                          g_world_missing_mask_assets[color].rect.width,
-                                                                          g_world_missing_mask_assets[color].rect.height,
-                                                                          g_world_missing_mask_assets[color].rect.x,
-                                                                          g_world_missing_mask_assets[color].rect.y);
+    this->screen_dib->blit_to(world_mask_dib, 0, 0,
+                              g_world_missing_mask_assets[color].rect.width,
+                              g_world_missing_mask_assets[color].rect.height,
+                              g_world_missing_mask_assets[color].rect.x,
+                              g_world_missing_mask_assets[color].rect.y);
     join_paths(path, g_statwin_asset_dir, g_world_missing_mask_assets[color].filename);
     world_mask_dib->save_bitmap(path);
     if (world_mask_dib != 0)
@@ -2449,8 +2505,6 @@ void StatWinState::prepare_missing_masks(void)
 // FUNCTION: STATWIN 0x10007564
 void StatWinState::draw_initial_town_counts(StatWinData *data)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   DibState *mana_dib;
   char path[256];
   int pip_index;
@@ -2473,7 +2527,7 @@ void StatWinState::draw_initial_town_counts(StatWinData *data)
       else
       {
         join_paths(path, g_statwin_asset_dir, g_mana_base_assets[color].filename);
-        if ((mana_dib->*(*(DibStateLoadBitmapFn *)mana_dib->vtable))(0, path, 0x18) == 0)
+        if (mana_dib->load_bitmap(0, path, 0x18) == 0)
         {
           break;
         }
@@ -2482,13 +2536,13 @@ void StatWinState::draw_initial_town_counts(StatWinData *data)
         {
           if (town_count != 0)
           {
-            (mana_dib->*(((DibStateBlitToFn *)mana_dib->vtable)[6]))(this->field_0c,
-                                                                     g_town_mana_source_rects[color][pip_index].x + g_mana_base_assets[color].rect.x,
-                                                                     g_town_mana_source_rects[color][pip_index].y + g_mana_base_assets[color].rect.y,
-                                                                     g_town_mana_source_rects[color][pip_index].width,
-                                                                     g_town_mana_source_rects[color][pip_index].height,
-                                                                     g_town_mana_source_rects[color][pip_index].x,
-                                                                     g_town_mana_source_rects[color][pip_index].y);
+            mana_dib->blit_to(this->screen_dib,
+                              g_town_mana_source_rects[color][pip_index].x + g_mana_base_assets[color].rect.x,
+                              g_town_mana_source_rects[color][pip_index].y + g_mana_base_assets[color].rect.y,
+                              g_town_mana_source_rects[color][pip_index].width,
+                              g_town_mana_source_rects[color][pip_index].height,
+                              g_town_mana_source_rects[color][pip_index].x,
+                              g_town_mana_source_rects[color][pip_index].y);
           }
           pip_index++;
         }
@@ -2504,8 +2558,6 @@ void StatWinState::draw_initial_town_counts(StatWinData *data)
 // FUNCTION: STATWIN 0x10007833
 void StatWinState::draw_initial_sprites(StatWinData *data)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   DibState *sprite_dib;
   char path[256];
   DrawRect rect;
@@ -2517,13 +2569,13 @@ void StatWinState::draw_initial_sprites(StatWinData *data)
     {
       sprite_dib = new DibState();
       join_paths(path, g_statwin_asset_dir, g_color_sprite_assets[color].filename);
-      if ((sprite_dib->*(*(DibStateLoadBitmapFn *)sprite_dib->vtable))(0, path, 0x18) == 0)
+      if (sprite_dib->load_bitmap(0, path, 0x18) == 0)
       {
         break;
       }
       rect = g_color_sprite_assets[color].rect;
-      sprite_dib->set_field_10_value(0xff00);
-      (sprite_dib->*(((DibStateBlitToFn *)sprite_dib->vtable)[6]))(this->field_0c, rect.x, rect.y, rect.width, rect.height, 0, 0);
+      sprite_dib->set_transparent_color(0xff00);
+      sprite_dib->blit_to(this->screen_dib, rect.x, rect.y, rect.width, rect.height, 0, 0);
       if (sprite_dib != 0)
       {
         delete sprite_dib;
@@ -2558,12 +2610,12 @@ int StatWinState::draw_initial_duel_wins(void)
 // FUNCTION: STATWIN 0x1000882f
 int StatWinState::prepare_duel_foreground(DrawRect *rect, uint color)
 {
-  if (this->field_10 != 0)
+  if (this->foreground_dib != 0)
   {
-    delete this->field_10;
+    delete this->foreground_dib;
   }
-  this->field_10 = new DibState();
-  this->field_10->create(rect->width, rect->height, 0x18);
+  this->foreground_dib = new DibState();
+  this->foreground_dib->create(rect->width, rect->height, 0x18);
   this->draw_progress_total(color);
   this->draw_town_count(color);
   return 0;
@@ -2617,28 +2669,28 @@ int StatWinState::draw_missing_color_progress(uint color)
   DibState color_mask_dib;
 
   DrawRect rect = g_color_mask_assets[color].rect;
-  color_mask_dib.set_field_10_value(0xff00);
+  color_mask_dib.set_transparent_color(0xff00);
   join_paths(path, g_statwin_asset_dir, g_color_mask_assets[color].filename);
   if (color_mask_dib.load_bitmap(0, path, 0x18) == 0)
   {
     return 4;
   }
 
-  color_mask_dib.blit_to(this->field_0c, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
+  color_mask_dib.blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
 
   DibState small_mask_dib;
   rect = g_small_missing_mask_assets[color].rect;
   join_paths(path, g_statwin_asset_dir, g_small_missing_mask_assets[color].filename);
 
   small_mask_dib.load_bitmap(0, path, 0x18);
-  small_mask_dib.blit_to(this->field_0c, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
+  small_mask_dib.blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
 
   DibState world_mask_dib;
   rect = g_world_missing_mask_assets[color].rect;
   join_paths(path, g_statwin_asset_dir, g_world_missing_mask_assets[color].filename);
 
   world_mask_dib.load_bitmap(0, path, 0x18);
-  world_mask_dib.blit_to(this->field_0c, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
+  world_mask_dib.blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
 
   return 0;
 }
@@ -2646,8 +2698,6 @@ int StatWinState::draw_missing_color_progress(uint color)
 // FUNCTION: STATWIN 0x10008051
 void StatWinState::draw_color_progress(uint color)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   char path[256];
   DibState unused_dib;
   DibState sprite_dib;
@@ -2657,44 +2707,44 @@ void StatWinState::draw_color_progress(uint color)
   int hidden_height;
 
   rect = g_color_sprite_assets[color].rect;
-  sprite_dib.set_field_10_value(0xff00);
+  sprite_dib.set_transparent_color(0xff00);
   join_paths(path, g_statwin_asset_dir, g_color_sprite_assets[color].filename);
   if (sprite_dib.load_bitmap(0, path, 0x18) == 0)
   {
     return;
   }
-  sprite_dib.blit_to(this->field_0c, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
+  sprite_dib.blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
 
   yellow_dib = new DibState();
-  yellow_dib->set_field_10_value(0);
+  yellow_dib->set_transparent_color(0);
   join_paths(path, g_statwin_asset_dir, g_progress_yellow_assets[color].filename);
-  if ((yellow_dib->*(*(DibStateLoadBitmapFn *)yellow_dib->vtable))(0, path, 0x18) == 0)
+  if (yellow_dib->load_bitmap(0, path, 0x18) == 0)
   {
     return;
   }
   rect = g_progress_yellow_assets[color].rect;
-  (yellow_dib->*(((DibStateBlitToFn *)yellow_dib->vtable)[6]))(this->field_0c, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
+  yellow_dib->blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
   if (yellow_dib != 0)
   {
     delete yellow_dib;
   }
 
   red_dib = new DibState();
-  red_dib->set_field_10_value(0);
+  red_dib->set_transparent_color(0);
   join_paths(path, g_statwin_asset_dir, g_progress_red_assets[color].filename);
-  if ((red_dib->*(*(DibStateLoadBitmapFn *)red_dib->vtable))(0, path, 0x18) == 0)
+  if (red_dib->load_bitmap(0, path, 0x18) == 0)
   {
     return;
   }
   rect = g_progress_red_assets[color].rect;
   hidden_height = rect.height - (this->cached_data->progress_by_color[color] * rect.height) / 0x1e;
-  (red_dib->*(((DibStateBlitToFn *)red_dib->vtable)[6]))(this->field_0c,
-                                                         this->cache_x + rect.x,
-                                                         this->cache_y + rect.y + hidden_height,
-                                                         rect.width,
-                                                         rect.height - hidden_height,
-                                                         0,
-                                                         hidden_height);
+  red_dib->blit_to(this->screen_dib,
+                   this->cache_x + rect.x,
+                   this->cache_y + rect.y + hidden_height,
+                   rect.width,
+                   rect.height - hidden_height,
+                   0,
+                   hidden_height);
   if (red_dib != 0)
   {
     delete red_dib;
@@ -2704,8 +2754,6 @@ void StatWinState::draw_color_progress(uint color)
 // FUNCTION: STATWIN 0x10007d77
 int StatWinState::draw_town_count(uint color)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   DibState *mana_dib;
   char path[256];
   int pip_index;
@@ -2723,7 +2771,7 @@ int StatWinState::draw_town_count(uint color)
   }
 
   join_paths(path, g_statwin_asset_dir, g_mana_base_assets[color].filename);
-  if ((mana_dib->*(*(DibStateLoadBitmapFn *)mana_dib->vtable))(0, path, 0x18) == 0)
+  if (mana_dib->load_bitmap(0, path, 0x18) == 0)
   {
     if (mana_dib != 0)
     {
@@ -2735,13 +2783,13 @@ int StatWinState::draw_town_count(uint color)
   pip_index = 0;
   for (town_count &= 0x1f; (pip_index < 5) && (0 < (int)town_count); town_count--)
   {
-    (mana_dib->*(((DibStateBlitToFn *)mana_dib->vtable)[6]))(this->field_0c,
-                                                             g_town_mana_source_rects[color][pip_index].x + g_mana_base_assets[color].rect.x + this->cache_x,
-                                                             g_town_mana_source_rects[color][pip_index].y + g_mana_base_assets[color].rect.y + this->cache_y,
-                                                             g_town_mana_source_rects[color][pip_index].width,
-                                                             g_town_mana_source_rects[color][pip_index].height,
-                                                             g_town_mana_source_rects[color][pip_index].x,
-                                                             g_town_mana_source_rects[color][pip_index].y);
+    mana_dib->blit_to(this->screen_dib,
+                      g_town_mana_source_rects[color][pip_index].x + g_mana_base_assets[color].rect.x + this->cache_x,
+                      g_town_mana_source_rects[color][pip_index].y + g_mana_base_assets[color].rect.y + this->cache_y,
+                      g_town_mana_source_rects[color][pip_index].width,
+                      g_town_mana_source_rects[color][pip_index].height,
+                      g_town_mana_source_rects[color][pip_index].x,
+                      g_town_mana_source_rects[color][pip_index].y);
     pip_index++;
   }
   if (mana_dib != 0)
@@ -2754,8 +2802,6 @@ int StatWinState::draw_town_count(uint color)
 // FUNCTION: STATWIN 0x10008a26
 int StatWinState::draw_progress_total(uint color)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   struct
   {
     DibState *yellow_dib;
@@ -2768,9 +2814,9 @@ int StatWinState::draw_progress_total(uint color)
   } s;
 
   s.yellow_dib = new DibState();
-  s.yellow_dib->set_field_10_value(0);
+  s.yellow_dib->set_transparent_color(0);
   join_paths(s.path, g_statwin_asset_dir, g_progress_yellow_assets[color].filename);
-  if ((s.yellow_dib->*(*(DibStateLoadBitmapFn *)s.yellow_dib->vtable))(0, s.path, 0x18) == 0)
+  if (s.yellow_dib->load_bitmap(0, s.path, 0x18) == 0)
   {
     if (s.yellow_dib != 0)
     {
@@ -2779,16 +2825,16 @@ int StatWinState::draw_progress_total(uint color)
     return 4;
   }
   s.rect = g_progress_yellow_assets[color].rect;
-  (s.yellow_dib->*(((DibStateBlitToFn *)s.yellow_dib->vtable)[6]))(this->field_0c, this->cache_x + s.rect.x, this->cache_y + s.rect.y, s.rect.width, s.rect.height, 0, 0);
+  s.yellow_dib->blit_to(this->screen_dib, this->cache_x + s.rect.x, this->cache_y + s.rect.y, s.rect.width, s.rect.height, 0, 0);
   if (s.yellow_dib != 0)
   {
     delete s.yellow_dib;
   }
 
   s.red_dib = new DibState();
-  s.red_dib->set_field_10_value(0);
+  s.red_dib->set_transparent_color(0);
   join_paths(s.path, g_statwin_asset_dir, g_progress_red_assets[color].filename);
-  if ((s.red_dib->*(*(DibStateLoadBitmapFn *)s.red_dib->vtable))(0, s.path, 0x18) == 0)
+  if (s.red_dib->load_bitmap(0, s.path, 0x18) == 0)
   {
     if (s.red_dib != 0)
     {
@@ -2800,13 +2846,13 @@ int StatWinState::draw_progress_total(uint color)
   s.filled_height = (this->cached_data->progress_by_color[color] * s.total_height) / 0x1e;
   s.visible_height = s.total_height - s.filled_height;
   s.rect = g_progress_red_assets[color].rect;
-  (s.red_dib->*(((DibStateBlitToFn *)s.red_dib->vtable)[6]))(this->field_0c,
-                                                             this->cache_x + s.rect.x,
-                                                             g_progress_total_offsets[color].y + this->cache_y + s.rect.y + s.filled_height,
-                                                             s.rect.width,
-                                                             s.visible_height,
-                                                             0,
-                                                             g_progress_total_offsets[color].y + s.filled_height);
+  s.red_dib->blit_to(this->screen_dib,
+                     this->cache_x + s.rect.x,
+                     g_progress_total_offsets[color].y + this->cache_y + s.rect.y + s.filled_height,
+                     s.rect.width,
+                     s.visible_height,
+                     0,
+                     g_progress_total_offsets[color].y + s.filled_height);
   if (s.red_dib != 0)
   {
     delete s.red_dib;
@@ -2849,8 +2895,6 @@ int StatWinState::refresh_progress_totals(StatWinData *data)
 // FUNCTION: STATWIN 0x10008e43
 int StatWinState::refresh_duel_wins(StatWinData *data)
 {
-  typedef int (DibState::*DibStateLoadBitmapFn)(HWND hwnd, char *path, uint bit_count);
-  typedef void (DibState::*DibStateBlitToFn)(DibState *dest, int dest_x, int dest_y, int width, int height, int source_x, int source_y);
   struct
   {
     DibState *skull_dib;
@@ -2887,22 +2931,22 @@ int StatWinState::refresh_duel_wins(StatWinData *data)
       }
       s.skull_dib = new DibState();
       join_paths(s.skull_path, g_statwin_asset_dir, g_skull_bitmap_assets[s.skull_index].filename);
-      if ((s.skull_dib->*(*(DibStateLoadBitmapFn *)s.skull_dib->vtable))(0, s.skull_path, 0x18) == 0)
+      if (s.skull_dib->load_bitmap(0, s.skull_path, 0x18) == 0)
       {
         return 4;
       }
-      s.skull_dib->set_field_10_value(0);
+      s.skull_dib->set_transparent_color(0);
       memset(s.loaded_skulls, 0, sizeof(s.loaded_skulls));
       s.loaded_skulls[s.skull_index] = 1;
     }
 
-    (s.skull_dib->*(((DibStateBlitToFn *)s.skull_dib->vtable)[6]))(this->field_0c,
-                                                                   g_duel_win_skull_rects[s.color].x + this->cache_x,
-                                                                   g_duel_win_skull_rects[s.color].y + this->cache_y,
-                                                                   g_duel_win_skull_rects[s.color].width,
-                                                                   g_duel_win_skull_rects[s.color].height,
-                                                                   g_duel_win_skull_rects[s.color].x,
-                                                                   0);
+    s.skull_dib->blit_to(this->screen_dib,
+                         g_duel_win_skull_rects[s.color].x + this->cache_x,
+                         g_duel_win_skull_rects[s.color].y + this->cache_y,
+                         g_duel_win_skull_rects[s.color].width,
+                         g_duel_win_skull_rects[s.color].height,
+                         g_duel_win_skull_rects[s.color].x,
+                         0);
     this->cached_data->duel_wins_by_color[s.color] = data->duel_wins_by_color[s.color];
   }
 
@@ -3082,7 +3126,6 @@ static LRESULT CALLBACK status_window_wndproc(HWND hwnd, UINT msg, WPARAM wparam
 // FUNCTION: STATWIN 0x10002056
 static void __cdecl draw_status_dib_to_window(HWND hwnd)
 {
-  typedef int (DibState::*DibStateGetDimensionFn)(void);
   struct
   {
     BITMAPINFOHEADER *header;
@@ -3097,12 +3140,12 @@ static void __cdecl draw_status_dib_to_window(HWND hwnd)
 
   s.hdc = GetDC(hwnd);
   s.draw_dib = DrawDibOpen();
-  s.header = g_status_state->field_0c->get_header();
+  s.header = g_status_state->screen_dib->get_header();
   s.dest_x = 0;
   s.dest_y = 0;
-  s.width = (g_status_state->field_0c->*(((DibStateGetDimensionFn *)g_status_state->field_0c->vtable)[2]))();
-  s.height = (g_status_state->field_0c->*(((DibStateGetDimensionFn *)g_status_state->field_0c->vtable)[3]))();
-  s.bits = g_status_state->field_0c->get_bits();
+  s.width = g_status_state->screen_dib->get_width();
+  s.height = g_status_state->screen_dib->get_height();
+  s.bits = g_status_state->screen_dib->get_bits();
   DrawDibDraw(s.draw_dib, s.hdc, s.dest_x, s.dest_y, s.width, s.height, s.header, s.bits, 0, 0, s.width, s.height, 0);
   ReleaseDC(hwnd, s.hdc);
   DrawDibClose(s.draw_dib);
