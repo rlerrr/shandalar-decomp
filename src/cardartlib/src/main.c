@@ -654,7 +654,12 @@ int DrawSmallArt(HDC hdc, RECT *rect, card_id_t id, int version)
 
   if (g_cardPicCounts[id] > 1)
   {
+#ifdef MODERN_FIXES
+    // Don't rely on UB to save return val in EAX
+    return DrawVersionedSmallArt(hdc, rect, id, version);
+#else
     DrawVersionedSmallArt(hdc, rect, id, version);
+#endif
   }
   else
   {
