@@ -19,6 +19,7 @@ option(SHANDALAR_BUILD_MAGIC "Build Magic.exe" ON)
 option(SHANDALAR_BUILD_SHANDALAR "Build Shandalar.exe" ON)
 option(SHANDALAR_BUILD_MANALINKINTERFACE "Build manalinkinterface.dll" ON)
 option(SHANDALAR_BUILD_MAGSND "Build magsnd.dll" ON)
+option(SHANDALAR_BUILD_STATWIN "Build StatWin.dll" ON)
 set(SHANDALAR_MODERN_FIXES_DEFAULT OFF)
 
 math(EXPR bits "8 * ${CMAKE_SIZEOF_VOID_P}")
@@ -109,6 +110,7 @@ install(TARGETS
   shandalar
   manalinkinterface
   magsnd
+  statwin
   # any other targets
   RUNTIME DESTINATION .
   LIBRARY DESTINATION .

@@ -57,3 +57,10 @@ targets:
     source-root: src/magsnd
     hash:
       sha256: 213b7dc2e1d0eed131d38485cba8004c1d7760f8ff0a94486b86bba5f3aeba9e
+  STATWIN:
+    filename: STATWIN.DLL
+    source-root: src
+    hash:
+      sha256: c1ca59496afa786f22fcd97b94052b937910a613f9321399b4ef4dd5dec76940
+    data_sources:
+      - ghidra/statwin.csv

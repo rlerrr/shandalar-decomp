@@ -1,0 +1,6 @@
+LIBRARY "StatWin.dll" BASE=268435456
+
+EXPORTS
+status_show @1
+status_init @2
+play_video @3

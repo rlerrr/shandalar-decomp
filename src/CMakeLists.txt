@@ -38,6 +38,10 @@ if (SHANDALAR_BUILD_MAGSND)
   add_subdirectory(magsnd)
 endif()
 
+if (SHANDALAR_BUILD_STATWIN)
+  add_subdirectory(statwin)
+endif()
+
 if (SHANDALAR_BUILD_SHANDALAR)
   add_subdirectory(shandalar)
 endif()

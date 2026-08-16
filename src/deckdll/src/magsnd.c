@@ -5,23 +5,28 @@
 #define SND_MAX 26
 
 // GLOBAL: DECKDLL 0x101054b8
+// GLOBAL: STATWIN 0x10017d94
 // GLOBAL: SHANDALAR 0x0073bf98
 static HMODULE global_hmodule_magsnd_dll;
 
 // GLOBAL: DECKDLL 0x1003a860
+// GLOBAL: STATWIN 0x1000d700
 // GLOBAL: SHANDALAR 0x005a0d40
 static bool global_sound_unk2 = false;
 
 // GLOBAL: DECKDLL 0x1003a864
+// GLOBAL: STATWIN 0x1000d704
 // GLOBAL: MAGIC 0x00570f50
 // GLOBAL: SHANDALAR 0x005a0d44
 static int global_sound_status = 0; // 0 = not loaded, 1 = loaded and ok, 2 = loaded and error I think
 
 // GLOBAL: DECKDLL 0x1003a868
+// GLOBAL: STATWIN 0x1000d708
 // GLOBAL: SHANDALAR 0x005a0d48
 static bool global_sound_unk1 = false;
 
 // GLOBAL: DECKDLL 0x1003a86c
+// GLOBAL: STATWIN 0x1000d70c
 // GLOBAL: SHANDALAR 0x005a0d4c
 static char *PTR_s_magsnd_1003a86c = "magsnd";
 
@@ -174,6 +179,7 @@ int sound_set_vol(int num, unsigned int vol)
 }
 
 // FUNCTION: DECKDLL 0x1002daee
+// FUNCTION: STATWIN 0x100035ce
 // FUNCTION: MAGIC 0x0048600c
 // FUNCTION: SHANDALAR 0x0056d74e
 void clear_sound_imports_table(void)
@@ -297,6 +303,17 @@ int sound_get_lru(int *out_num, int start, int end)
   }
 
   return global_sound_vtable.GetLRUSnd(out_num, start, end);
+}
+
+// FUNCTION: STATWIN 0x1000350c
+HWND get_sound_hwnd(void)
+{
+  if ((global_sound_status == 0) || (global_sound_status == 2))
+  {
+    return NULL;
+  }
+
+  return global_sound_vtable.GetSndHWND();
 }
 
 // FUNCTION: SHANDALAR 0x0056d476
