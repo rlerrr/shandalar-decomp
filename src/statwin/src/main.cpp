@@ -214,8 +214,10 @@ static char g_status_flag_byte;
 static int g_video_stop_requested;
 // GLOBAL: STATWIN 0x1000e52c
 static int g_help_dialog_enabled;
+// GLOBAL: STATWIN 0x1000d2ac
+static char g_statwin_root[] = "':statwin\\";
 // GLOBAL: STATWIN 0x1000d020
-static char *g_status_flag_ptr = "':statwin\\";
+static char *g_statwin_root_ptr = g_statwin_root;
 // GLOBAL: STATWIN 0x1000d024
 static char *g_status_sound_dir = ".\\";
 // GLOBAL: STATWIN 0x1000d028
@@ -445,7 +447,7 @@ extern "C" int __cdecl status_init(StatWinData *data)
     g_status_initialized = 1;
   }
   reset_status_assets();
-  *g_status_flag_ptr = g_status_flag_byte;
+  *g_statwin_root_ptr = g_status_flag_byte;
   return 0;
 }
 
@@ -629,7 +631,7 @@ int StatWinState::apply_progress(StatWinData *data, int flags)
   int color_count;
   BITMAPINFOHEADER *header;
 
-  this->cached_data = (StatWinData *)operator new(sizeof(StatWinData));
+  this->cached_data = new StatWinData();
   this->field_04 = flags;
   this->field_04 = 2;
   this->field_1c = 0;
@@ -1920,7 +1922,7 @@ static void __cdecl show_world_magic_detail(StatWinData *data, int unused)
   (void)unused;
   s.color = data->highlighted_wizard_color;
   s.load_flags = 5;
-  join_paths(s.path, g_status_flag_ptr, g_detail_creature_avi_names[data->highlighted_creature_type]);
+  join_paths(s.path, g_statwin_root_ptr, g_detail_creature_avi_names[data->highlighted_creature_type]);
   if (load_avi(s.path, &s.main_avi, &s.position, 1) == 0)
   {
     join_paths(s.path, g_status_sound_dir, "statscrn.wav");
@@ -1939,7 +1941,7 @@ static void __cdecl show_world_magic_detail(StatWinData *data, int unused)
   {
     s.position.x = (short)g_detail_wizard_rects[s.color].x;
     s.position.y = (short)g_detail_wizard_rects[s.color].y;
-    join_paths(s.path, g_status_flag_ptr, g_wizard_hit_avi_names[s.color]);
+    join_paths(s.path, g_statwin_root_ptr, g_wizard_hit_avi_names[s.color]);
     if (load_avi(s.path, &s.hit_avi, &s.position, 5) == 0)
     {
       set_vid_background_to_dib((int)g_status_state->screen_dib, s.hit_avi);
@@ -2085,7 +2087,7 @@ static int __cdecl show_color_missing_message(uint color)
     return s.load_result;
   }
 
-  join_paths(s.path, g_status_flag_ptr, g_missing_color_avi_names[color]);
+  join_paths(s.path, g_statwin_root_ptr, g_missing_color_avi_names[color]);
   if (load_avi(s.path, &s.avi, &s.position, 1) != 0)
   {
     return 4;
