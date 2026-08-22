@@ -9,11 +9,12 @@ extern "C"
 {
 #include "magsnd.h"
 }
+#include "magvid.h"
 
 typedef unsigned char byte;
 typedef unsigned int uint;
 
-typedef struct DibState DibState;
+class DibState;
 
 typedef struct StatWinData_t
 {
@@ -25,12 +26,6 @@ typedef struct StatWinData_t
   unsigned char highlighted_lair_color;
   int field_30;
 } StatWinData;
-
-typedef struct AviPosition_t
-{
-  short x;
-  short y;
-} AviPosition;
 
 typedef struct DrawRect_t
 {
@@ -186,25 +181,6 @@ extern "C" int __cdecl pump_one_statwin_message(void);
 extern "C" void __cdecl play_status_avi(int avi);
 extern "C" HWND __cdecl get_sound_hwnd(void);
 static void __cdecl play_status_sound(char *path);
-static int __cdecl init_video_dll(int hwnd, HINSTANCE instance, int flags);
-static int __cdecl release_video_dll(void);
-static void __cdecl clear_video_imports_table(void);
-static int __cdecl load_avi(char *path, int *out_avi, AviPosition *position, uint flags);
-static int __cdecl play_avi(int avi);
-static int __cdecl stop_avi(int avi);
-static int __cdecl unload_avi(int avi);
-extern "C" int __cdecl set_vid_callback(int avi, int callback);
-extern "C" int __cdecl set_vid_background(int avi, int background);
-extern "C" int __cdecl set_vid_background_to_bmp(int avi, char *path, int flags);
-extern "C" int __cdecl paint_vid(int avi);
-extern "C" int __cdecl set_vid_pos(int avi, AviPosition *position);
-extern "C" int __cdecl set_vid_background_to_dib(int avi, int dib);
-extern "C" int __cdecl set_vid_foreground(int avi, int foreground);
-extern "C" int __cdecl draw_vid_background(int avi);
-extern "C" int __cdecl link_vids(int avi, int linked_avi);
-extern "C" int __cdecl set_vid_thread_priority(int avi, int priority);
-static int __cdecl set_vid_transparency(int avi, int transparency);
-static int __cdecl vid_status(int avi);
 static int __cdecl poll_statwin_messages(void);
 static BOOL CALLBACK statwin_help_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static void __cdecl draw_status_dib_to_window(HWND hwnd);
@@ -302,18 +278,6 @@ static DrawRect g_detail_wizard_rects[5] = {
     {0, 0x30, 0x104, 0x140},
     {0x8c, 0x3c, 0xa0, 0x118},
     {0x17c, 0x30, 0x104, 0x12c}};
-
-typedef int(__cdecl *MagVidFn)(void);
-// GLOBAL: STATWIN 0x10017d8c
-static HMODULE g_magvid_module;
-// GLOBAL: STATWIN 0x1000d718
-static int g_video_dll_status;
-// GLOBAL: STATWIN 0x1000d71c
-static char *PTR_s_magvid_1000d71c = "magvid";
-// GLOBAL: STATWIN 0x10017d40
-static MagVidFn g_magvid_fns[19];
-// GLOBAL: STATWIN 0x10017d90
-static MagVidFn g_magvid_delay_fn;
 
 // GLOBAL: STATWIN 0x1000e480
 static char *g_statwin_asset_dir = "statwin\\";
@@ -663,237 +627,6 @@ extern "C" int __cdecl play_video(char *path, int x, int y, int flags)
   s.avi = 0;
   DestroyWindow(s.video_window);
   return 0;
-}
-
-// FUNCTION: STATWIN 0x10003610
-static int __cdecl init_video_dll(int hwnd, HINSTANCE instance, int flags)
-{
-  int i;
-  int result;
-
-  result = 0;
-  if (g_video_dll_status != 0)
-  {
-    return 6;
-  }
-
-  g_magvid_module = LoadLibraryA(PTR_s_magvid_1000d71c);
-  if (g_magvid_module != 0)
-  {
-    for (i = 0; i < 19; i++)
-    {
-      g_magvid_fns[i] = (MagVidFn)GetProcAddress(g_magvid_module, (LPCSTR)((i + 1U) & 0xffff));
-      if (g_magvid_fns[i] == 0)
-      {
-        FreeLibrary(g_magvid_module);
-        clear_video_imports_table();
-        return 7;
-      }
-    }
-
-    g_magvid_delay_fn = (MagVidFn)GetProcAddress(g_magvid_module, (LPCSTR)((i + 1U) & 0xffff));
-  }
-  else
-  {
-    return 7;
-  }
-
-  result = ((int(__cdecl *)(int, HINSTANCE, int))g_magvid_fns[0])(hwnd, instance, flags);
-  if (result != 0)
-  {
-    FreeLibrary(g_magvid_module);
-    clear_video_imports_table();
-    return result;
-  }
-
-  g_video_dll_status = 1;
-  return 0;
-}
-
-// FUNCTION: STATWIN 0x1000373a
-static int __cdecl release_video_dll(void)
-{
-  if (g_video_dll_status == 0)
-  {
-    return 7;
-  }
-
-  g_video_dll_status = 0;
-  ((void(__cdecl *)(void))g_magvid_fns[1])();
-  FreeLibrary(g_magvid_module);
-  clear_video_imports_table();
-  return 0;
-}
-
-// FUNCTION: STATWIN 0x10003bae
-static void __cdecl clear_video_imports_table(void)
-{
-  int i;
-
-  for (i = 0; i < 19; i++)
-  {
-    g_magvid_fns[i] = 0;
-  }
-}
-
-// FUNCTION: STATWIN 0x10003784
-static int __cdecl load_avi(char *path, int *out_avi, AviPosition *position, uint flags)
-{
-  if (g_video_dll_status == 0)
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(char *, int *, AviPosition *, uint))g_magvid_fns[2])(path, out_avi, position, flags);
-}
-
-// FUNCTION: STATWIN 0x100037c4
-static int __cdecl unload_avi(int avi)
-{
-  if (g_video_dll_status == 0)
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int))g_magvid_fns[3])(avi);
-}
-
-// FUNCTION: STATWIN 0x100037f8
-static int __cdecl play_avi(int avi)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int))g_magvid_fns[4])(avi);
-}
-
-// FUNCTION: STATWIN 0x10003839
-static int __cdecl stop_avi(int avi)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int))g_magvid_fns[5])(avi);
-}
-
-// FUNCTION: STATWIN 0x1000387a
-extern "C" int __cdecl set_vid_callback(int avi, int callback)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[6])(avi, callback);
-}
-
-// FUNCTION: STATWIN 0x100038bf
-extern "C" int __cdecl set_vid_background(int avi, int background)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[7])(avi, background);
-}
-
-// FUNCTION: STATWIN 0x10003904
-extern "C" int __cdecl set_vid_background_to_bmp(int avi, char *path, int flags)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, char *, int))g_magvid_fns[8])(avi, path, flags);
-}
-
-// FUNCTION: STATWIN 0x1000394d
-extern "C" int __cdecl paint_vid(int avi)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int))g_magvid_fns[13])(avi);
-}
-
-// FUNCTION: STATWIN 0x1000398e
-extern "C" int __cdecl set_vid_pos(int avi, AviPosition *position)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, AviPosition *))g_magvid_fns[14])(avi, position);
-}
-
-// FUNCTION: STATWIN 0x100039d3
-extern "C" int __cdecl set_vid_background_to_dib(int avi, int dib)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[9])(avi, dib);
-}
-
-// FUNCTION: STATWIN 0x10003a18
-extern "C" int __cdecl set_vid_foreground(int avi, int foreground)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[12])(avi, foreground);
-}
-
-// FUNCTION: STATWIN 0x10003a5d
-static int __cdecl set_vid_transparency(int avi, int transparency)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[18])(avi, transparency);
-}
-
-// FUNCTION: STATWIN 0x10003aa2
-extern "C" int __cdecl draw_vid_background(int avi)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int))g_magvid_fns[10])(avi);
-}
-
-// FUNCTION: STATWIN 0x10003ae3
-static int __cdecl vid_status(int avi)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int))g_magvid_fns[15])(avi);
-}
-
-// FUNCTION: STATWIN 0x10003b24
-extern "C" int __cdecl link_vids(int avi, int linked_avi)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[16])(avi, linked_avi);
-}
-
-// FUNCTION: STATWIN 0x10003b69
-extern "C" int __cdecl set_vid_thread_priority(int avi, int priority)
-{
-  if ((g_video_dll_status == 0) || (g_video_dll_status == 2))
-  {
-    return 7;
-  }
-  return ((int(__cdecl *)(int, int))g_magvid_fns[17])(avi, priority);
 }
 
 // FUNCTION: STATWIN 0x100053b2
