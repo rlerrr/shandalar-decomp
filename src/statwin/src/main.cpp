@@ -88,18 +88,6 @@ public:
   int attach_external_bits(BITMAPINFOHEADER *source_header, void *source_bits);
 };
 
-typedef struct WriteCacheLocals_t
-{
-  char cache_path[256];
-  HANDLE file;
-  DibState cache_dib;
-  BITMAPINFOHEADER *header;
-  void *bits;
-  void *palette;
-  DWORD bytes_written;
-  int color_count;
-} WriteCacheLocals;
-
 static int __cdecl bitmap_header_color_count(BITMAPINFOHEADER *header);
 
 class StatWinState;
@@ -143,12 +131,14 @@ public:
   int prepare_resources(void);
   int choose_mode(int *mode, StatWinData *data, int *selection);
   int update(StatWinData *data, int mode);
-  void write_cache(void);
+  int write_cache(void);
   int release_cache(void);
   int draw_missing_color_progress(uint color);
-  void draw_color_progress(uint color);
+  int draw_color_progress(uint color);
   int draw_town_count(uint color);
   int draw_progress_total(uint color);
+  int draw_foreground_progress_total(uint color, DrawRect *clip_rect);
+  int draw_foreground_duel_wins(uint color, DrawRect *clip_rect);
   void prepare_missing_masks(void);
   void draw_initial_town_counts(StatWinData *data);
   void draw_initial_sprites(StatWinData *data);
@@ -177,6 +167,7 @@ static void __cdecl show_status_window(void);
 static void __cdecl show_world_magic_detail(StatWinData *data, int unused);
 static int __cdecl show_color_missing_message(uint color);
 static int __cdecl load_centered_background(DibState *dest, char *path);
+static int __cdecl intersect_draw_rects(DrawRect *out_rect, DrawRect *rect1, DrawRect *rect2);
 extern "C" int __cdecl pump_one_statwin_message(void);
 extern "C" void __cdecl play_status_avi(int avi);
 extern "C" HWND __cdecl get_sound_hwnd(void);
@@ -633,9 +624,10 @@ extern "C" int __cdecl play_video(char *path, int x, int y, int flags)
 int StatWinState::apply_progress(StatWinData *data, int flags)
 {
   DibState *new_dib;
-  char path[256];
   DibState unused_dib;
+  char path[256];
   int color_count;
+  BITMAPINFOHEADER *header;
 
   this->cached_data = (StatWinData *)operator new(sizeof(StatWinData));
   this->field_04 = flags;
@@ -643,7 +635,7 @@ int StatWinState::apply_progress(StatWinData *data, int flags)
   this->field_1c = 0;
   new_dib = new DibState();
   this->screen_dib = new_dib;
-  memcpy(this->cached_data, data, sizeof(StatWinData));
+  *this->cached_data = *data;
   join_paths(path, g_statwin_asset_dir, g_wizard_background_bitmap_name);
   if (this->screen_dib->load_bitmap(0, path, 0x18) == 0)
   {
@@ -652,18 +644,19 @@ int StatWinState::apply_progress(StatWinData *data, int flags)
 
   this->prepare_missing_masks();
   color_count = dib_state_get_color_count(this->screen_dib);
-  if (color_count == 0)
+  if (color_count != 0)
   {
-    this->cached_bitmap_info = (byte *)operator new(0x2c);
-  }
-  else
-  {
+    header = this->screen_dib->get_header();
     this->cached_bitmap_info = (byte *)operator new(color_count * 4 + 0x28);
     if (this->cached_bitmap_info != 0)
     {
-      memcpy(this->cached_bitmap_info, this->screen_dib->get_header(), 0x28);
-      memcpy(this->cached_bitmap_info + 0x28, (byte *)this->screen_dib->get_header() + 0x28, color_count << 2);
+      memcpy(this->cached_bitmap_info, header, 0x28);
+      memcpy(this->cached_bitmap_info + 0x28, (byte *)header + 0x28, color_count << 2);
     }
+  }
+  else
+  {
+    this->cached_bitmap_info = (byte *)operator new(0x2c);
   }
   memcpy(this->cached_bitmap_info, this->screen_dib->get_header(), 0x2c);
 
@@ -1062,16 +1055,19 @@ int DibState::save_bitmap(char *path)
 {
   struct
   {
+    int bits_size;
+    BITMAPINFOHEADER *header;
+    void *palette;
+    HANDLE file;
+    int bit_count;
     DWORD bytes_written;
     void *bits;
     int color_count;
     BITMAPFILEHEADER file_header;
-    BITMAPINFOHEADER *header;
-    DWORD bits_size;
-    HANDLE file;
+    int unused;
   } s;
 
-  s.bits_size = 0;
+  s.unused = 0;
   s.color_count = 0;
   s.file = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
   if (s.file == INVALID_HANDLE_VALUE)
@@ -1083,16 +1079,20 @@ int DibState::save_bitmap(char *path)
   s.file_header.bfReserved1 = 0;
   s.file_header.bfReserved2 = 0;
   s.color_count = dib_state_get_color_count(this);
-  s.file_header.bfOffBits = s.color_count * 4 + 0x36;
+  s.bit_count = dib_state_get_bit_count(this);
+  s.file_header.bfSize = 0xe;
+  s.file_header.bfSize += (s.color_count << 2) + 0x28;
+  s.file_header.bfOffBits = s.file_header.bfSize;
   s.header = this->get_header();
-  s.bits_size = s.header->biWidth * s.header->biHeight * ((dib_state_get_bit_count(this) + 7) >> 3);
-  s.file_header.bfSize = s.file_header.bfOffBits + s.bits_size;
+  s.bits_size = s.header->biWidth * s.header->biHeight * (s.bit_count / 8);
+  s.file_header.bfSize += s.bits_size;
   WriteFile(s.file, &s.file_header, sizeof(BITMAPFILEHEADER), &s.bytes_written, NULL);
   s.header->biSizeImage = s.bits_size;
   WriteFile(s.file, s.header, sizeof(BITMAPINFOHEADER), &s.bytes_written, NULL);
   if (s.color_count != 0)
   {
-    WriteFile(s.file, dib_state_get_palette(this), s.color_count << 2, &s.bytes_written, NULL);
+    s.palette = dib_state_get_palette(this);
+    WriteFile(s.file, s.palette, s.color_count << 2, &s.bytes_written, NULL);
   }
   s.bits = this->get_bits();
   WriteFile(s.file, s.bits, s.bits_size, &s.bytes_written, NULL);
@@ -1618,24 +1618,31 @@ int DibState::attach_external_bits(BITMAPINFOHEADER *source_header, void *source
   return 1;
 }
 
-// FUNCTION: STATWIN 0x10005caa
-int StatWinState::prepare_resources(void)
+typedef struct PrepareResourcesLocals_t
 {
-  DibState cache_dib;
+  int stack_padding[26];
   char cache_path[256];
   int screen_width;
   BITMAPINFOHEADER header;
-  void *bits;
   HANDLE file;
   int screen_height;
   BITMAPINFOHEADER *source_header;
+  void *bits;
+  DWORD bytes_to_read;
+  RECT dest_bounds;
+  DibState cache_dib;
   void *palette;
   DWORD bytes_read;
-  RECT dest_bounds;
   RECT source_bounds;
+} PrepareResourcesLocals;
 
-  bits = 0;
-  palette = 0;
+// FUNCTION: STATWIN 0x10005caa
+int StatWinState::prepare_resources(void)
+{
+  PrepareResourcesLocals s;
+
+  s.bits = 0;
+  s.palette = 0;
   if (this->screen_dib != 0)
   {
     delete this->screen_dib;
@@ -1649,96 +1656,125 @@ int StatWinState::prepare_resources(void)
   }
   this->cached_data = (StatWinData *)operator new(sizeof(StatWinData));
   this->field_1c = 0;
-  screen_width = GetSystemMetrics(SM_CXSCREEN);
-  screen_height = GetSystemMetrics(SM_CYSCREEN);
-  this->screen_dib->create(screen_width, screen_height, 0x18);
-  join_paths(cache_path, g_statwin_asset_dir, g_stats_cache_bitmap_name);
-  file = CreateFileA(cache_path, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
-  if (file == INVALID_HANDLE_VALUE)
+  s.screen_width = GetSystemMetrics(SM_CXSCREEN);
+  s.screen_height = GetSystemMetrics(SM_CYSCREEN);
+  this->screen_dib->create(s.screen_width, s.screen_height, 0x18);
+  join_paths(s.cache_path, g_statwin_asset_dir, g_stats_cache_bitmap_name);
+  s.file = CreateFileA(s.cache_path, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+  if (s.file == INVALID_HANDLE_VALUE)
   {
     if (this->screen_dib != 0)
     {
       delete this->screen_dib;
-      this->screen_dib = 0;
     }
     operator delete(this->cached_data);
-    this->cached_data = 0;
-    return 6;
+    return 1;
   }
 
-  if (ReadFile(file, this->cached_data, sizeof(StatWinData), &bytes_read, NULL) == 0)
+  s.bytes_to_read = sizeof(StatWinData);
+  if (ReadFile(s.file, this->cached_data, s.bytes_to_read, &s.bytes_read, NULL) == 0)
   {
-    CloseHandle(file);
-    DeleteFileA(cache_path);
-    return 6;
+    CloseHandle(s.file);
+    DeleteFileA(s.cache_path);
+    if (this->screen_dib != 0)
+    {
+      delete this->screen_dib;
+    }
+    operator delete(this->cached_data);
+    return 3;
   }
-  if (ReadFile(file, &header, sizeof(BITMAPINFOHEADER), &bytes_read, NULL) == 0)
+  s.bytes_to_read = sizeof(BITMAPINFOHEADER);
+  if (ReadFile(s.file, &s.header, s.bytes_to_read, &s.bytes_read, NULL) == 0)
   {
-    CloseHandle(file);
-    DeleteFileA(cache_path);
-    return 6;
+    CloseHandle(s.file);
+    DeleteFileA(s.cache_path);
+    if (this->screen_dib != 0)
+    {
+      delete this->screen_dib;
+    }
+    operator delete(this->cached_data);
+    return 3;
   }
 
-  if (header.biBitCount < 9)
+  if (s.header.biBitCount <= 8)
   {
-    source_header = (BITMAPINFOHEADER *)operator new(0x428);
-    palette = (byte *)source_header + 0x28;
+    s.source_header = (BITMAPINFOHEADER *)operator new(0x428);
+    s.bytes_to_read = 0x400;
+    s.palette = (byte *)s.source_header + 0x6e0;
     if (this->cached_bitmap_info == 0)
     {
       this->cached_bitmap_info = (byte *)operator new(0x428);
     }
-    if (ReadFile(file, palette, 0x400, &bytes_read, NULL) == 0)
+    if (ReadFile(s.file, s.palette, s.bytes_to_read, &s.bytes_read, NULL) == 0)
     {
-      CloseHandle(file);
-      DeleteFileA(cache_path);
-      return 6;
+      CloseHandle(s.file);
+      DeleteFileA(s.cache_path);
+      if (this->screen_dib != 0)
+      {
+        delete this->screen_dib;
+      }
+      operator delete(this->cached_data);
+      return 3;
     }
-    memcpy(this->cached_bitmap_info + 0x28, palette, bytes_read);
+    memcpy(this->cached_bitmap_info + 0x6e0, s.palette, s.bytes_read);
   }
   else
   {
-    source_header = (BITMAPINFOHEADER *)operator new(0x28);
+    s.source_header = (BITMAPINFOHEADER *)operator new(0x28);
     if (this->cached_bitmap_info == 0)
     {
       this->cached_bitmap_info = (byte *)operator new(0x28);
     }
   }
-  memcpy(source_header, &header, 0x28);
-  memcpy(this->cached_bitmap_info, &header, 0x28);
-  bits = operator new(header.biSizeImage);
-  if (ReadFile(file, bits, header.biSizeImage, &bytes_read, NULL) == 0)
+  memcpy(s.source_header, &s.header, 0x28);
+  memcpy(this->cached_bitmap_info, &s.header, 0x28);
+  s.bits = operator new(s.header.biSizeImage);
+  s.bytes_to_read = s.header.biSizeImage;
+  if (ReadFile(s.file, s.bits, s.bytes_to_read, &s.bytes_read, NULL) == 0)
   {
-    CloseHandle(file);
-    DeleteFileA(cache_path);
-    operator delete(source_header);
-    operator delete(bits);
-    return 6;
+    CloseHandle(s.file);
+    DeleteFileA(s.cache_path);
+    operator delete(s.source_header);
+    operator delete(s.bits);
+    if (this->screen_dib != 0)
+    {
+      delete this->screen_dib;
+    }
+    operator delete(this->cached_data);
+    return 3;
   }
 
-  cache_dib.attach_external_bits(source_header, bits);
-  cache_dib.get_bounds_rect(&source_bounds);
-  this->screen_dib->get_bounds_rect(&dest_bounds);
-  if ((dest_bounds.right == source_bounds.right) && (dest_bounds.bottom == source_bounds.bottom))
+  s.cache_dib.attach_external_bits(s.source_header, s.bits);
+  s.cache_dib.get_bounds_rect(&s.source_bounds);
+  this->screen_dib->get_bounds_rect(&s.dest_bounds);
+  if ((s.dest_bounds.right == s.source_bounds.right) && (s.dest_bounds.bottom == s.source_bounds.bottom))
   {
-    cache_dib.blit_to(this->screen_dib, 0, 0, source_bounds.right, source_bounds.bottom, 0, 0);
+    s.cache_dib.blit_to(this->screen_dib, 0, 0, s.source_bounds.right, s.source_bounds.bottom, 0, 0);
     this->cache_x = 0;
     this->cache_y = 0;
   }
+  else if ((s.source_bounds.right < s.dest_bounds.right) && (s.source_bounds.bottom < s.dest_bounds.bottom))
+  {
+    this->cache_x = (s.dest_bounds.right - s.source_bounds.right) / 2;
+    this->cache_y = (s.dest_bounds.bottom - s.source_bounds.bottom) / 2;
+    s.cache_dib.blit_to(this->screen_dib, this->cache_x, this->cache_y, s.source_bounds.right, s.source_bounds.bottom, 0, 0);
+  }
   else
   {
-    if ((dest_bounds.right <= source_bounds.right) || (dest_bounds.bottom <= source_bounds.bottom))
+    CloseHandle(s.file);
+    DeleteFileA(s.cache_path);
+    operator delete(s.source_header);
+    operator delete(s.bits);
+    if (this->screen_dib != 0)
     {
-      CloseHandle(file);
-      DeleteFileA(cache_path);
-      return 6;
+      delete this->screen_dib;
     }
-    this->cache_x = (dest_bounds.right - source_bounds.right) / 2;
-    this->cache_y = (dest_bounds.bottom - source_bounds.bottom) / 2;
-    cache_dib.blit_to(this->screen_dib, this->cache_x, this->cache_y, source_bounds.right, source_bounds.bottom, 0, 0);
+    operator delete(this->cached_data);
+    return 3;
   }
-  operator delete(source_header);
-  operator delete(bits);
-  CloseHandle(file);
+  operator delete(s.source_header);
+  operator delete(s.bits);
+  CloseHandle(s.file);
   return 0;
 }
 
@@ -2117,56 +2153,70 @@ extern "C" void __cdecl play_status_avi(int avi)
 }
 
 // FUNCTION: STATWIN 0x1000599a
-void StatWinState::write_cache(void)
+int StatWinState::write_cache(void)
 {
-  WriteCacheLocals s;
-
-  join_paths(s.cache_path, g_statwin_asset_dir, g_stats_cache_bitmap_name);
-  s.file = CreateFileA(s.cache_path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
-  if (s.file == INVALID_HANDLE_VALUE)
+  struct
   {
-    return;
+    char cache_path[256];
+    HANDLE file;
+  } cache_file;
+  DibState cache_dib;
+  struct
+  {
+    BITMAPINFOHEADER *header;
+    void *bits;
+    void *palette;
+    DWORD bytes_written;
+    int color_count;
+  } cache_vars;
+
+  join_paths(cache_file.cache_path, g_statwin_asset_dir, g_stats_cache_bitmap_name);
+  cache_file.file = CreateFileA(cache_file.cache_path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+  if (cache_file.file == INVALID_HANDLE_VALUE)
+  {
+    return 1;
   }
 
-  if (WriteFile(s.file, this->cached_data, sizeof(StatWinData), &s.bytes_written, NULL) == 0)
+  if (WriteFile(cache_file.file, this->cached_data, sizeof(StatWinData), &cache_vars.bytes_written, NULL) == 0)
   {
-    CloseHandle(s.file);
-    DeleteFileA(s.cache_path);
-    return;
+    CloseHandle(cache_file.file);
+    DeleteFileA(cache_file.cache_path);
+    return 2;
   }
 
-  s.cache_dib.create(((BITMAPINFOHEADER *)this->cached_bitmap_info)->biWidth, ((BITMAPINFOHEADER *)this->cached_bitmap_info)->biHeight, 0x18);
-  s.header = s.cache_dib.get_header();
-  s.header->biSizeImage = ((BITMAPINFOHEADER *)this->cached_bitmap_info)->biSizeImage;
-  if (WriteFile(s.file, s.header, s.header->biSize, &s.bytes_written, NULL) == 0)
+  cache_dib.create(((BITMAPINFOHEADER *)this->cached_bitmap_info)->biWidth, ((BITMAPINFOHEADER *)this->cached_bitmap_info)->biHeight, 0x18);
+  cache_vars.header = cache_dib.get_header();
+  cache_vars.header->biSizeImage = ((BITMAPINFOHEADER *)this->cached_bitmap_info)->biSizeImage;
+  if (WriteFile(cache_file.file, cache_vars.header, cache_vars.header->biSize, &cache_vars.bytes_written, NULL) == 0)
   {
-    CloseHandle(s.file);
-    DeleteFileA(s.cache_path);
-    return;
+    CloseHandle(cache_file.file);
+    DeleteFileA(cache_file.cache_path);
+    return 2;
   }
 
-  s.color_count = dib_state_get_color_count(this->screen_dib);
-  s.palette = dib_state_get_palette(this->screen_dib);
-  if (s.palette != 0)
+  cache_vars.color_count = dib_state_get_color_count(this->screen_dib);
+  cache_vars.palette = dib_state_get_palette(this->screen_dib);
+  if (cache_vars.palette != 0)
   {
-    if (WriteFile(s.file, s.palette, s.color_count << 2, &s.bytes_written, NULL) == 0)
+    if (WriteFile(cache_file.file, cache_vars.palette, cache_vars.color_count << 2, &cache_vars.bytes_written, NULL) == 0)
     {
-      CloseHandle(s.file);
-      DeleteFileA(s.cache_path);
-      return;
+      CloseHandle(cache_file.file);
+      DeleteFileA(cache_file.cache_path);
+      return 2;
     }
   }
 
-  this->screen_dib->blit_to(&s.cache_dib, 0, 0, s.cache_dib.get_width(), s.cache_dib.get_height(), this->cache_x, this->cache_y);
-  s.bits = s.cache_dib.get_bits();
-  if (WriteFile(s.file, s.bits, s.header->biSizeImage, &s.bytes_written, NULL) == 0)
+  this->screen_dib->blit_to(&cache_dib, 0, 0, cache_dib.get_width(), cache_dib.get_height(), this->cache_x, this->cache_y);
+  cache_vars.bits = cache_dib.get_bits();
+  if (WriteFile(cache_file.file, cache_vars.bits, cache_vars.header->biSizeImage, &cache_vars.bytes_written, NULL) == 0)
   {
-    CloseHandle(s.file);
-    DeleteFileA(s.cache_path);
-    return;
+    CloseHandle(cache_file.file);
+    DeleteFileA(cache_file.cache_path);
+    return 2;
   }
 
-  CloseHandle(s.file);
+  CloseHandle(cache_file.file);
+  return 0;
 }
 
 // FUNCTION: STATWIN 0x100065c1
@@ -2198,160 +2248,470 @@ int StatWinState::release_cache(void)
 // FUNCTION: STATWIN 0x100084f9
 void StatWinState::prepare_missing_masks(void)
 {
-  DibState *small_mask_dib;
-  DibState *world_mask_dib;
-  char path[256];
-  int color;
-
-  for (color = 0; color < 5; color++)
+  struct
   {
-    small_mask_dib = new DibState();
-    small_mask_dib->create(g_small_missing_mask_assets[color].rect.width, g_small_missing_mask_assets[color].rect.height, 0x18);
-    this->screen_dib->blit_to(small_mask_dib, 0, 0,
-                              g_small_missing_mask_assets[color].rect.width,
-                              g_small_missing_mask_assets[color].rect.height,
-                              g_small_missing_mask_assets[color].rect.x,
-                              g_small_missing_mask_assets[color].rect.y);
-    join_paths(path, g_statwin_asset_dir, g_small_missing_mask_assets[color].filename);
-    small_mask_dib->save_bitmap(path);
-    if (small_mask_dib != 0)
-    {
-      delete small_mask_dib;
-    }
+    DrawRect rect;
+    DibState *small_mask_dib;
+    DibState *world_mask_dib;
+    char path[256];
+    int color;
+  } s;
 
-    world_mask_dib = new DibState();
-    world_mask_dib->create(g_world_missing_mask_assets[color].rect.width, g_world_missing_mask_assets[color].rect.height, 0x18);
-    this->screen_dib->blit_to(world_mask_dib, 0, 0,
-                              g_world_missing_mask_assets[color].rect.width,
-                              g_world_missing_mask_assets[color].rect.height,
-                              g_world_missing_mask_assets[color].rect.x,
-                              g_world_missing_mask_assets[color].rect.y);
-    join_paths(path, g_statwin_asset_dir, g_world_missing_mask_assets[color].filename);
-    world_mask_dib->save_bitmap(path);
-    if (world_mask_dib != 0)
-    {
-      delete world_mask_dib;
-    }
+  for (s.color = 0; s.color < 5; s.color++)
+  {
+    s.small_mask_dib = new DibState();
+    s.rect = g_progress_yellow_assets[s.color].rect;
+    s.small_mask_dib->create(s.rect.width, s.rect.height, 0x18);
+    this->screen_dib->blit_to(s.small_mask_dib, 0, 0,
+                              s.rect.width,
+                              s.rect.height,
+                              s.rect.x,
+                              s.rect.y);
+    join_paths(s.path, g_statwin_asset_dir, g_small_missing_mask_assets[s.color].filename);
+    s.small_mask_dib->save_bitmap(s.path);
+    delete s.small_mask_dib;
+
+    s.world_mask_dib = new DibState();
+    s.rect = g_world_missing_mask_assets[s.color].rect;
+    s.world_mask_dib->create(s.rect.width, s.rect.height, 0x18);
+    this->screen_dib->blit_to(s.world_mask_dib, 0, 0,
+                              s.rect.width,
+                              s.rect.height,
+                              s.rect.x,
+                              s.rect.y);
+    join_paths(s.path, g_statwin_asset_dir, g_world_missing_mask_assets[s.color].filename);
+    s.world_mask_dib->save_bitmap(s.path);
+    delete s.world_mask_dib;
   }
 }
 
 // FUNCTION: STATWIN 0x10007564
 void StatWinState::draw_initial_town_counts(StatWinData *data)
 {
-  DibState *mana_dib;
-  char path[256];
-  int pip_index;
-  int color;
-  byte town_count;
-
-  for (color = 0; color < 5; color++)
+  struct
   {
-    if (data->progress_by_color[color] != 0)
+    char path[256];
+    DibState *mana_dib;
+    int pip_index;
+    int color;
+    byte town_count;
+  } s;
+
+  for (s.color = 0; s.color < 5; s.color++)
+  {
+    if (data->progress_by_color[s.color] == 0)
     {
-      mana_dib = new DibState();
-      town_count = this->cached_data->town_count_by_color[color];
-      if (town_count == 0)
-      {
-        if (mana_dib != 0)
-        {
-          delete mana_dib;
-        }
-      }
-      else
-      {
-        join_paths(path, g_statwin_asset_dir, g_mana_base_assets[color].filename);
-        if (mana_dib->load_bitmap(0, path, 0x18) == 0)
-        {
-          break;
-        }
-        pip_index = 0;
-        for (town_count &= 0x1f; (pip_index < 5) && (town_count != 0); town_count--)
-        {
-          if (town_count != 0)
-          {
-            mana_dib->blit_to(this->screen_dib,
-                              g_town_mana_source_rects[color][pip_index].x + g_mana_base_assets[color].rect.x,
-                              g_town_mana_source_rects[color][pip_index].y + g_mana_base_assets[color].rect.y,
-                              g_town_mana_source_rects[color][pip_index].width,
-                              g_town_mana_source_rects[color][pip_index].height,
-                              g_town_mana_source_rects[color][pip_index].x,
-                              g_town_mana_source_rects[color][pip_index].y);
-          }
-          pip_index++;
-        }
-        if (mana_dib != 0)
-        {
-          delete mana_dib;
-        }
-      }
+      continue;
     }
+    s.mana_dib = new DibState();
+    s.town_count = this->cached_data->town_count_by_color[s.color];
+    s.town_count = this->cached_data->town_count_by_color[s.color];
+    if (s.town_count == 0)
+    {
+      delete s.mana_dib;
+      continue;
+    }
+    join_paths(s.path, g_statwin_asset_dir, g_mana_base_assets[s.color].filename);
+    if (s.mana_dib->load_bitmap(0, s.path, 0x18) == 0)
+    {
+      return;
+    }
+    s.town_count &= 0x1f;
+    s.pip_index = 0;
+    for (; s.pip_index < 5 && (int)s.town_count > 0; s.pip_index++)
+    {
+      if (s.town_count != 0)
+      {
+        s.mana_dib->blit_to(this->screen_dib,
+                            g_town_mana_source_rects[s.color][s.pip_index].x + g_mana_base_assets[s.color].rect.x,
+                            g_town_mana_source_rects[s.color][s.pip_index].y + g_mana_base_assets[s.color].rect.y,
+                            g_town_mana_source_rects[s.color][s.pip_index].width,
+                            g_town_mana_source_rects[s.color][s.pip_index].height,
+                            g_town_mana_source_rects[s.color][s.pip_index].x,
+                            g_town_mana_source_rects[s.color][s.pip_index].y);
+      }
+      s.town_count--;
+    }
+    delete s.mana_dib;
   }
 }
 
 // FUNCTION: STATWIN 0x10007833
 void StatWinState::draw_initial_sprites(StatWinData *data)
 {
-  DibState *sprite_dib;
-  char path[256];
-  DrawRect rect;
-  int color;
-
-  for (color = 0; color < 5; color++)
+  struct
   {
-    if (data->progress_by_color[color] != 0)
+    char path[256];
+    DrawRect rect;
+    DibState *sprite_dib;
+    int color;
+  } s;
+
+  for (s.color = 0; s.color < 5; s.color++)
+  {
+    if (data->progress_by_color[s.color] == 0)
     {
-      sprite_dib = new DibState();
-      join_paths(path, g_statwin_asset_dir, g_color_sprite_assets[color].filename);
-      if (sprite_dib->load_bitmap(0, path, 0x18) == 0)
-      {
-        break;
-      }
-      rect = g_color_sprite_assets[color].rect;
-      sprite_dib->set_transparent_color(0xff00);
-      sprite_dib->blit_to(this->screen_dib, rect.x, rect.y, rect.width, rect.height, 0, 0);
-      if (sprite_dib != 0)
-      {
-        delete sprite_dib;
-      }
+      continue;
     }
+    s.sprite_dib = new DibState();
+    join_paths(s.path, g_statwin_asset_dir, g_color_sprite_assets[s.color].filename);
+    if (s.sprite_dib->load_bitmap(0, s.path, 0x18) == 0)
+    {
+      return;
+    }
+    s.rect = g_color_sprite_assets[s.color].rect;
+    s.sprite_dib->set_transparent_color(0xff00);
+    s.sprite_dib->blit_to(this->screen_dib, s.rect.x, s.rect.y, s.rect.width, s.rect.height, 0, 0);
+    delete s.sprite_dib;
   }
 }
 
 // FUNCTION: STATWIN 0x100066a3
 void StatWinState::draw_initial_progress_totals(StatWinData *data)
 {
-  int color;
-
-  if (this->cached_data != 0)
+  struct
   {
-    for (color = 0; color < 5; color++)
-    {
-      if (data->progress_by_color[color] != 0)
-      {
-        this->draw_progress_total(color);
-      }
-    }
+    char path[256];
+    int filled_height;
+    int visible_height;
+    DrawRect rect;
+    int color;
+    DibState *yellow_dib;
+    DibState *red_dib;
+    int total_height;
+  } s;
+
+  if (this->cached_data == 0)
+  {
+    return;
   }
+
+  s.rect.x = 0;
+  s.rect.y = 0;
+  s.rect.width = 0;
+  s.rect.height = 0;
+  for (s.color = 0; s.color < 5; s.color++)
+  {
+    if (data->progress_by_color[s.color] == 0)
+    {
+      continue;
+    }
+
+    s.yellow_dib = new DibState();
+    s.yellow_dib->set_transparent_color(0);
+    join_paths(s.path, g_statwin_asset_dir, g_progress_yellow_assets[s.color].filename);
+    if (s.yellow_dib->load_bitmap(0, s.path, 0x18) == 0)
+    {
+      delete s.yellow_dib;
+      return;
+    }
+    s.rect = g_progress_yellow_assets[s.color].rect;
+    s.yellow_dib->blit_to(this->screen_dib, s.rect.x, s.rect.y, s.rect.width, s.rect.height, 0, 0);
+    delete s.yellow_dib;
+
+    s.red_dib = new DibState();
+    s.red_dib->set_transparent_color(0);
+    join_paths(s.path, g_statwin_asset_dir, g_progress_red_assets[s.color].filename);
+    if (s.red_dib->load_bitmap(0, s.path, 0x18) == 0)
+    {
+      delete s.yellow_dib;
+      return;
+    }
+    s.total_height = g_progress_total_offsets[s.color].height;
+    s.filled_height = (this->cached_data->progress_by_color[s.color] * s.total_height) / 0x1e;
+    s.visible_height = s.total_height - s.filled_height;
+    s.rect = g_progress_red_assets[s.color].rect;
+    s.red_dib->blit_to(this->screen_dib,
+                       s.rect.x,
+                       g_progress_total_offsets[s.color].y + s.rect.y + s.filled_height,
+                       s.rect.width,
+                       s.visible_height,
+                       0,
+                       g_progress_total_offsets[s.color].y + s.filled_height);
+    delete s.red_dib;
+  }
+}
+
+// FUNCTION: STATWIN 0x10006a8c
+int StatWinState::draw_foreground_progress_total(uint color, DrawRect *clip_rect)
+{
+  struct
+  {
+    char path[256];
+    int filled_height;
+    int visible_height;
+    int source_y;
+    int source_x;
+    DibState *yellow_dib;
+    DibState *red_dib;
+    int total_height;
+    DrawRect clipped_rect;
+    DrawRect asset_rect;
+  } s;
+
+  if (this->cached_data == 0)
+  {
+    return 6;
+  }
+
+  s.asset_rect.x = 0;
+  s.asset_rect.y = 0;
+  s.asset_rect.width = 0;
+  s.asset_rect.height = 0;
+  s.yellow_dib = new DibState();
+  s.yellow_dib->set_transparent_color(0);
+  join_paths(s.path, g_statwin_asset_dir, g_progress_yellow_assets[color].filename);
+  if (s.yellow_dib->load_bitmap(0, s.path, 0x18) == 0)
+  {
+    delete s.yellow_dib;
+    return 4;
+  }
+
+  s.asset_rect = g_progress_yellow_assets[color].rect;
+  s.red_dib = new DibState();
+  s.red_dib->set_transparent_color(0);
+  join_paths(s.path, g_statwin_asset_dir, g_progress_red_assets[color].filename);
+  if (s.red_dib->load_bitmap(0, s.path, 0x18) == 0)
+  {
+    delete s.red_dib;
+    delete s.yellow_dib;
+    return 4;
+  }
+
+  s.total_height = g_progress_total_offsets[color].height;
+  s.filled_height = (this->cached_data->progress_by_color[color] * s.total_height) / 0x1e;
+  s.visible_height = s.total_height - s.filled_height;
+  s.red_dib->blit_to(s.yellow_dib,
+                     0,
+                     g_progress_total_offsets[color].y + s.filled_height,
+                     s.asset_rect.width,
+                     s.visible_height,
+                     0,
+                     g_progress_total_offsets[color].y + s.filled_height);
+  delete s.red_dib;
+
+  if (intersect_draw_rects(&s.clipped_rect, &s.asset_rect, clip_rect) == 0)
+  {
+    delete s.yellow_dib;
+    return 7;
+  }
+
+  if (s.asset_rect.x < s.clipped_rect.x)
+  {
+    s.source_x = s.clipped_rect.x - s.asset_rect.x;
+  }
+  else
+  {
+    s.source_x = 0;
+  }
+  if (s.asset_rect.y < s.clipped_rect.y)
+  {
+    s.source_y = s.clipped_rect.y - s.asset_rect.y;
+  }
+  else
+  {
+    s.source_y = 0;
+  }
+
+  s.clipped_rect.x -= clip_rect->x;
+  s.clipped_rect.y -= clip_rect->y;
+  s.yellow_dib->blit_to(this->foreground_dib,
+                        s.clipped_rect.x,
+                        s.clipped_rect.y,
+                        s.clipped_rect.width,
+                        s.clipped_rect.height,
+                        s.source_x,
+                        s.source_y);
+  delete s.yellow_dib;
+  return 0;
+}
+
+// FUNCTION: STATWIN 0x10006f06
+int StatWinState::draw_foreground_duel_wins(uint color, DrawRect *clip_rect)
+{
+  struct
+  {
+    DibState *skull_dib;
+    char path[256];
+    int source_y;
+    int source_x;
+    int skull_index;
+    DrawRect clipped_rect;
+  } s;
+
+  if (this->cached_data == 0)
+  {
+    return 6;
+  }
+
+  s.skull_index = this->cached_data->duel_wins_by_color[color];
+  if (s.skull_index == 0)
+  {
+    return 0;
+  }
+
+  s.skull_index = duel_wins_to_skull_index(s.skull_index);
+  s.skull_dib = new DibState();
+  join_paths(s.path, g_statwin_asset_dir, g_skull_bitmap_assets[s.skull_index].filename);
+  if (s.skull_dib->load_bitmap(0, s.path, 0x18) == 0)
+  {
+    delete s.skull_dib;
+    return 4;
+  }
+
+  s.skull_dib->set_transparent_color(0);
+  if (intersect_draw_rects(&s.clipped_rect, &g_duel_win_skull_rects[color], clip_rect) == 0)
+  {
+    delete s.skull_dib;
+    return 7;
+  }
+
+  if (g_duel_win_skull_rects[color].x < s.clipped_rect.x)
+  {
+    s.source_x = s.clipped_rect.x - g_duel_win_skull_rects[color].x;
+  }
+  else
+  {
+    s.source_x = 0;
+  }
+  if (g_duel_win_skull_rects[color].y < s.clipped_rect.y)
+  {
+    s.source_y = s.clipped_rect.y - g_duel_win_skull_rects[color].y;
+  }
+  else
+  {
+    s.source_y = 0;
+  }
+
+  s.clipped_rect.x -= clip_rect->x;
+  s.clipped_rect.y -= clip_rect->y;
+  s.skull_dib->blit_to(this->foreground_dib,
+                       s.clipped_rect.x,
+                       s.clipped_rect.y,
+                       s.clipped_rect.width,
+                       s.clipped_rect.height,
+                       g_duel_win_skull_rects[color].x + s.source_x,
+                       s.source_y);
+  delete s.skull_dib;
+  return 0;
 }
 
 // FUNCTION: STATWIN 0x100072c2
 int StatWinState::draw_initial_duel_wins(void)
 {
-  return this->refresh_duel_wins(this->cached_data);
+  struct
+  {
+    DibState *skull_dib;
+    char skull_path[256];
+    int color;
+    int unused_30;
+    int loaded_skulls[7];
+    int skull_index;
+  } s;
+
+  s.skull_dib = 0;
+  s.loaded_skulls[0] = 0;
+  s.loaded_skulls[1] = 0;
+  s.loaded_skulls[2] = 0;
+  s.loaded_skulls[3] = 0;
+  s.loaded_skulls[4] = 0;
+  s.loaded_skulls[5] = 0;
+  s.loaded_skulls[6] = 0;
+
+  for (s.color = 0; s.color < 5; s.color++)
+  {
+    s.skull_index = duel_wins_to_skull_index(this->cached_data->duel_wins_by_color[s.color]);
+    if (s.skull_index < 0)
+    {
+      continue;
+    }
+
+    if (s.loaded_skulls[s.skull_index] == 0)
+    {
+      if (s.skull_dib != 0)
+      {
+        delete s.skull_dib;
+      }
+      s.skull_dib = new DibState();
+      join_paths(s.skull_path, g_statwin_asset_dir, g_skull_bitmap_assets[s.skull_index].filename);
+      if (s.skull_dib->load_bitmap(0, s.skull_path, 0x18) == 0)
+      {
+        return 4;
+      }
+      s.skull_dib->set_transparent_color(0);
+      memset(s.loaded_skulls, 0, sizeof(s.loaded_skulls));
+      s.loaded_skulls[s.skull_index] = 1;
+    }
+
+    s.skull_dib->blit_to(this->screen_dib,
+                         g_duel_win_skull_rects[s.color].x,
+                         g_duel_win_skull_rects[s.color].y,
+                         g_duel_win_skull_rects[s.color].width,
+                         g_duel_win_skull_rects[s.color].height,
+                         g_duel_win_skull_rects[s.color].x,
+                         0);
+  }
+
+  if (s.skull_dib != 0)
+  {
+    delete s.skull_dib;
+  }
+  return 0;
 }
 
 // FUNCTION: STATWIN 0x1000882f
 int StatWinState::prepare_duel_foreground(DrawRect *rect, uint color)
 {
+  int result;
+
   if (this->foreground_dib != 0)
   {
     delete this->foreground_dib;
   }
+  this->foreground_dib = 0;
   this->foreground_dib = new DibState();
   this->foreground_dib->create(rect->width, rect->height, 0x18);
-  this->draw_progress_total(color);
-  this->draw_town_count(color);
+  result = this->draw_foreground_progress_total(color, rect);
+  if (result != 0)
+  {
+    return result;
+  }
+  result = this->draw_foreground_duel_wins(color, rect);
+  if (result != 0)
+  {
+    return result;
+  }
   return 0;
+}
+
+// FUNCTION: STATWIN 0x10008968
+static int __cdecl intersect_draw_rects(DrawRect *out_rect, DrawRect *rect1, DrawRect *rect2)
+{
+  struct
+  {
+    RECT intersection;
+    RECT bounds2;
+    RECT bounds1;
+  } s;
+
+  s.bounds1.left = rect1->x;
+  s.bounds1.top = rect1->y;
+  s.bounds1.bottom = rect1->y + rect1->height;
+  s.bounds1.right = rect1->width + rect1->x;
+  s.bounds2.left = rect2->x;
+  s.bounds2.top = rect2->y;
+  s.bounds2.bottom = rect2->y + rect2->height;
+  s.bounds2.right = rect2->width + rect2->x;
+  if (IntersectRect(&s.intersection, &s.bounds1, &s.bounds2) == 0)
+  {
+    return 0;
+  }
+  out_rect->x = s.intersection.left;
+  out_rect->y = s.intersection.top;
+  out_rect->width = s.intersection.right - s.intersection.left;
+  out_rect->height = s.intersection.bottom - s.intersection.top;
+
+  return 1;
 }
 
 // FUNCTION: STATWIN 0x100071f4
@@ -2429,7 +2789,7 @@ int StatWinState::draw_missing_color_progress(uint color)
 }
 
 // FUNCTION: STATWIN 0x10008051
-void StatWinState::draw_color_progress(uint color)
+int StatWinState::draw_color_progress(uint color)
 {
   char path[256];
   DibState unused_dib;
@@ -2444,7 +2804,7 @@ void StatWinState::draw_color_progress(uint color)
   join_paths(path, g_statwin_asset_dir, g_color_sprite_assets[color].filename);
   if (sprite_dib.load_bitmap(0, path, 0x18) == 0)
   {
-    return;
+    return 4;
   }
   sprite_dib.blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
 
@@ -2453,24 +2813,21 @@ void StatWinState::draw_color_progress(uint color)
   join_paths(path, g_statwin_asset_dir, g_progress_yellow_assets[color].filename);
   if (yellow_dib->load_bitmap(0, path, 0x18) == 0)
   {
-    return;
+    return 6;
   }
   rect = g_progress_yellow_assets[color].rect;
   yellow_dib->blit_to(this->screen_dib, this->cache_x + rect.x, this->cache_y + rect.y, rect.width, rect.height, 0, 0);
-  if (yellow_dib != 0)
-  {
-    delete yellow_dib;
-  }
+  delete yellow_dib;
 
   red_dib = new DibState();
   red_dib->set_transparent_color(0);
   join_paths(path, g_statwin_asset_dir, g_progress_red_assets[color].filename);
   if (red_dib->load_bitmap(0, path, 0x18) == 0)
   {
-    return;
+    return 6;
   }
+  hidden_height = g_progress_red_assets[color].rect.height - (this->cached_data->progress_by_color[color] * g_progress_red_assets[color].rect.height) / 0x1e;
   rect = g_progress_red_assets[color].rect;
-  hidden_height = rect.height - (this->cached_data->progress_by_color[color] * rect.height) / 0x1e;
   red_dib->blit_to(this->screen_dib,
                    this->cache_x + rect.x,
                    this->cache_y + rect.y + hidden_height,
@@ -2478,57 +2835,51 @@ void StatWinState::draw_color_progress(uint color)
                    rect.height - hidden_height,
                    0,
                    hidden_height);
-  if (red_dib != 0)
-  {
-    delete red_dib;
-  }
+  delete red_dib;
+  return 0;
 }
 
 // FUNCTION: STATWIN 0x10007d77
 int StatWinState::draw_town_count(uint color)
 {
-  DibState *mana_dib;
-  char path[256];
-  int pip_index;
-  uint town_count;
-
-  mana_dib = new DibState();
-  town_count = this->cached_data->town_count_by_color[color];
-  if (town_count == 0)
+  struct
   {
-    if (mana_dib != 0)
-    {
-      delete mana_dib;
-    }
+    char path[256];
+    DibState *mana_dib;
+    int pip_index;
+    uint town_count;
+  } s;
+
+  s.mana_dib = new DibState();
+  s.town_count = this->cached_data->town_count_by_color[color];
+  s.town_count = this->cached_data->town_count_by_color[color];
+  if (s.town_count == 0)
+  {
+    delete s.mana_dib;
     return 7;
   }
 
-  join_paths(path, g_statwin_asset_dir, g_mana_base_assets[color].filename);
-  if (mana_dib->load_bitmap(0, path, 0x18) == 0)
+  join_paths(s.path, g_statwin_asset_dir, g_mana_base_assets[color].filename);
+  if (s.mana_dib->load_bitmap(0, s.path, 0x18) == 0)
   {
-    if (mana_dib != 0)
-    {
-      delete mana_dib;
-    }
+    delete s.mana_dib;
     return 6;
   }
 
-  pip_index = 0;
-  for (town_count &= 0x1f; (pip_index < 5) && (0 < (int)town_count); town_count--)
+  s.town_count &= 0x1f;
+  s.pip_index = 0;
+  for (; (s.pip_index < 5) && (0 < (int)s.town_count); s.pip_index++)
   {
-    mana_dib->blit_to(this->screen_dib,
-                      g_town_mana_source_rects[color][pip_index].x + g_mana_base_assets[color].rect.x + this->cache_x,
-                      g_town_mana_source_rects[color][pip_index].y + g_mana_base_assets[color].rect.y + this->cache_y,
-                      g_town_mana_source_rects[color][pip_index].width,
-                      g_town_mana_source_rects[color][pip_index].height,
-                      g_town_mana_source_rects[color][pip_index].x,
-                      g_town_mana_source_rects[color][pip_index].y);
-    pip_index++;
+    s.mana_dib->blit_to(this->screen_dib,
+                        g_town_mana_source_rects[color][s.pip_index].x + g_mana_base_assets[color].rect.x + this->cache_x,
+                        g_town_mana_source_rects[color][s.pip_index].y + g_mana_base_assets[color].rect.y + this->cache_y,
+                        g_town_mana_source_rects[color][s.pip_index].width,
+                        g_town_mana_source_rects[color][s.pip_index].height,
+                        g_town_mana_source_rects[color][s.pip_index].x,
+                        g_town_mana_source_rects[color][s.pip_index].y);
+    s.town_count--;
   }
-  if (mana_dib != 0)
-  {
-    delete mana_dib;
-  }
+  delete s.mana_dib;
   return 0;
 }
 
@@ -2537,12 +2888,12 @@ int StatWinState::draw_progress_total(uint color)
 {
   struct
   {
-    DibState *yellow_dib;
-    DibState *red_dib;
     char path[256];
     int filled_height;
     int visible_height;
     DrawRect rect;
+    DibState *yellow_dib;
+    DibState *red_dib;
     int total_height;
   } s;
 
@@ -2551,28 +2902,19 @@ int StatWinState::draw_progress_total(uint color)
   join_paths(s.path, g_statwin_asset_dir, g_progress_yellow_assets[color].filename);
   if (s.yellow_dib->load_bitmap(0, s.path, 0x18) == 0)
   {
-    if (s.yellow_dib != 0)
-    {
-      delete s.yellow_dib;
-    }
+    delete s.yellow_dib;
     return 4;
   }
   s.rect = g_progress_yellow_assets[color].rect;
   s.yellow_dib->blit_to(this->screen_dib, this->cache_x + s.rect.x, this->cache_y + s.rect.y, s.rect.width, s.rect.height, 0, 0);
-  if (s.yellow_dib != 0)
-  {
-    delete s.yellow_dib;
-  }
+  delete s.yellow_dib;
 
   s.red_dib = new DibState();
   s.red_dib->set_transparent_color(0);
   join_paths(s.path, g_statwin_asset_dir, g_progress_red_assets[color].filename);
   if (s.red_dib->load_bitmap(0, s.path, 0x18) == 0)
   {
-    if (s.red_dib != 0)
-    {
-      delete s.red_dib;
-    }
+    delete s.red_dib;
     return 4;
   }
   s.total_height = g_progress_total_offsets[color].height;
@@ -2586,10 +2928,7 @@ int StatWinState::draw_progress_total(uint color)
                      s.visible_height,
                      0,
                      g_progress_total_offsets[color].y + s.filled_height);
-  if (s.red_dib != 0)
-  {
-    delete s.red_dib;
-  }
+  delete s.red_dib;
   return 0;
 }
 
