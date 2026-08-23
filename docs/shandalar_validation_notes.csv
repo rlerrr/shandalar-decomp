@@ -1,0 +1,1113 @@
+address,status,confidence,reviewer,reviewed_commit,notes
+0x00409a0b,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and one drifted jmp displacement
+0x0042693e,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x00425f10,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x0043ddff,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding jmp displacement drift
+0x004660d6,reviewed,high,Codex,904cc2b,commutative adds differ with sar encoding drift and faithful branch displacements
+0x004690e0,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x0046a3c1,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x0048416b,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x004a898c,reviewed,high,Codex,904cc2b,equivalent lea plus add address arithmetic with sar encoding and branch displacement drift
+0x004a21ad,reviewed,high,Codex,904cc2b,cmp operands swapped plus equivalent inverted branch and sar displacement drift
+0x004bc6d3,reviewed,high,Codex,904cc2b,array comparison operands swapped with faithful opposite conditional jump
+0x004c8c30,reviewed,high,Codex,904cc2b,RegisterClassA return tests use movzx plus test but only ZF controls following branches
+0x004ccc10,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x004f04c5,reviewed,high,Codex,904cc2b,setne boolean materialization rewritten as equivalent sub cmp sbb inc sequence
+0x004f0b50,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x004f2407,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x004f263b,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x004f2aa1,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x004f6886,reviewed,high,Codex,904cc2b,sar encodings differ and jmp/jne displacements drift accordingly
+0x004f7c7d,reviewed,high,Codex,904cc2b,je plus jmp sequence folded to equivalent inverted jne branch
+0x0051a759,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x005033bb,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful opposite conditional jump
+0x00504850,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00535344,reviewed,high,Codex,904cc2b,sar encodings differ and branch displacements drift accordingly
+0x0053f72a,reviewed,high,Codex,904cc2b,sar encoding differs and branch displacements drift accordingly
+0x0054ac08,reviewed,high,Codex,904cc2b,commutative adds differ with sar encoding drift and faithful branch displacements
+0x005431cd,reviewed,high,Codex,904cc2b,commutative adds differ with sar encoding drift and faithful branch displacements
+0x00550c00,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00564ee7,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful opposite conditional jumps
+0x00548cba,reviewed,high,Codex,904cc2b,commutative field adds differ with sar encoding drift
+0x00571504,reviewed,high,Codex,904cc2b,sete boolean materialization rewritten as equivalent sub cmp sbb neg sequence
+0x00572fef,reviewed,high,Codex,904cc2b,sar encoding differs and branch displacements drift accordingly
+0x00573f30,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x0057a440,reviewed,high,Codex,904cc2b,recompiled side has no-op add eax zero before return
+0x0098a000,reviewed,high,Codex,904cc2b,loop target is the corresponding recomp address within the same matched instruction block
+0x00408dcc,needs-work,medium,Codex,904cc2b,indirect dispatch table base differs and should not be accepted from compact diff alone
+0x0040e1f5,needs-work,medium,Codex,904cc2b,indirect dispatch table base differs at two calls
+0x0040e3dc,needs-work,medium,Codex,904cc2b,indirect dispatch table base differs
+0x0041879d,needs-work,medium,Codex,904cc2b,parameter and stack local loads are swapped in compact diff and need source level proof
+0x00418b24,needs-work,high,Codex,904cc2b,recompiled memset emits an extra stosb stack write
+0x0042d548,needs-work,medium,Codex,904cc2b,recompiled epilogue appears where original hunk has no corresponding instructions
+0x0046e6f0,needs-work,high,Codex,904cc2b,argument cleanup and ret size differ in compact diff
+0x004afc4a,needs-work,medium,Codex,904cc2b,indirect dispatch table base differs
+0x004bea85,needs-work,medium,Codex,904cc2b,repeated empty string offsets are unresolved and need deliberate string identity proof
+0x004cc15a,needs-work,medium,Codex,904cc2b,jump table offsets and inserted movzx need wider control flow review
+0x004ce61a,needs-work,medium,Codex,904cc2b,jump table entry differs as an unresolved start relative target
+0x004eda50,needs-work,medium,Codex,904cc2b,large function includes unresolved DrawTextAt call target and many drifted branches
+0x0050c0ff,needs-work,medium,Codex,904cc2b,import thunk naming and unresolved DrawTextAt call target need deliberate proof
+0x00508c4a,needs-work,medium,Codex,904cc2b,register loads are swapped in compact diff and need wider dataflow review
+0x005231ec,needs-work,medium,Codex,904cc2b,complex array address rewrite and branch drift need source level review
+0x005448ea,needs-work,medium,Codex,904cc2b,recompiled epilogue appears where original hunk has no corresponding instructions
+0x0054a668,needs-work,medium,Codex,904cc2b,otherwise benign diff includes unresolved DrawTextAt call target
+0x0054baaa,needs-work,medium,Codex,904cc2b,otherwise benign diff includes multiple unresolved DrawTextAt call targets
+0x0054c6ba,needs-work,medium,Codex,904cc2b,stack local slots appear swapped and need full source level review
+0x0055db50,needs-work,medium,Codex,904cc2b,otherwise benign diff is blocked by unresolved DrawTextAt call target
+0x00562169,needs-work,medium,Codex,904cc2b,unresolved DrawTextAt call target plus swapped ordering compare
+0x00566693,needs-work,medium,Codex,904cc2b,debug source path string differs which is observable if assert path is used
+0x00573c35,needs-work,medium,Codex,904cc2b,add appears moved across omitted context in compact diff
+0x00577e65,needs-work,medium,Codex,904cc2b,parameter loads are swapped and need deliberate semantic review
+0x0098a392,needs-work,medium,Codex,904cc2b,stack probe comparison immediate differs
+0x0040b26d,reviewed,high,Codex,904cc2b,stack spill slots are reused differently but trigger cause globals are restored in the same order
+0x0043ac21,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x00450233,reviewed,high,Codex,904cc2b,POINT argument setup is equivalent and cmp operands are swapped with faithful equality branch
+0x00451c62,reviewed,high,Codex,904cc2b,sar encoding differs and branch displacements drift accordingly
+0x0045c730,reviewed,high,Codex,904cc2b,RegisterClassA return tests use movzx plus test but only ZF controls following branches
+0x004a657e,reviewed,high,Codex,904cc2b,equivalent array address calculation with register ordering differences
+0x004dc5a1,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x004f1951,reviewed,high,Codex,904cc2b,DeckBuilderMain import is shown by ordinal but DeckDll.def exports DeckBuilderMain at ordinal 1
+0x0051e2a5,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x005313e3,reviewed,high,Codex,904cc2b,imul operands swapped and branch displacement drifts accordingly
+0x00544e8f,needs-work,high,Codex,904cc2b,offset-addressed diff shows original reads 0x8a92b0 while recomp reads g_duel_help_owner_hwnd
+0x00559e90,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00566d8e,reviewed,high,Codex,904cc2b,shift encoding differs and surrounding jump displacements drift accordingly
+0x0056f300,reviewed,high,Codex,904cc2b,color component OR operations are commuted with the same final value
+0x0046160c,needs-work,medium,Codex,904cc2b,increment appears moved across omitted context in compact diff
+0x004acc56,needs-work,medium,Codex,904cc2b,complex affected-card/controller address rewrite needs wider dataflow proof
+0x004f2ec0,needs-work,medium,Codex,904cc2b,large function has swapped stack locals and many unresolved DrawTextAt call targets
+0x0050c973,needs-work,high,Codex,904cc2b,mov al differs from movsx eax before pushing character width argument
+0x0053cdc4,needs-work,medium,Codex,904cc2b,jump table offsets and inserted movzx instructions need wider control flow review
+0x005616f9,needs-work,medium,Codex,904cc2b,arithmetic rewrite plus unresolved DrawTextAt call target needs deliberate proof
+0x004eadb0,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x00466794,reviewed,medium,Codex,904cc2b,unresolved data offsets correspond to global_wndproc_std_ButtonClass
+0x00536086,reviewed,medium,Codex,904cc2b,shift encodings POINT argument setup and branch displacement drift are equivalent
+0x004aed84,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jne and surrounding branch displacement drift
+0x004cdd70,reviewed,medium,Codex,904cc2b,large function differs by displacement drift commutative imul and equivalent boolean materialization
+0x00522880,reviewed,medium,Codex,904cc2b,g_text_lines row-address expressions are equivalent because rows are 300 bytes
+0x0054e756,reviewed,high,Codex,904cc2b,equivalent idx times three address calculation with registers reordered
+0x004bb1cf,reviewed,high,Codex,904cc2b,sar encoding differs and branch displacements drift accordingly
+0x00466500,reviewed,high,Codex,904cc2b,sar encodings branch drift and commutative add are equivalent
+0x00521e80,reviewed,high,Codex,904cc2b,sar encodings and surrounding branch displacement drift are equivalent
+0x0042df84,reviewed,high,Codex,904cc2b,RGB component OR operations are commuted with the same final value
+0x004ff888,reviewed,high,Codex,904cc2b,sar encodings branch drift and commutative add are equivalent
+0x005474e1,reviewed,medium,Codex,904cc2b,unresolved data offset corresponds to the duel help owner hwnd
+0x0057378d,reviewed,high,Codex,904cc2b,sar encodings and surrounding branch displacement drift are equivalent
+0x00419497,needs-work,medium,Codex,904cc2b,jump table or start-relative offsets differ enough to need wider control-flow review
+0x00446220,needs-work,medium,Codex,904cc2b,shift setup may be equivalent but later branch structure is not clean enough for review
+0x004629be,needs-work,medium,Codex,904cc2b,stack layout loop structure and string table symbol references need wider review
+0x0055060c,needs-work,medium,Codex,904cc2b,unresolved DrawTextAt call targets remain in an otherwise mechanical diff
+0x00561bf4,needs-work,medium,Codex,904cc2b,unresolved DrawTextAt call target remains in arithmetic-heavy UI diff
+0x00566d25,needs-work,medium,Codex,904cc2b,call target differs from __allshl and needs helper resolution before marking reviewed
+0x004476d4,reviewed,medium,Codex,904cc2b,local stack slots are swapped but target player and draw loop uses remain paired
+0x0050f87e,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jumps and surrounding branch displacement drift
+0x004cbfa0,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x0056dbb0,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00425c7e,reviewed,high,Codex,904cc2b,sar encodings and surrounding branch displacement drift are equivalent
+0x004ff340,reviewed,high,Codex,904cc2b,control y plus height address operands are commuted with the same bounds test
+0x0050a85a,reviewed,high,Codex,904cc2b,control y plus height address operands are commuted with the same bounds test
+0x00507883,reviewed,medium,Codex,904cc2b,found-window branch shape differs but returns the same descendant count or zero paths
+0x0056a515,reviewed,medium,Codex,904cc2b,cmp operands and sar encodings differ with faithful jumps and displacement drift
+0x005720a3,reviewed,medium,Codex,904cc2b,stack locals are laid out differently but saved dc and tag rect uses stay paired
+0x004c6b35,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x0055a06a,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00446b89,reviewed,high,Codex,904cc2b,equality compare operands swapped with faithful branch and displacement drift
+0x00564a5a,reviewed,high,Codex,904cc2b,Huffman shifted operands are computed in opposite registers then ORed to the same value
+0x0057b440,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b470,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b4a0,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b4d0,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b500,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b530,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b560,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b590,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b5c0,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0057b5f0,reviewed,high,Codex,904cc2b,only alignment padding lea ebx ebx differs
+0x0043d798,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jumps and surrounding branch displacement drift
+0x004ef1ea,needs-work,medium,Codex,904cc2b,large town-services function has stack field offset and jump table drift requiring wider review
+0x0041cf20,needs-work,high,Codex,904cc2b,virtual-key state literal pushes are swapped in a non-commutative table lookup path
+0x004c80d8,needs-work,high,Codex,904cc2b,escaped string table calls differ by pushed argument count and stack cleanup size
+0x0055bf91,needs-work,medium,Codex,904cc2b,large attack phase wndproc has inserted movzx and nontrivial return or branch reshaping
+0x0049914d,needs-work,medium,Codex,904cc2b,target validation failure path is reshaped enough to need wider control-flow proof
+0x0040a62b,reviewed,medium,Codex,904cc2b,large stack function differs by cmp operand swaps and branch displacement drift only in shown hunks
+0x00485458,reviewed,high,Codex,904cc2b,score comparisons swap operands with faithful inverse jumps
+0x004f2232,reviewed,high,Codex,904cc2b,sar encoding and branch displacement drift are equivalent
+0x00520c71,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jumps and surrounding branch displacement drift
+0x00433d6f,reviewed,high,Codex,904cc2b,sar encodings and surrounding branch displacement drift are equivalent
+0x005020fe,reviewed,medium,Codex,904cc2b,import thunk spelling differs with only branch displacement drift around file operations
+0x0053c35e,reviewed,medium,Codex,904cc2b,offset-addressed diff shows dialog callback target is original dlgproc_prompt_for_life_total address
+0x005562d0,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00563cc0,reviewed,high,Codex,904cc2b,shr encoding differs with faithful loop branch displacement drift
+0x00469f23,reviewed,high,Codex,904cc2b,sar encodings movzx and commutative adds are equivalent with branch displacement drift
+0x0050434b,reviewed,high,Codex,904cc2b,equality compare operands swapped with faithful branch displacement drift
+0x004ba41b,needs-work,medium,Codex,904cc2b,offset-addressed diff exposes unresolved card-leaving-play string target 0x5aa4f0
+0x00509244,needs-work,medium,Codex,904cc2b,large dungeon clues UI diff interleaves local slot changes across click and hover paths
+0x0041905e,needs-work,high,Codex,904cc2b,offset-addressed diff shows hint text strcat string pointer differs 0x580fc4 versus 0x561d70
+0x004257a4,needs-work,high,Codex,904cc2b,active-player and other-player globals plus callback table addresses are swapped
+0x00564de0,reviewed,high,Codex,904cc2b,only branch displacement drift differs
+0x004da8d7,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful branch and displacement drift
+0x004bab60,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x0046a315,reviewed,high,Codex,904cc2b,sar encoding and branch displacement drift are equivalent
+0x0042811a,reviewed,medium,Codex,904cc2b,jump table offsets and sar encodings drift consistently with no semantic hunk shown
+0x004ff652,reviewed,high,Codex,904cc2b,control y plus height and local coordinate adds are commuted with sar drift
+0x004bbc50,reviewed,medium,Codex,904cc2b,array index arithmetic and stack addresses reduce to the same sprite slots with compare swaps
+0x004c1830,reviewed,high,Codex,904cc2b,RegisterClassA return tests use movzx plus test but only ZF controls the following branches
+0x0052125a,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jumps and surrounding branch displacement drift
+0x004f0d09,reviewed,medium,Codex,904cc2b,large town buy screen differs by commutative imul sar encodings and equivalent array indexing
+0x0057b6c0,reviewed,high,Codex,904cc2b,only alignment padding lea instructions differ
+0x0042d790,needs-work,medium,Codex,904cc2b,diff appears to expose missing original epilogue or function-size metadata issue
+0x004ffc5d,needs-work,high,Codex,904cc2b,offset-addressed diff leaves recomp sound table target unresolved at 0x5632ec
+0x0050a9a2,needs-work,medium,Codex,904cc2b,large city info screen has repeated unresolved DrawTextAt targets and layout arithmetic drift
+0x0056dcca,needs-work,medium,Codex,904cc2b,large full-card wndproc includes rect local slot swaps and broad branch displacement drift
+0x0043f348,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful branch and displacement drift
+0x004218ec,reviewed,medium,Codex,904cc2b,AI block assignment comparisons swap operands with faithful inverse jumps
+0x0042e709,reviewed,high,Codex,904cc2b,diff squared additions are reordered before the same accumulated nearest-color score
+0x00541040,reviewed,high,Codex,904cc2b,RegisterClassA return test uses movzx plus test but only ZF controls the following branch
+0x00470b00,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful jumps and surrounding branch displacement drift
+0x004f1bcc,reviewed,high,Codex,904cc2b,sar encoding differs with faithful branch displacement drift
+0x004ff456,reviewed,medium,Codex,904cc2b,ScaleUiCoordinate locals are stack-swapped but padding and inset uses stay paired
+0x0040d7b2,reviewed,medium,Codex,904cc2b,ability-range compares and jump table offsets are equivalent with displacement drift
+0x004424b0,reviewed,medium,Codex,904cc2b,database slot limit comparisons swap operands with faithful inverse jumps
+0x00425a82,reviewed,high,Codex,904cc2b,sar and shl encodings differ with faithful branch displacement drift
+0x0046ca26,needs-work,medium,Codex,904cc2b,AI timeout check calls get_duel_time_units_if_available instead of original GetUiTickCount
+0x0044147b,needs-work,high,Codex,904cc2b,verbose diff shows color_to_produce and color_to_consume placed in opposite MAKELONG halves
+0x00480feb,needs-work,medium,Codex,904cc2b,complex PLAYER_CARD_INSTANCE address rewrite needs wider proof before accepting
+0x0054eb6a,needs-work,medium,Codex,904cc2b,large world map screen has unresolved DrawTextAt and string or data offset mismatches
+0x0044553d,needs-work,medium,Codex,904cc2b,offset-addressed diff shows dungeon board string and data targets differ from recomp symbols
+0x0041318b,reviewed,high,Codex,904cc2b,menu text comparisons imul operands and sar encoding differ only mechanically
+0x00438a16,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful branches and surrounding displacement drift
+0x004ef0a8,reviewed,high,Codex,904cc2b,control y plus height operands are commuted with sar and branch displacement drift
+0x004aca60,reviewed,high,Codex,904cc2b,cmp operands swapped with faithful branch and displacement drift
+0x004bdd0a,reviewed,medium,Codex,904cc2b,boolean materialization and OR operands differ but produce the same values
+0x00430bfb,reviewed,medium,Codex,904cc2b,jump table offsets and movzx insertion are consistent with branch displacement drift
+0x00443940,needs-work,medium,Codex,904cc2b,large dungeon board loop has unresolved DrawTextAt target and branch reshaping
+0x004511a5,needs-work,medium,Codex,904cc2b,complex displayed-card address rewrite in notify path needs wider proof
+0x0053a586,needs-work,medium,Codex,904cc2b,large deck dialog has multiple unresolved global offsets and jump table drift
+0x004c6c40,needs-work,medium,Codex,904cc2b,large big-card choice wndproc needs wider review despite mostly mechanical hunks
+0x004c59bb,needs-work,medium,Codex,904cc2b,itoa scratch buffer differs from original g_itoa_buffer writes
+0x00466753,needs-work,medium,Codex,904cc2b,offset-addressed diff writes 0x78df7c while recomp symbol is global_wndproc_std_ButtonClass
+0x0056bfa4,needs-work,high,Codex,904cc2b,offset-addressed diff writes 0x97f1bc while recomp symbol resolves to g_defeated_wizards_bitmap
+0x00532aeb,needs-work,medium,Codex,904cc2b,large card browser has unresolved DrawTextAt targets and extensive UI branch drift
+0x0055a16b,needs-work,medium,Codex,904cc2b,large phase display wndproc has broad jump table drift and local comparison swaps
+0x00409680,reviewed,high,Codex,904cc2b,g_card_count offset additions are commuted with faithful branch displacement drift
+0x00429a62,reviewed,high,Codex,904cc2b,imul operands cmp operands and sar encodings differ only mechanically
+0x0042f7dc,reviewed,medium,Codex,904cc2b,dither component shifts and boolean materialization are equivalent with branch drift
+0x0042ec23,reviewed,medium,Codex,904cc2b,dither component shifts and boolean materialization are equivalent with branch drift
+0x004ce992,reviewed,high,Codex,904cc2b,sar encoding differs with faithful loop branch displacement drift
+0x0050416b,reviewed,high,Codex,904cc2b,equality compare operands swapped with faithful branch displacement drift
+0x0053114a,reviewed,high,Codex,904cc2b,creature count compare operands swapped with faithful inverse branch
+0x0054cee2,reviewed,medium,Codex,904cc2b,viewport cache indexing compares ORs and coordinate adds are equivalent reorderings
+0x0055e808,reviewed,medium,Codex,904cc2b,DeckBuilder ordinal calls plus compare and address-calculation reorderings are equivalent
+0x0055fd27,reviewed,medium,Codex,904cc2b,large world slot update differs by jump table drift shift encodings and commutative tests
+0x004b4fb3,reviewed,medium,Codex,904cc2b,color replacement pointer arithmetic is reordered without changing final addresses
+0x0046ef58,needs-work,medium,Codex,904cc2b,large hand wndproc has broad branch drift and local comparison rewrites
+0x004c0efa,needs-work,medium,Codex,904cc2b,target selection control flow is reshaped enough to need wider proof
+0x004c25f0,needs-work,high,Codex,904cc2b,AI callback table address differs 0x59423c versus 0x54a044
+0x0046ee20,needs-work,high,Codex,904cc2b,register hand class reads string-address dword where recomp uses g_hand_window_extra_bytes
+0x004f717a,reviewed,medium,Codex,904cc2b,town slot generation differs by compare operand swaps sar encodings and branch drift
+0x00417e11,reviewed,medium,Codex,904cc2b,deck parsing loop differs by commutative add sar encoding and branch displacement drift
+0x00428b90,reviewed,high,Codex,904cc2b,exit button geometry additions and index arithmetic are reordered equivalently
+0x004c8600,reviewed,high,Codex,904cc2b,DIB pitch add and 8bpp boolean materialization are equivalent
+0x004543d4,reviewed,medium,Codex,904cc2b,palette wndproc differs by movzx insertion sar encodings push register choice and branch drift
+0x00417d4d,reviewed,high,Codex,904cc2b,text-width truncation uses a different temp stack slot with same value flow
+0x004d7623,reviewed,high,Codex,904cc2b,affected-card compare operands and sar encoding differ with faithful branch drift
+0x0057c7e0,reviewed,high,Codex,904cc2b,wrapper only adds alignment nop before tail-equivalent body
+0x0057c800,reviewed,high,Codex,904cc2b,wrapper only adds alignment nop before tail-equivalent body
+0x0057c840,reviewed,high,Codex,904cc2b,wrapper only adds alignment nop before tail-equivalent body
+0x0056335f,reviewed,medium,Codex,904cc2b,stats window math reorders imul and max operands with equivalent branch drift
+0x00488638,reviewed,high,Codex,904cc2b,verbose and raw disassembly confirm -1 sentinel branches still return before phase-out body
+0x0050bb6d,reviewed,medium,Codex,904cc2b,town row geometry compares invert faithfully with movsx/test and shift encoding differences
+0x004143e0,needs-work,medium,Codex,904cc2b,large mana payment function has reshaped colorless artifact cost-selection control flow
+0x004cce39,needs-work,medium,Codex,904cc2b,large life wndproc has broad jump table drift and boolean local rewrites needing wider proof
+0x0054e97e,reviewed,medium,Codex,904cc2b,tooltip split uses swapped temp slots for forward and backward space distances with same comparisons
+0x005576dc,reviewed,medium,Codex,904cc2b,scrollbar thumb math uses alternate temp slot for cached client height plus shift encoding drift
+0x0056c1b5,reviewed,high,Codex,904cc2b,library shuffle compares invert faithfully against active player and loop bound
+0x00465bb6,reviewed,high,Codex,904cc2b,hack word replacement loop limit compare is operand-swapped with inverse branch
+0x00465cb1,reviewed,high,Codex,904cc2b,sleight word replacement loop limit compare is operand-swapped with inverse branch
+0x0048b71c,reviewed,high,Codex,904cc2b,hypnotic specter event checks differ only by cmp operand swaps and branch drift
+0x00432455,reviewed,high,Codex,904cc2b,book of rass event owner compare operands swapped with faithful branch drift
+0x005081fa,reviewed,medium,Codex,904cc2b,castle dungeon initialization differs by compare inversions jump table drift and array index reordering
+0x00530b90,reviewed,medium,Codex,904cc2b,town purchase flow differs by inverted equality branches gold compare swaps and shift encodings
+0x004be0bf,reviewed,medium,Codex,904cc2b,starter deck generation loops differ by compare inversions boolean negation and loop-jump placement
+0x00445365,reviewed,medium,Codex,904cc2b,dungeon highlight geometry shifts and sprite index arithmetic are reordered equivalently
+0x00470a9d,reviewed,high,Codex,904cc2b,hand title hwnd compare swaps global and parameter with same equality result
+0x0050453d,reviewed,high,Codex,904cc2b,run mode 3 save loader compare operands swap with faithful branch displacement drift
+0x005224d9,reviewed,high,Codex,904cc2b,offset-addressed diff confirms 0x58e04c is g_showlibrary_menu_selection
+0x004f1cce,reviewed,medium,Codex,904cc2b,shop price switch differs by jump table drift and unavoidable shift encodings
+0x00539361,reviewed,medium,Codex,904cc2b,post-duel draws dialog differs by local point pair loading movzx insertion and jump table drift
+0x00552144,reviewed,medium,Codex,904cc2b,mana pool text rect boolean materialization and sar encoding differ equivalently
+0x00470468,reviewed,medium,Codex,904cc2b,hand window resize compares and geometry additions are reordered with faithful branches
+0x005589ed,reviewed,high,Codex,904cc2b,color chooser only swaps player compare operands with expected branch drift
+0x0050eb80,reviewed,high,Codex,904cc2b,offset-addressed diff confirms dialog callback target is dlgproc_ViewAntes at 0x50eba9
+0x004884c1,reviewed,high,Codex,904cc2b,phase-in sentinel checks mirror reviewed phase-out behavior and return before body
+0x004cc6c0,reviewed,medium,Codex,904cc2b,offset-addressed tooltip diff resolves cue-card y global and local jump tables with movzx substitutions
+0x00562835,reviewed,high,Codex,904cc2b,looping sound loader uses compound OR instead of load-or-store
+0x0040e7a6,reviewed,medium,Codex,904cc2b,battlefield summary zeroing uses memset instead of equivalent zero loop with array index reordering
+0x0053f03a,reviewed,medium,Codex,904cc2b,mana burn dialog offsets resolve to the expected dialog statics with stdcall epilogue form difference
+0x00521cd0,needs-work,high,Codex,904cc2b,mox helper checks g_card_on_stack where original checks g_affected_card globals
+0x00513019,needs-work,high,Codex,904cc2b,triskelion diff changes signed jle to unsigned jbe and pushes literal event 0x72
+0x0043efc8,needs-work,high,Codex,904cc2b,remove soul diff tests card state bit 0x80 where original tests 0x20
+0x004be650,needs-work,medium,Codex,904cc2b,target availability has reshaped side-effectful toggle and skip logic needing wider proof
+0x0052fae0,needs-work,medium,Codex,904cc2b,lair exploration event has large switch and loop control-flow drift needing source review
+0x00558941,reviewed,high,Codex,904cc2b,number chooser only swaps player compare operands with expected branch drift
+0x004e5571,reviewed,medium,Codex,904cc2b,creature aura stat adds and target checks differ by operand swaps and inverted early branches
+0x0050fd4d,reviewed,medium,Codex,904cc2b,time vault differs by local slot swap and card-array address arithmetic reordering
+0x0049ad68,reviewed,high,Codex,904cc2b,junun efreet affected-card checks only swap compare operands
+0x00548b25,reviewed,high,Codex,904cc2b,stats menu activation differs by sar encoding and branch displacement drift
+0x0048d477,reviewed,high,Codex,904cc2b,fungusaur affected-card checks only swap compare operands with branch drift
+0x0050a709,reviewed,high,Codex,904cc2b,city info scroll button geometry add and sprite index math are reordered equivalently
+0x004eb3bf,reviewed,high,Codex,904cc2b,conversion affected-controller and current-player compares swap operands with faithful branches
+0x0056279e,reviewed,high,Codex,904cc2b,looping sound pan wrapper uses compound OR instead of load-or-store
+0x00571b24,reviewed,medium,Codex,904cc2b,power toughness drawing swaps test operands and computes stack array address by split lea/add
+0x004584e4,reviewed,high,Codex,904cc2b,mightstone duel-summary offset uses base+16 with index 1 instead of index 5
+0x00486e05,reviewed,high,Codex,904cc2b,graveyard type active and other player compares swap operands with same equality checks
+0x0056862e,reviewed,medium,Codex,904cc2b,play duel differs by imul swaps boolean materialization and array index arithmetic reordering
+0x0046469a,needs-work,high,Codex,904cc2b,original guards palette application on color depth and duel message loop but recomp is unconditional
+0x005410d1,needs-work,high,Codex,904cc2b,main wndproc has concrete global and call target mismatches including player library and face bitmap
+0x00444cef,reviewed,medium,Codex,904cc2b,dungeon cell event neighbor dx/dy grid index terms are evaluated in opposite order
+0x00450925,reviewed,high,Codex,904cc2b,duel card preview uses swapped local slots for preview player and card pointer
+0x004c19f3,reviewed,medium,Codex,904cc2b,library wndproc differs by boolean materialization imul operand swaps movzx and jump drift
+0x0051ea11,reviewed,medium,Codex,904cc2b,dragon engine control flow differs by inverted branches with equivalent AI modifier arithmetic
+0x0041786e,reviewed,high,Codex,904cc2b,card rarity CSV loader loop bound compare is operand-swapped with inverse branch
+0x0049c5b0,reviewed,high,Codex,904cc2b,white knight affected-card compare swaps operands with faithful branch
+0x00501e44,reviewed,medium,Codex,904cc2b,load game path uses import thunks and reordered card-library address arithmetic
+0x0043a9c9,reviewed,high,Codex,904cc2b,wall of tombstones affected-card checks only swap compare operands
+0x00499d35,reviewed,high,Codex,904cc2b,orcish artillery parent controller and card address terms are generated in opposite order
+0x0041598e,reviewed,medium,Codex,904cc2b,generic mana autopay compares invert faithfully with branch displacement drift
+0x0046213c,reviewed,medium,Codex,904cc2b,attack minimized wndproc differs by movzx insertion and branch displacement drift
+0x004cbb3f,reviewed,medium,Codex,904cc2b,spell minimized wndproc differs by movzx insertion and branch displacement drift
+0x005626b0,reviewed,high,Codex,904cc2b,sound effect channel flag masks use explicit load-and-store instead of direct memory and
+0x00441f4a,reviewed,medium,Codex,904cc2b,registry serial scratch string symbol and byte checksum additions are equivalent
+0x0053b80b,needs-work,high,Codex,904cc2b,offset-addressed show list card diff compares card id to unk_009266ac versus gs_prompt_new_full_card+32
+0x00424c13,reviewed,high,Codex,904cc2b,combat damage matrix clear swaps row and column local loads with same final address
+0x005307dd,reviewed,medium,Codex,904cc2b,random creature ante duel loop bounds imul operands and sar encoding differ mechanically
+0x004ed6b9,reviewed,medium,Codex,904cc2b,wizard visit backdrop uses permuted temp stack slots with same loaded resources
+0x004cb077,reviewed,medium,Codex,904cc2b,spell chain entry copies point fields via lea/add and swaps dimension compares equivalently
+0x004da23c,reviewed,medium,Codex,904cc2b,psychic venom uses extra temp slot and inverted fizzled branches with same target locals
+0x00566ecc,reviewed,high,Codex,904cc2b,Haar sum-diff subtraction is algebraically reordered with faithful loop branch drift
+0x0057b650,reviewed,high,Codex,904cc2b,sprite encode session wrapper only adds alignment nop before equivalent body
+0x00422294,needs-work,medium,Codex,904cc2b,large combat damage resolver has unresolved blocker damage offsets and broad address rewrites
+0x0044c1eb,needs-work,high,Codex,904cc2b,mana clash calls prompt_for_life_total where original calls coin_flip
+0x00504c39,needs-work,high,Codex,904cc2b,territory wndproc has action flag and duel interface option offset mismatches
+0x004a8da8,needs-work,medium,Codex,904cc2b,load/save menu has large stack-buffer and control-flow reshaping needing wider proof
+0x004106f7,needs-work,medium,Codex,904cc2b,allow response once has broad trigger-dispatch control-flow reshaping
+0x004c5ca0,needs-work,medium,Codex,904cc2b,big card choice dialog has large dialog control-flow drift needing wider proof
+0x0040111d,needs-work,high,Codex,904cc2b,darkpact compares g_current_player where original uses g_active_player and rewrites card fields
+0x0045782f,needs-work,high,Codex,904cc2b,jalum tome tests state bit 0x20 instead of 0x10 and pushes discard mode 0 instead of 7
+0x00572d8c,reviewed,medium,Codex,904cc2b,ability icon rect swaps geometry add order and inverts bounds compare faithfully
+0x00434c40,reviewed,medium,Codex,904cc2b,emerald dragonfly card-instance address terms and affected-card compares are reordered equivalently
+0x0048b673,reviewed,high,Codex,904cc2b,elven riders attacking controller compare swaps operands with faithful branch drift
+0x004fe9cd,reviewed,medium,Codex,904cc2b,powerleech uses swapped loop locals while preserving player/card value flow
+0x0052160a,reviewed,high,Codex,904cc2b,library of leng trigger cause compares swap operands with same equality checks
+0x004c69fe,reviewed,medium,Codex,904cc2b,big-card card wndproc differs by movzx insertion and branch displacement drift
+0x004e4ace,reviewed,medium,Codex,904cc2b,pestilence loop compares and card-instance address arithmetic are reordered equivalently
+0x0043c5b6,reviewed,high,Codex,904cc2b,wall of light affected-controller compares swap operands with faithful branches
+0x004ed525,reviewed,medium,Codex,904cc2b,visit backdrop zoom math reorders divide multiply temporaries with shift encoding drift
+0x004a288d,reviewed,medium,Codex,904cc2b,name entry dialog uses shifted temp stack slots with equivalent message and width math
+0x00426252,reviewed,medium,Codex,904cc2b,face wndproc differs by boolean materialization movzx insertion and branch drift
+0x004974fb,reviewed,high,Codex,904cc2b,zombie master affected-card compares swap operand order only
+0x0046a520,needs-work,high,Codex,904cc2b,assert omits original PROMPT_ASSERT load and append block
+0x0046a674,needs-work,high,Codex,904cc2b,assert_noabort omits original PROMPT_ASSERT load and append block
+0x004e0bab,needs-work,high,Codex,904cc2b,web reads target fields at different card-instance offsets and checks event 0x32 instead of 0x34
+0x00558538,reviewed,medium,Codex,904cc2b,dialog helper swaps player compares and card-instance address terms without changing targets
+0x0053a265,reviewed,medium,Codex,904cc2b,multi-card list selection loop bounds and player compares are operand-swapped with faithful branches
+0x00562736,reviewed,high,Codex,904cc2b,sound pitch pan flag masks use explicit load-and-store instead of direct memory mask updates
+0x0049744a,reviewed,high,Codex,904cc2b,serra angel affected-controller compare swaps operands only
+0x00563934,reviewed,medium,Codex,904cc2b,icon button wndproc differs by movzx insertion and jump-table displacement drift
+0x004a1194,reviewed,medium,Codex,904cc2b,difficulty menu loop locals are shifted between stack slots with same value flow
+0x0045cdc8,reviewed,medium,Codex,904cc2b,attack wndproc differs by coordinate compare inversions card-instance address reordering and jump drift
+0x00450110,reviewed,high,Codex,904cc2b,selection display compares selected player/card operands with equivalent equality result
+0x004531c2,reviewed,medium,Codex,904cc2b,displayed sleight word replacement reorders pointer addition with faithful loop drift
+0x004fd888,reviewed,high,Codex,904cc2b,lance affected-card compare operands swapped with faithful branch
+0x004e7006,needs-work,high,Codex,904cc2b,copy artifact has hard state mask and summary/global offset mismatches including 0x30082 versus 0xb0082
+0x005631ca,needs-work,high,Codex,904cc2b,unlock progress subtracts original required wins where original subtracts counted duel wins
+0x0056c7cb,needs-work,high,Codex,904cc2b,opponent taunt calls empty begin/end stubs where original hides and shows mouse cursor
+0x00471f68,needs-work,medium,Codex,904cc2b,argivian archaeologist replaces direct graveyard type test with helper and has broad target flow drift
+0x0041e0d9,needs-work,high,Codex,904cc2b,combat damage simulation has AI callback table mismatch and differing combat state bit tests
+0x004885e4,reviewed,medium,Codex,904cc2b,tawnos coffin phase-out guard reshapes sentinel returns but preserves the guarded body calls
+0x004c4364,reviewed,high,Codex,904cc2b,recorded AI action loop bound compare swaps operands with faithful inverse branch
+0x00424c71,reviewed,medium,Codex,904cc2b,attacker combat damage differs by compare inversions imul operand swaps and card-instance address reordering
+0x00493e75,reviewed,medium,Codex,904cc2b,northern paladin uses shifted local result slots and inverted fizzle branches with paired target locals
+0x0054d619,reviewed,medium,Codex,904cc2b,world tile range drawing differs by shift encodings jump-table drift and equivalent tile array indexing
+0x00468800,reviewed,high,Codex,904cc2b,DIB pixel math swaps multiply operands and OR component load order with same packed color result
+0x004be570,reviewed,high,Codex,904cc2b,dialog box sprite bank row and column address terms are computed in opposite registers only
+0x00578c90,reviewed,high,Codex,904cc2b,font config loader only differs by alignment padding instructions
+0x0057c820,reviewed,high,Codex,904cc2b,PCX page loader wrapper only differs by alignment padding instructions
+0x00476ddc,reviewed,medium,Codex,904cc2b,granite gargoyle differs by return local materialization fizzle branch inversion and equivalent AI modifier sign arithmetic
+0x00436525,reviewed,high,Codex,904cc2b,giant turtle affected-card/controller and current-player compares swap operands only
+0x00549002,needs-work,high,Codex,904cc2b,adventure stats menu has unresolved draw calls and g_statwin_data versus duel-rules-table data target mismatch
+0x004509c9,reviewed,medium,Codex,904cc2b,duel display cache rebuild reorders active-card and multiblock target address calculations equivalently
+0x00572448,reviewed,high,Codex,904cc2b,special counter icon rect geometry uses commuted adds and imul operands with jump drift
+0x00531698,reviewed,high,Codex,904cc2b,wiseman town substitution loop compares town choice globals with swapped operands and faithful branches
+0x004cb395,reviewed,medium,Codex,904cc2b,spell chain target update uses equivalent pair-copy address math and loop compare inversion
+0x00412c37,reviewed,medium,Codex,904cc2b,text menu core hotkey test collapses masked xor compare into equivalent test with branch drift
+0x005678fa,needs-work,high,Codex,904cc2b,WVL decode reads font-init globals where recomp reads dither-kernel globals near color-depth handling
+0x004862c0,reviewed,high,Codex,904cc2b,card color after hacks only reorders player/card instance address calculation
+0x0042c3ae,needs-work,high,Codex,904cc2b,assembly worker has literal argument mismatch and swaps stored card-instance fields 268 and 272
+0x00488474,reviewed,medium,Codex,904cc2b,tawnos coffin phase-in guard reshapes sentinel returns but preserves the guarded body calls
+0x004038a8,reviewed,high,Codex,904cc2b,stop-phase prompt compares previous phase/player globals with swapped operands and faithful branches
+0x004084f7,needs-work,high,Codex,904cc2b,cleanup phase has AI callback table mismatch 0x59423c versus 0x54a044
+0x00579400,reviewed,high,Codex,904cc2b,graphics page present wrapper only differs by unused ebx save removal and alignment padding
+0x00520f7d,needs-work,high,Codex,904cc2b,bottle of suleiman omits original has_mana activation check path in compact diff
+0x00485308,reviewed,high,Codex,904cc2b,ante drawn card swaps ante-array index terms and active-player compare operands
+0x00499ae9,reviewed,medium,Codex,904cc2b,lord of atlantis differs by branch displacement and equivalent zero-return fallthrough shaping
+0x004e4fa0,needs-work,high,Codex,904cc2b,creature ability aura checks card-on-stack globals where original checks affected-card globals
+0x00466a34,reviewed,medium,Codex,904cc2b,duel child restack loop rewrites increment placement and stack-array address with same windows
+0x00494312,reviewed,medium,Codex,904cc2b,royal assassin uses shifted local result slots and inverted fizzle branches with paired target locals
+0x0049deff,reviewed,medium,Codex,904cc2b,wall of dust swaps local slots and preserves signed target-player byte checks through movsx
+0x0056434a,reviewed,high,Codex,904cc2b,Huffman init loop compare is inverted and bit-remainder boolean materialization is equivalent
+0x0048f983,reviewed,medium,Codex,904cc2b,nightmare uses an extra temp slot for selected card state writes without changing target addresses
+0x0046277f,reviewed,high,Codex,904cc2b,hidden descendant counter only reorders tree-index address calculations
+0x00455b59,needs-work,high,Codex,904cc2b,copper tablet writes card-instance offset 40 where original writes offset 56
+0x00440388,reviewed,medium,Codex,904cc2b,syphon soul card-instance address terms are evaluated in opposite order with same fields
+0x00410cb8,reviewed,medium,Codex,904cc2b,can-stop phase branches are reshaped around equivalent local boolean result assignments
+0x0046bbe0,reviewed,medium,Codex,904cc2b,response-card chooser swaps current-turn compares and card-instance address term order only
+0x005701e5,needs-work,medium,Codex,904cc2b,full-card special effect renderer has unresolved title/rules buffer offsets and stack-buffer drift
+0x0049affe,reviewed,medium,Codex,904cc2b,force of nature upkeep checks swap affected-card/controller operands and preserve return fallthrough
+0x00578b77,reviewed,high,Codex,904cc2b,card-window displayed id uses swapped temp slots before returning the same value
+0x0098a2b5,reviewed,high,Codex,904cc2b,RpBits decoder reset only differs by loop target address rebasing
+0x0040fd9f,reviewed,medium,Codex,904cc2b,top-of-stack resolution consistently swaps paired player/card local slots through target address math
+0x004a0403,reviewed,medium,Codex,904cc2b,artifact sacrifice helper rewrites failed-selection early return around the same success path
+0x00578af3,reviewed,high,Codex,904cc2b,card-window id comparison uses swapped temp slots and compare operands only
+0x00441bf9,reviewed,medium,Codex,904cc2b,license registry initialization uses named blank string buffers equivalent to original literals
+0x004e5502,reviewed,high,Codex,904cc2b,weakness affected-controller compare swaps operands with faithful branch
+0x0048686a,reviewed,high,Codex,904cc2b,artifact creature damage availability only reorders player/card instance address calculation
+0x004c83bb,reviewed,high,Codex,904cc2b,INI line trim loop uses equivalent newline boolean materialization and local negation simplification
+0x00573589,reviewed,medium,Codex,904cc2b,cant-target overlay rect uses shifted rect local slots with the same intersection tests
+0x004cb522,reviewed,medium,Codex,904cc2b,phase-display layout reorders small-card geometry additions and inverts bounds compares faithfully
+0x004b3f6b,reviewed,high,Codex,904cc2b,lightning bolt affected-card/controller compares swap operands only
+0x0045bf15,reviewed,high,Codex,904cc2b,urza chalice upkeep comparisons swap operands with faithful branch drift
+0x0051323c,needs-work,high,Codex,904cc2b,urza avenger has format-string spacing and card-instance power/toughness offset mismatches
+0x004472bb,reviewed,medium,Codex,904cc2b,balance loop increments and min/max compares are reshaped with equivalent local value flow
+0x004ec5d7,needs-work,high,Codex,904cc2b,tapped permanent AI checks different card-instance state bytes and masks including 0x40 versus 0x04
+0x004f7fb9,reviewed,medium,Codex,904cc2b,terrain value calculation swaps two accumulator locals while preserving all arithmetic uses
+0x00415c7c,reviewed,medium,Codex,904cc2b,mana payment prompt formatting uses equivalent stack-buffer offsets and range compare forms
+0x0057e970,needs-work,medium,Codex,904cc2b,CRT startup still has unresolved runtime data and call offsets needing offset-addressed verification
+0x0040d572,needs-work,high,Codex,904cc2b,AI decision search calls reset timer stub and omits original hide/show cursor sprite block
+0x00410f46,reviewed,medium,Codex,904cc2b,trigger dispatch reshapes loop exits and boolean mask materialization without changing tested flags
+0x00533ccd,reviewed,medium,Codex,904cc2b,deck analysis report uses shifted category arrays and equivalent rarity dispatch/index arithmetic
+0x004d6d23,needs-work,high,Codex,904cc2b,power leak swaps target fields and tests card-instance offsets 8/56 differently
+0x00571fcf,reviewed,high,Codex,904cc2b,damage overlay rect uses alternate divide registers with the same source dimensions
+0x00452efb,reviewed,high,Codex,904cc2b,displayed-card mana-source flag only swaps temporary local slots
+0x004caead,reviewed,high,Codex,904cc2b,spell-chain entry removal reorders row/column address arithmetic only
+0x0040571e,needs-work,medium,Codex,904cc2b,main phase is too large with broad control-flow and selected-card address rewrites for compact review
+0x00445256,reviewed,high,Codex,904cc2b,dungeon distance marker swaps grid row/column address terms only
+0x0056709e,reviewed,medium,Codex,904cc2b,YUV conversion uses equivalent edge-selection boolean arithmetic with expected shift-encoding drift
+0x00523f5c,reviewed,medium,Codex,904cc2b,rarity CSV expansion mask parser swaps result local slots through equivalent switch cases
+0x004252e8,reviewed,medium,Codex,904cc2b,blocker combat damage differs by compare inversions imul operand swaps and address reordering
+0x0047d1d2,reviewed,high,Codex,904cc2b,sedge troll affected-card/controller and mana-demand address terms are operand-reordered
+0x00478b53,needs-work,medium,Codex,904cc2b,khabal ghoul moves add-special-counters call across hidden context and needs source-level flow proof
+0x005745bc,needs-work,high,Codex,904cc2b,card window proc has concrete message/argument drift including push 0xd versus 0xf
+0x00492155,needs-work,medium,Codex,904cc2b,killer bees has broad activated-ability branch drift and linked-card field rewrites needing proof
+0x00434213,reviewed,high,Codex,904cc2b,coal golem only reorders card-instance address terms around equivalent checks
+0x00550e30,needs-work,high,Codex,904cc2b,mana summary wndproc reads and pushes different globals including g_main_window_hwnd versus original duel window hwnd
+0x004310e8,reviewed,high,Codex,904cc2b,text line width swaps source pointer and width accumulator stack slots with same strlen loop result
+0x0052234e,reviewed,high,Codex,904cc2b,initial-library draw reorders library index address math and swaps g_card_count bound compare operands
+0x00456897,needs-work,medium,Codex,904cc2b,gauntlet of might calls undeclare_mana_available_and_produce_it where original calls produce_mana
+0x00492a1e,needs-work,high,Codex,904cc2b,wall of water has broad activated-ability drift and concrete card-instance field offset swaps
+0x0051be77,reviewed,medium,Codex,904cc2b,pending damage redirect swaps nested player/card loop locals while preserving target damage flow
+0x00432dff,reviewed,medium,Codex,904cc2b,relic barrier copies target player/card pair through shifted stack slots with equivalent fizzle branch shape
+0x0043e33a,reviewed,high,Codex,904cc2b,holy light only reorders card-instance address terms around affected-card checks
+0x0044157b,reviewed,high,Codex,904cc2b,mana availability update only reorders mana-pool array address terms
+0x004c42ae,reviewed,high,Codex,904cc2b,recorded action load computes g_recorded_action_count plus parameter in opposite operand order
+0x00559cc3,reviewed,medium,Codex,904cc2b,mpstime timer init materializes handle and file-size booleans differently with equivalent branches
+0x00578c40,reviewed,high,Codex,904cc2b,show mouse cursor wrapper only differs by alignment padding
+0x00578c50,reviewed,high,Codex,904cc2b,hide mouse cursor wrapper only differs by alignment padding
+0x0057e930,reviewed,medium,Codex,904cc2b,offset-addressed diff shows _atexit calls adjacent CRT onexit helper at 0x0057e890 matching recomp __onexit call
+0x0042e606,reviewed,high,Codex,904cc2b,octree bit table init differs only by shift encoding and commutative test operands
+0x004de7f8,needs-work,high,Codex,904cc2b,blessing has multiple concrete card-instance field and AI modifier mismatches
+0x0049a1eb,needs-work,high,Codex,904cc2b,scavenging ghoul pushes fixed event literals where original forwards the event parameter
+0x00459437,needs-work,medium,Codex,904cc2b,rakalite has a zero versus seven mana argument and broad target branch drift
+0x0051dd8d,needs-work,high,Codex,904cc2b,aladdin ring uses global-cost mana helpers where original calls has_mana and charge_mana with fixed cost
+0x0057b7a0,reviewed,high,Codex,904cc2b,sprite entry pointer reader only swaps limit compare operands and output pointer temp slots
+0x0040f165,needs-work,high,Codex,904cc2b,stack proxy refresh reads target card fields 272 and 268 where recomp uses id and owner fields
+0x0043b476,reviewed,high,Codex,904cc2b,water wurm affected-card and controller compares only swap operands
+0x004882b5,reviewed,high,Codex,904cc2b,urza land type count only reorders player/card address calculation
+0x004a84c7,reviewed,medium,Codex,904cc2b,blinking caret swaps bound-compare operands and inverts equivalent space versus character branch
+0x0044139c,reviewed,medium,Codex,904cc2b,mana availability hex loop differs by equivalent branch inversions and increment placement
+0x004fc825,reviewed,high,Codex,904cc2b,haunting wind only reorders card-instance address terms
+0x0057b670,reviewed,high,Codex,904cc2b,sprite encode finalizer uses direct global-base subtraction with only unused ebx save drift
+0x00497962,needs-work,high,Codex,904cc2b,el hajjaj repeatedly uses card-instance offset 76 where recomp uses offset 56
+0x00572606,needs-work,medium,Codex,904cc2b,standard counter drawing has broad layout-local drift including mismatched imul source slots
+0x004dab86,reviewed,high,Codex,904cc2b,lifetap affected-card and controller compares only swap operands
+0x004b8014,reviewed,high,Codex,904cc2b,dark ritual affected-card and controller compares only swap operands
+0x0049c6b1,reviewed,medium,Codex,904cc2b,aura color destroyer swaps player/card loop locals while preserving pair-address value flow
+0x004608d2,needs-work,medium,Codex,904cc2b,attack phase layout is large with broad local drift including a zero argument replacing an original local
+0x00566fa1,reviewed,medium,Codex,904cc2b,Haar half combine swaps sum-diff temporaries and uses equivalent subtraction with shift-encoding drift
+0x004e2723,needs-work,high,Codex,904cc2b,smoke has prompt string versus zero argument drift and broad card-field rewrites
+0x00403818,reviewed,high,Codex,904cc2b,phase stop setting lookup only reorders current-player and phase index address calculation
+0x0055b6af,reviewed,medium,Codex,904cc2b,phase-display hit testing repeatedly emits POINT stack arguments through equivalent struct loads
+0x00566ae7,needs-work,medium,Codex,904cc2b,BGR rect copy calls CopyBytes where original calls CopyBytesAsmCompat and helper equivalence needs proof
+0x00558828,reviewed,high,Codex,904cc2b,arena network choice only swaps active-player compare operands and uses named packet globals
+0x00524172,reviewed,medium,Codex,904cc2b,rarity expansion parser rewrites digit range branches with equivalent bounds and accumulation
+0x004392a0,reviewed,medium,Codex,904cc2b,scavenger folk target pair is copied through shifted stack slots with equivalent fizzle branch shape
+0x00441b96,reviewed,high,Codex,904cc2b,bit reversal differs by commutative test operands and shift instruction encoding
+0x00507a50,needs-work,high,Codex,904cc2b,offset-addressed select-card diff exposes string stack-table and dungeon-card-effect address mismatches
+0x004e79b0,needs-work,high,Codex,904cc2b,warp artifact has card-state offset 56 versus 8 mismatches and AI modifier control-flow drift
+0x00475df0,needs-work,high,Codex,904cc2b,erhnam djinn has concrete card-instance field mismatches including offsets 52 versus 14 and 92 versus 112
+0x0042e5a2,reviewed,high,Codex,904cc2b,RGB path-byte builder only reorders red green and blue table lookups before the same OR accumulation
+0x00436655,reviewed,medium,Codex,904cc2b,goblin digging team target pair is copied through shifted stack slots with equivalent fizzle branch shape
+0x00490f6c,reviewed,high,Codex,904cc2b,uthden troll only reorders card-instance address terms
+0x00438047,needs-work,high,Codex,904cc2b,mold demon changes visible format string spacing and has broad prompt/control-flow drift
+0x00491883,needs-work,high,Codex,904cc2b,frozen shade has X-cost branch drift plus concrete card-instance target field swaps
+0x0040a4b8,reviewed,high,Codex,904cc2b,discard from hand only reorders player/card instance address calculation
+0x00421758,reviewed,high,Codex,904cc2b,AI block assignment enumeration only swaps compare operands and attacker loop address terms
+0x00434305,reviewed,medium,Codex,904cc2b,d avenant archer target pair is copied through shifted stack slots with equivalent fizzle branch shape
+0x004e49ba,reviewed,medium,Codex,904cc2b,greed AI modifier algebra negates then subtracts in original and directly adds the same amount in recomp
+0x004e52db,reviewed,high,Codex,904cc2b,holy strength affected-card and controller compares only swap operands
+0x00402ad0,reviewed,medium,Codex,904cc2b,shatterstorm swaps nested player/card loop locals while preserving destroy checks and kill calls
+0x00448939,reviewed,medium,Codex,904cc2b,tranquility swaps nested player/card loop locals while preserving destroy checks and kill calls
+0x0044e84e,reviewed,medium,Codex,904cc2b,wrath of god swaps nested player/card loop locals while preserving destroy checks and kill calls
+0x0043a19e,needs-work,medium,Codex,904cc2b,wall of opposition is a large X-cost target flow diff with broad fizzle and AI modifier drift
+0x00578bda,reviewed,medium,Codex,904cc2b,card hidden flag uses literal offset 8 matching g_cardclass_hidden_parent_window_long_offset initialization
+0x0048e853,needs-work,medium,Codex,904cc2b,dragon whelp has broad X-cost control-flow drift and threshold branch reshaping needing source proof
+0x0043da66,needs-work,medium,Codex,904cc2b,divine offering target flow has branch drift and apparent call argument or stack cleanup mismatch
+0x004093d0,needs-work,medium,Codex,904cc2b,player directive class registration reads original data at 0x57f000 where recomp hardcodes zero
+0x004c6961,needs-work,medium,Codex,904cc2b,big card class registration reads original data at 0x57f0b4 where recomp hardcodes 0x14
+0x00519a3d,needs-work,high,Codex,904cc2b,soul net checks different event and card-instance flag offsets and uses global-cost mana helpers
+0x0043d2cc,reviewed,high,Codex,904cc2b,lifeblood only swaps affected-controller comparisons and rewrites equivalent AI modifier arithmetic
+0x00566cea,needs-work,high,Codex,904cc2b,CopyBytesAsmCompat recomp omits original zero-qword-count guard before the qword copy loop
+0x0056c574,reviewed,high,Codex,904cc2b,put-on-top-of-deck only reorders library row and slot address terms
+0x00498e8a,reviewed,medium,Codex,904cc2b,damage target selection stores target pair through equivalent reordered card-instance address math
+0x0057d850,reviewed,medium,Codex,904cc2b,PCX header reader uses equivalent byte equality boolean materialization and register allocation
+0x004af7ac,reviewed,medium,Codex,904cc2b,damage legacy uses swapped player/card locals and equivalent owner/card comparisons through the damage loop
+0x00480f45,needs-work,high,Codex,904cc2b,army of allah pump tests card state bit 0x04 where recomp tests 0x02
+0x00434a1e,reviewed,high,Codex,904cc2b,elves of deep shadow affected-card and controller compares only swap operands
+0x0040541e,reviewed,medium,Codex,904cc2b,draw phase differs by compare operand swaps and reordered draw-card address calculations
+0x0041d33b,needs-work,high,Codex,904cc2b,AI combat ability setup tests card-instance offset 10 mask 0x03 where recomp tests offset 8 mask 0x30
+0x00474721,reviewed,medium,Codex,904cc2b,cuombajj witches auto target swaps scoring locals and loop index slots while preserving score comparisons
+0x0051e01b,needs-work,high,Codex,904cc2b,rod of ruin checks event 0xc7 instead of original 0x6c and uses global-cost mana helpers plus target field swaps
+0x00403615,reviewed,medium,Codex,904cc2b,phase stop eligibility differs by switch jump drift and compare operand swaps only
+0x00431e7a,reviewed,medium,Codex,904cc2b,barls cage target pair is copied through shifted stack slots with equivalent fizzle branch shape
+0x004a5d72,needs-work,medium,Codex,904cc2b,duel interface registry parser has broad branch drift and direct phase-flag stores where original masks existing flags
+0x00578e80,needs-work,medium,Codex,904cc2b,graphics initialization palette loop appears shifted and needs source-level proof before accepting
+0x0045398b,reviewed,high,Codex,904cc2b,displayed-card snapshot copy only reorders player/card instance address calculation
+0x0051baa5,needs-work,high,Codex,904cc2b,jade monolith checks event 0xc7 instead of original 0x6c and has effect-call stack cleanup drift
+0x00454350,needs-work,medium,Codex,904cc2b,palette class registration reads original data constant where recomp hardcodes cbWndExtra 4
+0x005638b0,needs-work,medium,Codex,904cc2b,icon button class registration reads original data constant where recomp hardcodes cbWndExtra 8
+0x00431920,needs-work,high,Codex,904cc2b,alchors tomb has prompt literal 0x1047 versus 0x11047 and missing record/replay action call shape
+0x0043f890,reviewed,high,Codex,904cc2b,cleanse only swaps nested player/card address calculations
+0x0049f31f,reviewed,high,Codex,904cc2b,permanent type scan only swaps player/card address calculation order
+0x004abf34,reviewed,medium,Codex,904cc2b,asp sting differs by affected-card compare swaps and reordered card-instance address terms
+0x0046a7c0,needs-work,high,Codex,904cc2b,response action processing has concrete state initialization and branch/value drift beyond cmp swaps
+0x0050d837,needs-work,high,Codex,904cc2b,graveyard window procedure has concrete argument and message literal drift including push 0 versus 4 and 0x116 versus 0x117
+0x004f9e49,needs-work,high,Codex,904cc2b,cyclone prompt text and upkeep loop structure differ visibly and need source-level repair
+0x004dd9ef,needs-work,high,Codex,904cc2b,holy armor has broad event flow drift and concrete card-instance field mismatches
+0x004c501b,reviewed,medium,Codex,904cc2b,AI gamestate opinion differs by repeated player/card address swaps and equivalent comparison inversions
+0x004c882b,needs-work,medium,Codex,904cc2b,LoadPicFile padding calculation shows original division remainder path versus recomp bit-mask path
+0x0056a05a,reviewed,medium,Codex,904cc2b,mulligan restore loop differs by reordered library and card-instance address calculations
+0x00498baa,reviewed,high,Codex,904cc2b,prodigal sorcerer uses a return-value stack temp and pointer temp while preserving compare and state-bit behavior
+0x0057129f,needs-work,medium,Codex,904cc2b,activation small-card draw has shifted local layout initialization and unresolved offset-table setup
+0x0057dd90,reviewed,medium,Codex,904cc2b,export encoded image differs by saved-ebx stack parameter offsets while palette branch and EncodeRpBitsImage arguments stay paired
+0x0056c4f7,reviewed,medium,Codex,904cc2b,bottom-of-library insert has equivalent scan and store side effects with only loop-shape and void return-residue drift
+0x0046e159,reviewed,high,Codex,904cc2b,attachment clear repeatedly swaps paired player/card local address calculations only
+0x005530c4,needs-work,high,Codex,904cc2b,bazaar of baghdad has broad activated-flow drift including produced-mana state and discard path mismatches
+0x004ceb62,needs-work,high,Codex,904cc2b,island sanctuary uses card-instance offset 72 where original uses 76 in sanctuary state checks and updates
+0x005796c0,reviewed,medium,Codex,904cc2b,graphics line color conversion uses equivalent negative-color branch and palette byte composition with reordered temporaries
+0x00415794,reviewed,medium,Codex,904cc2b,variable mana autopay swaps color and slot locals and uses equivalent word extraction from mana conversion table
+0x0046d022,reviewed,medium,Codex,904cc2b,available card action differs by repeated player/card address-order rewrites and compare operand swaps only in reviewed hunks
+0x0044aaee,needs-work,high,Codex,904cc2b,fireball has broad split-target flow drift and concrete target-selection prompt argument 0x20 versus 0xff
+0x0048c465,needs-work,high,Codex,904cc2b,giant tortoise tests card-state bit 0x10 with jne where recomp tests bit 0x08 with je
+0x005778f0,reviewed,high,Codex,904cc2b,card window action request matching only swaps hwnd and request-field compare operands with faithful branches
+0x0043e64b,reviewed,high,Codex,904cc2b,shield wall only reorders player/card address calculations
+0x0045309c,reviewed,high,Codex,904cc2b,displayed-card target test only reorders player/card address calculation
+0x00506f72,reviewed,medium,Codex,904cc2b,battlefield layout reset folds constant stack temps to literals and has expected sar encoding drift
+0x0049e35e,needs-work,high,Codex,904cc2b,apprentice wizard compact diff drops original has_mana path and has broad event-flow drift
+0x00426ddf,reviewed,high,Codex,904cc2b,face directive action check uses named globals corresponding to action-request fields 224 and 228
+0x0051fd11,needs-work,high,Codex,904cc2b,helm of chatzuk checks event 0xc7 instead of original 0x6c and writes card-instance offset 24 instead of 40
+0x0049fb64,needs-work,high,Codex,904cc2b,creature sacrifice choice tests card-instance byte offset 9 where original tests offset 10 and has broad selection-flow drift
+0x0041f5e3,needs-work,medium,Codex,904cc2b,attacker AI diff is large with unresolved callback table addresses and swapped stack arrays needing source-level proof
+0x0042f208,needs-work,medium,Codex,904cc2b,error diffusion table init embeds different Palette.c source-path string despite mechanical index arithmetic
+0x0046cf00,reviewed,high,Codex,904cc2b,lethal-damage cleanup only reorders nested player/card address calculations
+0x0049a36e,needs-work,high,Codex,904cc2b,sengir vampire repeatedly uses owner/id and byte counter fields where original uses target and dword counter fields
+0x0051159c,reviewed,medium,Codex,904cc2b,mishras war machine upkeep target logic differs by reordered player/card address calculations and paired target locals
+0x00457a60,needs-work,high,Codex,904cc2b,jandors ring pushes mana argument 0 where original pushes 7
+0x0047d2b6,reviewed,medium,Codex,904cc2b,serendib djinn reshapes event-result branches and swaps local slots while preserving comparisons and land-choice flow
+0x00487ce0,reviewed,medium,Codex,904cc2b,AI land sacrifice selection uses shifted score locals and equivalent min/max and direction-loop control
+0x0043fefe,needs-work,high,Codex,904cc2b,jovial evil pushes dynamic opponent expression where original pushes fixed player value 2 and has broad target-flow drift
+0x004a9910,reviewed,medium,Codex,904cc2b,legacy effect creation repeatedly swaps source card player/card address terms with equivalent field copies
+0x0056ba7d,reviewed,medium,Codex,904cc2b,attack rating differs by card address reorderings sar encoding drift and equivalent signed divide-by-eight setup
+0x00578cc0,needs-work,medium,Codex,904cc2b,default graphics initialization has shifted palette-entry initialization loop like InitializeGraphicsSystem and needs proof before accepting
+0x00449888,reviewed,medium,Codex,904cc2b,tsunami swaps nested player/card loop locals and push temporaries while preserving destroy-island calls
+0x004624cf,reviewed,medium,Codex,904cc2b,attack-phase card-window search swaps loop index and card-window array address terms with faithful bounds branches
+0x0057b6a0,reviewed,high,Codex,904cc2b,free sprite blob only differs by unused ebx save and alignment nop
+0x0049da3f,reviewed,medium,Codex,904cc2b,thicket basilisk uses shifted target locals and equivalent blocker/death-trigger selection flow
+0x004b6d67,needs-work,high,Codex,904cc2b,power sink uses current-player where original uses active-player and writes mana_charge slot 6 where original writes slot 0
+0x0045200d,reviewed,high,Codex,904cc2b,displayed-card special counter accessor only reorders player/card address calculation
+0x004522d8,reviewed,high,Codex,904cc2b,displayed-card damage accessor only reorders player/card address calculation
+0x004529df,reviewed,high,Codex,904cc2b,displayed-card power accessor only reorders player/card address calculation
+0x00452bd4,reviewed,high,Codex,904cc2b,displayed-card color flags accessor only reorders player/card address calculation
+0x004536c3,reviewed,high,Codex,904cc2b,displayed-card kill code accessor only reorders player/card address calculation
+0x0042e1e2,reviewed,medium,Codex,904cc2b,diff-squared lookup init swaps index and diff locals while preserving table fill formula
+0x00429f9e,needs-work,medium,Codex,904cc2b,gem bazaar has broad control-flow drift with hidden mana-color field updates needing source-level proof
+0x00404969,needs-work,high,Codex,904cc2b,untap phase has stop-phase state writes and target-selection control flow that differ beyond compare swaps
+0x00498786,needs-work,high,Codex,904cc2b,crimson manticore adds AI mana-demand block and changes prompt and target-player arguments
+0x00569f2e,reviewed,medium,Codex,904cc2b,opening hand land counts swaps land and nonland counters with equivalent range tests
+0x00579240,reviewed,medium,Codex,904cc2b,free graphics page uses equivalent range boolean materialization and page-slot pointer reordering
+0x004c9097,needs-work,high,Codex,904cc2b,spell-chain wndproc has concrete message literal drift including 0x18 versus 0x20 and 0x20 versus 0x37
+0x0047444f,needs-work,high,Codex,904cc2b,cuombajj witches pushes fixed event 0x72 where original forwards event parameter and has target-field drift
+0x00518a81,needs-work,high,Codex,904cc2b,lucky charm helper uses global-cost mana helper with colorless argument 0 where original uses fixed has_mana color 7
+0x0045659d,needs-work,medium,Codex,904cc2b,cyclopean tomb AI land selector has broad branch drift and suspicious land-type comparison reshaping
+0x00555e68,reviewed,medium,Codex,904cc2b,badlands only reorders player/card address arithmetic before the same dual-land helper call
+0x00555f48,reviewed,medium,Codex,904cc2b,plateau only reorders player/card address arithmetic before the same dual-land helper call
+0x00556028,reviewed,medium,Codex,904cc2b,scrubland only reorders player/card address arithmetic before the same dual-land helper call
+0x00556258,reviewed,medium,Codex,904cc2b,volcanic island only reorders player/card address arithmetic before the same dual-land helper call
+0x0040c602,needs-work,medium,Codex,904cc2b,human blocker selection has broad target-selection and blocking-field drift needing stronger proof
+0x00570cbe,reviewed,medium,Codex,904cc2b,special-effect small-card draw differs by named offsets stack-field positions and equivalent display-flag locals
+0x005242ad,reviewed,medium,Codex,904cc2b,rarity integer parser swaps result and negative-flag locals with equivalent negation and clamp paths
+0x00453ac9,reviewed,medium,Codex,904cc2b,cached exile copy uses explicit branch where original has branchless player pointer select
+0x0040cde5,reviewed,medium,Codex,904cc2b,attacker-count scan only reorders player/card address arithmetic inside equivalent in-play tests
+0x004170f8,reviewed,medium,Codex,904cc2b,mana payment record begin reorders depth and color index address calculation in zeroing loop
+0x0057a4c0,reviewed,high,Codex,904cc2b,bitmap info free only differs by unused ebx save and alignment padding
+0x0057ae30,reviewed,high,Codex,904cc2b,font style size accessor only differs by named field offset and alignment padding
+0x0057e630,reviewed,medium,Codex,904cc2b,rpbits dictionary reset differs by register choice and moving -1 into a register before identical stores
+0x004723c1,needs-work,high,Codex,904cc2b,argivian blacksmith has broad targeting fizzle and damage-card field control-flow drift
+0x0051419a,reviewed,medium,Codex,904cc2b,celestial prism differs by repeated player/card address order and compare operand swaps
+0x0057a5f0,reviewed,medium,Codex,904cc2b,bitmap font loader anchors font-slot pointer at a different field but preserves field-relative operations
+0x004412ec,reviewed,medium,Codex,904cc2b,mana-available hex declaration uses break where original tracks a found flag for the first empty slot
+0x004829d8,needs-work,medium,Codex,904cc2b,control effect has large reordered gain-control branches that are not proven by compact diff
+0x00449791,reviewed,medium,Codex,904cc2b,armageddon swaps nested player/card loop locals while preserving land destruction scan
+0x004350e4,needs-work,high,Codex,904cc2b,exorcist hoists sleighted color mask where original recomputes it around target selection
+0x0043c89c,reviewed,medium,Codex,904cc2b,angelic voices swaps loop and result locals with equivalent creature scan and pump test
+0x0040d614,reviewed,medium,Codex,904cc2b,reassess all cards and mana uses pointer-plus-index locals instead of incremented player row pointers
+0x0040c1ef,reviewed,medium,Codex,904cc2b,activated ability resolution differs by stack-slot choices and equivalent early return/control branching
+0x0040877b,needs-work,high,Codex,904cc2b,end turn phase has broad cleanup drift including dynamic-card tests and active/other-player ordering
+0x00441699,reviewed,medium,Codex,904cc2b,has mana reorders mana table address arithmetic compares and commutative final additions
+0x0056cc4d,reviewed,medium,Codex,904cc2b,text-section loader swaps line and output index locals with equivalent escaped-newline copy loop
+0x0050014e,reviewed,medium,Codex,904cc2b,menu-control context append swaps count and loop locals with equivalent context-array addressing
+0x00477c68,reviewed,medium,Codex,904cc2b,hasran ogress differs by repeated player/card address order and compare operand swaps
+0x004ec2be,reviewed,medium,Codex,904cc2b,deathgrip differs by affected-card compare order and repeated player/card address arithmetic order
+0x004fbb9f,reviewed,medium,Codex,904cc2b,fastbond preserves phase and land-count ranges using opposite boundary encodings plus address reorder
+0x0043e500,reviewed,medium,Codex,904cc2b,riptide swaps color-mask and loop locals while preserving scan and pump condition
+0x00470f7a,needs-work,high,Codex,904cc2b,aladdin has broad activation and control-gain target rewrites beyond compact-diff proof
+0x0047964f,needs-work,high,Codex,904cc2b,nettling imp has broad activation target fizzle and forced-attack state-flow drift
+0x0047d940,needs-work,high,Codex,904cc2b,singing tree changes can-activate state-bit test and has broad target resolution drift
+0x004b47b1,reviewed,medium,Codex,904cc2b,sandstorm preserves cast window checks with inverted branches and named damage callback offset
+0x0057dd30,reviewed,high,Codex,904cc2b,graphics page export only differs by esi/edi choice unused ebx save and alignment padding
+0x0057a340,reviewed,medium,Codex,904cc2b,rpbits palette writer differs by stack buffer offset from saved ebx and equivalent byte-copy registers
+0x00473c2e,needs-work,high,Codex,904cc2b,clone has large copy/kill/control-flow drift including concrete copied-card field mismatch
+0x0046c0c8,reviewed,medium,Codex,904cc2b,response-action type helper differs by repeated card-instance address order and compare operand swaps
+0x00432260,reviewed,medium,Codex,904cc2b,bone flute only reorders player/card address arithmetic in tap and activation paths
+0x004cfa1d,needs-work,medium,Codex,904cc2b,sylvan library has broad draw-choice and life-loss bookkeeping drift that compact diff cannot prove
+0x0048cc8c,needs-work,high,Codex,904cc2b,ali from cairo changes prompt section keys and has broad prevention target-flow drift
+0x0040b7b2,needs-work,high,Codex,904cc2b,activate has large stack and control-flow drift plus inverted boolean arguments near extra-ability handling
+0x0044e0b0,needs-work,medium,Codex,904cc2b,mind bomb has broad hand-choice stack layout drift and player iteration reshaping needing proof
+0x00474f5d,needs-work,high,Codex,904cc2b,desert nomads changes landwalk scan structure and broad affected-card prevention paths
+0x0040421c,needs-work,high,Codex,904cc2b,init turn widens byte field copies to dword stores and has broad phase-stop rewrite
+0x005222ae,reviewed,medium,Codex,904cc2b,initial library clear/load uses equivalent card/count clearing with address arithmetic reordered
+0x004764bc,reviewed,medium,Codex,904cc2b,gaea avenger only reorders active-player card scan address arithmetic
+0x004a3232,needs-work,medium,Codex,904cc2b,blaze of glory has broad target storage and fizzle path drift needing stronger proof
+0x00403381,needs-work,medium,Codex,904cc2b,phase-skip helper has broad early-return and stop-phase control-flow reshaping beyond compare swaps
+0x00403c34,needs-work,high,Codex,904cc2b,stop action prompt writes stop-phase globals from player globals in original but recomp writes -1 and reshapes target-selection status flow
+0x004e80b1,needs-work,high,Codex,904cc2b,power struggle has broad random-selection and fizzle/control bookkeeping drift beyond compact-diff proof
+0x0048c204,reviewed,medium,Codex,904cc2b,damage-effect copy swaps new effect player/card locals while preserving straight field-copy sequence
+0x00459be7,needs-work,high,Codex,904cc2b,rocket launcher changes mana color argument from 7 to 0 and forwards fixed event 0x72 instead of event parameter
+0x0050706e,reviewed,medium,Codex,904cc2b,battlefield card positioning swaps coordinate/local slots with equivalent window-side branches and shift encodings
+0x0041c0c4,reviewed,medium,Codex,904cc2b,whimsy candidate builder swaps player/card/count locals while preserving candidate pair writes
+0x004b50c0,needs-work,high,Codex,904cc2b,magical hack has broad target and color-selection control-flow drift with extra shift masking and fizzle movement
+0x0044e4ed,reviewed,medium,Codex,904cc2b,graveyard highest-value search swaps owner/index/best locals with equivalent score comparison
+0x0048f64a,needs-work,high,Codex,904cc2b,whirling dervish omits original event-result-preserved green-aura cleanup block and reshapes counter path
+0x00453e40,needs-work,high,Codex,904cc2b,current duel selection helper returns constant zero instead of reading protected selection flag
+0x0049bf0e,reviewed,medium,Codex,904cc2b,other-creature scan replaces found flag with early return while preserving current-card exclusion
+0x004547d0,needs-work,high,Codex,904cc2b,ashnod altar tests state bit 0x20 where original tests 0x10 and has target/fizzle drift
+0x004b2a22,needs-work,medium,Codex,904cc2b,swords to plowshares has broad target storage and fizzle-path reshaping needing stronger proof
+0x00518d54,reviewed,medium,Codex,904cc2b,ankh of mishra only reorders affected-card compares and player/card address arithmetic
+0x004aace7,needs-work,high,Codex,904cc2b,damage effect routine has extensive prevention/control-flow reshaping and hidden blocks beyond compact-diff proof
+0x004dadbe,reviewed,medium,Codex,904cc2b,sunken city preserves upkeep and affected-card checks with compare and player/card address reordering
+0x0057b710,reviewed,high,Codex,904cc2b,sprite entry pointer reader only swaps ebx/edi roles and named rb string offset
+0x004f82f2,reviewed,medium,Codex,904cc2b,animated noise bilinear sample swaps interpolation locals while preserving weighted sum formula
+0x004d0cc6,reviewed,medium,Codex,904cc2b,gloom preserves basic-land count cost addition with compare-order and lea-form differences
+0x004765fe,reviewed,medium,Codex,904cc2b,ghazban ogre differs by compare operand order and repeated player/card address arithmetic only
+0x0040f77c,needs-work,medium,Codex,904cc2b,push card onto stack has broad card-instance copy drift including reordered state and field writes needing proof
+0x0042d474,reviewed,medium,Codex,904cc2b,attached-aura cleanup worker only reorders player/card address arithmetic
+0x00499f04,reviewed,medium,Codex,904cc2b,psionic entity differs by repeated target player/card address calculations with equivalent damage target field use
+0x00419e85,reviewed,medium,Codex,904cc2b,aswan jaguar legacy creation only reorders generated-effect address arithmetic and field stores
+0x00419dc4,needs-work,high,Codex,904cc2b,aswan jaguar library scan returns raw-card abilities where original reads raw-card subtype
+0x00417301,reviewed,medium,Codex,904cc2b,global-cost mana charge helper only swaps player/card address arithmetic for card instance fields
+0x00415fd7,needs-work,high,Codex,904cc2b,mana-source activation has broad stack and control-flow drift beyond compact-diff proof
+0x00491025,needs-work,high,Codex,904cc2b,vampire bats uses low-byte info_slot checks where original tests high-word activation count state
+0x0051ef70,needs-work,high,Codex,904cc2b,clockwork creature has broad activation flow drift including current-phase compare mismatch
+0x004faf62,needs-work,medium,Codex,904cc2b,earthbind has broad target storage and resolution-path reshaping needing stronger proof
+0x00452743,reviewed,high,Codex,904cc2b,displayed attachment getter only reorders displayed player/card address arithmetic inside the render lock
+0x00490c6d,reviewed,medium,Codex,904cc2b,regeneration helper preserves linked-card scan and reset writes with loop/address reshaping
+0x004fa491,reviewed,medium,Codex,904cc2b,damping field keeps artifact-count and untap-target logic with compare and address arithmetic reordering
+0x0052f9e0,reviewed,medium,Codex,904cc2b,rarity digit packer emits the five clamped shift/or terms in a different commutative order
+0x004a4784,needs-work,high,Codex,904cc2b,sewers of estark tests target state bit 0x10 where original tests bit 0x04 and reshapes legacy creation
+0x00407feb,reviewed,medium,Codex,904cc2b,discard phase preserves stop-phase and discard loop behavior with compare-order and local-slot changes
+0x004fde93,reviewed,medium,Codex,904cc2b,lich sacrifice helper swaps target/local slots while preserving sacrifice count and selection loop
+0x004ceae2,reviewed,high,Codex,904cc2b,cached card art destroyer calls the same three imported cleanup routines with thunk/name differences only
+0x0057c4c0,reviewed,medium,Codex,904cc2b,resampled centered image draw swaps width/height register roles while preserving aspect-fit branches
+0x004e303a,reviewed,medium,Codex,904cc2b,burrowing differs by affected-card compare order and player/card address arithmetic only
+0x0044fb16,reviewed,medium,Codex,904cc2b,stone rain target and resolve paths preserve land selection with equivalent ai-modifier arithmetic
+0x005218f3,reviewed,medium,Codex,904cc2b,pandoras box preserves bidirectional library scan and selected-creature handling with loop-shape changes
+0x0040ca0f,reviewed,high,Codex,904cc2b,legal-attacker scan only reorders player/card instance address arithmetic
+0x00556385,needs-work,high,Codex,904cc2b,scrollbar class destroyer unregisters the class while original deletes cached dc/bitmap objects
+0x0049f710,needs-work,high,Codex,904cc2b,remove special counters zeroes upper special-counter bytes where original preserves them
+0x00507933,reviewed,medium,Codex,904cc2b,hidden battlefield descendant count only swaps local slots in the recursive child-window scan
+0x00454a08,needs-work,high,Codex,904cc2b,ashnod transmogrant changes target-selection argument 3 to 4 and has broad activation drift
+0x0057da90,needs-work,medium,Codex,904cc2b,palette window proc has broad stack-layout and paint/update control-flow drift needing stronger proof
+0x0057a4e0,reviewed,medium,Codex,904cc2b,font collection loader uses equivalent rb/path constants and fread loop with register/local swaps
+0x00558aea,reviewed,medium,Codex,904cc2b,reassess all cards differs by repeated player/card loop address arithmetic only
+0x00453770,reviewed,high,Codex,904cc2b,opponent-name prefix copy updates destination parameter in place instead of a separate local pointer
+0x0050e749,needs-work,high,Codex,904cc2b,expanded graveyard window uses main-window hwnd where original uses duel-window hwnd and has broad layout drift
+0x004ae8b2,reviewed,medium,Codex,904cc2b,sirens call effect swaps target-player/current-card locals while preserving cleanup kill scan
+0x00459f70,needs-work,high,Codex,904cc2b,sandals of abdallah changes mana color/target arguments and has broad activation target drift
+0x004b45ba,needs-work,high,Codex,904cc2b,unsummon has broad target resolve drift including changed bounce-call argument setup
+0x0048d76b,needs-work,high,Codex,904cc2b,carrion ants changes mana color arguments from 7 to 0 and reshapes x-payment handling
+0x00416b1c,reviewed,medium,Codex,904cc2b,mana-source can-activate helper only reorders repeated player/card instance address arithmetic
+0x0055912c,needs-work,medium,Codex,904cc2b,color-count lands routine has broad initialization and scan reshaping needing stronger proof
+0x00435590,needs-work,medium,Codex,904cc2b,fallen angel has broad sacrifice target and pump-resolution reshaping beyond compact-diff proof
+0x0040fcdd,reviewed,high,Codex,904cc2b,stack damage target setup only swaps player/card local address arithmetic for stack entries
+0x0041040d,reviewed,high,Codex,904cc2b,top-card stack obliteration only reorders stack player/card address arithmetic
+0x00441539,reviewed,high,Codex,904cc2b,mana availability declaration preserves pool update with equivalent indexed address calculation
+0x00473a91,needs-work,high,Codex,904cc2b,citanul druid omits original state-bit test and rewrites trigger-controller comparison
+0x00578c20,reviewed,high,Codex,904cc2b,legacy mouse initialize stub differs only by alignment nops
+0x00578c30,reviewed,high,Codex,904cc2b,legacy mouse shutdown stub differs only by alignment nops
+0x00578c80,reviewed,high,Codex,904cc2b,font config load result stub differs only by alignment nops
+0x005553ee,reviewed,medium,Codex,904cc2b,urzas mine differs by repeated player/card address arithmetic only
+0x00555699,reviewed,medium,Codex,904cc2b,urzas tower differs by repeated player/card address arithmetic only
+0x0051032b,reviewed,medium,Codex,904cc2b,black vise preserves controller/damage math with local-slot and compare-shape differences
+0x004aded3,reviewed,medium,Codex,904cc2b,piggy effect only reorders repeated player/card address arithmetic
+0x00438471,needs-work,medium,Codex,904cc2b,pixie queen has broad target validation and activation-resolution reshaping needing stronger proof
+0x004d8911,needs-work,high,Codex,904cc2b,karma uses state field +8 where original tests and sets card-instance field +56
+0x0050027e,reviewed,medium,Codex,904cc2b,menu control renderer preserves indexed redraw loop with equivalent local compare and address arithmetic
+0x00512a01,reviewed,medium,Codex,904cc2b,tetravite creation helper only swaps player/card address arithmetic around counter removal and token setup
+0x00497258,reviewed,medium,Codex,904cc2b,verduran enchantress preserves enchantment-cast draw trigger with compare-order and library-loop reshaping
+0x004d3f22,reviewed,medium,Codex,904cc2b,control-aura source rewiring only reorders player/card address calculations and field writes
+0x0047ffee,reviewed,medium,Codex,904cc2b,veteran bodyguard preserves prevention checks with affected-card compare and address reordering
+0x00476297,reviewed,medium,Codex,904cc2b,erhnam djinn target selector swaps score/local slots with equivalent landwalk mask scoring
+0x00433ca1,needs-work,high,Codex,904cc2b,akron legionnaire compares raw-card subtype 0x70 in original but recomp compares card id 0x22e
+0x004c4457,needs-work,high,Codex,904cc2b,ai gamestate evaluator has broad scoring/control-flow drift beyond compact-diff proof
+0x00510594,reviewed,medium,Codex,904cc2b,the rack preserves controller/damage math with local-slot and compare-shape differences
+0x0050d5d0,reviewed,medium,Codex,904cc2b,graveyard class registration preserves wndclass setup for all three classes with stack-layout differences
+0x00401fee,needs-work,high,Codex,904cc2b,reconstruction replaces original adventure-list selection and prompt path with graveyard dialog array flow
+0x00449507,needs-work,high,Codex,904cc2b,hurricane changes mana color argument from 7 to 0 and reshapes x-damage loop
+0x0057dcb0,reviewed,medium,Codex,904cc2b,palette popup window creation differs by saved-register/argument stack layout but preserves window creation parameters
+0x0056c496,reviewed,medium,Codex,904cc2b,deck removal shifts library entries down and clears slot 499 with equivalent loop-bound form
+0x00411b19,needs-work,medium,Codex,904cc2b,destroy-if-blocked combat flags has broad blocker/attacker ability-byte reshaping needing stronger proof
+0x004ff15c,needs-work,high,Codex,904cc2b,creature pile splitter reads different card-instance fields for ability/power tests than original
+0x00498365,needs-work,high,Codex,904cc2b,leviathan land sacrifice changes reassess mask 0x20 to 0xff and has broad selection-loop drift
+0x00401000,needs-work,high,Codex,904cc2b,contract from below replaces original pending-resolution hand count loop with duel-summary hand count
+0x00432575,needs-work,high,Codex,904cc2b,fountain of youth tests state mask 2 where original tests mask 3 in activation gating
+0x0043fb7a,needs-work,medium,Codex,904cc2b,inquisition has broad target-selection stack layout and pending-resolution scan reshaping needing stronger proof
+0x0044aa1f,reviewed,medium,Codex,904cc2b,permanent count helper only swaps loop locals and player/card address arithmetic
+0x00459866,reviewed,medium,Codex,904cc2b,ring of ma r f preserves trigger selection and exile flow with address arithmetic and compare-order differences
+0x0046dbed,reviewed,medium,Codex,904cc2b,killed-card processor differs by repeated player/card address arithmetic only in shown hunks
+0x00484d55,reviewed,medium,Codex,904cc2b,sewer fx preserves damage-source checks with affected-card address arithmetic reordered
+0x004c0dd4,reviewed,medium,Codex,904cc2b,pending-damage scan only swaps loop locals and player/card address arithmetic
+0x004e2bc8,needs-work,high,Codex,904cc2b,power surge uses state field +8 where original tests and updates card-instance field +56
+0x00516f08,needs-work,high,Codex,904cc2b,forcefield reads target damage fields at different card-instance offsets than original
+0x004136ab,needs-work,high,Codex,904cc2b,dialog frame auto-style omits original inset frame and rectangle border draw path after callback
+0x004155ee,reviewed,medium,Codex,904cc2b,auto colored mana payment preserves color loops and conversion high/low word extraction with local-slot drift
+0x00439655,needs-work,high,Codex,904cc2b,spinal villain changes current-phase compare from 0x22 to 0x1f in event handling
+0x0049c834,needs-work,high,Codex,904cc2b,ali baba target selection changes original 1-player argument path to literal 2
+0x004b42e2,needs-work,high,Codex,904cc2b,giant growth writes pump effect stats at different card-instance offsets than original
+0x004d264b,needs-work,medium,Codex,904cc2b,titanias song has broad animation transform drift including swapped card-data cc byte loads
+0x005221b0,reviewed,medium,Codex,904cc2b,initial library copy only reorders indexed initial-library loads for player zero
+0x00555944,needs-work,high,Codex,904cc2b,dual-land helper changes top event compare from 0x71 to 0x81
+0x005563b8,needs-work,medium,Codex,904cc2b,scrollbar wndproc has broad stack-layout and branch-condition reshaping needing stronger proof
+0x0057a9f0,needs-work,medium,Codex,904cc2b,offset-addressed font unload diff reads from 0x9837f8 while recomp indexes g_font_slots first-char fields
+0x0043e76e,needs-work,medium,Codex,904cc2b,storm seeker has broad target-selection and pending-resolution damage scan reshaping needing stronger proof
+0x00453f42,needs-work,medium,Codex,904cc2b,offset-addressed displayed-name diff leaves original title buffer 0x5a8f70 unresolved against recomp symbol
+0x00487123,reviewed,medium,Codex,904cc2b,ante-to-graveyard helper preserves sentinel checks and ante/graveyard loops with local-slot reshaping
+0x0049cbc7,needs-work,high,Codex,904cc2b,ley druid changes prompt load from prompts.txt LEY_DRUID to null-file LEY DRUID
+0x0049e1f3,reviewed,medium,Codex,904cc2b,sisters of the flame only reorders player/card instance address arithmetic
+0x004b4028,reviewed,medium,Codex,904cc2b,crumble preserves artifact target validation kill and life gain with target/local address reshaping
+0x004b9998,needs-work,high,Codex,904cc2b,fissure target selection changes original 1-player argument path to literal 2
+0x0056bf4c,reviewed,medium,Codex,904cc2b,shandalar deck removal inlines RemoveDeckSlot using deck-minus-one base addressing and clears slot 499
+0x00579050,reviewed,medium,Codex,904cc2b,graphics page creation preserves page setup and row-padding arithmetic with register allocation differences
+0x0057aa30,needs-work,medium,Codex,904cc2b,font char width repeats unresolved font-slot base offset differences from font unload
+0x00411e30,reviewed,medium,Codex,904cc2b,internal-card picker preserves dialog callback and first matching card-id scan with local-slot reshaping
+0x00435c34,reviewed,medium,Codex,904cc2b,fire drake preserves activation target bookkeeping and legacy pump resolution with address-order differences
+0x00488789,reviewed,medium,Codex,904cc2b,tawnos coffin attached phase-in scan only swaps loop locals and player/card address arithmetic
+0x004974ab,reviewed,high,Codex,904cc2b,giant spider only swaps affected-card and current-player compare operands
+0x0049c127,reviewed,medium,Codex,904cc2b,cyclopean mummy preserves graveyard replacement check with player/card address arithmetic reordered
+0x0049e49f,reviewed,medium,Codex,904cc2b,abomination preserves sleighted color mask and blocker scan logic with local-slot/address reshaping
+0x004ac14c,reviewed,medium,Codex,904cc2b,stoning preserves trigger and target kill flow with compare-order and address arithmetic differences
+0x004af111,reviewed,medium,Codex,904cc2b,graveyard utility preserves legacy handlers including equivalent owner-life index shift/addressing form
+0x004db180,reviewed,medium,Codex,904cc2b,crusade preserves sleighted color pump check with local spill and address arithmetic differences
+0x0051d63a,reviewed,medium,Codex,904cc2b,nevinyrrals disk preserves activation gate and destruction passes with local-array and address reshaping
+0x0041a42f,reviewed,medium,Codex,904cc2b,orcish catapult target chooser preserves network packet copy and creature/protection scan with local-slot reshaping
+0x00432b51,needs-work,high,Codex,904cc2b,poison snake reads card-instance field +80 where original reads +12 in damage trigger path
+0x0043f9d9,reviewed,medium,Codex,904cc2b,eternal flame preserves opponent target setup and red-land damage math with target-field store reordering
+0x00447b9f,reviewed,medium,Codex,904cc2b,rebirth preserves resolve flow; original has no-op cast-spell affected-card guard and equivalent life threshold compare
+0x0049aeb3,reviewed,medium,Codex,904cc2b,phantasmal forces preserves upkeep blue flag and unpaid-cost burial with compare-order/address arithmetic differences
+0x004b1910,needs-work,high,Codex,904cc2b,tunnel selects directly into stored target where original appears to use stack target and copy only on success
+0x004b2c3e,needs-work,high,Codex,904cc2b,death ward uses protected target helper and different kill-code/owner field flow from original
+0x004e07ad,reviewed,medium,Codex,904cc2b,seeker preserves block legality and aura target flow with instance-pointer hoist and x86-equivalent shift mask
+0x0051a531,needs-work,high,Codex,904cc2b,jayemdae tome runs AI modifier path on EVENT_SHOULD_AI_PLAY while original checks EVENT_CAST_SPELL
+0x00577b17,reviewed,medium,Codex,904cc2b,battlefield stagger offset preserves displayed-card/card modulo math using literal window offsets matching immutable globals
+0x004113ef,reviewed,medium,Codex,904cc2b,untap-cost payment helper preserves tapped gate mana scan colorless total and check-payment dispatch with local/address reshaping
+0x0042ffd0,reviewed,medium,Codex,904cc2b,duel engine thread entry preserves setup message-loop shutdown path; original has unreachable tail after epilogue jump
+0x00440d44,reviewed,medium,Codex,904cc2b,basic-land sacrifice helper preserves target selection cleanup retarget flags reassess and final sacrifice loop with stack-layout reshaping
+0x0044d3fa,needs-work,high,Codex,904cc2b,demonic tutor uses different manual deck UI helper AI type masks and reassess mask from original
+0x0044e72f,reviewed,medium,Codex,904cc2b,revealed-card chooser preserves required-type filter score formula rarity bonus and best-index update with abs/local reshaping
+0x00490853,reviewed,medium,Codex,904cc2b,keldon warlord preserves legacy creation and field initialization with only player/card address arithmetic reordered
+0x004ba5a1,reviewed,medium,Codex,904cc2b,damage creature preserves damage-card creation source metadata color/type picture selection and land-play flag with local/address reshaping
+0x004c38a2,reviewed,medium,Codex,904cc2b,AI search restore preserves backup-to-global restore sequence; extra duel-summary subfield restores duplicate paired save data
+0x004fa91d,needs-work,medium,Codex,904cc2b,drop of honey mechanics align but original tie prompt uses "%s %d." while current source emits "%s %d"
+0x0051c7d3,reviewed,medium,Codex,904cc2b,grapeshot catapult preserves activation target copy tap and resolve validation/damage with instance/local-slot reshaping
+0x00416d5a,reviewed,medium,Codex,904cc2b,mana-source activation preserves charge reset stack activation fizzled handling tap dispatch resolution and charge restore with local/address reshaping
+0x0043f507,needs-work,high,Codex,904cc2b,amnesia original resolve path builds selectable discard list and calls SelectAdventureListCardIndex while current discards all nonlands
+0x0044f1ac,needs-work,high,Codex,904cc2b,disintegrate original can-cast mana gate calls has_mana color 7 while current source passes color 0
+0x00475328,reviewed,medium,Codex,904cc2b,dwarven demolition team preserves activation target copy tap resolve validation destruction and parent target clear with instance/local reshaping
+0x0047cfdc,reviewed,medium,Codex,904cc2b,rukh egg preserves graveyard trigger invisible/remove gates legacy creation and AI modifier with address arithmetic differences
+0x0048889d,reviewed,medium,Codex,904cc2b,tawnos coffin attachment callback preserves chain scan and phase in/out or effect handling despite inverted branch/call ordering
+0x004c357e,reviewed,medium,Codex,904cc2b,AI search save preserves global-to-backup sequence; extra duel-summary subfield backups duplicate private paired restore data
+0x00514591,reviewed,medium,Codex,904cc2b,fellwar stone preserves mana declaration activation color choice produce undeclare prompt and graveyard cleanup with local/address reshaping
+0x0051b58d,reviewed,medium,Codex,904cc2b,jandors saddlebags preserves AI modifier activation charge target copy tap resolve validation untap and target clear with local reshaping
+0x0057bb90,reviewed,medium,Codex,904cc2b,unscaled encoded-image draw preserves row/span traversal raw copy scanline/pixel paths transparency skip and stride advancement
+0x00432798,reviewed,medium,Codex,904cc2b,life chisel preserves upkeep activation target sacrifice toughness storage life gain and cleanup with local/address reshaping
+0x00433233,reviewed,medium,Codex,904cc2b,serpent generator preserves activation gate AI hint charge tap snake counter token creation and parent info reset with address reshaping
+0x0048bc78,reviewed,medium,Codex,904cc2b,pit scorpion preserves shared poison-on-combat-damage helper with one counter and inlined address reshaping
+0x004a3da3,reviewed,medium,Codex,904cc2b,psionic blast preserves target selection AI modifier resolve damage and self-damage; literal resolve-event arg is equivalent inside resolve branch
+0x004b01c2,reviewed,medium,Codex,904cc2b,mana short preserves player target callback land tap raw-mana zero loop and cleanup with equivalent 0..7 loop bound
+0x004b0fe3,needs-work,high,Codex,904cc2b,disenchant original can-cast target scan passes protection mask 0 while current uses get_protections_from
+0x005202ec,reviewed,medium,Codex,904cc2b,coral helm preserves AI modifier activation discard target copy and resolve pump with nonnegative hand-count compare and local/address reshaping
+0x0056ca10,needs-work,high,Codex,904cc2b,load_text differs on path append call failure return values short-read return count line-count cap and post-count fgets size
+0x00579bf0,reviewed,medium,Codex,904cc2b,graphics rect copy preserves bitmap-info init direct frontbuffer flip blit restore and fallback BitBlt with register/call setup reshaping
+0x0057a900,reviewed,medium,Codex,904cc2b,font style size preserves loaded gate existing-font return font recreation metrics update and return with FontSlot base-offset normalization
+0x00402bc7,needs-work,medium,Codex,904cc2b,transmute artifact has broad library selection dialog payment and deck-removal control-flow drift not proven by compact diff
+0x0041a252,needs-work,high,Codex,904cc2b,polka apply effect original reads raw-card subtype for 0x56/0x57 legacy check while current reads raw-card abilities
+0x0049f7b5,reviewed,high,Codex,904cc2b,set special counters preserves 0xff cap and low-byte replacement while keeping upper counter bytes
+0x004b20dc,reviewed,medium,Codex,904cc2b,berserk preserves can-cast phase gate target selection validation legacy creation info-slot power copy state flag and cleanup with instance-pointer reshaping
+0x004b8c28,needs-work,medium,Codex,904cc2b,reverse damage has broad damage-source enumeration selection and prevention-resolution control-flow drift not proven by compact diff
+0x004d662b,needs-work,high,Codex,904cc2b,relic bind tap trigger original uses later RELIC_BIND text lines for dialog while current uses g_text_lines 0 and 1
+0x004e12ec,reviewed,medium,Codex,904cc2b,stasis preserves cast AI upkeep marker burial and event-199 AI tweak scan with instance-pointer and branch-order reshaping
+0x004e45de,reviewed,medium,Codex,904cc2b,flood preserves cast AI can-activate mana and target mask activation target storage resolve validation tap and parent target cleanup
+0x00521791,reviewed,medium,Codex,904cc2b,pandoras box activation preserves mana/tap/creature untap gate charge tap and resolve helper dispatch with address reshaping
+0x00579f10,reviewed,medium,Codex,904cc2b,write graphics scanline preserves bitmap-info init palette refresh page-zero SetDIBitsToDevice and offscreen memcpy paths
+0x004115b3,reviewed,medium,Codex,904cc2b,blocked-attacker marking preserves attacker/blocker scans blocked detection and STATE_ISBLOCKED writes with player/card address reshaping
+0x00419310,needs-work,high,Codex,904cc2b,aswan jaguar target scan original reads raw-card subtype for selected monster compare while current reads raw-card abilities
+0x00448662,reviewed,medium,Codex,904cc2b,stream of life preserves can-cast AI mana gate target selection x storage resolve life gain target clear and burial with address reshaping
+0x0047943c,reviewed,medium,Codex,904cc2b,mijae djinn preserves attack trigger info guard prompt dialog coin-flip tap/remove-attacking path and cleanup reset with address reshaping
+0x004873a6,reviewed,medium,Codex,904cc2b,control-effect removal preserves target scan match reverse-shift compaction info-slot increment and found return with local/address reshaping
+0x004ba309,reviewed,high,Codex,904cc2b,get hacked color preserves zero-hack fallback to original color and hacked-color return with only address arithmetic differences
+0x0050775c,reviewed,medium,Codex,904cc2b,battlefield card-window lookup preserves null guard child scan found card id child hwnd outputs and found return with local-slot reshaping
+0x005166cc,reviewed,medium,Codex,904cc2b,candelabra preserves activation scan x payment multi-land selection target marking cleanup fizzled untap rollback and resolve untap loop
+0x0051a01c,reviewed,medium,Codex,904cc2b,ebony horse preserves cast AI activation gate charge attacking-creature target storage tap resolve validation untap and legacy creation
+0x0057e6a0,needs-work,high,Codex,904cc2b,rpbits lookup original hashes g_ui_message_buffer while current hashes g_rpbits_symbol_buffer
+0x0041124e,reviewed,medium,Codex,904cc2b,timestamp compaction preserves stale-slot removal shift-down of player/card arrays timestamp decrement and final sentinel with base-minus-one indexed stores
+0x0041a76b,reviewed,medium,Codex,904cc2b,polka preserves untap trigger target match untap-status clear and self-burial with instance-pointer reshaping
+0x00437637,needs-work,high,Codex,904cc2b,merfolk assassin original computes hacked-color mask into target required-abilities slot while current passes it as illegal_color
+0x0043cdfb,needs-work,high,Codex,904cc2b,greater realm of preservation original uses dedicated promptsX2 GREATER_REALM_OF_PRESERVATION text and differing cast-AI modifier flow
+0x00446d20,needs-work,high,Codex,904cc2b,call from the grave offset-addressed diff shows original network packet reads/writes target-pair packet storage while current lands on xpool/unknown packet storage
+0x004893a9,needs-work,medium,Codex,904cc2b,rainbow knights has broad activation prompt/default-choice and resolve parent-target field drift not proven equivalent
+0x0049b183,reviewed,medium,Codex,904cc2b,llanowar elves preserves activation count-mana attack-rating and block-rating behavior with instance address reshaping
+0x0049f3c0,reviewed,medium,Codex,904cc2b,three-arg card callback dispatcher preserves player filter active-card scan in-play guard and callback arguments with loop/local reshaping
+0x004ac273,reviewed,medium,Codex,904cc2b,t elemental effect preserves end-combat and AI trigger gate self-damage source burial and legacy burial with address reshaping
+0x005003b7,reviewed,medium,Codex,904cc2b,menu control selection preserves queued key navigation hotkey activation mouse hover bounds render callbacks and return selection with array-index reshaping
+0x0040cf08,reviewed,medium,Codex,904cc2b,available-blocker scan preserves opposing attacker loop landwalk evasion mask blocker scan can-block test and return paths with local-slot reshaping
+0x00436053,reviewed,medium,Codex,904cc2b,ghosts of the damned preserves activation target scan selection tap resolve validation pump legacy creation and rating hooks with target/local reshaping
+0x0043ec68,reviewed,medium,Codex,904cc2b,force spike preserves stack-spell validation target storage AI modifier mana-payment prompt path counter-on-unpaid and cleanup with branch inversion
+0x0047b286,needs-work,medium,Codex,904cc2b,orcish mechanics original loads promptsX1 ORCISH_MECHANICS text while current uses hard-coded artifact sacrifice prompt/helper flow
+0x00493829,needs-work,high,Codex,904cc2b,time elemental has broad activation/resolve drift including original bounce helper and legacy/event handling not matched by current expanded flow
+0x004b0e02,reviewed,medium,Codex,904cc2b,shatter preserves artifact target selection validation destroy target clear and burial with helper-inlining and instance-pointer reshaping
+0x004b1d3f,needs-work,high,Codex,904cc2b,howl from beyond original subtracts computed cast AI penalty while current adds the computed value
+0x004b23c6,reviewed,medium,Codex,904cc2b,righteousness preserves blocking-creature target requirement selection validation pump legacy creation power/counter writes cleanup and burial
+0x005001e3,reviewed,high,Codex,904cc2b,render current menu controls preserves render guard loop over context controls selected-state argument and success return with equivalent boolean codegen
+0x0057c450,reviewed,medium,Codex,904cc2b,encoded image span extents preserves null guard initial min/max row loop span-length extension min/max updates and cursor advancement
+0x00401670,reviewed,medium,Codex,904cc2b,drafnas restoration preserves player target selection artifact graveyard filtering dialog selection topdeck move tombstone marking compaction target clear and burial
+0x00419599,needs-work,high,Codex,904cc2b,aswan jaguar activation path reads raw-card abilities for selected monster where original reads raw-card subtype
+0x00419d01,reviewed,medium,Codex,904cc2b,aswan jaguar random library monster preserves library count network/internal random slot fallback scan and result return with local-slot reshaping
+0x0045a443,needs-work,high,Codex,904cc2b,staff of zegon original checks generic any mana for activation while current checks colorless mana
+0x00495df9,reviewed,medium,Codex,904cc2b,dwarven warriors preserves tap gate target power requirement selection tap resolve validation evasion legacy and parent target cleanup with local reshaping
+0x0049b392,needs-work,high,Codex,904cc2b,birds of paradise original uses BIRDS_OF_PARADISE text in opponent notification path while current loads BIRDS_OF_PARADISE2
+0x0049fda3,reviewed,medium,Codex,904cc2b,select target land helper preserves default preferred controller selection target append number-of-targets increment and success/failure return with address reshaping
+0x004b39b5,reviewed,high,Codex,904cc2b,morale pump attacker preserves attacking-state guard pump legacy creation and +1/+1 counter writes with address reshaping
+0x0050eb28,reviewed,high,Codex,904cc2b,cached top graveyard id preserves cached copy count zero fallback and last-card return with only stack layout differences
+0x00553f7d,needs-work,high,Codex,904cc2b,diamond valley original uses dedicated DIAMOND_VALLEY prompt and extra control-aura target bookkeeping missing from current simplified flow
+0x0043919e,reviewed,medium,Codex,904cc2b,savaen elves target scan preserves player/card loops in-play enchantment subtype check and found return with local/address reshaping
+0x00449f2c,needs-work,high,Codex,904cc2b,desert twister original uses target mask 0x1047 and preferred opponent controller while current uses 0x11047 and controller 2
+0x0044daac,needs-work,high,Codex,904cc2b,visions original uses SelectAdventureListCardIndex and different prompt-line offsets while current uses show_deck and different dialog text construction
+0x0045a8d4,reviewed,high,Codex,904cc2b,su-chi preserves self graveyard-from-play invisibility/remove checks and four colorless mana production with only compare/address reshaping
+0x004804a4,needs-work,medium,Codex,904cc2b,wyluli wolf original loads promptsX1 WYLULI_WOLF text and uses different target selection controller setup than current hard-coded prompt path
+0x004ac7ed,reviewed,high,Codex,904cc2b,fog effect preserves combat damage phase gate damage source internal/original iid fallback creature type test info_slot clear and cleanup burial with inverted branches/address reshaping
+0x004afe3b,needs-work,high,Codex,904cc2b,fork original tests current spell type mask 0x18 while current tests TYPE_INSTANT|TYPE_INTERRUPT mask 0x30
+0x0051c2f1,needs-work,high,Codex,904cc2b,amulet of kroog original has additional check-pump style path that tests untapped mana availability and increments unk_007a7d88 missing from current source
+0x00520787,needs-work,high,Codex,904cc2b,tawnos wand original has extra event 0x6c affected-card/controller ai modifier block missing from current source before normal activation handling
+0x0057b230,reviewed,medium,Codex,904cc2b,formatted text drawing preserves vsnprintf buffer line counting scaling centering optional color/shadow draw loop y advance and final color restore with stack/register/shift encoding drift
+0x0044bde2,reviewed,high,Codex,904cc2b,detonate preserves artifact target availability selection stored x-cost target validation converted-cost check damage destroy target cleanup and self burial with stack/local reshaping
+0x0048592f,reviewed,high,Codex,904cc2b,two-headed giant legacy preserves blocking comparison trigger condition gates extra block flag/status writes cleanup burial and flag clear with address recomputation noise
+0x00499c47,needs-work,high,Codex,904cc2b,goblin rock sled original creates a legacy effect after attacking while current source uses direct info_slot and untap handling
+0x004b0777,needs-work,high,Codex,904cc2b,simulacrum original cast path gates on g_affected_card/controller while current gates on g_card_on_stack/controller
+0x004b35bf,needs-work,high,Codex,904cc2b,jump legacy effect initialization writes original regen_status and info_slot offsets while current writes token_status and regen_status
+0x004b97b4,needs-work,high,Codex,904cc2b,inferno original uses the card info_slot damage amount and has an extra affected-card event block while current hard-codes six damage only
+0x004ebb33,reviewed,medium,Codex,904cc2b,flight preserves target selection ai penalties aura attach target storage flying ability grant resolve validation and cleanup with target/damage_target aliasing and address reshaping
+0x0051649a,reviewed,high,Codex,904cc2b,battering ram preserves change-type wall-destroy flag declare-blockers attacker/blocking selection wall creature scan and legacy creation with local struct/address reshaping
+0x0051b0c8,needs-work,high,Codex,904cc2b,meekstone original clears affected creature untap_status bits at offset 0x11c while current clears dummy3 at offset 0x20
+0x0051f6af,reviewed,high,Codex,904cc2b,flying carpet preserves cast ai bonus activation target selection flying penalty tap resolve validation recalc-abilities write legacy effect info_slot and parent cleanup with local reshaping
+0x0041a64f,reviewed,medium,Codex,904cc2b,polka target availability preserves two-player active-card scan in-play creature and protection exclusion checks with swapped loop locals/address reshaping
+0x0042b270,needs-work,high,Codex,904cc2b,mishras factory original animation choice calls charge_mana with color argument 0 while current uses COLOR_ANY 7
+0x00447f4b,needs-work,high,Codex,904cc2b,timetwister original initializes current_player from g_current_player but current source self-assigns current_player leaving loop seed undefined
+0x0044e5f0,reviewed,medium,Codex,904cc2b,highest-value library card scan preserves library-player guard bounded library scan type filter score calculation mana affordability inversion rarity bonus and best index update with local reshaping
+0x0049c3a1,reviewed,medium,Codex,904cc2b,nether link preserves upkeep/ai trigger gates reverse graveyard scan creature counting nether shadow threshold optional trigger return reanimation graveyard removal dialog and cleanup
+0x004b3c5f,reviewed,medium,Codex,904cc2b,terror preserves sleighted illegal color mask target availability selection validation destroy target and cleanup with explicit shift-count mask that is x86-equivalent
+0x004b7590,needs-work,high,Codex,904cc2b,spell blast original cast path gates on g_affected_card/controller while current gates on g_card_on_stack/controller
+0x004d09fa,reviewed,medium,Codex,904cc2b,kismet preserves player target selection info_slot target storage duplicate ai bonus and opponent permanent tap-on-cast behavior with pointer/local reshaping
+0x0052221f,reviewed,medium,Codex,904cc2b,initial library iid removal preserves 200-row scan positive count csv-to-iid comparison decrement and early return using equivalent CardTypeFromID helper
+0x0056bc19,reviewed,medium,Codex,904cc2b,random unmarked deck draw preserves candidate collection from unmarked deck entries empty fallback random pick mark bit and masked return with stack layout shift
+0x00448282,needs-work,high,Codex,904cc2b,energy tap original loads ENERGYTAP prompt and directly credits raw colorless/any mana with clamp while current uses ENERGY_TAP and produce_mana path
+0x00484044,reviewed,high,Codex,904cc2b,power artifact gremlin fx preserves untap event damage-target card/player affected-card guard and clears target untap_status bits with pointer/address reshaping
+0x004875d7,needs-work,high,Codex,904cc2b,repentant blacksmith original has extra should-ai-play current-phase opponent scan block missing from current abilities-only source
+0x0049ee8e,needs-work,high,Codex,904cc2b,hurr jackal original activation targets opponent-preferred creature and resolve writes target regen_status 0x08000000 while current uses controller 2 and ORs 0x200
+0x004b9465,reviewed,high,Codex,904cc2b,eye for an eye preserves can-cast damage target scan cast target selection ai modifier target storage resolve damage-source player hit and bury with stack layout reshaping
+0x004ea3e7,reviewed,high,Codex,904cc2b,circle of protection helper preserves cast ai bonus can-activate mana and damage target checks activation select/target storage resolve validate zero damage and parent cleanup with local reshaping
+0x004ea8c1,reviewed,high,Codex,904cc2b,circle of protection artifacts preserves artifact/colorless ai heuristic color-test artifact target checks two-mana activation select/validate zero damage and parent cleanup with constant/address reshaping
+0x004ebfa3,needs-work,high,Codex,904cc2b,lifeforce original cast ai heuristic reads black land slot and uses current-spell globals while current source reads COLOR_GREEN and card-on-stack globals
+0x00512b06,reviewed,high,Codex,904cc2b,tetravus tetravite creation preserves add-card/process-enters-play source controller/card token status and info_slot writes with register/address reshaping
+0x00554f53,needs-work,medium,Codex,904cc2b,island of wak-wak original loads prompt text from promptsX1 ISLAND_OF_WAK_WAK while current hardcodes selection text; rest of activation/resolve path appears structurally equivalent
+0x004259e2,reviewed,high,Codex,904cc2b,combat damage blocker highlight preserves setting or clearing token_status 0x20000 with only player/card address expression ordering differences
+0x0042a995,needs-work,medium,Codex,904cc2b,strip mine original loads STRIPMINE prompt text and builds dialog from g_text_lines while current hardcodes dialog text; activation and resolve logic otherwise tracks structurally
+0x0044a96c,reviewed,high,Codex,904cc2b,count active card instances plus one preserves result seed loop bounds internal-card match in-play state exclusion increment and return with local slot swap
+0x0047d770,reviewed,high,Codex,904cc2b,serendib efreet preserves upkeep activation gate trigger flag/event-result writes unpaid-upkeep damage should-ai-play upkeep damage and cleanup info_slot clear with operand/address reshaping
+0x00495111,reviewed,high,Codex,904cc2b,sorceress queen preserves activation target checks cannot-target reassess select/target storage tap resolve validate old legacy cleanup new legacy power/toughness modifiers parent cleanup and rating adjustments
+0x004d92a4,needs-work,high,Codex,904cc2b,living artifact original clears g_spell_fizzled after successful target selection and resolve-activation gain_life is sourced from g_card_on_stack globals while current uses player/card
+0x004fbd52,reviewed,medium,Codex,904cc2b,fishliver oil preserves prompt load hacked-color islandwalk aura mask ai penalty gates target regen_status test and return with explicit shift mask/local reshaping
+0x00553a0e,needs-work,medium,Codex,904cc2b,desert original loads DESERT prompt text from promptsX1 and builds dialog/select prompt from g_text_lines while current hardcodes dialog and selection text
+0x0056cdb4,reviewed,high,Codex,904cc2b,load text with tab escapes preserves ai-mode zero return load_text count abs outer loop strlen inner rewrite of backslash-t to tab copy path null terminator and return with local reshaping
+0x0057e390,needs-work,high,Codex,904cc2b,RpBitsEncodeSymbol original stores/reads symbol bytes at g_ui_message_buffer base 0x78cf10 in key paths while current g_rpbits_symbol_buffer is declared at 0x78cf0f causing off-by-one global-buffer access
+0x00438bce,needs-work,high,Codex,904cc2b,savaen elves original activation search includes prompt update sleep rewind-recorded-action retry and ai modifier adjustments missing from current direct aura-target helper/select flow
+0x00452516,reviewed,high,Codex,904cc2b,displayed card ui flags preserves invalid guard critical section state/card-type reads and summonsick tapped attacking blocking attached oublietted result bits with address reshaping
+0x00457feb,needs-work,high,Codex,904cc2b,mana crypt original can-activate/count-mana tests tapped bit 0x10 and builds coin-flip dialog from loaded prompt text while current tests STATE_INVISIBLE 0x20 and hardcodes Heads/Tails strings
+0x0046e4d0,reviewed,high,Codex,904cc2b,move card to graveyard preserves original iid owner-from-state graveyard type mask update first-free-slot scan to 500 and iid store with local/address reshaping
+0x0048794a,needs-work,high,Codex,904cc2b,choose best card from library original final type bonus tests type bit 0x40 while current source tests TYPE_CREATURE 0x02 changing scoring
+0x00488b70,reviewed,high,Codex,904cc2b,dispatch function to all cards in play preserves saved event_result callback result player traversal direction who-to-check filter active-card scan is-in-play callback args and restore/return behavior
+0x004909b0,reviewed,medium,Codex,904cc2b,generic regeneration ability preserves conjunctive can-activate kill_code state regen_status and mana checks activation mana charge/info_slot update resolve parent clear and regenerate stack card with reordered tests
+0x004cf5a7,reviewed,high,Codex,904cc2b,living lands preserves can-cast color storage land-animation gate legacy lookup/create token status card-type clone creature flags stats dummy3 store and cleanup dispatch with stack/address reshaping
+0x00510802,reviewed,high,Codex,904cc2b,ivory tower preserves AI life-gain clamp and modifier sign upkeep trigger gates tapped-or-creature allowance event result and resolve gain-life amount with stack/address reshaping
+0x0057a000,reviewed,high,Codex,904cc2b,ReadGraphicsScanline preserves page-zero assert page lookup scanline source pointer calculation and memcpy byte count with only saved-register order/noop padding differences
+0x00447966,needs-work,high,Codex,904cc2b,wheel of fortune original seeds discard player from g_current_player counts pending-resolution cards and runs prompt/sleep/replay handling while current seeds current_player from itself and uses hand counts directly
+0x00448a30,needs-work,high,Codex,904cc2b,volcanic eruption original can-cast uses literal mountain subtype and target selection references g_other_player while current derives hacked color subtype and uses 1-player selection behavior
+0x00497760,needs-work,high,Codex,904cc2b,erg raiders original EOT/AI path tests broader state mask and includes human prompt/dialog handling before damage while current directly damages without that prompt path
+0x004985d4,needs-work,high,Codex,904cc2b,brothers of fire original activation checks show different mana argument pushes and loads BROTHERS_OF_FIRE prompt while current uses PRODIGAL_SORCERER prompt
+0x004b6a32,needs-work,high,Codex,904cc2b,counterspell original has extra EVENT_SHOULD_AI_PLAY branch adjusting g_ai_modifier from blue special mana and uses affected-card globals in cast path while current lacks that AI branch and checks card-on-stack globals
+0x004d5ee2,reviewed,medium,Codex,904cc2b,spirit shackle preserves target availability selection storage AI rating adjustments resolve validation attachment targets tap-counter trigger and target cleanup with packed local/address differences
+0x004db252,reviewed,medium,Codex,904cc2b,aspect of wolf preserves can-cast creature target cast selection fizzled handling resolve attachment target storage and power/toughness basic-land half rounding with address and shift encoding noise
+0x004fbeef,reviewed,medium,Codex,904cc2b,gate to phyrexia preserves can-cast AI scoring for sacrifice creature and artifact target activation target selection sacrifice resolve validation destroy target and parent target cleanup with local reshaping
+0x00512f6e,reviewed,high,Codex,904cc2b,tetravite preserves cleanup/event-199 info_slot reset and abilities event 0x20000 grant with only cmp/address-order differences
+0x0057adf0,reviewed,high,Codex,904cc2b,GetFontLineHeight preserves loaded-font branch point_size plus tm_leading and fallback point_size plus line_spacing with named-offset/noop padding differences
+0x00419fc9,reviewed,medium,Codex,904cc2b,polka band preserves can-activate mana and state gate action replay loads activation colorless/red mana charges info_slot from x-value tap state resolve sound effect child effect apply and parent info reset with instance-pointer reshaping
+0x0046d8c1,reviewed,high,Codex,904cc2b,kill_card preserves invalid args token reentry guard token mark internal-id guard out-of-play kill-mode coercion immediate kill cases kill_code writes pending state marker unknown0x14 and handler setup with address expression reshaping
+0x004790b4,reviewed,high,Codex,904cc2b,martyrs of korlis preserves resolve-present marker end-damage trigger gates info_slot event save trigger result resolve callbacks cleanup eot_toughness reset and address-order differences
+0x0048a4aa,needs-work,high,Codex,904cc2b,sindbad original reveals the drawn card through prompt/dialog and moves that non-land card to graveyard while current draws then discards the newest hand card without reveal dialog
+0x00497ec5,needs-work,high,Codex,904cc2b,leviathan original pay-to-attack trigger checks affected-card/controller globals while current checks card-on-stack globals changing trigger ownership dependency
+0x004b1292,needs-work,high,Codex,904cc2b,twiddle original has dialog/choice and recorded action data for tap versus untap while current derives info_slot from target tapped state or current spell and auto applies that action
+0x004b315b,reviewed,medium,Codex,904cc2b,hurkyls recall preserves can-cast AI/random target-player choice replay human player target selection resolve owner-state scan artifact bounce target cleanup and bury with local/address reshaping
+0x004cf20b,reviewed,high,Codex,904cc2b,kormus bell preserves can-cast hacked color storage tapped-or-creature gate land-animation legacy lookup/create token status cloned land creature stats dummy3 store and cleanup dispatch with same benign reshaping as living lands
+0x004fc8fa,needs-work,high,Codex,904cc2b,invisibility original cast path checks affected-card/controller globals while current checks card-on-stack globals before selecting the target
+0x00513d22,reviewed,medium,Codex,904cc2b,millstone preserves activation mana and tap/sickness gates action replay target selection tap state resolve parent target cleanup two-card mill loop and AI modifier sign with address/local reshaping
+0x00472f6b,needs-work,high,Codex,904cc2b,atog original should-ai-play discard-phase modifier reads g_duel_summary offset 0x1c while current reads unknown_28 offset 0x28 changing the AI score source
+0x0048ae32,needs-work,high,Codex,904cc2b,xenic poltergeist original resolve creates a separate poltergeist legacy effect and stores target and dynamic type state there while current mutates the source instance and handles change-type cleanup itself
+0x00493239,needs-work,high,Codex,904cc2b,rag man original untap-phase AI mana demand increments black by 1 and discarded hand creature is moved to graveyard manually while current adds 3 demand and calls discard_card_from_hand
+0x0049b8dc,needs-work,high,Codex,904cc2b,cosmic horror original unpaid-upkeep path loads COSMIC_HORROR prompt and shows a dialog before kill/damage while current directly kills and damages
+0x004aeac7,reviewed,medium,Codex,904cc2b,ebony horse FX preserves combat damage prevention for protected target/source and end-combat mandatory bury trigger with address and comparison-order reshaping
+0x004b26fc,needs-work,high,Codex,904cc2b,blood lust original target filters do not require TARGET_STATE_IN_COMBAT in can-cast/resolve loads BLOODLUST prompt key uses select_target_creature_and_store and applies phase-based AI modifier while current differs on all of those
+0x004b59fb,reviewed,high,Codex,904cc2b,replace card sleight color preserves color_id 1..5 replacement loop and empty-source-color fallback assignment with address reshaping only
+0x004d0138,needs-work,medium,Codex,904cc2b,land tax original human selection dialog uses three LANDTAX text lines from the loaded text block while current passes two empty strings even though selection and deck-removal logic otherwise appears equivalent
+0x005179e0,needs-work,medium,Codex,904cc2b,mana battery original dialog uses leading-space prompt formatting and counter-count prompt loaded from text lines while current hardcodes both formats without the same loaded text
+0x00578cb0,reviewed,high,Codex,904cc2b,GetPrimaryPage preserves direct InitializeGraphicsSystemDefaultMode return with only nop padding difference
+0x0040cadc,reviewed,medium,Codex,904cc2b,can_attack preserves invalid subtype/type/state gates event 0x79 card dispatch attached-aura payment check global save-restore and event-dispatch veto with extra early restore writes being no-ops
+0x00437a11,needs-work,high,Codex,904cc2b,miracle worker original human invalid-aura path shows retry prompt sleeps resets prompt and rewinds recorded action for another selection while current fizzles after one failed select/validation
+0x0044927d,needs-work,high,Codex,904cc2b,earthquake original AI can-cast affordability check calls has_mana with COLOR_ANY for the generic X cost while current uses COLOR_COLORLESS
+0x0044a249,needs-work,high,Codex,904cc2b,winter blast original can-cast target scan passes a conditional g_max_x_value and AI affordability check uses COLOR_ANY while current passes zero to the scan and COLOR_COLORLESS to has_mana
+0x0044d711,needs-work,high,Codex,904cc2b,untamed wilds original SHANDALAR human deck selection and view-only paths call SelectAdventureListCardIndex while current calls show_deck
+0x004768e5,needs-work,high,Codex,904cc2b,giant badger original declare-blockers trigger gates on declare-blockers phase and blocking state without affected-card globals while current requires affected-card/controller globals
+0x00495851,needs-work,high,Codex,904cc2b,stone giant original target power threshold reads the source power field at instance offset 0x34 while current reads upkeep_colorless at offset 0x124 via a cast
+0x0049e9a4,needs-work,high,Codex,904cc2b,radjan spirit original activation target controller argument is opponent 1-player while current uses ANYBODY 2 changing legal targets
+0x0049f9f7,reviewed,high,Codex,904cc2b,select target creature and store without protection preserves default-anybody controller selection C_real_select_target call target append to number_of_targets and success/failure return with address reshaping only
+0x004d8c4a,reviewed,medium,Codex,904cc2b,evil presence preserves land target selection AI scoring valid-target attachment hacked swamp type assignment regen-status recalc flag and change-type response with address/local reshaping
+0x0042ae58,needs-work,high,Codex,904cc2b,library of alexandria original draw/mana dialog format underlines the draw option and has additional global gates before player dialog while current uses a plain dialog format and simplified dialog gating
+0x00434051,reviewed,medium,Codex,904cc2b,beasts of bogardan preserves sleighted protection grant and white-permanent power/toughness bonus scan with only redundant shift-mask and local reshaping differences
+0x0044c410,needs-work,high,Codex,904cc2b,word of binding original can-cast target scan passes conditional g_max_x_value and AI affordability check uses COLOR_ANY while current passes zero to the scan and COLOR_COLORLESS to has_mana
+0x0044f4db,needs-work,high,Codex,904cc2b,drain life original can-cast affordability check uses COLOR_ANY and copied X value comes from current-spell globals while current checks COLOR_BLACK and uses trigger-cause globals
+0x00456cd1,needs-work,high,Codex,904cc2b,icy manipulator original cast/AI modifier gate checks affected-card globals while current checks card-on-stack globals before the same activation and target flow
+0x00474970,needs-work,high,Codex,904cc2b,demonic hordes original unpaid-upkeep sacrifice path has different prompt/selection flow including opponent selection and dialog text handling while current loads DEMONIC_HORDES_2 and uses a different target-selection branch structure
+0x00514c20,reviewed,medium,Codex,904cc2b,ashnods battle gear preserves untap trigger activation target storage resolve legacy pump effect permanent status power/toughness modifiers and graveyard cleanup with address/local reshaping
+0x00517500,reviewed,medium,Codex,904cc2b,disrupting scepter preserves tap and generic mana gates activation target-player selection state tap resolve discard and parent target cleanup with address/local reshaping
+0x005181a3,reviewed,medium,Codex,904cc2b,conservator preserves AI score activation gates two damage-target selection loop temporary target marking fizzle rules resolve prevention decrement and count-mana behavior with local/address reshaping
+0x00579520,reviewed,high,Codex,904cc2b,ReadGraphicsPixel preserves page-zero GetPixel palette lookup with 16bpp mask adjustment and nonzero-page DIB byte read with register/local allocation differences only
+0x00433539,reviewed,medium,Codex,904cc2b,war barge preserves landwalk mask activation target storage legacy effect kill-attached helper and leave-play cleanup with address/local reshaping
+0x00433b35,reviewed,high,Codex,904cc2b,war barge kill-attached helper preserves legacy id and parent target checks kill action and battlefield extra ability flag with cmp/addressing reshaping only
+0x004a3f3b,reviewed,medium,Codex,904cc2b,reverse polarity preserves can-cast gates target selection mass damage-source scan AI selection damage clearing life gain AI modifier and bury with major branch-order reshaping
+0x004a4e37,needs-work,high,Codex,904cc2b,sacrifice original cast path checks affected-card globals and uses choose_creature_to_sacrifice while current checks card-on-stack globals and uses generic select-target flow
+0x004d5741,reviewed,medium,Codex,904cc2b,brainwash preserves cast target selection resolve attachment attack mana-payment trigger combat cancellation attack legality and cleanup with instance-pointer reshaping
+0x004e9ad4,reviewed,medium,Codex,904cc2b,the brute preserves power bonus cast target attach activation gates red mana charge info-slot use and regeneration resolve with call/order and pointer-caching reshaping
+0x004f8dbe,reviewed,medium,Codex,904cc2b,artifact ward preserves target selection AI modifiers resolve attachment and artifact-protection ability grant with instance-pointer and address reshaping
+0x004feb50,needs-work,high,Codex,904cc2b,raging river original trigger branches check affected-card globals and use loaded RAGING_RIVER dialog text while current checks card-on-stack globals and uses a different RAGING_RIVER2/hard-coded dialog path
+0x00579480,reviewed,medium,Codex,904cc2b,ClearGraphicsPageWithPaletteColor preserves palette RGB color assembly brush creation fill rect dimensions DeleteObject return and differs only in stack/register allocation
+0x0057d330,reviewed,medium,Codex,904cc2b,BlitRectByRandomTileOrder preserves tile count LFSR mask traversal clipping pixel/BitBlt paths and loop termination with stack/register and harmless positive div/idiv differences
+0x00436ae4,needs-work,high,Codex,904cc2b,hyperion blacksmith original activation subtracts 0x30 from g_ai_modifier before target selection while current omits that AI modifier adjustment
+0x004372e0,reviewed,high,Codex,904cc2b,crimson kobolds preserves sleighted red color force and sound gating with shift/register/addressing differences only
+0x00440b8a,reviewed,medium,Codex,904cc2b,miracle worker has target preserves active-card scan in-play enchantment attachment-controller and attached-creature checks with local/loop reshaping
+0x0048fdcb,needs-work,high,Codex,904cc2b,gaea's liege original resolve activation creates the land-changing legacy effect from player/card while current uses card-on-stack globals as the effect source
+0x0049cf85,reviewed,medium,Codex,904cc2b,venom preserves aura can-cast cast/resolve behavior via generic helper and blocker destroy-effect scans with expanded-original versus helper/local reshaping
+0x004a354a,reviewed,medium,Codex,904cc2b,guardian angel preserves damage-card target selection X storage prevention decrement source legacy effect and destroy with stack/instance reshaping
+0x004b48ac,needs-work,high,Codex,904cc2b,purelace original cast branch checks affected-card globals while current checks card-on-stack globals before target selection and AI modifier logic
+0x004e03af,needs-work,high,Codex,904cc2b,fear original cast branch checks affected-card globals while current checks card-on-stack globals before selecting and storing the enchanted creature
+0x004e1bf2,reviewed,medium,Codex,904cc2b,paralyze preserves target selection mana-to-untap adjustment AI modifiers resolve tap untap flag clearing and untap-cost trigger with stack/address reshaping
+0x00552320,needs-work,high,Codex,904cc2b,arena original resolve validates and fights g_active_player versus g_other_player targets while current uses player versus 1-player so off-turn ownership can diverge
+0x004382fd,reviewed,high,Codex,904cc2b,people of the woods preserves resolve-time legacy effect creation info-slot toughness permanent/invisible status and source link setup with address reshaping
+0x004fd8eb,reviewed,medium,Codex,904cc2b,lich preserves life recomputation cast AI modifier resolve flag damage tracking sacrifice trigger and leave-play loss behavior with pointer/local/control-flow reshaping
+0x0044fd8c,reviewed,medium,Codex,904cc2b,drain power preserves cast target selection callback mana drain transfer loop selected-target flag cleanup and bury with stack/local reshaping
+0x005156b0,reviewed,high,Codex,904cc2b,tawnos weaponry preserves untap suppression upkeep trigger activation target legacy pump source cleanup and pump check with offset-address reccmp clean
+0x00455247,reviewed,medium,Codex,904cc2b,basalt monolith preserves untap suppression tap-for-mana untap-payment activation resolve tapped flag upkeep untap trigger and mana count with address/control-flow reshaping
+0x004d5020,reviewed,medium,Codex,904cc2b,feedback preserves in-play AI modifier original post-selection target quirk cast and resolve attachment upkeep damage and cleanup with branch/address reshaping
+0x00484619,reviewed,medium,Codex,904cc2b,living land FX preserves source info-slot lifetime check change-type target/color validation animated status update and self-destroy paths with cached-pointer reshaping
+0x004b0590,reviewed,high,Codex,904cc2b,ancestral recall preserves player target selection three draws target cleanup and destroy with only local target/instance storage reshaping
+0x004024fc,reviewed,medium,Codex,904cc2b,resurrection preserves graveyard creature selection AI/manual paths hidden hand-card staging resolve validation battlefield entry graveyard removal and fizzle cleanup with stack/address reshaping
+0x0041a8a4,reviewed,medium,Codex,904cc2b,faerie dragon preserves activation mana/random selection target candidate selection stored effect index resolve apply-effect dispatch and selected-card replay with stack/local reshaping
+0x0051cb99,needs-work,high,Codex,904cc2b,bronze tablet original reserves the large dialog buffer for exchange/payment prompts while current uses a tiny prompt buffer and can clobber different stack state
+0x004d40a4,reviewed,medium,Codex,904cc2b,gain control preserves hand-copy transfer state/timestamp rewrite damage target/source retargeting target-array rewrite remove-original and control event dispatch with stack/local reshaping
+0x005117f9,needs-work,medium,Codex,904cc2b,primal clay original dialog format includes leading spaces before choices while current sprintf omits them changing the presented modal text
+0x0042a375,needs-work,medium,Codex,904cc2b,oasis original activation loads the OASIS prompt from prompts.txt while current skips load_text and uses a hard-coded prompt string
+0x0047c44c,reviewed,high,Codex,904cc2b,rock hydra preserves X counter setup legacy toughness tracker regen/prevention activation damage-prevention counter accounting and offset-address reccmp exits clean
+0x0049bb0a,reviewed,medium,Codex,904cc2b,lord of the pit preserves cast AI modifier upkeep checks sacrifice prompt unpaid damage cleanup and combat ratings with event-order/control-flow reshaping
+0x00518f64,reviewed,medium,Codex,904cc2b,armageddon clock preserves counter upkeep trigger payment activation AI/network payment choice counter removal and end-upkeep damage with local/control-flow reshaping
+0x00439bdb,needs-work,high,Codex,904cc2b,tracker original can-activate target availability is restricted to the opponent while current availability scan allows either player before activation selection
+0x0049c195,reviewed,medium,Codex,904cc2b,nether shadow preserves state clearing graveyard/death trigger hand-player choice token hand creation and stored card id with address/local reshaping
+0x00478cc1,reviewed,medium,Codex,904cc2b,king suleiman preserves tap gate djinn-or-efreet target selection stored target tapped state resolve validation destroy and parent cleanup with stack/local reshaping
+0x0049ff1f,reviewed,high,Codex,904cc2b,select land target into next slot preserves preferred-controller normalization land target selection append-to-next-target-slot number increment and boolean return with stack/local reshaping
+0x004a4ae4,reviewed,medium,Codex,904cc2b,artifact blast preserves stack-spell target validation cast storage AI modifier resolve counter/bury behavior and target cleanup with instance-pointer reshaping
+0x0057da00,reviewed,high,Codex,904cc2b,PcxReadScanlineRle preserves PCX bytes-per-line loop run marker decoding repeated byte writes literal byte writes counter decrement and success return with rep-stos versus byte-loop codegen
+0x00579310,reviewed,high,Codex,904cc2b,SetGraphicsPage preserves nonzero page deallocation asserts GDI object cleanup mapping/DC/free sequence page slot clearing and replacement assignment with register/helper-call reshaping
+0x0057dc20,reviewed,high,Codex,904cc2b,RegisterPaletteClass preserves WNDCLASS fields icon cursor black brush class name and RegisterClass call with stack/register layout differences only
+0x0049682f,needs-work,high,Codex,904cc2b,pradesh gypsies original can-activate path checks red/green mana availability before target availability while current omits the mana gate
+0x004df65e,reviewed,medium,Codex,904cc2b,firebreathing preserves aura target setup AI modifiers mana-cost-mod activation X handling legacy pump creation AI play scoring and cleanup with extensive address/local reshaping
+0x004f8890,reviewed,medium,Codex,904cc2b,artifact possession preserves artifact target selection AI modifier resolve attachment tap/untap damage trigger and target cleanup with pointer/local reshaping
+0x00494f82,needs-work,high,Codex,904cc2b,murk dwellers original declare-blockers path scans opposing blockers before granting pump while current only checks this creature's blocking field
+0x00485094,reviewed,medium,Codex,904cc2b,xmorgrant FX preserves target identity checks change-type replacement and power/toughness increments with instance-pointer reshaping
+0x004370eb,reviewed,medium,Codex,904cc2b,ivory guardians preserves sleighted protection ability and opponent permanent color scan power/toughness bonus with local/control-flow reshaping
+0x0043b4e1,needs-work,high,Codex,904cc2b,witch hunter original activation uses recorded random/replay choice and formatted WITCH_HUNTER prompt text while current uses life-threshold AI and a hard-coded dialog
+0x0045c1a8,reviewed,medium,Codex,904cc2b,urza's miter preserves qualifying artifact graveyard tracking trigger priority mana-payment draw loop and info-slot clearing with cached-pointer/control-flow reshaping
+0x0048faf7,reviewed,medium,Codex,904cc2b,angry mob preserves resolve legacy effect setup source linkage and current-player power/toughness legacy flag toggle with address/local reshaping
+0x00494917,needs-work,high,Codex,904cc2b,osai vultures original resolve paths update the parent card and legacy source via parent fields while current uses g_card_on_stack globals for the legacy pump source
+0x004b647a,needs-work,high,Codex,904cc2b,blue elemental blast original cast/resolve paths compare affected-card globals while current compares card-on-stack globals causing hidden-address target-source mismatch
+0x004b7a5b,needs-work,high,Codex,904cc2b,red elemental blast original cast/resolve paths compare affected-card globals while current compares card-on-stack globals causing hidden-address target-source mismatch
+0x004e8d27,reviewed,medium,Codex,904cc2b,regeneration preserves aura target selection AI modifiers resolve attachment regeneration activation payment resolve regenerate and parent cleanup with pointer/local reshaping
+0x004fa29a,reviewed,medium,Codex,904cc2b,cyclone should pay upkeep preserves creature power totals red/vulnerable bucket logic life comparisons and boolean decision with stack/local arithmetic reshaping
+0x005533b2,needs-work,medium,Codex,904cc2b,city of brass original activation uses CITY_OF_BRASS loaded prompt text and formatted AI/human choice path while current collapses to hard-coded choose-a-color behavior
+0x0044ddad,needs-work,high,Codex,904cc2b,mind twist original AI can-cast mana gate checks color 7 while current checks color 0 changing the mana availability condition
+0x00455da6,needs-work,high,Codex,904cc2b,cyclopean tomb original resolve activation creates legacy effect from g_card_on_stack globals while current uses g_affected_card globals for the source
+0x00483690,reviewed,high,Codex,904cc2b,desert FX preserves end-combat trigger gate mandatory trigger damage source/target dispatch bury behavior and affected-card checks with instance pointer caching only
+0x004869b0,reviewed,high,Codex,904cc2b,pyramids helper preserves two-player active-card scan in-play enchantment attachment land-type validation and early success exit with loop/local reshaping
+0x00487b4e,reviewed,medium,Codex,904cc2b,choose lowest value creature preserves target-player filtering creature/in-play/cannot-target checks power equality score comparison best target storage and found return with local reshaping
+0x00499729,reviewed,medium,Codex,904cc2b,island fish jasconius preserves untap-cost setup sea-serpent delegation untap/cast upkeep payment prompt and untap resolution with stack/local reshaping
+0x004a3988,needs-work,high,Codex,904cc2b,natural selection original resolve path loads NATURAL_SELECTION and compares active-player while current loads NATURAL_SELECTION_2 and uses current-player in the chooser gate
+0x004e5bfd,reviewed,medium,Codex,904cc2b,helper ward preserves aura target selection AI modifier adjustments resolve attachment duplicate ward cleanup protection grant anti-aura check and AI cleanup scoring with pointer/local reshaping
+0x00510afa,reviewed,medium,Codex,904cc2b,aladdin's lamp preserves draw-replacement trigger mana payment reveal list selection network random bottoming and AI play scoring with stack/local/control-flow reshaping
+0x00535f16,needs-work,high,Codex,904cc2b,coin flip network choice thread original waits on mutex receives network choice sends dialog command releases mutex and ends thread while current SHANDALAR build compiles an empty body
+0x004499aa,needs-work,high,Codex,904cc2b,ashes to ashes original target calls show COLOR_TEST_0 and COLOR_TEST_ARTIFACT argument order crossing current source in availability selection and validation paths
+0x0044e9de,reviewed,medium,Codex,904cc2b,pyrotechnics preserves can-cast target accumulation AI auto-targeting reassess/cleanup resolve damage invalid-target handling and bury behavior with target-array/local reshaping
+0x00475696,needs-work,medium,Codex,904cc2b,dwarven weaponsmith original loads DWARVEN_WEAPONSMITH prompt text and g_text_lines choices while current uses hard-coded artifact and creature selection prompts
+0x004792c1,reviewed,high,Codex,904cc2b,merchant ship preserves island-sacrifice/attack-legality checks sea-serpent style damage-source filtering and life gain trigger with cached damage-instance reshaping
+0x00483a11,reviewed,medium,Codex,904cc2b,guardian FX preserves damage-prevention activation target loop same-source validation rewind/prompt handling resolve decrement cleanup bury and parent target cleanup with pointer/local reshaping
+0x004b8102,needs-work,high,Codex,904cc2b,gain life or prevent damage original uses HEALING_SALVE prompt text with sprintf/system-error overflow path while current uses HEALING_SALVE2/3 strcpy prompts and different overflow handling
+0x004fb4fd,reviewed,medium,Codex,904cc2b,farmstead preserves land aura targeting AI modifiers activation mana gate AI auto-activation life gain parent cleanup and info-slot reset with pointer/local reshaping
+0x0053760d,needs-work,high,Codex,904cc2b,redraw ante mulligan wait thread original waits on mutex receives network result sends WM_COMMAND 0x401 releases mutex and ends thread while current SHANDALAR build compiles an empty body
+0x00537684,needs-work,high,Codex,904cc2b,redraw ante done wait thread original waits on mutex receives network result sends WM_COMMAND 0x402 releases mutex and ends thread while current SHANDALAR build compiles an empty body
+0x0057a060,reviewed,medium,Codex,904cc2b,RpBits ApplyPalette preserves M0/M1 palette packet copy index range loops component masking white special-case palette zeroing and palette realization with register/local reshaping
+0x00477e97,needs-work,high,Codex,904cc2b,ifh biff efreet original uses event 0x94 and extra-ability mask 0x1000 in the damage/trigger path while current checks event 0x3c and mask 0x100000
+0x004863e1,reviewed,high,Codex,904cc2b,arena has targets preserves active/opponent creature scan color/ability tests and dual-side availability return with loop/local reshaping
+0x004b1bcb,needs-work,high,Codex,904cc2b,marsh gas original resolve path scans all creatures and creates per-creature effects while current collapses to a single legacy-effect call
+0x004dcace,reviewed,medium,Codex,904cc2b,gaseous form preserves aura target setup resolve attachment combat-damage prevention and cleanup with pointer/local reshaping
+0x004e8714,reviewed,medium,Codex,904cc2b,necropolis of azar preserves activation/cast gates token creation state/color copy random pump and protection/trigger handling with pointer/local reshaping
+0x004e9531,reviewed,medium,Codex,904cc2b,eternal warrior preserves aura target setup AI modifiers resolve attachment vigilance ability grant and cleanup with pointer/local reshaping
+0x005543ce,needs-work,high,Codex,904cc2b,elephant graveyard original loads ELEPHANT_GRAVEYARD prompts and formatted dialog/error text while current uses hard-coded dialog text and rewind-only invalid-target path
+0x005795f0,reviewed,medium,Codex,904cc2b,GetGraphicsPixelColorRef preserves direct 8-bit read and masked 16-bit palette lookup behavior with register/local reshaping
+0x005797e0,reviewed,medium,Codex,904cc2b,FillGraphicsRect preserves color-index to RGB conversion special cases brush/fill/delete sequence and rectangle bounds with register/local reshaping
+0x0057a7f0,reviewed,medium,Codex,904cc2b,LoadSystemFont preserves AddFontResource/CreateFont string slot copies font-loaded flag text metrics capture and style-size update with loop/register reshaping
+0x0044cf98,needs-work,high,Codex,904cc2b,regrowth original human graveyard chooser calls SelectAdventureListCardIndex while current calls show_deck with broader network/AI/adventure display behavior
+0x00468a60,needs-work,high,Codex,904cc2b,CopyRawCardNamesAndRarities JSON pairing compares the long original card-copy loop against a tiny unrelated recompiled body rather than a functional near-match
+0x00479a85,needs-work,high,Codex,904cc2b,old man of the sea original control-aura setup uses the function player/card source where current uses g_card_on_stack globals in the activation resolve path
+0x0049963e,reviewed,medium,Codex,904cc2b,elder land wurm preserves attack-legality restriction until blocked and declare-blockers info-slot update with independent if ordering reshaped
+0x004d9bac,reviewed,medium,Codex,904cc2b,blight preserves land aura target setup AI modifiers resolve attachment no-auto-tap flag tap-trigger legacy creation and info-slot guard with pointer/control-flow reshaping
+0x004dbe77,reviewed,medium,Codex,904cc2b,spirit link preserves aura targeting AI modifier resolve attachment damage-source tracking mandatory life-gain trigger and info-slot reset with pointer/local reshaping
+0x004fcc82,reviewed,medium,Codex,904cc2b,jihad preserves cast color choice resolve dialog power/toughness bonus and sacrifice-when-color-absent scan with shift/type-mask/control-flow reshaping
+0x004fd152,needs-work,high,Codex,904cc2b,kudzu original retarget/dialog path passes source player/card where current uses zero source arguments in protection/dialog calls
+0x004fe0c6,reviewed,medium,Codex,904cc2b,oubliette preserves target selection resolve phase-out leave-play trigger phase-in graveyard cleanup and target clearing with pointer/control-flow reshaping
+0x00578c70,reviewed,low,Codex,904cc2b,NoopSetSpecialSprite is a no-op stub; recomp only adds alignment nops before return
+0x0043ca02,needs-work,high,Codex,904cc2b,blood moon original includes cast-time affected-card checks count_permanents_by_internal_card_id and AI modifier logic while current only keeps can-cast and change-type behavior
+0x00458ab3,reviewed,high,Codex,904cc2b,pyramids preserves activation availability land/enchantment targeting prompt retry logic resolve destroy-or-regenerate behavior and parent target cleanup with stack/local reshaping
+0x0048486e,reviewed,medium,Codex,904cc2b,river FX preserves block-legality river-effect scan end-combat mandatory cleanup trigger and self-bury with cached target/effect pointers
+0x0048c4db,needs-work,high,Codex,904cc2b,personal incarnation original replacement-card state path preserves the 0x1000 state bit while current shifts it down to 0x10 before ORing STATE_IN_PLAY
+0x004961df,needs-work,high,Codex,904cc2b,cave people original function starts at activation availability while current adds attack-rating and attacker-chosen pump behavior before the activation paths
+0x004b9c58,needs-work,high,Codex,904cc2b,orcish catapult original uses a large target buffer around 0x960 bytes while current uses a six-target buffer for randomized target collection
+0x00511bc3,needs-work,medium,Codex,904cc2b,shapeshifter original prompt formatting includes spaces after newlines while current removes them in both cast and upkeep dialogs
+0x005195e9,reviewed,medium,Codex,904cc2b,dingus egg preserves land graveyard counting by controller mandatory damage trigger per stored count and info-slot shifting/reset with pointer/local reshaping
+0x0057c9f0,reviewed,medium,Codex,904cc2b,ConvertHsvToRgb preserves grayscale sentinel hue normalization fixed-point HSV math sector switch and output copy with register/division reshaping
+0x0057d180,reviewed,medium,Codex,904cc2b,BlitRectByRandomTileOrderInPlace preserves tile-count rounding LCG mask generation randomized in-place tile copy pixel special-case and result propagation with stack/register reshaping
+0x0043469a,needs-work,high,Codex,904cc2b,elder spawn original uses the upkeep-cost payment event flow while current performs the blue land sacrifice and self damage directly during upkeep phase
+0x00472d56,needs-work,high,Codex,904cc2b,argothian pixies original calls argothian treefolk damage prevention behavior and has an attacker artifact-interaction path while current only grants protection from artifacts
+0x00476a27,needs-work,high,Codex,904cc2b,goblin artisans original activation/resolve flow includes spell-on-stack globals and human dialog text handling while current skips the original prompt/dialog branch
+0x004808e9,needs-work,high,Codex,904cc2b,yawgmoth demon original uses target availability upkeep-cost prompt/dialog and g_card_on_stack damage source paths while current direct-selects an artifact during upkeep
+0x004d2d45,reviewed,medium,Codex,904cc2b,animate wall preserves wall aura targeting resolve attachment target validation token-status grant and cleanup with cached instance/local reshaping
+0x004d646a,reviewed,low,Codex,904cc2b,spirit shackle helper preserves target counter increment optional sound and toughness reduction with repeated target-instance address calculation reshaped
+0x004d829b,reviewed,medium,Codex,904cc2b,cursed land preserves land aura targeting resolve attachment upkeep damage cleanup and AI modifier behavior with pointer/local and signed arithmetic reshaping
+0x004dd0b4,reviewed,medium,Codex,904cc2b,backfire preserves creature aura targeting damage-card collection mandatory reflection trigger reset and attack rating modifier with cached instance/control-flow reshaping
+0x00579ea0,reviewed,medium,Codex,904cc2b,PushGraphicsClipRect preserves saved clip/current max calculations installs requested clip rectangle and copies previous clip to caller output with stack/register reshaping
+0x0057de20,reviewed,medium,Codex,904cc2b,EncodeRpBitsImage preserves RP bits header emission scanline callback loop run-length escape encoding dictionary reset/writeback and close behavior with register/local reshaping
+0x0047c106,needs-work,high,Codex,904cc2b,priest of yawgmoth original activation uses PRIEST_OF_YAWGMOTH prompt text path while current uses the generic literal artifact-cost helper
+0x0047dd1e,needs-work,high,Codex,904cc2b,two headed giant of foriys original clone bookkeeping writes/tests byte offset 0x0c while current raw-offset code writes/tests offset 0x08
+0x00482fd0,reviewed,medium,Codex,904cc2b,cyclopean tomb FX preserves upkeep effect counting selection validation removal land type recalculation cleanup and change-type result with cached instance/local reshaping
+0x00485185,reviewed,low,Codex,904cc2b,put card into ante preserves first-open ante slot scan internal-card guard ante storage token-status mark kill and return value with loop layout reshaping
+0x004865a8,reviewed,medium,Codex,904cc2b,has effect source type preserves damage-effect scan source retarget special case original/internal id fallback and type-mask test with stack-struct local reshaping
+0x0048b9cb,reviewed,medium,Codex,904cc2b,marsh viper preserves poison-on-combat-damage helper behavior storing damaged player/count resolving trigger adding counters clearing state and finish check with helper/local reshaping
+0x0049bfca,needs-work,high,Codex,904cc2b,ball lightning original includes attack/block rating modifier event paths and uses kill code 1 in the end-step sacrifice while current omits ratings and uses kill code 3
+0x004d34d6,reviewed,medium,Codex,904cc2b,generic control aura preserves target selection validation conflict resolution gain-control bookkeeping rewire trigger and cleanup behavior with pointer/local reshaping
+0x004e31e9,reviewed,medium,Codex,904cc2b,wanderlust preserves creature aura targeting resolve attachment upkeep damage cleanup and AI modifier behavior with pointer/local and signed arithmetic reshaping
+0x0057aae0,reviewed,medium,Codex,904cc2b,MeasureMultilineTextWidth preserves loaded-font multiline GetTextExtent path and bitmap-font width fallback including newline max tracking with register/local reshaping
+0x0041bc0d,reviewed,medium,Codex,904cc2b,whimsy preserves cast x storage randomized effect loop target candidate/network packet handling fizzle prompt apply-effect loop sound cleanup and bury with stack/local reshaping
+0x0045a98b,needs-work,high,Codex,904cc2b,tablet of epityr original trigger path checks/pays any mana while current uses colorless-only mana checks and charges
+0x004775a8,reviewed,medium,Codex,904cc2b,guardian beast preserves untapped in-play guard noncreature-artifact ability protection and destroy-prevention paths with helper inlining/control-flow reshaping
+0x00484b5d,reviewed,medium,Codex,904cc2b,rukh egg FX preserves cleanup token creation enters-play processing sleighted red color derivation token/sleight flags and self removal with cached instance/local reshaping
+0x00487749,reviewed,medium,Codex,904cc2b,select best arena creature preserves player/card scan target filters power/toughness/keyword/extra-ability scoring and best target selection; ability bit scan uses sar/shr but only keyword mask bits are scored
+0x0048e066,needs-work,high,Codex,904cc2b,shivan dragon original resolve path uses stored activation parent controller/card state while current pump legacy creation uses g_card_on_stack globals
+0x004d77f8,needs-work,high,Codex,904cc2b,erosion original unpaid-upkeep dialog builds the three-line EROSION prompt in a large stack buffer while current uses a much smaller one-line prompt path
+0x004f92f9,needs-work,high,Codex,904cc2b,consecrate land original cast and aura-trigger paths key off affected-card state while current uses g_card_on_stack globals in those checks
+0x0053fe87,needs-work,high,Codex,904cc2b,choose fireball options original includes CardIDFromType and network/UI option selection handling while current collapses to deterministic local defaults
+0x0057acb0,reviewed,medium,Codex,904cc2b,MeasureTextSpanWidth preserves loaded-font GetTextExtent path and bitmap-font per-character span accumulation with loop/register reshaping
+0x0043d553,needs-work,high,Codex,904cc2b,spiritual sanctuary original uses upkeep-cost payment event flow and g_card_on_stack damage source while current resolves directly during upkeep
+0x0044ca6b,needs-work,high,Codex,904cc2b,raise dead original human graveyard chooser calls SelectAdventureListCardIndex while current calls show_deck with broader display behavior
+0x00457199,needs-work,high,Codex,904cc2b,jade statue original cast and trigger paths key off affected-card state while current uses g_card_on_stack globals in those checks
+0x0047b4eb,needs-work,high,Codex,904cc2b,phyrexian gremlins original loads PHYREXIAN_GREMLINS prompt text and creates a legacy effect in resolve path while current uses a literal prompt and direct tap/flag handling
+0x00488e68,needs-work,high,Codex,904cc2b,prismatic dragon original has prompt/network random color choice flow while current keeps only static flying and simple mana activation paths
+0x0048a65a,needs-work,high,Codex,904cc2b,tempest efreet original loads TEMPEST_EFREET prompt text and formatted result messages while current uses hard-coded dialog/result strings
+0x0048bf26,needs-work,high,Codex,904cc2b,nafs asp original creates a damage-effect copy for the poisoned player while current creates a legacy effect from g_damage_card_internal_card_id + 17
+0x004ad642,reviewed,medium,Codex,904cc2b,asterisk FX preserves target match modes count accumulation basic-land/type/subtype scans result bonus and counter writeback with register/local reshaping
+0x004e384b,reviewed,medium,Codex,904cc2b,instill energy preserves creature aura targeting resolve attachment untap activation leave-play retap cleanup and control paths with pointer/local reshaping
+0x0057c580,reviewed,medium,Codex,904cc2b,LoadPcxResource preserves PCX and RP bits loading palette handling scanline loops and file close behavior with branch order and stack-layout differences
+0x0047360e,reviewed,medium,Codex,904cc2b,camel preserves desert damage prevention for itself and same-blocking creatures with damage/source instance caching and loop layout reshaping
+0x0048f20f,reviewed,medium,Codex,904cc2b,goblin balloon brigade preserves cast flagging red mana demand activation payment parent validation legacy effect creation and flight marker behavior with local reshaping
+0x004b5b0c,needs-work,high,Codex,904cc2b,sleight of mind original uses SLEIGHT_OF_MIND prompt key and choose_magical_hack_colors interactive path while current uses a different key and random/replay color choices
+0x004d0dc7,needs-work,medium,Codex,904cc2b,animate dead original formats graveyard selection dialog lines with leading spaces while current omits that prompt indentation
+0x004e6541,reviewed,medium,Codex,904cc2b,unstable mutation preserves creature aura targeting resolve attachment power/toughness bonus upkeep counter loss cleanup and AI-play effects with pointer/local reshaping
+0x004f87d9,needs-work,high,Codex,904cc2b,copy autosave to save file original builds an AUTOSAVE path and copies the file while current implementation is a stub
+0x00579890,reviewed,medium,Codex,904cc2b,BlitGraphicsRect preserves bitmap-info setup frontbuffer direct blit row flip memmove overlap paths and BitBlt fallback with pointer/register reshaping
+0x00579e40,reviewed,medium,Codex,904cc2b,StretchBlitGraphicsRect preserves graphics page DC lookup and StretchBlt argument flow with register/argument-order reshaping
+0x0057ae50,reviewed,medium,Codex,904cc2b,DrawTextLine preserves clip checks loaded-font TextOut path bitmap-font shadow and foreground blit passes width calculation and return value with local/register reshaping
+0x0057c890,reviewed,medium,Codex,904cc2b,ConvertRgbToHsv preserves RGB copy min/max delta saturation hue sector handling grayscale/zero cases and output scaling with local/register reshaping
+0x004407b3,reviewed,medium,Codex,904cc2b,transmute FX preserves affected target ability event counting power/toughness swap and info-slot reset with repeated instance-address reshaping
+0x0045aef3,reviewed,medium,Codex,904cc2b,Tawnos's Coffin preserves untap trigger choice activation targeting phase-out resolve leave-play/graveyard phase-in and cleanup behavior with pointer/local reshaping
+0x0047e344,needs-work,high,Codex,904cc2b,Vesuvan Doppelganger original uses promptsX1 selection text and extra g_card_on_stack/special-counter clone state while current uses prompts.txt and a shorter parent/data-card path
+0x004ac420,reviewed,medium,Codex,904cc2b,marsh gas effect preserves power/toughness target checks in-play creature guard result deltas and cleanup/AI-play self-bury with repeated address reshaping
+0x004d45d9,needs-work,high,Codex,904cc2b,power struggle exchange original dispatches events for exchanged permanents after copying state while current only reassesses cards and mana
+0x0051e814,reviewed,medium,Codex,904cc2b,brass man preserves untap-status clearing colorless untap-cost setup and cast-time mana-to-untap initialization with compare/address reshaping
+0x0051f4af,reviewed,medium,Codex,904cc2b,colossus of sardia preserves untap-status clearing nine-mana untap-cost setup and cast-time mana-to-untap initialization with compare/address reshaping
+0x0056af29,reviewed,medium,Codex,904cc2b,initialize card instance preserves initial instance field setup target/color/hack loops mana-source color overrides attack rating and timestamp assignment with loop/local reshaping
+0x0057b840,reviewed,medium,Codex,904cc2b,EncodeSpriteFromPage preserves border probes scanline reads transparent row trim run encoding tail copy alignment sentinel and total-size writeback with stack/local reshaping
+0x0057cb80,reviewed,medium,Codex,904cc2b,AnimatePaletteToColor preserves 8bpp guard source palette copy target HSV conversion per-entry HSV/step setup frame interpolation palette application and clear-page return with local reshaping
+0x0041ab5e,needs-work,high,Codex,904cc2b,faerie dragon apply effect original has extra prompt-building/dialog paths including FAERIEDRAGON_TAWNOSWAND while current uses the generic FAERIEDRAGON_MESSAGES line directly
+0x0041c208,needs-work,high,Codex,904cc2b,whimsy apply effect original builds and displays WHIMSY_MESSAGES dialog text for several cases while current switch applies effects without those prompt/dialog paths
+0x00426f3c,needs-work,high,Codex,904cc2b,redraw shandalar duel screen original is a full screen redraw routine while current implementation is a no-op stub
+0x00481688,reviewed,medium,Codex,904cc2b,blaze FX preserves must-block trigger blocker assignment legacy copy creation special-blocker bookkeeping cleanup and leave/graveyard cleanup with control-flow/local reshaping
+0x004f8613,needs-work,high,Codex,904cc2b,TENTATIVE savegame original handles autosave path construction mode checks and phase preservation while current implementation is a stub
+0x00501b7d,needs-work,high,Codex,904cc2b,GetSaveDriveIndex original includes save/load drive selection UI and graphics prompt flow while current only derives the drive from the stored/current path
+0x0053e098,needs-work,high,Codex,904cc2b,choose magical hack colors original uses network result packet handling and DialogBoxParamA color dialog flow while current directly calls choose_a_color_dialog twice
+0x0055d8fa,needs-work,high,Codex,904cc2b,phase display user message original draws a window message using DC/card-render lock handling while current function is empty
+0x00579760,reviewed,medium,Codex,904cc2b,PutGraphicsPixel preserves negative RGB/PALETTERGB conversion 0xff white special palette-index path and SetPixelV call with register reshaping
+0x0057bd10,reviewed,medium,Codex,904cc2b,DrawEncodedImageUnscaledClipped preserves clipping fast path span skipping clipped span draw page0 PutGraphicsPixel path and memory-write path with local/control-flow reshaping
+0x0057bfa0,reviewed,medium,Codex,904cc2b,DrawEncodedImageResampled preserves resample cache setup clipping row/span mapping raw scanline output pixel/memory draw paths and row advancement with local/control-flow reshaping
+0x0057ce70,reviewed,medium,Codex,904cc2b,FadeInPaletteFromGray preserves 8bpp guard palette snapshot grayscale seed HSV conversion interpolation clamp restore and palette apply flow with local/register reshaping
+0x0057d500,reviewed,medium,Codex,904cc2b,BlitRectByStaggeredRandomTileOrder preserves tiled strip count LCG state allocation seeded random tile traversal BitBlt/SetPixel copy paths and cleanup with stack/local reshaping
+0x0057e770,reviewed,medium,Codex,904cc2b,RpBitsWriteBits preserves bit emission loop byte-buffer flush threshold write call accumulator shift/or and bit count updates with register/local reshaping
