@@ -447,7 +447,7 @@ int card_reverse_polarity(int player, int card, event_t event)
     load_recorded_action_target(0);
     if ((g_land_can_be_played & 4) == 0)
     {
-      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && unk_0093b280[1][150][player][0] == 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_damage_accumulators[1][150][player].amount == 0)
       {
         return 0;
       }
@@ -486,12 +486,12 @@ int card_reverse_polarity(int player, int card, event_t event)
       {
         for (s.current_card = 0; s.current_card < 150; ++s.current_card)
         {
-          if (unk_0093b280[s.controller][s.current_card][player][0] > 0 &&
+          if (g_damage_accumulators[s.controller][s.current_card][player].amount > 0 &&
               (global_cards_data[PLAYER_CARD_INSTANCE(s.controller, s.current_card).internal_card_id].type & TYPE_ARTIFACT) != 0)
           {
             s.damage_sources[s.count * 2] = s.controller;
             s.damage_sources[s.count * 2 + 1] = s.current_card;
-            s.damage_amounts[s.count] = unk_0093b280[s.controller][s.current_card][player][0];
+            s.damage_amounts[s.count] = g_damage_accumulators[s.controller][s.current_card][player].amount;
             if (PLAYER_CARD_INSTANCE(s.controller, s.current_card).internal_card_id == -1)
             {
               s.internal_card_ids[s.count] = PLAYER_CARD_INSTANCE(s.controller, s.current_card).original_internal_card_id;
@@ -527,8 +527,8 @@ int card_reverse_polarity(int player, int card, event_t event)
         }
 
         gain_life(player,
-                  unk_0093b280[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player][0] * 2);
-        unk_0093b280[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player][0] = 0;
+                  g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount * 2);
+        g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount = 0;
       }
 
       if (g_life[1 - player] < 1)
@@ -553,8 +553,8 @@ int card_reverse_polarity(int player, int card, event_t event)
       else if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
       {
         gain_life(player,
-                  unk_0093b280[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
-                              [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player][0] * 2 +
+                  g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
+                                       [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player].amount * 2 +
                       PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
         PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
       }

@@ -38,7 +38,7 @@ static char *s_solo_options_registry_path_00571284 = "Software\\MicroProse\\Magi
 static char *s_gauntlet_options_registry_path_00571338 = "Software\\MicroProse\\Magic: The Gathering\\GauntletEx1Options";
 // GLOBAL: MAGIC 0x00588100
 // GLOBAL: SHANDALAR 0x00588100
-static char *s_duel_options_registry_path_00588100 = "Software\\MicroProse\\Magic: The Gathering\\DuelOptions";
+char *s_duel_options_registry_path_00588100 = "Software\\MicroProse\\Magic: The Gathering\\DuelOptions";
 
 // FUNCTION: MAGIC 0x004a5a1b
 // FUNCTION: SHANDALAR 0x00557b9b
@@ -533,7 +533,7 @@ unsigned int save_or_load_ver1(void)
   result &= save_or_load_data(&DAT_00742fc0, 4);
   result &= save_or_load_data(&deck, 2000);
   result &= save_or_load_data(global_card_instances, 0x161e8);
-  result &= save_or_load_data(unk_0093b280, 0x25c0);
+  result &= save_or_load_data(g_damage_accumulators, 0x25c0);
   result &= save_or_load_data(global_graveyard_slots, 4000);
   result &= save_or_load_data(global_exile, 4000);
   result &= save_or_load_data(global_library, 4000);
@@ -740,7 +740,7 @@ unsigned int save_or_load_ver2(void)
   result &= save_or_load_data(&DAT_00742fc0, 4);
   result &= save_or_load_data(&deck, 2000);
   result &= save_or_load_data(global_card_instances, 0x161e8);
-  result &= save_or_load_data(unk_0093b280, 0x25c0);
+  result &= save_or_load_data(g_damage_accumulators, 0x25c0);
   result &= save_or_load_data(global_graveyard_slots, 4000);
   result &= save_or_load_data(global_exile, 4000);
   result &= save_or_load_data(global_library, 4000);

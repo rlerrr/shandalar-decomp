@@ -86,11 +86,7 @@ extern HINSTANCE g_app_instance;
 void draw_card_list_count(int dc, int *rect, int value);
 
 // TODO: cleanup this bucket of shit
-#ifdef SHANDALAR
-#define SHOWLIST_CARD_BACK_CSVID (*(int *)&gs_phasebar_your_main_postcombat_00926670[0x60])
-#else
 #define SHOWLIST_CARD_BACK_CSVID unk_009266ac
-#endif
 #define SHOWLIST_MOUSE_MODE g_duel_interface_options.layout
 
 // FUNCTION: MAGIC 0x0049fd0c

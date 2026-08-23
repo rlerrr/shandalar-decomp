@@ -38,6 +38,13 @@ int get_recorded_action_count(void);
 void push_affected_card_stack(void);
 void pop_affected_card_stack(void);
 int C_get_abilities(int player, int card, int event, int a4);
+#ifdef SHANDALAR
+int ConsumeUiTickCount(void);
+void HideMouseCursorNested(void);
+void ShowMouseCursorNested(void);
+void NoopSetSpecialSprite(int unused_a, int unused_b, int unused_c);
+extern int g_ttsprite_special_sprite_b;
+#endif
 void set_duel_prompt_text(char *text);
 void process_damage_prevention(int player);
 void mark_blocked_attackers(int player);
@@ -127,7 +134,7 @@ typedef struct
   int stack_count;
   int(__cdecl *DAT_007ab2cc_value)(int, int);
   int DAT_0093a848_value;
-  int damage_matrix[2][151][2][4];
+  damage_accumulator_t damage_matrix[2][151][2];
   int cost_mod[8];
   int mana_charge[8];
   int x_value_copy;
@@ -1090,7 +1097,7 @@ int ai_opinion_of_gamestate(int player)
           s.card_value = 1;
         }
 
-        s.card_value = (unk_007a7d18[s.current_player] * s.card_value) / 8;
+        s.card_value = (g_ai_combat_value_weights[s.current_player + 2] * s.card_value) / 8;
       }
 
       if ((global_cards_data[s.internal_card_id].type & TYPE_LAND) != 0)
@@ -1142,7 +1149,7 @@ int ai_opinion_of_gamestate(int player)
       {
         append_displayed_card_name(s.current_player, s.card);
         strcat(g_ui_message_buffer, " ");
-        strcat(g_ui_message_buffer, _itoa(s.card_value, g_ai_action_dialog_number_buffer, 10));
+        strcat(g_ui_message_buffer, _itoa(s.card_value, g_itoa_buffer, 10));
         strcat(g_ui_message_buffer, "\n");
       }
     }
@@ -1358,7 +1365,7 @@ int ai_opinion_of_gamestate_continued(int player, int score)
     if ((s.block_result & 2) == 0)
     {
       s.damage_to_player_score = ((g_ai_combat_value_weights[player] * s.attacker_power * 0x18) / 4) / ClampIntToRange(g_life[player] + 1, 1, 99);
-      s.blocker_trade_score = (unk_007a7d18[player] * s.smallest_blocker_score) / 0x10;
+      s.blocker_trade_score = (g_ai_combat_value_weights[player + 2] * s.smallest_blocker_score) / 0x10;
       if (s.block_result == 0 || (s.damage_to_player_score < s.blocker_trade_score && g_life[player] > s.expected_damage + s.attacker_power))
       {
         s.expected_damage += s.attacker_power;
@@ -1398,11 +1405,11 @@ int show_ai_action_log_dialog(int use_saved_actions, int score)
   } s;
 
   strcpy(g_ui_message_buffer, "AI:");
-  strcat(g_ui_message_buffer, _itoa(score, g_ai_action_dialog_number_buffer, 10));
+  strcat(g_ui_message_buffer, _itoa(score, g_itoa_buffer, 10));
   strcat(g_ui_message_buffer, " L:");
-  strcat(g_ui_message_buffer, _itoa(g_life[0], g_ai_action_dialog_number_buffer, 10));
+  strcat(g_ui_message_buffer, _itoa(g_life[0], g_itoa_buffer, 10));
   strcat(g_ui_message_buffer, "/");
-  strcat(g_ui_message_buffer, _itoa(g_life[1], g_ai_action_dialog_number_buffer, 10));
+  strcat(g_ui_message_buffer, _itoa(g_life[1], g_itoa_buffer, 10));
   strcat(g_ui_message_buffer, " ...\n");
 
   for (s.action_index = 0; (s.action_count = use_saved_actions != 0 ? g_saved_recorded_action_count : g_recorded_action_count) > s.action_index; s.action_index++)
@@ -1470,11 +1477,20 @@ void start_ai_decision_search(int decision_code, int time_scale)
   DAT_00775d3c = 1 << (unsigned char)(internal_rand(5) + 1);
 
   save_ai_search_state();
+#ifdef SHANDALAR
+  ConsumeUiTickCount();
+#else
   reset_duel_tick_timer_indirect();
+#endif
   update_duel_thread_time_marker();
 
   g_ai_search_try_count = 0;
   g_ai_search_force_pass = 1;
+#ifdef SHANDALAR
+  HideMouseCursorNested();
+  NoopSetSpecialSprite(1, 1, (int)g_ttsprite_special_sprite_b);
+  ShowMouseCursorNested();
+#endif
   unk_00712938 = 0;
 }
 
@@ -1524,7 +1540,7 @@ void save_ai_search_state(void)
   g_ai_search_backup.stack_count = g_stack_size;
   g_ai_search_backup.DAT_007ab2cc_value = pending_killed_card_handler;
   g_ai_search_backup.DAT_0093a848_value = DAT_0093a848;
-  memcpy(g_ai_search_backup.damage_matrix, unk_0093b280, sizeof(g_ai_search_backup.damage_matrix));
+  memcpy(g_ai_search_backup.damage_matrix, g_damage_accumulators, sizeof(g_ai_search_backup.damage_matrix));
   memcpy(g_ai_search_backup.cost_mod, unk_0072c440, sizeof(g_ai_search_backup.cost_mod));
   memcpy(g_ai_search_backup.mana_charge, g_mana_charge, sizeof(g_ai_search_backup.mana_charge));
   g_ai_search_backup.x_value_copy = g_x_value;
@@ -1583,7 +1599,7 @@ void restore_ai_search_state(void)
   g_stack_size = g_ai_search_backup.stack_count;
   pending_killed_card_handler = g_ai_search_backup.DAT_007ab2cc_value;
   DAT_0093a848 = g_ai_search_backup.DAT_0093a848_value;
-  memcpy(unk_0093b280, g_ai_search_backup.damage_matrix, sizeof(g_ai_search_backup.damage_matrix));
+  memcpy(g_damage_accumulators, g_ai_search_backup.damage_matrix, sizeof(g_ai_search_backup.damage_matrix));
   memcpy(unk_0072c440, g_ai_search_backup.cost_mod, sizeof(g_ai_search_backup.cost_mod));
   memcpy(g_mana_charge, g_ai_search_backup.mana_charge, sizeof(g_ai_search_backup.mana_charge));
   g_x_value = g_ai_search_backup.x_value_copy;
@@ -1745,7 +1761,7 @@ void setup_ai_combat_abilities(int player)
       ai_combat_eval_table[s.attached_player][s.attached_card].toughness += has_mana(s.attached_player, COLOR_WHITE, 1);
     }
     else if ((global_cards_data[s.internal_card_id].code_pointer == card_royal_assassin) &&
-             ((global_card_instances[s.defending_player][s.card].state & (STATE_TAPPED | STATE_INVISIBLE)) == 0))
+             ((global_card_instances[s.defending_player][s.card].state & STATE_SUMMONSICK_BOTH) == 0))
     {
       untapped_royal_assassin_count++;
     }
@@ -2853,7 +2869,7 @@ void setup_combat_damage_simulation(int player)
       s.internal_card_id = AI_CARD_INTERNAL_ID(ai_blocker_player, s.card);
       if ((((s.internal_card_id != -1) &&
             (((global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0) ||
-             ((AI_CARD_STATE(ai_blocker_player, s.card) & STATE_NONCREATURE_CAN_ATTACK) != 0))) &&
+             ((AI_CARD_STATE(ai_blocker_player, s.card) & STATE_NONCREATURE_CAN_BLOCK) != 0))) &&
            ((AI_CARD_STATE(ai_blocker_player, s.card) & (STATE_OUBLIETTED | STATE_IN_PLAY | STATE_TAPPED)) == STATE_IN_PLAY)) &&
           (AI_CARD_BLOCKING(ai_blocker_player, s.card) == -1))
       {
@@ -2923,7 +2939,7 @@ void setup_combat_damage_simulation(int player)
       }
       unk_00925d3c = 0;
       dispatch_event(ai_blocker_player, s.card, 0x8b);
-      DAT_007080c8[ai_blocker_count] = unk_00925d3c;
+      DAT_007080c8[combat_damage_attacker_count] = unk_00925d3c;
       if (ai_blocker_player == g_active_player)
       {
         if ((global_cards_data[s.internal_card_id].extra_ability & EA_INF_POWER) != 0)

@@ -154,7 +154,7 @@ int activate_mana_source_for_payment(int player, int card);
 int activate_mana_sources_for_payment(int player,
                  int *mana_paid_by_color,
                  int *total_mana_paid,
-                 unsigned char activation_flags,
+                 int activation_flags,
                  int include_special_mana);
 int record_paid_mana(int color, int amount);
 int unproduce_mana(int player, int color, int amount);

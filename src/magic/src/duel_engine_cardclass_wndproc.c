@@ -54,7 +54,7 @@ int draw_masked_bitmap_left_half_to_rect(HDC dc, RECT *rect, HANDLE bitmap);
 BOOL DrawMaskedBitmapToRect(HDC dc, RECT *rect, HANDLE bitmap, int width, int height,
                             int src_x, int src_y, int mask_x, int mask_y);
 void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned int player, int card);
-void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned int player, int card, int attached_player, int attached_card);
+void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, int player, int card, int attached_player, int attached_card);
 void draw_cardclass_small_card(HDC dc, RECT *rect, unsigned int player, int card, int ui_flags,
                                unsigned int target_ui_flags, int parent_card, int activation, int upkeep);
 void draw_card_highlight_frame(HDC dc, RECT *rect, int highlighted);
@@ -834,9 +834,9 @@ state_t get_displayed_card_state(int player, int card)
 
 // FUNCTION: MAGIC 0x0044931a
 // FUNCTION: SHANDALAR 0x00452e97
-unsigned int is_displayed_card_owned_by_opponent(int player, int card)
+int is_displayed_card_owned_by_opponent(int player, int card)
 {
-  unsigned int state;
+  int state;
 
   if (displayed_card_indices_invalid(player, card) != 0)
   {
@@ -1595,7 +1595,7 @@ int draw_standard_counters(HDC dc, RECT *rect, int power, int m1m1,
   s.bitmap_width = s.bitmap.bmWidth;
   s.icon_row_height = s.bitmap.bmHeight / 0x19;
   s.card_height = rect->bottom - rect->top;
-  s.icon_width = (s.card_height * s.bitmap.bmWidth) / s.icon_row_height;
+  s.icon_width = (s.bitmap_width * s.card_height) / s.icon_row_height;
   s.column_width = (rect->right - rect->left) / 3;
   s.left_column = rect->left;
   s.middle_column = s.left_column + s.column_width;
@@ -2149,7 +2149,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
 
 // FUNCTION: MAGIC 0x0055af78
 // FUNCTION: SHANDALAR 0x0057129f
-void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned int player, int card,
+void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, int player, int card,
                                 int attached_player, int attached_card)
 {
   struct
@@ -2161,60 +2161,63 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, unsigned 
     unsigned int display_version;
   } s;
 
-  if (dc != (HDC)0 && rect != NULL)
+  if (dc == (HDC)0)
   {
-    if (card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == (unsigned int)g_draw_card_placeholder_internal_card_id)
+    return;
+  }
+  if (rect == NULL)
+  {
+    return;
+  }
+  if (card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == (unsigned int)g_draw_card_placeholder_internal_card_id)
+  {
+    DrawCardBack(dc, rect);
+    DrawSmallCardTitle(dc, rect, gs_cardtitle_activation_007aaeb0, 0, 1);
+  }
+  else
+  {
+    s.display_info = get_displayed_card_display_pic_info(s.displayed_player_and_card, player, card);
+    s.display_version = (s.display_info >> 0x10) & 0xffff;
+    s.card_data.id = s.display_info & 0xffff;
+    if (card_id == unk_0092666c)
     {
-      DrawCardBack(dc, rect);
-      DrawSmallCardTitle(dc, rect, gs_cardtitle_activation_007aaeb0, 0, 1);
+      strcpy(g_activation_card_title_buffer_00709150, gs_cardtitle_activation_007aaeb0);
     }
     else
     {
-      s.display_info = get_displayed_card_display_pic_info(s.displayed_player_and_card, player, card);
-      memset(&s.card_data, 0, sizeof(s.card_data));
-      s.display_version = s.display_info >> 0x10;
-      s.card_data.id = s.display_info & 0xffff;
-      if (card_id == unk_0092666c)
-      {
-        strcpy(g_activation_card_title_buffer_00709150, gs_cardtitle_activation_007aaeb0);
-      }
-      else
-      {
-        g_activation_card_title_buffer_00709150[0] = '\0';
-      }
-      s.card_data.full_name = g_activation_card_title_buffer_00709150;
-      s.card_data.name = g_activation_card_title_buffer_00709150;
-      s.card_data.expansion = 0xffffffff;
-      s.card_data.color = 0xffffffff;
-      s.card_data.card_type = 0xffffffff;
-      s.card_data.subtype = 0xffffffff;
-      s.card_data.db_card_type_2 = 0;
-      s.card_data.rarity = 0xffffffff;
-      for (s.i = 0; s.i < 10; ++s.i)
-      {
-        s.card_data.abilities[s.i] = 0;
-      }
-      s.card_data.unused0x38 = 0xffffffff;
-      s.card_data.unused0x3c = 0;
-      s.card_data.artist = NULL;
-      s.card_data.num_pics = 0;
-      s.card_data.req.req_black = 0;
-      s.card_data.req.req_blue = 0;
-      s.card_data.req.req_colorless = 0;
-      s.card_data.req.req_green = 0;
-      s.card_data.req.req_red = 0;
-      s.card_data.req.req_white = 0;
-      g_activation_rules_text_buffer_00708f48[0] = '\0';
-      s.card_data.rules_text = g_activation_rules_text_buffer_00708f48;
-      s.card_data.flavor_text = "";
-      s.card_data.power = 0;
-      s.card_data.toughness = 0;
-
-      DrawSmallCard(dc, rect, &s.card_data, s.display_version, 1);
-      draw_manastripes(dc, rect, attached_player, attached_card);
-      DrawSmallCardTitle(dc, rect, s.card_data.full_name, get_displayed_card_title_flags(player, card),
-                         is_displayed_card_owned_by_opponent(player, card) == player);
+      g_activation_card_title_buffer_00709150[0] = '\0';
     }
+    s.card_data.name = g_activation_card_title_buffer_00709150;
+    s.card_data.full_name = s.card_data.name;
+    s.card_data.expansion = 0xffffffff;
+    s.card_data.color = 0xffffffff;
+    s.card_data.card_type = 0xffffffff;
+    s.card_data.subtype = 0xffffffff;
+    s.card_data.type_text = NULL;
+    s.card_data.db_card_type_2 = 0xffffffff;
+    s.card_data.rarity = 0;
+    for (s.i = 0; s.i < 10; ++s.i)
+    {
+      ((unsigned char *)&s.card_data.req)[s.i] = 0;
+    }
+    s.card_data.unused0x3c = 0xffffffff;
+    s.card_data.artist = NULL;
+    s.card_data.num_pics = 0;
+    s.card_data.ai_against_color = s.card_data.ai_for_color = s.card_data.ai_counts_as_color = 0;
+    s.card_data.ai_against_land = s.card_data.ai_for_land = s.card_data.ai_counts_as_land = 0;
+    s.card_data.expansion_rarity = 0;
+    g_activation_rules_text_buffer_00708f48[0] = '\0';
+    s.card_data.rules_text = g_activation_rules_text_buffer_00708f48;
+    s.card_data.flavor_text = "";
+    s.card_data.power = 0;
+    s.card_data.toughness = 0;
+    s.card_data.sleight_color = 0;
+    *(uint32_t *)&s.card_data.hack_colors = 0;
+
+    DrawSmallCard(dc, rect, &s.card_data, s.display_version, 1);
+    draw_manastripes(dc, rect, attached_player, attached_card);
+    DrawSmallCardTitle(dc, rect, s.card_data.name, get_displayed_card_title_flags(player, card),
+                       is_displayed_card_owned_by_opponent(player, card) == player);
   }
 }
 
@@ -3906,7 +3909,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       s.test_point.x = (unsigned int)lparam & 0xffff;
       s.test_point.y = (unsigned int)lparam >> 0x10;
       ClientToScreen(hwnd, &s.test_point);
-      s.test_point.x += GetSystemMetrics(SM_CYMENU);
+      s.test_point.x += GetSystemMetrics(SM_CXCURSOR);
       s.test_point.y += 4;
       SetRect(&s.ability_rect, s.test_point.x, s.test_point.y,
               s.test_point.x + 1, s.test_point.y + 1);

@@ -356,11 +356,21 @@ GLOBAL_STATE_EXTERN int DAT_0093d850;
 // GLOBAL: SHANDALAR 0x0094d2b0
 GLOBAL_STATE_EXTERN int g_stack_data[32];
 
+typedef struct
+{
+  int amount;
+  unsigned int source_type;
+  char unknown_8;
+  char padding_9[3];
+  int unknown_c;
+} damage_accumulator_t;
+
 // GLOBAL: MOK 0x005098b0
 // GLOBAL: MAGIC 0x0093b280
 // GLOBAL: SHANDALAR 0x0094f3a0
-GLOBAL_STATE_EXTERN int unk_0093b280[2][151][2][4];
-STATIC_ASSERT(sizeof(unk_0093b280) == 0x25c0, unk_0093b280_wrong_size);
+GLOBAL_STATE_EXTERN damage_accumulator_t g_damage_accumulators[2][151][2];
+STATIC_ASSERT(sizeof(g_damage_accumulators) == 0x25c0, g_damage_accumulators_wrong_size);
+STATIC_ASSERT(sizeof(damage_accumulator_t) == 0x10, damage_accumulator_t_wrong_size);
 
 // GLOBAL: MAGIC 0x00895030
 // GLOBAL: SHANDALAR 0x008a9230
@@ -527,7 +537,7 @@ enum
 
 typedef struct duel_phase_stop_settings_struct
 {
-  unsigned char phase_flags[DUEL_PHASE_STOP_COUNT];
+  char phase_flags[DUEL_PHASE_STOP_COUNT];
 } duel_phase_stop_settings_t;
 
 // GLOBAL: MAGIC 0x007abc90
@@ -863,6 +873,7 @@ GLOBAL_STATE_EXTERN int g_current_spell_card;
 // GLOBAL: SHANDALAR 0x008e267c
 GLOBAL_STATE_EXTERN int DAT_008ce4fc;
 
+// GLOBAL: MAGIC 0x008ce504
 // GLOBAL: SHANDALAR 0x008e2684
 GLOBAL_STATE_EXTERN int g_has_expansion_10;
 

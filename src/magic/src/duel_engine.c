@@ -19,10 +19,12 @@
 #include "duel_engine.h"
 
 #ifndef SHANDALAR
-#include "manalinkinterface/manalinkinterface.h"
 extern HWND global_main_hwnd;
+#include "manalinkinterface/manalinkinterface.h"
 #else
 #include "shandalar/src/shandalar_global_strings.h"
+// GLOBAL: SHANDALAR 0x008a92b0
+HWND global_main_hwnd;
 extern HINSTANCE g_app_instance;
 extern int global_screen_width;
 extern int global_screen_height;
@@ -724,11 +726,7 @@ WPARAM run_duel_engine_message_loop(void)
 
   strcpy(s.help_path, global_base_directory);
   strcat(s.help_path, "\\duel.hlp");
-#ifdef SHANDALAR
-  WinHelpA(g_duel_help_owner_hwnd, s.help_path, 2, 0);
-#else
   WinHelpA(global_main_hwnd, s.help_path, 2, 0);
-#endif
   g_duel_message_loop_active = 1;
   SendMessageA(g_duel_window_hwnd, WM_USER, 0, 0);
 

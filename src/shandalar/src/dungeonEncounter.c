@@ -956,15 +956,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     sound_stop(100);
     do
     {
-      if (sound_get_state(100, &s.sound_state) != 4)
-      {
-        if (s.sound_state == 1)
-        {
-          continue;
-        }
-      }
-      break;
-    } while (1);
+    } while (sound_get_state(100, &s.sound_state) != 4 && s.sound_state == 1);
     sound_unload(100);
   }
   else

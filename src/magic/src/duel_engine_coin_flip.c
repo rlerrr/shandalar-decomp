@@ -28,9 +28,7 @@ extern int g_manalink_is_host;
 extern int g_show_card_list_last_preview_hwnd;
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
-#ifndef SHANDALAR
 extern HANDLE global_mutex_GameInit;
-#endif
 
 void delete_and_close_object(HANDLE obj);
 void resize_duel_hand_window(HWND hwnd);
@@ -261,36 +259,6 @@ void cleanup_coin_flip_animation_dialog_assets(HGDIOBJ brush)
   {
     DeleteObject(brush);
   }
-}
-
-// FUNCTION: SHANDALAR 0x0053fe87
-int choose_fireball_options(int player, int internal_card_id, int maximum_mana, int maximum_targets,
-                            int *mana_to_pay, int *number_of_targets, int *damage_per_target)
-{
-  if ((player == g_other_player && (g_duel_network_flags & 2) == 0) || player == -1 ||
-      internal_card_id == -1 || mana_to_pay == NULL || number_of_targets == NULL || damage_per_target == NULL)
-  {
-    return 0;
-  }
-
-  *mana_to_pay = maximum_mana;
-  *number_of_targets = 1;
-  if (maximum_targets > 1 && maximum_mana > 2)
-  {
-    *number_of_targets = 2;
-  }
-  if (*number_of_targets > maximum_targets)
-  {
-    *number_of_targets = maximum_targets;
-  }
-  *damage_per_target = (*mana_to_pay - (*number_of_targets - 1) + (*number_of_targets - 1)) /
-                       *number_of_targets;
-  if (*damage_per_target < 1)
-  {
-    *damage_per_target = 1;
-  }
-
-  return 1;
 }
 
 // FUNCTION: MAGIC 0x004a3d9c
@@ -987,7 +955,6 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 // FUNCTION: SHANDALAR 0x0053760d
 void redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
 {
-#ifndef SHANDALAR
   struct
   {
     int network_choice;
@@ -995,9 +962,9 @@ void redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
   } s;
 
   s.thread_hwnd = (HWND)hwnd;
-  do
+  while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0)
   {
-  } while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0);
+  }
   TENTATIVE_wait_for_network_result(1, 6);
   s.network_choice = g_network_result_value;
   if (s.thread_hwnd != (HWND)0)
@@ -1006,16 +973,12 @@ void redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
   }
   ReleaseMutex(global_mutex_GameInit);
   _endthread();
-#else
-  (void)hwnd;
-#endif
 }
 
 // FUNCTION: MAGIC 0x0049bccf
 // FUNCTION: SHANDALAR 0x00537684
 void redraw_ante_wait_for_opponent_done_thread(void *hwnd)
 {
-#ifndef SHANDALAR
   struct
   {
     int network_choice;
@@ -1023,9 +986,9 @@ void redraw_ante_wait_for_opponent_done_thread(void *hwnd)
   } s;
 
   s.thread_hwnd = (HWND)hwnd;
-  do
+  while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0)
   {
-  } while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0);
+  }
   TENTATIVE_wait_for_network_result(1, 6);
   s.network_choice = g_network_result_value;
   if (s.thread_hwnd != (HWND)0)
@@ -1034,9 +997,6 @@ void redraw_ante_wait_for_opponent_done_thread(void *hwnd)
   }
   ReleaseMutex(global_mutex_GameInit);
   _endthread();
-#else
-  (void)hwnd;
-#endif
 }
 
 // FUNCTION: MAGIC 0x0049bd46
@@ -1195,7 +1155,6 @@ void draw_duel_dialog_bitmap_button(DRAWITEMSTRUCT *draw_item,
 // FUNCTION: SHANDALAR 0x00535f16
 void coin_flip_wait_for_network_choice_thread(void *hwnd)
 {
-#ifndef SHANDALAR
   struct
   {
     int network_choice;
@@ -1203,17 +1162,14 @@ void coin_flip_wait_for_network_choice_thread(void *hwnd)
   } s;
 
   s.thread_hwnd = (HWND)hwnd;
-  do
+  while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0)
   {
-  } while (WaitForSingleObject(global_mutex_GameInit, 0xffffffff) != 0);
+  }
   TENTATIVE_wait_for_network_result(1, 5);
   s.network_choice = g_network_result_value;
   SendMessageA(s.thread_hwnd, WM_COMMAND, 0x401, s.network_choice);
   ReleaseMutex(global_mutex_GameInit);
   _endthread();
-#else
-  (void)hwnd;
-#endif
 }
 
 // FUNCTION: MAGIC 0x00499984

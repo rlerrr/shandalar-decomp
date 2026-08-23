@@ -10,12 +10,15 @@ int load_text(const char *file_name, const char *section_name)
 {
   struct
   {
+    size_t line_length;
     FILE *f;
-    char line[300];
-    char path[128];
-    char section_line[300]; // ebp - 0x134
-    unsigned int num_text;
     int i;
+    char *line_ptr;
+    char line[300];
+    char path[264];
+    char section_line[300];
+    int num_read;
+    int num_text;
   } s;
 
   strcpy(s.section_line, "@");
@@ -24,43 +27,49 @@ int load_text(const char *file_name, const char *section_name)
 
   strcpy(s.path, global_base_directory);
   strcat(s.path, "\\");
-  strcat(s.path, file_name);
+  strcpy(s.path, file_name);
   // if (!strchr(file_name, '.'))
   //   strcat(s.path, ".txt");
 
   s.f = fopen(s.path, "rt");
   if (s.f == NULL)
-    return -1;
+    return 0;
 
   while (strcmp(s.section_line, s.line))
   {
     if (!fgets(s.line, 300, s.f))
     {
       fclose(s.f);
-      return -1;
+      return 0;
     }
   }
 
   fscanf(s.f, "%d", &s.num_text);
-  fgets(s.line, 300, s.f);
-  if (s.num_text > 225)
-  {
-    fclose(s.f);
-    return -1;
-  }
+  fgets(s.line, 80, s.f);
 
-  for (s.i = 0; s.i < (int)s.num_text; s.i++)
+  s.num_read = 0;
+  for (s.i = 0; s.i < s.num_text && s.i < 250; s.i++)
   {
-    if (!fgets(g_text_lines[s.i], 300, s.f))
+    s.line_ptr = g_text_lines[s.i];
+    if (!fgets(s.line_ptr, 300, s.f))
     {
       fclose(s.f);
-      return -1;
+      return -s.num_read;
     }
-    g_text_lines[s.i][strlen(g_text_lines[s.i]) - 1] = 0;
+    s.line_length = strlen(s.line_ptr);
+    s.line_ptr[s.line_length - 1] = 0;
+    s.num_read++;
   }
 
   fclose(s.f);
-  return s.num_text;
+  if (s.num_read < s.num_text)
+  {
+    return -s.num_read;
+  }
+  else
+  {
+    return s.num_read;
+  }
 }
 
 // FUNCTION: MAGIC 0x004eca6d
@@ -123,18 +132,15 @@ void load_global_ui_strings(char *filename)
   loaded_count = 0;
   for (color_index = 1; color_index < 6; ++color_index)
   {
-    strcpy(gs_color_word_lower_00709210[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_color_word_lower_00709210[color_index], g_text_lines[loaded_count++]);
   }
   for (color_index = 1; color_index < 6; ++color_index)
   {
-    strcpy(gs_color_word_capitalized_00709390[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_color_word_capitalized_00709390[color_index], g_text_lines[loaded_count++]);
   }
   for (color_index = 1; color_index < 6; ++color_index)
   {
-    strcpy(gs_color_word_upper_00709190[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_color_word_upper_00709190[color_index], g_text_lines[loaded_count++]);
   }
 
   load_text(filename, "COLORLESSMANA");
@@ -145,26 +151,22 @@ void load_global_ui_strings(char *filename)
   loaded_count = 0;
   for (color_index = 1; color_index < 6; ++color_index)
   {
-    strcpy(gs_land_word_lower_00709310[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_land_word_lower_00709310[color_index], g_text_lines[loaded_count++]);
   }
   for (color_index = 1; color_index < 6; ++color_index)
   {
-    strcpy(gs_land_word_capitalized_00709290[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_land_word_capitalized_00709290[color_index], g_text_lines[loaded_count++]);
   }
   for (color_index = 1; color_index < 6; ++color_index)
   {
-    strcpy(gs_land_word_upper_00709410[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_land_word_upper_00709410[color_index], g_text_lines[loaded_count++]);
   }
 
   load_text(filename, "ABILITYWORDS");
   loaded_count = 0;
   for (color_index = 0; color_index < 0x11; ++color_index)
   {
-    strcpy(gs_ability_word_008b4de0[color_index], g_text_lines[loaded_count]);
-    ++loaded_count;
+    strcpy(gs_ability_word_008b4de0[color_index], g_text_lines[loaded_count++]);
   }
 
   loaded_count = load_text(filename, "HUNTING_SUBTYPENAMES");

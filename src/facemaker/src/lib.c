@@ -324,7 +324,7 @@ DIBSurface *InitializeGraphicsSystemDefaultMode(void)
   int *bits_per_pixel_ptr;
   int image_size_bytes;
   LOGPALETTE *log_palette;
-  LOGPALETTE *log_palette_cursor;
+  PALETTEENTRY *log_palette_cursor;
   HPALETTE palette_handle;
   PALETTEENTRY *palette_entry;
   int palette_entries_left;
@@ -368,15 +368,15 @@ DIBSurface *InitializeGraphicsSystemDefaultMode(void)
   log_palette->palVersion = 0x300;
   palette_entries_left = 0x100;
   log_palette->palNumEntries = 0x100;
-  log_palette_cursor = log_palette;
+  log_palette_cursor = log_palette->palPalEntry;
   do
   {
-    log_palette_cursor->palPalEntry[0].peRed = 0;
+    log_palette_cursor->peRed = 0;
     --palette_entries_left;
-    log_palette_cursor->palPalEntry[0].peGreen = 0;
-    log_palette_cursor->palPalEntry[0].peBlue = 0;
-    log_palette_cursor->palPalEntry[0].peFlags = 1;
-    log_palette_cursor = (LOGPALETTE *)log_palette_cursor->palPalEntry;
+    log_palette_cursor->peGreen = 0;
+    log_palette_cursor->peBlue = 0;
+    log_palette_cursor->peFlags = 1;
+    ++log_palette_cursor;
   } while (palette_entries_left != 0);
   log_palette->palPalEntry[0].peFlags = 0;
   log_palette->palPalEntry[255].peFlags = 0;
@@ -1395,13 +1395,13 @@ void CopyBytesAsmCompat(double *dst, double *src, unsigned int num)
 #ifdef MODERN_FIXES
   memcpy(dst, src, num);
 #else
-  // TODO: this looks like real inline asm but who knows
   __asm {
     mov edi, dst
     mov esi, src
     mov ecx, num
     push ecx
     shr ecx, 3
+    jz copy_bytes_tail
   copy_bytes_qword_loop:
     fld qword ptr [esi]
     fstp qword ptr [edi]
@@ -1412,6 +1412,7 @@ void CopyBytesAsmCompat(double *dst, double *src, unsigned int num)
   copy_bytes_tail:
     pop ecx
     and ecx, 7
+    jz copy_bytes_done
     rep movsb
   copy_bytes_done:
   }

@@ -135,14 +135,17 @@ undefined4 g_invalidPcxFileDescriptor = 0xFFFFFFFF;
 
 // GLOBAL: DRAWCARDLIB 0x100f2394
 // GLOBAL: DECKDLL 0x1010531c
+// GLOBAL: SHANDALAR 0x005b7b5c
 int g_pcxPaddedWidth;
 
 // GLOBAL: DRAWCARDLIB 0x100f239c
 // GLOBAL: DECKDLL 0x10105324
+// GLOBAL: SHANDALAR 0x005b7b64
 undefined4 global_pcx_lineNum;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a0
 // GLOBAL: DECKDLL 0x10105328
+// GLOBAL: SHANDALAR 0x005b7b68
 int global_pcxFileDescriptor;
 
 // GLOBAL: DRAWCARDLIB 0x100f23a4
@@ -309,7 +312,7 @@ LoadPicFile(int loadFlags, undefined4 unused_arg2, undefined4 unused_arg3, char 
   unused_arg3 = unused_arg3;
   s.bitsPerPixel = 8;
 
-  if (strcmpi(".pcx", strchr(pcxFilename, '.')) == 0)
+  if (_stricmp(".pcx", strchr(pcxFilename, '.')) == 0)
   {
     //.pcx file
     gPcxInFile = fopen(pcxFilename, "rb");
@@ -338,9 +341,9 @@ LoadPicFile(int loadFlags, undefined4 unused_arg2, undefined4 unused_arg3, char 
       {
         global_pcxw_image_height = 0;
       }
-      if ((global_pcxw_image_width & 3) != 0)
+      if ((global_pcxw_image_width % 3) != 0)
       {
-        s.pcx_width_padding = 4 - (global_pcxw_image_width & 3);
+        s.pcx_width_padding = 4 - (global_pcxw_image_width % 3);
       }
       else
       {

@@ -97,7 +97,11 @@ int count_hidden_battlefield_descendants(HWND hwnd, HWND hidden_parent);
 int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_card);
 int displayed_card_indices_invalid(int player, int card);
 extern int g_manalink_is_host;
-#ifndef SHANDALAR
+extern int DAT_00777848;
+#ifdef SHANDALAR
+// GLOBAL: SHANDALAR 0x008e0884
+HANDLE global_mutex_GameInit;
+#else
 extern HANDLE global_mutex_GameInit;
 #endif
 #ifdef SHANDALAR
@@ -172,6 +176,10 @@ OPENFILENAMEA g_duel_save_game_openfilename;
 // GLOBAL: MAGIC 0x00746368
 void *g_duel_player_face_pic;
 
+#ifdef SHANDALAR
+extern HBITMAP g_facemaker_page4_bitmap;
+#endif
+
 // GLOBAL: MAGIC 0x0091c9a4
 // GLOBAL: SHANDALAR 0x00930ae4
 HANDLE g_duel_thread_handle;
@@ -187,9 +195,6 @@ HWND g_duel_palette_window_hwnd;
 // GLOBAL: MAGIC 0x008cc700
 // GLOBAL: SHANDALAR 0x008e0880
 int g_duel_modal_action_active;
-
-// GLOBAL: MAGIC 0x008ce504
-int DAT_008ce504;
 
 // GLOBAL: MAGIC 0x00777aa4
 // GLOBAL: SHANDALAR 0x0078e834
@@ -1837,7 +1842,12 @@ void get_current_duel_selection(int *selected_player, int *selected_card)
 // FUNCTION: SHANDALAR 0x00453e40
 int can_use_current_duel_selection(void)
 {
-  return 0;
+  int result;
+
+  EnterCriticalSection(&g_duel_render_lock);
+  result = DAT_00777848;
+  LeaveCriticalSection(&g_duel_render_lock);
+  return result;
 }
 
 static __inline int pick_card_color_matches(card_ptr_t *card, unsigned int color_filter)
@@ -2377,6 +2387,7 @@ int pick_internal_card_from_list_dialog(char *prompt, int initial_card_id, int f
 }
 
 // FUNCTION: MAGIC 0x004649ef
+// FUNCTION: SHANDALAR 0x005224a0
 void show_opponent_library_window(int unused_color)
 {
   (void)unused_color;
@@ -3019,7 +3030,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
     g_duel_selected_player_card = -1;
     g_duel_selected_opponent_card = -1;
     g_duel_selection_pending = 0;
+#ifdef SHANDALAR
+    DAT_00789710 = -1;
+#else
     g_duel_current_selection_forced = -1;
+#endif
     SendMessageA(DAT_008a8dec, 0x432, 0, 0);
     ShowWindow(DAT_008a8dec, SW_SHOW);
     ShowWindow(DAT_008a8d78, SW_HIDE);
@@ -3094,7 +3109,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.screen_height = 0;
       }
       SendMessageA(g_duel_opponent_face_window_hwnd, 0x439, (WPARAM)s.screen_height, 0);
+#ifdef SHANDALAR
+      s.screen_height = (int)g_facemaker_page4_bitmap;
+#else
       s.screen_height = (int)g_duel_player_face_pic;
+#endif
       SendMessageA(g_duel_player_face_window_hwnd, 0x439, (WPARAM)s.screen_height, 1);
     }
     else
@@ -3231,7 +3250,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
       }
 #ifndef _DEBUG
       // Immediately disables debug menu normally
-      if (DAT_008ce504 == 0)
+      if (g_has_expansion_10 == 0)
       {
         g_duel_cheats_state = 0;
       }

@@ -17,6 +17,7 @@ extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern card_data_t global_cards_data[];
 extern BITMAPINFO g_duel_backbuffer_bmi;
+extern char *s_duel_options_registry_path_00588100;
 
 typedef struct
 {
@@ -401,6 +402,109 @@ int CopyRawCardNamesAndRarities(void)
   }
 
   return 1;
+
+  for (s.card_index = 0; s.card_index < global_available_slots; ++s.card_index)
+  {
+    s.card_type = CardTypeFromID(s.card_index);
+    strcpy(global_cards_data[s.card_type].name, global_raw_cards_storage[s.card_index].full_name);
+
+    if ((global_cards_data[s.card_type].color & 2) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_black;
+    }
+    else if ((global_cards_data[s.card_type].color & 0x20) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_white;
+    }
+    else if ((global_cards_data[s.card_type].color & 8) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_green;
+    }
+    else if ((global_cards_data[s.card_type].color & 0x10) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_red;
+    }
+    else if ((global_cards_data[s.card_type].color & 4) != 0)
+    {
+      global_cards_data[s.card_type].cc[0] = global_raw_cards_storage[s.card_index].req.req_blue;
+    }
+
+    if ((signed char)global_raw_cards_storage[s.card_index].req.req_colorless == 0x48)
+    {
+      global_cards_data[s.card_type].cc[1] = -1;
+    }
+    else
+    {
+      global_cards_data[s.card_type].cc[1] = global_raw_cards_storage[s.card_index].req.req_colorless;
+    }
+
+    global_cards_data[s.card_type].power = global_raw_cards_storage[s.card_index].power;
+    global_cards_data[s.card_type].toughness = global_raw_cards_storage[s.card_index].toughness;
+
+    if ((global_raw_cards_storage[s.card_index].expansion & 0x80) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 1;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 8) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 0x40;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x20) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 8;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x800) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 2;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 2) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 0x20;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 4) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 4;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x10) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 8;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x100) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 0x10;
+    }
+    else if ((global_raw_cards_storage[s.card_index].expansion & 0x200) != 0)
+    {
+      global_cards_data[s.card_type].expansion = 0x80;
+    }
+    else
+    {
+      global_cards_data[s.card_type].expansion = 0;
+    }
+
+    if (global_raw_cards_storage[s.card_index].rarity == 1)
+    {
+      global_cards_data[s.card_type].rarity = 1;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 2)
+    {
+      global_cards_data[s.card_type].rarity = 3;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 3)
+    {
+      global_cards_data[s.card_type].rarity = 3;
+    }
+    else if (global_raw_cards_storage[s.card_index].rarity == 4)
+    {
+      global_cards_data[s.card_type].rarity = 2;
+    }
+    else
+    {
+      global_cards_data[s.card_type].rarity = 1;
+    }
+  }
+
+  return 1;
 }
 
 // FUNCTION: MAGIC 0x004a7b3d
@@ -452,19 +556,18 @@ void LoadDuelInterfaceRegistryOptions(void)
 {
   struct
   {
-    unsigned int has_expansion;
-    int unused_008c;
-    int unused_0088;
-    BYTE *phase_value;
+    int step_008c;
+    int phase_0088;
+    char *phase_value;
     BYTE value_buffer[100];
     int step;
     int phase;
     HKEY options_key;
-    BYTE integer_buffer[12];
+    char integer_buffer[12];
     DWORD value_size;
   } s;
 
-  if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\MicroProse\\Magic: The Gathering\\DuelOptions", 0, KEY_QUERY_VALUE, &s.options_key) == ERROR_SUCCESS)
+  if (RegOpenKeyExA(HKEY_CURRENT_USER, s_duel_options_registry_path_00588100, 0, KEY_QUERY_VALUE, &s.options_key) == ERROR_SUCCESS)
   {
     s.value_size = 10;
     s.integer_buffer[0] = '\0';
@@ -525,10 +628,10 @@ void LoadDuelInterfaceRegistryOptions(void)
     s.value_size = 10;
     s.integer_buffer[0] = '\0';
     RegQueryValueExA(s.options_key, "ShowAbilitiesOnCards", NULL, NULL, s.integer_buffer, &s.value_size);
-    if (s.integer_buffer[0] == '\0')
-      g_duel_interface_options.show_abilities_on_cards = 1;
-    else
+    if (s.integer_buffer[0] != 0)
       sscanf((char *)s.integer_buffer, "%d", &g_duel_interface_options.show_abilities_on_cards);
+    else
+      g_duel_interface_options.show_abilities_on_cards = 1;
 
     s.value_size = 10;
     s.integer_buffer[0] = '\0';
@@ -549,31 +652,32 @@ void LoadDuelInterfaceRegistryOptions(void)
     if (RegQueryValueExA(s.options_key, "PhaseStoppers", NULL, NULL, s.value_buffer, &s.value_size) == ERROR_SUCCESS)
     {
       s.phase_value = s.value_buffer;
-      s.phase = 0;
-      while (s.phase < 2 && *s.phase_value != '\0')
+
+      for (s.phase = 0; s.phase < 2 && *s.phase_value != '\0'; s.phase++)
       {
-        s.step = 0;
-        while (s.step < 0x25 && *s.phase_value != '\0')
+
+        for (s.step = 0; s.step < 0x25 && *s.phase_value != '\0'; s.step++)
         {
-          if (g_duel_active == 0)
+          if (g_duel_active != 0)
           {
-            if (*s.phase_value == 'S')
-              g_duel_phase_stop_settings[s.phase].phase_flags[s.step] = 1;
+            if (*(s.phase_value++) == 'S')
+            {
+              g_duel_phase_stop_settings[s.phase].phase_flags[s.step] |= 1;
+            }
             else
-              g_duel_phase_stop_settings[s.phase].phase_flags[s.step] = 0;
+            {
+              g_duel_phase_stop_settings[s.phase].phase_flags[s.step] &= 0xfe;
+            }
           }
-          else if (*s.phase_value == 'S')
+          else if (*(s.phase_value++) == 'S')
           {
-            g_duel_phase_stop_settings[s.phase].phase_flags[s.step] |= 1;
+            g_duel_phase_stop_settings[s.phase].phase_flags[s.step] = 1;
           }
           else
           {
-            g_duel_phase_stop_settings[s.phase].phase_flags[s.step] &= 0xfe;
+            g_duel_phase_stop_settings[s.phase].phase_flags[s.step] = 0;
           }
-          s.phase_value++;
-          s.step++;
         }
-        s.phase++;
       }
       g_duel_phase_stop_settings[0].phase_flags[0x14] |= 1;
     }
@@ -611,8 +715,14 @@ void LoadDuelInterfaceRegistryOptions(void)
 
     g_has_expansion_10 = 0;
     s.value_size = 10;
-    s.has_expansion = HasExpansion(0x10);
-    g_has_expansion_10 = (s.has_expansion != 0);
+    if (HasExpansion(0x10))
+    {
+      g_has_expansion_10 = 1;
+    }
+    else
+    {
+      g_has_expansion_10 = 0;
+    }
   }
   else
   {
@@ -627,10 +737,10 @@ void LoadDuelInterfaceRegistryOptions(void)
     g_duel_interface_options.show_abilities_on_cards = 1;
     g_duel_interface_options.expand_text_box_on_big_card = 0;
     g_duel_interface_options.see_next_draws_at_end_of_duel = 0;
-    for (s.phase = 0; s.phase < 2; s.phase++)
+    for (s.phase_0088 = 0; s.phase_0088 < 2; s.phase_0088++)
     {
-      for (s.step = 0; s.step < 0x25; s.step++)
-        g_duel_phase_stop_settings[s.phase].phase_flags[s.step] = 0;
+      for (s.step_008c = 0; s.step_008c < 0x25; s.step_008c++)
+        g_duel_phase_stop_settings[s.phase_0088].phase_flags[s.step_008c] = 0;
     }
     g_duel_phase_stop_settings[0].phase_flags[0x14] = 1;
     g_duel_phase_stop_settings[0].phase_flags[0x1e] = 1;

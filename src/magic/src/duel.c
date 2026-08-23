@@ -12,6 +12,7 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/network.h"
+#include "magic/src/shared_startup.h"
 #ifdef SHANDALAR
 #include "deckdll/src/magsnd.h"
 #endif
@@ -73,7 +74,7 @@ int discard_phase(unsigned int player, int phase_mode);
 void cleanup_phase(unsigned int player);
 int restore_duel_turn_resume_state(void);
 int upkeep_phase(unsigned int player);
-void end_turn_phase(unsigned int player);
+int end_turn_phase(unsigned int player);
 int ai_decision_phase(unsigned int player, int *next_state, int *phase_mode, int *phase_value);
 #ifndef SHANDALAR
 extern HANDLE global_mutex_GameInit;
@@ -108,11 +109,33 @@ int DAT_00743098;
 // GLOBAL: SHANDALAR 0x0093022c
 int _DAT_0091c0ec;
 
+// GLOBAL: MAGIC 0x0069c490
+// GLOBAL: SHANDALAR 0x005b7f58
+char g_duel_save_extension[0x10];
+
+// GLOBAL: MAGIC 0x007abc40
+// GLOBAL: SHANDALAR 0x007bfe40
+char g_duel_run_save_extensions[4][10];
+
 // FUNCTION: MAGIC 0x004d2a09
 // FUNCTION: SHANDALAR 0x004f87d9
 void copy_autosave_to_save_file(LPCSTR save_path)
 {
-  (void)save_path;
+  char autosave_path[0x108];
+
+  if (g_duel_run_mode == 0)
+  {
+    strcpy(autosave_path, global_savegame_path);
+    strcat(autosave_path, "/AUTOSAVE");
+    strcat(autosave_path, g_duel_save_extension + 1);
+    CopyFileA(autosave_path, save_path, 0);
+  }
+  else
+  {
+    sprintf(autosave_path, "%s\\AUTOSAVE.%s", global_savegame_path,
+            g_duel_run_save_extensions[g_duel_run_mode]);
+    CopyFileA(autosave_path, save_path, 0);
+  }
 }
 
 // FUNCTION: MAGIC 0x00464b6f
@@ -485,18 +508,18 @@ int init_turn(int player)
   DAT_009251d4++;
   for (s.card = 0; s.card < 0x97; s.card = s.card + 1)
   {
-    unk_0093b280[s.other_player][s.card][1][0] = 0;
-    unk_0093b280[s.other_player][s.card][0][0] = unk_0093b280[s.other_player][s.card][1][0];
-    unk_0093b280[player][s.card][1][0] = unk_0093b280[s.other_player][s.card][0][0];
-    unk_0093b280[player][s.card][0][0] = unk_0093b280[player][s.card][1][0];
-    unk_0093b280[s.other_player][s.card][1][3] = -1;
-    unk_0093b280[s.other_player][s.card][0][3] = unk_0093b280[s.other_player][s.card][1][3];
-    unk_0093b280[s.other_player][s.card][1][2] = (char)unk_0093b280[s.other_player][s.card][0][3];
-    unk_0093b280[s.other_player][s.card][0][2] = (char)unk_0093b280[s.other_player][s.card][1][2];
-    unk_0093b280[player][s.card][1][3] = (char)unk_0093b280[s.other_player][s.card][0][2];
-    unk_0093b280[player][s.card][0][3] = unk_0093b280[player][s.card][1][3];
-    unk_0093b280[player][s.card][1][2] = (char)unk_0093b280[player][s.card][0][3];
-    unk_0093b280[player][s.card][0][2] = (char)unk_0093b280[player][s.card][1][2];
+    g_damage_accumulators[s.other_player][s.card][1].amount = 0;
+    g_damage_accumulators[s.other_player][s.card][0].amount = g_damage_accumulators[s.other_player][s.card][1].amount;
+    g_damage_accumulators[player][s.card][1].amount = g_damage_accumulators[s.other_player][s.card][0].amount;
+    g_damage_accumulators[player][s.card][0].amount = g_damage_accumulators[player][s.card][1].amount;
+    g_damage_accumulators[s.other_player][s.card][1].unknown_c = -1;
+    g_damage_accumulators[s.other_player][s.card][0].unknown_c = g_damage_accumulators[s.other_player][s.card][1].unknown_c;
+    g_damage_accumulators[s.other_player][s.card][1].unknown_8 = (char)g_damage_accumulators[s.other_player][s.card][0].unknown_c;
+    g_damage_accumulators[s.other_player][s.card][0].unknown_8 = g_damage_accumulators[s.other_player][s.card][1].unknown_8;
+    g_damage_accumulators[player][s.card][1].unknown_c = g_damage_accumulators[s.other_player][s.card][0].unknown_8;
+    g_damage_accumulators[player][s.card][0].unknown_c = g_damage_accumulators[player][s.card][1].unknown_c;
+    g_damage_accumulators[player][s.card][1].unknown_8 = (char)g_damage_accumulators[player][s.card][0].unknown_c;
+    g_damage_accumulators[player][s.card][0].unknown_8 = g_damage_accumulators[player][s.card][1].unknown_8;
   }
   reset_empty_card_original_ids();
   compact_timestamp_slots();
@@ -723,7 +746,56 @@ void rebuild_battlefield_summary(void)
 // FUNCTION: SHANDALAR 0x004f8613
 void TENTATIVE_savegame(int autosave_slot)
 {
-  (void)autosave_slot;
+  struct
+  {
+    int saved_phase;
+    char path[0x108];
+  } s;
+
+  if (g_duel_run_mode == 0)
+  {
+    if ((g_duel_mode_flags & 1) == 0)
+    {
+      s.saved_phase = g_current_phase;
+      g_current_phase = autosave_slot;
+      strcpy(s.path, global_savegame_path);
+      strcat(s.path, "/AUTOSAVE");
+      strcat(s.path, g_duel_save_extension + 1);
+      save_gametype0(s.path);
+      g_current_phase = s.saved_phase;
+    }
+
+    if ((g_duel_mode_flags & 1) != 0 && g_duel_cheats_state != 0)
+    {
+      s.saved_phase = g_current_phase;
+      g_current_phase = autosave_slot;
+      strcpy(s.path, global_savegame_path);
+      strcat(s.path, "/SHANDSAVE");
+      strcat(s.path, g_duel_save_extension + 1);
+      save_gametype0(s.path);
+      g_current_phase = s.saved_phase;
+    }
+  }
+  else
+  {
+    s.saved_phase = g_current_phase;
+    g_current_phase = autosave_slot;
+    sprintf(s.path, "%s\\AUTOSAVE.%s", global_savegame_path,
+            g_duel_run_save_extensions[g_duel_run_mode]);
+    if (g_duel_run_mode == 1)
+    {
+      save_soloduel(s.path);
+    }
+    else if (g_duel_run_mode == 2)
+    {
+      save_gauntlet(s.path);
+    }
+    else if (g_duel_run_mode == 3)
+    {
+      save_sealeddeck(s.path);
+    }
+    g_current_phase = s.saved_phase;
+  }
 }
 
 // FUNCTION: MAGIC 0x004e4e75
@@ -857,8 +929,7 @@ int untap_phase_exe(unsigned int player)
     s.done = 0;
     while (s.done == 0)
     {
-      s.optional_untap_count = 0;
-      s.must_untap_count = 0;
+      s.must_untap_count = s.optional_untap_count = 0;
       for (s.loop_player = 0; s.loop_player < 2; s.loop_player = s.loop_player + 1)
       {
         for (s.card = 0; s.card < g_active_cards_count[s.loop_player]; s.card = s.card + 1)
@@ -920,43 +991,43 @@ int untap_phase_exe(unsigned int player)
         {
           if (g_active_player == player)
           {
-            g_stop_phase_player = -1;
-            g_stop_phase = -1;
+            g_stop_phase = g_stop_phase_player = -1;
           }
           else
           {
-            g_previous_stop_phase_player = -1;
-            g_previous_stop_phase = -1;
+            g_previous_stop_phase = g_previous_stop_phase_player = -1;
           }
           load_text(global_ui_strings_filename, "PROMPT_UNTAP");
           s.selected_card = select_card_for_action(player, player, player, 0xff, 0, g_text_lines[1], 2);
           g_phase_was_skipped = 1;
         }
 
-        if (g_target_selection_status_code != -3)
+        switch (g_target_selection_status_code)
         {
-          if (g_target_selection_status_code == -2)
-          {
-            s.done = 1;
-          }
-          else if ((g_target_selection_status_code == 0) && (s.selected_card != -1))
-          {
-            if ((contains_player_card_pair(s.must_untap_cards, s.must_untap_count, unk_00742fcc, s.selected_card) == 0) &&
-                (contains_player_card_pair(s.optional_untap_cards, s.optional_untap_count, unk_00742fcc, s.selected_card) == 0))
+          case 0:
+            if (s.selected_card != -1)
             {
-              if ((can_activate_mana_source_for_stop_prompt(unk_00742fcc, s.selected_card) != 0) &&
-                  (unk_00742fcc == player))
+              if ((contains_player_card_pair(s.must_untap_cards, s.must_untap_count, unk_00742fcc, s.selected_card) != 0) ||
+                  (contains_player_card_pair(s.optional_untap_cards, s.optional_untap_count, unk_00742fcc, s.selected_card) != 0))
+              {
+                g_affected_card_controller = unk_00742fcc;
+                g_affected_card = s.selected_card;
+                C_dispatch_event_raw(0x7e);
+              }
+              else if ((can_activate_mana_source_for_stop_prompt(unk_00742fcc, s.selected_card) != 0) &&
+                       (unk_00742fcc == player))
               {
                 activate_mana_source_card(unk_00742fcc, s.selected_card);
               }
             }
-            else
-            {
-              g_affected_card_controller = unk_00742fcc;
-              g_affected_card = s.selected_card;
-              C_dispatch_event_raw(0x7e);
-            }
-          }
+            break;
+
+          case -2:
+            s.done = 1;
+            break;
+
+          case -3:
+            break;
         }
       }
     }
@@ -967,11 +1038,9 @@ int untap_phase_exe(unsigned int player)
       while (s.done == 0)
       {
         s.must_untap_count = 0;
-        s.loop_player = 0;
-        while ((s.loop_player < 2) && (s.must_untap_count == 0))
+        for (s.loop_player = 0; (s.loop_player < 2) && (s.must_untap_count == 0); s.loop_player++)
         {
-          s.card = 0;
-          while ((s.card < g_active_cards_count[s.loop_player]) && (s.must_untap_count == 0))
+          for (s.card = 0; (s.card < g_active_cards_count[s.loop_player]) && (s.must_untap_count == 0); s.card++)
           {
             if (is_in_play(s.loop_player, s.card) != 0)
             {
@@ -987,9 +1056,7 @@ int untap_phase_exe(unsigned int player)
                 s.must_untap_count++;
               }
             }
-            s.card++;
           }
-          s.loop_player++;
         }
 
         if (s.must_untap_count == 0)
@@ -1468,24 +1535,24 @@ void cleanup_phase(unsigned int player)
 
 // FUNCTION: MAGIC 0x0044fe1a
 // FUNCTION: SHANDALAR 0x0040877b
-void end_turn_phase(unsigned int player)
+int end_turn_phase(unsigned int player)
 {
   struct
   {
     int trace_counter;
-    char trace[104];
+    char trace[100];
+    int found;
     short dynamic_card_count;
     int other_player;
     int dynamic_card_index;
     int card;
     short dynamic_card_ids[300];
   } s;
-  int found;
 
-  s.trace_counter = g_duel_trace_counter;
   s.other_player = 1 - player;
   if (TRACE_ENABLED)
   {
+    s.trace_counter = g_duel_trace_counter;
     g_duel_trace_counter++;
     sprintf(s.trace, "%d: Entering End Turn Phase.\n", s.trace_counter);
     append_to_trace_txt(s.trace);
@@ -1500,8 +1567,7 @@ void end_turn_phase(unsigned int player)
   process_damage_prevention(player);
   TENTATIVE_reassess_all_cards(0, 0xff);
 
-  s.dynamic_card_count = 0;
-  for (s.card = 0; s.card < 0x96; s.card = s.card + 1)
+  for (s.card = 0, s.dynamic_card_count = 0; s.card < 0x96; s.card = s.card + 1)
   {
     if (global_card_instances[player][s.card].internal_card_id != -1)
     {
@@ -1531,35 +1597,35 @@ void end_turn_phase(unsigned int player)
   {
     if (global_cards_data[s.card].id != -1)
     {
-      s.dynamic_card_index = s.dynamic_card_count;
-      found = 0;
-      while (((s.dynamic_card_index = s.dynamic_card_index - 1) >= 0) && (found == 0))
+      s.dynamic_card_index = s.dynamic_card_count - 1;
+      s.found = 0;
+      for (; (s.dynamic_card_index >= 0) && (s.found == 0); s.dynamic_card_index--)
       {
         if (s.dynamic_card_ids[s.dynamic_card_index] == s.card)
         {
-          found = 1;
+          s.found = 1;
         }
       }
 
-      s.dynamic_card_index = 0;
-      while (s.dynamic_card_index < MAX(g_active_cards_count[g_other_player], g_active_cards_count[g_active_player]))
+      for (s.dynamic_card_index = 0;
+           s.dynamic_card_index < MAX(g_active_cards_count[g_other_player], g_active_cards_count[g_active_player]);
+           s.dynamic_card_index++)
       {
         if ((global_card_instances[g_active_player][s.dynamic_card_index].internal_card_id != -1) &&
             ((global_card_instances[g_active_player][s.dynamic_card_index].state & 2) != 0) &&
             (global_card_instances[g_active_player][s.dynamic_card_index].dummy3 == s.card))
         {
-          found = 1;
+          s.found = 1;
         }
         if ((global_card_instances[g_other_player][s.dynamic_card_index].internal_card_id != -1) &&
             ((global_card_instances[g_other_player][s.dynamic_card_index].state & 2) != 0) &&
             (global_card_instances[g_other_player][s.dynamic_card_index].dummy3 == s.card))
         {
-          found = 1;
+          s.found = 1;
         }
-        s.dynamic_card_index++;
       }
 
-      if (found == 0)
+      if (s.found == 0)
       {
         global_cards_data[s.card].id = -1;
       }
@@ -1567,6 +1633,7 @@ void end_turn_phase(unsigned int player)
   }
 
   g_battlefield_extra_ability_flags = 0;
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00450468

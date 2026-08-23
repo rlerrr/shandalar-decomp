@@ -144,6 +144,7 @@ int DAT_0093d84c;
 // GLOBAL: MAGIC 0x00708da8
 char g_card_rules_text_buffer_00708da8[0x190];
 // GLOBAL: MAGIC 0x00708f48
+// GLOBAL: SHANDALAR 0x007325c0
 char g_activation_rules_text_buffer_00708f48[0x190];
 // GLOBAL: MAGIC 0x00709100
 char g_card_title_buffer_00709100[0x34];
@@ -1276,21 +1277,14 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   s.card_data.rarity = 0;
   for (s.ability_index = 0; s.ability_index < 10; ++s.ability_index)
   {
-    s.card_data.abilities[s.ability_index] = 0;
+    ((char *)&s.card_data.req)[s.ability_index] = 0;
   }
-  s.card_data.unused0x38 = 0xffffffff;
-  s.card_data.unused0x3c = 0;
+  s.card_data.unused0x3c = 0xffffffff;
   s.card_data.artist = NULL;
   s.card_data.num_pics = 0;
-  s.card_data.mana_cost_text = NULL;
-  s.card_data.ai_modifiers1 = 0;
-  s.card_data.ai_modifiers2 = 0;
-  s.card_data.req.req_black = 0;
-  s.card_data.req.req_blue = 0;
-  s.card_data.req.req_colorless = 0;
-  s.card_data.req.req_green = 0;
-  s.card_data.req.req_red = 0;
-  s.card_data.req.req_white = 0;
+  s.card_data.ai_against_color = s.card_data.ai_for_color = s.card_data.ai_counts_as_color = 0;
+  s.card_data.ai_against_land = s.card_data.ai_for_land = s.card_data.ai_counts_as_land = 0;
+  s.card_data.expansion_rarity = 0;
 
   if (card_id == unk_007a7d64)
   {
@@ -1429,6 +1423,7 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   s.card_data.power = 0;
   s.card_data.toughness = 0;
   s.card_data.sleight_color = 0;
+  *(int *)&s.card_data.currently_zero_for_all_cards = 0;
   DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, g_duel_interface_options.expand_text_box_on_big_card, gs_illus_00789130);
 }
 

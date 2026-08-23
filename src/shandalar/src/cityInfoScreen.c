@@ -757,9 +757,9 @@ int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int 
     s.text_color = 0xe3;
   }
 
-  if (*(char *)((char *)&g_town_slots[town_index].status_and_ruling_wizard + 1) != '\0')
+  if (g_town_slots[town_index].status_and_ruling_wizard & 0xff00)
   {
-    s.text_color = *(int *)((char *)g_wizard_text_colors + (((int)(g_town_slots[town_index].status_and_ruling_wizard & 0xffffff00)) >> 6));
+    s.text_color = g_wizard_text_colors[(((int)(g_town_slots[town_index].status_and_ruling_wizard & 0xffffff00)) >> 8)];
   }
 
   DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.text_color, ScaleUiCoordinate(x + 0x2a), y, g_ui_message_buffer);

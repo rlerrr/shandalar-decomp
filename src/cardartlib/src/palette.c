@@ -43,6 +43,14 @@ extern undefined1 global_RedPathBitsTable[0x800];
 extern undefined1 global_GreenPathBitsTable[0x800];
 extern undefined1 global_BluePathBitsTable[0x800];
 
+#if defined(MAGIC) || defined(SHANDALAR)
+extern int g_display_color_depth;
+extern int g_duel_message_loop_active;
+#elif defined(DECKDLL)
+extern int global_color_depth;
+extern int g_duel_message_loop_active;
+#endif
+
 // GLOBAL: CARDARTLIB 0x1001d0e4
 // GLOBAL: DRAWCARDLIB 0x10022500
 // GLOBAL: DECKDLL 0x10035b38
@@ -247,6 +255,11 @@ void ApplyCardArtPaletteToDc(HDC hdc)
   SelectPalette(hdc,global_cart_art_hpalette,0);
   RealizePalette(hdc);
   GdiFlush();
+#if defined(MAGIC) || defined(SHANDALAR)
+  if (g_display_color_depth == 8 || g_duel_message_loop_active != 0)
+#elif defined(DECKDLL)
+  if (global_color_depth == 8 || g_duel_message_loop_active != 0)
+#endif
   SetDIBColorTable(hdc,0,0x100,g_cardArtPalette);
   SetStretchBltMode(hdc,COLORONCOLOR);
 }

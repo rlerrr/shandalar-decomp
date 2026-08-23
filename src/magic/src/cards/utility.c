@@ -308,9 +308,9 @@ int card_damage(int player, int card, event_t event)
                                 .internal_card_id]
                   .id != unk_008a8de8)
       {
-        unk_0093b280[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
-                    [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
-                    [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][0] +=
+        g_damage_accumulators[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
+                             [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
+                             [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].amount +=
             PLAYER_CARD_INSTANCE(player, card).info_slot;
 
         if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
@@ -330,20 +330,20 @@ int card_damage(int player, int card, event_t event)
                   .internal_card_id;
         }
 
-        unk_0093b280[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
-                    [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
-                    [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][1] =
+        g_damage_accumulators[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
+                             [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
+                             [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].source_type =
                         (unsigned int)global_cards_data[s.source_internal_card_id].type;
-        if ((unk_0093b280[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
-                         [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
-                         [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][1] &
+        if ((g_damage_accumulators[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
+                                  [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
+                                  [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].source_type &
              TYPE_ARTIFACT) == 0)
         {
-          unk_0093b280[0][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][0] = 1;
+          g_damage_accumulators[0][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].amount = 1;
         }
         else
         {
-          unk_0093b280[1][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][0] = 1;
+          g_damage_accumulators[1][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].amount = 1;
         }
       }
       else
@@ -357,8 +357,8 @@ int card_damage(int player, int card, event_t event)
                                  PLAYER_CARD_INSTANCE(player, card).damage_source_card)
                 .damage_source_card;
 
-        unk_0093b280[s.redirected_source_player][s.redirected_source_card]
-                    [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][0] +=
+        g_damage_accumulators[s.redirected_source_player][s.redirected_source_card]
+                             [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].amount +=
             PLAYER_CARD_INSTANCE(player, card).info_slot;
 
         if (PLAYER_CARD_INSTANCE(s.redirected_source_player, s.redirected_source_card).internal_card_id == -1)
@@ -372,18 +372,18 @@ int card_damage(int player, int card, event_t event)
               PLAYER_CARD_INSTANCE(s.redirected_source_player, s.redirected_source_card).internal_card_id;
         }
 
-        unk_0093b280[s.redirected_source_player][s.redirected_source_card]
-                    [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][1] =
+        g_damage_accumulators[s.redirected_source_player][s.redirected_source_card]
+                             [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].source_type =
                         (unsigned int)global_cards_data[s.redirected_source_internal_card_id].type;
-        if ((unk_0093b280[s.redirected_source_player][s.redirected_source_card]
-                         [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][1] &
+        if ((g_damage_accumulators[s.redirected_source_player][s.redirected_source_card]
+                                  [(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].source_type &
              TYPE_ARTIFACT) == 0)
         {
-          unk_0093b280[0][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][0] = 1;
+          g_damage_accumulators[0][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].amount = 1;
         }
         else
         {
-          unk_0093b280[1][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player][0] = 1;
+          g_damage_accumulators[1][150][(int)PLAYER_CARD_INSTANCE(player, card).damage_target_player].amount = 1;
         }
       }
 

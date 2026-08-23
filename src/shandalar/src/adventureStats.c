@@ -87,7 +87,6 @@ extern FacemakerWindowBounds *g_page1_window_bounds;
 extern FacemakerWindowBounds *g_page2_window_bounds;
 extern int g_analyzed_deck_special_rules;
 extern card_data_t global_cards_data[];
-extern char g_itoa_buffer[0x20];
 extern int g_menu_render_guard;
 extern int g_mouse_x;
 extern int g_mouse_y;

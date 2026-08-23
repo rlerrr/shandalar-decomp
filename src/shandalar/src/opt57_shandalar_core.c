@@ -235,20 +235,18 @@ BOOL UnloadFontSlot(int font_slot)
 }
 
 // FUNCTION: SHANDALAR 0x0057aa30
-int GetFontCharWidth(int font_slot, unsigned char ch_value)
+int GetFontCharWidth(int font_slot, char ch_value)
 {
   FontSlot *font;
   HDC hdc;
   ABC abc;
-  unsigned int ch;
 
   font = &g_font_slots[font_slot];
-  ch = (unsigned int)(unsigned char)ch_value;
   if (font->font_loaded != 0)
   {
     hdc = GetDC((HWND)0);
     SelectObject(hdc, font->hfont);
-    GetCharABCWidthsA(hdc, ch, ch, &abc);
+    GetCharABCWidthsA(hdc, ch_value, ch_value, &abc);
     ReleaseDC((HWND)0, hdc);
     return abc.abcA + abc.abcB + abc.abcC;
   }
@@ -256,7 +254,7 @@ int GetFontCharWidth(int font_slot, unsigned char ch_value)
   {
     return (unsigned int)font->has_packed_widths + (unsigned int)font->glyph_spacing;
   }
-  return (unsigned int)font->glyph_spacing + (unsigned int)font->data.bitmap.glyph_advance[ch];
+  return (unsigned int)font->glyph_spacing + (unsigned int)FONT_GLYPH_ADVANCE(font)[ch_value];
 }
 
 // FUNCTION: SHANDALAR 0x0057acb0
@@ -286,7 +284,7 @@ int MeasureTextSpanWidth(FacemakerWindowBounds *window, char *text, int length)
         glyph_width = font->glyph_width;
         if (glyph_width == 0)
         {
-          glyph_width = font->data.bitmap.glyph_advance[(unsigned char)ch];
+          glyph_width = FONT_GLYPH_ADVANCE(font)[(unsigned char)ch];
           glyph_spacing = font->glyph_spacing;
         }
         else

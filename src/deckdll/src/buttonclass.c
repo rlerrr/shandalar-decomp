@@ -4,7 +4,7 @@ extern HPALETTE global_cart_art_hpalette;
 
 // GLOBAL: DECKDLL 0x1011279c
 // GLOBAL: MAGIC 0x007775b0
-// FUNCTION: SHANDALAR 0x0078df7c
+// GLOBAL: SHANDALAR 0x0078df7c
 static WNDPROC global_wndproc_std_ButtonClass;
 
 // FUNCTION: DECKDLL 0x10025d1b

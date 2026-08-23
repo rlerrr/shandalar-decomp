@@ -600,7 +600,7 @@ char g_dungeon_clue_detail_done_alt_keys[] = " \rDd\x1b";
 
 char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width);
 void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-int GetFontCharWidth(int font_slot, int ch);
+int GetFontCharWidth(int font_slot, char ch);
 
 // FUNCTION: SHANDALAR 0x004311d2
 void BlitGraphicsRectScaledFrom320x240(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
@@ -957,7 +957,7 @@ redraw_list:
       {
         s.click_text_x = ScaleUiCoordinate(DUNGEON_CLUE_COLUMN_OFFSET(s.dungeon_index) + 0x19b);
         s.click_text_y = ScaleUiCoordinate(((int)s.dungeon_index / 2) * 0x3e + 0x69) - GetFontLineHeight(g_page0_window_bounds->font_slot) / 2;
-        DrawFormattedTextNoShadow(g_page0_window_bounds, 0xbe, s.click_text_x, s.click_text_y, s.name_buffer[s.dungeon_index]);
+        DrawFormattedTextNoShadow(g_page0_window_bounds, 0xbe, s.click_text_x, s.click_text_y, s.name_buffer[s.hover_index]);
         ClearInputAndWaitForMouseRelease();
         ShowDungeonClueDetailScreen(s.visible_dungeon_indices[s.dungeon_index]);
         goto redraw_background;

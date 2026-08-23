@@ -89,7 +89,7 @@ char *WrapTextToWidthForDropCap(char *src, char *dst, int max_width)
   s.line_width = 0;
   s.scan = src;
   s.current_line[0] = '\0';
-  memset(&s.current_line[1], 0, 255);
+  memset(&s.current_line[1], 0, 254);
   dst[0] = '\0';
 
   while ((s.word_end = FindTextWordBreak(s.scan)) != (char *)0)

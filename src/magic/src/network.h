@@ -44,6 +44,18 @@ typedef struct
 } target_pair_network_packet_t;
 STATIC_ASSERT(sizeof(target_pair_network_packet_t) == 0xc, target_pair_network_packet_t_wrong_size);
 
+typedef struct
+{
+  char packet_type;
+  char pad_1;
+  short packet_number;
+  int dialog_result;
+  int mana_to_pay;
+  int number_of_targets;
+  int damage_per_target;
+} fireball_options_network_packet_t;
+STATIC_ASSERT(sizeof(fireball_options_network_packet_t) == 0x14, fireball_options_network_packet_t_wrong_size);
+
 // GLOBAL: MAGIC 0x00789a44
 NETWORK_EXTERN HANDLE global_mutex_ReadPacket;
 
@@ -66,6 +78,10 @@ NETWORK_EXTERN char unk_00926080;
 
 // GLOBAL: SHANDALAR 0x0093a1b0
 NETWORK_EXTERN target_pair_network_packet_t g_orcish_catapult_target_packet;
+
+// GLOBAL: MAGIC 0x008cf3a0
+// GLOBAL: SHANDALAR 0x008e34f0
+NETWORK_EXTERN fireball_options_network_packet_t g_fireball_options_network_packet;
 
 // GLOBAL: MAGIC 0x008b27f0
 NETWORK_EXTERN char unk_008b27f0;

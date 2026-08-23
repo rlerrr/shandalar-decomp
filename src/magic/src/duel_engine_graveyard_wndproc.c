@@ -235,7 +235,11 @@ HWND create_expanded_graveyard_window(HWND hwnd, int show_graveyard)
   {
     int row_count;
     int card_x;
+    int created_card_count;
+    int card_width;
+    int x_step;
     int card_count;
+    int all_cards_created;
     int card_index;
     WPARAM cards[500];
     int x_pad;
@@ -249,91 +253,104 @@ HWND create_expanded_graveyard_window(HWND hwnd, int show_graveyard)
     RECT client_rect;
     RECT expanded_rect;
   } s;
-  int x_step;
-  int last_row_cards;
 
   GetWindowRect(hwnd, &s.client_rect);
   s.expanded_rect.left = s.client_rect.left;
   s.expanded_rect.top = s.client_rect.top;
-  GetClientRect(DUEL_SHELL_WINDOW_HWND, &s.client_rect);
+  GetClientRect(g_duel_window_hwnd, &s.client_rect);
   s.expanded_rect.right = (s.client_rect.right * 0x4b) / 100;
   s.expanded_rect.bottom = s.client_rect.bottom;
   GetClientRect(hwnd, &s.client_rect);
+  s.card_width = s.client_rect.right;
   s.card_height = s.client_rect.bottom;
-  x_step = (s.client_rect.right * 0x3c) / 100;
+  s.x_step = (s.card_width * 0x3c) / 100;
   s.x_pad = 5;
   s.y_pad = 5;
-  s.cards_per_row = (((s.expanded_rect.right - s.expanded_rect.left) - 10) - s.client_rect.right) / x_step + 1;
+  s.cards_per_row = (((s.expanded_rect.right - s.expanded_rect.left) - s.x_pad * 2) - s.card_width) / s.x_step + 1;
   s.player = hwnd != g_duel_player_graveyard_window_hwnd;
-  s.expanded_window = CreateWindowExA(0, CLASS_EXPANDED_GRAVEYARD, "", WS_POPUP, 0, 0, 0, 0,
-                                      DUEL_SHELL_WINDOW_HWND, (HMENU)0, g_app_instance, (LPVOID)0);
+  s.expanded_window = CreateWindowExA(0, CLASS_EXPANDED_GRAVEYARD,
+                                      show_graveyard ? "Graveyard list" : "Out-of-play list",
+                                      WS_POPUP, 0, 0, 0, 0, g_duel_window_hwnd,
+                                      (HMENU)0, g_app_instance, (LPVOID)0);
   if (s.expanded_window == (HWND)0)
   {
     return (HWND)0;
   }
 
-  if (show_graveyard == 0)
+  if (show_graveyard != 0)
   {
     SetClassLongA(s.expanded_window, GCL_HBRBACKGROUND, (LONG)GetStockObject(BLACK_BRUSH));
-    s.card_count = copy_cached_exile_cards_and_get_count(s.cards, s.player);
   }
   else
   {
-    SetClassLongA(s.expanded_window, GCL_HBRBACKGROUND, (LONG)GetStockObject(LTGRAY_BRUSH));
-    s.card_count = copy_cached_graveyard_cards_and_get_count(s.cards, s.player);
+    SetClassLongA(s.expanded_window, GCL_HBRBACKGROUND, (LONG)GetStockObject(WHITE_BRUSH));
   }
 
+  s.all_cards_created = 1;
   s.card_x = s.x_pad;
   s.card_y = s.y_pad;
-  s.row_count = 0;
-  s.card_index = s.card_count;
-  while (--s.card_index >= 0)
+  if (show_graveyard != 0)
   {
-    s.card_window = CreateWindowExA(0, CLASS_GRAVEYARD_CARDS, "", WS_CHILD | WS_VISIBLE,
-                                    s.card_x, s.card_y, s.client_rect.right, s.card_height,
+    s.card_count = copy_cached_graveyard_cards_and_get_count(s.cards, s.player);
+  }
+  else
+  {
+    s.card_count = copy_cached_exile_cards_and_get_count(s.cards, s.player);
+  }
+  s.card_index = s.card_count - 1;
+  s.created_card_count = 0;
+  for (; s.card_index >= 0; --s.card_index)
+  {
+    s.card_window = CreateWindowExA(0, CLASS_GRAVEYARD_CARDS,
+                                    show_graveyard ? "Graveyard card" : "Out-of-play card",
+                                    WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
+                                    s.card_x, s.card_y, s.card_width, s.card_height,
                                     s.expanded_window, (HMENU)1, g_app_instance, (LPVOID)0);
     if (s.card_window != (HWND)0)
     {
-      s.row_count++;
+      s.created_card_count++;
       SendMessageA(s.card_window, 0x401, s.cards[s.card_index], 0);
-      s.card_x += x_step;
-      if (s.row_count % s.cards_per_row == 0)
+      s.card_x += s.x_step;
+      if (s.created_card_count % s.cards_per_row == 0)
       {
         s.card_x = s.x_pad;
         s.card_y += s.card_height + s.y_pad;
       }
     }
+    else
+    {
+      s.all_cards_created = 0;
+    }
   }
 
-  if (s.card_count == 0)
+  if (s.card_count != 0)
+  {
+    BringWindowToTop(s.expanded_window);
+    s.expanded_rect.right = (s.card_count - 1 < s.cards_per_row - 1 ? s.card_count - 1 : s.cards_per_row - 1) *
+                                s.x_step +
+                            s.x_pad * 2 + s.expanded_rect.left + s.card_width;
+    s.row_count = s.card_count / s.cards_per_row;
+    if (s.card_count % s.cards_per_row != 0)
+    {
+      s.row_count++;
+    }
+    s.expanded_rect.bottom =
+        (s.card_height + s.y_pad) * (s.row_count - 1) + s.expanded_rect.top + s.y_pad * 2 + s.card_height;
+    GetClientRect(g_duel_window_hwnd, &s.client_rect);
+    if (s.client_rect.bottom < s.expanded_rect.bottom)
+    {
+      OffsetRect(&s.expanded_rect, 0, -(s.expanded_rect.bottom - s.client_rect.bottom));
+    }
+    MoveWindow(s.expanded_window, s.expanded_rect.left, s.expanded_rect.top,
+               s.expanded_rect.right - s.expanded_rect.left,
+               s.expanded_rect.bottom - s.expanded_rect.top, 1);
+    ShowWindow(s.expanded_window, SW_SHOW);
+  }
+  else
   {
     DestroyWindow(s.expanded_window);
-    return (HWND)0;
+    s.expanded_window = (HWND)0;
   }
-
-  BringWindowToTop(s.expanded_window);
-  last_row_cards = s.cards_per_row - 1;
-  if (s.card_count - 1 <= s.cards_per_row - 1)
-  {
-    last_row_cards = s.card_count - 1;
-  }
-  s.expanded_rect.right = last_row_cards * x_step + s.x_pad * 2 + s.expanded_rect.left + s.client_rect.right;
-  s.row_count = s.card_count / s.cards_per_row;
-  if (s.card_count % s.cards_per_row != 0)
-  {
-    s.row_count++;
-  }
-  s.expanded_rect.bottom =
-      (s.card_height + s.y_pad) * (s.row_count - 1) + s.expanded_rect.top + s.y_pad * 2 + s.card_height;
-  GetClientRect(DUEL_SHELL_WINDOW_HWND, &s.client_rect);
-  if (s.client_rect.bottom < s.expanded_rect.bottom)
-  {
-    OffsetRect(&s.expanded_rect, 0, -(s.expanded_rect.bottom - s.client_rect.bottom));
-  }
-  MoveWindow(s.expanded_window, s.expanded_rect.left, s.expanded_rect.top,
-             s.expanded_rect.right - s.expanded_rect.left,
-             s.expanded_rect.bottom - s.expanded_rect.top, 1);
-  ShowWindow(s.expanded_window, SW_SHOW);
   return s.expanded_window;
 }
 
@@ -896,7 +913,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
       ApplyCardArtPaletteToDc(s.paint_dc);
       if (g_duel_palette_refresh_pending != 0)
       {
-        FillRect(s.paint_dc, &s.client_rect, GetStockObject(BLACK_BRUSH));
+        FillRect(s.paint_dc, &s.client_rect, GetStockObject(WHITE_BRUSH));
         Sleep(200);
       }
       BitBlt(s.paint_dc, 0, 0, s.client_rect.right, s.client_rect.bottom,
@@ -929,7 +946,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
     }
     return 0;
 
-  case WM_INITMENUPOPUP:
+  case WM_INITMENU:
     s.player = hwnd != g_duel_player_graveyard_window_hwnd;
     AppendMenuA(g_graveyard_popup_menu, MF_STRING, 100, g_graveyard_menu_view_text);
     if (copy_cached_graveyard_cards_and_get_count(s.cards, s.player) == 0)

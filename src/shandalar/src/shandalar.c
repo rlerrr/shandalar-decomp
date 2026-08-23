@@ -510,7 +510,7 @@ void FreeAdvblocksFileBuffer(void);
 void QueueKeyInputFromMessage(WPARAM wparam, LPARAM lparam);
 ATOM RegisterPaletteClass(HINSTANCE hinst);
 HWND CreatePalettePopupWindow(HINSTANCE hinst, HWND parent_hwnd);
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
+int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch, ...);
 int MeasureMultilineTextWidth(FacemakerWindowBounds *window_bounds, char *text);
 int SetFontStyleSize(int font_id, unsigned int style);
 void LoadPcxIntoPageNoPalette(char *path);
@@ -550,7 +550,7 @@ char GetSoundAssetDriveLetter(void);
 unsigned int LoadSoundWithDriveFallback(char *filename, int channel, Sound *sound);
 LONG ChangeDisplayResolution(DWORD width, DWORD height);
 void RestoreDisplayResolution(void);
-DWORD WINAPI AdventureWorkerThread(LPVOID);
+DWORD AdventureWorkerThread(LPVOID);
 void NoopSetSpecialSprite(int unused_a, int unused_b, int unused_c);
 char *BuildResolutionSpritePath(char *sprite_filename);
 int ReadSpriteEntryPointersWithLimit(EncodedImage **out_entries, char *path, int max_entries);
@@ -672,6 +672,7 @@ int int_to_hex_digit(int value);
 unsigned int load_or_probe_duel_save_slot(char *save_file_path, int validate_only);
 int SaveGameWithMessage(char *save_file_path);
 int GetSaveDriveIndex(void);
+int IsSaveDriveAvailable(int drive_index);
 int LoadGameFromPath(char *save_file_path);
 int SaveGameToPath(char *save_file_path);
 int GetFontCharWidth(int font_slot, char ch);
@@ -3283,7 +3284,8 @@ int RunLoadGameMenu(void)
 // FUNCTION: SHANDALAR 0x00501b7d
 int GetSaveDriveIndex(void)
 {
-  char current_directory_buffer[0x104];
+  char current_directory_buffer[0x100];
+  int key;
 
   if (g_save_path_needs_init == -1)
   {
@@ -3292,6 +3294,78 @@ int GetSaveDriveIndex(void)
   }
 
   return tolower(g_save_file_path[0]) - 0x61;
+
+  // The rest of this is unreachable
+  FillGraphicsRect(g_page0_window_bounds, 0, 0, global_screen_width, global_screen_height, 0xf);
+
+  do
+  {
+    if (global_saveload_loading != 0)
+    {
+      strcpy(g_ui_message_buffer, "  Which drive contains your\n    saved game files?\n\n            ");
+    }
+    else
+    {
+      strcpy(g_ui_message_buffer, "  Which drive contains your\n     Save Game disk?\n\n            ");
+    }
+    g_ui_message_buffer[strlen(g_ui_message_buffer)] = (char)(g_save_path_needs_init + 'A');
+    strcat(g_ui_message_buffer, ":\n\n    Press drive letter and\nReturn when disk is inserted.\n");
+    strcat(g_ui_message_buffer, "    Press Escape to cancel.\n");
+    DrawWrappedLairText(g_ui_message_buffer, 0x63, 0x50, 0x48, 0);
+    key = PopNormalizedQueuedKeyInput();
+
+    if (key == 'A' || key == 'a')
+    {
+      g_save_path_needs_init = 0;
+    }
+    if (key == 'B' || key == 'b')
+    {
+      g_save_path_needs_init = 1;
+    }
+    if (key == 'C' || key == 'c')
+    {
+      g_save_path_needs_init = 2;
+    }
+    if (key == 'D' || key == 'd')
+    {
+      g_save_path_needs_init = 3;
+    }
+    if (key == 'E' || key == 'e')
+    {
+      g_save_path_needs_init = 4;
+    }
+    if (key == 'F' || key == 'f')
+    {
+      g_save_path_needs_init = 5;
+    }
+    if (key == 0x1b)
+    {
+      g_save_path_needs_init = -1;
+    }
+
+    FillGraphicsRect(g_page0_window_bounds, 0x50, 0x58, 0xa0, 0x18, 0xf);
+  } while (key != 0xd && key != 0x1b);
+
+  FillGraphicsRect(g_page0_window_bounds, 8, 8, 0x130, 0xb8, 0xf);
+  if (g_save_path_needs_init != -1)
+  {
+    if (IsSaveDriveAvailable(g_save_path_needs_init) == 0)
+    {
+      strcpy(g_ui_message_buffer, "No Disk in Drive A.\n");
+      g_ui_message_buffer[strlen(g_ui_message_buffer)] = (char)(g_save_path_needs_init + 'A');
+      RunTextMenuAt(g_ui_message_buffer, 0x64, 0x50);
+      return -1;
+    }
+  }
+
+  g_save_file_path[0] = (char)(g_save_path_needs_init + 'a');
+  return g_save_path_needs_init;
+}
+
+// FUNCTION: SHANDALAR 0x00501e32
+int IsSaveDriveAvailable(int drive_index)
+{
+  return 0;
 }
 
 // FUNCTION: SHANDALAR 0x00501e44
@@ -4069,7 +4143,7 @@ void UpdateWorldMagicUnlockProgress(void)
         }
       }
       s.world_magic_victory_counts[s.mapped_world_magic_index] = s.world_magic_duel_win_count;
-      s.required_duel_wins = MAX(g_shandalar_difficulty * 5 + 20, s.required_duel_wins - s.original_required_duel_wins);
+      s.required_duel_wins = MAX(g_shandalar_difficulty * 5 + 20, s.required_duel_wins - s.world_magic_duel_win_count);
       s.world_magic_progress_values[s.mapped_world_magic_index] = 0x1e - (s.original_required_duel_wins - s.required_duel_wins);
     }
   }
@@ -6389,7 +6463,7 @@ int FileExists(const char *filename)
 }
 
 // FUNCTION: SHANDALAR 0x0046e6f0
-DWORD WINAPI AdventureWorkerThread(LPVOID unused)
+DWORD AdventureWorkerThread(LPVOID unused)
 {
   struct
   {
@@ -6402,7 +6476,7 @@ DWORD WINAPI AdventureWorkerThread(LPVOID unused)
 
   g_advbuttons_ini_file = fopen("advButtons.txt", "rt");
   strcpy(g_ini_string_scratch, "");
-  g_done_text_table_entry = LoadIniEscapedStringTable(g_advbuttons_ini_file, "done", g_ini_string_scratch)[0];
+  g_done_text_table_entry = LoadIniEscapedStringTable(g_advbuttons_ini_file, "done", g_ini_string_scratch, 0)[0];
 
   IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("misc.exe", (char *)0));
   IgnoreFontConfigLoadResult(LoadFontConfigIfPresent("mgraphic.exe", "fonts.cv"));
@@ -6881,7 +6955,9 @@ cmd_parse:
     g_shared_startup_lock_initialized = 1;
   }
 
-  g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000, AdventureWorkerThread, (LPVOID)0, 0, &s.thread_id);
+  g_loader_thread_handle = CreateThread((LPSECURITY_ATTRIBUTES)0, 0x2000,
+                                        (LPTHREAD_START_ROUTINE)AdventureWorkerThread,
+                                        (LPVOID)0, 0, &s.thread_id);
 
   while (GetMessageA(&s.msg, (HWND)0, 0, 0))
   {

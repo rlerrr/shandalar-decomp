@@ -7,6 +7,25 @@
 #include "assert.h"
 #include "huffman.h"
 
+#ifdef SHANDALAR
+extern int global_fonts_init_state;
+extern int g_display_color_depth;
+#define WVL_DITHER_KERNEL_ID global_fonts_init_state
+#define WVL_COLOR_DEPTH g_display_color_depth
+#else
+#define WVL_DITHER_KERNEL_ID global_dither_kernel_id
+#define WVL_COLOR_DEPTH global_color_depth
+#endif
+
+// Original assert paths: CARDARTLIB/DRAWCARDLIB use "sources", others use "multiplayer"
+#ifdef CARDARTLIB
+#define ASSERT_DIR "sources"
+#elif defined(DRAWCARDLIB)
+#define ASSERT_DIR "sources"
+#else
+#define ASSERT_DIR "multiplayer"
+#endif
+
 // Forward declarations for globals referenced elsewhere.
 int Palette_FindNearestEntryIndex(int red, int green, int blue, byte *palette);
 uint Rgb888_QuantizeToF8(uint rgb);
@@ -21,6 +40,9 @@ void MemZeroDwords(undefined8 *dst, uint dword_count);
 void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24, byte *src_bgr24, int dst_x, int dst_y,
                                     int rect_width, int rect_height, int dst_stride_pixels, int unused);
 void CopyBytes(void *dst, const void *src, size_t size);
+#ifdef SHANDALAR
+extern void CopyBytesAsmCompat(double *dst, double *src, unsigned int size);
+#endif
 void SetBytes(void *dst, int value, size_t num);
 void Haar2D_ReconstructInPlace(int *coeffs, int full_size, int base_size);
 void Haar_CombineSumDiff(int *src_a, int *src_b, int *dst, int width, int rows, undefined4 src_stride_unused,
@@ -441,7 +463,7 @@ int InitErrorDiffusionDeltaTables(int dither_kernel_id, int *delta_table_ptrs_ba
     }
 
     delta_table_ptrs_base[s.tap_weight] = (int)malloc(0x800);
-    assert((uint)(delta_table_ptrs_base[s.tap_weight] != 0), "D:\\Newmagic\\sources\\NedCard\\Palette.c",
+    assert((uint)(delta_table_ptrs_base[s.tap_weight] != 0), "D:\\Newmagic\\" ASSERT_DIR "\\NedCard\\Palette.c",
            0x4fd, "Not enough memory for delta array\r\n");
     for (s.delta = -0x100; s.delta < 0x100; s.delta = s.delta + 1)
     {
@@ -830,7 +852,7 @@ byte *Wvl_DecodeHaar(WvlEntry *wvl, byte *dst)
   }
   else
   {
-    assert(0, "D:\\Newmagic\\sources\\NedCard\\haar.c", 0x15e,
+    assert(0, "D:\\Newmagic\\" ASSERT_DIR "\\NedCard\\haar.c", 0x15e,
            "wavelet pieces has illegal value: %d", wvl->pieces);
   }
 
@@ -914,7 +936,11 @@ void CopyBgr24RectIntoStridedBuffer(byte *dst_bgr24, byte *src_bgr24, int dst_x,
 
   for (row = 0; row < rect_height; row = row + 1, dst_bgr24 += dst_stride_pixels * 3, src_bgr24 += rect_width * 3)
   {
+#ifdef SHANDALAR
+    CopyBytesAsmCompat((double *)dst_bgr24, (double *)src_bgr24, rect_width * 3);
+#else
     CopyBytes(dst_bgr24, src_bgr24, rect_width * 3);
+#endif
   }
 }
 
@@ -1392,7 +1418,7 @@ uint *Wvl_DecodeToBgr24(byte *out_bgr24, WvlEntry *wvl_entry, int width, int hei
     }
     else
     {
-      assert(0, "D:\\Newmagic\\sources\\NedCard\\haar.c", 0x6f7,
+      assert(0, "D:\\Newmagic\\" ASSERT_DIR "\\NedCard\\haar.c", 0x6f7,
              "Only Works on 24 bit images\n");
     }
   }
@@ -1430,7 +1456,7 @@ uint *Wvl_DecodeToBgr24(byte *out_bgr24, WvlEntry *wvl_entry, int width, int hei
     }
     else
     {
-      assert(0, "D:\\Newmagic\\sources\\NedCard\\haar.c", 0x730,
+      assert(0, "D:\\Newmagic\\" ASSERT_DIR "\\NedCard\\haar.c", 0x730,
              "Only Works on 24 bit images\n");
     }
   }
@@ -1468,17 +1494,17 @@ uint *Wvl_DecodeToBgr24(byte *out_bgr24, WvlEntry *wvl_entry, int width, int hei
 
   s.output_row_align = 4;
   s.row_padding = (s.output_row_align - ((width * 3) % s.output_row_align)) % s.output_row_align;
-  if (global_dither_kernel_id == 0)
+  if (WVL_DITHER_KERNEL_ID == 0)
   {
     QuantizeBgr24ToNearestPaletteColorInPlace((uint *)s.out_base, height, width, s.row_padding);
   }
-  else if (global_color_depth == 16)
+  else if (WVL_COLOR_DEPTH == 16)
   {
-    DitherBgr24ToRgbQuantizedF8(global_dither_kernel_id, global_serpentine, (uint *)s.out_base, height, width, s.row_padding);
+    DitherBgr24ToRgbQuantizedF8(WVL_DITHER_KERNEL_ID, global_serpentine, (uint *)s.out_base, height, width, s.row_padding);
   }
-  else if (global_color_depth == 8)
+  else if (WVL_COLOR_DEPTH == 8)
   {
-    DitherBgr24ToPaletteColors(global_dither_kernel_id, global_serpentine, (uint *)s.out_base, height, width, s.row_padding);
+    DitherBgr24ToPaletteColors(WVL_DITHER_KERNEL_ID, global_serpentine, (uint *)s.out_base, height, width, s.row_padding);
   }
 
   return (uint *)s.out_base;

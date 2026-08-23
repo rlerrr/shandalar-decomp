@@ -18,7 +18,7 @@
 extern HWND global_main_hwnd;
 #define DUEL_MAIN_WINDOW_HWND global_main_hwnd
 #else
-#define DUEL_MAIN_WINDOW_HWND g_main_window_hwnd
+#define DUEL_MAIN_WINDOW_HWND g_duel_window_hwnd
 #endif
 
 extern char global_base_directory[];

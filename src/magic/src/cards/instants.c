@@ -307,13 +307,13 @@ int card_simulacrum(int player, int card, event_t event)
       {
         for (current_card = 0; current_card < 151; ++current_card)
         {
-          if (unk_0093b280[current_player][current_card][player][0] > 0)
+          if (g_damage_accumulators[current_player][current_card][player].amount > 0)
           {
             damage_creature(target_player, target_card,
-                            unk_0093b280[current_player][current_card][player][0],
+                            g_damage_accumulators[current_player][current_card][player].amount,
                             current_player, current_card);
-            instance->info_slot += unk_0093b280[current_player][current_card][player][0];
-            unk_0093b280[current_player][current_card][player][0] = 0;
+            instance->info_slot += g_damage_accumulators[current_player][current_card][player].amount;
+            g_damage_accumulators[current_player][current_card][player].amount = 0;
           }
         }
       }
@@ -3542,11 +3542,11 @@ int card_reverse_damage(int player, int card, event_t event)
         {
           for (s.current_card = 0; s.current_card < 150; s.current_card = s.current_card + 1)
           {
-            if (0 < unk_0093b280[s.controller][s.current_card][player][0])
+            if (0 < g_damage_accumulators[s.controller][s.current_card][player].amount)
             {
               s.damage_sources[s.count * 2] = s.controller;
               s.damage_sources[s.count * 2 + 1] = s.current_card;
-              s.damage_amounts[s.count] = unk_0093b280[s.controller][s.current_card][player][0];
+              s.damage_amounts[s.count] = g_damage_accumulators[s.controller][s.current_card][player].amount;
               if (PLAYER_CARD_INSTANCE(s.controller, s.current_card).internal_card_id == -1)
               {
                 s.internal_card_ids[s.count] = *(int *)((char *)&PLAYER_CARD_INSTANCE(s.controller, s.current_card) + 0x38);
@@ -3580,10 +3580,10 @@ int card_reverse_damage(int player, int card, event_t event)
             s.selected = select_damage_card_from_list(player, s.internal_card_ids, s.damage_amounts, s.count, 0x89684c, 1, g_text_lines[1]);
           }
           gain_life(player,
-                    unk_0093b280[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player][0] *
+                    g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount *
                         2,
                     player, card);
-          unk_0093b280[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player][0] = 0;
+          g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount = 0;
         }
         if (g_life[1 - player] < 1)
         {
@@ -3625,8 +3625,8 @@ int card_reverse_damage(int player, int card, event_t event)
         else if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
         {
           gain_life(player,
-                    unk_0093b280[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
-                                [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player][0] *
+                    g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
+                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player].amount *
                             2 +
                         PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot,
                     player, card);

@@ -53,7 +53,6 @@ extern char g_text_lines[249][300];
 extern int g_loadsave_skip_esc;
 extern jmp_buf g_adventure_session_restart_jump_buffer;
 extern jmp_buf g_adventure_world_exit_jump_buffer;
-extern char g_itoa_buffer[0x20];
 
 extern int card_dummy(int player, int card, event_t event);
 
@@ -2019,7 +2018,7 @@ int RunTownServicesMenu(int town_index)
     {
       s.rand_slot = internal_rand(s.hint_pair_count);
       g_town_hint_pair_index = s.hint_pairs[s.rand_slot].hint_pair_index;
-      g_town_hint_offer_slot_index = s.hint_pairs[s.rand_slot].slot_index;
+      g_town_hint_offer_slot_index = s.hint_pairs[s.rand_slot].hint_pair_index;
     }
 
     /* Price each offer. */
@@ -2811,13 +2810,6 @@ void RemoveCardFromDeckById(unsigned int card_id)
   }
 }
 
-// FUNCTION: SHANDALAR 0x005224a0
-void ShowPlayer1LibraryMenu(int unused)
-{
-  (void)unused;
-  SelectAdventureListCardIndex(g_active_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
-}
-
 // FUNCTION: SHANDALAR 0x0053114a
 void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
 {
@@ -2856,7 +2848,7 @@ void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
     {
       global_library[1][s.i] = DrawRandomCardFromInitialLibrary(g_opponent_initial_library_index);
     }
-    ShowPlayer1LibraryMenu(g_opponent_initial_library_index);
+    show_opponent_library_window(g_opponent_initial_library_index);
   }
 }
 

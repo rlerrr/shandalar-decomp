@@ -57,6 +57,7 @@ int g_hand_background_bitmap_long_offset = 0x18;
 int g_hand_selected_index_long_offset = 0x1c;
 
 // GLOBAL: MAGIC 0x0055e0f8
+// GLOBAL: SHANDALAR 0x0057f088
 int g_hand_window_extra_bytes = 0x20;
 
 // GLOBAL: MAGIC 0x0064f8f8

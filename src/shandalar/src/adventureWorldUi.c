@@ -325,7 +325,6 @@ extern int g_deck_active_card_count;
 extern int g_hide_world_map_overlays;
 extern card_data_t global_cards_data[];
 extern char g_ini_string_scratch[0x28];
-extern char g_itoa_buffer[0x20];
 
 void ShowMouseCursorNested(void);
 void HideMouseCursorNested(void);

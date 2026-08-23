@@ -66,13 +66,8 @@ void InitializeDuelUiGlobalIds(void)
 
   g_ai_combat_value_weights[0] = 8;
   g_ai_combat_value_weights[1] = 8;
-#ifdef SHANDALAR
   g_ai_combat_value_weights[2] = 0xc;
   g_ai_combat_value_weights[3] = 0xc;
-#else
-  unk_007a7d18[0] = 0xc;
-  unk_007a7d18[1] = 0xc;
-#endif
 
   DAT_008a8d6c = -1;
   DAT_007aadf0 = -1;

@@ -96,9 +96,13 @@ int g_rpbits_next_code;
 // GLOBAL: FACEMAKER 0x0041aa28
 unsigned char g_rpbits_scanline_buffer[0x718];
 
+#ifdef SHANDALAR
+extern char g_ui_message_buffer[0x1000];
+#define g_rpbits_symbol_buffer ((unsigned char *)g_ui_message_buffer)
+#else
 // GLOBAL: FACEMAKER 0x0041b140
-// GLOBAL: SHANDALAR 0x0078cf0f
 unsigned char g_rpbits_symbol_buffer[0x1000];
+#endif
 
 // GLOBAL: FACEMAKER 0x00422120
 unsigned char g_rpbits_bitstream_buffer[0x200];

@@ -20,9 +20,13 @@ typedef union FontSlotData
 {
   struct
   {
+#ifdef SHANDALAR
+    char unknown_000[0x200];
+#else
     char unk_020[0x60];
     unsigned char glyph_advance[0x80];
     char unk_100[0x120];
+#endif
   } bitmap;
   struct
   {
@@ -33,6 +37,9 @@ typedef union FontSlotData
 
 typedef struct FontSlot
 {
+#ifdef SHANDALAR
+  unsigned char glyph_advance[0x80];
+#endif
   unsigned char first_char;
   unsigned char last_char;
   unsigned char glyph_width;
@@ -51,12 +58,16 @@ typedef struct FontSlot
   int tm_min;
   int tm_max;
   LONG tm_leading;
-#ifdef SHANDALAR
-  char unk_22c[0x80];
-#else
+#ifndef SHANDALAR
   char unk_22c[0x78];
 #endif
 } FontSlot;
+
+#ifdef SHANDALAR
+#define FONT_GLYPH_ADVANCE(font) ((font)->glyph_advance)
+#else
+#define FONT_GLYPH_ADVANCE(font) ((font)->data.bitmap.glyph_advance)
+#endif
 
 typedef struct EncodedImage
 {

@@ -142,7 +142,10 @@ static int global_unknown_1012df44;
 static int global_supports_palette;
 
 // GLOBAL: DECKDLL 0x101bbefc
-static int global_color_depth = 0;
+int global_color_depth = 0;
+
+// GLOBAL: DECKDLL 0x101127a0
+int g_duel_message_loop_active;
 
 // GLOBAL: DECKDLL 0x1012dca0
 GlobalDeckInfoBlob global_deckinfo;

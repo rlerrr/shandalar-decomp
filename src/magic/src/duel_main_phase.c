@@ -224,7 +224,7 @@ void choose_blockers_human(int player)
     int best_attacker_abilities;
     int attacker_abilities;
     int attacker;
-    char attacker_blocking_group;
+    int attacker_blocking_group;
     int internal_card_id;
     int attacker_count;
     int defending_player;
@@ -233,87 +233,91 @@ void choose_blockers_human(int player)
     target_t blocked_attacker;
   } s;
 
-  if (g_duel_ai_mode_state != 1)
+  if (g_duel_ai_mode_state == 1)
   {
-    TENTATIVE_reassess_all_cards(0, 0xff);
-    s.attacking_player_copy = player;
-    s.defending_player = 1 - player;
-    s.best_attacker_abilities = 0;
-    s.attacker_count = 0;
-    for (s.attacker = 0; s.attacker < g_active_cards_count[player]; s.attacker++)
+    return;
+  }
+
+  TENTATIVE_reassess_all_cards(0, 0xff);
+  s.attacking_player_copy = player;
+  s.defending_player = 1 - player;
+  s.best_attacker_abilities = 0;
+  s.attacker_count = s.best_attacker_abilities;
+  for (s.attacker = 0; s.attacker < g_active_cards_count[player]; s.attacker++)
+  {
+    s.internal_card_id = global_card_instances[player][s.attacker].internal_card_id;
+    if ((s.internal_card_id != -1) && ((global_card_instances[player][s.attacker].state & STATE_ATTACKING) != 0))
     {
-      s.internal_card_id = global_card_instances[player][s.attacker].internal_card_id;
-      if ((s.internal_card_id != -1) && ((global_card_instances[player][s.attacker].state & STATE_ATTACKING) != 0))
+      s.attacker_abilities = C_get_abilities(player, s.attacker, 0x32, -1);
+      s.attacking_cards[s.attacker_count] = s.attacker;
+      s.attacking_card_abilities[s.attacker_count] = s.attacker_abilities;
+      s.attacker_count++;
+      if (s.best_attacker_abilities < s.attacker_abilities)
       {
-        s.attacker_abilities = C_get_abilities(player, s.attacker, 0x32, -1);
-        s.attacking_cards[s.attacker_count] = s.attacker;
-        s.attacking_card_abilities[s.attacker_count] = s.attacker_abilities;
-        s.attacker_count++;
-        if (s.best_attacker_abilities < s.attacker_abilities)
-        {
-          s.best_attacker_abilities = s.attacker_abilities;
-        }
+        s.best_attacker_abilities = s.attacker_abilities;
       }
     }
-    s.done = 0;
-    while ((s.done == 0) && (player_has_available_blocker(s.defending_player) != 0))
+  }
+  s.done = 0;
+  while ((s.done == 0) && (player_has_available_blocker(s.defending_player) != 0))
+  {
+    load_text(global_ui_strings_filename, "PROMPT_CHOOSEBLOCKERS");
+    if (C_real_select_target(s.defending_player, s.defending_player, s.defending_player, 0x2200, 0x2000002, 0, 0, 0, 0, 0,
+                             -1, -1, -1, -1, 0x400, 0, 0x11, g_text_lines[0], 2, &s.selected_blocker) == 0)
     {
-      load_text(global_ui_strings_filename, "PROMPT_CHOOSEBLOCKERS");
-      if (C_real_select_target(s.defending_player, s.defending_player, s.defending_player, 0x2200, 0x2000002, 0, 0, 0, 0, 0,
-                               -1, -1, -1, -1, 0x400, 0, 0x11, g_text_lines[0], 2, &s.selected_blocker) == 0)
+      s.done = 1;
+    }
+    else
+    {
+      g_combat_assignment_cancelled = 0;
+      if ((g_battlefield_extra_ability_flags & 0x800000) != 0)
       {
-        s.done = 1;
+        push_affected_card_stack();
+        g_trigger_cause_controller = s.selected_blocker.player;
+        g_trigger_cause = s.selected_blocker.card;
+        dispatch_trigger(s.defending_player, TRIGGER_PAY_TO_BLOCK, gs_pay_for_blocker_009263f0, 1);
+        pop_affected_card_stack();
       }
-      else
+      if ((g_combat_assignment_cancelled == 0) &&
+          (C_real_select_target(s.defending_player, s.attacking_player_copy, s.attacking_player_copy, 0x200, 2, 0, 0, 0,
+                                0, 0, -1, -1, -1, -1, 0, 2, 0, g_text_lines[1], 1, &s.blocked_attacker) != 0))
       {
-        g_combat_assignment_cancelled = 0;
-        if ((g_battlefield_extra_ability_flags & 0x800000) != 0)
+        if (assign_blocker_to_attacker(s.selected_blocker.player, s.selected_blocker.card, s.blocked_attacker.player, s.blocked_attacker.card) != 0)
         {
-          push_affected_card_stack();
-          g_trigger_cause_controller = s.selected_blocker.player;
-          g_trigger_cause = s.selected_blocker.card;
-          dispatch_trigger(s.defending_player, TRIGGER_PAY_TO_BLOCK, gs_pay_for_blocker_009263f0, 1);
-          pop_affected_card_stack();
+          s.attacker_blocking_group = global_card_instances[s.blocked_attacker.player][s.blocked_attacker.card].blocking;
+          if ((int)s.attacker_blocking_group == -1)
+          {
+            global_card_instances[s.selected_blocker.player][s.selected_blocker.card].blocking = (unsigned char)s.blocked_attacker.card;
+          }
+          else
+          {
+            global_card_instances[s.selected_blocker.player][s.selected_blocker.card].blocking = (unsigned char)s.attacker_blocking_group;
+          }
+          global_card_instances[s.selected_blocker.player][s.selected_blocker.card].state |= STATE_BLOCKING;
+          if ((g_duel_ai_mode_state != 1) && ((int)s.attacker_blocking_group == -1))
+          {
+            play_sound_effect(0x15);
+          }
+          TENTATIVE_reassess_all_cards(0, 0xff);
+          if ((g_battlefield_extra_ability_flags & 0x100000) != 0)
+          {
+            g_trigger_cause_controller = s.selected_blocker.player;
+            g_trigger_cause = s.selected_blocker.card;
+            dispatch_trigger_twice_once_with_each_player_as_reason(g_current_player, TRIGGER_BLOCKER_CHOSEN, gs_blocker_selected_00926210, 0);
+          }
         }
-        if ((g_combat_assignment_cancelled == 0) &&
-            (C_real_select_target(s.defending_player, s.attacking_player_copy, s.attacking_player_copy, 0x200, 2, 0, 0, 0,
-                                  0, 0, -1, -1, -1, -1, 0, 2, 0, g_text_lines[1], 1, &s.blocked_attacker) != 0))
+        else if (g_duel_ai_mode_state != 1)
         {
-          if (assign_blocker_to_attacker(s.selected_blocker.player, s.selected_blocker.card, s.blocked_attacker.player, s.blocked_attacker.card) != 0)
-          {
-            s.attacker_blocking_group = global_card_instances[s.blocked_attacker.player][s.blocked_attacker.card].blocking;
-            if ((int)s.attacker_blocking_group == -1)
-            {
-              global_card_instances[s.selected_blocker.player][s.selected_blocker.card].blocking = (unsigned char)s.blocked_attacker.card;
-            }
-            else
-            {
-              global_card_instances[s.selected_blocker.player][s.selected_blocker.card].blocking = (unsigned char)s.attacker_blocking_group;
-            }
-            global_card_instances[s.selected_blocker.player][s.selected_blocker.card].state |= STATE_BLOCKING;
-            if ((g_duel_ai_mode_state != 1) && ((int)s.attacker_blocking_group == -1))
-            {
-              play_sound_effect(0x15);
-            }
-            TENTATIVE_reassess_all_cards(0, 0xff);
-            if ((g_battlefield_extra_ability_flags & 0x100000) != 0)
-            {
-              g_trigger_cause_controller = s.selected_blocker.player;
-              g_trigger_cause = s.selected_blocker.card;
-              dispatch_trigger_twice_once_with_each_player_as_reason(g_current_player, TRIGGER_BLOCKER_CHOSEN, gs_blocker_selected_00926210, 0);
-            }
-          }
-          else if (g_duel_ai_mode_state != 1)
-          {
-            load_text(global_ui_strings_filename, "PROMPT_CHOOSEBLOCKERS");
-            set_duel_prompt_text(g_text_lines[2]);
-            Sleep(2000);
-            set_duel_prompt_text("");
-          }
+          load_text(global_ui_strings_filename, "PROMPT_CHOOSEBLOCKERS");
+          set_duel_prompt_text(g_text_lines[2]);
+          Sleep(2000);
+          set_duel_prompt_text("");
         }
       }
     }
   }
+
+  return;
 }
 
 // FUNCTION: MAGIC 0x00445d1a

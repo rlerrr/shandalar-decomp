@@ -23,6 +23,7 @@ extern int g_duel_window_userdata_card_offset;
 extern int DAT_00939508;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern int g_duel_modal_action_active;
+extern target_selection_request_t g_duel_action_request_copy;
 extern HWND g_duel_toggleable_status_window_hwnd;
 extern int g_duel_mode_flags;
 extern int g_duel_network_flags;
@@ -171,9 +172,6 @@ int g_territory_command_packet[3];
 // GLOBAL: MAGIC 0x00789720
 // GLOBAL: SHANDALAR 0x007a04b0
 char g_custom_duel_action_text[0x100];
-
-// GLOBAL: MAGIC 0x00925ae4
-int g_territory_popup_action_flags;
 
 // FUNCTION: MAGIC 0x00538e3d
 // FUNCTION: SHANDALAR 0x0055d661
@@ -1120,11 +1118,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
   case WM_INITMENU:
     if (g_duel_modal_action_active != 0)
     {
-      if ((g_territory_popup_action_flags & 2) != 0)
+      if ((g_duel_action_request_copy.allow_cancel & 2) != 0)
       {
         AppendMenuA(g_territory_popup_menu, MF_STRING, 0x66, g_custom_duel_action_text);
       }
-      if ((g_territory_popup_action_flags & 1) != 0)
+      if ((g_duel_action_request_copy.allow_cancel & 1) != 0)
       {
         AppendMenuA(g_territory_popup_menu, MF_STRING, 0x65, DAT_008ce680);
       }
@@ -1205,17 +1203,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     }
     AppendMenuA(g_territory_popup_menu, MF_STRING, 0x68, g_territory_menu_action_18_text);
     AppendMenuA(g_territory_popup_menu, MF_STRING, 0x69, g_territory_menu_action_69_text);
-    if (g_duel_interface_options.show_invisible_effect_cards != 0)
+    if (g_duel_interface_options.show_id_tags_on_cards != 0)
     {
       CheckMenuItem(g_territory_popup_menu, 0x69, MF_CHECKED);
     }
     AppendMenuA(g_territory_popup_menu, MF_STRING, 0x6a, g_territory_menu_show_options_text);
-    if (g_duel_interface_options.show_all_cards_summon_sickness != 0)
+    if (g_duel_interface_options.show_invisible_effect_cards != 0)
     {
       CheckMenuItem(g_territory_popup_menu, 0x6a, MF_CHECKED);
     }
     AppendMenuA(g_territory_popup_menu, MF_STRING, 0x6b, g_territory_menu_end_turn_text);
-    if (g_duel_interface_options.show_abilities_on_cards != 0)
+    if (g_duel_interface_options.show_all_cards_summon_sickness != 0)
     {
       CheckMenuItem(g_territory_popup_menu, 0x6b, MF_CHECKED);
     }

@@ -50,8 +50,6 @@ extern int g_reveal_all_world_info;
 extern int g_player_starting_life;
 // GLOBAL: SHANDALAR 0x007483e4
 int g_analyzed_deck_special_rules;
-// GLOBAL: SHANDALAR 0x0093a870
-char g_itoa_buffer[0x20];
 extern int g_world_magic_offer_slot_index;
 extern int g_world_scroll_cache_ready;
 extern int g_text_menu_color_normal;
@@ -1406,18 +1404,21 @@ end:
 // FUNCTION: SHANDALAR 0x0054c6ba
 undefined4 BuildQuestStatusMessage(void)
 {
-  int tmp;
-  int value;
+  struct
+  {
+    int value;
+    int tmp;
+  } s;
 
   strcpy(g_ui_message_buffer, "");
   if (g_lair_or_monster_slots[7].entry_type != SHANDALAR_ENTRY_NONE)
   {
-    value = 7;
+    s.value = 7;
     FormatMessageFromStringStripCarriageReturns(
         g_ui_message_buffer, 0x1000, gs_queststatus_0077e0a0[0],
-        GetCreatureName(g_lair_or_monster_slots[value].entry_type),
-        BuildTownDisplayName(FindNearestTownIndex(g_lair_or_monster_slots[value].world_x / 32,
-                                                  g_lair_or_monster_slots[value].world_y / 32)));
+        GetCreatureName(g_lair_or_monster_slots[s.value].entry_type),
+        BuildTownDisplayName(FindNearestTownIndex(g_lair_or_monster_slots[s.value].world_x / 32,
+                                                  g_lair_or_monster_slots[s.value].world_y / 32)));
   }
   if ((g_next_duel_life_delta != 0) || (g_next_duel_card_id != -1))
   {
@@ -1488,9 +1489,9 @@ undefined4 BuildQuestStatusMessage(void)
                                              (1 << (g_current_quest_destination & 3))) != 0)))) ||
         (g_current_quest_type < -100))
     {
-      tmp = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
-                                     g_town_slots[g_current_quest_destination].world_y);
-      if (tmp != g_current_quest_data)
+      s.tmp = GetRelativeWorldQuadrant(g_town_slots[g_current_quest_destination].world_x,
+                                       g_town_slots[g_current_quest_destination].world_y);
+      if (s.tmp != g_current_quest_data)
       {
         g_current_quest_data = -1;
       }

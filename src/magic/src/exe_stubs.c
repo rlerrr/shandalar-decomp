@@ -593,38 +593,52 @@ int prompt_stop_phase_anyway(phase_t phase)
 // FUNCTION: SHANDALAR 0x00403c34
 void prompt_player_for_stop_action(int player, char *prompt)
 {
-  int selected_card;
-  int done;
-  char prompt_copy[100];
+  struct
+  {
+    int selected_card;
+    char prompt_copy[100];
+    int done;
+  } s;
 
-  strcpy(prompt_copy, prompt);
-  done = 0;
+  strcpy(s.prompt_copy, prompt);
+  s.done = 0;
 
-  while (done == 0)
+  while (s.done == 0)
   {
     if (g_active_player == g_current_player)
     {
-      g_stop_phase_player = -1;
-      g_stop_phase = -1;
+      g_stop_phase = g_stop_phase_player = -1;
     }
     else
     {
-      g_previous_stop_phase_player = -1;
-      g_previous_stop_phase = -1;
+      g_previous_stop_phase = g_previous_stop_phase_player = -1;
     }
 
-    selected_card = select_card_for_action(player, player, player, 0xff, 0, prompt_copy, 2);
-    if (g_target_selection_status_code != -3)
+    s.selected_card = select_card_for_action(player, player, player, 0xff, 0, s.prompt_copy, 2);
+    switch (g_target_selection_status_code)
     {
-      if (g_target_selection_status_code == -2)
+    case 0:
+      if (s.selected_card == -1)
       {
-        done = 1;
       }
-      else if (g_target_selection_status_code == 0 && selected_card != -1 &&
-               can_activate_mana_source_for_stop_prompt(unk_00742fcc, selected_card) != 0)
+      else
       {
-        activate_mana_source_card(unk_00742fcc, selected_card);
+        if (can_activate_mana_source_for_stop_prompt(unk_00742fcc, s.selected_card) != 0)
+        {
+          activate_mana_source_card(unk_00742fcc, s.selected_card);
+        }
+        else
+        {
+        }
       }
+      break;
+
+    case -2:
+      s.done = 1;
+      break;
+
+    case -3:
+      break;
     }
   }
 }
@@ -1623,31 +1637,26 @@ int activate(int who_activates, int player, int card)
 {
   struct
   {
-    int result;
-    int who_pays; /* also who chooses in do_dialog */
-
-    int was_tapped;
-    int has_upkeep_costs;
-    int upkeep_total;
-
-    int upkeep_dialog_ai_choice;
-    int upkeep_cost[7];
-
     int upkeep_uses_mana_source;
-
-    char trace[500];
-    char prompt[300];
+    int untap_color;
+    int upkeep_total;
+    char upkeep_prompt[600];
+    int has_upkeep_costs;
+    int i;
+    int upkeep_dialog_ai_choice;
     char upkeep_opt0[300];
     char upkeep_opt1[300];
-    char upkeep_prompt[600];
+    card_instance_t *instance;
+    char prompt[300];
+    int result;
+    int who_pays; /* also who chooses in do_dialog */
+    int was_tapped;
+    char trace[500];
   } s;
-
-  int i;
-  card_instance_t *instance;
 
   s.result = 1;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  s.instance = &PLAYER_CARD_INSTANCE(player, card);
   s.who_pays = player;
 
   if ((g_duel_network_flags & 2) != 0)
@@ -1660,16 +1669,14 @@ int activate(int who_activates, int player, int card)
             "%d: Player #%d is tapping %s(%d).\n",
             trace_counter,
             player,
-            global_cards_data[instance->internal_card_id].name,
+            global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].name,
             card);
     append_to_trace_txt(s.trace);
   }
-
   if (g_current_phase == EVENT_UPKEEP_PHASE)
   {
     s.who_pays = unk_00742f60;
   }
-
   if (s.who_pays == g_other_player && (g_duel_network_flags & 2) == 0 && g_duel_ai_mode_state != 1)
   {
     g_ai_recorded_action = -1;
@@ -1682,63 +1689,58 @@ int activate(int who_activates, int player, int card)
     {
       sprintf(s.prompt, g_text_lines[1], DAT_007a7c60, g_loaded_recorded_action_code);
     }
-    else if (((global_cards_data[instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
+    else if (((global_cards_data[s.instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
              g_current_player == player && g_loaded_recorded_action_code != 0)
     {
       sprintf(s.prompt, g_text_lines[2], DAT_007a7c60, g_loaded_recorded_action_code);
     }
 
-    if (instance->number_of_targets == 0)
+    if (s.instance->number_of_targets != 0)
     {
-      if (g_ai_recorded_action == -1)
+      if (s.instance->number_of_targets == 1)
+      {
+        raw_do_dialog(player, card, s.instance->targets[0].player, s.instance->targets[0].card, s.prompt, 0);
+      }
+      else
       {
         raw_do_dialog(player, card, -1, -1, s.prompt, 0);
       }
-      else
+    }
+    else
+    {
+      if (g_ai_recorded_action != -1)
       {
         /* Unreachable in practice, but present in the original binary. */
         raw_do_dialog(player, card, (g_ai_recorded_action >> 8), (g_ai_recorded_action & 0xff), s.prompt, 0);
       }
-    }
-    else if (instance->number_of_targets == 1)
-    {
-      raw_do_dialog(player, card, instance->targets[0].player, instance->targets[0].card, s.prompt, 0);
-    }
-    else
-    {
-      raw_do_dialog(player, card, -1, -1, s.prompt, 0);
+      else
+      {
+        raw_do_dialog(player, card, -1, -1, s.prompt, 0);
+      }
     }
   }
 
   push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, player, 0);
   unk_007a7c1c = 0;
 
-  if ((instance->upkeep_flags & UPKEEP_UPKEEP_TRIGGER) != 0)
+  if ((s.instance->upkeep_flags & UPKEEP_UPKEEP_TRIGGER) != 0)
   {
     s.has_upkeep_costs = 1;
     s.upkeep_total = 0;
 
-    s.upkeep_cost[0] = (int)(char)instance->upkeep_colorless;
-    s.upkeep_cost[1] = (int)(char)instance->upkeep_black;
-    s.upkeep_cost[2] = (int)(char)instance->upkeep_blue;
-    s.upkeep_cost[3] = (int)(char)instance->upkeep_green;
-    s.upkeep_cost[4] = (int)(char)instance->upkeep_red;
-    s.upkeep_cost[5] = (int)(char)instance->upkeep_white;
-    s.upkeep_cost[6] = (int)(char)instance->upkeep_artmana;
-
-    for (i = 0; i < 7; ++i)
+    for (s.i = 0; s.i < 7; s.i++)
     {
-      g_mana_charge[i] = s.upkeep_cost[i];
+      g_mana_charge[s.i] = ((char *)&s.instance->upkeep_colorless)[s.i];
 
-      if (i > 0)
+      if (s.i > 0)
       {
-        if (has_mana(player, (color_t)i, g_mana_charge[i]) == 0)
+        if (has_mana(player, (color_t)s.i, g_mana_charge[s.i]) == 0)
         {
           s.has_upkeep_costs = 0;
         }
       }
 
-      s.upkeep_total += g_mana_charge[i];
+      s.upkeep_total += g_mana_charge[s.i];
     }
 
     if (has_mana(s.who_pays, COLOR_ANY, s.upkeep_total) == 0)
@@ -1746,14 +1748,17 @@ int activate(int who_activates, int player, int card)
       s.has_upkeep_costs = 0;
     }
 
-    s.upkeep_dialog_ai_choice = (s.has_upkeep_costs == 0);
+    if (s.has_upkeep_costs != 0)
+      s.upkeep_dialog_ai_choice = 0;
+    else
+      s.upkeep_dialog_ai_choice = 1;
 
     load_text(global_ui_strings_filename, "PROMPT_PAYUPKEEP");
     strcpy(s.upkeep_opt0, g_text_lines[0]);
     strcpy(s.upkeep_opt1, g_text_lines[1]);
     sprintf(s.upkeep_prompt, " %s\n %s", s.upkeep_opt0, s.upkeep_opt1);
 
-    if ((instance->upkeep_flags & UPKEEP_UPKEEP_NODIALOG) != 0 ||
+    if ((s.instance->upkeep_flags & UPKEEP_UPKEEP_NODIALOG) != 0 ||
         do_dialog(s.who_pays, player, card, -1, -1, s.upkeep_prompt, s.upkeep_dialog_ai_choice) == 0)
     {
       if (s.has_upkeep_costs == 0)
@@ -1767,7 +1772,7 @@ int activate(int who_activates, int player, int card)
         dispatch_event_to_single_card(player, card, EVENT_UPKEEP_PHASE, 1 - player, -1);
         if (g_last_single_card_event_result == 0)
         {
-          instance->upkeep_flags |= UPKEEP_UPKEEP_UNPAID;
+          s.instance->upkeep_flags |= UPKEEP_UPKEEP_UNPAID;
         }
       }
     }
@@ -1780,23 +1785,23 @@ int activate(int who_activates, int player, int card)
     }
 
   upkeep_cleanup:
-    for (i = 0; i < 7; ++i)
+    for (s.i = 0; s.i < 7; s.i++)
     {
-      g_mana_charge[i] = 0;
+      g_mana_charge[s.i] = 0;
     }
 
-    instance->upkeep_flags &= ~UPKEEP_UPKEEP_TRIGGER;
-    instance->upkeep_flags |= UPKEEP_UPKEEP_CANTPAY;
+    s.instance->upkeep_flags &= ~UPKEEP_UPKEEP_TRIGGER;
+    s.instance->upkeep_flags |= UPKEEP_UPKEEP_CANTPAY;
 
     refresh_stack_proxy_card(1);
     return 1;
   }
 
-  if ((instance->upkeep_flags & UPKEEP_UNTAP_TRIGGER) != 0 && can_pay_untap_cost(player, card) != 0)
+  if ((s.instance->upkeep_flags & UPKEEP_UNTAP_TRIGGER) != 0 && can_pay_untap_cost(player, card) != 0)
   {
-    for (i = 0; i < 7; ++i)
+    for (s.untap_color = 0; s.untap_color < 7; ++s.untap_color)
     {
-      g_mana_charge[i] = (int)(char)instance->mana_to_untap[i];
+      g_mana_charge[s.untap_color] = (int)(char)s.instance->mana_to_untap[s.untap_color];
     }
 
     charge_mana(player, 0, 0);
@@ -1805,7 +1810,7 @@ int activate(int who_activates, int player, int card)
       dispatch_event_to_single_card(player, card, EVENT_UNTAP_PHASE, 1 - player, -1);
       if (g_last_single_card_event_result == 0)
       {
-        instance->upkeep_flags |= UPKEEP_UNTAP_PAID;
+        s.instance->upkeep_flags |= UPKEEP_UNTAP_PAID;
       }
     }
 
@@ -1816,8 +1821,8 @@ int activate(int who_activates, int player, int card)
       return 0;
     }
 
-    instance->upkeep_flags &= ~UPKEEP_UNTAP_TRIGGER;
-    instance->upkeep_flags |= UPKEEP_UNTAP_DONE;
+    s.instance->upkeep_flags &= ~UPKEEP_UNTAP_TRIGGER;
+    s.instance->upkeep_flags |= UPKEEP_UNTAP_DONE;
     refresh_stack_proxy_card(1);
     return 1;
   }
@@ -1829,18 +1834,18 @@ int activate(int who_activates, int player, int card)
   }
   else
   {
-    if ((global_cards_data[instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
+    if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0)
     {
       g_produced_mana_color = -1;
     }
 
     begin_mana_payment_record();
 
-    s.was_tapped = instance->state & 0x10;
+    s.was_tapped = s.instance->state & 0x10;
     dispatch_event_to_single_card(player, card, EVENT_ACTIVATE, 1 - player, -1);
 
     if ((g_duel_network_flags & 2) != 0 && g_other_player == who_activates && DAT_007abc80 == 0 &&
-        instance->internal_card_id != g_draw_card_placeholder_internal_card_id)
+        s.instance->internal_card_id != g_draw_card_placeholder_internal_card_id)
     {
       LoadTextSectionLines(global_ui_strings_filename, "PROMPT_TAP1");
       sprintf(s.prompt, g_text_lines[0], DAT_007a7c60);
@@ -1849,15 +1854,15 @@ int activate(int who_activates, int player, int card)
       {
         sprintf(s.prompt, g_text_lines[1], DAT_007a7c60, g_x_value);
       }
-      else if (((global_cards_data[instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
+      else if (((global_cards_data[s.instance->internal_card_id].extra_ability & (EA_INF_POWER | EA_INF_TOUGHNESS)) != 0) &&
                g_current_player == player && g_x_value != 0)
       {
         sprintf(s.prompt, g_text_lines[2], DAT_007a7c60, g_x_value);
       }
 
-      if (instance->number_of_targets == 1)
+      if (s.instance->number_of_targets == 1)
       {
-        raw_do_dialog(player, card, instance->targets[0].player, instance->targets[0].card, s.prompt, 0);
+        raw_do_dialog(player, card, s.instance->targets[0].player, s.instance->targets[0].card, s.prompt, 0);
       }
       else
       {
@@ -1876,7 +1881,7 @@ int activate(int who_activates, int player, int card)
 
     if (s.result != 0)
     {
-      if (s.was_tapped == 0 && (instance->state & 0x10) != 0)
+      if (s.was_tapped == 0 && (s.instance->state & 0x10) != 0)
       {
         dispatch_event(player, card, EVENT_TAP_CARD);
       }
@@ -1885,25 +1890,27 @@ int activate(int who_activates, int player, int card)
         dispatch_event(player, card, EVENT_PLAY_ABILITY);
       }
 
-      i = instance->internal_card_id;
-      if (i == -1)
+      if (s.instance->internal_card_id != -1)
       {
-        i = instance->original_internal_card_id;
-      }
-      s.upkeep_uses_mana_source = global_cards_data[i].extra_ability & EA_MANA_SOURCE;
-
-      if (s.upkeep_uses_mana_source == 0 || g_produced_mana_color == -1)
-      {
-        refresh_stack_proxy_card(1);
+        s.upkeep_uses_mana_source = global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE;
       }
       else
       {
+        s.upkeep_uses_mana_source = global_cards_data[s.instance->original_internal_card_id].extra_ability & EA_MANA_SOURCE;
+      }
+
+      if (s.upkeep_uses_mana_source != 0 && g_produced_mana_color != -1)
+      {
         refresh_stack_proxy_card(0);
+      }
+      else
+      {
+        refresh_stack_proxy_card(1);
       }
 
       if (g_duel_ai_mode_state != 1)
       {
-        if ((global_cards_data[instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0 &&
+        if ((global_cards_data[s.instance->internal_card_id].extra_ability & EA_MANA_SOURCE) != 0 &&
             g_produced_mana_color != -1)
         {
           play_sound_effect(0x12);
@@ -1927,12 +1934,6 @@ int activate(int who_activates, int player, int card)
   }
 
   return s.result;
-}
-
-// FUNCTION: MAGIC 0x0050aa68
-void begin_opponent_taunt_animation_stub(void)
-{
-  // This space intentionally left blank (empty function)
 }
 
 // FUNCTION: MAGIC 0x00446cb8
@@ -1976,11 +1977,21 @@ void show_opponent_taunt_text_stub(char *text)
   }
 }
 
-// FUNCTION: MAGIC 0x0050aa5d
-void end_opponent_taunt_animation_stub(void)
+#ifndef SHANDALAR
+
+// FUNCTION: MAGIC 0x0050aa68
+void HideMouseCursorNested(void)
 {
   // This space intentionally left blank (empty function)
 }
+
+// FUNCTION: MAGIC 0x0050aa5d
+void ShowMouseCursorNested(void)
+{
+  // This space intentionally left blank (empty function)
+}
+
+#endif
 
 // FUNCTION: MAGIC 0x004b5fc9
 // FUNCTION: SHANDALAR 0x0056c7cb
@@ -1989,13 +2000,15 @@ void show_opponent_taunt(char *text)
   if (g_duel_ai_mode_state == 1)
     return;
 
-  begin_opponent_taunt_animation_stub();
+  HideMouseCursorNested();
+
   show_opponent_taunt_text_stub(text);
 #ifndef MODERN_FIXES
   // TODO: why the fuck did they do this??
   text[0] = '\0';
 #endif
-  end_opponent_taunt_animation_stub();
+
+  ShowMouseCursorNested();
 }
 
 // FUNCTION: MAGIC 0x00444d48
@@ -2046,14 +2059,13 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
 {
   struct
   {
-    int tmp;                      // scratch/padding (kept at the start so other offsets stay stable)
-    int pad;                      // unused/padding
+    int selection_done;           // local_29c
     char prompt_format[300];      // local_29c
     unsigned int selected_card;   // local_170
     int saved_unk_00742f60;       // local_16c
     unsigned int maybe_card;      // local_168
     int some_flag;                // local_164
-    unsigned int response_code;   // local_160
+    int response_code;            // local_160
     unsigned int card;            // local_15c
     int saved_land_can_be_played; // local_158
     unsigned int response_mask;   // local_154
@@ -2171,7 +2183,10 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
         if (PLAYER_CARD_INSTANCE(s.selected_player, (int)s.selected_card).unknown0x14 == (unsigned int)g_trigger_condition &&
             pending_killed_card_handler != NULL && g_trigger_condition != -1)
         {
-          pending_killed_card_handler(s.selected_player, (int)s.selected_card);
+          if (pending_killed_card_handler != NULL)
+          {
+            pending_killed_card_handler(s.selected_player, (int)s.selected_card);
+          }
         }
         else
         {
@@ -2211,8 +2226,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
     s.result_flags = 0;
   }
 
-  s.response_mask = 0;
-  s.num_candidates = 0;
+  s.num_candidates = s.response_mask = 0;
   s.maybe_card = 0xffffffffU;
 
   if (g_duel_ai_mode_state != 1 ||
@@ -2222,7 +2236,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
     if (((g_current_turn == g_active_player) || (g_current_turn == g_other_player && (g_duel_network_flags & 2) != 0)) &&
         g_trigger_condition != -1)
     {
-      for (s.player = 0; s.player < 2; ++s.player)
+      for (s.player = 0; s.player <= 1; ++s.player)
       {
         for (s.card = 0; (int)s.card < g_active_cards_count[s.player]; ++s.card)
         {
@@ -2240,7 +2254,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
               }
               else
               {
-                s.response_mask |= 1U << ((unsigned char)s.response_code & 0x1f);
+                s.response_mask |= 1U << (unsigned char)s.response_code;
               }
             }
           }
@@ -2288,8 +2302,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
           s.player = reason_for_trigger_controller;
         }
 
-        unk_008b3270 = 0;
-        DAT_00789714 = 0;
+        DAT_00789714 = unk_008b3270 = 0;
         s.some_flag = 0;
 
         for (s.card = 0; (int)s.card < g_active_cards_count[s.player]; ++s.card)
@@ -2378,20 +2391,17 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
   {
     strcpy(s.prompt_format, gs_triggered_effects_009396a0);
 
-    if ((DAT_00742f68 & 0x10) == 0 || g_current_spell_player != -1)
-    {
-      if ((DAT_00742f68 & 0x20) != 0)
-      {
-        if (DAT_007a7d78 != 0)
-        {
-          DAT_007a7d78 = 1;
-        }
-        strcpy(s.prompt_format, gs_interrupts_0093a850);
-      }
-    }
-    else
+    if ((DAT_00742f68 & 0x10) != 0 && g_current_spell_player == -1)
     {
       strcpy(s.prompt_format, gs_fast_effects_00926520);
+    }
+    else if ((DAT_00742f68 & 0x20) != 0)
+    {
+      if (DAT_007a7d78 != 0)
+      {
+        DAT_007a7d78 = 1;
+      }
+      strcpy(s.prompt_format, gs_interrupts_0093a850);
     }
 
     if (g_trigger_condition != -1)
@@ -2406,7 +2416,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
       if (((s.can_respond == 0 && (DAT_00777aa8 == 0 || g_trigger_condition != -1)) &&
            (s.interrupts_available == 0 || g_trigger_condition == -1) &&
            (DAT_00561390 == 0 || (s.response_mask & 6) == 0)) &&
-          (s.num_candidates <= (int)((s.response_mask & 6) == 0) ||
+          ((s.num_candidates <= (int)!(s.response_mask & 2) && (s.response_mask & 4) == 0) ||
            ((s.some_flag == 0 && should_skip_phase(reason_for_trigger_controller) != 0) || g_trigger_condition == 0xd6 ||
             (s.maybe_card != 0xffffffffU && DAT_00742f64 == DAT_007161d0))))
       {
@@ -2423,13 +2433,13 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
 
         DAT_00742f64 = 0;
 
-        s.tmp = 0;
-        while (!s.tmp)
+        s.selection_done = DAT_00742f64;
+        while (!s.selection_done)
         {
           if (g_duel_ai_mode_state == 1)
           {
             s.selected_card = s.maybe_card;
-            s.tmp = 1;
+            s.selection_done = 1;
             g_target_selection_status_code = -1;
           }
           else
@@ -2445,13 +2455,11 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
 
             if (g_active_player == s.player)
             {
-              g_stop_phase_player = -1;
-              g_stop_phase = -1;
+              g_stop_phase = g_stop_phase_player = -1;
             }
             else
             {
-              g_previous_stop_phase_player = -1;
-              g_previous_stop_phase = -1;
+              g_previous_stop_phase = g_previous_stop_phase_player = -1;
             }
 
             s.selected_card = select_card_for_action(s.player, -1, s.player, 0xff, 0, g_ui_message_buffer, 2);
@@ -2463,13 +2471,25 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
             }
           }
 
-          if (g_target_selection_status_code == -3)
+          switch (g_target_selection_status_code)
           {
-            s.tmp = 0;
-          }
-          else if (g_target_selection_status_code == -2)
-          {
-            s.tmp = 1;
+          case 0:
+            if (s.selected_player != -1 && s.selected_card != 0xffffffffU)
+            {
+              s.selection_done = 1;
+            }
+            else if (s.selected_player != -1 && s.selected_card == 0xffffffffU)
+            {
+              s.selection_done = 0;
+            }
+            break;
+
+          case -3:
+            s.selection_done = 0;
+            break;
+
+          case -2:
+            s.selection_done = 1;
             s.selected_card = 0xffffffffU;
 
             DAT_007ab2bc &= ~2;
@@ -2487,17 +2507,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
                 g_phase_stop_suppressed = 1;
               }
             }
-          }
-          else if (g_target_selection_status_code == 0)
-          {
-            if (s.selected_player != -1 && s.selected_card != 0xffffffffU)
-            {
-              s.tmp = 1;
-            }
-            else if (s.selected_player != -1 && s.selected_card == 0xffffffffU)
-            {
-              s.tmp = 0;
-            }
+            break;
           }
         }
       }
@@ -2512,8 +2522,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
       }
     }
 
-    /* original uses an empty string at 0x00573048 */
-    g_ui_message_buffer[0] = '\0';
+    strcpy(g_ui_message_buffer, "");
 
     if ((g_duel_network_flags & 2) == 0)
     {
@@ -2705,7 +2714,8 @@ int refresh_stack_proxy_card(int prompt_flag)
     s.saved_timestamp = PLAYER_CARD_INSTANCE(s.player, s.card).timestamp;
 
     memcpy(global_card_instances[s.player] + s.card,
-           global_card_instances[s.saved_parent_controller] + s.saved_parent_card,
+           global_card_instances[PLAYER_CARD_INSTANCE(s.player, s.card).parent_controller] +
+               PLAYER_CARD_INSTANCE(s.player, s.card).parent_card,
            300);
 
     PLAYER_CARD_INSTANCE(s.player, s.card).internal_card_id = g_stack_proxy_internal_card_id;
@@ -2717,23 +2727,24 @@ int refresh_stack_proxy_card(int prompt_flag)
     PLAYER_CARD_INSTANCE(s.player, s.card).parent_card = s.saved_parent_card;
     PLAYER_CARD_INSTANCE(s.player, s.card).timestamp = s.saved_timestamp;
 
-    if (PLAYER_CARD_INSTANCE(s.saved_parent_controller, s.saved_parent_card).internal_card_id != -1)
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(s.player, s.card).parent_controller,
+                             PLAYER_CARD_INSTANCE(s.player, s.card).parent_card)
+            .internal_card_id != -1)
     {
       PLAYER_CARD_INSTANCE(s.player, s.card).original_internal_card_id =
-          PLAYER_CARD_INSTANCE(s.saved_parent_controller, s.saved_parent_card).internal_card_id;
+          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(s.player, s.card).parent_controller,
+                               PLAYER_CARD_INSTANCE(s.player, s.card).parent_card)
+              .internal_card_id;
     }
 
     if ((int)PLAYER_CARD_INSTANCE(s.player, s.card).original_internal_card_id < g_damage_card_internal_card_id ||
         (g_damage_card_internal_card_id + 0x2d) <= (int)PLAYER_CARD_INSTANCE(s.player, s.card).original_internal_card_id)
     {
-      unsigned int packed_id;
-
-      packed_id =
-          (unsigned int)global_cards_data[PLAYER_CARD_INSTANCE(s.saved_parent_controller, s.saved_parent_card)
+      *(unsigned int *)&PLAYER_CARD_INSTANCE(s.player, s.card).display_pic_csv_id =
+          (unsigned int)global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(s.player, s.card).parent_controller,
+                                                               PLAYER_CARD_INSTANCE(s.player, s.card).parent_card)
                                               .original_internal_card_id]
               .id;
-      PLAYER_CARD_INSTANCE(s.player, s.card).display_pic_csv_id = (unsigned short)packed_id;
-      PLAYER_CARD_INSTANCE(s.player, s.card).display_pic_num = (unsigned short)(packed_id >> 16);
     }
   }
 

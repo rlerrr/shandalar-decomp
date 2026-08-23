@@ -1022,13 +1022,13 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
     {
       return s.hit_test;
     }
-    s.hit_border_width = GetSystemMetrics(SM_CYSIZEFRAME);
+    s.hit_border_width = GetSystemMetrics(SM_CXSIZE);
     GetClientRect(hwnd, &s.client_rect);
     MapWindowPoints(hwnd, (HWND)0, (LPPOINT)&s.client_rect, 2);
-    return HTLEFT;
+    return HTMINBUTTON;
 
   case WM_NCLBUTTONDOWN:
-    if (wparam == HTLEFT)
+    if (wparam == HTMINBUTTON)
     {
       SendMessageA(hwnd, WM_COMMAND, 0x65, 0);
       return 0;
@@ -1055,10 +1055,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
     ReleaseDC(hwnd, s.dc);
     return s.paint_result;
 
-  case WM_SETCURSOR:
+  case WM_SHOWWINDOW:
     return handle_duel_inactive_cursor(hwnd, msg, wparam, lparam);
 
-  case WM_QUERYDRAGICON:
+  case WM_SETCURSOR:
     PostMessageA(g_duel_prompt_context_hwnd, 0x403, 0, 0);
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 
