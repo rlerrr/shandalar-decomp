@@ -5,6 +5,11 @@
 
 int GetCardRarity(int internal_card_id);
 int find_highest_value_library_card_by_type(int player, int library_player, unsigned int type);
+int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off);
+#ifdef SHANDALAR
+int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,
+                                 int require_card_click, int *out_selection);
+#endif
 
 // FUNCTION: MAGIC 0x00401000
 // FUNCTION: SHANDALAR 0x00446d20
@@ -33,8 +38,8 @@ int card_call_from_the_grave(int player, int card, event_t event)
     if (g_other_player == player && (g_duel_network_flags & 2) != 0)
     {
       TENTATIVE_wait_for_network_result(found_player, 0x1c);
-      found_player = *(int *)((char *)&unk_00926080 + 4);
-      graveyard_index = *(int *)((char *)&unk_00926080 + 8);
+      found_player = g_target_pair_network_packet.target.player;
+      graveyard_index = g_target_pair_network_packet.target.card;
       selected_internal_card_id = global_graveyard_slots[found_player][graveyard_index];
     }
     else
@@ -65,9 +70,9 @@ int card_call_from_the_grave(int player, int card, event_t event)
 
       if ((g_duel_network_flags & 2) != 0 && g_active_player == player)
       {
-        unk_00926080 = 0x1c;
-        *(int *)((char *)&unk_00926080 + 4) = 1 - found_player;
-        *(int *)((char *)&unk_00926080 + 8) = graveyard_index;
+        g_target_pair_network_packet.packet_type = 0x1c;
+        g_target_pair_network_packet.target.player = 1 - found_player;
+        g_target_pair_network_packet.target.card = graveyard_index;
         TENTATIVE_send_network_result(player, 0x1c);
       }
     }
@@ -398,10 +403,17 @@ int card_wheel_of_fortune(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    current_player = current_player;
+    current_player = g_current_player;
     for (player_index = 0; player_index < 2; ++player_index)
     {
-      cards_in_hand = g_duel_summary.hand_counts[current_player];
+      cards_in_hand = 0;
+      for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
+      {
+        if (is_card_pending_resolution(current_player, current_card))
+        {
+          ++cards_in_hand;
+        }
+      }
       for (current_card = 0; current_card < cards_in_hand; ++current_card)
       {
         discard(current_player, 1, 0);
@@ -409,7 +421,7 @@ int card_wheel_of_fortune(int player, int card, event_t event)
       current_player = current_player == 0 ? 1 : 0;
     }
 
-    TENTATIVE_reassess_all_cards(0, 0xff);
+    TENTATIVE_reassess_all_cards(0, 0x30);
     player_zero_library = 0;
     player_one_library = 0;
     for (current_card = 0; current_card < 500; ++current_card)
@@ -426,8 +438,19 @@ int card_wheel_of_fortune(int player, int card, event_t event)
 
     if (player_zero_library < 7 && player_one_library < 7)
     {
-      g_life[0] = -99;
-      g_life[1] = -99;
+      if (g_duel_ai_mode_state == 1)
+      {
+        g_life[0] = -99;
+        g_life[1] = -99;
+      }
+      else
+      {
+        load_text("prompts.txt", "WHEELOFFORTUNE");
+        set_duel_prompt_text(g_text_lines[0]);
+        Sleep(2500);
+        set_duel_prompt_text("");
+        exit_duel_thread(2);
+      }
     }
     else
     {
@@ -713,7 +736,7 @@ int card_energy_tap(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
-    load_text("prompts.txt", "ENERGY_TAP");
+    load_text("prompts.txt", "ENERGYTAP");
     if (!C_real_select_target(player,
                               player,
                               player,
@@ -772,13 +795,10 @@ int card_energy_tap(int player, int card, event_t event)
     {
       tap_card_and_dispatch_event(instance->targets[0].player, instance->targets[0].card);
       internal_card_id = PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).internal_card_id;
-      mana_value = (int)(char)global_cards_data[internal_card_id].cc[0];
-      if ((char)global_cards_data[internal_card_id].cc[1] != -1)
-      {
-        mana_value += (int)(char)global_cards_data[internal_card_id].cc[1];
-      }
-      produce_mana(player, COLOR_COLORLESS, mana_value);
-      g_produced_mana_color = COLOR_COLORLESS;
+      mana_value = (int)(char)global_cards_data[internal_card_id].cc[0] +
+                   ClampIntToRange((int)(char)global_cards_data[internal_card_id].cc[1], 0, 99);
+      g_raw_mana_available[player][COLOR_COLORLESS] += mana_value;
+      g_raw_mana_available[player][COLOR_ANY] += mana_value;
     }
     instance->number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -911,7 +931,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
                           get_protections_from(player, card),
                           0,
                           0,
-                          get_hacked_color(player, card, 4) - 1,
+                          3,
                           -1,
                           -1,
                           -1,
@@ -975,7 +995,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
       {
         state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state;
         *state_ptr |= 0x300000;
-        TENTATIVE_reassess_all_cards(0, 0xff);
+        TENTATIVE_reassess_all_cards(0, 0x20);
         instance->targets[instance->number_of_targets].player = selected_target.player;
         instance->targets[instance->number_of_targets].card = selected_target.card;
         ++instance->number_of_targets;
@@ -1063,11 +1083,10 @@ int card_earthquake(int player, int card, event_t event)
 {
   int current_card;
   int current_player;
-  int damage_amount;
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_ANY, 2) == 0)
     {
       return 0;
     }
@@ -1082,16 +1101,15 @@ int card_earthquake(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    damage_amount = PLAYER_CARD_INSTANCE(player, card).info_slot;
     current_player = player;
     while (current_player >= 0 && current_player < 2)
     {
-      damage_player(current_player, damage_amount, player, card);
+      damage_player(current_player, PLAYER_CARD_INSTANCE(player, card).info_slot, player, card);
       for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
       {
         if (is_in_play(current_player, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type & TYPE_CREATURE) != 0 && (C_get_abilities(current_player, current_card, EVENT_ABILITIES, -1) & KEYWORD_FLYING) == 0)
         {
-          damage_creature(current_player, current_card, damage_amount, player, card);
+          damage_creature(current_player, current_card, PLAYER_CARD_INSTANCE(player, card).info_slot, player, card);
         }
       }
       if (player == 0)
@@ -1115,11 +1133,10 @@ int card_hurricane(int player, int card, event_t event)
 {
   int current_card;
   int current_player;
-  int damage_amount;
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_ANY, 2) == 0)
     {
       return 0;
     }
@@ -1134,16 +1151,15 @@ int card_hurricane(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    damage_amount = PLAYER_CARD_INSTANCE(player, card).info_slot;
     current_player = player;
     while (current_player >= 0 && current_player < 2)
     {
-      damage_player(current_player, damage_amount, player, card);
+      damage_player(current_player, PLAYER_CARD_INSTANCE(player, card).info_slot, player, card);
       for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
       {
         if (is_in_play(current_player, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type & TYPE_CREATURE) != 0 && (C_get_abilities(current_player, current_card, EVENT_ABILITIES, -1) & KEYWORD_FLYING) != 0)
         {
-          damage_creature(current_player, current_card, damage_amount, player, card);
+          damage_creature(current_player, current_card, PLAYER_CARD_INSTANCE(player, card).info_slot, player, card);
         }
       }
       if (player == 0)
@@ -1385,7 +1401,7 @@ int card_desert_twister(int player, int card, event_t event)
                                  2,
                                  2,
                                  TARGET_ZONE_IN_PLAY,
-                                 TYPE_PERMANENT | TARGET_TYPE_TOKEN,
+                                 TYPE_PERMANENT,
                                  TYPE_NONE,
                                  0,
                                  get_protections_from(player, card),
@@ -1402,12 +1418,13 @@ int card_desert_twister(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
+    g_ai_modifier -= 0x30 / count_active_card_instances_plus_one(player, instance->internal_card_id);
     load_text("prompts.txt", "DESERT_TWISTER");
     if (!C_real_select_target(player,
                               2,
-                              2,
+                              1 - player,
                               TARGET_ZONE_IN_PLAY,
-                              TYPE_PERMANENT | TARGET_TYPE_TOKEN,
+                              TYPE_PERMANENT,
                               TYPE_NONE,
                               0,
                               get_protections_from(player, card),
@@ -1441,7 +1458,7 @@ int card_desert_twister(int player, int card, event_t event)
                                 2,
                                 2,
                                 TARGET_ZONE_IN_PLAY,
-                                TYPE_PERMANENT | TARGET_TYPE_TOKEN,
+                                TYPE_PERMANENT,
                                 TYPE_NONE,
                                 0,
                                 get_protections_from(player, card),
@@ -2267,28 +2284,28 @@ int card_mana_clash(int player, int card, event_t event)
       load_text("prompts.txt", "MANACLASH");
       strcpy(prompt1, g_text_lines[0]);
       strcpy(prompt2, g_text_lines[0] + 0x12c);
+
+      do
+      {
+        p0_flip = coin_flip(player, player == g_active_player ? prompt1 : prompt2, 1);
+        p1_flip = coin_flip(player, player == g_active_player ? prompt2 : prompt1, 1);
+
+        if (p0_flip == 1)
+        {
+          damage_player(0, 1, player, card);
+        }
+        if (p1_flip == 1)
+        {
+          damage_player(1, 1, player, card);
+        }
+        if (p0_flip != 0 || p1_flip != 0)
+        {
+          do_dialog(player, player, card, -1, -1, g_text_lines[0] + 0x258, 0);
+        }
+      } while (p0_flip != 0 || p1_flip != 0);
+
+      kill_card(player, card, KILL_BURY);
     }
-
-    do
-    {
-      p0_flip = prompt_for_life_total(player, player == g_active_player ? prompt1 : prompt2, 1);
-      p1_flip = prompt_for_life_total(player, player == g_active_player ? prompt2 : prompt1, 1);
-
-      if (p0_flip == 1)
-      {
-        damage_player(0, 1, player, card);
-      }
-      if (p1_flip == 1)
-      {
-        damage_player(1, 1, player, card);
-      }
-      if (p0_flip == 0 && p1_flip != 0)
-      {
-        do_dialog(player, player, card, -1, -1, g_text_lines[0] + 0x258, 0);
-      }
-    } while (p0_flip != 0 || p1_flip != 0);
-
-    kill_card(player, card, KILL_BURY);
   }
 
   return 0;
@@ -2307,7 +2324,7 @@ int card_word_of_binding(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    real_target_available((int *)0,
+    real_target_available(unk_00743038 == 0 ? &g_max_x_value : (int *)0,
                           TARGET_SCAN_DIRECT,
                           player,
                           2,
@@ -2328,7 +2345,7 @@ int card_word_of_binding(int player, int card, event_t event)
                           0);
     if (player == g_other_player &&
         (g_duel_network_flags & 2) == 0 &&
-        (g_max_x_value == 0 || !has_mana(player, COLOR_COLORLESS, 3)))
+        (g_max_x_value == 0 || !has_mana(player, COLOR_ANY, 3)))
     {
       return 0;
     }
@@ -2567,15 +2584,17 @@ int card_regrowth(int player, int card, event_t event)
         {
           load_text("prompts.txt", "REGROWTH");
         }
+#ifdef SHANDALAR
+        s.graveyard_index =
+            SelectAdventureListCardIndex(player, global_graveyard_slots[player], 500,
+                                         g_text_lines[0], 0, (int *)gs_cancel_008a8c20);
+#else
         s.graveyard_index =
             show_deck(player, global_graveyard_slots[player], 500, g_text_lines, 0, gs_cancel_008a8c20);
+#endif
       }
 
-      if (s.graveyard_index == -1 || global_graveyard_slots[player][s.graveyard_index] == -1)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+      if (s.graveyard_index != -1 && global_graveyard_slots[player][s.graveyard_index] != -1)
       {
         s.hand_card = add_card_to_hand(player, global_graveyard_slots[player][s.graveyard_index]);
         PLAYER_CARD_INSTANCE(player, s.hand_card).state |= 0x20;
@@ -2583,6 +2602,10 @@ int card_regrowth(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.hand_card;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         *((int *)((char *)&PLAYER_CARD_INSTANCE(player, card) + 108)) = s.graveyard_index;
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
 
@@ -2655,19 +2678,19 @@ int card_demonic_tutor(int player, int card, event_t event)
           type_mask = TYPE_CREATURE;
           break;
         case 1:
-          type_mask = TYPE_ENCHANTMENT;
-          break;
-        case 2:
           type_mask = TYPE_ARTIFACT;
           break;
+        case 2:
+          type_mask = TYPE_SORCERY;
+          break;
         case 3:
-          type_mask = TYPE_LAND;
+          type_mask = TYPE_INSTANT;
           break;
         }
       }
       else
       {
-        type_mask = TYPE_CREATURE | TYPE_ENCHANTMENT;
+        type_mask = TYPE_CREATURE | TYPE_ARTIFACT;
       }
 
       found_card = choose_best_card_from_library(player, type_mask);
@@ -2675,19 +2698,39 @@ int card_demonic_tutor(int player, int card, event_t event)
       {
         found_card = choose_best_card_from_library(player, 0xffffffff);
       }
+      if (found_card != -1 && global_library[player][found_card] != -1)
+      {
+        add_card_to_hand(player, global_library[player][found_card]);
+        remove_card_from_deck(player, found_card);
+      }
     }
     else
     {
-      load_text("prompts.txt", "DEMONIC_TUTOR");
+      if (player == g_active_player && g_duel_ai_mode_state != 1)
+      {
+        load_text("prompts.txt", "DEMONIC_TUTOR");
+      }
+#ifdef SHANDALAR
+      found_card = SelectAdventureListCardIndex(player,
+                                                global_library[player],
+                                                500,
+                                                g_text_lines[0],
+                                                1,
+                                                (int *)gs_cancel_008a8c20);
+#else
       found_card = show_deck(player, global_library[player], 500, g_text_lines, 1, gs_cancel_008a8c20);
+#endif
+      if (found_card != -1 && global_library[player][found_card] != -1)
+      {
+        add_card_to_hand(player, global_library[player][found_card]);
+        remove_card_from_deck(player, found_card);
+      }
     }
 
-    if (found_card != -1 && global_library[player][found_card] != -1)
+    if (found_card != -1)
     {
-      add_card_to_hand(player, global_library[player][found_card]);
-      remove_card_from_deck(player, found_card);
       ++g_duel_summary.hand_counts[player];
-      TENTATIVE_reassess_all_cards(0, 0xff);
+      TENTATIVE_reassess_all_cards(0, 0x30);
       shuffle_duel_library(player, player);
     }
 
@@ -2759,7 +2802,16 @@ int card_untamed_wilds(int player, int card, event_t event)
       {
         do
         {
+#ifdef SHANDALAR
+          library_index = SelectAdventureListCardIndex(player,
+                                                       global_library[player],
+                                                       500,
+                                                       g_text_lines[0],
+                                                       1,
+                                                       (int *)gs_cancel_008a8c20);
+#else
           library_index = show_deck(player, global_library[player], 500, g_text_lines[0], 1, gs_cancel_008a8c20);
+#endif
           if (library_index == -1)
           {
             break;
@@ -2769,7 +2821,16 @@ int card_untamed_wilds(int player, int card, event_t event)
       else
       {
         library_index = -1;
+#ifdef SHANDALAR
+        SelectAdventureListCardIndex(player,
+                                     global_library[player],
+                                     500,
+                                     g_text_lines[0],
+                                     0,
+                                     (int *)gs_done_008b40e0);
+#else
         show_deck(player, global_library[player], 500, g_text_lines[0], 0, gs_done_008b40e0);
+#endif
       }
     }
 
@@ -2801,11 +2862,8 @@ int card_untamed_wilds(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044daac
 int card_visions(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   char dialog_text[600];
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2844,8 +2902,8 @@ int card_visions(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0] = target;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
@@ -2860,20 +2918,34 @@ int card_visions(int player, int card, event_t event)
         g_duel_ai_mode_state != 1 &&
         g_duel_network_state == 0)
     {
-      show_deck(player, global_library[instance->targets[0].player], 5, g_text_lines[1], 0, gs_done_008b40e0);
+#ifdef SHANDALAR
+      SelectAdventureListCardIndex(player,
+                                   global_library[PLAYER_CARD_INSTANCE(player, card).targets[0].player],
+                                   5,
+                                   g_text_lines[1],
+                                   0,
+                                   (int *)gs_done_008b40e0);
+#else
+      show_deck(player,
+                global_library[PLAYER_CARD_INSTANCE(player, card).targets[0].player],
+                5,
+                g_text_lines[1],
+                0,
+                gs_done_008b40e0);
+#endif
     }
 
     if (g_duel_ai_mode_state != 1)
     {
-      sprintf(dialog_text, " %s\n %s", g_text_lines[0], g_text_lines[1]);
+      sprintf(dialog_text, " %s\n %s", g_text_lines[2], g_text_lines[3]);
     }
 
     if (do_dialog(player, player, card, -1, -1, dialog_text, 1) == 0)
     {
-      shuffle_duel_library(player, instance->targets[0].player);
+      shuffle_duel_library(player, PLAYER_CARD_INSTANCE(player, card).targets[0].player);
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -2893,7 +2965,7 @@ int card_mind_twist(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (player == g_other_player && (g_duel_network_flags & 2) == 0 && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (player == g_other_player && (g_duel_network_flags & 2) == 0 && has_mana(player, COLOR_ANY, 2) == 0)
     {
       return 0;
     }
@@ -2902,7 +2974,10 @@ int card_mind_twist(int player, int card, event_t event)
 
   if (event == 0x6c && g_affected_card == card && g_affected_card_controller == player)
   {
-    load_text("prompts.txt", "MINDTWIST");
+    if (g_duel_ai_mode_state != 1)
+    {
+      load_text("prompts.txt", "MINDTWIST");
+    }
     if (!C_real_select_target(player,
                               2,
                               1 - player,
@@ -2914,7 +2989,7 @@ int card_mind_twist(int player, int card, event_t event)
                               COLOR_TEST_0,
                               COLOR_TEST_0,
                               -1,
-                              ~SUB_WALL,
+                              -1,
                               -1,
                               -1,
                               0,
@@ -3380,7 +3455,7 @@ int card_disintegrate(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_COLORLESS, 2) == 0)
+    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_ANY, 2) == 0)
     {
       return 0;
     }
@@ -3394,8 +3469,10 @@ int card_disintegrate(int player, int card, event_t event)
     {
       load_text("prompts.txt", "DISINTEGRATE");
     }
-    select_damage_target(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
-    g_ai_modifier -= 0x30 / count_active_card_instances_plus_one(player, instance->internal_card_id);
+    if (select_damage_target(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0)
+    {
+      g_ai_modifier -= 0x30 / count_active_card_instances_plus_one(player, instance->internal_card_id);
+    }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
@@ -3431,7 +3508,7 @@ int card_drain_life(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_BLACK, 3) == 0)
+    if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && has_mana(player, COLOR_ANY, 3) == 0)
     {
       return 0;
     }
@@ -3443,7 +3520,7 @@ int card_drain_life(int player, int card, event_t event)
     if ((g_land_can_be_played & 0x400) == 0)
     {
       g_x_value = 0;
-      charge_mana(player, COLOR_COLORLESS, -1);
+      charge_mana(player, COLOR_BLACK, -1);
       if (g_spell_fizzled == 1)
       {
         return 0;
@@ -3452,7 +3529,7 @@ int card_drain_life(int player, int card, event_t event)
     }
     else
     {
-      instance->info_slot = PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause).info_slot;
+      instance->info_slot = PLAYER_CARD_INSTANCE(g_current_spell_player, g_current_spell_card).info_slot;
     }
     if (g_duel_ai_mode_state != 1)
     {

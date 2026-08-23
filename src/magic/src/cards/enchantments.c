@@ -184,7 +184,7 @@ int card_consecrate_land(int player, int card, event_t event)
                                  0);
   }
 
-  if ((event == EVENT_CAST_SPELL) && (card == g_card_on_stack) && (player == g_card_on_stack_controller))
+  if ((event == EVENT_CAST_SPELL) && (card == g_affected_card) && (player == g_affected_card_controller))
   {
     load_text("promptsX1.txt", "CONSECRATE_LAND");
     if (!C_real_select_target(player,
@@ -198,7 +198,7 @@ int card_consecrate_land(int player, int card, event_t event)
                               COLOR_TEST_0,
                               COLOR_TEST_0,
                               -1,
-                              ~SUB_WALL,
+                              -1,
                               -1,
                               -1,
                               0,
@@ -222,9 +222,16 @@ int card_consecrate_land(int player, int card, event_t event)
         }
         else
         {
-          if ((global_cards_data[PLAYER_CARD_INSTANCE(target.player, target.card).internal_card_id].type & TYPE_CREATURE) != 0)
+          if (is_selected_target_already_attached(player, card, instance->internal_card_id) == 0)
           {
-            g_ai_modifier += 0x60;
+            if ((global_cards_data[PLAYER_CARD_INSTANCE(target.player, target.card).internal_card_id].type & TYPE_CREATURE) != 0)
+            {
+              g_ai_modifier += 0x60;
+            }
+          }
+          else
+          {
+            g_ai_modifier -= 0x60;
           }
         }
       }
@@ -247,7 +254,7 @@ int card_consecrate_land(int player, int card, event_t event)
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
                                 -1,
-                                ~SUB_WALL,
+                                -1,
                                 -1,
                                 -1,
                                 0,
@@ -261,27 +268,27 @@ int card_consecrate_land(int player, int card, event_t event)
     {
       instance->damage_target_player = instance->targets[0].player;
       instance->damage_target_card = instance->targets[0].card;
-      *(int *)((char *)&PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card) + 0x14) |= 0x4000000;
+      PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).token_status |= 0x4000000;
       dispatch_three_arg_callback_to_cards_in_play(destroy_other_auras_on_same_permanent, -1);
     }
     instance->number_of_targets = 0;
   }
 
-  if (event == 0x34 && instance->damage_target_card == g_card_on_stack && instance->damage_target_player == g_card_on_stack_controller && g_card_on_stack != -1)
+  if (event == 0x34 && instance->damage_target_card == g_affected_card && instance->damage_target_player == g_affected_card_controller && g_affected_card != -1)
   {
     g_event_result |= 0x20000;
   }
-  if (event == 0x77 && g_card_on_stack != -1 && *(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(g_card_on_stack_controller, g_card_on_stack) + 0x64) == 2 && instance->damage_target_card == g_card_on_stack && instance->damage_target_player == g_card_on_stack_controller)
+  if (event == 0x77 && g_affected_card != -1 && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).kill_code == KILL_DESTROY && instance->damage_target_card == g_affected_card && instance->damage_target_player == g_affected_card_controller)
   {
-    *(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(g_card_on_stack_controller, g_card_on_stack) + 0x64) = 0;
-    *(int *)((char *)&PLAYER_CARD_INSTANCE(g_card_on_stack_controller, g_card_on_stack) + 0x10) = 0;
+    PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).kill_code = 0;
+    PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).unknown0x14 = 0;
     ++g_event_result;
   }
-  if (event == 0x77 && card == g_card_on_stack && player == g_card_on_stack_controller && instance->damage_target_player != -1 && instance->damage_target_card != -1 && PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id != -1)
+  if (event == 0x77 && card == g_affected_card && player == g_affected_card_controller && instance->damage_target_player != -1 && instance->damage_target_card != -1 && PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id != -1)
   {
-    *(int *)((char *)&PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card) + 0x14) &= ~0x4000000;
+    PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).token_status &= ~0x4000000;
   }
-  if (g_trigger_condition == 0xd4 && card == g_card_on_stack && player == g_card_on_stack_controller && instance->damage_target_player != -1 && instance->damage_target_card != -1 && PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id != -1 && player == g_trigger_cause_controller && g_trigger_cause == card && player == g_current_turn)
+  if (g_trigger_condition == 0xd4 && card == g_affected_card && player == g_affected_card_controller && instance->damage_target_player != -1 && instance->damage_target_card != -1 && PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).internal_card_id != -1 && player == g_trigger_cause_controller && g_trigger_cause == card && player == g_current_turn)
   {
     if (event == 0x7d)
     {
@@ -289,7 +296,7 @@ int card_consecrate_land(int player, int card, event_t event)
     }
     if (event == 0x7e)
     {
-      *(int *)((char *)&PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card) + 0x14) &= ~0x4000000;
+      PLAYER_CARD_INSTANCE(instance->damage_target_player, instance->damage_target_card).token_status &= ~0x4000000;
     }
   }
 
@@ -325,13 +332,13 @@ int card_cyclone(int player, int card, event_t event)
   struct
   {
     char prompt[900];
-    int saved_player;
-    int saved_card;
-    int ai_choice;
     int paid;
+    int saved_player;
+    int ai_choice;
     int current_player;
     int current_card;
     unsigned int counters;
+    int saved_card;
   } s;
 
   if (event == EVENT_CAN_CAST)
@@ -346,7 +353,7 @@ int card_cyclone(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (g_current_phase == EVENT_UPKEEP_PHASE &&
+    if (g_current_phase == PHASE_UPKEEP &&
         (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 &&
         player == unk_00742f60 &&
         player == g_current_player)
@@ -369,7 +376,6 @@ int card_cyclone(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
     s.counters = C_get_special_counters(player, card);
-    s.ai_choice = 0;
     if ((g_duel_network_flags & 2) == 0)
     {
       s.ai_choice = cyclone_should_pay_upkeep(s.counters);
@@ -377,7 +383,7 @@ int card_cyclone(int player, int card, event_t event)
 
     s.paid = 0;
     load_text("promptsX1.txt", "CYCLONE");
-    sprintf(s.prompt, " %s\n %s\n %s", g_text_lines[0], "Pay upkeep", "Bury Cyclone");
+    sprintf(s.prompt, "%s\n %s\n %s\n", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
     if (has_mana(player, COLOR_GREEN, s.counters) != 0 &&
         do_dialog(player, player, card, -1, -1, s.prompt, s.ai_choice) != 0)
     {
@@ -665,7 +671,7 @@ int card_drop_of_honey(int player, int card, event_t event)
       if (player == g_active_player || (g_duel_network_flags & 2) != 0)
       {
         load_text("promptsX1.txt", "DROP_OF_HONEY");
-        sprintf(s.prompt, "%s %d", g_text_lines[0], s.min_power);
+        sprintf(s.prompt, "%s %d.", g_text_lines[0], s.min_power);
         C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
                              0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, -1, s.min_power, -1,
                              0, 0, 0, s.prompt, 0, &s.target);
@@ -810,7 +816,7 @@ int card_earthbind(int player, int card, event_t event)
                                COLOR_TEST_0,
                                COLOR_TEST_0,
                                -1,
-                               ~SUB_WALL,
+                               -1,
                                -1,
                                -1,
                                0,
@@ -853,7 +859,7 @@ int card_earthbind(int player, int card, event_t event)
                                  COLOR_TEST_0,
                                  COLOR_TEST_0,
                                  -1,
-                                 ~SUB_WALL,
+                                 -1,
                                  -1,
                                  -1,
                                  0,
@@ -869,6 +875,17 @@ int card_earthbind(int player, int card, event_t event)
             (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
         PLAYER_CARD_INSTANCE(player, card).damage_target_card =
             PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+        if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                  PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                 .regen_status &
+             KEYWORD_FLYING) != 0)
+        {
+          damage_creature(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                          PLAYER_CARD_INSTANCE(player, card).damage_target_card,
+                          2,
+                          player,
+                          card);
+        }
       }
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
@@ -1301,7 +1318,7 @@ int card_invisibility(int player, int card, event_t event)
                                  0);
   }
 
-  if ((event == EVENT_CAST_SPELL) && (card == g_card_on_stack) && (player == g_card_on_stack_controller))
+  if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller)
   {
     load_text("promptsX1.txt", "INVISIBILITY");
     g_spell_fizzled = !select_target_creature_and_store(player, player, card);
@@ -1323,7 +1340,7 @@ int card_invisibility(int player, int card, event_t event)
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
                                 -1,
-                                ~SUB_WALL,
+                                -1,
                                 -1,
                                 -1,
                                 0,
@@ -1341,7 +1358,11 @@ int card_invisibility(int player, int card, event_t event)
     instance->number_of_targets = 0;
   }
 
-  if (event == 0x78 && instance->damage_target_card == g_attacking_card && instance->damage_target_player == g_attacking_card_controller && (instance->state & 0x20) == 0 && global_cards_data[PLAYER_CARD_INSTANCE(g_card_on_stack_controller, g_card_on_stack).internal_card_id].subtype != 0)
+  if (event == EVENT_BLOCK_LEGALITY &&
+      instance->damage_target_card == g_attacking_card &&
+      instance->damage_target_player == g_attacking_card_controller &&
+      (instance->state & 0x20) == 0 &&
+      global_cards_data[PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id].subtype != 0)
   {
     ++g_event_result;
   }
@@ -1484,7 +1505,7 @@ int card_kudzu(int player, int card, event_t event)
                                  -1,
                                  -1,
                                  -1,
-                                 ~SUB_WALL,
+                                 -1,
                                  0,
                                  0,
                                  0);
@@ -1524,7 +1545,7 @@ int card_kudzu(int player, int card, event_t event)
                                 COLOR_TEST_0,
                                 COLOR_TEST_0,
                                 -1,
-                                ~SUB_WALL,
+                                -1,
                                 -1,
                                 -1,
                                 0,
@@ -1545,50 +1566,75 @@ int card_kudzu(int player, int card, event_t event)
 
   if (event == 0x81 && instance->damage_target_card == g_affected_card && instance->damage_target_player == g_affected_card_controller && g_affected_card != -1 && (instance->state & 0x20) == 0)
   {
-    load_text("promptsX1.txt", "KUDZU_2");
+    card_instance_t *original_kudzu;
+    int valid_targets;
 
-    new_target.player = -1;
-    new_target.card = -1;
-
-    if (instance->damage_target_player == g_current_player || (g_duel_network_flags & 2) != 0)
+    real_target_available(&valid_targets,
+                          TARGET_SCAN_DIRECT,
+                          0,
+                          2,
+                          2,
+                          TARGET_ZONE_IN_PLAY,
+                          TYPE_LAND,
+                          TYPE_NONE,
+                          0,
+                          get_protections_from(player, card),
+                          COLOR_TEST_0,
+                          COLOR_TEST_0,
+                          -1,
+                          -1,
+                          -1,
+                          -1,
+                          0,
+                          0,
+                          0);
+    if (valid_targets < 2)
     {
-      if (!C_real_select_target(instance->damage_target_player,
-                                2,
-                                2,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_LAND,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(0, 0),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                -1,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                g_text_lines[1],
-                                0,
-                                &new_target))
+      kill_card(0, 0, KILL_DESTROY);
+    }
+    else
+    {
+      load_text("promptsX1.txt", "KUDZU");
+      original_kudzu = &PLAYER_CARD_INSTANCE(0, 0);
+      PLAYER_CARD_INSTANCE(original_kudzu->damage_target_player, original_kudzu->damage_target_card).state |= 0x300000;
+
+      if (original_kudzu->damage_target_player == g_active_player || (g_duel_network_flags & 2) != 0)
       {
-        new_target.player = -1;
-        new_target.card = -1;
+        if (C_real_select_target(original_kudzu->damage_target_player,
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_LAND,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(0, 0),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[1],
+                                 0,
+                                 &new_target))
+        {
+          original_kudzu->damage_target_player = (char)new_target.player;
+          original_kudzu->damage_target_card = new_target.card;
+        }
+      }
+      else if (select_best_land_target_by_score(original_kudzu->damage_target_player, 1 - original_kudzu->damage_target_player, (int *)&new_target))
+      {
+        do_dialog(0, 0, 0, new_target.player, new_target.card, g_text_lines[2], 0);
+        g_ai_modifier +=
+            (g_basiclandtypes_controlled[g_other_player][7] - g_basiclandtypes_controlled[g_active_player][7]) * 0x18;
+        original_kudzu->damage_target_player = (char)new_target.player;
+        original_kudzu->damage_target_card = new_target.card;
       }
     }
-    else if (select_best_land_target_by_score(instance->damage_target_player, 1 - instance->damage_target_player, (int *)&new_target))
-    {
-      do_dialog(0, 0, 0, new_target.player, new_target.card, g_text_lines[2], 0);
-    }
-
     kill_card(g_affected_card_controller, g_affected_card, KILL_DESTROY);
-
-    if (new_target.player != -1)
-    {
-      instance->damage_target_player = (char)new_target.player;
-      instance->damage_target_card = new_target.card;
-    }
   }
 
   return 0;
@@ -2029,7 +2075,6 @@ int divide_creatures_into_two_piles(int who_is_being_divided, int player, int ca
 {
   int bank;
   int current_card;
-  int legacy_card;
   int power_total[3];
 
   power_total[0] = 0;
@@ -2037,17 +2082,24 @@ int divide_creatures_into_two_piles(int who_is_being_divided, int player, int ca
   bank = internal_rand(2);
   for (current_card = 0; current_card < g_active_cards_count[who_is_being_divided]; ++current_card)
   {
-    if (is_in_play(who_is_being_divided, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).internal_card_id].type & TYPE_CREATURE) != 0 && ((*(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(who_is_being_divided, current_card) + 0x24) & 0x20) == 0))
+    if (is_in_play(who_is_being_divided, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).internal_card_id].type & TYPE_CREATURE) != 0 && (PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).regen_status & 0x20) == 0)
     {
-      legacy_card = create_legacy_effect(player, card, unk_008b3bd4, who_is_being_divided, current_card);
-      if (legacy_card != -1)
+      power_total[2] = create_legacy_effect(player, card, unk_008b3bd4, who_is_being_divided, current_card);
+      if (power_total[2] != -1)
       {
         if (power_total[1 - bank] < power_total[bank])
         {
           bank ^= 1;
         }
-        power_total[bank] += *(short *)((char *)&PLAYER_CARD_INSTANCE(who_is_being_divided, current_card) + 0xa);
-        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = bank == 0 ? 1 : 2;
+        power_total[bank] += PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).toughness;
+        if (bank != 0)
+        {
+          PLAYER_CARD_INSTANCE(player, power_total[2]).eot_toughness = 2;
+        }
+        else
+        {
+          PLAYER_CARD_INSTANCE(player, power_total[2]).eot_toughness = 1;
+        }
       }
     }
   }

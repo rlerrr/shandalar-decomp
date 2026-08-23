@@ -49,7 +49,7 @@ int aswan_jaguar_target_available(int player, int card, int selected_monster)
     {
       if (is_in_play(current_player, current_card) != 0)
       {
-        raw_code = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].id].abilities;
+        raw_code = global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].id].subtype;
         if (selected_monster == raw_code || aswan_jaguar_paired_monster(raw_code) == selected_monster)
         {
           if ((global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type & TYPE_CREATURE) != 0 &&
@@ -142,9 +142,9 @@ int aswan_jaguar_find_library_monster(int player, int start_slot)
   {
     internal_card_id = global_library[player][current_slot];
     if (internal_card_id != -1 &&
-        *(int *)global_raw_cards_storage[global_cards_data[internal_card_id].id].types == CP_TYPE_CREATURE)
+        global_raw_cards_storage[global_cards_data[internal_card_id].id].card_type == CP_TYPE_CREATURE)
     {
-      result = *(int *)global_raw_cards_storage[global_cards_data[internal_card_id].id].abilities;
+      result = global_raw_cards_storage[global_cards_data[internal_card_id].id].subtype;
       g_event_result = internal_card_id;
     }
 
@@ -243,7 +243,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
           s.instance->targets[0].player = s.target.player;
           s.instance->targets[0].card = s.target.card;
           s.instance->number_of_targets = 1;
-          s.selected_monster = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].id].abilities;
+          s.selected_monster = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].id].subtype;
           s.instance->state |= STATE_TAPPED;
         }
       }
@@ -373,7 +373,7 @@ int polka_apply_effect(int player, int card, int amount)
     tap_card_and_dispatch_event(s.candidates[s.random_index].player, s.candidates[s.random_index].card);
 
     s.raw_code = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.candidates[s.random_index].player,
-                                                                                        s.candidates[s.random_index].card).internal_card_id].id].abilities;
+                                                                                        s.candidates[s.random_index].card).internal_card_id].id].subtype;
     if (s.raw_code == 0x57 || s.raw_code == 0x56)
     {
       create_legacy_effect(player, card, DAT_007a7878,
@@ -785,13 +785,13 @@ int card_whimsy(int player, int card, event_t event)
         if (player == g_other_player && (g_duel_network_flags & 2) != 0)
         {
           TENTATIVE_wait_for_network_result(player, 0x1b);
-          if (g_orcish_catapult_target_packet.target.player == -1)
+          if (g_target_pair_network_packet.target.player == -1)
           {
             g_spell_fizzled = 1;
           }
           else
           {
-            s.instance->targets[0] = g_orcish_catapult_target_packet.target;
+            s.instance->targets[0] = g_target_pair_network_packet.target;
             s.instance->number_of_targets = 1;
           }
         }
@@ -811,15 +811,15 @@ int card_whimsy(int player, int card, event_t event)
 
           if ((g_duel_network_flags & 2) != 0)
           {
-            g_orcish_catapult_target_packet.packet_type = 0x1b;
+            g_target_pair_network_packet.packet_type = 0x1b;
             if (s.candidate_count == 0)
             {
-              g_orcish_catapult_target_packet.target.player = -1;
+              g_target_pair_network_packet.target.player = -1;
             }
             else
             {
-              g_orcish_catapult_target_packet.target.player = 1 - s.instance->targets[0].player;
-              g_orcish_catapult_target_packet.target.card = s.instance->targets[0].card;
+              g_target_pair_network_packet.target.player = 1 - s.instance->targets[0].player;
+              g_target_pair_network_packet.target.card = s.instance->targets[0].card;
             }
             TENTATIVE_send_network_result(player, 0x1b);
           }

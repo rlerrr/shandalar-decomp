@@ -497,8 +497,8 @@ static int initialize_action_packets(void)
   unk_008b2938 = '\0';
   g_network_result_packet_type = '\0';
   unk_008b34a0 = '\0';
-  unk_008cf3a0 = '\0';
-  unk_00926080 = '\0';
+  g_fireball_options_network_packet.packet_type = '\0';
+  g_target_pair_network_packet.packet_type = '\0';
   g_card_list_packet_type = '\0';
 
   if (g_card_list_packet_cards != NULL)

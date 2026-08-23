@@ -9,7 +9,7 @@ int army_of_allah_pump_creature(int player, int card, int target_player, int tar
 
   (void)internal_card_id;
 
-  if ((PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_IN_PLAY) != 0)
+  if ((PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_ATTACKING) != 0)
   {
     legacy_card = create_legacy_effect(player, card, LEGACY_EFFECT_PUMP, target_player, target_card);
     if (legacy_card != -1)
@@ -280,6 +280,7 @@ int card_natural_selection(int player, int card, event_t event)
   int count;
   int choice_count;
   int index;
+  char (*prompt)[300];
 
   instance = &PLAYER_CARD_INSTANCE(player, card);
 
@@ -302,7 +303,7 @@ int card_natural_selection(int player, int card, event_t event)
                               COLOR_TEST_0,
                               COLOR_TEST_0,
                               -1,
-                              ~SUB_WALL,
+                              -1,
                               -1,
                               -1,
                               0,
@@ -329,7 +330,7 @@ int card_natural_selection(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    load_text("promptsX1.txt", "NATURAL_SELECTION_2");
+    load_text("promptsX1.txt", "NATURAL_SELECTION");
     count = 0;
     for (index = 0; index < 3; ++index)
     {
@@ -343,16 +344,13 @@ int card_natural_selection(int player, int card, event_t event)
       }
     }
 
-    if ((player == g_current_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
+    if ((player == g_active_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
     {
       if (count > 0)
       {
-        choice_count =
-            select_from_graveyard_with_dialog(player, top_three, available, count, 0x89684c, 1, selected[0], 0, count);
-      }
-      else
-      {
-        choice_count = 0;
+        prompt = g_text_lines;
+        choice_count = select_from_graveyard_with_dialog(
+            player, top_three, available, count, (int)&prompt, 1, (int)selected, 0, count);
       }
     }
     else if (internal_rand(2) == 0)
@@ -609,17 +607,18 @@ int card_sewers_of_estark(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    else if ((PLAYER_CARD_INSTANCE(target.player, target.card).state & STATE_TAPPED) == 0)
+    else if ((PLAYER_CARD_INSTANCE(target.player, target.card).state & STATE_ATTACKING) != 0)
     {
-      if (PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player != -1 &&
-          target.player != g_current_player)
-      {
-        create_legacy_effect(player, card, DAT_008b40cc, target.player, target.card);
-      }
+      create_legacy_effect(player, card, unk_007abc7c, target.player, target.card);
+    }
+    else if (PLAYER_CARD_INSTANCE(target.player, target.card).blocking != -1 &&
+             target.player != g_current_player)
+    {
+      create_legacy_effect(player, card, DAT_008b40cc, target.player, target.card);
     }
     else
     {
-      create_legacy_effect(player, card, unk_007abc7c, target.player, target.card);
+      g_spell_fizzled = 1;
     }
 
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
@@ -692,12 +691,8 @@ int card_artifact_blast(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a4e37
 int card_sacrifice(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  target_t target;
   int iid;
   int amount;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -705,29 +700,20 @@ int card_sacrifice(int player, int card, event_t event)
                                  0, 0, 0, -1, -1, 0xffffffff, 0xffffffff, 0, 0, 0);
   }
 
-  if ((event == EVENT_CAST_SPELL) && (card == g_card_on_stack) && (player == g_card_on_stack_controller))
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     load_text("promptsX1.txt", "SACRIFICE");
-    if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE,
-                              TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL,
-                              -1, -1, 0, 0, 0, g_text_lines[0], 0, &target))
-    {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
-      instance->targets[0].player = player;
-      instance->targets[0].card = target.card;
-      instance->number_of_targets = 1;
-      kill_card(player, target.card, KILL_SACRIFICE);
-    }
+    PLAYER_CARD_INSTANCE(player, card).targets[0].card = choose_creature_to_sacrifice(player);
+    PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
+    kill_card(player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_SACRIFICE);
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    iid = PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).internal_card_id;
+    iid = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card).original_internal_card_id;
     amount = (int)(char)global_cards_data[iid].cc[0] + (int)(char)global_cards_data[iid].cc[1];
-    if (global_cards_data[iid].cc[1] == 0xff)
+    if ((int)(char)global_cards_data[iid].cc[1] == -1)
     {
       ++amount;
     }

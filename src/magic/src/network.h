@@ -74,10 +74,8 @@ NETWORK_EXTERN int g_network_result_value;
 NETWORK_EXTERN int unk_0092607c;
 
 // GLOBAL: MAGIC 0x00926080
-NETWORK_EXTERN char unk_00926080;
-
 // GLOBAL: SHANDALAR 0x0093a1b0
-NETWORK_EXTERN target_pair_network_packet_t g_orcish_catapult_target_packet;
+NETWORK_EXTERN target_pair_network_packet_t g_target_pair_network_packet;
 
 // GLOBAL: MAGIC 0x008cf3a0
 // GLOBAL: SHANDALAR 0x008e34f0
@@ -127,9 +125,6 @@ NETWORK_EXTERN xpool_network_packet_t g_xpool_network_packet;
 // GLOBAL: MAGIC 0x008cf200
 // GLOBAL: SHANDALAR 0x008e3350
 NETWORK_EXTERN target_selection_network_packet_t g_target_selection_network_packet;
-
-// GLOBAL: MAGIC 0x008cf3a0
-NETWORK_EXTERN char unk_008cf3a0;
 
 int select_multiple_cards_from_card_list(int player,
                  int *graveyard,

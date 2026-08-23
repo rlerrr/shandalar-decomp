@@ -745,15 +745,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 0x15:
-      memcpy(&unk_008cf3a0, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_008cf3a0 + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_fireball_options_network_packet, s.packet_data, s.packet_size);
+      if (g_fireball_options_network_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&unk_008cf3a0 + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_fireball_options_network_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;
@@ -761,15 +762,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 
     case 0x1b:
     case 0x1c:
-      memcpy(&unk_00926080, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_00926080 + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_target_pair_network_packet, s.packet_data, s.packet_size);
+      if (g_target_pair_network_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&unk_00926080 + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_target_pair_network_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;

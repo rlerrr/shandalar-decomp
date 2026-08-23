@@ -23,7 +23,14 @@ int card_contract_from_below(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    cards_in_hand = g_duel_summary.hand_counts[player];
+    cards_in_hand = 0;
+    for (current_card = 0; current_card < g_active_cards_count[player]; ++current_card)
+    {
+      if (is_card_pending_resolution(player, current_card))
+      {
+        ++cards_in_hand;
+      }
+    }
     for (current_card = 0; current_card < cards_in_hand; ++current_card)
     {
       discard(player, 0, 0);
@@ -81,14 +88,14 @@ int card_darkpact(int player, int card, event_t event)
         real_put_on_top_of_deck(player, global_ante_cards[s.target_player][s.index]);
         global_ante_cards[s.target_player][s.index] = -1;
       }
-      global_ante_cards[s.target_player][0] = (char)PLAYER_CARD_INSTANCE(player, card).info_slot;
+      global_ante_cards[s.target_player][0] = PLAYER_CARD_INSTANCE(player, card).info_slot;
       PLAYER_CARD_INSTANCE(player, card).info_slot = add_card_to_hand(player, PLAYER_CARD_INSTANCE(player, card).info_slot);
       if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
       {
         PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).token_status |= 0x10000;
       }
       load_text("promptsX1.txt", "DARKPACT");
-      if (player == g_current_player)
+      if (player == g_active_player)
       {
         do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, g_text_lines[1], 0);
       }
@@ -96,10 +103,7 @@ int card_darkpact(int player, int card, event_t event)
       {
         do_dialog(player, player, card, player, PLAYER_CARD_INSTANCE(player, card).info_slot, g_text_lines[2], 0);
       }
-      if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
-      {
-        PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).internal_card_id = -1;
-      }
+      PLAYER_CARD_INSTANCE(player, PLAYER_CARD_INSTANCE(player, card).info_slot).internal_card_id = -1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);

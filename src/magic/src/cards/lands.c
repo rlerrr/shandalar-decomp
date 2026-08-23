@@ -81,6 +81,15 @@ int card_gem_bazaar(int player, int card, event_t event)
                                               (color_test_t)(global_card_instances[player])[card].mana_color));
   }
 
+  if (event == EVENT_UNTAP_PHASE)
+  {
+    return mana_producer_sound_on_resolve(player,
+                                          card,
+                                          event,
+                                          single_color_test_bit_to_color_t(
+                                              (color_test_t)(global_card_instances[player])[card].mana_color));
+  }
+
   if (event == EVENT_RESOLVE_SPELL ||
       ((event == EVENT_TAP_CARD || event == EVENT_PLAY_ABILITY) && g_affected_card == card &&
        g_affected_card_controller == player))
@@ -279,11 +288,18 @@ int card_strip_mine(int player, int card, event_t event)
   {
     s.result = 0;
     s.choice = 0;
+    if (g_duel_ai_mode_state != 1)
+    {
+      load_text("prompts.txt", "STRIPMINE");
+    }
     if (DAT_007aadf0 != 0 && unk_00938e2c == 0)
     {
       if (player == g_active_player || (g_duel_network_flags & 2) != 0)
       {
-        sprintf(s.dialog, " Add colorless mana\n Destroy target land\n Cancel");
+        if (g_duel_ai_mode_state != 1)
+        {
+          sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+        }
         s.choice = do_dialog(player, player, card, -1, -1, s.dialog, 1);
       }
       else
@@ -300,6 +316,10 @@ int card_strip_mine(int player, int card, event_t event)
     else if (s.choice == 1)
     {
       g_produced_mana_color = -1;
+      if (g_duel_ai_mode_state != 1)
+      {
+        load_text("prompts.txt", "STRIPMINE");
+      }
       if (!select_target_land_and_store(player, 1 - player, card))
       {
         g_spell_fizzled = 1;
@@ -378,8 +398,8 @@ int card_library_of_alexandria(int player, int card, event_t event)
   struct
   {
     char dialog[0x384];
-    int action;
     int default_action;
+    int action;
     int unused;
   } s;
 
@@ -407,18 +427,29 @@ int card_library_of_alexandria(int player, int card, event_t event)
     {
       if (g_duel_ai_mode_state != 1)
       {
-        sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+        sprintf(s.dialog, " %s\n _%s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
       }
       s.default_action = 0;
     }
 
-    if (((g_other_player == player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
+    if (DAT_007aadf0 == 0)
     {
-      s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
+      s.action = 0;
+    }
+    else if (unk_00938e2c == 0)
+    {
+      if (player == g_active_player || (g_duel_network_flags & 2) != 0)
+      {
+        s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
+      }
+      else
+      {
+        s.action = s.default_action;
+      }
     }
     else
     {
-      s.action = s.default_action;
+      s.action = 0;
     }
 
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
@@ -443,10 +474,13 @@ int card_library_of_alexandria(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    card_instance_t *instance = &PLAYER_CARD_INSTANCE(player, card);
-    if (PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot == 1)
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                             PLAYER_CARD_INSTANCE(player, card).parent_card)
+            .info_slot == 1)
     {
-      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 0;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .info_slot = 0;
       draw_card_for_player(player);
     }
     return 0;
@@ -920,7 +954,7 @@ int card_mishra_s_factory(int player, int card, event_t event)
     {
       s.saved_no_auto_tapping = PLAYER_CARD_INSTANCE(player, card).state & STATE_NO_AUTO_TAPPING;
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_NO_AUTO_TAPPING;
-      charge_mana(player, COLOR_ANY, 1);
+      charge_mana(player, COLOR_COLORLESS, 1);
       if (s.saved_no_auto_tapping == 0)
       {
         PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_NO_AUTO_TAPPING;
@@ -1268,7 +1302,7 @@ int card_assembly_worker(int player, int card, event_t event)
     {
       s.saved_no_auto_tapping = PLAYER_CARD_INSTANCE(player, card).state & STATE_NO_AUTO_TAPPING;
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_NO_AUTO_TAPPING;
-      charge_mana(player, COLOR_ANY, 1);
+      charge_mana(player, COLOR_COLORLESS, 1);
       if (s.saved_no_auto_tapping == 0)
       {
         PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_NO_AUTO_TAPPING;

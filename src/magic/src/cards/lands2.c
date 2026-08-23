@@ -278,9 +278,9 @@ int card_arena(int player, int card, event_t event)
     first_valid = C_real_validate_target(instance->targets[0].player,
                                          instance->targets[0].card,
                                          (char *)0,
-                                         player,
-                                         player,
-                                         player,
+                                         g_active_player,
+                                         g_active_player,
+                                         g_active_player,
                                          TARGET_ZONE_IN_PLAY,
                                          TYPE_CREATURE,
                                          TYPE_NONE,
@@ -298,14 +298,14 @@ int card_arena(int player, int card, event_t event)
     second_valid = C_real_validate_target(instance->targets[1].player,
                                           instance->targets[1].card,
                                           (char *)0,
-                                          1 - player,
-                                          1 - player,
-                                          1 - player,
+                                          g_other_player,
+                                          g_other_player,
+                                          g_other_player,
                                           TARGET_ZONE_IN_PLAY,
                                           TYPE_CREATURE,
                                           TYPE_NONE,
                                           0,
-                                          get_protections_from(player, card),
+                                          get_protections_from(-1, -1),
                                           COLOR_TEST_0,
                                           COLOR_TEST_0,
                                           -1,
@@ -429,6 +429,7 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
     }
 
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    g_produced_mana_color = -1;
     return 0;
   }
 
@@ -436,9 +437,13 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
   {
     draw_card_for_player(player);
     draw_card_for_player(player);
-    discard(player, 0, 0);
-    discard(player, 0, 0);
-    discard(player, 0, 0);
+    for (s.i = 0; s.i < 3; ++s.i)
+    {
+      if (g_duel_summary.hand_counts[player] > 0)
+      {
+        discard(player, 0, 0);
+      }
+    }
     return 0;
   }
 
@@ -565,6 +570,7 @@ int card_desert(int player, int card, event_t event)
   {
     s.result = 0;
     s.choice = 0;
+    load_text("promptsX1.txt", "DESERT");
     if (DAT_007aadf0 != 0 && unk_00938e2c == 0)
     {
       s.can_damage = real_target_available((int *)0,
@@ -590,7 +596,7 @@ int card_desert(int player, int card, event_t event)
       {
         if (player == g_active_player || (g_duel_network_flags & 2) != 0)
         {
-          sprintf(s.dialog, " Add colorless mana\n Damage target attacking creature\n Cancel");
+          sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
           s.choice = do_dialog(player, player, card, -1, -1, s.dialog, 1);
         }
         else
@@ -608,6 +614,7 @@ int card_desert(int player, int card, event_t event)
     else if (s.choice == 1)
     {
       g_produced_mana_color = -1;
+      load_text("promptsX1.txt", "DESERT");
       if (!C_real_select_target(player,
                                 2,
                                 1 - player,
@@ -625,7 +632,7 @@ int card_desert(int player, int card, event_t event)
                                 0,
                                 TARGET_STATE_ATTACKING,
                                 0,
-                                "Select target attacking creature.",
+                                g_text_lines[0],
                                 1,
                                 &s.target))
       {
@@ -697,8 +704,13 @@ int card_desert(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00553f7d
 int card_diamond_valley(int player, int card, event_t event)
 {
+  struct
+  {
+    target_t target;
+    int control_aura_found;
+    int current_card;
+  } s;
   card_instance_t *instance;
-  target_t target;
 
   instance = &PLAYER_CARD_INSTANCE(player, card);
 
@@ -742,6 +754,7 @@ int card_diamond_valley(int player, int card, event_t event)
       g_ai_modifier += (g_current_phase == PHASE_DISCARD && g_current_player != player) ? 0x30 : -0x18;
     }
 
+    load_text("promptsX1.txt", "DIAMOND_VALLEY");
     if (!C_real_select_target(player,
                               player,
                               player,
@@ -759,9 +772,9 @@ int card_diamond_valley(int player, int card, event_t event)
                               0,
                               0,
                               0,
-                              "Select a creature to sacrifice.",
+                              g_text_lines[0],
                               1,
-                              &target))
+                              &s.target))
     {
       g_spell_fizzled = 1;
     }
@@ -771,9 +784,31 @@ int card_diamond_valley(int player, int card, event_t event)
       {
         play_sound_effect(0xf);
       }
-      kill_card(target.player, target.card, KILL_SACRIFICE);
-      instance->info_slot = C_get_abilities(target.player, target.card, EVENT_TOUGHNESS, -1);
+      kill_card(s.target.player, s.target.card, KILL_SACRIFICE);
+      instance->info_slot = C_get_abilities(s.target.player, s.target.card, EVENT_TOUGHNESS, -1);
       instance->state |= STATE_TAPPED;
+
+      if (player == g_other_player &&
+          (g_duel_network_flags & 2) == 0 &&
+          (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).state & STATE_OWNED_BY_OPPONENT) !=
+              (s.target.player == 0 ? 0 : STATE_OWNED_BY_OPPONENT))
+      {
+        s.current_card = 0;
+        s.control_aura_found = 0;
+        while (s.current_card < g_active_cards_count[player] && s.control_aura_found == 0)
+        {
+          if (PLAYER_CARD_INSTANCE(player, s.current_card).internal_card_id ==
+                  g_control_aura_special_internal_card_id &&
+              PLAYER_CARD_INSTANCE(player, s.current_card).damage_target_player == s.target.player &&
+              PLAYER_CARD_INSTANCE(player, s.current_card).damage_target_card == s.target.card)
+          {
+            s.control_aura_found = 1;
+            g_ai_modifier += 0x30;
+          }
+          ++s.current_card;
+        }
+      }
+
       g_produced_mana_color = -1;
     }
     return 0;
@@ -781,7 +816,7 @@ int card_diamond_valley(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    gain_life(player, instance->info_slot);
+    gain_life(player, instance->info_slot, g_card_on_stack_controller, g_card_on_stack);
   }
 
   return 0;
@@ -1025,6 +1060,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
+    load_text("promptsX1.txt", "ISLAND_OF_WAK_WAK");
     if (!C_real_select_target(player,
                               2,
                               1 - player,
@@ -1042,7 +1078,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
                               0,
                               0,
                               0,
-                              "Select target creature with flying.",
+                              g_text_lines[0],
                               1,
                               &target))
     {
@@ -1058,7 +1094,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && instance->number_of_targets != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION)
   {
     target = instance->targets[0];
     if (!C_real_validate_target(target.player,
@@ -1224,7 +1260,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
   int num_available_colors;
   color_test_t colors_to_choose_from;
 
-  if (event == EVENT_TAP_CARD && g_duel_ai_mode_state != 1)
+  if (event == EVENT_RESOLVE_SPELL && g_duel_ai_mode_state != 1)
   {
     play_sound_effect(PLAYER_CARD_INSTANCE(player, card).internal_card_id + 0x16);
   }
