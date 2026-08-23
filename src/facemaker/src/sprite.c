@@ -242,8 +242,8 @@ EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, unsigned int w
     {
       *(char *)write_cursor = (char)run_offset;
       run_header = (unsigned char *)((int)write_cursor + 1);
-      first_char = *(char *)((int)&border_left + width + 3);
-      run_start = (int)&border_left + width + 3;
+      first_char = line_buffer[width - 1];
+      run_start = (int)(line_buffer + width - 1);
       run_end = run_start;
       run_len = width;
       while (first_char == '\0' && run_len != 0)

@@ -401,7 +401,10 @@ int count_hidden_battlefield_descendants_for_card(HWND hwnd, int *player_and_car
   {
     return count_hidden_battlefield_descendants(hwnd, s.found_window);
   }
-  return 0;
+  else
+  {
+    return 0;
+  }
 }
 
 // FUNCTION: MAGIC 0x004e9b26
