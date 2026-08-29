@@ -417,7 +417,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
     case 0x66:
       s.command_player = hwnd == g_duel_life_status_window_1_hwnd ? 0 : 1;
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       post_life_directive_action(s.command_player);
       break;
 
@@ -471,7 +471,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
     if (g_duel_modal_action_active != 0)
     {
       Sleep(GetDoubleClickTime());
-      unk_00715fb0 = PeekMessageA(&s.peek_msg, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0);
+      g_recorded_action_player = PeekMessageA(&s.peek_msg, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0);
       post_life_directive_action(s.click_player);
     }
     return 0;

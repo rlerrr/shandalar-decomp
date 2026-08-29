@@ -12,27 +12,27 @@ extern int g_spell_minimized_hwnd;
 
 // GLOBAL: MAGIC 0x007a7d74
 // GLOBAL: SHANDALAR 0x007beb00
-int DAT_007a7d74;
+int g_duel_tooltip_window;
 
 // GLOBAL: MAGIC 0x007aa928
 // GLOBAL: SHANDALAR 0x007beb20
-int DAT_007aa928;
+int g_saved_stop_phase_player;
 
 // GLOBAL: MAGIC 0x007aaeec
 // GLOBAL: SHANDALAR 0x007bf0ec
-int DAT_007aaeec;
+int g_response_prompt_enabled;
 
 // GLOBAL: MAGIC 0x008a8d78
 // GLOBAL: SHANDALAR 0x008bcf78
-int DAT_008a8d78;
+int g_duel_player_battlefield_window;
 
 // GLOBAL: MAGIC 0x008a8dec
 // GLOBAL: SHANDALAR 0x008bcfec
-int DAT_008a8dec;
+int g_duel_opponent_battlefield_window;
 
 // GLOBAL: MAGIC 0x0093d840
 // GLOBAL: SHANDALAR 0x00951960
-int DAT_0093d840;
+int g_target_selection_active;
 
 int show_spell_window_for_target_selection(void);
 int restore_spell_window_after_target_selection(void);
@@ -157,8 +157,8 @@ void set_duel_tooltip_text(char *text)
 
   if (*s.tooltip_text == '\0')
   {
-    ShowWindow((HWND)DAT_007a7d74, 0);
-    SetWindowTextA((HWND)DAT_007a7d74, s.tooltip_text);
+    ShowWindow((HWND)g_duel_tooltip_window, 0);
+    SetWindowTextA((HWND)g_duel_tooltip_window, s.tooltip_text);
   }
   else
   {
@@ -175,7 +175,7 @@ void set_duel_tooltip_text(char *text)
           s.tooltip_height = 0xc;
         }
 
-        s.tooltip_width = get_tooltip_text_width((HWND)DAT_007a7d74, s.tooltip_text);
+        s.tooltip_width = get_tooltip_text_width((HWND)g_duel_tooltip_window, s.tooltip_text);
         s.tooltip_width += s.tooltip_height * 2;
         GetCursorPos(&s.cursor_pos);
         s.cursor_pos.y += GetSystemMetrics(0xe);
@@ -201,16 +201,16 @@ void set_duel_tooltip_text(char *text)
           s.tooltip_height = 0x12;
         }
 
-        s.tooltip_width = get_tooltip_text_width((HWND)DAT_007a7d74, s.tooltip_text);
+        s.tooltip_width = get_tooltip_text_width((HWND)g_duel_tooltip_window, s.tooltip_text);
         s.tooltip_width += s.tooltip_height * 2;
         s.tooltip_x = (s.screen_width - (s.screen_width * 0x14) / 100) - s.tooltip_width;
         s.tooltip_y = (s.screen_height - s.tooltip_height) / 2;
       }
 
-      SetWindowPos((HWND)DAT_007a7d74, (HWND)0, s.tooltip_x, s.tooltip_y, s.tooltip_width, s.tooltip_height, 4);
-      SetWindowTextA((HWND)DAT_007a7d74, s.tooltip_text);
-      ShowWindow((HWND)DAT_007a7d74, 5);
-      BringWindowToTop((HWND)DAT_007a7d74);
+      SetWindowPos((HWND)g_duel_tooltip_window, (HWND)0, s.tooltip_x, s.tooltip_y, s.tooltip_width, s.tooltip_height, 4);
+      SetWindowTextA((HWND)g_duel_tooltip_window, s.tooltip_text);
+      ShowWindow((HWND)g_duel_tooltip_window, 5);
+      BringWindowToTop((HWND)g_duel_tooltip_window);
   }
 }
 
@@ -257,20 +257,20 @@ int run_target_selection_modal(int who_chooses,
   }
 
   EnterCriticalSection(&g_duel_render_lock);
-  if (DAT_007abc74 != -1)
+  if (g_saved_stop_phase != -1)
   {
     if ((g_duel_network_flags & 2) == 0)
     {
-      DAT_007abc74 = -1;
+      g_saved_stop_phase = -1;
     }
 
-    if (IsWindowVisible((HWND)DAT_008a8dec))
+    if (IsWindowVisible((HWND)g_duel_opponent_battlefield_window))
     {
-      InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
+      InvalidateRect((HWND)g_duel_opponent_battlefield_window, NULL, 1);
     }
     else
     {
-      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
+      InvalidateRect((HWND)g_duel_player_battlefield_window, NULL, 1);
     }
   }
   LeaveCriticalSection(&g_duel_render_lock);
@@ -292,13 +292,13 @@ int run_target_selection_modal(int who_chooses,
 
   if (g_active_player == who_chooses || (g_duel_network_flags & 2) == 0)
   {
-    if (DAT_0093d840 != 0)
+    if (g_target_selection_active != 0)
     {
       play_sound_effect(0x25);
-      DAT_0093d840 = 0;
+      g_target_selection_active = 0;
     }
 
-    if (DAT_007aaeec != 0 && g_current_phase == 10 && g_response_action_taken == 0)
+    if (g_response_prompt_enabled != 0 && g_current_phase == 10 && g_response_action_taken == 0)
     {
       s.result = 0;
       s.action_result.selection_code = -2;
@@ -307,9 +307,9 @@ int run_target_selection_modal(int who_chooses,
       s.thread_exit_code = 0;
       g_stop_phase_player = -1;
       g_stop_phase = -1;
-      unk_00715fb0 = 0;
-      DAT_0072c8e0 = 0;
-      DAT_00715fa4 = 0;
+      g_recorded_action_player = 0;
+      g_recorded_action_phase = 0;
+      g_recorded_action_controller = 0;
     }
     else
     {
@@ -340,9 +340,9 @@ int run_target_selection_modal(int who_chooses,
       {
         g_target_selection_network_packet.target_player = s.action_result.target_player;
       }
-      g_target_selection_network_packet.aux_player = unk_00715fb0;
-      g_target_selection_network_packet.aux_phase = DAT_0072c8e0;
-      g_target_selection_network_packet.aux_controller = 1 - DAT_00715fa4;
+      g_target_selection_network_packet.aux_player = g_recorded_action_player;
+      g_target_selection_network_packet.aux_phase = g_recorded_action_phase;
+      g_target_selection_network_packet.aux_controller = 1 - g_recorded_action_controller;
       TENTATIVE_send_network_result(who_chooses, 0xc);
       Sleep(0xfa);
       send_battlefield_status_packet(who_chooses);
@@ -351,7 +351,7 @@ int run_target_selection_modal(int who_chooses,
   else
   {
     set_duel_prompt_text(gs_waiting_for_opponent_007a7d30);
-    DAT_0093d840 = 1;
+    g_target_selection_active = 1;
     TENTATIVE_wait_for_network_result(who_chooses, 0xc);
     s.result = g_target_selection_network_packet.result;
     s.action_result.selection_code = g_target_selection_network_packet.selection_code;
@@ -359,9 +359,9 @@ int run_target_selection_modal(int who_chooses,
     g_previous_stop_phase = g_target_selection_network_packet.previous_phase;
     s.action_result.target_card = g_target_selection_network_packet.target_card;
     s.action_result.target_player = g_target_selection_network_packet.target_player;
-    unk_00715fb0 = g_target_selection_network_packet.aux_player;
-    DAT_0072c8e0 = g_target_selection_network_packet.aux_phase;
-    DAT_00715fa4 = g_target_selection_network_packet.aux_controller;
+    g_recorded_action_player = g_target_selection_network_packet.aux_player;
+    g_recorded_action_phase = g_target_selection_network_packet.aux_phase;
+    g_recorded_action_controller = g_target_selection_network_packet.aux_controller;
     s.thread_exit_code = (WPARAM)g_target_selection_network_packet.thread_exit_code;
     receive_battlefield_status_packet(who_chooses);
     set_duel_prompt_text("");
@@ -389,37 +389,37 @@ int run_target_selection_modal(int who_chooses,
       {
         if ((g_duel_network_flags & 2) != 0)
         {
-          DAT_007aa928 = g_stop_phase_player;
-          DAT_007abc74 = g_stop_phase;
+          g_saved_stop_phase_player = g_stop_phase_player;
+          g_saved_stop_phase = g_stop_phase;
         }
         else
         {
-          DAT_007aa928 = DAT_007abc74 = -1;
+          g_saved_stop_phase_player = g_saved_stop_phase = -1;
         }
       }
       else
       {
-        DAT_007aa928 = g_stop_phase_player;
-        DAT_007abc74 = g_stop_phase;
+        g_saved_stop_phase_player = g_stop_phase_player;
+        g_saved_stop_phase = g_stop_phase;
       }
     }
     else if ((g_duel_network_flags & 2) != 0)
     {
-      DAT_007aa928 = g_stop_phase_player;
-      DAT_007abc74 = g_stop_phase;
+      g_saved_stop_phase_player = g_stop_phase_player;
+      g_saved_stop_phase = g_stop_phase;
     }
     else
     {
-      DAT_007aa928 = DAT_007abc74 = -1;
+      g_saved_stop_phase_player = g_saved_stop_phase = -1;
     }
 
-    if (IsWindowVisible((HWND)DAT_008a8dec))
+    if (IsWindowVisible((HWND)g_duel_opponent_battlefield_window))
     {
-      InvalidateRect((HWND)DAT_008a8dec, NULL, 1);
+      InvalidateRect((HWND)g_duel_opponent_battlefield_window, NULL, 1);
     }
     else
     {
-      InvalidateRect((HWND)DAT_008a8d78, NULL, 1);
+      InvalidateRect((HWND)g_duel_player_battlefield_window, NULL, 1);
     }
     LeaveCriticalSection(&g_duel_render_lock);
     return s.result;
@@ -607,7 +607,7 @@ int C_real_select_target(int who_chooses,
       }
     }
 
-    unk_00742fcc = s.valid_players[g_ai_recorded_choice];
+    g_target_player_choice = s.valid_players[g_ai_recorded_choice];
     ret_tgt->player = s.valid_players[g_ai_recorded_choice];
     ret_tgt->card = s.valid_cards[g_ai_recorded_choice];
     s.result = 1;

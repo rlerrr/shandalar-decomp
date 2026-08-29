@@ -306,7 +306,7 @@ int card_damage(int player, int card, event_t event)
           global_cards_data[PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                                                  PLAYER_CARD_INSTANCE(player, card).damage_source_card)
                                 .internal_card_id]
-                  .id != unk_008a8de8)
+                  .id != g_legacy_display_internal_card_id)
       {
         g_damage_accumulators[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player]
                              [PLAYER_CARD_INSTANCE(player, card).damage_source_card]
@@ -774,7 +774,7 @@ int card_generic(int player, int card, event_t event)
     if (event == EVENT_CAN_SKIP_TURN && g_current_player == player)
     {
       kill_card(player, card, KILL_DESTROY);
-      unk_007a79b0[player] &= ~1;
+      g_player_special_effect_flags[player] &= ~1;
     }
 
     if (event == EVENT_ATTACK_LEGALITY &&
@@ -792,9 +792,9 @@ int card_generic(int player, int card, event_t event)
       g_duel_extra_turn_player = player;
     }
 
-    if (event == EVENT_CLEANUP && DAT_0093a848 == 0)
+    if (event == EVENT_CLEANUP && g_duel_state_0093a848 == 0)
     {
-      DAT_0093a848 |= 1 << (unsigned char)player;
+      g_duel_state_0093a848 |= 1 << (unsigned char)player;
       PLAYER_CARD_INSTANCE(player, card).token_status &= ~STATUS_PERMANENT;
     }
   }
@@ -979,7 +979,7 @@ int card_piggy_FX(int player, int card, event_t event)
 
     for (; s.current_card < g_active_cards_count[s.target_player] && s.found == 0; ++s.current_card)
     {
-      if (PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id == unk_0093d848 &&
+      if (PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id == g_duel_generated_internal_card_id_1a &&
           is_in_play(s.target_player, s.current_card) != 0 &&
           PLAYER_CARD_INSTANCE(player, card).damage_target_player ==
               PLAYER_CARD_INSTANCE(s.target_player, s.current_card).damage_target_player &&
@@ -1463,10 +1463,10 @@ int card_activation(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004afd4c
 int card_draw_card(int player, int card, event_t event)
 {
-  if (event == EVENT_CAN_ACTIVATE && g_current_phase == PHASE_DRAW && unk_00742f60 == player &&
+  if (event == EVENT_CAN_ACTIVATE && g_current_phase == PHASE_DRAW && g_event_player == player &&
       PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && g_trigger_condition == -1)
   {
-    unk_008b3270 |= 3;
+    g_activation_event_flags |= 3;
     return 1;
   }
 

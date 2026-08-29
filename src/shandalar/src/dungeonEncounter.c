@@ -83,7 +83,7 @@ extern int g_world_lair_monster_sprite_top_clips[0x10];
 extern int g_world_lair_monster_sprite_widths[0x10];
 extern int g_world_location_music_track_id;
 extern int g_world_location_music_active;
-extern int DAT_00742fc0;
+extern int g_duel_state_00742fc0;
 extern int g_encounter_opening_hand_size_modifier;
 extern int g_current_encounter_strength;
 extern int g_ai_combat_value_weights[4];
@@ -852,7 +852,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     s.card_id = deck[s.deck_index] & 0xfff;
     if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x80) != 0)
     {
-      DAT_00742fc0 = 0;
+      g_duel_state_00742fc0 = 0;
       if ((global_cards_data[s.card_id].type & 0x30) != 0)
       {
         deck[s.deck_index] |= 0x8000;
@@ -860,7 +860,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     }
     if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x40) != 0)
     {
-      DAT_00742fc0 = 0;
+      g_duel_state_00742fc0 = 0;
       if ((global_cards_data[s.card_id].type & 0x40) != 0)
       {
         deck[s.deck_index] |= 0x8000;
@@ -868,7 +868,7 @@ int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle)
     }
     if ((g_castle_dungeon_slots[dungeon_index].rules_bitmap & 0x10) != 0)
     {
-      DAT_00742fc0 = 0;
+      g_duel_state_00742fc0 = 0;
       if ((int)global_cards_data[s.card_id].color == 1 << (byte)g_castle_dungeon_slots[dungeon_index].color)
       {
         deck[s.deck_index] |= 0x8000;

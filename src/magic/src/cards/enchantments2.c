@@ -81,8 +81,8 @@ int card_island_sanctuary(int player, int card, event_t event)
     if (event == 0x7e)
     {
       PLAYER_CARD_INSTANCE(player, card).info_slot &= ~1;
-      unk_007a79b0[player] |= 1;
-      legacy_card = create_legacy_effect(player, card, unk_008b49c4, -1, -1);
+      g_player_special_effect_flags[player] |= 1;
+      legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_0f, -1, -1);
       if (legacy_card != -1)
       {
         PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x400020;
@@ -96,7 +96,7 @@ int card_island_sanctuary(int player, int card, event_t event)
           }
         }
       }
-      unk_0091c4fc = 1;
+      g_duel_state_0091c4fc = 1;
       ++PLAYER_CARD_INSTANCE(player, card).eot_toughness;
     }
   }
@@ -138,7 +138,7 @@ int card_kormus_bell(int player, int card, event_t event)
     }
     else if (is_basic_land_internal_card_id_of_color(g_event_result, instance->info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, find_land_animation_legacy, player) == -1)
     {
-      effect_card = create_legacy_effect(player, card, unk_0093933c, g_affected_card_controller, g_affected_card);
+      effect_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_28, g_affected_card_controller, g_affected_card);
       if (effect_card != -1)
       {
         effect_instance = &PLAYER_CARD_INSTANCE(player, effect_card);
@@ -215,7 +215,7 @@ int card_living_lands(int player, int card, event_t event)
     }
     else if (is_basic_land_internal_card_id_of_color(g_event_result, instance->info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, find_land_animation_legacy, player) == -1)
     {
-      effect_card = create_legacy_effect(player, card, unk_0093933c, g_affected_card_controller, g_affected_card);
+      effect_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_28, g_affected_card_controller, g_affected_card);
       if (effect_card != -1)
       {
         effect_instance = &PLAYER_CARD_INSTANCE(player, effect_card);
@@ -270,7 +270,7 @@ int find_land_animation_legacy(int a1, int a2, int player, int card, int interna
   int result; // ebp-0x4
 
   result = 0;
-  if (internal_card_id == unk_0093933c)
+  if (internal_card_id == g_duel_generated_internal_card_id_28)
   {
     if ((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller)
     {
@@ -288,7 +288,7 @@ int find_land_animation_legacy(int a1, int a2, int player, int card, int interna
 // FUNCTION: MAGIC 0x0051819c
 int destroy_land_animation_legacies(int parent_player, int parent_card, int player, int card, int internal_card_id)
 {
-  if (internal_card_id == unk_0093933c && PLAYER_CARD_INSTANCE(player, card).damage_source_player == parent_player && PLAYER_CARD_INSTANCE(player, card).damage_source_card == parent_card)
+  if (internal_card_id == g_duel_generated_internal_card_id_28 && PLAYER_CARD_INSTANCE(player, card).damage_source_player == parent_player && PLAYER_CARD_INSTANCE(player, card).damage_source_card == parent_card)
   {
     kill_card(player, card, KILL_DESTROY);
   }
@@ -331,11 +331,11 @@ int card_sylvan_library(int player, int card, event_t event)
       g_current_phase == PHASE_DRAW)
   {
     source_color = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-    if (unk_0072c440[source_color] == 0 || has_mana_w_global_cost_mod(player, card, COLOR_ANY, 0) != 0)
+    if (g_mana_cost_modifiers_by_color[source_color] == 0 || has_mana_w_global_cost_mod(player, card, COLOR_ANY, 0) != 0)
     {
       if (player == g_other_player && (g_duel_network_flags & 2) == 0)
       {
-        unk_008b3270 |= 3;
+        g_activation_event_flags |= 3;
       }
       return 1;
     }
@@ -345,7 +345,7 @@ int card_sylvan_library(int player, int card, event_t event)
   if (event == EVENT_ACTIVATE && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     source_color = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-    if (unk_0072c440[source_color] != 0)
+    if (g_mana_cost_modifiers_by_color[source_color] != 0)
     {
       charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 0);
     }
@@ -481,16 +481,16 @@ int card_land_tax(int player, int card, event_t event)
   {
     if (g_current_phase == PHASE_UPKEEP &&
         player == g_current_player &&
-        player == unk_00742f60 &&
+        player == g_event_player &&
         PLAYER_CARD_INSTANCE(player, card).info_slot == 0 &&
         g_basiclandtypes_controlled[player][7] < g_basiclandtypes_controlled[1 - player][7])
     {
       s.library_index = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-      if (unk_0072c440[s.library_index] == 0 || has_mana_w_global_cost_mod(player, card, COLOR_ANY, 0) != 0)
+      if (g_mana_cost_modifiers_by_color[s.library_index] == 0 || has_mana_w_global_cost_mod(player, card, COLOR_ANY, 0) != 0)
       {
         if (player == g_other_player && (g_duel_network_flags & 2) == 0 && global_library[player][4] != -1)
         {
-          unk_008b3270 |= 3;
+          g_activation_event_flags |= 3;
         }
         return 1;
       }
@@ -501,7 +501,7 @@ int card_land_tax(int player, int card, event_t event)
   if (event == EVENT_ACTIVATE && card == g_affected_card && player == g_affected_card_controller)
   {
     s.library_index = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-    if (unk_0072c440[s.library_index] != 0)
+    if (g_mana_cost_modifiers_by_color[s.library_index] != 0)
     {
       charge_mana_w_global_cost_mod(player, card, COLOR_COLORLESS, 0);
     }
@@ -756,7 +756,7 @@ int card_gloom(int player, int card, event_t event)
   if (event == 0x7f && g_affected_card == card && g_affected_card_controller == player)
   {
     chosen_color = get_sleighted_color(player, card, 5);
-    unk_0072c440[chosen_color] += 3;
+    g_mana_cost_modifiers_by_color[chosen_color] += 3;
     return 0;
   }
 
@@ -1239,7 +1239,7 @@ int card_titania_s_song(int player, int card, event_t event)
           break;
         }
 
-        if (PLAYER_CARD_INSTANCE(g_active_player, current_card).internal_card_id == DAT_007ab150 &&
+        if (PLAYER_CARD_INSTANCE(g_active_player, current_card).internal_card_id == g_duel_generated_internal_card_id_16 &&
             is_in_play(g_active_player, current_card) &&
             PLAYER_CARD_INSTANCE(g_active_player, current_card).damage_target_player == g_affected_card_controller &&
             PLAYER_CARD_INSTANCE(g_active_player, current_card).damage_target_card == g_affected_card)
@@ -1247,7 +1247,7 @@ int card_titania_s_song(int player, int card, event_t event)
           found = 1;
         }
 
-        if (PLAYER_CARD_INSTANCE(g_other_player, current_card).internal_card_id == DAT_007ab150 &&
+        if (PLAYER_CARD_INSTANCE(g_other_player, current_card).internal_card_id == g_duel_generated_internal_card_id_16 &&
             is_in_play(g_other_player, current_card) &&
             PLAYER_CARD_INSTANCE(g_other_player, current_card).damage_target_player == g_affected_card_controller &&
             PLAYER_CARD_INSTANCE(g_other_player, current_card).damage_target_card == g_affected_card)
@@ -1271,7 +1271,7 @@ int card_titania_s_song(int player, int card, event_t event)
 
         if (animated_internal_card_id != -1)
         {
-          legacy_card = create_legacy_effect(player, card, DAT_007ab150, g_affected_card_controller, g_affected_card);
+          legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_16, g_affected_card_controller, g_affected_card);
           if (legacy_card != -1)
           {
             effect = &PLAYER_CARD_INSTANCE(player, legacy_card);
@@ -1310,7 +1310,7 @@ int card_titania_s_song(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d2ca9
 int titanias_song_count_animations(int player, int card, int internal_card_id)
 {
-  if (internal_card_id == DAT_007ab150)
+  if (internal_card_id == g_duel_generated_internal_card_id_16)
   {
     ++PLAYER_CARD_INSTANCE(player, card).eot_toughness;
   }
@@ -1321,7 +1321,7 @@ int titanias_song_count_animations(int player, int card, int internal_card_id)
 // FUNCTION: SHANDALAR 0x004d2cf7
 int titanias_song_uncount_animations(int player, int card, int internal_card_id)
 {
-  if (internal_card_id == DAT_007ab150)
+  if (internal_card_id == g_duel_generated_internal_card_id_16)
   {
     --PLAYER_CARD_INSTANCE(player, card).eot_toughness;
   }
@@ -1821,10 +1821,10 @@ int card_feedback(int player, int card, event_t event)
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
-    if (((g_current_phase == EVENT_UPKEEP_PHASE) && (unk_00742f60 == g_current_player)) && (PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
+    if (((g_current_phase == EVENT_UPKEEP_PHASE) && (g_event_player == g_current_player)) && (PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -1832,7 +1832,7 @@ int card_feedback(int player, int card, event_t event)
   else if (((event == EVENT_UPKEEP_PHASE) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).state |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -2478,10 +2478,10 @@ int card_power_leak(int player, int card, event_t event)
   }
   else if (event == 0x73)
   {
-    if (((g_current_phase == 4) && (unk_00742f60 == g_current_player)) && (((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0)))
+    if (((g_current_phase == 4) && (g_event_player == g_current_player)) && (((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0)))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -2489,7 +2489,7 @@ int card_power_leak(int player, int card, event_t event)
   else if (((event == 4) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -2601,8 +2601,8 @@ int card_energy_flux(int player, int card, event_t event)
 
   if (event == EVENT_SETUP_UPKEEP_COSTS &&
       (global_cards_data[PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id].type & TYPE_ARTIFACT) != 0 &&
-      g_affected_card_controller == unk_00742f60 &&
-      unk_00742f60 == g_current_player)
+      g_affected_card_controller == g_event_player &&
+      g_event_player == g_current_player)
   {
     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).upkeep_flags |= 3;
     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).upkeep_colorless += 2;
@@ -2712,12 +2712,12 @@ int card_erosion(int player, int card, event_t event)
   else if (event == EVENT_CAN_ACTIVATE)
   {
     if (g_current_phase == 4 &&
-        unk_00742f60 == g_current_player &&
+        g_event_player == g_current_player &&
         instance->damage_target_player == g_current_player &&
         (instance->state & 1) == 0)
     {
       instance->upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -2725,7 +2725,7 @@ int card_erosion(int player, int card, event_t event)
   else if (event == EVENT_UPKEEP_PHASE && g_affected_card == card && g_affected_card_controller == player)
   {
     instance->state |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -2899,10 +2899,10 @@ int card_cursed_land(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (((g_current_phase == EVENT_UPKEEP_PHASE) && (unk_00742f60 == g_current_player)) && (PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
+    if (((g_current_phase == EVENT_UPKEEP_PHASE) && (g_event_player == g_current_player)) && (PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -2911,7 +2911,7 @@ int card_cursed_land(int player, int card, event_t event)
   if (((event == EVENT_UPKEEP_PHASE) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).state |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -2958,11 +2958,11 @@ int card_karma(int player, int card, event_t event)
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
-    if (((g_current_phase == EVENT_UPKEEP_PHASE) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0)) && ((unk_00742f60 == g_current_player) && ((color = get_hacked_color(player, card, 1),
-                                                                                                                                                           g_basiclandtypes_controlled[unk_00742f60][color] != 0))))
+    if (((g_current_phase == EVENT_UPKEEP_PHASE) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0)) && ((g_event_player == g_current_player) && ((color = get_hacked_color(player, card, 1),
+                                                                                                                                                           g_basiclandtypes_controlled[g_event_player][color] != 0))))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -2970,7 +2970,7 @@ int card_karma(int player, int card, event_t event)
   else if (((event == EVENT_UPKEEP_PHASE) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -3254,14 +3254,14 @@ int card_living_artifact(int player, int card, event_t event)
     }
     else if (event == EVENT_CAN_ACTIVATE)
     {
-      if (g_current_phase == 4 && player == g_current_player && player == unk_00742f60 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && C_get_special_counters(player, card) != 0)
+      if (g_current_phase == 4 && player == g_current_player && player == g_event_player && PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && C_get_special_counters(player, card) != 0)
       {
         ai_scale = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
-        if (unk_0072c440[ai_scale] == 0 || has_mana_w_global_cost_mod(player, card, 7, 0) != 0)
+        if (g_mana_cost_modifiers_by_color[ai_scale] == 0 || has_mana_w_global_cost_mod(player, card, 7, 0) != 0)
         {
           if (player == g_other_player && (g_duel_network_flags & 2) == 0)
           {
-            unk_008b3270 |= 3;
+            g_activation_event_flags |= 3;
           }
           return 1;
         }
@@ -3271,7 +3271,7 @@ int card_living_artifact(int player, int card, event_t event)
     else if (event == EVENT_ACTIVATE && card == g_affected_card && player == g_affected_card_controller)
     {
       ai_scale = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
-      if (unk_0072c440[ai_scale] != 0)
+      if (g_mana_cost_modifiers_by_color[ai_scale] != 0)
       {
         charge_mana_w_global_cost_mod(player, card, 0, 0);
       }
@@ -3426,7 +3426,7 @@ int card_blight(int player, int card, event_t event)
     {
       legacy_card = create_legacy_effect(player,
                                          card,
-                                         unk_008b49c4,
+                                         g_duel_generated_internal_card_id_0f,
                                          (int)(char)instance->damage_target_player,
                                          instance->damage_target_card);
       if (legacy_card != -1)
@@ -3757,7 +3757,7 @@ int card_sunken_city(int player, int card, event_t event)
       g_affected_card == card &&
       g_affected_card_controller == player &&
       player == g_current_player &&
-      player == unk_00742f60)
+      player == g_event_player)
   {
     PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 1;
     PLAYER_CARD_INSTANCE(player, card).upkeep_blue += 2;
@@ -4269,7 +4269,7 @@ int card_creature_bond(int player, int card, event_t event)
     return 0;
   }
 
-  if (((event == EVENT_GRAVEYARD_FROM_PLAY) && (PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card)) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && ((g_affected_card != -1) && ((effect_card = add_card_to_hand(player, unk_00939348)) != -1))))
+  if (((event == EVENT_GRAVEYARD_FROM_PLAY) && (PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card)) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && ((g_affected_card != -1) && ((effect_card = add_card_to_hand(player, g_duel_generated_internal_card_id_12)) != -1))))
   {
     PLAYER_CARD_INSTANCE(player, effect_card).original_internal_card_id =
         PLAYER_CARD_INSTANCE(player, card).internal_card_id;
@@ -4485,7 +4485,7 @@ int card_backfire(int player, int card, event_t event)
       instance->damage_target_player == g_affected_card_controller &&
       g_affected_card != -1)
   {
-    unk_00925d3c += PLAYER_CARD_INSTANCE((int)instance->damage_target_player, instance->damage_target_card).power * 0x18;
+    g_ai_score += PLAYER_CARD_INSTANCE((int)instance->damage_target_player, instance->damage_target_card).power * 0x18;
   }
 
   return 0;
@@ -4611,7 +4611,7 @@ int card_holy_armor(int player, int card, event_t event)
     if (player == g_current_player)
     {
       local = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-      if (unk_0072c440[local] == 0)
+      if (g_mana_cost_modifiers_by_color[local] == 0)
       {
         load_recorded_action_code(0);
       }
@@ -4636,7 +4636,7 @@ int card_holy_armor(int player, int card, event_t event)
       if (player == g_current_player)
       {
         local = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-        if (unk_0072c440[local] != 0)
+        if (g_mana_cost_modifiers_by_color[local] != 0)
         {
           g_x_value = charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
         }
@@ -4656,7 +4656,7 @@ int card_holy_armor(int player, int card, event_t event)
       else
       {
         local = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-        if (unk_0072c440[local] != 0)
+        if (g_mana_cost_modifiers_by_color[local] != 0)
         {
           charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
         }
@@ -4854,7 +4854,7 @@ int card_blessing(int player, int card, event_t event)
     if (player == g_current_player)
     {
       local = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-      if (unk_0072c440[local] == 0)
+      if (g_mana_cost_modifiers_by_color[local] == 0)
       {
         load_recorded_action_code(0);
       }
@@ -4879,7 +4879,7 @@ int card_blessing(int player, int card, event_t event)
       if (player == g_current_player)
       {
         local = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-        if (unk_0072c440[local] != 0)
+        if (g_mana_cost_modifiers_by_color[local] != 0)
         {
           g_x_value = charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
         }
@@ -4899,7 +4899,7 @@ int card_blessing(int player, int card, event_t event)
       else
       {
         local = single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color);
-        if (unk_0072c440[local] != 0)
+        if (g_mana_cost_modifiers_by_color[local] != 0)
         {
           charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
         }
@@ -5105,7 +5105,7 @@ int card_firebreathing(int player, int card, event_t event)
   {
     if (player == g_current_player)
     {
-      if (unk_0072c440[single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color)] != 0)
+      if (g_mana_cost_modifiers_by_color[single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color)] != 0)
       {
         g_loaded_recorded_action_code = 1;
       }
@@ -5129,7 +5129,7 @@ int card_firebreathing(int player, int card, event_t event)
     {
       if (player == g_current_player)
       {
-        if (unk_0072c440[single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color)] != 0)
+        if (g_mana_cost_modifiers_by_color[single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color)] != 0)
         {
           g_x_value = charge_mana_w_global_cost_mod(player, card, 4, 1);
         }
@@ -5149,7 +5149,7 @@ int card_firebreathing(int player, int card, event_t event)
       }
       else
       {
-        if (unk_0072c440[single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color)] != 0)
+        if (g_mana_cost_modifiers_by_color[single_color_test_bit_to_color_t((int)PLAYER_CARD_INSTANCE(player, card).color)] != 0)
         {
           charge_mana_w_global_cost_mod(player, card, 4, 1);
         }
@@ -5576,7 +5576,7 @@ int card_stasis(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == 0x85 && card == g_affected_card && player == g_affected_card_controller && player == g_current_player && unk_00742f60 == g_current_player)
+  if (event == 0x85 && card == g_affected_card && player == g_affected_card_controller && player == g_current_player && g_event_player == g_current_player)
   {
     *(unsigned int *)((char *)instance + 0x5c) |= 1;
     ++instance->upkeep_blue;
@@ -5671,7 +5671,7 @@ int card_magnetic_mountain(int player, int card, event_t event)
   if (event == EVENT_SET_UNTAP_COST &&
       (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).state & STATE_TAPPED) != 0 &&
       g_affected_card_controller == g_current_player &&
-      unk_00742f60 == g_current_player)
+      g_event_player == g_current_player)
   {
     if ((global_cards_data[PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id].type & TYPE_CREATURE) != 0 &&
         ((1 << get_sleighted_color(player, card, COLOR_BLUE)) & (int)(char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).color) != 0)
@@ -5837,7 +5837,7 @@ int card_paralyze(int player, int card, event_t event)
                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
            .state &
        STATE_TAPPED) != 0 &&
-      PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player && unk_00742f60 == g_current_player)
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player && g_event_player == g_current_player)
   {
     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).upkeep_flags |= UPKEEP_UNTAP_TRIGGER;
     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).mana_to_untap[0] += 4;
@@ -5908,7 +5908,7 @@ int card_smoke(int player, int card, event_t event)
   if (event == 0x82 && (global_cards_data[PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id].type & TYPE_CREATURE) != 0)
   {
     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).untap_status &= ~2;
-    unk_00925d38 |= 2;
+    g_ai_score_baseline |= 2;
     return 0;
   }
 
@@ -6005,10 +6005,10 @@ int card_power_surge(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (g_current_phase == 4 && (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 && unk_00742f60 == g_current_player)
+    if (g_current_phase == 4 && (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 && g_event_player == g_current_player)
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -6017,7 +6017,7 @@ int card_power_surge(int player, int card, event_t event)
   if (event == 4 && card == g_affected_card && player == g_affected_card_controller)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -6164,10 +6164,10 @@ int card_wanderlust(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((((g_current_phase == EVENT_UPKEEP_PHASE) && (unk_00742f60 == g_current_player)) && ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player)) && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
+    if ((((g_current_phase == EVENT_UPKEEP_PHASE) && (g_event_player == g_current_player)) && ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player)) && ((PLAYER_CARD_INSTANCE(player, card).state & 1) == 0))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -6176,7 +6176,7 @@ int card_wanderlust(int player, int card, event_t event)
   if (((event == EVENT_UPKEEP_PHASE) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).state |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -6327,7 +6327,7 @@ int card_instill_energy(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     selected_color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
-    if (unk_0072c440[selected_color] == 0 || has_mana_w_global_cost_mod(player, card, 7, 0) != 0)
+    if (g_mana_cost_modifiers_by_color[selected_color] == 0 || has_mana_w_global_cost_mod(player, card, 7, 0) != 0)
     {
       if (PLAYER_CARD_INSTANCE(player, card).info_slot == 0 && g_affected_card_controller == g_current_player &&
           (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0)
@@ -6341,7 +6341,7 @@ int card_instill_energy(int player, int card, event_t event)
   if (event == EVENT_ACTIVATE && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     selected_color = single_color_test_bit_to_color_t((unsigned char)PLAYER_CARD_INSTANCE(player, card).color);
-    if (unk_0072c440[selected_color] != 0)
+    if (g_mana_cost_modifiers_by_color[selected_color] != 0)
     {
       charge_mana_w_global_cost_mod(player, card, 0, 0);
     }
@@ -7331,12 +7331,12 @@ int card_unstable_mutation(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     if (g_current_phase == EVENT_UPKEEP_PHASE &&
-        unk_00742f60 == g_current_player &&
+        g_event_player == g_current_player &&
         instance->damage_target_player == g_current_player &&
         (instance->info_slot & 1) == 0)
     {
       instance->upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -7345,7 +7345,7 @@ int card_unstable_mutation(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && g_affected_card == card && g_affected_card_controller == player)
   {
     instance->info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -7695,10 +7695,10 @@ int card_warp_artifact(int player, int card, event_t event)
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
-    if (((g_current_phase == EVENT_UPKEEP_PHASE) && (unk_00742f60 == g_current_player)) && (PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0))
+    if (((g_current_phase == EVENT_UPKEEP_PHASE) && (g_event_player == g_current_player)) && (PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -7706,7 +7706,7 @@ int card_warp_artifact(int player, int card, event_t event)
   else if (((event == EVENT_UPKEEP_PHASE) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -7786,10 +7786,10 @@ int card_power_struggle(int player, int card, event_t event)
   {
     if (g_current_phase == EVENT_UPKEEP_PHASE &&
         (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 &&
-        unk_00742f60 == g_current_player)
+        g_event_player == g_current_player)
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -7798,7 +7798,7 @@ int card_power_struggle(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && card == g_affected_card && player == g_affected_card_controller)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
@@ -8041,9 +8041,9 @@ int card_necropolis_of_azar(int player, int card, event_t event)
     if (C_get_special_counters(player, card) != 0 &&
         has_mana_w_global_cost_mod(player, card, COLOR_ANY, 5) != 0)
     {
-      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && unk_00939330 > 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_ai_speculation_depth > 0)
       {
-        unk_008b3270 |= 3;
+        g_activation_event_flags |= 3;
       }
       return 1;
     }
@@ -8056,9 +8056,9 @@ int card_necropolis_of_azar(int player, int card, event_t event)
     if (g_spell_fizzled != 1)
     {
       remove_special_counter(player, card);
-      if (unk_00939330 > 0)
+      if (g_ai_speculation_depth > 0)
       {
-        --unk_00939330;
+        --g_ai_speculation_depth;
       }
     }
     return 0;
@@ -8234,7 +8234,7 @@ int card_regeneration(int player, int card, event_t event)
     charge_mana_w_global_cost_mod(player, card, 3, 1);
     if (g_spell_fizzled != 1)
     {
-      unk_007a7c1c = 1;
+      g_upkeep_payment_completed = 1;
       ++instance->info_slot;
     }
     return 0;
@@ -8476,7 +8476,7 @@ int card_the_brute(int player, int card, event_t event)
     charge_mana_w_global_cost_mod(player, card, COLOR_RED, 3);
     if (g_spell_fizzled != 1)
     {
-      unk_007a7c1c = 1;
+      g_upkeep_payment_completed = 1;
       ++instance->info_slot;
     }
     return 0;
@@ -8898,7 +8898,7 @@ int card_conversion(int player, int card, event_t event)
     return 0;
   }
 
-  if (((event == EVENT_SETUP_UPKEEP_COSTS) && (g_affected_card == card)) && (g_affected_card_controller == player) && player == g_current_player && unk_00742f60 == g_current_player)
+  if (((event == EVENT_SETUP_UPKEEP_COSTS) && (g_affected_card == card)) && (g_affected_card_controller == player) && player == g_current_player && g_event_player == g_current_player)
   {
     PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 1;
     PLAYER_CARD_INSTANCE(player, card).upkeep_white += 2;

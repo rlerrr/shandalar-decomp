@@ -279,7 +279,7 @@ address,status,confidence,reviewer,reviewed_commit,notes
 0x004cbb3f,reviewed,medium,Codex,904cc2b,spell minimized wndproc differs by movzx insertion and branch displacement drift
 0x005626b0,reviewed,high,Codex,904cc2b,sound effect channel flag masks use explicit load-and-store instead of direct memory and
 0x00441f4a,reviewed,medium,Codex,904cc2b,registry serial scratch string symbol and byte checksum additions are equivalent
-0x0053b80b,reviewed,high,Codex,WORKTREE,replaced the SHANDALAR raw prompt-buffer offset with the correctly annotated unk_009266ac card-back sentinel; remaining cmp order movzx and branch displacement differences are mechanical
+0x0053b80b,reviewed,high,Codex,WORKTREE,replaced the SHANDALAR raw prompt-buffer offset with the correctly annotated g_card_back_display_internal_card_id card-back sentinel; remaining cmp order movzx and branch displacement differences are mechanical
 0x00424c13,reviewed,high,Codex,904cc2b,combat damage matrix clear swaps row and column local loads with same final address
 0x005307dd,reviewed,medium,Codex,904cc2b,random creature ante duel loop bounds imul operands and sar encoding differ mechanically
 0x004ed6b9,reviewed,medium,Codex,904cc2b,wizard visit backdrop uses permuted temp stack slots with same loaded resources
@@ -324,7 +324,7 @@ address,status,confidence,reviewer,reviewed_commit,notes
 0x005631ca,reviewed,high,Codex,cf094c5,effective match; subtraction operand fixed; commutative MAX operand reorder and branch drift remain
 0x0056c7cb,reviewed,high,Codex,904cc2b,effective match; calls HideMouseCursorNested/ShowMouseCursorNested under #ifdef SHANDALAR; 100% match
 0x00471f68,reviewed,high,Codex,904cc2b,restored original byte-addressed graveyard type-cache activation test including player-byte indexing; selection identity validation hand transfer and cleanup match original; 90.08%
-0x0041e0d9,reviewed,high,Codex,WORKTREE,restored the original DAT_007080c8 index from combat_damage_attacker_count and blocker discovery STATE_NONCREATURE_CAN_BLOCK test in both MAGIC and SHANDALAR; remaining indirect callback bases direct-memory versus load-store forms comparisons arithmetic and can-block OR placement are equivalent
+0x0041e0d9,reviewed,high,Codex,WORKTREE,restored the original g_ai_blocker_power index from combat_damage_attacker_count and blocker discovery STATE_NONCREATURE_CAN_BLOCK test in both MAGIC and SHANDALAR; remaining indirect callback bases direct-memory versus load-store forms comparisons arithmetic and can-block OR placement are equivalent
 0x004885e4,reviewed,medium,Codex,904cc2b,tawnos coffin phase-out guard reshapes sentinel returns but preserves the guarded body calls
 0x004c4364,reviewed,high,Codex,904cc2b,recorded AI action loop bound compare swaps operands with faithful inverse branch
 0x00424c71,reviewed,medium,Codex,904cc2b,attacker combat damage differs by compare inversions imul operand swaps and card-instance address reordering
@@ -918,7 +918,7 @@ address,status,confidence,reviewer,reviewed_commit,notes
 0x0049e9a4,reviewed,high,Codex,WORKTREE,radjan spirit restores activation state guard opponent-only target AI flying penalty and original resolution ordering; remaining diff is card-instance pointer and target-local layout
 0x0049f9f7,reviewed,high,Codex,904cc2b,select target creature and store without protection preserves default-anybody controller selection C_real_select_target call target append to number_of_targets and success/failure return with address reshaping only
 0x004d8c4a,reviewed,medium,Codex,904cc2b,evil presence preserves land target selection AI scoring valid-target attachment hacked swamp type assignment regen-status recalc flag and change-type response with address/local reshaping
-0x0042ae58,reviewed,medium,Codex,904cc2b,restored original unavailable-draw underline and DAT_007aadf0/unk_00938e2c active-player/network dialog gates; remaining event and parent-instance flow validated as functionally equivalent with broad match-only layout drift; 46.69%
+0x0042ae58,reviewed,medium,Codex,904cc2b,restored original unavailable-draw underline and g_produced_mana_color_valid/g_required_mana_color_mask active-player/network dialog gates; remaining event and parent-instance flow validated as functionally equivalent with broad match-only layout drift; 46.69%
 0x00434051,reviewed,medium,Codex,904cc2b,beasts of bogardan preserves sleighted protection grant and white-permanent power/toughness bonus scan with only redundant shift-mask and local reshaping differences
 0x0044c410,reviewed,medium,Codex,WORKTREE,Word of Binding now passes the conditional g_max_x_value output to its availability scan and uses COLOR_ANY for AI affordability while preserving multi-target selection temporary exclusion cancellation validation tapping cleanup and burial; remaining divergence is local layout and loop shaping
 0x0044f4db,reviewed,medium,Codex,WORKTREE,Drain Life now uses COLOR_ANY for AI affordability charges black mana for X and copies X from the current-spell instance while preserving target damage effect creation damage tracking cleanup and burial; remaining divergence is local layout and branch shaping

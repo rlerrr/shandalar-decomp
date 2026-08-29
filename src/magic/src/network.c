@@ -502,7 +502,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 
         if (FamInterface_HasOpponent() == 0)
         {
-          if (unk_008b60e8 != 0 && packet_type >= 0xc)
+          if (g_network_packet_filter_enabled != 0 && packet_type >= 0xc)
           {
             append_to_trace_txt("The duel has ended because your opponent has dropped.\n");
             exit_duel_thread(3);
@@ -533,7 +533,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       s.packet_data_as_short = (short *)(s.packet_data + 2);
       report_unexpected_network_packet_number(g_next_expected_network_packet_number, *s.packet_data_as_short);
 
-      if (unk_008b60e8 != 0)
+      if (g_network_packet_filter_enabled != 0)
       {
         exit_duel_thread(3);
       }
@@ -547,7 +547,7 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 
     append_to_trace_txt("\n");
     trace_network_packet((char *)s.packet_data, s.packet_size);
-    SetEvent((HANDLE)unk_0092607c);
+    SetEvent((HANDLE)g_network_packet_event);
 
     packet_name = "GENERIC";
     switch (packet_type)

@@ -189,7 +189,7 @@ static int g_video_available;
 // GLOBAL: STATWIN 0x1000d274
 static int g_status_initialized;
 // GLOBAL: STATWIN 0x1000d278
-static UINT DAT_1000d278;
+static UINT g_previous_system_palette_use;
 // GLOBAL: STATWIN 0x1000d27c
 static int g_video_erase_background_pending = 1;
 // GLOBAL: STATWIN 0x1000d280
@@ -3142,7 +3142,7 @@ static LRESULT CALLBACK status_window_wndproc(HWND hwnd, UINT msg, WPARAM wparam
 
   case WM_DESTROY:
     s.hdc = GetDC(hwnd);
-    SetSystemPaletteUse(s.hdc, DAT_1000d278);
+    SetSystemPaletteUse(s.hdc, g_previous_system_palette_use);
     ReleaseDC(hwnd, s.hdc);
     g_video_erase_background_pending = 1;
     break;
@@ -3172,7 +3172,7 @@ static LRESULT CALLBACK status_window_wndproc(HWND hwnd, UINT msg, WPARAM wparam
     {
       s.result = DefWindowProcA(hwnd, msg, wparam, lparam);
       s.hdc = GetDC(hwnd);
-      DAT_1000d278 = SetSystemPaletteUse(s.hdc, 1);
+      g_previous_system_palette_use = SetSystemPaletteUse(s.hdc, 1);
       ReleaseDC(hwnd, s.hdc);
       g_video_erase_background_pending = 0;
     }

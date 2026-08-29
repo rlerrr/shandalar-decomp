@@ -30,10 +30,10 @@ STATIC_ASSERT(sizeof(spell_chain_window_entry_t) == 0x58, spell_chain_window_ent
 
 extern char global_base_directory[];
 extern HINSTANCE g_app_instance;
-extern HWND DAT_008a8dec;
+extern HWND g_duel_opponent_battlefield_window;
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
-extern spell_chain_display_entry_t DAT_008b1140[32];
+extern spell_chain_display_entry_t g_duel_cached_stack_entries[32];
 
 int load_text_with_tab_escapes(char *filename, char *section_name);
 HBITMAP load_pic(char *filename);
@@ -140,7 +140,7 @@ int copy_spell_chain_display_entries(spell_chain_display_entry_t *entries)
 
   EnterCriticalSection(&g_duel_render_lock);
   count = g_multiblock_creature_count;
-  memcpy(entries, DAT_008b1140, sizeof(DAT_008b1140));
+  memcpy(entries, g_duel_cached_stack_entries, sizeof(g_duel_cached_stack_entries));
   LeaveCriticalSection(&g_duel_render_lock);
 
   return count;
@@ -871,7 +871,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
     case 0x65:
       ShowWindow(hwnd, SW_HIDE);
       UpdateWindow(g_duel_help_owner_hwnd);
-      GetWindowRect(DAT_008a8dec, &s.face_rect);
+      GetWindowRect(g_duel_opponent_battlefield_window, &s.face_rect);
       s.minimized_x = s.face_rect.left;
       s.minimized_width = s.face_rect.right - s.face_rect.left;
       if (g_spell_minimized_background_bitmap != (HBITMAP)0)

@@ -510,7 +510,7 @@ AdvMenuControl g_dungeon_clues_list_controls[3] = {
 };
 
 // GLOBAL: SHANDALAR 0x0058c804
-int DAT_0058c804 = 1;
+int g_dungeon_clues_enabled = 1;
 
 // GLOBAL: SHANDALAR 0x0058c808
 unsigned char g_dungeon_clues_castle_sprite_lookup_by_tile_class[0x18] = {

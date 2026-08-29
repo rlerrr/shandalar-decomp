@@ -84,10 +84,10 @@ char g_phase_display_menu_stop_text[0x38];
 extern char global_base_directory[];
 extern char global_duelart_path[];
 extern int g_duel_modal_action_active;
-extern int DAT_00789710;
-extern int DAT_007aa928;
-extern int DAT_008b3400[0x26];
-extern int DAT_00925360[0x26];
+extern int g_phase_display_refresh_requested;
+extern int g_saved_stop_phase_player;
+extern int g_duel_cached_phase_stops_player_1[0x26];
+extern int g_duel_cached_phase_stops_player_0[0x26];
 
 void get_current_duel_selection(int *selected_player, int *selected_card);
 void save_duel_interface_options_to_registry(void);
@@ -243,7 +243,7 @@ void copy_phase_stop_flags(int *phase_flags, int player)
 
   EnterCriticalSection(&g_duel_render_lock);
 
-  memcpy(phase_flags, player == 0 ? DAT_00925360 : DAT_008b3400, 0x98);
+  memcpy(phase_flags, player == 0 ? g_duel_cached_phase_stops_player_0 : g_duel_cached_phase_stops_player_1, 0x98);
 
   LeaveCriticalSection(&g_duel_render_lock);
 }
@@ -254,7 +254,7 @@ void get_phase_display_selected_half(int *selected_half)
 {
   EnterCriticalSection(&g_duel_render_lock);
   if (selected_half != (int *)0)
-    *selected_half = DAT_00789710;
+    *selected_half = g_phase_display_refresh_requested;
   LeaveCriticalSection(&g_duel_render_lock);
 }
 
@@ -264,9 +264,9 @@ void get_phase_display_action_selection(int *player, int *phase)
 {
   EnterCriticalSection(&g_duel_render_lock);
   if (player != (int *)0)
-    *player = DAT_007aa928;
+    *player = g_saved_stop_phase_player;
   if (phase != (int *)0)
-    *phase = DAT_007abc74;
+    *phase = g_saved_stop_phase;
   LeaveCriticalSection(&g_duel_render_lock);
 }
 
@@ -636,7 +636,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
           s.stop_phase_code = 0x20;
         g_stop_phase_player = s.stop_player;
         g_stop_phase = s.stop_phase_code;
-        unk_00715fb0 = 0;
+        g_recorded_action_player = 0;
         g_phase_display_menu_packet[0] = -2;
         g_phase_display_menu_packet[1] = -1;
         g_phase_display_menu_packet[2] = -1;
@@ -729,7 +729,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
     {
       g_stop_phase_player = s.click_hit_player;
       g_stop_phase = s.click_hit_phase;
-      unk_00715fb0 = s.peek_result;
+      g_recorded_action_player = s.peek_result;
       g_phase_display_click_packet[0] = -2;
       g_phase_display_click_packet[1] = -1;
       g_phase_display_click_packet[2] = -1;

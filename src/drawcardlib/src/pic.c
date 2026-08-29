@@ -157,7 +157,7 @@ undefined4 rpbits_file_descriptor;
 // GLOBAL: DECKDLL 0x10105330
 // GLOBAL: MAGIC 0x00637e20
 // GLOBAL: SHANDALAR 0x005b7b70
-undefined4 _DAT_100f23a8;
+undefined4 g_last_picture_file_handle;
 
 // GLOBAL: DRAWCARDLIB 0x100f33a0
 // GLOBAL: DECKDLL 0x10105530
@@ -425,7 +425,7 @@ int OpenPcxFile(char *filename, int flags)
   int iVar1;
 
   iVar1 = _open(filename, flags);
-  _DAT_100f23a8 = 0xffffffff;
+  g_last_picture_file_handle = 0xffffffff;
   return iVar1;
 }
 

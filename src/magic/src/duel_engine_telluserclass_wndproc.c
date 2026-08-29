@@ -25,15 +25,15 @@ extern char g_custom_duel_action_text[0x100];
 
 // GLOBAL: MAGIC 0x0057b024
 // GLOBAL: SHANDALAR 0x00586190
-char DAT_0057b024[4] = "";
+char g_telluser_short_text_1[4] = "";
 
 // GLOBAL: MAGIC 0x0057b030
 // GLOBAL: SHANDALAR 0x0058619c
-char DAT_0057b030[4] = "";
+char g_telluser_short_text_2[4] = "";
 
 // GLOBAL: MAGIC 0x0057b03c
 // GLOBAL: SHANDALAR 0x005861a8
-char DAT_0057b03c[4] = "";
+char g_telluser_short_text_3[4] = "";
 
 // GLOBAL: MAGIC 0x0055e180
 // GLOBAL: SHANDALAR 0x0057f064
@@ -116,7 +116,7 @@ int register_MAGIC_TellUserClass(LPCSTR class_name)
   strcat(s.path, "\\WINBK_TellUser.pic");
   g_tell_user_background_bitmap = load_pic(s.path);
   load_text(global_ui_strings_filename, "BUTTONLABELS");
-  strcpy(DAT_008ce680, g_text_lines[0]);
+  strcpy(g_duel_status_text, g_text_lines[0]);
   strcpy(g_custom_duel_action_text, g_text_lines[1]);
   g_tell_user_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
   g_tell_user_button_font = CreateFontIndirectA(LoadFontFromIni("TellUser", 0));
@@ -221,11 +221,11 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
   {
   case 0x401:
     if (g_duel_modal_action_active != 0 &&
-        (IsWindowVisible(DAT_00743090) != 0 || IsWindowVisible(DAT_0074308c) != 0))
+        (IsWindowVisible(g_duel_client_window) != 0 || IsWindowVisible(g_duel_main_window) != 0))
     {
       if (wparam == 0)
       {
-        if (IsWindowVisible(DAT_0074308c) != 0)
+        if (IsWindowVisible(g_duel_main_window) != 0)
         {
           s.action_value = -2;
         }
@@ -244,7 +244,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       }
       g_stop_phase_player = -1;
       g_stop_phase = -1;
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       g_tell_user_command_packet[0] = -2;
       g_tell_user_command_packet[1] = -1;
       g_tell_user_command_packet[2] = s.action_value;
@@ -258,11 +258,11 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       GetWindowTextA(hwnd, (LPSTR)wparam, 200);
     }
     s.button_flags = 0;
-    if (IsWindowVisible(DAT_00743090) != 0)
+    if (IsWindowVisible(g_duel_client_window) != 0)
     {
       s.button_flags |= 1;
     }
-    if (IsWindowVisible(DAT_0074308c) != 0)
+    if (IsWindowVisible(g_duel_main_window) != 0)
     {
       s.button_flags |= 2;
     }
@@ -289,12 +289,12 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
 
   case WM_CREATE:
     s.font = g_tell_user_font;
-    SetWindowLongA(hwnd, DAT_0055e17c, (LONG)s.font);
-    DAT_00743090 = CreateWindowExA(0, "BUTTON", DAT_0057b024, 0x4080000b,
+    SetWindowLongA(hwnd, g_duel_ui_initialized, (LONG)s.font);
+    g_duel_client_window = CreateWindowExA(0, "BUTTON", g_telluser_short_text_1, 0x4080000b,
                                    0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, (LPVOID)0);
-    DAT_0074308c = CreateWindowExA(0, "BUTTON", DAT_0057b030, 0x4080000b,
+    g_duel_main_window = CreateWindowExA(0, "BUTTON", g_telluser_short_text_2, 0x4080000b,
                                    0, 0, 0, 0, hwnd, (HMENU)2, g_app_instance, (LPVOID)0);
-    if (DAT_00743090 == (HWND)0 || DAT_0074308c == (HWND)0)
+    if (g_duel_client_window == (HWND)0 || g_duel_main_window == (HWND)0)
     {
       return -1;
     }
@@ -307,7 +307,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
                  g_tell_user_border_pen_3, g_tell_user_button_text_color, 0);
     if (s.draw_item->CtlID == 1)
     {
-      s.button_text = DAT_008ce680;
+      s.button_text = g_duel_status_text;
     }
     else if (s.draw_item->CtlID == 2)
     {
@@ -315,7 +315,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
     }
     else
     {
-      s.button_text = DAT_0057b03c;
+      s.button_text = g_telluser_short_text_3;
     }
     SetMapMode(s.draw_item->hDC, MM_ANISOTROPIC);
     SetWindowExtEx(s.draw_item->hDC, s.draw_item->rcItem.right - s.draw_item->rcItem.left,
@@ -337,7 +337,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
     return 1;
 
   case WM_GETFONT:
-    s.font = (HFONT)GetWindowLongA(hwnd, DAT_0055e17c);
+    s.font = (HFONT)GetWindowLongA(hwnd, g_duel_ui_initialized);
     return (LRESULT)s.font;
 
   case WM_LBUTTONDOWN:
@@ -345,7 +345,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
     return 0;
 
   case WM_PAINT:
-    s.font = (HFONT)GetWindowLongA(hwnd, DAT_0055e17c);
+    s.font = (HFONT)GetWindowLongA(hwnd, g_duel_ui_initialized);
     s.paint_dc = BeginPaint(hwnd, &s.paint);
     if (s.paint_dc != (HDC)0)
     {
@@ -425,7 +425,7 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
       s.font = g_tell_user_font;
     }
-    SetWindowLongA(hwnd, DAT_0055e17c, (LONG)s.font);
+    SetWindowLongA(hwnd, g_duel_ui_initialized, (LONG)s.font);
     InvalidateRect(hwnd, (RECT *)0, 1);
     return 0;
 

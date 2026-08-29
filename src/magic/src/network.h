@@ -96,7 +96,7 @@ NETWORK_EXTERN int g_next_expected_network_packet_number;
 NETWORK_EXTERN result_network_packet_t g_network_result_packet;
 
 // GLOBAL: MAGIC 0x0092607c
-NETWORK_EXTERN int unk_0092607c;
+NETWORK_EXTERN int g_network_packet_event;
 
 // GLOBAL: MAGIC 0x00926080
 // GLOBAL: SHANDALAR 0x0093a1b0
@@ -117,7 +117,7 @@ NETWORK_EXTERN result_network_packet_t g_dialog_result_network_packet;
 NETWORK_EXTERN duel_parameters_network_packet_t g_duel_parameters_network_packet;
 
 // GLOBAL: MAGIC 0x008b60e8
-NETWORK_EXTERN int unk_008b60e8;
+NETWORK_EXTERN int g_network_packet_filter_enabled;
 
 // GLOBAL: MAGIC 0x0091ca90
 NETWORK_EXTERN char g_card_list_packet_type;

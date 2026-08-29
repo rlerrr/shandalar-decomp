@@ -188,7 +188,7 @@ int card_arena(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_00938e2c == 0)
+    if (g_required_mana_color_mask == 0)
     {
       charge_mana(player, COLOR_COLORLESS, 3);
       if (g_spell_fizzled != 1)
@@ -479,13 +479,13 @@ int card_city_of_brass(int player, int card, event_t event)
     {
       for (s.current_color = COLOR_BLACK; s.current_color <= COLOR_WHITE && s.color == -1; ++s.current_color)
       {
-        if ((unk_00938e2c & (1 << (unsigned char)s.current_color)) != 0 &&
+        if ((g_required_mana_color_mask & (1 << (unsigned char)s.current_color)) != 0 &&
             (s.available_colors & (1 << (unsigned char)s.current_color)) != 0)
         {
           s.color = s.current_color;
         }
       }
-      if (s.color == -1 && (unk_00938e2c & (COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT)) != 0)
+      if (s.color == -1 && (g_required_mana_color_mask & (COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT)) != 0)
       {
         s.color = COLOR_BLACK;
       }
@@ -497,9 +497,9 @@ int card_city_of_brass(int player, int card, event_t event)
 
     if (g_spell_fizzled != 1)
     {
-      if (unk_00938e2c == COLOR_TEST_COLORLESS ||
-          unk_00938e2c == COLOR_TEST_ARTIFACT ||
-          unk_00938e2c == (COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT))
+      if (g_required_mana_color_mask == COLOR_TEST_COLORLESS ||
+          g_required_mana_color_mask == COLOR_TEST_ARTIFACT ||
+          g_required_mana_color_mask == (COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT))
       {
         s.color = -1;
         for (s.current_color = COLOR_COLORLESS; s.current_color < 7 && s.color == -1; ++s.current_color)
@@ -605,7 +605,7 @@ int card_desert(int player, int card, event_t event)
     s.result = 0;
     s.choice = 0;
     load_text("promptsX1.txt", "DESERT");
-    if (DAT_007aadf0 != 0 && unk_00938e2c == 0)
+    if (g_produced_mana_color_valid != 0 && g_required_mana_color_mask == 0)
     {
       s.can_damage = real_target_available((int *)0,
                                            TARGET_SCAN_DIRECT,
@@ -717,7 +717,7 @@ int card_desert(int player, int card, event_t event)
     {
       create_legacy_effect(g_card_on_stack_controller,
                            g_card_on_stack,
-                           DAT_008b3278,
+                           g_duel_generated_internal_card_id_20,
                            s.target.player,
                            s.target.card);
     }
@@ -931,11 +931,11 @@ int card_elephant_graveyard(int player, int card, event_t event)
     s.result = 0;
     s.choice = 0;
     load_text("promptsX1.txt", "ELEPHANT_GRAVEYARD");
-    if (DAT_007aadf0 != 0 &&
+    if (g_produced_mana_color_valid != 0 &&
         instance->info_slot != 0 &&
         (g_land_can_be_played & LCBP_REGENERATION) != 0)
     {
-      if (unk_00938e2c == 0)
+      if (g_required_mana_color_mask == 0)
       {
         if (player == g_active_player || (g_duel_network_flags & 2) != 0)
         {
@@ -1326,7 +1326,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
 
   if (event == EVENT_ACTIVATE)
   {
-    if (unk_00938e2c == 1 || unk_00938e2c == 0x40 || unk_00938e2c == 0x41)
+    if (g_required_mana_color_mask == 1 || g_required_mana_color_mask == 0x40 || g_required_mana_color_mask == 0x41)
     {
       color = -1;
       first_available_color = 0;
@@ -1341,13 +1341,13 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
     }
     else
     {
-      if (unk_00938e2c == 0)
+      if (g_required_mana_color_mask == 0)
       {
         colors_to_choose_from = available_colors;
       }
       else
       {
-        colors_to_choose_from = available_colors & unk_00938e2c;
+        colors_to_choose_from = available_colors & g_required_mana_color_mask;
       }
 
       first_available_color = -1;

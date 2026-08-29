@@ -506,5 +506,5 @@ void load_global_ui_strings(char *filename)
   strcpy(gs_cuecard_phased_007aae00, g_text_lines[9]);
 
   LoadTextSectionLines(global_ui_strings_filename, "PROMPT_RESOLUTIONERROR");
-  strcpy(DAT_007898b0, g_text_lines[0]);
+  strcpy(g_default_duel_prompt_text, g_text_lines[0]);
 }

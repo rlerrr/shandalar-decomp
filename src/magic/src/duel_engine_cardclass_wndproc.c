@@ -119,7 +119,7 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern BITMAPINFO g_duel_backbuffer_bmi;
 extern int g_duel_modal_action_active;
 extern target_selection_request_t g_duel_action_request_copy;
-extern int DAT_007a7d74;
+extern int g_duel_tooltip_window;
 
 // GLOBAL: MAGIC 0x0055e0fc
 // GLOBAL: SHANDALAR 0x0057f19c
@@ -679,7 +679,7 @@ void post_card_action_selection(HWND hwnd)
   s.player = GetWindowLongA(hwnd, CARDCLASS_PLAYER_WINDOW_LONG_OFFSET);
   s.card = GetWindowLongA(hwnd, CARDCLASS_CARD_WINDOW_LONG_OFFSET);
   s.card_id = get_displayed_card_id(s.player, s.card);
-  if (unk_0092666c == s.card_id)
+  if (g_activation_display_internal_card_id == s.card_id)
   {
     get_displayed_card_parent(s.attached_player_and_card, s.player, s.card);
     g_cardclass_click_action_result.target_player = s.attached_player_and_card[0];
@@ -2017,7 +2017,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   s.display_version = (unsigned short)(s.display_info >> 0x10);
   s.card_data.id = s.display_info & 0xffff;
 
-  if (card_id == unk_007a7d64)
+  if (card_id == g_damage_display_internal_card_id)
   {
     s.ability_flags = get_displayed_card_special_counters(player, card);
     sprintf(g_card_title_buffer_00709100, "%s: %d", gs_cardtitle_damage_008cfd30,
@@ -2030,24 +2030,24 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
               gs_color_word_capitalized_00709390[s.single_color]);
     }
   }
-  else if (card_id == unk_00789b80)
+  else if (card_id == g_hunting_display_internal_card_id)
   {
     s.ability_flags = get_displayed_card_special_counters(player, card);
     sprintf(g_card_title_buffer_00709100, gs_cardtitle_hunting_00926750, get_hunting_subtype_name(s.ability_flags));
   }
-  else if (card_id == unk_008cf1ac)
+  else if (card_id == g_multiblock_display_internal_card_id)
   {
     strcpy(g_card_title_buffer_00709100, gs_multiblock_creature_008cf040);
   }
-  else if (card_id == unk_00789734)
+  else if (card_id == g_effect_display_internal_card_id)
   {
     strcpy(g_card_title_buffer_00709100, global_legacy_names[s.card_data.id].effect_title);
   }
-  else if (card_id == unk_008a8de8)
+  else if (card_id == g_legacy_display_internal_card_id)
   {
     strcpy(g_card_title_buffer_00709100, global_legacy_names[s.card_data.id].legacy_title);
   }
-  else if (card_id == unk_0092666c)
+  else if (card_id == g_activation_display_internal_card_id)
   {
     strcpy(g_card_title_buffer_00709100, gs_cardtitle_activation_007aaeb0);
   }
@@ -2056,13 +2056,13 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
     g_card_title_buffer_00709100[0] = '\0';
   }
 
-  if (card_id == unk_00789734 && get_displayed_card_eot_toughness(player, card) > 0)
+  if (card_id == g_effect_display_internal_card_id && get_displayed_card_eot_toughness(player, card) > 0)
   {
     strcpy(s.temporary_name, g_card_title_buffer_00709100);
     extract_numbered_text_choice(g_card_title_buffer_00709100, s.temporary_name, get_displayed_card_eot_toughness(player, card));
   }
   s.transformed_card_id = get_displayed_card_id(s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
-  if (card_id == unk_00789734 &&
+  if (card_id == g_effect_display_internal_card_id &&
       (s.transformed_card_id == CARD_ID_FAERIE_DRAGON ||
        s.transformed_card_id == CARD_ID_WHIMSY))
   {
@@ -2095,23 +2095,23 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   s.card_data.req.req_green = 0;
   s.card_data.req.req_red = 0;
   s.card_data.req.req_white = 0;
-  if (card_id == unk_007a7d64)
+  if (card_id == g_damage_display_internal_card_id)
   {
     strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].damage_text);
   }
-  else if (card_id == unk_00789b80)
+  else if (card_id == g_hunting_display_internal_card_id)
   {
     strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].effect_text);
   }
-  else if (card_id == unk_008cf1ac)
+  else if (card_id == g_multiblock_display_internal_card_id)
   {
     strcpy(g_card_rules_text_buffer_00708da8, gs_multiblock_shadow_blocker_00925e70);
   }
-  else if (card_id == unk_00789734)
+  else if (card_id == g_effect_display_internal_card_id)
   {
     strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].effect_text);
   }
-  else if (card_id == unk_008a8de8)
+  else if (card_id == g_legacy_display_internal_card_id)
   {
     strcpy(g_card_rules_text_buffer_00708da8, global_legacy_names[s.card_data.id].legacy_text);
   }
@@ -2128,7 +2128,7 @@ void draw_special_effect_small_card(HDC dc, RECT *rect, card_id_t card_id, unsig
   draw_manastripes(dc, rect, player, card);
   DrawSmallCardTitle(dc, rect, s.card_data.full_name, get_displayed_card_title_flags(player, card),
                      is_displayed_card_owned_by_opponent(player, card) == player);
-  if (card_id == unk_007a7d64)
+  if (card_id == g_damage_display_internal_card_id)
   {
     s.display_flags = get_displayed_card_display_flags(player, card);
     s.ability_flags = 0;
@@ -2169,7 +2169,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, int playe
   {
     return;
   }
-  if (card_id == unk_0092666c && get_displayed_card_original_internal_id(player, card) == (unsigned int)g_draw_card_placeholder_internal_card_id)
+  if (card_id == g_activation_display_internal_card_id && get_displayed_card_original_internal_id(player, card) == (unsigned int)g_draw_card_placeholder_internal_card_id)
   {
     DrawCardBack(dc, rect);
     DrawSmallCardTitle(dc, rect, gs_cardtitle_activation_007aaeb0, 0, 1);
@@ -2179,7 +2179,7 @@ void draw_activation_small_card(HDC dc, RECT *rect, card_id_t card_id, int playe
     s.display_info = get_displayed_card_display_pic_info(s.displayed_player_and_card, player, card);
     s.display_version = (s.display_info >> 0x10) & 0xffff;
     s.card_data.id = s.display_info & 0xffff;
-    if (card_id == unk_0092666c)
+    if (card_id == g_activation_display_internal_card_id)
     {
       strcpy(g_activation_card_title_buffer_00709150, gs_cardtitle_activation_007aaeb0);
     }
@@ -3183,13 +3183,13 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           InvalidateRect(hwnd, (RECT *)0, 0);
         }
-        else if (s.msg_432_card_id == unk_0092666c ||
-                 s.msg_432_card_id == unk_009266ac ||
-                 s.msg_432_card_id == unk_00789734 ||
-                 s.msg_432_card_id == unk_007a7d64 ||
-                 s.msg_432_card_id == unk_008a8de8 ||
-                 s.msg_432_card_id == unk_00789b80 ||
-                 s.msg_432_card_id == unk_008cf1ac)
+        else if (s.msg_432_card_id == g_activation_display_internal_card_id ||
+                 s.msg_432_card_id == g_card_back_display_internal_card_id ||
+                 s.msg_432_card_id == g_effect_display_internal_card_id ||
+                 s.msg_432_card_id == g_damage_display_internal_card_id ||
+                 s.msg_432_card_id == g_legacy_display_internal_card_id ||
+                 s.msg_432_card_id == g_hunting_display_internal_card_id ||
+                 s.msg_432_card_id == g_multiblock_display_internal_card_id)
         {
           InvalidateRect(hwnd, (RECT *)0, 0);
         }
@@ -3306,7 +3306,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 0x71:
       s.command_help_card_id = get_displayed_card_id(s.player, s.card);
-      if (s.command_help_card_id == unk_009266ac)
+      if (s.command_help_card_id == g_card_back_display_internal_card_id)
       {
         s.command_help_card_id = 0xc1b;
       }
@@ -3387,7 +3387,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       {
         memcpy(&s.command_band_action_request_copy, &g_duel_action_request_copy,
                sizeof(s.command_band_action_request_copy));
-        GetWindowTextA((HWND)DAT_007a7d74, s.command_band_tooltip_text, 100);
+        GetWindowTextA((HWND)g_duel_tooltip_window, s.command_band_tooltip_text, 100);
         s.command_band_saved_modal_active = g_duel_modal_action_active;
         s.command_band_select_ok =
             C_real_select_target(0, 0, 1, 0x200, 2, 0, 0, 0, 0, 0,
@@ -3510,7 +3510,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     case 0x6b:
       memcpy(&s.command_defend_action_request_copy, &g_duel_action_request_copy,
              sizeof(s.command_defend_action_request_copy));
-      GetWindowTextA((HWND)DAT_007a7d74, s.command_defend_tooltip_text, 100);
+      GetWindowTextA((HWND)g_duel_tooltip_window, s.command_defend_tooltip_text, 100);
       s.command_defend_saved_modal_active = g_duel_modal_action_active;
       s.command_defend_select_ok =
           C_real_select_target(0, 1, 0, 0x200, 2, 0, 0, 0, 0, 0,
@@ -3596,7 +3596,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
 
     case 100:
     case 0x6d:
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       post_card_action_selection(hwnd);
       break;
 
@@ -3736,7 +3736,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     get_current_duel_selection(&s.counter_m1m1, &s.counter_p1p0);
     if (s.is_target == 0 && g_duel_modal_action_active != 0 && card_window_matches_action_request(hwnd) != 0)
     {
-      unk_00715fb0 = s.cuecard_found;
+      g_recorded_action_player = s.cuecard_found;
       post_card_action_selection(hwnd);
     }
     return 0;
@@ -3778,18 +3778,18 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.paint_card_id = get_displayed_card_id(s.player, s.card);
         if (s.paint_card_id != -1 && global_available_slots > s.paint_card_id)
         {
-          if (s.paint_card_id == unk_009266ac)
+          if (s.paint_card_id == g_card_back_display_internal_card_id)
           {
             DrawCardBack(s.paint_dc, &s.paint_rect);
             DrawSmallCardTitle(s.paint_dc, &s.paint_rect,
                                gs_cardtitle_draw_a_card_008b4330,
                                get_displayed_card_title_flags(s.player, s.card), 1);
           }
-          else if (s.paint_card_id == unk_007a7d64 ||
-                   unk_00789b80 == s.paint_card_id ||
-                   unk_008cf1ac == s.paint_card_id ||
-                   s.paint_card_id == unk_00789734 ||
-                   s.paint_card_id == unk_008a8de8)
+          else if (s.paint_card_id == g_damage_display_internal_card_id ||
+                   g_hunting_display_internal_card_id == s.paint_card_id ||
+                   g_multiblock_display_internal_card_id == s.paint_card_id ||
+                   s.paint_card_id == g_effect_display_internal_card_id ||
+                   s.paint_card_id == g_legacy_display_internal_card_id)
           {
             get_displayed_card_display_pic_info(s.paint_displayed_player_and_card, s.player, s.card);
             draw_special_effect_small_card(s.paint_dc, &s.paint_rect,
@@ -3804,7 +3804,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
                         s.paint_displayed_player_and_card[1],
                         g_duel_interface_options.show_id_tags_on_cards);
           }
-          else if (unk_0092666c == s.paint_card_id)
+          else if (g_activation_display_internal_card_id == s.paint_card_id)
           {
             get_displayed_card_parent(s.paint_attached_player_and_card, s.player, s.card);
             draw_activation_small_card(g_shared_offscreen_dc, &s.paint_rect,

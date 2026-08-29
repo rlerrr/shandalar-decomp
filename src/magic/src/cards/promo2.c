@@ -38,7 +38,7 @@ int card_army_of_allah(int player, int card, event_t event)
 
   if (event == EVENT_CHECK_PUMP && has_mana(player, COLOR_WHITE, 2) != 0 && has_mana(player, COLOR_ANY, 3) != 0)
   {
-    unk_007a7d80[player] += 2;
+    g_global_power_bonus[player] += 2;
   }
 
   return 0;
@@ -134,7 +134,7 @@ int card_blaze_of_glory(int player, int card, event_t event)
                                0,
                                0))
     {
-      create_legacy_effect(player, card, unk_008a8df0, selected_target.player, selected_target.card);
+      create_legacy_effect(player, card, g_duel_generated_internal_card_id_29, selected_target.player, selected_target.card);
     }
     else
     {
@@ -257,7 +257,7 @@ int card_guardian_angel(int player, int card, event_t event)
       }
       create_legacy_effect(player,
                            card,
-                           unk_008cf1bc,
+                           g_duel_generated_internal_card_id_24,
                            (int)damage->damage_source_player,
                            damage->damage_source_card);
     }
@@ -609,12 +609,12 @@ int card_sewers_of_estark(int player, int card, event_t event)
     }
     else if ((PLAYER_CARD_INSTANCE(target.player, target.card).state & STATE_ATTACKING) != 0)
     {
-      create_legacy_effect(player, card, unk_007abc7c, target.player, target.card);
+      create_legacy_effect(player, card, g_duel_generated_internal_card_id_02, target.player, target.card);
     }
     else if (PLAYER_CARD_INSTANCE(target.player, target.card).blocking != -1 &&
              target.player != g_current_player)
     {
-      create_legacy_effect(player, card, DAT_008b40cc, target.player, target.card);
+      create_legacy_effect(player, card, g_duel_generated_internal_card_id_26, target.player, target.card);
     }
     else
     {

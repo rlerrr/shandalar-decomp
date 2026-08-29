@@ -22,7 +22,7 @@
 #define STARTUP_DIALOG_COUNT_OFFSET 0x8b4
 
 #define STARTUP_DIALOG_ROW(group_) \
-  (&DAT_007a7d90[(group_) * STARTUP_DIALOG_ROW_STRIDE])
+  (&g_startup_dialog_choices[(group_) * STARTUP_DIALOG_ROW_STRIDE])
 #define STARTUP_DIALOG_CHOICE_COUNT(group_) \
   (*(int *)(STARTUP_DIALOG_ROW(group_) + STARTUP_DIALOG_COUNT_OFFSET))
 #define STARTUP_DIALOG_CHOICE_PRESENT(group_, choice_) \
@@ -56,17 +56,17 @@ typedef struct
 STATIC_ASSERT(sizeof(screen_name_file_t) == 0x748, screen_name_file_t_wrong_size);
 
 // GLOBAL: MAGIC 0x0079141c
-HWND DAT_0079141c;
+HWND g_startup_modeless_dialog;
 
 
 // GLOBAL: MAGIC 0x0079154c
 HANDLE global_mutex_UpdateLowerDialog;
 
 // GLOBAL: MAGIC 0x007a7d90
-unsigned char DAT_007a7d90[STARTUP_DIALOG_COUNT * STARTUP_DIALOG_ROW_STRIDE];
+unsigned char g_startup_dialog_choices[STARTUP_DIALOG_COUNT * STARTUP_DIALOG_ROW_STRIDE];
 
 // GLOBAL: MAGIC 0x0074b62c
-int DAT_0074b62c;
+int g_startup_exit_requested;
 
 extern int g_manalink_is_host;
 
@@ -76,19 +76,19 @@ extern char *global_base_txt;
 HWND global_main_hwnd;
 
 // GLOBAL: MAGIC 0x008b3bd8
-int DAT_008b3bd8;
+int g_startup_dialog_group;
 
 // GLOBAL: MAGIC 0x008b32bc
 int g_manalink_opponent_monitor_active;
 
 // GLOBAL: MAGIC 0x008b4dd4
-int DAT_008b4dd4;
+int g_startup_duel_active;
 
 // GLOBAL: MAGIC 0x008cc704
 HANDLE global_mutex_GameInit;
 
 // GLOBAL: MAGIC 0x008a91a0
-screen_name_file_t DAT_008a91a0;
+screen_name_file_t g_screen_name_profile;
 
 extern int global_available_slots;
 extern card_ptr_t global_raw_cards_storage[2000];
@@ -97,10 +97,10 @@ extern card_ptr_t global_raw_cards_storage[2000];
 HANDLE global_mutex_LowerDialog;
 
 // GLOBAL: MAGIC 0x0091bbd0
-int DAT_0091bbd0;
+int g_startup_dialog_group_count;
 
 // GLOBAL: MAGIC 0x0091ce40
-char DAT_0091ce40[300];
+char g_shell_art_directory[300];
 
 // GLOBAL: MAGIC 0x0093932c
 HANDLE global_mutex_WritePacket;
@@ -109,13 +109,13 @@ HANDLE global_mutex_WritePacket;
 int g_manalink_opponent_status_dirty;
 
 // GLOBAL: MAGIC 0x006381c0
-char DAT_006381c0[0x358];
+char g_default_screen_name[0x358];
 
 // GLOBAL: MAGIC 0x00638518
-char DAT_00638518[0xd0];
+char g_screen_name_date_format[0xd0];
 
 // GLOBAL: MAGIC 0x006385e8
-char DAT_006385e8[0x40];
+char g_screen_name_unknown_date_text[0x40];
 
 // GLOBAL: MAGIC 0x007ab2c0
 int g_manalink_current_opponent_present;
@@ -237,7 +237,7 @@ unsigned int handle_magic_shell_accelerator_message(HWND hwnd, MSG *msg)
     case VK_END:
     case VK_HOME:
       if ((msg->message == WM_KEYDOWN || msg->message == WM_SYSKEYDOWN) &&
-          DAT_008b3bd8 != -1)
+          g_startup_dialog_group != -1)
       {
         dialog_item = GetDlgItem(hwnd, 99);
         if (dialog_item != NULL && IsWindowVisible(dialog_item))
@@ -269,13 +269,13 @@ unsigned int handle_magic_shell_accelerator_message(HWND hwnd, MSG *msg)
 
   if (msg->message == WM_SYSCHAR)
   {
-    if (DAT_008b3bd8 == -1)
+    if (g_startup_dialog_group == -1)
     {
       return 0;
     }
 
     accelerator_index = -1;
-    for (key_index = 0; key_index < STARTUP_DIALOG_CHOICE_COUNT(DAT_008b3bd8) &&
+    for (key_index = 0; key_index < STARTUP_DIALOG_CHOICE_COUNT(g_startup_dialog_group) &&
                         accelerator_index == -1;
          ++key_index)
     {
@@ -340,15 +340,15 @@ static void save_active_screen_name_profile(void)
   FILE *screen_name_file;
   char screen_name_filename[100];
 
-  initialize_screen_name_profile(&DAT_008a91a0, 0);
-  sprintf(screen_name_filename, "ScreenNames\\%s.scn", DAT_008a91a0.screen_name);
+  initialize_screen_name_profile(&g_screen_name_profile, 0);
+  sprintf(screen_name_filename, "ScreenNames\\%s.scn", g_screen_name_profile.screen_name);
   SetFileAttributesA(screen_name_filename, FILE_ATTRIBUTE_NORMAL);
   screen_name_file = fopen(screen_name_filename, "wb");
-  fwrite(&DAT_008a91a0, 0x748, 1, screen_name_file);
+  fwrite(&g_screen_name_profile, 0x748, 1, screen_name_file);
   fclose(screen_name_file);
   SetFileAttributesA("ScreenNames\\ActiveName.dat", FILE_ATTRIBUTE_NORMAL);
   screen_name_file = fopen("ScreenNames\\ActiveName.dat", "wb");
-  fwrite(DAT_008a91a0.screen_name, 0xe, 1, screen_name_file);
+  fwrite(g_screen_name_profile.screen_name, 0xe, 1, screen_name_file);
   fclose(screen_name_file);
 }
 
@@ -382,11 +382,11 @@ static void load_active_screen_name_profile(void)
     s.screen_name_file = fopen(s.screen_name_filename, "rb");
     if (s.screen_name_file == NULL)
     {
-      initialize_screen_name_profile(&DAT_008a91a0, 0);
+      initialize_screen_name_profile(&g_screen_name_profile, 0);
     }
     else
     {
-      fread(&DAT_008a91a0, 0x748, 1, s.screen_name_file);
+      fread(&g_screen_name_profile, 0x748, 1, s.screen_name_file);
       fclose(s.screen_name_file);
     }
   }
@@ -397,14 +397,14 @@ static void initialize_screen_name_profile(screen_name_file_t *screen_name_data,
 {
   time_t current_time;
 
-  if (strlen(DAT_006381c0) == 0)
+  if (strlen(g_default_screen_name) == 0)
   {
     load_text("MP_UIStrings.txt", "SHELLPAGE_SCREENNAME");
-    strcpy(DAT_006381c0, g_text_lines[2]);
-    strcpy(DAT_006385e8, g_text_lines[0x11]);
+    strcpy(g_default_screen_name, g_text_lines[2]);
+    strcpy(g_screen_name_unknown_date_text, g_text_lines[0x11]);
   }
 
-  strcpy(screen_name_data->screen_name, DAT_006381c0);
+  strcpy(screen_name_data->screen_name, g_default_screen_name);
   strcpy(screen_name_data->playface_name, "0001");
   strcpy(screen_name_data->real_name, "");
   strcpy(screen_name_data->personal_quote, "");
@@ -416,11 +416,11 @@ static void initialize_screen_name_profile(screen_name_file_t *screen_name_data,
     _tzset();
     time(&current_time);
     current_tm = localtime(&current_time);
-    strftime(screen_name_data->date_text, 0x80, DAT_00638518, current_tm);
+    strftime(screen_name_data->date_text, 0x80, g_screen_name_date_format, current_tm);
   }
   else
   {
-    strcpy(screen_name_data->date_text, DAT_006385e8);
+    strcpy(screen_name_data->date_text, g_screen_name_unknown_date_text);
   }
 
   screen_name_data->disconnect_count = 0;
@@ -600,10 +600,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   g_duel_phase_display_window_hwnd = 0;
   g_duel_attack_phase_window_hwnd = g_duel_phase_display_window_hwnd;
   g_duel_card_preview_window_hwnd = 0;
-  DAT_008b4dd4 = 0;
-  g_duel_message_loop_active = DAT_008b4dd4;
+  g_startup_duel_active = 0;
+  g_duel_message_loop_active = g_startup_duel_active;
   g_duel_active = g_duel_message_loop_active;
-  DAT_0074b62c = 0;
+  g_startup_exit_requested = 0;
 
   load_binary_version_strings();
   if (InitLicenseSecretsFromRegistry() != 0)
@@ -642,15 +642,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   InitializeCriticalSection(&g_shared_startup_lock);
   s.startup_ok &= setup_paths_and_load_text_etc(s.startup_message);
 
-  strcpy(DAT_0091ce40, global_base_directory);
-  strcat(DAT_0091ce40, "\\ShellArt");
+  strcpy(g_shell_art_directory, global_base_directory);
+  strcat(g_shell_art_directory, "\\ShellArt");
 
   global_mutex_GameInit = CreateMutexA(NULL, FALSE, "GameInit");
   global_mutex_ReadPacket = CreateMutexA(NULL, FALSE, "ReadPacket");
   global_mutex_WritePacket = CreateMutexA(NULL, FALSE, "WritePacket");
   global_mutex_UpdateLowerDialog = CreateMutexA(NULL, FALSE, "UpdateLowerDialog");
   global_mutex_LowerDialog = CreateMutexA(NULL, TRUE, "LowerDialog");
-  unk_0092607c = (int)CreateEventA(NULL, TRUE, TRUE, NULL);
+  g_network_packet_event = (int)CreateEventA(NULL, TRUE, TRUE, NULL);
 
   if (validate_deckbuilder_data_stub() == 0)
   {
@@ -734,7 +734,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
         ++s.slash;
       }
 
-      if (s.duel_group > 0 && s.duel_group <= DAT_0091bbd0)
+      if (s.duel_group > 0 && s.duel_group <= g_startup_dialog_group_count)
       {
         PostMessageA(global_main_hwnd, WM_COMMAND, s.duel_group + 0x31, 0);
         if (s.duel_number > 0 &&
@@ -758,7 +758,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
       FamInterface_Taunt();
     }
     else if (!handle_magic_shell_accelerator_message(global_main_hwnd, &s.msg) &&
-             (DAT_0079141c == NULL || !IsDialogMessageA(DAT_0079141c, &s.msg)))
+             (g_startup_modeless_dialog == NULL || !IsDialogMessageA(g_startup_modeless_dialog, &s.msg)))
     {
       TranslateMessage(&s.msg);
       DispatchMessageA(&s.msg);

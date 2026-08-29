@@ -15,8 +15,8 @@
 
 #define CLASS_SHUFFLE_CARD "ShuffleCard"
 
-extern int DAT_008cdac0[500];
-extern int DAT_0091b400[500];
+extern int g_duel_cached_library_player_0[500];
+extern int g_duel_cached_library_player_1[500];
 extern int g_duel_cached_library_count_player_0;
 extern int g_duel_cached_library_count_player_1;
 extern char global_base_directory[];
@@ -72,7 +72,7 @@ int copy_cached_library_cards_and_get_count(void *cards, int player)
   {
     result = g_duel_cached_library_count_player_1;
   }
-  memcpy(cards, (player == 0) ? DAT_008cdac0 : DAT_0091b400, 2000);
+  memcpy(cards, (player == 0) ? g_duel_cached_library_player_0 : g_duel_cached_library_player_1, 2000);
   LeaveCriticalSection(&g_duel_render_lock);
 
   return result;
@@ -178,7 +178,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
   switch (msg)
   {
   case 0x437:
-    if (DAT_0091ce30 == hwnd)
+    if (g_duel_main_window_hwnd == hwnd)
     {
       strcpy(s.cuecard_text, gs_cuecard_your_library_0091ca20);
     }
@@ -192,7 +192,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
 
   case 0x432:
     s.previous_count = GetWindowLongA(hwnd, g_library_window_long_offset);
-    s.cached_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)DAT_0091ce30));
+    s.cached_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)g_duel_main_window_hwnd));
     if (s.previous_count != s.cached_count)
     {
       InvalidateRect(hwnd, NULL, TRUE);
@@ -200,7 +200,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
     return 0;
 
   case 0x400:
-    s.shuffle_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)DAT_0091ce30));
+    s.shuffle_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)g_duel_main_window_hwnd));
     GetClientRect(hwnd, &s.shuffle_rect);
     s.shuffle_card_width_delta = (((s.shuffle_rect.right * 0x28) / 100) *
                                   (s.shuffle_count < 0x4b ? s.shuffle_count : 0x4b)) /
@@ -277,7 +277,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_LibraryClass(HWND hwnd, UINT msg, WPARAM wpar
 
   case WM_PAINT:
     s.previous_count = GetWindowLongA(hwnd, g_library_window_long_offset);
-    s.library_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)DAT_0091ce30));
+    s.library_count = get_cached_library_count(1 <= (unsigned int)((int)hwnd - (int)g_duel_main_window_hwnd));
     if (s.previous_count != s.library_count)
     {
       InvalidateRect(hwnd, NULL, FALSE);

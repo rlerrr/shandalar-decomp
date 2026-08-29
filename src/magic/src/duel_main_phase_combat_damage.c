@@ -104,7 +104,7 @@ int adjust_two_headed_giant_damage(int player, int card, int amount)
 
   for (s.index = 0; s.index < g_active_cards_count[s.damage_player] && s.found_trampler == 0; s.index = s.index + 1)
   {
-    if (PLAYER_CARD_INSTANCE(s.damage_player, s.index).internal_card_id == unk_008a8df0 &&
+    if (PLAYER_CARD_INSTANCE(s.damage_player, s.index).internal_card_id == g_duel_generated_internal_card_id_29 &&
         PLAYER_CARD_INSTANCE(s.damage_player, s.index).damage_target_player == player &&
         PLAYER_CARD_INSTANCE(s.damage_player, s.index).damage_target_card == card)
     {
@@ -829,7 +829,7 @@ void resolve_combat_damage(int player)
                 {
                   if (ai_blocker_cards[s.loop_index] == s.selected_target.card)
                   {
-                    if (unk_00715fb0 != 0)
+                    if (g_recorded_action_player != 0)
                     {
                       s.damage_to_assign = s.attacker_damage_remaining;
                     }
@@ -1027,7 +1027,7 @@ void resolve_combat_damage(int player)
                     PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot < 2)))
               {
                 s.target_is_valid = 1;
-                unk_00715fb0 = 0;
+                g_recorded_action_player = 0;
                 s.selected_target.player = player;
                 s.selected_target.card = combat_damage_attacker_cards[0];
               }
@@ -1083,7 +1083,7 @@ void resolve_combat_damage(int player)
                 {
                   if (combat_damage_attacker_cards[s.loop_index] == s.selected_target.card)
                   {
-                    if (unk_00715fb0 != 0 ||
+                    if (g_recorded_action_player != 0 ||
                         (global_cards_data[PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
                          PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[s.damage_index]).info_slot < 2))
                     {

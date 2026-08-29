@@ -41,7 +41,7 @@ int g_magicgame_face_window_extra_bytes = 8;
 COLORREF g_face_name_text_color;
 
 // GLOBAL: MAGIC 0x00637b4c
-int DAT_00637b4c;
+int g_face_ui_player_life;
 
 // GLOBAL: MAGIC 0x00637b50
 // GLOBAL: SHANDALAR 0x005a8168
@@ -56,7 +56,7 @@ COLORREF g_face_name_shadow_color;
 int g_face_directive_packet[3];
 
 // GLOBAL: MAGIC 0x00637b94
-int DAT_00637b94;
+int g_face_ui_opponent_life;
 
 // GLOBAL: MAGIC 0x00637b98
 // GLOBAL: SHANDALAR 0x005a81b0
@@ -84,7 +84,7 @@ HBITMAP g_face_background_pics[6];
 
 // GLOBAL: MAGIC 0x00637c70
 // GLOBAL: SHANDALAR 0x00604420
-int DAT_00637c70;
+int g_face_ui_refresh_flags;
 
 // GLOBAL: MAGIC 0x00925bb0
 int g_opponent_face_directive_action_enabled;
@@ -235,7 +235,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam,
     {
     case 102:
       s.command_player = g_duel_player_face_window_hwnd == hwnd ? 0 : 1;
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       post_face_directive_action(s.command_player);
       break;
     case 100:
@@ -273,7 +273,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FaceClass(HWND hwnd, UINT msg, WPARAM wparam,
     if (g_duel_modal_action_active != 0)
     {
       Sleep(GetDoubleClickTime());
-      unk_00715fb0 = PeekMessageA(&s.peek_msg, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0);
+      g_recorded_action_player = PeekMessageA(&s.peek_msg, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0);
       post_face_directive_action(s.click_player);
     }
     return 0;
@@ -477,11 +477,11 @@ void set_player_directive_value(int player, int value)
 
   if (player == 0)
   {
-    s.library_window = DAT_0091ce30;
+    s.library_window = g_duel_main_window_hwnd;
   }
   else
   {
-    s.library_window = DAT_0092680c;
+    s.library_window = g_duel_status_window_hwnd;
   }
 
   if (player == 0)
@@ -495,11 +495,11 @@ void set_player_directive_value(int player, int value)
 
   if (player == 0)
   {
-    s.mana_summary_window = unk_008ce534;
+    s.mana_summary_window = g_duel_active_popup_window;
   }
   else
   {
-    s.mana_summary_window = unk_00939344;
+    s.mana_summary_window = g_duel_last_active_window;
   }
 
   if (value != 0)

@@ -174,7 +174,7 @@ undefined4 g_sndLoadSerial = 0x00000000;
 // GLOBAL: MAGSND 0x100070A8
 SndInstance *g_sndSlots[0x110];
 // GLOBAL: MAGSND 0x1000707C
-undefined4 _DAT_1000707c = 0x00000000;
+undefined4 g_oversized_sound_buffer_count = 0x00000000;
 
 // GLOBAL: MAGSND 0x10007088
 undefined4 g_mmioInfoMismatchCount = 0x00000000;
@@ -1762,7 +1762,7 @@ void __cdecl UpdateMmioSnd(SndInstance *snd)
       s.bufferedSourceBytes = snd->writeCursorBytes - snd->readCursorBytes;
       if (0x10000 < s.bufferedSourceBytes)
       {
-        _DAT_1000707c = _DAT_1000707c + 1;
+        g_oversized_sound_buffer_count = g_oversized_sound_buffer_count + 1;
       }
     }
     else

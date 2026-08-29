@@ -171,7 +171,7 @@ int card_blaze_FX(int player, int card, event_t event)
                 {
                   global_cards_data[copy_internal_card_id].code_pointer = card_two_headed_giant_of_foriys_legacy;
                   global_cards_data[copy_internal_card_id].extra_ability = 0;
-                  global_cards_data[copy_internal_card_id].id = unk_008cf1ac;
+                  global_cards_data[copy_internal_card_id].id = g_multiblock_display_internal_card_id;
                 }
               }
 
@@ -337,7 +337,7 @@ int card_control_FX(int player, int card, event_t event)
       (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1)
   {
-    unk_00925d3c -= 0x18;
+    g_ai_score -= 0x18;
   }
 
   if (event == EVENT_BLOCK_RATING &&
@@ -345,7 +345,7 @@ int card_control_FX(int player, int card, event_t event)
       (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1)
   {
-    unk_00925d3c += 0x18;
+    g_ai_score += 0x18;
   }
 
   return 0;
@@ -384,7 +384,7 @@ int card_c_tomb_FX(int player, int card, event_t event)
       {
         effect = &PLAYER_CARD_INSTANCE(current_player, current_card);
         if (is_in_play(current_player, current_card) &&
-            effect->internal_card_id == unk_00789108 &&
+            effect->internal_card_id == g_duel_generated_internal_card_id_23 &&
             effect->timestamp == instance->timestamp)
         {
           ++total;
@@ -411,7 +411,7 @@ int card_c_tomb_FX(int player, int card, event_t event)
         {
           effect = &PLAYER_CARD_INSTANCE(player, current_card);
           if (is_in_play(player, current_card) &&
-              effect->internal_card_id == unk_00789108 &&
+              effect->internal_card_id == g_duel_generated_internal_card_id_23 &&
               effect->timestamp == instance->timestamp &&
               (int)effect->damage_target_player == selected.player &&
               effect->damage_target_card == selected.card)
@@ -757,7 +757,7 @@ int card_river_FX(int player, int card, event_t event)
     while (current_card < g_active_cards_count[g_attacking_card_controller] && g_event_result == 0)
     {
       river_effect = &PLAYER_CARD_INSTANCE(g_attacking_card_controller, current_card);
-      if (river_effect->internal_card_id == unk_008b3bd4 &&
+      if (river_effect->internal_card_id == g_duel_generated_internal_card_id_2a &&
           (int)river_effect->damage_target_player == g_attacking_card_controller &&
           river_effect->damage_target_card == g_attacking_card &&
           instance->unknown0x14 != river_effect->unknown0x14)

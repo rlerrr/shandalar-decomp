@@ -139,7 +139,7 @@ HANDLE g_timer_thread_handle;
 // GLOBAL: SHANDALAR 0x00748408
 int g_local_sound_missing;
 // GLOBAL: SHANDALAR 0x0074840c
-int _DAT_0074840c;
+int g_local_sound_state;
 // GLOBAL: SHANDALAR 0x00748410
 HANDLE g_loader_thread_handle;
 // GLOBAL: SHANDALAR 0x005b7d90
@@ -191,7 +191,7 @@ extern unsigned int g_load_menu_valid_slot_mask;
 // GLOBAL: SHANDALAR 0x0073e9dc
 int g_world_scene_reveal_effect_pending;
 // GLOBAL: SHANDALAR 0x00591214
-int DAT_00591214 = 1;
+int g_world_location_entry_enabled = 1;
 // GLOBAL: SHANDALAR 0x00591218
 int g_world_move_dir_index = 0;
 // GLOBAL: SHANDALAR 0x0059121c
@@ -410,9 +410,9 @@ jmp_buf g_adventure_session_restart_jump_buffer;
 // GLOBAL: SHANDALAR 0x0073e9e0
 jmp_buf g_adventure_world_exit_jump_buffer;
 // GLOBAL: SHANDALAR 0x006527b0
-int DAT_006527b0;
+int g_pending_world_location;
 // GLOBAL: SHANDALAR 0x00590764
-int DAT_00590764 = -1;
+int g_current_world_location = -1;
 // GLOBAL: SHANDALAR 0x00590768
 int g_adventure_ui_layout_dirty = 1;
 // GLOBAL: SHANDALAR 0x00650f28
@@ -457,7 +457,7 @@ int g_text_menu_hovered_selection;
 // GLOBAL: SHANDALAR 0x0078cef0
 char g_text_menu_timer_itoa_buffer[0xc];
 // GLOBAL: SHANDALAR 0x00789934
-int DAT_00789934;
+int g_shandalar_state_00789934;
 // GLOBAL: SHANDALAR 0x0097ec50
 signed char g_text_menu_hotkey_by_option[0x20];
 // GLOBAL: SHANDALAR 0x0097ec70
@@ -484,11 +484,11 @@ int g_text_box_frame_color_override;
 int g_text_menu_disabled_option_mask;
 
 // GLOBAL: SHANDALAR 0x005aa414
-int DAT_005aa414;
+int g_shandalar_state_005aa414;
 // GLOBAL: SHANDALAR 0x005aa62c
 int g_last_matching_deck_card_index;
 // GLOBAL: SHANDALAR 0x005873d4
-int DAT_005873d4 = 0;
+int g_shandalar_initialized = 0;
 
 extern int g_selected_save_slot_index;
 
@@ -820,7 +820,7 @@ opening_menu:
     GenerateAdventureWorldMap();
     InitializeCastleDungeonSlots();
     Gold = (5 - g_shandalar_difficulty) * 0x32;
-    DAT_00591214 = 0;
+    g_world_location_entry_enabled = 0;
     do
     {
       do
@@ -1024,7 +1024,7 @@ int RunTextMenuCore(char *menu_text, int clear_input_before_show)
   s.current_menu_entry = 3;
   s.line_height = 0x16;
   g_text_menu_color_base = 0xff;
-  if (DAT_00789934 == 0)
+  if (g_shandalar_state_00789934 == 0)
   {
     s.line_height = -1;
   }
@@ -4184,7 +4184,7 @@ void RebuildDeckEntriesByCardGroup(void)
 // FUNCTION: SHANDALAR 0x0054cdbd
 void RefreshAdventureInterfaceLayout(void)
 {
-  DAT_00590764 = DAT_006527b0 = -1;
+  g_current_world_location = g_pending_world_location = -1;
   g_adventure_ui_layout_dirty = 1;
   if (g_duel_ai_mode_state == 0)
   {
@@ -4925,7 +4925,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       g_world_scene_force_redraw = 1;
       if (g_siege_timer >= 8)
       {
-        DAT_00591214 = 1;
+        g_world_location_entry_enabled = 1;
       }
     }
 
@@ -5120,8 +5120,8 @@ void UpdateAdventureWorldInputAndMovement(void)
         sound_set_vol(0x10, 400);
         play_snd_marker(0x10, 1);
         VisitTownSlot(s.move_step_divisor);
-        DAT_00591214 = 1;
-        g_world_location_entry_latched = DAT_00591214;
+        g_world_location_entry_enabled = 1;
+        g_world_location_entry_latched = g_world_location_entry_enabled;
         g_world_move_dir_index = 0;
         for (s.slot_index = 0; s.slot_index < 6; s.slot_index = s.slot_index + 1)
         {
@@ -6594,7 +6594,7 @@ void RestoreDisplayResolution(void)
 unsigned int InitializeSoundPresenceState(void)
 {
   g_local_sound_missing = (unsigned int)(FileExists("sound\\locmus1.wav") == 0);
-  _DAT_0074840c = 0;
+  g_local_sound_state = 0;
   return 0;
 }
 

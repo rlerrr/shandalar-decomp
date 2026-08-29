@@ -20,7 +20,7 @@ extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
 extern int g_duel_window_userdata_player_offset;
 extern int g_duel_window_userdata_card_offset;
-extern int DAT_00939508;
+extern int g_duel_selected_card_window;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern int g_duel_modal_action_active;
 extern target_selection_request_t g_duel_action_request_copy;
@@ -28,7 +28,7 @@ extern HWND g_duel_toggleable_status_window_hwnd;
 extern int g_duel_mode_flags;
 extern int g_duel_network_flags;
 extern int g_shared_startup_completed;
-extern int DAT_007aaeec;
+extern int g_response_prompt_enabled;
 extern char global_base_directory[];
 card_id_t get_displayed_card_id(int player, int card);
 unsigned int get_displayed_card_ui_flags(int player, int card);
@@ -792,7 +792,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       s.displayed_card_id = get_displayed_card_id(s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
       get_displayed_card_attachment(s.attached_player_and_card, s.displayed_player_and_card[0], s.displayed_player_and_card[1]);
       if ((get_displayed_card_ui_flags(s.displayed_player_and_card[0], s.displayed_player_and_card[1]) & 0x10) != 0 &&
-          (s.displayed_card_id >= unk_007a7d64 ||
+          (s.displayed_card_id >= g_damage_display_internal_card_id ||
            (global_raw_cards_storage[s.displayed_card_id].card_type == 2 &&
             global_raw_cards_storage[s.displayed_card_id].subtype != 0xd3)))
       {
@@ -819,7 +819,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
           }
         }
       }
-      else if (s.displayed_card_id == unk_007a7d64 &&
+      else if (s.displayed_card_id == g_damage_display_internal_card_id &&
                s.attached_player_and_card[0] != -1 &&
                s.attached_player_and_card[1] == -1)
       {
@@ -848,7 +848,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       return 0;
     }
     s.attachment_x_step = 5;
-    s.attachment_y_step = DAT_00939508;
+    s.attachment_y_step = g_duel_selected_card_window;
     GetWindowRect(s.attachment_parent, &s.attachment_rect);
     MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.attachment_rect, 2);
     s.attachment_x = s.attachment_rect.left + s.attachment_x_step;
@@ -968,7 +968,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     case 0x66:
       g_stop_phase = -1;
       g_stop_phase_player = -1;
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
       g_territory_command_packet[2] = -2;
@@ -977,7 +977,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     case 0x65:
       g_stop_phase = -1;
       g_stop_phase_player = -1;
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
       g_territory_command_packet[2] = -1;
@@ -985,7 +985,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       break;
     case 0x64:
       get_next_phase_stop(&g_stop_phase_player, &g_stop_phase, NULL);
-      unk_00715fb0 = 0;
+      g_recorded_action_player = 0;
       g_territory_command_packet[0] = -2;
       g_territory_command_packet[1] = -1;
       g_territory_command_packet[2] = -1;
@@ -1004,10 +1004,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       SendMessageA(g_duel_window_hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
       break;
     case 0x70:
-      DAT_007abc80 ^= 1;
+      g_battlefield_ui_flags ^= 1;
       break;
     case 0x71:
-      DAT_007aaeec ^= 1;
+      g_response_prompt_enabled ^= 1;
       break;
     case 0x6e:
       s.help_context = 0x7e2;
@@ -1127,7 +1127,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       }
       if ((g_duel_action_request_copy.allow_cancel & 1) != 0)
       {
-        AppendMenuA(g_territory_popup_menu, MF_STRING, 0x65, DAT_008ce680);
+        AppendMenuA(g_territory_popup_menu, MF_STRING, 0x65, g_duel_status_text);
       }
       get_current_duel_selection(NULL, &s.action_code);
       if (s.action_code == 1)
@@ -1225,7 +1225,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
     {
       if ((g_duel_network_flags & 2) != 0)
       {
-        if (DAT_007abc80 != 0)
+        if (g_battlefield_ui_flags != 0)
         {
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x70,
                       g_territory_menu_skip_full_card_text[0]);
@@ -1235,7 +1235,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x70,
                       g_territory_menu_skip_full_card_text[1]);
         }
-        if (DAT_007aaeec != 0)
+        if (g_response_prompt_enabled != 0)
         {
           AppendMenuA(g_territory_popup_menu, MF_STRING, 0x71,
                       g_territory_menu_draw_response_text[0]);

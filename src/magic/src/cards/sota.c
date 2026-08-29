@@ -253,7 +253,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
       }
       else
       {
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, DAT_008b60e4,
+        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_22,
                                            target.player, target.card);
         if (legacy_card != -1)
         {
@@ -285,8 +285,8 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
 
     if (event == EVENT_CHECK_PUMP && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {
-      ++unk_007a7d80[player];
-      ++unk_007a7d88[player];
+      ++g_global_power_bonus[player];
+      ++g_global_toughness_bonus[player];
     }
   }
 
@@ -388,12 +388,12 @@ int card_copper_tablet(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     if ((g_current_phase == PHASE_UPKEEP) && ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0) &&
-        (unk_00742f60 == g_current_player) &&
+        (g_event_player == g_current_player) &&
         (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
          ((global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0)))
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -402,7 +402,7 @@ int card_copper_tablet(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && card == g_affected_card && player == g_affected_card_controller)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
   }
   if (event == EVENT_UPKEEP_COSTS_UNPAID)
@@ -451,7 +451,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
         }
         if (internal_rand(100) < ((has_mana(player, 7, 1) + 1) / 2) * 0x14)
         {
-          unk_008b3270 |= 3;
+          g_activation_event_flags |= 3;
           return 1;
         }
       }
@@ -505,7 +505,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
     }
     else
     {
-      legacy_card = create_legacy_effect(g_affected_card_controller, g_affected_card, unk_00789108,
+      legacy_card = create_legacy_effect(g_affected_card_controller, g_affected_card, g_duel_generated_internal_card_id_23,
                                          instance->targets[0].player, instance->targets[0].card);
       if (legacy_card != -1)
       {
@@ -521,7 +521,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 
   if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player)
   {
-    legacy_card = create_legacy_effect(player, card, unk_00789108, -1, -1);
+    legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_23, -1, -1);
     if (legacy_card != -1)
     {
       legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
@@ -1061,10 +1061,10 @@ int card_mana_crypt(int player, int card, event_t event)
     {
       if (g_current_phase == PHASE_UPKEEP && (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0)
       {
-        if (g_current_player == unk_00742f60 && g_current_player == player)
+        if (g_current_player == g_event_player && g_current_player == player)
         {
           PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-          unk_008b3270 |= 3;
+          g_activation_event_flags |= 3;
           s.result = 1;
         }
       }
@@ -1079,7 +1079,7 @@ int card_mana_crypt(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && g_affected_card == card && g_affected_card_controller == player)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
   }
 
@@ -1661,7 +1661,7 @@ int card_ring_of_ma_r_f(int player, int card, event_t event)
           hurkyls_recall_bounce_artifact(player, scratch);
         }
         kill_card(player, card, KILL_REMOVE);
-        unk_0091c4fc = 1;
+        g_duel_state_0091c4fc = 1;
       }
       else
       {
@@ -1798,7 +1798,7 @@ int card_sandals_of_abdallah(int player, int card, event_t event)
       }
       else
       {
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_00896534,
+        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_03,
                                            target.player, target.card);
         if (legacy_card != -1)
         {
@@ -2199,7 +2199,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
     if (event == EVENT_TRIGGER &&
         (instance->untap_status & 1) != 0 &&
         (instance->untap_status & 2) == 0 &&
-        (unk_00925d38 & global_cards_data[instance->internal_card_id].type) == 0)
+        (g_ai_score_baseline & global_cards_data[instance->internal_card_id].type) == 0)
     {
       if ((g_other_player == player && (g_duel_network_flags & 2) == 0) ||
           g_duel_ai_mode_state == 1 ||

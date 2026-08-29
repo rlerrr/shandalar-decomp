@@ -23,7 +23,7 @@ static unsigned int code_mask;
 static unsigned int saved_edx;
 static unsigned int bit_buffer;
 static unsigned int last_node_index;
-static unsigned int DAT_10026550;
+static unsigned int g_rpbits_stream_word;
 
 static unsigned char repeat_count;
 static unsigned char last_literal;
@@ -409,7 +409,7 @@ void RpBits_ReadTables(unsigned short *palette)
     if ((first_word & 0xff) == 0x58)
     {
       packed_mode = (unsigned char)((first_word >> 8) & 1);
-      DAT_10026550 = read_stream_word();
+      g_rpbits_stream_word = read_stream_word();
       global_pcxw_image_width = (int)read_stream_word();
       global_pcxw_image_height = (int)read_stream_word();
       RpBits_InitStream();

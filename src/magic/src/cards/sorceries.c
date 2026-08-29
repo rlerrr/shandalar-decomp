@@ -163,7 +163,7 @@ int card_time_walk(int player, int card, event_t event)
       {
         for (current_card = 0; current_card < g_active_cards_count[effect_card]; ++current_card)
         {
-          if (PLAYER_CARD_INSTANCE(effect_card, current_card).internal_card_id == unk_008b49c4 && (PLAYER_CARD_INSTANCE(effect_card, current_card).token_status & 0x100) != 0)
+          if (PLAYER_CARD_INSTANCE(effect_card, current_card).internal_card_id == g_duel_generated_internal_card_id_0f && (PLAYER_CARD_INSTANCE(effect_card, current_card).token_status & 0x100) != 0)
           {
             effect_found = 1;
           }
@@ -175,7 +175,7 @@ int card_time_walk(int player, int card, event_t event)
       }
     }
 
-    current_player = create_legacy_effect(player, card, unk_008b49c4, -1, -1);
+    current_player = create_legacy_effect(player, card, g_duel_generated_internal_card_id_0f, -1, -1);
     PLAYER_CARD_INSTANCE(player, current_player).token_status |= 0x120;
     kill_card(player, card, KILL_BURY);
   }
@@ -674,7 +674,7 @@ void draw_cards_and_set_hand_count(int player, int amount)
     draw_card_for_player(player);
     if (player != 0)
     {
-      unk_007161d8 = 0;
+      g_hand_count_adjustment = 0;
     }
   }
   g_duel_summary.hand_counts[player] = amount;
@@ -692,7 +692,7 @@ int card_channel(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    create_legacy_effect(player, card, unk_008a8c34, -1, -1);
+    create_legacy_effect(player, card, g_duel_generated_internal_card_id_0e, -1, -1);
     declare_mana_available(player, COLOR_COLORLESS, 1);
     kill_card(player, card, KILL_BURY);
   }
@@ -919,7 +919,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    real_target_available(unk_00743038 == 0 ? &g_max_x_value : (int *)0,
+    real_target_available(g_activation_scan_flags == 0 ? &g_max_x_value : (int *)0,
                           TARGET_SCAN_DIRECT,
                           player,
                           2,
@@ -1061,7 +1061,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    if (g_spell_fizzled != 1 && (damage_effect_card = add_card_to_hand(player, unk_00939348)) != -1)
+    if (g_spell_fizzled != 1 && (damage_effect_card = add_card_to_hand(player, g_duel_generated_internal_card_id_12)) != -1)
     {
       PLAYER_CARD_INSTANCE(player, damage_effect_card).original_internal_card_id = instance->internal_card_id;
       PLAYER_CARD_INSTANCE(player, damage_effect_card).state |= 2;
@@ -1496,7 +1496,7 @@ int card_winter_blast(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    real_target_available(unk_00743038 == 0 ? &g_max_x_value : (int *)0,
+    real_target_available(g_activation_scan_flags == 0 ? &g_max_x_value : (int *)0,
                           TARGET_SCAN_DIRECT,
                           player,
                           2,
@@ -1714,7 +1714,7 @@ int card_fireball(int player, int card, event_t event)
   {
     if (player == g_active_player || (g_duel_network_flags & 2) != 0)
     {
-      unk_0091bfb4 = 1;
+      g_adventure_world_state = 1;
     }
     else if (has_mana(player, 7, 2) == 0)
     {
@@ -2322,7 +2322,7 @@ int card_word_of_binding(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    real_target_available(unk_00743038 == 0 ? &g_max_x_value : (int *)0,
+    real_target_available(g_activation_scan_flags == 0 ? &g_max_x_value : (int *)0,
                           TARGET_SCAN_DIRECT,
                           player,
                           2,
@@ -3484,7 +3484,7 @@ int card_disintegrate(int player, int card, event_t event)
     damage_dealt = deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, instance->info_slot);
     if (damage_dealt != 0 && target_card != -1)
     {
-      legacy_card = create_legacy_effect(player, card, unk_008b3d10, target_player, target_card);
+      legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_17, target_player, target_card);
       if (legacy_card != -1)
       {
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x200;
@@ -3745,7 +3745,7 @@ int card_drain_power(int player, int card, event_t event)
 // FUNCTION: MAGIC 0x0040a2ae
 int drain_power_draw_mana_from_land(int player, int card, int internal_card_id)
 {
-  unk_00938e2c = 0x3e;
+  g_required_mana_color_mask = 0x3e;
   g_produced_mana_color = -1;
 
   if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0 && (global_cards_data[internal_card_id].extra_ability & 0x1000) != 0)
@@ -3754,9 +3754,9 @@ int drain_power_draw_mana_from_land(int player, int card, int internal_card_id)
     if (g_spell_fizzled == 1)
     {
       g_spell_fizzled = -1;
-      unk_00938e2c = 1;
+      g_required_mana_color_mask = 1;
       dispatch_event_to_single_card(player, card, EVENT_ACTIVATE, 1 - player, -1);
-      unk_00938e2c = 0x3e;
+      g_required_mana_color_mask = 0x3e;
     }
     if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0)
     {
@@ -3764,6 +3764,6 @@ int drain_power_draw_mana_from_land(int player, int card, int internal_card_id)
     }
   }
 
-  unk_00938e2c = 0;
+  g_required_mana_color_mask = 0;
   return 0;
 }

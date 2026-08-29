@@ -24,17 +24,17 @@ extern HWND global_main_hwnd;
 
 extern card_ptr_t global_raw_cards_storage[2000];
 extern char global_base_directory[];
-extern int DAT_007ab430[500];
-extern int DAT_0091a940[500];
-extern int DAT_00924820[500];
-extern int DAT_00924ff0[16];
-extern int DAT_009397d0[16];
+extern int g_duel_cached_graveyard_player_0[500];
+extern int g_duel_cached_graveyard_player_1[500];
+extern int g_duel_cached_exile_player_0[500];
+extern int g_duel_cached_ante_player_1[16];
+extern int g_duel_cached_ante_player_0[16];
 extern int g_duel_cached_graveyard_count_player_0;
 extern int g_duel_cached_graveyard_count_player_1;
 extern int g_duel_cached_exile_count_player_0;
 extern int g_duel_cached_exile_count_player_1;
-extern int DAT_008966d0;
-extern int DAT_0093d84c;
+extern int g_duel_cached_ante_count_player_1;
+extern int g_duel_cached_ante_count_player_0;
 extern int is_invalid_duel_player(int player);
 extern LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void delete_and_close_object(HANDLE obj);
@@ -45,7 +45,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wp
 BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 // GLOBAL: MAGIC 0x0055e00c
-int DAT_0055e00c = 0;
+int g_graveyard_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e010
 // GLOBAL: SHANDALAR 0x0057f10c
@@ -67,7 +67,7 @@ int g_expanded_graveyard_window_extra_bytes = 0;
 
 // GLOBAL: MAGIC 0x0055e024
 // GLOBAL: SHANDALAR 0x0057f120
-int DAT_0055e024 = 0;
+int g_graveyard_card_id_window_long_offset = 0;
 
 // GLOBAL: MAGIC 0x0055e028
 int g_graveyard_cards_window_extra_bytes = 4;
@@ -112,7 +112,7 @@ char g_graveyard_menu_view_exile_text[0x34];
 extern int g_graveyard_card_window_long_offset;
 extern int g_graveyard_expanded_window_long_offset;
 extern int g_graveyard_bitmap_window_long_offset;
-extern int DAT_0055e024;
+extern int g_graveyard_card_id_window_long_offset;
 
 // FUNCTION: MAGIC 0x00449ea5
 // FUNCTION: SHANDALAR 0x00453a26
@@ -138,7 +138,7 @@ int copy_cached_graveyard_cards_and_get_count(void *cards, int player)
   {
     result = g_duel_cached_graveyard_count_player_1;
   }
-  memcpy(cards, (player == 0) ? DAT_007ab430 : DAT_0091a940, 2000);
+  memcpy(cards, (player == 0) ? g_duel_cached_graveyard_player_0 : g_duel_cached_graveyard_player_1, 2000);
   LeaveCriticalSection(&g_duel_render_lock);
 
   return result;
@@ -168,7 +168,7 @@ int copy_cached_exile_cards_and_get_count(void *cards, int player)
   {
     result = g_duel_cached_exile_count_player_1;
   }
-  memcpy(cards, (player == 0) ? DAT_00924820 : global_exile[1], 2000);
+  memcpy(cards, (player == 0) ? g_duel_cached_exile_player_0 : global_exile[1], 2000);
   LeaveCriticalSection(&g_duel_render_lock);
 
   return result;
@@ -363,15 +363,15 @@ void copy_cached_ante_cards(int *opponent_antes, int *opponent_count, int *playe
     return;
 
   EnterCriticalSection(&g_duel_render_lock);
-  *opponent_count = DAT_008966d0;
-  for (index = 0; index < DAT_008966d0; index++)
+  *opponent_count = g_duel_cached_ante_count_player_1;
+  for (index = 0; index < g_duel_cached_ante_count_player_1; index++)
   {
-    opponent_antes[index] = CardIDFromType(DAT_00924ff0[index]);
+    opponent_antes[index] = CardIDFromType(g_duel_cached_ante_player_1[index]);
   }
-  *player_count = DAT_0093d84c;
-  for (index = 0; index < DAT_0093d84c; index++)
+  *player_count = g_duel_cached_ante_count_player_0;
+  for (index = 0; index < g_duel_cached_ante_count_player_0; index++)
   {
-    player_antes[index] = CardIDFromType(DAT_009397d0[index]);
+    player_antes[index] = CardIDFromType(g_duel_cached_ante_player_0[index]);
   }
   LeaveCriticalSection(&g_duel_render_lock);
 }
@@ -662,7 +662,7 @@ LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPAR
   {
 
   case 0x437:
-    s.card_id = GetWindowLongA(hwnd, DAT_0055e024);
+    s.card_id = GetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset);
     if (g_duel_interface_options.layout != 2 || IsWindowVisible(g_duel_card_preview_window_hwnd) != 0)
     {
       SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.card_id, 0);
@@ -670,25 +670,25 @@ LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPAR
     return 0;
 
   case 0x400:
-    return s.card_id = GetWindowLongA(hwnd, DAT_0055e024);
+    return s.card_id = GetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset);
 
   case 0x401:
-    s.card_id = GetWindowLongA(hwnd, DAT_0055e024);
+    s.card_id = GetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset);
     if (s.card_id != (int)wparam)
     {
       s.card_id = wparam;
-      SetWindowLongA(hwnd, DAT_0055e024, s.card_id);
+      SetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset, s.card_id);
       InvalidateRect(hwnd, NULL, FALSE);
     }
     return 0;
 
   case WM_CREATE:
     s.card_id = -1;
-    SetWindowLongA(hwnd, DAT_0055e024, s.card_id);
+    SetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset, s.card_id);
     return 0;
 
   case WM_PAINT:
-    s.card_id = GetWindowLongA(hwnd, DAT_0055e024);
+    s.card_id = GetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset);
     GetClientRect(hwnd, &s.client_rect);
     EnterCriticalSection(&g_card_render_lock);
     FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(4));
@@ -706,7 +706,7 @@ LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPAR
     return 0;
 
   case WM_RBUTTONDBLCLK:
-    s.card_id = GetWindowLongA(hwnd, DAT_0055e024);
+    s.card_id = GetWindowLongA(hwnd, g_graveyard_card_id_window_long_offset);
     if (g_duel_interface_options.layout == 2)
     {
       SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.card_id, 0);

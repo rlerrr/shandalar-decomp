@@ -13,7 +13,7 @@
 
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
-extern int DAT_00939508;
+extern int g_duel_selected_card_window;
 extern char global_base_directory[];
 
 LOGFONTA *LoadFontFromIni(char *section, int must_load);
@@ -266,7 +266,7 @@ void resize_duel_hand_window(HWND hwnd)
     }
     else
     {
-      s.window_height = (s.visible_count - 1) * DAT_00939508 + s.bottom_margin +
+      s.window_height = (s.visible_count - 1) * g_duel_selected_card_window + s.bottom_margin +
                         s.title_height + g_showlist_smallcard_height;
     }
 
@@ -298,7 +298,7 @@ void resize_duel_hand_window(HWND hwnd)
         {
           s.card_index--;
         }
-        s.card_y -= DAT_00939508;
+        s.card_y -= g_duel_selected_card_window;
       }
       for (s.loop_index = s.visible_count; s.card_count > s.loop_index; s.loop_index++)
       {

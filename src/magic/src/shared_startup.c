@@ -150,7 +150,7 @@ CRITICAL_SECTION g_card_render_lock;
 
 // GLOBAL: SHANDALAR 0x005a8b30
 // GLOBAL: MAGIC 0x00637a94
-int DAT_00637a94;
+int g_shared_startup_allocation;
 
 static __inline void append_startup_error(char *message_buffer, const char *path, int line_index)
 {
@@ -544,9 +544,9 @@ void FreeBaseTextBuffer(void)
 // FUNCTION: MAGIC 0x00453b3c
 void free_duel_interface_resource_buffer(void)
 {
-  if (DAT_00637a94 != 0)
+  if (g_shared_startup_allocation != 0)
   {
-    free((void *)DAT_00637a94);
+    free((void *)g_shared_startup_allocation);
   }
 }
 

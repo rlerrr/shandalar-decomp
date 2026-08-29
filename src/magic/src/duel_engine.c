@@ -31,9 +31,9 @@ extern int global_screen_height;
 #endif
 
 extern int g_duel_modal_action_active;
-extern int DAT_007a7d74;
-extern int DAT_008a8dec;
-extern int DAT_008a8d78;
+extern int g_duel_tooltip_window;
+extern int g_duel_opponent_battlefield_window;
+extern int g_duel_player_battlefield_window;
 extern HMENU g_library_popup_menu;
 extern HMENU g_library_submenu;
 extern char g_library_menu_count_text[];
@@ -72,7 +72,7 @@ int g_duel_directive_hover_timer_id = 0;
 HWND g_duel_last_cue_card_hwnd = (HWND)0;
 
 // GLOBAL: MAGIC 0x0057306c
-int DAT_0057306c = 0;
+int g_duel_engine_initialized = 0;
 
 // GLOBAL: MAGIC 0x00573070
 // GLOBAL: SHANDALAR 0x00589d68
@@ -365,7 +365,7 @@ int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
       g_duel_directive_hover_timer_id = 0;
     }
     if (g_duel_interface_options.directive_tracks_mouse != 0 &&
-        IsWindowVisible((HWND)DAT_007a7d74) != 0)
+        IsWindowVisible((HWND)g_duel_tooltip_window) != 0)
     {
       g_duel_directive_hover_timer_id = SetTimer((HWND)0, 0, timer_elapsed, (TIMERPROC)0);
     }
@@ -379,7 +379,7 @@ int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
       GetCursorPos(&s.point);
       s.point.x += GetSystemMetrics(0xd);
       s.point.y += GetSystemMetrics(0xe);
-      GetWindowRect((HWND)DAT_007a7d74, &s.rect);
+      GetWindowRect((HWND)g_duel_tooltip_window, &s.rect);
       s.overrun = (s.rect.right - s.rect.left) + s.point.x - GetSystemMetrics(SM_CXSCREEN);
       if (s.overrun > 0)
       {
@@ -390,7 +390,7 @@ int handle_duel_hover_help_message(MSG *message, UINT timer_elapsed)
       {
         s.point.y -= s.overrun;
       }
-      SetWindowPos((HWND)DAT_007a7d74, (HWND)0, s.point.x, s.point.y, 0, 0,
+      SetWindowPos((HWND)g_duel_tooltip_window, (HWND)0, s.point.x, s.point.y, 0, 0,
                    SWP_NOSIZE | SWP_NOZORDER);
       return 1;
     }
@@ -800,12 +800,12 @@ DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type)
   if (g_duel_creature_type != -1)
   {
     load_text("Menus.txt", "DECKFACES");
-    strcpy(unk_009266d0, g_text_lines[g_duel_creature_type - 1]);
+    strcpy(g_saved_player_name, g_text_lines[g_duel_creature_type - 1]);
   }
   else
   {
     load_text(global_ui_strings_filename, "OPPONENT");
-    strcpy(unk_009266d0, g_text_lines[0]);
+    strcpy(g_saved_player_name, g_text_lines[0]);
   }
 
   if (initialize_duel_engine_window() != 0)
@@ -1816,13 +1816,13 @@ int create_duel_child_windows(HWND parent_window)
   s.popup_style = 0x80c00000;
   g_duel_cue_card_window_hwnd =
       CreateWindowExA(0, CLASS_MAGIC_CUE_CARD, "", 0x80000000, 0, 0, 0, 0, parent_window, (HMENU)0, g_app_instance, (LPVOID)0);
-  DAT_007a7d74 =
+  g_duel_tooltip_window =
       (int)CreateWindowExA(0, CLASS_MAGIC_PLAYER_DIRECTIVE, "", 0x80000000, 0, 0, 100, 30, parent_window, (HMENU)0, g_app_instance, (LPVOID)0);
   g_duel_prompt_context_hwnd =
       CreateWindowExA(0, CLASS_MAGIC_TELL_USER, "", 0x80000001, 0, 0, 0, 0, parent_window, (HMENU)0, g_app_instance, (LPVOID)0);
-  DAT_008a8dec =
+  g_duel_opponent_battlefield_window =
       (int)CreateWindowExA(0, CLASS_MAGICGAME_PHASE_DISPLAY, "Phase Display", s.visible_style, 0, 0, 0, 0, parent_window, (HMENU)0x77, g_app_instance, (LPVOID)0);
-  DAT_008a8d78 =
+  g_duel_player_battlefield_window =
       (int)CreateWindowExA(0, CLASS_MAGICGAME_ATTACK_PHASE_DISPLAY, "Attack Phase Display", s.visible_style, 0, 0, 0, 0, parent_window, (HMENU)0x78, g_app_instance, (LPVOID)0);
   g_duel_card_preview_window_hwnd =
       CreateWindowExA(0, CLASS_MAGICGAME_FULL_CARD, "Full-size card", 0x90000000, 0, 0, 0, 0, parent_window, (HMENU)0, g_app_instance, (LPVOID)0);
@@ -1834,13 +1834,13 @@ int create_duel_child_windows(HWND parent_window)
       CreateWindowExA(0, CLASS_MAGICGAME_GRAVEYARD, "Oppon Graveyard", s.visible_style | 0x2000000, 0, 0, 0, 0, parent_window, (HMENU)0x6c, g_app_instance, (LPVOID)0);
   g_duel_player_graveyard_window_hwnd =
       CreateWindowExA(0, CLASS_MAGICGAME_GRAVEYARD, "Player Graveyard", s.visible_style | 0x2000000, 0, 0, 0, 0, parent_window, (HMENU)0x6e, g_app_instance, (LPVOID)0);
-  DAT_0092680c =
+  g_duel_status_window_hwnd =
       CreateWindowExA(0, CLASS_MAGICGAME_LIBRARY, "Oppon Library", s.visible_style, 0, 0, 0, 0, parent_window, (HMENU)0x6d, g_app_instance, (LPVOID)0);
-  DAT_0091ce30 =
+  g_duel_main_window_hwnd =
       CreateWindowExA(0, CLASS_MAGICGAME_LIBRARY, "Player Library", s.visible_style, 0, 0, 0, 0, parent_window, (HMENU)0x6f, g_app_instance, (LPVOID)0);
-  unk_00939344 =
+  g_duel_last_active_window =
       CreateWindowExA(0, CLASS_MAGICGAME_MANA_SUMMARY, "Oppon Mana", s.visible_style, 0, 0, 0, 0, parent_window, (HMENU)0x68, g_app_instance, (LPVOID)0);
-  unk_008ce534 =
+  g_duel_active_popup_window =
       CreateWindowExA(0, CLASS_MAGICGAME_MANA_SUMMARY, "Player Mana", s.visible_style, 0, 0, 0, 0, parent_window, (HMENU)0x69, g_app_instance, (LPVOID)0);
   g_duel_opponent_face_window_hwnd =
       CreateWindowExA(0, CLASS_MAGICGAME_FACE, "Oppon Face", 0x40000000, 0, 0, 0, 0, parent_window, (HMENU)0x7c, g_app_instance, (LPVOID)0);
@@ -1865,13 +1865,13 @@ int create_duel_child_windows(HWND parent_window)
   g_duel_phase_display_window_hwnd =
       CreateWindowExA(0, CLASS_MAGICGAME_SPELL_CHAIN, gs_window_title_spell_chain_008b42f0, s.popup_style, 0, 0, 0, 0, parent_window, (HMENU)0, g_app_instance, (LPVOID)0);
 
-  if (DAT_007a7d74 == 0 || g_duel_card_preview_window_hwnd == (HWND)0 ||
+  if (g_duel_tooltip_window == 0 || g_duel_card_preview_window_hwnd == (HWND)0 ||
       g_duel_life_status_window_2_hwnd == (HWND)0 || g_duel_life_status_window_1_hwnd == (HWND)0 ||
-      unk_00939344 == (HWND)0 || unk_008ce534 == (HWND)0 ||
-      g_phasebar_your_untap_window_hwnd == (HWND)0 || DAT_0092680c == (HWND)0 ||
-      g_duel_player_graveyard_window_hwnd == (HWND)0 || DAT_0091ce30 == (HWND)0 ||
+      g_duel_last_active_window == (HWND)0 || g_duel_active_popup_window == (HWND)0 ||
+      g_phasebar_your_untap_window_hwnd == (HWND)0 || g_duel_status_window_hwnd == (HWND)0 ||
+      g_duel_player_graveyard_window_hwnd == (HWND)0 || g_duel_main_window_hwnd == (HWND)0 ||
       global_opponent_chat_hwnd == (HWND)0 || g_duel_player_chat_window_hwnd == (HWND)0 ||
-      DAT_008a8dec == (HWND)0 || DAT_008a8d78 == (HWND)0 ||
+      g_duel_opponent_battlefield_window == (HWND)0 || g_duel_player_battlefield_window == (HWND)0 ||
       g_duel_attack_phase_window_hwnd == (HWND)0 || g_duel_phase_display_window_hwnd == (HWND)0 ||
       g_duel_player_battlefield_window_hwnd == (HWND)0 || g_duel_help_owner_hwnd == (HWND)0 ||
       g_duel_prompt_context_hwnd == (HWND)0 || g_duel_opponent_face_window_hwnd == (HWND)0 ||

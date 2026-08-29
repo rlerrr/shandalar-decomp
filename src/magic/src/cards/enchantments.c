@@ -355,11 +355,11 @@ int card_cyclone(int player, int card, event_t event)
   {
     if (g_current_phase == PHASE_UPKEEP &&
         (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 &&
-        player == unk_00742f60 &&
+        player == g_event_player &&
         player == g_current_player)
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -368,7 +368,7 @@ int card_cyclone(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && card == g_affected_card && player == g_affected_card_controller)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     add_special_counter(player, card);
   }
@@ -609,7 +609,7 @@ int card_drop_of_honey(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     if (g_current_phase == EVENT_UPKEEP_PHASE &&
-        g_current_player == unk_00742f60 &&
+        g_current_player == g_event_player &&
         player == g_current_player &&
         (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) == 0 &&
         real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
@@ -618,7 +618,7 @@ int card_drop_of_honey(int player, int card, event_t event)
                               -1, -1, -1, -1, 0, 0, 0) != 0)
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
-      unk_008b3270 |= 3;
+      g_activation_event_flags |= 3;
       return 1;
     }
     return 0;
@@ -627,7 +627,7 @@ int card_drop_of_honey(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && card == g_affected_card && player == g_affected_card_controller)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot |= 1;
-    unk_007a7c1c = 1;
+    g_upkeep_payment_completed = 1;
     g_event_result |= 1;
   }
 
@@ -991,7 +991,7 @@ int card_farmstead(int player, int card, event_t event)
       {
         if (player == g_other_player && (g_duel_network_flags & 2) == 0 && (internal_rand(100) < ((g_basiclandtypes_controlled[player][COLOR_WHITE] + 1) / 2) * 0x14 || g_life[g_other_player] < 5))
         {
-          unk_008b3270 |= 3;
+          g_activation_event_flags |= 3;
         }
         return 1;
       }
@@ -1183,7 +1183,7 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
 
         if (creature.card != -1 && artifact.card != -1 && best_creature_score < best_artifact_score)
         {
-          unk_008b3270 |= 3;
+          g_activation_event_flags |= 3;
           instance->targets[0] = artifact;
           instance->targets[1] = creature;
         }
@@ -1687,7 +1687,7 @@ int card_lich(int player, int card, event_t event)
 
     if (event == EVENT_RESOLVE_SPELL)
     {
-      unk_008b44d0[player] = 1;
+      g_lich_active[player] = 1;
     }
 
     if (event == EVENT_DEAL_DAMAGE && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id == g_damage_card_internal_card_id && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == -1 && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
@@ -2012,7 +2012,7 @@ int card_raging_river(int player, int card, event_t event)
         else
         {
           s.legacy_card =
-              create_legacy_effect(player, card, unk_008b3bd4, s.target.player, s.target.card);
+              create_legacy_effect(player, card, g_duel_generated_internal_card_id_2a, s.target.player, s.target.card);
           if (s.legacy_card != -1)
           {
             PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 2;
@@ -2030,7 +2030,7 @@ int card_raging_river(int player, int card, event_t event)
             ((unsigned char)PLAYER_CARD_INSTANCE(s.defender, s.current_card).blocking & 0x20) == 0)
         {
           s.legacy_card =
-              create_legacy_effect(player, card, unk_008b3bd4, s.defender, s.current_card);
+              create_legacy_effect(player, card, g_duel_generated_internal_card_id_2a, s.defender, s.current_card);
           if (s.legacy_card != -1)
           {
             PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 1;
@@ -2059,7 +2059,7 @@ int card_raging_river(int player, int card, event_t event)
     if (event == 0x7e)
     {
       s.legacy_card =
-          create_legacy_effect(player, card, unk_008b3bd4, g_trigger_cause_controller, g_trigger_cause);
+          create_legacy_effect(player, card, g_duel_generated_internal_card_id_2a, g_trigger_cause_controller, g_trigger_cause);
       load_text("promptsX1.txt", "RAGING_RIVER");
       sprintf(s.message, " %s\n %s", g_text_lines[0], g_text_lines[1]);
       if (do_dialog(player, player, card, -1, -1, s.message, 0) == 0)
@@ -2104,7 +2104,7 @@ int divide_creatures_into_two_piles(int who_is_being_divided, int player, int ca
   {
     if (is_in_play(who_is_being_divided, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).internal_card_id].type & TYPE_CREATURE) != 0 && (PLAYER_CARD_INSTANCE(who_is_being_divided, current_card).regen_status & 0x20) == 0)
     {
-      power_total[2] = create_legacy_effect(player, card, unk_008b3bd4, who_is_being_divided, current_card);
+      power_total[2] = create_legacy_effect(player, card, g_duel_generated_internal_card_id_2a, who_is_being_divided, current_card);
       if (power_total[2] != -1)
       {
         if (power_total[1 - bank] < power_total[bank])

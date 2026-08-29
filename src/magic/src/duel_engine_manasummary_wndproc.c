@@ -263,7 +263,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
     {
       s.hit_color = 6;
     }
-    s.cuecard_player = unk_008ce534 == hwnd ? 0 : 1;
+    s.cuecard_player = g_duel_active_popup_window == hwnd ? 0 : 1;
     if (s.hit_color == 0 || s.hit_color == 1 || s.hit_color == 5 ||
         s.hit_color == 3 || s.hit_color == 4 || s.hit_color == 2 || s.hit_color == 6)
     {
@@ -291,7 +291,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
 
   case 0x432:
     s.cached_mana_pool = (mana_summary_values_t *)GetWindowLongA(hwnd, 0);
-    get_displayed_mana_pool(&s.updated_mana_pool, (unsigned int)(unk_008ce534 != hwnd));
+    get_displayed_mana_pool(&s.updated_mana_pool, (unsigned int)(g_duel_active_popup_window != hwnd));
     if (s.cached_mana_pool->colorless != s.updated_mana_pool.colorless ||
         s.cached_mana_pool->black != s.updated_mana_pool.black ||
         s.cached_mana_pool->blue != s.updated_mana_pool.blue ||
@@ -318,9 +318,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
       s.command_id = (unsigned int)wparam & 0xffff;
       if (100 < s.command_id)
       {
-        DAT_00715fa4 = (int)(unk_008ce534 != hwnd);
-        DAT_0072c8e0 = s.command_id - 0x65;
-        unk_00715fb0 = 0;
+        g_recorded_action_controller = (int)(g_duel_active_popup_window != hwnd);
+        g_recorded_action_phase = s.command_id - 0x65;
+        g_recorded_action_player = 0;
         g_mana_summary_menu_packet[0] = -3;
         g_mana_summary_menu_packet[1] = -1;
         g_mana_summary_menu_packet[2] = -1;
@@ -359,26 +359,26 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
     {
       Sleep(GetDoubleClickTime());
       s.peek_result = PeekMessageA(&s.peek_msg, hwnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, 0);
-      get_displayed_mana_pool((mana_summary_values_t *)s.clicked_mana_pool, (unsigned int)(unk_008ce534 != hwnd));
+      get_displayed_mana_pool((mana_summary_values_t *)s.clicked_mana_pool, (unsigned int)(g_duel_active_popup_window != hwnd));
       GetClientRect(hwnd, &s.click_client_rect);
       s.click_x = lparam & 0xffff;
       s.click_y = HIWORD(lparam);
       s.unused_row_height = s.unused_row_bottom = s.click_client_rect.bottom / 6;
-      DAT_00715fa4 = unk_008ce534 == hwnd ? 0 : 1;
-      DAT_0072c8e0 = -1;
+      g_recorded_action_controller = g_duel_active_popup_window == hwnd ? 0 : 1;
+      g_recorded_action_phase = -1;
       for (s.click_color = 0; s.click_color < 7; s.click_color++)
       {
         get_mana_pool_text_rect(&s.click_rect, hwnd, s.click_color);
         if (PtInRect(&s.click_rect, *(POINT *)&s.click_x) != 0 && 0 < s.clicked_mana_pool[s.click_color])
         {
-          DAT_0072c8e0 = s.click_color;
+          g_recorded_action_phase = s.click_color;
         }
       }
-      if (DAT_0072c8e0 != -1 && g_duel_modal_action_active != 0 &&
-          (g_duel_action_request_copy.player == -1 || g_duel_action_request_copy.player == DAT_00715fa4) &&
+      if (g_recorded_action_phase != -1 && g_duel_modal_action_active != 0 &&
+          (g_duel_action_request_copy.player == -1 || g_duel_action_request_copy.player == g_recorded_action_controller) &&
           (g_duel_action_request_copy.zone_flags == -1 || (g_duel_action_request_copy.zone_flags & 1) != 0))
       {
-        unk_00715fb0 = s.peek_result;
+        g_recorded_action_player = s.peek_result;
         g_mana_summary_click_packet[0] = -3;
         g_mana_summary_click_packet[1] = -1;
         g_mana_summary_click_packet[2] = -1;
@@ -389,7 +389,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
 
   case WM_PAINT:
     s.cached_mana_pool = (mana_summary_values_t *)GetWindowLongA(hwnd, 0);
-    get_displayed_mana_pool(&s.paint_mana_pool, (unsigned int)(unk_008ce534 != hwnd));
+    get_displayed_mana_pool(&s.paint_mana_pool, (unsigned int)(g_duel_active_popup_window != hwnd));
     if (s.cached_mana_pool->colorless != s.paint_mana_pool.colorless ||
         s.cached_mana_pool->black != s.paint_mana_pool.black ||
         s.cached_mana_pool->blue != s.paint_mana_pool.blue ||
@@ -503,14 +503,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
       }
     }
     if (g_duel_modal_action_active != 0 && s.has_cuecard &&
-        (g_duel_action_request_copy.player == -1 || g_duel_action_request_copy.player == DAT_00715fa4) &&
+        (g_duel_action_request_copy.player == -1 || g_duel_action_request_copy.player == g_recorded_action_controller) &&
         (g_duel_action_request_copy.type_flags == -1 ||
          g_duel_action_request_copy.type_flags == 0 ||
          g_duel_action_request_copy.type_flags == 1) &&
         (g_duel_action_request_copy.color_flags == -1 ||
          g_duel_action_request_copy.color_flags == 0 ||
-         g_duel_action_request_copy.color_flags == DAT_0072c8e0) &&
-        (g_duel_action_request_copy.owner == -1 || g_duel_action_request_copy.owner == DAT_00715fa4) &&
+         g_duel_action_request_copy.color_flags == g_recorded_action_phase) &&
+        (g_duel_action_request_copy.owner == -1 || g_duel_action_request_copy.owner == g_recorded_action_controller) &&
         (g_duel_action_request_copy.zone_flags == -1 || (g_duel_action_request_copy.zone_flags & 1) != 0))
     {
       GetCursorPos(&s.cursor_point);
@@ -636,7 +636,7 @@ void get_mana_pool_text_rect(LPRECT rect, HWND hwnd, int mana_color)
     int top;
   } s;
 
-  get_displayed_mana_pool(&s.mana_pool, (unsigned int)(hwnd != unk_008ce534));
+  get_displayed_mana_pool(&s.mana_pool, (unsigned int)(hwnd != g_duel_active_popup_window));
   GetClientRect(hwnd, &s.client_rect);
   s.top_margin = (s.client_rect.bottom * 5) / 100;
   s.row_height = (s.client_rect.bottom * 0x91) / 1000;

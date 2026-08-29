@@ -8,9 +8,9 @@ option casemap:none
 
 EXTERN global_pcxw_image_width:DWORD
 EXTERN global_pcxw_image_height:DWORD
-EXTERN rpbits_stream_ptr:DWORD        ; DAT_100f3394
+EXTERN rpbits_stream_ptr:DWORD        ; g_rpbits_stream_ptr
 EXTERN rpbits_stream_end:DWORD        ; PTR_DAT_1002252c
-EXTERN rpbits_stream_refill:DWORD     ; DAT_100f35a0
+EXTERN rpbits_stream_refill:DWORD     ; g_rpbits_stream_refill
 EXTERN RpBits_ApplyPalette:PROC
 
 ; ============================================================
@@ -19,27 +19,27 @@ EXTERN RpBits_ApplyPalette:PROC
 
 .data
 
-decoder_stack_ptr       dd 0          ; DAT_10026554
-remaining_count         dd 0          ; DAT_10026558
-code_mask               dd 0          ; DAT_10026560
-saved_edx               dd 0          ; DAT_10026564
-bit_buffer              dd 0          ; DAT_10026568
+decoder_stack_ptr       dd 0          ; g_rpbits_decoder_stack_ptr
+remaining_count         dd 0          ; g_rpbits_remaining_count
+code_mask               dd 0          ; g_rpbits_code_mask
+saved_edx               dd 0          ; g_rpbits_saved_edx
+bit_buffer              dd 0          ; g_rpbits_bit_buffer
 
-repeat_count            db 0          ; DAT_1002655c
-last_literal            db 0          ; DAT_1002655d
-code_bits               db 0          ; DAT_1002655e
-max_code_bits           db 0          ; DAT_1002655f
-bit_count               db 0          ; DAT_1002656c
-packed_mode             db 0          ; DAT_1002656d
+repeat_count            db 0          ; g_rpbits_repeat_count
+last_literal            db 0          ; g_rpbits_last_literal
+code_bits               db 0          ; g_rpbits_code_bits
+max_code_bits           db 0          ; g_rpbits_max_code_bits
+bit_count               db 0          ; g_rpbits_bit_count
+packed_mode             db 0          ; g_rpbits_packed_mode
 
-last_node_index         dd 0          ; DAT_1002656e
-last_symbol             db 0          ; DAT_10026572
+last_node_index         dd 0          ; g_rpbits_last_node_index
+last_symbol             db 0          ; g_rpbits_last_symbol
 
 align 4
-decoder_table           db 2048*3 dup (0)  ; DAT_10022548
+decoder_table           db 2048*3 dup (0)  ; g_rpbits_decoder_table
 
 ; Dword written by RpBits_ReadTables header path (address 0x10026550 in original).
-DAT_10026550            dd 0
+g_rpbits_stream_word            dd 0
 
 ; Dedicated decoder stack space. InitStream loads decoder_stack_ptr with the
 ; address of decoder_stack_sentinel, and DecodeRun swaps ESP with decoder_stack_ptr.
@@ -193,7 +193,7 @@ ReadHdr1:
     mov eax, 0
     lodsw
     mov dword ptr [rpbits_stream_ptr], esi
-    mov dword ptr [DAT_10026550], eax
+    mov dword ptr [g_rpbits_stream_word], eax
 
     mov esi, dword ptr [rpbits_stream_ptr]
     cmp esi, dword ptr [rpbits_stream_end]

@@ -109,7 +109,7 @@ int card_gem_bazaar(int player, int card, event_t event)
     }
     else
     {
-      (global_card_instances[player])[card].mana_color = (char)DAT_00775d3c;
+      (global_card_instances[player])[card].mana_color = (char)g_ai_land_score_modifier;
     }
 
     (global_card_instances[player])[card].info_slot = (global_card_instances[player])[card].mana_color;
@@ -176,7 +176,7 @@ int card_oasis(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE && (g_land_can_be_played & 4) != 0)
   {
-    if (unk_00938e2c != 0)
+    if (g_required_mana_color_mask != 0)
     {
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       g_spell_fizzled = 1;
@@ -275,7 +275,7 @@ int card_oasis(int player, int card, event_t event)
   if (event == EVENT_CHECK_PUMP &&
       (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
-    ++unk_007a7d88[player];
+    ++g_global_toughness_bonus[player];
   }
 
   return 0;
@@ -309,7 +309,7 @@ int card_strip_mine(int player, int card, event_t event)
     {
       load_text("prompts.txt", "STRIPMINE");
     }
-    if (DAT_007aadf0 != 0 && unk_00938e2c == 0)
+    if (g_produced_mana_color_valid != 0 && g_required_mana_color_mask == 0)
     {
       if (player == g_active_player || (g_duel_network_flags & 2) != 0)
       {
@@ -449,11 +449,11 @@ int card_library_of_alexandria(int player, int card, event_t event)
       s.default_action = 0;
     }
 
-    if (DAT_007aadf0 == 0)
+    if (g_produced_mana_color_valid == 0)
     {
       s.action = 0;
     }
-    else if (unk_00938e2c == 0)
+    else if (g_required_mana_color_mask == 0)
     {
       if (player == g_active_player || (g_duel_network_flags & 2) != 0)
       {
@@ -551,9 +551,9 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
          g_duel_network_state == 0 &&
          has_mana(player, COLOR_COLORLESS, 1)))
     {
-      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && unk_00939330 > 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_ai_speculation_depth > 0)
       {
-        unk_008b3270 |= 3;
+        g_activation_event_flags |= 3;
       }
       return 1;
     }
@@ -650,7 +650,7 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
       sprintf(s.dialog + strlen(s.dialog), " %s", g_text_lines[3]);
     }
 
-    if (unk_00938e2c != 0)
+    if (g_required_mana_color_mask != 0)
     {
       s.choice = 0;
     }
@@ -723,9 +723,9 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
       g_spell_fizzled = 1;
     }
 
-    if (unk_00939330 > 0)
+    if (g_ai_speculation_depth > 0)
     {
-      --unk_00939330;
+      --g_ai_speculation_depth;
     }
     return 0;
   }
@@ -846,9 +846,9 @@ int card_mishra_s_factory(int player, int card, event_t event)
          ((player != g_other_player || (g_duel_network_flags & 2) != 0) ||
           g_current_phase < PHASE_DECLARE_BLOCKERS)))
     {
-      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && unk_00939330 > 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_ai_speculation_depth > 0)
       {
-        unk_008b3270 |= 3;
+        g_activation_event_flags |= 3;
       }
       return 1;
     }
@@ -949,7 +949,7 @@ int card_mishra_s_factory(int player, int card, event_t event)
       sprintf(s.dialog + strlen(s.dialog), " %s", g_text_lines[4]);
     }
 
-    if (unk_00938e2c != 0)
+    if (g_required_mana_color_mask != 0)
     {
       s.choice = 0;
     }
@@ -1022,9 +1022,9 @@ int card_mishra_s_factory(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    if (unk_00939330 > 0)
+    if (g_ai_speculation_depth > 0)
     {
-      --unk_00939330;
+      --g_ai_speculation_depth;
     }
     return s.result;
   }
@@ -1194,9 +1194,9 @@ int card_assembly_worker(int player, int card, event_t event)
          g_duel_network_state == 0 &&
          has_mana(player, COLOR_ANY, 1)))
     {
-      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && unk_00939330 > 0)
+      if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_ai_speculation_depth > 0)
       {
-        unk_008b3270 |= 3;
+        g_activation_event_flags |= 3;
       }
       return 1;
     }
@@ -1293,7 +1293,7 @@ int card_assembly_worker(int player, int card, event_t event)
       sprintf(s.dialog + strlen(s.dialog), " %s", g_text_lines[4]);
     }
 
-    if (unk_00938e2c != 0)
+    if (g_required_mana_color_mask != 0)
     {
       s.choice = 0;
     }
@@ -1366,9 +1366,9 @@ int card_assembly_worker(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    if (unk_00939330 > 0)
+    if (g_ai_speculation_depth > 0)
     {
-      --unk_00939330;
+      --g_ai_speculation_depth;
     }
     return s.result;
   }

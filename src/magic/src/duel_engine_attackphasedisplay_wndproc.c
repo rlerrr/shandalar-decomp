@@ -19,7 +19,7 @@
 #define ATTACK_PHASE_DISPLAY_BITMAP_WIDTH 0x2f8
 
 #define ATTACK_PHASE_DISPLAY_PIC g_magicgame_attack_phase_display_pic
-#define ATTACK_WINDOW_TITLE_HEIGHT DAT_0069c654
+#define ATTACK_WINDOW_TITLE_HEIGHT g_attack_ui_card_spacing
 
 #define ATTACK_MAX_CARDS_PER_GROUP 50
 
@@ -45,23 +45,23 @@ typedef struct msvc_bitmap
 
 // GLOBAL: MAGIC 0x00571d20
 // GLOBAL: SHANDALAR 0x00585928
-int DAT_00571d20 = -1;
+int g_attack_phase_display_selection = -1;
 
 // GLOBAL: MAGIC 0x0069c618
 // GLOBAL: SHANDALAR 0x005a8fe0
-int DAT_0069c618;
+int g_attack_phase_display_state;
 
 // GLOBAL: MAGIC 0x0069c69c
 // GLOBAL: SHANDALAR 0x005a9064
-int DAT_0069c69c;
+int g_attack_phase_display_width;
 
 // GLOBAL: MAGIC 0x0069c6ac
 // GLOBAL: SHANDALAR 0x005a9074
-int DAT_0069c6ac;
+int g_attack_phase_display_height;
 
 // GLOBAL: MAGIC 0x0069c6b0
 // GLOBAL: SHANDALAR 0x005a9078
-int DAT_0069c6b0;
+int g_attack_phase_display_flags;
 
 // GLOBAL: MAGIC 0x00708828
 // GLOBAL: SHANDALAR 0x00669660
@@ -71,15 +71,15 @@ int g_attack_phase_display_click_packet[3];
 // GLOBAL: SHANDALAR 0x00669670
 int g_attack_phase_display_menu_packet[3];
 
-extern HWND DAT_0069c620;
-extern char DAT_0069c628[0x1c];
-extern HBITMAP DAT_0069c644;
-extern int DAT_0069c654;
-extern int DAT_0069c6c0;
-extern HWND DAT_008a8d78;
-extern HWND DAT_008a8dec;
-extern HWND DAT_0094ca30;
-extern int DAT_00939508;
+extern HWND g_attack_ui_tooltip_window;
+extern char g_attack_ui_label_text[0x1c];
+extern HBITMAP g_attack_ui_button_bitmap;
+extern int g_attack_ui_card_spacing;
+extern int g_attack_ui_layout_flags;
+extern HWND g_duel_player_battlefield_window;
+extern HWND g_duel_opponent_battlefield_window;
+extern HWND g_attack_phase_window_hwnd;
+extern int g_duel_selected_card_window;
 extern char global_base_directory[];
 extern char global_duelart_path[];
 extern int g_duel_modal_action_active;
@@ -129,7 +129,7 @@ int debug_draw_attack_phase_message(char *text, COLORREF color, HBRUSH brush)
   } s;
 
   SetRect(&s.rect, 0, 0x23f, 0x8c, 0x26c);
-  if (DAT_00571d20 != -1)
+  if (g_attack_phase_display_selection != -1)
   {
 
     s.dc = CreateDCA("DISPLAY", (LPCSTR)0, (LPCSTR)0, (DEVMODEA *)0);
@@ -138,7 +138,7 @@ int debug_draw_attack_phase_message(char *text, COLORREF color, HBRUSH brush)
     FillRect(s.dc, &s.rect, brush);
     TextOutA(s.dc, s.rect.left + 5, s.rect.top + 5, text, strlen(text));
     DeleteDC(s.dc);
-    Sleep(DAT_00571d20);
+    Sleep(g_attack_phase_display_selection);
   }
   return 1;
 }
@@ -493,10 +493,10 @@ void layout_attack_phase_window(HWND hwnd)
       is_attack_phase_window_enabled() == 0 ||
       (s.current_player == 1 && s.group_count == 0 && (g_duel_network_flags & 2) == 0))
   {
-    ShowWindow(DAT_008a8d78, SW_HIDE);
-    ShowWindow(DAT_008a8dec, SW_SHOW);
+    ShowWindow(g_duel_player_battlefield_window, SW_HIDE);
+    ShowWindow(g_duel_opponent_battlefield_window, SW_SHOW);
     ShowWindow(hwnd, SW_HIDE);
-    ShowWindow(DAT_0069c620, SW_HIDE);
+    ShowWindow(g_attack_ui_tooltip_window, SW_HIDE);
     UpdateWindow(g_duel_help_owner_hwnd);
     SendMessageA(s.scrollbar_hwnd, 0x468, 0, 0);
     SendMessageA(g_duel_attack_phase_window_hwnd, 0x40c, 0, 0);
@@ -510,14 +510,14 @@ void layout_attack_phase_window(HWND hwnd)
   }
 
   debug_draw_attack_phase_message("LayoutAttackCards", 0xff00ff, GetStockObject(LTGRAY_BRUSH));
-  DAT_0069c654 = 10;
-  DAT_0069c6c0 = 10;
-  DAT_0069c69c = (g_showlist_smallcard_width * 0xf) / 100;
-  DAT_0069c618 = 5;
+  g_attack_ui_card_spacing = 10;
+  g_attack_ui_layout_flags = 10;
+  g_attack_phase_display_width = (g_showlist_smallcard_width * 0xf) / 100;
+  g_attack_phase_display_state = 5;
   s.minimum_rows = 2;
-  if (DAT_0069c644 != (HBITMAP)0)
+  if (g_attack_ui_button_bitmap != (HBITMAP)0)
   {
-    GetObjectA(DAT_0069c644, sizeof(s.bitmap), &s.bitmap);
+    GetObjectA(g_attack_ui_button_bitmap, sizeof(s.bitmap), &s.bitmap);
     if (GetSystemMetrics(SM_CYHSCROLL) * 2 < s.bitmap.bmHeight / 2)
       s.scrollbar_height = s.bitmap.bmHeight / 2;
     else
@@ -570,36 +570,36 @@ void layout_attack_phase_window(HWND hwnd)
     s.visible_attacker_rows = s.visible_blocker_descendants;
   }
 
-  DAT_0069c6ac = (s.visible_blocker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_blocker_rows) *
-                     DAT_00939508 +
-                 DAT_0069c6c0;
+  g_attack_phase_display_height = (s.visible_blocker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_blocker_rows) *
+                     g_duel_selected_card_window +
+                 g_attack_ui_layout_flags;
 
-  DAT_0069c6b0 = (s.visible_attacker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_attacker_rows) *
-                     DAT_00939508 +
+  g_attack_phase_display_flags = (s.visible_attacker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_attacker_rows) *
+                     g_duel_selected_card_window +
                  g_showlist_smallcard_height +
-                 DAT_0069c6ac + s.scrollbar_height + DAT_0069c618 + DAT_0069c618;
+                 g_attack_phase_display_height + s.scrollbar_height + g_attack_phase_display_state + g_attack_phase_display_state;
 
   s.attacker_spacing = g_showlist_smallcard_width / 3;
   s.blocker_spacing = g_showlist_smallcard_width / 3;
-  SetWindowPos(s.scrollbar_hwnd, (HWND)0, 0, g_showlist_smallcard_height + DAT_0069c6ac + DAT_0069c618,
+  SetWindowPos(s.scrollbar_hwnd, (HWND)0, 0, g_showlist_smallcard_height + g_attack_phase_display_height + g_attack_phase_display_state,
                0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
   s.card_x = ATTACK_WINDOW_TITLE_HEIGHT - s.scroll_pos;
   s.content_rect.left = s.card_x;
   s.content_rect.right = s.card_x;
-  s.content_rect.top = DAT_0069c6ac -
+  s.content_rect.top = g_attack_phase_display_height -
                        (s.visible_blocker_rows <= s.minimum_rows ? s.minimum_rows : s.visible_blocker_rows) *
-                           DAT_00939508;
-  s.content_rect.bottom = g_showlist_smallcard_height + DAT_0069c6b0;
+                           g_duel_selected_card_window;
+  s.content_rect.bottom = g_showlist_smallcard_height + g_attack_phase_display_flags;
   if (s.current_player == 0)
   {
-    s.attacker_y = DAT_0069c6b0;
-    s.blocker_y = DAT_0069c6ac;
+    s.attacker_y = g_attack_phase_display_flags;
+    s.blocker_y = g_attack_phase_display_height;
   }
   else
   {
-    s.attacker_y = DAT_0069c6ac;
-    s.blocker_y = DAT_0069c6b0;
+    s.attacker_y = g_attack_phase_display_height;
+    s.blocker_y = g_attack_phase_display_flags;
   }
 
   for (s.layout_group_index = 0; s.layout_group_index < s.group_count; s.layout_group_index++)
@@ -637,15 +637,15 @@ void layout_attack_phase_window(HWND hwnd)
       }
     }
     s.card_x = (s.blocker_x <= s.attacker_x ? s.attacker_x : s.blocker_x) +
-               g_showlist_smallcard_width + DAT_0069c69c;
+               g_showlist_smallcard_width + g_attack_phase_display_width;
   }
 #undef ATTACK_GROUPS
 
   s.scratch_padding3 = g_showlist_smallcard_width / 3;
   s.content_rect.left -= ATTACK_WINDOW_TITLE_HEIGHT;
   s.content_rect.right += ATTACK_WINDOW_TITLE_HEIGHT;
-  s.content_rect.top -= DAT_0069c6c0;
-  s.content_rect.bottom += DAT_0069c6c0;
+  s.content_rect.top -= g_attack_ui_layout_flags;
+  s.content_rect.bottom += g_attack_ui_layout_flags;
   s.width = g_showlist_smallcard_width + ATTACK_WINDOW_TITLE_HEIGHT * 2;
   if (s.content_rect.right - s.content_rect.left < s.width)
     s.content_rect.right = s.content_rect.left + s.width;
@@ -661,7 +661,7 @@ void layout_attack_phase_window(HWND hwnd)
   if (s.adjusted_rect.right - s.adjusted_rect.left <= s.hidden_count)
     s.hidden_count = s.adjusted_rect.right - s.adjusted_rect.left;
 
-  MoveWindow(DAT_0094ca30, s.battlefield_rect.left, s.width, s.scratch_padding3,
+  MoveWindow(g_attack_phase_window_hwnd, s.battlefield_rect.left, s.width, s.scratch_padding3,
              s.adjusted_rect.bottom - s.adjusted_rect.top, 1);
   MoveWindow(hwnd, s.scratch_padding3 + s.battlefield_rect.left, s.width, s.hidden_count,
              s.adjusted_rect.bottom - s.adjusted_rect.top, 1);
@@ -689,15 +689,15 @@ void layout_attack_phase_window(HWND hwnd)
     SendMessageA(hwnd, WM_HSCROLL, MAKELONG(SB_THUMBPOSITION, s.scroll_pos), (LPARAM)s.scrollbar_hwnd);
   }
 
-  if (IsWindowVisible(hwnd) == 0 && IsWindowVisible(DAT_0069c620) == 0)
+  if (IsWindowVisible(hwnd) == 0 && IsWindowVisible(g_attack_ui_tooltip_window) == 0)
   {
     set_attack_phase_window_title(hwnd);
-    ShowWindow(DAT_008a8d78, SW_SHOW);
-    ShowWindow(DAT_008a8dec, SW_HIDE);
+    ShowWindow(g_duel_player_battlefield_window, SW_SHOW);
+    ShowWindow(g_duel_opponent_battlefield_window, SW_HIDE);
     ShowWindow(hwnd, SW_SHOW);
-    UpdateWindow(DAT_0094ca30);
+    UpdateWindow(g_attack_phase_window_hwnd);
     UpdateWindow(hwnd);
-    UpdateWindow(DAT_008a8d78);
+    UpdateWindow(g_duel_player_battlefield_window);
     restack_duel_child_windows();
   }
   UpdateWindow(hwnd);
@@ -878,7 +878,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
         get_current_duel_selection(&s.stop_player, (int *)0);
         g_stop_phase_player = s.stop_player;
         g_stop_phase = s.stop_phase_code;
-        unk_00715fb0 = 0;
+        g_recorded_action_player = 0;
         g_attack_phase_display_menu_packet[0] = -2;
         g_attack_phase_display_menu_packet[1] = -1;
         g_attack_phase_display_menu_packet[2] = -1;
@@ -958,7 +958,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
       get_current_duel_selection(&s.click_player, (int *)0);
       g_stop_phase_player = s.click_player;
       g_stop_phase = s.click_phase;
-      unk_00715fb0 = s.peek_result;
+      g_recorded_action_player = s.peek_result;
       g_attack_phase_display_click_packet[0] = -2;
       g_attack_phase_display_click_packet[1] = -1;
       g_attack_phase_display_click_packet[2] = -1;

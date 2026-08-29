@@ -14,7 +14,7 @@ unsigned int get_current_stack_action(void)
     return 0xffffffffU;
   }
 
-  return (unsigned int)DAT_0093917c[g_stack_size];
+  return (unsigned int)g_duel_state_table_0093917c[g_stack_size];
 }
 
 // FUNCTION: MAGIC 0x00444c43

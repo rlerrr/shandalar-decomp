@@ -229,11 +229,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
     s.player = GetWindowLongA(hwnd, g_full_card_player_window_long_offset);
     s.card = GetWindowLongA(hwnd, g_full_card_card_window_long_offset);
     s.cached_counters = GetWindowLongA(hwnd, g_full_card_counters_window_long_offset);
-    if (s.window_card_id == (HWND)unk_007a7d64)
+    if (s.window_card_id == (HWND)g_damage_display_internal_card_id)
     {
       s.counters = get_displayed_card_special_counters(s.player, s.card);
     }
-    else if (s.window_card_id == (HWND)unk_00789734)
+    else if (s.window_card_id == (HWND)g_effect_display_internal_card_id)
     {
       get_displayed_card_counter_power_toughness(s.player, s.card, (int *)&s.displayed_power, &s.displayed_toughness);
       s.counters = MAKELONG(s.displayed_power, s.displayed_toughness);
@@ -277,11 +277,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
   case 0x401:
     s.window_card_id = (HWND)wparam;
     s.update_card = (int *)lparam;
-    if ((s.window_card_id == (HWND)unk_007a7d64 ||
-         (HWND)unk_00789b80 == s.window_card_id ||
-         (HWND)unk_008cf1ac == s.window_card_id ||
-         s.window_card_id == (HWND)unk_00789734 ||
-         s.window_card_id == (HWND)unk_008a8de8) &&
+    if ((s.window_card_id == (HWND)g_damage_display_internal_card_id ||
+         (HWND)g_hunting_display_internal_card_id == s.window_card_id ||
+         (HWND)g_multiblock_display_internal_card_id == s.window_card_id ||
+         s.window_card_id == (HWND)g_effect_display_internal_card_id ||
+         s.window_card_id == (HWND)g_legacy_display_internal_card_id) &&
         (s.update_card == (int *)0 || s.update_card[0] == -1 || s.update_card[1] == -1))
     {
       return 0;
@@ -361,7 +361,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
 
     case 100:
       s.help_context = GetWindowLongA(hwnd, g_full_card_card_id_window_long_offset);
-      if (s.help_context == (DWORD)unk_009266ac)
+      if (s.help_context == (DWORD)g_card_back_display_internal_card_id)
       {
         s.help_context = 0xc1b;
       }
@@ -498,7 +498,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
     s.cached_counters = GetWindowLongA(hwnd, g_full_card_counters_window_long_offset);
     s.cached_color = GetWindowLongA(hwnd, g_full_card_color_window_long_offset);
     if ((s.window_card_id == (HWND)-1 ||
-         s.window_card_id == (HWND)unk_009266ac ||
+         s.window_card_id == (HWND)g_card_back_display_internal_card_id ||
          global_available_slots - 1 < (int)s.window_card_id) &&
         g_duel_interface_options.layout == 2 &&
         g_duel_card_preview_window_hwnd == hwnd)
@@ -507,11 +507,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
       return DefWindowProcA(hwnd, msg, wparam, lparam);
     }
 
-    if (s.window_card_id == (HWND)unk_007a7d64)
+    if (s.window_card_id == (HWND)g_damage_display_internal_card_id)
     {
       s.paint_counters = get_displayed_card_special_counters(s.player, s.card);
     }
-    else if (s.window_card_id == (HWND)unk_00789734)
+    else if (s.window_card_id == (HWND)g_effect_display_internal_card_id)
     {
       get_displayed_card_counter_power_toughness(s.player, s.card, (int *)&s.paint_power, &s.paint_toughness);
       s.paint_counters = MAKELONG(s.paint_power, s.paint_toughness);
@@ -558,18 +558,18 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
         BitBlt(s.paint_dc, 0, 0, s.client_rect.right, s.client_rect.bottom,
                g_shared_offscreen_dc, 0, 0, SRCCOPY);
       }
-      else if ((int)s.window_card_id < 0 || s.window_card_id == (HWND)unk_009266ac)
+      else if ((int)s.window_card_id < 0 || s.window_card_id == (HWND)g_card_back_display_internal_card_id)
       {
         FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(4));
         DrawCardBack(g_shared_offscreen_dc, &s.client_rect);
         BitBlt(s.paint_dc, 0, 0, s.client_rect.right, s.client_rect.bottom,
                g_shared_offscreen_dc, 0, 0, SRCCOPY);
       }
-      else if (s.window_card_id == (HWND)unk_007a7d64 ||
-               (HWND)unk_00789b80 == s.window_card_id ||
-               (HWND)unk_008cf1ac == s.window_card_id ||
-               s.window_card_id == (HWND)unk_00789734 ||
-               s.window_card_id == (HWND)unk_008a8de8)
+      else if (s.window_card_id == (HWND)g_damage_display_internal_card_id ||
+               (HWND)g_hunting_display_internal_card_id == s.window_card_id ||
+               (HWND)g_multiblock_display_internal_card_id == s.window_card_id ||
+               s.window_card_id == (HWND)g_effect_display_internal_card_id ||
+               s.window_card_id == (HWND)g_legacy_display_internal_card_id)
       {
         FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(4));
         if (get_displayed_card_id(s.player, s.card) != -1)
@@ -583,7 +583,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_FullCardClass(HWND hwnd, UINT msg, WPARAM wpa
         BitBlt(s.paint_dc, 0, 0, s.client_rect.right, s.client_rect.bottom,
                g_shared_offscreen_dc, 0, 0, SRCCOPY);
       }
-      else if (s.window_card_id == (HWND)unk_0092666c)
+      else if (s.window_card_id == (HWND)g_activation_display_internal_card_id)
       {
         FillRect(g_shared_offscreen_dc, &s.client_rect, GetStockObject(4));
         if (get_displayed_card_id(s.player, s.card) != -1)

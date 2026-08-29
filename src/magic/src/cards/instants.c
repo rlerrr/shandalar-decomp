@@ -137,7 +137,7 @@ int card_mana_short(int player, int card, event_t event)
 // FUNCTION: MAGIC 0x004f6311
 int tap_mana_producing_land_callback(int player, int card, int internal_card_id)
 {
-  unk_00938e2c = 1;
+  g_required_mana_color_mask = 1;
   g_produced_mana_color = -1;
   if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0 && (global_cards_data[internal_card_id].extra_ability & 0x1000) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0)
   {
@@ -147,7 +147,7 @@ int tap_mana_producing_land_callback(int player, int card, int internal_card_id)
       dispatch_event(player, card, EVENT_TAP_CARD);
     }
   }
-  unk_00938e2c = 0;
+  g_required_mana_color_mask = 0;
   return 0;
 }
 
@@ -162,7 +162,7 @@ int card_siren_s_call(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    create_legacy_effect(player, card, unk_00789314, -1, -1);
+    create_legacy_effect(player, card, g_duel_generated_internal_card_id_18, -1, -1);
     kill_card(player, card, KILL_DESTROY);
   }
 
@@ -797,7 +797,7 @@ int card_marsh_gas(int player, int card, event_t event)
         {
           legacy_card = create_legacy_effect(player,
                                              card,
-                                             DAT_008a9198,
+                                             g_duel_generated_internal_card_id_07,
                                              current_player,
                                              current_card);
           if (legacy_card != -1)
@@ -984,7 +984,7 @@ int card_berserk(int player, int card, event_t event)
     else
     {
       effect_card =
-          create_legacy_effect(player, card, unk_008b49c4, instance->targets[0].player, instance->targets[0].card);
+          create_legacy_effect(player, card, g_duel_generated_internal_card_id_0f, instance->targets[0].player, instance->targets[0].card);
       if (effect_card != -1)
       {
         PLAYER_CARD_INSTANCE(player, effect_card).info_slot = 0x80;
@@ -1212,7 +1212,7 @@ int card_fog(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    create_legacy_effect(player, card, unk_007894a0, -1, -1);
+    create_legacy_effect(player, card, g_duel_generated_internal_card_id_0d, -1, -1);
     kill_card(player, card, KILL_BURY);
   }
 
@@ -1636,7 +1636,7 @@ int card_jump(int player, int card, event_t event)
     }
     else
     {
-      effect_card = create_legacy_effect(player, card, unk_00896534, target_player, target_card);
+      effect_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_03, target_player, target_card);
       if (effect_card != -1)
       {
         PLAYER_CARD_INSTANCE(player, effect_card).regen_status = 0;
@@ -1681,8 +1681,8 @@ int card_morale(int player, int card, event_t event)
     if (has_mana(player, COLOR_WHITE, 2) != 0 &&
         has_mana(player, COLOR_ANY, 3) != 0)
     {
-      ++unk_007a7d80[player];
-      ++unk_007a7d88[player];
+      ++g_global_power_bonus[player];
+      ++g_global_toughness_bonus[player];
     }
   }
 
@@ -1741,7 +1741,7 @@ int card_piety(int player, int card, event_t event)
     if (has_mana(player, COLOR_WHITE, 1) != 0 &&
         has_mana(player, COLOR_ANY, 2) != 0)
     {
-      unk_007a7d88[player] += 3;
+      g_global_toughness_bonus[player] += 3;
     }
   }
 
@@ -2077,8 +2077,8 @@ int card_giant_growth(int player, int card, event_t event)
 
   if ((event == 0x3b) && has_mana(player, 3, 1) != 0)
   {
-    unk_007a7d80[player] += 3;
-    unk_007a7d88[player] += 3;
+    g_global_power_bonus[player] += 3;
+    g_global_toughness_bonus[player] += 3;
   }
 
   return 0;
@@ -3138,7 +3138,7 @@ int card_spell_blast(int player, int card, event_t event)
       return 0;
     }
 
-    unk_0091bfb4 = 1;
+    g_adventure_world_state = 1;
     return 99;
   }
 
@@ -3442,7 +3442,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
           {
             done = 1;
           }
-          if (unk_00715fb0 == 1)
+          if (g_recorded_action_player == 1)
           {
             while ((PLAYER_CARD_INSTANCE(player, card).number_of_targets < amount) && !done)
             {

@@ -62,8 +62,8 @@ extern char global_duelart_path[];
 extern char global_ui_strings_filename[];
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
-extern int DAT_008a8dec;
-extern int DAT_00939508;
+extern int g_duel_opponent_battlefield_window;
+extern int g_duel_selected_card_window;
 extern int g_duel_window_userdata_card_offset;
 extern int g_duel_window_userdata_player_offset;
 
@@ -81,63 +81,63 @@ int g_attackclass_window_extra_bytes = 8;
 
 // GLOBAL: MAGIC 0x00579ab4
 // GLOBAL: SHANDALAR 0x00585734
-int DAT_00579ab4 = 6;
+int g_attack_ui_border_width = 6;
 
 // GLOBAL: MAGIC 0x00579be0
 // GLOBAL: SHANDALAR 0x00585860
-char DAT_00579be0[4] = "";
+char g_attack_ui_short_text_1[4] = "";
 
 // GLOBAL: MAGIC 0x00579c00
 // GLOBAL: SHANDALAR 0x00585880
-char DAT_00579c00[4] = "";
+char g_attack_ui_short_text_2[4] = "";
 
 // GLOBAL: MAGIC 0x00579c18
 // GLOBAL: SHANDALAR 0x00585898
-char DAT_00579c18[4] = "";
+char g_attack_ui_short_text_3[4] = "";
 
 // GLOBAL: MAGIC 0x0069c610
 // GLOBAL: SHANDALAR 0x005a8fd8
-HBITMAP DAT_0069c610;
+HBITMAP g_attack_ui_background_bitmap;
 
 // GLOBAL: MAGIC 0x0069c614
 // GLOBAL: SHANDALAR 0x005a8fdc
-HBITMAP DAT_0069c614;
+HBITMAP g_attack_ui_card_bitmap;
 
 // GLOBAL: MAGIC 0x0069c61c
 // GLOBAL: SHANDALAR 0x005a8fe4
-HPEN DAT_0069c61c;
+HPEN g_attack_ui_border_pen;
 
 // GLOBAL: MAGIC 0x0069c620
 // GLOBAL: SHANDALAR 0x005a8fe8
-HWND DAT_0069c620;
+HWND g_attack_ui_tooltip_window;
 
 // GLOBAL: MAGIC 0x0069c628
 // GLOBAL: SHANDALAR 0x005a8ff0
-char DAT_0069c628[0x1c];
+char g_attack_ui_label_text[0x1c];
 
 // GLOBAL: MAGIC 0x0069c644
 // GLOBAL: SHANDALAR 0x005a900c
-HBITMAP DAT_0069c644;
+HBITMAP g_attack_ui_button_bitmap;
 
 // GLOBAL: MAGIC 0x0069c648
 // GLOBAL: SHANDALAR 0x005a9010
-HPEN DAT_0069c648;
+HPEN g_attack_ui_light_pen;
 
 // GLOBAL: MAGIC 0x0069c64c
 // GLOBAL: SHANDALAR 0x005a9014
-COLORREF DAT_0069c64c;
+COLORREF g_attack_ui_text_color;
 
 // GLOBAL: MAGIC 0x0069c650
 // GLOBAL: SHANDALAR 0x005a9018
-HPEN DAT_0069c650;
+HPEN g_attack_ui_dark_pen;
 
 // GLOBAL: MAGIC 0x0069c654
 // GLOBAL: SHANDALAR 0x005a901c
-int DAT_0069c654;
+int g_attack_ui_card_spacing;
 
 // GLOBAL: MAGIC 0x0069c658
 // GLOBAL: SHANDALAR 0x005a9020
-char DAT_0069c658[0x20];
+char g_attack_ui_status_text[0x20];
 
 // GLOBAL: MAGIC 0x0069c678
 // GLOBAL: SHANDALAR 0x005a9040
@@ -153,19 +153,19 @@ HMENU g_attack_minimized_popup_menu;
 
 // GLOBAL: MAGIC 0x0069c6a0
 // GLOBAL: SHANDALAR 0x005a9068
-HBITMAP DAT_0069c6a0;
+HBITMAP g_attack_ui_defender_bitmap;
 
 // GLOBAL: MAGIC 0x0069c6a4
 // GLOBAL: SHANDALAR 0x005a906c
-HPEN DAT_0069c6a4;
+HPEN g_attack_ui_defender_pen;
 
 // GLOBAL: MAGIC 0x0069c6a8
 // GLOBAL: SHANDALAR 0x005a9070
-HPEN DAT_0069c6a8;
+HPEN g_attack_ui_attacker_pen;
 
 // GLOBAL: MAGIC 0x0069c6b4
 // GLOBAL: SHANDALAR 0x005a907c
-HBRUSH DAT_0069c6b4;
+HBRUSH g_attack_ui_attacker_brush;
 
 // GLOBAL: MAGIC 0x0069c6b8
 // GLOBAL: SHANDALAR 0x005a9080
@@ -173,11 +173,11 @@ HBITMAP g_attack_minimized_background_bitmap;
 
 // GLOBAL: MAGIC 0x0069c6bc
 // GLOBAL: SHANDALAR 0x005a9084
-HPEN DAT_0069c6bc;
+HPEN g_attack_ui_selection_pen;
 
 // GLOBAL: MAGIC 0x0069c6c0
 // GLOBAL: SHANDALAR 0x005a9088
-int DAT_0069c6c0;
+int g_attack_ui_layout_flags;
 
 // GLOBAL: MAGIC 0x0069c6c8
 // GLOBAL: SHANDALAR 0x005a9090
@@ -189,7 +189,7 @@ COLORREF g_attack_text_shadow_color;
 
 // GLOBAL: MAGIC 0x0069c6e8
 // GLOBAL: SHANDALAR 0x005a90b0
-HBITMAP DAT_0069c6e8;
+HBITMAP g_attack_ui_arrow_bitmap;
 
 // FUNCTION: MAGIC 0x004d2ac0
 // FUNCTION: SHANDALAR 0x0045c730
@@ -227,47 +227,47 @@ int register_MAGICGAME_AttackClass(LPCSTR class_name)
 
   g_attack_minimized_popup_menu = CreatePopupMenu();
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_ATTACK");
-  strcpy(DAT_0069c628, g_text_lines[0]);
-  strcpy(DAT_0069c658, g_text_lines[1]);
+  strcpy(g_attack_ui_label_text, g_text_lines[0]);
+  strcpy(g_attack_ui_status_text, g_text_lines[1]);
   load_text_with_tab_escapes(global_ui_strings_filename, "MENU_MINIMIZEDATTACK");
   strcpy(g_attack_minimized_menu_restore_text, g_text_lines[0]);
   strcpy(g_attack_minimized_menu_help_text, g_text_lines[1]);
 
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_Attack.pic");
-  DAT_0069c6e8 = load_pic(s.pic_path);
+  g_attack_ui_arrow_bitmap = load_pic(s.pic_path);
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_AttackSword.pic");
-  DAT_0069c614 = load_pic(s.pic_path);
+  g_attack_ui_card_bitmap = load_pic(s.pic_path);
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_AttackShield.pic");
-  DAT_0069c6a0 = load_pic(s.pic_path);
+  g_attack_ui_defender_bitmap = load_pic(s.pic_path);
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_AttackBones.pic");
-  DAT_0069c644 = load_pic(s.pic_path);
+  g_attack_ui_button_bitmap = load_pic(s.pic_path);
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_AttackRats.pic");
-  DAT_0069c610 = load_pic(s.pic_path);
-  DAT_00579ab4 = 6;
+  g_attack_ui_background_bitmap = load_pic(s.pic_path);
+  g_attack_ui_border_width = 6;
   strcpy(s.pic_path, global_duelart_path);
   strcat(s.pic_path, "\\WINBK_AttackMin.pic");
   g_attack_minimized_background_bitmap = load_pic(s.pic_path);
 
-  DAT_0069c650 = CreatePen(PS_SOLID, 0, 0x10000b4);
-  DAT_0069c6bc = CreatePen(PS_SOLID, 0, 0x100007c);
-  DAT_0069c61c = CreatePen(PS_SOLID, 0, 0x1000050);
+  g_attack_ui_dark_pen = CreatePen(PS_SOLID, 0, 0x10000b4);
+  g_attack_ui_selection_pen = CreatePen(PS_SOLID, 0, 0x100007c);
+  g_attack_ui_border_pen = CreatePen(PS_SOLID, 0, 0x1000050);
   g_attack_defender_brush = CreateSolidBrush(0x1000076);
-  DAT_0069c6a4 = CreatePen(PS_SOLID, 0, 0x10000d3);
-  DAT_0069c6a8 = CreatePen(PS_SOLID, 0, 0x100002f);
-  DAT_0069c648 = CreatePen(PS_SOLID, 0, 0x10000d7);
-  DAT_0069c6b4 = CreateSolidBrush(0x100003a);
-  DAT_0069c64c = 0x10000bf;
+  g_attack_ui_defender_pen = CreatePen(PS_SOLID, 0, 0x10000d3);
+  g_attack_ui_attacker_pen = CreatePen(PS_SOLID, 0, 0x100002f);
+  g_attack_ui_light_pen = CreatePen(PS_SOLID, 0, 0x10000d7);
+  g_attack_ui_attacker_brush = CreateSolidBrush(0x100003a);
+  g_attack_ui_text_color = 0x10000bf;
   g_attack_text_shadow_color = 0x10000c9;
 
-  if (DAT_0069c650 == (HPEN)0 || DAT_0069c6bc == (HPEN)0 ||
-      DAT_0069c61c == (HPEN)0 || g_attack_defender_brush == (HBRUSH)0 ||
-      DAT_0069c6a4 == (HPEN)0 || DAT_0069c6a8 == (HPEN)0 ||
-      DAT_0069c648 == (HPEN)0 || DAT_0069c6b4 == (HBRUSH)0)
+  if (g_attack_ui_dark_pen == (HPEN)0 || g_attack_ui_selection_pen == (HPEN)0 ||
+      g_attack_ui_border_pen == (HPEN)0 || g_attack_defender_brush == (HBRUSH)0 ||
+      g_attack_ui_defender_pen == (HPEN)0 || g_attack_ui_attacker_pen == (HPEN)0 ||
+      g_attack_ui_light_pen == (HPEN)0 || g_attack_ui_attacker_brush == (HBRUSH)0)
   {
     s.registered = 0;
   }
@@ -287,29 +287,29 @@ void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
   }
   g_attack_minimized_popup_menu = (HMENU)0;
 
-  if (DAT_0069c6e8 != (HBITMAP)0)
+  if (g_attack_ui_arrow_bitmap != (HBITMAP)0)
   {
-    delete_and_close_object(DAT_0069c6e8);
+    delete_and_close_object(g_attack_ui_arrow_bitmap);
   }
 
-  if (DAT_0069c614 != (HBITMAP)0)
+  if (g_attack_ui_card_bitmap != (HBITMAP)0)
   {
-    delete_and_close_object(DAT_0069c614);
+    delete_and_close_object(g_attack_ui_card_bitmap);
   }
 
-  if (DAT_0069c6a0 != (HBITMAP)0)
+  if (g_attack_ui_defender_bitmap != (HBITMAP)0)
   {
-    delete_and_close_object(DAT_0069c6a0);
+    delete_and_close_object(g_attack_ui_defender_bitmap);
   }
 
-  if (DAT_0069c644 != (HBITMAP)0)
+  if (g_attack_ui_button_bitmap != (HBITMAP)0)
   {
-    delete_and_close_object(DAT_0069c644);
+    delete_and_close_object(g_attack_ui_button_bitmap);
   }
 
-  if (DAT_0069c610 != (HBITMAP)0)
+  if (g_attack_ui_background_bitmap != (HBITMAP)0)
   {
-    delete_and_close_object(DAT_0069c610);
+    delete_and_close_object(g_attack_ui_background_bitmap);
   }
 
   if (g_attack_minimized_background_bitmap != (HBITMAP)0)
@@ -317,53 +317,53 @@ void destroy_MAGICGAME_AttackClass(LPCSTR class_name)
     delete_and_close_object(g_attack_minimized_background_bitmap);
   }
 
-  if (DAT_0069c650 != (HPEN)0)
+  if (g_attack_ui_dark_pen != (HPEN)0)
   {
-    DeleteObject(DAT_0069c650);
+    DeleteObject(g_attack_ui_dark_pen);
   }
-  if (DAT_0069c6bc != (HPEN)0)
+  if (g_attack_ui_selection_pen != (HPEN)0)
   {
-    DeleteObject(DAT_0069c6bc);
+    DeleteObject(g_attack_ui_selection_pen);
   }
-  if (DAT_0069c61c != (HPEN)0)
+  if (g_attack_ui_border_pen != (HPEN)0)
   {
-    DeleteObject(DAT_0069c61c);
+    DeleteObject(g_attack_ui_border_pen);
   }
   if (g_attack_defender_brush != (HBRUSH)0)
   {
     DeleteObject(g_attack_defender_brush);
   }
-  if (DAT_0069c6a4 != (HPEN)0)
+  if (g_attack_ui_defender_pen != (HPEN)0)
   {
-    DeleteObject(DAT_0069c6a4);
+    DeleteObject(g_attack_ui_defender_pen);
   }
-  if (DAT_0069c6a8 != (HPEN)0)
+  if (g_attack_ui_attacker_pen != (HPEN)0)
   {
-    DeleteObject(DAT_0069c6a8);
+    DeleteObject(g_attack_ui_attacker_pen);
   }
-  if (DAT_0069c648 != (HPEN)0)
+  if (g_attack_ui_light_pen != (HPEN)0)
   {
-    DeleteObject(DAT_0069c648);
+    DeleteObject(g_attack_ui_light_pen);
   }
-  if (DAT_0069c6b4 != (HBRUSH)0)
+  if (g_attack_ui_attacker_brush != (HBRUSH)0)
   {
-    DeleteObject(DAT_0069c6b4);
+    DeleteObject(g_attack_ui_attacker_brush);
   }
 
-  DAT_0069c6e8 = (HBITMAP)0;
-  DAT_0069c614 = (HBITMAP)0;
-  DAT_0069c6a0 = (HBITMAP)0;
-  DAT_0069c644 = (HBITMAP)0;
-  DAT_0069c610 = (HBITMAP)0;
+  g_attack_ui_arrow_bitmap = (HBITMAP)0;
+  g_attack_ui_card_bitmap = (HBITMAP)0;
+  g_attack_ui_defender_bitmap = (HBITMAP)0;
+  g_attack_ui_button_bitmap = (HBITMAP)0;
+  g_attack_ui_background_bitmap = (HBITMAP)0;
   g_attack_minimized_background_bitmap = (HBITMAP)0;
-  DAT_0069c650 = (HPEN)0;
-  DAT_0069c6bc = (HPEN)0;
-  DAT_0069c61c = (HPEN)0;
+  g_attack_ui_dark_pen = (HPEN)0;
+  g_attack_ui_selection_pen = (HPEN)0;
+  g_attack_ui_border_pen = (HPEN)0;
   g_attack_defender_brush = (HBRUSH)0;
-  DAT_0069c6a4 = (HPEN)0;
-  DAT_0069c6a8 = (HPEN)0;
-  DAT_0069c648 = (HPEN)0;
-  DAT_0069c6b4 = (HBRUSH)0;
+  g_attack_ui_defender_pen = (HPEN)0;
+  g_attack_ui_attacker_pen = (HPEN)0;
+  g_attack_ui_light_pen = (HPEN)0;
+  g_attack_ui_attacker_brush = (HBRUSH)0;
 }
 
 // FUNCTION: MAGIC 0x004d6b78
@@ -952,7 +952,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
         return 0;
       }
       s.case410_x_offset = 5;
-      s.case410_y_step = DAT_00939508;
+      s.case410_y_step = g_duel_selected_card_window;
       GetWindowRect((HWND)s.case410_wparam, &s.case410_rect);
       MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.case410_rect, 2);
       s.case410_left = s.case410_rect.left + s.case410_x_offset;
@@ -1052,7 +1052,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       s.groups = (attack_window_group_t *)GetWindowLongA(hwnd, g_attackclass_data_window_long_offset);
       s.group_count = GetWindowLongA(hwnd, g_attackclass_count_window_long_offset);
       ShowWindow(hwnd, SW_HIDE);
-      ShowWindow(DAT_0069c620, SW_HIDE);
+      ShowWindow(g_attack_ui_tooltip_window, SW_HIDE);
       for (s.case40c_i = 0; s.case40c_i < s.group_count; s.case40c_i++)
       {
         for (s.case40c_j = 0; s.case40c_j < s.groups[s.case40c_i].attacker_count; s.case40c_j++)
@@ -1322,17 +1322,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
     case WM_ACTIVATE:
       if ((wparam & 0xffff) == WA_ACTIVE || (wparam & 0xffff) == WA_CLICKACTIVE)
       {
-        SendMessageA(DAT_0094ca30, WM_NCACTIVATE, 1, 0);
+        SendMessageA(g_attack_phase_window_hwnd, WM_NCACTIVATE, 1, 0);
       }
       else
       {
-        SendMessageA(DAT_0094ca30, WM_NCACTIVATE, 0, 0);
+        SendMessageA(g_attack_phase_window_hwnd, WM_NCACTIVATE, 0, 0);
       }
       return DefWindowProcA(hwnd, msg, wparam, lparam);
 
     case WM_CLOSE:
       ShowWindow(hwnd, SW_HIDE);
-      ShowWindow(DAT_0069c620, SW_HIDE);
+      ShowWindow(g_attack_ui_tooltip_window, SW_HIDE);
       return 0;
 
     case WM_COMMAND:
@@ -1341,7 +1341,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       case 0x65:
         ShowWindow(hwnd, SW_HIDE);
         UpdateWindow(g_duel_help_owner_hwnd);
-        GetWindowRect((HWND)DAT_008a8dec, &s.minimize_rect);
+        GetWindowRect((HWND)g_duel_opponent_battlefield_window, &s.minimize_rect);
         s.minimize_left = s.minimize_rect.left;
         s.minimize_width = s.minimize_rect.right - s.minimize_rect.left;
         if (g_attack_minimized_background_bitmap != (HBITMAP)0)
@@ -1354,14 +1354,14 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
           s.minimize_height = s.minimize_width * 2;
         }
         s.minimize_top = (s.minimize_rect.bottom - s.minimize_rect.top) / 2 + s.minimize_height / 2 + 2;
-        MoveWindow(DAT_0069c620, s.minimize_left, s.minimize_top, s.minimize_width, s.minimize_height, 1);
-        ShowWindow(DAT_0069c620, SW_SHOW);
-        BringWindowToTop(DAT_0069c620);
+        MoveWindow(g_attack_ui_tooltip_window, s.minimize_left, s.minimize_top, s.minimize_width, s.minimize_height, 1);
+        ShowWindow(g_attack_ui_tooltip_window, SW_SHOW);
+        BringWindowToTop(g_attack_ui_tooltip_window);
         SendMessageA(g_duel_prompt_context_hwnd, 0x403, 0, 0);
         break;
 
       case 0x66:
-        ShowWindow(DAT_0069c620, SW_HIDE);
+        ShowWindow(g_attack_ui_tooltip_window, SW_HIDE);
         ShowWindow(hwnd, SW_SHOW);
         SendMessageA(g_duel_prompt_context_hwnd, 0x403, 0, 0);
         restack_duel_child_windows();
@@ -1384,22 +1384,22 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       SetWindowLongA(hwnd, g_attackclass_count_window_long_offset, s.group_count);
       s.groups = (attack_window_group_t *)malloc(sizeof(attack_window_group_t) * ATTACK_MAX_GROUPS);
       SetWindowLongA(hwnd, g_attackclass_data_window_long_offset, (LONG)s.groups);
-      s.create_scrollbar_hwnd = CreateWindowExA(0, CLASS_MAGICGAME_SCROLLBAR, DAT_00579be0,
+      s.create_scrollbar_hwnd = CreateWindowExA(0, CLASS_MAGICGAME_SCROLLBAR, g_attack_ui_short_text_1,
                                                 WS_CHILD | WS_VISIBLE, 0, 0, 0, 0,
                                                 hwnd, (HMENU)0, g_app_instance, (LPVOID)0);
       if (s.create_scrollbar_hwnd != (HWND)0)
       {
-        SendMessageA(s.create_scrollbar_hwnd, 0x464, (WPARAM)DAT_0069c644, 1);
-        SendMessageA(s.create_scrollbar_hwnd, 0x466, (WPARAM)DAT_0069c610, DAT_00579ab4);
+        SendMessageA(s.create_scrollbar_hwnd, 0x464, (WPARAM)g_attack_ui_button_bitmap, 1);
+        SendMessageA(s.create_scrollbar_hwnd, 0x466, (WPARAM)g_attack_ui_background_bitmap, g_attack_ui_border_width);
       }
-      DAT_0094ca30 = CreateWindowExA(0, CLASS_ATTACK_SWORD_SHIELD, DAT_00579c00,
+      g_attack_phase_window_hwnd = CreateWindowExA(0, CLASS_ATTACK_SWORD_SHIELD, g_attack_ui_short_text_2,
                                      WS_POPUP | WS_BORDER | WS_CAPTION, 0, 0, 0, 0,
                                      GetParent(hwnd), (HMENU)0, g_app_instance, (LPVOID)0);
-      DAT_0069c620 = CreateWindowExA(0, CLASS_ATTACK_MINIMIZED, DAT_00579c18,
+      g_attack_ui_tooltip_window = CreateWindowExA(0, CLASS_ATTACK_MINIMIZED, g_attack_ui_short_text_3,
                                      WS_POPUP, 0, 0, 0, 0, hwnd, (HMENU)0,
                                      g_app_instance, (LPVOID)0);
       if (s.groups == (attack_window_group_t *)0 || s.create_scrollbar_hwnd == (HWND)0 ||
-          DAT_0094ca30 == (HWND)0 || DAT_0069c620 == (HWND)0)
+          g_attack_phase_window_hwnd == (HWND)0 || g_attack_ui_tooltip_window == (HWND)0)
       {
         if (s.groups != (attack_window_group_t *)0)
         {
@@ -1419,18 +1419,18 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       ApplyCardArtPaletteToDc(s.erase_dc);
       GetClientRect(hwnd, &s.erase_client_rect);
       s.erase_scroll_pos = SendDlgItemMessageA(hwnd, 0, 0xe1, 0, 0);
-      if (DAT_0069c6e8 == (HBITMAP)0)
+      if (g_attack_ui_arrow_bitmap == (HBITMAP)0)
       {
         strcpy(s.erase_bitmap_path, global_duelart_path);
         strcat(s.erase_bitmap_path, "\\WINBK_Attack.pic");
-        DAT_0069c6e8 = load_pic(s.erase_bitmap_path);
+        g_attack_ui_arrow_bitmap = load_pic(s.erase_bitmap_path);
       }
-      if (DAT_0069c6e8 != (HBITMAP)0)
+      if (g_attack_ui_arrow_bitmap != (HBITMAP)0)
       {
         CopyRect(&s.erase_tile_rect, &s.erase_client_rect);
-        GetObjectA(DAT_0069c6e8, sizeof(s.erase_bitmap), &s.erase_bitmap);
+        GetObjectA(g_attack_ui_arrow_bitmap, sizeof(s.erase_bitmap), &s.erase_bitmap);
         s.erase_tile_rect.left = 0 - (s.erase_scroll_pos % s.erase_bitmap.bmWidth);
-        TileBitmapIntoRect(s.erase_dc, &s.erase_tile_rect, DAT_0069c6e8);
+        TileBitmapIntoRect(s.erase_dc, &s.erase_tile_rect, g_attack_ui_arrow_bitmap);
       }
       else
       {
@@ -1566,17 +1566,17 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
         get_current_duel_selection(&s.ncpaint_selected_player, (int *)0);
         if (s.ncpaint_selected_player == 0)
         {
-          s.ncpaint_light_pen = DAT_0069c650;
-          s.ncpaint_dark_pen = DAT_0069c6bc;
-          s.ncpaint_shade_pen = DAT_0069c61c;
+          s.ncpaint_light_pen = g_attack_ui_dark_pen;
+          s.ncpaint_dark_pen = g_attack_ui_selection_pen;
+          s.ncpaint_shade_pen = g_attack_ui_border_pen;
           s.ncpaint_caption_brush = g_attack_defender_brush;
         }
         else
         {
-          s.ncpaint_light_pen = DAT_0069c6a4;
-          s.ncpaint_dark_pen = DAT_0069c6a8;
-          s.ncpaint_shade_pen = DAT_0069c648;
-          s.ncpaint_caption_brush = DAT_0069c6b4;
+          s.ncpaint_light_pen = g_attack_ui_defender_pen;
+          s.ncpaint_dark_pen = g_attack_ui_attacker_pen;
+          s.ncpaint_shade_pen = g_attack_ui_light_pen;
+          s.ncpaint_caption_brush = g_attack_ui_attacker_brush;
         }
         SelectObject(s.ncpaint_dc, s.ncpaint_dark_pen);
         s.ncpaint_frame_y = 0;
@@ -1643,7 +1643,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
         DrawTextA(s.ncpaint_dc, s.ncpaint_caption, -1, &s.ncpaint_caption_rect,
                   DT_SINGLELINE | DT_VCENTER);
         OffsetRect(&s.ncpaint_caption_rect, -1, -1);
-        SetTextColor(s.ncpaint_dc, DAT_0069c64c);
+        SetTextColor(s.ncpaint_dc, g_attack_ui_text_color);
         DrawTextA(s.ncpaint_dc, s.ncpaint_caption, -1, &s.ncpaint_caption_rect,
                   DT_SINGLELINE | DT_VCENTER);
         s.ncpaint_close_bitmap = LoadBitmapA((HINSTANCE)0, (LPCSTR)0x7fed);
@@ -1665,11 +1665,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
     case WM_SHOWWINDOW:
       if (wparam != 0)
       {
-        ShowWindow(DAT_0094ca30, SW_SHOW);
+        ShowWindow(g_attack_phase_window_hwnd, SW_SHOW);
       }
       else
       {
-        ShowWindow(DAT_0094ca30, SW_HIDE);
+        ShowWindow(g_attack_phase_window_hwnd, SW_HIDE);
       }
       PostMessageA(g_duel_prompt_context_hwnd, 0x403, 0, 0);
       return DefWindowProcA(hwnd, msg, wparam, lparam);
@@ -1701,8 +1701,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackClass(HWND hwnd, UINT msg, WPARAM wpara
       return 0;
 
     case WM_INITMENU:
-      AppendMenuA(g_attack_minimized_popup_menu, 0, 0x65, DAT_0069c628);
-      AppendMenuA(g_attack_minimized_popup_menu, 0, 100, DAT_0069c658);
+      AppendMenuA(g_attack_minimized_popup_menu, 0, 0x65, g_attack_ui_label_text);
+      AppendMenuA(g_attack_minimized_popup_menu, 0, 100, g_attack_ui_status_text);
       return 0;
 
     case WM_MENUSELECT:
@@ -1820,17 +1820,17 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
       get_current_duel_selection(&s.border_selected_player, (int *)0);
       if (s.border_selected_player == 0)
       {
-        s.light_pen = DAT_0069c650;
-        s.dark_pen = DAT_0069c6bc;
-        s.shade_pen = DAT_0069c61c;
+        s.light_pen = g_attack_ui_dark_pen;
+        s.dark_pen = g_attack_ui_selection_pen;
+        s.shade_pen = g_attack_ui_border_pen;
         s.caption_brush = g_attack_defender_brush;
       }
       else
       {
-        s.light_pen = DAT_0069c6a4;
-        s.dark_pen = DAT_0069c6a8;
-        s.shade_pen = DAT_0069c648;
-        s.caption_brush = DAT_0069c6b4;
+        s.light_pen = g_attack_ui_defender_pen;
+        s.dark_pen = g_attack_ui_attacker_pen;
+        s.shade_pen = g_attack_ui_light_pen;
+        s.caption_brush = g_attack_ui_attacker_brush;
       }
       SelectObject(s.dc, s.dark_pen);
       s.frame_y = 0;
@@ -1882,7 +1882,7 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
       SetRect(&s.caption_rect, s.client_window_rect.left, s.frame_height,
               s.client_window_rect.right, s.client_window_rect.top - 1);
       FillRect(s.dc, &s.caption_rect, s.caption_brush);
-      SetTextColor(s.dc, DAT_0069c64c);
+      SetTextColor(s.dc, g_attack_ui_text_color);
       SetBkMode(s.dc, TRANSPARENT);
       DrawTextA(s.dc, s.caption, -1, &s.caption_rect, DT_SINGLELINE | DT_VCENTER);
       ReleaseDC(hwnd, s.dc);
@@ -1890,17 +1890,17 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
     return s.nonclient_result;
 
   case WM_PAINT:
-    if (DAT_0069c614 == (HBITMAP)0)
+    if (g_attack_ui_card_bitmap == (HBITMAP)0)
     {
       strcpy(s.pic_path, global_duelart_path);
       strcat(s.pic_path, "\\WINBK_AttackSword.pic");
-      DAT_0069c614 = load_pic(s.pic_path);
+      g_attack_ui_card_bitmap = load_pic(s.pic_path);
     }
-    if (DAT_0069c6a0 == (HBITMAP)0)
+    if (g_attack_ui_defender_bitmap == (HBITMAP)0)
     {
       strcpy(s.pic_path, global_duelart_path);
       strcat(s.pic_path, "\\WINBK_AttackShield.pic");
-      DAT_0069c6a0 = load_pic(s.pic_path);
+      g_attack_ui_defender_bitmap = load_pic(s.pic_path);
     }
     get_current_duel_selection(&s.paint_selected_player, (int *)0);
     s.paint_dc = BeginPaint(hwnd, &s.paint_struct);
@@ -1913,14 +1913,14 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
       MapWindowPoints((HWND)0, g_duel_attack_phase_window_hwnd, (LPPOINT)&s.scrollbar_rect, 2);
       s.card_height = g_showlist_smallcard_height;
       s.paint_margin = (g_showlist_smallcard_height * 5) / 100;
-      if (DAT_0069c614 != (HBITMAP)0)
+      if (g_attack_ui_card_bitmap != (HBITMAP)0)
       {
         s.save_dc = SaveDC(s.paint_dc);
-        GetObjectA(DAT_0069c614, sizeof(s.bitmap), &s.bitmap);
+        GetObjectA(g_attack_ui_card_bitmap, sizeof(s.bitmap), &s.bitmap);
         s.bitmap.bmWidth /= 2;
         if (s.paint_selected_player == 1)
         {
-          s.bitmap_rect.top = s.client_rect.top + DAT_0069c6c0;
+          s.bitmap_rect.top = s.client_rect.top + g_attack_ui_layout_flags;
           s.bitmap_rect.bottom = s.bitmap_rect.top + s.card_height;
         }
         else
@@ -1930,7 +1930,7 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
           SetMapMode(s.paint_dc, MM_ANISOTROPIC);
           SetViewportExtEx(s.paint_dc, 1, -1, (LPSIZE)0);
           SetWindowExtEx(s.paint_dc, 1, 1, (LPSIZE)0);
-          SetViewportOrgEx(s.paint_dc, 0, s.client_rect.bottom - DAT_0069c6c0, (LPPOINT)0);
+          SetViewportOrgEx(s.paint_dc, 0, s.client_rect.bottom - g_attack_ui_layout_flags, (LPPOINT)0);
           SetWindowOrgEx(s.paint_dc, 0, s.bitmap_rect.top, (LPPOINT)0);
         }
         s.bitmap_rect.left = 5;
@@ -1938,21 +1938,21 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
                                s.bitmap.bmWidth) /
                                   s.bitmap.bmHeight +
                               s.bitmap_rect.left;
-        draw_masked_bitmap_left_half_to_rect(s.paint_dc, &s.bitmap_rect, DAT_0069c614);
+        draw_masked_bitmap_left_half_to_rect(s.paint_dc, &s.bitmap_rect, g_attack_ui_card_bitmap);
         RestoreDC(s.paint_dc, s.save_dc);
       }
-      if (DAT_0069c6a0 != (HBITMAP)0)
+      if (g_attack_ui_defender_bitmap != (HBITMAP)0)
       {
-        GetObjectA(DAT_0069c6a0, sizeof(s.bitmap), &s.bitmap);
+        GetObjectA(g_attack_ui_defender_bitmap, sizeof(s.bitmap), &s.bitmap);
         s.bitmap.bmWidth /= 2;
         if (s.paint_selected_player == 0)
         {
-          s.bitmap_rect.top = s.client_rect.top + DAT_0069c6c0;
+          s.bitmap_rect.top = s.client_rect.top + g_attack_ui_layout_flags;
           s.bitmap_rect.bottom = s.bitmap_rect.top + s.card_height;
         }
         else
         {
-          s.bitmap_rect.bottom = s.client_rect.bottom - DAT_0069c6c0;
+          s.bitmap_rect.bottom = s.client_rect.bottom - g_attack_ui_layout_flags;
           s.bitmap_rect.top = s.bitmap_rect.bottom - s.card_height;
         }
         s.bitmap_rect.left = 5;
@@ -1960,7 +1960,7 @@ LRESULT CALLBACK wndproc_AttackSwordShield(HWND hwnd, UINT msg, WPARAM wparam, L
                                s.bitmap.bmWidth) /
                                   s.bitmap.bmHeight +
                               s.bitmap_rect.left;
-        draw_masked_bitmap_left_half_to_rect(s.paint_dc, &s.bitmap_rect, DAT_0069c6a0);
+        draw_masked_bitmap_left_half_to_rect(s.paint_dc, &s.bitmap_rect, g_attack_ui_defender_bitmap);
       }
       EndPaint(hwnd, &s.paint_struct);
     }

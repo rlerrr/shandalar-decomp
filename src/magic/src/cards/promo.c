@@ -164,7 +164,7 @@ int create_aswan_jaguar_legacy(int player, int card, int selected_monster)
 {
   int legacy_card;
 
-  legacy_card = create_legacy_effect(player, card, DAT_00925bf4, player, card);
+  legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_0a, player, card);
   if (legacy_card != -1)
   {
     PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= STATUS_PERMANENT;
@@ -380,7 +380,7 @@ int polka_apply_effect(int player, int card, int amount)
                                                                                         s.candidates[s.random_index].card).internal_card_id].id].subtype;
     if (s.raw_code == 0x57 || s.raw_code == 0x56)
     {
-      create_legacy_effect(player, card, DAT_007a7878,
+      create_legacy_effect(player, card, g_duel_generated_internal_card_id_0b,
                            s.candidates[s.random_index].player,
                            s.candidates[s.random_index].card);
     }
@@ -541,7 +541,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
     switch (effect_index)
     {
       case 0:
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_008b49c4, target_player, target_card);
+        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_0f, target_player, target_card);
         if (legacy_card != -1)
         {
           legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
@@ -557,7 +557,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
           load_text("prompts.txt", "FAERIEDRAGON_TAWNOSWAND");
           sprintf(dialog, "\n%s", g_text_lines[0]);
           do_dialog(player, player, card, target_player, target_card, dialog, 0);
-          legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_007abc7c, target_player, target_card);
+          legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_02, target_player, target_card);
           if (g_duel_ai_mode_state != 1)
           {
             play_sound_effect(0x30);
@@ -616,7 +616,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         break;
 
       case 7:
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_00896534, target_player, target_card);
+        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_03, target_player, target_card);
         if (legacy_card != -1)
         {
           legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
@@ -636,7 +636,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         break;
 
       case 9:
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_00896534, target_player, target_card);
+        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_03, target_player, target_card);
         if (legacy_card != -1)
         {
           PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x40;
@@ -645,7 +645,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         break;
 
       case 12:
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_008b49c4, target_player, target_card);
+        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_0f, target_player, target_card);
         if (legacy_card != -1)
         {
           PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x800000;
@@ -1105,7 +1105,7 @@ int whimsy_apply_effect(int player, int card, int effect_index)
     case 14:
       sprintf(s.dialog, "\n%s", g_text_lines[15]);
       do_dialog(player, player, card, -1, -1, s.dialog, 0);
-      s.hand_card = create_legacy_effect(player, card, unk_007894a0, -1, -1);
+      s.hand_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_0d, -1, -1);
       if (s.hand_card != -1)
       {
         PLAYER_CARD_INSTANCE(player, s.hand_card).display_pic_info = 0x58;
