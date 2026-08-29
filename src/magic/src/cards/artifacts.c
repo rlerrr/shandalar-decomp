@@ -704,15 +704,15 @@ int card_aladdin_s_lamp(int player, int card, event_t event)
 
               if ((g_duel_network_flags & 2) != 0 && player == g_active_player)
               {
-                g_network_result_value = chosen_index;
-                g_network_result_packet_type = 0x14;
+                g_network_result_packet.result = chosen_index;
+                g_network_result_packet.packet_type = 0x14;
                 TENTATIVE_send_network_result(player, 0x14);
               }
             }
             else
             {
               TENTATIVE_wait_for_network_result(player, 0x14);
-              chosen_index = g_network_result_value;
+              chosen_index = g_network_result_packet.result;
             }
 
             if (revealed[chosen_index] == -1)
@@ -765,7 +765,7 @@ static __inline int select_revealed_card_index_for_aladdins_lamp(int player, int
   if (player == g_other_player && (g_duel_network_flags & 2) != 0 && g_duel_active != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    return g_network_result_value;
+    return g_network_result_packet.result;
   }
 
   if (player == g_other_player && (g_duel_network_flags & 2) == 0)
@@ -779,8 +779,8 @@ static __inline int select_revealed_card_index_for_aladdins_lamp(int player, int
 
   if ((g_duel_network_flags & 2) != 0 && player == g_active_player)
   {
-    g_network_result_value = result;
-    g_network_result_packet_type = 0x19;
+    g_network_result_packet.result = result;
+    g_network_result_packet.packet_type = 0x19;
     TENTATIVE_send_network_result(player, 0x19);
   }
 

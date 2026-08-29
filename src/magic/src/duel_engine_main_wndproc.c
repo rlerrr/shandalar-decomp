@@ -3322,8 +3322,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
         g_duel_summary.hand_counts[s.player_backdrop_color] += 1;
         if (((g_duel_network_flags & 2) != 0) && (g_active_player == s.player_backdrop_color))
         {
-          g_network_result_packet_type = 0x12;
-          g_network_result_value = s.enemy_backdrop_result;
+          g_network_result_packet.packet_type = 0x12;
+          g_network_result_packet.result = s.enemy_backdrop_result;
           TENTATIVE_send_network_result(g_active_player, 0x12);
         }
         notify_duel_action(0, 0xff);

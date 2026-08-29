@@ -431,7 +431,7 @@ int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packe
 // FUNCTION: MAGIC 0x00501b6e
 int apply_cheat_card_packet(void)
 {
-  add_card_to_hand(g_other_player, g_network_result_value);
+  add_card_to_hand(g_other_player, g_network_result_packet.result);
   ++g_duel_summary.hand_counts[g_other_player];
   return 1;
 }
@@ -629,15 +629,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
     case 0x18:
     case 0x19:
     case 0x1a:
-      memcpy(&g_network_result_packet_type, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&g_network_result_packet_type + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_network_result_packet, s.packet_data, s.packet_size);
+      if (g_network_result_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&g_network_result_packet_type + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_network_result_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;
@@ -651,15 +652,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 7:
-      memcpy(&unk_008b34a0, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_008b34a0 + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_duel_parameters_network_packet, s.packet_data, s.packet_size);
+      if (g_duel_parameters_network_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&unk_008b34a0 + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_duel_parameters_network_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;
@@ -667,14 +669,15 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
 
     case 0xc:
       memcpy(&g_target_selection_network_packet, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&g_target_selection_network_packet + 2) == g_next_expected_network_packet_number)
+      if (g_target_selection_network_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&g_target_selection_network_packet + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_target_selection_network_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;
@@ -683,15 +686,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
     case 0xd:
     case 0xe:
     case 0xf:
-      memcpy(&unk_008b2938, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_008b2938 + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_dialog_result_network_packet, s.packet_data, s.packet_size);
+      if (g_dialog_result_network_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&unk_008b2938 + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_dialog_result_network_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;
@@ -714,15 +718,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 0x12:
-      memcpy(&g_network_result_packet_type, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&g_network_result_packet_type + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_network_result_packet, s.packet_data, s.packet_size);
+      if (g_network_result_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&g_network_result_packet_type + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_network_result_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       apply_cheat_card_packet();
@@ -730,15 +735,16 @@ int TENTATIVE_wait_for_network_result(int player, signed int packet_type)
       break;
 
     case 0x13:
-      memcpy(&unk_008b27f0, s.packet_data, s.packet_size);
-      if (*(short *)((char *)&unk_008b27f0 + 2) == g_next_expected_network_packet_number)
+      memcpy(&g_phase_stopper_network_packet, s.packet_data, s.packet_size);
+      if (g_phase_stopper_network_packet.packet_number == g_next_expected_network_packet_number)
       {
         sprintf(s.message, "Player %d is receiving a %s packet. This is packet number %d.\n", player, packet_name, g_next_expected_network_packet_number);
         append_to_trace_txt(s.message);
       }
       else
       {
-        report_unexpected_network_packet_number(g_next_expected_network_packet_number, *(short *)((char *)&unk_008b27f0 + 2));
+        report_unexpected_network_packet_number(g_next_expected_network_packet_number,
+                                                g_phase_stopper_network_packet.packet_number);
       }
       ++g_next_expected_network_packet_number;
       s.got_requested_packet = 1;
@@ -815,11 +821,13 @@ void send_battlefield_status_packet(int player)
 #ifdef MAGIC
   int phase;
 
-  unk_008b27f0 = 0x13;
+  g_phase_stopper_network_packet.packet_type = 0x13;
   for (phase = 0; phase < 0x26; ++phase)
   {
-    DAT_008b27f4[phase] = (g_duel_phase_stop_settings[1].phase_flags[phase] & PHASE_STOP_ENABLED) << 2;
-    DAT_008b27f4[0x26 + phase] = (g_duel_phase_stop_settings[0].phase_flags[phase] & PHASE_STOP_ENABLED) << 2;
+    g_phase_stopper_network_packet.phase_stop_flags[phase] =
+        (g_duel_phase_stop_settings[1].phase_flags[phase] & PHASE_STOP_ENABLED) << 2;
+    g_phase_stopper_network_packet.phase_stop_flags[0x26 + phase] =
+        (g_duel_phase_stop_settings[0].phase_flags[phase] & PHASE_STOP_ENABLED) << 2;
   }
 
   TENTATIVE_send_network_result(player, 0x13);
@@ -841,7 +849,9 @@ void receive_battlefield_status_packet(int player)
       for (phase = 0; phase < 0x26; ++phase)
       {
         g_duel_phase_stop_settings[target_player].phase_flags[phase] =
-            DAT_008b27f4[target_player * 0x26 + phase] | (g_duel_phase_stop_settings[target_player].phase_flags[phase] & (PHASE_STOP_ENABLED | PHASE_STOP_SUPPRESSED));
+            g_phase_stopper_network_packet.phase_stop_flags[target_player * 0x26 + phase] |
+            (g_duel_phase_stop_settings[target_player].phase_flags[phase] &
+             (PHASE_STOP_ENABLED | PHASE_STOP_SUPPRESSED));
       }
     }
   }

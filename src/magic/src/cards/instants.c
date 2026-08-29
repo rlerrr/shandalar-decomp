@@ -4027,8 +4027,8 @@ int choose_orcish_catapult_targets(int player, int card, target_t *targets)
   if (g_other_player == player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x14);
-    network_count = g_network_result_value;
-    count = g_network_result_value;
+    network_count = g_network_result_packet.result;
+    count = g_network_result_packet.result;
     for (current_card = 0; current_card < network_count; ++current_card)
     {
       TENTATIVE_wait_for_network_result(player, 0x1b);
@@ -4056,8 +4056,8 @@ int choose_orcish_catapult_targets(int player, int card, target_t *targets)
     }
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_network_result_value = count;
-      g_network_result_packet_type = 0x14;
+      g_network_result_packet.result = count;
+      g_network_result_packet.packet_type = 0x14;
       TENTATIVE_send_network_result(player, 0x14);
       g_target_pair_network_packet.packet_type = 0x1b;
       for (current_card = 0; current_card < count; ++current_card)

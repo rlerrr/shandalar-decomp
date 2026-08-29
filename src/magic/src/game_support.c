@@ -1142,7 +1142,7 @@ int select_card_from_graveyard(int player,
   if (g_other_player == player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    result = g_network_result_value;
+    result = g_network_result_packet.result;
   }
 
   if (g_active_player == player && g_duel_ai_mode_state != 1)
@@ -1155,8 +1155,8 @@ int select_card_from_graveyard(int player,
                                            title);
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_network_result_packet_type = 0x19;
-      g_network_result_value = result;
+      g_network_result_packet.packet_type = 0x19;
+      g_network_result_packet.result = result;
       TENTATIVE_send_network_result(player, 0x19);
     }
   }
@@ -1706,7 +1706,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
   if (((player == g_other_player) && ((g_duel_network_flags & 2) != 0)) && g_duel_active != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    return g_network_result_value;
+    return g_network_result_packet.result;
   }
   else if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) || g_duel_ai_mode_state == 1)
   {
@@ -1788,8 +1788,8 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
     s.result = show_cardlist_if_human(cards, count, context, suppress_done_txt, prompt);
     if ((player == g_active_player) && ((g_duel_network_flags & 2) != 0))
     {
-      g_network_result_value = s.result;
-      g_network_result_packet_type = 0x19;
+      g_network_result_packet.result = s.result;
+      g_network_result_packet.packet_type = 0x19;
       TENTATIVE_send_network_result(player, 0x19);
     }
   }
@@ -3115,14 +3115,14 @@ int choose_a_color(int player, const char *prompt, int use_color_names_instead_o
   if (g_other_player == player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0xf);
-    return DAT_008b293c;
+    return g_dialog_result_network_packet.result;
   }
 
   chosen_color = choose_a_color_dialog(player, prompt, use_color_names_instead_of_land, ai_choice, available_colors);
   if (player == g_active_player && (g_duel_network_flags & 2) != 0)
   {
-    unk_008b2938 = '\x0f';
-    DAT_008b293c = chosen_color;
+    g_dialog_result_network_packet.packet_type = '\x0f';
+    g_dialog_result_network_packet.result = chosen_color;
     TENTATIVE_send_network_result(player, 0xf);
   }
 
@@ -3168,14 +3168,14 @@ int network_random(int player, int maximum)
   {
     if (maximum > 1)
     {
-      g_network_result_value = rand() % maximum;
+      g_network_result_packet.result = rand() % maximum;
     }
     else
     {
-      g_network_result_value = 0;
+      g_network_result_packet.result = 0;
     }
 
-    g_network_result_packet_type = 0x18;
+    g_network_result_packet.packet_type = 0x18;
     TENTATIVE_send_network_result(player, 0x18);
   }
   else
@@ -3183,7 +3183,7 @@ int network_random(int player, int maximum)
     TENTATIVE_wait_for_network_result(player, 0x18);
   }
 
-  return g_network_result_value;
+  return g_network_result_packet.result;
 }
 
 // FUNCTION: SHANDALAR 0x005225a9
@@ -3194,14 +3194,14 @@ int network_random_boolean(int player)
   if (player == g_active_player)
   {
     result = rand() % 2;
-    g_network_result_value = 1 - result;
-    g_network_result_packet_type = 0x18;
+    g_network_result_packet.result = 1 - result;
+    g_network_result_packet.packet_type = 0x18;
     TENTATIVE_send_network_result(player, 0x18);
   }
   else
   {
     TENTATIVE_wait_for_network_result(player, 0x18);
-    result = g_network_result_value;
+    result = g_network_result_packet.result;
   }
 
   return result;
@@ -3730,7 +3730,7 @@ void discard(int player, int flags, int player_who_controls_effect)
     if ((g_duel_network_flags & 2) != 0 && g_other_player == player)
     {
       TENTATIVE_wait_for_network_result(player, 0x14);
-      s.selected_card = g_network_result_value;
+      s.selected_card = g_network_result_packet.result;
       if (s.selected_card == -1)
         s.found = 0;
       else
@@ -3766,8 +3766,8 @@ void discard(int player, int flags, int player_who_controls_effect)
         {
           s.selected_card = -1;
         }
-        g_network_result_value = s.selected_card;
-        g_network_result_packet_type = 0x14;
+        g_network_result_packet.result = s.selected_card;
+        g_network_result_packet.packet_type = 0x14;
         TENTATIVE_send_network_result(player, 0x14);
       }
     }
@@ -4912,7 +4912,7 @@ int activate_mana_sources_for_payment(int player,
     while (s.current_card != -1)
     {
       TENTATIVE_wait_for_network_result(player, 0x10);
-      s.current_card = g_network_result_value;
+      s.current_card = g_network_result_packet.result;
       if (s.current_card != -1 && activate_mana_source_for_payment(player, s.current_card) != 0)
       {
         s.max_colorless = has_mana(player, COLOR_ARTIFACT, 1) - has_mana(player, COLOR_ANY, 1);
@@ -4965,8 +4965,8 @@ int activate_mana_sources_for_payment(int player,
           {
             if ((g_duel_network_flags & 2) != 0)
             {
-              g_network_result_packet_type = 0x10;
-              g_network_result_value = s.current_card;
+              g_network_result_packet.packet_type = 0x10;
+              g_network_result_packet.result = s.current_card;
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
@@ -5021,8 +5021,8 @@ int activate_mana_sources_for_payment(int player,
           {
             if ((g_duel_network_flags & 2) != 0)
             {
-              g_network_result_packet_type = 0x10;
-              g_network_result_value = s.current_card;
+              g_network_result_packet.packet_type = 0x10;
+              g_network_result_packet.result = s.current_card;
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
@@ -5084,8 +5084,8 @@ int activate_mana_sources_for_payment(int player,
           {
             if ((g_duel_network_flags & 2) != 0)
             {
-              g_network_result_packet_type = 0x10;
-              g_network_result_value = s.current_card;
+              g_network_result_packet.packet_type = 0x10;
+              g_network_result_packet.result = s.current_card;
               TENTATIVE_send_network_result(player, 0x10);
               Sleep(0x32);
             }
@@ -5103,8 +5103,8 @@ int activate_mana_sources_for_payment(int player,
 
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_network_result_packet_type = 0x10;
-      g_network_result_value = -1;
+      g_network_result_packet.packet_type = 0x10;
+      g_network_result_packet.result = -1;
       TENTATIVE_send_network_result(player, 0x10);
     }
     copy_mana_pool_to_display();
@@ -6225,7 +6225,7 @@ int select_damage_card_from_list(int player,
   if (player == g_other_player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    selected = g_network_result_value;
+    selected = g_network_result_packet.result;
   }
 
   if (player == g_active_player && g_duel_ai_mode_state != 1)
@@ -6233,8 +6233,8 @@ int select_damage_card_from_list(int player,
     selected = (int)show_damage_assignment_cardlist(internal_card_ids, damage_amounts, count, title, allow_cancel, prompt);
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_network_result_value = selected;
-      g_network_result_packet_type = 0x19;
+      g_network_result_packet.result = selected;
+      g_network_result_packet.packet_type = 0x19;
       TENTATIVE_send_network_result(player, 0x19);
     }
   }
@@ -8871,15 +8871,15 @@ int choose_a_number(int player, char *prompt, int maxnum)
   if (player == g_other_player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(player, 0xe);
-    maxnum = DAT_008b293c;
+    maxnum = g_dialog_result_network_packet.result;
   }
 
   chosen = prompt_for_life_total(player, prompt, maxnum);
 
   if (player == g_active_player && (g_duel_network_flags & 2) != 0)
   {
-    unk_008b2938 = 0xe;
-    DAT_008b293c = chosen;
+    g_dialog_result_network_packet.packet_type = 0xe;
+    g_dialog_result_network_packet.result = chosen;
     TENTATIVE_send_network_result(player, 0xe);
   }
 

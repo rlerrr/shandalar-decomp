@@ -182,15 +182,15 @@ int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_of
   {
     if (g_manalink_is_host != 0)
     {
-      g_network_result_packet_type = 1;
+      g_network_result_packet.packet_type = 1;
       s.animation_context.coin_result = rand() % 2;
-      g_network_result_value = s.animation_context.coin_result;
+      g_network_result_packet.result = s.animation_context.coin_result;
       TENTATIVE_send_network_result(player, 1);
     }
     else
     {
       TENTATIVE_wait_for_network_result(player, 1);
-      s.animation_context.coin_result = g_network_result_value;
+      s.animation_context.coin_result = g_network_result_packet.result;
     }
   }
   else
@@ -681,8 +681,8 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
       {
         if (s.context->redraw_result != 0 || s.context->ante_result != 0)
         {
-          g_network_result_packet_type = 6;
-          g_network_result_value = 0;
+          g_network_result_packet.packet_type = 6;
+          g_network_result_packet.result = 0;
           TENTATIVE_send_network_result(0, 6);
         }
         EnableWindow(GetDlgItem(hwnd, IDOK), 0);
@@ -713,8 +713,8 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
       ShowWindow(GetDlgItem(hwnd, IDOK), SW_HIDE);
       if ((g_duel_network_flags & 2) != 0)
       {
-        g_network_result_packet_type = 6;
-        g_network_result_value = 1;
+        g_network_result_packet.packet_type = 6;
+        g_network_result_packet.result = 1;
         TENTATIVE_send_network_result(0, 6);
         if (s.context->redraw_result != 0 && g_redraw_ante_opponent_choice_received == 0)
         {
@@ -966,7 +966,7 @@ void redraw_ante_wait_for_opponent_mulligan_thread(void *hwnd)
   {
   }
   TENTATIVE_wait_for_network_result(1, 6);
-  s.network_choice = g_network_result_value;
+  s.network_choice = g_network_result_packet.result;
   if (s.thread_hwnd != (HWND)0)
   {
     SendMessageA(s.thread_hwnd, WM_COMMAND, 0x401, s.network_choice);
@@ -990,7 +990,7 @@ void redraw_ante_wait_for_opponent_done_thread(void *hwnd)
   {
   }
   TENTATIVE_wait_for_network_result(1, 6);
-  s.network_choice = g_network_result_value;
+  s.network_choice = g_network_result_packet.result;
   if (s.thread_hwnd != (HWND)0)
   {
     SendMessageA(s.thread_hwnd, WM_COMMAND, 0x402, s.network_choice);
@@ -1166,7 +1166,7 @@ void coin_flip_wait_for_network_choice_thread(void *hwnd)
   {
   }
   TENTATIVE_wait_for_network_result(1, 5);
-  s.network_choice = g_network_result_value;
+  s.network_choice = g_network_result_packet.result;
   SendMessageA(s.thread_hwnd, WM_COMMAND, 0x401, s.network_choice);
   ReleaseMutex(global_mutex_GameInit);
   _endthread();
@@ -1535,8 +1535,8 @@ int run_duel_coin_flip_dialogs(unsigned int *starting_player,
         DialogBoxParamA(g_app_instance, (LPCSTR)0xf4, g_duel_window_hwnd, dlgproc_duel_coin_flip, (LPARAM)&s.coin_flip_context);
     if ((g_duel_network_flags & 2) != 0 && s.coin_flip_context.coin_winner == 0)
     {
-      g_network_result_packet_type = 5;
-      g_network_result_value = s.coin_flip_context.play_draw_choice;
+      g_network_result_packet.packet_type = 5;
+      g_network_result_packet.result = s.coin_flip_context.play_draw_choice;
       TENTATIVE_send_network_result(0, 5);
     }
     set_player_directive_value(1, 0);

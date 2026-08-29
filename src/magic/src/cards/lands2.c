@@ -149,8 +149,8 @@ int send_arena_network_choice(int player, int choice)
 {
   if (g_active_player == player && (g_duel_network_flags & 2) != 0)
   {
-    g_network_result_packet_type = 0xd;
-    g_network_result_value = choice;
+    g_network_result_packet.packet_type = 0xd;
+    g_network_result_packet.result = choice;
     TENTATIVE_send_network_result(player, 0xd);
   }
   return choice;

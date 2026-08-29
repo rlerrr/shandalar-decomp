@@ -13,7 +13,8 @@
 typedef struct
 {
   char packet_type;
-  char pad_1[3];
+  char pad_1;
+  short packet_number;
   int result;
   int selection_code;
   int previous_player;
@@ -25,6 +26,34 @@ typedef struct
   int aux_controller;
   char thread_exit_code;
 } target_selection_network_packet_t;
+STATIC_ASSERT(sizeof(target_selection_network_packet_t) == 0x2c, target_selection_network_packet_t_wrong_size);
+
+typedef struct
+{
+  char packet_type;
+  char pad_1;
+  short packet_number;
+  int result;
+} result_network_packet_t;
+STATIC_ASSERT(sizeof(result_network_packet_t) == 8, result_network_packet_t_wrong_size);
+
+typedef struct
+{
+  char packet_type;
+  char pad_1;
+  short packet_number;
+  unsigned char payload[0x1c];
+} duel_parameters_network_packet_t;
+STATIC_ASSERT(sizeof(duel_parameters_network_packet_t) == 0x20, duel_parameters_network_packet_t_wrong_size);
+
+typedef struct
+{
+  char packet_type;
+  char pad_1;
+  short packet_number;
+  unsigned char phase_stop_flags[0x4c];
+} phase_stopper_network_packet_t;
+STATIC_ASSERT(sizeof(phase_stopper_network_packet_t) == 0x50, phase_stopper_network_packet_t_wrong_size);
 
 typedef struct
 {
@@ -64,11 +93,7 @@ NETWORK_EXTERN int g_next_expected_network_packet_number;
 
 // GLOBAL: MAGIC 0x007a7d08
 // GLOBAL: SHANDALAR 0x007bea98
-NETWORK_EXTERN char g_network_result_packet_type;
-
-// GLOBAL: MAGIC 0x007a7d0c
-// GLOBAL: SHANDALAR 0x007bea9c
-NETWORK_EXTERN int g_network_result_value;
+NETWORK_EXTERN result_network_packet_t g_network_result_packet;
 
 // GLOBAL: MAGIC 0x0092607c
 NETWORK_EXTERN int unk_0092607c;
@@ -82,20 +107,14 @@ NETWORK_EXTERN target_pair_network_packet_t g_target_pair_network_packet;
 NETWORK_EXTERN fireball_options_network_packet_t g_fireball_options_network_packet;
 
 // GLOBAL: MAGIC 0x008b27f0
-NETWORK_EXTERN char unk_008b27f0;
-
-// GLOBAL: MAGIC 0x008b27f4
-NETWORK_EXTERN unsigned char DAT_008b27f4[0x4c];
+NETWORK_EXTERN phase_stopper_network_packet_t g_phase_stopper_network_packet;
 
 // GLOBAL: MAGIC 0x008b2938
 // GLOBAL: SHANDALAR 0x008c6ae8
-NETWORK_EXTERN char unk_008b2938;
-// GLOBAL: MAGIC 0x008b293c
-// GLOBAL: SHANDALAR 0x008c6aec
-NETWORK_EXTERN int DAT_008b293c;
+NETWORK_EXTERN result_network_packet_t g_dialog_result_network_packet;
 
 // GLOBAL: MAGIC 0x008b34a0
-NETWORK_EXTERN char unk_008b34a0;
+NETWORK_EXTERN duel_parameters_network_packet_t g_duel_parameters_network_packet;
 
 // GLOBAL: MAGIC 0x008b60e8
 NETWORK_EXTERN int unk_008b60e8;

@@ -825,7 +825,7 @@ int choose_magical_hack_colors(int player, target_t *target, const char *prompt,
   if ((g_duel_network_flags & 2) != 0 && player == g_other_player)
   {
     TENTATIVE_wait_for_network_result(player, 0x17);
-    s.dialog_result = g_network_result_value;
+    s.dialog_result = g_network_result_packet.result;
   }
   else
   {
@@ -833,8 +833,8 @@ int choose_magical_hack_colors(int player, target_t *target, const char *prompt,
                                       dlgproc_magical_hack, (LPARAM)&s);
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_network_result_value = s.dialog_result;
-      g_network_result_packet_type = 0x17;
+      g_network_result_packet.result = s.dialog_result;
+      g_network_result_packet.packet_type = 0x17;
       TENTATIVE_send_network_result(player, 0x17);
     }
   }

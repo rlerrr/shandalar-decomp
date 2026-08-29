@@ -2574,14 +2574,14 @@ int play_duel(int player, int creature_type)
     {
       if (g_manalink_is_host != 0)
       {
-        g_network_result_packet_type = 1;
-        g_network_result_value = 1 - s.starting_player;
+        g_network_result_packet.packet_type = 1;
+        g_network_result_packet.result = 1 - s.starting_player;
         TENTATIVE_send_network_result(0, 1);
       }
       else
       {
         TENTATIVE_wait_for_network_result(1, 1);
-        s.starting_player = g_network_result_value;
+        s.starting_player = g_network_result_packet.result;
       }
     }
     g_starting_player_was_random = 1;
@@ -2608,11 +2608,11 @@ int play_duel(int player, int creature_type)
         if ((g_duel_network_flags & 2) != 0)
         {
           global_ante_cards[0][0] = DrawRandomCardFromInitialLibrary(g_selected_wizard_color);
-          g_network_result_packet_type = 2;
-          g_network_result_value = global_ante_cards[0][0];
+          g_network_result_packet.packet_type = 2;
+          g_network_result_packet.result = global_ante_cards[0][0];
           TENTATIVE_send_network_result(0, 2);
           TENTATIVE_wait_for_network_result(1, 2);
-          global_ante_cards[1][0] = g_network_result_value;
+          global_ante_cards[1][0] = g_network_result_packet.result;
         }
         else
         {

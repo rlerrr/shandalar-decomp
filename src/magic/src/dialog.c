@@ -714,7 +714,7 @@ int do_dialog(int who_chooses,
   if (who_chooses == g_other_player && (g_duel_network_flags & 2) != 0)
   {
     TENTATIVE_wait_for_network_result(who_chooses, 0xd);
-    ai_choice = DAT_008b293c;
+    ai_choice = g_dialog_result_network_packet.result;
   }
 
   if (g_duel_ai_mode_state == 1)
@@ -778,8 +778,8 @@ int do_dialog(int who_chooses,
 
   if (who_chooses == g_active_player && (g_duel_network_flags & 2) != 0)
   {
-    unk_008b2938 = '\r';
-    DAT_008b293c = s.dialog_result;
+    g_dialog_result_network_packet.packet_type = '\r';
+    g_dialog_result_network_packet.result = s.dialog_result;
     TENTATIVE_send_network_result(who_chooses, 0xd);
   }
 

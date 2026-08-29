@@ -105,7 +105,7 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
       (g_duel_active != 0))
   {
     TENTATIVE_wait_for_network_result(player, 0x19);
-    return g_network_result_value;
+    return g_network_result_packet.result;
   }
 
   if (((player == g_other_player) &&
@@ -331,8 +331,8 @@ int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char
   if ((player == g_active_player) &&
       ((g_duel_network_flags & 2) != 0))
   {
-    g_network_result_value = result;
-    g_network_result_packet_type = 0x19;
+    g_network_result_packet.result = result;
+    g_network_result_packet.packet_type = 0x19;
     TENTATIVE_send_network_result(player, 0x19);
   }
 

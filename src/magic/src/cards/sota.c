@@ -1621,15 +1621,15 @@ int card_ring_of_ma_r_f(int player, int card, event_t event)
               internal_card_id = pick_internal_card_from_list_dialog(g_text_lines[0], -1, -1);
               if ((g_duel_network_flags & 2) != 0)
               {
-                g_network_result_packet_type = 0x1a;
-                g_network_result_value = internal_card_id;
+                g_network_result_packet.packet_type = 0x1a;
+                g_network_result_packet.result = internal_card_id;
                 TENTATIVE_send_network_result(0, 0x1a);
               }
             }
             else
             {
               TENTATIVE_wait_for_network_result(1, 0x1a);
-              internal_card_id = g_network_result_value;
+              internal_card_id = g_network_result_packet.result;
             }
           }
         }

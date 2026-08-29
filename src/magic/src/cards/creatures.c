@@ -716,16 +716,16 @@ int card_tempest_efreet(int player, int card, event_t event)
           {
             random_card_index = -1;
           }
-          g_network_result_value = random_card_index;
-          g_network_result_packet_type = 0x14;
+          g_network_result_packet.result = random_card_index;
+          g_network_result_packet.packet_type = 0x14;
           TENTATIVE_send_network_result(player, 0x14);
         }
       }
       else
       {
         TENTATIVE_wait_for_network_result(player, 0x14);
-        random_card_index = g_network_result_value;
-        if (g_network_result_value == -1)
+        random_card_index = g_network_result_packet.result;
+        if (g_network_result_packet.result == -1)
         {
           attempts = 999;
         }
@@ -3052,15 +3052,15 @@ int card_rag_man(int player, int card, event_t event)
         {
           s.selected_card = -1;
         }
-        g_network_result_value = s.selected_card;
-        g_network_result_packet_type = 0x14;
+        g_network_result_packet.result = s.selected_card;
+        g_network_result_packet.packet_type = 0x14;
         TENTATIVE_send_network_result(player, 0x14);
       }
     }
     else
     {
       TENTATIVE_wait_for_network_result(player, 0x14);
-      s.selected_card = g_network_result_value;
+      s.selected_card = g_network_result_packet.result;
       if (s.selected_card == -1)
       {
         s.attempts = 999;

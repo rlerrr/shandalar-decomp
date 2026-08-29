@@ -492,11 +492,11 @@ static int initialize_action_packets(void)
   g_manalink_current_opponent_present = g_manalink_previous_opponent_present;
   g_manalink_opponent_monitor_active = 1;
   g_waiting_for_network_packet = 0;
-  unk_008b27f0 = '\0';
+  g_phase_stopper_network_packet.packet_type = '\0';
   g_target_selection_network_packet.packet_type = '\0';
-  unk_008b2938 = '\0';
-  g_network_result_packet_type = '\0';
-  unk_008b34a0 = '\0';
+  g_dialog_result_network_packet.packet_type = '\0';
+  g_network_result_packet.packet_type = '\0';
+  g_duel_parameters_network_packet.packet_type = '\0';
   g_fireball_options_network_packet.packet_type = '\0';
   g_target_pair_network_packet.packet_type = '\0';
   g_card_list_packet_type = '\0';
