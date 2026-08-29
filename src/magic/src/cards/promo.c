@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "../global_duel_ui_ids.h"
 #include "../game_support.h"
@@ -14,6 +15,9 @@ int get_card_display_pic_num(int card_id, int player, int card);
 int whimsy_build_candidates(int player, int card, target_t *candidates, unsigned int type_mask);
 int whimsy_apply_effect(int player, int card, int effect_index);
 int choose_orcish_catapult_targets(int player, int card, target_t *targets);
+int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off);
+int resolve_pandoras_box(int player, int card);
+int whimsy_destroy_creatures_then_artifacts_and_enchantments(int player, int card, int internal_card_id);
 
 static int whimsy_target_type_masks[16] =
 {
@@ -496,6 +500,7 @@ int card_faerie_dragon(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0041ab5e
 int faerie_dragon_apply_effect(int player, int card, int effect_index)
 {
+  char dialog[300];
   int target_player;
   int target_card;
   int legacy_card;
@@ -524,7 +529,9 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
     if (effect_index >= 0 && effect_index < 0x14 && effect_index != 0xd && effect_index != 1)
     {
       load_text("prompts.txt", "FAERIEDRAGON_MESSAGES");
-      do_dialog(player, player, card, target_player, target_card, g_text_lines[effect_index], 0);
+      strcpy(dialog, "\n");
+      strcat(dialog, g_text_lines[effect_index]);
+      do_dialog(player, player, card, target_player, target_card, dialog, 0);
       if (g_duel_ai_mode_state != 1)
       {
         play_sound_effect(0x30);
@@ -547,6 +554,9 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
       case 1:
         if (target->power < 3)
         {
+          load_text("prompts.txt", "FAERIEDRAGON_TAWNOSWAND");
+          sprintf(dialog, "\n%s", g_text_lines[0]);
+          do_dialog(player, player, card, target_player, target_card, dialog, 0);
           legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, unk_007abc7c, target_player, target_card);
           if (g_duel_ai_mode_state != 1)
           {
@@ -556,6 +566,9 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         else
         {
           g_spell_fizzled = 1;
+          load_text("prompts.txt", "FAERIEDRAGON_TAWNOSWAND");
+          sprintf(dialog, "\n%s", g_text_lines[1]);
+          do_dialog(player, player, card, target_player, target_card, dialog, 0);
         }
         break;
 
@@ -641,7 +654,16 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         break;
 
       case 13:
-        if ((target->state & STATE_TAPPED) == 0)
+        load_text("prompts.txt", "FAERIEDRAGON_TWIDDLE");
+        sprintf(dialog, "\n%s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+        amount = do_dialog(player,
+                           player,
+                           card,
+                           target_player,
+                           target_card,
+                           dialog,
+                           (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) >> 4);
+        if (amount == 0)
         {
           tap_card_and_dispatch_event(target_player, target_card);
         }
@@ -666,7 +688,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         break;
 
       case 15:
-        kill_card(target_player, target_card, KILL_BURY);
+        hurkyls_recall_bounce_artifact(target_player, target_card);
         break;
 
       case 16:
@@ -718,10 +740,13 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         break;
 
       default:
+        load_text("prompts.txt", "FAERIEDRAGON_ERROR");
+        sprintf(dialog, "\n%s", g_text_lines[0]);
+        do_dialog(player, player, card, target_player, target_card, dialog, 0);
         break;
     }
 
-    if (legacy_card != -1 && effect_index >= 0 && effect_index < 0x14)
+    if (legacy_card != -1)
     {
       PLAYER_CARD_INSTANCE(player, legacy_card).display_pic_info =
           (get_card_display_pic_num(faerie_dragon_effect_pics[effect_index], player, card) << 16) |
@@ -729,10 +754,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
     }
   }
 
-  if (instance->parent_controller != -1 && instance->parent_card != -1)
-  {
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
-  }
+  PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
 
   return 0;
 }
@@ -892,102 +914,157 @@ int whimsy_build_candidates(int player, int card, target_t *candidates, unsigned
 // FUNCTION: SHANDALAR 0x0041c208
 int whimsy_apply_effect(int player, int card, int effect_index)
 {
+  struct
+  {
+    char dialog[300];
+    int top_card;
+    int hand_card;
+    int random_player;
+    int random_choice;
+    int loop_index;
+  } s;
   int target_player;
   int target_card;
-  int hand_card;
-  int top_card;
-  int loop_index;
-  card_instance_t *instance;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-  target_player = instance->targets[0].player;
-  target_card = instance->targets[0].card;
+  target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+  target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
   load_text("prompts.txt", "WHIMSY_MESSAGES");
 
   switch (effect_index)
   {
     case 0:
-      if (target_card != -1)
-      {
-        kill_card(target_player, target_card, KILL_BURY);
-      }
+      sprintf(s.dialog, "\n%s", g_text_lines[0]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      hurkyls_recall_bounce_artifact(target_player, target_card);
       break;
 
     case 1:
-      if (target_card != -1)
+      if ((g_duel_network_flags & 2) == 0)
       {
-        if ((g_duel_network_flags & 2) == 0)
+        s.random_choice = internal_rand(2);
+      }
+      else
+      {
+        s.random_choice = network_random_boolean(player);
+      }
+      if (s.random_choice == 0)
+      {
+        sprintf(s.dialog, "\n%s", g_text_lines[2]);
+      }
+      else
+      {
+        sprintf(s.dialog, "\n%s", g_text_lines[1]);
+      }
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      if (s.random_choice == 0)
+      {
+        if ((PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_TAPPED) == 0)
         {
-          loop_index = internal_rand(2);
+          PLAYER_CARD_INSTANCE(target_player, target_card).state |= STATE_TAPPED;
+          if ((global_cards_data[PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id].type & TYPE_LAND) != 0)
+          {
+            g_produced_mana_color = -1;
+          }
+          dispatch_event(target_player, target_card, EVENT_TAP_CARD);
         }
-        else
-        {
-          loop_index = network_random_boolean(player);
-        }
-        if (loop_index == 0)
-        {
-          tap_card_and_dispatch_event(target_player, target_card);
-        }
-        else
-        {
-          PLAYER_CARD_INSTANCE(target_player, target_card).state &= ~STATE_TAPPED;
-        }
+      }
+      else
+      {
+        PLAYER_CARD_INSTANCE(target_player, target_card).state &= ~STATE_TAPPED;
       }
       break;
 
     case 2:
+      sprintf(s.dialog, "\n%s", g_text_lines[3]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
       deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, 4);
       break;
 
     case 3:
+      sprintf(s.dialog, "\n%s", g_text_lines[4]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
       draw_card_for_player(target_player);
       draw_card_for_player(target_player);
       draw_card_for_player(target_player);
+      break;
+
+    case 4:
+      sprintf(s.dialog, "\n%s", g_text_lines[13]);
+      do_dialog(player, player, card, -1, -1, s.dialog, 0);
+      g_card_on_stack_controller = player;
+      resolve_pandoras_box(player, card);
+      g_card_on_stack_controller = -1;
       break;
 
     case 5:
-      if (target_card != -1)
-      {
-        top_card = PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id;
-        gain_life(target_player,
-                  (int)(char)global_cards_data[top_card].cc[0] +
-                  ClampIntToRange((int)(char)global_cards_data[top_card].cc[1], 0, 99));
-        kill_card(target_player, target_card, KILL_DESTROY);
-      }
+      sprintf(s.dialog, "\n%s", g_text_lines[5]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      s.top_card = PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id;
+      gain_life(target_player,
+                (int)(char)global_cards_data[s.top_card].cc[0] +
+                    ClampIntToRange((int)(char)global_cards_data[s.top_card].cc[1], 0, 99));
+      kill_card(target_player, target_card, KILL_DESTROY);
       break;
 
     case 6:
-      damage_player(player, 5, player, card);
-      break;
-
-    case 7:
-    case 9:
-      if (target_card != -1)
+      sprintf(s.dialog, "\n%s", g_text_lines[12]);
+      do_dialog(player, player, card, -1, -1, s.dialog, 0);
+      load_text("prompts.txt", "WHIMSY_BOTTLESULEIMAN");
+      sprintf(s.dialog, "%s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+      s.random_choice = do_dialog(player, player, card, -1, -1, s.dialog, 1);
+      if (coin_flip(player, get_displayed_card_name(player, card), 1) == s.random_choice)
       {
-        kill_card(target_player, target_card, KILL_BURY);
+        s.hand_card = add_card_to_hand(player, find_internal_card_id_by_csv_id((card_id_t)0x37a));
+        if (s.hand_card != -1)
+        {
+          process_card_enters_play(player, s.hand_card);
+          PLAYER_CARD_INSTANCE(player, s.hand_card).token_status |= 0x10;
+        }
+      }
+      else
+      {
+        damage_player(player, 5, player, card);
       }
       break;
 
+    case 7:
+      sprintf(s.dialog, "\n%s", g_text_lines[6]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      kill_card(target_player, target_card, KILL_BURY);
+      break;
+
     case 8:
+      sprintf(s.dialog, "\n%s", g_text_lines[7]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
       gain_life(target_player, 3);
       break;
 
+    case 9:
+      sprintf(s.dialog, "\n%s", g_text_lines[8]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      kill_card(target_player, target_card, KILL_BURY);
+      break;
+
     case 10:
+      sprintf(s.dialog, "\n%s", g_text_lines[14]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
       discard(target_player, 0, 0);
       break;
 
     case 11:
-      for (loop_index = 0; loop_index < 2; ++loop_index)
+      sprintf(s.dialog, "\n%s", g_text_lines[9]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      for (s.loop_index = 0; s.loop_index < 2; ++s.loop_index)
       {
-        top_card = global_library[target_player][0];
-        if (top_card != -1)
+        s.top_card = global_library[target_player][0];
+        if (s.top_card != -1)
         {
           remove_card_from_deck(target_player, 0);
-          hand_card = add_card_to_hand(target_player, top_card);
-          if (hand_card != -1)
+          s.hand_card = add_card_to_hand(target_player, s.top_card);
+          if (s.hand_card != -1)
           {
-            move_card_to_graveyard(target_player, hand_card);
-            PLAYER_CARD_INSTANCE(target_player, hand_card).internal_card_id = -1;
+            move_card_to_graveyard(target_player, s.hand_card);
+            PLAYER_CARD_INSTANCE(target_player, s.hand_card).internal_card_id = -1;
           }
         }
         if (g_duel_ai_mode_state != 1)
@@ -997,13 +1074,55 @@ int whimsy_apply_effect(int player, int card, int effect_index)
       }
       break;
 
-    case 15:
-      hand_card = draw_card_for_player(target_player);
-      if (hand_card != -1 &&
-          (global_cards_data[PLAYER_CARD_INSTANCE(target_player, hand_card).internal_card_id].type & TYPE_LAND) == 0)
+    case 12:
+      sprintf(s.dialog, "\n%s", g_text_lines[10]);
+      do_dialog(player, player, card, -1, -1, s.dialog, 0);
+      if ((g_duel_network_flags & 2) == 0)
       {
-        move_card_to_graveyard(target_player, hand_card);
-        PLAYER_CARD_INSTANCE(target_player, hand_card).internal_card_id = -1;
+        s.random_player = internal_rand(2);
+      }
+      else
+      {
+        s.random_player = network_random_boolean(player);
+      }
+      s.hand_card = add_card_to_hand(s.random_player,
+                                     find_internal_card_id_by_csv_id((card_id_t)0x375));
+      if (s.hand_card != -1)
+      {
+        process_card_enters_play(s.random_player, s.hand_card);
+        PLAYER_CARD_INSTANCE(s.random_player, s.hand_card).token_status |= 0x10;
+      }
+      break;
+
+    case 13:
+      sprintf(s.dialog, "\n%s", g_text_lines[11]);
+      do_dialog(player, player, card, -1, -1, s.dialog, 0);
+      dispatch_three_arg_callback_to_cards_in_play(
+          whimsy_destroy_creatures_then_artifacts_and_enchantments,
+          -1);
+      break;
+
+    case 14:
+      sprintf(s.dialog, "\n%s", g_text_lines[15]);
+      do_dialog(player, player, card, -1, -1, s.dialog, 0);
+      s.hand_card = create_legacy_effect(player, card, unk_007894a0, -1, -1);
+      if (s.hand_card != -1)
+      {
+        PLAYER_CARD_INSTANCE(player, s.hand_card).display_pic_info = 0x58;
+      }
+      break;
+
+    case 15:
+      sprintf(s.dialog, "\n%s", g_text_lines[16]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
+      s.hand_card = draw_card_for_player(target_player);
+      load_text("prompts.txt", "WHIMSY_SINDBAD");
+      do_dialog(player, player, card, target_player, s.hand_card, g_text_lines[0], 0);
+      if ((global_cards_data[PLAYER_CARD_INSTANCE(target_player, s.hand_card).internal_card_id].type & TYPE_LAND) == 0)
+      {
+        move_card_to_graveyard(target_player, s.hand_card);
+        PLAYER_CARD_INSTANCE(target_player, s.hand_card).internal_card_id = -1;
+        --g_duel_summary.hand_counts[target_player];
         if (g_duel_ai_mode_state != 1)
         {
           play_sound_effect(0x18);
@@ -1012,9 +1131,30 @@ int whimsy_apply_effect(int player, int card, int effect_index)
       break;
 
     default:
+      sprintf(s.dialog, "\n%s", g_text_lines[17]);
+      do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
       break;
   }
 
   TENTATIVE_reassess_all_cards(0, 0xff);
+  return 0;
+}
+
+// FUNCTION: SHANDALAR 0x0051dcf2
+int whimsy_destroy_creatures_then_artifacts_and_enchantments(int player,
+                                                              int card,
+                                                              int internal_card_id)
+{
+  if (is_in_play(player, card) != 0 &&
+      (global_cards_data[internal_card_id].type & TYPE_CREATURE) != 0)
+  {
+    kill_card(player, card, KILL_DESTROY);
+  }
+  regenerate_or_graveyard_triggers();
+  if (is_in_play(player, card) != 0 &&
+      (global_cards_data[internal_card_id].type & (TYPE_ARTIFACT | TYPE_ENCHANTMENT)) != 0)
+  {
+    kill_card(player, card, KILL_DESTROY);
+  }
   return 0;
 }

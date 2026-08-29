@@ -123,12 +123,9 @@ int card_gem_bazaar(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0042a375
 int card_oasis(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  card_instance_t *parent;
   target_t target;
   int can_activate;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  int done;
 
   if (event == EVENT_CAST_SPELL &&
       g_affected_card == card &&
@@ -141,7 +138,8 @@ int card_oasis(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     can_activate = (g_land_can_be_played & 4) != 0;
-    if ((instance->state & STATE_TAPPED) != 0 || is_animated_and_sick(player, card))
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0 ||
+        is_animated_and_sick(player, card))
     {
       can_activate = 0;
     }
@@ -180,47 +178,64 @@ int card_oasis(int player, int card, event_t event)
   {
     if (unk_00938e2c != 0)
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       g_spell_fizzled = 1;
       return 0;
     }
 
-    if (!C_real_select_target(player,
-                              2,
-                              2,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_NONE,
-                              TYPE_NONE,
-                              0,
-                              0,
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              g_damage_card_internal_card_id,
-                              -1,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              "Select damage to a creature.",
-                              1,
-                              &target))
+    done = 0;
+    while (!done)
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
-      instance->targets[0] = target;
-      instance->number_of_targets = 1;
-      instance->state |= STATE_TAPPED;
-      g_produced_mana_color = -1;
+      load_text("prompts.txt", "OASIS");
+      if (!C_real_select_target(player,
+                                2,
+                                2,
+                                TARGET_ZONE_IN_PLAY,
+                                TYPE_NONE,
+                                TYPE_NONE,
+                                0,
+                                0,
+                                COLOR_TEST_0,
+                                COLOR_TEST_0,
+                                g_damage_card_internal_card_id,
+                                -1,
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                0,
+                                g_text_lines[0],
+                                1,
+                                &target))
+      {
+        g_spell_fizzled = 1;
+        done = 1;
+      }
+      else if (PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card == -1)
+      {
+        if (g_duel_ai_mode_state != 1 && player != g_other_player)
+        {
+          set_duel_prompt_text(g_text_lines[1]);
+          Sleep(2000);
+          set_duel_prompt_text("");
+        }
+      }
+      else
+      {
+        done = 1;
+        PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        g_produced_mana_color = -1;
+      }
     }
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && instance->number_of_targets != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION &&
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
   {
-    target = instance->targets[0];
+    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -251,12 +266,14 @@ int card_oasis(int player, int card, event_t event)
         --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
       }
     }
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
-    parent->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
     return 0;
   }
 
-  if (event == EVENT_CHECK_PUMP && (instance->state & STATE_TAPPED) == 0)
+  if (event == EVENT_CHECK_PUMP &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
     ++unk_007a7d88[player];
   }
@@ -1086,10 +1103,6 @@ int card_mishra_s_factory(int player, int card, event_t event)
           {
             PLAYER_CARD_INSTANCE(player, s.legacy_card).counter_power = 1;
             PLAYER_CARD_INSTANCE(player, s.legacy_card).counter_toughness = 1;
-          }
-          else
-          {
-            g_spell_fizzled = 1;
           }
         }
       }

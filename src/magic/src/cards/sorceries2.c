@@ -3,6 +3,10 @@
 #include "../global_strings.h"
 
 int find_highest_value_library_card_by_type(int player, int library_player, unsigned int type);
+#ifdef SHANDALAR
+int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,
+                                 int require_card_click, int *out_selection);
+#endif
 
 // FUNCTION: MAGIC 0x0040a8d0
 // FUNCTION: SHANDALAR 0x00401000
@@ -261,12 +265,8 @@ int card_reconstruction(int player, int card, event_t event)
 {
   struct
   {
-    int can_select;
-    int selectable[500];
     int hand_card;
     int graveyard_index;
-    int current_card;
-    char (*prompt)[300];
   } s;
 
   if (event == EVENT_CAN_CAST)
@@ -278,45 +278,48 @@ int card_reconstruction(int player, int card, event_t event)
   {
     if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) || g_duel_ai_mode_state == 1)
     {
-      s.can_select = 1;
       s.graveyard_index = find_highest_value_graveyard_card_by_type(player, TYPE_ARTIFACT);
     }
     else
     {
-      for (s.current_card = 0;
-           s.current_card < 500 && global_graveyard_slots[player][s.current_card] != -1;
-           ++s.current_card)
+      if (g_active_player == player)
       {
-        s.selectable[s.current_card] =
-            (global_cards_data[global_graveyard_slots[player][s.current_card]].type & TYPE_ARTIFACT) != 0;
+        load_text("promptsX1.txt", "RECONSTRUCTION");
       }
-      load_text("promptsX1.txt", "RECONSTRUCTION");
-      s.prompt = g_text_lines;
-      s.can_select = select_from_graveyard_with_dialog(player,
-                                                       global_graveyard_slots[player],
-                                                       s.selectable,
-                                                       500,
-                                                       (int)&s.prompt,
-                                                       1,
-                                                       (int)&s.graveyard_index,
-                                                       0,
-                                                       1);
+      do
+      {
+#ifdef SHANDALAR
+        s.graveyard_index =
+            SelectAdventureListCardIndex(player, global_graveyard_slots[player], 500,
+                                         g_text_lines[0], 0, (int *)gs_cancel_008a8c20);
+#else
+        s.graveyard_index =
+            show_deck(player, global_graveyard_slots[player], 500,
+                      g_text_lines, 0, gs_cancel_008a8c20);
+#endif
+        if ((global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type &
+             TYPE_ARTIFACT) == 0 &&
+            g_duel_ai_mode_state != 1)
+        {
+          set_duel_prompt_text(g_text_lines[1]);
+          Sleep(2500);
+          set_duel_prompt_text("");
+        }
+      } while (s.graveyard_index != -1 &&
+               (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type &
+                TYPE_ARTIFACT) == 0);
     }
 
-    if (s.can_select != 0 &&
-        s.graveyard_index != -1 &&
+    if (s.graveyard_index != -1 &&
         global_graveyard_slots[player][s.graveyard_index] != -1 &&
         (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_ARTIFACT) != 0)
     {
       s.hand_card = add_card_to_hand(player, global_graveyard_slots[player][s.graveyard_index]);
-      if (s.hand_card != -1)
-      {
-        PLAYER_CARD_INSTANCE(player, s.hand_card).state |= STATE_INVISIBLE;
-        PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
-        PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.hand_card;
-        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        PLAYER_CARD_INSTANCE(player, card).info_slot = s.graveyard_index;
-      }
+      PLAYER_CARD_INSTANCE(player, s.hand_card).state |= STATE_INVISIBLE;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.hand_card;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = s.graveyard_index;
     }
     else
     {
@@ -327,22 +330,21 @@ int card_reconstruction(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     s.graveyard_index = PLAYER_CARD_INSTANCE(player, card).info_slot;
-    if (s.graveyard_index == -1 ||
-        global_graveyard_slots[player][s.graveyard_index] == -1 ||
-        (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_ARTIFACT) == 0)
-    {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .targets[6]
-          .card = -1;
-    }
-    else
+    if (s.graveyard_index != -1 &&
+        global_graveyard_slots[player][s.graveyard_index] != -1 &&
+        (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_ARTIFACT) != 0)
     {
       remove_card_from_graveyard(player, s.graveyard_index);
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                            PLAYER_CARD_INSTANCE(player, card).targets[0].card)
           .state &= ~STATE_INVISIBLE;
       ++g_duel_summary.hand_counts[player];
+    }
+    else
+    {
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+          .internal_card_id = -1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -394,14 +396,14 @@ int card_resurrection(int player, int card, event_t event)
       load_text("promptsX1.txt", "RESURRECTION");
       s.prompt = g_text_lines;
       s.can_select = select_from_graveyard_with_dialog(player,
-                                       global_graveyard_slots[player],
-                                       s.selectable,
-                                       500,
-                                       (int)&s.prompt,
-                                       1,
-                                       (int)&s.graveyard_index,
-                                       0,
-                                       1);
+                                                       global_graveyard_slots[player],
+                                                       s.selectable,
+                                                       500,
+                                                       (int)&s.prompt,
+                                                       1,
+                                                       (int)&s.graveyard_index,
+                                                       0,
+                                                       1);
     }
 
     if (s.can_select != 0 && global_graveyard_slots[player][s.graveyard_index] != -1)
@@ -430,9 +432,9 @@ int card_resurrection(int player, int card, event_t event)
         (global_cards_data[global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot]].type & TYPE_CREATURE) != 0)
     {
       process_card_enters_play(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                   PLAYER_CARD_INSTANCE(player, card).targets[0].card);
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card);
       remove_card_from_graveyard(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                   PLAYER_CARD_INSTANCE(player, card).info_slot);
+                                 PLAYER_CARD_INSTANCE(player, card).info_slot);
     }
     else
     {
@@ -487,18 +489,17 @@ int card_transmute_artifact(int player, int card, event_t event)
 {
   struct
   {
-    target_t target;
-    int selectable[500];
-    int library_index;
-    int current_card;
-    int selectable_count;
-    int hand_card;
     int selected_value;
-    int extra_cost;
-    int internal_card_id;
-    int paid;
-    int selection_result;
     char (*prompt)[300];
+    int selection_result;
+    int selectable[500];
+    target_t target;
+    int paid;
+    int current_card;
+    int extra_cost;
+    int library_index;
+    int internal_card_id;
+    int selectable_count;
   } s;
 
   if (event == EVENT_CAN_CAST)
@@ -511,23 +512,16 @@ int card_transmute_artifact(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     load_text("promptsX1.txt", "TRANSMUTE_ARTIFACT");
-    if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY,
-                              TYPE_ARTIFACT, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
-                              -1, ~SUB_WALL, -1, -1, 0, 0, 0, g_text_lines[0], 1, &s.target))
+    if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY,
+                             TYPE_ARTIFACT, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
+                             -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &s.target))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = s.target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.target.card;
-      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-      s.internal_card_id = PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id;
-      if ((int)(char)global_cards_data[s.internal_card_id].cc[0] +
-              (((int)(char)global_cards_data[s.internal_card_id].cc[1] == -1) ? 1 : 0) ==
+      if ((int)(char)global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].cc[0] +
+              (((int)(char)global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].cc[1] == -1) ? 1 : 0) ==
           0)
       {
-        PLAYER_CARD_INSTANCE(player, card).info_slot = (int)(char)global_cards_data[s.internal_card_id].cc[1];
+        PLAYER_CARD_INSTANCE(player, card).info_slot =
+            (int)(char)global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].cc[1];
       }
       else
       {
@@ -539,12 +533,14 @@ int card_transmute_artifact(int player, int card, event_t event)
       }
       kill_card(s.target.player, s.target.card, KILL_SACRIFICE);
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    s.library_index = -1;
-    s.selection_result = 0;
     if (player == g_active_player || (g_duel_network_flags & 2) != 0)
     {
       s.selectable_count = 0;
@@ -556,35 +552,26 @@ int card_transmute_artifact(int player, int card, event_t event)
           ++s.selectable_count;
         }
         else
-        {
           s.selectable[s.current_card] = 0;
-        }
       }
 
-      if (s.selectable_count != 0)
+      if (s.current_card < 1 || s.selectable_count < 1)
       {
-        if (g_duel_ai_mode_state != 1 && g_duel_network_state == 0)
-        {
-          load_text("promptsX1.txt", "TRANSMUTE_ARTIFACT");
-          s.prompt = g_text_lines;
-          s.selection_result = select_from_graveyard_with_dialog(player,
-                                                                 global_library[player],
-                                                                 s.selectable,
-                                                                 500,
-                                                                 (int)&s.prompt,
-                                                                 1,
-                                                                 (int)&s.library_index,
-                                                                 1,
-                                                                 1);
-        }
-        else
-        {
-          s.library_index = find_highest_value_library_card_by_type(player, player, TYPE_ARTIFACT);
-          if (s.library_index != -1)
-          {
-            s.selection_result = 1;
-          }
-        }
+        s.selection_result = 0;
+      }
+      else if (g_duel_ai_mode_state != 1 && g_duel_network_state == 0)
+      {
+        load_text("promptsX1.txt", "TRANSMUTE_ARTIFACT");
+        s.prompt = g_text_lines;
+        s.selection_result = select_from_graveyard_with_dialog(player,
+                                                               global_library[player],
+                                                               s.selectable,
+                                                               500,
+                                                               (int)&s.prompt,
+                                                               1,
+                                                               (int)&s.library_index,
+                                                               1,
+                                                               1);
       }
     }
     else
@@ -596,10 +583,7 @@ int card_transmute_artifact(int player, int card, event_t event)
       }
     }
 
-    if (s.selection_result < 1 ||
-        s.library_index == -1 ||
-        global_library[player][s.library_index] == -1 ||
-        (global_cards_data[global_library[player][s.library_index]].type & TYPE_ARTIFACT) == 0)
+    if (s.selection_result < 1)
     {
       g_spell_fizzled = 1;
     }
@@ -623,10 +607,10 @@ int card_transmute_artifact(int player, int card, event_t event)
         s.extra_cost = 0;
       }
 
-      s.hand_card = add_card_to_hand(player, s.internal_card_id);
-      if (s.hand_card != -1)
+      s.current_card = add_card_to_hand(player, s.internal_card_id);
+      if (s.current_card != -1)
       {
-        PLAYER_CARD_INSTANCE(player, s.hand_card).state |= STATE_INVISIBLE;
+        PLAYER_CARD_INSTANCE(player, s.current_card).state |= STATE_INVISIBLE;
         s.paid = 0;
         if (has_mana(player, COLOR_ANY, s.extra_cost) != 0)
         {
@@ -634,12 +618,12 @@ int card_transmute_artifact(int player, int card, event_t event)
           if (g_spell_fizzled != 1)
           {
             s.paid = 1;
-            process_card_enters_play(player, s.hand_card);
+            process_card_enters_play(player, s.current_card);
           }
         }
         if (s.paid == 0)
         {
-          kill_card(player, s.hand_card, KILL_BURY);
+          kill_card(player, s.current_card, KILL_BURY);
         }
       }
       remove_card_from_deck(player, s.library_index);

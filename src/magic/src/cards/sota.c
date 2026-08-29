@@ -227,7 +227,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-        kill_card(player, card, KILL_REMOVE);
+        kill_card(player, card, KILL_SACRIFICE);
         if (target.player == g_active_player)
         {
           g_ai_modifier -= 0x18;

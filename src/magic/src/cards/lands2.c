@@ -456,22 +456,21 @@ int card_city_of_brass(int player, int card, event_t event)
 {
   struct
   {
+    char dialog[300];
     int color;
     int current_color;
     color_test_t available_colors;
   } s;
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (instance->state & STATE_TAPPED) == 0 && !is_animated_and_sick(player, card);
+    return (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+           !is_animated_and_sick(player, card);
   }
 
-  if (event == EVENT_ACTIVATE && (instance->state & STATE_TAPPED) == 0)
+  if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
-    s.available_colors = (color_test_t)(unsigned char)instance->mana_color;
+    s.available_colors = (color_test_t)(unsigned char)PLAYER_CARD_INSTANCE(player, card).mana_color;
     s.color = -1;
 
     if ((player == g_other_player && (g_duel_network_flags & 2) == 0) ||
@@ -490,6 +489,10 @@ int card_city_of_brass(int player, int card, event_t event)
       {
         s.color = COLOR_BLACK;
       }
+      if (s.color == -1)
+      {
+        g_spell_fizzled = 1;
+      }
     }
 
     if (g_spell_fizzled != 1)
@@ -498,6 +501,7 @@ int card_city_of_brass(int player, int card, event_t event)
           unk_00938e2c == COLOR_TEST_ARTIFACT ||
           unk_00938e2c == (COLOR_TEST_COLORLESS | COLOR_TEST_ARTIFACT))
       {
+        s.color = -1;
         for (s.current_color = COLOR_COLORLESS; s.current_color < 7 && s.color == -1; ++s.current_color)
         {
           if ((s.available_colors & (1 << (unsigned char)s.current_color)) != 0)
@@ -506,9 +510,10 @@ int card_city_of_brass(int player, int card, event_t event)
           }
         }
       }
-      else if (s.color == -1)
+      else
       {
-        s.color = choose_a_color(player, "Choose a color.", 1, -1, s.available_colors);
+        load_text("promptsX1.txt", "CITY_OF_BRASS");
+        s.color = choose_a_color(player, g_text_lines[0], 1, s.color, s.available_colors);
       }
 
       if (s.color == -1)
@@ -519,8 +524,34 @@ int card_city_of_brass(int player, int card, event_t event)
       {
         produce_mana(player, s.color, 1);
         undeclare_mana_available_hex(player, s.available_colors, 1);
-        instance->state |= STATE_TAPPED;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         g_produced_mana_color = s.color;
+
+        if (player == g_other_player && (g_duel_network_flags & 2) == 0)
+        {
+          load_text("promptsX1.txt", "CITY_OF_BRASS");
+          if (s.color == COLOR_BLACK)
+          {
+            strcpy(s.dialog, g_text_lines[1]);
+          }
+          else if (s.color == COLOR_BLUE)
+          {
+            strcpy(s.dialog, g_text_lines[2]);
+          }
+          else if (s.color == COLOR_GREEN)
+          {
+            strcpy(s.dialog, g_text_lines[3]);
+          }
+          else if (s.color == COLOR_RED)
+          {
+            strcpy(s.dialog, g_text_lines[4]);
+          }
+          else
+          {
+            strcpy(s.dialog, g_text_lines[5]);
+          }
+          do_dialog(player, player, card, -1, -1, s.dialog, 0);
+        }
       }
     }
   }
@@ -529,16 +560,19 @@ int card_city_of_brass(int player, int card, event_t event)
       g_affected_card == card &&
       g_affected_card_controller == player)
   {
-    damage_player(player, 1, player, card);
+    damage_player(g_affected_card_controller, 1, player, card);
   }
 
   if (event == EVENT_COUNT_MANA &&
       g_affected_card == card &&
       g_affected_card_controller == player &&
-      (instance->state & STATE_TAPPED) == 0 &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
       !is_animated_and_sick(player, card))
   {
-    declare_mana_available_hex(player, (color_test_t)(unsigned char)instance->mana_color, 1);
+    declare_mana_available_hex(
+        player,
+        (color_test_t)(unsigned char)PLAYER_CARD_INSTANCE(player, card).mana_color,
+        1);
   }
 
   return 0;
@@ -896,6 +930,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
   {
     s.result = 0;
     s.choice = 0;
+    load_text("promptsX1.txt", "ELEPHANT_GRAVEYARD");
     if (DAT_007aadf0 != 0 &&
         instance->info_slot != 0 &&
         (g_land_can_be_played & LCBP_REGENERATION) != 0)
@@ -904,7 +939,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
       {
         if (player == g_active_player || (g_duel_network_flags & 2) != 0)
         {
-          sprintf(s.dialog, " Add colorless mana\n Regenerate an Elephant or Mammoth\n Cancel");
+          sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
           s.choice = do_dialog(player, player, card, -1, -1, s.dialog, 1);
         }
         else
@@ -912,6 +947,10 @@ int card_elephant_graveyard(int player, int card, event_t event)
           s.choice = 1;
         }
       }
+    }
+    else if (player == g_other_player && instance->info_slot != 0)
+    {
+      g_ai_modifier -= 0x30;
     }
 
     if (s.choice == 0)
@@ -926,6 +965,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
       do
       {
         instance->number_of_targets = 0;
+        load_text("promptsX1.txt", "ELEPHANT_GRAVEYARD");
         if (!select_target_creature_and_store_without_protection(player, player, card))
         {
           g_spell_fizzled = 1;
@@ -947,9 +987,19 @@ int card_elephant_graveyard(int player, int card, event_t event)
             instance->state |= STATE_TAPPED;
             undeclare_mana_available(player, COLOR_COLORLESS, 1);
           }
-          else if (g_duel_ai_mode_state == 1)
+          else if (g_duel_ai_mode_state != 1)
           {
-            rewind_recorded_action();
+            load_text("prompts.txt", "ELEPHANT_GRAVEYARD");
+            if ((int)(char)target_instance->kill_code != KILL_DESTROY)
+            {
+              set_duel_prompt_text(g_text_lines[4]);
+            }
+            else
+            {
+              set_duel_prompt_text(g_text_lines[5]);
+            }
+            Sleep(0x9c4);
+            set_duel_prompt_text("");
           }
         }
       } while (g_spell_fizzled != 1 && s.done == 0);

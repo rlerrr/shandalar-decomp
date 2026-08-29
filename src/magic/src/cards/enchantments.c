@@ -1950,16 +1950,17 @@ int card_powerleech(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004feb50
 int card_raging_river(int player, int card, event_t event)
 {
-  int current_card;
-  int defender;
-  int done;
-  int legacy_card;
-  int selected_cards[151];
-  card_instance_t *instance;
-  char message[600];
-  target_t target;
+  struct
+  {
+    target_t target;
+    char message[600];
+    int selected_cards[151];
+    int legacy_card;
+    int defender;
+    int done;
+    int current_card;
+  } s;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_CAST)
   {
     return player == g_active_player || (g_duel_network_flags & 2) != 0;
@@ -1967,25 +1968,27 @@ int card_raging_river(int player, int card, event_t event)
 
   if ((event == EVENT_RESOLVE_SPELL) && dispatch_function_to_all_cards_in_play(player, card, find_matching_active_control_effect, player) == -1)
   {
-    *(int *)((char *)instance + 0x14) |= 0x1000000;
+    PLAYER_CARD_INSTANCE(player, card).unknown0x14 |= 0x1000000;
   }
-  if ((event == 0x92) && (player == g_current_player) && ((*(unsigned char *)((char *)instance + 0x17) & 1) != 0))
+  if ((event == 0x92) &&
+      player == g_current_player &&
+      ((PLAYER_CARD_INSTANCE(player, card).unknown0x14 >> 24) & 1) != 0)
   {
-    defender = 1 - g_current_player;
-    if ((g_active_player == defender) || ((g_duel_network_flags & 2) != 0))
+    s.defender = 1 - g_current_player;
+    if (g_active_player == s.defender || (g_duel_network_flags & 2) != 0)
     {
-      for (current_card = 0; current_card < g_active_cards_count[defender]; ++current_card)
+      for (s.current_card = 0; s.current_card < g_active_cards_count[s.defender]; ++s.current_card)
       {
-        selected_cards[current_card] = 0;
+        s.selected_cards[s.current_card] = 0;
       }
 
-      done = 0;
-      while (done == 0)
+      s.done = 0;
+      while (s.done == 0)
       {
         load_text("promptsX1.txt", "RAGING_RIVER");
-        if (!C_real_select_target(defender,
-                                  defender,
-                                  defender,
+        if (!C_real_select_target(s.defender,
+                                  s.defender,
+                                  s.defender,
                                   TARGET_ZONE_IN_PLAY,
                                   TYPE_CREATURE,
                                   TYPE_NONE,
@@ -2002,40 +2005,52 @@ int card_raging_river(int player, int card, event_t event)
                                   0,
                                   g_text_lines[0],
                                   2,
-                                  &target))
+                                  &s.target))
         {
-          done = 1;
+          s.done = 1;
         }
         else
         {
-          legacy_card = create_legacy_effect(player, card, unk_008b3bd4, target.player, target.card);
-          if (legacy_card != -1)
+          s.legacy_card =
+              create_legacy_effect(player, card, unk_008b3bd4, s.target.player, s.target.card);
+          if (s.legacy_card != -1)
           {
-            PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 2;
+            PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 2;
           }
-          selected_cards[target.card] = 1;
+          s.selected_cards[s.target.card] = 1;
         }
       }
 
-      for (current_card = 0; current_card < g_active_cards_count[defender]; ++current_card)
+      for (s.current_card = 0; s.current_card < g_active_cards_count[s.defender]; ++s.current_card)
       {
-        if (is_in_play(defender, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(defender, current_card).internal_card_id].type & TYPE_CREATURE) != 0 && selected_cards[current_card] == 0 && ((*(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(defender, current_card) + 0x24) & 0x20) == 0))
+        if (is_in_play(s.defender, s.current_card) &&
+            (global_cards_data[PLAYER_CARD_INSTANCE(s.defender, s.current_card).internal_card_id].type &
+             TYPE_CREATURE) != 0 &&
+            s.selected_cards[s.current_card] == 0 &&
+            ((unsigned char)PLAYER_CARD_INSTANCE(s.defender, s.current_card).blocking & 0x20) == 0)
         {
-          legacy_card = create_legacy_effect(player, card, unk_008b3bd4, defender, current_card);
-          if (legacy_card != -1)
+          s.legacy_card =
+              create_legacy_effect(player, card, unk_008b3bd4, s.defender, s.current_card);
+          if (s.legacy_card != -1)
           {
-            PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 1;
+            PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 1;
           }
         }
       }
     }
     else
     {
-      divide_creatures_into_two_piles(defender, player, card);
+      divide_creatures_into_two_piles(s.defender, player, card);
     }
   }
 
-  if (g_trigger_condition == 0xde && card == g_card_on_stack && player == g_card_on_stack_controller && ((*(unsigned char *)((char *)instance + 0x17) & 1) != 0) && ((*(unsigned char *)((char *)&PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause) + 0x24) & 0x20) == 0) && g_current_turn == g_current_player && player == g_current_player)
+  if (g_trigger_condition == 0xde &&
+      card == g_affected_card &&
+      player == g_affected_card_controller &&
+      ((PLAYER_CARD_INSTANCE(player, card).unknown0x14 >> 24) & 1) != 0 &&
+      ((unsigned char)PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause).blocking & 0x20) == 0 &&
+      g_current_turn == g_current_player &&
+      player == g_current_player)
   {
     if (event == 0x7d)
     {
@@ -2043,26 +2058,31 @@ int card_raging_river(int player, int card, event_t event)
     }
     if (event == 0x7e)
     {
-      legacy_card = create_legacy_effect(player, card, unk_008b3bd4, g_trigger_cause_controller, g_trigger_cause);
-      load_text("promptsX1.txt", "RAGING_RIVER2");
-      sprintf(message, " %s\n %s", "Attack from left bank", "Attack from right bank");
-      if (do_dialog(player, player, card, -1, -1, message, 0) == 0)
+      s.legacy_card =
+          create_legacy_effect(player, card, unk_008b3bd4, g_trigger_cause_controller, g_trigger_cause);
+      load_text("promptsX1.txt", "RAGING_RIVER");
+      sprintf(s.message, " %s\n %s", g_text_lines[0], g_text_lines[1]);
+      if (do_dialog(player, player, card, -1, -1, s.message, 0) == 0)
       {
-        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 1;
+        PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 1;
       }
       else
       {
-        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 2;
+        PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 2;
       }
     }
   }
 
-  if (event == 0x77 && card == g_card_on_stack && player == g_card_on_stack_controller && ((*(unsigned char *)((char *)instance + 0x17) & 1) != 0))
+  if (event == EVENT_GRAVEYARD_FROM_PLAY &&
+      card == g_affected_card &&
+      player == g_affected_card_controller &&
+      ((PLAYER_CARD_INSTANCE(player, card).unknown0x14 >> 24) & 1) != 0)
   {
-    legacy_card = dispatch_function_to_all_cards_in_play(player, card, find_matching_inactive_control_effect, player);
-    if (legacy_card != -1)
+    s.legacy_card =
+        dispatch_function_to_all_cards_in_play(player, card, find_matching_inactive_control_effect, player);
+    if (s.legacy_card != -1)
     {
-      *(int *)((char *)&PLAYER_CARD_INSTANCE(player, legacy_card) + 0x14) |= 0x1000000;
+      PLAYER_CARD_INSTANCE(player, s.legacy_card).unknown0x14 |= 0x1000000;
     }
   }
 

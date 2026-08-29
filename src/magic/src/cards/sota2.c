@@ -385,11 +385,6 @@ int card_aladdin(int player, int card, event_t event)
                                  -1, -1, -1, -1, 0, 0, 0);
   }
 
-  if (event == EVENT_GET_SELECTED_CARD)
-  {
-    load_recorded_action_target(0);
-  }
-
   if (event == EVENT_ACTIVATE)
   {
     g_mana_charge[COLOR_COLORLESS] = 1;
@@ -420,7 +415,10 @@ int card_aladdin(int player, int card, event_t event)
     }
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION)
+  if (event == EVENT_RESOLVE_ACTIVATION &&
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+              .internal_card_id != -1)
   {
     target = PLAYER_CARD_INSTANCE(player, card).targets[0];
     if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2,
@@ -429,6 +427,10 @@ int card_aladdin(int player, int card, event_t event)
                                -1, -1, -1, -1, 0, 0, 0) != 0)
     {
       create_activated_control_effect(player, card, target);
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -1130,7 +1132,7 @@ int card_clone(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       kill_card(player, card, KILL_DESTROY);
     }
-    else if (global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).internal_card_id]
+    else if (global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).original_internal_card_id]
                  .id == CARD_ID_VESUVAN_DOPPELGANGER)
     {
       data_card_location = dispatch_function_to_all_cards_in_play(selected_target.player,
@@ -1163,8 +1165,7 @@ int card_clone(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).internal_card_id = cloned_internal_card_id;
           PLAYER_CARD_INSTANCE(player, card).dummy3 = cloned_internal_card_id;
           PLAYER_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
-          PLAYER_CARD_INSTANCE(player, card).state &= 0xffffdfff;
-          PLAYER_CARD_INSTANCE(player, card).color = global_cards_data[cloned_internal_card_id].color;
+          PLAYER_CARD_INSTANCE(player, card).mana_color = global_cards_data[cloned_internal_card_id].color;
           if ((global_cards_data[cloned_internal_card_id].type & TYPE_ARTIFACT) != 0)
           {
             ++g_duel_summary.artifact_counts[player];
@@ -1182,7 +1183,7 @@ int card_clone(int player, int card, event_t event)
           dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
           global_cards_data[cloned_internal_card_id].code_pointer =
               global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card)
-                                    .internal_card_id]
+                                    .original_internal_card_id]
                   .code_pointer;
           global_cards_data[cloned_internal_card_id].extra_ability |= 1;
         }
@@ -1438,9 +1439,6 @@ int card_demonic_hordes(int player, int card, event_t event)
 
     if (event == EVENT_UPKEEP_COSTS_UNPAID)
     {
-      selected_target.player = -1;
-      selected_target.card = -1;
-
       if (real_target_available((int *)0,
                                 TARGET_SCAN_DIRECT,
                                 player,
@@ -1461,10 +1459,10 @@ int card_demonic_hordes(int player, int card, event_t event)
                                 0,
                                 0) != 0)
       {
-        load_text("promptsX1.txt", "DEMONIC_HORDES_2");
-        if (g_current_player == player || (g_duel_network_flags & 2) != 0)
+        if (g_other_player == player || (g_duel_network_flags & 2) != 0)
         {
-          C_real_select_target(player,
+          load_text("promptsX1.txt", "DEMONIC_HORDES");
+          C_real_select_target(1 - player,
                                2,
                                2,
                                TARGET_ZONE_IN_PLAY,
@@ -1485,28 +1483,26 @@ int card_demonic_hordes(int player, int card, event_t event)
                                0,
                                &selected_target);
         }
-        else if (select_best_land_target_by_score(1 - player, player, (int *)&selected_target))
+        else
         {
+          select_best_land_target_by_score(1 - player, player, (int *)&selected_target);
           do_dialog(player,
                     player,
-                    0,
+                    card,
                     selected_target.player,
                     selected_target.card,
-                    g_text_lines[1],
+                    "selects for player to sacrifice.",
                     0);
         }
 
-        if (selected_target.player != -1)
+        if (g_duel_ai_mode_state != 1)
         {
-          if (g_duel_ai_mode_state != 1)
-          {
-            play_sound_effect(WAV_SACRFICE);
-          }
-          kill_card(selected_target.player, selected_target.card, KILL_SACRIFICE);
+          play_sound_effect(WAV_SACRFICE);
         }
+        kill_card(selected_target.player, selected_target.card, KILL_SACRIFICE);
       }
 
-      instance->state |= 0x10;
+      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).state |= STATE_TAPPED;
     }
   }
 
@@ -1697,27 +1693,32 @@ int card_dwarven_weaponsmith(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (select_own_artifact_for_cost(player, card, &artifact, "Select an artifact to sacrifice.") == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else if (C_real_select_target(player, 2, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
-                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                  -1, -1, -1, -1, 0, 0, 0,
-                                  "Select target creature.", 1, &target) == 0)
+    load_text("promptsX1.txt", "DWARVEN_WEAPONSMITH");
+    if (select_own_artifact_for_cost(player, card, &artifact, g_text_lines[0]) == 0)
     {
       g_spell_fizzled = 1;
     }
     else
     {
-      instance->targets[0] = target;
-      instance->number_of_targets = 1;
-      instance->state |= STATE_TAPPED;
-      if (g_duel_ai_mode_state != 1)
+      load_text("promptsX1.txt", "DWARVEN_WEAPONSMITH");
+      if (C_real_select_target(player, 2, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
+                               get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                               -1, -1, -1, -1, 0, 0, 0,
+                               g_text_lines[1], 1, &target) == 0)
       {
-        play_sound_effect(WAV_SACRFICE);
+        g_spell_fizzled = 1;
       }
-      kill_card(artifact.player, artifact.card, KILL_SACRIFICE);
+      else
+      {
+        if (g_duel_ai_mode_state != 1)
+        {
+          play_sound_effect(WAV_SACRFICE);
+        }
+        kill_card(artifact.player, artifact.card, KILL_SACRIFICE);
+        instance->targets[0] = target;
+        instance->number_of_targets = 1;
+        instance->state |= STATE_TAPPED;
+      }
     }
   }
 
@@ -1738,6 +1739,10 @@ int card_dwarven_weaponsmith(int player, int card, event_t event)
       {
         play_sound_effect(WAV_COUNTER);
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
   }
@@ -3110,10 +3115,113 @@ int card_orcish_mechanics(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047b4eb
 int card_phyrexian_gremlins(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  target_t target;
+  struct
+  {
+    target_t target;
+    int legacy_card;
+    int opponent;
+    int target_card;
+    unsigned int target_is_creature;
+    int target_power;
+    int target_internal_card_id;
+    int current_card;
+    int target_mana_value;
+    int target_player;
+    int candidate_internal_card_id;
+  } s;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  if (event == EVENT_UNTAP &&
+      g_affected_card == card &&
+      g_affected_card_controller == player)
+  {
+    PLAYER_CARD_INSTANCE(player, card).untap_status &= ~UNTAP_STATUS_WILL_UNTAP;
+  }
+
+  if (g_current_phase == PHASE_UNTAP &&
+      g_affected_card == card &&
+      g_affected_card_controller == player)
+  {
+    if (event == EVENT_TRIGGER &&
+        (PLAYER_CARD_INSTANCE(player, card).untap_status & UNTAP_STATUS_COULD_UNTAP) != 0 &&
+        (PLAYER_CARD_INSTANCE(player, card).untap_status & UNTAP_STATUS_WILL_UNTAP) == 0 &&
+        (unk_00925d38 & global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type) == 0)
+    {
+      if ((g_other_player == player && (g_duel_network_flags & 2) == 0) ||
+          g_duel_ai_mode_state == 1 ||
+          g_duel_network_state != 0)
+      {
+        s.legacy_card = PLAYER_CARD_INSTANCE(player, card).info_slot;
+        if (s.legacy_card == -1 ||
+            (PLAYER_CARD_INSTANCE(
+                 (int)PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_target_player,
+                 PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_target_card)
+                 .untap_status &
+             UNTAP_STATUS_COULD_UNTAP) != 0 ||
+            (PLAYER_CARD_INSTANCE(
+                 (int)PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_target_player,
+                 PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_target_card)
+                 .state &
+             STATE_TAPPED) == 0)
+        {
+          g_event_result |= RESOLVE_TRIGGER_MANDATORY;
+        }
+        else
+        {
+          s.target_player =
+              (int)PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_target_player;
+          s.target_card = PLAYER_CARD_INSTANCE(player, s.legacy_card).damage_target_card;
+          s.target_internal_card_id =
+              PLAYER_CARD_INSTANCE(s.target_player, s.target_card).internal_card_id;
+          s.target_is_creature =
+              global_cards_data[s.target_internal_card_id].type & TYPE_CREATURE;
+          if (s.target_is_creature == 0)
+          {
+            s.target_power = 0;
+          }
+          else
+          {
+            s.target_power = PLAYER_CARD_INSTANCE(s.target_player, s.target_card).power;
+          }
+          s.target_mana_value = global_cards_data[s.target_internal_card_id].cc[1];
+          s.opponent = 1 - player;
+          s.current_card = 0;
+          while (s.current_card < g_active_cards_count[s.opponent] && g_event_result == 0)
+          {
+            if (is_in_play(s.opponent, s.current_card) &&
+                (global_cards_data[PLAYER_CARD_INSTANCE(s.opponent, s.current_card).internal_card_id].type &
+                 (TYPE_ARTIFACT | TYPE_CREATURE)) == (TYPE_ARTIFACT | TYPE_CREATURE) &&
+                s.target_power < PLAYER_CARD_INSTANCE(s.opponent, s.current_card).power)
+            {
+              g_event_result |= RESOLVE_TRIGGER_MANDATORY;
+            }
+            ++s.current_card;
+          }
+          s.current_card = 0;
+          while (s.current_card < g_active_cards_count[s.opponent] && g_event_result == 0)
+          {
+            s.candidate_internal_card_id =
+                PLAYER_CARD_INSTANCE(s.opponent, s.current_card).internal_card_id;
+            if (is_in_play(s.opponent, s.current_card) &&
+                (global_cards_data[s.candidate_internal_card_id].type & TYPE_ARTIFACT) != 0 &&
+                s.target_mana_value < global_cards_data[s.candidate_internal_card_id].cc[1])
+            {
+              g_event_result |= RESOLVE_TRIGGER_MANDATORY;
+            }
+            ++s.current_card;
+          }
+        }
+      }
+      else
+      {
+        g_event_result |= RESOLVE_TRIGGER_OPTIONAL;
+      }
+    }
+
+    if (event == EVENT_RESOLVE_TRIGGER)
+    {
+      PLAYER_CARD_INSTANCE(player, card).untap_status |= UNTAP_STATUS_WILL_UNTAP;
+    }
+  }
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -3131,43 +3239,81 @@ int card_phyrexian_gremlins(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
+    load_text("promptsX1.txt", "PHYREXIAN_GREMLINS");
     if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT, TYPE_NONE, 0,
                              get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                              -1, -1, -1, -1, 0, 0, 0,
-                             "Select target artifact.", 1, &target) == 0)
+                             g_text_lines[0], 1, &s.target) == 0)
     {
       g_spell_fizzled = 1;
     }
     else
     {
-      instance->targets[0] = target;
-      instance->number_of_targets = 1;
-      instance->state |= STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+      if (player == g_other_player &&
+          (g_duel_network_flags & 2) == 0 &&
+          s.target.player == g_other_player)
+      {
+        g_ai_modifier -= 0x30;
+      }
     }
+  }
+
+  if (event == EVENT_CAST_SPELL &&
+      g_affected_card == card &&
+      g_affected_card_controller == player)
+  {
+    PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2,
+    s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    if (C_real_validate_target(s.target.player, s.target.card, (char *)0, player, 2, 2,
                                TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT, TYPE_NONE, 0,
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                               -1, -1, -1, -1, 0, 0, 0) != 0)
+                               -1, -1, -1, -1, 0, 0, 0) == 0)
     {
-      tap_card_and_dispatch_event(target.player, target.card);
-      PLAYER_CARD_INSTANCE(target.player, target.card).untap_status |= 4;
+      g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    else
+    {
+      s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
+                                           g_card_on_stack,
+                                           g_duel_generated_iid_21,
+                                           s.target.player,
+                                           s.target.card);
+      if (s.legacy_card != -1)
+      {
+        PLAYER_CARD_INSTANCE(g_card_on_stack_controller, s.legacy_card).token_status |=
+            STATUS_PERMANENT;
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                             PLAYER_CARD_INSTANCE(player, card).parent_card)
+            .info_slot = s.legacy_card;
+        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).state |= STATE_TAPPED;
+      }
+    }
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
   }
 
-  if (event == EVENT_UNTAP_CARD && g_affected_card == card && g_affected_card_controller == player)
+  if (event == EVENT_GRAVEYARD_FROM_PLAY &&
+      g_affected_card == card &&
+      g_affected_card_controller == player &&
+      PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
   {
-    target = instance->targets[0];
-    if (target.card != -1 && is_in_play(target.player, target.card))
-    {
-      PLAYER_CARD_INSTANCE(target.player, target.card).untap_status &= ~4;
-    }
-    instance->number_of_targets = 0;
+    kill_card(player, PLAYER_CARD_INSTANCE(player, card).info_slot, KILL_BURY);
+  }
+
+  if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1 &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+  {
+    s.legacy_card = PLAYER_CARD_INSTANCE(player, card).info_slot;
+    kill_card(player, s.legacy_card, KILL_BURY);
+    PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = -1;
   }
 
   return 0;
@@ -3992,6 +4138,12 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   int copied_internal_id;
   int lookup_player;
   int lookup_card;
+  int change_form;
+  int delegate_to_copy;
+  short copied_power_modifier;
+  short copied_toughness_modifier;
+  unsigned int counter_count;
+  char dialog[900];
   unsigned int result;
 
   instance = &PLAYER_CARD_INSTANCE(player, card);
@@ -4000,6 +4152,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   data_card_location = -1;
   data_card_controller = -1;
   data_card_slot = -1;
+  delegate_to_copy = 0;
   result = 0;
 
   if (event == EVENT_RESOLVE_ACTIVATION && instance->parent_controller != -1 && instance->parent_card != -1)
@@ -4032,6 +4185,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
       data_card_controller = (data_card_location >> 8) & 0xff;
       data_card_slot = data_card_location & 0xff;
       data_card = &PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot);
+      delegate_to_copy = 1;
     }
   }
 
@@ -4060,7 +4214,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller)
   {
-    load_text("prompts.txt", "VESUVAN_DOPPELGANGER");
+    load_text("promptsX1.txt", "VESUVAN_DOPPELGANGER");
     if (!C_real_select_target(player,
                               2,
                               2,
@@ -4172,7 +4326,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
           dispatch_event_to_single_card(player, card, EVENT_CAST_SPELL, 1 - player, -1);
           dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
           global_cards_data[copied_internal_id].code_pointer =
-              global_cards_data[target_instance->internal_card_id].code_pointer;
+              global_cards_data[instance->original_internal_card_id].code_pointer;
           global_cards_data[copied_internal_id].extra_ability |= 1;
         }
       }
@@ -4187,17 +4341,30 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (g_current_phase == EVENT_UPKEEP_PHASE && player == g_current_turn && player == unk_00742f60 && data_card != (card_instance_t *)0 && (data_card->eot_toughness & 2) == 0 && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, TYPE_CREATURE, 0, 0, get_protections_from(player, card), 0, 0, -1, -1, -1, -1, TARGET_SPECIAL_USE_ORIGINAL_TYPE, 0, 0))
+    if (g_current_phase == EVENT_UPKEEP_PHASE && player == g_current_player && player == unk_00742f60 && data_card != (card_instance_t *)0 && (data_card->eot_toughness & 2) == 0 && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, TYPE_CREATURE, 0, 0, get_protections_from(player, card), 0, 0, -1, -1, -1, -1, TARGET_SPECIAL_USE_ORIGINAL_TYPE, 0, 0))
     {
       result = 1;
     }
   }
 
-  if (event == EVENT_ACTIVATE && card == g_affected_card && player == g_affected_card_controller && g_current_phase == EVENT_UPKEEP_PHASE && player == g_current_turn && player == unk_00742f60 && data_card != (card_instance_t *)0 && (data_card->eot_toughness & 2) == 0)
+  if (event == EVENT_ACTIVATE && card == g_affected_card && player == g_affected_card_controller && g_current_phase == EVENT_UPKEEP_PHASE && player == g_current_player && player == unk_00742f60 && data_card != (card_instance_t *)0 && (data_card->eot_toughness & 2) == 0)
   {
-    load_text("prompts.txt", "VESUVAN_DOPPELGANGER");
-    if (!C_real_select_target(player,
-                              2,
+    change_form = 1;
+    load_text("promptsX1.txt", "VESUVAN_DOPPELGANGER");
+    if ((instance->state & STATE_OUBLIETTED) == 0 &&
+        (data_card->eot_toughness & 1) != 0 &&
+        data_card->info_slot != 0 &&
+        global_cards_data[data_card->info_slot].code_pointer(player, card, EVENT_CAN_ACTIVATE) != 0)
+    {
+      sprintf(dialog, " %s\n %s", g_text_lines[1], g_text_lines[2]);
+      if (do_dialog(player, player, card, -1, -1, dialog, 0) != 0)
+      {
+        change_form = 0;
+      }
+    }
+    if (change_form &&
+        !C_real_select_target(player,
+                               2,
                               2,
                               TARGET_ZONE_IN_PLAY,
                               TYPE_CREATURE,
@@ -4215,16 +4382,17 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
                               0,
                               g_text_lines[0],
                               1,
-                              &selected_target))
+                               &selected_target))
     {
       g_spell_fizzled = 1;
     }
-    else
+    else if (change_form)
     {
       instance->targets[0].player = selected_target.player;
       instance->targets[0].card = selected_target.card;
       instance->number_of_targets = 1;
       data_card->eot_toughness |= 6;
+      delegate_to_copy = 0;
     }
   }
 
@@ -4282,30 +4450,64 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
           parent->regen_status |= 0x1000000;
           parent->state &= 0xffffdfff;
           parent->color = global_cards_data[copied_internal_id].color;
+          set_special_counters(g_card_on_stack_controller, g_card_on_stack, 0);
+          copied_toughness_modifier = 0;
+          copied_power_modifier = 0;
+          counter_count = (parent->special_counters >> 8) & 0xff;
+          if (counter_count != 0)
+          {
+            copied_toughness_modifier = (short)(counter_count * -2);
+          }
+          counter_count = (parent->special_counters >> 16) & 0xff;
+          if (counter_count != 0)
+          {
+            copied_power_modifier = (short)-(short)counter_count;
+            copied_toughness_modifier -= (short)counter_count;
+          }
+          counter_count = parent->special_counters >> 24;
+          if (counter_count != 0)
+          {
+            copied_toughness_modifier -= (short)(unsigned char)counter_count;
+          }
+          counter_count = parent->counters & 0xff;
+          if (counter_count != 0)
+          {
+            copied_power_modifier += (short)counter_count;
+            copied_toughness_modifier += (short)counter_count;
+          }
+          counter_count = (parent->counters >> 8) & 0xff;
+          if (counter_count != 0)
+          {
+            copied_power_modifier += (short)counter_count;
+            copied_toughness_modifier += (short)counter_count;
+          }
+          parent->counter_power = copied_power_modifier;
+          parent->counter_toughness = copied_toughness_modifier;
           data_card->info_slot = source_internal_card_id;
           data_card->eot_toughness &= ~1;
           data_card->eot_toughness |= global_cards_data[source_internal_card_id].extra_ability & 1;
-          dispatch_function_to_all_cards_in_play(instance->parent_controller,
-                                                 instance->parent_card,
+          dispatch_function_to_all_cards_in_play(g_card_on_stack_controller,
+                                                 g_card_on_stack,
                                                  C_vesuvan_doppelganger_helper,
                                                  -1);
-          dispatch_event_to_single_card(instance->parent_controller,
-                                        instance->parent_card,
+          dispatch_event_to_single_card(g_card_on_stack_controller,
+                                        g_card_on_stack,
                                         EVENT_CAST_SPELL,
                                         1 - instance->parent_controller,
                                         -1);
-          dispatch_event_to_single_card(instance->parent_controller,
-                                        instance->parent_card,
+          dispatch_event_to_single_card(g_card_on_stack_controller,
+                                        g_card_on_stack,
                                         EVENT_RESOLVE_SPELL,
                                         1 - instance->parent_controller,
                                         -1);
           global_cards_data[copied_internal_id].code_pointer =
-              global_cards_data[target_instance->internal_card_id].code_pointer;
+              global_cards_data[parent->original_internal_card_id].code_pointer;
           global_cards_data[copied_internal_id].extra_ability |= 1;
         }
       }
 
       data_card->eot_toughness &= ~4;
+      delegate_to_copy = 0;
     }
 
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
@@ -4316,7 +4518,11 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
     data_card->eot_toughness &= ~2;
   }
 
-  if (parent == instance && (instance->state & STATE_INVISIBLE) == 0 && data_card != (card_instance_t *)0 && data_card->info_slot != 0)
+  if (parent == instance &&
+      (instance->state & STATE_INVISIBLE) == 0 &&
+      delegate_to_copy &&
+      data_card != (card_instance_t *)0 &&
+      data_card->info_slot != 0)
   {
     result |= global_cards_data[data_card->info_slot].code_pointer(player, card, event);
   }
