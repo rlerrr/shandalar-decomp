@@ -365,9 +365,7 @@ int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, 
     int target_index;
     int shift_index;
     int window_count;
-    HWND spell_window;
-    HWND target_windows[20];
-    int created_target_count;
+    spell_chain_window_entry_t new_entry;
   } s;
   spell_chain_window_entry_t *windows;
 
@@ -386,27 +384,27 @@ int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, 
   s.result = 1;
   s.create_target.player = display_entry.player;
   s.create_target.card = display_entry.card;
-  s.spell_window = CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Card", 0x50000000,
-                                   0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
-  if (s.spell_window == (HWND)0)
+  s.new_entry.spell_window = CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Card", 0x50000000,
+                                             0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
+  if (s.new_entry.spell_window == (HWND)0)
   {
     s.result = 0;
   }
 
-  s.created_target_count = 0;
+  s.new_entry.target_count = 0;
   for (s.target_index = 0; s.target_index < display_entry.number_of_targets && s.result != 0; ++s.target_index)
   {
     s.create_target = display_entry.targets[s.target_index];
-    s.target_windows[s.target_index] =
+    s.new_entry.target_windows[s.target_index] =
         CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Target Card", 0x50000000,
                         0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
-    if (s.target_windows[s.target_index] == (HWND)0)
+    if (s.new_entry.target_windows[s.target_index] == (HWND)0)
     {
       s.result = 0;
     }
     else
     {
-      ++s.created_target_count;
+      ++s.new_entry.target_count;
     }
   }
 
@@ -416,21 +414,21 @@ int add_spell_chain_entry(HWND hwnd, spell_chain_display_entry_t display_entry, 
     {
       memcpy(&windows[s.shift_index + 1], &windows[s.shift_index], sizeof(windows[s.shift_index]));
     }
-    memcpy(&windows[insert_index], &s.spell_window, sizeof(windows[insert_index]));
+    memcpy(&windows[insert_index], &s.new_entry, sizeof(windows[insert_index]));
     ++s.window_count;
     SetWindowLongA(hwnd, g_spell_chain_count_long_offset, s.window_count);
   }
   else
   {
-    if (s.spell_window != (HWND)0)
+    if (s.new_entry.spell_window != (HWND)0)
     {
-      DestroyWindow(s.spell_window);
+      DestroyWindow(s.new_entry.spell_window);
     }
-    for (s.target_index = 0; s.target_index < s.created_target_count; ++s.target_index)
+    for (s.target_index = 0; s.target_index < s.new_entry.target_count; ++s.target_index)
     {
-      if (s.target_windows[s.target_index] != (HWND)0)
+      if (s.new_entry.target_windows[s.target_index] != (HWND)0)
       {
-        DestroyWindow(s.target_windows[s.target_index]);
+        DestroyWindow(s.new_entry.target_windows[s.target_index]);
       }
     }
   }
@@ -480,9 +478,7 @@ int update_spell_chain_entry_targets(HWND hwnd, spell_chain_display_entry_t disp
     int result;
     int target_index;
     int window_count;
-    HWND spell_window;
-    HWND target_windows[20];
-    int created_target_count;
+    spell_chain_window_entry_t new_entry;
   } s;
   spell_chain_window_entry_t *windows;
 
@@ -494,35 +490,35 @@ int update_spell_chain_entry_targets(HWND hwnd, spell_chain_display_entry_t disp
   windows = (spell_chain_window_entry_t *)GetWindowLongA(hwnd, g_spell_chain_windows_long_offset);
   s.window_count = GetWindowLongA(hwnd, g_spell_chain_count_long_offset);
   s.result = 1;
-  s.spell_window = windows[entry_index].spell_window;
-  s.created_target_count = 0;
+  s.new_entry.spell_window = windows[entry_index].spell_window;
+  s.new_entry.target_count = 0;
   for (s.target_index = 0; s.target_index < display_entry.number_of_targets && s.result != 0; ++s.target_index)
   {
     s.create_target = display_entry.targets[s.target_index];
-    s.target_windows[s.target_index] =
+    s.new_entry.target_windows[s.target_index] =
         CreateWindowExA(0, "MAGICGAME_CardClass", "Spell Target Card", 0x50000000,
                         0, 0, 0, 0, hwnd, (HMENU)1, g_app_instance, &s.create_target);
-    if (s.target_windows[s.target_index] == (HWND)0)
+    if (s.new_entry.target_windows[s.target_index] == (HWND)0)
     {
       s.result = 0;
     }
     else
     {
-      ++s.created_target_count;
+      ++s.new_entry.target_count;
     }
   }
 
   if (s.result != 0)
   {
-    memcpy(&windows[entry_index], &s.spell_window, sizeof(windows[entry_index]));
+    memcpy(&windows[entry_index], &s.new_entry, sizeof(windows[entry_index]));
   }
   else
   {
-    for (s.target_index = 0; s.target_index < s.created_target_count; ++s.target_index)
+    for (s.target_index = 0; s.target_index < s.new_entry.target_count; ++s.target_index)
     {
-      if (s.target_windows[s.target_index] != (HWND)0)
+      if (s.new_entry.target_windows[s.target_index] != (HWND)0)
       {
-        DestroyWindow(s.target_windows[s.target_index]);
+        DestroyWindow(s.new_entry.target_windows[s.target_index]);
       }
     }
     windows[entry_index].target_count = 0;
