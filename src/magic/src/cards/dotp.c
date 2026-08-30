@@ -2756,29 +2756,34 @@ int card_wall_of_opposition(int player, int card, event_t event)
   {
     PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    return 0;
   }
-  else if (event == EVENT_CAN_ACTIVATE)
+
+  if (event == EVENT_CAN_ACTIVATE)
   {
     return has_mana(player, COLOR_ANY, 1);
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_code(0);
+    return 0;
   }
-  else if (event == EVENT_ACTIVATE)
+
+  if (event == EVENT_ACTIVATE)
   {
     if (has_mana(player, COLOR_ANY, 1) != 0)
     {
-      if (player == g_current_player)
+      if (g_current_player == player)
       {
         charge_mana(player, COLOR_COLORLESS, -1);
-        if (g_x_value < 1)
+        if (g_x_value > 0)
         {
-          g_spell_fizzled = 1;
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness = g_x_value;
         }
         else
         {
-          PLAYER_CARD_INSTANCE(player, card).eot_toughness = g_x_value;
+          g_spell_fizzled = 1;
         }
       }
       else
@@ -2787,11 +2792,7 @@ int card_wall_of_opposition(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
       }
 
-      if (g_spell_fizzled == 1)
-      {
-        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      }
-      else
+      if (g_spell_fizzled != 1)
       {
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
@@ -2801,17 +2802,19 @@ int card_wall_of_opposition(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
         }
       }
+      else
+      {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      }
     }
+    return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION)
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id == -1)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+            .internal_card_id != -1)
     {
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -2821,7 +2824,7 @@ int card_wall_of_opposition(int player, int card, event_t event)
           .number_of_targets = 0;
       if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                 PLAYER_CARD_INSTANCE(player, card).parent_card)
-               .info_slot &
+                 .info_slot &
            0x80000) != 0)
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
@@ -2835,36 +2838,46 @@ int card_wall_of_opposition(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 1;
           PLAYER_CARD_INSTANCE(player, legacy_card).info_slot |= 0x80000;
         }
+        else
+        {
+          g_spell_fizzled = 1;
+        }
       }
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
+    return 0;
   }
-  else if (event == EVENT_POW_BOOST)
+
+  if (event == EVENT_POW_BOOST)
   {
     return has_mana(player, COLOR_ANY, 1);
   }
-  else if (event == EVENT_CAN_WASTE_MANA)
+
+  if (event == EVENT_CAN_WASTE_MANA)
   {
     g_event_result |= 1;
+    return 0;
   }
-  else
-  {
-    if (event == EVENT_SHOULD_AI_PLAY && g_current_phase == PHASE_DISCARD)
-    {
-      if (player == g_other_player)
-      {
-        g_ai_modifier += (g_basiclandtypes_controlled[player][COLOR_ANY] * 3 + 6) * 4;
-      }
-      else
-      {
-        g_ai_modifier += (g_basiclandtypes_controlled[player][COLOR_ANY] * 3 + 6) * -4;
-      }
-    }
 
-    if (event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY)
+  if (event == EVENT_SHOULD_AI_PLAY && g_current_phase == PHASE_DISCARD)
+  {
+    if (player == g_other_player)
     {
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+      g_ai_modifier += (g_basiclandtypes_controlled[player][COLOR_ANY] * 3 + 6) * 4;
     }
+    else
+    {
+      g_ai_modifier -= (g_basiclandtypes_controlled[player][COLOR_ANY] * 3 + 6) * 4;
+    }
+  }
+
+  if (event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY)
+  {
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
   }
 
   return 0;

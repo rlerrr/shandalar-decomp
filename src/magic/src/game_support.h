@@ -68,7 +68,7 @@ int helper_destroy_basiclandtype(int source_player,
                                         int internal_card_id);
 int destroy_other_auras_on_same_permanent(int player, int card, int internal_card_id);
 int divide_creatures_into_two_piles(int who_is_being_divided, int player, int card);
-int sacrifice_permanents_for_lich_damage(int player, int amount);
+int sacrifice_permanents_for_lich_damage(int player, int amount, int unused_player);
 int can_attack(int player, int card);
 int push_card_onto_stack(int player, int card, int event, int extra, int prompt);
 void redirect_pending_damage_to_player(int target_player, int target_card, int damage_target_player);

@@ -1656,18 +1656,17 @@ int card_lance(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fd8eb
 int card_lich(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  card_instance_t *damage_card;
   int current_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (is_in_play(player, card) && g_life[player] != -99)
   {
+    current_card = 0;
     g_life[player] = 0;
-    for (current_card = 0; current_card < g_active_cards_count[player]; ++current_card)
+    for (; current_card < g_active_cards_count[player]; ++current_card)
     {
-      if (is_in_play(player, current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(player, current_card).internal_card_id].type & (TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND)) != 0)
+      if (is_in_play(player, current_card) &&
+          ((int)global_cards_data[(global_card_instances[player] + current_card)->internal_card_id].type &
+           (TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND)) != 0)
       {
         ++g_life[player];
       }
@@ -1678,70 +1677,75 @@ int card_lich(int player, int card, event_t event)
   {
     return 1;
   }
-  else
+
+  if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller && g_other_player == player)
   {
-    if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller && g_other_player == player)
-    {
-      g_ai_modifier -= g_life[player] - 5;
-    }
-
-    if (event == EVENT_RESOLVE_SPELL)
-    {
-      g_lich_active[player] = 1;
-    }
-
-    if (event == EVENT_DEAL_DAMAGE && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id == g_damage_card_internal_card_id && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == -1 && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
-    {
-      instance->targets[instance->info_slot].player = g_affected_card_controller;
-      instance->targets[instance->info_slot].card = g_affected_card;
-      ++instance->info_slot;
-    }
-
-    if (g_trigger_condition == TRIGGER_DEAL_DAMAGE && card == g_affected_card && player == g_affected_card_controller && instance->info_slot != 0 && player == g_current_turn)
-    {
-      if (event == EVENT_TRIGGER)
-      {
-        g_event_result |= RESOLVE_TRIGGER_MANDATORY;
-      }
-
-      if (event == EVENT_RESOLVE_TRIGGER)
-      {
-        do
-        {
-          damage_card = &PLAYER_CARD_INSTANCE(instance->targets[instance->info_slot - 1].player,
-                                              instance->targets[instance->info_slot - 1].card);
-          sacrifice_permanents_for_lich_damage(player, damage_card->info_slot);
-          --instance->info_slot;
-          if (instance->info_slot == 0)
-          {
-            break;
-          }
-        } while (g_life[player] != -99);
-      }
-    }
-
-    if (event == EVENT_GRAVEYARD_FROM_PLAY && card == g_affected_card && player == g_affected_card_controller)
-    {
-      if (is_in_play(player, card))
-      {
-        if (g_duel_ai_mode_state == 1)
-        {
-          g_life[player] = -99;
-        }
-        else
-        {
-          exit_duel_thread(player);
-        }
-      }
-    }
-
-    return 0;
+    g_ai_modifier -= g_life[g_other_player] - 5;
   }
+
+  if (event == EVENT_RESOLVE_SPELL)
+  {
+    g_lich_active[player] = 1;
+  }
+
+  if (event == EVENT_DEAL_DAMAGE && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id == g_damage_card_internal_card_id && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == -1 && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
+  {
+    PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).info_slot].player =
+        g_affected_card_controller;
+    PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).info_slot].card =
+        g_affected_card;
+    ++PLAYER_CARD_INSTANCE(player, card).info_slot;
+  }
+
+  if (g_trigger_condition == TRIGGER_DEAL_DAMAGE && card == g_affected_card && player == g_affected_card_controller && PLAYER_CARD_INSTANCE(player, card).info_slot != 0 && player == g_current_turn)
+  {
+    if (event == EVENT_TRIGGER)
+    {
+      g_event_result |= RESOLVE_TRIGGER_MANDATORY;
+    }
+
+    if (event == EVENT_RESOLVE_TRIGGER)
+    {
+      do
+      {
+        sacrifice_permanents_for_lich_damage(
+            player,
+            PLAYER_CARD_INSTANCE(
+                PLAYER_CARD_INSTANCE(player, card)
+                    .targets[PLAYER_CARD_INSTANCE(player, card).info_slot - 1]
+                    .player,
+                PLAYER_CARD_INSTANCE(player, card)
+                    .targets[PLAYER_CARD_INSTANCE(player, card).info_slot - 1]
+                    .card)
+                .info_slot,
+            player);
+        --PLAYER_CARD_INSTANCE(player, card).info_slot;
+      } while (PLAYER_CARD_INSTANCE(player, card).info_slot != 0 &&
+               g_life[player] != -99);
+    }
+  }
+
+  if (event == EVENT_GRAVEYARD_FROM_PLAY && card == g_affected_card && player == g_affected_card_controller)
+  {
+    if (is_in_play(player, card))
+    {
+      if (g_duel_ai_mode_state != 1)
+      {
+        exit_duel_thread(player);
+      }
+      else
+      {
+        g_life[player] = -99;
+      }
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0043b4f3
 // FUNCTION: SHANDALAR 0x004fde93
-int sacrifice_permanents_for_lich_damage(int player, int amount)
+int sacrifice_permanents_for_lich_damage(int player, int amount, int unused_player)
 {
   card_instance_t *instance;
   int max_targets;
