@@ -112,70 +112,69 @@ static void hit_test_phase_display(POINT *point, RECT *client_rect, int *player,
   struct
   {
     int found_player;
-    int test_x;
-    int test_y;
+    POINT test_point;
     RECT client_copy;
     RECT phase_rect;
     int found_phase;
   } s;
 
   CopyRect(&s.client_copy, client_rect);
-  s.test_x = point->x;
-  s.test_y = point->y;
+  s.test_point.x = point->x;
+  s.test_point.y = point->y;
   s.found_phase = -1;
   s.found_player = 1;
 
   get_phase_display_phase_rect(&s.phase_rect, 1, 1, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 1;
   get_phase_display_phase_rect(&s.phase_rect, 1, 4, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 4;
   get_phase_display_phase_rect(&s.phase_rect, 1, 0xa, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 0xa;
   get_phase_display_phase_rect(&s.phase_rect, 1, 0x14, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 0x14;
   get_phase_display_phase_rect(&s.phase_rect, 1, 0x16, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 0x16;
   get_phase_display_phase_rect(&s.phase_rect, 1, 0x1e, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 0x1e;
   get_phase_display_phase_rect(&s.phase_rect, 1, 0x1f, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 0x1f;
   get_phase_display_phase_rect(&s.phase_rect, 1, 0x20, s.client_copy.right, s.client_copy.bottom);
-  if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+  if (PtInRect(&s.phase_rect, s.test_point) != 0)
     s.found_phase = 0x20;
 
   if (s.found_phase == -1)
   {
     s.found_player = 0;
     get_phase_display_phase_rect(&s.phase_rect, 0, 1, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 1;
     get_phase_display_phase_rect(&s.phase_rect, 0, 4, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 4;
     get_phase_display_phase_rect(&s.phase_rect, 0, 0xa, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 0xa;
     get_phase_display_phase_rect(&s.phase_rect, 0, 0x14, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 0x14;
     get_phase_display_phase_rect(&s.phase_rect, 0, 0x15, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 0x15;
     get_phase_display_phase_rect(&s.phase_rect, 0, 0x1e, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 0x1e;
     get_phase_display_phase_rect(&s.phase_rect, 0, 0x1f, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 0x1f;
     get_phase_display_phase_rect(&s.phase_rect, 0, 0x20, s.client_copy.right, s.client_copy.bottom);
-    if (PtInRect(&s.phase_rect, *(POINT *)&s.test_x) != 0)
+    if (PtInRect(&s.phase_rect, s.test_point) != 0)
       s.found_phase = 0x20;
   }
 
