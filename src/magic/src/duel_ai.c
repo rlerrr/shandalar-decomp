@@ -2540,7 +2540,7 @@ void dispatch_ai_combat_pump_checks(int player)
 
   for (card = 0; card < 4; card++)
   {
-    g_global_power_bonus[card] = 0;
+    g_global_stats_bonus[card] = 0;
   }
 
   for (card = 0; MAX(g_active_cards_count[g_active_player], g_active_cards_count[g_other_player]) > card; card++)

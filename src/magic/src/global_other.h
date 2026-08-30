@@ -142,10 +142,6 @@ GLOBAL_OTHERS_EXTERN HWND g_duel_main_window;
 // GLOBAL: SHANDALAR 0x0078df74
 GLOBAL_OTHERS_EXTERN HWND g_duel_client_window;
 
-// GLOBAL: MAGIC 0x007a7d88
-// GLOBAL: SHANDALAR 0x007beb18
-GLOBAL_OTHERS_EXTERN int g_global_toughness_bonus[2];
-
 // GLOBAL: MAGIC 0x00743094
 // GLOBAL: SHANDALAR 0x0074842c
 GLOBAL_OTHERS_EXTERN int g_recorded_action_count;
@@ -294,10 +290,6 @@ GLOBAL_OTHERS_EXTERN int g_affected_card_context_flags_0093f4b4;
 
 // GLOBAL: MAGIC 0x00925030
 GLOBAL_OTHERS_EXTERN HINSTANCE g_app_instance;
-
-// GLOBAL: MAGIC 0x008cdab4
-// GLOBAL: SHANDALAR 0x008e1c34
-GLOBAL_OTHERS_EXTERN int g_ai_side_score_player_1;
 
 #ifdef GLOBALS_OTHERS_IMPL
 int g_duel_state_0057a75c = 0;

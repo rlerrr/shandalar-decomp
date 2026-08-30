@@ -514,7 +514,11 @@ GLOBAL_STATE_EXTERN int g_upkeep_payment_completed;
 
 // GLOBAL: MAGIC 0x007a7d80
 // GLOBAL: SHANDALAR 0x007beb10
-GLOBAL_STATE_EXTERN int g_global_power_bonus[2];
+GLOBAL_STATE_EXTERN int g_global_stats_bonus[4];
+
+// Layout: player power bonuses, followed by player toughness bonuses.
+#define g_global_power_bonus (g_global_stats_bonus)
+#define g_global_toughness_bonus (g_global_stats_bonus + 2)
 
 // GLOBAL: MAGIC 0x007a7874
 // GLOBAL: SHANDALAR 0x007be604
@@ -684,7 +688,10 @@ GLOBAL_STATE_EXTERN int g_attacking_card_controller;
 
 // GLOBAL: MAGIC 0x008cdab0
 // GLOBAL: SHANDALAR 0x008e1c30
-GLOBAL_STATE_EXTERN int g_ai_side_score_player_0;
+GLOBAL_STATE_EXTERN int g_ai_side_scores[2];
+#define g_ai_side_score_player_0 (g_ai_side_scores[0])
+#define g_ai_side_score_player_1 (g_ai_side_scores[1])
+
 #ifdef GLOBAL_STATE_IMPL
 GLOBAL_STATE_EXTERN int g_opponent_initial_library_index = -1;
 #else
@@ -692,6 +699,7 @@ GLOBAL_STATE_EXTERN int g_opponent_initial_library_index = -1;
 // GLOBAL: SHANDALAR 0x00591200
 GLOBAL_STATE_EXTERN int g_opponent_initial_library_index;
 #endif
+
 #ifdef GLOBAL_STATE_IMPL
 GLOBAL_STATE_EXTERN int g_selected_wizard_color = -1;
 #else
