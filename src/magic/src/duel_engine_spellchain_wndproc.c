@@ -799,7 +799,6 @@ LRESULT CALLBACK wndproc_MAGICGAME_SpellChainClass(HWND hwnd, UINT msg, WPARAM w
   case 0x412:
     s.windows = (spell_chain_window_entry_t *)GetWindowLongA(hwnd, g_spell_chain_windows_long_offset);
     s.window_count = GetWindowLongA(hwnd, g_spell_chain_count_long_offset);
-    s.window_count = s.window_count;
     s.sync_count = copy_spell_chain_display_entries(s.display_entries);
     s.sync_changed = 0;
     for (s.sync_j = 0; !(s.sync_count <= s.sync_j); ++s.sync_j)

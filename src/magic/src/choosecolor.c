@@ -801,57 +801,49 @@ void get_choose_color_selection_rect(RECT *rect, HWND hwnd, int color)
 int choose_magical_hack_colors(int player, target_t *target, const char *prompt, int initial_color_mask,
                                int has_initial_color)
 {
-  struct
-  {
-    const char *prompt;
-    int initial_color_mask;
-    int has_initial_color;
-    int target_player;
-    int target_card;
-    int dialog_result;
-  } s;
+  magical_hack_dialog_context_t context;
 
   if (player == g_other_player && (g_duel_network_flags & 2) == 0)
   {
     return ((unsigned short)has_initial_color != 0 || initial_color_mask != 0) ? 1 : 0;
   }
 
-  s.prompt = prompt;
-  s.initial_color_mask = initial_color_mask;
-  s.has_initial_color = has_initial_color;
-  s.target_player = target->player;
-  s.target_card = target->card;
+  context.prompt = prompt;
+  context.initial_color_mask = initial_color_mask;
+  context.has_initial_color = has_initial_color;
+  context.target_player = target->player;
+  context.target_card = target->card;
 
   if ((g_duel_network_flags & 2) != 0 && player == g_other_player)
   {
     TENTATIVE_wait_for_network_result(player, 0x17);
-    s.dialog_result = g_network_result_packet.result;
+    context.dialog_result = g_network_result_packet.result;
   }
   else
   {
-    s.dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xea, g_duel_window_hwnd,
-                                      dlgproc_magical_hack, (LPARAM)&s);
+    context.dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xea, g_duel_window_hwnd,
+                                            dlgproc_magical_hack, (LPARAM)&context);
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_network_result_packet.result = s.dialog_result;
+      g_network_result_packet.result = context.dialog_result;
       g_network_result_packet.packet_type = 0x17;
       TENTATIVE_send_network_result(player, 0x17);
     }
   }
 
-  if (s.dialog_result == -1)
+  if (context.dialog_result == -1)
   {
     return -1;
   }
   else
   {
-    if (s.dialog_result == -2)
+    if (context.dialog_result == -2)
     {
       return -1;
     }
     else
     {
-      return s.dialog_result;
+      return context.dialog_result;
     }
   }
 }

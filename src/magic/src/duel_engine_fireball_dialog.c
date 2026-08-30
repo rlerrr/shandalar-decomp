@@ -95,16 +95,7 @@ COLORREF g_fireball_dialog_button_focus_text_color;
 int choose_fireball_options(int player, int internal_card_id, int maximum_mana, int maximum_targets,
                             int *mana_to_pay, int *number_of_targets, int *damage_per_target)
 {
-  struct
-  {
-    int maximum_mana;
-    int maximum_targets;
-    int mana_to_pay;
-    int number_of_targets;
-    int damage_per_target;
-    int card_id;
-    int dialog_result;
-  } s;
+  FireballOptionsDialogContext context;
 
   if (player == g_other_player && (g_duel_network_flags & 2) == 0)
   {
@@ -116,50 +107,50 @@ int choose_fireball_options(int player, int internal_card_id, int maximum_mana, 
     return 0;
   }
 
-  s.maximum_mana = maximum_mana;
-  s.maximum_targets = maximum_targets;
-  s.mana_to_pay = *mana_to_pay;
-  s.number_of_targets = *number_of_targets;
-  s.card_id = CardIDFromType(internal_card_id);
+  context.maximum_mana = maximum_mana;
+  context.maximum_targets = maximum_targets;
+  context.mana_to_pay = *mana_to_pay;
+  context.number_of_targets = *number_of_targets;
+  context.card_id = CardIDFromType(internal_card_id);
 
   if ((g_duel_network_flags & 2) != 0 && player == g_other_player)
   {
     TENTATIVE_wait_for_network_result(player, 0x15);
-    s.dialog_result = g_fireball_options_network_packet.dialog_result;
-    s.mana_to_pay = g_fireball_options_network_packet.mana_to_pay;
-    s.number_of_targets = g_fireball_options_network_packet.number_of_targets;
-    s.damage_per_target = g_fireball_options_network_packet.damage_per_target;
+    context.dialog_result = g_fireball_options_network_packet.dialog_result;
+    context.mana_to_pay = g_fireball_options_network_packet.mana_to_pay;
+    context.number_of_targets = g_fireball_options_network_packet.number_of_targets;
+    context.damage_per_target = g_fireball_options_network_packet.damage_per_target;
   }
   else
   {
-    s.dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xef, g_duel_window_hwnd,
-                                      dlgproc_fireball_options, (LPARAM)&s);
+    context.dialog_result = DialogBoxParamA(g_app_instance, (LPCSTR)0xef, g_duel_window_hwnd,
+                                            dlgproc_fireball_options, (LPARAM)&context);
     if ((g_duel_network_flags & 2) != 0)
     {
-      g_fireball_options_network_packet.dialog_result = s.dialog_result;
-      g_fireball_options_network_packet.mana_to_pay = s.mana_to_pay;
-      g_fireball_options_network_packet.number_of_targets = s.number_of_targets;
-      g_fireball_options_network_packet.damage_per_target = s.damage_per_target;
+      g_fireball_options_network_packet.dialog_result = context.dialog_result;
+      g_fireball_options_network_packet.mana_to_pay = context.mana_to_pay;
+      g_fireball_options_network_packet.number_of_targets = context.number_of_targets;
+      g_fireball_options_network_packet.damage_per_target = context.damage_per_target;
       g_fireball_options_network_packet.packet_type = 0x15;
       TENTATIVE_send_network_result(player, 0x15);
     }
   }
 
-  if (s.dialog_result == -1)
+  if (context.dialog_result == -1)
   {
     return 0;
   }
   else
   {
-    if (s.dialog_result == -2)
+    if (context.dialog_result == -2)
     {
       return 0;
     }
     else
     {
-      *mana_to_pay = s.mana_to_pay;
-      *number_of_targets = s.number_of_targets;
-      *damage_per_target = s.damage_per_target;
+      *mana_to_pay = context.mana_to_pay;
+      *number_of_targets = context.number_of_targets;
+      *damage_per_target = context.damage_per_target;
       return 1;
     }
   }
