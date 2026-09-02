@@ -22,11 +22,6 @@
 #define CARDCLASS_SNAPSHOT_WINDOW_LONG_OFFSET g_cardclass_snapshot_window_long_offset
 #define CARDCLASS_PREVIOUS_Z_ORDER_WINDOW_LONG_OFFSET g_cardclass_previous_z_order_window_long_offset
 
-typedef BOOL(WINAPI *PtInRectByCoordsProc)(const RECT *rect, LONG x, LONG y);
-
-#define PtInRectByCoords(rect_, x_, y_) \
-  (((PtInRectByCoordsProc)PtInRect)((rect_), (LONG)(x_), (LONG)(y_)))
-
 int load_text_with_tab_escapes(char *filename, char *section_name);
 LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void draw_duel_face_window(HDC dc, RECT *rect, int player);
@@ -2935,8 +2930,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     char cuecard_text[100];
     unsigned int untap_status;
     unsigned int counter_p1p1;
-    unsigned int mouse_x;
-    unsigned int mouse_y;
+    POINT mouse_point;
     int cuecard_found;
     unsigned int counter_p1p0;
     int ability_loop_index;
@@ -2971,8 +2965,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
     s.player = GetWindowLongA(hwnd, CARDCLASS_PLAYER_WINDOW_LONG_OFFSET);
     s.card = GetWindowLongA(hwnd, CARDCLASS_CARD_WINDOW_LONG_OFFSET);
     s.card_id = get_displayed_card_id(s.player, s.card);
-    s.mouse_x = (unsigned int)lparam & 0xffff;
-    s.mouse_y = (unsigned short)((((unsigned int)lparam >> 0x10) & 0xffff));
+    s.mouse_point.x = (short)LOWORD(lparam);
+    s.mouse_point.y = (short)HIWORD(lparam);
     if (s.player != -1 && s.card == -1)
     {
       s.cuecard_found = 1;
@@ -2984,9 +2978,9 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       GetClientRect(hwnd, &s.client_rect);
       if ((get_displayed_card_ui_flags(s.player, s.card) & 2) != 0)
       {
-        s.temp_mouse = s.mouse_x;
-        s.mouse_x = s.mouse_y;
-        s.mouse_y = s.client_rect.bottom - s.temp_mouse;
+        s.temp_mouse = s.mouse_point.x;
+        s.mouse_point.x = s.mouse_point.y;
+        s.mouse_point.y = s.client_rect.bottom - s.temp_mouse;
       }
 
       s.ability_flags = get_displayed_card_regen_status(s.player, s.card);
@@ -2998,7 +2992,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         {
           get_ability_icon_rect(&s.ability_rect, g_cardclass_ability_masks[s.ability_loop_index],
                                 &s.client_rect, s.ability_flags);
-          if (PtInRectByCoords(&s.ability_rect, s.mouse_x, s.mouse_y) != 0)
+          if (PtInRect(&s.ability_rect, s.mouse_point) != 0)
           {
             s.ability_index = s.ability_loop_index;
           }
@@ -3019,7 +3013,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
 
       if ((s.untap_status & 1) != 0 &&
           (s.untap_status & 2) != 0 &&
-          PtInRectByCoords(&s.untap_rect, s.mouse_x, s.mouse_y) != 0)
+          PtInRect(&s.untap_rect, s.mouse_point) != 0)
       {
         strcpy(s.cuecard_text, gs_cuecard_this_card_will_untap_00925040);
         s.cuecard_found = 1;
@@ -3030,27 +3024,27 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.cuecard_found = 1;
       }
       else if (s.damage_on_card > 0 &&
-               PtInRectByCoords(&s.damage_rect, s.mouse_x, s.mouse_y) != 0)
+               PtInRect(&s.damage_rect, s.mouse_point) != 0)
       {
         sprintf(s.cuecard_text, gs_cuecard_damage_n_0091b290, s.damage_on_card);
         s.cuecard_found = 1;
       }
       else if ((int)s.special_counters > 0 &&
-               PtInRectByCoords(&s.special_counter_rect, s.mouse_x, s.mouse_y) != 0)
+               PtInRect(&s.special_counter_rect, s.mouse_point) != 0)
       {
         format_special_counter_cuecard_text(s.cuecard_text, s.card_id, s.special_counters);
         s.cuecard_found = 1;
       }
       else if ((int)(s.counter_p1p1 + s.counter_m1m1 + s.counter_power) > 0 &&
-               (int)s.mouse_y > (s.client_rect.bottom * 0x23) / 100 &&
-               (s.client_rect.bottom * 0x3e) / 100 > (int)s.mouse_y)
+               s.mouse_point.y > (s.client_rect.bottom * 0x23) / 100 &&
+               (s.client_rect.bottom * 0x3e) / 100 > s.mouse_point.y)
       {
         s.counter_column_width = (s.client_rect.right - s.client_rect.left) / 3;
-        if ((int)s.mouse_x < s.client_rect.left + s.counter_column_width)
+        if (s.mouse_point.x < s.client_rect.left + s.counter_column_width)
         {
           format_standard_counter_cuecard_text(s.cuecard_text, 1, s.counter_p1p1);
         }
-        else if ((int)s.mouse_x < s.counter_column_width * 2 + s.client_rect.left)
+        else if (s.mouse_point.x < s.counter_column_width * 2 + s.client_rect.left)
         {
           format_standard_counter_cuecard_text(s.cuecard_text, 2, s.counter_m1m1);
         }
@@ -3061,11 +3055,11 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
         s.cuecard_found = 1;
       }
       else if ((int)(s.counter_p1p0 + s.counter_p0p1) > 0 &&
-               (int)s.mouse_y > (s.client_rect.bottom * 0x35) / 100 &&
-               (s.client_rect.bottom * 0x59) / 100 > (int)s.mouse_y)
+               s.mouse_point.y > (s.client_rect.bottom * 0x35) / 100 &&
+               (s.client_rect.bottom * 0x59) / 100 > s.mouse_point.y)
       {
         s.counter_column_width = (s.client_rect.right - s.client_rect.left) / 2;
-        if ((int)s.mouse_x < s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2)
+        if (s.mouse_point.x < s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2)
         {
           format_standard_counter_cuecard_text(s.cuecard_text, 4, s.counter_p0p1);
         }
@@ -3077,16 +3071,16 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
       }
       else
       {
-        if (is_displayed_card_owned_by_opponent(s.player, s.card) != s.player && (s.client_rect.bottom * 0xc) / 100 > (int)s.mouse_y)
+        if (is_displayed_card_owned_by_opponent(s.player, s.card) != s.player && (s.client_rect.bottom * 0xc) / 100 > s.mouse_point.y)
         {
           strcpy(s.cuecard_text, gs_cuecard_not_controlled_by_owner_008a8e40);
           s.cuecard_found = 1;
         }
         else if (((s.is_target != 0 || s.can_target_again != 0) &&
-                  (int)s.mouse_x > (s.client_rect.right * 5) / 100 &&
-                  (s.client_rect.right * 0x5f) / 100 > (int)s.mouse_x &&
-                  (int)s.mouse_y > (s.client_rect.bottom * 0xf) / 100 &&
-                  (s.client_rect.bottom * 0x5f) / 100 > (int)s.mouse_y))
+                  s.mouse_point.x > (s.client_rect.right * 5) / 100 &&
+                  (s.client_rect.right * 0x5f) / 100 > s.mouse_point.x &&
+                  s.mouse_point.y > (s.client_rect.bottom * 0xf) / 100 &&
+                  (s.client_rect.bottom * 0x5f) / 100 > s.mouse_point.y))
         {
           if (s.is_target != 0 && s.can_target_again != 0)
           {
@@ -3103,18 +3097,18 @@ LRESULT CALLBACK wndproc_MAGICGAME_CardClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.cuecard_found = 1;
         }
         else if (s.kill_code == 2 &&
-                 (s.client_rect.right * 5) / 100 < (int)s.mouse_x &&
-                 (int)s.mouse_x < (s.client_rect.right * 0x5f) / 100 &&
-                 (s.client_rect.bottom * 0xf) / 100 < (int)s.mouse_y &&
-                 (int)s.mouse_y < (s.client_rect.bottom * 0x5f) / 100)
+                 (s.client_rect.right * 5) / 100 < s.mouse_point.x &&
+                 s.mouse_point.x < (s.client_rect.right * 0x5f) / 100 &&
+                 (s.client_rect.bottom * 0xf) / 100 < s.mouse_point.y &&
+                 s.mouse_point.y < (s.client_rect.bottom * 0x5f) / 100)
         {
           strcpy(s.cuecard_text, gs_cuecard_dying_0091c640);
           s.cuecard_found = 1;
         }
-        else if ((s.client_rect.right * 5) / 100 < (int)s.mouse_x &&
-                 (int)s.mouse_x < (s.client_rect.right * 0x5f) / 100 &&
-                 (s.client_rect.bottom * 0xf) / 100 < (int)s.mouse_y &&
-                 (int)s.mouse_y < (s.client_rect.bottom * 0x5f) / 100)
+        else if ((s.client_rect.right * 5) / 100 < s.mouse_point.x &&
+                 s.mouse_point.x < (s.client_rect.right * 0x5f) / 100 &&
+                 (s.client_rect.bottom * 0xf) / 100 < s.mouse_point.y &&
+                 s.mouse_point.y < (s.client_rect.bottom * 0x5f) / 100)
         {
           if ((get_displayed_card_type(s.player, s.card) & 2) != 0 &&
               (get_displayed_card_ui_flags(s.player, s.card) & 1) != 0 &&

@@ -854,7 +854,7 @@ BOOL WINAPI dlgproc_magical_hack(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
 {
   struct
   {
-    char pad_60[12];
+    POINT preview_point;
     RECT preview_rect;
     HDC paint_dc;
     int saved_dc;
@@ -864,6 +864,7 @@ BOOL WINAPI dlgproc_magical_hack(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
     HWND ctl_hwnd;
     int ctl_id;
     HDC ctl_hdc;
+    HBRUSH ctl_brush;
     HWND focus_lost;
     HWND focus_gained;
     unsigned int command_id;
@@ -1046,11 +1047,13 @@ BOOL WINAPI dlgproc_magical_hack(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
       else
         SetTextColor(s.ctl_hdc, g_magical_hack_label_text_color);
       SetBkMode(s.ctl_hdc, TRANSPARENT);
-      return (BOOL)GetStockObject(NULL_BRUSH);
+      s.ctl_brush = (HBRUSH)GetStockObject(NULL_BRUSH);
+      return (BOOL)s.ctl_brush;
     }
     SetTextColor(s.ctl_hdc, g_magical_hack_label_text_color);
     SetBkMode(s.ctl_hdc, TRANSPARENT);
-    return (BOOL)g_magical_hack_button_brush;
+    s.ctl_brush = g_magical_hack_button_brush;
+    return (BOOL)s.ctl_brush;
 
   case WM_MOUSEMOVE:
   case WM_RBUTTONDOWN:
@@ -1059,10 +1062,10 @@ BOOL WINAPI dlgproc_magical_hack(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
     {
       GetWindowRect(GetDlgItem(hwnd, MAGICAL_HACK_CARD_DISPLAY), &s.preview_rect);
       MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.preview_rect, 2);
-      s.paint_rect.left = (short)LOWORD(lparam);
-      s.paint_rect.top = (short)HIWORD(lparam);
+      s.preview_point.x = (short)LOWORD(lparam);
+      s.preview_point.y = (short)HIWORD(lparam);
       if ((g_magical_hack_displayed_card_id != -1) &&
-          PtInRect(&s.preview_rect, *(POINT *)&s.paint_rect))
+          PtInRect(&s.preview_rect, s.preview_point))
       {
         SendMessageA(g_duel_card_preview_window_hwnd, 0x401,
                      g_magical_hack_displayed_card_id, 0);
