@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,6 +10,8 @@
 #include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
+
+typedef ptrdiff_t INT_PTR;
 
 extern int load_text_with_tab_escapes(char *filename, char *section_name);
 extern LRESULT handle_duel_inactive_cursor(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -49,7 +52,7 @@ void position_duel_prompt_context_window(HWND hwnd);
 void resize_duel_hand_window(HWND hwnd);
 void save_duel_interface_options_to_registry(void);
 void apply_duel_backdrop_art(int player, int color, int variant);
-BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 #ifndef SHANDALAR
 extern HWND global_main_hwnd;

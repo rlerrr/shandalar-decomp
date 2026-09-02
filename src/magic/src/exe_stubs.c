@@ -8,6 +8,8 @@
 #include "global_strings.h"
 #include "shared_startup.h"
 
+typedef ptrdiff_t INT_PTR;
+
 // This file holds temporary stub implementations for exe functions that are
 // referenced by decompiled code but not yet matched/decompiled elsewhere.
 
@@ -31,8 +33,8 @@ int activate_mana_source_card(int player, int card);
 int resolve_activated_ability(int player, int card);
 void prompt_player_for_stop_action(int player, char *prompt);
 void show_mana_burn_dialog(int player, int amount);
-BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void delete_and_close_object(HANDLE obj);
 HBITMAP load_pic(char *filename);
 void ApplyCardArtPaletteToDc(HDC hdc);
@@ -177,7 +179,7 @@ static void cleanup_duel_options_dialog_resources(HBITMAP background,
 
 // FUNCTION: MAGIC 0x0048958a
 // FUNCTION: SHANDALAR 0x004a521a
-BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -439,7 +441,7 @@ BOOL CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam,
       SetBkMode(s.ctl_hdc, TRANSPARENT);
       s.brush = GetStockObject(NULL_BRUSH);
     }
-    return (BOOL)s.brush;
+    return (INT_PTR)s.brush;
 
   case WM_DRAWITEM:
     s.draw_item = (DRAWITEMSTRUCT *)lparam;
@@ -3039,7 +3041,7 @@ void show_mana_burn_dialog(int player, int amount)
 
 // FUNCTION: MAGIC 0x004a36ac
 // FUNCTION: SHANDALAR 0x0053f03a
-BOOL CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -3162,7 +3164,7 @@ int prompt_for_life_total(int player, char *prompt, int initial_life_total)
 }
 
 // FUNCTION: MAGIC 0x004a0a29
-BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -3275,7 +3277,7 @@ BOOL CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, 
     s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
     SetBkMode(s.ctl_hdc, TRANSPARENT);
     SetTextColor(s.ctl_hdc, g_life_total_dialog_text_color);
-    return (BOOL)GetStockObject(NULL_BRUSH);
+    return (INT_PTR)GetStockObject(NULL_BRUSH);
 
   case WM_DRAWITEM:
     s.draw_item = (DRAWITEMSTRUCT *)lparam;

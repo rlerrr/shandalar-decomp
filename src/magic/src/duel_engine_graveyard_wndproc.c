@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,6 +12,8 @@
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "magic/src/shared_startup.h"
+
+typedef ptrdiff_t INT_PTR;
 
 #ifndef SHANDALAR
 extern HWND global_main_hwnd;
@@ -42,7 +45,7 @@ int load_text_with_tab_escapes(char *filename, char *section_name);
 LRESULT CALLBACK wndproc_ExpandedGraveyard(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 LRESULT CALLBACK wndproc_GraveyardCards(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 LRESULT CALLBACK wndproc_MAGICGAME_GraveyardClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 // GLOBAL: MAGIC 0x0055e00c
 int g_graveyard_window_long_offset = 0;
@@ -437,7 +440,7 @@ void get_view_antes_card_rect(RECT *rect, HWND hwnd, int opponent, int index)
 }
 
 // FUNCTION: MAGIC 0x00452059
-BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -567,7 +570,7 @@ BOOL CALLBACK dlgproc_ViewAntes(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
     SetBkMode(s.ctl_dc, TRANSPARENT);
     SetTextColor(s.ctl_dc, g_view_antes_text_color);
-    return (BOOL)GetStockObject(NULL_BRUSH);
+    return (INT_PTR)GetStockObject(NULL_BRUSH);
 
   case WM_QUERYNEWPALETTE:
   case WM_PALETTECHANGED:

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <commdlg.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,6 +17,8 @@
 #include "magic/src/shared_startup.h"
 #include "drawcardlib/Drawcardlib.h"
 #include "drawcardlib/src/pic.h"
+
+typedef ptrdiff_t INT_PTR;
 #ifdef SHANDALAR
 #include "deckdll/src/magsnd.h"
 #include "shandalar/src/shandalar_global_strings.h"
@@ -122,8 +125,8 @@ void copy_opponent_name_prefix(char *name);
 void delete_and_close_object(HANDLE obj);
 void change_buttonclass_wndproc(HWND hwnd);
 void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item, HBRUSH brush, HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
-BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-BOOL CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 #define PICK_CARD_FULLCARD_ID 1030
 #define PICK_CARD_LISTBOX_ID 1031
@@ -1373,7 +1376,7 @@ void show_post_duel_draws(int duel_result)
 
 // FUNCTION: MAGIC 0x0049d9b4
 // FUNCTION: SHANDALAR 0x00539361
-BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -1515,7 +1518,7 @@ BOOL CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LP
       SetBkMode(s.ctl_hdc, TRANSPARENT);
       s.brush = GetStockObject(NULL_BRUSH);
     }
-    return (BOOL)s.brush;
+    return (INT_PTR)s.brush;
 
   case WM_DRAWITEM:
     s.draw_item = (DRAWITEMSTRUCT *)lparam;
@@ -1748,7 +1751,7 @@ void cleanup_post_duel_draws_dialog_resources(HBITMAP background, HBRUSH button_
 
 // FUNCTION: MAGIC 0x004ddc39
 // FUNCTION: SHANDALAR 0x005448ea
-BOOL CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -2106,7 +2109,7 @@ static __inline void select_first_pick_card(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x0050630c
-static BOOL CALLBACK dlgproc_pick_card_from_list(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static INT_PTR CALLBACK dlgproc_pick_card_from_list(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {

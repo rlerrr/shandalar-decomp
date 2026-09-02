@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stddef.h>
 #include <process.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,8 @@
 #include "magic/src/global_strings.h"
 #include "magic/src/network.h"
 #include "magic/src/shared_startup.h"
+
+typedef ptrdiff_t INT_PTR;
 
 #ifndef MCIWNDM_PLAY
 #define MCIWNDM_PLAY 0x806
@@ -41,7 +44,7 @@ void draw_duel_dialog_bitmap_button(DRAWITEMSTRUCT *draw_item,
                                     HBITMAP disabled_bitmap,
                                     COLORREF text_color,
                                     int draw_focus);
-BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void load_coin_flip_animation_dialog_assets(HBRUSH *brush, COLORREF *text_color);
 void cleanup_coin_flip_animation_dialog_assets(HGDIOBJ brush);
 void load_redraw_ante_dialog_assets(HBITMAP *background,
@@ -263,7 +266,7 @@ void cleanup_coin_flip_animation_dialog_assets(HGDIOBJ brush)
 
 // FUNCTION: MAGIC 0x004a3d9c
 // FUNCTION: SHANDALAR 0x0053f72a
-BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -371,7 +374,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wpara
     s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
     SetBkMode(s.ctl_dc, TRANSPARENT);
     SetTextColor(s.ctl_dc, g_coin_flip_animation_dialog_text_color);
-    return (BOOL)g_coin_flip_animation_dialog_brush;
+    return (INT_PTR)g_coin_flip_animation_dialog_brush;
 
   case 0x30f:
   case 0x310:
@@ -455,7 +458,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip_animation(HWND hwnd, UINT msg, WPARAM wpara
 
 // FUNCTION: MAGIC 0x0049a6c8
 // FUNCTION: SHANDALAR 0x00536086
-BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -828,7 +831,7 @@ BOOL CALLBACK dlgproc_duel_redraw_ante(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
     SetBkMode(s.ctl_dc, TRANSPARENT);
     SetTextColor(s.ctl_dc, g_redraw_ante_dialog_text_color);
-    return (BOOL)GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
 
   case WM_DRAWITEM:
     s.draw_item = (DRAWITEMSTRUCT *)lparam;
@@ -1174,7 +1177,7 @@ void coin_flip_wait_for_network_choice_thread(void *hwnd)
 
 // FUNCTION: MAGIC 0x00499984
 // FUNCTION: SHANDALAR 0x00535344
-BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -1378,7 +1381,7 @@ BOOL CALLBACK dlgproc_duel_coin_flip(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
     s.ctl_id = GetDlgCtrlID(s.ctl_hwnd);
     SetBkMode(s.hdc_a, TRANSPARENT);
     SetTextColor(s.hdc_a, g_coin_flip_dialog_text_color);
-    return (BOOL)GetStockObject(HOLLOW_BRUSH);
+    return (INT_PTR)GetStockObject(HOLLOW_BRUSH);
 
   case WM_DRAWITEM:
     s.draw_item = (DRAWITEMSTRUCT *)lparam;

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <commctrl.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "cardartlib/src/palette.h"
@@ -11,6 +12,8 @@
 #include "magic/src/global_strings.h"
 #include "magic/src/network.h"
 #include "magic/src/shared_startup.h"
+
+typedef ptrdiff_t INT_PTR;
 
 #define FIREBALL_CARD_DISPLAY 0x4ce
 #define FIREBALL_MANA_SPIN 0x4cf
@@ -45,7 +48,7 @@ void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item, HBRUSH brush,
                                      HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
 int handle_button_palette_message(int hwnd, unsigned int msg, int wparam, int lparam);
 
-BOOL WINAPI dlgproc_fireball_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+INT_PTR WINAPI dlgproc_fireball_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void setup_fireball_dialog_resources(HBITMAP *background, COLORREF *label_text_color,
                                      HBRUSH *button_brush, HPEN *button_pen1, HPEN *button_pen2,
                                      COLORREF *button_unfocus_text_color,
@@ -158,7 +161,7 @@ int choose_fireball_options(int player, int internal_card_id, int maximum_mana, 
 
 // FUNCTION: MAGIC 0x004a4691
 // FUNCTION: SHANDALAR 0x0054001c
-BOOL WINAPI dlgproc_fireball_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR WINAPI dlgproc_fireball_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -365,10 +368,10 @@ BOOL WINAPI dlgproc_fireball_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
         (s.ctl_id != FIREBALL_EXTRA_TARGET_COST))
     {
       SetBkMode(s.ctl_hdc, TRANSPARENT);
-      return (BOOL)GetStockObject(NULL_BRUSH);
+      return (INT_PTR)GetStockObject(NULL_BRUSH);
     }
     SetBkMode(s.ctl_hdc, TRANSPARENT);
-    return (BOOL)g_fireball_dialog_button_brush;
+    return (INT_PTR)g_fireball_dialog_button_brush;
 
   case WM_PAINT:
     s.erase_dc = BeginPaint(hwnd, &s.paint);
