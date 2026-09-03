@@ -2615,7 +2615,6 @@ int card_energy_flux(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d77f8
 int card_erosion(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   char message[900];
   int can_pay_color;
   int can_pay_any;
@@ -2623,7 +2622,7 @@ int card_erosion(int player, int card, event_t event)
   int dialog_result;
   int done;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  done = 0;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2656,19 +2655,20 @@ int card_erosion(int player, int card, event_t event)
     g_spell_fizzled = (select_target_land_and_store(player, 1 - player, card) == 0);
     if (g_spell_fizzled != 1)
     {
-      if (instance->targets[0].player == g_active_player)
+      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_active_player)
       {
         g_ai_modifier +=
             g_basiclandtypes_controlled
                 [g_active_player]
                 [single_color_test_bit_to_color_t(
                     (int)global_cards_data
-                        [PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).internal_card_id]
+                        [PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                              PLAYER_CARD_INSTANCE(player, card).targets[0].card).internal_card_id]
                             .color)] *
                 -4 +
             0x20;
       }
-      if (instance->targets[0].player == g_other_player)
+      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_other_player)
       {
         g_ai_modifier -= 0x60;
       }
@@ -2677,8 +2677,8 @@ int card_erosion(int player, int card, event_t event)
   }
   else if (event == EVENT_RESOLVE_SPELL)
   {
-    if (!C_real_validate_target(instance->targets[0].player,
-                                instance->targets[0].card,
+    if (!C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                 (char *)0,
                                 player,
                                 2,
@@ -2703,20 +2703,22 @@ int card_erosion(int player, int card, event_t event)
     }
     else
     {
-      instance->damage_target_player = instance->targets[0].player;
-      instance->damage_target_card = instance->targets[0].card;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player =
+          PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card =
+          PLAYER_CARD_INSTANCE(player, card).targets[0].card;
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
     if (g_current_phase == 4 &&
         g_event_player == g_current_player &&
-        instance->damage_target_player == g_current_player &&
-        (instance->state & 1) == 0)
+        PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player &&
+        (PLAYER_CARD_INSTANCE(player, card).state & 1) == 0)
     {
-      instance->upkeep_flags |= 0x101;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 0x101;
       g_activation_event_flags |= 3;
       return 1;
     }
@@ -2724,23 +2726,26 @@ int card_erosion(int player, int card, event_t event)
   }
   else if (event == EVENT_UPKEEP_PHASE && g_affected_card == card && g_affected_card_controller == player)
   {
-    instance->state |= 1;
+    PLAYER_CARD_INSTANCE(player, card).state |= 1;
     g_upkeep_payment_completed = 1;
     g_event_result |= 1;
     return 0;
   }
   else if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
-    can_pay_color = has_mana((int)(char)instance->damage_target_player,
+    can_pay_color = has_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                              single_color_test_bit_to_color_t(
-                                 (int)(char)PLAYER_CARD_INSTANCE((int)(char)instance->damage_target_player,
-                                                                 instance->damage_target_card)
+                                 (int)(char)PLAYER_CARD_INSTANCE(
+                                     (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                     PLAYER_CARD_INSTANCE(player, card).damage_target_card)
                                      .mana_color),
                              1);
-    can_pay_any = has_mana((int)(char)instance->damage_target_player, COLOR_ANY, 1);
+    can_pay_any = has_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                           COLOR_ANY,
+                           1);
     if (can_pay_color == 1)
     {
-      if (can_pay_any < 4 && 10 < g_life[(int)(char)instance->damage_target_player])
+      if (can_pay_any < 4 && 10 < g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player])
       {
         default_choice = 2;
       }
@@ -2749,7 +2754,7 @@ int card_erosion(int player, int card, event_t event)
         default_choice = 1;
       }
     }
-    else if (can_pay_any < 3 && 15 < g_life[(int)(char)instance->damage_target_player])
+    else if (can_pay_any < 3 && 15 < g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player])
     {
       default_choice = 2;
     }
@@ -2758,46 +2763,54 @@ int card_erosion(int player, int card, event_t event)
       default_choice = 0;
     }
 
-    done = 0;
     while (!done)
     {
       load_text("prompts.txt", "EROSION");
-      sprintf(message, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
-      dialog_result = do_dialog((int)(char)instance->damage_target_player,
+      sprintf(message, " %s\n %s\n %s", g_text_lines[1], g_text_lines[2], g_text_lines[3]);
+      dialog_result = do_dialog((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                                 player,
                                 card,
-                                (int)(char)instance->damage_target_player,
-                                instance->damage_target_card,
+                                (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                PLAYER_CARD_INSTANCE(player, card).damage_target_card,
                                 message,
                                 default_choice);
-      if (dialog_result == 0)
+      switch (dialog_result)
       {
-        kill_card((int)(char)instance->damage_target_player, instance->damage_target_card, KILL_DESTROY);
-        done = 1;
-      }
-      else if (dialog_result == 1)
-      {
-        if (has_mana((int)(char)instance->damage_target_player, COLOR_ANY, 1))
-        {
-          PLAYER_CARD_INSTANCE((int)(char)instance->damage_target_player, instance->damage_target_card).state |=
-              STATE_NO_AUTO_TAPPING;
-          push_card_onto_stack(player, card, 0x7e, 0, 0);
-          charge_mana((int)(char)instance->damage_target_player, COLOR_COLORLESS, 1);
-          obliterate_top_card_of_stack();
-          if (g_spell_fizzled == 1)
+        case 0:
+          kill_card((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                    PLAYER_CARD_INSTANCE(player, card).damage_target_card,
+                    KILL_DESTROY);
+          ++done;
+          break;
+
+        case 1:
+          if (has_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                       COLOR_ANY,
+                       1))
           {
-            g_spell_fizzled = 0;
+            PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                 PLAYER_CARD_INSTANCE(player, card).damage_target_card).state |=
+                STATE_NO_AUTO_TAPPING;
+            push_card_onto_stack(player, card, 0x7e, 0, 0);
+            charge_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                        COLOR_COLORLESS,
+                        1);
+            obliterate_top_card_of_stack();
+            if (g_spell_fizzled == 1)
+            {
+              g_spell_fizzled = 0;
+            }
+            else
+            {
+              ++done;
+            }
           }
-          else
-          {
-            done = 1;
-          }
-        }
-      }
-      else if (dialog_result == 2)
-      {
-        --g_life[(int)(char)instance->damage_target_player];
-        done = 1;
+          break;
+
+        case 2:
+          --g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player];
+          ++done;
+          break;
       }
     }
     return 0;
@@ -2806,7 +2819,7 @@ int card_erosion(int player, int card, event_t event)
   {
     if (event == EVENT_CLEANUP)
     {
-      instance->state &= ~1;
+      PLAYER_CARD_INSTANCE(player, card).state &= ~1;
     }
     return 0;
   }

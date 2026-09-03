@@ -4326,9 +4326,9 @@ int card_bronze_tablet(int player, int card, event_t event)
 {
   struct
   {
+    int choice;
     target_t target;
     char prompt[900];
-    int choice;
   } s;
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
@@ -4415,7 +4415,7 @@ int card_bronze_tablet(int player, int card, event_t event)
     if (event == EVENT_RESOLVE_ACTIVATION)
     {
       s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
-      if (!C_real_validate_target(s.target.player,
+      if (C_real_validate_target(s.target.player,
                                   s.target.card,
                                   (char *)0,
                                   player,
@@ -4434,22 +4434,18 @@ int card_bronze_tablet(int player, int card, event_t event)
                                   -1,
                                   0,
                                   0,
-                                  0))
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+                                  0) != 0)
       {
         if (g_duel_ai_mode_state != 1)
         {
           load_text("prompts.txt", "BRONZE_TABLET");
           if (g_life[1 - player] < 10)
           {
-            sprintf(s.prompt, " %s\n _%s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+            sprintf(s.prompt, " %s\n _%s\n %s", g_text_lines[1], g_text_lines[2], g_text_lines[3]);
           }
           else
           {
-            sprintf(s.prompt, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+            sprintf(s.prompt, " %s\n %s\n %s", g_text_lines[1], g_text_lines[2], g_text_lines[3]);
           }
         }
 
@@ -4510,6 +4506,10 @@ int card_bronze_tablet(int player, int card, event_t event)
             kill_card(g_card_on_stack_controller, g_card_on_stack, KILL_DESTROY);
           }
         }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
   }

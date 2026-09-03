@@ -286,17 +286,18 @@ int card_strip_mine(int player, int card, event_t event)
 {
   struct
   {
-    char dialog[600];
+    target_t target;
+    char dialog[0x384];
     int choice;
     int result;
   } s;
-  card_instance_t *instance;
-  card_instance_t *parent;
-  target_t target;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  if (event == EVENT_COUNT_MANA)
+  {
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+  }
 
-  if (event == EVENT_COUNT_MANA || event == EVENT_CAN_ACTIVATE)
+  if (event == EVENT_CAN_ACTIVATE)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
@@ -304,18 +305,25 @@ int card_strip_mine(int player, int card, event_t event)
   if (event == EVENT_ACTIVATE)
   {
     s.result = 0;
-    s.choice = 0;
     if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "STRIPMINE");
     }
-    if (g_produced_mana_color_valid != 0 && g_required_mana_color_mask == 0)
+    if (g_produced_mana_color_valid == 0)
     {
-      if (player == g_active_player || (g_duel_network_flags & 2) != 0)
+      s.choice = 0;
+    }
+    else if (g_required_mana_color_mask != 0)
+    {
+      s.choice = 0;
+    }
+    else
+    {
+      if (g_active_player == player || (g_duel_network_flags & 2) != 0)
       {
         if (g_duel_ai_mode_state != 1)
         {
-          sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
+          sprintf(s.dialog, " %s\n %s\n %s", g_text_lines[1], g_text_lines[2], g_text_lines[3]);
         }
         s.choice = do_dialog(player, player, card, -1, -1, s.dialog, 1);
       }
@@ -328,7 +336,7 @@ int card_strip_mine(int player, int card, event_t event)
     if (s.choice == 0)
     {
       s.result = mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
     else if (s.choice == 1)
     {
@@ -337,19 +345,19 @@ int card_strip_mine(int player, int card, event_t event)
       {
         load_text("prompts.txt", "STRIPMINE");
       }
-      if (!select_target_land_and_store(player, 1 - player, card))
+      if (select_target_land_and_store(player, 1 - player, card) != 0)
       {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
-        instance->state |= STATE_TAPPED;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         if (g_duel_ai_mode_state != 1)
         {
           play_sound_effect(0xf);
         }
         kill_card(player, card, KILL_SACRIFICE);
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
     else
@@ -359,16 +367,16 @@ int card_strip_mine(int player, int card, event_t event)
 
     if (g_spell_fizzled == 1)
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
     return s.result;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && instance->number_of_targets != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
   {
-    target = instance->targets[0];
-    if (!C_real_validate_target(target.player,
-                                target.card,
+    s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    if (C_real_validate_target(s.target.player,
+                                s.target.card,
                                 (char *)0,
                                 player,
                                 2,
@@ -386,17 +394,17 @@ int card_strip_mine(int player, int card, event_t event)
                                 -1,
                                 0,
                                 0,
-                                0))
+                                0) != 0)
     {
-      g_spell_fizzled = 1;
+      kill_card(s.target.player, s.target.card, KILL_DESTROY);
     }
     else
     {
-      kill_card(target.player, target.card, KILL_DESTROY);
+      g_spell_fizzled = 1;
     }
 
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
-    parent->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
     return 0;
   }
 
