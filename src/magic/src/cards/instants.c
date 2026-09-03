@@ -173,11 +173,8 @@ int card_siren_s_call(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b0590
 int card_ancestral_recall(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t selected_target;
   int target_player;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -212,18 +209,18 @@ int card_ancestral_recall(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0] = selected_target;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0] = selected_target;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target_player = instance->targets[0].player;
+    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     draw_card_for_player(target_player);
     draw_card_for_player(target_player);
     draw_card_for_player(target_player);
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_DESTROY);
   }
 
@@ -417,10 +414,7 @@ int card_shatter(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b0fe3
 int card_disenchant(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t selected_target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -475,14 +469,14 @@ int card_disenchant(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0] = selected_target;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0] = selected_target;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    selected_target = instance->targets[0];
+    selected_target = PLAYER_CARD_INSTANCE(player, card).targets[0];
     if (!C_real_validate_target(selected_target.player,
                                 selected_target.card,
                                 (char *)0,
@@ -510,7 +504,7 @@ int card_disenchant(int player, int card, event_t event)
     {
       kill_card(selected_target.player, selected_target.card, KILL_DESTROY);
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -2761,28 +2755,20 @@ int card_sleight_of_mind(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b647a
 int card_blue_elemental_blast(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-  int color;
   int valid;
-  int target_player;
-  int target_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
     if (g_current_spell_player == -1)
     {
       load_recorded_action_target(0);
-      color = get_sleighted_color(player, card, 4);
       return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0x1047, 0, 0,
-                                   get_protections_from(player, card), 1 << ((unsigned char)color & 0x1f), 0, -1, -1,
+                                   get_protections_from(player, card), 1 << ((unsigned char)get_sleighted_color(player, card, 4) & 0x1f), 0, -1, -1,
                                    0xffffffff, 0xffffffff, 0, 0, 0);
     }
-    color = get_sleighted_color(player, card, 4);
     return C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player, 2, 2, 0,
-                                  TYPE_NONE, TYPE_NONE, 0, 0, 1 << ((unsigned char)color & 0x1f),
+                                  TYPE_NONE, TYPE_NONE, 0, 0, 1 << ((unsigned char)get_sleighted_color(player, card, 4) & 0x1f),
                                   COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
                                   TARGET_SPECIAL_SPELL_ON_STACK, 0, 0)
                ? 99
@@ -2794,27 +2780,26 @@ int card_blue_elemental_blast(int player, int card, event_t event)
     if (g_current_spell_player == -1)
     {
       load_text("prompts.txt", "BLUE_ELEMENTAL_BLAST");
-      color = get_sleighted_color(player, card, 4);
       if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY,
                                 TARGET_TYPE_TOKEN | TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND,
                                 TYPE_NONE, 0, get_protections_from(player, card),
-                                1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, -1, -1, -1,
+                                1 << ((unsigned char)get_sleighted_color(player, card, 4) & 0x1f), COLOR_TEST_0, -1, -1, -1, -1,
                                 0, 0, 0, g_text_lines[0], 1, &target))
       {
         g_spell_fizzled = 1;
       }
       else
       {
-        instance->targets[0].player = target.player;
-        instance->targets[0].card = target.card;
-        instance->number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }
     else
     {
-      instance->targets[0].player = g_current_spell_player;
-      instance->targets[0].card = g_current_spell_card;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = g_current_spell_player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = g_current_spell_card;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
@@ -2823,29 +2808,30 @@ int card_blue_elemental_blast(int player, int card, event_t event)
     valid = 0;
     if (g_current_spell_player == -1)
     {
-      color = get_sleighted_color(player, card, 4);
-      valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+      valid = C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                      (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE,
                                      TYPE_NONE, 0, get_protections_from(player, card),
-                                     1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, -1,
+                                     1 << ((unsigned char)get_sleighted_color(player, card, 4) & 0x1f), COLOR_TEST_0, -1, -1,
                                      -1, -1, 0, 0, 0);
     }
     else
     {
-      color = get_sleighted_color(player, card, 4);
-      valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+      valid = C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                      (char *)0, player, 2, 2, 0, TYPE_NONE, TYPE_NONE, 0, 0,
-                                     1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, -1,
+                                     1 << ((unsigned char)get_sleighted_color(player, card, 4) & 0x1f), COLOR_TEST_0, -1, -1,
                                      -1, -1, TARGET_SPECIAL_SPELL_ON_STACK, 0, 0);
     }
 
     if (valid)
     {
-      target_player = instance->targets[0].player;
-      target_card = instance->targets[0].card;
-      if ((PLAYER_CARD_INSTANCE(target_player, target_card).color & (1 << ((unsigned char)color & 0x1f))) != 0)
+      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card).color &
+           (1 << ((unsigned char)get_sleighted_color(player, card, 4) & 0x1f))) != 0)
       {
-        kill_card(target_player, target_card, KILL_DESTROY);
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                  PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_DESTROY);
       }
     }
     else
@@ -2853,7 +2839,7 @@ int card_blue_elemental_blast(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -3180,28 +3166,20 @@ int card_spell_blast(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b7a5b
 int card_red_elemental_blast(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-  int color;
   int valid;
-  int target_player;
-  int target_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
     if (g_current_spell_player == -1)
     {
       load_recorded_action_target(0);
-      color = get_sleighted_color(player, card, 2);
       return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0x1047, 0, 0,
-                                   get_protections_from(player, card), 1 << ((unsigned char)color & 0x1f), 0, -1, -1,
+                                   get_protections_from(player, card), 1 << ((unsigned char)get_sleighted_color(player, card, 2) & 0x1f), 0, -1, -1,
                                    0xffffffff, 0xffffffff, 0, 0, 0);
     }
-    color = get_sleighted_color(player, card, 2);
     return C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player, 2, 2, 0,
-                                  TYPE_NONE, TYPE_NONE, 0, 0, 1 << ((unsigned char)color & 0x1f),
+                                  TYPE_NONE, TYPE_NONE, 0, 0, 1 << ((unsigned char)get_sleighted_color(player, card, 2) & 0x1f),
                                   COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
                                   TARGET_SPECIAL_SPELL_ON_STACK, 0, 0)
                ? 99
@@ -3213,27 +3191,26 @@ int card_red_elemental_blast(int player, int card, event_t event)
     if (g_current_spell_player == -1)
     {
       load_text("prompts.txt", "RED_ELEMENTAL_BLAST");
-      color = get_sleighted_color(player, card, 2);
       if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY,
                                 TARGET_TYPE_TOKEN | TYPE_ARTIFACT | TYPE_ENCHANTMENT | TYPE_CREATURE | TYPE_LAND,
                                 TYPE_NONE, 0, get_protections_from(player, card),
-                                1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, -1, -1, -1,
+                                1 << ((unsigned char)get_sleighted_color(player, card, 2) & 0x1f), COLOR_TEST_0, -1, -1, -1, -1,
                                 0, 0, 0, g_text_lines[0], 1, &target))
       {
         g_spell_fizzled = 1;
       }
       else
       {
-        instance->targets[0].player = target.player;
-        instance->targets[0].card = target.card;
-        instance->number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
+        PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }
     else
     {
-      instance->targets[0].player = g_current_spell_player;
-      instance->targets[0].card = g_current_spell_card;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = g_current_spell_player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = g_current_spell_card;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
 
@@ -3242,29 +3219,30 @@ int card_red_elemental_blast(int player, int card, event_t event)
     valid = 0;
     if (g_current_spell_player == -1)
     {
-      color = get_sleighted_color(player, card, 2);
-      valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+      valid = C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                      (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE,
                                      TYPE_NONE, 0, get_protections_from(player, card),
-                                     1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, -1,
+                                     1 << ((unsigned char)get_sleighted_color(player, card, 2) & 0x1f), COLOR_TEST_0, -1, -1,
                                      -1, -1, 0, 0, 0);
     }
     else
     {
-      color = get_sleighted_color(player, card, 2);
-      valid = C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+      valid = C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                     PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                      (char *)0, player, 2, 2, 0, TYPE_NONE, TYPE_NONE, 0, 0,
-                                     1 << ((unsigned char)color & 0x1f), COLOR_TEST_0, -1, -1,
+                                     1 << ((unsigned char)get_sleighted_color(player, card, 2) & 0x1f), COLOR_TEST_0, -1, -1,
                                      -1, -1, TARGET_SPECIAL_SPELL_ON_STACK, 0, 0);
     }
 
     if (valid)
     {
-      target_player = instance->targets[0].player;
-      target_card = instance->targets[0].card;
-      if ((PLAYER_CARD_INSTANCE(target_player, target_card).color & (1 << ((unsigned char)color & 0x1f))) != 0)
+      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card).color &
+           (1 << ((unsigned char)get_sleighted_color(player, card, 2) & 0x1f))) != 0)
       {
-        kill_card(target_player, target_card, KILL_DESTROY);
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                  PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_DESTROY);
       }
     }
     else
@@ -3272,7 +3250,7 @@ int card_red_elemental_blast(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 

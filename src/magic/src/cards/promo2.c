@@ -631,10 +631,6 @@ int card_sewers_of_estark(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a4ae4
 int card_artifact_blast(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
@@ -660,27 +656,30 @@ int card_artifact_blast(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0].player = g_current_spell_player;
-      instance->targets[0].card = g_current_spell_card;
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = g_current_spell_player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = g_current_spell_card;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     g_ai_modifier -= 0x24;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card, (char *)0,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card, (char *)0,
                                player, 2, 2, 0, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
                                COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1,
                                TARGET_SPECIAL_SPELL_ON_STACK, 0, 0) == 0)
     {
       g_spell_fizzled = 1;
     }
-    else if ((PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).state & STATE_INVISIBLE) != 0)
+    else if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                   PLAYER_CARD_INSTANCE(player, card).targets[0].card).state & STATE_INVISIBLE) != 0)
     {
-      kill_card(instance->targets[0].player, instance->targets[0].card, KILL_BURY);
+      kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_BURY);
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 

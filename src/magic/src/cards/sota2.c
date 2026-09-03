@@ -956,30 +956,30 @@ int card_atog(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047360e
 int card_camel(int player, int card, event_t event)
 {
-  card_instance_t *damage;
-  card_instance_t *source;
   int source_internal_card_id;
   int current_card;
 
   if (event == EVENT_DEAL_DAMAGE &&
       PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id == g_damage_card_internal_card_id)
   {
-    damage = &PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card);
-    source = &PLAYER_CARD_INSTANCE((int)(char)damage->damage_source_player, damage->damage_source_card);
-    if (source->internal_card_id == -1)
+    if (PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player,
+                             PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card).internal_card_id == -1)
     {
-      source_internal_card_id = source->original_internal_card_id;
+      source_internal_card_id = PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player,
+                                                     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card).original_internal_card_id;
     }
     else
     {
-      source_internal_card_id = source->internal_card_id;
+      source_internal_card_id = PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player,
+                                                     PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card).internal_card_id;
     }
 
     if (global_cards_data[source_internal_card_id].id == CARD_ID_DESERT)
     {
-      if ((int)(char)damage->damage_target_player == player && damage->damage_target_card == card)
+      if ((int)(char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player &&
+          PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == card)
       {
-        damage->info_slot = 0;
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot = 0;
       }
 
       if (g_current_player == player && (int)(char)PLAYER_CARD_INSTANCE(player, card).blocking != -1)
@@ -988,10 +988,10 @@ int card_camel(int player, int card, event_t event)
         {
           if (is_in_play(player, current_card) &&
               PLAYER_CARD_INSTANCE(player, card).blocking == PLAYER_CARD_INSTANCE(player, current_card).blocking &&
-              (int)(char)damage->damage_target_player == player &&
-              damage->damage_target_card == current_card)
+              (int)(char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player &&
+              PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == current_card)
           {
-            damage->info_slot = 0;
+            PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot = 0;
           }
         }
       }
@@ -2496,15 +2496,12 @@ int card_khabal_ghoul(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00478cc1
 int card_king_suleiman(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return CAN_TAP(player, card) &&
-           real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
+           real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 1 - player,
                                  TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                  -1, -1, -1, -1, TARGET_SPECIAL_DJINN_OR_EFREET, 0, 0);
@@ -2513,36 +2510,42 @@ int card_king_suleiman(int player, int card, event_t event)
   if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
 
   if (event == EVENT_ACTIVATE)
   {
-    if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
+    load_text("promptsX1.txt", "KING_SULEIMAN");
+    if (C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                              get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                              -1, -1, -1, -1, TARGET_SPECIAL_DJINN_OR_EFREET, 0, 0,
-                             "Select target Djinn or Efreet.", 1, &target) == 0)
+                             g_text_lines[0], 1, &target) != 0)
     {
-      g_spell_fizzled = 1;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
+      PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
     }
     else
     {
-      instance->targets[0] = target;
-      instance->number_of_targets = 1;
-      instance->state |= STATE_TAPPED;
+      g_spell_fizzled = 1;
     }
+    return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2,
+    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 1 - player,
                                TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                -1, -1, -1, -1, TARGET_SPECIAL_DJINN_OR_EFREET, 0, 0) != 0)
     {
       kill_card(target.player, target.card, KILL_DESTROY);
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    return 0;
   }
 
   return 0;

@@ -777,23 +777,21 @@ int card_icy_manipulator(int player, int card, event_t event)
 int card_jade_statue(int player, int card, event_t event)
 {
   int animated_internal_card_id;
-  card_instance_t *instance;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if ((event == EVENT_CAST_SPELL) && (card == g_affected_card) && (player == g_affected_card_controller))
   {
-    instance->dummy3 = instance->internal_card_id;
+    PLAYER_CARD_INSTANCE(player, card).dummy3 = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
   }
   if (event == EVENT_RESOLVE_SPELL)
   {
-    instance->state |= 0x3000000;
-    instance->info_slot = -1;
+    PLAYER_CARD_INSTANCE(player, card).state |= 0x3000000;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
   }
-  if (((event == 0x79) || ((event == 0x78) && (card == g_affected_card) && (player == g_affected_card_controller))) && (instance->state & 4) == 0 && !has_mana(player, 7, 2))
+  if (((event == 0x79) || ((event == 0x78) && (card == g_affected_card) && (player == g_affected_card_controller))) && (PLAYER_CARD_INSTANCE(player, card).state & 4) == 0 && !has_mana(player, 7, 2))
   {
     g_event_result = 1;
   }
-  if ((((g_trigger_condition == 0xdc) && (g_current_phase == 0x15) && (g_current_turn == g_current_player)) || ((g_trigger_condition == 0xdd) && (g_current_phase == 0x17) && (g_current_turn != g_current_player))) && card == g_affected_card && player == g_affected_card_controller && instance->eot_toughness == 0 && (instance->state & STATE_TAPPED) == 0 && g_trigger_cause_controller == player && g_trigger_cause == card)
+  if ((((g_trigger_condition == 0xdc) && (g_current_phase == 0x15) && (g_current_turn == g_current_player)) || ((g_trigger_condition == 0xdd) && (g_current_phase == 0x17) && (g_current_turn != g_current_player))) && card == g_affected_card && player == g_affected_card_controller && PLAYER_CARD_INSTANCE(player, card).eot_toughness == 0 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && g_trigger_cause_controller == player && g_trigger_cause == card)
   {
     if (!has_mana(player, 7, 2))
     {
@@ -817,26 +815,26 @@ int card_jade_statue(int player, int card, event_t event)
         }
         else
         {
-          animated_internal_card_id = create_a_card_type(instance->internal_card_id);
+          animated_internal_card_id = create_a_card_type(PLAYER_CARD_INSTANCE(player, card).internal_card_id);
           if (animated_internal_card_id != -1)
           {
             global_cards_data[animated_internal_card_id].type |= TYPE_CREATURE;
             global_cards_data[animated_internal_card_id].power = 3;
             global_cards_data[animated_internal_card_id].toughness = 6;
-            instance->dummy3 = animated_internal_card_id;
-            instance->regen_status |= 0x1000000;
-            instance->info_slot = instance->internal_card_id;
+            PLAYER_CARD_INSTANCE(player, card).dummy3 = animated_internal_card_id;
+            PLAYER_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
+            PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
           }
-          instance->eot_toughness = 1;
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
         }
       }
     }
   }
   if ((event == 0x3c) && (g_land_can_be_played & 0x20000) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
   {
-    g_event_result = instance->dummy3;
+    g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
-  if (g_trigger_condition == 0xcc && card == g_affected_card && player == g_affected_card_controller && g_current_turn == player && instance->info_slot != -1)
+  if (g_trigger_condition == 0xcc && card == g_affected_card && player == g_affected_card_controller && g_current_turn == player && PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
   {
     if (event == 0x7d)
     {
@@ -844,10 +842,10 @@ int card_jade_statue(int player, int card, event_t event)
     }
     if (event == 0x7e)
     {
-      invalidate_dynamic_card_type(instance->dummy3);
-      instance->dummy3 = instance->info_slot;
-      instance->info_slot = -1;
-      instance->eot_toughness = 0;
+      invalidate_dynamic_card_type(PLAYER_CARD_INSTANCE(player, card).dummy3);
+      PLAYER_CARD_INSTANCE(player, card).dummy3 = PLAYER_CARD_INSTANCE(player, card).info_slot;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
     }
   }
 

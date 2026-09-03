@@ -31,49 +31,6 @@ static __inline int give_pump_until_eot(int player, int card, int target_player,
   return legacy_card;
 }
 
-static __inline int poison_player_on_combat_damage(int player, int card, event_t event, int poison_counters)
-{
-  card_instance_t *damage;
-  int poisoned_player;
-
-  if (event == EVENT_DEAL_DAMAGE &&
-      PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id == g_damage_card_internal_card_id)
-  {
-    damage = &PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card);
-    if (damage->damage_target_card == -1 &&
-        damage->damage_source_player == player &&
-        damage->damage_source_card == card &&
-        damage->info_slot != 0)
-    {
-      PLAYER_CARD_INSTANCE(player, card).damage_source_player = (char)damage->damage_target_player;
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = poison_counters;
-    }
-    return 0;
-  }
-
-  if (g_trigger_condition == TRIGGER_DEAL_DAMAGE &&
-      g_affected_card == card &&
-      g_affected_card_controller == player &&
-      PLAYER_CARD_INSTANCE(player, card).damage_source_player != -1 &&
-      player == g_current_turn)
-  {
-    if (event == EVENT_TRIGGER)
-    {
-      g_event_result |= 2;
-    }
-    if (event == EVENT_RESOLVE_TRIGGER)
-    {
-      poisoned_player = (int)PLAYER_CARD_INSTANCE(player, card).damage_source_player;
-      g_poison_counters[poisoned_player] += PLAYER_CARD_INSTANCE(player, card).eot_toughness;
-      PLAYER_CARD_INSTANCE(player, card).damage_source_player = -1;
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      check_duel_finished();
-    }
-  }
-
-  return 0;
-}
-
 static __inline int random_magic_color(void)
 {
   return internal_rand(5) + 1;
@@ -1112,14 +1069,86 @@ int card_hypnotic_specter(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048b9cb
 int card_marsh_viper(int player, int card, event_t event)
 {
-  return poison_player_on_combat_damage(player, card, event, 2);
+  if (event == EVENT_DEAL_DAMAGE &&
+      PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id ==
+          g_damage_card_internal_card_id)
+  {
+    if (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == -1 &&
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player == player &&
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card == card &&
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
+    {
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player =
+          PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player;
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 2;
+    }
+    return 0;
+  }
+
+  if (g_trigger_condition == TRIGGER_DEAL_DAMAGE &&
+      g_affected_card == card &&
+      g_affected_card_controller == player &&
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player != -1 &&
+      player == g_current_turn)
+  {
+    if (event == EVENT_TRIGGER)
+    {
+      g_event_result |= RESOLVE_TRIGGER_MANDATORY;
+    }
+    if (event == EVENT_RESOLVE_TRIGGER)
+    {
+      g_poison_counters[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player] +=
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player = -1;
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      check_duel_finished();
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0053da26
 // FUNCTION: SHANDALAR 0x0048bc78
 int card_pit_scorpion(int player, int card, event_t event)
 {
-  return poison_player_on_combat_damage(player, card, event, 1);
+  if (event == EVENT_DEAL_DAMAGE &&
+      PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id ==
+          g_damage_card_internal_card_id)
+  {
+    if (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == -1 &&
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player == player &&
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card == card &&
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
+    {
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player =
+          PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player;
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+    }
+    return 0;
+  }
+
+  if (g_trigger_condition == TRIGGER_DEAL_DAMAGE &&
+      g_affected_card == card &&
+      g_affected_card_controller == player &&
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player != -1 &&
+      player == g_current_turn)
+  {
+    if (event == EVENT_TRIGGER)
+    {
+      g_event_result |= RESOLVE_TRIGGER_MANDATORY;
+    }
+    if (event == EVENT_RESOLVE_TRIGGER)
+    {
+      g_poison_counters[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player] +=
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player = -1;
+      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      check_duel_finished();
+    }
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0053dcd4

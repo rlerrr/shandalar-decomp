@@ -957,13 +957,10 @@ int card_beasts_of_bogardan(int player, int card, event_t event)
 {
   int opponent;
   int current_card;
-  int protection_color;
-  int pump_color;
 
   if (event == EVENT_ABILITIES && g_affected_card == card && g_affected_card_controller == player)
   {
-    protection_color = get_sleighted_color(player, card, COLOR_RED);
-    g_event_result |= KEYWORD_PROT_BLACK << (((unsigned char)protection_color - 1) & 0x1f);
+    g_event_result |= KEYWORD_PROT_BLACK << (((unsigned char)get_sleighted_color(player, card, COLOR_RED) - 1) & 0x1f);
   }
 
   if ((event == EVENT_POWER || event == EVENT_TOUGHNESS) && g_affected_card == card &&
@@ -974,8 +971,7 @@ int card_beasts_of_bogardan(int player, int card, event_t event)
     {
       if (is_in_play(opponent, current_card))
       {
-        pump_color = get_sleighted_color(player, card, COLOR_WHITE);
-        if (((1 << ((unsigned char)pump_color & 0x1f)) & (unsigned char)PLAYER_CARD_INSTANCE(opponent, current_card).color) != 0)
+        if (((1 << ((unsigned char)get_sleighted_color(player, card, COLOR_WHITE) & 0x1f)) & (unsigned char)PLAYER_CARD_INSTANCE(opponent, current_card).color) != 0)
         {
           ++g_event_result;
           return 0;
@@ -4680,9 +4676,7 @@ int card_typhoon(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004407b3
 int card_transmute_FX(int player, int card, event_t event)
 {
-  int target_player;
-  int target_card;
-  short old_toughness;
+  int old_toughness;
 
   if (event == EVENT_ABILITIES &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
@@ -4694,12 +4688,14 @@ int card_transmute_FX(int player, int card, event_t event)
 
   if (PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
   {
-    target_player = PLAYER_CARD_INSTANCE(player, card).damage_target_player;
-    target_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
-    old_toughness = PLAYER_CARD_INSTANCE(target_player, target_card).toughness;
-    PLAYER_CARD_INSTANCE(target_player, target_card).toughness =
-        PLAYER_CARD_INSTANCE(target_player, target_card).power;
-    PLAYER_CARD_INSTANCE(target_player, target_card).power = old_toughness;
+    old_toughness = PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                         PLAYER_CARD_INSTANCE(player, card).damage_target_card).toughness;
+    PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                         PLAYER_CARD_INSTANCE(player, card).damage_target_card).toughness =
+        PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                             PLAYER_CARD_INSTANCE(player, card).damage_target_card).power;
+    PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                         PLAYER_CARD_INSTANCE(player, card).damage_target_card).power = old_toughness;
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
   }
   return 0;

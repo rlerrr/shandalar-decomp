@@ -3289,25 +3289,22 @@ int card_armageddon_clock(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x005195e9
 int card_dingus_egg(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int current_player;
   int damage_count;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-
-  if (event == EVENT_GRAVEYARD_FROM_PLAY && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).kill_code != 0 && (global_cards_data[PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id].type & TYPE_LAND) && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).kill_code != 4 && (instance->state & 0x20) == 0 && (((instance->state & STATE_TAPPED) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE)))
+  if (event == EVENT_GRAVEYARD_FROM_PLAY && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).kill_code != 0 && (global_cards_data[PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id].type & TYPE_LAND) && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).kill_code != 4 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0 && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
     if (g_affected_card_controller == 0)
     {
-      ++instance->info_slot;
+      ++PLAYER_CARD_INSTANCE(player, card).info_slot;
     }
     else
     {
-      instance->info_slot += 0x100;
+      PLAYER_CARD_INSTANCE(player, card).info_slot += 0x100;
     }
   }
 
-  if (g_trigger_condition == 0xd5 && g_affected_card == card && g_affected_card_controller == player && (instance->info_slot & 0xffff) != 0 && player == g_current_turn && (instance->state & 0x20) == 0 && (((instance->state & STATE_TAPPED) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE)))
+  if (g_trigger_condition == 0xd5 && g_affected_card == card && g_affected_card_controller == player && (PLAYER_CARD_INSTANCE(player, card).info_slot & 0xffff) != 0 && player == g_current_turn && (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0 && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
     if (event == EVENT_TRIGGER)
     {
@@ -3317,16 +3314,16 @@ int card_dingus_egg(int player, int card, event_t event)
     {
       for (current_player = 0; current_player < 2; ++current_player)
       {
-        if ((instance->info_slot & 0xff) != 0)
+        if ((PLAYER_CARD_INSTANCE(player, card).info_slot & 0xff) != 0)
         {
-          for (damage_count = 0; damage_count < (instance->info_slot & 0xff); ++damage_count)
+          for (damage_count = 0; damage_count < (PLAYER_CARD_INSTANCE(player, card).info_slot & 0xff); ++damage_count)
           {
             damage_player(current_player, 2, player, card);
           }
         }
-        instance->info_slot >>= 8;
+        PLAYER_CARD_INSTANCE(player, card).info_slot >>= 8;
       }
-      instance->info_slot = 0;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     }
   }
 
@@ -3783,10 +3780,7 @@ int card_meekstone(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051b58d
 int card_jandor_s_saddlebags(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_SHOULD_AI_PLAY && g_affected_card == card && g_affected_card_controller == player)
   {
@@ -3797,7 +3791,7 @@ int card_jandor_s_saddlebags(int player, int card, event_t event)
   {
     return has_mana(player, COLOR_ANY, 3) &&
            !is_animated_and_sick(player, card) &&
-           (instance->state & STATE_TAPPED) == 0 &&
+           (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -3827,7 +3821,7 @@ int card_jandor_s_saddlebags(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if ((instance->state & STATE_TAPPED) == 0 && has_mana(player, COLOR_ANY, 3))
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && has_mana(player, COLOR_ANY, 3))
     {
       charge_mana(player, COLOR_COLORLESS, 3);
       if (g_spell_fizzled != 1)
@@ -3861,9 +3855,9 @@ int card_jandor_s_saddlebags(int player, int card, event_t event)
         }
         else
         {
-          instance->targets[0] = target;
-          instance->number_of_targets = 1;
-          instance->state |= STATE_TAPPED;
+          PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
           if (player == g_other_player && (PLAYER_CARD_INSTANCE(target.player, target.card).state & STATE_TAPPED) != 0)
           {
             g_ai_modifier -= 0x18;
@@ -3876,8 +3870,9 @@ int card_jandor_s_saddlebags(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
     if (!C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
@@ -3905,7 +3900,8 @@ int card_jandor_s_saddlebags(int player, int card, event_t event)
     {
       PLAYER_CARD_INSTANCE(target.player, target.card).state &= ~STATE_TAPPED;
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;
@@ -4074,16 +4070,13 @@ int card_onulet(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051c2f1
 int card_amulet_of_kroog(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
     if ((g_land_can_be_played & 4) == 0 ||
         is_animated_and_sick(player, card) ||
-        (instance->state & STATE_TAPPED) != 0 ||
+        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0 ||
         !has_mana(player, COLOR_ANY, 2) ||
         !real_target_available((int *)0,
                                TARGET_SCAN_DIRECT,
@@ -4152,9 +4145,9 @@ int card_amulet_of_kroog(int player, int card, event_t event)
         }
         else
         {
-          instance->targets[0] = target;
-          instance->number_of_targets = 1;
-          instance->state |= STATE_TAPPED;
+          PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
       }
     }
@@ -4163,7 +4156,7 @@ int card_amulet_of_kroog(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
+    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
     if (!C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
@@ -4191,11 +4184,12 @@ int card_amulet_of_kroog(int player, int card, event_t event)
     {
       --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   if (event == EVENT_CHECK_PUMP &&
-      (instance->state & STATE_TAPPED) == 0 &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
       has_mana(player, COLOR_ANY, 2))
   {
     ++g_global_toughness_bonus[player];
@@ -4208,14 +4202,11 @@ int card_amulet_of_kroog(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051c7d3
 int card_grapeshot_catapult(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (instance->state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -4245,7 +4236,7 @@ int card_grapeshot_catapult(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if ((instance->state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0)
+    if ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0)
     {
       if (g_duel_ai_mode_state != 1)
       {
@@ -4276,9 +4267,9 @@ int card_grapeshot_catapult(int player, int card, event_t event)
       }
       else
       {
-        instance->targets[0] = target;
-        instance->number_of_targets = 1;
-        instance->state |= STATE_TAPPED;
+        PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
     }
     return 0;
@@ -4286,8 +4277,9 @@ int card_grapeshot_catapult(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
     if (!C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,

@@ -2958,12 +2958,8 @@ int card_visions(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044ddad
 int card_mind_twist(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-  int i;
   int amount;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -3005,9 +3001,9 @@ int card_mind_twist(int player, int card, event_t event)
     }
     else
     {
-      instance->info_slot = g_x_value;
-      instance->targets[0] = target;
-      *((char *)instance + 0x32) = 1;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
+      PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+      *((char *)&PLAYER_CARD_INSTANCE(player, card) + 0x32) = 1;
       if (player == g_other_player)
       {
         amount = (g_duel_summary.hand_counts[1 - player] - g_x_value) * 0xc;
@@ -3031,11 +3027,11 @@ int card_mind_twist(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    for (i = 0; i < instance->info_slot; ++i)
+    for (amount = 0; amount < PLAYER_CARD_INSTANCE(player, card).info_slot; ++amount)
     {
-      discard(instance->targets[0].player, 1, 0);
+      discard(PLAYER_CARD_INSTANCE(player, card).targets[0].player, 1, 0);
     }
-    *((char *)instance + 0x32) = 0;
+    *((char *)&PLAYER_CARD_INSTANCE(player, card) + 0x32) = 0;
     kill_card(player, card, KILL_BURY);
   }
 
