@@ -21,7 +21,6 @@ extern int g_adventure_world_exit_requested;
 
 extern int g_world_player_tile_x;
 extern int g_world_player_tile_y;
-extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 extern int g_world_lair_monster_sprite_widths[0x10];
 extern int g_world_lair_monster_sprite_heights[0x10];
@@ -1208,7 +1207,7 @@ void ResolveWizardTownSiege(void)
     }
   }
 
-  if (g_world_magic_slot_timers[0xb].town_index == 0)
+  if (Scards[WORLDMAGIC_RING_OF_THE_GUARDIAN].worldmagic_city == 0)
   {
     s.required_count = 5;
   }

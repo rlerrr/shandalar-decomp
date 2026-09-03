@@ -42,7 +42,6 @@ extern int g_default_palette_fade_steps;
 extern int g_adventure_world_exit_requested;
 extern int g_world_magic_town_flags[5];
 extern int g_world_location_music_active;
-extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 
 extern int g_deck_total_card_count;
 extern int g_deck_active_card_count;
@@ -2052,7 +2051,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
           s.menu_choice = RunTextMenuAt(g_ui_message_buffer, 0xa0, 200);
           if (s.menu_choice != 0xffffffff)
           {
-            s.loop_index = g_world_magic_slot_timers[s.temp_deck[s.menu_choice]].town_index;
+            s.loop_index = Scards[s.temp_deck[s.menu_choice]].worldmagic_city;
             g_town_slots[s.loop_index].status_and_ruling_wizard =
                 g_town_slots[s.loop_index].status_and_ruling_wizard | 2;
             SetWorldMapPixelFlags(0x80, g_town_slots[s.loop_index].world_x, g_town_slots[s.loop_index].world_y);

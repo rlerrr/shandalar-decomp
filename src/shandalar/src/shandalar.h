@@ -46,14 +46,6 @@ typedef char AdvMenuControl_size_must_be_0x54[(sizeof(AdvMenuControl) == 0x54) ?
 typedef char AdvMenuRect_size_must_be_0x10[(sizeof(AdvMenuRect) == 0x10) ? 1 : -1];
 typedef char OpeningMenuSpriteWorkEntry_size_must_be_0xb4[(sizeof(OpeningMenuSpriteWorkEntry) == 0xb4) ? 1 : -1];
 
-typedef struct
-{
-  int town_index;
-  int timer;
-  int overlap_next_world_magic_csvid;
-  int overlap_next_world_magic_price;
-} WorldMagicSlotTimer;
-
 #ifdef SHANDALAR
 void StopWorldLocationMusic(void);
 char *GetCreatureName(int creature_type);

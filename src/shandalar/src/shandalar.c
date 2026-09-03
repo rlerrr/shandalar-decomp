@@ -75,21 +75,6 @@ int global_screen_height = 0x1e0;
 int g_neighbor_dx[9] = {0, 0, 1, 1, 1, 0, -1, -1, -1};
 // GLOBAL: SHANDALAR 0x00586340
 int g_neighbor_dy[9] = {0, -1, -1, 0, 1, 1, 1, 0, -1};
-// GLOBAL: SHANDALAR 0x005863c8
-WorldMagicSlotTimer g_world_magic_slot_timers[0xc] = {
-    {0, 0, 114, 1000},
-    {0, 0, 62, 700},
-    {0, 0, 24, 200},
-    {0, 0, 133, 800},
-    {0, 0, 25, 1500},
-    {0, 0, 121, 400},
-    {0, 0, 285, 500},
-    {0, 0, 145, 600},
-    {0, 0, 26, 300},
-    {0, 0, 205, 600},
-    {0, 0, 28, 1200},
-    {0, 0, 0x03020100, 0x07060004},
-};
 // GLOBAL: SHANDALAR 0x00589de8
 char *PTR_s_advinter800_pic_00589de8 = "advinter800.pic";
 // GLOBAL: SHANDALAR 0x00583290
@@ -1724,7 +1709,7 @@ void InitializeNewGameState(void)
   }
 
   g_world_magic_bitmap = g_world_magic_bitmap | (1 << (g_selected_wizard_color * 2));
-  g_world_magic_slot_timers[g_selected_wizard_color * 2].town_index = 0;
+  Scards[g_selected_wizard_color * 2].worldmagic_city = 0;
 
   s.uVar2 = 1 << (BYTE)g_selected_wizard_color;
   s.entry_index = g_shandalar_difficulty + 1;
@@ -2328,7 +2313,7 @@ generate_pass:
 
   for (s.town_index = 0; s.town_index < 0xc; s.town_index = s.town_index + 1)
   {
-    g_world_magic_slot_timers[s.town_index].town_index = 0;
+    Scards[s.town_index].worldmagic_city = 0;
   }
 
   s.placement_slot_index = (int)clock() % 0x80;
@@ -2437,7 +2422,7 @@ generate_pass:
             for (s.scan_index = 0; s.scan_index < 99; s.scan_index = s.scan_index + 1)
             {
               s.magic_slot_or_trade_color_index = internal_rand(10) + 2;
-              if (g_world_magic_slot_timers[s.magic_slot_or_trade_color_index].town_index != 0)
+              if (Scards[s.magic_slot_or_trade_color_index].worldmagic_city != 0)
               {
                 continue;
               }
@@ -2447,14 +2432,14 @@ generate_pass:
                 continue;
               }
 
-              g_world_magic_slot_timers[s.magic_slot_or_trade_color_index].town_index = s.placement_slot_index;
+              Scards[s.magic_slot_or_trade_color_index].worldmagic_city = s.placement_slot_index;
               break;
             }
 
             if (0x63 <= s.scan_index)
             {
               s.random_timer = internal_rand(2);
-              g_world_magic_slot_timers[s.random_timer].town_index = s.placement_slot_index;
+              Scards[s.random_timer].worldmagic_city = s.placement_slot_index;
             }
 
             if (s.world_magic_town_count < 10)
@@ -2517,13 +2502,13 @@ generate_pass:
 
   for (s.town_index = 0; s.town_index < 0xc; s.town_index = s.town_index + 1)
   {
-    if (g_world_magic_slot_timers[s.town_index].town_index == 0)
+    if (Scards[s.town_index].worldmagic_city == 0)
     {
       s.valid_world = 0;
     }
     if ((g_world_magic_bitmap & 1 << (char)s.town_index) != 0)
     {
-      g_world_magic_slot_timers[s.town_index].town_index = 0;
+      Scards[s.town_index].worldmagic_city = 0;
     }
   }
 
@@ -2536,7 +2521,7 @@ generate_pass:
 
     for (s.town_index = 0; s.town_index < 0xc; s.town_index = s.town_index + 1)
     {
-      g_world_magic_slot_timers[s.town_index].town_index = 0;
+      Scards[s.town_index].worldmagic_city = 0;
     }
     goto generate_pass;
   }
@@ -4281,7 +4266,7 @@ void RunDebugToggleWorldMagicMenu(void)
       else
       {
         g_world_magic_bitmap = g_world_magic_bitmap | (1 << (unsigned char)menu_selection);
-        g_world_magic_slot_timers[menu_selection].town_index = 0;
+        Scards[menu_selection].worldmagic_city = 0;
       }
     }
   } while (menu_selection != -1);
@@ -4738,7 +4723,7 @@ void UpdateAdventureWorldInputAndMovement(void)
           g_world_scene_reveal_effect_pending = 1;
           break;
         case 3:
-          g_world_magic_slot_timers[s.key_magic_index * 2].timer = 0x96;
+          Scards[s.key_magic_index * 2].worldmagic_duration = 0x96;
           AddJournalEntry(JOURNAL_ENTRY_WORLD_MAGIC_EVENT, JOURNAL_WORLD_MAGIC_EVENT_DELAY_MONSTERS);
           break;
         case 4:
@@ -4876,7 +4861,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       g_world_player_animation_direction = g_world_move_dir_index;
     }
 
-    if ((g_world_magic_slot_timers[WORLDMAGIC_QUICKENING].timer != 0) ||
+    if ((Scards[WORLDMAGIC_QUICKENING].worldmagic_duration != 0) ||
         (((g_monster_timer & 1U) != 0 &&
           (WorldRoadTileHasDirection(g_world_player_tile_x, g_world_player_tile_y, (g_world_move_dir_index + 3U & 7) + 1) != 0))))
     {
@@ -4904,7 +4889,7 @@ void UpdateAdventureWorldInputAndMovement(void)
       {
         g_food = g_food - 1;
       }
-      if ((g_world_magic_slot_timers[WORLDMAGIC_FRUIT_OF_SUSTENANCE].town_index == 0) && (s.tile_type == 2))
+      if ((Scards[WORLDMAGIC_FRUIT_OF_SUSTENANCE].worldmagic_city == 0) && (s.tile_type == 2))
       {
         g_food = g_food + 2;
       }
@@ -5486,10 +5471,10 @@ void TickWorldMagicSlotTimers(void)
 
   for (slot_index = 0; slot_index < 0xc; slot_index = slot_index + 1)
   {
-    if (0 < g_world_magic_slot_timers[slot_index].timer)
+    if (0 < Scards[slot_index].worldmagic_duration)
     {
-      g_world_magic_slot_timers[slot_index].timer = g_world_magic_slot_timers[slot_index].timer - 1;
-      if (g_world_magic_slot_timers[slot_index].timer == 0)
+      Scards[slot_index].worldmagic_duration = Scards[slot_index].worldmagic_duration - 1;
+      if (Scards[slot_index].worldmagic_duration == 0)
       {
         RefreshAdventureInterfaceLayout();
       }

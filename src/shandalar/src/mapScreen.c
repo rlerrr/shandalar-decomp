@@ -22,7 +22,6 @@ extern int g_menu_allow_arrow_nav_by_context[50];
 extern int g_menu_control_count_by_context[50];
 extern AdvMenuControl *g_menu_controls_by_context[50][50];
 
-extern WorldMagicSlotTimer g_world_magic_slot_timers[0xc];
 extern int g_mouse_x;
 extern int g_mouse_y;
 extern int g_mouse_button_down_mask;
@@ -806,7 +805,7 @@ retry:
 
             for (s.dir = 0; s.dir < 0xc; s.dir++)
             {
-              if ((s.town_index != 0) && (g_world_magic_slot_timers[s.dir].town_index == s.town_index))
+              if ((s.town_index != 0) && (Scards[s.dir].worldmagic_city == s.town_index))
               {
                 s.world_magic_slot_result = FindWorldMagicCardIndex(s.dir);
                 strcpy(g_ui_message_buffer, gs_worldmagic_names_00780660[s.dir]);
