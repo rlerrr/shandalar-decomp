@@ -11,6 +11,7 @@ int card_sea_serpent(int player, int card, event_t event);
 void replace_text_token(char *text, char *search, int case_sensitive, char *replace);
 int AddCardToDeckSorted(int card_id);
 void remove_card_from_shandalar_deck_by_id(unsigned int card_id);
+int create_damage_effect_copy_for_target_player(int player, int card);
 extern int combat_eval_abilities;
 #ifdef SHANDALAR
 int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,

@@ -12,6 +12,14 @@ int find_highest_value_library_card_by_type(int player, int library_player, unsi
 int titanias_song_count_animations(int player, int card, int internal_card_id);
 int titanias_song_uncount_animations(int player, int card, int internal_card_id);
 int power_struggle_exchange_permanents(int first_player, int first_card, int second_player, int second_card);
+int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
+int gain_control(int player, int card);
+int spirit_shackle_add_counter(int player, int card);
+void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *out_basic_land_mask);
+int can_block_attacker_with_abilities(int blocker_player, int blocker_card, int attacker_player, int attacker_card,
+                                      unsigned int attacker_abilities, unsigned int land_bits);
+int helper_ward(int player, int card, event_t event, int color);
+int helper_circle_of_protection(int player, int card, event_t event, int color);
 
 // FUNCTION: MAGIC 0x00517370
 // FUNCTION: SHANDALAR 0x004ceb50
@@ -7528,7 +7536,7 @@ int card_copy_artifact(int player, int card, event_t event)
         g_trigger_cause = card;
         dispatch_trigger_twice_once_with_each_player_as_reason(g_current_player,
                                                                TRIGGER_COMES_INTO_PLAY,
-                                                               &gs_card_into_play_0091c840,
+                                                               gs_card_into_play_0091c840,
                                                                0);
       }
       else

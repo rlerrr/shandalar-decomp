@@ -6,7 +6,6 @@
 
 int gain_control(int player, int card);
 int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off);
-int single_color_test_bit_to_color_t(int color_mask);
 int card_argothian_treefolk(int player, int card, event_t event);
 static int veteran_bodyguard_prevent_damage_callback(int source_player,
                                                      int source_card,

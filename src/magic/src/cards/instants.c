@@ -8,6 +8,8 @@ void record_ai_action_selection(void);
 void replay_ai_action_selection(void);
 int choose_orcish_catapult_targets(int player, int card, target_t *targets);
 void hurkyls_recall_bounce_artifact(int target_player, int target_card);
+int gain_life_or_prevent_damage(int player, int card, event_t event, int amount);
+void show_duel_system_error(const char *err_msg);
 
 // FUNCTION: MAGIC 0x004f5d83
 // FUNCTION: SHANDALAR 0x004afe3b
