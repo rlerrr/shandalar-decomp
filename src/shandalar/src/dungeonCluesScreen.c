@@ -4,6 +4,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "shandalar_global_strings.h"
@@ -19,45 +20,19 @@
 // Kept together since the list screen directly calls the detail screen.
 
 /* External engine state (owned by shandalar.c / other modules) */
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_menu_render_guard;
-extern int g_menu_context_index;
-extern int g_menu_prev_control_index;
-extern int g_menu_current_control_index;
-extern int g_menu_allow_arrow_nav_by_context[50];
-extern int g_menu_control_count_by_context[50];
-extern AdvMenuControl *g_menu_controls_by_context[50][50];
 
-extern int g_mouse_x;
-extern int g_mouse_y;
-extern int g_mouse_button_down_mask;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
 
-extern FILE *g_advbuttons_ini_file;
-extern char g_ini_string_scratch[0x28];
-extern char g_ui_message_buffer[0x1000];
-extern int g_world_scroll_cache_ready;
 extern int g_world_ui_top_offset;
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
-extern FacemakerWindowBounds *g_page2_window_bounds;
 
-extern DIBSurface *g_graphics_pages[10];
 
 /* Shared selection/activation scratch used by multiple screens (defined in cityInfoScreen.c) */
 extern int g_adv_menu_selected_value;
 
 /* Debug toggle used by multiple screens (defined in cityInfoScreen.c) */
-extern int g_reveal_all_world_info;
 
 /* Palette helper data (defined in shandalar.c) */
-extern int g_default_palette_fade_steps;
 
 /* Sprites loaded by startup code (owned by shandalar.c) */
-extern EncodedImage *g_location_marker_sprite_entries[0x9e];
-extern EncodedImage *g_castles_sprite_entries[20];
 
 typedef struct DungeonCluesListSpriteStorage
 {
@@ -82,55 +57,17 @@ extern char g_dungeon_clue_detail_done_alt_keys[];
 void ShowDungeonClueDetailScreen(int dungeon_index);
 
 /* External functions */
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
-void LoadPcxIntoPageNoPalette(char *path);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-void BeginSpriteEncodeSession(void);
-EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
-void FinalizeSpriteEncodeSession(void);
-void FreeSpriteBlob(void *memory);
 
-int BeginMenuContext(void);
-int ResetMenuContext(int context_index);
-int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
-int EndMenuContext(void);
 int SetCurrentMenuContextArrowNavigation(int allow_arrow_nav);
 int RenderCurrentMenuContextControls(void);
 
 int ScaleUiCoordinateFrom320(int value);
-int ScaleUiCoordinate(int value);
-int SetFontStyleSize(int font_slot, unsigned int point_size);
 int GetFontStyleSize(int font_slot);
-int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
-int MeasureTextLineWidth(char *text);
-int GetFontLineHeight(int font_slot);
-void DrawTextLine(FacemakerWindowBounds *dst, int x, int y, char *text);
-int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen, int center_x, int center_y, int x,
-                      int y, int *format_and_args);
-void DrawTextLineClamped(char *text, int x, int y, int color_index);
-void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, int width, int height,
-                      FacemakerWindowBounds *dst, int dst_x, int dst_y);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
-void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
-AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 
-void UpdateMouseSnapshot(void);
-void PopNormalizedQueuedKeyInput(void);
-int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
-void ClearInputAndWaitForMouseRelease(void);
 
-void AnimatePaletteToColor(int mode, int color_index);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawFormattedTextNoShadow(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
 void GetEncodedImageSpanXExtents(EncodedImage *image, unsigned int *out_min_x, int *out_max_x);
 int DrawEncodedImageResampledFitBoxCentered(FacemakerWindowBounds *dst, int x, int y, int box_w, int box_h,
@@ -140,12 +77,9 @@ void ResetWorldDrawQueue(void);
 void UpdateWorldViewportBuffer(int world_x, int world_y);
 void DrawQueuedWorldSprites(void);
 void DestroyCachedCardArt(void);
-int find_internal_card_id_by_csv_id(card_id_t card_id);
 
 /* Card rendering (drawcardlib) */
 extern card_ptr_t global_raw_cards_storage[2000];
-extern card_data_t global_cards_data[];
-extern EncodedImage *g_endtop_banner_sprite;
 
 /* Other helpers referenced by clue detail screen */
 void BlitGraphicsRectScaledFrom320x240(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
@@ -154,17 +88,13 @@ void ResetWorldDrawQueue(void);
 void DrawQueuedWorldSprites(void);
 void UpdateWorldViewportBuffer(int world_x, int world_y);
 
-unsigned int MarkPathConnection(int world_x, int world_y, int unused);
 char *BuildTownDisplayName(int town_index);
-int LoadTextSectionLines(const char *filename, const char *section);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD dst_len, LPCVOID format, ...);
-unsigned int GetWorldMapPixelFlags(int x, int y);
 
 /*
  * These two helpers are used as enable/disable visuals for arrow buttons.
  * They are implemented (with these names) in cityInfoScreen.c.
  */
-int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 int RenderAdvMenuControlNormally(AdvMenuControl *control);
 
 /*

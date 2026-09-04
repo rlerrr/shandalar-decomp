@@ -5,6 +5,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "shandalar_global_strings.h"
 #include "facemaker/src/facemaker_types.h"
@@ -259,111 +260,27 @@ int g_world_player_world_x_cached;
 // GLOBAL: SHANDALAR 0x00746afc
 int g_world_player_world_y_cached;
 
-typedef union
-{
-  struct
-  {
-    EncodedImage *normal[12];
-    EncodedImage *highlight[12];
-    EncodedImage *pressed[12];
-    EncodedImage *icon[12];
-  } named;
-  EncodedImage *by_group[4][12];
-} WorldMagicChoiceButtonSpriteBank;
 
-extern int global_screen_width;
-extern int global_screen_height;
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
-extern FacemakerWindowBounds *g_page3_window_bounds;
-extern FacemakerWindowBounds *g_page2_window_bounds;
-extern int g_adventure_ui_layout_dirty;
-extern int g_world_player_animation_direction;
-extern int g_world_player_animation_frame;
-extern int g_world_scene_reveal_effect_pending;
-extern int g_world_scroll_cache_ready;
 extern int g_monster_timer;
-extern int g_skip_world_sfx_preload;
-extern char g_ui_message_buffer[0x1000];
-extern int g_ego_sprite_width;
-extern int g_ego_sprite_draw_height;
-extern int g_sego_sprite_width;
-extern int g_sego_sprite_draw_height;
-extern int g_neighbor_dx[9];
-extern int g_neighbor_dy[9];
-extern EncodedImage *g_location07_sprite_entries[0xc];
-extern EncodedImage *g_road_sprite_entries[0xc];
-extern EncodedImage *g_land_sprite_entries[22][5];
-extern EncodedImage *g_sland_sprite_entries[22][5];
-extern EncodedImage *g_land_tile_sprite_entries[0x10];
-extern EncodedImage *g_cstline1_sprite_entries[12][7];
-extern EncodedImage *g_location_marker_sprite_entries[0x9e];
-extern int g_world_lair_monster_sprite_top_clips[0x10];
-extern EncodedImage *g_questnew_sprite_entries[4];
-extern EncodedImage *g_clocknew_sprite_entries[9];
-extern EncodedImage *g_sunmoon_sprite_entries[0x14];
-extern EncodedImage *g_daysnew_sprite_entries[0xc];
-extern EncodedImage *g_tips_frame_sprite;
-extern EncodedImage *g_tips_icon_sprite;
-extern int g_world_lair_monster_sprite_widths[0x10];
-extern DIBSurface *g_graphics_pages[10];
-extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
-extern EncodedImage *g_world_magic_avatar_sprites[5];
-extern EncodedImage *g_worlds_extra_sprite_entries[4];
-extern EncodedImage *g_castles_sprite_entries[20];
-extern EncodedImage *g_wizard_controlled_town_sprite_entries[5];
-extern EncodedImage *g_current_location_marker_sprite;
-extern WorldMagicChoiceButtonSpriteBank g_world_magic_choice_button_sprite_bank;
 
 extern int g_next_duel_life_delta;
 extern int g_next_duel_card_id;
-extern int Gold;
 extern int g_food;
 
-extern int g_deck_total_card_count;
-extern int g_deck_active_card_count;
-extern int g_hide_world_map_overlays;
-extern card_data_t global_cards_data[];
-extern char g_ini_string_scratch[0x28];
 
-void ShowMouseCursorNested(void);
-void HideMouseCursorNested(void);
 int ScaleUiCoordinateFrom320(int value);
-AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 void DrawEncodedImageUnscaledClipped(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
-void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
-int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int parse_format, int centered, int draw_shadow, int multiline, int x, int y, int *arg_ptr);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 unsigned int BlitRectByRandomTileOrder(HDC dst_hdc, int dst_x, int dst_y, int width, int height, int block_w, int block_h,
                                        HDC src_hdc, int src_x, int src_y);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void DelayUiTicks(int ticks);
-int ApproximateDistance(int x, int y);
-int FindWorldMagicCardIndex(int world_magic_slot_index);
-int single_color_test_bit_to_color_t(int mask);
-unsigned int GetWorldTileType(int x, int y);
-unsigned int GetWorldMapPixelFlags(int x, int y);
-void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
-unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-unsigned int GetGraphicsPixelColorRef(FacemakerWindowBounds *window, int x, int y);
 void QueueWorldSpriteForDraw(FacemakerWindowBounds *window, int draw_x, int draw_y, int depth_y, EncodedImage *sprite);
 void DrawWorldTileRange(unsigned int world_x, unsigned int world_y, int tile_x_start, int tile_x_end, int tile_y_start, int tile_y_end,
                         int edge_mode, int draw_mode);
 void ScreenToWorldPoint(int screen_x, int screen_y, int *out_world_x, int *out_world_y);
 int IsWorldMapCoordinateInBounds(int x, int y);
-int FindCastleDungeonAtWorldCoordinates(int world_x, int world_y);
-int FindTownAtWorldCoordinates(int world_x, int world_y);
 char *BuildQuestLocationName(int town_index, int quest_destination, int mana_castle_index);
 void WorldPointToScreen(int world_x, int world_y, int *out_screen_x, int *out_screen_y);
-void RefreshAdventureInterfaceLayout(void);
-int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
 int CountDuelPoolEligibleTowns(void);
-void AddJournalEntry(int entry_type, int entry_arg);
 int GetRelativeWorldQuadrant(int world_x, int world_y);
 int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask);
 char *GetTownCardDescription(int town_index);

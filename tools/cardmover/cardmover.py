@@ -148,20 +148,66 @@ def parse_movefuncs_file(path: Path) -> dict:
     return parse_movefuncs_text(path.read_text(encoding="utf-8"))
 
 
-def count_braces_in_line(line: str) -> int:
-    return line.count("{") - line.count("}")
-
-
 def find_function_body_end(lines: List[str], start_idx: int) -> int:
     brace_depth = 0
     saw_open_brace = False
+    in_block_comment = False
+    in_string = False
+    in_char = False
+    escaped = False
     i = start_idx
 
     while i < len(lines):
+        if i > start_idx and saw_open_brace and ANY_FUNCTION_ANNOTATION_RE.match(lines[i]):
+            previous = i - 1
+            while previous >= start_idx and not lines[previous].strip():
+                previous -= 1
+            if previous >= start_idx and lines[previous].strip() == "}":
+                return previous + 1
+
         line = lines[i]
-        if "{" in line:
-            saw_open_brace = True
-        brace_depth += count_braces_in_line(line)
+        j = 0
+
+        while j < len(line):
+            ch = line[j]
+            next_ch = line[j + 1] if j + 1 < len(line) else ""
+
+            if in_block_comment:
+                if ch == "*" and next_ch == "/":
+                    in_block_comment = False
+                    j += 2
+                    continue
+            elif in_string:
+                if escaped:
+                    escaped = False
+                elif ch == "\\":
+                    escaped = True
+                elif ch == '"':
+                    in_string = False
+            elif in_char:
+                if escaped:
+                    escaped = False
+                elif ch == "\\":
+                    escaped = True
+                elif ch == "'":
+                    in_char = False
+            elif ch == "/" and next_ch == "*":
+                in_block_comment = True
+                j += 2
+                continue
+            elif ch == "/" and next_ch == "/":
+                break
+            elif ch == '"':
+                in_string = True
+            elif ch == "'":
+                in_char = True
+            elif ch == "{":
+                saw_open_brace = True
+                brace_depth += 1
+            elif ch == "}":
+                brace_depth -= 1
+
+            j += 1
 
         if saw_open_brace and brace_depth == 0:
             return i + 1
@@ -220,9 +266,7 @@ def extract_blocks_from_c_file(path: Path) -> List[SourceBlock]:
         func_end = find_function_body_end(lines, sig_start)
 
         block_end = func_end
-        while block_end < len(lines):
-            if ANY_FUNCTION_ANNOTATION_RE.match(lines[block_end]):
-                break
+        while block_end < len(lines) and not lines[block_end].strip():
             block_end += 1
 
         block_text = "".join(lines[anno_start:block_end])

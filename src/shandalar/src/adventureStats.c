@@ -5,6 +5,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "shandalar_global_strings.h"
 #include "deckdll/src/card_db.h"
@@ -29,18 +30,6 @@ typedef struct
   int wins;
   int losses;
 } StatsCreatureJournalCount;
-
-typedef union
-{
-  struct
-  {
-    EncodedImage *normal[12];
-    EncodedImage *highlight[12];
-    EncodedImage *pressed[12];
-    EncodedImage *icon[12];
-  } named;
-  EncodedImage *by_group[4][12];
-} WorldMagicChoiceButtonSpriteBank;
 
 typedef struct
 {
@@ -71,41 +60,11 @@ DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, L
 char *__cdecl GetLairName(int lair_type);
 int FindNearestTownIndex(int world_x, int world_y);
 
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_default_palette_fade_steps;
-extern int g_statwin_exports_by_ordinal[3];
-extern int g_world_magic_town_flags[5];
-extern char g_ui_message_buffer[0x1000];
 extern HWND g_main_window_hwnd;
-extern HANDLE g_main_thread_handle;
-extern HANDLE g_timer_thread_handle;
-extern HPALETTE g_palette_handle;
-extern DIBSurface *g_graphics_pages[10];
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
-extern FacemakerWindowBounds *g_page2_window_bounds;
 extern int g_analyzed_deck_special_rules;
-extern card_data_t global_cards_data[];
-extern int g_menu_render_guard;
-extern int g_mouse_x;
-extern int g_mouse_y;
-extern int g_reveal_all_world_info;
-extern WorldMagicChoiceButtonSpriteBank g_world_magic_choice_button_sprite_bank;
-extern int g_graphics_bpp;
-extern RpBitsPalettePacket g_palette_data_words;
-extern DIBSurface *g_facemaker_page4_dib;
-extern HBITMAP g_facemaker_page4_bitmap;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
-extern int g_mouse_button_down_mask;
-extern int Gold;
-extern FacemakerWindowBounds *g_menu_control_draw_target_page;
 extern EncodedImage *g_adv_scrollbar_track_sprite;
 extern EncodedImage *g_adv_scrollbar_thumb_sprite;
 extern EncodedImage *g_map_button_sprites[5][3];
-extern int g_deck_total_card_count;
-extern int g_deck_active_card_count;
 
 // GLOBAL: SHANDALAR 0x00590618
 static char s_statText_00590618[] = "statText";
@@ -220,69 +179,19 @@ static int g_stats_journal_previous_marker_y;
 // GLOBAL: SHANDALAR 0x005a82e8
 static int g_stats_journal_previous_marker_x;
 
-void AnimatePaletteToColor(int color_index, int steps);
-void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
 void LoadPcxIntoPage(int page_number, char *path);
-void LoadPcxIntoPageNoPalette(char *path);
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
-int MapWizardColorToDisplayIndex(int wizard_color);
-void ReadPalette(char *palette_text_path, char *palette_binary_path);
-void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
-unsigned int WaitForInputEventUnlessBlocked(void);
-int single_color_test_bit_to_color_t(int mask);
-void DrawTextLineNoShadow(char *text, int x, int y, int color_index);
-void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 void DrawScaledCenteredTextNoShadow(char *text, int center_x, int y, int color_index);
 int ScaleUiCoordinateFrom320(int value);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index);
 void DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawUiScaledTextWithShadowCenterY(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-unsigned int FindWorldMagicCardIndex(int world_magic_slot_index);
-int ScaleUiCoordinate(int value);
-void DrawTextAt(FacemakerWindowBounds *dst, int text_color, int x, int y, char *text, ...);
 void DrawUiScaledCenteredText(char *text, int center_x, int y, int color_index);
-void ClearInputAndWaitForMouseRelease(void);
-void BeginSpriteEncodeSession(void);
-EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
-void FinalizeSpriteEncodeSession(void);
-int SetFontStyleSize(int font_id, unsigned int style);
-extern FILE *g_advbuttons_ini_file;
-extern char g_ini_string_scratch[0x28];
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, char *palette_source_path,
                             char *portrait_path);
 int CountDuelPoolEligibleTowns(void);
 void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data);
-int FadeInPaletteFromGray(int gray, int steps);
-void LoadPcxIntoPageOpaque(int page_number, char *path);
-int BeginMenuContext(void);
-int ResetMenuContext(int context_index);
-int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
-int EndMenuContext(void);
-void UpdateMouseSnapshot(void);
-int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
-void FreeSpriteBlob(void *memory);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
-extern char *g_world_magic_sound_paths[5];
-int ShowStatsWindow(int mode, int highlight);
-void ShowWorldMapScreen(int mode);
-int ConsumeUiTickCount(void);
-int GetUiTickCount(void);
-int IsKeyInputQueueEmpty(void);
-int PopQueuedKeyInput(void);
 void ConvertWorldTileToMapScreenCoords(int tile_x, int tile_y, int *out_x, int *out_y);
-void DelayUiTicks(int ticks);
-int SignNonZero(int value);
-int ClampIntToRange(int value, int min_value, int max_value);
-int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
-int GetFontLineHeight(int font_slot);
 void ApplyPortraitTintMap(FacemakerWindowBounds *dst, int x, int y, int w, int h, unsigned int tint, int maybe_shadow);
 
 int RenderStatsCreatureGridPage(int page_index);

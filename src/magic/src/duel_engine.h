@@ -245,6 +245,8 @@ DUEL_ENGINE_EXTERN int g_duel_exit_code;
 
 DWORD WINAPI RunDuelEngineThreadProc(LPVOID creature_type);
 int create_duel_child_windows(HWND parent_window);
+int update_duel_selection_display(int player, int phase);
+extern const char *g_duel_sound_filenames[];
 void show_opponent_library_window(int unused_color);
 int run_duel_coin_flip_dialogs(unsigned int *starting_player,
                                unsigned int *mulligan_accepted,

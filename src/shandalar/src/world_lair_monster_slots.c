@@ -5,78 +5,30 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "shandalar_global_strings.h"
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_neighbor_dx[9];
-extern int g_neighbor_dy[9];
-extern int g_world_player_animation_direction;
-extern int g_world_player_animation_frame;
-extern int g_default_palette_fade_steps;
-extern int g_adventure_world_exit_requested;
 
-extern int g_world_player_tile_x;
-extern int g_world_player_tile_y;
-extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
-extern int g_world_lair_monster_sprite_widths[0x10];
-extern int g_world_lair_monster_sprite_heights[0x10];
-extern int g_world_lair_monster_sprite_top_clips[0x10];
 
 #define OPENING_MENU_WORK_ENTRY_SPRITES(entry_index) (g_opening_menu_sprite_work_buffer[(entry_index)].sprites)
 
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
 
 extern int g_wizard_siege_count;
-extern char g_ui_message_buffer[0x1000];
-extern char g_ini_string_scratch[0x28];
 
-void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
-char *BuildResolutionSpritePath(char *sprite_filename);
-int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 int FindNearestTownIndex(int world_x, int world_y);
-int ClampIntToRange(int value, int min_value, int max_value);
-int ApproximateDistance(int x, int y);
 int internal_rand(int max_exclusive);
-int single_color_test_bit_to_color_t(int mask);
-unsigned int GetWorldTileType(int x, int y);
-unsigned int GetWorldMapPixelFlags(int x, int y);
-void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
-unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-void AddJournalEntry(int entry_type, int entry_arg);
-void SaveGameToSlot(int save_slot_index);
-void EnsureAdvfac64Loaded(int state);
-void RefreshAdventureInterfaceLayout(void);
-void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 void AnimateVisitBackdropZoomIn(char *pcx_path);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 char *BuildTownDisplayName(int town_index);
 char *BuildCreatureNameWithArticle(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
-unsigned int WaitForInputEventUnlessBlocked(void);
-void ClearInputAndWaitForMouseRelease(void);
 int IsWizardColorFeminine(int color_index);
-void ShowStatsWindow(int mode, int highlight);
-void AnimatePaletteToColor(int color_index, int palette_id);
-void LoadPcxIntoPageOpaque(int page_number, char *path);
-int ScaleUiCoordinate(int value);
-void SetFontStyleSize(int font_slot, unsigned int scaled_size);
-int GetFontLineHeight(int font_slot);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void UnloadStatWinDllExports(void);
 int ShutdownSharedStartup(void);
-unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 int sound_unload(int sound_id);
 void PlayCreatureEncounterSound(int creature_type, int volume, int pitch_percent, int pan_percent);
-void ResolveWizardTownSiege(void);
 int RunWorldLairMonsterEncounter(int slot_index, int monster_color);
 
 // GLOBAL: SHANDALAR 0x00591270

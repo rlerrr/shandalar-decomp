@@ -1,4 +1,9 @@
 
+#ifndef SHANDALAR_H
+#define SHANDALAR_H
+
+#include <windows.h>
+
 typedef struct AdvMenuControl AdvMenuControl;
 
 typedef int(__cdecl *AdvMenuRenderCallback)(AdvMenuControl *control, int mode);
@@ -54,4 +59,12 @@ int internal_rand(int max_exclusive);
 int AddCardToDeckSorted(int card_id);
 void ReadCsvFieldByCsvid(char *out, int csvid, int field, const char *csv_name);
 int GetCardRarity(int card_id);
+int ScaleUiCoordinate(int value);
+unsigned int InitializeSoundPresenceState(void);
+void ShutdownUiTimer(void);
+void RestoreSystemPaletteAtExit(void);
+void CALLBACK UiTimerTickCallback(UINT timer_id, UINT msg, DWORD user_data,
+                                  DWORD param1, DWORD param2);
+#endif
+
 #endif

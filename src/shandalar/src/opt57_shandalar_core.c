@@ -7,26 +7,17 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "drawcardlib/src/pic.h"
 #include "facemaker/src/facemaker_types.h"
 
-extern HDC global_main_hdc;
-extern DIBSurface *g_graphics_pages[10];
-extern RpBitsPalettePacket g_palette_data_words;
 extern PALETTEENTRY g_palette_entries[256];
-extern FontSlot g_font_slots[0x10];
 
-extern int g_mouse_button_released_mask;
-extern int g_graphics_bpp;
 
-int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen,
-                      int center_x, int center_y, int x, int y, int *format_and_args);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-int ExportEncodedImage(int page_number, int x, int y, int width, int height, int write_palette, char *path);
 
 typedef void(__cdecl *EncodeRpBitsImage_Callback)(unsigned int *scanline, int page_number, int x, int y, unsigned int width);
 int EncodeRpBitsImage(int fd, EncodeRpBitsImage_Callback scanline_cb, int page_number, int x, int y, int width, int height);
-void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y, unsigned int byte_count);
 extern int g_export_write_palette;
 
 #pragma optimize("gy", on)

@@ -5,75 +5,26 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "shandalar_global_strings.h"
 #include "facemaker/src/facemaker_types.h"
 
 // External engine state (defined in shandalar.c / other modules)
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_menu_render_guard;
-extern int g_menu_context_index;
-extern int g_menu_prev_control_index;
-extern int g_menu_allow_arrow_nav_by_context[50];
-extern int g_menu_control_count_by_context[50];
-extern AdvMenuControl *g_menu_controls_by_context[50][50];
 
-extern int g_mouse_x;
-extern int g_mouse_y;
-extern int g_mouse_button_down_mask;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
-extern int g_mouse_button_mask_snapshot;
 
-extern FILE *g_advbuttons_ini_file;
-extern char g_ini_string_scratch[0x28];
-extern char g_ui_message_buffer[0x1000];
-extern int g_done_text_table_entry;
 
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
-extern FacemakerWindowBounds *g_page2_window_bounds;
 
-extern int g_world_scroll_cache_ready;
 
 // External functions
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-void BeginSpriteEncodeSession(void);
-EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
-void FinalizeSpriteEncodeSession(void);
 
-int ScaleUiCoordinate(int value);
-int SetFontStyleSize(int font_slot, unsigned int point_size);
-void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text, ...);
-int DrawTextFormatted(FacemakerWindowBounds *dst, int text_color, int draw_shadow, int scale_to_screen, int center_x, int center_y, int x,
-                      int y, int *format_and_args);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, int width, int height,
-                      FacemakerWindowBounds *dst, int dst_x, int dst_y);
-void FreeSpriteBlob(void *memory);
 
-int BeginMenuContext(void);
-int ResetMenuContext(int context_index);
-int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
-int EndMenuContext(void);
 
-void UpdateMouseSnapshot(void);
-int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
-int HasQueuedKeyInput(void);
-extern EncodedImage *g_world_magic_avatar_sprites[5];
 
-void EnsureAdvfac64Loaded(int state);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 
-unsigned int GetWorldTileType(int x, int y);
-unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-int FindWorldMagicCardIndex(int world_magic_slot_index);
 char *GetTownCardDescription(int town_index);
 
 // From city-info helpers
@@ -81,8 +32,6 @@ DWORD __cdecl FormatMessageFromStringStripCarriageReturns(char *dst, DWORD dst_l
 char *BuildTownDisplayName(int town_index);
 int __cdecl DrawCityInfoTownRow(FacemakerWindowBounds *dst, int town_index, int x, int y);
 void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
-void __cdecl DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 
 // GLOBAL: SHANDALAR 0x00603a34
 int g_adv_menu_selected_value;
@@ -96,7 +45,6 @@ EncodedImage *g_city_info_done_button_sprites[3];
 // GLOBAL: SHANDALAR 0x00746e70
 EncodedImage *g_city_info_scroll_button_sprites[0x10];
 
-extern int g_reveal_all_world_info;
 
 // GLOBAL: SHANDALAR 0x00581918
 int g_wizard_text_colors[0x10] = {

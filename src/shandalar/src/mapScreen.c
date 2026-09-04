@@ -5,6 +5,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
 #include "shandalar_global_strings.h"
@@ -12,112 +13,39 @@
 #include "drawcardlib/src/pic.h"
 
 /* Menu / input globals (owned by shandalar.c) */
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_menu_render_guard;
-extern int g_menu_context_index;
-extern int g_menu_prev_control_index;
-extern int g_menu_current_control_index;
-extern int g_menu_allow_arrow_nav_by_context[50];
-extern int g_menu_control_count_by_context[50];
-extern AdvMenuControl *g_menu_controls_by_context[50][50];
 
-extern int g_mouse_x;
-extern int g_mouse_y;
-extern int g_mouse_button_down_mask;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
 
-extern FILE *g_advbuttons_ini_file;
-extern char g_ini_string_scratch[0x28];
-extern char g_ui_message_buffer[0x1000];
 
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
 
-extern RpBitsPalettePacket g_palette_data_words;
 
 /* World state */
-extern int g_world_player_tile_x;
-extern int g_world_player_tile_y;
-extern int g_world_scroll_cache_ready;
 
-extern int g_neighbor_dx[9];
-extern int g_neighbor_dy[9];
 
 /* Debug toggle used by multiple screens */
-extern int g_reveal_all_world_info;
 
 /* Sprites loaded by startup code (owned by shandalar.c) */
-extern EncodedImage *g_ttsprite_grid_sprite_entries[0x40];
-extern EncodedImage *g_ttsprite_aux_sprite_entries[8];
-extern EncodedImage *g_world_magic_avatar_sprites[5];
 
-extern FontSlot g_font_slots[0x10];
 extern char g_world_ui_text_scratch_buffer[0x1000];
 
 /* Engine / UI helpers */
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
-void LoadPcxIntoPageNoPalette(char *path);
 void LoadPcxIntoPage(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-void BeginSpriteEncodeSession(void);
-EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
-void FinalizeSpriteEncodeSession(void);
-void FreeSpriteBlob(void *memory);
 
-void ClearGraphicsPageWithPaletteColor(int page_number, int palette_index);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
 
-int ScaleUiCoordinate(int value);
-int SetFontStyleSize(int font_slot, unsigned int point_size);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
-void DrawTextAt(FacemakerWindowBounds *dst, int text_id, int x, int y, char *text, ...);
-int MeasureMultilineTextWidth(FacemakerWindowBounds *dst, char *text);
-int GetFontLineHeight(int font_slot);
 int GetFontStyleSize(int font_slot);
 void ApplyPortraitTintMap(FacemakerWindowBounds *dst, int x, int y, int w, int h, unsigned int tint, int maybe_shadow);
 
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index);
-void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
 
-int BeginMenuContext(void);
-int ResetMenuContext(int context_index);
-int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
-int EndMenuContext(void);
 int RenderCurrentMenuContextControls(void);
-int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
 
-void UpdateMouseSnapshot(void);
-int ConsumeUiTickCount(void);
-int GetUiTickCount(void);
-void PopNormalizedQueuedKeyInput(void);
-void ClearInputAndWaitForMouseRelease(void);
 
-void EnsureAdvfac64Loaded(int state);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 
-unsigned int GetWorldTileType(int x, int y);
-unsigned int GetWorldMapPixelFlags(int x, int y);
-unsigned int WorldRoadTileHasDirection(int tile_x, int tile_y, char direction_index);
 void ConvertWorldTileToMapScreenCoords(int tile_x, int tile_y, int *out_x, int *out_y);
 void ConvertMapScreenToWorldTileCoords(int x, int y, int *out_tile_x, int *out_tile_y);
-void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
-int single_color_test_bit_to_color_t(int mask);
-unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-int FindWorldMagicCardIndex(int world_magic_slot_index);
 int FindNearestTownIndex(int world_x, int world_y);
-int FindTownAtWorldCoordinates(int world_x, int world_y);
 char *GetPluralCardClassNameFromColorMask(unsigned int color_bitmask);
 
-void DrawCenteredTextLineClamped(char *text, int center_x, int y, int color_index);
 
-void ShowCityInfoScreen(int unused);
 
 void FormatMessageFromStringStripCarriageReturns(char *dst, int max_length, char *format, ...);
 

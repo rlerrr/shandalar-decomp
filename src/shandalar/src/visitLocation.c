@@ -6,6 +6,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_other.h"
 #include "magic/src/game_support.h"
 #include "magic/src/global_state.h"
@@ -17,79 +18,27 @@
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
-extern int global_screen_width;
-extern int global_screen_height;
 extern HWND g_main_window_hwnd;
-extern HANDLE g_main_thread_handle;
-extern HPALETTE g_palette_handle;
 
-extern int g_menu_render_guard;
-extern int g_mouse_x;
-extern int g_mouse_y;
-extern int g_mouse_button_down_mask;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
 
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
 
-extern DIBSurface *g_graphics_pages[10];
 
-extern char g_ui_message_buffer[0x1000];
 
-extern int g_text_menu_abort_requested;
-extern card_data_t global_cards_data[];
 extern int g_card_count;
-extern int g_default_palette_fade_steps;
-extern int g_adventure_world_exit_requested;
-extern char g_last_parsed_deck_path[0x110];
-extern int g_reveal_all_world_info;
 extern int g_current_quest_giver_town_index;
-extern int g_done_text_table_entry;
-extern int g_world_player_tile_x;
-extern int g_world_player_tile_y;
 extern int g_duel_selection_pending;
 extern char g_text_lines[249][300];
-extern int g_loadsave_skip_esc;
-extern jmp_buf g_adventure_session_restart_jump_buffer;
-extern jmp_buf g_adventure_world_exit_jump_buffer;
 
 extern int card_dummy(int player, int card, event_t event);
 
-typedef struct
-{
-  int first;
-  int second;
-} HintPair;
 
-extern int g_hint_difficulty_masks[0x100];
-extern HintPair g_hint_card_pairs[0x100];
 
 // GLOBAL: SHANDALAR 0x0073ea68
 int g_wizard_siege_count;
 
-typedef union
-{
-  struct
-  {
-    EncodedImage *normal[12];
-    EncodedImage *highlight[12];
-    EncodedImage *pressed[12];
-    EncodedImage *icon[12];
-  } named;
-  EncodedImage *by_group[4][12];
-} WorldMagicChoiceButtonSpriteBank;
 
-extern WorldMagicChoiceButtonSpriteBank g_world_magic_choice_button_sprite_bank;
 
-typedef struct
-{
-  EncodedImage *frame[4][9];
-  EncodedImage *icon_rows[4][4];
-} DialogBoxSpriteBank;
 
-extern DialogBoxSpriteBank g_dialog_box_sprite_bank;
-extern EncodedImage *g_icons_sprite_entries[0x18];
 
 
 typedef struct
@@ -102,77 +51,30 @@ typedef struct
 
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 void LoadPcxIntoPage(int page_number, char *path);
-void LoadPcxIntoPageOpaque(int page_number, char *path);
-void LoadPcxIntoPageNoPalette(char *path);
-void ReadPalette(char *path, char *out_palette);
 
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
 
 int ScaleUiCoordinateFrom320(int value);
-int ScaleUiCoordinate(int value);
 
-unsigned int GetWorldTileType(int x, int y);
-unsigned int GetWorldTileMagicMask(unsigned int tile_mask);
-int single_color_test_bit_to_color_t(int mask);
-int ClampIntToRange(int value, int min_value, int max_value);
-int MeasureTextLineWidth(char *text);
 
-int PopNormalizedQueuedKeyInput(void);
-int RunTextMenuAt(char *menu_text, int left_x, int top_y);
-int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
-int RunRightClickMenuAndQueueInput(void);
-void ClearInputAndWaitForMouseRelease(void);
-unsigned int WaitForInputEventUnlessBlocked(void);
 
-void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent);
-unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
 
-void RefreshAdventureInterfaceLayout(void);
-void *DrawAdventureInterfaceLayout(int force_redraw);
-void AddJournalEntry(int entry_type, int entry_arg);
-void DelayUiTicks(int delay);
 
-void EnterCastleDungeon(int dungeon_index);
-void EnsureAdvfac64Loaded(int state);
-WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
-void ShowWorldMapScreen(int mode);
-void ShowDungeonCluesScreen(int unused);
 void ShowDungeonClueDetailScreen(int dungeon_index);
-int RestoreAdventureUiPaletteAndFocus(void);
-void RunAdventureStatsMenu(void);
 
 void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner_label);
 int internal_rand(int max_exclusive);
-int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
 void DrawAdventureCardSized(int card_index, int x, int y, int width, int height, int full_card, char *banner_label);
 void ShowTownHintTextPopup(int hint_index);
 void DrawUiScaledCenteredTextNoShadow(FacemakerWindowBounds *window, int color_index, int x, int y, char *text);
 int RecountDeckCardTotals(void);
 
-void AnimatePaletteToColor(int color_index, int palette_id);
-void SetFontStyleSize(int font_slot, unsigned int scaled_size);
-int GetFontLineHeight(int font_slot);
-void UnloadStatWinDllExports(void);
 int ShutdownSharedStartup(void);
-int FileExists(const char *filename);
-void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
 char *BuildCreatureNameWithArticle(int creature_type);
-void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
 int ParseDeckFileIntoInitialLibrary(char *deck_path, csvid_and_numcards *library_entries, unsigned int color_filter, int speed_filter);
 
 int ApplyPortraitPaletteMap(FacemakerWindowBounds *page, int src_x, int src_y, unsigned int width, int height, char *palette_source_path, char *portrait_path);
-void BeginSpriteEncodeSession(void);
-void FinalizeSpriteEncodeSession(void);
-EncodedImage *EncodeSpriteFromPage(int page_number, int src_x, int src_y, int width, int height);
-void FreeSpriteBlob(void *sprite_blob);
 
 void DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *world_magic_button_sprite, ...);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *world_magic_button_sprite, ...);
-void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color_index, int x, int y, char *world_magic_button_sprite, ...);
 unsigned int BlitRectByRandomTileOrderInPlace(HDC dst, int dst_x, int dst_y, int width, int height, int tile_w, int tile_h, HDC src);
 void BlitRectByStaggeredRandomTileOrder(HDC dst_hdc, int x, int y, int w, int h, int strip_width, int active_strip_count,
                                         int tile_width, int tile_height, HDC src_hdc);
@@ -180,15 +82,8 @@ void BlitRectByStaggeredRandomTileOrder(HDC dst_hdc, int x, int y, int w, int h,
 void DestroyAllCardBackgrounds(void);
 void DestroyAllBigArts(void);
 void DestroyAllSmallArts(void);
-void InitializeNewGameState(void);
-void PreloadWorldAmbientSounds(void);
 
-int ApproximateDistance(int x, int y);
 int GetRelativeWorldQuadrant(int world_x, int world_y);
-int AddCardToDeckSorted(int card_id);
-int GetRemainingAllowedCardCopies(int card_id);
-int GetCardRarity(int card_id);
-int find_internal_card_id_by_csv_id(card_id_t card_id);
 int FindDeckSlotForQuestColorAndType(unsigned char quest_color, int quest_bitmap_mask);
 char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID world_magic_button_sprite, ...);
@@ -197,7 +92,6 @@ int RunTownServicesMenu(int town_index);
 int DeckContainsCsvid(int csvid);
 int FindHintPairIndexForOfferCard(int card_internal_id);
 int CalculateCardShopPrice(int card_index);
-int FindWorldMagicCardIndex(int world_magic_slot_index);
 char *GetTownCardDescription(int town_index);
 char *BuildTownDisplayName(int town_index);
 extern int g_dungeon_monster_duel_music_csvids[];
@@ -206,11 +100,9 @@ unsigned int RunWisemanAdviceSequence(int preferred_color, int new_town_visit, i
 int BuyAnyCardFromTown(int payment_color, int town_index);
 char *AppendString(char *dst, char *src);
 
-int RunDuelEngine(unsigned int card_id, int creature_type);
 int ExitIfNoUsableDeckCards(void);
 ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 void LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int color_filter, int speed_filter);
-void ClearAndLoadInitialLibraryFromDeckFile(char *deck_path, int library_index, unsigned int color_filter, int speed_filter);
 int DrawRandomCardFromInitialLibrary(int library_index);
 int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 void DrawCreaturePortrait(int creature_type, int x_320, int y_200, int tinted, int mode);
@@ -218,49 +110,14 @@ void PlayDuelMusic(int tune_index);
 void RemoveCardFromDeckById(unsigned int card_id);
 unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int type_mask, int reset_filters, int show_done_button);
 int QuestCardChooserCallback(void);
-void DrawTiledDialogBoxFrame(int x, int y, int width, int height, int frame_style);
-int HandleMainMenuButtonControlEvent(void *control_ptr, int event_type);
-int HandlePortraitMainMenuControlEvent(void *control_ptr, int event_type);
-void CopyGraphicsRect(FacemakerWindowBounds *src_page, int src_x, int src_y, int width, int height, FacemakerWindowBounds *dst_page,
-                      int dst_x, int dst_y);
-int RunSaveMenuAndSelectSlot(void);
-int RunLoadGameMenu(void);
-void SaveGameToSlot(int save_slot_index);
-int load_selected_duel_save_slot(int save_slot_index);
-int RestoreAdventureUiPaletteAndFocus(void);
-void ShowWorldMapScreen(int mode);
-void ShowCityInfoScreen(int unused);
-void ShowDungeonCluesScreen(int unused);
-void ShowStatsWindow(int mode, int highlight);
 
 void DrawTownMenuIconWithTooltip(int center_x, int center_y, int icon_index, int draw_mode, char *tooltip_text);
-int BeginMenuContext(void);
-int ResetMenuContext(int context_index);
-int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
-int EndMenuContext(void);
-int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
-int QueuePendingMenuActionInput(void);
 int RenderCurrentMenuContextControls(void);
-int LoadTextSectionLines(const char *filename, const char *section);
-int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
-void ShowMouseCursorNested(void);
-void HideMouseCursorNested(void);
-void UpdateMouseSnapshot(void);
 
-AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *saved_clip_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
 
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
-void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 void DrawWorldUiFormattedText(FacemakerWindowBounds *window, int color_index, int x, int y, char *world_magic_button_sprite, ...);
 void DrawCenteredTextLineWithShadow(char *text, int center_x, int y, int color_index);
 
-extern EncodedImage *g_questnew_sprite_entries[4];
-extern EncodedImage *g_tips_frame_sprite;
-extern EncodedImage *g_tips_icon_sprite;
-extern EncodedImage *g_main_menu_button_sprites_normal[4];
-extern EncodedImage *g_main_menu_button_sprites_highlight[4];
 
 // GLOBAL: SHANDALAR 0x00582d40
 int g_visit_tips_frame_x_by_resolution[3] = {0x40, 0x50, 0x66};
@@ -274,12 +131,8 @@ int g_visit_tips_right_icon_x_by_resolution[3] = {0x1af, 0x21a, 0x2b0};
 int g_visit_tips_icon_y_by_resolution[3] = {0x2f, 0x3c, 0x4d};
 
 int sound_unload(int sound_id);
-void LoadLoopingSound(char *filename, int sound_id);
 void PlaySoundWithPan(int sound_id, int volume, int pan);
 
-extern int g_world_location_music_track_id;
-extern int g_world_location_music_town_index;
-extern int g_world_location_music_active;
 
 // GLOBAL: SHANDALAR 0x00591278
 char *PTR_s_x_sound_dueltune_wav_00591278[3] = {

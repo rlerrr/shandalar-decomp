@@ -5,94 +5,26 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_state.h"
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_graphics_bpp;
-extern RpBitsPalettePacket g_palette_data_words;
-extern int g_default_palette_fade_steps;
-extern FILE *g_advbuttons_ini_file;
-extern char g_ui_message_buffer[0x1000];
-extern char g_ini_string_scratch[0x28];
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
-extern int g_mouse_button_down_mask;
-extern int g_mouse_y;
-extern int g_mouse_x;
-extern int g_menu_render_guard;
 extern char *gs_loadsave_0077d1b0[3];
 extern HWND g_main_window_hwnd;
-extern EncodedImage *g_face_preview_sprite_group[6];
-extern EncodedImage *g_face_preview_sprite_selected;
-extern DIBSurface *g_graphics_pages[10];
 extern char g_text_lines[249][300];
 
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
-extern FacemakerWindowBounds *g_page2_window_bounds;
 
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch);
-int MeasureMultilineTextWidth(FacemakerWindowBounds *window, char *text);
-int SetFontStyleSize(int font_id, unsigned int style);
-int DrawTextFormatted(FacemakerWindowBounds *dst, int text_id, int draw_shadow, int scale_to_screen, int center_x, int center_y, int x,
-                      int y, int *format_and_args);
-int LoadTextSectionLines(const char *filename, const char *section);
-int PopQueuedKeyInput(void);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
 void LoadPcxIntoPage(int page_number, char *path);
-void LoadPcxIntoPageNoPalette(char *path);
-void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
-void CopyGraphicsRect(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height,
-                      FacemakerWindowBounds *dst, int dst_x, int dst_y);
-AdvMenuRect *PushGraphicsClipRect(AdvMenuRect *out_rect, FacemakerWindowBounds *page, int x, int y, int width, int height);
-void BeginSpriteEncodeSession(void);
-EncodedImage *EncodeSpriteFromPage(int page_number, int x, int y, int width, int height);
-void FinalizeSpriteEncodeSession(void);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-int FileExists(const char *filename);
-int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_table_name);
-void FreeSpriteBlob(void *memory);
-void AnimatePaletteToColor(int color_index, int palette_id);
 void set_global_base_directory(char *path);
-int BeginMenuContext(void);
-int ResetMenuContext(int context_index);
-int AddMenuControlsToContext(AdvMenuControl *controls, int control_count, int context_index);
-int EndMenuContext(void);
-int FadeInPaletteFromGray(int gray, int steps);
-void DrawFormattedTextShadowedCenterY(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
 void __cdecl DrawFormattedTextNoShadowCentered(FacemakerWindowBounds *dst, int text_color, int x, int y, char *format, ...);
-void DrawFormattedTextShadowed(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-void LoadPcxIntoPageOpaque(int page_number, char *path);
-unsigned int WaitForInputEventUnlessBlocked(void);
-int UpdateMenuControlSelection(int mouse_x, int mouse_y, int allow_activate_on_click);
-int ScaleUiCoordinate(int value);
 int Palette_FindNearestEntryIndex(int target_r, int target_g, int target_b, unsigned char *palette_bytes);
-void *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
-void SetGraphicsPage(int page_number, void *page);
-void ReadGraphicsScanline(unsigned int *out_scanline, int page_number, int src_x, int src_y, unsigned int byte_count);
 void WriteGraphicsScanline(unsigned int *scanline_data, int page_number, int dst_x, int dst_y, unsigned int byte_count);
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, unsigned int color_index);
-void DrawGraphicsLine(FacemakerWindowBounds *window_bounds, int x1, int y1, int x2, int y2, int color_index);
-void DelayUiTicks(int ticks);
-int GetUiTickCount(void);
-int GetFontCharWidth(int font_slot, char ch);
-int GetFontLineHeight(int font_slot);
 void DrawLoadSaveButtonText(FacemakerWindowBounds *window, int color, int x, int y, ...);
-int RenderAdvMenuControlDisabled(AdvMenuControl *control);
 int RenderAdvMenuControlNormally(AdvMenuControl *control);
-int int_to_hex_digit(int value);
 int ShowHallBackgroundScreen(void);
 int RunNameEntryDialog(char *name_buffer);
-void BuildFacemakerPortraitSprites(FacemakerWindowBounds *page);
 int BlitTransparentRuns(FacemakerWindowBounds *src, int src_x, int src_y, unsigned int width, int height, FacemakerWindowBounds *dst, int dst_x, int dst_y);
 int ApplyNameEntryKey(char *name_buffer, int key_code, int max_len);
 int DrawBlinkingNameCaret(FacemakerWindowBounds *window, int color_index, int caret_x, int caret_y, char *name_buffer, int cursor_pos);

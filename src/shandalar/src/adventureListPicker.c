@@ -4,6 +4,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/global_strings.h"
@@ -13,47 +14,22 @@
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
-extern int g_mouse_button_mask_snapshot;
-extern char g_ui_message_buffer[0x1000];
-extern HDC global_main_hdc;
 extern HPALETTE g_realized_palette_handle;
-extern RpBitsPalettePacket g_palette_data_words;
 
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
 
 int internal_rand(int max_exclusive);
 int ScaleUiCoordinateFrom320(int value);
 
-int ReadPalette(char *palette_text_path, char *palette_binary_path);
-void ClearGraphicsPageWithPaletteColor(int page_number, int palette_color);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-void LoadPcxIntoPageNoPalette(char *path);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int width, int height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
 
-int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void FreeSpriteBlob(void *sprite_blob);
 
 void DrawAdventureCard(int card_index, int x, int y, int full_card, char *banner_label);
 void DrawAdventureCardSized(int card_index, int x, int y, int width, int height, int full_card, char *banner_label);
 void DestroyCachedCardArt(void);
 
 void DrawCenteredTextLineWithShadow(char *text, int center_x, int y, int color_index);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 void DrawScaledTextNoShadow(char *text, int x, int y, int color_index);
 
-void UpdateMouseSnapshot(void);
-int HasQueuedKeyInput(void);
-int PopNormalizedQueuedKeyInput(void);
-void ClearInputAndWaitForMouseRelease(void);
 
 typedef ptrdiff_t INT_PTR;
 

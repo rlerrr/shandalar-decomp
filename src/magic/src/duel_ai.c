@@ -31,7 +31,6 @@ int put_card_on_stack(int player, int card, int pay_costs);
 int resolve_card_on_stack(int player, int card);
 int dispatch_event_to_single_card(int player, int card, int event, int a4, int a5);
 int activate(int player, int a2, int card);
-void resolve_activated_ability(int player, int card);
 void request_duel_display_refresh_if_human(int player, int card, int a3, int a4);
 int can_attack(int player, int card);
 int get_recorded_action_count(void);

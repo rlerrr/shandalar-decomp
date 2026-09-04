@@ -7,6 +7,7 @@
 #include "network.h"
 
 extern card_data_t global_cards_data[];
+extern const unsigned char wizard_card_color_preference_table[18];
 
 typedef struct
 {
@@ -29,6 +30,12 @@ typedef struct
   int target_card;
   int unused;
 } target_selection_result_t;
+
+typedef int(__cdecl *in_play_card_callback_t)(int source_player,
+                                              int source_card,
+                                              int player,
+                                              int card,
+                                              int internal_card_id);
 
 /* Helpers that are inlined in the original executable (no function calls). */
 #define is_tapped(player_, card_) ((PLAYER_CARD_INSTANCE((player_), (card_)).state & STATE_TAPPED) != 0)
@@ -405,5 +412,88 @@ int regenerate_or_graveyard_triggers(void);
 int can_block_with_landwalk_masks(int blocker_player, int blocker_card, int attacker_player, int attacker_card);
 void replace_card_hack_color(int player, int card, int color_from, unsigned char color_to);
 void replace_card_sleight_color(int player, int card, int color_from, unsigned char color_to);
+
+/* Shared duel support entry points.  Keep these here instead of redeclaring
+ * them in each translation unit that happens to call one. */
+int calculate_attack_rating(int player, int card);
+int get_recorded_action_count(void);
+unsigned int get_card_color_after_hacks(int player, int card);
+int card_matches_excluded_land_type(int player, int card, int excluded_internal_card_id);
+int process_killed_card(int player, int card);
+void move_card_to_exile(int player, int internal_card_id);
+void initialize_card_instance(int player, int internal_card_id, int card);
+void send_library_contents(int deck_owner);
+void receive_library_contents(int deck_owner);
+int has_pending_damage(int player, int card);
+int is_basic_land(int player, int card);
+int basic_land_matches_type_index(int internal_card_id, int extra);
+void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *out_basic_land_mask);
+int card_activation_uses_x(int player, int card);
+void resolve_mana_burn(void);
+int can_activate_mana_source_for_stop_prompt(int player, int card);
+int activate_mana_source_card(int player, int card);
+int put_card_on_stack(int player, int card, int mode);
+int resolve_card_on_stack(int player, int card);
+int activate(int who_activates, int player, int card);
+int resolve_activated_ability(int player, int card);
+int resolve_card_immediately(int player, int card, int arg_3);
+int count_colored_cards_in_hand(int player);
+int refresh_stack_proxy_card(int prompt_flag);
+int set_stack_damage_targets(void);
+void reset_trigger_dispatch_state(void);
+int allow_response(int response_player, int phase, char *prompt, int event_code);
+int allow_response_once(int response_player, int phase, char *prompt, int event_code);
+int dispatch_trigger_twice_once_with_each_player_as_reason(int reason_for_trig, trigger_t trig, const char *prompt, int a4);
+int dispatch_trigger(int player, trigger_t trig, const char *prompt, int allow_response);
+int player_can_stop_at_phase(int player, phase_t phase);
+int prompt_stop_phase_anyway(phase_t phase);
+void prompt_player_for_stop_action(int player, char *prompt);
+int contains_player_card_pair(int *card_pairs, int card_pair_count, int player, int card);
+int process_response_actions(int reason_for_trigger_controller, const char *prompt);
+unsigned int choose_response_card(int player);
+int get_card_response_action_type(int player, int card);
+int is_phase_stop_allowed_for_current_event(void);
+int legacy_clear_graphics_page_stub();
+int legacy_blit_graphics_rect_stub();
+int legacy_load_pcx_into_page_stub();
+int legacy_load_pcx_into_page_no_palette_stub();
+void show_opponent_taunt_text_stub(char *text);
+int reset_duel_tick_timer(void);
+void display_duel_prompt_text(char *text);
+void notify_library_shuffled(int deck_owner);
+int CALLBACK dlgproc_duel_interface_options(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+void restack_duel_child_windows(void);
+int find_first_visible_window_index(HWND *windows, int count);
+int restack_visible_windows_after(HWND previous_window, HWND *windows, int window_count);
+int get_card_display_pic_num(card_id_t card_id, int player, int card);
+int prompt_for_life_total(int player, char *prompt, int initial_life_total);
+int CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+void show_mana_burn_dialog(int player, int amount);
+int CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+int update_duel_selection_display_if_human(int player, int phase);
+int show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amounts, int count, int title, int allow_cancel, char *prompt);
+int show_selectable_cardlist(int *graveyard, int *available, int count, void *window_title,
+                             unsigned int require_selection, char *prompt);
+int get_duel_thread_time_ms(void);
+void update_duel_thread_time_marker(void);
+void show_opponent_taunt(char *text);
+void show_duel_system_error(const char *err_msg);
+int reset_duel_tick_timer_indirect(void);
+void set_duel_prompt_context(HWND prompt_hwnd, char *text, unsigned int button_flags);
+void position_duel_prompt_context_window(HWND prompt_hwnd);
+void setup_duel_prompt_context_text_dc(HWND prompt_hwnd, HDC dc, int *rect_values);
+void ShowMouseCursorNested(void);
+void HideMouseCursorNested(void);
+int raw_do_dialog(int bigcard_player, int bigcard_card, int smallcard_player, int smallcard_card,
+                  char *prompt, int dialog_mode);
+void append_to_trace_txt(char *text);
+int GetCardRarity(int internal_card_id);
+int choose_a_color_dialog(int player, const char *prompt, int use_color_names_instead_of_land,
+                          int ai_choice, unsigned int available_colors);
+HBITMAP load_pic(char *filename);
+void delete_and_close_object(HANDLE obj);
+void change_buttonclass_wndproc(HWND hwnd);
+void draw_owner_draw_button_centered(DRAWITEMSTRUCT *draw_item_struct, HBRUSH brush,
+                                     HPEN pen1, HPEN pen2, COLORREF color, int draw_focus);
 
 #endif

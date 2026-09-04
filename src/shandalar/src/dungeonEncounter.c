@@ -5,6 +5,7 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "magic/src/global_other.h"
 #include "magic/src/global_state.h"
 #include "magic/src/game_support.h"
@@ -58,31 +59,12 @@ typedef char DungeonRuntimeState_size_must_be_0x438[(sizeof(DungeonRuntimeState)
 #define true 1
 #endif
 
-extern int global_screen_width;
-extern int global_screen_height;
-extern int g_default_palette_fade_steps;
-extern int g_adventure_world_exit_requested;
 
 extern int g_shandalar_difficulty;
-extern int g_mouse_button_mask_snapshot;
-extern int g_mouse_x_snapshot;
-extern int g_mouse_y_snapshot;
 extern int g_defeated_wizards_bitmap;
 extern int g_next_duel_card_id;
 extern int g_next_duel_life_delta;
-extern int g_neighbor_dx[9];
-extern int g_neighbor_dy[9];
-extern int g_statwin_exports_by_ordinal[3];
 extern int g_wizard_siege_count;
-extern int g_ego_sprite_width;
-extern int g_ego_sprite_height;
-extern int g_ego_sprite_draw_height;
-extern int g_sego_sprite_width;
-extern int g_sego_sprite_draw_height;
-extern int g_world_lair_monster_sprite_top_clips[0x10];
-extern int g_world_lair_monster_sprite_widths[0x10];
-extern int g_world_location_music_track_id;
-extern int g_world_location_music_active;
 extern int g_duel_state_00742fc0;
 extern int g_encounter_opening_hand_size_modifier;
 extern int g_current_encounter_strength;
@@ -90,28 +72,15 @@ extern int g_ai_combat_value_weights[4];
 extern int g_current_encounter_color;
 extern int g_opponent_starting_card_id_1;
 extern int g_opponent_starting_card_id_2;
-extern int Gold;
 extern int g_life[2];
 extern int deck[500];
-extern char g_ui_message_buffer[0x1000];
-extern HPALETTE g_palette_handle;
 extern HWND g_main_window_hwnd;
-extern DIBSurface *g_graphics_pages[10];
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern FacemakerWindowBounds *g_page1_window_bounds;
-extern FacemakerWindowBounds *g_page2_window_bounds;
-extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
 char *BuildCreatureNameWithArticle(int creature_type);
 char *BuildTownDisplayName(int town_index);
 char *GetCreatureName(int creature_type);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
-int BeginMenuContext(void);
-int ClampIntToRange(int value, int min_value, int max_value);
 int CountDuelPoolEligibleTowns(void);
-int EndMenuContext(void);
 int ExitIfNoUsableDeckCards(void);
-int single_color_test_bit_to_color_t(int mask);
-int PopNormalizedQueuedKeyInput(void);
 int PopulateDungeonCellEvents(void);
 void SetDungeonPassageHighlight(int direction, int enable);
 void DrawCastleDungeonBoard(int animation_step, int initial_draw, int dungeon_index);
@@ -119,111 +88,48 @@ void ConvertDungeonCellToScreen(int dungeon_x, int dungeon_y, int *out_screen_x,
 void ConvertMouseToDungeonCell(int mouse_x, int mouse_y, int *out_x, int *out_y);
 int QueueDungeonMouseNavigationInput(int mouse_x, int mouse_y);
 int ShutdownSharedStartup(void);
-int FindTownAtWorldCoordinates(int world_x, int world_y);
 int LoadCreatureEncounterSprites(int creature_type, int work_entry_index_a, int work_entry_index_b);
-int SeedRandomFromTickCount(void);
 char *GetDungeonName(int dungeon_index);
 int CalculateDungeonEndgameScore(void);
 int internal_rand(int max_value);
 int RunCardRiddleChallenge(void);
 int ScaleUiCoordinateFrom320(int value);
-int ScaleUiCoordinate(int value);
-int AddCardToDeckSorted(int card_id);
-int find_internal_card_id_by_csv_id(card_id_t card_id);
 int sound_get_state(int sound_id, int *out_state);
-int GetUiTickCount(void);
-int IsKeyInputQueueEmpty(void);
 int IsWizardColorFeminine(int color_index);
 int LoadCreatureDuelDeck(int creature_type, unsigned int name_id, unsigned int color_filter, int speed_filter);
 ShandalarEntryType PickRandomCreatureTypeForWizardTier(int wizard_color, int creature_tier);
 int QuestCardChooserCallback(void);
-int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
-int ReadSpriteEntryPointersWithLimit(EncodedImage **out_sprite_entries, char *sprite_path, int max_entries);
 int RemoveCardFromDeckById(unsigned int card_id);
-int ResetMenuContext(int context_index);
 int RunCardBrowser(char *title, int color_mask, unsigned int type_mask, int reset_filters, int show_done_button);
 int RunCastleDungeonBoard(int dungeon_index);
 int RunDungeonMonsterDuel(int dungeon_index, int monster_slot, int final_battle);
 undefined4 HandleDefeatedWizardCastle(int dungeon_index);
-int RunDuelEngine(unsigned int card_id, int creature_type);
-int RunTextMenuAt(char *menu_text, int x, int y);
-int RunTextMenuAtScaled(char *menu_text, int x_320_scale, unsigned int y_200_scale);
-int ScaleUiCoordinate(int value);
-int MeasureTextLineWidth(char *text);
 int sound_stop(int sound_id);
 int sound_unload(int sound_id);
-unsigned int GetWorldTileType(int x, int y);
-unsigned int GetWorldMapPixelFlags(int x, int y);
-unsigned int LoadSoundWithDriveFallback(char *filename, int channel, int flags);
-unsigned int WaitForInputEventUnlessBlocked(void);
-void AnimatePaletteToColor(int color_index, int palette_id);
-void ClearGraphicsPageWithPaletteColor(int page_number, int color_index);
-void ClearInputAndWaitForMouseRelease(void);
-void ConsumeUiTickCount(void);
-WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1, int db_flags_2);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
 void DrawCenteredTextLineWithShadow(char *text, int center_x, int y, int color_index);
-void DrawFormattedTextShadowedCentered(FacemakerWindowBounds *window, int color_index, int x, int y, char *format, ...);
 void DrawUiScaledCenteredText(char *text, int center_x_320, int y_200, int color_index);
-void DrawTiledDialogBoxFrame(int x, int y, int width, int height, int frame_style);
-void FadeInPaletteFromGray(int color_index, int palette_id);
-void FreeOpeningMenuSpriteWorkEntries(int work_entry_index_a, int work_entry_index_b);
-void FreeSpriteBlob(EncodedImage *sprite_blob);
-void AddJournalEntry(int entry_type, int entry_arg);
-void SetWorldMapPixelFlags(unsigned int mask, int x, int y);
-void ClearWorldMapPixelFlags(unsigned int mask, int x, int y);
 void RevealDungeonCellAndNeighbors(int x, int y);
 void AppendDungeonRewardDescription(void);
 void InitDungeonScratchPage(void);
 void FreeDungeonScratchPage(void);
-void DelayUiTicks(int ticks);
-void RestoreAdventureUiPaletteAndFocus(void);
 undefined4 TransitionPcxToScreenRandomTiles8(char *path);
 undefined4 TransitionPcxToScreenRandomTiles(char *path, int x_scale, int y_scale);
-void ClearInputAndWaitForMouseRelease(void);
 void DrawAdventureCard(unsigned int card_id, int x, int y, int full_card, char *banner_text);
 void DrawAdventureCardSized(int card_id, int x, int y, int width, int height, int full_card, char *label);
-int ResetMenuContext(int context_index);
 void ForceReloadAdvfac64(int state);
 undefined4 PlayStatWinMovie(char *path, int x, int y, int flags);
-void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int pan_percent);
-void PlayLoopingSoundWithPan(int sound_id, int volume, int pan_percent);
-void LoadLoopingSound(char *sound_path, int channel);
 void StopWorldLocationMusic(void);
 void PlayCastleMusic(int castle_music_index);
 int FreeGraphicsPage(int page_number);
 void DrawUiScaledCenteredTextWithShadow(FacemakerWindowBounds *window, int color, int x, int y, char *format, ...);
-void BlitGraphicsRect(FacemakerWindowBounds *dst, unsigned int dst_x, int dst_y, unsigned int width, DWORD height,
-                      FacemakerWindowBounds *src, int src_x, int src_y);
 void CopyUiScaledGraphicsRect(FacemakerWindowBounds *src_page, int src_x_320, int src_y_240, int width_320,
                               int height_240, FacemakerWindowBounds *dst_page, int dst_x_320, int dst_y_240);
-void CopyGraphicsRect(FacemakerWindowBounds *src_page, int src_x, int src_y, int width, int height,
-                      FacemakerWindowBounds *dst_page, int dst_x, int dst_y);
-void FillGraphicsRect(FacemakerWindowBounds *window_bounds, int x, int y, int width, int height, int color_index);
 void FillUiScaledGraphicsRect(FacemakerWindowBounds *window_bounds, int x_320, int y_240, int width_320,
                               int height_240, int color_index);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawEncodedImageUiScaled(FacemakerWindowBounds *dst, int x_320, int y_200, EncodedImage *sprite, int width_320, int height_200);
-void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 unsigned int BlitRectByRandomTileOrderInPlace(HDC dst, int dst_x, int dst_y, int width, int height, int tile_w,
                                               int tile_h, HDC src);
-DIBSurface *CreateGraphicsPage(int page_number, int width, int height, int bits_per_pixel);
 void LoadPcxIntoPage(int page_number, char *path);
-void LoadPcxIntoPageNoPalette(char *path);
-void LoadPcxIntoPageOpaque(int page_number, char *path);
 void LoadPcxResource(int page_number, int x, int y, char *path, void *opaque);
-void PlaySoundEffectOnChannel(char *sound_path, int channel, int volume, int pitch_percent, int pan_percent);
-void PushQueuedKeyInput(int key_code);
-void ReadPalette(char *path, char *out_palette);
-void RefreshAdventureInterfaceLayout(void);
-void RestoreAdventureUiPaletteAndFocus(void);
-void RunAdventureStatsMenu(void);
-void ShowStatsWindow(int mode, int highlight);
-void StretchBlitGraphicsRect(FacemakerWindowBounds *dst, int dst_x, int dst_y, int src_w, int src_h,
-                             FacemakerWindowBounds *src, int src_x, int src_y, int copy_w, int copy_h);
-void SetGraphicsPage(int page_number, DIBSurface *page);
-void UnloadStatWinDllExports(void);
-void UpdateMouseSnapshot(void);
 
 // GLOBAL: SHANDALAR 0x00583a28
 int g_dungeon_move_direction = 4;

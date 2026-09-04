@@ -4,33 +4,17 @@
 
 #include "defs.h"
 #include "shandalar.h"
+#include "shandalar_internal.h"
 #include "shandalar_global_strings.h"
 #include "facemaker/src/facemaker_types.h"
 #include "drawcardlib/src/pic.h"
 
-typedef struct
-{
-  int first;
-  int second;
-} HintPair;
 
-extern char g_ui_message_buffer[0x1000];
-extern FacemakerWindowBounds *g_page0_window_bounds;
-extern card_data_t global_cards_data[];
-extern long g_hint_text_offsets[0x100];
-extern HintPair g_hint_card_pairs[0x100];
 
 int DeckContainsCsvid(int csvid);
-int find_internal_card_id_by_csv_id(card_id_t card_id);
 DWORD FormatMessageFromStringStripCarriageReturns(char *dst, DWORD max_length, LPCVOID format, ...);
 char *AppendString(char *dst, char *src);
-int ReadSpriteEntryPointers(EncodedImage **out_sprite_entries, char *sprite_path);
-int ScaleUiCoordinate(int value);
 int MeasureTextSpanWidth(FacemakerWindowBounds *window, char *text, int length);
-void DrawEncodedImageResampled(FacemakerWindowBounds *dst, int x, int y, int width, int height, EncodedImage *encoded_image);
-void DrawTextAt(FacemakerWindowBounds *window, int color, int x, int y, char *text, ...);
-unsigned int WaitForInputEventUnlessBlocked(void);
-void FreeSpriteBlob(void *sprite_blob);
 
 // FUNCTION: SHANDALAR 0x0041871f
 void AppendTownHintBodyText(int hint_index)

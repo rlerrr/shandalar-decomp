@@ -158,6 +158,8 @@ int select_multiple_cards_from_card_list(int player,
 
 void send_battlefield_status_packet(int player);
 void receive_battlefield_status_packet(int player);
+void AddCardToCLPacket(int card_in_packet);
+int GetCardFromCLPacket(int packet_index);
 int ReportUnexpectedNetworkPacketType(int expected_packet_type, int actual_packet_type);
 int TENTATIVE_wait_for_network_result(int player, signed int packet_type);
 int TENTATIVE_send_network_result(int player, signed int packet_type);

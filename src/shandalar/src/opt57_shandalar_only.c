@@ -14,6 +14,7 @@
 #include "cardartlib/src/assert.h"
 #include "drawcardlib/src/pic.h"
 #include "facemaker/src/facemaker_types.h"
+#include "shandalar_internal.h"
 
 #undef _fileno
 
@@ -32,18 +33,13 @@ typedef struct HSVLike
   int value;
 } HSVLike;
 
-extern void PutGraphicsPixel(FacemakerWindowBounds *window_bounds, int x, int y, unsigned int color_index);
-extern void DrawEncodedImageUnscaled(FacemakerWindowBounds *dst, int x, int y, EncodedImage *encoded_image);
 extern void RpBits_ApplyPalette(RpBitsPalettePacket *palette_data);
 extern void ConvertRgbToHsv(HSVLike *hsv, RGBLike *rgb);
 extern RGBLike *ConvertHsvToRgb(HSVLike *hsv, RGBLike *rgb);
 extern void CopyBytesAsmCompat(double *dst, double *src, unsigned int size);
 
-extern DIBSurface *g_graphics_pages[10];
 extern RGBQUAD g_palette_rgb[256];
 extern unsigned char *g_palette_rgb_bytes;
-extern int g_graphics_bpp;
-extern int g_frontbuffer_direct_blit_enabled;
 
 extern BITMAPINFO *g_copy_bitmap_info;
 extern int g_copy_bitmap_info_initialized;
@@ -51,7 +47,6 @@ extern char *g_copy_flip_scratch_buffer_ptr;
 extern char *g_copy_restore_scratch_buffer_ptr;
 
 extern RpBitsPalettePacket g_palette_transition_source_words;
-extern RpBitsPalettePacket g_palette_data_words;
 extern int g_palette_transition_work_words[0x400];
 extern int g_palette_transition_hsv[0x301];
 extern int g_palette_transition_value_step[0x2ff];
