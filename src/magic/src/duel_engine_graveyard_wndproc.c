@@ -30,6 +30,7 @@ extern char global_base_directory[];
 extern int g_duel_cached_graveyard_player_0[500];
 extern int g_duel_cached_graveyard_player_1[500];
 extern int g_duel_cached_exile_player_0[500];
+extern int g_duel_cached_exile_player_1[500];
 extern int g_duel_cached_ante_player_1[16];
 extern int g_duel_cached_ante_player_0[16];
 extern int g_duel_cached_graveyard_count_player_0;
@@ -171,7 +172,7 @@ int copy_cached_exile_cards_and_get_count(void *cards, int player)
   {
     result = g_duel_cached_exile_count_player_1;
   }
-  memcpy(cards, (player == 0) ? g_duel_cached_exile_player_0 : global_exile[1], 2000);
+  memcpy(cards, (player == 0) ? g_duel_cached_exile_player_0 : g_duel_cached_exile_player_1, 2000);
   LeaveCriticalSection(&g_duel_render_lock);
 
   return result;
