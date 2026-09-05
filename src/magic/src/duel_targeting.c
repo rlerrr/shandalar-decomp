@@ -1786,15 +1786,15 @@ int choose_creature_to_sacrifice(int player)
 
   if ((player == g_active_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
   {
-    if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0,
+    if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
                               g_text_lines[0], 0, &s.target))
     {
-      s.best_card = -1;
+      s.best_card = s.target.card;
     }
     else
     {
-      s.best_card = s.target.card;
+      s.best_card = -1;
     }
   }
   else

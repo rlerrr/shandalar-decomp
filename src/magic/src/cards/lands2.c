@@ -198,11 +198,7 @@ int card_arena(int player, int card, event_t event)
           load_text("promptsX1.txt", "ARENA");
           if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                    get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                   -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) == 0)
-          {
-            g_spell_fizzled = 1;
-          }
-          else
+                                   -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
           {
             SET_TARGET(instance->targets[instance->number_of_targets], target);
             ++instance->number_of_targets;
@@ -223,6 +219,10 @@ int card_arena(int player, int card, event_t event)
             SET_TARGET(instance->targets[instance->number_of_targets], target);
             ++instance->number_of_targets;
             do_dialog(1 - player, player, card, target.player, target.card, g_text_lines[1], 0);
+          }
+          else
+          {
+            g_spell_fizzled = 1;
           }
         }
         else
@@ -803,7 +803,7 @@ int card_diamond_valley(int player, int card, event_t event)
     }
 
     load_text("promptsX1.txt", "DIAMOND_VALLEY");
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               player,
                               player,
                               TARGET_ZONE_IN_PLAY,
@@ -823,10 +823,6 @@ int card_diamond_valley(int player, int card, event_t event)
                               g_text_lines[0],
                               1,
                               &s.target))
-    {
-      g_spell_fizzled = 1;
-    }
-    else
     {
       if (g_duel_ai_mode_state != 1)
       {
@@ -858,6 +854,10 @@ int card_diamond_valley(int player, int card, event_t event)
       }
 
       g_produced_mana_color = -1;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     return 0;
   }
@@ -1358,7 +1358,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
       first_available_color = 0;
       while (first_available_color < 7 && color == -1)
       {
-        if ((available_colors & (1 << ((unsigned char)first_available_color & 0x1f))) != 0)
+        if ((available_colors & (1 << ((unsigned char)first_available_color))) != 0)
         {
           color = first_available_color;
         }
@@ -1380,7 +1380,7 @@ int helper_dual_land(int player, int card, event_t event, color_test_t available
       num_available_colors = 0;
       for (color = 0; color < 7; ++color)
       {
-        if ((colors_to_choose_from & (1 << ((unsigned char)color & 0x1f))) != COLOR_TEST_0)
+        if ((colors_to_choose_from & (1 << ((unsigned char)color))) != COLOR_TEST_0)
         {
           ++num_available_colors;
           if (first_available_color == -1)

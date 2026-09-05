@@ -215,11 +215,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
       load_text("promptsX1.txt", "ASHNODS_TRANSMORGRANT");
       if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_ARTIFACT,
                                0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                               -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+                               -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
       {
         SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -236,6 +232,10 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
         {
           g_ai_modifier -= 0x18;
         }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
 
@@ -479,19 +479,19 @@ int card_cyclopean_tomb(int player, int card, event_t event)
       else
       {
         load_text("promptsX1.txt", "CYCLOPEAN_TOMB");
-        if (!C_real_select_target(player, 2, player, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0,
+        if (C_real_select_target(player, 2, player, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0,
                                   get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                   chosen_land_type, ~SUB_WALL, -1, -1,
                                   TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0, g_text_lines[0], 1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
           instance->state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -500,10 +500,10 @@ int card_cyclopean_tomb(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
     if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card, (char *)0,
-                                player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0,
-                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                chosen_land_type, ~SUB_WALL, -1, -1,
-                                TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0))
+                               player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0,
+                               get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                               chosen_land_type, ~SUB_WALL, -1, -1,
+                               TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0))
     {
       legacy_card = create_legacy_effect(g_affected_card_controller, g_affected_card, g_duel_generated_internal_card_id_23,
                                          instance->targets[0].player, instance->targets[0].card);
@@ -610,7 +610,7 @@ int card_gauntlet_of_might(int player, int card, event_t event)
   {
     chosen_color = get_sleighted_color(player, card, 4);
     affected_color = (unsigned char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).color;
-    if (((1 << ((unsigned char)chosen_color & 0x1f)) & affected_color) != 0)
+    if (((1 << ((unsigned char)chosen_color)) & affected_color) != 0)
     {
       ++g_event_result;
     }
@@ -694,7 +694,7 @@ int card_icy_manipulator(int player, int card, event_t event)
       {
         load_text("promptsX1.txt", "ICY_MANIPULATOR");
         illegal_abilities = get_protections_from(player, card);
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   2,
                                   TARGET_ZONE_IN_PLAY,
@@ -715,10 +715,6 @@ int card_icy_manipulator(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
           if (g_other_player == player)
@@ -735,6 +731,10 @@ int card_icy_manipulator(int player, int card, event_t event)
           }
           instance->state |= STATE_TAPPED;
         }
+        else
+        {
+          g_spell_fizzled = 1;
+        }
       }
     }
     if (event == EVENT_RESOLVE_ACTIVATION)
@@ -742,25 +742,25 @@ int card_icy_manipulator(int player, int card, event_t event)
       SET_TARGET(target, instance->targets[0]);
       illegal_abilities = get_protections_from(player, card);
       if (C_real_validate_target(target.player,
-                                  target.card,
-                                  (char *)0,
-                                  player,
-                                  2,
-                                  2,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_ARTIFACT | TYPE_CREATURE | TYPE_LAND,
-                                  TYPE_NONE,
-                                  0,
-                                  illegal_abilities,
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0))
+                                 target.card,
+                                 (char *)0,
+                                 player,
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_ARTIFACT | TYPE_CREATURE | TYPE_LAND,
+                                 TYPE_NONE,
+                                 0,
+                                 illegal_abilities,
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0))
       {
         tap_card_and_dispatch_event(target.player, target.card);
       }
@@ -1349,11 +1349,7 @@ int card_pyramids(int player, int card, event_t event)
             load_text("promptsX1.txt", "PYRAMIDS");
             if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_ENCHANTMENT, TYPE_NONE,
                                      0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                     -1, -1, -1, -1, 0, 0, 0, g_text_lines[2], 1, &target) == 0)
-            {
-              g_spell_fizzled = 1;
-            }
-            else
+                                     -1, -1, -1, -1, 0, 0, 0, g_text_lines[2], 1, &target))
             {
               if ((int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player == -1 ||
                   PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card == -1 ||
@@ -1393,6 +1389,10 @@ int card_pyramids(int player, int card, event_t event)
                   }
                 }
               }
+            }
+            else
+            {
+              g_spell_fizzled = 1;
             }
           } while (g_spell_fizzled != 1 && done == 0);
         }
@@ -1497,70 +1497,67 @@ int card_rakalite(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
-        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-        has_mana(player, COLOR_COLORLESS, 2) != 0 &&
-        real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY,
-                              TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
-                              g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0) != 0)
-    {
-      return 99;
-    }
-    return 0;
+    return ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
+            (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+            has_mana(player, COLOR_ANY, 2) != 0 &&
+            real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY,
+                                  TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
+                                  g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0) != 0)
+               ? 99
+               : 0;
   }
 
   if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
-  else
-  {
-    if (event == EVENT_ACTIVATE)
-    {
-      charge_mana(player, COLOR_COLORLESS, 2);
-      if (g_spell_fizzled != 1)
-      {
-        load_text("promptsX1.txt", "RAKALITE");
-        if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE,
-                                 0, 0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
-                                 -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) != 0)
-        {
-          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
-          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-          PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
-        }
-        else
-        {
-          g_spell_fizzled = 1;
-        }
-      }
-    }
 
-    if (event == EVENT_RESOLVE_ACTIVATION)
+  if (event == EVENT_ACTIVATE)
+  {
+    charge_mana(player, COLOR_COLORLESS, 2);
+    if (g_spell_fizzled != 1)
     {
-      SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-      if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
-                                 TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
-                                 g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0) != 0)
+      load_text("promptsX1.txt", "RAKALITE");
+      if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE,
+                               0, 0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
+                               -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) != 0)
       {
-        if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot != 0)
-        {
-          --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
-        }
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
       }
       else
       {
         g_spell_fizzled = 1;
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
     }
+  }
 
-    if (event == EVENT_CLEANUP && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
+                               g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0) != 0)
     {
-      hurkyls_recall_bounce_artifact(player, card);
+      if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot != 0)
+      {
+        --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
+      }
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
+  }
+
+  if (event == EVENT_CLEANUP && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
+  {
+    hurkyls_recall_bounce_artifact(player, card);
   }
 
   return 0;
@@ -1832,15 +1829,15 @@ int card_staff_of_zegon(int player, int card, event_t event)
         load_text("promptsX1.txt", "STAFF_OF_ZEGON");
         if (C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
                                  0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                 -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) == 0)
-        {
-          g_spell_fizzled = 1;
-        }
-        else
+                                 -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }

@@ -694,7 +694,7 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
       {
         load_text("prompts.txt", is_assembly_worker ? "ASSEMBLY_WORKER" : "MISHRAS_FACTORY");
       }
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 player,
                                 TARGET_ZONE_IN_PLAY,
@@ -715,14 +715,14 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
                                 1,
                                 &s.target))
       {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
         instance->state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
         instance->targets[0] = s.target;
         instance->number_of_targets = 1;
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       g_produced_mana_color = -1;
     }
@@ -993,7 +993,7 @@ int card_mishra_s_factory(int player, int card, event_t event)
       {
         load_text("prompts.txt", "MISHRAS_FACTORY");
       }
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 player,
                                 TARGET_ZONE_IN_PLAY,
@@ -1014,14 +1014,14 @@ int card_mishra_s_factory(int player, int card, event_t event)
                                 1,
                                 &s.target))
       {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
         PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       g_produced_mana_color = -1;
     }
@@ -1337,7 +1337,7 @@ int card_assembly_worker(int player, int card, event_t event)
       {
         load_text("prompts.txt", "ASSEMBLY_WORKER");
       }
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 player,
                                 TARGET_ZONE_IN_PLAY,
@@ -1358,14 +1358,14 @@ int card_assembly_worker(int player, int card, event_t event)
                                 1,
                                 &s.target))
       {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
         PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       g_produced_mana_color = -1;
     }

@@ -11,7 +11,7 @@ int aswan_jaguar_find_library_monster(int player, int start_slot);
 int polka_apply_effect(int player, int card, int amount);
 int polka_has_target_available(int player, int card);
 int faerie_dragon_apply_effect(int player, int card, int effect_index);
-int get_card_display_pic_num(int card_id, int player, int card);
+int get_card_display_pic_num(card_id_t card_id, int player, int card);
 int whimsy_build_candidates(int player, int card, target_t *candidates, unsigned int type_mask);
 int whimsy_apply_effect(int player, int card, int effect_index);
 int choose_orcish_catapult_targets(int player, int card, target_t *targets);
@@ -238,16 +238,16 @@ int card_aswan_jaguar(int player, int card, event_t event)
                                  -1,
                                  PLAYER_CARD_INSTANCE((int)s.instance->damage_source_player,
                                                       s.instance->damage_source_card).info_slot,
-                                 -1, -1, TARGET_SPECIAL_0x10, 0, 0, g_text_lines[0], 1, &s.target) == 0)
-        {
-          g_spell_fizzled = 1;
-        }
-        else
+                                 -1, -1, TARGET_SPECIAL_0x10, 0, 0, g_text_lines[0], 1, &s.target))
         {
           SET_TARGET(s.instance->targets[0], s.target);
           s.instance->number_of_targets = 1;
           s.selected_monster = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].id].subtype;
           s.instance->state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -607,7 +607,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         {
           amount = get_sleighted_color(player, card, COLOR_BLUE);
         }
-        target->color = (char)(1 << ((unsigned char)amount & 0x1f));
+        target->color = (char)(1 << ((unsigned char)amount));
         break;
 
       case 6:

@@ -730,7 +730,7 @@ int card_energy_tap(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     load_text("prompts.txt", "ENERGYTAP");
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               player,
                               player,
                               TARGET_ZONE_IN_PLAY,
@@ -751,12 +751,12 @@ int card_energy_tap(int player, int card, event_t event)
                               1,
                               &target))
     {
-      g_spell_fizzled = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
-      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
-      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      g_spell_fizzled = 1;
     }
   }
 
@@ -954,7 +954,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
         sprintf(prompt, g_text_lines[0], current_target + 1, g_x_value);
       }
 
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 1 - player,
                                 TARGET_ZONE_IN_PLAY,
@@ -975,6 +975,14 @@ int card_volcanic_eruption(int player, int card, event_t event)
                                 1,
                                 &selected_target))
       {
+        state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state;
+        *state_ptr |= 0x300000;
+        TENTATIVE_reassess_all_cards(0, 0x20);
+        SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
+        ++instance->number_of_targets;
+      }
+      else
+      {
         if (selected_target.card == -1)
         {
           g_spell_fizzled = 1;
@@ -983,14 +991,6 @@ int card_volcanic_eruption(int player, int card, event_t event)
         {
           selecting_done = 1;
         }
-      }
-      else
-      {
-        state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state;
-        *state_ptr |= 0x300000;
-        TENTATIVE_reassess_all_cards(0, 0x20);
-        SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
-        ++instance->number_of_targets;
       }
 
       ++current_target;
@@ -1274,7 +1274,7 @@ int card_ashes_to_ashes(int player, int card, event_t event)
         load_text("prompts.txt", "ASHESTOASHES");
       }
 
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 1 - player,
                                 TARGET_ZONE_IN_PLAY,
@@ -1295,14 +1295,14 @@ int card_ashes_to_ashes(int player, int card, event_t event)
                                 1,
                                 &PLAYER_CARD_INSTANCE(player, card).targets[target_index]))
       {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
                              PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
             .state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
         TENTATIVE_reassess_all_cards(0, 0x20);
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       ++target_index;
     }
@@ -1534,7 +1534,7 @@ int card_winter_blast(int player, int card, event_t event)
         sprintf(g_text_lines[0], g_text_lines[0], target_index + 1, g_x_value);
       }
 
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 1 - player,
                                 TARGET_ZONE_IN_PLAY,
@@ -1555,6 +1555,14 @@ int card_winter_blast(int player, int card, event_t event)
                                 1,
                                 &selected_target))
       {
+        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |=
+            STATE_CANNOT_TARGET | STATE_TARGETTED;
+        TENTATIVE_reassess_all_cards(0, 0x20);
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], selected_target);
+        ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+      }
+      else
+      {
         if (selected_target.card == -1)
         {
           g_spell_fizzled = 1;
@@ -1563,14 +1571,6 @@ int card_winter_blast(int player, int card, event_t event)
         {
           stop_selecting = 1;
         }
-      }
-      else
-      {
-        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |=
-            STATE_CANNOT_TARGET | STATE_TARGETTED;
-        TENTATIVE_reassess_all_cards(0, 0x20);
-        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], selected_target);
-        ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
       }
       ++target_index;
     }
@@ -2173,7 +2173,7 @@ int card_detonate(int player, int card, event_t event)
       load_text("prompts.txt", "DETONATE");
     }
 
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               2,
                               1 - player,
                               TARGET_ZONE_IN_PLAY,
@@ -2194,13 +2194,13 @@ int card_detonate(int player, int card, event_t event)
                               1,
                               &target))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       instance->info_slot = g_x_value;
       SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
   }
 
@@ -2361,7 +2361,7 @@ int card_word_of_binding(int player, int card, event_t event)
         sprintf(g_text_lines[0], g_text_lines[0], target_index + 1, g_x_value);
       }
 
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 1 - player,
                                 TARGET_ZONE_IN_PLAY,
@@ -2382,6 +2382,14 @@ int card_word_of_binding(int player, int card, event_t event)
                                 1,
                                 &selected_target))
       {
+        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |=
+            STATE_CANNOT_TARGET | STATE_TARGETTED;
+        TENTATIVE_reassess_all_cards(0, 0x20);
+        SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
+        ++instance->number_of_targets;
+      }
+      else
+      {
         if (selected_target.card == -1)
         {
           g_spell_fizzled = 1;
@@ -2390,14 +2398,6 @@ int card_word_of_binding(int player, int card, event_t event)
         {
           stop_selecting = 1;
         }
-      }
-      else
-      {
-        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |=
-            STATE_CANNOT_TARGET | STATE_TARGETTED;
-        TENTATIVE_reassess_all_cards(0, 0x20);
-        SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
-        ++instance->number_of_targets;
       }
       ++target_index;
     }
@@ -2836,7 +2836,7 @@ int card_visions(int player, int card, event_t event)
       load_text("prompts.txt", "VISIONS");
     }
 
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               2,
                               1 - player,
                               TARGET_ZONE_PLAYERS,
@@ -2857,12 +2857,12 @@ int card_visions(int player, int card, event_t event)
                               1,
                               &target))
     {
-      g_spell_fizzled = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
-      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
-      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      g_spell_fizzled = 1;
     }
   }
 
@@ -2924,7 +2924,7 @@ int card_mind_twist(int player, int card, event_t event)
     {
       load_text("prompts.txt", "MINDTWIST");
     }
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               2,
                               1 - player,
                               TARGET_ZONE_PLAYERS,
@@ -2944,10 +2944,6 @@ int card_mind_twist(int player, int card, event_t event)
                               g_text_lines[0],
                               1,
                               &target))
-    {
-      g_spell_fizzled = 1;
-    }
-    else
     {
       PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
@@ -2970,6 +2966,10 @@ int card_mind_twist(int player, int card, event_t event)
         }
         g_ai_modifier += amount * 0x18;
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
   }
 
@@ -3278,7 +3278,7 @@ int card_pyrotechnics(int player, int card, event_t event)
       target_index = 0;
       while (target_index < 4 && g_spell_fizzled != 1)
       {
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   1 - player,
                                   TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
@@ -3299,14 +3299,14 @@ int card_pyrotechnics(int player, int card, event_t event)
                                   1,
                                   &selected_target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= STATE_TARGETTED;
           TENTATIVE_reassess_all_cards(0, 0x20);
           SET_TARGET(instance->targets[target_index], selected_target);
           ++instance->number_of_targets;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
         ++target_index;
       }
@@ -3634,7 +3634,7 @@ int card_drain_power(int player, int card, event_t event)
     {
       load_text("prompts.txt", "DRAIN_POWER");
     }
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               2,
                               1 - player,
                               TARGET_ZONE_PLAYERS,
@@ -3655,12 +3655,12 @@ int card_drain_power(int player, int card, event_t event)
                               1,
                               &target))
     {
-      g_spell_fizzled = 1;
+      SET_TARGET(instance->targets[0], target);
+      instance->number_of_targets = 1;
     }
     else
     {
-      SET_TARGET(instance->targets[0], target);
-      instance->number_of_targets = 1;
+      g_spell_fizzled = 1;
     }
     return 0;
   }

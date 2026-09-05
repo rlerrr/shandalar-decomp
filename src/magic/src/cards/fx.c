@@ -555,11 +555,7 @@ int card_guardian_FX(int player, int card, event_t event)
           load_text("promptsX1.txt", "GUARDIAN_EFFECT");
           if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE,
                                    0, 0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
-                                   -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target) == 0)
-          {
-            g_spell_fizzled = 1;
-          }
-          else
+                                   -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
           {
             if ((int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player ==
                     (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player &&
@@ -580,6 +576,10 @@ int card_guardian_FX(int player, int card, event_t event)
               Sleep(0x9c4);
               set_duel_prompt_text("");
             }
+          }
+          else
+          {
+            g_spell_fizzled = 1;
           }
         } while (g_spell_fizzled != 1 && done == 0);
       }

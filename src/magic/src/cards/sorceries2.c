@@ -62,16 +62,16 @@ int card_darkpact(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     load_text("promptsX1.txt", "DARKPACT");
-    if (!C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
+    if (C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
                               g_text_lines[0], 1, &s.target))
     {
-      g_spell_fizzled = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
-      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
-      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      g_spell_fizzled = 1;
     }
   }
 
@@ -154,16 +154,16 @@ int card_drafna_s_restoration(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     load_text("promptsX1.txt", "DRAFNAS_RESTORATION");
-    if (!C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
+    if (C_real_select_target(player, 2, 2, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE, 0, 0,
                               COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
                               g_text_lines[0], 1, &s.target))
     {
-      g_spell_fizzled = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
-      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
-      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      g_spell_fizzled = 1;
     }
   }
 

@@ -234,7 +234,7 @@ int EncodeRpBitsImage(int file_handle, EncodeRpBitsImage_Callback read_scanline,
                 g_rpbits_prev_code = 0x90;
                 g_rpbits_symbol_buffer[0] = 0x90;
                 current_value = g_rpbits_prev_code;
-                if ((1 << ((unsigned char)g_rpbits_code_bits & 0x1f)) < g_rpbits_next_code)
+                if ((1 << ((unsigned char)g_rpbits_code_bits)) < g_rpbits_next_code)
                 {
                   g_rpbits_code_bits = g_rpbits_code_bits + 1;
                   if (0xb < g_rpbits_code_bits)
@@ -352,7 +352,7 @@ int EncodeRpBitsImage(int file_handle, EncodeRpBitsImage_Callback read_scanline,
               g_rpbits_symbol_buffer[0] = 0x90;
               g_rpbits_symbol_length = 1;
               run_value = g_rpbits_prev_code;
-              if ((1 << ((unsigned char)g_rpbits_code_bits & 0x1f)) < g_rpbits_next_code)
+              if ((1 << ((unsigned char)g_rpbits_code_bits)) < g_rpbits_next_code)
               {
                 g_rpbits_code_bits = g_rpbits_code_bits + 1;
                 if (0xb < g_rpbits_code_bits)
@@ -509,7 +509,7 @@ MATCH_FOUND:
   g_rpbits_prev_code = symbol;
   g_rpbits_symbol_length = 1;
   g_rpbits_symbol_buffer[0] = code_byte;
-  if ((1 << ((unsigned char)g_rpbits_code_bits & 0x1f)) < g_rpbits_next_code)
+  if ((1 << ((unsigned char)g_rpbits_code_bits)) < g_rpbits_next_code)
   {
     g_rpbits_code_bits = g_rpbits_code_bits + 1;
     if (0xb < g_rpbits_code_bits)

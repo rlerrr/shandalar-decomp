@@ -206,7 +206,6 @@ int card_black_lotus(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0050fd4d
 int card_time_vault(int player, int card, event_t event)
 {
-  int effect_found;
   char prompt[600];
   int effect_card;
   int current_player;
@@ -249,6 +248,7 @@ int card_time_vault(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
+
     if (rand() % 5 < 1)
     {
       g_ai_modifier += 0x30;
@@ -256,7 +256,7 @@ int card_time_vault(int player, int card, event_t event)
 
     if (g_duel_extra_turn_player == -1)
     {
-      effect_found = 0;
+      int effect_found = 0;
       for (current_player = 0; current_player < 2 && !effect_found; ++current_player)
       {
         for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
@@ -278,10 +278,8 @@ int card_time_vault(int player, int card, event_t event)
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .info_slot = 1;
     effect_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_0f, -1, -1);
-    if (effect_card != -1)
-    {
-      PLAYER_CARD_INSTANCE(player, effect_card).token_status |= 0x120;
-    }
+
+    PLAYER_CARD_INSTANCE(player, effect_card).token_status |= 0x120;
   }
 
   return 0;
@@ -1554,7 +1552,7 @@ int card_millstone(int player, int card, event_t event)
         {
           load_text("prompts.txt", "MILLSTONE");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   1 - player,
                                   TARGET_ZONE_PLAYERS,
@@ -1575,13 +1573,13 @@ int card_millstone(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -1950,17 +1948,17 @@ int card_ashnod_s_battle_gear(int player, int card, event_t event)
           load_text("prompts.txt", "ASHNODS_BATTLEGEAR");
         }
 
-        if (!C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
+        if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
                                   0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                   -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
-        {
-          g_spell_fizzled = 1;
-        }
-        else
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -2336,7 +2334,14 @@ int card_candelabra_of_tawnos(int player, int card, event_t event)
                                  0,
                                  g_text_lines[0],
                                  1,
-                                 &s.target) == 0)
+                                 &s.target))
+        {
+          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
+          TENTATIVE_reassess_all_cards(0, 0x20);
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], s.target);
+          ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+        }
+        else
         {
           if (s.target.card == -1)
           {
@@ -2346,13 +2351,6 @@ int card_candelabra_of_tawnos(int player, int card, event_t event)
           {
             s.selecting_done = 1;
           }
-        }
-        else
-        {
-          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
-          TENTATIVE_reassess_all_cards(0, 0x20);
-          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], s.target);
-          ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
         }
         ++s.current_target;
       }
@@ -2496,43 +2494,46 @@ int card_forcefield(int player, int card, event_t event)
       {
         load_text("prompts.txt", "FORCEFIELD");
       }
-      if (!C_real_select_target(player,
-                                player,
-                                player,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                0,
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                g_damage_card_internal_card_id,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                TARGET_SPECIAL_DAMAGE_PLAYER,
-                                0,
-                                0,
-                                g_text_lines[0],
-                                1,
-                                &target))
+      if (C_real_select_target(player,
+                               player,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               0,
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               g_damage_card_internal_card_id,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               TARGET_SPECIAL_DAMAGE_PLAYER,
+                               0,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &target))
+      {
+        if ((global_cards_data[PLAYER_CARD_INSTANCE(
+                                        (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
+                                        PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
+                                        .internal_card_id]
+                      .type &
+                  TYPE_CREATURE) != 0 &&
+                 (PLAYER_CARD_INSTANCE(
+                      (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
+                      PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
+                      .state &
+                  0x200) == 0)
+        {
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        }
+      }
+      else
       {
         g_spell_fizzled = 1;
-      }
-      else if ((global_cards_data[PLAYER_CARD_INSTANCE(
-                                      (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
-                                      PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
-                                      .internal_card_id]
-                    .type &
-                TYPE_CREATURE) != 0 &&
-               (PLAYER_CARD_INSTANCE(
-                    (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
-                    PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
-                    .state &
-                0x200) == 0)
-      {
-        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
-        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }
     return 0;
@@ -2604,17 +2605,17 @@ int card_disrupting_scepter(int player, int card, event_t event)
       {
         load_text("prompts.txt", "DISRUPTING_SCEPTER");
       }
-      if (!C_real_select_target(player, 2, 1 - player, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE,
+      if (C_real_select_target(player, 2, 1 - player, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE,
                                 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
                                 0, 0, 0, g_text_lines[0], 1, &target))
-      {
-        g_spell_fizzled = 1;
-      }
-      else
       {
         SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
   }
@@ -2888,7 +2889,7 @@ int card_conservator(int player, int card, event_t event)
         {
           load_text("prompts.txt", "CONSERVATOR");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   player,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -2909,6 +2910,13 @@ int card_conservator(int player, int card, event_t event)
                                   3,
                                   &selected_target))
         {
+          PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= 0x200000;
+          TENTATIVE_reassess_all_cards(0, TARGET_SPECIAL_DAMAGE_PLAYER);
+          SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
+          ++instance->number_of_targets;
+        }
+        else
+        {
           if (selected_target.card == -1)
           {
             g_spell_fizzled = 1;
@@ -2917,13 +2925,6 @@ int card_conservator(int player, int card, event_t event)
           {
             stop_selecting = 1;
           }
-        }
-        else
-        {
-          PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= 0x200000;
-          TENTATIVE_reassess_all_cards(0, TARGET_SPECIAL_DAMAGE_PLAYER);
-          SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
-          ++instance->number_of_targets;
         }
         ++target_index;
       }
@@ -3416,7 +3417,7 @@ int card_ebony_horse(int player, int card, event_t event)
         {
           load_text("prompts.txt", "EBONYHORSE");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   player,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -3437,13 +3438,13 @@ int card_ebony_horse(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
           instance->state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -4065,7 +4066,7 @@ int card_amulet_of_kroog(int player, int card, event_t event)
         {
           load_text("prompts.txt", "AMULET_KROOG");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -4086,13 +4087,13 @@ int card_amulet_of_kroog(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -4318,7 +4319,7 @@ int card_bronze_tablet(int player, int card, event_t event)
         {
           load_text("prompts.txt", "BRONZE_TABLET");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   1 - player,
                                   1 - player,
                                   TARGET_ZONE_IN_PLAY,
@@ -4339,13 +4340,13 @@ int card_bronze_tablet(int player, int card, event_t event)
                                   1,
                                   &s.target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -5157,7 +5158,7 @@ int card_flying_carpet(int player, int card, event_t event)
         {
           load_text("prompts.txt", "FLYING_CARPET");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -5178,10 +5179,6 @@ int card_flying_carpet(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
           if (player == g_other_player &&
@@ -5190,6 +5187,10 @@ int card_flying_carpet(int player, int card, event_t event)
             g_ai_modifier -= 0x60;
           }
           instance->state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -5274,7 +5275,7 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
         {
           load_text("prompts.txt", "HELM_OF_CHATZUK");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -5295,10 +5296,6 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
                                   1,
                                   &selected_target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           if (g_other_player == player && (((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status & 0x40) != 0) || selected_target.player == g_active_player))
@@ -5306,6 +5303,10 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
             g_ai_modifier -= 0x30;
           }
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -5415,7 +5416,7 @@ int card_coral_helm(int player, int card, event_t event)
         {
           load_text("prompts.txt", "CORAL_HELM");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -5436,12 +5437,12 @@ int card_coral_helm(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
+          SET_TARGET(instance->targets[0], target);
+          instance->number_of_targets = 1;
         }
         else
         {
-          SET_TARGET(instance->targets[0], target);
-          instance->number_of_targets = 1;
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -5540,7 +5541,7 @@ int card_tawnos_s_wand(int player, int card, event_t event)
         {
           load_text("prompts.txt", "TAWNOS_WAND");
         }
-        if (!C_real_select_target(player,
+        if (C_real_select_target(player,
                                   2,
                                   player,
                                   TARGET_ZONE_IN_PLAY,
@@ -5561,13 +5562,13 @@ int card_tawnos_s_wand(int player, int card, event_t event)
                                   1,
                                   &target))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
           instance->state |= STATE_TAPPED;
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
     }

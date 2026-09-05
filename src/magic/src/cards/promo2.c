@@ -185,7 +185,7 @@ int card_guardian_angel(int player, int card, event_t event)
   if (((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller))
   {
     load_text("promptsX1.txt", "GUARDIAN_ANGLE");
-    if (!C_real_select_target(player,
+    if (C_real_select_target(player,
                               2,
                               2,
                               TARGET_ZONE_IN_PLAY,
@@ -206,13 +206,13 @@ int card_guardian_angel(int player, int card, event_t event)
                               1,
                               &selected_target))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       SET_TARGET(instance->targets[0], selected_target);
       instance->number_of_targets = 1;
       instance->info_slot = g_x_value;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
   }
 
@@ -461,14 +461,14 @@ int card_reverse_polarity(int player, int card, event_t event)
     if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE,
                              0, 0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
                              -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
-                             g_text_lines[0], 1, &s.target) == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+                             g_text_lines[0], 1, &s.target))
     {
       PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
   }
 
