@@ -3279,13 +3279,13 @@ int card_time_elemental(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0x40) == 0)
+                               0x40))
     {
-      g_spell_fizzled = 1;
+      hurkyls_recall_bounce_artifact(target.player, target.card);
     }
     else
     {
-      hurkyls_recall_bounce_artifact(target.player, target.card);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -3567,13 +3567,13 @@ int card_royal_assassin(int player, int card, event_t event)
                                -1,
                                0,
                                TARGET_STATE_TAPPED,
-                               0) == 0)
+                               0))
     {
-      g_spell_fizzled = 1;
+      kill_card(selected_target.player, selected_target.card, KILL_DESTROY);
     }
     else
     {
-      kill_card(selected_target.player, selected_target.card, KILL_DESTROY);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -6752,14 +6752,14 @@ int card_ley_druid(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+                               0))
     {
       PLAYER_CARD_INSTANCE(target.player, target.card).state &= ~STATE_TAPPED;
       dispatch_event_to_single_card(target.player, target.card, EVENT_UNTAP_PHASE, -1, -1);
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
     return 0;

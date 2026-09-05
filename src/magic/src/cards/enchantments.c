@@ -874,12 +874,7 @@ int card_earthbind(int player, int card, event_t event)
                                  -1,
                                  0,
                                  0,
-                                 0) == 0)
-      {
-        kill_card(player, card, KILL_BURY);
-        g_spell_fizzled = 1;
-      }
-      else
+                                 0))
       {
         PLAYER_CARD_INSTANCE(player, card).damage_target_player =
             (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
@@ -896,6 +891,11 @@ int card_earthbind(int player, int card, event_t event)
                           player,
                           card);
         }
+      }
+      else
+      {
+        kill_card(player, card, KILL_BURY);
+        g_spell_fizzled = 1;
       }
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }

@@ -244,11 +244,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
       SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                  TYPE_CREATURE, TYPE_ARTIFACT, 0, get_protections_from(player, card),
-                                 COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0) == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+                                 COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
       {
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_22,
                                            target.player, target.card);
@@ -274,6 +270,10 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
         {
           play_sound_effect(WAV_COUNTER);
         }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
 #ifdef MODERN_FIXES
       /* The original clears the selected creature's target count here. */
@@ -1442,11 +1442,7 @@ int card_pyramids(int player, int card, event_t event)
       {
         if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                    TYPE_ENCHANTMENT, TYPE_NONE, 0, get_protections_from(player, card),
-                                   COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0) == 0)
-        {
-          g_spell_fizzled = 1;
-        }
-        else
+                                   COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
         {
           attached_internal_card_id = -1;
           if ((int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player != -1 &&
@@ -1467,18 +1463,22 @@ int card_pyramids(int player, int card, event_t event)
             kill_card(target.player, target.card, KILL_DESTROY);
           }
         }
+        else
+        {
+          g_spell_fizzled = 1;
+        }
       }
       else
       {
         if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                    TYPE_LAND, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
-                                   -1, -1, -1, -1, 0, 0, 0) == 0)
+                                   -1, -1, -1, -1, 0, 0, 0))
         {
-          g_spell_fizzled = 1;
+          regenerate_card(target.player, target.card);
         }
         else
         {
-          regenerate_card(target.player, target.card);
+          g_spell_fizzled = 1;
         }
       }
 
@@ -1847,11 +1847,7 @@ int card_staff_of_zegon(int player, int card, event_t event)
       SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                  TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
-                                 -1, -1, -1, -1, 0, 0, 0) == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+                                 -1, -1, -1, -1, 0, 0, 0))
       {
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, LEGACY_EFFECT_PUMP,
                                            target.player, target.card);
@@ -1860,6 +1856,10 @@ int card_staff_of_zegon(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = -2;
           PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 0;
         }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)

@@ -542,17 +542,20 @@ int card_reverse_polarity(int player, int card, event_t event)
       if (C_real_validate_target(s.target.player, s.target.card, (char *)0, player, 2, 2,
                                  TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
                                  COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
-                                 -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) == 0)
+                                 -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
+      {
+        if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
+        {
+          gain_life(player,
+                    g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
+                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player].amount * 2 +
+                        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
+          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
+        }
+      }
+      else
       {
         g_spell_fizzled = 1;
-      }
-      else if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
-      {
-        gain_life(player,
-                  g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
-                                       [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player].amount * 2 +
-                      PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
-        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
       }
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -638,11 +641,11 @@ int card_artifact_blast(int player, int card, event_t event)
     if (C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0,
                                player, 2, 2, 0, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
                                COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1,
-                               TARGET_SPECIAL_SPELL_ON_STACK, 0, 0) == 0)
+                               TARGET_SPECIAL_SPELL_ON_STACK, 0, 0))
     {
-      return 0;
+      return 99;
     }
-    return 99;
+    return 0;
   }
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)

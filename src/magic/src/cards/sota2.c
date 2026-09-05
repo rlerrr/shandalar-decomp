@@ -702,13 +702,16 @@ int card_argivian_blacksmith(int player, int card, event_t event)
       if (C_real_validate_target(s.target.player, s.target.card, (char *)0, player, 2, 2,
                                  TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0,
                                  0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
-                                 -1, -1, -1, 0, 0, 0) == 0)
+                                 -1, -1, -1, 0, 0, 0))
+      {
+        if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
+        {
+          --PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot;
+        }
+      }
+      else
       {
         g_spell_fizzled = 1;
-      }
-      else if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
-      {
-        --PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot;
       }
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
@@ -1084,76 +1087,79 @@ int card_clone(int player, int card, event_t event)
                                -1,
                                TARGET_SPECIAL_USE_ORIGINAL_TYPE,
                                0,
-                               0) == 0)
+                               0))
     {
-      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
-      kill_card(player, card, KILL_DESTROY);
-    }
-    else if (global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).original_internal_card_id]
-                 .id == CARD_ID_VESUVAN_DOPPELGANGER)
-    {
-      data_card_location = dispatch_function_to_all_cards_in_play(selected_target.player,
-                                                                  selected_target.card,
-                                                                  clone_find_data_card_callback,
-                                                                  -1);
-      if (data_card_location == -1)
+      if (global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).original_internal_card_id]
+              .id == CARD_ID_VESUVAN_DOPPELGANGER)
       {
-        source_internal_card_id = 0;
+        data_card_location = dispatch_function_to_all_cards_in_play(selected_target.player,
+                                                                    selected_target.card,
+                                                                    clone_find_data_card_callback,
+                                                                    -1);
+        if (data_card_location == -1)
+        {
+          source_internal_card_id = 0;
+        }
+        else
+        {
+          source_internal_card_id = PLAYER_CARD_INSTANCE((data_card_location >> 8) & 0xff,
+                                                         data_card_location & 0xff)
+                                        .info_slot;
+        }
+        data_card_controller = player;
+        data_card_slot = add_card_to_hand(player, find_internal_card_id_by_csv_id(CARD_ID_DATA_CARD));
+        if (data_card_slot != -1)
+        {
+          PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).state =
+              ((((unsigned int)(((player == 0) - 1) >> 8)) & 0x1000) | 2);
+          PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).token_status |= 0x10008;
+          PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).damage_target_player =
+              (char)player;
+          PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).damage_target_card = card;
+          cloned_internal_card_id = create_a_card_type(source_internal_card_id);
+          if (cloned_internal_card_id != -1)
+          {
+            PLAYER_CARD_INSTANCE(player, card).internal_card_id = cloned_internal_card_id;
+            PLAYER_CARD_INSTANCE(player, card).dummy3 = cloned_internal_card_id;
+            PLAYER_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
+            PLAYER_CARD_INSTANCE(player, card).mana_color = global_cards_data[cloned_internal_card_id].color;
+            if ((global_cards_data[cloned_internal_card_id].type & TYPE_ARTIFACT) != 0)
+            {
+              ++g_duel_summary.artifact_counts[player];
+            }
+            if ((global_cards_data[cloned_internal_card_id].type & TYPE_ENCHANTMENT) != 0)
+            {
+              ++g_duel_summary.enchantment_counts[player];
+            }
+            g_card_types_in_play[player] |= global_cards_data[cloned_internal_card_id].type;
+            PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).info_slot =
+                source_internal_card_id;
+            PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).eot_toughness |=
+                global_cards_data[source_internal_card_id].extra_ability & 1;
+            dispatch_event_to_single_card(player, card, EVENT_CAST_SPELL, 1 - player, -1);
+            dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
+            global_cards_data[cloned_internal_card_id].code_pointer =
+                global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card)
+                                      .original_internal_card_id]
+                    .code_pointer;
+            global_cards_data[cloned_internal_card_id].extra_ability |= 1;
+          }
+        }
       }
       else
       {
-        source_internal_card_id = PLAYER_CARD_INSTANCE((data_card_location >> 8) & 0xff,
-                                                       data_card_location & 0xff)
-                                      .info_slot;
-      }
-      data_card_controller = player;
-      data_card_slot = add_card_to_hand(player, find_internal_card_id_by_csv_id(CARD_ID_DATA_CARD));
-      if (data_card_slot != -1)
-      {
-        PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).state =
-            ((((unsigned int)(((player == 0) - 1) >> 8)) & 0x1000) | 2);
-        PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).token_status |= 0x10008;
-        PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).damage_target_player =
-            (char)player;
-        PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).damage_target_card = card;
-        cloned_internal_card_id = create_a_card_type(source_internal_card_id);
-        if (cloned_internal_card_id != -1)
-        {
-          PLAYER_CARD_INSTANCE(player, card).internal_card_id = cloned_internal_card_id;
-          PLAYER_CARD_INSTANCE(player, card).dummy3 = cloned_internal_card_id;
-          PLAYER_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
-          PLAYER_CARD_INSTANCE(player, card).mana_color = global_cards_data[cloned_internal_card_id].color;
-          if ((global_cards_data[cloned_internal_card_id].type & TYPE_ARTIFACT) != 0)
-          {
-            ++g_duel_summary.artifact_counts[player];
-          }
-          if ((global_cards_data[cloned_internal_card_id].type & TYPE_ENCHANTMENT) != 0)
-          {
-            ++g_duel_summary.enchantment_counts[player];
-          }
-          g_card_types_in_play[player] |= global_cards_data[cloned_internal_card_id].type;
-          PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).info_slot =
-              source_internal_card_id;
-          PLAYER_CARD_INSTANCE(data_card_controller, data_card_slot).eot_toughness |=
-              global_cards_data[source_internal_card_id].extra_ability & 1;
-          dispatch_event_to_single_card(player, card, EVENT_CAST_SPELL, 1 - player, -1);
-          dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
-          global_cards_data[cloned_internal_card_id].code_pointer =
-              global_cards_data[PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card)
-                                    .original_internal_card_id]
-                  .code_pointer;
-          global_cards_data[cloned_internal_card_id].extra_ability |= 1;
-        }
+        PLAYER_CARD_INSTANCE(player, card).dummy3 =
+            PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).internal_card_id;
+        PLAYER_CARD_INSTANCE(player, card).internal_card_id = PLAYER_CARD_INSTANCE(player, card).dummy3;
+        PLAYER_CARD_INSTANCE(player, card).color =
+            PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).color;
+        process_card_enters_play(player, card);
       }
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).dummy3 =
-          PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).internal_card_id;
-      PLAYER_CARD_INSTANCE(player, card).internal_card_id = PLAYER_CARD_INSTANCE(player, card).dummy3;
-      PLAYER_CARD_INSTANCE(player, card).color =
-          PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).color;
-      process_card_enters_play(player, card);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
+      kill_card(player, card, KILL_DESTROY);
     }
   }
 
@@ -2878,11 +2884,7 @@ int card_old_man_of_the_sea(int player, int card, event_t event)
                                         PLAYER_CARD_INSTANCE(player, card).parent_card)
                        .power -
                    1),
-              -1, 0, 0, 0) == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+              -1, 0, 0, 0))
       {
         s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                              g_card_on_stack,
@@ -2923,6 +2925,10 @@ int card_old_man_of_the_sea(int player, int card, event_t event)
             }
           }
         }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)

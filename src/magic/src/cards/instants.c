@@ -3679,19 +3679,22 @@ int card_reverse_damage(int player, int card, event_t event)
                                    -1,
                                    TARGET_SPECIAL_DAMAGE_PLAYER,
                                    0,
-                                   0) == 0)
+                                   0))
+        {
+          if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
+          {
+            gain_life(player,
+                      g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
+                                           [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player]
+                                               .amount *
+                              2 +
+                          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
+            PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
+          }
+        }
+        else
         {
           g_spell_fizzled = 1;
-        }
-        else if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
-        {
-          gain_life(player,
-                    g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
-                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player]
-                                             .amount *
-                            2 +
-                        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
-          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
         }
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)

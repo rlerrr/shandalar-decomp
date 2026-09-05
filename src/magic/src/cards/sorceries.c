@@ -2104,17 +2104,17 @@ int card_fireball(int player, int card, event_t event)
                   -1,
                   0,
                   0,
-                  0) == 0)
-          {
-            ++invalid_targets;
-          }
-          else
+                  0))
           {
             damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].player,
                             PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card,
                             PLAYER_CARD_INSTANCE(player, card).info_slot,
                             player,
                             card);
+          }
+          else
+          {
+            ++invalid_targets;
           }
         }
       }
@@ -3597,13 +3597,13 @@ int card_stone_rain(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
+                               0))
     {
-      g_spell_fizzled = 1;
+      kill_card(target_player, target_card, KILL_DESTROY);
     }
     else
     {
-      kill_card(target_player, target_card, KILL_DESTROY);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);

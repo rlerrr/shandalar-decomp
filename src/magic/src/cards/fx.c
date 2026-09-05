@@ -593,13 +593,16 @@ int card_guardian_FX(int player, int card, event_t event)
         SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
         if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                    TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
-                                   g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0) == 0)
+                                   g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0))
+        {
+          if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot > 0)
+          {
+            --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
+          }
+        }
+        else
         {
           g_spell_fizzled = 1;
-        }
-        else if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot > 0)
-        {
-          --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
         }
       }
 #ifdef MODERN_FIXES

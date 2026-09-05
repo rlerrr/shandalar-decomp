@@ -3530,12 +3530,7 @@ int card_psychic_venom(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      kill_card(player, card, KILL_BURY);
-      g_spell_fizzled = 1;
-    }
-    else
+                               0))
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player =
           (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
@@ -3547,6 +3542,11 @@ int card_psychic_venom(int player, int card, event_t event)
                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
             .state |= 0x40000;
       }
+    }
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
@@ -4817,17 +4817,17 @@ int card_blessing(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      kill_card(player, card, KILL_BURY);
-      g_spell_fizzled = 1;
-    }
-    else
+                               0))
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player =
           (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    }
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
@@ -6274,12 +6274,7 @@ int card_instill_energy(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      kill_card(player, card, KILL_BURY);
-      g_spell_fizzled = 1;
-    }
-    else
+                               0))
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
@@ -6293,6 +6288,11 @@ int card_instill_energy(int player, int card, event_t event)
                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
             .state &= 0xfffcffff;
       }
+    }
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
@@ -6961,17 +6961,17 @@ int generic_creature_stat_aura(int player, int card, event_t event, int power_mo
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      kill_card(player, card, KILL_BURY);
-      g_spell_fizzled = 1;
-    }
-    else
+                               0))
     {
       global_card_instances[player][card].damage_target_player =
           (char)global_card_instances[player][card].targets[0].player;
       global_card_instances[player][card].damage_target_card =
           global_card_instances[player][card].targets[0].card;
+    }
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+      g_spell_fizzled = 1;
     }
     global_card_instances[player][card].number_of_targets = 0;
     return 0;
@@ -7140,15 +7140,15 @@ int helper_ward(int player, int card, event_t event, int color)
                                  -1,
                                  0,
                                  0,
-                                 0) == 0)
-      {
-        kill_card(player, card, KILL_BURY);
-        g_spell_fizzled = 1;
-      }
-      else
+                                 0))
       {
         instance->damage_target_player = instance->targets[0].player;
         instance->damage_target_card = instance->targets[0].card;
+      }
+      else
+      {
+        kill_card(player, card, KILL_BURY);
+        g_spell_fizzled = 1;
       }
       instance->number_of_targets = 0;
     }
@@ -8167,15 +8167,15 @@ int card_regeneration(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      kill_card(player, card, KILL_BURY);
-      g_spell_fizzled = 1;
-    }
-    else
+                               0))
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    }
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
@@ -8595,11 +8595,7 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
                                    -1,
                                    TARGET_SPECIAL_DAMAGE_PLAYER,
                                    0,
-                                   0) == 0)
-        {
-          g_spell_fizzled = 1;
-        }
-        else
+                                   0))
         {
           target_player = instance->targets[0].player;
           target_card = instance->targets[0].card;
@@ -8607,6 +8603,10 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
           {
             PLAYER_CARD_INSTANCE(target_player, target_card).info_slot = 0;
           }
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
 
         PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
@@ -9168,15 +9168,15 @@ int card_lifeforce(int player, int card, event_t event)
                                  -1,
                                  TARGET_SPECIAL_SPELL_ON_STACK,
                                  0,
-                                 0) == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+                                 0))
       {
         kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                   PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                   KILL_BURY);
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
     return 0;

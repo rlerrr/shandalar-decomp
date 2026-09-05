@@ -260,17 +260,17 @@ int card_aswan_jaguar(int player, int card, event_t event)
                                  COLOR_TEST_0, COLOR_TEST_0, -1,
                                  PLAYER_CARD_INSTANCE((int)s.instance->damage_source_player,
                                                       s.instance->damage_source_card).info_slot,
-                                 -1, -1, TARGET_SPECIAL_0x10, 0, 0) == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+                                 -1, -1, TARGET_SPECIAL_0x10, 0, 0))
       {
         if (g_duel_ai_mode_state != 1)
         {
           play_sound_effect(0x2e);
         }
         kill_card(s.instance->targets[0].player, s.instance->targets[0].card, KILL_BURY);
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
       PLAYER_CARD_INSTANCE(s.instance->parent_controller, s.instance->parent_card).number_of_targets = 0;
     }
@@ -514,11 +514,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
   if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
                              (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                              TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
-                             COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0) == 0)
-  {
-    g_spell_fizzled = 1;
-  }
-  else
+                             COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
   {
     target_player = instance->targets[0].player;
     target_card = instance->targets[0].card;
@@ -751,6 +747,10 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
           (get_card_display_pic_num(faerie_dragon_effect_pics[effect_index], player, card) << 16) |
           faerie_dragon_effect_pics[effect_index];
     }
+  }
+  else
+  {
+    g_spell_fizzled = 1;
   }
 
   PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
