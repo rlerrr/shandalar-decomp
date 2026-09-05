@@ -354,7 +354,11 @@ void UpdateAdventureWorldInputAndMovement(void)
       break;
 
     case 0x3b00:
-      if ((g_world_magic_bitmap & 8U) != 0)
+#ifdef MODERN_FIXES
+      if ((g_world_magic_bitmap & (1U << WORLDMAGIC_CONJURERS_WILL)) != 0)
+#else
+      if ((g_world_magic_bitmap & (1U << WORLDMAGIC_AMULET_OF_SWAMPWALK)) != 0)
+#endif
       {
         s.key_code = 0x31;
         goto handle_world_magic_hotkey;
@@ -1369,4 +1373,3 @@ loop:
 
   return (int)queued_key;
 }
-
