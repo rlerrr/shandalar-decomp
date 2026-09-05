@@ -111,12 +111,8 @@ extern HANDLE global_mutex_GameInit;
 extern int g_world_location_music_active;
 extern int g_random_seed_initialized;
 extern int g_random_seed_tick_value;
-// GLOBAL: SHANDALAR 0x0058e048
-// GLOBAL: SHANDALAR 0x0058e04c
-int g_showlibrary_menu_selection = 0;
 int single_color_test_bit_to_color_t(int color_mask);
 void AddJournalEntry(int entry_type, int entry_arg);
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 #endif
 int GetCardRarity(int card_id);
 int IsCardAvailable(csvid_t csvid, int expansion);
@@ -928,21 +924,21 @@ void layout_duel_child_windows(HWND hwnd, int layout)
     int chat_y;
     int left_phasebar_width;
     int bottom_half_y;
-    int client_height;       // ebp - 0xb8
-    POINT point;             // ebp - 0xb4
-    int lower_middle_height; // ebp - 0xac
+    int client_height;        // ebp - 0xb8
+    POINT point;              // ebp - 0xb4
+    int lower_middle_height;  // ebp - 0xac
     int left_phasebar_x_copy; // ebp - 0xa8
-    int divider_width;       // ebp - 0xa4
-    int chat_height;         // ebp - 0xa0
-    int client_width;        // ebp - 0x9c
-    int top_middle_height;   // ebp - 0x98
-    int face_y;              // ebp - 0x94
-    int face_height;         // ebp - 0x90
-    int player_life_x;       // ebp - 0x8c
-    int preview_left;        // ebp - 0x88
-    int preview_top;         // ebp - 0x84
-    int right_column_y;      // ebp - 0x80
-    int player_row_y_copy;   // ebp - 0x7c
+    int divider_width;        // ebp - 0xa4
+    int chat_height;          // ebp - 0xa0
+    int client_width;         // ebp - 0x9c
+    int top_middle_height;    // ebp - 0x98
+    int face_y;               // ebp - 0x94
+    int face_height;          // ebp - 0x90
+    int player_life_x;        // ebp - 0x8c
+    int preview_left;         // ebp - 0x88
+    int preview_top;          // ebp - 0x84
+    int right_column_y;       // ebp - 0x80
+    int player_row_y_copy;    // ebp - 0x7c
     int lower_phasebar_y;
     int right_chat_x;
     int player_chat_y;
@@ -1535,11 +1531,11 @@ INT_PTR CALLBACK post_duel_draws_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam,
       s.draw_color = g_post_duel_draws_button_unfocus_color;
     }
     draw_owner_draw_button_centered(s.draw_item,
-                 g_post_duel_draws_button_brush,
-                 g_post_duel_draws_button_pen1,
-                 g_post_duel_draws_button_pen2,
-                 s.draw_color,
-                 0);
+                                    g_post_duel_draws_button_brush,
+                                    g_post_duel_draws_button_pen1,
+                                    g_post_duel_draws_button_pen2,
+                                    s.draw_color,
+                                    0);
     return TRUE;
 
   case WM_QUERYNEWPALETTE:
@@ -2395,9 +2391,10 @@ void show_opponent_library_window(int unused_color)
 {
   (void)unused_color;
 #ifdef SHANDALAR
-  SelectAdventureListCardIndex(g_active_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, &g_showlibrary_menu_selection);
+  show_deck(g_active_player, global_library[1], 500, gs_showlibrary_text_0074bcc0.accept_keys, 0, "");
 #else
-  show_deck(g_active_player, global_library[1], 500, g_text_lines, 0, "");
+  // TODO: I don't this this actually references g_text_lines?
+  show_deck(g_active_player, global_library[1], 500, g_text_lines[0], 0, "");
 #endif
 }
 
@@ -2407,9 +2404,10 @@ void show_player_library_window(int unused_color)
 {
   (void)unused_color;
 #ifdef SHANDALAR
-  SelectAdventureListCardIndex(g_active_player, global_library[0], 500, gs_showlibrary_text_0074bcc0.title, 0, &g_showlibrary_menu_selection);
+  show_deck(g_active_player, global_library[0], 500, gs_showlibrary_text_0074bcc0.title, 0, "");
 #else
-  show_deck(g_active_player, global_library[0], 500, g_text_lines, 0, "");
+  // TODO: I don't this this actually references g_text_lines?
+  show_deck(g_active_player, global_library[0], 500, g_text_lines[0], 0, "");
 #endif
 }
 
@@ -3363,8 +3361,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_MainClass(HWND hwnd, UINT msg, WPARAM wparam,
           s.player_backdrop_color = 1;
         }
         g_life[s.player_backdrop_color] = prompt_for_life_total(0,
-                                                              s.player_backdrop_color == 0 ? "Set player lives to:" : "Set opponent lives tp:",
-                                                              g_life[s.player_backdrop_color]);
+                                                                s.player_backdrop_color == 0 ? "Set player lives to:" : "Set opponent lives tp:",
+                                                                g_life[s.player_backdrop_color]);
         notify_duel_action(0, 0xff);
       }
       break;

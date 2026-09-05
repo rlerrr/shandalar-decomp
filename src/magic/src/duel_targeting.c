@@ -428,9 +428,10 @@ int select_card_from_graveyard(int player,
   return result;
 }
 
+#ifndef SHANDALAR
 // FUNCTION: MOK 0x0047936d
 // FUNCTION: MAGIC 0x004b42aa
-int show_deck(int player, int *cards, int count, void *context, int suppress_done_txt, char *prompt)
+int show_deck(int player, int *cards, int count, char *title, int require_selection, char *prompt)
 {
   struct
   {
@@ -529,7 +530,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
   }
   else
   {
-    s.result = show_cardlist_if_human(cards, count, context, suppress_done_txt, prompt);
+    s.result = show_cardlist_if_human(cards, count, title, require_selection, prompt);
     if ((player == g_active_player) && ((g_duel_network_flags & 2) != 0))
     {
       g_network_result_packet.result = s.result;
@@ -540,6 +541,7 @@ int show_deck(int player, int *cards, int count, void *context, int suppress_don
 
   return s.result;
 }
+#endif
 
 // FUNCTION: MAGIC 0x004bd7d0
 // FUNCTION: SHANDALAR 0x004be650

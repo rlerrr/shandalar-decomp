@@ -22,10 +22,6 @@ static int veteran_bodyguard_or_martyrs_present(int unused1,
                                                 int unused3,
                                                 int unused4,
                                                 int internal_card_id);
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
-#endif
-
 static __inline int select_own_artifact_for_cost(int player, int card, target_t *target, char *prompt)
 {
   return C_real_select_target(player,
@@ -497,25 +493,15 @@ int card_argivian_archaeologist(int player, int card, event_t event)
 {
   struct
   {
-#ifndef SHANDALAR
-    int can_select;
-    int selectable[500];
-    int current_card;
-    char (*prompt)[300];
-#endif
-    int graveyard_index;
     int hand_card;
+    int graveyard_index;
   } s;
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
-        has_mana(player, COLOR_WHITE, 2) &&
-        ((g_graveyard_card_types)[player] & TYPE_ARTIFACT) != 0)
-    {
-      return 1;
-    }
-    return 0;
+    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+           has_mana(player, COLOR_WHITE, 2) &&
+           ((g_graveyard_card_types)[player] & TYPE_ARTIFACT) != 0;
   }
 
   if (event == EVENT_ACTIVATE)
@@ -529,71 +515,43 @@ int card_argivian_archaeologist(int player, int card, event_t event)
       }
       else
       {
-#ifdef SHANDALAR
         do
         {
-          s.graveyard_index = SelectAdventureListCardIndex(player, global_graveyard_slots[player], 500,
-                                                           "Pick an artifact", 0, (int *)"Cancel");
-          if (s.graveyard_index == -1)
-          {
-            break;
-          }
-        } while ((global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_ARTIFACT) == 0);
-#else
-        for (s.current_card = 0;
-             s.current_card < 500 && global_graveyard_slots[player][s.current_card] != -1;
-             ++s.current_card)
-        {
-          s.selectable[s.current_card] =
-              (global_cards_data[global_graveyard_slots[player][s.current_card]].type & TYPE_ARTIFACT) != 0;
-        }
-        load_text("promptsX1.txt", "ARGIVIAN_ARCH");
-        s.prompt = g_text_lines;
-        s.can_select = select_from_graveyard_with_dialog(player,
-                                                         global_graveyard_slots[player],
-                                                         s.selectable,
-                                                         500,
-                                                         (int)&s.prompt,
-                                                         1,
-                                                         (int)&s.graveyard_index,
-                                                         0,
-                                                         1);
-        if (s.can_select == 0)
-        {
-          s.graveyard_index = -1;
-        }
-#endif
+          s.graveyard_index = show_deck(player, global_graveyard_slots[player], 500,
+                                        "Pick an artifact", 0, "Cancel");
+        } while (s.graveyard_index != -1 &&
+                 (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_ARTIFACT) == 0);
       }
 
-      if (s.graveyard_index == -1)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+      if (s.graveyard_index != -1)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot = s.graveyard_index;
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = global_graveyard_slots[player][s.graveyard_index];
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(player, card).info_slot == -1 ||
-        global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] == -1 ||
-        global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] != (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness ||
-        (global_cards_data[global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot]].type & TYPE_ARTIFACT) == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+    if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1 &&
+        global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] != -1 &&
+        global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] == (int)PLAYER_CARD_INSTANCE(player, card).eot_toughness &&
+        (global_cards_data[global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot]].type & TYPE_ARTIFACT) != 0)
     {
       s.hand_card = add_card_to_hand(player, global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot]);
       if (s.hand_card != -1)
       {
         remove_card_from_graveyard(player, PLAYER_CARD_INSTANCE(player, card).info_slot);
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
   }

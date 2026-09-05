@@ -318,7 +318,7 @@ int regenerate_target_exe(int, int);
 int remove_card_from_deck(int, int);
 void remove_card_from_grave(int player, int position);
 int should_ai_play(int, int);	// equivalent to in_play(); has nothing to do with ai
-int show_deck(int player, const int* deck, int num_cards, const char* prompt, int suppress_done_label, /* const char* */int done_label);	// no desire to cast all the references to 0x7375B0 to const char* (they're the localized "Done" string in Text.res:DIALOGBUTTONS[3]).  See also show_bottom_of_deck() below.
+int show_deck(int player, const int* deck, int num_cards, const char* title, int require_selection, /* const char* */int prompt);	// no desire to cast all the references to 0x7375B0 to const char* (they're the localized "Done" string in Text.res:DIALOGBUTTONS[3]).  See also show_bottom_of_deck() below.
 int signet(int, int, event_t, int, int);
 int tap_card(int player, int card);
 void target_player(int, int, event_t);

@@ -6,10 +6,6 @@
 int GetCardRarity(int internal_card_id);
 int find_highest_value_library_card_by_type(int player, int library_player, unsigned int type);
 int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off);
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,
-                                 int require_card_click, int *out_selection);
-#endif
 
 // FUNCTION: MAGIC 0x00401000
 // FUNCTION: SHANDALAR 0x00446d20
@@ -2500,14 +2496,8 @@ int card_raise_dead(int player, int card, event_t event)
         }
         do
         {
-#ifdef SHANDALAR
           s.graveyard_index =
-              SelectAdventureListCardIndex(player, global_graveyard_slots[player], 500,
-                                           g_text_lines[0], 0, (int *)gs_cancel_008a8c20);
-#else
-          s.graveyard_index =
-              show_deck(player, global_graveyard_slots[player], 500, g_text_lines, 0, gs_cancel_008a8c20);
-#endif
+              show_deck(player, global_graveyard_slots[player], 500, g_text_lines[0], 0, gs_cancel_008a8c20);
         } while (s.graveyard_index != -1 && (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_CREATURE) == 0);
       }
 
@@ -2587,14 +2577,8 @@ int card_regrowth(int player, int card, event_t event)
         {
           load_text("prompts.txt", "REGROWTH");
         }
-#ifdef SHANDALAR
         s.graveyard_index =
-            SelectAdventureListCardIndex(player, global_graveyard_slots[player], 500,
-                                         g_text_lines[0], 0, (int *)gs_cancel_008a8c20);
-#else
-        s.graveyard_index =
-            show_deck(player, global_graveyard_slots[player], 500, g_text_lines, 0, gs_cancel_008a8c20);
-#endif
+            show_deck(player, global_graveyard_slots[player], 500, g_text_lines[0], 0, gs_cancel_008a8c20);
       }
 
       if (s.graveyard_index != -1 && global_graveyard_slots[player][s.graveyard_index] != -1)
@@ -2712,16 +2696,7 @@ int card_demonic_tutor(int player, int card, event_t event)
       {
         load_text("prompts.txt", "DEMONIC_TUTOR");
       }
-#ifdef SHANDALAR
-      found_card = SelectAdventureListCardIndex(player,
-                                                global_library[player],
-                                                500,
-                                                g_text_lines[0],
-                                                1,
-                                                (int *)gs_cancel_008a8c20);
-#else
-      found_card = show_deck(player, global_library[player], 500, g_text_lines, 1, gs_cancel_008a8c20);
-#endif
+      found_card = show_deck(player, global_library[player], 500, g_text_lines[0], 1, gs_cancel_008a8c20);
       if (found_card != -1 && global_library[player][found_card] != -1)
       {
         add_card_to_hand(player, global_library[player][found_card]);
@@ -2804,16 +2779,7 @@ int card_untamed_wilds(int player, int card, event_t event)
       {
         do
         {
-#ifdef SHANDALAR
-          library_index = SelectAdventureListCardIndex(player,
-                                                       global_library[player],
-                                                       500,
-                                                       g_text_lines[0],
-                                                       1,
-                                                       (int *)gs_cancel_008a8c20);
-#else
           library_index = show_deck(player, global_library[player], 500, g_text_lines[0], 1, gs_cancel_008a8c20);
-#endif
           if (library_index == -1)
           {
             break;
@@ -2823,16 +2789,7 @@ int card_untamed_wilds(int player, int card, event_t event)
       else
       {
         library_index = -1;
-#ifdef SHANDALAR
-        SelectAdventureListCardIndex(player,
-                                     global_library[player],
-                                     500,
-                                     g_text_lines[0],
-                                     0,
-                                     (int *)gs_done_008b40e0);
-#else
         show_deck(player, global_library[player], 500, g_text_lines[0], 0, gs_done_008b40e0);
-#endif
       }
     }
 
@@ -2920,21 +2877,12 @@ int card_visions(int player, int card, event_t event)
         g_duel_ai_mode_state != 1 &&
         g_duel_network_state == 0)
     {
-#ifdef SHANDALAR
-      SelectAdventureListCardIndex(player,
-                                   global_library[PLAYER_CARD_INSTANCE(player, card).targets[0].player],
-                                   5,
-                                   g_text_lines[1],
-                                   0,
-                                   (int *)gs_done_008b40e0);
-#else
       show_deck(player,
                 global_library[PLAYER_CARD_INSTANCE(player, card).targets[0].player],
                 5,
                 g_text_lines[1],
                 0,
                 gs_done_008b40e0);
-#endif
     }
 
     if (g_duel_ai_mode_state != 1)

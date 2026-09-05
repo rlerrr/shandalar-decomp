@@ -9,10 +9,6 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern int combat_eval_abilities;
 
 int check_duel_finished(void);
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,
-                                 int require_card_click, int *out_selection);
-#endif
 
 // FUNCTION: SHANDALAR 0x004323cc
 static int bone_flute_effect(int player, int card, int target_player, int target_card, int internal_card_id)
@@ -4290,16 +4286,7 @@ int card_amnesia(int player, int card, event_t event)
       {
         load_text("promptsX2.txt", "AMNESIA");
       }
-#ifdef SHANDALAR
-      SelectAdventureListCardIndex(player,
-                                   hand_cards,
-                                   hand_card_count,
-                                   g_text_lines[1],
-                                   0,
-                                   (int *)gs_done_008b40e0);
-#else
       show_deck(player, hand_cards, hand_card_count, g_text_lines[1], 0, gs_done_008b40e0);
-#endif
     }
     for (current_card = 0; current_card < discard_count; ++current_card)
     {
@@ -4438,16 +4425,7 @@ int card_inquisition(int player, int card, event_t event)
       {
         load_text("promptsX2.txt", "INQUISITION");
       }
-#ifdef SHANDALAR
-      SelectAdventureListCardIndex(player,
-                                   hand_cards,
-                                   card_count,
-                                   g_text_lines[1],
-                                   0,
-                                   (int *)gs_done_008b40e0);
-#else
       show_deck(player, hand_cards, card_count, g_text_lines[1], 0, gs_done_008b40e0);
-#endif
     }
     damage_player(target_player, damage, player, card);
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;

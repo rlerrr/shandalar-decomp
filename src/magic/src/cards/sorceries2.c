@@ -3,10 +3,6 @@
 #include "../global_strings.h"
 
 int find_highest_value_library_card_by_type(int player, int library_player, unsigned int type);
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,
-                                 int require_card_click, int *out_selection);
-#endif
 
 // FUNCTION: MAGIC 0x0040a8d0
 // FUNCTION: SHANDALAR 0x00401000
@@ -286,15 +282,9 @@ int card_reconstruction(int player, int card, event_t event)
       }
       do
       {
-#ifdef SHANDALAR
-        s.graveyard_index =
-            SelectAdventureListCardIndex(player, global_graveyard_slots[player], 500,
-                                         g_text_lines[0], 0, (int *)gs_cancel_008a8c20);
-#else
         s.graveyard_index =
             show_deck(player, global_graveyard_slots[player], 500,
-                      g_text_lines, 0, gs_cancel_008a8c20);
-#endif
+                      g_text_lines[0], 0, gs_cancel_008a8c20);
         if ((global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type &
              TYPE_ARTIFACT) == 0 &&
             g_duel_ai_mode_state != 1)

@@ -5,9 +5,6 @@
 
 int card_dummy(int player, int card, event_t event);
 int card_copy_artifact(int player, int card, event_t event);
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
-#endif
 int find_highest_value_library_card_by_type(int player, int library_player, unsigned int type);
 int titanias_song_count_animations(int player, int card, int internal_card_id);
 int titanias_song_uncount_animations(int player, int card, int internal_card_id);
@@ -424,11 +421,7 @@ int card_sylvan_library(int player, int card, event_t event)
         {
           load_text("prompts.txt", "SYLVAN_LIBRARY");
         }
-#ifdef SHANDALAR
-        s.selected_index = SelectAdventureListCardIndex(player, s.card_ids, s.count, g_text_lines[2], 1, (int *)"");
-#else
-        s.selected_index = show_cardlist(s.card_ids, (int *)0, (int *)0, s.count, g_text_lines[2], 1, "");
-#endif
+        s.selected_index = show_deck(player, s.card_ids, s.count, g_text_lines[2], 1, "");
         real_put_on_top_of_deck(player, s.card_ids[s.selected_index]);
         PLAYER_CARD_INSTANCE(player, s.card_indices[s.selected_index]).internal_card_id = -1;
         --g_duel_summary.hand_counts[player];
@@ -572,11 +565,7 @@ int card_land_tax(int player, int card, event_t event)
         {
           load_text("prompts.txt", "LANDTAX");
         }
-#ifdef SHANDALAR
-        SelectAdventureListCardIndex(0, s.selected, s.selected_count, g_text_lines[3], 0, (int *)gs_done_008b40e0);
-#else
-        show_cardlist(s.selected, (int *)0, (int *)0, s.selected_count, g_text_lines[3], 0, gs_done_008b40e0);
-#endif
+        show_deck(0, s.selected, s.selected_count, g_text_lines[3], 0, gs_done_008b40e0);
       }
 
       for (s.current_card = 0; s.current_card < s.selected_count; ++s.current_card)
@@ -626,11 +615,7 @@ int card_land_tax(int player, int card, event_t event)
         {
           load_text("prompts.txt", "LANDTAX");
         }
-#ifdef SHANDALAR
-        SelectAdventureListCardIndex(1 - player, s.selected + 3, s.selected_count, g_text_lines[3], 0, (int *)gs_done_008b40e0);
-#else
-        show_cardlist(s.selected + 3, (int *)0, (int *)0, s.selected_count, g_text_lines[3], 0, gs_done_008b40e0);
-#endif
+        show_deck(1 - player, s.selected + 3, s.selected_count, g_text_lines[3], 0, gs_done_008b40e0);
       }
 
       if (s.selected_count == 1)

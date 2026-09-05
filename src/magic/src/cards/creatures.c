@@ -13,10 +13,6 @@ int AddCardToDeckSorted(int card_id);
 void remove_card_from_shandalar_deck_by_id(unsigned int card_id);
 int create_damage_effect_copy_for_target_player(int player, int card);
 extern int combat_eval_abilities;
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title,
-                                 int require_card_click, int *out_selection);
-#endif
 
 static __inline int give_pump_until_eot(int player, int card, int target_player, int target_card, int power, int toughness)
 {
@@ -3094,13 +3090,8 @@ int card_rag_man(int player, int card, event_t event)
         }
         load_text("prompts.txt", "RAGMAN");
       }
-#ifdef SHANDALAR
-      SelectAdventureListCardIndex(player, s.hand_internal_ids, s.attempts,
-                                   g_text_lines[0], 0, (int *)gs_done_008b40e0);
-#else
       show_deck(player, s.hand_internal_ids, s.attempts,
-                g_text_lines, 0, gs_done_008b40e0);
-#endif
+                g_text_lines[0], 0, gs_done_008b40e0);
     }
 
     if ((g_duel_network_flags & 2) != 0 && g_other_player == player)

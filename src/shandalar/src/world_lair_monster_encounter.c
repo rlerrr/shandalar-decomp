@@ -63,7 +63,6 @@ int ShutdownSharedStartup(void);
 void ShowDungeonClueDetailScreen(int dungeon_index);
 int internal_rand(int max_exclusive);
 int ScaleUiCoordinateFrom320(int value);
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
 int sound_get_state(int sound_id, int *out_state);
 int GetCardAvailabilityMask(unsigned int card_id);
 int GetQuestCardClassName(int card_class);
@@ -1934,7 +1933,7 @@ int RunWorldLairMonsterEncounter(int slot_index, int monster_color)
         SelectPalette(global_main_hdc, g_realized_palette_handle, 0);
         AnimatePaletteToColor(0, g_default_palette_fade_steps);
         LoadDialogBoxFrameSprites("dbox.spr", 0x71, 0xe3);
-        s.selected_card_id = SelectAdventureListCardIndex(g_active_player, global_library[1], 500,
+        s.selected_card_id = show_deck(g_active_player, global_library[1], 500,
                                                           gs_encounter_preduel_0077f0d0[0x23], 1, &g_preduel_card_list_selection);
         if (global_library[1][s.selected_card_id] != -1)
         {
@@ -2616,7 +2615,7 @@ LAB_4F4BB2:
             s.temp_deck[slot_index] = s.temp_deck[slot_index] & 0xfff;
           }
         }
-        s.selected_card_id = SelectAdventureListCardIndex(g_active_player, (int *)s.temp_deck, 500,
+        s.selected_card_id = show_deck(g_active_player, (int *)s.temp_deck, 500,
                                                           gs_encounter_postduel_0077f050[0x19], 1, &g_postduel_card_list_selection);
         if (s.selected_card_id != 0xffffffff)
         {

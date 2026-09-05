@@ -7,9 +7,6 @@
 extern card_ptr_t global_raw_cards_storage[2000];
 
 int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off);
-#ifdef SHANDALAR
-int SelectAdventureListCardIndex(int player, int *card_ids, int card_count, char *title, int require_card_click, int *out_selection);
-#endif
 int move_ante_to_graveyard(int player, int ante_index);
 int put_card_into_ante(int ante_player, int card_player, int card);
 void hurkyls_recall_bounce_artifact(int target_player, int target_card);
@@ -966,11 +963,7 @@ int card_jandor_s_ring(int player, int card, event_t event)
         {
           load_text("promptsX1.txt", "JANDORS_RING");
         }
-#ifdef SHANDALAR
-        s.selected_index = SelectAdventureListCardIndex(player, s.card_ids, s.count, g_text_lines[0], 1, (int *)"");
-#else
-        s.selected_index = show_cardlist(s.card_ids, (int *)0, (int *)0, s.count, g_text_lines[0], 1, "");
-#endif
+        s.selected_index = show_deck(player, s.card_ids, s.count, g_text_lines[0], 1, "");
       }
       else
       {

@@ -128,7 +128,7 @@ int ante_drawn_card(int player);
 void remove_card_from_graveyard(int player, int graveyard_index);
 void clear_card_attachments(int player, int card);
 void exit_duel_thread(int player);
-int show_deck(int player, int *cards, int count, void *context, int suppress_done_txt, char *prompt);
+int show_deck(int player, int *cards, int count, char *title, int require_selection, char *prompt);
 int discard_card_from_hand(int player, int card);
 void request_duel_display_refresh(int player, int card, int reason, int flags);
 void request_duel_display_refresh_if_human(int player, int card, int reason, int flags);
